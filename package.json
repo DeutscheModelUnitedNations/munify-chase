@@ -1,0 +1,10 @@
+{
+  "scripts": {
+    "format": "rome format . --write",
+    "lint": "rome check . --apply",
+    "test": "echo TODO"
+  },
+  "devDependencies": {
+    "rome": "12.1.1"
+  }
+}

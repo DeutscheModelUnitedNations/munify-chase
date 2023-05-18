@@ -1,24 +1,20 @@
-import { FastifyInstance, FastifyPluginOptions } from "fastify";
+import { NowRequestHandler } from "fastify-now";
+import { Static, Type } from "@sinclair/typebox";
 
-export default async function routes(
-  fastify: FastifyInstance,
-  options: FastifyPluginOptions,
-) {
-  fastify.post(
-    "/",
-    {
-      schema: {
-        body: {
-          type: "object",
-          properties: {
-            username: { type: "string" },
-            password: { type: "string" },
-          },
-        },
-      },
-    },
-    async (request, reply) => {
-      return { hello: "world" };
-    },
-  );
-}
+const User = Type.Object({
+  password: Type.String(),
+  email: Type.String({ format: "email" }),
+});
+export type UserType = Static<typeof User>;
+
+export const POST: NowRequestHandler<{
+  Body: UserType;
+}> = async (req, rep) => {
+  return "cool, it works";
+};
+
+POST.opts = {
+  schema: {
+    body: User,
+  },
+};

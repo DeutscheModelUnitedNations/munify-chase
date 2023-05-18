@@ -1,16 +1,16 @@
 import Fastify, { FastifyInstance } from "fastify";
-
 import swagger from "@fastify/swagger";
 import swaggerUi from "@fastify/swagger-ui";
-
-import login from "./routes/login";
+import fastifyNow from "fastify-now";
+import { join } from "path";
+import { TypeBoxTypeProvider } from '@fastify/type-provider-typebox'
 
 //TODO get from env vars
 const PORT = 3000;
 
 const server: FastifyInstance = Fastify({
   logger: true,
-});
+}).withTypeProvider<TypeBoxTypeProvider>();
 
 server.register(swagger);
 server.register(swaggerUi, {
@@ -19,22 +19,12 @@ server.register(swaggerUi, {
     docExpansion: "full",
     deepLinking: false,
   },
-  uiHooks: {
-    onRequest: function (request, reply, next) {
-      next();
-    },
-    preHandler: function (request, reply, next) {
-      next();
-    },
-  },
-  staticCSP: true,
-  transformStaticCSP: (header) => header,
-  transformSpecification: (swaggerObject, request, reply) => {
-    return swaggerObject;
-  },
-  transformSpecificationClone: true,
 });
-server.register(login);
+
+server.register(fastifyNow, {
+  routesFolder: join(__dirname, "./routes"),
+  pathPrefix: "/api",
+});
 
 // wrap in an async function to allow top level async
 (async () => {

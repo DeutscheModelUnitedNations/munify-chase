@@ -1,17 +1,20 @@
 {
   "scripts": {
-    "dev": "ts-node-dev src/main.ts"
+    "dev": "ts-node-dev src/main.ts --serve-documentation --load-env-vars-from-file"
   },
   "dependencies": {
-    "@fastify/swagger": "^8.4.0",
-    "@fastify/swagger-ui": "^1.8.1",
+    "@fastify/cookie": "^8.3.0",
+    "@fastify/session": "^10.3.0",
     "@fastify/type-provider-typebox": "^3.2.0",
     "@sinclair/typebox": "^0.28.11",
     "fastify": "^4.17.0",
     "fastify-now": "^3.0.4"
   },
   "devDependencies": {
+    "@fastify/swagger": "^8.4.0",
+    "@fastify/swagger-ui": "^1.8.1",
     "@types/node": "^20.2.0",
+    "dotenv": "^16.0.3",
     "ts-node-dev": "^2.0.0"
   }
 }

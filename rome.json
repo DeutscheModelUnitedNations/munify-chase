@@ -1,5 +1,5 @@
 {
-  "$schema": "https://docs.rome.tools/schemas/12.1.1/schema.json",
+  "$schema": "./node_modules/rome/configuration_schema.json",
   "linter": {
     "enabled": true,
     "rules": {
@@ -8,5 +8,10 @@
   },
   "formatter": {
     "indentStyle": "space"
+  },
+  "vcs": {
+    "clientKind": "git",
+    "enabled": true,
+    "useIgnoreFile": true
   }
 }

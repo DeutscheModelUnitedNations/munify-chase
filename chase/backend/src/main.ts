@@ -51,6 +51,12 @@ if (SERVE_DOCUMENTATION) {
       deepLinking: false,
     },
   });
+
+  console.log(`
+╔══════════════════════════════════════════════════════════════════╗
+║ Serving API documentation on http://localhost:${PORT}/documentation ║
+╚══════════════════════════════════════════════════════════════════╝
+`);
 }
 
 // ╔═════════════════════════════════════════╗

@@ -1,6 +1,15 @@
 import "./globals.scss";
 import { Inter } from "next/font/google";
 
+
+//theme
+import "primereact/resources/themes/lara-light-indigo/theme.css";
+//core
+import "primereact/resources/primereact.min.css";
+//icons
+import "primeicons/primeicons.css";
+
+
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata = {
@@ -13,7 +22,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en">
+    <html lang="de">
       <body className={inter.className}>{children}</body>
     </html>
   );

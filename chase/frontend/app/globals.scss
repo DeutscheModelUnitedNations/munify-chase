@@ -2,7 +2,16 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  --dmun-primary: #3d7dd2;
+  --dmun-black: #000;
+}
+
 
 body {
   font-family: var(--font-family);
+}
+
+.bg-dmun-primary {
+  background-color: var(--dmun-primary);
 }

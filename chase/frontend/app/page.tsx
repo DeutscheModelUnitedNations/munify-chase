@@ -5,12 +5,6 @@ import { Button } from "primereact/button";
 import { Toast } from "primereact/toast";
 import Loading from "./loading";
 
-// //theme
-// import "primereact/resources/themes/lara-light-indigo/theme.css";
-// //core
-// import "primereact/resources/primereact.min.css";     
-
-
 export default function Home() {
   const [loadingParticipants, setLoadingParticipants] = useState(false);
   const [loadingChairs, setLoadingChairs] = useState(false);
@@ -24,7 +18,6 @@ export default function Home() {
       detail: "You will be redirected to the login page.",
     });
   };
-
 
   function loadParticipants() {
     setLoadingParticipants(true);
@@ -58,30 +51,35 @@ export default function Home() {
     }, 1000);
   }
 
-
   return (
     <>
-      <Suspense fallback={<Loading />} />
-      <Toast ref={linkRedirectingToast} />
-      <div className="flex align-center justify-center h-screen">
-        <div className="flex flex-col items-center justify-center">
-          <Image src="/chase_logo_blue_text.png" alt="Logo" width={700} height={128} className="mb-10"/>
-          <div className="p-buttonset">
-            <Button
-              label="Teilnehmenden-Login"
-              icon="pi pi-link"
-              loading={loadingParticipants}
-              onClick={loadParticipants}
-            />
-            <Button
-              label="Vorsitz-Login"
-              icon="pi pi-link"
-              loading={loadingChairs}
-              onClick={loadChairs}
-            />
-          </div>
+        <Suspense fallback={<Loading />} />
+        <Toast ref={linkRedirectingToast} />
+        <div className="flex align-center justify-center h-screen">
+            <div className="flex flex-col items-center justify-center">
+                <Image
+                    src="/logo/png/chase_logo_blue_text.png"
+                    alt="Logo"
+                    width={700}
+                    height={128}
+                    className="mb-10"
+                />
+                <div className="p-buttonset">
+                    <Button
+                        label="Teilnehmenden-Login"
+                        icon="pi pi-link"
+                        loading={loadingParticipants}
+                        onClick={loadParticipants}
+                    />
+                    <Button
+                        label="Vorsitz-Login"
+                        icon="pi pi-link"
+                        loading={loadingChairs}
+                        onClick={loadChairs}
+                    />
+                </div>
+            </div>
         </div>
-      </div>
     </>
   );
 }

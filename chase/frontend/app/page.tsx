@@ -1,56 +1,11 @@
 "use client";
-import React, { Suspense, useState, useRef } from "react";
+import React, { Suspense } from "react";
 import Image from "next/image";
 import { Button } from "primereact/button";
-import { Toast } from "primereact/toast";
 import Loading from "./loading";
+import Link from "next/link";
 
 export default function Home() {
-  const [loadingParticipants, setLoadingParticipants] = useState(false);
-  const [loadingChairs, setLoadingChairs] = useState(false);
-
-  const linkRedirectingToast = useRef(null);
-
-  const showLinkRedirectingToast = () => {
-    linkRedirectingToast.current.show({
-      severity: "info",
-      summary: "Redirecting...",
-      detail: "You will be redirected to the login page.",
-    });
-  };
-
-  function loadParticipants() {
-    setLoadingParticipants(true);
-
-    // show toast
-    showLinkRedirectingToast();
-
-    // navigate to the participant login page
-    setTimeout(() => {
-      window.location.href = "/login/participant";
-    }, 1000);
-
-    setTimeout(() => {
-      setLoadingParticipants(false);
-    }, 1000);
-  }
-
-  function loadChairs() {
-    setLoadingChairs(true);
-
-    // show toast
-    showLinkRedirectingToast();
-
-    // navigate to the chair login page
-    setTimeout(() => {
-      window.location.href = "/login/chair";
-    }, 1000);
-
-    setTimeout(() => {
-      setLoadingChairs(false);
-    }, 1000);
-  }
-
   return (
     <>
       <Suspense fallback={<Loading />} />
@@ -65,18 +20,18 @@ export default function Home() {
             className="mb-10"
           />
           <div className="p-buttonset">
-            <Button
-              label="Teilnehmenden-Login"
-              icon="pi pi-link"
-              loading={loadingParticipants}
-              onClick={loadParticipants}
-            />
-            <Button
-              label="Vorsitz-Login"
-              icon="pi pi-link"
-              loading={loadingChairs}
-              onClick={loadChairs}
-            />
+            <Link href="/login/participant">
+              <Button
+                label="Teilnehmenden-Login"
+                icon="pi pi-link"
+              />
+            </Link>
+            <Link href="/login/chair">
+              <Button
+                label="Vorsitz-Login"
+                icon="pi pi-link"
+              />
+            </Link>
           </div>
         </div>
       </div>

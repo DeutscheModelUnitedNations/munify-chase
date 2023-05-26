@@ -1,18 +1,22 @@
 "use client";
-import React, { Suspense, useState, useRef } from "react";
+import React, { useState } from "react";
 import Image from "next/image";
 import { Button } from "primereact/button";
-import { Toast } from "primereact/toast";
+import { useRouter } from "next/router";
+import Link from "next/link";
 
 export default function Home() {
+  const router = useRouter();
+
   const [loading, setLoading] = useState(false);
+
 
   function load() {
     setLoading(true);
 
     // navigate to the participant login page
     setTimeout(() => {
-      window.location.href = "/";
+      router.push("/login");
     }, 1000);
 
     setTimeout(() => {
@@ -33,13 +37,14 @@ export default function Home() {
           />
           <p className="text-white text-9xl mb-3 mt-10">404</p>
           <p className="text-white text-1xl mb-10">Page Not Found</p>
-          <Button
-            severity="warning"
-            label="Back to Home"
-            icon="pi pi-link"
-            loading={loading}
-            onClick={load}
-          />
+          <Link href="/">
+            <Button
+              severity="warning"
+              label="Back to Home"
+              icon="pi pi-link"
+              loading={loading}
+            />
+          </Link>
         </div>
       </div>
     </>

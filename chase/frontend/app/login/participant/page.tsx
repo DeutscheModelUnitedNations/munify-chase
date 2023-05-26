@@ -11,13 +11,11 @@ export default function loginVorsitz() {
   return (
     <>
       <div
-        className="flex justify-stretch h-screen"
-        style={{ backgroundColor: "#eee" }}
+        className="flex justify-stretch h-screen bg-light-gray"
       >
         <div className="flex-1 flex justify-center">
           <div
-            className="flex-1 flex flex-col justify-stretch items-center rounded-2xl shadow-md m-10 max-w-lg"
-            style={{ backgroundColor: "#fff" }}
+            className="flex-1 flex flex-col justify-stretch items-center rounded-2xl shadow-md m-10 max-w-lg bg-white"
           >
             <div className="flex justify-center items-center m-10">
               <Image

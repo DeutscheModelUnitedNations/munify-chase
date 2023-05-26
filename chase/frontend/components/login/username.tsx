@@ -4,17 +4,14 @@ import { InputText } from "primereact/inputtext";
 import { Toast } from "primereact/toast";
 
 export default function UsernameLogin({ changeLoginState }) {
-  const [loading, setLoading] = useState(false);
   const [username, setUsername] = useState("");
 
-  function load() {
-    setLoading(true);
-
-    // navigate to the participant login page
-    setTimeout(() => {
-      setLoading(false);
-      changeLoginState(1);
-    }, 1000);
+  function advance() {
+    // TODO request username from backend and store data in context
+    // TODO if username is not found, show toast
+    
+    // navigate to the next stage of the login process (password)
+    changeLoginState(1);
   }
 
   return (
@@ -31,8 +28,7 @@ export default function UsernameLogin({ changeLoginState }) {
         label="Weiter"
         icon="pi pi-arrow-right"
         iconPos="right"
-        loading={loading}
-        onClick={load}
+        onClick={advance}
         disabled={username === ""}
       />
     </div>

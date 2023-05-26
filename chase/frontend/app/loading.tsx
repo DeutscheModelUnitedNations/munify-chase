@@ -1,11 +1,5 @@
 "use client";
-import React, { Suspense } from "react";
-
-//theme
-import "primereact/resources/themes/lara-light-indigo/theme.css";
-
-//core
-import "primereact/resources/primereact.min.css";
+import React from "react";
 
 //TODO maybe a centralized spinner and a nice text would fit here
 export default function Loading() {

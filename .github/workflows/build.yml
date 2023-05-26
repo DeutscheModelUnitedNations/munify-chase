@@ -1,7 +1,7 @@
 name: Build
+on: [pull_request]
 
-on: [push, pull_request]
-
+# TODO run tests too
 jobs:
   chase-build-frontend:
     runs-on: ubuntu-latest

@@ -7,6 +7,7 @@ import "primereact/resources/themes/lara-light-indigo/theme.css";
 //core
 import "primereact/resources/primereact.min.css";
 
+//TODO maybe a centralized spinner and a nice text would fit here
 export default function Loading() {
   return (
     <div className="flex flex-col justify-center align-center">

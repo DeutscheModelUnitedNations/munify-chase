@@ -5,7 +5,6 @@ import Image from "next/image";
 import UsernameLogin from "../../../components/login/username";
 import PasswordLogin from "../../../components/login/password";
 
-
 export default function loginVorsitz() {
   const [loginStage, changeLoginState] = useState(0);
 
@@ -32,7 +31,9 @@ export default function loginVorsitz() {
               <>
                 <div className="flex-1 flex flex-col justify-center items-center">
                   <UsernameLogin changeLoginState={changeLoginState} />
-                  <p className="mt-10 text-gray-400 hover:text-black underline text-xs text-center"><a href="/login/chair">Stattdessen als Vorsitz anmelden</a></p>
+                  <p className="mt-10 text-gray-400 hover:text-black underline text-xs text-center">
+                    <a href="/login/chair">Stattdessen als Vorsitz anmelden</a>
+                  </p>
                 </div>
                 <div className="flex flex-col justify-center items-center m-10">
                   <p className="text-sm text-gray-500">Powered by</p>

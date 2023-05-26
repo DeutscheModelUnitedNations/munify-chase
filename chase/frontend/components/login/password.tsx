@@ -1,18 +1,18 @@
-import React, { useState, use } from "react"
+import React, { useState, use } from "react";
 import { useForm } from "react-hook-form";
 import { Button } from "primereact/button";
 import { Password } from "primereact/password";
 import { Checkbox } from "primereact/checkbox";
 import Image from "next/image";
 
-export default function usernameLogin({changeLoginState}) {
+export default function usernameLogin({ changeLoginState }) {
   const [loading, setLoading] = useState(false);
   const [committee, setCommittee] = useState("GV");
   const [countryCode, setCountry] = useState("cze");
   const [agreedToTerms, setAgreedToTerms] = useState(false);
   const [password, setPassword] = useState("");
 
-  function getCountrySvgPath (country: string) {
+  function getCountrySvgPath(country: string) {
     return `/flags/${country}.svg`;
   }
 
@@ -23,10 +23,7 @@ export default function usernameLogin({changeLoginState}) {
     password: "",
   };
 
-  const {
-    handleSubmit: handleLogin,
-    reset,
-  } = useForm({ defaultValues });
+  const { handleSubmit: handleLogin, reset } = useForm({ defaultValues });
 
   const submitDisabled = () => {
     return !agreedToTerms || password === "";
@@ -98,7 +95,7 @@ export default function usernameLogin({changeLoginState}) {
               className="underline"
               onClick={(e) => e.stopPropagation()}
               onKeyDown={(e) => e.stopPropagation()}
-              >
+            >
               Nutzungsbedingungen
             </a>
             . Außerdem bin ich damit einverstanden, dass diese Website Cookies
@@ -122,7 +119,10 @@ export default function usernameLogin({changeLoginState}) {
             label="Zurück"
             icon="pi pi-arrow-left"
             severity="danger"
-            onClick={() => {changeLoginState(0); reset(defaultValues);}}
+            onClick={() => {
+              changeLoginState(0);
+              reset(defaultValues);
+            }}
           />
           <Button
             label="Anmelden"

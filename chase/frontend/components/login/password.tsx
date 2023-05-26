@@ -44,7 +44,7 @@ export default function usernameLogin({ changeLoginState }) {
         <div className="flex-1 flex flex-col rounded-lg border border-gray-300 justify-center items-center">
           <p className="m-auto text-sm mt-5 mb-0">Gremium</p>
           <div className="text-3xl m-5 rounded-md border border-black h-24 flex align-center justify-center w-32">
-            <div className="self-center p-1">WiSo</div>
+            <div className="self-center p-1">{committee}</div>
           </div>
         </div>
         <div className="flex-1 flex flex-col rounded-lg border border-gray-300 justify-center items-center">

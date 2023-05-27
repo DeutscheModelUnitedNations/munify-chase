@@ -4,6 +4,7 @@ import { Button } from "primereact/button";
 import { Password } from "primereact/password";
 import { Checkbox } from "primereact/checkbox";
 import Image from "next/image";
+import Link from "next/link";
 
 export default function usernameLogin({ changeLoginState }) {
   const [loading, setLoading] = useState(false);
@@ -88,7 +89,7 @@ export default function usernameLogin({ changeLoginState }) {
             }}
           >
             Ich bin Einverstanden mit den{" "}
-            <a
+            <Link
               href="/terms"
               target="_blank"
               rel="noreferrer"
@@ -97,11 +98,11 @@ export default function usernameLogin({ changeLoginState }) {
               onKeyDown={(e) => e.stopPropagation()}
             >
               Nutzungsbedingungen
-            </a>
+            </Link>
             . Außerdem bin ich damit einverstanden, dass diese Website Cookies
             verwendet. Mehr Informationen dazu finden Sie in unseren{" "}
-            <a
-              href="datenschutz"
+            <Link
+              href="privacy"
               target="_blank"
               rel="noreferrer"
               className="underline"
@@ -109,7 +110,7 @@ export default function usernameLogin({ changeLoginState }) {
               onKeyDown={(e) => e.stopPropagation()}
             >
               Datenschutzbestimmungen
-            </a>
+            </Link>
             .
           </span>
         </div>

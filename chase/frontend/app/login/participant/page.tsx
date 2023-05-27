@@ -2,8 +2,8 @@
 import React, { useState, Suspense } from "react";
 import Image from "next/image";
 
-import UsernameLogin from "../../../components/login/username";
-import PasswordLogin from "../../../components/login/password";
+import UsernameLogin from "../components/username";
+import PasswordLogin from "../components/password";
 import Loading from "@/app/loading";
 import Link from "next/link";
 

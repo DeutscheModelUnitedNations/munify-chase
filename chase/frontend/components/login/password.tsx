@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { Button } from "primereact/button";
 import { Password } from "primereact/password";
@@ -7,8 +7,8 @@ import Image from "next/image";
 
 export default function usernameLogin({ changeLoginState }) {
   const [loading, setLoading] = useState(false);
-  const [committee, setCommittee] = useState("GV");
-  const [countryCode, setCountry] = useState("cze");
+  const [committee, setCommittee] = useState("N/A");
+  const [countryCode, setCountry] = useState("xxx"); // Placeholder SVG
   const [agreedToTerms, setAgreedToTerms] = useState(false);
   const [password, setPassword] = useState("");
 
@@ -16,9 +16,13 @@ export default function usernameLogin({ changeLoginState }) {
     return `/flags/${country}.svg`;
   }
 
+  useEffect(() => {
+    // TODO set committee and country from previous request
+  }, [])
+
   const defaultValues = {
-    countryCode: "cze",
-    committee: "GV",
+    countryCode: "xxx", // Placeholder SVG
+    committee: "N/A",
     agreedToTerms: false,
     password: "",
   };
@@ -31,11 +35,7 @@ export default function usernameLogin({ changeLoginState }) {
 
   const onSubmit = (data) => {
     setLoading(true);
-    console.log(data);
-    // navigate to the participant login page
-    setTimeout(() => {
-      window.location.href = "/participant";
-    }, 1000);
+    // TODO verify password, set cookie and advance to Dashboard
   };
 
   return (

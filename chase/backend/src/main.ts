@@ -30,9 +30,9 @@ PORT = Number.parseInt(process.env.PORT);
 // ╔════════════════════════╗
 // ║ Creating server object ║
 // ╚════════════════════════╝
-
+//TODO make the logger non ugly: https://www.fastify.io/docs/latest/Reference/Logging/
 const server: FastifyInstance = Fastify({
-  logger: { level: "warn" }, //TODO make the logger non ugly: https://www.fastify.io/docs/latest/Reference/Logging/
+  logger: { level: "warn" },
 }).withTypeProvider<TypeBoxTypeProvider>();
 
 // ╔═══════════════════════════════════════════════════╗
@@ -101,4 +101,4 @@ server.register(fastifyNow, {
   }
 })();
 
-server.log.info(`server listening on ${server.server.address()}`);
+console.log(`Starting server...`);

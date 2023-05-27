@@ -3,7 +3,6 @@ import React, { useState, useEffect, useRef } from "react";
 import Image from "next/image";
 import { Messages } from "primereact/messages";
 
-
 import UsernameLogin from "../components/username";
 import PasswordLogin from "../components/password_chair";
 import Link from "next/link";

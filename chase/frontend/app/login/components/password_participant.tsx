@@ -1,3 +1,4 @@
+"use client";
 import React, { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { Button } from "primereact/button";
@@ -61,6 +62,7 @@ export default function usernameLogin({ changeLoginState }) {
           </div>
         </div>
       </div>
+      // TODO This form can be a component that is used in both chair and participant login password components
       <form onSubmit={handleLogin(onSubmit)} className="contents">
         <Password
           placeholder="Password"

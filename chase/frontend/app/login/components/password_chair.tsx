@@ -33,7 +33,7 @@ export default function usernameLogin({ changeLoginState }) {
   };
 
   return (
-    <div className="flex flex-col p-5 items-center">
+    <div className="flex flex-col p-5 items-center justify-center h-full">
       {/* TODO This form can be a component that is used in both chair and participant login password components */}
       <form onSubmit={handleLogin(onSubmit)} className="contents">
         <Password

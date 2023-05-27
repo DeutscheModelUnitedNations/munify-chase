@@ -1,28 +1,10 @@
 "use client";
-import React, { useState } from "react";
+import React from "react";
 import Image from "next/image";
 import { Button } from "primereact/button";
-import { useRouter } from "next/router";
 import Link from "next/link";
 
 export default function Home() {
-  const router = useRouter();
-
-  const [loading, setLoading] = useState(false);
-
-
-  function load() {
-    setLoading(true);
-
-    // navigate to the participant login page
-    setTimeout(() => {
-      router.push("/login");
-    }, 1000);
-
-    setTimeout(() => {
-      setLoading(false);
-    }, 1000);
-  }
 
   return (
     <>
@@ -42,7 +24,6 @@ export default function Home() {
               severity="warning"
               label="Back to Home"
               icon="pi pi-link"
-              loading={loading}
             />
           </Link>
         </div>

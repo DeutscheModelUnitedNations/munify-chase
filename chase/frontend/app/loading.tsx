@@ -1,12 +1,21 @@
 "use client";
 import React from "react";
 
-//TODO maybe a centralized spinner and a nice text would fit here
 export default function Loading() {
   return (
-    <div className="flex flex-col justify-center align-center">
-      <h1>Chase</h1>
-      <p>Loading...</p>
+    <div className="flex justify-center items-center h-screen">
+      <div
+        className="flex flex-col justify-center items-center gap-10"
+        role="status"
+      >
+        <div>
+          <i
+            className="pi pi-spin pi-spinner fg-dmun-primary"
+            style={{ fontSize: "3rem" }}
+          />
+        </div>
+        <div className="">Loading</div>
+      </div>
     </div>
   );
 }

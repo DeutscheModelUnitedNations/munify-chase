@@ -1,22 +1,20 @@
 "use client";
-import React, { useState, useContext } from "react";
+import React, { useState, Suspense } from "react";
 import Image from "next/image";
 
 import UsernameLogin from "../../../components/login/username";
 import PasswordLogin from "../../../components/login/password";
+import Loading from "@/app/loading";
 
 export default function loginVorsitz() {
   const [loginStage, changeLoginState] = useState(0);
 
   return (
     <>
-      <div
-        className="flex justify-stretch h-screen bg-light-gray"
-      >
+      <Suspense fallback={<Loading />} />
+      <div className="flex justify-stretch h-screen bg-light-gray">
         <div className="flex-1 flex justify-center">
-          <div
-            className="flex-1 flex flex-col justify-stretch items-center rounded-2xl shadow-md m-10 max-w-lg bg-white"
-          >
+          <div className="flex-1 flex flex-col justify-stretch items-center rounded-2xl shadow-md m-10 max-w-lg bg-white">
             <div className="flex justify-center items-center m-10">
               <Image
                 src={"/logo/png/chase_logo_blue_text.png"}

@@ -14,7 +14,7 @@ export default function Loading() {
             style={{ fontSize: "3rem" }}
           />
         </div>
-        <div className="">Loading</div>
+        <div>Loading</div>
       </div>
     </div>
   );

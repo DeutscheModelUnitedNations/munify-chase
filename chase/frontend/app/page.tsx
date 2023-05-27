@@ -3,13 +3,14 @@ import React, { Suspense } from "react";
 import Image from "next/image";
 import { Button } from "primereact/button";
 import Loading from "./loading";
-import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 export default function Home() {
+  const router = useRouter();
+
   return (
     <>
       <Suspense fallback={<Loading />} />
-      <Toast ref={linkRedirectingToast} />
       <div className="flex align-center justify-center h-screen">
         <div className="flex flex-col items-center justify-center">
           <Image
@@ -20,18 +21,16 @@ export default function Home() {
             className="mb-10"
           />
           <div className="p-buttonset">
-            <Link href="/login/participant">
-              <Button
-                label="Teilnehmenden-Login"
-                icon="pi pi-link"
-              />
-            </Link>
-            <Link href="/login/chair">
-              <Button
-                label="Vorsitz-Login"
-                icon="pi pi-link"
-              />
-            </Link>
+            <Button
+              label="Teilnehmenden-Login"
+              icon="pi pi-link"
+              onClick={() => router.push("/login/participant")}
+            />
+            <Button
+              label="Vorsitz-Login"
+              icon="pi pi-link"
+              onClick={() => router.push("/login/chairs")}
+            />
           </div>
         </div>
       </div>

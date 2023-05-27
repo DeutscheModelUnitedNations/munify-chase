@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import { Button } from "primereact/button";
 import { InputText } from "primereact/inputtext";
-import { Toast } from "primereact/toast";
 
 export default function UsernameLogin({ changeLoginState }) {
   const [username, setUsername] = useState("");
@@ -9,7 +8,7 @@ export default function UsernameLogin({ changeLoginState }) {
   function advance() {
     // TODO request username from backend and store data in context
     // TODO if username is not found, show toast
-    
+
     // navigate to the next stage of the login process (password)
     changeLoginState(1);
   }

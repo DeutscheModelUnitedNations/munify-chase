@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, Suspense } from "react";
+import React, { useState } from "react";
 import Image from "next/image";
 
 import UsernameLogin from "../components/username";

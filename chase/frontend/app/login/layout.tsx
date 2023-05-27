@@ -8,7 +8,6 @@ import "primereact/resources/themes/lara-light-indigo/theme.css";
 import "primereact/resources/primereact.min.css";
 //icons
 import "primeicons/primeicons.css";
-import { Suspense } from "react";
 import Loading from "../loading";
 
 const inter = Inter({ subsets: ["latin"] });
@@ -25,7 +24,6 @@ export default function RootLayout({
   return (
     <html lang="de">
       <body className={inter.className}>
-        <Suspense fallback={<Loading />} />
         <div className="flex justify-stretch h-screen bg-light-gray">
           <div className="flex-1 flex justify-center">
             <div className="flex-1 flex flex-col justify-stretch items-center rounded-2xl shadow-md m-10 max-w-lg bg-white">

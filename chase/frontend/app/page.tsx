@@ -1,5 +1,5 @@
 "use client";
-import React, { Suspense } from "react";
+import React from "react";
 import Image from "next/image";
 import { Button } from "primereact/button";
 import Loading from "./loading";
@@ -10,7 +10,6 @@ export default function Home() {
 
   return (
     <>
-      <Suspense fallback={<Loading />} />
       <div className="flex align-center justify-center h-screen">
         <div className="flex flex-col items-center justify-center">
           <Image

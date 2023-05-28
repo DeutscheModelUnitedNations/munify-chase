@@ -7,7 +7,7 @@ import Link from "next/link";
 export default function Home() {
   return (
     <>
-      <div className="flex align-center justify-center h-screen w-screen bg-dmun-primary">
+      <div className="flex align-center justify-center h-screen w-screen bg-primary">
         <div className="flex flex-col items-center justify-center">
           <Image
             src="/logo/png/chase_logo_white_text.png"

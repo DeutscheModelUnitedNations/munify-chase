@@ -1,4 +1,5 @@
 /** @type {import('tailwindcss').Config} */
+
 module.exports = {
   content: [
     "./pages/**/*.{js,ts,jsx,tsx,mdx}",
@@ -11,6 +12,14 @@ module.exports = {
         "gradient-radial": "radial-gradient(var(--tw-gradient-stops))",
         "gradient-conic":
           "conic-gradient(from 180deg at 50% 50%, var(--tw-gradient-stops))",
+      },
+      colors: {
+        dmun : "#3d7dd2", // DMUN Blue
+        primary: "#3d7dd2", // Primary Color, until specified remains DMUN Blue
+        secondary: "#ffc200", // For now, Orange
+        gray: {
+          light: "#EEEEEE",
+        },
       },
     },
   },

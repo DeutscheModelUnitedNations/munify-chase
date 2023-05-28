@@ -10,7 +10,7 @@ export default function Loading() {
       >
         <div>
           <i
-            className="pi pi-spin pi-spinner fg-dmun-primary"
+            className="pi pi-spin pi-spinner text-primary "
             style={{ fontSize: "3rem" }}
           />
         </div>

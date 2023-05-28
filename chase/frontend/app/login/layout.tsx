@@ -24,7 +24,7 @@ export default function RootLayout({
   return (
     <html lang="de">
       <body className={inter.className}>
-        <div className="flex justify-stretch h-screen bg-light-gray">
+        <div className="flex justify-stretch h-screen bg-gray-light">
           <div className="flex-1 flex justify-center">
             <div className="flex-1 flex flex-col justify-stretch items-center rounded-2xl shadow-md m-10 max-w-lg bg-white">
               {children}

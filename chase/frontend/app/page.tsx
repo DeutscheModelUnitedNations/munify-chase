@@ -28,7 +28,7 @@ export default function Home() {
             <Button
               label="Vorsitz-Login"
               icon="pi pi-link"
-              onClick={() => router.push("/login/chairs")}
+              onClick={() => router.push("/login/chair")}
             />
           </div>
         </div>

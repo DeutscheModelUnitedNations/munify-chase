@@ -1,4 +1,4 @@
-import "../globals.scss";
+import "@/app/globals.scss";
 import { Inter } from "next/font/google";
 import Image from "next/image";
 
@@ -8,7 +8,6 @@ import "primereact/resources/themes/lara-light-indigo/theme.css";
 import "primereact/resources/primereact.min.css";
 //icons
 import "primeicons/primeicons.css";
-import Loading from "../loading";
 
 const inter = Inter({ subsets: ["latin"] });
 

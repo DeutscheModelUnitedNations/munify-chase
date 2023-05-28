@@ -3,8 +3,8 @@ import React, { useState, useEffect, useRef } from "react";
 import Image from "next/image";
 import { Messages } from "primereact/messages";
 
-import UsernameLogin from "../components/username";
-import PasswordLogin from "../components/password_chair";
+import UsernameLogin from "@/components/login/username";
+import PasswordLogin from "@/components/login/password_chair";
 import Link from "next/link";
 
 export default function loginVorsitz() {

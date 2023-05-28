@@ -12,7 +12,7 @@ import "primeicons/primeicons.css";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata = {
-  title: "Chase",
+  title: "Chase | Login",
 };
 
 export default function RootLayout({

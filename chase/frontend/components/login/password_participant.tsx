@@ -8,8 +8,11 @@ import { Sidebar } from "primereact/sidebar";
 import { Card } from "primereact/card";
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 export default function usernameLogin({ changeLoginState }) {
+  const router = useRouter();
+
   const [loading, setLoading] = useState(false);
 
   const [isNonStateActor, setIsNonStateActor] = useState(true);
@@ -46,6 +49,7 @@ export default function usernameLogin({ changeLoginState }) {
   const onSubmit = (data) => {
     setLoading(true);
     // TODO verify password, set cookie and advance to Dashboard
+    router.push("/participant/dashboard");
   };
 
   return (

@@ -14,7 +14,7 @@ module.exports = {
           "conic-gradient(from 180deg at 50% 50%, var(--tw-gradient-stops))",
       },
       colors: {
-        dmun : "#3d7dd2", // DMUN Blue
+        dmun: "#3d7dd2", // DMUN Blue
         primary: "#3d7dd2", // Primary Color, until specified remains DMUN Blue
         secondary: "#ffc200", // For now, Orange
         gray: {

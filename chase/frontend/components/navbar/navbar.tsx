@@ -1,19 +1,32 @@
 "use client";
 import React, { useState } from "react";
 import Image from "next/image";
-import Button from "@/components/navbar/button";
+
+import NavButton from "@/components/navbar/button";
+import SettingsSidebar from "@/components/navbar/settingssidebar";
+
 import { useRouter } from "next/navigation";
 import { confirmDialog, ConfirmDialog } from "primereact/confirmdialog";
+import { Card } from "primereact/card";
+import { Sidebar } from "primereact/sidebar";
+import { SelectButton } from "primereact/selectbutton";
 
-import { faHouse } from "@fortawesome/free-solid-svg-icons";
-import { faComment } from "@fortawesome/free-solid-svg-icons";
-import { faScroll } from "@fortawesome/free-solid-svg-icons";
-import { faSquarePollVertical } from "@fortawesome/free-solid-svg-icons";
-import { faGear } from "@fortawesome/free-solid-svg-icons";
-import { faRightFromBracket } from "@fortawesome/free-solid-svg-icons";
+import {
+  faRightFromBracket,
+  faGear,
+  faSquarePollVertical,
+  faScroll,
+  faComment,
+  faHouse,
+  faMoon,
+  faSun,
+  faAdjust,
+} from "@fortawesome/free-solid-svg-icons";
 
 export default function Navbar({ active }) {
     const router = useRouter();
+
+    const [settingsSidebarVisible, setSettingsSidebarVisible] = useState(false);
 
     const acceptLogout = () => {
         // TODO: logout
@@ -28,7 +41,7 @@ export default function Navbar({ active }) {
       confirmDialog({
         message: "Sind sie sicher, dass Sie sich abmelden möchten?",
         icon: "pi pi-exclamation-triangle",
-        position: "bottomleft",
+        position: "bottom-left",
         acceptLabel: "Ja",
         acceptIcon: "pi pi-check",
         acceptClassName: "p-button-danger",
@@ -50,22 +63,22 @@ export default function Navbar({ active }) {
             className="mt-3"
           />
           <div className="flex flex-col justify-center items-center gap-3">
-            <Button
+            <NavButton
               active={active.index === 0}
               icon={faHouse}
               link={"/participant/dashboard"}
             />
-            <Button
+            <NavButton
               active={active.index === 1}
               icon={faComment}
               link={"/participant/speakers"}
             />
-            <Button
+            <NavButton
               active={active.index === 2}
               icon={faScroll}
               link={"/participant/resolutions"}
             />
-            <Button
+            <NavButton
               active={active.index === 3}
               icon={faSquarePollVertical}
               link={"/participant/voting"}
@@ -73,16 +86,14 @@ export default function Navbar({ active }) {
           </div>
           <div className="flex-1" />
           <div className="flex flex-col items-center gap-3 mb-5">
-            <Button
+            <SettingsSidebar settingsSidebarVisible={settingsSidebarVisible} setSettingsSidebarVisible={setSettingsSidebarVisible} />
+            <NavButton
               active={false}
               icon={faGear}
-              onClick={() => {
-                // TODO: open settings sidebar
-                console.log("TODO: open settings sidebar");
-              }}
+              onClick={() => setSettingsSidebarVisible(true)}
             />
             <ConfirmDialog />
-            <Button
+            <NavButton
               active={false}
               icon={faRightFromBracket}
               onClick={confirmLogout}
@@ -92,5 +103,3 @@ export default function Navbar({ active }) {
       </>
     );
 }
-
-

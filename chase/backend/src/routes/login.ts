@@ -5,13 +5,13 @@ const Body = Type.Object({
   password: Type.String(),
   email: Type.String({ format: "email" }),
 });
-export type BodyType = Static<typeof Body>;
+type BodyType = Static<typeof Body>;
 
 const Reply = Type.Object({
   firstName: Type.String(),
   lastName: Type.String(),
 });
-export type ReplyType = Static<typeof Reply>;
+type ReplyType = Static<typeof Reply>;
 
 const ErrorResponse = Type.Union([
   Type.Literal("CouldNotFindUser"),

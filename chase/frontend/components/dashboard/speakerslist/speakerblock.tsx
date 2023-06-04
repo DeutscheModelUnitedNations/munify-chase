@@ -15,7 +15,7 @@ export default function SpeakerBlock({ countryCode, countryName, time}) {
             alt="flag"
           />
         </div>
-        <div className="flex-1 flex flex-col ml-2">
+        <div className="flex-1 flex flex-col ml-4">
           <div className="font-bold text-md">{countryName}</div>
           <div className="text-md text-gray-500 flex items-center gap-3">
             <FontAwesomeIcon icon={faClock} />

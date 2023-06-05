@@ -11,3 +11,8 @@
 body {
   font-family: var(--font-family);
 }
+
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum";
+}

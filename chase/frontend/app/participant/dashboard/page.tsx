@@ -12,12 +12,20 @@ import DocumentsWidget from "@/components/dashboard/documents";
 import WhiteboardWidget from "@/components/dashboard/whiteboard";
 import ActionsWidget from "@/components/dashboard/actions";
 
-
 export default function participant_dashboard() {
   const [countryName, setCountryName] = React.useState("Republik Panama");
   const [countryCode, setCountryCode] = React.useState("jam");
-  const [committeeName, setCommitteeName] = React.useState("Generalversammlung");
-  const [currentTopic, setCurrentTopic] = React.useState("Rechte von Kindersoldaten");
+  const [committeeName, setCommitteeName] =
+    React.useState("Generalversammlung");
+  const [currentTopic, setCurrentTopic] = React.useState(
+    "Rechte von Kindersoldaten",
+  );
+
+  // Demo data
+  const pauseHeadline = "Informelle Sitzung";
+  const pauseUntil = new Date(Date.now() + 1000 * 10);
+  const pauseCategory = "informal";
+
 
 
   return (
@@ -34,7 +42,11 @@ export default function participant_dashboard() {
           <div className="flex-1 grid grid-cols-1 lg:grid-cols-3 md:grid-cols-2  gap-5 p-4">
             <div className="flex-1 flex flex-col justify-start items-stretch gap-5">
               <SpeakersListWidget />
-              <TimerWidget />
+              <TimerWidget
+                headline={pauseHeadline}
+                until={pauseUntil}
+                category={pauseCategory}
+              />
             </div>
             <div className="flex-1 flex flex-col justify-start items-stretch gap-5">
               <CommitteeStatusWidget />
@@ -50,4 +62,3 @@ export default function participant_dashboard() {
     </>
   );
 }
-

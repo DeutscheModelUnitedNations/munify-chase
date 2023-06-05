@@ -7,7 +7,7 @@ import QueueBlock from "@/components/dashboard/speakerslist/queueblock";
 export default function SpeakersListWidget() {
   // Demo Data
   // TODO remove
-  const myCountry = "jam"
+  const myCountry = "jam";
 
   const currentSpeaker = {
     countryCode: "uno",
@@ -15,18 +15,17 @@ export default function SpeakersListWidget() {
     time: "2:35",
   };
 
-  const speakersList = ["gbr", "che", "yem", "fra", "jam"]
+  const speakersList = ["gbr", "che", "yem", "fra", "jam"];
 
   const currentComment = {
     countryCode: "cze",
     countryName: "Republik Tschechien",
-    time: "0:23"
-  }
+    time: "0:23",
+  };
 
   // const currentComment = null;  // If there is no data for current comment, the commentlist block will not be rendered
 
   const commentList = ["deu", "jam", "usa", "yem"];
-
 
   return (
     <>
@@ -37,7 +36,7 @@ export default function SpeakersListWidget() {
             countryName={currentSpeaker.countryName}
             time={currentSpeaker.time}
           />
-          { currentComment && (
+          {currentComment && (
             <CommentBlock>
               <SpeakerBlock
                 countryCode={currentComment.countryCode}
@@ -45,7 +44,7 @@ export default function SpeakersListWidget() {
                 time={currentComment.time}
               />
               <QueueBlock list={commentList} myCountry={myCountry} />
-            </CommentBlock>  
+            </CommentBlock>
           )}
           <QueueBlock list={speakersList} myCountry={myCountry} />
         </div>

@@ -13,7 +13,6 @@ export default function WidgetTemplate({
   cardTitle,
   styles,
 }: WidgetTemplateProps) {
-
   const widgetClassNames = () => {
     const classNames = ["flex flex-col bg-gray-light rounded-lg p-3"];
 
@@ -22,12 +21,14 @@ export default function WidgetTemplate({
     }
 
     return classNames.join(" ");
-  }
+  };
 
   return (
     <>
       <div className={widgetClassNames()}>
-        {cardTitle ? (<div className=" font-bold mb-2 text-lg">{cardTitle}</div>) : null}
+        {cardTitle ? (
+          <div className=" font-bold mb-2 text-lg">{cardTitle}</div>
+        ) : null}
         <div className="flex-1">{children}</div>
       </div>
     </>

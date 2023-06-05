@@ -3,7 +3,7 @@ import Image from "next/image";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faClock } from "@fortawesome/free-solid-svg-icons";
 
-export default function SpeakerBlock({ countryCode, countryName, time}) {
+export default function SpeakerBlock({ countryCode, countryName, time }) {
   return (
     <>
       <div className="flex flex-row items-center justify-start">

@@ -23,17 +23,15 @@ export default function NavbarButton({
     }
   }, [active]);
 
-  return (
-    (link === "" && onClick !== null) ? (
+  return link === "" && onClick !== null ? (
+    <div className={wrapperStyle}>
+      <FontAwesomeIcon icon={icon} className=" text-xl m-3" onClick={onClick} />
+    </div>
+  ) : (
+    <Link href={link} className="w-full">
       <div className={wrapperStyle}>
-        <FontAwesomeIcon icon={icon} className=" text-xl m-3" onClick={onClick} />
+        <FontAwesomeIcon icon={icon} className=" text-xl m-3" />
       </div>
-    ) : (
-      <Link href={link} className="w-full">
-        <div className={wrapperStyle}>
-            <FontAwesomeIcon icon={icon} className=" text-xl m-3" />
-        </div>
-      </Link>
-    )
+    </Link>
   );
 }

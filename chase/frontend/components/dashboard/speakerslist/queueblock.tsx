@@ -2,7 +2,6 @@ import React from "react";
 import Image from "next/image";
 
 export default function SpeakerBlock({ list, myCountry }) {
-
   const compressedList = () => {
     let compressedList = [];
 
@@ -19,7 +18,7 @@ export default function SpeakerBlock({ list, myCountry }) {
     }
 
     return compressedList;
-  }
+  };
 
   const getWaitingPosition = () => {
     if (list.includes(myCountry)) {
@@ -27,7 +26,7 @@ export default function SpeakerBlock({ list, myCountry }) {
     } else {
       return 0;
     }
-  }
+  };
 
   return (
     <>

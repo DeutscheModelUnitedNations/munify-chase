@@ -17,7 +17,6 @@ export default function TimerWidget({
   until: Date | null;
   category: "formal" | "informal" | "pause" | "suspension";
 }) {
-
   const toast = useRef(null);
 
   const showTimerToast = () => {
@@ -47,8 +46,6 @@ export default function TimerWidget({
     }
   };
 
-
-
   return (
     <>
       <WidgetTemplate cardTitle="" styles={styles()}>
@@ -69,7 +66,9 @@ export default function TimerWidget({
             )}
           </div>
           <div className="text-2xl font-bold">{headline}</div>
-          {category !== "suspension" && (<div className="text-md">Bis {timeStamp} Uhr</div>)}
+          {category !== "suspension" && (
+            <div className="text-md">Bis {timeStamp} Uhr</div>
+          )}
           {category !== "suspension" && category !== "formal" && (
             <div className="text-4xl font-bold my-2 tabular-nums">
               <Timer until={until} showTimerToast={showTimerToast} />
@@ -81,9 +80,10 @@ export default function TimerWidget({
   );
 }
 
-
-
-function Timer({ until, showTimerToast }: { until: Date | null, showTimerToast: () => void }) {
+function Timer({
+  until,
+  showTimerToast,
+}: { until: Date | null; showTimerToast: () => void }) {
   const [timeLeft, setTimeLeft] = React.useState<number | null>(null);
 
   useEffect(() => {
@@ -112,7 +112,7 @@ function Timer({ until, showTimerToast }: { until: Date | null, showTimerToast: 
 
   return (
     <span>
-      { hours > 0 && hours.toString().padStart(2, "0") } { hours > 0 && ":" }
+      {hours > 0 && hours.toString().padStart(2, "0")} {hours > 0 && ":"}
       {minutes.toString().padStart(2, "0")}:
       {seconds.toString().padStart(2, "0")}
     </span>

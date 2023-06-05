@@ -1,7 +1,12 @@
 import React from "react";
 import Image from "next/image";
 
-export default function DashboardHeader({countryName, countryCode, committeeName, currentTopic}){
+export default function DashboardHeader({
+  countryName,
+  countryCode,
+  committeeName,
+  currentTopic,
+}) {
   return (
     <div className=" h-32 bg-gray-300 flex justify-between items-center p-4">
       <div className="flex flex-col items-start justify-center">

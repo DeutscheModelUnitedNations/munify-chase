@@ -26,8 +26,6 @@ export default function participant_dashboard() {
   const pauseUntil = new Date(Date.now() + 1000 * 10);
   const pauseCategory = "informal";
 
-
-
   return (
     <>
       <Navbar active={{ index: 0, path: "/participant/dashboard" }} />

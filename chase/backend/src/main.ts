@@ -28,7 +28,7 @@ if (LOAD_ENV_VARS_FROM_FILE) {
 let PORT = 0;
 if (process.env.PORT === undefined) {
   throw new Error(
-    "Please make sure the PORT environment variable is set to a valid port number"
+    "Please make sure the PORT environment variable is set to a valid port number",
   );
 }
 PORT = Number.parseInt(process.env.PORT);
@@ -71,13 +71,13 @@ server.register(fastifyCookie, {});
 const redisUrl = process.env.REDIS_URL;
 if (redisUrl === undefined) {
   throw new Error(
-    "Could not find REDIS_URL environment variable. Make sure it's set"
+    "Could not find REDIS_URL environment variable. Make sure it's set",
   );
 }
 
 // Initialize redis client.
 const redisClient = createClient({
-  url: redisUrl
+  url: redisUrl,
 });
 redisClient.connect().catch(console.error);
 
@@ -90,7 +90,7 @@ const redisStore = new RedisStore({
 const sessionSecret = process.env.SESSION_SECRET;
 if (sessionSecret === undefined) {
   throw new Error(
-    "Could not find session secret in environment variable. Make sure that the 'SESSION_SECRET' environment variable is set and a secure string with more than 21 characters."
+    "Could not find session secret in environment variable. Make sure that the 'SESSION_SECRET' environment variable is set and a secure string with more than 21 characters.",
   );
 }
 
@@ -126,7 +126,7 @@ server.register(fastifyNow, {
     if (process.env.SERVE_DOCUMENTATION) {
       server.swagger();
     }
-    console.log(`Running on port ${PORT}`)
+    console.log(`Running on port ${PORT}`);
     await server.listen({ port: PORT, host: "0.0.0.0" });
   } catch (err) {
     server.log.error(err);

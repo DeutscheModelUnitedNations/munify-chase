@@ -3,7 +3,7 @@
     "build": "node build.js",
     "dev": "npm-run-all -p dev:*",
     "dev:server": "ts-node-dev src/main.ts --load-env-vars-from-file",
-    "dev:db": "docker compose up -d"
+    "dev:db": "docker compose up"
   },
   "dependencies": {
     "@fastify/cookie": "^8.3.0",

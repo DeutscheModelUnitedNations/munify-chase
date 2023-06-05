@@ -1,3 +1,5 @@
+# TODO document docker requirement for setup
+
 services:
   # postgres:
   #   image: postgres
@@ -16,4 +18,4 @@ services:
     ports:
       - "6379:6379"
     volumes:
-      - ./redis-data:/data
+      - ./.redis-data:/data

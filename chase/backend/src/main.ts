@@ -10,6 +10,8 @@ import fastifyNow from "fastify-now";
 import { join } from "path";
 import { createClient } from "redis";
 
+//TODO establish testing concept & coverage
+
 // ╔═══════════════╗
 // ║ Configuration ║
 // ╚═══════════════╝
@@ -23,21 +25,10 @@ if (LOAD_ENV_VARS_FROM_FILE) {
   dotenv.config({ path: join(__dirname, "../.env") });
 }
 
-// TODO: extract redis configuration into a separate file
-// Initialize redis client.
-const redisClient = createClient();
-redisClient.connect().catch(console.error);
-
-// Initialize store.
-const redisStore = new RedisStore({
-  client: redisClient,
-  prefix: "myapp:",
-});
-
 let PORT = 0;
 if (process.env.PORT === undefined) {
   throw new Error(
-    "Please make sure the PORT environment variable is set to a valid port number",
+    "Please make sure the PORT environment variable is set to a valid port number"
   );
 }
 PORT = Number.parseInt(process.env.PORT);
@@ -76,10 +67,30 @@ if (process.env.SERVE_DOCUMENTATION) {
 // ╚═════════════════════════════════════════╝
 
 server.register(fastifyCookie, {});
+
+const redisUrl = process.env.REDIS_URL;
+if (redisUrl === undefined) {
+  throw new Error(
+    "Could not find REDIS_URL environment variable. Make sure it's set"
+  );
+}
+
+// Initialize redis client.
+const redisClient = createClient({
+  url: redisUrl
+});
+redisClient.connect().catch(console.error);
+
+// Initialize store.
+const redisStore = new RedisStore({
+  client: redisClient,
+  prefix: "chase-session:",
+});
+
 const sessionSecret = process.env.SESSION_SECRET;
 if (sessionSecret === undefined) {
   throw new Error(
-    "Could not find session secret in environment variable. Make sure that the 'SESSION_SECRET' environment variable is set and a secure string with more than 21 characters.",
+    "Could not find session secret in environment variable. Make sure that the 'SESSION_SECRET' environment variable is set and a secure string with more than 21 characters."
   );
 }
 
@@ -115,6 +126,7 @@ server.register(fastifyNow, {
     if (process.env.SERVE_DOCUMENTATION) {
       server.swagger();
     }
+    console.log(`Running on port ${PORT}`)
     await server.listen({ port: PORT, host: "0.0.0.0" });
   } catch (err) {
     server.log.error(err);

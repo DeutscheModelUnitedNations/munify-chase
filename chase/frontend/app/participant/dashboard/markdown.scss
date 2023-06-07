@@ -5,6 +5,10 @@
     line-height: 1.2;
     color: #333;
 
+    > *:first-child {
+        margin-top: 0.6em;
+    }
+
     // Headers
     h1,
     h2,
@@ -18,9 +22,6 @@
 
     h1 {
         font-size: 1.5em;
-        &:first-child {
-            margin-top: 0.2em;
-        }
     }
 
     h2 {

@@ -10,12 +10,12 @@ export default function WhiteboardWidget({
   return (
     <>
       <WidgetTemplate cardTitle="Aktuelle Hinweise" styles="flex-1">
-        <div className="flex-1 flex px-4 bg-white rounded-md">
-          {/* TODO find a better solution for scaling the Whitboard Box */}
-          <ScrollPanel
-            className="flex-1 overflow-y-auto"
-            style={{ maxHeight: "50vh" }}
-          >
+        {/* TODO find a better solution for scaling the Whitboard Box */}
+        <div
+          className="flex-1 flex pl-4 bg-white rounded-md overflow-hidden"
+          style={{ maxHeight: "50vh" }}
+        >
+          <ScrollPanel className="flex-1">
             <div className="markdown">
               <ReactMarkdown
                 children={markdown_content}

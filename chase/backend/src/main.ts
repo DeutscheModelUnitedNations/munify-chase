@@ -10,6 +10,8 @@ import fastifyNow from "fastify-now";
 import { join } from "path";
 import { createClient } from "redis";
 
+import { db } from "../prisma/client";
+
 //TODO establish testing concept & coverage
 
 // ╔═══════════════╗
@@ -28,7 +30,7 @@ if (LOAD_ENV_VARS_FROM_FILE) {
 let PORT = 0;
 if (process.env.PORT === undefined) {
   throw new Error(
-    "Please make sure the PORT environment variable is set to a valid port number",
+    "Please make sure the PORT environment variable is set to a valid port number"
   );
 }
 PORT = Number.parseInt(process.env.PORT);
@@ -37,7 +39,8 @@ PORT = Number.parseInt(process.env.PORT);
 // ║ Creating server object ║
 // ╚════════════════════════╝
 //TODO make the logger non ugly: https://www.fastify.io/docs/latest/Reference/Logging/
-const server: FastifyInstance = Fastify({
+
+export const server: FastifyInstance = Fastify({
   logger: { level: "warn" },
 }).withTypeProvider<TypeBoxTypeProvider>();
 
@@ -62,6 +65,12 @@ if (process.env.SERVE_DOCUMENTATION) {
 `);
 }
 
+// ╔══════════════════════╗
+// ║ Import hooks & types ║
+// ╚══════════════════════╝
+
+import "./hooks/hooks";
+
 // ╔═════════════════════════════════════════╗
 // ║ Cookie parsing & Session initialization ║
 // ╚═════════════════════════════════════════╝
@@ -71,7 +80,7 @@ server.register(fastifyCookie, {});
 const redisUrl = process.env.REDIS_URL;
 if (redisUrl === undefined) {
   throw new Error(
-    "Could not find REDIS_URL environment variable. Make sure it's set",
+    "Could not find REDIS_URL environment variable. Make sure it's set"
   );
 }
 
@@ -90,7 +99,7 @@ const redisStore = new RedisStore({
 const sessionSecret = process.env.SESSION_SECRET;
 if (sessionSecret === undefined) {
   throw new Error(
-    "Could not find session secret in environment variable. Make sure that the 'SESSION_SECRET' environment variable is set and a secure string with more than 21 characters.",
+    "Could not find session secret in environment variable. Make sure that the 'SESSION_SECRET' environment variable is set and a secure string with more than 21 characters."
   );
 }
 
@@ -128,6 +137,7 @@ server.register(fastifyNow, {
     }
     console.log(`Running on port ${PORT}`);
     await server.listen({ port: PORT, host: "0.0.0.0" });
+    db.$disconnect();
   } catch (err) {
     server.log.error(err);
     process.exit(1);

@@ -11,8 +11,14 @@ declare module "fastify" {
      */
   interface Session {
     /**
-        The email of the user, unique per user
+        If the user is authenticated this object contains various fields that are obtained from the authentication
      */
-    email: string;
+    authentication?: {
+      userId: string;
+      email: string;
+      firstName: string;
+      lastName: string;
+      pronouns: string;
+    };
   }
 }

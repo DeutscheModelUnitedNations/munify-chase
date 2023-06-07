@@ -21,7 +21,7 @@ const ErrorResponse = Type.Union([
 export const POST: NowRequestHandler<{
   Body: BodyType;
   Reply: ReplyType;
-}> = async (req, rep) => {
+}> = async () => {
   return {
     firstName: "FirstName",
     lastName: "LastName",

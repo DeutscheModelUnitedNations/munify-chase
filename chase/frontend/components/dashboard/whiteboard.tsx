@@ -15,7 +15,7 @@ export default function WhiteboardWidget({
           className="flex-1 flex pl-4 bg-white rounded-md overflow-hidden"
           style={{ maxHeight: "50vh" }}
         >
-          <ScrollPanel className="flex-1">
+          <ScrollPanel className="flex-1 custom-scrollbar">
             <div className="markdown">
               <ReactMarkdown
                 children={markdown_content}

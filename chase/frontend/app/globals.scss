@@ -16,3 +16,11 @@ body {
   font-variant-numeric: tabular-nums;
   font-feature-settings: "tnum";
 }
+
+.custom-scrollbar {
+  .p-scrollpanel, .p-scrollpanel:active {
+    .p-scrollpanel-bar, .p-scrollpanel-bar-x, .p-scrollpanel-bar-y {
+      background: #e2e2e2 !important;
+    }
+  }
+}

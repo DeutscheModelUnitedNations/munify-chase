@@ -54,8 +54,8 @@ export default function DocumentsWidget() {
   return (
     <>
       <WidgetTemplate cardTitle="Dokumente">
-        {/* TODO Find a better solution for height limiting and change scrollbar color to make it more visible */}
-        <ScrollPanel style={{ maxHeight: "50vh" }}>
+        {/* TODO Find a better solution for height limiting */}
+        <ScrollPanel className="custom-scrollbar" style={{ maxHeight: "50vh" }}>
           {documents.map((document: Document) => {
             if (document.category === "adopted") {
               return (

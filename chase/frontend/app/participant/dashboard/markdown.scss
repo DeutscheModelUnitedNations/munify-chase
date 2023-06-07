@@ -1,6 +1,6 @@
 .markdown {
     // General
-    font-family: 'Open Sans', sans-serif;
+    font-family: "Open Sans", sans-serif;
     font-size: 0.8rem;
     line-height: 1.2;
     color: #333;
@@ -52,10 +52,17 @@
     ol {
         margin: 1em 0;
         padding: 0 0 0 2em;
-
         li {
             margin: 0.5em 0;
         }
+    }
+
+    ul {
+        list-style-type: disc; // for unordered lists, typically bullets
+    }
+
+    ol {
+        list-style-type: decimal; // for ordered lists, typically numbers
     }
 
     // Blockquotes
@@ -75,7 +82,7 @@
         overflow: auto;
 
         code {
-            font-family: 'Source Code Pro', monospace;
+            font-family: "Source Code Pro", monospace;
             font-size: 0.9em;
             color: #333;
         }
@@ -83,7 +90,7 @@
 
     // Inline code
     code {
-        font-family: 'Source Code Pro', monospace;
+        font-family: "Source Code Pro", monospace;
         font-size: 0.9em;
         color: #333;
         background-color: #f2f2f2;

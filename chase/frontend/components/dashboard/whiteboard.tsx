@@ -9,7 +9,7 @@ export default function WhiteboardWidget({
 }: { markdown_content: string }) {
   return (
     <>
-      <WidgetTemplate cardTitle="Aktuelle Hinweise" styles="flex-1">
+      <WidgetTemplate cardTitle="Aktuelle Hinweise">
         {/* TODO find a better solution for scaling the Whitboard Box */}
         <div
           className="flex-1 flex pl-4 bg-white rounded-md overflow-hidden"

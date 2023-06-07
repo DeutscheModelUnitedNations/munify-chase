@@ -14,7 +14,6 @@ import {
   faQuestionCircle,
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { send } from "process";
 
 export default function ActionsWidget() {
   const [displayChairDialog, setDisplayChairDialog] = React.useState(false);
@@ -145,7 +144,10 @@ export default function ActionsWidget() {
             value={message}
             onChange={(e) => setMessage(e.target.value)}
           />
-          <p>Diese Anfrage wird zunächst vom Vorsitz geprüft und erst anschließend an den Wissenschaftlichen Dienst weitergeleitet.</p>
+          <p>
+            Diese Anfrage wird zunächst vom Vorsitz geprüft und erst
+            anschließend an den Wissenschaftlichen Dienst weitergeleitet.
+          </p>
         </div>
       </Dialog>
       <WidgetTemplate cardTitle="Anfrage senden">

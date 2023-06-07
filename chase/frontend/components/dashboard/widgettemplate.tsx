@@ -1,6 +1,4 @@
 import React from "react";
-import { Card } from "primereact/card";
-import { LiteralExpression } from "typescript";
 
 interface WidgetTemplateProps {
   children: React.ReactNode;

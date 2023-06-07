@@ -1,7 +1,6 @@
 "use client";
 import React from "react";
 import Navbar from "@/components/navbar/navbar";
-import Image from "next/image";
 import "./markdown.scss";
 import { ScrollPanel } from "primereact/scrollpanel";
 

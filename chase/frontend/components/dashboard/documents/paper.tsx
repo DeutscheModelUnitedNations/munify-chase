@@ -1,11 +1,7 @@
 import React from "react";
 import DocumentTemplate from "@components/dashboard/documents/documenttemplate";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import {
-  faClipboard,
-  faFileLines,
-  faShareNodes,
-} from "@fortawesome/free-solid-svg-icons";
+import { faClipboard, faShareNodes } from "@fortawesome/free-solid-svg-icons";
 import Image from "next/image";
 
 export default function Paper({

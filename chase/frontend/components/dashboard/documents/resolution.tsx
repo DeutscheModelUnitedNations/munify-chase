@@ -1,7 +1,7 @@
 import React from "react";
 import DocumentTemplate from "@components/dashboard/documents/documenttemplate";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faFile, faFileContract } from "@fortawesome/free-solid-svg-icons";
+import { faFileContract } from "@fortawesome/free-solid-svg-icons";
 import Image from "next/image";
 
 export default function Resolution({

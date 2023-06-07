@@ -14,7 +14,7 @@ export default function DashboardHeader({
         <div className="text-md font-bold">{committeeName}</div>
         <div className="text-md">{currentTopic}</div>
       </div>
-      <div className="flex flex-col items-center rounded-md overflow-hidden shadow-lg">
+      <div className="flex flex-col items-center rounded-md overflow-hidden border border-black shadow-lg">
         <Image
           src={`/flags/${countryCode}.svg`}
           alt="flag"

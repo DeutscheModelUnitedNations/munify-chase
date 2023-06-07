@@ -13,7 +13,7 @@ import WhiteboardWidget from "@/components/dashboard/whiteboard";
 import ActionsWidget from "@/components/dashboard/actions";
 
 export default function participant_dashboard() {
-  const [countryName, setCountryName] = React.useState("Republik Panama");
+  const [countryName, setCountryName] = React.useState("Jamaika");
   const [countryCode, setCountryCode] = React.useState("jam");
   const [committeeName, setCommitteeName] =
     React.useState("Generalversammlung");

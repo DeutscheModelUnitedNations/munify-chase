@@ -2,6 +2,7 @@
 import React from "react";
 import Navbar from "@/components/navbar/navbar";
 import Image from "next/image";
+import "./markdown.scss";
 import { ScrollPanel } from "primereact/scrollpanel";
 
 import DashboardHeader from "@/components/dashboard/header";
@@ -25,6 +26,9 @@ export default function participant_dashboard() {
   const pauseHeadline = "Informelle Sitzung";
   const pauseUntil = new Date(Date.now() + 1000 * 10);
   const pauseCategory = "informal";
+
+  const markdown_content =
+    "# Hello World!\n\nHier ist ein Markdown-Beispiel.\n\n## Vorsitzende\n* Miriam Güthe\n* Maximilian Ilzhöfer\n* Tade Strehk\n## Gremienberatung\n* Felix Thomsen\n\nUnd hier ein [Link](https://www.google.com).\n\n> **An alle Terrorteilis:** Das Pöbeln nicht vergessen!";
 
   return (
     <>
@@ -51,7 +55,7 @@ export default function participant_dashboard() {
               <DocumentsWidget />
             </div>
             <div className="flex-1 flex flex-col justify-start items-stretch gap-5 md:col-span-2 lg:col-span-1">
-              <WhiteboardWidget />
+              <WhiteboardWidget markdown_content={markdown_content} />
               <ActionsWidget />
             </div>
           </div>

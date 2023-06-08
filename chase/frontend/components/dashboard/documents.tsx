@@ -58,9 +58,7 @@ export default function DocumentsWidget() {
         <ScrollPanel className="custom-scrollbar" style={{ maxHeight: "50vh" }}>
           {documents.map((document: Document) => {
             if (document.category === "adopted") {
-              return (
-                <Resolution number={document.number} topic={document?.topic} />
-              );
+              return <Resolution documentId={document.documentId} topic={document?.topic} />;
             }
           })}
           <Divider style={{ marginTop: "0.4em", marginBottom: "0.4em" }} />
@@ -68,7 +66,7 @@ export default function DocumentsWidget() {
             if (document.category === "draft") {
               return (
                 <Draft
-                  number={document.number}
+                  documentId={document.documentId}
                   introducedBy={document.introducedBy}
                   sponsors={document.sponsors}
                 />
@@ -80,7 +78,7 @@ export default function DocumentsWidget() {
             if (document.category === "paper") {
               return (
                 <Paper
-                  number={document.number}
+                  documentId={document.documentId}
                   introducedBy={document.introducedBy}
                   sponsors={document.sponsors}
                   shared={document.shared}

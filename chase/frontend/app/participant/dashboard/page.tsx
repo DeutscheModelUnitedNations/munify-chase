@@ -1,7 +1,6 @@
 "use client";
 import React from "react";
 import Navbar from "@/components/navbar/navbar";
-import "./markdown.scss";
 import { ScrollPanel } from "primereact/scrollpanel";
 
 import DashboardHeader from "@/components/dashboard/header";

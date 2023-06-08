@@ -4,9 +4,9 @@ import Navbar from "@/components/navbar/navbar";
 import { ScrollPanel } from "primereact/scrollpanel";
 
 import DashboardHeader from "@/components/dashboard/header";
-import SpeakersListWidget from "@/components/dashboard/speakerslist";
+import SpeakersListWidget from "@/components/dashboard/speakers_list";
 import TimerWidget from "@/components/dashboard/timer";
-import CommitteeStatusWidget from "@/components/dashboard/committeestatus";
+import CommitteeStatusWidget from "@/components/dashboard/committee_status";
 import DocumentsWidget from "@/components/dashboard/documents";
 import WhiteboardWidget from "@/components/dashboard/whiteboard";
 import ActionsWidget from "@/components/dashboard/actions";

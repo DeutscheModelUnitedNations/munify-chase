@@ -1,8 +1,8 @@
 import React from "react";
-import WidgetTemplate from "@components/dashboard/widgettemplate";
-import SpeakerBlock from "@components/dashboard/speakerslist/speakerblock";
-import CommentBlock from "@/components/dashboard/speakerslist/commentblock";
-import QueueBlock from "@/components/dashboard/speakerslist/queueblock";
+import WidgetTemplate from "@/components/dashboard/widget_template";
+import SpeakerBlock from "@/components/dashboard/speakerslist/speaker_block";
+import CommentBlock from "@/components/dashboard/speakerslist/comment_block";
+import QueueBlock from "@/components/dashboard/speakerslist/queue_block";
 
 import "./markdown.scss";
 

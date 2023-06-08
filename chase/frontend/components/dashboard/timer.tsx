@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from "react";
-import WidgetTemplate from "./widgettemplate";
+import WidgetTemplate from "./widget_template";
 import { Toast } from "primereact/toast";
 
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";

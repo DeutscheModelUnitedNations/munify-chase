@@ -1,5 +1,5 @@
 import React from "react";
-import WidgetTemplate from "./widgettemplate";
+import WidgetTemplate from "./widget_template";
 import remarkGfm from "remark-gfm";
 import ReactMarkdown from "react-markdown";
 import { ScrollPanel } from "primereact/scrollpanel";

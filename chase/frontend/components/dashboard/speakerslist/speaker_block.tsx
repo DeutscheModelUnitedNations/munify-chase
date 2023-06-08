@@ -8,7 +8,7 @@ import {
   faClock,
   faBell,
 } from "@fortawesome/free-solid-svg-icons";
-import "./timeranimations.scss";
+import "./timer_animations.scss";
 
 
 export default function SpeakerBlock({ countryCode, countryName, time }) {

@@ -1,5 +1,5 @@
 import React from "react";
-import WidgetTemplate from "./widgettemplate";
+import WidgetTemplate from "./widget_template";
 import { Button } from "primereact/button";
 import { Dialog } from "primereact/dialog";
 import { InputText } from "primereact/inputtext";

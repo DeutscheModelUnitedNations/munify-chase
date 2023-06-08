@@ -3,7 +3,7 @@ import React, { useState } from "react";
 import Image from "next/image";
 
 import NavButton from "@/components/navbar/button";
-import SettingsSidebar from "@/components/navbar/settingssidebar";
+import SettingsSidebar from "@/components/navbar/settings_sidebar";
 
 import { useRouter } from "next/navigation";
 import { confirmDialog, ConfirmDialog } from "primereact/confirmdialog";

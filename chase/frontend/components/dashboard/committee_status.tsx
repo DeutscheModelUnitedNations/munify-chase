@@ -1,5 +1,5 @@
 import React from "react";
-import WidgetTemplate from "./widgettemplate";
+import WidgetTemplate from "./widget_template";
 import { faArrowDown } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 

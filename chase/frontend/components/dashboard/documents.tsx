@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import WidgetTemplate from "./widgettemplate";
+import WidgetTemplate from "./widget_template";
 import Resolution from "@components/dashboard/documents/resolution";
 import Draft from "@components/dashboard/documents/draft";
 import Paper from "@components/dashboard/documents/paper";

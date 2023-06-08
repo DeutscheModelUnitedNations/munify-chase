@@ -15,7 +15,7 @@ export default function TimerWidget({
 }: {
   headline: string;
   until: Date | null;
-  category: "formal" | "informal" | "pause" | "suspension";
+  category: "formal" | "informal" | "pause" | "suspension"; // TODO replace with typescript enum
 }) {
   const toast = useRef(null);
 

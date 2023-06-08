@@ -7,9 +7,6 @@ import SettingsSidebar from "@/components/navbar/settings_sidebar";
 
 import { useRouter } from "next/navigation";
 import { confirmDialog, ConfirmDialog } from "primereact/confirmdialog";
-import { Card } from "primereact/card";
-import { Sidebar } from "primereact/sidebar";
-import { SelectButton } from "primereact/selectbutton";
 
 import {
   faRightFromBracket,
@@ -18,12 +15,9 @@ import {
   faScroll,
   faComment,
   faHouse,
-  faMoon,
-  faSun,
-  faAdjust,
 } from "@fortawesome/free-solid-svg-icons";
 
-export default function Navbar({ active }) {
+export default function Navbar() {
   const router = useRouter();
 
   const [settingsSidebarVisible, setSettingsSidebarVisible] = useState(false);
@@ -64,22 +58,18 @@ export default function Navbar({ active }) {
         />
         <div className="flex flex-col justify-center items-center gap-3">
           <NavButton
-            active={active.index === 0}
             icon={faHouse}
             link={"/participant/dashboard"}
           />
           <NavButton
-            active={active.index === 1}
             icon={faComment}
             link={"/participant/speakers"}
           />
           <NavButton
-            active={active.index === 2}
             icon={faScroll}
             link={"/participant/resolutions"}
           />
           <NavButton
-            active={active.index === 3}
             icon={faSquarePollVertical}
             link={"/participant/voting"}
           />

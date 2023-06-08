@@ -1,6 +1,5 @@
 "use client";
 import React from "react";
-import Navbar from "@/components/navbar/navbar";
 import { ScrollPanel } from "primereact/scrollpanel";
 
 import DashboardHeader from "@/components/dashboard/header";
@@ -30,7 +29,6 @@ export default function participant_dashboard() {
 
   return (
     <>
-      <Navbar active={{ index: 0, path: "/participant/dashboard" }} />
       <div className="flex-1 flex flex-col">
         <DashboardHeader
           countryName={countryName}

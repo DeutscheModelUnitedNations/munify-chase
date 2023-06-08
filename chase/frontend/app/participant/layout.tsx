@@ -1,5 +1,6 @@
 import "@/app/globals.scss";
 import { Inter } from "next/font/google";
+import Navbar from "@/components/navbar/navbar";
 
 //theme
 import "primereact/resources/themes/lara-light-indigo/theme.css";
@@ -26,6 +27,7 @@ export default function RootLayout({
         <div className="flex h-screen w-screen bg-gray-light">
           <div className="m-5 rounded-3xl bg-white flex shadow-md w-full overflow-hidden">
             <div className="flex-1 flex">
+              <Navbar />
               {children}
             </div>
           </div>

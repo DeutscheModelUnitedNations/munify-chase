@@ -4,6 +4,8 @@ import SpeakerBlock from "@components/dashboard/speakerslist/speakerblock";
 import CommentBlock from "@/components/dashboard/speakerslist/commentblock";
 import QueueBlock from "@/components/dashboard/speakerslist/queueblock";
 
+import "./markdown.scss";
+
 export default function SpeakersListWidget() {
   // Demo Data
   // TODO remove

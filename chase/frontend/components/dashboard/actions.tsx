@@ -10,6 +10,7 @@ import {
   faComment,
   faExclamationTriangle,
   faGavel,
+  faInfoCircle,
   faPaperPlane,
   faQuestionCircle,
 } from "@fortawesome/free-solid-svg-icons";
@@ -145,8 +146,11 @@ export default function ActionsWidget() {
             onChange={(e) => setMessage(e.target.value)}
           />
           <p>
+            <FontAwesomeIcon icon={faInfoCircle} />{" "}
+            <small>
             Diese Anfrage wird zunächst vom Vorsitz geprüft und erst
             anschließend an den Wissenschaftlichen Dienst weitergeleitet.
+          </small>
           </p>
         </div>
       </Dialog>

@@ -7,7 +7,7 @@ import { ScrollPanel } from "primereact/scrollpanel";
 import { Divider } from "primereact/divider";
 
 interface Document {
-  number: string;
+  documentId: string;
   topic?: string;
   category: "paper" | "draft" | "adopted";
   shared?: boolean;
@@ -18,33 +18,33 @@ interface Document {
 export default function DocumentsWidget() {
   const [documents, setDocuments] = useState<Document[]>([
     {
-      number: "RES/GV/23/1",
+      documentId: "RES/GV/23/1",
       topic: "Resolution zur Einführung einer neuen Chairsoftware",
       category: "adopted",
       introducedBy: "deu",
       sponsors: ["gbr", "fra", "usa"],
     },
     {
-      number: "RE/GV/23/2/1",
+      documentId: "RE/GV/23/2/1",
       category: "draft",
       introducedBy: "jam",
       sponsors: ["gbr", "fra", "usa"],
     },
     {
-      number: "RE/GV/23/2/2",
+      documentId: "RE/GV/23/2/2",
       category: "draft",
       introducedBy: "usa",
       sponsors: ["gbr", "deu"],
     },
     {
-      number: "AP/1",
+      documentId: "AP/1",
       category: "paper",
       introducedBy: "gbr",
       shared: true,
       sponsors: ["gbr"],
     },
     {
-      number: "AP/5",
+      documentId: "AP/5",
       shared: false,
       category: "paper",
       introducedBy: "jam",

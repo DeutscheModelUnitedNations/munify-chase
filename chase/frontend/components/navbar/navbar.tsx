@@ -57,22 +57,10 @@ export default function Navbar() {
           className="mt-3"
         />
         <div className="flex flex-col justify-center items-center gap-3">
-          <NavButton
-            icon={faHouse}
-            link={"/participant/dashboard"}
-          />
-          <NavButton
-            icon={faComment}
-            link={"/participant/speakers"}
-          />
-          <NavButton
-            icon={faScroll}
-            link={"/participant/resolutions"}
-          />
-          <NavButton
-            icon={faSquarePollVertical}
-            link={"/participant/voting"}
-          />
+          <NavButton icon={faHouse} link={"/participant/dashboard"} />
+          <NavButton icon={faComment} link={"/participant/speakers"} />
+          <NavButton icon={faScroll} link={"/participant/resolutions"} />
+          <NavButton icon={faSquarePollVertical} link={"/participant/voting"} />
         </div>
         <div className="flex-1" />
         <div className="flex flex-col items-center gap-3 mb-5">

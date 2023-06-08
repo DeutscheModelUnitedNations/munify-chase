@@ -10,9 +10,8 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import "./timer_animations.scss";
 
-
 export default function SpeakerBlock({ countryCode, countryName, time }) {
-  const timerState : "active" | "paused" | "overtime" = "active" ; // TODO implement this when backend is ready
+  const timerState: "active" | "paused" | "overtime" = "active"; // TODO implement this when backend is ready
 
   return (
     <>
@@ -44,11 +43,11 @@ export default function SpeakerBlock({ countryCode, countryName, time }) {
   );
 }
 
-
 function HourglasAnimation() {
   const [animationState, setAnimationState] = React.useState<number>(0);
   const [icon, setIcon] = React.useState(faHourglassStart);
-  const [WrapperStyleClass, setWrapperStyleClass] = React.useState<string>("hourglass");
+  const [WrapperStyleClass, setWrapperStyleClass] =
+    React.useState<string>("hourglass");
 
   useEffect(() => {
     const animation = setInterval(() => {
@@ -73,11 +72,9 @@ function HourglasAnimation() {
     return () => clearInterval(animation);
   }, []);
 
-
-
   return (
     <div className={WrapperStyleClass}>
       <FontAwesomeIcon icon={icon} />
     </div>
-  )
+  );
 }

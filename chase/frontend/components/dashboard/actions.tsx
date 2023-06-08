@@ -148,9 +148,9 @@ export default function ActionsWidget() {
           <p>
             <FontAwesomeIcon icon={faInfoCircle} />{" "}
             <small>
-            Diese Anfrage wird zunächst vom Vorsitz geprüft und erst
-            anschließend an den Wissenschaftlichen Dienst weitergeleitet.
-          </small>
+              Diese Anfrage wird zunächst vom Vorsitz geprüft und erst
+              anschließend an den Wissenschaftlichen Dienst weitergeleitet.
+            </small>
           </p>
         </div>
       </Dialog>

@@ -27,7 +27,7 @@ server.decorateRequest("session", {
 export function authenticated(
   req: FastifyRequest,
   rep: FastifyReply,
-  done: (error?: FastifyError) => void
+  done: (error?: FastifyError) => void,
 ) {
   if (req.session.authentication) {
     done();

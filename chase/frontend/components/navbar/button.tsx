@@ -12,8 +12,8 @@ export default function NavbarButton({ icon, link = "", onClick = null }) {
     "flex-1 rounded-md flex flex-col justify-center items-center";
 
   useEffect(() => {
-    // if the link is equal to the current page route, set the button to active
-    if (link === pathname) {
+    // if the link starts with the current page route, set the button to active
+    if (link.startsWith(pathname)) {
       setWrapperStyle(`${defaultWrapperStyle} bg-dmunlight text-white`);
     } else {
       setWrapperStyle(

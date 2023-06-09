@@ -4,7 +4,7 @@ import swagger from "@fastify/swagger";
 import swaggerUi from "@fastify/swagger-ui";
 import { TypeBoxTypeProvider } from "@fastify/type-provider-typebox";
 import RedisStore from "connect-redis";
-import dotenv from "dotenv";
+import { config as dotenv } from "dotenv";
 import Fastify, { FastifyInstance } from "fastify";
 import fastifyNow from "fastify-now";
 import { join } from "path";
@@ -24,7 +24,7 @@ const LOAD_ENV_VARS_FROM_FILE =
 if (LOAD_ENV_VARS_FROM_FILE) {
   // load environment variables from .env file during development
   // in production, environment variables are set by the host
-  dotenv.config({ path: join(__dirname, "../.env") });
+  dotenv({ path: join(__dirname, "../.env") });
 }
 
 let PORT = 0;

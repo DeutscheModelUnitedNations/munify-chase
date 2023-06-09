@@ -1,8 +1,7 @@
-export * from "fastify";
-
+import m = require("fastify");
 /*
-    Typescript type for the session.
-    This is not checked at runtime and should be strictly complied with to prevent type drifting
+Typescript type for the session.
+This is not checked at runtime and should be strictly complied with to prevent type drifting
 */
 
 declare module "fastify" {
@@ -12,7 +11,7 @@ declare module "fastify" {
   interface Session {
     /**
         If the user is authenticated this object contains various fields that are obtained from the authentication
-     */
+        */
     authentication?: {
       userId: string;
       email: string;
@@ -22,3 +21,5 @@ declare module "fastify" {
     };
   }
 }
+
+export { m };

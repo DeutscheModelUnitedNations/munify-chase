@@ -5,6 +5,8 @@
  // "paths": {},                                         /* Specify a set of entries that re-map imports to additional lookup locations. */
     "esModuleInterop": true,                             /* Emit additional JavaScript to ease support for importing CommonJS modules. This enables 'allowSyntheticDefaultImports' for type compatibility. */
     "forceConsistentCasingInFileNames": true,            /* Ensure that casing is correct in imports. */
+    "target": "es2022",
+    "moduleResolution": "nodenext",
 
     "strict": true,                                      /* Enable all strict type-checking options. */
     "noImplicitAny": true,                               /* Enable error reporting for expressions and declarations with an implied 'any' type. */
@@ -15,6 +17,5 @@
     "noUnusedParameters": true,                          /* Raise an error when a function parameter isn't read. */
     "noFallthroughCasesInSwitch": true,                  /* Enable error reporting for fallthrough cases in switch statements. */
     "noUncheckedIndexedAccess": true,                    /* Add 'undefined' to a type when accessed using an index. */
-    "skipLibCheck": true                                 /* Skip type checking all .d.ts files. */
   }
 }

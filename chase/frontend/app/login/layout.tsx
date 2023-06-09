@@ -2,6 +2,8 @@ import "@/app/globals.scss";
 import { Inter } from "next/font/google";
 import Image from "next/image";
 
+//TODO check the possibility of a route guard for logged in state
+
 //theme
 import "primereact/resources/themes/lara-light-indigo/theme.css";
 //core

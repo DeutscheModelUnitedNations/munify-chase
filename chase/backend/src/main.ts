@@ -11,6 +11,7 @@ import { join } from "path";
 import { createClient } from "redis";
 
 import { db } from "../prisma/client";
+import "./types/types";
 
 //TODO establish testing concept & coverage
 
@@ -65,12 +66,6 @@ if (process.env.SERVE_DOCUMENTATION) {
 `);
 }
 
-// ╔══════════════════════╗
-// ║ Import hooks & types ║
-// ╚══════════════════════╝
-
-import "./hooks/hooks";
-
 // ╔═════════════════════════════════════════╗
 // ║ Cookie parsing & Session initialization ║
 // ╚═════════════════════════════════════════╝
@@ -88,7 +83,7 @@ if (redisUrl === undefined) {
 const redisClient = createClient({
   url: redisUrl,
 });
-redisClient.connect().catch(console.error);
+redisClient.connect();
 
 // Initialize store.
 const redisStore = new RedisStore({
@@ -110,6 +105,7 @@ server.register(fastifySession, {
     // secure is only deactivated when running in dev (env var 'SECURE_COOKIE' is set to 'false')
     secure: process.env.SECURE_COOKIE !== "false",
     sameSite: "strict",
+    maxAge: 86400000, // 7 days
   },
   store: redisStore,
   saveUninitialized: false, // recommended: only save session when data exists

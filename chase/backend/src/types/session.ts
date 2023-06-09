@@ -1,4 +1,4 @@
-import m = require("fastify");
+import * as m from "fastify";
 /*
 Typescript type for the session.
 This is not checked at runtime and should be strictly complied with to prevent type drifting

@@ -1,0 +1,21 @@
+# TODO document docker requirement for setup
+
+services:
+  # postgres:
+  #   image: postgres
+  #   restart: always
+  #   environment:
+  #     - POSTGRES_USER=postgres
+  #     - POSTGRES_PASSWORD=postgres
+  #   ports:
+  #     - "5432:5432"
+  #   volumes:
+  #     - ./.postgres-data:/var/lib/postgresql/data
+      
+  redis:
+    image: redis
+    restart: always
+    ports:
+      - "6379:6379"
+    volumes:
+      - ./.redis-data:/data

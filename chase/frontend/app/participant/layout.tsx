@@ -24,14 +24,14 @@ export default function RootLayout({
   return (
     <html lang="de">
       <body className={inter.className}>
-        <div className="flex h-screen w-screen bg-gray-light">
-          <div className="m-5 rounded-3xl bg-white flex shadow-md w-full overflow-hidden">
-            <div className="flex-1 flex">
-              <Navbar />
-              {children}
+          <div className="flex h-screen w-screen bg-gray-light">
+            <div className="m-3 rounded-3xl bg-white flex shadow-md w-full overflow-hidden">
+              <div className="flex-1 flex">
+                <Navbar />
+                {children}
+              </div>
             </div>
           </div>
-        </div>
       </body>
     </html>
   );

@@ -1,6 +1,6 @@
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useContext } from "react";
 import WidgetTemplate from "./widget_template";
-import { Toast } from "primereact/toast";
+import { ToastContext } from "@components/messages/toast"
 
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faGavel } from "@fortawesome/free-solid-svg-icons";
@@ -17,15 +17,17 @@ export default function TimerWidget({
   until: Date | null;
   category: "formal" | "informal" | "pause" | "suspension"; // TODO replace with typescript enum
 }) {
-  const toast = useRef(null);
+
+  const { showToast } = useContext(ToastContext);
 
   const showTimerToast = () => {
-    toast.current.show({
-      severity: "info",
+    const message = {
       summary: "Zeit abgelaufen",
       detail: "Rückkehr zur formellen Sitzung",
+      severity: "info",
       sticky: true,
-    });
+    };
+    showToast(message);
   };
 
   const timeStamp = until?.toLocaleTimeString("de-DE", {
@@ -49,7 +51,6 @@ export default function TimerWidget({
   return (
     <>
       <WidgetTemplate cardTitle="" styles={styles()}>
-        <Toast ref={toast} position="bottom-center" />
         <div className="flex flex-col justify-center items-center">
           <div className="my-4">
             {category === "formal" && (

@@ -1,12 +1,18 @@
-import Fastify, { FastifyInstance } from "fastify";
+import fastifyCookie from "@fastify/cookie";
+import fastifySession from "@fastify/session";
 import swagger from "@fastify/swagger";
 import swaggerUi from "@fastify/swagger-ui";
-import fastifyNow from "fastify-now";
-import fastifySession from "@fastify/session";
-import fastifyCookie from "@fastify/cookie";
-import { join } from "path";
 import { TypeBoxTypeProvider } from "@fastify/type-provider-typebox";
-import dotenv from "dotenv";
+import RedisStore from "connect-redis";
+import { config as dotenv } from "dotenv";
+import Fastify, { FastifyInstance } from "fastify";
+import fastifyNow from "fastify-now";
+import { join } from "path";
+import { createClient } from "redis";
+
+import { db } from "../prisma/client";
+
+//TODO establish testing concept & coverage
 
 // ╔═══════════════╗
 // ║ Configuration ║
@@ -16,7 +22,9 @@ const LOAD_ENV_VARS_FROM_FILE =
   process.argv.find((a) => a === "--load-env-vars-from-file") !== undefined;
 
 if (LOAD_ENV_VARS_FROM_FILE) {
-  dotenv.config();
+  // load environment variables from .env file during development
+  // in production, environment variables are set by the host
+  dotenv({ path: join(__dirname, "../.env") });
 }
 
 let PORT = 0;
@@ -30,19 +38,17 @@ PORT = Number.parseInt(process.env.PORT);
 // ╔════════════════════════╗
 // ║ Creating server object ║
 // ╚════════════════════════╝
+//TODO make the logger non ugly: https://www.fastify.io/docs/latest/Reference/Logging/
 
-const server: FastifyInstance = Fastify({
-  logger: { level: "warn" }, //TODO make the logger non ugly: https://www.fastify.io/docs/latest/Reference/Logging/
+export const server: FastifyInstance = Fastify({
+  logger: { level: "warn" },
 }).withTypeProvider<TypeBoxTypeProvider>();
 
 // ╔═══════════════════════════════════════════════════╗
 // ║ API documentation generation & serving (dev only) ║
 // ╚═══════════════════════════════════════════════════╝
 
-const SERVE_DOCUMENTATION =
-  process.argv.find((a) => a === "--serve-documentation") !== undefined;
-
-if (SERVE_DOCUMENTATION) {
+if (process.env.SERVE_DOCUMENTATION) {
   server.register(swagger);
   server.register(swaggerUi, {
     routePrefix: "/documentation",
@@ -59,19 +65,54 @@ if (SERVE_DOCUMENTATION) {
 `);
 }
 
+// ╔══════════════════════╗
+// ║ Import hooks & types ║
+// ╚══════════════════════╝
+
+import "./hooks/hooks";
+
 // ╔═════════════════════════════════════════╗
 // ║ Cookie parsing & Session initialization ║
 // ╚═════════════════════════════════════════╝
 
-server.register(fastifyCookie);
+server.register(fastifyCookie, {});
+
+const redisUrl = process.env.REDIS_URL;
+if (redisUrl === undefined) {
+  throw new Error(
+    "Could not find REDIS_URL environment variable. Make sure it's set",
+  );
+}
+
+// Initialize redis client.
+const redisClient = createClient({
+  url: redisUrl,
+});
+redisClient.connect().catch(console.error);
+
+// Initialize store.
+const redisStore = new RedisStore({
+  client: redisClient,
+  prefix: "chase-session:",
+});
+
 const sessionSecret = process.env.SESSION_SECRET;
 if (sessionSecret === undefined) {
   throw new Error(
     "Could not find session secret in environment variable. Make sure that the 'SESSION_SECRET' environment variable is set and a secure string with more than 21 characters.",
   );
 }
+
 server.register(fastifySession, {
   secret: sessionSecret,
+  cookie: {
+    httpOnly: true,
+    // secure is only deactivated when running in dev (env var 'SECURE_COOKIE' is set to 'false')
+    secure: process.env.SECURE_COOKIE !== "false",
+    sameSite: "strict",
+  },
+  store: redisStore,
+  saveUninitialized: false, // recommended: only save session when data exists
 });
 
 // ╔══════════════════════════════════════╗
@@ -91,14 +132,16 @@ server.register(fastifyNow, {
 (async () => {
   try {
     await server.ready();
-    if (SERVE_DOCUMENTATION) {
+    if (process.env.SERVE_DOCUMENTATION) {
       server.swagger();
     }
+    console.log(`Running on port ${PORT}`);
     await server.listen({ port: PORT, host: "0.0.0.0" });
+    db.$disconnect();
   } catch (err) {
     server.log.error(err);
     process.exit(1);
   }
 })();
 
-server.log.info(`server listening on ${server.server.address()}`);
+console.log("Starting server...");

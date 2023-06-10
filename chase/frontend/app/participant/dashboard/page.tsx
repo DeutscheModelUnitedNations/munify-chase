@@ -40,7 +40,7 @@ export default function participant_dashboard() {
           <ScrollPanel className="flex-1 overflow-y-auto custom-scrollbar">
             <div className="flex-1 grid grid-cols-1 lg:grid-cols-3 md:grid-cols-2 gap-5 p-4">
               <div className="flex-1 flex flex-col justify-start items-stretch gap-5">
-                <SpeakersListWidget myCountry={countryCode}/>
+                <SpeakersListWidget myCountry={countryCode} />
                 <TimerWidget
                   headline={pauseHeadline}
                   until={pauseUntil}

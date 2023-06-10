@@ -12,7 +12,7 @@ interface Speaker {
   time: string;
 }
 
-export default function SpeakersListWidget({myCountry}) {
+export default function SpeakersListWidget({ myCountry }) {
   // Demo Data
   // TODO remove
 

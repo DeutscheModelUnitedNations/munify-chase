@@ -10,7 +10,9 @@ export default function DashboardHeader({
   return (
     <div className=" h-32 bg-gray-300 flex justify-between items-center p-4">
       <div className="flex flex-col items-start justify-center">
-        <div className="text-2xl font-bold mb-1">{getCountryNameByCode(countryCode)}</div>
+        <div className="text-2xl font-bold mb-1">
+          {getCountryNameByCode(countryCode)}
+        </div>
         <div className="text-md font-bold">{committeeName}</div>
         <div className="text-md">{currentTopic}</div>
       </div>

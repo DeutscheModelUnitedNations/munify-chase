@@ -6,22 +6,25 @@ import QueueBlock from "@/components/dashboard/speakerslist/queue_block";
 
 import "./markdown.scss";
 
-export default function SpeakersListWidget() {
+interface Speaker {
+  countryCode: string;
+  customName?: string;
+  time: string;
+}
+
+export default function SpeakersListWidget({myCountry}) {
   // Demo Data
   // TODO remove
-  const myCountry = "jam";
 
-  const currentSpeaker = {
-    countryCode: "uno",
-    countryName: "Generalsekretär",
+  const currentSpeaker: Speaker = {
+    countryCode: "unw",
     time: "2:35",
   };
 
   const speakersList = ["gbr", "che", "yem", "fra", "jam"];
 
-  const currentComment = {
+  const currentComment: Speaker = {
     countryCode: "cze",
-    countryName: "Republik Tschechien",
     time: "0:23",
   };
 
@@ -35,14 +38,14 @@ export default function SpeakersListWidget() {
         <div className="flex-1 flex flex-col gap-3">
           <SpeakerBlock
             countryCode={currentSpeaker.countryCode}
-            countryName={currentSpeaker.countryName}
+            customName={currentSpeaker?.customName}
             time={currentSpeaker.time}
           />
           {currentComment && (
             <CommentBlock>
               <SpeakerBlock
                 countryCode={currentComment.countryCode}
-                countryName={currentComment.countryName}
+                customName={currentComment?.customName}
                 time={currentComment.time}
               />
               <QueueBlock list={commentList} myCountry={myCountry} />

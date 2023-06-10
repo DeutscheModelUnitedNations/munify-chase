@@ -12,7 +12,6 @@ import WhiteboardWidget from "@/components/dashboard/whiteboard";
 import ActionsWidget from "@/components/dashboard/actions";
 
 export default function participant_dashboard() {
-  const [countryName, setCountryName] = React.useState("Jamaika");
   const [countryCode, setCountryCode] = React.useState("jam");
   const [committeeName, setCommitteeName] =
     React.useState("Generalversammlung");
@@ -33,16 +32,15 @@ export default function participant_dashboard() {
       <ToastProvider>
         <div className="flex-1 flex flex-col">
           <DashboardHeader
-            countryName={countryName}
             countryCode={countryCode}
             committeeName={committeeName}
             currentTopic={currentTopic}
           />
           {/* TODO Check why this Scroll Bar is not changing color as the other ones with the custom-scrollbar class */}
           <ScrollPanel className="flex-1 overflow-y-auto custom-scrollbar">
-            <div className="flex-1 grid grid-cols-1 lg:grid-cols-3 md:grid-cols-2  gap-5 p-4">
+            <div className="flex-1 grid grid-cols-1 lg:grid-cols-3 md:grid-cols-2 gap-5 p-4">
               <div className="flex-1 flex flex-col justify-start items-stretch gap-5">
-                <SpeakersListWidget />
+                <SpeakersListWidget myCountry={countryCode}/>
                 <TimerWidget
                   headline={pauseHeadline}
                   until={pauseUntil}

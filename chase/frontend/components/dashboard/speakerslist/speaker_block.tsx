@@ -1,5 +1,6 @@
 import React, { useEffect } from "react";
 import Image from "next/image";
+import getCountryNameByCode from "@/components/misc/get_country_name_by_code";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faHourglassStart,
@@ -10,7 +11,13 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import "./timer_animations.scss";
 
-export default function SpeakerBlock({ countryCode, countryName, time }) {
+interface Props {
+  countryCode: string;
+  time: string;
+  customName?: string;
+}
+
+export default function SpeakerBlock({ countryCode, time, customName }: Props) {
   const timerState: "active" | "paused" | "overtime" = "active"; // TODO implement this when backend is ready
 
   return (
@@ -25,7 +32,9 @@ export default function SpeakerBlock({ countryCode, countryName, time }) {
           />
         </div>
         <div className="flex-1 flex flex-col ml-4">
-          <div className="font-bold text-md">{countryName}</div>
+          <div className="font-bold text-md">
+            {customName || getCountryNameByCode(countryCode)}
+          </div>
           <div className="text-md text-gray-500 flex items-center gap-3">
             {timerState === "active" && <HourglasAnimation />}
             {timerState === "paused" && <FontAwesomeIcon icon={faClock} />}

@@ -58,7 +58,12 @@ export default function DocumentsWidget() {
         <ScrollPanel className="custom-scrollbar" style={{ maxHeight: "50vh" }}>
           {documents.map((document: Document) => {
             if (document.category === "adopted") {
-              return <Resolution documentId={document.documentId} topic={document?.topic} />;
+              return (
+                <Resolution
+                  documentId={document.documentId}
+                  topic={document?.topic}
+                />
+              );
             }
           })}
           <Divider style={{ marginTop: "0.4em", marginBottom: "0.4em" }} />

@@ -8,7 +8,7 @@ export const ToastProvider = ({ children }: { children: React.ReactNode }) => {
 
   const showToast = (message: ToastMessage) => {
     const { summary, detail, severity, sticky } = message;
-    toast.current?.show({summary, detail, severity, sticky });
+    toast.current?.show({ summary, detail, severity, sticky });
   };
 
   return (

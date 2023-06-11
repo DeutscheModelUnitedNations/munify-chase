@@ -1,6 +1,6 @@
 import React, { useEffect, useContext } from "react";
 import WidgetTemplate from "./widget_template";
-import { ToastContext } from "@components/messages/toast";
+import { ToastContext } from "@/contexts/messages/toast";
 
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faGavel } from "@fortawesome/free-solid-svg-icons";

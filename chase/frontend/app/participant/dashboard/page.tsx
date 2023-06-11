@@ -1,7 +1,7 @@
 "use client";
 import React from "react";
 import { ScrollPanel } from "primereact/scrollpanel";
-import { ToastProvider } from "@/components/messages/toast";
+import { ToastProvider } from "@/contexts/messages/toast";
 
 import DashboardHeader from "@/components/dashboard/header";
 import SpeakersListWidget from "@/components/dashboard/speakers_list";

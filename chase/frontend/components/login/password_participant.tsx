@@ -10,6 +10,8 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
+// TODO: Type this function properly
+// @ts-ignore
 export default function usernameLogin({ changeLoginState }) {
   const router = useRouter();
 
@@ -18,7 +20,7 @@ export default function usernameLogin({ changeLoginState }) {
   const [isNonStateActor, setIsNonStateActor] = useState(true);
   const [committee, setCommittee] = useState("N/A");
   const [selectCommittee, setSelectCommittee] = useState(false);
-  const [countryCode, setCountry] = useState("xxx"); // Placeholder SVG
+  const [countryCode, setCountry] = useState("jam"); // Placeholder SVG
 
   const [agreedToTerms, setAgreedToTerms] = useState(false);
   const [password, setPassword] = useState("");
@@ -34,7 +36,7 @@ export default function usernameLogin({ changeLoginState }) {
   }, []);
 
   const defaultValues = {
-    countryCode: "xxx", // Placeholder UN flag SVG
+    countryCode: "jam", // Placeholder UN flag SVG
     committee: "N/A",
     agreedToTerms: false,
     password: "",
@@ -46,6 +48,8 @@ export default function usernameLogin({ changeLoginState }) {
     return !agreedToTerms || password === "";
   };
 
+  // TODO Type data properly
+  // @ts-ignore
   const onSubmit = (data) => {
     setLoading(true);
     // TODO verify password, set cookie and advance to Dashboard
@@ -152,7 +156,7 @@ export default function usernameLogin({ changeLoginState }) {
               inputId="agreementTerms"
               name="agreementTerms"
               checked={agreedToTerms}
-              onChange={(e) => setAgreedToTerms(e.checked)}
+              onChange={(e) => setAgreedToTerms(e.checked as boolean)}
             />
             <span
               className="text-xs mb-5"

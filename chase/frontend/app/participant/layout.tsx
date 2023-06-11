@@ -1,5 +1,5 @@
 import "@/app/globals.scss";
-import { Inter } from "next/font/google";
+import { Inter } from "next/font/google"; // TODO Remove Google Fonts and use local fonts (legal reasons)
 import Navbar from "@/components/navbar/navbar";
 
 //theme

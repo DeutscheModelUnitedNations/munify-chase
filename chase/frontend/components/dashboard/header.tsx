@@ -1,12 +1,18 @@
 import React from "react";
 import Image from "next/image";
-import getCountryNameByCode from "../misc/get_country_name_by_code";
+import getCountryNameByCode from "../../misc/get_country_name_by_code";
+
+interface HeaderProps {
+  countryCode: string;
+  committeeName: string;
+  currentTopic: string;
+}
 
 export default function DashboardHeader({
   countryCode,
   committeeName,
   currentTopic,
-}) {
+}: HeaderProps) {
   return (
     <div className=" h-32 bg-gray-300 flex justify-between items-center p-4">
       <div className="flex flex-col items-start justify-center">

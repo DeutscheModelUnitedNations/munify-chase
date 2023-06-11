@@ -69,16 +69,11 @@ export default function Navbar() {
             setSettingsSidebarVisible={setSettingsSidebarVisible}
           />
           <NavButton
-            active={false}
             icon={faGear}
             onClick={() => setSettingsSidebarVisible(true)}
           />
           <ConfirmDialog />
-          <NavButton
-            active={false}
-            icon={faRightFromBracket}
-            onClick={confirmLogout}
-          />
+          <NavButton icon={faRightFromBracket} onClick={confirmLogout} />
         </div>
       </div>
     </>

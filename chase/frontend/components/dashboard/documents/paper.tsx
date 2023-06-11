@@ -13,7 +13,7 @@ export default function Paper({
   documentId: string;
   introducedBy: string;
   sponsors?: string[];
-  shared: boolean;
+  shared?: boolean;
 }) {
   return (
     <DocumentTemplate>

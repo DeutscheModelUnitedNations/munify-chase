@@ -23,7 +23,7 @@ export default function TimerWidget({
     const message = {
       summary: "Zeit abgelaufen",
       detail: "Rückkehr zur formellen Sitzung",
-      severity: "info",
+      severity: "info" as "info",
       sticky: true,
     };
     showToast(message);

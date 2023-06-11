@@ -14,7 +14,16 @@ import {
   faPaperPlane,
   faQuestionCircle,
 } from "@fortawesome/free-solid-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import {
+  FontAwesomeIcon,
+  FontAwesomeIconProps,
+} from "@fortawesome/react-fontawesome";
+
+interface DropdownOptions {
+  lable: string;
+  value: string;
+  icon: FontAwesomeIconProps["icon"];
+}
 
 export default function ActionsWidget() {
   const [displayChairDialog, setDisplayChairDialog] = React.useState(false);
@@ -22,7 +31,7 @@ export default function ActionsWidget() {
     React.useState(false);
 
   const [category, setCategory] = React.useState("");
-  const categoryOption = [
+  const categoryOption: DropdownOptions[] = [
     { lable: "Gastrede anfragen", value: "gastrede", icon: faComment },
     { lable: "Faktencheck", value: "faktencheck", icon: faExclamationTriangle },
     {
@@ -36,7 +45,7 @@ export default function ActionsWidget() {
   const [subjectLine, setSubjectLine] = React.useState("");
   const [message, setMessage] = React.useState("");
 
-  const categoryOptionTemplate = (option) => {
+  const categoryOptionTemplate = (option: DropdownOptions) => {
     return (
       <div className="flex items-center gap-4">
         <FontAwesomeIcon icon={option.icon} />
@@ -45,14 +54,16 @@ export default function ActionsWidget() {
     );
   };
 
-  const categoryOptionSelectedTemplate = (option, props) => {
+  // @ts-ignore
+  const categoryOptionSelectedTemplate = (option: DropdownOptions, props) => {
+    // TODO type "props" correctly
     if (option) {
       return categoryOptionTemplate(option);
     }
     return props.placeholder;
   };
 
-  const footerContent = ({ sendFunction }) => {
+  const footerContent = ({ sendFunction }: { sendFunction: VoidFunction }) => {
     return (
       <div>
         <Button

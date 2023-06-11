@@ -1,10 +1,23 @@
 "use client";
 import React, { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import {
+  FontAwesomeIcon,
+  FontAwesomeIconProps,
+} from "@fortawesome/react-fontawesome";
 import Link from "next/link";
 
-export default function NavbarButton({ icon, link = "", onClick = null }) {
+interface NavbarButtonProps {
+  icon: FontAwesomeIconProps["icon"];
+  link?: string;
+  onClick?: () => void;
+}
+
+export default function NavbarButton({
+  icon,
+  link = "",
+  onClick,
+}: NavbarButtonProps) {
   const pathname = usePathname();
 
   const [wrapperStyle, setWrapperStyle] = useState("");

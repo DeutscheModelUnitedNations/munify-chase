@@ -1,5 +1,5 @@
 import "./globals.scss";
-import { Inter } from "next/font/google";
+import { Inter } from "next/font/google"; // TODO Remove Google Fonts and use local fonts (legal reasons)
 
 
 //theme

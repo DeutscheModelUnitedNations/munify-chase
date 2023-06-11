@@ -1,6 +1,6 @@
 import React, { useEffect } from "react";
 import Image from "next/image";
-import getCountryNameByCode from "@/components/misc/get_country_name_by_code";
+import getCountryNameByCode from "@/misc/get_country_name_by_code";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faHourglassStart,
@@ -18,7 +18,7 @@ interface Props {
 }
 
 export default function SpeakerBlock({ countryCode, time, customName }: Props) {
-  const timerState: "active" | "paused" | "overtime" = "active"; // TODO implement this when backend is ready
+  const timerState: string = "active"; // TODO implement this when backend is ready // "active" | "paused" | "overtime"
 
   return (
     <>

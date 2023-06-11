@@ -10,9 +10,10 @@ import CommitteeStatusWidget from "@/components/dashboard/committee_status";
 import DocumentsWidget from "@/components/dashboard/documents";
 import WhiteboardWidget from "@/components/dashboard/whiteboard";
 import ActionsWidget from "@/components/dashboard/actions";
+import { CountryCode } from "@/custom_types";
 
 export default function participant_dashboard() {
-  const [countryCode, setCountryCode] = React.useState("jam");
+  const [countryCode, setCountryCode] = React.useState<CountryCode>("jam");
   const [committeeName, setCommitteeName] =
     React.useState("Generalversammlung");
   const [currentTopic, setCurrentTopic] = React.useState(

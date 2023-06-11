@@ -3,16 +3,19 @@ import WidgetTemplate from "@/components/dashboard/widget_template";
 import SpeakerBlock from "@/components/dashboard/speakerslist/speaker_block";
 import CommentBlock from "@/components/dashboard/speakerslist/comment_block";
 import QueueBlock from "@/components/dashboard/speakerslist/queue_block";
+import { CountryCode } from "@/custom_types";
 
 import "./markdown.scss";
 
 interface Speaker {
-  countryCode: string;
+  countryCode: CountryCode;
   customName?: string;
   time: string;
 }
 
-export default function SpeakersListWidget({ myCountry }) {
+export default function SpeakersListWidget({
+  myCountry,
+}: { myCountry: CountryCode }) {
   // Demo Data
   // TODO remove
 
@@ -21,7 +24,7 @@ export default function SpeakersListWidget({ myCountry }) {
     time: "2:35",
   };
 
-  const speakersList = ["gbr", "che", "yem", "fra", "jam"];
+  const speakersList: CountryCode[] = ["gbr", "che", "yem", "fra", "jam"];
 
   const currentComment: Speaker = {
     countryCode: "cze",
@@ -30,7 +33,7 @@ export default function SpeakersListWidget({ myCountry }) {
 
   // const currentComment = null;  // If there is no data for current comment, the commentlist block will not be rendered
 
-  const commentList = ["deu", "jam", "usa", "yem"];
+  const commentList: CountryCode[] = ["deu", "jam", "usa", "yem"];
 
   return (
     <>

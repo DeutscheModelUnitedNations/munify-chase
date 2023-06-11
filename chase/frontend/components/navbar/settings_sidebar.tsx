@@ -9,10 +9,15 @@ interface ColormodeOption {
   value: string;
 }
 
+interface SettingsSidebarProps {
+  settingsSidebarVisible: boolean;
+  setSettingsSidebarVisible: (visible: boolean) => void;
+}
+
 export default function SettingsSidebar({
   settingsSidebarVisible,
   setSettingsSidebarVisible,
-}) {
+}: SettingsSidebarProps) {
   const [colortheme, setColortheme] = useState<ColormodeOption>({
     name: "Hell",
     icon: "pi pi-sun",

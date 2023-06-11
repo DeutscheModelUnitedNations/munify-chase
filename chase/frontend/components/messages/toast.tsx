@@ -1,5 +1,5 @@
 import React, { createContext, useRef } from "react";
-import { Toast } from "primereact/toast";
+import { Toast, ToastMessage } from "primereact/toast";
 
 export const ToastContext = createContext({} as ToastContextType);
 
@@ -21,12 +21,4 @@ export const ToastProvider = ({ children }: { children: React.ReactNode }) => {
 
 export interface ToastContextType {
   showToast: (message: ToastMessage) => void;
-}
-
-export interface ToastMessage {
-  summary: string;
-  detail?: string;
-  position?: string;
-  severity?: "success" | "info" | "warn" | "error";
-  sticky?: boolean;
 }

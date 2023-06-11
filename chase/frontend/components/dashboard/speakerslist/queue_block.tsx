@@ -1,7 +1,11 @@
 import React from "react";
 import Image from "next/image";
+import { CountryCode } from "@/custom_types";
 
-export default function SpeakerBlock({ list, myCountry }) {
+export default function SpeakerBlock({
+  list,
+  myCountry,
+}: { list: CountryCode[]; myCountry: CountryCode }) {
   const compressedList = () => {
     let compressedList = [];
 
@@ -67,7 +71,7 @@ export default function SpeakerBlock({ list, myCountry }) {
   );
 }
 
-function Flag({ countryCode }) {
+function Flag({ countryCode }: { countryCode: CountryCode }) {
   return (
     <div className="rounded-md border border-black shadow-md bg-white overflow-hidden">
       <Image
@@ -81,7 +85,7 @@ function Flag({ countryCode }) {
   );
 }
 
-function Arrow({ arrowName }) {
+function Arrow({ arrowName }: { arrowName: string }) {
   return (
     <div className="flex flex-col justify-center">
       <Image

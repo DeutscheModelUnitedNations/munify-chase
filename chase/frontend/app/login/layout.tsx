@@ -1,5 +1,5 @@
 import "@/app/globals.scss";
-import { Inter } from "next/font/google";
+import { Inter } from "next/font/google"; // TODO Remove Google Fonts and use local fonts (legal reasons)
 import Image from "next/image";
 
 //TODO check the possibility of a route guard for logged in state

@@ -6,6 +6,8 @@ import { Password } from "primereact/password";
 import { Checkbox } from "primereact/checkbox";
 import Image from "next/image";
 import Link from "next/link";
+import getFlagPathByCode from "@/misc/get_flag_path_by_code";
+import { CountryCode } from "@/custom_types";
 
 // TODO: Type this function properly
 // @ts-ignore
@@ -13,10 +15,6 @@ export default function usernameLogin({ changeLoginState }) {
   const [loading, setLoading] = useState(false);
   const [agreedToTerms, setAgreedToTerms] = useState(false);
   const [password, setPassword] = useState("");
-
-  function getCountrySvgPath(country: string) {
-    return `/flags/${country}.svg`;
-  }
 
   const defaultValues = {
     agreedToTerms: false,

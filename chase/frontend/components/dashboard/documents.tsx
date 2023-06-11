@@ -5,13 +5,14 @@ import Draft from "@components/dashboard/documents/draft";
 import Paper from "@components/dashboard/documents/paper";
 import { ScrollPanel } from "primereact/scrollpanel";
 import { Divider } from "primereact/divider";
+import { CountryCode } from "@/custom_types";
 
 interface Document {
   documentId: string;
   topic?: string;
   category: "paper" | "draft" | "adopted";
   shared?: boolean;
-  introducedBy: string;
+  introducedBy: CountryCode;
   sponsors?: string[];
 }
 

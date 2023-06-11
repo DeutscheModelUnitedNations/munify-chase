@@ -197,4 +197,6 @@ export type UNCodes = "unm" | "unw" | "gsm" | "gsw"; // UN-Flag Specials for Gen
 
 export type NASCodes = `nsa_${string}`; // Non-State Actor Prefix and ID
 
-export type CountryCode = Alpha3Code | UNCodes | NASCodes;
+export type OtherCodes = "xxx"; // Code for not found
+
+export type CountryCode = Alpha3Code | UNCodes | NASCodes | OtherCodes;

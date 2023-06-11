@@ -9,6 +9,8 @@ import { Card } from "primereact/card";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import getFlagPathByCode from "@/misc/get_flag_path_by_code";
+import { CountryCode } from "@/custom_types";
 
 // TODO: Type this function properly
 // @ts-ignore
@@ -20,14 +22,10 @@ export default function usernameLogin({ changeLoginState }) {
   const [isNonStateActor, setIsNonStateActor] = useState(true);
   const [committee, setCommittee] = useState("N/A");
   const [selectCommittee, setSelectCommittee] = useState(false);
-  const [countryCode, setCountry] = useState("jam"); // Placeholder SVG
+  const [countryCode, setCountry] = useState<CountryCode>("jam"); // Placeholder SVG
 
   const [agreedToTerms, setAgreedToTerms] = useState(false);
   const [password, setPassword] = useState("");
-
-  function getCountrySvgPath(country: string) {
-    return `/flags/${country}.svg`;
-  }
 
   useEffect(() => {
     if (isNonStateActor) {
@@ -130,7 +128,7 @@ export default function usernameLogin({ changeLoginState }) {
             <p className="m-auto text-sm mt-5">Staat / NA</p>
             <div className="m-5 rounded-md overflow-hidden border border-black h-24 w-32">
               <Image
-                src={getCountrySvgPath(countryCode)}
+                src={getFlagPathByCode(countryCode)}
                 alt="Flag"
                 width={600}
                 height={400}

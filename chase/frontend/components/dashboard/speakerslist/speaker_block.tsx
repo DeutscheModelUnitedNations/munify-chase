@@ -10,9 +10,11 @@ import {
   faBell,
 } from "@fortawesome/free-solid-svg-icons";
 import "./timer_animations.scss";
+import getFlagPathByCode from "@/misc/get_flag_path_by_code";
+import { CountryCode } from "@/custom_types";
 
 interface Props {
-  countryCode: string;
+  countryCode: CountryCode;
   time: string;
   customName?: string;
 }
@@ -25,7 +27,7 @@ export default function SpeakerBlock({ countryCode, time, customName }: Props) {
       <div className="flex flex-row items-center justify-start">
         <div className="rounded-md border border-black shadow-md bg-white overflow-hidden">
           <Image
-            src={`/flags/${countryCode}.svg`}
+            src={getFlagPathByCode(countryCode)}
             width={99}
             height={66}
             alt="flag"

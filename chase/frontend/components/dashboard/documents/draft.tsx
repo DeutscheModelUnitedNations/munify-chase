@@ -3,12 +3,14 @@ import DocumentTemplate from "@/components/dashboard/documents/document_template
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faFileLines } from "@fortawesome/free-solid-svg-icons";
 import Image from "next/image";
+import getFlagPathByCode from "@/misc/get_flag_path_by_code";
+import { CountryCode } from "@/custom_types";
 
 export default function Draft({
   documentId,
   introducedBy,
   sponsors,
-}: { documentId: string; introducedBy: string; sponsors?: string[] }) {
+}: { documentId: string; introducedBy: CountryCode; sponsors?: string[] }) {
   return (
     <DocumentTemplate>
       <FontAwesomeIcon icon={faFileLines} className="text-gray-400 text-2xl" />
@@ -20,7 +22,7 @@ export default function Draft({
       </div>
       <div className="flex-col justify-end items-center rounded-md border border-black shadow-md overflow-hidden">
         <Image
-          src={`/flags/${introducedBy}.svg`}
+          src={getFlagPathByCode(introducedBy)}
           width={32}
           height={32}
           alt={`Flag of ${introducedBy}`}

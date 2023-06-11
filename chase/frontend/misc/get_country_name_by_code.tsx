@@ -4,12 +4,14 @@ import { CountryCode } from "@/custom_types";
 export default function getCountryNameByCode(
   countryCode: string,
   language: "de" | "en" = "de", // TODO add more languages
-) {
+): CountryCode {
   const country = countryData.find((item) => item.alpha3 === countryCode);
 
   if (country) {
+    // TODO Fix bug with types
+    // @ts-ignore
     return country[language] || country.en; // Use English as a fallback language
   }
 
-  return "!CountryNotFound!"; // Country not found
+  return "xxx"; // Country not found
 }

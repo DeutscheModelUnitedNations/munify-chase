@@ -1,9 +1,11 @@
 import React from "react";
 import Image from "next/image";
 import getCountryNameByCode from "../../misc/get_country_name_by_code";
+import getFlagPathByCode from "@/misc/get_flag_path_by_code";
+import { CountryCode } from "@/custom_types";
 
 interface HeaderProps {
-  countryCode: string;
+  countryCode: CountryCode;
   committeeName: string;
   currentTopic: string;
 }
@@ -24,7 +26,7 @@ export default function DashboardHeader({
       </div>
       <div className="flex flex-col items-center rounded-md overflow-hidden border border-black shadow-lg">
         <Image
-          src={`/flags/${countryCode}.svg`}
+          src={getFlagPathByCode(countryCode)}
           alt="flag"
           width={130}
           height={100}

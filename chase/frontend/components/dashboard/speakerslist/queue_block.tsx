@@ -1,6 +1,8 @@
 import React from "react";
 import Image from "next/image";
 import { CountryCode } from "@/custom_types";
+import { get } from "http";
+import getFlagPathByCode from "@/misc/get_flag_path_by_code";
 
 export default function SpeakerBlock({
   list,
@@ -75,7 +77,7 @@ function Flag({ countryCode }: { countryCode: CountryCode }) {
   return (
     <div className="rounded-md border border-black shadow-md bg-white overflow-hidden">
       <Image
-        src={`/flags/${countryCode}.svg`}
+        src={getFlagPathByCode(countryCode)}
         width={39}
         height={26}
         alt="flag"

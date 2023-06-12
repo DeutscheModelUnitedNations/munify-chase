@@ -41,10 +41,17 @@ jobs:
         run: npm run build
         
       - name: Run the server
+        id: run
         env:
           CI: "true"
         run: timeout 20s node ./build/main.js
         continue-on-error: true
           
       - name: Check Timeout
-        run: exit ${{ job.status == 'completed' && steps.timeout_job.outcome != 'timed_out' && steps.timeout_job.outcome != 'failure' }}
+        run: |
+          if [[ ${{ steps.run.outcome }} == 'timed_out' ]]; then
+            echo exit 0
+          elif [[ ${{ steps.run.outcome }} == 'failure' ]]; then
+            echo "An error occurred during run"
+            exit 1
+          fi

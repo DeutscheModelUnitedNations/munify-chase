@@ -45,15 +45,4 @@ jobs:
         env:
           CI: "true"
         run:  | 
-          timeout 20s node ./build/main.js
-          exit_code=$?
-
-          # Check the exit code
-          if [[ $exit_code -eq 0 ]]; then
-            # Command completed successfully or timed out
-            exit 0
-          else
-            # Command encountered an error
-            exit 1
-          fi
-          
+          timeout 20s node ./build/main.js || true

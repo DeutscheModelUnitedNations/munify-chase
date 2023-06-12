@@ -44,14 +44,16 @@ jobs:
         id: run
         env:
           CI: "true"
-        run: timeout 20s node ./build/main.js
-        continue-on-error: true
-          
-      - name: Check Timeout
-        run: |
-          if [[ ${{ steps.run.outcome }} == 'timed_out' ]]; then
-            echo exit 0
-          elif [[ ${{ steps.run.outcome }} == 'failure' ]]; then
-            echo "An error occurred during run"
+        run:  | 
+          timeout 20s node ./build/main.js
+          exit_code=$?
+
+          # Check the exit code
+          if [[ $exit_code -eq 0 ]]; then
+            # Command completed successfully or timed out
+            exit 0
+          else
+            # Command encountered an error
             exit 1
           fi
+          

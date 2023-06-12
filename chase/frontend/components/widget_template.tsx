@@ -12,7 +12,7 @@ export default function WidgetTemplate({
   styles,
 }: WidgetTemplateProps) {
   const widgetClassNames = () => {
-    const classNames = ["flex flex-col bg-gray-light rounded-lg p-3"];
+    const classNames = ["flex-1 flex flex-col bg-gray-light rounded-lg p-3"];
 
     if (styles) {
       classNames.push(styles);

@@ -3,6 +3,7 @@ import Image from "next/image";
 import getCountryNameByCode from "../../misc/get_country_name_by_code";
 import getFlagPathByCode from "@/misc/get_flag_path_by_code";
 import { CountryCode } from "@/custom_types";
+import HeaderTemplate from "../header_template";
 
 interface HeaderProps {
   countryCode: CountryCode;
@@ -16,7 +17,7 @@ export default function DashboardHeader({
   currentTopic,
 }: HeaderProps) {
   return (
-    <div className=" h-32 bg-gray-300 flex justify-between items-center p-4">
+    <HeaderTemplate>
       <div className="flex flex-col items-start justify-center">
         <div className="text-2xl font-bold mb-1">
           {getCountryNameByCode(countryCode)}
@@ -33,6 +34,6 @@ export default function DashboardHeader({
           style={{ objectFit: "contain", height: "100%" }}
         />
       </div>
-    </div>
+    </HeaderTemplate>
   );
 }

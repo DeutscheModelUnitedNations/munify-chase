@@ -1,8 +1,8 @@
 import React from "react";
 import WidgetTemplate from "@/components/widget_template";
-import SpeakerBlock from "@/components/dashboard/speakerslist/speaker_block";
-import CommentBlock from "@/components/dashboard/speakerslist/comment_block";
-import QueueBlock from "@/components/dashboard/speakerslist/queue_block";
+import SpeakerBlock from "@/components/speakers_list/speaker_block";
+import CommentBlock from "@/components/speakers_list/comment_block";
+import QueueBlock from "@/components/speakers_list/queue_block";
 import { CountryCode } from "@/custom_types";
 
 import "./markdown.scss";
@@ -24,7 +24,7 @@ export default function SpeakersListWidget({
     time: "2:35",
   };
 
-  const speakersList: CountryCode[] = ["gbr", "che", "yem", "fra", "jam"];
+  const speakersList: CountryCode[] = ["gbr", "che", "yem", "fra", "jam", "cpv", "gmb", "jor", "lao", "ltu", "fsm", "omn", "qat", "sle", "sdn", "tls", "are", "ven"];
 
   const currentComment: Speaker = {
     countryCode: "cze",

@@ -15,6 +15,8 @@ import { setDb, db } from "../prisma/client";
  */
 declare const PRODUCTION: boolean;
 
+export let server: FastifyInstance;
+
 (async () => {
   // ╔═══════════════╗
   // ║ Configuration ║
@@ -30,7 +32,7 @@ declare const PRODUCTION: boolean;
   let PORT = 0;
   if (process.env.PORT === undefined) {
     throw new Error(
-      "Please make sure the PORT environment variable is set to a valid port number",
+      "Please make sure the PORT environment variable is set to a valid port number"
     );
   }
   PORT = Number.parseInt(process.env.PORT);
@@ -49,7 +51,7 @@ declare const PRODUCTION: boolean;
   // ╚════════════════════════╝
 
   // TODO: make logger more readable in dev
-  const server: FastifyInstance = Fastify({
+  server = Fastify({
     logger: { level: "warn" },
   }).withTypeProvider<TypeBoxTypeProvider>();
 
@@ -61,8 +63,8 @@ declare const PRODUCTION: boolean;
     const swagger = await import("@fastify/swagger");
     const swaggerUi = await import("@fastify/swagger-ui");
 
-    server.register(swagger);
-    server.register(swaggerUi, {
+    server.register(swagger.default);
+    server.register(swaggerUi.default, {
       routePrefix: "/documentation",
       uiConfig: {
         docExpansion: "full",
@@ -86,7 +88,7 @@ declare const PRODUCTION: boolean;
   const redisUrl = process.env.REDIS_URL;
   if (redisUrl === undefined) {
     throw new Error(
-      "Could not find REDIS_URL environment variable. Make sure it's set",
+      "Could not find REDIS_URL environment variable. Make sure it's set"
     );
   }
 
@@ -111,7 +113,7 @@ declare const PRODUCTION: boolean;
   const sessionSecret = process.env.SESSION_SECRET;
   if (sessionSecret === undefined) {
     throw new Error(
-      "Could not find session secret in environment variable. Make sure that the 'SESSION_SECRET' environment variable is set and a secure string with more than 21 characters.",
+      "Could not find session secret in environment variable. Make sure that the 'SESSION_SECRET' environment variable is set and a secure string with more than 21 characters."
     );
   }
 

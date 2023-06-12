@@ -1,3 +1,5 @@
+import {PrismaClient} from "@prisma/client";
+
 /**
  * The application wide db connection
  */

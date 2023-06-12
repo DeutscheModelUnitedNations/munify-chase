@@ -22,11 +22,6 @@
   "devDependencies": {
     "@fastify/swagger": "^8.4.0",
     "@fastify/swagger-ui": "^1.8.1",
-    "@rollup/plugin-commonjs": "^25.0.1",
-    "@rollup/plugin-json": "^6.0.0",
-    "@rollup/plugin-node-resolve": "^15.1.0",
-    "@rollup/plugin-terser": "^0.4.3",
-    "@rollup/plugin-typescript": "^11.1.1",
     "@types/express-session": "^1.17.7",
     "@types/node": "^20.2.5",
     "dotenv": "^16.0.3",

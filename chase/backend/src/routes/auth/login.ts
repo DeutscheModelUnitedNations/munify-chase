@@ -19,6 +19,7 @@ const ErrorResponse = Type.Union([
   Type.Literal("CouldNotFindUser"),
   Type.Literal("InvalidPassword"),
 ]);
+type ErrorReplyType = Static<typeof ErrorResponse>;
 
 export const POST: NowRequestHandler<{
   Body: BodyType;

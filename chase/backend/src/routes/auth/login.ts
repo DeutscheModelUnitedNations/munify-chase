@@ -1,5 +1,7 @@
 import { NowRequestHandler } from "fastify-now";
 import { Static, Type } from "@sinclair/typebox";
+import { db } from "../../../prisma/client";
+// import {verify} from "argon2";
 
 const Body = Type.Object({
   password: Type.String(),
@@ -24,10 +26,21 @@ export const POST: NowRequestHandler<{
   Body: BodyType;
   Reply: ReplyType | ErrorReplyType;
 }> = async (req, rep) => {
-  if (req.body.email !== "admin@dmun.de" || req.body.password !== "1234") {
+  const user = await db.user.findFirst({
+    where: {
+      email: req.body.email,
+    },
+  });
+
+  if (!user) {
     rep.status(401);
-    return "InvalidPassword";
+    return "CouldNotFindUser";
   }
+
+  // if (!(await verify(user.passwordHash, req.body.password))) {
+  //   rep.status(401);
+  //   return "InvalidPassword";
+  // }
 
   req.session.authentication = {
     email: req.body.email,

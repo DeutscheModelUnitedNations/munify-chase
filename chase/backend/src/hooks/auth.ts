@@ -1,4 +1,28 @@
 import { FastifyError, FastifyReply, FastifyRequest } from "fastify";
+// import { server } from "../main";
+
+// decorate to optimize the js engine
+// https://www.fastify.io/docs/latest/Reference/Decorators/
+// server.decorateRequest("session", {
+//   cookie: {
+//     originalMaxAge: 0,
+//     domain: "",
+//     expires: new Date(),
+//     httpOnly: true,
+//     maxAge: 0,
+//     path: "/",
+//     sameSite: true,
+//     secure: true,
+//     signed: true,
+//   },
+//   authentication: {
+//     userId: "",
+//     email: "",
+//     firstName: "",
+//     lastName: "",
+//     pronouns: "",
+//   },
+// });
 
 /**
  * This hook prevents the access to the route when there is no valid session or the user is not logged in. It ensures the presence of the session.authentication object

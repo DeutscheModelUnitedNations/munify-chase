@@ -1,58 +1,62 @@
-const { build } = require("esbuild");
+const {build} = require("esbuild");
 const path = require("path");
+const {definePlugin} = require('esbuild-plugin-define');
 const fs = require("fs");
+
+//TODO document that the built server only correctly registers routes on unix platforms
 
 const OUTDIR = path.join(__dirname, "build");
 
-// ╔══════════════════════════════╗
-// ║ Build the server entry point ║
-// ╚══════════════════════════════╝
+fs.rmSync(OUTDIR, {recursive: true, force: true});
+
+/**
+ * @param {string} dir The start directory to traverse
+ * @returns An array of files recursively in the start directory
+ */
+function listFiles(dir) {
+  let fileArray = [];
+
+  const files = fs.readdirSync(dir);
+
+  files.forEach(file => {
+    const filePath = path.join(dir, file);
+    const stats = fs.statSync(filePath);
+
+    if (stats.isDirectory()) {
+      const subdirectoryFiles = listFiles(filePath); // Recursive call for subdirectories
+      fileArray = fileArray.concat(subdirectoryFiles);
+    } else {
+      fileArray.push(filePath); // Add file path to array
+    }
+  });
+
+  return fileArray;
+}
+
+// ╔══════════════════╗
+// ║ Build the server ║
+// ╚══════════════════╝
+
+const entryPoints = [path.join(__dirname, "src", "main.ts"), ...listFiles(path.join(__dirname, "src", "routes"))];
 
 build({
-  entryPoints: ["src/main.ts"],
+  entryPoints,
   bundle: true,
   platform: "node",
-  minify: true,
+  format: "cjs",
+  target: "es2022",
+  // minify: true,
   outdir: OUTDIR,
+  plugins: [
+    definePlugin({
+      process: {
+        env: {
+          PRODUCTION: "true",
+        },
+      },
+    }),
+  ]
 }).catch((error) => {
   console.error(error);
   process.exit(1);
 });
-
-// ╔══════════════════╗
-// ║ Build each route ║
-// ╚══════════════════╝
-
-const routesPath = path.join(__dirname, "src", "routes");
-const outputRoutesPath = path.join(OUTDIR, "routes");
-
-function processDirectory(dirPath) {
-  const files = fs.readdirSync(dirPath);
-
-  files.forEach((file) => {
-    const filepath = path.join(dirPath, file);
-    const stats = fs.statSync(filepath);
-
-    if (stats.isDirectory()) {
-      processDirectory(filepath);
-    } else {
-      const options = {
-        entryPoints: [filepath],
-        bundle: true,
-        platform: "node",
-        minify: true,
-        outdir: path.join(
-          outputRoutesPath,
-          path.dirname(path.relative(routesPath, filepath)),
-        ),
-      };
-
-      build(options).catch((error) => {
-        console.error(error);
-        process.exit(1);
-      });
-    }
-  });
-}
-
-processDirectory(routesPath);

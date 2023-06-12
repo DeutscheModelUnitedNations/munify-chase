@@ -1,15 +1,22 @@
 {
   "extends": "@tsconfig/node16/tsconfig.json",
   "compilerOptions": {
-    "rootDir": "./",
-    "baseUrl": "./",
-    "preserveConstEnums": true,
-    "noFallthroughCasesInSwitch": true,
-    "strictFunctionTypes": true,
-    "noUncheckedIndexedAccess": true,
-    "strictNullChecks": true,
-    "noImplicitAny": true,
-    "noUnusedLocals": true,
-    "noUnusedParameters": true
+    "rootDir": ".",                                      /* Specify the root folder within your source files. */
+    "baseUrl": ".",                                      /* Specify the base directory to resolve non-relative module names. */
+ // "paths": {},                                         /* Specify a set of entries that re-map imports to additional lookup locations. */
+    "esModuleInterop": true,                             /* Emit additional JavaScript to ease support for importing CommonJS modules. This enables 'allowSyntheticDefaultImports' for type compatibility. */
+    "forceConsistentCasingInFileNames": true,            /* Ensure that casing is correct in imports. */
+    "target": "ESNext",
+    "moduleResolution": "nodenext",
+    "module": "CommonJS",
+    "strict": true,                                      /* Enable all strict type-checking options. */
+    "noImplicitAny": true,                               /* Enable error reporting for expressions and declarations with an implied 'any' type. */
+    "strictNullChecks": true,                            /* When type checking, take into account 'null' and 'undefined'. */
+    "strictFunctionTypes": true,                         /* When assigning functions, check to ensure parameters and the return values are subtype-compatible. */
+    "strictBindCallApply": true,                         /* Check that the arguments for 'bind', 'call', and 'apply' methods match the original function. */
+    "noUnusedLocals": true,                              /* Enable error reporting when local variables aren't read. */
+    "noUnusedParameters": true,                          /* Raise an error when a function parameter isn't read. */
+    "noFallthroughCasesInSwitch": true,                  /* Enable error reporting for fallthrough cases in switch statements. */
+    "noUncheckedIndexedAccess": true,                    /* Add 'undefined' to a type when accessed using an index. */
   }
 }

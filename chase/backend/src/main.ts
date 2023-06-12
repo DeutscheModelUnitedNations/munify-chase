@@ -8,12 +8,10 @@ import { join } from "path";
 import { createClient } from "redis";
 import { PrismaClient } from "@prisma/client";
 import { setDb, db } from "../prisma/client";
-//TODO establish testing concept & coverage
 
-/**
- * If this build is a production build. This will be changed in build time in the build process by esbuild.
- */
-declare const PRODUCTION: boolean;
+import "./types/types";
+
+//TODO establish testing concept & coverage
 
 /**
  * The server instance
@@ -25,7 +23,7 @@ export let server: FastifyInstance;
   // ║ Configuration ║
   // ╚═══════════════╝
 
-  if (!PRODUCTION) {
+  if (!process.env.PRODUCTION) {
     const { config: dotenv } = await import("dotenv");
     // load environment variables from .env file during development
     // in production, environment variables are set by the host
@@ -64,7 +62,7 @@ export let server: FastifyInstance;
   // ║ API documentation generation & serving (dev only) ║
   // ╚═══════════════════════════════════════════════════╝
 
-  if (!PRODUCTION) {
+  if (!process.env.PRODUCTION) {
     const swagger = await import("@fastify/swagger");
     const swaggerUi = await import("@fastify/swagger-ui");
 
@@ -129,7 +127,7 @@ export let server: FastifyInstance;
     cookie: {
       httpOnly: true,
       // secure is only deactivated when running in dev
-      secure: PRODUCTION,
+      secure: process.env.PRODUCTION === "true",
       sameSite: "strict",
       maxAge: 86400000, // 7 days
     },
@@ -154,7 +152,7 @@ export let server: FastifyInstance;
 
   try {
     await server.ready();
-    if (!PRODUCTION) {
+    if (!process.env.PRODUCTION) {
       server.swagger();
     }
     console.log(`Running on port ${PORT}`);

@@ -1,5 +1,5 @@
 import { NowRequestHandler } from "fastify-now";
-import {authenticated} from "src/hooks/auth";
+import { authenticated } from "../../hooks/auth";
 
 export const GET: NowRequestHandler<{}> = async () => {};
 

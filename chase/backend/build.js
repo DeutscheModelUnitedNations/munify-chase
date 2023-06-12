@@ -1,5 +1,6 @@
-const { build } = require("esbuild");
+const {build} = require("esbuild");
 const path = require("path");
+const {definePlugin} = require('esbuild-plugin-define');
 const fs = require("fs");
 
 //TODO document that the built server only correctly registers routes on unix platforms
@@ -46,9 +47,15 @@ build({
   target: "es2022",
   // minify: true,
   outdir: OUTDIR,
-  define: {
-    PRODUCTION: "true",
-  }
+  plugins: [
+    definePlugin({
+      process: {
+        env: {
+          PRODUCTION: "true",
+        },
+      },
+    }),
+  ]
 }).catch((error) => {
   console.error(error);
   process.exit(1);

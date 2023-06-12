@@ -32,7 +32,7 @@ export let server: FastifyInstance;
   let PORT = 0;
   if (process.env.PORT === undefined) {
     throw new Error(
-      "Please make sure the PORT environment variable is set to a valid port number"
+      "Please make sure the PORT environment variable is set to a valid port number",
     );
   }
   PORT = Number.parseInt(process.env.PORT);
@@ -88,7 +88,7 @@ export let server: FastifyInstance;
   const redisUrl = process.env.REDIS_URL;
   if (redisUrl === undefined) {
     throw new Error(
-      "Could not find REDIS_URL environment variable. Make sure it's set"
+      "Could not find REDIS_URL environment variable. Make sure it's set",
     );
   }
 
@@ -113,7 +113,7 @@ export let server: FastifyInstance;
   const sessionSecret = process.env.SESSION_SECRET;
   if (sessionSecret === undefined) {
     throw new Error(
-      "Could not find session secret in environment variable. Make sure that the 'SESSION_SECRET' environment variable is set and a secure string with more than 21 characters."
+      "Could not find session secret in environment variable. Make sure that the 'SESSION_SECRET' environment variable is set and a secure string with more than 21 characters.",
     );
   }
 

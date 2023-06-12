@@ -44,12 +44,7 @@ jobs:
         env:
           CI: "true"
         run: timeout 20s node ./build/main.js
+        continue-on-error: true
           
-      - name: Check exit code
-        run: |
-          if [ $? -eq 124 ]; then
-            echo "Program exited with code 124 (timeout), continuing..."
-          else
-            echo "Program exited with an unexpected code, failing..."
-            exit 1
-          fi
+      - name: Check Timeout
+        run: exit ${{ job.status == 'completed' && steps.timeout_job.outcome != 'timed_out' && steps.timeout_job.outcome != 'failure' }}

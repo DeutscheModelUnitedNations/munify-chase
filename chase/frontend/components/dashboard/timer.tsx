@@ -1,5 +1,5 @@
 import React, { useEffect, useContext } from "react";
-import WidgetTemplate from "./widget_template";
+import WidgetTemplate from "@components/widget_template";
 import { ToastContext } from "@/contexts/messages/toast";
 
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";

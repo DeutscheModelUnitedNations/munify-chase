@@ -1,5 +1,5 @@
 import React from "react";
-import WidgetTemplate from "@/components/dashboard/widget_template";
+import WidgetTemplate from "@/components/widget_template";
 import SpeakerBlock from "@/components/dashboard/speakerslist/speaker_block";
 import CommentBlock from "@/components/dashboard/speakerslist/comment_block";
 import QueueBlock from "@/components/dashboard/speakerslist/queue_block";

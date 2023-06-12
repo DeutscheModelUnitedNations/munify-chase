@@ -41,6 +41,8 @@ jobs:
         run: npm run build
 
       - name: Run the server
+        env:
+          CI: "true"
         run: |
           timeout 20s node ./build/main.js
           exit_code=$? # Get the exit code of the previous command

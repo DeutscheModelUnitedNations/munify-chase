@@ -15,6 +15,9 @@ import { setDb, db } from "../prisma/client";
  */
 declare const PRODUCTION: boolean;
 
+/**
+ * The server instance
+ */
 export let server: FastifyInstance;
 
 (async () => {
@@ -44,7 +47,9 @@ export let server: FastifyInstance;
   // we populate the client inside the async main wrapper to ensure env vars are set when this is called since prisma depends on them
 
   //TODO document how to use prisma/migrations
-  setDb(new PrismaClient());
+  if (process.env.CI !== "true") {
+    setDb(new PrismaClient());
+  }
 
   // ╔════════════════════════╗
   // ║ Creating server object ║
@@ -97,11 +102,13 @@ export let server: FastifyInstance;
     url: redisUrl,
   });
 
-  try {
-    await redisClient.connect();
-  } catch (error) {
-    console.error("Could not connect to redis");
-    throw error;
+  if (process.env.CI !== "true") {
+    try {
+      await redisClient.connect();
+    } catch (error) {
+      console.error("Could not connect to redis");
+      throw error;
+    }
   }
 
   // Initialize store

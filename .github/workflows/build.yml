@@ -39,21 +39,17 @@ jobs:
 
       - name: Run build
         run: npm run build
-
+        
       - name: Run the server
         env:
           CI: "true"
+        run: timeout 20s node ./build/main.js
+          
+      - name: Check exit code
         run: |
-          timeout 20s node ./build/main.js
-          exit_code=$? # Get the exit code of the previous command
-
-          if [ $exit_code -eq 124 ]; then
-            echo "Server started without errors"
-            exit 0
-          elif [ $exit_code -ne 0 ]; then
-            echo "Server encountered an error"
-            exit 1
+          if [ $? -eq 124 ]; then
+            echo "Program exited with code 124 (timeout), continuing..."
           else
-            echo "Server exited unexpectedly"
+            echo "Program exited with an unexpected code, failing..."
             exit 1
           fi

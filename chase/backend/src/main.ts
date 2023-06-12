@@ -157,7 +157,7 @@ export let server: FastifyInstance;
     }
     console.log(`Running on port ${PORT}`);
     await server.listen({ port: PORT, host: "0.0.0.0" });
-    db.$disconnect();
+    db?.$disconnect();
   } catch (err) {
     server.log.error(err);
     process.exit(1);

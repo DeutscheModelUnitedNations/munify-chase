@@ -61,6 +61,7 @@ export default function DocumentsWidget() {
             if (document.category === "adopted") {
               return (
                 <Resolution
+                  key={document.documentId}
                   documentId={document.documentId}
                   topic={document?.topic}
                 />
@@ -72,6 +73,7 @@ export default function DocumentsWidget() {
             if (document.category === "draft") {
               return (
                 <Draft
+                  key={document.documentId}
                   documentId={document.documentId}
                   introducedBy={document.introducedBy}
                   sponsors={document.sponsors}
@@ -84,6 +86,7 @@ export default function DocumentsWidget() {
             if (document.category === "paper") {
               return (
                 <Paper
+                  key={document.documentId}
                   documentId={document.documentId}
                   introducedBy={document.introducedBy}
                   sponsors={document.sponsors}

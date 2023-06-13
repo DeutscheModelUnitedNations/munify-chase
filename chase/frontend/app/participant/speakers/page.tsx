@@ -44,28 +44,49 @@ export default function participant_dashboard() {
   // const currentComment = null;  // If there is no data for current comment, the commentlist block will not be rendered
 
   const commentList: CountryCode[] = ["deu", "jam", "usa", "yem"];
+  // const commentList: CountryCode[] = [];
 
   const commentListClosed: boolean = true;
 
   return (
     <>
       <ScrollPanel className="flex-1 overflow-y-auto custom-scrollbar">
-        <div className="flex-1 flex p-4 gap-4">
+        <div className="flex-1 flex p-4 gap-4 md:flex-col lg:flex-row">
           <WidgetTemplate cardTitle="Redeliste">
-            <SpeakerBlock countryCode={currentSpeaker.countryCode} time={currentSpeaker.time} />
-            <SpeechButtons
-              listClosed={speakersListClosed}
-              onSpeakersList={myCountryInList(speakersList)}
-            />
-            <SpeakerQueueList list={speakersList} myCountry={myCountry} closed={speakersListClosed} />
+            { currentSpeaker ? (
+              <>
+                <SpeakerBlock countryCode={currentSpeaker.countryCode} time={currentSpeaker.time} />
+                <SpeechButtons
+                  listClosed={speakersListClosed}
+                  onSpeakersList={myCountryInList(speakersList)}
+                />
+                <SpeakerQueueList list={speakersList} myCountry={myCountry} closed={speakersListClosed} />  
+              </>
+            ) : (
+                <div className="flex flex-col gap-2 items-start justify-center mt-3">
+                  <p className="text-gray-500 text-sm mb-3">Kein Redebeitrag</p>
+                  <Button label="Redebeitrag" icon={<FontAwesomeIcon icon={faPlusCircle} className="mr-2" />} size="small" disabled={commentListClosed} />
+                </div>
+            )
+            }
           </WidgetTemplate>
           <WidgetTemplate cardTitle="Fragen u. Kurzberemerkungen">
-            <SpeakerBlock countryCode={currentComment.countryCode} time={currentComment.time} />
-            <SpeechButtons
-              listClosed={commentListClosed}
-              onSpeakersList={myCountryInList(commentList)}
-            />
-            <SpeakerQueueList list={commentList} myCountry={myCountry} closed={commentListClosed} />
+            { currentComment ? (
+              <>
+                <SpeakerBlock countryCode={currentComment.countryCode} time={currentComment.time} />
+                <SpeechButtons
+                  listClosed={commentListClosed}
+                  onSpeakersList={myCountryInList(commentList)}
+                />
+                <SpeakerQueueList list={commentList} myCountry={myCountry} closed={commentListClosed} />
+              </>
+            ) : (
+              <div className="flex flex-col gap-2 items-start justify-center mt-3">
+                <p className="text-gray-500 text-sm mb-3">Kein Frage oder Kurzbemerkung</p>
+                <Button label="Redebeitrag" icon={<FontAwesomeIcon icon={faPlusCircle} className="mr-2" />} size="small" disabled={commentListClosed} />
+              </div>
+            )
+            }
           </WidgetTemplate>
         </div>
       </ScrollPanel>

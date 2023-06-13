@@ -3,7 +3,7 @@ import WidgetTemplate from "@/components/widget_template";
 import SpeakerBlock from "@/components/speakers_list/speaker_block";
 import CommentBlock from "@/components/speakers_list/comment_block";
 import QueueBlock from "@/components/speakers_list/queue_block";
-import { CountryCode } from "@/custom_types";
+import { CountryCode, SpeakersListData } from "@/custom_types";
 
 import "./markdown.scss";
 
@@ -15,46 +15,30 @@ interface Speaker {
 
 export default function SpeakersListWidget({
   myCountry,
-}: { myCountry: CountryCode }) {
-  // Demo Data
-  // TODO remove
-
-  const currentSpeaker: Speaker = {
-    countryCode: "unw",
-    time: "2:35",
-  };
-
-  const speakersList: CountryCode[] = ["gbr", "che", "yem", "fra", "jam", "cpv", "gmb", "jor", "lao", "ltu", "fsm", "omn", "qat", "sle", "sdn", "tls", "are", "ven"];
-
-  const currentComment: Speaker = {
-    countryCode: "cze",
-    time: "0:23",
-  };
-
-  // const currentComment = null;  // If there is no data for current comment, the commentlist block will not be rendered
-
-  const commentList: CountryCode[] = ["deu", "jam", "usa", "yem"];
+  speakersList,
+  commentList,
+}: { myCountry: CountryCode, speakersList: SpeakersListData, commentList: SpeakersListData }) {
 
   return (
     <>
       <WidgetTemplate cardTitle="Redeliste">
         <div className="flex-1 flex flex-col gap-3">
           <SpeakerBlock
-            countryCode={currentSpeaker.countryCode}
-            customName={currentSpeaker?.customName}
-            time={currentSpeaker.time}
+            countryCode={speakersList.currentSpeaker.countryCode}
+            timer={speakersList.currentSpeaker.timer}
+            customName={speakersList.currentSpeaker.customName}
           />
-          {currentComment && (
+          {speakersList.currentSpeaker.countryCode && (
             <CommentBlock>
               <SpeakerBlock
-                countryCode={currentComment.countryCode}
-                customName={currentComment?.customName}
-                time={currentComment.time}
+                countryCode={commentList.currentSpeaker.countryCode}
+                timer={commentList.currentSpeaker.timer}
+                customName={commentList.currentSpeaker.customName}
               />
-              <QueueBlock list={commentList} myCountry={myCountry} />
+              <QueueBlock list={commentList.list} myCountry={myCountry} />
             </CommentBlock>
           )}
-          <QueueBlock list={speakersList} myCountry={myCountry} />
+          <QueueBlock list={speakersList.list} myCountry={myCountry} />
         </div>
       </WidgetTemplate>
     </>

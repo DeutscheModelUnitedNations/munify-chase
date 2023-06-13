@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import Image from "next/image";
 import getCountryNameByCode from "@/misc/get_country_name_by_code";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -15,12 +15,47 @@ import { CountryCode } from "@/custom_types";
 
 interface Props {
   countryCode: CountryCode;
-  time: string;
+  timer: {
+    start: Date;
+    durationMilliseconds: number,
+    paused: boolean, 
+  };
   customName?: string;
 }
 
-export default function SpeakerBlock({ countryCode, time, customName }: Props) {
-  const timerState: string = "active"; // TODO implement this when backend is ready // "active" | "paused" | "overtime"
+export default function SpeakerBlock({ countryCode, timer, customName }: Props) {
+  const [timerState, setTimerState] = useState<string>("active");
+  const [timeLeft, setTimeLeft] = useState<string>("0:00");
+
+  
+  const displayTimer = (milliseconds: number) => {
+    const minutes: number = Math.floor(Math.abs(milliseconds / 60000));
+    const seconds: number = Math.abs(Math.floor((milliseconds % 60000) / 1000));
+    
+    if (milliseconds < 0) {
+      return `-${minutes}:${seconds.toString().padStart(2, "0")}`
+    } else {
+      return `${minutes}:${seconds.toString().padStart(2, "0")}`;
+    }
+
+  }
+
+  useEffect(() => {
+    if (timer.paused) {
+      setTimerState("paused");
+      setTimeLeft(displayTimer(timer.durationMilliseconds));
+    } else {
+      const timeInterval = setInterval(() => {
+        const timerInMilliseconds: number = timer.durationMilliseconds - (Date.now() - timer.start.getTime());
+        setTimeLeft(displayTimer(timerInMilliseconds));
+        if (timerInMilliseconds < 0) {
+          setTimerState("overtime");
+        } else {
+          setTimerState("active");
+        }
+      }, 1000);
+    }
+  }, [timer]);
 
   return (
     <>
@@ -46,7 +81,7 @@ export default function SpeakerBlock({ countryCode, time, customName }: Props) {
                 className="text-red-700 fa-shake"
               />
             )}
-            <div>{time}</div>
+            <div>{timeLeft}</div>
           </div>
         </div>
       </div>

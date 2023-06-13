@@ -11,14 +11,58 @@ datasource db {
 }
 
 model User {
-  id           Int      @id @default(autoincrement())
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
-  email        String   @unique
-  passwordHash String
-  firstName    String
-  lastName     String
-  pronouns     String
+  id                       Int                       @id @default(autoincrement())
+  createdAt                DateTime                  @default(now())
+  updatedAt                DateTime                  @updatedAt
+  email                    String                    @unique
+  passwordHash             String
+  firstName                String
+  lastName                 String
+  pronouns                 String
+  pendingEmailVerification PendingEmailVerification?
+  ConferenceUser           ConferenceUser[]
 
   @@index([email])
+}
+
+model PendingEmailVerification {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  User      User     @relation(fields: [userId], references: [id])
+  userId    Int      @unique
+  token     String
+}
+
+model Conference {
+  id    Int              @id @default(autoincrement())
+  users ConferenceUser[]
+}
+
+/// Roles a user can have on a conference
+enum ConferenceRole {
+  /// Is allowed to do anything, including managing the conference itself
+  ADMIN
+  /// A team member helping to run the conference
+  TEAM
+  /// A participant joining the conference as a nation representative
+  PARTICIPANT_COUNTRY
+  /// A participant joining the conference as a ngo representative
+  PARTICIPANT_NGO
+  /// A participant watching the conference as a quiet observer
+  OBSERVER
+	@@map("ConferenceRoles")
+}
+
+model ConferenceUser {
+  user       User       @relation(fields: [userId], references: [id])
+  conference Conference @relation(fields: [conferenceId], references: [id])
+
+  userId       Int
+  conferenceId Int
+
+  /// The role the user has on the conference
+  role ConferenceRole
+
+  @@id([userId, conferenceId])
 }

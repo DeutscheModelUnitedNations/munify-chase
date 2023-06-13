@@ -1,25 +1,21 @@
 import { NowRequestHandler } from "fastify-now";
 import { Static, Type } from "@sinclair/typebox";
 import { db } from "../../../prisma/client";
-import { verify } from "argon2";
 
 const Body = Type.Object({
-  password: Type.String(),
   email: Type.String({ format: "email" }),
+  token: Type.String(),
 });
 type BodyType = Static<typeof Body>;
 
-const Reply = Type.Object({
-  firstName: Type.String(),
-  lastName: Type.String(),
-  pronouns: Type.String(),
-});
+const Reply = Type.Literal(
+  "Your email has been confirmed and you are now logged in"
+);
 type ReplyType = Static<typeof Reply>;
 
 const ErrorReply = Type.Union([
   Type.Literal("CouldNotFindUser"),
-  Type.Literal("InvalidPassword"),
-  Type.Literal("EmailNotVerified"),
+  Type.Literal("InvalidToken"),
 ]);
 type ErrorReplyType = Static<typeof ErrorReply>;
 
@@ -27,29 +23,29 @@ export const POST: NowRequestHandler<{
   Body: BodyType;
   Reply: ReplyType | ErrorReplyType;
 }> = async (req, rep) => {
-  const user = await db.user.findFirst({
+  const pendingEmailVerification = await db.pendingEmailVerification.findFirst({
     where: {
-      email: req.body.email,
-    },
-    include: {
-      pendingEmailVerification: true,
+      User: {
+        email: req.body.email,
+      },
     },
   });
 
-  if (!user) {
+  if (!pendingEmailVerification) {
     rep.status(401);
     return "CouldNotFindUser";
   }
 
-  if (user.pendingEmailVerification) {
+  if (pendingEmailVerification.token !== req.body.token) {
     rep.status(401);
-    return "EmailNotVerified";
+    return "InvalidToken";
   }
 
-  if (!(await verify(user.passwordHash, req.body.password))) {
-    rep.status(401);
-    return "InvalidPassword";
-  }
+  const user = await db.user.findFirstOrThrow({
+    where: {
+      id: pendingEmailVerification.userId,
+    },
+  });
 
   req.session.authentication = {
     email: user.email,
@@ -57,14 +53,15 @@ export const POST: NowRequestHandler<{
     lastName: user.lastName,
     pronouns: user.pronouns,
     userId: user.id,
-    
   };
 
-  return {
-    firstName: req.session.authentication?.firstName,
-    lastName: req.session.authentication?.lastName,
-    pronouns: req.session.authentication?.pronouns,
-  };
+  await db.pendingEmailVerification.delete({
+    where: {
+      id: pendingEmailVerification.id,
+    },
+  });
+
+  return "Your email has been confirmed and you are now logged in";
 };
 
 POST.opts = {

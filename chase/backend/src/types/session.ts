@@ -1,3 +1,4 @@
+import { ConferenceRole, Prisma } from "@prisma/client";
 import * as m from "fastify";
 /*
 Typescript type for the session.
@@ -10,10 +11,10 @@ declare module "fastify" {
      */
   interface Session {
     /**
-        If the user is authenticated this object contains various fields that are obtained from the authentication
-        */
+      If the user is authenticated this object contains various fields that are obtained from the authentication
+    */
     authentication?: {
-      userId: string;
+      userId: number;
       email: string;
       firstName: string;
       lastName: string;

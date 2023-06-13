@@ -13,5 +13,8 @@
     "clientKind": "git",
     "enabled": true,
     "useIgnoreFile": true
+  },
+  "files": {
+    "ignore": ["chase/frontend/src/i18n/*.ts", "chase/frontend/src/i18n/*.tsx"]
   }
 }

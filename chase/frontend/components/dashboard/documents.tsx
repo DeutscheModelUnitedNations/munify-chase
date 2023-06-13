@@ -5,53 +5,11 @@ import Draft from "@components/dashboard/documents/draft";
 import Paper from "@components/dashboard/documents/paper";
 import { ScrollPanel } from "primereact/scrollpanel";
 import { Divider } from "primereact/divider";
-import { CountryCode } from "@/custom_types";
+import { CountryCode, Document } from "@/custom_types";
 
-interface Document {
-  documentId: string;
-  topic?: string;
-  category: "paper" | "draft" | "adopted";
-  shared?: boolean;
-  introducedBy: CountryCode;
-  sponsors?: string[];
-}
-
-export default function DocumentsWidget() {
-  const [documents, setDocuments] = useState<Document[]>([
-    {
-      documentId: "RES/GV/23/1",
-      topic: "Resolution zur Einführung einer neuen Chairsoftware",
-      category: "adopted",
-      introducedBy: "deu",
-      sponsors: ["gbr", "fra", "usa"],
-    },
-    {
-      documentId: "RE/GV/23/2/1",
-      category: "draft",
-      introducedBy: "jam",
-      sponsors: ["gbr", "fra", "usa"],
-    },
-    {
-      documentId: "RE/GV/23/2/2",
-      category: "draft",
-      introducedBy: "usa",
-      sponsors: ["gbr", "deu"],
-    },
-    {
-      documentId: "AP/1",
-      category: "paper",
-      introducedBy: "gbr",
-      shared: true,
-      sponsors: ["gbr"],
-    },
-    {
-      documentId: "AP/5",
-      shared: false,
-      category: "paper",
-      introducedBy: "jam",
-    },
-  ]);
-
+export default function DocumentsWidget({
+  documents,
+}: { documents: Document[] }) {
   return (
     <>
       <WidgetTemplate cardTitle="Dokumente">

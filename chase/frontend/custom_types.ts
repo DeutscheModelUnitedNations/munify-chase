@@ -200,3 +200,47 @@ export type NASCodes = `nsa_${string}`; // Non-State Actor Prefix and ID
 export type OtherCodes = "xxx"; // Code for not found
 
 export type CountryCode = Alpha3Code | UNCodes | NASCodes | OtherCodes;
+
+export interface Speaker {
+  countryCode: CountryCode;
+  customName?: string;
+  timer: {
+    start: Date;
+    durationMilliseconds: number;
+    paused: boolean;
+  };
+}
+
+export interface SpeakersListData {
+  currentSpeaker: Speaker;
+  list: CountryCode[];
+  closed: boolean;
+}
+
+export interface CommitteeStatus {
+  status: string;
+  until: Date | null;
+  category: "formal" | "informal" | "pause" | "suspension";
+  currentDebateStep: string;
+  nextDebateStep?: string;
+}
+
+export interface Document {
+  documentId: string;
+  topic?: string;
+  category: "paper" | "draft" | "adopted";
+  shared?: boolean;
+  introducedBy: CountryCode;
+  sponsors?: string[];
+}
+
+export interface NormalApiResponse {
+  committeeName: string;
+  currentTopic: string;
+  myCountry: CountryCode;
+  speakersList: SpeakersListData;
+  commentList: SpeakersListData;
+  committeeStatus: CommitteeStatus;
+  whiteboardMarkdown: string;
+  documents: Document[];
+}

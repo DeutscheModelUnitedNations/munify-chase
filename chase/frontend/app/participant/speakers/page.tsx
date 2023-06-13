@@ -11,7 +11,6 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { SpeakersListData } from "@/custom_types";
 import { apiTestData } from "@/test_data";
 
-
 export default function SpeakersList() {
   const [data, setData] = useState(apiTestData);
 
@@ -43,44 +42,81 @@ export default function SpeakersList() {
   );
 }
 
-function SpeechButtons({ onSpeakersList, listClosed }: { onSpeakersList: boolean, listClosed: boolean }) {
+function SpeechButtons({
+  onSpeakersList,
+  listClosed,
+}: { onSpeakersList: boolean; listClosed: boolean }) {
   return (
     <div className="flex flex-col gap-2 items-start justify-center mt-3">
-      {onSpeakersList && <Button label="Zurückziehen" icon={<FontAwesomeIcon icon={faBan} className="mr-2" />} size="small" severity="danger" />}
-      {!onSpeakersList && <Button label="Redebeitrag" icon={<FontAwesomeIcon icon={faPlusCircle} className="mr-2" />} size="small" disabled={listClosed} />}
+      {onSpeakersList && (
+        <Button
+          label="Zurückziehen"
+          icon={<FontAwesomeIcon icon={faBan} className="mr-2" />}
+          size="small"
+          severity="danger"
+        />
+      )}
+      {!onSpeakersList && (
+        <Button
+          label="Redebeitrag"
+          icon={<FontAwesomeIcon icon={faPlusCircle} className="mr-2" />}
+          size="small"
+          disabled={listClosed}
+        />
+      )}
     </div>
   );
 }
 
 // TODO Idea: Create a functionality to add as many speakers lists as needed (not only two fixed ones)
-function SpeakersListBlock({ listTitle, speakersData, myCountry }: { listTitle: string, speakersData: SpeakersListData, myCountry: CountryCode}) {
-
+function SpeakersListBlock({
+  listTitle,
+  speakersData,
+  myCountry,
+}: {
+  listTitle: string;
+  speakersData: SpeakersListData;
+  myCountry: CountryCode;
+}) {
   const myCountryInList: () => boolean = () => {
     if (speakersData.list.find((countryCode) => countryCode === myCountry)) {
-      return true
+      return true;
     } else {
-      return false
+      return false;
     }
-  }
-  
+  };
+
   return (
     <WidgetTemplate cardTitle={listTitle}>
-    {speakersData.currentSpeaker ? (
-      <>
-        <SpeakerBlock countryCode={speakersData.currentSpeaker.countryCode} timer={speakersData.currentSpeaker.timer} />
-        <SpeechButtons
-          listClosed={speakersData.closed}
-          onSpeakersList={myCountryInList()}
-        />
-        <SpeakerQueueList list={speakersData.list} myCountry={myCountry} closed={speakersData.closed} />
-      </>
-    ) : (
-      <div className="flex flex-col gap-2 items-start justify-center mt-3">
-        <p className="text-gray-500 text-sm mb-3">Kein Beitrag auf der Liste</p>
-        <Button label="Redebeitrag" icon={<FontAwesomeIcon icon={faPlusCircle} className="mr-2" />} size="small" disabled={speakersData.closed} />
-      </div>
-    )
-    }
+      {speakersData.currentSpeaker ? (
+        <>
+          <SpeakerBlock
+            countryCode={speakersData.currentSpeaker.countryCode}
+            timer={speakersData.currentSpeaker.timer}
+          />
+          <SpeechButtons
+            listClosed={speakersData.closed}
+            onSpeakersList={myCountryInList()}
+          />
+          <SpeakerQueueList
+            list={speakersData.list}
+            myCountry={myCountry}
+            closed={speakersData.closed}
+          />
+        </>
+      ) : (
+        <div className="flex flex-col gap-2 items-start justify-center mt-3">
+          <p className="text-gray-500 text-sm mb-3">
+            Kein Beitrag auf der Liste
+          </p>
+          <Button
+            label="Redebeitrag"
+            icon={<FontAwesomeIcon icon={faPlusCircle} className="mr-2" />}
+            size="small"
+            disabled={speakersData.closed}
+          />
+        </div>
+      )}
     </WidgetTemplate>
-  )
+  );
 }

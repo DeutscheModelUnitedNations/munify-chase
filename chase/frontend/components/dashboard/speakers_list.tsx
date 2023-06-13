@@ -17,8 +17,11 @@ export default function SpeakersListWidget({
   myCountry,
   speakersList,
   commentList,
-}: { myCountry: CountryCode, speakersList: SpeakersListData, commentList: SpeakersListData }) {
-
+}: {
+  myCountry: CountryCode;
+  speakersList: SpeakersListData;
+  commentList: SpeakersListData;
+}) {
   return (
     <>
       <WidgetTemplate cardTitle="Redeliste">

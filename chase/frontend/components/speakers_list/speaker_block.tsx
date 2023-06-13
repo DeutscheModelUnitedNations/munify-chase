@@ -17,28 +17,30 @@ interface Props {
   countryCode: CountryCode;
   timer: {
     start: Date;
-    durationMilliseconds: number,
-    paused: boolean, 
+    durationMilliseconds: number;
+    paused: boolean;
   };
   customName?: string;
 }
 
-export default function SpeakerBlock({ countryCode, timer, customName }: Props) {
+export default function SpeakerBlock({
+  countryCode,
+  timer,
+  customName,
+}: Props) {
   const [timerState, setTimerState] = useState<string>("active");
   const [timeLeft, setTimeLeft] = useState<string>("0:00");
 
-  
   const displayTimer = (milliseconds: number) => {
     const minutes: number = Math.floor(Math.abs(milliseconds / 60000));
     const seconds: number = Math.abs(Math.floor((milliseconds % 60000) / 1000));
-    
+
     if (milliseconds < 0) {
-      return `-${minutes}:${seconds.toString().padStart(2, "0")}`
+      return `-${minutes}:${seconds.toString().padStart(2, "0")}`;
     } else {
       return `${minutes}:${seconds.toString().padStart(2, "0")}`;
     }
-
-  }
+  };
 
   useEffect(() => {
     if (timer.paused) {
@@ -46,7 +48,8 @@ export default function SpeakerBlock({ countryCode, timer, customName }: Props) 
       setTimeLeft(displayTimer(timer.durationMilliseconds));
     } else {
       const timeInterval = setInterval(() => {
-        const timerInMilliseconds: number = timer.durationMilliseconds - (Date.now() - timer.start.getTime());
+        const timerInMilliseconds: number =
+          timer.durationMilliseconds - (Date.now() - timer.start.getTime());
         setTimeLeft(displayTimer(timerInMilliseconds));
         if (timerInMilliseconds < 0) {
           setTimerState("overtime");

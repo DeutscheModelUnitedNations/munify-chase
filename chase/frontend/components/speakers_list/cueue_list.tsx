@@ -10,25 +10,35 @@ export default function QueueList({
   myCountry,
   closed,
 }: { list: CountryCode[]; myCountry: CountryCode; closed: boolean }) {
-
   return (
     <>
       <div className="flex flex-col mt-3">
-        <Timeline list={list} content={(item) => { return <CountryCard countryCode={item} myCountry={myCountry} /> }} />
-        { closed &&
+        <Timeline
+          list={list}
+          content={(item) => {
+            return <CountryCard countryCode={item} myCountry={myCountry} />;
+          }}
+        />
+        {closed && (
           <div className="flex justify-stretch items-center gap-3 mt-3">
             <div className="flex-1 border border-gray-500" />
-            <div className="text-sm font-bold text-gray-500">Liste Geschlossen</div>
+            <div className="text-sm font-bold text-gray-500">
+              Liste Geschlossen
+            </div>
             <div className="flex-1 border border-gray-500" />
           </div>
-        }
-        </div>
+        )}
+      </div>
     </>
   );
 }
 
-function CountryCard({ countryCode, myCountry }: { countryCode: CountryCode, myCountry: CountryCode }) {
-  let wrapperClassNames = "flex-1 w-full flex gap-4 p-2 rounded-md hover:bg-white transition";
+function CountryCard({
+  countryCode,
+  myCountry,
+}: { countryCode: CountryCode; myCountry: CountryCode }) {
+  let wrapperClassNames =
+    "flex-1 w-full flex gap-4 p-2 rounded-md hover:bg-white transition";
 
   if (countryCode === myCountry) {
     wrapperClassNames += " bg-dmunlight";
@@ -38,10 +48,12 @@ function CountryCard({ countryCode, myCountry }: { countryCode: CountryCode, myC
     <div className={wrapperClassNames}>
       <Flag countryCode={countryCode} />
       <div className="flex flex-col justify-center">
-        <div className="text-sm font-bold">{getCountryNameByCode(countryCode)}</div>
+        <div className="text-sm font-bold">
+          {getCountryNameByCode(countryCode)}
+        </div>
       </div>
     </div>
-  )
+  );
 }
 
 function Flag({ countryCode }: { countryCode: CountryCode }) {

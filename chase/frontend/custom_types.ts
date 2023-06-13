@@ -206,8 +206,8 @@ export interface Speaker {
   customName?: string;
   timer: {
     start: Date;
-    durationMilliseconds: number,
-    paused: boolean, 
+    durationMilliseconds: number;
+    paused: boolean;
   };
 }
 

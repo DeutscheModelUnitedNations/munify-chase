@@ -7,8 +7,9 @@ import { ScrollPanel } from "primereact/scrollpanel";
 import { Divider } from "primereact/divider";
 import { CountryCode, Document } from "@/custom_types";
 
-export default function DocumentsWidget({ documents }: { documents: Document[]}) {
-
+export default function DocumentsWidget({
+  documents,
+}: { documents: Document[] }) {
   return (
     <>
       <WidgetTemplate cardTitle="Dokumente">

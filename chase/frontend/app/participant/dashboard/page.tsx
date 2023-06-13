@@ -52,9 +52,7 @@ export default function participant_dashboard() {
                   currentDebateStep={data.committeeStatus.currentDebateStep}
                   nextDebateStep={data.committeeStatus.nextDebateStep}
                 />
-                <DocumentsWidget
-                  documents={data.documents}
-                />
+                <DocumentsWidget documents={data.documents} />
               </div>
               <div className="flex-1 flex flex-col justify-start items-stretch gap-5 md:col-span-2 lg:col-span-1">
                 <WhiteboardWidget markdown_content={data.whiteboardMarkdown} />

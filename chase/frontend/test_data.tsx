@@ -1,5 +1,10 @@
-import { CommitteeStatus, CountryCode, NormalApiResponse, SpeakersListData, Document } from "@/custom_types";
-
+import {
+  CommitteeStatus,
+  CountryCode,
+  NormalApiResponse,
+  SpeakersListData,
+  Document,
+} from "@/custom_types";
 
 export const myCountry: CountryCode = "che";
 
@@ -12,7 +17,26 @@ export const speakersListTestData: SpeakersListData = {
       paused: true,
     },
   },
-  list: ["gbr", "che", "yem", "fra", "jam", "cpv", "gmb", "jor", "lao", "ltu", "fsm", "omn", "qat", "sle", "sdn", "tls", "are", "ven"],
+  list: [
+    "gbr",
+    "che",
+    "yem",
+    "fra",
+    "jam",
+    "cpv",
+    "gmb",
+    "jor",
+    "lao",
+    "ltu",
+    "fsm",
+    "omn",
+    "qat",
+    "sle",
+    "sdn",
+    "tls",
+    "are",
+    "ven",
+  ],
   closed: false,
 };
 
@@ -72,18 +96,18 @@ export const documentsTestData: Document[] = [
   },
 ];
 
-
 export const apiTestData: NormalApiResponse = {
   committeeName: "Generalversammlung",
   currentTopic: "Rechte von Kindersoldaten",
   myCountry: myCountry,
-  
+
   speakersList: speakersListTestData,
   commentList: commentListTestData,
-  
+
   committeeStatus: committeeStatusTestData,
-  
-  whiteboardMarkdown: "# Hello World!\n\nHier ist ein Markdown- Beispiel.\n\n## Vorsitzende\n* Miriam Güthe\n * Maximilian Ilzhöfer\n * Tade Strehk\n## Gremienberatung\n * Felix Thomsen\n\nUnd hier ein[Link](https://www.google.com).\n\n> **An alle Terrorteilis:** Das Pöbeln nicht vergessen!\n\n# Über diesen Block\n\nHier können die Vorsitzenden aktuelle Informationen anzeigen. Das ganze wird über einen Editor funktionieren, sodass die Vorsitzenden über Markdown ihre Informationen individuell verpacken und anzeigen können. Das bietet größtmögliche Flexibilität und Übersichtlichkeit.",
+
+  whiteboardMarkdown:
+    "# Hello World!\n\nHier ist ein Markdown- Beispiel.\n\n## Vorsitzende\n* Miriam Güthe\n * Maximilian Ilzhöfer\n * Tade Strehk\n## Gremienberatung\n * Felix Thomsen\n\nUnd hier ein[Link](https://www.google.com).\n\n> **An alle Terrorteilis:** Das Pöbeln nicht vergessen!\n\n# Über diesen Block\n\nHier können die Vorsitzenden aktuelle Informationen anzeigen. Das ganze wird über einen Editor funktionieren, sodass die Vorsitzenden über Markdown ihre Informationen individuell verpacken und anzeigen können. Das bietet größtmögliche Flexibilität und Übersichtlichkeit.",
 
   documents: documentsTestData,
-}
+};

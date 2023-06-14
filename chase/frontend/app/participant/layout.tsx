@@ -22,17 +22,13 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="de">
-      <body className={inter.className}>
-          <div className="flex h-screen w-screen bg-gray-light">
-            <div className="m-3 rounded-3xl bg-white flex shadow-md w-full overflow-hidden">
-              <div className="flex-1 flex">
-                <Navbar />
-                {children}
-              </div>
-            </div>
-          </div>
-      </body>
-    </html>
+    <div className="flex h-screen w-screen bg-gray-light">
+      <div className="m-3 rounded-3xl bg-white flex shadow-md w-full overflow-hidden">
+        <div className="flex-1 flex">
+          <Navbar />
+          {children}
+        </div>
+      </div>
+    </div>
   );
 }

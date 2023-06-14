@@ -193,7 +193,7 @@ export type Alpha3Code =
   | "zmb"
   | "zwe";
 
-export type UNCodes = "unm" | "unw" | "gsm" | "gsw"; // UN-Flag Specials for General Secretary and Guest Speakers (male and female)
+export type UNCodes = "unm" | "unw" | "gsm" | "gsw" | "uno"; // UN-Flag Specials for General Secretary and Guest Speakers (male and female)
 
 export type NASCodes = `nsa_${string}`; // Non-State Actor Prefix and ID
 
@@ -238,7 +238,24 @@ export interface Motion {
   motionId: string;
   motionText: string;
   introducedBy: CountryCode;
+  personalPointOfMotion: boolean;
   active: boolean;
+}
+
+
+export type VotingMajority = "simple" | "two-thirds" | "three-quarters" | "consensus" | "security-council";
+export interface Voting {
+  votingId: string;
+  title: string;
+  description?: string;
+  introducedBy?: CountryCode;
+  substantiveVote: boolean;
+  votingCountries: CountryCode[];
+  majority: VotingMajority;
+  votes: {
+    [countryCode: string]: "yes" | "no" | "abstain" | "absent";
+  }
+  outcome?: "passed" | "failed";
 }
 
 export interface NormalApiResponse {

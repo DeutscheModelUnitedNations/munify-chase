@@ -1,7 +1,7 @@
 "use client";
 import React from "react";
 import Motions from "@/components/voting/motions";
-import Voting from "@/components/voting/voting";
+import VotingArea from "@/components/voting/voting";
 
 export default function participant_dashboard() {
   return (
@@ -11,7 +11,7 @@ export default function participant_dashboard() {
           <Motions />
         </div>
         <div className="w-full lg:w-2/3 flex">
-          <Voting />
+          <VotingArea />
         </div>
       </div>
     </>

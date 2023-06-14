@@ -5,7 +5,7 @@ export default function getFlagPathByCode(countryCode: CountryCode): string {
 
   if (countryCode.startsWith("nsa_")) {
     path = `/nsa_logos/${countryCode}.png`;
-  } else if (["unm", "unw", "gsm", "gsw"].includes(countryCode)) {
+  } else if (["unm", "unw", "gsm", "gsw", "uno"].includes(countryCode)) {
     path = "/flags/uno.svg";
   } else if (countryCode === "xxx") {
     path = "/flags/xxx.svg";

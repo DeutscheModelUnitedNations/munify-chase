@@ -12,6 +12,7 @@ import {
 import "./timer_animations.scss";
 import getFlagPathByCode from "@/misc/get_flag_path_by_code";
 import { CountryCode } from "@/custom_types";
+import { LargeFlag } from "../flag_templates";
 
 interface Props {
   countryCode: CountryCode;
@@ -63,14 +64,7 @@ export default function SpeakerBlock({
   return (
     <>
       <div className="flex flex-row items-center justify-start">
-        <div className="rounded-md border border-black shadow-md bg-white overflow-hidden">
-          <Image
-            src={getFlagPathByCode(countryCode)}
-            width={99}
-            height={66}
-            alt="flag"
-          />
-        </div>
+        <LargeFlag countryCode={countryCode} />
         <div className="flex-1 flex flex-col ml-4">
           <div className="font-bold text-md">
             {customName || getCountryNameByCode(countryCode)}

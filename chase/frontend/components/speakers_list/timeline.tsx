@@ -1,6 +1,4 @@
 import { CountryCode } from "@/custom_types";
-import { faArrowUp } from "@fortawesome/free-solid-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import React from "react";
 
 export default function Timeline({
@@ -10,9 +8,9 @@ export default function Timeline({
   return (
     <>
       <div className="flex-1 flex flex-col">
-        {list.map((item, index) => {
+        {list.map((item) => {
           return (
-            <div key={index} className="flex flex-col items-start">
+            <div className="flex flex-col items-start">
               {content(item)}
             </div>
           );

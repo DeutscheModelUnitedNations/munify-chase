@@ -6,7 +6,7 @@ import {
   Document,
 } from "@/custom_types";
 
-export const myCountry: CountryCode = "che";
+export const myCountry: CountryCode = "cpv";
 
 export const speakersListTestData: SpeakersListData = {
   currentSpeaker: {

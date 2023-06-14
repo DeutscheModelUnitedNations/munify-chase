@@ -2,9 +2,8 @@ import React from "react";
 import WidgetBoxTemplate from "@/components/widget_box_template";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faClipboard, faShareNodes } from "@fortawesome/free-solid-svg-icons";
-import Image from "next/image";
-import getFlagPathByCode from "@/misc/get_flag_path_by_code";
 import { CountryCode } from "@/custom_types";
+import { SmallFlag } from "@/components/flag_templates";
 
 export default function Paper({
   documentId,
@@ -29,14 +28,7 @@ export default function Paper({
       {shared && (
         <FontAwesomeIcon icon={faShareNodes} className="text-gray-400" />
       )}
-      <div className="flex-col justify-end items-center rounded-md border border-black shadow-md overflow-hidden">
-        <Image
-          src={getFlagPathByCode(introducedBy)}
-          width={32}
-          height={32}
-          alt={`Flag of ${introducedBy}`}
-        />
-      </div>
+      <SmallFlag countryCode={introducedBy} />
     </WidgetBoxTemplate>
   );
 }

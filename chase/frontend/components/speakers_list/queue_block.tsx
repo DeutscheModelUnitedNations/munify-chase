@@ -1,7 +1,7 @@
 import React from "react";
 import Image from "next/image";
 import { CountryCode } from "@/custom_types";
-import getFlagPathByCode from "@/misc/get_flag_path_by_code";
+import { SmallFlag as Flag } from "@components/flag_templates";
 
 export default function SpeakerBlock({
   list,
@@ -39,20 +39,20 @@ export default function SpeakerBlock({
         {list.length > 0 && (
           <>
             <Arrow arrowName="top" />
-            <Flag countryCode={compressedList()[0]} />
+            <Flag countryCode={compressedList()[0]} showNameOnHover />
           </>
         )}
         {list.length > 1 && (
           <>
             <Arrow arrowName="solid" />
-            <Flag countryCode={compressedList()[1]} />
+            <Flag countryCode={compressedList()[1]} showNameOnHover />
           </>
         )}
         {getWaitingPosition() <= 3 ? (
           list.length > 2 && (
             <>
               <Arrow arrowName="solid" />
-              <Flag countryCode={compressedList()[2]} />
+              <Flag countryCode={compressedList()[2]} showNameOnHover />
             </>
           )
         ) : (
@@ -69,20 +69,6 @@ export default function SpeakerBlock({
         )}
       </div>
     </>
-  );
-}
-
-function Flag({ countryCode }: { countryCode: CountryCode }) {
-  return (
-    <div className="rounded-md border border-black shadow-md bg-white overflow-hidden">
-      <Image
-        src={getFlagPathByCode(countryCode)}
-        width={39}
-        height={26}
-        alt="flag"
-        style={{ objectFit: "cover", height: "100%" }}
-      />
-    </div>
   );
 }
 

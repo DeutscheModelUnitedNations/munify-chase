@@ -5,7 +5,7 @@ import Draft from "@components/dashboard/documents/draft";
 import Paper from "@components/dashboard/documents/paper";
 import { ScrollPanel } from "primereact/scrollpanel";
 import { Divider } from "primereact/divider";
-import { CountryCode, Document } from "@/custom_types";
+import { Document } from "@/custom_types";
 
 export default function DocumentsWidget({
   documents,

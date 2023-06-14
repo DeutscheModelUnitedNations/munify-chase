@@ -3,7 +3,7 @@ import { CountryCode } from "@/custom_types";
 
 export default function getCountryNameByCode(
   countryCode: string,
-  language: "de" | "en" = "de", // TODO add more languages
+  language: "de" | "en" = "de", // TODO add more languages from i18n solution
 ): CountryCode {
   const country = countryData.find((item) => item.alpha3 === countryCode);
 

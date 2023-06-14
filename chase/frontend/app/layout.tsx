@@ -1,4 +1,3 @@
-"use client";
 
 import "./globals.scss";
 import { Inter } from "next/font/google"; // TODO Remove Google Fonts and use local fonts (legal reasons)
@@ -20,6 +19,7 @@ export const metadata = {
   title: "Chase",
 };
 
+"use client";
 export default function RootLayout({
   children,
 }: {

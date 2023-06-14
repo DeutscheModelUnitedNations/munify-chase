@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, RefObject } from "react";
 import Image from "next/image";
 import { Messages } from "primereact/messages";
 
@@ -10,10 +10,11 @@ import Link from "next/link";
 export default function loginVorsitz() {
   const [loginStage, changeLoginState] = useState(0);
 
-  const chairLoginWarning = useRef(null);
+  const chairLoginWarning: RefObject<Messages> = useRef<Messages>(null);
 
   useEffect(() => {
-    chairLoginWarning.current.show([
+    // TODO Change this Warning to a permanent prime react message warning
+    chairLoginWarning.current?.show([
       {
         sticky: true,
         severity: "warn",

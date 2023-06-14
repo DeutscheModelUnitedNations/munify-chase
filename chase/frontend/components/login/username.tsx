@@ -2,6 +2,8 @@ import React, { useState } from "react";
 import { Button } from "primereact/button";
 import { InputText } from "primereact/inputtext";
 
+// TODO: Type this function properly
+// @ts-ignore
 export default function UsernameLogin({ changeLoginState }) {
   const [username, setUsername] = useState("");
 

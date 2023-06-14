@@ -1,5 +1,10 @@
 import { PrismaClient } from "@prisma/client";
 
-//TOD document how to use prisma/migrations
+/**
+ * The application wide db connection
+ */
+export let db: PrismaClient;
 
-export const db = new PrismaClient();
+export function setDb(newDb: PrismaClient) {
+  db = newDb;
+}

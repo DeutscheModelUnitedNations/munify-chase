@@ -1,5 +1,5 @@
 import React from "react";
-import DocumentTemplate from "@/components/dashboard/documents/document_template";
+import WidgetBoxTemplate from "@/components/widget_box_template";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faFileContract } from "@fortawesome/free-solid-svg-icons";
 
@@ -8,7 +8,7 @@ export default function Resolution({
   topic,
 }: { documentId: string; topic?: string }) {
   return (
-    <DocumentTemplate>
+    <WidgetBoxTemplate>
       <FontAwesomeIcon
         icon={faFileContract}
         className="text-gray-400 text-2xl"
@@ -17,6 +17,6 @@ export default function Resolution({
         <div className="text-sm font-semibold text-gray-600">{documentId}</div>
         <div className="text-xs text-gray-400">{topic && `${topic}`}</div>
       </div>
-    </DocumentTemplate>
+    </WidgetBoxTemplate>
   );
 }

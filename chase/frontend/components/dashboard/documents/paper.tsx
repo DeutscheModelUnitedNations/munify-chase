@@ -1,5 +1,5 @@
 import React from "react";
-import DocumentTemplate from "@/components/dashboard/documents/document_template";
+import WidgetBoxTemplate from "@/components/widget_box_template";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faClipboard, faShareNodes } from "@fortawesome/free-solid-svg-icons";
 import Image from "next/image";
@@ -18,7 +18,7 @@ export default function Paper({
   shared?: boolean;
 }) {
   return (
-    <DocumentTemplate>
+    <WidgetBoxTemplate>
       <FontAwesomeIcon icon={faClipboard} className="text-gray-400 text-2xl" />
       <div className="flex-1 flex-col justify-start items-center">
         <div className="text-sm font-semibold text-gray-600">{documentId}</div>
@@ -37,6 +37,6 @@ export default function Paper({
           alt={`Flag of ${introducedBy}`}
         />
       </div>
-    </DocumentTemplate>
+    </WidgetBoxTemplate>
   );
 }

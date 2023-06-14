@@ -234,6 +234,13 @@ export interface Document {
   sponsors?: string[];
 }
 
+export interface Motion {
+  motionId: string;
+  motionText: string;
+  introducedBy: CountryCode;
+  active: boolean;
+}
+
 export interface NormalApiResponse {
   committeeName: string;
   currentTopic: string;

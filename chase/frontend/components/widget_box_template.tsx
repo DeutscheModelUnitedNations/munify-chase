@@ -1,6 +1,6 @@
 import React from "react";
 
-export default function DocumentTemplate({
+export default function WidgetBoxTemplate({
   children,
 }: { children: React.ReactNode }) {
   return (

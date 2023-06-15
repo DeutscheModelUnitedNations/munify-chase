@@ -202,6 +202,13 @@ export type OtherCodes = "xxx"; // Code for not found
 export type CountryCode = Alpha3Code | UNCodes | NASCodes | OtherCodes;
 
 export interface Speaker {
+  entryId: string;
+  countryCode: CountryCode;
+  customName?: string;
+}
+
+export interface CurrentSpeaker {
+  entryId: string;
   countryCode: CountryCode;
   customName?: string;
   timer: {
@@ -212,8 +219,8 @@ export interface Speaker {
 }
 
 export interface SpeakersListData {
-  currentSpeaker: Speaker;
-  list: CountryCode[];
+  currentSpeaker: CurrentSpeaker;
+  list: Speaker[];
   closed: boolean;
 }
 

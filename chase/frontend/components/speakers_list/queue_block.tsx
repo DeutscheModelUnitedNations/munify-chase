@@ -1,12 +1,13 @@
 import React from "react";
 import Image from "next/image";
-import { CountryCode } from "@/custom_types";
+import { CountryCode, Speaker } from "@/custom_types";
 import { SmallFlag as Flag } from "@components/flag_templates";
+import { AnimatePresence, motion } from "framer-motion";
 
 export default function SpeakerBlock({
   list,
   myCountry,
-}: { list: CountryCode[]; myCountry: CountryCode }) {
+}: { list: Speaker[]; myCountry: CountryCode }) {
   const compressedList = () => {
     let compressedList = [];
 
@@ -16,18 +17,25 @@ export default function SpeakerBlock({
       compressedList = list;
     }
 
-    if (list.includes(myCountry)) {
-      if (list.indexOf(myCountry) > 2) {
-        compressedList.splice(2, 0, myCountry);
-      }
+    const myCountryItem = list.find((item) => item.countryCode === myCountry);
+    if (!myCountryItem) {
+      return compressedList;
+    }
+    const myCountryIndex = list.indexOf(myCountryItem);
+
+    if (myCountryIndex < 2) {
+      compressedList = list.slice(0, 3);
     }
 
     return compressedList;
   };
 
   const getWaitingPosition = () => {
-    if (list.includes(myCountry)) {
-      return list.indexOf(myCountry) + 1;
+    if (list.find((item) => item.countryCode === myCountry)) {
+      // @ts-ignore TODO fix this
+      return (
+        list.indexOf(list.find((item) => item.countryCode === myCountry)) + 1
+      );
     } else {
       return 0;
     }
@@ -35,39 +43,62 @@ export default function SpeakerBlock({
 
   return (
     <>
-      <div className="flex gap-1">
-        {list.length > 0 && (
-          <>
-            <Arrow arrowName="top" />
-            <Flag countryCode={compressedList()[0]} showNameOnHover />
-          </>
-        )}
-        {list.length > 1 && (
-          <>
-            <Arrow arrowName="solid" />
-            <Flag countryCode={compressedList()[1]} showNameOnHover />
-          </>
-        )}
-        {getWaitingPosition() <= 3 ? (
-          list.length > 2 && (
-            <>
-              <Arrow arrowName="solid" />
-              <Flag countryCode={compressedList()[2]} showNameOnHover />
-            </>
-          )
-        ) : (
-          <>
-            <Arrow arrowName="dashed" />
-            <div className="self-center px-2 py-1 bg-dmun text-white rounded-md">
-              <div className="text-sm font-bold">
-                {getWaitingPosition() - 3}
-              </div>
-            </div>
-            <Arrow arrowName="dashed" />
-            <Flag countryCode={compressedList()[2]} showNameOnHover />
-          </>
-        )}
-      </div>
+      <AnimatePresence mode="wait">
+        <motion.div
+          key={list[0].countryCode}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.3 }}
+          layout
+        >
+          <div className="flex gap-1">
+            {list.length > 0 && (
+              <>
+                <Arrow arrowName="top" />
+                <Flag
+                  countryCode={compressedList()[0].countryCode}
+                  showNameOnHover
+                />
+              </>
+            )}
+            {list.length > 1 && (
+              <>
+                <Arrow arrowName="solid" />
+                <Flag
+                  countryCode={compressedList()[1].countryCode}
+                  showNameOnHover
+                />
+              </>
+            )}
+            {getWaitingPosition() <= 3 ? (
+              list.length > 2 && (
+                <>
+                  <Arrow arrowName="solid" />
+                  <Flag
+                    countryCode={compressedList()[2].countryCode}
+                    showNameOnHover
+                  />
+                </>
+              )
+            ) : (
+              <>
+                <Arrow arrowName="dashed" />
+                <div className="self-center px-2 py-1 bg-dmun text-white rounded-md">
+                  <div className="text-sm font-bold">
+                    {getWaitingPosition() - 3}
+                  </div>
+                </div>
+                <Arrow arrowName="dashed" />
+                <Flag
+                  countryCode={compressedList()[2].countryCode}
+                  showNameOnHover
+                />
+              </>
+            )}
+          </div>
+        </motion.div>
+      </AnimatePresence>
     </>
   );
 }

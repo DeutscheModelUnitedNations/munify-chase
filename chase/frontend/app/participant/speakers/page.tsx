@@ -3,7 +3,7 @@ import React, { useEffect, useState } from "react";
 import { ScrollPanel } from "primereact/scrollpanel";
 import WidgetTemplate from "@/components/widget_template";
 import SpeakerBlock from "@/components/speakers_list/speaker_block";
-import SpeakerQueueList from "@/components/speakers_list/cueue_list";
+import SpeakerQueueList from "@/components/speakers_list/queue_list";
 import { CountryCode } from "@/custom_types";
 import { Button } from "primereact/button";
 import { faBan, faPlusCircle } from "@fortawesome/free-solid-svg-icons";
@@ -89,7 +89,7 @@ function SpeakersListBlock({
   const { LL } = useI18nContext();
 
   const myCountryInList: () => boolean = () => {
-    if (speakersData.list.find((countryCode) => countryCode === myCountry)) {
+    if (speakersData.list.find((item) => item.countryCode === myCountry)) {
       return true;
     } else {
       return false;
@@ -100,19 +100,12 @@ function SpeakersListBlock({
     <WidgetTemplate cardTitle={listTitle}>
       {speakersData.currentSpeaker ? (
         <>
-          <SpeakerBlock
-            countryCode={speakersData.currentSpeaker.countryCode}
-            timer={speakersData.currentSpeaker.timer}
-          />
+          <SpeakerBlock {...speakersData.currentSpeaker} />
           <SpeechButtons
             listClosed={speakersData.closed}
             onSpeakersList={myCountryInList()}
           />
-          <SpeakerQueueList
-            list={speakersData.list}
-            myCountry={myCountry}
-            closed={speakersData.closed}
-          />
+          <SpeakerQueueList {...speakersData} myCountry={myCountry} />
         </>
       ) : (
         <div className="flex flex-col gap-2 items-start justify-center mt-3">

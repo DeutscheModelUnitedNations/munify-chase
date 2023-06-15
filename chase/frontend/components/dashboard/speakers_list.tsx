@@ -6,12 +6,7 @@ import QueueBlock from "@/components/speakers_list/queue_block";
 import { CountryCode, SpeakersListData } from "@/custom_types";
 import { useI18nContext } from "@/src/i18n/i18n-react";
 import "./markdown.scss";
-
-interface Speaker {
-  countryCode: CountryCode;
-  customName?: string;
-  time: string;
-}
+import { AnimatePresence, motion } from "framer-motion";
 
 export default function SpeakersListWidget({
   myCountry,
@@ -30,20 +25,23 @@ export default function SpeakersListWidget({
         cardTitle={LL.participants.dashboard.widgetHeadlines.SPEAKERS_LIST()}
       >
         <div className="flex-1 flex flex-col gap-3">
-          <SpeakerBlock
-            countryCode={speakersList.currentSpeaker.countryCode}
-            timer={speakersList.currentSpeaker.timer}
-            customName={speakersList.currentSpeaker.customName}
-          />
-          {speakersList.currentSpeaker.countryCode && (
-            <CommentBlock>
-              <SpeakerBlock
-                countryCode={commentList.currentSpeaker.countryCode}
-                timer={commentList.currentSpeaker.timer}
-                customName={commentList.currentSpeaker.customName}
-              />
-              <QueueBlock list={commentList.list} myCountry={myCountry} />
-            </CommentBlock>
+          <SpeakerBlock {...speakersList.currentSpeaker} />
+          {commentList.currentSpeaker.countryCode && (
+            <AnimatePresence>
+              <motion.div
+                key={speakersList.currentSpeaker.countryCode}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.3 }}
+                layout
+              >
+                <CommentBlock>
+                  <SpeakerBlock {...commentList.currentSpeaker} />
+                  <QueueBlock list={commentList.list} myCountry={myCountry} />
+                </CommentBlock>
+              </motion.div>
+            </AnimatePresence>
           )}
           <QueueBlock list={speakersList.list} myCountry={myCountry} />
         </div>

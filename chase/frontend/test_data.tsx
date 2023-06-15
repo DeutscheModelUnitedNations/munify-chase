@@ -11,6 +11,7 @@ export const myCountry: CountryCode = "cpv";
 
 export const speakersListTestData: SpeakersListData = {
   currentSpeaker: {
+    entryId: "1",
     countryCode: "unw",
     timer: {
       start: new Date(),
@@ -19,38 +20,86 @@ export const speakersListTestData: SpeakersListData = {
     },
   },
   list: [
-    "gbr",
-    "che",
-    "yem",
-    "fra",
-    "jam",
-    "cpv",
-    "gmb",
-    "jor",
-    "lao",
-    "ltu",
-    "fsm",
-    "omn",
-    "qat",
-    "sle",
-    "sdn",
-    "tls",
-    "are",
-    "ven",
+    {
+      entryId: "2",
+      countryCode: "deu",
+    },
+    {
+      entryId: "3",
+      countryCode: "usa",
+    },
+    {
+      entryId: "4",
+      countryCode: "yem",
+    },
+    {
+      entryId: "5",
+      countryCode: "fra",
+    },
+    {
+      entryId: "6",
+      countryCode: "gbr",
+    },
+    {
+      entryId: "7",
+      countryCode: "jam",
+    },
+    {
+      entryId: "8",
+      countryCode: "cpv",
+    },
+    {
+      entryId: "9",
+      countryCode: "gmb",
+    },
+    {
+      entryId: "10",
+      countryCode: "jor",
+    },
+    {
+      entryId: "11",
+      countryCode: "lao",
+    },
+    {
+      entryId: "12",
+      countryCode: "ltu",
+    },
+    {
+      entryId: "13",
+      countryCode: "fsm",
+    },
+    {
+      entryId: "14",
+      countryCode: "omn",
+    },
   ],
   closed: false,
 };
 
 export const commentListTestData: SpeakersListData = {
   currentSpeaker: {
-    countryCode: "cze",
+    entryId: "1",
+    countryCode: "cpv",
     timer: {
       start: new Date(),
       durationMilliseconds: 1000 * 20, // 20 test seconds
       paused: false,
     },
   },
-  list: ["deu", "jam", "usa", "yem"],
+  list: [
+    {
+      entryId: "3",
+      countryCode: "usa",
+    },
+    {
+      entryId: "4",
+      countryCode: "yem",
+    },
+    {
+      entryId: "5",
+      countryCode: "fra",
+    },
+  ],
   closed: true,
 };
 

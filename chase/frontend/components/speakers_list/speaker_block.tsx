@@ -9,25 +9,16 @@ import {
   faBell,
 } from "@fortawesome/free-solid-svg-icons";
 import "./timer_animations.scss";
-import { CountryCode } from "@/custom_types";
+import { CurrentSpeaker } from "@/custom_types";
 import { LargeFlag } from "../flag_templates";
 import { useI18nContext } from "@/src/i18n/i18n-react";
-
-interface Props {
-  countryCode: CountryCode;
-  timer: {
-    start: Date;
-    durationMilliseconds: number;
-    paused: boolean;
-  };
-  customName?: string;
-}
+import { AnimatePresence, motion } from "framer-motion";
 
 export default function SpeakerBlock({
   countryCode,
   timer,
   customName,
-}: Props) {
+}: CurrentSpeaker) {
   const { LL, locale } = useI18nContext();
 
   const [timerState, setTimerState] = useState<string>("active");
@@ -64,25 +55,34 @@ export default function SpeakerBlock({
 
   return (
     <>
-      <div className="flex flex-row items-center justify-start">
-        <LargeFlag countryCode={countryCode} />
-        <div className="flex-1 flex flex-col ml-4">
-          <div className="font-bold text-md">
-            {customName || getCountryNameByCode(countryCode, locale)}
+      <AnimatePresence mode="wait">
+        <motion.div
+          key={countryCode}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+        >
+          <div className="flex flex-row items-center justify-start">
+            <LargeFlag countryCode={countryCode} />
+            <div className="flex-1 flex flex-col ml-4">
+              <div className="font-bold text-md">
+                {customName || getCountryNameByCode(countryCode, locale)}
+              </div>
+              <div className="text-md text-gray-500 flex items-center gap-3">
+                {timerState === "active" && <HourglasAnimation />}
+                {timerState === "paused" && <FontAwesomeIcon icon={faClock} />}
+                {timerState === "overtime" && (
+                  <FontAwesomeIcon
+                    icon={faBell}
+                    className="text-red-700 fa-shake"
+                  />
+                )}
+                <div>{timeLeft}</div>
+              </div>
+            </div>
           </div>
-          <div className="text-md text-gray-500 flex items-center gap-3">
-            {timerState === "active" && <HourglasAnimation />}
-            {timerState === "paused" && <FontAwesomeIcon icon={faClock} />}
-            {timerState === "overtime" && (
-              <FontAwesomeIcon
-                icon={faBell}
-                className="text-red-700 fa-shake"
-              />
-            )}
-            <div>{timeLeft}</div>
-          </div>
-        </div>
-      </div>
+        </motion.div>
+      </AnimatePresence>
     </>
   );
 }

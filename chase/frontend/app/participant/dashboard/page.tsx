@@ -11,8 +11,11 @@ import DocumentsWidget from "@/components/dashboard/documents";
 import WhiteboardWidget from "@/components/dashboard/whiteboard";
 import ActionsWidget from "@/components/dashboard/actions";
 import { apiTestData } from "@/test_data";
+import { votingAlert } from "@/contexts/messages/voting_alert";
+import { useRouter } from "next/navigation";
 
 export default function participant_dashboard() {
+  const Router = useRouter();
   const [data, setData] = useState(apiTestData);
 
   useEffect(() => {
@@ -21,6 +24,14 @@ export default function participant_dashboard() {
       setData(apiTestData);
     }, 1000);
     return () => clearInterval(intervalAPICall);
+  }, []);
+
+  useEffect(() => {
+    // TODO only for testing
+    const timeout = setTimeout(() => {
+      votingAlert(() => Router.push("/participant/voting"));
+    }, 10000);
+    return () => clearTimeout(timeout);
   }, []);
 
   return (

@@ -4,8 +4,7 @@ export default function WidgetBoxTemplate({
   children,
   highlight,
   className,
-}: { children: React.ReactNode; highlight?: boolean, className?: string }) {
-
+}: { children: React.ReactNode; highlight?: boolean; className?: string }) {
   const getClassNames = (): string => {
     let classNames =
       "flex-1 w-full flex rounded-md justify-start items-center transition-all cursor-pointer gap-4 p-2 ";
@@ -25,9 +24,7 @@ export default function WidgetBoxTemplate({
 
   return (
     <>
-      <div className={getClassNames()}>
-        {children}
-      </div>
+      <div className={getClassNames()}>{children}</div>
     </>
   );
 }

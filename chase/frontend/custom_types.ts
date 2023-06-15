@@ -242,8 +242,18 @@ export interface Motion {
   active: boolean;
 }
 
+export type VotingMajority =
+  | "simple"
+  | "two-thirds"
+  | "three-quarters"
+  | "consensus"
+  | "security-council";
 
-export type VotingMajority = "simple" | "two-thirds" | "three-quarters" | "consensus" | "security-council";
+export interface VotingResult {
+  country: CountryCode;
+  vote: "yes" | "no" | "abstain" | "absent";
+}
+
 export interface Voting {
   votingId: string;
   title: string;
@@ -252,9 +262,7 @@ export interface Voting {
   substantiveVote: boolean;
   votingCountries: CountryCode[];
   majority: VotingMajority;
-  votes: {
-    [countryCode: string]: "yes" | "no" | "abstain" | "absent";
-  }
+  votes: VotingResult[];
   outcome?: "passed" | "failed";
 }
 

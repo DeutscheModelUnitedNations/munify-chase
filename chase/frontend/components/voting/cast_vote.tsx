@@ -2,22 +2,26 @@ import React, { useEffect, useState } from "react";
 import { CountryCode, Voting } from "@/custom_types";
 import { Button } from "primereact/button";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faCheckCircle } from "@fortawesome/free-solid-svg-icons";
+import {
+  faCheckCircle,
+  faCircle,
+  faMinusCircle,
+  faPlusCircle,
+} from "@fortawesome/free-solid-svg-icons";
 
 export default function CastVote({
   votes,
   votingCountries,
   substantiveVote,
   outcome,
-  myCountry
+  myCountry,
 }: Voting & { myCountry: CountryCode }) {
-
   const [ableToVote, setAbleToVote] = useState(false);
   const [voted, setVoted] = useState(false);
 
   useEffect(() => {
     const isInVotingCountries = votingCountries.includes(myCountry);
-    const myVote = votes[myCountry];
+    const myVote = votes.find((vote) => vote.country === myCountry);
 
     const ableToVote = isInVotingCountries && !myVote;
     const hasVoted = isInVotingCountries && myVote;
@@ -29,11 +33,14 @@ export default function CastVote({
     });
   }, [votes, outcome]);
 
+  const castVote = (vote: "yes" | "no" | "abstain") => {
+    setVoted(true);
+  };
 
   return (
     <>
       {ableToVote && voted ? (
-        !outcome &&
+        !outcome && (
           <div className="my-4 shadow-md rounded-md p-4 bg-white flex justify-center items-center">
             <div className="flex flex-col items-center gap-2">
               <div className="flex items-center gap-2 text-lg">
@@ -43,40 +50,51 @@ export default function CastVote({
               <div className="text-sm">Warte auf Ergebnisse</div>
             </div>
           </div>
-        ) : (
-          <div className="my-4 shadow-md rounded-md p-4 bg-white flex justify-center items-center">
-            <div className="flex justify-stretch items-center gap-4">
+        )
+      ) : (
+        <div className="my-4 shadow-md rounded-md p-4 bg-white flex justify-center items-center">
+          <div className="flex justify-stretch items-center gap-4">
+            <Button
+              label="Dafür"
+              style={{
+                backgroundColor: "var(--voting-for)",
+                color: "#fff",
+                borderColor: "var(--voting-for)",
+              }}
+              icon={<FontAwesomeIcon icon={faPlusCircle} className="mr-3" />}
+              onClick={() => {
+                castVote("yes");
+              }}
+            />
+            {substantiveVote && (
               <Button
-                label="Dafür"
+                label="Enthaltung"
+                style={{
+                  backgroundColor: "var(--voting-abstain)",
+                  color: "#fff",
+                  borderColor: "var(--voting-abstain)",
+                }}
+                icon={<FontAwesomeIcon icon={faCircle} className="mr-3" />}
                 onClick={() => {
-                  votes[myCountry] = "yes";
-                  setVoted(true);
-                  // TODO send vote to backend
+                  castVote("abstain");
                 }}
               />
-              {substantiveVote && (
-                <Button
-                  label="Enthaltung"
-                  className="p-button-secondary"
-                  onClick={() => {
-                    votes[myCountry] = "abstain";
-                    setVoted(true);
-                    // TODO send vote to backend
-                  }}
-                />
-              )}
-              <Button
-                label="Dagegen"
-                className="p-button-danger"
-                onClick={() => {
-                  votes[myCountry] = "no";
-                  setVoted(true);
-                  // TODO send vote to backend
-                }}
-              />
-            </div>
+            )}
+            <Button
+              label="Dagegen"
+              style={{
+                backgroundColor: "var(--voting-against)",
+                color: "#fff",
+                borderColor: "var(--voting-against)",
+              }}
+              icon={<FontAwesomeIcon icon={faMinusCircle} className="mr-3" />}
+              onClick={() => {
+                castVote("no");
+              }}
+            />
           </div>
+        </div>
       )}
     </>
-  )
+  );
 }

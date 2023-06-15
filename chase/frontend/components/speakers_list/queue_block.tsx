@@ -64,7 +64,7 @@ export default function SpeakerBlock({
               </div>
             </div>
             <Arrow arrowName="dashed" />
-            <Flag countryCode={compressedList()[2]} />
+            <Flag countryCode={compressedList()[2]} showNameOnHover />
           </>
         )}
       </div>

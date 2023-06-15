@@ -6,7 +6,11 @@ import Image from "next/image";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faFileLines } from "@fortawesome/free-solid-svg-icons/faFileLines";
 import { Motion } from "@/custom_types";
-import { faBan, faCircleQuestion, faGavel } from "@fortawesome/free-solid-svg-icons";
+import {
+  faBan,
+  faCircleQuestion,
+  faGavel,
+} from "@fortawesome/free-solid-svg-icons";
 import NoDataPlaceholder from "../no_data_placeholder";
 import { SmallFlag } from "../flag_templates";
 
@@ -18,8 +22,7 @@ export default function Voting() {
       motionId: "1",
       introducedBy: "deu",
       personalPointOfMotion: true,
-      motionText:
-        "Recht auf Information",
+      motionText: "Recht auf Information",
       active: true,
     },
     {
@@ -34,38 +37,31 @@ export default function Voting() {
       motionId: "2",
       introducedBy: "fra",
       personalPointOfMotion: false,
-      motionText:
-        "Informelle Sitzung",
+      motionText: "Informelle Sitzung",
       active: false,
     },
     {
       motionId: "3",
       introducedBy: "cpv",
       personalPointOfMotion: false,
-      motionText:
-        "Abschluss der Redeliste",
+      motionText: "Abschluss der Redeliste",
       active: false,
-    }
+    },
   ];
 
   useEffect(() => {
     const pollingInterval = setInterval(() => {
       console.log("polling");
       setData(testData);
-    }
-      , 1000);
+    }, 1000);
     return () => clearInterval(pollingInterval);
   }, []);
 
   const getIcon = (personalPointOfMotion: boolean) => {
     if (personalPointOfMotion) {
-      return (
-        faCircleQuestion
-      );
+      return faCircleQuestion;
     } else {
-      return (
-        faGavel
-      )
+      return faGavel;
     }
   };
 

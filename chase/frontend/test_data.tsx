@@ -4,6 +4,7 @@ import {
   NormalApiResponse,
   SpeakersListData,
   Document,
+  Voting,
 } from "@/custom_types";
 
 export const myCountry: CountryCode = "cpv";
@@ -110,4 +111,70 @@ export const apiTestData: NormalApiResponse = {
     "# Hello World!\n\nHier ist ein Markdown- Beispiel.\n\n## Vorsitzende\n* Miriam Güthe\n * Maximilian Ilzhöfer\n * Tade Strehk\n## Gremienberatung\n * Felix Thomsen\n\nUnd hier ein[Link](https://www.google.com).\n\n> **An alle Terrorteilis:** Das Pöbeln nicht vergessen!\n\n# Über diesen Block\n\nHier können die Vorsitzenden aktuelle Informationen anzeigen. Das ganze wird über einen Editor funktionieren, sodass die Vorsitzenden über Markdown ihre Informationen individuell verpacken und anzeigen können. Das bietet größtmögliche Flexibilität und Übersichtlichkeit.",
 
   documents: documentsTestData,
+};
+
+export const votingTestData: Voting = {
+  votingId: "1",
+  title: "Informelle Sitzung von 15 Minuten",
+  description:
+    "Sollte der Antrag angenommen werden, wird das Gremium in eine informelle Sitzung übergehen, die 15 Minuten dauern wird.",
+  introducedBy: "cpv",
+  substantiveVote: true,
+  votingCountries: [
+    "cpv",
+    "deu",
+    "fra",
+    "chn",
+    "rus",
+    "usa",
+    "gbr",
+    "jpn",
+    "cmr",
+    "alb",
+    "arm",
+  ],
+  majority: "simple",
+  votes: [
+    {
+      country: "cpv",
+      vote: "yes",
+    },
+    {
+      country: "deu",
+      vote: "no",
+    },
+    {
+      country: "fra",
+      vote: "yes",
+    },
+    {
+      country: "chn",
+      vote: "no",
+    },
+    {
+      country: "rus",
+      vote: "yes",
+    },
+    {
+      country: "usa",
+      vote: "yes",
+    },
+    {
+      country: "gbr",
+      vote: "yes",
+    },
+    {
+      country: "jpn",
+      vote: "yes",
+    },
+    {
+      country: "alb",
+      vote: "abstain",
+    },
+    {
+      country: "cmr",
+      vote: "yes",
+    },
+  ],
+  outcome: "passed",
 };

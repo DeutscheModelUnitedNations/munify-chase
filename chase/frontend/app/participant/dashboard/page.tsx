@@ -13,9 +13,11 @@ import ActionsWidget from "@/components/dashboard/actions";
 import { apiTestData } from "@/test_data";
 import { votingAlert } from "@/misc/voting_alert";
 import { useRouter } from "next/navigation";
+import { useI18nContext } from "@/src/i18n/i18n-react";
 
 export default function participant_dashboard() {
   const Router = useRouter();
+  const { LL } = useI18nContext();
   const [data, setData] = useState(apiTestData);
 
   useEffect(() => {
@@ -29,7 +31,7 @@ export default function participant_dashboard() {
   useEffect(() => {
     // TODO only for testing
     const timeout = setTimeout(() => {
-      votingAlert(() => Router.push("/participant/voting"));
+      votingAlert(() => Router.push("/participant/voting"), LL);
     }, 10000);
     return () => clearTimeout(timeout);
   }, []);

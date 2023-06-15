@@ -117,7 +117,7 @@ const en = {
         VOTING_FAILED: "Voting Failed",
       },
       votingAlert: {
-        VOTING_ALERT_HEADLINE: "New Vote Started",
+        VOTING_ALERT_HEADER: "New Vote Started",
         VOTING_ALERT_MESSAGE: "A new vote has been started. Please vote now.",
         BUTTON_ADVANCE: "To Voting",
         BUTTON_IGNORE: "Ignore",

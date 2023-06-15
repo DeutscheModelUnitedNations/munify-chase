@@ -24,7 +24,7 @@ export default function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
-  // TODO inspect the way locale is detected and loaded.
+  // TODO inspect the way locale is detected and loaded. We may want to switch to a more advanced locale detection mechanism.
   // The Problem was that the locale was not loaded on the client side. There was a build error because the navigator was not defined on the server side.
   // // https://github.com/ivanhofer/typesafe-i18n/tree/main/packages/detectors)
   // const locale = detectLocale(baseLocale, locales, navigatorDetector);

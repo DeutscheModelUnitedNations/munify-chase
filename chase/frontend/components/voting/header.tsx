@@ -1,7 +1,6 @@
 import { CountryCode, Voting } from "@/custom_types";
 import getCountryNameByCode from "@/misc/get_country_name_by_code";
 import { faFlag } from "@fortawesome/free-solid-svg-icons/faFlag";
-import { faFileContract } from "@fortawesome/free-solid-svg-icons/faFileContract";
 import { faGavel } from "@fortawesome/free-solid-svg-icons/faGavel";
 import { faInfoCircle } from "@fortawesome/free-solid-svg-icons/faInfoCircle";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -16,7 +15,7 @@ export default function Header({
   substantiveVote,
   majority,
 }: Voting) {
-  const { LL } = useI18nContext();
+  const { LL, locale } = useI18nContext();
 
   const getFlag = (countryCode: CountryCode = "uno"): CountryCode => {
     return countryCode;
@@ -63,7 +62,7 @@ export default function Header({
             />
             <div className="text-sm">
               {LL.participants.voting.votingInfo.INTRODUCED_BY()}{" "}
-              {getCountryNameByCode(introducedBy)}
+              {getCountryNameByCode(introducedBy, locale)}
             </div>
           </>
         )}

@@ -11,7 +11,7 @@ export default function QueueList({
   myCountry,
   closed,
 }: { list: CountryCode[]; myCountry: CountryCode; closed: boolean }) {
-  const { LL } = useI18nContext();
+  const { LL, locale } = useI18nContext();
 
   return (
     <>
@@ -40,12 +40,14 @@ function CountryCard({
   countryCode,
   myCountry,
 }: { countryCode: CountryCode; myCountry: CountryCode }) {
+  const { LL, locale } = useI18nContext();
+
   return (
     <WidgetBoxTemplate highlight={countryCode === myCountry}>
       <Flag countryCode={countryCode} />
       <div className="flex flex-col justify-center">
         <div className="text-sm font-bold">
-          {getCountryNameByCode(countryCode)}
+          {getCountryNameByCode(countryCode, locale)}
         </div>
       </div>
     </WidgetBoxTemplate>

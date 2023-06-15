@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from "react";
-import Image from "next/image";
 import getCountryNameByCode from "@/misc/get_country_name_by_code";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
@@ -10,9 +9,9 @@ import {
   faBell,
 } from "@fortawesome/free-solid-svg-icons";
 import "./timer_animations.scss";
-import getFlagPathByCode from "@/misc/get_flag_path_by_code";
 import { CountryCode } from "@/custom_types";
 import { LargeFlag } from "../flag_templates";
+import { useI18nContext } from "@/src/i18n/i18n-react";
 
 interface Props {
   countryCode: CountryCode;
@@ -29,6 +28,8 @@ export default function SpeakerBlock({
   timer,
   customName,
 }: Props) {
+  const { LL, locale } = useI18nContext();
+
   const [timerState, setTimerState] = useState<string>("active");
   const [timeLeft, setTimeLeft] = useState<string>("0:00");
 
@@ -67,7 +68,7 @@ export default function SpeakerBlock({
         <LargeFlag countryCode={countryCode} />
         <div className="flex-1 flex flex-col ml-4">
           <div className="font-bold text-md">
-            {customName || getCountryNameByCode(countryCode)}
+            {customName || getCountryNameByCode(countryCode, locale)}
           </div>
           <div className="text-md text-gray-500 flex items-center gap-3">
             {timerState === "active" && <HourglasAnimation />}

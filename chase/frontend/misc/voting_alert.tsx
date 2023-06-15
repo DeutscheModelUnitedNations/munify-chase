@@ -1,14 +1,13 @@
+import { TranslationFunctions } from "@/src/i18n/i18n-types";
 import { confirmDialog } from "primereact/confirmdialog";
 
-export const votingAlert = (routing: () => void) => {
-  // TODO find a way to make this work with the i18n context
+export const votingAlert = (routing: () => void, LL: TranslationFunctions) => {
   confirmDialog({
-    header: "Abstimmung gestartet!",
-    message:
-      "Sie wurden zu einer neuen Abstimmung aufgerufen. Bitte nehmen Sie schnellstmöglich daran teil.",
-    acceptLabel: "Zur Abstimmung",
+    header: LL.participants.voting.votingAlert.VOTING_ALERT_HEADER(),
+    message: LL.participants.voting.votingAlert.VOTING_ALERT_MESSAGE(),
+    acceptLabel: LL.participants.voting.votingAlert.BUTTON_ADVANCE(),
     acceptIcon: "pi pi-arrow-right",
     accept: routing,
-    rejectLabel: "Ignorieren",
+    rejectLabel: LL.participants.voting.votingAlert.BUTTON_IGNORE(),
   });
 };

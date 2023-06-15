@@ -3,14 +3,57 @@ import { CountryCode } from "@/custom_types";
 
 export default function getCountryNameByCode(
   countryCode: string,
-  language: "de" | "en" = "de", // TODO add more languages from i18n solution
+  locale: string,
 ): CountryCode {
+  const availableLanguages = [
+    "ar",
+    "bg",
+    "cs",
+    "da",
+    "de",
+    "el",
+    "en",
+    "eo",
+    "es",
+    "et",
+    "eu",
+    "fi",
+    "fr",
+    "hr",
+    "hu",
+    "hy",
+    "it",
+    "ja",
+    "ko",
+    "lt",
+    "nl",
+    "no",
+    "pl",
+    "pt",
+    "ro",
+    "ru",
+    "sk",
+    "sl",
+    "sr",
+    "sv",
+    "th",
+    "uk",
+    "zh",
+    "zh-tw",
+  ];
+
+  let languageCode = locale.split("-")[0];
+
+  if (availableLanguages.includes(languageCode) === false) {
+    languageCode = "en";
+  }
+
   const country = countryData.find((item) => item.alpha3 === countryCode);
 
   if (country) {
     // TODO Fix bug with types
     // @ts-ignore
-    return country[language] || country.en; // Use English as a fallback language
+    return country[languageCode] || country.en; // Use English as a fallback language
   }
 
   return "xxx"; // Country not found

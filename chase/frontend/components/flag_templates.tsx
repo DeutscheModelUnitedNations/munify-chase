@@ -3,11 +3,14 @@ import Image from "next/image";
 import { CountryCode } from "@/custom_types";
 import getFlagPathByCode from "@/misc/get_flag_path_by_code";
 import getCountryNameByCode from "@/misc/get_country_name_by_code";
+import { useI18nContext } from "@/src/i18n/i18n-react";
 
 export function SmallFlag({
   countryCode,
   showNameOnHover = false,
 }: { countryCode: CountryCode; showNameOnHover?: boolean }) {
+  const { LL, locale } = useI18nContext();
+
   const [isHovered, setIsHovered] = useState(false);
 
   const handleMouseEnter = () => {
@@ -29,12 +32,12 @@ export function SmallFlag({
           src={getFlagPathByCode(countryCode)}
           width={32}
           height={32}
-          alt={`Flag of ${getCountryNameByCode(countryCode)}`}
+          alt={`Flag of ${getCountryNameByCode(countryCode, locale)}`}
           style={{ objectFit: "cover", height: "100%" }}
         />
         {isHovered && showNameOnHover && (
           <div className="bg-dmun text-white text-xs rounded-md shadow-md p-2 absolute mt-2">
-            {getCountryNameByCode(countryCode)}
+            {getCountryNameByCode(countryCode, locale)}
           </div>
         )}
       </div>

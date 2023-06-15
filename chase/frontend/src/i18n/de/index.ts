@@ -117,8 +117,8 @@ const de = {
         VOTING_FAILED: "Abstimmung Fehlgeschlagen",
       },
       votingAlert: {
-        VOTING_ALERT_HEADLINE: "Neue Abstimmung gestartet",
-        VOTING_ALERT_MESSAGE: "Bitte stimmen Sie so bald wie möglich ab.",
+        VOTING_ALERT_HEADER: "Neue Abstimmung gestartet",
+        VOTING_ALERT_MESSAGE: "Sie wurden zu einer neuen Abstimmung aufgerufen. Bitte nehmen Sie schnellstmöglich daran teil.",
         BUTTON_ADVANCE: "Zur Abstimmung",
         BUTTON_IGNORE: "Ignorieren",
       }

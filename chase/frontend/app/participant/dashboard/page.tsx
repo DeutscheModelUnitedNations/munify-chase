@@ -11,7 +11,7 @@ import DocumentsWidget from "@/components/dashboard/documents";
 import WhiteboardWidget from "@/components/dashboard/whiteboard";
 import ActionsWidget from "@/components/dashboard/actions";
 import { apiTestData } from "@/test_data";
-import { votingAlert } from "@/contexts/messages/voting_alert";
+import { votingAlert } from "@/misc/voting_alert";
 import { useRouter } from "next/navigation";
 
 export default function participant_dashboard() {

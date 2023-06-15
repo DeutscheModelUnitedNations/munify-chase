@@ -7,6 +7,7 @@ import { faInfoCircle } from "@fortawesome/free-solid-svg-icons/faInfoCircle";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { LargeFlag } from "@components/flag_templates";
 import { faPieChart } from "@fortawesome/free-solid-svg-icons";
+import { useI18nContext } from "@/src/i18n/i18n-react";
 
 export default function Header({
   title,
@@ -15,6 +16,8 @@ export default function Header({
   substantiveVote,
   majority,
 }: Voting) {
+  const { LL } = useI18nContext();
+
   const getFlag = (countryCode: CountryCode = "uno"): CountryCode => {
     return countryCode;
   };
@@ -22,17 +25,17 @@ export default function Header({
   const neededMajority = () => {
     switch (majority) {
       case "simple":
-        return "Einfache Mehrheit erforderlich";
+        return LL.participants.voting.votingInfo.majorityMode.SIMPLE();
       case "two-thirds":
-        return "Zweidrittelmehrheit erforderlich";
+        return LL.participants.voting.votingInfo.majorityMode.TWO_THIRDS();
       case "three-quarters":
-        return "Dreiviertelmehrheit erforderlich";
+        return LL.participants.voting.votingInfo.majorityMode.THREE_QUARTERS();
       case "consensus":
-        return "Konsens erforderlich";
+        return LL.participants.voting.votingInfo.majorityMode.CONSENSUS();
       case "security-council":
-        return "9 Stimmen ohne Gegenstimme der ständigen Mitglieder erforderlich";
+        return LL.participants.voting.votingInfo.majorityMode.SECURITY_COUNCIL();
       default:
-        return "Mehrheit erforderlich";
+        return LL.participants.voting.votingInfo.majorityMode.SIMPLE();
     }
   };
 
@@ -59,7 +62,8 @@ export default function Header({
               className="text-lg justify-self-center"
             />
             <div className="text-sm">
-              Eingebracht von {getCountryNameByCode(introducedBy)}
+              {LL.participants.voting.votingInfo.INTRODUCED_BY()}{" "}
+              {getCountryNameByCode(introducedBy)}
             </div>
           </>
         )}
@@ -69,11 +73,11 @@ export default function Header({
         />
         {substantiveVote ? (
           <div className="text-sm">
-            Inhaltliche Abstimmung – Enthaltungen sind möglich
+            {LL.participants.voting.votingInfo.votingMode.SUBSTANTIAL_VOTING()}
           </div>
         ) : (
           <div className="text-sm">
-            Prozessuale Abstimmung – keine Enthaltungen möglich
+            {LL.participants.voting.votingInfo.votingMode.PROCEDURAL_VOTING()}
           </div>
         )}
         <FontAwesomeIcon

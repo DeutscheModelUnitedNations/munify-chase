@@ -1,6 +1,7 @@
 import { confirmDialog } from "primereact/confirmdialog";
 
 export const votingAlert = (routing: () => void) => {
+  // TODO find a way to make this work with the i18n context
   confirmDialog({
     header: "Abstimmung gestartet!",
     message:

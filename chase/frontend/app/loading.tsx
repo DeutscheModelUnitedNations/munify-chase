@@ -1,7 +1,10 @@
 "use client";
 import React from "react";
+import { useI18nContext } from "@/src/i18n/i18n-react";
 
 export default function Loading() {
+  const { LL } = useI18nContext();
+
   return (
     <div className="flex justify-center items-center h-screen">
       <div
@@ -14,7 +17,7 @@ export default function Loading() {
             style={{ fontSize: "3rem" }}
           />
         </div>
-        <div>Loading</div>
+        <div>{LL.LOADING_PAGE()}</div>
       </div>
     </div>
   );

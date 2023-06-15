@@ -10,8 +10,10 @@ import { myCountry } from "@/test_data";
 import Outcome from "@components/voting/outcome";
 import Header from "@components/voting/header";
 import { votingTestData as testData } from "@/test_data";
+import { useI18nContext } from "@/src/i18n/i18n-react";
 
 export default function VotingArea() {
+  const { LL } = useI18nContext();
   const [data, setData] = useState<Voting>(testData);
 
   useEffect(() => {
@@ -24,9 +26,9 @@ export default function VotingArea() {
 
   return (
     <>
-      <WidgetTemplate cardTitle="Abstimmungen">
+      <WidgetTemplate cardTitle={LL.participants.voting.VOTING_HEADLINE()}>
         {!data ? (
-          <NoDataPlaceholder title="Keine laufenden Abstimmungen" />
+          <NoDataPlaceholder title={LL.participants.voting.NO_DATA_VOTING()} />
         ) : (
           <ScrollPanel className="w-full h-full">
             <div className="flex flex-col gap-2">

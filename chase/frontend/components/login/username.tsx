@@ -1,10 +1,12 @@
 import React, { useState } from "react";
 import { Button } from "primereact/button";
 import { InputText } from "primereact/inputtext";
+import { useI18nContext } from "@/src/i18n/i18n-react";
 
 // TODO: Type this function properly
 // @ts-ignore
 export default function UsernameLogin({ changeLoginState }) {
+  const { LL } = useI18nContext();
   const [username, setUsername] = useState("");
 
   function advance() {
@@ -23,10 +25,10 @@ export default function UsernameLogin({ changeLoginState }) {
           value={username}
           onChange={(e) => setUsername(e.target.value)}
         />
-        <label htmlFor="username">Username</label>
+        <label htmlFor="username">{LL.login.USERNAME_PLACEHOLDER()}</label>
       </span>
       <Button
-        label="Weiter"
+        label={LL.login.ADVANCE_BUTTON()}
         icon="pi pi-arrow-right"
         iconPos="right"
         onClick={advance}

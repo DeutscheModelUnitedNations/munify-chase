@@ -4,14 +4,13 @@ import { useForm } from "react-hook-form";
 import { Button } from "primereact/button";
 import { Password } from "primereact/password";
 import { Checkbox } from "primereact/checkbox";
-import Image from "next/image";
 import Link from "next/link";
-import getFlagPathByCode from "@/misc/get_flag_path_by_code";
-import { CountryCode } from "@/custom_types";
+import { useI18nContext } from "@/src/i18n/i18n-react";
 
 // TODO: Type this function properly
 // @ts-ignore
 export default function usernameLogin({ changeLoginState }) {
+  const { LL } = useI18nContext();
   const [loading, setLoading] = useState(false);
   const [agreedToTerms, setAgreedToTerms] = useState(false);
   const [password, setPassword] = useState("");
@@ -39,7 +38,7 @@ export default function usernameLogin({ changeLoginState }) {
       {/* TODO This form can be a component that is used in both chair and participant login password components */}
       <form onSubmit={handleLogin(onSubmit)} className="contents">
         <Password
-          placeholder="Password"
+          placeholder={LL.login.PASSWORD_PLACEHOLDER()}
           feedback={false}
           style={{
             marginBottom: "1.25rem",
@@ -64,7 +63,7 @@ export default function usernameLogin({ changeLoginState }) {
               setAgreedToTerms(!agreedToTerms);
             }}
           >
-            Ich bin Einverstanden mit den{" "}
+            {LL.login.legalNotice.SECTION_1()}
             <Link
               href="/terms"
               target="_blank"
@@ -73,10 +72,9 @@ export default function usernameLogin({ changeLoginState }) {
               onClick={(e) => e.stopPropagation()}
               onKeyDown={(e) => e.stopPropagation()}
             >
-              Nutzungsbedingungen
+              {LL.login.legalNotice.TERMS_LINK()}
             </Link>
-            . Außerdem bin ich damit einverstanden, dass diese Website Cookies
-            verwendet. Mehr Informationen dazu finden Sie in unseren{" "}
+            {LL.login.legalNotice.SECTION_2()}
             <Link
               href="privacy"
               target="_blank"
@@ -85,15 +83,15 @@ export default function usernameLogin({ changeLoginState }) {
               onClick={(e) => e.stopPropagation()}
               onKeyDown={(e) => e.stopPropagation()}
             >
-              Datenschutzbestimmungen
+              {LL.login.legalNotice.PRIVACY_LINK()}
             </Link>
-            .
+            {LL.login.legalNotice.SECTION_3()}
           </span>
         </div>
         <div className="flex flex-row justify-center gap-5">
           <Button
             className="mb-5"
-            label="Zurück"
+            label={LL.login.BACK_BUTTON()}
             icon="pi pi-arrow-left"
             severity="danger"
             onClick={() => {
@@ -102,7 +100,7 @@ export default function usernameLogin({ changeLoginState }) {
             }}
           />
           <Button
-            label="Anmelden"
+            label={LL.login.LOGIN_BUTTON()}
             type="submit"
             icon="pi pi-arrow-right"
             iconPos="right"

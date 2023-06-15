@@ -8,6 +8,7 @@ import {
   faMinusCircle,
   faPlusCircle,
 } from "@fortawesome/free-solid-svg-icons";
+import { useI18nContext } from "@/src/i18n/i18n-react";
 
 export default function CastVote({
   votes,
@@ -16,6 +17,8 @@ export default function CastVote({
   outcome,
   myCountry,
 }: Voting & { myCountry: CountryCode }) {
+  const { LL } = useI18nContext();
+
   const [ableToVote, setAbleToVote] = useState(false);
   const [voted, setVoted] = useState(false);
 
@@ -45,9 +48,13 @@ export default function CastVote({
             <div className="flex flex-col items-center gap-2">
               <div className="flex items-center gap-2 text-lg">
                 <FontAwesomeIcon icon={faCheckCircle} />
-                <div>Auswahl bestätigt</div>
+                <div>
+                  {LL.participants.voting.votingButtons.VOTE_REGISTERED()}
+                </div>
               </div>
-              <div className="text-sm">Warte auf Ergebnisse</div>
+              <div className="text-sm">
+                {LL.participants.voting.votingButtons.VOTE_REGISTERED_MESSAGE()}
+              </div>
             </div>
           </div>
         )
@@ -55,7 +62,7 @@ export default function CastVote({
         <div className="my-4 shadow-md rounded-md p-4 bg-white flex justify-center items-center">
           <div className="flex justify-stretch items-center gap-4">
             <Button
-              label="Dafür"
+              label={LL.participants.voting.votingButtons.IN_FAVOUR()}
               style={{
                 backgroundColor: "var(--voting-for)",
                 color: "#fff",
@@ -68,7 +75,7 @@ export default function CastVote({
             />
             {substantiveVote && (
               <Button
-                label="Enthaltung"
+                label={LL.participants.voting.votingButtons.ABSTENTION()}
                 style={{
                   backgroundColor: "var(--voting-abstain)",
                   color: "#fff",
@@ -81,7 +88,7 @@ export default function CastVote({
               />
             )}
             <Button
-              label="Dagegen"
+              label={LL.participants.voting.votingButtons.AGAINST()}
               style={{
                 backgroundColor: "var(--voting-against)",
                 color: "#fff",

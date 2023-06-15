@@ -4,12 +4,15 @@ import Timeline from "@components/speakers_list/timeline";
 import getCountryNameByCode from "@/misc/get_country_name_by_code";
 import WidgetBoxTemplate from "../widget_box_template";
 import { NormalFlag as Flag } from "@components/flag_templates";
+import { useI18nContext } from "@/src/i18n/i18n-react";
 
 export default function QueueList({
   list,
   myCountry,
   closed,
 }: { list: CountryCode[]; myCountry: CountryCode; closed: boolean }) {
+  const { LL } = useI18nContext();
+
   return (
     <>
       <div className="flex flex-col mt-3">
@@ -23,7 +26,7 @@ export default function QueueList({
           <div className="flex justify-stretch items-center gap-3 mt-3">
             <div className="flex-1 border border-gray-500" />
             <div className="text-sm font-bold text-gray-500">
-              Liste Geschlossen
+              {LL.participants.speakersList.LIST_CLOSED_MESSAGE()}
             </div>
             <div className="flex-1 border border-gray-500" />
           </div>

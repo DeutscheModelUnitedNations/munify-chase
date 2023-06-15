@@ -1,20 +1,16 @@
 import React, { useEffect, useState } from "react";
 import WidgetTemplate from "../widget_template";
 import WidgetBoxTemplate from "../widget_box_template";
-import getFlagPathByCode from "@/misc/get_flag_path_by_code";
-import Image from "next/image";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faFileLines } from "@fortawesome/free-solid-svg-icons/faFileLines";
 import { Motion } from "@/custom_types";
-import {
-  faBan,
-  faCircleQuestion,
-  faGavel,
-} from "@fortawesome/free-solid-svg-icons";
+import { faCircleQuestion, faGavel } from "@fortawesome/free-solid-svg-icons";
 import NoDataPlaceholder from "../no_data_placeholder";
 import { SmallFlag } from "../flag_templates";
+import { useI18nContext } from "@/src/i18n/i18n-react";
 
 export default function Voting() {
+  const { LL } = useI18nContext();
+
   const [data, setData] = useState<Motion[]>([]);
 
   const testData: Motion[] = [
@@ -67,9 +63,9 @@ export default function Voting() {
 
   return (
     <>
-      <WidgetTemplate cardTitle="Anträge">
+      <WidgetTemplate cardTitle={LL.participants.voting.MOTIONS_HEADLINE()}>
         {data.length === 0 ? (
-          <NoDataPlaceholder title="Keine offenen Anträge" />
+          <NoDataPlaceholder title={LL.participants.voting.NO_DATA_MOTIONS()} />
         ) : (
           testData.map((motion) => {
             return (

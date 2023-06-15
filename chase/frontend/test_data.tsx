@@ -132,6 +132,8 @@ export const votingTestData: Voting = {
     "cmr",
     "alb",
     "arm",
+    "aut",
+    "bhr",
   ],
   majority: "simple",
   votes: [
@@ -173,6 +175,10 @@ export const votingTestData: Voting = {
     },
     {
       country: "cmr",
+      vote: "yes",
+    },
+    {
+      country: "arm",
       vote: "yes",
     },
   ],

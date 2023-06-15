@@ -7,6 +7,7 @@ import { faGavel } from "@fortawesome/free-solid-svg-icons";
 import { faComments } from "@fortawesome/free-solid-svg-icons";
 import { faCoffee } from "@fortawesome/free-solid-svg-icons";
 import { faCirclePause } from "@fortawesome/free-solid-svg-icons";
+import { useI18nContext } from "@/src/i18n/i18n-react";
 
 export default function TimerWidget({
   headline,
@@ -17,12 +18,13 @@ export default function TimerWidget({
   until: Date | null;
   category: "formal" | "informal" | "pause" | "suspension"; // TODO replace with typescript enum
 }) {
+  const { LL } = useI18nContext();
   const { showToast } = useContext(ToastContext);
 
   const showTimerToast = () => {
     const message = {
-      summary: "Zeit abgelaufen",
-      detail: "Rückkehr zur formellen Sitzung",
+      summary: LL.participants.dashboard.timerWidget.TOAST_HEADLINE(),
+      detail: LL.participants.dashboard.timerWidget.TOAST_MESSAGE(),
       severity: "info" as "info",
       sticky: true,
     };
@@ -67,7 +69,10 @@ export default function TimerWidget({
           </div>
           <div className="text-2xl font-bold">{headline}</div>
           {category !== "suspension" && (
-            <div className="text-md">Bis {timeStamp} Uhr</div>
+            <div className="text-md">
+              {LL.participants.dashboard.timerWidget.UNTIL_1()} {timeStamp}{" "}
+              {LL.participants.dashboard.timerWidget.UNTIL_2()}
+            </div>
           )}
           {category !== "suspension" && category !== "formal" && (
             <div className="text-4xl font-bold my-2 tabular-nums">

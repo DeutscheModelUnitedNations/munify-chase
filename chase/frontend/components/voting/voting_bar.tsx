@@ -106,24 +106,24 @@ function MajorityMarking({
   const getMajorityPercentage = (): number => {
     switch (majority) {
       case "simple":
-        return 0.5;
+        return 0.5001;
       case "two-thirds":
-        return 0.6667;
+        return 0.6666;
       case "three-quarters":
         return 0.75;
       case "consensus":
         return 1;
       case "security-council":
-        return 9 / numberOfVotes - 0.01; // counteract ceiling of the number: -0.01 to round down (e.g. the security council majority of 15 votes is 9, not 10)
+        return 9 / numberOfVotes;
       default:
-        return 0.5;
+        return 0.5001;
     }
   };
 
   const getVotingStepForMajority = (): number => {
     const majorityPercentage = getMajorityPercentage();
     const votesNeededForMajority = Math.ceil(
-      numberOfVotes * majorityPercentage + 0.01, // +0.01 to round up (e.g. the simple majority of 10 votes is 6, not 5)
+      numberOfVotes * majorityPercentage,
     );
     const percentagePosition = (votesNeededForMajority / numberOfVotes) * 100;
 

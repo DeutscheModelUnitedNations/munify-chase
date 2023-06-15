@@ -4,7 +4,6 @@ import Image from "next/image";
 
 import UsernameLogin from "@/components/login/username";
 import PasswordLogin from "@/components/login/password_participant";
-import Loading from "@/app/loading";
 import Link from "next/link";
 import { useI18nContext } from "@/src/i18n/i18n-react";
 
@@ -27,7 +26,9 @@ export default function loginVorsitz() {
           <div className="flex-1 flex flex-col justify-center items-center">
             <UsernameLogin changeLoginState={changeLoginState} />
             <p className="mt-10 text-gray-400 hover:text-black underline text-xs text-center">
-              <Link href="/login/chair">{LL.login.otherSignIn()}</Link>
+              <Link href="/login/chair">
+                {LL.login.participant.OTHER_SIGH_IN()}
+              </Link>
             </p>
           </div>
           <div className="flex flex-col justify-center items-center m-10">

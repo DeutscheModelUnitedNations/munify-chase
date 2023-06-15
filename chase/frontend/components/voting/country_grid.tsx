@@ -9,12 +9,15 @@ import {
   faPlusCircle,
 } from "@fortawesome/free-solid-svg-icons";
 import { IconProp } from "@fortawesome/fontawesome-svg-core";
+import { useI18nContext } from "@/src/i18n/i18n-react";
 
 export default function CountryGrid({
   votes,
   votingCountries,
   substantiveVote,
 }: Voting) {
+  const { LL } = useI18nContext();
+
   const [yesVotes, setYesVotes] = useState<CountryCode[]>([]);
   const [noVotes, setNoVotes] = useState<CountryCode[]>([]);
   const [abstainVotes, setAbstainVotes] = useState<CountryCode[]>([]);
@@ -54,26 +57,26 @@ export default function CountryGrid({
       {substantiveVote ? (
         <div className="flex-1 grid grid-cols-3 gap-2">
           <VotesCard
-            category="Dafür"
+            category={LL.participants.voting.votingButtons.IN_FAVOUR()}
             icon={faPlusCircle}
             color="text-green-700"
             votes={yesVotes}
           />
           <VotesCard
-            category="Enthaltung"
+            category={LL.participants.voting.votingButtons.ABSTENTION()}
             icon={faCircle}
             color="text-dmun"
             votes={abstainVotes}
           />
           <VotesCard
-            category="Dagegen"
+            category={LL.participants.voting.votingButtons.AGAINST()}
             icon={faMinusCircle}
             color="text-red-600"
             votes={noVotes}
           />
           {remainingVotes.length > 0 && (
             <VotesCard
-              category="Ausstehend"
+              category={LL.participants.voting.votingButtons.REMAINING()}
               icon={faHourglassHalf}
               color="text-black"
               votes={remainingVotes}

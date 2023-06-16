@@ -15,11 +15,11 @@ export default function Draft({
 
   return (
     <WidgetBoxTemplate>
-      <FontAwesomeIcon icon={faFileLines} className="text-gray-400 text-2xl" />
+      <FontAwesomeIcon icon={faFileLines} className="text-gray-icon text-2xl" />
       <div className="flex-1 flex-col justify-start items-center">
-        <div className="text-sm font-semibold text-gray-600">{documentId}</div>
+        <div className="text-sm font-semibold text-gray-text">{documentId}</div>
         {sponsors && (
-          <div className="text-xs text-gray-400">{`${
+          <div className="text-xs text-gray-icon">{`${
             sponsors?.length
           } ${LL.participants.dashboard.documentsWidget.SPONSORS()}`}</div>
         )}

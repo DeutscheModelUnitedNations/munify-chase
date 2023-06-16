@@ -141,31 +141,31 @@ function VotesCard({
         <FontAwesomeIcon icon={icon} className={color} />
         <div className={categoryClasses}>{category}</div>
       </div>
-        <AnimatePresence mode="wait">
-          <FlipMove className="flex flex-wrap gap-2 justify-center items-center">
+      <AnimatePresence mode="wait">
+        <FlipMove className="flex flex-wrap gap-2 justify-center items-center">
           {votes.map((country, index) => (
-          <motion.div
-            key={country}
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-            transition={{
-              duration: 0.5,
-              delay: index * 0.1, // Delay each flag's animation for a staggered effect
-              type: "spring",
-              damping: 20,
-              stiffness: 300,
-            }}
-            className="flex justify-center items-center"
-            style={{
-              zIndex: votes.length - index, // Ensure the latest flag appears on top
-            }}
-          >
-            <SmallFlag countryCode={country} showNameOnHover />
-          </motion.div>
-        ))}
+            <motion.div
+              key={country}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              transition={{
+                duration: 0.5,
+                delay: index * 0.1, // Delay each flag's animation for a staggered effect
+                type: "spring",
+                damping: 20,
+                stiffness: 300,
+              }}
+              className="flex justify-center items-center"
+              style={{
+                zIndex: votes.length - index, // Ensure the latest flag appears on top
+              }}
+            >
+              <SmallFlag countryCode={country} showNameOnHover />
+            </motion.div>
+          ))}
         </FlipMove>
-        </AnimatePresence>
-      </div>
+      </AnimatePresence>
+    </div>
   );
 }

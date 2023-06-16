@@ -109,7 +109,7 @@ function SpeakersListBlock({
         </>
       ) : (
         <div className="flex flex-col gap-2 items-start justify-center mt-3">
-          <p className="text-gray-500 text-sm mb-3">
+          <p className="text-gray-text text-sm mb-3">
             {LL.participants.speakersList.NO_SPEAKERS_MESSAGE()}
           </p>
           <Button

@@ -175,8 +175,7 @@ export const motionTestData: Motion[] = [
     motionId: "1",
     introducedBy: "deu",
     personalPointOfMotion: false,
-    motionText:
-      "Vorgezogene Abstimmung über den Resolutionsentwurf als Ganzen",
+    motionText: "Vorgezogene Abstimmung über den Resolutionsentwurf als Ganzen",
     active: false,
   },
   {
@@ -263,6 +262,14 @@ export const votingTestData: Voting = {
       country: "arm",
       vote: "yes",
     },
+    {
+      country: "aut",
+      vote: "yes",
+    },
+    // {
+    //   country: "cpv",
+    //   vote: "yes",
+    // },
   ],
-  // outcome: "failed"
+  outcome: "passed",
 };

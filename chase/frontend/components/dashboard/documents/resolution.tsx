@@ -11,11 +11,11 @@ export default function Resolution({
     <WidgetBoxTemplate>
       <FontAwesomeIcon
         icon={faFileContract}
-        className="text-gray-400 text-2xl"
+        className="text-gray-icon text-2xl"
       />
       <div className="flex-1 flex-col justify-start items-center">
-        <div className="text-sm font-semibold text-gray-600">{documentId}</div>
-        <div className="text-xs text-gray-400">{topic && `${topic}`}</div>
+        <div className="text-sm font-semibold text-gray-text">{documentId}</div>
+        <div className="text-xs text-gray-icon">{topic && `${topic}`}</div>
       </div>
     </WidgetBoxTemplate>
   );

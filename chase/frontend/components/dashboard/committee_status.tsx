@@ -22,7 +22,7 @@ export default function CommitteeStatusWidget({
             </div>
           </div>
           <FontAwesomeIcon icon={faArrowDown} />
-          <div className="flex flex-row bg-white text-gray-700 rounded-md p-2 gap-4 border border-gray-700 border-dashed">
+          <div className="flex flex-row bg-white text-gray-text rounded-md p-2 gap-4 border border-gray-text border-dashed">
             <div className="flex-1 text-sm font-semibold text-center">
               {nextDebateStep ? nextDebateStep : "..."}
             </div>

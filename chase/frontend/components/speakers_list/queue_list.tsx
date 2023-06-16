@@ -24,11 +24,11 @@ export default function QueueList({
         />
         {closed && (
           <div className="flex justify-stretch items-center gap-3 mt-3">
-            <div className="flex-1 border border-gray-600" />
-            <div className="text-sm font-bold text-gray-600">
+            <div className="flex-1 border border-gray-text" />
+            <div className="text-sm font-bold text-gray-text">
               {LL.participants.speakersList.LIST_CLOSED_MESSAGE()}
             </div>
-            <div className="flex-1 border border-gray-600" />
+            <div className="flex-1 border border-gray-text" />
           </div>
         )}
       </div>
@@ -46,7 +46,7 @@ function CountryCard({
     <WidgetBoxTemplate highlight={countryCode === myCountry}>
       <Flag countryCode={countryCode} />
       <div className="flex flex-col justify-center">
-        <div className="text-sm font-bold text-gray-600">
+        <div className="text-sm font-bold text-gray-text">
           {getCountryNameByCode(countryCode, locale)}
         </div>
       </div>

@@ -68,7 +68,7 @@ export default function SpeakerBlock({
               <div className="font-bold text-md">
                 {customName || getCountryNameByCode(countryCode, locale)}
               </div>
-              <div className="text-md text-gray-500 flex items-center gap-3">
+              <div className="text-md text-gray-text flex items-center gap-3">
                 {timerState === "active" && <HourglasAnimation />}
                 {timerState === "paused" && <FontAwesomeIcon icon={faClock} />}
                 {timerState === "overtime" && (

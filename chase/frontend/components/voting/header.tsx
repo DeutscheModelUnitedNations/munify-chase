@@ -39,7 +39,7 @@ export default function Header({
   };
 
   return (
-    <div className="flex flex-row justify-between gap-2 bg-white rounded-md p-3">
+    <div className="flex flex-row justify-between gap-2 bg-white text-gray-text rounded-md p-3">
       <div
         className="flex-1 grid items-center gap-3"
         style={{ gridTemplateColumns: "1fr auto" }}

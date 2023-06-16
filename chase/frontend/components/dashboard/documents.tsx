@@ -21,48 +21,63 @@ export default function DocumentsWidget({
       >
         {/* TODO Find a better solution for height limiting */}
         <ScrollPanel className="custom-scrollbar" style={{ maxHeight: "50vh" }}>
-          <FlipMove duration={500} enterAnimation="accordionVertical" leaveAnimation="accordionVertical" appearAnimation="fade" >
+          <FlipMove
+            duration={500}
+            enterAnimation="accordionVertical"
+            leaveAnimation="accordionVertical"
+            appearAnimation="fade"
+          >
             {documents.map((document: Document) => {
               if (document.category === "adopted") {
                 return (
                   <div key={document.documentId}>
-                  <Resolution
-                    documentId={document.documentId}
-                    topic={document?.topic}
-                  />
+                    <Resolution
+                      documentId={document.documentId}
+                      topic={document?.topic}
+                    />
                   </div>
                 );
               }
             })}
           </FlipMove>
           <Divider style={{ marginTop: "0.4em", marginBottom: "0.4em" }} />
-          <FlipMove duration={500} enterAnimation="accordionVertical" leaveAnimation="accordionVertical"  appearAnimation="fade" >
+          <FlipMove
+            duration={500}
+            enterAnimation="accordionVertical"
+            leaveAnimation="accordionVertical"
+            appearAnimation="fade"
+          >
             {documents.map((document: Document) => {
               if (document.category === "draft") {
                 return (
                   <div key={document.documentId}>
-                  <Draft
-                    documentId={document.documentId}
-                    introducedBy={document.introducedBy}
-                    sponsors={document.sponsors}
-                  />
+                    <Draft
+                      documentId={document.documentId}
+                      introducedBy={document.introducedBy}
+                      sponsors={document.sponsors}
+                    />
                   </div>
                 );
               }
             })}
           </FlipMove>
           <Divider style={{ marginTop: "0.4em", marginBottom: "0.4em" }} />
-          <FlipMove duration={500} enterAnimation="accordionVertical" leaveAnimation="accordionVertical" appearAnimation="fade" >
+          <FlipMove
+            duration={500}
+            enterAnimation="accordionVertical"
+            leaveAnimation="accordionVertical"
+            appearAnimation="fade"
+          >
             {documents.map((document: Document) => {
               if (document.category === "paper") {
                 return (
                   <div key={document.documentId}>
-                  <Paper
-                    documentId={document.documentId}
-                    introducedBy={document.introducedBy}
-                    sponsors={document.sponsors}
-                    shared={document.shared}
-                  />
+                    <Paper
+                      documentId={document.documentId}
+                      introducedBy={document.introducedBy}
+                      sponsors={document.sponsors}
+                      shared={document.shared}
+                    />
                   </div>
                 );
               }

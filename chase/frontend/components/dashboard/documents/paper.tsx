@@ -21,10 +21,10 @@ export default function Paper({
 
   return (
     <WidgetBoxTemplate>
-      <FontAwesomeIcon icon={faClipboard} className="text-gray-400 text-2xl" />
+      <FontAwesomeIcon icon={faClipboard} className="text-gray-icon text-2xl" />
       <div className="flex-1 flex-col justify-start items-center">
-        <div className="text-sm font-semibold text-gray-600">{documentId}</div>
-        <div className="text-xs text-gray-400">
+        <div className="text-sm font-semibold text-gray-text">{documentId}</div>
+        <div className="text-xs text-gray-icon">
           {shared &&
             sponsors &&
             `${
@@ -33,7 +33,7 @@ export default function Paper({
         </div>
       </div>
       {shared && (
-        <FontAwesomeIcon icon={faShareNodes} className="text-gray-400" />
+        <FontAwesomeIcon icon={faShareNodes} className="text-gray-icon" />
       )}
       <SmallFlag countryCode={introducedBy} />
     </WidgetBoxTemplate>

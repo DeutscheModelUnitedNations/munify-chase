@@ -10,7 +10,8 @@ export default function WidgetBoxTemplate({
       "flex-1 w-full flex rounded-md justify-start items-center transition-all cursor-pointer gap-4 p-2 ";
 
     if (highlight) {
-      classNames += "bg-highlight text-black hover:bg-white ";
+      classNames +=
+        "bg-highlight border border-dmun shadow-sm text-black hover:bg-white ";
     } else {
       classNames += "hover:bg-white ";
     }
@@ -24,7 +25,7 @@ export default function WidgetBoxTemplate({
 
   return (
     <>
-      <div className={getClassNames()} >{children}</div>
+      <div className={getClassNames()}>{children}</div>
     </>
   );
 }

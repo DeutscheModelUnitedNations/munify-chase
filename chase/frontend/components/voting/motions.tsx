@@ -37,25 +37,34 @@ export default function Voting() {
         {data.length === 0 ? (
           <NoDataPlaceholder title={LL.participants.voting.NO_DATA_MOTIONS()} />
         ) : (
-          <FlipMove duration={500} appearAnimation="fade" enterAnimation="fade" leaveAnimation="fade" className="flex-1 flex flex-col gap-2">
-          {data.map((motion) => {
-            return (
-              <div key={motion.motionId}>
-              <WidgetBoxTemplate highlight={motion.active}>
-                <FontAwesomeIcon
-                  icon={getIcon(motion.personalPointOfMotion)}
-                  className=" text-2xl text-gray-400"
-                />
-                <div className="flex-1 flex-col justify-start items-center">
-                  <div className="text-sm font-semibold text-gray-600">
-                    {motion.motionText}
-                  </div>
+          <FlipMove
+            duration={500}
+            appearAnimation="fade"
+            enterAnimation="fade"
+            leaveAnimation="fade"
+            className="flex-1 flex flex-col gap-2"
+          >
+            {data.map((motion) => {
+              return (
+                <div key={motion.motionId}>
+                  <WidgetBoxTemplate highlight={motion.active}>
+                    <FontAwesomeIcon
+                      icon={getIcon(motion.personalPointOfMotion)}
+                      className=" text-2xl text-gray-icon"
+                    />
+                    <div className="flex-1 flex-col justify-start items-center">
+                      <div className="text-sm font-semibold text-gray-text">
+                        {motion.motionText}
+                      </div>
+                    </div>
+                    <SmallFlag
+                      countryCode={motion.introducedBy}
+                      showNameOnHover
+                    />
+                  </WidgetBoxTemplate>
                 </div>
-                <SmallFlag countryCode={motion.introducedBy} showNameOnHover />
-              </WidgetBoxTemplate>
-              </div>
-            );
-          })}
+              );
+            })}
           </FlipMove>
         )}
       </WidgetTemplate>

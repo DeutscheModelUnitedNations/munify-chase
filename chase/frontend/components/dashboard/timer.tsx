@@ -61,36 +61,36 @@ export default function TimerWidget({
           transition={{ duration: 0.3 }}
           layout
         >
-      <WidgetTemplate cardTitle="" styles={styles()}>
-        <div className="flex flex-col justify-center items-center">
-          <div className="my-4">
-            {category === "formal" && (
-              <FontAwesomeIcon icon={faGavel} size="3x" />
-            )}
-            {category === "informal" && (
-              <FontAwesomeIcon icon={faComments} size="3x" />
-            )}
-            {category === "pause" && (
-              <FontAwesomeIcon icon={faCoffee} size="3x" />
-            )}
-            {category === "suspension" && (
-              <FontAwesomeIcon icon={faCirclePause} size="3x" />
-            )}
-          </div>
-          <div className="text-2xl font-bold">{headline}</div>
-          {category !== "suspension" && (
-            <div className="text-md">
-              {LL.participants.dashboard.timerWidget.UNTIL_1()} {timeStamp}{" "}
-              {LL.participants.dashboard.timerWidget.UNTIL_2()}
+          <WidgetTemplate cardTitle="" styles={styles()}>
+            <div className="flex flex-col justify-center items-center">
+              <div className="my-4">
+                {category === "formal" && (
+                  <FontAwesomeIcon icon={faGavel} size="3x" />
+                )}
+                {category === "informal" && (
+                  <FontAwesomeIcon icon={faComments} size="3x" />
+                )}
+                {category === "pause" && (
+                  <FontAwesomeIcon icon={faCoffee} size="3x" />
+                )}
+                {category === "suspension" && (
+                  <FontAwesomeIcon icon={faCirclePause} size="3x" />
+                )}
+              </div>
+              <div className="text-2xl font-bold">{headline}</div>
+              {category !== "suspension" && (
+                <div className="text-md">
+                  {LL.participants.dashboard.timerWidget.UNTIL_1()} {timeStamp}{" "}
+                  {LL.participants.dashboard.timerWidget.UNTIL_2()}
+                </div>
+              )}
+              {category !== "suspension" && category !== "formal" && (
+                <div className="text-4xl font-bold my-2 tabular-nums">
+                  <Timer until={until} showTimerToast={showTimerToast} />
+                </div>
+              )}
             </div>
-          )}
-          {category !== "suspension" && category !== "formal" && (
-            <div className="text-4xl font-bold my-2 tabular-nums">
-              <Timer until={until} showTimerToast={showTimerToast} />
-            </div>
-          )}
-        </div>
-      </WidgetTemplate>
+          </WidgetTemplate>
         </motion.div>
       </AnimatePresence>
     </>

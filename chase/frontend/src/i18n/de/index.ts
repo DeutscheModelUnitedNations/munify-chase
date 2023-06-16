@@ -89,7 +89,7 @@ const de = {
       VOTING_HEADLINE: "Abstimmungen",
       NO_DATA_VOTING: "Keine offenen Abstimmungen",
       votingInfo: {
-        INTRODUCED_BY: "Eingebraucht von",
+        INTRODUCED_BY: "Eingebracht von",
         votingMode: {
           SUBSTANTIAL_VOTING: "Inhaltliche Abstimmung – Enthaltung möglich",
           PROCEDURAL_VOTING: "Prozessuale Abstimmung – keine Enthaltung möglich",

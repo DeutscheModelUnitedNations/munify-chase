@@ -8,6 +8,7 @@ import { faComments } from "@fortawesome/free-solid-svg-icons";
 import { faCoffee } from "@fortawesome/free-solid-svg-icons";
 import { faCirclePause } from "@fortawesome/free-solid-svg-icons";
 import { useI18nContext } from "@/src/i18n/i18n-react";
+import { AnimatePresence, motion } from "framer-motion";
 
 export default function TimerWidget({
   headline,
@@ -51,6 +52,15 @@ export default function TimerWidget({
 
   return (
     <>
+      <AnimatePresence mode="wait">
+        <motion.div
+          key={category}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.3 }}
+          layout
+        >
       <WidgetTemplate cardTitle="" styles={styles()}>
         <div className="flex flex-col justify-center items-center">
           <div className="my-4">
@@ -81,6 +91,8 @@ export default function TimerWidget({
           )}
         </div>
       </WidgetTemplate>
+        </motion.div>
+      </AnimatePresence>
     </>
   );
 }

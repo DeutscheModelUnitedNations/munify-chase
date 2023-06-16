@@ -11,8 +11,9 @@ export default function Timeline({
       <div className="flex-1 flex flex-col">
         <FlipMove
           duration={500}
-          enterAnimation={"fade"}
-          leaveAnimation={"fade"}
+          enterAnimation="fade"
+          leaveAnimation="fade"
+          appearAnimation="fade"
         >
           {list.map((item) => {
             return (

@@ -28,7 +28,7 @@ export default function SpeakersList() {
   return (
     <>
       <ScrollPanel className="flex-1 overflow-y-auto custom-scrollbar">
-        <div className="flex-1 flex p-4 gap-4 md:flex-col lg:flex-row">
+        <div className="flex-1 flex p-4 gap-4 flex-col lg:flex-row">
           <SpeakersListBlock
             listTitle={LL.participants.speakersList.SPEAKERS_LIST()}
             speakersData={data.speakersList}

@@ -4,6 +4,7 @@ import { faCheckCircle } from "@fortawesome/free-solid-svg-icons/faCheckCircle";
 import { faXmarkCircle } from "@fortawesome/free-solid-svg-icons/faXmarkCircle";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useI18nContext } from "@/src/i18n/i18n-react";
+import { AnimatePresence, motion } from "framer-motion";
 
 export default function VotingBar({ outcome }: Voting) {
   const { LL } = useI18nContext();

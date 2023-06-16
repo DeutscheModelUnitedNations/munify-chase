@@ -5,6 +5,7 @@ import {
   SpeakersListData,
   Document,
   Voting,
+  Motion,
 } from "@/custom_types";
 
 export const myCountry: CountryCode = "cpv";
@@ -162,6 +163,38 @@ export const apiTestData: NormalApiResponse = {
   documents: documentsTestData,
 };
 
+export const motionTestData: Motion[] = [
+  {
+    motionId: "0",
+    introducedBy: "deu",
+    personalPointOfMotion: true,
+    motionText: "Recht auf Information",
+    active: true,
+  },
+  {
+    motionId: "1",
+    introducedBy: "deu",
+    personalPointOfMotion: false,
+    motionText:
+      "Vorgezogene Abstimmung über den Resolutionsentwurf als Ganzen",
+    active: false,
+  },
+  {
+    motionId: "2",
+    introducedBy: "fra",
+    personalPointOfMotion: false,
+    motionText: "Informelle Sitzung",
+    active: false,
+  },
+  {
+    motionId: "3",
+    introducedBy: "cpv",
+    personalPointOfMotion: false,
+    motionText: "Abschluss der Redeliste",
+    active: false,
+  },
+];
+
 export const votingTestData: Voting = {
   votingId: "1",
   title: "Informelle Sitzung von 15 Minuten",
@@ -186,10 +219,10 @@ export const votingTestData: Voting = {
   ],
   majority: "simple",
   votes: [
-    {
-      country: "cpv",
-      vote: "yes",
-    },
+    // {
+    //   country: "cpv",
+    //   vote: "yes",
+    // },
     {
       country: "deu",
       vote: "no",
@@ -231,5 +264,5 @@ export const votingTestData: Voting = {
       vote: "yes",
     },
   ],
-  outcome: "passed",
+  // outcome: "failed"
 };

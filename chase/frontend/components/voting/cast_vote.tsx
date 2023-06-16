@@ -9,6 +9,7 @@ import {
   faPlusCircle,
 } from "@fortawesome/free-solid-svg-icons";
 import { useI18nContext } from "@/src/i18n/i18n-react";
+import { set } from "react-hook-form";
 
 export default function CastVote({
   votes,
@@ -24,12 +25,12 @@ export default function CastVote({
 
   useEffect(() => {
     const isInVotingCountries = votingCountries.includes(myCountry);
-    const myVote = votes.find((vote) => vote.country === myCountry);
+    const myVote = votes.find((vote) => vote.country === myCountry)?.vote;
 
-    const ableToVote = isInVotingCountries && !myVote;
+    const isAbleToVote = isInVotingCountries && !myVote;
     const hasVoted = isInVotingCountries && myVote;
 
-    setAbleToVote(ableToVote);
+    setAbleToVote(isAbleToVote);
     setVoted(() => {
       if (hasVoted) return true;
       else return false;
@@ -42,7 +43,7 @@ export default function CastVote({
 
   return (
     <>
-      {ableToVote && voted ? (
+      {ableToVote && (voted ? (
         !outcome && (
           <div className="my-4 shadow-md rounded-md p-4 bg-white flex justify-center items-center">
             <div className="flex flex-col items-center gap-2">
@@ -101,7 +102,7 @@ export default function CastVote({
             />
           </div>
         </div>
-      )}
+      ))}
     </>
   );
 }

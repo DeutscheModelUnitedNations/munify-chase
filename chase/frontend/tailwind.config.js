@@ -19,6 +19,7 @@ module.exports = {
         dmunultralight: "#DFF4F4", // DMUN Blue 50% opacity
         primary: "#3d7dd2", // Primary Color, until specified remains DMUN Blue
         secondary: "#ffc200", // For now, Orange
+        highlight: "#ffc200",
         gray: {
           light: "#EEEEEE",
         },

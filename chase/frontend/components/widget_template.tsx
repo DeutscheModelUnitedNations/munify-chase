@@ -5,7 +5,9 @@ interface WidgetTemplateProps {
   cardTitle: string;
   styles?: string;
 }
-
+/**
+    Visual only component to standardize widget styling
+*/
 export default function WidgetTemplate({
   children,
   cardTitle,

@@ -1,20 +1,11 @@
 services:
   keycloak:
     image: quay.io/keycloak/keycloak:21.1.1
+    volumes:
+      - ./keycloak:/opt/keycloak/data/
     environment:
       - KEYCLOAK_ADMIN=admin
       - KEYCLOAK_ADMIN_PASSWORD=admin
-      - DB_ADDR=postgresql://postgres:postgres@localhost:5433/postgres
-      - DB_VENDOR=postgresql
     ports:
       - "6677:8080"
     command: start-dev
-  postgres:
-    image: postgres
-    environment:
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=postgres
-    ports:
-      - "5433:5432"
-    volumes:
-      - ./.postgres-data:/var/lib/postgresql/data

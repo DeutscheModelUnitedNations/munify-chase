@@ -11,6 +11,12 @@ import {
 import { useI18nContext } from "@/src/i18n/i18n-react";
 import { AnimatePresence, motion } from "framer-motion";
 
+/**
+ * This Component is used in the Voting Component.
+ * It displays the buttons to cast a vote and handles the request to the backend, when a vote is cast.
+ * It also displays a loading animation, while the request is being processed.
+ */
+
 export default function CastVote({
   substantiveVote,
 }: Voting & { myCountry: CountryCode }) {

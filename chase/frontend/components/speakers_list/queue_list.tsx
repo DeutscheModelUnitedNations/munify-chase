@@ -6,6 +6,13 @@ import WidgetBoxTemplate from "../widget_box_template";
 import { NormalFlag as Flag } from "@components/flag_templates";
 import { useI18nContext } from "@/src/i18n/i18n-react";
 
+/**
+ * This Component is used in the Speakers List and Comment List on the Speakers List Page.
+ * It uses the Timeline Component to create a list of countries.
+ * If no countries are in the list, it displays a message.
+ * If the list is closed, it displays a border at the bottom, that indicates the closed state of the list.
+ */
+
 export default function QueueList({
   list,
   myCountry,

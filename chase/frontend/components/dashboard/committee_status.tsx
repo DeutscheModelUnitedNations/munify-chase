@@ -4,6 +4,11 @@ import { faArrowDown } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useI18nContext } from "@/src/i18n/i18n-react";
 
+/**
+ * This Component is used in the Dashboard. It shows the current,
+ * and the next step in the debate process according to the rules of procedure.
+ */
+
 export default function CommitteeStatusWidget({
   currentDebateStep,
   nextDebateStep,

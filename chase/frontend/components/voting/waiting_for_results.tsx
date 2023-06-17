@@ -3,6 +3,11 @@ import { faCheckCircle } from "@fortawesome/free-solid-svg-icons/faCheckCircle";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useI18nContext } from "@/src/i18n/i18n-react";
 
+/**
+ * This Component is used in the Voting Component.
+ * It displays a message, when the vote of the user was registered, but the outcome is not yet known.
+ */
+
 export default function WaitingForResults() {
   const { LL } = useI18nContext();
 

@@ -4,6 +4,15 @@ import { CountryCode, Speaker } from "@/custom_types";
 import { SmallFlag as Flag } from "@components/flag_templates";
 import { AnimatePresence, motion } from "framer-motion";
 
+/**
+ * This Component is used in the Speakers List Widget on the Dashboard.
+ * It is a condensed view of a general Speakers List, that allows a compact view of the speakers list.
+ * It shows the first 3 speakers in the queue and the country of the user, if they are in the queue.
+ * It also shows the position of the user in the queue, if they are more than 3 speakers away from speaking.
+ * It uses the Arrow Component to show the arrows between the flags.
+ * It uses the Flag Component to show the flags.
+ */
+
 export default function SpeakerBlock({
   list,
   myCountry,

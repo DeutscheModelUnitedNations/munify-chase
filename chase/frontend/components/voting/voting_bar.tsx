@@ -1,6 +1,15 @@
 import React, { useEffect, useState } from "react";
 import { Voting, VotingMajority } from "@/custom_types";
 
+/**
+ * This Component is used in the Voting Component.
+ * It displays the voting bar, which shows the percentage of votes for each vote.
+ * It also displays the majority needed for the vote to pass.
+ * It also displays the numbers of votes for each vote.
+ * This Component does have a lot of logic calculations to calculate the percentages
+ * and display the bars correctly, so that they can be perceived as accurate.
+ */
+
 export default function VotingBar({
   votingCountries,
   votes,

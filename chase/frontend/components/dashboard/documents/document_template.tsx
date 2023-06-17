@@ -7,6 +7,13 @@ import { CountryCode } from "@/custom_types";
 import { IconDefinition } from "@fortawesome/fontawesome-svg-core";
 import { useI18nContext } from "@/src/i18n/i18n-react";
 
+/** This Component is used in the Documents Widget on the Dashboard.
+ * It creates Boxes, each containing a document's ID, its sponsors,
+ * its topic, and a flag of the country. It is not used directly,
+ * but rather through the individual document components "paper",
+ * "draft" and "resolution".
+ */
+
 interface DocumentProps {
   documentId: string;
   introducedBy?: CountryCode;

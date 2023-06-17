@@ -7,6 +7,11 @@ import {
 } from "@fortawesome/react-fontawesome";
 import Link from "next/link";
 
+/**
+ * This Component is used in the Navbar. It displays a button with an icon.
+ * It is used to navigate to other pages.
+ */
+
 interface NavbarButtonProps {
   icon: FontAwesomeIconProps["icon"];
   link?: string;

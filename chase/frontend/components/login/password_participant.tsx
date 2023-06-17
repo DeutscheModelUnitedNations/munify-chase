@@ -13,6 +13,14 @@ import getFlagPathByCode from "@/misc/get_flag_path_by_code";
 import { CountryCode } from "@/custom_types";
 import { useI18nContext } from "@/src/i18n/i18n-react";
 
+/**
+ * This Component is used in the Login Page for the participants. It is the second step of the login process.
+ * It displays a form that first previews the given committee and country (or NSA) and then asks for the password.
+ * The password is verified by the server.
+ * Participants that represent a Non-State Actor (NSA) can select their committee by clicking on the committee placeholder,
+ * which displays a plus if no committee is selected yet and opens a sidebar with a list of all committees.
+ */
+
 // TODO: Type this function properly
 // @ts-ignore
 export default function usernameLogin({ changeLoginState }) {

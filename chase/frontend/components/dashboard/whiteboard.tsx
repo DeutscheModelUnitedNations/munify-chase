@@ -5,6 +5,14 @@ import ReactMarkdown from "react-markdown";
 import { ScrollPanel } from "primereact/scrollpanel";
 import { useI18nContext } from "@/src/i18n/i18n-react";
 
+/**
+ * This Component is used in the Dashboard. It displays the Whiteboard Widget.
+ * The Whiteboard Widget is a Markdown Viewer that allows the chairs to write
+ * notes for the participants. For example, the chairs can write down important
+ * information regarding the conference, organizational information, as well as
+ * relevant contact information for different issues.
+ */
+
 export default function WhiteboardWidget({
   markdown_content,
 }: { markdown_content: string }) {

@@ -6,7 +6,6 @@ import { InputText } from "primereact/inputtext";
 import { InputTextarea } from "primereact/inputtextarea";
 import { Dropdown } from "primereact/dropdown";
 import { useI18nContext } from "@/src/i18n/i18n-react";
-
 import {
   faComment,
   faExclamationTriangle,
@@ -25,6 +24,10 @@ interface DropdownOptions {
   value: string;
   icon: FontAwesomeIconProps["icon"];
 }
+
+/** This Component is used in the Actions Widget on the Dashboard.
+ * The buttons of the widget open a dialog with a simple form that allows the user to contact the chair or the research team.
+ */
 
 export default function ActionsWidget() {
   const { LL } = useI18nContext();

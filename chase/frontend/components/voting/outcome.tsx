@@ -5,6 +5,14 @@ import { faXmarkCircle } from "@fortawesome/free-solid-svg-icons/faXmarkCircle";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useI18nContext } from "@/src/i18n/i18n-react";
 
+/**
+ * This Component is used in the Voting Component.
+ * It displays the outcome of the voting.
+ * It is only displayed, when the outcome variable is set by the server.
+ * It displays a green checkmark, when the vote was successful.
+ * It displays a red X, when the vote failed.
+ */
+
 export default function VotingBar({ outcome }: Voting) {
   const { LL } = useI18nContext();
     return (

@@ -15,6 +15,10 @@
     "useIgnoreFile": true
   },
   "files": {
-    "ignore": ["chase/frontend/src/i18n/*.ts", "chase/frontend/src/i18n/*.tsx"]
+    "ignore": [
+      "chase/frontend/src/i18n/*.ts",
+      "chase/frontend/src/i18n/*.tsx",
+      "chase/frontend/backend-client"
+    ]
   }
 }

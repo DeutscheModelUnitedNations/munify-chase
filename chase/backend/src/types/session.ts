@@ -1,4 +1,3 @@
-import { ConferenceRole, Prisma } from "@prisma/client";
 import * as m from "fastify";
 /*
 Typescript type for the session.

@@ -99,7 +99,6 @@ export default function SpeakerBlock({
 }
 
 function HourglasAnimation() {
-  const [animationState, setAnimationState] = React.useState<number>(0);
   const [icon, setIcon] = React.useState(faHourglassStart);
   const [WrapperStyleClass, setWrapperStyleClass] =
     React.useState<string>("hourglass");
@@ -107,19 +106,15 @@ function HourglasAnimation() {
   useEffect(() => {
     const animation = setInterval(() => {
       setTimeout(() => {
-        setAnimationState(1);
         setIcon(faHourglassHalf);
       }, 500);
       setTimeout(() => {
-        setAnimationState(2);
         setIcon(faHourglassEnd);
       }, 1000);
       setTimeout(() => {
-        setAnimationState(3);
         setWrapperStyleClass("hourglass hourglass-animation");
       }, 1500);
       setTimeout(() => {
-        setAnimationState(0);
         setIcon(faHourglassStart);
         setWrapperStyleClass("hourglass");
       }, 2000);

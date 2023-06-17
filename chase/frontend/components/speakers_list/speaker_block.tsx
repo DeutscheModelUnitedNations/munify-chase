@@ -43,11 +43,13 @@ export default function SpeakerBlock({
   };
 
   useEffect(() => {
+    let timeInterval: NodeJS.Timeout;
+
     if (timer.paused) {
       setTimerState("paused");
       setTimeLeft(displayTimer(timer.durationMilliseconds));
     } else {
-      const timeInterval = setInterval(() => {
+      timeInterval = setInterval(() => {
         const timerInMilliseconds: number =
           timer.durationMilliseconds - (Date.now() - timer.start.getTime());
         setTimeLeft(displayTimer(timerInMilliseconds));
@@ -58,6 +60,10 @@ export default function SpeakerBlock({
         }
       }, 1000);
     }
+
+    return () => {
+      clearInterval(timeInterval);
+    };
   }, [timer]);
 
   return (

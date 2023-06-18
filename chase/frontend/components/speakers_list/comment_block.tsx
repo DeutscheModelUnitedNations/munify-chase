@@ -1,5 +1,5 @@
 import React from "react";
-import { useI18nContext } from "@/src/i18n/i18n-react";
+import { useI18nContext } from "@/i18n/i18n-react";
 
 /**
  * This Component is used on the Speakers List Page.

@@ -3,7 +3,10 @@ import React from "react";
 export default function HeaderTemplate({
   children,
 }: { children: React.ReactNode }) {
-  // This is a style component. It is used to create a header div for pages Like the dashboard.
+  
+/** 
+ * This is a style component. It is used to create a header div for pages Like the dashboard.
+ */
 
   return (
     <>

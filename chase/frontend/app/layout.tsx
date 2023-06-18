@@ -12,6 +12,7 @@ import { detectLocale, navigatorDetector } from "typesafe-i18n/detectors";
 import { loadLocale } from "@/src/i18n/i18n-util.sync";
 import { baseLocale, locales } from "@/src/i18n/i18n-util";
 import TypesafeI18n from "@/src/i18n/i18n-react";
+import { AuthProvider } from "@/contexts/auth";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -40,9 +41,11 @@ export default function RootLayout({
 
   return (
     <TypesafeI18n locale={locale}>
-      <html lang="de">
-        <body className={inter.className}>{children}</body>
-      </html>
+      <AuthProvider>
+        <html lang="de">
+          <body className={inter.className}>{children}</body>
+        </html>
+      </AuthProvider>
     </TypesafeI18n>
   );
 }

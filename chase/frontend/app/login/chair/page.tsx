@@ -6,7 +6,7 @@ import { Messages } from "primereact/messages";
 import UsernameLogin from "@/components/login/username";
 import PasswordLogin from "@/components/login/password_chair";
 import Link from "next/link";
-import { useI18nContext } from "@/src/i18n/i18n-react";
+import { useI18nContext } from "@/i18n/i18n-react";
 
 export default function loginVorsitz() {
   const { LL } = useI18nContext();

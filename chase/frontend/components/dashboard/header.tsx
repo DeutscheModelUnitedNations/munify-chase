@@ -4,7 +4,7 @@ import getCountryNameByCode from "../../misc/get_country_name_by_code";
 import getFlagPathByCode from "@/misc/get_flag_path_by_code";
 import { CountryCode } from "@/custom_types";
 import HeaderTemplate from "../header_template";
-import { useI18nContext } from "@/src/i18n/i18n-react";
+import { useI18nContext } from "@/i18n/i18n-react";
 import { LargeFlag } from "../flag_templates";
 interface HeaderProps {
   countryCode: CountryCode;

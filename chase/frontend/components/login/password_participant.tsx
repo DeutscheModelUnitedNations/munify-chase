@@ -11,7 +11,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import getFlagPathByCode from "@/misc/get_flag_path_by_code";
 import { CountryCode } from "@/custom_types";
-import { useI18nContext } from "@/src/i18n/i18n-react";
+import { useI18nContext } from "@/i18n/i18n-react";
 
 /**
  * This Component is used in the Login Page for the participants. It is the second step of the login process.
@@ -21,6 +21,8 @@ import { useI18nContext } from "@/src/i18n/i18n-react";
  * which displays a plus if no committee is selected yet and opens a sidebar with a list of all committees.
  */
 
+// TODO: Type this function properly
+// @ts-ignore
 // TODO: Type this function properly
 // @ts-ignore
 export default function usernameLogin({ changeLoginState }) {

@@ -3,7 +3,7 @@ import WidgetTemplate from "@components/widget_template";
 import remarkGfm from "remark-gfm";
 import ReactMarkdown from "react-markdown";
 import { ScrollPanel } from "primereact/scrollpanel";
-import { useI18nContext } from "@/src/i18n/i18n-react";
+import { useI18nContext } from "@/i18n/i18n-react";
 
 /**
  * This Component is used in the Dashboard. It displays the Whiteboard Widget.

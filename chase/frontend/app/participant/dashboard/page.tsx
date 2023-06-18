@@ -13,7 +13,7 @@ import ActionsWidget from "@/components/dashboard/actions";
 import { apiTestData } from "@/test_data";
 import { votingAlert } from "@/misc/voting_alert";
 import { useRouter } from "next/navigation";
-import { useI18nContext } from "@/src/i18n/i18n-react";
+import { useI18nContext } from "@/i18n/i18n-react";
 
 export default function participant_dashboard() {
   const Router = useRouter();

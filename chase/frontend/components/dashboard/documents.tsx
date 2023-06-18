@@ -6,7 +6,7 @@ import Paper from "@components/dashboard/documents/paper";
 import { ScrollPanel } from "primereact/scrollpanel";
 import { Divider } from "primereact/divider";
 import { Document } from "@/custom_types";
-import { useI18nContext } from "@/src/i18n/i18n-react";
+import { useI18nContext } from "@/i18n/i18n-react";
 import FlipMove from "react-flip-move";
 
 /**

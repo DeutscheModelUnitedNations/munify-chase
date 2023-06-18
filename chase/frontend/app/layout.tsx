@@ -1,4 +1,3 @@
-"use client";
 import "./globals.scss";
 import { Inter } from "next/font/google"; // TODO Remove Google Fonts and use local fonts (legal reasons)
 
@@ -9,9 +8,9 @@ import "primereact/resources/primereact.min.css";
 //icons
 import "primeicons/primeicons.css";
 import { detectLocale, navigatorDetector } from "typesafe-i18n/detectors";
-import { loadLocale } from "@/src/i18n/i18n-util.sync";
-import { baseLocale, locales } from "@/src/i18n/i18n-util";
-import TypesafeI18n from "@/src/i18n/i18n-react";
+import { loadLocale } from "@/i18n/i18n-util.sync";
+import { baseLocale, locales } from "@/i18n/i18n-util";
+import TypesafeI18n from "@/i18n/i18n-react";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -24,7 +23,7 @@ export default function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
-  // TODO inspect the way locale is detected and loaded. We may want to switch to a more advanced locale detection mechanism.
+  // TODO inspect the way locale is detected and loaded.
   // The Problem was that the locale was not loaded on the client side. There was a build error because the navigator was not defined on the server side.
   // // https://github.com/ivanhofer/typesafe-i18n/tree/main/packages/detectors)
   // const locale = detectLocale(baseLocale, locales, navigatorDetector);
@@ -37,7 +36,7 @@ export default function RootLayout({
     locale = detectLocale(baseLocale, locales, navigatorDetector);
     loadLocale(locale);
   }
-
+  
   return (
     <TypesafeI18n locale={locale}>
       <html lang="de">

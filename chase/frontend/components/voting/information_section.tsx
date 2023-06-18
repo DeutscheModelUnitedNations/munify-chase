@@ -6,7 +6,7 @@ import { faInfoCircle } from "@fortawesome/free-solid-svg-icons/faInfoCircle";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { LargeFlag } from "@components/flag_templates";
 import { faPieChart } from "@fortawesome/free-solid-svg-icons";
-import { useI18nContext } from "@/src/i18n/i18n-react";
+import { useI18nContext } from "@/i18n/i18n-react";
 
 /**
  * This Component is used in the Voting Component.

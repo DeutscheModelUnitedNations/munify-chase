@@ -8,7 +8,7 @@ import {
   faPlusCircle,
   faSpinner,
 } from "@fortawesome/free-solid-svg-icons";
-import { useI18nContext } from "@/src/i18n/i18n-react";
+import { useI18nContext } from "@/i18n/i18n-react";
 import { AnimatePresence, motion } from "framer-motion";
 
 /**

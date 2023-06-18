@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Button } from "primereact/button";
 import { InputText } from "primereact/inputtext";
-import { useI18nContext } from "@/src/i18n/i18n-react";
+import { useI18nContext } from "@/i18n/i18n-react";
 
 /**
  * This component handels the first step in the login process for all users.
@@ -10,6 +10,8 @@ import { useI18nContext } from "@/src/i18n/i18n-react";
  * When the username matches the database, he is redirected to the password page.
  */
 
+// TODO: Type this function properly
+// @ts-ignore
 // TODO: Type this function properly
 // @ts-ignore
 export default function UsernameLogin({ changeLoginState }) {

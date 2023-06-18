@@ -5,7 +5,7 @@ import { Button } from "primereact/button";
 import { Password } from "primereact/password";
 import { Checkbox } from "primereact/checkbox";
 import Link from "next/link";
-import { useI18nContext } from "@/src/i18n/i18n-react";
+import { useI18nContext } from "@/i18n/i18n-react";
 
 /**
  * This Component is used in the Login Page for the Chair. It is the second step of the login process.

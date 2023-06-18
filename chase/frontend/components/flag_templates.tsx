@@ -3,7 +3,7 @@ import Image from "next/image";
 import { CountryCode } from "@/custom_types";
 import getFlagPathByCode from "@/misc/get_flag_path_by_code";
 import getCountryNameByCode from "@/misc/get_country_name_by_code";
-import { useI18nContext } from "@/src/i18n/i18n-react";
+import { useI18nContext } from "@/i18n/i18n-react";
 
 /**
  * The following Components are all different sizes of flags.

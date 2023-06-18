@@ -11,7 +11,7 @@ import Outcome from "@components/voting/outcome";
 import InformationSection from "@/components/voting/information_section";
 import WaitingForResults from "@components/voting/waiting_for_results";
 import { votingTestData as testData } from "@/test_data";
-import { useI18nContext } from "@/src/i18n/i18n-react";
+import { useI18nContext } from "@/i18n/i18n-react";
 import FlipMove from "react-flip-move";
 
 /**

@@ -4,7 +4,7 @@ import Timeline from "@components/speakers_list/timeline";
 import getCountryNameByCode from "@/misc/get_country_name_by_code";
 import WidgetBoxTemplate from "../widget_box_template";
 import { NormalFlag as Flag } from "@components/flag_templates";
-import { useI18nContext } from "@/src/i18n/i18n-react";
+import { useI18nContext } from "@/i18n/i18n-react";
 
 /**
  * This Component is used in the Speakers List and Comment List on the Speakers List Page.

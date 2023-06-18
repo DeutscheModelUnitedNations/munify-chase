@@ -1,6 +1,6 @@
 "use client";
 import React from "react";
-import { useI18nContext } from "@/src/i18n/i18n-react";
+import { useI18nContext } from "@/i18n/i18n-react";
 
 export default function Loading() {
   const { LL } = useI18nContext();

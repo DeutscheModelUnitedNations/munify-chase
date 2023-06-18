@@ -6,7 +6,7 @@ import { Motion } from "@/custom_types";
 import { faCircleQuestion, faGavel } from "@fortawesome/free-solid-svg-icons";
 import NoDataPlaceholder from "../no_data_placeholder";
 import { SmallFlag } from "../flag_templates";
-import { useI18nContext } from "@/src/i18n/i18n-react";
+import { useI18nContext } from "@/i18n/i18n-react";
 import FlipMove from "react-flip-move";
 import { motionTestData } from "@/test_data";
 

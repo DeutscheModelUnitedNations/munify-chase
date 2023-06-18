@@ -10,7 +10,7 @@ import { faBan, faPlusCircle } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { SpeakersListData } from "@/custom_types";
 import { apiTestData } from "@/test_data";
-import { useI18nContext } from "@/src/i18n/i18n-react";
+import { useI18nContext } from "@/i18n/i18n-react";
 
 export default function SpeakersList() {
   const { LL } = useI18nContext();

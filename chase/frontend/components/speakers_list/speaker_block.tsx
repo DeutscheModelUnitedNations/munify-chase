@@ -11,7 +11,7 @@ import {
 import "./timer_animations.scss";
 import { CurrentSpeaker } from "@/custom_types";
 import { LargeFlag } from "../flag_templates";
-import { useI18nContext } from "@/src/i18n/i18n-react";
+import { useI18nContext } from "@/i18n/i18n-react";
 import { AnimatePresence, motion } from "framer-motion";
 
 /**

@@ -9,9 +9,9 @@ import "primereact/resources/primereact.min.css";
 //icons
 import "primeicons/primeicons.css";
 import { detectLocale, navigatorDetector } from "typesafe-i18n/detectors";
-import { loadLocale } from "@/src/i18n/i18n-util.sync";
-import { baseLocale, locales } from "@/src/i18n/i18n-util";
-import TypesafeI18n from "@/src/i18n/i18n-react";
+import { loadLocale } from "@/i18n/i18n-util.sync";
+import { baseLocale, locales } from "@/i18n/i18n-util";
+import TypesafeI18n from "@/i18n/i18n-react";
 
 const inter = Inter({ subsets: ["latin"] });
 

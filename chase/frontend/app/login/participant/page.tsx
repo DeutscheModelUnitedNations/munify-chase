@@ -6,7 +6,7 @@ import UsernameLogin from "@/components/login/username";
 import PasswordLogin from "@/components/login/password_participant";
 import Loading from "@/app/loading";
 import Link from "next/link";
-import { useI18nContext } from "@/src/i18n/i18n-react";
+import { useI18nContext } from "@/i18n/i18n-react";
 
 export default function loginVorsitz() {
   const [loginStage, changeLoginState] = useState(0);

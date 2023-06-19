@@ -5,6 +5,13 @@ export default function getCountryNameByCode(
   countryCode: string,
   locale: string,
 ): CountryCode {
+  /**
+   * This function is used to get the name of a country in a given language.
+   * It uses the country code to find the country in the countries.json file.
+   * If the country is not found, it returns "xxx".
+   * If the language is not found or specified, it returns the English name.
+   */
+
   const availableLanguages = [
     "ar",
     "bg",

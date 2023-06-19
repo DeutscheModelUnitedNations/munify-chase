@@ -14,18 +14,18 @@ import { LargeFlag } from "../flag_templates";
 import { useI18nContext } from "@/i18n/i18n-react";
 import { AnimatePresence, motion } from "framer-motion";
 
-/**
- * This Component is used in the SpeakersList. It creates a box for the current speaker,
- * containing the country's flag, country's name and the time left.
- * The time left is displayed as a timer, the prefixing icon changes depending on the status: active, paused or overtime.
- * The icon is animated, the animation is written in the Hourglass Component below and the timer_animations.scss file.
- */
-
 export default function SpeakerBlock({
   countryCode,
   timer,
   customName,
 }: CurrentSpeaker) {
+  /**
+   * This Component is used in the SpeakersList. It creates a box for the current speaker,
+   * containing the country's flag, country's name and the time left.
+   * The time left is displayed as a timer, the prefixing icon changes depending on the status: active, paused or overtime.
+   * The icon is animated, the animation is written in the Hourglass Component below and the timer_animations.scss file.
+   */
+
   const { LL, locale } = useI18nContext();
 
   const [timerState, setTimerState] = useState<string>("active");

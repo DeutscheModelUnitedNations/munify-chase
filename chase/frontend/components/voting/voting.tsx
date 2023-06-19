@@ -14,16 +14,16 @@ import { votingTestData as testData } from "@/test_data";
 import { useI18nContext } from "@/i18n/i18n-react";
 import FlipMove from "react-flip-move";
 
-/**
- * This Component is the main Component of the Voting Area. It combines several other
- * Components like the InformationSection, the VotingBar, the CastVote Component, the CountryGrid, the Outcome
- * Component, and the WaitingForResults Component.
- * It also handles all the logic for the display of the different Components.
- * For example, it checks if the user's country is voting, if the user's country has already voted, and if the voting
- * is still ongoing. Based on these checks, it decides which Component to display.
- */
-
 export default function VotingArea() {
+  /**
+   * This Component is the main Component of the Voting Area. It combines several other
+   * Components like the InformationSection, the VotingBar, the CastVote Component, the CountryGrid, the Outcome
+   * Component, and the WaitingForResults Component.
+   * It also handles all the logic for the display of the different Components.
+   * For example, it checks if the user's country is voting, if the user's country has already voted, and if the voting
+   * is still ongoing. Based on these checks, it decides which Component to display.
+   */
+
   const { LL } = useI18nContext();
   const [data, setData] = useState<Voting>(testData);
   const [myCountryIsVoting, setMyCountryIsVoting] = useState<boolean>(false);

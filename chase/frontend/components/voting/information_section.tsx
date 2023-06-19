@@ -8,12 +8,6 @@ import { LargeFlag } from "@components/flag_templates";
 import { faPieChart } from "@fortawesome/free-solid-svg-icons";
 import { useI18nContext } from "@/i18n/i18n-react";
 
-/**
- * This Component is used in the Voting Component.
- * It displays the information about the voting.
- * It includes the title, description, introducedBy, substantiveVote and majority.
- */
-
 export default function InformationSection({
   title,
   description,
@@ -21,6 +15,12 @@ export default function InformationSection({
   substantiveVote,
   majority,
 }: Voting) {
+  /**
+   * This Component is used in the Voting Component.
+   * It displays the information about the voting.
+   * It includes the title, description, introducedBy, substantiveVote and majority.
+   */
+
   const { LL, locale } = useI18nContext();
 
   const getFlag = (countryCode: CountryCode = "uno"): CountryCode => {

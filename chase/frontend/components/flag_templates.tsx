@@ -5,16 +5,16 @@ import getFlagPathByCode from "@/misc/get_flag_path_by_code";
 import getCountryNameByCode from "@/misc/get_country_name_by_code";
 import { useI18nContext } from "@/i18n/i18n-react";
 
-/**
- * The following Components are all different sizes of flags.
- * They are used by many Components throughout the app.
- * The smalles size includes a hover flag that – when activated – shows the name of the country as a tooltip.
- */
-
 export function SmallFlag({
   countryCode,
   showNameOnHover = false,
 }: { countryCode: CountryCode; showNameOnHover?: boolean }) {
+  /**
+   * The following Components are all different sizes of flags.
+   * They are used by many Components throughout the app.
+   * The smalles size includes a hover flag that – when activated – shows the name of the country as a tooltip.
+   */
+
   const { LL, locale } = useI18nContext();
 
   const [isHovered, setIsHovered] = useState(false);

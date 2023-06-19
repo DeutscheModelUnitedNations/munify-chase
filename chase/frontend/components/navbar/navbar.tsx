@@ -17,13 +17,13 @@ import {
   faHouse,
 } from "@fortawesome/free-solid-svg-icons";
 
-/**
- * This Component is used in the Layout Component.
- * It displays the navbar on the left side of the screen on all pages except the login page.
- * It contains buttons to navigate to other pages and a button to open the settings sidebar.
- */
-
 export default function Navbar() {
+  /**
+   * This Component is used in the Layout Component.
+   * It displays the navbar on the left side of the screen on all pages except the login page.
+   * It contains buttons to navigate to other pages and a button to open the settings sidebar.
+   */
+
   const router = useRouter();
 
   const [settingsSidebarVisible, setSettingsSidebarVisible] = useState(false);

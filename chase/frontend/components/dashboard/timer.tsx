@@ -10,12 +10,6 @@ import { faCirclePause } from "@fortawesome/free-solid-svg-icons";
 import { useI18nContext } from "@/i18n/i18n-react";
 import { AnimatePresence, motion } from "framer-motion";
 
-/**
- * This Component is used in the Dashboard. It shows the current timer status –
- * e.g. for informal sessions, breaks, suspensions, etc.
- * With this widget, participants can see the end time of the current session as well as a countdown.
- */
-
 export default function TimerWidget({
   headline,
   until,
@@ -25,6 +19,12 @@ export default function TimerWidget({
   until: Date | null;
   category: "formal" | "informal" | "pause" | "suspension"; // TODO replace with typescript enum
 }) {
+  /**
+   * This Component is used in the Dashboard. It shows the current timer status –
+   * e.g. for informal sessions, breaks, suspensions, etc.
+   * With this widget, participants can see the end time of the current session as well as a countdown.
+   */
+
   const { LL } = useI18nContext();
   const { showToast } = useContext(ToastContext);
 

@@ -25,11 +25,11 @@ interface DropdownOptions {
   icon: FontAwesomeIconProps["icon"];
 }
 
-/** This Component is used in the Actions Widget on the Dashboard.
- * The buttons of the widget open a dialog with a simple form that allows the user to contact the chair or the research team.
- */
-
 export default function ActionsWidget() {
+  /** This Component is used in the Actions Widget on the Dashboard.
+   * The buttons of the widget open a dialog with a simple form that allows the user to contact the chair or the research team.
+   */
+
   const { LL } = useI18nContext();
 
   const [displayChairDialog, setDisplayChairDialog] = React.useState(false);

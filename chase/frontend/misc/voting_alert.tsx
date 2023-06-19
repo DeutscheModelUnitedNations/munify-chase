@@ -1,7 +1,12 @@
-import { TranslationFunctions } from "@/src/i18n/i18n-types";
+import { TranslationFunctions } from "@/i18n/i18n-types";
 import { confirmDialog } from "primereact/confirmdialog";
 
 export const votingAlert = (routing: () => void, LL: TranslationFunctions) => {
+  /**
+   * This function is used to display a prompt to the user when a new Vote is opened
+   * to guide them to the voting page.
+   */
+
   confirmDialog({
     header: LL.participants.voting.votingAlert.VOTING_ALERT_HEADER(),
     message: LL.participants.voting.votingAlert.VOTING_ALERT_MESSAGE(),

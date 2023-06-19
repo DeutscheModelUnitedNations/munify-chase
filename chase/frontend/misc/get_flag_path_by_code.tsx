@@ -1,6 +1,10 @@
 import { CountryCode } from "@/custom_types";
 
 export default function getFlagPathByCode(countryCode: CountryCode): string {
+  /**
+   * This function is used to get the path to the flag image for a given country code.
+   */
+
   let path = "";
 
   if (countryCode.startsWith("nsa_")) {

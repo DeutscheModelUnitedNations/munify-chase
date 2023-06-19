@@ -13,17 +13,17 @@ import { useI18nContext } from "@/i18n/i18n-react";
 import { AnimatePresence, motion } from "framer-motion";
 import FlipMove from "react-flip-move";
 
-/**
- * This Component is used in the Voting Component.
- * It displays all voting countries in a grid, sorted by their vote.
- * It also includes a transition animation, when a country changes from remaining to a vote.
- */
-
 export default function CountryGrid({
   votes,
   votingCountries,
   substantiveVote,
 }: Voting) {
+  /**
+   * This Component is used in the Voting Component.
+   * It displays all voting countries in a grid, sorted by their vote.
+   * It also includes a transition animation, when a country changes from remaining to a vote.
+   */
+
   const { LL } = useI18nContext();
 
   const [yesVotes, setYesVotes] = useState<CountryCode[]>([]);

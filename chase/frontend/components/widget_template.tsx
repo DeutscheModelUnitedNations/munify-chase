@@ -1,11 +1,5 @@
 import React from "react";
 
-/**
- * This Component is the main style template for any widget inside the app.
- * It provides a background color, a border, a border radius, a padding and a margin.
- * It is used in many Components on higher levels of the app, but with the most importance for the Dashboard.
- */
-
 interface WidgetTemplateProps {
   children: React.ReactNode;
   cardTitle: string;
@@ -17,6 +11,12 @@ export default function WidgetTemplate({
   cardTitle,
   styles,
 }: WidgetTemplateProps) {
+  /**
+   * This Component is the main style template for any widget inside the app.
+   * It provides a background color, a border, a border radius, a padding and a margin.
+   * It is used in many Components on higher levels of the app, but with the most importance for the Dashboard.
+   */
+
   const widgetClassNames = () => {
     const classNames = ["flex w-full flex-col bg-gray-light rounded-lg p-3"];
 

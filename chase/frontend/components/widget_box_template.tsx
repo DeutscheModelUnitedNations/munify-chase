@@ -4,7 +4,13 @@ export default function WidgetBoxTemplate({
   children,
   highlight,
   className,
-}: { children: React.ReactNode; highlight?: boolean; className?: string }) {
+  onClick,
+}: {
+  children: React.ReactNode;
+  highlight?: boolean;
+  className?: string;
+  onClick?: () => void;
+}) {
   /**
    * This Component is a style only component that provides a box for any list inside a widget.
    * It provides a background color, a border, a border radius, a padding and a margin,
@@ -32,7 +38,9 @@ export default function WidgetBoxTemplate({
 
   return (
     <>
-      <div className={getClassNames()}>{children}</div>
+      <div className={getClassNames()} onClick={onClick} onKeyDown={onClick}>
+        {children}
+      </div>
     </>
   );
 }

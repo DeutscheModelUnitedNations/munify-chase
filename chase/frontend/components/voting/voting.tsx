@@ -10,11 +10,14 @@ import { myCountry } from "@/test_data";
 import Outcome from "@components/voting/outcome";
 import InformationSection from "@/components/voting/information_section";
 import WaitingForResults from "@components/voting/waiting_for_results";
-import { votingTestData as testData } from "@/test_data";
 import { useI18nContext } from "@/i18n/i18n-react";
 import FlipMove from "react-flip-move";
 
-export default function VotingArea() {
+export default function VotingArea({
+  votingData,
+}: {
+  votingData: Voting | undefined;
+}) {
   /**
    * This Component is the main Component of the Voting Area. It combines several other
    * Components like the InformationSection, the VotingBar, the CastVote Component, the CountryGrid, the Outcome
@@ -25,60 +28,52 @@ export default function VotingArea() {
    */
 
   const { LL } = useI18nContext();
-  const [data, setData] = useState<Voting>(testData);
   const [myCountryIsVoting, setMyCountryIsVoting] = useState<boolean>(false);
   const [myCountryHasVoted, setMyCountryHasVoted] = useState<boolean>(false);
 
   useEffect(() => {
-    const pollingInterval = setInterval(() => {
-      setData(testData);
+    if (votingData) {
+      setMyCountryIsVoting(votingData.votingCountries.includes(myCountry));
 
-      if (data) {
-        setMyCountryIsVoting(data.votingCountries.includes(myCountry));
-
-        const myVote = data.votes.find(
-          (vote) => vote.country === myCountry,
-        )?.vote;
-        setMyCountryHasVoted(!!myVote);
-      }
-
-      console.log("polling");
-    }, 3000);
-    return () => clearInterval(pollingInterval);
-  }, []);
+      const myVote = votingData.votes.find(
+        (vote) => vote.country === myCountry,
+      )?.vote;
+      setMyCountryHasVoted(!!myVote);
+    }
+  }, [votingData]);
 
   return (
     <>
       <WidgetTemplate cardTitle={LL.participants.voting.VOTING_HEADLINE()}>
-        {!data ? (
+        {!votingData ? (
           <NoDataPlaceholder title={LL.participants.voting.NO_DATA_VOTING()} />
         ) : (
           <ScrollPanel className="w-full h-full">
             <FlipMove duration={1000} className="flex flex-col gap-2">
               <div key="Header">
-                <InformationSection {...data} />
+                <InformationSection {...votingData} />
+              </div>
+              {/* {votingData.outcome && (
+                <div key="Outcome">
+                  <Outcome {...votingData} />
+                </div>
+              )} */}
+              <div key="Bar">
+                <VotingBar {...votingData} />
+              </div>
+              <div key="Grid">
+                <CountryGrid {...votingData} />
               </div>
               {!myCountryHasVoted && myCountryIsVoting && (
                 <div key="CastVote">
-                  <CastVote myCountry={myCountry} {...data} />
+                  <CastVote myCountry={myCountry} {...votingData} />
                 </div>
               )}
-              {!data.outcome && myCountryHasVoted && (
+              {!votingData.outcome && myCountryHasVoted && (
                 <div key="WaitingForResults">
                   <WaitingForResults />
                 </div>
               )}
-              {data.outcome && (
-                <div key="Outcome">
-                  <Outcome {...data} />
-                </div>
-              )}
-              <div key="Bar">
-                <VotingBar {...data} />
-              </div>
-              <div key="Grid">
-                <CountryGrid {...data} />
-              </div>
             </FlipMove>
           </ScrollPanel>
         )}

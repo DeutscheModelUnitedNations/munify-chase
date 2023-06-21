@@ -245,8 +245,8 @@ export interface Motion {
   motionId: string;
   motionText: string;
   introducedBy: CountryCode;
-  personalPointOfMotion: boolean;
-  active: boolean;
+  status: "open" | "in-voting" | "passed" | "failed";
+  voting?: Voting;
 }
 
 export type VotingMajority =
@@ -262,7 +262,7 @@ export interface VotingResult {
 }
 
 export interface Voting {
-  votingId: string;
+  motionId: string;
   title: string;
   description?: string;
   introducedBy?: CountryCode;

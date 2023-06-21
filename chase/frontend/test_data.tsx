@@ -163,43 +163,12 @@ export const apiTestData: NormalApiResponse = {
   documents: documentsTestData,
 };
 
-export const motionTestData: Motion[] = [
-  {
-    motionId: "0",
-    introducedBy: "deu",
-    personalPointOfMotion: true,
-    motionText: "Recht auf Information",
-    active: true,
-  },
-  {
-    motionId: "1",
-    introducedBy: "deu",
-    personalPointOfMotion: false,
-    motionText: "Vorgezogene Abstimmung über den Resolutionsentwurf als Ganzen",
-    active: false,
-  },
-  {
-    motionId: "2",
-    introducedBy: "fra",
-    personalPointOfMotion: false,
-    motionText: "Informelle Sitzung",
-    active: false,
-  },
-  {
-    motionId: "3",
-    introducedBy: "cpv",
-    personalPointOfMotion: false,
-    motionText: "Abschluss der Redeliste",
-    active: false,
-  },
-];
-
-export const votingTestData: Voting = {
-  votingId: "1",
-  title: "Informelle Sitzung von 15 Minuten",
+export const votingTestData1: Voting = {
+  motionId: "1",
+  title: "Abstimmung über den Resolutionsentwurf RE/GV/23/1",
   description:
     "Sollte der Antrag angenommen werden, wird das Gremium in eine informelle Sitzung übergehen, die 15 Minuten dauern wird.",
-  introducedBy: "cpv",
+  introducedBy: "uno",
   substantiveVote: true,
   votingCountries: [
     "cpv",
@@ -273,3 +242,141 @@ export const votingTestData: Voting = {
   ],
   outcome: "passed",
 };
+
+export const votingTestData2: Voting = {
+  motionId: "2",
+  title:
+    "Antrag auf vorgezogene Abstimmung über den Resolutionsentwurf als Ganzen",
+  description:
+    "Wenn dieser Antrag angenommen wird, wird über den Resolutionsentwurf als Ganzen abgestimmt. Dies bedeutet, dass die einzelnen operativen Absätze des Resolutionsentwurfs nicht mehr einzeln abgestimmt werden. Sollte der Resolutionsentwurf in der folgenden Abstimmung nicht angenommen werden, wird mit der Behandlung des nächsten Resolutionsentwurfs fortgefahren.",
+  introducedBy: "deu",
+  substantiveVote: false,
+
+  votingCountries: [
+    "cpv",
+    "deu",
+    "fra",
+    "chn",
+    "rus",
+    "usa",
+    "gbr",
+    "jpn",
+    "cmr",
+    "alb",
+    "arm",
+    "aut",
+    "bhr",
+  ],
+  majority: "two-thirds",
+  votes: [
+    {
+      country: "cpv",
+      vote: "yes",
+    },
+    {
+      country: "deu",
+      vote: "yes",
+    },
+    {
+      country: "fra",
+      vote: "no",
+    },
+  ],
+  // outcome: "failed",
+};
+
+export const votingTestData3: Voting = {
+  motionId: "3",
+  title: "Antrag auf vorgezogene Abstimmung über den Resolutionsentwurf",
+  description:
+    "Wenn dieser Antrag angenommen wird, wird über den Resolutionsentwurf als Ganzen abgestimmt. Dies bedeutet, dass die einzelnen operativen Absätze des Resolutionsentwurfs nicht mehr einzeln abgestimmt werden. Sollte der Resolutionsentwurf in der folgenden Abstimmung nicht angenommen werden, wird mit der Behandlung des nächsten Resolutionsentwurfs fortgefahren.",
+  introducedBy: "cpv",
+  substantiveVote: false,
+  votingCountries: [
+    "cpv",
+    "deu",
+    "fra",
+    "chn",
+    "rus",
+    "usa",
+    "gbr",
+    "jpn",
+    "cmr",
+    "alb",
+    "arm",
+    "aut",
+    "bhr",
+  ],
+  majority: "two-thirds",
+  votes: [
+    {
+      country: "cpv",
+      vote: "yes",
+    },
+    {
+      country: "deu",
+      vote: "yes",
+    },
+    {
+      country: "fra",
+      vote: "no",
+    },
+    {
+      country: "chn",
+      vote: "no",
+    },
+    {
+      country: "rus",
+      vote: "no",
+    },
+    {
+      country: "usa",
+      vote: "no",
+    },
+    {
+      country: "gbr",
+      vote: "no",
+    },
+    {
+      country: "jpn",
+      vote: "no",
+    },
+  ],
+  outcome: "failed",
+};
+
+export const motionTestData: Motion[] = [
+  {
+    motionId: "1",
+    introducedBy: "deu",
+    motionText: "Vorgezogene Abstimmung über den Resolutionsentwurf als Ganzen",
+    status: "in-voting",
+    voting: votingTestData2,
+  },
+  {
+    motionId: "0",
+    introducedBy: "cpv",
+    motionText: "Schließung der Redeliste",
+    status: "open",
+  },
+  {
+    motionId: "2",
+    introducedBy: "uno",
+    motionText: "Abstimmung über den Resolutionsentwurf RE/GV/23/1",
+    status: "passed",
+    voting: votingTestData1,
+  },
+  {
+    motionId: "4",
+    introducedBy: "fra",
+    motionText: "Eröffnung der Redeliste",
+    status: "passed",
+  },
+  {
+    motionId: "3",
+    introducedBy: "cpv",
+    motionText: "Abschluss der Redeliste",
+    status: "failed",
+    voting: votingTestData3,
+  },
+];

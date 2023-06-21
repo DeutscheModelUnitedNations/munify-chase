@@ -84,10 +84,12 @@ const en = {
     },
 
     voting: {
-      MOTIONS_HEADLINE: "Motions",
+      ACTIVE_MOTIONS_TAB: "Motions on the Floor",
+      RECENT_MOTIONS_TAB: "Recent Motions",
+      RECENT_VOTINGS_TAB: "Recent Votings",
       NO_DATA_MOTIONS: "No open motions",
       VOTING_HEADLINE: "Voting",
-      NO_DATA_VOTING: "No open votings",
+      NO_DATA_VOTING: "No voting selected",
       votingInfo: {
         INTRODUCED_BY: "Introduced by",
         votingMode: {

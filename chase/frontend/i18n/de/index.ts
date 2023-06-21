@@ -84,10 +84,12 @@ const de = {
     },
 
     voting: {
-      MOTIONS_HEADLINE: "Anträge",
-      NO_DATA_MOTIONS: "Keine offenen Anträge",
-      VOTING_HEADLINE: "Abstimmungen",
-      NO_DATA_VOTING: "Keine offenen Abstimmungen",
+      ACTIVE_MOTIONS_TAB: "Aktuelle Anträge",
+      RECENT_MOTIONS_TAB: "Vergangene Anträge",
+      RECENT_VOTINGS_TAB: "Vergangene Abstimmungen",
+      NO_DATA_MOTIONS: "Aktuell keine Anträge",
+      VOTING_HEADLINE: "Abstimmung",
+      NO_DATA_VOTING: "Keine Abstimmung ausgewählt",
       votingInfo: {
         INTRODUCED_BY: "Eingebracht von",
         votingMode: {

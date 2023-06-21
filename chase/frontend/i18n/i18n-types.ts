@@ -244,9 +244,17 @@ type RootTranslation = {
 		}
 		voting: {
 			/**
-			 * M​o​t​i​o​n​s
+			 * M​o​t​i​o​n​s​ ​o​n​ ​t​h​e​ ​F​l​o​o​r
 			 */
-			MOTIONS_HEADLINE: string
+			ACTIVE_MOTIONS_TAB: string
+			/**
+			 * R​e​c​e​n​t​ ​M​o​t​i​o​n​s
+			 */
+			RECENT_MOTIONS_TAB: string
+			/**
+			 * R​e​c​e​n​t​ ​V​o​t​i​n​g​s
+			 */
+			RECENT_VOTINGS_TAB: string
 			/**
 			 * N​o​ ​o​p​e​n​ ​m​o​t​i​o​n​s
 			 */
@@ -256,7 +264,7 @@ type RootTranslation = {
 			 */
 			VOTING_HEADLINE: string
 			/**
-			 * N​o​ ​o​p​e​n​ ​v​o​t​i​n​g​s
+			 * N​o​ ​v​o​t​i​n​g​ ​s​e​l​e​c​t​e​d
 			 */
 			NO_DATA_VOTING: string
 			votingInfo: {
@@ -586,9 +594,17 @@ export type TranslationFunctions = {
 		}
 		voting: {
 			/**
-			 * Motions
+			 * Motions on the Floor
 			 */
-			MOTIONS_HEADLINE: () => LocalizedString
+			ACTIVE_MOTIONS_TAB: () => LocalizedString
+			/**
+			 * Recent Motions
+			 */
+			RECENT_MOTIONS_TAB: () => LocalizedString
+			/**
+			 * Recent Votings
+			 */
+			RECENT_VOTINGS_TAB: () => LocalizedString
 			/**
 			 * No open motions
 			 */
@@ -598,7 +614,7 @@ export type TranslationFunctions = {
 			 */
 			VOTING_HEADLINE: () => LocalizedString
 			/**
-			 * No open votings
+			 * No voting selected
 			 */
 			NO_DATA_VOTING: () => LocalizedString
 			votingInfo: {

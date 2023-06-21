@@ -3,14 +3,27 @@ import WidgetTemplate from "../widget_template";
 import WidgetBoxTemplate from "../widget_box_template";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Motion } from "@/custom_types";
-import { faCircleQuestion, faGavel } from "@fortawesome/free-solid-svg-icons";
+import {
+  faCircleCheck,
+  faCircleQuestion,
+  faGavel,
+  faSquarePollVertical,
+  faXmarkCircle,
+} from "@fortawesome/free-solid-svg-icons";
 import NoDataPlaceholder from "../no_data_placeholder";
 import { SmallFlag } from "../flag_templates";
 import { useI18nContext } from "@/i18n/i18n-react";
 import FlipMove from "react-flip-move";
-import { motionTestData } from "@/test_data";
 
-export default function Voting() {
+export default function Motions({
+  motionData,
+  highlightedMotionId,
+  setActiveMotion,
+}: {
+  motionData: Motion[];
+  highlightedMotionId?: string;
+  setActiveMotion: (motionId: string) => void;
+}) {
   /**
    * This Component is used on the Voting page and displays all open motions in a list format.
    * It also includes many animations, when a motion is added or removed.
@@ -20,28 +33,10 @@ export default function Voting() {
 
   const { LL } = useI18nContext();
 
-  const [data, setData] = useState<Motion[]>(motionTestData);
-
-  useEffect(() => {
-    const pollingInterval = setInterval(() => {
-      console.log("polling");
-      setData(motionTestData);
-    }, 1000);
-    return () => clearInterval(pollingInterval);
-  }, []);
-
-  const getIcon = (personalPointOfMotion: boolean) => {
-    if (personalPointOfMotion) {
-      return faCircleQuestion;
-    } else {
-      return faGavel;
-    }
-  };
-
   return (
     <>
-      <WidgetTemplate cardTitle={LL.participants.voting.MOTIONS_HEADLINE()}>
-        {data.length === 0 ? (
+      <WidgetTemplate cardTitle="">
+        {motionData.length === 0 ? (
           <NoDataPlaceholder title={LL.participants.voting.NO_DATA_MOTIONS()} />
         ) : (
           <FlipMove
@@ -51,23 +46,52 @@ export default function Voting() {
             leaveAnimation="fade"
             className="flex-1 flex flex-col gap-2"
           >
-            {data.map((motion) => {
+            {motionData.map((motion) => {
               return (
                 <div key={motion.motionId}>
-                  <WidgetBoxTemplate highlight={motion.active}>
-                    <FontAwesomeIcon
-                      icon={getIcon(motion.personalPointOfMotion)}
-                      className=" text-2xl text-gray-icon"
+                  <WidgetBoxTemplate
+                    highlight={highlightedMotionId === motion.motionId}
+                    onClick={() => setActiveMotion(motion.motionId)}
+                  >
+                    <SmallFlag
+                      countryCode={motion.introducedBy}
+                      showNameOnHover
                     />
                     <div className="flex-1 flex-col justify-start items-center">
                       <div className="text-sm font-semibold text-gray-text">
                         {motion.motionText}
                       </div>
                     </div>
-                    <SmallFlag
-                      countryCode={motion.introducedBy}
-                      showNameOnHover
-                    />
+
+                    {motion.status === "in-voting" && (
+                      <FontAwesomeIcon
+                        icon={faSquarePollVertical}
+                        className=" text-2xl text-dmun fa-beat"
+                      />
+                    )}
+
+                    {(motion.status === "passed" ||
+                      motion.status === "failed") &&
+                      motion.voting && (
+                        <FontAwesomeIcon
+                          icon={faSquarePollVertical}
+                          className=" text-2xl text-gray-icon"
+                        />
+                      )}
+
+                    {motion.status === "passed" && (
+                      <FontAwesomeIcon
+                        icon={faCircleCheck}
+                        className="text-2xl text-green-700"
+                      />
+                    )}
+
+                    {motion.status === "failed" && (
+                      <FontAwesomeIcon
+                        icon={faXmarkCircle}
+                        className="text-2xl text-red-600"
+                      />
+                    )}
                   </WidgetBoxTemplate>
                 </div>
               );

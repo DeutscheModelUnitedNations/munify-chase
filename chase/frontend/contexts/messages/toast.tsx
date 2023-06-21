@@ -3,12 +3,12 @@ import { Toast, ToastMessage } from "primereact/toast";
 
 export const ToastContext = createContext({} as ToastContextType);
 
-export const ToastProvider = ({ children }: { children: React.ReactNode }) => {
-  /**
-   * This Component provides a context for the Toast Component from PrimeReact.
-   * It is used to show messages to the user, for example when a document was successfully created.
-   */
+/**
+ * This Component provides a context for the Toast Component from PrimeReact.
+ * It is used to show messages to the user, for example when a document was successfully created.
+ */
 
+export const ToastProvider = ({ children }: { children: React.ReactNode }) => {
   const toast = useRef<Toast>(null);
 
   const showToast = (message: ToastMessage) => {

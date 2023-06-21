@@ -8,6 +8,12 @@ import { LargeFlag } from "@components/flag_templates";
 import { faPieChart } from "@fortawesome/free-solid-svg-icons";
 import { useI18nContext } from "@/i18n/i18n-react";
 
+/**
+ * This Component is used in the Voting Component.
+ * It displays the information about the voting.
+ * It includes the title, description, introducedBy, substantiveVote and majority.
+ */
+
 export default function InformationSection({
   title,
   description,
@@ -15,12 +21,6 @@ export default function InformationSection({
   substantiveVote,
   majority,
 }: Voting) {
-  /**
-   * This Component is used in the Voting Component.
-   * It displays the information about the voting.
-   * It includes the title, description, introducedBy, substantiveVote and majority.
-   */
-
   const { LL, locale } = useI18nContext();
 
   const getFlag = (countryCode: CountryCode = "uno"): CountryCode => {
@@ -45,17 +45,17 @@ export default function InformationSection({
   };
 
   return (
-    <div className="flex flex-row justify-between gap-2 bg-white text-gray-text rounded-md p-3">
+    <div className="flex flex-row justify-between gap-2 mb-5">
       <div
         className="flex-1 grid items-center gap-3"
         style={{ gridTemplateColumns: "1fr auto" }}
       >
-        <div className="text-md font-bold col-span-2">{title}</div>
+        <div className="text-lg font-bold col-span-2">{title}</div>
         {description && (
           <>
             <FontAwesomeIcon
               icon={faInfoCircle}
-              className="text-lg justify-self-center"
+              className="text-lg justify-self-center ml-2"
             />
             <div className="text-sm">{description}</div>
           </>
@@ -64,7 +64,7 @@ export default function InformationSection({
           <>
             <FontAwesomeIcon
               icon={faFlag}
-              className="text-lg justify-self-center"
+              className="text-lg justify-self-center ml-2"
             />
             <div className="text-sm">
               {LL.participants.voting.votingInfo.INTRODUCED_BY()}{" "}
@@ -74,7 +74,7 @@ export default function InformationSection({
         )}
         <FontAwesomeIcon
           icon={faGavel}
-          className="text-xl justify-self-center"
+          className="text-xl justify-self-center ml-2"
         />
         {substantiveVote ? (
           <div className="text-sm">
@@ -87,12 +87,12 @@ export default function InformationSection({
         )}
         <FontAwesomeIcon
           icon={faPieChart}
-          className="text-xl justify-self-center"
+          className="text-xl justify-self-center ml-2"
         />
         <div className="text-sm">{neededMajority()}</div>
       </div>
       <div className="flex flex-col justify-start items-center">
-        <LargeFlag countryCode={getFlag(introducedBy)} />
+        <LargeFlag countryCode={getFlag(introducedBy)} className="ml-4" />
       </div>
     </div>
   );

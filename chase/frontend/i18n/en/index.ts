@@ -9,6 +9,7 @@ const en = {
     ADVANCE_BUTTON: "Advance",
     BACK_BUTTON: "Back",
     LOGIN_BUTTON: "Login",
+    POWERED_BY: "Powered by",
     legalNotice: {
       SECTION_1: "I agree with the ",
       TERMS_LINK: "Terms of Use",
@@ -19,7 +20,7 @@ const en = {
     participant: {
       OTHER_SIGH_IN: "Sign in as chair instead",
       COMMITTEE_LABEL: "Committee",
-      COUNTRY_LABLE: "Country / NSA",
+      COUNTRY_LABEL: "Country / NSA",
       committeeSelection: {
         HEADLINE: "Select the committee",
       },

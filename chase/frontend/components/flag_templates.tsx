@@ -5,16 +5,16 @@ import getFlagPathByCode from "@/misc/get_flag_path_by_code";
 import getCountryNameByCode from "@/misc/get_country_name_by_code";
 import { useI18nContext } from "@/i18n/i18n-react";
 
+/**
+ * The following Components are all different sizes of flags.
+ * They are used by many Components throughout the app.
+ * The smalles size includes a hover flag that – when activated – shows the name of the country as a tooltip.
+ */
+
 export function SmallFlag({
   countryCode,
   showNameOnHover = false,
 }: { countryCode: CountryCode; showNameOnHover?: boolean }) {
-  /**
-   * The following Components are all different sizes of flags.
-   * They are used by many Components throughout the app.
-   * The smalles size includes a hover flag that – when activated – shows the name of the country as a tooltip.
-   */
-
   const { LL, locale } = useI18nContext();
 
   const [isHovered, setIsHovered] = useState(false);
@@ -65,9 +65,14 @@ export function NormalFlag({ countryCode }: { countryCode: CountryCode }) {
   );
 }
 
-export function LargeFlag({ countryCode }: { countryCode: CountryCode }) {
+export function LargeFlag({
+  countryCode,
+  className,
+}: { countryCode: CountryCode; className?: string }) {
   return (
-    <div className="rounded-md border border-black shadow-md bg-white overflow-hidden">
+    <div
+      className={`rounded-md border border-black shadow-md bg-white overflow-hidden ${className}`}
+    >
       <Image
         src={getFlagPathByCode(countryCode)}
         width={99}

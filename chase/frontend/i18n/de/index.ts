@@ -9,6 +9,7 @@ const de = {
     ADVANCE_BUTTON: "Weiter",
     BACK_BUTTON: "Zurück",
     LOGIN_BUTTON: "Anmelden",
+    POWERED_BY: "Ermöglicht durch",
     legalNotice: {
       SECTION_1: "Ich bin Einverstanden mit den ",
       TERMS_LINK: "Nutzungsbedingungen",
@@ -19,7 +20,7 @@ const de = {
     participant: {
       OTHER_SIGH_IN: "Stattdessen als Vorsitz anmelden",
       COMMITTEE_LABEL: "Gremium",
-      COUNTRY_LABLE: "Staat / NA",      
+      COUNTRY_LABEL: "Staat / NA",      
       committeeSelection: {
         HEADLINE: "Gremium auswählen",
       },

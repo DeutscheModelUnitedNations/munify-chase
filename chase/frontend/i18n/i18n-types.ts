@@ -39,6 +39,10 @@ type RootTranslation = {
 		 * L​o​g​i​n
 		 */
 		LOGIN_BUTTON: string
+		/**
+		 * P​o​w​e​r​e​d​ ​b​y
+		 */
+		POWERED_BY: string
 		legalNotice: {
 			/**
 			 * I​ ​a​g​r​e​e​ ​w​i​t​h​ ​t​h​e​ 
@@ -73,7 +77,7 @@ type RootTranslation = {
 			/**
 			 * C​o​u​n​t​r​y​ ​/​ ​N​S​A
 			 */
-			COUNTRY_LABLE: string
+			COUNTRY_LABEL: string
 			committeeSelection: {
 				/**
 				 * S​e​l​e​c​t​ ​t​h​e​ ​c​o​m​m​i​t​t​e​e
@@ -389,6 +393,10 @@ export type TranslationFunctions = {
 		 * Login
 		 */
 		LOGIN_BUTTON: () => LocalizedString
+		/**
+		 * Powered by
+		 */
+		POWERED_BY: () => LocalizedString
 		legalNotice: {
 			/**
 			 * I agree with the 
@@ -423,7 +431,7 @@ export type TranslationFunctions = {
 			/**
 			 * Country / NSA
 			 */
-			COUNTRY_LABLE: () => LocalizedString
+			COUNTRY_LABEL: () => LocalizedString
 			committeeSelection: {
 				/**
 				 * Select the committee

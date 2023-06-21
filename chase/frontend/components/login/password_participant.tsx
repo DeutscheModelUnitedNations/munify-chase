@@ -13,19 +13,16 @@ import getFlagPathByCode from "@/misc/get_flag_path_by_code";
 import { CountryCode } from "@/custom_types";
 import { useI18nContext } from "@/i18n/i18n-react";
 
-// TODO: Type this function properly
-// @ts-ignore
+/**
+ * This Component is used in the Login Page for the participants. It is the second step of the login process.
+ * It displays a form that first previews the given committee and country (or NSA) and then asks for the password.
+ * The password is verified by the server.
+ * Participants that represent a Non-State Actor (NSA) can select their committee by clicking on the committee placeholder,
+ * which displays a plus if no committee is selected yet and opens a sidebar with a list of all committees.
+ */
 // TODO: Type this function properly
 // @ts-ignore
 export default function usernameLogin({ changeLoginState }) {
-  /**
-   * This Component is used in the Login Page for the participants. It is the second step of the login process.
-   * It displays a form that first previews the given committee and country (or NSA) and then asks for the password.
-   * The password is verified by the server.
-   * Participants that represent a Non-State Actor (NSA) can select their committee by clicking on the committee placeholder,
-   * which displays a plus if no committee is selected yet and opens a sidebar with a list of all committees.
-   */
-
   const router = useRouter();
   const { LL } = useI18nContext();
 
@@ -76,7 +73,7 @@ export default function usernameLogin({ changeLoginState }) {
           {LL.login.participant.committeeSelection.HEADLINE()}
         </h2>
         <div className="flex flex-col gap-5">
-          {/* TODO Replace with dynamic list of committees (probably with map function) */}
+          {/* TODO Find another way of letting NSAs select their committee. Preferably after the login process is already finished to keep information private. */}
           <Card
             title="GV"
             subTitle="Generalversammlung"
@@ -142,7 +139,7 @@ export default function usernameLogin({ changeLoginState }) {
           </div>
           <div className="flex-1 flex flex-col rounded-lg border border-gray-300 justify-center items-center">
             <p className="m-auto text-sm mt-5">
-              {LL.login.participant.COUNTRY_LABLE()}
+              {LL.login.participant.COUNTRY_LABEL()}
             </p>
             <div className="m-5 rounded-md overflow-hidden border border-black h-24 w-32">
               <Image

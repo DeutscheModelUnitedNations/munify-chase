@@ -1,20 +1,20 @@
 import React, { useEffect, useState } from "react";
 import { Voting, VotingMajority } from "@/custom_types";
 
+/**
+ * This Component is used in the Voting Component.
+ * It displays the voting bar, which shows the percentage of votes for each vote.
+ * It also displays the majority needed for the vote to pass.
+ * It also displays the numbers of votes for each vote.
+ * This Component does have a lot of logic calculations to calculate the percentages
+ * and display the bars correctly, so that they can be perceived as accurate.
+ */
+
 export default function VotingBar({
   votingCountries,
   votes,
   majority,
 }: Voting) {
-  /**
-   * This Component is used in the Voting Component.
-   * It displays the voting bar, which shows the percentage of votes for each vote.
-   * It also displays the majority needed for the vote to pass.
-   * It also displays the numbers of votes for each vote.
-   * This Component does have a lot of logic calculations to calculate the percentages
-   * and display the bars correctly, so that they can be perceived as accurate.
-   */
-
   const [yesVotesPercentage, setyesVotesPercentage] = useState<number>(0);
   const [noVotesPercentage, setnoVotesPercentage] = useState<number>(0);
   const [abstainVotesPercentage, setabstainVotesPercentage] =
@@ -58,6 +58,12 @@ export default function VotingBar({
       />
       <div className="bg-white h-8 w-px" />
       <VotingBarSection
+        numberOfVotes={countRemainingVotes()}
+        percentage={remainingVotesPercentage}
+        color="white"
+        hideCounter
+      />
+      <VotingBarSection
         numberOfVotes={countVotes("abstain")}
         percentage={abstainVotesPercentage}
         color="dmun"
@@ -67,12 +73,6 @@ export default function VotingBar({
         numberOfVotes={countVotes("no")}
         percentage={noVotesPercentage}
         color="red-600"
-      />
-      <VotingBarSection
-        numberOfVotes={countRemainingVotes()}
-        percentage={remainingVotesPercentage}
-        color="white"
-        hideCounter
       />
       <MajorityMarking
         majority={majority}

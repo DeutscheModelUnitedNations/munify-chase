@@ -12,16 +12,16 @@ interface HeaderProps {
   currentTopic: string;
 }
 
+/**
+ * This Component is used in the Dashboard. It uses the HeaderTemplate
+ * to create a header with the country's flag, country's name, committee name and topic.
+ */
+
 export default function DashboardHeader({
   countryCode,
   committeeName,
   currentTopic,
 }: HeaderProps) {
-  /**
-   * This Component is used in the Dashboard. It uses the HeaderTemplate
-   * to create a header with the country's flag, country's name, committee name and topic.
-   */
-
   const { LL, locale } = useI18nContext();
 
   return (

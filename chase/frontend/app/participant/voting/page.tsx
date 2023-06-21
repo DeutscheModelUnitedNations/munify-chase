@@ -77,7 +77,9 @@ export default function VotingPage() {
               <Motions
                 motionData={motionTestData.filter(
                   (motion: Motion) =>
-                    motion.status === "passed" || motion.status === "failed",
+                    (motion.status === "passed" ||
+                      motion.status === "failed") &&
+                    motion.introducedBy !== "uno", // The introduced by filters all chair sind motions/votings (like a resolution voting shouldn't appear in the "Recent Motions" Tab)
                 )}
                 highlightedMotionId={activeMotionId}
                 setActiveMotion={setActiveMotionId}

@@ -32,7 +32,7 @@ export default function loginVorsitz() {
             </p>
           </div>
           <div className="flex flex-col justify-center items-center m-10">
-            <p className="text-sm text-gray-500">Powered by</p>
+            <p className="text-sm text-gray-500">{LL.login.POWERED_BY()}</p>
             <Image
               src="/dmunlogo/dmun_logo.png"
               alt="Logo"

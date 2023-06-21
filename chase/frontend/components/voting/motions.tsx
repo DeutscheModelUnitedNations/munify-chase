@@ -15,6 +15,13 @@ import { SmallFlag } from "../flag_templates";
 import { useI18nContext } from "@/i18n/i18n-react";
 import FlipMove from "react-flip-move";
 
+/**
+ * This Component is used on the Voting page and displays all open motions in a list format.
+ * It also includes many animations, when a motion is added or removed.
+ * When a motion is handeled by the chair, it can be highlighted.
+ * The motions are preordered by the backend, so that the motions with most precedence are on top.
+ */
+
 export default function Motions({
   motionData,
   highlightedMotionId,
@@ -24,13 +31,6 @@ export default function Motions({
   highlightedMotionId?: string;
   setActiveMotion: (motionId: string) => void;
 }) {
-  /**
-   * This Component is used on the Voting page and displays all open motions in a list format.
-   * It also includes many animations, when a motion is added or removed.
-   * When a motion is handeled by the chair, it can be highlighted.
-   * The motions are preordered by the backend, so that the motions with most precedence are on top.
-   */
-
   const { LL } = useI18nContext();
 
   return (
@@ -66,7 +66,7 @@ export default function Motions({
                     {motion.status === "in-voting" && (
                       <FontAwesomeIcon
                         icon={faSquarePollVertical}
-                        className=" text-2xl text-dmun fa-beat"
+                        className=" text-2xl text-dmun fa-beat-fade"
                       />
                     )}
 

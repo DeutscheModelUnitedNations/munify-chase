@@ -13,17 +13,18 @@ import { useI18nContext } from "@/i18n/i18n-react";
 import { AnimatePresence, motion } from "framer-motion";
 import FlipMove from "react-flip-move";
 
+/**
+ * This Component is used in the Voting Component.
+ * It displays all voting countries in a grid, sorted by their vote.
+ * It also includes a transition animation, when a country changes from remaining to a vote.
+ */
+
 export default function CountryGrid({
   votes,
   votingCountries,
   substantiveVote,
+  motionId,
 }: Voting) {
-  /**
-   * This Component is used in the Voting Component.
-   * It displays all voting countries in a grid, sorted by their vote.
-   * It also includes a transition animation, when a country changes from remaining to a vote.
-   */
-
   const { LL } = useI18nContext();
 
   const [yesVotes, setYesVotes] = useState<CountryCode[]>([]);
@@ -69,18 +70,21 @@ export default function CountryGrid({
             icon={faPlusCircle}
             color="text-green-700"
             votes={yesVotes}
+            motionId={motionId}
           />
           <VotesCard
             category={LL.participants.voting.votingButtons.ABSTENTION()}
             icon={faCircle}
             color="text-dmun"
             votes={abstainVotes}
+            motionId={motionId}
           />
           <VotesCard
             category={LL.participants.voting.votingButtons.AGAINST()}
             icon={faMinusCircle}
             color="text-red-600"
             votes={noVotes}
+            motionId={motionId}
           />
           {remainingVotes.length > 0 && (
             <VotesCard
@@ -89,6 +93,7 @@ export default function CountryGrid({
               color="text-black"
               votes={remainingVotes}
               colSpan={3}
+              motionId={motionId}
             />
           )}
         </div>
@@ -99,12 +104,14 @@ export default function CountryGrid({
             icon={faPlusCircle}
             color="text-green-700"
             votes={yesVotes}
+            motionId={motionId}
           />
           <VotesCard
             category="Dagegen"
             icon={faMinusCircle}
             color="text-red-600"
             votes={noVotes}
+            motionId={motionId}
           />
           {remainingVotes.length > 0 && (
             <VotesCard
@@ -113,6 +120,7 @@ export default function CountryGrid({
               color="text-black"
               votes={remainingVotes}
               colSpan={2}
+              motionId={motionId}
             />
           )}
         </div>
@@ -122,12 +130,14 @@ export default function CountryGrid({
 }
 
 function VotesCard({
+  motionId,
   category,
   icon,
   votes,
   color,
   colSpan,
 }: {
+  motionId: string;
   category: string;
   icon: IconProp;
   votes: CountryCode[];
@@ -148,16 +158,20 @@ function VotesCard({
         <div className={categoryClasses}>{category}</div>
       </div>
       <AnimatePresence mode="wait">
-        <FlipMove className="flex flex-wrap gap-2 justify-center items-center">
+        <FlipMove
+          className="flex flex-wrap gap-2 justify-center items-center"
+          leaveAnimation={false}
+          enterAnimation={false}
+        >
           {votes.map((country, index) => (
             <motion.div
-              key={country}
+              key={`${country}-${motionId}-${index}`}
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -10 }}
               transition={{
                 duration: 0.5,
-                delay: index * 0.1, // Delay each flag's animation for a staggered effect
+                delay: index * 0.05, // Delay each flag's animation for a staggered effect
                 type: "spring",
                 damping: 20,
                 stiffness: 300,

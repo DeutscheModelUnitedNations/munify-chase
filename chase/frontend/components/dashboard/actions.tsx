@@ -20,16 +20,17 @@ import {
 } from "@fortawesome/react-fontawesome";
 
 interface DropdownOptions {
-  lable: string;
+  label: string;
   value: string;
   icon: FontAwesomeIconProps["icon"];
 }
 
-export default function ActionsWidget() {
-  /** This Component is used in the Actions Widget on the Dashboard.
-   * The buttons of the widget open a dialog with a simple form that allows the user to contact the chair or the research team.
-   */
+/**
+ * This Component is used in the Actions Widget on the Dashboard.
+ * The buttons of the widget open a dialog with a simple form that allows the user to contact the chair or the research team.
+ */
 
+export default function ActionsWidget() {
   const { LL } = useI18nContext();
 
   const [displayChairDialog, setDisplayChairDialog] = React.useState(false);
@@ -39,31 +40,31 @@ export default function ActionsWidget() {
   const [category, setCategory] = React.useState("");
   const categoryOption: DropdownOptions[] = [
     {
-      lable:
+      label:
         LL.participants.dashboard.actionsWidget.contactForm.categoryOptions.GUEST_SPEAKER(),
       value: "guestSspeech",
       icon: faComment,
     },
     {
-      lable:
+      label:
         LL.participants.dashboard.actionsWidget.contactForm.categoryOptions.FACT_CHECK(),
       value: "factCheck",
       icon: faExclamationTriangle,
     },
     {
-      lable:
+      label:
         LL.participants.dashboard.actionsWidget.contactForm.categoryOptions.INFORMATION(),
       value: "information",
       icon: faQuestionCircle,
     },
     {
-      lable:
+      label:
         LL.participants.dashboard.actionsWidget.contactForm.categoryOptions.GENERAL_SECRETARY(),
       value: "generalSecretary",
       icon: faGavel,
     },
     {
-      lable:
+      label:
         LL.participants.dashboard.actionsWidget.contactForm.categoryOptions.OTHER(),
       value: "other",
       icon: faPaperPlane,
@@ -76,7 +77,7 @@ export default function ActionsWidget() {
     return (
       <div className="flex items-center gap-4">
         <FontAwesomeIcon icon={option.icon} />
-        <span>{option.lable}</span>
+        <span>{option.label}</span>
       </div>
     );
   };

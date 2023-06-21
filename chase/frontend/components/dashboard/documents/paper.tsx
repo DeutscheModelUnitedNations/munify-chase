@@ -3,6 +3,12 @@ import { faClipboard } from "@fortawesome/free-solid-svg-icons";
 import { CountryCode } from "@/custom_types";
 import Document from "@components/dashboard/documents/document_template";
 
+/**
+ * This Component is used in the Documents Widget on the Dashboard.
+ * It it uses the Document Widget to generate a Box containing
+ * a paper's ID, its sponsors, and a flag of the country.
+ */
+
 export default function Paper({
   documentId,
   introducedBy,
@@ -14,12 +20,6 @@ export default function Paper({
   sponsors?: string[];
   shared?: boolean;
 }) {
-  /**
-   * This Component is used in the Documents Widget on the Dashboard.
-   * It it uses the Document Widget to generate a Box containing
-   * a paper's ID, its sponsors, and a flag of the country.
-   */
-
   return (
     <Document
       documentId={documentId}

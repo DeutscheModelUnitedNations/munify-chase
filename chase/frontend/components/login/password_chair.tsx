@@ -7,14 +7,13 @@ import { Checkbox } from "primereact/checkbox";
 import Link from "next/link";
 import { useI18nContext } from "@/i18n/i18n-react";
 
+/**
+ * This Component is used in the Login Page for the Chair. It is the second step of the login process.
+ * It displays a form, where the chair can enter the password. The password is verified by the server.
+ */
 // TODO: Type this function properly
 // @ts-ignore
 export default function usernameLogin({ changeLoginState }) {
-  /**
-   * This Component is used in the Login Page for the Chair. It is the second step of the login process.
-   * It displays a form, where the chair can enter the password. The password is verified by the server.
-   */
-
   const { LL } = useI18nContext();
   const [loading, setLoading] = useState(false);
   const [agreedToTerms, setAgreedToTerms] = useState(false);

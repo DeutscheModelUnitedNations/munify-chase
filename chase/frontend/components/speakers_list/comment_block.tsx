@@ -1,17 +1,17 @@
 import React from "react";
 import { useI18nContext } from "@/i18n/i18n-react";
 
+/**
+ * This Component is used on the Speakers List Page.
+ * It is the main container for the Comment Components, containing
+ * the current Comment and the Comment List.
+ */
+
 export default function CommentBlock({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  /**
-   * This Component is used on the Speakers List Page.
-   * It is the main container for the Comment Components, containing
-   * the current Comment and the Comment List.
-   */
-
   const { LL } = useI18nContext();
 
   return (

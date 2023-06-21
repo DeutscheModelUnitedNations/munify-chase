@@ -11,15 +11,15 @@ import {
 import { useI18nContext } from "@/i18n/i18n-react";
 import { AnimatePresence, motion } from "framer-motion";
 
+/**
+ * This Component is used in the Voting Component.
+ * It displays the buttons to cast a vote and handles the request to the backend, when a vote is cast.
+ * It also displays a loading animation, while the request is being processed.
+ */
+
 export default function CastVote({
   substantiveVote,
 }: Voting & { myCountry: CountryCode }) {
-  /**
-   * This Component is used in the Voting Component.
-   * It displays the buttons to cast a vote and handles the request to the backend, when a vote is cast.
-   * It also displays a loading animation, while the request is being processed.
-   */
-
   const { LL } = useI18nContext();
 
   const [isLoading, setIsLoading] = useState(false);
@@ -30,7 +30,7 @@ export default function CastVote({
 
   return (
     <>
-      <div className="my-4 shadow-md rounded-md p-4 bg-white flex justify-center items-center h-20">
+      <div className="my-4 shadow-xl rounded-md p-4 bg-white border border-dmun flex justify-center items-center h-20  w-11/12 mr-3">
         <AnimatePresence mode="wait">
           {isLoading ? (
             <motion.div

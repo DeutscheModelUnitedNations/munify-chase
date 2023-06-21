@@ -9,17 +9,17 @@ import { Document } from "@/custom_types";
 import { useI18nContext } from "@/i18n/i18n-react";
 import FlipMove from "react-flip-move";
 
+/**
+ * This Component is used in the Documents Widget on the Dashboard. It displays
+ * all documents grouped by their category. The categories are "resolution" (the adopted
+ * resolutions of the current committee), "draft" (the draft resolutions), and "paper"
+ * (the working papers of the users country or of other countries that have been shared
+ * with the user).
+ */
+
 export default function DocumentsWidget({
   documents,
 }: { documents: Document[] }) {
-  /**
-   * This Component is used in the Documents Widget on the Dashboard. It displays
-   * all documents grouped by their category. The categories are "resolution" (the adopted
-   * resolutions of the current committee), "draft" (the draft resolutions), and "paper"
-   * (the working papers of the users country or of other countries that have been shared
-   * with the user).
-   */
-
   const { LL } = useI18nContext();
 
   return (

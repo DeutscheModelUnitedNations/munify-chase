@@ -16,6 +16,14 @@ interface DocumentProps {
   topic?: string;
 }
 
+/**
+ * This Component is used in the Documents Widget on the Dashboard.
+ * It creates Boxes, each containing a document's ID, its sponsors,
+ * its topic, and a flag of the country. It is not used directly,
+ * but rather through the individual document components "paper",
+ * "draft" and "resolution".
+ */
+
 export default function Document({
   documentId,
   introducedBy,
@@ -24,13 +32,6 @@ export default function Document({
   icon,
   topic,
 }: DocumentProps) {
-  /** This Component is used in the Documents Widget on the Dashboard.
-   * It creates Boxes, each containing a document's ID, its sponsors,
-   * its topic, and a flag of the country. It is not used directly,
-   * but rather through the individual document components "paper",
-   * "draft" and "resolution".
-   */
-
   const { LL } = useI18nContext();
 
   return (

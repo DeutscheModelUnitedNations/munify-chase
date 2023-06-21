@@ -13,16 +13,16 @@ interface NavbarButtonProps {
   onClick?: () => void;
 }
 
+/**
+ * This Component is used in the Navbar. It displays a button with an icon.
+ * It is used to navigate to other pages.
+ */
+
 export default function NavbarButton({
   icon,
   link = "",
   onClick,
 }: NavbarButtonProps) {
-  /**
-   * This Component is used in the Navbar. It displays a button with an icon.
-   * It is used to navigate to other pages.
-   */
-
   const pathname = usePathname();
 
   const [wrapperStyle, setWrapperStyle] = useState("");

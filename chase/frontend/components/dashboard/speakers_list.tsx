@@ -8,6 +8,14 @@ import { useI18nContext } from "@/i18n/i18n-react";
 import "./markdown.scss";
 import { AnimatePresence, motion } from "framer-motion";
 
+/**
+ * This Component is used in the Dashboard. It uses several components
+ * of the speakers list realm to create a widget with the current speaker,
+ * the current speaker's comment, and the queues for speakers and comments lists.
+ * The queues use the special QueueBlock component, which is a condensed and more
+ * compact way of displaying the queue (as opposed to the QueueList on the speakers list page).
+ */
+
 export default function SpeakersListWidget({
   myCountry,
   speakersList,
@@ -17,14 +25,6 @@ export default function SpeakersListWidget({
   speakersList: SpeakersListData;
   commentList: SpeakersListData;
 }) {
-  /**
-   * This Component is used in the Dashboard. It uses several components
-   * of the speakers list realm to create a widget with the current speaker,
-   * the current speaker's comment, and the queues for speakers and comments lists.
-   * The queues use the special QueueBlock component, which is a condensed and more
-   * compact way of displaying the queue (as opposed to the QueueList on the speakers list page).
-   */
-
   const { LL } = useI18nContext();
 
   return (

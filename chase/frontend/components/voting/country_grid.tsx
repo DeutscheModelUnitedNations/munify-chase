@@ -29,7 +29,7 @@ export default function CountryGrid({
   const [yesVotes, setYesVotes] = useState<CountryCode[]>([]);
   const [noVotes, setNoVotes] = useState<CountryCode[]>([]);
   const [abstainVotes, setAbstainVotes] = useState<CountryCode[]>([]);
-  const [absentVotes, setAbsentVotes] = useState<CountryCode[]>([]); // Only for completeness, not displayed.
+  const [_, setAbsentVotes] = useState<CountryCode[]>([]); // Only for completeness, not displayed.
   const [remainingVotes, setRemainingVotes] = useState<CountryCode[]>([]);
 
   useEffect(() => {

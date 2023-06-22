@@ -93,9 +93,11 @@ function VotingBarSection({
   color: string;
   hideCounter?: boolean;
 }) {
-  
   return (
-    <div className={`flex justify-center items-center text-white h-8 transition-all duration-1000 ${color}`} style={{ width: `${percentage}%` }}>
+    <div
+      className={`flex justify-center items-center text-white h-8 transition-all duration-1000 ${color}`}
+      style={{ width: `${percentage}%` }}
+    >
       {!hideCounter && numberOfVotes > 0 && (
         <div className="text-sm">{numberOfVotes}</div>
       )}

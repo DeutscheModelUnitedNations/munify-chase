@@ -25,6 +25,11 @@ module.exports = {
           icon: "rgb(156 163 175)",
           text: "rgb(75 85 99)",
         },
+        voting: {
+          for: "#188a42",
+          against: "#ff3d32",
+          abstain: "#3d7dd2",
+        },
       },
     },
   },

@@ -54,25 +54,25 @@ export default function VotingBar({
       <VotingBarSection
         numberOfVotes={countVotes("yes")}
         percentage={yesVotesPercentage}
-        color="green-700"
+        color="bg-voting-for"
       />
       <div className="bg-white h-8 w-px" />
       <VotingBarSection
         numberOfVotes={countRemainingVotes()}
         percentage={remainingVotesPercentage}
-        color="white"
+        color="bg-white"
         hideCounter
       />
       <VotingBarSection
         numberOfVotes={countVotes("abstain")}
         percentage={abstainVotesPercentage}
-        color="dmun"
+        color="bg-voting-abstain"
       />
       <div className="bg-white h-8 w-px" />
       <VotingBarSection
         numberOfVotes={countVotes("no")}
         percentage={noVotesPercentage}
-        color="red-600"
+        color="bg-voting-against"
       />
       <MajorityMarking
         majority={majority}
@@ -93,14 +93,11 @@ function VotingBarSection({
   color: string;
   hideCounter?: boolean;
 }) {
-  let classNames =
-    "flex justify-center items-center text-white h-8 transition-all duration-1000 ";
-  if (color) {
-    classNames += `bg-${color}`;
-  }
-
   return (
-    <div className={classNames} style={{ width: `${percentage}%` }}>
+    <div
+      className={`flex justify-center items-center text-white h-8 transition-all duration-1000 ${color}`}
+      style={{ width: `${percentage}%` }}
+    >
       {!hideCounter && numberOfVotes > 0 && (
         <div className="text-sm">{numberOfVotes}</div>
       )}

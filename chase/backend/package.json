@@ -7,16 +7,13 @@
     "dev:migrate": "npx prisma migrate dev"
   },
   "dependencies": {
-    "@fastify/cookie": "^8.3.0",
-    "@fastify/session": "^10.3.0",
     "@fastify/type-provider-typebox": "^3.2.0",
     "@prisma/client": "^4.15.0",
     "@sinclair/typebox": "^0.28.11",
-    "connect-redis": "^7.1.0",
     "fastify": "^4.17.0",
     "fastify-now": "^3.0.4",
-    "passport": "^0.6.0",
-    "redis": "^4.6.7"
+    "jose": "^4.14.4",
+    "openid-client": "^5.4.2"
   },
   "devDependencies": {
     "@fastify/swagger": "^8.4.0",
@@ -28,12 +25,8 @@
     "esbuild-plugin-define": "^0.3.0",
     "npm-run-all": "^4.1.5",
     "prisma": "^4.15.0",
-    "rollup": "^3.25.0",
-    "rollup-plugin-esbuild": "^5.0.0",
-    "rollup-plugin-multi-input": "^1.4.1",
     "ts-node": "^10.9.1",
     "ts-node-dev": "^2.0.0",
-    "tslib": "^2.5.3",
     "typescript": "^5.1.3"
   }
 }

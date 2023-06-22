@@ -1,15 +1,9 @@
-import fastifyCookie from "@fastify/cookie";
-import fastifySession from "@fastify/session";
 import { TypeBoxTypeProvider } from "@fastify/type-provider-typebox";
-import RedisStore from "connect-redis";
 import Fastify, { FastifyInstance } from "fastify";
 import fastifyNow from "fastify-now";
 import { join } from "path";
-import { createClient } from "redis";
 import { PrismaClient } from "@prisma/client";
 import { setDb, db } from "../prisma/client";
-
-import "./types/types";
 
 //TODO establish testing concept & coverage
 
@@ -33,7 +27,7 @@ export let server: FastifyInstance;
   let PORT = 0;
   if (process.env.PORT === undefined) {
     throw new Error(
-      "Please make sure the PORT environment variable is set to a valid port number",
+      "Please make sure the PORT environment variable is set to a valid port number"
     );
   }
   PORT = Number.parseInt(process.env.PORT);
@@ -81,59 +75,6 @@ export let server: FastifyInstance;
 ╚══════════════════════════════════════════════════════════════════╝
 `);
   }
-
-  // ╔═════════════════════════════════════════╗
-  // ║ Cookie parsing & Session initialization ║
-  // ╚═════════════════════════════════════════╝
-
-  server.register(fastifyCookie, {});
-
-  const redisUrl = process.env.REDIS_URL;
-  if (redisUrl === undefined) {
-    throw new Error(
-      "Could not find REDIS_URL environment variable. Make sure it's set",
-    );
-  }
-
-  // Initialize redis client
-  const redisClient = createClient({
-    url: redisUrl,
-  });
-
-  if (process.env.CI !== "true") {
-    try {
-      await redisClient.connect();
-    } catch (error) {
-      console.error("Could not connect to redis");
-      throw error;
-    }
-  }
-
-  // Initialize store
-  const redisStore = new RedisStore({
-    client: redisClient,
-    prefix: "chase-session:",
-  });
-
-  const sessionSecret = process.env.SESSION_SECRET;
-  if (sessionSecret === undefined) {
-    throw new Error(
-      "Could not find session secret in environment variable. Make sure that the 'SESSION_SECRET' environment variable is set and a secure string with more than 21 characters.",
-    );
-  }
-
-  server.register(fastifySession, {
-    secret: sessionSecret,
-    cookie: {
-      httpOnly: true,
-      // secure is only deactivated when running in dev
-      secure: process.env.PRODUCTION === "true",
-      sameSite: "strict",
-      maxAge: 86400000, // 7 days
-    },
-    store: redisStore,
-    saveUninitialized: false, // recommended: only save session when data exists
-  });
 
   // ╔══════════════════════════════════════╗
   // ║ File system based route registration ║

@@ -18,13 +18,14 @@ const i = setInterval(async () => {
     clearInterval(i);
   } catch (error) {
     if (error?.cause?.code === "ECONNREFUSED") {
-      console.error(
-        "Fetching the openapi specs from backend failed (ECONNREFUSED). When starting the dev server, this may happen when the backend is not ready yet.",
-      );
+      // TODO: make these logs not so spammy
+      // console.error(
+      //   "Fetching the openapi specs from backend failed (ECONNREFUSED). When starting the dev server, this may happen when the backend is not ready yet.",
+      // );
     } else {
       console.error("Could not generate client from spec: ", error);
     }
 
-    console.log("Retrying to generate specs...");
+    // console.log("Retrying to generate specs...");
   }
 }, 2000);

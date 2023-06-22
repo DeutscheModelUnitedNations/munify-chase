@@ -7,6 +7,14 @@ import { faGavel } from "@fortawesome/free-solid-svg-icons";
 import { faComments } from "@fortawesome/free-solid-svg-icons";
 import { faCoffee } from "@fortawesome/free-solid-svg-icons";
 import { faCirclePause } from "@fortawesome/free-solid-svg-icons";
+import { useI18nContext } from "@/i18n/i18n-react";
+import { AnimatePresence, motion } from "framer-motion";
+
+/**
+ * This Component is used in the Dashboard. It shows the current timer status –
+ * e.g. for informal sessions, breaks, suspensions, etc.
+ * With this widget, participants can see the end time of the current session as well as a countdown.
+ */
 
 export default function TimerWidget({
   headline,
@@ -17,12 +25,13 @@ export default function TimerWidget({
   until: Date | null;
   category: "formal" | "informal" | "pause" | "suspension"; // TODO replace with typescript enum
 }) {
+  const { LL } = useI18nContext();
   const { showToast } = useContext(ToastContext);
 
   const showTimerToast = () => {
     const message = {
-      summary: "Zeit abgelaufen",
-      detail: "Rückkehr zur formellen Sitzung",
+      summary: LL.participants.dashboard.timerWidget.TOAST_HEADLINE(),
+      detail: LL.participants.dashboard.timerWidget.TOAST_MESSAGE(),
       severity: "info" as "info",
       sticky: true,
     };
@@ -49,33 +58,47 @@ export default function TimerWidget({
 
   return (
     <>
-      <WidgetTemplate cardTitle="" styles={styles()}>
-        <div className="flex flex-col justify-center items-center">
-          <div className="my-4">
-            {category === "formal" && (
-              <FontAwesomeIcon icon={faGavel} size="3x" />
-            )}
-            {category === "informal" && (
-              <FontAwesomeIcon icon={faComments} size="3x" />
-            )}
-            {category === "pause" && (
-              <FontAwesomeIcon icon={faCoffee} size="3x" />
-            )}
-            {category === "suspension" && (
-              <FontAwesomeIcon icon={faCirclePause} size="3x" />
-            )}
-          </div>
-          <div className="text-2xl font-bold">{headline}</div>
-          {category !== "suspension" && (
-            <div className="text-md">Bis {timeStamp} Uhr</div>
-          )}
-          {category !== "suspension" && category !== "formal" && (
-            <div className="text-4xl font-bold my-2 tabular-nums">
-              <Timer until={until} showTimerToast={showTimerToast} />
+      <AnimatePresence mode="wait">
+        <motion.div
+          key={category}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.3 }}
+          layout
+        >
+          <WidgetTemplate cardTitle="" styles={styles()}>
+            <div className="flex flex-col justify-center items-center">
+              <div className="my-4">
+                {category === "formal" && (
+                  <FontAwesomeIcon icon={faGavel} size="3x" />
+                )}
+                {category === "informal" && (
+                  <FontAwesomeIcon icon={faComments} size="3x" />
+                )}
+                {category === "pause" && (
+                  <FontAwesomeIcon icon={faCoffee} size="3x" />
+                )}
+                {category === "suspension" && (
+                  <FontAwesomeIcon icon={faCirclePause} size="3x" />
+                )}
+              </div>
+              <div className="text-2xl font-bold">{headline}</div>
+              {category !== "suspension" && (
+                <div className="text-md">
+                  {LL.participants.dashboard.timerWidget.UNTIL_1()} {timeStamp}{" "}
+                  {LL.participants.dashboard.timerWidget.UNTIL_2()}
+                </div>
+              )}
+              {category !== "suspension" && category !== "formal" && (
+                <div className="text-4xl font-bold my-2 tabular-nums">
+                  <Timer until={until} showTimerToast={showTimerToast} />
+                </div>
+              )}
             </div>
-          )}
-        </div>
-      </WidgetTemplate>
+          </WidgetTemplate>
+        </motion.div>
+      </AnimatePresence>
     </>
   );
 }

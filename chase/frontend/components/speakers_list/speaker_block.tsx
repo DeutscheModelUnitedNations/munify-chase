@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from "react";
-import Image from "next/image";
 import getCountryNameByCode from "@/misc/get_country_name_by_code";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
@@ -10,24 +9,25 @@ import {
   faBell,
 } from "@fortawesome/free-solid-svg-icons";
 import "./timer_animations.scss";
-import getFlagPathByCode from "@/misc/get_flag_path_by_code";
-import { CountryCode } from "@/custom_types";
+import { CurrentSpeaker } from "@/custom_types";
+import { LargeFlag } from "../flag_templates";
+import { useI18nContext } from "@/i18n/i18n-react";
+import { AnimatePresence, motion } from "framer-motion";
 
-interface Props {
-  countryCode: CountryCode;
-  timer: {
-    start: Date;
-    durationMilliseconds: number;
-    paused: boolean;
-  };
-  customName?: string;
-}
+/**
+ * This Component is used in the SpeakersList. It creates a box for the current speaker,
+ * containing the country's flag, country's name and the time left.
+ * The time left is displayed as a timer, the prefixing icon changes depending on the status: active, paused or overtime.
+ * The icon is animated, the animation is written in the Hourglass Component below and the timer_animations.scss file.
+ */
 
 export default function SpeakerBlock({
   countryCode,
   timer,
   customName,
-}: Props) {
+}: CurrentSpeaker) {
+  const { LL, locale } = useI18nContext();
+
   const [timerState, setTimerState] = useState<string>("active");
   const [timeLeft, setTimeLeft] = useState<string>("0:00");
 
@@ -43,13 +43,11 @@ export default function SpeakerBlock({
   };
 
   useEffect(() => {
-    let timeInterval: NodeJS.Timeout;
-
     if (timer.paused) {
       setTimerState("paused");
       setTimeLeft(displayTimer(timer.durationMilliseconds));
     } else {
-      timeInterval = setInterval(() => {
+      const timeInterval = setInterval(() => {
         const timerInMilliseconds: number =
           timer.durationMilliseconds - (Date.now() - timer.start.getTime());
         setTimeLeft(displayTimer(timerInMilliseconds));
@@ -60,45 +58,44 @@ export default function SpeakerBlock({
         }
       }, 1000);
     }
-
-    return () => {
-      clearInterval(timeInterval);
-    };
   }, [timer]);
 
   return (
     <>
-      <div className="flex flex-row items-center justify-start">
-        <div className="rounded-md border border-black shadow-md bg-white overflow-hidden">
-          <Image
-            src={getFlagPathByCode(countryCode)}
-            width={99}
-            height={66}
-            alt="flag"
-          />
-        </div>
-        <div className="flex-1 flex flex-col ml-4">
-          <div className="font-bold text-md">
-            {customName || getCountryNameByCode(countryCode)}
+      <AnimatePresence mode="wait">
+        <motion.div
+          key={countryCode}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+        >
+          <div className="flex flex-row items-center justify-start">
+            <LargeFlag countryCode={countryCode} />
+            <div className="flex-1 flex flex-col ml-4">
+              <div className="font-bold text-md">
+                {customName || getCountryNameByCode(countryCode, locale)}
+              </div>
+              <div className="text-md text-gray-text flex items-center gap-3">
+                {timerState === "active" && <HourglasAnimation />}
+                {timerState === "paused" && <FontAwesomeIcon icon={faClock} />}
+                {timerState === "overtime" && (
+                  <FontAwesomeIcon
+                    icon={faBell}
+                    className="text-red-700 fa-shake"
+                  />
+                )}
+                <div>{timeLeft}</div>
+              </div>
+            </div>
           </div>
-          <div className="text-md text-gray-500 flex items-center gap-3">
-            {timerState === "active" && <HourglasAnimation />}
-            {timerState === "paused" && <FontAwesomeIcon icon={faClock} />}
-            {timerState === "overtime" && (
-              <FontAwesomeIcon
-                icon={faBell}
-                className="text-red-700 fa-shake"
-              />
-            )}
-            <div>{timeLeft}</div>
-          </div>
-        </div>
-      </div>
+        </motion.div>
+      </AnimatePresence>
     </>
   );
 }
 
 function HourglasAnimation() {
+  const [animationState, setAnimationState] = React.useState<number>(0);
   const [icon, setIcon] = React.useState(faHourglassStart);
   const [WrapperStyleClass, setWrapperStyleClass] =
     React.useState<string>("hourglass");
@@ -106,15 +103,19 @@ function HourglasAnimation() {
   useEffect(() => {
     const animation = setInterval(() => {
       setTimeout(() => {
+        setAnimationState(1);
         setIcon(faHourglassHalf);
       }, 500);
       setTimeout(() => {
+        setAnimationState(2);
         setIcon(faHourglassEnd);
       }, 1000);
       setTimeout(() => {
+        setAnimationState(3);
         setWrapperStyleClass("hourglass hourglass-animation");
       }, 1500);
       setTimeout(() => {
+        setAnimationState(0);
         setIcon(faHourglassStart);
         setWrapperStyleClass("hourglass");
       }, 2000);

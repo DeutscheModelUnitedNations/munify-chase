@@ -37,7 +37,7 @@ export default function RootLayout({
     locale = detectLocale(baseLocale, locales, navigatorDetector);
     loadLocale(locale);
   }
-
+  
   return (
     <TypesafeI18n locale={locale}>
       <html lang="de">

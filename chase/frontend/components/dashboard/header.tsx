@@ -4,36 +4,36 @@ import getCountryNameByCode from "../../misc/get_country_name_by_code";
 import getFlagPathByCode from "@/misc/get_flag_path_by_code";
 import { CountryCode } from "@/custom_types";
 import HeaderTemplate from "../header_template";
-
+import { useI18nContext } from "@/i18n/i18n-react";
+import { LargeFlag } from "../flag_templates";
 interface HeaderProps {
   countryCode: CountryCode;
   committeeName: string;
   currentTopic: string;
 }
 
+/**
+ * This Component is used in the Dashboard. It uses the HeaderTemplate
+ * to create a header with the country's flag, country's name, committee name and topic.
+ */
+
 export default function DashboardHeader({
   countryCode,
   committeeName,
   currentTopic,
 }: HeaderProps) {
+  const { LL, locale } = useI18nContext();
+
   return (
     <HeaderTemplate>
       <div className="flex flex-col items-start justify-center">
         <div className="text-2xl font-bold mb-1">
-          {getCountryNameByCode(countryCode)}
+          {getCountryNameByCode(countryCode, locale)}
         </div>
         <div className="text-md font-bold">{committeeName}</div>
         <div className="text-md">{currentTopic}</div>
       </div>
-      <div className="flex flex-col items-center rounded-md overflow-hidden border border-black shadow-lg">
-        <Image
-          src={getFlagPathByCode(countryCode)}
-          alt="flag"
-          width={130}
-          height={100}
-          style={{ objectFit: "contain", height: "100%" }}
-        />
-      </div>
+      <LargeFlag countryCode={countryCode} />
     </HeaderTemplate>
   );
 }

@@ -193,7 +193,7 @@ export type Alpha3Code =
   | "zmb"
   | "zwe";
 
-export type UNCodes = "unm" | "unw" | "gsm" | "gsw"; // UN-Flag Specials for General Secretary and Guest Speakers (male and female)
+export type UNCodes = "unm" | "unw" | "gsm" | "gsw" | "uno"; // UN-Flag Specials for General Secretary and Guest Speakers (male and female)
 
 export type NASCodes = `nsa_${string}`; // Non-State Actor Prefix and ID
 
@@ -202,6 +202,13 @@ export type OtherCodes = "xxx"; // Code for not found
 export type CountryCode = Alpha3Code | UNCodes | NASCodes | OtherCodes;
 
 export interface Speaker {
+  entryId: string;
+  countryCode: CountryCode;
+  customName?: string;
+}
+
+export interface CurrentSpeaker {
+  entryId: string;
   countryCode: CountryCode;
   customName?: string;
   timer: {
@@ -212,8 +219,8 @@ export interface Speaker {
 }
 
 export interface SpeakersListData {
-  currentSpeaker: Speaker;
-  list: CountryCode[];
+  currentSpeaker: CurrentSpeaker;
+  list: Speaker[];
   closed: boolean;
 }
 
@@ -232,6 +239,38 @@ export interface Document {
   shared?: boolean;
   introducedBy: CountryCode;
   sponsors?: string[];
+}
+
+export interface Motion {
+  motionId: string;
+  motionText: string;
+  introducedBy: CountryCode;
+  status: "open" | "in-voting" | "passed" | "failed";
+  voting?: Voting;
+}
+
+export type VotingMajority =
+  | "simple"
+  | "two-thirds"
+  | "three-quarters"
+  | "consensus"
+  | "security-council";
+
+export interface VotingResult {
+  country: CountryCode;
+  vote: "yes" | "no" | "abstain" | "absent";
+}
+
+export interface Voting {
+  motionId: string;
+  title: string;
+  description?: string;
+  introducedBy?: CountryCode;
+  substantiveVote: boolean;
+  votingCountries: CountryCode[];
+  majority: VotingMajority;
+  votes: VotingResult[];
+  outcome?: "passed" | "failed";
 }
 
 export interface NormalApiResponse {

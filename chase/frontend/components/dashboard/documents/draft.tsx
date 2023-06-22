@@ -1,33 +1,30 @@
 import React from "react";
-import DocumentTemplate from "@/components/dashboard/documents/document_template";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faFileLines } from "@fortawesome/free-solid-svg-icons";
-import Image from "next/image";
-import getFlagPathByCode from "@/misc/get_flag_path_by_code";
 import { CountryCode } from "@/custom_types";
+import Document from "@components/dashboard/documents/document_template";
+
+/**
+ * This Component is used in the Documents Widget on the Dashboard.
+ * It it uses the Document Widget to generate a Box containing
+ * a draft's ID, its sponsors, and a flag of the country. It also
+ * displays a "shared" icon, if the draft is shared with others.
+ */
 
 export default function Draft({
   documentId,
   introducedBy,
   sponsors,
-}: { documentId: string; introducedBy: CountryCode; sponsors?: string[] }) {
+}: {
+  documentId: string;
+  introducedBy: CountryCode;
+  sponsors?: string[];
+}) {
   return (
-    <DocumentTemplate>
-      <FontAwesomeIcon icon={faFileLines} className="text-gray-400 text-2xl" />
-      <div className="flex-1 flex-col justify-start items-center">
-        <div className="text-sm font-semibold text-gray-600">{documentId}</div>
-        {sponsors && (
-          <div className="text-xs text-gray-400">{`${sponsors?.length} signierte Unterstützer`}</div>
-        )}
-      </div>
-      <div className="flex-col justify-end items-center rounded-md border border-black shadow-md overflow-hidden">
-        <Image
-          src={getFlagPathByCode(introducedBy)}
-          width={32}
-          height={32}
-          alt={`Flag of ${introducedBy}`}
-        />
-      </div>
-    </DocumentTemplate>
+    <Document
+      documentId={documentId}
+      icon={faFileLines}
+      introducedBy={introducedBy}
+      sponsors={sponsors}
+    />
   );
 }

@@ -3,15 +3,18 @@ import React, { useEffect, useState } from "react";
 import { ScrollPanel } from "primereact/scrollpanel";
 import WidgetTemplate from "@/components/widget_template";
 import SpeakerBlock from "@/components/speakers_list/speaker_block";
-import SpeakerQueueList from "@/components/speakers_list/cueue_list";
+import SpeakerQueueList from "@/components/speakers_list/queue_list";
 import { CountryCode } from "@/custom_types";
 import { Button } from "primereact/button";
 import { faBan, faPlusCircle } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { SpeakersListData } from "@/custom_types";
 import { apiTestData } from "@/test_data";
+import { useI18nContext } from "@/i18n/i18n-react";
 
 export default function SpeakersList() {
+  const { LL } = useI18nContext();
+
   const [data, setData] = useState(apiTestData);
 
   useEffect(() => {
@@ -25,14 +28,14 @@ export default function SpeakersList() {
   return (
     <>
       <ScrollPanel className="flex-1 overflow-y-auto custom-scrollbar">
-        <div className="flex-1 flex p-4 gap-4 md:flex-col lg:flex-row">
+        <div className="flex-1 flex p-4 gap-4 flex-col lg:flex-row">
           <SpeakersListBlock
-            listTitle="Rednerliste"
+            listTitle={LL.participants.speakersList.SPEAKERS_LIST()}
             speakersData={data.speakersList}
             myCountry={data.myCountry}
           />
           <SpeakersListBlock
-            listTitle="Fragen und Kurzbemerkungen"
+            listTitle={LL.participants.speakersList.COMMENT_LIST()}
             speakersData={data.commentList}
             myCountry={data.myCountry}
           />
@@ -46,11 +49,13 @@ function SpeechButtons({
   onSpeakersList,
   listClosed,
 }: { onSpeakersList: boolean; listClosed: boolean }) {
+  const { LL } = useI18nContext();
+
   return (
     <div className="flex flex-col gap-2 items-start justify-center mt-3">
       {onSpeakersList && (
         <Button
-          label="Zurückziehen"
+          label={LL.participants.speakersList.REMOVE_FROM_LIST_BUTTON()}
           icon={<FontAwesomeIcon icon={faBan} className="mr-2" />}
           size="small"
           severity="danger"
@@ -58,7 +63,11 @@ function SpeechButtons({
       )}
       {!onSpeakersList && (
         <Button
-          label="Redebeitrag"
+          label={
+            listClosed
+              ? LL.participants.speakersList.LIST_CLOSED_BUTTON()
+              : LL.participants.speakersList.ADD_TO_LIST_BUTTON()
+          }
           icon={<FontAwesomeIcon icon={faPlusCircle} className="mr-2" />}
           size="small"
           disabled={listClosed}
@@ -68,7 +77,6 @@ function SpeechButtons({
   );
 }
 
-// TODO Idea: Create a functionality to add as many speakers lists as needed (not only two fixed ones)
 function SpeakersListBlock({
   listTitle,
   speakersData,
@@ -78,8 +86,10 @@ function SpeakersListBlock({
   speakersData: SpeakersListData;
   myCountry: CountryCode;
 }) {
+  const { LL } = useI18nContext();
+
   const myCountryInList: () => boolean = () => {
-    if (speakersData.list.find((countryCode) => countryCode === myCountry)) {
+    if (speakersData.list.find((item) => item.countryCode === myCountry)) {
       return true;
     } else {
       return false;
@@ -90,27 +100,20 @@ function SpeakersListBlock({
     <WidgetTemplate cardTitle={listTitle}>
       {speakersData.currentSpeaker ? (
         <>
-          <SpeakerBlock
-            countryCode={speakersData.currentSpeaker.countryCode}
-            timer={speakersData.currentSpeaker.timer}
-          />
+          <SpeakerBlock {...speakersData.currentSpeaker} />
           <SpeechButtons
             listClosed={speakersData.closed}
             onSpeakersList={myCountryInList()}
           />
-          <SpeakerQueueList
-            list={speakersData.list}
-            myCountry={myCountry}
-            closed={speakersData.closed}
-          />
+          <SpeakerQueueList {...speakersData} myCountry={myCountry} />
         </>
       ) : (
         <div className="flex flex-col gap-2 items-start justify-center mt-3">
-          <p className="text-gray-500 text-sm mb-3">
-            Kein Beitrag auf der Liste
+          <p className="text-gray-text text-sm mb-3">
+            {LL.participants.speakersList.NO_SPEAKERS_MESSAGE()}
           </p>
           <Button
-            label="Redebeitrag"
+            label={LL.participants.speakersList.ADD_TO_LIST_BUTTON()}
             icon={<FontAwesomeIcon icon={faPlusCircle} className="mr-2" />}
             size="small"
             disabled={speakersData.closed}

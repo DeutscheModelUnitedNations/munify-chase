@@ -11,18 +11,27 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import getFlagPathByCode from "@/misc/get_flag_path_by_code";
 import { CountryCode } from "@/custom_types";
+import { useI18nContext } from "@/i18n/i18n-react";
 
+/**
+ * This Component is used in the Login Page for the participants. It is the second step of the login process.
+ * It displays a form that first previews the given committee and country (or NSA) and then asks for the password.
+ * The password is verified by the server.
+ * Participants that represent a Non-State Actor (NSA) can select their committee by clicking on the committee placeholder,
+ * which displays a plus if no committee is selected yet and opens a sidebar with a list of all committees.
+ */
 // TODO: Type this function properly
 // @ts-ignore
 export default function usernameLogin({ changeLoginState }) {
   const router = useRouter();
+  const { LL } = useI18nContext();
 
   const [loading, setLoading] = useState(false);
 
   const [isNonStateActor, setIsNonStateActor] = useState(true);
   const [committee, setCommittee] = useState("N/A");
   const [selectCommittee, setSelectCommittee] = useState(false);
-  const [countryCode, setCountry] = useState<CountryCode>("jam"); // Placeholder SVG
+  const [countryCode, setCountry] = useState<CountryCode>("cpv"); // Placeholder SVG
 
   const [agreedToTerms, setAgreedToTerms] = useState(false);
   const [password, setPassword] = useState("");
@@ -34,7 +43,7 @@ export default function usernameLogin({ changeLoginState }) {
   }, []);
 
   const defaultValues = {
-    countryCode: "jam", // Placeholder UN flag SVG
+    countryCode: "cpv", // Placeholder UN flag SVG
     committee: "N/A",
     agreedToTerms: false,
     password: "",
@@ -60,9 +69,11 @@ export default function usernameLogin({ changeLoginState }) {
         visible={selectCommittee}
         onHide={() => setSelectCommittee(false)}
       >
-        <h2 className="mb-10">Gremium auswählen</h2>
+        <h2 className="mb-10">
+          {LL.login.participant.committeeSelection.HEADLINE()}
+        </h2>
         <div className="flex flex-col gap-5">
-          {/* TODO Replace with dynamic list of committees (probably with map function) */}
+          {/* TODO Find another way of letting NSAs select their committee. Preferably after the login process is already finished to keep information private. */}
           <Card
             title="GV"
             subTitle="Generalversammlung"
@@ -107,7 +118,9 @@ export default function usernameLogin({ changeLoginState }) {
       <div className="flex flex-col p-5 items-center justify-center h-full">
         <div className="flex flex-row gap-5 mb-5">
           <div className="flex-1 flex flex-col rounded-lg border border-gray-300 justify-center items-center">
-            <p className="m-auto text-sm mt-5 mb-0">Gremium</p>
+            <p className="m-auto text-sm mt-5 mb-0">
+              {LL.login.participant.COMMITTEE_LABEL()}
+            </p>
             <div
               className="text-3xl m-5 rounded-md border border-black h-24 flex align-center justify-center w-32"
               onClick={() => {
@@ -125,7 +138,9 @@ export default function usernameLogin({ changeLoginState }) {
             </div>
           </div>
           <div className="flex-1 flex flex-col rounded-lg border border-gray-300 justify-center items-center">
-            <p className="m-auto text-sm mt-5">Staat / NA</p>
+            <p className="m-auto text-sm mt-5">
+              {LL.login.participant.COUNTRY_LABEL()}
+            </p>
             <div className="m-5 rounded-md overflow-hidden border border-black h-24 w-32">
               <Image
                 src={getFlagPathByCode(countryCode)}
@@ -140,7 +155,7 @@ export default function usernameLogin({ changeLoginState }) {
         {/* TODO This form can be a component that is used in both chair and participant login password components */}
         <form onSubmit={handleLogin(onSubmit)} className="contents">
           <Password
-            placeholder="Password"
+            placeholder={LL.login.PASSWORD_PLACEHOLDER()}
             feedback={false}
             style={{
               marginBottom: "1.25rem",
@@ -165,7 +180,7 @@ export default function usernameLogin({ changeLoginState }) {
                 setAgreedToTerms(!agreedToTerms);
               }}
             >
-              Ich bin Einverstanden mit den{" "}
+              {LL.login.legalNotice.SECTION_1()}
               <Link
                 href="/terms"
                 target="_blank"
@@ -174,10 +189,9 @@ export default function usernameLogin({ changeLoginState }) {
                 onClick={(e) => e.stopPropagation()}
                 onKeyDown={(e) => e.stopPropagation()}
               >
-                Nutzungsbedingungen
+                {LL.login.legalNotice.TERMS_LINK()}
               </Link>
-              . Außerdem bin ich damit einverstanden, dass diese Website Cookies
-              verwendet. Mehr Informationen dazu finden Sie in unseren{" "}
+              {LL.login.legalNotice.SECTION_2()}
               <Link
                 href="privacy"
                 target="_blank"
@@ -186,15 +200,15 @@ export default function usernameLogin({ changeLoginState }) {
                 onClick={(e) => e.stopPropagation()}
                 onKeyDown={(e) => e.stopPropagation()}
               >
-                Datenschutzbestimmungen
+                {LL.login.legalNotice.PRIVACY_LINK()}
               </Link>
-              .
+              {LL.login.legalNotice.SECTION_3()}
             </span>
           </div>
           <div className="flex flex-row justify-center gap-5">
             <Button
               className="mb-5"
-              label="Zurück"
+              label={LL.login.BACK_BUTTON()}
               icon="pi pi-arrow-left"
               severity="danger"
               onClick={() => {
@@ -203,7 +217,7 @@ export default function usernameLogin({ changeLoginState }) {
               }}
             />
             <Button
-              label="Anmelden"
+              label={LL.login.LOGIN_BUTTON()}
               type="submit"
               icon="pi pi-arrow-right"
               iconPos="right"

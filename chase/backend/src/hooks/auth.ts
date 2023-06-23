@@ -61,7 +61,7 @@ export async function authenticated(
     req.headers.authorization === undefined ||
     !req.headers.authorization.startsWith("Bearer")
   ) {
-    rep.code(401).send(new Error("Unauthorized"));
+    rep.code(401).send(new Error("Unauthorized: Bearer missing"));
     return;
   }
 
@@ -69,21 +69,24 @@ export async function authenticated(
 
   try {
     const { payload } = await jwtVerify(token, jwks);
-
+    console.log(payload);
     if (!payload.sub) {
-      throw new Error("Sub is undefined, auth failed");
+      rep.code(401).send(new Error("Unauthorized: Sub undefined"));
+      return;
     }
 
+    // Continue here. Check how to manipulate the type and strongly type the session data
     const sessionData = JSON.parse(payload.sub);
     if (!compiledSessionSchema.Check(sessionData)) {
-      throw new Error("Malformed token");
+      rep.code(401).send(new Error("Unauthorized: Malformed token"));
+      return;
     }
 
     req.session = sessionData;
-
-    done();
   } catch (error) {
     console.error(error);
-    rep.code(401).send(new Error("Unauthorized"));
+    rep.code(401).send(new Error("Unauthorized: JWT not verified"));
   }
+
+  done();
 }

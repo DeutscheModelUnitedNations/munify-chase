@@ -7,6 +7,7 @@
     "dev:migrate": "npx prisma migrate dev"
   },
   "dependencies": {
+    "@fastify/cors": "^8.3.0",
     "@fastify/type-provider-typebox": "^3.2.0",
     "@prisma/client": "^4.15.0",
     "@sinclair/typebox": "^0.28.11",

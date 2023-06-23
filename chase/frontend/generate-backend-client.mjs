@@ -11,6 +11,7 @@ const i = setInterval(async () => {
       input: SPEC_URL,
       output: "backend-client",
       clientName: "API",
+      useOptions: true
     });
 
     console.log("Generated client form specs");

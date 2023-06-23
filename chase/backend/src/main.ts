@@ -3,6 +3,7 @@ import Fastify, { FastifyInstance } from "fastify";
 import fastifyNow from "fastify-now";
 import { join } from "path";
 import { PrismaClient } from "@prisma/client";
+import cors from "@fastify/cors";
 import { setDb, db } from "../prisma/client";
 
 //TODO establish testing concept & coverage
@@ -75,6 +76,14 @@ export let server: FastifyInstance;
 ╚══════════════════════════════════════════════════════════════════╝
 `);
   }
+
+  // ╔═════════════════╗
+  // ║ set CORS config ║
+  // ╚═════════════════╝
+
+  await server.register(cors, {
+    origin: ["http://localhost:3000"],//TODO set prod values
+  });
 
   // ╔══════════════════════════════════════╗
   // ║ File system based route registration ║

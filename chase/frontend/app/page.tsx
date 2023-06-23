@@ -1,14 +1,30 @@
 "use client";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import Image from "next/image";
 import { Button } from "primereact/button";
-import Loading from "./loading";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/contexts/auth";
+import { useBackend } from "@/contexts/backend";
 
 export default function Home() {
   const router = useRouter();
   const auth = useAuth();
+  const backend = useBackend();
+
+  const [authenticated, setAuthenticated] = useState(false);
+
+  useEffect(() => {
+    (async () => {
+      try {
+        await backend.getApiAuthStatus();
+        setAuthenticated(true);
+        console.log("success");
+      } catch (error) {
+        setAuthenticated(false);
+        console.log("fail");
+      }
+    })();
+  }, []);
 
   return (
     <>
@@ -35,8 +51,8 @@ export default function Home() {
           </div>
           <span>
             Authenticated:
-            {auth.authenticated && " Logged in"}
-            {!auth.authenticated && " Logged out"}
+            {authenticated && " Logged in"}
+            {!authenticated && " Logged out"}
           </span>
           <div className="p-buttonset">
             <Button

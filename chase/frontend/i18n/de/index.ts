@@ -13,21 +13,22 @@ const de = {
     legalNotice: {
       SECTION_1: "Ich bin Einverstanden mit den ",
       TERMS_LINK: "Nutzungsbedingungen",
-      SECTION_2: ". Außerdem bin ich damit einverstanden, dass diese Website Cookies verwendet. Mehr Informationen dazu finden Sie in unseren ",
+      SECTION_2:
+        ". Außerdem bin ich damit einverstanden, dass diese Website Cookies verwendet. Mehr Informationen dazu finden Sie in unseren ",
       PRIVACY_LINK: "Datenschutzbestimmungen",
       SECTION_3: ".",
     },
     participant: {
       OTHER_SIGH_IN: "Stattdessen als Vorsitz anmelden",
       COMMITTEE_LABEL: "Gremium",
-      COUNTRY_LABEL: "Staat / NA",      
+      COUNTRY_LABEL: "Staat / NA",
       committeeSelection: {
         HEADLINE: "Gremium auswählen",
       },
     },
     chair: {
       OTHER_SIGN_IN: "Stattdessen als Teilnehmer anmelden",
-      WARNING_MESSAGE: "Sie sind im Begriff sich als Vorsitz anzumelden."
+      WARNING_MESSAGE: "Sie sind im Begriff sich als Vorsitz anzumelden.",
     },
   },
 
@@ -52,14 +53,16 @@ const de = {
         RESEARCH_SERVICE_BUTTON: "Wiss. Dienst",
         contactForm: {
           HEADLINE_CHAIR: "Sende dem Vorsitz eine Nachricht",
-          HEADLINE_RESEARCH_SERVICE: "Sende dem Wissenschaftlichen Dienst (WD) eine Nachricht",
+          HEADLINE_RESEARCH_SERVICE:
+            "Sende dem Wissenschaftlichen Dienst (WD) eine Nachricht",
           SUBJECT_PLACEHOLDER: "Betreff",
           MESSAGE_PLACEHOLDER: "Nachricht",
           CATEGORY_LABEL: "Kategorie",
           CATEGORY_PLACEHOLDER: "Wähle eine Kategorie aus",
           CANCEL_BUTTON: "Abbrechen",
           SEND_BUTTON: "Senden",
-          INFO_MESSAGE: "Diese Anfrage wird zunächst vom Vorsitz geprüft und erst dann an den Wissenschaftlichen Dienst weitergeleitet.",
+          INFO_MESSAGE:
+            "Diese Anfrage wird zunächst vom Vorsitz geprüft und erst dann an den Wissenschaftlichen Dienst weitergeleitet.",
           categoryOptions: {
             GUEST_SPEAKER: "Gastredner:in anfragen",
             FACT_CHECK: "Faktencheck",
@@ -95,14 +98,16 @@ const de = {
         INTRODUCED_BY: "Eingebracht von",
         votingMode: {
           SUBSTANTIAL_VOTING: "Inhaltliche Abstimmung – Enthaltung möglich",
-          PROCEDURAL_VOTING: "Prozessuale Abstimmung – keine Enthaltung möglich",
+          PROCEDURAL_VOTING:
+            "Prozessuale Abstimmung – keine Enthaltung möglich",
         },
         majorityMode: {
           SIMPLE: "Einfache Mehrheit erforderlich (50% + 1)",
           TWO_THIRDS: "Zwei-Drittel Mehrheit erforderlich (2/3)",
           THREE_QUARTERS: "Drei-Viertel Mehrheit erforderlich (3/4)",
           CONSENSUS: "Konsens erforderlich",
-          SECURITY_COUNCIL: "Abstimmungsmodus des Sicherheitsrats (9/15 + no veto)",
+          SECURITY_COUNCIL:
+            "Abstimmungsmodus des Sicherheitsrats (9/15 + no veto)",
         },
       },
       votingButtons: {
@@ -121,12 +126,37 @@ const de = {
       },
       votingAlert: {
         VOTING_ALERT_HEADER: "Neue Abstimmung gestartet",
-        VOTING_ALERT_MESSAGE: "Sie wurden zu einer neuen Abstimmung aufgerufen. Bitte nehmen Sie schnellstmöglich daran teil.",
+        VOTING_ALERT_MESSAGE:
+          "Sie wurden zu einer neuen Abstimmung aufgerufen. Bitte nehmen Sie schnellstmöglich daran teil.",
         BUTTON_ADVANCE: "Zur Abstimmung",
         BUTTON_IGNORE: "Ignorieren",
-      }
-    }
-  }
+      },
+    },
+  },
+
+  chairs: {
+    speakersList: {
+      buttons: {
+        START_TIMER: "Start",
+        PAUSE_TIMER: "Stop",
+        RESET_TIMER: "Zeit zurücksetzen",
+        REMOVE_TIME: "15s",
+        ADD_TIME: "15s",
+        NEXT_SPEAKER: "Nächste Redner:in",
+        ADD_TO_LIST: "Redebeitrag hinzufügen",
+        CLOSE_LIST: "Liste schließen",
+        OPEN_LIST: "Liste öffnen",
+        CLEAR_LIST: "Liste zurücksetzen",
+      },
+      addSpeakerOverlay: {
+        HEADLINE: "Redebeiträge zu {{0}} hinzufügen",
+        PLACEHOLDER: "Suche nach Redner:innen",
+        BUTTON_CANCEL: "Abbrechen",
+        BUTTON_ADD: "Hinzufügen",
+        BUTTON_ADD_AND_CLOSE: "Hinzufügen und schließen",
+      },
+    },
+  },
 } satisfies Translation;
 
 export default de;

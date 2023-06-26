@@ -13,7 +13,8 @@ const en = {
     legalNotice: {
       SECTION_1: "I agree with the ",
       TERMS_LINK: "Terms of Use",
-      SECTION_2: ". I also agree that this website uses cookies. You can find more information about this in our ",
+      SECTION_2:
+        ". I also agree that this website uses cookies. You can find more information about this in our ",
       PRIVACY_LINK: "Privacy Policy",
       SECTION_3: ".",
     },
@@ -27,7 +28,7 @@ const en = {
     },
     chair: {
       OTHER_SIGN_IN: "Sign in as participant instead",
-      WARNING_MESSAGE: "You are about to sign in as a chair."
+      WARNING_MESSAGE: "You are about to sign in as a chair.",
     },
   },
 
@@ -59,7 +60,8 @@ const en = {
           CATEGORY_PLACEHOLDER: "Select a Category",
           CANCEL_BUTTON: "Cancel",
           SEND_BUTTON: "Send",
-          INFO_MESSAGE: "This request will be viewed and checked by the chair first and then forwarded to the Research Service.",
+          INFO_MESSAGE:
+            "This request will be viewed and checked by the chair first and then forwarded to the Research Service.",
           categoryOptions: {
             GUEST_SPEAKER: "Guest Speaker Request",
             FACT_CHECK: "Fact Check Request",
@@ -124,9 +126,33 @@ const en = {
         VOTING_ALERT_MESSAGE: "A new vote has been started. Please vote now.",
         BUTTON_ADVANCE: "To Voting",
         BUTTON_IGNORE: "Ignore",
-      }
-    }
-  }
+      },
+    },
+  },
+
+  chairs: {
+    speakersList: {
+      buttons: {
+        START_TIMER: "Start Timer",
+        PAUSE_TIMER: "Stop Timer",
+        RESET_TIMER: "Reset Timer",
+        REMOVE_TIME: "15s",
+        ADD_TIME: "15s",
+        NEXT_SPEAKER: "Next Speaker",
+        ADD_TO_LIST: "Add to List",
+        CLOSE_LIST: "Close List",
+        OPEN_LIST: "Open List",
+        CLEAR_LIST: "Reset List",
+      },
+      addSpeakerOverlay: {
+        HEADLINE: "Add Speaker to {{typeOfList}}",
+        PLACEHOLDER: "Select a Speaker",
+        BUTTON_CANCEL: "Cancel",
+        BUTTON_ADD: "Add",
+        BUTTON_ADD_AND_CLOSE: "Add and Close",
+      },
+    },
+  },
 } satisfies BaseTranslation;
 
 export default en;

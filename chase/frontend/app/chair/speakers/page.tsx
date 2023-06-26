@@ -4,9 +4,9 @@ import { ScrollPanel } from "primereact/scrollpanel";
 import { apiTestData } from "@/test_data";
 import { useI18nContext } from "@/i18n/i18n-react";
 import SpeakersListBlock from "@/components/speakers_list/speakers_list_block";
-import { ParticipantSpeechButtons } from "@/components/speakers_list/speech_buttons";
+import { ChairSpeechButtons } from "@/components/speakers_list/speech_buttons";
 
-export default function SpeakersList() {
+export default function ChairSpeakersList() {
   const { LL } = useI18nContext();
 
   const [data, setData] = useState(apiTestData);
@@ -27,28 +27,34 @@ export default function SpeakersList() {
             listTitle={LL.participants.speakersList.SPEAKERS_LIST()}
             speakersData={data.speakersList}
             myCountry={data.myCountry}
+            chairOptions={true}
           >
-            <ParticipantSpeechButtons
-              onSpeakersList={
-                data.speakersList.list.find(
-                  (item) => item.countryCode === data.myCountry,
-                ) !== undefined
-              }
+            <ChairSpeechButtons
               listClosed={data.speakersList.closed}
+              timerPaused={data.speakersList.currentSpeaker.timer.paused}
+              nextSpeakerQueued={data.speakersList.list.length > 0}
+              activeSpeaker={
+                data.speakersList.currentSpeaker.countryCode ? true : false
+              }
+              listOfAllCountries={data.speakersList.listOfAllCountries}
+              typeOfList={LL.participants.speakersList.SPEAKERS_LIST()}
             />
           </SpeakersListBlock>
           <SpeakersListBlock
             listTitle={LL.participants.speakersList.COMMENT_LIST()}
             speakersData={data.commentList}
             myCountry={data.myCountry}
+            chairOptions={true}
           >
-            <ParticipantSpeechButtons
-              onSpeakersList={
-                data.commentList.list.find(
-                  (item) => item.countryCode === data.myCountry,
-                ) !== undefined
-              }
+            <ChairSpeechButtons
               listClosed={data.commentList.closed}
+              timerPaused={data.commentList.currentSpeaker.timer.paused}
+              nextSpeakerQueued={data.commentList.list.length > 0}
+              activeSpeaker={
+                data.commentList.currentSpeaker.countryCode ? true : false
+              }
+              listOfAllCountries={data.speakersList.listOfAllCountries}
+              typeOfList={LL.participants.speakersList.COMMENT_LIST()}
             />
           </SpeakersListBlock>
         </div>

@@ -219,6 +219,7 @@ export interface CurrentSpeaker {
 }
 
 export interface SpeakersListData {
+  listOfAllCountries: CountryCode[];
   currentSpeaker: CurrentSpeaker;
   list: Speaker[];
   closed: boolean;

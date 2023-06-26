@@ -365,6 +365,74 @@ type RootTranslation = {
 			}
 		}
 	}
+	chairs: {
+		speakersList: {
+			buttons: {
+				/**
+				 * S​t​a​r​t​ ​T​i​m​e​r
+				 */
+				START_TIMER: string
+				/**
+				 * S​t​o​p​ ​T​i​m​e​r
+				 */
+				PAUSE_TIMER: string
+				/**
+				 * R​e​s​e​t​ ​T​i​m​e​r
+				 */
+				RESET_TIMER: string
+				/**
+				 * 1​5​s
+				 */
+				REMOVE_TIME: string
+				/**
+				 * 1​5​s
+				 */
+				ADD_TIME: string
+				/**
+				 * N​e​x​t​ ​S​p​e​a​k​e​r
+				 */
+				NEXT_SPEAKER: string
+				/**
+				 * A​d​d​ ​t​o​ ​L​i​s​t
+				 */
+				ADD_TO_LIST: string
+				/**
+				 * C​l​o​s​e​ ​L​i​s​t
+				 */
+				CLOSE_LIST: string
+				/**
+				 * O​p​e​n​ ​L​i​s​t
+				 */
+				OPEN_LIST: string
+				/**
+				 * R​e​s​e​t​ ​L​i​s​t
+				 */
+				CLEAR_LIST: string
+			}
+			addSpeakerOverlay: {
+				/**
+				 * A​d​d​ ​S​p​e​a​k​e​r​ ​t​o​ ​{​{​t​y​p​e​O​f​L​i​s​t​}​}
+				 */
+				HEADLINE: string
+				/**
+				 * S​e​l​e​c​t​ ​a​ ​S​p​e​a​k​e​r
+				 */
+				PLACEHOLDER: string
+				/**
+				 * C​a​n​c​e​l
+				 */
+				BUTTON_CANCEL: string
+				/**
+				 * A​d​d
+				 */
+				BUTTON_ADD: string
+				/**
+				 * A​d​d​ ​a​n​d​ ​C​l​o​s​e
+				 */
+				BUTTON_ADD_AND_CLOSE: string
+			}
+		}
+	}
 }
 
 export type TranslationFunctions = {
@@ -716,6 +784,74 @@ export type TranslationFunctions = {
 				 * Ignore
 				 */
 				BUTTON_IGNORE: () => LocalizedString
+			}
+		}
+	}
+	chairs: {
+		speakersList: {
+			buttons: {
+				/**
+				 * Start Timer
+				 */
+				START_TIMER: () => LocalizedString
+				/**
+				 * Stop Timer
+				 */
+				PAUSE_TIMER: () => LocalizedString
+				/**
+				 * Reset Timer
+				 */
+				RESET_TIMER: () => LocalizedString
+				/**
+				 * 15s
+				 */
+				REMOVE_TIME: () => LocalizedString
+				/**
+				 * 15s
+				 */
+				ADD_TIME: () => LocalizedString
+				/**
+				 * Next Speaker
+				 */
+				NEXT_SPEAKER: () => LocalizedString
+				/**
+				 * Add to List
+				 */
+				ADD_TO_LIST: () => LocalizedString
+				/**
+				 * Close List
+				 */
+				CLOSE_LIST: () => LocalizedString
+				/**
+				 * Open List
+				 */
+				OPEN_LIST: () => LocalizedString
+				/**
+				 * Reset List
+				 */
+				CLEAR_LIST: () => LocalizedString
+			}
+			addSpeakerOverlay: {
+				/**
+				 * Add Speaker to {{typeOfList}}
+				 */
+				HEADLINE: (arg0: number | string | boolean) => LocalizedString
+				/**
+				 * Select a Speaker
+				 */
+				PLACEHOLDER: () => LocalizedString
+				/**
+				 * Cancel
+				 */
+				BUTTON_CANCEL: () => LocalizedString
+				/**
+				 * Add
+				 */
+				BUTTON_ADD: () => LocalizedString
+				/**
+				 * Add and Close
+				 */
+				BUTTON_ADD_AND_CLOSE: () => LocalizedString
 			}
 		}
 	}

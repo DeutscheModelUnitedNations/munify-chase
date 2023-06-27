@@ -11,9 +11,9 @@ export default function Participant_Pages_Layout({
     <div className="flex h-screen w-screen bg-white shadow-md overflow-hidden">
       <Navbar>
         <NavButton icon={faHouse} link={"/chair/dashboard"} />
+        <NavButton icon={faUsersLine} link={"/chair/attendees"} />
         <NavButton icon={faComment} link={"/chair/speakers"} />
         <NavButton icon={faSquarePollVertical} link={"/chair/voting"} />
-        <NavButton icon={faUsersLine} link={"/chair/attendees"} />
         <NavButton icon={faChalkboard} link={"/chair/whiteboard"} />
         <NavButton icon={faScroll} link={"/chair/resolutions"} />
       </Navbar>

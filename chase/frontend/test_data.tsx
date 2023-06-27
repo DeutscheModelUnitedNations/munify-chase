@@ -6,6 +6,7 @@ import {
   Document,
   Voting,
   Motion,
+  Attendance,
 } from "@/custom_types";
 
 export const myCountry: CountryCode = "cpv";
@@ -832,5 +833,56 @@ export const motionTestData: Motion[] = [
     motionText: "Abschluss der Redeliste",
     status: "failed",
     voting: votingTestData3,
+  },
+];
+
+export const attendanceTestData: Attendance[] = [
+  {
+    country: "usa",
+    present: "present",
+  },
+  {
+    country: "fra",
+    present: "present",
+  },
+  {
+    country: "deu",
+    present: "present",
+  },
+  {
+    country: "gbr",
+    present: "absent",
+  },
+  {
+    country: "rus",
+    present: "absent",
+  },
+  {
+    country: "chn",
+    present: "absent",
+  },
+  {
+    country: "jpn",
+    present: "excused",
+  },
+  {
+    country: "kor",
+    present: "present",
+  },
+  {
+    country: "ita",
+    present: "present",
+  },
+  {
+    country: "esp",
+    present: "present",
+  },
+  {
+    country: "can",
+    present: "excused",
+  },
+  {
+    country: "mex",
+    present: "present",
   },
 ];

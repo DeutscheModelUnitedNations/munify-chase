@@ -366,6 +366,24 @@ type RootTranslation = {
 		}
 	}
 	chairs: {
+		attendance: {
+			/**
+			 * A​t​t​e​n​d​a​n​c​e
+			 */
+			HEADLINE: string
+			/**
+			 * P​r​e​s​e​n​t
+			 */
+			PRESENT: string
+			/**
+			 * A​b​s​e​n​t
+			 */
+			ABSENT: string
+			/**
+			 * E​x​c​u​s​e​d
+			 */
+			EXCUSED: string
+		}
 		speakersList: {
 			buttons: {
 				/**
@@ -788,6 +806,24 @@ export type TranslationFunctions = {
 		}
 	}
 	chairs: {
+		attendance: {
+			/**
+			 * Attendance
+			 */
+			HEADLINE: () => LocalizedString
+			/**
+			 * Present
+			 */
+			PRESENT: () => LocalizedString
+			/**
+			 * Absent
+			 */
+			ABSENT: () => LocalizedString
+			/**
+			 * Excused
+			 */
+			EXCUSED: () => LocalizedString
+		}
 		speakersList: {
 			buttons: {
 				/**

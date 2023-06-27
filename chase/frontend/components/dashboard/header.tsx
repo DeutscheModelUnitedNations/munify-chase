@@ -8,6 +8,7 @@ import { useI18nContext } from "@/i18n/i18n-react";
 import { LargeFlag } from "../flag_templates";
 interface HeaderProps {
   countryCode: CountryCode;
+  alternativeHeadline?: string;
   committeeName: string;
   currentTopic: string;
 }
@@ -19,6 +20,7 @@ interface HeaderProps {
 
 export default function DashboardHeader({
   countryCode,
+  alternativeHeadline,
   committeeName,
   currentTopic,
 }: HeaderProps) {
@@ -28,7 +30,9 @@ export default function DashboardHeader({
     <HeaderTemplate>
       <div className="flex flex-col items-start justify-center">
         <div className="text-2xl font-bold mb-1">
-          {getCountryNameByCode(countryCode, locale)}
+          {alternativeHeadline
+            ? alternativeHeadline
+            : getCountryNameByCode(countryCode, locale)}
         </div>
         <div className="text-md font-bold">{committeeName}</div>
         <div className="text-md">{currentTopic}</div>

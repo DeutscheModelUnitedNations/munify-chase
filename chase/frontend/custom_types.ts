@@ -284,3 +284,7 @@ export interface NormalApiResponse {
   whiteboardMarkdown: string;
   documents: Document[];
 }
+export interface Attendance {
+  country: CountryCode;
+  present: "present" | "excused" | "absent";
+}

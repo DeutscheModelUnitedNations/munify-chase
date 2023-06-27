@@ -16,3 +16,17 @@ export default function HeaderTemplate({
     </>
   );
 }
+
+/**
+ * This is a styling component to display an information box inside the header.
+ */
+
+export function HeaderInfoBox({ children }: { children: React.ReactNode }) {
+  return (
+    <>
+      <div className="text-sm bg-white rounded-md py-2 px-6 flex flex-col justify-center items-center">
+        {children}
+      </div>
+    </>
+  );
+}

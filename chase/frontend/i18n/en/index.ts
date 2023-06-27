@@ -131,6 +131,12 @@ const en = {
   },
 
   chairs: {
+    attendance: {
+      HEADLINE: "Attendance",
+      PRESENT: "Present",
+      ABSENT: "Absent",
+      EXCUSED: "Excused",
+    },
     speakersList: {
       buttons: {
         START_TIMER: "Start Timer",

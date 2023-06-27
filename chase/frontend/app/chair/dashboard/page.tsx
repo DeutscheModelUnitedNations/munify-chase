@@ -32,7 +32,8 @@ export default function ParticipantDashboard() {
       <ToastProvider>
         <div className="flex-1 flex flex-col">
           <DashboardHeader
-            countryCode={data.myCountry}
+            countryCode="uno"
+            alternativeHeadline="Vorsitz"
             committeeName={data.committeeName}
             currentTopic={data.currentTopic}
           />

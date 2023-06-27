@@ -135,6 +135,12 @@ const de = {
   },
 
   chairs: {
+    attendance: {
+      HEADLINE: "Anwesenheit",
+      PRESENT: "Anwesend",
+      ABSENT: "Abwesend",
+      EXCUSED: "Entschuldigt",
+    },
     speakersList: {
       buttons: {
         START_TIMER: "Start",

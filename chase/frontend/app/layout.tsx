@@ -12,8 +12,23 @@ import { detectLocale, navigatorDetector } from "typesafe-i18n/detectors";
 import { loadLocale } from "@/src/i18n/i18n-util.sync";
 import { baseLocale, locales } from "@/src/i18n/i18n-util";
 import TypesafeI18n from "@/src/i18n/i18n-react";
-import { AuthProvider } from "@/contexts/auth";
 import { BackendProvider } from "@/contexts/backend";
+import { AuthProvider } from "oidc-react";
+
+const oidcConfig = {
+  // rome-ignore lint/suspicious/noExplicitAny: <explanation>
+  onSignIn: async (response: any) => {
+    alert(
+      `You logged in :${response.profile.given_name} ${response.profile.family_name}`,
+    );
+    window.location.hash = "";
+  },
+  authority: "http://localhost:7788", // replace with your instance
+  clientId: "220605625510461443@dmun",
+  responseType: "code",
+  redirectUri: "http://localhost:3000/",
+  scope: "openid profile email",
+};
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -42,7 +57,7 @@ export default function RootLayout({
 
   return (
     <TypesafeI18n locale={locale}>
-      <AuthProvider>
+      <AuthProvider {...oidcConfig}>
         <BackendProvider>
           <html lang="de">
             <body className={inter.className}>{children}</body>

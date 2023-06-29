@@ -1,11 +1,44 @@
+# services:
+  # keycloak:
+  #   image: quay.io/keycloak/keycloak:21.1.1
+  #   volumes:
+  #     - ./keycloak:/opt/keycloak/data/
+  #   environment:
+  #     - KEYCLOAK_ADMIN=admin
+  #     - KEYCLOAK_ADMIN_PASSWORD=admin
+  #   ports:
+  #     - "6677:8080"
+  #   command: start-dev --features=declarative-user-profile
 services:
-  keycloak:
-    image: quay.io/keycloak/keycloak:21.1.1
-    volumes:
-      - ./keycloak:/opt/keycloak/data/
+  zitadel:
+    networks:
+      - 'zitadel'
+    image: 'ghcr.io/zitadel/zitadel:latest'
+    command: 'start-from-init --masterkey "MasterkeyNeedsToHave32Characters" --tlsMode disabled'
     environment:
-      - KEYCLOAK_ADMIN=admin
-      - KEYCLOAK_ADMIN_PASSWORD=admin
+      - 'ZITADEL_DATABASE_COCKROACH_HOST=crdb'
+      - 'ZITADEL_EXTERNALSECURE=false'
+      - 'ZITADEL_EXTERNALPORT=7788'
+    depends_on:
+      crdb:
+        condition: 'service_healthy'
     ports:
-      - "6677:8080"
-    command: start-dev
+      - '7788:8080'
+
+  crdb:
+    networks:
+      - 'zitadel'
+    image: 'cockroachdb/cockroach:v22.2.2'
+    command: 'start-single-node --insecure'
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health?ready=1"]
+      interval: '10s'
+      timeout: '30s'
+      retries: 5
+      start_period: '20s'
+    ports:
+      - '9090:8080'
+      - '26257:26257'
+
+networks:
+  zitadel:

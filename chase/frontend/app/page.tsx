@@ -3,8 +3,8 @@ import React, { useEffect, useState } from "react";
 import Image from "next/image";
 import { Button } from "primereact/button";
 import { useRouter } from "next/navigation";
-import { useAuth } from "@/contexts/auth";
 import { useBackend } from "@/contexts/backend";
+import { useAuth } from "oidc-react";
 
 export default function Home() {
   const router = useRouter();
@@ -58,12 +58,12 @@ export default function Home() {
             <Button
               label="Keycloak login"
               icon="pi pi-link"
-              onClick={() => auth.login()}
+              onClick={() => auth.signIn()}
             />
             <Button
               label="Keycloak logout"
               icon="pi pi-link"
-              onClick={() => auth.logout()}
+              onClick={() => auth.signOut()}
             />
           </div>
         </div>

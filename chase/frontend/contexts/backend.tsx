@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState } from "react";
 import { API, DefaultService, OpenAPI } from "@/backend-client";
-import { useAuth } from "./auth";
+import {useAuth} from "oidc-react";
 
 const BackendContext = createContext<DefaultService | undefined>(undefined);
 
@@ -26,7 +26,7 @@ const BackendProvider = ({ children }: { children: React.ReactNode }) => {
   OpenAPI.BASE = "http://localhost:3001"; //TODO adjust to prod values
   OpenAPI.CREDENTIALS = "same-origin";
   OpenAPI.WITH_CREDENTIALS = true;
-  OpenAPI.TOKEN = async () => await auth.token() as string; // ignore type checking here since undefined would equal not setting the value
+  OpenAPI.TOKEN = async () => auth.userData?.access_token as string; // ignore type checking here since undefined would equal not setting the value
 
   const [backend, _] = useState(new API(OpenAPI));
 

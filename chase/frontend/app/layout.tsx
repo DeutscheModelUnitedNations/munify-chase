@@ -12,8 +12,8 @@ import { detectLocale, navigatorDetector } from "typesafe-i18n/detectors";
 import { loadLocale } from "@/src/i18n/i18n-util.sync";
 import { baseLocale, locales } from "@/src/i18n/i18n-util";
 import TypesafeI18n from "@/src/i18n/i18n-react";
-import { AuthProvider } from "@/contexts/auth";
 import { BackendProvider } from "@/contexts/backend";
+import { AuthProvider } from "@/contexts/auth";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -23,9 +23,7 @@ const inter = Inter({ subsets: ["latin"] });
 
 export default function RootLayout({
   children,
-}: {
-  children: React.ReactNode;
-}) {
+}: { children: React.ReactNode }) {
   // TODO inspect the way locale is detected and loaded.
   // The Problem was that the locale was not loaded on the client side. There was a build error because the navigator was not defined on the server side.
   // // https://github.com/ivanhofer/typesafe-i18n/tree/main/packages/detectors)

@@ -1,20 +1,21 @@
-import React, { Key, createContext, useContext, useEffect } from "react";
-import Keycloak from "keycloak-js";
-import { OpenAPI } from "@/backend-client";
+import { UserManager } from "oidc-client-ts";
+import React, { createContext, useContext, useEffect } from "react";
+import { useRouter } from "next/navigation";
 
 interface AuthContextType {
-  token: () => Promise<string | undefined>;
+  authenticated: boolean;
   login: () => Promise<void>;
   logout: () => Promise<void>;
+  token: string | undefined;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 /**
- * Returns the authentication context of the current user
+ * Returns the authentication context of the current user.
  *
- * @return {object} The authentication context object
- * @throws {Error} Throws an error if used outside of an AuthProvider
+ * @return {object} The authentication context object.
+ * @throws {Error} Throws an error if used outside of an AuthProvider.
  */
 function useAuth() {
   const context = useContext(AuthContext);
@@ -25,43 +26,61 @@ function useAuth() {
 }
 
 const AuthProvider = ({ children }: { children: React.ReactNode }) => {
-  //TODO this is probably not the way to do this correctly, but its performant and clean enough for now
-  const keycloak = (async () => {
-    if (typeof window !== "undefined") {
-      // only run in browser
-      return new Keycloak({
-        //TODO update this with prod values
-        realm: "dmun",
-        url: "http://localhost:6677",
-        clientId: "chase",
-      });
-    }
-  })() as Promise<Keycloak>; // in browsers this will allways be set  so we force the type here
+  const router = useRouter();
 
-  const initialize = (async () => {
-    const k = await keycloak;
-    if (typeof window !== "undefined") {
-      // only run in browser
-      await k.init({
-        onLoad: "check-sso",
-      });
-    }
-  })();
+  const userManager = new Promise<UserManager>((resolve, reject) => {
+    // only run this in the browser where the required apis are available
+    if (typeof window === "undefined") return reject();
+
+    //TODO replace with real values
+    resolve(
+      new UserManager({
+        authority: "http://localhost:7788",
+        client_id: "220605625510461443@dmun",
+        redirect_uri: "http://localhost:3000",
+        post_logout_redirect_uri: "http://localhost:3000",
+      }),
+    );
+  });
 
   const login = async () => {
-    return (await keycloak).login(); // subsequent promise awaits dont delay the call
-  };
-  const logout = async () => {
-    return (await keycloak).logout();
-  };
-  const token = async () => {
-    // init first to ensure the token is set
-    await initialize;
-    return (await keycloak).token;
+    (await userManager).signinRedirect();
   };
 
+  const logout = async () => {
+    (await userManager).signoutRedirect();
+  };
+
+  const [authenticated, setAuthenticated] = React.useState<boolean>(false);
+  const [token, setToken] = React.useState<string | undefined>();
+
+  useEffect(() => {
+    (async () => {
+      const urlObj = new URL(window.location.href);
+
+      if (urlObj.searchParams.has("state") && urlObj.searchParams.has("code")) {
+        await (await userManager).signinRedirectCallback(window.location.href);
+        ["state", "code"].forEach((param) => {
+          urlObj.searchParams.delete(param);
+        });
+        
+        //TODO the replacement seems to not work perfectly here
+        router.replace(urlObj.toString());
+      }
+
+      const user = await (await userManager).getUser();
+      if (user) {
+        setAuthenticated(true);
+        setToken(user.access_token);
+      } else {
+        setAuthenticated(false);
+        setToken(undefined);
+      }
+    })();
+  }, []);
+
   return (
-    <AuthContext.Provider value={{ login, logout, token }}>
+    <AuthContext.Provider value={{ login, logout, authenticated, token }}>
       {children}
     </AuthContext.Provider>
   );

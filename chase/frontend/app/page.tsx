@@ -3,25 +3,24 @@ import React, { useEffect, useState } from "react";
 import Image from "next/image";
 import { Button } from "primereact/button";
 import { useRouter } from "next/navigation";
-import { useAuth } from "@/contexts/auth";
 import { useBackend } from "@/contexts/backend";
+import { useAuth } from "@/contexts/auth";
 
 export default function Home() {
   const router = useRouter();
   const auth = useAuth();
   const backend = useBackend();
 
-  const [authenticated, setAuthenticated] = useState(false);
+  const [backendAcceptsOurAuth, setBackendAcceptsOurAuth] = useState(false);
 
   useEffect(() => {
     (async () => {
       try {
+        if (typeof window === "undefined") return;
         await backend.getApiAuthStatus();
-        setAuthenticated(true);
-        console.log("success");
+        setBackendAcceptsOurAuth(true);
       } catch (error) {
-        setAuthenticated(false);
-        console.log("fail");
+        setBackendAcceptsOurAuth(false);
       }
     })();
   }, []);
@@ -50,9 +49,14 @@ export default function Home() {
             />
           </div>
           <span>
-            Authenticated:
-            {authenticated && " Logged in"}
-            {!authenticated && " Logged out"}
+            backendAcceptsOurAuth:
+            {backendAcceptsOurAuth && "yes"}
+            {!backendAcceptsOurAuth && "nonono"}
+          </span>
+          <span>
+            authenticated:
+            {auth.authenticated && "yes"}
+            {!auth.authenticated && "nonono"}
           </span>
           <div className="p-buttonset">
             <Button

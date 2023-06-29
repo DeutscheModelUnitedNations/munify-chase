@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import HeaderTemplate, { HeaderInfoBox } from "@/components/header_template";
 import WidgetBoxTemplate from "@/components/widget_box_template";
 import { ScrollPanel } from "primereact/scrollpanel";
@@ -16,7 +16,7 @@ import {
 import {
   faUser,
   faUserSlash,
-  faUserXmark,
+  faCalendarXmark,
 } from "@fortawesome/free-solid-svg-icons";
 import { attendanceTestData } from "@/test_data";
 
@@ -29,7 +29,10 @@ interface AttendanceButtonOptions {
 export default function ChairAttendees() {
   const { LL, locale } = useI18nContext();
 
-  const [testData, setTestData] = useState<Attendance[]>(attendanceTestData);
+  const [data, setData] = useState<Attendance[]>(attendanceTestData);
+  const [presentAttendees, setPresentAttendees] = useState<number>(0);
+  const [excusedAttendees, setExcusedAttendees] = useState<number>(0);
+  const [absentAttendees, setAbsentAttendees] = useState<number>(0);
 
   const attendanceOptions: AttendanceButtonOptions[] = [
     {
@@ -38,7 +41,7 @@ export default function ChairAttendees() {
       value: "present",
     },
     {
-      icon: faUserXmark,
+      icon: faCalendarXmark,
       label: LL.chairs.attendance.EXCUSED(),
       value: "excused",
     },
@@ -49,33 +52,66 @@ export default function ChairAttendees() {
     },
   ];
 
-  const countGroup = (group: "present" | "excused" | "absent") => {
-    return testData.filter((item) => item.present === group).length;
-  };
+  useEffect(() => {
+    const countGroup = (group: "present" | "excused" | "absent") => {
+      return data.filter((item) => item.present === group).length;
+    };
+
+    setPresentAttendees(countGroup("present"));
+    setExcusedAttendees(countGroup("excused"));
+    setAbsentAttendees(countGroup("absent"));
+  }, [data]);
 
   const justifyTemplate = (option: AttendanceButtonOptions) => {
     return (
       <>
-        <FontAwesomeIcon icon={option.icon} className="mr-2" />
-        {option.label}
+        <FontAwesomeIcon icon={option.icon} />
+        {/* <FontAwesomeIcon icon={option.icon} className="mr-2" />  Option with icon and lable
+        {option.label} */} 
       </>
     );
   };
 
   const MajorityInfo = ({
     name,
-    majorityInPercent,
+    majorityInPercent: majorityInDecimal,
   }: {
     name: string;
     majorityInPercent: number;
   }) => {
+    const majorityNeeded = (attendees: number) => {
+      return Math.ceil(attendees * majorityInDecimal);
+    };
+
     return (
       <HeaderInfoBox>
         <div className="flex items-center">{name}</div>
-        <div className="flex items-center mt-2 text-2xl font-bold">
-          {Math.ceil(countGroup("present") * majorityInPercent)}
+        <div className="flex items-center mt-2 text-2xl font-bold tabular-nums">
+          {majorityNeeded(presentAttendees)}
         </div>
       </HeaderInfoBox>
+    );
+  };
+
+  const CounterCell = ({
+    count,
+    lable,
+    icon,
+  }: {
+    count: number;
+    lable: string;
+    icon: FontAwesomeIconProps["icon"];
+  }) => {
+    return (
+      <>
+        <div className="flex justify-self-center items-center">
+          <FontAwesomeIcon icon={icon} className="mr-2" />
+        </div>
+        <div className="flex items-start">
+          {lable}:
+        </div>
+        <div className="font-bold justify-self-center items-center ml-3 tabular-nums">{count}</div>
+      </>
     );
   };
 
@@ -85,32 +121,22 @@ export default function ChairAttendees() {
         <HeaderTemplate>
           <div className="flex-1 flex gap-4 h-full justify-center">
             <HeaderInfoBox>
-              <div className="grid" style={{ gridTemplateColumns: "auto 1fr" }}>
-                <div className="flex justify-self-center items-center">
-                  <FontAwesomeIcon icon={faUser} className="mr-2" />
-                </div>
-                <div className="flex items-start">
-                  Present:
-                  <span className="font-bold ml-2">
-                    {countGroup("present")}
-                  </span>
-                </div>
-                <div className="flex justify-self-center items-center">
-                  <FontAwesomeIcon icon={faUserXmark} className="mr-2" />
-                </div>
-                <div className="flex items-start">
-                  Excused:
-                  <span className="font-bold ml-2">
-                    {countGroup("excused")}
-                  </span>
-                </div>
-                <div className="flex justify-self-center items-center">
-                  <FontAwesomeIcon icon={faUserSlash} className="mr-2" />
-                </div>
-                <div className="flex items-start">
-                  Absent:
-                  <span className="font-bold ml-2">{countGroup("absent")}</span>
-                </div>
+              <div className="grid" style={{ gridTemplateColumns: "auto 1fr auto" }}>
+                <CounterCell
+                  count={presentAttendees}
+                  lable={LL.chairs.attendance.PRESENT()}
+                  icon={faUser}
+                />
+                <CounterCell
+                  count={excusedAttendees}
+                  lable={LL.chairs.attendance.EXCUSED()}
+                  icon={faCalendarXmark}
+                />
+                <CounterCell
+                  count={absentAttendees}
+                  lable={LL.chairs.attendance.ABSENT()}
+                  icon={faUserSlash}
+                />
               </div>
             </HeaderInfoBox>
             <MajorityInfo name="1/2" majorityInPercent={0.50001} />
@@ -120,7 +146,7 @@ export default function ChairAttendees() {
         <ScrollPanel className="flex-1 overflow-y-auto custom-scrollbar">
           <div className="flex-1 flex p-4 gap-4 flex-col">
             <WidgetTemplate cardTitle="Attendance">
-              {testData?.map((attendee, index) => (
+              {data?.map((attendee, index) => (
                 <WidgetBoxTemplate>
                   <Flag countryCode={attendee.country} />
                   <div className="flex flex-col justify-center">
@@ -132,10 +158,10 @@ export default function ChairAttendees() {
                   <SelectButton
                     value={attendee.present}
                     onChange={(e) => {
-                      setTestData((prevData) =>
+                      setData((prevData) =>
                         prevData.map((item, i) =>
-                          i === index ? { ...item, present: e.value } : item,
-                        ),
+                          i === index ? { ...item, present: e.value } : item
+                        )
                       );
                     }}
                     options={attendanceOptions}

@@ -366,6 +366,10 @@ type RootTranslation = {
 		}
 	}
 	chairs: {
+		/**
+		 * C​h​a​i​r
+		 */
+		CHAIR: string
 		attendance: {
 			/**
 			 * A​t​t​e​n​d​a​n​c​e
@@ -806,6 +810,10 @@ export type TranslationFunctions = {
 		}
 	}
 	chairs: {
+		/**
+		 * Chair
+		 */
+		CHAIR: () => LocalizedString
 		attendance: {
 			/**
 			 * Attendance

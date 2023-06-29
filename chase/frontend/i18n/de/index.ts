@@ -135,6 +135,7 @@ const de = {
   },
 
   chairs: {
+    CHAIR: "Vorsitz",
     attendance: {
       HEADLINE: "Anwesenheit",
       PRESENT: "Anwesend",

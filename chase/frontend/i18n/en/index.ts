@@ -131,6 +131,7 @@ const en = {
   },
 
   chairs: {
+    CHAIR: "Chair",
     attendance: {
       HEADLINE: "Attendance",
       PRESENT: "Present",

@@ -33,7 +33,7 @@ export default function ParticipantDashboard() {
         <div className="flex-1 flex flex-col">
           <DashboardHeader
             countryCode="uno"
-            alternativeHeadline="Vorsitz"
+            alternativeHeadline={LL.chairs.CHAIR()}
             committeeName={data.committeeName}
             currentTopic={data.currentTopic}
           />

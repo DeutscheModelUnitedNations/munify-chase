@@ -1,29 +1,26 @@
-'use client';
-import React, { useEffect, useState } from 'react';
-import Image from 'next/image';
-import { Button } from 'primereact/button';
-import { useRouter } from 'next/navigation';
-import { useBackend } from '@/contexts/backend';
-import { useAuth } from 'oidc-react';
-import dynamic from 'next/dynamic';
+"use client";
+import React, { useEffect, useState } from "react";
+import Image from "next/image";
+import { Button } from "primereact/button";
+import { useRouter } from "next/navigation";
+import { useBackend } from "@/contexts/backend";
+import { useAuth } from "@/contexts/auth";
 
 export default function Home() {
   const router = useRouter();
   const auth = useAuth();
   const backend = useBackend();
 
-  const [authenticated, setAuthenticated] = useState(false);
+  const [backendAcceptsOurAuth, setBackendAcceptsOurAuth] = useState(false);
 
   useEffect(() => {
     (async () => {
       try {
-        if (typeof window === 'undefined') return;
+        if (typeof window === "undefined") return;
         await backend.getApiAuthStatus();
-        setAuthenticated(true);
-        console.log('success');
+        setBackendAcceptsOurAuth(true);
       } catch (error) {
-        setAuthenticated(false);
-        console.log('fail');
+        setBackendAcceptsOurAuth(false);
       }
     })();
   }, []);
@@ -43,22 +40,35 @@ export default function Home() {
             <Button
               label="Teilnehmenden-Login"
               icon="pi pi-link"
-              onClick={() => router.push('/login/participant')}
+              onClick={() => router.push("/login/participant")}
             />
             <Button
               label="Vorsitz-Login"
               icon="pi pi-link"
-              onClick={() => router.push('/login/chair')}
+              onClick={() => router.push("/login/chair")}
             />
           </div>
           <span>
-            Authenticated:
-            {authenticated && ' Logged in'}
-            {!authenticated && ' Logged out'}
+            backendAcceptsOurAuth:
+            {backendAcceptsOurAuth && "yes"}
+            {!backendAcceptsOurAuth && "nonono"}
+          </span>
+          <span>
+            authenticated:
+            {auth.authenticated && "yes"}
+            {!auth.authenticated && "nonono"}
           </span>
           <div className="p-buttonset">
-            <Button label="Keycloak login" icon="pi pi-link" onClick={() => auth.signIn()} />
-            <Button label="Keycloak logout" icon="pi pi-link" onClick={() => auth.signOut()} />
+            <Button
+              label="Keycloak login"
+              icon="pi pi-link"
+              onClick={() => auth.login()}
+            />
+            <Button
+              label="Keycloak logout"
+              icon="pi pi-link"
+              onClick={() => auth.logout()}
+            />
           </div>
         </div>
       </div>

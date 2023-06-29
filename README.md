@@ -3,7 +3,7 @@
 
 Munify is a collection of tools to organize and run a [model united nations](https://en.wikipedia.org/wiki/Model_United_Nations) conference. It aims to simplify aspects like participant management, document organization commitee sessions and communication at the conference.
 
-The project has been initiated by members of [DMun](https://de.wikipedia.org/wiki/Deutsche_Model_United_Nations).
+The project has been initiated by members of [DMUN](https://de.wikipedia.org/wiki/Deutsche_Model_United_Nations).
 
 It is composed of multiple software components which can be found in their separate directories inside this monorepo.
 ## Components
@@ -43,7 +43,7 @@ Now every component is installed and running. Please see the specific components
 You can find various other scripts at root level, e.g. for testing or linting, please see the scripts section in the [package.json](./package.json).
 ## FAQ
 
-#### Can I use this for my conference outside of DMun?
+#### Can I use this for my conference outside of DMUN?
 
 Yes. We encourage and allow usage for other conferences as long as it is non commercial. Please see our license for more detailed information on this.
 

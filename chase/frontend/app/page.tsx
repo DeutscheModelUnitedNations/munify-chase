@@ -1,10 +1,11 @@
-"use client";
-import React, { useEffect, useState } from "react";
-import Image from "next/image";
-import { Button } from "primereact/button";
-import { useRouter } from "next/navigation";
-import { useBackend } from "@/contexts/backend";
-import { useAuth } from "oidc-react";
+'use client';
+import React, { useEffect, useState } from 'react';
+import Image from 'next/image';
+import { Button } from 'primereact/button';
+import { useRouter } from 'next/navigation';
+import { useBackend } from '@/contexts/backend';
+import { useAuth } from 'oidc-react';
+import dynamic from 'next/dynamic';
 
 export default function Home() {
   const router = useRouter();
@@ -16,12 +17,13 @@ export default function Home() {
   useEffect(() => {
     (async () => {
       try {
+        if (typeof window === 'undefined') return;
         await backend.getApiAuthStatus();
         setAuthenticated(true);
-        console.log("success");
+        console.log('success');
       } catch (error) {
         setAuthenticated(false);
-        console.log("fail");
+        console.log('fail');
       }
     })();
   }, []);
@@ -41,30 +43,22 @@ export default function Home() {
             <Button
               label="Teilnehmenden-Login"
               icon="pi pi-link"
-              onClick={() => router.push("/login/participant")}
+              onClick={() => router.push('/login/participant')}
             />
             <Button
               label="Vorsitz-Login"
               icon="pi pi-link"
-              onClick={() => router.push("/login/chair")}
+              onClick={() => router.push('/login/chair')}
             />
           </div>
           <span>
             Authenticated:
-            {authenticated && " Logged in"}
-            {!authenticated && " Logged out"}
+            {authenticated && ' Logged in'}
+            {!authenticated && ' Logged out'}
           </span>
           <div className="p-buttonset">
-            <Button
-              label="Keycloak login"
-              icon="pi pi-link"
-              onClick={() => auth.signIn()}
-            />
-            <Button
-              label="Keycloak logout"
-              icon="pi pi-link"
-              onClick={() => auth.signOut()}
-            />
+            <Button label="Keycloak login" icon="pi pi-link" onClick={() => auth.signIn()} />
+            <Button label="Keycloak logout" icon="pi pi-link" onClick={() => auth.signOut()} />
           </div>
         </div>
       </div>

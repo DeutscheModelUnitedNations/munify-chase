@@ -63,7 +63,7 @@ For feature suggestions, please post in the discussion section of this repositor
 
 Contributions are always welcome!
 
-See `contributing.md` for ways to get started.
+See [CONTRIBUTING.md](./CONTRIBUTING.md) for ways to get started.
 
 By contributing you agree to release your contributtion under the projects license.
 ## License

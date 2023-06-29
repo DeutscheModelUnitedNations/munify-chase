@@ -14,6 +14,7 @@ See the existing components and their directory below
 
 
 ## Develop Locally
+Make sure you have docker installed
 
 Clone the project
 

@@ -40,7 +40,7 @@ Start all components in dev mode
 ```
 
 Now every component is installed and running. Please see the specific components for details like running port etc. and how to get going.
-You can find various other scripts at root level, e.g. for testing, please see the scripts section in the [package.json](./package.json).
+You can find various other scripts at root level, e.g. for testing or linting, please see the scripts section in the [package.json](./package.json).
 ## FAQ
 
 #### Can I use this for my conference outside of DMun?
@@ -63,8 +63,6 @@ For feature suggestions, please post in the discussion section of this repositor
 Contributions are always welcome!
 
 See `contributing.md` for ways to get started.
-
-Please adhere to this project's `code of conduct`.
 
 By contributing you agree to release your contributtion under the projects license.
 ## License

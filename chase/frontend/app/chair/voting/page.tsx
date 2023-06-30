@@ -22,7 +22,7 @@ export default function ChairVoting() {
   const [openTab, setOpenTab] = useState<Tabs>("current-motions");
   const [data, setData] = useState<Motion[]>(motionTestData);
   const [activeMotionId, setActiveMotionId] = useState<string | undefined>(
-    data[0].motionId
+    data[0].motionId,
   );
 
   return (
@@ -67,7 +67,7 @@ export default function ChairVoting() {
               <Motions
                 motionData={motionTestData.filter(
                   (motion: Motion) =>
-                    motion.status === "open" || motion.status === "in-voting"
+                    motion.status === "open" || motion.status === "in-voting",
                 )}
                 highlightedMotionId={activeMotionId}
                 setActiveMotion={setActiveMotionId}
@@ -79,7 +79,7 @@ export default function ChairVoting() {
                   (motion: Motion) =>
                     (motion.status === "passed" ||
                       motion.status === "failed") &&
-                    motion.introducedBy !== "uno" // The introduced by filters all chair sind motions/votings (like a resolution voting shouldn't appear in the "Recent Motions" Tab)
+                    motion.introducedBy !== "uno", // The introduced by filters all chair sind motions/votings (like a resolution voting shouldn't appear in the "Recent Motions" Tab)
                 )}
                 highlightedMotionId={activeMotionId}
                 setActiveMotion={setActiveMotionId}
@@ -91,7 +91,7 @@ export default function ChairVoting() {
                   (motion: Motion) =>
                     (motion.status === "passed" ||
                       motion.status === "failed") &&
-                    motion.voting !== undefined
+                    motion.voting !== undefined,
                 )}
                 highlightedMotionId={activeMotionId}
                 setActiveMotion={setActiveMotionId}

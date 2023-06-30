@@ -67,7 +67,7 @@ export default function ChairAttendees() {
       <>
         <FontAwesomeIcon icon={option.icon} />
         {/* <FontAwesomeIcon icon={option.icon} className="mr-2" />  Option with icon and lable
-        {option.label} */} 
+        {option.label} */}
       </>
     );
   };
@@ -107,10 +107,10 @@ export default function ChairAttendees() {
         <div className="flex justify-self-center items-center">
           <FontAwesomeIcon icon={icon} className="mr-2" />
         </div>
-        <div className="flex items-start">
-          {lable}:
+        <div className="flex items-start">{lable}:</div>
+        <div className="font-bold justify-self-center items-center ml-3 tabular-nums">
+          {count}
         </div>
-        <div className="font-bold justify-self-center items-center ml-3 tabular-nums">{count}</div>
       </>
     );
   };
@@ -121,7 +121,10 @@ export default function ChairAttendees() {
         <HeaderTemplate>
           <div className="flex-1 flex gap-4 h-full justify-center">
             <HeaderInfoBox>
-              <div className="grid" style={{ gridTemplateColumns: "auto 1fr auto" }}>
+              <div
+                className="grid"
+                style={{ gridTemplateColumns: "auto 1fr auto" }}
+              >
                 <CounterCell
                   count={presentAttendees}
                   lable={LL.chairs.attendance.PRESENT()}
@@ -160,8 +163,8 @@ export default function ChairAttendees() {
                     onChange={(e) => {
                       setData((prevData) =>
                         prevData.map((item, i) =>
-                          i === index ? { ...item, present: e.value } : item
-                        )
+                          i === index ? { ...item, present: e.value } : item,
+                        ),
                       );
                     }}
                     options={attendanceOptions}

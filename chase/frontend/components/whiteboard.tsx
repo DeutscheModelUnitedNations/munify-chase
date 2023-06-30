@@ -58,7 +58,7 @@ export default function ChairWhiteboard({
             if (e.htmlValue) setContentFunction(e.htmlValue);
           } else {
             console.warn(
-              "setWhiteboardContent is not defined. Whiteboard content will not be saved."
+              "setWhiteboardContent is not defined. Whiteboard content will not be saved.",
             );
           }
         }}

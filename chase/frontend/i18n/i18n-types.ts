@@ -388,6 +388,16 @@ type RootTranslation = {
 			 */
 			EXCUSED: string
 		}
+		whiteboard: {
+			/**
+			 * S​a​v​e​ ​a​n​d​ ​p​u​b​l​i​s​h
+			 */
+			SAVE_BUTTON: string
+			/**
+			 * R​e​s​e​t
+			 */
+			RESET_BUTTON: string
+		}
 		speakersList: {
 			buttons: {
 				/**
@@ -831,6 +841,16 @@ export type TranslationFunctions = {
 			 * Excused
 			 */
 			EXCUSED: () => LocalizedString
+		}
+		whiteboard: {
+			/**
+			 * Save and publish
+			 */
+			SAVE_BUTTON: () => LocalizedString
+			/**
+			 * Reset
+			 */
+			RESET_BUTTON: () => LocalizedString
 		}
 		speakersList: {
 			buttons: {

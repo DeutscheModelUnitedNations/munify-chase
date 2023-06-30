@@ -350,6 +350,9 @@ export const documentsTestData: Document[] = [
   },
 ];
 
+export const whiteboardTestData: string =
+  '<h1>Hello World!</h1><p>Hier ist ein Beispiel für einen Whiteboardtext.</p><p><br></p><h2>Vorsitzende</h2><ul><li>Miriam Güthe</li><li>Maximilian Ilzhöfer</li><li>Tade Strehk</li></ul><p><br></p><h2>Gremienberatung</h2><ul><li>Felix Thomsen</li></ul><p><br></p><p>Und hier ein <a href="https://www.google.com/" rel="noopener noreferrer" target="_blank" style="color: rgb(0, 123, 255);">Link</a>.</p><p><br></p><blockquote>An alle Terrorteilis:&nbsp;<code style="background-color: rgb(240, 240, 240);">Das Pöbeln nicht vergessen!</code></blockquote><p><br></p><h2>Über diesen Block</h2><p>Hier können die Vorsitzenden aktuelle Informationen anzeigen. Das ganze wird über einen Editor funktionieren, sodass die Vorsitzenden über Markdown ihre Informationen individuell verpacken und anzeigen können. Das bietet größtmögliche Flexibilität und Übersichtlichkeit.</p><p><br></p>';
+
 export const apiTestData: NormalApiResponse = {
   committeeName: "Generalversammlung",
   currentTopic: "Rechte von Kindersoldaten",
@@ -359,9 +362,6 @@ export const apiTestData: NormalApiResponse = {
   commentList: commentListTestData,
 
   committeeStatus: committeeStatusTestData,
-
-  whiteboardMarkdown:
-    "# Hello World!\n\nHier ist ein Markdown- Beispiel.\n\n## Vorsitzende\n* Miriam Güthe\n * Maximilian Ilzhöfer\n * Tade Strehk\n## Gremienberatung\n * Felix Thomsen\n\nUnd hier ein[Link](https://www.google.com).\n\n> **An alle Terrorteilis:** Das Pöbeln nicht vergessen!\n\n# Über diesen Block\n\nHier können die Vorsitzenden aktuelle Informationen anzeigen. Das ganze wird über einen Editor funktionieren, sodass die Vorsitzenden über Markdown ihre Informationen individuell verpacken und anzeigen können. Das bietet größtmögliche Flexibilität und Übersichtlichkeit.",
 
   documents: documentsTestData,
 };

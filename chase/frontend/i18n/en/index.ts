@@ -138,6 +138,10 @@ const en = {
       ABSENT: "Absent",
       EXCUSED: "Excused",
     },
+    whiteboard: {
+      SAVE_BUTTON: "Save and publish",
+      RESET_BUTTON: "Reset",
+    },
     speakersList: {
       buttons: {
         START_TIMER: "Start Timer",

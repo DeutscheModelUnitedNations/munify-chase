@@ -281,7 +281,6 @@ export interface NormalApiResponse {
   speakersList: SpeakersListData;
   commentList: SpeakersListData;
   committeeStatus: CommitteeStatus;
-  whiteboardMarkdown: string;
   documents: Document[];
 }
 export interface Attendance {

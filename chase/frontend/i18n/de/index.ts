@@ -142,6 +142,10 @@ const de = {
       ABSENT: "Abwesend",
       EXCUSED: "Entschuldigt",
     },
+    whiteboard: {
+      SAVE_BUTTON: "Speichern und Veröffentlichen",
+      RESET_BUTTON: "Zurücksetzen",
+    },
     speakersList: {
       buttons: {
         START_TIMER: "Start",

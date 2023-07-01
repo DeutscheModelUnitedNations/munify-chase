@@ -16,6 +16,11 @@ interface HeaderProps {
 /**
  * This Component is used in the Dashboard. It uses the HeaderTemplate
  * to create a header with the country's flag, country's name, committee name and topic.
+ * @param countryCode The country's code. If chair or other staff, use "uno" as the code.
+ * @param alternativeHeadline Used to override the country's name when chair or other staff.
+ * @param committeeName The name of the committee.
+ * @param currentTopic The current topic of the committee.
+ * @returns Header Component
  */
 
 export default function DashboardHeader({

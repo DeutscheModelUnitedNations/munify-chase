@@ -20,7 +20,7 @@ export default function ChairWhiteboard({
   value?: string;
   readOnly?: boolean;
   setContentFunction?: (content: string) => void;
-  [key: string]: any;
+  [key: string]: unknown;
 }) {
   const toolbarOptions = [
     ["bold", "italic", "underline", "strike"], // toggled buttons

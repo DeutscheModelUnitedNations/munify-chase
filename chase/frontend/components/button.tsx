@@ -6,7 +6,7 @@ import { IconDefinition } from "@fortawesome/fontawesome-svg-core";
 interface ButtonProps {
   label?: string;
   faIcon?: IconDefinition;
-  [key: string]: any;
+  [key: string]: unknown;
 }
 
 /**

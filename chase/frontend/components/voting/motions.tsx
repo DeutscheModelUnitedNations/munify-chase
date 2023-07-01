@@ -66,7 +66,7 @@ export default function Motions({
                     {motion.status === "in-voting" && (
                       <FontAwesomeIcon
                         icon={faSquarePollVertical}
-                        className=" text-2xl text-dmun fa-beat-fade"
+                        className=" text-2xl text-primary fa-beat-fade"
                       />
                     )}
 

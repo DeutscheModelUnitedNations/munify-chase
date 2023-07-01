@@ -32,10 +32,10 @@ export default function NavbarButton({
   useEffect(() => {
     // if the link starts with the current page route, set the button to active
     if (link.startsWith(pathname)) {
-      setWrapperStyle(`${defaultWrapperStyle} bg-dmunlight text-white`);
+      setWrapperStyle(`${defaultWrapperStyle} bg-primary-800 text-white`);
     } else {
       setWrapperStyle(
-        `${defaultWrapperStyle} bg-dmun text-dmunlight hover:bg-dmunlight hover:text-white transition cursor-pointer`,
+        `${defaultWrapperStyle} bg-primary text-primary-800 hover:bg-primary-800 hover:text-white transition cursor-pointer`
       );
     }
   }, [pathname]);

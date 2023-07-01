@@ -42,7 +42,7 @@ export function SmallFlag({
           style={{ objectFit: "cover", height: "100%" }}
         />
         {isHovered && showNameOnHover && (
-          <div className="bg-dmun text-white text-xs rounded-md shadow-md p-2 absolute mt-2">
+          <div className="bg-primary text-white text-xs rounded-md shadow-md p-2 absolute mt-2">
             {getCountryNameByCode(countryCode, locale)}
           </div>
         )}

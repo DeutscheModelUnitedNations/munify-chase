@@ -43,7 +43,7 @@ export default function CastVote({
             >
               <FontAwesomeIcon
                 icon={faSpinner}
-                className="text-dmun animate-spin text-3xl"
+                className="text-primary animate-spin text-3xl"
               />
             </motion.div>
           ) : (

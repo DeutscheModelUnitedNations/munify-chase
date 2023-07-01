@@ -1,5 +1,30 @@
 /** @type {import('tailwindcss').Config} */
 
+dmunColors = {
+  100: "#0c192a",
+  200: "#183254",
+  300: "#254b7e",
+  400: "#3164a8",
+  500: "#3d7dd2", // DMUN Blue
+  600: "#6497db",
+  700: "#8bb1e4",
+  800: "#b1cbed",
+  900: "#d8e5f6",
+};
+
+secondaryColors = {
+  100: "#332700",
+  200: "#664e00",
+  300: "#997400",
+  400: "#cc9b00",
+  500: "#ffc200", // Secondary Orange
+  600: "#ffce33",
+  700: "#ffda66",
+  800: "#ffe799",
+  900: "#fff3cc",
+};
+
+
 module.exports = {
   content: [
     "./pages/**/*.{js,ts,jsx,tsx,mdx}",
@@ -14,11 +39,8 @@ module.exports = {
           "conic-gradient(from 180deg at 50% 50%, var(--tw-gradient-stops))",
       },
       colors: {
-        dmun: "#3d7dd2", // DMUN Blue
-        dmunlight: "#9EBEE9", // DMUN Blue 50% opacity
-        dmunultralight: "#DFF4F4", // DMUN Blue 50% opacity
-        primary: "#3d7dd2", // Primary Color, until specified remains DMUN Blue
-        secondary: "#ffc200", // For now, Orange
+        primary: {...dmunColors, DEFAULT: dmunColors[500]},
+        secondary: {...secondaryColors, DEFAULT: secondaryColors[500]},
         highlight: "#DFF4F4",
         gray: {
           light: "#EEEEEE",

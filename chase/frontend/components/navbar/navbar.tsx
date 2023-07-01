@@ -58,7 +58,7 @@ export default function Navbar({
 
   return (
     <>
-      <div className="w-20 h-full bg-dmun flex flex-col items-center gap-10">
+      <div className="w-20 h-full bg-primary flex flex-col items-center gap-10">
         <Image
           src="/logo/png/chase_logo_white_transparent.png"
           alt="Logo"

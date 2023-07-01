@@ -75,7 +75,7 @@ export default function CountryGrid({
           <VotesCard
             category={LL.participants.voting.votingButtons.ABSTENTION()}
             icon={faCircle}
-            color="text-dmun"
+            color="text-primary"
             votes={abstainVotes}
             motionId={motionId}
           />

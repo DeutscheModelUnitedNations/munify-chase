@@ -24,9 +24,9 @@ export default function WidgetBoxTemplate({
 
     if (highlight) {
       classNames +=
-        "bg-highlight border border-dmun shadow-sm text-black hover:bg-white ";
+        "bg-highlight-light dark:bg-highlight-dark border border-primary shadow-sm text-black hover:bg-white dark:hover:bg-primary-300 ";
     } else {
-      classNames += "hover:bg-white ";
+      classNames += "hover:bg-white dark:hover:bg-primary-300";
     }
 
     if (className) {

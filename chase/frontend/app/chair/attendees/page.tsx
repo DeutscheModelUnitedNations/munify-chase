@@ -153,7 +153,7 @@ export default function ChairAttendees() {
                 <WidgetBoxTemplate>
                   <Flag countryCode={attendee.country} />
                   <div className="flex flex-col justify-center">
-                    <div className="text-sm font-bold text-gray-text">
+                    <div className="text-sm font-bold text-gray-text dark:text-primary-800">
                       {getCountryNameByCode(attendee.country, locale)}
                     </div>
                   </div>

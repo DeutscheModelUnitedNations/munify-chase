@@ -8,7 +8,7 @@ export default function Participant_Pages_Layout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="flex h-screen w-screen bg-white shadow-md overflow-hidden">
+    <div className="flex h-screen w-screen bg-white text-primary-100 dark:bg-primary-100 dark:text-primary-900 shadow-md overflow-hidden">
       <Navbar>
         <NavButton icon={faHouse} link={"/participant/dashboard"} />
         <NavButton icon={faComment} link={"/participant/speakers"} />

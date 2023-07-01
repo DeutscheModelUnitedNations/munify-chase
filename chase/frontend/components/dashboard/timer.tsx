@@ -10,6 +10,12 @@ import { faCirclePause } from "@fortawesome/free-solid-svg-icons";
 import { useI18nContext } from "@/i18n/i18n-react";
 import { AnimatePresence, motion } from "framer-motion";
 
+interface TimerWidgetProps {
+  headline: string;
+  until: Date | null;
+  category: "formal" | "informal" | "pause" | "suspension"; // TODO: use enum
+}
+
 /**
  * This Component is used in the Dashboard. It shows the current timer status –
  * e.g. for informal sessions, breaks, suspensions, etc.
@@ -20,11 +26,7 @@ export default function TimerWidget({
   headline,
   until,
   category,
-}: {
-  headline: string;
-  until: Date | null;
-  category: "formal" | "informal" | "pause" | "suspension"; // TODO replace with typescript enum
-}) {
+}: TimerWidgetProps) {
   const { LL } = useI18nContext();
   const { showToast } = useContext(ToastContext);
 
@@ -43,16 +45,16 @@ export default function TimerWidget({
     minute: "2-digit",
   });
 
-  const styles = () => {
+  const getClassNames = () => {
     switch (category) {
       case "formal":
         return "";
       case "informal":
-        return "bg-red-500 text-white";
+        return "bg-red-500 dark:bg-red-500 text-white dark:text-primary-100";
       case "pause":
-        return "bg-secondary text-white";
+        return "bg-secondary dark:bg-secondary text-white dark:text-secondary-200";
       case "suspension":
-        return "bg-gray-700 text-white";
+        return "bg-primary-300 dark:bg-primary-700 text-white dark:text-primary-200";
     }
   };
 
@@ -67,7 +69,7 @@ export default function TimerWidget({
           transition={{ duration: 0.3 }}
           layout
         >
-          <WidgetTemplate cardTitle="" styles={styles()}>
+          <WidgetTemplate cardTitle="" additionalClassNames={getClassNames()}>
             <div className="flex flex-col justify-center items-center">
               <div className="my-4">
                 {category === "formal" && (
@@ -106,7 +108,10 @@ export default function TimerWidget({
 function Timer({
   until,
   showTimerToast,
-}: { until: Date | null; showTimerToast: () => void }) {
+}: {
+  until: Date | null;
+  showTimerToast: () => void;
+}) {
   const [timeLeft, setTimeLeft] = React.useState<number | null>(null);
 
   useEffect(() => {

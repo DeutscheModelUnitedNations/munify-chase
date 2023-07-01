@@ -1,7 +1,8 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Sidebar } from "primereact/sidebar";
 import { Card } from "primereact/card";
 import { SelectButton } from "primereact/selectbutton";
+import { classNames } from "primereact/utils";
 
 interface ColormodeOption {
   name: string;
@@ -30,17 +31,13 @@ export default function SettingsSidebar({
   settingsSidebarVisible,
   setSettingsSidebarVisible,
 }: SettingsSidebarProps) {
-  const [colortheme, setColortheme] = useState<ColormodeOption>({
-    name: "Hell",
-    icon: "pi pi-sun",
-    value: "light",
-  }); // TODO: get this from global state or cookie
-
   const colortheme_items: ColormodeOption[] = [
     { name: "Hell", icon: "pi pi-sun", value: "light" },
     { name: "Dunkel", icon: "pi pi-moon", value: "dark" },
-    { name: "Kontrast", icon: "pi pi-circle-fill", value: "contrast" },
+    { name: "System", icon: "pi pi-circle-on", value: "system" },
   ];
+
+  const [colortheme, setColortheme] = useState("light");
 
   const colorModeTemplate = (option: ColormodeOption) => {
     return (
@@ -51,18 +48,30 @@ export default function SettingsSidebar({
     );
   };
 
+  useEffect(() => {
+    if (colortheme === "system") {
+      // TODO: Implement system color theme
+      document.documentElement.classList.remove("dark");
+    } else if (colortheme === "light") {
+      document.documentElement.classList.remove("dark");
+    } else {
+      document.documentElement.classList.add("dark");
+    }
+  }, [colortheme]);
+
   return (
     <Sidebar
       visible={settingsSidebarVisible}
       onHide={() => setSettingsSidebarVisible(false)}
-      fullScreen
       className="bg-gray-light" // TODO: Not working
     >
       {/* TODO Settings */}
       <Card title="Color Mode">
         <SelectButton
           value={colortheme}
-          onChange={(e) => setColortheme(e.value)}
+          onChange={(e) => {
+            setColortheme(e.value);
+          }}
           itemTemplate={colorModeTemplate}
           optionLabel="Color Theme"
           options={colortheme_items}

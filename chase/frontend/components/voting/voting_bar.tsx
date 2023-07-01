@@ -56,11 +56,11 @@ export default function VotingBar({
         percentage={yesVotesPercentage}
         color="bg-voting-for"
       />
-      <div className="bg-white h-8 w-px" />
+      <div className="bg-white dark:bg-primary-100 h-8 w-px" />
       <VotingBarSection
         numberOfVotes={countRemainingVotes()}
         percentage={remainingVotesPercentage}
-        color="bg-white"
+        color="bg-white dark:bg-primary-100"
         hideCounter
       />
       <VotingBarSection
@@ -68,7 +68,7 @@ export default function VotingBar({
         percentage={abstainVotesPercentage}
         color="bg-voting-abstain"
       />
-      <div className="bg-white h-8 w-px" />
+      <div className="bg-white dark:bg-primary-100 h-8 w-px" />
       <VotingBarSection
         numberOfVotes={countVotes("no")}
         percentage={noVotesPercentage}
@@ -138,7 +138,7 @@ function MajorityMarking({
 
   return (
     <div
-      className="w-1 h-8 bg-black absolute -translate-x-px"
+      className="w-1 h-8 bg-primary-100 dark:bg-primary-900 absolute -translate-x-px"
       style={{ left: `${getVotingStepForMajority()}%` }}
     />
   );

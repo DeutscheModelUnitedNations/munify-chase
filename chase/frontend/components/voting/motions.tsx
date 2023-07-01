@@ -58,7 +58,7 @@ export default function Motions({
                       showNameOnHover
                     />
                     <div className="flex-1 flex-col justify-start items-center">
-                      <div className="text-sm font-semibold text-gray-text">
+                      <div className="text-sm font-semibold text-gray-text dark:text-primary-800">
                         {motion.motionText}
                       </div>
                     </div>
@@ -66,7 +66,7 @@ export default function Motions({
                     {motion.status === "in-voting" && (
                       <FontAwesomeIcon
                         icon={faSquarePollVertical}
-                        className=" text-2xl text-primary fa-beat-fade"
+                        className=" text-2xl text-primary dark:text-primary-700 fa-beat-fade mr-1"
                       />
                     )}
 
@@ -75,7 +75,7 @@ export default function Motions({
                       motion.voting && (
                         <FontAwesomeIcon
                           icon={faSquarePollVertical}
-                          className=" text-2xl text-gray-icon"
+                          className=" text-2xl text-gray-icon dark:text-primary-400"
                         />
                       )}
 

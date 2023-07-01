@@ -764,10 +764,10 @@ export const votingTestData3: Voting = {
   ],
   majority: "two-thirds",
   votes: [
-    {
-      country: "cpv",
-      vote: "yes",
-    },
+    // {
+    //   country: "cpv",
+    //   vote: "yes",
+    // },
     {
       country: "deu",
       vote: "yes",

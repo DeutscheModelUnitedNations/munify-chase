@@ -10,6 +10,7 @@ dmunColors = {
   700: "#8bb1e4",
   800: "#b1cbed",
   900: "#d8e5f6",
+  950: "#ecf2fb",
 };
 
 secondaryColors = {
@@ -24,13 +25,13 @@ secondaryColors = {
   900: "#fff3cc",
 };
 
-
 module.exports = {
   content: [
     "./pages/**/*.{js,ts,jsx,tsx,mdx}",
     "./components/**/*.{js,ts,jsx,tsx,mdx}",
     "./app/**/*.{js,ts,jsx,tsx,mdx}",
   ],
+  darkMode: "class",
   theme: {
     extend: {
       backgroundImage: {
@@ -39,9 +40,12 @@ module.exports = {
           "conic-gradient(from 180deg at 50% 50%, var(--tw-gradient-stops))",
       },
       colors: {
-        primary: {...dmunColors, DEFAULT: dmunColors[500]},
-        secondary: {...secondaryColors, DEFAULT: secondaryColors[500]},
-        highlight: "#DFF4F4",
+        primary: { ...dmunColors, DEFAULT: dmunColors[500] },
+        secondary: { ...secondaryColors, DEFAULT: secondaryColors[500] },
+        highlight: {
+          light: "#DFF4F4",
+          dark: "#254b7e",
+        },
         gray: {
           light: "#EEEEEE",
           icon: "rgb(156 163 175)",

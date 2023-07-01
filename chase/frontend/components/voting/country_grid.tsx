@@ -117,7 +117,7 @@ export default function CountryGrid({
             <VotesCard
               category="Ausstehend"
               icon={faHourglassHalf}
-              color="text-black"
+              color="text-black dark:text-primary-700"
               votes={remainingVotes}
               colSpan={2}
               motionId={motionId}
@@ -150,7 +150,7 @@ function VotesCard({
 
   return (
     <div
-      className="flex-1 h-full flex flex-col justify-start gap-3 bg-white rounded-md p-2 transition-all duration-300 hover:shadow-sm"
+      className="flex-1 h-full flex flex-col justify-start gap-3 bg-white dark:bg-primary-100 rounded-md p-2 transition-all duration-300 hover:shadow-sm"
       style={{ gridColumn: colSpanClass }}
     >
       <div className="flex justify-center items-center gap-3 text-lg">

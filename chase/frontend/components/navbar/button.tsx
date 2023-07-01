@@ -32,10 +32,12 @@ export default function NavbarButton({
   useEffect(() => {
     // if the link starts with the current page route, set the button to active
     if (link.startsWith(pathname)) {
-      setWrapperStyle(`${defaultWrapperStyle} bg-primary-800 text-white`);
+      setWrapperStyle(
+        `${defaultWrapperStyle} bg-primary-800 dark:bg-primary-300 text-white dark:text-primary-100`,
+      );
     } else {
       setWrapperStyle(
-        `${defaultWrapperStyle} bg-primary text-primary-800 hover:bg-primary-800 hover:text-white transition cursor-pointer`
+        `${defaultWrapperStyle} bg-primary text-primary-800 dark:text-primary-300 hover:bg-primary-800 dark:hover:bg-primary-300 hover:text-white dark:hover:text-primary-100 transition cursor-pointer`,
       );
     }
   }, [pathname]);

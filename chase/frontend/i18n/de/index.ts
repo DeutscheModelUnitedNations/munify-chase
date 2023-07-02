@@ -166,6 +166,8 @@ const de = {
         BUTTON_CANCEL: "Abbrechen",
         BUTTON_ADD: "Hinzufügen",
         BUTTON_ADD_AND_CLOSE: "Hinzufügen und schließen",
+        TOAST_ADDED_SUMMARY: "{{0}} hinzugefügt",
+        TOAST_ADDED_DETAIL: "zu {{0}}",
       },
       changeSpeechTimeOverlay: {
         HEADLINE: "Redezeit für {{0}} ändern",

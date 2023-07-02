@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import {
   AutoComplete,
   AutoCompleteCompleteEvent,
@@ -11,6 +11,7 @@ import { faPlus, faTimes } from "@fortawesome/free-solid-svg-icons";
 import { SmallFlag } from "../flag_templates";
 import { CountryCode } from "@/custom_types";
 import Fuse from "fuse.js";
+import { ToastContext } from "@/contexts/messages/toast";
 
 interface CountryData {
   alpha3: CountryCode;
@@ -35,12 +36,16 @@ export default function AddSpeakerOverlay({
   listOfAllCountries,
   listClosed,
   closeOverlay,
+  typeOfList,
 }: {
   listOfAllCountries: CountryCode[];
   listClosed: boolean;
   closeOverlay: () => void;
+  typeOfList: string;
 }) {
   const { LL, locale } = useI18nContext();
+  const { showToast } = useContext(ToastContext);
+  console.log(showToast);
 
   const [countries, setCountries] = useState<CountryData[] | null>(null);
   const [query, setQuery] = useState<string>("");
@@ -58,7 +63,7 @@ export default function AddSpeakerOverlay({
           alpha3: country,
           name: getCountryNameByCode(country, locale),
         };
-      }
+      },
     );
     setCountries(countryData);
 
@@ -112,7 +117,17 @@ export default function AddSpeakerOverlay({
 
   const sendAddSpeaker = () => {
     if (selectedCountry) {
-      console.log(selectedCountry?.alpha3);
+      showToast({
+        severity: "success",
+        summary: LL.chairs.speakersList.addSpeakerOverlay.TOAST_ADDED_SUMMARY(
+          selectedCountry.name,
+        ),
+        detail:
+          LL.chairs.speakersList.addSpeakerOverlay.TOAST_ADDED_DETAIL(
+            typeOfList,
+          ),
+        sticky: false,
+      });
       setSelectedCountry(null);
     }
   };

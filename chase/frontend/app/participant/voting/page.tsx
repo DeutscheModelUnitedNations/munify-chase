@@ -3,7 +3,7 @@ import React, { useState } from "react";
 import Motions from "@/components/voting/motions";
 import VotingArea from "@/components/voting/voting";
 import { useI18nContext } from "@/i18n/i18n-react";
-import { motionTestData } from "@/test_data";
+import { motionTestData, myCountry } from "@/test_data";
 import { Motion } from "@/custom_types";
 import { TabMenu } from "primereact/tabmenu";
 
@@ -104,6 +104,7 @@ export default function VotingPage() {
                 data.find((motion) => motion.motionId === activeMotionId)
                   ?.voting
               }
+              myCountry={myCountry}
             />
           </div>
         </div>

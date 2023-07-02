@@ -466,6 +466,14 @@ type RootTranslation = {
 				 * A​d​d​ ​a​n​d​ ​C​l​o​s​e
 				 */
 				BUTTON_ADD_AND_CLOSE: string
+				/**
+				 * {​{​0​}​}​ ​a​d​d​e​d
+				 */
+				TOAST_ADDED_SUMMARY: string
+				/**
+				 * t​o​ ​t​h​e​ ​{​{​0​}​}
+				 */
+				TOAST_ADDED_DETAIL: string
 			}
 			changeSpeechTimeOverlay: {
 				/**
@@ -938,6 +946,14 @@ export type TranslationFunctions = {
 				 * Add and Close
 				 */
 				BUTTON_ADD_AND_CLOSE: () => LocalizedString
+				/**
+				 * {{0}} added
+				 */
+				TOAST_ADDED_SUMMARY: (arg0: number | string | boolean) => LocalizedString
+				/**
+				 * to the {{0}}
+				 */
+				TOAST_ADDED_DETAIL: (arg0: number | string | boolean) => LocalizedString
 			}
 			changeSpeechTimeOverlay: {
 				/**

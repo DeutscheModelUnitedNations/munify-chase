@@ -11,6 +11,7 @@ import {
   faSliders,
 } from "@fortawesome/free-solid-svg-icons";
 import { useI18nContext } from "@/i18n/i18n-react";
+import { ToastProvider } from "@/contexts/messages/toast";
 
 export default function Participant_Pages_Layout({
   children,

@@ -182,6 +182,7 @@ export function ChairSpeechButtons({
             listOfAllCountries={listOfAllCountries}
             listClosed={listClosed}
             closeOverlay={() => setAddSpeakersOverlayVisible(false)}
+            typeOfList={typeOfList}
           />
         </Dialog>
         <Dialog

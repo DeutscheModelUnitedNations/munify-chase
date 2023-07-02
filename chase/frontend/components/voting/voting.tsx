@@ -1,12 +1,11 @@
 import React, { useEffect, useState } from "react";
 import WidgetTemplate from "../widget_template";
 import NoDataPlaceholder from "../no_data_placeholder";
-import { Voting } from "@/custom_types";
+import { CountryCode, Voting } from "@/custom_types";
 import VotingBar from "@components/voting/voting_bar";
 import CastVote from "@components/voting/cast_vote";
 import CountryGrid from "@components/voting/country_grid";
 import { ScrollPanel } from "primereact/scrollpanel";
-import { myCountry } from "@/test_data";
 import InformationSection from "@/components/voting/information_section";
 import WaitingForResults from "@components/voting/waiting_for_results";
 import { useI18nContext } from "@/i18n/i18n-react";
@@ -23,8 +22,10 @@ import FlipMove from "react-flip-move";
 
 export default function VotingArea({
   votingData,
+  myCountry,
 }: {
   votingData: Voting | undefined;
+  myCountry?: CountryCode;
 }) {
   const { LL } = useI18nContext();
   const [myCountryIsVoting, setMyCountryIsVoting] = useState<boolean>(false);
@@ -32,6 +33,11 @@ export default function VotingArea({
 
   useEffect(() => {
     if (votingData) {
+      if (!myCountry) {
+        setMyCountryIsVoting(false);
+        setMyCountryHasVoted(false);
+        return;
+      }
       setMyCountryIsVoting(votingData.votingCountries.includes(myCountry));
 
       const myVote = votingData.votes.find(
@@ -61,19 +67,27 @@ export default function VotingArea({
                 </div>
                 <div key="Grid">
                   <CountryGrid {...votingData} />
-                  <div className="h-24" />{" "}
-                  {/* This is a hack to make the last element visible */}
+                  {
+                    votingData &&
+                      myCountry &&
+                      ((myCountryIsVoting && !myCountryHasVoted) ||
+                        (myCountryHasVoted && !votingData.outcome)) && (
+                        <div className="h-24" />
+                      ) // This is a hack to make the last element visible
+                  }
                 </div>
               </FlipMove>
             </ScrollPanel>
             <div className="relative h-full w-full flex flex-col justify-center items-center z-10">
               <div className="absolute bottom-0 left-0 flex justify-center items-center w-full">
-                {votingData && !myCountryHasVoted && myCountryIsVoting && (
-                  <CastVote myCountry={myCountry} {...votingData} />
-                )}
-                {votingData && !votingData.outcome && myCountryHasVoted && (
-                  <WaitingForResults />
-                )}
+                {votingData &&
+                  myCountry &&
+                  ((myCountryIsVoting && !myCountryHasVoted && (
+                    <CastVote myCountry={myCountry} {...votingData} />
+                  )) ||
+                    (myCountryHasVoted && !votingData.outcome && (
+                      <WaitingForResults />
+                    )))}
               </div>
             </div>
           </div>

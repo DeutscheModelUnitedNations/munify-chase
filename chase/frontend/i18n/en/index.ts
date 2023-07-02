@@ -162,12 +162,14 @@ const en = {
         BUTTON_CANCEL: "Cancel",
         BUTTON_ADD: "Add",
         BUTTON_ADD_AND_CLOSE: "Add and Close",
+        TOAST_ADDED_SUMMARY: "{{0}} added",
+        TOAST_ADDED_DETAIL: "to the {{0}}",
       },
       changeSpeechTimeOverlay: {
         HEADLINE: "Change Speech Time for {{0}}",
         BUTTON_CANCEL: "Cancel",
         BUTTON_SET: "Change",
-      }
+      },
     },
   },
 } satisfies BaseTranslation;

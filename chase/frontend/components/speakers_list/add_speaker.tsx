@@ -10,6 +10,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPlus, faTimes } from "@fortawesome/free-solid-svg-icons";
 import { SmallFlag } from "../flag_templates";
 import { CountryCode } from "@/custom_types";
+import Fuse from "fuse.js";
 
 interface CountryData {
   alpha3: CountryCode;
@@ -47,6 +48,7 @@ export default function AddSpeakerOverlay({
   const [selectedCountry, setSelectedCountry] = useState<CountryData | null>(
     null,
   );
+  const [fuse, setFuse] = useState<Fuse<CountryData> | null>(null);
 
   useEffect(() => {
     if (!listOfAllCountries) return;
@@ -56,9 +58,15 @@ export default function AddSpeakerOverlay({
           alpha3: country,
           name: getCountryNameByCode(country, locale),
         };
-      },
+      }
     );
     setCountries(countryData);
+
+    const options = {
+      keys: ["name", "alpha3"],
+      includeScore: true,
+    };
+    setFuse(new Fuse(countryData, options));
   }, [listOfAllCountries, locale]);
 
   useEffect(() => {
@@ -79,19 +87,15 @@ export default function AddSpeakerOverlay({
   }, [query]);
 
   const searchCountry = (event: AutoCompleteCompleteEvent) => {
-    if (!countries) return;
+    if (!fuse) return;
 
     setTimeout(() => {
       let filteredCountries;
       if (!event.query.trim().length) {
-        filteredCountries = [...countries];
+        filteredCountries = countries ? [...countries] : [];
       } else {
-        filteredCountries = countries.filter((country) => {
-          return (
-            country.name.toLowerCase().startsWith(event.query.toLowerCase()) ||
-            country.alpha3.toLowerCase().startsWith(event.query.toLowerCase())
-          );
-        });
+        const results = fuse.search(event.query);
+        filteredCountries = results.map((result) => result.item);
       }
       setFilteredCountries(filteredCountries);
     }, 250);

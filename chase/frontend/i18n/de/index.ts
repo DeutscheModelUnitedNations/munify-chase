@@ -179,6 +179,12 @@ const de = {
         TOAST_WRONG_FORMAT: "Falsches Format",
       },
     },
+    voting: {
+      BUTTON_NEW_MOTION: "Neuer Antrag",
+      BUTTON_CHANGE_INFO: "Infos Ändern",
+      BUTTON_RESET: "Abstimmung neu starten",
+      BUTTON_DELETE: "Abstimmung löschen",
+    },
   },
 } satisfies Translation;
 

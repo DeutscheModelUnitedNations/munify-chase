@@ -506,6 +506,24 @@ type RootTranslation = {
 				TOAST_WRONG_FORMAT: string
 			}
 		}
+		voting: {
+			/**
+			 * N​e​w​ ​M​o​t​i​o​n
+			 */
+			BUTTON_NEW_MOTION: string
+			/**
+			 * C​h​a​n​g​e​ ​I​n​f​o
+			 */
+			BUTTON_CHANGE_INFO: string
+			/**
+			 * R​e​s​t​a​r​t​ ​V​o​t​i​n​g
+			 */
+			BUTTON_RESET: string
+			/**
+			 * D​e​l​e​t​e​ ​V​o​t​i​n​g
+			 */
+			BUTTON_DELETE: string
+		}
 	}
 }
 
@@ -1001,6 +1019,24 @@ export type TranslationFunctions = {
 				 */
 				TOAST_WRONG_FORMAT: () => LocalizedString
 			}
+		}
+		voting: {
+			/**
+			 * New Motion
+			 */
+			BUTTON_NEW_MOTION: () => LocalizedString
+			/**
+			 * Change Info
+			 */
+			BUTTON_CHANGE_INFO: () => LocalizedString
+			/**
+			 * Restart Voting
+			 */
+			BUTTON_RESET: () => LocalizedString
+			/**
+			 * Delete Voting
+			 */
+			BUTTON_DELETE: () => LocalizedString
 		}
 	}
 }

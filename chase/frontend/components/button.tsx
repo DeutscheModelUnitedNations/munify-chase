@@ -6,6 +6,7 @@ import { IconDefinition } from "@fortawesome/fontawesome-svg-core";
 interface ButtonProps {
   label?: string;
   faIcon?: IconDefinition;
+  faIconClassName?: string;
   [key: string]: unknown;
 }
 
@@ -19,13 +20,23 @@ interface ButtonProps {
  * @returns A Button Component
  */
 
-export default function Button({ label, faIcon, ...rest }: ButtonProps) {
+export default function Button({
+  label,
+  faIcon,
+  faIconClassName,
+  ...rest
+}: ButtonProps) {
   return (
     <PrimeReactButton
       {...rest}
       label={label}
       icon={
-        faIcon && <FontAwesomeIcon icon={faIcon} className={label && "mr-3"} />
+        faIcon && (
+          <FontAwesomeIcon
+            icon={faIcon}
+            className={`${label && "mr-3"} + ${faIconClassName}`}
+          />
+        )
       }
     />
   );

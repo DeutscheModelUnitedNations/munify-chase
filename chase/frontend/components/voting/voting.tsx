@@ -10,6 +10,8 @@ import InformationSection from "@/components/voting/information_section";
 import WaitingForResults from "@components/voting/waiting_for_results";
 import { useI18nContext } from "@/i18n/i18n-react";
 import FlipMove from "react-flip-move";
+import Button from "@/components/button";
+import { faInfo, faTrash, faUndo } from "@fortawesome/free-solid-svg-icons";
 
 /**
  * This Component is the main Component of the Voting Area. It combines several other
@@ -23,9 +25,11 @@ import FlipMove from "react-flip-move";
 export default function VotingArea({
   votingData,
   myCountry,
+  chairOptions = false,
 }: {
   votingData: Voting | undefined;
   myCountry?: CountryCode;
+  chairOptions?: boolean;
 }) {
   const { LL } = useI18nContext();
   const [myCountryIsVoting, setMyCountryIsVoting] = useState<boolean>(false);
@@ -75,6 +79,35 @@ export default function VotingArea({
                         <div className="h-24" />
                       ) // This is a hack to make the last element visible
                   }
+                  {chairOptions && (
+                    <>
+                      <div className="flex justify-center items-center gap-2 flex-wrap mt-5">
+                        <Button
+                          label={LL.chairs.voting.BUTTON_CHANGE_INFO()}
+                          faIcon={faInfo}
+                          onClick={() => {
+                            console.log("Change Info");
+                          }}
+                        />
+                        <Button
+                          label={LL.chairs.voting.BUTTON_RESET()}
+                          faIcon={faUndo}
+                          onClick={() => {
+                            console.log("Reset");
+                          }}
+                          severity="warning"
+                        />
+                        <Button
+                          label={LL.chairs.voting.BUTTON_DELETE()}
+                          faIcon={faTrash}
+                          onClick={() => {
+                            console.log("Delete");
+                          }}
+                          severity="danger"
+                        />
+                      </div>
+                    </>
+                  )}
                 </div>
               </FlipMove>
             </ScrollPanel>

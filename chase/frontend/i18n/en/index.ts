@@ -175,6 +175,12 @@ const en = {
         TOAST_WRONG_FORMAT: "Wrong Format",
       },
     },
+    voting: {
+      BUTTON_NEW_MOTION: "New Motion",
+      BUTTON_CHANGE_INFO: "Change Info",
+      BUTTON_RESET: "Restart Voting",
+      BUTTON_DELETE: "Delete Voting",
+    },
   },
 } satisfies BaseTranslation;
 

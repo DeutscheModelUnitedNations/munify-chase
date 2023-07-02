@@ -50,11 +50,11 @@ export default function TimerWidget({
       case "formal":
         return "";
       case "informal":
-        return "bg-red-500 dark:bg-red-500 text-white dark:text-primary-100";
+        return "bg-red-500 dark:bg-red-800 text-white dark:text-primary-950";
       case "pause":
-        return "bg-secondary dark:bg-secondary text-white dark:text-secondary-200";
+        return "bg-secondary dark:bg-secondary-300 text-white dark:text-secondary-100";
       case "suspension":
-        return "bg-primary-300 dark:bg-primary-700 text-white dark:text-primary-200";
+        return "bg-primary-300 dark:bg-primary-700 text-primary-300 dark:text-primary-200";
     }
   };
 

@@ -52,18 +52,18 @@ export default function ChangeSpeechTimeOverlay({
 
     console.log(
       `API call to change the speech time (in seconds): ${calculateSecondsFromTime(
-        time
-      )}`
+        time,
+      )}`,
     );
 
     showToast({
       severity: "success",
       summary: LL.chairs.speakersList.changeSpeechTimeOverlay.TOAST_SUCCESS(
-        time || ""
+        time || "",
       ),
       detail:
         LL.chairs.speakersList.changeSpeechTimeOverlay.TOAST_SUCCESS_DETAIL(
-          typeOfList
+          typeOfList,
         ),
       sticky: false,
     });

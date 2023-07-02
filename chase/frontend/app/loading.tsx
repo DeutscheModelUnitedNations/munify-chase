@@ -17,7 +17,9 @@ export default function Loading() {
             style={{ fontSize: "3rem" }}
           />
         </div>
-        <div className="text-primary-100 dark:text-primary-900">{LL.LOADING_PAGE()}</div>
+        <div className="text-primary-100 dark:text-primary-900">
+          {LL.LOADING_PAGE()}
+        </div>
       </div>
     </div>
   );

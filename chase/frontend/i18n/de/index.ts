@@ -158,6 +158,7 @@ const de = {
         CLOSE_LIST: "Liste schließen",
         OPEN_LIST: "Liste öffnen",
         CLEAR_LIST: "Liste zurücksetzen",
+        CHANGE_SPEECH_TIME: "Redezeit ändern",
       },
       addSpeakerOverlay: {
         HEADLINE: "Redebeiträge zu {{0}} hinzufügen",
@@ -165,6 +166,11 @@ const de = {
         BUTTON_CANCEL: "Abbrechen",
         BUTTON_ADD: "Hinzufügen",
         BUTTON_ADD_AND_CLOSE: "Hinzufügen und schließen",
+      },
+      changeSpeechTimeOverlay: {
+        HEADLINE: "Redezeit für {{0}} ändern",
+        BUTTON_CANCEL: "Abbrechen",
+        BUTTON_SET: "Ändern",
       },
     },
   },

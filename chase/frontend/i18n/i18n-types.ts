@@ -440,10 +440,14 @@ type RootTranslation = {
 				 * R​e​s​e​t​ ​L​i​s​t
 				 */
 				CLEAR_LIST: string
+				/**
+				 * C​h​a​n​g​e​ ​S​p​e​e​c​h​ ​T​i​m​e
+				 */
+				CHANGE_SPEECH_TIME: string
 			}
 			addSpeakerOverlay: {
 				/**
-				 * A​d​d​ ​S​p​e​a​k​e​r​ ​t​o​ ​{​{​t​y​p​e​O​f​L​i​s​t​}​}
+				 * A​d​d​ ​S​p​e​a​k​e​r​ ​t​o​ ​{​{​0​}​}
 				 */
 				HEADLINE: string
 				/**
@@ -462,6 +466,20 @@ type RootTranslation = {
 				 * A​d​d​ ​a​n​d​ ​C​l​o​s​e
 				 */
 				BUTTON_ADD_AND_CLOSE: string
+			}
+			changeSpeechTimeOverlay: {
+				/**
+				 * C​h​a​n​g​e​ ​S​p​e​e​c​h​ ​T​i​m​e​ ​f​o​r​ ​{​{​0​}​}
+				 */
+				HEADLINE: string
+				/**
+				 * C​a​n​c​e​l
+				 */
+				BUTTON_CANCEL: string
+				/**
+				 * C​h​a​n​g​e
+				 */
+				BUTTON_SET: string
 			}
 		}
 	}
@@ -894,10 +912,14 @@ export type TranslationFunctions = {
 				 * Reset List
 				 */
 				CLEAR_LIST: () => LocalizedString
+				/**
+				 * Change Speech Time
+				 */
+				CHANGE_SPEECH_TIME: () => LocalizedString
 			}
 			addSpeakerOverlay: {
 				/**
-				 * Add Speaker to {{typeOfList}}
+				 * Add Speaker to {{0}}
 				 */
 				HEADLINE: (arg0: number | string | boolean) => LocalizedString
 				/**
@@ -916,6 +938,20 @@ export type TranslationFunctions = {
 				 * Add and Close
 				 */
 				BUTTON_ADD_AND_CLOSE: () => LocalizedString
+			}
+			changeSpeechTimeOverlay: {
+				/**
+				 * Change Speech Time for {{0}}
+				 */
+				HEADLINE: (arg0: number | string | boolean) => LocalizedString
+				/**
+				 * Cancel
+				 */
+				BUTTON_CANCEL: () => LocalizedString
+				/**
+				 * Change
+				 */
+				BUTTON_SET: () => LocalizedString
 			}
 		}
 	}

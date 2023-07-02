@@ -154,14 +154,20 @@ const en = {
         CLOSE_LIST: "Close List",
         OPEN_LIST: "Open List",
         CLEAR_LIST: "Reset List",
+        CHANGE_SPEECH_TIME: "Change Speech Time",
       },
       addSpeakerOverlay: {
-        HEADLINE: "Add Speaker to {{typeOfList}}",
+        HEADLINE: "Add Speaker to {{0}}",
         PLACEHOLDER: "Select a Speaker",
         BUTTON_CANCEL: "Cancel",
         BUTTON_ADD: "Add",
         BUTTON_ADD_AND_CLOSE: "Add and Close",
       },
+      changeSpeechTimeOverlay: {
+        HEADLINE: "Change Speech Time for {{0}}",
+        BUTTON_CANCEL: "Cancel",
+        BUTTON_SET: "Change",
+      }
     },
   },
 } satisfies BaseTranslation;

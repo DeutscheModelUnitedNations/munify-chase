@@ -4,6 +4,7 @@ import { SplitButton } from "primereact/splitbutton";
 import { Dialog } from "primereact/dialog";
 import {
   faBan,
+  faClock,
   faDiagramNext,
   faLock,
   faLockOpen,
@@ -18,6 +19,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useI18nContext } from "@/i18n/i18n-react";
 import { CountryCode } from "@/custom_types";
 import AddSpeakerOverlay from "./add_speaker";
+import ChangeSpeechTimeOverlay from "./change_speech_time";
 
 /**
  * This component is used to display the buttons for the Speakers List and Comment List on the Speakers List Page for participants.
@@ -91,6 +93,9 @@ export function ChairSpeechButtons({
   const [addSpeakersOverlayVisible, setAddSpeakersOverlayVisible] =
     useState(false);
 
+  const [changeSpeechTimeOverlayVisible, setChangeSpeechTimeOverlayVisible] =
+    useState(false);
+
   const splitButtonItems = [
     {
       label: LL.chairs.speakersList.buttons.OPEN_LIST(),
@@ -106,6 +111,11 @@ export function ChairSpeechButtons({
       label: LL.chairs.speakersList.buttons.CLEAR_LIST(),
       icon: <FontAwesomeIcon icon={faBan} className="mr-2" />,
       disabled: !nextSpeakerQueued,
+    },
+    {
+      label: LL.chairs.speakersList.buttons.CHANGE_SPEECH_TIME(),
+      icon: <FontAwesomeIcon icon={faClock} className="mr-2" />,
+      command: () => setChangeSpeechTimeOverlayVisible(true),
     },
   ];
 
@@ -166,11 +176,24 @@ export function ChairSpeechButtons({
           header={LL.chairs.speakersList.addSpeakerOverlay.HEADLINE(typeOfList)}
           visible={addSpeakersOverlayVisible}
           onHide={() => setAddSpeakersOverlayVisible(false)}
+          closable={false}
         >
           <AddSpeakerOverlay
             listOfAllCountries={listOfAllCountries}
             listClosed={listClosed}
             closeOverlay={() => setAddSpeakersOverlayVisible(false)}
+          />
+        </Dialog>
+        <Dialog
+          header={LL.chairs.speakersList.changeSpeechTimeOverlay.HEADLINE(
+            typeOfList,
+          )}
+          visible={changeSpeechTimeOverlayVisible}
+          onHide={() => setChangeSpeechTimeOverlayVisible(false)}
+          closable={false}
+        >
+          <ChangeSpeechTimeOverlay
+            closeOverlay={() => setChangeSpeechTimeOverlayVisible(false)}
           />
         </Dialog>
       </div>

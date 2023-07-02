@@ -23,12 +23,10 @@ import {
  * It contains buttons to navigate to other pages and a button to open the settings sidebar.
  */
 
-export default function Navbar({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function Navbar({ children }: { children: React.ReactNode }) {
   const router = useRouter();
+
+  // const { LL } = useI18nContext(); // TODO find a way to use this in the Navbar component (Layout.tsx)
 
   const [settingsSidebarVisible, setSettingsSidebarVisible] = useState(false);
 
@@ -78,9 +76,14 @@ export default function Navbar({
           <NavButton
             icon={faGear}
             onClick={() => setSettingsSidebarVisible(true)}
+            title="Einstellungen"
           />
           <ConfirmDialog />
-          <NavButton icon={faRightFromBracket} onClick={confirmLogout} />
+          <NavButton
+            icon={faRightFromBracket}
+            onClick={confirmLogout}
+            title="Logout"
+          />
         </div>
       </div>
     </>

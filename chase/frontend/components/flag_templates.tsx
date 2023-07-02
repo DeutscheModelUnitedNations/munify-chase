@@ -30,7 +30,7 @@ export function SmallFlag({
   return (
     <div className="flex justify-center items-center">
       <div
-        className="flex-col justify-end items-center rounded-md border border-primary-100 bg-white shadow-md overflow-hidden"
+        className="flex-col justify-end items-center rounded-md contrast:border contrast:border-primary-100 bg-white shadow-md overflow-hidden"
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}
       >
@@ -53,7 +53,7 @@ export function SmallFlag({
 
 export function NormalFlag({ countryCode }: { countryCode: CountryCode }) {
   return (
-    <div className="rounded-md border border-primary-100 bg-white shadow-md overflow-hidden">
+    <div className="rounded-md contrast:border contrast:border-primary-100 bg-white shadow-md overflow-hidden">
       <Image
         src={getFlagPathByCode(countryCode)}
         width={39}
@@ -71,7 +71,7 @@ export function LargeFlag({
 }: { countryCode: CountryCode; className?: string }) {
   return (
     <div
-      className={`rounded-md border border-primary-100 bg-white shadow-md overflow-hidden ${className}`}
+      className={`rounded-md contrast:border contrast:border-primary-100 bg-white shadow-md overflow-hidden ${className}`}
     >
       <Image
         src={getFlagPathByCode(countryCode)}

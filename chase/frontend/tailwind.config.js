@@ -1,4 +1,5 @@
 /** @type {import('tailwindcss').Config} */
+const plugin = require("tailwindcss/plugin");
 
 dmunColors = {
   100: "#0c192a",
@@ -57,6 +58,41 @@ module.exports = {
           abstain: "#3d7dd2",
         },
       },
+    },
+  },
+  plugins: [
+    plugin(function ({ addVariant, e }) {
+      addVariant("contrast", ({ modifySelectors, separator }) => {
+        modifySelectors(({ className }) => {
+          return `.contrast .${e(`contrast${separator}${className}`)}`;
+        });
+      });
+    }),
+  ],
+  variants: {
+    extend: {
+      backgroundColor: ["contrast"],
+      borderColor: ["contrast"],
+      textColor: ["contrast"],
+      opacity: ["contrast"],
+      display: ["contrast"],
+      visibility: ["contrast"],
+      boxShadow: ["contrast"],
+      fontWeight: ["contrast"],
+      fontSize: ["contrast"],
+      lineHeight: ["contrast"],
+      padding: ["contrast"],
+      margin: ["contrast"],
+      width: ["contrast"],
+      height: ["contrast"],
+      maxWidth: ["contrast"],
+      maxHeight: ["contrast"],
+      minWidth: ["contrast"],
+      minHeight: ["contrast"],
+      zIndex: ["contrast"],
+      inset: ["contrast"],
+      borderWidth: ["contrast"],
+      borderRadius: ["contrast"],
     },
   },
 };

@@ -195,6 +195,7 @@ export function ChairSpeechButtons({
         >
           <ChangeSpeechTimeOverlay
             closeOverlay={() => setChangeSpeechTimeOverlayVisible(false)}
+            typeOfList={typeOfList}
           />
         </Dialog>
       </div>

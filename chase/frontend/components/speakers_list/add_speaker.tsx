@@ -94,16 +94,14 @@ export default function AddSpeakerOverlay({
   const searchCountry = (event: AutoCompleteCompleteEvent) => {
     if (!fuse) return;
 
-    setTimeout(() => {
-      let filteredCountries;
-      if (!event.query.trim().length) {
-        filteredCountries = countries ? [...countries] : [];
-      } else {
-        const results = fuse.search(event.query);
-        filteredCountries = results.map((result) => result.item);
-      }
-      setFilteredCountries(filteredCountries);
-    }, 250);
+    let filteredCountries;
+    if (!event.query.trim().length) {
+      filteredCountries = countries ? [...countries] : [];
+    } else {
+      const results = fuse.search(event.query);
+      filteredCountries = results.map((result) => result.item);
+    }
+    setFilteredCountries(filteredCountries);
   };
 
   const countryTemplate = (item: CountryData) => {

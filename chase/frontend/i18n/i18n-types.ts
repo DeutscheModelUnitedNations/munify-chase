@@ -488,6 +488,22 @@ type RootTranslation = {
 				 * C​h​a​n​g​e
 				 */
 				BUTTON_SET: string
+				/**
+				 * N​e​w​ ​S​p​e​e​c​h​ ​T​i​m​e​ ​(​m​m​:​s​s​)
+				 */
+				PLACEHOLDER: string
+				/**
+				 * S​p​e​e​c​h​ ​T​i​m​e​ ​c​h​a​n​g​e​d​ ​t​o​ ​{​{​0​}​}​ ​m​i​n
+				 */
+				TOAST_SUCCESS: string
+				/**
+				 * f​o​r​ ​{​{​0​}​}
+				 */
+				TOAST_SUCCESS_DETAIL: string
+				/**
+				 * W​r​o​n​g​ ​F​o​r​m​a​t
+				 */
+				TOAST_WRONG_FORMAT: string
 			}
 		}
 	}
@@ -968,6 +984,22 @@ export type TranslationFunctions = {
 				 * Change
 				 */
 				BUTTON_SET: () => LocalizedString
+				/**
+				 * New Speech Time (mm:ss)
+				 */
+				PLACEHOLDER: () => LocalizedString
+				/**
+				 * Speech Time changed to {{0}} min
+				 */
+				TOAST_SUCCESS: (arg0: number | string | boolean) => LocalizedString
+				/**
+				 * for {{0}}
+				 */
+				TOAST_SUCCESS_DETAIL: (arg0: number | string | boolean) => LocalizedString
+				/**
+				 * Wrong Format
+				 */
+				TOAST_WRONG_FORMAT: () => LocalizedString
 			}
 		}
 	}

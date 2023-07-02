@@ -37,11 +37,11 @@ export default function NavbarButton({
     // if the link starts with the current page route, set the button to active
     if (link.startsWith(pathname)) {
       setWrapperStyle(
-        `${defaultWrapperStyle} bg-primary-800 dark:bg-primary-300 text-white dark:text-primary-100`
+        `${defaultWrapperStyle} bg-primary-800 dark:bg-primary-300 text-white dark:text-primary-100`,
       );
     } else {
       setWrapperStyle(
-        `${defaultWrapperStyle} bg-primary text-primary-800 dark:text-primary-300 hover:bg-primary-800 dark:hover:bg-primary-300 hover:text-white dark:hover:text-primary-100 transition cursor-pointer`
+        `${defaultWrapperStyle} bg-primary text-primary-800 dark:text-primary-300 hover:bg-primary-800 dark:hover:bg-primary-300 hover:text-white dark:hover:text-primary-100 transition cursor-pointer`,
       );
     }
   }, [pathname]);
@@ -52,7 +52,11 @@ export default function NavbarButton({
 
   return (link === "" && onClick !== null) || newWindow ? (
     <div className={wrapperStyle} title={title}>
-      <FontAwesomeIcon icon={icon} className=" text-xl m-3" onClick={newWindow ? openLinkInNewWindow : onClick} />
+      <FontAwesomeIcon
+        icon={icon}
+        className=" text-xl m-3"
+        onClick={newWindow ? openLinkInNewWindow : onClick}
+      />
     </div>
   ) : (
     <Link href={link} className="w-full" title={title}>

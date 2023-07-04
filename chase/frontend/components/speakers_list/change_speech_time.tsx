@@ -50,12 +50,6 @@ export default function ChangeSpeechTimeOverlay({
       return;
     }
 
-    console.log(
-      `API call to change the speech time (in seconds): ${calculateSecondsFromTime(
-        time,
-      )}`,
-    );
-
     showToast({
       severity: "success",
       summary: LL.chairs.speakersList.changeSpeechTimeOverlay.TOAST_SUCCESS(

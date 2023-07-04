@@ -85,24 +85,18 @@ export default function VotingArea({
                         <Button
                           label={LL.chairs.voting.BUTTON_CHANGE_INFO()}
                           faIcon={faInfo}
-                          onClick={() => {
-                            console.log("Change Info");
-                          }}
+                          onClick={() => {}}
                         />
                         <Button
                           label={LL.chairs.voting.BUTTON_RESET()}
                           faIcon={faUndo}
-                          onClick={() => {
-                            console.log("Reset");
-                          }}
+                          onClick={() => {}}
                           severity="warning"
                         />
                         <Button
                           label={LL.chairs.voting.BUTTON_DELETE()}
                           faIcon={faTrash}
-                          onClick={() => {
-                            console.log("Delete");
-                          }}
+                          onClick={() => {}}
                           severity="danger"
                         />
                       </div>

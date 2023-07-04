@@ -93,7 +93,7 @@ export default function SpeakerBlock({
             ) : (
               <>
                 <Arrow arrowName="dashed" />
-                <div className="self-center px-2 py-1 bg-dmun text-white rounded-md">
+                <div className="self-center px-2 py-1 bg-primary text-white rounded-md">
                   <div className="text-sm font-bold">
                     {getWaitingPosition() - 3}
                   </div>

@@ -219,6 +219,7 @@ export interface CurrentSpeaker {
 }
 
 export interface SpeakersListData {
+  listOfAllCountries: CountryCode[];
   currentSpeaker: CurrentSpeaker;
   list: Speaker[];
   closed: boolean;
@@ -280,6 +281,9 @@ export interface NormalApiResponse {
   speakersList: SpeakersListData;
   commentList: SpeakersListData;
   committeeStatus: CommitteeStatus;
-  whiteboardMarkdown: string;
   documents: Document[];
+}
+export interface Attendance {
+  country: CountryCode;
+  present: "present" | "excused" | "absent";
 }

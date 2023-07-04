@@ -5,6 +5,15 @@ import getCountryNameByCode from "@/misc/get_country_name_by_code";
 import WidgetBoxTemplate from "../widget_box_template";
 import { NormalFlag as Flag } from "@components/flag_templates";
 import { useI18nContext } from "@/i18n/i18n-react";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import {
+  faArrowDown,
+  faArrowUp,
+  faDiagramNext,
+  faGripVertical,
+  faXmark,
+} from "@fortawesome/free-solid-svg-icons";
+import { Button } from "primereact/button";
 
 /**
  * This Component is used in the Speakers List and Comment List on the Speakers List Page.
@@ -17,7 +26,12 @@ export default function QueueList({
   list,
   myCountry,
   closed,
-}: SpeakersListData & { myCountry: CountryCode; closed: boolean }) {
+  chairOptions = false,
+}: SpeakersListData & {
+  myCountry?: CountryCode;
+  closed: boolean;
+  chairOptions?: boolean;
+}) {
   const { LL, locale } = useI18nContext();
 
   return (
@@ -26,7 +40,13 @@ export default function QueueList({
         <Timeline
           list={list}
           content={(item) => {
-            return <CountryCard countryCode={item} myCountry={myCountry} />;
+            return (
+              <CountryCard
+                countryCode={item}
+                myCountry={myCountry}
+                chairOptions={chairOptions}
+              />
+            );
           }}
         />
         {closed && (
@@ -46,17 +66,34 @@ export default function QueueList({
 function CountryCard({
   countryCode,
   myCountry,
-}: { countryCode: CountryCode; myCountry: CountryCode }) {
+  chairOptions = false,
+}: {
+  countryCode: CountryCode;
+  myCountry?: CountryCode;
+  chairOptions?: boolean;
+}) {
   const { LL, locale } = useI18nContext();
 
   return (
     <WidgetBoxTemplate highlight={countryCode === myCountry}>
       <Flag countryCode={countryCode} />
       <div className="flex flex-col justify-center">
-        <div className="text-sm font-bold text-gray-text">
+        <div className="text-sm font-bold text-gray-text dark:text-primary-800">
           {getCountryNameByCode(countryCode, locale)}
         </div>
       </div>
+      <div className="flex-1" />
+      {chairOptions && (
+        <>
+          {/* TODO Find intuitive way to change the oder of the list */}
+          <Button
+            icon={<FontAwesomeIcon icon={faXmark} />}
+            text
+            severity="danger"
+            size="small"
+          />
+        </>
+      )}
     </WidgetBoxTemplate>
   );
 }

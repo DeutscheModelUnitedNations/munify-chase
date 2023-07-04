@@ -23,8 +23,10 @@ import {
  * It contains buttons to navigate to other pages and a button to open the settings sidebar.
  */
 
-export default function Navbar() {
+export default function Navbar({ children }: { children: React.ReactNode }) {
   const router = useRouter();
+
+  // const { LL } = useI18nContext(); // TODO find a way to use this in the Navbar component (Layout.tsx)
 
   const [settingsSidebarVisible, setSettingsSidebarVisible] = useState(false);
 
@@ -54,7 +56,7 @@ export default function Navbar() {
 
   return (
     <>
-      <div className="w-20 h-full bg-dmun flex flex-col items-center gap-10">
+      <div className="w-20 h-full bg-primary flex flex-col items-center gap-10">
         <Image
           src="/logo/png/chase_logo_white_transparent.png"
           alt="Logo"
@@ -63,10 +65,7 @@ export default function Navbar() {
           className="mt-3"
         />
         <div className="flex flex-col justify-center items-center gap-3">
-          <NavButton icon={faHouse} link={"/participant/dashboard"} />
-          <NavButton icon={faComment} link={"/participant/speakers"} />
-          <NavButton icon={faScroll} link={"/participant/resolutions"} />
-          <NavButton icon={faSquarePollVertical} link={"/participant/voting"} />
+          {children}
         </div>
         <div className="flex-1" />
         <div className="flex flex-col items-center gap-3 mb-5">
@@ -77,9 +76,14 @@ export default function Navbar() {
           <NavButton
             icon={faGear}
             onClick={() => setSettingsSidebarVisible(true)}
+            title="Einstellungen"
           />
           <ConfirmDialog />
-          <NavButton icon={faRightFromBracket} onClick={confirmLogout} />
+          <NavButton
+            icon={faRightFromBracket}
+            onClick={confirmLogout}
+            title="Logout"
+          />
         </div>
       </div>
     </>

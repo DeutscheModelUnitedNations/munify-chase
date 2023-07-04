@@ -365,6 +365,166 @@ type RootTranslation = {
 			}
 		}
 	}
+	chairs: {
+		/**
+		 * C​h​a​i​r
+		 */
+		CHAIR: string
+		attendance: {
+			/**
+			 * A​t​t​e​n​d​a​n​c​e
+			 */
+			HEADLINE: string
+			/**
+			 * P​r​e​s​e​n​t
+			 */
+			PRESENT: string
+			/**
+			 * A​b​s​e​n​t
+			 */
+			ABSENT: string
+			/**
+			 * E​x​c​u​s​e​d
+			 */
+			EXCUSED: string
+		}
+		whiteboard: {
+			/**
+			 * S​a​v​e​ ​a​n​d​ ​p​u​b​l​i​s​h
+			 */
+			SAVE_BUTTON: string
+			/**
+			 * R​e​s​e​t
+			 */
+			RESET_BUTTON: string
+		}
+		speakersList: {
+			buttons: {
+				/**
+				 * S​t​a​r​t​ ​T​i​m​e​r
+				 */
+				START_TIMER: string
+				/**
+				 * S​t​o​p​ ​T​i​m​e​r
+				 */
+				PAUSE_TIMER: string
+				/**
+				 * R​e​s​e​t​ ​T​i​m​e​r
+				 */
+				RESET_TIMER: string
+				/**
+				 * 1​5​s
+				 */
+				REMOVE_TIME: string
+				/**
+				 * 1​5​s
+				 */
+				ADD_TIME: string
+				/**
+				 * N​e​x​t​ ​S​p​e​a​k​e​r
+				 */
+				NEXT_SPEAKER: string
+				/**
+				 * A​d​d​ ​t​o​ ​L​i​s​t
+				 */
+				ADD_TO_LIST: string
+				/**
+				 * C​l​o​s​e​ ​L​i​s​t
+				 */
+				CLOSE_LIST: string
+				/**
+				 * O​p​e​n​ ​L​i​s​t
+				 */
+				OPEN_LIST: string
+				/**
+				 * R​e​s​e​t​ ​L​i​s​t
+				 */
+				CLEAR_LIST: string
+				/**
+				 * C​h​a​n​g​e​ ​S​p​e​e​c​h​ ​T​i​m​e
+				 */
+				CHANGE_SPEECH_TIME: string
+			}
+			addSpeakerOverlay: {
+				/**
+				 * A​d​d​ ​S​p​e​a​k​e​r​ ​t​o​ ​{​{​0​}​}
+				 */
+				HEADLINE: string
+				/**
+				 * S​e​l​e​c​t​ ​a​ ​S​p​e​a​k​e​r
+				 */
+				PLACEHOLDER: string
+				/**
+				 * C​a​n​c​e​l
+				 */
+				BUTTON_CANCEL: string
+				/**
+				 * A​d​d
+				 */
+				BUTTON_ADD: string
+				/**
+				 * A​d​d​ ​a​n​d​ ​C​l​o​s​e
+				 */
+				BUTTON_ADD_AND_CLOSE: string
+				/**
+				 * {​{​0​}​}​ ​a​d​d​e​d
+				 */
+				TOAST_ADDED_SUMMARY: string
+				/**
+				 * t​o​ ​t​h​e​ ​{​{​0​}​}
+				 */
+				TOAST_ADDED_DETAIL: string
+			}
+			changeSpeechTimeOverlay: {
+				/**
+				 * C​h​a​n​g​e​ ​S​p​e​e​c​h​ ​T​i​m​e​ ​f​o​r​ ​{​{​0​}​}
+				 */
+				HEADLINE: string
+				/**
+				 * C​a​n​c​e​l
+				 */
+				BUTTON_CANCEL: string
+				/**
+				 * C​h​a​n​g​e
+				 */
+				BUTTON_SET: string
+				/**
+				 * N​e​w​ ​S​p​e​e​c​h​ ​T​i​m​e​ ​(​m​m​:​s​s​)
+				 */
+				PLACEHOLDER: string
+				/**
+				 * S​p​e​e​c​h​ ​T​i​m​e​ ​c​h​a​n​g​e​d​ ​t​o​ ​{​{​0​}​}​ ​m​i​n
+				 */
+				TOAST_SUCCESS: string
+				/**
+				 * f​o​r​ ​{​{​0​}​}
+				 */
+				TOAST_SUCCESS_DETAIL: string
+				/**
+				 * W​r​o​n​g​ ​F​o​r​m​a​t
+				 */
+				TOAST_WRONG_FORMAT: string
+			}
+		}
+		voting: {
+			/**
+			 * N​e​w​ ​M​o​t​i​o​n
+			 */
+			BUTTON_NEW_MOTION: string
+			/**
+			 * C​h​a​n​g​e​ ​I​n​f​o
+			 */
+			BUTTON_CHANGE_INFO: string
+			/**
+			 * R​e​s​t​a​r​t​ ​V​o​t​i​n​g
+			 */
+			BUTTON_RESET: string
+			/**
+			 * D​e​l​e​t​e​ ​V​o​t​i​n​g
+			 */
+			BUTTON_DELETE: string
+		}
+	}
 }
 
 export type TranslationFunctions = {
@@ -717,6 +877,166 @@ export type TranslationFunctions = {
 				 */
 				BUTTON_IGNORE: () => LocalizedString
 			}
+		}
+	}
+	chairs: {
+		/**
+		 * Chair
+		 */
+		CHAIR: () => LocalizedString
+		attendance: {
+			/**
+			 * Attendance
+			 */
+			HEADLINE: () => LocalizedString
+			/**
+			 * Present
+			 */
+			PRESENT: () => LocalizedString
+			/**
+			 * Absent
+			 */
+			ABSENT: () => LocalizedString
+			/**
+			 * Excused
+			 */
+			EXCUSED: () => LocalizedString
+		}
+		whiteboard: {
+			/**
+			 * Save and publish
+			 */
+			SAVE_BUTTON: () => LocalizedString
+			/**
+			 * Reset
+			 */
+			RESET_BUTTON: () => LocalizedString
+		}
+		speakersList: {
+			buttons: {
+				/**
+				 * Start Timer
+				 */
+				START_TIMER: () => LocalizedString
+				/**
+				 * Stop Timer
+				 */
+				PAUSE_TIMER: () => LocalizedString
+				/**
+				 * Reset Timer
+				 */
+				RESET_TIMER: () => LocalizedString
+				/**
+				 * 15s
+				 */
+				REMOVE_TIME: () => LocalizedString
+				/**
+				 * 15s
+				 */
+				ADD_TIME: () => LocalizedString
+				/**
+				 * Next Speaker
+				 */
+				NEXT_SPEAKER: () => LocalizedString
+				/**
+				 * Add to List
+				 */
+				ADD_TO_LIST: () => LocalizedString
+				/**
+				 * Close List
+				 */
+				CLOSE_LIST: () => LocalizedString
+				/**
+				 * Open List
+				 */
+				OPEN_LIST: () => LocalizedString
+				/**
+				 * Reset List
+				 */
+				CLEAR_LIST: () => LocalizedString
+				/**
+				 * Change Speech Time
+				 */
+				CHANGE_SPEECH_TIME: () => LocalizedString
+			}
+			addSpeakerOverlay: {
+				/**
+				 * Add Speaker to {{0}}
+				 */
+				HEADLINE: (arg0: number | string | boolean) => LocalizedString
+				/**
+				 * Select a Speaker
+				 */
+				PLACEHOLDER: () => LocalizedString
+				/**
+				 * Cancel
+				 */
+				BUTTON_CANCEL: () => LocalizedString
+				/**
+				 * Add
+				 */
+				BUTTON_ADD: () => LocalizedString
+				/**
+				 * Add and Close
+				 */
+				BUTTON_ADD_AND_CLOSE: () => LocalizedString
+				/**
+				 * {{0}} added
+				 */
+				TOAST_ADDED_SUMMARY: (arg0: number | string | boolean) => LocalizedString
+				/**
+				 * to the {{0}}
+				 */
+				TOAST_ADDED_DETAIL: (arg0: number | string | boolean) => LocalizedString
+			}
+			changeSpeechTimeOverlay: {
+				/**
+				 * Change Speech Time for {{0}}
+				 */
+				HEADLINE: (arg0: number | string | boolean) => LocalizedString
+				/**
+				 * Cancel
+				 */
+				BUTTON_CANCEL: () => LocalizedString
+				/**
+				 * Change
+				 */
+				BUTTON_SET: () => LocalizedString
+				/**
+				 * New Speech Time (mm:ss)
+				 */
+				PLACEHOLDER: () => LocalizedString
+				/**
+				 * Speech Time changed to {{0}} min
+				 */
+				TOAST_SUCCESS: (arg0: number | string | boolean) => LocalizedString
+				/**
+				 * for {{0}}
+				 */
+				TOAST_SUCCESS_DETAIL: (arg0: number | string | boolean) => LocalizedString
+				/**
+				 * Wrong Format
+				 */
+				TOAST_WRONG_FORMAT: () => LocalizedString
+			}
+		}
+		voting: {
+			/**
+			 * New Motion
+			 */
+			BUTTON_NEW_MOTION: () => LocalizedString
+			/**
+			 * Change Info
+			 */
+			BUTTON_CHANGE_INFO: () => LocalizedString
+			/**
+			 * Restart Voting
+			 */
+			BUTTON_RESET: () => LocalizedString
+			/**
+			 * Delete Voting
+			 */
+			BUTTON_DELETE: () => LocalizedString
 		}
 	}
 }

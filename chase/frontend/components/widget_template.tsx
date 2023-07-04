@@ -3,7 +3,8 @@ import React from "react";
 interface WidgetTemplateProps {
   children: React.ReactNode;
   cardTitle: string;
-  styles?: string;
+  autoStyle?: boolean;
+  additionalClassNames?: string;
 }
 
 /**
@@ -15,13 +16,15 @@ interface WidgetTemplateProps {
 export default function WidgetTemplate({
   children,
   cardTitle,
-  styles,
+  additionalClassNames,
 }: WidgetTemplateProps) {
   const widgetClassNames = () => {
-    const classNames = ["flex w-full flex-col bg-gray-light rounded-lg p-3"];
+    const classNames = [
+      "flex w-full flex-col bg-primary-950 dark:bg-primary-200 rounded-lg p-3",
+    ];
 
-    if (styles) {
-      classNames.push(styles);
+    if (additionalClassNames) {
+      classNames.push(additionalClassNames);
     }
 
     return classNames.join(" ");

@@ -6,9 +6,11 @@ import {
   IconDefinition,
   faCircleHalfStroke,
   faDisplay,
+  faFloppyDisk,
   faMoon,
   faSun,
 } from "@fortawesome/free-solid-svg-icons";
+import { Dropdown } from "primereact/dropdown";
 
 interface ColormodeOption {
   name: string;
@@ -39,6 +41,11 @@ export default function SettingsSidebar({
 }: SettingsSidebarProps) {
   const colortheme_items: ColormodeOption[] = [
     {
+      name: "System",
+      icon: faDisplay,
+      value: "system",
+    },
+    {
       name: "Hell",
       icon: faSun,
       value: "light",
@@ -49,19 +56,18 @@ export default function SettingsSidebar({
       value: "dark",
     },
     {
-      name: "System",
-      icon: faDisplay,
-      value: "system",
-    },
-    {
       name: "Hoher Kontrast",
       icon: faCircleHalfStroke,
       value: "contrast",
     },
   ];
 
-  const [colortheme, setColortheme] = useState("system");
+  const [colortheme, setColortheme] = useState(localStorage.getItem("theme") || "system");
   const [isDarkMode, setIsDarkMode] = useState(false);
+
+  const [language, setLanguage] = useState(
+    localStorage.getItem("lang") || "system"
+  );
 
   useEffect(() => {
     setIsDarkMode(window.matchMedia("(prefers-color-scheme: dark)").matches);
@@ -105,7 +111,22 @@ export default function SettingsSidebar({
       document.documentElement.classList.remove("contrast");
       console.error(`Invalid colortheme: ${colortheme}`);
     }
+
+    localStorage.setItem("theme", colortheme);
   }, [colortheme, isDarkMode]);
+
+  useEffect(() => {
+    if (language === "system") {
+      localStorage.removeItem("lang");
+    } else if (language === "de") {
+      localStorage.setItem("lang", "de");
+    } else if (language === "en") {
+      localStorage.setItem("lang", "en");
+    } else {
+      console.error(`Invalid language: ${language}`);
+      return;
+    }
+  }, [language]);
 
   return (
     <Sidebar
@@ -114,16 +135,35 @@ export default function SettingsSidebar({
       position="top"
     >
       {/* TODO Settings */}
-      <div className="flex w-full justify-center items-center pt-2">
-        <SelectButton
-          value={colortheme}
-          onChange={(e) => {
-            setColortheme(e.value);
-          }}
-          itemTemplate={colorModeTemplate}
-          optionLabel="Color Theme"
-          options={colortheme_items}
-        />
+      <div className="flex w-full justify-center items-center pt-2 gap-2">
+        <div className="flex flex-col">
+          <div className="text-sm text-gray-500">Color Mode</div>
+          <SelectButton
+            value={colortheme}
+            onChange={(e) => {
+              setColortheme(e.value);
+            }}
+            itemTemplate={colorModeTemplate}
+            optionLabel="Color Theme"
+            options={colortheme_items}
+            unselectable={false}
+          />
+        </div>
+        <div className="flex flex-col">
+          <div className="text-sm text-gray-500">Language</div>
+          <Dropdown
+            value={language}
+            options={[
+              { label: "System", value: "system" },
+              { label: "Deutsch", value: "de" },
+              { label: "English", value: "en" },
+            ]}
+            onChange={(e) => {
+              setLanguage(e.value);
+              window.location.reload();
+            }}
+          />
+        </div>
       </div>
     </Sidebar>
   );

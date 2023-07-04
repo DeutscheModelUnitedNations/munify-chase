@@ -60,12 +60,12 @@ export default function Home() {
           </span>
           <div className="p-buttonset">
             <Button
-              label="Keycloak login"
+              label="Zitadel login"
               icon="pi pi-link"
               onClick={() => auth.login()}
             />
             <Button
-              label="Keycloak logout"
+              label="Zitadel logout"
               icon="pi pi-link"
               onClick={() => auth.logout()}
             />

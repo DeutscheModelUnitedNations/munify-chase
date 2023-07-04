@@ -1,12 +1,12 @@
 import { UserManager } from "oidc-client-ts";
-import React, { createContext, useContext, useEffect } from "react";
+import { createContext, useContext, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 
 interface AuthContextType {
   authenticated: boolean;
   login: () => Promise<void>;
   logout: () => Promise<void>;
-  token: string | undefined;
+  token: () => Promise<string | undefined>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -51,31 +51,28 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     (await userManager).signoutRedirect();
   };
 
-  const [authenticated, setAuthenticated] = React.useState<boolean>(false);
-  const [token, setToken] = React.useState<string | undefined>();
+  const token = async () => {
+    return (await (await userManager).getUser())?.access_token;
+  };
+
+  const [authenticated, setAuthenticated] = useState<boolean>(false);
 
   useEffect(() => {
     (async () => {
+      const manager = await userManager;
       const urlObj = new URL(window.location.href);
 
       if (urlObj.searchParams.has("state") && urlObj.searchParams.has("code")) {
-        await (await userManager).signinRedirectCallback(window.location.href);
+        await manager.signinRedirectCallback(window.location.href);
         ["state", "code"].forEach((param) => {
           urlObj.searchParams.delete(param);
         });
-        
-        //TODO the replacement seems to not work perfectly here
+
+        //TODO the replacement seems to not work perfectly here, the sensitive data shows up in the browser history
         router.replace(urlObj.toString());
       }
 
-      const user = await (await userManager).getUser();
-      if (user) {
-        setAuthenticated(true);
-        setToken(user.access_token);
-      } else {
-        setAuthenticated(false);
-        setToken(undefined);
-      }
+      setAuthenticated((await manager.getUser()) !== null);
     })();
   }, []);
 

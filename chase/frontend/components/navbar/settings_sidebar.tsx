@@ -62,11 +62,13 @@ export default function SettingsSidebar({
     },
   ];
 
-  const [colortheme, setColortheme] = useState(localStorage.getItem("theme") || "system");
+  const [colortheme, setColortheme] = useState(
+    localStorage.getItem("theme") || "system",
+  );
   const [isDarkMode, setIsDarkMode] = useState(false);
 
   const [language, setLanguage] = useState(
-    localStorage.getItem("lang") || "system"
+    localStorage.getItem("lang") || "system",
   );
 
   useEffect(() => {

@@ -38,14 +38,11 @@ Below are examples of well-formatted commits:
 
 ```
 ✨ feat (CHASE Frontend): implement login button and modal
-by @User
 branch: login
 
 🐞 fix (MUNify): address error in login body
-by @User
 branch: login
 
 📚 docs (CHASE Backend): add examples
-by @User
 branch: setup
 ```

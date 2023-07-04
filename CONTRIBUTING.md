@@ -32,7 +32,7 @@ We try to stick as close to the [conventional commit specification](https://www.
 - `revert:` reverts a previous commit
 - `merge:` use when merging branches
 
-If you are using the vscode extension [rioukkevin.vscode-git-commit](https://marketplace.visualstudio.com/items?itemName=rioukkevin.vscode-git-commit), you the right settings for the convention above should be set in the settings.json automatically.
+If you are using the vscode extension [rioukkevin.vscode-git-commit](https://marketplace.visualstudio.com/items?itemName=rioukkevin.vscode-git-commit), the right settings for the convention above should be applied through the settings.json automatically.
 
 Below are examples of well-formatted commits:
 

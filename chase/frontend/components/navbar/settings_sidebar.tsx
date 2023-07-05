@@ -89,8 +89,10 @@ export default function SettingsSidebar({
     if (colortheme === "system") {
       document.documentElement.classList.remove("contrast");
       if (isDarkMode) {
+        console.log("dark");
         document.documentElement.classList.add("dark");
       } else {
+        console.log("light");
         document.documentElement.classList.remove("dark");
       }
     } else if (colortheme === "light") {

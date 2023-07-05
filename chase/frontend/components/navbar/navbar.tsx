@@ -35,7 +35,9 @@ export default function Navbar({ children }: { children: React.ReactNode }) {
     router.push("/login/participant");
   };
 
-  const rejectLogout = () => {};
+  const rejectLogout = () => {
+    console.log("Logout rejected");
+  };
 
   const confirmLogout = () => {
     confirmDialog({

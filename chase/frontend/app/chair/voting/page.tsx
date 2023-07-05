@@ -74,7 +74,9 @@ export default function ChairVoting() {
                   label={LL.chairs.voting.BUTTON_NEW_MOTION()}
                   icon={<FontAwesomeIcon icon={faGavel} className="mr-2" />}
                   className="w-full"
-                  onClick={() => {}}
+                  onClick={() => {
+                    console.log("API call to create a new motion");
+                  }}
                   model={[]}
                 />
                 <Motions

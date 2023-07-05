@@ -11,7 +11,6 @@ import {
   faSun,
 } from "@fortawesome/free-solid-svg-icons";
 import { Dropdown } from "primereact/dropdown";
-import { SmallFlag } from "../flag_templates";
 
 interface ColormodeOption {
   name: string;
@@ -29,6 +28,11 @@ interface SettingsSidebarProps {
  * It displays the settings of the user, which are:
  * - Colortheme
  * - Language
+ * - ...
+ * TODO: add more settings
+ * TODO: add functionality to change settings
+ * TODO: add functionality to save settings
+ * TODO: add functionality to reset settings
  */
 
 export default function SettingsSidebar({
@@ -150,19 +154,13 @@ export default function SettingsSidebar({
           <Dropdown
             value={language}
             options={[
-              { flag: "uno", label: "System", value: "system" },
-              { flag: "deu", label: "Deutsch", value: "de" },
-              { flag: "usa", label: "English", value: "en" },
+              { label: "System", value: "system" },
+              { label: "Deutsch", value: "de" },
+              { label: "English", value: "en" },
             ]}
-            itemTemplate={(option) => (
-              <div className="flex items-center">
-                <SmallFlag countryCode={option.flag} />
-                <span className="ml-4">{option.label}</span>
-              </div>
-            )}
             onChange={(e) => {
               setLanguage(e.value);
-              if (window) window.location.reload();
+              window.location.reload();
             }}
           />
         </div>

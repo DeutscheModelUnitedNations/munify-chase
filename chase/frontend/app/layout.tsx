@@ -19,6 +19,7 @@ import {
 import { loadLocale } from "@/i18n/i18n-util.sync";
 import { baseLocale, locales } from "@/i18n/i18n-util";
 import TypesafeI18n from "@/i18n/i18n-react";
+import Cookies from "js-cookie";
 import { useEffect, useState } from "react";
 
 const inter = Inter({ subsets: ["latin"] });
@@ -28,18 +29,13 @@ export default function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const isBrowser = typeof window !== "undefined";
-  let locale = baseLocale;
 
-  if (isBrowser) {
-    // Only run this code in a browser context.
-    locale = detectLocale(
-      baseLocale,
-      locales,
-      localStorageDetector,
-      navigatorDetector
-    );
-  }
+  const locale = detectLocale(
+    baseLocale,
+    locales,
+    localStorageDetector,
+    navigatorDetector
+  );
 
   const [localesLoaded, setLocalesLoaded] = useState<boolean>(false);
   useEffect(() => {

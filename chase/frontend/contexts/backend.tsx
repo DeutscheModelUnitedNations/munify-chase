@@ -28,9 +28,16 @@ const BackendProvider = ({ children }: { children: React.ReactNode }) => {
   OpenAPI.WITH_CREDENTIALS = true;
 
   // this should be a resolver function since the token state might change throughout the application state
-  // ignore type checking here since undefined would equal not setting the value
-  // @ts-ignore
-  OpenAPI.TOKEN = auth.token;
+  // we can ignore type checking since when undefined, the values just wont be sent
+  //@ts-ignore
+  OpenAPI.TOKEN = auth.access_token;
+
+  //@ts-ignore
+  OpenAPI.HEADERS = async () => {
+    return {
+      "authorization-id-token": await auth.id_token(),
+    };
+  };
 
   const [backend, _] = useState(new API(OpenAPI));
 

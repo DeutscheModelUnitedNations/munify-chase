@@ -6,7 +6,8 @@ interface AuthContextType {
   authenticated: boolean;
   login: () => Promise<void>;
   logout: () => Promise<void>;
-  token: () => Promise<string | undefined>;
+  access_token: () => Promise<string | undefined>;
+  id_token: () => Promise<string | undefined>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -51,8 +52,11 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     (await userManager).signoutRedirect();
   };
 
-  const token = async () => {
+  const access_token = async () => {
     return (await (await userManager).getUser())?.access_token;
+  };
+  const id_token = async () => {
+    return (await (await userManager).getUser())?.id_token;
   };
 
   const [authenticated, setAuthenticated] = useState<boolean>(false);
@@ -77,7 +81,9 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   }, []);
 
   return (
-    <AuthContext.Provider value={{ login, logout, authenticated, token }}>
+    <AuthContext.Provider
+      value={{ login, logout, authenticated, access_token, id_token }}
+    >
       {children}
     </AuthContext.Provider>
   );

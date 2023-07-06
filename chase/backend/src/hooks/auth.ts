@@ -1,15 +1,15 @@
-'use client';
-import { FastifyError, FastifyReply, FastifyRequest } from 'fastify';
-import { createRemoteJWKSet, jwtVerify } from 'jose';
-import { server } from '../main';
-import { Static, Type } from '@sinclair/typebox';
-import { TypeCompiler } from '@sinclair/typebox/compiler';
+"use client";
+import { FastifyError, FastifyReply, FastifyRequest } from "fastify";
+import { createRemoteJWKSet, jwtVerify } from "jose";
+import { server } from "../main";
+import { Static, Type } from "@sinclair/typebox";
+import { TypeCompiler } from "@sinclair/typebox/compiler";
 
 // use typebox to define our session type
 export const sessionSchema = Type.Object({
   authentication: Type.Object({
     userId: Type.Number(),
-    email: Type.String({ format: 'email' }),
+    email: Type.String({ format: "email" }),
     firstName: Type.String(),
     lastName: Type.String(),
     pronouns: Type.String(),
@@ -23,7 +23,7 @@ const compiledSessionSchema = TypeCompiler.Compile(sessionSchema);
 type SessionType = Static<typeof sessionSchema>;
 
 // augment the fastify module to provide intellisense for the session object on the req in handlers
-declare module 'fastify' {
+declare module "fastify" {
   // rome-ignore lint/suspicious/noRedeclare: <explanation>
   interface FastifyRequest {
     session: SessionType;
@@ -36,19 +36,22 @@ declare module 'fastify' {
 // decorating with a shared object is ok here, since we replace the value at req time with a new object
 const defaultSessionValue: SessionType = {
   authentication: {
-    email: '',
-    firstName: '',
-    lastName: '',
-    pronouns: '',
+    email: "",
+    firstName: "",
+    lastName: "",
+    pronouns: "",
     userId: 0,
   },
 };
-server.decorateRequest('session', defaultSessionValue);
+server.decorateRequest("session", defaultSessionValue);
 
-// fetch the token specifications from keycloak
-const JWKSet = createRemoteJWKSet(
-  new URL(`${process.env.KEYCLOAK_REALM_URL}/.well-known/openid-configuration`)
-);
+const JWKSet = (async () => {
+  const wellKnown = await (
+    await fetch(`${process.env.OPENID_URL}/.well-known/openid-configuration`)
+  ).json();
+
+  return createRemoteJWKSet(new URL(wellKnown.jwks_uri));
+})();
 
 /**
  * This hook prevents the access to the route when there is no valid session or the user is not authenticated
@@ -58,70 +61,48 @@ export async function authenticated(
   rep: FastifyReply,
   done: (error?: FastifyError) => void
 ) {
-  if (req.headers.authorization === undefined || !req.headers.authorization.startsWith('Bearer')) {
-    rep.code(401).send(new Error('Unauthorized: Bearer missing'));
+  const id_token = req.headers["authorization-id-token"];
+  const access_token = req.headers["authorization"];
+
+  if (!access_token && !id_token) {
+    rep.code(401).send(new Error("Unauthorized"));
     return;
   }
 
-  const token = req.headers.authorization.substring('Bearer '.length);
+  let parsed_access_token;
+  let parsed_id_token;
 
-  try {
-    console.log(token);
-
-    const { payload } = await jwtVerify(token, JWKSet);
-    console.log(payload);
-    if (!payload.sub) {
-      rep.code(401).send(new Error('Unauthorized: Sub undefined'));
+  if (access_token && typeof access_token === "string") {
+    try {
+      parsed_access_token = await jwtVerify(
+        access_token.substring("Bearer ".length), // remove the "Bearer " prefix
+        await JWKSet
+      );
+    } catch (error) {
+      console.error(error);
+      rep.code(401).send(new Error("Unauthorized: JWT not verified"));
       return;
     }
-
-    // Continue here. Check how to manipulate the type and strongly type the session data
-    /*
-      {
-  exp: 1687519483,
-  iat: 1687519183,
-  auth_time: 1687519182,
-  jti: '75a12e28-a8b3-4025-81a4-24e8e82d5f8f',
-  iss: 'http://localhost:6677/realms/dmun',
-  aud: 'account',
-  sub: '36f9a7b2-ac4f-4b53-a92c-5ebeec214dc9',
-  typ: 'Bearer',
-  azp: 'chase',
-  nonce: '865a8bd3-00e6-436c-b496-a0f6268d810e',
-  session_state: '8d25fa16-0a0a-4eb1-971b-2e7de938a9f2',
-  acr: '1',
-  'allowed-origins': [ 'http://localhost:3000' ],
-  realm_access: {
-    roles: [
-      'offline_access',
-      'uma_authorization',
-      'default-roles-dmun-extern'
-    ]
-  },
-  resource_access: { account: { roles: [Array] } },
-  scope: 'openid email profile',
-  sid: '8d25fa16-0a0a-4eb1-971b-2e7de938a9f2',
-  email_verified: true,
-  name: 'TestVorname TestNachname',
-  preferred_username: 'test@test.de',
-  given_name: 'TestVorname',
-  family_name: 'TestNachname',
-  email: 'test@test.de'
-}
-    */
-    // const sessionData = JSON.parse(payload.sub);
-    // if (!compiledSessionSchema.Check(sessionData)) {
-    //   rep.code(401).send(new Error("Unauthorized: Malformed token"));
-    //   return;
-    // }
-
-    // req.session = sessionData;
-
-    compiledSessionSchema;
-  } catch (error) {
-    console.error(error);
-    rep.code(401).send(new Error('Unauthorized: JWT not verified'));
   }
 
+  if (id_token && typeof id_token === "string") {
+    try {
+      parsed_id_token = await jwtVerify(id_token, await JWKSet);
+    } catch (error) {
+      console.error(error);
+      rep.code(401).send(new Error("Unauthorized: JWT not verified"));
+      return;
+    }
+  }
+
+  if (!parsed_access_token && !parsed_id_token) {
+    rep.code(401).send(new Error("Unauthorized"));
+    return;
+  }
+
+  console.log("parsed_id_token", parsed_id_token?.payload);
+  console.log("parsed_access_token", parsed_access_token?.payload);
+
+  compiledSessionSchema;
   done();
 }

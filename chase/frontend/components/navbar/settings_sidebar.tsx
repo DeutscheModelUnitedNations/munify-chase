@@ -12,6 +12,7 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import { Dropdown } from "primereact/dropdown";
 import { SmallFlag } from "../flag_templates";
+import { useI18nContext } from "@/i18n/i18n-react";
 
 interface ColormodeOption {
   name: string;
@@ -35,24 +36,26 @@ export default function SettingsSidebar({
   settingsSidebarVisible,
   setSettingsSidebarVisible,
 }: SettingsSidebarProps) {
+  const { LL } = useI18nContext();
+
   const colortheme_items: ColormodeOption[] = [
     {
-      name: "System",
+      name: LL.settings.colorTheme.SYSTEM(),
       icon: faDisplay,
       value: "system",
     },
     {
-      name: "Hell",
+      name: LL.settings.colorTheme.LIGHT(),
       icon: faSun,
       value: "light",
     },
     {
-      name: "Dunkel",
+      name: LL.settings.colorTheme.DARK(),
       icon: faMoon,
       value: "dark",
     },
     {
-      name: "Hoher Kontrast",
+      name: LL.settings.colorTheme.CONTRAST(),
       icon: faCircleHalfStroke,
       value: "contrast",
     },
@@ -137,26 +140,42 @@ export default function SettingsSidebar({
       {/* TODO Settings */}
       <div className="flex w-full justify-center items-center pt-2 gap-2">
         <div className="flex flex-col">
-          <div className="text-sm text-gray-500">Color Mode</div>
+          <div className="text-sm text-gray-500">
+            {LL.settings.colorTheme.HEADLINE()}
+          </div>
           <SelectButton
             value={colortheme}
             onChange={(e) => {
               setColortheme(e.value);
             }}
             itemTemplate={colorModeTemplate}
-            optionLabel="Color Theme"
+            optionLabel={LL.settings.colorTheme.HEADLINE()}
             options={colortheme_items}
             unselectable={false}
           />
         </div>
         <div className="flex flex-col">
-          <div className="text-sm text-gray-500">Language</div>
+          <div className="text-sm text-gray-500">
+            {LL.settings.language.HEADLINE()}
+          </div>
           <Dropdown
             value={language}
             options={[
-              { flag: "uno", label: "System", value: "system" },
-              { flag: "deu", label: "Deutsch", value: "de" },
-              { flag: "usa", label: "English", value: "en" },
+              {
+                flag: "uno",
+                label: LL.settings.language.SYSTEM(),
+                value: "system",
+              },
+              {
+                flag: "deu",
+                label: LL.settings.language.GERMAN(),
+                value: "de",
+              },
+              {
+                flag: "usa",
+                label: LL.settings.language.ENGLISH(),
+                value: "en",
+              },
             ]}
             itemTemplate={(option) => (
               <div className="flex items-center">

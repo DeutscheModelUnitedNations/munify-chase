@@ -96,6 +96,48 @@ type RootTranslation = {
 			WARNING_MESSAGE: string
 		}
 	}
+	settings: {
+		colorTheme: {
+			/**
+			 * C​o​l​o​r​ ​M​o​d​e
+			 */
+			HEADLINE: string
+			/**
+			 * S​y​s​t​e​m
+			 */
+			SYSTEM: string
+			/**
+			 * L​i​g​h​t
+			 */
+			LIGHT: string
+			/**
+			 * D​a​r​k
+			 */
+			DARK: string
+			/**
+			 * C​o​n​t​r​a​s​t
+			 */
+			CONTRAST: string
+		}
+		language: {
+			/**
+			 * L​a​n​g​u​a​g​e
+			 */
+			HEADLINE: string
+			/**
+			 * S​y​s​t​e​m
+			 */
+			SYSTEM: string
+			/**
+			 * E​n​g​l​i​s​h
+			 */
+			ENGLISH: string
+			/**
+			 * D​e​u​t​s​c​h
+			 */
+			GERMAN: string
+		}
+	}
 	participants: {
 		dashboard: {
 			widgetHeadlines: {
@@ -608,6 +650,48 @@ export type TranslationFunctions = {
 			 * You are about to sign in as a chair.
 			 */
 			WARNING_MESSAGE: () => LocalizedString
+		}
+	}
+	settings: {
+		colorTheme: {
+			/**
+			 * Color Mode
+			 */
+			HEADLINE: () => LocalizedString
+			/**
+			 * System
+			 */
+			SYSTEM: () => LocalizedString
+			/**
+			 * Light
+			 */
+			LIGHT: () => LocalizedString
+			/**
+			 * Dark
+			 */
+			DARK: () => LocalizedString
+			/**
+			 * Contrast
+			 */
+			CONTRAST: () => LocalizedString
+		}
+		language: {
+			/**
+			 * Language
+			 */
+			HEADLINE: () => LocalizedString
+			/**
+			 * System
+			 */
+			SYSTEM: () => LocalizedString
+			/**
+			 * English
+			 */
+			ENGLISH: () => LocalizedString
+			/**
+			 * Deutsch
+			 */
+			GERMAN: () => LocalizedString
 		}
 	}
 	participants: {

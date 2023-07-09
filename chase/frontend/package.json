@@ -21,7 +21,6 @@
     "autoprefixer": "10.4.14",
     "framer-motion": "^10.12.16",
     "fuse.js": "^6.6.2",
-    "js-cookie": "^3.0.5",
     "next": "13.4.4",
     "postcss": "8.4.23",
     "primeicons": "^6.0.1",

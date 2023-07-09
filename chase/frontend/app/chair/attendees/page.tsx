@@ -148,7 +148,7 @@ export default function ChairAttendees() {
         </HeaderTemplate>
         <ScrollPanel className="flex-1 overflow-y-auto custom-scrollbar">
           <div className="flex-1 flex p-4 gap-4 flex-col">
-            <WidgetTemplate cardTitle="Attendance">
+            <WidgetTemplate cardTitle={LL.chairs.attendance.HEADLINE()}>
               {data?.map((attendee, index) => (
                 <WidgetBoxTemplate>
                   <Flag countryCode={attendee.country} />

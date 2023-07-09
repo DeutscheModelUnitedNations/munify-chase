@@ -3,7 +3,7 @@ import React, { useState } from "react";
 import Motions from "@/components/voting/motions";
 import VotingArea from "@/components/voting/voting";
 import { useI18nContext } from "@/i18n/i18n-react";
-import { motionTestData, myCountry } from "@/test_data";
+import { motionTestData } from "@/test_data";
 import { Motion } from "@/custom_types";
 import { TabMenu } from "primereact/tabmenu";
 
@@ -13,10 +13,11 @@ import {
   faHistory,
   faSquarePollVertical,
 } from "@fortawesome/free-solid-svg-icons";
+import { SplitButton } from "primereact/splitbutton";
 
 type Tabs = "current-motions" | "recent-motions" | "recent-votings";
 
-export default function VotingPage() {
+export default function ChairVoting() {
   const { LL } = useI18nContext();
 
   const [openTab, setOpenTab] = useState<Tabs>("current-motions");
@@ -24,6 +25,10 @@ export default function VotingPage() {
   const [activeMotionId, setActiveMotionId] = useState<string | undefined>(
     data[0].motionId,
   );
+
+  // TODO: Add dialog for creating a new motion
+  // TODO: Add dialog for creating a new voting out of a motion
+  // TODO: Add dialog for changing the information of a voting
 
   return (
     <>
@@ -62,16 +67,28 @@ export default function VotingPage() {
           />
         </div>
         <div className="flex flex-col lg:flex-row gap-4 justify-start">
-          <div className="w-full lg:w-1/3 flex flex-col gap-4">
+          <div className="w-full flex flex-col gap-4">
             {openTab === "current-motions" && (
-              <Motions
-                motionData={motionTestData.filter(
-                  (motion: Motion) =>
-                    motion.status === "open" || motion.status === "in-voting",
-                )}
-                highlightedMotionId={activeMotionId}
-                setActiveMotion={setActiveMotionId}
-              />
+              <>
+                <SplitButton
+                  label={LL.chairs.voting.BUTTON_NEW_MOTION()}
+                  icon={<FontAwesomeIcon icon={faGavel} className="mr-2" />}
+                  className="w-full"
+                  onClick={() => {
+                    console.log("API call to create a new motion");
+                  }}
+                  model={[]}
+                />
+                <Motions
+                  motionData={motionTestData.filter(
+                    (motion: Motion) =>
+                      motion.status === "open" || motion.status === "in-voting",
+                  )}
+                  highlightedMotionId={activeMotionId}
+                  setActiveMotion={setActiveMotionId}
+                  chairOptions
+                />
+              </>
             )}
             {openTab === "recent-motions" && (
               <Motions
@@ -83,6 +100,7 @@ export default function VotingPage() {
                 )}
                 highlightedMotionId={activeMotionId}
                 setActiveMotion={setActiveMotionId}
+                chairOptions
               />
             )}
             {openTab === "recent-votings" && (
@@ -95,16 +113,17 @@ export default function VotingPage() {
                 )}
                 highlightedMotionId={activeMotionId}
                 setActiveMotion={setActiveMotionId}
+                chairOptions
               />
             )}
           </div>
-          <div className="w-full lg:w-2/3 flex">
+          <div className="w-full flex">
             <VotingArea
               votingData={
                 data.find((motion) => motion.motionId === activeMotionId)
                   ?.voting
               }
-              myCountry={myCountry}
+              chairOptions
             />
           </div>
         </div>

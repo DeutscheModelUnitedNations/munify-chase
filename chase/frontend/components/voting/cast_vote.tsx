@@ -30,7 +30,7 @@ export default function CastVote({
 
   return (
     <>
-      <div className="my-4 shadow-xl rounded-md p-4 bg-white border border-dmun flex justify-center items-center h-20  w-11/12 mr-3">
+      <div className="my-4 shadow-xl rounded-md p-4 bg-white border border-secondary dark:bg-primary-100 flex justify-center items-center h-20  w-11/12 mr-3">
         <AnimatePresence mode="wait">
           {isLoading ? (
             <motion.div
@@ -43,7 +43,7 @@ export default function CastVote({
             >
               <FontAwesomeIcon
                 icon={faSpinner}
-                className="text-dmun animate-spin text-3xl"
+                className="text-primary animate-spin text-3xl"
               />
             </motion.div>
           ) : (

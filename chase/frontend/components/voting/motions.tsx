@@ -8,12 +8,16 @@ import {
   faCircleQuestion,
   faGavel,
   faSquarePollVertical,
+  faTrash,
+  faTrashAlt,
+  faXmark,
   faXmarkCircle,
 } from "@fortawesome/free-solid-svg-icons";
 import NoDataPlaceholder from "../no_data_placeholder";
 import { SmallFlag } from "../flag_templates";
 import { useI18nContext } from "@/i18n/i18n-react";
 import FlipMove from "react-flip-move";
+import Button from "@/components/button";
 
 /**
  * This Component is used on the Voting page and displays all open motions in a list format.
@@ -26,10 +30,12 @@ export default function Motions({
   motionData,
   highlightedMotionId,
   setActiveMotion,
+  chairOptions = false,
 }: {
   motionData: Motion[];
   highlightedMotionId?: string;
   setActiveMotion: (motionId: string) => void;
+  chairOptions?: boolean;
 }) {
   const { LL } = useI18nContext();
 
@@ -58,7 +64,7 @@ export default function Motions({
                       showNameOnHover
                     />
                     <div className="flex-1 flex-col justify-start items-center">
-                      <div className="text-sm font-semibold text-gray-text">
+                      <div className="text-sm font-semibold text-gray-text dark:text-primary-800">
                         {motion.motionText}
                       </div>
                     </div>
@@ -66,7 +72,7 @@ export default function Motions({
                     {motion.status === "in-voting" && (
                       <FontAwesomeIcon
                         icon={faSquarePollVertical}
-                        className=" text-2xl text-dmun fa-beat-fade"
+                        className=" text-3xl text-primary dark:text-primary-950 fa-beat-fade mr-1"
                       />
                     )}
 
@@ -75,7 +81,7 @@ export default function Motions({
                       motion.voting && (
                         <FontAwesomeIcon
                           icon={faSquarePollVertical}
-                          className=" text-2xl text-gray-icon"
+                          className=" text-2xl text-gray-icon dark:text-primary-400"
                         />
                       )}
 
@@ -91,6 +97,38 @@ export default function Motions({
                         icon={faXmarkCircle}
                         className="text-2xl text-red-600"
                       />
+                    )}
+
+                    {chairOptions && (
+                      <>
+                        {motion.status === "open" && (
+                          <>
+                            <Button
+                              faIcon={faCircleCheck}
+                              faIconClassName="text-voting-for text-xl"
+                              size="small"
+                              text
+                            />
+                            <Button
+                              faIcon={faXmarkCircle}
+                              faIconClassName="text-voting-against text-xl"
+                              size="small"
+                              text
+                            />
+                            <Button
+                              faIcon={faSquarePollVertical}
+                              faIconClassName="dark:text-white text-xl"
+                              size="small"
+                            />
+                          </>
+                        )}
+                        <Button
+                          faIcon={faTrashAlt}
+                          faIconClassName="text-lg"
+                          size="small"
+                          severity="danger"
+                        />
+                      </>
                     )}
                   </WidgetBoxTemplate>
                 </div>

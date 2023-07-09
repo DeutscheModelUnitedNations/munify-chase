@@ -36,20 +36,32 @@ export default function Document({
 
   return (
     <WidgetBoxTemplate>
-      <FontAwesomeIcon icon={icon} className="text-gray-icon text-2xl" />
+      <FontAwesomeIcon
+        icon={icon}
+        className="text-gray-icon dark:text-primary-500 text-2xl"
+      />
       <div className="flex-1 flex-col justify-start items-center">
-        <div className="text-sm font-semibold text-gray-text">{documentId}</div>
+        <div className="text-sm font-semibold text-gray-text dark:text-primary-800">
+          {documentId}
+        </div>
         {sponsors && (
-          <div className="text-xs text-gray-icon">
+          <div className="text-xs text-gray-icon dark:text-primary-800">
             {`${
               sponsors.length
             } ${LL.participants.dashboard.documentsWidget.SPONSORS()}`}
           </div>
         )}
-        {topic && <div className="text-xs text-gray-icon">{topic}</div>}
+        {topic && (
+          <div className="text-xs text-gray-icon dark:text-primary-800">
+            {topic}
+          </div>
+        )}
       </div>
       {shared && (
-        <FontAwesomeIcon icon={faShareNodes} className="text-gray-icon" />
+        <FontAwesomeIcon
+          icon={faShareNodes}
+          className="text-gray-icon dark:text-primary-800"
+        />
       )}
       {introducedBy && <SmallFlag countryCode={introducedBy} />}
     </WidgetBoxTemplate>

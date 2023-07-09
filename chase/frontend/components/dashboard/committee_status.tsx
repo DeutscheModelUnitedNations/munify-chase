@@ -21,13 +21,13 @@ export default function CommitteeStatusWidget({
         cardTitle={LL.participants.dashboard.widgetHeadlines.COMMITTEE_STATUS()}
       >
         <div className="flex flex-col gap-1">
-          <div className="flex flex-row bg-dmun text-white rounded-md p-2 gap-4 border border-black shadow-md">
+          <div className="flex flex-row bg-primary text-white dark:text-primary-100 rounded-md p-2 gap-4 contrast:border contrast:border-black shadow-md">
             <div className="flex-1 text-sm font-semibold text-center">
               {currentDebateStep}
             </div>
           </div>
           <FontAwesomeIcon icon={faArrowDown} />
-          <div className="flex flex-row bg-white text-gray-text rounded-md p-2 gap-4 border border-gray-text border-dashed">
+          <div className="flex flex-row dark:text-primary-700 rounded-md p-2 gap-4 border border-primary-300 dark:border-primary-600 border-dashed">
             <div className="flex-1 text-sm font-semibold text-center">
               {nextDebateStep ? nextDebateStep : "..."}
             </div>

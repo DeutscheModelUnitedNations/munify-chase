@@ -10,7 +10,7 @@ import CommitteeStatusWidget from "@/components/dashboard/committee_status";
 import DocumentsWidget from "@/components/dashboard/documents";
 import WhiteboardWidget from "@/components/dashboard/whiteboard";
 import ActionsWidget from "@/components/dashboard/actions";
-import { apiTestData } from "@/test_data";
+import { apiTestData, whiteboardTestData } from "@/test_data";
 import { votingAlert } from "@/misc/voting_alert";
 import { useRouter } from "next/navigation";
 import { useI18nContext } from "@/i18n/i18n-react";
@@ -68,7 +68,7 @@ export default function participant_dashboard() {
                 <DocumentsWidget documents={data.documents} />
               </div>
               <div className="flex-1 flex flex-col justify-start items-stretch gap-5 md:col-span-2 lg:col-span-1">
-                <WhiteboardWidget markdown_content={data.whiteboardMarkdown} />
+                <WhiteboardWidget value={whiteboardTestData} />
                 <ActionsWidget />
               </div>
             </div>

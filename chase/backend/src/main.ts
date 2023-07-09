@@ -50,6 +50,7 @@ export let server: FastifyInstance;
 
   // TODO: make logger more readable in dev
   server = Fastify({
+    exposeHeadRoutes: false,
     logger: { level: "warn" },
   }).withTypeProvider<TypeBoxTypeProvider>();
 
@@ -82,7 +83,7 @@ export let server: FastifyInstance;
   // ╚═════════════════╝
 
   await server.register(cors, {
-    origin: ["http://localhost:3000"],//TODO set prod values
+    origin: ["http://localhost:3000"], //TODO set prod values
   });
 
   // ╔══════════════════════════════════════╗

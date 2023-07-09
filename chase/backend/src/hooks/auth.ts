@@ -1,57 +1,100 @@
-"use client";
 import { FastifyError, FastifyReply, FastifyRequest } from "fastify";
-import { createRemoteJWKSet, jwtVerify } from "jose";
-import { server } from "../main";
-import { Static, Type } from "@sinclair/typebox";
-import { TypeCompiler } from "@sinclair/typebox/compiler";
-
-// use typebox to define our session type
-export const sessionSchema = Type.Object({
-  authentication: Type.Object({
-    userId: Type.Number(),
-    email: Type.String({ format: "email" }),
-    firstName: Type.String(),
-    lastName: Type.String(),
-    pronouns: Type.String(),
-  }),
-});
-
-// compile schema to validate tokens at req time
-const compiledSessionSchema = TypeCompiler.Compile(sessionSchema);
-
-// create ts type from typebox
-type SessionType = Static<typeof sessionSchema>;
+import { SignJWT } from "jose";
+import { createPrivateKey } from "crypto";
 
 // augment the fastify module to provide intellisense for the session object on the req in handlers
 declare module "fastify" {
   // rome-ignore lint/suspicious/noRedeclare: <explanation>
   interface FastifyRequest {
-    session: SessionType;
+    // session: SessionType;
+    session: string;
   }
 }
+
+const openidJsonSecretRaw = process.env.OPENID_JSON_SECRET;
+if (!openidJsonSecretRaw) {
+  throw new Error("OPENID_JSON_SECRET env var must be set");
+}
+const openidJsonSecret = JSON.parse(openidJsonSecretRaw);
 
 // TODO investigate if this is the way
 // decorate to optimize the js engine
 // https://www.fastify.io/docs/latest/Reference/Decorators/
 // decorating with a shared object is ok here, since we replace the value at req time with a new object
-const defaultSessionValue: SessionType = {
-  authentication: {
-    email: "",
-    firstName: "",
-    lastName: "",
-    pronouns: "",
-    userId: 0,
-  },
-};
-server.decorateRequest("session", defaultSessionValue);
+// const defaultSessionValue: SessionType = {
+//   authentication: {
+//     email: "",
+//     firstName: "",
+//     lastName: "",
+//     pronouns: "",
+//     userId: 0,
+//   },
+// };
+// server.decorateRequest("session", defaultSessionValue);
 
-const JWKSet = (async () => {
-  const wellKnown = await (
-    await fetch(`${process.env.OPENID_URL}/.well-known/openid-configuration`)
-  ).json();
+/**
+ * Generates a token using the provided information.
+ *
+ * @return {Promise<string>} The generated token.
+ */
+function generateToken() {
+  return new SignJWT({})
+    .setIssuedAt()
+    .setExpirationTime("1h")
+    .setIssuer(openidJsonSecret.clientId)
+    .setAudience("http://localhost:7788") //TODO replace with real values
+    .setSubject(openidJsonSecret.clientId)
+    .setProtectedHeader({ alg: "RS256", kid: openidJsonSecret.keyId })
+    .sign(createPrivateKey(openidJsonSecret.key));
+}
 
-  return createRemoteJWKSet(new URL(wellKnown.jwks_uri));
+let jwt = generateToken();
+// refresh the token every hour
+setInterval(() => {
+  jwt = generateToken();
+}, 1000 * 60 * 58);
+
+const wellKnownData = (async () => {
+  async function run() {
+    try {
+      return await (
+        await fetch(
+          `${process.env.OPENID_URL}/.well-known/openid-configuration`
+        )
+      ).json();
+    } catch (error) {
+      console.error("Failed to fetch well known data, retrying...", error);
+      setTimeout(() => {
+        run();
+      }, 1000);
+    }
+  }
+  return run();
 })();
+
+async function introspect(token: string) {
+  const params = new URLSearchParams();
+  params.append(
+    "client_assertion_type",
+    "urn:ietf:params:oauth:client-assertion-type:jwt-bearer"
+  );
+  params.append("client_assertion", await jwt);
+  params.append("token", token);
+
+  const req = await fetch((await wellKnownData).introspection_endpoint, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/x-www-form-urlencoded",
+    },
+    body: params,
+  });
+
+  if (!req.status.toString().startsWith("2")) {
+    throw new Error(`Introspection request errored: ${await req.text()}`);
+  }
+
+  return req.json();
+}
 
 /**
  * This hook prevents the access to the route when there is no valid session or the user is not authenticated
@@ -61,48 +104,37 @@ export async function authenticated(
   rep: FastifyReply,
   done: (error?: FastifyError) => void
 ) {
+  // @ts-ignore
   const id_token = req.headers["authorization-id-token"];
   const access_token = req.headers["authorization"];
 
-  if (!access_token && !id_token) {
+  console.log(id_token);
+
+  if (!access_token) {
     rep.code(401).send(new Error("Unauthorized"));
     return;
   }
 
-  let parsed_access_token;
-  let parsed_id_token;
-
-  if (access_token && typeof access_token === "string") {
-    try {
-      parsed_access_token = await jwtVerify(
-        access_token.substring("Bearer ".length), // remove the "Bearer " prefix
-        await JWKSet
-      );
-    } catch (error) {
-      console.error(error);
-      rep.code(401).send(new Error("Unauthorized: JWT not verified"));
-      return;
-    }
+  if (!access_token.startsWith("Bearer ")) {
+    rep.code(400).send(new Error("Malformed auth header"));
+    return;
   }
 
-  if (id_token && typeof id_token === "string") {
-    try {
-      parsed_id_token = await jwtVerify(id_token, await JWKSet);
-    } catch (error) {
-      console.error(error);
-      rep.code(401).send(new Error("Unauthorized: JWT not verified"));
-      return;
-    }
-  }
+  console.log();
 
-  if (!parsed_access_token && !parsed_id_token) {
+  const introspectionData = await introspect(
+    access_token.substring("Bearer ".length)
+    // access_token as any
+  );
+  console.log(introspectionData);
+
+  const introspectionData2 = await introspect(id_token as any);
+  console.log({ introspectionData2 });
+
+  if (!introspectionData.active) {
     rep.code(401).send(new Error("Unauthorized"));
     return;
   }
 
-  console.log("parsed_id_token", parsed_id_token?.payload);
-  console.log("parsed_access_token", parsed_access_token?.payload);
-
-  compiledSessionSchema;
   done();
 }

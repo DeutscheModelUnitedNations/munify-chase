@@ -1,3 +1,5 @@
+"use client";
+
 import Navbar from "@/components/navbar/navbar";
 import NavButton from "@/components/navbar/button";
 import {
@@ -18,7 +20,7 @@ export default function Participant_Pages_Layout({
 }: {
   children: React.ReactNode;
 }) {
-  // const { LL } = useI18nContext(); // TODO find a way to use this in the Navbar component (Layout.tsx)
+  const { LL } = useI18nContext(); // TODO find a way to use this in the Navbar component (Layout.tsx)
 
   return (
     <div className="flex h-screen w-screen bg-white text-primary-100 dark:bg-primary-100 dark:text-primary-900 shadow-md overflow-hidden">
@@ -26,7 +28,7 @@ export default function Participant_Pages_Layout({
         <NavButton
           icon={faSliders}
           link={"/chair/dashboard"}
-          title="Voreinstellungen"
+          title={LL.chairs.CHAIR()}
         />
         <NavButton
           icon={faUsersLine}

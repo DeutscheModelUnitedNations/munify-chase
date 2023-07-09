@@ -1,3 +1,4 @@
+"use client";
 import React, { useEffect, useState } from "react";
 import { Sidebar } from "primereact/sidebar";
 import { SelectButton } from "primereact/selectbutton";
@@ -6,7 +7,6 @@ import {
   IconDefinition,
   faCircleHalfStroke,
   faDisplay,
-  faFloppyDisk,
   faMoon,
   faSun,
 } from "@fortawesome/free-solid-svg-icons";
@@ -58,13 +58,18 @@ export default function SettingsSidebar({
     },
   ];
 
+  
   const [colortheme, setColortheme] = useState(
-    localStorage.getItem("theme") || "system",
+    typeof window !== "undefined"
+      ? localStorage.getItem("theme") ?? "system"
+      : "system"
   );
   const [isDarkMode, setIsDarkMode] = useState(false);
 
   const [language, setLanguage] = useState(
-    localStorage.getItem("lang") || "system",
+    typeof window !== "undefined"
+      ? localStorage.getItem("lang") ?? "system"
+      : "system"
   );
 
   useEffect(() => {

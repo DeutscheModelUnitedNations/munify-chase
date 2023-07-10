@@ -69,12 +69,20 @@ export default function Motions({
                       </div>
                     </div>
 
-                    {motion.status === "in-voting" && (
-                      <FontAwesomeIcon
-                        icon={faSquarePollVertical}
-                        className=" text-3xl text-primary dark:text-primary-950 fa-beat-fade mr-1"
-                      />
-                    )}
+                    {motion.status === "in-voting" &&
+                      (chairOptions ? (
+                        <Button
+                          faIcon={faSquarePollVertical}
+                          faIconClassName="dark:text-white text-xl fa-beat-fade"
+                          size="small"
+                          disabled
+                        />
+                      ) : (
+                        <FontAwesomeIcon
+                          icon={faSquarePollVertical}
+                          className=" text-3xl text-primary dark:text-primary-950 fa-beat-fade mr-1"
+                        />
+                      ))}
 
                     {(motion.status === "passed" ||
                       motion.status === "failed") &&

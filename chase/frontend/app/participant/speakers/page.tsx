@@ -13,7 +13,6 @@ export default function SpeakersList() {
 
   useEffect(() => {
     const intervalAPICall = setInterval(() => {
-      console.log("API Call");
       setData(apiTestData);
     }, 1000);
     return () => clearInterval(intervalAPICall);

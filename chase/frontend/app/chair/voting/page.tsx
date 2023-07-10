@@ -81,32 +81,46 @@ export default function ChairVoting() {
                 <>
                   <SplitButton
                     label={LL.chairs.voting.BUTTON_NEW_MOTION()}
-                    icon={<FontAwesomeIcon icon={faGavel} className="mr-2 text-xl" />}
+                    icon={
+                      <FontAwesomeIcon
+                        icon={faGavel}
+                        className="mr-2 text-xl"
+                      />
+                    }
                     className="w-full"
                     onClick={() => setNewMotionDialogVisible(true)}
                     model={[
                       {
                         label: "New Operative Clause Voting", // TODO i18n
-                        icon: <FontAwesomeIcon icon={faFileLines} className="mr-2 text-xl" />,
+                        icon: (
+                          <FontAwesomeIcon
+                            icon={faFileLines}
+                            className="mr-2 text-xl"
+                          />
+                        ),
                         command: () => {
                           setNewMotionDialogVisible(true); // TODO Implement new OC voting dialog
-                        }
+                        },
                       },
                       {
                         label: "New Resolution Voting", // TODO i18n
-                        icon: <FontAwesomeIcon icon={faFileContract} className="mr-2 text-xl" />,
+                        icon: (
+                          <FontAwesomeIcon
+                            icon={faFileContract}
+                            className="mr-2 text-xl"
+                          />
+                        ),
                         command: () => {
                           setNewMotionDialogVisible(true); // TODO Implement new resolution voting dialog
-                        }
-                      }
+                        },
+                      },
                     ]}
-                    
                   />
                   <Motions
                     motionData={motionTestData.filter(
                       (motion: Motion) =>
                         motion.status === "open" ||
-                        motion.status === "in-voting"
+                        motion.status === "in-voting",
                     )}
                     highlightedMotionId={activeMotionId}
                     setActiveMotion={setActiveMotionId}
@@ -120,7 +134,7 @@ export default function ChairVoting() {
                     (motion: Motion) =>
                       (motion.status === "passed" ||
                         motion.status === "failed") &&
-                      motion.introducedBy !== "uno" // The introduced by filters all chair sind motions/votings (like a resolution voting shouldn't appear in the "Recent Motions" Tab)
+                      motion.introducedBy !== "uno", // The introduced by filters all chair sind motions/votings (like a resolution voting shouldn't appear in the "Recent Motions" Tab)
                   )}
                   highlightedMotionId={activeMotionId}
                   setActiveMotion={setActiveMotionId}
@@ -133,7 +147,7 @@ export default function ChairVoting() {
                     (motion: Motion) =>
                       (motion.status === "passed" ||
                         motion.status === "failed") &&
-                      motion.voting !== undefined
+                      motion.voting !== undefined,
                   )}
                   highlightedMotionId={activeMotionId}
                   setActiveMotion={setActiveMotionId}

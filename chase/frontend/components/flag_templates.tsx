@@ -81,13 +81,13 @@ export function LargeFlag({
     <div
       className={`rounded-md contrast:border contrast:border-primary-100 bg-white shadow-md overflow-hidden ${className}`}
     >
-    <div className="relative" style={{ width: "100px", height: "75px" }}>
-      <Image
-        src={getFlagPathByCode(countryCode)}
-        alt="flag"
-        fill
-        style={{ objectFit: "cover" }}
-      />
+      <div className="relative" style={{ width: "100px", height: "75px" }}>
+        <Image
+          src={getFlagPathByCode(countryCode)}
+          alt="flag"
+          fill
+          style={{ objectFit: "cover" }}
+        />
       </div>
     </div>
   );

@@ -1,7 +1,10 @@
 import React, { useContext, useEffect, useState } from "react";
 import { useI18nContext } from "@/i18n/i18n-react";
 import { ToastContext } from "@/contexts/messages/toast";
-import { AutoComplete, AutoCompleteCompleteEvent } from "primereact/autocomplete";
+import {
+  AutoComplete,
+  AutoCompleteCompleteEvent,
+} from "primereact/autocomplete";
 import { MotionTemplate } from "@/custom_types";
 import { motionTemplates } from "@/motion_templates_de";
 import Fuse from "fuse.js";
@@ -19,11 +22,12 @@ export default function NewMotionDialog({
   const { LL } = useI18nContext();
   const { showToast } = useContext(ToastContext);
 
-  const [motionData, setMotionData] = useState<MotionTemplate[]>(motionTemplates);
+  const [motionData, setMotionData] =
+    useState<MotionTemplate[]>(motionTemplates);
   const [query, setQuery] = useState<string>("");
   const [filteredMotions, setFilteredMotions] = useState<MotionTemplate[]>([]);
   const [selectedMotion, setSelectedMotion] = useState<MotionTemplate | null>(
-    null
+    null,
   );
   const [fuse, setFuse] = useState<Fuse<MotionTemplate> | null>(null);
 

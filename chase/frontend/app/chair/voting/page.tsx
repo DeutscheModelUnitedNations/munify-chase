@@ -9,8 +9,11 @@ import { TabMenu } from "primereact/tabmenu";
 
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
+  faFileContract,
+  faFileLines,
   faGavel,
   faHistory,
+  faListOl,
   faSquarePollVertical,
 } from "@fortawesome/free-solid-svg-icons";
 import { SplitButton } from "primereact/splitbutton";
@@ -78,10 +81,26 @@ export default function ChairVoting() {
                 <>
                   <SplitButton
                     label={LL.chairs.voting.BUTTON_NEW_MOTION()}
-                    icon={<FontAwesomeIcon icon={faGavel} className="mr-2" />}
+                    icon={<FontAwesomeIcon icon={faGavel} className="mr-2 text-xl" />}
                     className="w-full"
                     onClick={() => setNewMotionDialogVisible(true)}
-                    model={[]}
+                    model={[
+                      {
+                        label: "New Operative Clause Voting", // TODO i18n
+                        icon: <FontAwesomeIcon icon={faFileLines} className="mr-2 text-xl" />,
+                        command: () => {
+                          setNewMotionDialogVisible(true); // TODO Implement new OC voting dialog
+                        }
+                      },
+                      {
+                        label: "New Resolution Voting", // TODO i18n
+                        icon: <FontAwesomeIcon icon={faFileContract} className="mr-2 text-xl" />,
+                        command: () => {
+                          setNewMotionDialogVisible(true); // TODO Implement new resolution voting dialog
+                        }
+                      }
+                    ]}
+                    
                   />
                   <Motions
                     motionData={motionTestData.filter(

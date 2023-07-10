@@ -98,20 +98,4 @@ export const motionTemplates: MotionTemplate[] = [
     "majority": "simple",
     "speeches": true
   },
-  {
-    "precedence": 98,
-    "title": "Abstimmung über Operativen Absatz",
-    "description": "Wird dieser Antrag angenommen, so wird der entsprechende Operative Absatz angenommen. Wird er abgelehnt, so wird der Operative Absatz aus der Resolution gestrichen.",
-    "substantiveVote": true,
-    "majority": "simple",
-    "speeches": false
-  },
-  {
-    "precedence": 99,
-    "title": "Abstimmung über Resolution",
-    "description": "Wird dieser Antrag angenommen, so wird die Resolution angenommen. Wird er abgelehnt, so wird die Resolution abgelehnt und der nächste Resolutionsentwurf zum aktuellen Tagesordnungspunkt behandelt.",
-    "substantiveVote": true,
-    "majority": "simple",
-    "speeches": false
-  }
 ]

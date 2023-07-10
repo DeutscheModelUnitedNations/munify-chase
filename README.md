@@ -14,7 +14,7 @@ See the existing components and their directory below
 
 
 ## Develop Locally
-Make sure you have docker installed
+Make sure you have [Docker](https://www.docker.com/get-started/) and [Node.js](https://nodejs.org/en/download/current) installed
 
 Clone the project
 

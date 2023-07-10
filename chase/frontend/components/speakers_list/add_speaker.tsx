@@ -45,7 +45,6 @@ export default function AddSpeakerOverlay({
 }) {
   const { LL, locale } = useI18nContext();
   const { showToast } = useContext(ToastContext);
-  console.log(showToast);
 
   const [countries, setCountries] = useState<CountryData[] | null>(null);
   const [query, setQuery] = useState<string>("");

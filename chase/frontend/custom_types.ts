@@ -274,6 +274,15 @@ export interface Voting {
   outcome?: "passed" | "failed";
 }
 
+export interface MotionTemplate {
+  precedence: number;
+  title: string;
+  description: string;
+  substantiveVote: boolean;
+  majority: VotingMajority;
+  speeches: boolean;
+}
+
 export interface NormalApiResponse {
   committeeName: string;
   currentTopic: string;

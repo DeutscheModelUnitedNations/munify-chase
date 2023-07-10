@@ -14,7 +14,10 @@ import { useI18nContext } from "@/i18n/i18n-react";
 export function SmallFlag({
   countryCode,
   showNameOnHover = false,
-}: { countryCode: CountryCode; showNameOnHover?: boolean }) {
+}: {
+  countryCode: CountryCode;
+  showNameOnHover?: boolean;
+}) {
   const { LL, locale } = useI18nContext();
 
   const [isHovered, setIsHovered] = useState(false);
@@ -34,13 +37,14 @@ export function SmallFlag({
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}
       >
-        <Image
-          src={getFlagPathByCode(countryCode)}
-          width={32}
-          height={32}
-          alt={`Flag of ${getCountryNameByCode(countryCode, locale)}`}
-          style={{ objectFit: "cover", height: "100%" }}
-        />
+        <div className="relative" style={{ width: "32px", height: "24px" }}>
+          <Image
+            src={getFlagPathByCode(countryCode)}
+            alt={`Flag of ${getCountryNameByCode(countryCode, locale)}`}
+            fill
+            style={{ objectFit: "cover" }}
+          />
+        </div>
         {isHovered && showNameOnHover && (
           <div className="bg-primary text-white text-xs rounded-md shadow-md p-2 absolute mt-2">
             {getCountryNameByCode(countryCode, locale)}
@@ -54,13 +58,14 @@ export function SmallFlag({
 export function NormalFlag({ countryCode }: { countryCode: CountryCode }) {
   return (
     <div className="rounded-md contrast:border contrast:border-primary-100 bg-white shadow-md overflow-hidden">
-      <Image
-        src={getFlagPathByCode(countryCode)}
-        width={39}
-        height={26}
-        alt="flag"
-        style={{ objectFit: "cover", height: "100%" }}
-      />
+      <div className="relative" style={{ width: "40px", height: "30px" }}>
+        <Image
+          src={getFlagPathByCode(countryCode)}
+          fill
+          alt="flag"
+          style={{ objectFit: "cover" }}
+        />
+      </div>
     </div>
   );
 }
@@ -68,17 +73,22 @@ export function NormalFlag({ countryCode }: { countryCode: CountryCode }) {
 export function LargeFlag({
   countryCode,
   className,
-}: { countryCode: CountryCode; className?: string }) {
+}: {
+  countryCode: CountryCode;
+  className?: string;
+}) {
   return (
     <div
       className={`rounded-md contrast:border contrast:border-primary-100 bg-white shadow-md overflow-hidden ${className}`}
     >
+    <div className="relative" style={{ width: "100px", height: "75px" }}>
       <Image
         src={getFlagPathByCode(countryCode)}
-        width={99}
-        height={66}
         alt="flag"
+        fill
+        style={{ objectFit: "cover" }}
       />
+      </div>
     </div>
   );
 }

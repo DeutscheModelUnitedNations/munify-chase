@@ -32,6 +32,19 @@ const en = {
     },
   },
 
+  navbar: {
+    SETTINGS: "Settings",
+    LOGOUT: "Logout",
+    DASHBOARD: "Dashboard",
+    CONFIGURATION: "Configuration",
+    ATTENDEES: "Attendees",
+    SPEAKERS: "Speakers List",
+    VOTING: "Voting",
+    WHITEBOARD: "Whiteboard",
+    RESOLUTIONS: "Resolutions",
+    PRESENTATION: "Presentation",
+  },
+
   settings: {
     colorTheme: {
       HEADLINE: "Color Mode",

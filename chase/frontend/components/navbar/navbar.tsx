@@ -1,4 +1,5 @@
 "use client";
+
 import React, { useState } from "react";
 import Image from "next/image";
 
@@ -17,6 +18,8 @@ import {
   faHouse,
 } from "@fortawesome/free-solid-svg-icons";
 
+import { useI18nContext } from "@/i18n/i18n-react";
+
 /**
  * This Component is used in the Layout Component.
  * It displays the navbar on the left side of the screen on all pages except the login page.
@@ -26,7 +29,7 @@ import {
 export default function Navbar({ children }: { children: React.ReactNode }) {
   const router = useRouter();
 
-  // const { LL } = useI18nContext(); // TODO find a way to use this in the Navbar component (Layout.tsx)
+  const { LL } = useI18nContext();
 
   const [settingsSidebarVisible, setSettingsSidebarVisible] = useState(false);
 
@@ -74,13 +77,13 @@ export default function Navbar({ children }: { children: React.ReactNode }) {
           <NavButton
             icon={faGear}
             onClick={() => setSettingsSidebarVisible(true)}
-            title="Einstellungen"
+            title={LL.navbar.SETTINGS()}
           />
           <ConfirmDialog />
           <NavButton
             icon={faRightFromBracket}
             onClick={confirmLogout}
-            title="Logout"
+            title={LL.navbar.LOGOUT()}
           />
         </div>
       </div>

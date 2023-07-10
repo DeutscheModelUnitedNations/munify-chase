@@ -5,7 +5,6 @@ import NavButton from "@/components/navbar/button";
 import {
   faChalkboard,
   faComment,
-  faHouse,
   faScroll,
   faSquarePollVertical,
   faUsersLine,
@@ -13,7 +12,6 @@ import {
   faSliders,
 } from "@fortawesome/free-solid-svg-icons";
 import { useI18nContext } from "@/i18n/i18n-react";
-import { ToastProvider } from "@/contexts/messages/toast";
 
 export default function Participant_Pages_Layout({
   children,
@@ -28,39 +26,39 @@ export default function Participant_Pages_Layout({
         <NavButton
           icon={faSliders}
           link={"/chair/dashboard"}
-          title={LL.chairs.CHAIR()}
+          title={LL.navbar.CONFIGURATION()}
         />
         <NavButton
           icon={faUsersLine}
           link={"/chair/attendees"}
-          title="Anwesenheit"
+          title={LL.navbar.ATTENDEES()}
         />
         <NavButton
           icon={faComment}
           link={"/chair/speakers"}
-          title="Redeliste"
+          title={LL.navbar.SPEAKERS()}
         />
         <NavButton
           icon={faSquarePollVertical}
           link={"/chair/voting"}
-          title="Abstimmungen"
+          title={LL.navbar.VOTING()}
         />
         <NavButton
           icon={faChalkboard}
           link={"/chair/whiteboard"}
-          title="Whiteboard"
+          title={LL.navbar.WHITEBOARD()}
         />
         <NavButton
           icon={faScroll}
           link={"/chair/resolutions"}
-          title="Resolutionen"
+          title={LL.navbar.RESOLUTIONS()}
         />
         <div className="h-5" />
         <NavButton
           icon={faArrowUpRightFromSquare}
           newWindow
           link="/chair/presentation"
-          title="Präsentationsfenster"
+          title={LL.navbar.PRESENTATION()}
         />
       </Navbar>
       {children}

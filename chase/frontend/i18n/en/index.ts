@@ -32,6 +32,22 @@ const en = {
     },
   },
 
+  settings: {
+    colorTheme: {
+      HEADLINE: "Color Mode",
+      SYSTEM: "System",
+      LIGHT: "Light",
+      DARK: "Dark",
+      CONTRAST: "Contrast",
+    },
+    language: {
+      HEADLINE: "Language",
+      SYSTEM: "System",
+      ENGLISH: "English",
+      GERMAN: "Deutsch",
+    },
+  },
+
   participants: {
     dashboard: {
       widgetHeadlines: {

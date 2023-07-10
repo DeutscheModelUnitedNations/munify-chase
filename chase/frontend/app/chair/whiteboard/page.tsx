@@ -15,12 +15,9 @@ export default function ChairWhiteboard() {
   const [whiteboardContent, setWhiteboardContent] =
     React.useState<string>(whiteboardTestData);
 
-  const pushWhiteboardContent = () => {
-    console.log("Pushing whiteboard content to server...", whiteboardContent);
-  };
+  const pushWhiteboardContent = () => {};
 
   const resetWhiteboardContent = () => {
-    console.log("Resetting whiteboard content...");
     setWhiteboardContent(whiteboardTestData);
   };
 

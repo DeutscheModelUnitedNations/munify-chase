@@ -8,13 +8,13 @@
   },
   "dependencies": {
     "@fastify/cors": "^8.3.0",
-    "@fastify/type-provider-typebox": "^3.2.0",
     "@prisma/client": "^4.15.0",
-    "@sinclair/typebox": "^0.28.11",
     "fastify": "^4.17.0",
     "fastify-now": "^3.0.4",
+    "fastify-type-provider-zod": "^1.1.9",
     "jose": "^4.14.4",
-    "openid-client": "^5.4.2"
+    "openid-client": "^5.4.2",
+    "zod": "^3.21.4"
   },
   "devDependencies": {
     "@fastify/swagger": "^8.4.0",
@@ -28,6 +28,7 @@
     "prisma": "^4.15.0",
     "ts-node": "^10.9.1",
     "ts-node-dev": "^2.0.0",
-    "typescript": "^5.1.3"
+    "typescript": "^5.1.3",
+    "zod-prisma-types": "^2.7.4"
   }
 }

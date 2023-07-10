@@ -1,11 +1,15 @@
-import { TypeBoxTypeProvider } from "@fastify/type-provider-typebox";
 import Fastify, { FastifyInstance } from "fastify";
 import fastifyNow from "fastify-now";
 import { join } from "path";
 import { PrismaClient } from "@prisma/client";
 import cors from "@fastify/cors";
 import { setDb, db } from "../prisma/client";
-
+import {
+  jsonSchemaTransform,
+  serializerCompiler,
+  validatorCompiler,
+  ZodTypeProvider,
+} from "fastify-type-provider-zod";
 //TODO establish testing concept & coverage
 
 /**
@@ -52,7 +56,14 @@ export let server: FastifyInstance;
   server = Fastify({
     exposeHeadRoutes: false,
     logger: { level: "warn" },
-  }).withTypeProvider<TypeBoxTypeProvider>();
+  }).withTypeProvider<ZodTypeProvider>();
+
+  // ╔═══════════════════╗
+  // ║ Schema validation ║
+  // ╚═══════════════════╝
+
+  server.setValidatorCompiler(validatorCompiler);
+  server.setSerializerCompiler(serializerCompiler);
 
   // ╔═══════════════════════════════════════════════════╗
   // ║ API documentation generation & serving (dev only) ║
@@ -62,7 +73,9 @@ export let server: FastifyInstance;
     const swagger = await import("@fastify/swagger");
     const swaggerUi = await import("@fastify/swagger-ui");
 
-    server.register(swagger.default);
+    server.register(swagger.default, {
+      transform: jsonSchemaTransform,
+    });
     server.register(swaggerUi.default, {
       routePrefix: "/documentation",
       uiConfig: {

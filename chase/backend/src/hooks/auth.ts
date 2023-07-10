@@ -108,8 +108,6 @@ export async function authenticated(
   const id_token = req.headers["authorization-id-token"];
   const access_token = req.headers["authorization"];
 
-  console.log(id_token);
-
   if (!access_token) {
     rep.code(401).send(new Error("Unauthorized"));
     return;
@@ -120,16 +118,9 @@ export async function authenticated(
     return;
   }
 
-  console.log();
-
   const introspectionData = await introspect(
     access_token.substring("Bearer ".length)
-    // access_token as any
   );
-  console.log(introspectionData);
-
-  const introspectionData2 = await introspect(id_token as any);
-  console.log({ introspectionData2 });
 
   if (!introspectionData.active) {
     rep.code(401).send(new Error("Unauthorized"));

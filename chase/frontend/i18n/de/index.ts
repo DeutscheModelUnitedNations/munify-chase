@@ -32,6 +32,19 @@ const de = {
     },
   },
 
+  navbar: {
+    SETTINGS: "Einstellungen",
+    LOGOUT: "Logout",
+    DASHBOARD: "Dashboard",
+    CONFIGURATION: "Voreinstellungen",
+    ATTENDEES: "Anwesenheit",
+    SPEAKERS: "Redeliste",
+    VOTING: "Abstimmungen",
+    WHITEBOARD: "Whiteboard",
+    RESOLUTIONS: "Resolutionen",
+    PRESENTATION: "Präsentation",
+  },
+
   settings: {
     colorTheme: {
       HEADLINE: "Farbmodus",

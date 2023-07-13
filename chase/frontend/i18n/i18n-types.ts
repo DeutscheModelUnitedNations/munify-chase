@@ -96,6 +96,48 @@ type RootTranslation = {
 			WARNING_MESSAGE: string
 		}
 	}
+	navbar: {
+		/**
+		 * S​e​t​t​i​n​g​s
+		 */
+		SETTINGS: string
+		/**
+		 * L​o​g​o​u​t
+		 */
+		LOGOUT: string
+		/**
+		 * D​a​s​h​b​o​a​r​d
+		 */
+		DASHBOARD: string
+		/**
+		 * C​o​n​f​i​g​u​r​a​t​i​o​n
+		 */
+		CONFIGURATION: string
+		/**
+		 * A​t​t​e​n​d​e​e​s
+		 */
+		ATTENDEES: string
+		/**
+		 * S​p​e​a​k​e​r​s​ ​L​i​s​t
+		 */
+		SPEAKERS: string
+		/**
+		 * V​o​t​i​n​g
+		 */
+		VOTING: string
+		/**
+		 * W​h​i​t​e​b​o​a​r​d
+		 */
+		WHITEBOARD: string
+		/**
+		 * R​e​s​o​l​u​t​i​o​n​s
+		 */
+		RESOLUTIONS: string
+		/**
+		 * P​r​e​s​e​n​t​a​t​i​o​n
+		 */
+		PRESENTATION: string
+	}
 	settings: {
 		colorTheme: {
 			/**
@@ -651,6 +693,48 @@ export type TranslationFunctions = {
 			 */
 			WARNING_MESSAGE: () => LocalizedString
 		}
+	}
+	navbar: {
+		/**
+		 * Settings
+		 */
+		SETTINGS: () => LocalizedString
+		/**
+		 * Logout
+		 */
+		LOGOUT: () => LocalizedString
+		/**
+		 * Dashboard
+		 */
+		DASHBOARD: () => LocalizedString
+		/**
+		 * Configuration
+		 */
+		CONFIGURATION: () => LocalizedString
+		/**
+		 * Attendees
+		 */
+		ATTENDEES: () => LocalizedString
+		/**
+		 * Speakers List
+		 */
+		SPEAKERS: () => LocalizedString
+		/**
+		 * Voting
+		 */
+		VOTING: () => LocalizedString
+		/**
+		 * Whiteboard
+		 */
+		WHITEBOARD: () => LocalizedString
+		/**
+		 * Resolutions
+		 */
+		RESOLUTIONS: () => LocalizedString
+		/**
+		 * Presentation
+		 */
+		PRESENTATION: () => LocalizedString
 	}
 	settings: {
 		colorTheme: {

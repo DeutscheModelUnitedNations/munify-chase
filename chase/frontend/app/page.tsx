@@ -17,7 +17,7 @@ export default function Home() {
     (async () => {
       try {
         if (typeof window === "undefined") return;
-        await backend.getApiAuthStatus();
+        await backend.getApiConferenceList();
         setBackendAcceptsOurAuth(true);
       } catch (error) {
         setBackendAcceptsOurAuth(false);

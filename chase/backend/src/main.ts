@@ -22,7 +22,7 @@ export let server: FastifyInstance;
   // ║ Configuration ║
   // ╚═══════════════╝
 
-  if (!process.env.PRODUCTION) {
+  if (process.env.PRODUCTION) {
     const { config: dotenv } = await import("dotenv");
     // load environment variables from .env file during development
     // in production, environment variables are set by the host
@@ -32,7 +32,7 @@ export let server: FastifyInstance;
   let PORT = 0;
   if (process.env.PORT === undefined) {
     throw new Error(
-      "Please make sure the PORT environment variable is set to a valid port number"
+      "Please make sure the PORT environment variable is set to a valid port number",
     );
   }
   PORT = Number.parseInt(process.env.PORT);

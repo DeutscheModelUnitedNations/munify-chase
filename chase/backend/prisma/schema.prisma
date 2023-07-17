@@ -2,7 +2,7 @@
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
 generator zod {
-  provider       = "zod-prisma-types"
+  provider = "zod-prisma-types"
 }
 
 generator client {
@@ -14,7 +14,13 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+/// A conference entity
 model Conference {
-  id   Int    @id @default(autoincrement())
+  id   String @id @default(uuid())
   name String @unique
+}
+
+/// Consumeable token which grants the creation of a conference
+model ConferenceCreateToken {
+  token String @id
 }

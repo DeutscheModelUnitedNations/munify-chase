@@ -1,19 +1,33 @@
-import { FastifyError, FastifyReply, FastifyRequest } from "fastify";
-import { SignJWT } from "jose";
-import { createPrivateKey } from "crypto";
+// rome-ignore lint/correctness/noUnusedVariables:
+import {FastifyReply, FastifyRequest} from "fastify";
+import {SignJWT} from "jose";
+import {createPrivateKey} from "crypto";
+import {parseMetadata} from "src/../../auth/src/services/zitadel/parseMetadata";
+import {Grants} from "src/../../auth/src/services/grants/grants";
 
 // augment the fastify module to provide intellisense for the session object on the req in handlers
 declare module "fastify" {
-  // rome-ignore lint/suspicious/noRedeclare: <explanation>
+  // rome-ignore lint/suspicious/noRedeclare:
   interface FastifyRequest {
     // session: SessionType;
-    session: string;
+    session: {
+      userId: string;
+      email: string;
+      email_verified: boolean;
+      family_name: string;
+      given_name: string;
+      username: string;
+      nickname: string;
+      locale: string;
+      pronouns: string;
+      grants: Grants
+    };
   }
 }
 
-const openidJsonSecretRaw = process.env.OPENID_JSON_SECRET;
+const openidJsonSecretRaw = process.env.OPENID_APPLICATION_JSON_SECRET;
 if (!openidJsonSecretRaw) {
-  throw new Error("OPENID_JSON_SECRET env var must be set");
+  throw new Error("OPENID_APPLICATION_JSON_SECRET env var must be set");
 }
 const openidJsonSecret = JSON.parse(openidJsonSecretRaw);
 
@@ -44,7 +58,7 @@ function generateToken() {
     .setIssuer(openidJsonSecret.clientId)
     .setAudience("http://localhost:7788") //TODO replace with real values
     .setSubject(openidJsonSecret.clientId)
-    .setProtectedHeader({ alg: "RS256", kid: openidJsonSecret.keyId })
+    .setProtectedHeader({alg: "RS256", kid: openidJsonSecret.keyId})
     .sign(createPrivateKey(openidJsonSecret.key));
 }
 
@@ -57,11 +71,13 @@ setInterval(() => {
 const wellKnownData = (async () => {
   async function run() {
     try {
-      return await (
+      const data = await (
         await fetch(
-          `${process.env.OPENID_URL}/.well-known/openid-configuration`
+          `${process.env.OPENID_URL}/.well-known/openid-configuration`,
         )
       ).json();
+      console.info("Well known data fetched successfully");
+      return data;
     } catch (error) {
       console.error("Failed to fetch well known data, retrying...", error);
       setTimeout(() => {
@@ -76,7 +92,7 @@ async function introspect(token: string) {
   const params = new URLSearchParams();
   params.append(
     "client_assertion_type",
-    "urn:ietf:params:oauth:client-assertion-type:jwt-bearer"
+    "urn:ietf:params:oauth:client-assertion-type:jwt-bearer",
   );
   params.append("client_assertion", await jwt);
   params.append("token", token);
@@ -99,13 +115,8 @@ async function introspect(token: string) {
 /**
  * This hook prevents the access to the route when there is no valid session or the user is not authenticated
  */
-export async function authenticated(
-  req: FastifyRequest,
-  rep: FastifyReply,
-  done: (error?: FastifyError) => void
-) {
-  // @ts-ignore
-  const id_token = req.headers["authorization-id-token"];
+export async function authenticated(req: FastifyRequest, rep: FastifyReply) {
+  const _ = req.headers["authorization-id-token"];
   const access_token = req.headers["authorization"];
 
   if (!access_token) {
@@ -119,7 +130,7 @@ export async function authenticated(
   }
 
   const introspectionData = await introspect(
-    access_token.substring("Bearer ".length)
+    access_token.substring("Bearer ".length),
   );
 
   if (!introspectionData.active) {
@@ -127,5 +138,35 @@ export async function authenticated(
     return;
   }
 
-  done();
+  const metadata = parseMetadata(introspectionData['urn:zitadel:iam:user:metadata'])
+
+  if (!req.session) {
+    req.session = {
+      userId: introspectionData.sub,
+      email: introspectionData.email,
+      email_verified: introspectionData.email_verified,
+      family_name: introspectionData.family_name,
+      given_name: introspectionData.given_name,
+      locale: introspectionData.locale,
+      nickname: introspectionData.nickname,
+      username: introspectionData.username,
+      pronouns: metadata.pronouns,
+      grants: new Grants(introspectionData.sub, metadata)
+    };
+  } else {
+    req.session.userId = introspectionData.sub;
+    req.session.email = introspectionData.email;
+    req.session.email_verified = introspectionData.email_verified;
+    req.session.family_name = introspectionData.family_name;
+    req.session.given_name = introspectionData.given_name;
+    req.session.locale = introspectionData.locale;
+    req.session.nickname = introspectionData.nickname;
+    req.session.username = introspectionData.username;
+    req.session.pronouns = metadata.pronouns
+    req.session.grants = new Grants(introspectionData.sub, metadata)
+  }
+
+  //TODO extract permissions and set them on req object/create helpers
+  // console.log(req.session);
+  console.log(await jwt)
 }

@@ -40,6 +40,7 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         client_id: "222200061369581571@dmun",
         redirect_uri: "http://localhost:3000",
         post_logout_redirect_uri: "http://localhost:3000",
+        scope: "openid profile email address urn:zitadel:iam:user:metadata",
       }),
     );
   });

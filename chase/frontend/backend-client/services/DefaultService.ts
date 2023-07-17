@@ -9,32 +9,48 @@ export class DefaultService {
     constructor(public readonly httpRequest: BaseHttpRequest) {}
 
     /**
-     * Check the authentication status of the user calling this method.
+     * List all available conferences
      * @returns any Default Response
      * @throws ApiError
      */
-    public getApiAuthStatus(): CancelablePromise<any> {
+    public postApiConferenceCreate({
+body,
+}: {
+body?: {
+/**
+ * The creation token required to create a conference. Will be consumed on use.
+ */
+token: string;
+/**
+ * The conference to create.
+ */
+conference: {
+name: string;
+};
+},
+}): CancelablePromise<{
+id: number;
+name: string;
+}> {
         return this.httpRequest.request({
-            method: 'GET',
-            url: '/api/auth/status',
-            errors: {
-                401: `Default Response`,
-            },
+            method: 'POST',
+            url: '/api/conference/create',
+            body: body,
         });
     }
 
     /**
-     * Check the authentication status of the user calling this method.
+     * List all available conferences
      * @returns any Default Response
      * @throws ApiError
      */
-    public headApiAuthStatus(): CancelablePromise<any> {
+    public getApiConferenceList(): CancelablePromise<Array<{
+id: number;
+name: string;
+}>> {
         return this.httpRequest.request({
-            method: 'HEAD',
-            url: '/api/auth/status',
-            errors: {
-                401: `Default Response`,
-            },
+            method: 'GET',
+            url: '/api/conference/list',
         });
     }
 

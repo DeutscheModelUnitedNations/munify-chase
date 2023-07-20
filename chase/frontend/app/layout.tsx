@@ -3,7 +3,8 @@ import "./globals.scss";
 import { Inter } from "next/font/google"; // TODO Remove Google Fonts and use local fonts (legal reasons)
 
 //theme
-import "primereact/resources/themes/lara-light-indigo/theme.css";
+import "@/themes/theme_light.scss";
+import "@/themes/theme_dark.scss";
 //core
 import "primereact/resources/primereact.min.css";
 //icons

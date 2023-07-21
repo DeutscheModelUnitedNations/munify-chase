@@ -29,9 +29,10 @@ function useAuth() {
 const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const router = useRouter();
 
-  const userManager = new Promise<UserManager>((resolve, reject) => {
+  const userManager = new Promise<UserManager>((resolve) => {
     // only run this in the browser where the required apis are available
-    if (typeof window === "undefined") return reject();
+    if (typeof window === "undefined")
+      return resolve(undefined as unknown as UserManager);
 
     //TODO replace with real values
     resolve(

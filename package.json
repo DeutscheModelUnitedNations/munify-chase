@@ -5,9 +5,9 @@
     "dev:chase:frontend": "cd ./chase/frontend && npm run dev",
     "dev:auth": "cd ./auth && npm run dev",
     "install-all": "npm i && npm-run-all install-all:**",
-    "install-all:chase:backend": "cd ./chase/backend && npm i",
-    "install-all:chase:frontend": "cd ./chase/frontend && npm i",
-    "install-all:auth": "cd ./auth && npm i",
+    "install-all:chase:backend": "cd ./chase/backend && npm i && npx npm-check-updates",
+    "install-all:chase:frontend": "cd ./chase/frontend && npm i && npx npm-check-updates",
+    "install-all:auth": "cd ./auth && npm i && npx npm-check-updates",
     "format": "rome format . --write",
     "lint": "rome check . --apply",
     "test": "echo TODO"

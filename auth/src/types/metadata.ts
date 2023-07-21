@@ -1,7 +1,5 @@
-import { CountryCode, NSACodes } from "./countrycodes";
-
 /**
- * User specific data
+ * Auth related user data
  */
 export interface User {
   id: string;
@@ -13,35 +11,67 @@ export interface User {
   pronouns: string;
 }
 
-export type Conference = number;
+/**
+ * How the auth system references conferences
+ */
+export type ConferenceId = number;
+/**
+ * How the auth system references countries
+ */
+export type CountryId = string;/**
+ * How the auth system references organizations (like greenpeace etc.)
+ */
+export type OrganizationId = string;
+
+/**
+ * A commitee how it is referenced by the authentication system
+ */
 export type Commitee = {
   id: string;
-  conference: Conference;
+  conference: ConferenceId;
 };
 
+/**
+ * A nsa how it is referenced by the authentication system
+ */
 export interface NonStateActor {
-  conference: Conference;
-  organization: NSACodes;
+  conference: ConferenceId;
+  organization: OrganizationId;
 }
 
-export interface Representative {
-  conference: Conference;
+/**
+ * A delegate how it is referenced by the authentication system
+ */
+export interface Delegate {
+  conference: ConferenceId;
   commitee: Commitee;
-  country: CountryCode;
+  country: CountryId;
 }
 
+/**
+ * A secretary member how it is referenced by the authentication system
+ */
 export interface SecretaryMember {
-  conference: Conference;
+  conference: ConferenceId;
 }
 
+/**
+ * A committee chair how it is referenced by the authentication system
+ */
 export interface Chair {
   commitee: Commitee;
 }
 
+/**
+ * A conference admin how it is referenced by the authentication system
+ */
 export interface ConferenceAdmin {
-  conference: Conference;
+  conference: ConferenceId;
 }
 
+/**
+ * A conference visitor how it is referenced by the authentication system
+ */
 export interface Visitor {
-  conference: Conference;
+  conference: ConferenceId;
 }

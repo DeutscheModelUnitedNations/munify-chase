@@ -58,7 +58,7 @@ Yes, you can! Please refer to the contributing section below.
 
 #### Can you add a feature?
 
-For feature suggestions, please post in the discussion section of this repository. You can find it [here](https://github.com/DeutscheModelUnitedNations/munify/discussions). If you want to write it yourself, please see the contributing section.
+For feature suggestions, please post in the discussion section of this repository. You can find it [here](https://github.com/DeutscheModelUnitedNations/munify/discussions). If you want to write it yourself, please see the contributing section below.
 ## Contributing
 
 Contributions are always welcome!

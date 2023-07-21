@@ -1,13 +1,10 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 import { Button } from "primereact/button";
 import { Password } from "primereact/password";
 import { Checkbox } from "primereact/checkbox";
-import Image from "next/image";
 import Link from "next/link";
-import getFlagPathByCode from "@/misc/get_flag_path_by_code";
-import { CountryCode } from "@/custom_types";
 
 // TODO: Type this function properly
 // @ts-ignore

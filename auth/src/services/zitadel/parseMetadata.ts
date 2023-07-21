@@ -1,25 +1,55 @@
-import {MetadataKeys, UserMetadata} from "../../types/metadata";
+import {
+  Chair,
+  ConferenceAdmin,
+  NonStateActor,
+  Representative,
+  SecretaryMember,
+  Visitor,
+} from "../../types/metadata";
 
-type Metadata = {
-    [key in MetadataKeys]: string
+export const ZITADEL_METADATA_CLAIM = "urn:zitadel:iam:user:metadata";
+
+export interface Metadata {
+  nonStateActorPermissions: NonStateActor[];
+  representativePermissions: Representative[];
+  secretaryMemberPermissions: SecretaryMember[];
+  chairPermissions: Chair[];
+  conferenceAdminPermissions: ConferenceAdmin[];
+  visitorPermissions: Visitor[];
+  pronouns: string;
 }
 
-export function parseMetadata(metadata?: Metadata): UserMetadata {
-    // rome-ignore lint/style/noParameterAssign:
-    if (!metadata) metadata = {} as unknown as Metadata;
+export type MetadataKeys =
+  | "nonStateActorPermissions"
+  | "representativePermissions"
+  | "secretaryMemberPermissions"
+  | "chairPermissions"
+  | "pronouns"
+  | "conferenceAdminPermissions"
+  | "visitorPermissions";
 
-    return {
-        pronouns: metadata["pronouns"] ?? "",
-        nonStateActorGrants: decodeFromBase64JSON(metadata["nonStateActorGrants"]) ?? [],
-        representativeGrants: decodeFromBase64JSON(metadata["representativeGrants"]) ?? [],
-        secretaryMemberGrants: decodeFromBase64JSON(metadata["secretaryMemberGrants"]) ?? [],
-        chairGrants: decodeFromBase64JSON(metadata["chairGrants"]) ?? [],
-        conferenceAdminGrants: decodeFromBase64JSON(metadata["conferenceAdminGrants"]) ?? [],
-        visitorGrants: decodeFromBase64JSON(metadata["visitorGrants"]) ?? [],
-    }
+export type RawMetadata = {
+  [key in MetadataKeys]: string;
+};
+
+export function parseMetadata(rawMetadata?: RawMetadata): Metadata {
+  return {
+    pronouns: rawMetadata?.pronouns ?? "",
+    nonStateActorPermissions:
+      decodeFromBase64JSON(rawMetadata?.nonStateActorPermissions) ?? [],
+    representativePermissions:
+      decodeFromBase64JSON(rawMetadata?.representativePermissions) ?? [],
+    secretaryMemberPermissions:
+      decodeFromBase64JSON(rawMetadata?.secretaryMemberPermissions) ?? [],
+    chairPermissions: decodeFromBase64JSON(rawMetadata?.chairPermissions) ?? [],
+    conferenceAdminPermissions:
+      decodeFromBase64JSON(rawMetadata?.conferenceAdminPermissions) ?? [],
+    visitorPermissions:
+      decodeFromBase64JSON(rawMetadata?.visitorPermissions) ?? [],
+  };
 }
 
 function decodeFromBase64JSON(value?: string) {
-    if (!value) return undefined;
-    return JSON.parse(Buffer.from(value, "base64").toString("utf-8"));
+  if (!value) return undefined;
+  return JSON.parse(Buffer.from(value, "base64").toString("utf-8"));
 }

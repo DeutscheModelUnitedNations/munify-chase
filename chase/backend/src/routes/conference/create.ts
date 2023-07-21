@@ -22,19 +22,25 @@ export const POST: NowRequestHandler<{
   Body: RequestType;
   Reply: ReplyType;
 }> = async (req) => {
+  const [_, newConference] = await db.$transaction([
+    // try to delete the token, throws if not found
+    db.conferenceCreateToken.delete({
+      where: {
+        token: req.body.token
+      }
+    }),
+    // if deletion worked, create a new conference
+    db.conference.create({
+      data: req.body.conference,
+    })
+  ]);
 
-  // try to delete the token, throws if not found
-  await db.conferenceCreateToken.delete({
-    where: {
-      token: req.body.token
-    }
-  });
-
-  const newConference = await db.conference.create({
-    data: req.body.conference,
-  });
-
-  await req.session.grants.setConferenceAdmin(newConference.id);
+  try {
+    await req.session.permissions.setConferenceAdmin(newConference.id);
+  } catch (error) {
+    await db.conference.delete({where: {id: newConference.id}});
+    console.error(error);
+  }
 
   return newConference;
 };

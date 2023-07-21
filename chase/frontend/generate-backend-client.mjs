@@ -4,7 +4,7 @@ dns.setDefaultResultOrder("ipv4first");
 
 const SPEC_URL = "http://localhost:3001/documentation/json";
 
-const i = setInterval(async () => {
+const _ = setInterval(async () => {
   try {
     // just check if the file is served
 

@@ -11,7 +11,7 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import "./timer_animations.scss";
 import getFlagPathByCode from "@/misc/get_flag_path_by_code";
-import { CountryCode } from "@/custom_types";
+import { CountryCode } from "auth";
 
 interface Props {
   countryCode: CountryCode;

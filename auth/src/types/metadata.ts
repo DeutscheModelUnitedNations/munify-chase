@@ -1,18 +1,19 @@
-import {CountryCode, NSACodes} from "./countrycodes";
+import { CountryCode, NSACodes } from "./countrycodes";
 
-export type MetadataKeys = "pronouns" | "nonStateActorGrants" | "representativeGrants" | "secretaryMemberGrants" | "chairGrants" | "conferenceAdminGrants" | "visitorGrants";
-
-export interface UserMetadata {
+/**
+ * User specific data
+ */
+export interface User {
+  id: string;
+  email: string;
+  email_verified: boolean;
+  family_name: string;
+  given_name: string;
+  locale: string;
   pronouns: string;
-  nonStateActorGrants: NonStateActor[];
-  representativeGrants: Representative[];
-  secretaryMemberGrants: SecretaryMember[];
-  chairGrants: Chair[];
-  conferenceAdminGrants: ConferenceAdmin[];
-  visitorGrants: Visitor[];
 }
 
-export type Conference = string;
+export type Conference = number;
 export type Commitee = {
   id: string;
   conference: Conference;

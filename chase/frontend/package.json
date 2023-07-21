@@ -1,5 +1,5 @@
 {
-  "name": "frontend",
+  "name": "chase-frontend",
   "version": "0.1.0",
   "private": true,
   "scripts": {
@@ -19,6 +19,7 @@
     "@types/node": "20.2.3",
     "@types/react": "18.2.7",
     "@types/react-dom": "18.2.4",
+    "auth": "file:../../auth",
     "autoprefixer": "10.4.14",
     "next": "13.4.4",
     "oidc-client-ts": "^2.2.4",

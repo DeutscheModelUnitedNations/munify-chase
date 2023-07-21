@@ -55,7 +55,16 @@ export let server: FastifyInstance;
   // TODO: make logger more readable in dev
   server = Fastify({
     exposeHeadRoutes: false,
-    logger: { level: "warn" },
+    logger: {
+      level: "warn",
+      transport: {
+        target: "pino-pretty",
+        options: {
+          translateTime: "HH:MM:ss Z",
+          ignore: "pid,hostname",
+        },
+      },
+    },
   }).withTypeProvider<ZodTypeProvider>();
 
   // ╔═══════════════════╗

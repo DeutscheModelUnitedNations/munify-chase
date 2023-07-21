@@ -1,4 +1,5 @@
 {
+  "name": "chase-backend",
   "scripts": {
     "build": "tsc --noEmit && node build.js",
     "dev": "npm-run-all -p dev:server dev:db",
@@ -9,11 +10,11 @@
   "dependencies": {
     "@fastify/cors": "^8.3.0",
     "@prisma/client": "^4.15.0",
+    "auth": "file:../../auth",
     "fastify": "^4.17.0",
     "fastify-now": "^3.0.4",
     "fastify-type-provider-zod": "^1.1.9",
-    "jose": "^4.14.4",
-    "openid-client": "^5.4.2",
+    "pino-pretty": "^10.0.1",
     "zod": "^3.21.4"
   },
   "devDependencies": {

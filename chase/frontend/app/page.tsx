@@ -17,7 +17,14 @@ export default function Home() {
     (async () => {
       try {
         if (typeof window === "undefined") return;
-        await backend.getApiConferenceList();
+        await backend.postApiConferenceCreate({
+          body: {
+            conference: {
+              name: "test conference",
+            },
+            token: "1234",
+          },
+        });
         setBackendAcceptsOurAuth(true);
       } catch (error) {
         setBackendAcceptsOurAuth(false);

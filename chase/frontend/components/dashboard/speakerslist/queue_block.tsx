@@ -1,7 +1,6 @@
 import React from "react";
 import Image from "next/image";
 import { CountryCode } from "@/custom_types";
-import { get } from "http";
 import getFlagPathByCode from "@/misc/get_flag_path_by_code";
 
 export default function SpeakerBlock({

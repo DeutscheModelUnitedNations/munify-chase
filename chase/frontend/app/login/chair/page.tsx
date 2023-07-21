@@ -6,8 +6,10 @@ import { Messages } from "primereact/messages";
 import UsernameLogin from "@/components/login/username";
 import PasswordLogin from "@/components/login/password_chair";
 import Link from "next/link";
+import { useI18nContext } from "@/i18n/i18n-react";
 
 export default function loginVorsitz() {
+  const { LL } = useI18nContext();
   const [loginStage, changeLoginState] = useState(0);
 
   const chairLoginWarning: RefObject<Messages> = useRef<Messages>(null);
@@ -17,9 +19,10 @@ export default function loginVorsitz() {
     chairLoginWarning.current?.show([
       {
         sticky: true,
+        closable: false,
         severity: "warn",
         // summary: "Warnung",
-        detail: "Sie sind im Begriff sich als Vorsitz anzumelden.",
+        detail: LL.login.chair.WARNING_MESSAGE(),
       },
     ]);
   }, []);
@@ -43,7 +46,7 @@ export default function loginVorsitz() {
             <UsernameLogin changeLoginState={changeLoginState} />
             <p className="mt-10 text-gray-400 hover:text-black underline text-xs text-center">
               <Link href="/login/participant">
-                Stattdessen als Teilnehmer*in anmelden
+                {LL.login.chair.OTHER_SIGN_IN()}
               </Link>
             </p>
           </div>

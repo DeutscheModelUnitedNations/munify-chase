@@ -1,11 +1,11 @@
 import React from "react";
-import WidgetTemplate from "./widget_template";
+import WidgetTemplate from "@components/widget_template";
 import { Button } from "primereact/button";
 import { Dialog } from "primereact/dialog";
 import { InputText } from "primereact/inputtext";
 import { InputTextarea } from "primereact/inputtextarea";
 import { Dropdown } from "primereact/dropdown";
-
+import { useI18nContext } from "@/i18n/i18n-react";
 import {
   faComment,
   faExclamationTriangle,
@@ -20,27 +20,55 @@ import {
 } from "@fortawesome/react-fontawesome";
 
 interface DropdownOptions {
-  lable: string;
+  label: string;
   value: string;
   icon: FontAwesomeIconProps["icon"];
 }
 
+/**
+ * This Component is used in the Actions Widget on the Dashboard.
+ * The buttons of the widget open a dialog with a simple form that allows the user to contact the chair or the research team.
+ */
+
 export default function ActionsWidget() {
+  const { LL } = useI18nContext();
+
   const [displayChairDialog, setDisplayChairDialog] = React.useState(false);
   const [displayResearchDialog, setDisplayResearchDialog] =
     React.useState(false);
 
   const [category, setCategory] = React.useState("");
   const categoryOption: DropdownOptions[] = [
-    { lable: "Gastrede anfragen", value: "gastrede", icon: faComment },
-    { lable: "Faktencheck", value: "faktencheck", icon: faExclamationTriangle },
     {
-      lable: "Informationsanfrage",
+      label:
+        LL.participants.dashboard.actionsWidget.contactForm.categoryOptions.GUEST_SPEAKER(),
+      value: "guestSspeech",
+      icon: faComment,
+    },
+    {
+      label:
+        LL.participants.dashboard.actionsWidget.contactForm.categoryOptions.FACT_CHECK(),
+      value: "factCheck",
+      icon: faExclamationTriangle,
+    },
+    {
+      label:
+        LL.participants.dashboard.actionsWidget.contactForm.categoryOptions.INFORMATION(),
       value: "information",
       icon: faQuestionCircle,
     },
-    { lable: "Generalsekretär anfragen", value: "gs", icon: faGavel },
-    { lable: "Sonstiges", value: "sonstiges", icon: faPaperPlane },
+    {
+      label:
+        LL.participants.dashboard.actionsWidget.contactForm.categoryOptions.GENERAL_SECRETARY(),
+      value: "generalSecretary",
+      icon: faGavel,
+    },
+    {
+      label:
+        LL.participants.dashboard.actionsWidget.contactForm.categoryOptions.OTHER(),
+      value: "other",
+      icon: faPaperPlane,
+    },
   ];
   const [subjectLine, setSubjectLine] = React.useState("");
   const [message, setMessage] = React.useState("");
@@ -49,7 +77,7 @@ export default function ActionsWidget() {
     return (
       <div className="flex items-center gap-4">
         <FontAwesomeIcon icon={option.icon} />
-        <span>{option.lable}</span>
+        <span>{option.label}</span>
       </div>
     );
   };
@@ -67,13 +95,13 @@ export default function ActionsWidget() {
     return (
       <div>
         <Button
-          label="Abbrechen"
+          label={LL.participants.dashboard.actionsWidget.contactForm.CANCEL_BUTTON()}
           icon="pi pi-times"
           onClick={() => closeAndResetDialog()}
           className="p-button-text"
         />
         <Button
-          label="Senden"
+          label={LL.participants.dashboard.actionsWidget.contactForm.SEND_BUTTON()}
           icon="pi pi-check"
           onClick={() => sendFunction()}
           autoFocus
@@ -104,7 +132,7 @@ export default function ActionsWidget() {
   return (
     <>
       <Dialog
-        header="Nachricht an den Vorsitz senden"
+        header={LL.participants.dashboard.actionsWidget.contactForm.HEADLINE_CHAIR()}
         visible={displayChairDialog}
         style={{ width: "50vw" }}
         footer={footerContent({ sendFunction: sendChairMessage })}
@@ -112,14 +140,14 @@ export default function ActionsWidget() {
       >
         <div className="flex flex-col gap-2 mt-1">
           <InputText
-            placeholder="Betreff"
+            placeholder={LL.participants.dashboard.actionsWidget.contactForm.SUBJECT_PLACEHOLDER()}
             value={subjectLine}
             onChange={(e) => setSubjectLine(e.target.value)}
           />
           <InputTextarea
             rows={5}
             autoResize
-            placeholder="Nachricht"
+            placeholder={LL.participants.dashboard.actionsWidget.contactForm.MESSAGE_PLACEHOLDER()}
             value={message}
             onChange={(e) => setMessage(e.target.value)}
           />
@@ -127,7 +155,7 @@ export default function ActionsWidget() {
         </div>
       </Dialog>
       <Dialog
-        header="Anfrage an den Wissenschaftlichen Dienst (WD) stellen"
+        header={LL.participants.dashboard.actionsWidget.contactForm.HEADLINE_RESEARCH_SERVICE()}
         visible={displayResearchDialog}
         style={{ width: "50vw" }}
         footer={footerContent({ sendFunction: sendResearchMessage })}
@@ -138,44 +166,45 @@ export default function ActionsWidget() {
             value={category}
             onChange={(e) => setCategory(e.value)}
             options={categoryOption}
-            optionLabel="Kategorie"
-            placeholder="Wähle eine Kategorie"
+            optionLabel={LL.participants.dashboard.actionsWidget.contactForm.CATEGORY_LABEL()}
+            placeholder={LL.participants.dashboard.actionsWidget.contactForm.CATEGORY_PLACEHOLDER()}
             itemTemplate={categoryOptionTemplate}
             valueTemplate={categoryOptionSelectedTemplate}
             className="w-full md:w-14rem"
           />
           <InputText
-            placeholder="Betreff"
+            placeholder={LL.participants.dashboard.actionsWidget.contactForm.SUBJECT_PLACEHOLDER()}
             value={subjectLine}
             onChange={(e) => setSubjectLine(e.target.value)}
           />
           <InputTextarea
             rows={5}
             autoResize
-            placeholder="Nachricht"
+            placeholder={LL.participants.dashboard.actionsWidget.contactForm.MESSAGE_PLACEHOLDER()}
             value={message}
             onChange={(e) => setMessage(e.target.value)}
           />
           <p>
             <FontAwesomeIcon icon={faInfoCircle} />{" "}
             <small>
-              Diese Anfrage wird zunächst vom Vorsitz geprüft und erst
-              anschließend an den Wissenschaftlichen Dienst weitergeleitet.
+              {LL.participants.dashboard.actionsWidget.contactForm.INFO_MESSAGE()}
             </small>
           </p>
         </div>
       </Dialog>
-      <WidgetTemplate cardTitle="Anfrage senden">
+      <WidgetTemplate
+        cardTitle={LL.participants.dashboard.widgetHeadlines.ACTIONS()}
+      >
         <div className="flex-1 flex gap-2">
           <Button
-            label="Vorsitz"
+            label={LL.participants.dashboard.actionsWidget.CHAIR_BUTTON()}
             className="flex-1"
             icon={<FontAwesomeIcon icon={faGavel} />}
             severity="warning"
             onClick={() => setDisplayChairDialog(true)}
           />
           <Button
-            label="Wiss. Dienst"
+            label={LL.participants.dashboard.actionsWidget.RESEARCH_SERVICE_BUTTON()}
             className="flex-1"
             icon={<FontAwesomeIcon icon={faPaperPlane} />}
             severity="help"

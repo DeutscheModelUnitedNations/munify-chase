@@ -1,5 +1,5 @@
 import React, { useEffect, useContext } from "react";
-import WidgetTemplate from "./widget_template";
+import WidgetTemplate from "@components/widget_template";
 import { ToastContext } from "@/contexts/messages/toast";
 
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -7,22 +7,33 @@ import { faGavel } from "@fortawesome/free-solid-svg-icons";
 import { faComments } from "@fortawesome/free-solid-svg-icons";
 import { faCoffee } from "@fortawesome/free-solid-svg-icons";
 import { faCirclePause } from "@fortawesome/free-solid-svg-icons";
+import { useI18nContext } from "@/i18n/i18n-react";
+import { AnimatePresence, motion } from "framer-motion";
+
+interface TimerWidgetProps {
+  headline: string;
+  until: Date | null;
+  category: "formal" | "informal" | "pause" | "suspension"; // TODO: use enum
+}
+
+/**
+ * This Component is used in the Dashboard. It shows the current timer status –
+ * e.g. for informal sessions, breaks, suspensions, etc.
+ * With this widget, participants can see the end time of the current session as well as a countdown.
+ */
 
 export default function TimerWidget({
   headline,
   until,
   category,
-}: {
-  headline: string;
-  until: Date | null;
-  category: "formal" | "informal" | "pause" | "suspension"; // TODO replace with typescript enum
-}) {
+}: TimerWidgetProps) {
+  const { LL } = useI18nContext();
   const { showToast } = useContext(ToastContext);
 
   const showTimerToast = () => {
     const message = {
-      summary: "Zeit abgelaufen",
-      detail: "Rückkehr zur formellen Sitzung",
+      summary: LL.participants.dashboard.timerWidget.TOAST_HEADLINE(),
+      detail: LL.participants.dashboard.timerWidget.TOAST_MESSAGE(),
       severity: "info" as "info",
       sticky: true,
     };
@@ -34,48 +45,62 @@ export default function TimerWidget({
     minute: "2-digit",
   });
 
-  const styles = () => {
+  const getClassNames = () => {
     switch (category) {
       case "formal":
         return "";
       case "informal":
-        return "bg-red-500 text-white";
+        return "bg-red-500 dark:bg-red-800 text-white dark:text-primary-950";
       case "pause":
-        return "bg-secondary text-white";
+        return "bg-secondary dark:bg-secondary-300 text-white dark:text-secondary-100";
       case "suspension":
-        return "bg-gray-700 text-white";
+        return "bg-primary-300 dark:bg-primary-700 text-primary-300 dark:text-primary-200";
     }
   };
 
   return (
     <>
-      <WidgetTemplate cardTitle="" styles={styles()}>
-        <div className="flex flex-col justify-center items-center">
-          <div className="my-4">
-            {category === "formal" && (
-              <FontAwesomeIcon icon={faGavel} size="3x" />
-            )}
-            {category === "informal" && (
-              <FontAwesomeIcon icon={faComments} size="3x" />
-            )}
-            {category === "pause" && (
-              <FontAwesomeIcon icon={faCoffee} size="3x" />
-            )}
-            {category === "suspension" && (
-              <FontAwesomeIcon icon={faCirclePause} size="3x" />
-            )}
-          </div>
-          <div className="text-2xl font-bold">{headline}</div>
-          {category !== "suspension" && (
-            <div className="text-md">Bis {timeStamp} Uhr</div>
-          )}
-          {category !== "suspension" && category !== "formal" && (
-            <div className="text-4xl font-bold my-2 tabular-nums">
-              <Timer until={until} showTimerToast={showTimerToast} />
+      <AnimatePresence mode="wait">
+        <motion.div
+          key={category}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.3 }}
+          layout
+        >
+          <WidgetTemplate cardTitle="" additionalClassNames={getClassNames()}>
+            <div className="flex flex-col justify-center items-center">
+              <div className="my-4">
+                {category === "formal" && (
+                  <FontAwesomeIcon icon={faGavel} size="3x" />
+                )}
+                {category === "informal" && (
+                  <FontAwesomeIcon icon={faComments} size="3x" />
+                )}
+                {category === "pause" && (
+                  <FontAwesomeIcon icon={faCoffee} size="3x" />
+                )}
+                {category === "suspension" && (
+                  <FontAwesomeIcon icon={faCirclePause} size="3x" />
+                )}
+              </div>
+              <div className="text-2xl font-bold">{headline}</div>
+              {category !== "suspension" && (
+                <div className="text-md">
+                  {LL.participants.dashboard.timerWidget.UNTIL_1()} {timeStamp}{" "}
+                  {LL.participants.dashboard.timerWidget.UNTIL_2()}
+                </div>
+              )}
+              {category !== "suspension" && category !== "formal" && (
+                <div className="text-4xl font-bold my-2 tabular-nums">
+                  <Timer until={until} showTimerToast={showTimerToast} />
+                </div>
+              )}
             </div>
-          )}
-        </div>
-      </WidgetTemplate>
+          </WidgetTemplate>
+        </motion.div>
+      </AnimatePresence>
     </>
   );
 }
@@ -83,7 +108,10 @@ export default function TimerWidget({
 function Timer({
   until,
   showTimerToast,
-}: { until: Date | null; showTimerToast: () => void }) {
+}: {
+  until: Date | null;
+  showTimerToast: () => void;
+}) {
   const [timeLeft, setTimeLeft] = React.useState<number | null>(null);
 
   useEffect(() => {

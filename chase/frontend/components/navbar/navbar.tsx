@@ -1,4 +1,5 @@
 "use client";
+
 import React, { useState } from "react";
 import Image from "next/image";
 
@@ -17,8 +18,18 @@ import {
   faHouse,
 } from "@fortawesome/free-solid-svg-icons";
 
-export default function Navbar() {
+import { useI18nContext } from "@/i18n/i18n-react";
+
+/**
+ * This Component is used in the Layout Component.
+ * It displays the navbar on the left side of the screen on all pages except the login page.
+ * It contains buttons to navigate to other pages and a button to open the settings sidebar.
+ */
+
+export default function Navbar({ children }: { children: React.ReactNode }) {
   const router = useRouter();
+
+  const { LL } = useI18nContext();
 
   const [settingsSidebarVisible, setSettingsSidebarVisible] = useState(false);
 
@@ -27,9 +38,7 @@ export default function Navbar() {
     router.push("/login/participant");
   };
 
-  const rejectLogout = () => {
-    console.log("Logout rejected");
-  };
+  const rejectLogout = () => {};
 
   const confirmLogout = () => {
     confirmDialog({
@@ -48,7 +57,7 @@ export default function Navbar() {
 
   return (
     <>
-      <div className="w-20 h-full bg-dmun flex flex-col items-center gap-10">
+      <div className="w-20 h-full bg-primary flex flex-col items-center gap-10">
         <Image
           src="/logo/png/chase_logo_white_transparent.png"
           alt="Logo"
@@ -57,10 +66,7 @@ export default function Navbar() {
           className="mt-3"
         />
         <div className="flex flex-col justify-center items-center gap-3">
-          <NavButton icon={faHouse} link={"/participant/dashboard"} />
-          <NavButton icon={faComment} link={"/participant/speakers"} />
-          <NavButton icon={faScroll} link={"/participant/resolutions"} />
-          <NavButton icon={faSquarePollVertical} link={"/participant/voting"} />
+          {children}
         </div>
         <div className="flex-1" />
         <div className="flex flex-col items-center gap-3 mb-5">
@@ -71,9 +77,14 @@ export default function Navbar() {
           <NavButton
             icon={faGear}
             onClick={() => setSettingsSidebarVisible(true)}
+            title={LL.navbar.SETTINGS()}
           />
           <ConfirmDialog />
-          <NavButton icon={faRightFromBracket} onClick={confirmLogout} />
+          <NavButton
+            icon={faRightFromBracket}
+            onClick={confirmLogout}
+            title={LL.navbar.LOGOUT()}
+          />
         </div>
       </div>
     </>

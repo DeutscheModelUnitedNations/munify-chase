@@ -1,10 +1,18 @@
 import React, { useState } from "react";
 import { Button } from "primereact/button";
 import { InputText } from "primereact/inputtext";
+import { useI18nContext } from "@/i18n/i18n-react";
 
+/**
+ * This component handels the first step in the login process for all users.
+ * It displays a form, where the user can enter their username.
+ * The username is verified by the server.
+ * When the username matches the database, he is redirected to the password page.
+ */
 // TODO: Type this function properly
 // @ts-ignore
 export default function UsernameLogin({ changeLoginState }) {
+  const { LL } = useI18nContext();
   const [username, setUsername] = useState("");
 
   function advance() {
@@ -23,10 +31,10 @@ export default function UsernameLogin({ changeLoginState }) {
           value={username}
           onChange={(e) => setUsername(e.target.value)}
         />
-        <label htmlFor="username">Username</label>
+        <label htmlFor="username">{LL.login.USERNAME_PLACEHOLDER()}</label>
       </span>
       <Button
-        label="Weiter"
+        label={LL.login.ADVANCE_BUTTON()}
         icon="pi pi-arrow-right"
         iconPos="right"
         onClick={advance}

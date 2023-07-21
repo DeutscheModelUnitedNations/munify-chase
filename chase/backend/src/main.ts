@@ -93,6 +93,7 @@ export let server: FastifyInstance;
       },
     });
 
+    // rome-ignore lint: console output is intended
     console.log(`
 ╔══════════════════════════════════════════════════════════════════╗
 ║ Serving API documentation on http://localhost:${PORT}/documentation ║
@@ -128,6 +129,7 @@ export let server: FastifyInstance;
     if (!process.env.PRODUCTION) {
       server.swagger();
     }
+    // rome-ignore lint: console output is intended
     console.log(`Running on port ${PORT}`);
     await server.listen({ port: PORT, host: "0.0.0.0" });
     db?.$disconnect();
@@ -137,4 +139,5 @@ export let server: FastifyInstance;
   }
 })();
 
+// rome-ignore lint: console output is intended
 console.log("Starting server...");

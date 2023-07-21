@@ -1,41 +1,35 @@
 import React from "react";
-import WidgetTemplate from "./widget_template";
+import WidgetTemplate from "@components/widget_template";
 import { faArrowDown } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { useI18nContext } from "@/i18n/i18n-react";
 
-interface Step {
-  title: string;
-  bg?: string;
-  color?: string;
-}
+/**
+ * This Component is used in the Dashboard. It shows the current,
+ * and the next step in the debate process according to the rules of procedure.
+ */
 
-export default function CommitteeStatusWidget() {
-  const [currentStep, setCurrentStep] = React.useState<Step>({
-    title: "Allgemeine Debatte",
-    bg: "dmun",
-    color: "white",
-  }); // TODO get from backend
-  const [nextStep, setNextStep] = React.useState<Step>({
-    title: "Debatte zum Resolutionsentwurf RE/GV/23/1",
-  }); // TODO get from backend
+export default function CommitteeStatusWidget({
+  currentDebateStep,
+  nextDebateStep,
+}: { currentDebateStep: string; nextDebateStep: string | undefined }) {
+  const { LL } = useI18nContext();
 
   return (
     <>
-      <WidgetTemplate cardTitle="Stand der Debatte">
+      <WidgetTemplate
+        cardTitle={LL.participants.dashboard.widgetHeadlines.COMMITTEE_STATUS()}
+      >
         <div className="flex flex-col gap-1">
-          <div
-            className={`flex flex-row bg-${currentStep.bg || "white"} text-${
-              currentStep.color || "black"
-            } rounded-md p-2 gap-4 border border-black shadow-md`}
-          >
+          <div className="flex flex-row bg-primary text-white dark:text-primary-100 rounded-md p-2 gap-4 contrast:border contrast:border-black shadow-md">
             <div className="flex-1 text-sm font-semibold text-center">
-              {currentStep.title}
+              {currentDebateStep}
             </div>
           </div>
           <FontAwesomeIcon icon={faArrowDown} />
-          <div className="flex flex-row bg-white text-gray-700 rounded-md p-2 gap-4 border border-gray-700 border-dashed">
+          <div className="flex flex-row dark:text-primary-700 rounded-md p-2 gap-4 border border-primary-300 dark:border-primary-600 border-dashed">
             <div className="flex-1 text-sm font-semibold text-center">
-              {nextStep.title}
+              {nextDebateStep ? nextDebateStep : "..."}
             </div>
           </div>
         </div>

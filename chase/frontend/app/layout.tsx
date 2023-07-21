@@ -1,6 +1,6 @@
 "use client";
 import "./globals.scss";
-import { Inter } from "next/font/google"; // Even though Google Fonts are used – no requests are sent to Google (see NEXT.JS docs)
+import { Inter } from "next/font/google"; // Even though Google Fonts are used – no requests are sent to Google (see NEXT.JS docs: https://nextjs.org/docs/pages/building-your-application/optimizing/fonts#google-fonts)
 
 //theme
 import "@/themes/theme_light.scss";

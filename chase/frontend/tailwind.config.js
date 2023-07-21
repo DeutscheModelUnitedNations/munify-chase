@@ -1,7 +1,7 @@
 /** @type {import('tailwindcss').Config} */
 const plugin = require("tailwindcss/plugin");
 
-dmunColors = {
+const dmunColors = {
   100: "#0c192a",
   200: "#183254",
   300: "#254b7e",
@@ -14,7 +14,7 @@ dmunColors = {
   950: "#ecf2fb",
 };
 
-secondaryColors = {
+const secondaryColors = {
   100: "#332700",
   200: "#664e00",
   300: "#997400",

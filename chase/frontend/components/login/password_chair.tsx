@@ -32,7 +32,7 @@ export default function usernameLogin({ changeLoginState }) {
 
   // TODO Type data properly
   // @ts-ignore
-  const onSubmit = (data) => {
+  const onSubmit = () => {
     setLoading(true);
     // TODO verify password, set cookie and advance to Dashboard
   };

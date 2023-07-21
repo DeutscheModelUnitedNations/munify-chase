@@ -12,8 +12,6 @@ export async function setUserMetadata(
   userId: string,
   metadata: Partial<Metadata>,
 ) {
-  console.log({ userId });
-
   return Promise.all(
     Object.entries(metadata).map(async ([key, data]) => {
       const res = await fetch(

@@ -1,7 +1,5 @@
 import React from "react";
-import Image from "next/image";
 import getCountryNameByCode from "../../misc/get_country_name_by_code";
-import getFlagPathByCode from "@/misc/get_flag_path_by_code";
 import { CountryCode } from "@/custom_types";
 import HeaderTemplate from "../header_template";
 import { useI18nContext } from "@/i18n/i18n-react";
@@ -29,7 +27,7 @@ export default function DashboardHeader({
   committeeName,
   currentTopic,
 }: HeaderProps) {
-  const { LL, locale } = useI18nContext();
+  const { locale } = useI18nContext();
 
   return (
     <HeaderTemplate>

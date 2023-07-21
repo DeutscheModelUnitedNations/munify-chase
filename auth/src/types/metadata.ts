@@ -18,7 +18,7 @@ export type ConferenceId = number;
 /**
  * How the auth system references countries
  */
-export type CountryId = string;/**
+export type CountryId = string; /**
  * How the auth system references organizations (like greenpeace etc.)
  */
 export type OrganizationId = string;

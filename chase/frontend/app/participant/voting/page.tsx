@@ -20,7 +20,7 @@ export default function VotingPage() {
   const { LL } = useI18nContext();
 
   const [openTab, setOpenTab] = useState<Tabs>("current-motions");
-  const [data, setData] = useState<Motion[]>(motionTestData);
+  const [data, _setData] = useState<Motion[]>(motionTestData);
   const [activeMotionId, setActiveMotionId] = useState<string | undefined>(
     data[0].motionId,
   );

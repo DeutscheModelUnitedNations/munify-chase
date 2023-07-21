@@ -26,7 +26,7 @@ export default function Home() {
           },
         });
         setBackendAcceptsOurAuth(true);
-      } catch (error) {
+      } catch (_) {
         setBackendAcceptsOurAuth(false);
       }
     })();

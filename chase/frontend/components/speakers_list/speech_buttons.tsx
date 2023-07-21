@@ -88,7 +88,7 @@ export function ChairSpeechButtons({
   activeSpeaker: boolean;
   typeOfList: string;
 }) {
-  const { LL, locale } = useI18nContext();
+  const { LL } = useI18nContext();
 
   const [addSpeakersOverlayVisible, setAddSpeakersOverlayVisible] =
     useState(false);

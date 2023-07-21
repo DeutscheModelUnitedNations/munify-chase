@@ -1,8 +1,8 @@
 import {
   Chair,
   ConferenceAdmin,
+  Delegate,
   NonStateActor,
-  Representative,
   SecretaryMember,
   Visitor,
 } from "../../types/metadata";
@@ -11,7 +11,7 @@ export const ZITADEL_METADATA_CLAIM = "urn:zitadel:iam:user:metadata";
 
 export interface Metadata {
   nonStateActorPermissions: NonStateActor[];
-  representativePermissions: Representative[];
+  representativePermissions: Delegate[];
   secretaryMemberPermissions: SecretaryMember[];
   chairPermissions: Chair[];
   conferenceAdminPermissions: ConferenceAdmin[];

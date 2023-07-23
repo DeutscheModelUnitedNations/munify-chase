@@ -13,7 +13,22 @@ export class DefaultService {
      * @returns any Default Response
      * @throws ApiError
      */
-    public postApiConferenceCreate({
+    public getApiConferenceList(): CancelablePromise<Array<{
+id: number;
+name: string;
+}>> {
+        return this.httpRequest.request({
+            method: 'GET',
+            url: '/api/conference/list',
+        });
+    }
+
+    /**
+     * Create a new conference
+     * @returns any Default Response
+     * @throws ApiError
+     */
+    public postApiConference({
 body,
 }: {
 body?: {
@@ -34,23 +49,8 @@ name: string;
 }> {
         return this.httpRequest.request({
             method: 'POST',
-            url: '/api/conference/create',
+            url: '/api/conference',
             body: body,
-        });
-    }
-
-    /**
-     * List all available conferences
-     * @returns any Default Response
-     * @throws ApiError
-     */
-    public getApiConferenceList(): CancelablePromise<Array<{
-id: number;
-name: string;
-}>> {
-        return this.httpRequest.request({
-            method: 'GET',
-            url: '/api/conference/list',
         });
     }
 

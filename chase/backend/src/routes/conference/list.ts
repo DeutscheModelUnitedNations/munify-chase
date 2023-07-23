@@ -1,26 +1,17 @@
-import { NowRequestHandler } from "fastify-now";
-import { authenticated } from "../../hooks/auth";
+import {NowRequestHandler} from "fastify-now";
+import {authenticated} from "../../hooks/auth";
 import z from "zod";
 
 //TODO change to absolute path
-import { db } from "../../../prisma/client";
-import { ConferenceSchema } from "../../../prisma/generated/zod";
+import {db} from "../../../prisma/client";
+import {ConferenceSchema} from "../../../prisma/generated/zod";
+import {makeEndpoint} from "src/util/endpointMaker";
 
-const Reply = z.array(ConferenceSchema);
-type ReplyType = z.infer<typeof Reply>;
-
-export const GET: NowRequestHandler<{
-  Reply: ReplyType;
-}> = async () => {
-  return await db.conference.findMany();
-};
-
-GET.opts = {
-  onRequest: authenticated,
-  schema: {
-    description: "List all available conferences",
-    response: {
-      200: Reply,
-    },
+export const GET = makeEndpoint({
+  description: "List all available conferences",
+  beforeRequestHook: authenticated,
+  replySchema: z.array(ConferenceSchema),
+  handler: async () => {
+    return await db.conference.findMany();
   },
-};
+});

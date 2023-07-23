@@ -11,6 +11,7 @@ import {
   ZodTypeProvider,
 } from "fastify-type-provider-zod";
 //TODO establish testing concept & coverage
+//TODO automate prisma generation so new frontend users can start directly
 
 export const isProd = process.argv.includes("--prod");
 

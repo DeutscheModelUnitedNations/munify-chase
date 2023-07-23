@@ -1,14 +1,3 @@
-# services:
-  # keycloak:
-  #   image: quay.io/keycloak/keycloak:21.1.1
-  #   volumes:
-  #     - ./keycloak:/opt/keycloak/data/
-  #   environment:
-  #     - KEYCLOAK_ADMIN=admin
-  #     - KEYCLOAK_ADMIN_PASSWORD=admin
-  #   ports:
-  #     - "6677:8080"
-  #   command: start-dev --features=declarative-user-profile
 services:
   zitadel:
     networks:

@@ -1,9 +1,9 @@
-import Fastify, {FastifyInstance} from "fastify";
+import Fastify, { FastifyInstance } from "fastify";
 import fastifyNow from "fastify-now";
-import {join} from "path";
-import {PrismaClient} from "@prisma/client";
+import { join } from "path";
+import { PrismaClient } from "@prisma/client";
 import cors from "@fastify/cors";
-import {setDb, db} from "../prisma/client";
+import { setDb, db } from "../prisma/client";
 import {
   jsonSchemaTransform,
   serializerCompiler,
@@ -25,11 +25,13 @@ export let server: FastifyInstance;
   // ╚═══════════════╝
 
   if (!isProd) {
-    const {config: dotenv} = await import("dotenv");
+    const { config: dotenv } = await import("dotenv");
     // load environment variables from .env file during development
     // in production, environment variables are set by the host
-    dotenv({path: join(__dirname, "../.env")});
-    console.warn("WARNING: Loaded env vars from .env file. This is intended for development only!");
+    dotenv({ path: join(__dirname, "../.env") });
+    console.warn(
+      "WARNING: Loaded env vars from .env file. This is intended for development only!",
+    );
   }
 
   let PORT = 0;
@@ -132,7 +134,7 @@ export let server: FastifyInstance;
       server.swagger();
     }
     console.info(`Running on port ${PORT}`);
-    await server.listen({port: PORT, host: "0.0.0.0"});
+    await server.listen({ port: PORT, host: "0.0.0.0" });
     db?.$disconnect();
   } catch (err) {
     server.log.error(err);

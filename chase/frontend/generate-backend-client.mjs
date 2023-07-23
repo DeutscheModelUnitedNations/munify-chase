@@ -1,10 +1,11 @@
-import { generate } from "openapi-typescript-codegen";
+import {generate} from "openapi-typescript-codegen";
 import dns from "node:dns";
 dns.setDefaultResultOrder("ipv4first");
 
 const SPEC_URL = "http://localhost:3001/documentation/json";
 
-const _ = setInterval(async () => {
+// rome-ignore lint/correctness/noUnusedVariables: <explanation>
+const i = setInterval(async () => {
   try {
     // just check if the file is served
 

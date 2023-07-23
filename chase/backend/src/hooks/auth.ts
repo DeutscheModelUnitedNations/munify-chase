@@ -61,7 +61,4 @@ export async function authenticated(req: FastifyRequest, rep: FastifyReply) {
     req.session.user = introspectionData.user;
     req.session.permissions = introspectionData.permissions;
   }
-
-  //TODO extract permissions and set them on req object/create helpers
-  // console.log(req.session);
 }

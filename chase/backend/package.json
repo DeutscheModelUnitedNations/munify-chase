@@ -4,8 +4,7 @@
     "build": "tsc --noEmit && node build.js",
     "dev": "npm-run-all -p dev:server dev:db",
     "dev:server": "ts-node-dev src/main.ts -p tsconfig.json --respawn",
-    "dev:db": "docker compose up",
-    "dev:migrate": "npx prisma migrate dev"
+    "dev:db": "docker compose up"
   },
   "dependencies": {
     "@fastify/cors": "^8.3.0",

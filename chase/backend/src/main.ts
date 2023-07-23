@@ -1,9 +1,9 @@
-import Fastify, { FastifyInstance } from "fastify";
+import Fastify, {FastifyInstance} from "fastify";
 import fastifyNow from "fastify-now";
-import { join } from "path";
-import { PrismaClient } from "@prisma/client";
+import {join} from "path";
+import {PrismaClient} from "@prisma/client";
 import cors from "@fastify/cors";
-import { setDb, db } from "../prisma/client";
+import {setDb, db} from "../prisma/client";
 import {
   jsonSchemaTransform,
   serializerCompiler,
@@ -12,10 +12,11 @@ import {
 } from "fastify-type-provider-zod";
 //TODO establish testing concept & coverage
 
+export const isProd = process.argv.includes("--prod");
+
 /**
  * The server instance
  */
-
 export let server: FastifyInstance;
 
 (async () => {
@@ -23,11 +24,12 @@ export let server: FastifyInstance;
   // ║ Configuration ║
   // ╚═══════════════╝
 
-  if (process.env.PRODUCTION) {
-    const { config: dotenv } = await import("dotenv");
+  if (!isProd) {
+    const {config: dotenv} = await import("dotenv");
     // load environment variables from .env file during development
     // in production, environment variables are set by the host
-    dotenv({ path: join(__dirname, "../.env") });
+    dotenv({path: join(__dirname, "../.env")});
+    console.warn("WARNING: Loaded env vars from .env file. This is intended for development only!");
   }
 
   let PORT = 0;
@@ -43,8 +45,6 @@ export let server: FastifyInstance;
   // ╚══════════════════════════════╝
 
   // we populate the client inside the async main wrapper to ensure env vars are set when this is called since prisma depends on them
-
-  //TODO document how to use prisma/migrations
   if (process.env.CI !== "true") {
     setDb(new PrismaClient());
   }
@@ -53,7 +53,6 @@ export let server: FastifyInstance;
   // ║ Creating server object ║
   // ╚════════════════════════╝
 
-  // TODO: make logger more readable in dev
   server = Fastify({
     exposeHeadRoutes: false,
     logger: {
@@ -72,6 +71,8 @@ export let server: FastifyInstance;
   // ║ Schema validation ║
   // ╚═══════════════════╝
 
+  // schema validation is the process of checking the incoming request for correct structure
+  // this enables validation globally
   server.setValidatorCompiler(validatorCompiler);
   server.setSerializerCompiler(serializerCompiler);
 
@@ -79,7 +80,7 @@ export let server: FastifyInstance;
   // ║ API documentation generation & serving (dev only) ║
   // ╚═══════════════════════════════════════════════════╝
 
-  if (!process.env.PRODUCTION) {
+  if (!isProd) {
     const swagger = await import("@fastify/swagger");
     const swaggerUi = await import("@fastify/swagger-ui");
 
@@ -114,6 +115,8 @@ export let server: FastifyInstance;
   // ║ File system based route registration ║
   // ╚══════════════════════════════════════╝
 
+  // we use file system based routing for the API
+  // this configures the routes directory to provide the API structure
   server.register(fastifyNow, {
     routesFolder: join(__dirname, "./routes"),
     pathPrefix: "/api",
@@ -123,16 +126,13 @@ export let server: FastifyInstance;
   // ║ Run the server ║
   // ╚════════════════╝
 
-  // wrap in an async function to allow top level async
-
   try {
     await server.ready();
-    if (!process.env.PRODUCTION) {
+    if (!isProd) {
       server.swagger();
     }
-    // rome-ignore lint: console output is intended
-    console.log(`Running on port ${PORT}`);
-    await server.listen({ port: PORT, host: "0.0.0.0" });
+    console.info(`Running on port ${PORT}`);
+    await server.listen({port: PORT, host: "0.0.0.0"});
     db?.$disconnect();
   } catch (err) {
     server.log.error(err);
@@ -140,5 +140,4 @@ export let server: FastifyInstance;
   }
 })();
 
-// rome-ignore lint: console output is intended
-console.log("Starting server...");
+console.info("Starting server...");

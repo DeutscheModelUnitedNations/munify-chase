@@ -1,4 +1,4 @@
-import {generate} from "openapi-typescript-codegen";
+import { generate } from "openapi-typescript-codegen";
 import dns from "node:dns";
 dns.setDefaultResultOrder("ipv4first");
 

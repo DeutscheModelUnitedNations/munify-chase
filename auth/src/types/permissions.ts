@@ -1,6 +1,9 @@
-import { Commitee, ConferenceId } from "./metadata";
-import { setUserMetadata } from "../services/zitadel/editUserMetadata";
-import { Metadata } from "../services/zitadel/parseMetadata";
+import {Commitee, ConferenceId} from "./metadata";
+import {setUserMetadata} from "../services/zitadel/editUserMetadata";
+import {Metadata} from "../services/zitadel/parseMetadata";
+import {fetchMetadataBulk} from "../services/zitadel/fetchMetadata";
+
+//TODO periodically clean up unused ids from the metadata
 
 /**
  * This class is a wrapper around the user metadata and abstracts the actual business logic for the permissions in the system.
@@ -9,12 +12,22 @@ import { Metadata } from "../services/zitadel/parseMetadata";
  */
 export class Permissions {
   constructor(
-    private readonly userId: string,
+    private readonly userId: number,
     private readonly metadata: Metadata,
-  ) {}
+  ) { }
 
-  setConferenceAdmin(conference: ConferenceId) {
-    this.metadata.conferenceAdminPermissions.push({
+  /**
+   * Creates a permissions class for a user which we do not have an introspection result of. Used for editing/checking permissions
+   * of users other than the one calling the handler
+   * @param userId The foreign user id
+   * @returns a permissions instance
+   */
+  static async forForeignUser(userId: number) {
+    return new Permissions(userId, await fetchMetadataBulk(userId));
+  }
+
+  grantConferenceAdmin(conference: ConferenceId) {
+    this.metadata.conferenceAdminPermissions.add({
       conference,
     });
 
@@ -32,6 +45,12 @@ export class Permissions {
     return setUserMetadata(this.userId, {
       conferenceAdminPermissions: this.metadata.conferenceAdminPermissions,
     });
+  }
+
+  isConferenceAdmin(conference: ConferenceId): boolean {
+    return this.metadata.conferenceAdminPermissions.some(
+      (v) => v.conference === conference,
+    );
   }
 
   canReadCommitee(commitee: Commitee): boolean {

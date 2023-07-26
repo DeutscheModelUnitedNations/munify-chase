@@ -7,15 +7,17 @@ import {
   Visitor,
 } from "../../types/metadata";
 
+import {Set as ImmutableSet} from "immutable";
+
 export const ZITADEL_METADATA_CLAIM = "urn:zitadel:iam:user:metadata";
 
 export interface Metadata {
-  nonStateActorPermissions: NonStateActor[];
-  representativePermissions: Delegate[];
-  secretaryMemberPermissions: SecretaryMember[];
-  chairPermissions: Chair[];
-  conferenceAdminPermissions: ConferenceAdmin[];
-  visitorPermissions: Visitor[];
+  nonStateActorPermissions: ImmutableSet<NonStateActor>;
+  representativePermissions: ImmutableSet<Delegate>;
+  secretaryMemberPermissions: ImmutableSet<SecretaryMember>;
+  chairPermissions: ImmutableSet<Chair>;
+  conferenceAdminPermissions: ImmutableSet<ConferenceAdmin>;
+  visitorPermissions: ImmutableSet<Visitor>;
   pronouns: string;
 }
 
@@ -49,7 +51,7 @@ export function parseMetadata(rawMetadata?: RawMetadata): Metadata {
   };
 }
 
-function decodeFromBase64JSON(value?: string) {
+export function decodeFromBase64JSON(value?: string) {
   if (!value) return undefined;
   return JSON.parse(Buffer.from(value, "base64").toString("utf-8"));
 }

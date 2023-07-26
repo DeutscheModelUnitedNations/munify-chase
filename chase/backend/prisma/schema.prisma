@@ -16,11 +16,19 @@ datasource db {
 
 /// A conference entity
 model Conference {
-  id   Int    @id @default(autoincrement())
-  name String @unique
+  id     Int        @id @default(autoincrement())
+  name   String     @unique
+  admins OIDCUser[]
 }
 
 /// Consumeable token which grants the creation of a conference
 model ConferenceCreateToken {
   token String @id
+}
+
+/// A reference to a OIDC user
+model OIDCUser {
+  userId  Int          @id @map("id")
+  conferences Conference[]
+  name        String
 }

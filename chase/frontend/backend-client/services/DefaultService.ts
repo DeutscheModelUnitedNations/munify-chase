@@ -24,6 +24,46 @@ name: string;
     }
 
     /**
+     * Update a conference
+     * @returns any Default Response
+     * @throws ApiError
+     */
+    public patchApiConference({
+body,
+}: {
+body?: {
+/**
+ * The new conference data
+ */
+conference: {
+name?: any;
+admins?: {
+create?: any;
+connectOrCreate?: any;
+upsert?: any;
+set?: any;
+disconnect?: any;
+delete?: any;
+connect?: any;
+update?: any;
+updateMany?: any;
+deleteMany?: any;
+};
+};
+/**
+ * The id of the conference to update
+ */
+conferenceId: number;
+},
+}): CancelablePromise<any> {
+        return this.httpRequest.request({
+            method: 'PATCH',
+            url: '/api/conference',
+            body: body,
+        });
+    }
+
+    /**
      * Create a conference
      * @returns any Default Response
      * @throws ApiError
@@ -41,6 +81,11 @@ token: string;
  */
 conference: {
 name: string;
+admins?: {
+create?: any;
+connectOrCreate?: any;
+connect?: any;
+};
 };
 },
 }): CancelablePromise<{

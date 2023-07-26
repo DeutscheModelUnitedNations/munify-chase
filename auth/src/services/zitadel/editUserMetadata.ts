@@ -1,6 +1,6 @@
-import { Metadata } from "./parseMetadata";
+import {Metadata, MetadataKeys} from "./parseMetadata";
 
-const ZITADEL_SERVICE_USER_PERSONAL_ACCESS_TOKEN =
+export const ZITADEL_SERVICE_USER_PERSONAL_ACCESS_TOKEN =
   process.env.ZITADEL_SERVICE_USER_PERSONAL_ACCESS_TOKEN;
 if (!ZITADEL_SERVICE_USER_PERSONAL_ACCESS_TOKEN) {
   throw new Error(
@@ -9,31 +9,36 @@ if (!ZITADEL_SERVICE_USER_PERSONAL_ACCESS_TOKEN) {
 }
 
 export async function setUserMetadata(
-  userId: string,
+  userId: number,
   metadata: Partial<Metadata>,
 ) {
-  return Promise.all(
-    Object.entries(metadata).map(async ([key, data]) => {
-      const res = await fetch(
-        `${process.env.OPENID_URL}/management/v1/users/${userId}/metadata/${key}`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Accept: "application/json",
-            Authorization: `Bearer ${ZITADEL_SERVICE_USER_PERSONAL_ACCESS_TOKEN}`,
-          },
-          body: JSON.stringify({
-            value: Buffer.from(JSON.stringify(data)).toString("base64"),
-          }),
-        },
-      );
+  const body: {key: string, value: string}[] = [];
 
-      if (!res.status.toString().startsWith("2")) {
-        throw new Error(`Failed to set user metadata: ${await res.text()}`);
-      }
+  Object.entries(metadata).forEach(([key, value]) => {
+    body.push({
+      key,
+      value: Buffer.from(JSON.stringify(value)).toString("base64"),
+    });
+  });
 
-      return res;
-    }),
+  if(body.length === 0) {
+    return;
+  }
+
+  const res = await fetch(
+    `${process.env.OPENID_URL}/management/v1/users/${userId}/metadata/_bulk`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json",
+        Authorization: `Bearer ${ZITADEL_SERVICE_USER_PERSONAL_ACCESS_TOKEN}`,
+      },
+      body: JSON.stringify(body),
+    },
   );
+
+  if (!res.status.toString().startsWith("2")) {
+    throw new Error(`Failed to set user metadata: ${await res.text()}`);
+  }
 }

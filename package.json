@@ -8,6 +8,10 @@
     "install-all:chase:backend": "cd ./chase/backend && npm i && npx npm-check-updates",
     "install-all:chase:frontend": "cd ./chase/frontend && npm i && npx npm-check-updates",
     "install-all:auth": "cd ./auth && npm i && npx npm-check-updates",
+    "upgrade-all": "npm-run-all -p upgrade-all:**",
+    "upgrade-all:chase:backend": "cd ./chase/backend && npx npm-check-updates -u && npm i",
+    "upgrade-all:chase:frontend": "cd ./chase/frontend && npx npm-check-updates -u && npm i",
+    "upgrade-all:auth": "cd ./auth && npx npm-check-updates -u && npm i",
     "format": "rome format . --write",
     "lint": "rome check . --apply",
     "test": "echo TODO"

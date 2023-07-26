@@ -1,5 +1,6 @@
 import {ZITADEL_SERVICE_USER_PERSONAL_ACCESS_TOKEN} from "./editUserMetadata";
 import {Metadata, MetadataKeys, decodeFromBase64JSON} from "./parseMetadata";
+import fetch from "node-fetch";
 
 export async function fetchMetadataKey(userId: number, key: MetadataKeys) {
     const res = await fetch(
@@ -33,13 +34,40 @@ export async function fetchMetadataBulk(userId: number) {
         visitorPermissions: null,
     };
 
-    // rome-ignore lint/suspicious/noExplicitAny: we trust the metadata output to be typesafe
-    const ret: any = {};
+    const amount = Object.keys(metadataKeysObject).length;
 
-    await Promise.all(Object.keys(metadataKeysObject).map(async (key) => {
-        const r = await fetchMetadataKey(userId, key as MetadataKeys) as unknown;
-        ret[key] = r;
-    }));
+    const res = await fetch(
+        `${process.env.OPENID_URL}/management/v1/users/${userId}/metadata/_search`,
+        {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                Accept: "application/json",
+                Authorization: `Bearer ${ZITADEL_SERVICE_USER_PERSONAL_ACCESS_TOKEN}`,
+            },
+            body: JSON.stringify({
+                query: {
+                    limit: amount,
+                }
+            }),
+        },
+    );
+
+    if (!res.status.toString().startsWith("2")) {
+        throw new Error(`Failed to fetch user metadata: ${await res.text()}`);
+    }
+
+    const parsedRes = await res.json();
+
+    if (parsedRes.details.totalResult !== amount) {
+        throw new Error("Metadata request returned unexpected amount of results");
+    }
+
+    const ret: Metadata = {} as Metadata;
+    const result: {key: string, value: string}[] = parsedRes.result;
+    result.forEach(({key, value}) => {
+        ret[key] = decodeFromBase64JSON(value);
+    })
 
     return ret;
 }

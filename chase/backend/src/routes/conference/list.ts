@@ -5,7 +5,7 @@ import z from "zod";
 //TODO change to absolute path
 import {db} from "../../../prisma/client";
 import {ConferenceSchema} from "../../../prisma/generated/zod";
-import {makeEndpoint} from "src/util/endpointMaker";
+import {makeEndpoint} from "../../util/endpointMaker";
 
 export const GET = makeEndpoint({
   description: "List all available conferences",

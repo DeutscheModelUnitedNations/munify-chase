@@ -8,7 +8,7 @@ import {
   ConferenceCreateInputSchema,
   ConferenceSchema,
 } from "../../prisma/generated/zod";
-import {makeEndpoint} from "src/util/endpointMaker";
+import {makeEndpoint} from "../util/endpointMaker";
 
 export const POST = makeEndpoint({
   beforeRequestHook: authenticated,

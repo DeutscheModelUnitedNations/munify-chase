@@ -24,7 +24,7 @@ name: string;
     }
 
     /**
-     * Create a new conference
+     * Create a conference
      * @returns any Default Response
      * @throws ApiError
      */

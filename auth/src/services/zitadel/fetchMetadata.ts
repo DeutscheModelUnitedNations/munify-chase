@@ -1,6 +1,5 @@
 import {ZITADEL_SERVICE_USER_PERSONAL_ACCESS_TOKEN} from "./editUserMetadata";
 import {Metadata, MetadataKeys, decodeFromBase64JSON} from "./parseMetadata";
-import fetch from "node-fetch";
 
 export async function fetchMetadataKey(userId: number, key: MetadataKeys) {
     const res = await fetch(
@@ -63,7 +62,8 @@ export async function fetchMetadataBulk(userId: number) {
         throw new Error("Metadata request returned unexpected amount of results");
     }
 
-    const ret: Metadata = {} as Metadata;
+    // rome-ignore lint/suspicious/noExplicitAny: we trust the output format of the metadata
+    const ret: any = {};
     const result: {key: string, value: string}[] = parsedRes.result;
     result.forEach(({key, value}) => {
         ret[key] = decodeFromBase64JSON(value);

@@ -1,8 +1,10 @@
 import React, { createContext, useContext, useState } from "react";
-import { API, DefaultService, OpenAPI } from "@/backend-client";
 import { useAuth } from "./auth";
+import { edenTreaty } from "@elysiajs/eden";
+import type { App } from "../../elysia-backend/src/index";
 
-const BackendContext = createContext<DefaultService | undefined>(undefined);
+let client = edenTreaty<App>("http://localhost:3001");
+const BackendContext = createContext(client);
 
 /**
  * Returns the backend context for calling the api
@@ -23,26 +25,27 @@ function useBackend() {
 const BackendProvider = ({ children }: { children: React.ReactNode }) => {
   const auth = useAuth();
 
-  OpenAPI.BASE = "http://localhost:3001"; //TODO adjust to prod values
-  OpenAPI.CREDENTIALS = "same-origin";
-  OpenAPI.WITH_CREDENTIALS = true;
+  //TODO adjust to prod values
+  client = edenTreaty<App>("http://localhost:3001", {
+    async fetcher(input, init) {
+      return fetch(input, {
+        ...init,
+        headers: {
+          ...init?.headers,
+          Authorization: `Bearer ${await auth.access_token()}`,
+          "authorization-id-token":
+            (await auth.id_token()) ?? (undefined as unknown as string),
+        },
+        credentials: "same-origin",
+      });
+    },
+  }); //TODO replace with real value
 
-  // this should be a resolver function since the token state might change throughout the application state
-  // we can ignore type checking since when undefined, the values just wont be sent
-  //@ts-ignore
-  OpenAPI.TOKEN = auth.access_token;
-
-  //@ts-ignore
-  OpenAPI.HEADERS = async () => {
-    return {
-      "authorization-id-token": await auth.id_token(),
-    };
-  };
-
-  const [backend, _] = useState(new API(OpenAPI));
+  const [backend, _] = useState(client);
 
   return (
-    <BackendContext.Provider value={backend.default}>
+    // rome-ignore lint/suspicious/noExplicitAny: typesyript cant detect the actual type here
+    <BackendContext.Provider value={backend as any}>
       {children}
     </BackendContext.Provider>
   );

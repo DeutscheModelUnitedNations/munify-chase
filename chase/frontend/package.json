@@ -3,15 +3,15 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "npm-run-all -p devserver typesafe-i18n watch-generate-client-from-openapi-specs",
+    "dev": "npm-run-all -p devserver typesafe-i18n",
     "devserver": "next dev",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "typesafe-i18n": "typesafe-i18n",
-    "watch-generate-client-from-openapi-specs": "npx nodemon --watch ../backend/src/**/* --watch ../backend/prisma/**/* --watch ../backend/node_modules/.prisma/**/* -e ts,js,mjs generate-backend-client.mjs"
+    "typesafe-i18n": "typesafe-i18n"
   },
   "dependencies": {
+    "@elysiajs/eden": "^0.5.6",
     "@fortawesome/fontawesome-svg-core": "^6.4.0",
     "@fortawesome/free-regular-svg-icons": "^6.4.0",
     "@fortawesome/free-solid-svg-icons": "^6.4.0",
@@ -41,7 +41,6 @@
   "devDependencies": {
     "nodemon": "^2.0.22",
     "npm-run-all": "^4.1.5",
-    "openapi-typescript-codegen": "^0.24.0",
     "sass": "^1.62.1"
   }
 }

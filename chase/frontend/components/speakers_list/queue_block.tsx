@@ -42,7 +42,7 @@ export default function SpeakerBlock({
   const getWaitingPosition = () => {
     if (list.find((item) => item.countryCode === myCountry)) {
       return (
-        // @ts-ignore TODO fix this
+        // @ts-ignore TODO NO-178 fix this
         list.indexOf(list.find((item) => item.countryCode === myCountry)) + 1
       );
     } else {

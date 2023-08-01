@@ -23,7 +23,7 @@ function useBackend() {
 const BackendProvider = ({ children }: { children: React.ReactNode }) => {
   const auth = useAuth();
 
-  OpenAPI.BASE = "http://localhost:3001"; //TODO adjust to prod values
+  OpenAPI.BASE = "http://localhost:3001"; //TODO NO-162 adjust to prod values
   OpenAPI.CREDENTIALS = "same-origin";
   OpenAPI.WITH_CREDENTIALS = true;
 

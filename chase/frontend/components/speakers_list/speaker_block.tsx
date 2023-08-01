@@ -47,7 +47,7 @@ export default function SpeakerBlock({
       setTimerState("paused");
       setTimeLeft(displayTimer(timer.durationMilliseconds));
     } else {
-      //TODO clear this interval
+      //TODO NO-159 clear this interval
       const _ = setInterval(() => {
         const timerInMilliseconds: number =
           timer.durationMilliseconds - (Date.now() - timer.start.getTime());

@@ -34,7 +34,7 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     if (typeof window === "undefined")
       return resolve(undefined as unknown as UserManager);
 
-    //TODO replace with real values
+    //TODO NO-160 replace with real values
     resolve(
       new UserManager({
         authority: "http://localhost:7788",
@@ -74,7 +74,7 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           urlObj.searchParams.delete(param);
         });
 
-        //TODO the replacement seems to not work perfectly here, the sensitive data shows up in the browser history
+        //TODO NO-161 the replacement seems to not work perfectly here, the sensitive data shows up in the browser history
         router.replace(urlObj.toString());
       }
 

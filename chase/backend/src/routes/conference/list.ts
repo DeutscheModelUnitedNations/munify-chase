@@ -2,7 +2,7 @@ import { NowRequestHandler } from "fastify-now";
 import { authenticated } from "../../hooks/auth";
 import z from "zod";
 
-//TODO change to absolute path
+//TODO NO-120 change to absolute path
 import { db } from "../../../prisma/client";
 import { ConferenceSchema } from "../../../prisma/generated/zod";
 

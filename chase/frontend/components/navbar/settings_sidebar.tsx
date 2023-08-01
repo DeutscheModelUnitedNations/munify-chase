@@ -137,7 +137,7 @@ export default function SettingsSidebar({
       onHide={() => setSettingsSidebarVisible(false)}
       position="top"
     >
-      {/* TODO Settings */}
+      {/* TODO NO-153 Settings */}
       <div className="flex w-full justify-center items-center pt-2 gap-2">
         <div className="flex flex-col">
           <div className="text-sm text-gray-500">

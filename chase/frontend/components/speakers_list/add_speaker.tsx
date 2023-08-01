@@ -29,8 +29,8 @@ interface CountryData {
  * Note: Not only countries can be added to the Speakers List, but also Non-State Actors and als UN Staff like the Secretary-General (Country-Code: unm / unw (male/female))
  */
 
-// TODO add toast functionality for when a speaker is added or already on the list
-// TODO add warning when a speaker is added to the list and the list is closed
+// TODO NO-154 add toast functionality for when a speaker is added or already on the list
+// TODO NO-155 add warning when a speaker is added to the list and the list is closed
 
 export default function AddSpeakerOverlay({
   listOfAllCountries,

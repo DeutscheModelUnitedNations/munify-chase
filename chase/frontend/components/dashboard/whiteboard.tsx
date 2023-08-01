@@ -19,7 +19,7 @@ export default function WhiteboardWidget({ value }: { value: string }) {
       <WidgetTemplate
         cardTitle={LL.participants.dashboard.widgetHeadlines.WHITEBOARD()}
       >
-        {/* TODO find a better solution for scaling the Whitboard Box */}
+        {/* TODO NO-138 find a better solution for scaling the Whitboard Box */}
         <div
           className="flex-1 flex bg-white rounded-md overflow-hidden"
           style={{ maxHeight: "50vh" }}

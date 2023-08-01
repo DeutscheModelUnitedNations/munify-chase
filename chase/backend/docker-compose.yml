@@ -1,4 +1,4 @@
-# TODO document docker requirement for setup
+# TODO NO-115 document docker requirement for setup
 
 services:
   postgres:

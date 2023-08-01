@@ -9,15 +9,15 @@ import { useI18nContext } from "@/i18n/i18n-react";
  * The username is verified by the server.
  * When the username matches the database, he is redirected to the password page.
  */
-// TODO: Type this function properly
+// TODO NO-149: Type this function properly
 // @ts-ignore
 export default function UsernameLogin({ changeLoginState }) {
   const { LL } = useI18nContext();
   const [username, setUsername] = useState("");
 
   function advance() {
-    // TODO request username from backend and store data in context
-    // TODO if username is not found, show toast
+    // TODO NO-150 request username from backend and store data in context
+    // TODO NO-151 if username is not found, show toast
 
     // navigate to the next stage of the login process (password)
     changeLoginState(1);

@@ -13,7 +13,7 @@ import { AnimatePresence, motion } from "framer-motion";
 interface TimerWidgetProps {
   headline: string;
   until: Date | null;
-  category: "formal" | "informal" | "pause" | "suspension"; // TODO: use enum
+  category: "formal" | "informal" | "pause" | "suspension"; // TODO NO-137: use enum
 }
 
 /**

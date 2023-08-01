@@ -20,7 +20,7 @@ export default function ChangeSpeechTimeOverlay({
   const { LL } = useI18nContext();
   const { showToast } = useContext(ToastContext);
 
-  const [time, setTime] = useState<string | null>(null); // TODO: Add a default value
+  const [time, setTime] = useState<string | null>(null); // TODO NO-156: Add a default value
 
   const validateTime = (time: string | null) => {
     if (!time) return false;

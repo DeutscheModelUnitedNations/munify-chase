@@ -58,7 +58,7 @@ export default function getCountryNameByCode(
   const country = countryData.find((item) => item.alpha3 === countryCode);
 
   if (country) {
-    // TODO Fix bug with types
+    // TODO NO-164 Fix bug with types
     // @ts-ignore
     return country[languageCode] || country.en; // Use English as a fallback language
   }

@@ -10,7 +10,7 @@ import {
   validatorCompiler,
   ZodTypeProvider,
 } from "fastify-type-provider-zod";
-//TODO establish testing concept & coverage
+//TODO NO-117 establish testing concept & coverage
 
 export const isProd = process.argv.includes("--prod");
 
@@ -110,7 +110,7 @@ export let server: FastifyInstance;
   // ╚═════════════════╝
 
   await server.register(cors, {
-    origin: ["http://localhost:3000"], //TODO set prod values
+    origin: ["http://localhost:3000"], //TODO NO-118 set prod values
   });
 
   // ╔══════════════════════════════════════╗

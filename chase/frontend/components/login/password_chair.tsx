@@ -11,7 +11,7 @@ import { useI18nContext } from "@/i18n/i18n-react";
  * This Component is used in the Login Page for the Chair. It is the second step of the login process.
  * It displays a form, where the chair can enter the password. The password is verified by the server.
  */
-// TODO: Type this function properly
+// TODO NO-139: Type this function properly
 // @ts-ignore
 export default function usernameLogin({ changeLoginState }) {
   const { LL } = useI18nContext();
@@ -30,16 +30,16 @@ export default function usernameLogin({ changeLoginState }) {
     return !agreedToTerms || password === "";
   };
 
-  // TODO Type data properly
+  // TODO NO-140 Type data properly
   // @ts-ignore
   const onSubmit = () => {
     setLoading(true);
-    // TODO verify password, set cookie and advance to Dashboard
+    // TODO NO-141 verify password, set cookie and advance to Dashboard
   };
 
   return (
     <div className="flex flex-col p-5 items-center justify-center h-full">
-      {/* TODO This form can be a component that is used in both chair and participant login password components */}
+      {/* TODO NO-142 This form can be a component that is used in both chair and participant login password components */}
       <form onSubmit={handleLogin(onSubmit)} className="contents">
         <Password
           placeholder={LL.login.PASSWORD_PLACEHOLDER()}

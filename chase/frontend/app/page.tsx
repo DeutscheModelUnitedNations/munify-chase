@@ -1,36 +1,11 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React from "react";
 import Image from "next/image";
 import { Button } from "primereact/button";
 import { useRouter } from "next/navigation";
-import { useBackend } from "@/contexts/backend";
-import { useAuth } from "@/contexts/auth";
 
 export default function Home() {
   const router = useRouter();
-  const auth = useAuth();
-  const backend = useBackend();
-
-  const [backendAcceptsOurAuth, setBackendAcceptsOurAuth] = useState(false);
-
-  useEffect(() => {
-    (async () => {
-      try {
-        if (typeof window === "undefined") return;
-        await backend.postApiConferenceCreate({
-          body: {
-            conference: {
-              name: "test conference",
-            },
-            token: "1234",
-          },
-        });
-        setBackendAcceptsOurAuth(true);
-      } catch (_) {
-        setBackendAcceptsOurAuth(false);
-      }
-    })();
-  }, []);
 
   return (
     <>
@@ -53,28 +28,6 @@ export default function Home() {
               label="Vorsitz-Login"
               icon="pi pi-link"
               onClick={() => router.push("/login/chair")}
-            />
-          </div>
-          <span>
-            backendAcceptsOurAuth:
-            {backendAcceptsOurAuth && "yes"}
-            {!backendAcceptsOurAuth && "nonono"}
-          </span>
-          <span>
-            authenticated:
-            {auth.authenticated && "yes"}
-            {!auth.authenticated && "nonono"}
-          </span>
-          <div className="p-buttonset">
-            <Button
-              label="Zitadel login"
-              icon="pi pi-link"
-              onClick={() => auth.login()}
-            />
-            <Button
-              label="Zitadel logout"
-              icon="pi pi-link"
-              onClick={() => auth.logout()}
             />
           </div>
         </div>

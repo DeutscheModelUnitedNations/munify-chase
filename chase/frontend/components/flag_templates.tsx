@@ -15,7 +15,7 @@ export function SmallFlag({
   countryCode,
   showNameOnHover = false,
 }: { countryCode: CountryCode; showNameOnHover?: boolean }) {
-  const { LL, locale } = useI18nContext();
+  const { locale } = useI18nContext();
 
   const [isHovered, setIsHovered] = useState(false);
 

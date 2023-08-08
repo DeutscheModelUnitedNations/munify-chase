@@ -6,13 +6,7 @@ import WidgetBoxTemplate from "../widget_box_template";
 import { NormalFlag as Flag } from "@components/flag_templates";
 import { useI18nContext } from "@/i18n/i18n-react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import {
-  faArrowDown,
-  faArrowUp,
-  faDiagramNext,
-  faGripVertical,
-  faXmark,
-} from "@fortawesome/free-solid-svg-icons";
+import { faXmark } from "@fortawesome/free-solid-svg-icons";
 import { Button } from "primereact/button";
 
 /**
@@ -32,7 +26,7 @@ export default function QueueList({
   closed: boolean;
   chairOptions?: boolean;
 }) {
-  const { LL, locale } = useI18nContext();
+  const { LL } = useI18nContext();
 
   return (
     <>
@@ -72,7 +66,7 @@ function CountryCard({
   myCountry?: CountryCode;
   chairOptions?: boolean;
 }) {
-  const { LL, locale } = useI18nContext();
+  const { locale } = useI18nContext();
 
   return (
     <WidgetBoxTemplate highlight={countryCode === myCountry}>

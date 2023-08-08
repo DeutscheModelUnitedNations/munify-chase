@@ -1,16 +1,12 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import WidgetTemplate from "../widget_template";
 import WidgetBoxTemplate from "../widget_box_template";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Motion } from "@/custom_types";
 import {
   faCircleCheck,
-  faCircleQuestion,
-  faGavel,
   faSquarePollVertical,
-  faTrash,
   faTrashAlt,
-  faXmark,
   faXmarkCircle,
 } from "@fortawesome/free-solid-svg-icons";
 import NoDataPlaceholder from "../no_data_placeholder";

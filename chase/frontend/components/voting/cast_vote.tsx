@@ -24,7 +24,7 @@ export default function CastVote({
 
   const [isLoading, setIsLoading] = useState(false);
 
-  const castVote = (vote: "yes" | "no" | "abstain") => {
+  const castVote = (_: "yes" | "no" | "abstain") => {
     setIsLoading(true);
   };
 

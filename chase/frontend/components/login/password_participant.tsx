@@ -28,10 +28,10 @@ export default function usernameLogin({ changeLoginState }) {
 
   const [loading, setLoading] = useState(false);
 
-  const [isNonStateActor, setIsNonStateActor] = useState(true);
+  const [isNonStateActor, _setIsNonStateActor] = useState(true);
   const [committee, setCommittee] = useState("N/A");
   const [selectCommittee, setSelectCommittee] = useState(false);
-  const [countryCode, setCountry] = useState<CountryCode>("cpv"); // Placeholder SVG
+  const [countryCode, _setCountry] = useState<CountryCode>("cpv"); // Placeholder SVG
 
   const [agreedToTerms, setAgreedToTerms] = useState(false);
   const [password, setPassword] = useState("");
@@ -57,7 +57,7 @@ export default function usernameLogin({ changeLoginState }) {
 
   // TODO Type data properly
   // @ts-ignore
-  const onSubmit = (data) => {
+  const onSubmit = () => {
     setLoading(true);
     // TODO verify password, set cookie and advance to Dashboard
     router.push("/participant/dashboard");

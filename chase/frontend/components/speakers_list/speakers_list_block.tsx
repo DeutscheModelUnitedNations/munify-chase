@@ -30,14 +30,6 @@ export default function SpeakersListBlock({
 }) {
   const { LL } = useI18nContext();
 
-  const myCountryInList: () => boolean = () => {
-    if (speakersData.list.find((item) => item.countryCode === myCountry)) {
-      return true;
-    } else {
-      return false;
-    }
-  };
-
   return (
     <WidgetTemplate cardTitle={listTitle}>
       {speakersData.currentSpeaker ? (

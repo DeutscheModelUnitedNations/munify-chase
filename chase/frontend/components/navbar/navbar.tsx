@@ -9,14 +9,7 @@ import SettingsSidebar from "@/components/navbar/settings_sidebar";
 import { useRouter } from "next/navigation";
 import { confirmDialog, ConfirmDialog } from "primereact/confirmdialog";
 
-import {
-  faRightFromBracket,
-  faGear,
-  faSquarePollVertical,
-  faScroll,
-  faComment,
-  faHouse,
-} from "@fortawesome/free-solid-svg-icons";
+import { faRightFromBracket, faGear } from "@fortawesome/free-solid-svg-icons";
 
 import { useI18nContext } from "@/i18n/i18n-react";
 

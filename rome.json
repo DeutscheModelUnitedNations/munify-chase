@@ -4,6 +4,9 @@
     "enabled": true,
     "rules": {
       "recommended": true,
+      "correctness": {
+        "noUnusedVariables": "warn"
+      },
       "nursery": {
         "noConsoleLog": "warn"
       }

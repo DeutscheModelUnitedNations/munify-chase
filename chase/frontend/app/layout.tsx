@@ -20,6 +20,8 @@ import {
 import { loadLocale } from "@/i18n/i18n-util.sync";
 import { baseLocale, locales } from "@/i18n/i18n-util";
 import TypesafeI18n from "@/i18n/i18n-react";
+import { AuthProvider } from "@/contexts/auth";
+import { BackendProvider } from "@/contexts/backend";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -37,20 +39,24 @@ export default function RootLayout({
       baseLocale,
       locales,
       localStorageDetector,
-      navigatorDetector
+      navigatorDetector,
     );
   }
 
   loadLocale(locale);
 
   return (
-    <TypesafeI18n locale={locale}>
-      <html lang="en">
-        <Head>
-          <title>Chase</title> {/* TODO Make title work */}
-        </Head>
-        <body className={inter.className}>{children}</body>
-      </html>
-    </TypesafeI18n>
+    <AuthProvider>
+      <BackendProvider>
+        <TypesafeI18n locale={locale}>
+          <html lang="en">
+            <Head>
+              <title>Chase</title> {/* TODO Make title work */}
+            </Head>
+            <body className={inter.className}>{children}</body>
+          </html>
+        </TypesafeI18n>
+      </BackendProvider>
+    </AuthProvider>
   );
 }

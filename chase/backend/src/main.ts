@@ -1,17 +1,18 @@
-import fastifyCookie from "@fastify/cookie";
-import fastifySession from "@fastify/session";
-import { TypeBoxTypeProvider } from "@fastify/type-provider-typebox";
-import RedisStore from "connect-redis";
 import Fastify, { FastifyInstance } from "fastify";
 import fastifyNow from "fastify-now";
 import { join } from "path";
-import { createClient } from "redis";
 import { PrismaClient } from "@prisma/client";
+import cors from "@fastify/cors";
 import { setDb, db } from "../prisma/client";
-
-import "./types/types";
-
+import {
+  jsonSchemaTransform,
+  serializerCompiler,
+  validatorCompiler,
+  ZodTypeProvider,
+} from "fastify-type-provider-zod";
 //TODO establish testing concept & coverage
+
+export const isProd = process.argv.includes("--prod");
 
 /**
  * The server instance
@@ -23,11 +24,14 @@ export let server: FastifyInstance;
   // ║ Configuration ║
   // ╚═══════════════╝
 
-  if (!process.env.PRODUCTION) {
+  if (!isProd) {
     const { config: dotenv } = await import("dotenv");
     // load environment variables from .env file during development
     // in production, environment variables are set by the host
     dotenv({ path: join(__dirname, "../.env") });
+    console.warn(
+      "WARNING: Loaded env vars from .env file. This is intended for development only!",
+    );
   }
 
   let PORT = 0;
@@ -43,8 +47,6 @@ export let server: FastifyInstance;
   // ╚══════════════════════════════╝
 
   // we populate the client inside the async main wrapper to ensure env vars are set when this is called since prisma depends on them
-
-  //TODO document how to use prisma/migrations
   if (process.env.CI !== "true") {
     setDb(new PrismaClient());
   }
@@ -53,20 +55,40 @@ export let server: FastifyInstance;
   // ║ Creating server object ║
   // ╚════════════════════════╝
 
-  // TODO: make logger more readable in dev
   server = Fastify({
-    logger: { level: "warn" },
-  }).withTypeProvider<TypeBoxTypeProvider>();
+    exposeHeadRoutes: false,
+    logger: {
+      level: "warn",
+      transport: {
+        target: "pino-pretty",
+        options: {
+          translateTime: "HH:MM:ss Z",
+          ignore: "pid,hostname",
+        },
+      },
+    },
+  }).withTypeProvider<ZodTypeProvider>() as unknown as FastifyInstance;
+
+  // ╔═══════════════════╗
+  // ║ Schema validation ║
+  // ╚═══════════════════╝
+
+  // schema validation is the process of checking the incoming request for correct structure
+  // this enables validation globally
+  server.setValidatorCompiler(validatorCompiler);
+  server.setSerializerCompiler(serializerCompiler);
 
   // ╔═══════════════════════════════════════════════════╗
   // ║ API documentation generation & serving (dev only) ║
   // ╚═══════════════════════════════════════════════════╝
 
-  if (!process.env.PRODUCTION) {
+  if (!isProd) {
     const swagger = await import("@fastify/swagger");
     const swaggerUi = await import("@fastify/swagger-ui");
 
-    server.register(swagger.default);
+    server.register(swagger.default, {
+      transform: jsonSchemaTransform,
+    });
     server.register(swaggerUi.default, {
       routePrefix: "/documentation",
       uiConfig: {
@@ -83,63 +105,20 @@ export let server: FastifyInstance;
 `);
   }
 
-  // ╔═════════════════════════════════════════╗
-  // ║ Cookie parsing & Session initialization ║
-  // ╚═════════════════════════════════════════╝
+  // ╔═════════════════╗
+  // ║ set CORS config ║
+  // ╚═════════════════╝
 
-  server.register(fastifyCookie, {});
-
-  const redisUrl = process.env.REDIS_URL;
-  if (redisUrl === undefined) {
-    throw new Error(
-      "Could not find REDIS_URL environment variable. Make sure it's set",
-    );
-  }
-
-  // Initialize redis client
-  const redisClient = createClient({
-    url: redisUrl,
-  });
-
-  if (process.env.CI !== "true") {
-    try {
-      await redisClient.connect();
-    } catch (error) {
-      console.error("Could not connect to redis");
-      throw error;
-    }
-  }
-
-  // Initialize store
-  const redisStore = new RedisStore({
-    client: redisClient,
-    prefix: "chase-session:",
-  });
-
-  const sessionSecret = process.env.SESSION_SECRET;
-  if (sessionSecret === undefined) {
-    throw new Error(
-      "Could not find session secret in environment variable. Make sure that the 'SESSION_SECRET' environment variable is set and a secure string with more than 21 characters.",
-    );
-  }
-
-  server.register(fastifySession, {
-    secret: sessionSecret,
-    cookie: {
-      httpOnly: true,
-      // secure is only deactivated when running in dev
-      secure: process.env.PRODUCTION === "true",
-      sameSite: "strict",
-      maxAge: 86400000, // 7 days
-    },
-    store: redisStore,
-    saveUninitialized: false, // recommended: only save session when data exists
+  await server.register(cors, {
+    origin: ["http://localhost:3000"], //TODO set prod values
   });
 
   // ╔══════════════════════════════════════╗
   // ║ File system based route registration ║
   // ╚══════════════════════════════════════╝
 
+  // we use file system based routing for the API
+  // this configures the routes directory to provide the API structure
   server.register(fastifyNow, {
     routesFolder: join(__dirname, "./routes"),
     pathPrefix: "/api",
@@ -149,15 +128,12 @@ export let server: FastifyInstance;
   // ║ Run the server ║
   // ╚════════════════╝
 
-  // wrap in an async function to allow top level async
-
   try {
     await server.ready();
-    if (!process.env.PRODUCTION) {
+    if (!isProd) {
       server.swagger();
     }
-    // rome-ignore lint: console output is intended
-    console.log(`Running on port ${PORT}`);
+    console.info(`Running on port ${PORT}`);
     await server.listen({ port: PORT, host: "0.0.0.0" });
     db?.$disconnect();
   } catch (err) {
@@ -166,5 +142,4 @@ export let server: FastifyInstance;
   }
 })();
 
-// rome-ignore lint: console output is intended
-console.log("Starting server...");
+console.info("Starting server...");

@@ -4,18 +4,10 @@ import { ScrollPanel } from "primereact/scrollpanel";
 import { ToastProvider } from "@/contexts/messages/toast";
 
 import DashboardHeader from "@/components/dashboard/header";
-import SpeakersListWidget from "@/components/dashboard/speakers_list";
-import TimerWidget from "@/components/dashboard/timer";
-import CommitteeStatusWidget from "@/components/dashboard/committee_status";
-import DocumentsWidget from "@/components/dashboard/documents";
-import WhiteboardWidget from "@/components/dashboard/whiteboard";
-import ActionsWidget from "@/components/dashboard/actions";
 import { apiTestData } from "@/test_data";
-import { useRouter } from "next/navigation";
 import { useI18nContext } from "@/i18n/i18n-react";
 
 export default function ParticipantDashboard() {
-  const Router = useRouter();
   const { LL } = useI18nContext();
   const [data, setData] = useState(apiTestData);
 

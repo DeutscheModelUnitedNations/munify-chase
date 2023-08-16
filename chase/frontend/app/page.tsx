@@ -2,7 +2,6 @@
 import React from "react";
 import Image from "next/image";
 import { Button } from "primereact/button";
-import Loading from "./loading";
 import { useRouter } from "next/navigation";
 
 export default function Home() {
@@ -19,7 +18,7 @@ export default function Home() {
             height={128}
             className="mb-10"
           />
-          <div className="p-buttonset">
+          <div className="p-buttonset mb-2">
             <Button
               label="Teilnehmenden-Login"
               icon="pi pi-link"

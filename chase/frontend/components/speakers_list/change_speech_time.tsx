@@ -22,12 +22,6 @@ export default function ChangeSpeechTimeOverlay({
 
   const [time, setTime] = useState<string | null>(null); // TODO: Add a default value
 
-  const calculateSecondsFromTime = (time: string | null) => {
-    if (!time) return 0;
-    const [minutes, seconds] = time.split(":");
-    return parseInt(minutes) * 60 + parseInt(seconds);
-  };
-
   const validateTime = (time: string | null) => {
     if (!time) return false;
     const [minutes, seconds] = time.split(":");

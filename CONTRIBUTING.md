@@ -46,3 +46,6 @@ branch: login
 📚 docs (CHASE Backend): add examples
 branch: setup
 ```
+
+## Getting started with the codebase
+This is a monorepo, which means that multiple projects reside in their respective directories. Each project contains documentation on its own which should get you going with the details. E.g. if you want to contribute to chase, see the [chase directory](./chase).

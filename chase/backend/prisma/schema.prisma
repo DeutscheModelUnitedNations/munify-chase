@@ -1,6 +1,10 @@
 // This is your Prisma schema file,
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
+generator zod {
+  provider = "zod-prisma-types"
+}
+
 generator client {
   provider = "prisma-client-js"
 }
@@ -10,15 +14,13 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model User {
-  id           Int      @id @default(autoincrement())
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
-  email        String   @unique
-  passwordHash String
-  firstName    String
-  lastName     String
-  pronouns     String
+/// A conference entity
+model Conference {
+  id   Int    @id @default(autoincrement())
+  name String @unique
+}
 
-  @@index([email])
+/// Consumeable token which grants the creation of a conference
+model ConferenceCreateToken {
+  token String @id
 }

@@ -1,14 +1,15 @@
 {
-  "name": "frontend",
+  "name": "chase-frontend",
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "npm-run-all -p devserver typesafe-i18n",
+    "dev": "npm-run-all -p devserver typesafe-i18n watch-generate-client-from-openapi-specs",
     "devserver": "next dev",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "typesafe-i18n": "typesafe-i18n"
+    "typesafe-i18n": "typesafe-i18n",
+    "watch-generate-client-from-openapi-specs": "npx nodemon --watch ../backend/src/**/* --watch ../backend/prisma/**/* --watch ../backend/node_modules/.prisma/**/* -e ts,js,mjs generate-backend-client.mjs"
   },
   "dependencies": {
     "@fortawesome/fontawesome-pro": "^6.4.2",
@@ -23,6 +24,7 @@
     "framer-motion": "^10.12.16",
     "fuse.js": "^6.6.2",
     "next": "13.4.4",
+    "oidc-client-ts": "^2.2.4",
     "postcss": "8.4.23",
     "primeicons": "^6.0.1",
     "primereact": "^9.5.0",
@@ -38,7 +40,9 @@
     "typescript": "5.0.4"
   },
   "devDependencies": {
+    "nodemon": "^2.0.22",
     "npm-run-all": "^4.1.5",
+    "openapi-typescript-codegen": "^0.24.0",
     "sass": "^1.62.1"
   }
 }

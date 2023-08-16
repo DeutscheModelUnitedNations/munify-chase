@@ -26,7 +26,7 @@ export default function SpeakerBlock({
   timer,
   customName,
 }: CurrentSpeaker) {
-  const { LL, locale } = useI18nContext();
+  const { locale } = useI18nContext();
 
   const [timerState, setTimerState] = useState<string>("active");
   const [timeLeft, setTimeLeft] = useState<string>("0:00");
@@ -47,7 +47,8 @@ export default function SpeakerBlock({
       setTimerState("paused");
       setTimeLeft(displayTimer(timer.durationMilliseconds));
     } else {
-      const timeInterval = setInterval(() => {
+      //TODO clear this interval
+      const _ = setInterval(() => {
         const timerInMilliseconds: number =
           timer.durationMilliseconds - (Date.now() - timer.start.getTime());
         setTimeLeft(displayTimer(timerInMilliseconds));
@@ -97,7 +98,7 @@ export default function SpeakerBlock({
 }
 
 function HourglasAnimation() {
-  const [animationState, setAnimationState] = React.useState<number>(0);
+  const [_, setAnimationState] = React.useState<number>(0);
   const [icon, setIcon] = React.useState(faHourglassStart);
   const [WrapperStyleClass, setWrapperStyleClass] =
     React.useState<string>("hourglass");

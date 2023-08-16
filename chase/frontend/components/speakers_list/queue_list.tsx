@@ -26,7 +26,7 @@ export default function QueueList({
   closed: boolean;
   chairOptions?: boolean;
 }) {
-  const { LL, locale } = useI18nContext();
+  const { LL } = useI18nContext();
 
   return (
     <>
@@ -66,7 +66,7 @@ function CountryCard({
   myCountry?: CountryCode;
   chairOptions?: boolean;
 }) {
-  const { LL, locale } = useI18nContext();
+  const { locale } = useI18nContext();
 
   return (
     <WidgetBoxTemplate highlight={countryCode === myCountry}>

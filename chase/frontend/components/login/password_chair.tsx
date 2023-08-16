@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 import { Button } from "primereact/button";
 import { Password } from "primereact/password";
@@ -32,7 +32,7 @@ export default function usernameLogin({ changeLoginState }) {
 
   // TODO Type data properly
   // @ts-ignore
-  const onSubmit = (data) => {
+  const onSubmit = () => {
     setLoading(true);
     // TODO verify password, set cookie and advance to Dashboard
   };

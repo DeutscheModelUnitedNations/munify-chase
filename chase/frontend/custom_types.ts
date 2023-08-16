@@ -1,3 +1,6 @@
+/**
+ * A country alpha3 code
+ */
 export type Alpha3Code =
   | "afg"
   | "alb"
@@ -193,13 +196,22 @@ export type Alpha3Code =
   | "zmb"
   | "zwe";
 
-export type UNCodes = "unm" | "unw" | "gsm" | "gsw" | "uno"; // UN-Flag Specials for General Secretary and Guest Speakers (male and female)
+/**
+ * UN-Flag Specials for General Secretary and Guest Speakers (male and female)
+ */
+export type UNCodes = "unm" | "unw" | "gsm" | "gsw" | "uno";
 
-export type NASCodes = `nsa_${string}`; // Non-State Actor Prefix and ID
+/**
+ * Non-State Actor Prefix and ID
+ */
+export type NSACodes = `nsa_${string}`;
 
-export type OtherCodes = "xxx"; // Code for not found
+/**
+ * Code for not found
+ */
+export type OtherCodes = "xxx";
 
-export type CountryCode = Alpha3Code | UNCodes | NASCodes | OtherCodes;
+export type CountryCode = Alpha3Code | UNCodes | NSACodes | OtherCodes;
 
 export interface Speaker {
   entryId: string;

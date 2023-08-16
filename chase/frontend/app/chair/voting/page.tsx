@@ -38,26 +38,28 @@ export default function ChairVoting() {
             model={[
               {
                 label: LL.participants.voting.ACTIVE_MOTIONS_TAB(),
-                icon: <FontAwesomeIcon icon={faCommentExclamation} className="mr-2" />,
+                icon: (
+                  <FontAwesomeIcon
+                    icon={faCommentExclamation}
+                    className="mr-2"
+                  />
+                ),
                 command: () => {
                   setOpenTab("current-motions");
                 },
               },
               {
                 label: LL.participants.voting.RECENT_MOTIONS_TAB(),
-                icon: <FontAwesomeIcon icon={faClockRotateLeft} className="mr-2" />,
+                icon: (
+                  <FontAwesomeIcon icon={faClockRotateLeft} className="mr-2" />
+                ),
                 command: () => {
                   setOpenTab("recent-motions");
                 },
               },
               {
                 label: LL.participants.voting.RECENT_VOTINGS_TAB(),
-                icon: (
-                  <FontAwesomeIcon
-                    icon={faPollPeople}
-                    className="mr-2"
-                  />
-                ),
+                icon: <FontAwesomeIcon icon={faPollPeople} className="mr-2" />,
                 command: () => {
                   setOpenTab("recent-votings");
                 },
@@ -72,7 +74,12 @@ export default function ChairVoting() {
               <>
                 <SplitButton
                   label={LL.chairs.voting.BUTTON_NEW_MOTION()}
-                  icon={<FontAwesomeIcon icon={faCommentExclamation} className="mr-2" />}
+                  icon={
+                    <FontAwesomeIcon
+                      icon={faCommentExclamation}
+                      className="mr-2"
+                    />
+                  }
                   className="w-full"
                   onClick={() => {}}
                   model={[]}

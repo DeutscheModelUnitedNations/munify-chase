@@ -6,9 +6,7 @@ import WidgetBoxTemplate from "../widget_box_template";
 import { NormalFlag as Flag } from "@components/flag_templates";
 import { useI18nContext } from "@/i18n/i18n-react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import {
-  faXmark,
-} from "@fortawesome/pro-solid-svg-icons";
+import { faXmark } from "@fortawesome/pro-solid-svg-icons";
 import { Button } from "primereact/button";
 
 /**

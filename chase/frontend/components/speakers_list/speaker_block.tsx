@@ -77,7 +77,9 @@ export default function SpeakerBlock({
               </div>
               <div className="text-md text-primary-300 dark:text-primary-600 flex items-center gap-3">
                 {timerState === "active" && <HourglasAnimation />}
-                {timerState === "paused" && <FontAwesomeIcon icon={faHourglassClock} />}
+                {timerState === "paused" && (
+                  <FontAwesomeIcon icon={faHourglassClock} />
+                )}
                 {timerState === "overtime" && (
                   <FontAwesomeIcon
                     icon={faBell}

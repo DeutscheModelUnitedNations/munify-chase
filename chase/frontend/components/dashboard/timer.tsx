@@ -3,7 +3,12 @@ import WidgetTemplate from "@components/widget_template";
 import { ToastContext } from "@/contexts/messages/toast";
 
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faGavel, faComments, faCoffee, faCirclePause } from "@fortawesome/pro-solid-svg-icons";
+import {
+  faGavel,
+  faComments,
+  faCoffee,
+  faCirclePause,
+} from "@fortawesome/pro-solid-svg-icons";
 import { useI18nContext } from "@/i18n/i18n-react";
 import { AnimatePresence, motion } from "framer-motion";
 

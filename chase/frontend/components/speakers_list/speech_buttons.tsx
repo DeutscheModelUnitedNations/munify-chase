@@ -3,18 +3,18 @@ import { Button } from "primereact/button";
 import { SplitButton } from "primereact/splitbutton";
 import { Dialog } from "primereact/dialog";
 import {
-  faBan,
-  faClock,
-  faDiagramNext,
+  faTrashCanXmark,
+  faHourglassClock,
+  faDiagramSuccessor,
   faLock,
   faLockOpen,
   faMinus,
   faPause,
-  faPlay,
+  faPodium,
   faPlus,
   faPlusCircle,
   faRotateLeft,
-} from "@fortawesome/free-solid-svg-icons";
+} from "@fortawesome/pro-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useI18nContext } from "@/i18n/i18n-react";
 import { CountryCode } from "@/custom_types";
@@ -44,7 +44,7 @@ export function ParticipantSpeechButtons({
       {onSpeakersList && (
         <Button
           label={LL.participants.speakersList.REMOVE_FROM_LIST_BUTTON()}
-          icon={<FontAwesomeIcon icon={faBan} className="mr-2" />}
+          icon={<FontAwesomeIcon icon={faTrashCanXmark} className="mr-2" />}
           size="small"
           severity="danger"
         />
@@ -109,12 +109,12 @@ export function ChairSpeechButtons({
     },
     {
       label: LL.chairs.speakersList.buttons.CLEAR_LIST(),
-      icon: <FontAwesomeIcon icon={faBan} className="mr-2" />,
+      icon: <FontAwesomeIcon icon={faTrashCanXmark} className="mr-2" />,
       disabled: !nextSpeakerQueued,
     },
     {
       label: LL.chairs.speakersList.buttons.CHANGE_SPEECH_TIME(),
-      icon: <FontAwesomeIcon icon={faClock} className="mr-2" />,
+      icon: <FontAwesomeIcon icon={faHourglassClock} className="mr-2" />,
       command: () => setChangeSpeechTimeOverlayVisible(true),
     },
   ];
@@ -124,7 +124,7 @@ export function ChairSpeechButtons({
       <div className="flex gap-2 items-center justify-center">
         <Button
           label={LL.chairs.speakersList.buttons.START_TIMER()}
-          icon={<FontAwesomeIcon icon={faPlay} className="mr-2" />}
+          icon={<FontAwesomeIcon icon={faPodium} className="mr-2" />}
           size="small"
           visible={timerPaused && activeSpeaker}
         />
@@ -160,7 +160,7 @@ export function ChairSpeechButtons({
       <div className="flex gap-2 items-center justify-start flex-wrap">
         <Button
           label={LL.chairs.speakersList.buttons.NEXT_SPEAKER()}
-          icon={<FontAwesomeIcon icon={faDiagramNext} className="mr-2" />}
+          icon={<FontAwesomeIcon icon={faDiagramSuccessor} className="mr-2" />}
           size="small"
           disabled={!nextSpeakerQueued}
           severity="warning"

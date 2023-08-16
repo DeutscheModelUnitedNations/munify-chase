@@ -1,6 +1,6 @@
 import React from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faBan } from "@fortawesome/free-solid-svg-icons/faBan";
+import { faBan } from "@fortawesome/pro-solid-svg-icons/faBan";
 
 /**
  * This Component is used whenever a section or widget has no data to display.

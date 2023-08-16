@@ -1,5 +1,5 @@
 import React from "react";
-import { faClipboard } from "@fortawesome/free-solid-svg-icons";
+import { faClipboard } from "@fortawesome/pro-solid-svg-icons";
 import { CountryCode } from "@/custom_types";
 import Document from "@components/dashboard/documents/document_template";
 

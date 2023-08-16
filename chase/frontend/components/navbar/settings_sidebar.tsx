@@ -5,11 +5,11 @@ import { SelectButton } from "primereact/selectbutton";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   IconDefinition,
-  faCircleHalfStroke,
+  faDiamondHalfStroke,
   faDisplay,
   faMoon,
   faSun,
-} from "@fortawesome/free-solid-svg-icons";
+} from "@fortawesome/pro-solid-svg-icons";
 import { Dropdown } from "primereact/dropdown";
 import { SmallFlag } from "../flag_templates";
 import { useI18nContext } from "@/i18n/i18n-react";
@@ -56,7 +56,7 @@ export default function SettingsSidebar({
     },
     {
       name: LL.settings.colorTheme.CONTRAST(),
-      icon: faCircleHalfStroke,
+      icon: faDiamondHalfStroke,
       value: "contrast",
     },
   ];

@@ -3,11 +3,12 @@
 import Navbar from "@/components/navbar/navbar";
 import NavButton from "@/components/navbar/button";
 import {
-  faComment,
+  faPodium,
   faHouse,
   faScroll,
-  faSquarePollVertical,
-} from "@fortawesome/free-solid-svg-icons";
+  faPollPeople,
+  faNewspaper
+} from "@fortawesome/pro-solid-svg-icons";
 import { useI18nContext } from "@/i18n/i18n-react";
 
 export default function Participant_Pages_Layout({
@@ -26,12 +27,12 @@ export default function Participant_Pages_Layout({
           title={LL.navbar.DASHBOARD()}
         />
         <NavButton
-          icon={faComment}
+          icon={faPodium}
           link={"/participant/speakers"}
           title={LL.navbar.SPEAKERS()}
         />
         <NavButton
-          icon={faSquarePollVertical}
+          icon={faPollPeople}
           link={"/participant/voting"}
           title={LL.navbar.VOTING()}
         />
@@ -39,6 +40,13 @@ export default function Participant_Pages_Layout({
           icon={faScroll}
           link={"/participant/resolutions"}
           title={LL.navbar.RESOLUTIONS()}
+        />
+        <div className="h-5" />
+        <NavButton
+          icon={faNewspaper}
+          newWindow
+          link="https://presse.mun-sh.de/" // TODO make this link configurable for the chair (Link to external News Page)
+          title={LL.navbar.NEWS()}
         />
       </Navbar>
       {children}

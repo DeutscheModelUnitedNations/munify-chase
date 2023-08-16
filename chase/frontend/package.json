@@ -11,6 +11,7 @@
     "typesafe-i18n": "typesafe-i18n"
   },
   "dependencies": {
+    "@fortawesome/fontawesome-pro": "^6.4.2",
     "@fortawesome/fontawesome-svg-core": "^6.4.0",
     "@fortawesome/free-regular-svg-icons": "^6.4.0",
     "@fortawesome/free-solid-svg-icons": "^6.4.0",

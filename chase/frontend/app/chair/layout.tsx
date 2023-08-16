@@ -4,13 +4,13 @@ import Navbar from "@/components/navbar/navbar";
 import NavButton from "@/components/navbar/button";
 import {
   faChalkboard,
-  faComment,
+  faPodium,
   faScroll,
-  faSquarePollVertical,
+  faPollPeople,
   faUsersLine,
-  faArrowUpRightFromSquare,
-  faSliders,
-} from "@fortawesome/free-solid-svg-icons";
+  faPresentationScreen,
+  faSquareSliders,
+} from "@fortawesome/pro-solid-svg-icons";
 import { useI18nContext } from "@/i18n/i18n-react";
 
 export default function Participant_Pages_Layout({
@@ -24,7 +24,7 @@ export default function Participant_Pages_Layout({
     <div className="flex h-screen w-screen bg-white text-primary-100 dark:bg-primary-100 dark:text-primary-900 shadow-md overflow-hidden">
       <Navbar>
         <NavButton
-          icon={faSliders}
+          icon={faSquareSliders}
           link={"/chair/dashboard"}
           title={LL.navbar.CONFIGURATION()}
         />
@@ -34,12 +34,12 @@ export default function Participant_Pages_Layout({
           title={LL.navbar.ATTENDEES()}
         />
         <NavButton
-          icon={faComment}
+          icon={faPodium}
           link={"/chair/speakers"}
           title={LL.navbar.SPEAKERS()}
         />
         <NavButton
-          icon={faSquarePollVertical}
+          icon={faPollPeople}
           link={"/chair/voting"}
           title={LL.navbar.VOTING()}
         />
@@ -55,7 +55,7 @@ export default function Participant_Pages_Layout({
         />
         <div className="h-5" />
         <NavButton
-          icon={faArrowUpRightFromSquare}
+          icon={faPresentationScreen}
           newWindow
           link="/chair/presentation"
           title={LL.navbar.PRESENTATION()}

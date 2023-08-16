@@ -13,7 +13,7 @@ import {
   faInfoCircle,
   faPaperPlane,
   faQuestionCircle,
-} from "@fortawesome/free-solid-svg-icons";
+} from "@fortawesome/pro-solid-svg-icons";
 import {
   FontAwesomeIcon,
   FontAwesomeIconProps,

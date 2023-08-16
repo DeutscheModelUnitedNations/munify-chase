@@ -9,10 +9,10 @@ import { TabMenu } from "primereact/tabmenu";
 
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
-  faGavel,
+  faCommentExclamation,
   faHistory,
-  faSquarePollVertical,
-} from "@fortawesome/free-solid-svg-icons";
+  faPollPeople,
+} from "@fortawesome/pro-solid-svg-icons";
 
 type Tabs = "current-motions" | "recent-motions" | "recent-votings";
 
@@ -33,7 +33,7 @@ export default function VotingPage() {
             model={[
               {
                 label: LL.participants.voting.ACTIVE_MOTIONS_TAB(),
-                icon: <FontAwesomeIcon icon={faGavel} className="mr-2" />,
+                icon: <FontAwesomeIcon icon={faCommentExclamation} className="mr-2" />,
                 command: () => {
                   setOpenTab("current-motions");
                 },
@@ -49,7 +49,7 @@ export default function VotingPage() {
                 label: LL.participants.voting.RECENT_VOTINGS_TAB(),
                 icon: (
                   <FontAwesomeIcon
-                    icon={faSquarePollVertical}
+                    icon={faPollPeople}
                     className="mr-2"
                   />
                 ),

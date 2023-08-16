@@ -11,12 +11,8 @@ import { confirmDialog, ConfirmDialog } from "primereact/confirmdialog";
 
 import {
   faRightFromBracket,
-  faGear,
-  faSquarePollVertical,
-  faScroll,
-  faComment,
-  faHouse,
-} from "@fortawesome/free-solid-svg-icons";
+  faUserGear,
+} from "@fortawesome/pro-solid-svg-icons";
 
 import { useI18nContext } from "@/i18n/i18n-react";
 
@@ -75,7 +71,7 @@ export default function Navbar({ children }: { children: React.ReactNode }) {
             setSettingsSidebarVisible={setSettingsSidebarVisible}
           />
           <NavButton
-            icon={faGear}
+            icon={faUserGear}
             onClick={() => setSettingsSidebarVisible(true)}
             title={LL.navbar.SETTINGS()}
           />

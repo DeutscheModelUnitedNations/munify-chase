@@ -1,11 +1,12 @@
 import { CountryCode, Voting } from "@/custom_types";
 import getCountryNameByCode from "@/misc/get_country_name_by_code";
-import { faFlag } from "@fortawesome/free-solid-svg-icons/faFlag";
-import { faGavel } from "@fortawesome/free-solid-svg-icons/faGavel";
-import { faInfoCircle } from "@fortawesome/free-solid-svg-icons/faInfoCircle";
+import { faFlag } from "@fortawesome/pro-solid-svg-icons/faFlag";
+import { faGavel } from "@fortawesome/pro-solid-svg-icons/faGavel";
+import { faInfoCircle } from "@fortawesome/pro-solid-svg-icons/faInfoCircle";
+import { faPieChart } from "@fortawesome/pro-solid-svg-icons";
+import { faCheckToSlot } from "@fortawesome/pro-solid-svg-icons/faCheckToSlot";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { LargeFlag } from "@components/flag_templates";
-import { faPieChart } from "@fortawesome/free-solid-svg-icons";
 import { useI18nContext } from "@/i18n/i18n-react";
 
 /**
@@ -72,18 +73,26 @@ export default function InformationSection({
             </div>
           </>
         )}
-        <FontAwesomeIcon
-          icon={faGavel}
-          className="text-xl justify-self-center ml-2"
-        />
         {substantiveVote ? (
-          <div className="text-sm">
-            {LL.participants.voting.votingInfo.votingMode.SUBSTANTIAL_VOTING()}
-          </div>
+          <>
+            <FontAwesomeIcon
+              icon={faCheckToSlot}
+              className="text-xl justify-self-center ml-2"
+            />
+            <div className="text-sm">
+              {LL.participants.voting.votingInfo.votingMode.SUBSTANTIAL_VOTING()}
+            </div>
+          </>
         ) : (
-          <div className="text-sm">
-            {LL.participants.voting.votingInfo.votingMode.PROCEDURAL_VOTING()}
-          </div>
+          <>
+            <FontAwesomeIcon
+              icon={faGavel}
+              className="text-xl justify-self-center ml-2"
+            />
+            <div className="text-sm">
+              {LL.participants.voting.votingInfo.votingMode.PROCEDURAL_VOTING()}
+            </div>
+          </>
         )}
         <FontAwesomeIcon
           icon={faPieChart}

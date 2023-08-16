@@ -1,6 +1,6 @@
 import React from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faShareNodes } from "@fortawesome/free-solid-svg-icons/faShareNodes";
+import { faShareNodes } from "@fortawesome/pro-solid-svg-icons/faShareNodes";
 import WidgetBoxTemplate from "@/components/widget_box_template";
 import { SmallFlag } from "@/components/flag_templates";
 import { CountryCode } from "@/custom_types";

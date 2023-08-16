@@ -9,10 +9,10 @@ import { TabMenu } from "primereact/tabmenu";
 
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
-  faGavel,
-  faHistory,
-  faSquarePollVertical,
-} from "@fortawesome/free-solid-svg-icons";
+  faCommentExclamation,
+  faClockRotateLeft,
+  faPollPeople,
+} from "@fortawesome/pro-solid-svg-icons";
 import { SplitButton } from "primereact/splitbutton";
 
 type Tabs = "current-motions" | "recent-motions" | "recent-votings";
@@ -38,14 +38,14 @@ export default function ChairVoting() {
             model={[
               {
                 label: LL.participants.voting.ACTIVE_MOTIONS_TAB(),
-                icon: <FontAwesomeIcon icon={faGavel} className="mr-2" />,
+                icon: <FontAwesomeIcon icon={faCommentExclamation} className="mr-2" />,
                 command: () => {
                   setOpenTab("current-motions");
                 },
               },
               {
                 label: LL.participants.voting.RECENT_MOTIONS_TAB(),
-                icon: <FontAwesomeIcon icon={faHistory} className="mr-2" />,
+                icon: <FontAwesomeIcon icon={faClockRotateLeft} className="mr-2" />,
                 command: () => {
                   setOpenTab("recent-motions");
                 },
@@ -54,7 +54,7 @@ export default function ChairVoting() {
                 label: LL.participants.voting.RECENT_VOTINGS_TAB(),
                 icon: (
                   <FontAwesomeIcon
-                    icon={faSquarePollVertical}
+                    icon={faPollPeople}
                     className="mr-2"
                   />
                 ),
@@ -72,7 +72,7 @@ export default function ChairVoting() {
               <>
                 <SplitButton
                   label={LL.chairs.voting.BUTTON_NEW_MOTION()}
-                  icon={<FontAwesomeIcon icon={faGavel} className="mr-2" />}
+                  icon={<FontAwesomeIcon icon={faCommentExclamation} className="mr-2" />}
                   className="w-full"
                   onClick={() => {}}
                   model={[]}

@@ -3,7 +3,7 @@ import { InputMask } from "primereact/inputmask";
 import { useI18nContext } from "@/i18n/i18n-react";
 import { Button } from "primereact/button";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faPlus, faTimes } from "@fortawesome/free-solid-svg-icons";
+import { faPlus, faTimes } from "@fortawesome/pro-solid-svg-icons";
 import { ToastContext } from "@/contexts/messages/toast";
 
 /**

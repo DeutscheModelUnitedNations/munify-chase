@@ -7,12 +7,8 @@ import { NormalFlag as Flag } from "@components/flag_templates";
 import { useI18nContext } from "@/i18n/i18n-react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
-  faArrowDown,
-  faArrowUp,
-  faDiagramNext,
-  faGripVertical,
   faXmark,
-} from "@fortawesome/free-solid-svg-icons";
+} from "@fortawesome/pro-solid-svg-icons";
 import { Button } from "primereact/button";
 
 /**

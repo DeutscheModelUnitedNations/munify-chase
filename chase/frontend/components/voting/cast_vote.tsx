@@ -6,8 +6,8 @@ import {
   faCircle,
   faMinusCircle,
   faPlusCircle,
-  faSpinner,
-} from "@fortawesome/free-solid-svg-icons";
+  faCircleNotch,
+} from "@fortawesome/pro-solid-svg-icons";
 import { useI18nContext } from "@/i18n/i18n-react";
 import { AnimatePresence, motion } from "framer-motion";
 
@@ -42,7 +42,7 @@ export default function CastVote({
               className="flex justify-stretch items-center"
             >
               <FontAwesomeIcon
-                icon={faSpinner}
+                icon={faCircleNotch}
                 className="text-primary animate-spin text-3xl"
               />
             </motion.div>

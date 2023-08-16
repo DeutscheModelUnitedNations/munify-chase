@@ -1,18 +1,15 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import WidgetTemplate from "../widget_template";
 import WidgetBoxTemplate from "../widget_box_template";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Motion } from "@/custom_types";
 import {
   faCircleCheck,
-  faCircleQuestion,
-  faGavel,
-  faSquarePollVertical,
-  faTrash,
+  faCheckToSlot,
+  faXmarkToSlot,
   faTrashAlt,
-  faXmark,
   faXmarkCircle,
-} from "@fortawesome/free-solid-svg-icons";
+} from "@fortawesome/pro-solid-svg-icons";
 import NoDataPlaceholder from "../no_data_placeholder";
 import { SmallFlag } from "../flag_templates";
 import { useI18nContext } from "@/i18n/i18n-react";
@@ -71,33 +68,36 @@ export default function Motions({
 
                     {motion.status === "in-voting" && (
                       <FontAwesomeIcon
-                        icon={faSquarePollVertical}
+                        icon={faCheckToSlot}
                         className=" text-3xl text-primary dark:text-primary-950 fa-beat-fade mr-1"
                       />
                     )}
 
-                    {(motion.status === "passed" ||
-                      motion.status === "failed") &&
-                      motion.voting && (
+                    {motion.status === "passed" &&
+                      (motion.voting ? (
                         <FontAwesomeIcon
-                          icon={faSquarePollVertical}
-                          className=" text-2xl text-gray-icon dark:text-primary-400"
+                          icon={faCheckToSlot}
+                          className="text-2xl text-green-700"
                         />
-                      )}
+                      ) : (
+                        <FontAwesomeIcon
+                          icon={faCircleCheck}
+                          className="text-2xl text-green-700"
+                        />
+                      ))}
 
-                    {motion.status === "passed" && (
-                      <FontAwesomeIcon
-                        icon={faCircleCheck}
-                        className="text-2xl text-green-700"
-                      />
-                    )}
-
-                    {motion.status === "failed" && (
-                      <FontAwesomeIcon
-                        icon={faXmarkCircle}
-                        className="text-2xl text-red-600"
-                      />
-                    )}
+                    {motion.status === "failed" &&
+                      (motion.voting ? (
+                        <FontAwesomeIcon
+                          icon={faXmarkToSlot}
+                          className="text-2xl text-red-600"
+                        />
+                      ) : (
+                        <FontAwesomeIcon
+                          icon={faXmarkCircle}
+                          className="text-2xl text-red-600"
+                        />
+                      ))}
 
                     {chairOptions && (
                       <>
@@ -116,7 +116,7 @@ export default function Motions({
                               text
                             />
                             <Button
-                              faIcon={faSquarePollVertical}
+                              faIcon={faCheckToSlot}
                               faIconClassName="dark:text-white text-xl"
                               size="small"
                             />

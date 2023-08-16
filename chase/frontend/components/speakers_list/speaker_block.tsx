@@ -5,9 +5,9 @@ import {
   faHourglassStart,
   faHourglassHalf,
   faHourglassEnd,
-  faClock,
+  faHourglassClock,
   faBell,
-} from "@fortawesome/free-solid-svg-icons";
+} from "@fortawesome/pro-solid-svg-icons";
 import "./timer_animations.scss";
 import { CurrentSpeaker } from "@/custom_types";
 import { LargeFlag } from "../flag_templates";
@@ -77,7 +77,7 @@ export default function SpeakerBlock({
               </div>
               <div className="text-md text-primary-300 dark:text-primary-600 flex items-center gap-3">
                 {timerState === "active" && <HourglasAnimation />}
-                {timerState === "paused" && <FontAwesomeIcon icon={faClock} />}
+                {timerState === "paused" && <FontAwesomeIcon icon={faHourglassClock} />}
                 {timerState === "overtime" && (
                   <FontAwesomeIcon
                     icon={faBell}

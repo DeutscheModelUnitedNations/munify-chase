@@ -14,10 +14,10 @@ import {
   FontAwesomeIconProps,
 } from "@fortawesome/react-fontawesome";
 import {
-  faUser,
-  faUserSlash,
-  faCalendarXmark,
-} from "@fortawesome/free-solid-svg-icons";
+  faUserCheck,
+  faUserXmark,
+  faUserClock,
+} from "@fortawesome/pro-solid-svg-icons";
 import { attendanceTestData } from "@/test_data";
 
 interface AttendanceButtonOptions {
@@ -36,17 +36,17 @@ export default function ChairAttendees() {
 
   const attendanceOptions: AttendanceButtonOptions[] = [
     {
-      icon: faUser,
+      icon: faUserCheck,
       label: LL.chairs.attendance.PRESENT(),
       value: "present",
     },
     {
-      icon: faCalendarXmark,
+      icon: faUserClock,
       label: LL.chairs.attendance.EXCUSED(),
       value: "excused",
     },
     {
-      icon: faUserSlash,
+      icon: faUserXmark,
       label: LL.chairs.attendance.ABSENT(),
       value: "absent",
     },
@@ -128,17 +128,17 @@ export default function ChairAttendees() {
                 <CounterCell
                   count={presentAttendees}
                   lable={LL.chairs.attendance.PRESENT()}
-                  icon={faUser}
+                  icon={faUserCheck}
                 />
                 <CounterCell
                   count={excusedAttendees}
                   lable={LL.chairs.attendance.EXCUSED()}
-                  icon={faCalendarXmark}
+                  icon={faUserClock}
                 />
                 <CounterCell
                   count={absentAttendees}
                   lable={LL.chairs.attendance.ABSENT()}
-                  icon={faUserSlash}
+                  icon={faUserXmark}
                 />
               </div>
             </HeaderInfoBox>

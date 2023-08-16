@@ -7,7 +7,7 @@ import {
   faHourglassHalf,
   faMinusCircle,
   faPlusCircle,
-} from "@fortawesome/free-solid-svg-icons";
+} from "@fortawesome/pro-solid-svg-icons";
 import { IconProp } from "@fortawesome/fontawesome-svg-core";
 import { useI18nContext } from "@/i18n/i18n-react";
 import { AnimatePresence, motion } from "framer-motion";
@@ -150,7 +150,7 @@ function VotesCard({
 
   return (
     <div
-      className="flex-1 h-full flex flex-col justify-start gap-3 bg-white dark:bg-primary-100 rounded-md p-2 transition-all duration-300 hover:shadow-sm"
+      className="flex-1 h-full flex flex-col justify-start gap-3 bg-slate-50 dark:bg-primary-100 rounded-md p-2 transition-all duration-300 hover:shadow-sm"
       style={{ gridColumn: colSpanClass }}
     >
       <div className="flex justify-center items-center gap-3 text-lg">

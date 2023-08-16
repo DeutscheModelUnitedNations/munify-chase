@@ -1,6 +1,6 @@
 import React from "react";
 import WidgetTemplate from "@components/widget_template";
-import { faArrowDown } from "@fortawesome/free-solid-svg-icons";
+import { faArrowDown } from "@fortawesome/pro-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useI18nContext } from "@/i18n/i18n-react";
 

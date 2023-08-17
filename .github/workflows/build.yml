@@ -20,6 +20,7 @@ jobs:
         run: npm ci
         env:
           FONTAWESOME_NPM_AUTH_TOKEN: ${{ secrets.FONTAWESOME_NPM_AUTH_TOKEN }}
+
       - name: Run build
         run: npm run build
   chase-build-backend:
@@ -31,8 +32,9 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v2
 
-      - name: Install all dependencies
-        run: npm run install-all
+      - name: Install dependencies
+        working-directory: ./chase/backend
+        run: npm ci
 
       - name: Run build
         working-directory: ./chase/backend

@@ -32,8 +32,12 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v2
 
-      - name: Install dependencies
+      - name: Install dependencies (backend)
         working-directory: ./chase/backend
+        run: npm ci
+
+      - name: Install dependencies (auth)
+        working-directory: ./auth
         run: npm ci
 
       - name: Run build

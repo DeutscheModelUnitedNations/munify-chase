@@ -1,5 +1,5 @@
 # auth
-This is a library project, it only exports modules but is not runnable or intended to run as a standalone application. It can/should be used by other projects to manage authentication and permissions.
+This is a library, it only exports modules but is not runnable or intended to run as a standalone application. It can/should be used by other projects to manage authentication and permissions.
 
 ## ZITADEL
 [ZITADEL](https://zitadel.com/) is the OpenID Connect issuer used in munify. This works the same way as "Login with Google" or Microsoft, Github etc. does. Except we selfhost the issuer, instead of relying on a company to do this for us.

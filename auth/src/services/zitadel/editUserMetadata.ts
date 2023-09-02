@@ -1,12 +1,8 @@
-import { Metadata } from "./parseMetadata";
+import {requireEnv} from "../../../../util/envloader";
+import {Metadata} from "./parseMetadata";
 
-const ZITADEL_SERVICE_USER_PERSONAL_ACCESS_TOKEN =
-  process.env.ZITADEL_SERVICE_USER_PERSONAL_ACCESS_TOKEN;
-if (!ZITADEL_SERVICE_USER_PERSONAL_ACCESS_TOKEN) {
-  throw new Error(
-    "ZITADEL_SERVICE_USER_PERSONAL_ACCESS_TOKEN env var is not defined",
-  );
-}
+const OPENID_URL = requireEnv("OPENID_URL");
+const ZITADEL_SERVICE_USER_PERSONAL_ACCESS_TOKEN = requireEnv("ZITADEL_SERVICE_USER_PERSONAL_ACCESS_TOKEN");
 
 export async function setUserMetadata(
   userId: string,
@@ -15,7 +11,7 @@ export async function setUserMetadata(
   return Promise.all(
     Object.entries(metadata).map(async ([key, data]) => {
       const res = await fetch(
-        `${process.env.OPENID_URL}/management/v1/users/${userId}/metadata/${key}`,
+        `${OPENID_URL}/management/v1/users/${userId}/metadata/${key}`,
         {
           method: "POST",
           headers: {

@@ -1,19 +1,19 @@
 {
   "scripts": {
     "dev": "npm-run-all -p dev:**",
-    "dev:chase:backend": "cd ./chase/backend && npm run dev",
+    "dev:chase:backend": "cd ./chase/backend && bun run dev",
     "dev:chase:frontend": "cd ./chase/frontend && npm run dev",
     "dev:auth": "cd ./auth && npm run dev",
-    "install-all": "npm i && npm-run-all install-all:**",
-    "install-all:chase:backend": "cd ./chase/backend && npm i && npx npm-check-updates",
-    "install-all:chase:frontend": "cd ./chase/frontend && npm i && npx npm-check-updates",
-    "install-all:auth": "cd ./auth && npm i && npx npm-check-updates",
+    "install-all": "bun i && npm-run-all install-all:**",
+    "install-all:chase:backend": "cd ./chase/backend && bun i",
+    "install-all:chase:frontend": "cd ./chase/frontend && bun i",
+    "install-all:auth": "cd ./auth && bun i",
     "format": "rome format . --write",
     "lint": "rome check . --apply",
     "test": "echo TODO"
   },
   "devDependencies": {
     "npm-run-all": "^4.1.5",
-    "rome": "12.1.1"
+    "rome": "12.1.3"
   }
 }

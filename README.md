@@ -14,7 +14,7 @@ See the existing components and their directory below
 
 
 ## Develop Locally
-Make sure you have [Docker](https://www.docker.com/get-started/) and [Node.js](https://nodejs.org/en/download/current) installed
+Make sure you have [Docker](https://www.docker.com/get-started/), [bun](https://bun.sh/) and [node](https://nodejs.org/en/download/current) installed
 
 Clone the project
 
@@ -31,13 +31,13 @@ Go to the project directory
 Install dependencies via the custom install-all script
 
 ```bash
-  npm run install-all
+  bun run install-all
 ```
 
 Start all components in dev mode
 
 ```bash
-  npm run dev
+  bun run dev
 ```
 
 Now every component is installed and running. Please see the specific components for details like running port etc. and how to get going.

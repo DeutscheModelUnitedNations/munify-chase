@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useState } from "react";
 import { useAuth } from "./auth";
 import { edenTreaty } from "@elysiajs/eden";
-import type { App } from "../../elysia-backend/src/index";
+import type { App } from "../../backend/src/main";
 
 let client = edenTreaty<App>("http://localhost:3001");
 const BackendContext = createContext(client);

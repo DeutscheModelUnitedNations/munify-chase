@@ -1,7 +1,7 @@
 console.info("Building...");
 
 const output = await Bun.build({
-    entrypoints: ["./src/index.ts"],
+    entrypoints: ["./src/main.ts"],
     outdir: "./out",
     target: "bun",
     format: "esm",

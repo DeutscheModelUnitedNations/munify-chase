@@ -1,77 +1,63 @@
-import { SignJWT } from "jose";
-import { createPrivateKey } from "crypto";
-import { User } from "../../types/metadata";
-import { Permissions } from "../../types/permissions";
+import {User} from "../../types/metadata";
+import {Permissions} from "../../types/permissions";
+import {requireEnv} from "../../../../util/envloader";
 import {
   ZITADEL_METADATA_CLAIM,
   parseMetadata,
 } from "../zitadel/parseMetadata";
 
-const openidJsonSecretRaw = process.env.OPENID_APPLICATION_JSON_SECRET;
-if (!openidJsonSecretRaw) {
-  throw new Error("OPENID_APPLICATION_JSON_SECRET env var must be set");
-}
-const parsedSecret = JSON.parse(openidJsonSecretRaw);
+const OPENID_URL = requireEnv("OPENID_URL");
+const ZITADEL_USERNAME = requireEnv("ZITADEL_USERNAME");
+const ZITADEL_PASSWORD = requireEnv("ZITADEL_PASSWORD");
 
-function generateToken() {
-  return new SignJWT({})
-    .setIssuedAt()
-    .setExpirationTime("1h")
-    .setIssuer(parsedSecret.clientId)
-    .setAudience("http://localhost:7788") //TODO replace with real values
-    .setSubject(parsedSecret.clientId)
-    .setProtectedHeader({ alg: "RS256", kid: parsedSecret.keyId })
-    .sign(createPrivateKey(parsedSecret.key));
+interface WellKnownData {
+  introspection_endpoint: string;
 }
 
-let jwt = generateToken();
+async function fetchWellKnownData(): Promise<WellKnownData | undefined> {
+  try {
+    const res = await fetch(
+      `${OPENID_URL}/.well-known/openid-configuration`
+    );
 
-setInterval(() => {
-  jwt = generateToken();
-}, 1000 * 60 * 58);
-
-const wellKnownData = (async () => {
-  async function run() {
-    try {
-      //TODO could be a good idea to use openid-client for at least fetching the well known data and creating an issuer instance
-      const res = await fetch(
-        `${process.env.OPENID_URL}/.well-known/openid-configuration`,
-      );
-
-      if (!res.status.toString().startsWith("2")) {
-        throw new Error(`Well known data request errored: ${await res.text()}`);
-      }
-      const data = await res.json();
-      console.info("Well known data fetched successfully");
-      return data;
-    } catch (error) {
-      console.error("Failed to fetch well known data, retrying...", error);
-      setTimeout(() => {
-        run();
-      }, 1000);
+    if (!res.status.toString().startsWith("2")) {
+      throw new Error(`Well known data request errored: ${await res.text()}`);
     }
+    const data = await res.json();
+    console.info("Well known data fetched successfully");
+    return data;
+  } catch (error) {
+    console.error("Failed to fetch well known data, retrying...", error);
+    return undefined;
   }
-  return run();
-})();
+}
+
+let wellKnownData = await fetchWellKnownData();
 
 /**
  * Returns the parsed user data or undefined if the user is not authorized
  */
 export async function introspect(
   token: string,
-): Promise<{ user: User; permissions: Permissions } | undefined> {
+): Promise<{user: User; permissions: Permissions} | undefined> {
   const params = new URLSearchParams();
-  params.append(
-    "client_assertion_type",
-    "urn:ietf:params:oauth:client-assertion-type:jwt-bearer",
-  );
-  params.append("client_assertion", await jwt);
   params.append("token", token);
 
-  const req = await fetch((await wellKnownData).introspection_endpoint, {
+  const authorizationHeaderContent = Buffer.from(`${ZITADEL_USERNAME}:${ZITADEL_PASSWORD}`).toString("base64");
+
+  // retry fetch if we havent succeeded yet
+  if (!wellKnownData) {
+    wellKnownData = await fetchWellKnownData();
+    if (!wellKnownData) {
+      throw new Error("Could not fetch well known data");
+    }
+  }
+  const req = await fetch(wellKnownData.introspection_endpoint, {
     method: "POST",
     headers: {
       "Content-Type": "application/x-www-form-urlencoded",
+      Authorization: `Basic ${authorizationHeaderContent}`
+
     },
     body: params,
   });

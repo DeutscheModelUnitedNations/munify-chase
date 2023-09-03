@@ -38,7 +38,7 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     resolve(
       new UserManager({
         authority: "http://localhost:7788",
-        client_id: "222200061369581571@dmun",
+        client_id: "230292295688192003@dmun",
         redirect_uri: "http://localhost:3000",
         post_logout_redirect_uri: "http://localhost:3000",
         scope: "openid profile email address urn:zitadel:iam:user:metadata",

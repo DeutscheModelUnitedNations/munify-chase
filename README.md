@@ -40,8 +40,15 @@ Start all components in dev mode
   bun run dev
 ```
 
-Now every component is installed and running. Please see the specific components for details like running port etc. and how to get going.
+Now every component required for development is installed and running. Please see the specific components for details like running port etc. and how to get going.
 You can find various other scripts at root level, e.g. for testing or linting, please see the scripts section in the [package.json](./package.json).
+
+Please note that the dev command is not running every possible component (you don't need everything for developing). E.g. while developing, no instance of our auth provider ZITADEL is started. Your can find more on those exceptions in the component documentations. To run all components use:
+
+```bash
+  bun run dev-full
+```
+You might need to do some extra configuration to make the components actually use the extra spawned processes. Please refer to the component docs for further info.
 ## FAQ
 
 #### Can I use this for my conference outside of DMUN?

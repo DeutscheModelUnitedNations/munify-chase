@@ -1,10 +1,12 @@
-import { requireEnv } from "../../../../munify-util/src/envloader";
+import { requireEnvWhenAuthNotMocked } from "../../../../munify-util/src/envloader";
 import { Metadata } from "./parseMetadata";
 
-const OPENID_URL = requireEnv("OPENID_URL");
-const ZITADEL_SERVICE_USER_PERSONAL_ACCESS_TOKEN = requireEnv(
+const OPENID_URL = requireEnvWhenAuthNotMocked("OPENID_URL");
+const ZITADEL_SERVICE_USER_PERSONAL_ACCESS_TOKEN = requireEnvWhenAuthNotMocked(
   "ZITADEL_SERVICE_USER_PERSONAL_ACCESS_TOKEN",
 );
+
+export type MetadataSetter = (userId: string, metadata: Partial<Metadata>) => Promise<Response[]>;
 
 export async function setUserMetadata(
   userId: string,

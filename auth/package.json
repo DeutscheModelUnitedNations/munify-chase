@@ -5,7 +5,7 @@
     "dev:docker": "docker compose up --remove-orphans"
   },
   "devDependencies": {
-    "@types/node": "^20.4.8"
+    "bun-types": "latest"
   },
   "main": "./src/index.ts",
   "dependencies": {

@@ -1,14 +1,14 @@
 import { User } from "../../types/metadata";
 import { Permissions } from "../../types/permissions";
-import { requireEnv } from "munify-util";
+import { requireEnvWhenAuthNotMocked } from "munify-util";
 import {
   ZITADEL_METADATA_CLAIM,
   parseMetadata,
 } from "../zitadel/parseMetadata";
 
-const OPENID_URL = requireEnv("OPENID_URL");
-const ZITADEL_USERNAME = requireEnv("ZITADEL_USERNAME");
-const ZITADEL_PASSWORD = requireEnv("ZITADEL_PASSWORD");
+const OPENID_URL = requireEnvWhenAuthNotMocked("OPENID_URL");
+const ZITADEL_USERNAME = requireEnvWhenAuthNotMocked("ZITADEL_USERNAME");
+const ZITADEL_PASSWORD = requireEnvWhenAuthNotMocked("ZITADEL_PASSWORD");
 
 interface WellKnownData {
   introspection_endpoint: string;
@@ -25,7 +25,7 @@ async function fetchWellKnownData(): Promise<WellKnownData | undefined> {
     console.info("Well known data fetched successfully");
     return data;
   } catch (error) {
-    console.error("Failed to fetch well known data, retrying...", error);
+    console.error("Failed to fetch well known data, retrying... (This is ok at process startup, or if running in dev mode)", error);
     return undefined;
   }
 }

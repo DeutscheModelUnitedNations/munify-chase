@@ -21,7 +21,7 @@
     "@fastify/swagger": "^8.4.0",
     "@fastify/swagger-ui": "^1.8.1",
     "@types/express-session": "^1.17.7",
-    "@types/node": "^20.2.5",
+    "bun-types": "latest"
     "dotenv": "^16.0.3",
     "esbuild": "^0.18.0",
     "esbuild-plugin-define": "^0.3.0",

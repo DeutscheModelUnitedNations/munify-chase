@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "npm run devserver & bun run typesafe-i18n",
+    "dev": "concurrently \"npm:devserver\" \"npm:typesafe-i18n\"",
     "devserver": "next dev",
     "build": "next build",
     "start": "next start",
@@ -16,7 +16,7 @@
     "@fortawesome/free-regular-svg-icons": "^6.4.2",
     "@fortawesome/free-solid-svg-icons": "^6.4.2",
     "@fortawesome/react-fontawesome": "^0.2.0",
-    "@types/node": "20.4.8",
+    "bun-types": "latest",
     "@types/react": "18.2.19",
     "@types/react-dom": "18.2.7",
     "autoprefixer": "10.4.14",
@@ -39,6 +39,7 @@
     "typescript": "5.1.6"
   },
   "devDependencies": {
+    "concurrently": "^8.2.1",
     "nodemon": "^3.0.1",
     "sass": "^1.64.2"
   }

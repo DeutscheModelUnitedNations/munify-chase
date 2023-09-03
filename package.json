@@ -1,19 +1,19 @@
 {
   "scripts": {
-    "dev": "npm-run-all -p dev:**",
+    "dev": "bun run dev:chase:backend & bun run dev:chase:frontend & bun run dev:auth",
     "dev:chase:backend": "cd ./chase/backend && bun run dev",
-    "dev:chase:frontend": "cd ./chase/frontend && npm run dev",
-    "dev:auth": "cd ./auth && npm run dev",
-    "install-all": "bun i && npm-run-all install-all:**",
+    "dev:chase:frontend": "cd ./chase/frontend && bun run dev",
+    "dev:auth": "cd ./auth && bun run dev",
+    "install-all": "bun i & bun run install-all:chase:backend & bun run install-all:chase:frontend & bun run install-all:auth",
     "install-all:chase:backend": "cd ./chase/backend && bun i",
     "install-all:chase:frontend": "cd ./chase/frontend && bun i",
     "install-all:auth": "cd ./auth && bun i",
-    "format": "rome format . --write",
-    "lint": "rome check . --apply",
+    "format": "biome format . --write",
+    "lint": "biome check . --apply",
     "test": "echo TODO"
   },
   "devDependencies": {
-    "npm-run-all": "^4.1.5",
-    "rome": "12.1.3"
+    "@biomejs/biome": "^1.0.0",
+    "@types/node": "^20.5.9"
   }
 }

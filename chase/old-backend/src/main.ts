@@ -97,7 +97,7 @@ export let server: FastifyInstance;
       },
     });
 
-    // rome-ignore lint: console output is intended
+    // biome-ignore lint: console output is intended
     console.log(`
 ╔══════════════════════════════════════════════════════════════════╗
 ║ Serving API documentation on http://localhost:${PORT}/documentation ║

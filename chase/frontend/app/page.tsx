@@ -1,10 +1,10 @@
 "use client";
-import React, {useEffect} from "react";
+import React, { useEffect } from "react";
 import Image from "next/image";
 import { Button } from "primereact/button";
 import { useRouter } from "next/navigation";
-import {useBackend} from "@/contexts/backend";
-import {useAuth} from "@/contexts/auth";
+import { useBackend } from "@/contexts/backend";
+import { useAuth } from "@/contexts/auth";
 
 export default function Home() {
   const router = useRouter();

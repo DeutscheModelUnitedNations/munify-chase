@@ -1,8 +1,10 @@
-import {requireEnv} from "../../../../util/envloader";
-import {Metadata} from "./parseMetadata";
+import { requireEnv } from "../../../../munify-util/src/envloader";
+import { Metadata } from "./parseMetadata";
 
 const OPENID_URL = requireEnv("OPENID_URL");
-const ZITADEL_SERVICE_USER_PERSONAL_ACCESS_TOKEN = requireEnv("ZITADEL_SERVICE_USER_PERSONAL_ACCESS_TOKEN");
+const ZITADEL_SERVICE_USER_PERSONAL_ACCESS_TOKEN = requireEnv(
+  "ZITADEL_SERVICE_USER_PERSONAL_ACCESS_TOKEN",
+);
 
 export async function setUserMetadata(
   userId: string,

@@ -1,10 +1,9 @@
-// rome-ignore lint/correctness/noUnusedVariables:
 import { FastifyReply, FastifyRequest } from "fastify";
 import { Permissions, User, introspect } from "auth";
 
 // augment the fastify module to provide intellisense for the session object on the req in handlers
 declare module "fastify" {
-  // rome-ignore lint/suspicious/noRedeclare:
+  // rome-ignore lint/suspicious/noRedeclare: <explanation>
   interface FastifyRequest {
     // session: SessionType;
     session: {

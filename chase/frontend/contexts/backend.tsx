@@ -44,7 +44,7 @@ const BackendProvider = ({ children }: { children: React.ReactNode }) => {
   const [backend, _] = useState(client);
 
   return (
-    // rome-ignore lint/suspicious/noExplicitAny: typesyript cant detect the actual type here
+    // biome-ignore lint/suspicious/noExplicitAny: typesyript cant detect the actual type here
     <BackendContext.Provider value={backend as any}>
       {children}
     </BackendContext.Provider>

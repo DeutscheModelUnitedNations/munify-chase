@@ -1,6 +1,6 @@
-import {User} from "../../types/metadata";
-import {Permissions} from "../../types/permissions";
-import {requireEnv} from "../../../../util/envloader";
+import { User } from "../../types/metadata";
+import { Permissions } from "../../types/permissions";
+import { requireEnv } from "munify-util";
 import {
   ZITADEL_METADATA_CLAIM,
   parseMetadata,
@@ -16,9 +16,7 @@ interface WellKnownData {
 
 async function fetchWellKnownData(): Promise<WellKnownData | undefined> {
   try {
-    const res = await fetch(
-      `${OPENID_URL}/.well-known/openid-configuration`
-    );
+    const res = await fetch(`${OPENID_URL}/.well-known/openid-configuration`);
 
     if (!res.status.toString().startsWith("2")) {
       throw new Error(`Well known data request errored: ${await res.text()}`);
@@ -39,11 +37,13 @@ let wellKnownData = await fetchWellKnownData();
  */
 export async function introspect(
   token: string,
-): Promise<{user: User; permissions: Permissions} | undefined> {
+): Promise<{ user: User; permissions: Permissions } | undefined> {
   const params = new URLSearchParams();
   params.append("token", token);
 
-  const authorizationHeaderContent = Buffer.from(`${ZITADEL_USERNAME}:${ZITADEL_PASSWORD}`).toString("base64");
+  const authorizationHeaderContent = Buffer.from(
+    `${ZITADEL_USERNAME}:${ZITADEL_PASSWORD}`,
+  ).toString("base64");
 
   // retry fetch if we havent succeeded yet
   if (!wellKnownData) {
@@ -56,8 +56,7 @@ export async function introspect(
     method: "POST",
     headers: {
       "Content-Type": "application/x-www-form-urlencoded",
-      Authorization: `Basic ${authorizationHeaderContent}`
-
+      Authorization: `Basic ${authorizationHeaderContent}`,
     },
     body: params,
   });

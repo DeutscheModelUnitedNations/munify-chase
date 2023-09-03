@@ -1,8 +1,8 @@
 {
   "name": "chase-backend",
   "scripts": {
-    "build": "tsc --noEmit && node build.js",
-    "dev": "npm-run-all -p dev:server dev:db",
+    "build": "tsc --noEmit & node build.js",
+    "dev": "bun run dev:server & bun run dev:db",
     "dev:server": "ts-node-dev src/main.ts -p tsconfig.json --respawn",
     "dev:db": "docker compose up"
   },
@@ -25,7 +25,6 @@
     "dotenv": "^16.0.3",
     "esbuild": "^0.18.0",
     "esbuild-plugin-define": "^0.3.0",
-    "npm-run-all": "^4.1.5",
     "prisma": "^4.15.0",
     "ts-node": "^10.9.1",
     "ts-node-dev": "^2.0.0",

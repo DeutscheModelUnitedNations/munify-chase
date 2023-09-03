@@ -10,11 +10,11 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v2
-
+      - name: Setup Bun.js
+        uses: oven-sh/setup-bun@v1
+      
       - name: Install dependencies
-        run: npm ci
+        run: bun i
 
       - name: Run biome
-        run: npx biome ci .
+        run: bun x biome ci .

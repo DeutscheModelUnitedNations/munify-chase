@@ -2,13 +2,13 @@ name: Build
 on: [pull_request]
 
 # TODO run tests too
+# TODO bring the frontend to bun when its ready
 jobs:
   chase-build-frontend:
     runs-on: ubuntu-latest
     defaults:
       run:
         working-directory: ./chase/frontend
-
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
@@ -27,19 +27,20 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v2
+      - name: Setup Bun.js
+        uses: oven-sh/setup-bun@v1
 
       - name: Install all dependencies
-        run: npm run install-all
+        run: bun run install-all
 
       - name: Run build
         working-directory: ./chase/backend
-        run: npm run build
+        run: bun run build
         
+        # test if the server starts without errors
       - name: Run the server
         id: run
         env:
           CI: "true"
         run:  | 
-          timeout 20s node ./build/main.js || true
+          timeout 20s bun run ./build/main.js || true

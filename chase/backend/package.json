@@ -3,7 +3,9 @@
   "version": "1.0.44",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "bun run --watch src/main.ts"
+    "dev": "concurrently \"npm:dev:server\" \"npm:dev:db\"",
+    "dev:server": "bun run --watch src/main.ts",
+    "dev:db": "docker compose up"
   },
   "dependencies": {
     "@elysiajs/bearer": "^0.6.0",
@@ -17,6 +19,7 @@
   },
   "devDependencies": {
     "bun-types": "latest",
+    "concurrently": "^8.2.1",
     "munify-util": "../../munify-util",
     "prisma": "^5.1.1"
   },

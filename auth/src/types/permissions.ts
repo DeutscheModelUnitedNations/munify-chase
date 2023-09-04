@@ -1,6 +1,6 @@
 import { Commitee, ConferenceId } from "./metadata";
 import { Metadata } from "../services/zitadel/parseMetadata";
-import { setUserMetadata as defaultSetUserMetadataImplementation } from "../services/zitadel/editUserMetadata";
+import { type MetadataSetter } from "../services/zitadel/editUserMetadata";
 
 /**
  * This class is a wrapper around the user metadata and abstracts the actual business logic for the permissions in the system.
@@ -11,7 +11,7 @@ export class Permissions {
   constructor(
     private readonly userId: string,
     private readonly metadata: Metadata,
-    private readonly metadataSetter = defaultSetUserMetadataImplementation, // make this exchangeable for dev mocking
+    private readonly metadataSetter: MetadataSetter, // make this exchangeable for dev mocking
   ) {}
 
   setConferenceAdmin(conference: ConferenceId) {

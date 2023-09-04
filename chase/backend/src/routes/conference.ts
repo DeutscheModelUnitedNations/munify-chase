@@ -7,8 +7,10 @@ export default (app: Elysia) => app
     .group("conference", app => app.get('/list', async () => {
         return db.conference.findMany();
     }).post("create", async ({body, auth}) => {
-        // run this in a transaction, so if setting the permission fails, the conference is not created
+        // run this in a transaction, so if setting the permission/deleting the token fails, the conference is not created
         return db.$transaction(async tx => {
+            await tx.conferenceCreateToken.delete({where: {token: body.token}})
+
             const newConference = await tx.conference.create({
                 data: {
                     name: body.name,
@@ -23,5 +25,6 @@ export default (app: Elysia) => app
     }, {
         body: t.Object({
             name: t.String({minLength: 3}),
+            token: t.String(),
         })
     }));

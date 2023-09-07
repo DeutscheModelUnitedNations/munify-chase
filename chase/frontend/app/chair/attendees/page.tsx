@@ -34,17 +34,17 @@ export default function ChairAttendees() {
 
   const attendanceOptions: AttendanceButtonOptions[] = [
     {
-      icon: faUserCheck,
+      icon: faUserCheck as IconProp,
       label: LL.chairs.attendance.PRESENT(),
       value: "present",
     },
     {
-      icon: faUserClock,
+      icon: faUserClock as IconProp,
       label: LL.chairs.attendance.EXCUSED(),
       value: "excused",
     },
     {
-      icon: faUserXmark,
+      icon: faUserXmark as IconProp,
       label: LL.chairs.attendance.ABSENT(),
       value: "absent",
     },
@@ -127,12 +127,12 @@ export default function ChairAttendees() {
                   count={presentAttendees}
                   lable={LL.chairs.attendance.PRESENT()}
                   icon={faUserCheck}
-                  />
+                />
                 <CounterCell
                   count={excusedAttendees}
                   lable={LL.chairs.attendance.EXCUSED()}
                   icon={faUserClock}
-                  />
+                />
                 <CounterCell
                   count={absentAttendees}
                   lable={LL.chairs.attendance.ABSENT()}
@@ -161,8 +161,8 @@ export default function ChairAttendees() {
                     onChange={(e) => {
                       setData((prevData) =>
                         prevData.map((item, i) =>
-                          i === index ? { ...item, present: e.value } : item
-                        )
+                          i === index ? { ...item, present: e.value } : item,
+                        ),
                       );
                     }}
                     options={attendanceOptions}

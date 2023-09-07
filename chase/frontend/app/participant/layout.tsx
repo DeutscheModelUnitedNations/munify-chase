@@ -10,6 +10,7 @@ import {
   faNewspaper
 } from "@fortawesome/pro-solid-svg-icons";
 import { useI18nContext } from "@/i18n/i18n-react";
+import { IconProp } from "@fortawesome/fontawesome-svg-core";
 
 export default function Participant_Pages_Layout({
   children,
@@ -22,28 +23,28 @@ export default function Participant_Pages_Layout({
     <div className="flex h-screen w-screen bg-white text-primary-100 dark:bg-primary-100 dark:text-primary-900 shadow-md overflow-hidden">
       <Navbar>
         <NavButton
-          icon={faHouse}
+          icon={faHouse as IconProp}
           link={"/participant/dashboard"}
           title={LL.navbar.DASHBOARD()}
         />
         <NavButton
-          icon={faPodium}
+          icon={faPodium as IconProp}
           link={"/participant/speakers"}
           title={LL.navbar.SPEAKERS()}
         />
         <NavButton
-          icon={faPollPeople}
+          icon={faPollPeople as IconProp}
           link={"/participant/voting"}
           title={LL.navbar.VOTING()}
         />
         <NavButton
-          icon={faScroll}
+          icon={faScroll as IconProp}
           link={"/participant/resolutions"}
           title={LL.navbar.RESOLUTIONS()}
         />
         <div className="h-5" />
         <NavButton
-          icon={faNewspaper}
+          icon={faNewspaper as IconProp}
           newWindow
           link="https://presse.mun-sh.de/" // TODO make this link configurable for the chair (Link to external News Page)
           title={LL.navbar.NEWS()}

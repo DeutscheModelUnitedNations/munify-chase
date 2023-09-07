@@ -15,6 +15,7 @@ import {
 } from "@fortawesome/pro-solid-svg-icons";
 
 import { useI18nContext } from "@/i18n/i18n-react";
+import { IconProp } from "@fortawesome/fontawesome-svg-core";
 
 /**
  * This Component is used in the Layout Component.
@@ -71,13 +72,13 @@ export default function Navbar({ children }: { children: React.ReactNode }) {
             setSettingsSidebarVisible={setSettingsSidebarVisible}
           />
           <NavButton
-            icon={faUserGear}
+            icon={faUserGear as IconProp}
             onClick={() => setSettingsSidebarVisible(true)}
             title={LL.navbar.SETTINGS()}
           />
           <ConfirmDialog />
           <NavButton
-            icon={faRightFromBracket}
+            icon={faRightFromBracket as IconProp}
             onClick={confirmLogout}
             title={LL.navbar.LOGOUT()}
           />

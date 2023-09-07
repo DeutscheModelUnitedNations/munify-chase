@@ -13,6 +13,7 @@ import {
   faHistory,
   faPollPeople,
 } from "@fortawesome/pro-solid-svg-icons";
+import { IconProp } from "@fortawesome/fontawesome-svg-core";
 
 type Tabs = "current-motions" | "recent-motions" | "recent-votings";
 
@@ -35,7 +36,7 @@ export default function VotingPage() {
                 label: LL.participants.voting.ACTIVE_MOTIONS_TAB(),
                 icon: (
                   <FontAwesomeIcon
-                    icon={faCommentExclamation}
+                    icon={faCommentExclamation as IconProp}
                     className="mr-2"
                   />
                 ),
@@ -45,14 +46,14 @@ export default function VotingPage() {
               },
               {
                 label: LL.participants.voting.RECENT_MOTIONS_TAB(),
-                icon: <FontAwesomeIcon icon={faHistory} className="mr-2" />,
+                icon: <FontAwesomeIcon icon={faHistory as IconProp} className="mr-2" />,
                 command: () => {
                   setOpenTab("recent-motions");
                 },
               },
               {
                 label: LL.participants.voting.RECENT_VOTINGS_TAB(),
-                icon: <FontAwesomeIcon icon={faPollPeople} className="mr-2" />,
+                icon: <FontAwesomeIcon icon={faPollPeople as IconProp} className="mr-2" />,
                 command: () => {
                   setOpenTab("recent-votings");
                 },

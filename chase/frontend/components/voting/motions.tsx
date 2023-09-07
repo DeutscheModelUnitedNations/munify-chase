@@ -15,6 +15,7 @@ import { SmallFlag } from "../flag_templates";
 import { useI18nContext } from "@/i18n/i18n-react";
 import FlipMove from "react-flip-move";
 import Button from "@/components/button";
+import { IconProp } from "@fortawesome/fontawesome-svg-core";
 
 /**
  * This Component is used on the Voting page and displays all open motions in a list format.
@@ -68,7 +69,7 @@ export default function Motions({
 
                     {motion.status === "in-voting" && (
                       <FontAwesomeIcon
-                        icon={faCheckToSlot}
+                        icon={faCheckToSlot as IconProp}
                         className=" text-3xl text-primary dark:text-primary-950 fa-beat-fade mr-1"
                       />
                     )}
@@ -76,12 +77,12 @@ export default function Motions({
                     {motion.status === "passed" &&
                       (motion.voting ? (
                         <FontAwesomeIcon
-                          icon={faCheckToSlot}
+                          icon={faCheckToSlot as IconProp}
                           className="text-2xl text-green-700"
                         />
                       ) : (
                         <FontAwesomeIcon
-                          icon={faCircleCheck}
+                          icon={faCircleCheck as IconProp}
                           className="text-2xl text-green-700"
                         />
                       ))}
@@ -89,12 +90,12 @@ export default function Motions({
                     {motion.status === "failed" &&
                       (motion.voting ? (
                         <FontAwesomeIcon
-                          icon={faXmarkToSlot}
+                          icon={faXmarkToSlot as IconProp}
                           className="text-2xl text-red-600"
                         />
                       ) : (
                         <FontAwesomeIcon
-                          icon={faXmarkCircle}
+                          icon={faXmarkCircle as IconProp}
                           className="text-2xl text-red-600"
                         />
                       ))}
@@ -104,26 +105,26 @@ export default function Motions({
                         {motion.status === "open" && (
                           <>
                             <Button
-                              faIcon={faCircleCheck}
+                              faIcon={faCircleCheck as IconProp}
                               faIconClassName="text-voting-for text-xl"
                               size="small"
                               text
                             />
                             <Button
-                              faIcon={faXmarkCircle}
+                              faIcon={faXmarkCircle as IconProp}
                               faIconClassName="text-voting-against text-xl"
                               size="small"
                               text
                             />
                             <Button
-                              faIcon={faCheckToSlot}
+                              faIcon={faCheckToSlot as IconProp}
                               faIconClassName="dark:text-white text-xl"
                               size="small"
                             />
                           </>
                         )}
                         <Button
-                          faIcon={faTrashAlt}
+                          faIcon={faTrashAlt as IconProp}
                           faIconClassName="text-lg"
                           size="small"
                           severity="danger"

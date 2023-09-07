@@ -85,7 +85,7 @@ export default function ChairVoting() {
                   label={LL.chairs.voting.BUTTON_NEW_MOTION()}
                   icon={
                     <FontAwesomeIcon
-                      icon={faCommentExclamation}
+                      icon={faCommentExclamation as IconProp}
                       className="mr-2"
                     />
                   }

@@ -8,6 +8,7 @@ import { faCheckToSlot } from "@fortawesome/pro-solid-svg-icons/faCheckToSlot";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { LargeFlag } from "@components/flag_templates";
 import { useI18nContext } from "@/i18n/i18n-react";
+import { IconProp } from "@fortawesome/fontawesome-svg-core";
 
 /**
  * This Component is used in the Voting Component.
@@ -55,7 +56,7 @@ export default function InformationSection({
         {description && (
           <>
             <FontAwesomeIcon
-              icon={faInfoCircle}
+              icon={faInfoCircle as IconProp}
               className="text-lg justify-self-center ml-2"
             />
             <div className="text-sm">{description}</div>
@@ -64,7 +65,7 @@ export default function InformationSection({
         {introducedBy && (
           <>
             <FontAwesomeIcon
-              icon={faFlag}
+              icon={faFlag as IconProp}
               className="text-lg justify-self-center ml-2"
             />
             <div className="text-sm">
@@ -76,7 +77,7 @@ export default function InformationSection({
         {substantiveVote ? (
           <>
             <FontAwesomeIcon
-              icon={faCheckToSlot}
+              icon={faCheckToSlot as IconProp}
               className="text-xl justify-self-center ml-2"
             />
             <div className="text-sm">
@@ -86,7 +87,7 @@ export default function InformationSection({
         ) : (
           <>
             <FontAwesomeIcon
-              icon={faGavel}
+              icon={faGavel as IconProp}
               className="text-xl justify-self-center ml-2"
             />
             <div className="text-sm">
@@ -95,7 +96,7 @@ export default function InformationSection({
           </>
         )}
         <FontAwesomeIcon
-          icon={faPieChart}
+          icon={faPieChart as IconProp}
           className="text-xl justify-self-center ml-2"
         />
         <div className="text-sm">{neededMajority()}</div>

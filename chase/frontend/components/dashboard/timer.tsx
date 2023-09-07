@@ -11,6 +11,7 @@ import {
 } from "@fortawesome/pro-solid-svg-icons";
 import { useI18nContext } from "@/i18n/i18n-react";
 import { AnimatePresence, motion } from "framer-motion";
+import { IconProp } from "@fortawesome/fontawesome-svg-core";
 
 interface TimerWidgetProps {
   headline: string;
@@ -75,16 +76,16 @@ export default function TimerWidget({
             <div className="flex flex-col justify-center items-center">
               <div className="my-4">
                 {category === "formal" && (
-                  <FontAwesomeIcon icon={faGavel} size="3x" />
+                  <FontAwesomeIcon icon={faGavel as IconProp} size="3x" />
                 )}
                 {category === "informal" && (
-                  <FontAwesomeIcon icon={faComments} size="3x" />
+                  <FontAwesomeIcon icon={faComments as IconProp} size="3x" />
                 )}
                 {category === "pause" && (
-                  <FontAwesomeIcon icon={faCoffee} size="3x" />
+                  <FontAwesomeIcon icon={faCoffee as IconProp} size="3x" />
                 )}
                 {category === "suspension" && (
-                  <FontAwesomeIcon icon={faCirclePause} size="3x" />
+                  <FontAwesomeIcon icon={faCirclePause as IconProp} size="3x" />
                 )}
               </div>
               <div className="text-2xl font-bold">{headline}</div>

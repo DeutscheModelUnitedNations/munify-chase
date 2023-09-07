@@ -17,6 +17,7 @@ export default (app: Elysia) => app
                 }
             });
 
+            // do this last so the db is set beforehand. If that fails we can't easily roll back the perms as the db transaction
             await auth?.permissions.setConferenceAdmin(newConference.id);
 
             return newConference;

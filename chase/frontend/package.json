@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "concurrently \"npm:devserver\" \"npm:typesafe-i18n\"",
+    "dev": "npx concurrently \"npm:devserver\" \"npm:typesafe-i18n\"",
     "devserver": "next dev",
     "build": "next build",
     "start": "next start",
@@ -16,10 +16,10 @@
     "@fortawesome/free-regular-svg-icons": "^6.4.2",
     "@fortawesome/free-solid-svg-icons": "^6.4.2",
     "@fortawesome/react-fontawesome": "^0.2.0",
-    "bun-types": "latest",
     "@types/react": "18.2.19",
     "@types/react-dom": "18.2.7",
     "autoprefixer": "10.4.14",
+    "bun-types": "latest",
     "framer-motion": "^10.15.1",
     "fuse.js": "^6.6.2",
     "next": "13.4.13",
@@ -39,6 +39,7 @@
     "typescript": "5.1.6"
   },
   "devDependencies": {
+    "@types/node": "20.5.9",
     "concurrently": "^8.2.1",
     "nodemon": "^3.0.1",
     "sass": "^1.64.2"

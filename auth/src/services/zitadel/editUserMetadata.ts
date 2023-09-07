@@ -1,6 +1,7 @@
 import { requireEnvWhenAuthNotMocked } from "../../../../munify-util/src/envloader";
 import { Metadata } from "./parseMetadata";
 
+//TODO spend some precious time to find out if roles might be the better way to tackle this
 
 const OPENID_URL = requireEnvWhenAuthNotMocked("OPENID_URL");
 const ZITADEL_SERVICE_USER_PERSONAL_ACCESS_TOKEN = requireEnvWhenAuthNotMocked(

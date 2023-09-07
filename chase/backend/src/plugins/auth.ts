@@ -3,6 +3,7 @@ import {bearer} from "@elysiajs/bearer";
 import {Permissions, User, introspect} from "auth";
 import {isAuthMocked} from "munify-util";
 import {Metadata} from "auth/src/services/zitadel/parseMetadata";
+import {join} from "node:path";
 
 // while developing and not running a live ZITADEL instance, you can adjust this to test permission related things for incoming requests
 // if you want to simulate a unauthorized request, just set this to undefined
@@ -26,7 +27,7 @@ const mockedUser: User = {
   pronouns: "he/him",
 };
 
-const mockedIntrospection: {user: User; permissions: Permissions} = {
+let mockedIntrospection: {user: User; permissions: Permissions} = {
   user: mockedUser,
   //TODO consider making this permanent, maybe store on disk somewhere
   permissions: new Permissions("42d35a24-cd3e-4625-9b91-b6510f728cc3", mockedPermissions, async (userId, metadata) => {
@@ -41,6 +42,22 @@ const mockedIntrospection: {user: User; permissions: Permissions} = {
     })
   })
 }
+
+// mocked data persistency
+const devpath = join(import.meta.dir, "mockedAuth.json");
+{
+  const file = Bun.file(devpath);
+  if (await file.exists()) {
+    mockedIntrospection = JSON.parse(await file.text())
+  }
+}
+
+setInterval(async () => {
+  const stored = Bun.file(devpath);
+  if (!Bun.deepEquals(JSON.parse(await stored.text()), mockedIntrospection)) {
+    Bun.write(devpath, JSON.stringify(mockedIntrospection));
+  }
+}, 1000)
 
 export const auth = (app: Elysia) => {
   return app

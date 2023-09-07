@@ -9,19 +9,19 @@ import WidgetTemplate from "@/components/widget_template";
 import getCountryNameByCode from "@/misc/get_country_name_by_code";
 import { NormalFlag as Flag } from "@/components/flag_templates";
 import { useI18nContext } from "@/i18n/i18n-react";
-import {
-  FontAwesomeIcon,
-  FontAwesomeIconProps,
-} from "@fortawesome/react-fontawesome";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faUserCheck,
   faUserXmark,
   faUserClock,
 } from "@fortawesome/pro-solid-svg-icons";
 import { attendanceTestData } from "@/test_data";
+import { IconProp } from "@fortawesome/fontawesome-svg-core";
 
 interface AttendanceButtonOptions {
-  icon: FontAwesomeIconProps["icon"];
+  //@ts-ignore
+  // TODO find way how to type fontawesome icons properly
+  icon: any;
   label: string;
   value: "present" | "excused" | "absent";
 }
@@ -100,7 +100,7 @@ export default function ChairAttendees() {
   }: {
     count: number;
     lable: string;
-    icon: FontAwesomeIconProps["icon"];
+    icon: IconProp;
   }) => {
     return (
       <>
@@ -129,12 +129,12 @@ export default function ChairAttendees() {
                   count={presentAttendees}
                   lable={LL.chairs.attendance.PRESENT()}
                   icon={faUserCheck}
-                />
+                  />
                 <CounterCell
                   count={excusedAttendees}
                   lable={LL.chairs.attendance.EXCUSED()}
                   icon={faUserClock}
-                />
+                  />
                 <CounterCell
                   count={absentAttendees}
                   lable={LL.chairs.attendance.ABSENT()}
@@ -163,8 +163,8 @@ export default function ChairAttendees() {
                     onChange={(e) => {
                       setData((prevData) =>
                         prevData.map((item, i) =>
-                          i === index ? { ...item, present: e.value } : item,
-                        ),
+                          i === index ? { ...item, present: e.value } : item
+                        )
                       );
                     }}
                     options={attendanceOptions}

@@ -3,12 +3,12 @@ import React, { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 import {
   FontAwesomeIcon,
-  FontAwesomeIconProps,
 } from "@fortawesome/react-fontawesome";
 import Link from "next/link";
+import { IconDefinition } from "@fortawesome/pro-solid-svg-icons";
 
 interface NavbarButtonProps {
-  icon: FontAwesomeIconProps["icon"];
+  icon: IconDefinition;
   title: string;
   link?: string;
   onClick?: () => void;

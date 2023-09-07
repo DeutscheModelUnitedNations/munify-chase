@@ -126,17 +126,17 @@ export default function ChairAttendees() {
                 <CounterCell
                   count={presentAttendees}
                   lable={LL.chairs.attendance.PRESENT()}
-                  icon={faUserCheck}
+                  icon={faUserCheck as IconProp}
                 />
                 <CounterCell
                   count={excusedAttendees}
                   lable={LL.chairs.attendance.EXCUSED()}
-                  icon={faUserClock}
+                  icon={faUserClock as IconProp}
                 />
                 <CounterCell
                   count={absentAttendees}
                   lable={LL.chairs.attendance.ABSENT()}
-                  icon={faUserXmark}
+                  icon={faUserXmark as IconProp}
                 />
               </div>
             </HeaderInfoBox>

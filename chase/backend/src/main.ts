@@ -9,7 +9,7 @@ const app = new Elysia()
       path: "/documentation",
     }),
   )
-  .use(cors({ origin: process.env.ORIGIN ?? "http://localhost:3000" }))
+  .use(cors({ origin: process.env.ORIGIN ?? "http://localhost:3001" }))
   .use(conference)
   .listen(process.env.PORT ?? "3001");
 

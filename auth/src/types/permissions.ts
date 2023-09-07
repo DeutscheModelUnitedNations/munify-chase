@@ -24,6 +24,10 @@ export class Permissions {
     });
   }
 
+  isConferenceAdmin(conference: ConferenceId) {
+    return this.metadata.conferenceAdminPermissions.find(c => c.conference === conference) !== undefined;
+  }
+
   revokeConferenceAdmin(conference: ConferenceId) {
     this.metadata.conferenceAdminPermissions =
       this.metadata.conferenceAdminPermissions.filter(

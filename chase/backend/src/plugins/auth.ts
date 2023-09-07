@@ -52,12 +52,12 @@ const devpath = join(import.meta.dir, "mockedAuth.json");
   }
 }
 
-setInterval(async () => {
-  const stored = Bun.file(devpath);
-  if (!Bun.deepEquals(JSON.parse(await stored.text()), mockedIntrospection)) {
-    Bun.write(devpath, JSON.stringify(mockedIntrospection));
-  }
-}, 1000)
+// setInterval(async () => {
+//   const stored = Bun.file(devpath);
+//   if (!Bun.deepEquals(JSON.parse(await stored.text()), mockedIntrospection)) {
+//     Bun.write(devpath, JSON.stringify(mockedIntrospection));
+//   }
+// }, 1000)
 
 export const auth = (app: Elysia) => {
   return app

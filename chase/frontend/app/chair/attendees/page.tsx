@@ -19,9 +19,7 @@ import { attendanceTestData } from "@/test_data";
 import { IconProp } from "@fortawesome/fontawesome-svg-core";
 
 interface AttendanceButtonOptions {
-  //@ts-ignore
-  // TODO find way how to type fontawesome icons properly
-  icon: any;
+  icon: IconProp;
   label: string;
   value: "present" | "excused" | "absent";
 }

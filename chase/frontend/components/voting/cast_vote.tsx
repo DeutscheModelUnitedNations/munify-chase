@@ -64,7 +64,10 @@ export default function CastVote({
                     borderColor: "var(--voting-for)",
                   }}
                   icon={
-                    <FontAwesomeIcon icon={faPlusCircle as IconProp} className="mr-3" />
+                    <FontAwesomeIcon
+                      icon={faPlusCircle as IconProp}
+                      className="mr-3"
+                    />
                   }
                   onClick={() => {
                     castVote("yes");
@@ -78,7 +81,12 @@ export default function CastVote({
                       color: "#fff",
                       borderColor: "var(--voting-abstain)",
                     }}
-                    icon={<FontAwesomeIcon icon={faCircle as IconProp} className="mr-3" />}
+                    icon={
+                      <FontAwesomeIcon
+                        icon={faCircle as IconProp}
+                        className="mr-3"
+                      />
+                    }
                     onClick={() => {
                       castVote("abstain");
                     }}
@@ -92,7 +100,10 @@ export default function CastVote({
                     borderColor: "var(--voting-against)",
                   }}
                   icon={
-                    <FontAwesomeIcon icon={faMinusCircle as IconProp} className="mr-3" />
+                    <FontAwesomeIcon
+                      icon={faMinusCircle as IconProp}
+                      className="mr-3"
+                    />
                   }
                   onClick={() => {
                     castVote("no");

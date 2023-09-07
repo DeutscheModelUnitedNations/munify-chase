@@ -16,7 +16,7 @@ import { IconProp } from "@fortawesome/fontawesome-svg-core";
 
 interface ColormodeOption {
   name: string;
-  icon:  IconProp;
+  icon: IconProp;
   value: string;
 }
 

@@ -76,14 +76,18 @@ export default function ChangeSpeechTimeOverlay({
         <div className="flex gap-3 justify-end flex-wrap">
           <Button
             label={LL.chairs.speakersList.changeSpeechTimeOverlay.BUTTON_CANCEL()}
-            icon={<FontAwesomeIcon icon={faTimes as IconProp} className="mr-2" />}
+            icon={
+              <FontAwesomeIcon icon={faTimes as IconProp} className="mr-2" />
+            }
             onClick={closeOverlay}
             severity="danger"
             text
           />
           <Button
             label={LL.chairs.speakersList.changeSpeechTimeOverlay.BUTTON_SET()}
-            icon={<FontAwesomeIcon icon={faPlus as IconProp} className="mr-2" />}
+            icon={
+              <FontAwesomeIcon icon={faPlus as IconProp} className="mr-2" />
+            }
             onClick={() => {
               sendNewTime(time);
             }}

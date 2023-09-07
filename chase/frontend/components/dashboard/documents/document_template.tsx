@@ -12,7 +12,7 @@ interface DocumentProps {
   introducedBy?: CountryCode;
   sponsors?: string[];
   shared?: boolean;
-  icon:  IconProp;
+  icon: IconProp;
   topic?: string;
 }
 

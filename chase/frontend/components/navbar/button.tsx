@@ -6,7 +6,7 @@ import Link from "next/link";
 import { IconProp } from "@fortawesome/fontawesome-svg-core";
 
 interface NavbarButtonProps {
-  icon:  IconProp;
+  icon: IconProp;
   title: string;
   link?: string;
   onClick?: () => void;

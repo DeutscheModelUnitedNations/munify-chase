@@ -46,14 +46,24 @@ export default function VotingPage() {
               },
               {
                 label: LL.participants.voting.RECENT_MOTIONS_TAB(),
-                icon: <FontAwesomeIcon icon={faHistory as IconProp} className="mr-2" />,
+                icon: (
+                  <FontAwesomeIcon
+                    icon={faHistory as IconProp}
+                    className="mr-2"
+                  />
+                ),
                 command: () => {
                   setOpenTab("recent-motions");
                 },
               },
               {
                 label: LL.participants.voting.RECENT_VOTINGS_TAB(),
-                icon: <FontAwesomeIcon icon={faPollPeople as IconProp} className="mr-2" />,
+                icon: (
+                  <FontAwesomeIcon
+                    icon={faPollPeople as IconProp}
+                    className="mr-2"
+                  />
+                ),
                 command: () => {
                   setOpenTab("recent-votings");
                 },

@@ -45,7 +45,12 @@ export function ParticipantSpeechButtons({
       {onSpeakersList && (
         <Button
           label={LL.participants.speakersList.REMOVE_FROM_LIST_BUTTON()}
-          icon={<FontAwesomeIcon icon={faTrashCanXmark as IconProp} className="mr-2" />}
+          icon={
+            <FontAwesomeIcon
+              icon={faTrashCanXmark as IconProp}
+              className="mr-2"
+            />
+          }
           size="small"
           severity="danger"
         />
@@ -57,7 +62,9 @@ export function ParticipantSpeechButtons({
               ? LL.participants.speakersList.LIST_CLOSED_BUTTON()
               : LL.participants.speakersList.ADD_TO_LIST_BUTTON()
           }
-          icon={<FontAwesomeIcon icon={faPlusCircle as IconProp} className="mr-2" />}
+          icon={
+            <FontAwesomeIcon icon={faPlusCircle as IconProp} className="mr-2" />
+          }
           size="small"
           disabled={listClosed}
         />
@@ -110,12 +117,16 @@ export function ChairSpeechButtons({
     },
     {
       label: LL.chairs.speakersList.buttons.CLEAR_LIST(),
-      icon: <FontAwesomeIcon icon={faTrashCanXmark as IconProp} className="mr-2" />,
+      icon: (
+        <FontAwesomeIcon icon={faTrashCanXmark as IconProp} className="mr-2" />
+      ),
       disabled: !nextSpeakerQueued,
     },
     {
       label: LL.chairs.speakersList.buttons.CHANGE_SPEECH_TIME(),
-      icon: <FontAwesomeIcon icon={faHourglassClock as IconProp} className="mr-2" />,
+      icon: (
+        <FontAwesomeIcon icon={faHourglassClock as IconProp} className="mr-2" />
+      ),
       command: () => setChangeSpeechTimeOverlayVisible(true),
     },
   ];
@@ -125,7 +136,9 @@ export function ChairSpeechButtons({
       <div className="flex gap-2 items-center justify-center">
         <Button
           label={LL.chairs.speakersList.buttons.START_TIMER()}
-          icon={<FontAwesomeIcon icon={faPodium as IconProp} className="mr-2" />}
+          icon={
+            <FontAwesomeIcon icon={faPodium as IconProp} className="mr-2" />
+          }
           size="small"
           visible={timerPaused && activeSpeaker}
         />
@@ -152,7 +165,9 @@ export function ChairSpeechButtons({
         />
         <Button
           label={LL.chairs.speakersList.buttons.RESET_TIMER()}
-          icon={<FontAwesomeIcon icon={faRotateLeft as IconProp} className="mr-2" />}
+          icon={
+            <FontAwesomeIcon icon={faRotateLeft as IconProp} className="mr-2" />
+          }
           size="small"
           text
           visible={activeSpeaker}
@@ -161,14 +176,21 @@ export function ChairSpeechButtons({
       <div className="flex gap-2 items-center justify-start flex-wrap">
         <Button
           label={LL.chairs.speakersList.buttons.NEXT_SPEAKER()}
-          icon={<FontAwesomeIcon icon={faDiagramSuccessor as IconProp} className="mr-2" />}
+          icon={
+            <FontAwesomeIcon
+              icon={faDiagramSuccessor as IconProp}
+              className="mr-2"
+            />
+          }
           size="small"
           disabled={!nextSpeakerQueued}
           severity="warning"
         />
         <SplitButton
           label={LL.chairs.speakersList.buttons.ADD_TO_LIST()}
-          icon={<FontAwesomeIcon icon={faPlusCircle as IconProp} className="mr-2" />}
+          icon={
+            <FontAwesomeIcon icon={faPlusCircle as IconProp} className="mr-2" />
+          }
           size="small"
           onClick={() => setAddSpeakersOverlayVisible(true)}
           model={splitButtonItems}

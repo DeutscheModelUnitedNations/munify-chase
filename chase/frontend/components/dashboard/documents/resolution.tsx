@@ -14,6 +14,10 @@ export default function Resolution({
   topic,
 }: { documentId: string; topic?: string }) {
   return (
-    <Document documentId={documentId} icon={faFileContract as IconProp} topic={topic} />
+    <Document
+      documentId={documentId}
+      icon={faFileContract as IconProp}
+      topic={topic}
+    />
   );
 }

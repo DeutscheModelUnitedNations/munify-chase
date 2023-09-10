@@ -18,6 +18,8 @@ jobs:
 
       - name: Install dependencies
         run: npm ci
+        env:
+          FONTAWESOME_NPM_AUTH_TOKEN: ${{ secrets.FONTAWESOME_NPM_AUTH_TOKEN }}
 
       - name: Run build
         run: npm run build

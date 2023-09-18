@@ -11,7 +11,7 @@ import { confirmPopup } from "primereact/confirmpopup";
 import ForwardBackButtons from "@/components/admin/onboarding/forward_back_bar";
 import CommitteeTable from "@/components/admin/structure/committee_table";
 import AddCommitteeDialog from "@/components/admin/structure/add_committee_dialog";
-
+import useMousetrap from "mousetrap-react";
 
 export default function structure({
   params,
@@ -27,7 +27,8 @@ export default function structure({
 
   const [saveLoading, setSaveLoading] = useState(false);
 
-  const [committees, setCommittees] = useState<CommitteeEntry[]>([ // TODO remove dummy data
+  const [committees, setCommittees] = useState<CommitteeEntry[]>([
+    // TODO remove dummy data
     {
       name: "Generalversammlung",
       shortname: "GV",
@@ -93,7 +94,7 @@ export default function structure({
     newCommitteeShortname: string,
     newCommitteeCategory: string,
     newCommitteeIsSubcommittee: boolean,
-    newCommitteeParent: CommitteeEntry | null,
+    newCommitteeParent: CommitteeEntry | null
   ) => {
     setCommittees([
       ...committees,
@@ -124,17 +125,9 @@ export default function structure({
   };
 
   // Eventlistener for N key
-  useEffect(() => {
-    const handleKeyDown = (e) => {
-      if (e.key === "n") {
-        setInputMaskVisible(true);
-      }
-    };
-    window.addEventListener("keydown", handleKeyDown);
-    return () => {
-      window.removeEventListener("keydown", handleKeyDown);
-    };
-  }, []);
+  useMousetrap("n", () => {
+    setInputMaskVisible(true);
+  });
 
   const handleSave = () => {
     setSaveLoading(true);
@@ -174,11 +167,25 @@ export default function structure({
   return (
     <>
       <OnboardingSteps activeIndex={0} />
-      <CommitteeTable committees={committees} confirmDeleteAll={confirmDeleteAll} handleDelete={handleDelete} setInputMaskVisible={setInputMaskVisible} />
-      
-      <ForwardBackButtons backURL="/admin/new" handleSaveFunction={handleSave} saveLoading={saveLoading} />
+      <CommitteeTable
+        committees={committees}
+        confirmDeleteAll={confirmDeleteAll}
+        handleDelete={handleDelete}
+        setInputMaskVisible={setInputMaskVisible}
+      />
 
-      <AddCommitteeDialog inputMaskVisible={inputMaskVisible} setInputMaskVisible={setInputMaskVisible} addCommitteeToList={addCommittee} committees={committees} />
+      <ForwardBackButtons
+        backURL="/admin/new"
+        handleSaveFunction={handleSave}
+        saveLoading={saveLoading}
+      />
+
+      <AddCommitteeDialog
+        inputMaskVisible={inputMaskVisible}
+        setInputMaskVisible={setInputMaskVisible}
+        addCommitteeToList={addCommittee}
+        committees={committees}
+      />
       <Toast ref={toast} />
     </>
   );

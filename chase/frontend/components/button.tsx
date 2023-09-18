@@ -45,7 +45,7 @@ export default function Button({
       <div className="flex flex-row items-center justify-center w-full">
         <span className="font-bold">{label}</span>
         {keyboardShortcut && (
-          <span className="text-xs ml-4 opacity-30 text-white bg-black px-2 py-1 rounded-md">{keyboardShortcut}</span>
+          <span className="text-xs ml-2 bg-white/30 dark:bg-black/25 px-2 py-1 rounded-md">{keyboardShortcut}</span>
         )}
       </div>
     </PrimeReactButton>

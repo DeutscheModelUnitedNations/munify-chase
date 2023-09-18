@@ -3,6 +3,7 @@ import { useI18nContext } from "@/i18n/i18n-react";
 import { faArrowLeft, faCheck } from "@fortawesome/pro-solid-svg-icons";
 import Button from "@/components/button";
 import { useRouter } from "next/navigation";
+import useMousetrap from "mousetrap-react";
 
 interface ForwardBackButtonsProps {
   backURL: string;
@@ -17,6 +18,12 @@ export default function ForwardBackButtons({
 }: ForwardBackButtonsProps) {
   const { LL } = useI18nContext();
   const router = useRouter();
+
+  useMousetrap("alt+enter", () => {
+    if (handleSaveFunction) {
+      handleSaveFunction();
+    }
+  });
 
   return (
     <>
@@ -34,6 +41,7 @@ export default function ForwardBackButtons({
           faIcon={faCheck}
           onClick={handleSaveFunction}
           loading={saveLoading}
+          keyboardShortcut="⌥ + Enter"
         />
       </div>
     </>

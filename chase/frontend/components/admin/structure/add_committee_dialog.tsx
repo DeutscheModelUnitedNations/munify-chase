@@ -1,4 +1,4 @@
-import React, { useRef, useState } from "react";
+import React, { FormEvent, useRef, useState } from "react";
 import { useI18nContext } from "@/i18n/i18n-react";
 
 import { Dialog } from "primereact/dialog";
@@ -15,6 +15,7 @@ import {
   faXmark,
 } from "@fortawesome/pro-solid-svg-icons";
 import Button from "@/components/button";
+import useMousetrap from "mousetrap-react";
 
 type AddCommitteeDialogProps = {
   inputMaskVisible: boolean;
@@ -54,8 +55,8 @@ export default function AddCommitteeDialog({
     setNewCommitteeParent(null);
   };
 
-  const addCommittee = (e) => {
-    e.preventDefault();
+  const addCommittee = (e: FormEvent | null = null) => {
+    if (e) e.preventDefault();
     addCommitteeToList(
       newCommitteeName,
       newCommitteeShortname,
@@ -85,6 +86,17 @@ export default function AddCommitteeDialog({
     },
   ];
 
+  useMousetrap("esc", () => {
+    setInputMaskVisible(false);
+    resetInputMask();
+  });
+
+  useMousetrap("enter", () => {
+    if (newCommitteeName || newCommitteeShortname) return;
+    if (newCommitteeIsSubcommittee && !newCommitteeParent) return;
+    addCommittee();
+  });
+
   return (
     <>
       <Dialog
@@ -97,15 +109,7 @@ export default function AddCommitteeDialog({
           className="flex flex-col items-stretch justify-center gap-4 w-full mt-2"
           onSubmit={(e) => addCommittee(e)}
           onKeyDown={(e) => {
-            if (e.key === "Escape") {
-              setInputMaskVisible(false);
-              resetInputMask();
-            } else if (e.key === "Enter") {
-              if (newCommitteeName === "") return;
-              if (newCommitteeShortname === "") return;
-
-              addCommittee(e);
-            }
+            if (e.key === "Enter") e.preventDefault();
           }}
         >
           <InputText
@@ -150,7 +154,9 @@ export default function AddCommitteeDialog({
           </div>
           <Dropdown
             value={newCommitteeParent}
-            options={committees.filter((c) => !c.isSubcommittee && c.category === "committee")}
+            options={committees.filter(
+              (c) => !c.isSubcommittee && c.category === "committee"
+            )}
             onChange={(e) => setNewCommitteeParent(e.value)}
             optionLabel="name"
             placeholder={LL.admin.onboarding.structure.input.PARENT_COMMITTEE()}
@@ -168,12 +174,14 @@ export default function AddCommitteeDialog({
                 setNewCommitteeName("");
                 setNewCommitteeShortname("");
               }}
+              keyboardShortcut="Esc"
             />
             <Button
               label={LL.admin.onboarding.structure.input.BUTTON_ADD()}
               className="w-full"
               faIcon={faPlus}
               type="submit"
+              keyboardShortcut="⏎"
             />
           </div>
         </form>

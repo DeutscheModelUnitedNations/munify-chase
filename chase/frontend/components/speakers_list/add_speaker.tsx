@@ -5,7 +5,7 @@ import {
 } from "primereact/autocomplete";
 import getCountryNameByCode from "@/misc/get_country_name_by_code";
 import { useI18nContext } from "@/i18n/i18n-react";
-import { Button } from "primereact/button";
+import Button from "@components/button";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPlus, faTimes } from "@fortawesome/pro-solid-svg-icons";
 import { SmallFlag } from "../flag_templates";
@@ -13,6 +13,7 @@ import { CountryCode } from "@/custom_types";
 import Fuse from "fuse.js";
 import { ToastContext } from "@/contexts/messages/toast";
 import { IconProp } from "@fortawesome/fontawesome-svg-core";
+import useMousetrap from "mousetrap-react";
 
 interface CountryData {
   alpha3: CountryCode;
@@ -51,7 +52,7 @@ export default function AddSpeakerOverlay({
   const [query, setQuery] = useState<string>("");
   const [filteredCountries, setFilteredCountries] = useState<CountryData[]>([]);
   const [selectedCountry, setSelectedCountry] = useState<CountryData | null>(
-    null,
+    null
   );
   const [fuse, setFuse] = useState<Fuse<CountryData> | null>(null);
 
@@ -63,7 +64,7 @@ export default function AddSpeakerOverlay({
           alpha3: country,
           name: getCountryNameByCode(country, locale),
         };
-      },
+      }
     );
     setCountries(countryData);
 
@@ -118,17 +119,32 @@ export default function AddSpeakerOverlay({
       showToast({
         severity: "success",
         summary: LL.chairs.speakersList.addSpeakerOverlay.TOAST_ADDED_SUMMARY(
-          selectedCountry.name,
+          selectedCountry.name
         ),
         detail:
           LL.chairs.speakersList.addSpeakerOverlay.TOAST_ADDED_DETAIL(
-            typeOfList,
+            typeOfList
           ),
         sticky: false,
       });
       setSelectedCountry(null);
     }
   };
+
+  useMousetrap("esc", () => closeOverlay());
+
+  useMousetrap("enter", () => {
+    if (selectedCountry?.alpha3) {
+      sendAddSpeaker();
+    }
+  });
+
+  useMousetrap("shift+enter", () => {
+    if (selectedCountry?.alpha3) {
+      sendAddSpeaker();
+      closeOverlay();
+    }
+  });
 
   return (
     <>
@@ -147,42 +163,47 @@ export default function AddSpeakerOverlay({
           autoHighlight
           forceSelection
           onKeyDown={(e) => {
-            // This enables the user to press enter after selecting a country. It has the same effect as clicking the "Add" button.
-            if (e.key === "Enter" && selectedCountry?.alpha3) {
-              sendAddSpeaker();
+            if (e.key === "Escape") {
+              closeOverlay();
+            } else if (e.key === "Enter" && e.shiftKey) {
+              if (selectedCountry?.alpha3) {
+                sendAddSpeaker();
+                closeOverlay();
+              }
+            } else if (e.key === "Enter") {
+              if (selectedCountry?.alpha3) {
+                sendAddSpeaker();
+              }
             }
           }}
         />
         <div className="flex gap-3 justify-end flex-wrap">
           <Button
             label={LL.chairs.speakersList.addSpeakerOverlay.BUTTON_CANCEL()}
-            icon={
-              <FontAwesomeIcon icon={faTimes as IconProp} className="mr-2" />
-            }
+            faIcon={faTimes}
             onClick={closeOverlay}
             severity="danger"
             text
+            keyboardShortcut="Esc"
           />
           <Button
             label={LL.chairs.speakersList.addSpeakerOverlay.BUTTON_ADD_AND_CLOSE()}
-            icon={
-              <FontAwesomeIcon icon={faPlus as IconProp} className="mr-2" />
-            }
+            faIcon={faPlus}
             onClick={() => {
               sendAddSpeaker();
               closeOverlay();
             }}
             text
+            keyboardShortcut="⇧ + ⏎"
           />
           <Button
             label={LL.chairs.speakersList.addSpeakerOverlay.BUTTON_ADD()}
-            icon={
-              <FontAwesomeIcon icon={faPlus as IconProp} className="mr-2" />
-            }
+            faIcon={faPlus}
             onClick={() => {
               sendAddSpeaker();
               setSelectedCountry(null);
             }}
+            keyboardShortcut="⏎"
           />
         </div>
       </div>

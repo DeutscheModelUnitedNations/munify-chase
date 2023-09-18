@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { Button } from "primereact/button";
+import React, { use, useState } from "react";
+import Button from "@components/button";
 import { SplitButton } from "primereact/splitbutton";
 import { Dialog } from "primereact/dialog";
 import {
@@ -21,6 +21,7 @@ import { CountryCode } from "@/custom_types";
 import AddSpeakerOverlay from "./add_speaker";
 import ChangeSpeechTimeOverlay from "./change_speech_time";
 import { IconProp } from "@fortawesome/fontawesome-svg-core";
+import useMousetrap from "mousetrap-react";
 
 /**
  * This component is used to display the buttons for the Speakers List and Comment List on the Speakers List Page for participants.
@@ -45,12 +46,7 @@ export function ParticipantSpeechButtons({
       {onSpeakersList && (
         <Button
           label={LL.participants.speakersList.REMOVE_FROM_LIST_BUTTON()}
-          icon={
-            <FontAwesomeIcon
-              icon={faTrashCanXmark as IconProp}
-              className="mr-2"
-            />
-          }
+          faIcon={faTrashCanXmark}
           size="small"
           severity="danger"
         />
@@ -62,9 +58,7 @@ export function ParticipantSpeechButtons({
               ? LL.participants.speakersList.LIST_CLOSED_BUTTON()
               : LL.participants.speakersList.ADD_TO_LIST_BUTTON()
           }
-          icon={
-            <FontAwesomeIcon icon={faPlusCircle as IconProp} className="mr-2" />
-          }
+          faIcon={faPlusCircle}
           size="small"
           disabled={listClosed}
         />
@@ -88,6 +82,7 @@ export function ChairSpeechButtons({
   nextSpeakerQueued,
   activeSpeaker,
   typeOfList,
+  isCommentList,
 }: {
   listOfAllCountries: CountryCode[];
   listClosed: boolean;
@@ -95,6 +90,7 @@ export function ChairSpeechButtons({
   nextSpeakerQueued: boolean;
   activeSpeaker: boolean;
   typeOfList: string;
+  isCommentList: boolean;
 }) {
   const { LL } = useI18nContext();
 
@@ -131,43 +127,45 @@ export function ChairSpeechButtons({
     },
   ];
 
+  if (!isCommentList) {
+    useMousetrap("n", () => setAddSpeakersOverlayVisible(true));
+  } else {
+    useMousetrap("shift+n", () => setAddSpeakersOverlayVisible(true));
+  }
+
   return (
     <div className="flex gap-2 flex-col items-start justify-center mt-3">
       <div className="flex gap-2 items-center justify-center">
         <Button
           label={LL.chairs.speakersList.buttons.START_TIMER()}
-          icon={
-            <FontAwesomeIcon icon={faPodium as IconProp} className="mr-2" />
-          }
+          faIcon={faPodium}
           size="small"
           visible={timerPaused && activeSpeaker}
         />
         <Button
           label={LL.chairs.speakersList.buttons.PAUSE_TIMER()}
-          icon={<FontAwesomeIcon icon={faPause as IconProp} className="mr-2" />}
+          faIcon={faPause}
           size="small"
           visible={!timerPaused && activeSpeaker}
           severity="danger"
         />
         <Button
           label={LL.chairs.speakersList.buttons.REMOVE_TIME()}
-          icon={<FontAwesomeIcon icon={faMinus as IconProp} className="mr-2" />}
+          faIcon={faMinus}
           size="small"
           text
           visible={activeSpeaker}
         />
         <Button
           label={LL.chairs.speakersList.buttons.ADD_TIME()}
-          icon={<FontAwesomeIcon icon={faPlus as IconProp} className="mr-2" />}
+          faIcon={faPlus}
           size="small"
           text
           visible={activeSpeaker}
         />
         <Button
           label={LL.chairs.speakersList.buttons.RESET_TIMER()}
-          icon={
-            <FontAwesomeIcon icon={faRotateLeft as IconProp} className="mr-2" />
-          }
+          faIcon={faRotateLeft}
           size="small"
           text
           visible={activeSpeaker}
@@ -176,18 +174,22 @@ export function ChairSpeechButtons({
       <div className="flex gap-2 items-center justify-start flex-wrap">
         <Button
           label={LL.chairs.speakersList.buttons.NEXT_SPEAKER()}
-          icon={
-            <FontAwesomeIcon
-              icon={faDiagramSuccessor as IconProp}
-              className="mr-2"
-            />
-          }
+          faIcon={faDiagramSuccessor}
           size="small"
           disabled={!nextSpeakerQueued}
           severity="warning"
         />
         <SplitButton
-          label={LL.chairs.speakersList.buttons.ADD_TO_LIST()}
+          buttonTemplate={
+            <>
+              <span className="font-bold">
+                {LL.chairs.speakersList.buttons.ADD_TO_LIST()}
+              </span>
+              <span className="text-xs ml-2 bg-white/30 dark:bg-black/25 px-2 py-1 rounded-md">
+                {!isCommentList ? "N" : "⇧ + N"}
+              </span>
+            </>
+          }
           icon={
             <FontAwesomeIcon icon={faPlusCircle as IconProp} className="mr-2" />
           }
@@ -210,7 +212,7 @@ export function ChairSpeechButtons({
         </Dialog>
         <Dialog
           header={LL.chairs.speakersList.changeSpeechTimeOverlay.HEADLINE(
-            typeOfList,
+            typeOfList
           )}
           visible={changeSpeechTimeOverlayVisible}
           onHide={() => setChangeSpeechTimeOverlayVisible(false)}

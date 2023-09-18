@@ -14,7 +14,7 @@ import {
 import { useI18nContext } from "@/i18n/i18n-react";
 import { IconProp } from "@fortawesome/fontawesome-svg-core";
 
-export default function Participant_Pages_Layout({
+export default function Chair_Pages_Layout({
   children,
 }: {
   children: React.ReactNode;

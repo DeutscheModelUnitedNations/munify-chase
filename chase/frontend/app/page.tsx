@@ -34,14 +34,19 @@ export default function Home() {
               onClick={() => backend["sign-in"].post()}
             />
             <Button
-              label="Teilnehmenden-Login"
+              label="Teilnehmenden"
               icon="pi pi-link"
-              onClick={() => router.push("/login/participant")}
+              onClick={() => router.push("/participant/dashboard")}
             />
             <Button
-              label="Vorsitz-Login"
+              label="Vorsitz"
               icon="pi pi-link"
-              onClick={() => router.push("/login/chair")}
+              onClick={() => router.push("/chair/dashboard")}
+            />
+            <Button
+              label="Admin"
+              icon="pi pi-link"
+              onClick={() => router.push("/admin/new")}
             />
           </div>
         </div>

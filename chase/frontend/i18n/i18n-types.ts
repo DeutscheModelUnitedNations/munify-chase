@@ -158,6 +158,36 @@ type RootTranslation = {
 				 */
 				ERROR_NO_COMMITTEES_DETAILS: string
 			}
+			teampool: {
+				/**
+				 * D​e​l​e​t​e​ ​A​l​l
+				 */
+				DELETE_ALL: string
+				/**
+				 * U​p​l​o​a​d​ ​C​S​V
+				 */
+				UPLOAD_TEAM: string
+				/**
+				 * A​d​d​ ​T​e​a​m​ ​M​e​m​b​e​r
+				 */
+				ADD_TEAMMEMBER: string
+				/**
+				 * N​o​ ​T​e​a​m​ ​M​e​m​b​e​r​s​ ​y​e​t​.​ ​C​l​i​c​k​ ​'​A​d​d​ ​T​e​a​m​ ​M​e​m​b​e​r​'​ ​i​n​ ​t​h​e​ ​t​o​p​ ​r​i​g​h​t​ ​c​o​r​n​e​r​ ​t​o​ ​c​r​e​a​t​e​ ​a​ ​n​e​w​ ​o​n​e​.
+				 */
+				EMPTY_MESSAGE: string
+				/**
+				 * I​n​ ​t​o​t​a​l​ ​{​{​0​}​}​ ​t​e​a​m​ ​m​e​m​b​e​r​s​.
+				 */
+				FOOTER: string
+				/**
+				 * N​a​m​e
+				 */
+				NAME: string
+				/**
+				 * R​o​l​e
+				 */
+				ROLE: string
+			}
 			steps: {
 				/**
 				 * S​t​r​u​c​t​u​r​e
@@ -923,6 +953,36 @@ export type TranslationFunctions = {
 				 * Please create a committee before continuing.
 				 */
 				ERROR_NO_COMMITTEES_DETAILS: () => LocalizedString
+			}
+			teampool: {
+				/**
+				 * Delete All
+				 */
+				DELETE_ALL: () => LocalizedString
+				/**
+				 * Upload CSV
+				 */
+				UPLOAD_TEAM: () => LocalizedString
+				/**
+				 * Add Team Member
+				 */
+				ADD_TEAMMEMBER: () => LocalizedString
+				/**
+				 * No Team Members yet. Click 'Add Team Member' in the top right corner to create a new one.
+				 */
+				EMPTY_MESSAGE: () => LocalizedString
+				/**
+				 * In total {{0}} team members.
+				 */
+				FOOTER: (arg0: number | string | boolean) => LocalizedString
+				/**
+				 * Name
+				 */
+				NAME: () => LocalizedString
+				/**
+				 * Role
+				 */
+				ROLE: () => LocalizedString
 			}
 			steps: {
 				/**

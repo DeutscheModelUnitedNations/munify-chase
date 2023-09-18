@@ -48,6 +48,16 @@ const de = {
         ERROR_NO_COMMITTEES_DETAILS: "Bitte erstelle ein Gremium, bevor du fortfährst.",
       },
 
+      teampool: {
+        DELETE_ALL: "Alle löschen",
+        UPLOAD_TEAM: "CSV hochladen",
+        ADD_TEAMMEMBER: "Teammitglied hinzufügen",
+        EMPTY_MESSAGE: "Keine Teammitglieder vorhanden. Klicke oben rechts auf 'Teammitglied hinzufügen', um ein neues Teammitglied zu erstellen.",
+        FOOTER: "Insgesamt {{0}} Teammitglieder.",
+        NAME: "Name",
+        ROLE: "Rolle",
+      },
+
       steps: {
         STEP_1: "Struktur",
         STEP_2: "Teampool",

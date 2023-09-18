@@ -19,7 +19,7 @@ const en = {
         conferenceExists: "A conference with this name already exists.",
         generic: "An error occurred.",
       },
-      
+
       SAVE_AND_QUIT: "Save and Quit Setup",
       BUTTON_ADVANCE: "Save and Continue",
       BUTTON_BACK: "Back",
@@ -45,6 +45,16 @@ const en = {
         },
         ERROR_NO_COMMITTEES: "No Committees found",
         ERROR_NO_COMMITTEES_DETAILS: "Please create a committee before continuing.",
+      },
+
+      teampool: {
+        DELETE_ALL: "Delete All",
+        UPLOAD_TEAM: "Upload CSV",
+        ADD_TEAMMEMBER: "Add Team Member",
+        EMPTY_MESSAGE: "No Team Members yet. Click 'Add Team Member' in the top right corner to create a new one.",
+        FOOTER: "In total {{0}} team members.",
+        NAME: "Name",
+        ROLE: "Role",
       },
 
       steps: {

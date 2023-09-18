@@ -18,6 +18,170 @@ type RootTranslation = {
 	 * L​o​a​d​i​n​g​.​.​.
 	 */
 	LOADING_PAGE: string
+	admin: {
+		onboarding: {
+			/**
+			 * S​e​t​u​p​ ​n​e​w​ ​C​o​n​f​e​r​e​n​c​e
+			 */
+			title: string
+			/**
+			 * C​o​n​f​e​r​e​n​c​e​ ​N​a​m​e
+			 */
+			conferenceName: string
+			/**
+			 * D​a​t​e​s
+			 */
+			dates: string
+			/**
+			 * C​r​e​a​t​i​o​n​ ​T​o​k​e​n
+			 */
+			token: string
+			/**
+			 * L​o​g​i​n
+			 */
+			login: string
+			/**
+			 * C​r​e​a​t​e
+			 */
+			submit: string
+			/**
+			 * S​u​c​c​e​s​s
+			 */
+			success: string
+			/**
+			 * C​o​n​f​e​r​e​n​c​e​ ​c​r​e​a​t​e​d​!
+			 */
+			successDetails: string
+			error: {
+				/**
+				 * E​r​r​o​r
+				 */
+				title: string
+				/**
+				 * T​h​e​ ​t​o​k​e​n​ ​i​s​ ​i​n​v​a​l​i​d​.
+				 */
+				wrongToken: string
+				/**
+				 * A​ ​c​o​n​f​e​r​e​n​c​e​ ​w​i​t​h​ ​t​h​i​s​ ​n​a​m​e​ ​a​l​r​e​a​d​y​ ​e​x​i​s​t​s​.
+				 */
+				conferenceExists: string
+				/**
+				 * A​n​ ​e​r​r​o​r​ ​o​c​c​u​r​r​e​d​.
+				 */
+				generic: string
+			}
+			/**
+			 * S​a​v​e​ ​a​n​d​ ​Q​u​i​t​ ​S​e​t​u​p
+			 */
+			SAVE_AND_QUIT: string
+			/**
+			 * S​a​v​e​ ​a​n​d​ ​C​o​n​t​i​n​u​e
+			 */
+			BUTTON_ADVANCE: string
+			/**
+			 * B​a​c​k
+			 */
+			BUTTON_BACK: string
+			structure: {
+				/**
+				 * D​e​l​e​t​e​ ​A​l​l
+				 */
+				DELETE_ALL: string
+				/**
+				 * A​r​e​ ​y​o​u​ ​s​u​r​e​ ​y​o​u​ ​w​a​n​t​ ​t​o​ ​d​e​l​e​t​e​ ​a​l​l​ ​c​o​m​m​i​t​t​e​e​s​?
+				 */
+				DELETE_ALL_CONFIRM: string
+				/**
+				 * A​d​d​ ​C​o​m​m​i​t​t​e​e
+				 */
+				ADD_COMMITTEE: string
+				/**
+				 * N​o​ ​C​o​m​m​i​t​t​e​e​s​ ​y​e​t​.​ ​C​l​i​c​k​ ​'​A​d​d​ ​C​o​m​m​i​t​t​e​e​'​ ​i​n​ ​t​h​e​ ​t​o​p​ ​r​i​g​h​t​ ​c​o​r​n​e​r​ ​t​o​ ​c​r​e​a​t​e​ ​a​ ​n​e​w​ ​o​n​e​.
+				 */
+				EMPTY_MESSAGE: string
+				/**
+				 * N​a​m​e
+				 */
+				COMMITTEE_LONG: string
+				/**
+				 * A​b​b​r​e​v​i​a​t​i​o​n
+				 */
+				COMMITTEE_SHORT: string
+				/**
+				 * C​a​t​e​g​o​r​y
+				 */
+				CATEGORY: string
+				/**
+				 * I​n​ ​t​o​t​a​l​ ​{​{​0​}​}​ ​c​o​m​m​i​t​t​e​e​s​.
+				 */
+				FOOTER: string
+				input: {
+					/**
+					 * A​d​d
+					 */
+					BUTTON_ADD: string
+					/**
+					 * C​a​n​c​e​l
+					 */
+					BUTTON_CANCEL: string
+					/**
+					 * C​a​t​e​g​o​r​y
+					 */
+					CATEGORY: string
+					/**
+					 * C​o​m​m​i​t​t​e​e
+					 */
+					CATEGORY_SWITCH_COMMITTEE: string
+					/**
+					 * C​r​i​s​i​s
+					 */
+					CATEGORY_SWITCH_CRISIS: string
+					/**
+					 * I​C​J
+					 */
+					CATEGORY_SWITCH_ICJ: string
+					/**
+					 * I​s​ ​S​u​b​-​C​o​m​m​i​t​t​e​e
+					 */
+					IS_SUBCOMMITTEE: string
+					/**
+					 * P​a​r​e​n​t​ ​C​o​m​m​i​t​t​e​e
+					 */
+					PARENT_COMMITTEE: string
+				}
+				/**
+				 * N​o​ ​C​o​m​m​i​t​t​e​e​s​ ​f​o​u​n​d
+				 */
+				ERROR_NO_COMMITTEES: string
+				/**
+				 * P​l​e​a​s​e​ ​c​r​e​a​t​e​ ​a​ ​c​o​m​m​i​t​t​e​e​ ​b​e​f​o​r​e​ ​c​o​n​t​i​n​u​i​n​g​.
+				 */
+				ERROR_NO_COMMITTEES_DETAILS: string
+			}
+			steps: {
+				/**
+				 * S​t​r​u​c​t​u​r​e
+				 */
+				STEP_1: string
+				/**
+				 * T​e​a​m​ ​P​o​o​l
+				 */
+				STEP_2: string
+				/**
+				 * C​o​m​m​i​t​t​e​e​s
+				 */
+				STEP_3: string
+				/**
+				 * D​e​l​e​g​a​t​i​o​n​s
+				 */
+				STEP_4: string
+				/**
+				 * R​o​l​e​s
+				 */
+				STEP_5: string
+			}
+		}
+	}
 	login: {
 		/**
 		 * U​s​e​r​n​a​m​e
@@ -620,6 +784,170 @@ export type TranslationFunctions = {
 	 * Loading...
 	 */
 	LOADING_PAGE: () => LocalizedString
+	admin: {
+		onboarding: {
+			/**
+			 * Setup new Conference
+			 */
+			title: () => LocalizedString
+			/**
+			 * Conference Name
+			 */
+			conferenceName: () => LocalizedString
+			/**
+			 * Dates
+			 */
+			dates: () => LocalizedString
+			/**
+			 * Creation Token
+			 */
+			token: () => LocalizedString
+			/**
+			 * Login
+			 */
+			login: () => LocalizedString
+			/**
+			 * Create
+			 */
+			submit: () => LocalizedString
+			/**
+			 * Success
+			 */
+			success: () => LocalizedString
+			/**
+			 * Conference created!
+			 */
+			successDetails: () => LocalizedString
+			error: {
+				/**
+				 * Error
+				 */
+				title: () => LocalizedString
+				/**
+				 * The token is invalid.
+				 */
+				wrongToken: () => LocalizedString
+				/**
+				 * A conference with this name already exists.
+				 */
+				conferenceExists: () => LocalizedString
+				/**
+				 * An error occurred.
+				 */
+				generic: () => LocalizedString
+			}
+			/**
+			 * Save and Quit Setup
+			 */
+			SAVE_AND_QUIT: () => LocalizedString
+			/**
+			 * Save and Continue
+			 */
+			BUTTON_ADVANCE: () => LocalizedString
+			/**
+			 * Back
+			 */
+			BUTTON_BACK: () => LocalizedString
+			structure: {
+				/**
+				 * Delete All
+				 */
+				DELETE_ALL: () => LocalizedString
+				/**
+				 * Are you sure you want to delete all committees?
+				 */
+				DELETE_ALL_CONFIRM: () => LocalizedString
+				/**
+				 * Add Committee
+				 */
+				ADD_COMMITTEE: () => LocalizedString
+				/**
+				 * No Committees yet. Click 'Add Committee' in the top right corner to create a new one.
+				 */
+				EMPTY_MESSAGE: () => LocalizedString
+				/**
+				 * Name
+				 */
+				COMMITTEE_LONG: () => LocalizedString
+				/**
+				 * Abbreviation
+				 */
+				COMMITTEE_SHORT: () => LocalizedString
+				/**
+				 * Category
+				 */
+				CATEGORY: () => LocalizedString
+				/**
+				 * In total {{0}} committees.
+				 */
+				FOOTER: (arg0: number | string | boolean) => LocalizedString
+				input: {
+					/**
+					 * Add
+					 */
+					BUTTON_ADD: () => LocalizedString
+					/**
+					 * Cancel
+					 */
+					BUTTON_CANCEL: () => LocalizedString
+					/**
+					 * Category
+					 */
+					CATEGORY: () => LocalizedString
+					/**
+					 * Committee
+					 */
+					CATEGORY_SWITCH_COMMITTEE: () => LocalizedString
+					/**
+					 * Crisis
+					 */
+					CATEGORY_SWITCH_CRISIS: () => LocalizedString
+					/**
+					 * ICJ
+					 */
+					CATEGORY_SWITCH_ICJ: () => LocalizedString
+					/**
+					 * Is Sub-Committee
+					 */
+					IS_SUBCOMMITTEE: () => LocalizedString
+					/**
+					 * Parent Committee
+					 */
+					PARENT_COMMITTEE: () => LocalizedString
+				}
+				/**
+				 * No Committees found
+				 */
+				ERROR_NO_COMMITTEES: () => LocalizedString
+				/**
+				 * Please create a committee before continuing.
+				 */
+				ERROR_NO_COMMITTEES_DETAILS: () => LocalizedString
+			}
+			steps: {
+				/**
+				 * Structure
+				 */
+				STEP_1: () => LocalizedString
+				/**
+				 * Team Pool
+				 */
+				STEP_2: () => LocalizedString
+				/**
+				 * Committees
+				 */
+				STEP_3: () => LocalizedString
+				/**
+				 * Delegations
+				 */
+				STEP_4: () => LocalizedString
+				/**
+				 * Roles
+				 */
+				STEP_5: () => LocalizedString
+			}
+		}
+	}
 	login: {
 		/**
 		 * Username

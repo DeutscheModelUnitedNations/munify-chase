@@ -3,6 +3,60 @@ import type { BaseTranslation } from "../i18n-types";
 const en = {
   LOADING_PAGE: "Loading...",
 
+  admin: {
+    onboarding: {
+      title: "Setup new Conference",
+      conferenceName: "Conference Name",
+      dates: "Dates",
+      token: "Creation Token",
+      login: "Login",
+      submit: "Create",
+      success: "Success",
+      successDetails: "Conference created!",
+      error: {
+        title: "Error",
+        wrongToken: "The token is invalid.",
+        conferenceExists: "A conference with this name already exists.",
+        generic: "An error occurred.",
+      },
+      
+      SAVE_AND_QUIT: "Save and Quit Setup",
+      BUTTON_ADVANCE: "Save and Continue",
+      BUTTON_BACK: "Back",
+
+      structure: {
+        DELETE_ALL: "Delete All",
+        DELETE_ALL_CONFIRM: "Are you sure you want to delete all committees?",
+        ADD_COMMITTEE: "Add Committee",
+        EMPTY_MESSAGE: "No Committees yet. Click 'Add Committee' in the top right corner to create a new one.",
+        COMMITTEE_LONG: "Name",
+        COMMITTEE_SHORT: "Abbreviation",
+        CATEGORY: "Category",
+        FOOTER: "In total {{0}} committees.",
+        input: {
+          BUTTON_ADD: "Add",
+          BUTTON_CANCEL: "Cancel",
+          CATEGORY: "Category",
+          CATEGORY_SWITCH_COMMITTEE: "Committee",
+          CATEGORY_SWITCH_CRISIS: "Crisis",
+          CATEGORY_SWITCH_ICJ: "ICJ",
+          IS_SUBCOMMITTEE: "Is Sub-Committee",
+          PARENT_COMMITTEE: "Parent Committee",
+        },
+        ERROR_NO_COMMITTEES: "No Committees found",
+        ERROR_NO_COMMITTEES_DETAILS: "Please create a committee before continuing.",
+      },
+
+      steps: {
+        STEP_1: "Structure",
+        STEP_2: "Team Pool",
+        STEP_3: "Committees",
+        STEP_4: "Delegations",
+        STEP_5: "Roles",
+      },
+    }
+  },
+
   login: {
     USERNAME_PLACEHOLDER: "Username",
     PASSWORD_PLACEHOLDER: "Password",

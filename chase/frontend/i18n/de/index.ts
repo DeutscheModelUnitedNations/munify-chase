@@ -3,6 +3,61 @@ import type { Translation } from "../i18n-types";
 const de = {
   LOADING_PAGE: "Loading...",
 
+  admin: {
+    onboarding: {
+      title: "Neue Konferenz erstellen",
+      conferenceName: "Name der Konferenz",
+      dates: "Zeitraum",
+      token: "Erstellungstoken",
+      login: "Anmelden",
+      submit: "Erstellen",
+      success: "Erfolg",
+      successDetails: "Die Konferenz wurde erstellt!",
+      error: {
+        title: "Fehler",
+        wrongToken: "Das Token ist ungültig.",
+        conferenceExists: "Eine Konferenz mit diesem Namen existiert bereits.",
+        generic: "Ein Fehler ist aufgetreten.",
+      },
+
+      SAVE_AND_QUIT: "Speichern und Einrichtung beenden",
+
+      BUTTON_ADVANCE: "Speichern und Weiter",
+      BUTTON_BACK: "Zurück",
+
+      structure: {
+        DELETE_ALL: "Alles löschen",
+        DELETE_ALL_CONFIRM: "Are you sure you want to delete all committees?",
+        ADD_COMMITTEE: "Gremium hinzufügen",
+        EMPTY_MESSAGE: "Keine Gremien vorhanden. Klicke oben rechts auf 'Gremium hinzufügen', um ein neues Gremium zu erstellen.",
+        COMMITTEE_LONG: "Name",
+        COMMITTEE_SHORT: "Abkürzung",
+        CATEGORY: "Kategorie",
+        FOOTER: "Insgesamt {{0}} Gremien.",
+        input: {
+          BUTTON_ADD: "Hinzufügen",
+          BUTTON_CANCEL: "Abbrechen",
+          CATEGORY: "Kategorie",
+          CATEGORY_SWITCH_COMMITTEE: "Gremium",
+          CATEGORY_SWITCH_CRISIS: "Krise",
+          CATEGORY_SWITCH_ICJ: "IGH",
+          IS_SUBCOMMITTEE: "Ist Vorlegendes Gremium / Untergremium",
+          PARENT_COMMITTEE: "Beschlussfassendes Gremium / Übergeordnetes Gremium",
+        },
+        ERROR_NO_COMMITTEES: "Keine Gremien vorhanden",
+        ERROR_NO_COMMITTEES_DETAILS: "Bitte erstelle ein Gremium, bevor du fortfährst.",
+      },
+
+      steps: {
+        STEP_1: "Struktur",
+        STEP_2: "Teampool",
+        STEP_3: "Gremien",
+        STEP_4: "Delegationen",
+        STEP_5: "Rollen",
+      },
+    },
+  },
+
   login: {
     USERNAME_PLACEHOLDER: "Username",
     PASSWORD_PLACEHOLDER: "Passwort",

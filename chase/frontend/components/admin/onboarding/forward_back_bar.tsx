@@ -9,12 +9,14 @@ interface ForwardBackButtonsProps {
   backURL: string;
   handleSaveFunction: () => void;
   saveLoading?: boolean;
+  forwardDisabled?: boolean;
 }
 
 export default function ForwardBackButtons({
   backURL,
   handleSaveFunction,
   saveLoading,
+  forwardDisabled = false,
 }: ForwardBackButtonsProps) {
   const { LL } = useI18nContext();
   const router = useRouter();
@@ -42,6 +44,7 @@ export default function ForwardBackButtons({
           onClick={handleSaveFunction}
           loading={saveLoading}
           keyboardShortcut="⌥ + Enter"
+          disabled={forwardDisabled}
         />
       </div>
     </>

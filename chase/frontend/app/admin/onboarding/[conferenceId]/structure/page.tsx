@@ -89,13 +89,45 @@ export default function structure({
       message: LL.admin.onboarding.structure.DELETE_ALL_CONFIRM(),
       acceptClassName: "p-button-danger",
       accept: () => {
-        setCommittees([]);
+        backend["conference/committee/delete"]
+          .post({
+            conferenceId: parseInt(params.conferenceId),
+            deleteAll: true,
+          })
+          .then((res) => {
+            console.log(res);
+            setUpdateCommittees(true);
+          })
+          .catch((err) => {
+            console.log(err);
+            toast.current.show({
+              severity: "error",
+              summary: LL.admin.onboarding.error.title(),
+              detail: LL.admin.onboarding.error.generic(),
+            });
+          });
       },
     });
   };
 
   const handleDelete = (rowData) => {
-    setCommittees(committees.filter((c) => c !== rowData));
+    backend["conference/committee/delete"]
+      .post({
+        conferenceId: parseInt(params.conferenceId),
+        id: rowData.id,
+      })
+      .then((res) => {
+        console.log(res);
+        setUpdateCommittees(true);
+      })
+      .catch((err) => {
+        console.log(err);
+        toast.current.show({
+          severity: "error",
+          summary: LL.admin.onboarding.error.title(),
+          detail: LL.admin.onboarding.error.generic(),
+        });
+      });
   };
 
   // Eventlistener for N key
@@ -105,37 +137,7 @@ export default function structure({
 
   const handleSave = () => {
     setSaveLoading(true);
-    if (committees.length === 0) {
-      setSaveLoading(false);
-      toast.current.show({
-        severity: "error",
-        summary: LL.admin.onboarding.structure.ERROR_NO_COMMITTEES(),
-        detail: LL.admin.onboarding.structure.ERROR_NO_COMMITTEES_DETAILS(),
-      });
-      return;
-    }
-
-    for (const committee of committees) {
-      backend["conference/committee/create"]
-        .post({
-          conferenceId: parseInt(params.conferenceId),
-          name: committee.name,
-          abbreviation: committee.shortname,
-        })
-        .then((res) => {
-          console.log(res);
-          router.push(`/admin/onboarding/${params.conferenceId}/teampool`);
-        })
-        .catch((err) => {
-          console.log(err);
-          toast.current.show({
-            severity: "error",
-            summary: LL.admin.onboarding.error.title(),
-            detail: LL.admin.onboarding.error.generic(),
-          });
-        });
-      setSaveLoading(false);
-    }
+    router.push(`/admin/onboarding/${params.conferenceId}/teampool`);
   };
 
   return (
@@ -152,6 +154,7 @@ export default function structure({
         backURL="/admin/new"
         handleSaveFunction={handleSave}
         saveLoading={saveLoading}
+        forwardDisabled={committees.length === 0}
       />
 
       <AddCommitteeDialog

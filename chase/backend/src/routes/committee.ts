@@ -59,7 +59,22 @@ export default (app: Elysia) =>
           });
         }
 
+        if (body.deleteAll) {
+          return db.$transaction(async (tx) => {
+            const deletedCommittees = await tx.committee.deleteMany({
+              where: {
+                conferenceId: body.conferenceId,
+              },
+            });
+
+            return deletedCommittees;
+          });
+        }
+
         return db.$transaction(async (tx) => {
+          if (!body.id) {
+            return new Response("No committeeId provided!", { status: 400 });
+          }
           const deletedCommittee = await tx.committee.delete({
             where: {
               id: body.id,
@@ -71,7 +86,8 @@ export default (app: Elysia) =>
       },
       {
         body: t.Object({
-          id: t.Number(),
+          id: t.Optional(t.Number()),
+          deleteAll: t.Optional(t.Boolean()),
           conferenceId: t.Number(),
         }),
       }

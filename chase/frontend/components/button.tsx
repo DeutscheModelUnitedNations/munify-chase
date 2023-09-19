@@ -2,6 +2,7 @@ import React from "react";
 import { Button as PrimeReactButton } from "primereact/button";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { IconProp } from "@fortawesome/fontawesome-svg-core";
+import { faSpinner, faSpinnerThird } from "@fortawesome/pro-solid-svg-icons";
 
 interface ButtonProps {
   label?: string;
@@ -20,6 +21,8 @@ interface ButtonProps {
  * @param faIcon The FontAwesomeIcon to be used as an icon for the Button
  * @param faIconClassName The className of the FontAwesomeIcon
  * @param keyboardShortcut The keyboard shortcut to be displayed on the Button
+ * @param text Whether the Button should be displayed as a text button or not
+ * @param loading Whether the Button should be displayed as loading or not
  * @param rest The rest of the props that are passed to the PrimeReact Button Component
  * @returns A Button Component
  */
@@ -30,6 +33,7 @@ export default function Button({
   faIconClassName,
   keyboardShortcut,
   text,
+  loading,
   ...rest
 }: ButtonProps) {
   return (
@@ -38,7 +42,8 @@ export default function Button({
       icon={
         faIcon && (
           <FontAwesomeIcon
-            icon={faIcon}
+            icon={loading ? faSpinnerThird : faIcon}
+            spin={loading ? true : false}
             className={`${label && "mr-3"} + ${faIconClassName}`}
           />
         )

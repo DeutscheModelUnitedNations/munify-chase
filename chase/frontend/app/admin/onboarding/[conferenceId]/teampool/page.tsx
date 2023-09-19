@@ -51,6 +51,7 @@ export default function teampool({
         backURL={`/admin/onboarding/${params.conferenceId}/structure`}
         saveLoading={saveLoading}
         handleSaveFunction={() => {}}
+        forwardDisabled={team.length === 0}
       />
     </>
   );

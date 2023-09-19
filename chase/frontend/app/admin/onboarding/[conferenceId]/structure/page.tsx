@@ -51,7 +51,7 @@ export default function structure({
 
   const addCommittee = (
     newCommitteeName: string,
-    newCommitteeShortname: string,
+    newCommitteeAbbreviation: string,
     newCommitteeCategory: string,
     newCommitteeIsSubcommittee: boolean,
     newCommitteeParent?: number
@@ -60,21 +60,21 @@ export default function structure({
       .post({
         conferenceId: parseInt(params.conferenceId),
         name: newCommitteeName,
-        abbreviation: newCommitteeShortname,
+        abbreviation: newCommitteeAbbreviation,
         category: newCommitteeCategory,
         isSubcommittee: newCommitteeIsSubcommittee,
         parentCommitteeId: newCommitteeParent,
       })
       .then((res) => {
-        console.log(res);
         setInputMaskVisible(false);
         setUpdateCommittees(true);
         toast.current.show({
           severity: "success",
+          summary: LL.admin.onboarding.structure.SUCCESS_ADD_COMMITTEE(),
+          detail: `${newCommitteeName} (${newCommitteeAbbreviation})`,
         });
       })
       .catch((err) => {
-        console.log(err);
         toast.current.show({
           severity: "error",
           summary: LL.admin.onboarding.error.title(),

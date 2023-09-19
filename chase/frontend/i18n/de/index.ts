@@ -20,16 +20,19 @@ const de = {
         generic: "Ein Fehler ist aufgetreten.",
       },
 
-      SAVE_AND_QUIT: "Speichern und Einrichtung beenden",
-
-      BUTTON_ADVANCE: "Speichern und Weiter",
+      SAVE_AND_QUIT: "Einrichtung beenden",
+      SAVE_AND_QUIT_MESSAGE:
+        "Willst du die Einrichtung wirklich beenden? Du kannst sie jederzeit später fortsetzen.",
+      BUTTON_ADVANCE: "Weiter",
       BUTTON_BACK: "Zurück",
 
       structure: {
         DELETE_ALL: "Alles löschen",
         DELETE_ALL_CONFIRM: "Are you sure you want to delete all committees?",
         ADD_COMMITTEE: "Gremium hinzufügen",
-        EMPTY_MESSAGE: "Keine Gremien vorhanden. Klicke oben rechts auf 'Gremium hinzufügen', um ein neues Gremium zu erstellen.",
+        SUCCESS_ADD_COMMITTEE: "Gremium hinzugefügt",
+        EMPTY_MESSAGE:
+          "Keine Gremien vorhanden. Klicke oben rechts auf 'Gremium hinzufügen', um ein neues Gremium zu erstellen.",
         COMMITTEE_LONG: "Name",
         COMMITTEE_SHORT: "Abkürzung",
         CATEGORY: "Kategorie",
@@ -42,17 +45,20 @@ const de = {
           CATEGORY_SWITCH_CRISIS: "Krise",
           CATEGORY_SWITCH_ICJ: "IGH",
           IS_SUBCOMMITTEE: "Ist Vorlegendes Gremium / Untergremium",
-          PARENT_COMMITTEE: "Beschlussfassendes Gremium / Übergeordnetes Gremium",
+          PARENT_COMMITTEE:
+            "Beschlussfassendes Gremium / Übergeordnetes Gremium",
         },
         ERROR_NO_COMMITTEES: "Keine Gremien vorhanden",
-        ERROR_NO_COMMITTEES_DETAILS: "Bitte erstelle ein Gremium, bevor du fortfährst.",
+        ERROR_NO_COMMITTEES_DETAILS:
+          "Bitte erstelle ein Gremium, bevor du fortfährst.",
       },
 
       teampool: {
         DELETE_ALL: "Alle löschen",
         UPLOAD_TEAM: "CSV hochladen",
         ADD_TEAMMEMBER: "Teammitglied hinzufügen",
-        EMPTY_MESSAGE: "Keine Teammitglieder vorhanden. Klicke oben rechts auf 'Teammitglied hinzufügen', um ein neues Teammitglied zu erstellen.",
+        EMPTY_MESSAGE:
+          "Keine Teammitglieder vorhanden. Klicke oben rechts auf 'Teammitglied hinzufügen', um ein neues Teammitglied zu erstellen.",
         FOOTER: "Insgesamt {{0}} Teammitglieder.",
         NAME: "Name",
         ROLE: "Rolle",

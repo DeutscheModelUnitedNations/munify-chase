@@ -66,7 +66,6 @@ export default function AddCommitteeDialog({
       newCommitteeIsSubcommittee,
       newCommitteeParent
     );
-    setInputMaskVisible(false);
     resetInputMask();
   };
 

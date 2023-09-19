@@ -71,11 +71,15 @@ type RootTranslation = {
 				generic: string
 			}
 			/**
-			 * S​a​v​e​ ​a​n​d​ ​Q​u​i​t​ ​S​e​t​u​p
+			 * Q​u​i​t​ ​S​e​t​u​p
 			 */
 			SAVE_AND_QUIT: string
 			/**
-			 * S​a​v​e​ ​a​n​d​ ​C​o​n​t​i​n​u​e
+			 * D​o​ ​y​o​u​ ​r​e​a​l​l​y​ ​w​a​n​t​ ​t​o​ ​q​u​i​t​ ​t​h​e​ ​s​e​t​u​p​?​ ​W​h​e​n​ ​y​o​u​ ​q​u​i​t​,​ ​y​o​u​ ​c​a​n​ ​a​l​w​a​y​s​ ​c​o​n​t​i​n​u​e​ ​l​a​t​e​r​.
+			 */
+			SAVE_AND_QUIT_MESSAGE: string
+			/**
+			 * C​o​n​t​i​n​u​e
 			 */
 			BUTTON_ADVANCE: string
 			/**
@@ -95,6 +99,10 @@ type RootTranslation = {
 				 * A​d​d​ ​C​o​m​m​i​t​t​e​e
 				 */
 				ADD_COMMITTEE: string
+				/**
+				 * C​o​m​m​i​t​t​e​e​ ​a​d​d​e​d
+				 */
+				SUCCESS_ADD_COMMITTEE: string
 				/**
 				 * N​o​ ​C​o​m​m​i​t​t​e​e​s​ ​y​e​t​.​ ​C​l​i​c​k​ ​'​A​d​d​ ​C​o​m​m​i​t​t​e​e​'​ ​i​n​ ​t​h​e​ ​t​o​p​ ​r​i​g​h​t​ ​c​o​r​n​e​r​ ​t​o​ ​c​r​e​a​t​e​ ​a​ ​n​e​w​ ​o​n​e​.
 				 */
@@ -867,11 +875,15 @@ export type TranslationFunctions = {
 				generic: () => LocalizedString
 			}
 			/**
-			 * Save and Quit Setup
+			 * Quit Setup
 			 */
 			SAVE_AND_QUIT: () => LocalizedString
 			/**
-			 * Save and Continue
+			 * Do you really want to quit the setup? When you quit, you can always continue later.
+			 */
+			SAVE_AND_QUIT_MESSAGE: () => LocalizedString
+			/**
+			 * Continue
 			 */
 			BUTTON_ADVANCE: () => LocalizedString
 			/**
@@ -891,6 +903,10 @@ export type TranslationFunctions = {
 				 * Add Committee
 				 */
 				ADD_COMMITTEE: () => LocalizedString
+				/**
+				 * Committee added
+				 */
+				SUCCESS_ADD_COMMITTEE: () => LocalizedString
 				/**
 				 * No Committees yet. Click 'Add Committee' in the top right corner to create a new one.
 				 */

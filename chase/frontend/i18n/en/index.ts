@@ -20,14 +20,16 @@ const en = {
         generic: "An error occurred.",
       },
 
-      SAVE_AND_QUIT: "Save and Quit Setup",
-      BUTTON_ADVANCE: "Save and Continue",
+      SAVE_AND_QUIT: "Quit Setup",
+      SAVE_AND_QUIT_MESSAGE: "Do you really want to quit the setup? When you quit, you can always continue later.",
+      BUTTON_ADVANCE: "Continue",
       BUTTON_BACK: "Back",
 
       structure: {
         DELETE_ALL: "Delete All",
         DELETE_ALL_CONFIRM: "Are you sure you want to delete all committees?",
         ADD_COMMITTEE: "Add Committee",
+        SUCCESS_ADD_COMMITTEE: "Committee added",
         EMPTY_MESSAGE: "No Committees yet. Click 'Add Committee' in the top right corner to create a new one.",
         COMMITTEE_LONG: "Name",
         COMMITTEE_SHORT: "Abbreviation",

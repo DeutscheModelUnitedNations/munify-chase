@@ -22,7 +22,7 @@ type AddCommitteeDialogProps = {
   setInputMaskVisible: (visible: boolean) => void;
   addCommitteeToList: (
     name: string,
-    shortname: string,
+    abbreviation: string,
     category: CommitteeCategory,
     isSubcommittee: boolean,
     parent: CommitteeEntry | null
@@ -40,16 +40,18 @@ export default function AddCommitteeDialog({
   const toast = useRef<Toast>(null);
 
   const [newCommitteeName, setNewCommitteeName] = useState("");
-  const [newCommitteeShortname, setNewCommitteeShortname] = useState("");
+  const [newCommitteeShortname, setNewCommitteeAbbreviation] = useState("");
   const [newCommitteeCategory, setNewCommitteeCategory] =
     useState<CommitteeCategory>("committee");
   const [newCommitteeIsSubcommittee, setNewCommitteeIsSubcommittee] =
     useState(false);
-  const [newCommitteeParent, setNewCommitteeParent] = useState(null);
+  const [newCommitteeParent, setNewCommitteeParent] = useState<number | null>(
+    null
+  );
 
   const resetInputMask = () => {
     setNewCommitteeName("");
-    setNewCommitteeShortname("");
+    setNewCommitteeAbbreviation("");
     setNewCommitteeCategory("committee");
     setNewCommitteeIsSubcommittee(false);
     setNewCommitteeParent(null);
@@ -124,7 +126,7 @@ export default function AddCommitteeDialog({
           <InputText
             id="committeeShortname"
             value={newCommitteeShortname}
-            onChange={(e) => setNewCommitteeShortname(e.target.value)}
+            onChange={(e) => setNewCommitteeAbbreviation(e.target.value)}
             className="w-full"
             required
             placeholder={LL.admin.onboarding.structure.COMMITTEE_SHORT()}
@@ -153,11 +155,11 @@ export default function AddCommitteeDialog({
             </label>
           </div>
           <Dropdown
-            value={newCommitteeParent}
+            value={committees.find((c) => c.id === newCommitteeParent)}
             options={committees.filter(
               (c) => !c.isSubcommittee && c.category === "committee"
             )}
-            onChange={(e) => setNewCommitteeParent(e.value)}
+            onChange={(e) => setNewCommitteeParent(e.value.id)}
             optionLabel="name"
             placeholder={LL.admin.onboarding.structure.input.PARENT_COMMITTEE()}
             disabled={!newCommitteeIsSubcommittee}
@@ -172,7 +174,7 @@ export default function AddCommitteeDialog({
               onClick={() => {
                 setInputMaskVisible(false);
                 setNewCommitteeName("");
-                setNewCommitteeShortname("");
+                setNewCommitteeAbbreviation("");
               }}
               keyboardShortcut="Esc"
             />

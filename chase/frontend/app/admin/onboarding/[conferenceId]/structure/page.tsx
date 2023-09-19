@@ -27,54 +27,12 @@ export default function structure({
 
   const [saveLoading, setSaveLoading] = useState(false);
 
-  const [committees, setCommittees] = useState<CommitteeEntry[]>([
-    // TODO remove dummy data
-    {
-      name: "Generalversammlung",
-      shortname: "GV",
-      category: "committee",
-      isSubcommittee: false,
-      parent: null,
-    },
-    {
-      name: "Sicherheitsrat",
-      shortname: "SR",
-      category: "committee",
-      isSubcommittee: false,
-      parent: null,
-    },
-    {
-      name: "Kommission für Friedenskonsolidierung",
-      shortname: "KFK",
-      category: "committee",
-      isSubcommittee: true,
-      parent: {
-        name: "Sicherheitsrat",
-        shortname: "SR",
-        category: "committee",
-        isSubcommittee: false,
-        parent: null,
-      },
-    },
-    {
-      name: "Krisesitzung",
-      shortname: "KRISE",
-      category: "crisis",
-      isSubcommittee: false,
-      parent: null,
-    },
-    {
-      name: "Internationaler Gerichtshof",
-      shortname: "IGH",
-      category: "icj",
-      isSubcommittee: false,
-      parent: null,
-    },
-  ]);
+  const [updateCommittees, setUpdateCommittees] = useState(true);
+  const [committees, setCommittees] = useState<CommitteeEntry[]>([]);
 
   useEffect(() => {
-    backend["conference/committee/list"]
-      .get({ conferenceId: params.conferenceId })
+    backend[`conference/committee/list/${params.conferenceId}`]
+      .get()
       .then((res) => {
         console.log(res);
         setCommittees(res.data);
@@ -87,26 +45,42 @@ export default function structure({
           detail: LL.admin.onboarding.error.generic(),
         });
       });
-  }, []);
+
+    setUpdateCommittees(false);
+  }, [updateCommittees]);
 
   const addCommittee = (
     newCommitteeName: string,
     newCommitteeShortname: string,
     newCommitteeCategory: string,
     newCommitteeIsSubcommittee: boolean,
-    newCommitteeParent: CommitteeEntry | null
+    newCommitteeParent?: number
   ) => {
-    setCommittees([
-      ...committees,
-      {
+    backend["conference/committee/create"]
+      .post({
+        conferenceId: parseInt(params.conferenceId),
         name: newCommitteeName,
-        shortname: newCommitteeShortname,
+        abbreviation: newCommitteeShortname,
         category: newCommitteeCategory,
         isSubcommittee: newCommitteeIsSubcommittee,
-        parent: newCommitteeParent,
-      },
-    ]);
-    setInputMaskVisible(false);
+        parentCommitteeId: newCommitteeParent,
+      })
+      .then((res) => {
+        console.log(res);
+        setInputMaskVisible(false);
+        setUpdateCommittees(true);
+        toast.current.show({
+          severity: "success",
+        });
+      })
+      .catch((err) => {
+        console.log(err);
+        toast.current.show({
+          severity: "error",
+          summary: LL.admin.onboarding.error.title(),
+          detail: LL.admin.onboarding.error.generic(),
+        });
+      });
   };
 
   const confirmDeleteAll = (event) => {

@@ -2,7 +2,7 @@
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
 generator zod {
-  provider = "zod-prisma-types"
+  provider = "npx zod-prisma-types"
 }
 
 generator client {
@@ -27,11 +27,16 @@ model ConferenceCreateToken {
 }
 
 model Committee {
-  id           Int        @id @default(autoincrement())
-  name         String
-  abbreviation String
-  conference   Conference @relation(fields: [conferenceId], references: [id])
-  conferenceId Int
+  id                Int         @id @default(autoincrement())
+  name              String
+  abbreviation      String
+  category          String
+  isSubcommittee    Boolean
+  parentCommittee   Committee?  @relation(name: "ParentChild", fields: [parentCommitteeId], references: [id], onDelete: Cascade)
+  parentCommitteeId Int?
+  conference        Conference  @relation(fields: [conferenceId], references: [id])
+  conferenceId      Int
+  subCommittees     Committee[] @relation(name: "ParentChild")
 
   @@unique([name, conferenceId])
 }

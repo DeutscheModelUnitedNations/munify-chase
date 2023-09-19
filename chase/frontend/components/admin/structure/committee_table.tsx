@@ -24,7 +24,7 @@ interface CommitteeTableProps {
 
 interface CommitteeEntry {
   name: string;
-  shortname: string;
+  abbreviation: string;
   category: CommitteeCategory;
   isSubcommittee: boolean;
   parent: CommitteeEntry | null;
@@ -72,7 +72,7 @@ export default function CommitteeTable({
           removableSort
         >
           <Column
-            field="shortname"
+            field="abbreviation"
             header={LL.admin.onboarding.structure.COMMITTEE_SHORT()}
             sortable
             className="w-1/6"
@@ -85,37 +85,45 @@ export default function CommitteeTable({
           />
           <Column
             header={LL.admin.onboarding.structure.CATEGORY()}
-            body={(rowData) => (
-              <span>
-                {rowData.category === "committee" &&
-                  (rowData.isSubcommittee ? (
-                    <div className="m-0 flex items-center justify-start gap-2">
+            body={(rowData) => {
+              const matchingCommittee = committees.find(
+                (committee) => committee.id === rowData.parentCommitteeId
+              );
+
+              return (
+                <span>
+                  {rowData.category === "committee" &&
+                    (rowData.isSubcommittee ? (
+                      <div className="m-0 flex items-center justify-start gap-2">
+                        <FontAwesomeIcon
+                          icon={faDiagramSubtask}
+                          className="text-2xl text-primary"
+                        />
+                        <span className="">
+                          {matchingCommittee ? matchingCommittee.abbreviation : 'N/A'}
+                        </span>
+                      </div>
+                    ) : (
                       <FontAwesomeIcon
-                        icon={faDiagramSubtask}
+                        icon={faUsersLine}
                         className="text-2xl text-primary"
                       />
-                      <span className="">{rowData.parent.shortname}</span>
-                    </div>
-                  ) : (
+                    ))}
+                  {rowData.category === "crisis" && (
                     <FontAwesomeIcon
-                      icon={faUsersLine}
-                      className="text-2xl text-primary"
+                      icon={faLightEmergencyOn}
+                      className="text-2xl text-red-500"
                     />
-                  ))}
-                {rowData.category === "crisis" && (
-                  <FontAwesomeIcon
-                    icon={faLightEmergencyOn}
-                    className="text-2xl text-red-500"
-                  />
-                )}
-                {rowData.category === "icj" && (
-                  <FontAwesomeIcon
-                    icon={faScaleBalanced}
-                    className="text-2xl text-green-500"
-                  />
-                )}
-              </span>
-            )}
+                  )}
+                  {rowData.category === "icj" && (
+                    <FontAwesomeIcon
+                      icon={faScaleBalanced}
+                      className="text-2xl text-green-500"
+                    />
+                  )}
+                </span>
+              );
+            }}
             className="w-1/6"
           />
           <Column

@@ -6,12 +6,15 @@ import { Metadata } from "./parseMetadata";
 const OPENID_URL = requireEnvWhenAuthNotMocked("OPENID_URL");
 const ZITADEL_SERVICE_USER_PERSONAL_ACCESS_TOKEN = requireEnvWhenAuthNotMocked(
   "ZITADEL_SERVICE_USER_PERSONAL_ACCESS_TOKEN",
-  );
-  
-  export type MetadataSetter = (userId: string, metadata: Partial<Metadata>) => Promise<Response[] | void>;
-  
-  // ATTENTION: This procedure assumes that there is only every one instance writing the metadata at the issuer at the same time
-  // if two instances write at the same time, the last one will overwrite the first one
+);
+
+export type MetadataSetter = (
+  userId: string,
+  metadata: Partial<Metadata>,
+) => Promise<Response[] | void>;
+
+// ATTENTION: This procedure assumes that there is only every one instance writing the metadata at the issuer at the same time
+// if two instances write at the same time, the last one will overwrite the first one
 export async function setUserMetadata(
   userId: string,
   metadata: Partial<Metadata>,

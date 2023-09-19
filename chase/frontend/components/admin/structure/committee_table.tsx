@@ -87,7 +87,7 @@ export default function CommitteeTable({
             header={LL.admin.onboarding.structure.CATEGORY()}
             body={(rowData) => {
               const matchingCommittee = committees.find(
-                (committee) => committee.id === rowData.parentCommitteeId
+                (committee) => committee.id === rowData.parentCommitteeId,
               );
 
               return (
@@ -100,7 +100,9 @@ export default function CommitteeTable({
                           className="text-2xl text-primary"
                         />
                         <span className="">
-                          {matchingCommittee ? matchingCommittee.abbreviation : 'N/A'}
+                          {matchingCommittee
+                            ? matchingCommittee.abbreviation
+                            : "N/A"}
                         </span>
                       </div>
                     ) : (

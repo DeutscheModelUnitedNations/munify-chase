@@ -25,7 +25,7 @@ type AddCommitteeDialogProps = {
     abbreviation: string,
     category: CommitteeCategory,
     isSubcommittee: boolean,
-    parent: CommitteeEntry | null
+    parent: CommitteeEntry | null,
   ) => void;
   committees: CommitteeEntry[];
 };
@@ -46,7 +46,7 @@ export default function AddCommitteeDialog({
   const [newCommitteeIsSubcommittee, setNewCommitteeIsSubcommittee] =
     useState(false);
   const [newCommitteeParent, setNewCommitteeParent] = useState<number | null>(
-    null
+    null,
   );
 
   const resetInputMask = () => {
@@ -64,7 +64,7 @@ export default function AddCommitteeDialog({
       newCommitteeShortname,
       newCommitteeCategory,
       newCommitteeIsSubcommittee,
-      newCommitteeParent
+      newCommitteeParent,
     );
     resetInputMask();
   };
@@ -156,7 +156,7 @@ export default function AddCommitteeDialog({
           <Dropdown
             value={committees.find((c) => c.id === newCommitteeParent)}
             options={committees.filter(
-              (c) => !c.isSubcommittee && c.category === "committee"
+              (c) => !c.isSubcommittee && c.category === "committee",
             )}
             onChange={(e) => setNewCommitteeParent(e.value.id)}
             optionLabel="name"

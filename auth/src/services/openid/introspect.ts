@@ -25,7 +25,10 @@ async function fetchWellKnownData(): Promise<WellKnownData | undefined> {
     console.info("Well known data fetched successfully");
     return data;
   } catch (error) {
-    console.error("Failed to fetch well known data, retrying... (This is ok at process startup, or if running in dev mode)", error);
+    console.error(
+      "Failed to fetch well known data, retrying... (This is ok at process startup, or if running in dev mode)",
+      error,
+    );
     return undefined;
   }
 }

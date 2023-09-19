@@ -1,8 +1,9 @@
 import { Steps } from "primereact/steps";
 import { useI18nContext } from "@/i18n/i18n-react";
 
-
-export default function OnboardingSteps({ activeIndex }: { activeIndex: number }) {
+export default function OnboardingSteps({
+  activeIndex,
+}: { activeIndex: number }) {
   const { LL } = useI18nContext();
 
   const items = [
@@ -23,5 +24,7 @@ export default function OnboardingSteps({ activeIndex }: { activeIndex: number }
     },
   ];
 
-  return <Steps model={items} activeIndex={activeIndex} className="w-full mb-8" />;
+  return (
+    <Steps model={items} activeIndex={activeIndex} className="w-full mb-8" />
+  );
 }

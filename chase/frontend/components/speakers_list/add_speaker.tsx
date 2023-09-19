@@ -52,7 +52,7 @@ export default function AddSpeakerOverlay({
   const [query, setQuery] = useState<string>("");
   const [filteredCountries, setFilteredCountries] = useState<CountryData[]>([]);
   const [selectedCountry, setSelectedCountry] = useState<CountryData | null>(
-    null
+    null,
   );
   const [fuse, setFuse] = useState<Fuse<CountryData> | null>(null);
 
@@ -64,7 +64,7 @@ export default function AddSpeakerOverlay({
           alpha3: country,
           name: getCountryNameByCode(country, locale),
         };
-      }
+      },
     );
     setCountries(countryData);
 
@@ -119,11 +119,11 @@ export default function AddSpeakerOverlay({
       showToast({
         severity: "success",
         summary: LL.chairs.speakersList.addSpeakerOverlay.TOAST_ADDED_SUMMARY(
-          selectedCountry.name
+          selectedCountry.name,
         ),
         detail:
           LL.chairs.speakersList.addSpeakerOverlay.TOAST_ADDED_DETAIL(
-            typeOfList
+            typeOfList,
           ),
         sticky: false,
       });

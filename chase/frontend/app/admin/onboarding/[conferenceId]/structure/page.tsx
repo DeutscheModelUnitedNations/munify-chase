@@ -54,7 +54,7 @@ export default function structure({
     newCommitteeAbbreviation: string,
     newCommitteeCategory: string,
     newCommitteeIsSubcommittee: boolean,
-    newCommitteeParent?: number
+    newCommitteeParent?: number,
   ) => {
     backend["conference/committee/create"]
       .post({

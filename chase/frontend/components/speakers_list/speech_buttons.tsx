@@ -212,7 +212,7 @@ export function ChairSpeechButtons({
         </Dialog>
         <Dialog
           header={LL.chairs.speakersList.changeSpeechTimeOverlay.HEADLINE(
-            typeOfList
+            typeOfList,
           )}
           visible={changeSpeechTimeOverlayVisible}
           onHide={() => setChangeSpeechTimeOverlayVisible(false)}

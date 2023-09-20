@@ -34,12 +34,12 @@ interface CountryData {
 
 export default function AddSpeakerOverlay({
   listOfAllCountries,
-  listClosed,
+  _listClosed,
   closeOverlay,
   typeOfList,
 }: {
   listOfAllCountries: CountryCode[];
-  listClosed: boolean;
+  _listClosed: boolean;
   closeOverlay: () => void;
   typeOfList: string;
 }) {

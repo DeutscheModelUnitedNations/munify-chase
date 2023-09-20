@@ -8,7 +8,7 @@ export function requireEnv(envName: string): string {
     throw new Error(`${v} env var must be set`);
   }
   return v;
-}/**
+} /**
  * Loads an env var. If the auth is mocked,
  * it will not load the var (return undefined), and dont throw an error.
  * If the auth is not mocked, it will throw an error if the var is not set.
@@ -42,5 +42,5 @@ if (isAuthMocked()) {
   is used
 
   ===============================================
-  `)
+  `);
 }

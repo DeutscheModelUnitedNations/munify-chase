@@ -40,7 +40,6 @@ async function fetchWellKnownData(): Promise<WellKnownData | undefined> {
 
 let wellKnownData = await fetchWellKnownData();
 
-
 /**
  * Returns the parsed user data or undefined if the user is not authorized
  */

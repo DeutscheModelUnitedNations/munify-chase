@@ -33,6 +33,10 @@ jobs:
       - name: Install all dependencies
         run: bun run install-all
 
+      - name: Generate prisma types
+        working-directory: ./chase/backend
+        run: bunx prisma generate
+
       - name: Run build
         working-directory: ./chase/backend
         run: bun run build

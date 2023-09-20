@@ -1,14 +1,12 @@
 "use client";
 import React, { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
-import {
-  FontAwesomeIcon,
-  FontAwesomeIconProps,
-} from "@fortawesome/react-fontawesome";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import Link from "next/link";
+import { IconProp } from "@fortawesome/fontawesome-svg-core";
 
 interface NavbarButtonProps {
-  icon: FontAwesomeIconProps["icon"];
+  icon: IconProp;
   title: string;
   link?: string;
   onClick?: () => void;

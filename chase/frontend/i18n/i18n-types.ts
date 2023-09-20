@@ -137,6 +137,10 @@ type RootTranslation = {
 		 * P​r​e​s​e​n​t​a​t​i​o​n
 		 */
 		PRESENTATION: string
+		/**
+		 * C​o​n​f​e​r​e​n​c​e​ ​P​r​e​s​s
+		 */
+		NEWS: string
 	}
 	settings: {
 		colorTheme: {
@@ -735,6 +739,10 @@ export type TranslationFunctions = {
 		 * Presentation
 		 */
 		PRESENTATION: () => LocalizedString
+		/**
+		 * Conference Press
+		 */
+		NEWS: () => LocalizedString
 	}
 	settings: {
 		colorTheme: {

@@ -1,7 +1,7 @@
-import React, { createContext, useContext, useState } from "react";
-import { useAuth } from "./auth";
 import { edenTreaty } from "@elysiajs/eden";
+import React, { createContext, useContext, useState } from "react";
 import type { App } from "../../backend/src/main";
+import { useAuth } from "./auth";
 
 // @ts-ignore
 let client = edenTreaty<App>("http://localhost:3001");

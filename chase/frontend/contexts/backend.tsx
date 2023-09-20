@@ -3,6 +3,7 @@ import { useAuth } from "./auth";
 import { edenTreaty } from "@elysiajs/eden";
 import type { App } from "../../backend/src/main";
 
+// @ts-ignore
 let client = edenTreaty<App>("http://localhost:3001");
 const BackendContext = createContext(client);
 
@@ -26,6 +27,7 @@ const BackendProvider = ({ children }: { children: React.ReactNode }) => {
   const auth = useAuth();
 
   //TODO adjust to prod values
+  // @ts-ignore
   client = edenTreaty<App>("http://localhost:3001", {
     async fetcher(input, init) {
       return fetch(input, {
@@ -44,7 +46,7 @@ const BackendProvider = ({ children }: { children: React.ReactNode }) => {
   const [backend, _] = useState(client);
 
   return (
-    // biome-ignore lint/suspicious/noExplicitAny: typesyript cant detect the actual type here
+    // rome-ignore lint/suspicious/noExplicitAny: typesyript cant detect the actual type here
     <BackendContext.Provider value={backend as any}>
       {children}
     </BackendContext.Provider>

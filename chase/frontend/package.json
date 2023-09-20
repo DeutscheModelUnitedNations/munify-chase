@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "npx concurrently \"npm:devserver\" \"npm:typesafe-i18n\"",
+    "dev": "concurrently \"bun run devserver\" \"bun run typesafe-i18n\"",
     "devserver": "next dev",
     "build": "next build",
     "start": "next start",

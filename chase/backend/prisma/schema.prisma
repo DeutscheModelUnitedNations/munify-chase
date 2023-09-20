@@ -12,9 +12,11 @@ datasource db {
 
 /// A conference entity
 model Conference {
-  id         Int         @id @default(autoincrement())
+  id         String      @id @default(uuid())
   name       String      @unique
   committees Committee[]
+  start      DateTime?
+  end        DateTime?
 }
 
 /// Consumeable token which grants the creation of a conference
@@ -23,11 +25,11 @@ model ConferenceCreateToken {
 }
 
 model Committee {
-  id           Int        @id @default(autoincrement())
+  id           String     @id @default(uuid())
   name         String
   abbreviation String
   conference   Conference @relation(fields: [conferenceId], references: [id])
-  conferenceId Int
+  conferenceId String
 
   @@unique([name, conferenceId])
 }

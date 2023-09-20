@@ -2,8 +2,8 @@
   "name": "backend",
   "version": "1.0.44",
   "scripts": {
-    "dev": "bun --bun concurrently \"bun:dev:server\" \"bun:dev:docker\"",
-    "dev:server": "bun run --watch src/main.ts",
+    "dev": "bun run concurrently \"bun run dev:server\" \"bun run dev:docker\"",
+    "dev:server": "bun run --watch --hot src/main.ts",
     "dev:docker": "docker compose up --remove-orphans"
   },
   "dependencies": {

@@ -14,7 +14,7 @@ export interface User {
 /**
  * How the auth system references conferences
  */
-export type ConferenceId = number;
+export type ConferenceId = string;
 /**
  * How the auth system references countries
  */

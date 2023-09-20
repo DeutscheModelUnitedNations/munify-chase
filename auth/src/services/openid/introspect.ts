@@ -14,6 +14,8 @@ interface WellKnownData {
   introspection_endpoint: string;
 }
 
+let failCounter = 0;
+
 async function fetchWellKnownData(): Promise<WellKnownData | undefined> {
   try {
     const res = await fetch(`${OPENID_URL}/.well-known/openid-configuration`);
@@ -25,12 +27,19 @@ async function fetchWellKnownData(): Promise<WellKnownData | undefined> {
     console.info("Well known data fetched successfully");
     return data;
   } catch (error) {
-    console.error("Failed to fetch well known data, retrying... (This is ok at process startup, or if running in dev mode)", error);
+    if (failCounter > 3) {
+      console.error(
+        "Failed to fetch well known data, retrying... (This is ok at process startup, or if running in dev mode)",
+        error,
+      );
+    }
+    failCounter++;
     return undefined;
   }
 }
 
 let wellKnownData = await fetchWellKnownData();
+
 
 /**
  * Returns the parsed user data or undefined if the user is not authorized

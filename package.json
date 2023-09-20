@@ -1,8 +1,11 @@
 {
   "scripts": {
-    "install-all": "npx concurrently \"npm:install-all:chase:backend\" \"npm:install-all:chase:frontend\" \"npm:install-all:auth\" \"npm:install-all:munify-util\"",
+    "dev": "concurrently \"bun run dev:chase:frontend\" \"bun run dev:chase:backend\"",
+    "dev:chase:frontend": "cd chase/frontend && bun run dev",
+    "dev:chase:backend": "cd chase/backend && bun run dev",
+    "install-all": "bun i && concurrently \"bun run install-all:chase:backend\" \"bun run install-all:chase:frontend\" \"bun run install-all:auth\" \"bun run install-all:munify-util\"",
     "install-all:chase:backend": "cd ./chase/backend && bun i",
-    "install-all:chase:frontend": "cd ./chase/frontend && npm i",
+    "install-all:chase:frontend": "cd ./chase/frontend && bun i",
     "install-all:auth": "cd ./auth && bun i",
     "install-all:munify-util": "cd ./munify-util && bun i",
     "format": "biome format . --write",
@@ -10,7 +13,7 @@
     "test": "echo TODO"
   },
   "devDependencies": {
-    "@biomejs/biome": "^1.0.0",
+    "@biomejs/biome": "^1.2.2",
     "bun-types": "latest",
     "concurrently": "^8.2.1"
   }

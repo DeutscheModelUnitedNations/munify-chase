@@ -14,9 +14,9 @@ export class Permissions {
     private readonly metadataSetter: MetadataSetter, // make this exchangeable for dev mocking
   ) {}
 
-  setConferenceAdmin(conference: ConferenceId) {
+  setConferenceAdmin(conferenceId: ConferenceId) {
     this.metadata.conferenceAdminPermissions.push({
-      conference,
+      conference: conferenceId,
     });
 
     return this.metadataSetter(this.userId, {

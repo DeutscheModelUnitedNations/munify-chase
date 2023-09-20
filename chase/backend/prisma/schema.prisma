@@ -1,10 +1,6 @@
 // This is your Prisma schema file,
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
-generator zod {
-  provider = "npx zod-prisma-types"
-}
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -16,9 +12,11 @@ datasource db {
 
 /// A conference entity
 model Conference {
-  id         Int         @id @default(autoincrement())
+  id         String      @id @default(uuid())
   name       String      @unique
   committees Committee[]
+  start      DateTime?
+  end        DateTime?
 }
 
 /// Consumeable token which grants the creation of a conference
@@ -27,16 +25,11 @@ model ConferenceCreateToken {
 }
 
 model Committee {
-  id                Int         @id @default(autoincrement())
-  name              String
-  abbreviation      String
-  category          String
-  isSubcommittee    Boolean
-  parentCommittee   Committee?  @relation(name: "ParentChild", fields: [parentCommitteeId], references: [id], onDelete: Cascade)
-  parentCommitteeId Int?
-  conference        Conference  @relation(fields: [conferenceId], references: [id])
-  conferenceId      Int
-  subCommittees     Committee[] @relation(name: "ParentChild")
+  id           String     @id @default(uuid())
+  name         String
+  abbreviation String
+  conference   Conference @relation(fields: [conferenceId], references: [id])
+  conferenceId String
 
   @@unique([name, conferenceId])
 }

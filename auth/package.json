@@ -5,6 +5,7 @@
     "dev:docker": "docker compose up --remove-orphans"
   },
   "devDependencies": {
+    "@tsconfig/node16": "^16.1.1",
     "bun-types": "latest"
   },
   "main": "./src/index.ts",

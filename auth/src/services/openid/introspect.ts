@@ -5,6 +5,7 @@ import {
   ZITADEL_METADATA_CLAIM,
   parseMetadata,
 } from "../zitadel/parseMetadata";
+import { setUserMetadata } from "../zitadel/editUserMetadata";
 
 const OPENID_URL = requireEnvWhenAuthNotMocked("OPENID_URL");
 const ZITADEL_USERNAME = requireEnvWhenAuthNotMocked("ZITADEL_USERNAME");
@@ -23,7 +24,8 @@ async function fetchWellKnownData(): Promise<WellKnownData | undefined> {
     if (!res.status.toString().startsWith("2")) {
       throw new Error(`Well known data request errored: ${await res.text()}`);
     }
-    const data = await res.json();
+    // rome-ignore lint/suspicious/noExplicitAny: complex type, we dont care
+    const data = (await res.json()) as any;
     console.info("Well known data fetched successfully");
     return data;
   } catch (error) {
@@ -73,7 +75,9 @@ export async function introspect(
     throw new Error(`Introspection request errored: ${await req.text()}`);
   }
 
-  const parsedIntrospectionData = await req.json();
+  //TODO
+  // rome-ignore lint/suspicious/noExplicitAny:
+  const parsedIntrospectionData = (await req.json()) as any;
 
   if (!parsedIntrospectionData.active) {
     return undefined;
@@ -95,6 +99,6 @@ export async function introspect(
       locale: parsedIntrospectionData.locale,
       pronouns: parsedMetadata.pronouns,
     },
-    permissions: new Permissions(userId, parsedMetadata),
+    permissions: new Permissions(userId, parsedMetadata, setUserMetadata),
   };
 }

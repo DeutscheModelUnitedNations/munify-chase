@@ -7,7 +7,7 @@ import { join } from "node:path";
 
 // while developing and not running a live ZITADEL instance, you can adjust this to test permission related things for incoming requests
 // if you want to simulate a unauthorized request, just set this to undefined
-const mockedPermissions: Metadata = {
+let mockedPermissions: Metadata = {
   chairPermissions: [],
   conferenceAdminPermissions: [],
   nonStateActorPermissions: [],
@@ -17,7 +17,7 @@ const mockedPermissions: Metadata = {
   visitorPermissions: [],
 };
 
-const mockedUser: User = {
+let mockedUser: User = {
   email: "test@test.de",
   email_verified: true,
   family_name: "Test",
@@ -27,11 +27,32 @@ const mockedUser: User = {
   pronouns: "he/him",
 };
 
-let mockedIntrospection: { user: User; permissions: Permissions } = {
+if (isAuthMocked()) {
+  // load existing values if any
+  const devpath = join(import.meta.dir, "mockedAuth.json");
+  const file = Bun.file(devpath);
+  {
+    if (await file.exists()) {
+      const mocks = JSON.parse(await file.text());
+      mockedPermissions = mocks.permissions;
+      mockedUser = mocks.user;
+    }
+  }
+
+  // save values to disk
+  setInterval(async () => {
+    Bun.write(
+      devpath,
+      JSON.stringify({ permissions: mockedPermissions, user: mockedUser }),
+    );
+  }, 1000);
+}
+
+const mockedIntrospection: { user: User; permissions: Permissions } = {
   user: mockedUser,
   //TODO consider making this permanent, maybe store on disk somewhere
   permissions: new Permissions(
-    "42d35a24-cd3e-4625-9b91-b6510f728cc3",
+    mockedUser.id,
     mockedPermissions,
     async (userId, metadata) => {
       // we dont really care about other permissions in this scenario
@@ -49,28 +70,7 @@ let mockedIntrospection: { user: User; permissions: Permissions } = {
   ),
 };
 
-if (isAuthMocked()) {
-  // mocked data persistency
-  const devpath = join(import.meta.dir, "mockedAuth.json");
-  const file = Bun.file(devpath);
-  {
-    if (await file.exists()) {
-      mockedIntrospection = JSON.parse(await file.text());
-    }
-  }
-
-  setInterval(async () => {
-    if (
-      !(await file.exists()) ||
-      !Bun.deepEquals(JSON.parse(await file.text()), mockedIntrospection)
-    ) {
-      Bun.write(devpath, JSON.stringify(mockedIntrospection));
-    }
-  }, 1000);
-}
-
-//TODO separate plugin for different auth states?
-
+//TODO separate plugin for different auth states? (auth, isConferenceAdmin, isChar, etc.)
 export const auth = new Elysia({
   name: "auth", // set name to avoid duplication on multiple uses https://elysiajs.com/concept/plugin.html#plugin-deduplication
 })

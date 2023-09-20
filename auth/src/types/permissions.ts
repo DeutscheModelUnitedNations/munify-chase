@@ -25,7 +25,11 @@ export class Permissions {
   }
 
   isConferenceAdmin(conference: ConferenceId) {
-    return this.metadata.conferenceAdminPermissions.find(c => c.conference === conference) !== undefined;
+    return (
+      this.metadata.conferenceAdminPermissions.find(
+        (c) => c.conference === conference,
+      ) !== undefined
+    );
   }
 
   revokeConferenceAdmin(conference: ConferenceId) {

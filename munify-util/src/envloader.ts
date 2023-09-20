@@ -44,3 +44,10 @@ if (isAuthMocked()) {
   ===============================================
   `);
 }
+
+/**
+ * @returns Whether the backend is running in development mode
+ */
+export function isDevelopment(): boolean {
+  return process.env.NODE_ENV === "development";
+}

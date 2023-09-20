@@ -9,21 +9,20 @@
     "build": "tsc --noEmit && bun build.ts"
   },
   "dependencies": {
-    "@elysiajs/bearer": "^0.6.0",
-    "@elysiajs/cors": "^0.6.0",
-    "@elysiajs/eden": "^0.6.0",
+    "@elysiajs/bearer": "^0.7.0",
+    "@elysiajs/cors": "^0.7.0",
+    "@elysiajs/eden": "^0.7.0",
     "@elysiajs/fn": "^0.6.1",
-    "@elysiajs/swagger": "^0.6.0",
-    "@prisma/client": "5.1.1",
+    "@elysiajs/swagger": "^0.7.0",
+    "@prisma/client": "5.3.1",
     "auth": "../../auth",
-    "elysia": "^0.6.3"
+    "elysia": "^0.7.1"
   },
   "devDependencies": {
     "bun-types": "latest",
     "concurrently": "^8.2.1",
-    "chase-backend": "../chase-backend",
     "munify-util": "../../munify-util",
-    "prisma": "^5.1.1",
+    "prisma": "^5.3.1",
     "@tsconfig/node16": "^16.1.1"
   },
   "module": "src/main.js"

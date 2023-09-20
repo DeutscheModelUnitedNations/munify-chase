@@ -13,7 +13,7 @@
     "test": "echo TODO"
   },
   "devDependencies": {
-    "@biomejs/biome": "^1.0.0",
+    "@biomejs/biome": "^1.2.2",
     "bun-types": "latest",
     "concurrently": "^8.2.1"
   }

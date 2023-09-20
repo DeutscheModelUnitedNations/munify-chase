@@ -5,7 +5,7 @@
     "dev": "bun run concurrently \"bun run dev:server\" \"bun run dev:docker\"",
     "dev:server": "bun run --watch --hot src/main.ts",
     "dev:docker": "docker compose up --remove-orphans",
-    "build": "tsc --noEmit && bun build.js"
+    "build": "tsc --noEmit && bun build.ts"
   },
   "dependencies": {
     "@elysiajs/bearer": "^0.6.0",
@@ -21,7 +21,8 @@
     "bun-types": "latest",
     "concurrently": "^8.2.1",
     "munify-util": "../../munify-util",
-    "prisma": "^5.1.1"
+    "prisma": "^5.1.1",
+    "@tsconfig/node16": "16.1.1"
   },
   "module": "src/main.js"
 }

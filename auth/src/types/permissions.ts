@@ -1,6 +1,6 @@
 import { Commitee, ConferenceId } from "./metadata";
-import { setUserMetadata } from "../services/zitadel/editUserMetadata";
 import { Metadata } from "../services/zitadel/parseMetadata";
+import { type MetadataSetter } from "../services/zitadel/editUserMetadata";
 
 /**
  * This class is a wrapper around the user metadata and abstracts the actual business logic for the permissions in the system.
@@ -11,16 +11,25 @@ export class Permissions {
   constructor(
     private readonly userId: string,
     private readonly metadata: Metadata,
+    private readonly metadataSetter: MetadataSetter, // make this exchangeable for dev mocking
   ) {}
 
-  setConferenceAdmin(conference: ConferenceId) {
+  setConferenceAdmin(conferenceId: ConferenceId) {
     this.metadata.conferenceAdminPermissions.push({
-      conference,
+      conference: conferenceId,
     });
 
-    return setUserMetadata(this.userId, {
+    return this.metadataSetter(this.userId, {
       conferenceAdminPermissions: this.metadata.conferenceAdminPermissions,
     });
+  }
+
+  isConferenceAdmin(conference: ConferenceId) {
+    return (
+      this.metadata.conferenceAdminPermissions.find(
+        (c) => c.conference === conference,
+      ) !== undefined
+    );
   }
 
   revokeConferenceAdmin(conference: ConferenceId) {
@@ -29,7 +38,7 @@ export class Permissions {
         (c) => c.conference !== conference,
       );
 
-    return setUserMetadata(this.userId, {
+    return this.metadataSetter(this.userId, {
       conferenceAdminPermissions: this.metadata.conferenceAdminPermissions,
     });
   }

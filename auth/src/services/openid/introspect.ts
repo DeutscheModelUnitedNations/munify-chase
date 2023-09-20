@@ -24,7 +24,8 @@ async function fetchWellKnownData(): Promise<WellKnownData | undefined> {
     if (!res.status.toString().startsWith("2")) {
       throw new Error(`Well known data request errored: ${await res.text()}`);
     }
-    const data = await res.json();
+    // rome-ignore lint/suspicious/noExplicitAny: we expect the data to match the standard, no need for ts types
+    const data = (await res.json()) as any;
     console.info("Well known data fetched successfully");
     return data;
   } catch (error) {
@@ -73,8 +74,9 @@ export async function introspect(
   if (!req.status.toString().startsWith("2")) {
     throw new Error(`Introspection request errored: ${await req.text()}`);
   }
-
-  const parsedIntrospectionData = await req.json();
+  // TODO strongly type introspection data
+  // rome-ignore lint/suspicious/noExplicitAny:
+  const parsedIntrospectionData = (await req.json()) as any;
 
   if (!parsedIntrospectionData.active) {
     return undefined;

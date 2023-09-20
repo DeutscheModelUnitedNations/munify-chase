@@ -1,17 +1,24 @@
 import { t, Elysia } from "elysia";
 import { db } from "../../../prisma/db";
-import { isConferenceAdmin } from "../../plugins/isConferenceAdmin";
+import { auth } from "../../plugins/auth";
 
-//TODO how are roles/metadata removed from related users when the entity is deleted?
+//TODO how are auth issuer roles/metadata removed from related users when the entity is deleted?
 
-export default new Elysia({ prefix: "/committee" })
-  .get("/list", async ({ params: { conferenceId } }) => {
-    return db.committee.findFirstOrThrow({ where: { conferenceId } });
-  })
-  .use(isConferenceAdmin)
+export default new Elysia()
+  .use(auth)
+  .get(
+    "/conference/:conferenceId/committee/list",
+    async ({ params: { conferenceId } }) => {
+      return db.committee.findFirstOrThrow({ where: { conferenceId } });
+    },
+  )
   .post(
-    "/create",
-    async ({ body, conferenceId }) => {
+    "/conference/:conferenceId/committee",
+    async ({ auth, body, params: { conferenceId } }) => {
+      if (!auth.permissions.isConferenceAdmin(conferenceId)) {
+        return new Response(null, { status: 401 });
+      }
+
       return db.committee.create({
         data: {
           name: body.name,
@@ -30,6 +37,13 @@ export default new Elysia({ prefix: "/committee" })
       }),
     },
   )
-  .delete("/:committeeId", ({ conferenceId, params: { committeeId } }) => {
-    return db.committee.delete({ where: { conferenceId, id: committeeId } });
-  });
+  .delete(
+    "/conference/:conferenceId/committee/:committeeId",
+    ({ auth, params: { committeeId, conferenceId } }) => {
+      if (!auth.permissions.isConferenceAdmin(conferenceId)) {
+        return new Response(null, { status: 401 });
+      }
+
+      return db.committee.delete({ where: { conferenceId, id: committeeId } });
+    },
+  );

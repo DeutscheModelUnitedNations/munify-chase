@@ -1,7 +1,6 @@
 {
   "scripts": {
     "dev": "concurrently \"bun run dev:auth\" \"bun run dev:chase:frontend\" \"bun run dev:chase:backend\"",
-    "dev:auth": "cd auth && bun run dev",
     "dev:chase:frontend": "cd chase/frontend && bun run dev",
     "dev:chase:backend": "cd chase/backend && bun run dev",
     "install-all": "concurrently \"bun run install-all:chase:backend\" \"bun run install-all:chase:frontend\" \"bun run install-all:auth\" \"bun run install-all:munify-util\"",

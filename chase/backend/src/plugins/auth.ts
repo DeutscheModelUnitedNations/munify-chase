@@ -49,23 +49,27 @@ let mockedIntrospection: { user: User; permissions: Permissions } = {
   ),
 };
 
-// mocked data persistency
-const devpath = join(import.meta.dir, "mockedAuth.json");
-const file = Bun.file(devpath);
-{
-  if (await file.exists()) {
-    mockedIntrospection = JSON.parse(await file.text());
+if (isAuthMocked()) {
+  // mocked data persistency
+  const devpath = join(import.meta.dir, "mockedAuth.json");
+  const file = Bun.file(devpath);
+  {
+    if (await file.exists()) {
+      mockedIntrospection = JSON.parse(await file.text());
+    }
   }
+
+  setInterval(async () => {
+    if (
+      !(await file.exists()) ||
+      !Bun.deepEquals(JSON.parse(await file.text()), mockedIntrospection)
+    ) {
+      Bun.write(devpath, JSON.stringify(mockedIntrospection));
+    }
+  }, 1000);
 }
 
-setInterval(async () => {
-  if (
-    !(await file.exists()) ||
-    !Bun.deepEquals(JSON.parse(await file.text()), mockedIntrospection)
-  ) {
-    Bun.write(devpath, JSON.stringify(mockedIntrospection));
-  }
-}, 1000);
+//TODO separate plugin for different auth states?
 
 export const auth = new Elysia({
   name: "auth", // set name to avoid duplication on multiple uses https://elysiajs.com/concept/plugin.html#plugin-deduplication

@@ -1,6 +1,7 @@
 {
   "version": "1.0.44",
   "name": "chase-backend",
+  "main": "src/main.ts",
   "scripts": {
     "dev": "bun run concurrently \"bun run dev:server\" \"bun run dev:docker\"",
     "dev:server": "bun run --watch --hot src/main.ts",
@@ -20,6 +21,7 @@
   "devDependencies": {
     "bun-types": "latest",
     "concurrently": "^8.2.1",
+    "chase-backend": "../chase-backend",
     "munify-util": "../../munify-util",
     "prisma": "^5.1.1",
     "@tsconfig/node16": "^16.1.1"

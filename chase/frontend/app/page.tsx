@@ -3,13 +3,9 @@ import React from "react";
 import Image from "next/image";
 import { Button } from "primereact/button";
 import { useRouter } from "next/navigation";
-import { useBackend } from "@/contexts/backend";
-import { useAuth } from "@/contexts/auth";
 
 export default function Home() {
   const router = useRouter();
-  const auth = useAuth();
-  const backend = useBackend();
 
   return (
     <>
@@ -23,16 +19,6 @@ export default function Home() {
             className="mb-10"
           />
           <div className="p-buttonset mb-2">
-            <Button
-              label="Login ZITADEL"
-              icon="pi pi-link"
-              onClick={auth.login}
-            />
-            <Button
-              label="TEST"
-              icon="pi pi-link"
-              onClick={() => backend["sign-in"].post()}
-            />
             <Button
               label="Teilnehmenden-Login"
               icon="pi pi-link"

@@ -4,7 +4,8 @@
   "scripts": {
     "dev": "bun run concurrently \"bun run dev:server\" \"bun run dev:docker\"",
     "dev:server": "bun run --watch --hot src/main.ts",
-    "dev:docker": "docker compose up --remove-orphans"
+    "dev:docker": "docker compose up --remove-orphans",
+    "build": "tsc --noEmit && bun build.js"
   },
   "dependencies": {
     "@elysiajs/bearer": "^0.6.0",

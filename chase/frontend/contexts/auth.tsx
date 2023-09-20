@@ -34,7 +34,7 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     if (typeof window === "undefined")
       return resolve(undefined as unknown as UserManager);
 
-    //TODO replace with real values
+    //TODO replace with real values/fetch from backend
     resolve(
       new UserManager({
         authority: "http://localhost:7788",

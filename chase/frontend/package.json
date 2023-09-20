@@ -8,7 +8,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "typesafe-i18n": "typesafe-i18n"
+    "typesafe-i18n": "typesafe-i18n",
+    "watch-generate-client-from-openapi-specs": "npx nodemon --watch ../backend/src/**/* --watch ../backend/prisma/**/* --watch ../backend/node_modules/.prisma/**/* -e ts,js,mjs generate-backend-client.mjs"
   },
   "dependencies": {
     "@elysiajs/eden": "^0.6.0",

@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState } from "react";
+<<<<<<< HEAD
 import { useAuth } from "./auth";
 import { edenTreaty } from "@elysiajs/eden";
 import type { App } from "../../backend/src/main";
@@ -6,6 +7,12 @@ import type { App } from "../../backend/src/main";
 // @ts-ignore
 let client = edenTreaty<App>("http://localhost:3001");
 const BackendContext = createContext(client);
+=======
+import { API, DefaultService, OpenAPI } from "@/backend-client";
+import { useAuth } from "./auth";
+
+const BackendContext = createContext<DefaultService | undefined>(undefined);
+>>>>>>> main
 
 /**
  * Returns the backend context for calling the api

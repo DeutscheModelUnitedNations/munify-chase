@@ -16,8 +16,8 @@ jobs:
       - name: Setup Bun.js
         uses: oven-sh/setup-bun@v1
 
-      - name: Install dependencies
-        run: bun i
+      - name: Install all dependencies
+        run: bun run install-all
 
       - name: Generate prisma types
         working-directory: ./chase/backend

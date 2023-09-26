@@ -17,8 +17,8 @@ export default new Elysia()
         const newConference = await tx.conference.create({
           data: {
             name: body.name,
-            start: body.time?.start,
-            end: body.time?.end,
+            start: new Date(body.time?.start),
+            end: new Date(body.time?.end),
           },
         });
 
@@ -38,8 +38,8 @@ export default new Elysia()
         token: t.String(),
         time: t.Optional(
           t.Object({
-            start: t.Date({ minimumTimestamp: Date.now() }),
-            end: t.Date({ exclusiveMinimumTimestamp: Date.now() }),
+            start: t.Number(),
+            end: t.Number(),
           }),
         ),
       }),

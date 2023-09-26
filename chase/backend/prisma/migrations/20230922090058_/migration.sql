@@ -1,7 +1,9 @@
 -- CreateTable
 CREATE TABLE "Conference" (
-    "id" SERIAL NOT NULL,
+    "id" TEXT NOT NULL,
     "name" TEXT NOT NULL,
+    "start" TIMESTAMP(3),
+    "end" TIMESTAMP(3),
 
     CONSTRAINT "Conference_pkey" PRIMARY KEY ("id")
 );
@@ -15,13 +17,12 @@ CREATE TABLE "ConferenceCreateToken" (
 
 -- CreateTable
 CREATE TABLE "Committee" (
-    "id" SERIAL NOT NULL,
+    "id" TEXT NOT NULL,
     "name" TEXT NOT NULL,
     "abbreviation" TEXT NOT NULL,
-    "category" TEXT NOT NULL,
+    "conferenceId" TEXT NOT NULL,
     "isSubcomittee" BOOLEAN NOT NULL,
-    "parentCommitteeId" INTEGER,
-    "conferenceId" INTEGER NOT NULL,
+    "parentId" TEXT,
 
     CONSTRAINT "Committee_pkey" PRIMARY KEY ("id")
 );
@@ -33,7 +34,7 @@ CREATE UNIQUE INDEX "Conference_name_key" ON "Conference"("name");
 CREATE UNIQUE INDEX "Committee_name_conferenceId_key" ON "Committee"("name", "conferenceId");
 
 -- AddForeignKey
-ALTER TABLE "Committee" ADD CONSTRAINT "Committee_parentCommitteeId_fkey" FOREIGN KEY ("parentCommitteeId") REFERENCES "Committee"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "Committee" ADD CONSTRAINT "Committee_conferenceId_fkey" FOREIGN KEY ("conferenceId") REFERENCES "Conference"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Committee" ADD CONSTRAINT "Committee_conferenceId_fkey" FOREIGN KEY ("conferenceId") REFERENCES "Conference"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "Committee" ADD CONSTRAINT "Committee_parentId_fkey" FOREIGN KEY ("parentId") REFERENCES "Committee"("id") ON DELETE SET NULL ON UPDATE CASCADE;

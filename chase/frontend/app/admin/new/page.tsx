@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect, useRef, RefObject } from "react";
+import React, { useState, useRef } from "react";
 import Image from "next/image";
 
 import { useI18nContext } from "@/i18n/i18n-react";
@@ -18,33 +18,35 @@ export default function loginVorsitz() {
   const router = useRouter();
 
   const [conferenceName, setConferenceName] = useState("");
-  const [dates, setDates] = useState(null);
+  const [dates, setDates] = useState<Date | Date[] | undefined>(undefined);
   const [token, setToken] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const submit = (e) => {
+  const submit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setLoading(true);
-    backend["conference/create"]
-      .post({
-        name: conferenceName,
-        // TODO: add dates
-        token: token,
-      })
+
+    backend.conference.post({
+      name: conferenceName,
+      token: token,
+      time: {
+        start: dates[0].getTime(),
+        end: dates[1].getTime(),
+      },
+    })
       .then((res) => {
-        console.log(res);
+        if (!res?.data?.id) throw new Error("No conference id returned");
+        const conferenceId = res.data.id;
         toast.current.show({
           severity: "success",
           summary: LL.admin.onboarding.success(),
           detail: LL.admin.onboarding.successDetails(),
         });
 
-        const conferenceId = res.data.id;
-
         router.push(`/admin/onboarding/${conferenceId}/structure`);
       })
       .catch((err) => {
-        console.log(err);
+        console.log(err, err.response);
         toast.current.show({
           severity: "error",
           summary: LL.admin.onboarding.error.title(),

@@ -25,11 +25,15 @@ model ConferenceCreateToken {
 }
 
 model Committee {
-  id           String     @id @default(uuid())
-  name         String
-  abbreviation String
-  conference   Conference @relation(fields: [conferenceId], references: [id])
-  conferenceId String
+  id            String      @id @default(uuid())
+  name          String
+  abbreviation  String
+  conference    Conference  @relation(fields: [conferenceId], references: [id])
+  conferenceId  String
+  isSubcomittee Boolean
+  parent        Committee?  @relation("subCommittee", fields: [parentId], references: [id])
+  parentId      String?
+  subCommittees Committee[] @relation("subCommittee")
 
   @@unique([name, conferenceId])
 }

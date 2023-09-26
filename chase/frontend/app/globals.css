@@ -1,6 +1,21 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@font-face {
+  font-family: 'Vollkorn';
+  src: url('/fonts/Vollkorn/Vollkorn-VariableFont_wght.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'Vollkorn';
+  src: url('/fonts/Vollkorn/Vollkorn-Italic-VariableFont_wght.ttf') format('truetype');
+  font-weight: normal;
+  font-style: italic;
+}
+
 :root {
   --dmun-primary: #3d7dd2;
   --dmun-black: #000;

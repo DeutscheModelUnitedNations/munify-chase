@@ -31,11 +31,11 @@ export default function Footer({}: FooterProps) {
             <p><Link href="mailto:vorstand@dmun.de">{LL.home.footer.imprint.EMAIL()}</Link></p>
             <p><Link href="https://www.dmun.de">{LL.home.footer.imprint.WEBSITE()}</Link></p>
             <Image
-            src={"/logo/png/chase_logo_white_text.png"}
+            src={"/dmunlogo/logo-weiss.png"}
             alt="Logo"
             width={128}
             height={128}
-            className="my-5"
+            className="my-2"
             />
           </div>
         </div>

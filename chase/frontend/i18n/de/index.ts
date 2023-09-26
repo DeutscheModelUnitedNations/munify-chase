@@ -35,7 +35,7 @@ const de = {
     CONTRIBUTE_TITEL: "Mithelfen",
     CONTRIBUTE_TEXT:
       "CHASE ist ein wichtiger Bestandteil der Open-Source-Initiative 'MUNify' von DMUN. Das bedeutet, dass jeder, der möchte, zur Entwicklung beitragen kann. Wir freuen uns über jede Hilfe, die wir bekommen können. Wenn du also erfahrung im Web-Development hast, oder einfach nur neue Skills lernen und mithelfen möchtest, schau doch mal auf unserem GitHub vorbei und schreib uns eine Nachricht.",
-    CONTRIBUTE_BUTTON_LABEL: "CHASE auf GitHub",
+    CONTRIBUTE_BUTTON_LABEL: "MUNify auf GitHub",
     footer: {
       sitemap: {
         TITEL: "Sitemap",

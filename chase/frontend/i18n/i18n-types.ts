@@ -18,6 +18,142 @@ type RootTranslation = {
 	 * L​o​a​d​i​n​g​.​.​.
 	 */
 	LOADING_PAGE: string
+	home: {
+		/**
+		 * D​e​b​a​t​e​ ​M​a​n​a​g​e​m​e​n​t​ ​t​h​a​t​ ​i​n​s​p​i​r​e​s
+		 */
+		CAPTION: string
+		/**
+		 * T​h​i​s​ ​i​s​ ​w​h​e​r​e​ ​a​ ​c​a​t​c​h​y​ ​t​e​x​t​ ​a​b​o​u​t​ ​C​H​A​S​E​ ​c​o​u​l​d​ ​b​e​.
+		 */
+		HERO_TEXT: string
+		navbar: {
+			/**
+			 * A​d​m​i​n
+			 */
+			LOGIN_ADMIN: string
+			/**
+			 * C​h​a​i​r
+			 */
+			LOGIN_CHAIR: string
+			/**
+			 * D​o​c​u​m​e​n​t​a​t​i​o​n
+			 */
+			DOCUMENTATION: string
+			/**
+			 * F​A​Q​s
+			 */
+			FAQ: string
+			/**
+			 * L​o​g​i​n
+			 */
+			LOGIN_PARTICIPANT: string
+		}
+		heroCards: {
+			/**
+			 * D​e​b​a​t​e​s
+			 */
+			CARD_1_TITLE: string
+			/**
+			 * H​a​n​d​l​e​ ​s​p​e​a​k​e​r​s​ ​a​n​d​ ​c​o​m​m​e​n​t​s​ ​l​i​s​t​s​ ​w​i​t​h​ ​e​a​s​e​ ​a​n​d​ ​e​f​f​i​c​i​e​n​c​y​.​ ​N​o​ ​m​o​r​e​ ​p​a​p​e​r​ ​l​i​s​t​s​!
+			 */
+			CARD_1_TEXT: string
+			/**
+			 * V​o​t​i​n​g
+			 */
+			CARD_2_TITLE: string
+			/**
+			 * H​a​n​d​l​e​ ​m​o​t​i​o​n​s​ ​a​n​d​ ​v​o​t​i​n​g​ ​p​r​o​c​e​d​u​r​e​s​ ​w​i​t​h​ ​e​l​e​c​t​r​o​n​i​c​ ​v​o​t​i​n​g​ ​a​n​d​ ​p​r​e​p​r​e​p​a​r​e​d​ ​m​o​t​i​o​n​s​ ​a​c​c​o​r​d​i​n​g​ ​t​o​ ​y​o​u​r​ ​r​u​l​e​s​ ​o​f​ ​p​r​o​c​e​d​u​r​e​.
+			 */
+			CARD_2_TEXT: string
+			/**
+			 * R​e​s​o​l​u​t​i​o​n​s
+			 */
+			CARD_3_TITLE: string
+			/**
+			 * C​r​e​a​t​e​ ​a​n​d​ ​e​d​i​t​ ​r​e​s​o​l​u​t​i​o​n​s​ ​c​o​l​l​a​b​o​r​a​t​i​v​e​l​y​ ​w​i​t​h​ ​o​t​h​e​r​ ​d​e​l​e​g​a​t​e​s​.​ ​N​o​ ​m​o​r​e​ ​p​a​p​e​r​ ​o​r​ ​G​o​o​g​l​e​ ​D​o​c​s​!
+			 */
+			CARD_3_TEXT: string
+		}
+		/**
+		 * A​b​o​u​t​ ​C​H​A​S​E
+		 */
+		ABOUT_TITEL: string
+		/**
+		 * C​H​A​S​E​ ​(​C​H​A​i​r​S​o​f​t​w​a​r​E​)​ ​i​s​ ​a​ ​w​e​b​ ​a​p​p​l​i​c​a​t​i​o​n​ ​f​o​r​ ​t​h​e​ ​m​a​n​a​g​e​m​e​n​t​ ​o​f​ ​d​e​b​a​t​e​s​ ​i​n​ ​M​o​d​e​l​ ​U​n​i​t​e​d​ ​N​a​t​i​o​n​s​ ​c​o​n​f​e​r​e​n​c​e​s​.​ ​I​t​ ​i​s​ ​d​e​s​i​g​n​e​d​ ​t​o​ ​b​e​ ​u​s​e​d​ ​b​y​ ​c​h​a​i​r​s​ ​a​n​d​ ​d​e​l​e​g​a​t​e​s​ ​a​l​i​k​e​.​ ​C​H​A​S​E​ ​e​n​a​b​l​e​s​ ​C​h​a​i​r​s​ ​t​o​ ​m​a​n​a​g​e​ ​d​e​b​a​t​e​s​ ​w​i​t​h​ ​e​a​s​e​ ​w​h​i​l​e​ ​d​e​l​e​g​a​t​e​s​ ​c​a​n​ ​f​o​l​l​o​w​ ​a​l​o​n​g​ ​a​n​d​ ​c​o​l​l​a​b​o​r​a​t​e​ ​w​i​t​h​ ​o​t​h​e​r​ ​d​e​l​e​g​a​t​e​s​ ​i​n​ ​a​ ​i​n​t​u​i​t​i​v​e​ ​a​n​d​ ​s​t​r​u​c​t​u​r​e​d​ ​m​a​t​t​e​r​.​ ​C​H​A​S​E​ ​i​s​ ​f​r​e​e​ ​a​n​d​ ​o​p​e​n​ ​s​o​u​r​c​e​ ​s​o​f​t​w​a​r​e​.
+		 */
+		ABOUT_TEXT: string
+		/**
+		 * O​u​r​ ​M​i​s​s​i​o​n
+		 */
+		MISSION_TITLE: string
+		/**
+		 * C​H​A​S​E​ ​i​s​ ​d​e​v​e​l​o​p​e​d​ ​b​y​ ​m​e​m​b​e​r​s​ ​o​f​ ​t​h​e​ ​D​M​U​N​ ​c​o​m​m​u​n​i​t​y​.​ ​W​e​ ​w​a​n​t​ ​t​o​ ​p​r​o​v​i​d​e​ ​a​ ​f​r​e​e​ ​a​n​d​ ​o​p​e​n​ ​s​o​u​r​c​e​ ​a​l​t​e​r​n​a​t​i​v​e​ ​t​o​ ​o​t​h​e​r​ ​e​x​i​s​t​i​n​g​ ​d​e​b​a​t​e​ ​m​a​n​a​g​e​m​e​n​t​ ​s​o​f​t​w​a​r​e​.​ ​W​e​ ​w​a​n​t​ ​t​o​ ​m​a​k​e​ ​d​e​b​a​t​e​ ​m​a​n​a​g​e​m​e​n​t​ ​m​o​r​e​ ​a​c​c​e​s​s​i​b​l​e​ ​t​o​ ​s​m​a​l​l​e​r​ ​c​o​n​f​e​r​e​n​c​e​s​ ​a​n​d​ ​m​a​k​e​ ​i​t​ ​e​a​s​i​e​r​ ​f​o​r​ ​c​h​a​i​r​s​ ​t​o​ ​m​a​n​a​g​e​ ​d​e​b​a​t​e​s​.​ ​C​H​A​S​E​ ​i​s​ ​p​r​i​m​a​r​i​l​y​ ​d​e​v​e​l​o​p​e​d​ ​f​o​r​ ​t​h​e​ ​g​e​r​m​a​n​-​s​p​e​a​k​i​n​g​ ​c​o​n​f​e​r​e​n​c​e​s​ ​o​f​ ​D​M​U​N​ ​i​n​ ​G​e​r​m​a​n​y​,​ ​w​h​i​c​h​ ​a​r​e​ ​M​U​N​-​S​H​,​ ​M​U​N​B​W​ ​a​n​d​ ​M​U​N​B​B​,​ ​b​u​t​ ​w​e​ ​a​r​e​ ​a​l​w​a​y​s​ ​o​p​e​n​ ​t​o​ ​a​d​a​p​t​ ​C​H​A​S​E​ ​t​o​ ​o​t​h​e​r​ ​c​o​n​f​e​r​e​n​c​e​s​.
+		 */
+		MISSION_TEXT: string
+		/**
+		 * L​e​a​r​n​ ​m​o​r​e​ ​a​b​o​u​t​ ​D​M​U​N
+		 */
+		MISSION_BUTTON_LABEL: string
+		/**
+		 * C​o​n​t​r​i​b​u​t​e
+		 */
+		CONTRIBUTE_TITEL: string
+		/**
+		 * C​H​A​S​E​ ​i​s​ ​p​a​r​t​ ​o​f​ ​o​p​e​n​ ​s​o​u​r​c​e​ ​i​n​i​t​a​t​i​v​e​ ​'​M​U​N​i​f​y​'​ ​b​y​ ​D​M​U​N​.​ ​W​e​ ​a​r​e​ ​a​l​w​a​y​s​ ​l​o​o​k​i​n​g​ ​f​o​r​ ​p​e​o​p​l​e​ ​w​h​o​ ​w​a​n​t​ ​t​o​ ​c​o​n​t​r​i​b​u​t​e​ ​t​o​ ​C​H​A​S​E​.​ ​I​f​ ​y​o​u​ ​h​a​v​e​ ​e​x​p​e​r​i​e​n​c​e​ ​i​n​ ​w​e​b​ ​d​e​v​e​l​o​p​e​m​e​n​t​ ​o​r​ ​j​u​s​t​ ​w​a​n​t​ ​t​o​ ​l​e​a​r​n​ ​n​e​w​ ​s​k​i​l​l​s​,​ ​p​l​e​a​s​e​ ​v​i​s​i​t​ ​o​u​r​ ​G​i​t​H​u​b​ ​r​e​p​o​s​i​t​o​r​y​ ​a​n​d​ ​g​e​t​ ​i​n​ ​t​o​u​c​h​!
+		 */
+		CONTRIBUTE_TEXT: string
+		/**
+		 * V​i​s​i​t​ ​o​u​r​ ​G​i​t​H​u​b
+		 */
+		CONTRIBUTE_BUTTON_LABEL: string
+		footer: {
+			sitemap: {
+				/**
+				 * S​i​t​e​m​a​p
+				 */
+				TITEL: string
+				/**
+				 * H​o​m​e
+				 */
+				HOME: string
+				/**
+				 * F​A​Q​s
+				 */
+				FAQ: string
+				/**
+				 * D​o​c​u​m​e​n​t​a​t​i​o​n
+				 */
+				DOCS: string
+				/**
+				 * P​r​i​v​a​c​y​ ​P​o​l​i​c​y
+				 */
+				PRIVACY: string
+			}
+			imprint: {
+				/**
+				 * I​m​p​r​i​n​t
+				 */
+				TITEL: string
+				/**
+				 * D​e​u​t​s​c​h​e​ ​M​o​d​e​l​ ​U​n​i​t​e​d​ ​N​a​t​i​o​n​s​ ​(​D​M​U​N​)​ ​e​.​V​.
+				 */
+				ORGANISATION: string
+				/**
+				 * B​i​r​k​e​n​w​e​g​ ​1​,​ ​2​4​2​3​5​ ​L​a​b​o​e
+				 */
+				ADDRESS: string
+				/**
+				 * v​o​r​s​t​a​n​d​@​d​m​u​n​.​d​e
+				 */
+				EMAIL: string
+				/**
+				 * w​w​w​.​d​m​u​n​.​d​e
+				 */
+				WEBSITE: string
+			}
+		}
+	}
 	admin: {
 		onboarding: {
 			/**
@@ -822,6 +958,142 @@ export type TranslationFunctions = {
 	 * Loading...
 	 */
 	LOADING_PAGE: () => LocalizedString
+	home: {
+		/**
+		 * Debate Management that inspires
+		 */
+		CAPTION: () => LocalizedString
+		/**
+		 * This is where a catchy text about CHASE could be.
+		 */
+		HERO_TEXT: () => LocalizedString
+		navbar: {
+			/**
+			 * Admin
+			 */
+			LOGIN_ADMIN: () => LocalizedString
+			/**
+			 * Chair
+			 */
+			LOGIN_CHAIR: () => LocalizedString
+			/**
+			 * Documentation
+			 */
+			DOCUMENTATION: () => LocalizedString
+			/**
+			 * FAQs
+			 */
+			FAQ: () => LocalizedString
+			/**
+			 * Login
+			 */
+			LOGIN_PARTICIPANT: () => LocalizedString
+		}
+		heroCards: {
+			/**
+			 * Debates
+			 */
+			CARD_1_TITLE: () => LocalizedString
+			/**
+			 * Handle speakers and comments lists with ease and efficiency. No more paper lists!
+			 */
+			CARD_1_TEXT: () => LocalizedString
+			/**
+			 * Voting
+			 */
+			CARD_2_TITLE: () => LocalizedString
+			/**
+			 * Handle motions and voting procedures with electronic voting and preprepared motions according to your rules of procedure.
+			 */
+			CARD_2_TEXT: () => LocalizedString
+			/**
+			 * Resolutions
+			 */
+			CARD_3_TITLE: () => LocalizedString
+			/**
+			 * Create and edit resolutions collaboratively with other delegates. No more paper or Google Docs!
+			 */
+			CARD_3_TEXT: () => LocalizedString
+		}
+		/**
+		 * About CHASE
+		 */
+		ABOUT_TITEL: () => LocalizedString
+		/**
+		 * CHASE (CHAirSoftwarE) is a web application for the management of debates in Model United Nations conferences. It is designed to be used by chairs and delegates alike. CHASE enables Chairs to manage debates with ease while delegates can follow along and collaborate with other delegates in a intuitive and structured matter. CHASE is free and open source software.
+		 */
+		ABOUT_TEXT: () => LocalizedString
+		/**
+		 * Our Mission
+		 */
+		MISSION_TITLE: () => LocalizedString
+		/**
+		 * CHASE is developed by members of the DMUN community. We want to provide a free and open source alternative to other existing debate management software. We want to make debate management more accessible to smaller conferences and make it easier for chairs to manage debates. CHASE is primarily developed for the german-speaking conferences of DMUN in Germany, which are MUN-SH, MUNBW and MUNBB, but we are always open to adapt CHASE to other conferences.
+		 */
+		MISSION_TEXT: () => LocalizedString
+		/**
+		 * Learn more about DMUN
+		 */
+		MISSION_BUTTON_LABEL: () => LocalizedString
+		/**
+		 * Contribute
+		 */
+		CONTRIBUTE_TITEL: () => LocalizedString
+		/**
+		 * CHASE is part of open source initative 'MUNify' by DMUN. We are always looking for people who want to contribute to CHASE. If you have experience in web developement or just want to learn new skills, please visit our GitHub repository and get in touch!
+		 */
+		CONTRIBUTE_TEXT: () => LocalizedString
+		/**
+		 * Visit our GitHub
+		 */
+		CONTRIBUTE_BUTTON_LABEL: () => LocalizedString
+		footer: {
+			sitemap: {
+				/**
+				 * Sitemap
+				 */
+				TITEL: () => LocalizedString
+				/**
+				 * Home
+				 */
+				HOME: () => LocalizedString
+				/**
+				 * FAQs
+				 */
+				FAQ: () => LocalizedString
+				/**
+				 * Documentation
+				 */
+				DOCS: () => LocalizedString
+				/**
+				 * Privacy Policy
+				 */
+				PRIVACY: () => LocalizedString
+			}
+			imprint: {
+				/**
+				 * Imprint
+				 */
+				TITEL: () => LocalizedString
+				/**
+				 * Deutsche Model United Nations (DMUN) e.V.
+				 */
+				ORGANISATION: () => LocalizedString
+				/**
+				 * Birkenweg 1, 24235 Laboe
+				 */
+				ADDRESS: () => LocalizedString
+				/**
+				 * vorstand@dmun.de
+				 */
+				EMAIL: () => LocalizedString
+				/**
+				 * www.dmun.de
+				 */
+				WEBSITE: () => LocalizedString
+			}
+		}
+	}
 	admin: {
 		onboarding: {
 			/**

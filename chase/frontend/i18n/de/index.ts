@@ -3,6 +3,57 @@ import type { Translation } from "../i18n-types";
 const de = {
   LOADING_PAGE: "Loading...",
 
+  home: {
+    CAPTION: "MUN im 21. Jahrhundert",
+    HERO_TEXT:
+      "Debattenmanagement bei Model United Nations Konferenzen bekommt endlich ein Upgrade.",
+    navbar: {
+      LOGIN_ADMIN: "Admin",
+      LOGIN_CHAIR: "Vorsitz",
+      DOCUMENTATION: "Dokumentation",
+      FAQ: "FAQ",
+      LOGIN_PARTICIPANT: "Login",
+    },
+    heroCards: {
+      CARD_1_TITLE: "Debatten",
+      CARD_1_TEXT:
+        "Verwalte Rede- und Kurzbemerkungsliste einfach und effizient. Keine Papierlisten mehr!",
+      CARD_2_TITLE: "Absitmungen",
+      CARD_2_TEXT:
+        "Verwalte Anträge und Abstimmungen elektronisch und mit vorbereiteten Anträgen nach deiner Geschäftsordnung.",
+      CARD_3_TITLE: "Resolutionen",
+      CARD_3_TEXT:
+        "Erstelle und bearbeite Resolutionen gemeinsam mit anderen Delegierten. Kein Papier oder Google Docs mehr!",
+    },
+    ABOUT_TITEL: "Über CHASE",
+    ABOUT_TEXT:
+      "CHASE (CHAirSoftwarE) ist eine Webanwendung zur Verwaltung und Durchführung von Debatten in Model United Nations Konferenzen. Sie ist für Vorsitzende und Delegierte gleichermaßen konzipiert. CHASE ermöglicht es Vorsitzenden, Debatten einfach zu verwalten, während Delegierte der Debatte folgen und mit anderen Delegierten auf intuitive und strukturierte Weise zusammenarbeiten können. CHASE ist freie und open source Software.",
+    MISSION_TITLE: "Unsere Mission",
+    MISSION_TEXT:
+      "CHASE wird von Mitgliedern des deutschen Vereins DMUN e.V. entwickelt. Wir wollen eine kostenlose und frei zugängliche Alternative zu anderen Debatten-Management Anwendungen schaffen und damit den Zugang auch für kleinere Konferenzen erleichtern. CHASE ist primär für die deutschsprachigen Konferenzen von DMUN in Deutschland, MUN-SH, MUNBW und MUNBB, entwickelt worden. Wir sind aber immer offen, CHASE an andere Konferenzen anzupassen.",
+    MISSION_BUTTON_LABEL: "Mehr über DMUN erfahren",
+    CONTRIBUTE_TITEL: "Mithelfen",
+    CONTRIBUTE_TEXT:
+      "CHASE ist ein wichtiger Bestandteil der Open-Source-Initiative 'MUNify' von DMUN. Das bedeutet, dass jeder, der möchte, zur Entwicklung beitragen kann. Wir freuen uns über jede Hilfe, die wir bekommen können. Wenn du also erfahrung im Web-Development hast, oder einfach nur neue Skills lernen und mithelfen möchtest, schau doch mal auf unserem GitHub vorbei und schreib uns eine Nachricht.",
+    CONTRIBUTE_BUTTON_LABEL: "CHASE auf GitHub",
+    footer: {
+      sitemap: {
+        TITEL: "Sitemap",
+        HOME: "Home",
+        FAQ: "FAQs",
+        DOCS: "Dokumentation",
+        PRIVACY: "Datenschutzbestimmungen",
+      },
+      imprint: {
+        TITEL: "Impressum",
+        ORGANISATION: "Deutsche Model United Nations (DMUN) e.V.",
+        ADDRESS: "Birkenweg 1, 24235 Laboe",
+        EMAIL: "vorstand@dmun.de",
+        WEBSITE: "www.dmun.de",
+      },
+    },
+  },
+
   admin: {
     onboarding: {
       title: "Neue Konferenz erstellen",

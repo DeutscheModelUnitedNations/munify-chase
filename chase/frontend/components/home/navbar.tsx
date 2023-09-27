@@ -10,7 +10,13 @@ import {
   faRightToBracket,
 } from "@fortawesome/pro-solid-svg-icons";
 
-export default function Navbar() {
+export default function Navbar({
+  isDocs = false,
+  isFAQ = false,
+}: {
+  isDocs?: boolean;
+  isFAQ?: boolean;
+}) {
   const { LL } = useI18nContext();
   const router = useRouter();
 
@@ -63,18 +69,20 @@ export default function Navbar() {
             onClick={() => router.push("/chair/dashboard")}
             text
           />
-          <Button
-            label={LL.home.navbar.DOCUMENTATION()}
-            onClick={() => router.push("/docs")}
-            severity="secondary"
-            faIcon={faBook}
-          />
-          <Button
-            label={LL.home.navbar.FAQ()}
-            onClick={() => router.push("/faq")}
-            severity="secondary"
-            faIcon={faQuestionCircle}
-          />
+            <Button
+              label={LL.home.navbar.DOCUMENTATION()}
+              onClick={() => router.push("/docs")}
+              severity="secondary"
+              faIcon={faBook}
+              disabled={isDocs}
+            />
+            <Button
+              label={LL.home.navbar.FAQ()}
+              onClick={() => router.push("/faq")}
+              severity="secondary"
+              faIcon={faQuestionCircle}
+              disabled={isFAQ}
+            />
           <Button
             label={LL.home.navbar.LOGIN_PARTICIPANT()}
             onClick={() => router.push("/participant/dashboard")}

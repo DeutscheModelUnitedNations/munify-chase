@@ -11,7 +11,7 @@ export default function Docs() {
 
   return (
     <>
-      <Navbar />
+      <Navbar isFAQ />
       <div className="flex flex-col bg-primary-950 pt-60">
         <div className="flex flex-col items-center justify-center">
           <h1

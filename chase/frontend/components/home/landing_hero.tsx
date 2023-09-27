@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useI18nContext } from "@/i18n/i18n-react";
 import Image from "next/image";
+import { motion } from "framer-motion";
 
 export default function LandingHero() {
   const { LL } = useI18nContext();
@@ -20,30 +21,76 @@ export default function LandingHero() {
   ];
 
   const [illustration, _setIllustration] = useState(
-    Math.floor(Math.random() * availableIllustrations.length),
+    Math.floor(Math.random() * availableIllustrations.length)
   );
   const [blob, _setBlob] = useState(
-    Math.floor(Math.random() * availableBlobs.length),
+    Math.floor(Math.random() * availableBlobs.length)
   );
 
   return (
     <>
-      <div className="relative flex items-center justify-center pt-52 pb-40">
-        <Illustration
-          availableIllustrations={availableIllustrations}
-          chosenIllustration={illustration}
-        />
-        <Blob availableBlobs={availableBlobs} chosenBlob={blob} />
+      <div className="relative flex items-center justify-center pt-52 pb-40 gap-5">
+        <motion.div
+          className="z-10"
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -10 }}
+          transition={{
+            duration: 1,
+            type: "spring",
+            delay: 0.2,
+            damping: 20,
+            stiffness: 100,
+          }}
+        >
+          <Illustration
+            availableIllustrations={availableIllustrations}
+            chosenIllustration={illustration}
+          />
+        </motion.div>
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{
+            duration: 0.5,
+          }}
+        >
+          <Blob availableBlobs={availableBlobs} chosenBlob={blob} />
+        </motion.div>
         <div className="flex flex-col items-end z-20 w-1/2 ">
-          <h1
-            className="text-6xl font-bold text-right text-slate-900 mb-4 leading-tight"
-            style={{ fontFamily: "Vollkorn" }}
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{
+              duration: 1,
+              type: "spring",
+              delay: 0.7,
+              damping: 20,
+              stiffness: 100,
+            }}
           >
-            {LL.home.CAPTION()}
-          </h1>
-          <h2 className="text-2xl text-right text-slate-900 leading-normal">
-            {LL.home.HERO_TEXT()}
-          </h2>
+            <h1
+              className="text-6xl font-bold text-right text-slate-900 mb-4 leading-tight"
+              style={{ fontFamily: "Vollkorn" }}
+            >
+              {LL.home.CAPTION()}
+            </h1>
+          </motion.div>
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{
+              duration: 1.5,
+              delay: 1,
+            }}
+          >
+            <h2 className="text-2xl text-right text-slate-900 leading-normal">
+              {LL.home.HERO_TEXT()}
+            </h2>
+          </motion.div>
         </div>
       </div>
     </>
@@ -66,7 +113,6 @@ const Illustration = ({
         alt="Logo"
         width={500}
         height={128}
-        className="z-10"
       />
     </>
   );

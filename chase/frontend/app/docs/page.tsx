@@ -1,14 +1,12 @@
 "use client";
 import React from "react";
-import { useI18nContext } from "@/i18n/i18n-react";
 import Navbar from "@/components/home/navbar";
-import { faArrowLeft} from "@fortawesome/pro-solid-svg-icons";
+import { faArrowLeft } from "@fortawesome/pro-solid-svg-icons";
 import Footer from "@/components/home/footer";
 import Button from "@/components/button";
 import { useRouter } from "next/navigation";
 
 export default function Docs() {
-  const { LL } = useI18nContext();
   const Router = useRouter();
 
   return (
@@ -16,21 +14,25 @@ export default function Docs() {
       <Navbar />
       <div className="flex flex-col bg-primary-950 pt-60">
         <div className="flex flex-col items-center justify-center">
-            <h1 className="text-5xl font-bold"
+          <h1
+            className="text-5xl font-bold"
             style={{
-                fontFamily: "Vollkorn",
+              fontFamily: "Vollkorn",
             }}
-            >Docs</h1>
-            <p className="text-lg mb-10">The documentation for Chase. Still Work in Progress.</p>
-            <Button
-                label="Go back"
-                faIcon={faArrowLeft}
-                onClick={() => {
-                    Router.push("/");
-                }
-                }
-            />
-            <div className="h-96"/>
+          >
+            Docs
+          </h1>
+          <p className="text-lg mb-10">
+            The documentation for Chase. Still Work in Progress.
+          </p>
+          <Button
+            label="Go back"
+            faIcon={faArrowLeft}
+            onClick={() => {
+              Router.push("/");
+            }}
+          />
+          <div className="h-96" />
         </div>
       </div>
       <Footer />

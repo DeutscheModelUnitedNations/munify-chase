@@ -10,9 +10,7 @@ import {
   faRightToBracket,
 } from "@fortawesome/pro-solid-svg-icons";
 
-type NavbarProps = {};
-
-export default function Navbar({}: NavbarProps) {
+export default function Navbar() {
   const { LL } = useI18nContext();
   const router = useRouter();
 

@@ -34,11 +34,9 @@ export default function structure({
     backend[`conference/committee/list/${params.conferenceId}`]
       .get()
       .then((res) => {
-        console.log(res);
         setCommittees(res.data);
       })
       .catch((err) => {
-        console.log(err);
         toast.current.show({
           severity: "error",
           summary: LL.admin.onboarding.error.title(),
@@ -65,7 +63,7 @@ export default function structure({
         isSubcommittee: newCommitteeIsSubcommittee,
         parentCommitteeId: newCommitteeParent,
       })
-      .then((res) => {
+      .then((_res) => {
         setInputMaskVisible(false);
         setUpdateCommittees(true);
         toast.current.show({
@@ -74,7 +72,7 @@ export default function structure({
           detail: `${newCommitteeName} (${newCommitteeAbbreviation})`,
         });
       })
-      .catch((err) => {
+      .catch((_err) => {
         toast.current.show({
           severity: "error",
           summary: LL.admin.onboarding.error.title(),
@@ -94,12 +92,10 @@ export default function structure({
             conferenceId: parseInt(params.conferenceId),
             deleteAll: true,
           })
-          .then((res) => {
-            console.log(res);
+          .then((_res) => {
             setUpdateCommittees(true);
           })
-          .catch((err) => {
-            console.log(err);
+          .catch((_err) => {
             toast.current.show({
               severity: "error",
               summary: LL.admin.onboarding.error.title(),
@@ -116,12 +112,10 @@ export default function structure({
         conferenceId: parseInt(params.conferenceId),
         id: rowData.id,
       })
-      .then((res) => {
-        console.log(res);
+      .then((_res) => {
         setUpdateCommittees(true);
       })
-      .catch((err) => {
-        console.log(err);
+      .catch((_err) => {
         toast.current.show({
           severity: "error",
           summary: LL.admin.onboarding.error.title(),

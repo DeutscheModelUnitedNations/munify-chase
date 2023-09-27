@@ -32,14 +32,14 @@ export default function TextSection({ title, text, button }: TextSectionProps) {
         </p>
         {button && (
           <div className="pt-4">
-          <Button
-            label={button.lable}
-            onClick={() => {
-              Router.push(button.link);
-            }}
-            faIcon={button.faIcon}
-            className="mt-4"
-          />
+            <Button
+              label={button.lable}
+              onClick={() => {
+                Router.push(button.link);
+              }}
+              faIcon={button.faIcon}
+              className="mt-4"
+            />
           </div>
         )}
       </div>

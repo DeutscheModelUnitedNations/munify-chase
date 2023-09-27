@@ -22,7 +22,12 @@ export default function Card({ src, alt, header, text }: CardProps) {
           height={400}
           className="mb-10 h-40"
         />
-        <h2 className="text-3xl text-center font-bold mb-4" style={{ fontFamily: "Vollkorn"}}>{header}</h2>
+        <h2
+          className="text-3xl text-center font-bold mb-4"
+          style={{ fontFamily: "Vollkorn" }}
+        >
+          {header}
+        </h2>
         <p className="text-md text-center">{text}</p>
       </div>
     </>

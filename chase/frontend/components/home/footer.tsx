@@ -1,11 +1,9 @@
-import React from 'react';
-import { useI18nContext } from '@/i18n/i18n-react';
-import Link from 'next/link';
-import Image from 'next/image';
+import React from "react";
+import { useI18nContext } from "@/i18n/i18n-react";
+import Link from "next/link";
+import Image from "next/image";
 
-type FooterProps = {}
-
-export default function Footer({}: FooterProps) {
+export default function Footer() {
   const { LL } = useI18nContext();
 
   return (
@@ -14,28 +12,56 @@ export default function Footer({}: FooterProps) {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* Sitemap */}
           <div>
-            <h3 className="text-lg font-semibold mb-4">{LL.home.footer.sitemap.TITEL()}</h3>
+            <h3 className="text-lg font-semibold mb-4">
+              {LL.home.footer.sitemap.TITEL()}
+            </h3>
             <ul className="space-y-1">
-              <li><Link href="/" className="hover:underline">{LL.home.footer.sitemap.HOME()}</Link></li>
-              <li><Link href="/faq" className="hover:underline">{LL.home.footer.sitemap.FAQ()}</Link></li>
-              <li><Link href="/docs" className="hover:underline">{LL.home.footer.sitemap.DOCS()}</Link></li>
-              <li><Link href="https://www.dmun.de/impressum/">{LL.home.footer.sitemap.PRIVACY()}</Link></li>
+              <li>
+                <Link href="/" className="hover:underline">
+                  {LL.home.footer.sitemap.HOME()}
+                </Link>
+              </li>
+              <li>
+                <Link href="/faq" className="hover:underline">
+                  {LL.home.footer.sitemap.FAQ()}
+                </Link>
+              </li>
+              <li>
+                <Link href="/docs" className="hover:underline">
+                  {LL.home.footer.sitemap.DOCS()}
+                </Link>
+              </li>
+              <li>
+                <Link href="https://www.dmun.de/impressum/">
+                  {LL.home.footer.sitemap.PRIVACY()}
+                </Link>
+              </li>
             </ul>
           </div>
 
           {/* Impressum */}
           <div>
-            <h3 className="text-lg font-semibold mb-4">{LL.home.footer.imprint.TITEL()}</h3>
+            <h3 className="text-lg font-semibold mb-4">
+              {LL.home.footer.imprint.TITEL()}
+            </h3>
             <p>{LL.home.footer.imprint.ORGANISATION()}</p>
             <p>{LL.home.footer.imprint.ADDRESS()}</p>
-            <p><Link href="mailto:vorstand@dmun.de">{LL.home.footer.imprint.EMAIL()}</Link></p>
-            <p><Link href="https://www.dmun.de">{LL.home.footer.imprint.WEBSITE()}</Link></p>
+            <p>
+              <Link href="mailto:vorstand@dmun.de">
+                {LL.home.footer.imprint.EMAIL()}
+              </Link>
+            </p>
+            <p>
+              <Link href="https://www.dmun.de">
+                {LL.home.footer.imprint.WEBSITE()}
+              </Link>
+            </p>
             <Image
-            src={"/dmunlogo/logo-weiss.png"}
-            alt="Logo"
-            width={128}
-            height={128}
-            className="my-2"
+              src={"/dmunlogo/logo-weiss.png"}
+              alt="Logo"
+              width={128}
+              height={128}
+              className="my-2"
             />
           </div>
         </div>

@@ -26,14 +26,15 @@ export default function loginVorsitz() {
     e.preventDefault();
     setLoading(true);
 
-    backend.conference.post({
-      name: conferenceName,
-      token: token,
-      time: {
-        start: dates[0].getTime(),
-        end: dates[1].getTime(),
-      },
-    })
+    backend.conference
+      .post({
+        name: conferenceName,
+        token: token,
+        time: {
+          start: dates[0].getTime(),
+          end: dates[1].getTime(),
+        },
+      })
       .then((res) => {
         if (!res?.data?.id) throw new Error("No conference id returned");
         const conferenceId = res.data.id;
@@ -46,7 +47,6 @@ export default function loginVorsitz() {
         router.push(`/admin/onboarding/${conferenceId}/structure`);
       })
       .catch((err) => {
-        console.log(err, err.response);
         toast.current.show({
           severity: "error",
           summary: LL.admin.onboarding.error.title(),

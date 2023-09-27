@@ -1,10 +1,8 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { useI18nContext } from "@/i18n/i18n-react";
 import Image from "next/image";
 
-type LandingHeroProps = {};
-
-export default function LandingHero({}: LandingHeroProps) {
+export default function LandingHero() {
   const { LL } = useI18nContext();
 
   const availableIllustrations = [
@@ -21,11 +19,11 @@ export default function LandingHero({}: LandingHeroProps) {
     "/misc/blobs/blob_5.svg",
   ];
 
-  const [illustration, setIllustration] = useState(
-    Math.floor(Math.random() * availableIllustrations.length)
+  const [illustration, _setIllustration] = useState(
+    Math.floor(Math.random() * availableIllustrations.length),
   );
-  const [blob, setBlob] = useState(
-    Math.floor(Math.random() * availableBlobs.length)
+  const [blob, _setBlob] = useState(
+    Math.floor(Math.random() * availableBlobs.length),
   );
 
   return (
@@ -34,11 +32,8 @@ export default function LandingHero({}: LandingHeroProps) {
         <Illustration
           availableIllustrations={availableIllustrations}
           chosenIllustration={illustration}
-          />
-        <Blob
-          availableBlobs={availableBlobs}
-          chosenBlob={blob}
         />
+        <Blob availableBlobs={availableBlobs} chosenBlob={blob} />
         <div className="flex flex-col items-end z-20 w-1/2 ">
           <h1
             className="text-6xl font-bold text-right text-slate-900 mb-4 leading-tight"
@@ -64,8 +59,6 @@ const Illustration = ({
   availableIllustrations,
   chosenIllustration,
 }: IllustrationProps) => {
-  const { LL } = useI18nContext();
-
   return (
     <>
       <Image
@@ -84,12 +77,7 @@ interface BlobProps {
   chosenBlob: number;
 }
 
-const Blob = ({
-  availableBlobs,
-  chosenBlob,
-}: BlobProps) => {
-  const { LL } = useI18nContext();
-
+const Blob = ({ availableBlobs, chosenBlob }: BlobProps) => {
   return (
     <>
       <Image

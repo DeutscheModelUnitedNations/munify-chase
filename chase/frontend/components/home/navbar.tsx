@@ -49,12 +49,14 @@ export default function Navbar({
             modificator / 6
           })`,
         }}
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
+        initial={{ opacity: 0.5, y: -150 }}
+        animate={{ opacity: 1, y: 0 }}
         transition={{
-          duration: animate ? 1 : 0,
+          duration: animate ? 2 : 0,
           delay: animate ? 2 : 0,
+          type: "spring",
+          damping: 20,
+          stiffness: 70,
         }}
       >
         <Link href="/">

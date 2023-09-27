@@ -9,13 +9,16 @@ import {
   faQuestionCircle,
   faRightToBracket,
 } from "@fortawesome/pro-solid-svg-icons";
+import { motion } from "framer-motion";
 
 export default function Navbar({
   isDocs = false,
   isFAQ = false,
+  animate = false,
 }: {
   isDocs?: boolean;
   isFAQ?: boolean;
+  animate?: boolean;
 }) {
   const { LL } = useI18nContext();
   const router = useRouter();
@@ -25,7 +28,7 @@ export default function Navbar({
   useEffect(() => {
     const handleScroll = () => {
       // Adjust the value '100' based on when you want the fade effect to start
-      const newOpacity = Math.min(window.scrollY / 100, 1);
+      const newOpacity = Math.min(window.scrollY / 150, 1);
       setModificator(newOpacity);
     };
 
@@ -38,13 +41,20 @@ export default function Navbar({
 
   return (
     <>
-      <div
+      <motion.div
         className="fixed w-full px-8 py-4 top-0 left-0 flex gap-4 mb-8 items-center justify-center z-30"
         style={{
           backgroundColor: `rgba(255, 255, 255, ${modificator})`,
           boxShadow: `0 0 ${modificator * 20}px rgba(0, 0, 0, ${
             modificator / 6
           })`,
+        }}
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        transition={{
+          duration: animate ? 1 : 0,
+          delay: animate ? 2 : 0,
         }}
       >
         <Link href="/">
@@ -89,7 +99,7 @@ export default function Navbar({
             faIcon={faRightToBracket}
           />
         </div>
-      </div>
+      </motion.div>
     </>
   );
 }

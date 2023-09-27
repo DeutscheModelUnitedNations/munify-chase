@@ -13,7 +13,7 @@ export default function Home() {
 
   return (
     <>
-      <Navbar />
+      <Navbar animate />
       <div className="flex flex-col bg-primary-950">
         <LandingHero />
         <CardSection />

@@ -32,10 +32,8 @@ export default function Navbar({ children }: { children: React.ReactNode }) {
 
   const acceptLogout = () => {
     // TODO: logout
-    router.push("/login/participant");
+    router.push("/");
   };
-
-  const rejectLogout = () => {};
 
   const confirmLogout = () => {
     confirmDialog({
@@ -48,7 +46,6 @@ export default function Navbar({ children }: { children: React.ReactNode }) {
       rejectLabel: "Nein",
       rejectIcon: "pi pi-times",
       accept: acceptLogout,
-      reject: rejectLogout,
     });
   };
 

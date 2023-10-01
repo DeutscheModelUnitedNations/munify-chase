@@ -51,13 +51,20 @@ export default function Navbar({
         }}
         initial={{ opacity: 0.5, y: -150 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{
-          duration: animate ? 2 : 0,
-          delay: animate ? 2 : 0,
-          type: "spring",
-          damping: 20,
-          stiffness: 70,
-        }}
+        transition={
+          animate
+            ? {
+                duration: 2,
+                delay: 2,
+                type: "spring",
+                damping: 20,
+                stiffness: 70,
+              }
+            : {
+                duration: 0,
+                delay: 0,
+              }
+        }
       >
         <Link href="/">
           <Image
@@ -81,20 +88,20 @@ export default function Navbar({
             onClick={() => router.push("/chair/dashboard")}
             text
           />
-            <Button
-              label={LL.home.navbar.DOCUMENTATION()}
-              onClick={() => router.push("/docs")}
-              severity="secondary"
-              faIcon={faBook}
-              disabled={isDocs}
-            />
-            <Button
-              label={LL.home.navbar.FAQ()}
-              onClick={() => router.push("/faq")}
-              severity="secondary"
-              faIcon={faQuestionCircle}
-              disabled={isFAQ}
-            />
+          <Button
+            label={LL.home.navbar.DOCUMENTATION()}
+            onClick={() => router.push("/docs")}
+            severity="secondary"
+            faIcon={faBook}
+            disabled={isDocs}
+          />
+          <Button
+            label={LL.home.navbar.FAQ()}
+            onClick={() => router.push("/faq")}
+            severity="secondary"
+            faIcon={faQuestionCircle}
+            disabled={isFAQ}
+          />
           <Button
             label={LL.home.navbar.LOGIN_PARTICIPANT()}
             onClick={() => router.push("/participant/dashboard")}

@@ -75,6 +75,16 @@ export default function LandingHero() {
               className="text-6xl font-bold text-right text-slate-900 mb-4 leading-tight"
               style={{ fontFamily: "Vollkorn" }}
             >
+              <span
+                style={{
+                  background: "linear-gradient(to right, #3d7dd2, #0000d0)",
+                  backgroundClip: "text",
+                  WebkitBackgroundClip: "text",
+                  color: "transparent",
+                }}
+              >
+                MUN
+              </span>
               {LL.home.CAPTION()}
             </h1>
           </motion.div>

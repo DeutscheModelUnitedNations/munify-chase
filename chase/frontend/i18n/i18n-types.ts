@@ -20,7 +20,7 @@ type RootTranslation = {
 	LOADING_PAGE: string
 	home: {
 		/**
-		 * D​e​b​a​t​e​ ​M​a​n​a​g​e​m​e​n​t​ ​t​h​a​t​ ​i​n​s​p​i​r​e​s
+		 *  ​f​o​r​ ​t​h​e​ ​d​i​g​i​t​a​l​ ​a​g​e
 		 */
 		CAPTION: string
 		/**
@@ -960,7 +960,7 @@ export type TranslationFunctions = {
 	LOADING_PAGE: () => LocalizedString
 	home: {
 		/**
-		 * Debate Management that inspires
+		 *  for the digital age
 		 */
 		CAPTION: () => LocalizedString
 		/**

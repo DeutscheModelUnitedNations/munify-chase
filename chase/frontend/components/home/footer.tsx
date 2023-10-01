@@ -1,15 +1,45 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { useI18nContext } from "@/i18n/i18n-react";
 import Link from "next/link";
 import Image from "next/image";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faGlobe } from "@fortawesome/pro-solid-svg-icons";
 
 export default function Footer() {
   const { LL } = useI18nContext();
+  const [language, setLanguage] = useState<"system" | "de" | "en">("system");
+
+  useEffect(() => {
+    if (window) {
+      const lang = localStorage.getItem("lang");
+      if (lang === "de") {
+        setLanguage("de");
+      } else if (lang === "en") {
+        setLanguage("en");
+      } else {
+        setLanguage("system");
+      }
+    }
+  }
+  , []);
+
+  useEffect(() => {
+    if (language === "system") {
+      localStorage.removeItem("lang");
+    } else if (language === "de") {
+      localStorage.setItem("lang", "de");
+    } else if (language === "en") {
+      localStorage.setItem("lang", "en");
+    } else {
+      console.error(`Invalid language: ${language}`);
+      return;
+    }
+  }, [language]);
 
   return (
     <footer className="bg-primary-300 text-white py-6">
       <div className="container mx-auto px-4 md:px-8">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {/* Sitemap */}
           <div>
             <h3 className="text-lg font-semibold mb-4">
@@ -35,6 +65,54 @@ export default function Footer() {
                 <Link href="https://www.dmun.de/impressum/">
                   {LL.home.footer.sitemap.PRIVACY()}
                 </Link>
+              </li>
+            </ul>
+          </div>
+
+          {/* Languages */}
+          <div>
+            <h3 className="text-lg font-semibold mb-4">
+              <FontAwesomeIcon icon={faGlobe} />
+            </h3>
+            <ul className="space-y-1">
+              <li
+                onClick={() => {
+                  setLanguage("system");
+                  if (window) window.location.reload();
+                }}
+                onKeyDown={() => {
+                  setLanguage("system");
+                  if (window) window.location.reload();
+                }}
+                className={`hover:underline hover:decoration-white ${language === "system" && "underline decoration-slate-400"} cursor-pointer`}
+              >
+                System
+              </li>
+              <li
+                onClick={() => {
+                  setLanguage("en");
+                  if (window) window.location.reload();
+                }}
+                onKeyDown={() => {
+                  setLanguage("en");
+                  if (window) window.location.reload();
+                }}
+                className={`hover:underline hover:decoration-white ${language === "en" && "underline decoration-slate-400"} cursor-pointer`}
+              >
+                English (EN)
+              </li>
+              <li
+                onClick={() => {
+                  setLanguage("de");
+                  if (window) window.location.reload();
+                }}
+                onKeyDown={() => {
+                  setLanguage("de");
+                  if (window) window.location.reload();
+                }}
+                className={`hover:underline hover:decoration-white ${language === "de" && "underline decoration-slate-400"} cursor-pointer`}
+              >
+                Deutsch (DE)
               </li>
             </ul>
           </div>

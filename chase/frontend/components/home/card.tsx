@@ -14,22 +14,20 @@ export default function Card({ src, alt, header, text }: CardProps) {
 
   return (
     <>
-      <div className="flex-1 flex flex-col justify-center items-center bg-white p-8 rounded-xl shadow-sm">
-        <Image
-          src={src}
-          alt={alt}
-          width={400}
-          height={400}
-          className="mb-10 h-40"
-        />
-        <h2
-          className="text-3xl text-center font-bold mb-4"
-          style={{ fontFamily: "Vollkorn" }}
-        >
-          {header}
-        </h2>
-        <p className="text-md text-center">{text}</p>
-      </div>
+      <Image
+        src={src}
+        alt={alt}
+        width={400}
+        height={400}
+        className="mb-10 h-40"
+      />
+      <h2
+        className="text-3xl text-center font-bold mb-4"
+        style={{ fontFamily: "Vollkorn" }}
+      >
+        {header}
+      </h2>
+      <p className="text-md text-center">{text}</p>
     </>
   );
 }

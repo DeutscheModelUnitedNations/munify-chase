@@ -4,7 +4,7 @@ const de = {
   LOADING_PAGE: "Loading...",
 
   home: {
-    CAPTION: "MUN im 21. Jahrhundert",
+    CAPTION: " im 21. Jahrhundert",
     HERO_TEXT:
       "Debattenmanagement bei Model United Nations Konferenzen bekommt endlich ein Upgrade.",
     navbar: {

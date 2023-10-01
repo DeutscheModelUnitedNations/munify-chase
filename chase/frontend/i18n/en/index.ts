@@ -4,7 +4,7 @@ const en = {
   LOADING_PAGE: "Loading...",
 
   home: {
-    CAPTION: "Debate Management that inspires",
+    CAPTION: " for the digital age",
     HERO_TEXT: "This is where a catchy text about CHASE could be.",
     navbar: {
       LOGIN_ADMIN: "Admin",

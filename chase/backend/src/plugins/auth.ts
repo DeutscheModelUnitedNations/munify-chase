@@ -63,7 +63,7 @@ const mockedIntrospection: { user: User; permissions: Permissions } = {
         return;
       }
       Object.entries(metadata).map(async ([key, data]) => {
-        // rome-ignore lint/suspicious/noExplicitAny:
+        // biome-ignore lint/suspicious/noExplicitAny:
         mockedPermissions[key as keyof Metadata] = data as any;
       });
     },
@@ -84,7 +84,7 @@ export const auth = new Elysia({
     return {
       auth: isAuthMocked()
         ? mockedIntrospection
-        : // rome-ignore lint/style/noNonNullAssertion: we check for non null in the guard and want the correct type to be propagated by this plugin
+        : // biome-ignore lint/style/noNonNullAssertion: we check for non null in the guard and want the correct type to be propagated by this plugin
           (await introspect(bearer as string))!,
     };
   })

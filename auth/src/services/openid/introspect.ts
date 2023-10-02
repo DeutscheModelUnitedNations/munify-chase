@@ -24,7 +24,7 @@ async function fetchWellKnownData(): Promise<WellKnownData | undefined> {
     if (!res.status.toString().startsWith("2")) {
       throw new Error(`Well known data request errored: ${await res.text()}`);
     }
-    // rome-ignore lint/suspicious/noExplicitAny: complex type, we dont care
+    // biome-ignore lint/suspicious/noExplicitAny: complex type, we dont care
     const data = (await res.json()) as any;
     console.info("Well known data fetched successfully");
     return data;
@@ -76,7 +76,7 @@ export async function introspect(
   }
 
   //TODO
-  // rome-ignore lint/suspicious/noExplicitAny:
+  // biome-ignore lint/suspicious/noExplicitAny:
   const parsedIntrospectionData = (await req.json()) as any;
 
   if (!parsedIntrospectionData.active) {

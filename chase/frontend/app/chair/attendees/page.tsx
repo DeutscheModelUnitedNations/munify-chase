@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from "react";
 import HeaderTemplate, { HeaderInfoBox } from "@/components/header_template";
 import WidgetBoxTemplate from "@/components/widget_box_template";
-import { ScrollPanel } from 'primereact/scrollpanel';
+import { ScrollPanel } from "primereact/scrollpanel";
 import { SelectButton } from "primereact/selectbutton";
 import { Attendance } from "@/custom_types";
 import WidgetTemplate from "@/components/widget_template";

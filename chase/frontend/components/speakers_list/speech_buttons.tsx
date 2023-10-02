@@ -180,7 +180,7 @@ export function ChairSpeechButtons({
         >
           <AddSpeakerOverlay
             listOfAllCountries={listOfAllCountries}
-            listClosed={listClosed}
+            _listClosed={listClosed}
             closeOverlay={() => setAddSpeakersOverlayVisible(false)}
             typeOfList={typeOfList}
           />

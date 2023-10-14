@@ -111,8 +111,22 @@ const de = {
         EMPTY_MESSAGE:
           "Keine Teammitglieder vorhanden. Klicke oben rechts auf 'Teammitglied hinzufügen', um ein neues Teammitglied zu erstellen.",
         FOOTER: "Insgesamt {{0}} Teammitglieder.",
-        NAME: "Name",
+        FIRST_NAME: "Vorname",
+        LAST_NAME: "Nachname",
+        EMAIL: "E-Mail",
         ROLE: "Rolle",
+        roles: {
+          ADMIN: "Admin",
+          CHAIR: "Vorsitz",
+          SECRETARIAT: "Sekretariat",
+          PARTICIPANT_CARE: "Teilnehmendenbetreuung",
+          TEAM: "Team",
+          GUEST: "Gast",
+        },
+        input: {
+          BUTTON_ADD: "Hinzufügen",
+          BUTTON_CANCEL: "Abbrechen",
+        },
       },
 
       steps: {

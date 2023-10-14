@@ -28,12 +28,13 @@ export default function structure({
   const [saveLoading, setSaveLoading] = useState(false);
 
   const [updateCommittees, setUpdateCommittees] = useState(true);
-  const [committees, setCommittees] = useState<CommitteeEntry[]>([]);
+  const [committees, setCommittees] = useState([]);
 
   useEffect(() => {
-    backend[`conference/committee/list/${params.conferenceId}`]
+    backend.conference[params.conferenceId].committee.list
       .get()
       .then((res) => {
+        console.log(res.data)
         setCommittees(res.data);
       })
       .catch((err) => {
@@ -50,19 +51,24 @@ export default function structure({
   const addCommittee = (
     newCommitteeName: string,
     newCommitteeAbbreviation: string,
-    newCommitteeCategory: string,
+    newCommitteeCategory: "COMMITTEE" | "ICJ" | "CRISIS",
     newCommitteeIsSubcommittee: boolean,
-    newCommitteeParent?: number,
+    newCommitteeParent?: string,
   ) => {
-    backend["conference/committee/create"]
-      .post({
-        conferenceId: parseInt(params.conferenceId),
-        name: newCommitteeName,
-        abbreviation: newCommitteeAbbreviation,
-        category: newCommitteeCategory,
-        isSubcommittee: newCommitteeIsSubcommittee,
-        parentCommitteeId: newCommitteeParent,
-      })
+    let payload = {
+      name: newCommitteeName,
+      abbreviation: newCommitteeAbbreviation,
+      category: newCommitteeCategory,
+      isSubcommittee: newCommitteeIsSubcommittee,
+    };
+    if (newCommitteeParent) {
+      payload = {
+        ...payload,
+        parentId: newCommitteeParent,
+      }
+    }
+    backend.conference[params.conferenceId].committee
+      .post(payload)
       .then((_res) => {
         setInputMaskVisible(false);
         setUpdateCommittees(true);
@@ -87,11 +93,9 @@ export default function structure({
       message: LL.admin.onboarding.structure.DELETE_ALL_CONFIRM(),
       acceptClassName: "p-button-danger",
       accept: () => {
-        backend["conference/committee/delete"]
-          .post({
-            conferenceId: parseInt(params.conferenceId),
-            deleteAll: true,
-          })
+        // backend["conference/committee/delete"]
+        backend.conference[params.conferenceId].committee
+          .delete()
           .then((_res) => {
             setUpdateCommittees(true);
           })
@@ -107,11 +111,9 @@ export default function structure({
   };
 
   const handleDelete = (rowData) => {
-    backend["conference/committee/delete"]
-      .post({
-        conferenceId: parseInt(params.conferenceId),
-        id: rowData.id,
-      })
+    // backend["conference/committee/delete"]
+    backend.conference[params.conferenceId].committee[rowData.id]
+      .delete()
       .then((_res) => {
         setUpdateCommittees(true);
       })

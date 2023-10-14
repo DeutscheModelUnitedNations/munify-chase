@@ -87,12 +87,12 @@ export default function CommitteeTable({
             header={LL.admin.onboarding.structure.CATEGORY()}
             body={(rowData) => {
               const matchingCommittee = committees.find(
-                (committee) => committee.id === rowData.parentCommitteeId,
+                (committee) => committee.id === rowData.parentId,
               );
 
               return (
                 <span>
-                  {rowData.category === "committee" &&
+                  {rowData.category === "COMMITTEE" &&
                     (rowData.isSubcommittee ? (
                       <div className="m-0 flex items-center justify-start gap-2">
                         <FontAwesomeIcon
@@ -111,13 +111,13 @@ export default function CommitteeTable({
                         className="text-2xl text-primary"
                       />
                     ))}
-                  {rowData.category === "crisis" && (
+                  {rowData.category === "CRISIS" && (
                     <FontAwesomeIcon
                       icon={faLightEmergencyOn}
                       className="text-2xl text-red-500"
                     />
                   )}
-                  {rowData.category === "icj" && (
+                  {rowData.category === "ICJ" && (
                     <FontAwesomeIcon
                       icon={faScaleBalanced}
                       className="text-2xl text-green-500"

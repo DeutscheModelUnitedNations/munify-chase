@@ -324,13 +324,57 @@ type RootTranslation = {
 				 */
 				FOOTER: string
 				/**
-				 * N​a​m​e
+				 * F​i​r​s​t​ ​N​a​m​e
 				 */
-				NAME: string
+				FIRST_NAME: string
+				/**
+				 * L​a​s​t​ ​N​a​m​e
+				 */
+				LAST_NAME: string
+				/**
+				 * E​m​a​i​l
+				 */
+				EMAIL: string
 				/**
 				 * R​o​l​e
 				 */
 				ROLE: string
+				roles: {
+					/**
+					 * A​d​m​i​n
+					 */
+					ADMIN: string
+					/**
+					 * C​h​a​i​r
+					 */
+					CHAIR: string
+					/**
+					 * S​e​c​r​e​t​a​r​i​a​t
+					 */
+					SECRETARIAT: string
+					/**
+					 * P​a​r​t​i​c​i​p​a​n​t​ ​C​a​r​e
+					 */
+					PARTICIPANT_CARE: string
+					/**
+					 * T​e​a​m
+					 */
+					TEAM: string
+					/**
+					 * G​u​e​s​t
+					 */
+					GUEST: string
+				}
+				input: {
+					/**
+					 * A​d​d
+					 */
+					BUTTON_ADD: string
+					/**
+					 * C​a​n​c​e​l
+					 */
+					BUTTON_CANCEL: string
+				}
 			}
 			steps: {
 				/**
@@ -1264,13 +1308,57 @@ export type TranslationFunctions = {
 				 */
 				FOOTER: (arg0: number | string | boolean) => LocalizedString
 				/**
-				 * Name
+				 * First Name
 				 */
-				NAME: () => LocalizedString
+				FIRST_NAME: () => LocalizedString
+				/**
+				 * Last Name
+				 */
+				LAST_NAME: () => LocalizedString
+				/**
+				 * Email
+				 */
+				EMAIL: () => LocalizedString
 				/**
 				 * Role
 				 */
 				ROLE: () => LocalizedString
+				roles: {
+					/**
+					 * Admin
+					 */
+					ADMIN: () => LocalizedString
+					/**
+					 * Chair
+					 */
+					CHAIR: () => LocalizedString
+					/**
+					 * Secretariat
+					 */
+					SECRETARIAT: () => LocalizedString
+					/**
+					 * Participant Care
+					 */
+					PARTICIPANT_CARE: () => LocalizedString
+					/**
+					 * Team
+					 */
+					TEAM: () => LocalizedString
+					/**
+					 * Guest
+					 */
+					GUEST: () => LocalizedString
+				}
+				input: {
+					/**
+					 * Add
+					 */
+					BUTTON_ADD: () => LocalizedString
+					/**
+					 * Cancel
+					 */
+					BUTTON_CANCEL: () => LocalizedString
+				}
 			}
 			steps: {
 				/**

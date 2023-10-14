@@ -109,8 +109,22 @@ const en = {
         EMPTY_MESSAGE:
           "No Team Members yet. Click 'Add Team Member' in the top right corner to create a new one.",
         FOOTER: "In total {{0}} team members.",
-        NAME: "Name",
+        FIRST_NAME: "First Name",
+        LAST_NAME: "Last Name",
+        EMAIL: "Email",
         ROLE: "Role",
+        roles: {
+          ADMIN: "Admin",
+          CHAIR: "Chair",
+          SECRETARIAT: "Secretariat",
+          PARTICIPANT_CARE: "Participant Care",
+          TEAM: "Team",
+          GUEST: "Guest",
+        },
+        input: {
+          BUTTON_ADD: "Add",
+          BUTTON_CANCEL: "Cancel",
+        },
       },
 
       steps: {

@@ -65,7 +65,7 @@ export default function loginVorsitz() {
         height={128}
         className="mb-10"
       />
-      <div className="flex-1 flex flex-col justify-center items-center bg-white w-96 p-5 rounded-md shadow-lg">
+      <div className="flex-1 flex flex-col justify-center items-center bg-white dark:bg-primary-200 w-96 p-5 rounded-md shadow-lg">
         <form
           className="flex flex-col items-stretch justify-center gap-6 w-full"
           onSubmit={(e) => submit(e)}

@@ -17,6 +17,7 @@ model Conference {
   committees Committee[]
   start      DateTime?
   end        DateTime?
+  Team       Team[]
 }
 
 /// Consumeable token which grants the creation of a conference
@@ -24,16 +25,51 @@ model ConferenceCreateToken {
   token String @id
 }
 
+enum CommitteeCategory {
+  COMMITTEE /// A standard committee
+  CRISIS /// A crisis simulation
+  ICJ /// A International Court of Justice simulation
+}
+
+enum Role {
+  ADMIN
+  CHAIR
+  DELEGATE
+  OBSERVER
+  NON_STATE_ACTOR
+  SECRETARIAT
+  PRESS_CORPS
+  PARTICIPANT_CARE
+  TEAM
+  GUEST
+}
+
 model Committee {
-  id            String      @id @default(uuid())
-  name          String
-  abbreviation  String
-  conference    Conference  @relation(fields: [conferenceId], references: [id])
-  conferenceId  String
-  isSubcomittee Boolean
-  parent        Committee?  @relation("subCommittee", fields: [parentId], references: [id])
-  parentId      String?
-  subCommittees Committee[] @relation("subCommittee")
+  id             String            @id @default(uuid())
+  name           String
+  abbreviation   String
+  category       CommitteeCategory
+  conference     Conference        @relation(fields: [conferenceId], references: [id])
+  conferenceId   String
+  isSubcommittee Boolean
+  parent         Committee?        @relation("subCommittee", fields: [parentId], references: [id])
+  parentId       String?
+  subCommittees  Committee[]       @relation("subCommittee")
+  chairs         Team[]
 
   @@unique([name, conferenceId])
+}
+
+model Team {
+  id           String     @id @default(uuid())
+  conference   Conference @relation(fields: [conferenceId], references: [id])
+  conferenceId String
+  firstName    String
+  lastName     String
+  email        String
+  role         Role
+  committee    Committee?  @relation(fields: [committeeId], references: [id])
+  committeeId  String?
+
+  @@unique([conferenceId, email])
 }

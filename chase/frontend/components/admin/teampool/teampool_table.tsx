@@ -74,15 +74,30 @@ export default function TeamPoolTable({
           removableSort
         >
           <Column
-            field="name"
-            header={LL.admin.onboarding.teampool.NAME()}
+            field="firstName"
+            header={LL.admin.onboarding.teampool.FIRST_NAME()}
+            sortable
+          />
+          <Column
+            field="lastName"
+            header={LL.admin.onboarding.teampool.LAST_NAME()}
+            sortable
+          />
+          <Column
+            field="email"
+            header={LL.admin.onboarding.teampool.EMAIL()}
             sortable
             className="w-full"
           />
           <Column
             header={LL.admin.onboarding.teampool.ROLE()}
             body={(rowData) => {
-              return <span>{rowData.role}</span>;
+              const roleFunction = LL.admin.onboarding.teampool.roles[rowData.role];
+              if (!roleFunction) {
+                return <span>{rowData.role}</span>;
+              } else {
+                return <span>{roleFunction()}</span>;
+              }
             }}
             className="w-1/6"
           />

@@ -1,4 +1,4 @@
-import React, { FormEvent, useRef, useState } from "react";
+import React, { FormEvent, useEffect, useRef, useState } from "react";
 import { useI18nContext } from "@/i18n/i18n-react";
 
 import { Dialog } from "primereact/dialog";
@@ -23,7 +23,7 @@ type AddCommitteeDialogProps = {
   addCommitteeToList: (
     name: string,
     abbreviation: string,
-    category: CommitteeCategory,
+    category: "COMMITTEE" | "ICJ" | "CRISIS",
     isSubcommittee: boolean,
     parent: CommitteeEntry | null,
   ) => void;
@@ -42,7 +42,7 @@ export default function AddCommitteeDialog({
   const [newCommitteeName, setNewCommitteeName] = useState("");
   const [newCommitteeShortname, setNewCommitteeAbbreviation] = useState("");
   const [newCommitteeCategory, setNewCommitteeCategory] =
-    useState<CommitteeCategory>("committee");
+    useState<"COMMITTEE" | "ICJ" | "CRISIS">("COMMITTEE");
   const [newCommitteeIsSubcommittee, setNewCommitteeIsSubcommittee] =
     useState(false);
   const [newCommitteeParent, setNewCommitteeParent] = useState<number | null>(
@@ -52,7 +52,7 @@ export default function AddCommitteeDialog({
   const resetInputMask = () => {
     setNewCommitteeName("");
     setNewCommitteeAbbreviation("");
-    setNewCommitteeCategory("committee");
+    setNewCommitteeCategory("COMMITTEE");
     setNewCommitteeIsSubcommittee(false);
     setNewCommitteeParent(null);
   };
@@ -72,17 +72,17 @@ export default function AddCommitteeDialog({
   const categories = [
     {
       name: LL.admin.onboarding.structure.input.CATEGORY_SWITCH_COMMITTEE(),
-      value: "committee",
+      value: "COMMITTEE",
       icon: faUsersLine,
     },
     {
       name: LL.admin.onboarding.structure.input.CATEGORY_SWITCH_CRISIS(),
-      value: "crisis",
+      value: "CRISIS",
       icon: faLightEmergencyOn,
     },
     {
       name: LL.admin.onboarding.structure.input.CATEGORY_SWITCH_ICJ(),
-      value: "icj",
+      value: "ICJ",
       icon: faScaleBalanced,
     },
   ];
@@ -134,7 +134,7 @@ export default function AddCommitteeDialog({
             value={newCommitteeCategory}
             onChange={(e) => {
               setNewCommitteeCategory(e.value);
-              if (e.value !== "committee") {
+              if (e.value !== "COMMITTEE") {
                 setNewCommitteeParent(null);
                 setNewCommitteeIsSubcommittee(false);
               }
@@ -147,7 +147,7 @@ export default function AddCommitteeDialog({
             <InputSwitch
               checked={newCommitteeIsSubcommittee}
               onChange={(e) => setNewCommitteeIsSubcommittee(e.value)}
-              disabled={newCommitteeCategory !== "committee"}
+              disabled={newCommitteeCategory !== "COMMITTEE"}
             />
             <label className="ml-2">
               {LL.admin.onboarding.structure.input.IS_SUBCOMMITTEE()}
@@ -156,7 +156,7 @@ export default function AddCommitteeDialog({
           <Dropdown
             value={committees.find((c) => c.id === newCommitteeParent)}
             options={committees.filter(
-              (c) => !c.isSubcommittee && c.category === "committee",
+              (c) => !c.isSubcommittee && c.category === "COMMITTEE",
             )}
             onChange={(e) => setNewCommitteeParent(e.value.id)}
             optionLabel="name"

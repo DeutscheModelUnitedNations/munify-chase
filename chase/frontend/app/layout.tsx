@@ -22,6 +22,7 @@ import { baseLocale, locales } from "@/i18n/i18n-util";
 import TypesafeI18n from "@/i18n/i18n-react";
 import { AuthProvider } from "@/contexts/auth";
 import { BackendProvider } from "@/contexts/backend";
+import Featurebase from "@/components/featurebase_widget";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -53,7 +54,10 @@ export default function RootLayout({
             <Head>
               <title>Chase</title> {/* TODO Make title work */}
             </Head>
-            <body className={inter.className}>{children}</body>
+            <body className={inter.className}>
+              {children}
+              <Featurebase />
+            </body>
           </html>
         </TypesafeI18n>
       </BackendProvider>

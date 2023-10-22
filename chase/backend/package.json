@@ -10,19 +10,19 @@
   },
   "dependencies": {
     "@elysiajs/bearer": "^0.7.0",
-    "@elysiajs/cors": "^0.7.0",
-    "@elysiajs/eden": "^0.7.0",
+    "@elysiajs/cors": "^0.7.1",
+    "@elysiajs/eden": "^0.7.4",
     "@elysiajs/fn": "^0.6.1",
-    "@elysiajs/swagger": "^0.7.0",
+    "@elysiajs/swagger": "^0.7.3",
     "@prisma/client": "5.3.1",
     "auth": "../../auth",
-    "elysia": "^0.7.1"
+    "elysia": "^0.7.17"
   },
   "devDependencies": {
     "bun-types": "latest",
-    "concurrently": "^8.2.1",
+    "concurrently": "^8.2.2",
     "munify-util": "../../munify-util",
-    "prisma": "^5.3.1",
+    "prisma": "^5.4.2",
     "@tsconfig/node16": "^16.1.1"
   },
   "module": "src/main.js"

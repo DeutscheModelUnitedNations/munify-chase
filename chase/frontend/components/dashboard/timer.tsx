@@ -3,10 +3,10 @@ import WidgetTemplate from "@components/widget_template";
 import { ToastContext } from "@/contexts/messages/toast";
 
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faGavel } from "@fortawesome/free-solid-svg-icons";
-import { faComments } from "@fortawesome/free-solid-svg-icons";
-import { faCoffee } from "@fortawesome/free-solid-svg-icons";
-import { faCirclePause } from "@fortawesome/free-solid-svg-icons";
+import { faGavel } from "@fortawesome/pro-solid-svg-icons";
+import { faComments } from "@fortawesome/pro-solid-svg-icons";
+import { faCoffee } from "@fortawesome/pro-solid-svg-icons";
+import { faCirclePause } from "@fortawesome/pro-solid-svg-icons";
 import { useI18nContext } from "@/i18n/i18n-react";
 import { AnimatePresence, motion } from "framer-motion";
 

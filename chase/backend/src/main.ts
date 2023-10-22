@@ -3,7 +3,7 @@ import { Elysia } from "elysia";
 import { swagger } from "@elysiajs/swagger";
 import { cors } from "@elysiajs/cors";
 import committee from "./routes/conference/committee";
-import packagejson from "../package.json";
+import packagejson from "package.json";
 import { isDevelopment } from "munify-util";
 
 const app = new Elysia()
@@ -24,7 +24,7 @@ if (isDevelopment()) {
           version: packagejson.version,
         },
       },
-    }),
+    })
   );
 }
 

@@ -7,7 +7,7 @@ import {
   faMinusCircle,
   faPlusCircle,
   faSpinner,
-} from "@fortawesome/free-solid-svg-icons";
+} from "@fortawesome/pro-solid-svg-icons";
 import { useI18nContext } from "@/i18n/i18n-react";
 import { AnimatePresence, motion } from "framer-motion";
 

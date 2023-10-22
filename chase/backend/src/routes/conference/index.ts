@@ -1,6 +1,6 @@
 import { t, Elysia } from "elysia";
-import { auth } from "../../plugins/auth";
-import { db } from "../../../prisma/db";
+import { auth } from "src/plugins/auth";
+import { db } from "prisma/db";
 
 export default new Elysia()
   .use(auth)

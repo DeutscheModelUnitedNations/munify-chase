@@ -7,7 +7,7 @@ import {
   faHourglassEnd,
   faClock,
   faBell,
-} from "@fortawesome/free-solid-svg-icons";
+} from "@fortawesome/pro-solid-svg-icons";
 import "./timer_animations.scss";
 import { CurrentSpeaker } from "@/custom_types";
 import { LargeFlag } from "../flag_templates";

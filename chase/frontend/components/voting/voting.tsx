@@ -11,7 +11,7 @@ import WaitingForResults from "@components/voting/waiting_for_results";
 import { useI18nContext } from "@/i18n/i18n-react";
 import FlipMove from "react-flip-move";
 import Button from "@/components/button";
-import { faInfo, faTrash, faUndo } from "@fortawesome/free-solid-svg-icons";
+import { faInfo, faTrash, faUndo } from "@fortawesome/pro-solid-svg-icons";
 
 /**
  * This Component is the main Component of the Voting Area. It combines several other

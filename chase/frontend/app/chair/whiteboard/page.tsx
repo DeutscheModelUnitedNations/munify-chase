@@ -4,7 +4,7 @@ import Whiteboard from "@/components/whiteboard";
 import {
   faArrowRotateLeft,
   faPaperPlane,
-} from "@fortawesome/free-solid-svg-icons";
+} from "@fortawesome/pro-solid-svg-icons";
 import React from "react";
 import { useI18nContext } from "@/i18n/i18n-react";
 import { whiteboardTestData } from "@/test_data";

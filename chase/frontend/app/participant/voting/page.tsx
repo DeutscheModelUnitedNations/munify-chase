@@ -12,7 +12,7 @@ import {
   faGavel,
   faHistory,
   faSquarePollVertical,
-} from "@fortawesome/free-solid-svg-icons";
+} from "@fortawesome/pro-solid-svg-icons";
 
 type Tabs = "current-motions" | "recent-motions" | "recent-votings";
 

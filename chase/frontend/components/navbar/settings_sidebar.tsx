@@ -9,7 +9,7 @@ import {
   faDisplay,
   faMoon,
   faSun,
-} from "@fortawesome/free-solid-svg-icons";
+} from "@fortawesome/pro-solid-svg-icons";
 import { Dropdown } from "primereact/dropdown";
 import { SmallFlag } from "../flag_templates";
 import { useI18nContext } from "@/i18n/i18n-react";

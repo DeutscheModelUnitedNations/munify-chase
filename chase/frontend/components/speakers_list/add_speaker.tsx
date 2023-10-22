@@ -7,7 +7,7 @@ import getCountryNameByCode from "@/misc/get_country_name_by_code";
 import { useI18nContext } from "@/i18n/i18n-react";
 import { Button } from "primereact/button";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faPlus, faTimes } from "@fortawesome/free-solid-svg-icons";
+import { faPlus, faTimes } from "@fortawesome/pro-solid-svg-icons";
 import { SmallFlag } from "../flag_templates";
 import { CountryCode } from "@/custom_types";
 import Fuse from "fuse.js";

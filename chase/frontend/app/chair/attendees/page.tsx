@@ -17,7 +17,7 @@ import {
   faUser,
   faUserSlash,
   faCalendarXmark,
-} from "@fortawesome/free-solid-svg-icons";
+} from "@fortawesome/pro-solid-svg-icons";
 import { attendanceTestData } from "@/test_data";
 
 interface AttendanceButtonOptions {

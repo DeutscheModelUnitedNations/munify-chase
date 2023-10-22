@@ -1,5 +1,5 @@
 import React from "react";
-import { faFileContract } from "@fortawesome/free-solid-svg-icons";
+import { faFileContract } from "@fortawesome/pro-solid-svg-icons";
 import Document from "@components/dashboard/documents/document_template";
 
 /**

@@ -8,6 +8,11 @@
     "install-all:chase:frontend": "cd ./chase/frontend && bun i",
     "install-all:auth": "cd ./auth && bun i",
     "install-all:munify-util": "cd ./munify-util && bun i",
+    "update-all": "concurrently \"bun run update-all:chase:backend\" \"bun run update-all:chase:frontend\" \"bun run update-all:auth\" \"bun run update-all:munify-util\"",
+    "update-all:chase:backend": "cd ./chase/backend && bun update",
+    "update-all:chase:frontend": "cd ./chase/frontend && bun update",
+    "update-all:auth": "cd ./auth && bun update",
+    "update-all:munify-util": "cd ./munify-util && bun update",
     "format": "biome format . --write",
     "lint": "biome check . --apply",
     "test": "echo TODO"

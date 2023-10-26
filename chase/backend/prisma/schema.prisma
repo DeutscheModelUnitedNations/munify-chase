@@ -25,11 +25,27 @@ model ConferenceCreateToken {
 }
 
 model Committee {
-  id           String     @id @default(uuid())
-  name         String
-  abbreviation String
-  conference   Conference @relation(fields: [conferenceId], references: [id])
-  conferenceId String
+  id            String      @id @default(uuid())
+  name          String
+  abbreviation  String
+  conference    Conference  @relation(fields: [conferenceId], references: [id], onDelete: Cascade)
+  conferenceId  String
+  speakerlist   Speakerlist @relation(fields: [speakerlistId], references: [id], onDelete: Cascade)
+  speakerlistId String      @unique
 
   @@unique([name, conferenceId])
+}
+
+enum SpeakerlistState {
+  RUNNING
+  PAUSED
+}
+
+model Speakerlist {
+  id                             String           @id @default(uuid())
+  Committee                      Committee?
+  currentlySpeakingCountryCode   String
+  speakerStartedTimestamp        DateTime
+  state                          SpeakerlistState
+  remainingDurationMsWhenStarted Int
 }

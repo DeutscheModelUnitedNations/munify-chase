@@ -79,7 +79,7 @@ export const auth = new Elysia({
       authorization: t.String(),
     }),
   })
-  .use(bearer())
+.use(bearer())
   .derive(async ({ bearer }) => {
     return {
       auth: isAuthMocked()

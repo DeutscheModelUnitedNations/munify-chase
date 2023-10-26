@@ -24,7 +24,7 @@ if (isDevelopment()) {
           version: packagejson.version,
         },
       },
-    }),
+    })
   );
 }
 

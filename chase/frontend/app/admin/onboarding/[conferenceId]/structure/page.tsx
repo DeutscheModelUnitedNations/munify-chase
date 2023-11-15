@@ -12,6 +12,7 @@ import ForwardBackButtons from "@/components/admin/onboarding/forward_back_bar";
 import CommitteeTable from "@/components/admin/structure/committee_table";
 import AddCommitteeDialog from "@/components/admin/structure/add_committee_dialog";
 import useMousetrap from "mousetrap-react";
+import { Committee, CreateCommitteePayload } from "@/custom_types/fetching";
 
 export default function structure({
   params,
@@ -23,49 +24,56 @@ export default function structure({
   const router = useRouter();
   const toast = useRef<Toast>(null);
 
+  async function getCommittees(id: string) {
+
+    try {
+      const res = await backend.conference[id].committee.list.get();
+      return res.data;
+    } catch (error) {
+      toast.current.show({
+        severity: "error",
+        summary: LL.admin.onboarding.error.title(),
+        detail: LL.admin.onboarding.error.generic(),
+      });
+    }
+  }
+
   const [inputMaskVisible, setInputMaskVisible] = useState(false);
 
   const [saveLoading, setSaveLoading] = useState(false);
 
   const [updateCommittees, setUpdateCommittees] = useState(true);
-  const [committees, setCommittees] = useState([]);
+  const [committees, setCommittees] = useState<
+    Awaited<ReturnType<typeof getCommittees>>
+  >([]);
 
   useEffect(() => {
-    backend.conference[params.conferenceId].committee.list
-      .get()
-      .then((res) => {
-        console.log(res.data)
-        setCommittees(res.data);
-      })
-      .catch((err) => {
-        toast.current.show({
-          severity: "error",
-          summary: LL.admin.onboarding.error.title(),
-          detail: LL.admin.onboarding.error.generic(),
-        });
+    if (updateCommittees) {
+      getCommittees(params.conferenceId).then((data) => {
+        setCommittees(data);
+        setUpdateCommittees(false);
       });
-
-    setUpdateCommittees(false);
+    }
   }, [updateCommittees]);
 
-  const addCommittee = (
-    newCommitteeName: string,
-    newCommitteeAbbreviation: string,
-    newCommitteeCategory: "COMMITTEE" | "ICJ" | "CRISIS",
-    newCommitteeIsSubcommittee: boolean,
-    newCommitteeParent?: string,
-  ) => {
-    let payload = {
-      name: newCommitteeName,
-      abbreviation: newCommitteeAbbreviation,
-      category: newCommitteeCategory,
-      isSubcommittee: newCommitteeIsSubcommittee,
+  async function addCommittee({
+    name,
+    abbreviation,
+    category,
+    isSubcommittee,
+    parentId,
+  }: CreateCommitteePayload) {
+    let payload: CreateCommitteePayload = {
+      name,
+      abbreviation,
+      category,
+      isSubcommittee,
     };
-    if (newCommitteeParent) {
+    if (parentId) {
       payload = {
         ...payload,
-        parentId: newCommitteeParent,
-      }
+        parentId,
+      };
     }
     backend.conference[params.conferenceId].committee
       .post(payload)
@@ -75,7 +83,7 @@ export default function structure({
         toast.current.show({
           severity: "success",
           summary: LL.admin.onboarding.structure.SUCCESS_ADD_COMMITTEE(),
-          detail: `${newCommitteeName} (${newCommitteeAbbreviation})`,
+          detail: `${name} (${abbreviation})`,
         });
       })
       .catch((_err) => {
@@ -85,7 +93,7 @@ export default function structure({
           detail: LL.admin.onboarding.error.generic(),
         });
       });
-  };
+  }
 
   const confirmDeleteAll = (event) => {
     confirmPopup({
@@ -93,7 +101,6 @@ export default function structure({
       message: LL.admin.onboarding.structure.DELETE_ALL_CONFIRM(),
       acceptClassName: "p-button-danger",
       accept: () => {
-        // backend["conference/committee/delete"]
         backend.conference[params.conferenceId].committee
           .delete()
           .then((_res) => {
@@ -110,9 +117,11 @@ export default function structure({
     });
   };
 
-  const handleDelete = (rowData) => {
-    // backend["conference/committee/delete"]
-    backend.conference[params.conferenceId].committee[rowData.id]
+  async function handleDelete(
+    rawData: Committee
+  ) {
+    if (!rawData) return;
+    backend.conference[params.conferenceId].committee[rawData.id]
       .delete()
       .then((_res) => {
         setUpdateCommittees(true);
@@ -124,7 +133,7 @@ export default function structure({
           detail: LL.admin.onboarding.error.generic(),
         });
       });
-  };
+  }
 
   // Eventlistener for N key
   useMousetrap("n", () => {
@@ -150,7 +159,7 @@ export default function structure({
         backURL={`/admin/onboarding/${params.conferenceId}/structure`}
         handleSaveFunction={handleSave}
         saveLoading={saveLoading}
-        forwardDisabled={committees.length === 0}
+        forwardDisabled={committees?.length === 0 || !committees}
       />
 
       <AddCommitteeDialog

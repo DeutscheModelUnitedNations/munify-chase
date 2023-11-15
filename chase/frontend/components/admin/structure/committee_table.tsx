@@ -11,33 +11,23 @@ import {
 } from "@fortawesome/pro-solid-svg-icons";
 import { DataTable } from "primereact/datatable";
 import { Column } from "primereact/column";
-import { ConfirmPopup, confirmPopup } from "primereact/confirmpopup";
+import { ConfirmPopup } from "primereact/confirmpopup";
 import { Toolbar } from "primereact/toolbar";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-
-interface CommitteeTableProps {
-  committees: CommitteeEntry[];
-  confirmDeleteAll: (event) => void;
-  handleDelete: (committee: CommitteeEntry) => void;
-  setInputMaskVisible: (visible: boolean) => void;
-}
-
-interface CommitteeEntry {
-  name: string;
-  abbreviation: string;
-  category: CommitteeCategory;
-  isSubcommittee: boolean;
-  parent: CommitteeEntry | null;
-}
-
-type CommitteeCategory = "committee" | "crisis" | "icj";
+import { Committee } from "@/custom_types/fetching";
 
 export default function CommitteeTable({
   committees,
   confirmDeleteAll,
   handleDelete,
   setInputMaskVisible,
-}: CommitteeTableProps) {
+}: {
+  committees: Committee[] | null | undefined;
+  confirmDeleteAll: (event: React.MouseEvent<HTMLButtonElement>) => void;
+  handleDelete: (rowData: Committee) => void;
+  setInputMaskVisible: (visible: boolean) => void;
+}) {
+
   const { LL } = useI18nContext();
 
   return (
@@ -50,9 +40,9 @@ export default function CommitteeTable({
               <Button
                 label={LL.admin.onboarding.structure.DELETE_ALL()}
                 faIcon={faTrashAlt}
-                disabled={committees.length === 0}
+                disabled={committees?.length === 0}
                 severity="danger"
-                onClick={(event) => confirmDeleteAll(event)}
+                onClick={(event: React.MouseEvent<HTMLButtonElement>) => confirmDeleteAll(event)}
               />
               <Button
                 label={LL.admin.onboarding.structure.ADD_COMMITTEE()}
@@ -65,10 +55,10 @@ export default function CommitteeTable({
           style={{ borderBottomLeftRadius: "0", borderBottomRightRadius: "0" }}
         />
         <DataTable
-          value={committees}
+          value={committees || []}
           tableStyle={{ width: "100%" }}
           emptyMessage={LL.admin.onboarding.structure.EMPTY_MESSAGE()}
-          footer={LL.admin.onboarding.structure.FOOTER(committees.length)}
+          footer={LL.admin.onboarding.structure.FOOTER(committees?.length || 0)}
           removableSort
         >
           <Column
@@ -86,8 +76,8 @@ export default function CommitteeTable({
           <Column
             header={LL.admin.onboarding.structure.CATEGORY()}
             body={(rowData) => {
-              const matchingCommittee = committees.find(
-                (committee) => committee.id === rowData.parentId,
+              const matchingCommittee = committees?.find(
+                (committee) => committee.id === rowData.parentId
               );
 
               return (
@@ -130,11 +120,11 @@ export default function CommitteeTable({
           />
           <Column
             className="w-1/6"
-            body={(rowData) => (
+            body={(rawData) => (
               <Button
                 faIcon={faTrashAlt}
                 severity="danger"
-                onClick={() => handleDelete(rowData)}
+                onClick={() => handleDelete(rawData)}
               />
             )}
           />

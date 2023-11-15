@@ -16,18 +16,13 @@ import {
 } from "@fortawesome/pro-solid-svg-icons";
 import Button from "@/components/button";
 import useMousetrap from "mousetrap-react";
+import { Committee, CreateCommitteePayload } from "@/custom_types/fetching";
 
 type AddCommitteeDialogProps = {
   inputMaskVisible: boolean;
   setInputMaskVisible: (visible: boolean) => void;
-  addCommitteeToList: (
-    name: string,
-    abbreviation: string,
-    category: "COMMITTEE" | "ICJ" | "CRISIS",
-    isSubcommittee: boolean,
-    parent: CommitteeEntry | null,
-  ) => void;
-  committees: CommitteeEntry[];
+  addCommitteeToList: (payload: CreateCommitteePayload) => void;
+  committees: Committee[];
 };
 
 export default function AddCommitteeDialog({
@@ -40,13 +35,14 @@ export default function AddCommitteeDialog({
   const toast = useRef<Toast>(null);
 
   const [newCommitteeName, setNewCommitteeName] = useState("");
-  const [newCommitteeShortname, setNewCommitteeAbbreviation] = useState("");
-  const [newCommitteeCategory, setNewCommitteeCategory] =
-    useState<"COMMITTEE" | "ICJ" | "CRISIS">("COMMITTEE");
+  const [newCommitteeAbbreviation, setNewCommitteeAbbreviation] = useState("");
+  const [newCommitteeCategory, setNewCommitteeCategory] = useState<
+    "COMMITTEE" | "ICJ" | "CRISIS"
+  >("COMMITTEE");
   const [newCommitteeIsSubcommittee, setNewCommitteeIsSubcommittee] =
     useState(false);
-  const [newCommitteeParent, setNewCommitteeParent] = useState<number | null>(
-    null,
+  const [newCommitteeParent, setNewCommitteeParent] = useState<string | undefined>(
+    undefined
   );
 
   const resetInputMask = () => {
@@ -54,18 +50,18 @@ export default function AddCommitteeDialog({
     setNewCommitteeAbbreviation("");
     setNewCommitteeCategory("COMMITTEE");
     setNewCommitteeIsSubcommittee(false);
-    setNewCommitteeParent(null);
+    setNewCommitteeParent(undefined);
   };
 
   const addCommittee = (e: FormEvent | null = null) => {
     if (e) e.preventDefault();
-    addCommitteeToList(
-      newCommitteeName,
-      newCommitteeShortname,
-      newCommitteeCategory,
-      newCommitteeIsSubcommittee,
-      newCommitteeParent,
-    );
+    addCommitteeToList({
+      name: newCommitteeName,
+      abbreviation: newCommitteeAbbreviation,
+      category: newCommitteeCategory,
+      isSubcommittee: newCommitteeIsSubcommittee,
+      parentId: newCommitteeParent,
+    });
     resetInputMask();
   };
 
@@ -93,7 +89,7 @@ export default function AddCommitteeDialog({
   });
 
   useMousetrap("enter", () => {
-    if (newCommitteeName || newCommitteeShortname) return;
+    if (newCommitteeName || newCommitteeAbbreviation) return;
     if (newCommitteeIsSubcommittee && !newCommitteeParent) return;
     addCommittee();
   });
@@ -124,7 +120,7 @@ export default function AddCommitteeDialog({
           />
           <InputText
             id="committeeShortname"
-            value={newCommitteeShortname}
+            value={newCommitteeAbbreviation}
             onChange={(e) => setNewCommitteeAbbreviation(e.target.value)}
             className="w-full"
             required
@@ -156,7 +152,7 @@ export default function AddCommitteeDialog({
           <Dropdown
             value={committees.find((c) => c.id === newCommitteeParent)}
             options={committees.filter(
-              (c) => !c.isSubcommittee && c.category === "COMMITTEE",
+              (c) => !c.isSubcommittee && c.category === "COMMITTEE"
             )}
             onChange={(e) => setNewCommitteeParent(e.value.id)}
             optionLabel="name"

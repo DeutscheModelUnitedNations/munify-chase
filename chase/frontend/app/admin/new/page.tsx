@@ -19,7 +19,7 @@ export default function loginVorsitz() {
   const router = useRouter();
 
   const [conferenceName, setConferenceName] = useState("");
-  const [dates, setDates] = useState<Date | Date[] | undefined>(undefined);
+  const [dates, setDates] = useState<Date[] | undefined>(undefined);
   const [token, setToken] = useState("");
   const [loading, setLoading] = useState(false);
 

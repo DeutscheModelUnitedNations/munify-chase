@@ -54,6 +54,12 @@ const en = {
   },
 
   admin: {
+    login: {
+      TITLE: "Admin Login",
+      CONFERENCE_ID: "Conference ID",
+      CREATE_INSTEAD: "Create",
+      SUBMIT: "Login",
+    },
     onboarding: {
       title: "Setup new Conference",
       conferenceName: "Conference Name",
@@ -116,6 +122,7 @@ const en = {
         roles: {
           ADMIN: "Admin",
           CHAIR: "Chair",
+          COMMITTEE_ADVISOR: "Committee Advisor",
           SECRETARIAT: "Secretariat",
           PARTICIPANT_CARE: "Participant Care",
           TEAM: "Team",
@@ -125,6 +132,11 @@ const en = {
           BUTTON_ADD: "Add",
           BUTTON_CANCEL: "Cancel",
         },
+      },
+
+      committees: {
+        CHAIRS: "Select Chairs",
+        ADVISORS: "Select Committee Advisors",
       },
 
       steps: {

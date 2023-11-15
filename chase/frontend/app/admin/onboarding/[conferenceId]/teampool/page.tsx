@@ -50,20 +50,19 @@ export default function teampool({
     newTeammemberRole:
       | "ADMIN"
       | "CHAIR"
+      | "COMMITTEE_ADVISOR"
       | "SECRETARIAT"
       | "PARTICIPANT_CARE"
       | "TEAM"
       | "GUEST"
   ) => {
-    let payload = {
-      firstName: newTeammemberFirstName,
-      lastName: newTeammemberLastName,
-      email: newTeammemberEmail,
-      role: newTeammemberRole,
-    };
-
     backend.conference[params.conferenceId].team
-      .post(payload)
+      .post({
+        firstName: newTeammemberFirstName,
+        lastName: newTeammemberLastName,
+        email: newTeammemberEmail,
+        role: newTeammemberRole,
+      })
       .then((_res) => {
         setUpdateTable(true);
       })

@@ -147,7 +147,7 @@ export default function structure({
       />
 
       <ForwardBackButtons
-        backURL="/admin/new"
+        backURL={`/admin/onboarding/${params.conferenceId}/structure`}
         handleSaveFunction={handleSave}
         saveLoading={saveLoading}
         forwardDisabled={committees.length === 0}

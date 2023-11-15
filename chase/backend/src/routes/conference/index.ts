@@ -40,13 +40,27 @@ export default new Elysia()
           t.Object({
             start: t.Number(),
             end: t.Number(),
-          }),
+          })
         ),
       }),
-    },
+    }
+  )
+  .post(
+    "/conference/:conferenceId/registerAdmin",
+    ({ auth, params: { conferenceId } }) => {
+      const conference = db.conference.findFirstOrThrow({ where: { id: conferenceId } })
+
+      if (conference.id === undefined) {
+        return new Response(null, { status: 404 });
+      }
+
+      auth?.permissions.setConferenceAdmin(conferenceId);
+      
+      return conference;
+    }
   )
   .get("/conference/:conferenceId", ({ params: { conferenceId } }) =>
-    db.conference.findFirstOrThrow({ where: { id: conferenceId } }),
+    db.conference.findFirstOrThrow({ where: { id: conferenceId } })
   )
   .delete("/conference/:conferenceId", ({ auth, params: { conferenceId } }) => {
     if (!auth.permissions.isConferenceAdmin(conferenceId)) {

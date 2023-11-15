@@ -35,6 +35,7 @@ enum Role {
   ADMIN
   CHAIR
   DELEGATE
+  COMMITTEE_ADVISOR
   OBSERVER
   NON_STATE_ACTOR
   SECRETARIAT
@@ -45,31 +46,34 @@ enum Role {
 }
 
 model Committee {
-  id             String            @id @default(uuid())
-  name           String
-  abbreviation   String
-  category       CommitteeCategory
-  conference     Conference        @relation(fields: [conferenceId], references: [id])
-  conferenceId   String
-  isSubcommittee Boolean
-  parent         Committee?        @relation("subCommittee", fields: [parentId], references: [id])
-  parentId       String?
-  subCommittees  Committee[]       @relation("subCommittee")
-  chairs         Team[]
+  id                 String            @id @default(uuid())
+  name               String
+  abbreviation       String
+  category           CommitteeCategory
+  conference         Conference        @relation(fields: [conferenceId], references: [id])
+  conferenceId       String
+  isSubcommittee     Boolean
+  parent             Committee?        @relation("subCommittee", fields: [parentId], references: [id])
+  parentId           String?
+  subCommittees      Committee[]       @relation("subCommittee")
+  chairs             Team[]            @relation("chairs")
+  committee_advisors Team[]            @relation("committee_advisors")
 
   @@unique([name, conferenceId])
 }
 
 model Team {
-  id           String     @id @default(uuid())
-  conference   Conference @relation(fields: [conferenceId], references: [id])
-  conferenceId String
-  firstName    String
-  lastName     String
-  email        String
-  role         Role
-  committee    Committee?  @relation(fields: [committeeId], references: [id])
-  committeeId  String?
+  id                  String     @id @default(uuid())
+  conference          Conference @relation(fields: [conferenceId], references: [id])
+  conferenceId        String
+  firstName           String
+  lastName            String
+  email               String
+  role                Role
+  chair_committee     Committee? @relation(fields: [chair_committeeId], references: [id], name: "chairs")
+  chair_committeeId   String?
+  advisor_committee   Committee? @relation(fields: [advisor_committeeId], references: [id], name: "committee_advisors")
+  advisor_committeeId String?
 
   @@unique([conferenceId, email])
 }

@@ -55,6 +55,12 @@ const de = {
   },
 
   admin: {
+    login: {
+      TITLE: "Admin Login",
+      CONFERENCE_ID: "Konferenz ID",
+      CREATE_INSTEAD: "Erstellen",
+      SUBMIT: "Login",
+    },
     onboarding: {
       title: "Neue Konferenz erstellen",
       conferenceName: "Name der Konferenz",
@@ -118,6 +124,7 @@ const de = {
         roles: {
           ADMIN: "Admin",
           CHAIR: "Vorsitz",
+          COMMITTEE_ADVISOR: "Gremienberatung",
           SECRETARIAT: "Sekretariat",
           PARTICIPANT_CARE: "Teilnehmendenbetreuung",
           TEAM: "Team",
@@ -127,6 +134,11 @@ const de = {
           BUTTON_ADD: "Hinzufügen",
           BUTTON_CANCEL: "Abbrechen",
         },
+      },
+
+      committees: {
+        CHAIRS: "Vorsitzende auswählen",
+        ADVISORS: "Gremienberatung auswählen",
       },
 
       steps: {

@@ -155,6 +155,24 @@ type RootTranslation = {
 		}
 	}
 	admin: {
+		login: {
+			/**
+			 * A​d​m​i​n​ ​L​o​g​i​n
+			 */
+			TITLE: string
+			/**
+			 * C​o​n​f​e​r​e​n​c​e​ ​I​D
+			 */
+			CONFERENCE_ID: string
+			/**
+			 * C​r​e​a​t​e
+			 */
+			CREATE_INSTEAD: string
+			/**
+			 * L​o​g​i​n
+			 */
+			SUBMIT: string
+		}
 		onboarding: {
 			/**
 			 * S​e​t​u​p​ ​n​e​w​ ​C​o​n​f​e​r​e​n​c​e
@@ -349,6 +367,10 @@ type RootTranslation = {
 					 */
 					CHAIR: string
 					/**
+					 * C​o​m​m​i​t​t​e​e​ ​A​d​v​i​s​o​r
+					 */
+					COMMITTEE_ADVISOR: string
+					/**
 					 * S​e​c​r​e​t​a​r​i​a​t
 					 */
 					SECRETARIAT: string
@@ -375,6 +397,16 @@ type RootTranslation = {
 					 */
 					BUTTON_CANCEL: string
 				}
+			}
+			committees: {
+				/**
+				 * S​e​l​e​c​t​ ​C​h​a​i​r​s
+				 */
+				CHAIRS: string
+				/**
+				 * S​e​l​e​c​t​ ​C​o​m​m​i​t​t​e​e​ ​A​d​v​i​s​o​r​s
+				 */
+				ADVISORS: string
 			}
 			steps: {
 				/**
@@ -1139,6 +1171,24 @@ export type TranslationFunctions = {
 		}
 	}
 	admin: {
+		login: {
+			/**
+			 * Admin Login
+			 */
+			TITLE: () => LocalizedString
+			/**
+			 * Conference ID
+			 */
+			CONFERENCE_ID: () => LocalizedString
+			/**
+			 * Create
+			 */
+			CREATE_INSTEAD: () => LocalizedString
+			/**
+			 * Login
+			 */
+			SUBMIT: () => LocalizedString
+		}
 		onboarding: {
 			/**
 			 * Setup new Conference
@@ -1333,6 +1383,10 @@ export type TranslationFunctions = {
 					 */
 					CHAIR: () => LocalizedString
 					/**
+					 * Committee Advisor
+					 */
+					COMMITTEE_ADVISOR: () => LocalizedString
+					/**
 					 * Secretariat
 					 */
 					SECRETARIAT: () => LocalizedString
@@ -1359,6 +1413,16 @@ export type TranslationFunctions = {
 					 */
 					BUTTON_CANCEL: () => LocalizedString
 				}
+			}
+			committees: {
+				/**
+				 * Select Chairs
+				 */
+				CHAIRS: () => LocalizedString
+				/**
+				 * Select Committee Advisors
+				 */
+				ADVISORS: () => LocalizedString
 			}
 			steps: {
 				/**

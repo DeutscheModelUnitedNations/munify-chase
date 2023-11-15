@@ -18,27 +18,16 @@ export default function loginVorsitz() {
   const toast = useRef<Toast>(null);
   const router = useRouter();
 
-  const [conferenceName, setConferenceName] = useState("");
-  const [dates, setDates] = useState<Date | Date[] | undefined>(undefined);
-  const [token, setToken] = useState("");
   const [loading, setLoading] = useState(false);
+  const [conferenceId, setConferenceName] = useState("");
 
   const submit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setLoading(true);
 
-    backend.conference
-      .post({
-        name: conferenceName,
-        token: token,
-        time: {
-          start: dates[0].getTime(),
-          end: dates[1].getTime(),
-        },
-      })
+    backend.conference[conferenceId]
+      .registerAdmin()
       .then((res) => {
-        if (!res?.data?.id) throw new Error("No conference id returned");
-        const conferenceId = res.data.id;
         toast.current.show({
           severity: "success",
           summary: LL.admin.onboarding.success(),
@@ -72,55 +61,32 @@ export default function loginVorsitz() {
           onSubmit={(e) => submit(e)}
         >
           <h1 className="text-2xl font-bold text-center mb-4">
-            {LL.admin.onboarding.title()}
+            {LL.admin.login.TITLE()}
           </h1>
           <span className="p-float-label mb-5">
             <InputText
-              id="conferenceName"
-              value={conferenceName}
+              id="conferenceId"
+              value={conferenceId}
               onChange={(e) => setConferenceName(e.target.value)}
               className="w-full"
               required
             />
-            <label htmlFor="conferenceName">
-              {LL.admin.onboarding.conferenceName()}
-            </label>
-          </span>
-          <span className="p-float-label mb-5">
-            <Calendar
-              value={dates}
-              onChange={(e) => setDates(e.value)}
-              selectionMode="range"
-              dateFormat="d.m.yy"
-              readOnlyInput
-              className="w-full"
-            />
-            <label htmlFor="dates">{LL.admin.onboarding.dates()}</label>
-          </span>
-          <span className="p-float-label mb-5">
-            <InputText
-              id="token"
-              value={token}
-              onChange={(e) => setToken(e.target.value)}
-              className="w-full"
-              required
-            />
-            <label htmlFor="conferenceName">
-              {LL.admin.onboarding.token()}
+            <label htmlFor="conferenceId">
+              {LL.admin.login.CONFERENCE_ID()}
             </label>
           </span>
           <div className="flex w-full gap-4">
             <Button
-              label={LL.admin.onboarding.login()}
+              label={LL.admin.login.CREATE_INSTEAD()}
               className="w-full"
               severity="warning"
-              faIcon={faRightToBracket}
-              onClick={() => router.push("/admin/login")}
+              faIcon={faSparkles}
+              onClick={() => router.push("/admin/new")}
             />
             <Button
-              label={LL.admin.onboarding.submit()}
+              label={LL.admin.login.SUBMIT()}
               className="w-full"
-              faIcon={faSparkles}
+              faIcon={faRightToBracket}
               type="submit"
               loading={loading}
             />

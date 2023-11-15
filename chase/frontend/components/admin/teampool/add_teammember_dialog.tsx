@@ -5,7 +5,6 @@ import { Dialog } from "primereact/dialog";
 import { Toast } from "primereact/toast";
 import { InputText } from "primereact/inputtext";
 import { RadioButton } from "primereact/radiobutton";
-import { Dropdown } from "primereact/dropdown";
 import {
   faPlus,
   faXmark,
@@ -43,7 +42,7 @@ export default function AddTeammemberDialog({
   const [newTeammemberLastName, setTeammemberLastName] = useState("");
   const [newTeammemberEmail, setTeammemberEmail] = useState("");
   const [newTeammemberRole, setTeammemberRole] = useState<
-    "ADMIN" | "CHAIR" | "SECRETARIAT" | "PARTICIPANT_CARE" | "TEAM" | "GUEST"
+    "ADMIN" | "CHAIR" | "COMMITTEE_ADVISOR" | "SECRETARIAT" | "PARTICIPANT_CARE" | "TEAM" | "GUEST"
   >("GUEST");
 
   const roles = [
@@ -54,6 +53,10 @@ export default function AddTeammemberDialog({
     {
       name: LL.admin.onboarding.teampool.roles.CHAIR(),
       value: "CHAIR",
+    },
+    {
+      name: LL.admin.onboarding.teampool.roles.COMMITTEE_ADVISOR(),
+      value: "COMMITTEE_ADVISOR",
     },
     {
       name: LL.admin.onboarding.teampool.roles.SECRETARIAT(),

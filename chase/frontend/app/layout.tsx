@@ -9,6 +9,9 @@ import "@/themes/theme_dark.scss";
 import "primereact/resources/primereact.min.css";
 //icons
 import "primeicons/primeicons.css";
+import { config } from "@fortawesome/fontawesome-svg-core";
+import '@fortawesome/fontawesome-svg-core/styles.css';
+config.autoAddCss = false; // Tell Font Awesome to skip adding the CSS automatically since it's being imported above, otherwise icons will be huge on load
 
 import Head from "next/head";
 
@@ -22,7 +25,7 @@ import { baseLocale, locales } from "@/i18n/i18n-util";
 import TypesafeI18n from "@/i18n/i18n-react";
 import { AuthProvider } from "@/contexts/auth";
 import { BackendProvider } from "@/contexts/backend";
-import Featurebase from "@/components/featurebase_widget";
+import Featurebase from "@/components/featurebase_widget"; // TODO: Decide on Featurebase
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -56,7 +59,7 @@ export default function RootLayout({
             </Head>
             <body className={inter.className}>
               {children}
-              <Featurebase />
+              {/* <Featurebase /> */}
             </body>
           </html>
         </TypesafeI18n>

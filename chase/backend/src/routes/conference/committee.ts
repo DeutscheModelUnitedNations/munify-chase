@@ -94,9 +94,9 @@ export default new Elysia()
   .post(
     "/conference/:conferenceId/committee/:committeeId/agendaItem",
     ({ auth, body, params: { committeeId, conferenceId } }) => {
-      // if (!auth.permissions.isConferenceAdmin(conferenceId)) {
-      //   return new Response(null, { status: 401 });
-      // }
+      if (!auth.permissions.isConferenceAdmin(conferenceId)) {
+        return new Response(null, { status: 401 });
+      }
 
       console.info("Hello world")
 
@@ -121,9 +121,9 @@ export default new Elysia()
   .delete(
     "/conference/:conferenceId/committee/:committeeId/agendaItem/:agendaItemId",
     ({ auth, params: { committeeId, conferenceId, agendaItemId } }) => {
-      // if (!auth.permissions.isConferenceAdmin(conferenceId)) {
-      //   return new Response(null, { status: 401 });
-      // }
+      if (!auth.permissions.isConferenceAdmin(conferenceId)) {
+        return new Response(null, { status: 401 });
+      }
 
       return db.agendaItem.delete({ where: { committeeId, id: agendaItemId } });
     }

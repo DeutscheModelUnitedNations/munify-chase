@@ -94,9 +94,9 @@ export default new Elysia()
   .post(
     "/conference/:conferenceId/team/connectCommittee/chairs",
     async ({ auth, body, params: { conferenceId } }) => {
-        // if (!auth.permissions.isConferenceAdmin(conferenceId)) {
-        //   return new Response(null, { status: 401 });
-        // }
+        if (!auth.permissions.isConferenceAdmin(conferenceId)) {
+          return new Response(null, { status: 401 });
+        }
 
       const currentChairs = await db.committee.findUnique({
         where: { id: body.committeeId },
@@ -132,9 +132,9 @@ export default new Elysia()
   .post(
     "/conference/:conferenceId/team/connectCommittee/advisors",
     async ({ auth, body, params: { conferenceId } }) => {
-      // if (!auth.permissions.isConferenceAdmin(conferenceId)) {
-      //   return new Response(null, { status: 401 });
-      // }
+      if (!auth.permissions.isConferenceAdmin(conferenceId)) {
+        return new Response(null, { status: 401 });
+      }
 
       const currentAdvisors = await db.committee.findUnique({
         where: { id: body.committeeId },

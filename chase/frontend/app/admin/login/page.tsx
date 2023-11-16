@@ -25,8 +25,8 @@ export default function loginVorsitz() {
     e.preventDefault();
     setLoading(true);
 
-    backend.conference[conferenceId]
-      .registerAdmin()
+    backend.conference[conferenceId].registerAdmin
+      .post()
       .then((res) => {
         toast.current.show({
           severity: "success",

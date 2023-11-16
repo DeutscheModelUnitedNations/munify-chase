@@ -52,6 +52,7 @@ export default function agendaItem({
         title: inputValue,
       });
       setUpdate(true);
+      setInputValue("");
     } catch (error) {
       toast.current?.show({
         severity: "error",
@@ -98,6 +99,7 @@ export default function agendaItem({
       <div className="flex gap-2">
         <InputText
           id="username"
+          placeholder="Add Agenda Item"
           value={inputValue}
           onChange={(e) => setInputValue(e.target.value)}
           className="mt-3 flex-1"

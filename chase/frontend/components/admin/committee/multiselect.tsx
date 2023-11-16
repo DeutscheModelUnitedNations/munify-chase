@@ -33,19 +33,19 @@ export const ChairMultiSelect = ({
     committeeId: string;
     chairs: string[];
   }) {
-    try {
-      await backend.conference[conferenceId].team.connectCommittee.chairs.post({
+    await backend.conference[conferenceId].team.connectCommittee.chairs
+      .post({
         committeeId,
         chairs,
+      })
+      .catch((error) => {
+        toast.current?.show({
+          severity: "error",
+          summary: LL.admin.onboarding.error.title(),
+          detail: LL.admin.onboarding.error.generic(),
+        });
       });
-      setUpdate(true);
-    } catch (error) {
-      toast.current?.show({
-        severity: "error",
-        summary: LL.admin.onboarding.error.title(),
-        detail: LL.admin.onboarding.error.generic(),
-      });
-    }
+    setUpdate(true);
   }
 
   useEffect(() => {
@@ -105,26 +105,26 @@ export const AdvisorMultiSelect = ({
     committeeId: string;
     committeeAdvisors: string[];
   }) {
-    try {
-      await backend.conference[
-        conferenceId
-      ].team.connectCommittee.advisors.post({
+    await backend.conference[conferenceId].team.connectCommittee.advisors
+      .post({
         committeeId,
         committeeAdvisors,
+      })
+      .catch((error) => {
+        toast.current?.show({
+          severity: "error",
+          summary: LL.admin.onboarding.error.title(),
+          detail: LL.admin.onboarding.error.generic(),
+        });
       });
-      setUpdate(true);
-    } catch (error) {
-      toast.current?.show({
-        severity: "error",
-        summary: LL.admin.onboarding.error.title(),
-        detail: LL.admin.onboarding.error.generic(),
-      });
-    }
+    setUpdate(true);
   }
 
   useEffect(() => {
     setCommitteeAdvisors(
-      teammember?.filter((advisor) => advisor.advisor_committeeId === committee.id)
+      teammember?.filter(
+        (advisor) => advisor.advisor_committeeId === committee.id
+      )
     );
   }, [teammember]);
 
@@ -146,7 +146,6 @@ export const AdvisorMultiSelect = ({
             <span className="text-sm">{advisor.lastName}</span>
           </div>
         )}
-
         optionLabel="firstName"
         display="chip"
         filter

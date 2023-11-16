@@ -59,6 +59,20 @@ export default new Elysia()
       return conference;
     }
   )
+  .get("/conference/:conferenceId/verifyAdmin", ({ auth, params: { conferenceId } }) => {
+    return auth.permissions.isConferenceAdmin(conferenceId);
+  })
+  .get("/listMyConferences", async ({ auth }) => {
+    const conferences = await db.conference.findMany();
+
+    // const myConferences = conferences.filter((conference) =>
+    //   auth.permissions.isConferenceAdmin(conference.id)
+    // );
+
+    // TODO: fix this
+    const myConferences = conferences;
+    return myConferences;
+  })
   .get("/conference/:conferenceId", ({ params: { conferenceId } }) =>
     db.conference.findFirstOrThrow({ where: { id: conferenceId } })
   )

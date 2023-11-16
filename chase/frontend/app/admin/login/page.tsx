@@ -1,25 +1,43 @@
 "use client";
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import Image from "next/image";
 
 import { useI18nContext } from "@/i18n/i18n-react";
 import { InputText } from "primereact/inputtext";
-import { Calendar } from "primereact/calendar";
 import Button from "@/components/button";
 import { faRightToBracket, faSparkles } from "@fortawesome/pro-solid-svg-icons";
 import { useBackend } from "@/contexts/backend";
 import { Toast } from "primereact/toast";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { Skeleton } from "primereact/skeleton";
 
-export default function loginVorsitz() {
+export default function LoginVorsitz() {
   const { LL } = useI18nContext();
   const backend = useBackend();
   const toast = useRef<Toast>(null);
   const router = useRouter();
 
   const [loading, setLoading] = useState(false);
-  const [conferenceId, setConferenceName] = useState("");
+  const [conferenceId, setConferenceId] = useState("");
+  const [myConferences, setMyConferences] = useState<
+    Awaited<ReturnType<typeof getMyConferences>>
+  >(null);
+
+  async function getMyConferences() {
+    const response = await backend.listMyConferences.get().catch((err) => {
+      toast.current?.show({
+        severity: "error",
+        summary: LL.admin.onboarding.error.title(),
+        detail: LL.admin.onboarding.error.generic(),
+      });
+    });
+    setMyConferences(response?.data || []);
+  }
+
+  useEffect(() => {
+    getMyConferences();
+  }, []);
 
   const submit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -28,7 +46,7 @@ export default function loginVorsitz() {
     backend.conference[conferenceId].registerAdmin
       .post()
       .then((res) => {
-        toast.current.show({
+        toast.current?.show({
           severity: "success",
           summary: LL.admin.onboarding.success(),
           detail: LL.admin.onboarding.successDetails(),
@@ -37,7 +55,7 @@ export default function loginVorsitz() {
         router.push(`/admin/onboarding/${conferenceId}/structure`);
       })
       .catch((err) => {
-        toast.current.show({
+        toast.current?.show({
           severity: "error",
           summary: LL.admin.onboarding.error.title(),
           detail: LL.admin.onboarding.error.generic(),
@@ -63,11 +81,31 @@ export default function loginVorsitz() {
           <h1 className="text-2xl font-bold text-center mb-4">
             {LL.admin.login.TITLE()}
           </h1>
+          <div className="flex flex-col gap-2">
+            {myConferences === null && (
+              <>
+                <Skeleton height="3rem" />
+                <Skeleton height="3rem" />
+              </>
+              )}
+            {myConferences && (myConferences.map((conference) => (
+              <Link
+                href={`/admin/onboarding/${conference.id}/structure`}
+                key={conference.id}
+              >
+                <Button
+                  label={conference.name}
+                  className="w-full"
+                  severity="secondary"
+                />
+              </Link>
+            )))}
+          </div>
           <span className="p-float-label mb-5">
             <InputText
               id="conferenceId"
               value={conferenceId}
-              onChange={(e) => setConferenceName(e.target.value)}
+              onChange={(e) => setConferenceId(e.target.value)}
               className="w-full"
               required
             />

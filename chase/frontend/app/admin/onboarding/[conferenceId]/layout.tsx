@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import Button from "@/components/button";
 import SettingsSidebar from "@/components/navbar/settings_sidebar";
@@ -13,6 +13,7 @@ import { useRouter } from "next/navigation";
 import useMousetrap from "mousetrap-react";
 import { confirmPopup } from "primereact/confirmpopup";
 import { ConfirmDialog } from "primereact/confirmdialog";
+import { useBackend } from "@/contexts/backend";
 
 export default function RootLayout({
   children,
@@ -20,9 +21,11 @@ export default function RootLayout({
 }: {
   children: React.ReactNode;
   params: { conferenceId: string };
+  
 }) {
   const { LL } = useI18nContext();
   const router = useRouter();
+  const backend = useBackend();
 
   const [settingsSidebarVisible, setSettingsSidebarVisible] = useState(false);
 
@@ -36,7 +39,19 @@ export default function RootLayout({
     });
   };
 
-  useMousetrap("ctrl+shift+s", () => saveAndQuit());
+  useMousetrap("ctrl+shift+s", (e) => saveAndQuit(e));
+
+  useEffect(() => {
+    backend.conference[params.conferenceId].verifyAdmin.get()
+      .then((response) => {
+        if (!response) {
+          router.push("/admin/login");
+        }
+      })
+      .catch((error) => {
+        router.push("/admin/login");
+      });
+  }, []);
 
   return (
     <ToastProvider>

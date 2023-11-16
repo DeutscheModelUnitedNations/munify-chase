@@ -44,55 +44,55 @@ export default function loginVorsitz({
   const [update, setUpdate] = useState(true);
 
   async function getCommittees(id: string) {
-    try {
-      const res = await backend.conference[id].committee.list.get();
-      return res.data;
-    } catch (error) {
-      toast.current?.show({
-        severity: "error",
-        summary: LL.admin.onboarding.error.title(),
-        detail: LL.admin.onboarding.error.generic(),
+    const res = await backend.conference[id].committee.list
+      .get()
+      .catch((error) => {
+        toast.current?.show({
+          severity: "error",
+          summary: LL.admin.onboarding.error.title(),
+          detail: LL.admin.onboarding.error.generic(),
+        });
       });
-    }
+    return res.data;
   }
 
   async function getChairs(id: string) {
-    try {
-      const res = await backend.conference[id].team.chairs.list.get();
-      return res.data;
-    } catch (error) {
-      toast.current?.show({
-        severity: "error",
-        summary: LL.admin.onboarding.error.title(),
-        detail: LL.admin.onboarding.error.generic(),
+    const res = await backend.conference[id].team.chairs.list
+      .get()
+      .catch((error) => {
+        toast.current?.show({
+          severity: "error",
+          summary: LL.admin.onboarding.error.title(),
+          detail: LL.admin.onboarding.error.generic(),
+        });
       });
-    }
+    return res.data;
   }
 
   async function getAdvisors(id: string) {
-    try {
-      const res = await backend.conference[id].team.advisors.list.get();
-      return res.data;
-    } catch (error) {
-      toast.current?.show({
-        severity: "error",
-        summary: LL.admin.onboarding.error.title(),
-        detail: LL.admin.onboarding.error.generic(),
+    const res = await backend.conference[id].team.advisors.list
+      .get()
+      .catch((error) => {
+        toast.current?.show({
+          severity: "error",
+          summary: LL.admin.onboarding.error.title(),
+          detail: LL.admin.onboarding.error.generic(),
+        });
       });
-    }
+    return res.data;
   }
 
   async function getAgendaItems(id: string) {
-    try {
-      const res = await backend.conference[id].agendaItem.list.get();
-      return res.data;
-    } catch (error) {
-      toast.current?.show({
-        severity: "error",
-        summary: LL.admin.onboarding.error.title(),
-        detail: LL.admin.onboarding.error.generic(),
+    const res = await backend.conference[id].agendaItem.list
+      .get()
+      .catch((error) => {
+        toast.current?.show({
+          severity: "error",
+          summary: LL.admin.onboarding.error.title(),
+          detail: LL.admin.onboarding.error.generic(),
+        });
       });
-    }
+    return res.data;
   }
 
   useEffect(() => {

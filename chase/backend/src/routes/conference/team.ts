@@ -1,7 +1,6 @@
 import { t, Elysia } from "elysia";
 import { db } from "../../../prisma/db";
 import { auth } from "../../plugins/auth";
-import committee from "./committee";
 
 const isValidRole = (
   input: string
@@ -48,6 +47,14 @@ export default new Elysia()
       });
     }
   )
+  .get(
+    "/conference/:conferenceId/team/advisors/list",
+    async ({ params: { conferenceId } }) => {
+      return db.team.findMany({
+        where: { conferenceId, role: "COMMITTEE_ADVISOR" },
+      });
+    }
+  )
   .post(
     "/conference/:conferenceId/team",
     async ({ auth, body, params: { conferenceId } }) => {
@@ -87,9 +94,9 @@ export default new Elysia()
   .post(
     "/conference/:conferenceId/team/connectCommittee/chairs",
     async ({ auth, body, params: { conferenceId } }) => {
-      if (!auth.permissions.isConferenceAdmin(conferenceId)) {
-        return new Response(null, { status: 401 });
-      }
+        // if (!auth.permissions.isConferenceAdmin(conferenceId)) {
+        //   return new Response(null, { status: 401 });
+        // }
 
       const currentChairs = await db.committee.findUnique({
         where: { id: body.committeeId },
@@ -97,11 +104,13 @@ export default new Elysia()
       });
 
       const chairsToConnect = body.chairs.filter(
-        (id) => !currentChairs?.chairs.map((c) => c.id).includes(id)
+        // if the chair is not already connected to the committee, add them to the connect list
+        (id) =>
+          !currentChairs?.chairs.map((c) => c.id).includes(id)
       );
-      const chairsToDisconnect = body.chairs.filter((id) =>
-        currentChairs?.chairs.map((c) => c.id).includes(id)
-      );
+      const chairsToDisconnect = currentChairs?.chairs.map((c) => c.id).filter((id) =>
+        !body.chairs.includes(id)
+      ) || [];
 
       return db.committee.update({
         where: { id: body.committeeId },
@@ -123,26 +132,27 @@ export default new Elysia()
   .post(
     "/conference/:conferenceId/team/connectCommittee/advisors",
     async ({ auth, body, params: { conferenceId } }) => {
-      if (!auth.permissions.isConferenceAdmin(conferenceId)) {
-        return new Response(null, { status: 401 });
-      }
+      // if (!auth.permissions.isConferenceAdmin(conferenceId)) {
+      //   return new Response(null, { status: 401 });
+      // }
 
       const currentAdvisors = await db.committee.findUnique({
         where: { id: body.committeeId },
         select: { committee_advisors: { select: { id: true } } },
       });
 
-      const advisorsToConnect = body.chairs.filter(
-        (id) => !currentAdvisors?.committee_advisors.map((c) => c.id).includes(id)
+      const advisorsToConnect = body.committeeAdvisors.filter(
+        (id) =>
+          !currentAdvisors?.committee_advisors.map((c) => c.id).includes(id)
       );
-      const advisorsToDisconnect = body.chairs.filter((id) =>
-        currentAdvisors?.committee_advisors.map((c) => c.id).includes(id)
-      );
+      const advisorsToDisconnect = currentAdvisors?.committee_advisors.map((c) => c.id).filter((id) =>
+        !body.committeeAdvisors.includes(id)
+      ) || [];
 
       return db.committee.update({
         where: { id: body.committeeId },
         data: {
-          chairs: {
+          committee_advisors: {
             connect: advisorsToConnect.map((id) => ({ id })),
             disconnect: advisorsToDisconnect.map((id) => ({ id })),
           },
@@ -152,7 +162,7 @@ export default new Elysia()
     {
       body: t.Object({
         committeeId: t.String(),
-        chairs: t.Array(t.String()),
+        committeeAdvisors: t.Array(t.String()),
       }),
     }
   )

@@ -25,7 +25,6 @@ export default function structure({
   const toast = useRef<Toast>(null);
 
   async function getCommittees(id: string) {
-
     try {
       const res = await backend.conference[id].committee.list.get();
       return res.data;

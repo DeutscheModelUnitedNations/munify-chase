@@ -22,7 +22,7 @@ type AddCommitteeDialogProps = {
   inputMaskVisible: boolean;
   setInputMaskVisible: (visible: boolean) => void;
   addCommitteeToList: (payload: CreateCommitteePayload) => void;
-  committees: Committee[];
+  committees: Committee[] | undefined | null;
 };
 
 export default function AddCommitteeDialog({

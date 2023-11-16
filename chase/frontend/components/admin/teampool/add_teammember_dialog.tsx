@@ -1,33 +1,24 @@
-import React, { FormEvent, useEffect, useRef, useState } from "react";
+import React, { FormEvent, useRef, useState } from "react";
 import { useI18nContext } from "@/i18n/i18n-react";
 
 import { Dialog } from "primereact/dialog";
 import { Toast } from "primereact/toast";
 import { InputText } from "primereact/inputtext";
 import { RadioButton } from "primereact/radiobutton";
-import {
-  faPlus,
-  faXmark,
-} from "@fortawesome/pro-solid-svg-icons";
+import { faPlus, faXmark } from "@fortawesome/pro-solid-svg-icons";
 import Button from "@/components/button";
 import useMousetrap from "mousetrap-react";
-import { set } from "react-hook-form";
+import { CreateTeammemberPayload, TeamRoles } from "@/custom_types/fetching";
 
 type AddTeammemberDialogProps = {
   inputMaskVisible: boolean;
   setInputMaskVisible: (visible: boolean) => void;
-  addTeammemberToList: (
-    firstName: string,
-    lastName: string,
-    email: string,
-    role:
-      | "ADMIN"
-      | "CHAIR"
-      | "SECRETARIAT"
-      | "PARTICIPANT_CARE"
-      | "TEAM"
-      | "GUEST"
-  ) => void;
+  addTeammemberToList: ({
+    firstName,
+    lastName,
+    email,
+    role,
+  }: CreateTeammemberPayload) => void;
 };
 
 export default function AddTeammemberDialog({
@@ -41,9 +32,7 @@ export default function AddTeammemberDialog({
   const [newTeammemberFirstName, setTeammemberFirstName] = useState("");
   const [newTeammemberLastName, setTeammemberLastName] = useState("");
   const [newTeammemberEmail, setTeammemberEmail] = useState("");
-  const [newTeammemberRole, setTeammemberRole] = useState<
-    "ADMIN" | "CHAIR" | "COMMITTEE_ADVISOR" | "SECRETARIAT" | "PARTICIPANT_CARE" | "TEAM" | "GUEST"
-  >("GUEST");
+  const [newTeammemberRole, setTeammemberRole] = useState<TeamRoles>("CHAIR");
 
   const roles = [
     {
@@ -70,27 +59,23 @@ export default function AddTeammemberDialog({
       name: LL.admin.onboarding.teampool.roles.TEAM(),
       value: "TEAM",
     },
-    {
-      name: LL.admin.onboarding.teampool.roles.GUEST(),
-      value: "GUEST",
-    },
   ];
 
   const resetInputMask = () => {
     setTeammemberFirstName("");
     setTeammemberLastName("");
     setTeammemberEmail("");
-    setTeammemberRole("GUEST");
+    setTeammemberRole("CHAIR");
   };
 
   const addCommittee = (e: FormEvent | null = null) => {
     if (e) e.preventDefault();
-    addTeammemberToList(
-      newTeammemberFirstName,
-      newTeammemberLastName,
-      newTeammemberEmail,
-      newTeammemberRole
-    );
+    addTeammemberToList({
+      firstName: newTeammemberFirstName,
+      lastName: newTeammemberLastName,
+      email: newTeammemberEmail,
+      role: newTeammemberRole,
+    });
     resetInputMask();
     setInputMaskVisible(false);
   };

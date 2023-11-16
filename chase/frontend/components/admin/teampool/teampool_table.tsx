@@ -7,20 +7,14 @@ import { Column } from "primereact/column";
 import { ConfirmPopup, confirmPopup } from "primereact/confirmpopup";
 import { Toolbar } from "primereact/toolbar";
 import useMousetrap from "mousetrap-react";
+import { Teammember } from "@/custom_types/fetching";
 
 interface TeamPoolTableProps {
-  team: Teammember[];
-  confirmDeleteAll: (event) => void;
+  team: Teammember[] | undefined | null;
+  confirmDeleteAll: (event: React.MouseEvent<HTMLButtonElement, MouseEvent>) => void;
   handleDelete: (teammember: Teammember) => void;
   setInputMaskVisible: (visible: boolean) => void;
   setUploadDialogVisible: (visible: boolean) => void;
-}
-
-interface Teammember {
-  name: string;
-  role: string;
-  email: string;
-  id: number;
 }
 
 export default function TeamPoolTable({
@@ -46,9 +40,9 @@ export default function TeamPoolTable({
               <Button
                 label={LL.admin.onboarding.teampool.DELETE_ALL()}
                 faIcon={faTrashAlt}
-                disabled={team.length === 0}
+                disabled={team?.length === 0 || !team}
                 severity="danger"
-                onClick={(event) => confirmDeleteAll(event)}
+                onClick={(event: React.MouseEvent<HTMLButtonElement, MouseEvent>) => confirmDeleteAll(event)}
               />
               <Button
                 label={LL.admin.onboarding.teampool.UPLOAD_TEAM()}
@@ -67,10 +61,10 @@ export default function TeamPoolTable({
           style={{ borderBottomLeftRadius: "0", borderBottomRightRadius: "0" }}
         />
         <DataTable
-          value={team}
+          value={team || []}
           tableStyle={{ width: "100%" }}
           emptyMessage={LL.admin.onboarding.teampool.EMPTY_MESSAGE()}
-          footer={LL.admin.onboarding.teampool.FOOTER(team.length)}
+          footer={LL.admin.onboarding.teampool.FOOTER(team?.length || 0)}
           removableSort
         >
           <Column
@@ -91,10 +85,10 @@ export default function TeamPoolTable({
           />
           <Column
             header={LL.admin.onboarding.teampool.ROLE()}
-            body={(rowData) => {
-              const roleFunction = LL.admin.onboarding.teampool.roles[rowData.role];
+            body={(rawData: Teammember) => {
+              const roleFunction = LL.admin.onboarding.teampool.roles[rawData.role];
               if (!roleFunction) {
-                return <span>{rowData.role}</span>;
+                return <span>{rawData.role}</span>;
               } else {
                 return <span>{roleFunction()}</span>;
               }

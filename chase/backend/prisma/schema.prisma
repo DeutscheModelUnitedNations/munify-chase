@@ -31,6 +31,12 @@ enum CommitteeCategory {
   ICJ /// A International Court of Justice simulation
 }
 
+enum SpeakersListCategory {
+  SPEAKERS_LIST /// A standard speakers list
+  COMMENT_LIST /// A comment list
+  MODERATED_CAUCUS /// A moderated caucus
+}
+
 enum Role {
   ADMIN
   CHAIR
@@ -58,8 +64,26 @@ model Committee {
   subCommittees      Committee[]       @relation("subCommittee")
   chairs             Team[]            @relation("chairs")
   committee_advisors Team[]            @relation("committee_advisors")
+  AgendaItem         AgendaItem[]
 
   @@unique([name, conferenceId])
+}
+
+model AgendaItem {
+  id            String         @id @default(uuid())
+  committee     Committee      @relation(fields: [committeeId], references: [id])
+  committeeId   String
+  title         String
+  description   String?
+  SpeakersLists SpeakersList[]
+  isActive      Boolean        @default(false)
+}
+
+model SpeakersList {
+  id           String               @id @default(uuid())
+  AgendaItem   AgendaItem           @relation(fields: [agendaItemId], references: [id])
+  agendaItemId String
+  type         SpeakersListCategory
 }
 
 model Team {

@@ -26,7 +26,10 @@ export default new Elysia()
       }
 
       if (!isValidCommitteeCategory(body.category)) {
-        return new Response(null, { status: 400, statusText: "Invalid Committee Category" });
+        return new Response(null, {
+          status: 400,
+          statusText: "Invalid Committee Category",
+        });
       }
 
       return db.committee.create({
@@ -37,6 +40,12 @@ export default new Elysia()
           category: body.category,
           isSubcommittee: body.isSubcommittee,
           parentId: body.parentId,
+          chairs: {
+            create: [],
+          },
+          committee_advisors: {
+            create: [],
+          },
         },
       });
     },
@@ -71,5 +80,51 @@ export default new Elysia()
       }
 
       return db.committee.delete({ where: { conferenceId, id: committeeId } });
+    }
+  )
+
+  .get(
+    "/conference/:conferenceId/agendaItem/list",
+    async ({ params: { conferenceId } }) => {
+      return db.agendaItem.findMany({
+        where: { committee: { conferenceId } },
+      });
+    }
+  )
+  .post(
+    "/conference/:conferenceId/committee/:committeeId/agendaItem",
+    ({ auth, body, params: { committeeId, conferenceId } }) => {
+      // if (!auth.permissions.isConferenceAdmin(conferenceId)) {
+      //   return new Response(null, { status: 401 });
+      // }
+
+      console.info("Hello world")
+
+      return db.agendaItem.create({
+        data: {
+          title: body.title,
+          description: body.description || null,
+          committeeId,
+        },
+      });
+    },
+    {
+      detail: {
+        description: "Creates an agenda item on this committee",
+      },
+      body: t.Object({
+        title: t.String(),
+        description: t.Optional(t.String()),
+      }),
+    }
+  )
+  .delete(
+    "/conference/:conferenceId/committee/:committeeId/agendaItem/:agendaItemId",
+    ({ auth, params: { committeeId, conferenceId, agendaItemId } }) => {
+      // if (!auth.permissions.isConferenceAdmin(conferenceId)) {
+      //   return new Response(null, { status: 401 });
+      // }
+
+      return db.agendaItem.delete({ where: { committeeId, id: agendaItemId } });
     }
   );

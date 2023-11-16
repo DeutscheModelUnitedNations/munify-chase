@@ -14,7 +14,7 @@
     "@elysiajs/eden": "^0.7.0",
     "@elysiajs/fn": "^0.6.1",
     "@elysiajs/swagger": "^0.7.0",
-    "@prisma/client": "5.3.1",
+    "@prisma/client": "latest",
     "auth": "../../auth",
     "elysia": "^0.7.1"
   },

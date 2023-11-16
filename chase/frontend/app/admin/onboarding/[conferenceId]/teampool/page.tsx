@@ -9,6 +9,11 @@ import ForwardBackButtons from "@/components/admin/onboarding/forward_back_bar";
 import TeamPoolTable from "@/components/admin/teampool/teampool_table";
 import AddTeammemberDialog from "@/components/admin/teampool/add_teammember_dialog";
 import { confirmPopup } from "primereact/confirmpopup";
+import {
+  CreateTeammemberPayload,
+  TeamRoles,
+  Teammember,
+} from "@/custom_types/fetching";
 
 export default function teampool({
   params,
@@ -19,49 +24,47 @@ export default function teampool({
   const backend = useBackend();
   const router = useRouter();
 
-  const [team, setTeam] = useState([]);
+  const [team, setTeam] = useState<Awaited<ReturnType<typeof getTeam>>>([]);
   const [inputMaskVisible, setInputMaskVisible] = useState(false);
   const [uploadDialogVisible, setUploadDialogVisible] = useState(false);
   const [updateTable, setUpdateTable] = useState(true);
 
   const [saveLoading, setSaveLoading] = useState(false);
 
-  useEffect(() => {
-    backend.conference[params.conferenceId].team.list
-      .get()
-      .then((res) => {
-        setTeam(res.data);
-      })
-      .catch((err) => {
-        toast.current.show({
-          severity: "error",
-          summary: LL.admin.onboarding.error.title(),
-          detail: LL.admin.onboarding.error.generic(),
-        });
+  async function getTeam() {
+    try {
+      const res = await backend.conference[params.conferenceId].team.list.get();
+      return res.data;
+    } catch (error) {
+      Toast.current.show({
+        severity: "error",
+        summary: LL.admin.onboarding.error.title(),
+        detail: LL.admin.onboarding.error.generic(),
       });
+    }
+  }
 
-    setUpdateTable(false);
+  useEffect(() => {
+    if (updateTable) {
+      getTeam().then((data) => {
+        setTeam(data);
+      });
+      setUpdateTable(false);
+    }
   }, [updateTable]);
 
-  const addTeammember = (
-    newTeammemberFirstName: string,
-    newTeammemberLastName: string,
-    newTeammemberEmail: string,
-    newTeammemberRole:
-      | "ADMIN"
-      | "CHAIR"
-      | "COMMITTEE_ADVISOR"
-      | "SECRETARIAT"
-      | "PARTICIPANT_CARE"
-      | "TEAM"
-      | "GUEST"
-  ) => {
+  const addTeammember = ({
+    firstName,
+    lastName,
+    email,
+    role
+  }: CreateTeammemberPayload) => {
     backend.conference[params.conferenceId].team
       .post({
-        firstName: newTeammemberFirstName,
-        lastName: newTeammemberLastName,
-        email: newTeammemberEmail,
-        role: newTeammemberRole,
+        firstName,
+        lastName,
+        email,
+        role,
       })
       .then((_res) => {
         setUpdateTable(true);
@@ -75,7 +78,7 @@ export default function teampool({
       });
   };
 
-  const confirmDeleteAll = (event) => {
+  const confirmDeleteAll = (event: React.MouseEvent<HTMLButtonElement>) => {
     confirmPopup({
       target: event.currentTarget,
       message: LL.admin.onboarding.structure.DELETE_ALL_CONFIRM(),
@@ -97,9 +100,9 @@ export default function teampool({
     });
   };
 
-  const handleDelete = (rowData) => {
+  const handleDelete = (rawData: Teammember) => {
     // backend["conference/committee/delete"]
-    backend.conference[params.conferenceId].team[rowData.id]
+    backend.conference[params.conferenceId].team[rawData.id]
       .delete()
       .then((_res) => {
         setUpdateTable(true);
@@ -134,9 +137,10 @@ export default function teampool({
         saveLoading={saveLoading}
         handleSaveFunction={handleSave}
         forwardDisabled={
-          team.length === 0 ||
-          team.filter((teammember) => teammember.role === "CHAIR").length === 0 ||
-          team.filter((teammember) => teammember.role === "ADMIN").length === 0
+          team?.length === 0 ||
+          team?.filter((teammember) => teammember.role === "CHAIR").length ===
+            0 ||
+          team?.filter((teammember) => teammember.role === "ADMIN").length === 0
         }
       />
 

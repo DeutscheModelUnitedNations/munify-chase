@@ -41,8 +41,8 @@ enum SpeakersListCategory {
 enum Role {
   ADMIN
   CHAIR
-  DELEGATE
   COMMITTEE_ADVISOR
+  DELEGATE
   OBSERVER
   NON_STATE_ACTOR
   SECRETARIAT

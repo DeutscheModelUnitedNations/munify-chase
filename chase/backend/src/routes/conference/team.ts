@@ -44,6 +44,7 @@ export default new Elysia()
     async ({ params: { conferenceId } }) => {
       return db.team.findMany({
         where: { conferenceId, role: "CHAIR" },
+        include: { chair_committee: true }
       });
     }
   )
@@ -52,6 +53,7 @@ export default new Elysia()
     async ({ params: { conferenceId } }) => {
       return db.team.findMany({
         where: { conferenceId, role: "COMMITTEE_ADVISOR" },
+        include: { advisor_committee: true }
       });
     }
   )

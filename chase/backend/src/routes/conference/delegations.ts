@@ -22,7 +22,7 @@ export default new Elysia()
 
       return db.delegation.create({
         data: {
-          alpha3Code: body.alpha3Code,
+          alpha3Code: body.alpha3Code.toLowerCase(),
           conferenceId,
           Delegates: {
             create: [],
@@ -47,11 +47,14 @@ export default new Elysia()
       // }
 
       // TODO also delete the Delegates, not only the Delegation
-      return db.delegation.delete({
-        where: {
-          id: delegationId,
-        },
-      });
+      return db.$transaction([
+        db.delegate.deleteMany({
+          where: { delegationId },
+        }),
+        db.delegation.delete({
+          where: { id: delegationId },
+        }),
+      ]);
     },
     {
       detail: {

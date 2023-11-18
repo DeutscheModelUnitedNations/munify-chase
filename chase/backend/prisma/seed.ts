@@ -132,8 +132,40 @@ async function main() {
     }
   }
   console.info(conference);
-}
+  
+  const delegations = [
+    "AFG",
+    "ALB",
+    "DZA",
+    "AND",
+    "AGO",
+    "ATG",
+    "ARG",
+    "ARM",
+    "AUS",
+    "AUT",
+    "AZE",
+    "BHS",
+    "BHR",
+    "BGD",
+    "BRB",
+    "BLR",
+    "BEL",
+    "BLZ",
+    "BEN",
+    "BTN",
+  ];
 
+  for (const delegation of delegations) {
+    await prisma.delegation.create({
+      data: {
+        conferenceId: conference.id,
+        alpha3Code: delegation,
+      },
+    });
+  }
+  
+}
 main()
   .then(async () => {
     await prisma.$disconnect();

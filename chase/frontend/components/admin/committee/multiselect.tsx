@@ -70,6 +70,12 @@ export const ChairMultiSelect = ({
           <div className="flex flex-wrap items-center gap-2">
             <span className="font-bold">{chair.firstName}</span>
             <span className="text-sm">{chair.lastName}</span>
+            {chair.chair_committee?.id !== committee.id &&
+              chair.chair_committee?.name && (
+                <span className="text-white bg-primary px-2 py-1 rounded-md text-sm">
+                  {chair.chair_committee.abbreviation}
+                </span>
+              )}
           </div>
         )}
         optionLabel="firstName"
@@ -144,6 +150,12 @@ export const AdvisorMultiSelect = ({
           <div className="flex flex-wrap items-center gap-2">
             <span className="font-bold">{advisor.firstName}</span>
             <span className="text-sm">{advisor.lastName}</span>
+            {advisor.advisor_committee?.id !== committee.id &&
+              advisor.advisor_committee?.name && (
+                <span className="text-white bg-secondary px-2 py-1 rounded-md text-sm">
+                  {advisor.advisor_committee.abbreviation}
+                </span>
+              )}
           </div>
         )}
         optionLabel="firstName"

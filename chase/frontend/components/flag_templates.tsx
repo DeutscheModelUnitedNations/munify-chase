@@ -14,7 +14,10 @@ import { useI18nContext } from "@/i18n/i18n-react";
 export function SmallFlag({
   countryCode,
   showNameOnHover = false,
-}: { countryCode: CountryCode; showNameOnHover?: boolean }) {
+}: {
+  countryCode: CountryCode;
+  showNameOnHover?: boolean;
+}) {
   const { locale } = useI18nContext();
 
   const [isHovered, setIsHovered] = useState(false);
@@ -42,7 +45,7 @@ export function SmallFlag({
           style={{ objectFit: "cover", height: "100%" }}
         />
         {isHovered && showNameOnHover && (
-          <div className="bg-primary text-white text-xs rounded-md shadow-md p-2 absolute mt-2">
+          <div className="bg-primary text-white text-xs rounded-md shadow-md p-2 absolute mt-2 z-50">
             {getCountryNameByCode(countryCode, locale)}
           </div>
         )}
@@ -51,7 +54,19 @@ export function SmallFlag({
   );
 }
 
-export function NormalFlag({ countryCode }: { countryCode: CountryCode }) {
+export function NormalFlag({ countryCode, showNameOnHover = false }: { countryCode: CountryCode, showNameOnHover?: boolean }) {
+  const { locale } = useI18nContext();
+
+  const [isHovered, setIsHovered] = useState(false);
+
+  const handleMouseEnter = () => {
+    setIsHovered(true);
+  };
+
+  const handleMouseLeave = () => {
+    setIsHovered(false);
+  };
+
   return (
     <div className="rounded-md contrast:border contrast:border-primary-100 bg-white shadow-md overflow-hidden">
       <Image
@@ -60,7 +75,14 @@ export function NormalFlag({ countryCode }: { countryCode: CountryCode }) {
         height={26}
         alt="flag"
         style={{ objectFit: "cover", height: "100%" }}
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={handleMouseLeave}
       />
+      {isHovered && showNameOnHover && (
+        <div className="bg-primary text-white text-xs rounded-md shadow-md p-2 absolute mt-2 z-50">
+          {getCountryNameByCode(countryCode, locale)}
+        </div>
+      )}
     </div>
   );
 }
@@ -68,7 +90,10 @@ export function NormalFlag({ countryCode }: { countryCode: CountryCode }) {
 export function LargeFlag({
   countryCode,
   className,
-}: { countryCode: CountryCode; className?: string }) {
+}: {
+  countryCode: CountryCode;
+  className?: string;
+}) {
   return (
     <div
       className={`rounded-md contrast:border contrast:border-primary-100 bg-white shadow-md overflow-hidden ${className}`}

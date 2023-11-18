@@ -12,12 +12,13 @@ datasource db {
 
 /// A conference entity
 model Conference {
-  id         String      @id @default(uuid())
-  name       String      @unique
+  id         String       @id @default(uuid())
+  name       String       @unique
   committees Committee[]
   start      DateTime?
   end        DateTime?
   Team       Team[]
+  Delegation Delegation[]
 }
 
 /// Consumeable token which grants the creation of a conference
@@ -52,19 +53,20 @@ enum Role {
 }
 
 model Committee {
-  id                 String            @id @default(uuid())
+  id                 String                   @id @default(uuid())
   name               String
   abbreviation       String
   category           CommitteeCategory
-  conference         Conference        @relation(fields: [conferenceId], references: [id])
+  conference         Conference               @relation(fields: [conferenceId], references: [id])
   conferenceId       String
   isSubcommittee     Boolean
-  parent             Committee?        @relation("subCommittee", fields: [parentId], references: [id])
+  parent             Committee?               @relation("subCommittee", fields: [parentId], references: [id])
   parentId           String?
-  subCommittees      Committee[]       @relation("subCommittee")
-  chairs             Team[]            @relation("chairs")
-  committee_advisors Team[]            @relation("committee_advisors")
+  subCommittees      Committee[]              @relation("subCommittee")
+  chairs             Team[]                   @relation("chairs")
+  committee_advisors Team[]                   @relation("committee_advisors")
   AgendaItem         AgendaItem[]
+  Delegates        Delegate[]
 
   @@unique([name, conferenceId])
 }
@@ -100,4 +102,20 @@ model Team {
   advisor_committeeId String?
 
   @@unique([conferenceId, email])
+}
+
+model Delegation {
+  id           String                   @id @default(uuid())
+  alpha3Code   String
+  conference   Conference               @relation(fields: [conferenceId], references: [id])
+  conferenceId String
+  Delegates   Delegate[]
+}
+
+model Delegate {
+  id           String     @id @default(uuid())
+  delegation   Delegation @relation(fields: [delegationId], references: [id])
+  delegationId String
+  committee    Committee  @relation(fields: [committeeId], references: [id])
+  committeeId  String
 }

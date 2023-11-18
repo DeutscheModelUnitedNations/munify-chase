@@ -1,3 +1,5 @@
+import { Alpha3Code } from "./custom_types";
+
 // Structure types
 export type CommitteeCategory = "COMMITTEE" | "CRISIS" | "ICJ";
 export interface Committee {
@@ -8,6 +10,11 @@ export interface Committee {
   conferenceId: string;
   isSubcommittee: boolean;
   parentId: string | null;
+  Delegates: {
+    id: string;
+    delegationId: string;
+    committeeId: string;
+  }[]
 }
 
 export interface CreateCommitteePayload {
@@ -62,4 +69,21 @@ export interface AgendaItem {
     description?: string;
     SpeakersLists?: any;
     isActive: boolean;
+}
+
+export interface Delegation {
+  id: string;
+  name: string;
+  alpha3Code: Alpha3Code;
+  conferenceId: string;
+  Delegates: {
+    id: string;
+    delegationId: string;
+    committeeId: string;
+  }[];
+}
+
+export interface CreateDelegationPayload {
+  name: string;
+  alpha3Code: Alpha3Code;
 }

@@ -15,15 +15,18 @@ export default new Elysia()
   .get(
     "/conference/:conferenceId/committee/list",
     async ({ params: { conferenceId } }) => {
-      return db.committee.findMany({ where: { conferenceId } });
+      return db.committee.findMany({
+        where: { conferenceId },
+        include: { Delegates: true },
+      });
     }
   )
   .post(
     "/conference/:conferenceId/committee",
     async ({ auth, body, params: { conferenceId } }) => {
-      if (!auth.permissions.isConferenceAdmin(conferenceId)) {
-        return new Response(null, { status: 401 });
-      }
+      // if (!auth.permissions.isConferenceAdmin(conferenceId)) {
+      //   return new Response(null, { status: 401 });
+      // }
 
       if (!isValidCommitteeCategory(body.category)) {
         return new Response(null, {
@@ -65,9 +68,9 @@ export default new Elysia()
   .delete(
     "/conference/:conferenceId/committee",
     ({ auth, params: { conferenceId } }) => {
-      if (!auth.permissions.isConferenceAdmin(conferenceId)) {
-        return new Response(null, { status: 401 });
-      }
+      // if (!auth.permissions.isConferenceAdmin(conferenceId)) {
+      //   return new Response(null, { status: 401 });
+      // }
 
       return db.committee.deleteMany({ where: { conferenceId } });
     }
@@ -75,9 +78,9 @@ export default new Elysia()
   .delete(
     "/conference/:conferenceId/committee/:committeeId",
     ({ auth, params: { committeeId, conferenceId } }) => {
-      if (!auth.permissions.isConferenceAdmin(conferenceId)) {
-        return new Response(null, { status: 401 });
-      }
+      // if (!auth.permissions.isConferenceAdmin(conferenceId)) {
+      //   return new Response(null, { status: 401 });
+      // }
 
       return db.committee.delete({ where: { conferenceId, id: committeeId } });
     }
@@ -94,11 +97,9 @@ export default new Elysia()
   .post(
     "/conference/:conferenceId/committee/:committeeId/agendaItem",
     ({ auth, body, params: { committeeId, conferenceId } }) => {
-      if (!auth.permissions.isConferenceAdmin(conferenceId)) {
-        return new Response(null, { status: 401 });
-      }
-
-      console.info("Hello world")
+      // if (!auth.permissions.isConferenceAdmin(conferenceId)) {
+      //   return new Response(null, { status: 401 });
+      // }
 
       return db.agendaItem.create({
         data: {
@@ -121,9 +122,9 @@ export default new Elysia()
   .delete(
     "/conference/:conferenceId/committee/:committeeId/agendaItem/:agendaItemId",
     ({ auth, params: { committeeId, conferenceId, agendaItemId } }) => {
-      if (!auth.permissions.isConferenceAdmin(conferenceId)) {
-        return new Response(null, { status: 401 });
-      }
+      // if (!auth.permissions.isConferenceAdmin(conferenceId)) {
+      //   return new Response(null, { status: 401 });
+      // }
 
       return db.agendaItem.delete({ where: { committeeId, id: agendaItemId } });
     }

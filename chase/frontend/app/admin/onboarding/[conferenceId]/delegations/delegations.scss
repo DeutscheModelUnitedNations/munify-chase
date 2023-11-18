@@ -1,0 +1,13 @@
+.grid-div {
+  column-gap: 0.5rem;
+  row-gap: 1rem;
+}
+.grid-header {
+  font-weight: bold;
+  position: sticky;
+  padding-bottom: 0.2rem;
+  padding-top: 1rem;
+  top: 0;
+  background-color: white;
+  z-index: 9999;
+}

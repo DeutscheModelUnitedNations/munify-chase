@@ -1,27 +1,21 @@
 "use client";
-import React, { useEffect, useRef, useState } from "react";
-
-import { useI18nContext } from "@/i18n/i18n-react";
-import { useBackend } from "@/contexts/backend";
-import { useRouter } from "next/navigation";
-import OnboardingSteps from "@/components/admin/onboarding/steps";
+import DelegationsTable from "@/components/admin/delegations/delegations_table";
 import ForwardBackButtons from "@/components/admin/onboarding/forward_back_bar";
-import { NormalFlag } from "@/components/flag_templates";
-import { Toast } from "primereact/toast";
-import { ToggleButton } from "primereact/togglebutton";
-
-import "./delegations.scss";
+import OnboardingSteps from "@/components/admin/onboarding/steps";
+import { useBackend } from "@/contexts/backend";
 import { Alpha3Code } from "@/custom_types/custom_types";
-import Button from "@/components/button";
-import { faTrashAlt } from "@fortawesome/pro-solid-svg-icons";
 import { Committee, Delegation } from "@/custom_types/fetching";
+import { useI18nContext } from "@/i18n/i18n-react";
+import { useRouter } from "next/navigation";
+import { Toast } from "primereact/toast";
+import { useEffect, useRef, useState } from "react";
 
 export default function loginVorsitz({
   params,
 }: {
   params: { conferenceId: string };
 }) {
-  const { LL } = useI18nContext();
+  const { LL, locale } = useI18nContext();
   const backend = useBackend();
   const router = useRouter();
   const toast = useRef<Toast>(null);
@@ -150,52 +144,13 @@ export default function loginVorsitz({
     <>
       <OnboardingSteps activeIndex={3} />
 
-      {committees.length !== 0 && (
-        <div
-          className="grid grid-div items-center justify-items-center"
-          style={{
-            gridTemplateColumns: `auto repeat(${committees.length}, auto) auto`,
-          }}
-        >
-          {delegations.map((delegation) => (
-            <div className="contents" key={delegation.alpha3Code}>
-              <NormalFlag
-                countryCode={delegation.alpha3Code}
-                key={delegation.id}
-                showNameOnHover
-              />
-              {Array.isArray(committees) &&
-                committees?.map((committee) => (
-                  <div key={`${committee.id}-${delegation.alpha3Code}`}>
-                    <ToggleButton
-                      onLabel={committee.abbreviation}
-                      offLabel={committee.abbreviation}
-                      checked={committee.Delegates.some(
-                        (delegate) => delegate.delegationId === delegation.id
-                      )}
-                      onChange={() =>
-                        activateOrDeactivateCommittee(
-                          params.conferenceId,
-                          delegation.id,
-                          committee.id
-                        )
-                      }
-                    />
-                  </div>
-                ))}
-              <Button
-                severity="danger"
-                outlined
-                faIcon={faTrashAlt}
-                onClick={() =>
-                  deleteDelegation(params.conferenceId, delegation.id)
-                }
-                className="h-full"
-              />
-            </div>
-          ))}
-        </div>
-      )}
+      <DelegationsTable
+        conferenceId={params.conferenceId}
+        delegations={delegations}
+        committees={committees}
+        activateOrDeactivateCommittee={activateOrDeactivateCommittee}
+        deleteDelegation={deleteDelegation}
+      />
 
       <ForwardBackButtons
         backURL={`/admin/onboarding/${params.conferenceId}/committees`}
@@ -204,3 +159,5 @@ export default function loginVorsitz({
     </>
   );
 }
+
+

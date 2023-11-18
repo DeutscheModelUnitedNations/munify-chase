@@ -73,7 +73,6 @@ export interface AgendaItem {
 
 export interface Delegation {
   id: string;
-  name: string;
   alpha3Code: Alpha3Code;
   conferenceId: string;
   Delegates: {

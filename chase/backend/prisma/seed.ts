@@ -132,7 +132,7 @@ async function main() {
     }
   }
   console.info(conference);
-  
+
   const delegations = [
     "AFG",
     "ALB",
@@ -164,7 +164,49 @@ async function main() {
       },
     });
   }
-  
+
+  // Assign Chairs and Advisords to Committees
+
+  const chairsToAssign = await prisma.team.findMany({
+    where: {
+      conferenceId: conference.id,
+      role: "CHAIR",
+    },
+  });
+
+  const advisorsToAssign = await prisma.team.findMany({
+    where: {
+      conferenceId: conference.id,
+      role: "COMMITTEE_ADVISOR",
+    },
+  });
+
+  let chairCounter = 0;
+  let advisorCounter = 0;
+  for (const committee of Object.values(committees)) {
+    if (committee) {
+      for (let i = 0; i < 3; i++) {
+        await prisma.team.update({
+          where: {
+            id: chairsToAssign[chairCounter]?.id,
+          },
+          data: {
+            chair_committeeId: committee.id,
+          },
+        });
+        chairCounter++;
+      }
+      await prisma.team.update({
+        where: {
+          id: advisorsToAssign[advisorCounter]?.id,
+        },
+        data: {
+          advisor_committeeId: committee.id,
+        },
+      });
+      advisorCounter++;
+    }
+  }
 }
 main()
   .then(async () => {

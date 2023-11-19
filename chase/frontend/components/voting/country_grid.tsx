@@ -1,4 +1,4 @@
-import { CountryCode, Voting } from "@/custom_types";
+import { CountryCode, Voting } from "@/custom_types/custom_types";
 import React, { useEffect, useState } from "react";
 import { SmallFlag } from "../flag_templates";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";

@@ -1,4 +1,4 @@
-import { CountryCode, Voting } from "@/custom_types";
+import { CountryCode, Voting } from "@/custom_types/custom_types";
 import getCountryNameByCode from "@/misc/get_country_name_by_code";
 import { faFlag } from "@fortawesome/pro-solid-svg-icons/faFlag";
 import { faGavel } from "@fortawesome/pro-solid-svg-icons/faGavel";

@@ -2,7 +2,7 @@ import React from "react";
 import WidgetTemplate from "../widget_template";
 import WidgetBoxTemplate from "../widget_box_template";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { Motion } from "@/custom_types";
+import { Motion } from "@/custom_types/custom_types";
 import {
   faCircleCheck,
   faCheckToSlot,

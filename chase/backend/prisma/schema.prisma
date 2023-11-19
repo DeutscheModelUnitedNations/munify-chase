@@ -52,21 +52,38 @@ enum Role {
   GUEST
 }
 
+model CountryBaseData {
+  id         String @id @default(uuid())
+  alpha3Code String
+}
+
+model NonStateActorBaseData {
+  id   String @id @default(uuid())
+  name String
+  code String
+}
+
+model SpecialPersonBaseData {
+  id   String @id @default(uuid())
+  name String
+  code String
+}
+
 model Committee {
-  id                 String                   @id @default(uuid())
+  id                 String            @id @default(uuid())
   name               String
   abbreviation       String
   category           CommitteeCategory
-  conference         Conference               @relation(fields: [conferenceId], references: [id])
+  conference         Conference        @relation(fields: [conferenceId], references: [id])
   conferenceId       String
   isSubcommittee     Boolean
-  parent             Committee?               @relation("subCommittee", fields: [parentId], references: [id])
+  parent             Committee?        @relation("subCommittee", fields: [parentId], references: [id])
   parentId           String?
-  subCommittees      Committee[]              @relation("subCommittee")
-  chairs             Team[]                   @relation("chairs")
-  committee_advisors Team[]                   @relation("committee_advisors")
+  subCommittees      Committee[]       @relation("subCommittee")
+  chairs             Team[]            @relation("chairs")
+  committee_advisors Team[]            @relation("committee_advisors")
   AgendaItem         AgendaItem[]
-  Delegates        Delegate[]
+  Delegates          Delegate[]
 
   @@unique([name, conferenceId])
 }
@@ -105,11 +122,13 @@ model Team {
 }
 
 model Delegation {
-  id           String                   @id @default(uuid())
-  alpha3Code   String
-  conference   Conference               @relation(fields: [conferenceId], references: [id])
+  id           String     @id @default(uuid())
+  alpha3Code   String     
+  conference   Conference @relation(fields: [conferenceId], references: [id])
   conferenceId String
-  Delegates   Delegate[]
+  Delegates    Delegate[]
+
+  @@unique([alpha3Code, conferenceId])
 }
 
 model Delegate {

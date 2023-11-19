@@ -1,14 +1,18 @@
 "use client";
+import AddDelegationDialog from "@/components/admin/delegations/add_delegation_dialog";
 import DelegationsTable from "@/components/admin/delegations/delegations_table";
 import ForwardBackButtons from "@/components/admin/onboarding/forward_back_bar";
 import OnboardingSteps from "@/components/admin/onboarding/steps";
 import { useBackend } from "@/contexts/backend";
-import { Alpha3Code } from "@/custom_types/custom_types";
+import { Alpha3Code, CountryCode } from "@/custom_types/custom_types";
 import { Committee, Delegation } from "@/custom_types/fetching";
 import { useI18nContext } from "@/i18n/i18n-react";
 import { useRouter } from "next/navigation";
 import { Toast } from "primereact/toast";
 import { useEffect, useRef, useState } from "react";
+import useMousetrap from "mousetrap-react";
+
+
 
 export default function loginVorsitz({
   params,
@@ -23,6 +27,7 @@ export default function loginVorsitz({
   const [update, setUpdate] = useState(true);
   const [committees, setCommittees] = useState<Committee[]>([]);
   const [delegations, setDelegations] = useState<Delegation[]>([]);
+  const [inputMaskVisible, setInputMaskVisible] = useState(false);
 
   async function getCommittees(id: string) {
     const res = await backend.conference[id].committee.list
@@ -51,7 +56,7 @@ export default function loginVorsitz({
   }
 
   async function createDelegation(id: string, alpha3Code: Alpha3Code) {
-    const res = await backend.conference[id].delegations.create
+    await backend.conference[id].delegations.create
       .post({
         alpha3Code,
       })
@@ -62,6 +67,7 @@ export default function loginVorsitz({
           detail: LL.admin.onboarding.error.generic(),
         });
       });
+      setUpdate(true);
   }
 
   async function deleteDelegation(id: string, delegationId: string) {
@@ -140,6 +146,10 @@ export default function loginVorsitz({
     setUpdate(false);
   }, [update]);
 
+  useMousetrap("n", () => {
+    setInputMaskVisible(true);
+  });
+
   return (
     <>
       <OnboardingSteps activeIndex={3} />
@@ -150,6 +160,16 @@ export default function loginVorsitz({
         committees={committees}
         activateOrDeactivateCommittee={activateOrDeactivateCommittee}
         deleteDelegation={deleteDelegation}
+        openAddDelegationDialog={setInputMaskVisible}
+      />
+
+      <AddDelegationDialog
+        inputMaskVisible={inputMaskVisible}
+        setInputMaskVisible={setInputMaskVisible}
+        addDelegationToList={(alpha3Code: Alpha3Code) => {
+          createDelegation(params.conferenceId, alpha3Code);
+          setUpdate(true);
+        }}
       />
 
       <ForwardBackButtons
@@ -159,5 +179,3 @@ export default function loginVorsitz({
     </>
   );
 }
-
-

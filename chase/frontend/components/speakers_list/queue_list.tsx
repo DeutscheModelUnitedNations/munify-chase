@@ -1,5 +1,5 @@
 import React from "react";
-import { CountryCode, SpeakersListData } from "@/custom_types";
+import { CountryCode, SpeakersListData } from "@/custom_types/custom_types";
 import Timeline from "@components/speakers_list/timeline";
 import getCountryNameByCode from "@/misc/get_country_name_by_code";
 import WidgetBoxTemplate from "../widget_box_template";

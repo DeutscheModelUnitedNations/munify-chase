@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { CountryCode, Voting } from "@/custom_types";
+import { CountryCode, Voting } from "@/custom_types/custom_types";
 import { Button } from "primereact/button";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {

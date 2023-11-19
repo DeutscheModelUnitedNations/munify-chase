@@ -5,14 +5,14 @@ import { useI18nContext } from "@/i18n/i18n-react";
 import getCountryNameByCode from "@/misc/get_country_name_by_code";
 import {
   faCheck,
-  faPencilAlt,
   faPlus,
   faTrashAlt,
+  faXmark
 } from "@fortawesome/pro-solid-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Column } from "primereact/column";
-import { DataTable } from "primereact/datatable";
-import { ToggleButton } from "primereact/togglebutton";
+import {
+  DataTable
+} from "primereact/datatable";
 import { Toolbar } from "primereact/toolbar";
 
 type DelegationsTableProps = {
@@ -25,6 +25,7 @@ type DelegationsTableProps = {
     committeeId: string
   ) => void;
   deleteDelegation: (conferenceId: string, delegationId: string) => void;
+  openAddDelegationDialog: (state: boolean) => void;
 };
 
 export default function DelegationsTable({
@@ -33,8 +34,28 @@ export default function DelegationsTable({
   committees,
   activateOrDeactivateCommittee,
   deleteDelegation,
+  openAddDelegationDialog,
 }: DelegationsTableProps) {
   const { LL, locale } = useI18nContext();
+
+  const delegationIsActive = (delegation: Delegation, committee: Committee) => {
+    return committee.Delegates.some(
+      (delegate) => delegate.delegationId === delegation.id
+    );
+  };
+
+  const CountCard = ({
+    count,
+    committee,
+  }: {
+    count: number;
+    committee: string;
+  }) => (
+    <div className="flex py-3 px-6 bg-white flex-col items-center justify-center rounded-md">
+      <div className="text-sm font-normal">{committee}</div>
+      <div className="text-2xl">{count}</div>
+    </div>
+  );
 
   return (
     <>
@@ -46,7 +67,7 @@ export default function DelegationsTable({
                 label="Add Delegation"
                 faIcon={faPlus}
                 keyboardShortcut="N"
-                onClick={() => {}}
+                onClick={() => openAddDelegationDialog(true)}
               />
             </div>
           }
@@ -56,22 +77,40 @@ export default function DelegationsTable({
           value={delegations}
           className="mb-4"
           emptyMessage="No delegations found"
-          footer="Sum of delegations: "
+          footer={
+            <div className="flex justify-start gap-3">
+              <CountCard
+                count={delegations.length}
+                committee="Total"
+              />
+              {committees?.map((committee) => (
+                <CountCard
+                key={committee.id}
+                count={
+                  delegations.filter((delegation) =>
+                    delegationIsActive(delegation, committee)
+                  ).length
+                }
+                committee={committee.abbreviation}
+              />
+              ))}
+            </div>
+          }
           removableSort
         >
-          <Column
-            body={(delegation) => (
-              <span>{getCountryNameByCode(delegation.alpha3Code, locale)}</span>
-            )}
-            header="Delegation"
-            sortable
-          />
           <Column
             body={(delegation) => (
               <div className="flex justify-center">
                 <NormalFlag countryCode={delegation.alpha3Code} />
               </div>
             )}
+          />
+          <Column
+            body={(delegation) => (
+              <span>{getCountryNameByCode(delegation.alpha3Code, locale)}</span>
+            )}
+            header="Delegation"
+            sortable
           />
           {Array.isArray(committees) &&
             committees?.map((committee) => (
@@ -80,27 +119,34 @@ export default function DelegationsTable({
                 header={committee.abbreviation}
                 alignHeader={"center"}
                 align={"center"}
-                body={(delegation) => {
-                  if (
-                    committee.Delegates.some(
-                      (delegate) => delegate.delegationId === delegation.id
-                    )
-                  ) {
-                    return <FontAwesomeIcon icon={faCheck} />;
-                  }
-                }}
+                body={(delegation) => (
+                  <Button
+                    faIcon={
+                      delegationIsActive(delegation, committee)
+                        ? faCheck
+                        : faXmark
+                    }
+                    size="small"
+                    text={!delegationIsActive(delegation, committee)}
+                    severity={
+                      delegationIsActive(delegation, committee)
+                        ? "primary"
+                        : "danger"
+                    }
+                    onClick={() =>
+                      activateOrDeactivateCommittee(
+                        conferenceId,
+                        delegation.id,
+                        committee.id
+                      )
+                    }
+                  />
+                )}
               />
             ))}
           <Column
             body={(delegation) => (
               <>
-                <Button
-                  severity="primary"
-                  text
-                  faIcon={faPencilAlt}
-                  onClick={() => editDelegation(delegation.id)}
-                  className="h-full"
-                />
                 <Button
                   severity="danger"
                   text

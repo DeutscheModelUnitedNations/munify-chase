@@ -4,7 +4,7 @@ import HeaderTemplate, { HeaderInfoBox } from "@/components/header_template";
 import WidgetBoxTemplate from "@/components/widget_box_template";
 import { ScrollPanel } from "primereact/scrollpanel";
 import { SelectButton } from "primereact/selectbutton";
-import { Attendance } from "@/custom_types";
+import { Attendance } from "@/custom_types/custom_types";
 import WidgetTemplate from "@/components/widget_template";
 import getCountryNameByCode from "@/misc/get_country_name_by_code";
 import { NormalFlag as Flag } from "@/components/flag_templates";

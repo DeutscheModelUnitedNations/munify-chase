@@ -1,19 +1,18 @@
-import React, { useContext, useEffect, useState } from "react";
+import { ToastContext } from "@/contexts/messages/toast";
+import { CountryCode } from "@/custom_types/custom_types";
+import { useI18nContext } from "@/i18n/i18n-react";
+import getCountryNameByCode from "@/misc/get_country_name_by_code";
+import Button from "@components/button";
+import { faPlus, faTimes } from "@fortawesome/pro-solid-svg-icons";
+import Fuse from "fuse.js";
+import useMousetrap from "mousetrap-react";
 import {
   AutoComplete,
   AutoCompleteCompleteEvent,
 } from "primereact/autocomplete";
-import getCountryNameByCode from "@/misc/get_country_name_by_code";
-import { useI18nContext } from "@/i18n/i18n-react";
-import Button from "@components/button";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faPlus, faTimes } from "@fortawesome/pro-solid-svg-icons";
+import { useContext, useEffect, useState } from "react";
 import { SmallFlag } from "../flag_templates";
-import { CountryCode } from "@/custom_types";
-import Fuse from "fuse.js";
-import { ToastContext } from "@/contexts/messages/toast";
-import { IconProp } from "@fortawesome/fontawesome-svg-core";
-import useMousetrap from "mousetrap-react";
+import CountryAutoComplete from "./country_auto_complete";
 
 interface CountryData {
   alpha3: CountryCode;
@@ -45,85 +44,23 @@ export default function AddSpeakerOverlay({
   closeOverlay: () => void;
   typeOfList: string;
 }) {
-  const { LL, locale } = useI18nContext();
+  const { LL } = useI18nContext();
   const { showToast } = useContext(ToastContext);
 
-  const [countries, setCountries] = useState<CountryData[] | null>(null);
-  const [query, setQuery] = useState<string>("");
-  const [filteredCountries, setFilteredCountries] = useState<CountryData[]>([]);
   const [selectedCountry, setSelectedCountry] = useState<CountryData | null>(
-    null,
+    null
   );
-  const [fuse, setFuse] = useState<Fuse<CountryData> | null>(null);
-
-  useEffect(() => {
-    if (!listOfAllCountries) return;
-    const countryData: CountryData[] = listOfAllCountries.map(
-      (country: CountryCode) => {
-        return {
-          alpha3: country,
-          name: getCountryNameByCode(country, locale),
-        };
-      },
-    );
-    setCountries(countryData);
-
-    const options = {
-      keys: ["name", "alpha3"],
-      includeScore: true,
-    };
-    setFuse(new Fuse(countryData, options));
-  }, [listOfAllCountries, locale]);
-
-  useEffect(() => {
-    if (selectedCountry) {
-      setQuery(selectedCountry.name);
-    }
-  }, [selectedCountry]);
-
-  useEffect(() => {
-    if (query === "") {
-      setSelectedCountry(null);
-    } else {
-      const country = countries?.find((country) => country.name === query);
-      if (country) {
-        setSelectedCountry(country);
-      }
-    }
-  }, [query]);
-
-  const searchCountry = (event: AutoCompleteCompleteEvent) => {
-    if (!fuse) return;
-
-    let filteredCountries;
-    if (!event.query.trim().length) {
-      filteredCountries = countries ? [...countries] : [];
-    } else {
-      const results = fuse.search(event.query);
-      filteredCountries = results.map((result) => result.item);
-    }
-    setFilteredCountries(filteredCountries);
-  };
-
-  const countryTemplate = (item: CountryData) => {
-    return (
-      <div className="flex items-center">
-        <SmallFlag countryCode={item.alpha3} />
-        <div className="ml-2">{item.name}</div>
-      </div>
-    );
-  };
 
   const sendAddSpeaker = () => {
     if (selectedCountry) {
       showToast({
         severity: "success",
         summary: LL.chairs.speakersList.addSpeakerOverlay.TOAST_ADDED_SUMMARY(
-          selectedCountry.name,
+          selectedCountry.name
         ),
         detail:
           LL.chairs.speakersList.addSpeakerOverlay.TOAST_ADDED_DETAIL(
-            typeOfList,
+            typeOfList
           ),
         sticky: false,
       });
@@ -149,34 +86,8 @@ export default function AddSpeakerOverlay({
   return (
     <>
       <div className="flex flex-col gap-5 mt-1">
-        <AutoComplete
-          value={selectedCountry}
-          suggestions={filteredCountries}
-          completeMethod={searchCountry}
-          field={"name"}
-          onChange={(e) => setSelectedCountry(e.value)}
-          dropdown
-          dropdownMode="blank"
-          itemTemplate={countryTemplate}
-          placeholder={LL.chairs.speakersList.addSpeakerOverlay.PLACEHOLDER()}
-          autoFocus
-          autoHighlight
-          forceSelection
-          onKeyDown={(e) => {
-            if (e.key === "Escape") {
-              closeOverlay();
-            } else if (e.key === "Enter" && e.shiftKey) {
-              if (selectedCountry?.alpha3) {
-                sendAddSpeaker();
-                closeOverlay();
-              }
-            } else if (e.key === "Enter") {
-              if (selectedCountry?.alpha3) {
-                sendAddSpeaker();
-              }
-            }
-          }}
-        />
+        <CountryAutoComplete listOfAllCountries={listOfAllCountries} />
+
         <div className="flex gap-3 justify-end flex-wrap">
           <Button
             label={LL.chairs.speakersList.addSpeakerOverlay.BUTTON_CANCEL()}
@@ -205,6 +116,7 @@ export default function AddSpeakerOverlay({
             }}
             keyboardShortcut="⏎"
           />
+          ac
         </div>
       </div>
     </>

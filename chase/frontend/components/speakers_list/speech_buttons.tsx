@@ -17,7 +17,7 @@ import {
 } from "@fortawesome/pro-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useI18nContext } from "@/i18n/i18n-react";
-import { CountryCode } from "@/custom_types";
+import { CountryCode } from "@/custom_types/custom_types";
 import AddSpeakerOverlay from "./add_speaker";
 import ChangeSpeechTimeOverlay from "./change_speech_time";
 import { IconProp } from "@fortawesome/fontawesome-svg-core";

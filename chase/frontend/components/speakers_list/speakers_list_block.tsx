@@ -2,9 +2,9 @@ import React from "react";
 import WidgetTemplate from "@/components/widget_template";
 import SpeakerBlock from "@/components/speakers_list/speaker_block";
 import SpeakerQueueList from "@/components/speakers_list/queue_list";
-import { CountryCode } from "@/custom_types";
+import { CountryCode } from "@/custom_types/custom_types";
 
-import { SpeakersListData } from "@/custom_types";
+import { SpeakersListData } from "@/custom_types/custom_types";
 import { useI18nContext } from "@/i18n/i18n-react";
 import NoDataPlaceholder from "../no_data_placeholder";
 

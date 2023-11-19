@@ -1,4 +1,4 @@
-import { CountryCode, Speaker } from "@/custom_types";
+import { CountryCode, Speaker } from "@/custom_types/custom_types";
 import React from "react";
 import FlipMove from "react-flip-move";
 

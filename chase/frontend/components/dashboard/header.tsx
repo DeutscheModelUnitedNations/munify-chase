@@ -1,6 +1,6 @@
 import React from "react";
 import getCountryNameByCode from "../../misc/get_country_name_by_code";
-import { CountryCode } from "@/custom_types";
+import { CountryCode } from "@/custom_types/custom_types";
 import HeaderTemplate from "../header_template";
 import { useI18nContext } from "@/i18n/i18n-react";
 import { LargeFlag } from "../flag_templates";

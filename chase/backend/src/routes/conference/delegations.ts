@@ -1,4 +1,5 @@
 import { t, Elysia } from "elysia";
+import { Prisma } from "@prisma/client";
 import { db } from "../../../prisma/db";
 import { auth } from "../../plugins/auth";
 
@@ -20,15 +21,37 @@ export default new Elysia()
       //     return new Response(null, { status: 401 });
       //   }
 
-      return db.delegation.create({
-        data: {
-          alpha3Code: body.alpha3Code.toLowerCase(),
-          conferenceId,
-          Delegates: {
-            create: [],
+      try {
+        const delegation = await db.delegation.create({
+          data: {
+            alpha3Code: body.alpha3Code.toLowerCase(),
+            conferenceId,
+            Delegates: {
+              create: [],
+            },
           },
-        },
-      });
+        });
+
+        if (body.committeeIds) {
+          for (const committeeId of body.committeeIds) {
+            await db.delegate.create({
+              data: {
+                committeeId,
+                delegationId: delegation.id,
+              },
+            });
+          }
+        }
+
+        return new Response(null, { status: 200 });
+
+      } catch (e) {
+        if (e.code === "P2002") {
+          return new Response(null, { status: 409 });
+        } else {
+          return new Response(null, { status: 500 });
+        }
+      }
     },
     {
       detail: {
@@ -36,6 +59,7 @@ export default new Elysia()
       },
       body: t.Object({
         alpha3Code: t.String(),
+        committeeIds: t.Optional(t.Array(t.String())),
       }),
     }
   )
@@ -87,10 +111,7 @@ export default new Elysia()
 
       // Check if committees are already connected
       if (connection) {
-        return new Response(
-        connection.id,
-          { status: 208 }
-        );
+        return new Response(connection.id, { status: 208 });
       }
 
       return db.delegate.create({

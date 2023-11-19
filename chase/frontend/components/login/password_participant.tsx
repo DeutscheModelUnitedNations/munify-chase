@@ -10,7 +10,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import getFlagPathByCode from "@/misc/get_flag_path_by_code";
-import { CountryCode } from "@/custom_types";
+import { CountryCode } from "@/custom_types/custom_types";
 import { useI18nContext } from "@/i18n/i18n-react";
 
 /**

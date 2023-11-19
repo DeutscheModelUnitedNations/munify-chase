@@ -21,7 +21,6 @@ export default function RootLayout({
 }: {
   children: React.ReactNode;
   params: { conferenceId: string };
-  
 }) {
   const { LL } = useI18nContext();
   const router = useRouter();
@@ -42,9 +41,21 @@ export default function RootLayout({
   useMousetrap("ctrl+shift+s", (e) => saveAndQuit(e));
 
   useEffect(() => {
-    backend.conference[params.conferenceId].verifyAdmin.get()
+    backend.conference[params.conferenceId].verifyAdmin
+      .get()
       .then((response) => {
         if (!response) {
+          router.push("/admin/login");
+        }
+      })
+      .catch((error) => {
+        router.push("/admin/login");
+      });
+
+    backend.conference[params.conferenceId]
+      .get()
+      .then((response) => {
+        if (!response?.data?.id) {
           router.push("/admin/login");
         }
       })

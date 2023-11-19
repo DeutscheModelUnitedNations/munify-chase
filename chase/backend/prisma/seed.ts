@@ -156,13 +156,17 @@ async function main() {
     "BTN",
   ];
 
+  const createdDelegations = [];
+
   for (const delegation of delegations) {
-    await prisma.delegation.create({
-      data: {
-        conferenceId: conference.id,
-        alpha3Code: delegation,
-      },
-    });
+    createdDelegations.push(
+      await prisma.delegation.create({
+        data: {
+          conferenceId: conference.id,
+          alpha3Code: delegation,
+        },
+      })
+    );
   }
 
   // Assign Chairs and Advisords to Committees
@@ -205,6 +209,33 @@ async function main() {
         },
       });
       advisorCounter++;
+    }
+  }
+
+  for (const delegation of createdDelegations) {
+    await prisma.delegate.create({
+      data: {
+        committeeId: committees.GV?.id,
+        delegationId: delegation.id,
+      },
+    });
+
+    if (Math.random() > 0.4) {
+      await prisma.delegate.create({
+        data: {
+          committeeId: committees.HA1?.id,
+          delegationId: delegation.id,
+        },
+      });
+    }
+
+    if (Math.random() > 0.7) {
+      await prisma.delegate.create({
+        data: {
+          committeeId: committees.SR?.id,
+          delegationId: delegation.id,
+        },
+      });
     }
   }
 }

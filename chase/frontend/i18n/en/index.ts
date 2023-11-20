@@ -43,6 +43,7 @@ const en = {
     WHITEBOARD: "Whiteboard",
     RESOLUTIONS: "Resolutions",
     PRESENTATION: "Presentation",
+    NEWS: "Conference Press",
   },
 
   settings: {

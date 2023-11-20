@@ -20,7 +20,7 @@ const i = setInterval(async () => {
     clearInterval(i);
   } catch (error) {
     if (error?.cause?.code === "ECONNREFUSED") {
-      // TODO NO-163: make these logs not so spammy
+      // TODO: make these logs not so spammy
       console.error(
         "Fetching the openapi specs from backend failed (ECONNREFUSED). When starting the dev server, this may happen when the backend is not ready yet.",
       );

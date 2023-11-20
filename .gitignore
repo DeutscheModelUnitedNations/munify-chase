@@ -17,3 +17,4 @@ next-env.d.ts
 .postgres-data
 .redis-data
 fontawesome-pro-6.4.2/
+.env

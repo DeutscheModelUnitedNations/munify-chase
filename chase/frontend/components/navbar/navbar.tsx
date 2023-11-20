@@ -9,9 +9,13 @@ import SettingsSidebar from "@/components/navbar/settings_sidebar";
 import { useRouter } from "next/navigation";
 import { confirmDialog, ConfirmDialog } from "primereact/confirmdialog";
 
-import { faRightFromBracket, faGear } from "@fortawesome/free-solid-svg-icons";
+import {
+  faRightFromBracket,
+  faUserGear,
+} from "@fortawesome/pro-solid-svg-icons";
 
 import { useI18nContext } from "@/i18n/i18n-react";
+import { IconProp } from "@fortawesome/fontawesome-svg-core";
 
 /**
  * This Component is used in the Layout Component.
@@ -68,13 +72,13 @@ export default function Navbar({ children }: { children: React.ReactNode }) {
             setSettingsSidebarVisible={setSettingsSidebarVisible}
           />
           <NavButton
-            icon={faGear}
+            icon={faUserGear as IconProp}
             onClick={() => setSettingsSidebarVisible(true)}
             title={LL.navbar.SETTINGS()}
           />
           <ConfirmDialog />
           <NavButton
-            icon={faRightFromBracket}
+            icon={faRightFromBracket as IconProp}
             onClick={confirmLogout}
             title={LL.navbar.LOGOUT()}
           />

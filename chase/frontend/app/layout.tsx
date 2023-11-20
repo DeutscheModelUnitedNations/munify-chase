@@ -51,7 +51,7 @@ export default function RootLayout({
         <TypesafeI18n locale={locale}>
           <html lang="en">
             <Head>
-              <title>Chase</title> {/* TODO NO-127 Make title work */}
+              <title>Chase</title> {/* TODO Make title work */}
             </Head>
             <body className={inter.className}>{children}</body>
           </html>

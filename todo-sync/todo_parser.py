@@ -1,8 +1,6 @@
 import json
 import os
 import re
-import time
-from tqdm import tqdm
 
 class TodoItem:
     def __init__(self, file_path, line_number, content) -> None:

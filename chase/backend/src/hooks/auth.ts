@@ -14,7 +14,7 @@ declare module "fastify" {
   }
 }
 
-// TODO NO-116 investigate if this is the way
+// TODO investigate if this is the way
 // decorate to optimize the js engine
 // https://www.fastify.io/docs/latest/Reference/Decorators/
 // decorating with a shared object is ok here, since we replace the value at req time with a new object

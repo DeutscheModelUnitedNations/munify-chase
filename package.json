@@ -17,7 +17,5 @@
     "rome": "12.1.1"
   },
   "dependencies": {
-    "@notionhq/client": "^2.2.9",
-    "dotenv": "^16.3.1"
   }
 }

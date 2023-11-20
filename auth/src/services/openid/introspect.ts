@@ -18,7 +18,7 @@ function generateToken() {
     .setIssuedAt()
     .setExpirationTime("1h")
     .setIssuer(parsedSecret.clientId)
-    .setAudience("http://localhost:7788") //TODO NO-113 replace with real values
+    .setAudience("http://localhost:7788") //TODO replace with real values
     .setSubject(parsedSecret.clientId)
     .setProtectedHeader({ alg: "RS256", kid: parsedSecret.keyId })
     .sign(createPrivateKey(parsedSecret.key));
@@ -33,7 +33,7 @@ setInterval(() => {
 const wellKnownData = (async () => {
   async function run() {
     try {
-      //TODO NO-114 could be a good idea to use openid-client for at least fetching the well known data and creating an issuer instance
+      //TODO could be a good idea to use openid-client for at least fetching the well known data and creating an issuer instance
       const res = await fetch(
         `${process.env.OPENID_URL}/.well-known/openid-configuration`,
       );

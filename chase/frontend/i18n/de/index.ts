@@ -43,6 +43,7 @@ const de = {
     WHITEBOARD: "Whiteboard",
     RESOLUTIONS: "Resolutionen",
     PRESENTATION: "Präsentation",
+    NEWS: "Konferenzpresse",
   },
 
   settings: {

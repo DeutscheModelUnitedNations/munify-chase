@@ -19,7 +19,7 @@ export default function Home() {
           <p className="text-white text-9xl mb-3 mt-10">404</p>
           <p className="text-white text-1xl mb-10">Page Not Found</p>
           <Link href="/">
-            {/* TODO NO-129: Fix this issue with the Link not leading to home */}
+            {/* TODO: Fix this issue with the Link not leading to home */}
             <Button severity="warning" label="Back to Home" icon="pi pi-link" />
           </Link>
         </div>

@@ -80,7 +80,7 @@ function CountryCard({
       <div className="flex-1" />
       {chairOptions && (
         <>
-          {/* TODO NO-158 Find intuitive way to change the oder of the list */}
+          {/* TODO Find intuitive way to change the oder of the list */}
           <Button
             icon={<FontAwesomeIcon icon={faXmark as IconProp} />}
             text

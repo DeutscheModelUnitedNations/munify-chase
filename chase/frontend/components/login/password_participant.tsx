@@ -20,7 +20,7 @@ import { useI18nContext } from "@/i18n/i18n-react";
  * Participants that represent a Non-State Actor (NSA) can select their committee by clicking on the committee placeholder,
  * which displays a plus if no committee is selected yet and opens a sidebar with a list of all committees.
  */
-// TODO NO-143: Type this function properly
+// TODO: Type this function properly
 // @ts-ignore
 export default function usernameLogin({ changeLoginState }) {
   const router = useRouter();

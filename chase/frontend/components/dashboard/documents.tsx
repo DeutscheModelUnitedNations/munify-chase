@@ -27,7 +27,7 @@ export default function DocumentsWidget({
       <WidgetTemplate
         cardTitle={LL.participants.dashboard.widgetHeadlines.DOCUMENTS()}
       >
-        {/* TODO NO-136 Find a better solution for height limiting */}
+        {/* TODO Find a better solution for height limiting */}
         <ScrollPanel className="custom-scrollbar" style={{ maxHeight: "50vh" }}>
           <FlipMove
             duration={500}

@@ -82,7 +82,7 @@ export default function ActionsWidget() {
 
   // @ts-ignore
   const categoryOptionSelectedTemplate = (option: DropdownOptions, props) => {
-    // TODO NO-132 type "props" correctly
+// TODO type "props" correctly
     if (option) {
       return categoryOptionTemplate(option);
     }

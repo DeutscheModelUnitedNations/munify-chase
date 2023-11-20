@@ -10,7 +10,7 @@
     "install-all:auth": "cd ./auth && npm i && npx npm-check-updates",
     "format": "rome format . --write",
     "lint": "rome check . --apply",
-    "test": "echo TO DO"
+    "test": "echo TODO"
   },
   "devDependencies": {
     "npm-run-all": "^4.1.5",

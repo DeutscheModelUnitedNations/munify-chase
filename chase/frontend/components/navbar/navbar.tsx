@@ -31,7 +31,7 @@ export default function Navbar({ children }: { children: React.ReactNode }) {
   const [settingsSidebarVisible, setSettingsSidebarVisible] = useState(false);
 
   const acceptLogout = () => {
-    // TODO NO-152: logout
+    // TODO: logout
     router.push("/login/participant");
   };
 

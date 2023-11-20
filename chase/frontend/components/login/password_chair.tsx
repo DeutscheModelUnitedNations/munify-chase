@@ -11,7 +11,7 @@ import { useI18nContext } from "@/i18n/i18n-react";
  * This Component is used in the Login Page for the Chair. It is the second step of the login process.
  * It displays a form, where the chair can enter the password. The password is verified by the server.
  */
-// TODO NO-139: Type this function properly
+// TODO: Type this function properly
 // @ts-ignore
 export default function usernameLogin({ changeLoginState }) {
   const { LL } = useI18nContext();

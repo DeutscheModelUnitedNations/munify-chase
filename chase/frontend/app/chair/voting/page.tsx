@@ -27,9 +27,9 @@ export default function ChairVoting() {
     data[0].motionId,
   );
 
-  // TODO NO-124: Add dialog for creating a new motion
-  // TODO NO-125: Add dialog for creating a new voting out of a motion
-  // TODO NO-126: Add dialog for changing the information of a voting
+  // TODO: Add dialog for creating a new motion
+  // TODO: Add dialog for creating a new voting out of a motion
+  // TODO: Add dialog for changing the information of a voting
 
   return (
     <>

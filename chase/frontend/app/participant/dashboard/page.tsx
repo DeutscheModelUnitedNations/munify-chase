@@ -28,7 +28,7 @@ export default function participant_dashboard() {
   }, []);
 
   useEffect(() => {
-    // TODO NO-130 only for testing
+    // TODO only for testing
     const timeout = setTimeout(() => {
       votingAlert(() => Router.push("/participant/voting"), LL);
     }, 10000);

@@ -28,6 +28,15 @@ jobs:
       # - name: Install dependencies
       #   run: pip install -r requirements.txt
 
+      - name: Show Folder
+        run: |
+          cd /home/runner/work/munify
+          ls
+          cd munify
+          ls
+          cd todo-sync
+          ls
+
       - name: Generate HTML
         run: python todo-sync/todo_sync.py
 

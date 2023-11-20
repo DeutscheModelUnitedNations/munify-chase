@@ -30,12 +30,7 @@ jobs:
 
       - name: Show Folder
         run: |
-          cd /home/runner/work/munify
-          ls
-          cd munify
-          ls
-          cd todo-sync
-          ls
+          cd /home/runner/work/munify && ls -la
 
       - name: Generate HTML
         run: python todo-sync/todo_sync.py

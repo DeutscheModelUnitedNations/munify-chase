@@ -33,6 +33,7 @@
     "chase-backend": "../backend/",
     "framer-motion": "^10.16.4",
     "fuse.js": "^6.6.2",
+    "mousetrap-react": "^0.0.3",
     "next": "13.4.13",
     "oidc-client-ts": "^2.2.4",
     "postcss": "8.4.27",

@@ -42,7 +42,7 @@ if (isAuthMocked()) {
   setInterval(async () => {
     Bun.write(
       devpath,
-      JSON.stringify({ permissions: mockedPermissions, user: mockedUser })
+      JSON.stringify({ permissions: mockedPermissions, user: mockedUser }),
     );
   }, 1000);
 }
@@ -57,7 +57,7 @@ const mockedIntrospection: { user: User; permissions: Permissions } = {
       // we dont really care about other permissions in this scenario
       if (userId !== mockedUser.id) {
         console.info(
-          "tried to set metadata for user that is not the mocked user"
+          "tried to set metadata for user that is not the mocked user",
         );
         return;
       }
@@ -65,7 +65,7 @@ const mockedIntrospection: { user: User; permissions: Permissions } = {
         // biome-ignore lint/suspicious/noExplicitAny:
         mockedPermissions[key as keyof Metadata] = data as any;
       });
-    }
+    },
   ),
 };
 

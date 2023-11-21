@@ -338,26 +338,26 @@ async function main() {
   console.info(conference);
 
   const delegations = [
-    "AFG",
-    "ALB",
-    "DZA",
-    "AND",
-    "AGO",
-    "ATG",
-    "ARG",
-    "ARM",
-    "AUS",
-    "AUT",
-    "AZE",
-    "BHS",
-    "BHR",
-    "BGD",
-    "BRB",
-    "BLR",
-    "BEL",
-    "BLZ",
-    "BEN",
-    "BTN",
+    "afg",
+    "alb",
+    "dza",
+    "and",
+    "ago",
+    "atg",
+    "arg",
+    "arm",
+    "aus",
+    "aut",
+    "aze",
+    "bhs",
+    "bhr",
+    "bgd",
+    "brb",
+    "blr",
+    "bel",
+    "blz",
+    "ben",
+    "btn",
   ];
 
   const createdDelegations = [];
@@ -367,7 +367,7 @@ async function main() {
       await prisma.delegation.create({
         data: {
           conferenceId: conference.id,
-          alpha3Code: delegation.toLowerCase(),
+          alpha3Code: delegation,
         },
       })
     );

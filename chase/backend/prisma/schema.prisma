@@ -123,7 +123,7 @@ model Team {
 
 model Delegation {
   id           String     @id @default(uuid())
-  alpha3Code   String     
+  alpha3Code   String
   conference   Conference @relation(fields: [conferenceId], references: [id])
   conferenceId String
   Delegates    Delegate[]

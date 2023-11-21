@@ -5,7 +5,7 @@ CREATE TYPE "CommitteeCategory" AS ENUM ('COMMITTEE', 'CRISIS', 'ICJ');
 CREATE TYPE "SpeakersListCategory" AS ENUM ('SPEAKERS_LIST', 'COMMENT_LIST', 'MODERATED_CAUCUS');
 
 -- CreateEnum
-CREATE TYPE "Role" AS ENUM ('ADMIN', 'CHAIR', 'DELEGATE', 'COMMITTEE_ADVISOR', 'OBSERVER', 'NON_STATE_ACTOR', 'SECRETARIAT', 'PRESS_CORPS', 'PARTICIPANT_CARE', 'TEAM', 'GUEST');
+CREATE TYPE "Role" AS ENUM ('ADMIN', 'CHAIR', 'COMMITTEE_ADVISOR', 'DELEGATE', 'OBSERVER', 'NON_STATE_ACTOR', 'SECRETARIAT', 'PRESS_CORPS', 'PARTICIPANT_CARE', 'TEAM', 'GUEST');
 
 -- CreateTable
 CREATE TABLE "Conference" (
@@ -22,6 +22,32 @@ CREATE TABLE "ConferenceCreateToken" (
     "token" TEXT NOT NULL,
 
     CONSTRAINT "ConferenceCreateToken_pkey" PRIMARY KEY ("token")
+);
+
+-- CreateTable
+CREATE TABLE "CountryBaseData" (
+    "id" TEXT NOT NULL,
+    "alpha3Code" TEXT NOT NULL,
+
+    CONSTRAINT "CountryBaseData_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "NonStateActorBaseData" (
+    "id" TEXT NOT NULL,
+    "name" TEXT NOT NULL,
+    "code" TEXT NOT NULL,
+
+    CONSTRAINT "NonStateActorBaseData_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "SpecialPersonBaseData" (
+    "id" TEXT NOT NULL,
+    "name" TEXT NOT NULL,
+    "code" TEXT NOT NULL,
+
+    CONSTRAINT "SpecialPersonBaseData_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -43,6 +69,7 @@ CREATE TABLE "AgendaItem" (
     "committeeId" TEXT NOT NULL,
     "title" TEXT NOT NULL,
     "description" TEXT,
+    "isActive" BOOLEAN NOT NULL DEFAULT false,
 
     CONSTRAINT "AgendaItem_pkey" PRIMARY KEY ("id")
 );
@@ -70,6 +97,24 @@ CREATE TABLE "Team" (
     CONSTRAINT "Team_pkey" PRIMARY KEY ("id")
 );
 
+-- CreateTable
+CREATE TABLE "Delegation" (
+    "id" TEXT NOT NULL,
+    "alpha3Code" TEXT NOT NULL,
+    "conferenceId" TEXT NOT NULL,
+
+    CONSTRAINT "Delegation_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "Delegate" (
+    "id" TEXT NOT NULL,
+    "delegationId" TEXT NOT NULL,
+    "committeeId" TEXT NOT NULL,
+
+    CONSTRAINT "Delegate_pkey" PRIMARY KEY ("id")
+);
+
 -- CreateIndex
 CREATE UNIQUE INDEX "Conference_name_key" ON "Conference"("name");
 
@@ -78,6 +123,9 @@ CREATE UNIQUE INDEX "Committee_name_conferenceId_key" ON "Committee"("name", "co
 
 -- CreateIndex
 CREATE UNIQUE INDEX "Team_conferenceId_email_key" ON "Team"("conferenceId", "email");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "Delegation_alpha3Code_conferenceId_key" ON "Delegation"("alpha3Code", "conferenceId");
 
 -- AddForeignKey
 ALTER TABLE "Committee" ADD CONSTRAINT "Committee_conferenceId_fkey" FOREIGN KEY ("conferenceId") REFERENCES "Conference"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
@@ -99,3 +147,12 @@ ALTER TABLE "Team" ADD CONSTRAINT "Team_chair_committeeId_fkey" FOREIGN KEY ("ch
 
 -- AddForeignKey
 ALTER TABLE "Team" ADD CONSTRAINT "Team_advisor_committeeId_fkey" FOREIGN KEY ("advisor_committeeId") REFERENCES "Committee"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Delegation" ADD CONSTRAINT "Delegation_conferenceId_fkey" FOREIGN KEY ("conferenceId") REFERENCES "Conference"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Delegate" ADD CONSTRAINT "Delegate_delegationId_fkey" FOREIGN KEY ("delegationId") REFERENCES "Delegation"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Delegate" ADD CONSTRAINT "Delegate_committeeId_fkey" FOREIGN KEY ("committeeId") REFERENCES "Committee"("id") ON DELETE RESTRICT ON UPDATE CASCADE;

@@ -9,7 +9,6 @@
     "build": "tsc --noEmit && bun build.ts"
   },
   "dependencies": {
-    "@elysiajs/bearer": "^0.7.0",
     "@elysiajs/cors": "^0.7.2",
     "@elysiajs/eden": "^0.7.4",
     "@elysiajs/fn": "^0.6.1",

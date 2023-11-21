@@ -1,5 +1,4 @@
 import { Elysia, t } from "elysia";
-import { bearer } from "@elysiajs/bearer";
 import { Permissions, User, introspect } from "auth";
 import { isAuthMocked } from "munify-util";
 import { Metadata } from "auth/src/services/zitadel/parseMetadata";
@@ -43,7 +42,7 @@ if (isAuthMocked()) {
   setInterval(async () => {
     Bun.write(
       devpath,
-      JSON.stringify({ permissions: mockedPermissions, user: mockedUser }),
+      JSON.stringify({ permissions: mockedPermissions, user: mockedUser })
     );
   }, 1000);
 }
@@ -58,7 +57,7 @@ const mockedIntrospection: { user: User; permissions: Permissions } = {
       // we dont really care about other permissions in this scenario
       if (userId !== mockedUser.id) {
         console.info(
-          "tried to set metadata for user that is not the mocked user",
+          "tried to set metadata for user that is not the mocked user"
         );
         return;
       }
@@ -66,7 +65,7 @@ const mockedIntrospection: { user: User; permissions: Permissions } = {
         // biome-ignore lint/suspicious/noExplicitAny:
         mockedPermissions[key as keyof Metadata] = data as any;
       });
-    },
+    }
   ),
 };
 
@@ -79,7 +78,11 @@ export const auth = new Elysia({
       authorization: t.String(),
     }),
   })
-  .use(bearer())
+  .derive((r) => {
+    return {
+      bearer: r.headers.authorization?.replace("Bearer ", ""),
+    };
+  })
   .derive(async ({ bearer }) => {
     return {
       auth: isAuthMocked()
@@ -90,9 +93,10 @@ export const auth = new Elysia({
   })
   .guard({
     beforeHandle: [
-      async ({ auth }) => {
+      async ({ set, auth }) => {
         if (!auth) {
-          return new Response(null, { status: 401 });
+          set.status = "Unauthorized";
+          return "Unauthorized";
         }
       },
     ],

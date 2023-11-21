@@ -26,6 +26,8 @@ if (isDevelopment()) {
       },
     }),
   );
+
+  console.info(`Swagger documentation available at http://localhost:${process.env.PORT ?? "3001"}/documentation`);
 }
 
 app.listen(process.env.PORT ?? "3001");

@@ -15,7 +15,7 @@ jobs:
       - name: Install all dependencies
         run: bun run install-all
         env:
-          super_secret: ${{ secrets.FONTAWESOME_NPM_AUTH_TOKEN }}
+          FONTAWESOME_NPM_AUTH_TOKEN: ${{ secrets.FONTAWESOME_NPM_AUTH_TOKEN }}
 
       - name: Generate prisma types
         working-directory: ./chase/backend
@@ -37,7 +37,7 @@ jobs:
       - name: Install all dependencies
         run: bun run install-all
         env:
-          super_secret: ${{ secrets.FONTAWESOME_NPM_AUTH_TOKEN }}
+          FONTAWESOME_NPM_AUTH_TOKEN: ${{ secrets.FONTAWESOME_NPM_AUTH_TOKEN }}
 
       - name: Generate prisma types
         working-directory: ./chase/backend

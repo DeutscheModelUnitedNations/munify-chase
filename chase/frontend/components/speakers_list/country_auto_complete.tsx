@@ -17,11 +17,13 @@ interface CountryData {
 export default function CountryAutoComplete({
   listOfAllCountries,
   selectedCountry,
-  setSelectedCountry
+  setSelectedCountry,
+  placeholder,
 }: {
   listOfAllCountries: Alpha3Code[];
     selectedCountry: any;
     setSelectedCountry: (country) => void;
+    placeholder: string;
 }) {
   const { LL, locale } = useI18nContext();
   const [countries, setCountries] = useState<CountryData[] | null>(null);
@@ -97,7 +99,7 @@ export default function CountryAutoComplete({
       dropdown
       dropdownMode="blank"
       itemTemplate={countryTemplate}
-      placeholder={LL.chairs.speakersList.addSpeakerOverlay.PLACEHOLDER()}
+      placeholder={placeholder}
       autoFocus
       autoHighlight
       forceSelection

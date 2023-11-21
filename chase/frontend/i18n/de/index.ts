@@ -139,6 +139,23 @@ const de = {
       committees: {
         CHAIRS: "Vorsitzende auswählen",
         ADVISORS: "Gremienberatung auswählen",
+        AGENDA_ITEMS: "Tagesordnung",
+        ADD_AGENDA_ITEM: "Tagesordnungspunkt hinzufügen",
+        ADD_ITEM_BUTTON: "Hinzufügen",
+      },
+
+      delegations: {
+        ADD_DELEGATION_BUTTON: "Delegation hinzufügen",
+        DELEGATION_COLUMN: "Delegation",
+        TOTAL_NUMBER_OF_DELEGATIONS: "Summe",
+        EMPTY_MESSAGE: "Keine Delegationen gefunden",
+        add_delegation: {
+          HEADLINE: "Delegation hinzufügen",
+          SEARCH_PLACEHOLDER: "Nach Delegation suchen",
+          BACK_BUTTON: "Zurück",
+          ADD_BUTTON: "Hinzufügen und schließen",
+          ADD_MORE_BUTTON: "Hinzufügen",
+        }
       },
 
       steps: {

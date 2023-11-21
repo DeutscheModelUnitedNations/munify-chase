@@ -64,7 +64,7 @@ export default function DelegationsTable({
           end={
             <div className="w-full flex justify-end items-stretch gap-2">
               <Button
-                label="Add Delegation"
+                label={LL.admin.onboarding.delegations.ADD_DELEGATION_BUTTON()}
                 faIcon={faPlus}
                 keyboardShortcut="N"
                 onClick={() => openAddDelegationDialog(true)}
@@ -76,7 +76,7 @@ export default function DelegationsTable({
         <DataTable
           value={delegations}
           className="mb-4"
-          emptyMessage="No delegations found"
+          emptyMessage={LL.admin.onboarding.delegations.EMPTY_MESSAGE()}
           footer={
             <div className="flex justify-start gap-3">
               <CountCard

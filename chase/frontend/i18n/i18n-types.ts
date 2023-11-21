@@ -407,6 +407,58 @@ type RootTranslation = {
 				 * S​e​l​e​c​t​ ​C​o​m​m​i​t​t​e​e​ ​A​d​v​i​s​o​r​s
 				 */
 				ADVISORS: string
+				/**
+				 * A​g​e​n​d​a​ ​I​t​e​m​s
+				 */
+				AGENDA_ITEMS: string
+				/**
+				 * A​d​d​ ​A​g​e​n​d​a​ ​I​t​e​m
+				 */
+				ADD_AGENDA_ITEM: string
+				/**
+				 * A​d​d
+				 */
+				ADD_ITEM_BUTTON: string
+			}
+			delegations: {
+				/**
+				 * A​d​d​ ​D​e​l​e​g​a​t​i​o​n
+				 */
+				ADD_DELEGATION_BUTTON: string
+				/**
+				 * D​e​l​e​g​a​t​i​o​n
+				 */
+				DELEGATION_COLUMN: string
+				/**
+				 * T​o​t​a​l
+				 */
+				TOTAL_NUMBER_OF_DELEGATIONS: string
+				/**
+				 * N​o​ ​D​e​l​e​g​a​t​i​o​n​s​ ​f​o​u​n​d
+				 */
+				EMPTY_MESSAGE: string
+				add_delegation: {
+					/**
+					 * A​d​d​ ​D​e​l​e​g​a​t​i​o​n
+					 */
+					HEADLINE: string
+					/**
+					 * S​e​a​r​c​h​ ​f​o​r​ ​a​ ​D​e​l​e​g​a​t​i​o​n
+					 */
+					SEARCH_PLACEHOLDER: string
+					/**
+					 * B​a​c​k
+					 */
+					BACK_BUTTON: string
+					/**
+					 * A​d​d​ ​a​n​d​ ​C​l​o​s​e
+					 */
+					ADD_BUTTON: string
+					/**
+					 * A​d​d
+					 */
+					ADD_MORE_BUTTON: string
+				}
 			}
 			steps: {
 				/**
@@ -1423,6 +1475,58 @@ export type TranslationFunctions = {
 				 * Select Committee Advisors
 				 */
 				ADVISORS: () => LocalizedString
+				/**
+				 * Agenda Items
+				 */
+				AGENDA_ITEMS: () => LocalizedString
+				/**
+				 * Add Agenda Item
+				 */
+				ADD_AGENDA_ITEM: () => LocalizedString
+				/**
+				 * Add
+				 */
+				ADD_ITEM_BUTTON: () => LocalizedString
+			}
+			delegations: {
+				/**
+				 * Add Delegation
+				 */
+				ADD_DELEGATION_BUTTON: () => LocalizedString
+				/**
+				 * Delegation
+				 */
+				DELEGATION_COLUMN: () => LocalizedString
+				/**
+				 * Total
+				 */
+				TOTAL_NUMBER_OF_DELEGATIONS: () => LocalizedString
+				/**
+				 * No Delegations found
+				 */
+				EMPTY_MESSAGE: () => LocalizedString
+				add_delegation: {
+					/**
+					 * Add Delegation
+					 */
+					HEADLINE: () => LocalizedString
+					/**
+					 * Search for a Delegation
+					 */
+					SEARCH_PLACEHOLDER: () => LocalizedString
+					/**
+					 * Back
+					 */
+					BACK_BUTTON: () => LocalizedString
+					/**
+					 * Add and Close
+					 */
+					ADD_BUTTON: () => LocalizedString
+					/**
+					 * Add
+					 */
+					ADD_MORE_BUTTON: () => LocalizedString
+				}
 			}
 			steps: {
 				/**

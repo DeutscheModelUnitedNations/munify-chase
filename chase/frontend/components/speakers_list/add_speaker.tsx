@@ -86,7 +86,7 @@ export default function AddSpeakerOverlay({
   return (
     <>
       <div className="flex flex-col gap-5 mt-1">
-        <CountryAutoComplete listOfAllCountries={listOfAllCountries} />
+        <CountryAutoComplete listOfAllCountries={listOfAllCountries} placeholder={LL.chairs.speakersList.addSpeakerOverlay.PLACEHOLDER()}/>
 
         <div className="flex gap-3 justify-end flex-wrap">
           <Button

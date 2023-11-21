@@ -80,7 +80,7 @@ export default function agendaItem({
   return (
     <>
       <Divider align="center" type="dashed" />
-      <h1 className="font-bold text-lg mb-4">Agenda Items</h1>
+      <h1 className="font-bold text-lg mb-4">{LL.admin.onboarding.committees.AGENDA_ITEMS()}</h1>
       <li className="flex flex-col gap-2 mb-4">
         {CommitteeAgendaItems.map((item) => (
           <ul className="flex justify-between items-center bg-gray-100 rounded-md p-1">
@@ -99,14 +99,14 @@ export default function agendaItem({
       <div className="flex gap-2">
         <InputText
           id="username"
-          placeholder="Add Agenda Item"
+          placeholder={LL.admin.onboarding.committees.ADD_AGENDA_ITEM()}
           value={inputValue}
           onChange={(e) => setInputValue(e.target.value)}
           className="mt-3 flex-1"
         />
         <Button
           faIcon={faPlusCircle}
-          label="Add Item"
+          label={LL.admin.onboarding.committees.ADD_ITEM_BUTTON()}
           onClick={() => addAgendaItem()}
           disabled={inputValue === ""}
         />

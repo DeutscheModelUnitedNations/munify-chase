@@ -137,6 +137,23 @@ const en = {
       committees: {
         CHAIRS: "Select Chairs",
         ADVISORS: "Select Committee Advisors",
+        AGENDA_ITEMS: "Agenda Items",
+        ADD_AGENDA_ITEM: "Add Agenda Item",
+        ADD_ITEM_BUTTON: "Add",
+      },
+
+      delegations: {
+        ADD_DELEGATION_BUTTON: "Add Delegation",
+        DELEGATION_COLUMN: "Delegation",
+        TOTAL_NUMBER_OF_DELEGATIONS: "Total",
+        EMPTY_MESSAGE: "No Delegations found",
+        add_delegation: {
+          HEADLINE: "Add Delegation",
+          SEARCH_PLACEHOLDER: "Search for a Delegation",
+          BACK_BUTTON: "Back",
+          ADD_BUTTON: "Add and Close",
+          ADD_MORE_BUTTON: "Add",
+        }
       },
 
       steps: {

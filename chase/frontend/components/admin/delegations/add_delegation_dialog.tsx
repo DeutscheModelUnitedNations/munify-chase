@@ -52,7 +52,7 @@ export default function AddDelegationDialog({
   const addDelegation = (e: FormEvent | null = null) => {
     if (e) e.preventDefault();
     if (delegationAlpha3Code === null) return;
-    console.info(delegationAlpha3Code)
+    console.info(delegationAlpha3Code);
     addDelegationToList(delegationAlpha3Code?.alpha3);
     resetInputMask();
     setInputMaskVisible(false);
@@ -81,19 +81,21 @@ export default function AddDelegationDialog({
   return (
     <>
       <Dialog
-        header="Add Delegation"
+        header={LL.admin.onboarding.delegations.add_delegation.HEADLINE()}
         visible={inputMaskVisible}
         onHide={() => setInputMaskVisible(false)}
         className="w-3/4"
       >
         <div className="flex flex-col items-stretch justify-center gap-4 w-full mt-2">
-          <CountryAutoComplete listOfAllCountries={allAvailableCountries} 
-          selectedCountry={delegationAlpha3Code}
-          setSelectedCountry={setdelegationAlpha3Code}
+          <CountryAutoComplete
+            listOfAllCountries={allAvailableCountries}
+            selectedCountry={delegationAlpha3Code}
+            setSelectedCountry={setdelegationAlpha3Code}
+            placeholder={LL.admin.onboarding.delegations.add_delegation.SEARCH_PLACEHOLDER()}
           />
           <div className="mt-4 flex w-full gap-2">
             <Button
-              label="Back"
+              label={LL.admin.onboarding.delegations.add_delegation.BACK_BUTTON()}
               severity="warning"
               faIcon={faXmark}
               onClick={() => {
@@ -104,14 +106,14 @@ export default function AddDelegationDialog({
             />
             <div className="flex-1" />
             <Button
-              label="Add more"
+              label={LL.admin.onboarding.delegations.add_delegation.ADD_MORE_BUTTON()}
               faIcon={faPlus}
               type="submit"
               keyboardShortcut="⇧+⏎"
               onClick={() => addDelegationAndStay()}
             />
             <Button
-              label="Add and Close"
+              label={LL.admin.onboarding.delegations.add_delegation.ADD_BUTTON()}
               faIcon={faPlus}
               type="submit"
               keyboardShortcut="⏎"

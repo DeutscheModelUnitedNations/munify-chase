@@ -23,6 +23,5 @@
     "munify-util": "../../munify-util",
     "prisma": "^5.6.0",
     "@tsconfig/node16": "^16.1.1"
-  },
-  "module": "src/main.js"
+  }
 }

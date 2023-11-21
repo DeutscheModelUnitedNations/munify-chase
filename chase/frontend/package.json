@@ -20,7 +20,7 @@
     "@types/react-dom": "18.2.15",
     "autoprefixer": "10.4.16",
     "bun-types": "latest",
-    "chase-backend": "../backend/",
+    "chase-backend": "file:../backend",
     "framer-motion": "^10.16.5",
     "fuse.js": "^7.0.0",
     "next": "14.0.3",

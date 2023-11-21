@@ -82,7 +82,7 @@ export default function ActionsWidget() {
 
   // @ts-ignore
   const categoryOptionSelectedTemplate = (option: DropdownOptions, props) => {
-// TODO type "props" correctly
+    // TODO type "props" correctly
     if (option) {
       return categoryOptionTemplate(option);
     }
@@ -118,12 +118,12 @@ export default function ActionsWidget() {
   };
 
   const sendChairMessage = () => {
-    // TODO NO-133
+    // TODO
     closeAndResetDialog();
   };
 
   const sendResearchMessage = () => {
-    // TODO NO-134
+    // TODO
     closeAndResetDialog();
   };
 
@@ -149,7 +149,7 @@ export default function ActionsWidget() {
             value={message}
             onChange={(e) => setMessage(e.target.value)}
           />
-          {/* TODO NO-135 File Upload */}
+          {/* TODO File Upload */}
         </div>
       </Dialog>
       <Dialog

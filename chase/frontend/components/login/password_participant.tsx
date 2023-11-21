@@ -38,7 +38,7 @@ export default function usernameLogin({ changeLoginState }) {
 
   useEffect(() => {
     if (isNonStateActor) {
-      setCommittee("+"); // TODO NO-144 Maybe make this more elegant?
+      setCommittee("+"); // TODO Maybe make this more elegant?
     }
   }, []);
 
@@ -55,11 +55,11 @@ export default function usernameLogin({ changeLoginState }) {
     return !agreedToTerms || password === "";
   };
 
-  // TODO NO-145 Type data properly
+  // TODO Type data properly
   // @ts-ignore
   const onSubmit = () => {
     setLoading(true);
-    // TODO NO-146 verify password, set cookie and advance to Dashboard
+    // TODO verify password, set cookie and advance to Dashboard
     router.push("/participant/dashboard");
   };
 
@@ -73,7 +73,7 @@ export default function usernameLogin({ changeLoginState }) {
           {LL.login.participant.committeeSelection.HEADLINE()}
         </h2>
         <div className="flex flex-col gap-5">
-          {/* TODO NO-147 Find another way of letting NSAs select their committee. Preferably after the login process is already finished to keep information private. */}
+          {/* TODO Find another way of letting NSAs select their committee. Preferably after the login process is already finished to keep information private. */}
           <Card
             title="GV"
             subTitle="Generalversammlung"
@@ -152,7 +152,7 @@ export default function usernameLogin({ changeLoginState }) {
             </div>
           </div>
         </div>
-        {/* TODO NO-148 This form can be a component that is used in both chair and participant login password components */}
+        {/* TODO This form can be a component that is used in both chair and participant login password components */}
         <form onSubmit={handleLogin(onSubmit)} className="contents">
           <Password
             placeholder={LL.login.PASSWORD_PLACEHOLDER()}

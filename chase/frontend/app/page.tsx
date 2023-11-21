@@ -30,28 +30,6 @@ export default function Home() {
               onClick={() => router.push("/login/chair")}
             />
           </div>
-          <span>
-            backendAcceptsOurAuth:
-            {backendAcceptsOurAuth && "yes"}
-            {!backendAcceptsOurAuth && "nonono"}
-          </span>
-          <span>
-            authenticated:
-            {auth.authenticated && "yes"}
-            {!auth.authenticated && "nonono"}
-          </span>
-          <div className="p-buttonset">
-            <Button
-              label="Zitadel login"
-              icon="pi pi-link"
-              onClick={() => auth.login()}
-            />
-            <Button
-              label="Zitadel logout"
-              icon="pi pi-link"
-              onClick={() => auth.logout()}
-            />
-          </div>
         </div>
       </div>
     </>

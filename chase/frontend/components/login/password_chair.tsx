@@ -30,16 +30,16 @@ export default function usernameLogin({ changeLoginState }) {
     return !agreedToTerms || password === "";
   };
 
-  // TODO NO-140 Type data properly
+  // TODO Type data properly
   // @ts-ignore
   const onSubmit = () => {
     setLoading(true);
-    // TODO NO-141 verify password, set cookie and advance to Dashboard
+    // TODO verify password, set cookie and advance to Dashboard
   };
 
   return (
     <div className="flex flex-col p-5 items-center justify-center h-full">
-      {/* TODO NO-142 This form can be a component that is used in both chair and participant login password components */}
+      {/* TODO This form can be a component that is used in both chair and participant login password components */}
       <form onSubmit={handleLogin(onSubmit)} className="contents">
         <Password
           placeholder={LL.login.PASSWORD_PLACEHOLDER()}

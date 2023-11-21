@@ -9,6 +9,5 @@ todo_finder = TodoFinder('.', [
     ".postgres-data",
 ])
 todo_finder.find_todos()
-todo_finder.assign_ids()
 todo_finder.write_to_json('todo-sync/todos.json')
 todo_finder.write_to_html('todo-sync/index_template.html', '<!-- Insert -->', '<!-- Length -->')

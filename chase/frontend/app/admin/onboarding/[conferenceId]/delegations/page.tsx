@@ -174,7 +174,7 @@ export default function loginVorsitz({
 
       <ForwardBackButtons
         backURL={`/admin/onboarding/${params.conferenceId}/committees`}
-        forwardDisabled={false}
+        handleSaveFunction={() => {router.push(`/admin/onboarding/${params.conferenceId}/non_state_actors`)}}
       />
     </>
   );

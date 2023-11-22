@@ -478,9 +478,13 @@ type RootTranslation = {
 				 */
 				STEP_4: string
 				/**
-				 * R​o​l​e​s
+				 * N​S​A​s
 				 */
 				STEP_5: string
+				/**
+				 * C​o​n​f​i​g​u​r​a​t​i​o​n​s
+				 */
+				STEP_6: string
 			}
 		}
 	}
@@ -1546,9 +1550,13 @@ export type TranslationFunctions = {
 				 */
 				STEP_4: () => LocalizedString
 				/**
-				 * Roles
+				 * NSAs
 				 */
 				STEP_5: () => LocalizedString
+				/**
+				 * Configurations
+				 */
+				STEP_6: () => LocalizedString
 			}
 		}
 	}

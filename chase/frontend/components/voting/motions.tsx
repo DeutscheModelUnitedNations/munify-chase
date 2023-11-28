@@ -5,8 +5,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Motion } from "@/custom_types";
 import {
   faCircleCheck,
-  faCheckToSlot,
-  faXmarkToSlot,
+  faSquarePollVertical,
   faTrashAlt,
   faXmarkCircle,
 } from "@fortawesome/pro-solid-svg-icons";
@@ -15,7 +14,6 @@ import { SmallFlag } from "../flag_templates";
 import { useI18nContext } from "@/i18n/i18n-react";
 import FlipMove from "react-flip-move";
 import Button from "@/components/button";
-import { IconProp } from "@fortawesome/fontawesome-svg-core";
 
 /**
  * This Component is used on the Voting page and displays all open motions in a list format.
@@ -69,62 +67,59 @@ export default function Motions({
 
                     {motion.status === "in-voting" && (
                       <FontAwesomeIcon
-                        icon={faCheckToSlot as IconProp}
+                        icon={faSquarePollVertical}
                         className=" text-3xl text-primary dark:text-primary-950 fa-beat-fade mr-1"
                       />
                     )}
 
-                    {motion.status === "passed" &&
-                      (motion.voting ? (
+                    {(motion.status === "passed" ||
+                      motion.status === "failed") &&
+                      motion.voting && (
                         <FontAwesomeIcon
-                          icon={faCheckToSlot as IconProp}
-                          className="text-2xl text-green-700"
+                          icon={faSquarePollVertical}
+                          className=" text-2xl text-gray-icon dark:text-primary-400"
                         />
-                      ) : (
-                        <FontAwesomeIcon
-                          icon={faCircleCheck as IconProp}
-                          className="text-2xl text-green-700"
-                        />
-                      ))}
+                      )}
 
-                    {motion.status === "failed" &&
-                      (motion.voting ? (
-                        <FontAwesomeIcon
-                          icon={faXmarkToSlot as IconProp}
-                          className="text-2xl text-red-600"
-                        />
-                      ) : (
-                        <FontAwesomeIcon
-                          icon={faXmarkCircle as IconProp}
-                          className="text-2xl text-red-600"
-                        />
-                      ))}
+                    {motion.status === "passed" && (
+                      <FontAwesomeIcon
+                        icon={faCircleCheck}
+                        className="text-2xl text-green-700"
+                      />
+                    )}
+
+                    {motion.status === "failed" && (
+                      <FontAwesomeIcon
+                        icon={faXmarkCircle}
+                        className="text-2xl text-red-600"
+                      />
+                    )}
 
                     {chairOptions && (
                       <>
                         {motion.status === "open" && (
                           <>
                             <Button
-                              faIcon={faCircleCheck as IconProp}
+                              faIcon={faCircleCheck}
                               faIconClassName="text-voting-for text-xl"
                               size="small"
                               text
                             />
                             <Button
-                              faIcon={faXmarkCircle as IconProp}
+                              faIcon={faXmarkCircle}
                               faIconClassName="text-voting-against text-xl"
                               size="small"
                               text
                             />
                             <Button
-                              faIcon={faCheckToSlot as IconProp}
+                              faIcon={faSquarePollVertical}
                               faIconClassName="dark:text-white text-xl"
                               size="small"
                             />
                           </>
                         )}
                         <Button
-                          faIcon={faTrashAlt as IconProp}
+                          faIcon={faTrashAlt}
                           faIconClassName="text-lg"
                           size="small"
                           severity="danger"

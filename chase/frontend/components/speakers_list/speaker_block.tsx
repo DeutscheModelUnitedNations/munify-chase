@@ -5,7 +5,7 @@ import {
   faHourglassStart,
   faHourglassHalf,
   faHourglassEnd,
-  faHourglassClock,
+  faClock,
   faBell,
 } from "@fortawesome/pro-solid-svg-icons";
 import "./timer_animations.scss";
@@ -13,7 +13,6 @@ import { CurrentSpeaker } from "@/custom_types";
 import { LargeFlag } from "../flag_templates";
 import { useI18nContext } from "@/i18n/i18n-react";
 import { AnimatePresence, motion } from "framer-motion";
-import { IconProp } from "@fortawesome/fontawesome-svg-core";
 
 /**
  * This Component is used in the SpeakersList. It creates a box for the current speaker,
@@ -79,12 +78,10 @@ export default function SpeakerBlock({
               </div>
               <div className="text-md text-primary-300 dark:text-primary-600 flex items-center gap-3">
                 {timerState === "active" && <HourglasAnimation />}
-                {timerState === "paused" && (
-                  <FontAwesomeIcon icon={faHourglassClock as IconProp} />
-                )}
+                {timerState === "paused" && <FontAwesomeIcon icon={faClock} />}
                 {timerState === "overtime" && (
                   <FontAwesomeIcon
-                    icon={faBell as IconProp}
+                    icon={faBell}
                     className="text-red-700 fa-shake"
                   />
                 )}
@@ -129,7 +126,7 @@ function HourglasAnimation() {
 
   return (
     <div className={WrapperStyleClass}>
-      <FontAwesomeIcon icon={icon as IconProp} />
+      <FontAwesomeIcon icon={icon} />
     </div>
   );
 }

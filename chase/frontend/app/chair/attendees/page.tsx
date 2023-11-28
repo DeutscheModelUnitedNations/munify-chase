@@ -9,17 +9,19 @@ import WidgetTemplate from "@/components/widget_template";
 import getCountryNameByCode from "@/misc/get_country_name_by_code";
 import { NormalFlag as Flag } from "@/components/flag_templates";
 import { useI18nContext } from "@/i18n/i18n-react";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
-  faUserCheck,
-  faUserXmark,
-  faUserClock,
+  FontAwesomeIcon,
+  FontAwesomeIconProps,
+} from "@fortawesome/react-fontawesome";
+import {
+  faUser,
+  faUserSlash,
+  faCalendarXmark,
 } from "@fortawesome/pro-solid-svg-icons";
 import { attendanceTestData } from "@/test_data";
-import { IconProp } from "@fortawesome/fontawesome-svg-core";
 
 interface AttendanceButtonOptions {
-  icon: IconProp;
+  icon: FontAwesomeIconProps["icon"];
   label: string;
   value: "present" | "excused" | "absent";
 }
@@ -34,17 +36,17 @@ export default function ChairAttendees() {
 
   const attendanceOptions: AttendanceButtonOptions[] = [
     {
-      icon: faUserCheck as IconProp,
+      icon: faUser,
       label: LL.chairs.attendance.PRESENT(),
       value: "present",
     },
     {
-      icon: faUserClock as IconProp,
+      icon: faCalendarXmark,
       label: LL.chairs.attendance.EXCUSED(),
       value: "excused",
     },
     {
-      icon: faUserXmark as IconProp,
+      icon: faUserSlash,
       label: LL.chairs.attendance.ABSENT(),
       value: "absent",
     },
@@ -98,7 +100,7 @@ export default function ChairAttendees() {
   }: {
     count: number;
     lable: string;
-    icon: IconProp;
+    icon: FontAwesomeIconProps["icon"];
   }) => {
     return (
       <>
@@ -126,17 +128,17 @@ export default function ChairAttendees() {
                 <CounterCell
                   count={presentAttendees}
                   lable={LL.chairs.attendance.PRESENT()}
-                  icon={faUserCheck as IconProp}
+                  icon={faUser}
                 />
                 <CounterCell
                   count={excusedAttendees}
                   lable={LL.chairs.attendance.EXCUSED()}
-                  icon={faUserClock as IconProp}
+                  icon={faCalendarXmark}
                 />
                 <CounterCell
                   count={absentAttendees}
                   lable={LL.chairs.attendance.ABSENT()}
-                  icon={faUserXmark as IconProp}
+                  icon={faUserSlash}
                 />
               </div>
             </HeaderInfoBox>

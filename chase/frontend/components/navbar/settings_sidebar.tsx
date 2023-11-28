@@ -4,7 +4,8 @@ import { Sidebar } from "primereact/sidebar";
 import { SelectButton } from "primereact/selectbutton";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
-  faDiamondHalfStroke,
+  IconDefinition,
+  faCircleHalfStroke,
   faDisplay,
   faMoon,
   faSun,
@@ -12,11 +13,10 @@ import {
 import { Dropdown } from "primereact/dropdown";
 import { SmallFlag } from "../flag_templates";
 import { useI18nContext } from "@/i18n/i18n-react";
-import { IconProp } from "@fortawesome/fontawesome-svg-core";
 
 interface ColormodeOption {
   name: string;
-  icon: IconProp;
+  icon: IconDefinition;
   value: string;
 }
 
@@ -41,22 +41,22 @@ export default function SettingsSidebar({
   const colortheme_items: ColormodeOption[] = [
     {
       name: LL.settings.colorTheme.SYSTEM(),
-      icon: faDisplay as IconProp,
+      icon: faDisplay,
       value: "system",
     },
     {
       name: LL.settings.colorTheme.LIGHT(),
-      icon: faSun as IconProp,
+      icon: faSun,
       value: "light",
     },
     {
       name: LL.settings.colorTheme.DARK(),
-      icon: faMoon as IconProp,
+      icon: faMoon,
       value: "dark",
     },
     {
       name: LL.settings.colorTheme.CONTRAST(),
-      icon: faDiamondHalfStroke as IconProp,
+      icon: faCircleHalfStroke,
       value: "contrast",
     },
   ];

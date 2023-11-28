@@ -4,15 +4,14 @@ import Navbar from "@/components/navbar/navbar";
 import NavButton from "@/components/navbar/button";
 import {
   faChalkboard,
-  faPodium,
+  faComment,
   faScroll,
-  faPollPeople,
+  faSquarePollVertical,
   faUsersLine,
-  faPresentationScreen,
-  faSquareSliders,
+  faArrowUpRightFromSquare,
+  faSliders,
 } from "@fortawesome/pro-solid-svg-icons";
 import { useI18nContext } from "@/i18n/i18n-react";
-import { IconProp } from "@fortawesome/fontawesome-svg-core";
 
 export default function Participant_Pages_Layout({
   children,
@@ -25,38 +24,38 @@ export default function Participant_Pages_Layout({
     <div className="flex h-screen w-screen bg-white text-primary-100 dark:bg-primary-100 dark:text-primary-900 shadow-md overflow-hidden">
       <Navbar>
         <NavButton
-          icon={faSquareSliders as IconProp}
+          icon={faSliders}
           link={"/chair/dashboard"}
           title={LL.navbar.CONFIGURATION()}
         />
         <NavButton
-          icon={faUsersLine as IconProp}
+          icon={faUsersLine}
           link={"/chair/attendees"}
           title={LL.navbar.ATTENDEES()}
         />
         <NavButton
-          icon={faPodium as IconProp}
+          icon={faComment}
           link={"/chair/speakers"}
           title={LL.navbar.SPEAKERS()}
         />
         <NavButton
-          icon={faPollPeople as IconProp}
+          icon={faSquarePollVertical}
           link={"/chair/voting"}
           title={LL.navbar.VOTING()}
         />
         <NavButton
-          icon={faChalkboard as IconProp}
+          icon={faChalkboard}
           link={"/chair/whiteboard"}
           title={LL.navbar.WHITEBOARD()}
         />
         <NavButton
-          icon={faScroll as IconProp}
+          icon={faScroll}
           link={"/chair/resolutions"}
           title={LL.navbar.RESOLUTIONS()}
         />
         <div className="h-5" />
         <NavButton
-          icon={faPresentationScreen as IconProp}
+          icon={faArrowUpRightFromSquare}
           newWindow
           link="/chair/presentation"
           title={LL.navbar.PRESENTATION()}

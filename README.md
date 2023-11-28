@@ -10,11 +10,11 @@ It is composed of multiple software components which can be found in their separ
 See the existing components and their directory below
 
 - [chase](./chase)
-- [auth](./auth)
+- [authentication](./authentication)
 
 
 ## Develop Locally
-Make sure you have [Docker](https://www.docker.com/get-started/) and [Node.js](https://nodejs.org/en/download/current) installed
+Make sure you have [Docker](https://www.docker.com/get-started/), [bun](https://bun.sh/) and [node](https://nodejs.org/en/download/current) installed
 
 Clone the project
 
@@ -28,20 +28,19 @@ Go to the project directory
   cd munify
 ```
 
-Install dependencies via the custom install-all script
+Install root dependencies
 
 ```bash
-  npm run install-all
+  bun i
 ```
 
-Start all components in dev mode
+(optional) Install all component dependencies via the custom install-all script 
 
 ```bash
-  npm run dev
+  bun run install-all
 ```
 
-Now every component is installed and running. Please see the specific components for details like running port etc. and how to get going.
-You can find various other scripts at root level, e.g. for testing or linting, please see the scripts section in the [package.json](./package.json).
+Now go to the component you would like to run and follow the instructions/run the start scripts.
 ## FAQ
 
 #### Can I use this for my conference outside of DMUN?

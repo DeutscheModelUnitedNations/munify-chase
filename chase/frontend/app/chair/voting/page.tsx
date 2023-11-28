@@ -9,12 +9,11 @@ import { TabMenu } from "primereact/tabmenu";
 
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
-  faCommentExclamation,
-  faClockRotateLeft,
-  faPollPeople,
+  faGavel,
+  faHistory,
+  faSquarePollVertical,
 } from "@fortawesome/pro-solid-svg-icons";
 import { SplitButton } from "primereact/splitbutton";
-import { IconProp } from "@fortawesome/fontawesome-svg-core";
 
 type Tabs = "current-motions" | "recent-motions" | "recent-votings";
 
@@ -39,24 +38,14 @@ export default function ChairVoting() {
             model={[
               {
                 label: LL.participants.voting.ACTIVE_MOTIONS_TAB(),
-                icon: (
-                  <FontAwesomeIcon
-                    icon={faCommentExclamation as IconProp}
-                    className="mr-2"
-                  />
-                ),
+                icon: <FontAwesomeIcon icon={faGavel} className="mr-2" />,
                 command: () => {
                   setOpenTab("current-motions");
                 },
               },
               {
                 label: LL.participants.voting.RECENT_MOTIONS_TAB(),
-                icon: (
-                  <FontAwesomeIcon
-                    icon={faClockRotateLeft as IconProp}
-                    className="mr-2"
-                  />
-                ),
+                icon: <FontAwesomeIcon icon={faHistory} className="mr-2" />,
                 command: () => {
                   setOpenTab("recent-motions");
                 },
@@ -65,7 +54,7 @@ export default function ChairVoting() {
                 label: LL.participants.voting.RECENT_VOTINGS_TAB(),
                 icon: (
                   <FontAwesomeIcon
-                    icon={faPollPeople as IconProp}
+                    icon={faSquarePollVertical}
                     className="mr-2"
                   />
                 ),
@@ -83,12 +72,7 @@ export default function ChairVoting() {
               <>
                 <SplitButton
                   label={LL.chairs.voting.BUTTON_NEW_MOTION()}
-                  icon={
-                    <FontAwesomeIcon
-                      icon={faCommentExclamation as IconProp}
-                      className="mr-2"
-                    />
-                  }
+                  icon={<FontAwesomeIcon icon={faGavel} className="mr-2" />}
                   className="w-full"
                   onClick={() => {}}
                   model={[]}

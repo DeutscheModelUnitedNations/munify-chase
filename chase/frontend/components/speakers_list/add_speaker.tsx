@@ -12,7 +12,6 @@ import { SmallFlag } from "../flag_templates";
 import { CountryCode } from "@/custom_types";
 import Fuse from "fuse.js";
 import { ToastContext } from "@/contexts/messages/toast";
-import { IconProp } from "@fortawesome/fontawesome-svg-core";
 
 interface CountryData {
   alpha3: CountryCode;
@@ -35,12 +34,12 @@ interface CountryData {
 
 export default function AddSpeakerOverlay({
   listOfAllCountries,
-  listClosed,
+  _listClosed,
   closeOverlay,
   typeOfList,
 }: {
   listOfAllCountries: CountryCode[];
-  listClosed: boolean;
+  _listClosed: boolean;
   closeOverlay: () => void;
   typeOfList: string;
 }) {
@@ -156,18 +155,14 @@ export default function AddSpeakerOverlay({
         <div className="flex gap-3 justify-end flex-wrap">
           <Button
             label={LL.chairs.speakersList.addSpeakerOverlay.BUTTON_CANCEL()}
-            icon={
-              <FontAwesomeIcon icon={faTimes as IconProp} className="mr-2" />
-            }
+            icon={<FontAwesomeIcon icon={faTimes} className="mr-2" />}
             onClick={closeOverlay}
             severity="danger"
             text
           />
           <Button
             label={LL.chairs.speakersList.addSpeakerOverlay.BUTTON_ADD_AND_CLOSE()}
-            icon={
-              <FontAwesomeIcon icon={faPlus as IconProp} className="mr-2" />
-            }
+            icon={<FontAwesomeIcon icon={faPlus} className="mr-2" />}
             onClick={() => {
               sendAddSpeaker();
               closeOverlay();
@@ -176,9 +171,7 @@ export default function AddSpeakerOverlay({
           />
           <Button
             label={LL.chairs.speakersList.addSpeakerOverlay.BUTTON_ADD()}
-            icon={
-              <FontAwesomeIcon icon={faPlus as IconProp} className="mr-2" />
-            }
+            icon={<FontAwesomeIcon icon={faPlus} className="mr-2" />}
             onClick={() => {
               sendAddSpeaker();
               setSelectedCountry(null);

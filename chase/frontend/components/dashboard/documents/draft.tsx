@@ -2,7 +2,6 @@ import React from "react";
 import { faFileLines } from "@fortawesome/pro-solid-svg-icons";
 import { CountryCode } from "@/custom_types";
 import Document from "@components/dashboard/documents/document_template";
-import { IconProp } from "@fortawesome/fontawesome-svg-core";
 
 /**
  * This Component is used in the Documents Widget on the Dashboard.
@@ -23,7 +22,7 @@ export default function Draft({
   return (
     <Document
       documentId={documentId}
-      icon={faFileLines as IconProp}
+      icon={faFileLines}
       introducedBy={introducedBy}
       sponsors={sponsors}
     />

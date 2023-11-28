@@ -3,7 +3,6 @@ import WidgetTemplate from "@components/widget_template";
 import { faArrowDown } from "@fortawesome/pro-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useI18nContext } from "@/i18n/i18n-react";
-import { IconProp } from "@fortawesome/fontawesome-svg-core";
 
 /**
  * This Component is used in the Dashboard. It shows the current,
@@ -27,7 +26,7 @@ export default function CommitteeStatusWidget({
               {currentDebateStep}
             </div>
           </div>
-          <FontAwesomeIcon icon={faArrowDown as IconProp} />
+          <FontAwesomeIcon icon={faArrowDown} />
           <div className="flex flex-row dark:text-primary-700 rounded-md p-2 gap-4 border border-primary-300 dark:border-primary-600 border-dashed">
             <div className="flex-1 text-sm font-semibold text-center">
               {nextDebateStep ? nextDebateStep : "..."}

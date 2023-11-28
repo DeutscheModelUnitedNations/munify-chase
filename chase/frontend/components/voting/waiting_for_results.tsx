@@ -2,7 +2,6 @@ import React from "react";
 import { faCheckCircle } from "@fortawesome/pro-solid-svg-icons/faCheckCircle";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useI18nContext } from "@/i18n/i18n-react";
-import { IconProp } from "@fortawesome/fontawesome-svg-core";
 
 /**
  * This Component is used in the Voting Component.
@@ -17,7 +16,7 @@ export default function WaitingForResults() {
       <div className="flex flex-col items-center gap-2">
         <div className="flex items-center gap-2 text-lg">
           <FontAwesomeIcon
-            icon={faCheckCircle as IconProp}
+            icon={faCheckCircle}
             className="text-gray-icon dark:text-primary-800"
           />
           <div className="text-gray-text dark:text-primary-800 font-bold">

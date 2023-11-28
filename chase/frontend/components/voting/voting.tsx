@@ -11,12 +11,7 @@ import WaitingForResults from "@components/voting/waiting_for_results";
 import { useI18nContext } from "@/i18n/i18n-react";
 import FlipMove from "react-flip-move";
 import Button from "@/components/button";
-import {
-  faMemoCircleInfo,
-  faTrashAlt,
-  faUndo,
-} from "@fortawesome/pro-solid-svg-icons";
-import { IconProp } from "@fortawesome/fontawesome-svg-core";
+import { faInfo, faTrash, faUndo } from "@fortawesome/pro-solid-svg-icons";
 
 /**
  * This Component is the main Component of the Voting Area. It combines several other
@@ -89,18 +84,18 @@ export default function VotingArea({
                       <div className="flex justify-center items-center gap-2 flex-wrap mt-5">
                         <Button
                           label={LL.chairs.voting.BUTTON_CHANGE_INFO()}
-                          faIcon={faMemoCircleInfo as IconProp}
+                          faIcon={faInfo}
                           onClick={() => {}}
                         />
                         <Button
                           label={LL.chairs.voting.BUTTON_RESET()}
-                          faIcon={faUndo as IconProp}
+                          faIcon={faUndo}
                           onClick={() => {}}
                           severity="warning"
                         />
                         <Button
                           label={LL.chairs.voting.BUTTON_DELETE()}
-                          faIcon={faTrashAlt as IconProp}
+                          faIcon={faTrash}
                           onClick={() => {}}
                           severity="danger"
                         />

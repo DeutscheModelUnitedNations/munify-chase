@@ -3,18 +3,18 @@ name: Lint
 on: [push, pull_request]
 
 jobs:
-  rome-linter:
+  biome-linter:
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v2
+      - name: Setup Bun.js
+        uses: oven-sh/setup-bun@v1
+      
+      - name: Install biome
+        run: bun i biome
 
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Run rome
-        run: npx rome ci .
+      - name: Run biome
+        run: bun x biome ci .

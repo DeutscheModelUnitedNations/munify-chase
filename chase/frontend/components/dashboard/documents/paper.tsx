@@ -2,7 +2,6 @@ import React from "react";
 import { faClipboard } from "@fortawesome/pro-solid-svg-icons";
 import { CountryCode } from "@/custom_types";
 import Document from "@components/dashboard/documents/document_template";
-import { IconProp } from "@fortawesome/fontawesome-svg-core";
 
 /**
  * This Component is used in the Documents Widget on the Dashboard.
@@ -24,7 +23,7 @@ export default function Paper({
   return (
     <Document
       documentId={documentId}
-      icon={faClipboard as IconProp}
+      icon={faClipboard}
       introducedBy={introducedBy}
       sponsors={sponsors}
       shared={shared}

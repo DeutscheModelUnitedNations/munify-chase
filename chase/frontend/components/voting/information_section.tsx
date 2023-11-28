@@ -3,12 +3,10 @@ import getCountryNameByCode from "@/misc/get_country_name_by_code";
 import { faFlag } from "@fortawesome/pro-solid-svg-icons/faFlag";
 import { faGavel } from "@fortawesome/pro-solid-svg-icons/faGavel";
 import { faInfoCircle } from "@fortawesome/pro-solid-svg-icons/faInfoCircle";
-import { faPieChart } from "@fortawesome/pro-solid-svg-icons";
-import { faCheckToSlot } from "@fortawesome/pro-solid-svg-icons/faCheckToSlot";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { LargeFlag } from "@components/flag_templates";
+import { faPieChart } from "@fortawesome/pro-solid-svg-icons";
 import { useI18nContext } from "@/i18n/i18n-react";
-import { IconProp } from "@fortawesome/fontawesome-svg-core";
 
 /**
  * This Component is used in the Voting Component.
@@ -56,7 +54,7 @@ export default function InformationSection({
         {description && (
           <>
             <FontAwesomeIcon
-              icon={faInfoCircle as IconProp}
+              icon={faInfoCircle}
               className="text-lg justify-self-center ml-2"
             />
             <div className="text-sm">{description}</div>
@@ -65,7 +63,7 @@ export default function InformationSection({
         {introducedBy && (
           <>
             <FontAwesomeIcon
-              icon={faFlag as IconProp}
+              icon={faFlag}
               className="text-lg justify-self-center ml-2"
             />
             <div className="text-sm">
@@ -74,29 +72,21 @@ export default function InformationSection({
             </div>
           </>
         )}
+        <FontAwesomeIcon
+          icon={faGavel}
+          className="text-xl justify-self-center ml-2"
+        />
         {substantiveVote ? (
-          <>
-            <FontAwesomeIcon
-              icon={faCheckToSlot as IconProp}
-              className="text-xl justify-self-center ml-2"
-            />
-            <div className="text-sm">
-              {LL.participants.voting.votingInfo.votingMode.SUBSTANTIAL_VOTING()}
-            </div>
-          </>
+          <div className="text-sm">
+            {LL.participants.voting.votingInfo.votingMode.SUBSTANTIAL_VOTING()}
+          </div>
         ) : (
-          <>
-            <FontAwesomeIcon
-              icon={faGavel as IconProp}
-              className="text-xl justify-self-center ml-2"
-            />
-            <div className="text-sm">
-              {LL.participants.voting.votingInfo.votingMode.PROCEDURAL_VOTING()}
-            </div>
-          </>
+          <div className="text-sm">
+            {LL.participants.voting.votingInfo.votingMode.PROCEDURAL_VOTING()}
+          </div>
         )}
         <FontAwesomeIcon
-          icon={faPieChart as IconProp}
+          icon={faPieChart}
           className="text-xl justify-self-center ml-2"
         />
         <div className="text-sm">{neededMajority()}</div>

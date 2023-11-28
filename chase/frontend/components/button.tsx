@@ -1,11 +1,11 @@
 import React from "react";
 import { Button as PrimeReactButton } from "primereact/button";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { IconProp } from "@fortawesome/fontawesome-svg-core";
+import { IconDefinition } from "@fortawesome/fontawesome-svg-core";
 
 interface ButtonProps {
   label?: string;
-  faIcon?: IconProp;
+  faIcon?: IconDefinition;
   faIconClassName?: string;
   [key: string]: unknown;
 }

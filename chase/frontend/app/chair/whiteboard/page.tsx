@@ -8,7 +8,6 @@ import {
 import React from "react";
 import { useI18nContext } from "@/i18n/i18n-react";
 import { whiteboardTestData } from "@/test_data";
-import { IconProp } from "@fortawesome/fontawesome-svg-core";
 
 export default function ChairWhiteboard() {
   const { LL } = useI18nContext();
@@ -28,12 +27,12 @@ export default function ChairWhiteboard() {
         <div className="flex justify-end items-center gap-4">
           <Button
             label={LL.chairs.whiteboard.SAVE_BUTTON()}
-            faIcon={faPaperPlane as IconProp}
+            faIcon={faPaperPlane}
             onClick={pushWhiteboardContent}
           />
           <Button
             label={LL.chairs.whiteboard.RESET_BUTTON()}
-            faIcon={faArrowRotateLeft as IconProp}
+            faIcon={faArrowRotateLeft}
             severity="danger"
             onClick={resetWhiteboardContent}
           />

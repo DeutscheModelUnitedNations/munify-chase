@@ -3,14 +3,12 @@
 import Navbar from "@/components/navbar/navbar";
 import NavButton from "@/components/navbar/button";
 import {
-  faPodium,
+  faComment,
   faHouse,
   faScroll,
-  faPollPeople,
-  faNewspaper
+  faSquarePollVertical,
 } from "@fortawesome/pro-solid-svg-icons";
 import { useI18nContext } from "@/i18n/i18n-react";
-import { IconProp } from "@fortawesome/fontawesome-svg-core";
 
 export default function Participant_Pages_Layout({
   children,
@@ -23,31 +21,24 @@ export default function Participant_Pages_Layout({
     <div className="flex h-screen w-screen bg-white text-primary-100 dark:bg-primary-100 dark:text-primary-900 shadow-md overflow-hidden">
       <Navbar>
         <NavButton
-          icon={faHouse as IconProp}
+          icon={faHouse}
           link={"/participant/dashboard"}
           title={LL.navbar.DASHBOARD()}
         />
         <NavButton
-          icon={faPodium as IconProp}
+          icon={faComment}
           link={"/participant/speakers"}
           title={LL.navbar.SPEAKERS()}
         />
         <NavButton
-          icon={faPollPeople as IconProp}
+          icon={faSquarePollVertical}
           link={"/participant/voting"}
           title={LL.navbar.VOTING()}
         />
         <NavButton
-          icon={faScroll as IconProp}
+          icon={faScroll}
           link={"/participant/resolutions"}
           title={LL.navbar.RESOLUTIONS()}
-        />
-        <div className="h-5" />
-        <NavButton
-          icon={faNewspaper as IconProp}
-          newWindow
-          link="https://presse.mun-sh.de/" // TODO make this link configurable for the chair (Link to external News Page)
-          title={LL.navbar.NEWS()}
         />
       </Navbar>
       {children}

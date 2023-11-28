@@ -4,6 +4,13 @@
     "{prefix} ({scope}): {message}",
     "branch: {branch}"
   ],
+  "[javascript]": {
+    "editor.defaultFormatter": "biomejs.biome"
+  },
+  "editor.codeActionsOnSave": {
+    "quickfix.biome": true,
+    "source.organizeImports.biome": true
+  },
   "vscodeGitCommit.variables": {
     "prefix": [
       {

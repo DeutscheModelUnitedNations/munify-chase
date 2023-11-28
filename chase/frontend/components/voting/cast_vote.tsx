@@ -6,11 +6,10 @@ import {
   faCircle,
   faMinusCircle,
   faPlusCircle,
-  faCircleNotch,
+  faSpinner,
 } from "@fortawesome/pro-solid-svg-icons";
 import { useI18nContext } from "@/i18n/i18n-react";
 import { AnimatePresence, motion } from "framer-motion";
-import { IconProp } from "@fortawesome/fontawesome-svg-core";
 
 /**
  * This Component is used in the Voting Component.
@@ -43,7 +42,7 @@ export default function CastVote({
               className="flex justify-stretch items-center"
             >
               <FontAwesomeIcon
-                icon={faCircleNotch as IconProp}
+                icon={faSpinner}
                 className="text-primary animate-spin text-3xl"
               />
             </motion.div>
@@ -64,10 +63,7 @@ export default function CastVote({
                     borderColor: "var(--voting-for)",
                   }}
                   icon={
-                    <FontAwesomeIcon
-                      icon={faPlusCircle as IconProp}
-                      className="mr-3"
-                    />
+                    <FontAwesomeIcon icon={faPlusCircle} className="mr-3" />
                   }
                   onClick={() => {
                     castVote("yes");
@@ -81,12 +77,7 @@ export default function CastVote({
                       color: "#fff",
                       borderColor: "var(--voting-abstain)",
                     }}
-                    icon={
-                      <FontAwesomeIcon
-                        icon={faCircle as IconProp}
-                        className="mr-3"
-                      />
-                    }
+                    icon={<FontAwesomeIcon icon={faCircle} className="mr-3" />}
                     onClick={() => {
                       castVote("abstain");
                     }}
@@ -100,10 +91,7 @@ export default function CastVote({
                     borderColor: "var(--voting-against)",
                   }}
                   icon={
-                    <FontAwesomeIcon
-                      icon={faMinusCircle as IconProp}
-                      className="mr-3"
-                    />
+                    <FontAwesomeIcon icon={faMinusCircle} className="mr-3" />
                   }
                   onClick={() => {
                     castVote("no");

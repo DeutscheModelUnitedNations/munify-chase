@@ -4,7 +4,7 @@ import { faShareNodes } from "@fortawesome/pro-solid-svg-icons/faShareNodes";
 import WidgetBoxTemplate from "@/components/widget_box_template";
 import { SmallFlag } from "@/components/flag_templates";
 import { CountryCode } from "@/custom_types";
-import { IconProp } from "@fortawesome/fontawesome-svg-core";
+import { IconDefinition } from "@fortawesome/fontawesome-svg-core";
 import { useI18nContext } from "@/i18n/i18n-react";
 
 interface DocumentProps {
@@ -12,7 +12,7 @@ interface DocumentProps {
   introducedBy?: CountryCode;
   sponsors?: string[];
   shared?: boolean;
-  icon: IconProp;
+  icon: IconDefinition;
   topic?: string;
 }
 
@@ -59,7 +59,7 @@ export default function Document({
       </div>
       {shared && (
         <FontAwesomeIcon
-          icon={faShareNodes as IconProp}
+          icon={faShareNodes}
           className="text-gray-icon dark:text-primary-800"
         />
       )}

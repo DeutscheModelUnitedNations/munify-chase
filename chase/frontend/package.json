@@ -8,41 +8,6 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "typesafe-i18n": "typesafe-i18n",
-    "watch-generate-client-from-openapi-specs": "npx nodemon --watch ../backend/src/**/* --watch ../backend/prisma/**/* --watch ../backend/node_modules/.prisma/**/* -e ts,js,mjs generate-backend-client.mjs"
-  },
-  "dependencies": {
-    "@elysiajs/eden": "^0.7.4",
-    "@fortawesome/pro-regular-svg-icons": "^6.4.2",
-    "@fortawesome/pro-solid-svg-icons": "^6.4.2",
-    "@fortawesome/react-fontawesome": "^0.2.0",
-    "@types/react": "18.2.37",
-    "@types/react-dom": "18.2.15",
-    "autoprefixer": "10.4.16",
-    "bun-types": "latest",
-    "chase-backend": "file:../backend",
-    "framer-motion": "^10.16.5",
-    "fuse.js": "^7.0.0",
-    "next": "14.0.3",
-    "oidc-client-ts": "^2.4.0",
-    "postcss": "8.4.31",
-    "primeicons": "^6.0.1",
-    "primereact": "^10.1.0",
-    "quill": "^1.3.7",
-    "react": "18.2.0",
-    "react-dom": "18.2.0",
-    "react-flip-move": "^3.0.5",
-    "react-hook-form": "^7.48.2",
-    "react-markdown": "^9.0.1",
-    "remark-gfm": "^4.0.0",
-    "tailwindcss": "^3.3.5",
-    "typesafe-i18n": "^5.26.2",
-    "typescript": "5.3.2"
-  },
-  "devDependencies": {
-    "@types/node": "^20.9.2",
-    "concurrently": "^8.2.2",
-    "nodemon": "^3.0.1",
-    "sass": "^1.69.5"
+    "typesafe-i18n": "typesafe-i18n"
   }
 }

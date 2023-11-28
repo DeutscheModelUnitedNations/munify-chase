@@ -1,0 +1,36 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "./generated/client"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+/// A conference entity
+model Conference {
+  id         String      @id @default(uuid())
+  name       String      @unique
+  committees Committee[]
+  start      DateTime?
+  end        DateTime?
+}
+
+/// Consumeable token which grants the creation of a conference
+model ConferenceCreateToken {
+  token String @id
+}
+
+model Committee {
+  id           String     @id @default(uuid())
+  name         String
+  abbreviation String
+  conference   Conference @relation(fields: [conferenceId], references: [id])
+  conferenceId String
+
+  @@unique([name, conferenceId])
+}

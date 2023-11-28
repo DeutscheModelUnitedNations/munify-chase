@@ -13,8 +13,8 @@ jobs:
       - name: Setup Bun.js
         uses: oven-sh/setup-bun@v1
       
-      - name: Install dependencies
-        run: bun i
+      - name: Install biome
+        run: bun i biome
 
       - name: Run biome
         run: bun x biome ci .

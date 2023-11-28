@@ -23,7 +23,7 @@
     "paths": {
       "@/*": ["./*"],
       "@components/*": ["./components/*"],
-      "react": ["./node_modules/@types/react"]
+      "react": ["./node_modules/@types/react"],
     }
   },
   "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],

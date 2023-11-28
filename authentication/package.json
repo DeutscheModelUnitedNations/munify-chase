@@ -1,0 +1,10 @@
+
+{
+  "name": "authentication",
+  "main": "src/index.ts",
+  "type": "module",
+  "scripts": {
+    "dev": "bun run dev:docker",
+    "dev:docker": "docker compose up --remove-orphans"
+  }
+}

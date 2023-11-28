@@ -1,12 +1,12 @@
 import { t, Elysia } from "elysia";
-import { auth } from "src/plugins/auth";
-import { db } from "prisma/db";
+import { auth } from "../../plugins/auth";
+import { db } from "../../../prisma/db";
 
-export default new Elysia()
+export const conference = new Elysia({ prefix: "/conference" })
   .use(auth)
-  .get("/conference/list", () => db.conference.findMany())
+  .get("/list", () => db.conference.findMany())
   .post(
-    "/conference",
+    "",
     ({ body, auth }) => {
       // run this in a transaction, so if setting the permission/deleting the token fails, the conference is not created
       return db.$transaction(async (tx) => {
@@ -40,15 +40,15 @@ export default new Elysia()
           t.Object({
             start: t.Date({ minimumTimestamp: Date.now() }),
             end: t.Date({ exclusiveMinimumTimestamp: Date.now() }),
-          }),
+          })
         ),
       }),
-    },
+    }
   )
-  .get("/conference/:conferenceId", ({ params: { conferenceId } }) =>
-    db.conference.findFirstOrThrow({ where: { id: conferenceId } }),
+  .get("/:conferenceId", ({ params: { conferenceId } }) =>
+    db.conference.findFirstOrThrow({ where: { id: conferenceId } })
   )
-  .delete("/conference/:conferenceId", ({ auth, params: { conferenceId } }) => {
+  .delete("/:conferenceId", ({ auth, params: { conferenceId } }) => {
     if (!auth.permissions.isConferenceAdmin(conferenceId)) {
       return new Response(null, { status: 401 });
     }

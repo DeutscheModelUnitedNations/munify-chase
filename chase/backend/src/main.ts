@@ -1,17 +1,15 @@
-import conference from "./routes/conference";
 import { Elysia } from "elysia";
 import { swagger } from "@elysiajs/swagger";
 import { cors } from "@elysiajs/cors";
-import committee from "./routes/conference/committee";
-import packagejson from "package.json";
-import { isDevelopment } from "munify-util";
+import { committee } from "./routes/conference/committee";
+import packagejson from "../package.json";
+import { isDevelopment } from "helpers";
+// import { conference } from "./routes/conference";
 
 const app = new Elysia()
   .use(cors({ origin: process.env.ORIGIN ?? "http://localhost:3001" }))
-  .use(conference)
+  // .use(conference)
   .use(committee);
-
-export type App = typeof app;
 
 if (isDevelopment()) {
   app.use(
@@ -24,14 +22,16 @@ if (isDevelopment()) {
           version: packagejson.version,
         },
       },
-    }),
+    })
   );
 
   console.info(
     `Swagger documentation available at http://localhost:${
       process.env.PORT ?? "3001"
-    }/documentation`,
+    }/documentation`
   );
 }
 
 app.listen(process.env.PORT ?? "3001");
+
+export type App = typeof app;

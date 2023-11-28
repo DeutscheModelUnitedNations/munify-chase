@@ -30,7 +30,7 @@ const BackendProvider = ({ children }: { children: React.ReactNode }) => {
   // @ts-ignore
   client = edenTreaty<App>("http://localhost:3001", {
     async fetcher(input, init) {
-      return fetch(input, {
+      return fetch(input as Request, {
         ...init,
         headers: {
           ...init?.headers,

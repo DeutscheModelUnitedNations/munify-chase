@@ -4,7 +4,7 @@ on:
   workflow_dispatch: {}
   push:
     branches:
-      - TODO-sync # Change to main
+      - main
 
 jobs:
   deploy:
@@ -16,7 +16,7 @@ jobs:
       id-token: write
 
     environment:
-      name: production # change to github-pages
+      name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
 
     steps:
@@ -39,6 +39,6 @@ jobs:
         with:
           path: todo-sync/public
 
-      # - name: Deploy to GitHub Pages
-      #   id: todos
-      #   uses: actions/deploy-pages@v2
+      - name: Deploy to GitHub Pages
+        id: todos
+        uses: actions/deploy-pages@v2

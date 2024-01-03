@@ -1,34 +1,43 @@
 import { Elysia } from "elysia";
 import { swagger } from "@elysiajs/swagger";
 import { cors } from "@elysiajs/cors";
-import { committee } from "./routes/conference/committee";
+import { committee } from "./routes/committee";
 import packagejson from "../package.json";
-import { isDevelopment } from "helpers";
+import { appConfiguration } from "./config/config";
 // import { conference } from "./routes/conference";
 
-const app = new Elysia()
-  .use(cors({ origin: process.env.ORIGIN ?? "http://localhost:3001" }))
+const app = new Elysia({
+  cookie: {
+    httpOnly: true,
+    maxAge: 60 * 60 * 24 * 5, // 5 days
+    sameSite: "strict",
+    secure: true,
+    sign: true,
+    secrets: appConfiguration.cookieSecrets,
+  },
+})
+  .use(cors({ origin: appConfiguration.CORSOrigins }))
   // .use(conference)
   .use(committee);
 
-if (isDevelopment()) {
+if (appConfiguration.development) {
   app.use(
     swagger({
-      path: "/documentation",
+      path: `/${appConfiguration.documentationPath}`,
       documentation: {
         info: {
-          title: "CHASE backend Docs",
-          description: "CHASE backend documentation",
+          title: `${appConfiguration.appName} documentation`,
+          description: `${appConfiguration.appName} documentation`,
           version: packagejson.version,
         },
       },
-    })
+    }),
   );
 
   console.info(
     `Swagger documentation available at http://localhost:${
       process.env.PORT ?? "3001"
-    }/documentation`
+    }/${appConfiguration.documentationPath}`,
   );
 }
 

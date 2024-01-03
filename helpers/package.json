@@ -1,5 +1,0 @@
-{
-  "name": "helpers",
-  "main": "src/index.ts",
-  "type": "module"
-}

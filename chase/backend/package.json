@@ -7,22 +7,23 @@
     "dev": "bun run concurrently \"bun run dev:server\" \"bun run dev:docker\"",
     "dev:server": "bun run --watch --hot src/main.ts",
     "dev:docker": "docker compose up --remove-orphans",
-    "db:migrate": "NODE_ENV=development bunx drizzle-kit generate:pg",
     "build": "tsc --noEmit && bun build.ts"
   },
   "devDependencies": {
     "@types/pg": "^8.10.9",
     "bun-types": "latest",
     "concurrently": "^8.2.2",
-    "drizzle-kit": "^0.20.7"
+    "prisma": "5.8.1",
+    "prisma-typebox-generator": "^2.1.0"
   },
   "dependencies": {
-    "@elysiajs/bearer": "^0.7.0",
-    "@elysiajs/cors": "^0.7.2",
-    "@elysiajs/eden": "^0.7.7",
-    "@elysiajs/swagger": "^0.7.4",
-    "drizzle-orm": "^0.29.1",
-    "elysia": "^0.7.30",
+    "@elysiajs/bearer": "^0.8.0",
+    "@elysiajs/cors": "^0.8.0",
+    "@elysiajs/eden": "^0.8.1",
+    "@elysiajs/swagger": "^0.8.3",
+    "@prisma/client": "5.8.1",
+    "@sinclair/typebox": "^0.32.9",
+    "elysia": "^0.8.9",
     "nanoid": "^5.0.4",
     "pg": "^8.11.3",
     "redis": "^4.6.12",

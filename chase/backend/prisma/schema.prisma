@@ -1,0 +1,81 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "./generated/client"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator typebox {
+  provider = "prisma-typebox-generator"
+  output   = "./generated/schema"
+}
+
+model User {
+  id                    String             @id @default(uuid())
+  email                 String             @unique
+  name                  String
+  conferenceMemberships ConferenceMember[]
+  CommitteeMember       CommitteeMember[]
+}
+
+model Conference {
+  id               String             @id @default(uuid())
+  name             String             @unique
+  committees       Committee[]
+  start            DateTime?
+  end              DateTime?
+  conferenceMember ConferenceMember[]
+}
+
+enum ConferenceRole {
+  ADMIN
+  PARTICIPANT
+  TEAM_MEMBER
+  VISITOR
+}
+
+model ConferenceMember {
+  id           String         @id @default(uuid())
+  user         User           @relation(fields: [userId], references: [id])
+  conference   Conference     @relation(fields: [conferenceId], references: [id])
+  userId       String
+  conferenceId String
+  role         ConferenceRole
+}
+
+/// Consumeable token which grants the creation of a conference
+model ConferenceCreateToken {
+  token String @id
+}
+
+model Committee {
+  id               String            @id @default(uuid())
+  name             String
+  abbreviation     String
+  conference       Conference        @relation(fields: [conferenceId], references: [id])
+  conferenceId     String
+  committeeMembers CommitteeMember[]
+
+  @@unique([name, conferenceId])
+}
+
+enum CommitteeRole {
+  CHAIR
+  COUNTRY
+  NGO
+}
+
+model CommitteeMember {
+  id          String        @id @default(uuid())
+  user        User          @relation(fields: [userId], references: [id])
+  committee   Committee     @relation(fields: [committeeId], references: [id])
+  userId      String
+  committeeId String
+  role        CommitteeRole
+}

@@ -1,24 +1,17 @@
-import Elysia, { Context, t } from "elysia";
+import Elysia, { t } from "elysia";
 import { nanoid } from "nanoid";
-import { createClient } from "redis";
-import { appConfiguration } from "../config/config";
+import { redis } from "../../prisma/db";
 
-const client = createClient({
-  url: appConfiguration.db.redisUrl,
-});
-client.on("error", (err) => console.error("Redis Client Error", err));
-await client.connect();
-
-export type SessionData = {
+type sessionSchema = {
   userData?: {
-    userId: string;
+    id: string;
     email: string;
     family_name: string;
     given_name: string;
   };
 };
 
-export const session = new Elysia()
+export const session = new Elysia({ name: "session" })
   .guard({
     cookie: t.Cookie({
       sessionId: t.Optional(t.String()),
@@ -28,11 +21,11 @@ export const session = new Elysia()
     const createNewSession = async () => {
       sessionId.value = nanoid(30);
 
-      const data: SessionData = {};
-      await client.set(`user-session:${sessionId.value}`, JSON.stringify(data));
+      const data: sessionSchema = {};
+      await redis.set(`user-session:${sessionId.value}`, JSON.stringify(data));
 
       return {
-        session: { id: sessionId.value, data: data },
+        session: { ...data },
       };
     };
 
@@ -40,22 +33,13 @@ export const session = new Elysia()
       return createNewSession();
     }
 
-    const rawData = await client.get(`user-session:${sessionId.value}`);
+    const rawData = await redis.get(`user-session:${sessionId.value}`);
     if (!rawData) {
       return createNewSession();
     }
-    const data: SessionData = JSON.parse(rawData);
+    const data: sessionSchema = JSON.parse(rawData);
 
     return {
-      session: { id: sessionId.value, data },
+      session: { ...data },
     };
   });
-
-export const loggedIn = new Elysia().use(session).guard({
-  beforeHandle({ session, set }) {
-    if (!session.data.userData) {
-      // biome-ignore lint/suspicious/noAssignInExpressions: just return the state as body aswell
-      return (set.status = "Unauthorized");
-    }
-  },
-});

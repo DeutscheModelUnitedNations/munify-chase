@@ -36,6 +36,10 @@ export const appConfiguration = {
         ? process.env.DATABASE_URL ??
           "postgresql://postgres:postgres@localhost:5432/postgres"
         : requireEnv("DATABASE_URL"),
-    redisUrl: requireEnv("REDIS_URL"),
+    redisUrl:
+      NODE_ENV === "development"
+        ? process.env.REDIS_URL ??
+          "redis://default:redispw@localhost:6379"
+        : requireEnv("REDIS_URL"),
   },
 };

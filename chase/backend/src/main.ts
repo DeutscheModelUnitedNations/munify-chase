@@ -4,24 +4,27 @@ import { cors } from "@elysiajs/cors";
 import { committee } from "./routes/committee";
 import packagejson from "../package.json";
 import { appConfiguration } from "./config/config";
+import { errorLogging } from "./services/errorLogger";
+import { conference } from "./routes/conference";
 // import { conference } from "./routes/conference";
 
-const app = new Elysia({
+const m = new Elysia({
   cookie: {
     httpOnly: true,
-    maxAge: 60 * 60 * 24 * 5, // 5 days
+    maxAge: 60 * 60 * 24 * 7, // 7 days
     sameSite: "strict",
     secure: true,
     sign: true,
     secrets: appConfiguration.cookieSecrets,
   },
 })
+  .use(errorLogging)
   .use(cors({ origin: appConfiguration.CORSOrigins }))
-  // .use(conference)
+  .use(conference)
   .use(committee);
 
-if (appConfiguration.development) {
-  app.use(
+const app = new Elysia()
+  .use(
     swagger({
       path: `/${appConfiguration.documentationPath}`,
       documentation: {
@@ -32,15 +35,14 @@ if (appConfiguration.development) {
         },
       },
     }),
-  );
+  )
+  .use(m)
+  .listen(process.env.PORT ?? "3001");
 
-  console.info(
-    `Swagger documentation available at http://localhost:${
-      process.env.PORT ?? "3001"
-    }/${appConfiguration.documentationPath}`,
-  );
-}
-
-app.listen(process.env.PORT ?? "3001");
+console.info(
+  `Swagger documentation available at http://localhost:${
+    process.env.PORT ?? "3001"
+  }/${appConfiguration.documentationPath}`,
+);
 
 export type App = typeof app;

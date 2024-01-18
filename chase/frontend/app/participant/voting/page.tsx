@@ -4,15 +4,16 @@ import Motions from "@/components/voting/motions";
 import VotingArea from "@/components/voting/voting";
 import { useI18nContext } from "@/i18n/i18n-react";
 import { motionTestData, myCountry } from "@/test_data";
-import { Motion } from "@/custom_types";
+import { Motion } from "@/custom_types/custom_types";
 import { TabMenu } from "primereact/tabmenu";
 
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
-  faGavel,
+  faCommentExclamation,
   faHistory,
-  faSquarePollVertical,
+  faPollPeople,
 } from "@fortawesome/pro-solid-svg-icons";
+import { IconProp } from "@fortawesome/fontawesome-svg-core";
 
 type Tabs = "current-motions" | "recent-motions" | "recent-votings";
 
@@ -33,14 +34,24 @@ export default function VotingPage() {
             model={[
               {
                 label: LL.participants.voting.ACTIVE_MOTIONS_TAB(),
-                icon: <FontAwesomeIcon icon={faGavel} className="mr-2" />,
+                icon: (
+                  <FontAwesomeIcon
+                    icon={faCommentExclamation as IconProp}
+                    className="mr-2"
+                  />
+                ),
                 command: () => {
                   setOpenTab("current-motions");
                 },
               },
               {
                 label: LL.participants.voting.RECENT_MOTIONS_TAB(),
-                icon: <FontAwesomeIcon icon={faHistory} className="mr-2" />,
+                icon: (
+                  <FontAwesomeIcon
+                    icon={faHistory as IconProp}
+                    className="mr-2"
+                  />
+                ),
                 command: () => {
                   setOpenTab("recent-motions");
                 },
@@ -49,7 +60,7 @@ export default function VotingPage() {
                 label: LL.participants.voting.RECENT_VOTINGS_TAB(),
                 icon: (
                   <FontAwesomeIcon
-                    icon={faSquarePollVertical}
+                    icon={faPollPeople as IconProp}
                     className="mr-2"
                   />
                 ),

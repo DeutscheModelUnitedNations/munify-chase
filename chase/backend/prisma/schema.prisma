@@ -16,37 +16,13 @@ generator typebox {
   output   = "./generated/schema"
 }
 
+/// A user in the system
 model User {
   id                    String             @id @default(uuid())
   email                 String             @unique
   name                  String
   conferenceMemberships ConferenceMember[]
-  CommitteeMember       CommitteeMember[]
-}
-
-model Conference {
-  id               String             @id @default(uuid())
-  name             String             @unique
-  committees       Committee[]
-  start            DateTime?
-  end              DateTime?
-  conferenceMember ConferenceMember[]
-}
-
-enum ConferenceRole {
-  ADMIN
-  PARTICIPANT
-  TEAM_MEMBER
-  VISITOR
-}
-
-model ConferenceMember {
-  id           String         @id @default(uuid())
-  user         User           @relation(fields: [userId], references: [id])
-  conference   Conference     @relation(fields: [conferenceId], references: [id])
-  userId       String
-  conferenceId String
-  role         ConferenceRole
+  committeeMemberships  CommitteeMember[]
 }
 
 /// Consumeable token which grants the creation of a conference
@@ -54,28 +30,146 @@ model ConferenceCreateToken {
   token String @id
 }
 
+/// A conference in the system
+model Conference {
+  id          String             @id @default(uuid())
+  name        String             @unique
+  committees  Committee[]
+  start       DateTime?
+  end         DateTime?
+  delegations Delegation[]
+  members     ConferenceMember[]
+}
+
+/// The role of a user in a conference
+enum ConferenceRole {
+  ADMIN
+  SECRETARIAT
+  TEAM
+  GUEST
+}
+
+/// A user's membership in a conference, providing them with a role in the conference
+model ConferenceMember {
+  id           String         @id @default(uuid())
+  conference   Conference     @relation(fields: [conferenceId], references: [id])
+  conferenceId String
+  user         User           @relation(fields: [userId], references: [id])
+  userId       String
+  role         ConferenceRole
+}
+
+/// The type of a committee in a conference
+enum CommitteeCategory {
+  /// A standard committee
+  COMMITTEE
+  /// A crisis simulation
+  CRISIS
+  /// A International Court of Justice simulation
+  ICJ
+}
+
+/// A committee in a conference
 model Committee {
-  id               String            @id @default(uuid())
-  name             String
-  abbreviation     String
-  conference       Conference        @relation(fields: [conferenceId], references: [id])
-  conferenceId     String
-  committeeMembers CommitteeMember[]
+  id            String            @id @default(uuid())
+  name          String
+  abbreviation  String
+  category      CommitteeCategory
+  conference    Conference        @relation(fields: [conferenceId], references: [id])
+  conferenceId  String
+  members       CommitteeMember[]
+  parent        Committee?        @relation("subCommittee", fields: [parentId], references: [id])
+  parentId      String?
+  subCommittees Committee[]       @relation("subCommittee")
+  agendaItems   AgendaItem[]
 
   @@unique([name, conferenceId])
+  @@unique([abbreviation, name])
 }
 
+/// The role of a user in a committee
 enum CommitteeRole {
   CHAIR
-  COUNTRY
-  NGO
+  COMMITTEE_ADVISOR
+  DELEGATE
+  OBSERVER
+  NON_STATE_ACTOR
+  PRESS_CORPS
+  PARTICIPANT_CARE
 }
 
+/// A user's membership in a committee, providing them with a role in the committee
 model CommitteeMember {
-  id          String        @id @default(uuid())
-  user        User          @relation(fields: [userId], references: [id])
-  committee   Committee     @relation(fields: [committeeId], references: [id])
-  userId      String
-  committeeId String
-  role        CommitteeRole
+  id            String         @id @default(uuid())
+  committee     Committee      @relation(fields: [committeeId], references: [id])
+  committeeId   String
+  user          User           @relation(fields: [userId], references: [id])
+  userId        String
+  role          CommitteeRole
+  speakersLists SpeakersList[]
+  // TODO we kinda have a redundancy here, since we know if the member is a delegate based on
+  // the delegationId. However, this is not always the case so we have the role enum additionally
+  // to be able to distinguish between other roles a member can have
+  delegation    Delegation?    @relation(fields: [delegationId], references: [id])
+  delegationId  String?
+}
+
+/// An agenda item in a committee. This is a topic of discussion in a committee.
+model AgendaItem {
+  id           String         @id @default(uuid())
+  committee    Committee      @relation(fields: [committeeId], references: [id])
+  committeeId  String
+  title        String
+  description  String?
+  speakerLists SpeakersList[]
+  isActive     Boolean        @default(false)
+
+  // TODO is this correct? As far as I know only one agenda item can be active at a time
+  @@unique([isActive, committeeId])
+}
+
+/// The type of a speakers list
+enum SpeakersListCategory {
+  /// A standard speakers list
+  SPEAKERS_LIST
+  /// A comment list
+  COMMENT_LIST
+  /// A moderated caucus
+  MODERATED_CAUCUS
+}
+
+/// A speakers list in a committee
+model SpeakersList {
+  id           String               @id @default(uuid())
+  agendaItem   AgendaItem           @relation(fields: [agendaItemId], references: [id])
+  agendaItemId String
+  type         SpeakersListCategory
+  speakers     CommitteeMember[]
+}
+
+/// A nation in the system. E.g. Germany
+model Nation {
+  id          String       @id @default(uuid())
+  alpha3Code  String       @unique
+  delegations Delegation[]
+}
+
+/// A non-state actor in the system. E.g. the Red Cross
+model NonStateActor {
+  id   String @id @default(uuid())
+  code String @unique
+}
+
+model SpecialPerson {
+  id   String @id @default(uuid())
+  code String @unique
+}
+
+model Delegation {
+  id           String            @id @default(uuid())
+  conference   Conference        @relation(fields: [conferenceId], references: [id])
+  conferenceId String
+  nation       Nation            @relation(fields: [nationId], references: [id])
+  nationId     String
+  members      CommitteeMember[]
 }

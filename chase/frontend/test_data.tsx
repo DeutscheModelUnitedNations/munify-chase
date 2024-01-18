@@ -7,7 +7,7 @@ import {
   Voting,
   Motion,
   Attendance,
-} from "@/custom_types";
+} from "@/custom_types/custom_types";
 
 export const myCountry: CountryCode = "cpv";
 

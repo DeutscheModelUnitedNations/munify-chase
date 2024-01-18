@@ -14,15 +14,13 @@ import {
   faPaperPlane,
   faQuestionCircle,
 } from "@fortawesome/pro-solid-svg-icons";
-import {
-  FontAwesomeIcon,
-  FontAwesomeIconProps,
-} from "@fortawesome/react-fontawesome";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { IconProp } from "@fortawesome/fontawesome-svg-core";
 
 interface DropdownOptions {
   label: string;
   value: string;
-  icon: FontAwesomeIconProps["icon"];
+  icon: IconProp;
 }
 
 /**
@@ -43,31 +41,31 @@ export default function ActionsWidget() {
       label:
         LL.participants.dashboard.actionsWidget.contactForm.categoryOptions.GUEST_SPEAKER(),
       value: "guestSspeech",
-      icon: faComment,
+      icon: faComment as IconProp,
     },
     {
       label:
         LL.participants.dashboard.actionsWidget.contactForm.categoryOptions.FACT_CHECK(),
       value: "factCheck",
-      icon: faExclamationTriangle,
+      icon: faExclamationTriangle as IconProp,
     },
     {
       label:
         LL.participants.dashboard.actionsWidget.contactForm.categoryOptions.INFORMATION(),
       value: "information",
-      icon: faQuestionCircle,
+      icon: faQuestionCircle as IconProp,
     },
     {
       label:
         LL.participants.dashboard.actionsWidget.contactForm.categoryOptions.GENERAL_SECRETARY(),
       value: "generalSecretary",
-      icon: faGavel,
+      icon: faGavel as IconProp,
     },
     {
       label:
         LL.participants.dashboard.actionsWidget.contactForm.categoryOptions.OTHER(),
       value: "other",
-      icon: faPaperPlane,
+      icon: faPaperPlane as IconProp,
     },
   ];
   const [subjectLine, setSubjectLine] = React.useState("");
@@ -185,7 +183,7 @@ export default function ActionsWidget() {
             onChange={(e) => setMessage(e.target.value)}
           />
           <p>
-            <FontAwesomeIcon icon={faInfoCircle} />{" "}
+            <FontAwesomeIcon icon={faInfoCircle as IconProp} />{" "}
             <small>
               {LL.participants.dashboard.actionsWidget.contactForm.INFO_MESSAGE()}
             </small>
@@ -199,14 +197,14 @@ export default function ActionsWidget() {
           <Button
             label={LL.participants.dashboard.actionsWidget.CHAIR_BUTTON()}
             className="flex-1"
-            icon={<FontAwesomeIcon icon={faGavel} />}
+            icon={<FontAwesomeIcon icon={faGavel as IconProp} />}
             severity="warning"
             onClick={() => setDisplayChairDialog(true)}
           />
           <Button
             label={LL.participants.dashboard.actionsWidget.RESEARCH_SERVICE_BUTTON()}
             className="flex-1"
-            icon={<FontAwesomeIcon icon={faPaperPlane} />}
+            icon={<FontAwesomeIcon icon={faPaperPlane as IconProp} />}
             severity="help"
             onClick={() => setDisplayResearchDialog(true)}
           />

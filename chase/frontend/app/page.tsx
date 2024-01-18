@@ -1,37 +1,53 @@
 "use client";
 import React from "react";
-import Image from "next/image";
-import { Button } from "primereact/button";
-import { useRouter } from "next/navigation";
+import { useI18nContext } from "@/i18n/i18n-react";
+import Navbar from "@/components/home/navbar";
+import LandingHero from "@/components/home/landing_hero";
+import CardSection from "@/components/home/card_section";
+import TextSection from "@/components/home/text_section";
+import { faCodeBranch, faExternalLink } from "@fortawesome/pro-solid-svg-icons";
+import Footer from "@/components/home/footer";
 
 export default function Home() {
-  const router = useRouter();
+  const { LL } = useI18nContext();
 
   return (
     <>
-      <div className="flex align-center justify-center h-screen">
-        <div className="flex flex-col items-center justify-center">
-          <Image
-            src="/logo/png/chase_logo_blue_text.png"
-            alt="Logo"
-            width={700}
-            height={128}
-            className="mb-10"
+      <Navbar animate />
+      <div className="flex flex-col bg-primary-950">
+        <LandingHero />
+        <CardSection />
+        <div
+          className="flex flex-col lg:flex-none lg:grid gap-2 lg:gap-10 p-4 lg:p-20 align-items-start"
+          style={{
+            gridTemplateColumns: "auto 1fr",
+          }}
+        >
+          <TextSection
+            title={LL.home.ABOUT_TITEL()}
+            text={LL.home.ABOUT_TEXT()}
           />
-          <div className="p-buttonset mb-2">
-            <Button
-              label="Teilnehmenden-Login"
-              icon="pi pi-link"
-              onClick={() => router.push("/login/participant")}
-            />
-            <Button
-              label="Vorsitz-Login"
-              icon="pi pi-link"
-              onClick={() => router.push("/login/chair")}
-            />
-          </div>
+          <TextSection
+            title={LL.home.MISSION_TITLE()}
+            text={LL.home.MISSION_TEXT()}
+            button={{
+              lable: LL.home.MISSION_BUTTON_LABEL(),
+              link: "https://www.dmun.de/",
+              faIcon: faExternalLink,
+            }}
+          />
+          <TextSection
+            title={LL.home.CONTRIBUTE_TITEL()}
+            text={LL.home.CONTRIBUTE_TEXT()}
+            button={{
+              lable: LL.home.CONTRIBUTE_BUTTON_LABEL(),
+              link: "https://github.com/DeutscheModelUnitedNations/munify",
+              faIcon: faCodeBranch,
+            }}
+          />
         </div>
       </div>
+      <Footer />
     </>
   );
 }

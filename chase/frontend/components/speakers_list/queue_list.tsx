@@ -1,5 +1,5 @@
 import React from "react";
-import { CountryCode, SpeakersListData } from "@/custom_types";
+import { CountryCode, SpeakersListData } from "@/custom_types/custom_types";
 import Timeline from "@components/speakers_list/timeline";
 import getCountryNameByCode from "@/misc/get_country_name_by_code";
 import WidgetBoxTemplate from "../widget_box_template";
@@ -8,6 +8,7 @@ import { useI18nContext } from "@/i18n/i18n-react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faXmark } from "@fortawesome/pro-solid-svg-icons";
 import { Button } from "primereact/button";
+import { IconProp } from "@fortawesome/fontawesome-svg-core";
 
 /**
  * This Component is used in the Speakers List and Comment List on the Speakers List Page.
@@ -81,7 +82,7 @@ function CountryCard({
         <>
           {/* TODO Find intuitive way to change the oder of the list */}
           <Button
-            icon={<FontAwesomeIcon icon={faXmark} />}
+            icon={<FontAwesomeIcon icon={faXmark as IconProp} />}
             text
             severity="danger"
             size="small"

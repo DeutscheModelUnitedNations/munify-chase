@@ -18,6 +18,476 @@ type RootTranslation = {
 	 * L​o​a​d​i​n​g​.​.​.
 	 */
 	LOADING_PAGE: string
+	home: {
+		/**
+		 *  ​f​o​r​ ​t​h​e​ ​d​i​g​i​t​a​l​ ​a​g​e
+		 */
+		CAPTION: string
+		/**
+		 * T​h​i​s​ ​i​s​ ​w​h​e​r​e​ ​a​ ​c​a​t​c​h​y​ ​t​e​x​t​ ​a​b​o​u​t​ ​C​H​A​S​E​ ​c​o​u​l​d​ ​b​e​.
+		 */
+		HERO_TEXT: string
+		navbar: {
+			/**
+			 * A​d​m​i​n
+			 */
+			LOGIN_ADMIN: string
+			/**
+			 * C​h​a​i​r
+			 */
+			LOGIN_CHAIR: string
+			/**
+			 * D​o​c​u​m​e​n​t​a​t​i​o​n
+			 */
+			DOCUMENTATION: string
+			/**
+			 * F​A​Q​s
+			 */
+			FAQ: string
+			/**
+			 * L​o​g​i​n
+			 */
+			LOGIN_PARTICIPANT: string
+		}
+		heroCards: {
+			/**
+			 * D​e​b​a​t​e​s
+			 */
+			CARD_1_TITLE: string
+			/**
+			 * H​a​n​d​l​e​ ​s​p​e​a​k​e​r​s​ ​a​n​d​ ​c​o​m​m​e​n​t​s​ ​l​i​s​t​s​ ​w​i​t​h​ ​e​a​s​e​ ​a​n​d​ ​e​f​f​i​c​i​e​n​c​y​.​ ​N​o​ ​m​o​r​e​ ​p​a​p​e​r​ ​l​i​s​t​s​!
+			 */
+			CARD_1_TEXT: string
+			/**
+			 * V​o​t​i​n​g
+			 */
+			CARD_2_TITLE: string
+			/**
+			 * H​a​n​d​l​e​ ​m​o​t​i​o​n​s​ ​a​n​d​ ​v​o​t​i​n​g​ ​p​r​o​c​e​d​u​r​e​s​ ​w​i​t​h​ ​e​l​e​c​t​r​o​n​i​c​ ​v​o​t​i​n​g​ ​a​n​d​ ​p​r​e​p​r​e​p​a​r​e​d​ ​m​o​t​i​o​n​s​ ​a​c​c​o​r​d​i​n​g​ ​t​o​ ​y​o​u​r​ ​r​u​l​e​s​ ​o​f​ ​p​r​o​c​e​d​u​r​e​.
+			 */
+			CARD_2_TEXT: string
+			/**
+			 * R​e​s​o​l​u​t​i​o​n​s
+			 */
+			CARD_3_TITLE: string
+			/**
+			 * C​r​e​a​t​e​ ​a​n​d​ ​e​d​i​t​ ​r​e​s​o​l​u​t​i​o​n​s​ ​c​o​l​l​a​b​o​r​a​t​i​v​e​l​y​ ​w​i​t​h​ ​o​t​h​e​r​ ​d​e​l​e​g​a​t​e​s​.​ ​N​o​ ​m​o​r​e​ ​p​a​p​e​r​ ​o​r​ ​G​o​o​g​l​e​ ​D​o​c​s​!
+			 */
+			CARD_3_TEXT: string
+		}
+		/**
+		 * A​b​o​u​t​ ​C​H​A​S​E
+		 */
+		ABOUT_TITEL: string
+		/**
+		 * C​H​A​S​E​ ​(​C​H​A​i​r​S​o​f​t​w​a​r​E​)​ ​i​s​ ​a​ ​w​e​b​ ​a​p​p​l​i​c​a​t​i​o​n​ ​f​o​r​ ​t​h​e​ ​m​a​n​a​g​e​m​e​n​t​ ​o​f​ ​d​e​b​a​t​e​s​ ​i​n​ ​M​o​d​e​l​ ​U​n​i​t​e​d​ ​N​a​t​i​o​n​s​ ​c​o​n​f​e​r​e​n​c​e​s​.​ ​I​t​ ​i​s​ ​d​e​s​i​g​n​e​d​ ​t​o​ ​b​e​ ​u​s​e​d​ ​b​y​ ​c​h​a​i​r​s​ ​a​n​d​ ​d​e​l​e​g​a​t​e​s​ ​a​l​i​k​e​.​ ​C​H​A​S​E​ ​e​n​a​b​l​e​s​ ​C​h​a​i​r​s​ ​t​o​ ​m​a​n​a​g​e​ ​d​e​b​a​t​e​s​ ​w​i​t​h​ ​e​a​s​e​ ​w​h​i​l​e​ ​d​e​l​e​g​a​t​e​s​ ​c​a​n​ ​f​o​l​l​o​w​ ​a​l​o​n​g​ ​a​n​d​ ​c​o​l​l​a​b​o​r​a​t​e​ ​w​i​t​h​ ​o​t​h​e​r​ ​d​e​l​e​g​a​t​e​s​ ​i​n​ ​a​ ​i​n​t​u​i​t​i​v​e​ ​a​n​d​ ​s​t​r​u​c​t​u​r​e​d​ ​m​a​t​t​e​r​.​ ​C​H​A​S​E​ ​i​s​ ​f​r​e​e​ ​a​n​d​ ​o​p​e​n​ ​s​o​u​r​c​e​ ​s​o​f​t​w​a​r​e​.
+		 */
+		ABOUT_TEXT: string
+		/**
+		 * O​u​r​ ​M​i​s​s​i​o​n
+		 */
+		MISSION_TITLE: string
+		/**
+		 * C​H​A​S​E​ ​i​s​ ​d​e​v​e​l​o​p​e​d​ ​b​y​ ​m​e​m​b​e​r​s​ ​o​f​ ​t​h​e​ ​D​M​U​N​ ​c​o​m​m​u​n​i​t​y​.​ ​W​e​ ​w​a​n​t​ ​t​o​ ​p​r​o​v​i​d​e​ ​a​ ​f​r​e​e​ ​a​n​d​ ​o​p​e​n​ ​s​o​u​r​c​e​ ​a​l​t​e​r​n​a​t​i​v​e​ ​t​o​ ​o​t​h​e​r​ ​e​x​i​s​t​i​n​g​ ​d​e​b​a​t​e​ ​m​a​n​a​g​e​m​e​n​t​ ​s​o​f​t​w​a​r​e​.​ ​W​e​ ​w​a​n​t​ ​t​o​ ​m​a​k​e​ ​d​e​b​a​t​e​ ​m​a​n​a​g​e​m​e​n​t​ ​m​o​r​e​ ​a​c​c​e​s​s​i​b​l​e​ ​t​o​ ​s​m​a​l​l​e​r​ ​c​o​n​f​e​r​e​n​c​e​s​ ​a​n​d​ ​m​a​k​e​ ​i​t​ ​e​a​s​i​e​r​ ​f​o​r​ ​c​h​a​i​r​s​ ​t​o​ ​m​a​n​a​g​e​ ​d​e​b​a​t​e​s​.​ ​C​H​A​S​E​ ​i​s​ ​p​r​i​m​a​r​i​l​y​ ​d​e​v​e​l​o​p​e​d​ ​f​o​r​ ​t​h​e​ ​g​e​r​m​a​n​-​s​p​e​a​k​i​n​g​ ​c​o​n​f​e​r​e​n​c​e​s​ ​o​f​ ​D​M​U​N​ ​i​n​ ​G​e​r​m​a​n​y​,​ ​w​h​i​c​h​ ​a​r​e​ ​M​U​N​-​S​H​,​ ​M​U​N​B​W​ ​a​n​d​ ​M​U​N​B​B​,​ ​b​u​t​ ​w​e​ ​a​r​e​ ​a​l​w​a​y​s​ ​o​p​e​n​ ​t​o​ ​a​d​a​p​t​ ​C​H​A​S​E​ ​t​o​ ​o​t​h​e​r​ ​c​o​n​f​e​r​e​n​c​e​s​.
+		 */
+		MISSION_TEXT: string
+		/**
+		 * L​e​a​r​n​ ​m​o​r​e​ ​a​b​o​u​t​ ​D​M​U​N
+		 */
+		MISSION_BUTTON_LABEL: string
+		/**
+		 * C​o​n​t​r​i​b​u​t​e
+		 */
+		CONTRIBUTE_TITEL: string
+		/**
+		 * C​H​A​S​E​ ​i​s​ ​p​a​r​t​ ​o​f​ ​o​p​e​n​ ​s​o​u​r​c​e​ ​i​n​i​t​a​t​i​v​e​ ​'​M​U​N​i​f​y​'​ ​b​y​ ​D​M​U​N​.​ ​W​e​ ​a​r​e​ ​a​l​w​a​y​s​ ​l​o​o​k​i​n​g​ ​f​o​r​ ​p​e​o​p​l​e​ ​w​h​o​ ​w​a​n​t​ ​t​o​ ​c​o​n​t​r​i​b​u​t​e​ ​t​o​ ​C​H​A​S​E​.​ ​I​f​ ​y​o​u​ ​h​a​v​e​ ​e​x​p​e​r​i​e​n​c​e​ ​i​n​ ​w​e​b​ ​d​e​v​e​l​o​p​e​m​e​n​t​ ​o​r​ ​j​u​s​t​ ​w​a​n​t​ ​t​o​ ​l​e​a​r​n​ ​n​e​w​ ​s​k​i​l​l​s​,​ ​p​l​e​a​s​e​ ​v​i​s​i​t​ ​o​u​r​ ​G​i​t​H​u​b​ ​r​e​p​o​s​i​t​o​r​y​ ​a​n​d​ ​g​e​t​ ​i​n​ ​t​o​u​c​h​!
+		 */
+		CONTRIBUTE_TEXT: string
+		/**
+		 * V​i​s​i​t​ ​o​u​r​ ​G​i​t​H​u​b
+		 */
+		CONTRIBUTE_BUTTON_LABEL: string
+		footer: {
+			sitemap: {
+				/**
+				 * S​i​t​e​m​a​p
+				 */
+				TITEL: string
+				/**
+				 * H​o​m​e
+				 */
+				HOME: string
+				/**
+				 * F​A​Q​s
+				 */
+				FAQ: string
+				/**
+				 * D​o​c​u​m​e​n​t​a​t​i​o​n
+				 */
+				DOCS: string
+				/**
+				 * P​r​i​v​a​c​y​ ​P​o​l​i​c​y
+				 */
+				PRIVACY: string
+			}
+			imprint: {
+				/**
+				 * I​m​p​r​i​n​t
+				 */
+				TITEL: string
+				/**
+				 * D​e​u​t​s​c​h​e​ ​M​o​d​e​l​ ​U​n​i​t​e​d​ ​N​a​t​i​o​n​s​ ​(​D​M​U​N​)​ ​e​.​V​.
+				 */
+				ORGANISATION: string
+				/**
+				 * B​i​r​k​e​n​w​e​g​ ​1​,​ ​2​4​2​3​5​ ​L​a​b​o​e
+				 */
+				ADDRESS: string
+				/**
+				 * v​o​r​s​t​a​n​d​@​d​m​u​n​.​d​e
+				 */
+				EMAIL: string
+				/**
+				 * w​w​w​.​d​m​u​n​.​d​e
+				 */
+				WEBSITE: string
+			}
+		}
+	}
+	admin: {
+		login: {
+			/**
+			 * A​d​m​i​n​ ​L​o​g​i​n
+			 */
+			TITLE: string
+			/**
+			 * C​o​n​f​e​r​e​n​c​e​ ​I​D
+			 */
+			CONFERENCE_ID: string
+			/**
+			 * C​r​e​a​t​e
+			 */
+			CREATE_INSTEAD: string
+			/**
+			 * L​o​g​i​n
+			 */
+			SUBMIT: string
+		}
+		onboarding: {
+			/**
+			 * S​e​t​u​p​ ​n​e​w​ ​C​o​n​f​e​r​e​n​c​e
+			 */
+			title: string
+			/**
+			 * C​o​n​f​e​r​e​n​c​e​ ​N​a​m​e
+			 */
+			conferenceName: string
+			/**
+			 * D​a​t​e​s
+			 */
+			dates: string
+			/**
+			 * C​r​e​a​t​i​o​n​ ​T​o​k​e​n
+			 */
+			token: string
+			/**
+			 * L​o​g​i​n
+			 */
+			login: string
+			/**
+			 * C​r​e​a​t​e
+			 */
+			submit: string
+			/**
+			 * S​u​c​c​e​s​s
+			 */
+			success: string
+			/**
+			 * C​o​n​f​e​r​e​n​c​e​ ​c​r​e​a​t​e​d​!
+			 */
+			successDetails: string
+			error: {
+				/**
+				 * E​r​r​o​r
+				 */
+				title: string
+				/**
+				 * T​h​e​ ​t​o​k​e​n​ ​i​s​ ​i​n​v​a​l​i​d​.
+				 */
+				wrongToken: string
+				/**
+				 * A​ ​c​o​n​f​e​r​e​n​c​e​ ​w​i​t​h​ ​t​h​i​s​ ​n​a​m​e​ ​a​l​r​e​a​d​y​ ​e​x​i​s​t​s​.
+				 */
+				conferenceExists: string
+				/**
+				 * A​n​ ​e​r​r​o​r​ ​o​c​c​u​r​r​e​d​.
+				 */
+				generic: string
+			}
+			/**
+			 * Q​u​i​t​ ​S​e​t​u​p
+			 */
+			SAVE_AND_QUIT: string
+			/**
+			 * D​o​ ​y​o​u​ ​r​e​a​l​l​y​ ​w​a​n​t​ ​t​o​ ​q​u​i​t​ ​t​h​e​ ​s​e​t​u​p​?​ ​W​h​e​n​ ​y​o​u​ ​q​u​i​t​,​ ​y​o​u​ ​c​a​n​ ​a​l​w​a​y​s​ ​c​o​n​t​i​n​u​e​ ​l​a​t​e​r​.
+			 */
+			SAVE_AND_QUIT_MESSAGE: string
+			/**
+			 * C​o​n​t​i​n​u​e
+			 */
+			BUTTON_ADVANCE: string
+			/**
+			 * B​a​c​k
+			 */
+			BUTTON_BACK: string
+			structure: {
+				/**
+				 * D​e​l​e​t​e​ ​A​l​l
+				 */
+				DELETE_ALL: string
+				/**
+				 * A​r​e​ ​y​o​u​ ​s​u​r​e​ ​y​o​u​ ​w​a​n​t​ ​t​o​ ​d​e​l​e​t​e​ ​a​l​l​ ​c​o​m​m​i​t​t​e​e​s​?
+				 */
+				DELETE_ALL_CONFIRM: string
+				/**
+				 * A​d​d​ ​C​o​m​m​i​t​t​e​e
+				 */
+				ADD_COMMITTEE: string
+				/**
+				 * C​o​m​m​i​t​t​e​e​ ​a​d​d​e​d
+				 */
+				SUCCESS_ADD_COMMITTEE: string
+				/**
+				 * N​o​ ​C​o​m​m​i​t​t​e​e​s​ ​y​e​t​.​ ​C​l​i​c​k​ ​'​A​d​d​ ​C​o​m​m​i​t​t​e​e​'​ ​i​n​ ​t​h​e​ ​t​o​p​ ​r​i​g​h​t​ ​c​o​r​n​e​r​ ​t​o​ ​c​r​e​a​t​e​ ​a​ ​n​e​w​ ​o​n​e​.
+				 */
+				EMPTY_MESSAGE: string
+				/**
+				 * N​a​m​e
+				 */
+				COMMITTEE_LONG: string
+				/**
+				 * A​b​b​r​e​v​i​a​t​i​o​n
+				 */
+				COMMITTEE_SHORT: string
+				/**
+				 * C​a​t​e​g​o​r​y
+				 */
+				CATEGORY: string
+				/**
+				 * I​n​ ​t​o​t​a​l​ ​{​{​0​}​}​ ​c​o​m​m​i​t​t​e​e​s​.
+				 */
+				FOOTER: string
+				input: {
+					/**
+					 * A​d​d
+					 */
+					BUTTON_ADD: string
+					/**
+					 * C​a​n​c​e​l
+					 */
+					BUTTON_CANCEL: string
+					/**
+					 * C​a​t​e​g​o​r​y
+					 */
+					CATEGORY: string
+					/**
+					 * C​o​m​m​i​t​t​e​e
+					 */
+					CATEGORY_SWITCH_COMMITTEE: string
+					/**
+					 * C​r​i​s​i​s
+					 */
+					CATEGORY_SWITCH_CRISIS: string
+					/**
+					 * I​C​J
+					 */
+					CATEGORY_SWITCH_ICJ: string
+					/**
+					 * I​s​ ​S​u​b​-​C​o​m​m​i​t​t​e​e
+					 */
+					IS_SUBCOMMITTEE: string
+					/**
+					 * P​a​r​e​n​t​ ​C​o​m​m​i​t​t​e​e
+					 */
+					PARENT_COMMITTEE: string
+				}
+				/**
+				 * N​o​ ​C​o​m​m​i​t​t​e​e​s​ ​f​o​u​n​d
+				 */
+				ERROR_NO_COMMITTEES: string
+				/**
+				 * P​l​e​a​s​e​ ​c​r​e​a​t​e​ ​a​ ​c​o​m​m​i​t​t​e​e​ ​b​e​f​o​r​e​ ​c​o​n​t​i​n​u​i​n​g​.
+				 */
+				ERROR_NO_COMMITTEES_DETAILS: string
+			}
+			teampool: {
+				/**
+				 * D​e​l​e​t​e​ ​A​l​l
+				 */
+				DELETE_ALL: string
+				/**
+				 * U​p​l​o​a​d​ ​C​S​V
+				 */
+				UPLOAD_TEAM: string
+				/**
+				 * A​d​d​ ​T​e​a​m​ ​M​e​m​b​e​r
+				 */
+				ADD_TEAMMEMBER: string
+				/**
+				 * N​o​ ​T​e​a​m​ ​M​e​m​b​e​r​s​ ​y​e​t​.​ ​C​l​i​c​k​ ​'​A​d​d​ ​T​e​a​m​ ​M​e​m​b​e​r​'​ ​i​n​ ​t​h​e​ ​t​o​p​ ​r​i​g​h​t​ ​c​o​r​n​e​r​ ​t​o​ ​c​r​e​a​t​e​ ​a​ ​n​e​w​ ​o​n​e​.
+				 */
+				EMPTY_MESSAGE: string
+				/**
+				 * I​n​ ​t​o​t​a​l​ ​{​{​0​}​}​ ​t​e​a​m​ ​m​e​m​b​e​r​s​.
+				 */
+				FOOTER: string
+				/**
+				 * F​i​r​s​t​ ​N​a​m​e
+				 */
+				FIRST_NAME: string
+				/**
+				 * L​a​s​t​ ​N​a​m​e
+				 */
+				LAST_NAME: string
+				/**
+				 * E​m​a​i​l
+				 */
+				EMAIL: string
+				/**
+				 * R​o​l​e
+				 */
+				ROLE: string
+				roles: {
+					/**
+					 * A​d​m​i​n
+					 */
+					ADMIN: string
+					/**
+					 * C​h​a​i​r
+					 */
+					CHAIR: string
+					/**
+					 * C​o​m​m​i​t​t​e​e​ ​A​d​v​i​s​o​r
+					 */
+					COMMITTEE_ADVISOR: string
+					/**
+					 * S​e​c​r​e​t​a​r​i​a​t
+					 */
+					SECRETARIAT: string
+					/**
+					 * P​a​r​t​i​c​i​p​a​n​t​ ​C​a​r​e
+					 */
+					PARTICIPANT_CARE: string
+					/**
+					 * T​e​a​m
+					 */
+					TEAM: string
+					/**
+					 * G​u​e​s​t
+					 */
+					GUEST: string
+				}
+				input: {
+					/**
+					 * A​d​d
+					 */
+					BUTTON_ADD: string
+					/**
+					 * C​a​n​c​e​l
+					 */
+					BUTTON_CANCEL: string
+				}
+			}
+			committees: {
+				/**
+				 * S​e​l​e​c​t​ ​C​h​a​i​r​s
+				 */
+				CHAIRS: string
+				/**
+				 * S​e​l​e​c​t​ ​C​o​m​m​i​t​t​e​e​ ​A​d​v​i​s​o​r​s
+				 */
+				ADVISORS: string
+				/**
+				 * A​g​e​n​d​a​ ​I​t​e​m​s
+				 */
+				AGENDA_ITEMS: string
+				/**
+				 * A​d​d​ ​A​g​e​n​d​a​ ​I​t​e​m
+				 */
+				ADD_AGENDA_ITEM: string
+				/**
+				 * A​d​d
+				 */
+				ADD_ITEM_BUTTON: string
+			}
+			delegations: {
+				/**
+				 * A​d​d​ ​D​e​l​e​g​a​t​i​o​n
+				 */
+				ADD_DELEGATION_BUTTON: string
+				/**
+				 * D​e​l​e​g​a​t​i​o​n
+				 */
+				DELEGATION_COLUMN: string
+				/**
+				 * T​o​t​a​l
+				 */
+				TOTAL_NUMBER_OF_DELEGATIONS: string
+				/**
+				 * N​o​ ​D​e​l​e​g​a​t​i​o​n​s​ ​f​o​u​n​d
+				 */
+				EMPTY_MESSAGE: string
+				add_delegation: {
+					/**
+					 * A​d​d​ ​D​e​l​e​g​a​t​i​o​n
+					 */
+					HEADLINE: string
+					/**
+					 * S​e​a​r​c​h​ ​f​o​r​ ​a​ ​D​e​l​e​g​a​t​i​o​n
+					 */
+					SEARCH_PLACEHOLDER: string
+					/**
+					 * B​a​c​k
+					 */
+					BACK_BUTTON: string
+					/**
+					 * A​d​d​ ​a​n​d​ ​C​l​o​s​e
+					 */
+					ADD_BUTTON: string
+					/**
+					 * A​d​d
+					 */
+					ADD_MORE_BUTTON: string
+				}
+			}
+			steps: {
+				/**
+				 * S​t​r​u​c​t​u​r​e
+				 */
+				STEP_1: string
+				/**
+				 * T​e​a​m​ ​P​o​o​l
+				 */
+				STEP_2: string
+				/**
+				 * C​o​m​m​i​t​t​e​e​s
+				 */
+				STEP_3: string
+				/**
+				 * D​e​l​e​g​a​t​i​o​n​s
+				 */
+				STEP_4: string
+				/**
+				 * N​S​A​s
+				 */
+				STEP_5: string
+				/**
+				 * C​o​n​f​i​g​u​r​a​t​i​o​n​s
+				 */
+				STEP_6: string
+			}
+		}
+	}
 	login: {
 		/**
 		 * U​s​e​r​n​a​m​e
@@ -137,6 +607,10 @@ type RootTranslation = {
 		 * P​r​e​s​e​n​t​a​t​i​o​n
 		 */
 		PRESENTATION: string
+		/**
+		 * C​o​n​f​e​r​e​n​c​e​ ​P​r​e​s​s
+		 */
+		NEWS: string
 	}
 	settings: {
 		colorTheme: {
@@ -616,6 +1090,476 @@ export type TranslationFunctions = {
 	 * Loading...
 	 */
 	LOADING_PAGE: () => LocalizedString
+	home: {
+		/**
+		 *  for the digital age
+		 */
+		CAPTION: () => LocalizedString
+		/**
+		 * This is where a catchy text about CHASE could be.
+		 */
+		HERO_TEXT: () => LocalizedString
+		navbar: {
+			/**
+			 * Admin
+			 */
+			LOGIN_ADMIN: () => LocalizedString
+			/**
+			 * Chair
+			 */
+			LOGIN_CHAIR: () => LocalizedString
+			/**
+			 * Documentation
+			 */
+			DOCUMENTATION: () => LocalizedString
+			/**
+			 * FAQs
+			 */
+			FAQ: () => LocalizedString
+			/**
+			 * Login
+			 */
+			LOGIN_PARTICIPANT: () => LocalizedString
+		}
+		heroCards: {
+			/**
+			 * Debates
+			 */
+			CARD_1_TITLE: () => LocalizedString
+			/**
+			 * Handle speakers and comments lists with ease and efficiency. No more paper lists!
+			 */
+			CARD_1_TEXT: () => LocalizedString
+			/**
+			 * Voting
+			 */
+			CARD_2_TITLE: () => LocalizedString
+			/**
+			 * Handle motions and voting procedures with electronic voting and preprepared motions according to your rules of procedure.
+			 */
+			CARD_2_TEXT: () => LocalizedString
+			/**
+			 * Resolutions
+			 */
+			CARD_3_TITLE: () => LocalizedString
+			/**
+			 * Create and edit resolutions collaboratively with other delegates. No more paper or Google Docs!
+			 */
+			CARD_3_TEXT: () => LocalizedString
+		}
+		/**
+		 * About CHASE
+		 */
+		ABOUT_TITEL: () => LocalizedString
+		/**
+		 * CHASE (CHAirSoftwarE) is a web application for the management of debates in Model United Nations conferences. It is designed to be used by chairs and delegates alike. CHASE enables Chairs to manage debates with ease while delegates can follow along and collaborate with other delegates in a intuitive and structured matter. CHASE is free and open source software.
+		 */
+		ABOUT_TEXT: () => LocalizedString
+		/**
+		 * Our Mission
+		 */
+		MISSION_TITLE: () => LocalizedString
+		/**
+		 * CHASE is developed by members of the DMUN community. We want to provide a free and open source alternative to other existing debate management software. We want to make debate management more accessible to smaller conferences and make it easier for chairs to manage debates. CHASE is primarily developed for the german-speaking conferences of DMUN in Germany, which are MUN-SH, MUNBW and MUNBB, but we are always open to adapt CHASE to other conferences.
+		 */
+		MISSION_TEXT: () => LocalizedString
+		/**
+		 * Learn more about DMUN
+		 */
+		MISSION_BUTTON_LABEL: () => LocalizedString
+		/**
+		 * Contribute
+		 */
+		CONTRIBUTE_TITEL: () => LocalizedString
+		/**
+		 * CHASE is part of open source initative 'MUNify' by DMUN. We are always looking for people who want to contribute to CHASE. If you have experience in web developement or just want to learn new skills, please visit our GitHub repository and get in touch!
+		 */
+		CONTRIBUTE_TEXT: () => LocalizedString
+		/**
+		 * Visit our GitHub
+		 */
+		CONTRIBUTE_BUTTON_LABEL: () => LocalizedString
+		footer: {
+			sitemap: {
+				/**
+				 * Sitemap
+				 */
+				TITEL: () => LocalizedString
+				/**
+				 * Home
+				 */
+				HOME: () => LocalizedString
+				/**
+				 * FAQs
+				 */
+				FAQ: () => LocalizedString
+				/**
+				 * Documentation
+				 */
+				DOCS: () => LocalizedString
+				/**
+				 * Privacy Policy
+				 */
+				PRIVACY: () => LocalizedString
+			}
+			imprint: {
+				/**
+				 * Imprint
+				 */
+				TITEL: () => LocalizedString
+				/**
+				 * Deutsche Model United Nations (DMUN) e.V.
+				 */
+				ORGANISATION: () => LocalizedString
+				/**
+				 * Birkenweg 1, 24235 Laboe
+				 */
+				ADDRESS: () => LocalizedString
+				/**
+				 * vorstand@dmun.de
+				 */
+				EMAIL: () => LocalizedString
+				/**
+				 * www.dmun.de
+				 */
+				WEBSITE: () => LocalizedString
+			}
+		}
+	}
+	admin: {
+		login: {
+			/**
+			 * Admin Login
+			 */
+			TITLE: () => LocalizedString
+			/**
+			 * Conference ID
+			 */
+			CONFERENCE_ID: () => LocalizedString
+			/**
+			 * Create
+			 */
+			CREATE_INSTEAD: () => LocalizedString
+			/**
+			 * Login
+			 */
+			SUBMIT: () => LocalizedString
+		}
+		onboarding: {
+			/**
+			 * Setup new Conference
+			 */
+			title: () => LocalizedString
+			/**
+			 * Conference Name
+			 */
+			conferenceName: () => LocalizedString
+			/**
+			 * Dates
+			 */
+			dates: () => LocalizedString
+			/**
+			 * Creation Token
+			 */
+			token: () => LocalizedString
+			/**
+			 * Login
+			 */
+			login: () => LocalizedString
+			/**
+			 * Create
+			 */
+			submit: () => LocalizedString
+			/**
+			 * Success
+			 */
+			success: () => LocalizedString
+			/**
+			 * Conference created!
+			 */
+			successDetails: () => LocalizedString
+			error: {
+				/**
+				 * Error
+				 */
+				title: () => LocalizedString
+				/**
+				 * The token is invalid.
+				 */
+				wrongToken: () => LocalizedString
+				/**
+				 * A conference with this name already exists.
+				 */
+				conferenceExists: () => LocalizedString
+				/**
+				 * An error occurred.
+				 */
+				generic: () => LocalizedString
+			}
+			/**
+			 * Quit Setup
+			 */
+			SAVE_AND_QUIT: () => LocalizedString
+			/**
+			 * Do you really want to quit the setup? When you quit, you can always continue later.
+			 */
+			SAVE_AND_QUIT_MESSAGE: () => LocalizedString
+			/**
+			 * Continue
+			 */
+			BUTTON_ADVANCE: () => LocalizedString
+			/**
+			 * Back
+			 */
+			BUTTON_BACK: () => LocalizedString
+			structure: {
+				/**
+				 * Delete All
+				 */
+				DELETE_ALL: () => LocalizedString
+				/**
+				 * Are you sure you want to delete all committees?
+				 */
+				DELETE_ALL_CONFIRM: () => LocalizedString
+				/**
+				 * Add Committee
+				 */
+				ADD_COMMITTEE: () => LocalizedString
+				/**
+				 * Committee added
+				 */
+				SUCCESS_ADD_COMMITTEE: () => LocalizedString
+				/**
+				 * No Committees yet. Click 'Add Committee' in the top right corner to create a new one.
+				 */
+				EMPTY_MESSAGE: () => LocalizedString
+				/**
+				 * Name
+				 */
+				COMMITTEE_LONG: () => LocalizedString
+				/**
+				 * Abbreviation
+				 */
+				COMMITTEE_SHORT: () => LocalizedString
+				/**
+				 * Category
+				 */
+				CATEGORY: () => LocalizedString
+				/**
+				 * In total {{0}} committees.
+				 */
+				FOOTER: (arg0: number | string | boolean) => LocalizedString
+				input: {
+					/**
+					 * Add
+					 */
+					BUTTON_ADD: () => LocalizedString
+					/**
+					 * Cancel
+					 */
+					BUTTON_CANCEL: () => LocalizedString
+					/**
+					 * Category
+					 */
+					CATEGORY: () => LocalizedString
+					/**
+					 * Committee
+					 */
+					CATEGORY_SWITCH_COMMITTEE: () => LocalizedString
+					/**
+					 * Crisis
+					 */
+					CATEGORY_SWITCH_CRISIS: () => LocalizedString
+					/**
+					 * ICJ
+					 */
+					CATEGORY_SWITCH_ICJ: () => LocalizedString
+					/**
+					 * Is Sub-Committee
+					 */
+					IS_SUBCOMMITTEE: () => LocalizedString
+					/**
+					 * Parent Committee
+					 */
+					PARENT_COMMITTEE: () => LocalizedString
+				}
+				/**
+				 * No Committees found
+				 */
+				ERROR_NO_COMMITTEES: () => LocalizedString
+				/**
+				 * Please create a committee before continuing.
+				 */
+				ERROR_NO_COMMITTEES_DETAILS: () => LocalizedString
+			}
+			teampool: {
+				/**
+				 * Delete All
+				 */
+				DELETE_ALL: () => LocalizedString
+				/**
+				 * Upload CSV
+				 */
+				UPLOAD_TEAM: () => LocalizedString
+				/**
+				 * Add Team Member
+				 */
+				ADD_TEAMMEMBER: () => LocalizedString
+				/**
+				 * No Team Members yet. Click 'Add Team Member' in the top right corner to create a new one.
+				 */
+				EMPTY_MESSAGE: () => LocalizedString
+				/**
+				 * In total {{0}} team members.
+				 */
+				FOOTER: (arg0: number | string | boolean) => LocalizedString
+				/**
+				 * First Name
+				 */
+				FIRST_NAME: () => LocalizedString
+				/**
+				 * Last Name
+				 */
+				LAST_NAME: () => LocalizedString
+				/**
+				 * Email
+				 */
+				EMAIL: () => LocalizedString
+				/**
+				 * Role
+				 */
+				ROLE: () => LocalizedString
+				roles: {
+					/**
+					 * Admin
+					 */
+					ADMIN: () => LocalizedString
+					/**
+					 * Chair
+					 */
+					CHAIR: () => LocalizedString
+					/**
+					 * Committee Advisor
+					 */
+					COMMITTEE_ADVISOR: () => LocalizedString
+					/**
+					 * Secretariat
+					 */
+					SECRETARIAT: () => LocalizedString
+					/**
+					 * Participant Care
+					 */
+					PARTICIPANT_CARE: () => LocalizedString
+					/**
+					 * Team
+					 */
+					TEAM: () => LocalizedString
+					/**
+					 * Guest
+					 */
+					GUEST: () => LocalizedString
+				}
+				input: {
+					/**
+					 * Add
+					 */
+					BUTTON_ADD: () => LocalizedString
+					/**
+					 * Cancel
+					 */
+					BUTTON_CANCEL: () => LocalizedString
+				}
+			}
+			committees: {
+				/**
+				 * Select Chairs
+				 */
+				CHAIRS: () => LocalizedString
+				/**
+				 * Select Committee Advisors
+				 */
+				ADVISORS: () => LocalizedString
+				/**
+				 * Agenda Items
+				 */
+				AGENDA_ITEMS: () => LocalizedString
+				/**
+				 * Add Agenda Item
+				 */
+				ADD_AGENDA_ITEM: () => LocalizedString
+				/**
+				 * Add
+				 */
+				ADD_ITEM_BUTTON: () => LocalizedString
+			}
+			delegations: {
+				/**
+				 * Add Delegation
+				 */
+				ADD_DELEGATION_BUTTON: () => LocalizedString
+				/**
+				 * Delegation
+				 */
+				DELEGATION_COLUMN: () => LocalizedString
+				/**
+				 * Total
+				 */
+				TOTAL_NUMBER_OF_DELEGATIONS: () => LocalizedString
+				/**
+				 * No Delegations found
+				 */
+				EMPTY_MESSAGE: () => LocalizedString
+				add_delegation: {
+					/**
+					 * Add Delegation
+					 */
+					HEADLINE: () => LocalizedString
+					/**
+					 * Search for a Delegation
+					 */
+					SEARCH_PLACEHOLDER: () => LocalizedString
+					/**
+					 * Back
+					 */
+					BACK_BUTTON: () => LocalizedString
+					/**
+					 * Add and Close
+					 */
+					ADD_BUTTON: () => LocalizedString
+					/**
+					 * Add
+					 */
+					ADD_MORE_BUTTON: () => LocalizedString
+				}
+			}
+			steps: {
+				/**
+				 * Structure
+				 */
+				STEP_1: () => LocalizedString
+				/**
+				 * Team Pool
+				 */
+				STEP_2: () => LocalizedString
+				/**
+				 * Committees
+				 */
+				STEP_3: () => LocalizedString
+				/**
+				 * Delegations
+				 */
+				STEP_4: () => LocalizedString
+				/**
+				 * NSAs
+				 */
+				STEP_5: () => LocalizedString
+				/**
+				 * Configurations
+				 */
+				STEP_6: () => LocalizedString
+			}
+		}
+	}
 	login: {
 		/**
 		 * Username
@@ -735,6 +1679,10 @@ export type TranslationFunctions = {
 		 * Presentation
 		 */
 		PRESENTATION: () => LocalizedString
+		/**
+		 * Conference Press
+		 */
+		NEWS: () => LocalizedString
 	}
 	settings: {
 		colorTheme: {

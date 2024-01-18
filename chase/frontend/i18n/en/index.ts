@@ -3,6 +3,170 @@ import type { BaseTranslation } from "../i18n-types";
 const en = {
   LOADING_PAGE: "Loading...",
 
+  home: {
+    CAPTION: " for the digital age",
+    HERO_TEXT: "This is where a catchy text about CHASE could be.",
+    navbar: {
+      LOGIN_ADMIN: "Admin",
+      LOGIN_CHAIR: "Chair",
+      DOCUMENTATION: "Documentation",
+      FAQ: "FAQs",
+      LOGIN_PARTICIPANT: "Login",
+    },
+    heroCards: {
+      CARD_1_TITLE: "Debates",
+      CARD_1_TEXT:
+        "Handle speakers and comments lists with ease and efficiency. No more paper lists!",
+      CARD_2_TITLE: "Voting",
+      CARD_2_TEXT:
+        "Handle motions and voting procedures with electronic voting and preprepared motions according to your rules of procedure.",
+      CARD_3_TITLE: "Resolutions",
+      CARD_3_TEXT:
+        "Create and edit resolutions collaboratively with other delegates. No more paper or Google Docs!",
+    },
+    ABOUT_TITEL: "About CHASE",
+    ABOUT_TEXT:
+      "CHASE (CHAirSoftwarE) is a web application for the management of debates in Model United Nations conferences. It is designed to be used by chairs and delegates alike. CHASE enables Chairs to manage debates with ease while delegates can follow along and collaborate with other delegates in a intuitive and structured matter. CHASE is free and open source software.",
+    MISSION_TITLE: "Our Mission",
+    MISSION_TEXT:
+      "CHASE is developed by members of the DMUN community. We want to provide a free and open source alternative to other existing debate management software. We want to make debate management more accessible to smaller conferences and make it easier for chairs to manage debates. CHASE is primarily developed for the german-speaking conferences of DMUN in Germany, which are MUN-SH, MUNBW and MUNBB, but we are always open to adapt CHASE to other conferences.",
+    MISSION_BUTTON_LABEL: "Learn more about DMUN",
+    CONTRIBUTE_TITEL: "Contribute",
+    CONTRIBUTE_TEXT:
+      "CHASE is part of open source initative 'MUNify' by DMUN. We are always looking for people who want to contribute to CHASE. If you have experience in web developement or just want to learn new skills, please visit our GitHub repository and get in touch!",
+    CONTRIBUTE_BUTTON_LABEL: "Visit our GitHub",
+    footer: {
+      sitemap: {
+        TITEL: "Sitemap",
+        HOME: "Home",
+        FAQ: "FAQs",
+        DOCS: "Documentation",
+        PRIVACY: "Privacy Policy",
+      },
+      imprint: {
+        TITEL: "Imprint",
+        ORGANISATION: "Deutsche Model United Nations (DMUN) e.V.",
+        ADDRESS: "Birkenweg 1, 24235 Laboe",
+        EMAIL: "vorstand@dmun.de",
+        WEBSITE: "www.dmun.de",
+      },
+    },
+  },
+
+  admin: {
+    login: {
+      TITLE: "Admin Login",
+      CONFERENCE_ID: "Conference ID",
+      CREATE_INSTEAD: "Create",
+      SUBMIT: "Login",
+    },
+    onboarding: {
+      title: "Setup new Conference",
+      conferenceName: "Conference Name",
+      dates: "Dates",
+      token: "Creation Token",
+      login: "Login",
+      submit: "Create",
+      success: "Success",
+      successDetails: "Conference created!",
+      error: {
+        title: "Error",
+        wrongToken: "The token is invalid.",
+        conferenceExists: "A conference with this name already exists.",
+        generic: "An error occurred.",
+      },
+
+      SAVE_AND_QUIT: "Quit Setup",
+      SAVE_AND_QUIT_MESSAGE:
+        "Do you really want to quit the setup? When you quit, you can always continue later.",
+      BUTTON_ADVANCE: "Continue",
+      BUTTON_BACK: "Back",
+
+      structure: {
+        DELETE_ALL: "Delete All",
+        DELETE_ALL_CONFIRM: "Are you sure you want to delete all committees?",
+        ADD_COMMITTEE: "Add Committee",
+        SUCCESS_ADD_COMMITTEE: "Committee added",
+        EMPTY_MESSAGE:
+          "No Committees yet. Click 'Add Committee' in the top right corner to create a new one.",
+        COMMITTEE_LONG: "Name",
+        COMMITTEE_SHORT: "Abbreviation",
+        CATEGORY: "Category",
+        FOOTER: "In total {{0}} committees.",
+        input: {
+          BUTTON_ADD: "Add",
+          BUTTON_CANCEL: "Cancel",
+          CATEGORY: "Category",
+          CATEGORY_SWITCH_COMMITTEE: "Committee",
+          CATEGORY_SWITCH_CRISIS: "Crisis",
+          CATEGORY_SWITCH_ICJ: "ICJ",
+          IS_SUBCOMMITTEE: "Is Sub-Committee",
+          PARENT_COMMITTEE: "Parent Committee",
+        },
+        ERROR_NO_COMMITTEES: "No Committees found",
+        ERROR_NO_COMMITTEES_DETAILS:
+          "Please create a committee before continuing.",
+      },
+
+      teampool: {
+        DELETE_ALL: "Delete All",
+        UPLOAD_TEAM: "Upload CSV",
+        ADD_TEAMMEMBER: "Add Team Member",
+        EMPTY_MESSAGE:
+          "No Team Members yet. Click 'Add Team Member' in the top right corner to create a new one.",
+        FOOTER: "In total {{0}} team members.",
+        FIRST_NAME: "First Name",
+        LAST_NAME: "Last Name",
+        EMAIL: "Email",
+        ROLE: "Role",
+        roles: {
+          ADMIN: "Admin",
+          CHAIR: "Chair",
+          COMMITTEE_ADVISOR: "Committee Advisor",
+          SECRETARIAT: "Secretariat",
+          PARTICIPANT_CARE: "Participant Care",
+          TEAM: "Team",
+          GUEST: "Guest",
+        },
+        input: {
+          BUTTON_ADD: "Add",
+          BUTTON_CANCEL: "Cancel",
+        },
+      },
+
+      committees: {
+        CHAIRS: "Select Chairs",
+        ADVISORS: "Select Committee Advisors",
+        AGENDA_ITEMS: "Agenda Items",
+        ADD_AGENDA_ITEM: "Add Agenda Item",
+        ADD_ITEM_BUTTON: "Add",
+      },
+
+      delegations: {
+        ADD_DELEGATION_BUTTON: "Add Delegation",
+        DELEGATION_COLUMN: "Delegation",
+        TOTAL_NUMBER_OF_DELEGATIONS: "Total",
+        EMPTY_MESSAGE: "No Delegations found",
+        add_delegation: {
+          HEADLINE: "Add Delegation",
+          SEARCH_PLACEHOLDER: "Search for a Delegation",
+          BACK_BUTTON: "Back",
+          ADD_BUTTON: "Add and Close",
+          ADD_MORE_BUTTON: "Add",
+        }
+      },
+
+      steps: {
+        STEP_1: "Structure",
+        STEP_2: "Team Pool",
+        STEP_3: "Committees",
+        STEP_4: "Delegations",
+        STEP_5: "NSAs",
+        STEP_6: "Configurations",
+      },
+    },
+  },
+
   login: {
     USERNAME_PLACEHOLDER: "Username",
     PASSWORD_PLACEHOLDER: "Password",
@@ -43,6 +207,7 @@ const en = {
     WHITEBOARD: "Whiteboard",
     RESOLUTIONS: "Resolutions",
     PRESENTATION: "Presentation",
+    NEWS: "Conference Press",
   },
 
   settings: {

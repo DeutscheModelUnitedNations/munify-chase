@@ -1,4 +1,4 @@
-import { CountryCode } from "@/custom_types";
+import { CountryCode } from "@/custom_types/custom_types";
 
 /**
  * This function is used to get the path to the flag image for a given country code.

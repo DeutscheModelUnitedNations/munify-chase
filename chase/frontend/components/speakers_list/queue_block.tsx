@@ -1,6 +1,6 @@
 import React from "react";
 import Image from "next/image";
-import { CountryCode, Speaker } from "@/custom_types";
+import { CountryCode, Speaker } from "@/custom_types/custom_types";
 import { SmallFlag as Flag } from "@components/flag_templates";
 import { AnimatePresence, motion } from "framer-motion";
 

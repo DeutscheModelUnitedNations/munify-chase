@@ -39,6 +39,7 @@ export default function ChairSpeakersList() {
                 }
                 listOfAllCountries={data.speakersList.listOfAllCountries}
                 typeOfList={LL.participants.speakersList.SPEAKERS_LIST()}
+                isCommentList={false}
               />
             </SpeakersListBlock>
             <SpeakersListBlock
@@ -56,6 +57,7 @@ export default function ChairSpeakersList() {
                 }
                 listOfAllCountries={data.speakersList.listOfAllCountries}
                 typeOfList={LL.participants.speakersList.COMMENT_LIST()}
+                isCommentList={true}
               />
             </SpeakersListBlock>
           </div>

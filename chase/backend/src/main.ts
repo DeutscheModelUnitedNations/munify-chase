@@ -21,7 +21,10 @@ const m = new Elysia({
   .use(errorLogging)
   .use(cors({ origin: appConfiguration.CORSOrigins }))
   .use(conference)
-  .use(committee);
+  .use(committee)
+  .use(team)
+  .use(delegations)
+  .use(baseData);
 
 const app = new Elysia()
   .use(

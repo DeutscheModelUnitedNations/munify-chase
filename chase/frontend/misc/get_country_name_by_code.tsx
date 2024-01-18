@@ -1,5 +1,5 @@
 import countryData from "data/countries.json";
-import { CountryCode } from "@/custom_types";
+import { CountryCode } from "@/custom_types/custom_types";
 
 /**
  * This function is used to get the name of a country in a given language.
@@ -55,7 +55,7 @@ export default function getCountryNameByCode(
     languageCode = "en";
   }
 
-  const country = countryData.find((item) => item.alpha3 === countryCode);
+  const country = countryData.find((item) => item.alpha3 === countryCode?.toLowerCase());
 
   if (country) {
     // TODO Fix bug with types

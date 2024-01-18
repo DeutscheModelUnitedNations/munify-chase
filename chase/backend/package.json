@@ -10,7 +10,6 @@
     "build": "tsc --noEmit && bun build.ts"
   },
   "devDependencies": {
-    "@types/pg": "^8.10.9",
     "bun-types": "latest",
     "concurrently": "^8.2.2",
     "prisma": "5.8.1",
@@ -25,7 +24,6 @@
     "@sinclair/typebox": "^0.32.9",
     "elysia": "^0.8.9",
     "nanoid": "^5.0.4",
-    "pg": "^8.11.3",
     "redis": "^4.6.12",
     "typescript": "5.3.3"
   }

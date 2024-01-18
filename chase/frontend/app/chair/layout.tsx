@@ -4,16 +4,17 @@ import Navbar from "@/components/navbar/navbar";
 import NavButton from "@/components/navbar/button";
 import {
   faChalkboard,
-  faComment,
+  faPodium,
   faScroll,
-  faSquarePollVertical,
+  faPollPeople,
   faUsersLine,
-  faArrowUpRightFromSquare,
-  faSliders,
+  faPresentationScreen,
+  faSquareSliders,
 } from "@fortawesome/pro-solid-svg-icons";
 import { useI18nContext } from "@/i18n/i18n-react";
+import { IconProp } from "@fortawesome/fontawesome-svg-core";
 
-export default function Participant_Pages_Layout({
+export default function Chair_Pages_Layout({
   children,
 }: {
   children: React.ReactNode;
@@ -24,38 +25,38 @@ export default function Participant_Pages_Layout({
     <div className="flex h-screen w-screen bg-white text-primary-100 dark:bg-primary-100 dark:text-primary-900 shadow-md overflow-hidden">
       <Navbar>
         <NavButton
-          icon={faSliders}
+          icon={faSquareSliders as IconProp}
           link={"/chair/dashboard"}
           title={LL.navbar.CONFIGURATION()}
         />
         <NavButton
-          icon={faUsersLine}
+          icon={faUsersLine as IconProp}
           link={"/chair/attendees"}
           title={LL.navbar.ATTENDEES()}
         />
         <NavButton
-          icon={faComment}
+          icon={faPodium as IconProp}
           link={"/chair/speakers"}
           title={LL.navbar.SPEAKERS()}
         />
         <NavButton
-          icon={faSquarePollVertical}
+          icon={faPollPeople as IconProp}
           link={"/chair/voting"}
           title={LL.navbar.VOTING()}
         />
         <NavButton
-          icon={faChalkboard}
+          icon={faChalkboard as IconProp}
           link={"/chair/whiteboard"}
           title={LL.navbar.WHITEBOARD()}
         />
         <NavButton
-          icon={faScroll}
+          icon={faScroll as IconProp}
           link={"/chair/resolutions"}
           title={LL.navbar.RESOLUTIONS()}
         />
         <div className="h-5" />
         <NavButton
-          icon={faArrowUpRightFromSquare}
+          icon={faPresentationScreen as IconProp}
           newWindow
           link="/chair/presentation"
           title={LL.navbar.PRESENTATION()}

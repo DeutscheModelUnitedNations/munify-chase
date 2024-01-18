@@ -2,6 +2,7 @@ name: Build
 on: [pull_request]
 
 # TODO run tests too
+# TODO bring the frontend to bun when its ready
 jobs:
   chase-build-frontend:
     runs-on: ubuntu-latest

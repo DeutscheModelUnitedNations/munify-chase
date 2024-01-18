@@ -3,6 +3,172 @@ import type { Translation } from "../i18n-types";
 const de = {
   LOADING_PAGE: "Loading...",
 
+  home: {
+    CAPTION: " im 21. Jahrhundert",
+    HERO_TEXT:
+      "Debattenmanagement bei Model United Nations Konferenzen bekommt endlich ein Upgrade.",
+    navbar: {
+      LOGIN_ADMIN: "Admin",
+      LOGIN_CHAIR: "Vorsitz",
+      DOCUMENTATION: "Dokumentation",
+      FAQ: "FAQ",
+      LOGIN_PARTICIPANT: "Login",
+    },
+    heroCards: {
+      CARD_1_TITLE: "Debatten",
+      CARD_1_TEXT:
+        "Verwalte Rede- und Kurzbemerkungsliste einfach und effizient. Keine Papierlisten mehr!",
+      CARD_2_TITLE: "Absitmungen",
+      CARD_2_TEXT:
+        "Verwalte Anträge und Abstimmungen elektronisch und mit vorbereiteten Anträgen nach deiner Geschäftsordnung.",
+      CARD_3_TITLE: "Resolutionen",
+      CARD_3_TEXT:
+        "Erstelle und bearbeite Resolutionen gemeinsam mit anderen Delegierten. Kein Papier oder Google Docs mehr!",
+    },
+    ABOUT_TITEL: "Über CHASE",
+    ABOUT_TEXT:
+      "CHASE (CHAirSoftwarE) ist eine Webanwendung zur Verwaltung und Durchführung von Debatten in Model United Nations Konferenzen. Sie ist für Vorsitzende und Delegierte gleichermaßen konzipiert. CHASE ermöglicht es Vorsitzenden, Debatten einfach zu verwalten, während Delegierte der Debatte folgen und mit anderen Delegierten auf intuitive und strukturierte Weise zusammenarbeiten können. CHASE ist freie und open source Software.",
+    MISSION_TITLE: "Unsere Mission",
+    MISSION_TEXT:
+      "CHASE wird von Mitgliedern des deutschen Vereins DMUN e.V. entwickelt. Wir wollen eine kostenlose und frei zugängliche Alternative zu anderen Debatten-Management Anwendungen schaffen und damit den Zugang auch für kleinere Konferenzen erleichtern. CHASE ist primär für die deutschsprachigen Konferenzen von DMUN in Deutschland, MUN-SH, MUNBW und MUNBB, entwickelt worden. Wir sind aber immer offen, CHASE an andere Konferenzen anzupassen.",
+    MISSION_BUTTON_LABEL: "Mehr über DMUN erfahren",
+    CONTRIBUTE_TITEL: "Mithelfen",
+    CONTRIBUTE_TEXT:
+      "CHASE ist ein wichtiger Bestandteil der Open-Source-Initiative 'MUNify' von DMUN. Das bedeutet, dass jeder, der möchte, zur Entwicklung beitragen kann. Wir freuen uns über jede Hilfe, die wir bekommen können. Wenn du also erfahrung im Web-Development hast, oder einfach nur neue Skills lernen und mithelfen möchtest, schau doch mal auf unserem GitHub vorbei und schreib uns eine Nachricht.",
+    CONTRIBUTE_BUTTON_LABEL: "MUNify auf GitHub",
+    footer: {
+      sitemap: {
+        TITEL: "Sitemap",
+        HOME: "Home",
+        FAQ: "FAQs",
+        DOCS: "Dokumentation",
+        PRIVACY: "Datenschutzbestimmungen",
+      },
+      imprint: {
+        TITEL: "Impressum",
+        ORGANISATION: "Deutsche Model United Nations (DMUN) e.V.",
+        ADDRESS: "Birkenweg 1, 24235 Laboe",
+        EMAIL: "vorstand@dmun.de",
+        WEBSITE: "www.dmun.de",
+      },
+    },
+  },
+
+  admin: {
+    login: {
+      TITLE: "Admin Login",
+      CONFERENCE_ID: "Konferenz ID",
+      CREATE_INSTEAD: "Erstellen",
+      SUBMIT: "Login",
+    },
+    onboarding: {
+      title: "Neue Konferenz erstellen",
+      conferenceName: "Name der Konferenz",
+      dates: "Zeitraum",
+      token: "Erstellungstoken",
+      login: "Anmelden",
+      submit: "Erstellen",
+      success: "Erfolg",
+      successDetails: "Die Konferenz wurde erstellt!",
+      error: {
+        title: "Fehler",
+        wrongToken: "Das Token ist ungültig.",
+        conferenceExists: "Eine Konferenz mit diesem Namen existiert bereits.",
+        generic: "Ein Fehler ist aufgetreten.",
+      },
+
+      SAVE_AND_QUIT: "Einrichtung beenden",
+      SAVE_AND_QUIT_MESSAGE:
+        "Willst du die Einrichtung wirklich beenden? Du kannst sie jederzeit später fortsetzen.",
+      BUTTON_ADVANCE: "Weiter",
+      BUTTON_BACK: "Zurück",
+
+      structure: {
+        DELETE_ALL: "Alles löschen",
+        DELETE_ALL_CONFIRM: "Are you sure you want to delete all committees?",
+        ADD_COMMITTEE: "Gremium hinzufügen",
+        SUCCESS_ADD_COMMITTEE: "Gremium hinzugefügt",
+        EMPTY_MESSAGE:
+          "Keine Gremien vorhanden. Klicke oben rechts auf 'Gremium hinzufügen', um ein neues Gremium zu erstellen.",
+        COMMITTEE_LONG: "Name",
+        COMMITTEE_SHORT: "Abkürzung",
+        CATEGORY: "Kategorie",
+        FOOTER: "Insgesamt {{0}} Gremien.",
+        input: {
+          BUTTON_ADD: "Hinzufügen",
+          BUTTON_CANCEL: "Abbrechen",
+          CATEGORY: "Kategorie",
+          CATEGORY_SWITCH_COMMITTEE: "Gremium",
+          CATEGORY_SWITCH_CRISIS: "Krise",
+          CATEGORY_SWITCH_ICJ: "IGH",
+          IS_SUBCOMMITTEE: "Ist Vorlegendes Gremium / Untergremium",
+          PARENT_COMMITTEE:
+            "Beschlussfassendes Gremium / Übergeordnetes Gremium",
+        },
+        ERROR_NO_COMMITTEES: "Keine Gremien vorhanden",
+        ERROR_NO_COMMITTEES_DETAILS:
+          "Bitte erstelle ein Gremium, bevor du fortfährst.",
+      },
+
+      teampool: {
+        DELETE_ALL: "Alle löschen",
+        UPLOAD_TEAM: "CSV hochladen",
+        ADD_TEAMMEMBER: "Teammitglied hinzufügen",
+        EMPTY_MESSAGE:
+          "Keine Teammitglieder vorhanden. Klicke oben rechts auf 'Teammitglied hinzufügen', um ein neues Teammitglied zu erstellen.",
+        FOOTER: "Insgesamt {{0}} Teammitglieder.",
+        FIRST_NAME: "Vorname",
+        LAST_NAME: "Nachname",
+        EMAIL: "E-Mail",
+        ROLE: "Rolle",
+        roles: {
+          ADMIN: "Admin",
+          CHAIR: "Vorsitz",
+          COMMITTEE_ADVISOR: "Gremienberatung",
+          SECRETARIAT: "Sekretariat",
+          PARTICIPANT_CARE: "Teilnehmendenbetreuung",
+          TEAM: "Team",
+          GUEST: "Gast",
+        },
+        input: {
+          BUTTON_ADD: "Hinzufügen",
+          BUTTON_CANCEL: "Abbrechen",
+        },
+      },
+
+      committees: {
+        CHAIRS: "Vorsitzende auswählen",
+        ADVISORS: "Gremienberatung auswählen",
+        AGENDA_ITEMS: "Tagesordnung",
+        ADD_AGENDA_ITEM: "Tagesordnungspunkt hinzufügen",
+        ADD_ITEM_BUTTON: "Hinzufügen",
+      },
+
+      delegations: {
+        ADD_DELEGATION_BUTTON: "Delegation hinzufügen",
+        DELEGATION_COLUMN: "Delegation",
+        TOTAL_NUMBER_OF_DELEGATIONS: "Summe",
+        EMPTY_MESSAGE: "Keine Delegationen gefunden",
+        add_delegation: {
+          HEADLINE: "Delegation hinzufügen",
+          SEARCH_PLACEHOLDER: "Nach Delegation suchen",
+          BACK_BUTTON: "Zurück",
+          ADD_BUTTON: "Hinzufügen und schließen",
+          ADD_MORE_BUTTON: "Hinzufügen",
+        }
+      },
+
+      steps: {
+        STEP_1: "Struktur",
+        STEP_2: "Teampool",
+        STEP_3: "Gremien",
+        STEP_4: "Delegationen",
+        STEP_5: "NAs",
+        STEP_6: "Configurations",
+      },
+    },
+  },
+
   login: {
     USERNAME_PLACEHOLDER: "Username",
     PASSWORD_PLACEHOLDER: "Passwort",
@@ -43,6 +209,7 @@ const de = {
     WHITEBOARD: "Whiteboard",
     RESOLUTIONS: "Resolutionen",
     PRESENTATION: "Präsentation",
+    NEWS: "Konferenzpresse",
   },
 
   settings: {

@@ -3,24 +3,21 @@ import { db } from "../../prisma/db";
 import { committeeRoleGuard } from "../auth/guards/committeeRoles";
 import { conferenceRoleGuard } from "../auth/guards/conferenceRoles";
 import { openApiTag } from "../util/openApiTags";
-import { Committee } from "../../prisma/generated/schema";
+import { Delegation } from "../../prisma/generated/schema";
 
-const CommitteeWithoutRelations = t.Omit(Committee, [
+const DelegationWithoutRelations = t.Omit(Delegation, [
   "conference",
+  "nation",
   "members",
-  "parent",
-  "subCommittees",
-  "agendaItems",
-  "parentId",
 ]);
 
-export const committee = new Elysia({
+export const delegation = new Elysia({
   prefix: "/conference/:conferenceId",
 })
   .use(conferenceRoleGuard)
   .use(committeeRoleGuard)
   .get(
-    "/committee",
+    "/delegation",
     async ({ params: { conferenceId } }) => {
       return db.committee.findMany({
         where: {
@@ -38,7 +35,7 @@ export const committee = new Elysia({
     },
   )
   .post(
-    "/committee",
+    "/delegation",
     async ({ body, params: { conferenceId } }) => {
       return db.committee.create({
         data: {
@@ -60,7 +57,7 @@ export const committee = new Elysia({
     },
   )
   .get(
-    "/committee/:committeeId",
+    "/delegation/:delegationId",
     async ({ params: { conferenceId, committeeId } }) => {
       return db.committee.findFirstOrThrow({
         where: { conferenceId, id: committeeId },
@@ -73,17 +70,5 @@ export const committee = new Elysia({
         tags: [openApiTag(import.meta.path)],
       },
       response: CommitteeWithoutRelations,
-    },
-  )
-  .delete(
-    "/committee/:committeeId",
-    ({ params: { conferenceId, committeeId } }) =>
-      db.committee.delete({ where: { id: committeeId, conferenceId } }),
-    {
-      hasConferenceRole: ["ADMIN"],
-      detail: {
-        description: "Delete a committee by id",
-        tags: [openApiTag(import.meta.path)],
-      },
     },
   );

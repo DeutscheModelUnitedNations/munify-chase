@@ -14,7 +14,11 @@ export const conferenceRoleGuard = new Elysia()
   .use(session)
   .macro(({ onBeforeHandle }) => {
     return {
-      hasConferenceRole(roles: ConferenceRole[]) {
+      /**
+       * Checks if a user has the role in the conference. You can set the role to "any" to check if the user has any role in the conference.
+       * You can also set the role to an array of roles to check if the user has any of the roles in the conference.
+       */
+      hasConferenceRole(roles: ConferenceRole[] | "any") {
         onBeforeHandle(async ({ session, set, params }) => {
           if (!parametersSchema.Check(params)) {
             set.status = "Bad Request";
@@ -31,7 +35,7 @@ export const conferenceRoleGuard = new Elysia()
             where: {
               userId: session.userData.id,
               conferenceId,
-              role: { in: roles },
+              role: roles === "any" ? undefined : { in: roles },
             },
           });
 

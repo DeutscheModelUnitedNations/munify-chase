@@ -1,4 +1,4 @@
-import { appConfiguration } from "../src/config/config";
+import { appConfiguration } from "../src/util/config";
 import { PrismaClient } from "./generated/client";
 import { createClient } from "redis";
 

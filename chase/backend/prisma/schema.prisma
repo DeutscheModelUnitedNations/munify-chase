@@ -57,6 +57,8 @@ model ConferenceMember {
   user         User           @relation(fields: [userId], references: [id])
   userId       String
   role         ConferenceRole
+
+  @@unique([userId, conferenceId])
 }
 
 /// The type of a committee in a conference
@@ -147,6 +149,7 @@ model SpeakersList {
   speakers     CommitteeMember[]
 }
 
+//TODO should we allow for customizing these per conference and just allow loading template at creation?
 /// A nation in the system. E.g. Germany
 model Nation {
   id          String       @id @default(uuid())

@@ -15,7 +15,11 @@ export const committeeRoleGuard = new Elysia()
   .use(session)
   .macro(({ onBeforeHandle }) => {
     return {
-      hasCommitteeRole(roles: CommitteeRole[]) {
+      /**
+       * Checks if a user has the role in the committee. You can set the role to "any" to check if the user has any role in the committee.
+       * You can also set the role to an array of roles to check if the user has any of the roles in the committee.
+       */
+      hasCommitteeRole(roles: CommitteeRole[] | "any") {
         onBeforeHandle(async ({ session, set, params }) => {
           if (!parametersSchema.Check(params)) {
             set.status = "Bad Request";
@@ -37,7 +41,7 @@ export const committeeRoleGuard = new Elysia()
                   id: conferenceId,
                 },
               },
-              role: { in: roles },
+              role: roles === "any" ? undefined : { in: roles },
             },
           });
 

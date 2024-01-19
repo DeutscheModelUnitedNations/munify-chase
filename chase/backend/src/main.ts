@@ -1,12 +1,12 @@
 import { Elysia } from "elysia";
 import { swagger } from "@elysiajs/swagger";
 import { cors } from "@elysiajs/cors";
-import { committee } from "./routes/committee";
 import packagejson from "../package.json";
-import { appConfiguration } from "./config/config";
-import { errorLogging } from "./services/errorLogger";
+import { appConfiguration } from "./util/config";
+import { errorLogging } from "./util/errorLogger";
 import { conference } from "./routes/conference";
-// import { conference } from "./routes/conference";
+import { committee } from "./routes/committee";
+import { baseData } from "./routes/baseData";
 
 const m = new Elysia({
   cookie: {
@@ -22,10 +22,11 @@ const m = new Elysia({
   .use(cors({ origin: appConfiguration.CORSOrigins }))
   .use(conference)
   .use(committee)
-  .use(team)
-  .use(delegations)
+  // .use(team)
+  // .use(delegations)
   .use(baseData);
 
+// we make the api docs public
 const app = new Elysia()
   .use(
     swagger({

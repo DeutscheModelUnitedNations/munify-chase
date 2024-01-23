@@ -15,6 +15,8 @@ const ConferenceWithoutRelations = t.Omit(Conference, [
   "members",
 ]);
 
+const ConferenceData = t.Omit(ConferenceWithoutRelations, ["id"]);
+
 export const conference = new Elysia()
   .use(loggedIn)
   .use(conferenceRoleGuard) // we inject the conferenceRole macro here
@@ -79,17 +81,14 @@ export const conference = new Elysia()
         description: "Create a new conference, consumes a token",
         tags: [openApiTag(import.meta.path)],
       },
-      body: t.Composite([
-        t.Pick(Conference, ["name", "start", "end"]),
-        ConferenceCreateToken,
-      ]),
+      body: t.Composite([ConferenceData, ConferenceCreateToken]),
       response: ConferenceWithoutRelations,
     },
   )
   .get(
     "/conference/:conferenceId",
     async ({ params: { conferenceId } }) => {
-      const r = await db.conference.findFirstOrThrow({
+      const r = await db.conference.findUniqueOrThrow({
         where: { id: conferenceId },
       });
 
@@ -123,7 +122,7 @@ export const conference = new Elysia()
     },
     {
       hasConferenceRole: ["ADMIN"],
-      body: ConferenceWithoutRelations,
+      body: ConferenceData,
       detail: {
         description: "Update a conference by id",
         tags: [openApiTag(import.meta.path)],
@@ -181,7 +180,7 @@ export const conference = new Elysia()
       },
     },
   )
-  .get("/conference/:conferenceId/checkAdminAccess", async () => true, {
+  .get("/conference/:conferenceId/checkAdminAccess", () => true, {
     hasConferenceRole: ["ADMIN"],
     response: t.Boolean(),
     detail: {

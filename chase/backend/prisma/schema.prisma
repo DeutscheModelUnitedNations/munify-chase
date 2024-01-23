@@ -18,11 +18,15 @@ generator typebox {
 
 /// A user in the system
 model User {
-  id                    String             @id @default(uuid())
-  email                 String             @unique
-  name                  String
-  conferenceMemberships ConferenceMember[]
-  committeeMemberships  CommitteeMember[]
+  id                       String             @id @default(uuid())
+  email                    String             @unique
+  passwordHash             String?
+  passkeyPubKey            String?
+  emailValidated           Boolean            @default(false)
+  emailValidationTokenHash String?
+  name                     String
+  conferenceMemberships    ConferenceMember[]
+  committeeMemberships     CommitteeMember[]
 }
 
 /// Consumeable token which grants the creation of a conference
@@ -45,8 +49,11 @@ model Conference {
 enum ConferenceRole {
   ADMIN
   SECRETARIAT
-  TEAM
+  NON_STATE_ACTOR
+  PRESS_CORPS
   GUEST
+  PARTICIPANT_CARE
+  MISCELLANEOUS_TEAM
 }
 
 /// A user's membership in a conference, providing them with a role in the conference
@@ -95,9 +102,6 @@ enum CommitteeRole {
   COMMITTEE_ADVISOR
   DELEGATE
   OBSERVER
-  NON_STATE_ACTOR
-  PRESS_CORPS
-  PARTICIPANT_CARE
 }
 
 /// A user's membership in a committee, providing them with a role in the committee
@@ -105,8 +109,8 @@ model CommitteeMember {
   id            String         @id @default(uuid())
   committee     Committee      @relation(fields: [committeeId], references: [id])
   committeeId   String
-  user          User           @relation(fields: [userId], references: [id])
-  userId        String
+  user          User?          @relation(fields: [userId], references: [id])
+  userId        String?
   role          CommitteeRole
   speakersLists SpeakersList[]
   // TODO we kinda have a redundancy here, since we know if the member is a delegate based on

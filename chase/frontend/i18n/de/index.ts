@@ -1,7 +1,13 @@
 import type { Translation } from "../i18n-types";
 
 const de = {
-  LOADING_PAGE: "Loading...",
+  LOADING_PAGE: "Lade...",
+  ERROR: "Fehler",
+
+  NOT_FOUND: {
+    NOT_FOUND: "Nicht gefunden",
+    BACK_TO_HOME: "Zurück zur Startseite",
+  },
 
   home: {
     CAPTION: " im 21. Jahrhundert",
@@ -18,7 +24,7 @@ const de = {
       CARD_1_TITLE: "Debatten",
       CARD_1_TEXT:
         "Verwalte Rede- und Kurzbemerkungsliste einfach und effizient. Keine Papierlisten mehr!",
-      CARD_2_TITLE: "Absitmungen",
+      CARD_2_TITLE: "Abstimmungen",
       CARD_2_TEXT:
         "Verwalte Anträge und Abstimmungen elektronisch und mit vorbereiteten Anträgen nach deiner Geschäftsordnung.",
       CARD_3_TITLE: "Resolutionen",
@@ -155,7 +161,7 @@ const de = {
           BACK_BUTTON: "Zurück",
           ADD_BUTTON: "Hinzufügen und schließen",
           ADD_MORE_BUTTON: "Hinzufügen",
-        }
+        },
       },
 
       steps: {
@@ -170,11 +176,25 @@ const de = {
   },
 
   login: {
-    USERNAME_PLACEHOLDER: "Username",
+    EMAIL_PLACEHOLDER: "E-Mail",
     PASSWORD_PLACEHOLDER: "Passwort",
     ADVANCE_BUTTON: "Weiter",
     BACK_BUTTON: "Zurück",
     LOGIN_BUTTON: "Anmelden",
+    LOGIN_TITLE: "Anmelden",
+    LOGIN_DESCRIPTION: "Bitte melde dich mit deinen Zugangsdaten an.",
+    PASSKEY: "Passkey",
+    PASSWORD: "Passwort",
+    LOGIN_NOW: "Jetzt anmelden",
+    EMAIL_INVALID: "E-Mail-Adresse ungültig",
+    CREATE_ACCOUNT: "Konto erstellen",
+    PASSWORD_INVALID:
+      "Das Passwort ist ungültig. Es muss mindestens 8 Zeichen lang sein, und mindestens zwei Großbuchstaben, drei Kleinbuchstaben, zwei Zahlen und ein Sonderzeichen enthalten.",
+    WHAT_ARE_PASSKEYS: "Was sind Passkeys?",
+    CREATION_SUCCESS:
+      "Account erfolgreich erstellt. Bitte bestätige deine E-Mail-Adresse über die Link in der E-Mail, die wir geschickt haben, um den Account zu aktivieren.",
+    ACCOUNT_NOT_YET_CREATED:
+      "Prima, ein Konto mit dieser E-Mail-Adresse existiert noch nicht! Konto für diese E-Mail-Adresse mit folgendem Passwort anlegen:",
     POWERED_BY: "Ermöglicht durch",
     legalNotice: {
       SECTION_1: "Ich bin Einverstanden mit den ",

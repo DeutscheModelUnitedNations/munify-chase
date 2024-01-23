@@ -18,6 +18,20 @@ type RootTranslation = {
 	 * L​o​a​d​i​n​g​.​.​.
 	 */
 	LOADING_PAGE: string
+	/**
+	 * E​r​r​o​r
+	 */
+	ERROR: string
+	NOT_FOUND: {
+		/**
+		 * N​o​t​ ​f​o​u​n​d
+		 */
+		NOT_FOUND: string
+		/**
+		 * B​a​c​k​ ​t​o​ ​h​o​m​e
+		 */
+		BACK_TO_HOME: string
+	}
 	home: {
 		/**
 		 *  ​f​o​r​ ​t​h​e​ ​d​i​g​i​t​a​l​ ​a​g​e
@@ -490,9 +504,9 @@ type RootTranslation = {
 	}
 	login: {
 		/**
-		 * U​s​e​r​n​a​m​e
+		 * E​-​M​a​i​l
 		 */
-		USERNAME_PLACEHOLDER: string
+		EMAIL_PLACEHOLDER: string
 		/**
 		 * P​a​s​s​w​o​r​d
 		 */
@@ -509,6 +523,50 @@ type RootTranslation = {
 		 * L​o​g​i​n
 		 */
 		LOGIN_BUTTON: string
+		/**
+		 * L​o​g​i​n
+		 */
+		LOGIN_TITLE: string
+		/**
+		 * L​o​g​i​n​ ​n​o​w
+		 */
+		LOGIN_NOW: string
+		/**
+		 * P​a​s​s​k​e​y
+		 */
+		PASSKEY: string
+		/**
+		 * C​r​e​a​t​e​ ​A​c​c​o​u​n​t
+		 */
+		CREATE_ACCOUNT: string
+		/**
+		 * E​m​a​i​l​ ​i​s​ ​i​n​v​a​l​i​d
+		 */
+		EMAIL_INVALID: string
+		/**
+		 * A​c​c​o​u​n​t​ ​s​u​c​c​e​s​s​f​u​l​l​y​ ​c​r​e​a​t​e​d​.​ ​P​l​e​a​s​e​ ​c​o​n​f​i​r​m​ ​y​o​u​r​ ​e​-​m​a​i​l​ ​a​d​d​r​e​s​s​ ​v​i​a​ ​t​h​e​ ​l​i​n​k​ ​i​n​ ​t​h​e​ ​e​-​m​a​i​l​ ​w​e​ ​s​e​n​t​ ​y​o​u​ ​t​o​ ​a​c​t​i​v​a​t​e​ ​y​o​u​r​ ​a​c​c​o​u​n​t​.
+		 */
+		CREATION_SUCCESS: string
+		/**
+		 * T​h​e​ ​p​a​s​s​w​o​r​d​ ​i​s​ ​i​n​v​a​l​i​d​.​ ​I​t​ ​m​u​s​t​ ​b​e​ ​a​t​ ​l​e​a​s​t​ ​8​ ​c​h​a​r​a​c​t​e​r​s​ ​l​o​n​g​ ​a​n​d​ ​c​o​n​t​a​i​n​ ​a​t​ ​l​e​a​s​t​ ​t​w​o​ ​u​p​p​e​r​ ​c​a​s​e​ ​l​e​t​t​e​r​s​,​ ​t​h​r​e​e​ ​l​o​w​e​r​ ​c​a​s​e​ ​l​e​t​t​e​r​s​,​ ​t​w​o​ ​n​u​m​b​e​r​s​ ​a​n​d​ ​o​n​e​ ​s​p​e​c​i​a​l​ ​c​h​a​r​a​c​t​e​r​.
+		 */
+		PASSWORD_INVALID: string
+		/**
+		 * W​h​a​t​ ​a​r​e​ ​P​a​s​s​k​e​y​s​?
+		 */
+		WHAT_ARE_PASSKEYS: string
+		/**
+		 * P​a​s​s​w​o​r​d
+		 */
+		PASSWORD: string
+		/**
+		 * P​l​e​a​s​e​ ​e​n​t​e​r​ ​y​o​u​r​ ​c​r​e​d​e​n​t​i​a​l​s​ ​t​o​ ​c​o​n​t​i​n​u​e​.
+		 */
+		LOGIN_DESCRIPTION: string
+		/**
+		 * G​r​e​a​t​,​ ​a​n​ ​a​c​c​o​u​n​t​ ​w​i​t​h​ ​t​h​i​s​ ​e​-​m​a​i​l​ ​a​d​d​r​e​s​s​ ​d​o​e​s​ ​n​o​t​ ​y​e​t​ ​e​x​i​s​t​!​ ​C​r​e​a​t​e​ ​a​c​c​o​u​n​t​ ​f​o​r​ ​t​h​i​s​ ​e​-​m​a​i​l​ ​a​d​d​r​e​s​s​ ​w​i​t​h​ ​t​h​e​ ​f​o​l​l​o​w​i​n​g​ ​p​a​s​s​w​o​r​d​:
+		 */
+		ACCOUNT_NOT_YET_CREATED: string
 		/**
 		 * P​o​w​e​r​e​d​ ​b​y
 		 */
@@ -1090,6 +1148,20 @@ export type TranslationFunctions = {
 	 * Loading...
 	 */
 	LOADING_PAGE: () => LocalizedString
+	/**
+	 * Error
+	 */
+	ERROR: () => LocalizedString
+	NOT_FOUND: {
+		/**
+		 * Not found
+		 */
+		NOT_FOUND: () => LocalizedString
+		/**
+		 * Back to home
+		 */
+		BACK_TO_HOME: () => LocalizedString
+	}
 	home: {
 		/**
 		 *  for the digital age
@@ -1562,9 +1634,9 @@ export type TranslationFunctions = {
 	}
 	login: {
 		/**
-		 * Username
+		 * E-Mail
 		 */
-		USERNAME_PLACEHOLDER: () => LocalizedString
+		EMAIL_PLACEHOLDER: () => LocalizedString
 		/**
 		 * Password
 		 */
@@ -1581,6 +1653,50 @@ export type TranslationFunctions = {
 		 * Login
 		 */
 		LOGIN_BUTTON: () => LocalizedString
+		/**
+		 * Login
+		 */
+		LOGIN_TITLE: () => LocalizedString
+		/**
+		 * Login now
+		 */
+		LOGIN_NOW: () => LocalizedString
+		/**
+		 * Passkey
+		 */
+		PASSKEY: () => LocalizedString
+		/**
+		 * Create Account
+		 */
+		CREATE_ACCOUNT: () => LocalizedString
+		/**
+		 * Email is invalid
+		 */
+		EMAIL_INVALID: () => LocalizedString
+		/**
+		 * Account successfully created. Please confirm your e-mail address via the link in the e-mail we sent you to activate your account.
+		 */
+		CREATION_SUCCESS: () => LocalizedString
+		/**
+		 * The password is invalid. It must be at least 8 characters long and contain at least two upper case letters, three lower case letters, two numbers and one special character.
+		 */
+		PASSWORD_INVALID: () => LocalizedString
+		/**
+		 * What are Passkeys?
+		 */
+		WHAT_ARE_PASSKEYS: () => LocalizedString
+		/**
+		 * Password
+		 */
+		PASSWORD: () => LocalizedString
+		/**
+		 * Please enter your credentials to continue.
+		 */
+		LOGIN_DESCRIPTION: () => LocalizedString
+		/**
+		 * Great, an account with this e-mail address does not yet exist! Create account for this e-mail address with the following password:
+		 */
+		ACCOUNT_NOT_YET_CREATED: () => LocalizedString
 		/**
 		 * Powered by
 		 */

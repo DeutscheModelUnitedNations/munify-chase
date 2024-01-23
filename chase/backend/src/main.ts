@@ -7,6 +7,7 @@ import { errorLogging } from "./util/errorLogger";
 import { conference } from "./routes/conference";
 import { committee } from "./routes/committee";
 import { baseData } from "./routes/baseData";
+import { auth } from "./routes/auth";
 
 const m = new Elysia({
   cookie: {
@@ -22,6 +23,7 @@ const m = new Elysia({
   .use(cors({ origin: appConfiguration.CORSOrigins }))
   .use(conference)
   .use(committee)
+  .use(auth)
   // .use(team)
   // .use(delegations)
   .use(baseData);
@@ -43,10 +45,28 @@ const app = new Elysia()
   .use(m)
   .listen(process.env.PORT ?? "3001");
 
-console.info(
-  `Swagger documentation available at http://localhost:${
-    process.env.PORT ?? "3001"
-  }/${appConfiguration.documentationPath}`,
-);
+setTimeout(() => {
+  console.info(
+    `
+      
+      Swagger documentation available at http://localhost:${
+        process.env.PORT ?? "3001"
+      }/${appConfiguration.documentationPath}
+      
+      `,
+  );
+}, 3000);
+
+if (appConfiguration.development) {
+  setTimeout(() => {
+    console.info(
+      `
+      
+      Dummy emails sent to inbox at http://${appConfiguration.email.EMAIL_HOST}:3777
+      
+      `,
+    );
+  }, 3000);
+}
 
 export type App = typeof app;

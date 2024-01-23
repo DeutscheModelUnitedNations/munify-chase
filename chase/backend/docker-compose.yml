@@ -16,3 +16,13 @@ services:
       - '6379:6379'
     volumes: 
       - ./.redis-data:/data
+  smtp4dev:
+    image: rnwood/smtp4dev
+    ports:
+      - '3777:80'
+      - '5968:25'
+    volumes:
+      - ./.smtp4dev:/smtp4dev
+    environment:
+      - RelayOptions__Login=dev
+      - RelayOptions__Password=dev

@@ -14,6 +14,8 @@ const CommitteeWithoutRelations = t.Omit(Committee, [
   "parentId",
 ]);
 
+const CommitteeData = t.Omit(CommitteeWithoutRelations, ["id", "conferenceId"]);
+
 export const committee = new Elysia({
   prefix: "/conference/:conferenceId",
 })
@@ -21,7 +23,7 @@ export const committee = new Elysia({
   .use(committeeRoleGuard)
   .get(
     "/committee",
-    async ({ params: { conferenceId } }) => {
+    ({ params: { conferenceId } }) => {
       return db.committee.findMany({
         where: {
           conferenceId,
@@ -39,7 +41,7 @@ export const committee = new Elysia({
   )
   .post(
     "/committee",
-    async ({ body, params: { conferenceId } }) => {
+    ({ body, params: { conferenceId } }) => {
       return db.committee.create({
         data: {
           abbreviation: body.abbreviation,
@@ -55,14 +57,14 @@ export const committee = new Elysia({
         description: "Create a new committee in this conference",
         tags: [openApiTag(import.meta.path)],
       },
-      body: t.Pick(Committee, ["name", "abbreviation", "category"]),
+      body: CommitteeData,
       response: CommitteeWithoutRelations,
     },
   )
   .get(
     "/committee/:committeeId",
-    async ({ params: { conferenceId, committeeId } }) => {
-      return db.committee.findFirstOrThrow({
+    ({ params: { conferenceId, committeeId } }) => {
+      return db.committee.findUniqueOrThrow({
         where: { conferenceId, id: committeeId },
       });
     },
@@ -83,6 +85,27 @@ export const committee = new Elysia({
       hasConferenceRole: ["ADMIN"],
       detail: {
         description: "Delete a committee by id",
+        tags: [openApiTag(import.meta.path)],
+      },
+    },
+  )
+  .patch(
+    "/committee/:committeeId",
+    ({ params: { conferenceId, committeeId }, body }) => {
+      return db.committee.update({
+        where: { id: committeeId, conferenceId },
+        data: {
+          name: body.name,
+          abbreviation: body.abbreviation,
+          category: body.category,
+        },
+      });
+    },
+    {
+      hasConferenceRole: ["ADMIN"],
+      body: CommitteeData,
+      detail: {
+        description: "Update a committee by id",
         tags: [openApiTag(import.meta.path)],
       },
     },

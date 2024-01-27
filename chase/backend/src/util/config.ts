@@ -17,7 +17,7 @@ export const appConfiguration = {
   production: !development,
   development,
   CORSOrigins: development
-    ? ["localhost:3000", "localhost:3001"]
+    ? ["localhost:3000", "localhost:3001", "127.0.0.1:3000", "127.0.0.1:3001"]
     : requireEnv("CORS_ORIGINS")
         ?.split(",")
         .map((origin) => origin.trim()),
@@ -47,4 +47,9 @@ export const appConfiguration = {
     EMAIL_FROM: development ? "noreply@localhost" : requireEnv("EMAIL_FROM"),
     EMAIL_VERIFY_REDIRECT_URL: development ? "http://localhost:3000/pages/login/validateEmail" : requireEnv("EMAIL_VERIFY_REDIRECT_URL"),
   },
+  passkeys: {
+    RELAY_NAME: process.env.RELAY_NAME ?? "CHASE - DMUN e.V.",
+    RELAY_ID: process.env.RELAY_ID ?? "localhost",
+    RELAY_ORIGIN: development ? "http://localhost:3000" : requireEnv("RELAY_ORIGIN"),
+  }
 };

@@ -7,7 +7,7 @@ import { errorLogging } from "./util/errorLogger";
 import { conference } from "./routes/conference";
 import { committee } from "./routes/committee";
 import { baseData } from "./routes/baseData";
-import { auth } from "./routes/auth";
+import { auth } from "./routes/auth/auth";
 
 const m = new Elysia({
   cookie: {

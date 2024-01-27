@@ -532,9 +532,25 @@ type RootTranslation = {
 		 */
 		LOGIN_NOW: string
 		/**
+		 * T​h​e​ ​c​o​n​f​i​r​m​a​t​i​o​n​ ​t​o​k​e​n​ ​i​s​ ​i​n​v​a​l​i​d​ ​o​r​ ​c​o​u​l​d​ ​n​o​t​ ​b​e​ ​f​o​u​n​d​.
+		 */
+		NO_TOKEN: string
+		/**
+		 * T​h​e​ ​e​m​a​i​l​ ​i​s​ ​i​n​v​a​l​i​d​ ​o​r​ ​c​o​u​l​d​ ​n​o​t​ ​b​e​ ​f​o​u​n​d​.
+		 */
+		NO_EMAIL: string
+		/**
+		 * T​h​e​ ​e​m​a​i​l​ ​h​a​s​ ​b​e​e​n​ ​c​o​n​f​i​r​m​e​d​.
+		 */
+		EMAIL_CONFIRMED: string
+		/**
 		 * P​a​s​s​k​e​y
 		 */
 		PASSKEY: string
+		/**
+		 * W​e​ ​c​o​u​l​d​ ​n​o​t​ ​c​o​n​f​i​r​m​ ​y​o​u​r​ ​e​m​a​i​l​ ​a​d​d​r​e​s​s​.​ ​P​l​e​a​s​e​ ​t​r​y​ ​a​g​a​i​n​ ​l​a​t​e​r​.
+		 */
+		EMAIL_CONFIRMED_SERVER_ERROR: string
 		/**
 		 * C​r​e​a​t​e​ ​A​c​c​o​u​n​t
 		 */
@@ -1662,9 +1678,25 @@ export type TranslationFunctions = {
 		 */
 		LOGIN_NOW: () => LocalizedString
 		/**
+		 * The confirmation token is invalid or could not be found.
+		 */
+		NO_TOKEN: () => LocalizedString
+		/**
+		 * The email is invalid or could not be found.
+		 */
+		NO_EMAIL: () => LocalizedString
+		/**
+		 * The email has been confirmed.
+		 */
+		EMAIL_CONFIRMED: () => LocalizedString
+		/**
 		 * Passkey
 		 */
 		PASSKEY: () => LocalizedString
+		/**
+		 * We could not confirm your email address. Please try again later.
+		 */
+		EMAIL_CONFIRMED_SERVER_ERROR: () => LocalizedString
 		/**
 		 * Create Account
 		 */

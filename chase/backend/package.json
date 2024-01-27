@@ -23,6 +23,7 @@
     "@elysiajs/eden": "^0.8.1",
     "@elysiajs/swagger": "^0.8.3",
     "@prisma/client": "5.8.1",
+    "@simplewebauthn/server": "^9.0.0",
     "@sinclair/typebox": "^0.32.12",
     "elysia": "^0.8.9",
     "mjml": "^4.14.1",

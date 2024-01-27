@@ -25,6 +25,7 @@
     "@fortawesome/sharp-light-svg-icons": "^6.4.2",
     "@fortawesome/sharp-regular-svg-icons": "^6.4.2",
     "@fortawesome/sharp-solid-svg-icons": "^6.4.2",
+    "@simplewebauthn/browser": "^9.0.0",
     "@types/react": "18.2.48",
     "@types/react-dom": "18.2.18",
     "autoprefixer": "10.4.17",

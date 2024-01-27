@@ -38,6 +38,7 @@ export async function sendAccountConfirmationEmail({
     from: appConfiguration.email.EMAIL_FROM,
     to: email,
     html: template.text,
+    subject: template.subject,
   });
 
   if (result.rejected.length > 0) {

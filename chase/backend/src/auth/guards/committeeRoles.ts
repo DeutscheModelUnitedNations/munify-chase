@@ -21,6 +21,11 @@ export const committeeRoleGuard = new Elysia()
        */
       hasCommitteeRole(roles: CommitteeRole[] | "any") {
         onBeforeHandle(async ({ session, set, params }) => {
+          if (!session.loggedIn) {
+            // biome-ignore lint/suspicious/noAssignInExpressions: This is a valid use case
+            return (set.status = "Unauthorized");
+          }
+
           if (!parametersSchema.Check(params)) {
             set.status = "Bad Request";
             return [...parametersSchema.Errors(params)];

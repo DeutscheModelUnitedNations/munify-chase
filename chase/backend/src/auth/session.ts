@@ -2,13 +2,15 @@ import Elysia, { t } from "elysia";
 import { nanoid } from "nanoid";
 import { redis } from "../../prisma/db";
 
+interface UserData {
+  id: string;
+  email: string;
+}
+
 type sessionSchema = {
-  userData?: {
-    id: string;
-    email: string;
-    family_name: string;
-    given_name: string;
-  };
+  loggedIn: boolean;
+  userData?: UserData;
+  currentPasskeyChallenge?: any;
 };
 
 export const session = new Elysia({ name: "session" })
@@ -18,28 +20,47 @@ export const session = new Elysia({ name: "session" })
     }),
   })
   .derive(async ({ cookie: { sessionId } }) => {
-    const createNewSession = async () => {
-      sessionId.value = nanoid(30);
+    let data: sessionSchema = { loggedIn: false };
 
-      const data: sessionSchema = {};
+    const setPasskeyChallenge = async (challenge: any) => {
+      data.currentPasskeyChallenge = challenge;
+      await redis.set(`user-session:${sessionId.value}`, JSON.stringify(data));
+    };
+
+    const setUserData = async (userData: UserData) => {
+      data.userData = userData;
+      await redis.set(`user-session:${sessionId.value}`, JSON.stringify(data));
+    };
+
+    const setLoggedIn = async (loggedIn: boolean) => {
+      data.loggedIn = loggedIn;
+      await redis.set(`user-session:${sessionId.value}`, JSON.stringify(data));
+    };
+
+    const createNewSessionInDB = async () => {
+      sessionId.value = nanoid(30); // sets the session id in the cookie
+
       await redis.set(`user-session:${sessionId.value}`, JSON.stringify(data));
 
       return {
-        session: { ...data },
+        session: { ...data, setPasskeyChallenge, setUserData, setLoggedIn },
       };
     };
 
+    // no session id given by user? create a new session
     if (!sessionId.value) {
-      return createNewSession();
+      return createNewSessionInDB();
     }
 
+    // if the user provides a session id, check if it exists in the db
     const rawData = await redis.get(`user-session:${sessionId.value}`);
+    // if the session id doesn't exist in the db, create a new session
     if (!rawData) {
-      return createNewSession();
+      return createNewSessionInDB();
     }
-    const data: sessionSchema = JSON.parse(rawData);
+    data = JSON.parse(rawData);
 
     return {
-      session: { ...data },
+      session: { ...data, setPasskeyChallenge, setUserData, setLoggedIn },
     };
   });

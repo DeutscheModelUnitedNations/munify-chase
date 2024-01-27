@@ -26,7 +26,7 @@ const de = {
         "Verwalte Rede- und Kurzbemerkungsliste einfach und effizient. Keine Papierlisten mehr!",
       CARD_2_TITLE: "Abstimmungen",
       CARD_2_TEXT:
-        "Verwalte Anträge und Abstimmungen elektronisch und mit vorbereiteten Anträgen nach deiner Geschäftsordnung.",
+        "Verwalte Anträge und Abstimmungen elektronisch und mit vorbereiteten Anträgen nach Ihrer Geschäftsordnung.",
       CARD_3_TITLE: "Resolutionen",
       CARD_3_TEXT:
         "Erstelle und bearbeite Resolutionen gemeinsam mit anderen Delegierten. Kein Papier oder Google Docs mehr!",
@@ -40,7 +40,7 @@ const de = {
     MISSION_BUTTON_LABEL: "Mehr über DMUN erfahren",
     CONTRIBUTE_TITEL: "Mithelfen",
     CONTRIBUTE_TEXT:
-      "CHASE ist ein wichtiger Bestandteil der Open-Source-Initiative 'MUNify' von DMUN. Das bedeutet, dass jeder, der möchte, zur Entwicklung beitragen kann. Wir freuen uns über jede Hilfe, die wir bekommen können. Wenn du also erfahrung im Web-Development hast, oder einfach nur neue Skills lernen und mithelfen möchtest, schau doch mal auf unserem GitHub vorbei und schreib uns eine Nachricht.",
+      "CHASE ist ein wichtiger Bestandteil der Open-Source-Initiative 'MUNify' von DMUN. Das bedeutet, dass jeder, der möchte, zur Entwicklung beitragen kann. Wir freuen uns über jede Hilfe, die wir bekommen können. Wenn Sie also Erfahrung im Web-Development haben, oder einfach nur neue Skills lernen und mithelfen möchten, schauen Sie doch mal auf unserem GitHub vorbei!.",
     CONTRIBUTE_BUTTON_LABEL: "MUNify auf GitHub",
     footer: {
       sitemap: {
@@ -85,7 +85,7 @@ const de = {
 
       SAVE_AND_QUIT: "Einrichtung beenden",
       SAVE_AND_QUIT_MESSAGE:
-        "Willst du die Einrichtung wirklich beenden? Du kannst sie jederzeit später fortsetzen.",
+        "Wollen Sie die Einrichtung wirklich beenden? Sie kann später jederzeit fortgesetzt werden.",
       BUTTON_ADVANCE: "Weiter",
       BUTTON_BACK: "Zurück",
 
@@ -113,7 +113,7 @@ const de = {
         },
         ERROR_NO_COMMITTEES: "Keine Gremien vorhanden",
         ERROR_NO_COMMITTEES_DETAILS:
-          "Bitte erstelle ein Gremium, bevor du fortfährst.",
+          "Bitte erstellen Sie ein Gremium, um fortzufahren.",
       },
 
       teampool: {
@@ -182,7 +182,12 @@ const de = {
     BACK_BUTTON: "Zurück",
     LOGIN_BUTTON: "Anmelden",
     LOGIN_TITLE: "Anmelden",
-    LOGIN_DESCRIPTION: "Bitte melde dich mit deinen Zugangsdaten an.",
+    LOGIN_DESCRIPTION: "Bitte melden Sie sich mit Ihren Zugangsdaten an.",
+    NO_TOKEN: "Der Bestätigungstoken ist ungültig oder nicht vorhanden.",
+    NO_EMAIL: "Die E-Mail ist ungültig oder nicht vorhanden.",
+    EMAIL_CONFIRMED: "Die E-Mail ist nun bestätigt!",
+    EMAIL_CONFIRMED_SERVER_ERROR:
+      "Wir hatten Probleme deine E-Mail zu bestätigen. Bitte versuche es später noch einmal.",
     PASSKEY: "Passkey",
     PASSWORD: "Passwort",
     LOGIN_NOW: "Jetzt anmelden",
@@ -192,7 +197,7 @@ const de = {
       "Das Passwort ist ungültig. Es muss mindestens 8 Zeichen lang sein, und mindestens zwei Großbuchstaben, drei Kleinbuchstaben, zwei Zahlen und ein Sonderzeichen enthalten.",
     WHAT_ARE_PASSKEYS: "Was sind Passkeys?",
     CREATION_SUCCESS:
-      "Account erfolgreich erstellt. Bitte bestätige deine E-Mail-Adresse über die Link in der E-Mail, die wir geschickt haben, um den Account zu aktivieren.",
+      "Account erfolgreich erstellt. Bitte bestätigen Sie ihre E-Mail-Adresse über die Link in der E-Mail, die wir geschickt haben, um den Account zu aktivieren.",
     ACCOUNT_NOT_YET_CREATED:
       "Prima, ein Konto mit dieser E-Mail-Adresse existiert noch nicht! Konto für diese E-Mail-Adresse mit folgendem Passwort anlegen:",
     POWERED_BY: "Ermöglicht durch",

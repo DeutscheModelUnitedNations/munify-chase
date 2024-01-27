@@ -16,17 +16,36 @@ generator typebox {
   output   = "./generated/schema"
 }
 
+enum CredentialsType {
+  PASSWORD
+  PASSKEY
+}
+
 /// A user in the system
 model User {
-  id                       String             @id @default(uuid())
-  email                    String             @unique
-  passwordHash             String?
-  passkeyPubKey            String?
-  emailValidated           Boolean            @default(false)
-  emailValidationTokenHash String?
-  name                     String
-  conferenceMemberships    ConferenceMember[]
-  committeeMemberships     CommitteeMember[]
+  id                    String             @id @default(uuid())
+  email                 String             @unique
+  name                  String
+  conferenceMemberships ConferenceMember[]
+  committeeMemberships  CommitteeMember[]
+
+  // === credentials ===
+  type CredentialsType
+
+  // === password ===
+  passwordHash String?
+
+  // === passkey ===
+  passkeyCredentialID         String?
+  passkeyCredentialPublicKey  String?
+  passkeyCredentialCounter    Int?
+  passkeyCredentialDeviceType String?
+  passkeyCredentialBackedUp   Boolean?
+
+  // === email validation ===
+  emailValidated             Boolean   @default(false)
+  emailValidationTokenHash   String?
+  emailValidationTokenExpiry DateTime?
 }
 
 /// Consumeable token which grants the creation of a conference

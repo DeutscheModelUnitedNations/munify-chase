@@ -20,6 +20,10 @@ import { useToast } from "@/contexts/toast";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Chip } from "primereact/chip";
 import { Button } from "primereact/button";
+import {
+  browserSupportsWebAuthn,
+  startRegistration,
+} from "@simplewebauthn/browser";
 
 const emailRegex =
   /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|.(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
@@ -99,23 +103,55 @@ export default () => {
   const submit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-    setLoadingCreationResult(true);
-    const r = await backend.auth.createUserWithPassword.post({
-      email,
-      password,
-      locale,
-    });
-    setLoadingCreationResult(false);
-
-    if (r.error) {
-      toast.showToast({
-        severity: "error",
-        summary: r.error.message,
+    if (createNewUserType === "password") {
+      setLoadingCreationResult(true);
+      const r = await backend.auth.createUserWithPassword.post({
+        email,
+        password,
+        locale,
       });
-      return;
-    }
+      setLoadingCreationResult(false);
 
-    setCreationSuccess(true);
+      if (r.error) {
+        toast.showToast({
+          severity: "error",
+          summary: r.error.message,
+        });
+        return;
+      }
+
+      setCreationSuccess(true);
+    } else if (createNewUserType === "passkey") {
+      const r = await backend.auth.createUserWithPasskey.post({
+        email,
+        locale,
+      });
+      if (r.error) {
+        toast.showToast({
+          severity: "error",
+          summary: r.error.message,
+        });
+        return;
+      }
+      console.log(1);
+      const registration = await startRegistration(r.data);
+      console.log(2);
+
+      const r2 = await backend.auth.finishPasskeyRegistration.post(
+        // biome-ignore lint/suspicious/noExplicitAny: we rely on the library to return the correct type
+        registration as any,
+      );
+
+      if (r2.error) {
+        toast.showToast({
+          severity: "error",
+          summary: r2.error.message,
+        });
+        return;
+      }
+
+      setCreationSuccess(true);
+    }
   };
 
   const reset = () => {
@@ -125,7 +161,7 @@ export default () => {
   };
 
   return (
-    <div className="bg-white p-10 rounded-3xl flex flex-col items-center max-w-2xl w-full">
+    <>
       {!creationSuccess ? (
         <>
           <h1 className="font-bold text-4xl mb-4">{LL.login.LOGIN_TITLE()}</h1>
@@ -152,37 +188,40 @@ export default () => {
             ) : undefined}
             {userType && emailValid ? (
               <>
-                {userType === "notFound" ? (
+                {userType === "userNotFound" ? (
                   <>
-                    <span className="w-full flex justify-center mb-6 mt-4">
-                      <button
-                        type="button"
-                        onClick={() => setCreateNewUserType("password")}
-                        className="mr-4"
-                      >
-                        <Chip
-                          label={LL.login.PASSWORD()}
-                          className={
-                            createNewUserType === "password"
-                              ? "border-2 border-primary-600 duration-300"
-                              : "duration-300"
-                          }
-                        />
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setCreateNewUserType("passkey")}
-                      >
-                        <Chip
-                          label={LL.login.PASSKEY()}
-                          className={
-                            createNewUserType === "passkey"
-                              ? "border-2 border-primary-600 duration-300"
-                              : "duration-300"
-                          }
-                        />
-                      </button>
-                    </span>
+                    {browserSupportsWebAuthn() ? (
+                      <span className="w-full flex justify-center mb-6 mt-4">
+                        <button
+                          type="button"
+                          onClick={() => setCreateNewUserType("password")}
+                          className="mr-4"
+                        >
+                          <Chip
+                            label={LL.login.PASSWORD()}
+                            className={
+                              createNewUserType === "password"
+                                ? "border-2 border-primary-600 duration-300"
+                                : "duration-300"
+                            }
+                          />
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={() => setCreateNewUserType("passkey")}
+                        >
+                          <Chip
+                            label={LL.login.PASSKEY()}
+                            className={
+                              createNewUserType === "passkey"
+                                ? "border-2 border-primary-600 duration-300"
+                                : "duration-300"
+                            }
+                          />
+                        </button>
+                      </span>
+                    ) : undefined}
                     {createNewUserType === "password" ? (
                       <>
                         <p className="w-full text-center mb-8">
@@ -232,6 +271,18 @@ export default () => {
                           <FontAwesomeIcon icon={faInfoCircle} />
                           <p className="ml-2">{LL.login.WHAT_ARE_PASSKEYS()}</p>
                         </Link>
+                        <Button
+                          type="submit"
+                          label={LL.login.CREATE_ACCOUNT()}
+                          className="w-full mt-3"
+                        >
+                          {loadingCreationResult ? (
+                            <FontAwesomeIcon
+                              icon={faSpinnerThird}
+                              spin={true}
+                            />
+                          ) : undefined}
+                        </Button>
                       </>
                     )}
                   </>
@@ -258,130 +309,6 @@ export default () => {
           />
         </>
       )}
-    </div>
+    </>
   );
 };
-
-// export default function Login() {
-//   const { LL } = useI18nContext();
-//   const backend = useBackend();
-//   const toast = useRef<Toast>(null);
-//   const router = useRouter();
-
-//   const [loading, setLoading] = useState(false);
-//   const [conferenceId, setConferenceId] = useState("");
-//   const [myConferences, setMyConferences] = useState<
-//     Awaited<ReturnType<typeof getMyConferences>>
-//   >(null);
-
-//   async function getMyConferences() {
-//     const response = await backend.listMyConferences.get().catch((err) => {
-//       toast.current?.show({
-//         severity: "error",
-//         summary: LL.admin.onboarding.error.title(),
-//         detail: LL.admin.onboarding.error.generic(),
-//       });
-//     });
-//     setMyConferences(response?.data || []);
-//   }
-
-//   useEffect(() => {
-//     getMyConferences();
-//   }, []);
-
-//   const submit = (e: React.FormEvent<HTMLFormElement>) => {
-//     e.preventDefault();
-//     setLoading(true);
-
-//     backend.conference[conferenceId].registerAdmin
-//       .post()
-//       .then((res) => {
-//         toast.current?.show({
-//           severity: "success",
-//           summary: LL.admin.onboarding.success(),
-//           detail: LL.admin.onboarding.successDetails(),
-//         });
-
-//         router.push(`/admin/onboarding/${conferenceId}/structure`);
-//       })
-//       .catch((err) => {
-//         toast.current?.show({
-//           severity: "error",
-//           summary: LL.admin.onboarding.error.title(),
-//           detail: LL.admin.onboarding.error.generic(),
-//         });
-//         setLoading(false);
-//       });
-//   };
-
-//   return (
-//     <>
-//       <Image
-//         src="/logo/png/chase_logo_white_text.png"
-//         alt="Logo"
-//         width={350}
-//         height={128}
-//         className="mb-10"
-//       />
-//       <div className="flex-1 flex flex-col justify-center items-center bg-white dark:bg-primary-200 w-96 p-5 rounded-md shadow-lg">
-//         <form
-//           className="flex flex-col items-stretch justify-center gap-6 w-full"
-//           onSubmit={(e) => submit(e)}
-//         >
-//           <h1 className="text-2xl font-bold text-center mb-4">
-//             {LL.admin.login.TITLE()}
-//           </h1>
-//           <div className="flex flex-col gap-2">
-//             {myConferences === null && (
-//               <>
-//                 <Skeleton height="3rem" />
-//                 <Skeleton height="3rem" />
-//               </>
-//               )}
-//             {myConferences && (myConferences.map((conference) => (
-//               <Link
-//                 href={`/admin/onboarding/${conference.id}/structure`}
-//                 key={conference.id}
-//               >
-//                 <Button
-//                   label={conference.name}
-//                   className="w-full"
-//                   severity="secondary"
-//                 />
-//               </Link>
-//             )))}
-//           </div>
-//           <span className="p-float-label mb-5">
-//             <InputText
-//               id="conferenceId"
-//               value={conferenceId}
-//               onChange={(e) => setConferenceId(e.target.value)}
-//               className="w-full"
-//               required
-//             />
-//             <label htmlFor="conferenceId">
-//               {LL.admin.login.CONFERENCE_ID()}
-//             </label>
-//           </span>
-//           <div className="flex w-full gap-4">
-//             <Button
-//               label={LL.admin.login.CREATE_INSTEAD()}
-//               className="w-full"
-//               severity="warning"
-//               faIcon={faSparkles}
-//               onClick={() => router.push("/admin/new")}
-//             />
-//             <Button
-//               label={LL.admin.login.SUBMIT()}
-//               className="w-full"
-//               faIcon={faRightToBracket}
-//               type="submit"
-//               loading={loading}
-//             />
-//             <Toast ref={toast} />
-//           </div>
-//         </form>
-//       </div>
-//     </>
-//   );
-// }

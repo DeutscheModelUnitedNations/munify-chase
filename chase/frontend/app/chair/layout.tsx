@@ -10,6 +10,8 @@ import {
   faUsersLine,
   faPresentationScreen,
   faSquareSliders,
+  faNewspaper,
+  faCommentExclamation
 } from "@fortawesome/pro-solid-svg-icons";
 import { useI18nContext } from "@/i18n/i18n-react";
 import { IconProp } from "@fortawesome/fontawesome-svg-core";
@@ -60,6 +62,18 @@ export default function Chair_Pages_Layout({
           newWindow
           link="/chair/presentation"
           title={LL.navbar.PRESENTATION()}
+        />
+        <NavButton
+          icon={faNewspaper as IconProp}
+          newWindow
+          link="https://presse.mun-sh.de/" // TODO make this link configurable for the chair (Link to external News Page)
+          title={LL.navbar.NEWS()}
+        />
+        <NavButton
+          icon={faCommentExclamation as IconProp}
+          newWindow
+          link="https://chase-fb.dmun.de"
+          title={LL.navbar.BUG_REPORT()}
         />
       </Navbar>
       {children}

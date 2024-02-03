@@ -208,6 +208,7 @@ const en = {
     RESOLUTIONS: "Resolutions",
     PRESENTATION: "Presentation",
     NEWS: "Conference Press",
+    BUG_REPORT: "Report a Bug",
   },
 
   settings: {

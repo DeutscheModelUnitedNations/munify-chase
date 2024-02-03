@@ -210,6 +210,7 @@ const de = {
     RESOLUTIONS: "Resolutionen",
     PRESENTATION: "Präsentation",
     NEWS: "Konferenzpresse",
+    BUG_REPORT: "Fehler melden",
   },
 
   settings: {

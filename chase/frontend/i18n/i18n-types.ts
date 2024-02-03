@@ -611,6 +611,10 @@ type RootTranslation = {
 		 * C​o​n​f​e​r​e​n​c​e​ ​P​r​e​s​s
 		 */
 		NEWS: string
+		/**
+		 * R​e​p​o​r​t​ ​a​ ​B​u​g
+		 */
+		BUG_REPORT: string
 	}
 	settings: {
 		colorTheme: {
@@ -1683,6 +1687,10 @@ export type TranslationFunctions = {
 		 * Conference Press
 		 */
 		NEWS: () => LocalizedString
+		/**
+		 * Report a Bug
+		 */
+		BUG_REPORT: () => LocalizedString
 	}
 	settings: {
 		colorTheme: {

@@ -14,63 +14,41 @@ export const passkeys = new Elysia()
   .use(session)
   .post(
     "/createUserWithPasskey",
-    async ({ body: { email, locale, name }, session }) => {
-      return db.$transaction(async (tx) => {
-        const emailValidationToken = nanoid(32);
-        const emailValidationTokenHash =
-          await Bun.password.hash(emailValidationToken);
-        const user = await tx.user.create({
-          data: {
-            email,
-            name: name ?? email,
-            type: "PASSKEY",
-            emailValidationTokenExpiry: new Date(Date.now() + 10 * 60 * 1000),
-            emailValidationTokenHash,
-          },
-        });
+    async ({ body: { email }, session }) => {
+      const userID = nanoid();
 
-        await session.setUserData({
-          id: user.id,
-          email: user.email,
-        });
-
-        //TODO: report back errors in sending emails to the frontend in structured way
-        await sendAccountConfirmationEmail({
-          email,
-          locale,
-          redirectLink: `${appConfiguration.email.EMAIL_VERIFY_REDIRECT_URL}?token=${emailValidationToken}&email=${email}`,
-        });
-
-        const options = await generateRegistrationOptions({
-          rpName: appConfiguration.passkeys.RELAY_NAME,
-          rpID: appConfiguration.passkeys.RELAY_ID,
-          userID: user.id,
-          userName: user.email,
-          // Don't prompt users for additional information about the authenticator
-          // (Recommended for smoother UX)
-          attestationType: "none",
-          // Prevent users from re-registering existing authenticators
-          excludeCredentials: [],
-          // See "Guiding use of authenticators via authenticatorSelection" below
-          authenticatorSelection: {
-            // Defaults
-            residentKey: "preferred",
-            userVerification: "preferred",
-            // Optional
-            authenticatorAttachment: "cross-platform",
-          },
-        });
-
-        await session.setPasskeyChallenge(options.challenge);
-
-        return options;
+      const options = await generateRegistrationOptions({
+        rpName: appConfiguration.passkeys.RELAY_NAME,
+        rpID: appConfiguration.passkeys.RELAY_ID,
+        userID,
+        userName: email,
+        // Don't prompt users for additional information about the authenticator
+        // (Recommended for smoother UX)
+        attestationType: "none",
+        // Prevent users from re-registering existing authenticators
+        excludeCredentials: [],
+        // See "Guiding use of authenticators via authenticatorSelection" below
+        authenticatorSelection: {
+          // Defaults
+          residentKey: "preferred",
+          userVerification: "preferred",
+          requireResidentKey: false,
+          // Optional
+          authenticatorAttachment: "cross-platform",
+        },
       });
+
+      await session.setPasskeyChallenge({
+        challenge: options.challenge,
+        email,
+        userID: userID,
+      });
+
+      return options;
     },
     {
       body: t.Object({
         email: t.String(),
-        locale: t.Union([t.Literal("en"), t.Literal("de")]),
-        name: t.Optional(t.String()),
       }),
       detail: {
         description: "Creates a user with a passkey",
@@ -80,11 +58,15 @@ export const passkeys = new Elysia()
   )
   .post(
     "/finishPasskeyRegistration",
-    async ({ session, body }) => {
+    async ({ session, body: { challenge, locale, name } }) => {
+
+      if (!session.currentPasskeyChallenge) {
+        throw new Error("No challenge present for that session");
+      }
+
       const verification = await verifyRegistrationResponse({
-        // biome-ignore lint/suspicious/noExplicitAny: we expect the user to pass the correct object here, the validation will fail anyway if the schema is incorrect
-        response: body as any,
-        expectedChallenge: session.currentPasskeyChallenge,
+        response: challenge,
+        expectedChallenge: session.currentPasskeyChallenge.challenge,
         expectedOrigin: appConfiguration.passkeys.RELAY_ORIGIN,
         expectedRPID: appConfiguration.passkeys.RELAY_ID,
       });
@@ -97,17 +79,20 @@ export const passkeys = new Elysia()
         throw new Error("Registration info not set in verification");
       }
 
-      if (!session.userData) {
-        throw new Error("User data not set in session");
-      }
-
       await session.setPasskeyChallenge(undefined);
 
-      await db.user.update({
-        where: {
-          id: session.userData.id,
-        },
+      const emailValidationToken = nanoid(32);
+      const emailValidationTokenHash =
+        await Bun.password.hash(emailValidationToken);
+
+      await db.user.create({
         data: {
+          email: session.currentPasskeyChallenge.email,
+          name: name ?? session.currentPasskeyChallenge.email,
+          type: "PASSKEY",
+          emailValidationTokenExpiry: new Date(Date.now() + 10 * 60 * 1000),
+          emailValidationTokenHash,
+
           passkeyCredentialID: new TextDecoder().decode(
             verification.registrationInfo.credentialID,
           ),
@@ -121,9 +106,20 @@ export const passkeys = new Elysia()
             verification.registrationInfo.credentialBackedUp,
         },
       });
+
+      //TODO: report back errors in sending emails to the frontend in structured way
+      await sendAccountConfirmationEmail({
+        email: session.currentPasskeyChallenge.email,
+        locale,
+        redirectLink: `${appConfiguration.email.EMAIL_VERIFY_REDIRECT_URL}?token=${emailValidationToken}&email=${session.currentPasskeyChallenge.email}`,
+      });
     },
     {
-      body: t.Any(),
+      body: t.Object({
+        challenge: t.Any(),
+        locale: t.Union([t.Literal("en"), t.Literal("de")]),
+        name: t.Optional(t.String()),
+      }),
       detail: {
         description: "Finalizes passkey setup.",
         tags: [openApiTag(import.meta.path)],

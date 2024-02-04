@@ -17,18 +17,20 @@ export const appConfiguration = {
   production: !development,
   development,
   CORSOrigins: development
-    ? ["localhost:3000", "localhost:3001", "127.0.0.1:3000", "127.0.0.1:3001"]
+    ? ["localhost:3000", "localhost:3001"]
     : requireEnv("CORS_ORIGINS")
         ?.split(",")
         .map((origin) => origin.trim()),
   port: process.env.PORT ?? "3000",
   documentationPath: process.env.DOCUMENTATION_PATH ?? "documentation",
   appName: process.env.APP_NAME ?? "CHASE",
-  cookieSecrets: development
-    ? ["not", "very", "secure"]
-    : requireEnv("COOKIE_SECRETS")
-        ?.split(",")
-        .map((origin) => origin.trim()),
+  cookie: {
+    secrets: development
+      ? ["not", "very", "secure"]
+      : requireEnv("COOKIE_SECRETS")
+          ?.split(",")
+          .map((origin) => origin.trim()),
+  },
   db: {
     postgresUrl: development
       ? process.env.DATABASE_URL ??
@@ -45,11 +47,15 @@ export const appConfiguration = {
     EMAIL_AUTH_USER: development ? "dev" : requireEnv("EMAIL_AUTH_USER"),
     EMAIL_AUTH_PASS: development ? "dev" : requireEnv("EMAIL_AUTH_PASS"),
     EMAIL_FROM: development ? "noreply@localhost" : requireEnv("EMAIL_FROM"),
-    EMAIL_VERIFY_REDIRECT_URL: development ? "http://localhost:3000/pages/login/validateEmail" : requireEnv("EMAIL_VERIFY_REDIRECT_URL"),
+    EMAIL_VERIFY_REDIRECT_URL: development
+      ? "http://localhost:3000/pages/login/validateEmail"
+      : requireEnv("EMAIL_VERIFY_REDIRECT_URL"),
   },
   passkeys: {
     RELAY_NAME: process.env.RELAY_NAME ?? "CHASE - DMUN e.V.",
     RELAY_ID: process.env.RELAY_ID ?? "localhost",
-    RELAY_ORIGIN: development ? "http://localhost:3000" : requireEnv("RELAY_ORIGIN"),
-  }
+    RELAY_ORIGIN: development
+      ? "https://localhost:3000"
+      : requireEnv("RELAY_ORIGIN"),
+  },
 };

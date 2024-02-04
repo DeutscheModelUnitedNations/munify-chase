@@ -20,3 +20,4 @@ next-env.d.ts
 chase/backend/prisma/generated
 fontawesome-pro-6.4.2/
 .env
+certificates

@@ -14,6 +14,7 @@ export default () => {
   const { LL } = useI18nContext();
   const [errored, setErrored] = useState<boolean>();
   const [errorMessage, setErrorMessage] = useState("");
+  const [email, setEmail] = useState("");
 
   useEffect(() => {
     const token = searchParams.get("token");
@@ -30,6 +31,7 @@ export default () => {
       setErrorMessage(LL.login.NO_EMAIL());
       return;
     }
+    setEmail(email);
 
     (async () => {
       const r = await backend.auth.validateEmail.post({
@@ -73,7 +75,7 @@ export default () => {
         <FontAwesomeIcon icon={faSpinnerThird} spin={true} size="2x" />
       ) : undefined}
       {errored === false ? (
-        <Link href="/pages/login">
+        <Link href={`/pages/login?email=${email}`}>
           <Button
             type="button"
             label={LL.login.LOGIN_NOW()}

@@ -43,3 +43,4 @@ package-lock.json
 
 src/plugins/mockedAuth.json
 .smtp4dev
+certificates

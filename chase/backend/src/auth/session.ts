@@ -7,10 +7,17 @@ interface UserData {
   email: string;
 }
 
+interface PassKeyChallenge {
+  userID: string;
+  email: string;
+  // biome-ignore lint/suspicious/noExplicitAny:
+  challenge: any;
+}
+
 type sessionSchema = {
   loggedIn: boolean;
   userData?: UserData;
-  currentPasskeyChallenge?: any;
+  currentPasskeyChallenge?: PassKeyChallenge;
 };
 
 export const session = new Elysia({ name: "session" })
@@ -22,7 +29,9 @@ export const session = new Elysia({ name: "session" })
   .derive(async ({ cookie: { sessionId } }) => {
     let data: sessionSchema = { loggedIn: false };
 
-    const setPasskeyChallenge = async (challenge: any) => {
+    const setPasskeyChallenge = async (
+      challenge: PassKeyChallenge | undefined,
+    ) => {
       data.currentPasskeyChallenge = challenge;
       await redis.set(`user-session:${sessionId.value}`, JSON.stringify(data));
     };

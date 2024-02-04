@@ -13,14 +13,14 @@ const m = new Elysia({
   cookie: {
     httpOnly: true,
     maxAge: 60 * 60 * 24 * 7, // 7 days
-    sameSite: "strict",
-    secure: true,
+    sameSite: appConfiguration.development ? "none" : "strict",
+    secure: !appConfiguration.development,
     sign: true,
-    secrets: appConfiguration.cookieSecrets,
+    secrets: appConfiguration.cookie.secrets,
   },
 })
   .use(errorLogging)
-  .use(cors({ origin: appConfiguration.CORSOrigins }))
+  .use(cors({ origin: appConfiguration.CORSOrigins, allowedHeaders: ["content-type"] }))
   .use(conference)
   .use(committee)
   .use(auth)

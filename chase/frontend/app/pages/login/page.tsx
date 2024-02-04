@@ -12,7 +12,7 @@ import {
   faSpinnerThird,
 } from "@fortawesome/pro-solid-svg-icons";
 import { Toast } from "primereact/toast";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Skeleton } from "primereact/skeleton";
 import { backend } from "@/services/backend";
@@ -42,10 +42,19 @@ export default () => {
   const [userType, setUserType] =
     useState<Awaited<ReturnType<typeof backend.auth.userState.get>>["data"]>();
   const [loadingUserType, setLoadingUserType] = useState(false);
+  const [loadingPasskeyCreating, setloadingPasskeyCreating] = useState(false);
   const [loadingCreationResult, setLoadingCreationResult] = useState(false);
   const [createNewUserType, setCreateNewUserType] = useState<
     "password" | "passkey"
   >("password");
+  const searchParams = useSearchParams();
+
+  useEffect(() => {
+    const email = searchParams.get("email");
+    if (email) {
+      setEmail(email);
+    }
+  }, []);
 
   useEffect(() => {
     (async () => {
@@ -122,27 +131,43 @@ export default () => {
 
       setCreationSuccess(true);
     } else if (createNewUserType === "passkey") {
+      setloadingPasskeyCreating(true);
       const r = await backend.auth.createUserWithPasskey.post({
         email,
-        locale,
       });
       if (r.error) {
+        setloadingPasskeyCreating(false);
         toast.showToast({
           severity: "error",
           summary: r.error.message,
         });
         return;
       }
-      console.log(1);
-      const registration = await startRegistration(r.data);
-      console.log(2);
 
-      const r2 = await backend.auth.finishPasskeyRegistration.post(
-        // biome-ignore lint/suspicious/noExplicitAny: we rely on the library to return the correct type
-        registration as any,
-      );
+      //TODO try catch this since it can fail if e.g. the user aborts
+      let registration;
+
+      try {
+        registration = await startRegistration(r.data);
+      } catch (error) {
+        setloadingPasskeyCreating(false);
+
+        console.error(error);
+        toast.showToast({
+          severity: "error",
+          summary: LL.ERROR(),
+        });
+        return;
+      }
+
+      const r2 = await backend.auth.finishPasskeyRegistration.post({
+        challenge: registration,
+        locale,
+      });
 
       if (r2.error) {
+        setloadingPasskeyCreating(false);
+
         toast.showToast({
           severity: "error",
           summary: r2.error.message,
@@ -150,6 +175,7 @@ export default () => {
         return;
       }
 
+      setloadingPasskeyCreating(false);
       setCreationSuccess(true);
     }
   };
@@ -276,7 +302,7 @@ export default () => {
                           label={LL.login.CREATE_ACCOUNT()}
                           className="w-full mt-3"
                         >
-                          {loadingCreationResult ? (
+                          {loadingPasskeyCreating ? (
                             <FontAwesomeIcon
                               icon={faSpinnerThird}
                               spin={true}

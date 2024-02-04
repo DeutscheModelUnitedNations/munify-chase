@@ -25,24 +25,24 @@ export default function Participant_Pages_Layout({
       <Navbar>
         <NavButton
           icon={faHouse as IconProp}
-          link={"/participant/dashboard"}
+          link={"/app/participant/dashboard"}
           title={LL.navbar.DASHBOARD()}
         />
         <NavButton
           icon={faPodium as IconProp}
-          link={"/participant/speakers"}
+          link={"/app/participant/speakers"}
           title={LL.navbar.SPEAKERS()}
         />
-        <NavButton
+        {/* <NavButton TODO add Voting Page
           icon={faPollPeople as IconProp}
-          link={"/participant/voting"}
+          link={"/app/participant/voting"}
           title={LL.navbar.VOTING()}
-        />
-        <NavButton
+        /> */}
+        {/* <NavButton TODO add Resolution Editor page
           icon={faScroll as IconProp}
-          link={"/participant/resolutions"}
+          link={"/app/participant/resolutions"}
           title={LL.navbar.RESOLUTIONS()}
-        />
+        /> */}
         <div className="h-5" />
         <NavButton
           icon={faNewspaper as IconProp}

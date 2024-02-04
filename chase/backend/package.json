@@ -14,7 +14,7 @@
     "@types/nodemailer": "^6.4.14",
     "bun-types": "latest",
     "concurrently": "^8.2.2",
-    "prisma": "5.8.1",
+    "prisma": "^5.9.1",
     "prisma-typebox-generator": "^2.1.0"
   },
   "dependencies": {

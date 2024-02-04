@@ -75,18 +75,23 @@ export default function Navbar({
             height={110}
             className="absolute top-5 left-5 z-40"
           />
-          <div className="ml-32 font-thin text-5xl">CHASE™</div>
+          <div className="ml-32 font-thin text-5xl">CHASE</div>
         </Link>
         <div className="flex-1" />
         <div className="flex gap-2">
           <Button
             label={LL.home.navbar.LOGIN_ADMIN()}
-            onClick={() => router.push("/admin/new")}
+            onClick={() => router.push("/app/admin/new")}
             text
           />
           <Button
             label={LL.home.navbar.LOGIN_CHAIR()}
-            onClick={() => router.push("/chair/dashboard")}
+            onClick={() => router.push("/app/chair/dashboard")}
+            text
+          />
+          <Button
+            label={LL.home.navbar.LOGIN_PARTICIPANT()}
+            onClick={() => router.push("/app/participant/dashboard")}
             text
           />
           <Button

@@ -11,7 +11,6 @@ export default function Home() {
   const { LL } = useI18nContext();
   return (
     <>
-      <Navbar />
       <div className="flex flex-col bg-primary-950 items-center">
         <div className="flex align-center justify-center h-screen w-screen bg-primary">
           <div className="flex flex-col items-center justify-center">

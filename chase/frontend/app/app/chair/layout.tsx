@@ -28,41 +28,42 @@ export default function Chair_Pages_Layout({
       <Navbar>
         <NavButton
           icon={faSquareSliders as IconProp}
-          link={"/chair/dashboard"}
+          link={"/app/chair/dashboard"}
           title={LL.navbar.CONFIGURATION()}
         />
         <NavButton
           icon={faUsersLine as IconProp}
-          link={"/chair/attendees"}
+          link={"/app/chair/attendees"}
           title={LL.navbar.ATTENDEES()}
         />
         <NavButton
           icon={faPodium as IconProp}
-          link={"/chair/speakers"}
+          link={"/app/chair/speakers"}
           title={LL.navbar.SPEAKERS()}
         />
-        <NavButton
+        {/* <NavButton TODO add Voting page
           icon={faPollPeople as IconProp}
-          link={"/chair/voting"}
-          title={LL.navbar.VOTING()}
-        />
+          link={"/app/chair/voting"}
+          title={LL.navbar.VOTING()} 
+        /> */}
         <NavButton
           icon={faChalkboard as IconProp}
-          link={"/chair/whiteboard"}
+          link={"/app/chair/whiteboard"}
           title={LL.navbar.WHITEBOARD()}
         />
-        <NavButton
+        {/* <NavButton TODO add Resolution Editor page
           icon={faScroll as IconProp}
-          link={"/chair/resolutions"}
+          link={"/app/chair/resolutions"}
           title={LL.navbar.RESOLUTIONS()}
-        />
+        /> */}
         <div className="h-5" />
         <NavButton
           icon={faPresentationScreen as IconProp}
           newWindow
-          link="/chair/presentation"
+          link="/app/chair/presentation"
           title={LL.navbar.PRESENTATION()}
         />
+        <div className="h-5" />
         <NavButton
           icon={faNewspaper as IconProp}
           newWindow

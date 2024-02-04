@@ -1,11 +1,14 @@
 -- CreateEnum
-CREATE TYPE "ConferenceRole" AS ENUM ('ADMIN', 'SECRETARIAT', 'TEAM', 'GUEST');
+CREATE TYPE "CredentialsType" AS ENUM ('PASSWORD', 'PASSKEY');
+
+-- CreateEnum
+CREATE TYPE "ConferenceRole" AS ENUM ('ADMIN', 'SECRETARIAT', 'NON_STATE_ACTOR', 'PRESS_CORPS', 'GUEST', 'PARTICIPANT_CARE', 'MISCELLANEOUS_TEAM');
 
 -- CreateEnum
 CREATE TYPE "CommitteeCategory" AS ENUM ('COMMITTEE', 'CRISIS', 'ICJ');
 
 -- CreateEnum
-CREATE TYPE "CommitteeRole" AS ENUM ('CHAIR', 'COMMITTEE_ADVISOR', 'DELEGATE', 'OBSERVER', 'NON_STATE_ACTOR', 'PRESS_CORPS', 'PARTICIPANT_CARE');
+CREATE TYPE "CommitteeRole" AS ENUM ('CHAIR', 'COMMITTEE_ADVISOR', 'DELEGATE', 'OBSERVER');
 
 -- CreateEnum
 CREATE TYPE "SpeakersListCategory" AS ENUM ('SPEAKERS_LIST', 'COMMENT_LIST', 'MODERATED_CAUCUS');
@@ -15,6 +18,16 @@ CREATE TABLE "User" (
     "id" TEXT NOT NULL,
     "email" TEXT NOT NULL,
     "name" TEXT NOT NULL,
+    "type" "CredentialsType" NOT NULL,
+    "passwordHash" TEXT,
+    "passkeyCredentialID" TEXT,
+    "passkeyCredentialPublicKey" TEXT,
+    "passkeyCredentialCounter" INTEGER,
+    "passkeyCredentialDeviceType" TEXT,
+    "passkeyCredentialBackedUp" BOOLEAN,
+    "emailValidated" BOOLEAN NOT NULL DEFAULT false,
+    "emailValidationTokenHash" TEXT,
+    "emailValidationTokenExpiry" TIMESTAMP(3),
 
     CONSTRAINT "User_pkey" PRIMARY KEY ("id")
 );
@@ -62,7 +75,7 @@ CREATE TABLE "Committee" (
 CREATE TABLE "CommitteeMember" (
     "id" TEXT NOT NULL,
     "committeeId" TEXT NOT NULL,
-    "userId" TEXT NOT NULL,
+    "userId" TEXT,
     "role" "CommitteeRole" NOT NULL,
     "delegationId" TEXT,
 
@@ -135,6 +148,9 @@ CREATE UNIQUE INDEX "User_email_key" ON "User"("email");
 CREATE UNIQUE INDEX "Conference_name_key" ON "Conference"("name");
 
 -- CreateIndex
+CREATE UNIQUE INDEX "ConferenceMember_userId_conferenceId_key" ON "ConferenceMember"("userId", "conferenceId");
+
+-- CreateIndex
 CREATE UNIQUE INDEX "Committee_name_conferenceId_key" ON "Committee"("name", "conferenceId");
 
 -- CreateIndex
@@ -174,7 +190,7 @@ ALTER TABLE "Committee" ADD CONSTRAINT "Committee_parentId_fkey" FOREIGN KEY ("p
 ALTER TABLE "CommitteeMember" ADD CONSTRAINT "CommitteeMember_committeeId_fkey" FOREIGN KEY ("committeeId") REFERENCES "Committee"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "CommitteeMember" ADD CONSTRAINT "CommitteeMember_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "CommitteeMember" ADD CONSTRAINT "CommitteeMember_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "CommitteeMember" ADD CONSTRAINT "CommitteeMember_delegationId_fkey" FOREIGN KEY ("delegationId") REFERENCES "Delegation"("id") ON DELETE SET NULL ON UPDATE CASCADE;

@@ -7,14 +7,12 @@ import { InputText } from "primereact/inputtext";
 import { Calendar } from "primereact/calendar";
 import Button from "@/components/button";
 import { faRightToBracket, faSparkles } from "@fortawesome/pro-solid-svg-icons";
-import { useBackend } from "@/contexts/backend";
+import { backend } from "@/services/backend";
 import { Toast } from "primereact/toast";
 import { useRouter } from "next/navigation";
-import Link from "next/link";
 
 export default function loginVorsitz() {
   const { LL } = useI18nContext();
-  const backend = useBackend();
   const toast = useRef<Toast>(null);
   const router = useRouter();
 
@@ -31,10 +29,8 @@ export default function loginVorsitz() {
       .post({
         name: conferenceName,
         token: token,
-        time: {
-          start: dates[0].getTime(),
-          end: dates[1].getTime(),
-        },
+        start: dates[0]?.getTime().toString(),
+        end: dates[1]?.getTime().toString(),
       })
       .then((res) => {
         if (!res?.data?.id) throw new Error("No conference id returned");

@@ -2,6 +2,12 @@ import type { BaseTranslation } from "../i18n-types";
 
 const en = {
   LOADING_PAGE: "Loading...",
+  ERROR: "Error",
+
+  NOT_FOUND: {
+    NOT_FOUND: "Not found",
+    BACK_TO_HOME: "Back to home",
+  },
 
   home: {
     CAPTION: " for the digital age",
@@ -153,7 +159,7 @@ const en = {
           BACK_BUTTON: "Back",
           ADD_BUTTON: "Add and Close",
           ADD_MORE_BUTTON: "Add",
-        }
+        },
       },
 
       steps: {
@@ -168,11 +174,30 @@ const en = {
   },
 
   login: {
-    USERNAME_PLACEHOLDER: "Username",
+    EMAIL_PLACEHOLDER: "E-Mail",
     PASSWORD_PLACEHOLDER: "Password",
     ADVANCE_BUTTON: "Advance",
     BACK_BUTTON: "Back",
     LOGIN_BUTTON: "Login",
+    LOGIN_TITLE: "Login",
+    LOGIN_NOW: "Login now",
+    NO_TOKEN: "The confirmation token is invalid or could not be found.",
+    NO_EMAIL: "The email is invalid or could not be found.",
+    EMAIL_CONFIRMED: "The email has been confirmed.",
+    PASSKEY: "Passkey",
+    EMAIL_CONFIRMED_SERVER_ERROR:
+      "We could not confirm your email address. Please try again later.",
+    CREATE_ACCOUNT: "Create Account",
+    EMAIL_INVALID: "Email is invalid",
+    CREATION_SUCCESS:
+      "Account successfully created. Please confirm your e-mail address via the link in the e-mail we sent you to activate your account.",
+    PASSWORD_INVALID:
+      "The password is invalid. It must be at least 8 characters long and contain at least two upper case letters, three lower case letters, two numbers and one special character.",
+    WHAT_ARE_PASSKEYS: "What are Passkeys?",
+    PASSWORD: "Password",
+    LOGIN_DESCRIPTION: "Please enter your credentials to continue.",
+    ACCOUNT_NOT_YET_CREATED:
+      "Great, an account with this e-mail address does not yet exist! Create account for this e-mail address with the following password:",
     POWERED_BY: "Powered by",
     legalNotice: {
       SECTION_1: "I agree with the ",

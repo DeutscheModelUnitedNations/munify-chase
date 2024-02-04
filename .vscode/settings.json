@@ -73,25 +73,6 @@
         "label": "🔀 merge",
         "detail": "Use when merging branches"
       }
-    ],
-    "scope": [
-      {
-        "label": "CHASE Frontend",
-        "detail": "Changes to the Chase Frontend"
-      },
-      {
-        "label": "CHASE Backend",
-        "detail": "Changes to the Chase Backend"
-      },
-      {
-        "label": "AUTH",
-        "detail": "Changes to the auth system"
-      },
-      {
-        "label": "MUNify",
-        "detail": "Changes to MUNify in general"
-      }
-    ],
-    "branch": "branch"
+    ]
   }
 }

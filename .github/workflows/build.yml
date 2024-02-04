@@ -14,7 +14,9 @@ jobs:
         uses: oven-sh/setup-bun@v1
 
       - name: Install all dependencies
-        run: bun run install-all
+        run: bun i
+        env:
+          FONTAWESOME_NPM_AUTH_TOKEN: ${{ secrets.FONTAWESOME_NPM_AUTH_TOKEN }}
 
       - name: Generate prisma types
         working-directory: ./chase/backend
@@ -34,7 +36,9 @@ jobs:
         uses: oven-sh/setup-bun@v1
 
       - name: Install all dependencies
-        run: bun run install-all
+        run: bun i
+        env:
+          FONTAWESOME_NPM_AUTH_TOKEN: ${{ secrets.FONTAWESOME_NPM_AUTH_TOKEN }}
 
       - name: Generate prisma types
         working-directory: ./chase/backend

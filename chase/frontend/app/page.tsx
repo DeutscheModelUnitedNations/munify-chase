@@ -14,37 +14,39 @@ export default function Home() {
   return (
     <>
       <Navbar animate />
-      <div className="flex flex-col bg-primary-950">
-        <LandingHero />
-        <CardSection />
-        <div
-          className="flex flex-col lg:flex-none lg:grid gap-2 lg:gap-10 p-4 lg:p-20 align-items-start"
-          style={{
-            gridTemplateColumns: "auto 1fr",
-          }}
-        >
-          <TextSection
-            title={LL.home.ABOUT_TITEL()}
-            text={LL.home.ABOUT_TEXT()}
-          />
-          <TextSection
-            title={LL.home.MISSION_TITLE()}
-            text={LL.home.MISSION_TEXT()}
-            button={{
-              lable: LL.home.MISSION_BUTTON_LABEL(),
-              link: "https://www.dmun.de/",
-              faIcon: faExternalLink,
+      <div className="flex flex-col bg-primary-950 items-center">
+        <div className="max-w-7xl">
+          <LandingHero />
+          <CardSection />
+          <div
+            className="flex flex-col lg:flex-none lg:grid gap-2 lg:gap-10 p-4 lg:p-20 align-items-start"
+            style={{
+              gridTemplateColumns: "auto 1fr",
             }}
-          />
-          <TextSection
-            title={LL.home.CONTRIBUTE_TITEL()}
-            text={LL.home.CONTRIBUTE_TEXT()}
-            button={{
-              lable: LL.home.CONTRIBUTE_BUTTON_LABEL(),
-              link: "https://github.com/DeutscheModelUnitedNations/munify",
-              faIcon: faCodeBranch,
-            }}
-          />
+          >
+            <TextSection
+              title={LL.home.ABOUT_TITEL()}
+              text={LL.home.ABOUT_TEXT()}
+            />
+            <TextSection
+              title={LL.home.MISSION_TITLE()}
+              text={LL.home.MISSION_TEXT()}
+              button={{
+                lable: LL.home.MISSION_BUTTON_LABEL(),
+                link: "https://www.dmun.de/",
+                faIcon: faExternalLink,
+              }}
+            />
+            <TextSection
+              title={LL.home.CONTRIBUTE_TITEL()}
+              text={LL.home.CONTRIBUTE_TEXT()}
+              button={{
+                lable: LL.home.CONTRIBUTE_BUTTON_LABEL(),
+                link: "https://github.com/DeutscheModelUnitedNations/munify",
+                faIcon: faCodeBranch,
+              }}
+            />
+          </div>
         </div>
       </div>
       <Footer />

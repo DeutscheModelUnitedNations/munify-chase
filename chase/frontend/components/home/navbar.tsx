@@ -1,3 +1,4 @@
+"use client";
 import React, { useEffect, useState } from "react";
 import { useI18nContext } from "@/i18n/i18n-react";
 import Link from "next/link";
@@ -90,21 +91,21 @@ export default function Navbar({
           />
           <Button
             label={LL.home.navbar.DOCUMENTATION()}
-            onClick={() => router.push("/docs")}
+            onClick={() => router.push("/pages/docs")}
             severity="secondary"
             faIcon={faBook}
             disabled={isDocs}
           />
           <Button
             label={LL.home.navbar.FAQ()}
-            onClick={() => router.push("/faq")}
+            onClick={() => router.push("/pages/faq")}
             severity="secondary"
             faIcon={faQuestionCircle}
             disabled={isFAQ}
           />
           <Button
             label={LL.home.navbar.LOGIN_PARTICIPANT()}
-            onClick={() => router.push("/participant/dashboard")}
+            onClick={() => router.push("/pages/login")}
             faIcon={faRightToBracket}
           />
         </div>

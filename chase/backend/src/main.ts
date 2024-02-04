@@ -1,37 +1,72 @@
-import { cors } from "@elysiajs/cors";
-import { swagger } from "@elysiajs/swagger";
 import { Elysia } from "elysia";
-import { isDevelopment } from "munify-util";
+import { swagger } from "@elysiajs/swagger";
+import { cors } from "@elysiajs/cors";
 import packagejson from "../package.json";
-import baseData from "./routes/baseData";
-import conference from "./routes/conference";
-import committee from "./routes/conference/committee";
-import delegations from "./routes/conference/delegations";
-import team from "./routes/conference/team";
+import { appConfiguration } from "./util/config";
+import { errorLogging } from "./util/errorLogger";
+import { conference } from "./routes/conference";
+import { committee } from "./routes/committee";
+import { baseData } from "./routes/baseData";
+import { auth } from "./routes/auth/auth";
 
-const app = new Elysia()
-  .use(cors({ origin: "*" }))
+const m = new Elysia({
+  cookie: {
+    httpOnly: true,
+    maxAge: 60 * 60 * 24 * 7, // 7 days
+    sameSite: appConfiguration.development ? "none" : "strict",
+    secure: !appConfiguration.development,
+    sign: true,
+    secrets: appConfiguration.cookie.secrets,
+  },
+})
+  .use(errorLogging)
+  .use(cors({ origin: appConfiguration.CORSOrigins, allowedHeaders: ["content-type"] }))
   .use(conference)
   .use(committee)
-  .use(team)
-  .use(delegations)
+  .use(auth)
+  // .use(team)
+  // .use(delegations)
   .use(baseData);
 
-export type App = typeof app;
-
-if (isDevelopment()) {
-  app.use(
+// we make the api docs public
+const app = new Elysia()
+  .use(
     swagger({
-      path: "/documentation",
+      path: `/${appConfiguration.documentationPath}`,
       documentation: {
         info: {
-          title: "CHASE backend Docs",
-          description: "CHASE backend documentation",
+          title: `${appConfiguration.appName} documentation`,
+          description: `${appConfiguration.appName} documentation`,
           version: packagejson.version,
         },
       },
-    })
+    }),
+  )
+  .use(m)
+  .listen(process.env.PORT ?? "3001");
+
+setTimeout(() => {
+  console.info(
+    `
+      
+      Swagger documentation available at http://localhost:${
+        process.env.PORT ?? "3001"
+      }/${appConfiguration.documentationPath}
+      
+      `,
   );
+}, 3000);
+
+if (appConfiguration.development) {
+  setTimeout(() => {
+    console.info(
+      `
+      
+      Dummy emails sent to inbox at http://${appConfiguration.email.EMAIL_HOST}:3777
+      
+      `,
+    );
+  }, 3000);
 }
 
-app.listen(process.env.PORT ?? "3001");
+export type App = typeof app;

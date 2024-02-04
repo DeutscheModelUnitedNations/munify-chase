@@ -10,7 +10,7 @@ It is composed of multiple software components which can be found in their separ
 See the existing components and their directory below
 
 - [chase](./chase)
-- [auth](./auth)
+- [authentication](./authentication)
 
 
 ## Develop Locally

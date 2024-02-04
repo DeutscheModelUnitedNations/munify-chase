@@ -1,3 +1,4 @@
+"use client";
 import React, { useEffect, useState } from "react";
 import { useI18nContext } from "@/i18n/i18n-react";
 import Link from "next/link";

@@ -1,4 +1,4 @@
-import { ToastContext } from "@/contexts/messages/toast";
+import { ToastContext } from "@/contexts/toast";
 import { CountryCode } from "@/custom_types/custom_types";
 import { useI18nContext } from "@/i18n/i18n-react";
 import getCountryNameByCode from "@/misc/get_country_name_by_code";
@@ -48,7 +48,7 @@ export default function AddSpeakerOverlay({
   const { showToast } = useContext(ToastContext);
 
   const [selectedCountry, setSelectedCountry] = useState<CountryData | null>(
-    null
+    null,
   );
 
   const sendAddSpeaker = () => {
@@ -56,11 +56,11 @@ export default function AddSpeakerOverlay({
       showToast({
         severity: "success",
         summary: LL.chairs.speakersList.addSpeakerOverlay.TOAST_ADDED_SUMMARY(
-          selectedCountry.name
+          selectedCountry.name,
         ),
         detail:
           LL.chairs.speakersList.addSpeakerOverlay.TOAST_ADDED_DETAIL(
-            typeOfList
+            typeOfList,
           ),
         sticky: false,
       });
@@ -86,7 +86,10 @@ export default function AddSpeakerOverlay({
   return (
     <>
       <div className="flex flex-col gap-5 mt-1">
-        <CountryAutoComplete listOfAllCountries={listOfAllCountries} placeholder={LL.chairs.speakersList.addSpeakerOverlay.PLACEHOLDER()}/>
+        <CountryAutoComplete
+          listOfAllCountries={listOfAllCountries}
+          placeholder={LL.chairs.speakersList.addSpeakerOverlay.PLACEHOLDER()}
+        />
 
         <div className="flex gap-3 justify-end flex-wrap">
           <Button

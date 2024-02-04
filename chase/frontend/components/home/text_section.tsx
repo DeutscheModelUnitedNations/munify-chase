@@ -34,7 +34,9 @@ export default function TextSection({ title, text, button }: TextSectionProps) {
           <div className="pt-4">
             <Button
               label={button.lable}
+              href={button.link}
               onClick={() => {
+                //TODO this is not ideal, we should use actual anchor tags for this
                 Router.push(button.link);
               }}
               faIcon={button.faIcon}

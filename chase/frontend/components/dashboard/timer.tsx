@@ -1,6 +1,6 @@
 import React, { useEffect, useContext } from "react";
 import WidgetTemplate from "@components/widget_template";
-import { ToastContext } from "@/contexts/messages/toast";
+import { ToastContext } from "@/contexts/toast";
 
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
@@ -37,7 +37,7 @@ export default function TimerWidget({
     const message = {
       summary: LL.participants.dashboard.timerWidget.TOAST_HEADLINE(),
       detail: LL.participants.dashboard.timerWidget.TOAST_MESSAGE(),
-      severity: "info" as "info",
+      severity: "info" as const,
       sticky: true,
     };
     showToast(message);

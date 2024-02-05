@@ -1,8 +1,9 @@
 {
-  "workspaces": [
-    "chase/backend",
-    "chase/frontend"
-  ],
+  "devDependencies": {
+    "@biomejs/biome": "^1.5.2",
+    "bun-types": "latest",
+    "concurrently": "^8.2.2"
+  },
   "scripts": {
     "dev": "concurrently \"bun run dev:chase:frontend\" \"bun run dev:chase:backend\"",
     "dev:chase:frontend": "cd chase/frontend && bun run dev",
@@ -11,9 +12,11 @@
     "lint": "biome check . --apply",
     "test": "echo TODO"
   },
-  "devDependencies": {
-    "@biomejs/biome": "^1.5.2",
-    "bun-types": "latest",
-    "concurrently": "^8.2.2"
+  "workspaces": [
+    "chase/backend",
+    "chase/frontend"
+  ],
+  "dependencies": {
+    "@faker-js/faker": "^8.4.0"
   }
 }

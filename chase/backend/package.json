@@ -22,7 +22,7 @@
     "@elysiajs/cors": "^0.8.0",
     "@elysiajs/eden": "^0.8.1",
     "@elysiajs/swagger": "^0.8.3",
-    "@prisma/client": "5.8.1",
+    "@prisma/client": "^5.9.1",
     "@simplewebauthn/server": "^9.0.0",
     "@sinclair/typebox": "^0.32.12",
     "elysia": "^0.8.9",
@@ -31,5 +31,8 @@
     "nodemailer": "^6.9.8",
     "redis": "^4.6.12",
     "typescript": "5.3.3"
+  },
+  "prisma": {
+    "seed": "bun run prisma/seed.ts"
   }
 }

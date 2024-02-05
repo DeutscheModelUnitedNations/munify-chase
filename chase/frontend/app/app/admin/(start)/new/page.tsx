@@ -29,8 +29,8 @@ export default function loginVorsitz() {
       .post({
         name: conferenceName,
         token: token,
-        start: dates[0]?.getTime().toString(),
-        end: dates[1]?.getTime().toString(),
+        start: dates[0]?.toISOString(),
+        end: dates[1]?.toISOString(),
       })
       .then((res) => {
         if (!res?.data?.id) throw new Error("No conference id returned");
@@ -41,7 +41,7 @@ export default function loginVorsitz() {
           detail: LL.admin.onboarding.successDetails(),
         });
 
-        router.push(`/admin/onboarding/${conferenceId}/structure`);
+        router.push(`/app/admin/onboarding/${conferenceId}/structure`);
       })
       .catch((err) => {
         toast.current.show({
@@ -111,7 +111,7 @@ export default function loginVorsitz() {
               className="w-full"
               severity="warning"
               faIcon={faRightToBracket}
-              onClick={() => router.push("/admin/login")}
+              onClick={() => router.push("/app/admin/login")}
             />
             <Button
               label={LL.admin.onboarding.submit()}

@@ -54,16 +54,17 @@ export const conference = new Elysia()
             name: body.name,
             start: body.start,
             end: body.end,
-            members: {
-              create: {
-                role: "ADMIN",
-                user: {
-                  connect: {
-                    id: session.userData.id,
-                  },
-                },
-              },
-            },
+            // TODO: add the user that created the conference as an admin
+            // members: {
+            //   create: {
+            //     role: "ADMIN",
+            //     user: {
+            //       connect: {
+            //         id: session.userData.id,
+            //       },
+            //     },
+            //   },
+            // },
           },
         });
       });

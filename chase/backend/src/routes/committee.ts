@@ -5,16 +5,19 @@ import { conferenceRoleGuard } from "../auth/guards/conferenceRoles";
 import { openApiTag } from "../util/openApiTags";
 import { Committee } from "../../prisma/generated/schema";
 
-const CommitteeWithoutRelations = t.Omit(Committee, [
+const CommitteeWithOnlyParentCommitteeRelation = t.Omit(Committee, [
   "conference",
   "members",
-  "parent",
-  "subCommittees",
   "agendaItems",
-  "parentId",
+  "subCommittees",
+  "parent",
 ]);
+const CommitteeWithoutRelations = t.Omit(
+  CommitteeWithOnlyParentCommitteeRelation,
+  ["parentId"]
+);
 
-const CommitteeData = t.Omit(CommitteeWithoutRelations, ["id", "conferenceId"]);
+const CommitteeData = t.Omit(CommitteeWithOnlyParentCommitteeRelation, ["id", "conferenceId", "parent"]);
 
 export const committee = new Elysia({
   prefix: "/conference/:conferenceId",
@@ -37,19 +40,27 @@ export const committee = new Elysia({
         description: "Get all committees in this conference",
         tags: [openApiTag(import.meta.path)],
       },
-    },
+    }
   )
   .post(
     "/committee",
-    ({ body, params: { conferenceId } }) => {
-      return db.committee.create({
+    async ({ body, params: { conferenceId } }) => {
+
+      const res = await db.committee.create({
         data: {
           abbreviation: body.abbreviation,
           category: body.category,
           conferenceId,
           name: body.name,
+          parentId: body.parentId,
         },
       });
+
+      return {
+        ...res,
+          parentId: res.parentId ?? undefined,
+      }
+
     },
     {
       hasConferenceRole: ["ADMIN"],
@@ -58,8 +69,20 @@ export const committee = new Elysia({
         tags: [openApiTag(import.meta.path)],
       },
       body: CommitteeData,
-      response: CommitteeWithoutRelations,
-    },
+      response: CommitteeWithOnlyParentCommitteeRelation,
+    }
+  )
+  .delete(
+    "/committee",
+    ({ params: { conferenceId } }) =>
+      db.committee.deleteMany({ where: { conferenceId } }),
+    {
+      hasConferenceRole: ["ADMIN"],
+      detail: {
+        description: "Delete all committees in this conference",
+        tags: [openApiTag(import.meta.path)],
+      },
+    }
   )
   .get(
     "/committee/:committeeId",
@@ -75,19 +98,19 @@ export const committee = new Elysia({
         tags: [openApiTag(import.meta.path)],
       },
       response: CommitteeWithoutRelations,
-    },
+    }
   )
   .delete(
     "/committee/:committeeId",
     ({ params: { conferenceId, committeeId } }) =>
       db.committee.delete({ where: { id: committeeId, conferenceId } }),
     {
-      hasConferenceRole: ["ADMIN"],
+      // hasConferenceRole: ["ADMIN"],
       detail: {
         description: "Delete a committee by id",
         tags: [openApiTag(import.meta.path)],
       },
-    },
+    }
   )
   .patch(
     "/committee/:committeeId",
@@ -108,5 +131,5 @@ export const committee = new Elysia({
         description: "Update a committee by id",
         tags: [openApiTag(import.meta.path)],
       },
-    },
+    }
   );

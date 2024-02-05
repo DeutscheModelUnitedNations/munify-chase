@@ -32,7 +32,7 @@ export default function RootLayout({
       target: event.currentTarget,
       message: LL.admin.onboarding.SAVE_AND_QUIT_MESSAGE(),
       accept: () => {
-        router.push(`/admin/${params.conferenceId}/dashboard`);
+        router.push(`/app/admin/${params.conferenceId}/dashboard`);
       },
     });
   };
@@ -40,16 +40,16 @@ export default function RootLayout({
   useMousetrap("ctrl+shift+s", (e) => saveAndQuit(e));
 
   useEffect(() => {
-    backend.conference[params.conferenceId].verifyAdmin
-      .get()
-      .then((response) => {
-        if (!response) {
-          router.push("/admin/login");
-        }
-      })
-      .catch((error) => {
-        router.push("/admin/login");
-      });
+    // backend.conference[params.conferenceId].verifyAdmin
+    //   .get()
+    //   .then((response) => {
+    //     if (!response) {
+    //       router.push("/admin/login");
+    //     }
+    //   })
+    //   .catch((error) => {
+    //     router.push("/admin/login");
+    //   });
 
     backend.conference[params.conferenceId]
       .get()

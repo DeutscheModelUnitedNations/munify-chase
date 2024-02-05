@@ -2,7 +2,7 @@
 import React, { useEffect, useRef, useState } from "react";
 
 import { useI18nContext } from "@/i18n/i18n-react";
-import { useBackend } from "@/contexts/backend";
+import { backend } from "@/services/backend";
 import { useRouter } from "next/navigation";
 import OnboardingSteps from "@/components/admin/onboarding/steps";
 import { Toast } from "primereact/toast";
@@ -20,13 +20,12 @@ export default function structure({
   params: { conferenceId: string };
 }) {
   const { LL } = useI18nContext();
-  const backend = useBackend();
   const router = useRouter();
   const toast = useRef<Toast>(null);
 
   async function getCommittees(id: string) {
     try {
-      const res = await backend.conference[id].committee.list.get();
+      const res = await backend.conference[id].committee.get();
       return res.data;
     } catch (error) {
       toast.current.show({
@@ -53,20 +52,18 @@ export default function structure({
         setUpdateCommittees(false);
       });
     }
-  }, [updateCommittees]);
+  }, [updateCommittees, params.conferenceId]);
 
   async function addCommittee({
     name,
     abbreviation,
     category,
-    isSubcommittee,
     parentId,
   }: CreateCommitteePayload) {
     let payload: CreateCommitteePayload = {
       name,
       abbreviation,
       category,
-      isSubcommittee,
     };
     if (parentId) {
       payload = {
@@ -141,7 +138,7 @@ export default function structure({
 
   const handleSave = () => {
     setSaveLoading(true);
-    router.push(`/admin/onboarding/${params.conferenceId}/teampool`);
+    router.push(`/app/admin/onboarding/${params.conferenceId}/teampool`);
   };
 
   return (

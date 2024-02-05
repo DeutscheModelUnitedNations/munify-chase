@@ -24,7 +24,7 @@ export default function LoginVorsitz() {
   >(null);
 
   async function getMyConferences() {
-    const response = await backend.listMyConferences.get().catch((err) => {
+    const response = await backend.conference.get().catch((err) => {
       toast.current?.show({
         severity: "error",
         summary: LL.admin.onboarding.error.title(),
@@ -51,7 +51,7 @@ export default function LoginVorsitz() {
           detail: LL.admin.onboarding.successDetails(),
         });
 
-        router.push(`/admin/onboarding/${conferenceId}/structure`);
+        router.push(`/app/admin/onboarding/${conferenceId}/structure`);
       })
       .catch((err) => {
         toast.current?.show({
@@ -89,7 +89,7 @@ export default function LoginVorsitz() {
               )}
             {myConferences && (myConferences.map((conference) => (
               <Link
-                href={`/admin/onboarding/${conference.id}/structure`}
+                href={`/app/admin/onboarding/${conference.id}/structure`}
                 key={conference.id}
               >
                 <Button
@@ -118,7 +118,7 @@ export default function LoginVorsitz() {
               className="w-full"
               severity="warning"
               faIcon={faSparkles}
-              onClick={() => router.push("/admin/new")}
+              onClick={() => router.push("/app/admin/new")}
             />
             <Button
               label={LL.admin.login.SUBMIT()}

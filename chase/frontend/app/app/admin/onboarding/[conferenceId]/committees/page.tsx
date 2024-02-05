@@ -151,7 +151,7 @@ export default function loginVorsitz({
       </Accordion>
 
       <ForwardBackButtons
-        backURL={`/admin/onboarding/${params.conferenceId}/teampool`}
+        backURL={`/app/admin/onboarding/${params.conferenceId}/teampool`}
         handleSaveFunction={handleSave}
         saveLoading={saveLoading}
         forwardDisabled={false}

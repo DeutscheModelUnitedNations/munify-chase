@@ -21,10 +21,10 @@ export default function loginVorsitz({
       <OnboardingSteps activeIndex={4} />
 
       <ForwardBackButtons
-        backURL={`/admin/onboarding/${params.conferenceId}/delegations`}
+        backURL={`/app/admin/onboarding/${params.conferenceId}/delegations`}
         handleSaveFunction={() => {
           router.push(
-            `/admin/onboarding/${params.conferenceId}/configs`
+            `/app/admin/onboarding/${params.conferenceId}/configs`
           );
         }}
       />

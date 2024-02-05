@@ -83,7 +83,7 @@ export default function CommitteeTable({
               return (
                 <span>
                   {rowData.category === "COMMITTEE" &&
-                    (rowData.isSubcommittee ? (
+                    (rowData.parentId ? (
                       <div className="m-0 flex items-center justify-start gap-2">
                         <FontAwesomeIcon
                           icon={faDiagramSubtask}

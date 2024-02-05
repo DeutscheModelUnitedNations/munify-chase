@@ -112,7 +112,7 @@ model Committee {
   agendaItems   AgendaItem[]
 
   @@unique([name, conferenceId])
-  @@unique([abbreviation, name])
+  @@unique([abbreviation, conferenceId])
 }
 
 /// The role of a user in a committee

@@ -20,7 +20,24 @@ const m = new Elysia({
   },
 })
   .use(errorLogging)
-  .use(cors({ origin: appConfiguration.CORSOrigins, allowedHeaders: ["content-type"] }))
+  .use(
+    // @ts-ignore
+    cors({
+      origin: appConfiguration.CORSOrigins,
+      allowedHeaders: ["content-type"],
+      methods: [
+        "GET",
+        "PUT",
+        "POST",
+        "DELETE",
+        "PATCH",
+        "HEAD",
+        "OPTIONS",
+        "TRACE",
+        "CONNECT",
+      ],
+    })
+  )
   .use(conference)
   .use(committee)
   .use(auth)
@@ -40,7 +57,7 @@ const app = new Elysia()
           version: packagejson.version,
         },
       },
-    }),
+    })
   )
   .use(m)
   .listen(process.env.PORT ?? "3001");
@@ -53,7 +70,7 @@ setTimeout(() => {
         process.env.PORT ?? "3001"
       }/${appConfiguration.documentationPath}
       
-      `,
+      `
   );
 }, 3000);
 
@@ -64,7 +81,7 @@ if (appConfiguration.development) {
       
       Dummy emails sent to inbox at http://${appConfiguration.email.EMAIL_HOST}:3777
       
-      `,
+      `
     );
   }, 3000);
 }

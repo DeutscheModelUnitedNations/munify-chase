@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from "react";
 
 import { useI18nContext } from "@/i18n/i18n-react";
-import { useBackend } from "@/contexts/backend";
+import { backend } from "@/services/backend";
 import { useRouter } from "next/navigation";
 import OnboardingSteps from "@/components/admin/onboarding/steps";
 import ForwardBackButtons from "@/components/admin/onboarding/forward_back_bar";
@@ -21,7 +21,6 @@ export default function teampool({
   params: { conferenceId: string };
 }) {
   const { LL } = useI18nContext();
-  const backend = useBackend();
   const router = useRouter();
 
   const [team, setTeam] = useState<Awaited<ReturnType<typeof getTeam>>>([]);
@@ -133,7 +132,7 @@ export default function teampool({
       />
 
       <ForwardBackButtons
-        backURL={`/admin/onboarding/${params.conferenceId}/structure`}
+        backURL={`/app/admin/onboarding/${params.conferenceId}/structure`}
         saveLoading={saveLoading}
         handleSaveFunction={handleSave}
         forwardDisabled={

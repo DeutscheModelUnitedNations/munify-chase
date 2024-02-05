@@ -150,7 +150,7 @@ model AgendaItem {
   isActive     Boolean        @default(false)
 
   // TODO is this correct? As far as I know only one agenda item can be active at a time
-  @@unique([isActive, committeeId])
+  // @@unique([isActive, committeeId])
 }
 
 /// The type of a speakers list

@@ -8,13 +8,8 @@ import OnboardingSteps from "@/components/admin/onboarding/steps";
 import ForwardBackButtons from "@/components/admin/onboarding/forward_back_bar";
 import { Accordion, AccordionTab } from "primereact/accordion";
 import { Toast } from "primereact/toast";
-
-import {
-  ChairMultiSelect,
-  AdvisorMultiSelect,
-} from "@/components/admin/committee/multiselect";
 import AgendaItems from "@/components/admin/committee/agendaItems";
-import { Committee, Teammember } from "@/custom_types/fetching";
+import { AgendaItem, Committee } from "../../../../../../../backend/prisma/generated/client";
 
 export default function loginVorsitz({
   params,
@@ -26,63 +21,12 @@ export default function loginVorsitz({
   const toast = useRef<Toast>(null);
 
   const [saveLoading, setSaveLoading] = useState(false);
-  const [committees, setCommittees] = useState<
-    Awaited<ReturnType<typeof getCommittees>>
-  >([]);
-
-  const [chairs, setChairs] = useState<Awaited<ReturnType<typeof getChairs>>>(
-    []
-  );
-  const [advisors, setAdvisors] = useState<
-    Awaited<ReturnType<typeof getAdvisors>>
-  >([]);
-  const [agendaItems, setAgendaItems] = useState<
-    Awaited<ReturnType<typeof getAgendaItems>>
-  >([]);
+  const [committees, setCommittees] = useState<Committee[]>([]);
 
   const [update, setUpdate] = useState(true);
 
-  async function getCommittees(id: string) {
-    const res = await backend.conference[id].committee.list
-      .get()
-      .catch((error) => {
-        toast.current?.show({
-          severity: "error",
-          summary: LL.admin.onboarding.error.title(),
-          detail: LL.admin.onboarding.error.generic(),
-        });
-      });
-    return res.data;
-  }
-
-  async function getChairs(id: string) {
-    const res = await backend.conference[id].team.chairs.list
-      .get()
-      .catch((error) => {
-        toast.current?.show({
-          severity: "error",
-          summary: LL.admin.onboarding.error.title(),
-          detail: LL.admin.onboarding.error.generic(),
-        });
-      });
-    return res.data;
-  }
-
-  async function getAdvisors(id: string) {
-    const res = await backend.conference[id].team.advisors.list
-      .get()
-      .catch((error) => {
-        toast.current?.show({
-          severity: "error",
-          summary: LL.admin.onboarding.error.title(),
-          detail: LL.admin.onboarding.error.generic(),
-        });
-      });
-    return res.data;
-  }
-
-  async function getAgendaItems(id: string) {
-    const res = await backend.conference[id].agendaItem.list
+  async function getCommittees(conferenceId: string): Promise<Committee[]> {
+    const res = await backend.conference[conferenceId].committee
       .get()
       .catch((error) => {
         toast.current?.show({
@@ -96,25 +40,17 @@ export default function loginVorsitz({
 
   useEffect(() => {
     if (update) {
-      getCommittees(params.conferenceId).then((data) => {
-        setCommittees(data);
+      getCommittees(params.conferenceId).then((committeeData) => {
+        setCommittees(committeeData);
       });
-      getChairs(params.conferenceId).then((data) => {
-        setChairs(data);
-      });
-      getAdvisors(params.conferenceId).then((data) => {
-        setAdvisors(data);
-      });
-      getAgendaItems(params.conferenceId).then((data) => {
-        setAgendaItems(data);
-      });
+      
       setUpdate(false);
     }
   }, [update]);
 
   const handleSave = () => {
     setSaveLoading(true);
-    router.push(`/admin/onboarding/${params.conferenceId}/delegations`);
+    router.push(`/app/admin/onboarding/${params.conferenceId}/delegations`);
   };
 
   return (
@@ -124,25 +60,12 @@ export default function loginVorsitz({
       <Accordion activeIndex={0} className="w-full">
         {committees?.map((committee) => (
           <AccordionTab
-            header={HeaderTemplate(committee, chairs, advisors)}
+            header={HeaderTemplate(committee)}
             key={committee.id}
           >
-            <ChairMultiSelect
-              conferenceId={params.conferenceId}
-              committee={committee}
-              teammember={chairs}
-              setUpdate={setUpdate}
-            />
-            <AdvisorMultiSelect
-              conferenceId={params.conferenceId}
-              committee={committee}
-              teammember={advisors}
-              setUpdate={setUpdate}
-            />
             <AgendaItems
               conferenceId={params.conferenceId}
               committeeId={committee.id}
-              agendaItems={agendaItems}
               setUpdate={setUpdate}
             />
           </AccordionTab>
@@ -160,39 +83,13 @@ export default function loginVorsitz({
 }
 
 const HeaderTemplate = (
-  committee: Committee,
-  chairs: Teammember[] | null | undefined,
-  advisors: Teammember[] | null | undefined
+  committee: Committee
 ) => {
   return (
     <div className="flex flex-wrap items-center gap-6">
       <h2 className="font-bold text-lg">
         {committee.name} ({committee.abbreviation})
       </h2>
-      <div className="flex gap-2">
-        {chairs
-          ?.filter((chair) => chair.chair_committeeId === committee.id)
-          .map((chair) => (
-            <div
-              key={`${chair.id}-chip`}
-              className="flex justify-center items-center bg-primary-500 text-white py-2 px-3 rounded-md font-normal"
-            >
-              {chair.firstName.charAt(0)}
-              {chair.lastName.charAt(0)}
-            </div>
-          ))}
-        {advisors
-          ?.filter((advisor) => advisor.advisor_committeeId === committee.id)
-          .map((advisor) => (
-            <div
-              key={`${advisor.id}-chip`}
-              className="flex justify-center items-center bg-secondary-500 text-white py-2 px-3 rounded-md font-normal"
-            >
-              {advisor.firstName.charAt(0)}
-              {advisor.lastName.charAt(0)}
-            </div>
-          ))}
-      </div>
     </div>
   );
 };

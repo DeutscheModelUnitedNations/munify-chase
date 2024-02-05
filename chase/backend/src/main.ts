@@ -9,6 +9,7 @@ import { conferenceMember } from "./routes/conferenceMember";
 import { committee } from "./routes/committee";
 import { baseData } from "./routes/baseData";
 import { auth } from "./routes/auth/auth";
+import { agendaItem } from "./routes/agendaItem";
 
 const m = new Elysia({
   cookie: {
@@ -42,6 +43,7 @@ const m = new Elysia({
   .use(conference)
   .use(conferenceMember)
   .use(committee)
+  .use(agendaItem)
   .use(auth)
   // .use(delegations)
   .use(baseData);

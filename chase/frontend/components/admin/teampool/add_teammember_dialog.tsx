@@ -8,17 +8,12 @@ import { RadioButton } from "primereact/radiobutton";
 import { faPlus, faXmark } from "@fortawesome/pro-solid-svg-icons";
 import Button from "@/components/button";
 import useMousetrap from "mousetrap-react";
-import { CreateTeammemberPayload, TeamRoles } from "@/custom_types/fetching";
+import { ConferenceRole } from "../../../../backend/prisma/generated/client";
 
 type AddTeammemberDialogProps = {
   inputMaskVisible: boolean;
   setInputMaskVisible: (visible: boolean) => void;
-  addTeammemberToList: ({
-    firstName,
-    lastName,
-    email,
-    role,
-  }: CreateTeammemberPayload) => void;
+  addTeammemberToList: ({ role, count }: { role: ConferenceRole, count: Number }) => void;
 };
 
 export default function AddTeammemberDialog({
@@ -29,15 +24,17 @@ export default function AddTeammemberDialog({
   const { LL } = useI18nContext();
   const toast = useRef<Toast>(null);
 
-  const [newTeammemberFirstName, setTeammemberFirstName] = useState("");
-  const [newTeammemberLastName, setTeammemberLastName] = useState("");
-  const [newTeammemberEmail, setTeammemberEmail] = useState("");
-  const [newTeammemberRole, setTeammemberRole] = useState<TeamRoles>("CHAIR");
+  const [newTeammemberRole, setTeammemberRole] = useState<ConferenceRole>("CHAIR");
+  const [newTeammemberCount, setNewTeammemberCount] = useState<number>(1);
 
   const roles = [
     {
       name: LL.admin.onboarding.teampool.roles.ADMIN(),
       value: "ADMIN",
+    },
+    {
+      name: LL.admin.onboarding.teampool.roles.SECRETARIAT(),
+      value: "SECRETARIAT",
     },
     {
       name: LL.admin.onboarding.teampool.roles.CHAIR(),
@@ -48,33 +45,28 @@ export default function AddTeammemberDialog({
       value: "COMMITTEE_ADVISOR",
     },
     {
-      name: LL.admin.onboarding.teampool.roles.SECRETARIAT(),
-      value: "SECRETARIAT",
+      name: LL.admin.onboarding.teampool.roles.GUEST(),
+      value: "GUEST",
     },
     {
       name: LL.admin.onboarding.teampool.roles.PARTICIPANT_CARE(),
       value: "PARTICIPANT_CARE",
     },
     {
-      name: LL.admin.onboarding.teampool.roles.TEAM(),
-      value: "TEAM",
+      name: LL.admin.onboarding.teampool.roles.MISCELLANEOUS_TEAM(),
+      value: "MISCELLANEOUS_TEAM",
     },
   ];
 
   const resetInputMask = () => {
-    setTeammemberFirstName("");
-    setTeammemberLastName("");
-    setTeammemberEmail("");
     setTeammemberRole("CHAIR");
   };
 
   const addCommittee = (e: FormEvent | null = null) => {
     if (e) e.preventDefault();
     addTeammemberToList({
-      firstName: newTeammemberFirstName,
-      lastName: newTeammemberLastName,
-      email: newTeammemberEmail,
       role: newTeammemberRole,
+      count: newTeammemberCount,
     });
     resetInputMask();
     setInputMaskVisible(false);
@@ -86,9 +78,6 @@ export default function AddTeammemberDialog({
   });
 
   useMousetrap("enter", () => {
-    if (newTeammemberFirstName === "") return;
-    if (newTeammemberLastName === "") return;
-    if (newTeammemberEmail === "") return;
     addCommittee();
   });
 
@@ -107,32 +96,6 @@ export default function AddTeammemberDialog({
             if (e.key === "Enter") e.preventDefault();
           }}
         >
-          <InputText
-            id="firstName"
-            value={newTeammemberFirstName}
-            onChange={(e) => setTeammemberFirstName(e.target.value)}
-            className="w-full"
-            required
-            placeholder={LL.admin.onboarding.teampool.FIRST_NAME()}
-            autoFocus
-          />
-          <InputText
-            id="lastName"
-            value={newTeammemberLastName}
-            onChange={(e) => setTeammemberLastName(e.target.value)}
-            className="w-full"
-            required
-            placeholder={LL.admin.onboarding.teampool.LAST_NAME()}
-          />
-          <InputText
-            id="email"
-            value={newTeammemberEmail}
-            onChange={(e) => setTeammemberEmail(e.target.value)}
-            className="w-full"
-            required
-            placeholder={LL.admin.onboarding.teampool.EMAIL()}
-            // TODO: Add email validation
-          />
           {roles.map((role) => {
             return (
               <div key={role.value} className="flex align-items-center">
@@ -149,10 +112,23 @@ export default function AddTeammemberDialog({
               </div>
             );
           })}
+          <InputText
+            id="count"
+            type="number"
+            onChange={(e) => setNewTeammemberCount(parseInt(e.currentTarget.value))}
+            value={newTeammemberCount.toString()}
+            min={1}
+            max={50}
+            required
+            placeholder={LL.admin.onboarding.teampool.input.COUNT()}
+            className="w-full"
+          />
+
           <div className="mt-4 flex w-full gap-2">
             <Button
               label={LL.admin.onboarding.structure.input.BUTTON_CANCEL()}
               className="w-full"
+              type="button"
               severity="warning"
               faIcon={faXmark}
               onClick={() => {

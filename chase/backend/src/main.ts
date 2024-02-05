@@ -5,6 +5,7 @@ import packagejson from "../package.json";
 import { appConfiguration } from "./util/config";
 import { errorLogging } from "./util/errorLogger";
 import { conference } from "./routes/conference";
+import { conferenceMember } from "./routes/conferenceMember";
 import { committee } from "./routes/committee";
 import { baseData } from "./routes/baseData";
 import { auth } from "./routes/auth/auth";
@@ -39,9 +40,9 @@ const m = new Elysia({
     })
   )
   .use(conference)
+  .use(conferenceMember)
   .use(committee)
   .use(auth)
-  // .use(team)
   // .use(delegations)
   .use(baseData);
 

@@ -356,26 +356,22 @@ type RootTranslation = {
 				 */
 				FOOTER: string
 				/**
-				 * F​i​r​s​t​ ​N​a​m​e
-				 */
-				FIRST_NAME: string
-				/**
-				 * L​a​s​t​ ​N​a​m​e
-				 */
-				LAST_NAME: string
-				/**
-				 * E​m​a​i​l
-				 */
-				EMAIL: string
-				/**
 				 * R​o​l​e
 				 */
 				ROLE: string
+				/**
+				 * C​o​u​n​t
+				 */
+				COUNT: string
 				roles: {
 					/**
 					 * A​d​m​i​n
 					 */
 					ADMIN: string
+					/**
+					 * S​e​c​r​e​t​a​r​i​a​t
+					 */
+					SECRETARIAT: string
 					/**
 					 * C​h​a​i​r
 					 */
@@ -385,23 +381,31 @@ type RootTranslation = {
 					 */
 					COMMITTEE_ADVISOR: string
 					/**
-					 * S​e​c​r​e​t​a​r​i​a​t
+					 * N​o​n​-​S​t​a​t​e​ ​A​c​t​o​r
 					 */
-					SECRETARIAT: string
+					NON_STATE_ACTOR: string
+					/**
+					 * P​r​e​s​s​ ​C​o​r​p​s
+					 */
+					PRESS_CORPS: string
+					/**
+					 * G​u​e​s​t
+					 */
+					GUEST: string
 					/**
 					 * P​a​r​t​i​c​i​p​a​n​t​ ​C​a​r​e
 					 */
 					PARTICIPANT_CARE: string
 					/**
-					 * T​e​a​m
+					 * O​t​h​e​r​ ​T​e​a​m
 					 */
-					TEAM: string
-					/**
-					 * G​u​e​s​t
-					 */
-					GUEST: string
+					MISCELLANEOUS_TEAM: string
 				}
 				input: {
+					/**
+					 * C​o​u​n​t
+					 */
+					COUNT: string
 					/**
 					 * A​d​d
 					 */
@@ -1506,26 +1510,22 @@ export type TranslationFunctions = {
 				 */
 				FOOTER: (arg0: number | string | boolean) => LocalizedString
 				/**
-				 * First Name
-				 */
-				FIRST_NAME: () => LocalizedString
-				/**
-				 * Last Name
-				 */
-				LAST_NAME: () => LocalizedString
-				/**
-				 * Email
-				 */
-				EMAIL: () => LocalizedString
-				/**
 				 * Role
 				 */
 				ROLE: () => LocalizedString
+				/**
+				 * Count
+				 */
+				COUNT: () => LocalizedString
 				roles: {
 					/**
 					 * Admin
 					 */
 					ADMIN: () => LocalizedString
+					/**
+					 * Secretariat
+					 */
+					SECRETARIAT: () => LocalizedString
 					/**
 					 * Chair
 					 */
@@ -1535,23 +1535,31 @@ export type TranslationFunctions = {
 					 */
 					COMMITTEE_ADVISOR: () => LocalizedString
 					/**
-					 * Secretariat
+					 * Non-State Actor
 					 */
-					SECRETARIAT: () => LocalizedString
+					NON_STATE_ACTOR: () => LocalizedString
+					/**
+					 * Press Corps
+					 */
+					PRESS_CORPS: () => LocalizedString
+					/**
+					 * Guest
+					 */
+					GUEST: () => LocalizedString
 					/**
 					 * Participant Care
 					 */
 					PARTICIPANT_CARE: () => LocalizedString
 					/**
-					 * Team
+					 * Other Team
 					 */
-					TEAM: () => LocalizedString
-					/**
-					 * Guest
-					 */
-					GUEST: () => LocalizedString
+					MISCELLANEOUS_TEAM: () => LocalizedString
 				}
 				input: {
+					/**
+					 * Count
+					 */
+					COUNT: () => LocalizedString
 					/**
 					 * Add
 					 */

@@ -68,6 +68,8 @@ model Conference {
 enum ConferenceRole {
   ADMIN
   SECRETARIAT
+  CHAIR
+  COMMITTEE_ADVISOR
   NON_STATE_ACTOR
   PRESS_CORPS
   GUEST
@@ -80,8 +82,8 @@ model ConferenceMember {
   id           String         @id @default(uuid())
   conference   Conference     @relation(fields: [conferenceId], references: [id])
   conferenceId String
-  user         User           @relation(fields: [userId], references: [id])
-  userId       String
+  user         User?          @relation(fields: [userId], references: [id])
+  userId       String?
   role         ConferenceRole
 
   @@unique([userId, conferenceId])
@@ -117,8 +119,6 @@ model Committee {
 
 /// The role of a user in a committee
 enum CommitteeRole {
-  CHAIR
-  COMMITTEE_ADVISOR
   DELEGATE
   OBSERVER
 }

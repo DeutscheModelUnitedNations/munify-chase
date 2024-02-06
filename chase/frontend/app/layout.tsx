@@ -23,7 +23,6 @@ import {
 import { loadLocale } from "@/i18n/i18n-util.sync";
 import { baseLocale, locales } from "@/i18n/i18n-util";
 import TypesafeI18n from "@/i18n/i18n-react";
-import Featurebase from "@/components/featurebase_widget"; // TODO: Decide on Featurebase
 import { ToastProvider } from "@/contexts/toast";
 
 const inter = Inter({ subsets: ["latin"] });
@@ -55,10 +54,7 @@ export default function RootLayout({
       </Head>
       <body className={inter.className}>
         <TypesafeI18n locale={locale}>
-          <ToastProvider>
-            {children}
-            {/* <Featurebase /> */}
-          </ToastProvider>
+          <ToastProvider>{children}</ToastProvider>
         </TypesafeI18n>
       </body>
     </html>

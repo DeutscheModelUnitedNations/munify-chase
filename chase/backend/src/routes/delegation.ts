@@ -3,110 +3,144 @@ import { db } from "../../prisma/db";
 import { committeeRoleGuard } from "../auth/guards/committeeRoles";
 import { conferenceRoleGuard } from "../auth/guards/conferenceRoles";
 import { openApiTag } from "../util/openApiTags";
-import { Committee } from "../../prisma/generated/schema";
+import { Delegation, Nation } from "../../prisma/generated/schema";
 
-const CommitteeWithoutRelations = t.Omit(Committee, [
-  "conference",
-  "members",
-  "parent",
-  "subCommittees",
-  "agendaItems",
-  "parentId",
-]);
+const DelegationBody = t.Pick(Nation, ["alpha3Code"]);
 
-const CommitteeData = t.Omit(CommitteeWithoutRelations, ["id", "conferenceId"]);
-
-export const committee = new Elysia({
+export const delegation = new Elysia({
   prefix: "/conference/:conferenceId",
 })
   .use(conferenceRoleGuard)
   .use(committeeRoleGuard)
   .get(
-    "/committee",
+    "/delegation",
     ({ params: { conferenceId } }) => {
-      return db.committee.findMany({
+      return db.delegation.findMany({
         where: {
           conferenceId,
         },
+        include: {
+          nation: true,
+          members: true
+        }
       });
     },
     {
       hasConferenceRole: "any",
-      response: t.Array(CommitteeWithoutRelations),
       detail: {
-        description: "Get all committees in this conference",
+        description: "Get all delegations in this conference",
         tags: [openApiTag(import.meta.path)],
       },
-    },
+    }
   )
   .post(
-    "/committee",
+    "/delegation",
     ({ body, params: { conferenceId } }) => {
-      return db.committee.create({
+      return db.delegation.create({
         data: {
-          abbreviation: body.abbreviation,
-          category: body.category,
-          conferenceId,
-          name: body.name,
+          conference: { connect: { id: conferenceId } },
+          nation: { connect: { alpha3Code: body.alpha3Code } },
         },
       });
     },
     {
-      hasConferenceRole: ["ADMIN"],
+      hasConferenceRole: ['ADMIN'],
+      body: DelegationBody,
       detail: {
-        description: "Create a new committee in this conference",
+        description: "Create a new delegation in this conference",
         tags: [openApiTag(import.meta.path)],
       },
-      body: CommitteeData,
-      response: CommitteeWithoutRelations,
-    },
+    }
   )
   .get(
-    "/committee/:committeeId",
-    ({ params: { conferenceId, committeeId } }) => {
-      return db.committee.findUniqueOrThrow({
-        where: { conferenceId, id: committeeId },
+    "/delegation/:delegationId",
+    ({ params: { delegationId } }) => {
+      return db.delegation.findUnique({
+        where: {
+          id: delegationId,
+        },
+        include: {
+          members: true,
+        },
       });
     },
     {
       hasConferenceRole: "any",
       detail: {
-        description: "Get a single committee by id",
+        description: "Get a specific delegation in this conference",
         tags: [openApiTag(import.meta.path)],
       },
-      response: CommitteeWithoutRelations,
-    },
+    }
   )
   .delete(
-    "/committee/:committeeId",
-    ({ params: { conferenceId, committeeId } }) =>
-      db.committee.delete({ where: { id: committeeId, conferenceId } }),
+    "/delegation/:delegationId",
+    ({ params: { delegationId } }) => {
+      return db.$transaction([
+        db.committeeMember.deleteMany({
+          where: {
+            id: delegationId,
+          },
+        }),
+        db.delegation.delete({
+          where: {
+            id: delegationId,
+          },
+        }),
+      ]);
+    },
     {
-      hasConferenceRole: ["ADMIN"],
+      hasConferenceRole: ['ADMIN'],
       detail: {
-        description: "Delete a committee by id",
+        description: "Delete a delegation and all its committee members in this conference",
         tags: [openApiTag(import.meta.path)],
       },
-    },
+    }
   )
-  .patch(
-    "/committee/:committeeId",
-    ({ params: { conferenceId, committeeId }, body }) => {
-      return db.committee.update({
-        where: { id: committeeId, conferenceId },
-        data: {
-          name: body.name,
-          abbreviation: body.abbreviation,
-          category: body.category,
+  .post(
+    "/delegation/:delegationId/committee/:committeeId",
+    async ({ params: { delegationId, committeeId } }) => {
+      try {
+        const res = await db.committeeMember.create({
+          data: {
+            committeeId,
+            delegationId,
+          },
+        });
+        return res;
+      } catch (e) {
+        if (e.code === "P2002") {
+          return new Response("Committee is already connected to this delegation", {
+            status: 304,
+          });
+        }
+        throw e;
+      }
+
+    },
+    {
+      hasConferenceRole: ['ADMIN'],
+      detail: {
+        description: "Connect a committee to a delegation in this conference. If the committee is already connected to the delegation, return a 304 Not Modified Error Code.",
+        tags: [openApiTag(import.meta.path)],
+      },
+    }
+  )
+  .delete(
+    "/delegation/:delegationId/committee/:committeeId",
+    ({ params: { delegationId, committeeId } }) => {
+      return db.committeeMember.deleteMany({
+        where: {
+          committeeId,
+          delegationId,
         },
       });
     },
     {
-      hasConferenceRole: ["ADMIN"],
-      body: CommitteeData,
+      hasConferenceRole: ['ADMIN'],
       detail: {
-        description: "Update a committee by id",
+        description: "Disconnect a committee from a delegation in this conference",
         tags: [openApiTag(import.meta.path)],
       },
-    },
-  );
+    }
+  )
+  

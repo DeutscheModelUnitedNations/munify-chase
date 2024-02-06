@@ -2,7 +2,7 @@
 import React from "react";
 
 import { useI18nContext } from "@/i18n/i18n-react";
-import { useBackend } from "@/contexts/backend";
+import { backend } from "@/services/backend";
 import { useRouter } from "next/navigation";
 import OnboardingSteps from "@/components/admin/onboarding/steps";
 import ForwardBackButtons from "@/components/admin/onboarding/forward_back_bar";

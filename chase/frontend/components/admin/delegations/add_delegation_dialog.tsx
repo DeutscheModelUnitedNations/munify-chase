@@ -1,6 +1,6 @@
 import Button from "@/components/button";
 import CountryAutoComplete from "@/components/speakers_list/country_auto_complete";
-import { useBackend } from "@/contexts/backend";
+import { backend } from "@/services/backend";
 import { Alpha3Code } from "@/custom_types/custom_types";
 import { useI18nContext } from "@/i18n/i18n-react";
 import getCountryNameByCode from "@/misc/get_country_name_by_code";
@@ -22,7 +22,6 @@ export default function AddDelegationDialog({
   addDelegationToList,
 }: AddDelegationDialogProps) {
   const { LL } = useI18nContext();
-  const backend = useBackend();
   const toast = useRef<Toast>(null);
 
   const [delegationAlpha3Code, setdelegationAlpha3Code] = useState(null);

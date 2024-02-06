@@ -3,24 +3,23 @@ import AddDelegationDialog from "@/components/admin/delegations/add_delegation_d
 import DelegationsTable from "@/components/admin/delegations/delegations_table";
 import ForwardBackButtons from "@/components/admin/onboarding/forward_back_bar";
 import OnboardingSteps from "@/components/admin/onboarding/steps";
-import { useBackend } from "@/contexts/backend";
+import { backend } from "@/services/backend";
 import { Alpha3Code, CountryCode } from "@/custom_types/custom_types";
-import { Committee, Delegation } from "@/custom_types/fetching";
 import { useI18nContext } from "@/i18n/i18n-react";
 import { useRouter } from "next/navigation";
 import { Toast } from "primereact/toast";
 import { useEffect, useRef, useState } from "react";
 import useMousetrap from "mousetrap-react";
+import { Committee, Delegation } from "../../../../../../../backend/prisma/generated/client";
 
 
 
-export default function loginVorsitz({
+export default function LoginVorsitz({
   params,
 }: {
   params: { conferenceId: string };
 }) {
   const { LL, locale } = useI18nContext();
-  const backend = useBackend();
   const router = useRouter();
   const toast = useRef<Toast>(null);
 
@@ -29,8 +28,8 @@ export default function loginVorsitz({
   const [delegations, setDelegations] = useState<Delegation[]>([]);
   const [inputMaskVisible, setInputMaskVisible] = useState(false);
 
-  async function getCommittees(id: string) {
-    const res = await backend.conference[id].committee.list
+  async function getCommittees(id: string): Promise<Committee[]> {
+    const res = await backend.conference[id].committee
       .get()
       .catch((error) => {
         toast.current?.show({
@@ -42,8 +41,8 @@ export default function loginVorsitz({
     return res.data;
   }
 
-  async function getDelegations(id: string) {
-    const res = await backend.conference[id].delegations.list
+  async function getDelegations(id: string): Promise<Delegation[]> {
+    const res = await backend.conference[id].delegation
       .get()
       .catch((error) => {
         toast.current?.show({
@@ -56,7 +55,7 @@ export default function loginVorsitz({
   }
 
   async function createDelegation(id: string, alpha3Code: Alpha3Code) {
-    await backend.conference[id].delegations.create
+    await backend.conference[id].delegation
       .post({
         alpha3Code,
       })
@@ -71,7 +70,7 @@ export default function loginVorsitz({
   }
 
   async function deleteDelegation(id: string, delegationId: string) {
-    await backend.conference[id].delegations[delegationId]
+    await backend.conference[id].delegation[delegationId]
       .delete()
       .catch((error) => {
         toast.current?.show({
@@ -84,16 +83,12 @@ export default function loginVorsitz({
   }
 
   async function activateCommittee(
-    id: string,
+    conferenceId: string,
     delegationId: string,
     committeeId: string
   ) {
-    const res = await backend.conference[id].delegations[
-      delegationId
-    ].connectCommittee
-      .post({
-        committeeId,
-      })
+    const res = await backend.conference[conferenceId].delegation[delegationId].committee[committeeId]
+      .post()
       .catch((error) => {
         toast.current?.show({
           severity: "error",
@@ -105,14 +100,12 @@ export default function loginVorsitz({
   }
 
   async function deactivateCommittee(
-    id: string,
+    conferenceId: string,
     delegationId: string,
-    connectionId: string
+    committeeId: string
   ) {
-    await backend.conference[id].delegations[delegationId].disconnectCommittee
-      .post({
-        id: connectionId,
-      })
+    await backend.conference[conferenceId].delegation[delegationId].committee[committeeId]
+      .delete()
       .catch((error) => {
         toast.current?.show({
           severity: "error",
@@ -130,8 +123,8 @@ export default function loginVorsitz({
     const res = await activateCommittee(id, delegationId, committeeId);
 
     // if there was already a connection, the server will respond with a 208 status code and provide the id of the Delegate
-    if (res.status === 208) {
-      await deactivateCommittee(id, delegationId, res.data);
+    if (res.status === 304) {
+      await deactivateCommittee(id, delegationId, committeeId);
     }
     setUpdate(true);
   }
@@ -174,7 +167,7 @@ export default function loginVorsitz({
 
       <ForwardBackButtons
         backURL={`/app/admin/onboarding/${params.conferenceId}/committees`}
-        handleSaveFunction={() => {router.push(`/admin/onboarding/${params.conferenceId}/non_state_actors`)}}
+        handleSaveFunction={() => {router.push(`/app/admin/onboarding/${params.conferenceId}/non_state_actors`)}}
       />
     </>
   );

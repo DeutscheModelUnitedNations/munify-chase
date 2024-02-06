@@ -130,13 +130,11 @@ model CommitteeMember {
   committeeId   String
   user          User?          @relation(fields: [userId], references: [id])
   userId        String?
-  role          CommitteeRole
   speakersLists SpeakersList[]
-  // TODO we kinda have a redundancy here, since we know if the member is a delegate based on
-  // the delegationId. However, this is not always the case so we have the role enum additionally
-  // to be able to distinguish between other roles a member can have
   delegation    Delegation?    @relation(fields: [delegationId], references: [id])
   delegationId  String?
+
+  @@unique([committeeId, delegationId])
 }
 
 /// An agenda item in a committee. This is a topic of discussion in a committee.

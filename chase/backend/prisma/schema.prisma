@@ -79,12 +79,14 @@ enum ConferenceRole {
 
 /// A user's membership in a conference, providing them with a role in the conference
 model ConferenceMember {
-  id           String         @id @default(uuid())
-  conference   Conference     @relation(fields: [conferenceId], references: [id])
-  conferenceId String
-  user         User?          @relation(fields: [userId], references: [id])
-  userId       String?
-  role         ConferenceRole
+  id              String         @id @default(uuid())
+  conference      Conference     @relation(fields: [conferenceId], references: [id])
+  conferenceId    String
+  user            User?          @relation(fields: [userId], references: [id])
+  userId          String?
+  role            ConferenceRole
+  nonStateActor   NonStateActor? @relation(fields: [nonStateActorId], references: [id])
+  nonStateActorId String?
 
   @@unique([userId, conferenceId])
 }
@@ -180,8 +182,9 @@ model Nation {
 
 /// A non-state actor in the system. E.g. the Red Cross
 model NonStateActor {
-  id   String @id @default(uuid())
-  code String @unique
+  id               String             @id @default(uuid())
+  code             String             @unique
+  ConferenceMember ConferenceMember[]
 }
 
 model SpecialPerson {

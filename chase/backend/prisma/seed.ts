@@ -198,14 +198,44 @@ const allCountries = [
   { alpha3Code: "zwe" },
 ];
 
+const specialPersonData: string[] = [
+  "unm",
+  "unw",
+  "gsm",
+  "gsw",
+  "uno"
+]
+
 try {
+
+  /*
+  * -------------
+  *   Base Data
+  * -------------
+  */
+
   const countries = await prisma.nation.createMany({
     data: allCountries
   });
+  console.info(`Created ${countries.count} countries as base country data`);
 
-  console.info(countries);
+  const specialPersons = await prisma.specialPerson.createMany({
+    data: specialPersonData.map((code) => ({ code }))
+  });
 
-  // Add Test Data (only for development)
+  console.info(`Created ${specialPersons.count} special persons as base special person data`);
+
+
+
+
+
+  /*
+  * -------------
+  *   Test Data
+  * -------------
+  * (only for development)
+  * 
+  */ 
 
   const conference = await prisma.conference.upsert({
     where: {
@@ -216,6 +246,8 @@ try {
       name: "Dummy Conference",
     },
   });
+  console.info("\n----------------\n");
+  console.info(`Created a Dummy Conference with the ID ${conference.id}`);
 
   // Committees
 
@@ -256,7 +288,11 @@ try {
       category: "COMMITTEE",
     },
   });
-
+  console.info("\nCreated Committees:")
+  console.info(`  - Created ${committees.GV.abbreviation} with ID ${committees.GV.id}`)
+  console.info(`  - Created ${committees.HA1.abbreviation} with ID ${committees.HA1.id}`)
+  console.info(`  - Created ${committees.SR.abbreviation} with ID ${committees.SR.id}`)
+  
   // Team seeding
 
   await prisma.conferenceMember.create({
@@ -283,6 +319,8 @@ try {
       },
     });
   }
+
+  console.info("\nCreated Team Pool")
 
   // Committee seeding
 
@@ -314,7 +352,12 @@ try {
       }
     }
   }
-  console.info(conference);
+
+  console.info("\nCreated Agenda Items")
+
+
+  // Delegations
+  console.info("\nCreated Delegations:")
 
   const delegations: () => string[] = () => {
     let selectedCountries: string[] = []
@@ -335,6 +378,7 @@ try {
         nation: { connect: { alpha3Code } },
       },
     });
+    console.info(`  - Created Delegation for ${alpha3Code} with ID ${delegation.id}`)
 
     await prisma.committeeMember.create({
       data: {

@@ -61,7 +61,7 @@ module.exports = {
     },
   },
   plugins: [
-    plugin(function ({ addVariant, e }) {
+    plugin(({ addVariant, e }) => {
       addVariant("contrast", ({ modifySelectors, separator }) => {
         modifySelectors(({ className }) => {
           return `.contrast .${e(`contrast${separator}${className}`)}`;

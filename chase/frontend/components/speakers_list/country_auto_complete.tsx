@@ -3,8 +3,8 @@ import { useI18nContext } from "@/i18n/i18n-react";
 import getCountryNameByCode from "@/misc/get_country_name_by_code";
 import Fuse from "fuse.js";
 import {
-    AutoComplete,
-    AutoCompleteCompleteEvent,
+  AutoComplete,
+  AutoCompleteCompleteEvent,
 } from "primereact/autocomplete";
 import { useEffect, useState } from "react";
 import { SmallFlag } from "../flag_templates";
@@ -21,9 +21,9 @@ export default function CountryAutoComplete({
   placeholder,
 }: {
   listOfAllCountries: Alpha3Code[];
-    selectedCountry: any;
-    setSelectedCountry: (country) => void;
-    placeholder: string;
+  selectedCountry: CountryData | null;
+  setSelectedCountry: (country) => void;
+  placeholder: string;
 }) {
   const { LL, locale } = useI18nContext();
   const [countries, setCountries] = useState<CountryData[] | null>(null);
@@ -39,7 +39,7 @@ export default function CountryAutoComplete({
           alpha3: country,
           name: getCountryNameByCode(country, locale),
         };
-      }
+      },
     );
     setCountries(countryData);
 
@@ -70,7 +70,7 @@ export default function CountryAutoComplete({
   const searchCountry = (event: AutoCompleteCompleteEvent) => {
     if (!fuse) return;
 
-    let filteredCountries;
+    let filteredCountries: CountryData[] = [];
     if (!event.query.trim().length) {
       filteredCountries = countries ? [...countries] : [];
     } else {

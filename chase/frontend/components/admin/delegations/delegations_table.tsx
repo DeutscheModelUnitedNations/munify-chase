@@ -23,7 +23,7 @@ type DelegationsTableProps = {
   activateOrDeactivateCommittee: (
     conferenceId: string,
     delegationId: string,
-    committeeId: string
+    committeeId: string,
   ) => void;
   deleteDelegation: (conferenceId: string, delegationId: string) => void;
   openAddDelegationDialog: (state: boolean) => void;
@@ -41,7 +41,7 @@ export default function DelegationsTable({
 
   const delegationIsActive = (delegation: Delegation, committee: Committee) => {
     return delegation.members?.some(
-      (member) => member.committeeId === committee.id
+      (member) => member.committeeId === committee.id,
     );
   };
 
@@ -85,7 +85,7 @@ export default function DelegationsTable({
                 key={committee.id}
                 count={
                   delegations.filter((delegation) =>
-                    delegationIsActive(delegation, committee)
+                    delegationIsActive(delegation, committee),
                   ).length
                 }
                 committee={committee.abbreviation}
@@ -98,7 +98,7 @@ export default function DelegationsTable({
         <Column
           body={(delegation) => (
             <div className="flex justify-center">
-              {delegation && delegation.nation.alpha3Code && (
+              {delegation?.nation?.alpha3Code && (
                 <NormalFlag countryCode={delegation.nation.alpha3Code} />
               )}
             </div>
@@ -106,7 +106,9 @@ export default function DelegationsTable({
         />
         <Column
           body={(delegation) => (
-            <span>{getCountryNameByCode(delegation.nation.alpha3Code, locale)}</span>
+            <span>
+              {getCountryNameByCode(delegation.nation.alpha3Code, locale)}
+            </span>
           )}
           header="Delegation"
           sortable
@@ -114,7 +116,9 @@ export default function DelegationsTable({
         {Array.isArray(committees) &&
           committees?.map((committee) => (
             <Column
-              key={(delegation) => `${committee.id}-${delegation.nation.alpha3Code}`}
+              key={(delegation) =>
+                `${committee.id}-${delegation.nation.alpha3Code}`
+              }
               header={committee.abbreviation}
               alignHeader={"center"}
               align={"center"}
@@ -136,7 +140,7 @@ export default function DelegationsTable({
                     activateOrDeactivateCommittee(
                       conferenceId,
                       delegation.id,
-                      committee.id
+                      committee.id,
                     )
                   }
                 />

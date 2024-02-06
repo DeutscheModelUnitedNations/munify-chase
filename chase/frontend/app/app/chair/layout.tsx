@@ -11,7 +11,7 @@ import {
   faPresentationScreen,
   faSquareSliders,
   faNewspaper,
-  faCommentExclamation
+  faCommentExclamation,
 } from "@fortawesome/pro-solid-svg-icons";
 import { useI18nContext } from "@/i18n/i18n-react";
 import { IconProp } from "@fortawesome/fontawesome-svg-core";

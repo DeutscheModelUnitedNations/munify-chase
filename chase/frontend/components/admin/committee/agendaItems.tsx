@@ -29,20 +29,25 @@ export default function agendaItem({
     AgendaItem[]
   >([]);
   const [inputValue, setInputValue] = useState<string>("");
-  const [update, setUpdate] = useState<Boolean>(true);
+  const [update, setUpdate] = useState<boolean>(true);
 
   useEffect(() => {
     if (update) {
       getAgendaItems(conferenceId, committeeId).then((data) => {
         setCommitteeAgendaItems(data);
       });
-      
+
       setUpdate(false);
     }
   }, [update]);
 
-  async function getAgendaItems(conferenceId: string, committeeId: string): Promise<AgendaItem[]> {
-    const res = await backend.conference[conferenceId].committee[committeeId].agendaItem
+  async function getAgendaItems(
+    conferenceId: string,
+    committeeId: string,
+  ): Promise<AgendaItem[]> {
+    const res = await backend.conference[conferenceId].committee[
+      committeeId
+    ].agendaItem
       .get()
       .catch((error) => {
         toast.current?.show({
@@ -56,7 +61,9 @@ export default function agendaItem({
 
   async function addAgendaItem() {
     try {
-      await backend.conference[conferenceId].committee[committeeId].agendaItem.post({
+      await backend.conference[conferenceId].committee[
+        committeeId
+      ].agendaItem.post({
         title: inputValue,
       });
       setUpdate(true);
@@ -87,11 +94,18 @@ export default function agendaItem({
 
   return (
     <>
-      <h1 className="font-bold text-lg mb-4">{LL.admin.onboarding.committees.AGENDA_ITEMS()}</h1>
+      <h1 className="font-bold text-lg mb-4">
+        {LL.admin.onboarding.committees.AGENDA_ITEMS()}
+      </h1>
       <li className="flex flex-col gap-2 mb-4">
         {committeeAgendaItems.map((item) => (
-          <ul className="flex justify-between items-center bg-gray-100 rounded-md p-1" key={item.id}>
-            <div className="mx-4"><FontAwesomeIcon icon={faPodium} className="text-primary-500" /></div>
+          <ul
+            className="flex justify-between items-center bg-gray-100 rounded-md p-1"
+            key={item.id}
+          >
+            <div className="mx-4">
+              <FontAwesomeIcon icon={faPodium} className="text-primary-500" />
+            </div>
             <div className="flex-1 my-1">{item.title}</div>
             <Button
               faIcon={faTrashAlt}

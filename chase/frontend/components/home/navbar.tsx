@@ -81,7 +81,7 @@ export default function Navbar({
         <div className="flex gap-2">
           <Button
             label={LL.home.navbar.LOGIN_ADMIN()}
-            onClick={() => router.push("/app/admin/new")}
+            onClick={() => router.push("/app/admin/login")}
             text
           />
           <Button

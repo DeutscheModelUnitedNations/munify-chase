@@ -54,7 +54,10 @@ export function SmallFlag({
   );
 }
 
-export function NormalFlag({ countryCode, showNameOnHover = false }: { countryCode: CountryCode, showNameOnHover?: boolean }) {
+export function NormalFlag({
+  countryCode,
+  showNameOnHover = false,
+}: { countryCode: CountryCode; showNameOnHover?: boolean }) {
   const { locale } = useI18nContext();
 
   const [isHovered, setIsHovered] = useState(false);

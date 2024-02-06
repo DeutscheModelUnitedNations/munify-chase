@@ -19,9 +19,8 @@ export default function LoginVorsitz() {
 
   const [loading, setLoading] = useState(false);
   const [conferenceId, setConferenceId] = useState("");
-  const [myConferences, setMyConferences] = useState<
-    Awaited<ReturnType<typeof getMyConferences>>
-  >(null);
+  const [myConferences, setMyConferences] =
+    useState<Awaited<ReturnType<typeof getMyConferences>>>(null);
 
   async function getMyConferences() {
     const response = await backend.conference.get().catch((err) => {
@@ -86,8 +85,8 @@ export default function LoginVorsitz() {
                 <Skeleton height="3rem" />
                 <Skeleton height="3rem" />
               </>
-              )}
-            {myConferences && (myConferences.map((conference) => (
+            )}
+            {myConferences?.map((conference) => (
               <Link
                 href={`/app/admin/onboarding/${conference.id}/structure`}
                 key={conference.id}
@@ -98,7 +97,7 @@ export default function LoginVorsitz() {
                   severity="secondary"
                 />
               </Link>
-            )))}
+            ))}
           </div>
           <span className="p-float-label mb-5">
             <InputText

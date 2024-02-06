@@ -27,7 +27,7 @@ export default function structure({
     try {
       const res = await backend.conference[id].committee.get();
       return res.data;
-    } catch (error) {
+    } catch (_error) {
       toast.current.show({
         severity: "error",
         summary: LL.admin.onboarding.error.title(),
@@ -113,9 +113,7 @@ export default function structure({
     });
   };
 
-  async function handleDelete(
-    rawData: Committee
-  ) {
+  async function handleDelete(rawData: Committee) {
     if (!rawData) return;
     backend.conference[params.conferenceId].committee[rawData.id]
       .delete()

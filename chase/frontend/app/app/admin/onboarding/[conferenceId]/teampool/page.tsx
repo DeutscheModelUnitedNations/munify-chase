@@ -8,7 +8,10 @@ import ForwardBackButtons from "@/components/admin/onboarding/forward_back_bar";
 import TeamPoolTable from "@/components/admin/teampool/teampool_table";
 import AddTeammemberDialog from "@/components/admin/teampool/add_teammember_dialog";
 import { confirmPopup } from "primereact/confirmpopup";
-import { ConferenceMember, ConferenceRole } from "../../../../../../../backend/prisma/generated/client";
+import {
+  ConferenceMember,
+  ConferenceRole,
+} from "../../../../../../../backend/prisma/generated/client";
 
 export default function Teampool({
   params,
@@ -48,14 +51,14 @@ export default function Teampool({
 
   const addTeammember = ({
     role,
-    count
-  }: { role: ConferenceRole, count: Number }) => {
+    count,
+  }: { role: ConferenceRole; count: number }) => {
     backend.conference[params.conferenceId].member
       .post({
         data: {
-          role
+          role,
         },
-        count
+        count,
       })
       .then((_res) => {
         setUpdateTable(true);
@@ -91,7 +94,7 @@ export default function Teampool({
     });
   };
 
-  const handleDelete = (id: String) => {
+  const handleDelete = (id: string) => {
     // backend["conference/committee/delete"]
     backend.conference[params.conferenceId].member[id]
       .delete()

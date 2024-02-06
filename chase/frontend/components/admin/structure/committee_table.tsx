@@ -27,7 +27,6 @@ export default function CommitteeTable({
   handleDelete: (rowData: Committee) => void;
   setInputMaskVisible: (visible: boolean) => void;
 }) {
-
   const { LL } = useI18nContext();
 
   return (
@@ -42,7 +41,9 @@ export default function CommitteeTable({
                 faIcon={faTrashAlt}
                 disabled={committees?.length === 0}
                 severity="danger"
-                onClick={(event: React.MouseEvent<HTMLButtonElement>) => confirmDeleteAll(event)}
+                onClick={(event: React.MouseEvent<HTMLButtonElement>) =>
+                  confirmDeleteAll(event)
+                }
               />
               <Button
                 label={LL.admin.onboarding.structure.ADD_COMMITTEE()}
@@ -77,7 +78,7 @@ export default function CommitteeTable({
             header={LL.admin.onboarding.structure.CATEGORY()}
             body={(rowData) => {
               const matchingCommittee = committees?.find(
-                (committee) => committee.id === rowData.parentId
+                (committee) => committee.id === rowData.parentId,
               );
 
               return (

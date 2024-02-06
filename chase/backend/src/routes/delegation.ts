@@ -21,8 +21,8 @@ export const delegation = new Elysia({
         },
         include: {
           nation: true,
-          members: true
-        }
+          members: true,
+        },
       });
     },
     {
@@ -31,7 +31,7 @@ export const delegation = new Elysia({
         description: "Get all delegations in this conference",
         tags: [openApiTag(import.meta.path)],
       },
-    }
+    },
   )
   .post(
     "/delegation",
@@ -44,13 +44,13 @@ export const delegation = new Elysia({
       });
     },
     {
-      hasConferenceRole: ['ADMIN'],
+      hasConferenceRole: ["ADMIN"],
       body: DelegationBody,
       detail: {
         description: "Create a new delegation in this conference",
         tags: [openApiTag(import.meta.path)],
       },
-    }
+    },
   )
   .get(
     "/delegation/:delegationId",
@@ -70,7 +70,7 @@ export const delegation = new Elysia({
         description: "Get a specific delegation in this conference",
         tags: [openApiTag(import.meta.path)],
       },
-    }
+    },
   )
   .delete(
     "/delegation/:delegationId",
@@ -89,12 +89,13 @@ export const delegation = new Elysia({
       ]);
     },
     {
-      hasConferenceRole: ['ADMIN'],
+      hasConferenceRole: ["ADMIN"],
       detail: {
-        description: "Delete a delegation and all its committee members in this conference",
+        description:
+          "Delete a delegation and all its committee members in this conference",
         tags: [openApiTag(import.meta.path)],
       },
-    }
+    },
   )
   .post(
     "/delegation/:delegationId/committee/:committeeId",
@@ -109,21 +110,24 @@ export const delegation = new Elysia({
         return res;
       } catch (e) {
         if (e.code === "P2002") {
-          return new Response("Committee is already connected to this delegation", {
-            status: 304,
-          });
+          return new Response(
+            "Committee is already connected to this delegation",
+            {
+              status: 304,
+            },
+          );
         }
         throw e;
       }
-
     },
     {
-      hasConferenceRole: ['ADMIN'],
+      hasConferenceRole: ["ADMIN"],
       detail: {
-        description: "Connect a committee to a delegation in this conference. If the committee is already connected to the delegation, return a 304 Not Modified Error Code.",
+        description:
+          "Connect a committee to a delegation in this conference. If the committee is already connected to the delegation, return a 304 Not Modified Error Code.",
         tags: [openApiTag(import.meta.path)],
       },
-    }
+    },
   )
   .delete(
     "/delegation/:delegationId/committee/:committeeId",
@@ -136,11 +140,11 @@ export const delegation = new Elysia({
       });
     },
     {
-      hasConferenceRole: ['ADMIN'],
+      hasConferenceRole: ["ADMIN"],
       detail: {
-        description: "Disconnect a committee from a delegation in this conference",
+        description:
+          "Disconnect a committee from a delegation in this conference",
         tags: [openApiTag(import.meta.path)],
       },
-    }
-  )
-  
+    },
+  );

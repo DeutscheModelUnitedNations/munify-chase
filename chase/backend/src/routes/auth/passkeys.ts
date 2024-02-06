@@ -59,7 +59,6 @@ export const passkeys = new Elysia()
   .post(
     "/finishPasskeyRegistration",
     async ({ session, body: { challenge, locale, name } }) => {
-
       if (!session.currentPasskeyChallenge) {
         throw new Error("No challenge present for that session");
       }

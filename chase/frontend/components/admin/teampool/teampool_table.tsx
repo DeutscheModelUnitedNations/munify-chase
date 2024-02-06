@@ -21,10 +21,10 @@ import {
 interface TeamPoolTableProps {
   team: ConferenceMember[] | undefined | null;
   confirmDeleteAll: (
-    event: React.MouseEvent<HTMLButtonElement, MouseEvent>
+    event: React.MouseEvent<HTMLButtonElement, MouseEvent>,
   ) => void;
-  handleDelete: (id: String) => void;
-  handleAdd: ({ role, count }: { role: ConferenceRole; count: Number }) => void;
+  handleDelete: (id: string) => void;
+  handleAdd: ({ role, count }: { role: ConferenceRole; count: number }) => void;
   setInputMaskVisible: (visible: boolean) => void;
 }
 
@@ -38,7 +38,7 @@ export default function TeamPoolTable({
   const { LL } = useI18nContext();
 
   const [teamGrouped, setTeamGrouped] = useState<
-    { role: ConferenceRole; count: number; id: String[] }[]
+    { role: ConferenceRole; count: number; id: string[] }[]
   >([]);
 
   useMousetrap("n", () => {
@@ -47,9 +47,9 @@ export default function TeamPoolTable({
 
   useEffect(() => {
     const groupedByRole: typeof teamGrouped = [];
-    team?.forEach((teamMember) => {
+    for (const teamMember of team || []) {
       const roleIndex = groupedByRole.findIndex(
-        (entry) => entry.role === teamMember.role
+        (entry) => entry.role === teamMember.role,
       );
       if (roleIndex === -1) {
         groupedByRole.push({
@@ -61,7 +61,7 @@ export default function TeamPoolTable({
         groupedByRole[roleIndex].count++;
         groupedByRole[roleIndex].id.push(teamMember.id);
       }
-    });
+    }
     setTeamGrouped(groupedByRole);
   }, [team]);
 
@@ -78,7 +78,7 @@ export default function TeamPoolTable({
                 disabled={team?.length === 0 || !team}
                 severity="danger"
                 onClick={(
-                  event: React.MouseEvent<HTMLButtonElement, MouseEvent>
+                  event: React.MouseEvent<HTMLButtonElement, MouseEvent>,
                 ) => confirmDeleteAll(event)}
               />
               <Button
@@ -112,9 +112,8 @@ export default function TeamPoolTable({
                 LL.admin.onboarding.teampool.roles[rawData.role];
               if (!roleFunction) {
                 return <span>{rawData.role}</span>;
-              } else {
-                return <span>{roleFunction()}</span>;
               }
+              return <span>{roleFunction()}</span>;
             }}
             className="w-full"
           />

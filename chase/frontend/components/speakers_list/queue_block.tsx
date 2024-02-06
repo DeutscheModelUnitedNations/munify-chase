@@ -16,7 +16,10 @@ import { AnimatePresence, motion } from "framer-motion";
 export default function SpeakerBlock({
   list,
   myCountry,
-}: { list: Speaker[]; myCountry: CountryCode }) {
+}: {
+  list: Speaker[];
+  myCountry: CountryCode;
+}) {
   const compressedList = () => {
     let compressedList = [];
 
@@ -45,70 +48,67 @@ export default function SpeakerBlock({
         // @ts-ignore TODO fix this
         list.indexOf(list.find((item) => item.countryCode === myCountry)) + 1
       );
-    } else {
-      return 0;
     }
+    return 0;
   };
 
   return (
-    <>
-      <AnimatePresence mode="wait">
-        <motion.div
-          key={list[0].countryCode}
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          transition={{ duration: 0.3 }}
-          layout
-        >
-          <div className="flex gap-1">
-            {list.length > 0 && (
-              <>
-                <Arrow arrowName="top" />
-                <Flag
-                  countryCode={compressedList()[0].countryCode}
-                  showNameOnHover
-                />
-              </>
-            )}
-            {list.length > 1 && (
+    <AnimatePresence mode="wait">
+      <motion.div
+        key={list[0].countryCode}
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        transition={{ duration: 0.3 }}
+        layout
+      >
+        <div className="flex gap-1">
+          {list.length > 0 && (
+            <>
+              <Arrow arrowName="top" />
+              <Flag
+                countryCode={compressedList()[0].countryCode}
+                showNameOnHover
+              />
+            </>
+          )}
+          {list.length > 1 && (
+            <>
+              <Arrow arrowName="solid" />
+              <Flag
+                countryCode={compressedList()[1].countryCode}
+                showNameOnHover
+              />
+            </>
+          )}
+          {getWaitingPosition() <= 3 ? (
+            list.length > 2 && (
               <>
                 <Arrow arrowName="solid" />
-                <Flag
-                  countryCode={compressedList()[1].countryCode}
-                  showNameOnHover
-                />
-              </>
-            )}
-            {getWaitingPosition() <= 3 ? (
-              list.length > 2 && (
-                <>
-                  <Arrow arrowName="solid" />
-                  <Flag
-                    countryCode={compressedList()[2].countryCode}
-                    showNameOnHover
-                  />
-                </>
-              )
-            ) : (
-              <>
-                <Arrow arrowName="dashed" />
-                <div className="self-center px-2 py-1 bg-primary text-white rounded-md">
-                  <div className="text-sm font-bold">
-                    {getWaitingPosition() - 3}
-                  </div>
-                </div>
-                <Arrow arrowName="dashed" />
                 <Flag
                   countryCode={compressedList()[2].countryCode}
                   showNameOnHover
                 />
               </>
-            )}
-          </div>
-        </motion.div>
-      </AnimatePresence>
-    </>
+            )
+          ) : (
+            <>
+              <Arrow arrowName="dashed" />
+              <div className="self-center px-2 py-1 bg-primary text-white rounded-md">
+                <div className="text-sm font-bold">
+                  {getWaitingPosition() - 3}
+                </div>
+              </div>
+              <Arrow arrowName="dashed" />
+              <Flag
+                countryCode={compressedList()[2].countryCode}
+                showNameOnHover
+              />
+            </>
+          )}
+        </div>
+      </motion.div>
+    </AnimatePresence>
   );
 }
 

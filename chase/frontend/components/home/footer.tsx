@@ -21,8 +21,7 @@ export default function Footer() {
         setLanguage("system");
       }
     }
-  }
-  , []);
+  }, []);
 
   useEffect(() => {
     if (language === "system") {
@@ -85,7 +84,9 @@ export default function Footer() {
                   setLanguage("system");
                   if (window) window.location.reload();
                 }}
-                className={`hover:underline hover:decoration-white ${language === "system" && "underline decoration-slate-400"} cursor-pointer`}
+                className={`hover:underline hover:decoration-white ${
+                  language === "system" && "underline decoration-slate-400"
+                } cursor-pointer`}
               >
                 System
               </li>
@@ -98,7 +99,9 @@ export default function Footer() {
                   setLanguage("en");
                   if (window) window.location.reload();
                 }}
-                className={`hover:underline hover:decoration-white ${language === "en" && "underline decoration-slate-400"} cursor-pointer`}
+                className={`hover:underline hover:decoration-white ${
+                  language === "en" && "underline decoration-slate-400"
+                } cursor-pointer`}
               >
                 English (EN)
               </li>
@@ -111,7 +114,9 @@ export default function Footer() {
                   setLanguage("de");
                   if (window) window.location.reload();
                 }}
-                className={`hover:underline hover:decoration-white ${language === "de" && "underline decoration-slate-400"} cursor-pointer`}
+                className={`hover:underline hover:decoration-white ${
+                  language === "de" && "underline decoration-slate-400"
+                } cursor-pointer`}
               >
                 Deutsch (DE)
               </li>

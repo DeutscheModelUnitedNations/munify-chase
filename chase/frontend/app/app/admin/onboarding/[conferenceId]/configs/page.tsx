@@ -21,9 +21,7 @@ export default function loginVorsitz({
       <ForwardBackButtons
         backURL={`/app/admin/onboarding/${params.conferenceId}/non_state_actors`}
         handleSaveFunction={() => {
-          router.push(
-            `/app/admin/${params.conferenceId}/dashboard`
-          );
+          router.push(`/app/admin/${params.conferenceId}/dashboard`);
         }}
       />
     </>

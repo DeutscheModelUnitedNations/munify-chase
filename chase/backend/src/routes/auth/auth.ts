@@ -146,8 +146,7 @@ export const auth = new Elysia({
         name: t.Optional(t.String()),
       }),
       detail: {
-        description:
-          "Creates a user with a password.",
+        description: "Creates a user with a password.",
         tags: [openApiTag(import.meta.path)],
       },
     },

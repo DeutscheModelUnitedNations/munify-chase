@@ -3,7 +3,7 @@ import React, { createContext, useContext, useRef } from "react";
 import { Toast, ToastMessage } from "primereact/toast";
 
 export const ToastContext = createContext({} as ToastContextType);
-export const useToast = () => useContext(ToastContext)
+export const useToast = () => useContext(ToastContext);
 
 /**
  * This Component provides a context for the Toast Component from PrimeReact.

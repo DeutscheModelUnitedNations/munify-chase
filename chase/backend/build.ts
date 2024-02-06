@@ -1,18 +1,18 @@
 console.info("Building...");
 
 const output = await Bun.build({
-    entrypoints: ["./src/main.ts"],
-    outdir: "./out",
-    target: "bun",
-    format: "esm",
-    splitting: true,
-    sourcemap: "external",
-    minify: true,
+  entrypoints: ["./src/main.ts"],
+  outdir: "./out",
+  target: "bun",
+  format: "esm",
+  splitting: true,
+  sourcemap: "external",
+  minify: true,
 });
 if (!output.success) {
-    console.error(output.logs);
+  console.error(output.logs);
 } else {
-    console.info("Done!");
+  console.info("Done!");
 }
 
-export { }
+export {};

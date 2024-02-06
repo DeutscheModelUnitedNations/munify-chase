@@ -14,10 +14,14 @@ const CommitteeWithOnlyParentCommitteeRelation = t.Omit(Committee, [
 ]);
 const CommitteeWithoutRelations = t.Omit(
   CommitteeWithOnlyParentCommitteeRelation,
-  ["parentId"]
+  ["parentId"],
 );
 
-const CommitteeData = t.Omit(CommitteeWithOnlyParentCommitteeRelation, ["id", "conferenceId", "parent"]);
+const CommitteeData = t.Omit(CommitteeWithOnlyParentCommitteeRelation, [
+  "id",
+  "conferenceId",
+  "parent",
+]);
 
 export const committee = new Elysia({
   prefix: "/conference/:conferenceId",
@@ -40,12 +44,11 @@ export const committee = new Elysia({
         description: "Get all committees in this conference",
         tags: [openApiTag(import.meta.path)],
       },
-    }
+    },
   )
   .post(
     "/committee",
     async ({ body, params: { conferenceId } }) => {
-
       const res = await db.committee.create({
         data: {
           abbreviation: body.abbreviation,
@@ -58,9 +61,8 @@ export const committee = new Elysia({
 
       return {
         ...res,
-          parentId: res.parentId ?? undefined,
-      }
-
+        parentId: res.parentId ?? undefined,
+      };
     },
     {
       hasConferenceRole: ["ADMIN"],
@@ -70,7 +72,7 @@ export const committee = new Elysia({
       },
       body: CommitteeData,
       response: CommitteeWithOnlyParentCommitteeRelation,
-    }
+    },
   )
   .delete(
     "/committee",
@@ -82,7 +84,7 @@ export const committee = new Elysia({
         description: "Delete all committees in this conference",
         tags: [openApiTag(import.meta.path)],
       },
-    }
+    },
   )
   .get(
     "/committee/:committeeId",
@@ -98,7 +100,7 @@ export const committee = new Elysia({
         tags: [openApiTag(import.meta.path)],
       },
       response: CommitteeWithoutRelations,
-    }
+    },
   )
   .delete(
     "/committee/:committeeId",
@@ -110,7 +112,7 @@ export const committee = new Elysia({
         description: "Delete a committee by id",
         tags: [openApiTag(import.meta.path)],
       },
-    }
+    },
   )
   .patch(
     "/committee/:committeeId",
@@ -131,5 +133,5 @@ export const committee = new Elysia({
         description: "Update a committee by id",
         tags: [openApiTag(import.meta.path)],
       },
-    }
+    },
   );

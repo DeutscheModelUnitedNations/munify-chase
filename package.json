@@ -2,7 +2,8 @@
   "devDependencies": {
     "@biomejs/biome": "^1.5.2",
     "bun-types": "latest",
-    "concurrently": "^8.2.2"
+    "concurrently": "^8.2.2",
+    "@faker-js/faker": "^8.4.0"
   },
   "scripts": {
     "dev": "concurrently \"bun run dev:chase:frontend\" \"bun run dev:chase:backend\"",
@@ -15,8 +16,5 @@
   "workspaces": [
     "chase/backend",
     "chase/frontend"
-  ],
-  "dependencies": {
-    "@faker-js/faker": "^8.4.0"
-  }
+  ]
 }

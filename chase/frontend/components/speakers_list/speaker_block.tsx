@@ -38,9 +38,8 @@ export default function SpeakerBlock({
 
     if (milliseconds < 0) {
       return `-${minutes}:${seconds.toString().padStart(2, "0")}`;
-    } else {
-      return `${minutes}:${seconds.toString().padStart(2, "0")}`;
     }
+    return `${minutes}:${seconds.toString().padStart(2, "0")}`;
   };
 
   useEffect(() => {

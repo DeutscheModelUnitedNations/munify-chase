@@ -10,9 +10,10 @@ import { useRouter } from "next/navigation";
 import { Toast } from "primereact/toast";
 import { useEffect, useRef, useState } from "react";
 import useMousetrap from "mousetrap-react";
-import { Committee, Delegation } from "../../../../../../../backend/prisma/generated/client";
-
-
+import {
+  Committee,
+  Delegation,
+} from "../../../../../../../backend/prisma/generated/client";
 
 export default function LoginVorsitz({
   params,
@@ -29,28 +30,24 @@ export default function LoginVorsitz({
   const [inputMaskVisible, setInputMaskVisible] = useState(false);
 
   async function getCommittees(id: string): Promise<Committee[]> {
-    const res = await backend.conference[id].committee
-      .get()
-      .catch((error) => {
-        toast.current?.show({
-          severity: "error",
-          summary: LL.admin.onboarding.error.title(),
-          detail: LL.admin.onboarding.error.generic(),
-        });
+    const res = await backend.conference[id].committee.get().catch((error) => {
+      toast.current?.show({
+        severity: "error",
+        summary: LL.admin.onboarding.error.title(),
+        detail: LL.admin.onboarding.error.generic(),
       });
+    });
     return res.data;
   }
 
   async function getDelegations(id: string): Promise<Delegation[]> {
-    const res = await backend.conference[id].delegation
-      .get()
-      .catch((error) => {
-        toast.current?.show({
-          severity: "error",
-          summary: LL.admin.onboarding.error.title(),
-          detail: LL.admin.onboarding.error.generic(),
-        });
+    const res = await backend.conference[id].delegation.get().catch((error) => {
+      toast.current?.show({
+        severity: "error",
+        summary: LL.admin.onboarding.error.title(),
+        detail: LL.admin.onboarding.error.generic(),
       });
+    });
     return res.data;
   }
 
@@ -66,7 +63,7 @@ export default function LoginVorsitz({
           detail: LL.admin.onboarding.error.generic(),
         });
       });
-      setUpdate(true);
+    setUpdate(true);
   }
 
   async function deleteDelegation(id: string, delegationId: string) {
@@ -85,9 +82,11 @@ export default function LoginVorsitz({
   async function activateCommittee(
     conferenceId: string,
     delegationId: string,
-    committeeId: string
+    committeeId: string,
   ) {
-    const res = await backend.conference[conferenceId].delegation[delegationId].committee[committeeId]
+    const res = await backend.conference[conferenceId].delegation[
+      delegationId
+    ].committee[committeeId]
       .post()
       .catch((error) => {
         toast.current?.show({
@@ -102,9 +101,11 @@ export default function LoginVorsitz({
   async function deactivateCommittee(
     conferenceId: string,
     delegationId: string,
-    committeeId: string
+    committeeId: string,
   ) {
-    await backend.conference[conferenceId].delegation[delegationId].committee[committeeId]
+    await backend.conference[conferenceId].delegation[delegationId].committee[
+      committeeId
+    ]
       .delete()
       .catch((error) => {
         toast.current?.show({
@@ -118,7 +119,7 @@ export default function LoginVorsitz({
   async function activateOrDeactivateCommittee(
     id: string,
     delegationId: string,
-    committeeId: string
+    committeeId: string,
   ) {
     const res = await activateCommittee(id, delegationId, committeeId);
 
@@ -167,7 +168,11 @@ export default function LoginVorsitz({
 
       <ForwardBackButtons
         backURL={`/app/admin/onboarding/${params.conferenceId}/committees`}
-        handleSaveFunction={() => {router.push(`/app/admin/onboarding/${params.conferenceId}/non_state_actors`)}}
+        handleSaveFunction={() => {
+          router.push(
+            `/app/admin/onboarding/${params.conferenceId}/non_state_actors`,
+          );
+        }}
       />
     </>
   );

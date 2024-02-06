@@ -55,7 +55,9 @@ export default function getCountryNameByCode(
     languageCode = "en";
   }
 
-  const country = countryData.find((item) => item.alpha3 === countryCode?.toLowerCase());
+  const country = countryData.find(
+    (item) => item.alpha3 === countryCode?.toLowerCase(),
+  );
 
   if (country) {
     // TODO Fix bug with types

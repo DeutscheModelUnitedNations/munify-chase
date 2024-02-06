@@ -22,9 +22,7 @@ export default function Home() {
               className="mb-10"
             />
             <p className="text-white text-9xl mb-3 mt-10">500</p>
-            <p className="text-white text-1xl mb-10">
-              {LL.ERROR()}
-            </p>
+            <p className="text-white text-1xl mb-10">{LL.ERROR()}</p>
             <Link href="/">
               <Button
                 severity="warning"

@@ -9,7 +9,10 @@ import ForwardBackButtons from "@/components/admin/onboarding/forward_back_bar";
 import { Accordion, AccordionTab } from "primereact/accordion";
 import { Toast } from "primereact/toast";
 import AgendaItems from "@/components/admin/committee/agendaItems";
-import { AgendaItem, Committee } from "../../../../../../../backend/prisma/generated/client";
+import {
+  AgendaItem,
+  Committee,
+} from "../../../../../../../backend/prisma/generated/client";
 
 export default function loginVorsitz({
   params,
@@ -43,7 +46,7 @@ export default function loginVorsitz({
       getCommittees(params.conferenceId).then((committeeData) => {
         setCommittees(committeeData);
       });
-      
+
       setUpdate(false);
     }
   }, [update]);
@@ -59,10 +62,7 @@ export default function loginVorsitz({
 
       <Accordion activeIndex={0} className="w-full">
         {committees?.map((committee) => (
-          <AccordionTab
-            header={HeaderTemplate(committee)}
-            key={committee.id}
-          >
+          <AccordionTab header={HeaderTemplate(committee)} key={committee.id}>
             <AgendaItems
               conferenceId={params.conferenceId}
               committeeId={committee.id}
@@ -82,9 +82,7 @@ export default function loginVorsitz({
   );
 }
 
-const HeaderTemplate = (
-  committee: Committee
-) => {
+const HeaderTemplate = (committee: Committee) => {
   return (
     <div className="flex flex-wrap items-center gap-6">
       <h2 className="font-bold text-lg">

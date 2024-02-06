@@ -13,7 +13,10 @@ import { ConferenceRole } from "../../../../backend/prisma/generated/client";
 type AddTeammemberDialogProps = {
   inputMaskVisible: boolean;
   setInputMaskVisible: (visible: boolean) => void;
-  addTeammemberToList: ({ role, count }: { role: ConferenceRole, count: Number }) => void;
+  addTeammemberToList: ({
+    role,
+    count,
+  }: { role: ConferenceRole; count: number }) => void;
 };
 
 export default function AddTeammemberDialog({
@@ -24,7 +27,8 @@ export default function AddTeammemberDialog({
   const { LL } = useI18nContext();
   const toast = useRef<Toast>(null);
 
-  const [newTeammemberRole, setTeammemberRole] = useState<ConferenceRole>("CHAIR");
+  const [newTeammemberRole, setTeammemberRole] =
+    useState<ConferenceRole>("CHAIR");
   const [newTeammemberCount, setNewTeammemberCount] = useState<number>(1);
 
   const roles = [
@@ -115,7 +119,9 @@ export default function AddTeammemberDialog({
           <InputText
             id="count"
             type="number"
-            onChange={(e) => setNewTeammemberCount(parseInt(e.currentTarget.value))}
+            onChange={(e) =>
+              setNewTeammemberCount(parseInt(e.currentTarget.value))
+            }
             value={newTeammemberCount.toString()}
             min={1}
             max={50}

@@ -21,10 +21,10 @@ export default function LandingHero() {
   ];
 
   const [illustration, _setIllustration] = useState(
-    Math.floor(Math.random() * availableIllustrations.length)
+    Math.floor(Math.random() * availableIllustrations.length),
   );
   const [blob, _setBlob] = useState(
-    Math.floor(Math.random() * availableBlobs.length)
+    Math.floor(Math.random() * availableBlobs.length),
   );
 
   return (

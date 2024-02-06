@@ -198,44 +198,35 @@ const allCountries = [
   { alpha3Code: "zwe" },
 ];
 
-const specialPersonData: string[] = [
-  "unm",
-  "unw",
-  "gsm",
-  "gsw",
-  "uno"
-]
+const specialPersonData: string[] = ["unm", "unw", "gsm", "gsw", "uno"];
 
 try {
-
   /*
-  * -------------
-  *   Base Data
-  * -------------
-  */
+   * -------------
+   *   Base Data
+   * -------------
+   */
 
   const countries = await prisma.nation.createMany({
-    data: allCountries
+    data: allCountries,
   });
   console.info(`Created ${countries.count} countries as base country data`);
 
   const specialPersons = await prisma.specialPerson.createMany({
-    data: specialPersonData.map((code) => ({ code }))
+    data: specialPersonData.map((code) => ({ code })),
   });
 
-  console.info(`Created ${specialPersons.count} special persons as base special person data`);
-
-
-
-
+  console.info(
+    `Created ${specialPersons.count} special persons as base special person data`,
+  );
 
   /*
-  * -------------
-  *   Test Data
-  * -------------
-  * (only for development)
-  * 
-  */ 
+   * -------------
+   *   Test Data
+   * -------------
+   * (only for development)
+   *
+   */
 
   const conference = await prisma.conference.upsert({
     where: {
@@ -288,11 +279,17 @@ try {
       category: "COMMITTEE",
     },
   });
-  console.info("\nCreated Committees:")
-  console.info(`  - Created ${committees.GV.abbreviation} with ID ${committees.GV.id}`)
-  console.info(`  - Created ${committees.HA1.abbreviation} with ID ${committees.HA1.id}`)
-  console.info(`  - Created ${committees.SR.abbreviation} with ID ${committees.SR.id}`)
-  
+  console.info("\nCreated Committees:");
+  console.info(
+    `  - Created ${committees.GV.abbreviation} with ID ${committees.GV.id}`,
+  );
+  console.info(
+    `  - Created ${committees.HA1.abbreviation} with ID ${committees.HA1.id}`,
+  );
+  console.info(
+    `  - Created ${committees.SR.abbreviation} with ID ${committees.SR.id}`,
+  );
+
   // Team seeding
 
   await prisma.conferenceMember.create({
@@ -320,7 +317,7 @@ try {
     });
   }
 
-  console.info("\nCreated Team Pool")
+  console.info("\nCreated Team Pool");
 
   // Committee seeding
 
@@ -353,23 +350,25 @@ try {
     }
   }
 
-  console.info("\nCreated Agenda Items")
-
+  console.info("\nCreated Agenda Items");
 
   // Delegations
-  console.info("\nCreated Delegations:")
+  console.info("\nCreated Delegations:");
 
   const delegations: () => string[] = () => {
-    let selectedCountries: string[] = []
+    const selectedCountries: string[] = [];
     while (selectedCountries.length < 20) {
       for (const countryRaw of allCountries) {
-        if (["deu","usa","fra"].includes(countryRaw.alpha3Code) || Math.random() > 0.97) {
-          selectedCountries.push(countryRaw.alpha3Code)
+        if (
+          ["deu", "usa", "fra"].includes(countryRaw.alpha3Code) ||
+          Math.random() > 0.97
+        ) {
+          selectedCountries.push(countryRaw.alpha3Code);
         }
       }
     }
-    return selectedCountries
-  }
+    return selectedCountries;
+  };
 
   for (const alpha3Code of delegations()) {
     const delegation = await prisma.delegation.create({
@@ -378,20 +377,22 @@ try {
         nation: { connect: { alpha3Code } },
       },
     });
-    console.info(`  - Created Delegation for ${alpha3Code} with ID ${delegation.id}`)
+    console.info(
+      `  - Created Delegation for ${alpha3Code} with ID ${delegation.id}`,
+    );
 
     await prisma.committeeMember.create({
       data: {
         committeeId: committees.GV?.id,
-        delegationId: delegation.id
+        delegationId: delegation.id,
       },
-    })
+    });
 
     if (Math.random() > 0.5) {
       await prisma.committeeMember.create({
         data: {
           committeeId: committees.HA1?.id,
-          delegationId: delegation.id
+          delegationId: delegation.id,
         },
       });
     }
@@ -400,7 +401,7 @@ try {
       await prisma.committeeMember.create({
         data: {
           committeeId: committees.SR?.id,
-          delegationId: delegation.id
+          delegationId: delegation.id,
         },
       });
     }

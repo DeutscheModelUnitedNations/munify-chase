@@ -1,4 +1,4 @@
-declare module '*.mjml' {
-    const value: string;
-    export default value
-  }
+declare module "*.mjml" {
+  const value: string;
+  export default value;
+}

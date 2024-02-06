@@ -39,7 +39,7 @@ const m = new Elysia({
         "TRACE",
         "CONNECT",
       ],
-    })
+    }),
   )
   .use(conference)
   .use(conferenceMember)
@@ -61,7 +61,7 @@ const app = new Elysia()
           version: packagejson.version,
         },
       },
-    })
+    }),
   )
   .use(m)
   .listen(process.env.PORT ?? "3001");
@@ -74,7 +74,7 @@ setTimeout(() => {
         process.env.PORT ?? "3001"
       }/${appConfiguration.documentationPath}
       
-      `
+      `,
   );
 }, 3000);
 
@@ -85,7 +85,7 @@ if (appConfiguration.development) {
       
       Dummy emails sent to inbox at http://${appConfiguration.email.EMAIL_HOST}:3777
       
-      `
+      `,
     );
   }, 3000);
 }

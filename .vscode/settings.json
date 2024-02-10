@@ -4,13 +4,8 @@
     "{prefix} ({scope}): {message}",
     "branch: {branch}"
   ],
-  "[javascript]": {
-    "editor.defaultFormatter": "biomejs.biome"
-  },
-  "editor.codeActionsOnSave": {
-    "quickfix.biome": "explicit",
-    "source.organizeImports.biome": "explicit"
-  },
+  "[javascript]": {},
+  "editor.codeActionsOnSave": {},
   "vscodeGitCommit.variables": {
     "prefix": [
       {
@@ -74,5 +69,7 @@
         "detail": "Use when merging branches"
       }
     ]
-  }
+  },
+  "typescript.tsdk": "node_modules/typescript/lib",
+  "editor.tabSize": 2,
 }

@@ -125,6 +125,13 @@ enum CommitteeRole {
   OBSERVER
 }
 
+/// The presence status of a CommitteeMember
+enum Presence {
+  PRESENT
+  EXCUSED
+  ABSENT
+}
+
 /// A user's membership in a committee, providing them with a role in the committee
 model CommitteeMember {
   id            String         @id @default(uuid())
@@ -135,6 +142,7 @@ model CommitteeMember {
   speakersLists SpeakersList[]
   delegation    Delegation?    @relation(fields: [delegationId], references: [id])
   delegationId  String?
+  presence      Presence       @default(ABSENT)
 
   @@unique([committeeId, delegationId])
 }

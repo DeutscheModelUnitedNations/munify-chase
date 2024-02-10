@@ -736,6 +736,28 @@ type RootTranslation = {
 			GERMAN: string
 		}
 	}
+	hub: {
+		/**
+		 * C​h​a​i​r​ ​H​u​b
+		 */
+		CHAIR_HUB_TITLE: string
+		/**
+		 * N​o​n​-​S​t​a​t​e​ ​A​c​t​o​r​'​s​ ​H​u​b
+		 */
+		NA_HUB_TITLE: string
+		/**
+		 * S​e​l​e​c​t​ ​a​ ​C​o​m​m​i​t​t​e​e
+		 */
+		SELECT_COMMITTEE: string
+		/**
+		 * N​o​ ​C​o​m​m​i​t​t​e​e​s​ ​f​o​u​n​d
+		 */
+		NO_COMMITTEES: string
+		/**
+		 * L​o​g​o​u​t
+		 */
+		LOGOUT: string
+	}
 	participants: {
 		dashboard: {
 			widgetHeadlines: {
@@ -1889,6 +1911,28 @@ export type TranslationFunctions = {
 			 */
 			GERMAN: () => LocalizedString
 		}
+	}
+	hub: {
+		/**
+		 * Chair Hub
+		 */
+		CHAIR_HUB_TITLE: () => LocalizedString
+		/**
+		 * Non-State Actor's Hub
+		 */
+		NA_HUB_TITLE: () => LocalizedString
+		/**
+		 * Select a Committee
+		 */
+		SELECT_COMMITTEE: () => LocalizedString
+		/**
+		 * No Committees found
+		 */
+		NO_COMMITTEES: () => LocalizedString
+		/**
+		 * Logout
+		 */
+		LOGOUT: () => LocalizedString
 	}
 	participants: {
 		dashboard: {

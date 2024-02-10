@@ -11,6 +11,7 @@
     "dev:chase:backend": "cd chase/backend && bun run dev",
     "format": "biome format . --write",
     "lint": "biome check . --apply",
+    "lint:error-only": "biome check . --apply --diagnostic-level=error",
     "test": "echo TODO"
   },
   "workspaces": [

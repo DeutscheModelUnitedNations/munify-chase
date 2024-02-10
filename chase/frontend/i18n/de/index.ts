@@ -255,6 +255,14 @@ const de = {
     },
   },
 
+  hub: {
+    CHAIR_HUB_TITLE: "Hub für Vorsitzende",
+    NA_HUB_TITLE: "Hub für Nichtstaatliche Akteure",
+    SELECT_COMMITTEE: "Wähle ein Gremium",
+    NO_COMMITTEES: "Keine Gremien gefunden",
+    LOGOUT: "Abmelden",
+  },
+
   participants: {
     dashboard: {
       widgetHeadlines: {

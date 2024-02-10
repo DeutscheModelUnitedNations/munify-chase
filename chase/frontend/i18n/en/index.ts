@@ -253,6 +253,14 @@ const en = {
     },
   },
 
+  hub: {
+    CHAIR_HUB_TITLE: "Chair Hub",
+    NA_HUB_TITLE: "Non-State Actor's Hub",
+    SELECT_COMMITTEE: "Select a Committee",
+    NO_COMMITTEES: "No Committees found",
+    LOGOUT: "Logout",
+  },
+
   participants: {
     dashboard: {
       widgetHeadlines: {

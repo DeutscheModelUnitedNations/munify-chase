@@ -26,7 +26,7 @@
     "@prisma/client": "^5.9.1",
     "@simplewebauthn/server": "^9.0.0",
     "@sinclair/typebox": "^0.32.12",
-    "elysia": "^0.8.9",
+    "elysia": "^0.8.16",
     "mjml": "^4.14.1",
     "nanoid": "^5.0.4",
     "nodemailer": "^6.9.8",

@@ -52,6 +52,7 @@
   "devDependencies": {
     "@types/node": "20.11.5",
     "concurrently": "^8.2.2",
+    "elysia": "^0.8.16",
     "nodemon": "^3.0.3",
     "sass": "^1.70.0"
   }

@@ -274,10 +274,15 @@ const de = {
         ACTIONS: "Anfrage senden",
       },
       timerWidget: {
-        UNTIL_1: "bis",
-        UNTIL_2: "Uhr",
+        UNTIL: "bis {{0}} Uhr",
         TOAST_HEADLINE: "Zeit ist abgelaufen!",
         TOAST_MESSAGE: "Gehe zurück in die formelle Debatte.",
+        defaultHeadlines: {
+          FORMAL: "Formelle Debatte",
+          INFORMAL: "Informelle Sitzung",
+          PAUSE: "Pause",
+          SUSPENSION: "Vertagung",
+        },
       },
       actionsWidget: {
         CHAIR_BUTTON: "Vorsitz",

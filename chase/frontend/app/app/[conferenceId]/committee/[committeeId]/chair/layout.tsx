@@ -28,39 +28,39 @@ export default function Chair_Pages_Layout({
       <Navbar>
         <NavButton
           icon={faSquareSliders as IconProp}
-          link={"/app/chair/dashboard"}
+          link={"./dashboard"}
           title={LL.navbar.CONFIGURATION()}
         />
         <NavButton
           icon={faUsersLine as IconProp}
-          link={"/app/chair/attendees"}
+          link={"./attendees"}
           title={LL.navbar.ATTENDEES()}
         />
         <NavButton
           icon={faPodium as IconProp}
-          link={"/app/chair/speakers"}
+          link={"./speakers"}
           title={LL.navbar.SPEAKERS()}
         />
         {/* <NavButton TODO add Voting page
           icon={faPollPeople as IconProp}
-          link={"/app/chair/voting"}
+          link={"./voting"}
           title={LL.navbar.VOTING()} 
         /> */}
         <NavButton
           icon={faChalkboard as IconProp}
-          link={"/app/chair/whiteboard"}
+          link={"./whiteboard"}
           title={LL.navbar.WHITEBOARD()}
         />
         {/* <NavButton TODO add Resolution Editor page
           icon={faScroll as IconProp}
-          link={"/app/chair/resolutions"}
+          link={"./resolutions"}
           title={LL.navbar.RESOLUTIONS()}
         /> */}
         <div className="h-5" />
         <NavButton
           icon={faPresentationScreen as IconProp}
           newWindow
-          link="/app/chair/presentation"
+          link="./presentation"
           title={LL.navbar.PRESENTATION()}
         />
         <div className="h-5" />

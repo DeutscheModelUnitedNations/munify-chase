@@ -2,13 +2,19 @@
 CREATE TYPE "CredentialsType" AS ENUM ('PASSWORD', 'PASSKEY');
 
 -- CreateEnum
-CREATE TYPE "ConferenceRole" AS ENUM ('ADMIN', 'SECRETARIAT', 'NON_STATE_ACTOR', 'PRESS_CORPS', 'GUEST', 'PARTICIPANT_CARE', 'MISCELLANEOUS_TEAM');
+CREATE TYPE "ConferenceRole" AS ENUM ('ADMIN', 'SECRETARIAT', 'CHAIR', 'COMMITTEE_ADVISOR', 'NON_STATE_ACTOR', 'PRESS_CORPS', 'GUEST', 'PARTICIPANT_CARE', 'MISCELLANEOUS_TEAM');
 
 -- CreateEnum
 CREATE TYPE "CommitteeCategory" AS ENUM ('COMMITTEE', 'CRISIS', 'ICJ');
 
 -- CreateEnum
-CREATE TYPE "CommitteeRole" AS ENUM ('CHAIR', 'COMMITTEE_ADVISOR', 'DELEGATE', 'OBSERVER');
+CREATE TYPE "CommitteeStatus" AS ENUM ('FORMAL', 'INFORMAL', 'PAUSE', 'SUSPENSION', 'CLOSED');
+
+-- CreateEnum
+CREATE TYPE "CommitteeRole" AS ENUM ('DELEGATE', 'OBSERVER');
+
+-- CreateEnum
+CREATE TYPE "Presence" AS ENUM ('PRESENT', 'EXCUSED', 'ABSENT');
 
 -- CreateEnum
 CREATE TYPE "SpeakersListCategory" AS ENUM ('SPEAKERS_LIST', 'COMMENT_LIST', 'MODERATED_CAUCUS');
@@ -53,8 +59,9 @@ CREATE TABLE "Conference" (
 CREATE TABLE "ConferenceMember" (
     "id" TEXT NOT NULL,
     "conferenceId" TEXT NOT NULL,
-    "userId" TEXT NOT NULL,
+    "userId" TEXT,
     "role" "ConferenceRole" NOT NULL,
+    "nonStateActorId" TEXT,
 
     CONSTRAINT "ConferenceMember_pkey" PRIMARY KEY ("id")
 );
@@ -67,6 +74,10 @@ CREATE TABLE "Committee" (
     "category" "CommitteeCategory" NOT NULL,
     "conferenceId" TEXT NOT NULL,
     "parentId" TEXT,
+    "whiteboardContent" TEXT NOT NULL DEFAULT '<h1>Hello, World</h1>',
+    "status" "CommitteeStatus" NOT NULL DEFAULT 'CLOSED',
+    "statusHeadline" TEXT,
+    "statusUntil" TIMESTAMP(3),
 
     CONSTRAINT "Committee_pkey" PRIMARY KEY ("id")
 );
@@ -76,8 +87,8 @@ CREATE TABLE "CommitteeMember" (
     "id" TEXT NOT NULL,
     "committeeId" TEXT NOT NULL,
     "userId" TEXT,
-    "role" "CommitteeRole" NOT NULL,
     "delegationId" TEXT,
+    "presence" "Presence" NOT NULL DEFAULT 'ABSENT',
 
     CONSTRAINT "CommitteeMember_pkey" PRIMARY KEY ("id")
 );
@@ -154,10 +165,10 @@ CREATE UNIQUE INDEX "ConferenceMember_userId_conferenceId_key" ON "ConferenceMem
 CREATE UNIQUE INDEX "Committee_name_conferenceId_key" ON "Committee"("name", "conferenceId");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "Committee_abbreviation_name_key" ON "Committee"("abbreviation", "name");
+CREATE UNIQUE INDEX "Committee_abbreviation_conferenceId_key" ON "Committee"("abbreviation", "conferenceId");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "AgendaItem_isActive_committeeId_key" ON "AgendaItem"("isActive", "committeeId");
+CREATE UNIQUE INDEX "CommitteeMember_committeeId_delegationId_key" ON "CommitteeMember"("committeeId", "delegationId");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "Nation_alpha3Code_key" ON "Nation"("alpha3Code");
@@ -178,7 +189,10 @@ CREATE INDEX "_CommitteeMemberToSpeakersList_B_index" ON "_CommitteeMemberToSpea
 ALTER TABLE "ConferenceMember" ADD CONSTRAINT "ConferenceMember_conferenceId_fkey" FOREIGN KEY ("conferenceId") REFERENCES "Conference"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "ConferenceMember" ADD CONSTRAINT "ConferenceMember_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "ConferenceMember" ADD CONSTRAINT "ConferenceMember_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "ConferenceMember" ADD CONSTRAINT "ConferenceMember_nonStateActorId_fkey" FOREIGN KEY ("nonStateActorId") REFERENCES "NonStateActor"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Committee" ADD CONSTRAINT "Committee_conferenceId_fkey" FOREIGN KEY ("conferenceId") REFERENCES "Conference"("id") ON DELETE RESTRICT ON UPDATE CASCADE;

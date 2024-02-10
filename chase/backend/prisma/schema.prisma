@@ -101,19 +101,31 @@ enum CommitteeCategory {
   ICJ
 }
 
+enum CommitteeStatus {
+  FORMAL
+  INFORMAL
+  PAUSE
+  SUSPENSION
+  CLOSED /// Don't display a Widget
+}
+
 /// A committee in a conference
 model Committee {
-  id            String            @id @default(uuid())
-  name          String
-  abbreviation  String
-  category      CommitteeCategory
-  conference    Conference        @relation(fields: [conferenceId], references: [id])
-  conferenceId  String
-  members       CommitteeMember[]
-  parent        Committee?        @relation("subCommittee", fields: [parentId], references: [id])
-  parentId      String?
-  subCommittees Committee[]       @relation("subCommittee")
-  agendaItems   AgendaItem[]
+  id                String            @id @default(uuid())
+  name              String
+  abbreviation      String
+  category          CommitteeCategory
+  conference        Conference        @relation(fields: [conferenceId], references: [id])
+  conferenceId      String
+  members           CommitteeMember[]
+  parent            Committee?        @relation("subCommittee", fields: [parentId], references: [id])
+  parentId          String?
+  subCommittees     Committee[]       @relation("subCommittee")
+  agendaItems       AgendaItem[]
+  whiteboardContent String            @default("<h1>Hello, World</h1>")
+  status            CommitteeStatus   @default(CLOSED)
+  statusHeadline    String?
+  statusUntil       DateTime?
 
   @@unique([name, conferenceId])
   @@unique([abbreviation, conferenceId])
@@ -156,9 +168,6 @@ model AgendaItem {
   description  String?
   speakerLists SpeakersList[]
   isActive     Boolean        @default(false)
-
-  // TODO is this correct? As far as I know only one agenda item can be active at a time
-  // @@unique([isActive, committeeId])
 }
 
 /// The type of a speakers list

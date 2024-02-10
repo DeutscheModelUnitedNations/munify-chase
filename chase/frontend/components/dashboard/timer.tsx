@@ -8,15 +8,26 @@ import {
   faComments,
   faCoffee,
   faCirclePause,
+  faQuestion,
 } from "@fortawesome/pro-solid-svg-icons";
 import { useI18nContext } from "@/i18n/i18n-react";
 import { AnimatePresence, motion } from "framer-motion";
 import { IconProp } from "@fortawesome/fontawesome-svg-core";
+import en from "@/i18n/en";
+import { Skeleton } from "primereact/skeleton";
+
+type Category =
+  | "FORMAL"
+  | "INFORMAL"
+  | "PAUSE"
+  | "SUSPENSION"
+  | "CLOSED"
+  | undefined;
 
 interface TimerWidgetProps {
-  headline: string;
-  until: Date | null;
-  category: "formal" | "informal" | "pause" | "suspension"; // TODO: use enum
+  headline: string | null | undefined;
+  until: string | null | undefined;
+  category: Category;
 }
 
 /**
@@ -43,68 +54,102 @@ export default function TimerWidget({
     showToast(message);
   };
 
-  const timeStamp = until?.toLocaleTimeString("de-DE", {
-    hour: "2-digit",
-    minute: "2-digit",
-  });
+  const timeStamp = () => {
+    if (until) {
+      try {
+        return new Date(until).toLocaleTimeString("de-DE", {
+          hour: "2-digit",
+          minute: "2-digit",
+        });
+      } catch (e) {
+        return "";
+      }
+    }
+    return "";
+  };
 
   const getClassNames = () => {
     switch (category) {
-      case "formal":
+      case "FORMAL":
         return "";
-      case "informal":
+      case "INFORMAL":
         return "bg-red-500 dark:bg-red-800 text-white dark:text-primary-950";
-      case "pause":
+      case "PAUSE":
         return "bg-secondary dark:bg-secondary-300 text-white dark:text-secondary-100";
-      case "suspension":
+      case "SUSPENSION":
         return "bg-primary-300 dark:bg-primary-700 text-primary-300 dark:text-primary-200";
     }
   };
 
+  const getIcon: () => IconProp = () => {
+    switch (category) {
+      case "FORMAL":
+        return faGavel as IconProp;
+      case "INFORMAL":
+        return faComments as IconProp;
+      case "PAUSE":
+        return faCoffee as IconProp;
+      case "SUSPENSION":
+        return faCirclePause as IconProp;
+      default:
+        return faQuestion as IconProp;
+    }
+  };
+
+  const getHeadline: () => string = () => {
+    if (headline) return headline;
+    switch (category) {
+      case "FORMAL":
+        return LL.participants.dashboard.timerWidget.defaultHeadlines.FORMAL();
+      case "INFORMAL":
+        return LL.participants.dashboard.timerWidget.defaultHeadlines.INFORMAL();
+      case "PAUSE":
+        return LL.participants.dashboard.timerWidget.defaultHeadlines.PAUSE();
+      case "SUSPENSION":
+        return LL.participants.dashboard.timerWidget.defaultHeadlines.SUSPENSION();
+      default:
+        return "";
+    }
+  };
+
   return (
-    <>
-      <AnimatePresence mode="wait">
-        <motion.div
-          key={category}
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          transition={{ duration: 0.3 }}
-          layout
-        >
-          <WidgetTemplate cardTitle="" additionalClassNames={getClassNames()}>
-            <div className="flex flex-col justify-center items-center">
-              <div className="my-4">
-                {category === "formal" && (
-                  <FontAwesomeIcon icon={faGavel as IconProp} size="3x" />
+    <AnimatePresence mode="wait">
+      <motion.div
+        key={category}
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        transition={{ duration: 0.3 }}
+        layout
+      >
+        {category ? (
+          category !== "CLOSED" && (
+            <WidgetTemplate cardTitle="" additionalClassNames={getClassNames()}>
+              <div className="flex flex-col justify-center items-center">
+                <div className="my-4">
+                  <FontAwesomeIcon icon={getIcon()} size="3x" />
+                </div>
+                <div className="text-2xl font-bold">{getHeadline()}</div>
+                {until && (
+                  <div className="text-md">
+                    {LL.participants.dashboard.timerWidget.UNTIL_1()}{" "}
+                    {timeStamp()}{" "}
+                    {LL.participants.dashboard.timerWidget.UNTIL_2()}
+                  </div>
                 )}
-                {category === "informal" && (
-                  <FontAwesomeIcon icon={faComments as IconProp} size="3x" />
-                )}
-                {category === "pause" && (
-                  <FontAwesomeIcon icon={faCoffee as IconProp} size="3x" />
-                )}
-                {category === "suspension" && (
-                  <FontAwesomeIcon icon={faCirclePause as IconProp} size="3x" />
+                {(category === "INFORMAL" || category === "PAUSE") && until && (
+                  <div className="text-4xl font-bold my-2 tabular-nums">
+                    <Timer until={until} showTimerToast={showTimerToast} />
+                  </div>
                 )}
               </div>
-              <div className="text-2xl font-bold">{headline}</div>
-              {category !== "suspension" && (
-                <div className="text-md">
-                  {LL.participants.dashboard.timerWidget.UNTIL_1()} {timeStamp}{" "}
-                  {LL.participants.dashboard.timerWidget.UNTIL_2()}
-                </div>
-              )}
-              {category !== "suspension" && category !== "formal" && (
-                <div className="text-4xl font-bold my-2 tabular-nums">
-                  <Timer until={until} showTimerToast={showTimerToast} />
-                </div>
-              )}
-            </div>
-          </WidgetTemplate>
-        </motion.div>
-      </AnimatePresence>
-    </>
+            </WidgetTemplate>
+          )
+        ) : (
+          <Skeleton width="100%" height="10rem" />
+        )}
+      </motion.div>
+    </AnimatePresence>
   );
 }
 
@@ -112,7 +157,7 @@ function Timer({
   until,
   showTimerToast,
 }: {
-  until: Date | null;
+  until: string | null | undefined;
   showTimerToast: () => void;
 }) {
   const [timeLeft, setTimeLeft] = React.useState<number | null>(null);
@@ -120,7 +165,7 @@ function Timer({
   useEffect(() => {
     if (until) {
       const interval = setInterval(() => {
-        const diff = until.getTime() - Date.now();
+        const diff = new Date(until).getTime() - Date.now();
         if (diff > 0) {
           setTimeLeft(diff);
         } else {

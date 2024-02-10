@@ -18,5 +18,16 @@
       "}"
     ],
     "description": "Create a new React page"
-  }
+  },
+  "Generic Error Toast": {
+    "prefix": ["toast", "error-toast"],
+    "body": [
+      "toast.current?.show({"
+      "  severity: \"error\","
+      "  summary: LL.admin.onboarding.error.title(),"
+      "  detail: LL.admin.onboarding.error.generic(),"
+      "});"
+    ],
+    "description": "Create a new generic error toast"
+  },
 }

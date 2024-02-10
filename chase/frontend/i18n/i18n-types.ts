@@ -788,10 +788,9 @@ type RootTranslation = {
 			}
 			timerWidget: {
 				/**
-				 * u​n​t​i​l
+				 * u​n​t​i​l​ ​{​{​0​}​}
 				 */
-				UNTIL_1: string
-				UNTIL_2: string
+				UNTIL: string
 				/**
 				 * T​i​m​e​ ​i​s​ ​u​p​!
 				 */
@@ -800,6 +799,24 @@ type RootTranslation = {
 				 * G​o​i​n​g​ ​b​a​c​k​ ​t​o​ ​f​o​r​m​a​l​ ​d​e​b​a​t​e​.
 				 */
 				TOAST_MESSAGE: string
+				defaultHeadlines: {
+					/**
+					 * F​o​r​m​a​l​ ​D​e​b​a​t​e
+					 */
+					FORMAL: string
+					/**
+					 * I​n​f​o​r​m​a​l​ ​C​a​u​c​u​s
+					 */
+					INFORMAL: string
+					/**
+					 * P​a​u​s​e
+					 */
+					PAUSE: string
+					/**
+					 * S​u​s​p​e​n​s​i​o​n
+					 */
+					SUSPENSION: string
+				}
 			}
 			actionsWidget: {
 				/**
@@ -1964,10 +1981,9 @@ export type TranslationFunctions = {
 			}
 			timerWidget: {
 				/**
-				 * until
+				 * until {{0}}
 				 */
-				UNTIL_1: () => LocalizedString
-				UNTIL_2: () => LocalizedString
+				UNTIL: (arg0: number | string | boolean) => LocalizedString
 				/**
 				 * Time is up!
 				 */
@@ -1976,6 +1992,24 @@ export type TranslationFunctions = {
 				 * Going back to formal debate.
 				 */
 				TOAST_MESSAGE: () => LocalizedString
+				defaultHeadlines: {
+					/**
+					 * Formal Debate
+					 */
+					FORMAL: () => LocalizedString
+					/**
+					 * Informal Caucus
+					 */
+					INFORMAL: () => LocalizedString
+					/**
+					 * Pause
+					 */
+					PAUSE: () => LocalizedString
+					/**
+					 * Suspension
+					 */
+					SUSPENSION: () => LocalizedString
+				}
 			}
 			actionsWidget: {
 				/**

@@ -3,18 +3,16 @@ import { db } from "../../prisma/db";
 import { committeeRoleGuard } from "../auth/guards/committeeRoles";
 import { conferenceRoleGuard } from "../auth/guards/conferenceRoles";
 import { openApiTag } from "../util/openApiTags";
-import { Committee } from "../../prisma/generated/schema";
+import { AgendaItem, Committee } from "../../prisma/generated/schema";
 
 const CommitteeWithOnlyParentCommitteeRelation = t.Omit(Committee, [
   "conference",
   "members",
-  "agendaItems",
   "subCommittees",
-  "parent",
 ]);
 const CommitteeWithoutRelations = t.Omit(
   CommitteeWithOnlyParentCommitteeRelation,
-  ["parentId"],
+  ["parentId"]
 );
 
 const CommitteeData = t.Omit(CommitteeWithOnlyParentCommitteeRelation, [
@@ -30,21 +28,29 @@ export const committee = new Elysia({
   .use(committeeRoleGuard)
   .get(
     "/committee",
-    ({ params: { conferenceId } }) => {
-      return db.committee.findMany({
+    async ({ params: { conferenceId } }) => {
+        return (await db.committee.findMany({
         where: {
           conferenceId,
         },
-      });
+        include: { agendaItems: true }
+      })).map(c => ({
+        ...c,
+        parentId: c.parentId ?? undefined,
+        statusHeadline: c.statusHeadline ?? undefined,
+        statusUntil: c.statusUntil ?? undefined,
+        parent: c.parentId ? { id: c.parentId } : undefined,
+      }));
     },
     {
       hasConferenceRole: "any",
-      response: t.Array(CommitteeWithoutRelations),
+      // response: t.Array(t.Composite([CommitteeWithoutRelations, t.Pick(AgendaItem, ["id", "title", "isActive"])])),
+      // response: t.Array(t.Omit(Committee, ["conference", "members", "conference", "subCommittees"])),
       detail: {
         description: "Get all committees in this conference",
         tags: [openApiTag(import.meta.path)],
       },
-    },
+    }
   )
   .post(
     "/committee",
@@ -71,8 +77,8 @@ export const committee = new Elysia({
         tags: [openApiTag(import.meta.path)],
       },
       body: CommitteeData,
-      response: CommitteeWithOnlyParentCommitteeRelation,
-    },
+      // response: CommitteeWithOnlyParentCommitteeRelation,
+    }
   )
   .delete(
     "/committee",
@@ -84,7 +90,7 @@ export const committee = new Elysia({
         description: "Delete all committees in this conference",
         tags: [openApiTag(import.meta.path)],
       },
-    },
+    }
   )
   .get(
     "/committee/:committeeId",
@@ -99,20 +105,19 @@ export const committee = new Elysia({
         description: "Get a single committee by id",
         tags: [openApiTag(import.meta.path)],
       },
-      response: CommitteeWithoutRelations,
-    },
+    }
   )
   .delete(
     "/committee/:committeeId",
     ({ params: { conferenceId, committeeId } }) =>
       db.committee.delete({ where: { id: committeeId, conferenceId } }),
     {
-      // hasConferenceRole: ["ADMIN"],
+      hasConferenceRole: ["ADMIN"],
       detail: {
         description: "Delete a committee by id",
         tags: [openApiTag(import.meta.path)],
       },
-    },
+    }
   )
   .patch(
     "/committee/:committeeId",
@@ -133,5 +138,28 @@ export const committee = new Elysia({
         description: "Update a committee by id",
         tags: [openApiTag(import.meta.path)],
       },
+    }
+  )
+
+  // Committee Status
+  .post(
+    "/committee/:committeeId/status",
+    ({ params: { conferenceId, committeeId }, body }) => {
+      return db.committee.update({
+        where: { id: committeeId, conferenceId },
+        data: {
+          status: body.status,
+          statusHeadline: body.statusHeadline,
+          statusUntil: body.statusUntil,
+        },
+      });
     },
-  );
+    {
+      hasConferenceRole: ["ADMIN"],
+      body: t.Pick(Committee, ["status", "statusHeadline", "statusUntil"]),
+      detail: {
+        description: "Update the status of a committee by id",
+        tags: [openApiTag(import.meta.path)],
+      },
+    }
+  )

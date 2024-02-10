@@ -272,10 +272,15 @@ const en = {
         ACTIONS: "Send Request",
       },
       timerWidget: {
-        UNTIL_1: "until",
-        UNTIL_2: "",
+        UNTIL: "until {{0}}",
         TOAST_HEADLINE: "Time is up!",
         TOAST_MESSAGE: "Going back to formal debate.",
+        defaultHeadlines: {
+          FORMAL: "Formal Debate",
+          INFORMAL: "Informal Caucus",
+          PAUSE: "Pause",
+          SUSPENSION: "Suspension",
+        },
       },
       actionsWidget: {
         CHAIR_BUTTON: "Chair",

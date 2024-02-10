@@ -4,11 +4,12 @@ import { CountryCode } from "@/custom_types/custom_types";
 import HeaderTemplate from "../header_template";
 import { useI18nContext } from "@/i18n/i18n-react";
 import { LargeFlag } from "../flag_templates";
+import { Skeleton } from "primereact/skeleton";
 interface HeaderProps {
   countryCode: CountryCode;
   alternativeHeadline?: string;
-  committeeName: string;
-  currentTopic: string;
+  committeeName?: string;
+  currentTopic?: string;
 }
 
 /**
@@ -37,8 +38,8 @@ export default function DashboardHeader({
             ? alternativeHeadline
             : getCountryNameByCode(countryCode, locale)}
         </div>
-        <div className="text-md font-bold">{committeeName}</div>
-        <div className="text-md">{currentTopic}</div>
+        <div className="text-md font-bold my-1">{committeeName ?? <Skeleton width="10rem" height="1.5rem" />}</div>
+        <div className="text-md">{currentTopic ?? <Skeleton width="12rem" height="1.5rem" />}</div>
       </div>
       <LargeFlag countryCode={countryCode} />
     </HeaderTemplate>

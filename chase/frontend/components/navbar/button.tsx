@@ -31,9 +31,18 @@ export default function NavbarButton({
   const defaultWrapperStyle =
     "flex-1 rounded-md flex flex-col justify-center items-center";
 
+  function checkPathname() {
+    // link something like "./dashboard" to the current page
+    // pathname something like "/app/participant/dashboard"
+    if (link.startsWith(".")) {
+      return pathname.includes(link.slice(1));
+    }
+    return link.startsWith(pathname)
+  }
+
   useEffect(() => {
     // if the link starts with the current page route, set the button to active
-    if (link.startsWith(pathname)) {
+    if (checkPathname()) {
       setWrapperStyle(
         `${defaultWrapperStyle} bg-primary-800 dark:bg-primary-300 text-white dark:text-primary-100`,
       );

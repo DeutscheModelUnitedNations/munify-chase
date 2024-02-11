@@ -16,6 +16,7 @@ import { useRouter } from "next/navigation";
 import { useI18nContext } from "@/i18n/i18n-react";
 import { backend } from "@/services/backend";
 import { Toast } from "primereact/toast";
+import { tostError } from "@/fetching/fetching_utils";
 
 type Committee = Awaited<ReturnType<typeof backend.conference["conferenceId"]["committee"]["committeeId"]["get"]>>["data"];
 type AgendaItem = Awaited<ReturnType<typeof backend.conference["conferenceId"]["committee"]["committeeId"]["agendaItem"]["active"]["get"]>>["data"];
@@ -43,11 +44,7 @@ export default function participant_dashboard({
       setMyDelegationData(response.data);
     })
     .catch((error) => {
-      toast.current?.show({
-        severity: "error",
-        summary: LL.admin.onboarding.error.title(),
-        detail: LL.admin.onboarding.error.generic(),
-      });
+      tostError(toast, LL, error);
     });
   }
 
@@ -58,11 +55,7 @@ export default function participant_dashboard({
       setCommitteeData(response.data);
     })
     .catch((error) => {
-      toast.current?.show({
-        severity: "error",
-        summary: LL.admin.onboarding.error.title(),
-        detail: LL.admin.onboarding.error.generic(),
-      });
+      tostError(toast, LL, error);
     });
   }
 
@@ -77,11 +70,7 @@ export default function participant_dashboard({
       setAgendaItem(response.data);
     })
     .catch((error) => {
-      toast.current?.show({
-        severity: "error",
-        summary: LL.admin.onboarding.error.title(),
-        detail: LL.admin.onboarding.error.generic(),
-      });
+      tostError(toast, LL, error);
     });
   }
 

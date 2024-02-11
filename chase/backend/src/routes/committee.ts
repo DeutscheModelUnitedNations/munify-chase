@@ -29,7 +29,7 @@ export const committee = new Elysia({
   .get(
     "/committee",
     async ({ params: { conferenceId } }) => {
-        return (await db.committee.findMany({
+      return (await db.committee.findMany({
         where: {
           conferenceId,
         },
@@ -162,4 +162,37 @@ export const committee = new Elysia({
         tags: [openApiTag(import.meta.path)],
       },
     }
+  )
+
+  .get(
+    "/committee/:committeeId/delegations",
+    ({ params: { conferenceId, committeeId } }) => {
+      return db.delegation.findMany({
+        where: {
+          members: {
+            some: {
+              committeeId,
+            },
+          }
+        },
+        include: {
+          nation: true,
+          members: {
+            where: {
+              committeeId,
+            },
+            select: {
+              presence: true,
+            },
+          }
+        }
+      });
+    },
+    {
+      hasConferenceRole: "any",
+      detail: {
+        description: "Get all delegations of a committee",
+        tags: [openApiTag(import.meta.path)],
+      },
+    },
   )

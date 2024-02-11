@@ -1,20 +1,62 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { ScrollPanel } from "primereact/scrollpanel";
 import { ToastProvider } from "@/contexts/toast";
 
 import DashboardHeader from "@/components/dashboard/header";
-import { apiTestData } from "@/test_data";
 import { useI18nContext } from "@/i18n/i18n-react";
+import { backend } from "@/services/backend";
+import { tostError } from "@/fetching/fetching_utils";
+import { Toast } from "primereact/toast";
 
-export default function ParticipantDashboard() {
+type Committee = Awaited<ReturnType<typeof backend.conference["conferenceId"]["committee"]["committeeId"]["get"]>>["data"];
+type AgendaItem = Awaited<ReturnType<typeof backend.conference["conferenceId"]["committee"]["committeeId"]["agendaItem"]["active"]["get"]>>["data"];
+
+export default function ParticipantDashboard(
+  {
+    params
+  }:{
+    params: { conferenceId: string; committeeId: string}
+  }
+) {
   const { LL } = useI18nContext();
-  const [data, setData] = useState(apiTestData);
+  const [committeeData, setCommitteeData] = useState<Committee | null>(null);
+  const [agendaItem, setAgendaItem] = useState<AgendaItem | null>(null);
+  const toast = useRef<Toast>(null);
+
+  async function getCommitteeData() {
+    await backend.conference[params.conferenceId].committee[params.committeeId]
+    .get()
+    .then((response) => {
+      setCommitteeData(response.data);
+    })
+    .catch((error) => {
+      tostError(toast, LL, error);
+    });
+  }
+
+  async function getAgendaItem() {
+    await backend.conference[params.conferenceId].committee[params.committeeId].agendaItem.active
+    .get()
+    .then((response) => {
+      if (response.error?.status === 404) {
+        setAgendaItem(null);
+        return;
+      }
+      setAgendaItem(response.data);
+    })
+    .catch((error) => {
+      tostError(toast, LL, error);
+    });
+  }
 
   useEffect(() => {
+    getCommitteeData();
+    getAgendaItem();
     const intervalAPICall = setInterval(() => {
-      setData(apiTestData);
-    }, 1000);
+      getCommitteeData();
+      getAgendaItem();
+    }, 5000);
     return () => clearInterval(intervalAPICall);
   }, []);
 
@@ -25,8 +67,8 @@ export default function ParticipantDashboard() {
           <DashboardHeader
             countryCode="uno"
             alternativeHeadline={LL.chairs.CHAIR()}
-            committeeName={data.committeeName}
-            currentTopic={data.currentTopic}
+            committeeName={committeeData?.name}
+            currentTopic={agendaItem?.title}
           />
           {/* TODO Check why this Scroll Bar is not changing color as the other ones with the custom-scrollbar class */}
           <ScrollPanel className="flex-1 overflow-y-auto custom-scrollbar">

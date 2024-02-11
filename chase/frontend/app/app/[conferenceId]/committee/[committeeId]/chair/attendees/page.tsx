@@ -17,6 +17,8 @@ import {
 } from "@fortawesome/pro-solid-svg-icons";
 import { attendanceTestData } from "@/test_data";
 import { IconProp } from "@fortawesome/fontawesome-svg-core";
+import { backend } from "@/services/backend";
+import { tostError } from "@/fetching/fetching_utils";
 
 interface AttendanceButtonOptions {
   icon: IconProp;
@@ -24,10 +26,18 @@ interface AttendanceButtonOptions {
   value: "present" | "excused" | "absent";
 }
 
-export default function ChairAttendees() {
+type DelegationData = Awaited<ReturnType<typeof backend.conference["conferenceId"]["committee"]["committeeId"]["delegations"]["get"]>>["data"];
+
+export default function ChairAttendees(
+  {
+    params
+  }:{
+    params: { conferenceId: string; committeeId: string}
+  }
+) {
   const { LL, locale } = useI18nContext();
 
-  const [data, setData] = useState<Attendance[]>(attendanceTestData);
+  const [data, setData] = useState<DelegationData[]>(null);
   const [presentAttendees, setPresentAttendees] = useState<number>(0);
   const [excusedAttendees, setExcusedAttendees] = useState<number>(0);
   const [absentAttendees, setAbsentAttendees] = useState<number>(0);
@@ -50,11 +60,22 @@ export default function ChairAttendees() {
     },
   ];
 
-  useEffect(() => {
-    const countGroup = (group: "present" | "excused" | "absent") => {
-      return data.filter((item) => item.present === group).length;
-    };
+  async function getDelegationData() {
+    await backend.conference[params.conferenceId].committee[params.committeeId].delegations
+    .get()
+    .then((response) => {
+      setData(response.data);
+    })
+    .catch((error) => {
+      toastError(toast, LL, error);
+    });
+  }
 
+  const countGroup = (group: "present" | "excused" | "absent") => {
+    return data?.filter((item) => item.members[0].presence === group).length ?? 0;
+  };
+
+  useEffect(() => {
     setPresentAttendees(countGroup("present"));
     setExcusedAttendees(countGroup("excused"));
     setAbsentAttendees(countGroup("absent"));

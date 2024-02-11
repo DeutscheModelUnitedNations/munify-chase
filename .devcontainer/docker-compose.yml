@@ -47,7 +47,6 @@ services:
     environment:
       - RelayOptions__Login=dev
       - RelayOptions__Password=dev
-    network_mode: "host"
 
 volumes:
   postgres-data:

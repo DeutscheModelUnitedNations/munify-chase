@@ -16,12 +16,7 @@
 	"forwardPorts": [3000, 3001, 5432, 3777, 5968, 6379],
 
 	// Use 'postCreateCommand' to run commands after the container is created.
-	"postCreateCommand": [
-		"cd /workspaces/munify/chase/backend",
-		"bunx prisma generate",
-		"bunx prisma migrate dev --name init",
-		"bunx prisma db seed"
-	]
+	// "postCreateCommand": [],
 
 	// Configure tool-specific properties.
 	// "customizations": {},

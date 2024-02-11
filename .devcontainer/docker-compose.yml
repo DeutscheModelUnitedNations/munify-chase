@@ -12,7 +12,7 @@ services:
     # Overrides default command so things don't shut down after the process ends.
     command: sleep infinity
 
-    # Runs app on the same network as the database container, allows "forwardPorts" in devcontainer.json function.
+    # Runs app on the host network, so that every port is already available from the host.
     network_mode: "host"
 
     # Use "forwardPorts" in **devcontainer.json** to forward an app port locally.

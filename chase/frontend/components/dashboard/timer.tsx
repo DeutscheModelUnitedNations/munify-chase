@@ -1,4 +1,4 @@
-import React, { useEffect, useContext } from "react";
+import React, { useContext } from "react";
 import WidgetTemplate from "@components/widget_template";
 import { ToastContext } from "@/contexts/toast";
 
@@ -9,12 +9,15 @@ import {
   faCoffee,
   faCirclePause,
   faQuestion,
+  faPodium,
+  faMugHot,
+  faForwardStep,
 } from "@fortawesome/pro-solid-svg-icons";
 import { useI18nContext } from "@/i18n/i18n-react";
 import { AnimatePresence, motion } from "framer-motion";
 import { IconProp } from "@fortawesome/fontawesome-svg-core";
-import en from "@/i18n/en";
 import { Skeleton } from "primereact/skeleton";
+import Timer from "./countdown_timer";
 
 type Category =
   | "FORMAL"
@@ -26,7 +29,7 @@ type Category =
 
 interface TimerWidgetProps {
   headline: string | null | undefined;
-  until: string | null | undefined;
+  until: Date | null | undefined;
   category: Category;
 }
 
@@ -57,7 +60,7 @@ export default function TimerWidget({
   const timeStamp = () => {
     if (until) {
       try {
-        return new Date(until).toLocaleTimeString("de-DE", {
+        return until.toLocaleTimeString("de-DE", {
           hour: "2-digit",
           minute: "2-digit",
         });
@@ -84,13 +87,13 @@ export default function TimerWidget({
   const getIcon: () => IconProp = () => {
     switch (category) {
       case "FORMAL":
-        return faGavel as IconProp;
+        return faPodium as IconProp;
       case "INFORMAL":
         return faComments as IconProp;
       case "PAUSE":
-        return faCoffee as IconProp;
+        return faMugHot as IconProp;
       case "SUSPENSION":
-        return faCirclePause as IconProp;
+        return faForwardStep as IconProp;
       default:
         return faQuestion as IconProp;
     }
@@ -132,9 +135,7 @@ export default function TimerWidget({
                 <div className="text-2xl font-bold">{getHeadline()}</div>
                 {until && (
                   <div className="text-md">
-                    {LL.participants.dashboard.timerWidget.UNTIL_1()}{" "}
-                    {timeStamp()}{" "}
-                    {LL.participants.dashboard.timerWidget.UNTIL_2()}
+                    {LL.participants.dashboard.timerWidget.UNTIL(timeStamp())}
                   </div>
                 )}
                 {(category === "INFORMAL" || category === "PAUSE") && until && (
@@ -150,47 +151,5 @@ export default function TimerWidget({
         )}
       </motion.div>
     </AnimatePresence>
-  );
-}
-
-function Timer({
-  until,
-  showTimerToast,
-}: {
-  until: string | null | undefined;
-  showTimerToast: () => void;
-}) {
-  const [timeLeft, setTimeLeft] = React.useState<number | null>(null);
-
-  useEffect(() => {
-    if (until) {
-      const interval = setInterval(() => {
-        const diff = new Date(until).getTime() - Date.now();
-        if (diff > 0) {
-          setTimeLeft(diff);
-        } else {
-          setTimeLeft(null);
-          showTimerToast();
-          clearInterval(interval);
-        }
-      }, 1000);
-      return () => clearInterval(interval);
-    }
-  }, [until]);
-
-  if (timeLeft === null) {
-    return <span>00:00</span>;
-  }
-
-  const hours = Math.floor(timeLeft / 1000 / 60 / 60);
-  const minutes = Math.floor((timeLeft / 1000 / 60) % 60);
-  const seconds = Math.floor((timeLeft / 1000) % 60);
-
-  return (
-    <span>
-      {hours > 0 && hours.toString().padStart(2, "0")} {hours > 0 && ":"}
-      {minutes.toString().padStart(2, "0")}:
-      {seconds.toString().padStart(2, "0")}
-    </span>
   );
 }

@@ -106,7 +106,7 @@ export default function participant_dashboard({
                 />
                 <TimerWidget
                   headline={committeeData?.statusHeadline}
-                  until={committeeData?.statusUntil}
+                  until={committeeData && new Date(committeeData.statusUntil)}
                   category={committeeData?.status}
                 />
               </div>

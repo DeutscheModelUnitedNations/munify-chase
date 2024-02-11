@@ -1,10 +1,13 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useI18nContext } from "@/i18n/i18n-react";
 import { backend } from "@/services/backend";
-import { Committee, CommitteeStatus } from "../../../backend/prisma/generated/client";
 import { Toast } from "primereact/toast";
 import { Skeleton } from "primereact/skeleton";
 import Link from "next/link";
+import Timer from "../dashboard/countdown_timer";
+
+type CommitteeArray = Awaited<ReturnType<typeof backend.conference[":conferenceId"]["committee"]["get"]>>["data"];
+type CommitteeType = NonNullable<CommitteeArray>[number];
 
 export default function CommitteeGrid({
   conferenceId,
@@ -16,14 +19,13 @@ export default function CommitteeGrid({
   const { LL, locale } = useI18nContext();
   const toast = useRef<Toast>(null);
 
-  const [committees, setCommittees] = useState<Committee[] | null>(null);
+  const [committees, setCommittees] = useState<CommitteeArray>(null);
 
   async function getCommittees() {
-    
+
     await backend.conference[conferenceId].committee
       .get()
       .then((res) => {
-        console.log(res.data);
         setCommittees(res.data);
       })
       .catch((err) => {
@@ -42,7 +44,7 @@ export default function CommitteeGrid({
     }, 10000);
   }, []);
 
-  function getHeadline(category: CommitteeStatus, headline: string | undefined | null) {
+  function getHeadline(category: CommitteeType["status"], headline?: string) {
     if (headline) return headline;
     switch (category) {
       case "FORMAL":
@@ -58,35 +60,36 @@ export default function CommitteeGrid({
     }
   };
 
-  function getActiveAgendaItem(committee: Committee) {}
-
   return (
     <div className="w-full flex flex-wrap justify-center items-center gap-4">
-      {committees?.map((committee) => {
+      {committees && committees?.map((committee) => {
         return (
           <Link
             key={committee.id}
-            href={`/app/${conferenceId}/committee/${committee.id}/${
-              isChair ? "chair" : "participant"
-            }/dashboard`}
-            className="flex-1 h-48 min-w-60 flex flex-col justify-center items-center p-4 bg-primary-950 rounded-lg hover:bg-primary-900 hover:scale-105 hover:shadow-lg transition-all duration-300 ease-in-out cursor-pointer"
+            href={`/app/${conferenceId}/committee/${committee.id}/${isChair ? "chair" : "participant"
+              }/dashboard`}
+            className="flex-1 h-60 min-w-60 flex flex-col justify-center items-center p-4 bg-primary-950 rounded-lg hover:bg-primary-900 hover:scale-[102%] hover:shadow-lg transition-all duration-300 ease-in-out cursor-pointer"
           >
-            <h1 className="text-4xl my-4 text-primary font-bold">
+            <div className="flex-1 flex flex-col justify-center items-center">
+              <h3 className="text-lg">{committee.name}</h3>
+              <h3 className="italic text-sm">{committee.agendaItems.find((i) => i.isActive)?.title ?? ""}</h3>
+            </div>
+            <h1 className="flex-1 text-4xl my-2 text-primary font-bold">
               {committee.abbreviation}
             </h1>
-            <h3 className="text-lg">{committee.name}</h3>
-            <div className="w-full flex flex-col items-center justify-center">
-              <div className="" />
-              {getHeadline(committee.status, committee?.statusHeadline)}
-            </div>
-            <div className="">
-              {committee.statusUntil &&
-                LL.participants.dashboard.timerWidget.UNTIL(
-                  new Date(committee.statusUntil).toLocaleTimeString("de-DE", {
-                    hour: "2-digit",
-                    minute: "2-digit",
-                  })
-                )}
+            <div className="flex-1 flex flex-col justify-center items-center w-full p-1 rounded-xl border-2 border-white">
+              <h3>{getHeadline(committee.status, committee?.statusHeadline)}</h3>
+              <div className="">
+                {committee.statusUntil && (<>
+                  {LL.participants.dashboard.timerWidget.UNTIL(
+                    new Date(committee.statusUntil).toLocaleTimeString("de-DE", {
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    })
+                  )}
+                  {" ("}<Timer until={new Date(committee.statusUntil)} />{")"}
+                </>)}
+              </div>
             </div>
           </Link>
         );
@@ -97,15 +100,15 @@ export default function CommitteeGrid({
       {!committees && (
         <>
           <Skeleton
-            height="12rem"
+            height="15rem"
             className="flex-1 min-w-60 bg-slate-100 rounded-lg"
           />
           <Skeleton
-            height="12rem"
+            height="15rem"
             className="flex-1 min-w-60 bg-slate-100 rounded-lg"
           />
           <Skeleton
-            height="12rem"
+            height="15rem"
             className="flex-1 min-w-60 bg-slate-100 rounded-lg"
           />
         </>

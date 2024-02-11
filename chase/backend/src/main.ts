@@ -11,6 +11,7 @@ import { baseData } from "./routes/baseData";
 import { auth } from "./routes/auth/auth";
 import { agendaItem } from "./routes/agendaItem";
 import { delegation } from "./routes/delegation";
+import { user } from "./routes/user";
 
 const m = new Elysia({
   cookie: {
@@ -46,6 +47,7 @@ const m = new Elysia({
   .use(committee)
   .use(delegation)
   .use(agendaItem)
+  .use(user)
   .use(auth)
   .use(baseData);
 

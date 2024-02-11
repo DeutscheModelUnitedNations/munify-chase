@@ -91,7 +91,7 @@ export default function Navbar({
           />
           <Button
             label={LL.home.navbar.LOGIN_PARTICIPANT()}
-            onClick={() => router.push("/app/CONFERENCEID/committee/COMMITTEEID/participant/dashboard")}
+            onClick={() => router.push("/app/CONFERENCEID/hub/na")}
             text
           />
           <Button

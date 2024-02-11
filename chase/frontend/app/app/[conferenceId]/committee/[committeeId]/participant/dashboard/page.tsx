@@ -10,13 +10,16 @@ import CommitteeStatusWidget from "@/components/dashboard/committee_status";
 import DocumentsWidget from "@/components/dashboard/documents";
 import WhiteboardWidget from "@/components/dashboard/whiteboard";
 import ActionsWidget from "@/components/dashboard/actions";
-import { apiTestData, whiteboardTestData } from "@/test_data";
+import { apiTestData } from "@/test_data";
 import { votingAlert } from "@/misc/voting_alert";
 import { useRouter } from "next/navigation";
 import { useI18nContext } from "@/i18n/i18n-react";
 import { backend } from "@/services/backend";
 import { Toast } from "primereact/toast";
-import { Committee, AgendaItem } from "../../../../../../../../backend/prisma/generated/client";
+
+type Committee = Awaited<ReturnType<typeof backend.conference["conferenceId"]["committee"]["committeeId"]["get"]>>["data"];
+type AgendaItem = Awaited<ReturnType<typeof backend.conference["conferenceId"]["committee"]["committeeId"]["agendaItem"]["active"]["get"]>>["data"];
+type MyDelegation = Awaited<ReturnType<typeof backend.conference["conferenceId"]["user"]["userId"]["delegation"]["get"]>>["data"];
 
 export default function participant_dashboard({
   params
@@ -28,7 +31,25 @@ export default function participant_dashboard({
   const [data, setData] = useState(apiTestData);
   const [committeeData, setCommitteeData] = useState<Committee | null>(null);
   const [agendaItem, setAgendaItem] = useState<AgendaItem | null>(null);
+  const [myDelegationData, setMyDelegationData] = useState<MyDelegation | null>(null);
   const toast = useRef<Toast>(null);
+
+  const USER_ID_HARDCODED = "c4e23c2c-1f79-4662-b96f-9b7e66c73da7";
+
+  async function getMyDelegationData() {
+    await backend.conference[params.conferenceId].user[USER_ID_HARDCODED].delegation
+    .get()
+    .then((response) => {
+      setMyDelegationData(response.data);
+    })
+    .catch((error) => {
+      toast.current?.show({
+        severity: "error",
+        summary: LL.admin.onboarding.error.title(),
+        detail: LL.admin.onboarding.error.generic(),
+      });
+    });
+  }
 
   async function getCommitteeData() {
     await backend.conference[params.conferenceId].committee[params.committeeId]
@@ -49,7 +70,7 @@ export default function participant_dashboard({
     await backend.conference[params.conferenceId].committee[params.committeeId].agendaItem.active
     .get()
     .then((response) => {
-      if (response.code === 404) {
+      if (response.error?.status === 404) {
         setAgendaItem(null);
         return;
       }
@@ -68,6 +89,7 @@ export default function participant_dashboard({
   useEffect(() => {
     getCommitteeData();
     getAgendaItem();
+    getMyDelegationData();
     setData(apiTestData);
 
     const intervalAPICall = setInterval(() => {
@@ -78,20 +100,11 @@ export default function participant_dashboard({
     return () => clearInterval(intervalAPICall);
   }, []);
 
-
-  // useEffect(() => {
-  //   // TODO only for testing
-  //   const timeout = setTimeout(() => {
-  //     votingAlert(() => Router.push("./voting"), LL);
-  //   }, 10000);
-  //   return () => clearTimeout(timeout);
-  // }, []);
-
   return (
       <ToastProvider>
         <div className="flex-1 flex flex-col">
           <DashboardHeader
-            countryCode={data.myCountry}
+            countryCode={myDelegationData?.nation?.alpha3Code}
             committeeName={committeeData?.name}
             currentTopic={agendaItem?.title}
           />
@@ -106,7 +119,7 @@ export default function participant_dashboard({
                 />
                 <TimerWidget
                   headline={committeeData?.statusHeadline}
-                  until={committeeData && new Date(committeeData.statusUntil)}
+                  until={committeeData?.statusUntil ? new Date(committeeData.statusUntil) : null}
                   category={committeeData?.status}
                 />
               </div>

@@ -22,7 +22,7 @@
 		6379
 	],
 	// Use 'postCreateCommand' to run commands after the container is created.
-	"postCreateCommand": "mkdir -p ~/.config/fish && touch ~/.config/fish/config.fish && echo \"starship init fish | source\" > ~/.config/fish/config.fish",
+	"postCreateCommand": "bash /workspaces/munify/.devcontainer/setup.sh",
 	// Configure tool-specific properties.
 	"customizations": {
 		// Configure properties specific to VS Code.

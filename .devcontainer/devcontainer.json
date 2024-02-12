@@ -1,26 +1,52 @@
 // For format details, see https://aka.ms/devcontainer.json. For config options, see the
 // README at: https://github.com/marcosgomesneto/bun-devcontainers/tree/main/src/bun-postgresql
 {
-	"name": "Bun & PostgreSQL",
+	"name": "MUNify Dev Container",
 	"dockerComposeFile": "docker-compose.yml",
 	"service": "app",
 	"workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}",
-
 	// Features to add to the dev container. More info: https://containers.dev/features.
 	"features": {
 		"ghcr.io/devcontainers/features/node:1": {}
 	},
-
 	// Use 'forwardPorts' to make a list of ports inside the container available locally.
 	// This can be used to network with other containers or with the host.
-	"forwardPorts": [3000, 3001, 5432, 3777, 5968, 6379],
-
+	"forwardPorts": [
+		3000,
+		3001,
+		5432,
+		3777,
+		5968,
+		6379
+	],
 	// Use 'postCreateCommand' to run commands after the container is created.
 	// "postCreateCommand": [],
-
 	// Configure tool-specific properties.
-	// "customizations": {},
-
+	"customizations": {
+		// Configure properties specific to VS Code.
+		"vscode": {
+			// Set *default* container specific settings.json values on container create.
+			"settings": {
+				"editor.formatOnSave": true,
+				"files.insertFinalNewline": true
+			},
+			// Add the IDs of extensions you want installed when the container is created.
+			"extensions": [
+				"biomejs.biome",
+				"rioukkevin.vscode-git-commit",
+				"prisma.prisma",
+				"eamodio.gitlens",
+				"zainchen.json",
+				"yoavbls.pretty-ts-errors",
+				"msjsdiag.vscode-react-native",
+				"bradlc.vscode-tailwindcss",
+				"austenc.tailwind-docs",
+				"stivo.tailwind-fold",
+				"gruntfuggly.todo-tree",
+				"chriskirknielsen.visubezier"
+			]
+		}
+	}
 	// Uncomment to connect as root instead. More info: https://aka.ms/dev-containers-non-root.
 	// "remoteUser": "root"
 }

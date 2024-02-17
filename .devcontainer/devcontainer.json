@@ -45,7 +45,8 @@
 				"austenc.tailwind-docs",
 				"stivo.tailwind-fold",
 				"gruntfuggly.todo-tree",
-				"chriskirknielsen.visubezier"
+				"chriskirknielsen.visubezier",
+				"ms-vsliveshare.vsliveshare"
 			]
 		}
 	},

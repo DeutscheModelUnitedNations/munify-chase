@@ -107,9 +107,8 @@ export default function participant_dashboard({
                 commentList={data.commentList}
               />
               <TimerWidget
-                headline={committeeData?.statusHeadline}
-                until={committeeData?.statusUntil ? new Date(committeeData.statusUntil) : null}
-                category={committeeData?.status}
+                conferenceId={params.conferenceId}
+                committeeId={params.committeeId}
               />
             </div>
             {/* <div className="flex-1 flex flex-col justify-start items-stretch gap-5">

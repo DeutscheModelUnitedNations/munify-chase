@@ -1,4 +1,4 @@
-import React, { useContext } from "react";
+import React, { useContext, useEffect, useRef, useState } from "react";
 import WidgetTemplate from "@components/widget_template";
 import { ToastContext } from "@/contexts/toast";
 
@@ -18,20 +18,20 @@ import { AnimatePresence, motion } from "framer-motion";
 import { IconProp } from "@fortawesome/fontawesome-svg-core";
 import { Skeleton } from "primereact/skeleton";
 import Timer from "./countdown_timer";
+import { $Enums } from "../../../backend/prisma/generated/client";
+import { backend } from "@/services/backend";
+import { toastError } from "@/fetching/fetching_utils";
+import { Toast } from "primereact/toast";
 
-type Category =
-  | "FORMAL"
-  | "INFORMAL"
-  | "PAUSE"
-  | "SUSPENSION"
-  | "CLOSED"
-  | undefined;
+type Category = $Enums.CommitteeStatus;
 
 interface TimerWidgetProps {
-  headline: string | null | undefined;
-  until: Date | null | undefined;
-  category: Category;
+  conferenceId: string;
+  committeeId: string;
+  noAlert?: boolean;
 }
+
+type Committee = Awaited<ReturnType<typeof backend.conference["conferenceId"]["committee"]["committeeId"]["get"]>>["data"];
 
 /**
  * This Component is used in the Dashboard. It shows the current timer status –
@@ -40,12 +40,18 @@ interface TimerWidgetProps {
  */
 
 export default function TimerWidget({
-  headline,
-  until,
-  category,
+  conferenceId,
+  committeeId,
+  noAlert,
 }: TimerWidgetProps) {
   const { LL } = useI18nContext();
   const { showToast } = useContext(ToastContext);
+  const toast = useRef(null);
+
+  const [category, setCategory] = useState<Category | null>(null);
+  const [headline, setHeadline] = useState<string | null>(null);
+  const [until, setUntil] = useState<Date | null>(null);
+  const [didShowToast, setDidShowToast] = useState(false);
 
   const showTimerToast = () => {
     const message = {
@@ -54,8 +60,36 @@ export default function TimerWidget({
       severity: "info" as const,
       sticky: true,
     };
-    showToast(message);
+    if (!noAlert && !didShowToast) {
+      showToast(message)
+      setDidShowToast(true);
+    };
   };
+
+  async function getCommitteeData() {
+    await backend.conference[conferenceId].committee[committeeId]
+      .get()
+      .then((response) => {
+        setCategory(response.data?.status ?? null);
+        setHeadline(response.data?.statusHeadline ?? null);
+        setUntil(response.data?.statusUntil ? new Date(response.data.statusUntil) : null);
+      })
+      .catch((error) => {
+        toastError(toast, LL, error);
+      });
+  }
+
+  useEffect(() => {
+    getCommitteeData();
+    const intervalAPICall = setInterval(() => {
+      getCommitteeData();
+    }, 5000);
+    return () => clearInterval(intervalAPICall);
+  }, []);
+
+  useEffect(() => {
+    setDidShowToast(false);
+  }, [category, until, headline]);
 
   const timeStamp = () => {
     if (until) {
@@ -116,40 +150,43 @@ export default function TimerWidget({
   };
 
   return (
-    <AnimatePresence mode="wait">
-      <motion.div
-        key={category}
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
-        transition={{ duration: 0.3 }}
-        layout
-      >
-        {category ? (
-          category !== "CLOSED" && (
-            <WidgetTemplate cardTitle="" additionalClassNames={getClassNames()}>
-              <div className="flex flex-col justify-center items-center">
-                <div className="my-4">
-                  <FontAwesomeIcon icon={getIcon()} size="3x" />
+    <>
+      <Toast ref={toast} />
+      <AnimatePresence mode="wait">
+        <motion.div
+          key={category}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.3 }}
+          layout
+        >
+          {category ? (
+            category !== "CLOSED" && (
+              <WidgetTemplate cardTitle="" additionalClassNames={getClassNames()}>
+                <div className="flex flex-col justify-center items-center">
+                  <div className="my-4">
+                    <FontAwesomeIcon icon={getIcon()} size="3x" />
+                  </div>
+                  <div className="text-2xl font-bold">{getHeadline()}</div>
+                  {until && (
+                    <div className="text-md">
+                      {LL.participants.dashboard.timerWidget.UNTIL(timeStamp())}
+                    </div>
+                  )}
+                  {(category === "INFORMAL" || category === "PAUSE") && until && (
+                    <div className="text-4xl font-bold my-2 tabular-nums">
+                      <Timer until={until} showTimerToast={showTimerToast} />
+                    </div>
+                  )}
                 </div>
-                <div className="text-2xl font-bold">{getHeadline()}</div>
-                {until && (
-                  <div className="text-md">
-                    {LL.participants.dashboard.timerWidget.UNTIL(timeStamp())}
-                  </div>
-                )}
-                {(category === "INFORMAL" || category === "PAUSE") && until && (
-                  <div className="text-4xl font-bold my-2 tabular-nums">
-                    <Timer until={until} showTimerToast={showTimerToast} />
-                  </div>
-                )}
-              </div>
-            </WidgetTemplate>
-          )
-        ) : (
-          <Skeleton width="100%" height="10rem" />
-        )}
-      </motion.div>
-    </AnimatePresence>
+              </WidgetTemplate>
+            )
+          ) : (
+            <Skeleton width="100%" height="10rem" />
+          )}
+        </motion.div>
+      </AnimatePresence>
+    </>
   );
 }

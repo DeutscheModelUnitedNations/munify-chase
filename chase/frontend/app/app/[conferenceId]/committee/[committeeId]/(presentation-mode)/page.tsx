@@ -9,9 +9,14 @@ import { toastError } from "@/fetching/fetching_utils";
 import { backend } from "@/services/backend";
 import { Toast } from "primereact/toast";
 import { apiTestData } from "@/test_data";
+import { Committee } from "../../../../../../../backend/prisma/generated/schema";
+import { Skeleton } from "primereact/skeleton";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faPodium } from "@fortawesome/pro-solid-svg-icons";
 
 type Committee = Awaited<ReturnType<typeof backend.conference["conferenceId"]["committee"]["committeeId"]["get"]>>["data"];
 type DelegationData = Awaited<ReturnType<typeof backend.conference["conferenceId"]["committee"]["committeeId"]["delegations"]["get"]>>["data"];
+type AgendaItems = Awaited<ReturnType<typeof backend.conference["conferenceId"]["committee"]["committeeId"]["agendaItem"]["get"]>>["data"];
 
 
 export default function CommitteePresentationMode({
@@ -23,6 +28,8 @@ export default function CommitteePresentationMode({
 
   const [committeeData, setCommitteeData] = useState<Committee | null>(null);
   const [delegationData, setDelegationData] = useState<DelegationData>([]);
+  const [agendaItem, setAgendaItem] = useState<AgendaItems | null>(null);
+
   const [presentAttendees, setPresentAttendees] = useState<number>(0);
   const [excusedAttendees, setExcusedAttendees] = useState<number>(0);
   const [absentAttendees, setAbsentAttendees] = useState<number>(0);
@@ -52,12 +59,26 @@ export default function CommitteePresentationMode({
       });
   }
 
+  async function getAgendaItems() {
+    await backend.conference[params.conferenceId].committee[params.committeeId].agendaItem
+      .get()
+      .then((response) => {
+        console.log(response.data);
+        setAgendaItem(response.data);
+      })
+      .catch((error) => {
+        toastError(toast, LL, error);
+      });
+  }
+
   useEffect(() => {
     getCommitteeData();
     getDelegationData();
+    getAgendaItems();
     const intervalAPICall = setInterval(() => {
       getCommitteeData();
       getDelegationData();
+      getAgendaItems();
     }, 5000);
     return () => clearInterval(intervalAPICall);
   }, []);
@@ -77,6 +98,17 @@ export default function CommitteePresentationMode({
       <Toast ref={toast} />
       <div className="flex gap-4">
         <div className="flex-1 flex flex-col gap-4 h-[calc(100vh-2rem)]">
+          <WidgetTemplate>
+            <h1 className="text-2xl font-bold">
+              {committeeData?.name ?? <Skeleton width="5rem" height="2rem"></Skeleton>}
+            </h1>
+            <div className="flex gap-2 items-center mt-2">
+              <FontAwesomeIcon className="mx-2" icon={faPodium} />
+              <h2 className="text-lg">
+                {agendaItem?.find((item) => item.isActive)?.title ?? <Skeleton width="5rem" height="1.75rem"></Skeleton>}
+              </h2>
+            </div>
+          </WidgetTemplate>
           <WidgetTemplate
             cardTitle={LL.participants.dashboard.widgetHeadlines.PRESENCE()}
           >
@@ -87,9 +119,9 @@ export default function CommitteePresentationMode({
             />
           </WidgetTemplate>
           <TimerWidget
-            category={committeeData?.status}
-            headline={committeeData?.statusHeadline}
-            until={committeeData?.statusUntil ? new Date(committeeData.statusUntil) : null}
+            conferenceId={params.conferenceId}
+            committeeId={params.committeeId}
+            noAlert={true}
           />
         </div>
         <div className="flex-1 flex justify-center h-[calc(100vh-2rem)]">
@@ -105,6 +137,6 @@ export default function CommitteePresentationMode({
           />
         </div>
       </div>
-    </div>
+    </div >
   );
 }

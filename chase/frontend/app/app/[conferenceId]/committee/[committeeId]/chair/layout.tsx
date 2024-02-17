@@ -60,7 +60,7 @@ export default function Chair_Pages_Layout({
         <NavButton
           icon={faPresentationScreen as IconProp}
           newWindow
-          link="./presentation"
+          link=".."
           title={LL.navbar.PRESENTATION()}
         />
         <div className="h-5" />

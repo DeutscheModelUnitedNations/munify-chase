@@ -130,9 +130,8 @@ export default function ParticipantDashboard(
                     {LL.chairs.dashboard.overview.TITLE()}
                   </h1>
                   <TimerWidget
-                    category={committeeData?.status}
-                    headline={committeeData?.statusHeadline}
-                    until={committeeData?.statusUntil ? new Date(committeeData.statusUntil) : null}
+                    conferenceId={params.conferenceId}
+                    committeeId={params.committeeId}
                   />
                   <WhiteboardWidget
                     value={committeeData?.whiteboardContent}
@@ -199,6 +198,7 @@ export default function ParticipantDashboard(
                           }}
                           size="small"
                           className="flex-1"
+                          key={timeframe.label}
                         />
                       ))}
 

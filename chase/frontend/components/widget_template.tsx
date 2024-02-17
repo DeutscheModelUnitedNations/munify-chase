@@ -1,3 +1,4 @@
+import { Skeleton } from "primereact/skeleton";
 import React from "react";
 
 interface WidgetTemplateProps {
@@ -15,7 +16,7 @@ interface WidgetTemplateProps {
 
 export default function WidgetTemplate({
   children,
-  cardTitle,
+  cardTitle = "",
   additionalClassNames,
 }: WidgetTemplateProps) {
   const widgetClassNames = () => {
@@ -33,9 +34,12 @@ export default function WidgetTemplate({
   return (
     <>
       <div className={widgetClassNames()}>
-        {cardTitle ? (
+        {cardTitle && (cardTitle !== "" ? (
           <div className=" font-bold mb-2 text-lg">{cardTitle}</div>
-        ) : null}
+        ) : (
+          <Skeleton width="5rem" height="1.75rem"></Skeleton>
+        )
+        )}
         <div className="flex-1">{children}</div>
       </div>
     </>

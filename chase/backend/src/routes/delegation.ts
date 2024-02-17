@@ -3,7 +3,7 @@ import { db } from "../../prisma/db";
 import { committeeRoleGuard } from "../auth/guards/committeeRoles";
 import { conferenceRoleGuard } from "../auth/guards/conferenceRoles";
 import { openApiTag } from "../util/openApiTags";
-import { Delegation, Nation } from "../../prisma/generated/schema";
+import { CommitteeMember, Delegation, Nation } from "../../prisma/generated/schema";
 
 const DelegationBody = t.Pick(Nation, ["alpha3Code"]);
 
@@ -147,4 +147,36 @@ export const delegation = new Elysia({
         tags: [openApiTag(import.meta.path)],
       },
     },
-  );
+  )
+
+  // Presence
+  .post(
+    "/delegation/:delegationId/presence/:memberId",
+    ({ body, params: { delegationId, memberId } }) => {
+      return db.delegation.update({
+        where: {
+          id: delegationId,
+        },
+        data: {
+          members: {
+            update: {
+              where: {
+                id: memberId,
+              },
+              data: {
+                presence: body.presence,
+              },
+            },
+          },
+        },
+      });
+    },
+    {
+      hasConferenceRole: ["ADMIN"],
+      body: t.Pick(CommitteeMember, ["presence"]),
+      detail: {
+        description: "Update a member's presence in a delegation",
+        tags: [openApiTag(import.meta.path)],
+      },
+    },
+  )

@@ -1,10 +1,9 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import HeaderTemplate, { HeaderInfoBox } from "@/components/header_template";
 import WidgetBoxTemplate from "@/components/widget_box_template";
 import { ScrollPanel } from "primereact/scrollpanel";
 import { SelectButton } from "primereact/selectbutton";
-import { Attendance } from "@/custom_types/custom_types";
 import WidgetTemplate from "@/components/widget_template";
 import getCountryNameByCode from "@/misc/get_country_name_by_code";
 import { NormalFlag as Flag } from "@/components/flag_templates";
@@ -15,15 +14,17 @@ import {
   faUserXmark,
   faUserClock,
 } from "@fortawesome/pro-solid-svg-icons";
-import { attendanceTestData } from "@/test_data";
 import { IconProp } from "@fortawesome/fontawesome-svg-core";
 import { backend } from "@/services/backend";
 import { toastError } from "@/fetching/fetching_utils";
+import { $Enums } from "../../../../../../../../backend/prisma/generated/client";
+import { Toast } from "primereact/toast";
+import PresenceWidget from "@/components/attendance/presence_widget";
 
 interface AttendanceButtonOptions {
   icon: IconProp;
   label: string;
-  value: "present" | "excused" | "absent";
+  value: $Enums.Presence;
 }
 
 type DelegationData = Awaited<ReturnType<typeof backend.conference["conferenceId"]["committee"]["committeeId"]["delegations"]["get"]>>["data"];
@@ -37,26 +38,28 @@ export default function ChairAttendees(
 ) {
   const { LL, locale } = useI18nContext();
 
-  const [data, setData] = useState<DelegationData[]>(null);
+  const [data, setData] = useState<DelegationData>([]);
   const [presentAttendees, setPresentAttendees] = useState<number>(0);
   const [excusedAttendees, setExcusedAttendees] = useState<number>(0);
   const [absentAttendees, setAbsentAttendees] = useState<number>(0);
+
+  const toast = useRef<Toast>(null);
 
   const attendanceOptions: AttendanceButtonOptions[] = [
     {
       icon: faUserCheck as IconProp,
       label: LL.chairs.attendance.PRESENT(),
-      value: "present",
+      value: "PRESENT",
     },
     {
       icon: faUserClock as IconProp,
       label: LL.chairs.attendance.EXCUSED(),
-      value: "excused",
+      value: "EXCUSED",
     },
     {
       icon: faUserXmark as IconProp,
       label: LL.chairs.attendance.ABSENT(),
-      value: "absent",
+      value: "ABSENT",
     },
   ];
 
@@ -71,15 +74,42 @@ export default function ChairAttendees(
       });
   }
 
-  const countGroup = (group: "present" | "excused" | "absent") => {
+  useEffect(() => {
+    getDelegationData();
+    const intervalAPICall = setInterval(() => {
+      getDelegationData();
+    }, 5000);
+    return () => clearInterval(intervalAPICall);
+  }, []);
+
+  const countGroup = (group: "PRESENT" | "EXCUSED" | "ABSENT") => {
     return data?.filter((item) => item.members[0].presence === group).length ?? 0;
   };
 
   useEffect(() => {
-    setPresentAttendees(countGroup("present"));
-    setExcusedAttendees(countGroup("excused"));
-    setAbsentAttendees(countGroup("absent"));
+    setPresentAttendees(countGroup("PRESENT"));
+    setExcusedAttendees(countGroup("EXCUSED"));
+    setAbsentAttendees(countGroup("ABSENT"));
   }, [data]);
+
+
+  async function updatePresence(
+    delegationId: string,
+    memberId: string,
+    presence: $Enums.Presence
+  ) {
+    await backend.conference[params.conferenceId].delegation[delegationId].presence[memberId]
+      .post({
+        presence,
+      })
+      .then(() => {
+        getDelegationData();
+      })
+      .catch((error) => {
+        toastError(toast, LL, error);
+      });
+  }
+
 
   const justifyTemplate = (option: AttendanceButtonOptions) => {
     return (
@@ -91,104 +121,40 @@ export default function ChairAttendees(
     );
   };
 
-  const MajorityInfo = ({
-    name,
-    majorityInPercent: majorityInDecimal,
-  }: {
-    name: string;
-    majorityInPercent: number;
-  }) => {
-    const majorityNeeded = (attendees: number) => {
-      return Math.ceil(attendees * majorityInDecimal);
-    };
-
-    return (
-      <HeaderInfoBox>
-        <div className="flex items-center">{name}</div>
-        <div className="flex items-center mt-2 text-2xl font-bold tabular-nums">
-          {majorityNeeded(presentAttendees)}
-        </div>
-      </HeaderInfoBox>
-    );
-  };
-
-  const CounterCell = ({
-    count,
-    lable,
-    icon,
-  }: {
-    count: number;
-    lable: string;
-    icon: IconProp;
-  }) => {
-    return (
-      <>
-        <div className="flex justify-self-center items-center">
-          <FontAwesomeIcon icon={icon} className="mr-2" />
-        </div>
-        <div className="flex items-start">{lable}:</div>
-        <div className="font-bold justify-self-center items-center ml-3 tabular-nums">
-          {count}
-        </div>
-      </>
-    );
-  };
-
   return (
     <>
+      <Toast ref={toast} />
       <div className="flex-1 flex flex-col">
         <HeaderTemplate>
-          <div className="flex-1 flex gap-4 h-full justify-center">
-            <HeaderInfoBox>
-              <div
-                className="grid"
-                style={{ gridTemplateColumns: "auto 1fr auto" }}
-              >
-                <CounterCell
-                  count={presentAttendees}
-                  lable={LL.chairs.attendance.PRESENT()}
-                  icon={faUserCheck as IconProp}
-                />
-                <CounterCell
-                  count={excusedAttendees}
-                  lable={LL.chairs.attendance.EXCUSED()}
-                  icon={faUserClock as IconProp}
-                />
-                <CounterCell
-                  count={absentAttendees}
-                  lable={LL.chairs.attendance.ABSENT()}
-                  icon={faUserXmark as IconProp}
-                />
-              </div>
-            </HeaderInfoBox>
-            <MajorityInfo name="1/2" majorityInPercent={0.50001} />
-            <MajorityInfo name="2/3" majorityInPercent={0.66666} />
-          </div>
+          <PresenceWidget
+            presentAttendees={presentAttendees}
+            excusedAttendees={excusedAttendees}
+            absentAttendees={absentAttendees}
+          />
         </HeaderTemplate>
         <ScrollPanel className="flex-1 overflow-y-auto custom-scrollbar">
-          <div className="flex-1 flex p-4 gap-4 flex-col">
-            <WidgetTemplate cardTitle={LL.chairs.attendance.HEADLINE()}>
+          <div className="flex-1 flex p-4 gap-4 flex-col items-center">
+            <WidgetTemplate
+              cardTitle={LL.chairs.attendance.HEADLINE()}
+              additionalClassNames="max-w-[600px]"
+            >
               {data?.map((attendee, index) => (
                 <WidgetBoxTemplate>
-                  <Flag countryCode={attendee.country} />
+                  <Flag countryCode={attendee.nation.alpha3Code} />
                   <div className="flex flex-col justify-center">
                     <div className="text-sm font-bold text-gray-text dark:text-primary-800">
-                      {getCountryNameByCode(attendee.country, locale)}
+                      <span className="mr-2">
+                        {getCountryNameByCode(attendee.nation.alpha3Code, locale)}
+                      </span>
                     </div>
                   </div>
                   <div className="flex-1" />
                   <SelectButton
-                    value={attendee.present}
-                    onChange={(e) => {
-                      setData((prevData) =>
-                        prevData.map((item, i) =>
-                          i === index ? { ...item, present: e.value } : item,
-                        ),
-                      );
-                    }}
+                    value={attendee.members[0].presence}
+                    onChange={(e) => updatePresence(attendee.id, attendee.members[0].id, e.value)}
                     options={attendanceOptions}
                     itemTemplate={justifyTemplate}
-                    unselectable={false}
+                    allowEmpty={false}
                   />
                 </WidgetBoxTemplate>
               ))}

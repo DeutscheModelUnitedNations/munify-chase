@@ -183,6 +183,7 @@ export const committee = new Elysia({
             },
             select: {
               presence: true,
+              id: true,
             },
           }
         }

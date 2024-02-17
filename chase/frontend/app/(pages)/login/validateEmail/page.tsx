@@ -75,7 +75,7 @@ export default () => {
         <FontAwesomeIcon icon={faSpinnerThird} spin={true} size="2x" />
       ) : undefined}
       {errored === false ? (
-        <Link href={`/pages/login?email=${email}`}>
+        <Link href={`/login?email=${email}`}>
           <Button
             type="button"
             label={LL.login.LOGIN_NOW()}

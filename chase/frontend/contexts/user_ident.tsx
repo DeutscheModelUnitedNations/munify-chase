@@ -20,8 +20,13 @@ export const UserIdentProvider = ({ children }: { children: React.ReactNode }) =
     backend.auth.myInfo
       .get()
       .then((res) => {
+        // if (res.status > 400) {
+        //   router.push("/login");
+        //   return;
+        // }
+
         setUserIdent(res.data);
-        console.log(res.data);
+
       })
       .catch((err) => {
         router.push("/login");

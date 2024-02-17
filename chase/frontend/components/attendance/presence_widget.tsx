@@ -1,23 +1,69 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useI18nContext } from "@/i18n/i18n-react";
 import { HeaderInfoBox } from "../header_template";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { IconProp } from "@fortawesome/fontawesome-svg-core";
 import { faUserCheck, faUserClock, faUserXmark } from "@fortawesome/pro-solid-svg-icons";
+import { backend } from "@/services/backend";
+import { toastError } from "@/fetching/fetching_utils";
+import { Toast } from "primereact/toast";
+import { $Enums } from "../../../backend/prisma/generated/client";
+
+type DelegationData = Awaited<ReturnType<typeof backend.conference["conferenceId"]["committee"]["committeeId"]["delegations"]["get"]>>["data"];
 
 export default function PresenceWidget({
-  presentAttendees,
-  excusedAttendees,
-  absentAttendees,
+  conferenceId,
+  committeeId,
   showExcusedSeperately = false,
+  forceUpdate,
 }: {
-  presentAttendees: number;
-  excusedAttendees: number;
-  absentAttendees: number;
+  conferenceId: string;
+  committeeId: string;
   showExcusedSeperately?: boolean;
+  forceUpdate?: boolean;
 }) {
   const { LL, locale } = useI18nContext();
+  const toast = useRef(null);
 
+  const [delegationData, setDelegationData] = useState<DelegationData>([]);
+  const [presentAttendees, setPresentAttendees] = useState(0);
+  const [excusedAttendees, setExcusedAttendees] = useState(0);
+  const [absentAttendees, setAbsentAttendees] = useState(0);
+
+  async function getDelegationData() {
+    await backend.conference[conferenceId].committee[committeeId].delegations
+      .get()
+      .then((response) => {
+        setDelegationData(response.data);
+      })
+      .catch((error) => {
+        toastError(toast, LL, error);
+      });
+  }
+
+  useEffect(() => {
+    getDelegationData();
+    const intervalAPICall = setInterval(() => {
+      getDelegationData();
+    }, 5000);
+    return () => clearInterval(intervalAPICall);
+  }, []);
+
+  useEffect(() => {
+    if (forceUpdate) {
+      getDelegationData();
+    }
+  }, [forceUpdate]);
+
+  const countGroup = (group: $Enums.Presence) => {
+    return delegationData?.filter((item) => item.members[0].presence === group).length ?? 0;
+  };
+
+  useEffect(() => {
+    setPresentAttendees(countGroup("PRESENT"));
+    setExcusedAttendees(countGroup("EXCUSED"));
+    setAbsentAttendees(countGroup("ABSENT"));
+  }, [delegationData]);
 
 
   const MajorityInfo = ({
@@ -65,6 +111,7 @@ export default function PresenceWidget({
 
   return (
     <div className="flex-1 flex gap-4 h-full justify-center">
+      <Toast ref={toast} />
       <HeaderInfoBox>
         <div
           className="grid"

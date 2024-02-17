@@ -35,7 +35,7 @@ export default function participant_dashboard({
   const [myDelegationData, setMyDelegationData] = useState<MyDelegation | null>(null);
   const toast = useRef<Toast>(null);
 
-  const USER_ID_HARDCODED = "d9e113de-eafa-4a14-bc58-365cc56a4999"; // TODO replace with actual user id logic
+  const USER_ID_HARDCODED = "935a0051-39f4-4abe-abe8-42835e31b9d0"; // TODO replace with actual user id logic
 
   async function getMyDelegationData() {
     await backend.conference[params.conferenceId].user[USER_ID_HARDCODED].delegation

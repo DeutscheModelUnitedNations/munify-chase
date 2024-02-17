@@ -46,21 +46,35 @@ export const agendaItem = new Elysia({
   )
   .post(
     "/agendaItem",
-    ({ body, params: { conferenceId, committeeId } }) => {
-      return db.agendaItem
-        .create({
-          data: {
-            committee: {
-              connect: {
-                id: committeeId,
-                conferenceId,
-              },
+    async ({ body, params: { conferenceId, committeeId } }) => {
+      const agendaItem = await db.agendaItem.create({
+        data: {
+          committee: {
+            connect: {
+              id: committeeId,
+              conferenceId,
             },
-            title: body.title,
-            description: body.description,
           },
-        })
+          title: body.title,
+          description: body.description,
+        },
+      })
         .then((a) => ({ ...a, description: a.description || undefined }));
+      const _speakersLists = await db.speakersList.createMany({
+        data: [
+          {
+            type: "SPEAKERS_LIST",
+            agendaItemId: agendaItem.id,
+            speakingTime: 180,
+          },
+          {
+            type: "COMMENT_LIST",
+            agendaItemId: agendaItem.id,
+            speakingTime: 30,
+          }
+        ]
+      })
+      return agendaItem;
     },
     {
       hasConferenceRole: ["ADMIN"],

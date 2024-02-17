@@ -15,7 +15,6 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPodium } from "@fortawesome/pro-solid-svg-icons";
 
 type Committee = Awaited<ReturnType<typeof backend.conference["conferenceId"]["committee"]["committeeId"]["get"]>>["data"];
-type DelegationData = Awaited<ReturnType<typeof backend.conference["conferenceId"]["committee"]["committeeId"]["delegations"]["get"]>>["data"];
 type AgendaItems = Awaited<ReturnType<typeof backend.conference["conferenceId"]["committee"]["committeeId"]["agendaItem"]["get"]>>["data"];
 
 
@@ -27,12 +26,7 @@ export default function CommitteePresentationMode({
   const { LL, locale } = useI18nContext();
 
   const [committeeData, setCommitteeData] = useState<Committee | null>(null);
-  const [delegationData, setDelegationData] = useState<DelegationData>([]);
   const [agendaItem, setAgendaItem] = useState<AgendaItems | null>(null);
-
-  const [presentAttendees, setPresentAttendees] = useState<number>(0);
-  const [excusedAttendees, setExcusedAttendees] = useState<number>(0);
-  const [absentAttendees, setAbsentAttendees] = useState<number>(0);
 
   const toast = useRef(null);
 
@@ -41,18 +35,6 @@ export default function CommitteePresentationMode({
       .get()
       .then((response) => {
         setCommitteeData(response.data);
-      })
-      .catch((error) => {
-        toastError(toast, LL, error);
-      });
-  }
-
-
-  async function getDelegationData() {
-    await backend.conference[params.conferenceId].committee[params.committeeId].delegations
-      .get()
-      .then((response) => {
-        setDelegationData(response.data);
       })
       .catch((error) => {
         toastError(toast, LL, error);
@@ -73,25 +55,14 @@ export default function CommitteePresentationMode({
 
   useEffect(() => {
     getCommitteeData();
-    getDelegationData();
     getAgendaItems();
     const intervalAPICall = setInterval(() => {
       getCommitteeData();
-      getDelegationData();
       getAgendaItems();
     }, 5000);
     return () => clearInterval(intervalAPICall);
   }, []);
 
-  const countGroup = (group: "PRESENT" | "EXCUSED" | "ABSENT") => {
-    return delegationData?.filter((item) => item.members[0].presence === group).length ?? 0;
-  };
-
-  useEffect(() => {
-    setPresentAttendees(countGroup("PRESENT"));
-    setExcusedAttendees(countGroup("EXCUSED"));
-    setAbsentAttendees(countGroup("ABSENT"));
-  }, [delegationData]);
 
   return (
     <div className="bg-primary-900 p-4 h-screen">
@@ -113,9 +84,8 @@ export default function CommitteePresentationMode({
             cardTitle={LL.participants.dashboard.widgetHeadlines.PRESENCE()}
           >
             <PresenceWidget
-              presentAttendees={presentAttendees}
-              excusedAttendees={excusedAttendees}
-              absentAttendees={absentAttendees}
+              conferenceId={params.conferenceId}
+              committeeId={params.committeeId}
             />
           </WidgetTemplate>
           <TimerWidget

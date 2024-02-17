@@ -20,6 +20,8 @@ import SpeakersListWidget from "@/components/dashboard/speakers_list";
 import TimerWidget from "@/components/dashboard/timer";
 import { set } from "react-hook-form";
 import WhiteboardWidget from "@/components/dashboard/whiteboard";
+import PresenceWidget from "@/components/attendance/presence_widget";
+import WidgetTemplate from "@/components/widget_template";
 
 type Committee = Awaited<ReturnType<typeof backend.conference["conferenceId"]["committee"]["committeeId"]["get"]>>["data"];
 type AgendaItems = Awaited<ReturnType<typeof backend.conference["conferenceId"]["committee"]["committeeId"]["agendaItem"]["get"]>>["data"];
@@ -129,6 +131,13 @@ export default function ParticipantDashboard(
                   <h1 className="text-2xl font-bold">
                     {LL.chairs.dashboard.overview.TITLE()}
                   </h1>
+                  <WidgetTemplate>
+                    <PresenceWidget
+                      conferenceId={params.conferenceId}
+                      committeeId={params.committeeId}
+                      showExcusedSeperately={true}
+                    />
+                  </WidgetTemplate>
                   <TimerWidget
                     conferenceId={params.conferenceId}
                     committeeId={params.committeeId}

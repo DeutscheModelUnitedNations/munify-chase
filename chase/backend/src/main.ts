@@ -12,6 +12,7 @@ import { auth } from "./routes/auth/auth";
 import { agendaItem } from "./routes/agendaItem";
 import { delegation } from "./routes/delegation";
 import { user } from "./routes/user";
+import { speakersListGeneral } from "./routes/speakersList/general";
 
 const m = new Elysia({
   cookie: {
@@ -47,6 +48,7 @@ const m = new Elysia({
   .use(committee)
   .use(delegation)
   .use(agendaItem)
+  .use(speakersListGeneral)
   .use(user)
   .use(auth)
   .use(baseData);
@@ -72,9 +74,8 @@ setTimeout(() => {
   console.info(
     `
       
-      Swagger documentation available at http://localhost:${
-        process.env.PORT ?? "3001"
-      }/${appConfiguration.documentationPath}
+      Swagger documentation available at http://localhost:${process.env.PORT ?? "3001"
+    }/${appConfiguration.documentationPath}
       
       `,
   );

@@ -157,6 +157,7 @@ model CommitteeMember {
   presence      Presence       @default(ABSENT)
 
   @@unique([committeeId, delegationId])
+  @@unique([committeeId, userId])
 }
 
 /// An agenda item in a committee. This is a topic of discussion in a committee.
@@ -187,6 +188,13 @@ model SpeakersList {
   agendaItemId String
   type         SpeakersListCategory
   speakers     CommitteeMember[]
+  /// The time in seconds that a speaker has to speak
+  speakingTime Int
+  timestamp    DateTime?
+  isPaused     Boolean              @default(true)
+  isClosed     Boolean              @default(false)
+
+  @@unique([agendaItemId, type])
 }
 
 //TODO should we allow for customizing these per conference and just allow loading template at creation?

@@ -39,9 +39,7 @@ export default function ChairAttendees(
   const { LL, locale } = useI18nContext();
 
   const [data, setData] = useState<DelegationData>([]);
-  const [presentAttendees, setPresentAttendees] = useState<number>(0);
-  const [excusedAttendees, setExcusedAttendees] = useState<number>(0);
-  const [absentAttendees, setAbsentAttendees] = useState<number>(0);
+  const [forcePresenceWidgetUpdate, setForcePresenceWidgetUpdate] = useState(false);
 
   const toast = useRef<Toast>(null);
 
@@ -82,17 +80,6 @@ export default function ChairAttendees(
     return () => clearInterval(intervalAPICall);
   }, []);
 
-  const countGroup = (group: "PRESENT" | "EXCUSED" | "ABSENT") => {
-    return data?.filter((item) => item.members[0].presence === group).length ?? 0;
-  };
-
-  useEffect(() => {
-    setPresentAttendees(countGroup("PRESENT"));
-    setExcusedAttendees(countGroup("EXCUSED"));
-    setAbsentAttendees(countGroup("ABSENT"));
-  }, [data]);
-
-
   async function updatePresence(
     delegationId: string,
     memberId: string,
@@ -103,6 +90,7 @@ export default function ChairAttendees(
         presence,
       })
       .then(() => {
+        setForcePresenceWidgetUpdate(!forcePresenceWidgetUpdate);
         getDelegationData();
       })
       .catch((error) => {
@@ -127,9 +115,10 @@ export default function ChairAttendees(
       <div className="flex-1 flex flex-col">
         <HeaderTemplate>
           <PresenceWidget
-            presentAttendees={presentAttendees}
-            excusedAttendees={excusedAttendees}
-            absentAttendees={absentAttendees}
+            conferenceId={params.conferenceId}
+            committeeId={params.committeeId}
+            showExcusedSeperately={true}
+            forceUpdate={forcePresenceWidgetUpdate}
           />
         </HeaderTemplate>
         <ScrollPanel className="flex-1 overflow-y-auto custom-scrollbar">

@@ -51,18 +51,17 @@ export default function TimerWidget({
   const [category, setCategory] = useState<Category | null>(null);
   const [headline, setHeadline] = useState<string | null>(null);
   const [until, setUntil] = useState<Date | null>(null);
-  const [didShowToast, setDidShowToast] = useState(false);
+  const [timerOver, setTimerOver] = useState(false);
+  const [toastShown, setToastShown] = useState(false);
 
-  const showTimerToast = () => {
-    const message = {
-      summary: LL.participants.dashboard.timerWidget.TOAST_HEADLINE(),
-      detail: LL.participants.dashboard.timerWidget.TOAST_MESSAGE(),
-      severity: "info" as const,
-      sticky: true,
-    };
-    if (!noAlert && !didShowToast) {
-      showToast(message)
-      setDidShowToast(true);
+  const timerToast = () => {
+    if (!noAlert) {
+      toast.current?.show({
+        summary: LL.participants.dashboard.timerWidget.TOAST_HEADLINE(),
+        detail: LL.participants.dashboard.timerWidget.TOAST_MESSAGE(),
+        severity: "info" as const,
+        sticky: true,
+      });
     };
   };
 
@@ -70,9 +69,9 @@ export default function TimerWidget({
     await backend.conference[conferenceId].committee[committeeId]
       .get()
       .then((response) => {
-        setCategory(response.data?.status ?? null);
-        setHeadline(response.data?.statusHeadline ?? null);
-        setUntil(response.data?.statusUntil ? new Date(response.data.statusUntil) : null);
+        if (response.data?.status !== category) setCategory(response.data?.status ?? null);
+        if (response.data?.statusHeadline !== headline) setHeadline(response.data?.statusHeadline ?? null);
+        if (response.data?.statusUntil !== until) setUntil(response.data?.statusUntil ?? null);
       })
       .catch((error) => {
         toastError(toast, LL, error);
@@ -88,13 +87,22 @@ export default function TimerWidget({
   }, []);
 
   useEffect(() => {
-    setDidShowToast(false);
-  }, [category, until, headline]);
+    if (timerOver && !toastShown) {
+      timerToast();
+      setToastShown(false);
+    }
+  }, [timerOver]);
+
+  useEffect(() => {
+    setToastShown(false);
+    setTimerOver(false);
+    toast.current?.clear();
+  }, [until]);
 
   const timeStamp = () => {
     if (until) {
       try {
-        return until.toLocaleTimeString("de-DE", {
+        return new Date(until).toLocaleTimeString("de-DE", {
           hour: "2-digit",
           minute: "2-digit",
         });
@@ -176,7 +184,7 @@ export default function TimerWidget({
                   )}
                   {(category === "INFORMAL" || category === "PAUSE") && until && (
                     <div className="text-4xl font-bold my-2 tabular-nums">
-                      <Timer until={until} showTimerToast={showTimerToast} />
+                      <Timer until={new Date(until)} setTimerOver={setTimerOver} />
                     </div>
                   )}
                 </div>

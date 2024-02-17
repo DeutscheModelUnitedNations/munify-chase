@@ -1,11 +1,11 @@
 import { useEffect, useState } from "react";
 
-export default function Timer ({
+export default function Timer({
   until,
-  showTimerToast,
+  setTimerOver,
 }: {
   until: Date | null | undefined;
-  showTimerToast?: () => void;
+  setTimerOver?: React.Dispatch<React.SetStateAction<boolean>>;
 }) {
   const [timeLeft, setTimeLeft] = useState<number>(0);
 
@@ -17,7 +17,7 @@ export default function Timer ({
           setTimeLeft(diff);
         } else {
           setTimeLeft(0);
-          showTimerToast && showTimerToast();
+          setTimerOver && setTimerOver(true)
           clearInterval(interval);
         }
       }, 1000);

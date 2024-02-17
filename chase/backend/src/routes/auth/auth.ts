@@ -5,11 +5,13 @@ import { sendAccountConfirmationEmail } from "../../email/email";
 import { nanoid } from "nanoid";
 import { appConfiguration } from "../../util/config";
 import { passkeys } from "./passkeys";
+import { loggedIn } from "../../auth/guards/loggedIn";
 
 export const auth = new Elysia({
   prefix: "/auth",
 })
   .use(passkeys)
+  .use(loggedIn)
   .get(
     "/userState",
     async ({ query: { email } }) => {
@@ -50,6 +52,26 @@ export const auth = new Elysia({
       detail: {
         description:
           "Returns some info on the user in the system. Can be used to check if the user is existing and what auth type they use.",
+        tags: [openApiTag(import.meta.path)],
+      },
+    },
+  ).get(
+    "/myInfo",
+    async ({ session }) => {
+      return {
+        email: session.userData.email,
+        id: session.userData.id
+      }
+    },
+    {
+      mustBeLoggedIn: true,
+      response: t.Object({
+        email: t.String(),
+        id: t.String()
+      }),
+      detail: {
+        description:
+          "Returns the user info when they are logged in",
         tags: [openApiTag(import.meta.path)],
       },
     },

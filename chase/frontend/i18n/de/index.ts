@@ -272,6 +272,7 @@ const de = {
         WHITEBOARD: "Whiteboard",
         DOCUMENTS: "Dokumente",
         ACTIONS: "Anfrage senden",
+        PRESENCE: "Mehrheitsverhältnisse",
       },
       timerWidget: {
         UNTIL: "bis {{0}} Uhr",

@@ -270,6 +270,7 @@ const en = {
         WHITEBOARD: "Whiteboard",
         DOCUMENTS: "Documents",
         ACTIONS: "Send Request",
+        PRESENCE: "Majorities",
       },
       timerWidget: {
         UNTIL: "until {{0}}",

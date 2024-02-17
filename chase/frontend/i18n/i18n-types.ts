@@ -785,6 +785,10 @@ type RootTranslation = {
 				 * S​e​n​d​ ​R​e​q​u​e​s​t
 				 */
 				ACTIONS: string
+				/**
+				 * M​a​j​o​r​i​t​i​e​s
+				 */
+				PRESENCE: string
 			}
 			timerWidget: {
 				/**
@@ -2044,6 +2048,10 @@ export type TranslationFunctions = {
 				 * Send Request
 				 */
 				ACTIONS: () => LocalizedString
+				/**
+				 * Majorities
+				 */
+				PRESENCE: () => LocalizedString
 			}
 			timerWidget: {
 				/**

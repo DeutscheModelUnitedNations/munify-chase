@@ -18,6 +18,8 @@ import { Calendar } from "primereact/calendar";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import SpeakersListWidget from "@/components/dashboard/speakers_list";
 import TimerWidget from "@/components/dashboard/timer";
+import { set } from "react-hook-form";
+import WhiteboardWidget from "@/components/dashboard/whiteboard";
 
 type Committee = Awaited<ReturnType<typeof backend.conference["conferenceId"]["committee"]["committeeId"]["get"]>>["data"];
 type AgendaItems = Awaited<ReturnType<typeof backend.conference["conferenceId"]["committee"]["committeeId"]["agendaItem"]["get"]>>["data"];
@@ -35,7 +37,17 @@ export default function ParticipantDashboard(
   const [selectedStatus, setSelectedStatus] = useState<$Enums.CommitteeStatus | null>(null);
   const [selectedStatusUntil, setSelectedStatusUntil] = useState<Date | null>(null);
   const [selectedStatusCustomText, setSelectedStatusCustomText] = useState<string | null>("");
+  const [selectedStatusButtonLoading, setSelectedStatusButtonLoading] = useState(false);
   const toast = useRef<Toast>(null);
+
+  const TEMPLATE_TIMER_TIMEFRAMES = [
+    { label: "10", value: 10 * 60 * 1000 },
+    { label: "15", value: 15 * 60 * 1000 },
+    { label: "20", value: 20 * 60 * 1000 },
+    { label: "30", value: 30 * 60 * 1000 },
+    { label: "45", value: 45 * 60 * 1000 },
+    { label: "60", value: 60 * 60 * 1000 },
+  ]
 
   async function getCommitteeData() {
     await backend.conference[params.conferenceId].committee[params.committeeId]
@@ -83,6 +95,7 @@ export default function ParticipantDashboard(
   }
 
   async function updateStatus() {
+    setSelectedStatusButtonLoading(false);
     await backend.conference[params.conferenceId].committee[params.committeeId].status
       .post({
         status: selectedStatus ?? undefined,
@@ -91,6 +104,7 @@ export default function ParticipantDashboard(
       })
       .then(() => {
         getCommitteeData();
+        setSelectedStatusButtonLoading(false);
       })
       .catch((error) => {
         toastError(toast, LL, error);
@@ -120,6 +134,9 @@ export default function ParticipantDashboard(
                     headline={committeeData?.statusHeadline}
                     until={committeeData?.statusUntil ? new Date(committeeData.statusUntil) : null}
                   />
+                  <WhiteboardWidget
+                    value={committeeData?.whiteboardContent}
+                  />
                 </div>
               </div>
               <div className="w-full p-4 flex flex-col justify-stretch gap-4">
@@ -127,7 +144,7 @@ export default function ParticipantDashboard(
                   {LL.chairs.dashboard.configurations.TITLE()}
                 </h1>
                 <ConfigWrapper title={LL.chairs.dashboard.configurations.agenda.TITLE()} description={LL.chairs.dashboard.configurations.agenda.DESCRIPTION()}>
-                  <div className="flex gap-2">
+                  <div className="flex gap-2 w-full">
                     <Button
                       faIcon={faPencil}
                       onClick={() => {
@@ -142,6 +159,7 @@ export default function ParticipantDashboard(
                       onChange={(e) => activateAgendaItem(e.value)}
                       placeholder={LL.chairs.dashboard.configurations.agenda.PLACEHOLDER()}
                       loading={!agendaItem}
+                      className="w-full"
                     />
                   </div>
                 </ConfigWrapper>
@@ -172,6 +190,19 @@ export default function ParticipantDashboard(
                         className="flex-1"
                       />
                     </div>
+                    <div className="w-full flex gap-2">
+                      {TEMPLATE_TIMER_TIMEFRAMES.map((timeframe) => (
+                        <Button
+                          label={timeframe.label}
+                          onClick={() => {
+                            setSelectedStatusUntil(new Date(Date.now() + timeframe.value));
+                          }}
+                          size="small"
+                          className="flex-1"
+                        />
+                      ))}
+
+                    </div>
                     <InputText
                       value={selectedStatusCustomText ?? undefined}
                       onChange={(e) => setSelectedStatusCustomText(e.target.value)}
@@ -184,7 +215,10 @@ export default function ParticipantDashboard(
                       label={LL.chairs.dashboard.configurations.statusTimer.BUTTON()}
                       onClick={() => {
                         updateStatus();
+                        setSelectedStatusCustomText("");
+                        setSelectedStatusUntil(null);
                       }}
+                      loading={selectedStatusButtonLoading}
                     />
                   </div>
                 </ConfigWrapper>

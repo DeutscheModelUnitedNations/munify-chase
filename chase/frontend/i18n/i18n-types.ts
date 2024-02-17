@@ -1130,6 +1130,18 @@ type RootTranslation = {
 			 * R​e​s​e​t
 			 */
 			RESET_BUTTON: string
+			/**
+			 * W​h​i​t​e​b​o​a​r​d​ ​s​a​v​e​d
+			 */
+			SUCCESS_TOAST: string
+			/**
+			 * W​h​i​t​e​b​o​a​r​d​ ​i​s​ ​e​m​p​t​y
+			 */
+			NO_CONTENT_TOAST: string
+			/**
+			 * I​t​ ​s​e​e​m​s​ ​l​i​k​e​ ​t​h​e​r​e​ ​w​a​s​ ​a​n​ ​e​r​r​o​r​ ​w​h​i​l​e​ ​l​o​a​d​i​n​g​ ​t​h​e​ ​w​h​i​t​e​b​o​a​r​d​ ​o​r​ ​t​h​e​ ​w​h​i​t​e​b​o​a​r​d​ ​i​s​ ​e​m​p​t​y​.​ ​P​l​e​a​s​e​ ​t​r​y​ ​t​o​ ​r​e​l​o​a​d​ ​t​h​e​ ​p​a​g​e​.
+			 */
+			NO_CONTENT_TOAST_DETAILS: string
 		}
 		speakersList: {
 			buttons: {
@@ -2377,6 +2389,18 @@ export type TranslationFunctions = {
 			 * Reset
 			 */
 			RESET_BUTTON: () => LocalizedString
+			/**
+			 * Whiteboard saved
+			 */
+			SUCCESS_TOAST: () => LocalizedString
+			/**
+			 * Whiteboard is empty
+			 */
+			NO_CONTENT_TOAST: () => LocalizedString
+			/**
+			 * It seems like there was an error while loading the whiteboard or the whiteboard is empty. Please try to reload the page.
+			 */
+			NO_CONTENT_TOAST_DETAILS: () => LocalizedString
 		}
 		speakersList: {
 			buttons: {

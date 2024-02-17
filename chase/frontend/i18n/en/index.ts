@@ -396,6 +396,9 @@ const en = {
     whiteboard: {
       SAVE_BUTTON: "Save and publish",
       RESET_BUTTON: "Reset",
+      SUCCESS_TOAST: "Whiteboard saved",
+      NO_CONTENT_TOAST: "Whiteboard is empty",
+      NO_CONTENT_TOAST_DETAILS: "It seems like there was an error while loading the whiteboard or the whiteboard is empty. Please try to reload the page.",
     },
     speakersList: {
       buttons: {

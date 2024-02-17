@@ -16,24 +16,24 @@ export default function WhiteboardWidget({ value }: { value?: string }) {
   const { LL } = useI18nContext();
 
   return (
-      <WidgetTemplate
-        cardTitle={LL.participants.dashboard.widgetHeadlines.WHITEBOARD()}
+    <WidgetTemplate
+      cardTitle={LL.participants.dashboard.widgetHeadlines.WHITEBOARD()}
+    >
+      {/* TODO find a better solution for scaling the Whitboard Box */}
+      <div
+        className="flex-1 flex bg-white rounded-md overflow-hidden"
+        style={{ maxHeight: "50vh" }}
       >
-        {/* TODO find a better solution for scaling the Whitboard Box */}
-        <div
-          className="flex-1 flex bg-white rounded-md overflow-hidden"
-          style={{ maxHeight: "50vh" }}
-        >
-          {value ? 
+        {value ?
           <Whiteboard
             style={{ border: "none" }}
             value={value}
             readOnly={true}
           />
           :
-            <Skeleton width="100%" height="10rem" />
-          }
-        </div>
-      </WidgetTemplate>
+          <Skeleton width="100%" height="10rem" />
+        }
+      </div>
+    </WidgetTemplate>
   );
 }

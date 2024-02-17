@@ -196,3 +196,24 @@ export const committee = new Elysia({
       },
     },
   )
+
+  // Whiteboard
+  .post(
+    "/committee/:committeeId/whiteboard",
+    ({ params: { conferenceId, committeeId }, body }) => {
+      return db.committee.update({
+        where: { id: committeeId, conferenceId },
+        data: {
+          whiteboardContent: body.whiteboardContent,
+        },
+      });
+    },
+    {
+      hasConferenceRole: ["ADMIN"],
+      body: t.Pick(Committee, ["whiteboardContent"]),
+      detail: {
+        description: "Update the whiteboard content of a committee by id",
+        tags: [openApiTag(import.meta.path)],
+      },
+    }
+  )

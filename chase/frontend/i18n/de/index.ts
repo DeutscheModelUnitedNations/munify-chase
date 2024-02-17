@@ -402,6 +402,10 @@ const de = {
     whiteboard: {
       SAVE_BUTTON: "Speichern und Veröffentlichen",
       RESET_BUTTON: "Zurücksetzen",
+      SUCCESS_TOAST: "Whiteboard gespeichert",
+      NO_CONTENT_TOAST: "Whiteboard ist leer",
+      NO_CONTENT_TOAST_DETAILS: "Es scheint, als ob beim laden des Whiteboards ein Fehler aufgetreten ist oder das Whiteboard ist leer. Bitte versuche die Seite neu zu laden.",
+
     },
     speakersList: {
       buttons: {

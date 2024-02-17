@@ -17,7 +17,7 @@ export default function ChairWhiteboard({
   setContentFunction,
   ...rest
 }: {
-  value?: string;
+  value?: string | null;
   readOnly?: boolean;
   setContentFunction?: (content: string) => void;
   [key: string]: unknown;
@@ -52,7 +52,7 @@ export default function ChairWhiteboard({
         className="rounded-md"
         showHeader={false}
         readOnly={readOnly}
-        value={value}
+        value={value ?? ""}
         onTextChange={(e) => {
           if (setContentFunction) {
             if (e.htmlValue) setContentFunction(e.htmlValue);

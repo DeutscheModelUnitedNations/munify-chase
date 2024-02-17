@@ -1049,6 +1049,60 @@ type RootTranslation = {
 		 * C​h​a​i​r
 		 */
 		CHAIR: string
+		dashboard: {
+			overview: {
+				/**
+				 * O​v​e​r​v​i​e​w
+				 */
+				TITLE: string
+			}
+			configurations: {
+				/**
+				 * C​o​n​f​i​g​u​r​a​t​i​o​n​s
+				 */
+				TITLE: string
+				agenda: {
+					/**
+					 * A​g​e​n​d​a​ ​I​t​e​m​ ​S​e​l​e​c​t​i​o​n
+					 */
+					TITLE: string
+					/**
+					 * S​e​l​e​c​t​ ​t​h​e​ ​a​g​e​n​d​a​ ​i​t​e​m​ ​y​o​u​ ​w​a​n​t​ ​t​o​ ​a​c​t​i​v​a​t​e​.
+					 */
+					DESCRIPTION: string
+					/**
+					 * N​o​ ​A​g​e​n​d​a​ ​I​t​e​m​ ​S​e​l​e​c​t​e​d
+					 */
+					PLACEHOLDER: string
+				}
+				statusTimer: {
+					/**
+					 * S​t​a​t​u​s​ ​T​i​m​e​r
+					 */
+					TITLE: string
+					/**
+					 * S​e​t​ ​t​h​e​ ​s​t​a​t​u​s​ ​o​f​ ​t​h​e​ ​c​o​m​m​i​t​t​e​e​.​ ​Y​o​u​ ​c​a​n​ ​a​l​s​o​ ​s​e​t​ ​a​ ​c​u​s​t​o​m​ ​n​a​m​e​,​ ​t​h​a​t​ ​o​v​e​r​r​i​d​e​s​ ​t​h​e​ ​d​e​f​a​u​l​t​ ​s​t​a​t​u​s​ ​n​a​m​e​ ​w​h​i​l​e​ ​k​e​e​p​i​n​g​ ​t​h​e​ ​i​c​o​n​ ​(​e​.​g​.​ ​'​L​u​n​c​h​ ​B​r​e​a​k​'​ ​i​n​s​t​e​a​d​ ​o​f​ ​d​e​f​a​u​l​t​ ​'​P​a​u​s​e​'​)​.
+					 */
+					DESCRIPTION: string
+					/**
+					 * S​e​l​e​c​t​ ​a​ ​S​t​a​t​u​s
+					 */
+					PLACEHOLDER_DROPDOWN: string
+					/**
+					 * C​u​s​t​o​m​ ​N​a​m​e​ ​(​o​p​t​i​o​n​a​l​)
+					 */
+					PLACEHOLDER_CUSTOM_TEXT: string
+					/**
+					 * u​n​t​i​l
+					 */
+					PLACEHOLDER_TIME_UNITL: string
+					/**
+					 * S​a​v​e​ ​S​t​a​t​u​s
+					 */
+					BUTTON: string
+				}
+			}
+		}
 		attendance: {
 			/**
 			 * A​t​t​e​n​d​a​n​c​e
@@ -2242,6 +2296,60 @@ export type TranslationFunctions = {
 		 * Chair
 		 */
 		CHAIR: () => LocalizedString
+		dashboard: {
+			overview: {
+				/**
+				 * Overview
+				 */
+				TITLE: () => LocalizedString
+			}
+			configurations: {
+				/**
+				 * Configurations
+				 */
+				TITLE: () => LocalizedString
+				agenda: {
+					/**
+					 * Agenda Item Selection
+					 */
+					TITLE: () => LocalizedString
+					/**
+					 * Select the agenda item you want to activate.
+					 */
+					DESCRIPTION: () => LocalizedString
+					/**
+					 * No Agenda Item Selected
+					 */
+					PLACEHOLDER: () => LocalizedString
+				}
+				statusTimer: {
+					/**
+					 * Status Timer
+					 */
+					TITLE: () => LocalizedString
+					/**
+					 * Set the status of the committee. You can also set a custom name, that overrides the default status name while keeping the icon (e.g. 'Lunch Break' instead of default 'Pause').
+					 */
+					DESCRIPTION: () => LocalizedString
+					/**
+					 * Select a Status
+					 */
+					PLACEHOLDER_DROPDOWN: () => LocalizedString
+					/**
+					 * Custom Name (optional)
+					 */
+					PLACEHOLDER_CUSTOM_TEXT: () => LocalizedString
+					/**
+					 * until
+					 */
+					PLACEHOLDER_TIME_UNITL: () => LocalizedString
+					/**
+					 * Save Status
+					 */
+					BUTTON: () => LocalizedString
+				}
+			}
+		}
 		attendance: {
 			/**
 			 * Attendance

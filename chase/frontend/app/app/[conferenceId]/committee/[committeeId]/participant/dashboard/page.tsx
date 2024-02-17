@@ -16,7 +16,7 @@ import { useRouter } from "next/navigation";
 import { useI18nContext } from "@/i18n/i18n-react";
 import { backend } from "@/services/backend";
 import { Toast } from "primereact/toast";
-import { tostError } from "@/fetching/fetching_utils";
+import { toastError } from "@/fetching/fetching_utils";
 
 type Committee = Awaited<ReturnType<typeof backend.conference["conferenceId"]["committee"]["committeeId"]["get"]>>["data"];
 type AgendaItem = Awaited<ReturnType<typeof backend.conference["conferenceId"]["committee"]["committeeId"]["agendaItem"]["active"]["get"]>>["data"];
@@ -24,8 +24,8 @@ type MyDelegation = Awaited<ReturnType<typeof backend.conference["conferenceId"]
 
 export default function participant_dashboard({
   params
-}:{
-  params: { conferenceId: string; committeeId: string}
+}: {
+  params: { conferenceId: string; committeeId: string }
 }) {
   const Router = useRouter();
   const { LL } = useI18nContext();
@@ -35,43 +35,43 @@ export default function participant_dashboard({
   const [myDelegationData, setMyDelegationData] = useState<MyDelegation | null>(null);
   const toast = useRef<Toast>(null);
 
-  const USER_ID_HARDCODED = "c4e23c2c-1f79-4662-b96f-9b7e66c73da7";
+  const USER_ID_HARDCODED = "02e48ca0-b35d-4a93-bc10-f4a07a8f1666";
 
   async function getMyDelegationData() {
     await backend.conference[params.conferenceId].user[USER_ID_HARDCODED].delegation
-    .get()
-    .then((response) => {
-      setMyDelegationData(response.data);
-    })
-    .catch((error) => {
-      tostError(toast, LL, error);
-    });
+      .get()
+      .then((response) => {
+        setMyDelegationData(response.data);
+      })
+      .catch((error) => {
+        toastError(toast, LL, error);
+      });
   }
 
   async function getCommitteeData() {
     await backend.conference[params.conferenceId].committee[params.committeeId]
-    .get()
-    .then((response) => {
-      setCommitteeData(response.data);
-    })
-    .catch((error) => {
-      tostError(toast, LL, error);
-    });
+      .get()
+      .then((response) => {
+        setCommitteeData(response.data);
+      })
+      .catch((error) => {
+        toastError(toast, LL, error);
+      });
   }
 
   async function getAgendaItem() {
     await backend.conference[params.conferenceId].committee[params.committeeId].agendaItem.active
-    .get()
-    .then((response) => {
-      if (response.error?.status === 404) {
-        setAgendaItem(null);
-        return;
-      }
-      setAgendaItem(response.data);
-    })
-    .catch((error) => {
-      tostError(toast, LL, error);
-    });
+      .get()
+      .then((response) => {
+        if (response.error?.status === 404) {
+          setAgendaItem(null);
+          return;
+        }
+        setAgendaItem(response.data);
+      })
+      .catch((error) => {
+        toastError(toast, LL, error);
+      });
   }
 
 
@@ -90,42 +90,42 @@ export default function participant_dashboard({
   }, []);
 
   return (
-      <ToastProvider>
-        <div className="flex-1 flex flex-col">
-          <DashboardHeader
-            countryCode={myDelegationData?.nation?.alpha3Code}
-            committeeName={committeeData?.name}
-            currentTopic={agendaItem?.title}
-          />
-          {/* TODO Check why this Scroll Bar is not changing color as the other ones with the custom-scrollbar class */}
-          <ScrollPanel className="flex-1 overflow-y-auto custom-scrollbar">
-            <div className="flex-1 grid grid-cols-1 lg:grid-cols-2 md:grid-cols-1 gap-5 p-4">
-              <div className="flex-1 flex flex-col justify-start items-stretch gap-5">
-                <SpeakersListWidget
-                  myCountry={data.myCountry}
-                  speakersList={data.speakersList}
-                  commentList={data.commentList}
-                />
-                <TimerWidget
-                  headline={committeeData?.statusHeadline}
-                  until={committeeData?.statusUntil ? new Date(committeeData.statusUntil) : null}
-                  category={committeeData?.status}
-                />
-              </div>
-              {/* <div className="flex-1 flex flex-col justify-start items-stretch gap-5">
+    <ToastProvider>
+      <div className="flex-1 flex flex-col">
+        <DashboardHeader
+          countryCode={myDelegationData?.nation?.alpha3Code}
+          committeeName={committeeData?.name}
+          currentTopic={agendaItem?.title}
+        />
+        {/* TODO Check why this Scroll Bar is not changing color as the other ones with the custom-scrollbar class */}
+        <ScrollPanel className="flex-1 overflow-y-auto custom-scrollbar">
+          <div className="flex-1 grid grid-cols-1 lg:grid-cols-2 md:grid-cols-1 gap-5 p-4">
+            <div className="flex-1 flex flex-col justify-start items-stretch gap-5">
+              <SpeakersListWidget
+                myCountry={data.myCountry}
+                speakersList={data.speakersList}
+                commentList={data.commentList}
+              />
+              <TimerWidget
+                headline={committeeData?.statusHeadline}
+                until={committeeData?.statusUntil ? new Date(committeeData.statusUntil) : null}
+                category={committeeData?.status}
+              />
+            </div>
+            {/* <div className="flex-1 flex flex-col justify-start items-stretch gap-5">
                 <CommitteeStatusWidget
                   currentDebateStep={data.committeeStatus.currentDebateStep}
                   nextDebateStep={data.committeeStatus.nextDebateStep}
                 />
                 <DocumentsWidget documents={data.documents} />
               </div> */}
-              <div className="flex-1 flex flex-col justify-start items-stretch gap-5 md:col-span-2 lg:col-span-1">
-                <WhiteboardWidget value={committeeData?.whiteboardContent} />
-                <ActionsWidget />
-              </div>
+            <div className="flex-1 flex flex-col justify-start items-stretch gap-5 md:col-span-2 lg:col-span-1">
+              <WhiteboardWidget value={committeeData?.whiteboardContent} />
+              <ActionsWidget />
             </div>
-          </ScrollPanel>
-        </div>
-      </ToastProvider>
+          </div>
+        </ScrollPanel>
+      </div>
+    </ToastProvider>
   );
 }

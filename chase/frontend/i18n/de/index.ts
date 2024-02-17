@@ -372,6 +372,27 @@ const de = {
 
   chairs: {
     CHAIR: "Vorsitz",
+    dashboard: {
+      overview: {
+        TITLE: "Übersicht",
+      },
+      configurations: {
+        TITLE: "Konfigurationen",
+        agenda: {
+          TITLE: "Auswahl des Tagesordnungspunktes",
+          DESCRIPTION: "Wähle den aktuellen Tagesordnungspunkt aus.",
+          PLACEHOLDER: "Gerade kein aktiver Tagesordnungspunkt",
+        },
+        statusTimer: {
+          TITLE: "Status Timer",
+          DESCRIPTION: "Setze den Status des Gremiums fest. Du kannst auch einen benutzerdefinierten Namen festlegen, der den Standardstatusnamen überschreibt, während das Symbol beibehalten wird (z. B. 'Mittagspause' anstelle von 'Pause').",
+          PLACEHOLDER_DROPDOWN: "Wähle einen Status aus",
+          PLACEHOLDER_CUSTOM_TEXT: "Eigener Name (optional)",
+          PLACEHOLDER_TIME_UNITL: "until",
+          BUTTON: "Status Speichern",
+        },
+      }
+    },
     attendance: {
       HEADLINE: "Anwesenheit",
       PRESENT: "Anwesend",

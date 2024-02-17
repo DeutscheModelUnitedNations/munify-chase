@@ -3,7 +3,7 @@ import { backend } from "@/services/backend";
 import { Toast } from "primereact/toast";
 
 // Helper functions
-export function tostError(
+export function toastError(
   toast?: React.MutableRefObject<Toast | null>,
   LL?: TranslationFunctions,
   error?: any

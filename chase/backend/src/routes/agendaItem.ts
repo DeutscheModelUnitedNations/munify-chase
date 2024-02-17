@@ -117,6 +117,37 @@ export const agendaItem = new Elysia({
       response: AgendaItemWithoutRelations,
     },
   )
+  .post(
+    "/agendaItem/:agendaItemId/activate",
+    ({ params: { conferenceId, committeeId, agendaItemId } }) =>
+      db.$transaction([
+        db.agendaItem.update({
+          where: {
+            id: agendaItemId,
+            committee: { id: committeeId, conferenceId },
+          },
+          data: {
+            isActive: true,
+          },
+        }),
+        db.agendaItem.updateMany({
+          where: {
+            committeeId,
+            id: { not: agendaItemId },
+          },
+          data: {
+            isActive: false,
+          },
+        }),
+      ]),
+    {
+      hasConferenceRole: ["ADMIN"],
+      detail: {
+        description: "Activate an agenda item by id",
+        tags: [openApiTag(import.meta.path)],
+      },
+    },
+  )
   .delete(
     "/agendaItem/:agendaItemId",
     ({ params: { conferenceId, committeeId, agendaItemId } }) =>

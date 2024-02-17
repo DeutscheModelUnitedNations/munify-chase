@@ -18,7 +18,7 @@ import {
 import { attendanceTestData } from "@/test_data";
 import { IconProp } from "@fortawesome/fontawesome-svg-core";
 import { backend } from "@/services/backend";
-import { tostError } from "@/fetching/fetching_utils";
+import { toastError } from "@/fetching/fetching_utils";
 
 interface AttendanceButtonOptions {
   icon: IconProp;
@@ -31,8 +31,8 @@ type DelegationData = Awaited<ReturnType<typeof backend.conference["conferenceId
 export default function ChairAttendees(
   {
     params
-  }:{
-    params: { conferenceId: string; committeeId: string}
+  }: {
+    params: { conferenceId: string; committeeId: string }
   }
 ) {
   const { LL, locale } = useI18nContext();
@@ -62,13 +62,13 @@ export default function ChairAttendees(
 
   async function getDelegationData() {
     await backend.conference[params.conferenceId].committee[params.committeeId].delegations
-    .get()
-    .then((response) => {
-      setData(response.data);
-    })
-    .catch((error) => {
-      toastError(toast, LL, error);
-    });
+      .get()
+      .then((response) => {
+        setData(response.data);
+      })
+      .catch((error) => {
+        toastError(toast, LL, error);
+      });
   }
 
   const countGroup = (group: "present" | "excused" | "absent") => {

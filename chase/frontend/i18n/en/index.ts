@@ -366,6 +366,27 @@ const en = {
 
   chairs: {
     CHAIR: "Chair",
+    dashboard: {
+      overview: {
+        TITLE: "Overview",
+      },
+      configurations: {
+        TITLE: "Configurations",
+        agenda: {
+          TITLE: "Agenda Item Selection",
+          DESCRIPTION: "Select the agenda item you want to activate.",
+          PLACEHOLDER: "No Agenda Item Selected",
+        },
+        statusTimer: {
+          TITLE: "Status Timer",
+          DESCRIPTION: "Set the status of the committee. You can also set a custom name, that overrides the default status name while keeping the icon (e.g. 'Lunch Break' instead of default 'Pause').",
+          PLACEHOLDER_DROPDOWN: "Select a Status",
+          PLACEHOLDER_CUSTOM_TEXT: "Custom Name (optional)",
+          PLACEHOLDER_TIME_UNITL: "until",
+          BUTTON: "Save Status",
+        },
+      }
+    },
     attendance: {
       HEADLINE: "Attendance",
       PRESENT: "Present",

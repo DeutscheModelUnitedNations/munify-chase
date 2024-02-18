@@ -13,6 +13,8 @@ import { agendaItem } from "./routes/agendaItem";
 import { delegation } from "./routes/delegation";
 import { user } from "./routes/user";
 import { speakersListGeneral } from "./routes/speakersList/general";
+import { speakersListModification } from "./routes/speakersList/modification";
+import { speakersListSpeakers } from "./routes/speakersList/speakers";
 
 const m = new Elysia({
   cookie: {
@@ -49,6 +51,8 @@ const m = new Elysia({
   .use(delegation)
   .use(agendaItem)
   .use(speakersListGeneral)
+  .use(speakersListModification)
+  .use(speakersListSpeakers)
   .use(user)
   .use(auth)
   .use(baseData);

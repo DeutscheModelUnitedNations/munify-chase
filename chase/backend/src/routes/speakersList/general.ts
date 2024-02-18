@@ -3,6 +3,7 @@ import { db } from "../../../prisma/db";
 import { committeeRoleGuard } from "../../auth/guards/committeeRoles";
 import { conferenceRoleGuard } from "../../auth/guards/conferenceRoles";
 import { openApiTag } from "../../util/openApiTags";
+import { $Enums } from "../../../prisma/generated/client";
 
 export const speakersListGeneral = new Elysia({
   prefix: "/conference/:conferenceId/committee/:committeeId",
@@ -30,10 +31,18 @@ export const speakersListGeneral = new Elysia({
         include: {
           speakers: {
             include: {
-              delegation: {
+              committeeMember: {
                 include: {
-                  nation: true,
-                },
+                  delegation: {
+                    include: {
+                      nation: {
+                        select: {
+                          alpha3Code: true,
+                        }
+                      }
+                    },
+                  }
+                }
               },
             }
           }
@@ -50,6 +59,7 @@ export const speakersListGeneral = new Elysia({
       },
     },
   )
+
   .get(
     "/speakersList/:type",
     async ({ params: { conferenceId, committeeId, type } }) => {
@@ -64,80 +74,42 @@ export const speakersListGeneral = new Elysia({
         return new Response("No active agenda item found", { status: 404 });
       }
 
-      const speakersList = await db.speakersList.findUniqueOrThrow({
+      if (!["SPEAKERS_LIST", "COMMENT_LIST", "MODERATED_CAUCUS"].includes(type)) {
+        return new Response("Invalid speakers list type", { status: 400 });
+      }
+
+      const speakersList = await db.speakersList.findFirst({
         where: {
           agendaItemId: agendaItem.id,
-          type,
+          type: type as $Enums.SpeakersListCategory,
         },
         include: {
           speakers: {
             include: {
-              delegation: {
+              committeeMember: {
                 include: {
-                  nation: true,
+                  delegation: {
+                    include: {
+                      nation: {
+                        select: {
+                          alpha3Code: true,
+                        }
+                      }
+                    },
+                  }
                 },
-              },
+              }
             }
           }
         }
       });
+
+      return speakersList;
     },
     {
       hasConferenceRole: "any",
       detail: {
         description: "Get a single speakers list by type",
-        tags: [openApiTag(import.meta.path)],
-      },
-    },
-  )
-  .post(
-    "/speakersList/:speakersListId/addSpeaker",
-    async ({ body, params: { conferenceId, committeeId, speakersListId } }) => {
-      if (!body.userId && !body.committeeMemberId) {
-        return new Response("userId, delegationId, or committeeMemberId required", { status: 400 });
-      }
-
-      if (body.userId && body.committeeMemberId) {
-        return new Response("userId and committeeMemberId are mutually exclusive", { status: 400 });
-      }
-
-      if (body.userId) {
-        const committeeMember = await db.committeeMember.findFirst({
-          where: {
-            userId: body.userId,
-            committeeId,
-          },
-        });
-
-        if (!committeeMember) {
-          return new Response("User is not a committee member", { status: 404 });
-        }
-
-        body.committeeMemberId = committeeMember.id;
-      }
-
-      return await db.committeeMember.update({
-        where: {
-          userId: body.userId,
-          id: body.committeeMemberId,
-        },
-        data: {
-          speakersLists: {
-            connect: {
-              id: speakersListId,
-            },
-          },
-        },
-      })
-    },
-    {
-      hasConferenceRole: "any",
-      body: t.Object({
-        userId: t.Optional(t.String()),
-        committeeMemberId: t.Optional(t.String()),
-      }),
-      detail: {
-        description: "Add a speaker to a speakers list",
         tags: [openApiTag(import.meta.path)],
       },
     },

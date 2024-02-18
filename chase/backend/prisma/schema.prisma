@@ -146,15 +146,15 @@ enum Presence {
 
 /// A user's membership in a committee, providing them with a role in the committee
 model CommitteeMember {
-  id            String         @id @default(uuid())
-  committee     Committee      @relation(fields: [committeeId], references: [id])
-  committeeId   String
-  user          User?          @relation(fields: [userId], references: [id])
-  userId        String?
-  speakersLists SpeakersList[]
-  delegation    Delegation?    @relation(fields: [delegationId], references: [id])
-  delegationId  String?
-  presence      Presence       @default(ABSENT)
+  id           String          @id @default(uuid())
+  committee    Committee       @relation(fields: [committeeId], references: [id])
+  committeeId  String
+  user         User?           @relation(fields: [userId], references: [id])
+  userId       String?
+  speakerLists SpeakerOnList[]
+  delegation   Delegation?     @relation(fields: [delegationId], references: [id])
+  delegationId String?
+  presence     Presence        @default(ABSENT)
 
   @@unique([committeeId, delegationId])
   @@unique([committeeId, userId])
@@ -183,18 +183,31 @@ enum SpeakersListCategory {
 
 /// A speakers list in a committee
 model SpeakersList {
-  id           String               @id @default(uuid())
-  agendaItem   AgendaItem           @relation(fields: [agendaItemId], references: [id])
-  agendaItemId String
-  type         SpeakersListCategory
-  speakers     CommitteeMember[]
+  id             String               @id @default(uuid())
+  agendaItem     AgendaItem           @relation(fields: [agendaItemId], references: [id])
+  agendaItemId   String
+  type           SpeakersListCategory
+  speakers       SpeakerOnList[]
   /// The time in seconds that a speaker has to speak
-  speakingTime Int
-  timestamp    DateTime?
-  isPaused     Boolean              @default(true)
-  isClosed     Boolean              @default(false)
+  speakingTime   Int
+  timeLeft       Int?
+  startTimestamp DateTime?
+  isClosed       Boolean              @default(false)
 
   @@unique([agendaItemId, type])
+}
+
+/// A speaker on a speakers list, storing their position in the list
+model SpeakerOnList {
+  id                String          @id @default(uuid())
+  speakersList      SpeakersList    @relation(fields: [speakersListId], references: [id])
+  speakersListId    String
+  committeeMember   CommitteeMember @relation(fields: [committeeMemberId], references: [id])
+  committeeMemberId String
+  position          Int
+
+  @@unique([speakersListId, position])
+  @@unique([speakersListId, committeeMemberId])
 }
 
 //TODO should we allow for customizing these per conference and just allow loading template at creation?

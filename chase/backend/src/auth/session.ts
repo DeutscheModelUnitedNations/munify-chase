@@ -29,6 +29,7 @@ export const session = new Elysia({ name: "session" })
   .derive(async ({ cookie: { sessionId } }) => {
     let data: sessionSchema = { loggedIn: false };
 
+    // TODO: setter could be actual getters and setters
     const setPasskeyChallenge = async (
       challenge: PassKeyChallenge | undefined,
     ) => {

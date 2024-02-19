@@ -124,4 +124,42 @@ export const passkeys = new Elysia()
         tags: [openApiTag(import.meta.path)],
       },
     },
+  )
+  .post(
+    "/loginWithPasskey",
+    async ({ body: { email, password }, session }) => {
+      const user = await db.user.findUniqueOrThrow({
+        where: {
+          email,
+        },
+      });
+
+      if (!user.emailValidated) {
+        throw new Error("Email not validated");
+      }
+
+      if (user.type !== "PASSWORD" || !user.passwordHash) {
+        throw new Error("User is not a password user");
+      }
+
+      if (!Bun.password.verify(password, user.passwordHash)) {
+        throw new Error("Invalid password");
+      }
+
+      session.setLoggedIn(true);
+      session.setUserData({
+        email: user.email,
+        id: user.id,
+      });
+    },
+    {
+      body: t.Object({
+        email: t.String(),
+        password: t.String(),
+      }),
+      detail: {
+        description: "Login with a password.",
+        tags: [openApiTag(import.meta.path)],
+      },
+    },
   );

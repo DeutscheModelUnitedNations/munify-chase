@@ -5,11 +5,13 @@ import { sendAccountConfirmationEmail } from "../../email/email";
 import { nanoid } from "nanoid";
 import { appConfiguration } from "../../util/config";
 import { passkeys } from "./passkeys";
+import { session } from "../../auth/session";
 
 export const auth = new Elysia({
   prefix: "/auth",
 })
   .use(passkeys)
+  .use(session)
   .get(
     "/userState",
     async ({ query: { email } }) => {
@@ -77,6 +79,8 @@ export const auth = new Elysia({
       if (!user.emailValidationTokenHash) {
         return "userDoesNotHaveActiveValidationToken";
       }
+
+      //TODO email validation token expiry
 
       if (!(await Bun.password.verify(token, user.emailValidationTokenHash))) {
         return "invalidToken";
@@ -147,6 +151,44 @@ export const auth = new Elysia({
       }),
       detail: {
         description: "Creates a user with a password.",
+        tags: [openApiTag(import.meta.path)],
+      },
+    },
+  )
+  .post(
+    "/loginWithPassword",
+    async ({ body: { email, password }, session }) => {
+      const user = await db.user.findUniqueOrThrow({
+        where: {
+          email,
+        },
+      });
+
+      if (!user.emailValidated) {
+        throw new Error("Email not validated");
+      }
+
+      if (user.type !== "PASSWORD" || !user.passwordHash) {
+        throw new Error("User is not a password user");
+      }
+
+      if (!Bun.password.verify(password, user.passwordHash)) {
+        throw new Error("Invalid password");
+      }
+
+      session.setLoggedIn(true);
+      session.setUserData({
+        email: user.email,
+        id: user.id,
+      });
+    },
+    {
+      body: t.Object({
+        email: t.String(),
+        password: t.String(),
+      }),
+      detail: {
+        description: "Login with a password.",
         tags: [openApiTag(import.meta.path)],
       },
     },

@@ -321,6 +321,24 @@ const en = {
       LIST_CLOSED_BUTTON: "List Closed",
       LIST_CLOSED_MESSAGE: "List Closed",
       NO_SPEAKERS_MESSAGE: "No Speakers on the List",
+      toast: {
+        ADDED_SUCCESS_SUMMARY: "Added Speech",
+        ADDED_SUCCESS_DETAIL: "to {{0}}",
+        ADDED_FORBIDDEN_SUMMARY: "Forbidden",
+        ADDED_FORBIDDEN_DETAIL:
+          "You are probably not registered as PRESENT in the committee. Please contact the chair.",
+        ADDED_ALREADY_ON_LIST_SUMMARY: "Already on List",
+        ADDED_ALREADY_ON_LIST_DETAIL:
+          "Please wait a moment and you should appear on the list soon. If not, reload the page. If the error persists, please contact the chair.",
+        ADDED_ERROR_SUMMARY: "Error during adding",
+        ADDED_ERROR_DETAIL:
+          "An unexpected error occurred. Please try again later or contact the chair.",
+        REMOVED_SUCCESS_SUMMARY: "Removed",
+        REMOVED_SUCCESS_DETAIL: "from {{0}}",
+        REMOVED_ERROR_SUMMARY: "Error during removing",
+        REMOVED_ERROR_DETAIL:
+          "An unexpected error occurred. Please try again later or contact the chair.",
+      },
     },
 
     voting: {
@@ -382,13 +400,25 @@ const en = {
         },
         statusTimer: {
           TITLE: "Status Timer",
-          DESCRIPTION: "Set the status of the committee. You can also set a custom name, that overrides the default status name while keeping the icon (e.g. 'Lunch Break' instead of default 'Pause').",
+          DESCRIPTION:
+            "Set the status of the committee. You can also set a custom name, that overrides the default status name while keeping the icon (e.g. 'Lunch Break' instead of default 'Pause').",
           PLACEHOLDER_DROPDOWN: "Select a Status",
           PLACEHOLDER_CUSTOM_TEXT: "Custom Name (optional)",
           PLACEHOLDER_TIME_UNITL: "until",
           BUTTON: "Save Status",
         },
-      }
+        speakersListAdding: {
+          TITLE: "Speakers List Adding Policy",
+          DESCRIPTION:
+            "Select the policy for speakers adding themselves to the speakers list.",
+          TOGGLE_BUTTON_NOT_ALLOWED: "Not Allowed",
+          TOGGLE_BUTTON_ALLOWED: "Allowed",
+          TOAST_SUCCESS: "Policy changed",
+          TOAST_SUCCESS_DETAILS_ALLOWED: "Speakers can now add themselves.",
+          TOAST_SUCCESS_DETAILS_NOT_ALLOWED:
+            "Speakers can no longer add themselves.",
+        },
+      },
     },
     attendance: {
       HEADLINE: "Attendance",
@@ -401,7 +431,8 @@ const en = {
       RESET_BUTTON: "Reset",
       SUCCESS_TOAST: "Whiteboard saved",
       NO_CONTENT_TOAST: "Whiteboard is empty",
-      NO_CONTENT_TOAST_DETAILS: "It seems like there was an error while loading the whiteboard or the whiteboard is empty. Please try to reload the page.",
+      NO_CONTENT_TOAST_DETAILS:
+        "It seems like there was an error while loading the whiteboard or the whiteboard is empty. Please try to reload the page.",
     },
     speakersList: {
       buttons: {

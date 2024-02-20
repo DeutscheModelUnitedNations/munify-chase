@@ -7,7 +7,7 @@ import { faPlus, faTimes } from "@fortawesome/pro-solid-svg-icons";
 import { ToastContext } from "@/contexts/toast";
 import { IconProp } from "@fortawesome/fontawesome-svg-core";
 import { backend } from "@/services/backend";
-import { SpeakersListIdContext } from "@/contexts/speakers_list_data";
+import { SpeakersListDataContext } from "@/contexts/speakers_list_data";
 
 /**
  * This Component is used on the SpeakersListPage for the Chair to change the speech time of the current speaker
@@ -22,7 +22,7 @@ export default function ChangeSpeechTimeOverlay({
 }) {
   const { LL } = useI18nContext();
   const { showToast } = useContext(ToastContext);
-  const speakersListId = useContext(SpeakersListIdContext);
+  const speakersListId = useContext(SpeakersListDataContext)?.id;
 
   const [time, setTime] = useState<string | null>(null); // TODO: Add a default value
 

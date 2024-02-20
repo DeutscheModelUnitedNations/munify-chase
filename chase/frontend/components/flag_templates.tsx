@@ -33,11 +33,7 @@ export function SmallFlag({
 
   return (
     <div className="flex justify-center items-center">
-      <div
-        className="flex-col justify-end items-center rounded-md contrast:border contrast:border-primary-100 bg-white shadow-md overflow-hidden"
-        onMouseEnter={handleMouseEnter}
-        onMouseLeave={handleMouseLeave}
-      >
+      <div className="flex-col justify-end items-center rounded-md contrast:border contrast:border-primary-100 bg-white shadow-md overflow-hidden">
         {countryCode ? (
           <>
             <Image
@@ -46,9 +42,15 @@ export function SmallFlag({
               height={32}
               alt={`Flag of ${getCountryNameByCode(countryCode, locale)}`}
               style={{ objectFit: "cover", height: "100%" }}
+              onMouseEnter={handleMouseEnter}
+              onMouseLeave={handleMouseLeave}
             />
-            {isHovered && showNameOnHover && (
-              <div className="bg-primary text-white text-xs rounded-md shadow-md p-2 absolute mt-2 z-50">
+            {showNameOnHover && (
+              <div
+                className={`bg-primary text-white ${
+                  isHovered ? "opacity-100" : "opacity-0"
+                } text-xs rounded-md shadow-md p-2 absolute mt-2 z-50 transition-all duration-300`}
+              >
                 {getCountryNameByCode(countryCode, locale)}
               </div>
             )}
@@ -79,7 +81,6 @@ export function NormalFlag({
 
   return (
     <div className="rounded-md contrast:border contrast:border-primary-100 bg-white shadow-md overflow-hidden">
-
       {countryCode ? (
         <>
           <Image

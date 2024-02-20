@@ -11,10 +11,7 @@ import {
 } from "@fortawesome/pro-solid-svg-icons";
 import Button from "@components/button";
 import { backend } from "@/services/backend";
-import {
-  SpeakersListDataContext,
-  SpeakersListIdContext,
-} from "@/contexts/speakers_list_data";
+import { SpeakersListDataContext } from "@/contexts/speakers_list_data";
 
 /**
  * This Component is used in the Speakers List and Comment List on the Speakers List Page.
@@ -50,6 +47,13 @@ export default function QueueList({
                 speakerData={item}
                 myCountry={myCountry}
                 chairOptions={chairOptions}
+                isLast={
+                  speakersListData?.speakers &&
+                  item.id ===
+                    speakersListData.speakers[
+                      speakersListData.speakers.length - 1
+                    ].id
+                }
               />
             );
           }}
@@ -72,15 +76,18 @@ function CountryCard({
   speakerData,
   myCountry,
   chairOptions = false,
+  isLast,
 }: {
   speakerData: SpeakersListData.speakers[number];
   myCountry?: string;
   chairOptions?: boolean;
+  isLast?: boolean;
 }) {
   const { locale } = useI18nContext();
 
+  const listId = useContext(SpeakersListDataContext)?.id;
+
   const [alpha3Code, setAlpha3Code] = useState<string | undefined>(undefined);
-  const listId = useContext(SpeakersListIdContext);
   const [loadingDelete, setLoadingDelete] = useState(false);
 
   useEffect(() => {
@@ -121,6 +128,7 @@ function CountryCard({
             }}
             text
             size="small"
+            disabled={isLast}
           />
           <Button
             faIcon={faXmark}

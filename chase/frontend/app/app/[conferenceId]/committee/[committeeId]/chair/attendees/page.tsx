@@ -27,19 +27,22 @@ interface AttendanceButtonOptions {
   value: $Enums.Presence;
 }
 
-type DelegationData = Awaited<ReturnType<typeof backend.conference["conferenceId"]["committee"]["committeeId"]["delegations"]["get"]>>["data"];
+type DelegationData = Awaited<
+  ReturnType<
+    (typeof backend.conference)["conferenceId"]["committee"]["committeeId"]["delegations"]["get"]
+  >
+>["data"];
 
-export default function ChairAttendees(
-  {
-    params
-  }: {
-    params: { conferenceId: string; committeeId: string }
-  }
-) {
+export default function ChairAttendees({
+  params,
+}: {
+  params: { conferenceId: string; committeeId: string };
+}) {
   const { LL, locale } = useI18nContext();
 
   const [data, setData] = useState<DelegationData>([]);
-  const [forcePresenceWidgetUpdate, setForcePresenceWidgetUpdate] = useState(false);
+  const [forcePresenceWidgetUpdate, setForcePresenceWidgetUpdate] =
+    useState(false);
 
   const toast = useRef<Toast>(null);
 
@@ -62,13 +65,15 @@ export default function ChairAttendees(
   ];
 
   async function getDelegationData() {
-    await backend.conference[params.conferenceId].committee[params.committeeId].delegations
+    await backend.conference[params.conferenceId].committee[
+      params.committeeId
+    ].delegations
       .get()
       .then((response) => {
         setData(response.data);
       })
       .catch((error) => {
-        toastError(toast, LL, error);
+        toastError(error);
       });
   }
 
@@ -83,9 +88,11 @@ export default function ChairAttendees(
   async function updatePresence(
     delegationId: string,
     memberId: string,
-    presence: $Enums.Presence
+    presence: $Enums.Presence,
   ) {
-    await backend.conference[params.conferenceId].delegation[delegationId].presence[memberId]
+    await backend.conference[params.conferenceId].delegation[
+      delegationId
+    ].presence[memberId]
       .post({
         presence,
       })
@@ -94,10 +101,9 @@ export default function ChairAttendees(
         getDelegationData();
       })
       .catch((error) => {
-        toastError(toast, LL, error);
+        toastError(error);
       });
   }
-
 
   const justifyTemplate = (option: AttendanceButtonOptions) => {
     return (
@@ -133,14 +139,23 @@ export default function ChairAttendees(
                   <div className="flex flex-col justify-center">
                     <div className="text-sm font-bold text-gray-text dark:text-primary-800">
                       <span className="mr-2">
-                        {getCountryNameByCode(attendee.nation.alpha3Code, locale)}
+                        {getCountryNameByCode(
+                          attendee.nation.alpha3Code,
+                          locale,
+                        )}
                       </span>
                     </div>
                   </div>
                   <div className="flex-1" />
                   <SelectButton
                     value={attendee.members[0].presence}
-                    onChange={(e) => updatePresence(attendee.id, attendee.members[0].id, e.value)}
+                    onChange={(e) =>
+                      updatePresence(
+                        attendee.id,
+                        attendee.members[0].id,
+                        e.value,
+                      )
+                    }
                     options={attendanceOptions}
                     itemTemplate={justifyTemplate}
                     allowEmpty={false}

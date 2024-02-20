@@ -38,15 +38,15 @@ export const speakersListGeneral = new Elysia({
                       nation: {
                         select: {
                           alpha3Code: true,
-                        }
-                      }
+                        },
+                      },
                     },
-                  }
-                }
+                  },
+                },
               },
-            }
-          }
-        }
+            },
+          },
+        },
       });
 
       return speakersList;
@@ -74,11 +74,11 @@ export const speakersListGeneral = new Elysia({
         return new Response("No active agenda item found", { status: 404 });
       }
 
-      if (!["SPEAKERS_LIST", "COMMENT_LIST", "MODERATED_CAUCUS"].includes(type)) {
+      if (!Object.values($Enums.SpeakersListCategory).includes(type)) {
         return new Response("Invalid speakers list type", { status: 400 });
       }
 
-      const speakersList = await db.speakersList.findFirst({
+      return await db.speakersList.findFirst({
         where: {
           agendaItemId: agendaItem.id,
           type: type as $Enums.SpeakersListCategory,
@@ -87,24 +87,35 @@ export const speakersListGeneral = new Elysia({
           speakers: {
             include: {
               committeeMember: {
-                include: {
+                select: {
+                  id: true,
+                  userId: true,
                   delegation: {
-                    include: {
+                    select: {
+                      id: true,
                       nation: {
                         select: {
                           alpha3Code: true,
-                        }
-                      }
+                        },
+                      },
                     },
-                  }
+                  },
                 },
-              }
-            }
-          }
-        }
+              },
+            },
+          },
+          agendaItem: {
+            select: {
+              id: true,
+              committee: {
+                select: {
+                  allowDelegationsToAddThemselvesToSpeakersList: true,
+                },
+              },
+            },
+          },
+        },
       });
-
-      return speakersList;
     },
     {
       hasConferenceRole: "any",
@@ -113,4 +124,4 @@ export const speakersListGeneral = new Elysia({
         tags: [openApiTag(import.meta.path)],
       },
     },
-  )
+  );

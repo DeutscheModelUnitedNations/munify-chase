@@ -324,6 +324,24 @@ const de = {
       LIST_CLOSED_BUTTON: "Liste Geschlossen",
       LIST_CLOSED_MESSAGE: "Liste Geschlossen",
       NO_SPEAKERS_MESSAGE: "Keine Redner:innen auf der Liste",
+      toast: {
+        ADDED_SUCCESS_SUMMARY: "Redebeitrag hinzugefügt",
+        ADDED_SUCCESS_DETAIL: "zu {{0}}",
+        ADDED_FORBIDDEN_SUMMARY: "Hinzufügen nicht erlaubt",
+        ADDED_FORBIDDEN_DETAIL:
+          "Sie sind wahrscheinlich nicht als ANWESEND im Gremium registriert. Bitte wende dich an den Vorsitz.",
+        ADDED_ALREADY_ON_LIST_SUMMARY: "Bereits auf der Liste",
+        ADDED_ALREADY_ON_LIST_DETAIL:
+          "Bitte warten Sie einen Moment – Ihr Redebeitrag wird jeden Moment angezeigt. Wenn nicht, laden Sie die Seite neu. Wenn der Fehler weiterhin besteht, wenden Sie sich an den Vorsitz.",
+        ADDED_ERROR_SUMMARY: "Fehler beim Hinzufügen",
+        ADDED_ERROR_DETAIL:
+          "Ein unerwarteter Fehler ist aufgetreten. Bitte versuchen Sie es später erneut oder wenden Sie sich an den Vorsitz.",
+        REMOVED_SUCCESS_SUMMARY: "Redebeitrag zurückgezogen",
+        REMOVED_SUCCESS_DETAIL: "von {{0}}",
+        REMOVED_ERROR_SUMMARY: "Fehler beim Zurückziehen",
+        REMOVED_ERROR_DETAIL:
+          "Ein unerwarteter Fehler ist aufgetreten. Bitte versuchen Sie es später erneut oder wenden Sie sich an den Vorsitz.",
+      },
     },
 
     voting: {
@@ -388,13 +406,26 @@ const de = {
         },
         statusTimer: {
           TITLE: "Status Timer",
-          DESCRIPTION: "Setze den Status des Gremiums fest. Du kannst auch einen benutzerdefinierten Namen festlegen, der den Standardstatusnamen überschreibt, während das Symbol beibehalten wird (z. B. 'Mittagspause' anstelle von 'Pause').",
+          DESCRIPTION:
+            "Setze den Status des Gremiums fest. Du kannst auch einen benutzerdefinierten Namen festlegen, der den Standardstatusnamen überschreibt, während das Symbol beibehalten wird (z. B. 'Mittagspause' anstelle von 'Pause').",
           PLACEHOLDER_DROPDOWN: "Wähle einen Status aus",
           PLACEHOLDER_CUSTOM_TEXT: "Eigener Name (optional)",
           PLACEHOLDER_TIME_UNITL: "until",
           BUTTON: "Status Speichern",
         },
-      }
+        speakersListAdding: {
+          TITLE: "Hinzufügen zu Redelisten",
+          DESCRIPTION:
+            "Wähle eine Einstellung aus, um Delegierten zu erlauben, sich selbst zur Redeliste hinzuzufügen.",
+          TOGGLE_BUTTON_NOT_ALLOWED: "Nicht erlaubt",
+          TOGGLE_BUTTON_ALLOWED: "Erlaubt",
+          TOAST_SUCCESS: "Einstellung geändert",
+          TOAST_SUCCESS_DETAILS_ALLOWED:
+            "Delegierte können sich nun selbst hinzufügen.",
+          TOAST_SUCCESS_DETAILS_NOT_ALLOWED:
+            "Delegierte können sich nicht mehr selbst hinzufügen.",
+        },
+      },
     },
     attendance: {
       HEADLINE: "Anwesenheit",
@@ -407,8 +438,8 @@ const de = {
       RESET_BUTTON: "Zurücksetzen",
       SUCCESS_TOAST: "Whiteboard gespeichert",
       NO_CONTENT_TOAST: "Whiteboard ist leer",
-      NO_CONTENT_TOAST_DETAILS: "Es scheint, als ob beim laden des Whiteboards ein Fehler aufgetreten ist oder das Whiteboard ist leer. Bitte versuche die Seite neu zu laden.",
-
+      NO_CONTENT_TOAST_DETAILS:
+        "Es scheint, als ob beim laden des Whiteboards ein Fehler aufgetreten ist oder das Whiteboard ist leer. Bitte versuche die Seite neu zu laden.",
     },
     speakersList: {
       buttons: {

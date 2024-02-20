@@ -3,13 +3,21 @@ import { useI18nContext } from "@/i18n/i18n-react";
 import { HeaderInfoBox } from "../header_template";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { IconProp } from "@fortawesome/fontawesome-svg-core";
-import { faUserCheck, faUserClock, faUserXmark } from "@fortawesome/pro-solid-svg-icons";
+import {
+  faUserCheck,
+  faUserClock,
+  faUserXmark,
+} from "@fortawesome/pro-solid-svg-icons";
 import { backend } from "@/services/backend";
 import { toastError } from "@/fetching/fetching_utils";
 import { Toast } from "primereact/toast";
 import { $Enums } from "../../../backend/prisma/generated/client";
 
-type DelegationData = Awaited<ReturnType<typeof backend.conference["conferenceId"]["committee"]["committeeId"]["delegations"]["get"]>>["data"];
+type DelegationData = Awaited<
+  ReturnType<
+    (typeof backend.conference)["conferenceId"]["committee"]["committeeId"]["delegations"]["get"]
+  >
+>["data"];
 
 export default function PresenceWidget({
   conferenceId,
@@ -37,7 +45,7 @@ export default function PresenceWidget({
         setDelegationData(response.data);
       })
       .catch((error) => {
-        toastError(toast, LL, error);
+        toastError(error);
       });
   }
 
@@ -56,7 +64,10 @@ export default function PresenceWidget({
   }, [forceUpdate]);
 
   const countGroup = (group: $Enums.Presence) => {
-    return delegationData?.filter((item) => item.members[0].presence === group).length ?? 0;
+    return (
+      delegationData?.filter((item) => item.members[0].presence === group)
+        .length ?? 0
+    );
   };
 
   useEffect(() => {
@@ -64,7 +75,6 @@ export default function PresenceWidget({
     setExcusedAttendees(countGroup("EXCUSED"));
     setAbsentAttendees(countGroup("ABSENT"));
   }, [delegationData]);
-
 
   const MajorityInfo = ({
     name,
@@ -113,10 +123,7 @@ export default function PresenceWidget({
     <div className="flex-1 flex gap-4 h-full justify-center">
       <Toast ref={toast} />
       <HeaderInfoBox>
-        <div
-          className="grid"
-          style={{ gridTemplateColumns: "auto 1fr auto" }}
-        >
+        <div className="grid" style={{ gridTemplateColumns: "auto 1fr auto" }}>
           <CounterCell
             count={presentAttendees}
             lable={LL.chairs.attendance.PRESENT()}
@@ -130,7 +137,11 @@ export default function PresenceWidget({
             />
           )}
           <CounterCell
-            count={showExcusedSeperately ? absentAttendees : absentAttendees + excusedAttendees}
+            count={
+              showExcusedSeperately
+                ? absentAttendees
+                : absentAttendees + excusedAttendees
+            }
             lable={LL.chairs.attendance.ABSENT()}
             icon={faUserXmark as IconProp}
           />

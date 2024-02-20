@@ -17,7 +17,6 @@ import {
 } from "@fortawesome/pro-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useI18nContext } from "@/i18n/i18n-react";
-import { CountryCode } from "@/custom_types/custom_types";
 import AddSpeakerOverlay from "./add_speaker";
 import ChangeSpeechTimeOverlay from "./change_speech_time";
 import { IconProp } from "@fortawesome/fontawesome-svg-core";
@@ -31,6 +30,8 @@ import {
   CommitteeIdContext,
 } from "@/contexts/committee_data";
 import { SpeakersListDataContext } from "@/contexts/speakers_list_data";
+import { useUserIdent } from "@/contexts/user_ident";
+import { ToastContext } from "@/contexts/toast";
 
 type AllCountryCodes = Awaited<
   ReturnType<
@@ -47,38 +48,116 @@ type AllCountryCodes = Awaited<
  * If the participant is not on the list, the button to add the participant to the list is displayed.
  */
 
-export function ParticipantSpeechButtons({
-  onSpeakersList,
-  listClosed,
-}: {
-  onSpeakersList: boolean;
-  listClosed: boolean;
-}) {
+export function ParticipantSpeechButtons() {
   const { LL } = useI18nContext();
+  const { showToast } = useContext(ToastContext);
+
+  const speakersListData = useContext(SpeakersListDataContext);
+  const userIdent = useUserIdent();
+  const [userOnSpeakersList, setUserOnSpeakersList] = useState(false);
+
+  useEffect(() => {
+    if (!speakersListData || !userIdent?.userIdent?.id) return;
+    setUserOnSpeakersList(
+      speakersListData.speakers.some(
+        (speaker) => speaker.committeeMember.userId === userIdent.userIdent.id,
+      ),
+    );
+  }, [speakersListData, userIdent]);
+
+  async function addToSpeakersList() {
+    if (!speakersListData || !userIdent?.userIdent?.id) return;
+    backend.speakersList[speakersListData.id].addSpeaker.user[
+      userIdent.userIdent.id
+    ]
+      .post()
+      .then((res) => {
+        if (res.status === 200) {
+          showToast({
+            severity: "success",
+            summary: LL.participants.speakersList.toast.ADDED_SUCCESS_SUMMARY(),
+            detail: LL.participants.speakersList.toast.ADDED_SUCCESS_DETAIL(
+              speakersListData.type,
+            ),
+          });
+        } else if (res.status === 403) {
+          showToast({
+            severity: "warn",
+            summary:
+              LL.participants.speakersList.toast.ADDED_FORBIDDEN_SUMMARY(),
+            detail: LL.participants.speakersList.toast.ADDED_FORBIDDEN_DETAIL(),
+          });
+        } else if (res.status === 409) {
+          showToast({
+            severity: "error",
+            summary:
+              LL.participants.speakersList.toast.ADDED_ALREADY_ON_LIST_SUMMARY(),
+            detail:
+              LL.participants.speakersList.toast.ADDED_ALREADY_ON_LIST_DETAIL(),
+          });
+        } else {
+          showToast({
+            severity: "error",
+            summary: LL.participants.speakersList.toast.ADDED_ERROR_SUMMARY(),
+            detail: LL.participants.speakersList.toast.ADDED_ERROR_DETAIL(),
+          });
+        }
+      });
+  }
+
+  async function removeFromSpeakersList() {
+    if (!speakersListData || !userIdent?.userIdent?.id) return;
+    backend.speakersList[speakersListData.id].removeSpeaker.user[
+      userIdent.userIdent.id
+    ]
+      .delete()
+      .then((res) => {
+        if (res.status === 200) {
+          showToast({
+            severity: "success",
+            summary:
+              LL.participants.speakersList.toast.REMOVED_SUCCESS_SUMMARY(),
+            detail: LL.participants.speakersList.toast.REMOVED_SUCCESS_DETAIL(
+              speakersListData.type,
+            ),
+          });
+        } else {
+          showToast({
+            severity: "error",
+            summary: LL.participants.speakersList.toast.REMOVED_ERROR_SUMMARY(),
+            detail: LL.participants.speakersList.toast.REMOVED_ERROR_DETAIL(),
+          });
+        }
+      });
+  }
 
   return (
-    <div className="flex flex-col gap-2 items-start justify-center mt-3">
-      {onSpeakersList && (
-        <Button
-          label={LL.participants.speakersList.REMOVE_FROM_LIST_BUTTON()}
-          faIcon={faTrashCanXmark}
-          size="small"
-          severity="danger"
-        />
-      )}
-      {!onSpeakersList && (
-        <Button
-          label={
-            listClosed
-              ? LL.participants.speakersList.LIST_CLOSED_BUTTON()
-              : LL.participants.speakersList.ADD_TO_LIST_BUTTON()
-          }
-          faIcon={faPlusCircle}
-          size="small"
-          disabled={listClosed}
-        />
-      )}
-    </div>
+    speakersListData?.agendaItem.committee
+      .allowDelegationsToAddThemselvesToSpeakersList && (
+      <div className="flex flex-col gap-2 items-start justify-center mt-3">
+        {userOnSpeakersList ? (
+          <Button
+            label={LL.participants.speakersList.REMOVE_FROM_LIST_BUTTON()}
+            faIcon={faTrashCanXmark}
+            size="small"
+            severity="danger"
+            onClick={() => removeFromSpeakersList()}
+          />
+        ) : (
+          <Button
+            label={
+              speakersListData?.isClosed
+                ? LL.participants.speakersList.LIST_CLOSED_BUTTON()
+                : LL.participants.speakersList.ADD_TO_LIST_BUTTON()
+            }
+            faIcon={speakersListData?.isClosed ? faLock : faPodium}
+            size="small"
+            disabled={speakersListData?.isClosed}
+            onClick={() => addToSpeakersList()}
+          />
+        )}
+      </div>
+    )
   );
 }
 
@@ -121,7 +200,7 @@ export function ChairSpeechButtons({
         setCountries(response.data);
       })
       .catch((error) => {
-        toastError(toast, LL, error);
+        toastError(error);
       });
   }
 

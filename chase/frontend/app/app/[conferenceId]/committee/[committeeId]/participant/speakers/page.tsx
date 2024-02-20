@@ -1,16 +1,19 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { ScrollPanel } from "primereact/scrollpanel";
 import { apiTestData } from "@/test_data";
 import { useI18nContext } from "@/i18n/i18n-react";
 import SpeakersListBlock from "@/components/speakers_list/speakers_list_block";
 import { ParticipantSpeechButtons } from "@/components/speakers_list/speech_buttons";
 import { $Enums } from "../../../../../../../../backend/prisma/generated/client";
+import { MyDelegationContext } from "@/contexts/user_ident";
 
 export default function SpeakersList() {
   const { LL } = useI18nContext();
 
   const [data, setData] = useState(apiTestData);
+
+  const myDelegationData = useContext(MyDelegationContext);
 
   useEffect(() => {
     const intervalAPICall = setInterval(() => {
@@ -26,30 +29,16 @@ export default function SpeakersList() {
           <SpeakersListBlock
             typeOfList={$Enums.SpeakersListCategory.SPEAKERS_LIST}
             listTitle={LL.participants.speakersList.SPEAKERS_LIST()}
-            myCountry={data.myCountry}
+            myCountry={myDelegationData.delegation?.nation?.alpha3Code}
           >
-            <ParticipantSpeechButtons
-              onSpeakersList={
-                data.speakersList.list.find(
-                  (item) => item.countryCode === data.myCountry,
-                ) !== undefined
-              }
-              listClosed={data.speakersList.closed}
-            />
+            <ParticipantSpeechButtons />
           </SpeakersListBlock>
           <SpeakersListBlock
             typeOfList={$Enums.SpeakersListCategory.COMMENT_LIST}
             listTitle={LL.participants.speakersList.COMMENT_LIST()}
-            myCountry={data.myCountry}
+            myCountry={myDelegationData.delegation?.nation?.alpha3Code}
           >
-            <ParticipantSpeechButtons
-              onSpeakersList={
-                data.commentList.list.find(
-                  (item) => item.countryCode === data.myCountry,
-                ) !== undefined
-              }
-              listClosed={data.commentList.closed}
-            />
+            <ParticipantSpeechButtons />
           </SpeakersListBlock>
         </div>
       </ScrollPanel>

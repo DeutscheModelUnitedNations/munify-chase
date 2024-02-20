@@ -13,21 +13,26 @@ import { backend } from "@/services/backend";
 import { toastError } from "@/fetching/fetching_utils";
 import { Toast } from "primereact/toast";
 
-type Committee = Awaited<ReturnType<typeof backend.conference["conferenceId"]["committee"]["committeeId"]["get"]>>["data"];
+type Committee = Awaited<
+  ReturnType<
+    (typeof backend.conference)["conferenceId"]["committee"]["committeeId"]["get"]
+  >
+>["data"];
 
-
-export default function ChairWhiteboard(
-  {
-    params
-  }: {
-    params: { conferenceId: string; committeeId: string }
-  }
-) {
+export default function ChairWhiteboard({
+  params,
+}: {
+  params: { conferenceId: string; committeeId: string };
+}) {
   const { LL } = useI18nContext();
 
-  const [whiteboardContent, setWhiteboardContent] = useState<string | null | undefined>(undefined);
-  const [whiteboardContentChanged, setWhiteboardContentChanged] = useState<boolean>(false);
-  const [whiteboardButtonLoading, setWhiteboardButtonLoading] = useState<boolean>(false);
+  const [whiteboardContent, setWhiteboardContent] = useState<
+    string | null | undefined
+  >(undefined);
+  const [whiteboardContentChanged, setWhiteboardContentChanged] =
+    useState<boolean>(false);
+  const [whiteboardButtonLoading, setWhiteboardButtonLoading] =
+    useState<boolean>(false);
   const [committeeData, setCommitteeData] = useState<Committee | null>(null);
   const toast = useRef(null);
 
@@ -41,7 +46,7 @@ export default function ChairWhiteboard(
         }
       })
       .catch((error) => {
-        toastError(toast, LL, error);
+        toastError(error);
       });
   }
 
@@ -52,7 +57,6 @@ export default function ChairWhiteboard(
     }, 5000);
     return () => clearInterval(intervalAPICall);
   }, []);
-
 
   useEffect(() => {
     if (whiteboardContent !== committeeData?.whiteboardContent) {
@@ -70,10 +74,13 @@ export default function ChairWhiteboard(
     }
   }, [whiteboardContent, committeeData]);
 
-
   async function pushWhiteboardContent() {
     setWhiteboardButtonLoading(true);
-    if (whiteboardContent === null || whiteboardContent === undefined || whiteboardContent === "") {
+    if (
+      whiteboardContent === null ||
+      whiteboardContent === undefined ||
+      whiteboardContent === ""
+    ) {
       toast.current?.show({
         severity: "warn",
         summary: LL.chairs.whiteboard.NO_CONTENT_TOAST(),
@@ -83,7 +90,9 @@ export default function ChairWhiteboard(
       setWhiteboardButtonLoading(false);
       return;
     }
-    await backend.conference[params.conferenceId].committee[params.committeeId].whiteboard
+    await backend.conference[params.conferenceId].committee[
+      params.committeeId
+    ].whiteboard
       .post({
         whiteboardContent: whiteboardContent,
       })
@@ -98,9 +107,9 @@ export default function ChairWhiteboard(
         });
       })
       .catch((error) => {
-        toastError(toast, LL, error);
+        toastError(error);
       });
-  };
+  }
 
   const resetWhiteboardContent = () => {
     setWhiteboardContent(committeeData?.whiteboardContent ?? "");
@@ -116,7 +125,7 @@ export default function ChairWhiteboard(
             faIcon={faPaperPlane as IconProp}
             onClick={() => pushWhiteboardContent()}
             loading={whiteboardButtonLoading}
-          // disabled={!whiteboardContentChanged}
+            // disabled={!whiteboardContentChanged}
           />
           <Button
             label={LL.chairs.whiteboard.RESET_BUTTON()}

@@ -111,21 +111,22 @@ enum CommitteeStatus {
 
 /// A committee in a conference
 model Committee {
-  id                String            @id @default(uuid())
-  name              String
-  abbreviation      String
-  category          CommitteeCategory
-  conference        Conference        @relation(fields: [conferenceId], references: [id])
-  conferenceId      String
-  members           CommitteeMember[]
-  parent            Committee?        @relation("subCommittee", fields: [parentId], references: [id])
-  parentId          String?
-  subCommittees     Committee[]       @relation("subCommittee")
-  agendaItems       AgendaItem[]
-  whiteboardContent String            @default("<h1>Hello, World</h1>")
-  status            CommitteeStatus   @default(CLOSED)
-  statusHeadline    String?
-  statusUntil       DateTime?
+  id                                            String            @id @default(uuid())
+  name                                          String
+  abbreviation                                  String
+  category                                      CommitteeCategory
+  conference                                    Conference        @relation(fields: [conferenceId], references: [id])
+  conferenceId                                  String
+  members                                       CommitteeMember[]
+  parent                                        Committee?        @relation("subCommittee", fields: [parentId], references: [id])
+  parentId                                      String?
+  subCommittees                                 Committee[]       @relation("subCommittee")
+  agendaItems                                   AgendaItem[]
+  whiteboardContent                             String            @default("<h1>Hello, World</h1>")
+  status                                        CommitteeStatus   @default(CLOSED)
+  statusHeadline                                String?
+  statusUntil                                   DateTime?
+  allowDelegationsToAddThemselvesToSpeakersList Boolean           @default(false)
 
   @@unique([name, conferenceId])
   @@unique([abbreviation, conferenceId])

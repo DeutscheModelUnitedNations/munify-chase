@@ -31,7 +31,11 @@ interface TimerWidgetProps {
   noAlert?: boolean;
 }
 
-type Committee = Awaited<ReturnType<typeof backend.conference["conferenceId"]["committee"]["committeeId"]["get"]>>["data"];
+type Committee = Awaited<
+  ReturnType<
+    (typeof backend.conference)["conferenceId"]["committee"]["committeeId"]["get"]
+  >
+>["data"];
 
 /**
  * This Component is used in the Dashboard. It shows the current timer status –
@@ -62,19 +66,22 @@ export default function TimerWidget({
         severity: "info" as const,
         sticky: true,
       });
-    };
+    }
   };
 
   async function getCommitteeData() {
     await backend.conference[conferenceId].committee[committeeId]
       .get()
       .then((response) => {
-        if (response.data?.status !== category) setCategory(response.data?.status ?? null);
-        if (response.data?.statusHeadline !== headline) setHeadline(response.data?.statusHeadline ?? null);
-        if (response.data?.statusUntil !== until) setUntil(response.data?.statusUntil ?? null);
+        if (response.data?.status !== category)
+          setCategory(response.data?.status ?? null);
+        if (response.data?.statusHeadline !== headline)
+          setHeadline(response.data?.statusHeadline ?? null);
+        if (response.data?.statusUntil !== until)
+          setUntil(response.data?.statusUntil ?? null);
       })
       .catch((error) => {
-        toastError(toast, LL, error);
+        toastError(error);
       });
   }
 
@@ -171,7 +178,10 @@ export default function TimerWidget({
         >
           {category ? (
             category !== "CLOSED" && (
-              <WidgetTemplate cardTitle="" additionalClassNames={getClassNames()}>
+              <WidgetTemplate
+                cardTitle=""
+                additionalClassNames={getClassNames()}
+              >
                 <div className="flex flex-col justify-center items-center">
                   <div className="my-4">
                     <FontAwesomeIcon icon={getIcon()} size="3x" />
@@ -182,11 +192,15 @@ export default function TimerWidget({
                       {LL.participants.dashboard.timerWidget.UNTIL(timeStamp())}
                     </div>
                   )}
-                  {(category === "INFORMAL" || category === "PAUSE") && until && (
-                    <div className="text-4xl font-bold my-2 tabular-nums">
-                      <Timer until={new Date(until)} setTimerOver={setTimerOver} />
-                    </div>
-                  )}
+                  {(category === "INFORMAL" || category === "PAUSE") &&
+                    until && (
+                      <div className="text-4xl font-bold my-2 tabular-nums">
+                        <Timer
+                          until={new Date(until)}
+                          setTimerOver={setTimerOver}
+                        />
+                      </div>
+                    )}
                 </div>
               </WidgetTemplate>
             )

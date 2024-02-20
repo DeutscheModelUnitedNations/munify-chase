@@ -3,6 +3,7 @@ import { db } from "../../../prisma/db";
 import { committeeRoleGuard } from "../../auth/guards/committeeRoles";
 import { conferenceRoleGuard } from "../../auth/guards/conferenceRoles";
 import { openApiTag } from "../../util/openApiTags";
+import { $Enums } from "../../../prisma/generated/client";
 
 async function calculatePosition(speakersListId: string) {
   const maxPosition = await db.speakerOnList.aggregate({
@@ -51,6 +52,7 @@ export const speakersListSpeakers = new Elysia({
               committeeMember: {
                 select: {
                   id: true,
+                  userId: true,
                   delegation: {
                     select: {
                       id: true,
@@ -61,6 +63,16 @@ export const speakersListSpeakers = new Elysia({
                       },
                     },
                   },
+                },
+              },
+            },
+          },
+          agendaItem: {
+            select: {
+              id: true,
+              committee: {
+                select: {
+                  allowDelegationsToAddThemselvesToSpeakersList: true,
                 },
               },
             },
@@ -85,7 +97,8 @@ export const speakersListSpeakers = new Elysia({
     {
       hasConferenceRole: "any",
       detail: {
-        description: "Add a speaker to the speakers list",
+        description:
+          "Add a speaker to the speakers list by chairs via committeeMemberId",
         tags: [openApiTag(import.meta.path)],
       },
     },
@@ -94,6 +107,24 @@ export const speakersListSpeakers = new Elysia({
   .post(
     "/addSpeaker/user/:userId",
     async ({ params: { speakersListId, userId } }) => {
+      const speakersList = await db.speakersList.findUnique({
+        where: {
+          id: speakersListId,
+        },
+        include: {
+          agendaItem: {
+            select: {
+              id: true,
+              committee: {
+                select: {
+                  allowDelegationsToAddThemselvesToSpeakersList: true,
+                },
+              },
+            },
+          },
+        },
+      });
+
       const committeeMember = await db.committeeMember.findFirst({
         where: {
           userId,
@@ -101,10 +132,47 @@ export const speakersListSpeakers = new Elysia({
       });
 
       if (!committeeMember) {
-        throw new Response("User not found", { status: 404 });
+        return new Response("User not found", { status: 404 });
       }
 
-      return await createSpeakerOnList(speakersListId, committeeMember.id);
+      if (!speakersList) {
+        return new Response("Speakers list not found", { status: 404 });
+      }
+
+      if (
+        !speakersList.agendaItem.committee
+          .allowDelegationsToAddThemselvesToSpeakersList
+      ) {
+        return new Response(
+          "Speakers list does not allow speakers to add themselves",
+          { status: 403 },
+        );
+      }
+
+      if (speakersList.isClosed) {
+        return new Response("Speakers list is closed", { status: 403 });
+      }
+
+      if (committeeMember.presence !== $Enums.Presence.PRESENT) {
+        return new Response(
+          "CommitteeMember is not present in this committee",
+          {
+            status: 403,
+          },
+        );
+      }
+
+      return await createSpeakerOnList(
+        speakersListId,
+        committeeMember.id,
+      ).catch((e) => {
+        console.error(e);
+        if (e.code === "P2002")
+          return new Response("Speaker is already on the list", {
+            status: 409,
+          });
+        return new Response("Error adding speaker", { status: 500 });
+      });
     },
     {
       hasConferenceRole: "any",
@@ -137,7 +205,8 @@ export const speakersListSpeakers = new Elysia({
     {
       hasConferenceRole: "any",
       detail: {
-        description: "Add a speaker to the speakers list",
+        description:
+          "Add a speaker to the speakers list for chairs via countryCode",
         tags: [openApiTag(import.meta.path)],
       },
     },
@@ -149,6 +218,35 @@ export const speakersListSpeakers = new Elysia({
       return await db.speakerOnList.delete({
         where: {
           id: speakerId,
+        },
+      });
+    },
+    {
+      hasConferenceRole: "any",
+      detail: {
+        description: "Remove a speaker from the speakers list",
+        tags: [openApiTag(import.meta.path)],
+      },
+    },
+  )
+
+  .delete(
+    "/removeSpeaker/user/:userId",
+    async ({ params: { speakersListId, userId } }) => {
+      const committeeMember = await db.committeeMember.findFirst({
+        where: {
+          userId,
+        },
+      });
+
+      if (!committeeMember) {
+        throw new Response("Committee member not found", { status: 404 });
+      }
+
+      return await db.speakerOnList.deleteMany({
+        where: {
+          speakersListId,
+          committeeMemberId: committeeMember.id,
         },
       });
     },

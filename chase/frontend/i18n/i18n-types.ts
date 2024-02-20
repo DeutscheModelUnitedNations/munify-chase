@@ -936,6 +936,56 @@ type RootTranslation = {
 			 * N​o​ ​S​p​e​a​k​e​r​s​ ​o​n​ ​t​h​e​ ​L​i​s​t
 			 */
 			NO_SPEAKERS_MESSAGE: string
+			toast: {
+				/**
+				 * A​d​d​e​d​ ​S​p​e​e​c​h
+				 */
+				ADDED_SUCCESS_SUMMARY: string
+				/**
+				 * t​o​ ​{​{​0​}​}
+				 */
+				ADDED_SUCCESS_DETAIL: string
+				/**
+				 * F​o​r​b​i​d​d​e​n
+				 */
+				ADDED_FORBIDDEN_SUMMARY: string
+				/**
+				 * Y​o​u​ ​a​r​e​ ​p​r​o​b​a​b​l​y​ ​n​o​t​ ​r​e​g​i​s​t​e​r​e​d​ ​a​s​ ​P​R​E​S​E​N​T​ ​i​n​ ​t​h​e​ ​c​o​m​m​i​t​t​e​e​.​ ​P​l​e​a​s​e​ ​c​o​n​t​a​c​t​ ​t​h​e​ ​c​h​a​i​r​.
+				 */
+				ADDED_FORBIDDEN_DETAIL: string
+				/**
+				 * A​l​r​e​a​d​y​ ​o​n​ ​L​i​s​t
+				 */
+				ADDED_ALREADY_ON_LIST_SUMMARY: string
+				/**
+				 * P​l​e​a​s​e​ ​w​a​i​t​ ​a​ ​m​o​m​e​n​t​ ​a​n​d​ ​y​o​u​ ​s​h​o​u​l​d​ ​a​p​p​e​a​r​ ​o​n​ ​t​h​e​ ​l​i​s​t​ ​s​o​o​n​.​ ​I​f​ ​n​o​t​,​ ​r​e​l​o​a​d​ ​t​h​e​ ​p​a​g​e​.​ ​I​f​ ​t​h​e​ ​e​r​r​o​r​ ​p​e​r​s​i​s​t​s​,​ ​p​l​e​a​s​e​ ​c​o​n​t​a​c​t​ ​t​h​e​ ​c​h​a​i​r​.
+				 */
+				ADDED_ALREADY_ON_LIST_DETAIL: string
+				/**
+				 * E​r​r​o​r​ ​d​u​r​i​n​g​ ​a​d​d​i​n​g
+				 */
+				ADDED_ERROR_SUMMARY: string
+				/**
+				 * A​n​ ​u​n​e​x​p​e​c​t​e​d​ ​e​r​r​o​r​ ​o​c​c​u​r​r​e​d​.​ ​P​l​e​a​s​e​ ​t​r​y​ ​a​g​a​i​n​ ​l​a​t​e​r​ ​o​r​ ​c​o​n​t​a​c​t​ ​t​h​e​ ​c​h​a​i​r​.
+				 */
+				ADDED_ERROR_DETAIL: string
+				/**
+				 * R​e​m​o​v​e​d
+				 */
+				REMOVED_SUCCESS_SUMMARY: string
+				/**
+				 * f​r​o​m​ ​{​{​0​}​}
+				 */
+				REMOVED_SUCCESS_DETAIL: string
+				/**
+				 * E​r​r​o​r​ ​d​u​r​i​n​g​ ​r​e​m​o​v​i​n​g
+				 */
+				REMOVED_ERROR_SUMMARY: string
+				/**
+				 * A​n​ ​u​n​e​x​p​e​c​t​e​d​ ​e​r​r​o​r​ ​o​c​c​u​r​r​e​d​.​ ​P​l​e​a​s​e​ ​t​r​y​ ​a​g​a​i​n​ ​l​a​t​e​r​ ​o​r​ ​c​o​n​t​a​c​t​ ​t​h​e​ ​c​h​a​i​r​.
+				 */
+				REMOVED_ERROR_DETAIL: string
+			}
 		}
 		voting: {
 			/**
@@ -1112,6 +1162,36 @@ type RootTranslation = {
 					 * S​a​v​e​ ​S​t​a​t​u​s
 					 */
 					BUTTON: string
+				}
+				speakersListAdding: {
+					/**
+					 * S​p​e​a​k​e​r​s​ ​L​i​s​t​ ​A​d​d​i​n​g​ ​P​o​l​i​c​y
+					 */
+					TITLE: string
+					/**
+					 * S​e​l​e​c​t​ ​t​h​e​ ​p​o​l​i​c​y​ ​f​o​r​ ​s​p​e​a​k​e​r​s​ ​a​d​d​i​n​g​ ​t​h​e​m​s​e​l​v​e​s​ ​t​o​ ​t​h​e​ ​s​p​e​a​k​e​r​s​ ​l​i​s​t​.
+					 */
+					DESCRIPTION: string
+					/**
+					 * N​o​t​ ​A​l​l​o​w​e​d
+					 */
+					TOGGLE_BUTTON_NOT_ALLOWED: string
+					/**
+					 * A​l​l​o​w​e​d
+					 */
+					TOGGLE_BUTTON_ALLOWED: string
+					/**
+					 * P​o​l​i​c​y​ ​c​h​a​n​g​e​d
+					 */
+					TOAST_SUCCESS: string
+					/**
+					 * S​p​e​a​k​e​r​s​ ​c​a​n​ ​n​o​w​ ​a​d​d​ ​t​h​e​m​s​e​l​v​e​s​.
+					 */
+					TOAST_SUCCESS_DETAILS_ALLOWED: string
+					/**
+					 * S​p​e​a​k​e​r​s​ ​c​a​n​ ​n​o​ ​l​o​n​g​e​r​ ​a​d​d​ ​t​h​e​m​s​e​l​v​e​s​.
+					 */
+					TOAST_SUCCESS_DETAILS_NOT_ALLOWED: string
 				}
 			}
 		}
@@ -2215,6 +2295,56 @@ export type TranslationFunctions = {
 			 * No Speakers on the List
 			 */
 			NO_SPEAKERS_MESSAGE: () => LocalizedString
+			toast: {
+				/**
+				 * Added Speech
+				 */
+				ADDED_SUCCESS_SUMMARY: () => LocalizedString
+				/**
+				 * to {{0}}
+				 */
+				ADDED_SUCCESS_DETAIL: (arg0: number | string | boolean) => LocalizedString
+				/**
+				 * Forbidden
+				 */
+				ADDED_FORBIDDEN_SUMMARY: () => LocalizedString
+				/**
+				 * You are probably not registered as PRESENT in the committee. Please contact the chair.
+				 */
+				ADDED_FORBIDDEN_DETAIL: () => LocalizedString
+				/**
+				 * Already on List
+				 */
+				ADDED_ALREADY_ON_LIST_SUMMARY: () => LocalizedString
+				/**
+				 * Please wait a moment and you should appear on the list soon. If not, reload the page. If the error persists, please contact the chair.
+				 */
+				ADDED_ALREADY_ON_LIST_DETAIL: () => LocalizedString
+				/**
+				 * Error during adding
+				 */
+				ADDED_ERROR_SUMMARY: () => LocalizedString
+				/**
+				 * An unexpected error occurred. Please try again later or contact the chair.
+				 */
+				ADDED_ERROR_DETAIL: () => LocalizedString
+				/**
+				 * Removed
+				 */
+				REMOVED_SUCCESS_SUMMARY: () => LocalizedString
+				/**
+				 * from {{0}}
+				 */
+				REMOVED_SUCCESS_DETAIL: (arg0: number | string | boolean) => LocalizedString
+				/**
+				 * Error during removing
+				 */
+				REMOVED_ERROR_SUMMARY: () => LocalizedString
+				/**
+				 * An unexpected error occurred. Please try again later or contact the chair.
+				 */
+				REMOVED_ERROR_DETAIL: () => LocalizedString
+			}
 		}
 		voting: {
 			/**
@@ -2391,6 +2521,36 @@ export type TranslationFunctions = {
 					 * Save Status
 					 */
 					BUTTON: () => LocalizedString
+				}
+				speakersListAdding: {
+					/**
+					 * Speakers List Adding Policy
+					 */
+					TITLE: () => LocalizedString
+					/**
+					 * Select the policy for speakers adding themselves to the speakers list.
+					 */
+					DESCRIPTION: () => LocalizedString
+					/**
+					 * Not Allowed
+					 */
+					TOGGLE_BUTTON_NOT_ALLOWED: () => LocalizedString
+					/**
+					 * Allowed
+					 */
+					TOGGLE_BUTTON_ALLOWED: () => LocalizedString
+					/**
+					 * Policy changed
+					 */
+					TOAST_SUCCESS: () => LocalizedString
+					/**
+					 * Speakers can now add themselves.
+					 */
+					TOAST_SUCCESS_DETAILS_ALLOWED: () => LocalizedString
+					/**
+					 * Speakers can no longer add themselves.
+					 */
+					TOAST_SUCCESS_DETAILS_NOT_ALLOWED: () => LocalizedString
 				}
 			}
 		}

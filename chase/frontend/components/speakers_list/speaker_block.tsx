@@ -14,6 +14,7 @@ import { useI18nContext } from "@/i18n/i18n-react";
 import { AnimatePresence, motion } from "framer-motion";
 import { IconProp } from "@fortawesome/fontawesome-svg-core";
 import { SpeakersListDataContext } from "@/contexts/speakers_list_data";
+import NoDataPlaceholder from "../no_data_placeholder";
 
 /**
  * This Component is used in the SpeakersList. It creates a box for the current speaker,
@@ -23,7 +24,7 @@ import { SpeakersListDataContext } from "@/contexts/speakers_list_data";
  */
 
 export default function SpeakerBlock() {
-  const { locale } = useI18nContext();
+  const { LL, locale } = useI18nContext();
 
   const speakersListData = useContext(SpeakersListDataContext);
 
@@ -86,36 +87,44 @@ export default function SpeakerBlock() {
 
   return (
     <>
-      <AnimatePresence mode="wait">
-        <motion.div
-          key={countryCode}
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-        >
-          <div className="flex flex-row items-center justify-start">
-            <LargeFlag countryCode={countryCode} />
-            <div className="flex-1 flex flex-col ml-4">
-              <div className="font-bold text-md">
-                {getCountryNameByCode(countryCode, locale)}
-              </div>
-              <div className="text-md text-primary-300 dark:text-primary-600 flex items-center gap-3">
-                {timerState === "active" && <HourglasAnimation />}
-                {timerState === "paused" && (
-                  <FontAwesomeIcon icon={faHourglassClock as IconProp} />
-                )}
-                {timerState === "overtime" && (
-                  <FontAwesomeIcon
-                    icon={faBell as IconProp}
-                    className="text-red-700 fa-shake"
-                  />
-                )}
-                <div>{timeLeft}</div>
+      {speakersListData?.speakers && speakersListData?.speakers.length !== 0 ? (
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={countryCode}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+          >
+            <div className="flex flex-row items-center justify-start">
+              <LargeFlag countryCode={countryCode} />
+              <div className="flex-1 flex flex-col ml-4">
+                <div className="font-bold text-md">
+                  {getCountryNameByCode(countryCode, locale)}
+                </div>
+                <div className="text-md text-primary-300 dark:text-primary-600 flex items-center gap-3">
+                  {timerState === "active" && <HourglasAnimation />}
+                  {timerState === "paused" && (
+                    <FontAwesomeIcon icon={faHourglassClock as IconProp} />
+                  )}
+                  {timerState === "overtime" && (
+                    <FontAwesomeIcon
+                      icon={faBell as IconProp}
+                      className="text-red-700 fa-shake"
+                    />
+                  )}
+                  <div>{timeLeft}</div>
+                </div>
               </div>
             </div>
-          </div>
-        </motion.div>
-      </AnimatePresence>
+          </motion.div>
+        </AnimatePresence>
+      ) : (
+        <div className="flex flex-col gap-2 items-start justify-center mt-3">
+          <NoDataPlaceholder
+            title={LL.participants.speakersList.NO_SPEAKERS_MESSAGE()}
+          />
+        </div>
+      )}
     </>
   );
 }

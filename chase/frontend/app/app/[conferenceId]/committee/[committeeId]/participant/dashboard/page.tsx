@@ -18,33 +18,49 @@ import { backend } from "@/services/backend";
 import { Toast } from "primereact/toast";
 import { toastError } from "@/fetching/fetching_utils";
 
-type Committee = Awaited<ReturnType<typeof backend.conference["conferenceId"]["committee"]["committeeId"]["get"]>>["data"];
-type AgendaItem = Awaited<ReturnType<typeof backend.conference["conferenceId"]["committee"]["committeeId"]["agendaItem"]["active"]["get"]>>["data"];
-type MyDelegation = Awaited<ReturnType<typeof backend.conference["conferenceId"]["user"]["userId"]["delegation"]["get"]>>["data"];
+type Committee = Awaited<
+  ReturnType<
+    (typeof backend.conference)["conferenceId"]["committee"]["committeeId"]["get"]
+  >
+>["data"];
+type AgendaItem = Awaited<
+  ReturnType<
+    (typeof backend.conference)["conferenceId"]["committee"]["committeeId"]["agendaItem"]["active"]["get"]
+  >
+>["data"];
+type MyDelegation = Awaited<
+  ReturnType<
+    (typeof backend.conference)["conferenceId"]["user"]["userId"]["delegation"]["get"]
+  >
+>["data"];
 
 export default function participant_dashboard({
-  params
+  params,
 }: {
-  params: { conferenceId: string; committeeId: string }
+  params: { conferenceId: string; committeeId: string };
 }) {
   const Router = useRouter();
   const { LL } = useI18nContext();
   const [data, setData] = useState(apiTestData);
   const [committeeData, setCommitteeData] = useState<Committee | null>(null);
   const [agendaItem, setAgendaItem] = useState<AgendaItem | null>(null);
-  const [myDelegationData, setMyDelegationData] = useState<MyDelegation | null>(null);
+  const [myDelegationData, setMyDelegationData] = useState<MyDelegation | null>(
+    null,
+  );
   const toast = useRef<Toast>(null);
 
-  const USER_ID_HARDCODED = "935a0051-39f4-4abe-abe8-42835e31b9d0"; // TODO replace with actual user id logic
+  const USER_ID_HARDCODED = "10e056e8-a14f-4358-9de4-8fc1d616dc9e"; // TODO replace with actual user id logic
 
   async function getMyDelegationData() {
-    await backend.conference[params.conferenceId].user[USER_ID_HARDCODED].delegation
+    await backend.conference[params.conferenceId].user[
+      USER_ID_HARDCODED
+    ].delegation
       .get()
       .then((response) => {
         setMyDelegationData(response.data);
       })
       .catch((error) => {
-        toastError(toast, LL, error);
+        toastError(error);
       });
   }
 
@@ -55,12 +71,14 @@ export default function participant_dashboard({
         setCommitteeData(response.data);
       })
       .catch((error) => {
-        toastError(toast, LL, error);
+        toastError(error);
       });
   }
 
   async function getAgendaItem() {
-    await backend.conference[params.conferenceId].committee[params.committeeId].agendaItem.active
+    await backend.conference[params.conferenceId].committee[
+      params.committeeId
+    ].agendaItem.active
       .get()
       .then((response) => {
         if (response.error?.status === 404) {
@@ -70,10 +88,9 @@ export default function participant_dashboard({
         setAgendaItem(response.data);
       })
       .catch((error) => {
-        toastError(toast, LL, error);
+        toastError(error);
       });
   }
-
 
   useEffect(() => {
     getCommitteeData();

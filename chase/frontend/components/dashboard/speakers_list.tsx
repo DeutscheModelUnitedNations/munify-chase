@@ -7,6 +7,8 @@ import { CountryCode, SpeakersListData } from "@/custom_types/custom_types";
 import { useI18nContext } from "@/i18n/i18n-react";
 import "./markdown.scss";
 import { AnimatePresence, motion } from "framer-motion";
+import { $Enums } from "../../../backend/prisma/generated/client";
+import { SpeakersListDataProvider } from "@/contexts/speakers_list_data";
 
 /**
  * This Component is used in the Dashboard. It uses several components
@@ -29,31 +31,37 @@ export default function SpeakersListWidget({
 
   return (
     <>
-      <WidgetTemplate
-        cardTitle={LL.participants.dashboard.widgetHeadlines.SPEAKERS_LIST()}
+      <SpeakersListDataProvider
+        typeOfList={$Enums.SpeakersListCategory.SPEAKERS_LIST}
       >
-        <div className="flex-1 flex flex-col gap-3">
-          <SpeakerBlock {...speakersList.currentSpeaker} />
-          {commentList.currentSpeaker.countryCode && (
-            <AnimatePresence>
-              <motion.div
-                key={speakersList.currentSpeaker.countryCode}
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.3 }}
-                layout
-              >
-                <CommentBlock>
-                  <SpeakerBlock {...commentList.currentSpeaker} />
-                  <QueueBlock list={commentList.list} myCountry={myCountry} />
-                </CommentBlock>
-              </motion.div>
-            </AnimatePresence>
-          )}
-          <QueueBlock list={speakersList.list} myCountry={myCountry} />
-        </div>
-      </WidgetTemplate>
+        <WidgetTemplate
+          cardTitle={LL.participants.dashboard.widgetHeadlines.SPEAKERS_LIST()}
+        >
+          <div className="flex-1 flex flex-col gap-3">
+            <SpeakerBlock />
+            <SpeakersListDataProvider
+              typeOfList={$Enums.SpeakersListCategory.COMMENT_LIST}
+            >
+              <AnimatePresence>
+                <motion.div
+                  key={speakersList.currentSpeaker.countryCode}
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.3 }}
+                  layout
+                >
+                  <CommentBlock>
+                    <SpeakerBlock />
+                    <QueueBlock list={commentList.list} myCountry={myCountry} />
+                  </CommentBlock>
+                </motion.div>
+              </AnimatePresence>
+            </SpeakersListDataProvider>
+            <QueueBlock list={speakersList.list} myCountry={myCountry} />
+          </div>
+        </WidgetTemplate>
+      </SpeakersListDataProvider>
     </>
   );
 }

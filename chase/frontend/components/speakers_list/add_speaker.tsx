@@ -10,14 +10,26 @@ import {
   AutoComplete,
   AutoCompleteCompleteEvent,
 } from "primereact/autocomplete";
-import { useContext, useEffect, useState } from "react";
+import { useContext, useEffect, useRef, useState } from "react";
 import { SmallFlag } from "../flag_templates";
 import CountryAutoComplete from "./country_auto_complete";
+import { backend } from "@/services/backend";
+import { Toast } from "primereact/toast";
+import { $Enums } from "../../../backend/prisma/generated/client";
+import { toastError } from "@/fetching/fetching_utils";
+import { SpeakersListDataContext } from "@/contexts/speakers_list_data";
+import { ConferenceIdContext } from "@/contexts/committee_data";
 
 interface CountryData {
   alpha3: CountryCode;
   name: string;
 }
+
+type AllCountryCodes = Awaited<
+  ReturnType<
+    (typeof backend.conference)["conferenceId"]["committee"]["committeeId"]["allCountryCodes"]["get"]
+  >
+>["data"];
 
 /**
  * This component is used to display the overlay to add a speaker to the Speakers List on the Speakers List Page for chairs.
@@ -34,37 +46,73 @@ interface CountryData {
 // TODO add warning when a speaker is added to the list and the list is closed
 
 export default function AddSpeakerOverlay({
-  listOfAllCountries,
+  typeOfList,
+  allCountries,
   _listClosed,
   closeOverlay,
-  typeOfList,
 }: {
-  listOfAllCountries: CountryCode[];
+  typeOfList: $Enums.SpeakersListCategory;
+  allCountries: AllCountryCodes | null;
   _listClosed: boolean;
   closeOverlay: () => void;
-  typeOfList: string;
 }) {
   const { LL } = useI18nContext();
-  const { showToast } = useContext(ToastContext);
+  const toast = useRef<Toast>(null);
 
   const [selectedCountry, setSelectedCountry] = useState<CountryData | null>(
     null,
   );
+  const speakersListData = useContext(SpeakersListDataContext);
 
-  const sendAddSpeaker = () => {
-    if (selectedCountry) {
-      showToast({
-        severity: "success",
-        summary: LL.chairs.speakersList.addSpeakerOverlay.TOAST_ADDED_SUMMARY(
-          selectedCountry.name,
-        ),
-        detail:
-          LL.chairs.speakersList.addSpeakerOverlay.TOAST_ADDED_DETAIL(
-            typeOfList,
-          ),
-        sticky: false,
-      });
-      setSelectedCountry(null);
+  const { showToast } = useContext(ToastContext);
+
+  const listTypeMap: {
+    [key in $Enums.SpeakersListCategory]: string;
+  } = {
+    SPEAKERS_LIST: LL.participants.speakersList.SPEAKERS_LIST(),
+    COMMENT_LIST: LL.participants.speakersList.COMMENT_LIST(),
+    MODERATED_CAUCUS: LL.participants.speakersList.MODERATED_CAUCUS(),
+  };
+
+  const sendAddSpeaker = async () => {
+    if (selectedCountry && speakersListData?.id) {
+      await backend.speakersList[speakersListData.id].addSpeaker.code[
+        selectedCountry.alpha3
+      ]
+        .post()
+        .then((res) => {
+          if (res.status === 200) {
+            showToast({
+              severity: "success",
+              summary:
+                LL.chairs.speakersList.addSpeakerOverlay.TOAST_ADDED_SUMMARY(
+                  selectedCountry.name,
+                ),
+              detail:
+                LL.chairs.speakersList.addSpeakerOverlay.TOAST_ADDED_DETAIL(
+                  listTypeMap[typeOfList],
+                ),
+              sticky: false,
+            });
+            setSelectedCountry(null);
+          } else {
+            showToast({
+              severity: "warn",
+              summary:
+                LL.chairs.speakersList.addSpeakerOverlay.TOAST_ALREADY_ON_LIST(
+                  selectedCountry.name,
+                ),
+              detail:
+                LL.chairs.speakersList.addSpeakerOverlay.TOAST_ALREADY_ON_LIST_DETAIL(
+                  listTypeMap[typeOfList],
+                ),
+              sticky: false,
+            });
+          }
+        })
+        .catch((e) => {
+          toastError(toast, LL, e);
+        });
     }
   };
 
@@ -87,8 +135,10 @@ export default function AddSpeakerOverlay({
     <>
       <div className="flex flex-col gap-5 mt-1">
         <CountryAutoComplete
-          listOfAllCountries={listOfAllCountries}
+          allCountries={allCountries}
           placeholder={LL.chairs.speakersList.addSpeakerOverlay.PLACEHOLDER()}
+          selectedCountry={selectedCountry}
+          setSelectedCountry={setSelectedCountry}
         />
 
         <div className="flex gap-3 justify-end flex-wrap">
@@ -119,7 +169,6 @@ export default function AddSpeakerOverlay({
             }}
             keyboardShortcut="⏎"
           />
-          ac
         </div>
       </div>
     </>

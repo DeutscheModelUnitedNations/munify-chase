@@ -52,6 +52,37 @@ export const committee = new Elysia({
       },
     }
   )
+  .get(
+    "/committee/:committeeId/allCountryCodes",
+    async ({ params: { conferenceId, committeeId } }) => {
+      const delegation = await db.delegation.findMany({
+        where: {
+          members: {
+            some: {
+              committeeId,
+            },
+          }
+        },
+        select: {
+          nation: {
+            select: {
+              alpha3Code: true,
+            }
+          }
+        }
+      });
+
+      return delegation.map(d => d.nation.alpha3Code);
+    },
+    {
+      hasConferenceRole: "any",
+      response: t.Array(t.String()),
+      detail: {
+        description: "Get all country codes of a committee",
+        tags: [openApiTag(import.meta.path)],
+      },
+    }
+  )
   .post(
     "/committee",
     async ({ body, params: { conferenceId } }) => {

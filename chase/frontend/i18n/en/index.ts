@@ -266,6 +266,7 @@ const en = {
       widgetHeadlines: {
         SPEAKERS_LIST: "Speakers List",
         COMMENT_LIST: "Comment List",
+        MODERATED_CAUCUS: "Moderated Caucus",
         COMMITTEE_STATUS: "Committee Status",
         WHITEBOARD: "Whiteboard",
         DOCUMENTS: "Documents",
@@ -314,6 +315,7 @@ const en = {
     speakersList: {
       SPEAKERS_LIST: "Speakers List",
       COMMENT_LIST: "Comment List",
+      MODERATED_CAUCUS: "Moderated Caucus",
       ADD_TO_LIST_BUTTON: "Speech",
       REMOVE_FROM_LIST_BUTTON: "Remove",
       LIST_CLOSED_BUTTON: "List Closed",
@@ -423,6 +425,8 @@ const en = {
         BUTTON_ADD_AND_CLOSE: "Add and Close",
         TOAST_ADDED_SUMMARY: "{{0}} added",
         TOAST_ADDED_DETAIL: "to the {{0}}",
+        TOAST_ALREADY_ON_LIST: "Already on {{0}}",
+        TOAST_ALREADY_ON_LIST_DETAIL: "This country is already on {{0}}",
       },
       changeSpeechTimeOverlay: {
         HEADLINE: "Change Speech Time for {{0}}",

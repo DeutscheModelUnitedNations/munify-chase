@@ -7,10 +7,6 @@ type User = NonNullable<Awaited<ReturnType<typeof backend.auth.myInfo.get>>["dat
 export const UserIdent = createContext({} as { userIdent: User });
 export const useUserIdent = () => useContext(UserIdent);
 
-/**
- * This Component provides a context for the Toast Component from PrimeReact.
- * It is used to show messages to the user, for example when a document was successfully created.
- */
 export const UserIdentProvider = ({ children }: { children: React.ReactNode }) => {
   const router = useRouter();
 

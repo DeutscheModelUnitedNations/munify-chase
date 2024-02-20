@@ -268,6 +268,7 @@ const de = {
       widgetHeadlines: {
         SPEAKERS_LIST: "Redeliste",
         COMMENT_LIST: "Fragen und Kurzbemerkungen",
+        MODERATED_CAUCUS: "Moderierte Informelle Sitzung",
         COMMITTEE_STATUS: "Debattenstatus",
         WHITEBOARD: "Whiteboard",
         DOCUMENTS: "Dokumente",
@@ -317,6 +318,7 @@ const de = {
     speakersList: {
       SPEAKERS_LIST: "Redeliste",
       COMMENT_LIST: "Fragen und Kurzbemerkungen",
+      MODERATED_CAUCUS: "Moderierte Informelle Sitzung",
       ADD_TO_LIST_BUTTON: "Redebeitrag",
       REMOVE_FROM_LIST_BUTTON: "Zurückziehen",
       LIST_CLOSED_BUTTON: "Liste Geschlossen",
@@ -430,6 +432,8 @@ const de = {
         BUTTON_ADD_AND_CLOSE: "Hinzufügen und schließen",
         TOAST_ADDED_SUMMARY: "{{0}} hinzugefügt",
         TOAST_ADDED_DETAIL: "zu {{0}}",
+        TOAST_ALREADY_ON_LIST: "Already on {{0}}",
+        TOAST_ALREADY_ON_LIST_DETAIL: "This country is already on {{0}}",
       },
       changeSpeechTimeOverlay: {
         HEADLINE: "Redezeit für {{0}} ändern",

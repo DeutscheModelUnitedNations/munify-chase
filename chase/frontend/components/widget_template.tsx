@@ -3,7 +3,7 @@ import React from "react";
 
 interface WidgetTemplateProps {
   children: React.ReactNode;
-  cardTitle: string;
+  cardTitle?: string;
   autoStyle?: boolean;
   additionalClassNames?: string;
 }
@@ -34,12 +34,12 @@ export default function WidgetTemplate({
   return (
     <>
       <div className={widgetClassNames()}>
-        {cardTitle && (cardTitle !== "" ? (
-          <div className=" font-bold mb-2 text-lg">{cardTitle}</div>
-        ) : (
-          <Skeleton width="5rem" height="1.75rem"></Skeleton>
-        )
-        )}
+        {cardTitle &&
+          (cardTitle !== "" ? (
+            <div className=" font-bold mb-2 text-lg">{cardTitle}</div>
+          ) : (
+            <Skeleton width="5rem" height="1.75rem"></Skeleton>
+          ))}
         <div className="flex-1">{children}</div>
       </div>
     </>

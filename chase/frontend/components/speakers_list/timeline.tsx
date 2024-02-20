@@ -1,6 +1,6 @@
-import { CountryCode, Speaker } from "@/custom_types/custom_types";
 import React from "react";
 import FlipMove from "react-flip-move";
+import { SpeakersListData } from "./speakers_list_block";
 
 /**
  * This Component is used in the Queue List Component on the Speakers List Page.
@@ -12,24 +12,30 @@ import FlipMove from "react-flip-move";
 export default function Timeline({
   list,
   content,
-}: { list: Speaker[]; content: (item: CountryCode) => React.ReactNode }) {
+}: {
+  list?: SpeakersListData.speakers;
+  content: (item: SpeakersListData.speakers[number]) => React.ReactNode;
+}) {
   return (
     <>
       <div className="flex-1 flex flex-col">
-        <FlipMove
+        {/* <FlipMove 
+        TODO: Fix this
           duration={500}
           enterAnimation="fade"
           leaveAnimation="fade"
           appearAnimation="fade"
-        >
-          {list.map((item) => {
+        > */}
+        {list?.length &&
+          list.length !== 0 &&
+          list.map((item) => {
             return (
-              <div key={item.entryId} className="flex flex-col items-start">
-                {content(item.countryCode)}
+              <div key={item.id} className="flex flex-col items-start">
+                {content(item)}
               </div>
             );
           })}
-        </FlipMove>
+        {/* </FlipMove> */}
       </div>
     </>
   );

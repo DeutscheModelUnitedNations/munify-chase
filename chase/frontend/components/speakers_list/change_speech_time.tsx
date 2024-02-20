@@ -6,6 +6,8 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPlus, faTimes } from "@fortawesome/pro-solid-svg-icons";
 import { ToastContext } from "@/contexts/toast";
 import { IconProp } from "@fortawesome/fontawesome-svg-core";
+import { backend } from "@/services/backend";
+import { SpeakersListIdContext } from "@/contexts/speakers_list_data";
 
 /**
  * This Component is used on the SpeakersListPage for the Chair to change the speech time of the current speaker
@@ -20,6 +22,7 @@ export default function ChangeSpeechTimeOverlay({
 }) {
   const { LL } = useI18nContext();
   const { showToast } = useContext(ToastContext);
+  const speakersListId = useContext(SpeakersListIdContext);
 
   const [time, setTime] = useState<string | null>(null); // TODO: Add a default value
 
@@ -34,7 +37,14 @@ export default function ChangeSpeechTimeOverlay({
     );
   };
 
-  const sendNewTime = (time: string | null) => {
+  const convertTimeToSeconds = (time: string | null) => {
+    if (!time) return 0;
+    const [minutes, seconds] = time.split(":");
+    return parseInt(minutes) * 60 + parseInt(seconds);
+  };
+
+  const sendNewTime = async (time: string | null) => {
+    if (!speakersListId || !time) return;
     if (!validateTime(time)) {
       showToast({
         severity: "error",
@@ -44,6 +54,10 @@ export default function ChangeSpeechTimeOverlay({
       });
       return;
     }
+
+    await backend.speakersList[speakersListId].setSpeakingTime.post({
+      speakingTime: convertTimeToSeconds(time),
+    });
 
     showToast({
       severity: "success",

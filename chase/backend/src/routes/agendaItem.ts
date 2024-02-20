@@ -37,7 +37,6 @@ export const agendaItem = new Elysia({
     },
     {
       hasConferenceRole: "any",
-      response: t.Array(AgendaItemWithoutRelations),
       detail: {
         description: "Get all agenda items in this committee",
         tags: [openApiTag(import.meta.path)],
@@ -94,17 +93,46 @@ export const agendaItem = new Elysia({
           committeeId,
           isActive: true,
         },
+        include: {
+          speakerLists: true,
+        }
       });
 
       if (!r) {
         return new Response("No Active Committee", { status: 404 });
       }
 
-      return { ...r, description: r.description || undefined };
+      return { ...r, description: r.description || undefined }
     },
     {
       hasConferenceRole: "any",
-      response: AgendaItemWithoutRelations,
+      detail: {
+        description: "Get all active agenda items in this committee",
+        tags: [openApiTag(import.meta.path)],
+      },
+    },
+  )
+  .get(
+    "/agendaItem/active/:type",
+    async ({ params: { conferenceId, committeeId, type } }) => {
+      const r = await db.agendaItem.findFirst({
+        where: {
+          committeeId,
+          isActive: true,
+        },
+        include: {
+          speakerLists: true,
+        }
+      });
+
+      // if (!r) {
+      //   return new Response("No Active Committee", { status: 404 });
+      // }
+
+      return r?.speakerLists.find((sl) => sl.type === type) ?? null;
+    },
+    {
+      hasConferenceRole: "any",
       detail: {
         description: "Get all active agenda items in this committee",
         tags: [openApiTag(import.meta.path)],

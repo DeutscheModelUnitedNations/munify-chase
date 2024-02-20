@@ -95,7 +95,7 @@ export const speakersListModification = new Elysia({
 
   .post(
     "/startTimer",
-    async ({ params: { speakersListId }, body }) => {
+    async ({ params: { speakersListId } }) => {
       const speakersList = await db.speakersList.findUnique({
         where: {
           id: speakersListId,
@@ -107,16 +107,13 @@ export const speakersListModification = new Elysia({
           id: speakersListId,
         },
         data: {
-          startTimestamp: new Date(body.startTimestamp),
+          startTimestamp: new Date(Date.now()),
           timeLeft: speakersList?.timeLeft ?? speakersList?.speakingTime,
         },
       });
     },
     {
       hasConferenceRole: "any",
-      body: t.Object({
-        startTimestamp: t.String(),
-      }),
       detail: {
         description: "Start the timer for a speakers list",
         tags: [openApiTag(import.meta.path)],
@@ -126,7 +123,7 @@ export const speakersListModification = new Elysia({
 
   .post(
     "/stopTimer",
-    async ({ params: { speakersListId }, body }) => {
+    async ({ params: { speakersListId } }) => {
       const speakersList = await db.speakersList.findUnique({
         where: {
           id: speakersListId,
@@ -138,15 +135,13 @@ export const speakersListModification = new Elysia({
           id: speakersListId,
         },
         data: {
-          timeLeft: calculateTimeLeft(speakersList?.startTimestamp, new Date(body.stopTimestamp), speakersList?.speakingTime),
+          timeLeft: calculateTimeLeft(speakersList?.startTimestamp, new Date(Date.now()), speakersList?.timeLeft),
+          startTimestamp: null,
         },
       });
     },
     {
       hasConferenceRole: "any",
-      body: t.Object({
-        stopTimestamp: t.String(),
-      }),
       detail: {
         description: "Stop the timer for a speakers list",
         tags: [openApiTag(import.meta.path)],
@@ -168,7 +163,7 @@ export const speakersListModification = new Elysia({
           id: speakersListId,
         },
         data: {
-          startTimestamp: null,
+          startTimestamp: SpeakersList?.startTimestamp ? new Date(Date.now()) : null,
           timeLeft: SpeakersList?.speakingTime,
         },
       });
@@ -200,14 +195,14 @@ export const speakersListModification = new Elysia({
           id: speakersListId,
         },
         data: {
-          timeLeft: speakersList?.timeLeft + body.increase,
+          timeLeft: speakersList?.timeLeft + body.amount,
         },
       });
     },
     {
       hasConferenceRole: "any",
       body: t.Object({
-        increase: t.Number(),
+        amount: t.Number(),
       }),
       detail: {
         description: "Increase the speaking time for a speakers list",
@@ -234,14 +229,14 @@ export const speakersListModification = new Elysia({
           id: speakersListId,
         },
         data: {
-          timeLeft: speakersList?.timeLeft - body.decrease,
+          timeLeft: speakersList?.timeLeft - body.amount,
         },
       });
     },
     {
       hasConferenceRole: "any",
       body: t.Object({
-        decrease: t.Number(),
+        amount: t.Number(),
       }),
       detail: {
         description: "Decrease the speaking time for a speakers list",

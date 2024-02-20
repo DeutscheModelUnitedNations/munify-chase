@@ -770,6 +770,10 @@ type RootTranslation = {
 				 */
 				COMMENT_LIST: string
 				/**
+				 * M​o​d​e​r​a​t​e​d​ ​C​a​u​c​u​s
+				 */
+				MODERATED_CAUCUS: string
+				/**
 				 * C​o​m​m​i​t​t​e​e​ ​S​t​a​t​u​s
 				 */
 				COMMITTEE_STATUS: string
@@ -908,6 +912,10 @@ type RootTranslation = {
 			 * C​o​m​m​e​n​t​ ​L​i​s​t
 			 */
 			COMMENT_LIST: string
+			/**
+			 * M​o​d​e​r​a​t​e​d​ ​C​a​u​c​u​s
+			 */
+			MODERATED_CAUCUS: string
 			/**
 			 * S​p​e​e​c​h
 			 */
@@ -1223,6 +1231,14 @@ type RootTranslation = {
 				 * t​o​ ​t​h​e​ ​{​{​0​}​}
 				 */
 				TOAST_ADDED_DETAIL: string
+				/**
+				 * A​l​r​e​a​d​y​ ​o​n​ ​{​{​0​}​}
+				 */
+				TOAST_ALREADY_ON_LIST: string
+				/**
+				 * T​h​i​s​ ​c​o​u​n​t​r​y​ ​i​s​ ​a​l​r​e​a​d​y​ ​o​n​ ​{​{​0​}​}
+				 */
+				TOAST_ALREADY_ON_LIST_DETAIL: string
 			}
 			changeSpeechTimeOverlay: {
 				/**
@@ -2033,6 +2049,10 @@ export type TranslationFunctions = {
 				 */
 				COMMENT_LIST: () => LocalizedString
 				/**
+				 * Moderated Caucus
+				 */
+				MODERATED_CAUCUS: () => LocalizedString
+				/**
 				 * Committee Status
 				 */
 				COMMITTEE_STATUS: () => LocalizedString
@@ -2171,6 +2191,10 @@ export type TranslationFunctions = {
 			 * Comment List
 			 */
 			COMMENT_LIST: () => LocalizedString
+			/**
+			 * Moderated Caucus
+			 */
+			MODERATED_CAUCUS: () => LocalizedString
 			/**
 			 * Speech
 			 */
@@ -2486,6 +2510,14 @@ export type TranslationFunctions = {
 				 * to the {{0}}
 				 */
 				TOAST_ADDED_DETAIL: (arg0: number | string | boolean) => LocalizedString
+				/**
+				 * Already on {{0}}
+				 */
+				TOAST_ALREADY_ON_LIST: (arg0: number | string | boolean) => LocalizedString
+				/**
+				 * This country is already on {{0}}
+				 */
+				TOAST_ALREADY_ON_LIST_DETAIL: (arg0: number | string | boolean) => LocalizedString
 			}
 			changeSpeechTimeOverlay: {
 				/**

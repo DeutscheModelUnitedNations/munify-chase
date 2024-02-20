@@ -46,18 +46,19 @@ export const agendaItem = new Elysia({
   .post(
     "/agendaItem",
     async ({ body, params: { conferenceId, committeeId } }) => {
-      const agendaItem = await db.agendaItem.create({
-        data: {
-          committee: {
-            connect: {
-              id: committeeId,
-              conferenceId,
+      const agendaItem = await db.agendaItem
+        .create({
+          data: {
+            committee: {
+              connect: {
+                id: committeeId,
+                conferenceId,
+              },
             },
+            title: body.title,
+            description: body.description,
           },
-          title: body.title,
-          description: body.description,
-        },
-      })
+        })
         .then((a) => ({ ...a, description: a.description || undefined }));
       const _speakersLists = await db.speakersList.createMany({
         data: [
@@ -70,9 +71,9 @@ export const agendaItem = new Elysia({
             type: "COMMENT_LIST",
             agendaItemId: agendaItem.id,
             speakingTime: 30,
-          }
-        ]
-      })
+          },
+        ],
+      });
       return agendaItem;
     },
     {
@@ -87,7 +88,7 @@ export const agendaItem = new Elysia({
   )
   .get(
     "/agendaItem/active",
-    async ({ params: { committeeId } }) => {
+    async ({ params: { committeeId }, set }) => {
       const r = await db.agendaItem.findFirst({
         where: {
           committeeId,
@@ -95,14 +96,15 @@ export const agendaItem = new Elysia({
         },
         include: {
           speakerLists: true,
-        }
+        },
       });
 
       if (!r) {
-        return new Response("No Active Committee", { status: 404 });
+        set.status = "Not Found";
+        throw new Error("No Active Committee");
       }
 
-      return { ...r, description: r.description || undefined }
+      return { ...r, description: r.description || undefined };
     },
     {
       hasConferenceRole: "any",
@@ -114,7 +116,7 @@ export const agendaItem = new Elysia({
   )
   .get(
     "/agendaItem/active/:type",
-    async ({ params: { conferenceId, committeeId, type } }) => {
+    async ({ params: { conferenceId, committeeId, type }, set }) => {
       const r = await db.agendaItem.findFirst({
         where: {
           committeeId,
@@ -122,12 +124,13 @@ export const agendaItem = new Elysia({
         },
         include: {
           speakerLists: true,
-        }
+        },
       });
 
-      // if (!r) {
-      //   return new Response("No Active Committee", { status: 404 });
-      // }
+      if (!r) {
+        set.status = "Not Found";
+        throw new Error("No Active Committee");
+      }
 
       return r?.speakerLists.find((sl) => sl.type === type) ?? null;
     },

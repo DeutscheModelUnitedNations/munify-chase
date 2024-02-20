@@ -1,5 +1,4 @@
 "use client";
-import { MyDelegationProvider } from "@/contexts/user_ident";
 import { ConferenceIdContext } from "@/contexts/committee_data";
 
 export default function MyDelegationLayout({
@@ -11,7 +10,7 @@ export default function MyDelegationLayout({
 }) {
   return (
     <ConferenceIdContext.Provider value={params.conferenceId}>
-      <MyDelegationProvider>{children}</MyDelegationProvider>
+      {children}
     </ConferenceIdContext.Provider>
   );
 }

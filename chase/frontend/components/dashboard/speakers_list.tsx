@@ -39,6 +39,7 @@ export default function SpeakersListWidget({
         >
           <div className="flex-1 flex flex-col gap-3">
             <SpeakerBlock />
+
             <SpeakersListDataProvider
               typeOfList={$Enums.SpeakersListCategory.COMMENT_LIST}
             >
@@ -53,12 +54,13 @@ export default function SpeakersListWidget({
                 >
                   <CommentBlock>
                     <SpeakerBlock />
-                    <QueueBlock list={commentList.list} myCountry={myCountry} />
+                    <QueueBlock />
                   </CommentBlock>
                 </motion.div>
               </AnimatePresence>
             </SpeakersListDataProvider>
-            <QueueBlock list={speakersList.list} myCountry={myCountry} />
+
+            <QueueBlock />
           </div>
         </WidgetTemplate>
       </SpeakersListDataProvider>

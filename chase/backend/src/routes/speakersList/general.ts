@@ -12,7 +12,7 @@ export const speakersListGeneral = new Elysia({
   .use(committeeRoleGuard)
   .get(
     "/speakersList",
-    async ({ params: { conferenceId, committeeId } }) => {
+    async ({ params: { conferenceId, committeeId }, set }) => {
       const agendaItem = await db.agendaItem.findFirst({
         where: {
           committeeId,
@@ -21,7 +21,8 @@ export const speakersListGeneral = new Elysia({
       });
 
       if (!agendaItem) {
-        return new Response("No active agenda item found", { status: 404 });
+        set.status = "Not Found";
+        throw new Error("No active agenda item found");
       }
 
       const speakersList = await db.speakersList.findMany({
@@ -62,7 +63,7 @@ export const speakersListGeneral = new Elysia({
 
   .get(
     "/speakersList/:type",
-    async ({ params: { conferenceId, committeeId, type } }) => {
+    async ({ params: { conferenceId, committeeId, type }, set }) => {
       const agendaItem = await db.agendaItem.findFirst({
         where: {
           committeeId,
@@ -71,11 +72,13 @@ export const speakersListGeneral = new Elysia({
       });
 
       if (!agendaItem) {
-        return new Response("No active agenda item found", { status: 404 });
+        set.status = "Not Found";
+        throw new Error("No active agenda item found");
       }
 
       if (!Object.values($Enums.SpeakersListCategory).includes(type)) {
-        return new Response("Invalid speakers list type", { status: 400 });
+        set.status = "Bad Request";
+        throw new Error("Invalid speakers list type");
       }
 
       return await db.speakersList.findFirst({

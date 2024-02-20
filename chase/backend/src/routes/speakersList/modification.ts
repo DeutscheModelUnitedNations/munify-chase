@@ -7,10 +7,11 @@ import { openApiTag } from "../../util/openApiTags";
 function calculateTimeLeft(
   startTimestamp: Date | null | undefined,
   stopTimestamp: Date,
-  speakingTime: number | null | undefined
+  speakingTime: number | null | undefined,
 ): number {
   if (startTimestamp && speakingTime) {
-    const timeElapsed = (stopTimestamp.getTime() - startTimestamp.getTime()) / 1000;
+    const timeElapsed =
+      (stopTimestamp.getTime() - startTimestamp.getTime()) / 1000;
     return Math.floor(speakingTime - timeElapsed);
   }
   return 0;
@@ -99,7 +100,7 @@ export const speakersListModification = new Elysia({
       const speakersList = await db.speakersList.findUnique({
         where: {
           id: speakersListId,
-        }
+        },
       });
 
       return await db.speakersList.update({
@@ -135,7 +136,11 @@ export const speakersListModification = new Elysia({
           id: speakersListId,
         },
         data: {
-          timeLeft: calculateTimeLeft(speakersList?.startTimestamp, new Date(Date.now()), speakersList?.timeLeft),
+          timeLeft: calculateTimeLeft(
+            speakersList?.startTimestamp,
+            new Date(Date.now()),
+            speakersList?.timeLeft,
+          ),
           startTimestamp: null,
         },
       });
@@ -163,7 +168,9 @@ export const speakersListModification = new Elysia({
           id: speakersListId,
         },
         data: {
-          startTimestamp: SpeakersList?.startTimestamp ? new Date(Date.now()) : null,
+          startTimestamp: SpeakersList?.startTimestamp
+            ? new Date(Date.now())
+            : null,
           timeLeft: SpeakersList?.speakingTime,
         },
       });
@@ -179,7 +186,7 @@ export const speakersListModification = new Elysia({
 
   .post(
     "/increaseSpeakingTime",
-    async ({ params: { speakersListId }, body }) => {
+    async ({ params: { speakersListId }, body, set }) => {
       const speakersList = await db.speakersList.findUnique({
         where: {
           id: speakersListId,
@@ -187,7 +194,8 @@ export const speakersListModification = new Elysia({
       });
 
       if (!speakersList?.timeLeft) {
-        return new Response("No time set, increase not possible", { status: 400 });
+        set.status = "Bad Request";
+        throw new Error("No time set, increase not possible");
       }
 
       return await db.speakersList.update({
@@ -213,7 +221,7 @@ export const speakersListModification = new Elysia({
 
   .post(
     "/decreaseSpeakingTime",
-    async ({ params: { speakersListId }, body }) => {
+    async ({ params: { speakersListId }, body, set }) => {
       const speakersList = await db.speakersList.findUnique({
         where: {
           id: speakersListId,
@@ -221,7 +229,8 @@ export const speakersListModification = new Elysia({
       });
 
       if (!speakersList?.timeLeft) {
-        return new Response("No time set, decrease not possible", { status: 400 });
+        set.status = "Bad Request";
+        throw new Error("No time set, decrease not possible");
       }
 
       return await db.speakersList.update({
@@ -243,4 +252,4 @@ export const speakersListModification = new Elysia({
         tags: [openApiTag(import.meta.path)],
       },
     },
-  )
+  );

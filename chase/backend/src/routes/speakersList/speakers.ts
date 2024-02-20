@@ -106,7 +106,7 @@ export const speakersListSpeakers = new Elysia({
 
   .post(
     "/addSpeaker/user/:userId",
-    async ({ params: { speakersListId, userId } }) => {
+    async ({ params: { speakersListId, userId }, set }) => {
       const speakersList = await db.speakersList.findUnique({
         where: {
           id: speakersListId,
@@ -132,46 +132,45 @@ export const speakersListSpeakers = new Elysia({
       });
 
       if (!committeeMember) {
-        return new Response("User not found", { status: 404 });
+        set.status = "Not Found";
+        throw new Error("User not found");
       }
 
       if (!speakersList) {
-        return new Response("Speakers list not found", { status: 404 });
+        set.status = "Not Found";
+        throw new Error("Speakers list not found");
       }
 
       if (
         !speakersList.agendaItem.committee
           .allowDelegationsToAddThemselvesToSpeakersList
       ) {
-        return new Response(
+        set.status = "Forbidden";
+        throw new Error(
           "Speakers list does not allow speakers to add themselves",
-          { status: 403 },
         );
       }
 
       if (speakersList.isClosed) {
-        return new Response("Speakers list is closed", { status: 403 });
+        set.status = "Forbidden";
+        throw new Error("Speakers list is closed");
       }
 
       if (committeeMember.presence !== $Enums.Presence.PRESENT) {
-        return new Response(
-          "CommitteeMember is not present in this committee",
-          {
-            status: 403,
-          },
-        );
+        set.status = "Forbidden";
+        throw new Error("CommitteeMember is not present in this committee");
       }
 
       return await createSpeakerOnList(
         speakersListId,
         committeeMember.id,
       ).catch((e) => {
-        console.error(e);
-        if (e.code === "P2002")
-          return new Response("Speaker is already on the list", {
-            status: 409,
-          });
-        return new Response("Error adding speaker", { status: 500 });
+        if (e.code === "P2002") {
+          set.status = "Conflict";
+          throw new Error("Speaker is already on the list");
+        }
+        set.status = "Internal Server Error";
+        throw new Error("Error adding speaker");
       });
     },
     {
@@ -185,7 +184,7 @@ export const speakersListSpeakers = new Elysia({
 
   .post(
     "/addSpeaker/code/:countryCode",
-    async ({ params: { speakersListId, countryCode } }) => {
+    async ({ params: { speakersListId, countryCode }, set }) => {
       const committeeMember = await db.committeeMember.findFirst({
         where: {
           delegation: {
@@ -197,7 +196,8 @@ export const speakersListSpeakers = new Elysia({
       });
 
       if (!committeeMember) {
-        throw new Response("Committee member not found", { status: 404 });
+        set.status = "Not Found";
+        throw new Error("Committee member not found");
       }
 
       return await createSpeakerOnList(speakersListId, committeeMember.id);
@@ -232,7 +232,7 @@ export const speakersListSpeakers = new Elysia({
 
   .delete(
     "/removeSpeaker/user/:userId",
-    async ({ params: { speakersListId, userId } }) => {
+    async ({ params: { speakersListId, userId }, set }) => {
       const committeeMember = await db.committeeMember.findFirst({
         where: {
           userId,
@@ -240,7 +240,8 @@ export const speakersListSpeakers = new Elysia({
       });
 
       if (!committeeMember) {
-        throw new Response("Committee member not found", { status: 404 });
+        set.status = "Not Found";
+        throw new Error("Committee member not found");
       }
 
       return await db.speakerOnList.deleteMany({
@@ -279,7 +280,7 @@ export const speakersListSpeakers = new Elysia({
 
   .post(
     "/moveSpeaker/:speakerId/up",
-    async ({ params: { speakersListId, speakerId } }) => {
+    async ({ params: { speakersListId, speakerId }, set }) => {
       const speaker = await db.speakerOnList.findUnique({
         where: {
           id: speakerId,
@@ -287,7 +288,8 @@ export const speakersListSpeakers = new Elysia({
       });
 
       if (!speaker) {
-        throw new Response("Speaker not found", { status: 404 });
+        set.status = "Not Found";
+        throw new Error("Speaker not found");
       }
 
       const previousSpeaker = await db.speakerOnList.findFirst({
@@ -336,7 +338,7 @@ export const speakersListSpeakers = new Elysia({
 
   .post(
     "/moveSpeaker/:speakerId/down",
-    async ({ params: { speakersListId, speakerId } }) => {
+    async ({ params: { speakersListId, speakerId }, set }) => {
       const speaker = await db.speakerOnList.findUnique({
         where: {
           id: speakerId,
@@ -344,7 +346,8 @@ export const speakersListSpeakers = new Elysia({
       });
 
       if (!speaker) {
-        throw new Response("Speaker not found", { status: 404 });
+        set.status = "Not Found";
+        throw new Error("Speaker not found");
       }
 
       const nextSpeaker = await db.speakerOnList.findFirst({
@@ -393,7 +396,7 @@ export const speakersListSpeakers = new Elysia({
 
   .post(
     "/nextSpeaker",
-    async ({ params: { speakersListId } }) => {
+    async ({ params: { speakersListId }, set }) => {
       const currentSpeaker = await db.speakerOnList.findFirst({
         where: {
           speakersListId,
@@ -404,7 +407,8 @@ export const speakersListSpeakers = new Elysia({
       });
 
       if (!currentSpeaker) {
-        return new Response("No next speaker found", { status: 404 });
+        set.status = "Not Found";
+        throw new Error("No next speaker found");
       }
 
       const speakersList = await db.speakersList.findUnique({
@@ -421,7 +425,8 @@ export const speakersListSpeakers = new Elysia({
       });
 
       if (!speakersList) {
-        throw new Response("Speakers list not found", { status: 404 });
+        set.status = "Not Found";
+        throw new Error("Speakers list not found");
       }
 
       const transaction = [
@@ -450,9 +455,8 @@ export const speakersListSpeakers = new Elysia({
         });
 
         if (!correspondingCommentList) {
-          throw new Response("Corresponding comment list not found", {
-            status: 404,
-          });
+          set.status = "Not Found";
+          throw new Error("Corresponding comment list not found");
         }
         return await db.$transaction([
           db.speakerOnList.deleteMany({

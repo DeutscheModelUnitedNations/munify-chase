@@ -1,13 +1,9 @@
-import React, { useContext, useEffect, useRef, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import WidgetTemplate from "@components/widget_template";
 import { ToastContext } from "@/contexts/toast";
-
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
-  faGavel,
   faComments,
-  faCoffee,
-  faCirclePause,
   faQuestion,
   faPodium,
   faMugHot,
@@ -21,15 +17,12 @@ import Timer from "./countdown_timer";
 import { $Enums } from "../../../backend/prisma/generated/client";
 import { backend } from "@/services/backend";
 import { toastError } from "@/fetching/fetching_utils";
-import { Toast } from "primereact/toast";
+import {
+  ConferenceIdContext,
+  CommitteeIdContext,
+} from "@/contexts/committee_data";
 
 type Category = $Enums.CommitteeStatus;
-
-interface TimerWidgetProps {
-  conferenceId: string;
-  committeeId: string;
-  noAlert?: boolean;
-}
 
 type Committee = Awaited<
   ReturnType<
@@ -43,14 +36,11 @@ type Committee = Awaited<
  * With this widget, participants can see the end time of the current session as well as a countdown.
  */
 
-export default function TimerWidget({
-  conferenceId,
-  committeeId,
-  noAlert,
-}: TimerWidgetProps) {
+export default function TimerWidget({ noAlert }: { noAlert?: boolean }) {
   const { LL } = useI18nContext();
-  const { showToast } = useContext(ToastContext);
-  const toast = useRef(null);
+  const { showToast, clearToast } = useContext(ToastContext);
+  const conferenceId = useContext(ConferenceIdContext);
+  const committeeId = useContext(CommitteeIdContext);
 
   const [category, setCategory] = useState<Category | null>(null);
   const [headline, setHeadline] = useState<string | null>(null);
@@ -60,7 +50,7 @@ export default function TimerWidget({
 
   const timerToast = () => {
     if (!noAlert) {
-      toast.current?.show({
+      showToast({
         summary: LL.participants.dashboard.timerWidget.TOAST_HEADLINE(),
         detail: LL.participants.dashboard.timerWidget.TOAST_MESSAGE(),
         severity: "info" as const,
@@ -70,6 +60,7 @@ export default function TimerWidget({
   };
 
   async function getCommitteeData() {
+    if (!conferenceId || !committeeId) return;
     await backend.conference[conferenceId].committee[committeeId]
       .get()
       .then((response) => {
@@ -103,7 +94,7 @@ export default function TimerWidget({
   useEffect(() => {
     setToastShown(false);
     setTimerOver(false);
-    toast.current?.clear();
+    clearToast();
   }, [until]);
 
   const timeStamp = () => {
@@ -166,7 +157,6 @@ export default function TimerWidget({
 
   return (
     <>
-      <Toast ref={toast} />
       <AnimatePresence mode="wait">
         <motion.div
           key={category}

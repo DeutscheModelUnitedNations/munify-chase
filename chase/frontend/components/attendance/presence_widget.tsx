@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useContext } from "react";
 import { useI18nContext } from "@/i18n/i18n-react";
 import { HeaderInfoBox } from "../header_template";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -12,6 +12,10 @@ import { backend } from "@/services/backend";
 import { toastError } from "@/fetching/fetching_utils";
 import { Toast } from "primereact/toast";
 import { $Enums } from "../../../backend/prisma/generated/client";
+import {
+  ConferenceIdContext,
+  CommitteeIdContext,
+} from "@/contexts/committee_data";
 
 type DelegationData = Awaited<
   ReturnType<
@@ -20,18 +24,15 @@ type DelegationData = Awaited<
 >["data"];
 
 export default function PresenceWidget({
-  conferenceId,
-  committeeId,
   showExcusedSeperately = false,
   forceUpdate,
 }: {
-  conferenceId: string;
-  committeeId: string;
   showExcusedSeperately?: boolean;
   forceUpdate?: boolean;
 }) {
   const { LL, locale } = useI18nContext();
-  const toast = useRef(null);
+  const conferenceId = useContext(ConferenceIdContext);
+  const committeeId = useContext(CommitteeIdContext);
 
   const [delegationData, setDelegationData] = useState<DelegationData>([]);
   const [presentAttendees, setPresentAttendees] = useState(0);
@@ -121,7 +122,6 @@ export default function PresenceWidget({
 
   return (
     <div className="flex-1 flex gap-4 h-full justify-center">
-      <Toast ref={toast} />
       <HeaderInfoBox>
         <div className="grid" style={{ gridTemplateColumns: "auto 1fr auto" }}>
           <CounterCell

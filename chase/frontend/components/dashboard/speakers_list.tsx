@@ -18,15 +18,7 @@ import { SpeakersListDataProvider } from "@/contexts/speakers_list_data";
  * compact way of displaying the queue (as opposed to the QueueList on the speakers list page).
  */
 
-export default function SpeakersListWidget({
-  myCountry,
-  speakersList,
-  commentList,
-}: {
-  myCountry: CountryCode;
-  speakersList: SpeakersListData;
-  commentList: SpeakersListData;
-}) {
+export default function SpeakersListWidget() {
   const { LL } = useI18nContext();
 
   return (
@@ -45,7 +37,7 @@ export default function SpeakersListWidget({
             >
               <AnimatePresence>
                 <motion.div
-                  key={speakersList.currentSpeaker.countryCode}
+                  key={"commentBlock"}
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}

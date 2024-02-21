@@ -295,12 +295,7 @@ export const speakersListSpeakers = new Elysia({
       const previousSpeaker = await db.speakerOnList.findFirst({
         where: {
           speakersListId,
-          position: {
-            lt: speaker.position,
-          },
-        },
-        orderBy: {
-          position: "desc",
+          position: speaker.position - 1,
         },
       });
 
@@ -314,7 +309,7 @@ export const speakersListSpeakers = new Elysia({
             id: speakerId,
           },
           data: {
-            position: previousSpeaker.position,
+            position: -1,
           },
         }),
         db.speakerOnList.update({
@@ -323,6 +318,14 @@ export const speakersListSpeakers = new Elysia({
           },
           data: {
             position: speaker.position,
+          },
+        }),
+        db.speakerOnList.update({
+          where: {
+            id: speakerId,
+          },
+          data: {
+            position: previousSpeaker.position,
           },
         }),
       ]);
@@ -353,12 +356,7 @@ export const speakersListSpeakers = new Elysia({
       const nextSpeaker = await db.speakerOnList.findFirst({
         where: {
           speakersListId,
-          position: {
-            gt: speaker.position,
-          },
-        },
-        orderBy: {
-          position: "asc",
+          position: speaker.position + 1,
         },
       });
 
@@ -372,7 +370,7 @@ export const speakersListSpeakers = new Elysia({
             id: speakerId,
           },
           data: {
-            position: nextSpeaker.position,
+            position: -1,
           },
         }),
         db.speakerOnList.update({
@@ -381,6 +379,14 @@ export const speakersListSpeakers = new Elysia({
           },
           data: {
             position: speaker.position,
+          },
+        }),
+        db.speakerOnList.update({
+          where: {
+            id: speakerId,
+          },
+          data: {
+            position: nextSpeaker.position,
           },
         }),
       ]);
@@ -462,6 +468,15 @@ export const speakersListSpeakers = new Elysia({
           db.speakerOnList.deleteMany({
             where: {
               speakersListId: correspondingCommentList.id,
+            },
+          }),
+          db.speakersList.update({
+            where: {
+              id: correspondingCommentList.id,
+            },
+            data: {
+              startTimestamp: null,
+              timeLeft: correspondingCommentList.speakingTime,
             },
           }),
           ...transaction,

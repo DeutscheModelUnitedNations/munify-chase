@@ -309,6 +309,16 @@ const de = {
             OTHER: "Sonstiges",
           },
         },
+        toast: {
+          SUCCESS_CHAIR_SUMMARY: "Nachricht gesendet",
+          SUCCESS_CHAIR_DETAIL: "Der Vorsitz wird sich bald bei Ihnen melden.",
+          SUCCESS_RESEARCH_SUMMARY: "Nachricht gesendet",
+          SUCCESS_RESEARCH_DETAIL:
+            "Der Wissenschaftliche Dienst wird sich bald bei Ihnen melden.",
+          ERROR_SUMMARY: "Fehler beim Senden",
+          ERROR_DETAIL:
+            "Die Nachricht konnte nicht gesendet werden. Bitte versuchen Sie es später erneut und melden Sie den Fehler.",
+        },
       },
       documentsWidget: {
         SPONSORS: "signierte Unterstützer:innen",
@@ -403,6 +413,7 @@ const de = {
           TITLE: "Auswahl des Tagesordnungspunktes",
           DESCRIPTION: "Wähle den aktuellen Tagesordnungspunkt aus.",
           PLACEHOLDER: "Gerade kein aktiver Tagesordnungspunkt",
+          TOAST_SUCCESS: "Tagesordnungspunkt aktiviert",
         },
         statusTimer: {
           TITLE: "Status Timer",
@@ -412,6 +423,7 @@ const de = {
           PLACEHOLDER_CUSTOM_TEXT: "Eigener Name (optional)",
           PLACEHOLDER_TIME_UNITL: "until",
           BUTTON: "Status Speichern",
+          TOAST_SUCCESS: "Status {status:string} bis {date:string} gespeichert",
         },
         speakersListAdding: {
           TITLE: "Hinzufügen zu Redelisten",

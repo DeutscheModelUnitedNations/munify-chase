@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useContext } from "react";
 import WidgetTemplate from "@components/widget_template";
 import { Button } from "primereact/button";
 import { Dialog } from "primereact/dialog";
@@ -16,10 +16,20 @@ import {
 } from "@fortawesome/pro-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { IconProp } from "@fortawesome/fontawesome-svg-core";
+import {
+  CommitteeIdContext,
+  CommitteeDataContext,
+  AgendaItemContext,
+  ConferenceIdContext,
+} from "@/contexts/committee_data";
+import { MyDelegationContext, useUserIdent } from "@/contexts/user_ident";
+import { backend } from "@/services/backend";
+import { useToast } from "@/contexts/toast";
+import { $Enums } from "../../../backend/prisma/generated/client";
 
 interface DropdownOptions {
   label: string;
-  value: string;
+  value: $Enums.MessageCategory;
   icon: IconProp;
 }
 
@@ -30,41 +40,49 @@ interface DropdownOptions {
 
 export default function ActionsWidget() {
   const { LL } = useI18nContext();
+  const conferenceId = useContext(ConferenceIdContext);
+  const committeeId = useContext(CommitteeIdContext);
+  const committeeData = useContext(CommitteeDataContext);
+  const myDelegationData = useContext(MyDelegationContext);
+  const agendaItem = useContext(AgendaItemContext);
+  const userIdent = useUserIdent()?.userIdent;
+  const { showToast } = useToast();
 
   const [displayChairDialog, setDisplayChairDialog] = React.useState(false);
-  const [displayResearchDialog, setDisplayResearchDialog] =
-    React.useState(false);
+  const [displayResearchDialog, setDisplayResearchDialog] = useState(false);
 
-  const [category, setCategory] = React.useState("");
+  const [category, setCategory] = React.useState<
+    $Enums.MessageCategory | undefined
+  >(undefined);
   const categoryOption: DropdownOptions[] = [
     {
       label:
         LL.participants.dashboard.actionsWidget.contactForm.categoryOptions.GUEST_SPEAKER(),
-      value: "guestSspeech",
+      value: "GUEST_SPEAKER",
       icon: faComment as IconProp,
     },
     {
       label:
         LL.participants.dashboard.actionsWidget.contactForm.categoryOptions.FACT_CHECK(),
-      value: "factCheck",
+      value: "FACT_CHECK",
       icon: faExclamationTriangle as IconProp,
     },
     {
       label:
         LL.participants.dashboard.actionsWidget.contactForm.categoryOptions.INFORMATION(),
-      value: "information",
+      value: "INFORMATION",
       icon: faQuestionCircle as IconProp,
     },
     {
       label:
         LL.participants.dashboard.actionsWidget.contactForm.categoryOptions.GENERAL_SECRETARY(),
-      value: "generalSecretary",
+      value: "GENERAL_SECRETARY",
       icon: faGavel as IconProp,
     },
     {
       label:
         LL.participants.dashboard.actionsWidget.contactForm.categoryOptions.OTHER(),
-      value: "other",
+      value: "OTHER",
       icon: faPaperPlane as IconProp,
     },
   ];
@@ -112,20 +130,95 @@ export default function ActionsWidget() {
   const closeAndResetDialog = () => {
     setDisplayChairDialog(false);
     setDisplayResearchDialog(false);
-    setCategory("");
+    setCategory(undefined);
     setSubjectLine("");
     setMessage("");
   };
 
-  const sendChairMessage = () => {
-    // TODO
-    closeAndResetDialog();
-  };
+  async function sendChairMessage() {
+    if (!conferenceId || !committeeId || !userIdent?.id) {
+      showToast({
+        severity: "error",
+        summary: LL.participants.dashboard.actionsWidget.toast.ERROR_SUMMARY(),
+        detail: LL.participants.dashboard.actionsWidget.toast.ERROR_DETAIL(),
+      });
+      return;
+    }
+    await backend.conference[conferenceId].committee[committeeId].messages
+      .post({
+        subject: subjectLine,
+        message: message,
+        authorId: userIdent?.id,
+        metaEmail: userIdent?.email,
+        metaDelegation: myDelegationData.delegation?.nation.alpha3Code,
+        metaCommittee: committeeData?.name,
+      })
+      .then((res) => {
+        if (res.status === 200) {
+          showToast({
+            severity: "success",
+            summary:
+              LL.participants.dashboard.actionsWidget.toast.SUCCESS_CHAIR_SUMMARY(),
+            detail:
+              LL.participants.dashboard.actionsWidget.toast.SUCCESS_CHAIR_DETAIL(),
+          });
+          closeAndResetDialog();
+        }
+      })
+      .catch((err) => {
+        showToast({
+          severity: "error",
+          summary:
+            LL.participants.dashboard.actionsWidget.toast.ERROR_SUMMARY(),
+          detail: LL.participants.dashboard.actionsWidget.toast.ERROR_DETAIL(),
+        });
+        console.error(err);
+      });
+  }
 
-  const sendResearchMessage = () => {
-    // TODO
-    closeAndResetDialog();
-  };
+  async function sendResearchMessage() {
+    if (!conferenceId || !userIdent?.id) {
+      showToast({
+        severity: "error",
+        summary: LL.participants.dashboard.actionsWidget.toast.ERROR_SUMMARY(),
+        detail: LL.participants.dashboard.actionsWidget.toast.ERROR_DETAIL(),
+      });
+      return;
+    }
+
+    await backend.conference[conferenceId].messages.researchServices
+      .post({
+        category: category,
+        subject: subjectLine,
+        message: message,
+        authorId: userIdent?.id,
+        metaEmail: userIdent?.email,
+        metaDelegation: myDelegationData.delegation?.nation.alpha3Code,
+        metaCommittee: committeeData?.name,
+        metaAgendaItem: agendaItem?.title,
+      })
+      .then((res) => {
+        if (res.status === 200) {
+          showToast({
+            severity: "success",
+            summary:
+              LL.participants.dashboard.actionsWidget.toast.SUCCESS_RESEARCH_SUMMARY(),
+            detail:
+              LL.participants.dashboard.actionsWidget.toast.SUCCESS_RESEARCH_DETAIL(),
+          });
+          closeAndResetDialog();
+        }
+      })
+      .catch((err) => {
+        showToast({
+          severity: "error",
+          summary:
+            LL.participants.dashboard.actionsWidget.toast.ERROR_SUMMARY(),
+          detail: LL.participants.dashboard.actionsWidget.toast.ERROR_DETAIL(),
+        });
+        console.error(err);
+      });
+  }
 
   return (
     <>

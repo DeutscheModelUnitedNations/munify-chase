@@ -12,6 +12,7 @@ import {
   faSquareSliders,
   faNewspaper,
   faCommentExclamation,
+  faInbox,
 } from "@fortawesome/pro-solid-svg-icons";
 import { useI18nContext } from "@/i18n/i18n-react";
 import { IconProp } from "@fortawesome/fontawesome-svg-core";
@@ -50,6 +51,11 @@ export default function Chair_Pages_Layout({
         <NavButton
           icon={faChalkboard as IconProp}
           link={"./whiteboard"}
+          title={LL.navbar.WHITEBOARD()}
+        />
+        <NavButton
+          icon={faInbox as IconProp}
+          link={"./inbox"}
           title={LL.navbar.WHITEBOARD()}
         />
         {/* <NavButton TODO add Resolution Editor page

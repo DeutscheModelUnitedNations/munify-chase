@@ -23,11 +23,12 @@ enum CredentialsType {
 
 /// A user in the system
 model User {
-  id                    String             @id @default(uuid())
-  email                 String             @unique
-  name                  String
-  conferenceMemberships ConferenceMember[]
-  committeeMemberships  CommitteeMember[]
+  id                     String                   @id @default(uuid())
+  email                  String                   @unique
+  name                   String
+  conferenceMemberships  ConferenceMember[]
+  committeeMemberships   CommitteeMember[]
+  ResearchServiceMessage ResearchServiceMessage[]
 
   // === credentials ===
   type CredentialsType
@@ -43,9 +44,10 @@ model User {
   passkeyCredentialBackedUp   Boolean?
 
   // === email validation ===
-  emailValidated             Boolean   @default(false)
+  emailValidated             Boolean        @default(false)
   emailValidationTokenHash   String?
   emailValidationTokenExpiry DateTime?
+  ChairMessage               ChairMessage[]
 }
 
 /// Consumeable token which grants the creation of a conference
@@ -55,13 +57,14 @@ model ConferenceCreateToken {
 
 /// A conference in the system
 model Conference {
-  id          String             @id @default(uuid())
-  name        String             @unique
-  committees  Committee[]
-  start       DateTime?
-  end         DateTime?
-  delegations Delegation[]
-  members     ConferenceMember[]
+  id                     String                   @id @default(uuid())
+  name                   String                   @unique
+  committees             Committee[]
+  start                  DateTime?
+  end                    DateTime?
+  delegations            Delegation[]
+  members                ConferenceMember[]
+  ResearchServiceMessage ResearchServiceMessage[]
 }
 
 /// The role of a user in a conference
@@ -121,6 +124,7 @@ model Committee {
   parent                                        Committee?        @relation("subCommittee", fields: [parentId], references: [id])
   parentId                                      String?
   subCommittees                                 Committee[]       @relation("subCommittee")
+  messages                                      ChairMessage[]
   agendaItems                                   AgendaItem[]
   whiteboardContent                             String            @default("<h1>Hello, World</h1>")
   status                                        CommitteeStatus   @default(CLOSED)
@@ -211,6 +215,15 @@ model SpeakerOnList {
   @@unique([speakersListId, committeeMemberId])
 }
 
+model Delegation {
+  id           String            @id @default(uuid())
+  conference   Conference        @relation(fields: [conferenceId], references: [id])
+  conferenceId String
+  nation       Nation            @relation(fields: [nationId], references: [id])
+  nationId     String
+  members      CommitteeMember[]
+}
+
 //TODO should we allow for customizing these per conference and just allow loading template at creation?
 /// A nation in the system. E.g. Germany
 model Nation {
@@ -231,11 +244,52 @@ model SpecialPerson {
   code String @unique
 }
 
-model Delegation {
-  id           String            @id @default(uuid())
-  conference   Conference        @relation(fields: [conferenceId], references: [id])
+enum MessageCategory {
+  GUEST_SPEAKER
+  FACT_CHECK
+  INFORMATION
+  GENERAL_SECRETARY
+  OTHER
+}
+
+enum MessageStatus {
+  UNREAD
+  READ
+  ARCHIVED
+}
+
+model ResearchServiceMessage {
+  id           String          @id @default(uuid())
+  category     MessageCategory
+  subject      String
+  message      String
+  conference   Conference      @relation(fields: [conferenceId], references: [id])
   conferenceId String
-  nation       Nation            @relation(fields: [nationId], references: [id])
-  nationId     String
-  members      CommitteeMember[]
+  author       User            @relation(fields: [authorId], references: [id])
+  authorId     String
+  timestamp    DateTime
+  status       MessageStatus   @default(UNREAD)
+
+  /// Saved Metadata without relation
+  metaEmail      String?
+  metaDelegation String?
+  metaCommittee  String?
+  metaAgendaItem String?
+}
+
+model ChairMessage {
+  id          String        @id @default(uuid())
+  subject     String
+  message     String
+  committee   Committee     @relation(fields: [committeeId], references: [id])
+  committeeId String
+  author      User          @relation(fields: [authorId], references: [id])
+  authorId    String
+  timestamp   DateTime
+  status      MessageStatus @default(UNREAD)
+
+  /// Saved Metadata without relation
+  metaEmail      String?
+  metaDelegation String?
+  metaCommittee  String?
 }

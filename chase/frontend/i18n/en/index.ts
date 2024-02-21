@@ -306,6 +306,16 @@ const en = {
             OTHER: "Other",
           },
         },
+        toast: {
+          SUCCESS_CHAIR_SUMMARY: "Message sent",
+          SUCCESS_CHAIR_DETAIL: "The chair will get back to you soon.",
+          SUCCESS_RESEARCH_SUMMARY: "Message sent",
+          SUCCESS_RESEARCH_DETAIL:
+            "The Research Service will get back to you soon.",
+          ERROR_SUMMARY: "Error",
+          ERROR_DETAIL:
+            "The message could not be sent. Please try again or report the issue!",
+        },
       },
       documentsWidget: {
         SPONSORS: "signed Sponsors",
@@ -397,6 +407,7 @@ const en = {
           TITLE: "Agenda Item Selection",
           DESCRIPTION: "Select the agenda item you want to activate.",
           PLACEHOLDER: "No Agenda Item Selected",
+          TOAST_SUCCESS: "Agenda Item activated",
         },
         statusTimer: {
           TITLE: "Status Timer",
@@ -406,6 +417,8 @@ const en = {
           PLACEHOLDER_CUSTOM_TEXT: "Custom Name (optional)",
           PLACEHOLDER_TIME_UNITL: "until",
           BUTTON: "Save Status",
+          TOAST_SUCCESS:
+            "Status {status:string} successfully set until {date:string}",
         },
         speakersListAdding: {
           TITLE: "Speakers List Adding Policy",

@@ -4,11 +4,13 @@ import { usePathname } from "next/navigation";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import Link from "next/link";
 import { IconProp } from "@fortawesome/fontawesome-svg-core";
+import { Badge } from "primereact/badge";
 
 interface NavbarButtonProps {
   icon: IconProp;
   title: string;
   link?: string;
+  badge?: number;
   onClick?: () => void;
   newWindow?: boolean;
 }
@@ -22,6 +24,7 @@ export default function NavbarButton({
   icon,
   title,
   link = "",
+  badge = 0,
   onClick,
   newWindow = false,
 }: NavbarButtonProps) {
@@ -29,7 +32,7 @@ export default function NavbarButton({
 
   const [wrapperStyle, setWrapperStyle] = useState("");
   const defaultWrapperStyle =
-    "flex-1 rounded-md flex flex-col justify-center items-center";
+    "p-overlay-badge rounded-md flex flex-col justify-center items-center";
 
   function checkPathname() {
     // link something like "./dashboard" to the current page
@@ -37,7 +40,7 @@ export default function NavbarButton({
     if (link.startsWith(".")) {
       return pathname.includes(link.slice(1));
     }
-    return link.startsWith(pathname)
+    return link.startsWith(pathname);
   }
 
   useEffect(() => {
@@ -68,7 +71,17 @@ export default function NavbarButton({
   ) : (
     <Link href={link} className="w-full" title={title}>
       <div className={wrapperStyle}>
-        <FontAwesomeIcon icon={icon} className=" text-xl m-3" />
+        <FontAwesomeIcon
+          icon={icon}
+          className="text-xl m-3"
+          beatFade={badge > 0}
+        />
+        {badge !== 0 && (
+          <Badge
+            value={badge}
+            className="!bg-white !text-primary-500 mt-2 mr-2"
+          />
+        )}
       </div>
     </Link>
   );

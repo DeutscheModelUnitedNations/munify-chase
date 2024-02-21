@@ -33,16 +33,14 @@ export default function SpeakersListBlock({
   chairOptions?: boolean;
   children?: React.ReactNode;
 }) {
-  const toast = useRef<Toast>(null);
-
   return (
     <SpeakersListDataProvider typeOfList={typeOfList}>
-      <WidgetTemplate cardTitle={listTitle}>
-        <Toast ref={toast} />
+      <div className="flex w-full h-full flex-col bg-primary-950 dark:bg-primary-200 rounded-lg p-3 transition-all duration-500">
+        <div className="font-bold mb-2 text-lg">{listTitle}</div>
         <SpeakerBlock />
         {children}
         <SpeakerQueueList myCountry={myCountry} chairOptions={chairOptions} />
-      </WidgetTemplate>
+      </div>
     </SpeakersListDataProvider>
   );
 }

@@ -75,13 +75,23 @@ export default function CommitteePresentationMode({
         <div className="flex-1 flex flex-col gap-4 h-[calc(100vh-2rem)]">
           <WidgetTemplate>
             <h1 className="text-2xl font-bold">
-              {committeeData?.name ?? <Skeleton width="5rem" height="2rem" />}
+              {committeeData?.name ?? (
+                <Skeleton
+                  width="5rem"
+                  height="2rem"
+                  className="!bg-primary-900"
+                />
+              )}
             </h1>
             <div className="flex gap-2 items-center mt-2">
               <FontAwesomeIcon className="mx-2" icon={faPodium} />
               <h2 className="text-lg">
                 {agendaItem?.find((item) => item.isActive)?.title ?? (
-                  <Skeleton width="5rem" height="1.75rem" />
+                  <Skeleton
+                    width="5rem"
+                    height="1.75rem"
+                    className="!bg-primary-900"
+                  />
                 )}
               </h2>
             </div>
@@ -89,16 +99,9 @@ export default function CommitteePresentationMode({
           <WidgetTemplate
             cardTitle={LL.participants.dashboard.widgetHeadlines.PRESENCE()}
           >
-            <PresenceWidget
-              conferenceId={params.conferenceId}
-              committeeId={params.committeeId}
-            />
+            <PresenceWidget />
           </WidgetTemplate>
-          <TimerWidget
-            conferenceId={params.conferenceId}
-            committeeId={params.committeeId}
-            noAlert={true}
-          />
+          <TimerWidget />
         </div>
         <div className="flex-1 flex justify-center h-[calc(100vh-2rem)]">
           <SpeakersListBlock

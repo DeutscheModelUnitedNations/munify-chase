@@ -8,6 +8,8 @@ import {
   faPodium,
   faMugHot,
   faForwardStep,
+  faSpinner,
+  faCircleNotch,
 } from "@fortawesome/pro-solid-svg-icons";
 import { useI18nContext } from "@/i18n/i18n-react";
 import { AnimatePresence, motion } from "framer-motion";
@@ -21,8 +23,7 @@ import {
   ConferenceIdContext,
   CommitteeIdContext,
 } from "@/contexts/committee_data";
-
-type Category = $Enums.CommitteeStatus;
+import { StatusTimer } from "@/contexts/status_timer";
 
 type Committee = Awaited<
   ReturnType<
@@ -36,66 +37,9 @@ type Committee = Awaited<
  * With this widget, participants can see the end time of the current session as well as a countdown.
  */
 
-export default function TimerWidget({ noAlert }: { noAlert?: boolean }) {
+export default function TimerWidget() {
   const { LL } = useI18nContext();
-  const { showToast, clearToast } = useContext(ToastContext);
-  const conferenceId = useContext(ConferenceIdContext);
-  const committeeId = useContext(CommitteeIdContext);
-
-  const [category, setCategory] = useState<Category | null>(null);
-  const [headline, setHeadline] = useState<string | null>(null);
-  const [until, setUntil] = useState<Date | null>(null);
-  const [timerOver, setTimerOver] = useState(false);
-  const [toastShown, setToastShown] = useState(false);
-
-  const timerToast = () => {
-    if (!noAlert) {
-      showToast({
-        summary: LL.participants.dashboard.timerWidget.TOAST_HEADLINE(),
-        detail: LL.participants.dashboard.timerWidget.TOAST_MESSAGE(),
-        severity: "info" as const,
-        sticky: true,
-      });
-    }
-  };
-
-  async function getCommitteeData() {
-    if (!conferenceId || !committeeId) return;
-    await backend.conference[conferenceId].committee[committeeId]
-      .get()
-      .then((response) => {
-        if (response.data?.status !== category)
-          setCategory(response.data?.status ?? null);
-        if (response.data?.statusHeadline !== headline)
-          setHeadline(response.data?.statusHeadline ?? null);
-        if (response.data?.statusUntil !== until)
-          setUntil(response.data?.statusUntil ?? null);
-      })
-      .catch((error) => {
-        toastError(error);
-      });
-  }
-
-  useEffect(() => {
-    getCommitteeData();
-    const intervalAPICall = setInterval(() => {
-      getCommitteeData();
-    }, 5000);
-    return () => clearInterval(intervalAPICall);
-  }, []);
-
-  useEffect(() => {
-    if (timerOver && !toastShown) {
-      timerToast();
-      setToastShown(false);
-    }
-  }, [timerOver]);
-
-  useEffect(() => {
-    setToastShown(false);
-    setTimerOver(false);
-    clearToast();
-  }, [until]);
+  const { category, headline, until } = useContext(StatusTimer);
 
   const timeStamp = () => {
     if (until) {
@@ -104,7 +48,7 @@ export default function TimerWidget({ noAlert }: { noAlert?: boolean }) {
           hour: "2-digit",
           minute: "2-digit",
         });
-      } catch (e) {
+      } catch (_e) {
         return "";
       }
     }
@@ -185,17 +129,27 @@ export default function TimerWidget({ noAlert }: { noAlert?: boolean }) {
                   {(category === "INFORMAL" || category === "PAUSE") &&
                     until && (
                       <div className="text-4xl font-bold my-2 tabular-nums">
-                        <Timer
-                          until={new Date(until)}
-                          setTimerOver={setTimerOver}
-                        />
+                        <Timer />
                       </div>
                     )}
                 </div>
               </WidgetTemplate>
             )
           ) : (
-            <Skeleton width="100%" height="10rem" />
+            <WidgetTemplate cardTitle="" additionalClassNames={getClassNames()}>
+              <div className="flex flex-col justify-center items-center">
+                <div className="my-4">
+                  <FontAwesomeIcon
+                    icon={faCircleNotch}
+                    size="3x"
+                    spin
+                    className="text-primary-500"
+                  />
+                </div>
+                <Skeleton width="90%" height="2rem" />
+                <Skeleton width="50%" height="1.25rem" className="mt-1" />
+              </div>
+            </WidgetTemplate>
           )}
         </motion.div>
       </AnimatePresence>

@@ -122,6 +122,15 @@ export const speakersListSpeakers = new Elysia({
               },
             },
           },
+          speakers: {
+            select: {
+              committeeMember: {
+                select: {
+                  id: true,
+                },
+              },
+            },
+          },
         },
       });
 
@@ -159,6 +168,15 @@ export const speakersListSpeakers = new Elysia({
       if (committeeMember.presence !== $Enums.Presence.PRESENT) {
         set.status = "Forbidden";
         throw new Error("CommitteeMember is not present in this committee");
+      }
+
+      if (
+        speakersList.speakers.some(
+          (speaker) => speaker.committeeMember.id === committeeMember.id,
+        )
+      ) {
+        set.status = "Conflict";
+        throw new Error("Speaker is already on the list");
       }
 
       return await createSpeakerOnList(

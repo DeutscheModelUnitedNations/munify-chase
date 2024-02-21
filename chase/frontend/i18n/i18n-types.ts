@@ -654,6 +654,10 @@ type RootTranslation = {
 		 */
 		LOGOUT: string
 		/**
+		 * H​u​b
+		 */
+		HUB: string
+		/**
 		 * D​a​s​h​b​o​a​r​d
 		 */
 		DASHBOARD: string
@@ -1229,6 +1233,20 @@ type RootTranslation = {
 					 */
 					TOAST_SUCCESS_DETAILS_NOT_ALLOWED: string
 				}
+				presentationMode: {
+					/**
+					 * O​p​e​n​ ​P​r​e​s​e​n​t​a​t​i​o​n​ ​M​o​d​e
+					 */
+					TITLE: string
+					/**
+					 * O​p​e​n​ ​t​h​e​ ​p​r​e​s​e​n​t​a​t​i​o​n​ ​m​o​d​e​ ​i​n​ ​a​ ​n​e​w​ ​w​i​n​d​o​w​.​ ​T​h​i​s​ ​m​o​d​e​ ​i​s​ ​d​e​s​i​g​n​e​d​ ​t​o​ ​b​e​ ​d​i​s​p​l​a​y​e​d​ ​o​n​ ​a​ ​p​r​o​j​e​c​t​o​r​ ​o​r​ ​a​ ​s​e​c​o​n​d​ ​s​c​r​e​e​n​ ​a​n​d​ ​p​r​o​v​i​d​e​s​ ​r​e​l​e​v​a​n​t​ ​c​o​m​m​i​t​t​e​e​ ​d​a​t​a​ ​f​o​r​ ​d​e​l​e​g​a​t​e​s​.
+					 */
+					DESCRIPTION: string
+					/**
+					 * P​r​e​s​e​n​t​a​t​i​o​n​ ​M​o​d​e
+					 */
+					BUTTON: string
+				}
 			}
 		}
 		attendance: {
@@ -1405,6 +1423,36 @@ type RootTranslation = {
 			 */
 			BUTTON_DELETE: string
 		}
+	}
+	messageBoard: {
+		toast: {
+			/**
+			 * N​e​w​ ​M​e​s​s​a​g​e
+			 */
+			NEW_MESSAGE_SUMMARY: string
+			/**
+			 * Y​o​u​ ​h​a​v​e​ ​n​e​w​ ​u​n​r​e​a​d​ ​m​e​s​s​a​g​e​s
+			 */
+			NEW_MESSAGE_DETAIL: string
+		}
+		menu: {
+			/**
+			 * M​a​r​k​ ​a​s​ ​U​n​r​e​a​d
+			 */
+			MARK_AS_UNREAD: string
+			/**
+			 * A​r​c​h​i​v​e
+			 */
+			ARCHIVE: string
+		}
+		/**
+		 * N​o​ ​m​e​s​s​a​g​e​ ​s​e​l​e​c​t​e​d
+		 */
+		NO_MESSAGE_SELECTED: string
+		/**
+		 * U​n​r​e​a​d
+		 */
+		TAG_UNREAD: string
 	}
 }
 
@@ -2049,6 +2097,10 @@ export type TranslationFunctions = {
 		 */
 		LOGOUT: () => LocalizedString
 		/**
+		 * Hub
+		 */
+		HUB: () => LocalizedString
+		/**
 		 * Dashboard
 		 */
 		DASHBOARD: () => LocalizedString
@@ -2622,6 +2674,20 @@ export type TranslationFunctions = {
 					 */
 					TOAST_SUCCESS_DETAILS_NOT_ALLOWED: () => LocalizedString
 				}
+				presentationMode: {
+					/**
+					 * Open Presentation Mode
+					 */
+					TITLE: () => LocalizedString
+					/**
+					 * Open the presentation mode in a new window. This mode is designed to be displayed on a projector or a second screen and provides relevant committee data for delegates.
+					 */
+					DESCRIPTION: () => LocalizedString
+					/**
+					 * Presentation Mode
+					 */
+					BUTTON: () => LocalizedString
+				}
 			}
 		}
 		attendance: {
@@ -2798,6 +2864,36 @@ export type TranslationFunctions = {
 			 */
 			BUTTON_DELETE: () => LocalizedString
 		}
+	}
+	messageBoard: {
+		toast: {
+			/**
+			 * New Message
+			 */
+			NEW_MESSAGE_SUMMARY: () => LocalizedString
+			/**
+			 * You have new unread messages
+			 */
+			NEW_MESSAGE_DETAIL: () => LocalizedString
+		}
+		menu: {
+			/**
+			 * Mark as Unread
+			 */
+			MARK_AS_UNREAD: () => LocalizedString
+			/**
+			 * Archive
+			 */
+			ARCHIVE: () => LocalizedString
+		}
+		/**
+		 * No message selected
+		 */
+		NO_MESSAGE_SELECTED: () => LocalizedString
+		/**
+		 * Unread
+		 */
+		TAG_UNREAD: () => LocalizedString
 	}
 }
 

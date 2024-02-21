@@ -10,6 +10,7 @@ import { useRouter } from "next/navigation";
 import { confirmDialog, ConfirmDialog } from "primereact/confirmdialog";
 
 import {
+  faGridHorizontal,
   faRightFromBracket,
   faUserGear,
 } from "@fortawesome/pro-solid-svg-icons";
@@ -59,11 +60,9 @@ export default function Navbar({ children }: { children: React.ReactNode }) {
           height={60}
           className="mt-3"
         />
-        <div className="flex flex-col justify-center items-center gap-3">
+        <div className="h-full pb-6 flex flex-col justify-center items-center gap-3">
           {children}
-        </div>
-        <div className="flex-1" />
-        <div className="flex flex-col items-center gap-3 mb-5">
+          <div className="flex-1" />
           <SettingsSidebar
             settingsSidebarVisible={settingsSidebarVisible}
             setSettingsSidebarVisible={setSettingsSidebarVisible}

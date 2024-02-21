@@ -222,6 +222,8 @@ model Delegation {
   nation       Nation            @relation(fields: [nationId], references: [id])
   nationId     String
   members      CommitteeMember[]
+
+  @@unique([conferenceId, nationId])
 }
 
 //TODO should we allow for customizing these per conference and just allow loading template at creation?

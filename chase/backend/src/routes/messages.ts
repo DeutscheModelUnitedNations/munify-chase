@@ -7,6 +7,7 @@ import {
   ChairMessage,
   ResearchServiceMessage,
 } from "../../prisma/generated/schema";
+import { $Enums } from "../../prisma/generated/client";
 
 export const messages = new Elysia({
   prefix: "/conference/:conferenceId",
@@ -132,6 +133,46 @@ export const messages = new Elysia({
       ]),
       detail: {
         description: "Create a new message for the chair in this committee",
+        tags: [openApiTag(import.meta.path)],
+      },
+    },
+  )
+
+  .get(
+    "/messages/count",
+    async ({ params: { conferenceId } }) => {
+      return await db.researchServiceMessage.count({
+        where: {
+          conferenceId,
+          status: $Enums.MessageStatus.UNREAD,
+        },
+      });
+    },
+    {
+      hasConferenceRole: "any",
+      detail: {
+        description:
+          "Get the number of unread messages to the research service in this conference",
+        tags: [openApiTag(import.meta.path)],
+      },
+    },
+  )
+
+  .get(
+    "/committee/:committeeId/messages/count",
+    ({ params: { committeeId } }) => {
+      return db.chairMessage.count({
+        where: {
+          committeeId,
+          status: $Enums.MessageStatus.UNREAD,
+        },
+      });
+    },
+    {
+      hasConferenceRole: "any",
+      detail: {
+        description:
+          "Get the number of unread messages for the chair in this committee",
         tags: [openApiTag(import.meta.path)],
       },
     },

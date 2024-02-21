@@ -45,7 +45,7 @@ export default function Participant_Pages_Layout({
           link={"./resolutions"}
           title={LL.navbar.RESOLUTIONS()}
         /> */}
-          <div className="h-5" />
+          <div className="flex-1" />
           <NavButton
             icon={faNewspaper as IconProp}
             newWindow

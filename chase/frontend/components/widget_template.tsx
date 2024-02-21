@@ -21,7 +21,7 @@ export default function WidgetTemplate({
 }: WidgetTemplateProps) {
   const widgetClassNames = () => {
     const classNames = [
-      "flex w-full flex-col bg-primary-950 dark:bg-primary-200 rounded-lg p-3",
+      "flex w-full h-full flex-col bg-primary-950 dark:bg-primary-200 rounded-lg p-3 transition-all duration-500",
     ];
 
     if (additionalClassNames) {
@@ -38,7 +38,7 @@ export default function WidgetTemplate({
           (cardTitle !== "" ? (
             <div className=" font-bold mb-2 text-lg">{cardTitle}</div>
           ) : (
-            <Skeleton width="5rem" height="1.75rem"></Skeleton>
+            <Skeleton width="5rem" height="1.75rem" />
           ))}
         <div className="flex-1">{children}</div>
       </div>

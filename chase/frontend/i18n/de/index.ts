@@ -227,6 +227,7 @@ const de = {
   navbar: {
     SETTINGS: "Einstellungen",
     LOGOUT: "Logout",
+    HUB: "Hub",
     DASHBOARD: "Dashboard",
     CONFIGURATION: "Voreinstellungen",
     ATTENDEES: "Anwesenheit",
@@ -437,6 +438,12 @@ const de = {
           TOAST_SUCCESS_DETAILS_NOT_ALLOWED:
             "Delegierte können sich nicht mehr selbst hinzufügen.",
         },
+        presentationMode: {
+          TITLE: "Präsentationsmodus öffnen",
+          DESCRIPTION:
+            "Öffne ein neues Fenster im Präsentationsmodus über den folgenden Link, um ihn auf einem Beamer für alle Teilnehmenden sichtbar anzuzeigen.",
+          BUTTON: "Präsentationsmodus",
+        },
       },
     },
     attendance: {
@@ -494,6 +501,19 @@ const de = {
       BUTTON_RESET: "Abstimmung neu starten",
       BUTTON_DELETE: "Abstimmung löschen",
     },
+  },
+
+  messageBoard: {
+    toast: {
+      NEW_MESSAGE_SUMMARY: "Neue Nachricht",
+      NEW_MESSAGE_DETAIL: "Sie haben eine neue Nachricht erhalten.",
+    },
+    menu: {
+      MARK_AS_UNREAD: "Als ungelesen markieren",
+      ARCHIVE: "Archivieren",
+    },
+    NO_MESSAGE_SELECTED: "Keine Nachricht ausgewählt",
+    TAG_UNREAD: "Ungelesen",
   },
 } satisfies Translation;
 

@@ -377,10 +377,13 @@ try {
           ["deu", "usa", "fra"].includes(countryRaw.alpha3Code) ||
           Math.random() > 0.97
         ) {
-          selectedCountries.push(countryRaw.alpha3Code);
+          if (!selectedCountries.includes(countryRaw.alpha3Code)) {
+            selectedCountries.push(countryRaw.alpha3Code);
+          }
         }
       }
     }
+    selectedCountries.sort();
     return selectedCountries;
   };
 

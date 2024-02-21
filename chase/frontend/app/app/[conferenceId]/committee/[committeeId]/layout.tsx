@@ -1,6 +1,10 @@
 "use client";
 import React from "react";
-import { CommitteeIdContext } from "@/contexts/committee_data";
+import {
+  CommitteeDataProvider,
+  CommitteeIdContext,
+} from "@/contexts/committee_data";
+import { StatusTimerProvider } from "@/contexts/status_timer";
 
 export default function Participant_Pages_Layout({
   children,
@@ -11,7 +15,9 @@ export default function Participant_Pages_Layout({
 }) {
   return (
     <CommitteeIdContext.Provider value={params.committeeId}>
-      {children}
+      <CommitteeDataProvider>
+        <StatusTimerProvider>{children}</StatusTimerProvider>
+      </CommitteeDataProvider>
     </CommitteeIdContext.Provider>
   );
 }

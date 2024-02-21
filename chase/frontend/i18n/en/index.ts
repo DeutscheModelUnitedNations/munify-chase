@@ -225,6 +225,7 @@ const en = {
   navbar: {
     SETTINGS: "Settings",
     LOGOUT: "Logout",
+    HUB: "Hub",
     DASHBOARD: "Dashboard",
     CONFIGURATION: "Configuration",
     ATTENDEES: "Attendees",
@@ -431,6 +432,12 @@ const en = {
           TOAST_SUCCESS_DETAILS_NOT_ALLOWED:
             "Speakers can no longer add themselves.",
         },
+        presentationMode: {
+          TITLE: "Open Presentation Mode",
+          DESCRIPTION:
+            "Open the presentation mode in a new window. This mode is designed to be displayed on a projector or a second screen and provides relevant committee data for delegates.",
+          BUTTON: "Presentation Mode",
+        },
       },
     },
     attendance: {
@@ -488,6 +495,19 @@ const en = {
       BUTTON_RESET: "Restart Voting",
       BUTTON_DELETE: "Delete Voting",
     },
+  },
+
+  messageBoard: {
+    toast: {
+      NEW_MESSAGE_SUMMARY: "New Message",
+      NEW_MESSAGE_DETAIL: "You have new unread messages",
+    },
+    menu: {
+      MARK_AS_UNREAD: "Mark as Unread",
+      ARCHIVE: "Archive",
+    },
+    NO_MESSAGE_SELECTED: "No message selected",
+    TAG_UNREAD: "Unread",
   },
 } satisfies BaseTranslation;
 

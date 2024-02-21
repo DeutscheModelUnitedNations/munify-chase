@@ -3,7 +3,6 @@ import WidgetTemplate from "@/components/widget_template";
 import SpeakerBlock from "@/components/speakers_list/speaker_block";
 import CommentBlock from "@/components/speakers_list/comment_block";
 import QueueBlock from "@/components/speakers_list/queue_block";
-import { CountryCode, SpeakersListData } from "@/custom_types/custom_types";
 import { useI18nContext } from "@/i18n/i18n-react";
 import "./markdown.scss";
 import { AnimatePresence, motion } from "framer-motion";

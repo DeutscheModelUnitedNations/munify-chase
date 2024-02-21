@@ -12,7 +12,7 @@ export default function ChairSpeakersList() {
   return (
     <>
       <ScrollPanel className="flex-1 overflow-y-auto custom-scrollbar">
-        <div className="flex-1 flex p-4 gap-4 flex-col lg:flex-row">
+        <div className="flex-1 flex h-full p-4 gap-4 flex-col lg:flex-row">
           <SpeakersListBlock
             typeOfList={$Enums.SpeakersListCategory.SPEAKERS_LIST}
             listTitle={LL.participants.speakersList.SPEAKERS_LIST()}

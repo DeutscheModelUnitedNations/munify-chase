@@ -29,12 +29,9 @@ import { ToggleButton } from "primereact/togglebutton";
 import {
   AgendaItemDataProvider,
   CommitteeDataContext,
-  CommitteeDataProvider,
   CommitteeIdContext,
   ConferenceIdContext,
 } from "@/contexts/committee_data";
-import AgendaSelection from "@/components/dashboard/chair/agenda_selection";
-import SetStatusWidget from "@/components/dashboard/chair/set_status";
 
 export default function SpeakersListAddingPolicyWidget() {
   const { LL } = useI18nContext();
@@ -79,7 +76,7 @@ export default function SpeakersListAddingPolicyWidget() {
                 }
               })
               .catch((err) => {
-                toastError(err, showToast);
+                toastError(err);
               });
           }}
         />

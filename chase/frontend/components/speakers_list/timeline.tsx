@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import FlipMove from "react-flip-move";
 import { SpeakersListData } from "./speakers_list_block";
 import { useI18nContext } from "@/i18n/i18n-react";
@@ -14,36 +14,38 @@ export default function Timeline({
   list,
   content,
 }: {
-  list?: SpeakersListData.speakers;
-  content: (item: SpeakersListData.speakers[number]) => React.ReactNode;
+  list?: SpeakersListData["speakers"];
+  content: (item: SpeakersListData["speakers"][number]) => React.ReactNode;
 }) {
   const { LL } = useI18nContext();
+
   return (
     <>
       <div className="flex-1 flex flex-col">
-        {/* <FlipMove
-          // TODO: Fix this
-          duration={500}
-          enterAnimation="fade"
-          leaveAnimation="fade"
-          appearAnimation="fade"
-        > */}
-        {list?.length && list.length !== 0 ? (
-          list.map((item) => {
-            return (
-              <div key={item.id} className="flex flex-col items-start">
-                {content(item)}
-              </div>
-            );
-          })
+        {list?.length && list?.length > 1 ? (
+          <FlipMove
+            duration={500}
+            enterAnimation="fade"
+            leaveAnimation="fade"
+            appearAnimation="fade"
+          >
+            {list.slice(1).map((item) => {
+              return (
+                <div key={item.id} className="flex flex-col items-start">
+                  {content(item)}
+                </div>
+              );
+            })}
+          </FlipMove>
         ) : (
-          <div className="flex-1 flex items-center">
-            <p className="text-gray-500 text-sm">
-              {LL.participants.speakersList.NO_SPEAKERS_MESSAGE()}
-            </p>
-          </div>
+          list?.length === 1 && (
+            <div className="flex-1 flex items-center">
+              <p className="text-gray-500 text-sm">
+                {LL.participants.speakersList.NO_SPEAKERS_MESSAGE()}
+              </p>
+            </div>
+          )
         )}
-        {/* </FlipMove> */}
       </div>
     </>
   );

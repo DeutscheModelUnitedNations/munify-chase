@@ -35,12 +35,7 @@ export default function QueueList({
     <>
       <div className="flex flex-col mt-3">
         <Timeline
-          list={
-            speakersListData?.speakers &&
-            (speakersListData?.speakers.length > 1
-              ? speakersListData?.speakers.slice(1)
-              : [])
-          }
+          list={speakersListData?.speakers ?? []}
           content={(item) => {
             return (
               <CountryCard
@@ -78,7 +73,7 @@ function CountryCard({
   chairOptions = false,
   isLast,
 }: {
-  speakerData: SpeakersListData.speakers[number];
+  speakerData: (typeof SpeakersListData)["speakers"][number];
   myCountry?: string;
   chairOptions?: boolean;
   isLast?: boolean;

@@ -7,9 +7,11 @@ import Link from "next/link";
 import Timer from "../dashboard/countdown_timer";
 import { toastError } from "@/fetching/fetching_utils";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faSpinner } from "@fortawesome/pro-solid-svg-icons";
+import { faCircleNotch, faSpinner } from "@fortawesome/pro-solid-svg-icons";
 
-type CommitteeArray = Awaited<ReturnType<typeof backend.conference[":conferenceId"]["committee"]["get"]>>["data"];
+type CommitteeArray = Awaited<
+  ReturnType<(typeof backend.conference)[":conferenceId"]["committee"]["get"]>
+>["data"];
 type CommitteeType = NonNullable<CommitteeArray>[number];
 
 export default function CommitteeGrid({
@@ -20,12 +22,10 @@ export default function CommitteeGrid({
   isChair?: boolean;
 }) {
   const { LL, locale } = useI18nContext();
-  const toast = useRef<Toast>(null);
 
   const [committees, setCommittees] = useState<CommitteeArray>(null);
 
   async function getCommittees() {
-
     await backend.conference[conferenceId].committee
       .get()
       .then((res) => {
@@ -33,7 +33,7 @@ export default function CommitteeGrid({
         setCommittees(res.data);
       })
       .catch((err) => {
-        toastError(toast, LL, err);
+        toastError(toast);
       });
   }
 
@@ -46,8 +46,7 @@ export default function CommitteeGrid({
 
   return (
     <div className="w-full flex flex-wrap justify-center items-center gap-4">
-      <Toast ref={toast} />
-      {committees && committees?.map((committee) => {
+      {committees?.map((committee) => {
         return (
           <CommitteeCard
             key={committee.id}
@@ -80,7 +79,6 @@ export default function CommitteeGrid({
   );
 }
 
-
 function CommitteeCard({
   conferenceId,
   committee,
@@ -108,13 +106,14 @@ function CommitteeCard({
       default:
         return "";
     }
-  };
+  }
 
   return (
     <Link
       key={committee.id}
-      href={`/app/${conferenceId}/committee/${committee.id}/${isChair ? "chair" : "participant"
-        }/dashboard`}
+      href={`/app/${conferenceId}/committee/${committee.id}/${
+        isChair ? "chair" : "participant"
+      }/dashboard`}
       onClick={() => {
         setLoading(true);
       }}
@@ -122,27 +121,57 @@ function CommitteeCard({
     >
       <div className="flex-1 flex flex-col justify-center items-center">
         <h3 className="text-lg">{committee.name}</h3>
-        <h3 className="italic text-sm">{committee.agendaItems.find((i) => i.isActive)?.title ?? "–"}</h3>
+        <h3 className="italic text-sm">
+          {committee.agendaItems.find((i) => i.isActive)?.title ?? (
+            <Skeleton
+              width="5rem"
+              height="1.25rem"
+              className="!bg-primary-900"
+            />
+          )}
+        </h3>
       </div>
       <h1 className="flex-1 text-4xl my-2 text-primary font-bold">
-        {loading ? <FontAwesomeIcon icon={faSpinner} className="fa-spin" /> : committee.abbreviation}
+        {loading ? (
+          <FontAwesomeIcon icon={faCircleNotch} className="fa-spin" />
+        ) : (
+          committee.abbreviation
+        )}
       </h1>
-      <div className="flex-1 flex flex-col justify-center items-center w-full p-1 rounded-xl border-2 border-white">
-        <h3>{getHeadline(committee.status, committee?.statusHeadline)}</h3>
-        <div className="">
-          {committee.statusUntil ? (<>
-            {LL.participants.dashboard.timerWidget.UNTIL(
-              new Date(committee.statusUntil).toLocaleTimeString("de-DE", {
-                hour: "2-digit",
-                minute: "2-digit",
-              })
-            )}
-            {" ("}<Timer until={new Date(committee.statusUntil)} />{")"}
-          </>) : (
-            "–"
+      <div className="flex-1 flex flex-col justify-center items-center w-full p-1 rounded-md bg-primary-900">
+        <h3 className="text-lg">
+          {getHeadline(committee.status, committee?.statusHeadline)}
+        </h3>
+        <div className="text-sm">
+          {committee.statusUntil ? (
+            <>
+              {LL.participants.dashboard.timerWidget.UNTIL(
+                new Date(committee.statusUntil).toLocaleTimeString("de-DE", {
+                  hour: "2-digit",
+                  minute: "2-digit",
+                }),
+              )}
+              {" ("}
+              <Timer />
+              {")"}
+            </>
+          ) : (
+            <>
+              <Skeleton
+                width="10rem"
+                height="1.50rem"
+                className="!bg-primary-900"
+              />
+              <div className="h-1" />
+              <Skeleton
+                width="10rem"
+                height="1.25rem"
+                className="!bg-primary-900"
+              />
+            </>
           )}
         </div>
       </div>
     </Link>
-  )
+  );
 }

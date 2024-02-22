@@ -1,8 +1,8 @@
 import Elysia from "elysia";
 
-export const errorLogging = new Elysia().onError(({ error, code, path, set }) => {
-  console.error(`Error in ${path}: ${code} ${error.message}`);
-  console.error(error);
+export const errorLogging = new Elysia().onError(({ error, code, path, set, request }) => {
+    console.error(`Error in ${request.method} ${path}: ${code} ${error.message}`);
+    console.error(error);
 
   if (code === "VALIDATION") {
     return error.message;

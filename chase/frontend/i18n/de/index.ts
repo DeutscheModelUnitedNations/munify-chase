@@ -181,6 +181,8 @@ const de = {
     PASSWORD_PLACEHOLDER: "Passwort",
     REPEAT_PASSWORD_PLACEHOLDER: "Passwort wiederholen",
     PASSWORDS_DO_NOT_MATCH: "Passwörter stimmen nicht überein",
+    FORGOT_PASSWORD: "Passwort vergessen?",
+    SENT_EMAIL: "E-Mail gesendet",
     ADVANCE_BUTTON: "Weiter",
     BACK_BUTTON: "Zurück",
     LOGIN_BUTTON: "Anmelden",

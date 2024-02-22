@@ -179,6 +179,8 @@ const en = {
     PASSWORD_PLACEHOLDER: "Password",
     REPEAT_PASSWORD_PLACEHOLDER: "Repeat password",
     PASSWORDS_DO_NOT_MATCH: "Passwords do not match",
+    FORGOT_PASSWORD: "Forgot Password?",
+    SENT_EMAIL: "Sent Email",
     ADVANCE_BUTTON: "Advance",
     BACK_BUTTON: "Back",
     LOGIN_BUTTON: "Login",

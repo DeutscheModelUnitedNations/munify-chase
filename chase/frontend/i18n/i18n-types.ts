@@ -520,9 +520,17 @@ type RootTranslation = {
 		 */
 		REPEAT_PASSWORD_PLACEHOLDER: string
 		/**
-		 * P​a​s​s
+		 * P​a​s​s​w​o​r​d​s​ ​d​o​ ​n​o​t​ ​m​a​t​c​h
 		 */
 		PASSWORDS_DO_NOT_MATCH: string
+		/**
+		 * F​o​r​g​o​t​ ​P​a​s​s​w​o​r​d​?
+		 */
+		FORGOT_PASSWORD: string
+		/**
+		 * S​e​n​t​ ​E​m​a​i​l
+		 */
+		SENT_EMAIL: string
 		/**
 		 * A​d​v​a​n​c​e
 		 */
@@ -1999,9 +2007,17 @@ export type TranslationFunctions = {
 		 */
 		REPEAT_PASSWORD_PLACEHOLDER: () => LocalizedString
 		/**
-		 * Pass
+		 * Passwords do not match
 		 */
 		PASSWORDS_DO_NOT_MATCH: () => LocalizedString
+		/**
+		 * Forgot Password?
+		 */
+		FORGOT_PASSWORD: () => LocalizedString
+		/**
+		 * Sent Email
+		 */
+		SENT_EMAIL: () => LocalizedString
 		/**
 		 * Advance
 		 */

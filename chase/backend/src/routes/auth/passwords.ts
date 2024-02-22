@@ -33,19 +33,31 @@ export const passwords = new Elysia()
         throw new Error("Password does not meet requirements");
       }
 
-      const foundTask = foundEmail.user.pendingCredentialCreationTasks.find(
-        (task) =>
-          Bun.password.verify(credentialCreateToken, task.token.tokenHash),
-      );
+      const foundTask = (
+        await Promise.all(
+          foundEmail.user.pendingCredentialCreationTasks.map(async (task) => ({
+            ...task,
+            hit: await Bun.password.verify(
+              credentialCreateToken,
+              task.token.tokenHash,
+            ),
+          })),
+        )
+      ).find((t) => t.hit);
 
       if (!foundTask) {
         throw new Error("Invalid token");
       }
 
       if (
-        foundEmail.user.passwords.some((p) =>
-          Bun.password.verify(password, p.passwordHash),
-        )
+        (
+          await Promise.all(
+            foundEmail.user.passwords.map(async (p) => ({
+              ...p,
+              hit: await Bun.password.verify(password, p.passwordHash),
+            })),
+          )
+        ).find((p) => p.hit)
       ) {
         throw new Error("Password already exists");
       }
@@ -87,23 +99,22 @@ export const passwords = new Elysia()
   )
   .delete(
     "/password",
-    async ({ body: { email, password } }) => {
-      const foundEmail = await db.email.findUniqueOrThrow({
+    async ({ body: { password }, session }) => {
+      const user = await db.user.findUniqueOrThrow({
         where: {
-          email,
+          id: session.userData.id,
         },
-        include: {
-          user: {
-            include: {
-              passwords: true,
-            },
-          },
-        },
+        include: { passwords: true },
       });
 
-      const foundPassword = foundEmail.user.passwords.find((p) =>
-        Bun.password.verify(password, p.passwordHash),
-      );
+      const foundPassword = (
+        await Promise.all(
+          user.passwords.map(async (p) => ({
+            ...p,
+            hit: await Bun.password.verify(password, p.passwordHash),
+          })),
+        )
+      ).find((p) => p.hit);
 
       if (!foundPassword) {
         throw new Error("Password not found");
@@ -118,7 +129,6 @@ export const passwords = new Elysia()
     {
       mustBeLoggedIn: true,
       body: t.Object({
-        email: t.String(),
         password: t.String(),
       }),
       detail: {
@@ -141,9 +151,13 @@ export const passwords = new Elysia()
         throw new Error("Email not validated");
       }
       if (
-        !foundEmail.user.passwords
-          .map((p) => Bun.password.verify(password, p.passwordHash))
-          .some((p) => p)
+        !(
+          await Promise.all(
+            foundEmail.user.passwords.map((p) =>
+              Bun.password.verify(password, p.passwordHash),
+            ),
+          )
+        ).some((p) => p)
       ) {
         throw new Error("Invalid password");
       }

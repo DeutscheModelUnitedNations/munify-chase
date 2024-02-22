@@ -92,6 +92,15 @@ export default () => {
     }
   }
 
+  function forgotPassword(e) {
+    e.preventDefault();
+    backend.auth.sendCredentialCreateToken.get({ $query: { email, locale } });
+    toast.showToast({
+      severity: "info",
+      summary: LL.login.SENT_EMAIL(),
+    });
+  }
+
   return (
     <>
       {userCreatedSuccessfullyLoading === true ? (
@@ -152,16 +161,23 @@ export default () => {
                 ) : undefined}
                 {userState === "ok" ? (
                   <>
-                    <InputText
-                      className="w-full"
-                      type="password"
-                      id="password"
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                    />
-                    <label htmlFor="password">
-                      {LL.login.PASSWORD_PLACEHOLDER()}
-                    </label>
+                    <span className="p-float-label w-full mt-8">
+                      <InputText
+                        className="w-full"
+                        type="password"
+                        id="password"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                      />
+                      <label htmlFor="password">
+                        {LL.login.PASSWORD_PLACEHOLDER()}
+                      </label>
+                    </span>
+                    <small>
+                      <button type="button" onClick={forgotPassword}>
+                        {LL.login.FORGOT_PASSWORD()}
+                      </button>
+                    </small>
                     <Button
                       type="submit"
                       label={LL.login.LOGIN_BUTTON()}

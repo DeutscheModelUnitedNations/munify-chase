@@ -212,6 +212,7 @@ export const auth = new Elysia({
       },
     },
   )
+  //TODO spam protection?
   .get(
     "/sendCredentialCreateToken",
     async ({ query: { email, locale } }) => {

@@ -64,7 +64,7 @@ export default () => {
       const res = await backend.auth.password.login.post({
         email,
         password,
-      })
+      });
       if (res.error) {
         toast.showToast({
           severity: "error",

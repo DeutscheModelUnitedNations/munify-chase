@@ -60,6 +60,7 @@ const m = new Elysia({
   .use(baseData);
 
 // we make the api docs public
+// biome-ignore lint/suspicious/noExplicitAny: we explicitly dont want type checking here
 (new Elysia() as any) // just disable the type check for this object, since the middleware is causing issues
   .use(
     swagger({

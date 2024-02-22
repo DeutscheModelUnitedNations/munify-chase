@@ -20,8 +20,9 @@ export default function ChairHub({
       <Button
         className="mt-8"
         faIcon={faArrowRightFromBracket}
-        label={LL.hub.LOGOUT()
-        // TODO @Felix onClick={logout}
+        label={
+          LL.hub.LOGOUT()
+          // TODO @Felix onClick={logout}
         }
       />
     </>

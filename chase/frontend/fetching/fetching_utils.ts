@@ -3,10 +3,7 @@ import { useI18nContext } from "@/i18n/i18n-react";
 import { useContext } from "react";
 
 // Helper functions
-export function toastError(
-  error?: Error,
-) {
-
+export function toastError(error?: Error) {
   const { showToast } = useContext(ToastContext);
   const { LL } = useI18nContext();
 

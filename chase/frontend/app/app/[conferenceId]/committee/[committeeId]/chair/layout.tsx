@@ -1,14 +1,11 @@
 "use client";
-import { useContext, useState } from "react";
+import { useContext } from "react";
 import Navbar from "@/components/navbar/navbar";
 import NavButton from "@/components/navbar/button";
 import {
   faChalkboard,
   faPodium,
-  faScroll,
-  faPollPeople,
   faUsersLine,
-  faPresentationScreen,
   faSquareSliders,
   faNewspaper,
   faCommentExclamation,

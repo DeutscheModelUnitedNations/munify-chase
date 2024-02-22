@@ -8,10 +8,7 @@ import ForwardBackButtons from "@/components/admin/onboarding/forward_back_bar";
 import TeamPoolTable from "@/components/admin/teampool/teampool_table";
 import AddTeammemberDialog from "@/components/admin/teampool/add_teammember_dialog";
 import { confirmPopup } from "primereact/confirmpopup";
-import {
-  ConferenceMember,
-  ConferenceRole,
-} from "../../../../../../../backend/prisma/generated/client";
+import { ConferenceRole } from "../../../../../../../backend/prisma/generated/client";
 
 export default function Teampool({
   params,

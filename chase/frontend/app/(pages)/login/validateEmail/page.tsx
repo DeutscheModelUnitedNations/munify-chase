@@ -19,6 +19,7 @@ export default () => {
     string | undefined
   >();
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: yeah this should probably done more reacty, please give me some svelte
   useEffect(() => {
     const token = searchParams.get("token");
     const email = searchParams.get("email");
@@ -115,7 +116,9 @@ export default () => {
         <FontAwesomeIcon icon={faSpinnerThird} spin={true} size="2x" />
       ) : undefined}
       {errored === false ? (
-        <Link href={`/login/createCredentials?email=${email}&token=${credentialCreateToken}`}>
+        <Link
+          href={`/login/createCredentials?email=${email}&token=${credentialCreateToken}`}
+        >
           <Button
             type="button"
             label={LL.login.SET_CREDENTIALS()}

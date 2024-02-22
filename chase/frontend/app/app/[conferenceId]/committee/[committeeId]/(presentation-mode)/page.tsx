@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import { useI18nContext } from "@/i18n/i18n-react";
 import PresenceWidget from "@/components/attendance/presence_widget";
 import TimerWidget from "@/components/dashboard/timer";
@@ -7,9 +7,6 @@ import SpeakersListBlock from "@/components/speakers_list/speakers_list_block";
 import WidgetTemplate from "@/components/widget_template";
 import { toastError } from "@/fetching/fetching_utils";
 import { backend } from "@/services/backend";
-import { Toast } from "primereact/toast";
-import { apiTestData } from "@/test_data";
-import { Committee } from "../../../../../../../backend/prisma/generated/schema";
 import { Skeleton } from "primereact/skeleton";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPodium } from "@fortawesome/pro-solid-svg-icons";

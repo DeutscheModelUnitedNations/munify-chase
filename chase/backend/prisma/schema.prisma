@@ -257,6 +257,7 @@ enum MessageCategory {
 enum MessageStatus {
   UNREAD
   READ
+  PRIORITY
   ARCHIVED
 }
 

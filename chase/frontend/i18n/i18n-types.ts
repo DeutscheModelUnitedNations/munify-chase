@@ -1445,6 +1445,32 @@ type RootTranslation = {
 			 */
 			ARCHIVE: string
 		}
+		pdf: {
+			/**
+			 * M​e​s​s​a​g​e​ ​f​r​o​m​ ​P​a​r​t​i​c​i​p​a​n​t
+			 */
+			HEADLINE: string
+			/**
+			 * F​r​o​m​:
+			 */
+			FROM: string
+			/**
+			 * E​m​a​i​l​:
+			 */
+			EMAIL: string
+			/**
+			 * T​i​m​e​s​t​a​m​p​:​ ​{​d​a​t​e​}​ ​a​t​ ​{​t​i​m​e​}
+			 * @param {string} date
+			 * @param {string} time
+			 */
+			TIME: RequiredParams<'date' | 'time'>
+		}
+		/**
+		 * {​d​a​t​e​}​ ​a​t​ ​{​t​i​m​e​}
+		 * @param {string} date
+		 * @param {string} time
+		 */
+		TIME: RequiredParams<'date' | 'time'>
 		/**
 		 * N​o​ ​m​e​s​s​a​g​e​ ​s​e​l​e​c​t​e​d
 		 */
@@ -1453,6 +1479,10 @@ type RootTranslation = {
 		 * U​n​r​e​a​d
 		 */
 		TAG_UNREAD: string
+		/**
+		 * P​r​i​o​r​i​t​y
+		 */
+		TAG_PRIORITY: string
 	}
 }
 
@@ -2886,6 +2916,28 @@ export type TranslationFunctions = {
 			 */
 			ARCHIVE: () => LocalizedString
 		}
+		pdf: {
+			/**
+			 * Message from Participant
+			 */
+			HEADLINE: () => LocalizedString
+			/**
+			 * From:
+			 */
+			FROM: () => LocalizedString
+			/**
+			 * Email:
+			 */
+			EMAIL: () => LocalizedString
+			/**
+			 * Timestamp: {date} at {time}
+			 */
+			TIME: (arg: { date: string, time: string }) => LocalizedString
+		}
+		/**
+		 * {date} at {time}
+		 */
+		TIME: (arg: { date: string, time: string }) => LocalizedString
 		/**
 		 * No message selected
 		 */
@@ -2894,6 +2946,10 @@ export type TranslationFunctions = {
 		 * Unread
 		 */
 		TAG_UNREAD: () => LocalizedString
+		/**
+		 * Priority
+		 */
+		TAG_PRIORITY: () => LocalizedString
 	}
 }
 

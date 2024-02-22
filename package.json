@@ -19,5 +19,8 @@
   "workspaces": [
     "chase/backend",
     "chase/frontend"
-  ]
+  ],
+  "dependencies": {
+    "@react-pdf/renderer": "^3.3.8"
+  }
 }

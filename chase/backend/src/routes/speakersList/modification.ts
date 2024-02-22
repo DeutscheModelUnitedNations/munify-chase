@@ -96,21 +96,54 @@ export const speakersListModification = new Elysia({
 
   .post(
     "/startTimer",
-    async ({ params: { speakersListId } }) => {
+    async ({ params: { speakersListId } }, res) => {
       const speakersList = await db.speakersList.findUnique({
         where: {
           id: speakersListId,
         },
+        include: {
+          agendaItem: {
+            select: {
+              speakerLists: {
+                select: {
+                  id: true,
+                  type: true,
+                },
+              },
+            },
+          },
+        },
       });
 
-      return await db.speakersList.update({
-        where: {
-          id: speakersListId,
-        },
-        data: {
-          startTimestamp: new Date(Date.now()),
-          timeLeft: speakersList?.timeLeft ?? speakersList?.speakingTime,
-        },
+      if (!speakersList) {
+        res.status = "Not Found";
+        throw new Error("Speakers List not found");
+      }
+
+      return await db.$transaction(async (tx) => {
+        if (speakersList.type === "COMMENT_LIST") {
+          await tx.speakersList.update({
+            where: {
+              id: speakersList.agendaItem.speakerLists.find(
+                (sl) => sl.type === "SPEAKERS_LIST",
+              )?.id,
+            },
+            data: {
+              startTimestamp: null,
+              timeLeft: speakersList.speakingTime,
+            },
+          });
+        }
+
+        await tx.speakersList.update({
+          where: {
+            id: speakersListId,
+          },
+          data: {
+            startTimestamp: new Date(Date.now()),
+            timeLeft: speakersList?.timeLeft ?? speakersList?.speakingTime,
+          },
+        });
       });
     },
     {

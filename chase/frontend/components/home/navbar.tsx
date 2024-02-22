@@ -7,6 +7,7 @@ import Button from "@/components/button";
 import { useRouter } from "next/navigation";
 import {
   faBook,
+  faCode,
   faQuestionCircle,
   faRightToBracket,
 } from "@fortawesome/pro-solid-svg-icons";
@@ -46,24 +47,25 @@ export default function Navbar({
         className="fixed w-full px-8 py-4 top-0 left-0 flex gap-4 mb-8 items-center justify-center z-30"
         style={{
           backgroundColor: `rgba(255, 255, 255, ${modificator})`,
-          boxShadow: `0 0 ${modificator * 20}px rgba(0, 0, 0, ${modificator / 6
-            })`,
+          boxShadow: `0 0 ${modificator * 20}px rgba(0, 0, 0, ${
+            modificator / 6
+          })`,
         }}
         initial={{ opacity: 0.5, y: -150 }}
         animate={{ opacity: 1, y: 0 }}
         transition={
           animate
             ? {
-              duration: 2,
-              delay: 2,
-              type: "spring",
-              damping: 20,
-              stiffness: 70,
-            }
+                duration: 2,
+                delay: 2,
+                type: "spring",
+                damping: 20,
+                stiffness: 70,
+              }
             : {
-              duration: 0,
-              delay: 0,
-            }
+                duration: 0,
+                delay: 0,
+              }
         }
       >
         <Link href="/">
@@ -83,16 +85,7 @@ export default function Navbar({
             onClick={() => router.push("/app/admin/login")}
             text
           />
-          <Button
-            label={LL.home.navbar.LOGIN_CHAIR()}
-            onClick={() => router.push("/app/CONFERENCEID/hub/chair")}
-            text
-          />
-          <Button
-            label={LL.home.navbar.LOGIN_PARTICIPANT()}
-            onClick={() => router.push("/app/CONFERENCEID/hub/na")}
-            text
-          />
+          <Button faIcon={faCode} onClick={() => router.push("/dev")} text />
           <Button
             label={LL.home.navbar.DOCUMENTATION()}
             onClick={() => router.push("/docs")}

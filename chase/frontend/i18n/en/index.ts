@@ -506,8 +506,16 @@ const en = {
       MARK_AS_UNREAD: "Mark as Unread",
       ARCHIVE: "Archive",
     },
+    pdf: {
+      HEADLINE: "Message from Participant",
+      FROM: "From:",
+      EMAIL: "Email:",
+      TIME: "Timestamp: {date:string} at {time:string}",
+    },
+    TIME: "{date:string} at {time:string}",
     NO_MESSAGE_SELECTED: "No message selected",
     TAG_UNREAD: "Unread",
+    TAG_PRIORITY: "Priority",
   },
 } satisfies BaseTranslation;
 

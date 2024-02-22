@@ -512,8 +512,16 @@ const de = {
       MARK_AS_UNREAD: "Als ungelesen markieren",
       ARCHIVE: "Archivieren",
     },
+    pdf: {
+      HEADLINE: "Nachricht eines/einer Teilnehmenden",
+      FROM: "Von",
+      EMAIL: "E-Mail:",
+      TIME: "Empfangen am {date:string} um {time:string} Uhr",
+    },
+    TIME: "{date:string} um {time:string} Uhr",
     NO_MESSAGE_SELECTED: "Keine Nachricht ausgewählt",
     TAG_UNREAD: "Ungelesen",
+    TAG_PRIORITY: "Priorität",
   },
 } satisfies Translation;
 

@@ -23,17 +23,10 @@ export const conference = new Elysia()
   .get(
     "/conference",
     async () => {
-      const r = await db.conference.findMany();
-      return r.map((c) => ({
-        id: c.id,
-        name: c.name,
-        start: c.start?.toISOString(),
-        end: c.end?.toISOString(),
-      }));
+      return await db.conference.findMany();
     },
     {
       isLoggedIn: true,
-      response: t.Array(ConferenceWithoutRelations),
       detail: {
         description: "Get all conferences",
         tags: [openApiTag(import.meta.path)],

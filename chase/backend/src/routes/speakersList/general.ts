@@ -46,6 +46,9 @@ export const speakersListGeneral = new Elysia({
                 },
               },
             },
+            orderBy: {
+              position: "asc",
+            },
           },
         },
       });
@@ -105,6 +108,9 @@ export const speakersListGeneral = new Elysia({
                   },
                 },
               },
+            },
+            orderBy: {
+              position: "asc",
             },
           },
           agendaItem: {

@@ -419,6 +419,89 @@ export const speakersListSpeakers = new Elysia({
   )
 
   .post(
+    "/moveSpeaker/:speakerId/toTheTop",
+    async ({ params: { speakersListId, speakerId }, set }) => {
+      const speaker = await db.speakerOnList.findUnique({
+        where: {
+          id: speakerId,
+        },
+      });
+
+      if (!speaker) {
+        set.status = "Not Found";
+        throw new Error("Speaker not found");
+      }
+
+      const speakerOriginalPosition = speaker.position;
+
+      // Make sure the speaker is not already the first
+      const minPosition = await db.speakerOnList.aggregate({
+        _min: {
+          position: true,
+        },
+        where: {
+          speakersListId,
+        },
+      });
+
+      if (minPosition._min.position === speaker.position) {
+        set.status = "Locked";
+        throw new Error("Speaker is already at the top of the list");
+      }
+
+      const allSpeakers = await db.speakerOnList.findMany({
+        where: {
+          speakersListId,
+          position: {
+            gte: minPosition._min.position ?? 1,
+            lt: speakerOriginalPosition,
+          },
+        },
+        orderBy: {
+          position: "desc",
+        },
+      });
+
+      return await db.$transaction(async (tx) => {
+        await tx.speakerOnList.update({
+          where: {
+            id: speakerId,
+          },
+          data: {
+            position: -1,
+          },
+        });
+
+        for (const s of allSpeakers) {
+          await tx.speakerOnList.update({
+            where: {
+              id: s.id,
+            },
+            data: {
+              position: s.position + 1,
+            },
+          });
+        }
+        await tx.speakerOnList.update({
+          where: {
+            id: speakerId,
+          },
+          data: {
+            position: minPosition._min.position ?? 1,
+          },
+        });
+      });
+    },
+    {
+      hasConferenceRole: "any",
+      detail: {
+        description: "Move a speaker to the top of the list",
+        tags: [openApiTag(import.meta.path)],
+      },
+    },
+  )
+
+  .post(
     "/nextSpeaker",
     async ({ params: { speakersListId }, set }) => {
       const currentSpeaker = await db.speakerOnList.findFirst({

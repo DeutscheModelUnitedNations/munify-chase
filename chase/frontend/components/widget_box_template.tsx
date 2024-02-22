@@ -12,11 +12,13 @@ export default function WidgetBoxTemplate({
   highlight,
   className,
   onClick,
+  ...rest
 }: {
   children: React.ReactNode;
   highlight?: boolean;
   className?: string;
   onClick?: () => void;
+  [key: string]: any;
 }) {
   const getClassNames = (): string => {
     let classNames =
@@ -38,7 +40,12 @@ export default function WidgetBoxTemplate({
 
   return (
     <>
-      <div className={getClassNames()} onClick={onClick} onKeyDown={onClick}>
+      <div
+        className={getClassNames()}
+        onClick={onClick}
+        onKeyDown={onClick}
+        {...rest}
+      >
         {children}
       </div>
     </>

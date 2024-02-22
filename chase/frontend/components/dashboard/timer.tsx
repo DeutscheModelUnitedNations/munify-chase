@@ -1,17 +1,15 @@
-import React, { useContext, useEffect, useRef, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import WidgetTemplate from "@components/widget_template";
 import { ToastContext } from "@/contexts/toast";
-
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
-  faGavel,
   faComments,
-  faCoffee,
-  faCirclePause,
   faQuestion,
   faPodium,
   faMugHot,
   faForwardStep,
+  faSpinner,
+  faCircleNotch,
 } from "@fortawesome/pro-solid-svg-icons";
 import { useI18nContext } from "@/i18n/i18n-react";
 import { AnimatePresence, motion } from "framer-motion";
@@ -21,17 +19,17 @@ import Timer from "./countdown_timer";
 import { $Enums } from "../../../backend/prisma/generated/client";
 import { backend } from "@/services/backend";
 import { toastError } from "@/fetching/fetching_utils";
-import { Toast } from "primereact/toast";
+import {
+  ConferenceIdContext,
+  CommitteeIdContext,
+} from "@/contexts/committee_data";
+import { StatusTimer } from "@/contexts/status_timer";
 
-type Category = $Enums.CommitteeStatus;
-
-interface TimerWidgetProps {
-  conferenceId: string;
-  committeeId: string;
-  noAlert?: boolean;
-}
-
-type Committee = Awaited<ReturnType<typeof backend.conference["conferenceId"]["committee"]["committeeId"]["get"]>>["data"];
+type Committee = Awaited<
+  ReturnType<
+    (typeof backend.conference)["conferenceId"]["committee"]["committeeId"]["get"]
+  >
+>["data"];
 
 /**
  * This Component is used in the Dashboard. It shows the current timer status –
@@ -39,65 +37,9 @@ type Committee = Awaited<ReturnType<typeof backend.conference["conferenceId"]["c
  * With this widget, participants can see the end time of the current session as well as a countdown.
  */
 
-export default function TimerWidget({
-  conferenceId,
-  committeeId,
-  noAlert,
-}: TimerWidgetProps) {
+export default function TimerWidget() {
   const { LL } = useI18nContext();
-  const { showToast } = useContext(ToastContext);
-  const toast = useRef(null);
-
-  const [category, setCategory] = useState<Category | null>(null);
-  const [headline, setHeadline] = useState<string | null>(null);
-  const [until, setUntil] = useState<Date | null>(null);
-  const [timerOver, setTimerOver] = useState(false);
-  const [toastShown, setToastShown] = useState(false);
-
-  const timerToast = () => {
-    if (!noAlert) {
-      toast.current?.show({
-        summary: LL.participants.dashboard.timerWidget.TOAST_HEADLINE(),
-        detail: LL.participants.dashboard.timerWidget.TOAST_MESSAGE(),
-        severity: "info" as const,
-        sticky: true,
-      });
-    };
-  };
-
-  async function getCommitteeData() {
-    await backend.conference[conferenceId].committee[committeeId]
-      .get()
-      .then((response) => {
-        if (response.data?.status !== category) setCategory(response.data?.status ?? null);
-        if (response.data?.statusHeadline !== headline) setHeadline(response.data?.statusHeadline ?? null);
-        if (response.data?.statusUntil !== until) setUntil(response.data?.statusUntil ?? null);
-      })
-      .catch((error) => {
-        toastError(toast, LL, error);
-      });
-  }
-
-  useEffect(() => {
-    getCommitteeData();
-    const intervalAPICall = setInterval(() => {
-      getCommitteeData();
-    }, 5000);
-    return () => clearInterval(intervalAPICall);
-  }, []);
-
-  useEffect(() => {
-    if (timerOver && !toastShown) {
-      timerToast();
-      setToastShown(false);
-    }
-  }, [timerOver]);
-
-  useEffect(() => {
-    setToastShown(false);
-    setTimerOver(false);
-    toast.current?.clear();
-  }, [until]);
+  const { category, headline, until } = useContext(StatusTimer);
 
   const timeStamp = () => {
     if (until) {
@@ -106,7 +48,7 @@ export default function TimerWidget({
           hour: "2-digit",
           minute: "2-digit",
         });
-      } catch (e) {
+      } catch (_e) {
         return "";
       }
     }
@@ -159,7 +101,6 @@ export default function TimerWidget({
 
   return (
     <>
-      <Toast ref={toast} />
       <AnimatePresence mode="wait">
         <motion.div
           key={category}
@@ -171,7 +112,10 @@ export default function TimerWidget({
         >
           {category ? (
             category !== "CLOSED" && (
-              <WidgetTemplate cardTitle="" additionalClassNames={getClassNames()}>
+              <WidgetTemplate
+                cardTitle=""
+                additionalClassNames={getClassNames()}
+              >
                 <div className="flex flex-col justify-center items-center">
                   <div className="my-4">
                     <FontAwesomeIcon icon={getIcon()} size="3x" />
@@ -182,16 +126,30 @@ export default function TimerWidget({
                       {LL.participants.dashboard.timerWidget.UNTIL(timeStamp())}
                     </div>
                   )}
-                  {(category === "INFORMAL" || category === "PAUSE") && until && (
-                    <div className="text-4xl font-bold my-2 tabular-nums">
-                      <Timer until={new Date(until)} setTimerOver={setTimerOver} />
-                    </div>
-                  )}
+                  {(category === "INFORMAL" || category === "PAUSE") &&
+                    until && (
+                      <div className="text-4xl font-bold my-2 tabular-nums">
+                        <Timer />
+                      </div>
+                    )}
                 </div>
               </WidgetTemplate>
             )
           ) : (
-            <Skeleton width="100%" height="10rem" />
+            <WidgetTemplate cardTitle="" additionalClassNames={getClassNames()}>
+              <div className="flex flex-col justify-center items-center">
+                <div className="my-4">
+                  <FontAwesomeIcon
+                    icon={faCircleNotch}
+                    size="3x"
+                    spin
+                    className="text-primary-500"
+                  />
+                </div>
+                <Skeleton width="90%" height="2rem" />
+                <Skeleton width="50%" height="1.25rem" className="mt-1" />
+              </div>
+            </WidgetTemplate>
           )}
         </motion.div>
       </AnimatePresence>

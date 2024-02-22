@@ -3,7 +3,11 @@ import { db } from "../../prisma/db";
 import { committeeRoleGuard } from "../auth/guards/committeeRoles";
 import { conferenceRoleGuard } from "../auth/guards/conferenceRoles";
 import { openApiTag } from "../util/openApiTags";
-import { CommitteeMember, Delegation, Nation } from "../../prisma/generated/schema";
+import {
+  CommitteeMember,
+  Delegation,
+  Nation,
+} from "../../prisma/generated/schema";
 
 const DelegationBody = t.Pick(Nation, ["alpha3Code"]);
 
@@ -99,7 +103,7 @@ export const delegation = new Elysia({
   )
   .post(
     "/delegation/:delegationId/committee/:committeeId",
-    async ({ params: { delegationId, committeeId } }) => {
+    async ({ params: { delegationId, committeeId }, set }) => {
       try {
         const res = await db.committeeMember.create({
           data: {
@@ -110,12 +114,8 @@ export const delegation = new Elysia({
         return res;
       } catch (e) {
         if (e.code === "P2002") {
-          return new Response(
-            "Committee is already connected to this delegation",
-            {
-              status: 304,
-            },
-          );
+          set.status = "Not Modified";
+          throw new Error("Committee is already connected to this delegation");
         }
         throw e;
       }
@@ -179,4 +179,4 @@ export const delegation = new Elysia({
         tags: [openApiTag(import.meta.path)],
       },
     },
-  )
+  );

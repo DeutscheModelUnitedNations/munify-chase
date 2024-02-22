@@ -16,8 +16,12 @@ export const ToastProvider = ({ children }: { children: React.ReactNode }) => {
     toast.current?.show(message);
   };
 
+  const clearToast = () => {
+    toast.current?.clear();
+  };
+
   return (
-    <ToastContext.Provider value={{ showToast }}>
+    <ToastContext.Provider value={{ showToast, clearToast }}>
       <Toast ref={toast} />
       {children}
     </ToastContext.Provider>
@@ -26,4 +30,5 @@ export const ToastProvider = ({ children }: { children: React.ReactNode }) => {
 
 export interface ToastContextType {
   showToast: (message: ToastMessage) => void;
+  clearToast: () => void;
 }

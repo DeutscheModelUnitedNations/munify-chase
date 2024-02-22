@@ -225,6 +225,7 @@ const en = {
   navbar: {
     SETTINGS: "Settings",
     LOGOUT: "Logout",
+    HUB: "Hub",
     DASHBOARD: "Dashboard",
     CONFIGURATION: "Configuration",
     ATTENDEES: "Attendees",
@@ -266,6 +267,7 @@ const en = {
       widgetHeadlines: {
         SPEAKERS_LIST: "Speakers List",
         COMMENT_LIST: "Comment List",
+        MODERATED_CAUCUS: "Moderated Caucus",
         COMMITTEE_STATUS: "Committee Status",
         WHITEBOARD: "Whiteboard",
         DOCUMENTS: "Documents",
@@ -305,6 +307,16 @@ const en = {
             OTHER: "Other",
           },
         },
+        toast: {
+          SUCCESS_CHAIR_SUMMARY: "Message sent",
+          SUCCESS_CHAIR_DETAIL: "The chair will get back to you soon.",
+          SUCCESS_RESEARCH_SUMMARY: "Message sent",
+          SUCCESS_RESEARCH_DETAIL:
+            "The Research Service will get back to you soon.",
+          ERROR_SUMMARY: "Error",
+          ERROR_DETAIL:
+            "The message could not be sent. Please try again or report the issue!",
+        },
       },
       documentsWidget: {
         SPONSORS: "signed Sponsors",
@@ -314,11 +326,30 @@ const en = {
     speakersList: {
       SPEAKERS_LIST: "Speakers List",
       COMMENT_LIST: "Comment List",
+      MODERATED_CAUCUS: "Moderated Caucus",
       ADD_TO_LIST_BUTTON: "Speech",
       REMOVE_FROM_LIST_BUTTON: "Remove",
       LIST_CLOSED_BUTTON: "List Closed",
       LIST_CLOSED_MESSAGE: "List Closed",
       NO_SPEAKERS_MESSAGE: "No Speakers on the List",
+      toast: {
+        ADDED_SUCCESS_SUMMARY: "Added Speech",
+        ADDED_SUCCESS_DETAIL: "to {{0}}",
+        ADDED_FORBIDDEN_SUMMARY: "Forbidden",
+        ADDED_FORBIDDEN_DETAIL:
+          "You are probably not registered as PRESENT in the committee. Please contact the chair.",
+        ADDED_ALREADY_ON_LIST_SUMMARY: "Already on List",
+        ADDED_ALREADY_ON_LIST_DETAIL:
+          "Please wait a moment and you should appear on the list soon. If not, reload the page. If the error persists, please contact the chair.",
+        ADDED_ERROR_SUMMARY: "Error during adding",
+        ADDED_ERROR_DETAIL:
+          "An unexpected error occurred. Please try again later or contact the chair.",
+        REMOVED_SUCCESS_SUMMARY: "Removed",
+        REMOVED_SUCCESS_DETAIL: "from {{0}}",
+        REMOVED_ERROR_SUMMARY: "Error during removing",
+        REMOVED_ERROR_DETAIL:
+          "An unexpected error occurred. Please try again later or contact the chair.",
+      },
     },
 
     voting: {
@@ -377,16 +408,37 @@ const en = {
           TITLE: "Agenda Item Selection",
           DESCRIPTION: "Select the agenda item you want to activate.",
           PLACEHOLDER: "No Agenda Item Selected",
+          TOAST_SUCCESS: "Agenda Item activated",
         },
         statusTimer: {
           TITLE: "Status Timer",
-          DESCRIPTION: "Set the status of the committee. You can also set a custom name, that overrides the default status name while keeping the icon (e.g. 'Lunch Break' instead of default 'Pause').",
+          DESCRIPTION:
+            "Set the status of the committee. You can also set a custom name, that overrides the default status name while keeping the icon (e.g. 'Lunch Break' instead of default 'Pause').",
           PLACEHOLDER_DROPDOWN: "Select a Status",
           PLACEHOLDER_CUSTOM_TEXT: "Custom Name (optional)",
           PLACEHOLDER_TIME_UNITL: "until",
           BUTTON: "Save Status",
+          TOAST_SUCCESS:
+            "Status {status:string} successfully set until {date:string}",
         },
-      }
+        speakersListAdding: {
+          TITLE: "Speakers List Adding Policy",
+          DESCRIPTION:
+            "Select the policy for speakers adding themselves to the speakers list.",
+          TOGGLE_BUTTON_NOT_ALLOWED: "Not Allowed",
+          TOGGLE_BUTTON_ALLOWED: "Allowed",
+          TOAST_SUCCESS: "Policy changed",
+          TOAST_SUCCESS_DETAILS_ALLOWED: "Speakers can now add themselves.",
+          TOAST_SUCCESS_DETAILS_NOT_ALLOWED:
+            "Speakers can no longer add themselves.",
+        },
+        presentationMode: {
+          TITLE: "Open Presentation Mode",
+          DESCRIPTION:
+            "Open the presentation mode in a new window. This mode is designed to be displayed on a projector or a second screen and provides relevant committee data for delegates.",
+          BUTTON: "Presentation Mode",
+        },
+      },
     },
     attendance: {
       HEADLINE: "Attendance",
@@ -399,7 +451,8 @@ const en = {
       RESET_BUTTON: "Reset",
       SUCCESS_TOAST: "Whiteboard saved",
       NO_CONTENT_TOAST: "Whiteboard is empty",
-      NO_CONTENT_TOAST_DETAILS: "It seems like there was an error while loading the whiteboard or the whiteboard is empty. Please try to reload the page.",
+      NO_CONTENT_TOAST_DETAILS:
+        "It seems like there was an error while loading the whiteboard or the whiteboard is empty. Please try to reload the page.",
     },
     speakersList: {
       buttons: {
@@ -423,6 +476,8 @@ const en = {
         BUTTON_ADD_AND_CLOSE: "Add and Close",
         TOAST_ADDED_SUMMARY: "{{0}} added",
         TOAST_ADDED_DETAIL: "to the {{0}}",
+        TOAST_ALREADY_ON_LIST: "Already on {{0}}",
+        TOAST_ALREADY_ON_LIST_DETAIL: "This country is already on {{0}}",
       },
       changeSpeechTimeOverlay: {
         HEADLINE: "Change Speech Time for {{0}}",
@@ -440,6 +495,19 @@ const en = {
       BUTTON_RESET: "Restart Voting",
       BUTTON_DELETE: "Delete Voting",
     },
+  },
+
+  messageBoard: {
+    toast: {
+      NEW_MESSAGE_SUMMARY: "New Message",
+      NEW_MESSAGE_DETAIL: "You have new unread messages",
+    },
+    menu: {
+      MARK_AS_UNREAD: "Mark as Unread",
+      ARCHIVE: "Archive",
+    },
+    NO_MESSAGE_SELECTED: "No message selected",
+    TAG_UNREAD: "Unread",
   },
 } satisfies BaseTranslation;
 

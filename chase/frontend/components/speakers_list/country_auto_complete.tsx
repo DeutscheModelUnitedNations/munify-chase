@@ -6,41 +6,57 @@ import {
   AutoComplete,
   AutoCompleteCompleteEvent,
 } from "primereact/autocomplete";
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useRef, useState } from "react";
 import { SmallFlag } from "../flag_templates";
+import { toastError } from "@/fetching/fetching_utils";
+import { backend } from "@/services/backend";
+import { Toast } from "primereact/toast";
+import {
+  ConferenceIdContext,
+  CommitteeIdContext,
+} from "@/contexts/committee_data";
 
 interface CountryData {
   alpha3: CountryCode;
   name: string;
 }
 
+type AllCountriesData = Awaited<
+  ReturnType<
+    (typeof backend.conference)["conferenceId"]["committee"]["committeeId"]["allCountryCodes"]
+  >
+>["data"];
+
 export default function CountryAutoComplete({
-  listOfAllCountries,
+  allCountries,
   selectedCountry,
   setSelectedCountry,
   placeholder,
 }: {
-  listOfAllCountries: Alpha3Code[];
+  allCountries: AllCountriesData | null;
   selectedCountry: CountryData | null;
-  setSelectedCountry: (country) => void;
+  setSelectedCountry: (country: CountryData | null) => void;
   placeholder: string;
 }) {
   const { LL, locale } = useI18nContext();
+  const toast = useRef<Toast>(null);
+
+  const conferenceId = useContext(ConferenceIdContext);
+  const committeeId = useContext(CommitteeIdContext);
+
   const [countries, setCountries] = useState<CountryData[] | null>(null);
   const [query, setQuery] = useState<string>("");
   const [filteredCountries, setFilteredCountries] = useState<CountryData[]>([]);
   const [fuse, setFuse] = useState<Fuse<CountryData> | null>(null);
 
   useEffect(() => {
-    if (!listOfAllCountries) return;
-    const countryData: CountryData[] = listOfAllCountries.map(
-      (country: CountryCode) => {
-        return {
-          alpha3: country,
-          name: getCountryNameByCode(country, locale),
-        };
-      },
-    );
+    if (!allCountries) return;
+    const countryData: CountryData[] = allCountries.map((country: string) => {
+      return {
+        alpha3: country,
+        name: getCountryNameByCode(country, locale),
+      };
+    });
     setCountries(countryData);
 
     const options = {
@@ -48,7 +64,7 @@ export default function CountryAutoComplete({
       includeScore: true,
     };
     setFuse(new Fuse(countryData, options));
-  }, [listOfAllCountries, locale]);
+  }, [allCountries, locale]);
 
   useEffect(() => {
     if (selectedCountry) {
@@ -90,19 +106,22 @@ export default function CountryAutoComplete({
   };
 
   return (
-    <AutoComplete
-      value={selectedCountry}
-      suggestions={filteredCountries}
-      completeMethod={searchCountry}
-      field={"name"}
-      onChange={(e) => setSelectedCountry(e.value)}
-      dropdown
-      dropdownMode="blank"
-      itemTemplate={countryTemplate}
-      placeholder={placeholder}
-      autoFocus
-      autoHighlight
-      forceSelection
-    />
+    <>
+      <Toast ref={toast} />
+      <AutoComplete
+        value={selectedCountry}
+        suggestions={filteredCountries}
+        completeMethod={searchCountry}
+        field={"name"}
+        onChange={(e) => setSelectedCountry(e.value)}
+        dropdown
+        dropdownMode="blank"
+        itemTemplate={countryTemplate}
+        placeholder={placeholder}
+        autoFocus
+        autoHighlight
+        forceSelection
+      />
+    </>
   );
 }

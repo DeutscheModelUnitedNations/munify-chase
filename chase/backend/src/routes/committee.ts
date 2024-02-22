@@ -12,7 +12,7 @@ const CommitteeWithOnlyParentCommitteeRelation = t.Omit(Committee, [
 ]);
 const CommitteeWithoutRelations = t.Omit(
   CommitteeWithOnlyParentCommitteeRelation,
-  ["parentId"]
+  ["parentId"],
 );
 
 const CommitteeData = t.Omit(CommitteeWithOnlyParentCommitteeRelation, [
@@ -29,12 +29,14 @@ export const committee = new Elysia({
   .get(
     "/committee",
     async ({ params: { conferenceId } }) => {
-      return (await db.committee.findMany({
-        where: {
-          conferenceId,
-        },
-        include: { agendaItems: true }
-      })).map(c => ({
+      return (
+        await db.committee.findMany({
+          where: {
+            conferenceId,
+          },
+          include: { agendaItems: true },
+        })
+      ).map((c) => ({
         ...c,
         parentId: c.parentId ?? undefined,
         statusHeadline: c.statusHeadline ?? undefined,
@@ -50,7 +52,38 @@ export const committee = new Elysia({
         description: "Get all committees in this conference",
         tags: [openApiTag(import.meta.path)],
       },
-    }
+    },
+  )
+  .get(
+    "/committee/:committeeId/allCountryCodes",
+    async ({ params: { conferenceId, committeeId } }) => {
+      const delegation = await db.delegation.findMany({
+        where: {
+          members: {
+            some: {
+              committeeId,
+            },
+          },
+        },
+        select: {
+          nation: {
+            select: {
+              alpha3Code: true,
+            },
+          },
+        },
+      });
+
+      return delegation.map((d) => d.nation.alpha3Code);
+    },
+    {
+      hasConferenceRole: "any",
+      response: t.Array(t.String()),
+      detail: {
+        description: "Get all country codes of a committee",
+        tags: [openApiTag(import.meta.path)],
+      },
+    },
   )
   .post(
     "/committee",
@@ -78,7 +111,7 @@ export const committee = new Elysia({
       },
       body: CommitteeData,
       // response: CommitteeWithOnlyParentCommitteeRelation,
-    }
+    },
   )
   .delete(
     "/committee",
@@ -90,7 +123,7 @@ export const committee = new Elysia({
         description: "Delete all committees in this conference",
         tags: [openApiTag(import.meta.path)],
       },
-    }
+    },
   )
   .get(
     "/committee/:committeeId",
@@ -105,7 +138,7 @@ export const committee = new Elysia({
         description: "Get a single committee by id",
         tags: [openApiTag(import.meta.path)],
       },
-    }
+    },
   )
   .delete(
     "/committee/:committeeId",
@@ -117,7 +150,7 @@ export const committee = new Elysia({
         description: "Delete a committee by id",
         tags: [openApiTag(import.meta.path)],
       },
-    }
+    },
   )
   .patch(
     "/committee/:committeeId",
@@ -138,7 +171,7 @@ export const committee = new Elysia({
         description: "Update a committee by id",
         tags: [openApiTag(import.meta.path)],
       },
-    }
+    },
   )
 
   // Committee Status
@@ -161,7 +194,7 @@ export const committee = new Elysia({
         description: "Update the status of a committee by id",
         tags: [openApiTag(import.meta.path)],
       },
-    }
+    },
   )
 
   .get(
@@ -173,7 +206,7 @@ export const committee = new Elysia({
             some: {
               committeeId,
             },
-          }
+          },
         },
         include: {
           nation: true,
@@ -185,14 +218,43 @@ export const committee = new Elysia({
               presence: true,
               id: true,
             },
-          }
-        }
+          },
+        },
       });
     },
     {
       hasConferenceRole: "any",
       detail: {
         description: "Get all delegations of a committee",
+        tags: [openApiTag(import.meta.path)],
+      },
+    },
+  )
+
+  .post(
+    "/committee/:committeeId/delegations/toggleAllowAddingThemselvesToSpeakersList",
+    async ({ params: { conferenceId, committeeId } }) => {
+      const committee = await db.committee.findUnique({
+        where: { id: committeeId, conferenceId },
+      });
+
+      if (!committee) {
+        throw new Error("Committee not found");
+      }
+
+      return db.committee.update({
+        where: { id: committeeId, conferenceId },
+        data: {
+          allowDelegationsToAddThemselvesToSpeakersList:
+            !committee.allowDelegationsToAddThemselvesToSpeakersList,
+        },
+      });
+    },
+    {
+      hasConferenceRole: ["ADMIN"],
+      detail: {
+        description:
+          "Toggle the ability for delegations to add themselves to the speakers list",
         tags: [openApiTag(import.meta.path)],
       },
     },
@@ -216,5 +278,5 @@ export const committee = new Elysia({
         description: "Update the whiteboard content of a committee by id",
         tags: [openApiTag(import.meta.path)],
       },
-    }
-  )
+    },
+  );

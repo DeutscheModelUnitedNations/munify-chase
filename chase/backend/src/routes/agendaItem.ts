@@ -37,7 +37,6 @@ export const agendaItem = new Elysia({
     },
     {
       hasConferenceRole: "any",
-      response: t.Array(AgendaItemWithoutRelations),
       detail: {
         description: "Get all agenda items in this committee",
         tags: [openApiTag(import.meta.path)],
@@ -46,8 +45,8 @@ export const agendaItem = new Elysia({
   )
   .post(
     "/agendaItem",
-    ({ body, params: { conferenceId, committeeId } }) => {
-      return db.agendaItem
+    async ({ body, params: { conferenceId, committeeId } }) => {
+      const agendaItem = await db.agendaItem
         .create({
           data: {
             committee: {
@@ -61,6 +60,21 @@ export const agendaItem = new Elysia({
           },
         })
         .then((a) => ({ ...a, description: a.description || undefined }));
+      const _speakersLists = await db.speakersList.createMany({
+        data: [
+          {
+            type: "SPEAKERS_LIST",
+            agendaItemId: agendaItem.id,
+            speakingTime: 180,
+          },
+          {
+            type: "COMMENT_LIST",
+            agendaItemId: agendaItem.id,
+            speakingTime: 30,
+          },
+        ],
+      });
+      return agendaItem;
     },
     {
       hasConferenceRole: ["ADMIN"],
@@ -74,23 +88,54 @@ export const agendaItem = new Elysia({
   )
   .get(
     "/agendaItem/active",
-    async ({ params: { committeeId } }) => {
+    async ({ params: { committeeId }, set }) => {
       const r = await db.agendaItem.findFirst({
         where: {
           committeeId,
           isActive: true,
         },
+        include: {
+          speakerLists: true,
+        },
       });
 
       if (!r) {
-        return new Response("No Active Committee", { status: 404 });
+        set.status = "Not Found";
+        throw new Error("No Active Committee");
       }
 
       return { ...r, description: r.description || undefined };
     },
     {
       hasConferenceRole: "any",
-      response: AgendaItemWithoutRelations,
+      detail: {
+        description: "Get all active agenda items in this committee",
+        tags: [openApiTag(import.meta.path)],
+      },
+    },
+  )
+  .get(
+    "/agendaItem/active/:type",
+    async ({ params: { conferenceId, committeeId, type }, set }) => {
+      const r = await db.agendaItem.findFirst({
+        where: {
+          committeeId,
+          isActive: true,
+        },
+        include: {
+          speakerLists: true,
+        },
+      });
+
+      if (!r) {
+        set.status = "Not Found";
+        throw new Error("No Active Committee");
+      }
+
+      return r?.speakerLists.find((sl) => sl.type === type) ?? null;
+    },
+    {
+      hasConferenceRole: "any",
       detail: {
         description: "Get all active agenda items in this committee",
         tags: [openApiTag(import.meta.path)],

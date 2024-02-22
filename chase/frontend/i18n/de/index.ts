@@ -227,6 +227,7 @@ const de = {
   navbar: {
     SETTINGS: "Einstellungen",
     LOGOUT: "Logout",
+    HUB: "Hub",
     DASHBOARD: "Dashboard",
     CONFIGURATION: "Voreinstellungen",
     ATTENDEES: "Anwesenheit",
@@ -268,6 +269,7 @@ const de = {
       widgetHeadlines: {
         SPEAKERS_LIST: "Redeliste",
         COMMENT_LIST: "Fragen und Kurzbemerkungen",
+        MODERATED_CAUCUS: "Moderierte Informelle Sitzung",
         COMMITTEE_STATUS: "Debattenstatus",
         WHITEBOARD: "Whiteboard",
         DOCUMENTS: "Dokumente",
@@ -308,6 +310,16 @@ const de = {
             OTHER: "Sonstiges",
           },
         },
+        toast: {
+          SUCCESS_CHAIR_SUMMARY: "Nachricht gesendet",
+          SUCCESS_CHAIR_DETAIL: "Der Vorsitz wird sich bald bei Ihnen melden.",
+          SUCCESS_RESEARCH_SUMMARY: "Nachricht gesendet",
+          SUCCESS_RESEARCH_DETAIL:
+            "Der Wissenschaftliche Dienst wird sich bald bei Ihnen melden.",
+          ERROR_SUMMARY: "Fehler beim Senden",
+          ERROR_DETAIL:
+            "Die Nachricht konnte nicht gesendet werden. Bitte versuchen Sie es später erneut und melden Sie den Fehler.",
+        },
       },
       documentsWidget: {
         SPONSORS: "signierte Unterstützer:innen",
@@ -317,11 +329,30 @@ const de = {
     speakersList: {
       SPEAKERS_LIST: "Redeliste",
       COMMENT_LIST: "Fragen und Kurzbemerkungen",
+      MODERATED_CAUCUS: "Moderierte Informelle Sitzung",
       ADD_TO_LIST_BUTTON: "Redebeitrag",
       REMOVE_FROM_LIST_BUTTON: "Zurückziehen",
       LIST_CLOSED_BUTTON: "Liste Geschlossen",
       LIST_CLOSED_MESSAGE: "Liste Geschlossen",
       NO_SPEAKERS_MESSAGE: "Keine Redner:innen auf der Liste",
+      toast: {
+        ADDED_SUCCESS_SUMMARY: "Redebeitrag hinzugefügt",
+        ADDED_SUCCESS_DETAIL: "zu {{0}}",
+        ADDED_FORBIDDEN_SUMMARY: "Hinzufügen nicht erlaubt",
+        ADDED_FORBIDDEN_DETAIL:
+          "Sie sind wahrscheinlich nicht als ANWESEND im Gremium registriert. Bitte wende dich an den Vorsitz.",
+        ADDED_ALREADY_ON_LIST_SUMMARY: "Bereits auf der Liste",
+        ADDED_ALREADY_ON_LIST_DETAIL:
+          "Bitte warten Sie einen Moment – Ihr Redebeitrag wird jeden Moment angezeigt. Wenn nicht, laden Sie die Seite neu. Wenn der Fehler weiterhin besteht, wenden Sie sich an den Vorsitz.",
+        ADDED_ERROR_SUMMARY: "Fehler beim Hinzufügen",
+        ADDED_ERROR_DETAIL:
+          "Ein unerwarteter Fehler ist aufgetreten. Bitte versuchen Sie es später erneut oder wenden Sie sich an den Vorsitz.",
+        REMOVED_SUCCESS_SUMMARY: "Redebeitrag zurückgezogen",
+        REMOVED_SUCCESS_DETAIL: "von {{0}}",
+        REMOVED_ERROR_SUMMARY: "Fehler beim Zurückziehen",
+        REMOVED_ERROR_DETAIL:
+          "Ein unerwarteter Fehler ist aufgetreten. Bitte versuchen Sie es später erneut oder wenden Sie sich an den Vorsitz.",
+      },
     },
 
     voting: {
@@ -383,16 +414,37 @@ const de = {
           TITLE: "Auswahl des Tagesordnungspunktes",
           DESCRIPTION: "Wähle den aktuellen Tagesordnungspunkt aus.",
           PLACEHOLDER: "Gerade kein aktiver Tagesordnungspunkt",
+          TOAST_SUCCESS: "Tagesordnungspunkt aktiviert",
         },
         statusTimer: {
           TITLE: "Status Timer",
-          DESCRIPTION: "Setze den Status des Gremiums fest. Du kannst auch einen benutzerdefinierten Namen festlegen, der den Standardstatusnamen überschreibt, während das Symbol beibehalten wird (z. B. 'Mittagspause' anstelle von 'Pause').",
+          DESCRIPTION:
+            "Setze den Status des Gremiums fest. Du kannst auch einen benutzerdefinierten Namen festlegen, der den Standardstatusnamen überschreibt, während das Symbol beibehalten wird (z. B. 'Mittagspause' anstelle von 'Pause').",
           PLACEHOLDER_DROPDOWN: "Wähle einen Status aus",
           PLACEHOLDER_CUSTOM_TEXT: "Eigener Name (optional)",
           PLACEHOLDER_TIME_UNITL: "until",
           BUTTON: "Status Speichern",
+          TOAST_SUCCESS: "Status {status:string} bis {date:string} gespeichert",
         },
-      }
+        speakersListAdding: {
+          TITLE: "Hinzufügen zu Redelisten",
+          DESCRIPTION:
+            "Wähle eine Einstellung aus, um Delegierten zu erlauben, sich selbst zur Redeliste hinzuzufügen.",
+          TOGGLE_BUTTON_NOT_ALLOWED: "Nicht erlaubt",
+          TOGGLE_BUTTON_ALLOWED: "Erlaubt",
+          TOAST_SUCCESS: "Einstellung geändert",
+          TOAST_SUCCESS_DETAILS_ALLOWED:
+            "Delegierte können sich nun selbst hinzufügen.",
+          TOAST_SUCCESS_DETAILS_NOT_ALLOWED:
+            "Delegierte können sich nicht mehr selbst hinzufügen.",
+        },
+        presentationMode: {
+          TITLE: "Präsentationsmodus öffnen",
+          DESCRIPTION:
+            "Öffne ein neues Fenster im Präsentationsmodus über den folgenden Link, um ihn auf einem Beamer für alle Teilnehmenden sichtbar anzuzeigen.",
+          BUTTON: "Präsentationsmodus",
+        },
+      },
     },
     attendance: {
       HEADLINE: "Anwesenheit",
@@ -405,8 +457,8 @@ const de = {
       RESET_BUTTON: "Zurücksetzen",
       SUCCESS_TOAST: "Whiteboard gespeichert",
       NO_CONTENT_TOAST: "Whiteboard ist leer",
-      NO_CONTENT_TOAST_DETAILS: "Es scheint, als ob beim laden des Whiteboards ein Fehler aufgetreten ist oder das Whiteboard ist leer. Bitte versuche die Seite neu zu laden.",
-
+      NO_CONTENT_TOAST_DETAILS:
+        "Es scheint, als ob beim laden des Whiteboards ein Fehler aufgetreten ist oder das Whiteboard ist leer. Bitte versuche die Seite neu zu laden.",
     },
     speakersList: {
       buttons: {
@@ -430,6 +482,8 @@ const de = {
         BUTTON_ADD_AND_CLOSE: "Hinzufügen und schließen",
         TOAST_ADDED_SUMMARY: "{{0}} hinzugefügt",
         TOAST_ADDED_DETAIL: "zu {{0}}",
+        TOAST_ALREADY_ON_LIST: "Already on {{0}}",
+        TOAST_ALREADY_ON_LIST_DETAIL: "This country is already on {{0}}",
       },
       changeSpeechTimeOverlay: {
         HEADLINE: "Redezeit für {{0}} ändern",
@@ -447,6 +501,19 @@ const de = {
       BUTTON_RESET: "Abstimmung neu starten",
       BUTTON_DELETE: "Abstimmung löschen",
     },
+  },
+
+  messageBoard: {
+    toast: {
+      NEW_MESSAGE_SUMMARY: "Neue Nachricht",
+      NEW_MESSAGE_DETAIL: "Sie haben eine neue Nachricht erhalten.",
+    },
+    menu: {
+      MARK_AS_UNREAD: "Als ungelesen markieren",
+      ARCHIVE: "Archivieren",
+    },
+    NO_MESSAGE_SELECTED: "Keine Nachricht ausgewählt",
+    TAG_UNREAD: "Ungelesen",
   },
 } satisfies Translation;
 

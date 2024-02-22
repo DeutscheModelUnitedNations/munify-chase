@@ -37,7 +37,6 @@
 				"biomejs.biome",
 				"rioukkevin.vscode-git-commit",
 				"prisma.prisma",
-				"eamodio.gitlens",
 				"zainchen.json",
 				"yoavbls.pretty-ts-errors",
 				"msjsdiag.vscode-react-native",
@@ -45,7 +44,7 @@
 				"austenc.tailwind-docs",
 				"stivo.tailwind-fold",
 				"gruntfuggly.todo-tree",
-				"chriskirknielsen.visubezier"
+				"ms-vsliveshare.vsliveshare"
 			]
 		}
 	},

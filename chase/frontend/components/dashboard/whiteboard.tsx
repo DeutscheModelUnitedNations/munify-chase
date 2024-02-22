@@ -1,8 +1,9 @@
-import React from "react";
+import React, { useContext } from "react";
 import WidgetTemplate from "@components/widget_template";
 import { useI18nContext } from "@/i18n/i18n-react";
 import Whiteboard from "@/components/whiteboard";
 import { Skeleton } from "primereact/skeleton";
+import { CommitteeDataContext } from "@/contexts/committee_data";
 
 /**
  * This Component is used in the Dashboard. It displays the Whiteboard Widget.
@@ -12,8 +13,9 @@ import { Skeleton } from "primereact/skeleton";
  * relevant contact information for different issues.
  */
 
-export default function WhiteboardWidget({ value }: { value?: string }) {
+export default function WhiteboardWidget() {
   const { LL } = useI18nContext();
+  const whiteboardValue = useContext(CommitteeDataContext)?.whiteboardContent;
 
   return (
     <WidgetTemplate
@@ -24,15 +26,15 @@ export default function WhiteboardWidget({ value }: { value?: string }) {
         className="flex-1 flex bg-white rounded-md overflow-hidden"
         style={{ maxHeight: "50vh" }}
       >
-        {value ?
+        {whiteboardValue ? (
           <Whiteboard
             style={{ border: "none" }}
-            value={value}
+            value={whiteboardValue}
             readOnly={true}
           />
-          :
+        ) : (
           <Skeleton width="100%" height="10rem" />
-        }
+        )}
       </div>
     </WidgetTemplate>
   );

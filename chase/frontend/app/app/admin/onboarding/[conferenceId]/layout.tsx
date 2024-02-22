@@ -3,7 +3,6 @@ import { useEffect, useState } from "react";
 
 import Button from "@/components/button";
 import SettingsSidebar from "@/components/navbar/settings_sidebar";
-import { ToastProvider } from "@/contexts/toast";
 import { useI18nContext } from "@/i18n/i18n-react";
 import {
   faFloppyDiskCircleArrowRight,
@@ -64,7 +63,6 @@ export default function RootLayout({
   }, []);
 
   return (
-    <ToastProvider>
       <ConfirmDialog />
       <div className="flex justify-center items-start min-h-screen bg-primary">
         <div className="flex-1 flex flex-col justify-center items-center m-10 mt-20">
@@ -93,6 +91,5 @@ export default function RootLayout({
         settingsSidebarVisible={settingsSidebarVisible}
         setSettingsSidebarVisible={setSettingsSidebarVisible}
       />
-    </ToastProvider>
   );
 }

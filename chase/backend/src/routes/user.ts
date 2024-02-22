@@ -12,19 +12,19 @@ export const user = new Elysia({
   .get(
     "/user/:userId/delegation",
     async ({ params: { conferenceId, userId } }) => {
-        const committeeMember = await db.committeeMember.findFirst({
-          where: {
-            userId,
-          },
-        });
-        return await db.delegation.findFirst({
-          where: {
-            conferenceId,
-            id: committeeMember?.delegationId ?? "0",
-          },
-          include: {
-            nation: true,
-          },
+      const committeeMember = await db.committeeMember.findFirst({
+        where: {
+          userId,
+        },
+      });
+      return await db.delegation.findFirst({
+        where: {
+          conferenceId,
+          id: committeeMember?.delegationId ?? "0",
+        },
+        include: {
+          nation: true,
+        },
       });
     },
     {
@@ -34,4 +34,4 @@ export const user = new Elysia({
         tags: [openApiTag(import.meta.path)],
       },
     },
-  )
+  );

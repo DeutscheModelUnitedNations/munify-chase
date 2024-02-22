@@ -1,24 +1,81 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef, useContext } from "react";
 import { useI18nContext } from "@/i18n/i18n-react";
 import { HeaderInfoBox } from "../header_template";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { IconProp } from "@fortawesome/fontawesome-svg-core";
-import { faUserCheck, faUserClock, faUserXmark } from "@fortawesome/pro-solid-svg-icons";
+import {
+  faUserCheck,
+  faUserClock,
+  faUserXmark,
+} from "@fortawesome/pro-solid-svg-icons";
+import { backend } from "@/services/backend";
+import { toastError } from "@/fetching/fetching_utils";
+import { Toast } from "primereact/toast";
+import { $Enums } from "../../../backend/prisma/generated/client";
+import {
+  ConferenceIdContext,
+  CommitteeIdContext,
+} from "@/contexts/committee_data";
+
+type DelegationData = Awaited<
+  ReturnType<
+    (typeof backend.conference)["conferenceId"]["committee"]["committeeId"]["delegations"]["get"]
+  >
+>["data"];
 
 export default function PresenceWidget({
-  presentAttendees,
-  excusedAttendees,
-  absentAttendees,
   showExcusedSeperately = false,
+  forceUpdate,
 }: {
-  presentAttendees: number;
-  excusedAttendees: number;
-  absentAttendees: number;
   showExcusedSeperately?: boolean;
+  forceUpdate?: boolean;
 }) {
   const { LL, locale } = useI18nContext();
+  const conferenceId = useContext(ConferenceIdContext);
+  const committeeId = useContext(CommitteeIdContext);
 
+  const [delegationData, setDelegationData] = useState<DelegationData>([]);
+  const [presentAttendees, setPresentAttendees] = useState(0);
+  const [excusedAttendees, setExcusedAttendees] = useState(0);
+  const [absentAttendees, setAbsentAttendees] = useState(0);
 
+  async function getDelegationData() {
+    await backend.conference[conferenceId].committee[committeeId].delegations
+      .get()
+      .then((response) => {
+        setDelegationData(response.data);
+      })
+      .catch((error) => {
+        toastError(error);
+      });
+  }
+
+  useEffect(() => {
+    getDelegationData();
+    const intervalAPICall = setInterval(() => {
+      getDelegationData();
+    }, 5000);
+    return () => clearInterval(intervalAPICall);
+  }, []);
+
+  useEffect(() => {
+    if (forceUpdate) {
+      getDelegationData();
+    }
+  }, [forceUpdate]);
+
+  const countGroup = (group: $Enums.Presence) => {
+    return (
+      delegationData?.filter((item) => item.members[0].presence === group)
+        .length ?? 0
+    );
+  };
+
+  useEffect(() => {
+    setPresentAttendees(countGroup("PRESENT"));
+    setExcusedAttendees(countGroup("EXCUSED"));
+    setAbsentAttendees(countGroup("ABSENT"));
+  }, [delegationData]);
 
   const MajorityInfo = ({
     name,
@@ -66,10 +123,7 @@ export default function PresenceWidget({
   return (
     <div className="flex-1 flex gap-4 h-full justify-center">
       <HeaderInfoBox>
-        <div
-          className="grid"
-          style={{ gridTemplateColumns: "auto 1fr auto" }}
-        >
+        <div className="grid" style={{ gridTemplateColumns: "auto 1fr auto" }}>
           <CounterCell
             count={presentAttendees}
             lable={LL.chairs.attendance.PRESENT()}
@@ -83,7 +137,11 @@ export default function PresenceWidget({
             />
           )}
           <CounterCell
-            count={showExcusedSeperately ? absentAttendees : absentAttendees + excusedAttendees}
+            count={
+              showExcusedSeperately
+                ? absentAttendees
+                : absentAttendees + excusedAttendees
+            }
             lable={LL.chairs.attendance.ABSENT()}
             icon={faUserXmark as IconProp}
           />

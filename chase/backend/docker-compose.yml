@@ -1,5 +1,3 @@
-# TODO document docker requirement for setup
-
 services:
   postgres:
     image: postgres

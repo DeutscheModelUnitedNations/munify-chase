@@ -1,194 +1,111 @@
 "use client";
-import React, { useState, useRef, useEffect } from "react";
-import Image from "next/image";
-
-import { useI18nContext } from "@/i18n/i18n-react";
-import { InputText } from "primereact/inputtext";
-import {
-  faInfoCircle,
-  faLock,
-  faRightToBracket,
-  faSparkles,
-  faSpinnerThird,
-} from "@fortawesome/pro-solid-svg-icons";
-import { Toast } from "primereact/toast";
-import { useRouter, useSearchParams } from "next/navigation";
-import Link from "next/link";
-import { Skeleton } from "primereact/skeleton";
-import { backend } from "@/services/backend";
 import { useToast } from "@/contexts/toast";
+import Image from "next/image";
+import { useI18nContext } from "@/i18n/i18n-react";
+import { backend } from "@/services/backend";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { Chip } from "primereact/chip";
+import { InputText } from "primereact/inputtext";
+import { useEffect, useState } from "react";
+import { faSpinnerThird } from "@fortawesome/pro-solid-svg-icons";
 import { Button } from "primereact/button";
-import {
-  browserSupportsWebAuthn,
-  startRegistration,
-} from "@simplewebauthn/browser";
+import { useRouter } from "next/navigation";
 
 const emailRegex =
   /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|.(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
 
-const passwordRegex =
-  /^(?=.*[A-Z].*[A-Z])(?=.*[!@#$&*])(?=.*[0-9].*[0-9])(?=.*[a-z].*[a-z].*[a-z]).{8,}$/;
-
 export default () => {
   const { LL, locale } = useI18nContext();
+  const router = useRouter();
   const toast = useToast();
+  const [userStateLoading, setUserStateLoading] = useState(false);
+  const [userCreateLoading, setCreateLoading] = useState(false);
+  const [loginLoading, setLoginLoading] = useState(false);
+  const [userCreatedSuccessfullyLoading, setCreatedSuccessfullyLoading] =
+    useState(false);
+  const [userState, setUserState] =
+    useState<Awaited<ReturnType<typeof backend.auth.userState.get>>["data"]>();
   const [email, setEmail] = useState("");
   const [emailValid, setEmailValid] = useState<boolean | undefined>();
-  const [passwordValid, setPasswordValid] = useState<boolean | undefined>();
-  const [creationSuccess, setCreationSuccess] = useState(false);
   const [password, setPassword] = useState("");
-  const [userType, setUserType] =
-    useState<Awaited<ReturnType<typeof backend.auth.userState.get>>["data"]>();
-  const [loadingUserType, setLoadingUserType] = useState(false);
-  const [loadingPasskeyCreating, setloadingPasskeyCreating] = useState(false);
-  const [loadingCreationResult, setLoadingCreationResult] = useState(false);
-  const [createNewUserType, setCreateNewUserType] = useState<
-    "password" | "passkey"
-  >("password");
-  const searchParams = useSearchParams();
 
   useEffect(() => {
-    const email = searchParams.get("email");
     if (email) {
-      setEmail(email);
-    }
-  }, []);
-
-  useEffect(() => {
-    (async () => {
-      if (!email || email === "" || !emailValid) {
-        setUserType(null);
-        return;
-      }
-
-      setLoadingUserType(true);
-      const ret = await backend.auth.userState.get({
-        $query: {
-          email,
-        },
-      });
-
-      setLoadingUserType(false);
-
-      if (ret.data) {
-        setUserType(ret.data);
-      } else if (ret.error) {
-        toast.showToast({
-          severity: "error",
-          summary: ret.error.message,
-        });
-      }
-    })();
-  }, [email, emailValid]);
-
-  useEffect(() => {
-    if (!email || email === "") {
-      setEmailValid(undefined);
-      return;
-    }
-
-    if (emailRegex.test(email.toLowerCase())) {
-      setEmailValid(true);
+      setEmailValid(emailRegex.test(email));
     } else {
-      setEmailValid(false);
+      setEmailValid(undefined);
     }
   }, [email]);
 
   useEffect(() => {
-    if (!password || password === "") {
-      setPasswordValid(undefined);
-      return;
-    }
+    (async () => {
+      setUserStateLoading(true);
+      const res = await backend.auth.userState.get({
+        $query: {
+          email,
+        },
+      });
+      if (res.error) {
+        toast.showToast({
+          severity: "error",
+          summary: res.error.message,
+        });
+      } else {
+        setUserState(res.data);
+      }
+      setUserStateLoading(false);
+    })();
+  }, [email, toast]);
 
-    if (passwordRegex.test(password)) {
-      setPasswordValid(true);
-    } else {
-      setPasswordValid(false);
-    }
-  }, [password]);
-
-  const submit = async (e: React.FormEvent<HTMLFormElement>) => {
+  async function submit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
 
-    if (createNewUserType === "password") {
-      setLoadingCreationResult(true);
-      const r = await backend.auth.createUserWithPassword.post({
+    if (password) {
+      setLoginLoading(true);
+      const res = await backend.auth.password.login.post({
         email,
         password,
-        locale,
-      });
-      setLoadingCreationResult(false);
-
-      if (r.error) {
+      })
+      if (res.error) {
         toast.showToast({
           severity: "error",
-          summary: r.error.message,
+          summary: res.error.message,
         });
+        setLoginLoading(false);
         return;
       }
-
-      setCreationSuccess(true);
-    } else if (createNewUserType === "passkey") {
-      setloadingPasskeyCreating(true);
-      const r = await backend.auth.createUserWithPasskey.post({
+      router.push("/");
+    } else {
+      setCreateLoading(true);
+      const res = await backend.auth.createUser.post({
+        locale,
         email,
       });
-      if (r.error) {
-        setloadingPasskeyCreating(false);
+      if (res.error) {
         toast.showToast({
           severity: "error",
-          summary: r.error.message,
+          summary: res.error.message,
         });
-        return;
+      } else {
+        setCreatedSuccessfullyLoading(true);
       }
-
-      //TODO try catch this since it can fail if e.g. the user aborts
-      let registration;
-
-      try {
-        registration = await startRegistration(r.data);
-      } catch (error) {
-        setloadingPasskeyCreating(false);
-
-        console.error(error);
-        toast.showToast({
-          severity: "error",
-          summary: LL.ERROR(),
-        });
-        return;
-      }
-
-      const r2 = await backend.auth.finishPasskeyRegistration.post({
-        challenge: registration,
-        locale,
-      });
-
-      if (r2.error) {
-        setloadingPasskeyCreating(false);
-
-        toast.showToast({
-          severity: "error",
-          summary: r2.error.message,
-        });
-        return;
-      }
-
-      setloadingPasskeyCreating(false);
-      setCreationSuccess(true);
+      setCreateLoading(false);
     }
-  };
-
-  const reset = () => {
-    setCreationSuccess(false);
-    setEmail("");
-    setPassword("");
-  };
+  }
 
   return (
     <>
-      {!creationSuccess ? (
+      {userCreatedSuccessfullyLoading === true ? (
+        <>
+          <Image
+            src="/undraw/order_confirmed.svg"
+            alt="decorative success drawing"
+            width={300}
+            height={300}
+            className="mb-10"
+          />
+          <p>{LL.login.CREATION_SUCCESS()}</p>
+        </>
+      ) : (
         <>
           <h1 className="font-bold text-4xl mb-4">{LL.login.LOGIN_TITLE()}</h1>
           <p className="mb-8 text-lg">{LL.login.LOGIN_DESCRIPTION()}</p>
@@ -206,133 +123,64 @@ export default () => {
             {emailValid === false ? (
               <small className="text-red-500">{LL.login.EMAIL_INVALID()}</small>
             ) : undefined}
-
-            {loadingUserType && emailValid ? (
-              <span className="flex w-full justify-center">
-                <FontAwesomeIcon icon={faSpinnerThird} spin={true} size="2x" />
-              </span>
-            ) : undefined}
-            {userType && emailValid ? (
+            {emailValid === true ? (
               <>
-                {userType === "userNotFound" ? (
+                {userStateLoading === true ? (
+                  <span className="flex w-full justify-center mt-3">
+                    <FontAwesomeIcon
+                      icon={faSpinnerThird}
+                      spin={true}
+                      size="2x"
+                    />
+                  </span>
+                ) : undefined}
+                {userState === "userNotFound" ? (
                   <>
-                    {browserSupportsWebAuthn() ? (
-                      <span className="w-full flex justify-center mb-6 mt-4">
-                        <button
-                          type="button"
-                          onClick={() => setCreateNewUserType("password")}
-                          className="mr-4"
-                        >
-                          <Chip
-                            label={LL.login.PASSWORD()}
-                            className={
-                              createNewUserType === "password"
-                                ? "border-2 border-primary-600 duration-300"
-                                : "duration-300"
-                            }
-                          />
-                        </button>
-
-                        <button
-                          type="button"
-                          onClick={() => setCreateNewUserType("passkey")}
-                        >
-                          <Chip
-                            label={LL.login.PASSKEY()}
-                            className={
-                              createNewUserType === "passkey"
-                                ? "border-2 border-primary-600 duration-300"
-                                : "duration-300"
-                            }
-                          />
-                        </button>
-                      </span>
-                    ) : undefined}
-                    {createNewUserType === "password" ? (
-                      <>
-                        <p className="w-full text-center mb-8">
-                          {LL.login.ACCOUNT_NOT_YET_CREATED()}
-                        </p>
-                        <span className="p-float-label w-full mb-2">
-                          <InputText
-                            className="w-full"
-                            type="password"
-                            id="password"
-                            value={password}
-                            onChange={(e) => setPassword(e.target.value)}
-                          />
-                          <label htmlFor="password">
-                            {LL.login.PASSWORD_PLACEHOLDER()}
-                          </label>
-                        </span>
-                        {passwordValid === false ? (
-                          <small className="text-red-500">
-                            {LL.login.PASSWORD_INVALID()}
-                          </small>
-                        ) : undefined}
-                        {passwordValid === true ? (
-                          <>
-                            <Button
-                              type="submit"
-                              label={LL.login.CREATE_ACCOUNT()}
-                              className="w-full mt-3"
-                            >
-                              {loadingCreationResult ? (
-                                <FontAwesomeIcon
-                                  icon={faSpinnerThird}
-                                  spin={true}
-                                />
-                              ) : undefined}
-                            </Button>
-                          </>
-                        ) : undefined}
-                      </>
-                    ) : (
-                      <>
-                        <Link
-                          href="https://www.passkeys.com"
-                          target="_blank"
-                          className="flex text-gray-400 items-center"
-                        >
-                          <FontAwesomeIcon icon={faInfoCircle} />
-                          <p className="ml-2">{LL.login.WHAT_ARE_PASSKEYS()}</p>
-                        </Link>
-                        <Button
-                          type="submit"
-                          label={LL.login.CREATE_ACCOUNT()}
-                          className="w-full mt-3"
-                        >
-                          {loadingPasskeyCreating ? (
-                            <FontAwesomeIcon
-                              icon={faSpinnerThird}
-                              spin={true}
-                            />
-                          ) : undefined}
-                        </Button>
-                      </>
-                    )}
+                    <p className="w-full text-center mb-8">
+                      {LL.login.ACCOUNT_NOT_YET_CREATED()}
+                    </p>
+                    <Button
+                      type="submit"
+                      label={LL.login.CREATE_ACCOUNT()}
+                      className="w-full mt-3"
+                    >
+                      {userCreateLoading === true ? (
+                        <FontAwesomeIcon icon={faSpinnerThird} spin={true} />
+                      ) : undefined}
+                    </Button>
                   </>
+                ) : undefined}
+                {userState === "ok" ? (
+                  <>
+                    <InputText
+                      className="w-full"
+                      type="password"
+                      id="password"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                    />
+                    <label htmlFor="password">
+                      {LL.login.PASSWORD_PLACEHOLDER()}
+                    </label>
+                    <Button
+                      type="submit"
+                      label={LL.login.LOGIN_BUTTON()}
+                      className="w-full mt-3"
+                    >
+                      {loginLoading === true ? (
+                        <FontAwesomeIcon icon={faSpinnerThird} spin={true} />
+                      ) : undefined}
+                    </Button>
+                  </>
+                ) : undefined}
+                {userState === "emailNotValidated" ? (
+                  <p className="text-red-500">
+                    {LL.login.EMAIL_NOT_CONFIRMED()}
+                  </p>
                 ) : undefined}
               </>
             ) : undefined}
           </form>
-        </>
-      ) : (
-        <>
-          <Image
-            src="/undraw/order_confirmed.svg"
-            alt="decorative success drawing"
-            width={300}
-            height={300}
-            className="mb-10"
-          />
-          <p>{LL.login.CREATION_SUCCESS()}</p>
-          <Button
-            type="button"
-            onClick={reset}
-            label={LL.login.LOGIN_NOW()}
-            className="w-full mt-3"
-          />
         </>
       )}
     </>

@@ -4,20 +4,19 @@ import { redis } from "../../prisma/db";
 
 interface UserData {
   id: string;
-  email: string;
 }
 
-interface PassKeyChallenge {
-  userID: string;
-  email: string;
-  // biome-ignore lint/suspicious/noExplicitAny:
-  challenge: any;
-}
+// interface PassKeyChallenge {
+//   userID: string;
+//   email: string;
+//   // biome-ignore lint/suspicious/noExplicitAny:
+//   challenge: any;
+// }
 
 type sessionSchema = {
   loggedIn: boolean;
   userData?: UserData;
-  currentPasskeyChallenge?: PassKeyChallenge;
+  // currentPasskeyChallenge?: PassKeyChallenge;
 };
 
 export const session = new Elysia({ name: "session" })
@@ -30,12 +29,12 @@ export const session = new Elysia({ name: "session" })
     let data: sessionSchema = { loggedIn: false };
 
     // TODO: setter could be actual getters and setters
-    const setPasskeyChallenge = async (
-      challenge: PassKeyChallenge | undefined,
-    ) => {
-      data.currentPasskeyChallenge = challenge;
-      await redis.set(`user-session:${sessionId.value}`, JSON.stringify(data));
-    };
+    // const setPasskeyChallenge = async (
+    //   challenge: PassKeyChallenge | undefined,
+    // ) => {
+    //   data.currentPasskeyChallenge = challenge;
+    //   await redis.set(`user-session:${sessionId.value}`, JSON.stringify(data));
+    // };
 
     const setUserData = async (userData: UserData) => {
       data.userData = userData;
@@ -53,7 +52,8 @@ export const session = new Elysia({ name: "session" })
       await redis.set(`user-session:${sessionId.value}`, JSON.stringify(data));
 
       return {
-        session: { ...data, setPasskeyChallenge, setUserData, setLoggedIn },
+        // session: { ...data, setPasskeyChallenge, setUserData, setLoggedIn },
+        session: { ...data, setUserData, setLoggedIn },
       };
     };
 
@@ -71,6 +71,7 @@ export const session = new Elysia({ name: "session" })
     data = JSON.parse(rawData);
 
     return {
-      session: { ...data, setPasskeyChallenge, setUserData, setLoggedIn },
+      // session: { ...data, setPasskeyChallenge, setUserData, setLoggedIn },
+      session: { ...data, setUserData, setLoggedIn },
     };
   });

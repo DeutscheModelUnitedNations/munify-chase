@@ -179,11 +179,20 @@ const de = {
   login: {
     EMAIL_PLACEHOLDER: "E-Mail",
     PASSWORD_PLACEHOLDER: "Passwort",
+    REPEAT_PASSWORD_PLACEHOLDER: "Passwort wiederholen",
+    PASSWORDS_DO_NOT_MATCH: "Passwörter stimmen nicht überein",
     ADVANCE_BUTTON: "Weiter",
     BACK_BUTTON: "Zurück",
     LOGIN_BUTTON: "Anmelden",
     LOGIN_TITLE: "Anmelden",
     LOGIN_DESCRIPTION: "Bitte melden Sie sich mit Ihren Zugangsdaten an.",
+    EMAIL_NOT_CONFIRMED: "The email address has not been confirmed yet.",
+    EMAIL_NOT_FOUND: "Die E-Mail-Adresse wurde nicht gefunden.",
+    EMAIL_NO_ACTIVE_VALIDATION_TOKEN: "Die E-Mail-Adresse hat keinen aktiven Bestätigungstoken.",
+    EMAIL_INVALID_TOKEN: "Der Bestätigungstoken ist ungültig.",
+    EMAIL_ALREADY_VALIDATED: "Die E-Mail-Adresse wurde bereits bestätigt.",
+    EMAIL_VALIDATION_TOKEN_EXPIRED: "Der Bestätigungstoken ist abgelaufen. Bitte fordern Sie einen neuen an.",
+    SET_CREDENTIALS: "Zugangsdaten festlegen",
     NO_TOKEN: "Der Bestätigungstoken ist ungültig oder nicht vorhanden.",
     NO_EMAIL: "Die E-Mail ist ungültig oder nicht vorhanden.",
     EMAIL_CONFIRMED: "Die E-Mail ist nun bestätigt!",
@@ -200,7 +209,7 @@ const de = {
     CREATION_SUCCESS:
       "Account erfolgreich erstellt. Bitte bestätigen Sie ihre E-Mail-Adresse über die Link in der E-Mail, die wir geschickt haben, um den Account zu aktivieren.",
     ACCOUNT_NOT_YET_CREATED:
-      "Prima, ein Konto mit dieser E-Mail-Adresse existiert noch nicht! Konto für diese E-Mail-Adresse mit folgendem Passwort anlegen:",
+      "Prima, ein Konto mit dieser E-Mail-Adresse existiert noch nicht! Sie können jetzt ein Konto für diese E-Mail Addresse erstellen.",
     POWERED_BY: "Ermöglicht durch",
     legalNotice: {
       SECTION_1: "Ich bin Einverstanden mit den ",

@@ -516,6 +516,14 @@ type RootTranslation = {
 		 */
 		PASSWORD_PLACEHOLDER: string
 		/**
+		 * R​e​p​e​a​t​ ​p​a​s​s​w​o​r​d
+		 */
+		REPEAT_PASSWORD_PLACEHOLDER: string
+		/**
+		 * P​a​s​s
+		 */
+		PASSWORDS_DO_NOT_MATCH: string
+		/**
 		 * A​d​v​a​n​c​e
 		 */
 		ADVANCE_BUTTON: string
@@ -531,6 +539,30 @@ type RootTranslation = {
 		 * L​o​g​i​n
 		 */
 		LOGIN_TITLE: string
+		/**
+		 * T​h​e​ ​e​m​a​i​l​ ​i​s​ ​i​n​v​a​l​i​d​ ​o​r​ ​c​o​u​l​d​ ​n​o​t​ ​b​e​ ​f​o​u​n​d​.
+		 */
+		EMAIL_NOT_FOUND: string
+		/**
+		 * T​h​e​ ​e​m​a​i​l​ ​d​o​e​s​ ​n​o​t​ ​h​a​v​e​ ​a​n​ ​a​c​t​i​v​e​ ​v​a​l​i​d​a​t​i​o​n​ ​t​o​k​e​n​.
+		 */
+		EMAIL_NO_ACTIVE_VALIDATION_TOKEN: string
+		/**
+		 * T​h​e​ ​t​o​k​e​n​ ​i​s​ ​i​n​v​a​l​i​d​.
+		 */
+		EMAIL_INVALID_TOKEN: string
+		/**
+		 * T​h​e​ ​e​m​a​i​l​ ​h​a​s​ ​a​l​r​e​a​d​y​ ​b​e​e​n​ ​v​a​l​i​d​a​t​e​d​.
+		 */
+		EMAIL_ALREADY_VALIDATED: string
+		/**
+		 * T​h​e​ ​v​a​l​i​d​a​t​i​o​n​ ​t​o​k​e​n​ ​h​a​s​ ​e​x​p​i​r​e​d​.​ ​P​l​e​a​s​e​ ​r​e​q​u​e​s​t​ ​a​ ​n​e​w​ ​o​n​e​.
+		 */
+		EMAIL_VALIDATION_TOKEN_EXPIRED: string
+		/**
+		 * S​e​t​ ​C​r​e​d​e​n​t​i​a​l​s
+		 */
+		SET_CREDENTIALS: string
 		/**
 		 * L​o​g​i​n​ ​n​o​w
 		 */
@@ -584,7 +616,11 @@ type RootTranslation = {
 		 */
 		LOGIN_DESCRIPTION: string
 		/**
-		 * G​r​e​a​t​,​ ​a​n​ ​a​c​c​o​u​n​t​ ​w​i​t​h​ ​t​h​i​s​ ​e​-​m​a​i​l​ ​a​d​d​r​e​s​s​ ​d​o​e​s​ ​n​o​t​ ​y​e​t​ ​e​x​i​s​t​!​ ​C​r​e​a​t​e​ ​a​c​c​o​u​n​t​ ​f​o​r​ ​t​h​i​s​ ​e​-​m​a​i​l​ ​a​d​d​r​e​s​s​ ​w​i​t​h​ ​t​h​e​ ​f​o​l​l​o​w​i​n​g​ ​p​a​s​s​w​o​r​d​:
+		 * T​h​e​ ​e​m​a​i​l​ ​a​d​d​r​e​s​s​ ​h​a​s​ ​n​o​t​ ​b​e​e​n​ ​c​o​n​f​i​r​m​e​d​ ​y​e​t​.
+		 */
+		EMAIL_NOT_CONFIRMED: string
+		/**
+		 * G​r​e​a​t​,​ ​a​n​ ​a​c​c​o​u​n​t​ ​w​i​t​h​ ​t​h​i​s​ ​e​-​m​a​i​l​ ​a​d​d​r​e​s​s​ ​d​o​e​s​ ​n​o​t​ ​y​e​t​ ​e​x​i​s​t​!​ ​Y​o​u​ ​c​a​n​ ​n​o​w​ ​c​r​e​a​t​e​ ​o​n​e​!
 		 */
 		ACCOUNT_NOT_YET_CREATED: string
 		/**
@@ -1959,6 +1995,14 @@ export type TranslationFunctions = {
 		 */
 		PASSWORD_PLACEHOLDER: () => LocalizedString
 		/**
+		 * Repeat password
+		 */
+		REPEAT_PASSWORD_PLACEHOLDER: () => LocalizedString
+		/**
+		 * Pass
+		 */
+		PASSWORDS_DO_NOT_MATCH: () => LocalizedString
+		/**
 		 * Advance
 		 */
 		ADVANCE_BUTTON: () => LocalizedString
@@ -1974,6 +2018,30 @@ export type TranslationFunctions = {
 		 * Login
 		 */
 		LOGIN_TITLE: () => LocalizedString
+		/**
+		 * The email is invalid or could not be found.
+		 */
+		EMAIL_NOT_FOUND: () => LocalizedString
+		/**
+		 * The email does not have an active validation token.
+		 */
+		EMAIL_NO_ACTIVE_VALIDATION_TOKEN: () => LocalizedString
+		/**
+		 * The token is invalid.
+		 */
+		EMAIL_INVALID_TOKEN: () => LocalizedString
+		/**
+		 * The email has already been validated.
+		 */
+		EMAIL_ALREADY_VALIDATED: () => LocalizedString
+		/**
+		 * The validation token has expired. Please request a new one.
+		 */
+		EMAIL_VALIDATION_TOKEN_EXPIRED: () => LocalizedString
+		/**
+		 * Set Credentials
+		 */
+		SET_CREDENTIALS: () => LocalizedString
 		/**
 		 * Login now
 		 */
@@ -2027,7 +2095,11 @@ export type TranslationFunctions = {
 		 */
 		LOGIN_DESCRIPTION: () => LocalizedString
 		/**
-		 * Great, an account with this e-mail address does not yet exist! Create account for this e-mail address with the following password:
+		 * The email address has not been confirmed yet.
+		 */
+		EMAIL_NOT_CONFIRMED: () => LocalizedString
+		/**
+		 * Great, an account with this e-mail address does not yet exist! You can now create one!
 		 */
 		ACCOUNT_NOT_YET_CREATED: () => LocalizedString
 		/**

@@ -1,43 +1,50 @@
 import { t, Elysia } from "elysia";
 import { db } from "../../../prisma/db";
 import { openApiTag } from "../../util/openApiTags";
-import { sendAccountConfirmationEmail } from "../../email/email";
+import {
+  sendEmailConfirmationEmail,
+  sendCredentialCreationEmail,
+} from "../../email/email";
 import { nanoid } from "nanoid";
 import { appConfiguration } from "../../util/config";
-import { passkeys } from "./passkeys";
 import { loggedIn } from "../../auth/guards/loggedIn";
+import { User } from "../../../prisma/generated/schema";
+import { passwords } from "./passwords";
+
+const UserWithoutRelations = t.Omit(User, [
+  "conferenceMemberships",
+  "committeeMemberships",
+  "researchServiceMessages",
+  "chairMessages",
+  "emails",
+  "passwords",
+  "pendingCredentialCreationTasks",
+]);
 
 export const auth = new Elysia({
   prefix: "/auth",
 })
-  .use(passkeys)
+  .use(passwords)
   .use(loggedIn)
   .get(
     "/userState",
     async ({ query: { email } }) => {
-      const user = await db.user.findMany({
+      const foundEmail = await db.email.findUnique({
         where: {
-          email: email,
+          email,
         },
+        include: { user: true },
       });
 
-      if (user.length === 0) {
+      if (!foundEmail?.user) {
         return "userNotFound";
       }
 
-      if (user.length > 1) {
-        throw new Error("Multiple users with same email");
-      }
-
-      if (!user.at(0)?.emailValidated) {
+      if (!foundEmail.validated) {
         return "emailNotValidated";
       }
 
-      if (user.at(0)?.type === "PASSKEY") {
-        return "passkey";
-      }
-
-      return "password";
+      return "ok";
     },
     {
       query: t.Object({
@@ -45,33 +52,33 @@ export const auth = new Elysia({
       }),
       response: t.Union([
         t.Literal("userNotFound"),
-        t.Literal("password"),
-        t.Literal("passkey"),
         t.Literal("emailNotValidated"),
+        t.Literal("ok"),
       ]),
       detail: {
         description:
-          "Returns some info on the user in the system. Can be used to check if the user is existing and what auth type they use.",
+          "Returns some info on the user in the system. Can be used to check if the user is existing and validated.",
         tags: [openApiTag(import.meta.path)],
       },
     },
-  ).get(
+  )
+  .get(
     "/myInfo",
     async ({ session }) => {
-      return {
-        email: session.userData.email,
-        id: session.userData.id
-      }
+      const user = await db.user.findUniqueOrThrow({
+        where: { id: session.userData.id },
+        include: { emails: true },
+      });
+      return { ...user, emails: user.emails.map((e) => e.email) };
     },
     {
       mustBeLoggedIn: true,
-      response: t.Object({
-        email: t.String(),
-        id: t.String()
-      }),
+      response: t.Composite([
+        UserWithoutRelations,
+        t.Object({ emails: t.Array(t.String()) }),
+      ]),
       detail: {
-        description:
-          "Returns the user info when they are logged in",
+        description: "Returns the user info when they are logged in",
         tags: [openApiTag(import.meta.path)],
       },
     },
@@ -79,44 +86,69 @@ export const auth = new Elysia({
   .post(
     "/validateEmail",
     async ({ body: { email, token } }) => {
-      const users = await db.user.findMany({
+      const foundEmail = await db.email.findUnique({
         where: {
-          email: email,
+          email,
         },
+        include: { validationToken: true },
       });
 
-      if (users.length === 0) {
-        return "userNotFound";
+      if (!foundEmail) {
+        return "emailNotFound";
       }
 
-      if (users.length > 1) {
-        throw new Error("Multiple users with same email");
+      if (foundEmail.validated) {
+        return "alreadyValidated";
       }
 
-      // biome-ignore lint/style/noNonNullAssertion: we checked for length
-      const user = users.at(0)!;
-
-      if (!user.emailValidationTokenHash) {
-        return "userDoesNotHaveActiveValidationToken";
+      if (!foundEmail.validationToken) {
+        return "emailDoesNotHaveActiveValidationToken";
       }
 
-      //TODO email validation token expiry
+      if (new Date() > foundEmail.validationToken.expiresAt) {
+        return "tokenExpired";
+      }
 
-      if (!(await Bun.password.verify(token, user.emailValidationTokenHash))) {
+      if (
+        !(await Bun.password.verify(
+          token,
+          foundEmail.validationToken.tokenHash,
+        ))
+      ) {
         return "invalidToken";
       }
 
-      await db.user.update({
+      await db.email.update({
         where: {
           email,
         },
         data: {
-          emailValidated: true,
-          emailValidationTokenHash: null,
+          validated: true,
+          validationTokenId: null,
+        },
+      });
+      await db.token.delete({
+        where: { id: foundEmail.validationToken.id },
+      });
+
+      const credentialCreateToken = nanoid(32);
+      await db.pendingCredentialCreateTask.create({
+        data: {
+          token: {
+            create: {
+              tokenHash: await Bun.password.hash(credentialCreateToken),
+              expiresAt: new Date(Date.now() + 1000 * 60 * 10), // 10 minutes
+            },
+          },
+          user: {
+            connect: {
+              id: foundEmail.userId,
+            },
+          },
         },
       });
 
-      return "ok";
+      return { credentialCreateToken };
     },
     {
       body: t.Object({
@@ -124,39 +156,45 @@ export const auth = new Elysia({
         token: t.String(),
       }),
       response: t.Union([
-        t.Literal("userNotFound"),
-        t.Literal("userDoesNotHaveActiveValidationToken"),
+        t.Literal("emailNotFound"),
+        t.Literal("emailDoesNotHaveActiveValidationToken"),
         t.Literal("invalidToken"),
-        t.Literal("ok"),
+        t.Literal("alreadyValidated"),
+        t.Literal("tokenExpired"),
+        t.Object({ credentialCreateToken: t.String() }),
       ]),
       detail: {
         description:
-          "Validates the email of a user. The token is the token that was sent to the user via email.",
+          "Validates the email of a user. The token is the token that was sent to the user via email. Returns a token which can be used to create credentials",
         tags: [openApiTag(import.meta.path)],
       },
     },
   )
   .post(
-    "/createUserWithPassword",
-    async ({ body: { email, password, locale, name } }) => {
-      const passwordHash = await Bun.password.hash(password);
+    "/createUser",
+    async ({ body: { email, locale, name } }) => {
       const emailValidationToken = nanoid(32);
       const emailValidationTokenHash =
         await Bun.password.hash(emailValidationToken);
       await db.user.create({
         data: {
-          email,
           name: name ?? email,
-          passwordHash,
-          emailValidationTokenHash,
-          // 10 minutes from now
-          emailValidationTokenExpiry: new Date(Date.now() + 10 * 60 * 1000),
-          type: "PASSWORD",
+          emails: {
+            create: {
+              email,
+              validationToken: {
+                create: {
+                  tokenHash: emailValidationTokenHash,
+                  expiresAt: new Date(Date.now() + 1000 * 60 * 60 * 24),
+                },
+              },
+            },
+          },
         },
       });
 
       //TODO: report back errors in sending emails to the frontend in structured way
-      await sendAccountConfirmationEmail({
+      await sendEmailConfirmationEmail({
         email,
         locale,
         redirectLink: `${appConfiguration.email.EMAIL_VERIFY_REDIRECT_URL}?token=${emailValidationToken}&email=${email}`,
@@ -165,50 +203,56 @@ export const auth = new Elysia({
     {
       body: t.Object({
         email: t.String(),
-        password: t.String(),
         locale: t.Union([t.Literal("en"), t.Literal("de")]),
         name: t.Optional(t.String()),
       }),
       detail: {
-        description: "Creates a user with a password.",
+        description: "Creates a user",
         tags: [openApiTag(import.meta.path)],
       },
     },
   )
-  .post(
-    "/loginWithPassword",
-    async ({ body: { email, password }, session }) => {
-      const user = await db.user.findUniqueOrThrow({
+  .get(
+    "/sendCredentialCreateToken",
+    async ({ query: { email, locale } }) => {
+      const token = nanoid(32);
+
+      const foundEmail = await db.email.findUniqueOrThrow({
         where: {
           email,
         },
       });
 
-      if (!user.emailValidated) {
-        throw new Error("Email not validated");
-      }
+      await db.pendingCredentialCreateTask.create({
+        data: {
+          token: {
+            create: {
+              tokenHash: await Bun.password.hash(token),
+              expiresAt: new Date(Date.now() + 1000 * 60 * 10), // 10 minutes
+            },
+          },
+          user: {
+            connect: {
+              id: foundEmail.userId,
+            },
+          },
+        },
+      });
 
-      if (user.type !== "PASSWORD" || !user.passwordHash) {
-        throw new Error("User is not a password user");
-      }
-
-      if (!Bun.password.verify(password, user.passwordHash)) {
-        throw new Error("Invalid password");
-      }
-
-      session.setLoggedIn(true);
-      session.setUserData({
-        email: user.email,
-        id: user.id,
+      //TODO: report back errors in sending emails to the frontend in structured way
+      await sendCredentialCreationEmail({
+        email,
+        locale,
+        redirectLink: `${appConfiguration.email.CREDENTIAL_CREATE_REDIRECT_URL}?token=${token}&email=${email}`,
       });
     },
     {
-      body: t.Object({
+      query: t.Object({
+        locale: t.Union([t.Literal("en"), t.Literal("de")]),
         email: t.String(),
-        password: t.String(),
       }),
       detail: {
-        description: "Login with a password.",
+        description: "Sends a credential creation token to the users email",
         tags: [openApiTag(import.meta.path)],
       },
     },

@@ -35,7 +35,7 @@ export default function ChairHubLayout({
           />
           <NavButton
             icon={faInbox as IconProp}
-            link={"./chair/inbox"}
+            link={"./inbox"}
             title={LL.navbar.INBOX()}
           />
           <div className="flex-1" />

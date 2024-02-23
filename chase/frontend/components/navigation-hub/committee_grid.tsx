@@ -80,8 +80,8 @@ export default function CommitteeGrid({
             className="flex-1 min-w-[30rem] !bg-primary-900 rounded-lg"
           />
           <Skeleton
+            height="15rem"
             className="flex-1 min-w-[30rem] !bg-primary-900 rounded-lg"
-            className="flex-1 min-w-60 bg-slate-100 rounded-lg"
           />
         </>
       )}

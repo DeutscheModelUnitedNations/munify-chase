@@ -6,9 +6,16 @@ import { backend } from "@/services/backend";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { InputText } from "primereact/inputtext";
 import { useEffect, useState } from "react";
-import { faSpinnerThird } from "@fortawesome/pro-solid-svg-icons";
+import {
+  faEnvelopeDot,
+  faSpinnerThird,
+  faUserCheck,
+  faUserPlus,
+} from "@fortawesome/pro-solid-svg-icons";
 import { Button } from "primereact/button";
 import { useRouter } from "next/navigation";
+import SmallInfoCard from "@/components/small_info_card";
+import { Skeleton } from "primereact/skeleton";
 
 const emailRegex =
   /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|.(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
@@ -16,7 +23,7 @@ const emailRegex =
 export default () => {
   const { LL, locale } = useI18nContext();
   const router = useRouter();
-  const toast = useToast();
+  const { showToast } = useToast();
   const [userStateLoading, setUserStateLoading] = useState(false);
   const [userCreateLoading, setCreateLoading] = useState(false);
   const [loginLoading, setLoginLoading] = useState(false);
@@ -45,16 +52,17 @@ export default () => {
         },
       });
       if (res.error) {
-        toast.showToast({
+        showToast({
           severity: "error",
           summary: res.error.message,
+          detail: "Test",
         });
       } else {
         setUserState(res.data);
       }
       setUserStateLoading(false);
     })();
-  }, [email, toast]);
+  }, [email, showToast]);
 
   async function submit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -66,14 +74,14 @@ export default () => {
         password,
       });
       if (res.error) {
-        toast.showToast({
+        showToast({
           severity: "error",
-          summary: res.error.message,
+          summary: LL.login.WRONG_CREDENTIALS(),
         });
         setLoginLoading(false);
         return;
       }
-      router.push("/");
+      router.push("/login/redirect");
     } else {
       setCreateLoading(true);
       const res = await backend.auth.createUser.post({
@@ -81,7 +89,7 @@ export default () => {
         email,
       });
       if (res.error) {
-        toast.showToast({
+        showToast({
           severity: "error",
           summary: res.error.message,
         });
@@ -95,7 +103,7 @@ export default () => {
   function forgotPassword(e) {
     e.preventDefault();
     backend.auth.sendCredentialCreateToken.get({ $query: { email, locale } });
-    toast.showToast({
+    showToast({
       severity: "info",
       summary: LL.login.SENT_EMAIL(),
     });
@@ -135,19 +143,16 @@ export default () => {
             {emailValid === true ? (
               <>
                 {userStateLoading === true ? (
-                  <span className="flex w-full justify-center mt-3">
-                    <FontAwesomeIcon
-                      icon={faSpinnerThird}
-                      spin={true}
-                      size="2x"
-                    />
-                  </span>
-                ) : undefined}
-                {userState === "userNotFound" ? (
+                  <Skeleton
+                    width="100%"
+                    height="4rem"
+                    className="!bg-primary-900"
+                  />
+                ) : userState === "userNotFound" ? (
                   <>
-                    <p className="w-full text-center mb-8">
-                      {LL.login.ACCOUNT_NOT_YET_CREATED()}
-                    </p>
+                    <SmallInfoCard icon={faUserPlus}>
+                      <p>{LL.login.ACCOUNT_NOT_YET_CREATED()}</p>
+                    </SmallInfoCard>
                     <Button
                       type="submit"
                       label={LL.login.CREATE_ACCOUNT()}
@@ -161,6 +166,12 @@ export default () => {
                 ) : undefined}
                 {userState === "ok" ? (
                   <>
+                    <SmallInfoCard
+                      icon={faUserCheck}
+                      color="bg-green-500 text-white"
+                    >
+                      <p>{LL.login.USER_FOUND()}</p>
+                    </SmallInfoCard>
                     <span className="p-float-label w-full mt-8">
                       <InputText
                         className="w-full"
@@ -190,9 +201,12 @@ export default () => {
                   </>
                 ) : undefined}
                 {userState === "emailNotValidated" ? (
-                  <p className="text-red-500">
-                    {LL.login.EMAIL_NOT_CONFIRMED()}
-                  </p>
+                  <SmallInfoCard
+                    icon={faEnvelopeDot}
+                    color="bg-red-500 text-white"
+                  >
+                    <p>{LL.login.EMAIL_NOT_CONFIRMED()}</p>
+                  </SmallInfoCard>
                 ) : undefined}
               </>
             ) : undefined}

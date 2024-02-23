@@ -624,6 +624,10 @@ type RootTranslation = {
 		 */
 		LOGIN_DESCRIPTION: string
 		/**
+		 * U​s​e​r​ ​f​o​u​n​d​.​ ​Y​o​u​ ​c​a​n​ ​n​o​w​ ​e​n​t​e​r​ ​y​o​u​r​ ​p​a​s​s​w​o​r​d​.
+		 */
+		USER_FOUND: string
+		/**
 		 * T​h​e​ ​e​m​a​i​l​ ​a​d​d​r​e​s​s​ ​h​a​s​ ​n​o​t​ ​b​e​e​n​ ​c​o​n​f​i​r​m​e​d​ ​y​e​t​.
 		 */
 		EMAIL_NOT_CONFIRMED: string
@@ -631,6 +635,10 @@ type RootTranslation = {
 		 * G​r​e​a​t​,​ ​a​n​ ​a​c​c​o​u​n​t​ ​w​i​t​h​ ​t​h​i​s​ ​e​-​m​a​i​l​ ​a​d​d​r​e​s​s​ ​d​o​e​s​ ​n​o​t​ ​y​e​t​ ​e​x​i​s​t​!​ ​Y​o​u​ ​c​a​n​ ​n​o​w​ ​c​r​e​a​t​e​ ​o​n​e​!
 		 */
 		ACCOUNT_NOT_YET_CREATED: string
+		/**
+		 * W​r​o​n​g​ ​c​r​e​d​e​n​t​i​a​l​s
+		 */
+		WRONG_CREDENTIALS: string
 		/**
 		 * P​o​w​e​r​e​d​ ​b​y
 		 */
@@ -2168,6 +2176,10 @@ export type TranslationFunctions = {
 		 */
 		LOGIN_DESCRIPTION: () => LocalizedString
 		/**
+		 * User found. You can now enter your password.
+		 */
+		USER_FOUND: () => LocalizedString
+		/**
 		 * The email address has not been confirmed yet.
 		 */
 		EMAIL_NOT_CONFIRMED: () => LocalizedString
@@ -2175,6 +2187,10 @@ export type TranslationFunctions = {
 		 * Great, an account with this e-mail address does not yet exist! You can now create one!
 		 */
 		ACCOUNT_NOT_YET_CREATED: () => LocalizedString
+		/**
+		 * Wrong credentials
+		 */
+		WRONG_CREDENTIALS: () => LocalizedString
 		/**
 		 * Powered by
 		 */

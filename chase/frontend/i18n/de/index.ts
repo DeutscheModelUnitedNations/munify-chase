@@ -209,11 +209,13 @@ const de = {
     CREATE_ACCOUNT: "Konto erstellen",
     PASSWORD_INVALID:
       "Das Passwort ist ungültig. Es muss mindestens 8 Zeichen lang sein, und mindestens zwei Großbuchstaben, drei Kleinbuchstaben, zwei Zahlen und ein Sonderzeichen enthalten.",
+    USER_FOUND: "Benutzer gefunden. Bitte geben Sie Ihr Passwort ein.",
     WHAT_ARE_PASSKEYS: "Was sind Passkeys?",
     CREATION_SUCCESS:
       "Account erfolgreich erstellt. Bitte bestätigen Sie ihre E-Mail-Adresse über die Link in der E-Mail, die wir geschickt haben, um den Account zu aktivieren.",
     ACCOUNT_NOT_YET_CREATED:
       "Prima, ein Konto mit dieser E-Mail-Adresse existiert noch nicht! Sie können jetzt ein Konto für diese E-Mail Addresse erstellen.",
+    WRONG_CREDENTIALS: "Falsche Zugangsdaten",
     POWERED_BY: "Ermöglicht durch",
     legalNotice: {
       SECTION_1: "Ich bin Einverstanden mit den ",

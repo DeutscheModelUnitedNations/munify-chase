@@ -6,7 +6,7 @@ import { useSearchParams } from "next/navigation";
 import Image from "next/image";
 import { useEffect, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faSpinnerThird } from "@fortawesome/pro-solid-svg-icons";
+import { faCircleNotch } from "@fortawesome/pro-solid-svg-icons";
 import { Button } from "primereact/button";
 import Link from "next/link";
 import { InputText } from "primereact/inputtext";
@@ -116,6 +116,7 @@ export default () => {
             type="submit"
             label={LL.login.SET_CREDENTIALS()}
             className="w-full mt-3"
+            loading={awaitingCredentialSetResponse === true}
           />
         </form>
       ) : undefined}
@@ -137,9 +138,6 @@ export default () => {
           height={300}
           className="mb-10"
         />
-      ) : undefined}
-      {awaitingCredentialSetResponse === true ? (
-        <FontAwesomeIcon icon={faSpinnerThird} spin={true} size="2x" />
       ) : undefined}
       {succeeded === true ? (
         <Link href={"/login"}>

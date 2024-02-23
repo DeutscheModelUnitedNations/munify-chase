@@ -209,9 +209,11 @@ const en = {
     WHAT_ARE_PASSKEYS: "What are Passkeys?",
     PASSWORD: "Password",
     LOGIN_DESCRIPTION: "Please enter your credentials to continue.",
+    USER_FOUND: "User found. You can now enter your password.",
     EMAIL_NOT_CONFIRMED: "The email address has not been confirmed yet.",
     ACCOUNT_NOT_YET_CREATED:
       "Great, an account with this e-mail address does not yet exist! You can now create one!",
+    WRONG_CREDENTIALS: "Wrong credentials",
     POWERED_BY: "Powered by",
     legalNotice: {
       SECTION_1: "I agree with the ",

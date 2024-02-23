@@ -5,7 +5,7 @@ import { useSearchParams } from "next/navigation";
 import Image from "next/image";
 import { useEffect, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faSpinnerThird } from "@fortawesome/pro-solid-svg-icons";
+import { faCircleNotch } from "@fortawesome/pro-solid-svg-icons";
 import { Button } from "primereact/button";
 import Link from "next/link";
 
@@ -113,7 +113,12 @@ export default () => {
       {errored === true ? <p>{errorMessage}</p> : undefined}
       {errored === false ? <p>{LL.login.EMAIL_CONFIRMED()}</p> : undefined}
       {errored === undefined ? (
-        <FontAwesomeIcon icon={faSpinnerThird} spin={true} size="2x" />
+        <FontAwesomeIcon
+          icon={faCircleNotch}
+          spin
+          size="3x"
+          className="text-primary-500"
+        />
       ) : undefined}
       {errored === false ? (
         <Link

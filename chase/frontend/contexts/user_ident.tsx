@@ -28,25 +28,18 @@ export const UserIdentProvider = ({
   const [userIdent, setUserIdent] = useState<User | null>(null);
 
   async function getMyInfo() {
-    // await backend.auth.myInfo
-    //   .get()
-    //   .then((res) => {
-    //     if (res.status > 400) {
-    //       router.push("/login");
-    //       return;
-    //     }
-
-    //     setUserIdent(res.data);
-    //   })
-    //   .catch((err) => {
-    //     router.push("/login");
-    //   });
-
-    //TODO remove hardcoded user
-    setUserIdent({
-      email: "tade99@gmx.de",
-      id: "ba177163-c88e-43e1-927c-7eaccb9e1616",
-    });
+    await backend.auth.myInfo
+      .get()
+      .then((res) => {
+        if (res.status > 400) {
+          router.push("/login");
+          return;
+        }
+        setUserIdent(res.data);
+      })
+      .catch((err) => {
+        router.push("/login");
+      });
   }
 
   useEffect(() => {

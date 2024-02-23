@@ -14,6 +14,7 @@ import {
   faCommentExclamation,
   faInbox,
   faGridHorizontal,
+  faChartNetwork,
 } from "@fortawesome/pro-solid-svg-icons";
 import { useI18nContext } from "@/i18n/i18n-react";
 import { IconProp } from "@fortawesome/fontawesome-svg-core";
@@ -41,8 +42,8 @@ function ChairNavbar() {
   return (
     <Navbar>
       <NavButton
-        icon={faGridHorizontal as IconProp}
-        link="../../../hub/chair"
+        icon={faChartNetwork as IconProp}
+        link="../../../hub/team/committees"
         title={LL.navbar.HUB()}
       />
       <div className="flex-1" />

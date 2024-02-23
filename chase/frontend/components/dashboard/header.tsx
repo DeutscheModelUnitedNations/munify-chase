@@ -28,8 +28,8 @@ export default function DashboardHeader({
   const { locale } = useI18nContext();
   const committeeName = useContext(CommitteeDataContext)?.name;
   const currentTopic = useContext(AgendaItemContext)?.title;
-  
-  return(
+
+  return (
     <HeaderTemplate>
       <div className="flex flex-col items-start justify-center">
         <div className="text-2xl font-bold mb-1">
@@ -51,6 +51,6 @@ export default function DashboardHeader({
         </div>
       </div>
       <LargeFlag countryCode={countryCode} />
-    </HeaderTemplate>,
+    </HeaderTemplate>
   );
 }

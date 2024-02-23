@@ -197,6 +197,26 @@ export const committee = new Elysia({
     },
   )
 
+  .post(
+    "/committee/:committeeId/stateOfDebate",
+    ({ params: { conferenceId, committeeId }, body }) => {
+      return db.committee.update({
+        where: { id: committeeId, conferenceId },
+        data: {
+          stateOfDebate: body.stateOfDebate,
+        },
+      });
+    },
+    {
+      hasConferenceRole: ["ADMIN"],
+      body: t.Pick(Committee, ["stateOfDebate"]),
+      detail: {
+        description: "Update the state of debate of a committee by id",
+        tags: [openApiTag(import.meta.path)],
+      },
+    },
+  )
+
   .get(
     "/committee/:committeeId/delegations",
     ({ params: { conferenceId, committeeId } }) => {

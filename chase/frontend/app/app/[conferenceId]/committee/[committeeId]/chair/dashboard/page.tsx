@@ -19,8 +19,9 @@ import SpeakersListAddingPolicyWidget from "@/components/dashboard/chair/speaker
 import Button from "@/components/button";
 import { faPresentationScreen } from "@fortawesome/pro-solid-svg-icons";
 import ConfigWrapper from "@/components/dashboard/chair/config_wrapper";
+import StateOfDebateWidget from "@/components/dashboard/chair/state_of_debate";
 
-export default function ParticipantDashboard() {
+export default function ChairDashboardPage() {
   const { LL } = useI18nContext();
   const conferenceId = useContext(ConferenceIdContext);
   const committeeId = useContext(CommitteeIdContext);
@@ -52,8 +53,9 @@ export default function ParticipantDashboard() {
                 <h1 className="text-2xl font-bold">
                   {LL.chairs.dashboard.configurations.TITLE()}
                 </h1>
-                <AgendaSelection />
                 <SetStatusWidget />
+                <StateOfDebateWidget />
+                <AgendaSelection />
                 <SpeakersListAddingPolicyWidget />
                 <ConfigWrapper
                   title={LL.chairs.dashboard.configurations.presentationMode.TITLE()}

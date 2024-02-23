@@ -10,7 +10,6 @@ import { useRouter } from "next/navigation";
 import { confirmDialog, ConfirmDialog } from "primereact/confirmdialog";
 
 import {
-  faGridHorizontal,
   faRightFromBracket,
   faUserGear,
 } from "@fortawesome/pro-solid-svg-icons";

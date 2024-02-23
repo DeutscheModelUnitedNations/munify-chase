@@ -128,6 +128,7 @@ model Committee {
   agendaItems                                   AgendaItem[]
   whiteboardContent                             String            @default("<h1>Hello, World</h1>")
   status                                        CommitteeStatus   @default(CLOSED)
+  stateOfDebate                                 String?
   statusHeadline                                String?
   statusUntil                                   DateTime?
   allowDelegationsToAddThemselvesToSpeakersList Boolean           @default(false)

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, Children } from "react";
 import { useI18nContext } from "@/i18n/i18n-react";
 import { backend } from "@/services/backend";
 import { Toast } from "primereact/toast";
@@ -7,7 +7,17 @@ import Link from "next/link";
 import Timer from "../dashboard/countdown_timer";
 import { toastError } from "@/fetching/fetching_utils";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faCircleNotch, faSpinner } from "@fortawesome/pro-solid-svg-icons";
+import {
+  faCircleNotch,
+  faDiagramSubtask,
+  faPodium,
+  faComments,
+  faMugHot,
+  faForwardStep,
+  faQuestion,
+} from "@fortawesome/pro-solid-svg-icons";
+import { IconProp } from "@fortawesome/fontawesome-svg-core";
+import SmallInfoCard from "../small_info_card";
 
 type CommitteeArray = Awaited<
   ReturnType<(typeof backend.conference)[":conferenceId"]["committee"]["get"]>
@@ -45,7 +55,7 @@ export default function CommitteeGrid({
   }, []);
 
   return (
-    <div className="w-full flex flex-wrap justify-center items-center gap-4">
+    <div className="w-full flex flex-wrap justify-start items-center gap-4 p-10">
       {committees?.map((committee) => {
         return (
           <CommitteeCard
@@ -63,14 +73,14 @@ export default function CommitteeGrid({
         <>
           <Skeleton
             height="15rem"
-            className="flex-1 min-w-60 bg-slate-100 rounded-lg"
+            className="flex-1 min-w-[30rem] !bg-primary-900 rounded-lg"
           />
           <Skeleton
             height="15rem"
-            className="flex-1 min-w-60 bg-slate-100 rounded-lg"
+            className="flex-1 min-w-[30rem] !bg-primary-900 rounded-lg"
           />
           <Skeleton
-            height="15rem"
+            className="flex-1 min-w-[30rem] !bg-primary-900 rounded-lg"
             className="flex-1 min-w-60 bg-slate-100 rounded-lg"
           />
         </>
@@ -108,6 +118,40 @@ function CommitteeCard({
     }
   }
 
+  const getIcon: (category: CommitteeType["status"]) => IconProp = (
+    category,
+  ) => {
+    switch (category) {
+      case "FORMAL":
+        return faPodium as IconProp;
+      case "INFORMAL":
+        return faComments as IconProp;
+      case "PAUSE":
+        return faMugHot as IconProp;
+      case "SUSPENSION":
+        return faForwardStep as IconProp;
+      default:
+        return faQuestion as IconProp;
+    }
+  };
+
+  const getColor: (category: CommitteeType["status"]) => string | undefined = (
+    category,
+  ) => {
+    switch (category) {
+      case "FORMAL":
+        return undefined;
+      case "INFORMAL":
+        return "bg-red-500 dark:bg-red-800 text-white dark:text-primary-950";
+      case "PAUSE":
+        return "bg-secondary dark:bg-secondary-300 text-white dark:text-secondary-100";
+      case "SUSPENSION":
+        return "bg-primary-300 dark:bg-primary-700 text-white dark:text-primary-200";
+      default:
+        return undefined;
+    }
+  };
+
   return (
     <Link
       key={committee.id}
@@ -117,34 +161,45 @@ function CommitteeCard({
       onClick={() => {
         setLoading(true);
       }}
-      className="flex-1 h-60 min-w-60 flex flex-col justify-center items-center p-4 bg-primary-950 rounded-lg hover:bg-primary-900 hover:scale-[102%] hover:shadow-lg transition-all duration-300 ease-in-out cursor-pointer"
+      className="flex-1 min-w-[30rem] flex flex-col justify-between p-4 gap-2 bg-primary-950 rounded-lg hover:bg-primary-800 hover:scale-[102%] hover:shadow-lg transition-all duration-300 ease-in-out cursor-pointer"
     >
-      <div className="flex-1 flex flex-col justify-center items-center">
-        <h3 className="text-lg">{committee.name}</h3>
-        <h3 className="italic text-sm">
-          {committee.agendaItems.find((i) => i.isActive)?.title ?? (
-            <Skeleton
-              width="5rem"
-              height="1.25rem"
-              className="!bg-primary-900"
-            />
-          )}
-        </h3>
-      </div>
-      <h1 className="flex-1 text-4xl my-2 text-primary font-bold">
+      <h3 className="text-lg">{committee.name}</h3>
+      <h1 className="flex-1 mt-4 mb-6 ml-4 text-4xl text-primary font-bold">
         {loading ? (
           <FontAwesomeIcon icon={faCircleNotch} className="fa-spin" />
         ) : (
           committee.abbreviation
         )}
       </h1>
-      <div className="flex-1 flex flex-col justify-center items-center w-full p-1 rounded-md bg-primary-900">
+
+      <SmallInfoCard icon={faPodium}>
         <h3 className="text-lg">
-          {getHeadline(committee.status, committee?.statusHeadline)}
+          {committee.agendaItems.find((i) => i.isActive)?.title ?? (
+            <Skeleton
+              width="100"
+              height="1.75rem"
+              className="!bg-primary-800"
+            />
+          )}
         </h3>
-        <div className="text-sm">
+      </SmallInfoCard>
+
+      <SmallInfoCard icon={faDiagramSubtask}>
+        {committee?.stateOfDebate != null && committee?.stateOfDebate !== "" ? (
+          <h3 className="text-lg truncate">{committee?.stateOfDebate}</h3>
+        ) : (
+          <Skeleton width="80%" height="1.75rem" className="!bg-primary-800" />
+        )}
+      </SmallInfoCard>
+
+      <SmallInfoCard
+        icon={getIcon(committee?.status)}
+        color={getColor(committee?.status)}
+      >
+        <h3 className="text-lg">
+          {getHeadline(committee.status, committee?.statusHeadline)}{" "}
           {committee.statusUntil ? (
-            <>
+            <span className="italic">
               {LL.participants.dashboard.timerWidget.UNTIL(
                 new Date(committee.statusUntil).toLocaleTimeString("de-DE", {
                   hour: "2-digit",
@@ -154,24 +209,16 @@ function CommitteeCard({
               {" ("}
               <Timer />
               {")"}
-            </>
+            </span>
           ) : (
-            <>
-              <Skeleton
-                width="10rem"
-                height="1.50rem"
-                className="!bg-primary-900"
-              />
-              <div className="h-1" />
-              <Skeleton
-                width="10rem"
-                height="1.25rem"
-                className="!bg-primary-900"
-              />
-            </>
+            <Skeleton
+              width="100%"
+              height="1.75rem"
+              className="!bg-primary-800"
+            />
           )}
-        </div>
-      </div>
+        </h3>
+      </SmallInfoCard>
     </Link>
   );
 }

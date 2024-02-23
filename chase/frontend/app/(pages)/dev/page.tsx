@@ -43,7 +43,7 @@ export default function DevQuickstartPage() {
                 <Button
                   label="Chair Hub"
                   onClick={() => {
-                    router.push(`/app/${conference.id}/hub/chair`);
+                    router.push(`/app/${conference.id}/hub/team/committees`);
                   }}
                 />
                 <Button

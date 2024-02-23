@@ -234,6 +234,7 @@ const de = {
     SPEAKERS: "Redeliste",
     VOTING: "Abstimmungen",
     WHITEBOARD: "Whiteboard",
+    INBOX: "Inbox",
     RESOLUTIONS: "Resolutionen",
     PRESENTATION: "Präsentation",
     NEWS: "Konferenzpresse",
@@ -257,8 +258,8 @@ const de = {
   },
 
   hub: {
-    CHAIR_HUB_TITLE: "Hub für Vorsitzende",
-    NA_HUB_TITLE: "Hub für Nichtstaatliche Akteure",
+    CHAIR_HUB_TITLE: "Team Hub",
+    NA_HUB_TITLE: "Hub der Nichtstaatliche Akteure",
     SELECT_COMMITTEE: "Wähle ein Gremium",
     NO_COMMITTEES: "Keine Gremien gefunden",
     LOGOUT: "Abmelden",
@@ -415,6 +416,13 @@ const de = {
           DESCRIPTION: "Wähle den aktuellen Tagesordnungspunkt aus.",
           PLACEHOLDER: "Gerade kein aktiver Tagesordnungspunkt",
           TOAST_SUCCESS: "Tagesordnungspunkt aktiviert",
+        },
+        stateOfDebate: {
+          TITLE: "Debattenstatus",
+          DESCRIPTION: "Lege den Debattenstatus fest (z.B. Allgemeine Debatte)",
+          CURRENTLY_NO_STATUS: "Kein Status festgelegt",
+          PLACEHOLDER_TEXT: "Debattenstatus",
+          TOAST_SUCCESS: "Status '{state:string}' gespeichert",
         },
         statusTimer: {
           TITLE: "Status Timer",

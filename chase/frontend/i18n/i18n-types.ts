@@ -682,6 +682,10 @@ type RootTranslation = {
 		 */
 		WHITEBOARD: string
 		/**
+		 * I​n​b​o​x
+		 */
+		INBOX: string
+		/**
 		 * R​e​s​o​l​u​t​i​o​n​s
 		 */
 		RESOLUTIONS: string
@@ -742,7 +746,7 @@ type RootTranslation = {
 	}
 	hub: {
 		/**
-		 * C​h​a​i​r​ ​H​u​b
+		 * T​e​a​m​ ​H​u​b
 		 */
 		CHAIR_HUB_TITLE: string
 		/**
@@ -1171,6 +1175,29 @@ type RootTranslation = {
 					 */
 					TOAST_SUCCESS: string
 				}
+				stateOfDebate: {
+					/**
+					 * S​t​a​t​e​ ​o​f​ ​D​e​b​a​t​e
+					 */
+					TITLE: string
+					/**
+					 * S​e​t​ ​t​h​e​ ​s​t​a​t​e​ ​o​f​ ​D​e​b​a​t​e​ ​(​e​.​g​.​ ​G​e​n​e​r​a​l​ ​D​e​b​a​t​e​)
+					 */
+					DESCRIPTION: string
+					/**
+					 * N​o​ ​S​t​a​t​u​s​ ​S​e​t
+					 */
+					CURRENTLY_NO_STATUS: string
+					/**
+					 * S​t​a​t​e​ ​o​f​ ​D​e​b​a​t​e
+					 */
+					PLACEHOLDER_TEXT: string
+					/**
+					 * S​t​a​t​e​ ​{​s​t​a​t​e​}​ ​s​u​c​c​e​s​s​f​u​l​l​y​ ​s​e​t
+					 * @param {string} state
+					 */
+					TOAST_SUCCESS: RequiredParams<'state'>
+				}
 				statusTimer: {
 					/**
 					 * S​t​a​t​u​s​ ​T​i​m​e​r
@@ -1197,7 +1224,7 @@ type RootTranslation = {
 					 */
 					BUTTON: string
 					/**
-					 * S​t​a​t​u​s​ ​{​s​t​a​t​u​s​}​ ​s​u​c​c​e​s​s​f​u​l​l​y​ ​s​e​t​ ​u​n​t​i​l​ ​{​d​a​t​e​}
+					 * S​t​a​t​u​s​ ​'​{​s​t​a​t​u​s​}​'​ ​s​u​c​c​e​s​s​f​u​l​l​y​ ​s​e​t​ ​u​n​t​i​l​ ​{​d​a​t​e​}
 					 * @param {string} date
 					 * @param {string} status
 					 */
@@ -2155,6 +2182,10 @@ export type TranslationFunctions = {
 		 */
 		WHITEBOARD: () => LocalizedString
 		/**
+		 * Inbox
+		 */
+		INBOX: () => LocalizedString
+		/**
 		 * Resolutions
 		 */
 		RESOLUTIONS: () => LocalizedString
@@ -2215,7 +2246,7 @@ export type TranslationFunctions = {
 	}
 	hub: {
 		/**
-		 * Chair Hub
+		 * Team Hub
 		 */
 		CHAIR_HUB_TITLE: () => LocalizedString
 		/**
@@ -2644,6 +2675,28 @@ export type TranslationFunctions = {
 					 */
 					TOAST_SUCCESS: () => LocalizedString
 				}
+				stateOfDebate: {
+					/**
+					 * State of Debate
+					 */
+					TITLE: () => LocalizedString
+					/**
+					 * Set the state of Debate (e.g. General Debate)
+					 */
+					DESCRIPTION: () => LocalizedString
+					/**
+					 * No Status Set
+					 */
+					CURRENTLY_NO_STATUS: () => LocalizedString
+					/**
+					 * State of Debate
+					 */
+					PLACEHOLDER_TEXT: () => LocalizedString
+					/**
+					 * State {state} successfully set
+					 */
+					TOAST_SUCCESS: (arg: { state: string }) => LocalizedString
+				}
 				statusTimer: {
 					/**
 					 * Status Timer
@@ -2670,7 +2723,7 @@ export type TranslationFunctions = {
 					 */
 					BUTTON: () => LocalizedString
 					/**
-					 * Status {status} successfully set until {date}
+					 * Status '{status}' successfully set until {date}
 					 */
 					TOAST_SUCCESS: (arg: { date: string, status: string }) => LocalizedString
 				}

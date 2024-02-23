@@ -19,21 +19,11 @@ export default function WidgetTemplate({
   cardTitle = "",
   additionalClassNames,
 }: WidgetTemplateProps) {
-  const widgetClassNames = () => {
-    const classNames = [
-      "flex w-full h-full flex-col bg-primary-950 dark:bg-primary-200 rounded-lg p-3 transition-all duration-500",
-    ];
-
-    if (additionalClassNames) {
-      classNames.push(additionalClassNames);
-    }
-
-    return classNames.join(" ");
-  };
-
   return (
     <>
-      <div className={widgetClassNames()}>
+      <div
+        className={`flex w-full flex-col bg-primary-950 dark:bg-primary-200 rounded-lg p-3 transition-all duration-500 ${additionalClassNames}`}
+      >
         {cardTitle &&
           (cardTitle !== "" ? (
             <div className=" font-bold mb-2 text-lg">{cardTitle}</div>

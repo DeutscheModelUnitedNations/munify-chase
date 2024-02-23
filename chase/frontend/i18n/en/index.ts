@@ -232,6 +232,7 @@ const en = {
     SPEAKERS: "Speakers List",
     VOTING: "Voting",
     WHITEBOARD: "Whiteboard",
+    INBOX: "Inbox",
     RESOLUTIONS: "Resolutions",
     PRESENTATION: "Presentation",
     NEWS: "Conference Press",
@@ -255,7 +256,7 @@ const en = {
   },
 
   hub: {
-    CHAIR_HUB_TITLE: "Chair Hub",
+    CHAIR_HUB_TITLE: "Team Hub",
     NA_HUB_TITLE: "Non-State Actor's Hub",
     SELECT_COMMITTEE: "Select a Committee",
     NO_COMMITTEES: "No Committees found",
@@ -410,6 +411,13 @@ const en = {
           PLACEHOLDER: "No Agenda Item Selected",
           TOAST_SUCCESS: "Agenda Item activated",
         },
+        stateOfDebate: {
+          TITLE: "State of Debate",
+          DESCRIPTION: "Set the state of Debate (e.g. General Debate)",
+          CURRENTLY_NO_STATUS: "No Status Set",
+          PLACEHOLDER_TEXT: "State of Debate",
+          TOAST_SUCCESS: "State {state:string} successfully set",
+        },
         statusTimer: {
           TITLE: "Status Timer",
           DESCRIPTION:
@@ -419,7 +427,7 @@ const en = {
           PLACEHOLDER_TIME_UNITL: "until",
           BUTTON: "Save Status",
           TOAST_SUCCESS:
-            "Status {status:string} successfully set until {date:string}",
+            "Status '{status:string}' successfully set until {date:string}",
         },
         speakersListAdding: {
           TITLE: "Speakers List Adding Policy",

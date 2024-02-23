@@ -15,7 +15,11 @@ export default () => {
   const [errored, setErrored] = useState<boolean>();
   const [errorMessage, setErrorMessage] = useState("");
   const [email, setEmail] = useState("");
+  const [credentialCreateToken, setCredentialCreateToken] = useState<
+    string | undefined
+  >();
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: yeah this should probably done more reacty, please give me some svelte
   useEffect(() => {
     const token = searchParams.get("token");
     const email = searchParams.get("email");
@@ -39,15 +43,52 @@ export default () => {
         token,
       });
 
+      //TODO: these error messages are copied into the html and therefore are not responsive to language changes
+      // I want to ignore this for now since its super rare that the user will see this but it should be fixed
+      // in general it would be nice to take another look at the topic of how we present error messages to the user
+      // and how we pass them along from the backend to the frontend, how we i18n them
       if (r.error) {
         setErrored(true);
         setErrorMessage(LL.login.EMAIL_CONFIRMED_SERVER_ERROR());
         return;
       }
 
+      if (r.data === "emailNotFound") {
+        setErrored(true);
+        setErrorMessage(LL.login.EMAIL_NOT_FOUND());
+        return;
+      }
+
+      if (r.data === "emailDoesNotHaveActiveValidationToken") {
+        setErrored(true);
+        setErrorMessage(LL.login.EMAIL_NO_ACTIVE_VALIDATION_TOKEN());
+        return;
+      }
+
+      if (r.data === "invalidToken") {
+        setErrored(true);
+        setErrorMessage(LL.login.EMAIL_INVALID_TOKEN());
+        return;
+      }
+
+      if (r.data === "alreadyValidated") {
+        setErrored(true);
+        setErrorMessage(LL.login.EMAIL_ALREADY_VALIDATED());
+        return;
+      }
+
+      if (r.data === "tokenExpired") {
+        setErrored(true);
+        setErrorMessage(LL.login.EMAIL_VALIDATION_TOKEN_EXPIRED());
+        return;
+      }
+
       setErrored(false);
+
+      setCredentialCreateToken(r.data.credentialCreateToken);
     })();
   }, []);
+
   return (
     <>
       {errored === true ? (
@@ -75,10 +116,12 @@ export default () => {
         <FontAwesomeIcon icon={faSpinnerThird} spin={true} size="2x" />
       ) : undefined}
       {errored === false ? (
-        <Link href={`/login?email=${email}`}>
+        <Link
+          href={`/login/createCredentials?email=${email}&token=${credentialCreateToken}`}
+        >
           <Button
             type="button"
-            label={LL.login.LOGIN_NOW()}
+            label={LL.login.SET_CREDENTIALS()}
             className="w-full mt-3"
           />
         </Link>

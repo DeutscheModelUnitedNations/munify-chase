@@ -11,3 +11,27 @@ export const redis = createClient({
 });
 redis.on("error", (err) => console.error("Redis Client Error", err));
 await redis.connect();
+
+// maintanance
+setInterval(
+  async () => {
+    await db.pendingCredentialCreateTask.deleteMany({
+      where: {
+        token: {
+          expiresAt: {
+            lte: new Date(),
+          },
+        },
+      },
+    });
+
+    await db.token.deleteMany({
+      where: {
+        expiresAt: {
+          lte: new Date(),
+        },
+      },
+    });
+  },
+  1000 * 60 * 11,
+);

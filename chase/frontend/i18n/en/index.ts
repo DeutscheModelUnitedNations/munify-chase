@@ -177,10 +177,22 @@ const en = {
   login: {
     EMAIL_PLACEHOLDER: "E-Mail",
     PASSWORD_PLACEHOLDER: "Password",
+    REPEAT_PASSWORD_PLACEHOLDER: "Repeat password",
+    PASSWORDS_DO_NOT_MATCH: "Passwords do not match",
+    FORGOT_PASSWORD: "Forgot Password?",
+    SENT_EMAIL: "Sent Email",
     ADVANCE_BUTTON: "Advance",
     BACK_BUTTON: "Back",
     LOGIN_BUTTON: "Login",
     LOGIN_TITLE: "Login",
+    EMAIL_NOT_FOUND: "The email is invalid or could not be found.",
+    EMAIL_NO_ACTIVE_VALIDATION_TOKEN:
+      "The email does not have an active validation token.",
+    EMAIL_INVALID_TOKEN: "The token is invalid.",
+    EMAIL_ALREADY_VALIDATED: "The email has already been validated.",
+    EMAIL_VALIDATION_TOKEN_EXPIRED:
+      "The validation token has expired. Please request a new one.",
+    SET_CREDENTIALS: "Set Credentials",
     LOGIN_NOW: "Login now",
     NO_TOKEN: "The confirmation token is invalid or could not be found.",
     NO_EMAIL: "The email is invalid or could not be found.",
@@ -197,8 +209,9 @@ const en = {
     WHAT_ARE_PASSKEYS: "What are Passkeys?",
     PASSWORD: "Password",
     LOGIN_DESCRIPTION: "Please enter your credentials to continue.",
+    EMAIL_NOT_CONFIRMED: "The email address has not been confirmed yet.",
     ACCOUNT_NOT_YET_CREATED:
-      "Great, an account with this e-mail address does not yet exist! Create account for this e-mail address with the following password:",
+      "Great, an account with this e-mail address does not yet exist! You can now create one!",
     POWERED_BY: "Powered by",
     legalNotice: {
       SECTION_1: "I agree with the ",

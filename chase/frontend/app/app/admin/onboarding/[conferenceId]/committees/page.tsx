@@ -9,10 +9,7 @@ import ForwardBackButtons from "@/components/admin/onboarding/forward_back_bar";
 import { Accordion, AccordionTab } from "primereact/accordion";
 import { Toast } from "primereact/toast";
 import AgendaItems from "@/components/admin/committee/agendaItems";
-import {
-  AgendaItem,
-  Committee,
-} from "../../../../../../../backend/prisma/generated/client";
+import { Committee } from "../../../../../../../backend/prisma/generated/client";
 
 export default function loginVorsitz({
   params,
@@ -32,6 +29,7 @@ export default function loginVorsitz({
     const res = await backend.conference[conferenceId].committee
       .get()
       .catch((error) => {
+        console.error(error);
         toast.current?.show({
           severity: "error",
           summary: LL.admin.onboarding.error.title(),

@@ -7,7 +7,8 @@
     "dev": "bun run concurrently \"bun run dev:server\" \"bun run dev:docker\"",
     "dev:server": "bun run --watch --hot src/main.ts",
     "dev:docker": "docker compose up --remove-orphans",
-    "build": "tsc --noEmit && bun build.ts",
+    "build": "bun build.ts",
+    "typecheck": "bunx prisma generate && tsc --noEmit",
     "database:reset": "bunx prisma db push --force-reset & bunx prisma db seed"
   },
   "devDependencies": {

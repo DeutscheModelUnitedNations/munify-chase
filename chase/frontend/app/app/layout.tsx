@@ -7,10 +7,5 @@ export default function UserIdentLayout({
 }: {
   children: React.ReactNode;
 }) {
-
-  return (
-    <UserIdentProvider>
-      {children}
-    </UserIdentProvider>
-  );
+  return <UserIdentProvider>{children}</UserIdentProvider>;
 }

@@ -30,7 +30,9 @@ export default function CommitteePresentationMode({
 }) {
   const { LL, locale } = useI18nContext();
 
-  const [committeeData, setCommitteeData] = useState<CommitteeType | null>(null);
+  const [committeeData, setCommitteeData] = useState<CommitteeType | null>(
+    null,
+  );
   const [agendaItem, setAgendaItem] = useState<AgendaItems | null>(null);
 
   async function getCommitteeData() {

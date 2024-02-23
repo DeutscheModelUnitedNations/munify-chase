@@ -63,6 +63,7 @@ export default function RootLayout({
   }, []);
 
   return (
+    <>
       <ConfirmDialog />
       <div className="flex justify-center items-start min-h-screen bg-primary">
         <div className="flex-1 flex flex-col justify-center items-center m-10 mt-20">
@@ -91,5 +92,6 @@ export default function RootLayout({
         settingsSidebarVisible={settingsSidebarVisible}
         setSettingsSidebarVisible={setSettingsSidebarVisible}
       />
+    </>
   );
 }

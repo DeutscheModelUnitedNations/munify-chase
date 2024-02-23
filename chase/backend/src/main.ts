@@ -60,7 +60,8 @@ const m = new Elysia({
   .use(baseData);
 
 // we make the api docs public
-const app = new Elysia()
+// biome-ignore lint/suspicious/noExplicitAny: we explicitly dont want type checking here
+(new Elysia() as any) // just disable the type check for this object, since the middleware is causing issues
   .use(
     swagger({
       path: `/${appConfiguration.documentationPath}`,
@@ -100,4 +101,4 @@ if (appConfiguration.development) {
   }, 3000);
 }
 
-export type App = typeof app;
+export type App = typeof m;

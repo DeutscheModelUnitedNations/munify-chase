@@ -1,0 +1,155 @@
+"use client";
+import { useI18nContext } from "@/i18n/i18n-react";
+import { useToast } from "@/contexts/toast";
+import { backend } from "@/services/backend";
+import { useSearchParams } from "next/navigation";
+import Image from "next/image";
+import { useEffect, useState } from "react";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faSpinnerThird } from "@fortawesome/pro-solid-svg-icons";
+import { Button } from "primereact/button";
+import Link from "next/link";
+import { InputText } from "primereact/inputtext";
+
+const passwordRegex =
+  /^(?=.*[A-Z].*[A-Z])(?=.*[!@#$&*])(?=.*[0-9].*[0-9])(?=.*[a-z].*[a-z].*[a-z]).{8,}$/;
+
+export default () => {
+  const searchParams = useSearchParams();
+  const { LL } = useI18nContext();
+  const toast = useToast();
+  const [password, setPassword] = useState("");
+  const [repeatPassword, setRepeatPassword] = useState("");
+  const [awaitingCredentialSetResponse, setAwaitingCredentialSetResponse] =
+    useState<boolean | undefined>();
+  const [succeeded, setSucceeded] = useState<boolean | undefined>();
+  const [passwordValid, setPasswordValid] = useState<boolean | undefined>();
+
+  useEffect(() => {
+    if (password) {
+      setPasswordValid(passwordRegex.test(password));
+    } else {
+      setPasswordValid(undefined);
+    }
+  }, [password]);
+
+  const createCredentialsWithPassword = async (
+    e: React.FormEvent<HTMLFormElement>,
+  ) => {
+    e.preventDefault();
+    const token = searchParams.get("token");
+    const email = searchParams.get("email");
+
+    if (!token) {
+      toast.showToast({
+        severity: "error",
+        summary: LL.login.NO_TOKEN(),
+      });
+      return;
+    }
+
+    if (!email) {
+      toast.showToast({
+        severity: "error",
+        summary: LL.login.NO_EMAIL(),
+      });
+      return;
+    }
+
+    setAwaitingCredentialSetResponse(true);
+    const r = await backend.auth.password.post({
+      email,
+      password,
+      credentialCreateToken: token,
+    });
+    setAwaitingCredentialSetResponse(false);
+
+    if (r.error) {
+      toast.showToast({
+        severity: "error",
+        summary: r.error.message,
+      });
+      return;
+    }
+    setSucceeded(true);
+  };
+
+  return (
+    <>
+      {succeeded === undefined ? (
+        <form onSubmit={createCredentialsWithPassword} className="w-full">
+          <h1 className="text-xl mb-5">{LL.login.SET_CREDENTIALS()}</h1>
+          <span className="p-float-label w-full mb-8">
+            <InputText
+              className="w-full"
+              type="password"
+              id="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+            />
+            <label htmlFor="password">{LL.login.PASSWORD_PLACEHOLDER()}</label>
+            {passwordValid === false ? (
+              <small className="text-red-500">
+                {LL.login.PASSWORD_INVALID()}
+              </small>
+            ) : undefined}
+          </span>
+          <span className="p-float-label w-full mb-2">
+            <InputText
+              className="w-full"
+              type="password"
+              id="repeatPassword"
+              value={repeatPassword}
+              onChange={(e) => setRepeatPassword(e.target.value)}
+            />
+            <label htmlFor="repeatPassword">
+              {LL.login.REPEAT_PASSWORD_PLACEHOLDER()}
+            </label>
+            {password !== repeatPassword ? (
+              <small className="text-red-500">
+                {LL.login.PASSWORDS_DO_NOT_MATCH()}
+              </small>
+            ) : undefined}
+          </span>
+          <Button
+            disabled={passwordValid === false || password !== repeatPassword}
+            type="submit"
+            label={LL.login.SET_CREDENTIALS()}
+            className="w-full mt-3"
+          />
+        </form>
+      ) : undefined}
+      {succeeded === false ? (
+        <Image
+          src="/undraw/warning.svg"
+          alt="decorative error drawing"
+          width={300}
+          height={300}
+          className="mb-10"
+        />
+      ) : undefined}
+
+      {succeeded === true ? (
+        <Image
+          src="/undraw/verified.svg"
+          alt="decorative success drawing"
+          width={300}
+          height={300}
+          className="mb-10"
+        />
+      ) : undefined}
+      {awaitingCredentialSetResponse === true ? (
+        <FontAwesomeIcon icon={faSpinnerThird} spin={true} size="2x" />
+      ) : undefined}
+      {succeeded === true ? (
+        <Link href={"/login"}>
+          <Button
+            type="button"
+            label={LL.login.LOGIN_BUTTON()}
+            className="w-full mt-3"
+          />
+        </Link>
+      ) : undefined}
+    </>
+  );
+};

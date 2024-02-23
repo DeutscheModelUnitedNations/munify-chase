@@ -1,19 +1,23 @@
-import { Nation, NonStateActor, SpecialPerson } from "../../backend/prisma/generated/client";
+import {
+  Nation,
+  NonStateActor,
+  SpecialPerson,
+} from "../../backend/prisma/generated/client";
 
 /**
  * A country alpha3 code
  */
-export type Alpha3Code = Nation["alpha3Code"]
+export type Alpha3Code = Nation["alpha3Code"];
 
 /**
  * UN-Flag Specials for General Secretary and Guest Speakers (male and female)
  */
-export type UNCodes = SpecialPerson["code"]
+export type UNCodes = SpecialPerson["code"];
 
 /**
  * Non-State Actor Prefix and ID
  */
-export type NSACodes = NonStateActor["code"]
+export type NSACodes = NonStateActor["code"];
 
 /**
  * Code for not found

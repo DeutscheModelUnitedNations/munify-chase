@@ -11,7 +11,10 @@ import { MyDelegationContext } from "@/contexts/user_ident";
 export default function SpeakersList() {
   const { LL } = useI18nContext();
 
-  const [data, setData] = useState(apiTestData);
+  //TODO this is unused
+  const [_data, setData] = useState(apiTestData);
+
+  const myDelegationData = useContext(MyDelegationContext);
 
   const myDelegationData = useContext(MyDelegationContext);
 

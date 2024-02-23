@@ -5,10 +5,7 @@ import NavButton from "@/components/navbar/button";
 import {
   faChalkboard,
   faPodium,
-  faScroll,
-  faPollPeople,
   faUsersLine,
-  faPresentationScreen,
   faSquareSliders,
   faNewspaper,
   faCommentExclamation,

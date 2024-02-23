@@ -8,6 +8,7 @@ import { useRouter } from "next/navigation";
 import {
   faBook,
   faCode,
+  faPlus,
   faQuestionCircle,
   faRightToBracket,
 } from "@fortawesome/pro-solid-svg-icons";
@@ -81,11 +82,10 @@ export default function Navbar({
         <div className="flex-1" />
         <div className="flex gap-2">
           <Button
-            label={LL.home.navbar.LOGIN_ADMIN()}
-            onClick={() => router.push("/app/admin/login")}
+            faIcon={faPlus}
+            onClick={() => router.push("/app/admin/new")}
             text
-          />
-          <Button faIcon={faCode} onClick={() => router.push("/dev")} text />
+          />{" "}
           <Button
             label={LL.home.navbar.DOCUMENTATION()}
             onClick={() => router.push("/docs")}

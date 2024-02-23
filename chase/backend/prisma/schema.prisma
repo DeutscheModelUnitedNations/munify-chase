@@ -75,8 +75,7 @@ model User {
   name                           String
   conferenceMemberships          ConferenceMember[]
   committeeMemberships           CommitteeMember[]
-  researchServiceMessages        ResearchServiceMessage[]
-  chairMessages                  ChairMessage[]
+  Messages                       Message[]
   emails                         Email[]
   passwords                      Password[]
   // authenticators Authenticator[]
@@ -90,14 +89,13 @@ model ConferenceCreateToken {
 
 /// A conference in the system
 model Conference {
-  id                       String                   @id @default(uuid())
-  name                     String                   @unique
-  committees               Committee[]
-  start                    DateTime?
-  end                      DateTime?
-  delegations              Delegation[]
-  members                  ConferenceMember[]
-  researchServiceMessagees ResearchServiceMessage[]
+  id          String             @id @default(uuid())
+  name        String             @unique
+  committees  Committee[]
+  start       DateTime?
+  end         DateTime?
+  delegations Delegation[]
+  members     ConferenceMember[]
 }
 
 /// The role of a user in a conference
@@ -157,7 +155,7 @@ model Committee {
   parent                                        Committee?        @relation("subCommittee", fields: [parentId], references: [id])
   parentId                                      String?
   subCommittees                                 Committee[]       @relation("subCommittee")
-  messages                                      ChairMessage[]
+  messages                                      Message[]
   agendaItems                                   AgendaItem[]
   whiteboardContent                             String            @default("<h1>Hello, World</h1>")
   status                                        CommitteeStatus   @default(CLOSED)
@@ -281,6 +279,7 @@ model SpecialPerson {
 }
 
 enum MessageCategory {
+  TO_CHAIR
   GUEST_SPEAKER
   FACT_CHECK
   INFORMATION
@@ -296,38 +295,21 @@ enum MessageStatus {
   ARCHIVED
 }
 
-model ResearchServiceMessage {
-  id           String          @id @default(uuid())
-  category     MessageCategory
-  subject      String
-  message      String
-  conference   Conference      @relation(fields: [conferenceId], references: [id])
-  conferenceId String
-  author       User            @relation(fields: [authorId], references: [id])
-  authorId     String
-  timestamp    DateTime
-  status       MessageStatus[] @default([UNREAD])
+model Message {
+  id          String          @id @default(uuid())
+  subject     String
+  category    MessageCategory @default(TO_CHAIR)
+  message     String
+  committee   Committee       @relation(fields: [committeeId], references: [id])
+  committeeId String
+  author      User            @relation(fields: [authorId], references: [id])
+  authorId    String
+  timestamp   DateTime
+  status      MessageStatus[] @default([UNREAD])
 
   /// Saved Metadata without relation
   metaEmail      String?
   metaDelegation String?
   metaCommittee  String?
   metaAgendaItem String?
-}
-
-model ChairMessage {
-  id          String        @id @default(uuid())
-  subject     String
-  message     String
-  committee   Committee     @relation(fields: [committeeId], references: [id])
-  committeeId String
-  author      User          @relation(fields: [authorId], references: [id])
-  authorId    String
-  timestamp   DateTime
-  status      MessageStatus @default(UNREAD)
-
-  /// Saved Metadata without relation
-  metaEmail      String?
-  metaDelegation String?
-  metaCommittee  String?
 }

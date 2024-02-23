@@ -76,6 +76,31 @@ export default function LoginRedirectPage() {
     throw new Error("Unknown role");
   };
 
+  const conferenceRoleTranslation = (role: $Enums.ConferenceRole) => {
+    switch (role) {
+      case $Enums.ConferenceRole.ADMIN:
+        return LL.roles.ADMIN();
+      case $Enums.ConferenceRole.SECRETARIAT:
+        return LL.roles.SECRETARIAT();
+      case $Enums.ConferenceRole.CHAIR:
+        return LL.roles.CHAIR();
+      case $Enums.ConferenceRole.COMMITTEE_ADVISOR:
+        return LL.roles.COMMITTEE_ADVISOR();
+      case $Enums.ConferenceRole.PARTICIPANT_CARE:
+        return LL.roles.PARTICIPANT_CARE();
+      case $Enums.ConferenceRole.MISCELLANEOUS_TEAM:
+        return LL.roles.MISCELLANEOUS_TEAM();
+      case $Enums.ConferenceRole.PRESS_CORPS:
+        return LL.roles.PRESS_CORPS();
+      case $Enums.ConferenceRole.NON_STATE_ACTOR:
+        return LL.roles.NON_STATE_ACTOR();
+      case $Enums.ConferenceRole.GUEST:
+        return LL.roles.GUEST();
+      default:
+        return "Unknown role";
+    }
+  };
+
   return (
     <div className="flex flex-col items-center justify-center">
       {myInfoData ? (
@@ -91,16 +116,28 @@ export default function LoginRedirectPage() {
                   : LL.login.gateway.CONFERENCE_MEMBER_MULTIPLE()}
               </p>
               {myInfoData.conferenceMemberships.map((conferenceMembership) => (
-                <Button
+                <Link
+                  href={conferenceMemberRedirectPath(conferenceMembership)}
+                  className="w-full flex flex-col justify-center items-center p-4 bg-primary-950 rounded-lg mb-4 hover:cursor-pointer hover:shadow-xl hover:scale-[1.02] transition-all duration-500"
                   key={conferenceMembership.id}
-                  faIcon={faRocketLaunch}
-                  label={conferenceMembership.conference.name}
-                  onClick={() =>
-                    router.push(
-                      conferenceMemberRedirectPath(conferenceMembership),
-                    )
-                  }
-                />
+                >
+                  <h2 className="text-2xl font-bold mb-2">
+                    {conferenceMembership.conference.name}
+                  </h2>
+                  <h3 className="text-xl mb-4">
+                    {conferenceRoleTranslation(conferenceMembership.role)}
+                  </h3>
+                  <Button
+                    key={conferenceMembership.id}
+                    faIcon={faRocketLaunch}
+                    label={LL.login.gateway.LAUNCH_BUTTON()}
+                    onClick={() =>
+                      router.push(
+                        conferenceMemberRedirectPath(conferenceMembership),
+                      )
+                    }
+                  />
+                </Link>
               ))}
             </>
           ) : myInfoData.committeeMemberships.length > 0 ? (
@@ -116,12 +153,12 @@ export default function LoginRedirectPage() {
                   className="w-full flex flex-col justify-center items-center p-4 bg-primary-950 rounded-lg mb-4 hover:cursor-pointer hover:shadow-xl hover:scale-[1.02] transition-all duration-500"
                   key={committeeMembership.committee.id}
                 >
-                  <h2 className="text-xl">
+                  <h3 className="text-xl">
                     {committeeMembership.committee.conference.name}
-                  </h2>
-                  <h3 className="text-2xl font-bold mb-4">
-                    {committeeMembership.committee.name}
                   </h3>
+                  <h2 className="text-2xl font-bold mb-4">
+                    {committeeMembership.committee.name}
+                  </h2>
                   <div className="flex flex-col gap-4 justify-center items-center p-4 bg-white rounded-lg mb-6">
                     <LargeFlag
                       countryCode={
@@ -144,7 +181,9 @@ export default function LoginRedirectPage() {
                 </Link>
               ))}
             </>
-          ) : undefined}
+          ) : (
+            <p>{LL.login.gateway.NO_MEMBERSHIP()}</p>
+          )}
         </>
       ) : (
         <FontAwesomeIcon

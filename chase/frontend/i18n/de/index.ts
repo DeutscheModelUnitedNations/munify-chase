@@ -9,6 +9,18 @@ const de = {
     BACK_TO_HOME: "Zurück zur Startseite",
   },
 
+  roles: {
+    ADMIN: "Konferenz-Administrator*in",
+    SECRETARIAT: "Mitarbeiter*in des Sekretariats",
+    CHAIR: "Gremienvorsitz",
+    COMMITTEE_ADVISOR: "Gremienberatung",
+    NON_STATE_ACTOR: "Vertreter*in eines Nichtstaatlichen Akteurs",
+    PRESS_CORPS: "Mitglied der Konferenzpresse",
+    GUEST: "Gast",
+    PARTICIPANT_CARE: "Teilnehmendenbetreuung",
+    MISCELLANEOUS_TEAM: "Teammitglied",
+  },
+
   home: {
     CAPTION: " im 21. Jahrhundert",
     HERO_TEXT:
@@ -248,6 +260,8 @@ const de = {
       COMMITTEE_MEMBER_MULTIPLE:
         "Du bist für mehrere Gremien registriert. Bitte wähle das Gremium, für das du die App starten möchtest.",
       LAUNCH_BUTTON: "Launch the app",
+      NO_MEMBERSHIP:
+        "Du bist für keine Konferenz oder kein Gremium registriert. Wenn du glaubst, dass das ein Fehler ist, wende dich bitte an den Konferenzadmin.",
     },
   },
 

@@ -9,9 +9,22 @@ const en = {
     BACK_TO_HOME: "Back to home",
   },
 
+  roles: {
+    ADMIN: "Conference Admin",
+    SECRETARIAT: "Member of the Secretariat",
+    CHAIR: "Chair",
+    COMMITTEE_ADVISOR: "Committee Advisor",
+    NON_STATE_ACTOR: "Non-State Actor",
+    PRESS_CORPS: "Press Corps",
+    GUEST: "Guest",
+    PARTICIPANT_CARE: "Participant Care",
+    MISCELLANEOUS_TEAM: "Member of the Team",
+  },
+
   home: {
     CAPTION: " for the digital age",
-    HERO_TEXT: "This is where a catchy text about CHASE could be.",
+    HERO_TEXT:
+      "Debate Management Software for Model United Nations Conferences finally made easy.",
     navbar: {
       LOGIN_ADMIN: "Admin",
       LOGIN_CHAIR: "Chair",
@@ -246,6 +259,8 @@ const en = {
       COMMITTEE_MEMBER_MULTIPLE:
         "You are registered for multiple committees. Please select the committee you want to start the application for.",
       LAUNCH_BUTTON: "Launch the app",
+      NO_MEMBERSHIP:
+        "You are not registered for any conference or committee. If you think this is a mistake, please contact the conference organizers.",
     },
   },
 

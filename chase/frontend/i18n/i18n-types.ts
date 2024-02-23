@@ -32,13 +32,51 @@ type RootTranslation = {
 		 */
 		BACK_TO_HOME: string
 	}
+	roles: {
+		/**
+		 * C​o​n​f​e​r​e​n​c​e​ ​A​d​m​i​n
+		 */
+		ADMIN: string
+		/**
+		 * M​e​m​b​e​r​ ​o​f​ ​t​h​e​ ​S​e​c​r​e​t​a​r​i​a​t
+		 */
+		SECRETARIAT: string
+		/**
+		 * C​h​a​i​r
+		 */
+		CHAIR: string
+		/**
+		 * C​o​m​m​i​t​t​e​e​ ​A​d​v​i​s​o​r
+		 */
+		COMMITTEE_ADVISOR: string
+		/**
+		 * N​o​n​-​S​t​a​t​e​ ​A​c​t​o​r
+		 */
+		NON_STATE_ACTOR: string
+		/**
+		 * P​r​e​s​s​ ​C​o​r​p​s
+		 */
+		PRESS_CORPS: string
+		/**
+		 * G​u​e​s​t
+		 */
+		GUEST: string
+		/**
+		 * P​a​r​t​i​c​i​p​a​n​t​ ​C​a​r​e
+		 */
+		PARTICIPANT_CARE: string
+		/**
+		 * M​e​m​b​e​r​ ​o​f​ ​t​h​e​ ​T​e​a​m
+		 */
+		MISCELLANEOUS_TEAM: string
+	}
 	home: {
 		/**
 		 *  ​f​o​r​ ​t​h​e​ ​d​i​g​i​t​a​l​ ​a​g​e
 		 */
 		CAPTION: string
 		/**
-		 * T​h​i​s​ ​i​s​ ​w​h​e​r​e​ ​a​ ​c​a​t​c​h​y​ ​t​e​x​t​ ​a​b​o​u​t​ ​C​H​A​S​E​ ​c​o​u​l​d​ ​b​e​.
+		 * D​e​b​a​t​e​ ​M​a​n​a​g​e​m​e​n​t​ ​S​o​f​t​w​a​r​e​ ​f​o​r​ ​M​o​d​e​l​ ​U​n​i​t​e​d​ ​N​a​t​i​o​n​s​ ​C​o​n​f​e​r​e​n​c​e​s​ ​f​i​n​a​l​l​y​ ​m​a​d​e​ ​e​a​s​y​.
 		 */
 		HERO_TEXT: string
 		navbar: {
@@ -720,6 +758,10 @@ type RootTranslation = {
 			 * L​a​u​n​c​h​ ​t​h​e​ ​a​p​p
 			 */
 			LAUNCH_BUTTON: string
+			/**
+			 * Y​o​u​ ​a​r​e​ ​n​o​t​ ​r​e​g​i​s​t​e​r​e​d​ ​f​o​r​ ​a​n​y​ ​c​o​n​f​e​r​e​n​c​e​ ​o​r​ ​c​o​m​m​i​t​t​e​e​.​ ​I​f​ ​y​o​u​ ​t​h​i​n​k​ ​t​h​i​s​ ​i​s​ ​a​ ​m​i​s​t​a​k​e​,​ ​p​l​e​a​s​e​ ​c​o​n​t​a​c​t​ ​t​h​e​ ​c​o​n​f​e​r​e​n​c​e​ ​o​r​g​a​n​i​z​e​r​s​.
+			 */
+			NO_MEMBERSHIP: string
 		}
 	}
 	navbar: {
@@ -1610,13 +1652,51 @@ export type TranslationFunctions = {
 		 */
 		BACK_TO_HOME: () => LocalizedString
 	}
+	roles: {
+		/**
+		 * Conference Admin
+		 */
+		ADMIN: () => LocalizedString
+		/**
+		 * Member of the Secretariat
+		 */
+		SECRETARIAT: () => LocalizedString
+		/**
+		 * Chair
+		 */
+		CHAIR: () => LocalizedString
+		/**
+		 * Committee Advisor
+		 */
+		COMMITTEE_ADVISOR: () => LocalizedString
+		/**
+		 * Non-State Actor
+		 */
+		NON_STATE_ACTOR: () => LocalizedString
+		/**
+		 * Press Corps
+		 */
+		PRESS_CORPS: () => LocalizedString
+		/**
+		 * Guest
+		 */
+		GUEST: () => LocalizedString
+		/**
+		 * Participant Care
+		 */
+		PARTICIPANT_CARE: () => LocalizedString
+		/**
+		 * Member of the Team
+		 */
+		MISCELLANEOUS_TEAM: () => LocalizedString
+	}
 	home: {
 		/**
 		 *  for the digital age
 		 */
 		CAPTION: () => LocalizedString
 		/**
-		 * This is where a catchy text about CHASE could be.
+		 * Debate Management Software for Model United Nations Conferences finally made easy.
 		 */
 		HERO_TEXT: () => LocalizedString
 		navbar: {
@@ -2298,6 +2378,10 @@ export type TranslationFunctions = {
 			 * Launch the app
 			 */
 			LAUNCH_BUTTON: () => LocalizedString
+			/**
+			 * You are not registered for any conference or committee. If you think this is a mistake, please contact the conference organizers.
+			 */
+			NO_MEMBERSHIP: () => LocalizedString
 		}
 	}
 	navbar: {

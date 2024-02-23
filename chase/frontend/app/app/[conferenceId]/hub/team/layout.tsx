@@ -12,10 +12,13 @@ import {
   faInbox,
   faList,
   faChartNetwork,
+  faGears,
 } from "@fortawesome/pro-solid-svg-icons";
 import { useI18nContext } from "@/i18n/i18n-react";
 import { IconProp } from "@fortawesome/fontawesome-svg-core";
 import { MyDelegationProvider } from "@/contexts/user_ident";
+import { useContext } from "react";
+import { ConferenceIdContext } from "@/contexts/committee_data";
 
 export default function ChairHubLayout({
   children,
@@ -23,6 +26,7 @@ export default function ChairHubLayout({
   children: React.ReactNode;
 }) {
   const { LL } = useI18nContext();
+  const conferenceId = useContext(ConferenceIdContext);
 
   return (
     <MyDelegationProvider>
@@ -36,6 +40,11 @@ export default function ChairHubLayout({
           <NavButton
             icon={faInbox as IconProp}
             link={"./inbox"}
+            title={LL.navbar.INBOX()}
+          />
+          <NavButton
+            icon={faGears as IconProp}
+            link={`/app/admin/onboarding/${conferenceId}/structure`}
             title={LL.navbar.INBOX()}
           />
           <div className="flex-1" />

@@ -1,7 +1,8 @@
-name: Build
-on: [pull_request]
+name: Build and publish container images
+on:
+  release:
+    types: [created]
 
-# TODO run tests too
 jobs:
   chase-build-frontend:
     runs-on: ubuntu-latest
@@ -26,24 +27,30 @@ jobs:
         run: bun run build
         working-directory: ./chase/frontend
 
-  chase-build-backend:
+
+  chase-backend:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
 
-      - name: Setup Bun.js
-        uses: oven-sh/setup-bun@v1
+      - name: Log in to Docker Hub
+        uses: docker/login-action
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_PASSWORD }}
 
-      - name: Install all dependencies
-        run: bun i
-        env:
-          FONTAWESOME_NPM_AUTH_TOKEN: ${{ secrets.FONTAWESOME_NPM_AUTH_TOKEN }}
+      - name: Extract metadata (tags, labels) for Docker
+        id: meta
+        uses: docker/metadata-action
+        with:
+          images: m1212e/chase-backend
 
-      - name: Typecheck
-        working-directory: ./chase/backend
-        run: bun run typecheck
-
-      - name: Run build
-        working-directory: ./chase/backend
-        run: bun run build
+      - name: Build and push Docker image
+        uses: docker/build-push-action
+        with:
+          context: .
+          file: ./Dockerfile.backend
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}

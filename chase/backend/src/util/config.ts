@@ -21,7 +21,7 @@ export const appConfiguration = {
     : requireEnv("CORS_ORIGINS")
         ?.split(",")
         .map((origin) => origin.trim()),
-  port: process.env.PORT ?? "3000",
+  port: process.env.PORT ?? "3001",
   documentationPath: process.env.DOCUMENTATION_PATH ?? "documentation",
   appName: process.env.APP_NAME ?? "CHASE",
   cookie: {

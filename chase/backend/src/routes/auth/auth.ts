@@ -65,18 +65,15 @@ export const auth = new Elysia({
   .get(
     "/myInfo",
     async ({ session }) => {
-      const user = await db.user.findUniqueOrThrow({
-        where: { id: session.userData.id },
-        include: { emails: true },
-      });
-      return { ...user, emails: user.emails.map((e) => e.email) };
+      return {
+        id: session.userData.id,
+      };
     },
     {
       mustBeLoggedIn: true,
-      response: t.Composite([
-        UserWithoutRelations,
-        t.Object({ emails: t.Array(t.String()) }),
-      ]),
+      response: t.Object({
+        id: t.String(),
+      }),
       detail: {
         description: "Returns the user info when they are logged in",
         tags: [openApiTag(import.meta.path)],

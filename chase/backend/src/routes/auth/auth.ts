@@ -65,33 +65,26 @@ export const auth = new Elysia({
   .get(
     "/myInfo",
     async ({ session }) => {
-      return {
-        id: session.userData.id,
-      };
-    },
-    {
-      mustBeLoggedIn: true,
-      response: t.Object({
-        id: t.String(),
-      }),
-      detail: {
-        description: "Returns the user info when they are logged in",
-        tags: [openApiTag(import.meta.path)],
-      },
-    },
-  )
-  .get(
-    "/myRedirectInfo",
-    async ({ session }) => {
       return await db.user.findUniqueOrThrow({
         where: { id: session.userData.id },
         include: {
-          conferenceMemberships: true,
+          conferenceMemberships: {
+            select: {
+              id: true,
+              role: true,
+              conference: true,
+            },
+          },
           committeeMemberships: {
             include: {
               committee: {
+                include: {
+                  conference: true,
+                },
+              },
+              delegation: {
                 select: {
-                  conferenceId: true,
+                  nation: true,
                 },
               },
             },

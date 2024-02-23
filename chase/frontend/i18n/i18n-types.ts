@@ -695,6 +695,32 @@ type RootTranslation = {
 			 */
 			WARNING_MESSAGE: string
 		}
+		gateway: {
+			/**
+			 * W​e​l​c​o​m​e​ ​t​o​ ​C​H​A​S​E
+			 */
+			TITLE: string
+			/**
+			 * Y​o​u​ ​a​r​e​ ​r​e​g​i​s​t​e​r​e​d​ ​f​o​r​ ​a​ ​c​o​n​f​e​r​e​n​c​e​.​ ​C​l​i​c​k​ ​o​n​ ​t​h​e​ ​b​u​t​t​o​n​ ​b​e​l​o​w​ ​t​o​ ​s​t​a​r​t​ ​t​h​e​ ​a​p​p​l​i​c​a​t​i​o​n​.
+			 */
+			CONFERENCE_MEMBER_SINGLE: string
+			/**
+			 * Y​o​u​ ​a​r​e​ ​r​e​g​i​s​t​e​r​e​d​ ​f​o​r​ ​m​u​l​t​i​p​l​e​ ​c​o​n​f​e​r​e​n​c​e​s​.​ ​P​l​e​a​s​e​ ​s​e​l​e​c​t​ ​t​h​e​ ​c​o​n​f​e​r​e​n​c​e​ ​y​o​u​ ​w​a​n​t​ ​t​o​ ​s​t​a​r​t​ ​t​h​e​ ​a​p​p​l​i​c​a​t​i​o​n​ ​f​o​r​.
+			 */
+			CONFERENCE_MEMBER_MULTIPLE: string
+			/**
+			 * Y​o​u​ ​a​r​e​ ​r​e​g​i​s​t​e​r​e​d​ ​f​o​r​ ​a​ ​c​o​m​m​i​t​t​e​e​.​ ​C​l​i​c​k​ ​o​n​ ​t​h​e​ ​b​u​t​t​o​n​ ​b​e​l​o​w​ ​t​o​ ​s​t​a​r​t​ ​t​h​e​ ​a​p​p​l​i​c​a​t​i​o​n​.
+			 */
+			COMMITTEE_MEMBER_SINGLE: string
+			/**
+			 * Y​o​u​ ​a​r​e​ ​r​e​g​i​s​t​e​r​e​d​ ​f​o​r​ ​m​u​l​t​i​p​l​e​ ​c​o​m​m​i​t​t​e​e​s​.​ ​P​l​e​a​s​e​ ​s​e​l​e​c​t​ ​t​h​e​ ​c​o​m​m​i​t​t​e​e​ ​y​o​u​ ​w​a​n​t​ ​t​o​ ​s​t​a​r​t​ ​t​h​e​ ​a​p​p​l​i​c​a​t​i​o​n​ ​f​o​r​.
+			 */
+			COMMITTEE_MEMBER_MULTIPLE: string
+			/**
+			 * L​a​u​n​c​h​ ​t​h​e​ ​a​p​p
+			 */
+			LAUNCH_BUTTON: string
+		}
 	}
 	navbar: {
 		/**
@@ -2246,6 +2272,32 @@ export type TranslationFunctions = {
 			 * You are about to sign in as a chair.
 			 */
 			WARNING_MESSAGE: () => LocalizedString
+		}
+		gateway: {
+			/**
+			 * Welcome to CHASE
+			 */
+			TITLE: () => LocalizedString
+			/**
+			 * You are registered for a conference. Click on the button below to start the application.
+			 */
+			CONFERENCE_MEMBER_SINGLE: () => LocalizedString
+			/**
+			 * You are registered for multiple conferences. Please select the conference you want to start the application for.
+			 */
+			CONFERENCE_MEMBER_MULTIPLE: () => LocalizedString
+			/**
+			 * You are registered for a committee. Click on the button below to start the application.
+			 */
+			COMMITTEE_MEMBER_SINGLE: () => LocalizedString
+			/**
+			 * You are registered for multiple committees. Please select the committee you want to start the application for.
+			 */
+			COMMITTEE_MEMBER_MULTIPLE: () => LocalizedString
+			/**
+			 * Launch the app
+			 */
+			LAUNCH_BUTTON: () => LocalizedString
 		}
 	}
 	navbar: {

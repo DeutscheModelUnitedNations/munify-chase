@@ -292,6 +292,7 @@ enum MessageStatus {
   UNREAD
   READ
   PRIORITY
+  ASSIGNED
   ARCHIVED
 }
 
@@ -305,7 +306,7 @@ model ResearchServiceMessage {
   author       User            @relation(fields: [authorId], references: [id])
   authorId     String
   timestamp    DateTime
-  status       MessageStatus   @default(UNREAD)
+  status       MessageStatus[] @default([UNREAD])
 
   /// Saved Metadata without relation
   metaEmail      String?

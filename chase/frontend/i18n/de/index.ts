@@ -237,6 +237,18 @@ const de = {
       OTHER_SIGN_IN: "Stattdessen als Teilnehmer anmelden",
       WARNING_MESSAGE: "Sie sind im Begriff sich als Vorsitz anzumelden.",
     },
+    gateway: {
+      TITLE: "Willkommen bei CHASE",
+      CONFERENCE_MEMBER_SINGLE:
+        "Du bist für eine Konferenz registriert. Klicke auf den Button unten, um die App zu starten.",
+      CONFERENCE_MEMBER_MULTIPLE:
+        "Du bist für mehrere Konferenzen registriert. Bitte wähle die Konferenz, für die du die App starten möchtest.",
+      COMMITTEE_MEMBER_SINGLE:
+        "Du bist für ein Gremium registriert. Klicke auf den Button unten, um die App zu starten.",
+      COMMITTEE_MEMBER_MULTIPLE:
+        "Du bist für mehrere Gremien registriert. Bitte wähle das Gremium, für das du die App starten möchtest.",
+      LAUNCH_BUTTON: "Launch the app",
+    },
   },
 
   navbar: {

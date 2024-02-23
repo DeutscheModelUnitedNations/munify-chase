@@ -26,7 +26,7 @@ export const messages = new Elysia({
             select: {
               id: true,
               name: true,
-              email: true,
+              emails: true,
             },
           },
         },
@@ -90,7 +90,7 @@ export const messages = new Elysia({
             select: {
               id: true,
               name: true,
-              email: true,
+              emails: true,
             },
           },
         },

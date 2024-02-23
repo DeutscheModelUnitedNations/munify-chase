@@ -235,6 +235,18 @@ const en = {
       OTHER_SIGN_IN: "Sign in as participant instead",
       WARNING_MESSAGE: "You are about to sign in as a chair.",
     },
+    gateway: {
+      TITLE: "Welcome to CHASE",
+      CONFERENCE_MEMBER_SINGLE:
+        "You are registered for a conference. Click on the button below to start the application.",
+      CONFERENCE_MEMBER_MULTIPLE:
+        "You are registered for multiple conferences. Please select the conference you want to start the application for.",
+      COMMITTEE_MEMBER_SINGLE:
+        "You are registered for a committee. Click on the button below to start the application.",
+      COMMITTEE_MEMBER_MULTIPLE:
+        "You are registered for multiple committees. Please select the committee you want to start the application for.",
+      LAUNCH_BUTTON: "Launch the app",
+    },
   },
 
   navbar: {

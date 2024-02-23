@@ -16,8 +16,6 @@ export default function SpeakersList() {
 
   const myDelegationData = useContext(MyDelegationContext);
 
-  const myDelegationData = useContext(MyDelegationContext);
-
   useEffect(() => {
     const intervalAPICall = setInterval(() => {
       setData(apiTestData);

@@ -87,14 +87,12 @@ export const auth = new Elysia({
     "/myInfo",
     async ({ session }) => {
       return {
-        email: session.userData.email,
         id: session.userData.id,
       };
     },
     {
       mustBeLoggedIn: true,
       response: t.Object({
-        email: t.String(),
         id: t.String(),
       }),
       detail: {

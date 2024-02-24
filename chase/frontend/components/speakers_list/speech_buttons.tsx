@@ -24,7 +24,6 @@ import useMousetrap from "mousetrap-react";
 import { backend } from "@/services/backend";
 import { $Enums } from "../../../backend/prisma/generated/client";
 import { toastError } from "@/fetching/fetching_utils";
-import { Toast } from "primereact/toast";
 import {
   ConferenceIdContext,
   CommitteeIdContext,
@@ -32,6 +31,7 @@ import {
 import { SpeakersListDataContext } from "@/contexts/speakers_list_data";
 import { useUserIdent } from "@/contexts/user_ident";
 import { ToastContext } from "@/contexts/toast";
+import { ConfirmDialog, confirmDialog } from "primereact/confirmdialog";
 
 type AllCountryCodes = Awaited<
   ReturnType<
@@ -53,23 +53,21 @@ export function ParticipantSpeechButtons() {
   const { showToast } = useContext(ToastContext);
 
   const speakersListData = useContext(SpeakersListDataContext);
-  const userIdent = useUserIdent();
+  const { userIdent } = useUserIdent();
   const [userOnSpeakersList, setUserOnSpeakersList] = useState(false);
 
   useEffect(() => {
-    if (!speakersListData || !userIdent?.userIdent?.id) return;
+    if (!speakersListData || !userIdent?.id) return;
     setUserOnSpeakersList(
       speakersListData.speakers.some(
-        (speaker) => speaker.committeeMember.userId === userIdent.userIdent.id,
+        (speaker) => speaker.committeeMember.userId === userIdent?.id,
       ),
     );
   }, [speakersListData, userIdent]);
 
   async function addToSpeakersList() {
-    if (!speakersListData || !userIdent?.userIdent?.id) return;
-    backend.speakersList[speakersListData.id].addSpeaker.user[
-      userIdent.userIdent.id
-    ]
+    if (!speakersListData || !userIdent?.id) return;
+    backend.speakersList[speakersListData.id].addSpeaker.user[userIdent.id]
       .post()
       .then((res) => {
         if (res.status === 200) {
@@ -106,10 +104,8 @@ export function ParticipantSpeechButtons() {
   }
 
   async function removeFromSpeakersList() {
-    if (!speakersListData || !userIdent?.userIdent?.id) return;
-    backend.speakersList[speakersListData.id].removeSpeaker.user[
-      userIdent.userIdent.id
-    ]
+    if (!speakersListData || !userIdent?.id) return;
+    backend.speakersList[speakersListData.id].removeSpeaker.user[userIdent.id]
       .delete()
       .then((res) => {
         if (res.status === 200) {
@@ -175,12 +171,14 @@ export function ChairSpeechButtons({
   typeOfList: $Enums.SpeakersListCategory;
 }) {
   const { LL } = useI18nContext();
-  const toast = useRef<Toast>(null);
 
   const conferenceId = useContext(ConferenceIdContext);
   const committeeId = useContext(CommitteeIdContext);
 
   const speakersListData = useContext(SpeakersListDataContext);
+
+  const [nextSpeakerWarningVisible, setNextSpeakerWarningVisible] =
+    useState(false);
 
   const [addSpeakersOverlayVisible, setAddSpeakersOverlayVisible] =
     useState(false);
@@ -247,11 +245,35 @@ export function ChairSpeechButtons({
     },
   ];
 
-  if (typeOfList === $Enums.SpeakersListCategory.SPEAKERS_LIST) {
-    useMousetrap("n", () => setAddSpeakersOverlayVisible(true));
-  } else {
-    useMousetrap("shift+n", () => setAddSpeakersOverlayVisible(true));
-  }
+  useMousetrap(
+    $Enums.SpeakersListCategory.SPEAKERS_LIST === typeOfList ? "a" : "shift+a",
+    () => !addSpeakersOverlayVisible && setAddSpeakersOverlayVisible(true),
+  );
+  useMousetrap(
+    $Enums.SpeakersListCategory.SPEAKERS_LIST === typeOfList ? "s" : "shift+s",
+    () => {
+      if (addSpeakersOverlayVisible || !speakersListData) return;
+      if (speakersListData?.startTimestamp == null) {
+        backend.speakersList[speakersListData.id].startTimer.post();
+      } else {
+        backend.speakersList[speakersListData.id].stopTimer.post();
+      }
+    },
+  );
+  useMousetrap(
+    $Enums.SpeakersListCategory.SPEAKERS_LIST === typeOfList ? "r" : "shift+r",
+    () => {
+      if (addSpeakersOverlayVisible || !speakersListData) return;
+      backend.speakersList[speakersListData.id].resetTimer.post();
+    },
+  );
+  useMousetrap(
+    $Enums.SpeakersListCategory.SPEAKERS_LIST === typeOfList ? "n" : "shift+n",
+    () => {
+      if (addSpeakersOverlayVisible || !speakersListData) return;
+      setNextSpeakerWarningVisible(true);
+    },
+  );
 
   const listTypeMap: {
     [key in $Enums.SpeakersListCategory]: string;
@@ -263,12 +285,32 @@ export function ChairSpeechButtons({
 
   return (
     <div className="flex gap-2 flex-col items-start justify-center mt-3">
-      <Toast ref={toast} />
+      <ConfirmDialog
+        visible={nextSpeakerWarningVisible}
+        onHide={() => setNextSpeakerWarningVisible(false)}
+        message={LL.chairs.speakersList.confirm.NEXT_SPEAKER_MESSAGE()}
+        header={LL.chairs.speakersList.confirm.NEXT_SPEAKER_HEADER()}
+        defaultFocus="accept"
+        accept={() => {
+          if (!speakersListData) return;
+          backend.speakersList[speakersListData.id].nextSpeaker.post();
+        }}
+        acceptLabel={LL.chairs.speakersList.confirm.NEXT_SPEAKER_ACCEPT()}
+        rejectLabel={LL.chairs.speakersList.confirm.NEXT_SPEAKER_REJECT()}
+        closable={false}
+        closeOnEscape
+        dismissableMask
+      />
       <div className="flex gap-2 items-center justify-center">
         <Button
           label={LL.chairs.speakersList.buttons.START_TIMER()}
           faIcon={faPodium}
           size="small"
+          keyboardShortcut={
+            typeOfList === $Enums.SpeakersListCategory.SPEAKERS_LIST
+              ? "S"
+              : "⇧ + S"
+          }
           visible={speakersListData?.startTimestamp === null}
           disabled={speakersListData?.speakers.length === 0}
           onClick={() => {
@@ -280,11 +322,35 @@ export function ChairSpeechButtons({
           label={LL.chairs.speakersList.buttons.PAUSE_TIMER()}
           faIcon={faPause}
           size="small"
+          keyboardShortcut={
+            typeOfList === $Enums.SpeakersListCategory.SPEAKERS_LIST
+              ? "S"
+              : "⇧ + S"
+          }
           visible={speakersListData?.startTimestamp !== null}
           severity="danger"
           onClick={() => {
             if (!speakersListData) return;
             backend.speakersList[speakersListData.id].stopTimer.post();
+          }}
+        />
+        <Button
+          faIcon={faRotateLeft}
+          size="small"
+          severity="danger"
+          keyboardShortcut={
+            typeOfList === $Enums.SpeakersListCategory.SPEAKERS_LIST
+              ? "R"
+              : "⇧ + R"
+          }
+          disabled={
+            speakersListData?.speakers.length === 0 ||
+            (speakersListData?.timeLeft === speakersListData?.speakingTime &&
+              speakersListData?.startTimestamp === null)
+          }
+          onClick={() => {
+            if (!speakersListData) return;
+            backend.speakersList[speakersListData.id].resetTimer.post();
           }}
         />
         <Button
@@ -317,32 +383,21 @@ export function ChairSpeechButtons({
             );
           }}
         />
-        <Button
-          label={LL.chairs.speakersList.buttons.RESET_TIMER()}
-          faIcon={faRotateLeft}
-          size="small"
-          text
-          disabled={
-            speakersListData?.speakers.length === 0 ||
-            (speakersListData?.timeLeft === speakersListData?.speakingTime &&
-              speakersListData?.startTimestamp === null)
-          }
-          onClick={() => {
-            if (!speakersListData) return;
-            backend.speakersList[speakersListData.id].resetTimer.post();
-          }}
-        />
       </div>
       <div className="flex gap-2 items-center justify-start flex-wrap">
         <Button
           label={LL.chairs.speakersList.buttons.NEXT_SPEAKER()}
           faIcon={faDiagramSuccessor}
           size="small"
+          keyboardShortcut={
+            typeOfList === $Enums.SpeakersListCategory.SPEAKERS_LIST
+              ? "N"
+              : "⇧ + N"
+          }
           disabled={speakersListData?.speakers.length === 0}
           severity="warning"
           onClick={() => {
-            if (!speakersListData) return;
-            backend.speakersList[speakersListData.id].nextSpeaker.post();
+            setNextSpeakerWarningVisible(true);
           }}
         />
         <SplitButton
@@ -353,8 +408,8 @@ export function ChairSpeechButtons({
               </span>
               <span className="text-xs ml-2 bg-white/30 dark:bg-black/25 px-2 py-1 rounded-md">
                 {typeOfList === $Enums.SpeakersListCategory.SPEAKERS_LIST
-                  ? "N"
-                  : "⇧ + N"}
+                  ? "A"
+                  : "⇧ + A"}
               </span>
             </>
           }

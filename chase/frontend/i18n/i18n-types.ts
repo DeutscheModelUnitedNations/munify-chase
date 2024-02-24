@@ -1565,6 +1565,24 @@ type RootTranslation = {
 				 */
 				TOAST_WRONG_FORMAT: string
 			}
+			confirm: {
+				/**
+				 * D​o​ ​y​o​u​ ​r​e​a​l​l​y​ ​w​a​n​t​ ​t​o​ ​r​e​m​o​v​e​ ​t​h​e​ ​c​u​r​r​e​n​t​ ​s​p​e​a​k​e​r​ ​a​n​d​ ​a​d​v​a​n​c​e​ ​t​o​ ​t​h​e​ ​n​e​x​t​?
+				 */
+				NEXT_SPEAKER_MESSAGE: string
+				/**
+				 * N​e​x​t​ ​S​p​e​a​k​e​r
+				 */
+				NEXT_SPEAKER_HEADER: string
+				/**
+				 * Y​e​s
+				 */
+				NEXT_SPEAKER_ACCEPT: string
+				/**
+				 * N​o
+				 */
+				NEXT_SPEAKER_REJECT: string
+			}
 		}
 		voting: {
 			/**
@@ -3195,6 +3213,24 @@ export type TranslationFunctions = {
 				 * Wrong Format
 				 */
 				TOAST_WRONG_FORMAT: () => LocalizedString
+			}
+			confirm: {
+				/**
+				 * Do you really want to remove the current speaker and advance to the next?
+				 */
+				NEXT_SPEAKER_MESSAGE: () => LocalizedString
+				/**
+				 * Next Speaker
+				 */
+				NEXT_SPEAKER_HEADER: () => LocalizedString
+				/**
+				 * Yes
+				 */
+				NEXT_SPEAKER_ACCEPT: () => LocalizedString
+				/**
+				 * No
+				 */
+				NEXT_SPEAKER_REJECT: () => LocalizedString
 			}
 		}
 		voting: {

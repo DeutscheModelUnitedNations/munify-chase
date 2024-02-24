@@ -544,6 +544,13 @@ const en = {
         TOAST_SUCCESS_DETAIL: "for {{0}}",
         TOAST_WRONG_FORMAT: "Wrong Format",
       },
+      confirm: {
+        NEXT_SPEAKER_MESSAGE:
+          "Do you really want to remove the current speaker and advance to the next?",
+        NEXT_SPEAKER_HEADER: "Next Speaker",
+        NEXT_SPEAKER_ACCEPT: "Yes",
+        NEXT_SPEAKER_REJECT: "No",
+      },
     },
     voting: {
       BUTTON_NEW_MOTION: "New Motion",

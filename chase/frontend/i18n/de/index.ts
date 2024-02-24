@@ -143,7 +143,7 @@ const de = {
           SECRETARIAT: "Sekretariat",
           CHAIR: "Vorsitz",
           COMMITTEE_ADVISOR: "Gremienberatung",
-          NON_STATE_ACTOR: "Nichtstaatliche Akteur:in",
+          NON_STATE_ACTOR: "Nichtstaatliche Akteur",
           PRESS_CORPS: "Konferenzpresse",
           GUEST: "Gast",
           PARTICIPANT_CARE: "Teilnehmendenbetreuung",
@@ -351,10 +351,10 @@ const de = {
           INFO_MESSAGE:
             "Diese Anfrage wird zunächst vom Vorsitz geprüft und erst dann an den Wissenschaftlichen Dienst weitergeleitet.",
           categoryOptions: {
-            GUEST_SPEAKER: "Gastredner:in anfragen",
+            GUEST_SPEAKER: "Gastrede anfragen",
             FACT_CHECK: "Faktencheck",
             INFORMATION: "Informationsanfrage",
-            GENERAL_SECRETARY: "Um Besuch des/der Generalsekretär:in bitten",
+            GENERAL_SECRETARY: "Um Besuch des/der Generalsekretär*in bitten",
             OTHER: "Sonstiges",
           },
         },
@@ -370,7 +370,7 @@ const de = {
         },
       },
       documentsWidget: {
-        SPONSORS: "signierte Unterstützer:innen",
+        SPONSORS: "signierte Unterstützer*innen",
       },
     },
 
@@ -382,7 +382,7 @@ const de = {
       REMOVE_FROM_LIST_BUTTON: "Zurückziehen",
       LIST_CLOSED_BUTTON: "Liste Geschlossen",
       LIST_CLOSED_MESSAGE: "Liste Geschlossen",
-      NO_SPEAKERS_MESSAGE: "Keine Redner:innen auf der Liste",
+      NO_SPEAKERS_MESSAGE: "Keine Redner*innen auf der Liste",
       toast: {
         ADDED_SUCCESS_SUMMARY: "Redebeitrag hinzugefügt",
         ADDED_SUCCESS_DETAIL: "zu {{0}}",
@@ -522,8 +522,8 @@ const de = {
         RESET_TIMER: "Zeit zurücksetzen",
         REMOVE_TIME: "15s",
         ADD_TIME: "15s",
-        NEXT_SPEAKER: "Nächste Redner:in",
-        ADD_TO_LIST: "Redebeitrag hinzufügen",
+        NEXT_SPEAKER: "Nächste Redner*in",
+        ADD_TO_LIST: "Redebeitrag",
         CLOSE_LIST: "Liste schließen",
         OPEN_LIST: "Liste öffnen",
         CLEAR_LIST: "Liste zurücksetzen",
@@ -531,7 +531,7 @@ const de = {
       },
       addSpeakerOverlay: {
         HEADLINE: "Redebeiträge zu {{0}} hinzufügen",
-        PLACEHOLDER: "Suche nach Redner:innen",
+        PLACEHOLDER: "Suche nach Redner*innen",
         BUTTON_CANCEL: "Abbrechen",
         BUTTON_ADD: "Hinzufügen",
         BUTTON_ADD_AND_CLOSE: "Hinzufügen und schließen",
@@ -548,6 +548,13 @@ const de = {
         TOAST_SUCCESS: "Redezeit festgelegt auf {{0}} min",
         TOAST_SUCCESS_DETAIL: "für {{0}}",
         TOAST_WRONG_FORMAT: "Falsches Format",
+      },
+      confirm: {
+        NEXT_SPEAKER_MESSAGE:
+          "Willst du wirklich den nächsten Redner aufrufen?",
+        NEXT_SPEAKER_HEADER: "Nächste Rede",
+        NEXT_SPEAKER_ACCEPT: "Ja",
+        NEXT_SPEAKER_REJECT: "Nein",
       },
     },
     voting: {

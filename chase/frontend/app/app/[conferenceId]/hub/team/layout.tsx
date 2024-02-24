@@ -16,9 +16,12 @@ import {
 } from "@fortawesome/pro-solid-svg-icons";
 import { useI18nContext } from "@/i18n/i18n-react";
 import { IconProp } from "@fortawesome/fontawesome-svg-core";
-import { MyDelegationProvider } from "@/contexts/user_ident";
-import { useContext } from "react";
+import { MyDelegationProvider, useUserIdent } from "@/contexts/user_ident";
+import { useContext, useEffect } from "react";
 import { ConferenceIdContext } from "@/contexts/committee_data";
+import { useRouter } from "next/navigation";
+import { $Enums } from "../../../../../../backend/prisma/generated/client";
+import Lockout from "@/components/lockout";
 
 export default function ChairHubLayout({
   children,
@@ -30,6 +33,16 @@ export default function ChairHubLayout({
 
   return (
     <MyDelegationProvider>
+      <Lockout
+        whitelist={[
+          $Enums.ConferenceRole.ADMIN,
+          $Enums.ConferenceRole.SECRETARIAT,
+          $Enums.ConferenceRole.CHAIR,
+          $Enums.ConferenceRole.COMMITTEE_ADVISOR,
+          $Enums.ConferenceRole.PARTICIPANT_CARE,
+          $Enums.ConferenceRole.MISCELLANEOUS_TEAM,
+        ]}
+      />
       <div className="flex h-screen w-screen bg-white text-primary-100 dark:bg-primary-100 dark:text-primary-900 shadow-md overflow-hidden">
         <Navbar>
           <NavButton

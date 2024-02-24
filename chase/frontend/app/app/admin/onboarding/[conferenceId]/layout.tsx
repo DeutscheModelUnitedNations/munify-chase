@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useContext } from "react";
 
 import Button from "@/components/button";
 import SettingsSidebar from "@/components/navbar/settings_sidebar";
@@ -13,6 +13,7 @@ import useMousetrap from "mousetrap-react";
 import { confirmPopup } from "primereact/confirmpopup";
 import { ConfirmDialog } from "primereact/confirmdialog";
 import { backend } from "@/services/backend";
+import { useUserIdent } from "@/contexts/user_ident";
 
 export default function RootLayout({
   children,
@@ -23,6 +24,7 @@ export default function RootLayout({
 }) {
   const { LL } = useI18nContext();
   const router = useRouter();
+  const { userIdent } = useUserIdent();
 
   const [settingsSidebarVisible, setSettingsSidebarVisible] = useState(false);
 
@@ -39,26 +41,20 @@ export default function RootLayout({
   useMousetrap("ctrl+shift+s", (e) => saveAndQuit(e));
 
   useEffect(() => {
-    // backend.conference[params.conferenceId].verifyAdmin
-    //   .get()
-    //   .then((response) => {
-    //     if (!response) {
-    //       router.push("/admin/login");
-    //     }
-    //   })
-    //   .catch((error) => {
-    //     router.push("/admin/login");
-    //   });
+    if (userIdent?.role !== "ADMIN") {
+      router.push("/login/lockout");
+      return;
+    }
 
     backend.conference[params.conferenceId]
       .get()
       .then((response) => {
         if (!response?.data?.id) {
-          router.push("/admin/login");
+          router.push("/login/lockout");
         }
       })
       .catch((error) => {
-        router.push("/admin/login");
+        router.push("/login/lockout");
       });
   }, []);
 

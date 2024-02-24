@@ -763,6 +763,16 @@ type RootTranslation = {
 			 */
 			NO_MEMBERSHIP: string
 		}
+		lockout: {
+			/**
+			 * Y​o​u​ ​h​a​v​e​ ​b​e​e​n​ ​l​o​c​k​e​d​ ​o​u​t
+			 */
+			TITLE: string
+			/**
+			 * Y​o​u​ ​d​o​n​'​t​ ​h​a​v​e​ ​p​e​r​m​i​s​s​i​o​n​ ​t​o​ ​u​s​e​ ​t​h​i​s​ ​a​s​p​e​c​t​ ​o​f​ ​t​h​e​ ​A​p​p​.​ ​P​l​e​a​s​e​ ​l​o​g​ ​i​n​ ​a​g​a​i​n​.
+			 */
+			DETAIL: string
+		}
 	}
 	navbar: {
 		/**
@@ -2382,6 +2392,16 @@ export type TranslationFunctions = {
 			 * You are not registered for any conference or committee. If you think this is a mistake, please contact the conference organizers.
 			 */
 			NO_MEMBERSHIP: () => LocalizedString
+		}
+		lockout: {
+			/**
+			 * You have been locked out
+			 */
+			TITLE: () => LocalizedString
+			/**
+			 * You don't have permission to use this aspect of the App. Please log in again.
+			 */
+			DETAIL: () => LocalizedString
 		}
 	}
 	navbar: {

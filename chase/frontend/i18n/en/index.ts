@@ -262,6 +262,11 @@ const en = {
       NO_MEMBERSHIP:
         "You are not registered for any conference or committee. If you think this is a mistake, please contact the conference organizers.",
     },
+    lockout: {
+      TITLE: "You have been locked out",
+      DETAIL:
+        "You don't have permission to use this aspect of the App. Please log in again.",
+    },
   },
 
   navbar: {

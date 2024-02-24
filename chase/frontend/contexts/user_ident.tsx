@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { ConferenceIdContext } from "./committee_data";
 
-type User = NonNullable<
+export type User = NonNullable<
   Awaited<ReturnType<typeof backend.auth.myInfo.get>>["data"]
 >;
 type Delegation = Awaited<

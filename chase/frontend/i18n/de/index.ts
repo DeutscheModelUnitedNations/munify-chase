@@ -263,6 +263,11 @@ const de = {
       NO_MEMBERSHIP:
         "Du bist für keine Konferenz oder kein Gremium registriert. Wenn du glaubst, dass das ein Fehler ist, wende dich bitte an den Konferenzadmin.",
     },
+    lockout: {
+      TITLE: "Du wurdest ausgesperrt",
+      DETAIL:
+        "Du hast keine Berechtigung, diesen Teil der App zu nutzen. Bitte melde dich erneut an.",
+    },
   },
 
   navbar: {

@@ -18,7 +18,7 @@ export default function WidgetBoxTemplate({
   highlight?: boolean;
   className?: string;
   onClick?: () => void;
-  [key: string]: any;
+  [key: string]: unknown;
 }) {
   const getClassNames = (): string => {
     let classNames =

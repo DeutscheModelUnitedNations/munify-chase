@@ -3,6 +3,7 @@ import React, { useEffect, useState } from "react";
 import { backend } from "@/services/backend";
 import {
   faCircleNotch,
+  faRightFromBracket,
   faRocket,
   faRocketLaunch,
 } from "@fortawesome/pro-solid-svg-icons";
@@ -81,7 +82,7 @@ export default function LoginRedirectPage() {
     <div className="flex flex-col items-center justify-center">
       {myInfoData ? (
         <>
-          <h1 className="text-3xl font-bold mb-4">
+          <h1 className="font-serif font-bold text-4xl mb-4">
             {LL.login.gateway.TITLE()}
           </h1>
           {myInfoData.conferenceMemberships.length > 0 ? (
@@ -160,6 +161,16 @@ export default function LoginRedirectPage() {
           ) : (
             <p>{LL.login.gateway.NO_MEMBERSHIP()}</p>
           )}
+          <Button
+            faIcon={faRightFromBracket}
+            label={LL.login.gateway.LOGOUT_BUTTON()}
+            onClick={() => {
+              alert("Not implemented");
+              // TODO @Felix implement logout
+            }}
+            severity="danger"
+            className={"mt-8"}
+          />
         </>
       ) : (
         <FontAwesomeIcon

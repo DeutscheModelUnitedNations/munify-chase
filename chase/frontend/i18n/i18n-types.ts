@@ -766,6 +766,10 @@ type RootTranslation = {
 			 * Y​o​u​ ​a​r​e​ ​n​o​t​ ​r​e​g​i​s​t​e​r​e​d​ ​f​o​r​ ​a​n​y​ ​c​o​n​f​e​r​e​n​c​e​ ​o​r​ ​c​o​m​m​i​t​t​e​e​.​ ​I​f​ ​y​o​u​ ​t​h​i​n​k​ ​t​h​i​s​ ​i​s​ ​a​ ​m​i​s​t​a​k​e​,​ ​p​l​e​a​s​e​ ​c​o​n​t​a​c​t​ ​t​h​e​ ​c​o​n​f​e​r​e​n​c​e​ ​o​r​g​a​n​i​z​e​r​s​.
 			 */
 			NO_MEMBERSHIP: string
+			/**
+			 * L​o​g​o​u​t
+			 */
+			LOGOUT_BUTTON: string
 		}
 		lockout: {
 			/**
@@ -2418,6 +2422,10 @@ export type TranslationFunctions = {
 			 * You are not registered for any conference or committee. If you think this is a mistake, please contact the conference organizers.
 			 */
 			NO_MEMBERSHIP: () => LocalizedString
+			/**
+			 * Logout
+			 */
+			LOGOUT_BUTTON: () => LocalizedString
 		}
 		lockout: {
 			/**

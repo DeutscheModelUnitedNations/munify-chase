@@ -263,6 +263,7 @@ const de = {
       LAUNCH_BUTTON: "Launch the app",
       NO_MEMBERSHIP:
         "Du bist für keine Konferenz oder kein Gremium registriert. Wenn du glaubst, dass das ein Fehler ist, wende dich bitte an den Konferenzadmin.",
+      LOGOUT_BUTTON: "Abmelden",
     },
     lockout: {
       TITLE: "Du wurdest ausgesperrt",

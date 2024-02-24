@@ -157,7 +157,9 @@ export default () => {
         </>
       ) : (
         <>
-          <h1 className="font-bold text-4xl mb-4">{LL.login.LOGIN_TITLE()}</h1>
+          <h1 className="font-serif font-bold text-4xl mb-4">
+            {LL.login.LOGIN_TITLE()}
+          </h1>
           <p className="mb-8 text-lg">{LL.login.LOGIN_DESCRIPTION()}</p>
           <form onSubmit={submit} className="w-full">
             <span className="p-float-label w-full mb-2">

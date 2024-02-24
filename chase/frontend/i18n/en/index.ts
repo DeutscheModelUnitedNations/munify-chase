@@ -262,6 +262,7 @@ const en = {
       LAUNCH_BUTTON: "Launch the app",
       NO_MEMBERSHIP:
         "You are not registered for any conference or committee. If you think this is a mistake, please contact the conference organizers.",
+      LOGOUT_BUTTON: "Logout",
     },
     lockout: {
       TITLE: "You have been locked out",

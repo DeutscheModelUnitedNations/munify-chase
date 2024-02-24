@@ -19,6 +19,7 @@ const en = {
     GUEST: "Guest",
     PARTICIPANT_CARE: "Participant Care",
     MISCELLANEOUS_TEAM: "Member of the Team",
+    UNKNOWN: "Unknown Role",
   },
 
   home: {

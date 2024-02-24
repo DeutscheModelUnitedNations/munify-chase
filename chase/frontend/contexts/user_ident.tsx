@@ -13,7 +13,14 @@ type Delegation = Awaited<
   >
 >["data"];
 
-export const UserIdent = createContext({} as { userIdent: User | null });
+export const UserIdent = createContext(
+  {} as {
+    userIdent: User | null;
+    conferenceMembership: (
+      conferenceId: string,
+    ) => User["conferenceMemberships"][number] | null;
+  },
+);
 export const useUserIdent = () => useContext(UserIdent);
 
 export const MyDelegationContext = createContext(
@@ -26,6 +33,11 @@ export const UserIdentProvider = ({
   const router = useRouter();
 
   const [userIdent, setUserIdent] = useState<User | null>(null);
+
+  const conferenceMembership = (conferenceId: string) =>
+    userIdent?.conferenceMemberships.find(
+      (c) => c.conference.id === conferenceId,
+    ) ?? null;
 
   async function getMyInfo() {
     await backend.auth.myInfo
@@ -47,7 +59,9 @@ export const UserIdentProvider = ({
   }, []);
 
   return (
-    <UserIdent.Provider value={{ userIdent }}>{children}</UserIdent.Provider>
+    <UserIdent.Provider value={{ userIdent, conferenceMembership }}>
+      {children}
+    </UserIdent.Provider>
   );
 };
 

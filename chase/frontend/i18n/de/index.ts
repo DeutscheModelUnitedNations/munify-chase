@@ -19,6 +19,7 @@ const de = {
     GUEST: "Gast",
     PARTICIPANT_CARE: "Teilnehmendenbetreuung",
     MISCELLANEOUS_TEAM: "Teammitglied",
+    UNKNOWN: "Unbekannte Rolle",
   },
 
   home: {

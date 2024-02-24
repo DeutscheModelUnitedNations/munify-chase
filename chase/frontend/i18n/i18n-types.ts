@@ -69,6 +69,10 @@ type RootTranslation = {
 		 * M​e​m​b​e​r​ ​o​f​ ​t​h​e​ ​T​e​a​m
 		 */
 		MISCELLANEOUS_TEAM: string
+		/**
+		 * U​n​k​n​o​w​n​ ​R​o​l​e
+		 */
+		UNKNOWN: string
 	}
 	home: {
 		/**
@@ -1699,6 +1703,10 @@ export type TranslationFunctions = {
 		 * Member of the Team
 		 */
 		MISCELLANEOUS_TEAM: () => LocalizedString
+		/**
+		 * Unknown Role
+		 */
+		UNKNOWN: () => LocalizedString
 	}
 	home: {
 		/**

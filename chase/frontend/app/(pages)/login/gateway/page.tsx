@@ -15,6 +15,7 @@ import { LargeFlag } from "@/components/flag_templates";
 import getCountryNameByCode from "@/misc/get_country_name_by_code";
 import { useI18nContext } from "@/i18n/i18n-react";
 import Link from "next/link";
+import { conferenceRoleTranslation } from "@/i18n/translation_utils";
 
 type MyInfoDataType = Awaited<
   ReturnType<typeof backend.auth.myInfo.get>
@@ -76,31 +77,6 @@ export default function LoginRedirectPage() {
     throw new Error("Unknown role");
   };
 
-  const conferenceRoleTranslation = (role: $Enums.ConferenceRole) => {
-    switch (role) {
-      case $Enums.ConferenceRole.ADMIN:
-        return LL.roles.ADMIN();
-      case $Enums.ConferenceRole.SECRETARIAT:
-        return LL.roles.SECRETARIAT();
-      case $Enums.ConferenceRole.CHAIR:
-        return LL.roles.CHAIR();
-      case $Enums.ConferenceRole.COMMITTEE_ADVISOR:
-        return LL.roles.COMMITTEE_ADVISOR();
-      case $Enums.ConferenceRole.PARTICIPANT_CARE:
-        return LL.roles.PARTICIPANT_CARE();
-      case $Enums.ConferenceRole.MISCELLANEOUS_TEAM:
-        return LL.roles.MISCELLANEOUS_TEAM();
-      case $Enums.ConferenceRole.PRESS_CORPS:
-        return LL.roles.PRESS_CORPS();
-      case $Enums.ConferenceRole.NON_STATE_ACTOR:
-        return LL.roles.NON_STATE_ACTOR();
-      case $Enums.ConferenceRole.GUEST:
-        return LL.roles.GUEST();
-      default:
-        return "Unknown role";
-    }
-  };
-
   return (
     <div className="flex flex-col items-center justify-center">
       {myInfoData ? (
@@ -125,7 +101,7 @@ export default function LoginRedirectPage() {
                     {conferenceMembership.conference.name}
                   </h2>
                   <h3 className="text-xl mb-4">
-                    {conferenceRoleTranslation(conferenceMembership.role)}
+                    {conferenceRoleTranslation(LL, conferenceMembership.role)}
                   </h3>
                   <Button
                     key={conferenceMembership.id}

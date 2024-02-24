@@ -160,7 +160,7 @@ function CommitteeCard({
   return (
     <CommitteeIdContext.Provider value={committee.id}>
       <CommitteeDataProvider>
-        <StatusTimerProvider>
+        <StatusTimerProvider disallowNotifications>
           <Link
             key={committee.id}
             href={`/app/${conferenceId}/committee/${committee.id}/${
@@ -194,41 +194,47 @@ function CommitteeCard({
               )}
             </SmallInfoCard>
 
-            <SmallInfoCard icon={faDiagramSubtask}>
-              {committee?.stateOfDebate != null &&
-              committee?.stateOfDebate !== "" ? (
-                <h3 className="text-lg truncate">{committee?.stateOfDebate}</h3>
-              ) : (
-                <Skeleton
-                  width={`${Math.random() * (100 - 20) + 20}%`}
-                  height="1.75rem"
-                  className="!bg-primary-800"
-                />
-              )}
-            </SmallInfoCard>
+            {isChair && (
+              <SmallInfoCard icon={faDiagramSubtask}>
+                {committee?.stateOfDebate != null &&
+                committee?.stateOfDebate !== "" ? (
+                  <h3 className="text-lg truncate">
+                    {committee?.stateOfDebate}
+                  </h3>
+                ) : (
+                  <Skeleton
+                    width={`${Math.random() * (100 - 20) + 20}%`}
+                    height="1.75rem"
+                    className="!bg-primary-800"
+                  />
+                )}
+              </SmallInfoCard>
+            )}
 
             <SmallInfoCard
               icon={getIcon(committee?.status)}
               color={getColor(committee?.status)}
             >
               {committee.statusUntil ? (
-                <h3 className="text-lg">
-                  {getHeadline(committee.status, committee?.statusHeadline)}{" "}
-                  <span className="italic">
-                    {LL.participants.dashboard.timerWidget.UNTIL(
-                      new Date(committee.statusUntil).toLocaleTimeString(
-                        "de-DE",
-                        {
-                          hour: "2-digit",
-                          minute: "2-digit",
-                        },
-                      ),
-                    )}
-                    {" ("}
-                    <Timer />
-                    {")"}
-                  </span>
-                </h3>
+                <>
+                  <h3 className="text-lg">
+                    {getHeadline(committee.status, committee?.statusHeadline)}{" "}
+                    <span className="italic">
+                      {LL.participants.dashboard.timerWidget.UNTIL(
+                        new Date(committee.statusUntil).toLocaleTimeString(
+                          "de-DE",
+                          {
+                            hour: "2-digit",
+                            minute: "2-digit",
+                          },
+                        ),
+                      )}
+                    </span>
+                  </h3>
+                  <div className=" text-lg ml-auto font-mono font-extralight">
+                    <Timer hideOnZero />
+                  </div>
+                </>
               ) : (
                 <Skeleton
                   width={`${Math.random() * (100 - 20) + 20}%`}

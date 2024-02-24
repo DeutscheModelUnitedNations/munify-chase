@@ -14,6 +14,7 @@ import {
   faPlus,
   faPlusCircle,
   faRotateLeft,
+  faExclamationTriangle,
 } from "@fortawesome/pro-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useI18nContext } from "@/i18n/i18n-react";
@@ -31,7 +32,7 @@ import {
 import { SpeakersListDataContext } from "@/contexts/speakers_list_data";
 import { useUserIdent } from "@/contexts/user_ident";
 import { ToastContext } from "@/contexts/toast";
-import { ConfirmDialog, confirmDialog } from "primereact/confirmdialog";
+import { ConfirmDialog } from "primereact/confirmdialog";
 
 type AllCountryCodes = Awaited<
   ReturnType<
@@ -291,6 +292,14 @@ export function ChairSpeechButtons({
         message={LL.chairs.speakersList.confirm.NEXT_SPEAKER_MESSAGE()}
         header={LL.chairs.speakersList.confirm.NEXT_SPEAKER_HEADER()}
         defaultFocus="accept"
+        icon={
+          <FontAwesomeIcon
+            icon={faExclamationTriangle}
+            beatFade
+            size={"3x"}
+            className="text-red-500"
+          />
+        }
         accept={() => {
           if (!speakersListData) return;
           backend.speakersList[speakersListData.id].nextSpeaker.post();

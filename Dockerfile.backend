@@ -1,8 +1,10 @@
 # Builds an image to run the api in prod mode
 
+
 # install dependencies into temp directory
 # this will cache them and speed up future builds
 FROM oven/bun:latest AS install
+ENV FONTAWESOME_NPM_AUTH_TOKEN $FONTAWESOME_NPM_AUTH_TOKEN
 RUN mkdir -p /temp/dev
 COPY package.json bun.lockb bunfig.toml /temp/dev/
 COPY chase/backend/package.json /temp/dev/chase/backend/package.json
@@ -19,6 +21,7 @@ RUN cd /temp/dev && bun install --frozen-lockfile
 FROM imbios/bun-node AS prerelease
 WORKDIR /app/staging
 COPY --from=install /temp/dev/node_modules node_modules
+COPY chase/backend chase/backend/
 # generates types and runs a typecheck
 RUN cd chase/backend && bun run typecheck
 RUN cd chase/backend && bun run build

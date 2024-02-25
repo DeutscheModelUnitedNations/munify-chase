@@ -1,5 +1,6 @@
 import { exists, rm } from "node:fs/promises";
 import { join } from "node:path";
+import { build } from "esbuild";
 
 console.info("Building...");
 
@@ -12,17 +13,24 @@ if (await exists(outDir)) {
   await rm(outDir, { recursive: true });
 }
 
-const output = await Bun.build({
-  entrypoints: [join(srcDir, "main.ts")],
+const r = await build({
+  entryPoints: [join(srcDir, "main.ts")],
+  bundle: true,
+  platform: "node",
+  target: ["node21.6"],
   outdir: "./out",
-  target: "bun",
   format: "esm",
   splitting: true,
   sourcemap: "external",
   minify: true,
+  loader: { ".mjml": "file" },
 });
-if (!output.success) {
-  console.error(output.logs);
-} else {
-  console.info("Done!");
+
+if (!r.errors && r.errors) {
+  console.error(r.errors);
+  throw new Error("Build unsuccessful!");
 }
+if (r.warnings.length > 0) {
+  console.warn(r.warnings);
+}
+console.info("Done!");

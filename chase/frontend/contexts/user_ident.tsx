@@ -17,7 +17,7 @@ type Delegation = NonNullable<
 >;
 
 interface UserIdentContextType {
-  userIdent: User;
+  userIdent: User | undefined;
   conferenceMembership: (
     conferenceId: string | null | undefined,
   ) => ConferenceMembership | undefined;
@@ -27,12 +27,9 @@ interface MyDelegationContextType {
   delegation: Delegation | null;
 }
 
-export const UserIdentContext = createContext<UserIdentContextType | undefined>(
-  undefined,
-);
+export const UserIdentContext = createContext({} as UserIdentContextType);
 export const useUserIdent = () => useContext(UserIdentContext);
-export const MyDelegationContext =
-  createContext<MyDelegationContextType | null>(null);
+export const MyDelegationContext = createContext({} as MyDelegationContextType);
 
 export const UserIdentProvider = ({
   children,

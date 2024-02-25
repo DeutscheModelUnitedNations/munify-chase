@@ -22,7 +22,7 @@ const m = new Elysia({
     httpOnly: true,
     maxAge: 60 * 60 * 24 * 7, // 7 days
     sameSite: appConfiguration.development ? "none" : "strict",
-    secure: !appConfiguration.development,
+    secure: true,
     sign: true,
     secrets: appConfiguration.cookie.secrets,
   },

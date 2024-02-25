@@ -274,4 +274,17 @@ export const auth = new Elysia({
         tags: [openApiTag(import.meta.path)],
       },
     },
+  )
+  .get(
+    "/logout",
+    ({ session }) => {
+      session.setLoggedIn(false);
+    },
+    {
+      detail: {
+        description:
+          "Logs the user out. The user will be logged out on the next request",
+        tags: [openApiTag(import.meta.path)],
+      },
+    },
   );

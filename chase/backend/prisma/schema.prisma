@@ -169,12 +169,6 @@ model Committee {
   @@unique([abbreviation, conferenceId])
 }
 
-/// The role of a user in a committee
-enum CommitteeRole {
-  DELEGATE
-  OBSERVER
-}
-
 /// The presence status of a CommitteeMember
 enum Presence {
   PRESENT

@@ -21,7 +21,7 @@ interface UserIdentContextType {
     | {
         data: User;
         conferenceMembership: (
-          conferenceId: string,
+          conferenceId: string | null | undefined,
         ) => ConferenceMembership | undefined;
       }
     | undefined;
@@ -45,10 +45,12 @@ export const UserIdentProvider = ({
 
   const [userIdent, setUserIdent] = useState<User | null>(null);
 
-  const conferenceMembership = (conferenceId: string) =>
-    userIdent?.conferenceMemberships.find(
+  const conferenceMembership = (conferenceId: string | null | undefined) => {
+    if (!conferenceId) return undefined;
+    return userIdent?.conferenceMemberships.find(
       (c) => c.conference.id === conferenceId,
     );
+  };
 
   useEffect(() => {
     (async () => {

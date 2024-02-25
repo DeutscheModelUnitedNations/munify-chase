@@ -106,9 +106,7 @@ export const committee = new Elysia({
         description: "Create a new committee in this conference",
         tags: [openApiTag(import.meta.path)],
       },
-      body: t.Object(
-        t.Pick(Committee, ["name", "abbreviation", "category", "parentId"]),
-      ),
+      body: t.Pick(Committee, ["name", "abbreviation", "category", "parentId"]),
     },
   )
   .delete(

@@ -7,6 +7,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { InputText } from "primereact/inputtext";
 import { useEffect, useState } from "react";
 import {
+  faCircleNotch,
   faEnvelopeDot,
   faSpinnerThird,
   faUserCheck,
@@ -24,6 +25,8 @@ export default () => {
   const { LL, locale } = useI18nContext();
   const router = useRouter();
   const { showToast } = useToast();
+
+  const [initialLoarding, setInitialLoading] = useState(true);
   const [userStateLoading, setUserStateLoading] = useState(false);
   const [userCreateLoading, setCreateLoading] = useState(false);
   const [loginLoading, setLoginLoading] = useState(false);
@@ -34,6 +37,29 @@ export default () => {
   const [email, setEmail] = useState("");
   const [emailValid, setEmailValid] = useState<boolean | undefined>();
   const [password, setPassword] = useState("");
+
+  async function fetchMyInfoData() {
+    await backend.auth.myInfo
+      .get()
+      .then((res) => {
+        if (res.status === 200) {
+          router.push("/login/gateway");
+        } else {
+          setInitialLoading(false);
+        }
+      })
+      .catch((err) => {
+        showToast({
+          severity: "error",
+          summary: "Error",
+          detail: err.message,
+        });
+      });
+  }
+
+  useEffect(() => {
+    fetchMyInfoData();
+  }, []);
 
   useEffect(() => {
     if (email) {
@@ -81,7 +107,7 @@ export default () => {
         setLoginLoading(false);
         return;
       }
-      router.push("/login/redirect");
+      router.push("/login/gateway");
     } else {
       setCreateLoading(true);
       const res = await backend.auth.createUser.post({
@@ -111,7 +137,14 @@ export default () => {
 
   return (
     <>
-      {userCreatedSuccessfullyLoading === true ? (
+      {initialLoarding === true ? (
+        <FontAwesomeIcon
+          icon={faCircleNotch}
+          spin
+          size="3x"
+          className="text-primary-500"
+        />
+      ) : userCreatedSuccessfullyLoading === true ? (
         <>
           <Image
             src="/undraw/order_confirmed.svg"
@@ -124,7 +157,9 @@ export default () => {
         </>
       ) : (
         <>
-          <h1 className="font-bold text-4xl mb-4">{LL.login.LOGIN_TITLE()}</h1>
+          <h1 className="font-serif font-bold text-4xl mb-4">
+            {LL.login.LOGIN_TITLE()}
+          </h1>
           <p className="mb-8 text-lg">{LL.login.LOGIN_DESCRIPTION()}</p>
           <form onSubmit={submit} className="w-full">
             <span className="p-float-label w-full mb-2">

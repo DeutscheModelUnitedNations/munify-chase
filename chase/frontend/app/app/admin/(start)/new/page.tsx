@@ -1,19 +1,20 @@
 "use client";
-import React, { useState, useRef } from "react";
+import React, { useState } from "react";
 import Image from "next/image";
 
 import { useI18nContext } from "@/i18n/i18n-react";
 import { InputText } from "primereact/inputtext";
 import { Calendar } from "primereact/calendar";
 import Button from "@/components/button";
-import { faRightToBracket, faSparkles } from "@fortawesome/pro-solid-svg-icons";
+import { faSparkles } from "@fortawesome/pro-solid-svg-icons";
 import { backend } from "@/services/backend";
-import { Toast } from "primereact/toast";
 import { useRouter } from "next/navigation";
+import { useToast } from "@/contexts/toast";
+import { errorToast } from "@/fetching/fetching_utils";
 
 export default function loginVorsitz() {
   const { LL } = useI18nContext();
-  const toast = useRef<Toast>(null);
+  const { showToast } = useToast();
   const router = useRouter();
 
   const [conferenceName, setConferenceName] = useState("");
@@ -29,13 +30,13 @@ export default function loginVorsitz() {
       .post({
         name: conferenceName,
         token: token,
-        start: dates[0]?.toISOString(),
-        end: dates[1]?.toISOString(),
+        start: dates ? dates[0]?.toISOString() : undefined,
+        end: dates ? dates[1]?.toISOString() : undefined,
       })
       .then((res) => {
         if (!res?.data?.id) throw new Error("No conference id returned");
         const conferenceId = res.data.id;
-        toast.current.show({
+        showToast({
           severity: "success",
           summary: LL.admin.onboarding.success(),
           detail: LL.admin.onboarding.successDetails(),
@@ -44,11 +45,7 @@ export default function loginVorsitz() {
         router.push(`/app/admin/onboarding/${conferenceId}/structure`);
       })
       .catch((err) => {
-        toast.current.show({
-          severity: "error",
-          summary: LL.admin.onboarding.error.title(),
-          detail: LL.admin.onboarding.error.generic(),
-        });
+        errorToast(err);
         setLoading(false);
       });
   };
@@ -107,20 +104,12 @@ export default function loginVorsitz() {
           </span>
           <div className="flex w-full gap-4">
             <Button
-              label={LL.admin.onboarding.login()}
-              className="w-full"
-              severity="warning"
-              faIcon={faRightToBracket}
-              onClick={() => router.push("/app/admin/login")}
-            />
-            <Button
               label={LL.admin.onboarding.submit()}
               className="w-full"
               faIcon={faSparkles}
               type="submit"
               loading={loading}
             />
-            <Toast ref={toast} />
           </div>
         </form>
       </div>

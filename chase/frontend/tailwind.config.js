@@ -1,5 +1,6 @@
 /** @type {import('tailwindcss').Config} */
 const plugin = require("tailwindcss/plugin");
+const defaultTheme = require("tailwindcss/defaultTheme");
 
 const dmunColors = {
   100: "#0c192a",
@@ -35,6 +36,11 @@ module.exports = {
   ],
   darkMode: "class",
   theme: {
+    fontFamily: {
+      sans: ["Helvetica", "Arial", ...defaultTheme.fontFamily.sans],
+      serif: ["Vollkorn", ...defaultTheme.fontFamily.serif],
+      mono: ["NotoSans", ...defaultTheme.fontFamily.mono],
+    },
     extend: {
       backgroundImage: {
         "gradient-radial": "radial-gradient(var(--tw-gradient-stops))",

@@ -13,6 +13,7 @@ const ConferenceWithoutRelations = t.Omit(Conference, [
   "committees",
   "delegations",
   "members",
+  "",
 ]);
 
 const ConferenceData = t.Omit(ConferenceWithoutRelations, ["id"]);

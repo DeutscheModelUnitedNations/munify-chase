@@ -47,6 +47,7 @@ export default function InboxPage() {
   const [showPrintDialog, setShowPrintDialog] = useState<boolean>(false);
 
   async function getMessages() {
+    if (!conferenceId || !committeeId) return;
     backend.conference[conferenceId].committee[committeeId].messages
       .get()
       .then((res) => {

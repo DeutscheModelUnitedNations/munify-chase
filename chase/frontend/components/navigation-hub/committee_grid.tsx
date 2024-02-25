@@ -18,6 +18,11 @@ import {
 } from "@fortawesome/pro-solid-svg-icons";
 import { IconProp } from "@fortawesome/fontawesome-svg-core";
 import SmallInfoCard from "../small_info_card";
+import {
+  CommitteeDataProvider,
+  CommitteeIdContext,
+} from "@/contexts/committee_data";
+import { StatusTimerProvider } from "@/contexts/status_timer";
 
 type CommitteeArray = Awaited<
   ReturnType<(typeof backend.conference)[":conferenceId"]["committee"]["get"]>
@@ -153,72 +158,94 @@ function CommitteeCard({
   };
 
   return (
-    <Link
-      key={committee.id}
-      href={`/app/${conferenceId}/committee/${committee.id}/${
-        isChair ? "chair" : "participant"
-      }/dashboard`}
-      onClick={() => {
-        setLoading(true);
-      }}
-      className="flex-1 min-w-[30rem] flex flex-col justify-between p-4 gap-2 bg-primary-950 rounded-lg hover:bg-primary-800 hover:scale-[102%] hover:shadow-lg transition-all duration-300 ease-in-out cursor-pointer"
-    >
-      <h3 className="text-lg">{committee.name}</h3>
-      <h1 className="flex-1 mt-4 mb-6 ml-4 text-4xl text-primary font-bold">
-        {loading ? (
-          <FontAwesomeIcon icon={faCircleNotch} className="fa-spin" />
-        ) : (
-          committee.abbreviation
-        )}
-      </h1>
-
-      <SmallInfoCard icon={faPodium}>
-        <h3 className="text-lg">
-          {committee.agendaItems.find((i) => i.isActive)?.title ?? (
-            <Skeleton
-              width="100"
-              height="1.75rem"
-              className="!bg-primary-800"
-            />
-          )}
-        </h3>
-      </SmallInfoCard>
-
-      <SmallInfoCard icon={faDiagramSubtask}>
-        {committee?.stateOfDebate != null && committee?.stateOfDebate !== "" ? (
-          <h3 className="text-lg truncate">{committee?.stateOfDebate}</h3>
-        ) : (
-          <Skeleton width="80%" height="1.75rem" className="!bg-primary-800" />
-        )}
-      </SmallInfoCard>
-
-      <SmallInfoCard
-        icon={getIcon(committee?.status)}
-        color={getColor(committee?.status)}
-      >
-        <h3 className="text-lg">
-          {getHeadline(committee.status, committee?.statusHeadline)}{" "}
-          {committee.statusUntil ? (
-            <span className="italic">
-              {LL.participants.dashboard.timerWidget.UNTIL(
-                new Date(committee.statusUntil).toLocaleTimeString("de-DE", {
-                  hour: "2-digit",
-                  minute: "2-digit",
-                }),
+    <CommitteeIdContext.Provider value={committee.id}>
+      <CommitteeDataProvider>
+        <StatusTimerProvider disallowNotifications>
+          <Link
+            key={committee.id}
+            href={`/app/${conferenceId}/committee/${committee.id}/${
+              isChair ? "chair" : "participant"
+            }/dashboard`}
+            onClick={() => {
+              setLoading(true);
+            }}
+            className="flex-1 min-w-[30rem] flex flex-col justify-between p-4 gap-2 bg-primary-950 rounded-lg hover:scale-[102%] hover:shadow-lg transition-all duration-300 ease-in-out cursor-pointer"
+          >
+            <h3 className="text-lg">{committee.name}</h3>
+            <h1 className="flex-1 mt-4 mb-6 ml-4 text-4xl text-primary font-bold">
+              {loading ? (
+                <FontAwesomeIcon icon={faCircleNotch} className="fa-spin" />
+              ) : (
+                committee.abbreviation
               )}
-              {" ("}
-              <Timer />
-              {")"}
-            </span>
-          ) : (
-            <Skeleton
-              width="100%"
-              height="1.75rem"
-              className="!bg-primary-800"
-            />
-          )}
-        </h3>
-      </SmallInfoCard>
-    </Link>
+            </h1>
+
+            <SmallInfoCard icon={faPodium}>
+              {committee.agendaItems.find((i) => i.isActive)?.title ? (
+                <h3 className="text-lg">
+                  {committee.agendaItems.find((i) => i.isActive)?.title}
+                </h3>
+              ) : (
+                <Skeleton
+                  width={`${Math.random() * (100 - 20) + 20}%`}
+                  height="1.75rem"
+                  className="!bg-primary-800"
+                />
+              )}
+            </SmallInfoCard>
+
+            {isChair && (
+              <SmallInfoCard icon={faDiagramSubtask}>
+                {committee?.stateOfDebate != null &&
+                committee?.stateOfDebate !== "" ? (
+                  <h3 className="text-lg truncate">
+                    {committee?.stateOfDebate}
+                  </h3>
+                ) : (
+                  <Skeleton
+                    width={`${Math.random() * (100 - 20) + 20}%`}
+                    height="1.75rem"
+                    className="!bg-primary-800"
+                  />
+                )}
+              </SmallInfoCard>
+            )}
+
+            <SmallInfoCard
+              icon={getIcon(committee?.status)}
+              color={getColor(committee?.status)}
+            >
+              {committee.statusUntil ? (
+                <>
+                  <h3 className="text-lg">
+                    {getHeadline(committee.status, committee?.statusHeadline)}{" "}
+                    <span className="italic">
+                      {LL.participants.dashboard.timerWidget.UNTIL(
+                        new Date(committee.statusUntil).toLocaleTimeString(
+                          "de-DE",
+                          {
+                            hour: "2-digit",
+                            minute: "2-digit",
+                          },
+                        ),
+                      )}
+                    </span>
+                  </h3>
+                  <div className=" text-lg ml-auto font-mono font-extralight">
+                    <Timer hideOnZero />
+                  </div>
+                </>
+              ) : (
+                <Skeleton
+                  width={`${Math.random() * (100 - 20) + 20}%`}
+                  height="1.75rem"
+                  className="!bg-primary-800"
+                />
+              )}
+            </SmallInfoCard>
+          </Link>
+        </StatusTimerProvider>
+      </CommitteeDataProvider>
+    </CommitteeIdContext.Provider>
   );
 }

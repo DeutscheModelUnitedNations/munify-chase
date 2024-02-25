@@ -9,9 +9,23 @@ const en = {
     BACK_TO_HOME: "Back to home",
   },
 
+  roles: {
+    ADMIN: "Conference Admin",
+    SECRETARIAT: "Member of the Secretariat",
+    CHAIR: "Chair",
+    COMMITTEE_ADVISOR: "Committee Advisor",
+    NON_STATE_ACTOR: "Non-State Actor",
+    PRESS_CORPS: "Press Corps",
+    GUEST: "Guest",
+    PARTICIPANT_CARE: "Participant Care",
+    MISCELLANEOUS_TEAM: "Member of the Team",
+    UNKNOWN: "Unknown Role",
+  },
+
   home: {
     CAPTION: " for the digital age",
-    HERO_TEXT: "This is where a catchy text about CHASE could be.",
+    HERO_TEXT:
+      "Debate Management Software for Model United Nations Conferences finally made easy.",
     navbar: {
       LOGIN_ADMIN: "Admin",
       LOGIN_CHAIR: "Chair",
@@ -234,6 +248,26 @@ const en = {
     chair: {
       OTHER_SIGN_IN: "Sign in as participant instead",
       WARNING_MESSAGE: "You are about to sign in as a chair.",
+    },
+    gateway: {
+      TITLE: "Welcome to CHASE",
+      CONFERENCE_MEMBER_SINGLE:
+        "You are registered for a conference. Click on the button below to start the application.",
+      CONFERENCE_MEMBER_MULTIPLE:
+        "You are registered for multiple conferences. Please select the conference you want to start the application for.",
+      COMMITTEE_MEMBER_SINGLE:
+        "You are registered for a committee. Click on the button below to start the application.",
+      COMMITTEE_MEMBER_MULTIPLE:
+        "You are registered for multiple committees. Please select the committee you want to start the application for.",
+      LAUNCH_BUTTON: "Launch the app",
+      NO_MEMBERSHIP:
+        "You are not registered for any conference or committee. If you think this is a mistake, please contact the conference organizers.",
+      LOGOUT_BUTTON: "Logout",
+    },
+    lockout: {
+      TITLE: "You have been locked out",
+      DETAIL:
+        "You don't have permission to use this aspect of the App. Please log in again.",
     },
   },
 
@@ -510,6 +544,13 @@ const en = {
         TOAST_SUCCESS: "Speech Time changed to {{0}} min",
         TOAST_SUCCESS_DETAIL: "for {{0}}",
         TOAST_WRONG_FORMAT: "Wrong Format",
+      },
+      confirm: {
+        NEXT_SPEAKER_MESSAGE:
+          "Do you really want to remove the current speaker and advance to the next?",
+        NEXT_SPEAKER_HEADER: "Next Speaker",
+        NEXT_SPEAKER_ACCEPT: "Yes",
+        NEXT_SPEAKER_REJECT: "No",
       },
     },
     voting: {

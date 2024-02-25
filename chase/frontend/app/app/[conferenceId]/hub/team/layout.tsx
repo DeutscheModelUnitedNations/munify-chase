@@ -1,21 +1,21 @@
 "use client";
-
 import Navbar from "@/components/navbar/navbar";
 import NavButton from "@/components/navbar/button";
 import {
-  faPodium,
-  faHouse,
-  faScroll,
-  faPollPeople,
   faNewspaper,
   faCommentExclamation,
   faInbox,
-  faList,
   faChartNetwork,
+  faGears,
 } from "@fortawesome/pro-solid-svg-icons";
 import { useI18nContext } from "@/i18n/i18n-react";
 import { IconProp } from "@fortawesome/fontawesome-svg-core";
-import { MyDelegationProvider } from "@/contexts/user_ident";
+import { MyDelegationProvider, useUserIdent } from "@/contexts/user_ident";
+import { useContext, useEffect, useState } from "react";
+import { ConferenceIdContext } from "@/contexts/committee_data";
+import { useRouter } from "next/navigation";
+import { $Enums } from "../../../../../../backend/prisma/generated/client";
+import Lockout from "@/components/lockout";
 
 export default function ChairHubLayout({
   children,
@@ -23,9 +23,33 @@ export default function ChairHubLayout({
   children: React.ReactNode;
 }) {
   const { LL } = useI18nContext();
+  const conferenceId = useContext(ConferenceIdContext);
+  const { userIdent } = useUserIdent();
+  const [role, setRole] = useState<$Enums.ConferenceRole | null>(null);
+
+  useEffect(() => {
+    if (!userIdent) {
+      return;
+    }
+    setRole(
+      userIdent.conferenceMemberships.find(
+        (c) => c.conference.id === conferenceId,
+      )?.role ?? null,
+    );
+  }, [userIdent]);
 
   return (
     <MyDelegationProvider>
+      <Lockout
+        whitelist={[
+          $Enums.ConferenceRole.ADMIN,
+          $Enums.ConferenceRole.SECRETARIAT,
+          $Enums.ConferenceRole.CHAIR,
+          $Enums.ConferenceRole.COMMITTEE_ADVISOR,
+          $Enums.ConferenceRole.PARTICIPANT_CARE,
+          $Enums.ConferenceRole.MISCELLANEOUS_TEAM,
+        ]}
+      />
       <div className="flex h-screen w-screen bg-white text-primary-100 dark:bg-primary-100 dark:text-primary-900 shadow-md overflow-hidden">
         <Navbar>
           <NavButton
@@ -33,11 +57,29 @@ export default function ChairHubLayout({
             link={"./committees"}
             title={LL.navbar.HUB()}
           />
-          <NavButton
-            icon={faInbox as IconProp}
-            link={"./inbox"}
-            title={LL.navbar.INBOX()}
-          />
+          {userIdent &&
+            role !== null &&
+            [
+              $Enums.ConferenceRole.ADMIN,
+              $Enums.ConferenceRole.SECRETARIAT,
+              $Enums.ConferenceRole.COMMITTEE_ADVISOR,
+              $Enums.ConferenceRole.PARTICIPANT_CARE,
+              $Enums.ConferenceRole.MISCELLANEOUS_TEAM,
+              // @ts-ignore TODO Typescript is confused by the includes method. Find a better way
+            ].includes(role) && (
+              <NavButton
+                icon={faInbox as IconProp}
+                link={"./inbox"}
+                title={LL.navbar.INBOX()}
+              />
+            )}
+          {userIdent && role === $Enums.ConferenceRole.ADMIN && (
+            <NavButton
+              icon={faGears as IconProp}
+              link={`/app/admin/onboarding/${conferenceId}/structure`}
+              title={LL.navbar.INBOX()}
+            />
+          )}
           <div className="flex-1" />
           <NavButton
             icon={faNewspaper as IconProp}

@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import { useI18nContext } from "@/i18n/i18n-react";
 import CommitteeGrid from "@/components/navigation-hub/committee_grid";
 import Button from "@/components/button";
@@ -8,6 +8,9 @@ import HeaderTemplate from "@/components/header_template";
 import DashboardHeader from "@/components/dashboard/header";
 import { LargeFlag } from "@/components/flag_templates";
 import { ScrollPanel } from "primereact/scrollpanel";
+import { conferenceRoleTranslation } from "@/i18n/translation_utils";
+import { ConferenceIdContext } from "@/contexts/committee_data";
+import { useUserIdent } from "@/contexts/user_ident";
 
 export default function ChairHub({
   params,
@@ -15,17 +18,21 @@ export default function ChairHub({
   params: { conferenceId: string };
 }) {
   const { LL, locale } = useI18nContext();
+  const conferenceId = useContext(ConferenceIdContext);
+  const { conferenceMembership } = useUserIdent();
 
   return (
     <>
       <div className="flex-1 flex flex-col">
         <HeaderTemplate>
           <div className="flex flex-col items-start justify-center">
-            <div className="text-2xl font-bold mb-1">
-              <div className="text-md font-bold my-1">
-                {LL.hub.CHAIR_HUB_TITLE()}
-              </div>
-            </div>
+            <h1 className="text-2xl font-bold">{LL.hub.CHAIR_HUB_TITLE()}</h1>
+            <h2 className="text-lg my-1">
+              {conferenceRoleTranslation(
+                LL,
+                conferenceMembership(conferenceId)?.role,
+              )}
+            </h2>
           </div>
           <LargeFlag countryCode={"uno"} />
         </HeaderTemplate>

@@ -35,6 +35,9 @@ export const committee = new Elysia({
             conferenceId,
           },
           include: { agendaItems: true },
+          orderBy: {
+            abbreviation: "asc",
+          },
         })
       ).map((c) => ({
         ...c,

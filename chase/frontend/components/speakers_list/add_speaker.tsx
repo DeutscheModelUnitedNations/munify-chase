@@ -57,14 +57,14 @@ export default function AddSpeakerOverlay({
   closeOverlay: () => void;
 }) {
   const { LL } = useI18nContext();
-  const toast = useRef<Toast>(null);
+  const { showToast } = useContext(ToastContext);
 
   const [selectedCountry, setSelectedCountry] = useState<CountryData | null>(
     null,
   );
   const speakersListData = useContext(SpeakersListDataContext);
 
-  const { showToast } = useContext(ToastContext);
+  const [focusInputField, setFocusInputField] = useState<boolean>(false);
 
   const listTypeMap: {
     [key in $Enums.SpeakersListCategory]: string;
@@ -108,10 +108,11 @@ export default function AddSpeakerOverlay({
                 ),
               sticky: false,
             });
+            setFocusInputField(!focusInputField);
           }
         })
         .catch((e) => {
-          toastError(toast, LL, e);
+          toastError(e);
         });
     }
   };
@@ -121,6 +122,7 @@ export default function AddSpeakerOverlay({
   useMousetrap("enter", () => {
     if (selectedCountry?.alpha3) {
       sendAddSpeaker();
+      setFocusInputField(!focusInputField);
     }
   });
 
@@ -139,6 +141,7 @@ export default function AddSpeakerOverlay({
           placeholder={LL.chairs.speakersList.addSpeakerOverlay.PLACEHOLDER()}
           selectedCountry={selectedCountry}
           setSelectedCountry={setSelectedCountry}
+          focusInputField={focusInputField}
         />
 
         <div className="flex gap-3 justify-end flex-wrap">

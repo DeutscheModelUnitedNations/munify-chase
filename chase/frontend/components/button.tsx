@@ -3,15 +3,7 @@ import { Button as PrimeReactButton } from "primereact/button";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { IconProp } from "@fortawesome/fontawesome-svg-core";
 import { faSpinner, faSpinnerThird } from "@fortawesome/pro-solid-svg-icons";
-
-interface ButtonProps {
-  label?: string;
-  faIcon?: IconProp;
-  faIconClassName?: string;
-  keyboardShortcut?: string;
-  text?: boolean;
-  [key: string]: unknown;
-}
+import { ButtonProps as PrimeReactButtonProps } from "primereact/button";
 
 /**
  * This Component is a wrapper for the PrimeReact Button Component.
@@ -27,6 +19,15 @@ interface ButtonProps {
  * @returns A Button Component
  */
 
+interface ExtendedButtonProps extends PrimeReactButtonProps {
+  label?: string;
+  faIcon?: IconProp;
+  faIconClassName?: string;
+  keyboardShortcut?: string;
+  text?: boolean;
+  loading?: boolean;
+}
+
 export default function Button({
   label,
   faIcon,
@@ -35,7 +36,7 @@ export default function Button({
   text,
   loading,
   ...rest
-}: ButtonProps) {
+}: ExtendedButtonProps) {
   return (
     <PrimeReactButton
       {...rest}

@@ -3,10 +3,7 @@ import { db } from "../../prisma/db";
 import { committeeRoleGuard } from "../auth/guards/committeeRoles";
 import { conferenceRoleGuard } from "../auth/guards/conferenceRoles";
 import { openApiTag } from "../util/openApiTags";
-import {
-  ChairMessage,
-  ResearchServiceMessage,
-} from "../../prisma/generated/schema";
+import { Message } from "../../prisma/generated/schema";
 import { $Enums } from "../../prisma/generated/client";
 
 export const messages = new Elysia({
@@ -17,16 +14,18 @@ export const messages = new Elysia({
   .get(
     "/messages/researchService",
     ({ params: { conferenceId } }) => {
-      return db.researchServiceMessage.findMany({
+      return db.message.findMany({
         where: {
-          conferenceId,
+          committee: {
+            conferenceId,
+          },
         },
         include: {
           author: {
             select: {
               id: true,
               name: true,
-              email: true,
+              emails: true,
             },
           },
         },
@@ -41,47 +40,10 @@ export const messages = new Elysia({
     },
   )
 
-  .post(
-    "/messages/researchServices",
-    ({ body, params: { conferenceId } }) => {
-      return db.researchServiceMessage.create({
-        data: {
-          conference: { connect: { id: conferenceId } },
-          category: body.category,
-          subject: body.subject,
-          message: body.message,
-          author: { connect: { id: body.authorId } },
-          timestamp: new Date(Date.now()),
-          metaEmail: body.metaEmail,
-          metaDelegation: body.metaDelegation,
-          metaCommittee: body.metaCommittee,
-          metaAgendaItem: body.metaAgendaItem,
-        },
-      });
-    },
-    {
-      hasConferenceRole: "any",
-      body: t.Pick(ResearchServiceMessage, [
-        "category",
-        "subject",
-        "message",
-        "authorId",
-        "metaEmail",
-        "metaDelegation",
-        "metaCommittee",
-        "metaAgendaItem",
-      ]),
-      detail: {
-        description: "Create a new research service message in this conference",
-        tags: [openApiTag(import.meta.path)],
-      },
-    },
-  )
-
   .get(
     "/committee/:committeeId/messages",
     ({ params: { committeeId } }) => {
-      return db.chairMessage.findMany({
+      return db.message.findMany({
         where: {
           committeeId,
         },
@@ -90,7 +52,7 @@ export const messages = new Elysia({
             select: {
               id: true,
               name: true,
-              email: true,
+              emails: true,
             },
           },
         },
@@ -108,7 +70,7 @@ export const messages = new Elysia({
   .post(
     "/committee/:committeeId/messages",
     ({ body, params: { committeeId } }) => {
-      return db.chairMessage.create({
+      return db.message.create({
         data: {
           committee: { connect: { id: committeeId } },
           subject: body.subject,
@@ -123,7 +85,7 @@ export const messages = new Elysia({
     },
     {
       hasConferenceRole: "any",
-      body: t.Pick(ChairMessage, [
+      body: t.Pick(Message, [
         "subject",
         "message",
         "authorId",
@@ -141,10 +103,14 @@ export const messages = new Elysia({
   .get(
     "/messages/count",
     async ({ params: { conferenceId } }) => {
-      return await db.researchServiceMessage.count({
+      return await db.message.count({
         where: {
-          conferenceId,
-          status: $Enums.MessageStatus.UNREAD,
+          committee: {
+            conferenceId,
+          },
+          status: {
+            has: $Enums.MessageStatus.UNREAD,
+          },
         },
       });
     },
@@ -161,10 +127,12 @@ export const messages = new Elysia({
   .get(
     "/committee/:committeeId/messages/count",
     ({ params: { committeeId } }) => {
-      return db.chairMessage.count({
+      return db.message.count({
         where: {
           committeeId,
-          status: $Enums.MessageStatus.UNREAD,
+          status: {
+            has: $Enums.MessageStatus.UNREAD,
+          },
         },
       });
     },

@@ -1,6 +1,6 @@
 "use client";
-import React, { useEffect, useState, useRef } from "react";
-import HeaderTemplate, { HeaderInfoBox } from "@/components/header_template";
+import React, { useEffect, useState, useContext } from "react";
+import HeaderTemplate from "@/components/header_template";
 import WidgetBoxTemplate from "@/components/widget_box_template";
 import { ScrollPanel } from "primereact/scrollpanel";
 import { SelectButton } from "primereact/selectbutton";
@@ -18,8 +18,11 @@ import { IconProp } from "@fortawesome/fontawesome-svg-core";
 import { backend } from "@/services/backend";
 import { toastError } from "@/fetching/fetching_utils";
 import { $Enums } from "../../../../../../../../backend/prisma/generated/client";
-import { Toast } from "primereact/toast";
 import PresenceWidget from "@/components/attendance/presence_widget";
+import {
+  CommitteeIdContext,
+  ConferenceIdContext,
+} from "@/contexts/committee_data";
 
 interface AttendanceButtonOptions {
   icon: IconProp;
@@ -33,18 +36,14 @@ type DelegationData = Awaited<
   >
 >["data"];
 
-export default function ChairAttendees({
-  params,
-}: {
-  params: { conferenceId: string; committeeId: string };
-}) {
+export default function ChairAttendees() {
   const { LL, locale } = useI18nContext();
+  const conferenceId = useContext(ConferenceIdContext);
+  const committeeId = useContext(CommitteeIdContext);
 
   const [data, setData] = useState<DelegationData>([]);
   const [forcePresenceWidgetUpdate, setForcePresenceWidgetUpdate] =
     useState(false);
-
-  const toast = useRef<Toast>(null);
 
   const attendanceOptions: AttendanceButtonOptions[] = [
     {
@@ -65,9 +64,8 @@ export default function ChairAttendees({
   ];
 
   async function getDelegationData() {
-    await backend.conference[params.conferenceId].committee[
-      params.committeeId
-    ].delegations
+    if (!conferenceId || !committeeId) return;
+    await backend.conference[conferenceId].committee[committeeId].delegations
       .get()
       .then((response) => {
         setData(response.data);
@@ -90,9 +88,10 @@ export default function ChairAttendees({
     memberId: string,
     presence: $Enums.Presence,
   ) {
-    await backend.conference[params.conferenceId].delegation[
-      delegationId
-    ].presence[memberId]
+    if (!conferenceId || !committeeId) return;
+    await backend.conference[conferenceId].delegation[delegationId].presence[
+      memberId
+    ]
       .post({
         presence,
       })
@@ -117,12 +116,9 @@ export default function ChairAttendees({
 
   return (
     <>
-      <Toast ref={toast} />
       <div className="flex-1 flex flex-col">
         <HeaderTemplate>
           <PresenceWidget
-            conferenceId={params.conferenceId}
-            committeeId={params.committeeId}
             showExcusedSeperately={true}
             forceUpdate={forcePresenceWidgetUpdate}
           />
@@ -133,7 +129,7 @@ export default function ChairAttendees({
               cardTitle={LL.chairs.attendance.HEADLINE()}
               additionalClassNames="max-w-[600px]"
             >
-              {data?.map((attendee, index) => (
+              {data?.map((attendee) => (
                 <WidgetBoxTemplate>
                   <Flag countryCode={attendee.nation.alpha3Code} />
                   <div className="flex flex-col justify-center">

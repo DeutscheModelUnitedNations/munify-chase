@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useContext } from "react";
 
 import Button from "@/components/button";
 import SettingsSidebar from "@/components/navbar/settings_sidebar";
@@ -13,8 +13,12 @@ import useMousetrap from "mousetrap-react";
 import { confirmPopup } from "primereact/confirmpopup";
 import { ConfirmDialog } from "primereact/confirmdialog";
 import { backend } from "@/services/backend";
+import { useUserIdent } from "@/contexts/user_ident";
+import { ConferenceIdContext } from "@/contexts/committee_data";
+import Lockout from "@/components/lockout";
+import { $Enums } from "../../../../../../backend/prisma/generated/client";
 
-export default function RootLayout({
+export default function AdminLayout({
   children,
   params,
 }: {
@@ -23,6 +27,8 @@ export default function RootLayout({
 }) {
   const { LL } = useI18nContext();
   const router = useRouter();
+  const { userIdent } = useUserIdent();
+  const conferenceId = useContext(ConferenceIdContext);
 
   const [settingsSidebarVisible, setSettingsSidebarVisible] = useState(false);
 
@@ -39,31 +45,22 @@ export default function RootLayout({
   useMousetrap("ctrl+shift+s", (e) => saveAndQuit(e));
 
   useEffect(() => {
-    // backend.conference[params.conferenceId].verifyAdmin
-    //   .get()
-    //   .then((response) => {
-    //     if (!response) {
-    //       router.push("/admin/login");
-    //     }
-    //   })
-    //   .catch((error) => {
-    //     router.push("/admin/login");
-    //   });
-
-    backend.conference[params.conferenceId]
+    if (!conferenceId) return;
+    backend.conference[conferenceId]
       .get()
       .then((response) => {
         if (!response?.data?.id) {
-          router.push("/admin/login");
+          router.push("/login/lockout");
         }
       })
       .catch((error) => {
-        router.push("/admin/login");
+        router.push("/login/lockout");
       });
   }, []);
 
   return (
     <>
+      <Lockout whitelist={[$Enums.ConferenceRole.ADMIN]} />
       <ConfirmDialog />
       <div className="flex justify-center items-start min-h-screen bg-primary">
         <div className="flex-1 flex flex-col justify-center items-center m-10 mt-20">

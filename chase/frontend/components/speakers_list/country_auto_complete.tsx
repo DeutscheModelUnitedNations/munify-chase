@@ -1,4 +1,5 @@
-import { Alpha3Code, CountryCode } from "@/custom_types/custom_types";
+import { useContext, useEffect, useState, useRef } from "react";
+import { CountryCode } from "@/custom_types/custom_types";
 import { useI18nContext } from "@/i18n/i18n-react";
 import getCountryNameByCode from "@/misc/get_country_name_by_code";
 import Fuse from "fuse.js";
@@ -6,11 +7,8 @@ import {
   AutoComplete,
   AutoCompleteCompleteEvent,
 } from "primereact/autocomplete";
-import { useContext, useEffect, useRef, useState } from "react";
 import { SmallFlag } from "../flag_templates";
-import { toastError } from "@/fetching/fetching_utils";
 import { backend } from "@/services/backend";
-import { Toast } from "primereact/toast";
 import {
   ConferenceIdContext,
   CommitteeIdContext,
@@ -32,15 +30,15 @@ export default function CountryAutoComplete({
   selectedCountry,
   setSelectedCountry,
   placeholder,
+  focusInputField,
 }: {
   allCountries: AllCountriesData | null;
   selectedCountry: CountryData | null;
   setSelectedCountry: (country: CountryData | null) => void;
   placeholder: string;
+  focusInputField?: boolean;
 }) {
   const { LL, locale } = useI18nContext();
-  const toast = useRef<Toast>(null);
-
   const conferenceId = useContext(ConferenceIdContext);
   const committeeId = useContext(CommitteeIdContext);
 
@@ -105,10 +103,30 @@ export default function CountryAutoComplete({
     );
   };
 
+  const autoCompleteRef = useRef(null); // Create a ref to store the autocomplete component
+
+  // Function to handle selection
+  const blur = (e) => {
+    // Call .blur() on the actual input element inside AutoComplete
+    if (autoCompleteRef.current) {
+      setTimeout(() => {
+        autoCompleteRef.current.getElement().querySelector("input").blur();
+      }, 100);
+    }
+  };
+
+  useEffect(() => {
+    if (focusInputField) {
+      if (autoCompleteRef.current) {
+        autoCompleteRef.current.focus();
+      }
+    }
+  }, [focusInputField]);
+
   return (
     <>
-      <Toast ref={toast} />
       <AutoComplete
+        ref={autoCompleteRef}
         value={selectedCountry}
         suggestions={filteredCountries}
         completeMethod={searchCountry}
@@ -119,8 +137,15 @@ export default function CountryAutoComplete({
         itemTemplate={countryTemplate}
         placeholder={placeholder}
         autoFocus
+        dropdownAutoFocus
         autoHighlight
         forceSelection
+        onSelect={blur}
+        onKeyUp={(e) => {
+          if (e.key === "Enter" || e.key === "Escape") {
+            blur(e);
+          }
+        }}
       />
     </>
   );

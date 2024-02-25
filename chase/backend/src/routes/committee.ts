@@ -107,7 +107,7 @@ export const committee = new Elysia({
         tags: [openApiTag(import.meta.path)],
       },
       body: t.Object(
-        t.Pick(CommitteeData, ["name", "abbreviation", "category", "parentId"]),
+        t.Pick(Committee, ["name", "abbreviation", "category", "parentId"]),
       ),
     },
   )

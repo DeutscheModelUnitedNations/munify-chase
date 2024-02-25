@@ -1,20 +1,11 @@
+import { useContext, useState } from "react";
 import { ToastContext } from "@/contexts/toast";
-import { CountryCode } from "@/custom_types/custom_types";
 import { useI18nContext } from "@/i18n/i18n-react";
-import getCountryNameByCode from "@/misc/get_country_name_by_code";
 import Button from "@components/button";
 import { faPlus, faTimes } from "@fortawesome/pro-solid-svg-icons";
-import Fuse from "fuse.js";
 import useMousetrap from "mousetrap-react";
-import {
-  AutoComplete,
-  AutoCompleteCompleteEvent,
-} from "primereact/autocomplete";
-import { useContext, useEffect, useRef, useState } from "react";
-import { SmallFlag } from "../flag_templates";
 import CountryAutoComplete from "./country_auto_complete";
 import { backend } from "@/services/backend";
-import { Toast } from "primereact/toast";
 import { $Enums } from "../../../backend/prisma/generated/client";
 import { toastError } from "@/fetching/fetching_utils";
 import { SpeakersListDataContext } from "@/contexts/speakers_list_data";
@@ -34,7 +25,6 @@ import {
  * Note: Not only countries can be added to the Speakers List, but also Non-State Actors and als UN Staff like the Secretary-General (Country-Code: unm / unw (male/female))
  */
 
-// TODO add toast functionality for when a speaker is added or already on the list
 // TODO add warning when a speaker is added to the list and the list is closed
 
 export default function AddSpeakerOverlay({
@@ -66,7 +56,7 @@ export default function AddSpeakerOverlay({
   const sendAddSpeaker = async () => {
     if (selectedCountry && speakersListData?.id) {
       await backend.speakersList[speakersListData.id].addSpeaker.code[
-        selectedCountry.alpha3
+        selectedCountry.alpha3Code
       ]
         .post()
         .then((res) => {
@@ -75,7 +65,7 @@ export default function AddSpeakerOverlay({
               severity: "success",
               summary:
                 LL.chairs.speakersList.addSpeakerOverlay.TOAST_ADDED_SUMMARY(
-                  selectedCountry.name,
+                  selectedCountry.name ?? "",
                 ),
               detail:
                 LL.chairs.speakersList.addSpeakerOverlay.TOAST_ADDED_DETAIL(
@@ -89,7 +79,7 @@ export default function AddSpeakerOverlay({
               severity: "warn",
               summary:
                 LL.chairs.speakersList.addSpeakerOverlay.TOAST_ALREADY_ON_LIST(
-                  selectedCountry.name,
+                  selectedCountry.name ?? "",
                 ),
               detail:
                 LL.chairs.speakersList.addSpeakerOverlay.TOAST_ALREADY_ON_LIST_DETAIL(
@@ -109,14 +99,14 @@ export default function AddSpeakerOverlay({
   useMousetrap("esc", () => closeOverlay());
 
   useMousetrap("enter", () => {
-    if (selectedCountry?.alpha3) {
+    if (selectedCountry?.alpha3Code) {
       sendAddSpeaker();
       setFocusInputField(!focusInputField);
     }
   });
 
   useMousetrap("shift+enter", () => {
-    if (selectedCountry?.alpha3) {
+    if (selectedCountry?.alpha3Code) {
       sendAddSpeaker();
       closeOverlay();
     }

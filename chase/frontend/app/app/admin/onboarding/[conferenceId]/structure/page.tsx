@@ -71,9 +71,10 @@ export default function structure() {
         category,
         parentId,
       })
-      .then((_res) => {
+      .then((res) => {
         setInputMaskVisible(false);
         setUpdateCommittees(true);
+        if (res.status >= 400) throw new Error("Failed to add committee");
         showToast({
           severity: "success",
           summary: LL.admin.onboarding.structure.SUCCESS_ADD_COMMITTEE(),

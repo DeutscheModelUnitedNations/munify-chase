@@ -10,7 +10,7 @@ import { faSparkles } from "@fortawesome/pro-solid-svg-icons";
 import { backend } from "@/services/backend";
 import { useRouter } from "next/navigation";
 import { useToast } from "@/contexts/toast";
-import { errorToast } from "@/fetching/fetching_utils";
+import { toastError } from "@/fetching/fetching_utils";
 
 export default function loginVorsitz() {
   const { LL } = useI18nContext();
@@ -18,7 +18,7 @@ export default function loginVorsitz() {
   const router = useRouter();
 
   const [conferenceName, setConferenceName] = useState("");
-  const [dates, setDates] = useState<Date[] | undefined>(undefined);
+  const [dates, setDates] = useState<Date[] | null>(null);
   const [token, setToken] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -45,7 +45,7 @@ export default function loginVorsitz() {
         router.push(`/app/admin/onboarding/${conferenceId}/structure`);
       })
       .catch((err) => {
-        errorToast(err);
+        toastError(err);
         setLoading(false);
       });
   };
@@ -82,6 +82,7 @@ export default function loginVorsitz() {
           <span className="p-float-label mb-5">
             <Calendar
               value={dates}
+              // @ts-ignore TODO fix type
               onChange={(e) => setDates(e.value)}
               selectionMode="range"
               dateFormat="d.m.yy"

@@ -10,7 +10,7 @@ export const useToast = () => useContext(ToastContext);
  * It is used to show messages to the user, for example when a document was successfully created.
  */
 export const ToastProvider = ({ children }: { children: React.ReactNode }) => {
-  const toast = useRef<Toast>();
+  const toast = useRef<Toast>(null);
 
   const showToast = (message: ToastMessage) => {
     toast.current?.show(message);

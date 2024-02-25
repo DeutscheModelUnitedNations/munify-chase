@@ -18,18 +18,10 @@ import { Toast } from "primereact/toast";
 import { $Enums } from "../../../backend/prisma/generated/client";
 import { toastError } from "@/fetching/fetching_utils";
 import { SpeakersListDataContext } from "@/contexts/speakers_list_data";
-import { ConferenceIdContext } from "@/contexts/committee_data";
-
-interface CountryData {
-  alpha3: CountryCode;
-  name: string;
-}
-
-type AllCountryCodes = Awaited<
-  ReturnType<
-    (typeof backend.conference)["conferenceId"]["committee"]["committeeId"]["allCountryCodes"]["get"]
-  >
->["data"];
+import {
+  AllAvailableCountriesType,
+  CountryDataType,
+} from "@/components/admin/delegations/add_delegation_dialog";
 
 /**
  * This component is used to display the overlay to add a speaker to the Speakers List on the Speakers List Page for chairs.
@@ -48,20 +40,17 @@ type AllCountryCodes = Awaited<
 export default function AddSpeakerOverlay({
   typeOfList,
   allCountries,
-  _listClosed,
   closeOverlay,
 }: {
   typeOfList: $Enums.SpeakersListCategory;
-  allCountries: AllCountryCodes | null;
-  _listClosed: boolean;
+  allCountries: AllAvailableCountriesType | null;
   closeOverlay: () => void;
 }) {
   const { LL } = useI18nContext();
   const { showToast } = useContext(ToastContext);
 
-  const [selectedCountry, setSelectedCountry] = useState<CountryData | null>(
-    null,
-  );
+  const [selectedCountry, setSelectedCountry] =
+    useState<CountryDataType | null>(null);
   const speakersListData = useContext(SpeakersListDataContext);
 
   const [focusInputField, setFocusInputField] = useState<boolean>(false);

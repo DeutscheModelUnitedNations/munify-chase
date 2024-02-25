@@ -46,6 +46,8 @@ export default function SpeakerBlock() {
       speakersListData.speakers[0].committeeMember.delegation.nation.alpha3Code,
     );
 
+    if (!speakersListData?.timeLeft) return;
+
     if (speakersListData?.timeLeft * 1000 !== timeLeftData) {
       setTimeLeftData(speakersListData?.timeLeft * 1000);
     }

@@ -45,7 +45,7 @@ export default function ActionsWidget() {
   const committeeData = useContext(CommitteeDataContext);
   const myDelegationData = useContext(MyDelegationContext);
   const agendaItem = useContext(AgendaItemContext);
-  const userIdent = useUserIdent()?.userIdent;
+  const { userIdent } = useUserIdent();
   const { showToast } = useToast();
 
   const [displayChairDialog, setDisplayChairDialog] = React.useState(false);

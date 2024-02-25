@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import {
   Page,
   Text,
@@ -27,7 +27,7 @@ export default function PrintMessageDocument({
   showDialog,
   setShowDialog,
 }: {
-  message: ChairMessages[number];
+  message: NonNullable<ChairMessages>[number];
   showDialog: boolean;
   setShowDialog: (showDialog: boolean) => void;
 }) {
@@ -57,7 +57,7 @@ export default function PrintMessageDocument({
                 label="Download PDF"
                 faIcon={faDownload}
                 loading={loading}
-                disabled={loading || error}
+                disabled={!loading && !error && url ? true : false}
               />
             )}
           </PDFDownloadLink>
@@ -105,7 +105,7 @@ function MessageDocument({
   LL,
   locale,
 }: {
-  message: ChairMessages[number];
+  message: NonNullable<ChairMessages>[number];
   LL: TranslationFunctions;
   locale: string | undefined;
 }) {
@@ -121,7 +121,7 @@ function MessageDocument({
               <Text>
                 {LL.messageBoard.pdf.FROM()}{" "}
                 {getCountryNameByCode(
-                  message.metaDelegation,
+                  message?.metaDelegation,
                   locale ?? "de-de",
                 )}{" "}
                 / {message.metaCommittee}

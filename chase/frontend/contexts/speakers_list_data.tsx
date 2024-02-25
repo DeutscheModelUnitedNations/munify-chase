@@ -5,15 +5,14 @@ import { ConferenceIdContext, CommitteeIdContext } from "./committee_data";
 import { toastError } from "@/fetching/fetching_utils";
 import { $Enums } from "../../backend/prisma/generated/client";
 
-type SpeakersListData = Awaited<
+export type SpeakersListDataType = Awaited<
   ReturnType<
     (typeof backend.conference)["conferenceId"]["committee"]["committeeId"]["speakersList"]["type"]["get"]
   >
 >["data"];
 
-export const SpeakersListDataContext = createContext<SpeakersListData | null>(
-  null,
-);
+export const SpeakersListDataContext =
+  createContext<SpeakersListDataType | null>(null);
 
 export function SpeakersListDataProvider({
   children,
@@ -26,7 +25,7 @@ export function SpeakersListDataProvider({
   const committeeId = useContext(CommitteeIdContext);
 
   const [speakersListData, setSpeakersListData] =
-    useState<SpeakersListData | null>(null);
+    useState<SpeakersListDataType | null>(null);
 
   async function getSpeakersListData() {
     if (!conferenceId || !committeeId) return;

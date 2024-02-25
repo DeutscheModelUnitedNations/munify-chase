@@ -1,13 +1,10 @@
 "use client";
 import React, { useEffect, useContext, useState } from "react";
-
 import { useI18nContext } from "@/i18n/i18n-react";
 import { backend } from "@/services/backend";
 import { useRouter } from "next/navigation";
 import OnboardingSteps from "@/components/admin/onboarding/steps";
-import { Toast } from "primereact/toast";
 import { confirmPopup } from "primereact/confirmpopup";
-
 import ForwardBackButtons from "@/components/admin/onboarding/forward_back_bar";
 import CommitteeTable from "@/components/admin/structure/committee_table";
 import AddCommitteeDialog from "@/components/admin/structure/add_committee_dialog";
@@ -67,11 +64,12 @@ export default function structure() {
   }) {
     if (!conferenceId) return;
     backend.conference[conferenceId].committee
+      // TODO @Felix Help – what is wrong with this type D:
       .post({
         name,
         abbreviation,
         category,
-        parentId: parentId || undifined,
+        parentId,
       })
       .then((_res) => {
         setInputMaskVisible(false);
@@ -87,7 +85,7 @@ export default function structure() {
       });
   }
 
-  const confirmDeleteAll = (event) => {
+  const confirmDeleteAll = (event: React.MouseEvent<HTMLButtonElement>) => {
     confirmPopup({
       target: event.currentTarget,
       message: LL.admin.onboarding.structure.DELETE_ALL_CONFIRM(),
@@ -106,8 +104,8 @@ export default function structure() {
     });
   };
 
-  async function handleDelete(rawData: NonNullable<CommitteesType[number]>) {
-    if (!rawData) return;
+  async function handleDelete(rawData: NonNullable<CommitteesType>[number]) {
+    if (!rawData || !conferenceId) return;
     backend.conference[conferenceId].committee[rawData.id]
       .delete()
       .then((_res) => {

@@ -44,7 +44,8 @@
 				"austenc.tailwind-docs",
 				"stivo.tailwind-fold",
 				"gruntfuggly.todo-tree",
-				"ms-vsliveshare.vsliveshare"
+				"ms-vsliveshare.vsliveshare",
+				"eamodio.gitlens"
 			]
 		}
 	},

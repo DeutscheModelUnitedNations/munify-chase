@@ -1,15 +1,10 @@
-import React, { useState, useEffect, useContext } from "react";
+import React, { useState, useContext } from "react";
 import { useI18nContext } from "@/i18n/i18n-react";
 import { backend } from "@/services/backend";
 import { toastError } from "@/fetching/fetching_utils";
 import ConfigWrapper from "@/components/dashboard/chair/config_wrapper";
-import { Dropdown } from "primereact/dropdown";
 import Button from "@/components/button";
-import {
-  faDiagramSubtask,
-  faPencil,
-  faSave,
-} from "@fortawesome/pro-solid-svg-icons";
+import { faDiagramSubtask, faSave } from "@fortawesome/pro-solid-svg-icons";
 import {
   CommitteeDataContext,
   CommitteeIdContext,
@@ -17,7 +12,6 @@ import {
 } from "@/contexts/committee_data";
 import { ToastContext } from "@/contexts/toast";
 import { InputText } from "primereact/inputtext";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import SmallInfoCard from "@/components/small_info_card";
 
 export default function StateOfDebateWidget() {
@@ -30,6 +24,7 @@ export default function StateOfDebateWidget() {
   const [stateOfDebate, setStateOfDebate] = useState<string>("");
 
   async function saveStateOfDebate() {
+    if (!conferenceId || !committeeId) return;
     await backend.conference[conferenceId].committee[committeeId].stateOfDebate
       .post({
         stateOfDebate: stateOfDebate,

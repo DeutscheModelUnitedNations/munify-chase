@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef, useContext } from "react";
+import React, { useEffect, useState, useContext } from "react";
 import Button from "@components/button";
 import { SplitButton } from "primereact/splitbutton";
 import { Dialog } from "primereact/dialog";
@@ -33,6 +33,7 @@ import { SpeakersListDataContext } from "@/contexts/speakers_list_data";
 import { useUserIdent } from "@/contexts/user_ident";
 import { ToastContext } from "@/contexts/toast";
 import { ConfirmDialog } from "primereact/confirmdialog";
+import { MenuItem } from "primereact/menuitem";
 
 type AllCountryCodes = Awaited<
   ReturnType<
@@ -207,7 +208,7 @@ export function ChairSpeechButtons({
     getCountries();
   }, []);
 
-  const splitButtonItems = [
+  const splitButtonItems: MenuItem[] = [
     {
       label: LL.chairs.speakersList.buttons.OPEN_LIST(),
       icon: <FontAwesomeIcon icon={faLockOpen as IconProp} className="mr-2" />,
@@ -220,7 +221,7 @@ export function ChairSpeechButtons({
     {
       label: LL.chairs.speakersList.buttons.CLOSE_LIST(),
       icon: <FontAwesomeIcon icon={faLock as IconProp} className="mr-2" />,
-      visible: speakersListData && !speakersListData?.isClosed,
+      visible: speakersListData && !speakersListData?.isClosed ? true : false,
       command: () => {
         if (!speakersListData) return;
         backend.speakersList[speakersListData.id].close.post();
@@ -440,7 +441,6 @@ export function ChairSpeechButtons({
         >
           <AddSpeakerOverlay
             allCountries={countries}
-            _listClosed={speakersListData?.isClosed ?? false}
             closeOverlay={() => setAddSpeakersOverlayVisible(false)}
             typeOfList={typeOfList}
           />

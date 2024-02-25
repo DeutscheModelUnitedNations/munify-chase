@@ -66,8 +66,8 @@ export default function SetStatusWidget() {
               LL.chairs.dashboard.configurations.statusTimer.TOAST_SUCCESS({
                 status: selectedStatusCustomText
                   ? selectedStatusCustomText
-                  : selectedStatus,
-                date: selectedStatusUntil?.toLocaleString(locale),
+                  : selectedStatus || "",
+                date: selectedStatusUntil?.toLocaleString(locale) ?? "",
               }),
           });
           setSelectedStatusButtonLoading(false);

@@ -12,7 +12,10 @@ import {
 } from "@fortawesome/pro-solid-svg-icons";
 import Button from "@components/button";
 import { backend } from "@/services/backend";
-import { SpeakersListDataContext } from "@/contexts/speakers_list_data";
+import {
+  SpeakersListDataContext,
+  SpeakersListDataType,
+} from "@/contexts/speakers_list_data";
 
 /**
  * This Component is used in the Speakers List and Comment List on the Speakers List Page.
@@ -79,7 +82,7 @@ function CountryCard({
   isLast,
   isFirst,
 }: {
-  speakerData: (typeof SpeakersListData)["speakers"][number];
+  speakerData: NonNullable<SpeakersListDataType>["speakers"][number];
   myCountry?: string;
   chairOptions?: boolean;
   isFirst?: boolean;

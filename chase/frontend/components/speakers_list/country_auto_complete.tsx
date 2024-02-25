@@ -1,5 +1,4 @@
-import { useContext, useEffect, useState, useRef } from "react";
-import { CountryCode } from "@/custom_types/custom_types";
+import { useEffect, useState, useRef } from "react";
 import { useI18nContext } from "@/i18n/i18n-react";
 import getCountryNameByCode from "@/misc/get_country_name_by_code";
 import Fuse from "fuse.js";
@@ -8,22 +7,10 @@ import {
   AutoCompleteCompleteEvent,
 } from "primereact/autocomplete";
 import { SmallFlag } from "../flag_templates";
-import { backend } from "@/services/backend";
 import {
-  ConferenceIdContext,
-  CommitteeIdContext,
-} from "@/contexts/committee_data";
-
-interface CountryData {
-  alpha3: CountryCode;
-  name: string;
-}
-
-type AllCountriesData = Awaited<
-  ReturnType<
-    (typeof backend.conference)["conferenceId"]["committee"]["committeeId"]["allCountryCodes"]
-  >
->["data"];
+  AllAvailableCountriesType,
+  CountryDataType,
+} from "@/components/admin/delegations/add_delegation_dialog";
 
 export default function CountryAutoComplete({
   allCountries,
@@ -32,27 +19,27 @@ export default function CountryAutoComplete({
   placeholder,
   focusInputField,
 }: {
-  allCountries: AllCountriesData | null;
-  selectedCountry: CountryData | null;
-  setSelectedCountry: (country: CountryData | null) => void;
+  allCountries: AllAvailableCountriesType | null;
+  selectedCountry: CountryDataType | null;
+  setSelectedCountry: (country: CountryDataType | null) => void;
   placeholder: string;
   focusInputField?: boolean;
 }) {
-  const { LL, locale } = useI18nContext();
-  const conferenceId = useContext(ConferenceIdContext);
-  const committeeId = useContext(CommitteeIdContext);
+  const { locale } = useI18nContext();
 
-  const [countries, setCountries] = useState<CountryData[] | null>(null);
+  const [countries, setCountries] = useState<CountryDataType[] | null>(null);
   const [query, setQuery] = useState<string>("");
-  const [filteredCountries, setFilteredCountries] = useState<CountryData[]>([]);
-  const [fuse, setFuse] = useState<Fuse<CountryData> | null>(null);
+  const [filteredCountries, setFilteredCountries] = useState<CountryDataType[]>(
+    [],
+  );
+  const [fuse, setFuse] = useState<Fuse<CountryDataType> | null>(null);
 
   useEffect(() => {
     if (!allCountries) return;
-    const countryData: CountryData[] = allCountries.map((country: string) => {
+    const countryData: CountryDataType[] = allCountries.map((country) => {
       return {
-        alpha3: country,
-        name: getCountryNameByCode(country, locale),
+        ...country,
+        name: getCountryNameByCode(country.alpha3Code, locale),
       };
     });
     setCountries(countryData);
@@ -65,26 +52,25 @@ export default function CountryAutoComplete({
   }, [allCountries, locale]);
 
   useEffect(() => {
-    if (selectedCountry) {
-      setQuery(selectedCountry.name);
-    }
+    if (!selectedCountry?.name) return;
+    setQuery(selectedCountry.name);
   }, [selectedCountry]);
 
   useEffect(() => {
     if (query === "") {
       setSelectedCountry(null);
     } else {
-      const country = countries?.find((country) => country.name === query);
+      const country = countries?.find((country) => country?.name === query);
       if (country) {
         setSelectedCountry(country);
       }
     }
-  }, [query]);
+  }, [query, countries, setSelectedCountry]);
 
   const searchCountry = (event: AutoCompleteCompleteEvent) => {
     if (!fuse) return;
 
-    let filteredCountries: CountryData[] = [];
+    let filteredCountries: CountryDataType[] = [];
     if (!event.query.trim().length) {
       filteredCountries = countries ? [...countries] : [];
     } else {
@@ -94,26 +80,23 @@ export default function CountryAutoComplete({
     setFilteredCountries(filteredCountries);
   };
 
-  const countryTemplate = (item: CountryData) => {
+  const countryTemplate = (item: CountryDataType) => {
     return (
       <div className="flex items-center">
-        <SmallFlag countryCode={item.alpha3} />
+        <SmallFlag countryCode={item.alpha3Code} />
         <div className="ml-2">{item.name}</div>
       </div>
     );
   };
 
-  const autoCompleteRef = useRef(null); // Create a ref to store the autocomplete component
+  const autoCompleteRef = useRef<AutoComplete>(null);
 
-  // Function to handle selection
-  const blur = (e) => {
-    // Call .blur() on the actual input element inside AutoComplete
-    if (autoCompleteRef.current) {
-      setTimeout(() => {
-        autoCompleteRef.current.getElement().querySelector("input").blur();
-      }, 100);
-    }
-  };
+  function blur() {
+    setTimeout(() => {
+      if (!autoCompleteRef?.current) return;
+      autoCompleteRef.current.getElement().querySelector("input")?.blur();
+    }, 100);
+  }
 
   useEffect(() => {
     if (focusInputField) {
@@ -140,10 +123,10 @@ export default function CountryAutoComplete({
         dropdownAutoFocus
         autoHighlight
         forceSelection
-        onSelect={blur}
+        onSelect={(_e) => blur()}
         onKeyUp={(e) => {
           if (e.key === "Enter" || e.key === "Escape") {
-            blur(e);
+            blur();
           }
         }}
       />

@@ -18,9 +18,13 @@ export default function SpeakerBlock() {
   const speakersList = useContext(SpeakersListDataContext)?.speakers.slice(1);
   const myCountry =
     useContext(MyDelegationContext)?.delegation?.nation?.alpha3Code;
-  const [compressedList, setCompressedList] = useState<typeof speakersList>([]);
+  const [compressedList, setCompressedList] = useState<
+    NonNullable<typeof speakersList>
+  >([]);
 
-  function getAlpha3Code(listElement: (typeof speakersList)[number]) {
+  function getAlpha3Code(
+    listElement: NonNullable<typeof speakersList>[number],
+  ) {
     if (listElement?.committeeMember?.delegation?.nation?.alpha3Code) {
       return listElement.committeeMember.delegation.nation.alpha3Code;
     }
@@ -28,6 +32,10 @@ export default function SpeakerBlock() {
   }
 
   function getCompressedList(list: typeof speakersList) {
+    if (!list?.length) {
+      return [];
+    }
+
     let res = [];
 
     if (list.length > 3) {
@@ -55,14 +63,12 @@ export default function SpeakerBlock() {
   }
 
   function getWaitingPosition() {
-    if (speakersList.find((item) => getAlpha3Code(item) === myCountry)) {
-      return (
-        speakersList.indexOf(
-          speakersList.find((item) => getAlpha3Code(item) === myCountry),
-        ) + 1
-      );
-    }
-    return 0;
+    if (!speakersList) return 0;
+
+    const index = speakersList.find(
+      (item) => getAlpha3Code(item) === myCountry,
+    );
+    return index ? speakersList.indexOf(index) + 1 : 0;
   }
 
   useEffect(() => {

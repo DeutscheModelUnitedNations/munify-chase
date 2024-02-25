@@ -2,14 +2,8 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { ToastContext } from "@/contexts/toast";
 import { useI18nContext } from "@/i18n/i18n-react";
-import { backend } from "@/services/backend";
-import {
-  ConferenceIdContext,
-  CommitteeIdContext,
-  CommitteeDataContext,
-} from "@/contexts/committee_data";
+import { CommitteeDataContext } from "@/contexts/committee_data";
 import { $Enums } from "../../backend/prisma/generated/client";
-import { MessageCategoryConst } from "../../backend/prisma/generated/schema";
 
 export const StatusTimer = createContext(
   {} as {
@@ -82,11 +76,12 @@ export function StatusTimerProvider({
             if (
               !toastShown &&
               !disallowNotifications &&
-              [
-                $Enums.CommitteeStatus.INFORMAL,
-                $Enums.CommitteeStatus.PAUSE,
-                // @ts-ignore TODO Typescript is confused by the includes method. Find a better way
-              ].includes(category)
+              (
+                [
+                  $Enums.CommitteeStatus.INFORMAL,
+                  $Enums.CommitteeStatus.PAUSE,
+                ] as ($Enums.CommitteeStatus | null)[]
+              ).includes(category)
             )
               timerToast();
             setToastShown(true);

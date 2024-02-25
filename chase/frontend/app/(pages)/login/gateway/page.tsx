@@ -50,15 +50,16 @@ export default function LoginRedirectPage() {
     conferenceMembership: NonNullable<MyInfoDataType>["conferenceMemberships"][number],
   ) => {
     if (
-      [
-        $Enums.ConferenceRole.ADMIN,
-        $Enums.ConferenceRole.SECRETARIAT,
-        $Enums.ConferenceRole.CHAIR,
-        $Enums.ConferenceRole.COMMITTEE_ADVISOR,
-        $Enums.ConferenceRole.PARTICIPANT_CARE,
-        $Enums.ConferenceRole.MISCELLANEOUS_TEAM,
-        // @ts-ignore TODO Typescript is confused by the includes method. Find a better way
-      ].includes(conferenceMembership.role)
+      (
+        [
+          $Enums.ConferenceRole.ADMIN,
+          $Enums.ConferenceRole.SECRETARIAT,
+          $Enums.ConferenceRole.CHAIR,
+          $Enums.ConferenceRole.COMMITTEE_ADVISOR,
+          $Enums.ConferenceRole.PARTICIPANT_CARE,
+          $Enums.ConferenceRole.MISCELLANEOUS_TEAM,
+        ] as ($Enums.ConferenceRole | undefined)[]
+      ).includes(conferenceMembership.role)
     )
       return `/app/${conferenceMembership.conference.id}/hub/team/committees`;
     if (conferenceMembership.role === $Enums.ConferenceRole.PRESS_CORPS) {

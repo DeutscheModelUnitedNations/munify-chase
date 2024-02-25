@@ -14,6 +14,7 @@
     "format": "biome format . --write",
     "lint": "biome check . --apply",
     "lint:error-only": "biome check . --apply --diagnostic-level=error",
+    "typecheck": "cd ./chase/frontend && bunx tsc --noEmit",
     "test": "echo TODO"
   },
   "workspaces": [

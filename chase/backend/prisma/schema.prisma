@@ -30,6 +30,7 @@ generator typebox {
 // }
 
 // TODO a max amount would make sense
+
 model Password {
   id           String @id @default(uuid())
   user         User   @relation(fields: [userId], references: [id])

@@ -14,12 +14,13 @@ export default function ({
   const { userIdent } = useUserIdent();
 
   useEffect(() => {
-    if (!userIdent) {
+    if (!userIdent?.conferenceMemberships || !conferenceId) {
       return;
     }
 
     if (
-      !whitelist.includes(
+      !(whitelist as ($Enums.ConferenceRole | undefined)[]).includes(
+        // @ts-ignore TODO fix this type error
         userIdent.conferenceMemberships.find(
           (c) => c.conference.id === conferenceId,
         )?.role,

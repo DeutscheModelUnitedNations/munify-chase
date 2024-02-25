@@ -14,7 +14,13 @@ import { Column } from "primereact/column";
 import { ConfirmPopup } from "primereact/confirmpopup";
 import { Toolbar } from "primereact/toolbar";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { Committee } from "@/custom_types/fetching";
+import { backend } from "@/services/backend";
+
+type CommitteesType = Awaited<
+  ReturnType<(typeof backend.conference)["conferenceId"]["committee"]["get"]>
+>["data"];
+
+type CommitteeType = NonNullable<CommitteesType>[number];
 
 export default function CommitteeTable({
   committees,
@@ -22,9 +28,9 @@ export default function CommitteeTable({
   handleDelete,
   setInputMaskVisible,
 }: {
-  committees: Committee[] | null | undefined;
+  committees?: CommitteesType;
   confirmDeleteAll: (event: React.MouseEvent<HTMLButtonElement>) => void;
-  handleDelete: (rowData: Committee) => void;
+  handleDelete: (rowData: CommitteeType) => void;
   setInputMaskVisible: (visible: boolean) => void;
 }) {
   const { LL } = useI18nContext();

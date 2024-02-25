@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { useI18nContext } from "@/i18n/i18n-react";
 import { backend } from "@/services/backend";
 import { useRouter } from "next/navigation";
@@ -8,40 +8,41 @@ import ForwardBackButtons from "@/components/admin/onboarding/forward_back_bar";
 import TeamPoolTable from "@/components/admin/teampool/teampool_table";
 import AddTeammemberDialog from "@/components/admin/teampool/add_teammember_dialog";
 import { confirmPopup } from "primereact/confirmpopup";
-import { ConferenceRole } from "../../../../../../../backend/prisma/generated/client";
+import { toastError } from "@/fetching/fetching_utils";
+import { ConferenceIdContext } from "@/contexts/committee_data";
+import { $Enums } from "../../../../../../../backend/prisma/generated/client";
 
-export default function Teampool({
-  params,
-}: {
-  params: { conferenceId: string };
-}) {
+type TeamType = Awaited<
+  ReturnType<(typeof backend.conference)["conferenceId"]["member"]["get"]>
+>["data"];
+
+export default function Teampool() {
   const { LL } = useI18nContext();
   const router = useRouter();
+  const conferenceId = useContext(ConferenceIdContext);
 
-  const [team, setTeam] = useState<Awaited<ReturnType<typeof getTeam>>>([]);
+  const [team, setTeam] = useState<TeamType | null>(null);
   const [inputMaskVisible, setInputMaskVisible] = useState(false);
   const [updateTable, setUpdateTable] = useState(true);
 
   const [saveLoading, setSaveLoading] = useState(false);
 
   async function getTeam() {
-    try {
-      const res = await backend.conference[params.conferenceId].member.get();
-      return res.data;
-    } catch (error) {
-      Toast.current.show({
-        severity: "error",
-        summary: LL.admin.onboarding.error.title(),
-        detail: LL.admin.onboarding.error.generic(),
+    if (!conferenceId) return;
+    await backend.conference[conferenceId].member
+      .get()
+      .then((res) => {
+        if (res.status >= 400) throw new Error("Failed to fetch team");
+        setTeam(res.data);
+      })
+      .catch((error) => {
+        toastError(error);
       });
-    }
   }
 
   useEffect(() => {
     if (updateTable) {
-      getTeam().then((data) => {
-        setTeam(data);
-      });
+      getTeam();
       setUpdateTable(false);
     }
   }, [updateTable]);
@@ -49,8 +50,9 @@ export default function Teampool({
   const addTeammember = ({
     role,
     count,
-  }: { role: ConferenceRole; count: number }) => {
-    backend.conference[params.conferenceId].member
+  }: { role: $Enums.ConferenceRole; count: number }) => {
+    if (!conferenceId) return;
+    backend.conference[conferenceId].member
       .post({
         data: {
           role,
@@ -60,12 +62,8 @@ export default function Teampool({
       .then((_res) => {
         setUpdateTable(true);
       })
-      .catch((_err) => {
-        toast.current.show({
-          severity: "error",
-          summary: LL.admin.onboarding.error.title(),
-          detail: LL.admin.onboarding.error.generic(),
-        });
+      .catch((err) => {
+        toastError(err);
       });
   };
 
@@ -75,41 +73,34 @@ export default function Teampool({
       message: LL.admin.onboarding.structure.DELETE_ALL_CONFIRM(),
       acceptClassName: "p-button-danger",
       accept: () => {
-        backend.conference[params.conferenceId].member
+        if (!conferenceId) return;
+        backend.conference[conferenceId].member
           .delete()
           .then(() => {
             setUpdateTable(true);
           })
           .catch((err) => {
-            toast.current.show({
-              severity: "error",
-              summary: LL.admin.onboarding.error.title(),
-              detail: LL.admin.onboarding.error.generic(),
-            });
+            toastError(err);
           });
       },
     });
   };
 
   const handleDelete = (id: string) => {
-    // backend["conference/committee/delete"]
-    backend.conference[params.conferenceId].member[id]
+    if (!conferenceId) return;
+    backend.conference[conferenceId].member[id]
       .delete()
       .then((_res) => {
         setUpdateTable(true);
       })
-      .catch((_err) => {
-        toast.current.show({
-          severity: "error",
-          summary: LL.admin.onboarding.error.title(),
-          detail: LL.admin.onboarding.error.generic(),
-        });
+      .catch((err) => {
+        toastError(err);
       });
   };
 
   const handleSave = () => {
     setSaveLoading(true);
-    router.push(`/app/admin/onboarding/${params.conferenceId}/committees`);
+    router.push(`/app/admin/onboarding/${conferenceId}/committees`);
   };
 
   return (
@@ -124,7 +115,7 @@ export default function Teampool({
       />
 
       <ForwardBackButtons
-        backURL={`/app/admin/onboarding/${params.conferenceId}/structure`}
+        backURL={`/app/admin/onboarding/${conferenceId}/structure`}
         saveLoading={saveLoading}
         handleSaveFunction={handleSave}
       />

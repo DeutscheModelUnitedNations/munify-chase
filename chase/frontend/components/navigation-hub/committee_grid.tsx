@@ -1,7 +1,6 @@
-import React, { useState, useEffect, useRef, Children } from "react";
+import React, { useState, useEffect } from "react";
 import { useI18nContext } from "@/i18n/i18n-react";
 import { backend } from "@/services/backend";
-import { Toast } from "primereact/toast";
 import { Skeleton } from "primereact/skeleton";
 import Link from "next/link";
 import Timer from "../dashboard/countdown_timer";
@@ -36,7 +35,7 @@ export default function CommitteeGrid({
   conferenceId: string;
   isChair?: boolean;
 }) {
-  const { LL, locale } = useI18nContext();
+  const { LL } = useI18nContext();
 
   const [committees, setCommittees] = useState<CommitteeArray>(null);
 
@@ -44,11 +43,11 @@ export default function CommitteeGrid({
     await backend.conference[conferenceId].committee
       .get()
       .then((res) => {
-        if (res.status !== 200) throw new Error(res.statusText);
+        if (res.status !== 200) throw new Error("Failed to fetch committees");
         setCommittees(res.data);
       })
       .catch((err) => {
-        toastError(toast);
+        toastError(err);
       });
   }
 
@@ -103,7 +102,7 @@ function CommitteeCard({
   committee: CommitteeType;
   isChair?: boolean;
 }) {
-  const { LL, locale } = useI18nContext();
+  const { LL } = useI18nContext();
 
   const [loading, setLoading] = useState(false);
 

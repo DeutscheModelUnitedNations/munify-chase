@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useContext } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import { useI18nContext } from "@/i18n/i18n-react";
 import { HeaderInfoBox } from "../header_template";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -30,7 +30,7 @@ export default function PresenceWidget({
   showExcusedSeperately?: boolean;
   forceUpdate?: boolean;
 }) {
-  const { LL, locale } = useI18nContext();
+  const { LL } = useI18nContext();
   const conferenceId = useContext(ConferenceIdContext);
   const committeeId = useContext(CommitteeIdContext);
 
@@ -40,6 +40,7 @@ export default function PresenceWidget({
   const [absentAttendees, setAbsentAttendees] = useState(0);
 
   async function getDelegationData() {
+    if (!conferenceId || !committeeId) return;
     await backend.conference[conferenceId].committee[committeeId].delegations
       .get()
       .then((response) => {

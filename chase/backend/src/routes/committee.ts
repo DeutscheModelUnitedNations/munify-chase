@@ -3,7 +3,7 @@ import { db } from "../../prisma/db";
 import { committeeRoleGuard } from "../auth/guards/committeeRoles";
 import { conferenceRoleGuard } from "../auth/guards/conferenceRoles";
 import { openApiTag } from "../util/openApiTags";
-import { AgendaItem, Committee } from "../../prisma/generated/schema";
+import { AgendaItem, Committee, Nation } from "../../prisma/generated/schema";
 
 const CommitteeWithOnlyParentCommitteeRelation = t.Omit(Committee, [
   "conference",
@@ -49,8 +49,6 @@ export const committee = new Elysia({
     },
     {
       hasConferenceRole: "any",
-      // response: t.Array(t.Composite([CommitteeWithoutRelations, t.Pick(AgendaItem, ["id", "title", "isActive"])])),
-      // response: t.Array(t.Omit(Committee, ["conference", "members", "conference", "subCommittees"])),
       detail: {
         description: "Get all committees in this conference",
         tags: [openApiTag(import.meta.path)],
@@ -69,19 +67,15 @@ export const committee = new Elysia({
           },
         },
         select: {
-          nation: {
-            select: {
-              alpha3Code: true,
-            },
-          },
+          nation: true,
         },
       });
 
-      return delegation.map((d) => d.nation.alpha3Code);
+      return delegation.map((d) => d.nation);
     },
     {
       hasConferenceRole: "any",
-      response: t.Array(t.String()),
+      response: t.Array(t.Pick(Nation, ["alpha3Code", "id"])),
       detail: {
         description: "Get all country codes of a committee",
         tags: [openApiTag(import.meta.path)],
@@ -112,8 +106,9 @@ export const committee = new Elysia({
         description: "Create a new committee in this conference",
         tags: [openApiTag(import.meta.path)],
       },
-      body: CommitteeData,
-      // response: CommitteeWithOnlyParentCommitteeRelation,
+      body: t.Object(
+        t.Pick(CommitteeData, ["name", "abbreviation", "category", "parentId"]),
+      ),
     },
   )
   .delete(

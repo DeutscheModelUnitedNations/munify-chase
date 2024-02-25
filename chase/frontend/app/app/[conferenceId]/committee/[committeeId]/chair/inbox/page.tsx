@@ -41,7 +41,7 @@ export default function InboxPage() {
 
   const [messages, setMessages] = useState<ChairMessages | null>(null);
   const [selectedMessage, setSelectedMessage] = useState<
-    ChairMessages[number] | null
+    NonNullable<ChairMessages>[number] | null
   >(null);
 
   const [showPrintDialog, setShowPrintDialog] = useState<boolean>(false);
@@ -68,7 +68,7 @@ export default function InboxPage() {
 
   const startContent = (
     <div className="flex gap-2">
-      {selectedMessage?.status === $Enums.MessageStatus.UNREAD ? (
+      {selectedMessage?.status.includes($Enums.MessageStatus.UNREAD) ? (
         <Button faIcon={faEyeSlash} />
       ) : (
         <Button faIcon={faEye} />
@@ -76,12 +76,12 @@ export default function InboxPage() {
       <Button
         faIcon={faExclamationCircle}
         severity={
-          selectedMessage?.status === $Enums.MessageStatus.PRIORITY
-            ? "warn"
+          selectedMessage?.status.includes($Enums.MessageStatus.PRIORITY)
+            ? "warning"
             : "info"
         }
       />
-      <Button faIcon={faTrash} severity="error" />
+      <Button faIcon={faTrash} severity="danger" />
     </div>
   );
 
@@ -90,7 +90,7 @@ export default function InboxPage() {
       <Button faIcon={faPrint} onClick={() => setShowPrintDialog(true)} />
       <Button
         faIcon={faPaperPlane}
-        onClick={() => window.open(`mailto:${messages?.metaEmail}`)}
+        onClick={() => window.open(`mailto:${selectedMessage?.metaEmail}`)}
       />
     </div>
   );

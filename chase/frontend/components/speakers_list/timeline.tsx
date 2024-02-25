@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React from "react";
 import FlipMove from "react-flip-move";
 import { SpeakersListData } from "./speakers_list_block";
 import { useI18nContext } from "@/i18n/i18n-react";
@@ -14,8 +14,10 @@ export default function Timeline({
   list,
   content,
 }: {
-  list?: SpeakersListData["speakers"];
-  content: (item: SpeakersListData["speakers"][number]) => React.ReactNode;
+  list?: NonNullable<SpeakersListData>["speakers"];
+  content: (
+    item: NonNullable<SpeakersListData>["speakers"][number],
+  ) => React.ReactNode;
 }) {
   const { LL } = useI18nContext();
 

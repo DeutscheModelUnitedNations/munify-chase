@@ -126,7 +126,7 @@ export default () => {
     }
   }
 
-  function forgotPassword(e) {
+  function forgotPassword(e: React.MouseEvent<HTMLButtonElement, MouseEvent>) {
     e.preventDefault();
     backend.auth.sendCredentialCreateToken.get({ $query: { email, locale } });
     showToast({
@@ -220,7 +220,7 @@ export default () => {
                       </label>
                     </span>
                     <small>
-                      <button type="button" onClick={forgotPassword}>
+                      <button type="button" onClick={(e) => forgotPassword(e)}>
                         {LL.login.FORGOT_PASSWORD()}
                       </button>
                     </small>

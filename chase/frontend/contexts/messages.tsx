@@ -33,6 +33,7 @@ export function MessageCountProvider({
   const [toastShown, setToastShown] = react.useState(false);
 
   async function getGlobalMessageCount() {
+    if (!conferenceId) return;
     backend.conference[conferenceId].messages.count
       .get()
       .then((res) => {
@@ -58,11 +59,12 @@ export function MessageCountProvider({
   }
 
   async function getCommitteeMessageCount() {
+    if (!conferenceId || !committeeId) return;
     backend.conference[conferenceId].committee[committeeId].messages.count
       .get()
       .then((res) => {
         if (res.status === 200) {
-          const newCount = parseInt(res.data);
+          const newCount = parseInt(res.data || 0);
           if (newCount < messageCount) {
             setToastShown(false);
           }
@@ -83,16 +85,14 @@ export function MessageCountProvider({
   }
 
   useEffect(() => {
-    if (committeeId) {
-      const intervalAPICall = setInterval(() => {
-        if (committeeId) {
-          getCommitteeMessageCount();
-        } else {
-          getGlobalMessageCount();
-        }
-      }, 15000);
-      return () => clearInterval(intervalAPICall);
-    }
+    const intervalAPICall = setInterval(() => {
+      if (committeeId) {
+        getCommitteeMessageCount();
+      } else {
+        getGlobalMessageCount();
+      }
+    }, 15000);
+    return () => clearInterval(intervalAPICall);
   }, [committeeId]);
 
   return (

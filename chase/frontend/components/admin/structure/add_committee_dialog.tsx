@@ -1,8 +1,6 @@
-import React, { FormEvent, useEffect, useRef, useState } from "react";
+import React, { FormEvent, useState } from "react";
 import { useI18nContext } from "@/i18n/i18n-react";
-
 import { Dialog } from "primereact/dialog";
-import { Toast } from "primereact/toast";
 import { InputText } from "primereact/inputtext";
 import { InputSwitch } from "primereact/inputswitch";
 import { SelectButton } from "primereact/selectbutton";
@@ -16,23 +14,32 @@ import {
 } from "@fortawesome/pro-solid-svg-icons";
 import Button from "@/components/button";
 import useMousetrap from "mousetrap-react";
-import { Committee, CreateCommitteePayload } from "@/custom_types/fetching";
+import { $Enums } from "../../../../backend/prisma/generated/client";
+import { backend } from "@/services/backend";
 
-type AddCommitteeDialogProps = {
-  inputMaskVisible: boolean;
-  setInputMaskVisible: (visible: boolean) => void;
-  addCommitteeToList: (payload: CreateCommitteePayload) => void;
-  committees: Committee[] | undefined | null;
+type AddCommitteePayloadType = {
+  name: string;
+  abbreviation: string;
+  category: $Enums.CommitteeCategory;
+  parentId?: string | undefined;
 };
+
+type CommitteesType = Awaited<
+  ReturnType<(typeof backend.conference)["conferenceId"]["committee"]["get"]>
+>["data"];
 
 export default function AddCommitteeDialog({
   inputMaskVisible,
   setInputMaskVisible,
   addCommitteeToList,
   committees,
-}: AddCommitteeDialogProps) {
+}: {
+  inputMaskVisible: boolean;
+  setInputMaskVisible: (visible: boolean) => void;
+  addCommitteeToList: (payload: AddCommitteePayloadType) => void;
+  committees: CommitteesType;
+}) {
   const { LL } = useI18nContext();
-  const toast = useRef<Toast>(null);
 
   const [newCommitteeName, setNewCommitteeName] = useState("");
   const [newCommitteeAbbreviation, setNewCommitteeAbbreviation] = useState("");
@@ -59,7 +66,6 @@ export default function AddCommitteeDialog({
       name: newCommitteeName,
       abbreviation: newCommitteeAbbreviation,
       category: newCommitteeCategory,
-      isSubcommittee: newCommitteeIsSubcommittee,
       parentId: newCommitteeParent,
     });
     resetInputMask();
@@ -131,13 +137,13 @@ export default function AddCommitteeDialog({
             onChange={(e) => {
               setNewCommitteeCategory(e.value);
               if (e.value !== "COMMITTEE") {
-                setNewCommitteeParent(null);
+                setNewCommitteeParent(undefined);
                 setNewCommitteeIsSubcommittee(false);
               }
             }}
             optionLabel="name"
             options={categories}
-            unselectable={false}
+            allowEmpty={false}
           />
           <div className="flex justify-start items-center">
             <InputSwitch
@@ -150,9 +156,9 @@ export default function AddCommitteeDialog({
             </label>
           </div>
           <Dropdown
-            value={committees.find((c) => c.id === newCommitteeParent)}
-            options={committees.filter(
-              (c) => !c.isSubcommittee && c.category === "COMMITTEE",
+            value={committees?.find((c) => c.id === newCommitteeParent)}
+            options={committees?.filter(
+              (c) => !c.parentId && c.category === "COMMITTEE",
             )}
             onChange={(e) => setNewCommitteeParent(e.value.id)}
             optionLabel="name"
@@ -182,7 +188,6 @@ export default function AddCommitteeDialog({
             />
           </div>
         </form>
-        <Toast ref={toast} />
       </Dialog>
     </>
   );

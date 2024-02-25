@@ -1,3 +1,4 @@
+import React from "react";
 import Button from "@/components/button";
 import { NormalFlag } from "@/components/flag_templates";
 import { useI18nContext } from "@/i18n/i18n-react";
@@ -11,35 +12,38 @@ import {
 import { Column } from "primereact/column";
 import { DataTable } from "primereact/datatable";
 import { Toolbar } from "primereact/toolbar";
-import {
-  Committee,
-  Delegation,
-} from "../../../../backend/prisma/generated/client";
+import { backend } from "@/services/backend";
 
-type DelegationsTableProps = {
-  conferenceId: string;
-  delegations: Delegation[];
-  committees: Committee[];
-  activateOrDeactivateCommittee: (
-    conferenceId: string,
-    delegationId: string,
-    committeeId: string,
-  ) => void;
-  deleteDelegation: (conferenceId: string, delegationId: string) => void;
-  openAddDelegationDialog: (state: boolean) => void;
-};
+export type CommitteesType = Awaited<
+  ReturnType<(typeof backend.conference)["conferenceId"]["committee"]["get"]>
+>["data"];
+
+export type DelegationsType = Awaited<
+  ReturnType<(typeof backend.conference)["conferenceId"]["delegation"]["get"]>
+>["data"];
 
 export default function DelegationsTable({
-  conferenceId,
   delegations,
   committees,
   activateOrDeactivateCommittee,
   deleteDelegation,
   openAddDelegationDialog,
-}: DelegationsTableProps) {
+}: {
+  delegations: DelegationsType;
+  committees: CommitteesType;
+  activateOrDeactivateCommittee: (
+    delegationId: string,
+    committeeId: string,
+  ) => void;
+  deleteDelegation: (delegationId: string) => void;
+  openAddDelegationDialog: (state: boolean) => void;
+}) {
   const { LL, locale } = useI18nContext();
 
-  const delegationIsActive = (delegation: Delegation, committee: Committee) => {
+  const delegationIsActive = (
+    delegation: NonNullable<DelegationsType>[number],
+    committee: NonNullable<CommitteesType>[number],
+  ) => {
     return delegation.members?.some(
       (member) => member.committeeId === committee.id,
     );
@@ -74,19 +78,19 @@ export default function DelegationsTable({
         style={{ borderBottomLeftRadius: "0", borderBottomRightRadius: "0" }}
       />
       <DataTable
-        value={delegations}
+        value={delegations || []}
         className="mb-4"
         emptyMessage={LL.admin.onboarding.delegations.EMPTY_MESSAGE()}
         footer={
           <div className="flex justify-start gap-3">
-            <CountCard count={delegations.length} committee="Total" />
+            <CountCard count={delegations?.length || 0} committee="Total" />
             {committees?.map((committee) => (
               <CountCard
                 key={committee.id}
                 count={
-                  delegations.filter((delegation) =>
+                  delegations?.filter((delegation) =>
                     delegationIsActive(delegation, committee),
-                  ).length
+                  ).length || 0
                 }
                 committee={committee.abbreviation}
               />
@@ -116,9 +120,7 @@ export default function DelegationsTable({
         {Array.isArray(committees) &&
           committees?.map((committee) => (
             <Column
-              key={(delegation) =>
-                `${committee.id}-${delegation.nation.alpha3Code}`
-              }
+              key={committee?.id}
               header={committee.abbreviation}
               alignHeader={"center"}
               align={"center"}
@@ -133,15 +135,11 @@ export default function DelegationsTable({
                   text={!delegationIsActive(delegation, committee)}
                   severity={
                     delegationIsActive(delegation, committee)
-                      ? "primary"
+                      ? undefined
                       : "danger"
                   }
                   onClick={() =>
-                    activateOrDeactivateCommittee(
-                      conferenceId,
-                      delegation.id,
-                      committee.id,
-                    )
+                    activateOrDeactivateCommittee(delegation.id, committee.id)
                   }
                 />
               )}
@@ -153,7 +151,7 @@ export default function DelegationsTable({
               severity="danger"
               text
               faIcon={faTrashAlt}
-              onClick={() => deleteDelegation(conferenceId, delegation.id)}
+              onClick={() => deleteDelegation(delegation.id)}
               className="h-full"
             />
           )}

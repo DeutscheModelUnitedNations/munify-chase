@@ -1,5 +1,4 @@
 import React from "react";
-import { useI18nContext } from "@/i18n/i18n-react";
 import Button from "../button";
 import { IconDefinition } from "@fortawesome/fontawesome-svg-core";
 import { useRouter } from "next/navigation";
@@ -15,7 +14,6 @@ type TextSectionProps = {
 };
 
 export default function TextSection({ title, text, button }: TextSectionProps) {
-  const { LL } = useI18nContext();
   const Router = useRouter();
 
   return (
@@ -34,7 +32,6 @@ export default function TextSection({ title, text, button }: TextSectionProps) {
           <div className="pt-4">
             <Button
               label={button.lable}
-              href={button.link}
               onClick={() => {
                 //TODO this is not ideal, we should use actual anchor tags for this
                 Router.push(button.link);

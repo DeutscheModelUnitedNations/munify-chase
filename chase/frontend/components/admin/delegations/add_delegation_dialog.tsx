@@ -3,64 +3,72 @@ import CountryAutoComplete from "@/components/speakers_list/country_auto_complet
 import { backend } from "@/services/backend";
 import { Alpha3Code } from "@/custom_types/custom_types";
 import { useI18nContext } from "@/i18n/i18n-react";
-import getCountryNameByCode from "@/misc/get_country_name_by_code";
 import { faPlus, faXmark } from "@fortawesome/pro-solid-svg-icons";
 import useMousetrap from "mousetrap-react";
 import { Dialog } from "primereact/dialog";
-import { Toast } from "primereact/toast";
-import { FormEvent, use, useEffect, useRef, useState } from "react";
+import { FormEvent, useEffect, useState } from "react";
+import { toastError } from "@/fetching/fetching_utils";
 
-type AddDelegationDialogProps = {
-  inputMaskVisible: boolean;
-  setInputMaskVisible: (visible: boolean) => void;
-  addDelegationToList: (alpha3Code: Alpha3Code) => void;
-};
+export type AllAvailableCountriesType = Awaited<
+  ReturnType<typeof backend.baseData.countries.get>
+>["data"];
+
+type CountryDataWithoutNameType =
+  NonNullable<AllAvailableCountriesType>[number];
+
+export interface CountryDataType extends CountryDataWithoutNameType {
+  name?: string;
+}
 
 export default function AddDelegationDialog({
   inputMaskVisible,
   setInputMaskVisible,
   addDelegationToList,
-}: AddDelegationDialogProps) {
+}: {
+  inputMaskVisible: boolean;
+  setInputMaskVisible: (visible: boolean) => void;
+  addDelegationToList: (alpha3Code: Alpha3Code) => void;
+}) {
   const { LL } = useI18nContext();
-  const toast = useRef<Toast>(null);
 
-  const [delegationAlpha3Code, setdelegationAlpha3Code] = useState(null);
-  const [allAvailableCountries, setAllAvailableCountries] = useState([]);
+  const [delegationData, setDelegationData] = useState<CountryDataType | null>(
+    null,
+  );
+  const [allAvailableCountries, setAllAvailableCountries] =
+    useState<AllAvailableCountriesType | null>(null);
 
   const resetInputMask = () => {
-    setdelegationAlpha3Code(null);
+    setDelegationData(null);
   };
 
   async function getAllBaseCountries() {
-    const res = await backend.baseData.countries.get().catch((error) => {
-      toast.current?.show({
-        severity: "error",
-        summary: LL.admin.onboarding.error.title(),
-        detail: LL.admin.onboarding.error.generic(),
+    await backend.baseData.countries
+      .get()
+      .then((res) => {
+        if (res.status >= 400) throw new Error("Failed to fetch countries");
+        setAllAvailableCountries(res.data);
+      })
+      .catch((error) => {
+        toastError(error);
       });
-    });
-    return res.data.map((country) => country.alpha3Code);
   }
 
   useEffect(() => {
-    getAllBaseCountries().then((allCountries) => {
-      setAllAvailableCountries(allCountries);
-    });
+    getAllBaseCountries();
   }, []);
 
   const addDelegation = (e: FormEvent | null = null) => {
     if (e) e.preventDefault();
-    if (delegationAlpha3Code === null) return;
-    console.info(delegationAlpha3Code);
-    addDelegationToList(delegationAlpha3Code?.alpha3);
+    if (!delegationData) return;
+    addDelegationToList(delegationData.alpha3Code);
     resetInputMask();
     setInputMaskVisible(false);
   };
 
   const addDelegationAndStay = (e: FormEvent | null = null) => {
     if (e) e.preventDefault();
-    if (delegationAlpha3Code === null) return;
-    addDelegationToList(delegationAlpha3Code?.alpha3);
+    if (!delegationData) return;
+    addDelegationToList(delegationData.alpha3Code);
     resetInputMask();
   };
 
@@ -87,9 +95,9 @@ export default function AddDelegationDialog({
       >
         <div className="flex flex-col items-stretch justify-center gap-4 w-full mt-2">
           <CountryAutoComplete
-            listOfAllCountries={allAvailableCountries}
-            selectedCountry={delegationAlpha3Code}
-            setSelectedCountry={setdelegationAlpha3Code}
+            allCountries={allAvailableCountries}
+            selectedCountry={delegationData}
+            setSelectedCountry={setDelegationData}
             placeholder={LL.admin.onboarding.delegations.add_delegation.SEARCH_PLACEHOLDER()}
           />
           <div className="mt-4 flex w-full gap-2">
@@ -120,7 +128,6 @@ export default function AddDelegationDialog({
             />
           </div>
         </div>
-        <Toast ref={toast} />
       </Dialog>
     </>
   );

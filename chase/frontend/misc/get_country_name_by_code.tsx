@@ -9,7 +9,7 @@ import { CountryCode } from "@/custom_types/custom_types";
  */
 
 export default function getCountryNameByCode(
-  countryCode: string,
+  countryCode: string | null | undefined,
   locale: string,
 ): CountryCode {
   const availableLanguages = [
@@ -56,7 +56,7 @@ export default function getCountryNameByCode(
   }
 
   const country = countryData.find(
-    (item) => item.alpha3 === countryCode?.toLowerCase(),
+    (item) => item.alpha3 === (countryCode?.toLowerCase() || "xxx"),
   );
 
   if (country) {

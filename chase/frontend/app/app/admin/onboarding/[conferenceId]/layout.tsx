@@ -17,6 +17,7 @@ import { useUserIdent } from "@/contexts/user_ident";
 import { ConferenceIdContext } from "@/contexts/committee_data";
 import Lockout from "@/components/lockout";
 import { $Enums } from "../../../../../../backend/prisma/generated/client";
+import { toastError } from "@/fetching/fetching_utils";
 
 export default function AdminLayout({
   children,
@@ -32,9 +33,9 @@ export default function AdminLayout({
 
   const [settingsSidebarVisible, setSettingsSidebarVisible] = useState(false);
 
-  const saveAndQuit = (event) => {
+  const saveAndQuit = (e: React.MouseEvent<HTMLButtonElement>) => {
     confirmPopup({
-      target: event.currentTarget,
+      target: e.currentTarget,
       message: LL.admin.onboarding.SAVE_AND_QUIT_MESSAGE(),
       accept: () => {
         router.push(`/app/admin/${params.conferenceId}/dashboard`);
@@ -54,6 +55,7 @@ export default function AdminLayout({
         }
       })
       .catch((error) => {
+        toastError(error);
         router.push("/login/lockout");
       });
   }, []);

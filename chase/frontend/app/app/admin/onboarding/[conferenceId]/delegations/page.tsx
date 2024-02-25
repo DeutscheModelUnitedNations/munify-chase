@@ -10,14 +10,10 @@ import { useEffect, useState, useContext } from "react";
 import useMousetrap from "mousetrap-react";
 import { ConferenceIdContext } from "@/contexts/committee_data";
 import { toastError } from "@/fetching/fetching_utils";
-
-type CommitteesType = Awaited<
-  ReturnType<(typeof backend.conference)["conferenceId"]["committee"]["get"]>
->["data"];
-
-type DelegationsType = Awaited<
-  ReturnType<(typeof backend.conference)["conferenceId"]["delegation"]["get"]>
->["data"];
+import {
+  CommitteesType,
+  DelegationsType,
+} from "@/components/admin/delegations/delegations_table";
 
 export default function AdminDelegationsPage() {
   const { LL, locale } = useI18nContext();
@@ -87,46 +83,23 @@ export default function AdminDelegationsPage() {
     setUpdate(true);
   }
 
-  async function activateCommittee(delegationId: string, committeeId: string) {
+  async function activateOrDeactivateCommittee(
+    delegationId: string,
+    committeeId: string,
+  ) {
     if (!conferenceId) return;
     await backend.conference[conferenceId].delegation[delegationId].committee[
       committeeId
     ]
       .post()
       .then((res) => {
-        if (res.status >= 400) throw new Error("Failed to activate committee");
-        return res;
+        if (res.status >= 400)
+          throw new Error("Failed to activate/deactivate committee");
+        setUpdate(true);
       })
       .catch((error) => {
         toastError(error);
       });
-  }
-
-  async function deactivateCommittee(
-    delegationId: string,
-    committeeId: string,
-  ) {
-    if (!conferenceId) return;
-    await backend.conference[conferenceId].delegation[delegationId].committee[
-      committeeId
-    ]
-      .delete()
-      .catch((error) => {
-        toastError(error);
-      });
-  }
-
-  async function activateOrDeactivateCommittee(
-    delegationId: string,
-    committeeId: string,
-  ) {
-    const res = await activateCommittee(delegationId, committeeId);
-
-    // if there was already a connection, the server will respond with a 208 status code and provide the id of the Delegate
-    if (res.status === 304) {
-      await deactivateCommittee(delegationId, committeeId);
-    }
-    setUpdate(true);
   }
 
   return (
@@ -134,7 +107,6 @@ export default function AdminDelegationsPage() {
       <OnboardingSteps activeIndex={3} />
 
       <DelegationsTable
-        conferenceId={conferenceId}
         delegations={delegations}
         committees={committees}
         activateOrDeactivateCommittee={activateOrDeactivateCommittee}

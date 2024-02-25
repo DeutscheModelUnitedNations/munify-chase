@@ -59,14 +59,15 @@ export default function ChairHubLayout({
           />
           {userIdent &&
             role !== null &&
-            [
-              $Enums.ConferenceRole.ADMIN,
-              $Enums.ConferenceRole.SECRETARIAT,
-              $Enums.ConferenceRole.COMMITTEE_ADVISOR,
-              $Enums.ConferenceRole.PARTICIPANT_CARE,
-              $Enums.ConferenceRole.MISCELLANEOUS_TEAM,
-              // @ts-ignore TODO Typescript is confused by the includes method. Find a better way
-            ].includes(role) && (
+            (
+              [
+                $Enums.ConferenceRole.ADMIN,
+                $Enums.ConferenceRole.SECRETARIAT,
+                $Enums.ConferenceRole.COMMITTEE_ADVISOR,
+                $Enums.ConferenceRole.PARTICIPANT_CARE,
+                $Enums.ConferenceRole.MISCELLANEOUS_TEAM,
+              ] as ($Enums.ConferenceRole | undefined)[]
+            ).includes(role) && (
               <NavButton
                 icon={faInbox as IconProp}
                 link={"./inbox"}

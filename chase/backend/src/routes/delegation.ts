@@ -104,36 +104,23 @@ export const delegation = new Elysia({
   .post(
     "/delegation/:delegationId/committee/:committeeId",
     async ({ params: { delegationId, committeeId }, set }) => {
-      try {
-        const res = await db.committeeMember.create({
-          data: {
-            committeeId,
-            delegationId,
+      const committeeMember = await db.committeeMember.findFirst({
+        where: {
+          committeeId,
+          delegationId,
+        },
+      });
+
+      if (committeeMember) {
+        return db.committeeMember.delete({
+          where: {
+            id: committeeMember.id,
           },
         });
-        return res;
-      } catch (e) {
-        if (e.code === "P2002") {
-          set.status = "Not Modified";
-          throw new Error("Committee is already connected to this delegation");
-        }
-        throw e;
       }
-    },
-    {
-      hasConferenceRole: ["ADMIN"],
-      detail: {
-        description:
-          "Connect a committee to a delegation in this conference. If the committee is already connected to the delegation, return a 304 Not Modified Error Code.",
-        tags: [openApiTag(import.meta.path)],
-      },
-    },
-  )
-  .delete(
-    "/delegation/:delegationId/committee/:committeeId",
-    ({ params: { delegationId, committeeId } }) => {
-      return db.committeeMember.deleteMany({
-        where: {
+
+      return await db.committeeMember.create({
+        data: {
           committeeId,
           delegationId,
         },
@@ -143,7 +130,7 @@ export const delegation = new Elysia({
       hasConferenceRole: ["ADMIN"],
       detail: {
         description:
-          "Disconnect a committee from a delegation in this conference",
+          "Connect a committee to a delegation in this conference. If the committee is already connected to the delegation, it will be disconnected.",
         tags: [openApiTag(import.meta.path)],
       },
     },

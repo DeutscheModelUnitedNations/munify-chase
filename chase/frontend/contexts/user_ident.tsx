@@ -17,14 +17,10 @@ type Delegation = NonNullable<
 >;
 
 interface UserIdentContextType {
-  user:
-    | {
-        data: User;
-        conferenceMembership: (
-          conferenceId: string | null | undefined,
-        ) => ConferenceMembership | undefined;
-      }
-    | undefined;
+  userIdent: User;
+  conferenceMembership: (
+    conferenceId: string | null | undefined,
+  ) => ConferenceMembership | undefined;
 }
 
 interface MyDelegationContextType {
@@ -67,12 +63,8 @@ export const UserIdentProvider = ({
 
   return (
     <UserIdentContext.Provider
-      value={{
-        user:
-          userIdent !== null
-            ? { data: userIdent, conferenceMembership }
-            : undefined,
-      }}
+      // biome-ignore lint/style/noNonNullAssertion: TODO nullable types cleanup throughout the whole app
+      value={{ userIdent: userIdent!, conferenceMembership }}
     >
       {children}
     </UserIdentContext.Provider>
@@ -84,22 +76,22 @@ export const MyDelegationProvider = ({
 }: {
   children: React.ReactNode;
 }) => {
-  const userIdent = useUserIdent();
+  const userIdentContext = useUserIdent();
   const conferenceId = useContext(ConferenceIdContext);
 
   const [delegation, setDelegation] = useState<Delegation | null>(null);
 
   useEffect(() => {
     (async () => {
-      if (!userIdent?.user?.data.id || !conferenceId) return;
+      if (!userIdentContext?.userIdent?.id || !conferenceId) return;
       const res =
         await backend.conference[conferenceId].user[
-          userIdent.user.data.id
+          userIdentContext?.userIdent?.id
         ].delegation.get();
 
       setDelegation(res.data);
     })();
-  }, [userIdent]);
+  }, [userIdentContext]);
 
   return (
     <MyDelegationContext.Provider value={{ delegation }}>

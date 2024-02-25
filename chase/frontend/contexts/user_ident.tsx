@@ -7,25 +7,36 @@ import { ConferenceIdContext } from "./committee_data";
 export type User = NonNullable<
   Awaited<ReturnType<typeof backend.auth.myInfo.get>>["data"]
 >;
-type Delegation = Awaited<
-  ReturnType<
-    (typeof backend.conference)["conferenceId"]["user"]["userId"]["delegation"]["get"]
-  >
->["data"];
+type ConferenceMembership = User["conferenceMemberships"][number];
+type Delegation = NonNullable<
+  Awaited<
+    ReturnType<
+      (typeof backend.conference)["conferenceId"]["user"]["userId"]["delegation"]["get"]
+    >
+  >["data"]
+>;
 
-export const UserIdent = createContext(
-  {} as {
-    userIdent: User | null;
-    conferenceMembership: (
-      conferenceId: string | null | undefined,
-    ) => User["conferenceMemberships"][number] | null;
-  },
-);
-export const useUserIdent = () => useContext(UserIdent);
+interface UserIdentContextType {
+  user:
+    | {
+        data: User;
+        conferenceMembership: (
+          conferenceId: string,
+        ) => ConferenceMembership | undefined;
+      }
+    | undefined;
+}
 
-export const MyDelegationContext = createContext(
-  {} as { delegation: Delegation | null },
+interface MyDelegationContextType {
+  delegation: Delegation | null;
+}
+
+export const UserIdentContext = createContext<UserIdentContextType | undefined>(
+  undefined,
 );
+export const useUserIdent = () => useContext(UserIdentContext);
+export const MyDelegationContext =
+  createContext<MyDelegationContextType | null>(null);
 
 export const UserIdentProvider = ({
   children,
@@ -34,36 +45,35 @@ export const UserIdentProvider = ({
 
   const [userIdent, setUserIdent] = useState<User | null>(null);
 
-  const conferenceMembership = (conferenceId: string | null) => {
-    if (!conferenceId || !userIdent) return null;
+  const conferenceMembership = (conferenceId: string) =>
     userIdent?.conferenceMemberships.find(
       (c) => c.conference.id === conferenceId,
-    ) ?? null;
-  };
-
-  async function getMyInfo() {
-    await backend.auth.myInfo
-      .get()
-      .then((res) => {
-        if (res.status > 400) {
-          router.push("/login");
-          return;
-        }
-        setUserIdent(res.data);
-      })
-      .catch((err) => {
-        router.push("/login");
-      });
-  }
+    );
 
   useEffect(() => {
-    getMyInfo();
+    (async () => {
+      const res = await backend.auth.myInfo.get();
+
+      if (res.status > 400) {
+        router.push("/login");
+        return;
+      }
+
+      setUserIdent(res.data);
+    })();
   }, []);
 
   return (
-    <UserIdent.Provider value={{ userIdent, conferenceMembership }}>
+    <UserIdentContext.Provider
+      value={{
+        user:
+          userIdent !== null
+            ? { data: userIdent, conferenceMembership }
+            : undefined,
+      }}
+    >
       {children}
-    </UserIdent.Provider>
+    </UserIdentContext.Provider>
   );
 };
 
@@ -77,22 +87,16 @@ export const MyDelegationProvider = ({
 
   const [delegation, setDelegation] = useState<Delegation | null>(null);
 
-  async function getMyDelegation() {
-    if (!userIdent?.userIdent?.id || !conferenceId) return;
-    await backend.conference[conferenceId].user[
-      userIdent.userIdent.id
-    ].delegation
-      .get()
-      .then((res) => {
-        setDelegation(res.data);
-      })
-      .catch((err) => {
-        console.error(err);
-      });
-  }
-
   useEffect(() => {
-    getMyDelegation();
+    (async () => {
+      if (!userIdent?.user?.data.id || !conferenceId) return;
+      const res =
+        await backend.conference[conferenceId].user[
+          userIdent.user.data.id
+        ].delegation.get();
+
+      setDelegation(res.data);
+    })();
   }, [userIdent]);
 
   return (

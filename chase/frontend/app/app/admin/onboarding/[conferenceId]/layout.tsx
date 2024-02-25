@@ -14,8 +14,11 @@ import { confirmPopup } from "primereact/confirmpopup";
 import { ConfirmDialog } from "primereact/confirmdialog";
 import { backend } from "@/services/backend";
 import { useUserIdent } from "@/contexts/user_ident";
+import { ConferenceIdContext } from "@/contexts/committee_data";
+import Lockout from "@/components/lockout";
+import { $Enums } from "../../../../../../backend/prisma/generated/client";
 
-export default function RootLayout({
+export default function AdminLayout({
   children,
   params,
 }: {
@@ -25,6 +28,7 @@ export default function RootLayout({
   const { LL } = useI18nContext();
   const router = useRouter();
   const { userIdent } = useUserIdent();
+  const conferenceId = useContext(ConferenceIdContext);
 
   const [settingsSidebarVisible, setSettingsSidebarVisible] = useState(false);
 
@@ -41,12 +45,8 @@ export default function RootLayout({
   useMousetrap("ctrl+shift+s", (e) => saveAndQuit(e));
 
   useEffect(() => {
-    if (userIdent?.role !== "ADMIN") {
-      router.push("/login/lockout");
-      return;
-    }
-
-    backend.conference[params.conferenceId]
+    if (!conferenceId) return;
+    backend.conference[conferenceId]
       .get()
       .then((response) => {
         if (!response?.data?.id) {
@@ -60,6 +60,7 @@ export default function RootLayout({
 
   return (
     <>
+      <Lockout whitelist={[$Enums.ConferenceRole.ADMIN]} />
       <ConfirmDialog />
       <div className="flex justify-center items-start min-h-screen bg-primary">
         <div className="flex-1 flex flex-col justify-center items-center m-10 mt-20">

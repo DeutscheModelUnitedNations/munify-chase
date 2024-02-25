@@ -85,6 +85,7 @@ export function StatusTimerProvider({
               [
                 $Enums.CommitteeStatus.INFORMAL,
                 $Enums.CommitteeStatus.PAUSE,
+                // @ts-ignore TODO Typescript is confused by the includes method. Find a better way
               ].includes(category)
             )
               timerToast();

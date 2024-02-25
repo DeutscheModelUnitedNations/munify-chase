@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useContext, useState } from "react";
 
 import { useI18nContext } from "@/i18n/i18n-react";
 import { backend } from "@/services/backend";
@@ -12,82 +12,78 @@ import ForwardBackButtons from "@/components/admin/onboarding/forward_back_bar";
 import CommitteeTable from "@/components/admin/structure/committee_table";
 import AddCommitteeDialog from "@/components/admin/structure/add_committee_dialog";
 import useMousetrap from "mousetrap-react";
-import { Committee, CreateCommitteePayload } from "@/custom_types/fetching";
+import { toastError } from "@/fetching/fetching_utils";
+import { ConferenceIdContext } from "@/contexts/committee_data";
+import { $Enums } from "../../../../../../../backend/prisma/generated/client";
+import { useToast } from "@/contexts/toast";
 
-export default function structure({
-  params,
-}: {
-  params: { conferenceId: string };
-}) {
+type CommitteesType = Awaited<
+  ReturnType<(typeof backend.conference)["conferenceId"]["committee"]["get"]>
+>["data"];
+
+export default function structure() {
   const { LL } = useI18nContext();
   const router = useRouter();
-  const toast = useRef<Toast>(null);
-
-  async function getCommittees(id: string) {
-    try {
-      const res = await backend.conference[id].committee.get();
-      return res.data;
-    } catch (_error) {
-      toast.current.show({
-        severity: "error",
-        summary: LL.admin.onboarding.error.title(),
-        detail: LL.admin.onboarding.error.generic(),
-      });
-    }
-  }
+  const { showToast } = useToast();
+  const conferenceId = useContext(ConferenceIdContext);
 
   const [inputMaskVisible, setInputMaskVisible] = useState(false);
 
   const [saveLoading, setSaveLoading] = useState(false);
 
   const [updateCommittees, setUpdateCommittees] = useState(true);
-  const [committees, setCommittees] = useState<
-    Awaited<ReturnType<typeof getCommittees>>
-  >([]);
+  const [committees, setCommittees] = useState<CommitteesType>(null);
+
+  async function getCommittees() {
+    if (!conferenceId) return;
+    await backend.conference[conferenceId].committee
+      .get()
+      .then((res) => {
+        if (res.status >= 400) throw new Error("Failed to fetch committees");
+        setCommittees(res.data);
+      })
+      .catch((error) => {
+        toastError(error);
+      });
+  }
 
   useEffect(() => {
     if (updateCommittees) {
-      getCommittees(params.conferenceId).then((data) => {
-        setCommittees(data);
-        setUpdateCommittees(false);
-      });
+      getCommittees();
+      setUpdateCommittees(false);
     }
-  }, [updateCommittees, params.conferenceId]);
+  }, [updateCommittees, conferenceId]);
 
   async function addCommittee({
     name,
     abbreviation,
     category,
     parentId,
-  }: CreateCommitteePayload) {
-    let payload: CreateCommitteePayload = {
-      name,
-      abbreviation,
-      category,
-    };
-    if (parentId) {
-      payload = {
-        ...payload,
-        parentId,
-      };
-    }
-    backend.conference[params.conferenceId].committee
-      .post(payload)
+  }: {
+    name: string;
+    abbreviation: string;
+    category: $Enums.CommitteeCategory;
+    parentId?: string;
+  }) {
+    if (!conferenceId) return;
+    backend.conference[conferenceId].committee
+      .post({
+        name,
+        abbreviation,
+        category,
+        parentId: parentId || undifined,
+      })
       .then((_res) => {
         setInputMaskVisible(false);
         setUpdateCommittees(true);
-        toast.current.show({
+        showToast({
           severity: "success",
           summary: LL.admin.onboarding.structure.SUCCESS_ADD_COMMITTEE(),
           detail: `${name} (${abbreviation})`,
         });
       })
-      .catch((_err) => {
-        toast.current.show({
-          severity: "error",
-          summary: LL.admin.onboarding.error.title(),
-          detail: LL.admin.onboarding.error.generic(),
-        });
+      .catch((err) => {
+        toastError(err);
       });
   }
 
@@ -97,35 +93,28 @@ export default function structure({
       message: LL.admin.onboarding.structure.DELETE_ALL_CONFIRM(),
       acceptClassName: "p-button-danger",
       accept: () => {
-        backend.conference[params.conferenceId].committee
+        if (!conferenceId) return;
+        backend.conference[conferenceId].committee
           .delete()
           .then((_res) => {
             setUpdateCommittees(true);
           })
-          .catch((_err) => {
-            toast.current.show({
-              severity: "error",
-              summary: LL.admin.onboarding.error.title(),
-              detail: LL.admin.onboarding.error.generic(),
-            });
+          .catch((err) => {
+            toastError(err);
           });
       },
     });
   };
 
-  async function handleDelete(rawData: Committee) {
+  async function handleDelete(rawData: NonNullable<CommitteesType[number]>) {
     if (!rawData) return;
-    backend.conference[params.conferenceId].committee[rawData.id]
+    backend.conference[conferenceId].committee[rawData.id]
       .delete()
       .then((_res) => {
         setUpdateCommittees(true);
       })
-      .catch((_err) => {
-        toast.current.show({
-          severity: "error",
-          summary: LL.admin.onboarding.error.title(),
-          detail: LL.admin.onboarding.error.generic(),
-        });
+      .catch((err) => {
+        toastError(err);
       });
   }
 
@@ -136,7 +125,7 @@ export default function structure({
 
   const handleSave = () => {
     setSaveLoading(true);
-    router.push(`/app/admin/onboarding/${params.conferenceId}/teampool`);
+    router.push(`/app/admin/onboarding/${conferenceId}/teampool`);
   };
 
   return (
@@ -162,7 +151,6 @@ export default function structure({
         addCommitteeToList={addCommittee}
         committees={committees}
       />
-      <Toast ref={toast} />
     </>
   );
 }

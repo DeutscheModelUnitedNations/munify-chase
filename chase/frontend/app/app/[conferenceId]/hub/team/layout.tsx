@@ -65,6 +65,7 @@ export default function ChairHubLayout({
               $Enums.ConferenceRole.COMMITTEE_ADVISOR,
               $Enums.ConferenceRole.PARTICIPANT_CARE,
               $Enums.ConferenceRole.MISCELLANEOUS_TEAM,
+              // @ts-ignore TODO Typescript is confused by the includes method. Find a better way
             ].includes(role) && (
               <NavButton
                 icon={faInbox as IconProp}

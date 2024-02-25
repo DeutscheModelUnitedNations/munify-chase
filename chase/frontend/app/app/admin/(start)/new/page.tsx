@@ -10,6 +10,7 @@ import { faSparkles } from "@fortawesome/pro-solid-svg-icons";
 import { backend } from "@/services/backend";
 import { useRouter } from "next/navigation";
 import { useToast } from "@/contexts/toast";
+import { errorToast } from "@/fetching/fetching_utils";
 
 export default function loginVorsitz() {
   const { LL } = useI18nContext();
@@ -29,8 +30,8 @@ export default function loginVorsitz() {
       .post({
         name: conferenceName,
         token: token,
-        start: dates[0]?.toISOString(),
-        end: dates[1]?.toISOString(),
+        start: dates ? dates[0]?.toISOString() : undefined,
+        end: dates ? dates[1]?.toISOString() : undefined,
       })
       .then((res) => {
         if (!res?.data?.id) throw new Error("No conference id returned");
@@ -44,11 +45,7 @@ export default function loginVorsitz() {
         router.push(`/app/admin/onboarding/${conferenceId}/structure`);
       })
       .catch((err) => {
-        showToast({
-          severity: "error",
-          summary: LL.admin.onboarding.error.title(),
-          detail: LL.admin.onboarding.error.generic(),
-        });
+        errorToast(err);
         setLoading(false);
       });
   };

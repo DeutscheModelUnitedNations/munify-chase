@@ -4,12 +4,10 @@ import { backend } from "@/services/backend";
 import {
   faCircleNotch,
   faRightFromBracket,
-  faRocket,
   faRocketLaunch,
 } from "@fortawesome/pro-solid-svg-icons";
 import { useRouter } from "next/navigation";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { useToast } from "@/contexts/toast";
 import Button from "@/components/button";
 import { $Enums } from "../../../../../backend/prisma/generated/client";
 import { LargeFlag } from "@/components/flag_templates";
@@ -17,6 +15,7 @@ import getCountryNameByCode from "@/misc/get_country_name_by_code";
 import { useI18nContext } from "@/i18n/i18n-react";
 import Link from "next/link";
 import { conferenceRoleTranslation } from "@/i18n/translation_utils";
+import { toastError } from "@/fetching/fetching_utils";
 
 type MyInfoDataType = Awaited<
   ReturnType<typeof backend.auth.myInfo.get>
@@ -25,7 +24,6 @@ type MyInfoDataType = Awaited<
 export default function LoginRedirectPage() {
   const router = useRouter();
   const { LL, locale } = useI18nContext();
-  const { showToast } = useToast();
 
   const [myInfoData, setMyInfoData] = useState<MyInfoDataType | null>(null);
 
@@ -40,11 +38,7 @@ export default function LoginRedirectPage() {
         }
       })
       .catch((err) => {
-        showToast({
-          severity: "error",
-          summary: "Error",
-          detail: err.message,
-        });
+        toastError(err);
       });
   }
 
@@ -53,7 +47,7 @@ export default function LoginRedirectPage() {
   }, []);
 
   const conferenceMemberRedirectPath = (
-    conferenceMembership: MyInfoDataType["conferenceMemberships"][number],
+    conferenceMembership: NonNullable<MyInfoDataType>["conferenceMemberships"][number],
   ) => {
     if (
       [
@@ -63,6 +57,7 @@ export default function LoginRedirectPage() {
         $Enums.ConferenceRole.COMMITTEE_ADVISOR,
         $Enums.ConferenceRole.PARTICIPANT_CARE,
         $Enums.ConferenceRole.MISCELLANEOUS_TEAM,
+        // @ts-ignore TODO Typescript is confused by the includes method. Find a better way
       ].includes(conferenceMembership.role)
     )
       return `/app/${conferenceMembership.conference.id}/hub/team/committees`;

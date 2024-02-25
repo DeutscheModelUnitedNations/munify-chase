@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useContext, useState } from "react";
 import { useI18nContext } from "@/i18n/i18n-react";
 import { InputText } from "primereact/inputtext";
 import Button from "@/components/button";
@@ -8,88 +8,77 @@ import {
   faTrashAlt,
 } from "@fortawesome/pro-solid-svg-icons";
 import { backend } from "@/services/backend";
-import { Toast } from "primereact/toast";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { AgendaItem } from "../../../../backend/prisma/generated/client";
+import { toastError } from "@/fetching/fetching_utils";
+import {
+  CommitteeIdContext,
+  ConferenceIdContext,
+} from "@/contexts/committee_data";
 
-interface AgendaItemProbs {
-  conferenceId: string;
-  committeeId: string;
-  setUpdate: (update: boolean) => void;
-}
+type AgendaItemType = Awaited<
+  ReturnType<
+    (typeof backend.conference)["conferenceId"]["committee"]["committeeId"]["agendaItem"]["get"]
+  >
+>["data"];
 
-export default function agendaItem({
-  conferenceId,
-  committeeId,
-}: AgendaItemProbs) {
+export default function agendaItem() {
   const { LL } = useI18nContext();
-  const toast = useRef<Toast>(null);
+  const conferenceId = useContext(ConferenceIdContext);
+  const committeeId = useContext(CommitteeIdContext);
 
-  const [committeeAgendaItems, setCommitteeAgendaItems] = useState<
-    AgendaItem[]
-  >([]);
+  const [committeeAgendaItems, setCommitteeAgendaItems] =
+    useState<AgendaItemType | null>(null);
   const [inputValue, setInputValue] = useState<string>("");
   const [update, setUpdate] = useState<boolean>(true);
 
+  async function getAgendaItems() {
+    if (!conferenceId || !committeeId) return;
+    await backend.conference[conferenceId].committee[committeeId].agendaItem
+      .get()
+      .then((res) => {
+        if (res.status > 400 || !res.data)
+          throw new Error("Failed to fetch agenda items");
+        setCommitteeAgendaItems(res.data);
+      })
+      .catch((error) => {
+        toastError(error);
+      });
+  }
+
   useEffect(() => {
     if (update) {
-      getAgendaItems(conferenceId, committeeId).then((data) => {
-        setCommitteeAgendaItems(data);
-      });
-
+      getAgendaItems();
       setUpdate(false);
     }
   }, [update]);
 
-  async function getAgendaItems(
-    conferenceId: string,
-    committeeId: string,
-  ): Promise<AgendaItem[]> {
-    const res = await backend.conference[conferenceId].committee[
-      committeeId
-    ].agendaItem
-      .get()
-      .catch((error) => {
-        toast.current?.show({
-          severity: "error",
-          summary: LL.admin.onboarding.error.title(),
-          detail: LL.admin.onboarding.error.generic(),
-        });
-      });
-    return res.data;
-  }
-
   async function addAgendaItem() {
-    try {
-      await backend.conference[conferenceId].committee[
-        committeeId
-      ].agendaItem.post({
+    if (!conferenceId || !committeeId) return;
+    await backend.conference[conferenceId].committee[committeeId].agendaItem
+      .post({
         title: inputValue,
+      })
+      .then(() => {
+        setUpdate(true);
+        setInputValue("");
+      })
+      .catch((error) => {
+        toastError(error);
       });
-      setUpdate(true);
-      setInputValue("");
-    } catch (error) {
-      toast.current?.show({
-        severity: "error",
-        summary: LL.admin.onboarding.error.title(),
-        detail: LL.admin.onboarding.error.generic(),
-      });
-    }
   }
 
   async function deleteAgendaItem(agendaItemId: string) {
-    try {
-      await backend.conference[conferenceId].committee[committeeId].agendaItem[
-        agendaItemId
-      ].delete();
-      setUpdate(true);
-    } catch (error) {
-      toast.current?.show({
-        severity: "error",
-        summary: LL.admin.onboarding.error.title(),
-        detail: LL.admin.onboarding.error.generic(),
+    if (!conferenceId || !committeeId) return;
+    await backend.conference[conferenceId].committee[committeeId].agendaItem[
+      agendaItemId
+    ]
+      .delete()
+      .then(() => {
+        setUpdate(true);
+      })
+      .catch((error) => {
+        toastError(error);
       });
-    }
   }
 
   return (
@@ -98,7 +87,7 @@ export default function agendaItem({
         {LL.admin.onboarding.committees.AGENDA_ITEMS()}
       </h1>
       <li className="flex flex-col gap-2 mb-4">
-        {committeeAgendaItems.map((item) => (
+        {committeeAgendaItems?.map((item) => (
           <ul
             className="flex justify-between items-center bg-gray-100 rounded-md p-1"
             key={item.id}

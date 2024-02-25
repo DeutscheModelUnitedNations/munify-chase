@@ -30,7 +30,7 @@ export default function ChairHub({
             <h2 className="text-lg my-1">
               {conferenceRoleTranslation(
                 LL,
-                conferenceMembership(conferenceId)?.role ?? null,
+                conferenceMembership(conferenceId)?.role,
               )}
             </h2>
           </div>

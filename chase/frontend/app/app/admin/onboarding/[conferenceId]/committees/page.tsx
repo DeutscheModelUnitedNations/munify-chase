@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 
 import { useI18nContext } from "@/i18n/i18n-react";
 import { backend } from "@/services/backend";
@@ -7,43 +7,41 @@ import { useRouter } from "next/navigation";
 import OnboardingSteps from "@/components/admin/onboarding/steps";
 import ForwardBackButtons from "@/components/admin/onboarding/forward_back_bar";
 import { Accordion, AccordionTab } from "primereact/accordion";
-import { Toast } from "primereact/toast";
 import AgendaItems from "@/components/admin/committee/agendaItems";
-import { Committee } from "../../../../../../../backend/prisma/generated/client";
+import { ConferenceIdContext } from "@/contexts/committee_data";
+import { toastError } from "@/fetching/fetching_utils";
 
-export default function loginVorsitz({
-  params,
-}: {
-  params: { conferenceId: string };
-}) {
+type CommitteesType = Awaited<
+  ReturnType<(typeof backend.conference)["conferenceId"]["committee"]["get"]>
+>["data"];
+
+export default function OnboardingCommitteePage() {
   const { LL } = useI18nContext();
   const router = useRouter();
-  const toast = useRef<Toast>(null);
+  const conferenceId = useContext(ConferenceIdContext);
 
   const [saveLoading, setSaveLoading] = useState(false);
-  const [committees, setCommittees] = useState<Committee[]>([]);
+  const [committees, setCommittees] = useState<CommitteesType | null>(null);
 
   const [update, setUpdate] = useState(true);
 
-  async function getCommittees(conferenceId: string): Promise<Committee[]> {
-    const res = await backend.conference[conferenceId].committee
+  async function getCommittees() {
+    if (!conferenceId) return;
+    await backend.conference[conferenceId].committee
       .get()
-      .catch((error) => {
-        console.error(error);
-        toast.current?.show({
-          severity: "error",
-          summary: LL.admin.onboarding.error.title(),
-          detail: LL.admin.onboarding.error.generic(),
-        });
+      .then((res) => {
+        if (res.status > 400 || !res.data)
+          throw new Error("Failed to fetch committees");
+        setCommittees(res.data);
+      })
+      .catch((e) => {
+        toastError(e);
       });
-    return res.data;
   }
 
   useEffect(() => {
     if (update) {
-      getCommittees(params.conferenceId).then((committeeData) => {
-        setCommittees(committeeData);
-      });
+      getCommittees();
 
       setUpdate(false);
     }
@@ -51,7 +49,7 @@ export default function loginVorsitz({
 
   const handleSave = () => {
     setSaveLoading(true);
-    router.push(`/app/admin/onboarding/${params.conferenceId}/delegations`);
+    router.push(`/app/admin/onboarding/${conferenceId}/delegations`);
   };
 
   return (
@@ -60,18 +58,14 @@ export default function loginVorsitz({
 
       <Accordion activeIndex={0} className="w-full">
         {committees?.map((committee) => (
-          <AccordionTab header={HeaderTemplate(committee)} key={committee.id}>
-            <AgendaItems
-              conferenceId={params.conferenceId}
-              committeeId={committee.id}
-              setUpdate={setUpdate}
-            />
+          <AccordionTab header={HeaderTemplate(committee)} key={committee?.id}>
+            <AgendaItems />
           </AccordionTab>
         ))}
       </Accordion>
 
       <ForwardBackButtons
-        backURL={`/app/admin/onboarding/${params.conferenceId}/teampool`}
+        backURL={`/app/admin/onboarding/${conferenceId}/teampool`}
         handleSaveFunction={handleSave}
         saveLoading={saveLoading}
         forwardDisabled={false}
@@ -80,7 +74,7 @@ export default function loginVorsitz({
   );
 }
 
-const HeaderTemplate = (committee: Committee) => {
+const HeaderTemplate = (committee: NonNullable<CommitteesType>[number]) => {
   return (
     <div className="flex flex-wrap items-center gap-6">
       <h2 className="font-bold text-lg">

@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useContext, useEffect, useRef, useState } from "react";
 import Button from "@/components/button";
 import Whiteboard from "@/components/whiteboard";
 import {
@@ -7,11 +7,14 @@ import {
   faPaperPlane,
 } from "@fortawesome/pro-solid-svg-icons";
 import { useI18nContext } from "@/i18n/i18n-react";
-import { whiteboardTestData } from "@/test_data";
 import { IconProp } from "@fortawesome/fontawesome-svg-core";
 import { backend } from "@/services/backend";
 import { toastError } from "@/fetching/fetching_utils";
-import { Toast } from "primereact/toast";
+import {
+  CommitteeIdContext,
+  ConferenceIdContext,
+} from "@/contexts/committee_data";
+import { useToast } from "@/contexts/toast";
 
 type Committee = Awaited<
   ReturnType<
@@ -19,12 +22,11 @@ type Committee = Awaited<
   >
 >["data"];
 
-export default function ChairWhiteboard({
-  params,
-}: {
-  params: { conferenceId: string; committeeId: string };
-}) {
+export default function ChairWhiteboard() {
   const { LL } = useI18nContext();
+  const conferenceId = useContext(ConferenceIdContext);
+  const committeeId = useContext(CommitteeIdContext);
+  const { showToast } = useToast();
 
   const [whiteboardContent, setWhiteboardContent] = useState<
     string | null | undefined
@@ -34,10 +36,10 @@ export default function ChairWhiteboard({
   const [whiteboardButtonLoading, setWhiteboardButtonLoading] =
     useState<boolean>(false);
   const [committeeData, setCommitteeData] = useState<Committee | null>(null);
-  const toast = useRef(null);
 
   async function getCommitteeData() {
-    await backend.conference[params.conferenceId].committee[params.committeeId]
+    if (!conferenceId || !committeeId) return;
+    await backend.conference[conferenceId].committee[committeeId]
       .get()
       .then((response) => {
         setCommitteeData(response.data);
@@ -65,7 +67,7 @@ export default function ChairWhiteboard({
       setWhiteboardContentChanged(false);
     }
     if (whiteboardContent === null) {
-      toast.current?.show({
+      showToast({
         severity: "warn",
         summary: LL.chairs.whiteboard.NO_CONTENT_TOAST(),
         detail: LL.chairs.whiteboard.NO_CONTENT_TOAST_DETAILS(),
@@ -81,7 +83,7 @@ export default function ChairWhiteboard({
       whiteboardContent === undefined ||
       whiteboardContent === ""
     ) {
-      toast.current?.show({
+      showToast({
         severity: "warn",
         summary: LL.chairs.whiteboard.NO_CONTENT_TOAST(),
         detail: LL.chairs.whiteboard.NO_CONTENT_TOAST_DETAILS(),
@@ -90,17 +92,18 @@ export default function ChairWhiteboard({
       setWhiteboardButtonLoading(false);
       return;
     }
-    await backend.conference[params.conferenceId].committee[
-      params.committeeId
-    ].whiteboard
+    if (!conferenceId || !committeeId) return;
+    await backend.conference[conferenceId].committee[committeeId].whiteboard
       .post({
         whiteboardContent: whiteboardContent,
       })
-      .then((response) => {
+      .then((res) => {
+        if (res.status >= 400)
+          throw new Error("Failed to push whiteboard content");
         getCommitteeData();
         setWhiteboardContentChanged(false);
         setWhiteboardButtonLoading(false);
-        toast.current?.show({
+        showToast({
           severity: "success",
           summary: LL.chairs.whiteboard.SUCCESS_TOAST(),
           life: 3000,
@@ -117,7 +120,6 @@ export default function ChairWhiteboard({
 
   return (
     <>
-      <Toast ref={toast} />
       <div className="flex-1 flex flex-col w-full h-full gap-4 p-4">
         <div className="flex justify-end items-center gap-4">
           <Button

@@ -17,7 +17,7 @@ export const UserIdent = createContext(
   {} as {
     userIdent: User | null;
     conferenceMembership: (
-      conferenceId: string,
+      conferenceId: string | null | undefined,
     ) => User["conferenceMemberships"][number] | null;
   },
 );
@@ -34,10 +34,12 @@ export const UserIdentProvider = ({
 
   const [userIdent, setUserIdent] = useState<User | null>(null);
 
-  const conferenceMembership = (conferenceId: string) =>
+  const conferenceMembership = (conferenceId: string | null) => {
+    if (!conferenceId || !userIdent) return null;
     userIdent?.conferenceMemberships.find(
       (c) => c.conference.id === conferenceId,
     ) ?? null;
+  };
 
   async function getMyInfo() {
     await backend.auth.myInfo

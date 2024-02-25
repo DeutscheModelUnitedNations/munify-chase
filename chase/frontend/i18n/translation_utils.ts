@@ -3,7 +3,7 @@ import { TranslationFunctions } from "./i18n-types";
 
 export const conferenceRoleTranslation = (
   LL: TranslationFunctions,
-  role: $Enums.ConferenceRole,
+  role: $Enums.ConferenceRole | null | undefined,
 ) => {
   switch (role) {
     case $Enums.ConferenceRole.ADMIN:

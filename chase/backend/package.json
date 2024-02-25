@@ -18,6 +18,7 @@
     "@types/nodemailer": "^6.4.14",
     "bun-types": "latest",
     "concurrently": "^8.2.2",
+    "esbuild": "^0.20.1",
     "prisma": "^5.9.1",
     "prisma-typebox-generator": "^2.1.0",
     "@faker-js/faker": "^8.4.0"

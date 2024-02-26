@@ -251,7 +251,7 @@ model Delegation {
   @@unique([conferenceId, nationId])
 }
 
-enum NationType {
+enum NationVariant {
   NATION
   NON_STATE_ACTOR
   SPECIAL_PERSON
@@ -260,9 +260,9 @@ enum NationType {
 //TODO should we allow for customizing these per conference and just allow loading template at creation?
 /// A nation in the system. E.g. Germany
 model Nation {
-  id          String       @id @default(uuid())
-  alpha3Code  String       @unique
-  type        NationType   @default(NATION)
+  id          String        @id @default(uuid())
+  alpha3Code  String        @unique
+  type        NationVariant @default(NATION)
   delegations Delegation[]
 }
 

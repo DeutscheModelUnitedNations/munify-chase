@@ -4,9 +4,11 @@
   "main": "src/main.ts",
   "private": "true",
   "scripts": {
-    "dev": "bun run concurrently \"bun run dev:server\" \"bun run dev:docker\"",
+    "dev": "bun run concurrently \"bun run dev:server\" \"bun run dev:docker\" \"bun run dev:prisma-studio\"",
+    "dev:container": "bun run concurrently \"bun run dev:server\" \"bun run dev:prisma-studio\"",
     "dev:server": "bun run --watch --hot src/main.ts",
     "dev:docker": "docker compose up --remove-orphans",
+    "dev:prisma-studio": "bunx prisma studio",
     "build": "bun build.ts",
     "typecheck": "bunx prisma generate && tsc --noEmit",
     "database:reset": "bunx prisma db push --force-reset & bunx prisma db seed"

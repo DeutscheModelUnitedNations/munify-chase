@@ -197,25 +197,25 @@ const allCountries = [
   { alpha3Code: "zmb" },
   { alpha3Code: "zwe" },
 
-  { alpha3Code: "unm", type: $Enums.NationType.SPECIAL_PERSON },
-  // { alpha3Code: "unw", type: $Enums.NationType.SPECIAL_PERSON },
-  { alpha3Code: "gsm", type: $Enums.NationType.SPECIAL_PERSON },
-  { alpha3Code: "gsw", type: $Enums.NationType.SPECIAL_PERSON },
-  { alpha3Code: "uno", type: $Enums.NationType.SPECIAL_PERSON },
+  { alpha3Code: "unm", type: $Enums.NationVariant.SPECIAL_PERSON },
+  // { alpha3Code: "unw", type: $Enums.NationVariant.SPECIAL_PERSON },
+  { alpha3Code: "gsm", type: $Enums.NationVariant.SPECIAL_PERSON },
+  { alpha3Code: "gsw", type: $Enums.NationVariant.SPECIAL_PERSON },
+  { alpha3Code: "uno", type: $Enums.NationVariant.SPECIAL_PERSON },
 
-  { alpha3Code: "nsa_amn", type: $Enums.NationType.NON_STATE_ACTOR },
-  { alpha3Code: "nsa_gates", type: $Enums.NationType.NON_STATE_ACTOR },
-  { alpha3Code: "nsa_gnwp", type: $Enums.NationType.NON_STATE_ACTOR },
-  { alpha3Code: "nsa_gp", type: $Enums.NationType.NON_STATE_ACTOR },
-  { alpha3Code: "nsa_hrw", type: $Enums.NationType.NON_STATE_ACTOR },
-  { alpha3Code: "nsa_iog", type: $Enums.NationType.NON_STATE_ACTOR },
-  { alpha3Code: "nsa_icrc", type: $Enums.NationType.NON_STATE_ACTOR },
-  { alpha3Code: "nsa_icg", type: $Enums.NationType.NON_STATE_ACTOR },
-  { alpha3Code: "nsa_ippnw", type: $Enums.NationType.NON_STATE_ACTOR },
-  { alpha3Code: "nsa_mercy", type: $Enums.NationType.NON_STATE_ACTOR },
-  { alpha3Code: "nsa_unwatch", type: $Enums.NationType.NON_STATE_ACTOR },
-  { alpha3Code: "nsa_whh", type: $Enums.NationType.NON_STATE_ACTOR },
-  { alpha3Code: "nsa_wef", type: $Enums.NationType.NON_STATE_ACTOR },
+  { alpha3Code: "nsa_amn", type: $Enums.NationVariant.NON_STATE_ACTOR },
+  { alpha3Code: "nsa_gates", type: $Enums.NationVariant.NON_STATE_ACTOR },
+  { alpha3Code: "nsa_gnwp", type: $Enums.NationVariant.NON_STATE_ACTOR },
+  { alpha3Code: "nsa_gp", type: $Enums.NationVariant.NON_STATE_ACTOR },
+  { alpha3Code: "nsa_hrw", type: $Enums.NationVariant.NON_STATE_ACTOR },
+  { alpha3Code: "nsa_iog", type: $Enums.NationVariant.NON_STATE_ACTOR },
+  { alpha3Code: "nsa_icrc", type: $Enums.NationVariant.NON_STATE_ACTOR },
+  { alpha3Code: "nsa_icg", type: $Enums.NationVariant.NON_STATE_ACTOR },
+  { alpha3Code: "nsa_ippnw", type: $Enums.NationVariant.NON_STATE_ACTOR },
+  { alpha3Code: "nsa_mercy", type: $Enums.NationVariant.NON_STATE_ACTOR },
+  { alpha3Code: "nsa_unwatch", type: $Enums.NationVariant.NON_STATE_ACTOR },
+  { alpha3Code: "nsa_whh", type: $Enums.NationVariant.NON_STATE_ACTOR },
+  { alpha3Code: "nsa_wef", type: $Enums.NationVariant.NON_STATE_ACTOR },
 ];
 
 try {
@@ -458,8 +458,8 @@ try {
         ) {
           if (
             !selectedCountries.includes(countryRaw.alpha3Code) &&
-            countryRaw.type !== $Enums.NationType.SPECIAL_PERSON &&
-            countryRaw.type !== $Enums.NationType.NON_STATE_ACTOR
+            countryRaw.type !== $Enums.NationVariant.SPECIAL_PERSON &&
+            countryRaw.type !== $Enums.NationVariant.NON_STATE_ACTOR
           ) {
             selectedCountries.push(countryRaw.alpha3Code);
           }
@@ -512,7 +512,7 @@ try {
 
   const nonStateActors = await prisma.nation.findMany({
     where: {
-      type: $Enums.NationType.NON_STATE_ACTOR,
+      type: $Enums.NationVariant.NON_STATE_ACTOR,
     },
   });
 
@@ -544,7 +544,7 @@ try {
 
   const specialPersons = await prisma.nation.findMany({
     where: {
-      type: $Enums.NationType.SPECIAL_PERSON,
+      type: $Enums.NationVariant.SPECIAL_PERSON,
     },
   });
 

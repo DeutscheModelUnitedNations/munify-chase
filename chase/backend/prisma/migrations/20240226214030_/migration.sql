@@ -8,13 +8,13 @@ CREATE TYPE "CommitteeCategory" AS ENUM ('COMMITTEE', 'CRISIS', 'ICJ');
 CREATE TYPE "CommitteeStatus" AS ENUM ('FORMAL', 'INFORMAL', 'PAUSE', 'SUSPENSION', 'CLOSED');
 
 -- CreateEnum
-CREATE TYPE "CommitteeRole" AS ENUM ('DELEGATE', 'OBSERVER');
-
--- CreateEnum
 CREATE TYPE "Presence" AS ENUM ('PRESENT', 'EXCUSED', 'ABSENT');
 
 -- CreateEnum
 CREATE TYPE "SpeakersListCategory" AS ENUM ('SPEAKERS_LIST', 'COMMENT_LIST', 'MODERATED_CAUCUS');
+
+-- CreateEnum
+CREATE TYPE "NationVariant" AS ENUM ('NATION', 'NON_STATE_ACTOR', 'SPECIAL_PERSON');
 
 -- CreateEnum
 CREATE TYPE "MessageCategory" AS ENUM ('TO_CHAIR', 'GUEST_SPEAKER', 'FACT_CHECK', 'INFORMATION', 'GENERAL_SECRETARY', 'OTHER');
@@ -90,7 +90,6 @@ CREATE TABLE "ConferenceMember" (
     "conferenceId" TEXT NOT NULL,
     "userId" TEXT,
     "role" "ConferenceRole" NOT NULL,
-    "nonStateActorId" TEXT,
 
     CONSTRAINT "ConferenceMember_pkey" PRIMARY KEY ("id")
 );
@@ -171,24 +170,9 @@ CREATE TABLE "Delegation" (
 CREATE TABLE "Nation" (
     "id" TEXT NOT NULL,
     "alpha3Code" TEXT NOT NULL,
+    "variant" "NationVariant" NOT NULL DEFAULT 'NATION',
 
     CONSTRAINT "Nation_pkey" PRIMARY KEY ("id")
-);
-
--- CreateTable
-CREATE TABLE "NonStateActor" (
-    "id" TEXT NOT NULL,
-    "code" TEXT NOT NULL,
-
-    CONSTRAINT "NonStateActor_pkey" PRIMARY KEY ("id")
-);
-
--- CreateTable
-CREATE TABLE "SpecialPerson" (
-    "id" TEXT NOT NULL,
-    "code" TEXT NOT NULL,
-
-    CONSTRAINT "SpecialPerson_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -245,12 +229,6 @@ CREATE UNIQUE INDEX "Delegation_conferenceId_nationId_key" ON "Delegation"("conf
 -- CreateIndex
 CREATE UNIQUE INDEX "Nation_alpha3Code_key" ON "Nation"("alpha3Code");
 
--- CreateIndex
-CREATE UNIQUE INDEX "NonStateActor_code_key" ON "NonStateActor"("code");
-
--- CreateIndex
-CREATE UNIQUE INDEX "SpecialPerson_code_key" ON "SpecialPerson"("code");
-
 -- AddForeignKey
 ALTER TABLE "Password" ADD CONSTRAINT "Password_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
@@ -271,9 +249,6 @@ ALTER TABLE "ConferenceMember" ADD CONSTRAINT "ConferenceMember_conferenceId_fke
 
 -- AddForeignKey
 ALTER TABLE "ConferenceMember" ADD CONSTRAINT "ConferenceMember_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE SET NULL ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "ConferenceMember" ADD CONSTRAINT "ConferenceMember_nonStateActorId_fkey" FOREIGN KEY ("nonStateActorId") REFERENCES "NonStateActor"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Committee" ADD CONSTRAINT "Committee_conferenceId_fkey" FOREIGN KEY ("conferenceId") REFERENCES "Conference"("id") ON DELETE RESTRICT ON UPDATE CASCADE;

@@ -197,25 +197,25 @@ const allCountries = [
   { alpha3Code: "zmb" },
   { alpha3Code: "zwe" },
 
-  { alpha3Code: "unm", type: $Enums.NationVariant.SPECIAL_PERSON }, // Male General Secretary
-  // { alpha3Code: "unw", type: $Enums.NationVariant.SPECIAL_PERSON }, // Female General Secretary
-  { alpha3Code: "gsm", type: $Enums.NationVariant.SPECIAL_PERSON }, // Male Guest Speaker
-  { alpha3Code: "gsw", type: $Enums.NationVariant.SPECIAL_PERSON }, // Female Guest Speaker
-  { alpha3Code: "uno", type: $Enums.NationVariant.SPECIAL_PERSON }, // MISC UN Official
+  { alpha3Code: "unm", variant: $Enums.NationVariant.SPECIAL_PERSON }, // Male General Secretary
+  // { alpha3Code: "unw", variant: $Enums.NationVariant.SPECIAL_PERSON }, // Female General Secretary
+  { alpha3Code: "gsm", variant: $Enums.NationVariant.SPECIAL_PERSON }, // Male Guest Speaker
+  { alpha3Code: "gsw", variant: $Enums.NationVariant.SPECIAL_PERSON }, // Female Guest Speaker
+  { alpha3Code: "uno", variant: $Enums.NationVariant.SPECIAL_PERSON }, // MISC UN Official
 
-  { alpha3Code: "nsa_amn", type: $Enums.NationVariant.NON_STATE_ACTOR }, // Amnesty International
-  { alpha3Code: "nsa_gates", type: $Enums.NationVariant.NON_STATE_ACTOR }, // Bill & Melinda Gates Foundation
-  { alpha3Code: "nsa_gnwp", type: $Enums.NationVariant.NON_STATE_ACTOR }, // Global Network of Women Peacekeepers
-  { alpha3Code: "nsa_gp", type: $Enums.NationVariant.NON_STATE_ACTOR }, // Greenpeace
-  { alpha3Code: "nsa_hrw", type: $Enums.NationVariant.NON_STATE_ACTOR }, // Human Rights Watch
-  { alpha3Code: "nsa_iog", type: $Enums.NationVariant.NON_STATE_ACTOR }, // International
-  { alpha3Code: "nsa_icrc", type: $Enums.NationVariant.NON_STATE_ACTOR }, // International Red Cross
-  { alpha3Code: "nsa_icg", type: $Enums.NationVariant.NON_STATE_ACTOR }, // International Crisis Group
-  { alpha3Code: "nsa_ippnw", type: $Enums.NationVariant.NON_STATE_ACTOR }, // International Physicians for the Prevention of Nuclear War
-  { alpha3Code: "nsa_mercy", type: $Enums.NationVariant.NON_STATE_ACTOR }, // Mercy Corps
-  { alpha3Code: "nsa_unwatch", type: $Enums.NationVariant.NON_STATE_ACTOR }, // UN Watch
-  { alpha3Code: "nsa_whh", type: $Enums.NationVariant.NON_STATE_ACTOR }, // Welthungerhilfe
-  { alpha3Code: "nsa_wef", type: $Enums.NationVariant.NON_STATE_ACTOR }, // World Economic Forum
+  { alpha3Code: "nsa_amn", variant: $Enums.NationVariant.NON_STATE_ACTOR }, // Amnesty International
+  { alpha3Code: "nsa_gates", variant: $Enums.NationVariant.NON_STATE_ACTOR }, // Bill & Melinda Gates Foundation
+  { alpha3Code: "nsa_gnwp", variant: $Enums.NationVariant.NON_STATE_ACTOR }, // Global Network of Women Peacekeepers
+  { alpha3Code: "nsa_gp", variant: $Enums.NationVariant.NON_STATE_ACTOR }, // Greenpeace
+  { alpha3Code: "nsa_hrw", variant: $Enums.NationVariant.NON_STATE_ACTOR }, // Human Rights Watch
+  { alpha3Code: "nsa_iog", variant: $Enums.NationVariant.NON_STATE_ACTOR }, // International
+  { alpha3Code: "nsa_icrc", variant: $Enums.NationVariant.NON_STATE_ACTOR }, // International Red Cross
+  { alpha3Code: "nsa_icg", variant: $Enums.NationVariant.NON_STATE_ACTOR }, // International Crisis Group
+  { alpha3Code: "nsa_ippnw", variant: $Enums.NationVariant.NON_STATE_ACTOR }, // International Physicians for the Prevention of Nuclear War
+  { alpha3Code: "nsa_mercy", variant: $Enums.NationVariant.NON_STATE_ACTOR }, // Mercy Corps
+  { alpha3Code: "nsa_unwatch", variant: $Enums.NationVariant.NON_STATE_ACTOR }, // UN Watch
+  { alpha3Code: "nsa_whh", variant: $Enums.NationVariant.NON_STATE_ACTOR }, // Welthungerhilfe
+  { alpha3Code: "nsa_wef", variant: $Enums.NationVariant.NON_STATE_ACTOR }, // World Economic Forum
 ];
 
 try {
@@ -512,7 +512,7 @@ try {
 
   const nonStateActors = await prisma.nation.findMany({
     where: {
-      type: $Enums.NationVariant.NON_STATE_ACTOR,
+      variant: $Enums.NationVariant.NON_STATE_ACTOR,
     },
   });
 
@@ -544,7 +544,7 @@ try {
 
   const specialPersons = await prisma.nation.findMany({
     where: {
-      type: $Enums.NationVariant.SPECIAL_PERSON,
+      variant: $Enums.NationVariant.SPECIAL_PERSON,
     },
   });
 

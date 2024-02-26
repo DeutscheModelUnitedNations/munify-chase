@@ -45,7 +45,9 @@
 				"stivo.tailwind-fold",
 				"gruntfuggly.todo-tree",
 				"ms-vsliveshare.vsliveshare",
-				"eamodio.gitlens"
+				"eamodio.gitlens",
+				"exceedsystem.vscode-macros"
+
 			]
 		}
 	},

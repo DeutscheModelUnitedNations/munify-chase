@@ -1,7 +1,7 @@
 "use client";
 import { backend } from "@/services/backend";
 import React, { createContext, useContext, useEffect, useState } from "react";
-import { toastError } from "@/fetching/fetching_utils";
+import { useToast } from "@/contexts/toast";
 
 type Committee = Awaited<
   ReturnType<
@@ -25,6 +25,7 @@ export const CommitteeDataProvider = ({
 }: {
   children: React.ReactNode;
 }) => {
+  const { toastError } = useToast();
   const conferenceId = useContext(ConferenceIdContext);
   const committeeId = useContext(CommitteeIdContext);
 

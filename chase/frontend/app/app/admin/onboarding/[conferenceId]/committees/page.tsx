@@ -12,7 +12,7 @@ import {
   CommitteeIdContext,
   ConferenceIdContext,
 } from "@/contexts/committee_data";
-import { toastError } from "@/fetching/fetching_utils";
+import { useToast } from "@/contexts/toast";
 
 type CommitteesType = Awaited<
   ReturnType<(typeof backend.conference)["conferenceId"]["committee"]["get"]>
@@ -21,6 +21,7 @@ type CommitteesType = Awaited<
 export default function OnboardingCommitteePage() {
   const { LL } = useI18nContext();
   const router = useRouter();
+  const { toastError } = useToast();
   const conferenceId = useContext(ConferenceIdContext);
 
   const [saveLoading, setSaveLoading] = useState(false);

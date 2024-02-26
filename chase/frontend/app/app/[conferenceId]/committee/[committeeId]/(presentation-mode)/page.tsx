@@ -5,12 +5,12 @@ import PresenceWidget from "@/components/attendance/presence_widget";
 import TimerWidget from "@/components/dashboard/timer";
 import SpeakersListBlock from "@/components/speakers_list/speakers_list_block";
 import WidgetTemplate from "@/components/widget_template";
-import { toastError } from "@/fetching/fetching_utils";
 import { backend } from "@/services/backend";
 import { Committee } from "../../../../../../../backend/prisma/generated/schema";
 import { Skeleton } from "primereact/skeleton";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPodium } from "@fortawesome/pro-solid-svg-icons";
+import { useToast } from "@/contexts/toast";
 
 type CommitteeType = Awaited<
   ReturnType<
@@ -29,6 +29,7 @@ export default function CommitteePresentationMode({
   params: { conferenceId: string; committeeId: string };
 }) {
   const { LL, locale } = useI18nContext();
+  const { toastError } = useToast();
 
   const [committeeData, setCommitteeData] = useState<CommitteeType | null>(
     null,

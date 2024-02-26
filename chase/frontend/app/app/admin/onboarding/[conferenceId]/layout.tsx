@@ -17,7 +17,7 @@ import { useUserIdent } from "@/contexts/user_ident";
 import { ConferenceIdContext } from "@/contexts/committee_data";
 import Lockout from "@/components/lockout";
 import { $Enums } from "../../../../../../backend/prisma/generated/client";
-import { toastError } from "@/fetching/fetching_utils";
+import { useToast } from "@/contexts/toast";
 
 export default function AdminLayout({
   children,
@@ -27,6 +27,7 @@ export default function AdminLayout({
   params: { conferenceId: string };
 }) {
   const { LL } = useI18nContext();
+  const { toastError } = useToast();
   const router = useRouter();
   const conferenceId = useContext(ConferenceIdContext);
 

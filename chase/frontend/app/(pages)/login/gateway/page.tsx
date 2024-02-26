@@ -15,7 +15,7 @@ import getCountryNameByCode from "@/misc/get_country_name_by_code";
 import { useI18nContext } from "@/i18n/i18n-react";
 import Link from "next/link";
 import { conferenceRoleTranslation } from "@/i18n/translation_utils";
-import { toastError } from "@/fetching/fetching_utils";
+import { useToast } from "@/contexts/toast";
 
 type MyInfoDataType = Awaited<
   ReturnType<typeof backend.auth.myInfo.get>
@@ -24,6 +24,7 @@ type MyInfoDataType = Awaited<
 export default function LoginRedirectPage() {
   const router = useRouter();
   const { LL, locale } = useI18nContext();
+  const { toastError } = useToast();
 
   const [myInfoData, setMyInfoData] = useState<MyInfoDataType | null>(null);
 

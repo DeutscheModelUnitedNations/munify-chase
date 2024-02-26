@@ -9,12 +9,11 @@ import {
 import { useI18nContext } from "@/i18n/i18n-react";
 import { IconProp } from "@fortawesome/fontawesome-svg-core";
 import { backend } from "@/services/backend";
-import { toastError } from "@/fetching/fetching_utils";
+import { useToast } from "@/contexts/toast";
 import {
   CommitteeIdContext,
   ConferenceIdContext,
 } from "@/contexts/committee_data";
-import { useToast } from "@/contexts/toast";
 
 type Committee = Awaited<
   ReturnType<
@@ -26,7 +25,7 @@ export default function ChairWhiteboard() {
   const { LL } = useI18nContext();
   const conferenceId = useContext(ConferenceIdContext);
   const committeeId = useContext(CommitteeIdContext);
-  const { showToast } = useToast();
+  const { showToast, toastError } = useToast();
 
   const [whiteboardContent, setWhiteboardContent] = useState<
     string | null | undefined

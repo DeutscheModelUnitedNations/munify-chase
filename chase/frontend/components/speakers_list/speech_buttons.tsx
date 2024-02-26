@@ -24,14 +24,13 @@ import { IconProp } from "@fortawesome/fontawesome-svg-core";
 import useMousetrap from "mousetrap-react";
 import { backend } from "@/services/backend";
 import { $Enums } from "../../../backend/prisma/generated/client";
-import { toastError } from "@/fetching/fetching_utils";
+import { useToast } from "@/contexts/toast";
 import {
   ConferenceIdContext,
   CommitteeIdContext,
 } from "@/contexts/committee_data";
 import { SpeakersListDataContext } from "@/contexts/speakers_list_data";
 import { useUserIdent } from "@/contexts/user_ident";
-import { ToastContext } from "@/contexts/toast";
 import { ConfirmDialog } from "primereact/confirmdialog";
 import { MenuItem } from "primereact/menuitem";
 
@@ -52,7 +51,7 @@ type AllCountryCodes = Awaited<
 
 export function ParticipantSpeechButtons() {
   const { LL } = useI18nContext();
-  const { showToast } = useContext(ToastContext);
+  const { showToast, toastError } = useToast();
 
   const speakersListData = useContext(SpeakersListDataContext);
   const { userIdent } = useUserIdent();

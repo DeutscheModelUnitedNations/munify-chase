@@ -4,7 +4,7 @@ import { backend } from "@/services/backend";
 import { Skeleton } from "primereact/skeleton";
 import Link from "next/link";
 import Timer from "../dashboard/countdown_timer";
-import { toastError } from "@/fetching/fetching_utils";
+import { useToast } from "@/contexts/toast";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faCircleNotch,
@@ -36,6 +36,7 @@ export default function CommitteeGrid({
   isChair?: boolean;
 }) {
   const { LL } = useI18nContext();
+  const { toastError } = useToast();
 
   const [committees, setCommittees] = useState<CommitteeArray>(null);
 

@@ -10,11 +10,10 @@ import { faSparkles } from "@fortawesome/pro-solid-svg-icons";
 import { backend } from "@/services/backend";
 import { useRouter } from "next/navigation";
 import { useToast } from "@/contexts/toast";
-import { toastError } from "@/fetching/fetching_utils";
 
 export default function loginVorsitz() {
   const { LL } = useI18nContext();
-  const { showToast } = useToast();
+  const { showToast, toastError } = useToast();
   const router = useRouter();
 
   const [conferenceName, setConferenceName] = useState("");

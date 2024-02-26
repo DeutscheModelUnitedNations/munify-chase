@@ -4,7 +4,7 @@ import { ToastContext } from "@/contexts/toast";
 import DashboardHeader from "@/components/dashboard/header";
 import { useI18nContext } from "@/i18n/i18n-react";
 import { backend } from "@/services/backend";
-import { toastError } from "@/fetching/fetching_utils";
+import { useToast } from "@/contexts/toast";
 import ConfigWrapper from "@/components/dashboard/chair/config_wrapper";
 import { Dropdown } from "primereact/dropdown";
 import Button from "@/components/button";

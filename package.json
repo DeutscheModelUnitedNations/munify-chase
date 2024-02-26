@@ -21,6 +21,8 @@
   "workspaces": ["chase/backend", "chase/frontend"],
   "dependencies": {
     "@react-pdf/renderer": "^3.3.8",
-    "react-cookie-consent": "^9.0.0"
+    "markdown-to-jsx": "^7.4.1",
+    "react-cookie-consent": "^9.0.0",
+    "yaml": "^2.4.0"
   }
 }

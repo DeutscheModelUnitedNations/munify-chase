@@ -1,6 +1,5 @@
 import React, { useContext, useEffect, useState } from "react";
 import WidgetTemplate from "@components/widget_template";
-import { ToastContext } from "@/contexts/toast";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faComments,
@@ -18,7 +17,7 @@ import { Skeleton } from "primereact/skeleton";
 import Timer from "./countdown_timer";
 import { $Enums } from "../../../backend/prisma/generated/client";
 import { backend } from "@/services/backend";
-import { toastError } from "@/fetching/fetching_utils";
+import { useToast } from "@/contexts/toast";
 import {
   ConferenceIdContext,
   CommitteeIdContext,
@@ -39,6 +38,7 @@ type Committee = Awaited<
 
 export default function TimerWidget() {
   const { LL } = useI18nContext();
+  const { toastError } = useToast();
   const { category, headline, until } = useContext(StatusTimer);
 
   const timeStamp = () => {

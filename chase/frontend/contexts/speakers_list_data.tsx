@@ -2,8 +2,8 @@
 import React, { createContext, useState, useEffect, useContext } from "react";
 import { backend } from "@/services/backend";
 import { ConferenceIdContext, CommitteeIdContext } from "./committee_data";
-import { toastError } from "@/fetching/fetching_utils";
 import { $Enums } from "../../backend/prisma/generated/client";
+import { useToast } from "./toast";
 
 export type SpeakersListDataType = Awaited<
   ReturnType<
@@ -21,6 +21,7 @@ export function SpeakersListDataProvider({
   children: React.ReactNode;
   typeOfList: $Enums.SpeakersListCategory;
 }) {
+  const { toastError } = useToast();
   const conferenceId = useContext(ConferenceIdContext);
   const committeeId = useContext(CommitteeIdContext);
 

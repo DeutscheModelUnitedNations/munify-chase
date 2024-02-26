@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useContext } from "react";
 import { useI18nContext } from "@/i18n/i18n-react";
 import { backend } from "@/services/backend";
-import { toastError } from "@/fetching/fetching_utils";
 import ConfigWrapper from "@/components/dashboard/chair/config_wrapper";
 import { Dropdown } from "primereact/dropdown";
 import Button from "@/components/button";
@@ -10,8 +9,7 @@ import {
   CommitteeIdContext,
   ConferenceIdContext,
 } from "@/contexts/committee_data";
-import { ToastContext } from "@/contexts/toast";
-
+import { useToast } from "@/contexts/toast";
 type AgendaItems = Awaited<
   ReturnType<
     (typeof backend.conference)["conferenceId"]["committee"]["committeeId"]["agendaItem"]["get"]
@@ -20,7 +18,7 @@ type AgendaItems = Awaited<
 
 export default function AgendaSelection() {
   const { LL } = useI18nContext();
-  const { showToast } = useContext(ToastContext);
+  const { showToast, toastError } = useToast();
   const conferenceId = useContext(ConferenceIdContext);
   const committeeId = useContext(CommitteeIdContext);
 

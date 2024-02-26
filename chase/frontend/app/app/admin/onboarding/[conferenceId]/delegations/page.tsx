@@ -9,7 +9,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState, useContext } from "react";
 import useMousetrap from "mousetrap-react";
 import { ConferenceIdContext } from "@/contexts/committee_data";
-import { toastError } from "@/fetching/fetching_utils";
+import { useToast } from "@/contexts/toast";
 import {
   CommitteesType,
   DelegationsType,
@@ -17,6 +17,7 @@ import {
 
 export default function AdminDelegationsPage() {
   const { LL, locale } = useI18nContext();
+  const { toastError } = useToast();
   const router = useRouter();
   const conferenceId = useContext(ConferenceIdContext);
 

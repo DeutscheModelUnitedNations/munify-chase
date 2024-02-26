@@ -82,6 +82,20 @@ const de = {
     },
   },
 
+  docs: {
+    TITLE: "Dokumentation",
+    DESCRIPTION:
+      "Hier finden Sie eine Übersicht über die Funktionen und Möglichkeiten von CHASE.",
+    BACK_TO_HOME: "Zurück zur Startseite",
+  },
+
+  faq: {
+    TITLE: "FAQs",
+    DESCRIPTION:
+      "Hier finden Sie Antworten auf häufig gestellte Fragen zu CHASE.",
+    BACK_TO_HOME: "Back to home",
+  },
+
   admin: {
     login: {
       TITLE: "Admin Login",

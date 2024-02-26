@@ -8,7 +8,7 @@ import ForwardBackButtons from "@/components/admin/onboarding/forward_back_bar";
 import TeamPoolTable from "@/components/admin/teampool/teampool_table";
 import AddTeammemberDialog from "@/components/admin/teampool/add_teammember_dialog";
 import { confirmPopup } from "primereact/confirmpopup";
-import { toastError } from "@/fetching/fetching_utils";
+import { useToast } from "@/contexts/toast";
 import { ConferenceIdContext } from "@/contexts/committee_data";
 import { $Enums } from "../../../../../../../backend/prisma/generated/client";
 
@@ -18,6 +18,7 @@ type TeamType = Awaited<
 
 export default function Teampool() {
   const { LL } = useI18nContext();
+  const { toastError } = useToast();
   const router = useRouter();
   const conferenceId = useContext(ConferenceIdContext);
 

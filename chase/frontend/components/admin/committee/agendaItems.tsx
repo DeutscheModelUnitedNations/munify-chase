@@ -9,7 +9,7 @@ import {
 } from "@fortawesome/pro-solid-svg-icons";
 import { backend } from "@/services/backend";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { toastError } from "@/fetching/fetching_utils";
+import { useToast } from "@/contexts/toast";
 import {
   CommitteeIdContext,
   ConferenceIdContext,
@@ -23,6 +23,7 @@ type AgendaItemType = Awaited<
 
 export default function agendaItem() {
   const { LL } = useI18nContext();
+  const { toastError } = useToast();
   const conferenceId = useContext(ConferenceIdContext);
   const committeeId = useContext(CommitteeIdContext);
 

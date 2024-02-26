@@ -71,5 +71,11 @@
     ]
   },
   "typescript.tsdk": "node_modules/typescript/lib",
-  "editor.tabSize": 2
+  "editor.tabSize": 2,
+  "vscodemacros.userMacroCommands": [
+    {
+      "path": "/workspaces/munify/.vscode/macros.ts",
+      "name": "OpenI18n",
+    },
+  ]
 }

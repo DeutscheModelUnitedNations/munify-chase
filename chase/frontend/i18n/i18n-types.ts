@@ -236,6 +236,34 @@ type RootTranslation = {
 			}
 		}
 	}
+	docs: {
+		/**
+		 * D​o​c​u​m​e​n​t​a​t​i​o​n
+		 */
+		TITLE: string
+		/**
+		 * H​e​r​e​ ​y​o​u​ ​c​a​n​ ​f​i​n​d​ ​t​h​e​ ​d​o​c​u​m​e​n​t​a​t​i​o​n​ ​f​o​r​ ​C​H​A​S​E​.​ ​C​u​r​r​e​n​t​l​y​,​ ​t​h​e​ ​D​o​c​s​ ​a​r​e​ ​o​n​l​y​ ​a​v​a​i​l​a​b​l​e​ ​i​n​ ​G​e​r​m​a​n​.​ ​I​f​ ​y​o​u​ ​h​a​v​e​ ​a​n​y​ ​q​u​e​s​t​i​o​n​s​,​ ​f​e​e​l​ ​f​r​e​e​ ​t​o​ ​c​o​n​t​a​c​t​ ​u​s​.
+		 */
+		DESCRIPTION: string
+		/**
+		 * B​a​c​k​ ​t​o​ ​h​o​m​e
+		 */
+		BACK_TO_HOME: string
+	}
+	faq: {
+		/**
+		 * F​A​Q​s
+		 */
+		TITLE: string
+		/**
+		 * H​e​r​e​ ​y​o​u​ ​c​a​n​ ​f​i​n​d​ ​t​h​e​ ​F​A​Q​s​ ​f​o​r​ ​C​H​A​S​E​.​ ​C​u​r​r​e​n​t​l​y​,​ ​t​h​e​ ​F​A​Q​s​ ​a​r​e​ ​o​n​l​y​ ​a​v​a​i​l​a​b​l​e​ ​i​n​ ​G​e​r​m​a​n​.​ ​I​f​ ​y​o​u​ ​h​a​v​e​ ​a​n​y​ ​q​u​e​s​t​i​o​n​s​,​ ​f​e​e​l​ ​f​r​e​e​ ​t​o​ ​c​o​n​t​a​c​t​ ​u​s​.
+		 */
+		DESCRIPTION: string
+		/**
+		 * B​a​c​k​ ​t​o​ ​h​o​m​e
+		 */
+		BACK_TO_HOME: string
+	}
 	admin: {
 		login: {
 			/**
@@ -1937,6 +1965,34 @@ export type TranslationFunctions = {
 				WEBSITE: () => LocalizedString
 			}
 		}
+	}
+	docs: {
+		/**
+		 * Documentation
+		 */
+		TITLE: () => LocalizedString
+		/**
+		 * Here you can find the documentation for CHASE. Currently, the Docs are only available in German. If you have any questions, feel free to contact us.
+		 */
+		DESCRIPTION: () => LocalizedString
+		/**
+		 * Back to home
+		 */
+		BACK_TO_HOME: () => LocalizedString
+	}
+	faq: {
+		/**
+		 * FAQs
+		 */
+		TITLE: () => LocalizedString
+		/**
+		 * Here you can find the FAQs for CHASE. Currently, the FAQs are only available in German. If you have any questions, feel free to contact us.
+		 */
+		DESCRIPTION: () => LocalizedString
+		/**
+		 * Back to home
+		 */
+		BACK_TO_HOME: () => LocalizedString
 	}
 	admin: {
 		login: {

@@ -1,5 +1,4 @@
 import { useContext, useState } from "react";
-import { ToastContext } from "@/contexts/toast";
 import { useI18nContext } from "@/i18n/i18n-react";
 import Button from "@components/button";
 import { faPlus, faTimes } from "@fortawesome/pro-solid-svg-icons";
@@ -7,7 +6,7 @@ import useMousetrap from "mousetrap-react";
 import CountryAutoComplete from "./country_auto_complete";
 import { backend } from "@/services/backend";
 import { $Enums } from "../../../backend/prisma/generated/client";
-import { toastError } from "@/fetching/fetching_utils";
+import { useToast } from "@/contexts/toast";
 import { SpeakersListDataContext } from "@/contexts/speakers_list_data";
 import {
   AllAvailableCountriesType,
@@ -37,7 +36,7 @@ export default function AddSpeakerOverlay({
   closeOverlay: () => void;
 }) {
   const { LL } = useI18nContext();
-  const { showToast } = useContext(ToastContext);
+  const { showToast, toastError } = useToast();
 
   const [selectedCountry, setSelectedCountry] =
     useState<CountryDataType | null>(null);

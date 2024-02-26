@@ -82,6 +82,20 @@ const en = {
     },
   },
 
+  docs: {
+    TITLE: "Documentation",
+    DESCRIPTION:
+      "Here you can find the documentation for CHASE. Currently, the Docs are only available in German. If you have any questions, feel free to contact us.",
+    BACK_TO_HOME: "Back to home",
+  },
+
+  faq: {
+    TITLE: "FAQs",
+    DESCRIPTION:
+      "Here you can find the FAQs for CHASE. Currently, the FAQs are only available in German. If you have any questions, feel free to contact us.",
+    BACK_TO_HOME: "Back to home",
+  },
+
   admin: {
     login: {
       TITLE: "Admin Login",

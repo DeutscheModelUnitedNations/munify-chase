@@ -2,7 +2,6 @@ import { backend } from "@/services/backend";
 import react, { createContext, useContext, useEffect } from "react";
 import { CommitteeIdContext, ConferenceIdContext } from "./committee_data";
 import { useToast } from "./toast";
-import { toastError } from "@/fetching/fetching_utils";
 import { useI18nContext } from "@/i18n/i18n-react";
 
 export const MessageCountContext = createContext(
@@ -27,7 +26,7 @@ export function MessageCountProvider({
   const { LL } = useI18nContext();
   const conferenceId = useContext(ConferenceIdContext);
   const committeeId = useContext(CommitteeIdContext);
-  const { showToast } = useToast();
+  const { showToast, toastError } = useToast();
 
   const [messageCount, setMessageCount] = react.useState(0);
   const [toastShown, setToastShown] = react.useState(false);

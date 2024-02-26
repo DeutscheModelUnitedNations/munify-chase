@@ -9,10 +9,9 @@ import ForwardBackButtons from "@/components/admin/onboarding/forward_back_bar";
 import CommitteeTable from "@/components/admin/structure/committee_table";
 import AddCommitteeDialog from "@/components/admin/structure/add_committee_dialog";
 import useMousetrap from "mousetrap-react";
-import { toastError } from "@/fetching/fetching_utils";
+import { useToast } from "@/contexts/toast";
 import { ConferenceIdContext } from "@/contexts/committee_data";
 import { $Enums } from "../../../../../../../backend/prisma/generated/client";
-import { useToast } from "@/contexts/toast";
 
 type CommitteesType = Awaited<
   ReturnType<(typeof backend.conference)["conferenceId"]["committee"]["get"]>
@@ -21,7 +20,7 @@ type CommitteesType = Awaited<
 export default function structure() {
   const { LL } = useI18nContext();
   const router = useRouter();
-  const { showToast } = useToast();
+  const { showToast, toastError } = useToast();
   const conferenceId = useContext(ConferenceIdContext);
 
   const [inputMaskVisible, setInputMaskVisible] = useState(false);

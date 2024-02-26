@@ -9,8 +9,7 @@ import {
   faUserXmark,
 } from "@fortawesome/pro-solid-svg-icons";
 import { backend } from "@/services/backend";
-import { toastError } from "@/fetching/fetching_utils";
-import { Toast } from "primereact/toast";
+import { useToast } from "@/contexts/toast";
 import { $Enums } from "../../../backend/prisma/generated/client";
 import {
   ConferenceIdContext,
@@ -31,6 +30,7 @@ export default function PresenceWidget({
   forceUpdate?: boolean;
 }) {
   const { LL } = useI18nContext();
+  const { toastError } = useToast();
   const conferenceId = useContext(ConferenceIdContext);
   const committeeId = useContext(CommitteeIdContext);
 

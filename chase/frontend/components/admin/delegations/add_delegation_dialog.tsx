@@ -7,7 +7,7 @@ import { faPlus, faXmark } from "@fortawesome/pro-solid-svg-icons";
 import useMousetrap from "mousetrap-react";
 import { Dialog } from "primereact/dialog";
 import { FormEvent, useEffect, useState } from "react";
-import { toastError } from "@/fetching/fetching_utils";
+import { useToast } from "@/contexts/toast";
 
 export type AllAvailableCountriesType = Awaited<
   ReturnType<typeof backend.baseData.countries.get>
@@ -30,6 +30,7 @@ export default function AddDelegationDialog({
   addDelegationToList: (alpha3Code: Alpha3Code) => void;
 }) {
   const { LL } = useI18nContext();
+  const { toastError } = useToast();
 
   const [delegationData, setDelegationData] = useState<CountryDataType | null>(
     null,

@@ -1,6 +1,7 @@
 "use client";
 import React, { createContext, useContext, useRef } from "react";
 import { Toast, ToastMessage } from "primereact/toast";
+import { useI18nContext } from "@/i18n/i18n-react";
 
 export const ToastContext = createContext({} as ToastContextType);
 export const useToast = () => useContext(ToastContext);
@@ -11,6 +12,7 @@ export const useToast = () => useContext(ToastContext);
  */
 export const ToastProvider = ({ children }: { children: React.ReactNode }) => {
   const toast = useRef<Toast>(null);
+  const { LL } = useI18nContext();
 
   const showToast = (message: ToastMessage) => {
     toast.current?.show(message);
@@ -20,8 +22,17 @@ export const ToastProvider = ({ children }: { children: React.ReactNode }) => {
     toast.current?.clear();
   };
 
+  const toastError = (error: Error) => {
+    console.error("Generic Error: ", error);
+    showToast({
+      severity: "error",
+      summary: LL.admin.onboarding.error.title(),
+      detail: LL.admin.onboarding.error.generic(),
+    });
+  };
+
   return (
-    <ToastContext.Provider value={{ showToast, clearToast }}>
+    <ToastContext.Provider value={{ showToast, clearToast, toastError }}>
       <Toast ref={toast} />
       {children}
     </ToastContext.Provider>
@@ -31,4 +42,5 @@ export const ToastProvider = ({ children }: { children: React.ReactNode }) => {
 export interface ToastContextType {
   showToast: (message: ToastMessage) => void;
   clearToast: () => void;
+  toastError: (error: Error) => void;
 }

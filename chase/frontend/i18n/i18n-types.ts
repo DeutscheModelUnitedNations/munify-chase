@@ -1108,6 +1108,10 @@ type RootTranslation = {
 			 * N​o​ ​S​p​e​a​k​e​r​s​ ​o​n​ ​t​h​e​ ​L​i​s​t
 			 */
 			NO_SPEAKERS_MESSAGE: string
+			/**
+			 * N​o​ ​a​c​t​i​v​e​ ​a​g​e​n​d​a​ ​i​t​e​m
+			 */
+			NO_ACTIVE_AGENDA_ITEM: string
 			toast: {
 				/**
 				 * A​d​d​e​d​ ​S​p​e​e​c​h
@@ -1416,10 +1420,6 @@ type RootTranslation = {
 		}
 		attendance: {
 			/**
-			 * A​t​t​e​n​d​a​n​c​e
-			 */
-			HEADLINE: string
-			/**
 			 * P​r​e​s​e​n​t
 			 */
 			PRESENT: string
@@ -1431,6 +1431,26 @@ type RootTranslation = {
 			 * E​x​c​u​s​e​d
 			 */
 			EXCUSED: string
+			nations: {
+				/**
+				 * A​t​t​e​n​d​a​n​c​e
+				 */
+				TITLE: string
+				/**
+				 * M​a​n​a​g​e​ ​t​h​e​ ​a​t​t​e​n​d​a​n​c​e​ ​o​f​ ​d​e​l​e​g​a​t​e​s​ ​i​n​ ​t​h​e​ ​c​o​m​m​i​t​t​e​e​.
+				 */
+				DESCRIPTION: string
+			}
+			nsa: {
+				/**
+				 * N​o​n​-​S​t​a​t​e​ ​A​c​t​o​r​s
+				 */
+				TITLE: string
+				/**
+				 * M​a​n​a​g​e​ ​t​h​e​ ​a​t​t​e​n​d​a​n​c​e​ ​o​f​ ​n​o​n​-​s​t​a​t​e​ ​a​c​t​o​r​s​ ​i​n​ ​t​h​e​ ​c​o​m​m​i​t​t​e​e​.​ ​T​h​e​y​ ​a​r​e​ ​n​o​t​ ​c​o​u​n​t​e​d​ ​i​n​ ​t​h​e​ ​q​u​o​r​u​m​ ​a​n​d​ ​a​r​e​ ​n​o​t​ ​a​l​l​o​w​e​d​ ​t​o​ ​v​o​t​e​.
+				 */
+				DESCRIPTION: string
+			}
 		}
 		whiteboard: {
 			/**
@@ -2764,6 +2784,10 @@ export type TranslationFunctions = {
 			 * No Speakers on the List
 			 */
 			NO_SPEAKERS_MESSAGE: () => LocalizedString
+			/**
+			 * No active agenda item
+			 */
+			NO_ACTIVE_AGENDA_ITEM: () => LocalizedString
 			toast: {
 				/**
 				 * Added Speech
@@ -3069,10 +3093,6 @@ export type TranslationFunctions = {
 		}
 		attendance: {
 			/**
-			 * Attendance
-			 */
-			HEADLINE: () => LocalizedString
-			/**
 			 * Present
 			 */
 			PRESENT: () => LocalizedString
@@ -3084,6 +3104,26 @@ export type TranslationFunctions = {
 			 * Excused
 			 */
 			EXCUSED: () => LocalizedString
+			nations: {
+				/**
+				 * Attendance
+				 */
+				TITLE: () => LocalizedString
+				/**
+				 * Manage the attendance of delegates in the committee.
+				 */
+				DESCRIPTION: () => LocalizedString
+			}
+			nsa: {
+				/**
+				 * Non-State Actors
+				 */
+				TITLE: () => LocalizedString
+				/**
+				 * Manage the attendance of non-state actors in the committee. They are not counted in the quorum and are not allowed to vote.
+				 */
+				DESCRIPTION: () => LocalizedString
+			}
 		}
 		whiteboard: {
 			/**

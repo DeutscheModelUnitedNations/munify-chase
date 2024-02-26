@@ -44,7 +44,11 @@ export default function PresenceWidget({
     await backend.conference[conferenceId].committee[committeeId].delegations
       .get()
       .then((response) => {
-        setDelegationData(response.data);
+        setDelegationData(
+          response.data?.filter(
+            (item) => item.nation.type === $Enums.NationType.NATION,
+          ) ?? [],
+        );
       })
       .catch((error) => {
         toastError(error);

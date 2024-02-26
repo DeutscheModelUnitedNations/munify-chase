@@ -384,6 +384,7 @@ const de = {
       LIST_CLOSED_BUTTON: "Liste Geschlossen",
       LIST_CLOSED_MESSAGE: "Liste Geschlossen",
       NO_SPEAKERS_MESSAGE: "Keine Redner*innen auf der Liste",
+      NO_ACTIVE_AGENDA_ITEM: "Kein aktiver Tagesordnungspunkt",
       toast: {
         ADDED_SUCCESS_SUMMARY: "Redebeitrag hinzugefügt",
         ADDED_SUCCESS_DETAIL: "zu {{0}}",
@@ -503,10 +504,18 @@ const de = {
       },
     },
     attendance: {
-      HEADLINE: "Anwesenheit",
       PRESENT: "Anwesend",
       ABSENT: "Abwesend",
       EXCUSED: "Entschuldigt",
+      nations: {
+        TITLE: "Anwesenheit der Delegationen",
+        DESCRIPTION: "Verwalte die Anwesenheit der Delegationen im Gremium.",
+      },
+      nsa: {
+        TITLE: "Nichtstaatliche Akteure",
+        DESCRIPTION:
+          "Verwalte die Anwesenheit der Nichtstaatlichen Akteure im Gremium. Sie werden nicht in die Abstimmungsverhältnisse einbezogen und dürfen nicht an Abstimmungen teilnehmen.",
+      },
     },
     whiteboard: {
       SAVE_BUTTON: "Speichern und Veröffentlichen",

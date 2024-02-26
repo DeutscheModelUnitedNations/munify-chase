@@ -126,6 +126,9 @@ export const committee = new Elysia({
     ({ params: { conferenceId, committeeId } }) => {
       return db.committee.findUniqueOrThrow({
         where: { conferenceId, id: committeeId },
+        include: {
+          agendaItems: true,
+        },
       });
     },
     {

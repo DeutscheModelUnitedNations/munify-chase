@@ -382,6 +382,7 @@ const en = {
       LIST_CLOSED_BUTTON: "List Closed",
       LIST_CLOSED_MESSAGE: "List Closed",
       NO_SPEAKERS_MESSAGE: "No Speakers on the List",
+      NO_ACTIVE_AGENDA_ITEM: "No active agenda item",
       toast: {
         ADDED_SUCCESS_SUMMARY: "Added Speech",
         ADDED_SUCCESS_DETAIL: "to {{0}}",
@@ -498,10 +499,18 @@ const en = {
       },
     },
     attendance: {
-      HEADLINE: "Attendance",
       PRESENT: "Present",
       ABSENT: "Absent",
       EXCUSED: "Excused",
+      nations: {
+        TITLE: "Attendance",
+        DESCRIPTION: "Manage the attendance of delegates in the committee.",
+      },
+      nsa: {
+        TITLE: "Non-State Actors",
+        DESCRIPTION:
+          "Manage the attendance of non-state actors in the committee. They are not counted in the quorum and are not allowed to vote.",
+      },
     },
     whiteboard: {
       SAVE_BUTTON: "Save and publish",

@@ -4,7 +4,7 @@ import HeaderTemplate from "@/components/header_template";
 import WidgetBoxTemplate from "@/components/widget_box_template";
 import { ScrollPanel } from "primereact/scrollpanel";
 import { SelectButton } from "primereact/selectbutton";
-import WidgetTemplate from "@/components/widget_template";
+import ConfigWrapper from "@/components/dashboard/chair/config_wrapper";
 import getCountryNameByCode from "@/misc/get_country_name_by_code";
 import { NormalFlag as Flag } from "@/components/flag_templates";
 import { useI18nContext } from "@/i18n/i18n-react";
@@ -23,54 +23,35 @@ import {
   CommitteeIdContext,
   ConferenceIdContext,
 } from "@/contexts/committee_data";
-
-interface AttendanceButtonOptions {
-  icon: IconProp;
-  label: string;
-  value: $Enums.Presence;
-}
-
-type DelegationData = Awaited<
-  ReturnType<
-    (typeof backend.conference)["conferenceId"]["committee"]["committeeId"]["delegations"]["get"]
-  >
->["data"];
+import AttendanceTable, {
+  DelegationDataType,
+} from "@/components/attendance/attendance_table";
 
 export default function ChairAttendees() {
   const { LL, locale } = useI18nContext();
   const conferenceId = useContext(ConferenceIdContext);
   const committeeId = useContext(CommitteeIdContext);
 
-  const [data, setData] = useState<DelegationData>([]);
+  const [delegationData, setDelegationData] = useState<DelegationDataType>([]);
+  const [nonStateActorsData, setNonStateActorsData] =
+    useState<DelegationDataType>([]);
   const [forcePresenceWidgetUpdate, setForcePresenceWidgetUpdate] =
     useState(false);
-
-  const attendanceOptions: AttendanceButtonOptions[] = [
-    {
-      icon: faUserCheck as IconProp,
-      label: LL.chairs.attendance.PRESENT(),
-      value: "PRESENT",
-    },
-    {
-      icon: faUserClock as IconProp,
-      label: LL.chairs.attendance.EXCUSED(),
-      value: "EXCUSED",
-    },
-    {
-      icon: faUserXmark as IconProp,
-      label: LL.chairs.attendance.ABSENT(),
-      value: "ABSENT",
-    },
-  ];
 
   async function getDelegationData() {
     if (!conferenceId || !committeeId) return;
     await backend.conference[conferenceId].committee[committeeId].delegations
       .get()
       .then((response) => {
-        setData(
+        setDelegationData(
           response.data?.filter(
             (delegation) => delegation.nation.type === $Enums.NationType.NATION,
+          ) || null,
+        );
+        setNonStateActorsData(
+          response.data?.filter(
+            (delegation) =>
+              delegation.nation.type === $Enums.NationType.NON_STATE_ACTOR,
           ) || null,
         );
       })
@@ -108,16 +89,6 @@ export default function ChairAttendees() {
       });
   }
 
-  const justifyTemplate = (option: AttendanceButtonOptions) => {
-    return (
-      <>
-        <FontAwesomeIcon icon={option.icon} />
-        {/* <FontAwesomeIcon icon={option.icon} className="mr-2" />  Option with icon and lable
-        {option.label} */}
-      </>
-    );
-  };
-
   return (
     <>
       <div className="flex-1 flex flex-col">
@@ -129,40 +100,20 @@ export default function ChairAttendees() {
         </HeaderTemplate>
         <ScrollPanel className="flex-1 overflow-y-auto custom-scrollbar">
           <div className="flex-1 flex p-4 gap-4 flex-col items-center">
-            <WidgetTemplate
-              cardTitle={LL.chairs.attendance.HEADLINE()}
-              additionalClassNames="max-w-[600px]"
-            >
-              {data?.map((attendee) => (
-                <WidgetBoxTemplate>
-                  <Flag countryCode={attendee.nation.alpha3Code} />
-                  <div className="flex flex-col justify-center">
-                    <div className="text-sm font-bold text-gray-text dark:text-primary-800">
-                      <span className="mr-2">
-                        {getCountryNameByCode(
-                          attendee.nation.alpha3Code,
-                          locale,
-                        )}
-                      </span>
-                    </div>
-                  </div>
-                  <div className="flex-1" />
-                  <SelectButton
-                    value={attendee.members[0].presence}
-                    onChange={(e) =>
-                      updatePresence(
-                        attendee.id,
-                        attendee.members[0].id,
-                        e.value,
-                      )
-                    }
-                    options={attendanceOptions}
-                    itemTemplate={justifyTemplate}
-                    allowEmpty={false}
-                  />
-                </WidgetBoxTemplate>
-              ))}
-            </WidgetTemplate>
+            <div className="flex gap-10 flex-col items-center max-w-[700px]">
+              <AttendanceTable
+                title={LL.chairs.attendance.nations.TITLE()}
+                description={LL.chairs.attendance.nations.DESCRIPTION()}
+                delegationData={delegationData}
+                updatePresence={updatePresence}
+              />
+              <AttendanceTable
+                title={LL.chairs.attendance.nsa.TITLE()}
+                description={LL.chairs.attendance.nsa.DESCRIPTION()}
+                delegationData={nonStateActorsData}
+                updatePresence={updatePresence}
+              />
+            </div>
           </div>
         </ScrollPanel>
       </div>

@@ -24,7 +24,7 @@ const emailRegex =
 export default () => {
   const { LL, locale } = useI18nContext();
   const router = useRouter();
-  const { showToast } = useToast();
+  const { showToast, toastError } = useToast();
 
   const [initialLoarding, setInitialLoading] = useState(true);
   const [userStateLoading, setUserStateLoading] = useState(false);
@@ -49,11 +49,7 @@ export default () => {
         }
       })
       .catch((err) => {
-        showToast({
-          severity: "error",
-          summary: "Error",
-          detail: err.message,
-        });
+        toastError(err);
       });
   }
 
@@ -78,11 +74,7 @@ export default () => {
         },
       });
       if (res.error) {
-        showToast({
-          severity: "error",
-          summary: res.error.message,
-          detail: "Test",
-        });
+        toastError(res.error);
       } else {
         setUserState(res.data);
       }

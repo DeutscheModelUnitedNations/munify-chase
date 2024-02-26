@@ -458,8 +458,8 @@ try {
         ) {
           if (
             !selectedCountries.includes(countryRaw.alpha3Code) &&
-            countryRaw.type !== $Enums.NationVariant.SPECIAL_PERSON &&
-            countryRaw.type !== $Enums.NationVariant.NON_STATE_ACTOR
+            countryRaw.variant !== $Enums.NationVariant.SPECIAL_PERSON &&
+            countryRaw.variant !== $Enums.NationVariant.NON_STATE_ACTOR
           ) {
             selectedCountries.push(countryRaw.alpha3Code);
           }
@@ -577,38 +577,38 @@ try {
    * ---------------
    */
 
-  const simSimConference = await prisma.conference.upsert({
-    where: {
-      name: "SimSim",
-    },
-    update: {},
-    create: {
-      name: "SimSim",
-    },
-  });
+  // const simSimConference = await prisma.conference.upsert({
+  //   where: {
+  //     name: "SimSim",
+  //   },
+  //   update: {},
+  //   create: {
+  //     name: "SimSim",
+  //   },
+  // });
 
-  const simSimCommittees = {} as {
-    SimSim1: Awaited<ReturnType<typeof prisma.committee.create>> | undefined;
-    SimSim2: Awaited<ReturnType<typeof prisma.committee.create>> | undefined;
-  };
+  // const simSimCommittees = {} as {
+  //   SimSim1: Awaited<ReturnType<typeof prisma.committee.create>> | undefined;
+  //   SimSim2: Awaited<ReturnType<typeof prisma.committee.create>> | undefined;
+  // };
 
-  simSimCommittees.SimSim1 = await prisma.committee.create({
-    data: {
-      conferenceId: simSimConference.id,
-      abbreviation: "S1",
-      name: "SimSim 1",
-      category: "COMMITTEE",
-    },
-  });
+  // simSimCommittees.SimSim1 = await prisma.committee.create({
+  //   data: {
+  //     conferenceId: simSimConference.id,
+  //     abbreviation: "S1",
+  //     name: "SimSim 1",
+  //     category: "COMMITTEE",
+  //   },
+  // });
 
-  simSimCommittees.SimSim2 = await prisma.committee.create({
-    data: {
-      conferenceId: simSimConference.id,
-      abbreviation: "S2",
-      name: "SimSim 2",
-      category: "COMMITTEE",
-    },
-  });
+  // simSimCommittees.SimSim2 = await prisma.committee.create({
+  //   data: {
+  //     conferenceId: simSimConference.id,
+  //     abbreviation: "S2",
+  //     name: "SimSim 2",
+  //     category: "COMMITTEE",
+  //   },
+  // });
 
   await prisma.$disconnect();
 } catch (e) {

@@ -24,9 +24,6 @@ export default function Navbar({
   isFAQ?: boolean;
   animate?: boolean;
 }) {
-  const { LL } = useI18nContext();
-  const router = useRouter();
-
   const [modificator, setModificator] = useState(0);
   const [showMenu, setShowMenu] = useState(false);
 

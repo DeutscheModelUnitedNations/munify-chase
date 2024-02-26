@@ -197,25 +197,25 @@ const allCountries = [
   { alpha3Code: "zmb" },
   { alpha3Code: "zwe" },
 
-  { alpha3Code: "unm", type: $Enums.NationVariant.SPECIAL_PERSON },
-  // { alpha3Code: "unw", type: $Enums.NationVariant.SPECIAL_PERSON },
-  { alpha3Code: "gsm", type: $Enums.NationVariant.SPECIAL_PERSON },
-  { alpha3Code: "gsw", type: $Enums.NationVariant.SPECIAL_PERSON },
-  { alpha3Code: "uno", type: $Enums.NationVariant.SPECIAL_PERSON },
+  { alpha3Code: "unm", type: $Enums.NationVariant.SPECIAL_PERSON }, // Male General Secretary
+  // { alpha3Code: "unw", type: $Enums.NationVariant.SPECIAL_PERSON }, // Female General Secretary
+  { alpha3Code: "gsm", type: $Enums.NationVariant.SPECIAL_PERSON }, // Male Guest Speaker
+  { alpha3Code: "gsw", type: $Enums.NationVariant.SPECIAL_PERSON }, // Female Guest Speaker
+  { alpha3Code: "uno", type: $Enums.NationVariant.SPECIAL_PERSON }, // MISC UN Official
 
-  { alpha3Code: "nsa_amn", type: $Enums.NationVariant.NON_STATE_ACTOR },
-  { alpha3Code: "nsa_gates", type: $Enums.NationVariant.NON_STATE_ACTOR },
-  { alpha3Code: "nsa_gnwp", type: $Enums.NationVariant.NON_STATE_ACTOR },
-  { alpha3Code: "nsa_gp", type: $Enums.NationVariant.NON_STATE_ACTOR },
-  { alpha3Code: "nsa_hrw", type: $Enums.NationVariant.NON_STATE_ACTOR },
-  { alpha3Code: "nsa_iog", type: $Enums.NationVariant.NON_STATE_ACTOR },
-  { alpha3Code: "nsa_icrc", type: $Enums.NationVariant.NON_STATE_ACTOR },
-  { alpha3Code: "nsa_icg", type: $Enums.NationVariant.NON_STATE_ACTOR },
-  { alpha3Code: "nsa_ippnw", type: $Enums.NationVariant.NON_STATE_ACTOR },
-  { alpha3Code: "nsa_mercy", type: $Enums.NationVariant.NON_STATE_ACTOR },
-  { alpha3Code: "nsa_unwatch", type: $Enums.NationVariant.NON_STATE_ACTOR },
-  { alpha3Code: "nsa_whh", type: $Enums.NationVariant.NON_STATE_ACTOR },
-  { alpha3Code: "nsa_wef", type: $Enums.NationVariant.NON_STATE_ACTOR },
+  { alpha3Code: "nsa_amn", type: $Enums.NationVariant.NON_STATE_ACTOR }, // Amnesty International
+  { alpha3Code: "nsa_gates", type: $Enums.NationVariant.NON_STATE_ACTOR }, // Bill & Melinda Gates Foundation
+  { alpha3Code: "nsa_gnwp", type: $Enums.NationVariant.NON_STATE_ACTOR }, // Global Network of Women Peacekeepers
+  { alpha3Code: "nsa_gp", type: $Enums.NationVariant.NON_STATE_ACTOR }, // Greenpeace
+  { alpha3Code: "nsa_hrw", type: $Enums.NationVariant.NON_STATE_ACTOR }, // Human Rights Watch
+  { alpha3Code: "nsa_iog", type: $Enums.NationVariant.NON_STATE_ACTOR }, // International
+  { alpha3Code: "nsa_icrc", type: $Enums.NationVariant.NON_STATE_ACTOR }, // International Red Cross
+  { alpha3Code: "nsa_icg", type: $Enums.NationVariant.NON_STATE_ACTOR }, // International Crisis Group
+  { alpha3Code: "nsa_ippnw", type: $Enums.NationVariant.NON_STATE_ACTOR }, // International Physicians for the Prevention of Nuclear War
+  { alpha3Code: "nsa_mercy", type: $Enums.NationVariant.NON_STATE_ACTOR }, // Mercy Corps
+  { alpha3Code: "nsa_unwatch", type: $Enums.NationVariant.NON_STATE_ACTOR }, // UN Watch
+  { alpha3Code: "nsa_whh", type: $Enums.NationVariant.NON_STATE_ACTOR }, // Welthungerhilfe
+  { alpha3Code: "nsa_wef", type: $Enums.NationVariant.NON_STATE_ACTOR }, // World Economic Forum
 ];
 
 try {
@@ -231,24 +231,24 @@ try {
   console.info(`Created ${countries.count} countries as base country data`);
 
   /*
-   * -------------
-   *   Test Data
-   * -------------
-   * (only for development)
-   *
+   * --------------------
+   *   MUN-SH 2024 Data
+   * --------------------
    */
 
   const conference = await prisma.conference.upsert({
     where: {
-      name: "Dummy Conference",
+      name: "MUN-SH 2024",
     },
     update: {},
     create: {
-      name: "Dummy Conference",
+      name: "MUN-SH 2024",
+      start: new Date("2024-03-07"),
+      end: new Date("2024-03-11"),
     },
   });
   console.info("\n----------------\n");
-  console.info(`Created a Dummy Conference with the ID ${conference.id}`);
+  console.info(`Created a MUN-SH 2024 Conference with the ID ${conference.id}`);
 
   // Committees
 
@@ -570,6 +570,45 @@ try {
       }
     }
   }
+
+  /*
+   * ---------------
+   *   SimSim Data
+   * ---------------
+   */
+
+  const simSimConference = await prisma.conference.upsert({
+    where: {
+      name: "SimSim",
+    },
+    update: {},
+    create: {
+      name: "SimSim",
+    },
+  });
+
+  const simSimCommittees = {} as {
+    SimSim1: Awaited<ReturnType<typeof prisma.committee.create>> | undefined;
+    SimSim2: Awaited<ReturnType<typeof prisma.committee.create>> | undefined;
+  };
+
+  simSimCommittees.SimSim1 = await prisma.committee.create({
+    data: {
+      conferenceId: simSimConference.id,
+      abbreviation: "S1",
+      name: "SimSim 1",
+      category: "COMMITTEE",
+    },
+  });
+
+  simSimCommittees.SimSim2 = await prisma.committee.create({
+    data: {
+      conferenceId: simSimConference.id,
+      abbreviation: "S2",
+      name: "SimSim 2",
+      category: "COMMITTEE",
+    },
+  });
 
   await prisma.$disconnect();
 } catch (e) {

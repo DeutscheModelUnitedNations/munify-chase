@@ -4,6 +4,7 @@ import { committeeRoleGuard } from "../auth/guards/committeeRoles";
 import { conferenceRoleGuard } from "../auth/guards/conferenceRoles";
 import { openApiTag } from "../util/openApiTags";
 import { AgendaItem } from "../../prisma/generated/schema";
+import { nullToUndefined } from "../util/nullToUndefined";
 
 const AgendaItemWithoutRelations = t.Omit(AgendaItem, [
   "committee",
@@ -33,7 +34,7 @@ export const agendaItem = new Elysia({
       });
 
       // the return schema expects description to be set or undefined https://github.com/adeyahya/prisma-typebox-generator/issues/19
-      return r.map((a) => ({ ...a, description: a.description || undefined }));
+      return nullToUndefined(r);
     },
     {
       hasConferenceRole: "any",

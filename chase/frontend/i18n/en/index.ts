@@ -9,6 +9,14 @@ const en = {
     BACK_TO_HOME: "Back to home",
   },
 
+  cookieBanner: {
+    HEADLINE: "Use of Cookies",
+    TEXT: "We use cookies to optimize our website for you and to be able to continuously improve it. By continuing to use the website and web app, you consent to the use of cookies.",
+    ACCEPT: "I understand",
+    SUBTEXT: "Further information on cookies can be found in our",
+    PRIVACY_POLICY: "privacy policy",
+  },
+
   roles: {
     ADMIN: "Conference Admin",
     SECRETARIAT: "Member of the Secretariat",
@@ -43,6 +51,7 @@ const en = {
       CARD_3_TITLE: "Resolutions",
       CARD_3_TEXT:
         "Create and edit resolutions collaboratively with other delegates. No more paper or Google Docs!",
+      COMING_SOON: "Coming Soon",
     },
     ABOUT_TITEL: "About CHASE",
     ABOUT_TEXT:

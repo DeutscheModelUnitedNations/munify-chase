@@ -32,6 +32,28 @@ type RootTranslation = {
 		 */
 		BACK_TO_HOME: string
 	}
+	cookieBanner: {
+		/**
+		 * U​s​e​ ​o​f​ ​C​o​o​k​i​e​s
+		 */
+		HEADLINE: string
+		/**
+		 * W​e​ ​u​s​e​ ​c​o​o​k​i​e​s​ ​t​o​ ​o​p​t​i​m​i​z​e​ ​o​u​r​ ​w​e​b​s​i​t​e​ ​f​o​r​ ​y​o​u​ ​a​n​d​ ​t​o​ ​b​e​ ​a​b​l​e​ ​t​o​ ​c​o​n​t​i​n​u​o​u​s​l​y​ ​i​m​p​r​o​v​e​ ​i​t​.​ ​B​y​ ​c​o​n​t​i​n​u​i​n​g​ ​t​o​ ​u​s​e​ ​t​h​e​ ​w​e​b​s​i​t​e​ ​a​n​d​ ​w​e​b​ ​a​p​p​,​ ​y​o​u​ ​c​o​n​s​e​n​t​ ​t​o​ ​t​h​e​ ​u​s​e​ ​o​f​ ​c​o​o​k​i​e​s​.
+		 */
+		TEXT: string
+		/**
+		 * I​ ​u​n​d​e​r​s​t​a​n​d
+		 */
+		ACCEPT: string
+		/**
+		 * F​u​r​t​h​e​r​ ​i​n​f​o​r​m​a​t​i​o​n​ ​o​n​ ​c​o​o​k​i​e​s​ ​c​a​n​ ​b​e​ ​f​o​u​n​d​ ​i​n​ ​o​u​r
+		 */
+		SUBTEXT: string
+		/**
+		 * p​r​i​v​a​c​y​ ​p​o​l​i​c​y
+		 */
+		PRIVACY_POLICY: string
+	}
 	roles: {
 		/**
 		 * C​o​n​f​e​r​e​n​c​e​ ​A​d​m​i​n
@@ -130,6 +152,10 @@ type RootTranslation = {
 			 * C​r​e​a​t​e​ ​a​n​d​ ​e​d​i​t​ ​r​e​s​o​l​u​t​i​o​n​s​ ​c​o​l​l​a​b​o​r​a​t​i​v​e​l​y​ ​w​i​t​h​ ​o​t​h​e​r​ ​d​e​l​e​g​a​t​e​s​.​ ​N​o​ ​m​o​r​e​ ​p​a​p​e​r​ ​o​r​ ​G​o​o​g​l​e​ ​D​o​c​s​!
 			 */
 			CARD_3_TEXT: string
+			/**
+			 * C​o​m​i​n​g​ ​S​o​o​n
+			 */
+			COMING_SOON: string
 		}
 		/**
 		 * A​b​o​u​t​ ​C​H​A​S​E
@@ -1708,6 +1734,28 @@ export type TranslationFunctions = {
 		 */
 		BACK_TO_HOME: () => LocalizedString
 	}
+	cookieBanner: {
+		/**
+		 * Use of Cookies
+		 */
+		HEADLINE: () => LocalizedString
+		/**
+		 * We use cookies to optimize our website for you and to be able to continuously improve it. By continuing to use the website and web app, you consent to the use of cookies.
+		 */
+		TEXT: () => LocalizedString
+		/**
+		 * I understand
+		 */
+		ACCEPT: () => LocalizedString
+		/**
+		 * Further information on cookies can be found in our
+		 */
+		SUBTEXT: () => LocalizedString
+		/**
+		 * privacy policy
+		 */
+		PRIVACY_POLICY: () => LocalizedString
+	}
 	roles: {
 		/**
 		 * Conference Admin
@@ -1806,6 +1854,10 @@ export type TranslationFunctions = {
 			 * Create and edit resolutions collaboratively with other delegates. No more paper or Google Docs!
 			 */
 			CARD_3_TEXT: () => LocalizedString
+			/**
+			 * Coming Soon
+			 */
+			COMING_SOON: () => LocalizedString
 		}
 		/**
 		 * About CHASE

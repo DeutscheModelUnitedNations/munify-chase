@@ -8,7 +8,7 @@ export default function CardSection() {
 
   return (
     <>
-      <div className="flex flex-col lg:flex-row w-full justify-stretch p-8 gap-4">
+      <div className="flex-1 flex flex-col lg:flex-row w-full justify-stretch p-8 gap-4">
         <Motion delay={0.2}>
           <Card
             src="/undraw/candidate.svg"
@@ -23,6 +23,7 @@ export default function CardSection() {
             alt="Debate"
             header={LL.home.heroCards.CARD_2_TITLE()}
             text={LL.home.heroCards.CARD_2_TEXT()}
+            comingSoonRibbon
           />
         </Motion>
         <Motion delay={0.6}>
@@ -31,6 +32,7 @@ export default function CardSection() {
             alt="Debate"
             header={LL.home.heroCards.CARD_3_TITLE()}
             text={LL.home.heroCards.CARD_3_TEXT()}
+            comingSoonRibbon
           />
         </Motion>
       </div>
@@ -57,7 +59,7 @@ function Motion({
         damping: 20,
         stiffness: 100,
       }}
-      className="flex-1 flex flex-col items-center bg-white p-8 rounded-xl shadow-sm"
+      className="flex-1 relative"
     >
       {children}
     </motion.div>

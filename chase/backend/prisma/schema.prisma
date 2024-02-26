@@ -262,7 +262,7 @@ enum NationVariant {
 model Nation {
   id          String        @id @default(uuid())
   alpha3Code  String        @unique
-  type        NationVariant @default(NATION)
+  variant     NationVariant @default(NATION)
   delegations Delegation[]
 }
 

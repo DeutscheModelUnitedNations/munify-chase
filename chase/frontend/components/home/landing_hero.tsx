@@ -29,7 +29,7 @@ export default function LandingHero() {
 
   return (
     <>
-      <div className="relative flex items-center justify-center pt-52 pb-40 gap-5">
+      <div className="relative flex flex-col lg:flex-row items-center justify-center p-4 pt-52 pb-20 lg:pb-40 gap-5">
         <motion.div
           className="z-10"
           initial={{ opacity: 0, y: 10 }}
@@ -58,7 +58,7 @@ export default function LandingHero() {
         >
           <Blob availableBlobs={availableBlobs} chosenBlob={blob} />
         </motion.div>
-        <div className="flex flex-col items-end z-20 w-1/2 ">
+        <div className="flex flex-col items-center lg:items-end z-20 w-full lg:w-1/2 ">
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
@@ -72,7 +72,7 @@ export default function LandingHero() {
             }}
           >
             <h1
-              className="text-6xl font-bold text-right text-slate-900 mb-4 leading-tight"
+              className="text-5xl lg:text-6xl font-bold text-center lg:text-right text-slate-900 mb-4 leading-tight"
               style={{ fontFamily: "Vollkorn" }}
             >
               <span
@@ -97,7 +97,7 @@ export default function LandingHero() {
               delay: 1,
             }}
           >
-            <h2 className="text-2xl text-right text-slate-900 leading-normal">
+            <h2 className="text-xl lg:text-2xl text-center lg:text-right text-slate-900 leading-normal">
               {LL.home.HERO_TEXT()}
             </h2>
           </motion.div>
@@ -141,7 +141,7 @@ const Blob = ({ availableBlobs, chosenBlob }: BlobProps) => {
         alt="Logo"
         width={800}
         height={128}
-        className="absolute top-0 left-0 z-0"
+        className="absolute top-24 md:top-0 lg:top-0 left-0 z-0"
       />
     </>
   );

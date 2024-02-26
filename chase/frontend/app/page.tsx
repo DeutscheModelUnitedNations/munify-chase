@@ -7,9 +7,19 @@ import CardSection from "@/components/home/card_section";
 import TextSection from "@/components/home/text_section";
 import { faCodeBranch, faExternalLink } from "@fortawesome/pro-solid-svg-icons";
 import Footer from "@/components/home/footer";
+import { useMediaQuery } from "react-responsive";
+import Image from "next/image";
 
 export default function Home() {
   const { LL } = useI18nContext();
+
+  const isDesktopOrLaptop = useMediaQuery({
+    query: "(min-width: 1024px)",
+  });
+  const isBiggerThanMobile = useMediaQuery({
+    query: "(min-width: 768px)",
+  });
+  const isTabletOrMobile = useMediaQuery({ query: "(max-width: 768px)" });
 
   return (
     <>
@@ -17,6 +27,17 @@ export default function Home() {
       <div className="flex flex-col bg-primary-950 items-center">
         <div className="max-w-7xl">
           <LandingHero />
+          {isTabletOrMobile && (
+            <div className="w-full bg-white h-40 flex justify-center items-center">
+              <Image
+                src="/logo/svg/chase_logo_blue_text.svg"
+                objectFit="contain"
+                width={300}
+                height={100}
+                alt={"Chase Logo"}
+              />
+            </div>
+          )}
           <CardSection />
           <div
             className="flex flex-col lg:flex-none lg:grid gap-2 lg:gap-10 p-4 lg:p-20 align-items-start"

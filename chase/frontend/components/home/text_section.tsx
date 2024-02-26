@@ -19,17 +19,17 @@ export default function TextSection({ title, text, button }: TextSectionProps) {
   return (
     <>
       <h1
-        className="text-4xl font-bold lg:text-right text-slate-900 leading-tight"
+        className="text-3xl lg:text-4xl font-bold text-center lg:text-right text-slate-900 leading-tight"
         style={{ fontFamily: "Vollkorn" }}
       >
         {title}
       </h1>
       <div className="pb-10 lg:pb-0">
-        <p className="text-lg text-left text-slate-900 leading-normal">
+        <p className="text-md lg:text-lg text-center lg:text-left text-slate-900 leading-normal">
           {text}
         </p>
         {button && (
-          <div className="pt-4">
+          <div className="pt-4 flex justify-center lg:justify-start">
             <Button
               label={button.lable}
               onClick={() => {

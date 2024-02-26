@@ -9,7 +9,7 @@ export default ({
   return (
     <>
       <Navbar />
-      <div className="flex flex-col bg-primary-950 items-center min-h-screen pt-32">
+      <div className="flex flex-col bg-primary-950 items-center min-h-screen pt-40">
         {children}
       </div>
       <Footer />

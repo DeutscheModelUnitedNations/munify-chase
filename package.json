@@ -23,6 +23,7 @@
     "@react-pdf/renderer": "^3.3.8",
     "markdown-to-jsx": "^7.4.1",
     "react-cookie-consent": "^9.0.0",
+    "react-responsive": "^9.0.2",
     "yaml": "^2.4.0"
   }
 }

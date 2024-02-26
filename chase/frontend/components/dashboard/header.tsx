@@ -9,6 +9,8 @@ import {
   AgendaItemContext,
   CommitteeDataContext,
 } from "@/contexts/committee_data";
+import { useUserIdent } from "@/contexts/user_ident";
+import { conferenceRoleTranslation } from "@/i18n/translation_utils";
 
 /**
  * This Component is used in the Dashboard. It uses the HeaderTemplate
@@ -19,36 +21,50 @@ import {
  */
 
 export default function DashboardHeader({
-  countryCode,
-  alternativeHeadline,
+  alternativeHeadline1,
+  alternativeHeadline2,
+  alternativeHeadline3,
 }: {
-  countryCode?: CountryCode;
-  alternativeHeadline?: string;
+  alternativeHeadline1?: string;
+  alternativeHeadline2?: string;
+  alternativeHeadline3?: string;
 }) {
-  const { locale } = useI18nContext();
+  const { LL, locale } = useI18nContext();
+  const { userIdent } = useUserIdent();
   const committeeName = useContext(CommitteeDataContext)?.name;
   const currentTopic = useContext(AgendaItemContext)?.title;
+
+  const isConferenceMember = () => {
+    if (!userIdent?.conferenceMemberships) return false;
+    userIdent?.conferenceMemberships?.length > 0;
+  };
 
   return (
     <HeaderTemplate>
       <div className="flex flex-col items-start justify-center">
-        <div className="text-2xl font-bold mb-1">
-          {countryCode ? (
-            alternativeHeadline ? (
-              alternativeHeadline
-            ) : (
-              getCountryNameByCode(countryCode ?? "xxx", locale)
-            )
-          ) : (
-            <Skeleton width="15rem" height="2rem" />
+        <h1 className="text-2xl font-bold mb-1">
+          {alternativeHeadline1 ??
+            (userIdent && isConferenceMember()
+              ? conferenceRoleTranslation(
+                  LL,
+                  userIdent?.conferenceMemberships[0].role,
+                )
+              : getCountryNameByCode(
+                  userIdent?.committeeMemberships[0]?.delegation?.nation
+                    ?.alpha3Code ?? "xxx",
+                  locale,
+                ) ?? <Skeleton width="15rem" height="2rem" />)}
+        </h1>
+        <h2 className="text-md font-bold my-1">
+          {alternativeHeadline2 ?? committeeName ?? (
+            <Skeleton width="10rem" height="1.5rem" />
           )}
-        </div>
-        <div className="text-md font-bold my-1">
-          {committeeName ?? <Skeleton width="10rem" height="1.5rem" />}
-        </div>
-        <div className="text-md">
-          {currentTopic ?? <Skeleton width="12rem" height="1.5rem" />}
-        </div>
+        </h2>
+        <h3 className="text-md">
+          {alternativeHeadline3 ?? currentTopic ?? (
+            <Skeleton width="12rem" height="1.5rem" />
+          )}
+        </h3>
       </div>
       <LargeFlag countryCode={countryCode} />
     </HeaderTemplate>

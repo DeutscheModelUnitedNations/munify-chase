@@ -8,7 +8,10 @@ import OnboardingSteps from "@/components/admin/onboarding/steps";
 import ForwardBackButtons from "@/components/admin/onboarding/forward_back_bar";
 import { Accordion, AccordionTab } from "primereact/accordion";
 import AgendaItems from "@/components/admin/committee/agendaItems";
-import { ConferenceIdContext } from "@/contexts/committee_data";
+import {
+  CommitteeIdContext,
+  ConferenceIdContext,
+} from "@/contexts/committee_data";
 import { toastError } from "@/fetching/fetching_utils";
 
 type CommitteesType = Awaited<
@@ -59,7 +62,9 @@ export default function OnboardingCommitteePage() {
       <Accordion activeIndex={0} className="w-full">
         {committees?.map((committee) => (
           <AccordionTab header={HeaderTemplate(committee)} key={committee?.id}>
-            <AgendaItems />
+            <CommitteeIdContext.Provider value={committee.id}>
+              <AgendaItems />
+            </CommitteeIdContext.Provider>
           </AccordionTab>
         ))}
       </Accordion>

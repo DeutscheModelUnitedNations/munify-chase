@@ -38,6 +38,7 @@ export default function agendaItem() {
       .then((res) => {
         if (res.status > 400 || !res.data)
           throw new Error("Failed to fetch agenda items");
+        console.log(res.data);
         setCommitteeAgendaItems(res.data);
       })
       .catch((error) => {

@@ -133,6 +133,17 @@ export const speakersListModification = new Elysia({
               timeLeft: speakersList.speakingTime,
             },
           });
+        } else if (speakersList.type === "SPEAKERS_LIST") {
+          await tx.speakersList.update({
+            where: {
+              id: speakersList.agendaItem.speakerLists.find(
+                (sl) => sl.type === "COMMENT_LIST",
+              )?.id,
+            },
+            data: {
+              startTimestamp: null,
+            },
+          });
         }
 
         await tx.speakersList.update({

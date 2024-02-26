@@ -77,14 +77,14 @@ export default function AgendaSelection() {
         description={LL.chairs.dashboard.configurations.agenda.DESCRIPTION()}
       >
         <div className="flex gap-2 w-full">
-          <Button
+          {/* <Button
             faIcon={faPencil}
             onClick={() => {
               // TODO Implement Chairs creating new Agenda Items
               alert("Not implemented yet");
             }}
             disabled
-          />
+          /> */}
           <Dropdown
             value={agendaItems?.find((item) => item.isActive)?.id || null}
             options={

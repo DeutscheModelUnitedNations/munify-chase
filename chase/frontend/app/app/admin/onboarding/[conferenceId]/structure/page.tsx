@@ -64,7 +64,6 @@ export default function structure() {
   }) {
     if (!conferenceId) return;
     backend.conference[conferenceId].committee
-      // TODO @Felix Help – what is wrong with this type D:
       .post({
         name,
         abbreviation,

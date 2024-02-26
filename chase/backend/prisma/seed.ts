@@ -1,5 +1,5 @@
 // import { faker } from "@faker-js/faker";
-import { PrismaClient } from "./generated/client";
+import { $Enums, PrismaClient } from "./generated/client";
 const prisma = new PrismaClient();
 
 const allCountries = [
@@ -196,9 +196,27 @@ const allCountries = [
   { alpha3Code: "yem" },
   { alpha3Code: "zmb" },
   { alpha3Code: "zwe" },
-];
 
-const specialPersonData: string[] = ["unm", "unw", "gsm", "gsw", "uno"];
+  { alpha3Code: "unm", type: $Enums.NationType.SPECIAL_PERSON },
+  // { alpha3Code: "unw", type: $Enums.NationType.SPECIAL_PERSON },
+  { alpha3Code: "gsm", type: $Enums.NationType.SPECIAL_PERSON },
+  { alpha3Code: "gsw", type: $Enums.NationType.SPECIAL_PERSON },
+  { alpha3Code: "uno", type: $Enums.NationType.SPECIAL_PERSON },
+
+  { alpha3Code: "nsa_amn", type: $Enums.NationType.NON_STATE_ACTOR },
+  { alpha3Code: "nsa_gates", type: $Enums.NationType.NON_STATE_ACTOR },
+  { alpha3Code: "nsa_gnwp", type: $Enums.NationType.NON_STATE_ACTOR },
+  { alpha3Code: "nsa_gp", type: $Enums.NationType.NON_STATE_ACTOR },
+  { alpha3Code: "nsa_hrw", type: $Enums.NationType.NON_STATE_ACTOR },
+  { alpha3Code: "nsa_iog", type: $Enums.NationType.NON_STATE_ACTOR },
+  { alpha3Code: "nsa_icrc", type: $Enums.NationType.NON_STATE_ACTOR },
+  { alpha3Code: "nsa_icg", type: $Enums.NationType.NON_STATE_ACTOR },
+  { alpha3Code: "nsa_ippnw", type: $Enums.NationType.NON_STATE_ACTOR },
+  { alpha3Code: "nsa_mercy", type: $Enums.NationType.NON_STATE_ACTOR },
+  { alpha3Code: "nsa_unwatch", type: $Enums.NationType.NON_STATE_ACTOR },
+  { alpha3Code: "nsa_whh", type: $Enums.NationType.NON_STATE_ACTOR },
+  { alpha3Code: "nsa_wef", type: $Enums.NationType.NON_STATE_ACTOR },
+];
 
 try {
   /*
@@ -211,14 +229,6 @@ try {
     data: allCountries,
   });
   console.info(`Created ${countries.count} countries as base country data`);
-
-  const specialPersons = await prisma.specialPerson.createMany({
-    data: specialPersonData.map((code) => ({ code })),
-  });
-
-  console.info(
-    `Created ${specialPersons.count} special persons as base special person data`,
-  );
 
   /*
    * -------------
@@ -242,14 +252,14 @@ try {
 
   // Committees
 
-  const committees: {
-    GV: Awaited<ReturnType<typeof prisma.committee.create>> | null;
-    HA1: Awaited<ReturnType<typeof prisma.committee.create>> | null;
-    SR: Awaited<ReturnType<typeof prisma.committee.create>> | null;
-  } = {
-    GV: null,
-    HA1: null,
-    SR: null,
+  const committees = {} as {
+    GV: Awaited<ReturnType<typeof prisma.committee.create>> | undefined;
+    HA1: Awaited<ReturnType<typeof prisma.committee.create>> | undefined;
+    WiSo: Awaited<ReturnType<typeof prisma.committee.create>> | undefined;
+    SR: Awaited<ReturnType<typeof prisma.committee.create>> | undefined;
+    MRR: Awaited<ReturnType<typeof prisma.committee.create>> | undefined;
+    WHO: Awaited<ReturnType<typeof prisma.committee.create>> | undefined;
+    IAEO: Awaited<ReturnType<typeof prisma.committee.create>> | undefined;
   };
 
   committees.GV = await prisma.committee.create({
@@ -271,6 +281,15 @@ try {
     },
   });
 
+  committees.WiSo = await prisma.committee.create({
+    data: {
+      conferenceId: conference.id,
+      abbreviation: "WiSo",
+      name: "Wirtschaft- und Sozialrat",
+      category: "COMMITTEE",
+    },
+  });
+
   committees.SR = await prisma.committee.create({
     data: {
       conferenceId: conference.id,
@@ -279,6 +298,34 @@ try {
       category: "COMMITTEE",
     },
   });
+
+  committees.MRR = await prisma.committee.create({
+    data: {
+      conferenceId: conference.id,
+      abbreviation: "MRR",
+      name: "Menschenrechtsrat",
+      category: "COMMITTEE",
+    },
+  });
+
+  committees.WHO = await prisma.committee.create({
+    data: {
+      conferenceId: conference.id,
+      abbreviation: "WHO",
+      name: "Weltgesundheitsversammlung",
+      category: "COMMITTEE",
+    },
+  });
+
+  committees.IAEO = await prisma.committee.create({
+    data: {
+      conferenceId: conference.id,
+      abbreviation: "IAEO",
+      name: "Generalkonferenz der Internationalen Atomenergieorganisation",
+      category: "COMMITTEE",
+    },
+  });
+
   console.info("\nCreated Committees:");
   console.info(
     `  - Created ${committees.GV.abbreviation} with ID ${committees.GV.id}`,
@@ -287,7 +334,19 @@ try {
     `  - Created ${committees.HA1.abbreviation} with ID ${committees.HA1.id}`,
   );
   console.info(
+    `  - Created ${committees.WiSo.abbreviation} with ID ${committees.WiSo.id}`,
+  );
+  console.info(
     `  - Created ${committees.SR.abbreviation} with ID ${committees.SR.id}`,
+  );
+  console.info(
+    `  - Created ${committees.MRR.abbreviation} with ID ${committees.MRR.id}`,
+  );
+  console.info(
+    `  - Created ${committees.WHO.abbreviation} with ID ${committees.WHO.id}`,
+  );
+  console.info(
+    `  - Created ${committees.IAEO.abbreviation} with ID ${committees.IAEO.id}`,
   );
 
   // Team seeding
@@ -299,7 +358,7 @@ try {
     },
   });
 
-  for (let i = 0; i < 9; i++) {
+  for (let i = 0; i < 21; i++) {
     await prisma.conferenceMember.create({
       data: {
         conferenceId: conference.id,
@@ -308,7 +367,7 @@ try {
     });
   }
 
-  for (let i = 0; i < 3; i++) {
+  for (let i = 0; i < 7; i++) {
     await prisma.conferenceMember.create({
       data: {
         conferenceId: conference.id,
@@ -330,9 +389,25 @@ try {
     "Bekämpfung illegaler Waffenlieferungen an nichtstaatliche Akteure",
     "Planetare Verteidigung",
 
+    "Förderung von Kreislaufwirtschaft",
+    "Umgang mit klimawandelbedingter Migration",
+    "Rolle von künstlicher Intelligenz für die nachhaltige Entwicklung",
+
     "Aktuelles",
     "Situation in Haiti",
     "Bedeutung natürlicher Ressourcen für bewaffnete Konflikte",
+
+    "Verantwortung von Unternehmen für Menschenrechte entlang globaler Lieferketten",
+    "Umsetzung des Rechts auf eine saubere Umwelt",
+    "Menschenrechtslage in der Demokratischen Republik Kongo",
+
+    "Verbesserung der psychischen Gesundheitsversorgung",
+    "Bekämpfung der Folgeerkranungen von Fehl- und Mangelernährung",
+    "Sicherung des Zugangs zu Verhütungsmitteln",
+
+    "Sicherheit kerntechnischer Anlagen in Konfliktgebieten",
+    "Auswirkungen von Uranabbau, -nutzung und -lagerung auf indigene Bevölkerungen",
+    "Rolle der Kernenergie für die Umsetzung von SDG 7",
   ];
 
   let i = 0;
@@ -351,11 +426,13 @@ try {
               type: "SPEAKERS_LIST",
               agendaItemId: agendaItem.id,
               speakingTime: 180,
+              timeLeft: 180,
             },
             {
               type: "COMMENT_LIST",
               agendaItemId: agendaItem.id,
               speakingTime: 30,
+              timeLeft: 30,
             },
           ],
         });
@@ -374,10 +451,16 @@ try {
     while (selectedCountries.length < 20) {
       for (const countryRaw of allCountries) {
         if (
-          ["deu", "usa", "fra"].includes(countryRaw.alpha3Code) ||
+          ["deu", "usa", "fra", "gbr", "rus", "chn"].includes(
+            countryRaw.alpha3Code,
+          ) ||
           Math.random() > 0.97
         ) {
-          if (!selectedCountries.includes(countryRaw.alpha3Code)) {
+          if (
+            !selectedCountries.includes(countryRaw.alpha3Code) &&
+            countryRaw.type !== $Enums.NationType.SPECIAL_PERSON &&
+            countryRaw.type !== $Enums.NationType.NON_STATE_ACTOR
+          ) {
             selectedCountries.push(countryRaw.alpha3Code);
           }
         }
@@ -421,6 +504,70 @@ try {
           delegationId: delegation.id,
         },
       });
+    }
+  }
+
+  // Non-State Actors
+  console.info("\nCreated Non-State Actor CommitteeMemberships:");
+
+  const nonStateActors = await prisma.nation.findMany({
+    where: {
+      type: $Enums.NationType.NON_STATE_ACTOR,
+    },
+  });
+
+  for (const nonStateActor of nonStateActors) {
+    const delegation = await prisma.delegation.create({
+      data: {
+        conference: { connect: { id: conference.id } },
+        nation: { connect: { alpha3Code: nonStateActor.alpha3Code } },
+      },
+    });
+
+    for (const committee of Object.values(committees)) {
+      if (committee) {
+        await prisma.committeeMember.create({
+          data: {
+            committeeId: committee.id,
+            delegationId: delegation.id,
+          },
+        });
+        console.info(
+          `  - Created CommitteeMembership for ${nonStateActor.alpha3Code} in ${committee.abbreviation}`,
+        );
+      }
+    }
+  }
+
+  // Special Persons
+  console.info("\nCreated Special Persons CommitteeMemberships:");
+
+  const specialPersons = await prisma.nation.findMany({
+    where: {
+      type: $Enums.NationType.SPECIAL_PERSON,
+    },
+  });
+
+  for (const specialPerson of specialPersons) {
+    const delegation = await prisma.delegation.create({
+      data: {
+        conference: { connect: { id: conference.id } },
+        nation: { connect: { alpha3Code: specialPerson.alpha3Code } },
+      },
+    });
+
+    for (const committee of Object.values(committees)) {
+      if (committee) {
+        await prisma.committeeMember.create({
+          data: {
+            committeeId: committee.id,
+            delegationId: delegation.id,
+          },
+        });
+        console.info(
+          `  - Created CommitteeMembership for ${specialPerson.alpha3Code} in ${committee.abbreviation}`,
+        );
+      }
     }
   }
 

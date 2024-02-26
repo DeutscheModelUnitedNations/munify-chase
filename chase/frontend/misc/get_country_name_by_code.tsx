@@ -1,4 +1,6 @@
-import countryData from "data/countries.json";
+import nations from "data/nations";
+import nonStateActors from "data/nsa";
+import specialPersons from "@/data/specials";
 import { CountryCode } from "@/custom_types/custom_types";
 
 /**
@@ -51,19 +53,20 @@ export default function getCountryNameByCode(
 
   let languageCode = locale.split("-")[0];
 
+  const combinedTranslations = [
+    ...nations,
+    ...nonStateActors,
+    ...specialPersons,
+  ];
+
   if (availableLanguages.includes(languageCode) === false) {
     languageCode = "en";
   }
 
-  const country = countryData.find(
-    (item) => item.alpha3 === (countryCode?.toLowerCase() || "xxx"),
+  const res = combinedTranslations.find(
+    (item) => item.alpha3 === countryCode?.toLowerCase(),
   );
+  if (!res) return "xxx"; // Country not found
 
-  if (country) {
-    // TODO Fix bug with types
-    // @ts-ignore
-    return country[languageCode] || country.en; // Use English as a fallback language
-  }
-
-  return "xxx"; // Country not found
+  return res[languageCode as keyof typeof res] as CountryCode;
 }

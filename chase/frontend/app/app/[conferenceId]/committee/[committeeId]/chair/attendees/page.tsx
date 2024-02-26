@@ -68,7 +68,11 @@ export default function ChairAttendees() {
     await backend.conference[conferenceId].committee[committeeId].delegations
       .get()
       .then((response) => {
-        setData(response.data);
+        setData(
+          response.data?.filter(
+            (delegation) => delegation.nation.type === $Enums.NationType.NATION,
+          ) || null,
+        );
       })
       .catch((error) => {
         toastError(error);

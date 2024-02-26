@@ -114,14 +114,12 @@ enum ConferenceRole {
 
 /// A user's membership in a conference, providing them with a role in the conference
 model ConferenceMember {
-  id              String         @id @default(uuid())
-  conference      Conference     @relation(fields: [conferenceId], references: [id])
-  conferenceId    String
-  user            User?          @relation(fields: [userId], references: [id])
-  userId          String?
-  role            ConferenceRole
-  nonStateActor   NonStateActor? @relation(fields: [nonStateActorId], references: [id])
-  nonStateActorId String?
+  id           String         @id @default(uuid())
+  conference   Conference     @relation(fields: [conferenceId], references: [id])
+  conferenceId String
+  user         User?          @relation(fields: [userId], references: [id])
+  userId       String?
+  role         ConferenceRole
 
   @@unique([userId, conferenceId])
 }
@@ -253,24 +251,19 @@ model Delegation {
   @@unique([conferenceId, nationId])
 }
 
+enum NationType {
+  NATION
+  NON_STATE_ACTOR
+  SPECIAL_PERSON
+}
+
 //TODO should we allow for customizing these per conference and just allow loading template at creation?
 /// A nation in the system. E.g. Germany
 model Nation {
   id          String       @id @default(uuid())
   alpha3Code  String       @unique
+  type        NationType   @default(NATION)
   delegations Delegation[]
-}
-
-/// A non-state actor in the system. E.g. the Red Cross
-model NonStateActor {
-  id                String             @id @default(uuid())
-  code              String             @unique
-  conferenceMembers ConferenceMember[]
-}
-
-model SpecialPerson {
-  id   String @id @default(uuid())
-  code String @unique
 }
 
 enum MessageCategory {

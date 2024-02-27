@@ -954,6 +954,10 @@ type RootTranslation = {
 		 */
 		NA_HUB_TITLE: string
 		/**
+		 * G​u​e​s​t​ ​H​u​b
+		 */
+		GUEST_HUB_TITLE: string
+		/**
 		 * S​e​l​e​c​t​ ​a​ ​C​o​m​m​i​t​t​e​e
 		 */
 		SELECT_COMMITTEE: string
@@ -2691,6 +2695,10 @@ export type TranslationFunctions = {
 		 * Non-State Actor's Hub
 		 */
 		NA_HUB_TITLE: () => LocalizedString
+		/**
+		 * Guest Hub
+		 */
+		GUEST_HUB_TITLE: () => LocalizedString
 		/**
 		 * Select a Committee
 		 */

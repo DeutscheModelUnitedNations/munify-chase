@@ -15,7 +15,7 @@ import { MyDelegationContext } from "@/contexts/user_ident";
  */
 
 export default function SpeakerBlock() {
-  const speakersList = useContext(SpeakersListDataContext)?.speakers.slice(1);
+  const speakersList = useContext(SpeakersListDataContext)?.speakers;
   const myCountry =
     useContext(MyDelegationContext)?.delegation?.nation?.alpha3Code;
   const [compressedList, setCompressedList] = useState<
@@ -31,7 +31,9 @@ export default function SpeakerBlock() {
     return "";
   }
 
-  function getCompressedList(list: typeof speakersList) {
+  function getCompressedList(og_list: typeof speakersList) {
+    let list = og_list.slice(1);
+
     if (!list?.length) {
       return [];
     }

@@ -332,6 +332,7 @@ const en = {
   hub: {
     CHAIR_HUB_TITLE: "Team Hub",
     NA_HUB_TITLE: "Non-State Actor's Hub",
+    GUEST_HUB_TITLE: "Guest Hub",
     SELECT_COMMITTEE: "Select a Committee",
     NO_COMMITTEES: "No Committees found",
     LOGOUT: "Logout",

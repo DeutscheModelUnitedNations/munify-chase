@@ -1,13 +1,12 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useRef } from "react";
 import { useI18nContext } from "@/i18n/i18n-react";
-import { backend } from "@/services/backend";
 import CookieConsent from "react-cookie-consent";
 import Button from "./button";
 import Link from "next/link";
 import { faCookieBite } from "@fortawesome/pro-solid-svg-icons";
 
 export default function CookieBanner() {
-  const { LL, locale } = useI18nContext();
+  const { LL } = useI18nContext();
 
   const cookieConsentRef = useRef<CookieConsent | null>(null);
 
@@ -19,7 +18,7 @@ export default function CookieBanner() {
   // TODO: Fix cookie interference with the backend
   return (
     <>
-      {/* <CookieConsent
+      <CookieConsent
         ref={cookieConsentRef}
         location="bottom"
         buttonText="Accept"
@@ -53,7 +52,7 @@ export default function CookieBanner() {
           </Link>
           .
         </p>
-      </CookieConsent> */}
+      </CookieConsent>
     </>
   );
 }

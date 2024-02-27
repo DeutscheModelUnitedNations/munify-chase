@@ -336,6 +336,7 @@ const de = {
   hub: {
     CHAIR_HUB_TITLE: "Team Hub",
     NA_HUB_TITLE: "Hub der Nichtstaatliche Akteure",
+    GUEST_HUB_TITLE: "Gäste-Hub",
     SELECT_COMMITTEE: "Wähle ein Gremium",
     NO_COMMITTEES: "Keine Gremien gefunden",
     LOGOUT: "Abmelden",

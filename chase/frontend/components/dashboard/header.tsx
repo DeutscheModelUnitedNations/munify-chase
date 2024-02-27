@@ -1,4 +1,4 @@
-import React, { useContext } from "react";
+import React, { useContext, useEffect } from "react";
 import getCountryNameByCode from "../../misc/get_country_name_by_code";
 import HeaderTemplate from "../header_template";
 import { useI18nContext } from "@/i18n/i18n-react";
@@ -11,6 +11,7 @@ import {
 } from "@/contexts/committee_data";
 import { useUserIdent } from "@/contexts/user_ident";
 import { conferenceRoleTranslation } from "@/i18n/translation_utils";
+import { $Enums } from "../../../backend/prisma/generated/client";
 
 /**
  * This Component is used in the Dashboard. It uses the HeaderTemplate
@@ -38,10 +39,6 @@ export default function DashboardHeader({
 
   const isConferenceMember = () => {
     return conferenceMembership(conferenceId) !== undefined;
-  };
-
-  const isNonStateActor = () => {
-    return conferenceMembership(conferenceId)?.role === "nonStateActor";
   };
 
   return (
@@ -74,11 +71,12 @@ export default function DashboardHeader({
       <LargeFlag
         countryCode={
           committeeMembership(conferenceId)?.delegation?.nation?.alpha3Code ??
-          isNonStateActor()
+          (conferenceMembership(conferenceId)?.role ===
+          $Enums.ConferenceRole.NON_STATE_ACTOR
             ? "nsa_1"
             : isConferenceMember()
               ? "uno"
-              : "xxx"
+              : "xxx")
         }
       />
     </HeaderTemplate>

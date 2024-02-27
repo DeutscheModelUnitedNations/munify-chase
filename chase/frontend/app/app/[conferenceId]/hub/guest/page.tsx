@@ -9,7 +9,7 @@ import { useRouter } from "next/navigation";
 import { useToast } from "@/contexts/toast";
 import { useUserIdent } from "@/contexts/user_ident";
 
-export default function NAHubPage({
+export default function GuestHubPage({
   params,
 }: {
   params: { conferenceId: string };
@@ -23,7 +23,7 @@ export default function NAHubPage({
       <div className="flex justify-center items-start min-h-screen bg-primary">
         <div className="flex-1 flex flex-col justify-center items-center m-10 mt-20">
           <div className="flex-1 flex flex-col justify-center items-center bg-white dark:bg-primary-200 w-11/12 p-5 rounded-md shadow-lg">
-            <h1 className="text-3xl">{LL.hub.NA_HUB_TITLE()}</h1>
+            <h1 className="text-3xl">{LL.hub.GUEST_HUB_TITLE()}</h1>
             <h2 className="text-xl mt-2 mb-8">{LL.hub.SELECT_COMMITTEE()}</h2>
             <CommitteeGrid conferenceId={params.conferenceId} />
             <Button

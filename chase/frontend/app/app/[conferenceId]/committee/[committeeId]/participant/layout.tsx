@@ -15,9 +15,10 @@ import {
 } from "@fortawesome/pro-solid-svg-icons";
 import { useI18nContext } from "@/i18n/i18n-react";
 import { IconProp } from "@fortawesome/fontawesome-svg-core";
-import { MyDelegationProvider } from "@/contexts/user_ident";
+import { MyDelegationProvider, useUserIdent } from "@/contexts/user_ident";
 import { useContext, useEffect, useState } from "react";
 import { ConferenceIdContext } from "@/contexts/committee_data";
+import { $Enums } from "../../../../../../../backend/prisma/generated/client";
 
 export default function Participant_Pages_Layout({
   children,
@@ -26,6 +27,7 @@ export default function Participant_Pages_Layout({
 }) {
   const { LL } = useI18nContext();
   const conferenceId = useContext(ConferenceIdContext);
+  const { conferenceMembership } = useUserIdent();
 
   const [homeIcon, setHomeIcon] = useState<IconProp>(faEarthEurope);
 
@@ -47,12 +49,28 @@ export default function Participant_Pages_Layout({
     <MyDelegationProvider>
       <div className="flex h-screen w-screen bg-white text-primary-100 dark:bg-primary-100 dark:text-primary-900 shadow-md overflow-hidden">
         <Navbar>
-          <NavButton
-            icon={faChartNetwork}
-            link={`/app/${conferenceId}/hub/na`}
-            title="Hub"
-          />
-          <div className="flex-1" />
+          {conferenceMembership(conferenceId)?.role ===
+            $Enums.ConferenceRole.NON_STATE_ACTOR && (
+            <>
+              <NavButton
+                icon={faChartNetwork}
+                link={`/app/${conferenceId}/hub/na`}
+                title="Hub"
+              />
+              <div className="flex-1" />
+            </>
+          )}
+          {conferenceMembership(conferenceId)?.role ===
+            $Enums.ConferenceRole.GUEST && (
+            <>
+              <NavButton
+                icon={faChartNetwork}
+                link={`/app/${conferenceId}/hub/guest`}
+                title="Hub"
+              />
+              <div className="flex-1" />
+            </>
+          )}
           <NavButton
             icon={homeIcon}
             link={"./dashboard"}

@@ -1,9 +1,12 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import React from "react";
 import { useI18nContext } from "@/i18n/i18n-react";
 import CommitteeGrid from "@/components/navigation-hub/committee_grid";
 import Button from "@/components/button";
 import { faArrowRightFromBracket } from "@fortawesome/pro-solid-svg-icons";
+import { backend } from "@/services/backend";
+import { useRouter } from "next/navigation";
+import { useToast } from "@/contexts/toast";
 
 export default function ChairHub({
   params,
@@ -11,6 +14,8 @@ export default function ChairHub({
   params: { conferenceId: string };
 }) {
   const { LL, locale } = useI18nContext();
+  const router = useRouter();
+  const { toastError } = useToast();
 
   return (
     <>
@@ -23,10 +28,19 @@ export default function ChairHub({
             <Button
               className="mt-8"
               faIcon={faArrowRightFromBracket}
-              label={
-                LL.hub.LOGOUT()
-                // TODO @Felix onClick={logout}
-              }
+              label={LL.hub.LOGOUT()}
+              onClick={() => {
+                backend.auth.logout
+                  .get()
+                  .then((res) => {
+                    if (res.status !== 200)
+                      throw new Error("Failed to log out");
+                    router.push("/login");
+                  })
+                  .catch((err) => {
+                    toastError(err);
+                  });
+              }}
             />
           </div>
         </div>

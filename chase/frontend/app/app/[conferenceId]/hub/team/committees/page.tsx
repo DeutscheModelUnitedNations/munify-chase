@@ -2,10 +2,7 @@
 import React, { useState, useEffect, useContext } from "react";
 import { useI18nContext } from "@/i18n/i18n-react";
 import CommitteeGrid from "@/components/navigation-hub/committee_grid";
-import Button from "@/components/button";
-import { faArrowRightFromBracket } from "@fortawesome/pro-solid-svg-icons";
 import HeaderTemplate from "@/components/header_template";
-import DashboardHeader from "@/components/dashboard/header";
 import { LargeFlag } from "@/components/flag_templates";
 import { ScrollPanel } from "primereact/scrollpanel";
 import { conferenceRoleTranslation } from "@/i18n/translation_utils";

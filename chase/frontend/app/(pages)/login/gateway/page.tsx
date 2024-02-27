@@ -165,8 +165,15 @@ export default function LoginRedirectPage() {
             faIcon={faRightFromBracket}
             label={LL.login.gateway.LOGOUT_BUTTON()}
             onClick={() => {
-              alert("Not implemented");
-              // TODO @Felix implement logout
+              backend.auth.logout
+                .get()
+                .then((res) => {
+                  if (res.status !== 200) throw new Error("Failed to log out");
+                  router.push("/login");
+                })
+                .catch((err) => {
+                  toastError(err);
+                });
             }}
             severity="danger"
             className={"mt-8"}

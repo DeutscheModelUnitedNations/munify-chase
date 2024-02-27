@@ -70,6 +70,7 @@ const en = {
         HOME: "Home",
         FAQ: "FAQs",
         DOCS: "Documentation",
+        LOGIN: "Login",
         PRIVACY: "Privacy Policy",
       },
       imprint: {
@@ -117,6 +118,7 @@ const en = {
         wrongToken: "The token is invalid.",
         conferenceExists: "A conference with this name already exists.",
         generic: "An error occurred.",
+        unavailable: "Not available for legal reasons (no Cookie Consent).",
       },
 
       SAVE_AND_QUIT: "Quit Setup",

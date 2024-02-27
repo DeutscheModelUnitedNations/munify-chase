@@ -5,6 +5,7 @@ import { conferenceRoleGuard } from "../auth/guards/conferenceRoles";
 import { openApiTag } from "../util/openApiTags";
 import { AgendaItem } from "../../prisma/generated/schema";
 import { nullToUndefined } from "../util/nullToUndefined";
+import { $Enums } from "../../prisma/generated/client";
 
 const AgendaItemWithoutRelations = t.Omit(AgendaItem, [
   "committee",
@@ -47,6 +48,12 @@ export const agendaItem = new Elysia({
   .post(
     "/agendaItem",
     async ({ body, params: { conferenceId, committeeId } }) => {
+      const committeeHasActiveAgendaItem = !!(await db.agendaItem.findFirst({
+        where: {
+          committeeId,
+          isActive: true,
+        },
+      }));
       const agendaItem = await db.agendaItem
         .create({
           data: {
@@ -64,12 +71,12 @@ export const agendaItem = new Elysia({
       const _speakersLists = await db.speakersList.createMany({
         data: [
           {
-            type: "SPEAKERS_LIST",
+            type: $Enums.SpeakersListCategory.SPEAKERS_LIST,
             agendaItemId: agendaItem.id,
             speakingTime: 180,
           },
           {
-            type: "COMMENT_LIST",
+            type: $Enums.SpeakersListCategory.COMMENT_LIST,
             agendaItemId: agendaItem.id,
             speakingTime: 30,
           },

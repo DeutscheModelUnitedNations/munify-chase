@@ -70,6 +70,8 @@ const de = {
         HOME: "Home",
         FAQ: "FAQs",
         DOCS: "Dokumentation",
+        LOGIN: "Login",
+        IMPRINT: "Impressum",
         PRIVACY: "Datenschutzbestimmungen",
       },
       imprint: {
@@ -117,6 +119,8 @@ const de = {
         wrongToken: "Das Token ist ungültig.",
         conferenceExists: "Eine Konferenz mit diesem Namen existiert bereits.",
         generic: "Ein Fehler ist aufgetreten.",
+        unavailable:
+          "Aus rechtlichen Gründen nicht erreichbar (keiner Verwendung von Cookies zugestimmt).",
       },
 
       SAVE_AND_QUIT: "Einrichtung beenden",
@@ -224,7 +228,8 @@ const de = {
     LOGIN_BUTTON: "Anmelden",
     LOGIN_TITLE: "Anmelden",
     LOGIN_DESCRIPTION: "Bitte melden Sie sich mit Ihren Zugangsdaten an.",
-    EMAIL_NOT_CONFIRMED: "The email address has not been confirmed yet.",
+    EMAIL_NOT_CONFIRMED:
+      "Die E-Mail-Adresse wurde noch nicht bestätigt. Bitte checken Sie Ihr E-Mail-Postfach.",
     EMAIL_NOT_FOUND: "Die E-Mail-Adresse wurde nicht gefunden.",
     EMAIL_NO_ACTIVE_VALIDATION_TOKEN:
       "Die E-Mail-Adresse hat keinen aktiven Bestätigungstoken.",

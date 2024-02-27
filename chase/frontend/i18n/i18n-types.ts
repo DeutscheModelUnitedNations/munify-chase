@@ -208,6 +208,10 @@ type RootTranslation = {
 				 */
 				DOCS: string
 				/**
+				 * L​o​g​i​n
+				 */
+				LOGIN: string
+				/**
 				 * P​r​i​v​a​c​y​ ​P​o​l​i​c​y
 				 */
 				PRIVACY: string
@@ -333,6 +337,10 @@ type RootTranslation = {
 				 * A​n​ ​e​r​r​o​r​ ​o​c​c​u​r​r​e​d​.
 				 */
 				generic: string
+				/**
+				 * N​o​t​ ​a​v​a​i​l​a​b​l​e​ ​f​o​r​ ​l​e​g​a​l​ ​r​e​a​s​o​n​s​ ​(​n​o​ ​C​o​o​k​i​e​ ​C​o​n​s​e​n​t​)​.
+				 */
+				unavailable: string
 			}
 			/**
 			 * Q​u​i​t​ ​S​e​t​u​p
@@ -1938,6 +1946,10 @@ export type TranslationFunctions = {
 				 */
 				DOCS: () => LocalizedString
 				/**
+				 * Login
+				 */
+				LOGIN: () => LocalizedString
+				/**
 				 * Privacy Policy
 				 */
 				PRIVACY: () => LocalizedString
@@ -2063,6 +2075,10 @@ export type TranslationFunctions = {
 				 * An error occurred.
 				 */
 				generic: () => LocalizedString
+				/**
+				 * Not available for legal reasons (no Cookie Consent).
+				 */
+				unavailable: () => LocalizedString
 			}
 			/**
 			 * Quit Setup

@@ -16,9 +16,10 @@ export default function CookieBanner() {
     cookieConsentRef?.current?.accept?.();
   };
 
+  // TODO: Fix cookie interference with the backend
   return (
     <>
-      <CookieConsent
+      {/* <CookieConsent
         ref={cookieConsentRef}
         location="bottom"
         buttonText="Accept"
@@ -52,7 +53,7 @@ export default function CookieBanner() {
           </Link>
           .
         </p>
-      </CookieConsent>
+      </CookieConsent> */}
     </>
   );
 }

@@ -46,7 +46,7 @@ export default function PresenceWidget({
       .then((response) => {
         setDelegationData(
           response.data?.filter(
-            (item) => item.nation.type === $Enums.NationVariant.NATION,
+            (item) => item.nation.variant === $Enums.NationVariant.NATION,
           ) ?? [],
         );
       })

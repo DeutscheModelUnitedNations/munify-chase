@@ -82,7 +82,7 @@ export default function LoginRedirectPage() {
           <h1 className="font-serif font-bold text-4xl mb-4">
             {LL.login.gateway.TITLE()}
           </h1>
-          {myInfoData.conferenceMemberships.length > 0 ? (
+          {myInfoData.conferenceMemberships.length > 0 && (
             <>
               <p className="mb-4 text-center">
                 {myInfoData.conferenceMemberships.length === 1
@@ -114,7 +114,8 @@ export default function LoginRedirectPage() {
                 </Link>
               ))}
             </>
-          ) : myInfoData.committeeMemberships.length > 0 ? (
+          )}
+          {myInfoData.committeeMemberships.length > 0 && (
             <>
               <p className="mb-4 text-center">
                 {myInfoData.committeeMemberships.length === 1
@@ -155,9 +156,11 @@ export default function LoginRedirectPage() {
                 </Link>
               ))}
             </>
-          ) : (
-            <p>{LL.login.gateway.NO_MEMBERSHIP()}</p>
           )}
+          {myInfoData.conferenceMemberships.length === 0 &&
+            myInfoData.committeeMemberships.length === 0 && (
+              <p>{LL.login.gateway.NO_MEMBERSHIP()}</p>
+            )}
           <Button
             faIcon={faRightFromBracket}
             label={LL.login.gateway.LOGOUT_BUTTON()}

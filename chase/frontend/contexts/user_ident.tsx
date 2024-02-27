@@ -8,6 +8,7 @@ export type User = NonNullable<
   Awaited<ReturnType<typeof backend.auth.myInfo.get>>["data"]
 >;
 type ConferenceMembership = User["conferenceMemberships"][number];
+type CommitteeMembership = User["committeeMemberships"][number];
 type Delegation = NonNullable<
   Awaited<
     ReturnType<
@@ -21,6 +22,9 @@ interface UserIdentContextType {
   conferenceMembership: (
     conferenceId: string | null | undefined,
   ) => ConferenceMembership | undefined;
+  committeeMembership: (
+    conferenceId: string | null | undefined,
+  ) => CommitteeMembership | undefined;
 }
 
 interface MyDelegationContextType {
@@ -45,6 +49,13 @@ export const UserIdentProvider = ({
     );
   };
 
+  const committeeMembership = (conferenceId: string | null | undefined) => {
+    if (!conferenceId) return undefined;
+    return userIdent?.committeeMemberships.find(
+      (c) => c.committee.conference.id === conferenceId,
+    );
+  };
+
   useEffect(() => {
     (async () => {
       const res = await backend.auth.myInfo.get();
@@ -61,7 +72,11 @@ export const UserIdentProvider = ({
   return (
     <UserIdentContext.Provider
       // biome-ignore lint/style/noNonNullAssertion: TODO nullable types cleanup throughout the whole app
-      value={{ userIdent: userIdent!, conferenceMembership }}
+      value={{
+        userIdent: userIdent!,
+        conferenceMembership,
+        committeeMembership,
+      }}
     >
       {children}
     </UserIdentContext.Provider>

@@ -35,13 +35,14 @@ export default function ChairAttendees() {
         setDelegationData(
           response.data?.filter(
             (delegation) =>
-              delegation.nation.type === $Enums.NationVariant.NATION,
+              delegation.nation.variant === $Enums.NationVariant.NATION,
           ) || null,
         );
         setNonStateActorsData(
           response.data?.filter(
             (delegation) =>
-              delegation.nation.type === $Enums.NationVariant.NON_STATE_ACTOR,
+              delegation.nation.variant ===
+              $Enums.NationVariant.NON_STATE_ACTOR,
           ) || null,
         );
       })

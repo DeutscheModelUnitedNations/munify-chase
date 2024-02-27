@@ -4,15 +4,20 @@ import Navbar from "@/components/navbar/navbar";
 import NavButton from "@/components/navbar/button";
 import {
   faPodium,
-  faHouse,
-  faScroll,
-  faPollPeople,
   faNewspaper,
   faCommentExclamation,
+  faEarthEurope,
+  faEarthOceania,
+  faEarthAsia,
+  faEarthAfrica,
+  faEarthAmericas,
+  faChartNetwork,
 } from "@fortawesome/pro-solid-svg-icons";
 import { useI18nContext } from "@/i18n/i18n-react";
 import { IconProp } from "@fortawesome/fontawesome-svg-core";
 import { MyDelegationProvider } from "@/contexts/user_ident";
+import { useContext, useEffect, useState } from "react";
+import { ConferenceIdContext } from "@/contexts/committee_data";
 
 export default function Participant_Pages_Layout({
   children,
@@ -20,13 +25,36 @@ export default function Participant_Pages_Layout({
   children: React.ReactNode;
 }) {
   const { LL } = useI18nContext();
+  const conferenceId = useContext(ConferenceIdContext);
+
+  const [homeIcon, setHomeIcon] = useState<IconProp>(faEarthEurope);
+
+  useEffect(() => {
+    // random out of this list
+    const icons = [
+      faEarthOceania,
+      faEarthAsia,
+      faEarthAfrica,
+      faEarthAmericas,
+      faEarthEurope,
+    ];
+
+    const randomIcon = icons[Math.floor(Math.random() * icons.length)];
+    setHomeIcon(randomIcon);
+  }, []);
 
   return (
     <MyDelegationProvider>
       <div className="flex h-screen w-screen bg-white text-primary-100 dark:bg-primary-100 dark:text-primary-900 shadow-md overflow-hidden">
         <Navbar>
           <NavButton
-            icon={faHouse as IconProp}
+            icon={faChartNetwork}
+            link={`/app/${conferenceId}/hub/na`}
+            title="Hub"
+          />
+          <div className="flex-1" />
+          <NavButton
+            icon={homeIcon}
             link={"./dashboard"}
             title={LL.navbar.DASHBOARD()}
           />

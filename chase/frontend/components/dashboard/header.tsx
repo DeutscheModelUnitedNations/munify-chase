@@ -4,10 +4,10 @@ import HeaderTemplate from "../header_template";
 import { useI18nContext } from "@/i18n/i18n-react";
 import { LargeFlag } from "../flag_templates";
 import { Skeleton } from "primereact/skeleton";
-import { CountryCode } from "@/custom_types/custom_types";
 import {
   AgendaItemContext,
   CommitteeDataContext,
+  ConferenceIdContext,
 } from "@/contexts/committee_data";
 import { useUserIdent } from "@/contexts/user_ident";
 import { conferenceRoleTranslation } from "@/i18n/translation_utils";
@@ -30,13 +30,18 @@ export default function DashboardHeader({
   alternativeHeadline3?: string;
 }) {
   const { LL, locale } = useI18nContext();
-  const { userIdent } = useUserIdent();
+  const { userIdent, conferenceMembership, committeeMembership } =
+    useUserIdent();
+  const conferenceId = useContext(ConferenceIdContext);
   const committeeName = useContext(CommitteeDataContext)?.name;
   const currentTopic = useContext(AgendaItemContext)?.title;
 
   const isConferenceMember = () => {
-    if (!userIdent?.conferenceMemberships) return false;
-    userIdent?.conferenceMemberships?.length > 0;
+    return conferenceMembership(conferenceId) !== undefined;
+  };
+
+  const isNonStateActor = () => {
+    return conferenceMembership(conferenceId)?.role === "nonStateActor";
   };
 
   return (
@@ -47,10 +52,10 @@ export default function DashboardHeader({
             (userIdent && isConferenceMember()
               ? conferenceRoleTranslation(
                   LL,
-                  userIdent?.conferenceMemberships[0].role,
+                  conferenceMembership(conferenceId)?.role,
                 )
               : getCountryNameByCode(
-                  userIdent?.committeeMemberships[0]?.delegation?.nation
+                  committeeMembership(conferenceId)?.delegation?.nation
                     ?.alpha3Code ?? "xxx",
                   locale,
                 ) ?? <Skeleton width="15rem" height="2rem" />)}
@@ -66,7 +71,16 @@ export default function DashboardHeader({
           )}
         </h3>
       </div>
-      <LargeFlag countryCode={countryCode} />
+      <LargeFlag
+        countryCode={
+          committeeMembership(conferenceId)?.delegation?.nation?.alpha3Code ??
+          isNonStateActor()
+            ? "nsa_1"
+            : isConferenceMember()
+              ? "uno"
+              : "xxx"
+        }
+      />
     </HeaderTemplate>
   );
 }

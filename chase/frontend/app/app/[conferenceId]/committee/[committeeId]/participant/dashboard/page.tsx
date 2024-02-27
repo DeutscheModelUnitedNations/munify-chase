@@ -15,9 +15,7 @@ export default function participant_dashboard() {
   return (
     <AgendaItemDataProvider>
       <div className="flex-1 flex flex-col">
-        <DashboardHeader
-          countryCode={myDelegationData?.delegation?.nation?.alpha3Code}
-        />
+        <DashboardHeader />
         {/* TODO Check why this Scroll Bar is not changing color as the other ones with the custom-scrollbar class */}
         <ScrollPanel className="flex-1 overflow-y-auto custom-scrollbar">
           <div className="flex-1 grid grid-cols-1 lg:grid-cols-2 md:grid-cols-1 gap-5 p-4">

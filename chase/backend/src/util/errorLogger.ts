@@ -20,6 +20,10 @@ export const errorLogging = new Elysia().onError(
       return `Path ${path} doesn't exist (${error.message})`;
     }
 
+    if (set.status === "Unavailable For Legal Reasons") {
+      return error.message;
+    }
+
     return "Internal server error";
   },
 );

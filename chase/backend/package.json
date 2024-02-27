@@ -19,7 +19,8 @@
     "bun-types": "latest",
     "concurrently": "^8.2.2",
     "prisma": "^5.9.1",
-    "prisma-typebox-generator": "^2.1.0"
+    "prisma-typebox-generator": "^2.1.0",
+    "@faker-js/faker": "^8.4.0"
   },
   "dependencies": {
     "@elysiajs/bearer": "^0.8.0",

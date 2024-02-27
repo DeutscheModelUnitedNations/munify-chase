@@ -2,8 +2,7 @@
   "devDependencies": {
     "@biomejs/biome": "^1.5.2",
     "bun-types": "latest",
-    "concurrently": "^8.2.2",
-    "@faker-js/faker": "^8.4.0"
+    "concurrently": "^8.2.2"
   },
   "scripts": {
     "dev": "./run_dev.sh",
@@ -20,10 +19,6 @@
   },
   "workspaces": ["chase/backend", "chase/frontend"],
   "dependencies": {
-    "@react-pdf/renderer": "^3.3.8",
-    "markdown-to-jsx": "^7.4.1",
-    "react-cookie-consent": "^9.0.0",
-    "react-responsive": "^9.0.2",
-    "yaml": "^2.4.0"
+
   }
 }

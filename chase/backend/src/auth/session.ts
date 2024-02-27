@@ -1,6 +1,7 @@
 import Elysia, { t } from "elysia";
 import { nanoid } from "nanoid";
 import { redis } from "../../prisma/db";
+import { appConfiguration } from "../util/config";
 
 interface UserData {
   id: string;
@@ -21,11 +22,29 @@ type sessionSchema = {
 
 export const session = new Elysia({ name: "session" })
   .guard({
-    cookie: t.Cookie({
-      sessionId: t.Optional(t.String()),
-    }),
+    cookie: t.Cookie(
+      {
+        cookieConsent: t.Optional(t.BooleanString()),
+        sessionId: t.Optional(t.String()),
+      },
+      {
+        cookie: {
+          httpOnly: true,
+          maxAge: 60 * 60 * 24 * 7, // 7 days
+          sameSite: appConfiguration.development ? "none" : "strict",
+          secure: true,
+          sign: ["sessionId"],
+          secrets: appConfiguration.cookie.secrets,
+        },
+      },
+    ),
   })
-  .derive(async ({ cookie: { sessionId } }) => {
+  .derive(async ({ cookie: { sessionId, cookieConsent }, set }) => {
+    if (cookieConsent.value !== true) {
+      set.status = "Unavailable For Legal Reasons";
+      throw new Error("You need to allow cookies to access this route");
+    }
+
     let data: sessionSchema = { loggedIn: false };
 
     // TODO: setter could be actual getters and setters

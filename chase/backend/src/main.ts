@@ -17,16 +17,7 @@ import { speakersListModification } from "./routes/speakersList/modification";
 import { speakersListSpeakers } from "./routes/speakersList/speakers";
 import { messages } from "./routes/messages";
 
-const m = new Elysia({
-  cookie: {
-    httpOnly: true,
-    maxAge: 60 * 60 * 24 * 7, // 7 days
-    sameSite: appConfiguration.development ? "none" : "strict",
-    secure: true,
-    sign: true,
-    secrets: appConfiguration.cookie.secrets,
-  },
-})
+const m = new Elysia()
   .use(errorLogging)
   .use(
     // @ts-ignore

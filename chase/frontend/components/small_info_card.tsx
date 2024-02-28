@@ -40,7 +40,7 @@ export default function SmallInfoCard({
           <Skeleton
             width={`${loadingRandom}%`}
             height="1.75rem"
-            className="!bg-primary-800"
+            className="!bg-primary-800 dark:!bg-primary-300"
           />
         ) : (
           children

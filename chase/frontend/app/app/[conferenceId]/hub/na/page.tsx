@@ -7,7 +7,6 @@ import { faArrowRightFromBracket } from "@fortawesome/pro-solid-svg-icons";
 import { backend } from "@/services/backend";
 import { useRouter } from "next/navigation";
 import { useToast } from "@/contexts/toast";
-import { useUserIdent } from "@/contexts/user_ident";
 
 export default function NAHubPage({
   params,

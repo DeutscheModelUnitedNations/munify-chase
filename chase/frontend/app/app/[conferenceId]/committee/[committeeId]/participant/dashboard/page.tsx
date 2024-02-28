@@ -37,7 +37,7 @@ export default function participant_dashboard() {
               </div> */}
             <div className="flex-1 flex flex-col justify-start items-stretch gap-5 md:col-span-2 lg:col-span-1">
               <WhiteboardWidget />
-              {conferenceMembership(conferenceId)?.role ===
+              {conferenceMembership(conferenceId)?.role !==
                 $Enums.ConferenceRole.GUEST && <ActionsWidget />}
             </div>
           </div>

@@ -13,6 +13,10 @@
         "detail": "A new feature"
       },
       {
+        "label": "⬆️ improvement",
+        "detail": "An improvement of an existing feature"
+      },
+      {
         "label": "🐞 fix",
         "detail": "A bugfix"
       },

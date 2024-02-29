@@ -1,8 +1,9 @@
-import React from "react";
+import React, { useContext, useState, useEffect } from "react";
 import Image from "next/image";
-import { CountryCode, Speaker } from "@/custom_types";
 import { SmallFlag as Flag } from "@components/flag_templates";
 import { AnimatePresence, motion } from "framer-motion";
+import { SpeakersListDataContext } from "@/contexts/speakers_list_data";
+import { MyDelegationContext } from "@/contexts/user_ident";
 
 /**
  * This Component is used in the Speakers List Widget on the Dashboard.
@@ -13,48 +14,79 @@ import { AnimatePresence, motion } from "framer-motion";
  * It uses the Flag Component to show the flags.
  */
 
-export default function SpeakerBlock({
-  list,
-  myCountry,
-}: { list: Speaker[]; myCountry: CountryCode }) {
-  const compressedList = () => {
-    let compressedList = [];
+export default function SpeakerBlock() {
+  const rawSpeakersList = useContext(SpeakersListDataContext)?.speakers;
+  const [speakersList, setSpeakersList] = useState<typeof rawSpeakersList>([]);
+  const myCountry =
+    useContext(MyDelegationContext)?.delegation?.nation?.alpha3Code;
+  const [compressedList, setCompressedList] = useState<
+    NonNullable<typeof speakersList>
+  >([]);
 
-    if (list.length > 3) {
-      compressedList = list.slice(0, 3);
-    } else {
-      compressedList = list;
+  function getAlpha3Code(
+    listElement: NonNullable<typeof speakersList>[number],
+  ) {
+    if (listElement?.committeeMember?.delegation?.nation?.alpha3Code) {
+      return listElement.committeeMember.delegation.nation.alpha3Code;
+    }
+    return "";
+  }
+
+  function getCompressedList(list: typeof speakersList) {
+    if (!list?.length) {
+      return [];
     }
 
-    const myCountryItem = list.find((item) => item.countryCode === myCountry);
+    let res = [];
+
+    if (list.length > 3) {
+      res = list.slice(0, 3);
+    } else {
+      res = list;
+    }
+
+    const myCountryItem = list.find(
+      (item) => getAlpha3Code(item) === myCountry,
+    );
     if (!myCountryItem) {
-      return compressedList;
+      return res;
     }
     const myCountryIndex = list.indexOf(myCountryItem);
 
     if (myCountryIndex < 2) {
-      compressedList = list.slice(0, 3);
-    }
-
-    return compressedList;
-  };
-
-  const getWaitingPosition = () => {
-    if (list.find((item) => item.countryCode === myCountry)) {
-      return (
-        // @ts-ignore TODO fix this
-        list.indexOf(list.find((item) => item.countryCode === myCountry)) + 1
-      );
+      res = list.slice(0, 3);
     } else {
-      return 0;
+      res = list.slice(0, 2);
+      res.push(myCountryItem);
     }
-  };
+
+    return res;
+  }
+
+  function getWaitingPosition() {
+    if (!speakersList) return 0;
+
+    const index = speakersList.find(
+      (item) => getAlpha3Code(item) === myCountry,
+    );
+    return index ? speakersList.indexOf(index) + 1 : 0;
+  }
+
+  useEffect(() => {
+    if (!rawSpeakersList) return;
+    setSpeakersList(rawSpeakersList.slice(1));
+  }, [rawSpeakersList]);
+
+  useEffect(() => {
+    if (!speakersList) return;
+    setCompressedList(getCompressedList(speakersList.slice(1)));
+  }, [speakersList]);
 
   return (
-    <>
+    speakersList && (
       <AnimatePresence mode="wait">
         <motion.div
-          key={list[0].countryCode}
+          key={getAlpha3Code(speakersList[0])}
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
@@ -62,30 +94,30 @@ export default function SpeakerBlock({
           layout
         >
           <div className="flex gap-1">
-            {list.length > 0 && (
+            {speakersList.length > 0 && (
               <>
                 <Arrow arrowName="top" />
                 <Flag
-                  countryCode={compressedList()[0].countryCode}
+                  countryCode={getAlpha3Code(compressedList[0])}
                   showNameOnHover
                 />
               </>
             )}
-            {list.length > 1 && (
+            {speakersList.length > 1 && (
               <>
                 <Arrow arrowName="solid" />
                 <Flag
-                  countryCode={compressedList()[1].countryCode}
+                  countryCode={getAlpha3Code(compressedList[1])}
                   showNameOnHover
                 />
               </>
             )}
             {getWaitingPosition() <= 3 ? (
-              list.length > 2 && (
+              speakersList.length > 2 && (
                 <>
                   <Arrow arrowName="solid" />
                   <Flag
-                    countryCode={compressedList()[2].countryCode}
+                    countryCode={getAlpha3Code(compressedList[2])}
                     showNameOnHover
                   />
                 </>
@@ -100,15 +132,29 @@ export default function SpeakerBlock({
                 </div>
                 <Arrow arrowName="dashed" />
                 <Flag
-                  countryCode={compressedList()[2].countryCode}
+                  countryCode={getAlpha3Code(compressedList[2])}
                   showNameOnHover
                 />
               </>
             )}
+            {speakersList?.length > 3 &&
+              (getWaitingPosition() < speakersList?.length ||
+                getWaitingPosition() === 0) && (
+                <>
+                  <Arrow arrowName="dashed" />
+                  <div className="self-center px-2 py-1 bg-primary text-white rounded-md">
+                    <div className="text-sm font-bold">
+                      {getWaitingPosition() === 0
+                        ? speakersList.length - 3
+                        : speakersList.length - getWaitingPosition()}
+                    </div>
+                  </div>
+                </>
+              )}
           </div>
         </motion.div>
       </AnimatePresence>
-    </>
+    )
   );
 }
 

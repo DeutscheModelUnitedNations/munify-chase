@@ -1,4 +1,4 @@
-import { CountryCode, Voting } from "@/custom_types";
+import { CountryCode, Voting } from "@/custom_types/custom_types";
 import React, { useEffect, useState } from "react";
 import { SmallFlag } from "../flag_templates";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -67,21 +67,21 @@ export default function CountryGrid({
         <div className="flex-1 grid grid-cols-3 gap-2">
           <VotesCard
             category={LL.participants.voting.votingButtons.IN_FAVOUR()}
-            icon={faPlusCircle}
+            icon={faPlusCircle as IconProp}
             color="text-green-700"
             votes={yesVotes}
             motionId={motionId}
           />
           <VotesCard
             category={LL.participants.voting.votingButtons.ABSTENTION()}
-            icon={faCircle}
+            icon={faCircle as IconProp}
             color="text-primary"
             votes={abstainVotes}
             motionId={motionId}
           />
           <VotesCard
             category={LL.participants.voting.votingButtons.AGAINST()}
-            icon={faMinusCircle}
+            icon={faMinusCircle as IconProp}
             color="text-red-600"
             votes={noVotes}
             motionId={motionId}
@@ -89,7 +89,7 @@ export default function CountryGrid({
           {remainingVotes.length > 0 && (
             <VotesCard
               category={LL.participants.voting.votingButtons.REMAINING()}
-              icon={faHourglassHalf}
+              icon={faHourglassHalf as IconProp}
               color="text-black"
               votes={remainingVotes}
               colSpan={3}
@@ -101,14 +101,14 @@ export default function CountryGrid({
         <div className="flex-1 grid grid-cols-2 gap-2">
           <VotesCard
             category="Dafür"
-            icon={faPlusCircle}
+            icon={faPlusCircle as IconProp}
             color="text-green-700"
             votes={yesVotes}
             motionId={motionId}
           />
           <VotesCard
             category="Dagegen"
-            icon={faMinusCircle}
+            icon={faMinusCircle as IconProp}
             color="text-red-600"
             votes={noVotes}
             motionId={motionId}
@@ -116,7 +116,7 @@ export default function CountryGrid({
           {remainingVotes.length > 0 && (
             <VotesCard
               category="Ausstehend"
-              icon={faHourglassHalf}
+              icon={faHourglassHalf as IconProp}
               color="text-black dark:text-primary-700"
               votes={remainingVotes}
               colSpan={2}
@@ -150,7 +150,7 @@ function VotesCard({
 
   return (
     <div
-      className="flex-1 h-full flex flex-col justify-start gap-3 bg-white dark:bg-primary-100 rounded-md p-2 transition-all duration-300 hover:shadow-sm"
+      className="flex-1 h-full flex flex-col justify-start gap-3 bg-slate-50 dark:bg-primary-100 rounded-md p-2 transition-all duration-300 hover:shadow-sm"
       style={{ gridColumn: colSpanClass }}
     >
       <div className="flex justify-center items-center gap-3 text-lg">
@@ -165,7 +165,7 @@ function VotesCard({
         >
           {votes.map((country, index) => (
             <motion.div
-              key={`${country}-${motionId}-${index}`}
+              key={`${country}-${motionId}`}
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -10 }}

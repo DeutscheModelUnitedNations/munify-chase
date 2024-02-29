@@ -1,4 +1,5 @@
 import { Editor } from "primereact/editor";
+import { Skeleton } from "primereact/skeleton";
 import React from "react";
 
 /**
@@ -12,12 +13,12 @@ import React from "react";
  */
 
 export default function ChairWhiteboard({
-  value = "Hello World!",
+  value,
   readOnly = false,
   setContentFunction,
   ...rest
 }: {
-  value?: string;
+  value?: string | null;
   readOnly?: boolean;
   setContentFunction?: (content: string) => void;
   [key: string]: unknown;
@@ -33,36 +34,40 @@ export default function ChairWhiteboard({
     [{ indent: "-1" }, { indent: "+1" }], // outdent/indent
 
     [{ color: [] }, { background: [] }], // dropdown with defaults from theme
-    ["code", "link"], // code
+    ["code", "link"], // code, link
 
     ["clean"], // remove formatting button
 
-    ["image", "video"], // link, image, video
+    ["image", "video"], // image, video
   ];
 
   return (
     <>
-      <Editor
-        {...rest}
-        modules={
-          !readOnly && {
-            toolbar: toolbarOptions,
+      {value ? (
+        <Editor
+          {...rest}
+          modules={
+            !readOnly && {
+              toolbar: toolbarOptions,
+            }
           }
-        }
-        className="rounded-md"
-        showHeader={false}
-        readOnly={readOnly}
-        value={value}
-        onTextChange={(e) => {
-          if (setContentFunction) {
-            if (e.htmlValue) setContentFunction(e.htmlValue);
-          } else {
-            console.warn(
-              "setWhiteboardContent is not defined. Whiteboard content will not be saved.",
-            );
-          }
-        }}
-      />
+          className="rounded-md"
+          showHeader={false}
+          readOnly={readOnly}
+          value={value ?? ""}
+          onTextChange={(e) => {
+            if (setContentFunction) {
+              if (e.htmlValue) setContentFunction(e.htmlValue);
+            } else {
+              console.warn(
+                "setWhiteboardContent is not defined. Whiteboard content will not be saved.",
+              );
+            }
+          }}
+        />
+      ) : (
+        <Skeleton width="100%" height="10rem" className="!bg-primary-900" />
+      )}
     </>
   );
 }

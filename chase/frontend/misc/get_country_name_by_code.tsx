@@ -1,5 +1,6 @@
-import countryData from "data/countries.json";
-import { CountryCode } from "@/custom_types";
+import nations from "data/nations";
+import nonStateActors from "data/nsa";
+import specialPersons from "@/data/specials";
 
 /**
  * This function is used to get the name of a country in a given language.
@@ -9,9 +10,9 @@ import { CountryCode } from "@/custom_types";
  */
 
 export default function getCountryNameByCode(
-  countryCode: string,
+  countryCode: string | null | undefined,
   locale: string,
-): CountryCode {
+): string {
   const availableLanguages = [
     "ar",
     "bg",
@@ -51,17 +52,20 @@ export default function getCountryNameByCode(
 
   let languageCode = locale.split("-")[0];
 
+  const combinedTranslations = [
+    ...nations,
+    ...nonStateActors,
+    ...specialPersons,
+  ];
+
   if (availableLanguages.includes(languageCode) === false) {
     languageCode = "en";
   }
 
-  const country = countryData.find((item) => item.alpha3 === countryCode);
+  const res = combinedTranslations.find(
+    (item) => item.alpha3 === countryCode?.toLowerCase(),
+  );
+  if (!res) return "xxx"; // Country not found
 
-  if (country) {
-    // TODO Fix bug with types
-    // @ts-ignore
-    return country[languageCode] || country.en; // Use English as a fallback language
-  }
-
-  return "xxx"; // Country not found
+  return res[languageCode as keyof typeof res] as string;
 }

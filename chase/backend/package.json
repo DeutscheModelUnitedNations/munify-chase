@@ -2,10 +2,42 @@
   "version": "1.0.44",
   "name": "chase-backend",
   "main": "src/main.ts",
+  "private": "true",
   "scripts": {
-    "dev": "bun run concurrently \"bun run dev:server\" \"bun run dev:docker\"",
+    "dev": "bun run concurrently \"bun run dev:server\" \"bun run dev:docker\" \"bun run dev:prisma-studio\"",
+    "dev:container": "bun run concurrently \"bun run dev:server\" \"bun run dev:prisma-studio\"",
     "dev:server": "bun run --watch --hot src/main.ts",
     "dev:docker": "docker compose up --remove-orphans",
-    "build": "tsc --noEmit && bun build.ts"
+    "dev:prisma-studio": "bunx prisma studio --browser none",
+    "build": "bun build.ts",
+    "typecheck": "bunx prisma generate && tsc --noEmit",
+    "database:reset": "bunx prisma db push --force-reset & bunx prisma db seed"
+  },
+  "devDependencies": {
+    "@types/mjml": "^4.7.4",
+    "@types/nodemailer": "^6.4.14",
+    "bun-types": "latest",
+    "concurrently": "^8.2.2",
+    "prisma": "^5.9.1",
+    "prisma-typebox-generator": "^2.1.0",
+    "@faker-js/faker": "^8.4.0"
+  },
+  "dependencies": {
+    "@elysiajs/bearer": "^0.8.0",
+    "@elysiajs/cors": "^0.8.0",
+    "@elysiajs/eden": "^0.8.1",
+    "@elysiajs/swagger": "^0.8.3",
+    "@prisma/client": "^5.9.1",
+    "@simplewebauthn/server": "^9.0.0",
+    "@sinclair/typebox": "^0.32.12",
+    "elysia": "^0.8.16",
+    "mjml": "^4.14.1",
+    "nanoid": "^5.0.4",
+    "nodemailer": "^6.9.8",
+    "redis": "^4.6.12",
+    "typescript": "5.3.3"
+  },
+  "prisma": {
+    "seed": "bun run prisma/seed.ts"
   }
 }

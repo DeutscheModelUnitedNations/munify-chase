@@ -4,18 +4,17 @@
     "{prefix} ({scope}): {message}",
     "branch: {branch}"
   ],
-  "[javascript]": {
-    "editor.defaultFormatter": "biomejs.biome"
-  },
-  "editor.codeActionsOnSave": {
-    "quickfix.biome": true,
-    "source.organizeImports.biome": true
-  },
+  "[javascript]": {},
+  "editor.codeActionsOnSave": {},
   "vscodeGitCommit.variables": {
     "prefix": [
       {
         "label": "✨ feat",
         "detail": "A new feature"
+      },
+      {
+        "label": "⬆️ improvement",
+        "detail": "An improvement of an existing feature"
       },
       {
         "label": "🐞 fix",
@@ -73,25 +72,14 @@
         "label": "🔀 merge",
         "detail": "Use when merging branches"
       }
-    ],
-    "scope": [
-      {
-        "label": "CHASE Frontend",
-        "detail": "Changes to the Chase Frontend"
-      },
-      {
-        "label": "CHASE Backend",
-        "detail": "Changes to the Chase Backend"
-      },
-      {
-        "label": "AUTH",
-        "detail": "Changes to the auth system"
-      },
-      {
-        "label": "MUNify",
-        "detail": "Changes to MUNify in general"
-      }
-    ],
-    "branch": "branch"
-  }
+    ]
+  },
+  "typescript.tsdk": "node_modules/typescript/lib",
+  "editor.tabSize": 2,
+  "vscodemacros.userMacroCommands": [
+    {
+      "path": "/workspaces/munify/.vscode/macros.ts",
+      "name": "OpenI18n"
+    }
+  ]
 }

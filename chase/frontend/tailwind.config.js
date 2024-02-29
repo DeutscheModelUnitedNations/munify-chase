@@ -1,5 +1,6 @@
 /** @type {import('tailwindcss').Config} */
 const plugin = require("tailwindcss/plugin");
+const defaultTheme = require("tailwindcss/defaultTheme");
 
 const dmunColors = {
   100: "#0c192a",
@@ -28,12 +29,18 @@ const secondaryColors = {
 
 module.exports = {
   content: [
-    "./pages/**/*.{js,ts,jsx,tsx,mdx}",
+    "./(pages)/**/*.{js,ts,jsx,tsx,mdx}",
     "./components/**/*.{js,ts,jsx,tsx,mdx}",
     "./app/**/*.{js,ts,jsx,tsx,mdx}",
+    "../../node_modules/primereact/**/*.{js,ts,jsx,tsx}",
   ],
   darkMode: "class",
   theme: {
+    fontFamily: {
+      sans: ["Helvetica", "Arial", ...defaultTheme.fontFamily.sans],
+      serif: ["Vollkorn", ...defaultTheme.fontFamily.serif],
+      mono: ["NotoSans", ...defaultTheme.fontFamily.mono],
+    },
     extend: {
       backgroundImage: {
         "gradient-radial": "radial-gradient(var(--tw-gradient-stops))",
@@ -61,7 +68,7 @@ module.exports = {
     },
   },
   plugins: [
-    plugin(function ({ addVariant, e }) {
+    plugin(({ addVariant, e }) => {
       addVariant("contrast", ({ modifySelectors, separator }) => {
         modifySelectors(({ className }) => {
           return `.contrast .${e(`contrast${separator}${className}`)}`;

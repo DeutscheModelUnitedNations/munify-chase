@@ -4,7 +4,10 @@ import { useI18nContext } from "@/i18n/i18n-react";
 import { Button } from "primereact/button";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPlus, faTimes } from "@fortawesome/pro-solid-svg-icons";
-import { ToastContext } from "@/contexts/messages/toast";
+import { ToastContext } from "@/contexts/toast";
+import { IconProp } from "@fortawesome/fontawesome-svg-core";
+import { backend } from "@/services/backend";
+import { SpeakersListDataContext } from "@/contexts/speakers_list_data";
 
 /**
  * This Component is used on the SpeakersListPage for the Chair to change the speech time of the current speaker
@@ -19,6 +22,7 @@ export default function ChangeSpeechTimeOverlay({
 }) {
   const { LL } = useI18nContext();
   const { showToast } = useContext(ToastContext);
+  const speakersListId = useContext(SpeakersListDataContext)?.id;
 
   const [time, setTime] = useState<string | null>(null); // TODO: Add a default value
 
@@ -33,7 +37,14 @@ export default function ChangeSpeechTimeOverlay({
     );
   };
 
-  const sendNewTime = (time: string | null) => {
+  const convertTimeToSeconds = (time: string | null) => {
+    if (!time) return 0;
+    const [minutes, seconds] = time.split(":");
+    return parseInt(minutes) * 60 + parseInt(seconds);
+  };
+
+  const sendNewTime = async (time: string | null) => {
+    if (!speakersListId || !time) return;
     if (!validateTime(time)) {
       showToast({
         severity: "error",
@@ -43,6 +54,10 @@ export default function ChangeSpeechTimeOverlay({
       });
       return;
     }
+
+    await backend.speakersList[speakersListId].setSpeakingTime.post({
+      speakingTime: convertTimeToSeconds(time),
+    });
 
     showToast({
       severity: "success",
@@ -75,14 +90,18 @@ export default function ChangeSpeechTimeOverlay({
         <div className="flex gap-3 justify-end flex-wrap">
           <Button
             label={LL.chairs.speakersList.changeSpeechTimeOverlay.BUTTON_CANCEL()}
-            icon={<FontAwesomeIcon icon={faTimes} className="mr-2" />}
+            icon={
+              <FontAwesomeIcon icon={faTimes as IconProp} className="mr-2" />
+            }
             onClick={closeOverlay}
             severity="danger"
             text
           />
           <Button
             label={LL.chairs.speakersList.changeSpeechTimeOverlay.BUTTON_SET()}
-            icon={<FontAwesomeIcon icon={faPlus} className="mr-2" />}
+            icon={
+              <FontAwesomeIcon icon={faPlus as IconProp} className="mr-2" />
+            }
             onClick={() => {
               sendNewTime(time);
             }}

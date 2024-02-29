@@ -1,7 +1,9 @@
-import React from "react";
+import React, { useContext } from "react";
 import WidgetTemplate from "@components/widget_template";
 import { useI18nContext } from "@/i18n/i18n-react";
 import Whiteboard from "@/components/whiteboard";
+import { Skeleton } from "primereact/skeleton";
+import { CommitteeDataContext } from "@/contexts/committee_data";
 
 /**
  * This Component is used in the Dashboard. It displays the Whiteboard Widget.
@@ -11,26 +13,29 @@ import Whiteboard from "@/components/whiteboard";
  * relevant contact information for different issues.
  */
 
-export default function WhiteboardWidget({ value }: { value: string }) {
+export default function WhiteboardWidget() {
   const { LL } = useI18nContext();
+  const whiteboardValue = useContext(CommitteeDataContext)?.whiteboardContent;
 
   return (
-    <>
-      <WidgetTemplate
-        cardTitle={LL.participants.dashboard.widgetHeadlines.WHITEBOARD()}
+    <WidgetTemplate
+      cardTitle={LL.participants.dashboard.widgetHeadlines.WHITEBOARD()}
+    >
+      {/* TODO find a better solution for scaling the Whitboard Box */}
+      <div
+        className="flex-1 flex bg-white rounded-md overflow-hidden"
+        style={{ maxHeight: "50vh" }}
       >
-        {/* TODO find a better solution for scaling the Whitboard Box */}
-        <div
-          className="flex-1 flex bg-white rounded-md overflow-hidden"
-          style={{ maxHeight: "50vh" }}
-        >
+        {whiteboardValue ? (
           <Whiteboard
             style={{ border: "none" }}
-            value={value}
+            value={whiteboardValue}
             readOnly={true}
           />
-        </div>
-      </WidgetTemplate>
-    </>
+        ) : (
+          <Skeleton width="100%" height="10rem" />
+        )}
+      </div>
+    </WidgetTemplate>
   );
 }

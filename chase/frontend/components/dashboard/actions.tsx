@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useContext } from "react";
 import WidgetTemplate from "@components/widget_template";
 import { Button } from "primereact/button";
 import { Dialog } from "primereact/dialog";
@@ -7,22 +7,31 @@ import { InputTextarea } from "primereact/inputtextarea";
 import { Dropdown } from "primereact/dropdown";
 import { useI18nContext } from "@/i18n/i18n-react";
 import {
-  faComment,
   faExclamationTriangle,
   faGavel,
   faInfoCircle,
   faPaperPlane,
+  faPodium,
   faQuestionCircle,
+  faUserTie,
 } from "@fortawesome/pro-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { IconProp } from "@fortawesome/fontawesome-svg-core";
 import {
-  FontAwesomeIcon,
-  FontAwesomeIconProps,
-} from "@fortawesome/react-fontawesome";
+  CommitteeIdContext,
+  CommitteeDataContext,
+  AgendaItemContext,
+  ConferenceIdContext,
+} from "@/contexts/committee_data";
+import { MyDelegationContext, useUserIdent } from "@/contexts/user_ident";
+import { backend } from "@/services/backend";
+import { useToast } from "@/contexts/toast";
+import { $Enums } from "../../../backend/prisma/generated/client";
 
 interface DropdownOptions {
   label: string;
-  value: string;
-  icon: FontAwesomeIconProps["icon"];
+  value: $Enums.MessageCategory;
+  icon: IconProp;
 }
 
 /**
@@ -32,42 +41,50 @@ interface DropdownOptions {
 
 export default function ActionsWidget() {
   const { LL } = useI18nContext();
+  const conferenceId = useContext(ConferenceIdContext);
+  const committeeId = useContext(CommitteeIdContext);
+  const committeeData = useContext(CommitteeDataContext);
+  const myDelegationData = useContext(MyDelegationContext);
+  const agendaItem = useContext(AgendaItemContext);
+  const { userIdent } = useUserIdent();
+  const { showToast } = useToast();
 
   const [displayChairDialog, setDisplayChairDialog] = React.useState(false);
-  const [displayResearchDialog, setDisplayResearchDialog] =
-    React.useState(false);
+  const [displayResearchDialog, setDisplayResearchDialog] = useState(false);
 
-  const [category, setCategory] = React.useState("");
+  const [category, setCategory] = React.useState<
+    $Enums.MessageCategory | undefined
+  >(undefined);
   const categoryOption: DropdownOptions[] = [
     {
       label:
         LL.participants.dashboard.actionsWidget.contactForm.categoryOptions.GUEST_SPEAKER(),
-      value: "guestSspeech",
-      icon: faComment,
+      value: "GUEST_SPEAKER",
+      icon: faPodium as IconProp,
     },
     {
       label:
         LL.participants.dashboard.actionsWidget.contactForm.categoryOptions.FACT_CHECK(),
-      value: "factCheck",
-      icon: faExclamationTriangle,
+      value: "FACT_CHECK",
+      icon: faExclamationTriangle as IconProp,
     },
     {
       label:
         LL.participants.dashboard.actionsWidget.contactForm.categoryOptions.INFORMATION(),
-      value: "information",
-      icon: faQuestionCircle,
+      value: "INFORMATION",
+      icon: faQuestionCircle as IconProp,
     },
     {
       label:
         LL.participants.dashboard.actionsWidget.contactForm.categoryOptions.GENERAL_SECRETARY(),
-      value: "generalSecretary",
-      icon: faGavel,
+      value: "GENERAL_SECRETARY",
+      icon: faUserTie as IconProp,
     },
     {
       label:
         LL.participants.dashboard.actionsWidget.contactForm.categoryOptions.OTHER(),
-      value: "other",
-      icon: faPaperPlane,
+      value: "OTHER",
+      icon: faPaperPlane as IconProp,
     },
   ];
   const [subjectLine, setSubjectLine] = React.useState("");
@@ -114,20 +131,97 @@ export default function ActionsWidget() {
   const closeAndResetDialog = () => {
     setDisplayChairDialog(false);
     setDisplayResearchDialog(false);
-    setCategory("");
+    setCategory(undefined);
     setSubjectLine("");
     setMessage("");
   };
 
-  const sendChairMessage = () => {
-    // TODO
-    closeAndResetDialog();
-  };
+  async function sendChairMessage() {
+    if (!conferenceId || !committeeId || !userIdent?.id) {
+      showToast({
+        severity: "error",
+        summary: LL.participants.dashboard.actionsWidget.toast.ERROR_SUMMARY(),
+        detail: LL.participants.dashboard.actionsWidget.toast.ERROR_DETAIL(),
+      });
+      return;
+    }
+    await backend.conference[conferenceId].committee[committeeId].messages
+      .post({
+        category: "TO_CHAIR",
+        subject: subjectLine,
+        message: message,
+        authorId: userIdent?.id,
+        metaEmail: userIdent?.emails[0]?.email,
+        metaDelegation: myDelegationData.delegation?.nation.alpha3Code,
+        metaCommittee: committeeData?.name,
+      })
+      .then((res) => {
+        if (res.status === 200) {
+          showToast({
+            severity: "success",
+            summary:
+              LL.participants.dashboard.actionsWidget.toast.SUCCESS_CHAIR_SUMMARY(),
+            detail:
+              LL.participants.dashboard.actionsWidget.toast.SUCCESS_CHAIR_DETAIL(),
+          });
+          closeAndResetDialog();
+        }
+      })
+      .catch((err) => {
+        showToast({
+          severity: "error",
+          summary:
+            LL.participants.dashboard.actionsWidget.toast.ERROR_SUMMARY(),
+          detail: LL.participants.dashboard.actionsWidget.toast.ERROR_DETAIL(),
+        });
+        console.error(err);
+      });
+  }
 
-  const sendResearchMessage = () => {
-    // TODO
-    closeAndResetDialog();
-  };
+  async function sendResearchMessage() {
+    if (!conferenceId || !userIdent?.id || !committeeId || !category) {
+      showToast({
+        severity: "error",
+        summary: LL.participants.dashboard.actionsWidget.toast.ERROR_SUMMARY(),
+        detail: LL.participants.dashboard.actionsWidget.toast.ERROR_DETAIL(),
+      });
+      console.error("Missing data to send message");
+      return;
+    }
+
+    await backend.conference[conferenceId].committee[committeeId].messages
+      .post({
+        category: category,
+        subject: subjectLine,
+        message: message,
+        authorId: userIdent?.id,
+        metaEmail: userIdent?.emails[0]?.email,
+        metaDelegation: myDelegationData.delegation?.nation.alpha3Code,
+        metaCommittee: committeeData?.name,
+        metaAgendaItem: agendaItem?.title,
+      })
+      .then((res) => {
+        if (res.status === 200) {
+          showToast({
+            severity: "success",
+            summary:
+              LL.participants.dashboard.actionsWidget.toast.SUCCESS_RESEARCH_SUMMARY(),
+            detail:
+              LL.participants.dashboard.actionsWidget.toast.SUCCESS_RESEARCH_DETAIL(),
+          });
+          closeAndResetDialog();
+        }
+      })
+      .catch((err) => {
+        showToast({
+          severity: "error",
+          summary:
+            LL.participants.dashboard.actionsWidget.toast.ERROR_SUMMARY(),
+          detail: LL.participants.dashboard.actionsWidget.toast.ERROR_DETAIL(),
+        });
+        console.error(err);
+      });
+  }
 
   return (
     <>
@@ -185,7 +279,7 @@ export default function ActionsWidget() {
             onChange={(e) => setMessage(e.target.value)}
           />
           <p>
-            <FontAwesomeIcon icon={faInfoCircle} />{" "}
+            <FontAwesomeIcon icon={faInfoCircle as IconProp} />{" "}
             <small>
               {LL.participants.dashboard.actionsWidget.contactForm.INFO_MESSAGE()}
             </small>
@@ -199,14 +293,14 @@ export default function ActionsWidget() {
           <Button
             label={LL.participants.dashboard.actionsWidget.CHAIR_BUTTON()}
             className="flex-1"
-            icon={<FontAwesomeIcon icon={faGavel} />}
+            icon={<FontAwesomeIcon icon={faGavel as IconProp} />}
             severity="warning"
             onClick={() => setDisplayChairDialog(true)}
           />
           <Button
             label={LL.participants.dashboard.actionsWidget.RESEARCH_SERVICE_BUTTON()}
             className="flex-1"
-            icon={<FontAwesomeIcon icon={faPaperPlane} />}
+            icon={<FontAwesomeIcon icon={faPaperPlane as IconProp} />}
             severity="help"
             onClick={() => setDisplayResearchDialog(true)}
           />

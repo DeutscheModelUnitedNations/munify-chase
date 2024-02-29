@@ -1,13 +1,21 @@
-import React from "react";
-import { CountryCode, SpeakersListData } from "@/custom_types";
+import React, { useState, useEffect, useContext } from "react";
 import Timeline from "@components/speakers_list/timeline";
 import getCountryNameByCode from "@/misc/get_country_name_by_code";
 import WidgetBoxTemplate from "../widget_box_template";
 import { NormalFlag as Flag } from "@components/flag_templates";
 import { useI18nContext } from "@/i18n/i18n-react";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faXmark } from "@fortawesome/pro-solid-svg-icons";
-import { Button } from "primereact/button";
+import {
+  faChevronDoubleUp,
+  faChevronDown,
+  faChevronUp,
+  faXmark,
+} from "@fortawesome/pro-solid-svg-icons";
+import Button from "@components/button";
+import { backend } from "@/services/backend";
+import {
+  SpeakersListDataContext,
+  SpeakersListDataType,
+} from "@/contexts/speakers_list_data";
 
 /**
  * This Component is used in the Speakers List and Comment List on the Speakers List Page.
@@ -17,33 +25,43 @@ import { Button } from "primereact/button";
  */
 
 export default function QueueList({
-  list,
   myCountry,
-  closed,
   chairOptions = false,
-}: SpeakersListData & {
-  myCountry?: CountryCode;
-  closed: boolean;
+}: {
+  myCountry?: string;
   chairOptions?: boolean;
 }) {
   const { LL } = useI18nContext();
+
+  const speakersListData = useContext(SpeakersListDataContext);
 
   return (
     <>
       <div className="flex flex-col mt-3">
         <Timeline
-          list={list}
+          list={speakersListData?.speakers ?? []}
           content={(item) => {
             return (
               <CountryCard
-                countryCode={item}
+                speakerData={item}
                 myCountry={myCountry}
                 chairOptions={chairOptions}
+                isLast={
+                  speakersListData?.speakers &&
+                  item.id ===
+                    speakersListData.speakers[
+                      speakersListData.speakers.length - 1
+                    ].id
+                }
+                isFirst={
+                  speakersListData?.speakers &&
+                  item.id === speakersListData.speakers[1].id
+                }
               />
             );
           }}
         />
-        {closed && (
+        {speakersListData?.isClosed && (
           <div className="flex justify-stretch items-center gap-3 mt-3">
             <div className="flex-1 border border-gray-text" />
             <div className="text-sm font-bold text-gray-text">
@@ -58,36 +76,104 @@ export default function QueueList({
 }
 
 function CountryCard({
-  countryCode,
+  speakerData,
   myCountry,
   chairOptions = false,
+  isLast,
+  isFirst,
 }: {
-  countryCode: CountryCode;
-  myCountry?: CountryCode;
+  speakerData: NonNullable<SpeakersListDataType>["speakers"][number];
+  myCountry?: string;
   chairOptions?: boolean;
+  isFirst?: boolean;
+  isLast?: boolean;
 }) {
   const { locale } = useI18nContext();
 
+  const listId = useContext(SpeakersListDataContext)?.id;
+
+  const [alpha3Code, setAlpha3Code] = useState<string | undefined>(undefined);
+  const [loadingDelete, setLoadingDelete] = useState(false);
+
+  const [isHovering, setIsHovering] = useState(false);
+
+  useEffect(() => {
+    if (!speakerData?.committeeMember?.delegation?.nation.alpha3Code) return;
+    setAlpha3Code(speakerData.committeeMember.delegation.nation.alpha3Code);
+  }, [speakerData]);
+
   return (
-    <WidgetBoxTemplate highlight={countryCode === myCountry}>
-      <Flag countryCode={countryCode} />
-      <div className="flex flex-col justify-center">
-        <div className="text-sm font-bold text-gray-text dark:text-primary-800">
-          {getCountryNameByCode(countryCode, locale)}
+    <WidgetBoxTemplate
+      highlight={alpha3Code === myCountry}
+      onMouseEnter={() => setIsHovering(true)}
+      onMouseLeave={() => setIsHovering(false)}
+    >
+      <div className="w-full flex justify-between items-center gap-2">
+        <div className="flex items-center justify-start gap-4">
+          <Flag countryCode={alpha3Code} />
+          <div className="text-sm font-bold dark:text-primary-800 truncate">
+            {alpha3Code && getCountryNameByCode(alpha3Code, locale)}
+          </div>
         </div>
+        {chairOptions && (
+          <div className="flex">
+            {isHovering && (
+              <>
+                {!isFirst && (
+                  <Button
+                    faIcon={faChevronDoubleUp}
+                    onClick={async () => {
+                      if (!listId) return;
+                      await backend.speakersList[listId].moveSpeaker[
+                        speakerData.id
+                      ].toTheTop.post();
+                    }}
+                    text
+                    size="small"
+                  />
+                )}
+                <Button
+                  faIcon={faChevronUp}
+                  onClick={async () => {
+                    if (!listId) return;
+                    await backend.speakersList[listId].moveSpeaker[
+                      speakerData.id
+                    ].up.post();
+                  }}
+                  text
+                  size="small"
+                />
+                <Button
+                  faIcon={faChevronDown}
+                  onClick={async () => {
+                    if (!listId) return;
+                    await backend.speakersList[listId].moveSpeaker[
+                      speakerData.id
+                    ].down.post();
+                  }}
+                  text
+                  size="small"
+                  disabled={isLast}
+                />
+              </>
+            )}
+            <Button
+              faIcon={faXmark}
+              onClick={async () => {
+                if (!listId) return;
+                setLoadingDelete(true);
+                await backend.speakersList[listId].removeSpeaker[
+                  speakerData.id
+                ].delete();
+              }}
+              text
+              size="small"
+              severity="danger"
+              loading={loadingDelete}
+            />
+          </div>
+        )}
       </div>
-      <div className="flex-1" />
-      {chairOptions && (
-        <>
-          {/* TODO Find intuitive way to change the oder of the list */}
-          <Button
-            icon={<FontAwesomeIcon icon={faXmark} />}
-            text
-            severity="danger"
-            size="small"
-          />
-        </>
-      )}
     </WidgetBoxTemplate>
   );
 }

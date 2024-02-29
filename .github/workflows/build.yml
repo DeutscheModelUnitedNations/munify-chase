@@ -17,9 +17,10 @@ jobs:
         env:
           FONTAWESOME_NPM_AUTH_TOKEN: ${{ secrets.FONTAWESOME_NPM_AUTH_TOKEN }}
 
-      - name: Generate prisma types
+        # typecheck the backend since it is required for the frontend
+      - name: Typecheck backend
         working-directory: ./chase/backend
-        run: bunx prisma generate
+        run: bun run typecheck
         
       - name: Run build
         run: bun run build
@@ -39,18 +40,10 @@ jobs:
         env:
           FONTAWESOME_NPM_AUTH_TOKEN: ${{ secrets.FONTAWESOME_NPM_AUTH_TOKEN }}
 
-      - name: Generate prisma types
+      - name: Typecheck
         working-directory: ./chase/backend
-        run: bunx prisma generate
+        run: bun run typecheck
 
       - name: Run build
         working-directory: ./chase/backend
         run: bun run build
-        
-        # test if the server starts without errors
-      - name: Run the server
-        id: run
-        env:
-          CI: "true"
-        run:  | 
-          timeout 20s bun run ./build/main.js || true

@@ -8,7 +8,8 @@
     "rules": {
       "recommended": true,
       "correctness": {
-        "noUnusedVariables": "warn"
+        "noUnusedVariables": "warn",
+        "useExhaustiveDependencies": "off"
       },
       "suspicious": {
         "noConsoleLog": "warn"
@@ -27,7 +28,7 @@
     "ignore": [
       "chase/frontend/i18n/*.ts",
       "chase/frontend/i18n/*.tsx",
-      "chase/frontend/backend-client"
+      ".devcontainer"
     ]
   }
 }

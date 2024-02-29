@@ -1,22 +1,17 @@
-import React, { useContext, useEffect, useState } from "react";
-import {
-  AutoComplete,
-  AutoCompleteCompleteEvent,
-} from "primereact/autocomplete";
-import getCountryNameByCode from "@/misc/get_country_name_by_code";
+import { useContext, useState } from "react";
 import { useI18nContext } from "@/i18n/i18n-react";
-import { Button } from "primereact/button";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import Button from "@components/button";
 import { faPlus, faTimes } from "@fortawesome/pro-solid-svg-icons";
-import { SmallFlag } from "../flag_templates";
-import { CountryCode } from "@/custom_types";
-import Fuse from "fuse.js";
-import { ToastContext } from "@/contexts/messages/toast";
-
-interface CountryData {
-  alpha3: CountryCode;
-  name: string;
-}
+import useMousetrap from "mousetrap-react";
+import CountryAutoComplete from "./country_auto_complete";
+import { backend } from "@/services/backend";
+import { $Enums } from "../../../backend/prisma/generated/client";
+import { useToast } from "@/contexts/toast";
+import { SpeakersListDataContext } from "@/contexts/speakers_list_data";
+import {
+  AllAvailableCountriesType,
+  CountryDataType,
+} from "@/components/admin/delegations/add_delegation_dialog";
 
 /**
  * This component is used to display the overlay to add a speaker to the Speakers List on the Speakers List Page for chairs.
@@ -29,153 +24,131 @@ interface CountryData {
  * Note: Not only countries can be added to the Speakers List, but also Non-State Actors and als UN Staff like the Secretary-General (Country-Code: unm / unw (male/female))
  */
 
-// TODO add toast functionality for when a speaker is added or already on the list
 // TODO add warning when a speaker is added to the list and the list is closed
 
 export default function AddSpeakerOverlay({
-  listOfAllCountries,
-  _listClosed,
-  closeOverlay,
   typeOfList,
+  allCountries,
+  closeOverlay,
 }: {
-  listOfAllCountries: CountryCode[];
-  _listClosed: boolean;
+  typeOfList: $Enums.SpeakersListCategory;
+  allCountries: AllAvailableCountriesType | null;
   closeOverlay: () => void;
-  typeOfList: string;
 }) {
-  const { LL, locale } = useI18nContext();
-  const { showToast } = useContext(ToastContext);
+  const { LL } = useI18nContext();
+  const { showToast, toastError } = useToast();
 
-  const [countries, setCountries] = useState<CountryData[] | null>(null);
-  const [query, setQuery] = useState<string>("");
-  const [filteredCountries, setFilteredCountries] = useState<CountryData[]>([]);
-  const [selectedCountry, setSelectedCountry] = useState<CountryData | null>(
-    null,
-  );
-  const [fuse, setFuse] = useState<Fuse<CountryData> | null>(null);
+  const [selectedCountry, setSelectedCountry] =
+    useState<CountryDataType | null>(null);
+  const speakersListData = useContext(SpeakersListDataContext);
 
-  useEffect(() => {
-    if (!listOfAllCountries) return;
-    const countryData: CountryData[] = listOfAllCountries.map(
-      (country: CountryCode) => {
-        return {
-          alpha3: country,
-          name: getCountryNameByCode(country, locale),
-        };
-      },
-    );
-    setCountries(countryData);
+  const [focusInputField, setFocusInputField] = useState<boolean>(false);
 
-    const options = {
-      keys: ["name", "alpha3"],
-      includeScore: true,
-    };
-    setFuse(new Fuse(countryData, options));
-  }, [listOfAllCountries, locale]);
-
-  useEffect(() => {
-    if (selectedCountry) {
-      setQuery(selectedCountry.name);
-    }
-  }, [selectedCountry]);
-
-  useEffect(() => {
-    if (query === "") {
-      setSelectedCountry(null);
-    } else {
-      const country = countries?.find((country) => country.name === query);
-      if (country) {
-        setSelectedCountry(country);
-      }
-    }
-  }, [query]);
-
-  const searchCountry = (event: AutoCompleteCompleteEvent) => {
-    if (!fuse) return;
-
-    let filteredCountries;
-    if (!event.query.trim().length) {
-      filteredCountries = countries ? [...countries] : [];
-    } else {
-      const results = fuse.search(event.query);
-      filteredCountries = results.map((result) => result.item);
-    }
-    setFilteredCountries(filteredCountries);
+  const listTypeMap: {
+    [key in $Enums.SpeakersListCategory]: string;
+  } = {
+    SPEAKERS_LIST: LL.participants.speakersList.SPEAKERS_LIST(),
+    COMMENT_LIST: LL.participants.speakersList.COMMENT_LIST(),
+    MODERATED_CAUCUS: LL.participants.speakersList.MODERATED_CAUCUS(),
   };
 
-  const countryTemplate = (item: CountryData) => {
-    return (
-      <div className="flex items-center">
-        <SmallFlag countryCode={item.alpha3} />
-        <div className="ml-2">{item.name}</div>
-      </div>
-    );
-  };
-
-  const sendAddSpeaker = () => {
-    if (selectedCountry) {
-      showToast({
-        severity: "success",
-        summary: LL.chairs.speakersList.addSpeakerOverlay.TOAST_ADDED_SUMMARY(
-          selectedCountry.name,
-        ),
-        detail:
-          LL.chairs.speakersList.addSpeakerOverlay.TOAST_ADDED_DETAIL(
-            typeOfList,
-          ),
-        sticky: false,
-      });
-      setSelectedCountry(null);
+  const sendAddSpeaker = async () => {
+    if (selectedCountry && speakersListData?.id) {
+      await backend.speakersList[speakersListData.id].addSpeaker.code[
+        selectedCountry.alpha3Code
+      ]
+        .post()
+        .then((res) => {
+          if (res.status === 200) {
+            showToast({
+              severity: "success",
+              summary:
+                LL.chairs.speakersList.addSpeakerOverlay.TOAST_ADDED_SUMMARY(
+                  selectedCountry.name ?? "",
+                ),
+              detail:
+                LL.chairs.speakersList.addSpeakerOverlay.TOAST_ADDED_DETAIL(
+                  listTypeMap[typeOfList],
+                ),
+              sticky: false,
+            });
+            setSelectedCountry(null);
+          } else {
+            showToast({
+              severity: "warn",
+              summary:
+                LL.chairs.speakersList.addSpeakerOverlay.TOAST_ALREADY_ON_LIST(
+                  selectedCountry.name ?? "",
+                ),
+              detail:
+                LL.chairs.speakersList.addSpeakerOverlay.TOAST_ALREADY_ON_LIST_DETAIL(
+                  listTypeMap[typeOfList],
+                ),
+              sticky: false,
+            });
+            setFocusInputField(!focusInputField);
+          }
+        })
+        .catch((e) => {
+          toastError(e);
+        });
     }
   };
+
+  useMousetrap("esc", () => closeOverlay());
+
+  useMousetrap("enter", () => {
+    if (selectedCountry?.alpha3Code) {
+      sendAddSpeaker();
+      setFocusInputField(!focusInputField);
+    }
+  });
+
+  useMousetrap("shift+enter", () => {
+    if (selectedCountry?.alpha3Code) {
+      sendAddSpeaker();
+      closeOverlay();
+    }
+  });
 
   return (
     <>
       <div className="flex flex-col gap-5 mt-1">
-        <AutoComplete
-          value={selectedCountry}
-          suggestions={filteredCountries}
-          completeMethod={searchCountry}
-          field={"name"}
-          onChange={(e) => setSelectedCountry(e.value)}
-          dropdown
-          dropdownMode="blank"
-          itemTemplate={countryTemplate}
+        <CountryAutoComplete
+          allCountries={allCountries}
           placeholder={LL.chairs.speakersList.addSpeakerOverlay.PLACEHOLDER()}
-          autoFocus
-          autoHighlight
-          forceSelection
-          onKeyDown={(e) => {
-            // This enables the user to press enter after selecting a country. It has the same effect as clicking the "Add" button.
-            if (e.key === "Enter" && selectedCountry?.alpha3) {
-              sendAddSpeaker();
-            }
-          }}
+          selectedCountry={selectedCountry}
+          setSelectedCountry={setSelectedCountry}
+          focusInputField={focusInputField}
         />
+
         <div className="flex gap-3 justify-end flex-wrap">
           <Button
             label={LL.chairs.speakersList.addSpeakerOverlay.BUTTON_CANCEL()}
-            icon={<FontAwesomeIcon icon={faTimes} className="mr-2" />}
+            faIcon={faTimes}
             onClick={closeOverlay}
             severity="danger"
             text
+            keyboardShortcut="Esc"
           />
           <Button
             label={LL.chairs.speakersList.addSpeakerOverlay.BUTTON_ADD_AND_CLOSE()}
-            icon={<FontAwesomeIcon icon={faPlus} className="mr-2" />}
+            faIcon={faPlus}
             onClick={() => {
               sendAddSpeaker();
               closeOverlay();
             }}
             text
+            keyboardShortcut="⇧ + ⏎"
           />
           <Button
             label={LL.chairs.speakersList.addSpeakerOverlay.BUTTON_ADD()}
-            icon={<FontAwesomeIcon icon={faPlus} className="mr-2" />}
+            faIcon={faPlus}
             onClick={() => {
               sendAddSpeaker();
               setSelectedCountry(null);
             }}
+            keyboardShortcut="⏎"
           />
         </div>
       </div>

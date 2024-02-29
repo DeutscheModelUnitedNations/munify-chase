@@ -1,37 +1,76 @@
 "use client";
 import React from "react";
+import { useI18nContext } from "@/i18n/i18n-react";
+import Navbar from "@/components/home/navbar";
+import LandingHero from "@/components/home/landing_hero";
+import CardSection from "@/components/home/card_section";
+import TextSection from "@/components/home/text_section";
+import { faCodeBranch, faExternalLink } from "@fortawesome/pro-solid-svg-icons";
+import Footer from "@/components/home/footer";
+import { useMediaQuery } from "react-responsive";
 import Image from "next/image";
-import { Button } from "primereact/button";
-import { useRouter } from "next/navigation";
 
 export default function Home() {
-  const router = useRouter();
+  const { LL } = useI18nContext();
+
+  const isDesktopOrLaptop = useMediaQuery({
+    query: "(min-width: 1024px)",
+  });
+  const isBiggerThanMobile = useMediaQuery({
+    query: "(min-width: 768px)",
+  });
+  const isTabletOrMobile = useMediaQuery({ query: "(max-width: 768px)" });
 
   return (
     <>
-      <div className="flex align-center justify-center h-screen">
-        <div className="flex flex-col items-center justify-center">
-          <Image
-            src="/logo/png/chase_logo_blue_text.png"
-            alt="Logo"
-            width={700}
-            height={128}
-            className="mb-10"
-          />
-          <div className="p-buttonset mb-2">
-            <Button
-              label="Teilnehmenden-Login"
-              icon="pi pi-link"
-              onClick={() => router.push("/login/participant")}
+      <Navbar animate />
+      <div className="flex flex-col bg-primary-950 items-center">
+        <div className="max-w-7xl">
+          <LandingHero />
+          {isTabletOrMobile && (
+            <div className="w-full bg-white h-40 flex justify-center items-center">
+              <Image
+                src="/logo/svg/chase_logo_blue_text.svg"
+                objectFit="contain"
+                width={300}
+                height={100}
+                alt={"Chase Logo"}
+              />
+            </div>
+          )}
+          <CardSection />
+          <div
+            className="flex flex-col lg:flex-none lg:grid gap-2 lg:gap-10 p-4 lg:p-20 align-items-start"
+            style={{
+              gridTemplateColumns: "auto 1fr",
+            }}
+          >
+            <TextSection
+              title={LL.home.ABOUT_TITEL()}
+              text={LL.home.ABOUT_TEXT()}
             />
-            <Button
-              label="Vorsitz-Login"
-              icon="pi pi-link"
-              onClick={() => router.push("/login/chair")}
+            <TextSection
+              title={LL.home.MISSION_TITLE()}
+              text={LL.home.MISSION_TEXT()}
+              button={{
+                lable: LL.home.MISSION_BUTTON_LABEL(),
+                link: "https://www.dmun.de/",
+                faIcon: faExternalLink,
+              }}
+            />
+            <TextSection
+              title={LL.home.CONTRIBUTE_TITEL()}
+              text={LL.home.CONTRIBUTE_TEXT()}
+              button={{
+                lable: LL.home.CONTRIBUTE_BUTTON_LABEL(),
+                link: "https://github.com/DeutscheModelUnitedNations/munify",
+                faIcon: faCodeBranch,
+              }}
             />
           </div>
         </div>
       </div>
+      <Footer />
     </>
   );
 }

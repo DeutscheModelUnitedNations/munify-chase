@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext } from "react";
+import React from "react";
 import { useI18nContext } from "@/i18n/i18n-react";
 import { backend } from "@/services/backend";
 import { ScrollPanel } from "primereact/scrollpanel";
@@ -47,7 +47,6 @@ export default function InboxTemplate({
                     setSelected={setSelectedMessage}
                     selected={selectedMessage?.id === message.id}
                     getMessagesFunction={getMessagesFunction}
-                    class="h-min"
                   />
                 ))}
               </div>

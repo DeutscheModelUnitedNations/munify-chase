@@ -45,7 +45,7 @@ export default function MessageCard({
         })
         .then((res) => {
           if (res.status !== 200)
-            throw new Error(res.message ?? "Unknown error");
+            throw new Error(res.error?.message ?? "Unknown error");
         })
         .catch((err) => {
           toastError(err);
@@ -116,7 +116,7 @@ export default function MessageCard({
         } rounded-md mt-4 items-center tramsition-all duration-300`}
       >
         <div className="w-max">
-          <SmallFlag countryCode={message.metaDelegation} />
+          <SmallFlag countryCode={message.metaDelegation ?? "xxx"} />
         </div>
         <h3 className="text-black font-bold text-sm truncate">
           {getCountryNameByCode(message.metaDelegation, locale ?? "de-de")} /{" "}

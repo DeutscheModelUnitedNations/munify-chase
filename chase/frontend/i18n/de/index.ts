@@ -80,7 +80,6 @@ const de = {
         FAQ: "FAQs",
         DOCS: "Dokumentation",
         LOGIN: "Login",
-        IMPRINT: "Impressum",
         PRIVACY: "Datenschutzbestimmungen",
       },
       imprint: {

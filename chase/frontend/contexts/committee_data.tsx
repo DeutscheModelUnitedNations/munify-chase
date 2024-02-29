@@ -67,6 +67,7 @@ export const AgendaItemDataProvider = ({
 }) => {
   const conferenceId = useContext(ConferenceIdContext);
   const committeeId = useContext(CommitteeIdContext);
+  const { toastError } = useToast();
 
   const [agendaItem, setAgendaItem] = useState<AgendaItem | null>(null);
 

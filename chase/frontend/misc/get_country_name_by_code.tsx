@@ -1,7 +1,6 @@
 import nations from "data/nations";
 import nonStateActors from "data/nsa";
 import specialPersons from "@/data/specials";
-import { CountryCode } from "@/custom_types/custom_types";
 
 /**
  * This function is used to get the name of a country in a given language.
@@ -13,7 +12,7 @@ import { CountryCode } from "@/custom_types/custom_types";
 export default function getCountryNameByCode(
   countryCode: string | null | undefined,
   locale: string,
-): CountryCode {
+): string {
   const availableLanguages = [
     "ar",
     "bg",
@@ -68,5 +67,5 @@ export default function getCountryNameByCode(
   );
   if (!res) return "xxx"; // Country not found
 
-  return res[languageCode as keyof typeof res] as CountryCode;
+  return res[languageCode as keyof typeof res] as string;
 }

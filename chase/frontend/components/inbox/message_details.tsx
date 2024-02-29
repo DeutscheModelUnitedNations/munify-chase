@@ -109,7 +109,7 @@ export default function MessageDetails({
               })
               .then((res) => {
                 if (res.status !== 200)
-                  throw new Error(res.message ?? "Unknown error");
+                  throw new Error(res.error?.message ?? "Unknown error");
                 getMessagesFunction();
               })
               .catch((err) => {
@@ -122,7 +122,7 @@ export default function MessageDetails({
               })
               .then((res) => {
                 if (res.status !== 200)
-                  throw new Error(res.message ?? "Unknown error");
+                  throw new Error(res.error?.message ?? "Unknown error");
                 getMessagesFunction();
               })
               .catch((err) => {
@@ -147,7 +147,7 @@ export default function MessageDetails({
               })
               .then((res) => {
                 if (res.status !== 200)
-                  throw new Error(res.message ?? "Unknown error");
+                  throw new Error(res.error?.message ?? "Unknown error");
                 getMessagesFunction();
               })
               .catch((err) => {
@@ -160,7 +160,7 @@ export default function MessageDetails({
               })
               .then((res) => {
                 if (res.status !== 200)
-                  throw new Error(res.message ?? "Unknown error");
+                  throw new Error(res.error?.message ?? "Unknown error");
                 getMessagesFunction();
               })
               .catch((err) => {
@@ -189,7 +189,7 @@ export default function MessageDetails({
               })
               .then((res) => {
                 if (res.status !== 200)
-                  throw new Error(res.message ?? "Unknown error");
+                  throw new Error(res.error?.message ?? "Unknown error");
                 getMessagesFunction();
               })
               .catch((err) => {
@@ -202,7 +202,7 @@ export default function MessageDetails({
               })
               .then((res) => {
                 if (res.status !== 200)
-                  throw new Error(res.message ?? "Unknown error");
+                  throw new Error(res.error?.message ?? "Unknown error");
                 getMessagesFunction();
               })
               .catch((err) => {
@@ -222,7 +222,7 @@ export default function MessageDetails({
             })
             .then((res) => {
               if (res.status !== 200)
-                throw new Error(res.message ?? "Unknown error");
+                throw new Error(res.error?.message ?? "Unknown error");
               showToast({
                 severity: "warn",
                 summary: LL.messageBoard.toast.ARCHIVED_SUMMARY(),
@@ -250,7 +250,7 @@ export default function MessageDetails({
             .post()
             .then((res) => {
               if (res.status !== 200)
-                throw new Error(res.message ?? "Unknown error");
+                throw new Error(res.error?.message ?? "Unknown error");
               showToast({
                 severity: "success",
                 summary: LL.messageBoard.toast.FORWARDED_SUMMARY(),
@@ -356,7 +356,7 @@ export default function MessageDetails({
         <p>{message.message}</p>
 
         <div className="flex gap-4 items-center p-4 my-4 bg-primary-950 rounded-xl">
-          <LargeFlag countryCode={message.metaDelegation} />
+          <LargeFlag countryCode={message.metaDelegation ?? "xxx"} />
           <div className="flex-1 flex flex-col">
             <h2 className="text-lg font-bold">
               {getCountryNameByCode(message.metaDelegation, locale)}

@@ -1,7 +1,6 @@
 import Button from "@/components/button";
 import CountryAutoComplete from "@/components/speakers_list/country_auto_complete";
 import { backend } from "@/services/backend";
-import { Alpha3Code } from "@/custom_types/custom_types";
 import { useI18nContext } from "@/i18n/i18n-react";
 import { faPlus, faXmark } from "@fortawesome/pro-solid-svg-icons";
 import useMousetrap from "mousetrap-react";
@@ -27,7 +26,7 @@ export default function AddDelegationDialog({
 }: {
   inputMaskVisible: boolean;
   setInputMaskVisible: (visible: boolean) => void;
-  addDelegationToList: (alpha3Code: Alpha3Code) => void;
+  addDelegationToList: (alpha3Code: string) => void;
 }) {
   const { LL } = useI18nContext();
   const { toastError } = useToast();

@@ -1,5 +1,5 @@
 // import { faker } from "@faker-js/faker";
-import { $Enums, PrismaClient } from "./generated/client";
+import { $Enums, PrismaClient } from "../generated/client";
 const prisma = new PrismaClient();
 
 try {

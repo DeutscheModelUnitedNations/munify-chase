@@ -19,6 +19,7 @@
   },
   "workspaces": ["chase/backend", "chase/frontend"],
   "dependencies": {
+    "@types/papaparse": "^5.3.14",
     "papaparse": "^5.4.1"
   }
 }

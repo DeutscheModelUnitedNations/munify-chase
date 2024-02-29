@@ -1,4 +1,10 @@
-type UndefinedIfNull<T> = T extends null ? undefined : T extends (infer U)[] ? UndefinedIfNull<U>[] : T extends object ? { [K in keyof T]: UndefinedIfNull<T[K]> } : T;
+type UndefinedIfNull<T> = T extends null
+  ? undefined
+  : T extends (infer U)[]
+    ? UndefinedIfNull<U>[]
+    : T extends object
+      ? { [K in keyof T]: UndefinedIfNull<T[K]> }
+      : T;
 
 export function nullToUndefined<T>(obj: T): UndefinedIfNull<T> {
   if (obj === null) {

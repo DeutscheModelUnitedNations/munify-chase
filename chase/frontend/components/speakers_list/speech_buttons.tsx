@@ -172,6 +172,7 @@ export function ChairSpeechButtons({
   typeOfList: $Enums.SpeakersListCategory;
 }) {
   const { LL } = useI18nContext();
+  const { toastError } = useToast();
 
   const conferenceId = useContext(ConferenceIdContext);
   const committeeId = useContext(CommitteeIdContext);

@@ -37,7 +37,7 @@ export function MessageCountProvider({
       .get()
       .then((res) => {
         if (res.status === 200) {
-          const newCount = parseInt(res.data);
+          const newCount = res.data;
           if (newCount !== messageCount) {
             setToastShown(false);
           }
@@ -49,7 +49,7 @@ export function MessageCountProvider({
           //   });
           //   setToastShown(true);
           // }
-          setMessageCount(newCount);
+          setMessageCount(newCount || 2);
         }
       })
       .catch((err) => {
@@ -63,8 +63,8 @@ export function MessageCountProvider({
       .get()
       .then((res) => {
         if (res.status === 200) {
-          const newCount = parseInt(res.data || 0);
-          if (newCount < messageCount) {
+          const newCount = res.data;
+          if (newCount !== messageCount) {
             setToastShown(false);
           }
           // if (newCount > messageCount && !toastShown) {
@@ -75,7 +75,7 @@ export function MessageCountProvider({
           //   });
           //   setToastShown(true);
           // }
-          // setMessageCount(res.data);
+          setMessageCount(newCount ?? 0);
         }
       })
       .catch((err) => {
@@ -84,6 +84,11 @@ export function MessageCountProvider({
   }
 
   useEffect(() => {
+    if (committeeId) {
+      getCommitteeMessageCount();
+    } else {
+      getGlobalMessageCount();
+    }
     const intervalAPICall = setInterval(() => {
       if (committeeId) {
         getCommitteeMessageCount();

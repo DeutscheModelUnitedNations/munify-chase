@@ -277,7 +277,6 @@ enum MessageCategory {
 
 enum MessageStatus {
   UNREAD
-  READ
   PRIORITY
   ASSIGNED
   ARCHIVED
@@ -294,6 +293,7 @@ model Message {
   authorId    String
   timestamp   DateTime
   status      MessageStatus[] @default([UNREAD])
+  forwarded   Boolean         @default(false) /// If the message was forwarded to the Research Service
 
   /// Saved Metadata without relation
   metaEmail      String?

@@ -15,6 +15,7 @@ import { backend } from "@/services/backend";
 import { useI18nContext } from "@/i18n/i18n-react";
 import getCountryNameByCode from "@/misc/get_country_name_by_code";
 import { TranslationFunctions } from "@/i18n/i18n-types";
+import { $Enums } from "../../../backend/prisma/generated/client";
 
 type ChairMessages = Awaited<
   ReturnType<
@@ -72,7 +73,8 @@ const styles = StyleSheet.create({
   page: {
     flexDirection: "column",
     backgroundColor: "#FFFFFF",
-    padding: "10mm",
+    padding: "30px",
+    paddingRight: "200px",
   },
   headerSection: {
     display: "flex",
@@ -130,6 +132,11 @@ function MessageDocument({
             <Text>
               {LL.messageBoard.pdf.EMAIL()} {message.metaEmail}
             </Text>
+            {message.category !== $Enums.MessageCategory.TO_CHAIR && (
+              <Text>
+                {LL.messageBoard.pdf.CATEGORY()} {message.category}
+              </Text>
+            )}
             <Text>
               {LL.messageBoard.pdf.TIME({
                 date: new Date(message.timestamp).toLocaleDateString(locale, {

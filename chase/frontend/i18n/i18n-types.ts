@@ -96,6 +96,32 @@ type RootTranslation = {
 		 */
 		UNKNOWN: string
 	}
+	messageCategories: {
+		/**
+		 * M​e​s​s​a​g​e​ ​t​o​ ​t​h​e​ ​C​h​a​i​r
+		 */
+		TO_CHAIR: string
+		/**
+		 * R​e​q​u​e​s​t​ ​f​o​r​ ​G​u​e​s​t​ ​S​p​e​a​k​e​r
+		 */
+		GUEST_SPEAKER: string
+		/**
+		 * F​a​c​t​ ​C​h​e​c​k​ ​R​e​q​u​e​s​t
+		 */
+		FACT_CHECK: string
+		/**
+		 * I​n​f​o​r​m​a​t​i​o​n​ ​R​e​q​u​e​s​t
+		 */
+		INFORMATION: string
+		/**
+		 * R​e​q​u​e​s​t​ ​f​o​r​ ​G​e​n​e​r​a​l​ ​S​e​c​r​e​t​a​r​y​ ​V​i​s​i​t
+		 */
+		GENERAL_SECRETARY: string
+		/**
+		 * O​t​h​e​r
+		 */
+		OTHER: string
+	}
 	home: {
 		/**
 		 *  ​f​o​r​ ​t​h​e​ ​d​i​g​i​t​a​l​ ​a​g​e
@@ -1703,6 +1729,22 @@ type RootTranslation = {
 			 * Y​o​u​ ​h​a​v​e​ ​n​e​w​ ​u​n​r​e​a​d​ ​m​e​s​s​a​g​e​s
 			 */
 			NEW_MESSAGE_DETAIL: string
+			/**
+			 * M​e​s​s​a​g​e​ ​f​o​r​w​a​r​d​e​d
+			 */
+			FORWARDED_SUMMARY: string
+			/**
+			 * T​h​e​ ​m​e​s​s​a​g​e​ ​h​a​s​ ​b​e​e​n​ ​f​o​r​w​a​r​d​e​d​ ​t​o​ ​t​h​e​ ​R​e​s​e​a​r​c​h​ ​S​e​r​v​i​c​e
+			 */
+			FORWARDED_DETAIL: string
+			/**
+			 * M​e​s​s​a​g​e​ ​a​r​c​h​i​v​e​d
+			 */
+			ARCHIVED_SUMMARY: string
+			/**
+			 * T​h​e​ ​m​e​s​s​a​g​e​ ​h​a​s​ ​b​e​e​n​ ​a​r​c​h​i​v​e​d​.​ ​I​f​ ​y​o​u​ ​w​a​n​t​ ​t​o​ ​r​e​s​t​o​r​e​ ​i​t​,​ ​p​l​e​a​s​e​ ​a​s​k​ ​a​ ​c​o​n​f​e​r​e​n​c​e​ ​a​d​m​i​n​.
+			 */
+			ARCHIVED_DETAIL: string
 		}
 		menu: {
 			/**
@@ -1723,6 +1765,10 @@ type RootTranslation = {
 			 * F​r​o​m​:
 			 */
 			FROM: string
+			/**
+			 * C​a​t​e​g​o​r​y​:
+			 */
+			CATEGORY: string
 			/**
 			 * E​m​a​i​l​:
 			 */
@@ -1752,6 +1798,18 @@ type RootTranslation = {
 		 * P​r​i​o​r​i​t​y
 		 */
 		TAG_PRIORITY: string
+		/**
+		 * A​s​s​i​g​n​e​d
+		 */
+		TAG_ASSIGNED: string
+		/**
+		 * R​S
+		 */
+		TAG_RESEARCH_SERVICE: string
+		/**
+		 * F​W​D​ ​t​o​ ​R​S
+		 */
+		BUTTON_FORWARD_TO_RESEARCH_SERVICE: string
 	}
 }
 
@@ -1837,6 +1895,32 @@ export type TranslationFunctions = {
 		 * Unknown Role
 		 */
 		UNKNOWN: () => LocalizedString
+	}
+	messageCategories: {
+		/**
+		 * Message to the Chair
+		 */
+		TO_CHAIR: () => LocalizedString
+		/**
+		 * Request for Guest Speaker
+		 */
+		GUEST_SPEAKER: () => LocalizedString
+		/**
+		 * Fact Check Request
+		 */
+		FACT_CHECK: () => LocalizedString
+		/**
+		 * Information Request
+		 */
+		INFORMATION: () => LocalizedString
+		/**
+		 * Request for General Secretary Visit
+		 */
+		GENERAL_SECRETARY: () => LocalizedString
+		/**
+		 * Other
+		 */
+		OTHER: () => LocalizedString
 	}
 	home: {
 		/**
@@ -3442,6 +3526,22 @@ export type TranslationFunctions = {
 			 * You have new unread messages
 			 */
 			NEW_MESSAGE_DETAIL: () => LocalizedString
+			/**
+			 * Message forwarded
+			 */
+			FORWARDED_SUMMARY: () => LocalizedString
+			/**
+			 * The message has been forwarded to the Research Service
+			 */
+			FORWARDED_DETAIL: () => LocalizedString
+			/**
+			 * Message archived
+			 */
+			ARCHIVED_SUMMARY: () => LocalizedString
+			/**
+			 * The message has been archived. If you want to restore it, please ask a conference admin.
+			 */
+			ARCHIVED_DETAIL: () => LocalizedString
 		}
 		menu: {
 			/**
@@ -3462,6 +3562,10 @@ export type TranslationFunctions = {
 			 * From:
 			 */
 			FROM: () => LocalizedString
+			/**
+			 * Category:
+			 */
+			CATEGORY: () => LocalizedString
 			/**
 			 * Email:
 			 */
@@ -3487,6 +3591,18 @@ export type TranslationFunctions = {
 		 * Priority
 		 */
 		TAG_PRIORITY: () => LocalizedString
+		/**
+		 * Assigned
+		 */
+		TAG_ASSIGNED: () => LocalizedString
+		/**
+		 * RS
+		 */
+		TAG_RESEARCH_SERVICE: () => LocalizedString
+		/**
+		 * FWD to RS
+		 */
+		BUTTON_FORWARD_TO_RESEARCH_SERVICE: () => LocalizedString
 	}
 }
 

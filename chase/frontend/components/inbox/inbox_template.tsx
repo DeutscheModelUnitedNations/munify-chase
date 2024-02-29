@@ -1,0 +1,79 @@
+import React, { useState, useEffect, useContext } from "react";
+import { useI18nContext } from "@/i18n/i18n-react";
+import { backend } from "@/services/backend";
+import { ScrollPanel } from "primereact/scrollpanel";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faInbox } from "@fortawesome/pro-solid-svg-icons";
+import NoDataPlaceholder from "@/components/no_data_placeholder";
+import MessageCard from "./message_card";
+import MessageDetails from "./message_details";
+
+type ChairMessages = Awaited<
+  ReturnType<
+    (typeof backend.conference)["conferenceId"]["committee"]["committeeId"]["messages"]["get"]
+  >
+>["data"];
+
+export default function InboxTemplate({
+  isResearchService,
+  messages,
+  selectedMessage,
+  setSelectedMessage,
+  getMessagesFunction,
+}: {
+  isResearchService: boolean;
+  messages: ChairMessages | null;
+  selectedMessage: NonNullable<ChairMessages>[number] | null;
+  setSelectedMessage: (message: NonNullable<ChairMessages>[number]) => void;
+  getMessagesFunction: () => void;
+}) {
+  const { LL } = useI18nContext();
+
+  return (
+    <>
+      <div className="flex h-screen w-screen bg-white overflow-hidden">
+        <div className="w-1/3 h-full border-r border-gray-200">
+          <div className="flex flex-col justify-stretch">
+            <div className="p-4 flex gap-3 text-2xl items-center border-b border-gray-200">
+              <FontAwesomeIcon icon={faInbox} className="text-primary-500" />
+              <h1 className="font-bold">{LL.navbar.INBOX()}</h1>
+            </div>
+            <ScrollPanel style={{ width: "100%", height: "90vh" }}>
+              <div className="h-full flex flex-col gap-2 pt-2 pb-10">
+                {messages?.map((message) => (
+                  <MessageCard
+                    isResearchService={isResearchService}
+                    message={message}
+                    setSelected={setSelectedMessage}
+                    selected={selectedMessage?.id === message.id}
+                    getMessagesFunction={getMessagesFunction}
+                    class="h-min"
+                  />
+                ))}
+              </div>
+            </ScrollPanel>
+          </div>
+        </div>
+        <div className="w-2/3 h-full">
+          {selectedMessage ? (
+            <>
+              <div className="p-4">
+                <MessageDetails
+                  isResearchService={isResearchService}
+                  message={selectedMessage}
+                  getMessagesFunction={getMessagesFunction}
+                />
+              </div>
+            </>
+          ) : (
+            <div className="h-screen w-full flex justify-center items-center">
+              <NoDataPlaceholder
+                title={LL.messageBoard.NO_MESSAGE_SELECTED()}
+              />
+            </div>
+          )}
+        </div>
+      </div>
+    </>
+  );
+}

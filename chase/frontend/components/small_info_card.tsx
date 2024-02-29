@@ -7,6 +7,7 @@ export default function SmallInfoCard({
   icon,
   classNameForIconBox = "bg-primary-500 text-primary-500 border-primary-500",
   classNameForContentBox = "bg-primary-500",
+  className,
   noFixedHeight = false,
   loading = false,
   children,
@@ -14,6 +15,7 @@ export default function SmallInfoCard({
   icon: IconProp;
   classNameForIconBox?: string;
   classNameForContentBox?: string;
+  className?: string;
   noFixedHeight?: boolean;
   loading?: boolean;
   children: React.ReactNode;
@@ -25,7 +27,11 @@ export default function SmallInfoCard({
   }, []);
 
   return (
-    <div className={`w-full flex gap-1 ${noFixedHeight ? "min-h-16" : "h-16"}`}>
+    <div
+      className={`w-full flex gap-1 ${
+        noFixedHeight ? "min-h-16" : "h-16"
+      } ${className}`}
+    >
       <div
         className={`w-20 ${classNameForIconBox} border-l-[6px] sm:rounded-l-lg justify-center items-center w-full sm:w-auto bg-opacity-20 hidden sm:flex`}
       >

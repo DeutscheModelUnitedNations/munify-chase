@@ -71,8 +71,8 @@ export const UserIdentProvider = ({
 
   return (
     <UserIdentContext.Provider
-      // biome-ignore lint/style/noNonNullAssertion: TODO nullable types cleanup throughout the whole app
       value={{
+        // biome-ignore lint/style/noNonNullAssertion: TODO nullable types cleanup throughout the whole app
         userIdent: userIdent!,
         conferenceMembership,
         committeeMembership,

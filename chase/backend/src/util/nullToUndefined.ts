@@ -8,10 +8,12 @@ type UndefinedIfNull<T> = T extends null
 
 export function nullToUndefined<T>(obj: T): UndefinedIfNull<T> {
   if (obj === null) {
+    // biome-ignore lint/suspicious/noExplicitAny: This is a valid use case for any
     return undefined as any;
   }
 
   if (typeof obj === "object") {
+    // biome-ignore lint/suspicious/noExplicitAny: This is a valid use case for any
     const newObj: any = Array.isArray(obj) ? [] : {};
     for (const key in obj) {
       newObj[key] = nullToUndefined(obj[key]);
@@ -19,5 +21,6 @@ export function nullToUndefined<T>(obj: T): UndefinedIfNull<T> {
     return newObj;
   }
 
+  // biome-ignore lint/suspicious/noExplicitAny: This is a valid use case for any
   return obj as any;
 }

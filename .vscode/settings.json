@@ -79,7 +79,7 @@
   "vscodemacros.userMacroCommands": [
     {
       "path": "/workspaces/munify/.vscode/macros.ts",
-      "name": "OpenI18n",
-    },
+      "name": "OpenI18n"
+    }
   ]
 }

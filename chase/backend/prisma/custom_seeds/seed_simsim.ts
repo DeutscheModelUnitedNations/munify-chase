@@ -224,7 +224,7 @@ try {
   }
 
   // Create dummy users for all conference- and committee-members
-
+  // biome-ignore lint/suspicious/noExplicitAny: This is only a seeding file and therefore not part of the application
   const users: any = [];
 
   const allConferenceMembers = await prisma.conferenceMember.findMany({

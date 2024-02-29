@@ -3,6 +3,8 @@
 
 Munify is a collection of tools to organize and run a [model united nations](https://en.wikipedia.org/wiki/Model_United_Nations) conference. It aims to simplify aspects like participant management, document organization commitee sessions and communication at the conference.
 
+The project is under development and not in a working state.
+
 The project has been initiated by members of [DMUN](https://de.wikipedia.org/wiki/Deutsche_Model_United_Nations).
 
 It is composed of multiple software components which can be found in their separate directories inside this monorepo.

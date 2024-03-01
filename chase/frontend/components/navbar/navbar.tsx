@@ -17,6 +17,8 @@ import {
 
 import { useI18nContext } from "@/i18n/i18n-react";
 import { IconProp } from "@fortawesome/fontawesome-svg-core";
+import { backend } from "@/services/backend";
+import { useToast } from "@/contexts/toast";
 
 /**
  * This Component is used in the Layout Component.
@@ -26,14 +28,22 @@ import { IconProp } from "@fortawesome/fontawesome-svg-core";
 
 export default function Navbar({ children }: { children: React.ReactNode }) {
   const router = useRouter();
+  const { toastError } = useToast();
 
   const { LL } = useI18nContext();
 
   const [settingsSidebarVisible, setSettingsSidebarVisible] = useState(false);
 
   const acceptLogout = () => {
-    // TODO: logout
-    router.push("/");
+    backend.auth.logout
+      .get()
+      .then((res) => {
+        if (res.status !== 200) throw new Error("Failed to log out");
+        router.push("/login");
+      })
+      .catch((err) => {
+        toastError(err);
+      });
   };
 
   const confirmLogout = () => {

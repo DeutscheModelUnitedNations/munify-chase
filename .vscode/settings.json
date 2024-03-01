@@ -13,6 +13,10 @@
         "detail": "A new feature"
       },
       {
+        "label": "⬆️ improvement",
+        "detail": "An improvement of an existing feature"
+      },
+      {
         "label": "🐞 fix",
         "detail": "A bugfix"
       },
@@ -75,7 +79,7 @@
   "vscodemacros.userMacroCommands": [
     {
       "path": "/workspaces/munify/.vscode/macros.ts",
-      "name": "OpenI18n",
-    },
+      "name": "OpenI18n"
+    }
   ]
 }

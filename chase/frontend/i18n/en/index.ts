@@ -30,6 +30,15 @@ const en = {
     UNKNOWN: "Unknown Role",
   },
 
+  messageCategories: {
+    TO_CHAIR: "Message to the Chair",
+    GUEST_SPEAKER: "Request for Guest Speaker",
+    FACT_CHECK: "Fact Check Request",
+    INFORMATION: "Information Request",
+    GENERAL_SECRETARY: "Request for General Secretary Visit",
+    OTHER: "Other",
+  },
+
   home: {
     CAPTION: " for the digital age",
     HERO_TEXT:
@@ -70,6 +79,7 @@ const en = {
         HOME: "Home",
         FAQ: "FAQs",
         DOCS: "Documentation",
+        LOGIN: "Login",
         PRIVACY: "Privacy Policy",
       },
       imprint: {
@@ -117,6 +127,7 @@ const en = {
         wrongToken: "The token is invalid.",
         conferenceExists: "A conference with this name already exists.",
         generic: "An error occurred.",
+        unavailable: "Not available for legal reasons (no Cookie Consent).",
       },
 
       SAVE_AND_QUIT: "Quit Setup",
@@ -330,6 +341,7 @@ const en = {
   hub: {
     CHAIR_HUB_TITLE: "Team Hub",
     NA_HUB_TITLE: "Non-State Actor's Hub",
+    GUEST_HUB_TITLE: "Guest Hub",
     SELECT_COMMITTEE: "Select a Committee",
     NO_COMMITTEES: "No Committees found",
     LOGOUT: "Logout",
@@ -597,6 +609,12 @@ const en = {
     toast: {
       NEW_MESSAGE_SUMMARY: "New Message",
       NEW_MESSAGE_DETAIL: "You have new unread messages",
+      FORWARDED_SUMMARY: "Message forwarded",
+      FORWARDED_DETAIL:
+        "The message has been forwarded to the Research Service",
+      ARCHIVED_SUMMARY: "Message archived",
+      ARCHIVED_DETAIL:
+        "The message has been archived. If you want to restore it, please ask a conference admin.",
     },
     menu: {
       MARK_AS_UNREAD: "Mark as Unread",
@@ -605,6 +623,7 @@ const en = {
     pdf: {
       HEADLINE: "Message from Participant",
       FROM: "From:",
+      CATEGORY: "Category:",
       EMAIL: "Email:",
       TIME: "Timestamp: {date:string} at {time:string}",
     },
@@ -612,6 +631,9 @@ const en = {
     NO_MESSAGE_SELECTED: "No message selected",
     TAG_UNREAD: "Unread",
     TAG_PRIORITY: "Priority",
+    TAG_ASSIGNED: "Assigned",
+    TAG_RESEARCH_SERVICE: "RS",
+    BUTTON_FORWARD_TO_RESEARCH_SERVICE: "FWD to RS",
   },
 } satisfies BaseTranslation;
 

@@ -7,16 +7,21 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { InputText } from "primereact/inputtext";
 import { useEffect, useState } from "react";
 import {
+  faArrowLeft,
   faCircleNotch,
   faEnvelopeDot,
-  faSpinnerThird,
+  faKey,
+  faPaperPlane,
+  faRightToBracket,
   faUserCheck,
   faUserPlus,
 } from "@fortawesome/pro-solid-svg-icons";
-import { Button } from "primereact/button";
+import Button from "@/components/button";
 import { useRouter } from "next/navigation";
 import SmallInfoCard from "@/components/small_info_card";
 import { Skeleton } from "primereact/skeleton";
+import { Message } from "primereact/message";
+import { Messages } from "primereact/messages";
 
 const emailRegex =
   /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|.(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
@@ -74,7 +79,11 @@ export default () => {
         },
       });
       if (res.error) {
-        toastError(res.error);
+        if (res.error.status === 451) {
+          toastError(res.error, "Unavailable for legal reasons");
+        } else {
+          toastError(res.error);
+        }
       } else {
         setUserState(res.data);
       }
@@ -146,6 +155,12 @@ export default () => {
             className="mb-10"
           />
           <p>{LL.login.CREATION_SUCCESS()}</p>
+          <Button
+            faIcon={faArrowLeft}
+            label={LL.login.LOGIN_BUTTON()}
+            onClick={() => router.refresh()}
+            className="w-full mt-8"
+          />
         </>
       ) : (
         <>
@@ -164,8 +179,9 @@ export default () => {
               />
               <label htmlFor="email">{LL.login.EMAIL_PLACEHOLDER()}</label>
             </span>
+
             {emailValid === false ? (
-              <small className="text-red-500">{LL.login.EMAIL_INVALID()}</small>
+              <Message severity="error" text={LL.login.EMAIL_INVALID()} />
             ) : undefined}
             {emailValid === true ? (
               <>
@@ -177,25 +193,25 @@ export default () => {
                   />
                 ) : userState === "userNotFound" ? (
                   <>
-                    <SmallInfoCard icon={faUserPlus}>
+                    <SmallInfoCard icon={faUserPlus} noFixedHeight>
                       <p>{LL.login.ACCOUNT_NOT_YET_CREATED()}</p>
                     </SmallInfoCard>
                     <Button
                       type="submit"
+                      faIcon={faPaperPlane}
                       label={LL.login.CREATE_ACCOUNT()}
+                      loading={userCreateLoading}
                       className="w-full mt-3"
-                    >
-                      {userCreateLoading === true ? (
-                        <FontAwesomeIcon icon={faSpinnerThird} spin={true} />
-                      ) : undefined}
-                    </Button>
+                    />
                   </>
                 ) : undefined}
                 {userState === "ok" ? (
                   <>
                     <SmallInfoCard
                       icon={faUserCheck}
-                      color="bg-green-500 text-white"
+                      noFixedHeight
+                      classNameForIconBox="bg-green-500 text-green-500 border-green-500"
+                      classNameForContentBox="bg-green-500"
                     >
                       <p>{LL.login.USER_FOUND()}</p>
                     </SmallInfoCard>
@@ -217,20 +233,20 @@ export default () => {
                       </button>
                     </small>
                     <Button
+                      faIcon={faRightToBracket}
                       type="submit"
                       label={LL.login.LOGIN_BUTTON()}
+                      loading={loginLoading}
                       className="w-full mt-3"
-                    >
-                      {loginLoading === true ? (
-                        <FontAwesomeIcon icon={faSpinnerThird} spin={true} />
-                      ) : undefined}
-                    </Button>
+                    />
                   </>
                 ) : undefined}
                 {userState === "emailNotValidated" ? (
                   <SmallInfoCard
                     icon={faEnvelopeDot}
-                    color="bg-red-500 text-white"
+                    noFixedHeight
+                    classNameForIconBox="bg-yellow-500 text-yellow-500 border-yellow-500"
+                    classNameForContentBox="bg-yellow-500"
                   >
                     <p>{LL.login.EMAIL_NOT_CONFIRMED()}</p>
                   </SmallInfoCard>

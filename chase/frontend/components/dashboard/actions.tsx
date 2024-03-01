@@ -7,12 +7,13 @@ import { InputTextarea } from "primereact/inputtextarea";
 import { Dropdown } from "primereact/dropdown";
 import { useI18nContext } from "@/i18n/i18n-react";
 import {
-  faComment,
   faExclamationTriangle,
   faGavel,
   faInfoCircle,
   faPaperPlane,
+  faPodium,
   faQuestionCircle,
+  faUserTie,
 } from "@fortawesome/pro-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { IconProp } from "@fortawesome/fontawesome-svg-core";
@@ -59,7 +60,7 @@ export default function ActionsWidget() {
       label:
         LL.participants.dashboard.actionsWidget.contactForm.categoryOptions.GUEST_SPEAKER(),
       value: "GUEST_SPEAKER",
-      icon: faComment as IconProp,
+      icon: faPodium as IconProp,
     },
     {
       label:
@@ -77,7 +78,7 @@ export default function ActionsWidget() {
       label:
         LL.participants.dashboard.actionsWidget.contactForm.categoryOptions.GENERAL_SECRETARY(),
       value: "GENERAL_SECRETARY",
-      icon: faGavel as IconProp,
+      icon: faUserTie as IconProp,
     },
     {
       label:
@@ -146,10 +147,11 @@ export default function ActionsWidget() {
     }
     await backend.conference[conferenceId].committee[committeeId].messages
       .post({
+        category: "TO_CHAIR",
         subject: subjectLine,
         message: message,
         authorId: userIdent?.id,
-        metaEmail: userIdent?.email,
+        metaEmail: userIdent?.emails[0]?.email,
         metaDelegation: myDelegationData.delegation?.nation.alpha3Code,
         metaCommittee: committeeData?.name,
       })
@@ -177,22 +179,23 @@ export default function ActionsWidget() {
   }
 
   async function sendResearchMessage() {
-    if (!conferenceId || !userIdent?.id) {
+    if (!conferenceId || !userIdent?.id || !committeeId || !category) {
       showToast({
         severity: "error",
         summary: LL.participants.dashboard.actionsWidget.toast.ERROR_SUMMARY(),
         detail: LL.participants.dashboard.actionsWidget.toast.ERROR_DETAIL(),
       });
+      console.error("Missing data to send message");
       return;
     }
 
-    await backend.conference[conferenceId].messages.researchServices
+    await backend.conference[conferenceId].committee[committeeId].messages
       .post({
         category: category,
         subject: subjectLine,
         message: message,
         authorId: userIdent?.id,
-        metaEmail: userIdent?.email,
+        metaEmail: userIdent?.emails[0]?.email,
         metaDelegation: myDelegationData.delegation?.nation.alpha3Code,
         metaCommittee: committeeData?.name,
         metaAgendaItem: agendaItem?.title,

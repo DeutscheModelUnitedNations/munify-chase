@@ -30,6 +30,15 @@ const de = {
     UNKNOWN: "Unbekannte Rolle",
   },
 
+  messageCategories: {
+    TO_CHAIR: "Anfrage an den Vorsitz",
+    GUEST_SPEAKER: "Gastrede anfragen",
+    FACT_CHECK: "Faktencheck",
+    INFORMATION: "Informationsanfrage",
+    GENERAL_SECRETARY: "Um Besuch des/der Generalsekretär*in bitten",
+    OTHER: "Sonstiges",
+  },
+
   home: {
     CAPTION: " im 21. Jahrhundert",
     HERO_TEXT:
@@ -70,6 +79,7 @@ const de = {
         HOME: "Home",
         FAQ: "FAQs",
         DOCS: "Dokumentation",
+        LOGIN: "Login",
         PRIVACY: "Datenschutzbestimmungen",
       },
       imprint: {
@@ -117,6 +127,8 @@ const de = {
         wrongToken: "Das Token ist ungültig.",
         conferenceExists: "Eine Konferenz mit diesem Namen existiert bereits.",
         generic: "Ein Fehler ist aufgetreten.",
+        unavailable:
+          "Aus rechtlichen Gründen nicht erreichbar (keiner Verwendung von Cookies zugestimmt).",
       },
 
       SAVE_AND_QUIT: "Einrichtung beenden",
@@ -224,7 +236,8 @@ const de = {
     LOGIN_BUTTON: "Anmelden",
     LOGIN_TITLE: "Anmelden",
     LOGIN_DESCRIPTION: "Bitte melden Sie sich mit Ihren Zugangsdaten an.",
-    EMAIL_NOT_CONFIRMED: "The email address has not been confirmed yet.",
+    EMAIL_NOT_CONFIRMED:
+      "Die E-Mail-Adresse wurde noch nicht bestätigt. Bitte checken Sie Ihr E-Mail-Postfach.",
     EMAIL_NOT_FOUND: "Die E-Mail-Adresse wurde nicht gefunden.",
     EMAIL_NO_ACTIVE_VALIDATION_TOKEN:
       "Die E-Mail-Adresse hat keinen aktiven Bestätigungstoken.",
@@ -331,6 +344,7 @@ const de = {
   hub: {
     CHAIR_HUB_TITLE: "Team Hub",
     NA_HUB_TITLE: "Hub der Nichtstaatliche Akteure",
+    GUEST_HUB_TITLE: "Gäste-Hub",
     SELECT_COMMITTEE: "Wähle ein Gremium",
     NO_COMMITTEES: "Keine Gremien gefunden",
     LOGOUT: "Abmelden",
@@ -602,6 +616,12 @@ const de = {
     toast: {
       NEW_MESSAGE_SUMMARY: "Neue Nachricht",
       NEW_MESSAGE_DETAIL: "Sie haben eine neue Nachricht erhalten.",
+      FORWARDED_SUMMARY: "Nachricht weitergeleitet",
+      FORWARDED_DETAIL:
+        "Die Nachricht wurde erfolgreich an den Wissenschaftlichen Dienst weitergeleitet.",
+      ARCHIVED_SUMMARY: "Nachricht archiviert",
+      ARCHIVED_DETAIL:
+        "Die Nachricht wurde erfolgreich archiviert. Um sie wieder herzustellen, frage einen Konferenz-Admin.",
     },
     menu: {
       MARK_AS_UNREAD: "Als ungelesen markieren",
@@ -610,6 +630,7 @@ const de = {
     pdf: {
       HEADLINE: "Nachricht eines/einer Teilnehmenden",
       FROM: "Von",
+      CATEGORY: "Kategorie:",
       EMAIL: "E-Mail:",
       TIME: "Empfangen am {date} um {time} Uhr",
     },
@@ -617,6 +638,9 @@ const de = {
     NO_MESSAGE_SELECTED: "Keine Nachricht ausgewählt",
     TAG_UNREAD: "Ungelesen",
     TAG_PRIORITY: "Priorität",
+    TAG_ASSIGNED: "Zugewiesen",
+    TAG_RESEARCH_SERVICE: "WD",
+    BUTTON_FORWARD_TO_RESEARCH_SERVICE: "FWD an WD",
   },
 } satisfies Translation;
 

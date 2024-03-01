@@ -140,22 +140,27 @@ function CommitteeCard({
     }
   };
 
-  const getColor: (category: CommitteeType["status"]) => string | undefined = (
-    category,
-  ) => {
-    switch (category) {
-      case "FORMAL":
-        return undefined;
-      case "INFORMAL":
-        return "bg-red-500 dark:bg-red-800 text-white dark:text-primary-950";
-      case "PAUSE":
-        return "bg-secondary dark:bg-secondary-300 text-white dark:text-secondary-100";
-      case "SUSPENSION":
-        return "bg-primary-300 dark:bg-primary-700 text-white dark:text-primary-200";
-      default:
-        return undefined;
-    }
-  };
+  const getColor: (category: CommitteeType["status"]) => string[] | undefined =
+    (category) => {
+      switch (category) {
+        case "FORMAL":
+          return undefined;
+        case "INFORMAL":
+          return ["bg-red-500 border-red-500 text-red-500", "bg-red-500"];
+        case "PAUSE":
+          return [
+            "bg-secondary-500 border-secondary-400 text-secondary-400",
+            "bg-secondary",
+          ];
+        case "SUSPENSION":
+          return [
+            "bg-primary-200 border-primary-200 text-primary-200",
+            "bg-primary-200",
+          ];
+        default:
+          return undefined;
+      }
+    };
 
   return (
     <CommitteeIdContext.Provider value={committee.id}>
@@ -169,7 +174,7 @@ function CommitteeCard({
             onClick={() => {
               setLoading(true);
             }}
-            className="flex-1 min-w-[30rem] flex flex-col justify-between p-4 gap-2 bg-primary-950 rounded-lg hover:scale-[102%] hover:shadow-lg transition-all duration-300 ease-in-out cursor-pointer"
+            className="flex-1 min-w-[30rem] flex flex-col justify-between p-4 gap-2 bg-primary-950 dark:bg-primary-200 rounded-lg hover:scale-[102%] hover:shadow-lg transition-all duration-300 ease-in-out cursor-pointer"
           >
             <h3 className="text-lg">{committee.name}</h3>
             <h1 className="flex-1 mt-4 mb-6 ml-4 text-4xl text-primary font-bold">
@@ -180,68 +185,52 @@ function CommitteeCard({
               )}
             </h1>
 
-            <SmallInfoCard icon={faPodium}>
-              {committee.agendaItems.find((i) => i.isActive)?.title ? (
-                <h3 className="text-lg">
-                  {committee.agendaItems.find((i) => i.isActive)?.title}
-                </h3>
-              ) : (
-                <Skeleton
-                  width={`${Math.random() * (100 - 20) + 20}%`}
-                  height="1.75rem"
-                  className="!bg-primary-800"
-                />
-              )}
+            <SmallInfoCard
+              icon={faPodium}
+              loading={!committee.agendaItems.find((i) => i.isActive)?.title}
+            >
+              <h3 className="text-lg">
+                {committee.agendaItems.find((i) => i.isActive)?.title}
+              </h3>
             </SmallInfoCard>
 
             {isChair && (
-              <SmallInfoCard icon={faDiagramSubtask}>
-                {committee?.stateOfDebate != null &&
-                committee?.stateOfDebate !== "" ? (
-                  <h3 className="text-lg truncate">
-                    {committee?.stateOfDebate}
-                  </h3>
-                ) : (
-                  <Skeleton
-                    width={`${Math.random() * (100 - 20) + 20}%`}
-                    height="1.75rem"
-                    className="!bg-primary-800"
-                  />
-                )}
+              <SmallInfoCard
+                icon={faDiagramSubtask}
+                loading={
+                  committee?.stateOfDebate == null ||
+                  committee?.stateOfDebate === ""
+                }
+              >
+                <h3 className="text-lg truncate">{committee?.stateOfDebate}</h3>
               </SmallInfoCard>
             )}
 
             <SmallInfoCard
               icon={getIcon(committee?.status)}
-              color={getColor(committee?.status)}
+              classNameForIconBox={getColor(committee?.status)?.[0]}
+              classNameForContentBox={getColor(committee?.status)?.[1]}
+              loading={!committee.statusUntil}
             >
-              {committee.statusUntil ? (
-                <>
-                  <h3 className="text-lg">
-                    {getHeadline(committee.status, committee?.statusHeadline)}{" "}
-                    <span className="italic">
-                      {LL.participants.dashboard.timerWidget.UNTIL(
-                        new Date(committee.statusUntil).toLocaleTimeString(
+              <h3 className="text-lg">
+                {getHeadline(committee.status, committee?.statusHeadline)}{" "}
+                <span className="italic">
+                  {LL.participants.dashboard.timerWidget.UNTIL(
+                    committee?.statusUntil
+                      ? new Date(committee?.statusUntil).toLocaleTimeString(
                           "de-DE",
                           {
                             hour: "2-digit",
                             minute: "2-digit",
                           },
-                        ),
-                      )}
-                    </span>
-                  </h3>
-                  <div className=" text-lg ml-auto font-mono font-extralight">
-                    <Timer hideOnZero />
-                  </div>
-                </>
-              ) : (
-                <Skeleton
-                  width={`${Math.random() * (100 - 20) + 20}%`}
-                  height="1.75rem"
-                  className="!bg-primary-800"
-                />
-              )}
+                        )
+                      : "undefined",
+                  )}
+                </span>
+              </h3>
+              <div className=" text-lg ml-auto font-mono font-extralight">
+                <Timer hideOnZero />
+              </div>
             </SmallInfoCard>
           </Link>
         </StatusTimerProvider>

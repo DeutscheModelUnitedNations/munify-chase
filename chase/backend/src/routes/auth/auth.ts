@@ -68,6 +68,7 @@ export const auth = new Elysia({
       return await db.user.findUniqueOrThrow({
         where: { id: session.userData.id },
         include: {
+          emails: true,
           conferenceMemberships: {
             select: {
               id: true,
@@ -279,8 +280,11 @@ export const auth = new Elysia({
     "/logout",
     ({ session }) => {
       session.setLoggedIn(false);
+      // delete the session cookie
+      return "ok";
     },
     {
+      response: t.Literal("ok"),
       detail: {
         description:
           "Logs the user out. The user will be logged out on the next request",

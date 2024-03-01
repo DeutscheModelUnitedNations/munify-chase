@@ -62,7 +62,15 @@ export default function Footer() {
                 </Link>
               </li>
               <li>
-                <Link href="https://www.dmun.de/impressum/">
+                <Link href="/login" className="hover:underline">
+                  {LL.home.footer.sitemap.LOGIN()}
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="https://www.dmun.de/impressum/"
+                  className="hover:underline"
+                >
                   {LL.home.footer.sitemap.PRIVACY()}
                 </Link>
               </li>

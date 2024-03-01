@@ -25,7 +25,7 @@ import { $Enums } from "../../../../backend/prisma/generated/client";
 
 export default function SetStatusWidget() {
   const { LL, locale } = useI18nContext();
-  const { showToast } = useContext(ToastContext);
+  const { showToast, toastError } = useContext(ToastContext);
   const conferenceId = useContext(ConferenceIdContext);
   const committeeId = useContext(CommitteeIdContext);
   const committeeData = useContext(CommitteeDataContext);

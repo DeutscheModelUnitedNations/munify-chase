@@ -8,7 +8,7 @@
     "dev:container": "bun run concurrently \"bun run dev:server\" \"bun run dev:prisma-studio\"",
     "dev:server": "bun run --watch --hot src/main.ts",
     "dev:docker": "docker compose up --remove-orphans",
-    "dev:prisma-studio": "bunx prisma studio",
+    "dev:prisma-studio": "bunx prisma studio --browser none",
     "build": "bun build.ts",
     "typecheck": "bunx prisma generate && tsc --noEmit",
     "database:reset": "bunx prisma db push --force-reset & bunx prisma db seed"

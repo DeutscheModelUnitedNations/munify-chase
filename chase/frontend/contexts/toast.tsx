@@ -22,12 +22,12 @@ export const ToastProvider = ({ children }: { children: React.ReactNode }) => {
     toast.current?.clear();
   };
 
-  const toastError = (error: Error) => {
-    console.error("Generic Error: ", error);
+  const toastError = (error: Error, message?: string) => {
+    console.error(error);
     showToast({
       severity: "error",
       summary: LL.admin.onboarding.error.title(),
-      detail: LL.admin.onboarding.error.generic(),
+      detail: message ?? LL.admin.onboarding.error.generic(),
     });
   };
 
@@ -42,5 +42,5 @@ export const ToastProvider = ({ children }: { children: React.ReactNode }) => {
 export interface ToastContextType {
   showToast: (message: ToastMessage) => void;
   clearToast: () => void;
-  toastError: (error: Error) => void;
+  toastError: (error: Error, message?: string) => void;
 }

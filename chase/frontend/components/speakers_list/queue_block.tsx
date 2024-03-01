@@ -15,7 +15,8 @@ import { MyDelegationContext } from "@/contexts/user_ident";
  */
 
 export default function SpeakerBlock() {
-  const speakersList = useContext(SpeakersListDataContext)?.speakers.slice(1);
+  const rawSpeakersList = useContext(SpeakersListDataContext)?.speakers;
+  const [speakersList, setSpeakersList] = useState<typeof rawSpeakersList>([]);
   const myCountry =
     useContext(MyDelegationContext)?.delegation?.nation?.alpha3Code;
   const [compressedList, setCompressedList] = useState<
@@ -72,8 +73,13 @@ export default function SpeakerBlock() {
   }
 
   useEffect(() => {
+    if (!rawSpeakersList) return;
+    setSpeakersList(rawSpeakersList.slice(1));
+  }, [rawSpeakersList]);
+
+  useEffect(() => {
     if (!speakersList) return;
-    setCompressedList(getCompressedList(speakersList));
+    setCompressedList(getCompressedList(speakersList.slice(1)));
   }, [speakersList]);
 
   return (

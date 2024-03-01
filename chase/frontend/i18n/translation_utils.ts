@@ -28,3 +28,23 @@ export const conferenceRoleTranslation = (
       return LL.roles.UNKNOWN();
   }
 };
+
+export const messageCategoryTranslation = (
+  LL: TranslationFunctions,
+  category: $Enums.MessageCategory | null | undefined,
+) => {
+  switch (category) {
+    case $Enums.MessageCategory.TO_CHAIR:
+      return LL.messageCategories.TO_CHAIR();
+    case $Enums.MessageCategory.GUEST_SPEAKER:
+      return LL.messageCategories.GUEST_SPEAKER();
+    case $Enums.MessageCategory.FACT_CHECK:
+      return LL.messageCategories.FACT_CHECK();
+    case $Enums.MessageCategory.INFORMATION:
+      return LL.messageCategories.INFORMATION();
+    case $Enums.MessageCategory.GENERAL_SECRETARY:
+      return LL.messageCategories.GENERAL_SECRETARY();
+    case $Enums.MessageCategory.OTHER:
+      return LL.messageCategories.OTHER();
+  }
+};

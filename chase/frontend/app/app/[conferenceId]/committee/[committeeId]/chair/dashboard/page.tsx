@@ -30,10 +30,7 @@ export default function ChairDashboardPage() {
     <>
       <AgendaItemDataProvider>
         <div className="flex-1 flex flex-col">
-          <DashboardHeader
-            countryCode="uno"
-            alternativeHeadline={LL.chairs.CHAIR()}
-          />
+          <DashboardHeader />
           {/* TODO Check why this Scroll Bar is not changing color as the other ones with the custom-scrollbar class */}
           <ScrollPanel className="flex-1 overflow-y-auto custom-scrollbar">
             <div className="grid grid-cols-1 xl:grid-cols-2 m-4">

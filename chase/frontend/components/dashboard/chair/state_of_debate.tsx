@@ -16,7 +16,7 @@ import SmallInfoCard from "@/components/small_info_card";
 
 export default function StateOfDebateWidget() {
   const { LL } = useI18nContext();
-  const { showToast } = useContext(ToastContext);
+  const { showToast, toastError } = useContext(ToastContext);
   const conferenceId = useContext(ConferenceIdContext);
   const committeeId = useContext(CommitteeIdContext);
   const committeeData = useContext(CommitteeDataContext);
@@ -54,10 +54,10 @@ export default function StateOfDebateWidget() {
       >
         <SmallInfoCard
           icon={faDiagramSubtask}
-          color={
+          classNameForIconBox={
             committeeData?.stateOfDebate == null ||
             committeeData?.stateOfDebate === ""
-              ? "bg-red-500 text-white"
+              ? "bg-red-500 border-red-500 text-red-500"
               : undefined
           }
         >

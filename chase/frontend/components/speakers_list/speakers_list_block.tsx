@@ -2,7 +2,6 @@ import React, { useRef, useContext, useEffect } from "react";
 import WidgetTemplate from "@/components/widget_template";
 import SpeakerBlock from "@/components/speakers_list/speaker_block";
 import SpeakerQueueList from "@/components/speakers_list/queue_list";
-import { CountryCode } from "@/custom_types/custom_types";
 import { useI18nContext } from "@/i18n/i18n-react";
 import { backend } from "@/services/backend";
 import { Toast } from "primereact/toast";
@@ -29,7 +28,7 @@ export default function SpeakersListBlock({
 }: {
   typeOfList: $Enums.SpeakersListCategory;
   listTitle: string;
-  myCountry?: CountryCode;
+  myCountry?: string;
   chairOptions?: boolean;
   children?: React.ReactNode;
 }) {

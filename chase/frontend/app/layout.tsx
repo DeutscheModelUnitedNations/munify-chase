@@ -26,9 +26,6 @@ import { loadLocale } from "@/i18n/i18n-util.sync";
 import { baseLocale, locales } from "@/i18n/i18n-util";
 import TypesafeI18n from "@/i18n/i18n-react";
 import { ToastProvider } from "@/contexts/toast";
-import Button from "@/components/button";
-import CookieConsent from "react-cookie-consent";
-import Link from "next/link";
 import CookieBanner from "@/components/cookie_banner";
 
 const inter = Inter({ subsets: ["latin"] });

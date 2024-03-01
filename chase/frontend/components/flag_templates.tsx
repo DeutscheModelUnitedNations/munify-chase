@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import Image from "next/image";
-import { CountryCode } from "@/custom_types/custom_types";
 import getFlagPathByCode from "@/misc/get_flag_path_by_code";
 import getCountryNameByCode from "@/misc/get_country_name_by_code";
 import { useI18nContext } from "@/i18n/i18n-react";
@@ -16,7 +15,7 @@ export function SmallFlag({
   countryCode,
   showNameOnHover = false,
 }: {
-  countryCode?: CountryCode;
+  countryCode?: string;
   showNameOnHover?: boolean;
 }) {
   const { locale } = useI18nContext();
@@ -66,7 +65,7 @@ export function SmallFlag({
 export function NormalFlag({
   countryCode,
   showNameOnHover = false,
-}: { countryCode?: CountryCode; showNameOnHover?: boolean }) {
+}: { countryCode?: string; showNameOnHover?: boolean }) {
   const { locale } = useI18nContext();
 
   const [isHovered, setIsHovered] = useState(false);
@@ -109,7 +108,7 @@ export function LargeFlag({
   countryCode,
   className,
 }: {
-  countryCode?: CountryCode;
+  countryCode?: string;
   className?: string;
 }) {
   return (

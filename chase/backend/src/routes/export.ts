@@ -13,8 +13,8 @@ import {
 } from "../../prisma/generated/schema";
 import { Value } from "@sinclair/typebox/value";
 import { db } from "../../prisma/db";
-import { user } from "./user";
-import { nullToUndefined } from "../util/nullToUndefined";
+import { recursiveNullFieldsToUndefined } from "../util/nullToUndefined";
+import { recursiveDateFieldsToString } from "../util/dateToString";
 
 //TODO ensure to other conferences can be edited when importing again
 
@@ -126,7 +126,7 @@ export const committee = new Elysia({
       });
 
       Value.Clean(Data, res);
-      return nullToUndefined(res);
+      return recursiveNullFieldsToUndefined(recursiveDateFieldsToString(res));
     },
     {
       hasConferenceRole: ["ADMIN"],

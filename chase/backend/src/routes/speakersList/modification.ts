@@ -1,6 +1,6 @@
 import { t, Elysia } from "elysia";
 import { db } from "../../../prisma/db";
-import { committeeRoleGuard } from "../../auth/guards/committeeRoles";
+import { committeeRoleGuard } from "../../auth/guards/committeeMember";
 import { conferenceRoleGuard } from "../../auth/guards/conferenceRoles";
 import { openApiTag } from "../../util/openApiTags";
 
@@ -93,10 +93,9 @@ export const speakersListModification = new Elysia({
       },
     },
   )
-
   .post(
     "/startTimer",
-    async ({ params: { speakersListId } }, res) => {
+    async ({ params: { speakersListId }, set }) => {
       const speakersList = await db.speakersList.findUnique({
         where: {
           id: speakersListId,
@@ -116,7 +115,7 @@ export const speakersListModification = new Elysia({
       });
 
       if (!speakersList) {
-        res.status = "Not Found";
+        set.status = "Not Found";
         throw new Error("Speakers List not found");
       }
 

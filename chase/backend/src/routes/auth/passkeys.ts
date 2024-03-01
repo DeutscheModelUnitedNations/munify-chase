@@ -1,17 +1,17 @@
-import { t, Elysia } from "elysia";
-import {
-  generateAuthenticationOptions,
-  generateRegistrationOptions,
-  verifyRegistrationResponse,
-} from "@simplewebauthn/server";
-import { appConfiguration } from "../../util/config";
-import { db } from "../../../prisma/db";
-import { openApiTag } from "../../util/openApiTags";
-import { session } from "../../auth/session";
-import { nanoid } from "nanoid";
-import { sendEmailConfirmationEmail } from "../../email/email";
+// import { t, Elysia } from "elysia";
+// import {
+//   generateAuthenticationOptions,
+//   generateRegistrationOptions,
+//   verifyRegistrationResponse,
+// } from "@simplewebauthn/server";
+// import { appConfiguration } from "../../util/config";
+// import { db } from "../../../prisma/db";
+// import { openApiTag } from "../../util/openApiTags";
+// import { session } from "../../auth/session";
+// import { nanoid } from "nanoid";
+// import { sendEmailConfirmationEmail } from "../../email/email";
 
-export const passkeys = new Elysia();
+// export const passkeys = new Elysia();
 // .use(session)
 // .post(
 //   "/createUserWithPasskey",

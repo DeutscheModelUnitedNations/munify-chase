@@ -1,4 +1,5 @@
 name: Build and publish container images
+
 on:
   release:
     types: [created]
@@ -18,11 +19,6 @@ jobs:
   #       env:
   #         FONTAWESOME_NPM_AUTH_TOKEN: ${{ secrets.FONTAWESOME_NPM_AUTH_TOKEN }}
 
-  #       # typecheck the backend since it is required for the frontend
-  #     - name: Typecheck backend
-  #       working-directory: ./chase/backend
-  #       run: bun run typecheck
-        
   #     - name: Run build
   #       run: bun run build
   #       working-directory: ./chase/frontend
@@ -32,7 +28,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
+
+      - name: Extract metadata (tags, labels) for Docker
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: m1212e/chase-backend
 
       - name: Log in to Docker Hub
         uses: docker/login-action@v3
@@ -40,11 +42,6 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: Extract metadata (tags, labels) for Docker
-        id: meta
-        uses: docker/metadata-action@v5
-        with:
-          images: m1212e/chase-backend
 
       - name: Build and push Docker image
         uses: docker/build-push-action@v5

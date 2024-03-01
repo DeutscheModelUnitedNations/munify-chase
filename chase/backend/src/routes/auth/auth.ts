@@ -8,18 +8,7 @@ import {
 import { nanoid } from "nanoid";
 import { appConfiguration } from "../../util/config";
 import { loggedIn } from "../../auth/guards/loggedIn";
-import { User } from "../../../prisma/generated/schema";
 import { passwords } from "./passwords";
-
-const UserWithoutRelations = t.Omit(User, [
-  "conferenceMemberships",
-  "committeeMemberships",
-  "researchServiceMessages",
-  "chairMessages",
-  "emails",
-  "passwords",
-  "pendingCredentialCreationTasks",
-]);
 
 export const auth = new Elysia({
   prefix: "/auth",

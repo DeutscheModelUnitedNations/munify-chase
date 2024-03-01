@@ -2,7 +2,6 @@ import Elysia, { t } from "elysia";
 import { session } from "../session";
 import { TypeCompiler } from "@sinclair/typebox/compiler";
 import { db } from "../../../prisma/db";
-import { CommitteeRole } from "../../../prisma/generated/client";
 
 const parametersSchema = TypeCompiler.Compile(
   t.Object({
@@ -19,7 +18,7 @@ export const committeeRoleGuard = new Elysia()
        * Checks if a user has the role in the committee. You can set the role to "any" to check if the user has any role in the committee.
        * You can also set the role to an array of roles to check if the user has any of the roles in the committee.
        */
-      hasCommitteeRole(roles: CommitteeRole[] | "any") {
+      isCommitteeMember() {
         onBeforeHandle(async ({ session, set, params }) => {
           if (!session.loggedIn) {
             // biome-ignore lint/suspicious/noAssignInExpressions: This is a valid use case
@@ -46,7 +45,6 @@ export const committeeRoleGuard = new Elysia()
                   id: conferenceId,
                 },
               },
-              role: roles === "any" ? undefined : { in: roles },
             },
           });
 

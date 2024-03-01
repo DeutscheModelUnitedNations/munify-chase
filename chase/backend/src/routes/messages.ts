@@ -1,6 +1,6 @@
 import { t, Elysia } from "elysia";
 import { db } from "../../prisma/db";
-import { committeeRoleGuard } from "../auth/guards/committeeRoles";
+import { committeeRoleGuard } from "../auth/guards/committeeMember";
 import { conferenceRoleGuard } from "../auth/guards/conferenceRoles";
 import { openApiTag } from "../util/openApiTags";
 import { Message } from "../../prisma/generated/schema";

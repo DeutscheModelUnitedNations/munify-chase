@@ -1,13 +1,9 @@
 import { t, Elysia } from "elysia";
 import { db } from "../../prisma/db";
-import { committeeRoleGuard } from "../auth/guards/committeeRoles";
+import { committeeRoleGuard } from "../auth/guards/committeeMember";
 import { conferenceRoleGuard } from "../auth/guards/conferenceRoles";
 import { openApiTag } from "../util/openApiTags";
-import {
-  CommitteeMember,
-  Delegation,
-  Nation,
-} from "../../prisma/generated/schema";
+import { CommitteeMember, Nation } from "../../prisma/generated/schema";
 
 const DelegationBody = t.Pick(Nation, ["alpha3Code"]);
 
@@ -103,7 +99,7 @@ export const delegation = new Elysia({
   )
   .post(
     "/delegation/:delegationId/committee/:committeeId",
-    async ({ params: { delegationId, committeeId }, set }) => {
+    async ({ params: { delegationId, committeeId } }) => {
       const committeeMember = await db.committeeMember.findFirst({
         where: {
           committeeId,

@@ -2,9 +2,10 @@ import { appConfiguration } from "../../../util/config";
 import { AvailableEmailLocales, EmailTemplate } from "../../email";
 import { parse, replaceTemplateVariables } from "../../parser";
 import template from "./template.mjml";
+import { readFile } from "node:fs/promises";
 
 const de_subject = `${appConfiguration.appName} - Account bestätigen`;
-const de = parse(await Bun.file(template).text(), {
+const de = parse(await readFile(template, { encoding: "utf8" }), {
   locale: "de",
   title: `Willkommen bei ${appConfiguration.appName}!`,
   text: "Für diese E-Mail-Adresse wurde ein Account bei CHASE erstellt. Bitte bestätige die E-Mail-Adresse durch Klicken auf den nachfolgenden Link. Wenn diese E-Mail irrtümlich versendet wurde, kann sie einfach ignoriert werden.",
@@ -15,7 +16,7 @@ const de = parse(await Bun.file(template).text(), {
 });
 
 const en_subject = `${appConfiguration.appName} - Confirm account`;
-const en = parse(await Bun.file(template).text(), {
+const en = parse(await readFile(template, { encoding: "utf8" }), {
   locale: "en",
   title: `Welcome to ${appConfiguration.appName}!`,
   text: "A CHASE account has been created for this e-mail address. Please confirm the e-mail address by clicking on the following link. If this e-mail was sent in error, it can simply be ignored.",

@@ -6,6 +6,7 @@ import {
   Committee,
   CommitteeMember,
   Conference,
+  ConferenceMember,
   Delegation,
   Email,
   User,
@@ -14,7 +15,6 @@ import { Value } from "@sinclair/typebox/value";
 import { db } from "../../prisma/db";
 import { recursiveNullFieldsToUndefined } from "../util/nullToUndefined";
 import { recursiveDateFieldsToString } from "../util/dateToString";
-import { ConferenceMember } from "../../prisma/generated/client";
 
 //TODO ensure to other conferences can be edited when importing again
 
@@ -153,7 +153,7 @@ export const committee = new Elysia({
       body.id = undefined;
 
       db.$transaction(async (tx) => {
-        const queryResult = await tx.conference.update({
+        await tx.conference.update({
           where: { id: conferenceId },
           data: {
             committees: {

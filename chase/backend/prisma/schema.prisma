@@ -76,7 +76,7 @@ model User {
   name                           String
   conferenceMemberships          ConferenceMember[]
   committeeMemberships           CommitteeMember[]
-  Messages                       Message[]
+  messages                       Message[]
   emails                         Email[]
   passwords                      Password[]
   // authenticators Authenticator[]

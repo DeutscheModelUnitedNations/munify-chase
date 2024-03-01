@@ -6,7 +6,6 @@ import {
   Committee,
   CommitteeMember,
   Conference,
-  ConferenceMember,
   Delegation,
   Email,
   User,
@@ -15,6 +14,7 @@ import { Value } from "@sinclair/typebox/value";
 import { db } from "../../prisma/db";
 import { recursiveNullFieldsToUndefined } from "../util/nullToUndefined";
 import { recursiveDateFieldsToString } from "../util/dateToString";
+import { ConferenceMember } from "../../prisma/generated/client";
 
 //TODO ensure to other conferences can be edited when importing again
 
@@ -38,13 +38,16 @@ const Data = t.Composite([
           "agendaItems",
         ]),
         t.Object({
-          members: t.Omit(CommitteeMember, [
-            "committee",
-            "user",
-            "speakerLists",
-            "delegation",
-            "presence",
-          ]),
+          members: t.Array(
+            t.Omit(CommitteeMember, [
+              "committee",
+              "committeeId",
+              "user",
+              "speakerLists",
+              "delegation",
+              "presence",
+            ]),
+          ),
           agendaItems: t.Array(
             t.Omit(AgendaItem, ["committee", "speakerLists"]),
           ),
@@ -59,29 +62,29 @@ const Data = t.Composite([
           "user",
           "nonStateActor",
         ]),
-        t,
-        Object({
-          user: t.Composite([
-            t.Omit(User, [
-              "conferenceMemberships",
-              "committeeMemberships",
-              "researchServiceMessages",
-              "chairMessages",
-              "emails",
-              "passwords",
-              "pendingCredentialCreationTasks",
+        t.Object({
+          user: t.Optional(
+            t.Composite([
+              t.Omit(User, [
+                "conferenceMemberships",
+                "committeeMemberships",
+                "messages",
+                "emails",
+                "passwords",
+                "pendingCredentialCreationTasks",
+              ]),
+              t.Object({
+                emails: t.Array(
+                  t.Omit(Email, [
+                    "user",
+                    "userId",
+                    "validationToken",
+                    "validationTokenId",
+                  ]),
+                ),
+              }),
             ]),
-            t.Object({
-              emails: t.Array(
-                t.Omit(Email, [
-                  "user",
-                  "userId",
-                  "validationToken",
-                  "validationTokenId",
-                ]),
-              ),
-            }),
-          ]),
+          ),
         }),
       ]),
     ),
@@ -103,7 +106,13 @@ export const committee = new Elysia({
         include: {
           committees: {
             include: {
-              members: true,
+              members: {
+                select: {
+                  id: true,
+                  userId: true,
+                  delegationId: true,
+                },
+              },
               agendaItems: true,
             },
           },
@@ -133,6 +142,131 @@ export const committee = new Elysia({
       response: Data,
       detail: {
         description: "Export the conference data",
+        tags: [openApiTag(import.meta.path)],
+      },
+    },
+  )
+  .post(
+    "/import",
+    async ({ params: { conferenceId }, body }) => {
+      //@ts-ignore
+      body.id = undefined;
+
+      db.$transaction(async (tx) => {
+        const queryResult = await tx.conference.update({
+          where: { id: conferenceId },
+          data: {
+            committees: {
+              upsert: body.committees.map((committee) => ({
+                where: {
+                  id: committee.id,
+                },
+                create: {
+                  ...committee,
+                  members: {
+                    connectOrCreate: committee.members.map((member) => ({
+                      where: { id: member.id },
+                      create: member,
+                      update: member,
+                    })),
+                  },
+                  agendaItems: {
+                    connectOrCreate: committee.agendaItems.map(
+                      (agendaItem) => ({
+                        where: { id: agendaItem.id },
+                        create: agendaItem,
+                        update: agendaItem,
+                      }),
+                    ),
+                  },
+                },
+                update: {
+                  ...committee,
+                  members: {
+                    connectOrCreate: committee.members.map((member) => ({
+                      where: { id: member.id },
+                      create: member,
+                      update: member,
+                    })),
+                  },
+                  agendaItems: {
+                    connectOrCreate: committee.agendaItems.map(
+                      (agendaItem) => ({
+                        where: { id: agendaItem.id },
+                        create: agendaItem,
+                        update: agendaItem,
+                      }),
+                    ),
+                  },
+                },
+              })),
+            },
+            members: {
+              upsert: body.members.map((member) => ({
+                where: { id: member.id },
+                create: {
+                  role: member.role,
+                  user:
+                    member.user !== undefined
+                      ? {
+                          connectOrCreate: {
+                            where: { id: member.user.id },
+                            create: {
+                              ...member.user,
+                              emails: {
+                                create: member.user.emails,
+                              },
+                            },
+                          },
+                        }
+                      : undefined,
+                },
+                update: {
+                  role: member.role,
+                  user:
+                    member.user !== undefined
+                      ? {
+                          connectOrCreate: {
+                            where: { id: member.user.id },
+                            create: {
+                              ...member.user,
+                              emails: {
+                                create: member.user.emails,
+                              },
+                            },
+                          },
+                        }
+                      : undefined,
+                },
+              })),
+            },
+          },
+          include: {
+            committees: {
+              include: {
+                members: true,
+                agendaItems: true,
+              },
+            },
+            members: {
+              include: {
+                user: {
+                  include: { emails: true },
+                },
+              },
+            },
+          },
+        });
+
+        //TODO we cannot upsert certain entities. Everything above which is created by
+        // connectOrCreate needs to be updaten in case of a data change!
+      });
+    },
+    {
+      hasConferenceRole: ["ADMIN"],
+      body: Data,
+      detail: {
+        description: "Import the conference data",
         tags: [openApiTag(import.meta.path)],
       },
     },

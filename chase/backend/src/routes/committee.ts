@@ -237,6 +237,11 @@ export const committee = new Elysia({
             },
           },
         },
+        orderBy: {
+          nation: {
+            alpha3Code: "asc",
+          },
+        },
       });
     },
     {

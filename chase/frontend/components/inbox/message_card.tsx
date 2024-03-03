@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext } from "react";
+import React from "react";
 import { useI18nContext } from "@/i18n/i18n-react";
 import { backend } from "@/services/backend";
 import { SmallFlag } from "@/components/flag_templates";
@@ -33,7 +33,7 @@ export default function MessageCard({
   setSelected: (message: NonNullable<ChairMessages>[number]) => void;
   getMessagesFunction: () => void;
 }) {
-  const { LL, locale } = useI18nContext();
+  const { locale } = useI18nContext();
   const { toastError } = useToast();
 
   async function selectMessage() {

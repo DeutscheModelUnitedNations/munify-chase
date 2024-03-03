@@ -16,10 +16,10 @@ export default () => {
   const [email, setEmail] = useState("");
   const [credentialCreateToken, setCredentialCreateToken] = useState<
     string | undefined
-    >();
-    
-    // biome-ignore lint/correctness/useExhaustiveDependencies: yeah this should probably done more reacty, please give me some svelte
-    useEffect(() => {
+  >();
+
+  // biome-ignore lint/correctness/useExhaustiveDependencies: yeah this should probably done more reacty, please give me some svelte
+  useEffect(() => {
     const searchParams = useSearchParams();
     const token = searchParams.get("token");
     const email = searchParams.get("email");

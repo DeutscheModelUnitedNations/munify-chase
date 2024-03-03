@@ -54,11 +54,11 @@ export const appConfiguration = {
       ? "http://localhost:3000/login/createCredentials"
       : requireEnv("EMAIL_VERIFY_REDIRECT_URL"),
   },
-  passkeys: {
-    RELAY_NAME: process.env.RELAY_NAME ?? "CHASE - DMUN e.V.",
-    RELAY_ID: process.env.RELAY_ID ?? "localhost",
-    RELAY_ORIGIN: development
-      ? "https://localhost:3000"
-      : requireEnv("RELAY_ORIGIN"),
-  },
+  // passkeys: {
+  //   RELAY_NAME: process.env.RELAY_NAME ?? "CHASE - DMUN e.V.",
+  //   RELAY_ID: process.env.RELAY_ID ?? "localhost",
+  //   RELAY_ORIGIN: development
+  //     ? "https://localhost:3000"
+  //     : requireEnv("RELAY_ORIGIN"),
+  // },
 };

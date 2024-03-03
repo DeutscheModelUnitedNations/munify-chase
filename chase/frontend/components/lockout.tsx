@@ -20,7 +20,8 @@ export default function ({
 
     if (
       !(whitelist as ($Enums.ConferenceRole | undefined)[]).includes(
-        // @ts-ignore TODO fix this type error
+        // TODO fix this type error
+        // @ts-ignore 
         userIdent.conferenceMemberships.find(
           (c) => c.conference.id === conferenceId,
         )?.role,

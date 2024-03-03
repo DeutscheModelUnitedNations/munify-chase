@@ -3,24 +3,24 @@ import { useI18nContext } from "@/i18n/i18n-react";
 import { backend } from "@/services/backend";
 import { useSearchParams } from "next/navigation";
 import Image from "next/image";
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCircleNotch } from "@fortawesome/pro-solid-svg-icons";
 import { Button } from "primereact/button";
 import Link from "next/link";
 
 export default () => {
-  const searchParams = useSearchParams();
   const { LL } = useI18nContext();
   const [errored, setErrored] = useState<boolean>();
   const [errorMessage, setErrorMessage] = useState("");
   const [email, setEmail] = useState("");
   const [credentialCreateToken, setCredentialCreateToken] = useState<
     string | undefined
-  >();
-
-  // biome-ignore lint/correctness/useExhaustiveDependencies: yeah this should probably done more reacty, please give me some svelte
-  useEffect(() => {
+    >();
+    
+    // biome-ignore lint/correctness/useExhaustiveDependencies: yeah this should probably done more reacty, please give me some svelte
+    useEffect(() => {
+    const searchParams = useSearchParams();
     const token = searchParams.get("token");
     const email = searchParams.get("email");
 

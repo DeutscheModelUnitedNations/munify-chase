@@ -4,7 +4,7 @@ import { useToast } from "@/contexts/toast";
 import { backend } from "@/services/backend";
 import { useSearchParams } from "next/navigation";
 import Image from "next/image";
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCircleNotch } from "@fortawesome/pro-solid-svg-icons";
 import { Button } from "primereact/button";
@@ -15,7 +15,6 @@ const passwordRegex =
   /^(?=.*[A-Z].*[A-Z])(?=.*[!@#$&*])(?=.*[0-9].*[0-9])(?=.*[a-z].*[a-z].*[a-z]).{8,}$/;
 
 export default () => {
-  const searchParams = useSearchParams();
   const { LL } = useI18nContext();
   const toast = useToast();
   const [password, setPassword] = useState("");
@@ -37,6 +36,7 @@ export default () => {
     e: React.FormEvent<HTMLFormElement>,
   ) => {
     e.preventDefault();
+    const searchParams = useSearchParams();
     const token = searchParams.get("token");
     const email = searchParams.get("email");
 

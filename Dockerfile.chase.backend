@@ -1,6 +1,5 @@
 # Builds an image to run the api in prod mode
 
-
 # install dependencies into temp directory
 # this will cache them and speed up future builds
 FROM oven/bun:latest AS install
@@ -18,7 +17,7 @@ RUN cd /temp/dev && bun install --frozen-lockfile
 # RUN cd /temp/prod && bun install --frozen-lockfile --production
 
 # we need to use node and bun for generating prisma files, see https://github.com/prisma/prisma/issues/21241
-FROM imbios/bun-node AS prerelease
+FROM imbios/bun-node AS builder
 WORKDIR /app/staging
 COPY --from=install /temp/dev/node_modules node_modules
 COPY chase/backend chase/backend/
@@ -35,4 +34,4 @@ ENV PORT=3001
 # run the app
 USER bun
 EXPOSE 3001/tcp
-ENTRYPOINT [ "bun", "run", "out/main.js" ]
+ENTRYPOINT [ "bun", "out/main.js" ]

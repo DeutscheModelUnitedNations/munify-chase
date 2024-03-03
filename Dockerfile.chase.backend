@@ -28,10 +28,10 @@ RUN cd chase/backend && bun run build
 FROM oven/bun:alpine AS release
 WORKDIR /app/prod
 # dependencies
-COPY --from=builder /app/staging/chase/backend/out ./out/
+COPY --from=builder /app/staging/chase/backend/out .
 ENV NODE_ENV=production
 ENV PORT=3001
 # run the app
 USER bun
 EXPOSE 3001/tcp
-ENTRYPOINT [ "bun", "out/main.js" ]
+ENTRYPOINT [ "bun", "main.js" ]

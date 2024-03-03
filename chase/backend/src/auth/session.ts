@@ -24,7 +24,7 @@ export const session = new Elysia({ name: "session" })
   .guard({
     cookie: t.Cookie(
       {
-        cookieConsent: t.Optional(t.BooleanString()),
+        cookieConsent: t.Optional(t.Boolean()),
         sessionId: t.Optional(t.String()),
       },
       {

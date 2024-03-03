@@ -28,4 +28,4 @@ ENV PORT=3000
 # run the app
 USER bun
 EXPOSE 3000/tcp
-ENTRYPOINT [ "bun", "out/main.js" ]
+ENTRYPOINT [ "bun", "server.js" ]

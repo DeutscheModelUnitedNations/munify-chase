@@ -29,6 +29,8 @@ FROM oven/bun:alpine AS release
 WORKDIR /app/prod
 # dependencies
 COPY --from=builder /app/staging/chase/backend/out .
+# we need the generated prisma files at runtime since it contains the prisma engine
+COPY --from=builder /app/staging/chase/backend/prisma ./prisma/
 ENV NODE_ENV=production
 ENV PORT=3001
 # run the app

@@ -17,9 +17,14 @@ RUN cd chase/backend && bun run typecheck
 RUN bun next telemetry disable
 RUN cd chase/frontend && bun run build
 
+# unfortunately we need a nextjs installation at runtime
+FROM oven/bun:latest AS nextjs
+WORKDIR /app/staging
+RUN bun add next
+
 FROM oven/bun:alpine AS release
 WORKDIR /app/prod
-# dependencies
+COPY --from=nextjs /app/staging/node_modules ./node_modules/
 COPY --from=builder /app/staging/chase/frontend/public ./public/
 COPY --from=builder /app/staging/chase/frontend/.next/standalone ./
 COPY --from=builder /app/staging/chase/frontend/.next/static ./.next/static

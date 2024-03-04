@@ -278,9 +278,11 @@ try {
   for (const member of allSim1Members) {
     const data = {
       email: faker.internet.email(),
-      password: faker.music.songName().replace(/ /g, "-"),
+      password: "chase",
       role: "SimSim 1 Delegate",
     };
+
+    console.info(`${data.email},${data.password},${data.role}`)
 
     const user = await prisma.user.create({
       data: {

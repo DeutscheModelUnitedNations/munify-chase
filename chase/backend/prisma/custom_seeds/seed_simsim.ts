@@ -240,6 +240,8 @@ try {
       role: member.role,
     };
 
+    console.info(`${data.email},${data.password},${data.role}`)
+
     const user = await prisma.user.create({
       data: {
         name: data.email,
@@ -325,6 +327,8 @@ try {
       password: faker.music.songName().replace(/ /g, "-"),
       role: "SimSim 2 Delegate",
     };
+
+    console.info(`${data.email},${data.password},${data.role}`)
 
     const user = await prisma.user.create({
       data: {

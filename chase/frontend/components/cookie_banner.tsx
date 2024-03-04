@@ -1,4 +1,4 @@
-import React, { useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useI18nContext } from "@/i18n/i18n-react";
 import CookieConsent from "react-cookie-consent";
 import Button from "./button";
@@ -7,12 +7,19 @@ import { faCookieBite } from "@fortawesome/pro-solid-svg-icons";
 
 export default function CookieBanner() {
   const { LL } = useI18nContext();
+  const [domain, setDomain] = useState<string>();
+
+  useEffect(() => {
+    if (window?.location?.hostname) {
+      const domainParts = window.location.hostname.split(".");
+      setDomain(domainParts.slice(-2).join("."));
+    }
+  }, [domain]);
 
   const cookieConsentRef = useRef<CookieConsent | null>(null);
 
   const handleAcceptButtonClick = () => {
-    // @ts-ignore
-    cookieConsentRef?.current?.accept?.();
+    cookieConsentRef?.current?.accept();
   };
 
   // TODO: Fix cookie interference with the backend
@@ -22,7 +29,10 @@ export default function CookieBanner() {
         ref={cookieConsentRef}
         location="bottom"
         buttonText="Accept"
-        cookieName="cookieConsent"
+        cookieName="chaseCookieConsent"
+        extraCookieOptions={{
+          domain,
+        }}
         style={{
           zIndex: 1000,
         }}

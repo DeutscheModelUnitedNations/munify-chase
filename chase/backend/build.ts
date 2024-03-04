@@ -13,6 +13,18 @@ if (await exists(outDir)) {
   await rm(outDir, { recursive: true });
 }
 
+// https://github.com/mjmlio/mjml/issues/2132#issuecomment-1004713444
+const emptyMjmlUglifyPlugin = {
+  name: "empty mjml uglify plugin",
+  // biome-ignore lint/suspicious/noExplicitAny: <explanation>
+  setup(build: any) {
+    build.onLoad({ filter: /uglify-js\/tools\/node.js$/ }, () => ({
+      contents: "{}",
+      loader: "js",
+    }));
+  },
+};
+
 const r = await build({
   entryPoints: [join(srcDir, "main.ts")],
   bundle: true,
@@ -20,10 +32,12 @@ const r = await build({
   target: ["node21.6"],
   outdir: "./out",
   format: "esm",
-  splitting: true,
+  splitting: false,
   sourcemap: "external",
   minify: true,
   loader: { ".mjml": "file" },
+  treeShaking: true,
+  plugins: [emptyMjmlUglifyPlugin],
 });
 
 if (!r.errors && r.errors) {

@@ -284,8 +284,6 @@ try {
       role: "SimSim 1 Delegate",
     };
 
-    console.info(`${data.email},${data.password},${data.role}`)
-
     const user = await prisma.user.create({
       data: {
         name: data.email,
@@ -311,6 +309,21 @@ try {
         userId: user.id,
       },
     });
+
+    const committeeMember = await prisma.committeeMember.findUnique({
+      where: {
+        id: member.id,
+      },
+      include: {
+        delegation: {
+          include: {
+            nation: true,
+          },
+        }
+      },
+    });
+
+    console.info(`${data.email},${data.password},${data.role},${committeeMember?.delegation?.nation?.alpha3Code}`)
 
     users.push(data);
   }
@@ -356,8 +369,24 @@ try {
       },
     });
 
+    const committeeMember = await prisma.committeeMember.findUnique({
+      where: {
+        id: member.id,
+      },
+      include: {
+        delegation: {
+          include: {
+            nation: true,
+          },
+        }
+      },
+    });
+
+    console.info(`${data.email},${data.password},${data.role},${committeeMember?.delegation?.nation?.alpha3Code}`)
+
     users.push(data);
   }
+
 
   const csv = Papa.unparse(users);
 

@@ -10,20 +10,30 @@ import { Button } from "primereact/button";
 import Link from "next/link";
 
 export default () => {
+  return (
+    <>
+      <Suspense fallback={<p>Loading...</p>}>
+        <ValidateEmailComponent />
+      </Suspense>
+    </>
+  );
+};
+
+function ValidateEmailComponent() {
   const { LL } = useI18nContext();
   const [errored, setErrored] = useState<boolean>();
   const [errorMessage, setErrorMessage] = useState("");
   const [email, setEmail] = useState("");
   const [credentialCreateToken, setCredentialCreateToken] = useState<
     string | undefined
-    >();
-    
-    // biome-ignore lint/correctness/useExhaustiveDependencies: yeah this should probably done more reacty, please give me some svelte
-    useEffect(() => {
-    const searchParams = useSearchParams();
+  >();
+
+  const searchParams = useSearchParams();
+
+  // biome-ignore lint/correctness/useExhaustiveDependencies: yeah this should probably done more reacty, please give me some svelte
+  useEffect(() => {
     const token = searchParams.get("token");
     const email = searchParams.get("email");
-
     if (!token) {
       setErrored(true);
       setErrorMessage(LL.login.NO_TOKEN());
@@ -133,4 +143,4 @@ export default () => {
       ) : undefined}
     </>
   );
-};
+}

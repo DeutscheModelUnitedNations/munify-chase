@@ -15,6 +15,16 @@ const passwordRegex =
   /^(?=.*[A-Z].*[A-Z])(?=.*[!@#$&*])(?=.*[0-9].*[0-9])(?=.*[a-z].*[a-z].*[a-z]).{8,}$/;
 
 export default () => {
+  return (
+    <>
+      <Suspense fallback={<p>Loading...</p>}>
+        <CreateCredentialsComponent />
+      </Suspense>
+    </>
+  );
+};
+
+function CreateCredentialsComponent() {
   const { LL } = useI18nContext();
   const toast = useToast();
   const [password, setPassword] = useState("");
@@ -23,6 +33,8 @@ export default () => {
     useState<boolean | undefined>();
   const [succeeded, setSucceeded] = useState<boolean | undefined>();
   const [passwordValid, setPasswordValid] = useState<boolean | undefined>();
+
+  const searchParams = useSearchParams();
 
   useEffect(() => {
     if (password) {
@@ -36,7 +48,6 @@ export default () => {
     e: React.FormEvent<HTMLFormElement>,
   ) => {
     e.preventDefault();
-    const searchParams = useSearchParams();
     const token = searchParams.get("token");
     const email = searchParams.get("email");
 
@@ -150,4 +161,4 @@ export default () => {
       ) : undefined}
     </>
   );
-};
+}

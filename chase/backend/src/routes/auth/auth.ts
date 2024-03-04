@@ -53,7 +53,11 @@ export const auth = new Elysia({
   )
   .get(
     "/myInfo",
-    async ({ session }) => {
+    async ({ session, set }) => {
+      if (!session.userData) {
+        set.status = "Forbidden";
+        throw new Error("User is not logged in");
+      }
       return await db.user.findUniqueOrThrow({
         where: { id: session.userData.id },
         include: {

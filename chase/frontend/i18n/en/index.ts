@@ -383,7 +383,7 @@ const en = {
           CANCEL_BUTTON: "Cancel",
           SEND_BUTTON: "Send",
           INFO_MESSAGE:
-            "This request will be viewed and checked by the chair first and then forwarded to the Research Service.",
+            "This request will be viewed and checked by the chair first and then forwarded to the Research Service. The Research Services will usually get back to you via email, please regularly check your inbox.",
           categoryOptions: {
             GUEST_SPEAKER: "Guest Speaker Request",
             FACT_CHECK: "Fact Check Request",

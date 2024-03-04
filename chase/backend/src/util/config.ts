@@ -30,6 +30,7 @@ export const appConfiguration = {
       : requireEnv("COOKIE_SECRETS")
           ?.split(",")
           .map((origin) => origin.trim()),
+    domain: development ? "localhost" : requireEnv("COOKIE_DOMAIN"),
   },
   db: {
     postgresUrl: development

@@ -35,6 +35,7 @@ export const session = new Elysia({ name: "session" })
           secure: true,
           sign: ["sessionId"],
           secrets: appConfiguration.cookie.secrets,
+          domain: appConfiguration.cookie.domain,
         },
       },
     ),

@@ -62,7 +62,11 @@ export const session = new Elysia({ name: "session" })
 
     const setLoggedIn = async (loggedIn: boolean) => {
       data.loggedIn = loggedIn;
-      await redis.set(`user-session:${sessionId.value}`, JSON.stringify(data));
+      if (!data.loggedIn) {
+        await redis.del(`user-session:${sessionId.value}`);
+      } else {
+        await redis.set(`user-session:${sessionId.value}`, JSON.stringify(data));
+      }
     };
 
     const createNewSessionInDB = async () => {

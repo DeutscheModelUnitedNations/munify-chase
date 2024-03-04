@@ -20,7 +20,7 @@ export const conferenceRoleGuard = new Elysia()
        */
       hasConferenceRole(roles: ConferenceRole[] | "any") {
         onBeforeHandle(async ({ session, set, params }) => {
-          if (!session.loggedIn) {
+          if (session.loggedIn !== true) {
             // biome-ignore lint/suspicious/noAssignInExpressions: This is a valid use case
             return (set.status = "Unauthorized");
           }

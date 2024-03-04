@@ -235,6 +235,18 @@ const specialPersons: NationTranslation[] = [
     zh: "联合国",
     "zh-tw": "聯合國",
   },
+  {
+    id: 7,
+    alpha3: "undm",
+    de: "Stellv. Generalsekretär",
+    en: "Deputy General Secretary",
+  },
+  {
+    id: 8,
+    alpha3: "undw",
+    de: "Stellv. Generalsekretärin",
+    en: "Deputy General Secretary",
+  },
 ];
 
 export default specialPersons;

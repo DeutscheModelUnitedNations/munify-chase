@@ -20,7 +20,7 @@ export const committeeRoleGuard = new Elysia()
        */
       isCommitteeMember() {
         onBeforeHandle(async ({ session, set, params }) => {
-          if (!session.loggedIn) {
+          if (session.loggedIn !== true) {
             // biome-ignore lint/suspicious/noAssignInExpressions: This is a valid use case
             return (set.status = "Unauthorized");
           }

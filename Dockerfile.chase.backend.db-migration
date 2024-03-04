@@ -1,5 +1,3 @@
-# Builds an image to run the api in prod mode
-
 # install dependencies into temp directory
 # this will cache them and speed up future builds
 FROM oven/bun:latest AS install
@@ -15,4 +13,4 @@ WORKDIR /app/staging
 COPY --from=install /temp/dev/node_modules node_modules
 COPY chase/backend/prisma ./prisma/
 
-ENTRYPOINT [ "bunx", "prisma", "migrate", "deploy"]
+ENTRYPOINT ["bunx", "prisma", "migrate", "deploy", "&&", "bunx", "prisma", "db", "seed" ]

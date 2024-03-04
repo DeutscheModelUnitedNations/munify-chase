@@ -25,7 +25,7 @@ COPY chase/backend chase/backend/
 RUN cd chase/backend && bun run typecheck
 RUN cd chase/backend && bun run build
 
-FROM oven/bun:alpine AS release
+FROM oven/bun:latest AS release
 WORKDIR /app/prod
 COPY --from=builder /app/staging/chase/backend/out .
 # we need the generated prisma files at runtime since it contains the prisma engine

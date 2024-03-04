@@ -22,7 +22,7 @@ FROM oven/bun:latest AS nextjs
 WORKDIR /app/staging
 RUN bun add next
 
-FROM oven/bun:alpine AS release
+FROM oven/bun:latest AS release
 WORKDIR /app/prod
 COPY --from=nextjs /app/staging/node_modules ./node_modules/
 COPY --from=builder /app/staging/chase/frontend/public ./public/

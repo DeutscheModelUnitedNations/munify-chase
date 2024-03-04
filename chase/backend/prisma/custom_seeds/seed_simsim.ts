@@ -236,7 +236,7 @@ try {
   for (const member of allConferenceMembers) {
     const data = {
       email: faker.internet.email(),
-      password: faker.music.songName().replace(/ /g, "-"),
+      password: "chase",
       role: member.role,
     };
 
@@ -324,7 +324,7 @@ try {
   for (const member of allSim2Members) {
     const data = {
       email: faker.internet.email(),
-      password: faker.music.songName().replace(/ /g, "-"),
+      password: "chase",
       role: "SimSim 2 Delegate",
     };
 

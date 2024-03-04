@@ -3,6 +3,8 @@ import { nanoid } from "nanoid";
 import { redis } from "../../prisma/db";
 import { appConfiguration } from "../util/config";
 
+//TODO periodically purge old sessions
+
 interface UserData {
   id: string;
 }
@@ -64,6 +66,7 @@ export const session = new Elysia({ name: "session" })
       data.loggedIn = loggedIn;
       if (!data.loggedIn) {
         await redis.del(`user-session:${sessionId.value}`);
+        sessionId.remove()
       } else {
         await redis.set(`user-session:${sessionId.value}`, JSON.stringify(data));
       }

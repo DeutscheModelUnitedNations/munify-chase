@@ -63,7 +63,7 @@ jobs:
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
 
-  chase-backendmigration:
+  chase-backend-migration:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code

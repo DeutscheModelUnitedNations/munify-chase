@@ -200,9 +200,12 @@ const allCountries = [
   { alpha3Code: "unm", variant: $Enums.NationVariant.SPECIAL_PERSON }, // Male General Secretary
   { alpha3Code: "undm", variant: $Enums.NationVariant.SPECIAL_PERSON }, // Male Deputy General Secretary
   // { alpha3Code: "unw", variant: $Enums.NationVariant.SPECIAL_PERSON }, // Female General Secretary
+  // { alpha3Code: "un", variant: $Enums.NationVariant.SPECIAL_PERSON }, // Gender Neutral General Secretary
   { alpha3Code: "undw", variant: $Enums.NationVariant.SPECIAL_PERSON }, // Female Deputy General Secretary
+  { alpha3Code: "und", variant: $Enums.NationVariant.SPECIAL_PERSON }, // Gender Neutral Deputy General Secretary
   { alpha3Code: "gsm", variant: $Enums.NationVariant.SPECIAL_PERSON }, // Male Guest Speaker
   { alpha3Code: "gsw", variant: $Enums.NationVariant.SPECIAL_PERSON }, // Female Guest Speaker
+  { alpha3Code: "gs", variant: $Enums.NationVariant.SPECIAL_PERSON }, // Gender Neutral Guest Speaker
   { alpha3Code: "uno", variant: $Enums.NationVariant.SPECIAL_PERSON }, // MISC UN Official
 
   { alpha3Code: "nsa_amn", variant: $Enums.NationVariant.NON_STATE_ACTOR }, // Amnesty International

@@ -80,6 +80,12 @@ const specialPersons: NationTranslation[] = [
     "zh-tw": "秘書長",
   },
   {
+    id: 11,
+    alpha3: "un",
+    de: "Generalsekretariat",
+    en: "General Secretary",
+  },
+  {
     id: 3,
     alpha2: "gsm",
     alpha3: "gsm",
@@ -246,6 +252,18 @@ const specialPersons: NationTranslation[] = [
     alpha3: "undw",
     de: "Stellv. Generalsekretärin",
     en: "Deputy General Secretary",
+  },
+  {
+    id: 9,
+    alpha3: "und",
+    de: "Generalsekretariat",
+    en: "Deputy General Secretary",
+  },
+  {
+    id: 10,
+    alpha3: "gs",
+    de: "Gastrede",
+    en: "Guest Speaker",
   },
 ];
 

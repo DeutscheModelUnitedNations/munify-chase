@@ -3,6 +3,8 @@ import { nanoid } from "nanoid";
 import { redis } from "../../prisma/db";
 import { appConfiguration } from "../util/config";
 
+//TODO periodically purge old sessions
+
 interface UserData {
   id: string;
 }
@@ -24,7 +26,7 @@ export const session = new Elysia({ name: "session" })
   .guard({
     cookie: t.Cookie(
       {
-        cookieConsent: t.Optional(t.BooleanString()),
+        chaseCookieConsent: t.Optional(t.Boolean()),
         sessionId: t.Optional(t.String()),
       },
       {
@@ -39,8 +41,8 @@ export const session = new Elysia({ name: "session" })
       },
     ),
   })
-  .derive(async ({ cookie: { sessionId, cookieConsent }, set }) => {
-    if (cookieConsent.value !== true) {
+  .derive(async ({ cookie: { sessionId, chaseCookieConsent }, set }) => {
+    if (chaseCookieConsent.value !== true) {
       set.status = "Unavailable For Legal Reasons";
       throw new Error("You need to allow cookies to access this route");
     }
@@ -62,7 +64,15 @@ export const session = new Elysia({ name: "session" })
 
     const setLoggedIn = async (loggedIn: boolean) => {
       data.loggedIn = loggedIn;
-      await redis.set(`user-session:${sessionId.value}`, JSON.stringify(data));
+      if (!data.loggedIn) {
+        await redis.del(`user-session:${sessionId.value}`);
+        sessionId.remove();
+      } else {
+        await redis.set(
+          `user-session:${sessionId.value}`,
+          JSON.stringify(data),
+        );
+      }
     };
 
     const createNewSessionInDB = async () => {

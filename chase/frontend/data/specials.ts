@@ -80,6 +80,12 @@ const specialPersons: NationTranslation[] = [
     "zh-tw": "秘書長",
   },
   {
+    id: 11,
+    alpha3: "un",
+    de: "Generalsekretariat",
+    en: "General Secretary",
+  },
+  {
     id: 3,
     alpha2: "gsm",
     alpha3: "gsm",
@@ -234,6 +240,30 @@ const specialPersons: NationTranslation[] = [
     uk: "ООН",
     zh: "联合国",
     "zh-tw": "聯合國",
+  },
+  {
+    id: 7,
+    alpha3: "undm",
+    de: "Stellv. Generalsekretär",
+    en: "Deputy General Secretary",
+  },
+  {
+    id: 8,
+    alpha3: "undw",
+    de: "Stellv. Generalsekretärin",
+    en: "Deputy General Secretary",
+  },
+  {
+    id: 9,
+    alpha3: "und",
+    de: "Generalsekretariat",
+    en: "Deputy General Secretary",
+  },
+  {
+    id: 10,
+    alpha3: "gs",
+    de: "Gastrede",
+    en: "Guest Speaker",
   },
 ];
 

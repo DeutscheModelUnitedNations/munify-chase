@@ -1,9 +1,4 @@
 {
-  "devDependencies": {
-    "@biomejs/biome": "^1.5.2",
-    "bun-types": "latest",
-    "concurrently": "^8.2.2"
-  },
   "scripts": {
     "dev": "./run_dev.sh",
     "dev:normal": "concurrently \"bun run dev:chase:frontend\" \"bun run dev:chase:backend\"",
@@ -14,12 +9,12 @@
     "format": "biome format . --write",
     "lint": "biome check . --apply",
     "lint:error-only": "biome check . --apply --diagnostic-level=error",
-    "typecheck": "cd ./chase/frontend && bunx tsc --noEmit",
     "test": "echo TODO"
   },
   "workspaces": ["chase/backend", "chase/frontend"],
-  "dependencies": {
-    "@types/papaparse": "^5.3.14",
-    "papaparse": "^5.4.1"
+  "devDependencies": {
+    "@biomejs/biome": "^1.5.3",
+    "bun-types": "latest",
+    "concurrently": "^8.2.2"
   }
 }

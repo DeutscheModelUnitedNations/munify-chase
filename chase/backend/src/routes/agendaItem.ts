@@ -1,10 +1,10 @@
 import { t, Elysia } from "elysia";
 import { db } from "../../prisma/db";
-import { committeeRoleGuard } from "../auth/guards/committeeRoles";
+import { committeeRoleGuard } from "../auth/guards/committeeMember";
 import { conferenceRoleGuard } from "../auth/guards/conferenceRoles";
 import { openApiTag } from "../util/openApiTags";
 import { AgendaItem } from "../../prisma/generated/schema";
-import { nullToUndefined } from "../util/nullToUndefined";
+import { recursiveNullFieldsToUndefined } from "../util/nullToUndefined";
 import { $Enums } from "../../prisma/generated/client";
 
 const AgendaItemWithoutRelations = t.Omit(AgendaItem, [
@@ -35,7 +35,7 @@ export const agendaItem = new Elysia({
       });
 
       // the return schema expects description to be set or undefined https://github.com/adeyahya/prisma-typebox-generator/issues/19
-      return nullToUndefined(r);
+      return recursiveNullFieldsToUndefined(r);
     },
     {
       hasConferenceRole: "any",
@@ -48,12 +48,13 @@ export const agendaItem = new Elysia({
   .post(
     "/agendaItem",
     async ({ body, params: { conferenceId, committeeId } }) => {
-      const committeeHasActiveAgendaItem = !!(await db.agendaItem.findFirst({
-        where: {
-          committeeId,
-          isActive: true,
-        },
-      }));
+      //TODO is this used? @TadeSF
+      // const committeeHasActiveAgendaItem = !!(await db.agendaItem.findFirst({
+      //   where: {
+      //     committeeId,
+      //     isActive: true,
+      //   },
+      // }));
       const agendaItem = await db.agendaItem
         .create({
           data: {
@@ -68,7 +69,7 @@ export const agendaItem = new Elysia({
           },
         })
         .then((a) => ({ ...a, description: a.description || undefined }));
-      const _speakersLists = await db.speakersList.createMany({
+      await db.speakersList.createMany({
         data: [
           {
             type: $Enums.SpeakersListCategory.SPEAKERS_LIST,
@@ -127,7 +128,10 @@ export const agendaItem = new Elysia({
     async ({ params: { conferenceId, committeeId, type }, set }) => {
       const r = await db.agendaItem.findFirst({
         where: {
-          committeeId,
+          committee: {
+            id: committeeId,
+            conferenceId,
+          },
           isActive: true,
         },
         include: {

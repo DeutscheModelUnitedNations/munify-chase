@@ -2,9 +2,10 @@ import { appConfiguration } from "../../../util/config";
 import { AvailableEmailLocales, EmailTemplate } from "../../email";
 import { parse, replaceTemplateVariables } from "../../parser";
 import template from "./template.mjml";
+import { readFile } from "node:fs/promises";
 
 const de_subject = `${appConfiguration.appName} - Zugangsdaten festlegen`;
-const de = parse(await Bun.file(template).text(), {
+const de = parse(await readFile(template, { encoding: "utf8" }), {
   locale: "de",
   title: `${appConfiguration.appName} Zugangsdaten festlegen`,
   text: "Für dieses Konto wurde das Festlegen neuer Zugangsdaten angefordert. Über den nachfolgenden Link können diese festgelegt werden. Wenn diese E-Mail irrtümlich versendet wurde, kann sie einfach ignoriert werden.",
@@ -15,7 +16,7 @@ const de = parse(await Bun.file(template).text(), {
 });
 
 const en_subject = `${appConfiguration.appName} - Confirm account`;
-const en = parse(await Bun.file(template).text(), {
+const en = parse(await readFile(template, { encoding: "utf8" }), {
   locale: "en",
   title: `Set ${appConfiguration.appName} credentials`,
   text: "The setting of new crentials has been requested for this account. These can be set via the following link. If this e-mail was sent in error, it can simply be ignored.",

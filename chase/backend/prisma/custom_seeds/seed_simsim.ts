@@ -236,9 +236,11 @@ try {
   for (const member of allConferenceMembers) {
     const data = {
       email: faker.internet.email(),
-      password: faker.music.songName().replace(/ /g, "-"),
+      password: "chase",
       role: member.role,
     };
+
+    console.info(`${data.email},${data.password},${data.role}`);
 
     const user = await prisma.user.create({
       data: {
@@ -278,7 +280,7 @@ try {
   for (const member of allSim1Members) {
     const data = {
       email: faker.internet.email(),
-      password: faker.music.songName().replace(/ /g, "-"),
+      password: "chase",
       role: "SimSim 1 Delegate",
     };
 
@@ -308,6 +310,23 @@ try {
       },
     });
 
+    const committeeMember = await prisma.committeeMember.findUnique({
+      where: {
+        id: member.id,
+      },
+      include: {
+        delegation: {
+          include: {
+            nation: true,
+          },
+        },
+      },
+    });
+
+    console.info(
+      `${data.email},${data.password},${data.role},${committeeMember?.delegation?.nation?.alpha3Code}`,
+    );
+
     users.push(data);
   }
 
@@ -320,9 +339,11 @@ try {
   for (const member of allSim2Members) {
     const data = {
       email: faker.internet.email(),
-      password: faker.music.songName().replace(/ /g, "-"),
+      password: "chase",
       role: "SimSim 2 Delegate",
     };
+
+    console.info(`${data.email},${data.password},${data.role}`);
 
     const user = await prisma.user.create({
       data: {
@@ -349,6 +370,23 @@ try {
         userId: user.id,
       },
     });
+
+    const committeeMember = await prisma.committeeMember.findUnique({
+      where: {
+        id: member.id,
+      },
+      include: {
+        delegation: {
+          include: {
+            nation: true,
+          },
+        },
+      },
+    });
+
+    console.info(
+      `${data.email},${data.password},${data.role},${committeeMember?.delegation?.nation?.alpha3Code}`,
+    );
 
     users.push(data);
   }

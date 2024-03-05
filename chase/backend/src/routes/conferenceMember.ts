@@ -4,7 +4,7 @@ import { conferenceRoleGuard } from "../auth/guards/conferenceRoles";
 import { ConferenceMember } from "../../prisma/generated/schema";
 import { openApiTag } from "../util/openApiTags";
 import { loggedIn } from "../auth/guards/loggedIn";
-import { committeeRoleGuard } from "../auth/guards/committeeRoles";
+import { committeeRoleGuard } from "../auth/guards/committeeMember";
 
 const ConferenceMembersWithoutRelations = t.Omit(ConferenceMember, [
   "user",

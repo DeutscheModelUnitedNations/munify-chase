@@ -1,9 +1,9 @@
 import { t, Elysia } from "elysia";
 import { db } from "../../../prisma/db";
-import { committeeRoleGuard } from "../../auth/guards/committeeRoles";
+import { committeeRoleGuard } from "../../auth/guards/committeeMember";
 import { conferenceRoleGuard } from "../../auth/guards/conferenceRoles";
 import { openApiTag } from "../../util/openApiTags";
-import { $Enums } from "../../../prisma/generated/client";
+import { SpeakersListCategory } from "../../../prisma/generated/schema";
 
 export const speakersListGeneral = new Elysia({
   prefix: "/conference/:conferenceId/committee/:committeeId",
@@ -12,7 +12,7 @@ export const speakersListGeneral = new Elysia({
   .use(committeeRoleGuard)
   .get(
     "/speakersList",
-    async ({ params: { conferenceId, committeeId }, set }) => {
+    async ({ params: { committeeId }, set }) => {
       const agendaItem = await db.agendaItem.findFirst({
         where: {
           committeeId,
@@ -63,10 +63,9 @@ export const speakersListGeneral = new Elysia({
       },
     },
   )
-
   .get(
     "/speakersList/:type",
-    async ({ params: { conferenceId, committeeId, type }, set }) => {
+    async ({ params: { committeeId, type }, set }) => {
       const agendaItem = await db.agendaItem.findFirst({
         where: {
           committeeId,
@@ -79,15 +78,10 @@ export const speakersListGeneral = new Elysia({
         throw new Error("No active agenda item found");
       }
 
-      if (!Object.values($Enums.SpeakersListCategory).includes(type)) {
-        set.status = "Bad Request";
-        throw new Error("Invalid speakers list type");
-      }
-
       return await db.speakersList.findFirst({
         where: {
           agendaItemId: agendaItem.id,
-          type: type as $Enums.SpeakersListCategory,
+          type,
         },
         include: {
           speakers: {
@@ -127,6 +121,11 @@ export const speakersListGeneral = new Elysia({
       });
     },
     {
+      params: t.Object({
+        type: SpeakersListCategory,
+        committeeId: t.String(),
+        conferenceId: t.String(),
+      }),
       hasConferenceRole: "any",
       detail: {
         description: "Get a single speakers list by type",

@@ -1,4 +1,4 @@
-import { Email, User } from "../../prisma/generated/client";
+import { Email } from "../../prisma/generated/client";
 import { createTransport } from "nodemailer";
 import { appConfiguration } from "../util/config";
 import { emailConfirmation } from "./templates/emailConfirmation/emailConfirmation";

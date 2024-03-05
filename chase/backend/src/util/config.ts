@@ -43,7 +43,8 @@ export const appConfiguration = {
   email: {
     EMAIL_HOST: development ? "localhost" : requireEnv("EMAIL_HOST"),
     EMAIL_PORT: development ? 5968 : Number.parseInt(requireEnv("EMAIL_PORT")),
-    EMAIL_SECURE: development ? false : requireEnv("EMAIL_SECURE") !== "false",
+    // EMAIL_SECURE: development ? false : requireEnv("EMAIL_SECURE") !== "false",
+    EMAIL_SECURE: development ? false : true,
     EMAIL_AUTH_USER: development ? "dev" : requireEnv("EMAIL_AUTH_USER"),
     EMAIL_AUTH_PASS: development ? "dev" : requireEnv("EMAIL_AUTH_PASS"),
     EMAIL_FROM: development ? "noreply@localhost" : requireEnv("EMAIL_FROM"),
@@ -54,11 +55,11 @@ export const appConfiguration = {
       ? "http://localhost:3000/login/createCredentials"
       : requireEnv("EMAIL_VERIFY_REDIRECT_URL"),
   },
-  passkeys: {
-    RELAY_NAME: process.env.RELAY_NAME ?? "CHASE - DMUN e.V.",
-    RELAY_ID: process.env.RELAY_ID ?? "localhost",
-    RELAY_ORIGIN: development
-      ? "https://localhost:3000"
-      : requireEnv("RELAY_ORIGIN"),
-  },
+  // passkeys: {
+  //   RELAY_NAME: process.env.RELAY_NAME ?? "CHASE - DMUN e.V.",
+  //   RELAY_ID: process.env.RELAY_ID ?? "localhost",
+  //   RELAY_ORIGIN: development
+  //     ? "https://localhost:3000"
+  //     : requireEnv("RELAY_ORIGIN"),
+  // },
 };

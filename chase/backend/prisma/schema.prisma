@@ -4,6 +4,7 @@
 generator client {
   provider = "prisma-client-js"
   output   = "./generated/client"
+  binaryTargets = ["native", "linux-musl-openssl-3.0.x"]
 }
 
 datasource db {
@@ -76,7 +77,7 @@ model User {
   name                           String
   conferenceMemberships          ConferenceMember[]
   committeeMemberships           CommitteeMember[]
-  Messages                       Message[]
+  messages                       Message[]
   emails                         Email[]
   passwords                      Password[]
   // authenticators Authenticator[]

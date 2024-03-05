@@ -27,7 +27,7 @@ export const conference = new Elysia()
       return await db.conference.findMany();
     },
     {
-      isLoggedIn: true,
+      mustBeLoggedIn: true,
       detail: {
         description: "Get all conferences",
         tags: [openApiTag(import.meta.path)],
@@ -36,6 +36,9 @@ export const conference = new Elysia()
   )
   .post(
     "/conference",
+    // TODO related to the one below
+    // @ts-ignore
+    // biome-ignore lint/correctness/noUnusedVariables: <explanation>
     async ({ body, session }) => {
       // run this in a transaction, so if setting the permission/deleting the token fails, the conference is not created
       const r = await db.$transaction(async (tx) => {

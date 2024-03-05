@@ -387,7 +387,7 @@ const de = {
           CANCEL_BUTTON: "Abbrechen",
           SEND_BUTTON: "Senden",
           INFO_MESSAGE:
-            "Diese Anfrage wird zunächst vom Vorsitz geprüft und erst dann an den Wissenschaftlichen Dienst weitergeleitet.",
+            "Diese Anfrage wird zunächst vom Vorsitz geprüft und erst dann an den Wissenschaftlichen Dienst weitergeleitet. Die Antwort erfolgt in der Regel per E-Mail – behalten Sie bitte Ihr Postfach im Auge.",
           categoryOptions: {
             GUEST_SPEAKER: "Gastrede anfragen",
             FACT_CHECK: "Faktencheck",

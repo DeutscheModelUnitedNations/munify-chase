@@ -1,19 +1,15 @@
 import { t, Elysia } from "elysia";
 import { db } from "../../prisma/db";
-import { committeeRoleGuard } from "../auth/guards/committeeRoles";
+import { committeeRoleGuard } from "../auth/guards/committeeMember";
 import { conferenceRoleGuard } from "../auth/guards/conferenceRoles";
 import { openApiTag } from "../util/openApiTags";
-import { AgendaItem, Committee, Nation } from "../../prisma/generated/schema";
+import { Committee, Nation } from "../../prisma/generated/schema";
 
 const CommitteeWithOnlyParentCommitteeRelation = t.Omit(Committee, [
   "conference",
   "members",
   "subCommittees",
 ]);
-const CommitteeWithoutRelations = t.Omit(
-  CommitteeWithOnlyParentCommitteeRelation,
-  ["parentId"],
-);
 
 const CommitteeData = t.Omit(CommitteeWithOnlyParentCommitteeRelation, [
   "id",
@@ -60,6 +56,7 @@ export const committee = new Elysia({
     async ({ params: { conferenceId, committeeId } }) => {
       const delegation = await db.delegation.findMany({
         where: {
+          conferenceId,
           members: {
             some: {
               committeeId,
@@ -221,6 +218,7 @@ export const committee = new Elysia({
     ({ params: { conferenceId, committeeId } }) => {
       return db.delegation.findMany({
         where: {
+          conferenceId,
           members: {
             some: {
               committeeId,
@@ -237,6 +235,11 @@ export const committee = new Elysia({
               presence: true,
               id: true,
             },
+          },
+        },
+        orderBy: {
+          nation: {
+            alpha3Code: "asc",
           },
         },
       });

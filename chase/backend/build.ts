@@ -1,5 +1,6 @@
 import { exists, rm } from "node:fs/promises";
 import { join } from "node:path";
+import { build } from "esbuild";
 
 console.info("Building...");
 
@@ -12,17 +13,38 @@ if (await exists(outDir)) {
   await rm(outDir, { recursive: true });
 }
 
-const output = await Bun.build({
-  entrypoints: [join(srcDir, "main.ts")],
+// https://github.com/mjmlio/mjml/issues/2132#issuecomment-1004713444
+const emptyMjmlUglifyPlugin = {
+  name: "empty mjml uglify plugin",
+  // biome-ignore lint/suspicious/noExplicitAny: <explanation>
+  setup(build: any) {
+    build.onLoad({ filter: /uglify-js\/tools\/node.js$/ }, () => ({
+      contents: "{}",
+      loader: "js",
+    }));
+  },
+};
+
+const r = await build({
+  entryPoints: [join(srcDir, "main.ts")],
+  bundle: true,
+  platform: "node",
+  target: ["node21.6"],
   outdir: "./out",
-  target: "bun",
   format: "esm",
-  splitting: true,
+  splitting: false,
   sourcemap: "external",
   minify: true,
+  loader: { ".mjml": "file" },
+  treeShaking: true,
+  plugins: [emptyMjmlUglifyPlugin],
 });
-if (!output.success) {
-  console.error(output.logs);
-} else {
-  console.info("Done!");
+
+if (!r.errors && r.errors) {
+  console.error(r.errors);
+  throw new Error("Build unsuccessful!");
 }
+if (r.warnings.length > 0) {
+  console.warn(r.warnings);
+}
+console.info("Done!");

@@ -8,18 +8,7 @@ import {
 import { nanoid } from "nanoid";
 import { appConfiguration } from "../../util/config";
 import { loggedIn } from "../../auth/guards/loggedIn";
-import { User } from "../../../prisma/generated/schema";
 import { passwords } from "./passwords";
-
-const UserWithoutRelations = t.Omit(User, [
-  "conferenceMemberships",
-  "committeeMemberships",
-  "researchServiceMessages",
-  "chairMessages",
-  "emails",
-  "passwords",
-  "pendingCredentialCreationTasks",
-]);
 
 export const auth = new Elysia({
   prefix: "/auth",
@@ -64,7 +53,11 @@ export const auth = new Elysia({
   )
   .get(
     "/myInfo",
-    async ({ session }) => {
+    async ({ session, set }) => {
+      if (!session.userData) {
+        set.status = "Forbidden";
+        throw new Error("User is not logged in");
+      }
       return await db.user.findUniqueOrThrow({
         where: { id: session.userData.id },
         include: {

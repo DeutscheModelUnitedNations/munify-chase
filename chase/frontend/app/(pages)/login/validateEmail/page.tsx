@@ -3,14 +3,23 @@ import { useI18nContext } from "@/i18n/i18n-react";
 import { backend } from "@/services/backend";
 import { useSearchParams } from "next/navigation";
 import Image from "next/image";
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCircleNotch } from "@fortawesome/pro-solid-svg-icons";
 import { Button } from "primereact/button";
 import Link from "next/link";
 
 export default () => {
-  const searchParams = useSearchParams();
+  return (
+    <>
+      <Suspense fallback={<p>Loading...</p>}>
+        <ValidateEmailComponent />
+      </Suspense>
+    </>
+  );
+};
+
+function ValidateEmailComponent() {
   const { LL } = useI18nContext();
   const [errored, setErrored] = useState<boolean>();
   const [errorMessage, setErrorMessage] = useState("");
@@ -19,11 +28,12 @@ export default () => {
     string | undefined
   >();
 
+  const searchParams = useSearchParams();
+
   // biome-ignore lint/correctness/useExhaustiveDependencies: yeah this should probably done more reacty, please give me some svelte
   useEffect(() => {
     const token = searchParams.get("token");
     const email = searchParams.get("email");
-
     if (!token) {
       setErrored(true);
       setErrorMessage(LL.login.NO_TOKEN());
@@ -133,4 +143,4 @@ export default () => {
       ) : undefined}
     </>
   );
-};
+}

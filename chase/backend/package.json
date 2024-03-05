@@ -18,24 +18,27 @@
     "@types/nodemailer": "^6.4.14",
     "bun-types": "latest",
     "concurrently": "^8.2.2",
-    "prisma": "^5.9.1",
+    "esbuild": "^0.20.1",
+    "prisma": "^5.10.2",
     "prisma-typebox-generator": "^2.1.0",
-    "@faker-js/faker": "^8.4.0"
+    "@faker-js/faker": "^8.4.1",
+    "@types/papaparse": "^5.3.14"
   },
   "dependencies": {
     "@elysiajs/bearer": "^0.8.0",
     "@elysiajs/cors": "^0.8.0",
     "@elysiajs/eden": "^0.8.1",
-    "@elysiajs/swagger": "^0.8.3",
-    "@prisma/client": "^5.9.1",
-    "@simplewebauthn/server": "^9.0.0",
-    "@sinclair/typebox": "^0.32.12",
-    "elysia": "^0.8.16",
-    "mjml": "^4.14.1",
-    "nanoid": "^5.0.4",
-    "nodemailer": "^6.9.8",
-    "redis": "^4.6.12",
-    "typescript": "5.3.3"
+    "@elysiajs/swagger": "^0.8.5",
+    "@prisma/client": "^5.10.2",
+    "@simplewebauthn/server": "^9.0.3",
+    "@sinclair/typebox": "^0.32.15",
+    "elysia": "^0.8.17",
+    "mjml": "^4.15.3",
+    "nanoid": "^5.0.6",
+    "nodemailer": "^6.9.11",
+    "redis": "^4.6.13",
+    "typescript": "5.3.3",
+    "papaparse": "^5.4.1"
   },
   "prisma": {
     "seed": "bun run prisma/seed.ts"

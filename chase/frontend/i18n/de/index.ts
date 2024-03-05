@@ -553,6 +553,8 @@ const de = {
         DESCRIPTION:
           "Verwalte die Anwesenheit der Nichtstaatlichen Akteure im Gremium. Sie werden nicht in die Abstimmungsverhältnisse einbezogen und dürfen nicht an Abstimmungen teilnehmen.",
       },
+      SET_ALL_ABSENT: "Alle auf Abwesend setzen",
+      SET_ALL_PRESENT: "Alle auf Anwesend setzen",
     },
     whiteboard: {
       SAVE_BUTTON: "Speichern und Veröffentlichen",

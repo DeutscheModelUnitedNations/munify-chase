@@ -87,7 +87,7 @@ export function StatusTimerProvider({
             setToastShown(true);
             clearInterval(interval);
           }
-        } catch (e) {
+        } catch (_e) {
           console.error(until);
         }
       }, 1000);

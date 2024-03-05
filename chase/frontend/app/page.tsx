@@ -13,10 +13,10 @@ import Image from "next/image";
 export default function Home() {
   const { LL } = useI18nContext();
 
-  const isDesktopOrLaptop = useMediaQuery({
+  const _isDesktopOrLaptop = useMediaQuery({
     query: "(min-width: 1024px)",
   });
-  const isBiggerThanMobile = useMediaQuery({
+  const _isBiggerThanMobile = useMediaQuery({
     query: "(min-width: 768px)",
   });
   const isTabletOrMobile = useMediaQuery({ query: "(max-width: 768px)" });

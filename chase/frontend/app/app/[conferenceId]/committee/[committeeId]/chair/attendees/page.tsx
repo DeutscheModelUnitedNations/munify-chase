@@ -16,7 +16,7 @@ import AttendanceTable, {
 } from "@/components/attendance/attendance_table";
 
 export default function ChairAttendees() {
-  const { LL, locale } = useI18nContext();
+  const { LL } = useI18nContext();
   const { toastError } = useToast();
   const conferenceId = useContext(ConferenceIdContext);
   const committeeId = useContext(CommitteeIdContext);

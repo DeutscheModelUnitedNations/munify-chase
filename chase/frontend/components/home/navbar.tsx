@@ -27,7 +27,7 @@ export default function Navbar({
   const [modificator, setModificator] = useState(0);
   const [showMenu, setShowMenu] = useState(false);
 
-  const isDesktopOrLaptop = useMediaQuery({
+  const _isDesktopOrLaptop = useMediaQuery({
     query: "(min-width: 1024px)",
   });
   const isBiggerThanMobile = useMediaQuery({

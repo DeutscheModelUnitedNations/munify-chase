@@ -14,7 +14,7 @@ import { Column } from "primereact/column";
 import { ConfirmPopup } from "primereact/confirmpopup";
 import { Toolbar } from "primereact/toolbar";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { useBackend, type BackendInstanceType } from "@/contexts/backend";
+import { type BackendInstanceType } from "@/contexts/backend";
 
 type CommitteesType = Awaited<
   ReturnType<
@@ -36,7 +36,6 @@ export default function CommitteeTable({
   setInputMaskVisible: (visible: boolean) => void;
 }) {
   const { LL } = useI18nContext();
-  const { backend } = useBackend();
 
   return (
     <>

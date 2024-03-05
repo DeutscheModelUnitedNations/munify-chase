@@ -14,7 +14,9 @@ import { ConferenceIdContext } from "@/contexts/committee_data";
 import { $Enums } from "../../../../../../../backend/prisma/generated/client";
 
 type CommitteesType = Awaited<
-  ReturnType<(BackendInstanceType["conference"])["conferenceId"]["committee"]["get"]>
+  ReturnType<
+    BackendInstanceType["conference"]["conferenceId"]["committee"]["get"]
+  >
 >["data"];
 
 export default function structure() {

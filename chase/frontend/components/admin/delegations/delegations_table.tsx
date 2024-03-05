@@ -12,7 +12,7 @@ import {
 import { Column } from "primereact/column";
 import { DataTable } from "primereact/datatable";
 import { Toolbar } from "primereact/toolbar";
-import { useBackend, type BackendInstanceType } from "@/contexts/backend";
+import { type BackendInstanceType } from "@/contexts/backend";
 
 export type CommitteesType = Awaited<
   ReturnType<
@@ -43,7 +43,6 @@ export default function DelegationsTable({
   openAddDelegationDialog: (state: boolean) => void;
 }) {
   const { LL, locale } = useI18nContext();
-  const { backend } = useBackend();
 
   const delegationIsActive = (
     delegation: NonNullable<DelegationsType>[number],

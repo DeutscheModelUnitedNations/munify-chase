@@ -27,7 +27,7 @@ export default function CommitteePresentationMode({
 }: {
   params: { conferenceId: string; committeeId: string };
 }) {
-  const { LL, locale } = useI18nContext();
+  const { LL } = useI18nContext();
   const { toastError } = useToast();
   const { backend } = useBackend();
 

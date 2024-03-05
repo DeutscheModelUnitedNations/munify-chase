@@ -6,7 +6,7 @@ import SpeakersListWidget from "@/components/dashboard/speakers_list";
 import TimerWidget from "@/components/dashboard/timer";
 import WhiteboardWidget from "@/components/dashboard/whiteboard";
 import ActionsWidget from "@/components/dashboard/actions";
-import { MyDelegationContext, useUserIdent } from "@/contexts/user_ident";
+import { useUserIdent } from "@/contexts/user_ident";
 import {
   AgendaItemDataProvider,
   ConferenceIdContext,

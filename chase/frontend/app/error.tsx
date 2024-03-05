@@ -5,7 +5,6 @@ import { Button } from "primereact/button";
 import Link from "next/link";
 import { useI18nContext } from "@/i18n/i18n-react";
 import Footer from "@/components/home/footer";
-import Navbar from "@/components/home/navbar";
 
 export default function Home() {
   const { LL } = useI18nContext();

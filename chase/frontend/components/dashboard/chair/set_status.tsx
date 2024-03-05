@@ -2,7 +2,6 @@ import React, { useState, useContext } from "react";
 import { ToastContext } from "@/contexts/toast";
 import { useI18nContext } from "@/i18n/i18n-react";
 import { useBackend } from "@/contexts/backend";
-import { useToast } from "@/contexts/toast";
 import ConfigWrapper from "@/components/dashboard/chair/config_wrapper";
 import { Dropdown } from "primereact/dropdown";
 import Button from "@/components/button";

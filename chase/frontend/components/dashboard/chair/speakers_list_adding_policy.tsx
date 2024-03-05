@@ -1,33 +1,12 @@
-import React, { useState, useEffect, useContext } from "react";
-import { ScrollPanel } from "primereact/scrollpanel";
-import { ToastContext } from "@/contexts/toast";
-import DashboardHeader from "@/components/dashboard/header";
+import React, { useContext } from "react";
 import { useI18nContext } from "@/i18n/i18n-react";
 import { useBackend } from "@/contexts/backend";
 import { useToast } from "@/contexts/toast";
 import ConfigWrapper from "@/components/dashboard/chair/config_wrapper";
-import { Dropdown } from "primereact/dropdown";
-import Button from "@/components/button";
-import {
-  faComment,
-  faFloppyDisk,
-  faForwardStep,
-  faLock,
-  faLockOpen,
-  faMugHot,
-  faPencil,
-  faPodium,
-} from "@fortawesome/pro-solid-svg-icons";
-import { InputText } from "primereact/inputtext";
-import { Calendar } from "primereact/calendar";
+import { faLock, faLockOpen } from "@fortawesome/pro-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import TimerWidget from "@/components/dashboard/timer";
-import WhiteboardWidget from "@/components/dashboard/whiteboard";
-import PresenceWidget from "@/components/attendance/presence_widget";
-import WidgetTemplate from "@/components/widget_template";
 import { ToggleButton } from "primereact/togglebutton";
 import {
-  AgendaItemDataProvider,
   CommitteeDataContext,
   CommitteeIdContext,
   ConferenceIdContext,
@@ -53,7 +32,7 @@ export default function SpeakersListAddingPolicyWidget() {
           onIcon={<FontAwesomeIcon icon={faLockOpen} />}
           offIcon={<FontAwesomeIcon icon={faLock} />}
           checked={committeeData?.allowDelegationsToAddThemselvesToSpeakersList}
-          onChange={async (e) => {
+          onChange={async (_e) => {
             if (!conferenceId || !committeeId) return;
             await backend.conference[conferenceId].committee[
               committeeId

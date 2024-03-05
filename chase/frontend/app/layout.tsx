@@ -2,8 +2,6 @@
 import "./globals.scss";
 import { Inter } from "next/font/google"; // Even though Google Fonts are used – no requests are sent to Google (see NEXT.JS docs)
 
-import { PrimeReactProvider } from "primereact/api";
-import Tailwind from "primereact/passthrough/tailwind";
 //theme
 import "@/themes/theme_light.scss";
 import "@/themes/theme_dark.scss";

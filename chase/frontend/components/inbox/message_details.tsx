@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext } from "react";
+import React, { useState } from "react";
 import { useI18nContext } from "@/i18n/i18n-react";
 import { useBackend, type BackendInstanceType } from "@/contexts/backend";
 import { ScrollPanel } from "primereact/scrollpanel";
@@ -20,7 +20,6 @@ import {
   faTrash,
   faUserTie,
   faUserXmark,
-  faForwardStep,
 } from "@fortawesome/pro-solid-svg-icons";
 import { Tag } from "primereact/tag";
 import PrintMessageDocument from "@/components/inbox/print_message";

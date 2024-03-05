@@ -10,7 +10,6 @@ export const loggedIn = new Elysia()
         onBeforeHandle(async ({ session, set }) => {
           if (session.loggedIn !== true) {
             set.status = "Unauthorized";
-            // biome-ignore lint/suspicious/noAssignInExpressions: This is a valid use case
             return "Unauthorized";
           }
         });

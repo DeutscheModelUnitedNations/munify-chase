@@ -9,7 +9,6 @@ import {
   faArrowLeft,
   faCircleNotch,
   faEnvelopeDot,
-  faKey,
   faPaperPlane,
   faRightToBracket,
   faUserCheck,
@@ -20,7 +19,6 @@ import { useRouter } from "next/navigation";
 import SmallInfoCard from "@/components/small_info_card";
 import { Skeleton } from "primereact/skeleton";
 import { Message } from "primereact/message";
-import { Messages } from "primereact/messages";
 import { useBackend } from "@/contexts/backend";
 
 const emailRegex =

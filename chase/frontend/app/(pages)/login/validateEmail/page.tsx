@@ -31,7 +31,6 @@ function ValidateEmailComponent() {
 
   const searchParams = useSearchParams();
 
-  // biome-ignore lint/correctness/useExhaustiveDependencies: yeah this should probably done more reacty, please give me some svelte
   useEffect(() => {
     const token = searchParams.get("token");
     const email = searchParams.get("email");

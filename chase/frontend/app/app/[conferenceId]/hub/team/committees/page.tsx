@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect, useContext } from "react";
+import React, { useContext } from "react";
 import { useI18nContext } from "@/i18n/i18n-react";
 import CommitteeGrid from "@/components/navigation-hub/committee_grid";
 import HeaderTemplate from "@/components/header_template";
@@ -14,7 +14,7 @@ export default function ChairHub({
 }: {
   params: { conferenceId: string };
 }) {
-  const { LL, locale } = useI18nContext();
+  const { LL } = useI18nContext();
   const conferenceId = useContext(ConferenceIdContext);
   const { conferenceMembership } = useUserIdent();
 

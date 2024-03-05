@@ -7,7 +7,7 @@ import styles from "./md_reader.module.css";
 import { useToast } from "@/contexts/toast";
 
 export default function MarkdownReader({ filename }: { filename: string }) {
-  const { LL, locale } = useI18nContext();
+  const { locale } = useI18nContext();
   const { toastError } = useToast();
 
   const [content, setContent] = useState<string>("");

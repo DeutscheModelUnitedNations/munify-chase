@@ -17,7 +17,7 @@ type CountryDataWithoutNameType =
 
 export type CountryDataType = CountryDataWithoutNameType & {
   name?: string;
-}
+};
 
 export default function AddDelegationDialog({
   inputMaskVisible,

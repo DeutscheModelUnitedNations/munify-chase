@@ -1,6 +1,5 @@
 "use client";
 import React, { useState, useEffect, useContext } from "react";
-import { useI18nContext } from "@/i18n/i18n-react";
 import { useBackend, type BackendInstanceType } from "@/contexts/backend";
 import {
   CommitteeIdContext,
@@ -15,7 +14,6 @@ type ChairMessages = Awaited<
 >["data"];
 
 export default function InboxPage() {
-  const { LL, locale } = useI18nContext();
   const conferenceId = useContext(ConferenceIdContext);
   const committeeId = useContext(CommitteeIdContext);
   const { backend } = useBackend();

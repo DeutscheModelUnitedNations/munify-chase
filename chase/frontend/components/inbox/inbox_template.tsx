@@ -1,6 +1,6 @@
 import React from "react";
 import { useI18nContext } from "@/i18n/i18n-react";
-import { useBackend, type BackendInstanceType } from "@/contexts/backend";
+import { type BackendInstanceType } from "@/contexts/backend";
 import { ScrollPanel } from "primereact/scrollpanel";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faInbox } from "@fortawesome/pro-solid-svg-icons";
@@ -28,7 +28,6 @@ export default function InboxTemplate({
   getMessagesFunction: () => void;
 }) {
   const { LL } = useI18nContext();
-  const { backend } = useBackend();
 
   return (
     <>

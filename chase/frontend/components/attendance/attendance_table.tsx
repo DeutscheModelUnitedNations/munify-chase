@@ -12,8 +12,7 @@ import {
   faUserClock,
 } from "@fortawesome/pro-solid-svg-icons";
 import { IconProp } from "@fortawesome/fontawesome-svg-core";
-import { useBackend, type BackendInstanceType } from "@/contexts/backend";
-import { useToast } from "@/contexts/toast";
+import { type BackendInstanceType } from "@/contexts/backend";
 import { $Enums } from "../../../backend/prisma/generated/client";
 
 export type DelegationDataType = Awaited<
@@ -44,8 +43,6 @@ export default function AttendanceTable({
   ) => void;
 }) {
   const { LL, locale } = useI18nContext();
-  const { toastError } = useToast();
-  const { backend } = useBackend();
 
   const attendanceOptions: AttendanceButtonOptions[] = [
     {

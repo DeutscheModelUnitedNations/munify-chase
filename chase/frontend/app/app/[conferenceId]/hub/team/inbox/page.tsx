@@ -1,6 +1,5 @@
 "use client";
 import React, { useState, useEffect, useContext } from "react";
-import { useI18nContext } from "@/i18n/i18n-react";
 import { useBackend, type BackendInstanceType } from "@/contexts/backend";
 import { ConferenceIdContext } from "@/contexts/committee_data";
 import InboxTemplate from "@/components/inbox/inbox_template";
@@ -12,7 +11,6 @@ type ChairMessages = Awaited<
 >["data"];
 
 export default function InboxPageResearchService() {
-  const { LL, locale } = useI18nContext();
   const conferenceId = useContext(ConferenceIdContext);
   const { backend } = useBackend();
 

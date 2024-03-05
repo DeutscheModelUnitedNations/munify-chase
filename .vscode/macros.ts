@@ -19,8 +19,6 @@ module.exports.macroCommands = {
 
 async function openI18nFile(filename) {
   const document = await vscode.workspace.openTextDocument(filename);
-  const editor = await vscode.window.showTextDocument(document);
-  const save = await vscode.commands.executeCommand(
-    "workbench.action.files.save",
-  );
+  await vscode.window.showTextDocument(document);
+  await vscode.commands.executeCommand("workbench.action.files.save");
 }

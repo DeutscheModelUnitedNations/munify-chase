@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect } from "react";
+import React from "react";
 import { useI18nContext } from "@/i18n/i18n-react";
 import CommitteeGrid from "@/components/navigation-hub/committee_grid";
 import Button from "@/components/button";
@@ -13,7 +13,7 @@ export default function NAHubPage({
 }: {
   params: { conferenceId: string };
 }) {
-  const { LL, locale } = useI18nContext();
+  const { LL } = useI18nContext();
   const router = useRouter();
   const { toastError } = useToast();
   const { backend } = useBackend();

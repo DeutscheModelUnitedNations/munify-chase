@@ -3,8 +3,6 @@ import { useI18nContext } from "@/i18n/i18n-react";
 import { useBackend, type BackendInstanceType } from "@/contexts/backend";
 import ConfigWrapper from "@/components/dashboard/chair/config_wrapper";
 import { Dropdown } from "primereact/dropdown";
-import Button from "@/components/button";
-import { faPencil } from "@fortawesome/pro-solid-svg-icons";
 import {
   CommitteeIdContext,
   ConferenceIdContext,

@@ -12,7 +12,7 @@ type CommitteeMembership = User["committeeMemberships"][number];
 type Delegation = NonNullable<
   Awaited<
     ReturnType<
-      (BackendInstanceType["conference"])["conferenceId"]["user"]["userId"]["delegation"]["get"]
+      BackendInstanceType["conference"]["conferenceId"]["user"]["userId"]["delegation"]["get"]
     >
   >["data"]
 >;

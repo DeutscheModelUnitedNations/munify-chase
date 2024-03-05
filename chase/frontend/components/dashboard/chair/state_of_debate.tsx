@@ -1,7 +1,6 @@
 import React, { useState, useContext } from "react";
 import { useI18nContext } from "@/i18n/i18n-react";
 import { useBackend } from "@/contexts/backend";
-import { useToast } from "@/contexts/toast";
 import ConfigWrapper from "@/components/dashboard/chair/config_wrapper";
 import Button from "@/components/button";
 import { faDiagramSubtask, faSave } from "@fortawesome/pro-solid-svg-icons";

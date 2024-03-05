@@ -2,7 +2,7 @@ import React from "react";
 import { Button as PrimeReactButton } from "primereact/button";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { IconProp } from "@fortawesome/fontawesome-svg-core";
-import { faSpinner, faSpinnerThird } from "@fortawesome/pro-solid-svg-icons";
+import { faSpinnerThird } from "@fortawesome/pro-solid-svg-icons";
 import { ButtonProps as PrimeReactButtonProps } from "primereact/button";
 
 /**

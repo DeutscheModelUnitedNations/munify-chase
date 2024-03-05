@@ -51,7 +51,7 @@ type AllCountryCodes = Awaited<
 
 export function ParticipantSpeechButtons() {
   const { LL } = useI18nContext();
-  const { showToast, toastError } = useToast();
+  const { showToast } = useToast();
 
   const { backend } = useBackend();
   const speakersListData = useContext(SpeakersListDataContext);

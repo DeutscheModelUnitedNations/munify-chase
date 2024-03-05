@@ -581,7 +581,7 @@ const de = {
       addSpeakerOverlay: {
         HEADLINE: "Redebeiträge zu {{0}} hinzufügen",
         PLACEHOLDER: "Suche nach Redner*innen",
-        BUTTON_CANCEL: "Abbrechen",
+        BUTTON_CANCEL: "Schließen",
         BUTTON_ADD: "Hinzufügen",
         BUTTON_ADD_AND_CLOSE: "Hinzufügen und schließen",
         TOAST_ADDED_SUMMARY: "{{0}} hinzugefügt",

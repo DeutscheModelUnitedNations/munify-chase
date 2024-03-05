@@ -1695,9 +1695,10 @@ type RootTranslation = {
 				 */
 				NEXT_SPEAKER_MESSAGE: string
 				/**
-				 * N​e​x​t​ ​S​p​e​a​k​e​r
+				 * N​e​x​t​ ​S​p​e​a​k​e​r​ ​a​t​ ​{​l​i​s​t​}
+				 * @param {string} list
 				 */
-				NEXT_SPEAKER_HEADER: string
+				NEXT_SPEAKER_HEADER: RequiredParams<'list'>
 				/**
 				 * Y​e​s
 				 */
@@ -3526,9 +3527,9 @@ export type TranslationFunctions = {
 				 */
 				NEXT_SPEAKER_MESSAGE: () => LocalizedString
 				/**
-				 * Next Speaker
+				 * Next Speaker at {list}
 				 */
-				NEXT_SPEAKER_HEADER: () => LocalizedString
+				NEXT_SPEAKER_HEADER: (arg: { list: string }) => LocalizedString
 				/**
 				 * Yes
 				 */

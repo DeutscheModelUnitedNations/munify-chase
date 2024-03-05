@@ -601,7 +601,7 @@ const de = {
       confirm: {
         NEXT_SPEAKER_MESSAGE:
           "Willst du wirklich den nächsten Redner aufrufen?",
-        NEXT_SPEAKER_HEADER: "Nächste Rede",
+        NEXT_SPEAKER_HEADER: "Nächste Rede: {list}",
         NEXT_SPEAKER_ACCEPT: "Ja",
         NEXT_SPEAKER_REJECT: "Nein",
       },

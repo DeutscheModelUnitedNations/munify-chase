@@ -57,7 +57,7 @@ export default function NavbarButton({
   }, [pathname]);
 
   const openLinkInNewWindow = () => {
-    window.open(link, "_blank", "noopener,noreferrer,menubar=no,toolbar=no");
+    window.open(link, "_blank");
   };
 
   return (link === "" && onClick !== null) || newWindow ? (

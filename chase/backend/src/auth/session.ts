@@ -66,9 +66,12 @@ export const session = new Elysia({ name: "session" })
       data.loggedIn = loggedIn;
       if (!data.loggedIn) {
         await redis.del(`user-session:${sessionId.value}`);
-        sessionId.remove()
+        sessionId.remove();
       } else {
-        await redis.set(`user-session:${sessionId.value}`, JSON.stringify(data));
+        await redis.set(
+          `user-session:${sessionId.value}`,
+          JSON.stringify(data),
+        );
       }
     };
 

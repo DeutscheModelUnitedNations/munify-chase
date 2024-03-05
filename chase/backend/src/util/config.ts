@@ -19,8 +19,8 @@ export const appConfiguration = {
   CORSOrigins: development
     ? ["localhost:3000", "localhost:3001"]
     : requireEnv("CORS_ORIGINS")
-      ?.split(",")
-      .map((origin) => origin.trim()),
+        ?.split(",")
+        .map((origin) => origin.trim()),
   port: process.env.PORT ?? "3001",
   documentationPath: process.env.DOCUMENTATION_PATH ?? "documentation",
   appName: process.env.APP_NAME ?? "CHASE",
@@ -28,13 +28,13 @@ export const appConfiguration = {
     secrets: development
       ? ["not", "very", "secure"]
       : requireEnv("COOKIE_SECRETS")
-        ?.split(",")
-        .map((origin) => origin.trim()),
+          ?.split(",")
+          .map((origin) => origin.trim()),
   },
   db: {
     postgresUrl: development
       ? process.env.DATABASE_URL ??
-      "postgresql://postgres:postgres@localhost:5432/postgres"
+        "postgresql://postgres:postgres@localhost:5432/postgres"
       : requireEnv("DATABASE_URL"),
     redisUrl: development
       ? process.env.REDIS_URL ?? "redis://default:redispw@localhost:6379"

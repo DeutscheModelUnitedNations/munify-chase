@@ -230,7 +230,7 @@ try {
    * -------------
    */
 
-  console.info("Seeding Database with alpha3Codes")
+  console.info("Seeding Database with alpha3Codes");
 
   const countries = await Promise.all(
     allCountries.map((country) => {
@@ -244,7 +244,9 @@ try {
       });
     }),
   );
-  console.info(`==> Created ${countries.length} countries as base country data`);
+  console.info(
+    `==> Created ${countries.length} countries as base country data`,
+  );
 
   await prisma.$disconnect();
 } catch (e) {

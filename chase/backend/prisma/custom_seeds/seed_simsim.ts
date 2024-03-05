@@ -240,7 +240,7 @@ try {
       role: member.role,
     };
 
-    console.info(`${data.email},${data.password},${data.role}`)
+    console.info(`${data.email},${data.password},${data.role}`);
 
     const user = await prisma.user.create({
       data: {
@@ -319,11 +319,13 @@ try {
           include: {
             nation: true,
           },
-        }
+        },
       },
     });
 
-    console.info(`${data.email},${data.password},${data.role},${committeeMember?.delegation?.nation?.alpha3Code}`)
+    console.info(
+      `${data.email},${data.password},${data.role},${committeeMember?.delegation?.nation?.alpha3Code}`,
+    );
 
     users.push(data);
   }
@@ -341,7 +343,7 @@ try {
       role: "SimSim 2 Delegate",
     };
 
-    console.info(`${data.email},${data.password},${data.role}`)
+    console.info(`${data.email},${data.password},${data.role}`);
 
     const user = await prisma.user.create({
       data: {
@@ -378,15 +380,16 @@ try {
           include: {
             nation: true,
           },
-        }
+        },
       },
     });
 
-    console.info(`${data.email},${data.password},${data.role},${committeeMember?.delegation?.nation?.alpha3Code}`)
+    console.info(
+      `${data.email},${data.password},${data.role},${committeeMember?.delegation?.nation?.alpha3Code}`,
+    );
 
     users.push(data);
   }
-
 
   const csv = Papa.unparse(users);
 

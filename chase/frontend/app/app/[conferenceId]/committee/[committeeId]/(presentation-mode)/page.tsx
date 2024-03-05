@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import { useI18nContext } from "@/i18n/i18n-react";
 import PresenceWidget from "@/components/attendance/presence_widget";
 import TimerWidget from "@/components/dashboard/timer";
@@ -11,6 +11,8 @@ import { Skeleton } from "primereact/skeleton";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPodium } from "@fortawesome/pro-solid-svg-icons";
 import { useToast } from "@/contexts/toast";
+import WhiteboardWidget from "@/components/dashboard/whiteboard";
+import { StatusTimer } from "@/contexts/status_timer";
 
 type CommitteeType = Awaited<
   ReturnType<
@@ -30,6 +32,7 @@ export default function CommitteePresentationMode({
 }) {
   const { LL, locale } = useI18nContext();
   const { toastError } = useToast();
+  const { category } = useContext(StatusTimer);
 
   const isDesktopOrLaptop = useMediaQuery({
     query: "(min-width: 768px)",
@@ -110,20 +113,26 @@ export default function CommitteePresentationMode({
           </div>
           <TimerWidget showOnFormalDebate={isDesktopOrLaptop} />
         </div>
-        <div className="flex-1 flex flex-col xl:contents gap-4">
-          <div className="flex-1 flex justify-center h-[calc(100vh-2rem)]">
-            <SpeakersListBlock
-              listTitle={LL.participants.speakersList.SPEAKERS_LIST()}
-              typeOfList="SPEAKERS_LIST"
-            />
+        {category === "FORMAL" ? (
+          <div className="flex-1 flex flex-col xl:contents gap-4">
+            <div className="flex-1 flex justify-center h-[calc(100vh-2rem)]">
+              <SpeakersListBlock
+                listTitle={LL.participants.speakersList.SPEAKERS_LIST()}
+                typeOfList="SPEAKERS_LIST"
+              />
+            </div>
+            <div className="flex-1 flex justify-center h-[calc(100vh-2rem)]">
+              <SpeakersListBlock
+                listTitle={LL.participants.speakersList.COMMENT_LIST()}
+                typeOfList="COMMENT_LIST"
+              />
+            </div>
           </div>
+        ) : (
           <div className="flex-1 flex justify-center h-[calc(100vh-2rem)]">
-            <SpeakersListBlock
-              listTitle={LL.participants.speakersList.COMMENT_LIST()}
-              typeOfList="COMMENT_LIST"
-            />
+            <WhiteboardWidget />
           </div>
-        </div>
+        )}
       </div>
     </div>
   );

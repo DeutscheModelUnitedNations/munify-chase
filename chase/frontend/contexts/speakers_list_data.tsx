@@ -1,13 +1,13 @@
 "use client";
 import React, { createContext, useState, useEffect, useContext } from "react";
-import { backend } from "@/services/backend";
+import { useBackend, type BackendInstanceType } from "@/contexts/backend";
 import { ConferenceIdContext, CommitteeIdContext } from "./committee_data";
 import { $Enums } from "../../backend/prisma/generated/client";
 import { useToast } from "./toast";
 
 export type SpeakersListDataType = Awaited<
   ReturnType<
-    (typeof backend.conference)["conferenceId"]["committee"]["committeeId"]["speakersList"]["type"]["get"]
+    BackendInstanceType["conference"]["conferenceId"]["committee"]["committeeId"]["speakersList"]["type"]["get"]
   >
 >["data"];
 
@@ -22,6 +22,7 @@ export function SpeakersListDataProvider({
   typeOfList: $Enums.SpeakersListCategory;
 }) {
   const { toastError } = useToast();
+  const { backend } = useBackend();
   const conferenceId = useContext(ConferenceIdContext);
   const committeeId = useContext(CommitteeIdContext);
 

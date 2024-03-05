@@ -43,13 +43,11 @@ export const conferenceMember = new Elysia({
   .post(
     "/member",
     ({ params: { conferenceId }, body }) => {
-      const createManyData = [];
-      for (let i = 0; i < body.count; i++) {
-        createManyData.push({ role: body.data.role, conferenceId });
-      }
-
       return db.conferenceMember.createMany({
-        data: createManyData,
+        data: new Array(body.count).fill({
+          role: body.data.role,
+          conferenceId,
+        }),
       });
     },
     {

@@ -1,5 +1,5 @@
 "use client";
-import React, { useContext, useEffect, useRef, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import Button from "@/components/button";
 import Whiteboard from "@/components/whiteboard";
 import {
@@ -8,7 +8,7 @@ import {
 } from "@fortawesome/pro-solid-svg-icons";
 import { useI18nContext } from "@/i18n/i18n-react";
 import { IconProp } from "@fortawesome/fontawesome-svg-core";
-import { backend } from "@/services/backend";
+import { useBackend, type BackendInstanceType } from "@/contexts/backend";
 import { useToast } from "@/contexts/toast";
 import {
   CommitteeIdContext,
@@ -17,7 +17,7 @@ import {
 
 type Committee = Awaited<
   ReturnType<
-    (typeof backend.conference)["conferenceId"]["committee"]["committeeId"]["get"]
+    BackendInstanceType["conference"]["conferenceId"]["committee"]["committeeId"]["get"]
   >
 >["data"];
 
@@ -26,6 +26,7 @@ export default function ChairWhiteboard() {
   const conferenceId = useContext(ConferenceIdContext);
   const committeeId = useContext(CommitteeIdContext);
   const { showToast, toastError } = useToast();
+  const { backend } = useBackend();
 
   const [whiteboardContent, setWhiteboardContent] = useState<
     string | null | undefined

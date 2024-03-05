@@ -1107,7 +1107,7 @@ type RootTranslation = {
 					 */
 					SEND_BUTTON: string
 					/**
-					 * T​h​i​s​ ​r​e​q​u​e​s​t​ ​w​i​l​l​ ​b​e​ ​v​i​e​w​e​d​ ​a​n​d​ ​c​h​e​c​k​e​d​ ​b​y​ ​t​h​e​ ​c​h​a​i​r​ ​f​i​r​s​t​ ​a​n​d​ ​t​h​e​n​ ​f​o​r​w​a​r​d​e​d​ ​t​o​ ​t​h​e​ ​R​e​s​e​a​r​c​h​ ​S​e​r​v​i​c​e​.
+					 * T​h​i​s​ ​r​e​q​u​e​s​t​ ​w​i​l​l​ ​b​e​ ​v​i​e​w​e​d​ ​a​n​d​ ​c​h​e​c​k​e​d​ ​b​y​ ​t​h​e​ ​c​h​a​i​r​ ​f​i​r​s​t​ ​a​n​d​ ​t​h​e​n​ ​f​o​r​w​a​r​d​e​d​ ​t​o​ ​t​h​e​ ​R​e​s​e​a​r​c​h​ ​S​e​r​v​i​c​e​.​ ​T​h​e​ ​R​e​s​e​a​r​c​h​ ​S​e​r​v​i​c​e​s​ ​w​i​l​l​ ​u​s​u​a​l​l​y​ ​g​e​t​ ​b​a​c​k​ ​t​o​ ​y​o​u​ ​v​i​a​ ​e​m​a​i​l​,​ ​p​l​e​a​s​e​ ​r​e​g​u​l​a​r​l​y​ ​c​h​e​c​k​ ​y​o​u​r​ ​i​n​b​o​x​.
 					 */
 					INFO_MESSAGE: string
 					categoryOptions: {
@@ -2907,7 +2907,7 @@ export type TranslationFunctions = {
 					 */
 					SEND_BUTTON: () => LocalizedString
 					/**
-					 * This request will be viewed and checked by the chair first and then forwarded to the Research Service.
+					 * This request will be viewed and checked by the chair first and then forwarded to the Research Service. The Research Services will usually get back to you via email, please regularly check your inbox.
 					 */
 					INFO_MESSAGE: () => LocalizedString
 					categoryOptions: {

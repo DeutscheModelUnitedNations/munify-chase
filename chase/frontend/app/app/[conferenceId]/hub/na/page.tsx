@@ -4,7 +4,7 @@ import { useI18nContext } from "@/i18n/i18n-react";
 import CommitteeGrid from "@/components/navigation-hub/committee_grid";
 import Button from "@/components/button";
 import { faArrowRightFromBracket } from "@fortawesome/pro-solid-svg-icons";
-import { backend } from "@/services/backend";
+import { useBackend } from "@/contexts/backend";
 import { useRouter } from "next/navigation";
 import { useToast } from "@/contexts/toast";
 
@@ -16,6 +16,7 @@ export default function NAHubPage({
   const { LL, locale } = useI18nContext();
   const router = useRouter();
   const { toastError } = useToast();
+  const { backend } = useBackend();
 
   return (
     <>

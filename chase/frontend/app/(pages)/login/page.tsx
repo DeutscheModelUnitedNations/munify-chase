@@ -2,7 +2,6 @@
 import { useToast } from "@/contexts/toast";
 import Image from "next/image";
 import { useI18nContext } from "@/i18n/i18n-react";
-import { backend } from "@/services/backend";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { InputText } from "primereact/inputtext";
 import { useEffect, useState } from "react";
@@ -22,6 +21,7 @@ import SmallInfoCard from "@/components/small_info_card";
 import { Skeleton } from "primereact/skeleton";
 import { Message } from "primereact/message";
 import { Messages } from "primereact/messages";
+import { useBackend } from "@/contexts/backend";
 
 const emailRegex =
   /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|.(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
@@ -42,6 +42,7 @@ export default () => {
   const [email, setEmail] = useState("");
   const [emailValid, setEmailValid] = useState<boolean | undefined>();
   const [password, setPassword] = useState("");
+  const { backend } = useBackend();
 
   async function fetchMyInfoData() {
     await backend.auth.myInfo

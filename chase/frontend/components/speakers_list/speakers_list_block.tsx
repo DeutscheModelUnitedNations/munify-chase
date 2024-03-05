@@ -3,13 +3,13 @@ import WidgetTemplate from "@/components/widget_template";
 import SpeakerBlock from "@/components/speakers_list/speaker_block";
 import SpeakerQueueList from "@/components/speakers_list/queue_list";
 import { useI18nContext } from "@/i18n/i18n-react";
-import { backend } from "@/services/backend";
+import { useBackend, type BackendInstanceType } from "@/contexts/backend";
 import { Toast } from "primereact/toast";
 import { SpeakersListDataProvider } from "@/contexts/speakers_list_data";
 import { $Enums } from "../../../backend/prisma/generated/client";
 
 export type SpeakersListData = Awaited<
-  ReturnType<(typeof backend.speakersList)["speakersListId"]["get"]>
+  ReturnType<BackendInstanceType["speakersList"]["speakersListId"]["get"]>
 >["data"];
 
 /**
@@ -32,6 +32,7 @@ export default function SpeakersListBlock({
   chairOptions?: boolean;
   children?: React.ReactNode;
 }) {
+  const { backend } = useBackend();
   return (
     <SpeakersListDataProvider typeOfList={typeOfList}>
       <div className="flex w-full h-full flex-col bg-primary-950 dark:bg-primary-200 rounded-lg p-3 transition-all duration-500">

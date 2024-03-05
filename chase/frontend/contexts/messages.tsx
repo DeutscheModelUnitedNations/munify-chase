@@ -1,4 +1,4 @@
-import { backend } from "@/services/backend";
+import { useBackend } from "@/contexts/backend";
 import react, { createContext, useContext, useEffect } from "react";
 import { CommitteeIdContext, ConferenceIdContext } from "./committee_data";
 import { useToast } from "./toast";
@@ -24,6 +24,7 @@ export function MessageCountProvider({
   children: React.ReactNode;
 }) {
   const { LL } = useI18nContext();
+  const { backend } = useBackend();
   const conferenceId = useContext(ConferenceIdContext);
   const committeeId = useContext(CommitteeIdContext);
   const { showToast, toastError } = useToast();

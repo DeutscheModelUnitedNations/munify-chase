@@ -8,7 +8,7 @@ import {
   faUserClock,
   faUserXmark,
 } from "@fortawesome/pro-solid-svg-icons";
-import { backend } from "@/services/backend";
+import { useBackend, type BackendInstanceType } from "@/contexts/backend";
 import { useToast } from "@/contexts/toast";
 import { $Enums } from "../../../backend/prisma/generated/client";
 import {
@@ -18,7 +18,7 @@ import {
 
 type DelegationData = Awaited<
   ReturnType<
-    (typeof backend.conference)["conferenceId"]["committee"]["committeeId"]["delegations"]["get"]
+    BackendInstanceType["conference"]["conferenceId"]["committee"]["committeeId"]["delegations"]["get"]
   >
 >["data"];
 
@@ -33,6 +33,7 @@ export default function PresenceWidget({
   const { toastError } = useToast();
   const conferenceId = useContext(ConferenceIdContext);
   const committeeId = useContext(CommitteeIdContext);
+  const { backend } = useBackend();
 
   const [delegationData, setDelegationData] = useState<DelegationData>([]);
   const [presentAttendees, setPresentAttendees] = useState(0);

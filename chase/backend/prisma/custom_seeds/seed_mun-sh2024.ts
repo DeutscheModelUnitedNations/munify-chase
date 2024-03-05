@@ -1,5 +1,6 @@
 // import { faker } from "@faker-js/faker";
 import { $Enums, PrismaClient } from "../generated/client";
+import { allCountries } from "../seed";
 const prisma = new PrismaClient();
 
 try {
@@ -221,23 +222,22 @@ try {
   const delegations: () => string[] = () => {
     const selectedCountries: string[] = [];
     while (selectedCountries.length < 20) {
-      //TODO @TadeSF where do we have the countries possible? :D
-      // for (const countryRaw of allCountries) {
-      //   if (
-      //     ["deu", "usa", "fra", "gbr", "rus", "chn"].includes(
-      //       countryRaw.alpha3Code,
-      //     ) ||
-      //     Math.random() > 0.97
-      //   ) {
-      //     if (
-      //       !selectedCountries.includes(countryRaw.alpha3Code) &&
-      //       countryRaw.variant !== $Enums.NationVariant.SPECIAL_PERSON &&
-      //       countryRaw.variant !== $Enums.NationVariant.NON_STATE_ACTOR
-      //     ) {
-      //       selectedCountries.push(countryRaw.alpha3Code);
-      //     }
-      //   }
-      // }
+      for (const countryRaw of allCountries) {
+        if (
+          ["deu", "usa", "fra", "gbr", "rus", "chn"].includes(
+            countryRaw.alpha3Code,
+          ) ||
+          Math.random() > 0.97
+        ) {
+          if (
+            !selectedCountries.includes(countryRaw.alpha3Code) &&
+            countryRaw.variant !== $Enums.NationVariant.SPECIAL_PERSON &&
+            countryRaw.variant !== $Enums.NationVariant.NON_STATE_ACTOR
+          ) {
+            selectedCountries.push(countryRaw.alpha3Code);
+          }
+        }
+      }
     }
     selectedCountries.sort();
     return selectedCountries;

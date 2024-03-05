@@ -16,7 +16,7 @@ import { db } from "../../prisma/db";
 import { recursiveNullFieldsToUndefined } from "../util/nullToUndefined";
 import { recursiveDateFieldsToString } from "../util/dateToString";
 
-//TODO ensure to other conferences can be edited when importing again
+//TODO ensure no other conferences can be edited when importing again
 
 const Data = t.Composite([
   t.Omit(Conference, [
@@ -98,7 +98,7 @@ export const committee = new Elysia({
   prefix: "/conference/:conferenceId",
 })
   .use(conferenceRoleGuard)
-  .post(
+  .get(
     "/export",
     async ({ params: { conferenceId } }) => {
       const res = await db.conference.findUniqueOrThrow({
@@ -167,7 +167,6 @@ export const committee = new Elysia({
                     connectOrCreate: committee.members.map((member) => ({
                       where: { id: member.id },
                       create: member,
-                      update: member,
                     })),
                   },
                   agendaItems: {
@@ -175,7 +174,6 @@ export const committee = new Elysia({
                       (agendaItem) => ({
                         where: { id: agendaItem.id },
                         create: agendaItem,
-                        update: agendaItem,
                       }),
                     ),
                   },
@@ -186,7 +184,6 @@ export const committee = new Elysia({
                     connectOrCreate: committee.members.map((member) => ({
                       where: { id: member.id },
                       create: member,
-                      update: member,
                     })),
                   },
                   agendaItems: {
@@ -194,7 +191,6 @@ export const committee = new Elysia({
                       (agendaItem) => ({
                         where: { id: agendaItem.id },
                         create: agendaItem,
-                        update: agendaItem,
                       }),
                     ),
                   },

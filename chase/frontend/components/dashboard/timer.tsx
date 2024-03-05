@@ -16,7 +16,7 @@ import { IconProp } from "@fortawesome/fontawesome-svg-core";
 import { Skeleton } from "primereact/skeleton";
 import Timer from "./countdown_timer";
 import { $Enums } from "../../../backend/prisma/generated/client";
-import { backend } from "@/services/backend";
+import { useBackend, type BackendInstanceType } from "@/contexts/backend";
 import { useToast } from "@/contexts/toast";
 import {
   ConferenceIdContext,
@@ -26,7 +26,7 @@ import { StatusTimer } from "@/contexts/status_timer";
 
 type Committee = Awaited<
   ReturnType<
-    (typeof backend.conference)["conferenceId"]["committee"]["committeeId"]["get"]
+    BackendInstanceType["conference"]["conferenceId"]["committee"]["committeeId"]["get"]
   >
 >["data"];
 
@@ -40,6 +40,7 @@ export default function TimerWidget() {
   const { LL } = useI18nContext();
   const { toastError } = useToast();
   const { category, headline, until } = useContext(StatusTimer);
+  const { backend } = useBackend();
 
   const timeStamp = () => {
     if (until) {

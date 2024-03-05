@@ -2,7 +2,7 @@
 import { $Enums, PrismaClient } from "./generated/client";
 const prisma = new PrismaClient();
 
-const allCountries = [
+export const allCountries = [
   { alpha3Code: "afg" },
   { alpha3Code: "alb" },
   { alpha3Code: "dza" },
@@ -230,11 +230,11 @@ try {
    * -------------
    */
 
-  console.info("Seeding Database with alpha3Codes")
+  console.info("Seeding Database with alpha3Codes");
 
   const countries = await Promise.all(
     allCountries.map((country) => {
-      console.info(`--> Creating ${country}`);
+      console.info(`--> Creating ${JSON.stringify(country)}`);
       return prisma.nation.upsert({
         where: {
           alpha3Code: country.alpha3Code,
@@ -244,7 +244,9 @@ try {
       });
     }),
   );
-  console.info(`==> Created ${countries.length} countries as base country data`);
+  console.info(
+    `==> Created ${countries.length} countries as base country data`,
+  );
 
   await prisma.$disconnect();
 } catch (e) {

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useContext } from "react";
 import { useI18nContext } from "@/i18n/i18n-react";
-import { backend } from "@/services/backend";
+import { useBackend, type BackendInstanceType } from "@/contexts/backend";
 import { ScrollPanel } from "primereact/scrollpanel";
 import { LargeFlag } from "@/components/flag_templates";
 import {
@@ -35,7 +35,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 type ChairMessages = Awaited<
   ReturnType<
-    (typeof backend.conference)["conferenceId"]["committee"]["committeeId"]["messages"]["get"]
+    BackendInstanceType["conference"]["conferenceId"]["committee"]["committeeId"]["messages"]["get"]
   >
 >["data"];
 
@@ -50,6 +50,7 @@ export default function MessageDetails({
 }) {
   const { LL, locale } = useI18nContext();
   const { toastError, showToast } = useToast();
+  const { backend } = useBackend();
 
   const [showPrintDialog, setShowPrintDialog] = useState<boolean>(false);
 

@@ -7,7 +7,6 @@
     "devserver": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint",
     "typesafe-i18n": "typesafe-i18n",
     "typecheck": "tsc --noEmit"
   },

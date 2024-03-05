@@ -1,7 +1,7 @@
 "use client";
 import React, { useEffect, useContext, useState } from "react";
 import { useI18nContext } from "@/i18n/i18n-react";
-import { backend } from "@/services/backend";
+import { useBackend, type BackendInstanceType } from "@/contexts/backend";
 import { useRouter } from "next/navigation";
 import OnboardingSteps from "@/components/admin/onboarding/steps";
 import { confirmPopup } from "primereact/confirmpopup";
@@ -14,7 +14,7 @@ import { ConferenceIdContext } from "@/contexts/committee_data";
 import { $Enums } from "../../../../../../../backend/prisma/generated/client";
 
 type CommitteesType = Awaited<
-  ReturnType<(typeof backend.conference)["conferenceId"]["committee"]["get"]>
+  ReturnType<(BackendInstanceType["conference"])["conferenceId"]["committee"]["get"]>
 >["data"];
 
 export default function structure() {
@@ -22,6 +22,7 @@ export default function structure() {
   const router = useRouter();
   const { showToast, toastError } = useToast();
   const conferenceId = useContext(ConferenceIdContext);
+  const { backend } = useBackend();
 
   const [inputMaskVisible, setInputMaskVisible] = useState(false);
 

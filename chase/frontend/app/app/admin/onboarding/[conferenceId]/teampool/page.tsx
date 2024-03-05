@@ -1,7 +1,7 @@
 "use client";
 import React, { useContext, useEffect, useState } from "react";
 import { useI18nContext } from "@/i18n/i18n-react";
-import { backend } from "@/services/backend";
+import { useBackend, type BackendInstanceType } from "@/contexts/backend";
 import { useRouter } from "next/navigation";
 import OnboardingSteps from "@/components/admin/onboarding/steps";
 import ForwardBackButtons from "@/components/admin/onboarding/forward_back_bar";
@@ -13,7 +13,7 @@ import { ConferenceIdContext } from "@/contexts/committee_data";
 import { $Enums } from "../../../../../../../backend/prisma/generated/client";
 
 type TeamType = Awaited<
-  ReturnType<(typeof backend.conference)["conferenceId"]["member"]["get"]>
+  ReturnType<BackendInstanceType["conference"]["conferenceId"]["member"]["get"]>
 >["data"];
 
 export default function Teampool() {
@@ -21,6 +21,7 @@ export default function Teampool() {
   const { toastError } = useToast();
   const router = useRouter();
   const conferenceId = useContext(ConferenceIdContext);
+  const { backend } = useBackend();
 
   const [team, setTeam] = useState<TeamType | null>(null);
   const [inputMaskVisible, setInputMaskVisible] = useState(false);

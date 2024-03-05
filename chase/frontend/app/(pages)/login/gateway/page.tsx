@@ -1,6 +1,6 @@
 "use client";
 import React, { useEffect, useState } from "react";
-import { backend } from "@/services/backend";
+import { useBackend, type BackendInstanceType } from "@/contexts/backend";
 import {
   faCircleNotch,
   faRightFromBracket,
@@ -18,13 +18,14 @@ import { conferenceRoleTranslation } from "@/i18n/translation_utils";
 import { useToast } from "@/contexts/toast";
 
 type MyInfoDataType = Awaited<
-  ReturnType<typeof backend.auth.myInfo.get>
+  ReturnType<BackendInstanceType["auth"]["myInfo"]["get"]>
 >["data"];
 
 export default function LoginRedirectPage() {
   const router = useRouter();
   const { LL, locale } = useI18nContext();
   const { toastError } = useToast();
+  const { backend } = useBackend();
 
   const [myInfoData, setMyInfoData] = useState<MyInfoDataType | null>(null);
 

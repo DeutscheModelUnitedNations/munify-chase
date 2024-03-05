@@ -3,7 +3,7 @@ import React, { useEffect, useState, useContext } from "react";
 import HeaderTemplate from "@/components/header_template";
 import { ScrollPanel } from "primereact/scrollpanel";
 import { useI18nContext } from "@/i18n/i18n-react";
-import { backend } from "@/services/backend";
+import { useBackend } from "@/contexts/backend";
 import { useToast } from "@/contexts/toast";
 import { $Enums } from "../../../../../../../../backend/prisma/generated/client";
 import PresenceWidget from "@/components/attendance/presence_widget";
@@ -20,6 +20,7 @@ export default function ChairAttendees() {
   const { toastError } = useToast();
   const conferenceId = useContext(ConferenceIdContext);
   const committeeId = useContext(CommitteeIdContext);
+  const { backend } = useBackend();
 
   const [delegationData, setDelegationData] = useState<DelegationDataType>([]);
   const [nonStateActorsData, setNonStateActorsData] =

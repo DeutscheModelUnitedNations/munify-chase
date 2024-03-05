@@ -17,7 +17,7 @@ import {
 
 import { useI18nContext } from "@/i18n/i18n-react";
 import { IconProp } from "@fortawesome/fontawesome-svg-core";
-import { backend } from "@/services/backend";
+import { useBackend } from "@/contexts/backend";
 import { useToast } from "@/contexts/toast";
 
 /**
@@ -29,6 +29,7 @@ import { useToast } from "@/contexts/toast";
 export default function Navbar({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const { toastError } = useToast();
+  const { backend } = useBackend();
 
   const { LL } = useI18nContext();
 

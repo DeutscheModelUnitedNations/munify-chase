@@ -3,7 +3,7 @@ import React, { useContext } from "react";
 import { ScrollPanel } from "primereact/scrollpanel";
 import DashboardHeader from "@/components/dashboard/header";
 import { useI18nContext } from "@/i18n/i18n-react";
-import { backend } from "@/services/backend";
+import { useBackend } from "@/contexts/backend";
 import TimerWidget from "@/components/dashboard/timer";
 import WhiteboardWidget from "@/components/dashboard/whiteboard";
 import PresenceWidget from "@/components/attendance/presence_widget";
@@ -25,6 +25,7 @@ export default function ChairDashboardPage() {
   const { LL } = useI18nContext();
   const conferenceId = useContext(ConferenceIdContext);
   const committeeId = useContext(CommitteeIdContext);
+  const { backend } = useBackend();
 
   return (
     <>

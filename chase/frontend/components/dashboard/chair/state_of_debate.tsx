@@ -1,6 +1,6 @@
 import React, { useState, useContext } from "react";
 import { useI18nContext } from "@/i18n/i18n-react";
-import { backend } from "@/services/backend";
+import { useBackend } from "@/contexts/backend";
 import { useToast } from "@/contexts/toast";
 import ConfigWrapper from "@/components/dashboard/chair/config_wrapper";
 import Button from "@/components/button";
@@ -18,6 +18,7 @@ export default function StateOfDebateWidget() {
   const { LL } = useI18nContext();
   const { showToast, toastError } = useContext(ToastContext);
   const conferenceId = useContext(ConferenceIdContext);
+  const { backend } = useBackend();
   const committeeId = useContext(CommitteeIdContext);
   const committeeData = useContext(CommitteeDataContext);
 

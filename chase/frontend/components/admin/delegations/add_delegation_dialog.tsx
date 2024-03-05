@@ -1,6 +1,6 @@
 import Button from "@/components/button";
 import CountryAutoComplete from "@/components/speakers_list/country_auto_complete";
-import { backend } from "@/services/backend";
+import { useBackend, type BackendInstanceType } from "@/contexts/backend";
 import { useI18nContext } from "@/i18n/i18n-react";
 import { faPlus, faXmark } from "@fortawesome/pro-solid-svg-icons";
 import useMousetrap from "mousetrap-react";
@@ -9,13 +9,13 @@ import { FormEvent, useEffect, useState } from "react";
 import { useToast } from "@/contexts/toast";
 
 export type AllAvailableCountriesType = Awaited<
-  ReturnType<typeof backend.baseData.countries.get>
+  ReturnType<BackendInstanceType["baseData"]["countries"]["get"]>
 >["data"];
 
 type CountryDataWithoutNameType =
   NonNullable<AllAvailableCountriesType>[number];
 
-export interface CountryDataType extends CountryDataWithoutNameType {
+export type CountryDataType = CountryDataWithoutNameType & {
   name?: string;
 }
 
@@ -30,6 +30,7 @@ export default function AddDelegationDialog({
 }) {
   const { LL } = useI18nContext();
   const { toastError } = useToast();
+  const { backend } = useBackend();
 
   const [delegationData, setDelegationData] = useState<CountryDataType | null>(
     null,

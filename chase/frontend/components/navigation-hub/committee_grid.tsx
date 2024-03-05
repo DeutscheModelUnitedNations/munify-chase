@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useI18nContext } from "@/i18n/i18n-react";
-import { backend } from "@/services/backend";
+import { useBackend, type BackendInstanceType } from "@/contexts/backend";
 import { Skeleton } from "primereact/skeleton";
 import Link from "next/link";
 import Timer from "../dashboard/countdown_timer";
@@ -24,7 +24,9 @@ import {
 import { StatusTimerProvider } from "@/contexts/status_timer";
 
 type CommitteeArray = Awaited<
-  ReturnType<(typeof backend.conference)[":conferenceId"]["committee"]["get"]>
+  ReturnType<
+    BackendInstanceType["conference"][":conferenceId"]["committee"]["get"]
+  >
 >["data"];
 type CommitteeType = NonNullable<CommitteeArray>[number];
 
@@ -36,6 +38,7 @@ export default function CommitteeGrid({
   isChair?: boolean;
 }) {
   const { LL } = useI18nContext();
+  const { backend } = useBackend();
   const { toastError } = useToast();
 
   const [committees, setCommittees] = useState<CommitteeArray>(null);

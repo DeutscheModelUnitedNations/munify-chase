@@ -5,8 +5,7 @@ import PresenceWidget from "@/components/attendance/presence_widget";
 import TimerWidget from "@/components/dashboard/timer";
 import SpeakersListBlock from "@/components/speakers_list/speakers_list_block";
 import WidgetTemplate from "@/components/widget_template";
-import { backend } from "@/services/backend";
-import { Committee } from "../../../../../../../backend/prisma/generated/schema";
+import { useBackend, type BackendInstanceType } from "@/contexts/backend";
 import { Skeleton } from "primereact/skeleton";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPodium } from "@fortawesome/pro-solid-svg-icons";
@@ -14,12 +13,12 @@ import { useToast } from "@/contexts/toast";
 
 type CommitteeType = Awaited<
   ReturnType<
-    (typeof backend.conference)["conferenceId"]["committee"]["committeeId"]["get"]
+    BackendInstanceType["conference"]["conferenceId"]["committee"]["committeeId"]["get"]
   >
 >["data"];
 type AgendaItems = Awaited<
   ReturnType<
-    (typeof backend.conference)["conferenceId"]["committee"]["committeeId"]["agendaItem"]["get"]
+    BackendInstanceType["conference"]["conferenceId"]["committee"]["committeeId"]["agendaItem"]["get"]
   >
 >["data"];
 
@@ -30,6 +29,7 @@ export default function CommitteePresentationMode({
 }) {
   const { LL, locale } = useI18nContext();
   const { toastError } = useToast();
+  const { backend } = useBackend();
 
   const [committeeData, setCommitteeData] = useState<CommitteeType | null>(
     null,

@@ -2,7 +2,7 @@
 import React, { useContext, useEffect, useState } from "react";
 
 import { useI18nContext } from "@/i18n/i18n-react";
-import { backend } from "@/services/backend";
+import { useBackend, type BackendInstanceType } from "@/contexts/backend";
 import { useRouter } from "next/navigation";
 import OnboardingSteps from "@/components/admin/onboarding/steps";
 import ForwardBackButtons from "@/components/admin/onboarding/forward_back_bar";
@@ -15,14 +15,16 @@ import {
 import { useToast } from "@/contexts/toast";
 
 type CommitteesType = Awaited<
-  ReturnType<(typeof backend.conference)["conferenceId"]["committee"]["get"]>
+  ReturnType<
+    BackendInstanceType["conference"]["conferenceId"]["committee"]["get"]
+  >
 >["data"];
 
 export default function OnboardingCommitteePage() {
-  const { LL } = useI18nContext();
   const router = useRouter();
   const { toastError } = useToast();
   const conferenceId = useContext(ConferenceIdContext);
+  const { backend } = useBackend();
 
   const [saveLoading, setSaveLoading] = useState(false);
   const [committees, setCommittees] = useState<CommitteesType | null>(null);

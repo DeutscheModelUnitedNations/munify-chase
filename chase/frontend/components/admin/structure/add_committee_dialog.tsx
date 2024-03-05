@@ -15,7 +15,7 @@ import {
 import Button from "@/components/button";
 import useMousetrap from "mousetrap-react";
 import { $Enums } from "../../../../backend/prisma/generated/client";
-import { backend } from "@/services/backend";
+import { useBackend, type BackendInstanceType } from "@/contexts/backend";
 
 type AddCommitteePayloadType = {
   name: string;
@@ -25,7 +25,9 @@ type AddCommitteePayloadType = {
 };
 
 type CommitteesType = Awaited<
-  ReturnType<(typeof backend.conference)["conferenceId"]["committee"]["get"]>
+  ReturnType<
+    BackendInstanceType["conference"]["conferenceId"]["committee"]["get"]
+  >
 >["data"];
 
 export default function AddCommitteeDialog({
@@ -40,6 +42,7 @@ export default function AddCommitteeDialog({
   committees: CommitteesType;
 }) {
   const { LL } = useI18nContext();
+  const { backend } = useBackend();
 
   const [newCommitteeName, setNewCommitteeName] = useState("");
   const [newCommitteeAbbreviation, setNewCommitteeAbbreviation] = useState("");

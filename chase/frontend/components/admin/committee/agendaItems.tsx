@@ -7,7 +7,7 @@ import {
   faPodium,
   faTrashAlt,
 } from "@fortawesome/pro-solid-svg-icons";
-import { backend } from "@/services/backend";
+import { useBackend, type BackendInstanceType } from "@/contexts/backend";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useToast } from "@/contexts/toast";
 import {
@@ -17,7 +17,7 @@ import {
 
 type AgendaItemType = Awaited<
   ReturnType<
-    (typeof backend.conference)["conferenceId"]["committee"]["committeeId"]["agendaItem"]["get"]
+    BackendInstanceType["conference"]["conferenceId"]["committee"]["committeeId"]["agendaItem"]["get"]
   >
 >["data"];
 
@@ -26,6 +26,7 @@ export default function agendaItem() {
   const { toastError } = useToast();
   const conferenceId = useContext(ConferenceIdContext);
   const committeeId = useContext(CommitteeIdContext);
+  const { backend } = useBackend();
 
   const [committeeAgendaItems, setCommitteeAgendaItems] =
     useState<AgendaItemType | null>(null);

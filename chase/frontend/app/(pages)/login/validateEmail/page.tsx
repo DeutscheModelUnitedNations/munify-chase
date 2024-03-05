@@ -1,6 +1,6 @@
 "use client";
 import { useI18nContext } from "@/i18n/i18n-react";
-import { backend } from "@/services/backend";
+import { useBackend } from "@/contexts/backend";
 import { useSearchParams } from "next/navigation";
 import Image from "next/image";
 import { Suspense, useEffect, useState } from "react";
@@ -27,6 +27,7 @@ function ValidateEmailComponent() {
   const [credentialCreateToken, setCredentialCreateToken] = useState<
     string | undefined
   >();
+  const { backend } = useBackend();
 
   const searchParams = useSearchParams();
 

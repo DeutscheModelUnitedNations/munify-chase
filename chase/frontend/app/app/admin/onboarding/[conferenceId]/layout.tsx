@@ -12,7 +12,7 @@ import { useRouter } from "next/navigation";
 import useMousetrap from "mousetrap-react";
 import { confirmPopup } from "primereact/confirmpopup";
 import { ConfirmDialog } from "primereact/confirmdialog";
-import { backend } from "@/services/backend";
+import { useBackend } from "@/contexts/backend";
 import { useUserIdent } from "@/contexts/user_ident";
 import { ConferenceIdContext } from "@/contexts/committee_data";
 import Lockout from "@/components/lockout";
@@ -30,6 +30,7 @@ export default function AdminLayout({
   const { toastError } = useToast();
   const router = useRouter();
   const conferenceId = useContext(ConferenceIdContext);
+  const { backend } = useBackend();
 
   const [settingsSidebarVisible, setSettingsSidebarVisible] = useState(false);
 

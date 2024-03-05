@@ -24,7 +24,7 @@ import {
   ConferenceIdContext,
 } from "@/contexts/committee_data";
 import { MyDelegationContext, useUserIdent } from "@/contexts/user_ident";
-import { backend } from "@/services/backend";
+import { useBackend } from "@/contexts/backend";
 import { useToast } from "@/contexts/toast";
 import { $Enums } from "../../../backend/prisma/generated/client";
 
@@ -41,6 +41,7 @@ interface DropdownOptions {
 
 export default function ActionsWidget() {
   const { LL } = useI18nContext();
+  const { backend } = useBackend();
   const conferenceId = useContext(ConferenceIdContext);
   const committeeId = useContext(CommitteeIdContext);
   const committeeData = useContext(CommitteeDataContext);

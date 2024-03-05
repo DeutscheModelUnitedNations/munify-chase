@@ -1,7 +1,6 @@
 "use client";
 import { useI18nContext } from "@/i18n/i18n-react";
 import { useToast } from "@/contexts/toast";
-import { backend } from "@/services/backend";
 import { useSearchParams } from "next/navigation";
 import Image from "next/image";
 import { Suspense, useEffect, useState } from "react";
@@ -10,6 +9,7 @@ import { faCircleNotch } from "@fortawesome/pro-solid-svg-icons";
 import { Button } from "primereact/button";
 import Link from "next/link";
 import { InputText } from "primereact/inputtext";
+import { useBackend } from "@/contexts/backend";
 
 const passwordRegex =
   /^(?=.*[A-Z].*[A-Z])(?=.*[!@#$&*])(?=.*[0-9].*[0-9])(?=.*[a-z].*[a-z].*[a-z]).{8,}$/;
@@ -33,6 +33,7 @@ function CreateCredentialsComponent() {
     useState<boolean | undefined>();
   const [succeeded, setSucceeded] = useState<boolean | undefined>();
   const [passwordValid, setPasswordValid] = useState<boolean | undefined>();
+  const { backend } = useBackend();
 
   const searchParams = useSearchParams();
 

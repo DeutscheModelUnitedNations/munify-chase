@@ -14,6 +14,11 @@ import {
 import AttendanceTable, {
   DelegationDataType,
 } from "@/components/attendance/attendance_table";
+import Button from "@/components/button";
+import {
+  faPersonFromPortal,
+  faPersonToPortal,
+} from "@fortawesome/pro-solid-svg-icons";
 
 export default function ChairAttendees() {
   const { LL, locale } = useI18nContext();
@@ -88,6 +93,46 @@ export default function ChairAttendees() {
             showExcusedSeperately={true}
             forceUpdate={forcePresenceWidgetUpdate}
           />
+          <div className="flex-1 flex gap-2 items-center justify-center">
+            <Button
+              faIcon={faPersonFromPortal}
+              label={LL.chairs.attendance.SET_ALL_ABSENT()}
+              onClick={() => {
+                if (!conferenceId || !committeeId) return;
+                backend.conference[conferenceId].committee[
+                  committeeId
+                ].presence.allAbsent
+                  .post()
+                  .then((res) => {
+                    if (res.status !== 200)
+                      throw new Error("Failed to set all absent");
+                  })
+                  .catch((error) => {
+                    toastError(error);
+                  });
+              }}
+              severity="danger"
+            />
+            <Button
+              faIcon={faPersonToPortal}
+              label={LL.chairs.attendance.SET_ALL_PRESENT()}
+              onClick={() => {
+                if (!conferenceId || !committeeId) return;
+                backend.conference[conferenceId].committee[
+                  committeeId
+                ].presence.allPresent
+                  .post()
+                  .then((res) => {
+                    if (res.status !== 200)
+                      throw new Error("Failed to set all absent");
+                  })
+                  .catch((error) => {
+                    toastError(error);
+                  });
+              }}
+              severity="success"
+            />
+          </div>
         </HeaderTemplate>
         <ScrollPanel className="flex-1 overflow-y-auto custom-scrollbar">
           <div className="flex-1 flex p-4 gap-4 flex-col items-center">

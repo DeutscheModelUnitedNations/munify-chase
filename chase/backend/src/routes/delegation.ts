@@ -162,4 +162,45 @@ export const delegation = new Elysia({
         tags: [openApiTag(import.meta.path)],
       },
     },
-  );
+  )
+
+  .post(
+    "/committee/:committeeId/presence/allAbsent",
+    async ({ params: { committeeId } }) => {
+      return await db.committeeMember.updateMany({
+        where: {
+          committeeId,
+        },
+        data: {
+          presence: "ABSENT",
+        },
+      });
+    },
+    {
+      hasConferenceRole: ["ADMIN", "CHAIR"],
+      detail: {
+        description: "Get all delegations in a committee with all members absent",
+        tags: [openApiTag(import.meta.path)],
+      },
+    },
+  )
+  .post(
+    "/committee/:committeeId/presence/allPresent",
+    async ({ params: { committeeId } }) => {
+      return await db.committeeMember.updateMany({
+        where: {
+          committeeId,
+        },
+        data: {
+          presence: "PRESENT",
+        },
+      });
+    },
+    {
+      hasConferenceRole: ["ADMIN", "CHAIR"],
+      detail: {
+        description: "Get all delegations in a committee with all members absent",
+        tags: [openApiTag(import.meta.path)],
+      },
+    },
+  )

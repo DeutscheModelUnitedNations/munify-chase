@@ -546,6 +546,8 @@ const en = {
         DESCRIPTION:
           "Manage the attendance of non-state actors in the committee. They are not counted in the quorum and are not allowed to vote.",
       },
+      SET_ALL_ABSENT: "All on Absent",
+      SET_ALL_PRESENT: "All on Present",
     },
     whiteboard: {
       SAVE_BUTTON: "Save and publish",

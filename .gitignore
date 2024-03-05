@@ -16,6 +16,7 @@ yarn-error.log*
 next-env.d.ts
 .postgres-data
 .redis-data
+users.csv
 
 chase/backend/prisma/generated
 fontawesome-pro-6.4.2/

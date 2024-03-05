@@ -36,7 +36,11 @@ type Committee = Awaited<
  * With this widget, participants can see the end time of the current session as well as a countdown.
  */
 
-export default function TimerWidget() {
+export default function TimerWidget({
+  showOnFormalDebate = true,
+}: {
+  showOnFormalDebate?: boolean;
+}) {
   const { LL } = useI18nContext();
   const { toastError } = useToast();
   const { category, headline, until } = useContext(StatusTimer);
@@ -111,7 +115,8 @@ export default function TimerWidget() {
           layout
         >
           {category ? (
-            category !== "CLOSED" && (
+            category !== "CLOSED" &&
+            (showOnFormalDebate || category !== "FORMAL") && (
               <WidgetTemplate
                 cardTitle=""
                 additionalClassNames={getClassNames()}

@@ -594,7 +594,7 @@ const en = {
       confirm: {
         NEXT_SPEAKER_MESSAGE:
           "Do you really want to remove the current speaker and advance to the next?",
-        NEXT_SPEAKER_HEADER: "Next Speaker",
+        NEXT_SPEAKER_HEADER: "Next Speaker at {list:string}",
         NEXT_SPEAKER_ACCEPT: "Yes",
         NEXT_SPEAKER_REJECT: "No",
       },

@@ -642,7 +642,15 @@ const de = {
     TAG_PRIORITY: "Priorität",
     TAG_ASSIGNED: "Zugewiesen",
     TAG_RESEARCH_SERVICE: "WD",
-    BUTTON_FORWARD_TO_RESEARCH_SERVICE: "FWD an WD",
+    BUTTON_FORWARD_TO_RESEARCH_SERVICE: "an WD senden",
+    tooltips: {
+      UNREAD: "Als ungelesen markieren",
+      PRIORITY: "Als Priorität markieren",
+      ASSIGNED: "Als zugewiesen markieren",
+      DELETE: "Nachricht löschen",
+      PRINT: "Nachricht drucken",
+      REPLY_VIA_EMAIL: "Antworten per E-Mail",
+    },
   },
 } satisfies Translation;
 

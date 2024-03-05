@@ -636,6 +636,14 @@ const en = {
     TAG_ASSIGNED: "Assigned",
     TAG_RESEARCH_SERVICE: "RS",
     BUTTON_FORWARD_TO_RESEARCH_SERVICE: "FWD to RS",
+    tooltips: {
+      UNREAD: "Mark as Unread",
+      PRIORITY: "Mark as Priority",
+      DELETE: "Delete message",
+      ASSIGNED: "Mark as Assigned",
+      PRINT: "Print message",
+      REPLY_VIA_EMAIL: "Reply via Email",
+    },
   },
 } satisfies BaseTranslation;
 

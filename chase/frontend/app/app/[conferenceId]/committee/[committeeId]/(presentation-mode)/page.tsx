@@ -6,7 +6,7 @@ import TimerWidget from "@/components/dashboard/timer";
 import SpeakersListBlock from "@/components/speakers_list/speakers_list_block";
 import WidgetTemplate from "@/components/widget_template";
 import { backend } from "@/services/backend";
-import { Committee } from "../../../../../../../backend/prisma/generated/schema";
+import { useMediaQuery } from "react-responsive";
 import { Skeleton } from "primereact/skeleton";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPodium } from "@fortawesome/pro-solid-svg-icons";
@@ -30,6 +30,10 @@ export default function CommitteePresentationMode({
 }) {
   const { LL, locale } = useI18nContext();
   const { toastError } = useToast();
+
+  const isDesktopOrLaptop = useMediaQuery({
+    query: "(min-width: 768px)",
+  });
 
   const [committeeData, setCommitteeData] = useState<CommitteeType | null>(
     null,
@@ -72,7 +76,7 @@ export default function CommitteePresentationMode({
 
   return (
     <div className="bg-primary-900 p-4 h-screen">
-      <div className="flex gap-4">
+      <div className="flex flex-col md:flex-row gap-4">
         <div className="flex-1 flex flex-col gap-4 h-[calc(100vh-2rem)]">
           <WidgetTemplate>
             <h1 className="text-2xl font-bold">
@@ -97,24 +101,28 @@ export default function CommitteePresentationMode({
               </h2>
             </div>
           </WidgetTemplate>
-          <WidgetTemplate
-            cardTitle={LL.participants.dashboard.widgetHeadlines.PRESENCE()}
-          >
-            <PresenceWidget />
-          </WidgetTemplate>
-          <TimerWidget />
+          <div className="hidden md:contents">
+            <WidgetTemplate
+              cardTitle={LL.participants.dashboard.widgetHeadlines.PRESENCE()}
+            >
+              <PresenceWidget />
+            </WidgetTemplate>
+          </div>
+          <TimerWidget showOnFormalDebate={isDesktopOrLaptop} />
         </div>
-        <div className="flex-1 flex justify-center h-[calc(100vh-2rem)]">
-          <SpeakersListBlock
-            listTitle={LL.participants.speakersList.SPEAKERS_LIST()}
-            typeOfList="SPEAKERS_LIST"
-          />
-        </div>
-        <div className="flex-1 flex justify-center h-[calc(100vh-2rem)]">
-          <SpeakersListBlock
-            listTitle={LL.participants.speakersList.COMMENT_LIST()}
-            typeOfList="COMMENT_LIST"
-          />
+        <div className="flex-1 flex flex-col xl:contents gap-4">
+          <div className="flex-1 flex justify-center h-[calc(100vh-2rem)]">
+            <SpeakersListBlock
+              listTitle={LL.participants.speakersList.SPEAKERS_LIST()}
+              typeOfList="SPEAKERS_LIST"
+            />
+          </div>
+          <div className="flex-1 flex justify-center h-[calc(100vh-2rem)]">
+            <SpeakersListBlock
+              listTitle={LL.participants.speakersList.COMMENT_LIST()}
+              typeOfList="COMMENT_LIST"
+            />
+          </div>
         </div>
       </div>
     </div>

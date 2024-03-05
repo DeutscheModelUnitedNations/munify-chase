@@ -179,7 +179,8 @@ export const delegation = new Elysia({
     {
       hasConferenceRole: ["ADMIN", "CHAIR"],
       detail: {
-        description: "Get all delegations in a committee with all members absent",
+        description:
+          "Get all delegations in a committee with all members absent",
         tags: [openApiTag(import.meta.path)],
       },
     },
@@ -199,8 +200,9 @@ export const delegation = new Elysia({
     {
       hasConferenceRole: ["ADMIN", "CHAIR"],
       detail: {
-        description: "Get all delegations in a committee with all members absent",
+        description:
+          "Get all delegations in a committee with all members absent",
         tags: [openApiTag(import.meta.path)],
       },
     },
-  )
+  );

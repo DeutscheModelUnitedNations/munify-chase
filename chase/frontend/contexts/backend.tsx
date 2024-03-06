@@ -1,27 +1,28 @@
-import React, { createContext, useContext, useEffect, useState } from "react";
+import React, { createContext, useContext, useState } from "react";
 import { edenTreaty } from "@elysiajs/eden";
 import { App } from "../../backend/src/main";
+import { unstable_noStore as noStore } from "next/cache";
 
 export const BackendContext = createContext({} as BackendContextType);
 export const useBackend = () => useContext(BackendContext);
 
-// @ts-ignore
-const instance = edenTreaty<App>(
-  process.env.NEXT_PUBLIC_BACKEND_URL || "https://chase-backend.dmun.de",
-  {
-    $fetch: {
-      credentials: "include",
-    },
-  },
-);
-export type BackendInstanceType = typeof instance;
+export type BackendInstanceType = ReturnType<typeof edenTreaty<App>>;
+
+function getBackendUrl() {
+  noStore();
+  // return process.env.BACKEND_URL || "https://chase-backend.dmun.de";
+  return process.env.BACKEND_URL || "http://localhost:3001";
+}
 
 export const Backend = ({ children }: { children: React.ReactNode }) => {
-  const [backend, setBackend] = useState<BackendInstanceType>(instance);
-
-  useEffect(() => {
-    setBackend(instance);
-  }, [backend]);
+  console.log(getBackendUrl())
+  const [backend, _setBackend] = useState(
+    edenTreaty<App>(getBackendUrl(), {
+      $fetch: {
+        credentials: "include",
+      },
+    }),
+  );
 
   return (
     <BackendContext.Provider value={{ backend }}>

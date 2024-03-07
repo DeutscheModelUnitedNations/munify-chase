@@ -26,7 +26,6 @@ import { useToast } from "@/contexts/toast";
 import { $Enums } from "../../../backend/prisma/generated/client";
 import { useBackend } from "@/contexts/backend";
 
-
 interface DropdownOptions {
   label: string;
   value: $Enums.MessageCategory;

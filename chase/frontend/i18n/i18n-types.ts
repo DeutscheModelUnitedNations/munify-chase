@@ -1543,6 +1543,14 @@ type RootTranslation = {
 				 */
 				DESCRIPTION: string
 			}
+			/**
+			 * A​l​l​ ​o​n​ ​A​b​s​e​n​t
+			 */
+			SET_ALL_ABSENT: string
+			/**
+			 * A​l​l​ ​o​n​ ​P​r​e​s​e​n​t
+			 */
+			SET_ALL_PRESENT: string
 		}
 		whiteboard: {
 			/**
@@ -1687,9 +1695,10 @@ type RootTranslation = {
 				 */
 				NEXT_SPEAKER_MESSAGE: string
 				/**
-				 * N​e​x​t​ ​S​p​e​a​k​e​r
+				 * N​e​x​t​ ​S​p​e​a​k​e​r​ ​a​t​ ​{​l​i​s​t​}
+				 * @param {string} list
 				 */
-				NEXT_SPEAKER_HEADER: string
+				NEXT_SPEAKER_HEADER: RequiredParams<'list'>
 				/**
 				 * Y​e​s
 				 */
@@ -1810,6 +1819,32 @@ type RootTranslation = {
 		 * F​W​D​ ​t​o​ ​R​S
 		 */
 		BUTTON_FORWARD_TO_RESEARCH_SERVICE: string
+		tooltips: {
+			/**
+			 * M​a​r​k​ ​a​s​ ​U​n​r​e​a​d
+			 */
+			UNREAD: string
+			/**
+			 * M​a​r​k​ ​a​s​ ​P​r​i​o​r​i​t​y
+			 */
+			PRIORITY: string
+			/**
+			 * D​e​l​e​t​e​ ​m​e​s​s​a​g​e
+			 */
+			DELETE: string
+			/**
+			 * M​a​r​k​ ​a​s​ ​A​s​s​i​g​n​e​d
+			 */
+			ASSIGNED: string
+			/**
+			 * P​r​i​n​t​ ​m​e​s​s​a​g​e
+			 */
+			PRINT: string
+			/**
+			 * R​e​p​l​y​ ​v​i​a​ ​E​m​a​i​l
+			 */
+			REPLY_VIA_EMAIL: string
+		}
 	}
 }
 
@@ -3340,6 +3375,14 @@ export type TranslationFunctions = {
 				 */
 				DESCRIPTION: () => LocalizedString
 			}
+			/**
+			 * All on Absent
+			 */
+			SET_ALL_ABSENT: () => LocalizedString
+			/**
+			 * All on Present
+			 */
+			SET_ALL_PRESENT: () => LocalizedString
 		}
 		whiteboard: {
 			/**
@@ -3484,9 +3527,9 @@ export type TranslationFunctions = {
 				 */
 				NEXT_SPEAKER_MESSAGE: () => LocalizedString
 				/**
-				 * Next Speaker
+				 * Next Speaker at {list}
 				 */
-				NEXT_SPEAKER_HEADER: () => LocalizedString
+				NEXT_SPEAKER_HEADER: (arg: { list: string }) => LocalizedString
 				/**
 				 * Yes
 				 */
@@ -3603,6 +3646,32 @@ export type TranslationFunctions = {
 		 * FWD to RS
 		 */
 		BUTTON_FORWARD_TO_RESEARCH_SERVICE: () => LocalizedString
+		tooltips: {
+			/**
+			 * Mark as Unread
+			 */
+			UNREAD: () => LocalizedString
+			/**
+			 * Mark as Priority
+			 */
+			PRIORITY: () => LocalizedString
+			/**
+			 * Delete message
+			 */
+			DELETE: () => LocalizedString
+			/**
+			 * Mark as Assigned
+			 */
+			ASSIGNED: () => LocalizedString
+			/**
+			 * Print message
+			 */
+			PRINT: () => LocalizedString
+			/**
+			 * Reply via Email
+			 */
+			REPLY_VIA_EMAIL: () => LocalizedString
+		}
 	}
 }
 

@@ -6,6 +6,9 @@ import {
   ConferenceIdContext,
 } from "@/contexts/committee_data";
 import InboxTemplate from "@/components/inbox/inbox_template";
+import Button from "@/components/button";
+import { faPlus } from "@fortawesome/pro-solid-svg-icons";
+import { ActionsOverlayResearchService } from "@/components/dashboard/actions_overlay";
 
 type ChairMessages = Awaited<
   ReturnType<
@@ -22,6 +25,7 @@ export default function InboxPage() {
   const [selectedMessage, setSelectedMessage] = useState<
     NonNullable<ChairMessages>[number] | null
   >(null);
+  const [displayResearchDialog, setDisplayResearchDialog] = useState(false);
 
   async function getMessages() {
     if (!conferenceId || !committeeId) return;
@@ -51,6 +55,11 @@ export default function InboxPage() {
 
   return (
     <>
+      <ActionsOverlayResearchService
+        showOverlay={displayResearchDialog}
+        setShowOverlay={setDisplayResearchDialog}
+        isChair
+      />
       <InboxTemplate
         isResearchService={false}
         messages={messages}
@@ -58,6 +67,14 @@ export default function InboxPage() {
         setSelectedMessage={setSelectedMessage}
         getMessagesFunction={getMessages}
       />
+      <div className="absolute bottom-5 right-5">
+        <Button
+          faIcon={faPlus}
+          className="z-50"
+          raised
+          onClick={() => setDisplayResearchDialog(true)}
+        />
+      </div>
     </>
   );
 }

@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import { useI18nContext } from "@/i18n/i18n-react";
 import PresenceWidget from "@/components/attendance/presence_widget";
 import TimerWidget from "@/components/dashboard/timer";
@@ -10,6 +10,8 @@ import { Skeleton } from "primereact/skeleton";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPodium } from "@fortawesome/pro-solid-svg-icons";
 import { useToast } from "@/contexts/toast";
+import WhiteboardWidget from "@/components/dashboard/whiteboard";
+import { StatusTimer } from "@/contexts/status_timer";
 
 type CommitteeType = Awaited<
   ReturnType<
@@ -30,6 +32,11 @@ export default function CommitteePresentationMode({
   const { LL } = useI18nContext();
   const { toastError } = useToast();
   const { backend } = useBackend();
+  const { category } = useContext(StatusTimer);
+
+  const isDesktopOrLaptop = useMediaQuery({
+    query: "(min-width: 768px)",
+  });
 
   const [committeeData, setCommitteeData] = useState<CommitteeType | null>(
     null,
@@ -72,7 +79,7 @@ export default function CommitteePresentationMode({
 
   return (
     <div className="bg-primary-900 p-4 h-screen">
-      <div className="flex gap-4">
+      <div className="flex flex-col md:flex-row gap-4">
         <div className="flex-1 flex flex-col gap-4 h-[calc(100vh-2rem)]">
           <WidgetTemplate>
             <h1 className="text-2xl font-bold">
@@ -97,25 +104,35 @@ export default function CommitteePresentationMode({
               </h2>
             </div>
           </WidgetTemplate>
-          <WidgetTemplate
-            cardTitle={LL.participants.dashboard.widgetHeadlines.PRESENCE()}
-          >
-            <PresenceWidget />
-          </WidgetTemplate>
-          <TimerWidget />
+          <div className="hidden md:contents">
+            <WidgetTemplate
+              cardTitle={LL.participants.dashboard.widgetHeadlines.PRESENCE()}
+            >
+              <PresenceWidget />
+            </WidgetTemplate>
+          </div>
+          <TimerWidget showOnFormalDebate={isDesktopOrLaptop} />
         </div>
-        <div className="flex-1 flex justify-center h-[calc(100vh-2rem)]">
-          <SpeakersListBlock
-            listTitle={LL.participants.speakersList.SPEAKERS_LIST()}
-            typeOfList="SPEAKERS_LIST"
-          />
-        </div>
-        <div className="flex-1 flex justify-center h-[calc(100vh-2rem)]">
-          <SpeakersListBlock
-            listTitle={LL.participants.speakersList.COMMENT_LIST()}
-            typeOfList="COMMENT_LIST"
-          />
-        </div>
+        {category === "FORMAL" ? (
+          <div className="flex-1 flex flex-col xl:contents gap-4">
+            <div className="flex-1 flex justify-center h-[calc(100vh-2rem)]">
+              <SpeakersListBlock
+                listTitle={LL.participants.speakersList.SPEAKERS_LIST()}
+                typeOfList="SPEAKERS_LIST"
+              />
+            </div>
+            <div className="flex-1 flex justify-center h-[calc(100vh-2rem)]">
+              <SpeakersListBlock
+                listTitle={LL.participants.speakersList.COMMENT_LIST()}
+                typeOfList="COMMENT_LIST"
+              />
+            </div>
+          </div>
+        ) : (
+          <div className="flex-1 flex justify-center h-[calc(100vh-2rem)]">
+            <WhiteboardWidget />
+          </div>
+        )}
       </div>
     </div>
   );

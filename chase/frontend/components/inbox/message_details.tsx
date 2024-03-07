@@ -20,6 +20,9 @@ import {
   faTrash,
   faUserTie,
   faUserXmark,
+  faForwardStep,
+  faMailForward,
+  faMailReply,
 } from "@fortawesome/pro-solid-svg-icons";
 import { Tag } from "primereact/tag";
 import PrintMessageDocument from "@/components/inbox/print_message";
@@ -101,6 +104,8 @@ export default function MessageDetails({
             ? faEyeSlash
             : faEye
         }
+        tooltip={LL.messageBoard.tooltips.UNREAD()}
+        tooltipOptions={{ showDelay: 800, hideDelay: 300, position: "bottom" }}
         onClick={async () => {
           if (message.status.includes($Enums.MessageStatus.UNREAD)) {
             await backend.message[message.id].removeStatus
@@ -134,6 +139,8 @@ export default function MessageDetails({
       />
       <Button
         faIcon={faExclamationCircle}
+        tooltip={LL.messageBoard.tooltips.PRIORITY()}
+        tooltipOptions={{ showDelay: 800, hideDelay: 300, position: "bottom" }}
         severity={
           message?.status.includes($Enums.MessageStatus.PRIORITY)
             ? "danger"
@@ -171,6 +178,8 @@ export default function MessageDetails({
         }}
       />
       <Button
+        tooltip={LL.messageBoard.tooltips.ASSIGNED()}
+        tooltipOptions={{ showDelay: 800, hideDelay: 300, position: "bottom" }}
         faIcon={
           message?.status.includes($Enums.MessageStatus.ASSIGNED)
             ? faUserXmark
@@ -215,6 +224,8 @@ export default function MessageDetails({
       <Button
         faIcon={faTrash}
         severity="danger"
+        tooltip={LL.messageBoard.tooltips.DELETE()}
+        tooltipOptions={{ showDelay: 800, hideDelay: 300, position: "bottom" }}
         onClick={async () => {
           await backend.message[message.id].setStatus
             .post({
@@ -242,7 +253,7 @@ export default function MessageDetails({
   const centerContent = (
     <div className="flex gap-2">
       <Button
-        faIcon={faMicroscope}
+        faIcon={faMailForward}
         label={LL.messageBoard.BUTTON_FORWARD_TO_RESEARCH_SERVICE()}
         severity="warning"
         onClick={async () => {
@@ -269,9 +280,16 @@ export default function MessageDetails({
 
   const endContent = (
     <div className="flex gap-2">
-      <Button faIcon={faPrint} onClick={() => setShowPrintDialog(true)} />
       <Button
-        faIcon={faPaperPlane}
+        faIcon={faPrint}
+        onClick={() => setShowPrintDialog(true)}
+        tooltip={LL.messageBoard.tooltips.PRINT()}
+        tooltipOptions={{ showDelay: 800, hideDelay: 300, position: "bottom" }}
+      />
+      <Button
+        faIcon={faMailReply}
+        tooltip={LL.messageBoard.tooltips.REPLY_VIA_EMAIL()}
+        tooltipOptions={{ showDelay: 800, hideDelay: 300, position: "bottom" }}
         onClick={() => window.open(`mailto:${message?.metaEmail}`)}
       />
     </div>

@@ -546,6 +546,8 @@ const en = {
         DESCRIPTION:
           "Manage the attendance of non-state actors in the committee. They are not counted in the quorum and are not allowed to vote.",
       },
+      SET_ALL_ABSENT: "All on Absent",
+      SET_ALL_PRESENT: "All on Present",
     },
     whiteboard: {
       SAVE_BUTTON: "Save and publish",
@@ -592,7 +594,7 @@ const en = {
       confirm: {
         NEXT_SPEAKER_MESSAGE:
           "Do you really want to remove the current speaker and advance to the next?",
-        NEXT_SPEAKER_HEADER: "Next Speaker",
+        NEXT_SPEAKER_HEADER: "Next Speaker at {list:string}",
         NEXT_SPEAKER_ACCEPT: "Yes",
         NEXT_SPEAKER_REJECT: "No",
       },
@@ -634,6 +636,14 @@ const en = {
     TAG_ASSIGNED: "Assigned",
     TAG_RESEARCH_SERVICE: "RS",
     BUTTON_FORWARD_TO_RESEARCH_SERVICE: "FWD to RS",
+    tooltips: {
+      UNREAD: "Mark as Unread",
+      PRIORITY: "Mark as Priority",
+      DELETE: "Delete message",
+      ASSIGNED: "Mark as Assigned",
+      PRINT: "Print message",
+      REPLY_VIA_EMAIL: "Reply via Email",
+    },
   },
 } satisfies BaseTranslation;
 

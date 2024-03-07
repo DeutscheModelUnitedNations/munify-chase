@@ -553,6 +553,8 @@ const de = {
         DESCRIPTION:
           "Verwalte die Anwesenheit der Nichtstaatlichen Akteure im Gremium. Sie werden nicht in die Abstimmungsverhältnisse einbezogen und dürfen nicht an Abstimmungen teilnehmen.",
       },
+      SET_ALL_ABSENT: "Alle auf Abwesend setzen",
+      SET_ALL_PRESENT: "Alle auf Anwesend setzen",
     },
     whiteboard: {
       SAVE_BUTTON: "Speichern und Veröffentlichen",
@@ -579,7 +581,7 @@ const de = {
       addSpeakerOverlay: {
         HEADLINE: "Redebeiträge zu {{0}} hinzufügen",
         PLACEHOLDER: "Suche nach Redner*innen",
-        BUTTON_CANCEL: "Abbrechen",
+        BUTTON_CANCEL: "Schließen",
         BUTTON_ADD: "Hinzufügen",
         BUTTON_ADD_AND_CLOSE: "Hinzufügen und schließen",
         TOAST_ADDED_SUMMARY: "{{0}} hinzugefügt",
@@ -599,7 +601,7 @@ const de = {
       confirm: {
         NEXT_SPEAKER_MESSAGE:
           "Willst du wirklich den nächsten Redner aufrufen?",
-        NEXT_SPEAKER_HEADER: "Nächste Rede",
+        NEXT_SPEAKER_HEADER: "Nächste Rede: {list}",
         NEXT_SPEAKER_ACCEPT: "Ja",
         NEXT_SPEAKER_REJECT: "Nein",
       },
@@ -640,7 +642,15 @@ const de = {
     TAG_PRIORITY: "Priorität",
     TAG_ASSIGNED: "Zugewiesen",
     TAG_RESEARCH_SERVICE: "WD",
-    BUTTON_FORWARD_TO_RESEARCH_SERVICE: "FWD an WD",
+    BUTTON_FORWARD_TO_RESEARCH_SERVICE: "an WD senden",
+    tooltips: {
+      UNREAD: "Als ungelesen markieren",
+      PRIORITY: "Als Priorität markieren",
+      ASSIGNED: "Als zugewiesen markieren",
+      DELETE: "Nachricht löschen",
+      PRINT: "Nachricht drucken",
+      REPLY_VIA_EMAIL: "Antworten per E-Mail",
+    },
   },
 } satisfies Translation;
 

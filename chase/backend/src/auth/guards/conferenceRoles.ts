@@ -22,8 +22,6 @@ export const conferenceRoleGuard = new Elysia({
        */
       hasConferenceRole(roles: ConferenceRole[] | "any") {
         onBeforeHandle(async ({ session, set, params }) => {
-          console.log("called");
-
           if (session.loggedIn !== true || !session.userData) {
             // biome-ignore lint/suspicious/noAssignInExpressions: This is a valid use case
             return (set.status = "Unauthorized");
@@ -35,7 +33,6 @@ export const conferenceRoleGuard = new Elysia({
           }
           const { conferenceId } = parametersSchema.Decode(params);
 
-          console.log(roles);
           const res = await db.conferenceMember.findFirst({
             where: {
               userId: session.userData.id,

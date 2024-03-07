@@ -293,14 +293,20 @@ export function ChairSpeechButtons({
         visible={nextSpeakerWarningVisible}
         onHide={() => setNextSpeakerWarningVisible(false)}
         message={LL.chairs.speakersList.confirm.NEXT_SPEAKER_MESSAGE()}
-        header={LL.chairs.speakersList.confirm.NEXT_SPEAKER_HEADER()}
+        header={LL.chairs.speakersList.confirm.NEXT_SPEAKER_HEADER({
+          list: listTypeMap[typeOfList as $Enums.SpeakersListCategory],
+        })}
         defaultFocus="accept"
         icon={
           <FontAwesomeIcon
             icon={faExclamationTriangle}
             beatFade
             size={"3x"}
-            className="text-red-500"
+            className={
+              typeOfList === $Enums.SpeakersListCategory.SPEAKERS_LIST
+                ? "text-red-500"
+                : "text-yellow-500"
+            }
           />
         }
         accept={() => {
@@ -449,7 +455,7 @@ export function ChairSpeechButtons({
         </Dialog>
         <Dialog
           header={LL.chairs.speakersList.changeSpeechTimeOverlay.HEADLINE(
-            typeOfList,
+            listTypeMap[typeOfList],
           )}
           visible={changeSpeechTimeOverlayVisible}
           onHide={() => setChangeSpeechTimeOverlayVisible(false)}

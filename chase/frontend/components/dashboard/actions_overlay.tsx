@@ -22,9 +22,10 @@ import {
   ConferenceIdContext,
 } from "@/contexts/committee_data";
 import { MyDelegationContext, useUserIdent } from "@/contexts/user_ident";
-import { backend } from "@/services/backend";
 import { useToast } from "@/contexts/toast";
 import { $Enums } from "../../../backend/prisma/generated/client";
+import { useBackend } from "@/contexts/backend";
+
 
 interface DropdownOptions {
   label: string;
@@ -46,6 +47,7 @@ export function ActionsOverlayChairMessage({
   const myDelegationData = useContext(MyDelegationContext);
   const { userIdent } = useUserIdent();
   const { showToast } = useToast();
+  const { backend } = useBackend();
 
   const [subjectLine, setSubjectLine] = React.useState("");
   const [message, setMessage] = React.useState("");

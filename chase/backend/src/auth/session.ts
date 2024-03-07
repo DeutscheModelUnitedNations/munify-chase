@@ -64,8 +64,8 @@ export const session = new Elysia({ name: "session" })
         const verify = createVerify("SHA256");
         verify.update(sessionId);
         if (!verify.verify(publicKey, sessionIdSignature, "hex")) {
-          set.status = "Unauthorized";
-          throw new Error("Session id signature is invalid");
+          sessionIdCookie.remove();
+          sessionId = undefined;
         }
       }
 

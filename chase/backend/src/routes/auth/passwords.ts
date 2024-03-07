@@ -87,7 +87,7 @@ export const passwords = new Elysia()
     },
     {
       body: t.Object({
-        email: t.String(),
+        email: t.String({ format: "email" }),
         password: t.String(),
         credentialCreateToken: t.String(),
       }),
@@ -169,7 +169,7 @@ export const passwords = new Elysia()
     },
     {
       body: t.Object({
-        email: t.String(),
+        email: t.String({ format: "email" }),
         password: t.String(),
       }),
       detail: {

@@ -37,7 +37,7 @@ export const auth = new Elysia({
     },
     {
       query: t.Object({
-        email: t.String(),
+        email: t.String({ format: "email" }),
       }),
       response: t.Union([
         t.Literal("userNotFound"),
@@ -163,7 +163,7 @@ export const auth = new Elysia({
     },
     {
       body: t.Object({
-        email: t.String(),
+        email: t.String({ format: "email" }),
         token: t.String(),
       }),
       response: t.Union([
@@ -213,7 +213,7 @@ export const auth = new Elysia({
     },
     {
       body: t.Object({
-        email: t.String(),
+        email: t.String({ format: "email" }),
         locale: t.Union([t.Literal("en"), t.Literal("de")]),
         name: t.Optional(t.String()),
       }),
@@ -261,7 +261,7 @@ export const auth = new Elysia({
     {
       query: t.Object({
         locale: t.Union([t.Literal("en"), t.Literal("de")]),
-        email: t.String(),
+        email: t.String({ format: "email" }),
       }),
       detail: {
         description: "Sends a credential creation token to the users email",

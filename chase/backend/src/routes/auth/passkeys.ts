@@ -45,7 +45,7 @@
 //   },
 //   {
 //     body: t.Object({
-//       email: t.String(),
+//       email: t.String({ format: "email" }),
 //     }),
 //     detail: {
 //       description: "Starts the process of user creation with a passkey",
@@ -159,7 +159,7 @@
 //   },
 //   {
 //     body: t.Object({
-//       email: t.String(),
+//       email: t.String({ format: "email" }),
 //     }),
 //     detail: {
 //       description: "Login with a passkey",

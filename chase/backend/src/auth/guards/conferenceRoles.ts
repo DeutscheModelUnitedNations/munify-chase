@@ -10,7 +10,9 @@ const parametersSchema = TypeCompiler.Compile(
   }),
 );
 
-export const conferenceRoleGuard = new Elysia()
+export const conferenceRoleGuard = new Elysia({
+  name: "conferenceRoleGuard",
+})
   .use(session)
   .macro(({ onBeforeHandle }) => {
     return {
@@ -20,7 +22,9 @@ export const conferenceRoleGuard = new Elysia()
        */
       hasConferenceRole(roles: ConferenceRole[] | "any") {
         onBeforeHandle(async ({ session, set, params }) => {
-          if (session.loggedIn !== true) {
+          console.log("called");
+
+          if (session.loggedIn !== true || !session.userData) {
             // biome-ignore lint/suspicious/noAssignInExpressions: This is a valid use case
             return (set.status = "Unauthorized");
           }
@@ -31,11 +35,7 @@ export const conferenceRoleGuard = new Elysia()
           }
           const { conferenceId } = parametersSchema.Decode(params);
 
-          if (!session.userData) {
-            // biome-ignore lint/suspicious/noAssignInExpressions: This is a valid use case
-            return (set.status = "Unauthorized");
-          }
-
+          console.log(roles);
           const res = await db.conferenceMember.findFirst({
             where: {
               userId: session.userData.id,

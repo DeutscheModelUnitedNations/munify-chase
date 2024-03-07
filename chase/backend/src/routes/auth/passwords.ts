@@ -1,13 +1,13 @@
 import { t, Elysia } from "elysia";
 import { db } from "../../../prisma/db";
 import { openApiTag } from "../../util/openApiTags";
-import { loggedIn } from "../../auth/guards/loggedIn";
+import { loggedInGuard } from "../../auth/guards/loggedIn";
 
 const passwordRegex =
   /^(?=.*[A-Z].*[A-Z])(?=.*[!@#$&*])(?=.*[0-9].*[0-9])(?=.*[a-z].*[a-z].*[a-z]).{8,}$/;
 
 export const passwords = new Elysia()
-  .use(loggedIn)
+  .use(loggedInGuard)
   .post(
     "/password",
     async ({ body: { email, password, credentialCreateToken } }) => {
@@ -87,7 +87,7 @@ export const passwords = new Elysia()
     },
     {
       body: t.Object({
-        email: t.String({ format: "email" }),
+        email: t.String(),
         password: t.String(),
         credentialCreateToken: t.String(),
       }),
@@ -169,7 +169,7 @@ export const passwords = new Elysia()
     },
     {
       body: t.Object({
-        email: t.String({ format: "email" }),
+        email: t.String(),
         password: t.String(),
       }),
       detail: {

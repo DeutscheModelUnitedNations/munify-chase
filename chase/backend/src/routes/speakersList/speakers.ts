@@ -1,6 +1,6 @@
 import { Elysia } from "elysia";
 import { db } from "../../../prisma/db";
-import { committeeRoleGuard } from "../../auth/guards/committeeMember";
+import { committeeMemberGuard } from "../../auth/guards/committeeMember";
 import { conferenceRoleGuard } from "../../auth/guards/conferenceRoles";
 import { openApiTag } from "../../util/openApiTags";
 import { $Enums } from "../../../prisma/generated/client";
@@ -37,7 +37,7 @@ export const speakersListSpeakers = new Elysia({
   prefix: "/speakersList/:speakersListId",
 })
   .use(conferenceRoleGuard)
-  .use(committeeRoleGuard)
+  .use(committeeMemberGuard)
 
   .get(
     "",

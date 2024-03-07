@@ -56,7 +56,7 @@ export const session = new Elysia({ name: "session" })
       sessionIdCookie.path = "/";
 
       let sessionId = sessionIdCookie.value?.split(".")[0];
-      const sessionIdSignature = sessionIdCookie.value?.split(".")[1];
+      let sessionIdSignature = sessionIdCookie.value?.split(".")[1];
       if (sessionId) {
         if (!sessionIdSignature) {
           throw new Error("Session id signature cannot be undefined");
@@ -64,8 +64,9 @@ export const session = new Elysia({ name: "session" })
         const verify = createVerify("SHA256");
         verify.update(sessionId);
         if (!verify.verify(publicKey, sessionIdSignature, "hex")) {
-          sessionIdCookie.remove();
+          // if the session signature is not valid, treat the user as if they have no session id cookie set
           sessionId = undefined;
+          sessionIdSignature = undefined;
         }
       }
 

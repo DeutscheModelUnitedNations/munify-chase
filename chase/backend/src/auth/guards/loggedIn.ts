@@ -1,7 +1,9 @@
 import Elysia from "elysia";
 import { session } from "../session";
 
-export const loggedIn = new Elysia()
+export const loggedInGuard = new Elysia({
+  name: "loggedInGuard",
+})
   .use(session)
   .macro(({ onBeforeHandle }) => {
     return {

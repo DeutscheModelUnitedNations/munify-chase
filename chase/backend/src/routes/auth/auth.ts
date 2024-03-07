@@ -7,14 +7,14 @@ import {
 } from "../../email/email";
 import { nanoid } from "nanoid";
 import { appConfiguration } from "../../util/config";
-import { loggedIn } from "../../auth/guards/loggedIn";
+import { loggedInGuard } from "../../auth/guards/loggedIn";
 import { passwords } from "./passwords";
 
 export const auth = new Elysia({
   prefix: "/auth",
 })
   .use(passwords)
-  .use(loggedIn)
+  .use(loggedInGuard)
   .get(
     "/userState",
     async ({ query: { email } }) => {
@@ -37,7 +37,7 @@ export const auth = new Elysia({
     },
     {
       query: t.Object({
-        email: t.String({ format: "email" }),
+        email: t.String(),
       }),
       response: t.Union([
         t.Literal("userNotFound"),
@@ -163,7 +163,7 @@ export const auth = new Elysia({
     },
     {
       body: t.Object({
-        email: t.String({ format: "email" }),
+        email: t.String(),
         token: t.String(),
       }),
       response: t.Union([
@@ -213,7 +213,7 @@ export const auth = new Elysia({
     },
     {
       body: t.Object({
-        email: t.String({ format: "email" }),
+        email: t.String(),
         locale: t.Union([t.Literal("en"), t.Literal("de")]),
         name: t.Optional(t.String()),
       }),
@@ -261,7 +261,7 @@ export const auth = new Elysia({
     {
       query: t.Object({
         locale: t.Union([t.Literal("en"), t.Literal("de")]),
-        email: t.String({ format: "email" }),
+        email: t.String(),
       }),
       detail: {
         description: "Sends a credential creation token to the users email",

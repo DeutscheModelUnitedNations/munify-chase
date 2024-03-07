@@ -3,8 +3,8 @@ import { db } from "../../prisma/db";
 import { conferenceRoleGuard } from "../auth/guards/conferenceRoles";
 import { ConferenceMember } from "../../prisma/generated/schema";
 import { openApiTag } from "../util/openApiTags";
-import { loggedIn } from "../auth/guards/loggedIn";
-import { committeeRoleGuard } from "../auth/guards/committeeMember";
+import { loggedInGuard } from "../auth/guards/loggedIn";
+import { committeeMemberGuard } from "../auth/guards/committeeMember";
 
 const ConferenceMembersWithoutRelations = t.Omit(ConferenceMember, [
   "user",
@@ -19,9 +19,9 @@ const ConferenceMemberCreationBody = t.Object({
 export const conferenceMember = new Elysia({
   prefix: "/conference/:conferenceId",
 })
-  .use(loggedIn)
+  .use(loggedInGuard)
   .use(conferenceRoleGuard)
-  .use(committeeRoleGuard)
+  .use(committeeMemberGuard)
   .get(
     "/member",
     ({ params: { conferenceId } }) => {

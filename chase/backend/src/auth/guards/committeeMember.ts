@@ -10,7 +10,9 @@ const parametersSchema = TypeCompiler.Compile(
   }),
 );
 
-export const committeeRoleGuard = new Elysia()
+export const committeeMemberGuard = new Elysia({
+  name: "conferenceMemberGuard",
+})
   .use(session)
   .macro(({ onBeforeHandle }) => {
     return {

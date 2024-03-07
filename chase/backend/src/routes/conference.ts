@@ -7,7 +7,7 @@ import {
   User,
 } from "../../prisma/generated/schema";
 import { openApiTag } from "../util/openApiTags";
-import { loggedIn } from "../auth/guards/loggedIn";
+import { loggedInGuard } from "../auth/guards/loggedIn";
 
 const ConferenceWithoutRelations = t.Omit(Conference, [
   "committees",
@@ -19,7 +19,7 @@ const ConferenceWithoutRelations = t.Omit(Conference, [
 const ConferenceData = t.Omit(ConferenceWithoutRelations, ["id"]);
 
 export const conference = new Elysia()
-  .use(loggedIn)
+  .use(loggedInGuard)
   .use(conferenceRoleGuard) // we inject the conferenceRole macro here
   .get(
     "/conference",

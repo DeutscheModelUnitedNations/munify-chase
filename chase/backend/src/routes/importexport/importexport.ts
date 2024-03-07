@@ -8,8 +8,7 @@ import { db } from "../../../prisma/db";
 // import { recursiveDateFieldsToString } from "../../util/dateToString";
 // import { ConferenceExport } from "./exportSchema";
 // import { ConferenceImport } from "./importSchema";
-import { ConferenceRole, Nation } from "../../../prisma/generated/schema";
-import { loggedIn } from "../../auth/guards/loggedIn";
+import { ConferenceRole } from "../../../prisma/generated/schema";
 import { nanoid } from "nanoid";
 import { sendCredentialCreationEmail } from "../../email/email";
 import { appConfiguration } from "../../util/config";
@@ -18,16 +17,14 @@ import { appConfiguration } from "../../util/config";
 
 export const importexport = new Elysia()
   .use(conferenceRoleGuard)
-  .use(loggedIn)
   .get(
-    "/export-nations",
+    "/conference/:conferenceId/export-nations",
     async () =>
       db.nation.findMany({
         select: { alpha3Code: true, id: true, variant: true },
       }),
     {
-      mustBeLoggedIn: true,
-      response: t.Array(t.Pick(Nation, ["alpha3Code", "id", "variant"])),
+      hasConferenceRole: ["ADMIN"],
       detail: {
         description: "Export available nations",
         tags: [openApiTag(import.meta.path)],
@@ -38,107 +35,116 @@ export const importexport = new Elysia()
     "/conference/:conferenceId/import-conference-members",
     async ({ body, params: { conferenceId } }) => {
       console.info(`About to process ${body.length} entries!`);
-      const result = await db.$transaction(async (tx) => {
-        return Promise.allSettled(
-          body.map(async (datasetUser) => {
-            let userId = (
-              await tx.email.findFirst({
-                where: {
-                  email: {
-                    in: [
-                      datasetUser["E-Mail-Adresse 1"],
-                      datasetUser["E-Mail-Adresse 2"],
-                    ],
+      const result = await db.$transaction(
+        async (tx) => {
+          return Promise.allSettled(
+            body.map(async (datasetUser) => {
+              let userId = (
+                await tx.email.findFirst({
+                  where: {
+                    email: {
+                      in: [
+                        datasetUser["E-Mail-Adresse 1"],
+                        datasetUser["E-Mail-Adresse 2"] ?? "",
+                      ],
+                    },
                   },
-                },
-                include: {
-                  user: true,
-                },
-              })
-            )?.user.id;
+                  include: {
+                    user: true,
+                  },
+                })
+              )?.user.id;
 
-            if (!userId) {
-              userId = (
-                await tx.user.create({
+              if (!userId) {
+                userId = (
+                  await tx.user.create({
+                    data: {
+                      name: datasetUser.Name,
+                      emails: {
+                        createMany: {
+                          skipDuplicates: true,
+                          data: [
+                            {
+                              email: datasetUser["E-Mail-Adresse 1"],
+                              validated: true,
+                            },
+                            {
+                              email: datasetUser["E-Mail-Adresse 2"] ?? "",
+                              validated: true,
+                            },
+                          ].filter((e) => e.email !== ""),
+                        },
+                      },
+                    },
+                  })
+                ).id;
+
+                const token = nanoid(32);
+                await tx.pendingCredentialCreateTask.create({
                   data: {
-                    name: datasetUser.Name,
-                    emails: {
-                      createMany: {
-                        data: [
-                          {
-                            email: datasetUser["E-Mail-Adresse 1"],
-                            validated: true,
-                          },
-                          {
-                            email: datasetUser["E-Mail-Adresse 2"],
-                            validated: true,
-                          },
-                        ].filter((e) => e.email !== ""),
+                    token: {
+                      create: {
+                        tokenHash: await Bun.password.hash(token),
+                        expiresAt: new Date(
+                          Date.now() + 1000 * 60 * 60 * 24 * 7,
+                        ), // 1 week
+                      },
+                    },
+                    user: {
+                      connect: {
+                        id: userId,
                       },
                     },
                   },
-                })
-              ).id;
+                });
 
-              const token = nanoid(32);
-              await tx.pendingCredentialCreateTask.create({
-                data: {
-                  token: {
-                    create: {
-                      tokenHash: await Bun.password.hash(token),
-                      expiresAt: new Date(Date.now() + 1000 * 60 * 60 * 24 * 7), // 1 week
-                    },
-                  },
-                  user: {
-                    connect: {
-                      id: userId,
-                    },
-                  },
-                },
-              });
-
-              //TODO: report back errors in sending emails to the frontend in structured way
-              // the whole sending process should be unified in a function outside the handlers
-              await sendCredentialCreationEmail({
-                email: datasetUser["E-Mail-Adresse 1"],
-                locale: "de",
-                redirectLink: `${appConfiguration.email.CREDENTIAL_CREATE_REDIRECT_URL}?token=${token}&email=${datasetUser["E-Mail-Adresse 1"]}`,
-              });
-            }
-            let conferenceMemberId = (
-              await tx.conferenceMember.findFirst({
-                where: {
-                  conferenceId,
-                  role: datasetUser.role,
-                },
-              })
-            )?.id;
-            if (!conferenceMemberId) {
-              conferenceMemberId = (
-                await tx.conferenceMember.create({
-                  data: {
+                //TODO: report back errors in sending emails to the frontend in structured way
+                // the whole sending process should be unified in a function outside the handlers
+                await sendCredentialCreationEmail({
+                  email: datasetUser["E-Mail-Adresse 1"],
+                  locale: "de",
+                  redirectLink: `${appConfiguration.email.CREDENTIAL_CREATE_REDIRECT_URL}?token=${token}&email=${datasetUser["E-Mail-Adresse 1"]}`,
+                });
+              }
+              let conferenceMemberId = (
+                await tx.conferenceMember.findFirst({
+                  where: {
                     conferenceId,
                     role: datasetUser.role,
+                    userId: null,
                   },
                 })
-              ).id;
-            }
-            await tx.conferenceMember.update({
-              where: {
-                id: conferenceMemberId,
-              },
-              data: {
-                userId,
-              },
-            });
-            return { ...datasetUser, userId };
-          }),
-        );
-      });
+              )?.id;
+              if (!conferenceMemberId) {
+                conferenceMemberId = (
+                  await tx.conferenceMember.create({
+                    data: {
+                      conferenceId,
+                      role: datasetUser.role,
+                    },
+                  })
+                ).id;
+              }
+              await tx.conferenceMember.update({
+                where: {
+                  id: conferenceMemberId,
+                },
+                data: {
+                  userId,
+                },
+              });
+              return { ...datasetUser, userId };
+            }),
+          );
+        },
+        {
+          timeout: 20000,
+        },
+      );
 
       const rejected = result.filter((res) => res.status === "rejected");
       if (rejected.length > 0) {
-        console.error(`Failed to create ${rejected.length} entries!`);
+        console.error(`Failed to process ${rejected.length} entries!`);
         console.error(JSON.stringify(rejected));
       }
 
@@ -146,56 +152,191 @@ export const importexport = new Elysia()
         `Successfully processed ${body.length - rejected.length} entries!`,
       );
 
-      return result.map((r) => {
-        // biome-ignore lint/suspicious/noExplicitAny: we assume the structure
-        const value = (r as unknown as any).value as (typeof body)[number];
-        return {
-          status: r.status,
-          value: {
-            emails: [
-              value["E-Mail-Adresse 1"],
-              value["E-Mail-Adresse 2"],
-            ].filter((r) => r),
-            name: value.Name,
-            role: value.role,
-            // biome-ignore lint/suspicious/noExplicitAny: we assume the structure
-            userId: (value as any).userId,
-          },
-        };
-      });
+      return result;
     },
     {
+      hasConferenceRole: ["ADMIN"],
       body: t.Array(
         t.Object({
           Name: t.String(),
           role: ConferenceRole,
           "E-Mail-Adresse 1": t.String({ format: "email" }),
-          "E-Mail-Adresse 2": t.String(),
+          "E-Mail-Adresse 2": t.Optional(t.String()),
         }),
       ),
-      response: t.Array(
-        t.Object({
-          status: t.Union([t.Literal("fulfilled"), t.Literal("rejected")]),
-          value: t.Object({
-            userId: t.String(),
-            name: t.String(),
-            role: ConferenceRole,
-            emails: t.Array(t.String({ format: "email" })),
-          }),
-        }),
-      ),
-      //  {
-      //   "status": "fulfilled",
-      //   "value": {
-      //     "Name": "Elisabeth Sentürk",
-      //     "role": "PRESS_CORPS",
-      //     "E-Mail-Adresse 1": "elly.privat.stuff@gmail.com",
-      //     "E-Mail-Adresse 2": "elisabeth.sentuerk@gmail.com",
-      //     "userId": "77d40c40-d081-4c71-9380-f3ca6e74f0f3"
-      //   }
-      // hasConferenceRole: ["ADMIN"],
       detail: {
         description: "Import conference members",
+        tags: [openApiTag(import.meta.path)],
+      },
+    },
+  )
+  .post(
+    "/conference/:conferenceId/import-committee-members",
+    async ({ body, params: { conferenceId } }) => {
+      console.info(`About to process ${body.length} entries!`);
+      const result = await db.$transaction(
+        async (tx) => {
+          return Promise.allSettled(
+            body.map(async (datasetUser) => {
+              let userId = (
+                await tx.email.findFirst({
+                  where: {
+                    email: {
+                      in: [datasetUser.mail1, datasetUser.mail2],
+                    },
+                  },
+                  include: {
+                    user: true,
+                  },
+                })
+              )?.user.id;
+
+              if (!userId) {
+                userId = (
+                  await tx.user.create({
+                    data: {
+                      name: datasetUser.name,
+                      emails: {
+                        createMany: {
+                          skipDuplicates: true,
+                          data: [
+                            {
+                              email: datasetUser.mail1,
+                              validated: true,
+                            },
+                            {
+                              email: datasetUser.mail1,
+                              validated: true,
+                            },
+                          ].filter((e) => e.email !== ""),
+                        },
+                      },
+                    },
+                  })
+                ).id;
+
+                const token = nanoid(32);
+                await tx.pendingCredentialCreateTask.create({
+                  data: {
+                    token: {
+                      create: {
+                        tokenHash: await Bun.password.hash(token),
+                        expiresAt: new Date(
+                          Date.now() + 1000 * 60 * 60 * 24 * 7,
+                        ), // 1 week
+                      },
+                    },
+                    user: {
+                      connect: {
+                        id: userId,
+                      },
+                    },
+                  },
+                });
+
+                //TODO: report back errors in sending emails to the frontend in structured way
+                // the whole sending process should be unified in a function outside the handlers
+                await sendCredentialCreationEmail({
+                  email: datasetUser.mail1,
+                  locale: "de",
+                  redirectLink: `${appConfiguration.email.CREDENTIAL_CREATE_REDIRECT_URL}?token=${token}&email=${datasetUser.mail1}`,
+                });
+              }
+
+              let committeeMemberId = (
+                await tx.committeeMember.findFirst({
+                  where: {
+                    committee: {
+                      conferenceId,
+                      abbreviation: datasetUser.committee,
+                    },
+                    delegation: {
+                      nation: {
+                        alpha3Code: datasetUser.alpha3Code,
+                      },
+                    },
+                    userId: null
+                  },
+                })
+              )?.id;
+
+              if (!committeeMemberId) {
+                const delegation = await tx.delegation.findFirstOrThrow({
+                  where: {
+                    conference: {
+                      id: conferenceId,
+                    },
+                    nation: {
+                      alpha3Code: datasetUser.alpha3Code,
+                    },
+                  },
+                });
+
+                committeeMemberId = (
+                  await tx.committeeMember.create({
+                    data: {
+                      committee: {
+                        connect: {
+                          abbreviation_conferenceId: {
+                            abbreviation: datasetUser.committee,
+                            conferenceId,
+                          },
+                        },
+                      },
+                      delegation: {
+                        connect: {
+                          id: delegation.id,
+                        },
+                      },
+                    },
+                  })
+                ).id;
+              }
+
+              await tx.committeeMember.update({
+                where: {
+                  id: committeeMemberId,
+                },
+                data: {
+                  userId,
+                },
+              });
+
+              return { ...datasetUser, userId };
+            }),
+          );
+        },
+        {
+          timeout: 20000,
+        },
+      );
+
+      const rejected = result.filter((res) => res.status === "rejected");
+      if (rejected.length > 0) {
+        console.error(`Failed to process ${rejected.length} entries!`);
+        console.error(JSON.stringify(rejected));
+      }
+
+      console.info(
+        `Successfully processed ${body.length - rejected.length} entries!`,
+      );
+
+      return result;
+    },
+    {
+      hasConferenceRole: ["ADMIN"],
+      body: t.Array(
+        t.Object({
+          name: t.String(),
+          nation: t.String(),
+          alpha3Code: t.String(),
+          committee: t.String(),
+          mail1: t.String({ format: "email" }),
+          mail2: t.String(),
+        }),
+      ),
+      detail: {
+        description: "Import committee members",
         tags: [openApiTag(import.meta.path)],
       },
     },

@@ -1,5 +1,4 @@
-import React, { useState, useContext } from "react";
-import WidgetTemplate from "@components/widget_template";
+import React, { useContext } from "react";
 import { Button } from "primereact/button";
 import { Dialog } from "primereact/dialog";
 import { InputText } from "primereact/inputtext";
@@ -8,7 +7,6 @@ import { Dropdown } from "primereact/dropdown";
 import { useI18nContext } from "@/i18n/i18n-react";
 import {
   faExclamationTriangle,
-  faGavel,
   faInfoCircle,
   faPaperPlane,
   faPodium,

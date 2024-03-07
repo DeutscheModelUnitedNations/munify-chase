@@ -128,51 +128,55 @@ try {
     GV: [
       "Nachhaltige wirtschaftliche Entwicklung in den am wenigsten entwickelten Ländern",
       "Umgang mit klimatischen Kipppunkten",
-      "Globales Erinnern an Kolonialismus"
+      "Globales Erinnern an Kolonialismus",
     ],
 
     HA1: [
       "Situation in der Ukraine",
       "Bekämpfung illegaler Waffenlieferungen an nichtstaatliche Akteure",
-      "Planetare Verteidigung"
+      "Planetare Verteidigung",
     ],
 
-    WiSo: ["Förderung von Kreislaufwirtschaft",
+    WiSo: [
+      "Förderung von Kreislaufwirtschaft",
       "Umgang mit klimawandelbedingter Migration",
-      "Rolle von künstlicher Intelligenz für die nachhaltige Entwicklung"
+      "Rolle von künstlicher Intelligenz für die nachhaltige Entwicklung",
     ],
 
     SR: [
       "Aktuelles",
       "Situation in Haiti",
-      "Bedeutung natürlicher Ressourcen für bewaffnete Konflikte"
+      "Bedeutung natürlicher Ressourcen für bewaffnete Konflikte",
     ],
 
     MRR: [
       "Verantwortung von Unternehmen für Menschenrechte entlang globaler Lieferketten",
       "Umsetzung des Rechts auf eine saubere Umwelt",
-      "Menschenrechtslage in der Demokratischen Republik Kongo"
+      "Menschenrechtslage in der Demokratischen Republik Kongo",
     ],
 
     WHO: [
       "Verbesserung der psychischen Gesundheitsversorgung",
       "Bekämpfung der Folgeerkranungen von Fehl- und Mangelernährung",
-      "Sicherung des Zugangs zu Verhütungsmitteln"
+      "Sicherung des Zugangs zu Verhütungsmitteln",
     ],
 
     IAEO: [
       "Sicherheit kerntechnischer Anlagen in Konfliktgebieten",
       "Auswirkungen von Uranabbau, -nutzung und -lagerung auf indigene Bevölkerungen",
-      "Rolle der Kernenergie für die Umsetzung von SDG 7"
+      "Rolle der Kernenergie für die Umsetzung von SDG 7",
     ],
-  }
+  };
 
   for (const committee of Object.keys(committees)) {
     if (committees[committee as keyof typeof committees]) {
-      for (const itemTemplate of agendaItems[committee as keyof typeof committees]) {
+      for (const itemTemplate of agendaItems[
+        committee as keyof typeof committees
+      ]) {
         const agendaItem = await prisma.agendaItem.create({
           data: {
-            committeeId: committees[committee as keyof typeof committees]?.id || "0",
+            committeeId:
+              committees[committee as keyof typeof committees]?.id || "0",
             title: itemTemplate || "Dummy Agenda Item",
           },
         });

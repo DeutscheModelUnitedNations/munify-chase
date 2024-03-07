@@ -8,6 +8,7 @@ export const useBackend = () => useContext(BackendContext);
 
 export type BackendInstanceType = ReturnType<typeof edenTreaty<App>>;
 
+//TODO
 function getBackendUrl() {
   noStore();
   // return process.env.BACKEND_URL || "https://chase-backend.dmun.de";
@@ -15,7 +16,6 @@ function getBackendUrl() {
 }
 
 export const Backend = ({ children }: { children: React.ReactNode }) => {
-  console.log(getBackendUrl())
   const [backend, _setBackend] = useState(
     edenTreaty<App>(getBackendUrl(), {
       $fetch: {

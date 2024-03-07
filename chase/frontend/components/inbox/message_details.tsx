@@ -20,7 +20,6 @@ import {
   faTrash,
   faUserTie,
   faUserXmark,
-  faForwardStep,
   faMailForward,
   faMailReply,
 } from "@fortawesome/pro-solid-svg-icons";

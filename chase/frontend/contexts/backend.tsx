@@ -11,8 +11,8 @@ export type BackendInstanceType = ReturnType<typeof edenTreaty<App>>;
 //TODO
 function getBackendUrl() {
   noStore();
-  // return process.env.BACKEND_URL || "https://chase-backend.dmun.de";
-  return process.env.BACKEND_URL || "http://localhost:3001";
+  return process.env.BACKEND_URL || "https://chase-backend.dmun.de";
+  // return process.env.BACKEND_URL || "http://localhost:3001";
 }
 
 export const Backend = ({ children }: { children: React.ReactNode }) => {

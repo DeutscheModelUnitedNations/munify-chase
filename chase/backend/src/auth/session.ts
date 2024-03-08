@@ -42,12 +42,12 @@ export const session = new Elysia({ name: "session" })
       set,
     }) => {
       //TODO refactor
-      if (chaseCookieConsent.value !== true) {
-        set.status = "Unavailable For Legal Reasons";
-        throw new Error(
-          "User has not consented to cookies. Please ensure the 'chaseCookieConsent' cookie is set to true!",
-        );
-      }
+      // if (chaseCookieConsent.value !== true) {
+      //   set.status = "Unavailable For Legal Reasons";
+      //   throw new Error(
+      //     "User has not consented to cookies. Please ensure the 'chaseCookieConsent' cookie is set to true!",
+      //   );
+      // }
 
       sessionIdCookie.httpOnly = true;
       sessionIdCookie.maxAge = 60 * 60 * 24 * 7; // 7 days
@@ -61,6 +61,7 @@ export const session = new Elysia({ name: "session" })
       let sessionIdSignature = sessionIdCookie.value?.split(".")[1];
       if (sessionId) {
         if (!sessionIdSignature) {
+          set.status = "Unauthorized";
           throw new Error("Session id signature cannot be undefined");
         }
         const verify = createVerify("SHA256");

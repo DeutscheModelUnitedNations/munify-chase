@@ -155,7 +155,7 @@ export const importexport = new Elysia()
       return result;
     },
     {
-      // hasConferenceRole: ["ADMIN"],
+      hasConferenceRole: ["ADMIN"],
       body: t.Array(
         t.Object({
           Name: t.String(),
@@ -190,7 +190,6 @@ export const importexport = new Elysia()
                   },
                 })
               )?.user.id;
-              console.log(1);
 
               if (!userId) {
                 userId = (
@@ -215,7 +214,6 @@ export const importexport = new Elysia()
                     },
                   })
                 ).id;
-                console.log(2);
 
                 const token = nanoid(32);
                 await tx.pendingCredentialCreateTask.create({
@@ -235,7 +233,6 @@ export const importexport = new Elysia()
                     },
                   },
                 });
-                console.log(3);
 
                 //TODO: report back errors in sending emails to the frontend in structured way
                 // the whole sending process should be unified in a function outside the handlers
@@ -245,22 +242,6 @@ export const importexport = new Elysia()
                   redirectLink: `${appConfiguration.email.CREDENTIAL_CREATE_REDIRECT_URL}?token=${token}&email=${datasetUser.mail1}`,
                 });
               }
-              console.log(4);
-
-              const nation = await tx.nation.findUniqueOrThrow({
-                where: {
-                  alpha3Code: datasetUser.alpha3Code,
-                },
-              });
-              const delegation = await tx.delegation.findUniqueOrThrow({
-                where: {
-                  conferenceId_nationId: {
-                    nationId: nation.id,
-                    conferenceId,
-                  },
-                },
-              });
-              console.log(6);
 
               let committeeMemberId = (
                 await tx.committeeMember.findFirst({
@@ -270,16 +251,26 @@ export const importexport = new Elysia()
                       abbreviation: datasetUser.committee,
                     },
                     delegation: {
-                      id: delegation.id,
+                      nation: {
+                        alpha3Code: datasetUser.alpha3Code,
+                      },
                     },
                     userId: null,
                   },
                 })
               )?.id;
-              console.log(5);
 
               if (!committeeMemberId) {
-                console.log(6.5);
+                const delegation = await tx.delegation.findFirstOrThrow({
+                  where: {
+                    conference: {
+                      id: conferenceId,
+                    },
+                    nation: {
+                      alpha3Code: datasetUser.alpha3Code,
+                    },
+                  },
+                });
 
                 committeeMemberId = (
                   await tx.committeeMember.create({
@@ -301,7 +292,6 @@ export const importexport = new Elysia()
                   })
                 ).id;
               }
-              console.log(7);
 
               await tx.committeeMember.update({
                 where: {
@@ -311,7 +301,6 @@ export const importexport = new Elysia()
                   userId,
                 },
               });
-              console.log(8);
 
               return { ...datasetUser, userId };
             }),
@@ -335,7 +324,7 @@ export const importexport = new Elysia()
       return result;
     },
     {
-      // hasConferenceRole: ["ADMIN"],
+      hasConferenceRole: ["ADMIN"],
       body: t.Array(
         t.Object({
           name: t.String(),

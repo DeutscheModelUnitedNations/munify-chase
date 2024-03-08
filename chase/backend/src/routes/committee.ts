@@ -184,7 +184,7 @@ export const committee = new Elysia({
       });
     },
     {
-      hasConferenceRole: ["ADMIN"],
+      hasConferenceRole: ["ADMIN", "CHAIR", "COMMITTEE_ADVISOR"],
       body: t.Pick(Committee, ["status", "statusHeadline", "statusUntil"]),
       detail: {
         description: "Update the status of a committee by id",

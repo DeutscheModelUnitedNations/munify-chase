@@ -361,6 +361,7 @@ export default function MessageDetails({
           </h3>
         </div>
         <SmallInfoCard
+          //@ts-ignore
           icon={getMessageCategoryIcon()}
           classNameForIconBox={getMessageCategoryClassNames()?.[0]}
           classNameForContentBox={getMessageCategoryClassNames()?.[1]}

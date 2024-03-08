@@ -6,6 +6,7 @@ import { unstable_noStore as noStore } from "next/cache";
 export const BackendContext = createContext({} as BackendContextType);
 export const useBackend = () => useContext(BackendContext);
 
+//@ts-ignore
 export type BackendInstanceType = ReturnType<typeof edenTreaty<App>>;
 
 //TODO

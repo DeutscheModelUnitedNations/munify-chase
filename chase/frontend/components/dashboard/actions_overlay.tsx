@@ -165,6 +165,7 @@ export function ActionsOverlayResearchService({
   const agendaItem = useContext(AgendaItemContext);
   const { userIdent } = useUserIdent();
   const { showToast } = useToast();
+  const { backend } = useBackend();
 
   const [category, setCategory] = React.useState<
     $Enums.MessageCategory | undefined

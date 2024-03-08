@@ -1,11 +1,11 @@
 import { t, Elysia } from "elysia";
 import { db } from "../../prisma/db";
-import { loggedIn } from "../auth/guards/loggedIn";
+import { loggedInGuard } from "../auth/guards/loggedIn";
 import { Nation } from "../../prisma/generated/schema";
 import { openApiTag } from "../util/openApiTags";
 
 export const baseData = new Elysia({ prefix: "/baseData" })
-  .use(loggedIn)
+  .use(loggedInGuard)
   .get(
     "/countries",
     () => db.nation.findMany({ select: { id: true, alpha3Code: true } }),

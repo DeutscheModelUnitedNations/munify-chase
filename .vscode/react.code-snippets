@@ -5,10 +5,12 @@
       "${1|\"use client\";, |}",
       "import React, { useState, useEffect } from \"react\";",
       "import { useI18nContext } from \"@/i18n/i18n-react\";",
-      "import { backend } from \"@/services/backend\";",
+      "import { useBackend } from \"@/contexts/backend\";",
+
       "",
       "export default function ${2:COMPONENT_TITLE}() {",
       "  const { LL, locale } = useI18nContext();",
+      "  const { backend } = useBackend();"
       "  ",
       "  return (",
       "    <>",

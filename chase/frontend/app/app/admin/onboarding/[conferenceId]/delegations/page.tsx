@@ -3,8 +3,7 @@ import AddDelegationDialog from "@/components/admin/delegations/add_delegation_d
 import DelegationsTable from "@/components/admin/delegations/delegations_table";
 import ForwardBackButtons from "@/components/admin/onboarding/forward_back_bar";
 import OnboardingSteps from "@/components/admin/onboarding/steps";
-import { backend } from "@/services/backend";
-import { useI18nContext } from "@/i18n/i18n-react";
+import { useBackend } from "@/contexts/backend";
 import { useRouter } from "next/navigation";
 import { useEffect, useState, useContext } from "react";
 import useMousetrap from "mousetrap-react";
@@ -16,10 +15,10 @@ import {
 } from "@/components/admin/delegations/delegations_table";
 
 export default function AdminDelegationsPage() {
-  const { LL, locale } = useI18nContext();
   const { toastError } = useToast();
   const router = useRouter();
   const conferenceId = useContext(ConferenceIdContext);
+  const { backend } = useBackend();
 
   const [update, setUpdate] = useState(true);
   const [committees, setCommittees] = useState<CommitteesType | null>(null);

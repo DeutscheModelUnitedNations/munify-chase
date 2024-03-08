@@ -18,7 +18,7 @@ export default function OnboardingSteps({
   activeIndex: number;
 }) {
   const { LL } = useI18nContext();
-  const router = useRouter();
+  const _router = useRouter();
 
   const items = [
     {

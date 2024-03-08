@@ -1,5 +1,4 @@
-import React, { useEffect, useState, useContext } from "react";
-import HeaderTemplate from "@/components/header_template";
+import React from "react";
 import WidgetBoxTemplate from "@/components/widget_box_template";
 import { SelectButton } from "primereact/selectbutton";
 import ConfigWrapper from "@/components/dashboard/chair/config_wrapper";
@@ -13,13 +12,12 @@ import {
   faUserClock,
 } from "@fortawesome/pro-solid-svg-icons";
 import { IconProp } from "@fortawesome/fontawesome-svg-core";
-import { backend } from "@/services/backend";
-import { useToast } from "@/contexts/toast";
+import { type BackendInstanceType } from "@/contexts/backend";
 import { $Enums } from "../../../backend/prisma/generated/client";
 
 export type DelegationDataType = Awaited<
   ReturnType<
-    (typeof backend.conference)["conferenceId"]["committee"]["committeeId"]["delegations"]["get"]
+    BackendInstanceType["conference"]["conferenceId"]["committee"]["committeeId"]["delegations"]["get"]
   >
 >["data"];
 
@@ -45,7 +43,6 @@ export default function AttendanceTable({
   ) => void;
 }) {
   const { LL, locale } = useI18nContext();
-  const { toastError } = useToast();
 
   const attendanceOptions: AttendanceButtonOptions[] = [
     {

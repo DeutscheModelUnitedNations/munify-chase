@@ -1,6 +1,5 @@
 "use client";
-import React, { useState } from "react";
-import SettingsSidebar from "@/components/navbar/settings_sidebar";
+import React from "react";
 import { MessageCountProvider } from "@/contexts/messages";
 
 export default function NavigationLayout({

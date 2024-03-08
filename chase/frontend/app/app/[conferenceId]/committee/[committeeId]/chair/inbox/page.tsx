@@ -1,7 +1,6 @@
 "use client";
 import React, { useState, useEffect, useContext } from "react";
-import { useI18nContext } from "@/i18n/i18n-react";
-import { backend } from "@/services/backend";
+import { useBackend, type BackendInstanceType } from "@/contexts/backend";
 import {
   CommitteeIdContext,
   ConferenceIdContext,
@@ -13,14 +12,14 @@ import { ActionsOverlayResearchService } from "@/components/dashboard/actions_ov
 
 type ChairMessages = Awaited<
   ReturnType<
-    (typeof backend.conference)["conferenceId"]["committee"]["committeeId"]["messages"]["get"]
+    BackendInstanceType["conference"]["conferenceId"]["committee"]["committeeId"]["messages"]["get"]
   >
 >["data"];
 
 export default function InboxPage() {
-  const { LL, locale } = useI18nContext();
   const conferenceId = useContext(ConferenceIdContext);
   const committeeId = useContext(CommitteeIdContext);
+  const { backend } = useBackend();
 
   const [messages, setMessages] = useState<ChairMessages | null>(null);
   const [selectedMessage, setSelectedMessage] = useState<

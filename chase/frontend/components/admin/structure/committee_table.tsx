@@ -14,10 +14,12 @@ import { Column } from "primereact/column";
 import { ConfirmPopup } from "primereact/confirmpopup";
 import { Toolbar } from "primereact/toolbar";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { backend } from "@/services/backend";
+import { type BackendInstanceType } from "@/contexts/backend";
 
 type CommitteesType = Awaited<
-  ReturnType<(typeof backend.conference)["conferenceId"]["committee"]["get"]>
+  ReturnType<
+    BackendInstanceType["conference"]["conferenceId"]["committee"]["get"]
+  >
 >["data"];
 
 type CommitteeType = NonNullable<CommitteesType>[number];

@@ -7,7 +7,7 @@ import { InputText } from "primereact/inputtext";
 import { Calendar } from "primereact/calendar";
 import Button from "@/components/button";
 import { faSparkles } from "@fortawesome/pro-solid-svg-icons";
-import { backend } from "@/services/backend";
+import { useBackend } from "@/contexts/backend";
 import { useRouter } from "next/navigation";
 import { useToast } from "@/contexts/toast";
 
@@ -15,6 +15,7 @@ export default function loginVorsitz() {
   const { LL } = useI18nContext();
   const { showToast, toastError } = useToast();
   const router = useRouter();
+  const { backend } = useBackend();
 
   const [conferenceName, setConferenceName] = useState("");
   const [dates, setDates] = useState<Date[] | null>(null);

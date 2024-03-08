@@ -16,6 +16,7 @@ import { speakersListGeneral } from "./routes/speakersList/general";
 import { speakersListModification } from "./routes/speakersList/modification";
 import { speakersListSpeakers } from "./routes/speakersList/speakers";
 import { messages } from "./routes/messages";
+import { importexport } from "./routes/importexport/importexport";
 
 const m = new Elysia()
   .use(errorLogging)
@@ -48,6 +49,7 @@ const m = new Elysia()
   .use(messages)
   .use(user)
   .use(auth)
+  .use(importexport)
   .use(baseData);
 
 // we make the api docs public

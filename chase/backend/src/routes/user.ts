@@ -1,6 +1,6 @@
 import { Elysia } from "elysia";
 import { db } from "../../prisma/db";
-import { committeeRoleGuard } from "../auth/guards/committeeMember";
+import { committeeMemberGuard } from "../auth/guards/committeeMember";
 import { conferenceRoleGuard } from "../auth/guards/conferenceRoles";
 import { openApiTag } from "../util/openApiTags";
 
@@ -8,7 +8,7 @@ export const user = new Elysia({
   prefix: "/conference/:conferenceId",
 })
   .use(conferenceRoleGuard)
-  .use(committeeRoleGuard)
+  .use(committeeMemberGuard)
   .get(
     "/user/:userId/delegation",
     async ({ params: { conferenceId, userId } }) => {

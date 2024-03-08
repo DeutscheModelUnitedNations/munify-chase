@@ -11,7 +11,7 @@ import {
   faXmark,
 } from "@fortawesome/pro-solid-svg-icons";
 import Button from "@components/button";
-import { backend } from "@/services/backend";
+import { useBackend } from "@/contexts/backend";
 import {
   SpeakersListDataContext,
   SpeakersListDataType,
@@ -89,6 +89,7 @@ function CountryCard({
   isLast?: boolean;
 }) {
   const { locale } = useI18nContext();
+  const { backend } = useBackend();
 
   const listId = useContext(SpeakersListDataContext)?.id;
 

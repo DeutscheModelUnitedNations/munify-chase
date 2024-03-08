@@ -37,7 +37,7 @@ export default function SpeakerBlock() {
       return [];
     }
 
-    let res = [];
+    let res: typeof list = [];
 
     if (list.length > 3) {
       res = list.slice(0, 3);

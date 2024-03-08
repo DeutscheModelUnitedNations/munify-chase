@@ -1,19 +1,18 @@
 "use client";
 import React, { useState, useEffect, useContext } from "react";
-import { useI18nContext } from "@/i18n/i18n-react";
-import { backend } from "@/services/backend";
+import { useBackend, type BackendInstanceType } from "@/contexts/backend";
 import { ConferenceIdContext } from "@/contexts/committee_data";
 import InboxTemplate from "@/components/inbox/inbox_template";
 
 type ChairMessages = Awaited<
   ReturnType<
-    (typeof backend.conference)["conferenceId"]["messages"]["researchService"]["get"]
+    BackendInstanceType["conference"]["conferenceId"]["messages"]["researchService"]["get"]
   >
 >["data"];
 
 export default function InboxPageResearchService() {
-  const { LL, locale } = useI18nContext();
   const conferenceId = useContext(ConferenceIdContext);
+  const { backend } = useBackend();
 
   const [messages, setMessages] = useState<ChairMessages | null>(null);
   const [selectedMessage, setSelectedMessage] = useState<

@@ -1,5 +1,5 @@
 "use client";
-import { useContext, useState } from "react";
+import { useContext } from "react";
 import Navbar from "@/components/navbar/navbar";
 import NavButton from "@/components/navbar/button";
 import {
@@ -10,7 +10,6 @@ import {
   faNewspaper,
   faCommentExclamation,
   faInbox,
-  faGridHorizontal,
   faChartNetwork,
 } from "@fortawesome/pro-solid-svg-icons";
 import { useI18nContext } from "@/i18n/i18n-react";

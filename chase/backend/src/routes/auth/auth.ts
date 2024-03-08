@@ -7,14 +7,14 @@ import {
 } from "../../email/email";
 import { nanoid } from "nanoid";
 import { appConfiguration } from "../../util/config";
-import { loggedIn } from "../../auth/guards/loggedIn";
+import { loggedInGuard } from "../../auth/guards/loggedIn";
 import { passwords } from "./passwords";
 
 export const auth = new Elysia({
   prefix: "/auth",
 })
   .use(passwords)
-  .use(loggedIn)
+  .use(loggedInGuard)
   .get(
     "/userState",
     async ({ query: { email } }) => {

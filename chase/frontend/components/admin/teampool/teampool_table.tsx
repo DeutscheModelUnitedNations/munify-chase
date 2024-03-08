@@ -6,11 +6,10 @@ import {
   faPlus,
   faPlusCircle,
   faTrashAlt,
-  faUpload,
 } from "@fortawesome/pro-solid-svg-icons";
 import { DataTable } from "primereact/datatable";
 import { Column } from "primereact/column";
-import { ConfirmPopup, confirmPopup } from "primereact/confirmpopup";
+import { ConfirmPopup } from "primereact/confirmpopup";
 import { Toolbar } from "primereact/toolbar";
 import useMousetrap from "mousetrap-react";
 import {

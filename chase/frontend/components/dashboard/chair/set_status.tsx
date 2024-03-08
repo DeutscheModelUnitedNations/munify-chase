@@ -1,8 +1,7 @@
 import React, { useState, useContext } from "react";
 import { ToastContext } from "@/contexts/toast";
 import { useI18nContext } from "@/i18n/i18n-react";
-import { backend } from "@/services/backend";
-import { useToast } from "@/contexts/toast";
+import { useBackend } from "@/contexts/backend";
 import ConfigWrapper from "@/components/dashboard/chair/config_wrapper";
 import { Dropdown } from "primereact/dropdown";
 import Button from "@/components/button";
@@ -27,6 +26,7 @@ export default function SetStatusWidget() {
   const { LL, locale } = useI18nContext();
   const { showToast, toastError } = useContext(ToastContext);
   const conferenceId = useContext(ConferenceIdContext);
+  const { backend } = useBackend();
   const committeeId = useContext(CommitteeIdContext);
   const committeeData = useContext(CommitteeDataContext);
 

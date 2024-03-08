@@ -1,17 +1,17 @@
 "use client";
-import { backend } from "@/services/backend";
+import { useBackend, type BackendInstanceType } from "@/contexts/backend";
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { useToast } from "@/contexts/toast";
 
 type Committee = Awaited<
   ReturnType<
-    (typeof backend.conference)["conferenceId"]["committee"]["committeeId"]["get"]
+    BackendInstanceType["conference"]["conferenceId"]["committee"]["committeeId"]["get"]
   >
 >["data"];
 
 type AgendaItem = Awaited<
   ReturnType<
-    (typeof backend.conference)["conferenceId"]["committee"]["committeeId"]["agendaItem"]["active"]["get"]
+    BackendInstanceType["conference"]["conferenceId"]["committee"]["committeeId"]["agendaItem"]["active"]["get"]
   >
 >["data"];
 
@@ -25,6 +25,7 @@ export const CommitteeDataProvider = ({
 }: {
   children: React.ReactNode;
 }) => {
+  const { backend } = useBackend();
   const { toastError } = useToast();
   const conferenceId = useContext(ConferenceIdContext);
   const committeeId = useContext(CommitteeIdContext);
@@ -68,6 +69,7 @@ export const AgendaItemDataProvider = ({
   const conferenceId = useContext(ConferenceIdContext);
   const committeeId = useContext(CommitteeIdContext);
   const { toastError } = useToast();
+  const { backend } = useBackend();
 
   const [agendaItem, setAgendaItem] = useState<AgendaItem | null>(null);
 

@@ -12,14 +12,18 @@ import {
 import { Column } from "primereact/column";
 import { DataTable } from "primereact/datatable";
 import { Toolbar } from "primereact/toolbar";
-import { backend } from "@/services/backend";
+import { type BackendInstanceType } from "@/contexts/backend";
 
 export type CommitteesType = Awaited<
-  ReturnType<(typeof backend.conference)["conferenceId"]["committee"]["get"]>
+  ReturnType<
+    BackendInstanceType["conference"]["conferenceId"]["committee"]["get"]
+  >
 >["data"];
 
 export type DelegationsType = Awaited<
-  ReturnType<(typeof backend.conference)["conferenceId"]["delegation"]["get"]>
+  ReturnType<
+    BackendInstanceType["conference"]["conferenceId"]["delegation"]["get"]
+  >
 >["data"];
 
 export default function DelegationsTable({

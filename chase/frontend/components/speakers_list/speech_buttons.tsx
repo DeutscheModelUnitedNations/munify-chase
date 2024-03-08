@@ -22,7 +22,7 @@ import AddSpeakerOverlay from "./add_speaker";
 import ChangeSpeechTimeOverlay from "./change_speech_time";
 import { IconProp } from "@fortawesome/fontawesome-svg-core";
 import useMousetrap from "mousetrap-react";
-import { backend } from "@/services/backend";
+import { useBackend, type BackendInstanceType } from "@/contexts/backend";
 import { $Enums } from "../../../backend/prisma/generated/client";
 import { useToast } from "@/contexts/toast";
 import {
@@ -36,7 +36,7 @@ import { MenuItem } from "primereact/menuitem";
 
 type AllCountryCodes = Awaited<
   ReturnType<
-    (typeof backend.conference)["conferenceId"]["committee"]["committeeId"]["allCountryCodes"]["get"]
+    BackendInstanceType["conference"]["conferenceId"]["committee"]["committeeId"]["allCountryCodes"]["get"]
   >
 >["data"];
 
@@ -51,8 +51,9 @@ type AllCountryCodes = Awaited<
 
 export function ParticipantSpeechButtons() {
   const { LL } = useI18nContext();
-  const { showToast, toastError } = useToast();
+  const { showToast } = useToast();
 
+  const { backend } = useBackend();
   const speakersListData = useContext(SpeakersListDataContext);
   const { userIdent } = useUserIdent();
   const [userOnSpeakersList, setUserOnSpeakersList] = useState(false);
@@ -173,6 +174,7 @@ export function ChairSpeechButtons({
 }) {
   const { LL } = useI18nContext();
   const { toastError } = useToast();
+  const { backend } = useBackend();
 
   const conferenceId = useContext(ConferenceIdContext);
   const committeeId = useContext(CommitteeIdContext);

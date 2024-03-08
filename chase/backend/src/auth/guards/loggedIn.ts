@@ -1,7 +1,9 @@
 import Elysia from "elysia";
 import { session } from "../session";
 
-export const loggedIn = new Elysia()
+export const loggedInGuard = new Elysia({
+  name: "loggedInGuard",
+})
   .use(session)
   .macro(({ onBeforeHandle }) => {
     return {
@@ -10,7 +12,6 @@ export const loggedIn = new Elysia()
         onBeforeHandle(async ({ session, set }) => {
           if (session.loggedIn !== true) {
             set.status = "Unauthorized";
-            // biome-ignore lint/suspicious/noAssignInExpressions: This is a valid use case
             return "Unauthorized";
           }
         });

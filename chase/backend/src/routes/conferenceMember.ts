@@ -3,8 +3,8 @@ import { db } from "../../prisma/db";
 import { conferenceRoleGuard } from "../auth/guards/conferenceRoles";
 import { ConferenceMember } from "../../prisma/generated/schema";
 import { openApiTag } from "../util/openApiTags";
-import { loggedIn } from "../auth/guards/loggedIn";
-import { committeeRoleGuard } from "../auth/guards/committeeMember";
+import { loggedInGuard } from "../auth/guards/loggedIn";
+import { committeeMemberGuard } from "../auth/guards/committeeMember";
 
 const ConferenceMembersWithoutRelations = t.Omit(ConferenceMember, [
   "user",
@@ -19,9 +19,9 @@ const ConferenceMemberCreationBody = t.Object({
 export const conferenceMember = new Elysia({
   prefix: "/conference/:conferenceId",
 })
-  .use(loggedIn)
+  .use(loggedInGuard)
   .use(conferenceRoleGuard)
-  .use(committeeRoleGuard)
+  .use(committeeMemberGuard)
   .get(
     "/member",
     ({ params: { conferenceId } }) => {
@@ -43,13 +43,11 @@ export const conferenceMember = new Elysia({
   .post(
     "/member",
     ({ params: { conferenceId }, body }) => {
-      const createManyData = [];
-      for (let i = 0; i < body.count; i++) {
-        createManyData.push({ role: body.data.role, conferenceId });
-      }
-
       return db.conferenceMember.createMany({
-        data: createManyData,
+        data: new Array(body.count).fill({
+          role: body.data.role,
+          conferenceId,
+        }),
       });
     },
     {

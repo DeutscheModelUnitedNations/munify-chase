@@ -1,6 +1,6 @@
 import React from "react";
 import { useI18nContext } from "@/i18n/i18n-react";
-import { backend } from "@/services/backend";
+import { useBackend, type BackendInstanceType } from "@/contexts/backend";
 import { SmallFlag } from "@/components/flag_templates";
 import { Tag } from "primereact/tag";
 import getCountryNameByCode from "@/misc/get_country_name_by_code";
@@ -16,7 +16,7 @@ import {
 
 type ChairMessages = Awaited<
   ReturnType<
-    (typeof backend.conference)["conferenceId"]["committee"]["committeeId"]["messages"]["get"]
+    BackendInstanceType["conference"]["conferenceId"]["committee"]["committeeId"]["messages"]["get"]
   >
 >["data"];
 
@@ -35,6 +35,7 @@ export default function MessageCard({
 }) {
   const { locale } = useI18nContext();
   const { toastError } = useToast();
+  const { backend } = useBackend();
 
   async function selectMessage() {
     setSelected(message);

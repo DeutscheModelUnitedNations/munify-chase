@@ -3,7 +3,6 @@ import React, { useContext } from "react";
 import { ScrollPanel } from "primereact/scrollpanel";
 import DashboardHeader from "@/components/dashboard/header";
 import { useI18nContext } from "@/i18n/i18n-react";
-import { backend } from "@/services/backend";
 import TimerWidget from "@/components/dashboard/timer";
 import WhiteboardWidget from "@/components/dashboard/whiteboard";
 import PresenceWidget from "@/components/attendance/presence_widget";

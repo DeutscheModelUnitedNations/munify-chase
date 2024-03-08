@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from "react";
+import React, { useContext } from "react";
 import WidgetTemplate from "@components/widget_template";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
@@ -7,7 +7,6 @@ import {
   faPodium,
   faMugHot,
   faForwardStep,
-  faSpinner,
   faCircleNotch,
 } from "@fortawesome/pro-solid-svg-icons";
 import { useI18nContext } from "@/i18n/i18n-react";
@@ -15,20 +14,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { IconProp } from "@fortawesome/fontawesome-svg-core";
 import { Skeleton } from "primereact/skeleton";
 import Timer from "./countdown_timer";
-import { $Enums } from "../../../backend/prisma/generated/client";
-import { backend } from "@/services/backend";
-import { useToast } from "@/contexts/toast";
-import {
-  ConferenceIdContext,
-  CommitteeIdContext,
-} from "@/contexts/committee_data";
 import { StatusTimer } from "@/contexts/status_timer";
-
-type Committee = Awaited<
-  ReturnType<
-    (typeof backend.conference)["conferenceId"]["committee"]["committeeId"]["get"]
-  >
->["data"];
 
 /**
  * This Component is used in the Dashboard. It shows the current timer status –
@@ -42,7 +28,6 @@ export default function TimerWidget({
   showOnFormalDebate?: boolean;
 }) {
   const { LL } = useI18nContext();
-  const { toastError } = useToast();
   const { category, headline, until } = useContext(StatusTimer);
 
   const timeStamp = () => {

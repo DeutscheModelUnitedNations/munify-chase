@@ -1,42 +1,14 @@
-import React, { useState, useContext } from "react";
+import React, { useState } from "react";
 import WidgetTemplate from "@components/widget_template";
 import { Button } from "primereact/button";
-import { Dialog } from "primereact/dialog";
-import { InputText } from "primereact/inputtext";
-import { InputTextarea } from "primereact/inputtextarea";
-import { Dropdown } from "primereact/dropdown";
 import { useI18nContext } from "@/i18n/i18n-react";
-import {
-  faExclamationTriangle,
-  faGavel,
-  faInfoCircle,
-  faPaperPlane,
-  faPodium,
-  faQuestionCircle,
-  faUserTie,
-} from "@fortawesome/pro-solid-svg-icons";
+import { faGavel, faPaperPlane } from "@fortawesome/pro-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { IconProp } from "@fortawesome/fontawesome-svg-core";
-import {
-  CommitteeIdContext,
-  CommitteeDataContext,
-  AgendaItemContext,
-  ConferenceIdContext,
-} from "@/contexts/committee_data";
-import { MyDelegationContext, useUserIdent } from "@/contexts/user_ident";
-import { backend } from "@/services/backend";
-import { useToast } from "@/contexts/toast";
-import { $Enums } from "../../../backend/prisma/generated/client";
 import {
   ActionsOverlayChairMessage,
   ActionsOverlayResearchService,
 } from "./actions_overlay";
-
-interface DropdownOptions {
-  label: string;
-  value: $Enums.MessageCategory;
-  icon: IconProp;
-}
 
 /**
  * This Component is used in the Actions Widget on the Dashboard.
@@ -45,6 +17,7 @@ interface DropdownOptions {
 
 export default function ActionsWidget() {
   const { LL } = useI18nContext();
+
   const [displayChairDialog, setDisplayChairDialog] = useState(false);
   const [displayResearchDialog, setDisplayResearchDialog] = useState(false);
 

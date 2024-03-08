@@ -15,9 +15,10 @@ export default function loginVorsitz({
 
   const [pressURL, setPressURL] = useState<string>("");
 
-  function checkURL(url: string) {
-    return url.match(/https?:\/\/.+/);
-  }
+  //TODO remove
+  // function checkURL(url: string) {
+  //   return url.match(/https?:\/\/.+/);
+  // }
 
   return (
     <>

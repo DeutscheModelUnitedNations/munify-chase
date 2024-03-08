@@ -1,5 +1,6 @@
 // import { faker } from "@faker-js/faker";
 import { $Enums, PrismaClient } from "../generated/client";
+import delegationData from "./mun-sh_delegations.json";
 const prisma = new PrismaClient();
 
 try {
@@ -121,75 +122,62 @@ try {
     `  - Created ${committees.IAEO.abbreviation} with ID ${committees.IAEO.id}`,
   );
 
-  // Team seeding
-
-  await prisma.conferenceMember.create({
-    data: {
-      conferenceId: conference.id,
-      role: "ADMIN",
-    },
-  });
-
-  for (let i = 0; i < 21; i++) {
-    await prisma.conferenceMember.create({
-      data: {
-        conferenceId: conference.id,
-        role: "CHAIR",
-      },
-    });
-  }
-
-  for (let i = 0; i < 7; i++) {
-    await prisma.conferenceMember.create({
-      data: {
-        conferenceId: conference.id,
-        role: "COMMITTEE_ADVISOR",
-      },
-    });
-  }
-
-  console.info("\nCreated Team Pool");
-
   // Committee seeding
 
-  const agendaItems = [
-    "Nachhaltige wirtschaftliche Entwicklung in den am wenigsten entwickelten Ländern",
-    "Umgang mit klimatischen Kipppunkten",
-    "Globales Erinnern an Kolonialismus",
+  const agendaItems = {
+    GV: [
+      "Nachhaltige wirtschaftliche Entwicklung in den am wenigsten entwickelten Ländern",
+      "Umgang mit klimatischen Kipppunkten",
+      "Globales Erinnern an Kolonialismus",
+    ],
 
-    "Situation in der Ukraine",
-    "Bekämpfung illegaler Waffenlieferungen an nichtstaatliche Akteure",
-    "Planetare Verteidigung",
+    HA1: [
+      "Situation in der Ukraine",
+      "Bekämpfung illegaler Waffenlieferungen an nichtstaatliche Akteure",
+      "Planetare Verteidigung",
+    ],
 
-    "Förderung von Kreislaufwirtschaft",
-    "Umgang mit klimawandelbedingter Migration",
-    "Rolle von künstlicher Intelligenz für die nachhaltige Entwicklung",
+    WiSo: [
+      "Förderung von Kreislaufwirtschaft",
+      "Umgang mit klimawandelbedingter Migration",
+      "Rolle von künstlicher Intelligenz für die nachhaltige Entwicklung",
+    ],
 
-    "Aktuelles",
-    "Situation in Haiti",
-    "Bedeutung natürlicher Ressourcen für bewaffnete Konflikte",
+    SR: [
+      "Aktuelles",
+      "Situation in Haiti",
+      "Bedeutung natürlicher Ressourcen für bewaffnete Konflikte",
+    ],
 
-    "Verantwortung von Unternehmen für Menschenrechte entlang globaler Lieferketten",
-    "Umsetzung des Rechts auf eine saubere Umwelt",
-    "Menschenrechtslage in der Demokratischen Republik Kongo",
+    MRR: [
+      "Verantwortung von Unternehmen für Menschenrechte entlang globaler Lieferketten",
+      "Umsetzung des Rechts auf eine saubere Umwelt",
+      "Menschenrechtslage in der Demokratischen Republik Kongo",
+    ],
 
-    "Verbesserung der psychischen Gesundheitsversorgung",
-    "Bekämpfung der Folgeerkranungen von Fehl- und Mangelernährung",
-    "Sicherung des Zugangs zu Verhütungsmitteln",
+    WHO: [
+      "Verbesserung der psychischen Gesundheitsversorgung",
+      "Bekämpfung der Folgeerkranungen von Fehl- und Mangelernährung",
+      "Sicherung des Zugangs zu Verhütungsmitteln",
+    ],
 
-    "Sicherheit kerntechnischer Anlagen in Konfliktgebieten",
-    "Auswirkungen von Uranabbau, -nutzung und -lagerung auf indigene Bevölkerungen",
-    "Rolle der Kernenergie für die Umsetzung von SDG 7",
-  ];
+    IAEO: [
+      "Sicherheit kerntechnischer Anlagen in Konfliktgebieten",
+      "Auswirkungen von Uranabbau, -nutzung und -lagerung auf indigene Bevölkerungen",
+      "Rolle der Kernenergie für die Umsetzung von SDG 7",
+    ],
+  };
 
-  let i = 0;
-  for (const committee of Object.values(committees)) {
-    if (committee) {
-      for (let j = 0; j < 3; j++) {
+  for (const committee of Object.keys(committees)) {
+    if (committees[committee as keyof typeof committees]) {
+      for (const itemTemplate of agendaItems[
+        committee as keyof typeof committees
+      ]) {
         const agendaItem = await prisma.agendaItem.create({
           data: {
-            committeeId: committee.id,
-            title: agendaItems[i] || "Dummy Agenda Item",
+            committeeId:
+              committees[committee as keyof typeof committees]?.id || "0",
+            title: itemTemplate || "Dummy Agenda Item",
           },
         });
         await prisma.speakersList.createMany({
@@ -208,7 +196,6 @@ try {
             },
           ],
         });
-        i++;
       }
     }
   }
@@ -218,50 +205,27 @@ try {
   // Delegations
   console.info("\nCreated Delegations:");
 
-  const delegations: () => string[] = () => {
-    const selectedCountries: string[] = [];
-    while (selectedCountries.length < 20) {
-      //TODO @TadeSF where do we have the countries possible? :D
-      // for (const countryRaw of allCountries) {
-      //   if (
-      //     ["deu", "usa", "fra", "gbr", "rus", "chn"].includes(
-      //       countryRaw.alpha3Code,
-      //     ) ||
-      //     Math.random() > 0.97
-      //   ) {
-      //     if (
-      //       !selectedCountries.includes(countryRaw.alpha3Code) &&
-      //       countryRaw.variant !== $Enums.NationVariant.SPECIAL_PERSON &&
-      //       countryRaw.variant !== $Enums.NationVariant.NON_STATE_ACTOR
-      //     ) {
-      //       selectedCountries.push(countryRaw.alpha3Code);
-      //     }
-      //   }
-      // }
-    }
-    selectedCountries.sort();
-    return selectedCountries;
-  };
-
-  for (const alpha3Code of delegations()) {
+  for (const data of delegationData) {
     const delegation = await prisma.delegation.create({
       data: {
         conference: { connect: { id: conference.id } },
-        nation: { connect: { alpha3Code } },
+        nation: { connect: { alpha3Code: data.alpha3Code } },
       },
     });
     console.info(
-      `  - Created Delegation for ${alpha3Code} with ID ${delegation.id}`,
+      `  - Created Delegation for ${data.alpha3Code} with ID ${delegation.id}`,
     );
 
-    await prisma.committeeMember.create({
-      data: {
-        committeeId: committees.GV?.id,
-        delegationId: delegation.id,
-      },
-    });
+    if (data.GV) {
+      await prisma.committeeMember.create({
+        data: {
+          committeeId: committees.GV?.id,
+          delegationId: delegation.id,
+        },
+      });
+    }
 
-    if (Math.random() > 0.5) {
+    if (data.HA1) {
       await prisma.committeeMember.create({
         data: {
           committeeId: committees.HA1?.id,
@@ -270,10 +234,46 @@ try {
       });
     }
 
-    if (Math.random() > 0.7) {
+    if (data.WiSo) {
+      await prisma.committeeMember.create({
+        data: {
+          committeeId: committees.WiSo?.id,
+          delegationId: delegation.id,
+        },
+      });
+    }
+
+    if (data.SR) {
       await prisma.committeeMember.create({
         data: {
           committeeId: committees.SR?.id,
+          delegationId: delegation.id,
+        },
+      });
+    }
+
+    if (data.MRR) {
+      await prisma.committeeMember.create({
+        data: {
+          committeeId: committees.MRR?.id,
+          delegationId: delegation.id,
+        },
+      });
+    }
+
+    if (data.WHO) {
+      await prisma.committeeMember.create({
+        data: {
+          committeeId: committees.WHO?.id,
+          delegationId: delegation.id,
+        },
+      });
+    }
+
+    if (data.IAEO) {
+      await prisma.committeeMember.create({
+        data: {
+          committeeId: committees.IAEO?.id,
           delegationId: delegation.id,
         },
       });
@@ -343,52 +343,6 @@ try {
       }
     }
   }
-
-  /*
-   * ---------------
-   *   SimSim Data
-   * ---------------
-   */
-
-  const simSimConference = await prisma.conference.upsert({
-    where: {
-      name: "SimSim",
-    },
-    update: {},
-    create: {
-      name: "SimSim",
-    },
-  });
-
-  const simSimCommittees = {} as {
-    SimSim1: Awaited<ReturnType<typeof prisma.committee.create>> | undefined;
-    SimSim2: Awaited<ReturnType<typeof prisma.committee.create>> | undefined;
-  };
-
-  simSimCommittees.SimSim1 = await prisma.committee.create({
-    data: {
-      conferenceId: simSimConference.id,
-      abbreviation: "S1",
-      name: "SimSim 1",
-      category: "COMMITTEE",
-    },
-  });
-
-  simSimCommittees.SimSim2 = await prisma.committee.create({
-    data: {
-      conferenceId: simSimConference.id,
-      abbreviation: "S2",
-      name: "SimSim 2",
-      category: "COMMITTEE",
-    },
-  });
-
-  await prisma.conferenceMember.create({
-    data: {
-      conferenceId: simSimConference.id,
-      role: "ADMIN",
-    },
-  });
 
   await prisma.$disconnect();
 } catch (e) {

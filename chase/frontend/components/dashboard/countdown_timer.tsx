@@ -1,5 +1,5 @@
 import { StatusTimer } from "@/contexts/status_timer";
-import { useContext, useEffect, useState } from "react";
+import { useContext } from "react";
 
 export default function Timer({
   inBrackets = false,

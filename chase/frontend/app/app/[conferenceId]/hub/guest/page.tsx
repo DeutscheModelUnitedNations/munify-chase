@@ -1,22 +1,22 @@
 "use client";
-import React, { useEffect } from "react";
+import React from "react";
 import { useI18nContext } from "@/i18n/i18n-react";
 import CommitteeGrid from "@/components/navigation-hub/committee_grid";
 import Button from "@/components/button";
 import { faArrowRightFromBracket } from "@fortawesome/pro-solid-svg-icons";
-import { backend } from "@/services/backend";
+import { useBackend } from "@/contexts/backend";
 import { useRouter } from "next/navigation";
 import { useToast } from "@/contexts/toast";
-import { useUserIdent } from "@/contexts/user_ident";
 
 export default function GuestHubPage({
   params,
 }: {
   params: { conferenceId: string };
 }) {
-  const { LL, locale } = useI18nContext();
+  const { LL } = useI18nContext();
   const router = useRouter();
   const { toastError } = useToast();
+  const { backend } = useBackend();
 
   return (
     <>

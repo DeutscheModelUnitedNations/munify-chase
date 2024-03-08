@@ -6,7 +6,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPlus, faTimes } from "@fortawesome/pro-solid-svg-icons";
 import { ToastContext } from "@/contexts/toast";
 import { IconProp } from "@fortawesome/fontawesome-svg-core";
-import { backend } from "@/services/backend";
+import { useBackend } from "@/contexts/backend";
 import { SpeakersListDataContext } from "@/contexts/speakers_list_data";
 
 /**
@@ -22,6 +22,7 @@ export default function ChangeSpeechTimeOverlay({
 }) {
   const { LL } = useI18nContext();
   const { showToast } = useContext(ToastContext);
+  const { backend } = useBackend();
   const speakersListId = useContext(SpeakersListDataContext)?.id;
 
   const [time, setTime] = useState<string | null>(null); // TODO: Add a default value

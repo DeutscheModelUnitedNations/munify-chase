@@ -19,9 +19,10 @@ import {
   faPersonFromPortal,
   faPersonToPortal,
 } from "@fortawesome/pro-solid-svg-icons";
+import getCountryNameByCode from "@/misc/get_country_name_by_code";
 
 export default function ChairAttendees() {
-  const { LL } = useI18nContext();
+  const { LL, locale } = useI18nContext();
   const { toastError } = useToast();
   const conferenceId = useContext(ConferenceIdContext);
   const committeeId = useContext(CommitteeIdContext);
@@ -39,10 +40,17 @@ export default function ChairAttendees() {
       .get()
       .then((response) => {
         setDelegationData(
-          response.data?.filter(
-            (delegation) =>
-              delegation.nation.variant === $Enums.NationVariant.NATION,
-          ) || null,
+          response.data
+            ?.filter(
+              (delegation) =>
+                delegation.nation.variant === $Enums.NationVariant.NATION,
+            )
+            .sort((a, b) =>
+              getCountryNameByCode(a.nation.alpha3Code, locale).localeCompare(
+                getCountryNameByCode(b.nation.alpha3Code, locale),
+                locale,
+              ),
+            ) || null,
         );
         setNonStateActorsData(
           response.data?.filter(

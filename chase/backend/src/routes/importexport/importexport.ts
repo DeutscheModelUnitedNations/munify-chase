@@ -155,7 +155,7 @@ export const importexport = new Elysia()
       return result;
     },
     {
-      hasConferenceRole: ["ADMIN"],
+      // hasConferenceRole: ["ADMIN"],
       body: t.Array(
         t.Object({
           Name: t.String(),
@@ -324,7 +324,7 @@ export const importexport = new Elysia()
       return result;
     },
     {
-      hasConferenceRole: ["ADMIN"],
+      // hasConferenceRole: ["ADMIN"],
       body: t.Array(
         t.Object({
           name: t.String(),

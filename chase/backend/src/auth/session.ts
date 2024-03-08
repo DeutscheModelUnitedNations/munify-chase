@@ -38,7 +38,7 @@ export const session = new Elysia({ name: "session" })
   })
   .derive(
     async ({
-      cookie: { sessionId: sessionIdCookie, chaseCookieConsent },
+      cookie: { sessionId: sessionIdCookie },
       set,
     }) => {
       //TODO refactor

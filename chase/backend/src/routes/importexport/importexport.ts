@@ -38,7 +38,7 @@ export const importexport = new Elysia()
       const result = await db.$transaction(
         async (tx) => {
           return Promise.allSettled(
-            body.map(async (datasetUser, datasetUserIndex) => {
+            body.map(async (datasetUser) => {
               let userId = (
                 await tx.email.findFirst({
                   where: {
@@ -100,14 +100,14 @@ export const importexport = new Elysia()
 
                 //TODO: report back errors in sending emails to the frontend in structured way
                 // the whole sending process should be unified in a function outside the handlers
-                setTimeout(() => {
-                  sendCredentialCreationEmail({
-                    email: datasetUser["E-Mail-Adresse 1"],
-                    locale: "de",
-                    redirectLink: `${appConfiguration.email.CREDENTIAL_CREATE_REDIRECT_URL}?token=${token}&email=${datasetUser["E-Mail-Adresse 1"]}`,
-                  });
-                  console.log("Sent email to", datasetUser["E-Mail-Adresse 1"]);
-                }, 1000 * datasetUserIndex);
+                // setTimeout(() => {
+                //   sendCredentialCreationEmail({
+                //     email: datasetUser["E-Mail-Adresse 1"],
+                //     locale: "de",
+                //     redirectLink: `${appConfiguration.email.CREDENTIAL_CREATE_REDIRECT_URL}?token=${token}&email=${datasetUser["E-Mail-Adresse 1"]}`,
+                //   });
+                //   console.log("Sent email to", datasetUser["E-Mail-Adresse 1"]);
+                // }, 1000 * datasetUserIndex);
               }
               let conferenceMemberId = (
                 await tx.conferenceMember.findFirst({

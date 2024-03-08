@@ -53,7 +53,7 @@ export const appConfiguration = {
       : requireEnv("EMAIL_VERIFY_REDIRECT_URL"),
     CREDENTIAL_CREATE_REDIRECT_URL: development
       ? "http://localhost:3000/login/createCredentials"
-      : requireEnv("EMAIL_VERIFY_REDIRECT_URL"),
+      : requireEnv("CREDENTIAL_CREATE_REDIRECT_URL"),
   },
   // passkeys: {
   //   RELAY_NAME: process.env.RELAY_NAME ?? "CHASE - DMUN e.V.",

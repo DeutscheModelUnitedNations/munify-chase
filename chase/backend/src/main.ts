@@ -18,21 +18,6 @@ import { speakersListSpeakers } from "./routes/speakersList/speakers";
 import { messages } from "./routes/messages";
 import { importexport } from "./routes/importexport/importexport";
 
-//TODO remove this?
-import { generateHeapSnapshot } from "bun";
-
-setInterval(
-  () => {
-    console.info("Taking memory snapshot");
-    const snapshot = generateHeapSnapshot();
-    Bun.write(
-      `./.memorysnapshots/${Date.now()}.json`,
-      JSON.stringify(snapshot, null, 2),
-    );
-  },
-  1000 * 60 * 5,
-);
-
 const m = new Elysia()
   .use(errorLogging)
   .use(

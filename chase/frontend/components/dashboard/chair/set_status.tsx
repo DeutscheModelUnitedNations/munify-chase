@@ -44,6 +44,7 @@ export default function SetStatusWidget() {
     useState(false);
 
   const TEMPLATE_TIMER_TIMEFRAMES = [
+    { label: "5", value: 5 * 60 * 1000 },
     { label: "10", value: 10 * 60 * 1000 },
     { label: "15", value: 15 * 60 * 1000 },
     { label: "20", value: 20 * 60 * 1000 },

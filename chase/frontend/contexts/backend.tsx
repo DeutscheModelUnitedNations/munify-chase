@@ -7,10 +7,9 @@ import { env } from "next-runtime-env";
 export const BackendContext = createContext({} as BackendContextType);
 export const useBackend = () => useContext(BackendContext);
 
-//@ ts-ignore
+//@ts-ignore
 export type BackendInstanceType = ReturnType<typeof edenTreaty<App>>;
 
-// TODO
 function getBackendUrl() {
   noStore();
   return env("NEXT_PUBLIC_BACKEND_URL") || "https://chase-backend.dmun.de";

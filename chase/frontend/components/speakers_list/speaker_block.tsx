@@ -15,6 +15,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { IconProp } from "@fortawesome/fontawesome-svg-core";
 import { SpeakersListDataContext } from "@/contexts/speakers_list_data";
 import NoDataPlaceholder from "../no_data_placeholder";
+import { useBackendTime } from "@/contexts/backendTime";
 
 /**
  * This Component is used in the SpeakersList. It creates a box for the current speaker,
@@ -25,7 +26,7 @@ import NoDataPlaceholder from "../no_data_placeholder";
 
 export default function SpeakerBlock() {
   const { LL, locale } = useI18nContext();
-
+  const { currentTime } = useBackendTime();
   const speakersListData = useContext(SpeakersListDataContext);
 
   const [timerState, setTimerState] = useState<string>("active");
@@ -65,7 +66,8 @@ export default function SpeakerBlock() {
       //TODO clear this interval
       const countDownInterval = setInterval(() => {
         const timerInMilliseconds: number =
-          timeLeftData - (Date.now() - new Date(startTimestampData).getTime());
+          timeLeftData -
+          (currentTime.getTime() - new Date(startTimestampData).getTime());
         setTimeLeft(displayTimer(timerInMilliseconds));
         if (timerInMilliseconds < 0) {
           setTimerState("overtime");

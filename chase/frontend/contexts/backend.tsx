@@ -7,10 +7,10 @@ import { env } from "next-runtime-env";
 export const BackendContext = createContext({} as BackendContextType);
 export const useBackend = () => useContext(BackendContext);
 
-//@ts-ignore
+//@ ts-ignore
 export type BackendInstanceType = ReturnType<typeof edenTreaty<App>>;
 
-//TODO
+// TODO
 function getBackendUrl() {
   noStore();
   return env("NEXT_PUBLIC_BACKEND_URL") || "https://chase-backend.dmun.de";
@@ -18,6 +18,7 @@ function getBackendUrl() {
 
 export const Backend = ({ children }: { children: React.ReactNode }) => {
   const [backend, _setBackend] = useState(
+    //@ts-ignore
     edenTreaty<App>(getBackendUrl(), {
       $fetch: {
         credentials: "include",

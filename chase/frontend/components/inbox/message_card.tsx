@@ -1,6 +1,7 @@
 import React from "react";
 import { useI18nContext } from "@/i18n/i18n-react";
 import { useBackend, type BackendInstanceType } from "@/contexts/backend";
+import { useBackendTime } from "@/contexts/backendTime";
 import { SmallFlag } from "@/components/flag_templates";
 import { Tag } from "primereact/tag";
 import getCountryNameByCode from "@/misc/get_country_name_by_code";
@@ -36,6 +37,7 @@ export default function MessageCard({
   const { locale } = useI18nContext();
   const { toastError } = useToast();
   const { backend } = useBackend();
+  const { currentTime } = useBackendTime();
 
   async function selectMessage() {
     setSelected(message);
@@ -102,7 +104,7 @@ export default function MessageCard({
             hour: "2-digit",
             minute: "2-digit",
           })}{" "}
-          {new Date(message.timestamp).getDay() !== new Date().getDay() &&
+          {new Date(message.timestamp).getDay() !== currentTime.getDay() &&
             `(${new Date(message.timestamp).toLocaleDateString(locale, {
               month: "numeric",
               day: "numeric",

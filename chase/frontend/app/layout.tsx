@@ -23,6 +23,7 @@ import { baseLocale, locales } from "@/i18n/i18n-util";
 import TypesafeI18n from "@/i18n/i18n-react";
 import { ToastProvider } from "@/contexts/toast";
 import { Backend } from "@/contexts/backend";
+import { BackendTime } from "@/contexts/backendTime";
 import CookieBanner from "@/components/cookie_banner";
 
 const inter = Inter({ subsets: ["latin"] });
@@ -64,8 +65,10 @@ export default function RootLayout({
         <TypesafeI18n locale={locale}>
           <ToastProvider>
             <Backend>
-              <CookieBanner />
-              {children}
+              <BackendTime>
+                <CookieBanner />
+                {children}
+              </BackendTime>
             </Backend>
           </ToastProvider>
         </TypesafeI18n>

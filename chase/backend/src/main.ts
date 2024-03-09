@@ -17,6 +17,7 @@ import { speakersListModification } from "./routes/speakersList/modification";
 import { speakersListSpeakers } from "./routes/speakersList/speakers";
 import { messages } from "./routes/messages";
 import { importexport } from "./routes/importexport/importexport";
+import { time } from "./routes/time";
 
 const m = new Elysia()
   .use(errorLogging)
@@ -49,6 +50,7 @@ const m = new Elysia()
   .use(messages)
   .use(user)
   .use(auth)
+  .use(time)
   .use(importexport)
   .use(baseData);
 

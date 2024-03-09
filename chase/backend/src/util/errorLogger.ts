@@ -1,5 +1,8 @@
 import Elysia from "elysia";
 
+// if available we should also log the user info etc. and to something agains these
+// verbose blocks of code in out logs
+// TODO we should also add general logging for all requests
 export const errorLogging = new Elysia().onError(
   ({ error, code, path, set, request }) => {
     console.error(

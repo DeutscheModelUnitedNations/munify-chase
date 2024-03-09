@@ -57,18 +57,18 @@ const m = new Elysia()
 // we make the api docs public
 // biome-ignore lint/suspicious/noExplicitAny: we explicitly dont want type checking here
 (new Elysia() as any) // just disable the type check for this object, since the middleware is causing issues
-  .use(
-    swagger({
-      path: `/${appConfiguration.documentationPath}`,
-      documentation: {
-        info: {
-          title: `${appConfiguration.appName} documentation`,
-          description: `${appConfiguration.appName} documentation`,
-          version: packagejson.version,
-        },
-      },
-    }),
-  )
+  // .use(
+  //   swagger({
+  //     path: `/${appConfiguration.documentationPath}`,
+  //     documentation: {
+  //       info: {
+  //         title: `${appConfiguration.appName} documentation`,
+  //         description: `${appConfiguration.appName} documentation`,
+  //         version: packagejson.version,
+  //       },
+  //     },
+  //   }),
+  // )
   .use(m)
   .listen(process.env.PORT ?? "3001");
 

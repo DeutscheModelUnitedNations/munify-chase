@@ -130,4 +130,3 @@ export const session = new Elysia({ name: "session" })
       session: { ...data, setUserData, setLoggedIn },
     };
   });
-  

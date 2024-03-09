@@ -35,4 +35,3 @@ export const Backend = ({ children }: { children: React.ReactNode }) => {
 export interface BackendContextType {
   backend: BackendInstanceType;
 }
-

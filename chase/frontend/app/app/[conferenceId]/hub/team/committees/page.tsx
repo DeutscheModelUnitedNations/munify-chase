@@ -14,7 +14,7 @@ export default function ChairHub({
 }: {
   params: { conferenceId: string };
 }) {
-  const { LL } = useI18nContext();
+  const { LL, locale } = useI18nContext();
   const conferenceId = useContext(ConferenceIdContext);
   const { conferenceMembership } = useUserIdent();
 

@@ -42,6 +42,7 @@ export default function ChairHub({
             <h2 className="text-lg my-1">
               {conferenceRoleTranslation(
                 LL,
+                //@ts-ignore
                 conferenceMembership(conferenceId)?.role,
               )}
             </h2>

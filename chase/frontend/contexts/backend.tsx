@@ -15,10 +15,6 @@ function getBackendUrl() {
   noStore();
   return env("NEXT_PUBLIC_BACKEND_URL") || "https://chase-backend.dmun.de";
 }
-setTimeout(() => {
-  console.log("Backend URL", getBackendUrl());
-}, 5000);
-
 
 export const Backend = ({ children }: { children: React.ReactNode }) => {
   const [backend, _setBackend] = useState(

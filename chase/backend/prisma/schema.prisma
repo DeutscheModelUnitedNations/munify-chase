@@ -34,7 +34,7 @@ generator typebox {
 
 model Password {
   id           String @id @default(uuid())
-  user         User   @relation(fields: [userId], references: [id])
+  user         User   @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
   userId       String
   passwordHash String
 }
@@ -53,15 +53,15 @@ model Token {
 model PendingCredentialCreateTask {
   id String @id @default(uuid())
 
-  user    User   @relation(fields: [userId], references: [id])
+  user    User   @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
   userId  String
-  token   Token  @relation(fields: [tokenId], references: [id])
+  token   Token  @relation(fields: [tokenId], references: [id], onDelete: Cascade, onUpdate: Cascade)
   tokenId String
 }
 
 model Email {
   email  String @id
-  user   User   @relation(fields: [userId], references: [id])
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
   userId String
 
   validated         Boolean @default(false)

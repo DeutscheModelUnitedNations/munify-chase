@@ -1,5 +1,5 @@
 "use client";
-import React, { useContext } from "react";
+import React, { useContext, useState, useEffect } from "react";
 import { useI18nContext } from "@/i18n/i18n-react";
 import CommitteeGrid from "@/components/navigation-hub/committee_grid";
 import HeaderTemplate from "@/components/header_template";
@@ -14,9 +14,24 @@ export default function ChairHub({
 }: {
   params: { conferenceId: string };
 }) {
-  const { LL } = useI18nContext();
+  const { LL, locale } = useI18nContext();
   const conferenceId = useContext(ConferenceIdContext);
   const { conferenceMembership } = useUserIdent();
+
+  const [localTime, setLocalTime] = useState("");
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setLocalTime(
+        new Date().toLocaleTimeString(locale, {
+          hour: "2-digit",
+          minute: "numeric",
+          second: "numeric",
+        }),
+      );
+    }, 1000);
+    return () => clearInterval(interval);
+  }, []);
 
   return (
     <>
@@ -27,9 +42,14 @@ export default function ChairHub({
             <h2 className="text-lg my-1">
               {conferenceRoleTranslation(
                 LL,
+                //@ts-ignore
                 conferenceMembership(conferenceId)?.role,
               )}
             </h2>
+          </div>
+          <div className="flex-1" />
+          <div className="font-mono text-5xl text-primary-300 dark:text-primary-700 mr-10">
+            {localTime}
           </div>
           <LargeFlag countryCode={"uno"} />
         </HeaderTemplate>

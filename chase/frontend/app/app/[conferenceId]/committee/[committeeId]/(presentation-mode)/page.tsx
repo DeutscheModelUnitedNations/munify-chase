@@ -12,6 +12,7 @@ import { faPodium } from "@fortawesome/pro-solid-svg-icons";
 import { useToast } from "@/contexts/toast";
 import WhiteboardWidget from "@/components/dashboard/whiteboard";
 import { StatusTimer } from "@/contexts/status_timer";
+import { useMediaQuery } from "react-responsive";
 
 type CommitteeType = Awaited<
   ReturnType<

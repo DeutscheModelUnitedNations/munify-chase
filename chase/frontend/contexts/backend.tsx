@@ -6,13 +6,14 @@ import { unstable_noStore as noStore } from "next/cache";
 export const BackendContext = createContext({} as BackendContextType);
 export const useBackend = () => useContext(BackendContext);
 
+//@ts-ignore
 export type BackendInstanceType = ReturnType<typeof edenTreaty<App>>;
 
 //TODO
 function getBackendUrl() {
   noStore();
-  // return process.env.BACKEND_URL || "https://chase-backend.dmun.de";
-  return process.env.BACKEND_URL || "http://localhost:3001";
+  return process.env.BACKEND_URL || "https://chase-backend.dmun.de";
+  // return process.env.BACKEND_URL || "http://localhost:3001";
 }
 
 export const Backend = ({ children }: { children: React.ReactNode }) => {

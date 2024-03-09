@@ -34,7 +34,7 @@ const r = await build({
   format: "esm",
   splitting: false,
   sourcemap: "external",
-  minify: true,
+  minify: false,
   loader: { ".mjml": "file" },
   treeShaking: true,
   plugins: [emptyMjmlUglifyPlugin],

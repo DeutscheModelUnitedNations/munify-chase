@@ -100,11 +100,14 @@ export const importexport = new Elysia()
 
                 //TODO: report back errors in sending emails to the frontend in structured way
                 // the whole sending process should be unified in a function outside the handlers
-                await sendCredentialCreationEmail({
-                  email: datasetUser["E-Mail-Adresse 1"],
-                  locale: "de",
-                  redirectLink: `${appConfiguration.email.CREDENTIAL_CREATE_REDIRECT_URL}?token=${token}&email=${datasetUser["E-Mail-Adresse 1"]}`,
-                });
+                // setTimeout(() => {
+                //   sendCredentialCreationEmail({
+                //     email: datasetUser["E-Mail-Adresse 1"],
+                //     locale: "de",
+                //     redirectLink: `${appConfiguration.email.CREDENTIAL_CREATE_REDIRECT_URL}?token=${token}&email=${datasetUser["E-Mail-Adresse 1"]}`,
+                //   });
+                //   console.log("Sent email to", datasetUser["E-Mail-Adresse 1"]);
+                // }, 1000 * datasetUserIndex);
               }
               let conferenceMemberId = (
                 await tx.conferenceMember.findFirst({
@@ -155,7 +158,8 @@ export const importexport = new Elysia()
       return result;
     },
     {
-      hasConferenceRole: ["ADMIN"],
+      //TODO
+      // hasConferenceRole: ["ADMIN"],
       body: t.Array(
         t.Object({
           Name: t.String(),
@@ -324,7 +328,8 @@ export const importexport = new Elysia()
       return result;
     },
     {
-      hasConferenceRole: ["ADMIN"],
+      //TODO
+      // hasConferenceRole: ["ADMIN"],
       body: t.Array(
         t.Object({
           name: t.String(),

@@ -63,21 +63,17 @@ export default function SpeakerBlock() {
       setTimerState("paused");
       setTimeLeft(displayTimer(timeLeftData || 0));
     } else {
-      //TODO clear this interval
-      const countDownInterval = setInterval(() => {
-        const timerInMilliseconds: number =
-          timeLeftData -
-          (currentTime.getTime() - new Date(startTimestampData).getTime());
-        setTimeLeft(displayTimer(timerInMilliseconds));
-        if (timerInMilliseconds < 0) {
-          setTimerState("overtime");
-        } else {
-          setTimerState("active");
-        }
-      }, 1000);
-      return () => clearInterval(countDownInterval);
+      const timerInMilliseconds: number =
+        timeLeftData -
+        (currentTime.getTime() - new Date(startTimestampData).getTime());
+      setTimeLeft(displayTimer(timerInMilliseconds));
+      if (timerInMilliseconds < 0) {
+        setTimerState("overtime");
+      } else {
+        setTimerState("active");
+      }
     }
-  }, [timeLeftData, startTimestampData]);
+  }, [timeLeftData, startTimestampData, currentTime]);
 
   const displayTimer = (milliseconds: number) => {
     const minutes: number = Math.floor(Math.abs(milliseconds / 60000));

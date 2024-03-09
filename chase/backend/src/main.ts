@@ -1,7 +1,5 @@
 import { Elysia } from "elysia";
-import { swagger } from "@elysiajs/swagger";
 import { cors } from "@elysiajs/cors";
-import packagejson from "../package.json";
 import { appConfiguration } from "./util/config";
 import { errorLogging } from "./util/errorLogger";
 import { conference } from "./routes/conference";

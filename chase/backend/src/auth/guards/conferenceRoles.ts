@@ -23,18 +23,16 @@ export const conferenceRoleGuard = new Elysia({
        */
       hasConferenceRole(_roles: ConferenceRole[] | "any") {
         onBeforeHandle(async () => {
-        // onBeforeHandle(async ({ session, set, params }) => {
+          // onBeforeHandle(async ({ session, set, params }) => {
           // if (session.loggedIn !== true || !session.userData) {
           //   // biome-ignore lint/suspicious/noAssignInExpressions: This is a valid use case
           //   return (set.status = "Unauthorized");
           // }
-
           // if (!parametersSchema.Check(params)) {
           //   set.status = "Bad Request";
           //   return [...parametersSchema.Errors(params)];
           // }
           // const { conferenceId } = parametersSchema.Decode(params);
-
           // const res = await db.conferenceMember.findFirst({
           //   where: {
           //     userId: session.userData.id,
@@ -42,7 +40,6 @@ export const conferenceRoleGuard = new Elysia({
           //     role: roles === "any" ? undefined : { in: roles },
           //   },
           // });
-
           // if (!res) {
           //   // biome-ignore lint/suspicious/noAssignInExpressions: This is a valid use case
           //   return (set.status = "Unauthorized");

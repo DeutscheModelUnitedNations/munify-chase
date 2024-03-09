@@ -2,6 +2,7 @@ import React, { createContext, useContext, useState } from "react";
 import { edenTreaty } from "@elysiajs/eden";
 import { App } from "../../backend/src/main";
 import { unstable_noStore as noStore } from "next/cache";
+import { env } from "next-runtime-env";
 
 export const BackendContext = createContext({} as BackendContextType);
 export const useBackend = () => useContext(BackendContext);
@@ -12,9 +13,12 @@ export type BackendInstanceType = ReturnType<typeof edenTreaty<App>>;
 //TODO
 function getBackendUrl() {
   noStore();
-  return process.env.BACKEND_URL || "https://chase-backend.dmun.de";
-  // return process.env.BACKEND_URL || "http://localhost:3001";
+  return env("NEXT_PUBLIC_BACKEND_URL") || "https://chase-backend.dmun.de";
 }
+setTimeout(() => {
+  console.log("Backend URL", getBackendUrl());
+}, 5000);
+
 
 export const Backend = ({ children }: { children: React.ReactNode }) => {
   const [backend, _setBackend] = useState(
@@ -35,3 +39,4 @@ export const Backend = ({ children }: { children: React.ReactNode }) => {
 export interface BackendContextType {
   backend: BackendInstanceType;
 }
+

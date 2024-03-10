@@ -35,4 +35,4 @@ ENV PORT=3001
 # run the app
 USER bun
 EXPOSE 3001/tcp
-ENTRYPOINT [ "bun", "main.js" ]
+ENTRYPOINT [ "bun", "main.js", "--smol" ]

@@ -26,7 +26,6 @@ export default function ChairAttendees() {
   const { toastError } = useToast();
   const conferenceId = useContext(ConferenceIdContext);
   const committeeId = useContext(CommitteeIdContext);
-  // @ts-ignore
   const { backend } = useBackend();
 
   const [delegationData, setDelegationData] = useState<DelegationDataType>([]);

@@ -1,7 +1,7 @@
 "use client";
 import "./globals.scss";
 import { Inter } from "next/font/google"; // Even though Google Fonts are used – no requests are sent to Google (see NEXT.JS docs)
-
+import { PublicEnvScript } from "next-runtime-env";
 //theme
 import "@/themes/theme_light.scss";
 import "@/themes/theme_dark.scss";
@@ -12,7 +12,6 @@ import "primeicons/primeicons.css";
 import { config } from "@fortawesome/fontawesome-svg-core";
 import "@fortawesome/fontawesome-svg-core/styles.css";
 config.autoAddCss = false; // Tell Font Awesome to skip adding the CSS automatically since it's being imported above, otherwise icons will be huge on load
-import Head from "next/head";
 
 import {
   detectLocale,
@@ -50,9 +49,16 @@ export default function RootLayout({
 
   return (
     <html lang="en">
-      <Head>
-        <title>Chase</title> {/* TODO Make title work */}
+      <head>
+        <PublicEnvScript />
+      </head>
+
+      {/* <Head>
+        <title>Chase</title> 
+        <PublicEnvScript />
       </Head>
+     */}
+
       <body className={inter.className}>
         {/* <PrimeReactProvider value={{ pt: Tailwind }}> */}
         <TypesafeI18n locale={locale}>

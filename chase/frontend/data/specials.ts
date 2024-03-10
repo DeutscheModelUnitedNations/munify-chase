@@ -256,7 +256,7 @@ const specialPersons: NationTranslation[] = [
   {
     id: 9,
     alpha3: "und",
-    de: "Generalsekretariat",
+    de: "Stellvertretung des Generalsekretärs",
     en: "Deputy General Secretary",
   },
   {

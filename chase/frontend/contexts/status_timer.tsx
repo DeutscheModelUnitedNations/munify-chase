@@ -1,6 +1,7 @@
 "use client";
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { ToastContext } from "@/contexts/toast";
+import { useBackendTime } from "@/contexts/backendTime";
 import { useI18nContext } from "@/i18n/i18n-react";
 import { CommitteeDataContext } from "@/contexts/committee_data";
 import { $Enums } from "../../backend/prisma/generated/client";
@@ -25,6 +26,7 @@ export function StatusTimerProvider({
   const { showToast, clearToast } = useContext(ToastContext);
   const { LL } = useI18nContext();
   const committeeData = useContext(CommitteeDataContext);
+  const { currentTime } = useBackendTime();
 
   const [category, setCategory] = useState<$Enums.CommitteeStatus | null>(null);
   const [headline, setHeadline] = useState<string | null>(null);
@@ -65,35 +67,31 @@ export function StatusTimerProvider({
 
   useEffect(() => {
     if (until) {
-      const interval = setInterval(() => {
-        try {
-          const diff = new Date(until).getTime() - Date.now();
-          if (diff > 0) {
-            setTimeLeft(diff);
-          } else {
-            setTimeLeft(0);
-            setTimerOver?.(true);
-            if (
-              !toastShown &&
-              !disallowNotifications &&
-              (
-                [
-                  $Enums.CommitteeStatus.INFORMAL,
-                  $Enums.CommitteeStatus.PAUSE,
-                ] as ($Enums.CommitteeStatus | null)[]
-              ).includes(category)
-            )
-              timerToast();
-            setToastShown(true);
-            clearInterval(interval);
-          }
-        } catch (_e) {
-          console.error(until);
+      try {
+        const diff = new Date(until).getTime() - currentTime.getTime();
+        if (diff > 0) {
+          setTimeLeft(diff);
+        } else {
+          setTimeLeft(0);
+          setTimerOver?.(true);
+          if (
+            !toastShown &&
+            !disallowNotifications &&
+            (
+              [
+                $Enums.CommitteeStatus.INFORMAL,
+                $Enums.CommitteeStatus.PAUSE,
+              ] as ($Enums.CommitteeStatus | null)[]
+            ).includes(category)
+          )
+            timerToast();
+          setToastShown(true);
         }
-      }, 1000);
-      return () => clearInterval(interval);
+      } catch (_e) {
+        console.error(until);
+      }
     }
-  }, [until, toastShown]);
+  }, [until, toastShown, currentTime]);
 
   useEffect(() => {
     if (timeLeft === 0 || timeLeft === undefined) {

@@ -1,7 +1,5 @@
 import { Elysia } from "elysia";
-import { swagger } from "@elysiajs/swagger";
 import { cors } from "@elysiajs/cors";
-import packagejson from "../package.json";
 import { appConfiguration } from "./util/config";
 import { errorLogging } from "./util/errorLogger";
 import { conference } from "./routes/conference";
@@ -17,6 +15,7 @@ import { speakersListModification } from "./routes/speakersList/modification";
 import { speakersListSpeakers } from "./routes/speakersList/speakers";
 import { messages } from "./routes/messages";
 import { importexport } from "./routes/importexport/importexport";
+import { time } from "./routes/time";
 
 const m = new Elysia()
   .use(errorLogging)
@@ -49,24 +48,25 @@ const m = new Elysia()
   .use(messages)
   .use(user)
   .use(auth)
+  .use(time)
   .use(importexport)
   .use(baseData);
 
 // we make the api docs public
 // biome-ignore lint/suspicious/noExplicitAny: we explicitly dont want type checking here
 (new Elysia() as any) // just disable the type check for this object, since the middleware is causing issues
-  .use(
-    swagger({
-      path: `/${appConfiguration.documentationPath}`,
-      documentation: {
-        info: {
-          title: `${appConfiguration.appName} documentation`,
-          description: `${appConfiguration.appName} documentation`,
-          version: packagejson.version,
-        },
-      },
-    }),
-  )
+  // .use(
+  //   swagger({
+  //     path: `/${appConfiguration.documentationPath}`,
+  //     documentation: {
+  //       info: {
+  //         title: `${appConfiguration.appName} documentation`,
+  //         description: `${appConfiguration.appName} documentation`,
+  //         version: packagejson.version,
+  //       },
+  //     },
+  //   }),
+  // )
   .use(m)
   .listen(process.env.PORT ?? "3001");
 

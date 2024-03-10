@@ -1,5 +1,5 @@
 "use client";
-import React, { useContext, useState, useEffect } from "react";
+import React, { useContext } from "react";
 import { useI18nContext } from "@/i18n/i18n-react";
 import CommitteeGrid from "@/components/navigation-hub/committee_grid";
 import HeaderTemplate from "@/components/header_template";
@@ -8,6 +8,7 @@ import { ScrollPanel } from "primereact/scrollpanel";
 import { conferenceRoleTranslation } from "@/i18n/translation_utils";
 import { ConferenceIdContext } from "@/contexts/committee_data";
 import { useUserIdent } from "@/contexts/user_ident";
+import { useBackendTime } from "@/contexts/backendTime";
 
 export default function ChairHub({
   params,
@@ -17,21 +18,7 @@ export default function ChairHub({
   const { LL, locale } = useI18nContext();
   const conferenceId = useContext(ConferenceIdContext);
   const { conferenceMembership } = useUserIdent();
-
-  const [localTime, setLocalTime] = useState("");
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setLocalTime(
-        new Date().toLocaleTimeString(locale, {
-          hour: "2-digit",
-          minute: "numeric",
-          second: "numeric",
-        }),
-      );
-    }, 1000);
-    return () => clearInterval(interval);
-  }, []);
+  const { currentTime } = useBackendTime();
 
   return (
     <>
@@ -49,7 +36,11 @@ export default function ChairHub({
           </div>
           <div className="flex-1" />
           <div className="font-mono text-5xl text-primary-300 dark:text-primary-700 mr-10">
-            {localTime}
+            {currentTime.toLocaleTimeString(locale, {
+              hour: "2-digit",
+              minute: "numeric",
+              second: "numeric",
+            })}
           </div>
           <LargeFlag countryCode={"uno"} />
         </HeaderTemplate>

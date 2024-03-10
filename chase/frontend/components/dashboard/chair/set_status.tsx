@@ -2,6 +2,7 @@ import React, { useState, useContext } from "react";
 import { ToastContext } from "@/contexts/toast";
 import { useI18nContext } from "@/i18n/i18n-react";
 import { useBackend } from "@/contexts/backend";
+import { useBackendTime } from "@/contexts/backendTime";
 import ConfigWrapper from "@/components/dashboard/chair/config_wrapper";
 import { Dropdown } from "primereact/dropdown";
 import Button from "@/components/button";
@@ -29,6 +30,7 @@ export default function SetStatusWidget() {
   const { backend } = useBackend();
   const committeeId = useContext(CommitteeIdContext);
   const committeeData = useContext(CommitteeDataContext);
+  const { currentTime } = useBackendTime();
 
   const [selectedStatus, setSelectedStatus] =
     useState<$Enums.CommitteeStatus | null>(null);
@@ -141,7 +143,9 @@ export default function SetStatusWidget() {
             <Button
               label={timeframe.label}
               onClick={() => {
-                setSelectedStatusUntil(new Date(Date.now() + timeframe.value));
+                setSelectedStatusUntil(
+                  new Date(currentTime.getTime() + timeframe.value),
+                );
               }}
               size="small"
               className="flex-1"

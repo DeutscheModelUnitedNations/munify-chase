@@ -1,15 +1,13 @@
-use async_graphql::{ComplexObject, InputObject, SimpleObject};
+use async_graphql::{InputObject, SimpleObject};
+use serde::Serialize;
 
 pub mod query;
 
-#[derive(SimpleObject, InputObject, Default)]
-#[graphql(complex, input_name = "UserInput")] // NOTE: If you want the `ComplexObject` macro to take effect, this `complex` attribute is required.
+#[derive(SimpleObject, InputObject, Default, Debug, Serialize)]
+#[graphql(input_name = "UserInput")]
 pub struct User {
     id: String,
     name: String,
     start: chrono::NaiveDate,
     end: chrono::NaiveDate,
 }
-
-#[ComplexObject]
-impl User {}

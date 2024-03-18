@@ -1,7 +1,8 @@
 "use client";
-import React, { createContext, useContext, useRef } from "react";
+import React, { createContext, useContext, useRef, useState } from "react";
 import { Toast, ToastMessage } from "primereact/toast";
 import { useI18nContext } from "@/i18n/i18n-react";
+import { usePathname } from "next/navigation";
 
 export const ToastContext = createContext({} as ToastContextType);
 export const useToast = () => useContext(ToastContext);
@@ -13,8 +14,22 @@ export const useToast = () => useContext(ToastContext);
 export const ToastProvider = ({ children }: { children: React.ReactNode }) => {
   const toast = useRef<Toast>(null);
   const { LL } = useI18nContext();
+  const pathname = usePathname();
+
+  const [disabledPages, setDisabledPages] = useState<string[]>([]);
+
+  const disableToastsOnCurrentPage = () => {
+    setDisabledPages((prevDisabledPages) => [...prevDisabledPages, pathname]);
+  };
+
+  const enableToastsOnCurrentPage = () => {
+    setDisabledPages((prevDisabledPages) =>
+      prevDisabledPages.filter((page) => page !== pathname),
+    );
+  };
 
   const showToast = (message: ToastMessage) => {
+    if (disabledPages.includes(pathname)) return;
     toast.current?.show(message);
   };
 
@@ -24,6 +39,7 @@ export const ToastProvider = ({ children }: { children: React.ReactNode }) => {
 
   const toastError = (error: Error, message?: string) => {
     console.error(error);
+    if (disabledPages.includes(pathname)) return;
     showToast({
       severity: "error",
       summary: LL.admin.onboarding.error.title(),
@@ -32,7 +48,15 @@ export const ToastProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   return (
-    <ToastContext.Provider value={{ showToast, clearToast, toastError }}>
+    <ToastContext.Provider
+      value={{
+        showToast,
+        clearToast,
+        toastError,
+        disableToastsOnCurrentPage,
+        enableToastsOnCurrentPage,
+      }}
+    >
       <Toast ref={toast} />
       {children}
     </ToastContext.Provider>
@@ -43,4 +67,6 @@ export interface ToastContextType {
   showToast: (message: ToastMessage) => void;
   clearToast: () => void;
   toastError: (error: Error, message?: string) => void;
+  disableToastsOnCurrentPage: () => void;
+  enableToastsOnCurrentPage: () => void;
 }

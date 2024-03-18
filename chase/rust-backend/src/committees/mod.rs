@@ -1,7 +1,6 @@
 use async_graphql::{InputObject, SimpleObject};
 use serde::{Deserialize, Serialize};
 
-pub mod repo;
 pub mod query;
 
 #[derive(SimpleObject, InputObject, Default, Debug, Serialize, Deserialize)]

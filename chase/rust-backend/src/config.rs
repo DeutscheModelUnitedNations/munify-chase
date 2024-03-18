@@ -8,9 +8,7 @@ pub struct AppConfig {
 
 #[derive(Debug, serde::Deserialize, PartialEq, Eq)]
 pub struct DbConfig {
-    pub port: u16,
-    pub namespace: String,
-    pub database: String,
+   pub url: String
 }
 
 pub fn read_config() -> Result<AppConfig, ConfigError> {
@@ -27,8 +25,7 @@ pub fn read_config() -> Result<AppConfig, ConfigError> {
         )
         .set_default("port", 3001)?
         .set_default("name", "CHASE")?
-        .set_default("db.namespace", "dev")?
-        .set_default("db.database", "dev")?
+        .set_default("db.url", "postgres://username:password@localhost:5432/database")?
         .build()?;
 
     config.try_deserialize()

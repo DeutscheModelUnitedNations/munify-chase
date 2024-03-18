@@ -1,13 +1,15 @@
 version: '3'
 services:
-  surrealdb:
-    image: surrealdb/surrealdb:latest
-    command: start file:/mydata/mydatabase.db
+  db:
     ports:
-      - "8000:8000"
+      - 5432:5432
+    image: postgres
+    environment:
+      POSTGRES_PASSWORD: password
+      POSTGRES_USER: username
+      POSTGRES_DB: database
     volumes:
-      - mydata:/mydata
-    user: "root"
+      - mydata:/var/lib/postgresql/data
 
 volumes:
   mydata:

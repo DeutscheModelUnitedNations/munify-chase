@@ -2,8 +2,8 @@
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
 generator client {
-  provider = "prisma-client-js"
-  output   = "./generated/client"
+  provider      = "prisma-client-js"
+  output        = "./generated/client"
   binaryTargets = ["native", "linux-musl-openssl-3.0.x"]
 }
 
@@ -157,7 +157,7 @@ model Committee {
   subCommittees                                 Committee[]       @relation("subCommittee")
   messages                                      Message[]
   agendaItems                                   AgendaItem[]
-  whiteboardContent                             String            @default("<h1>Hello, World</h1>")
+  whiteboardContent                             String            @default("<p>Willkommen!</p>")
   status                                        CommitteeStatus   @default(CLOSED)
   stateOfDebate                                 String?
   statusHeadline                                String?

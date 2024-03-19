@@ -1,6 +1,6 @@
 "use client";
 import "./globals.scss";
-import { IBM_Plex_Sans, Vollkorn, Noto_Sans_Mono } from "next/font/google"; // Even though Google Fonts are used – no requests are sent to Google (see NEXT.JS docs)
+import { Inter, Vollkorn, Noto_Sans_Mono } from "next/font/google"; // Even though Google Fonts are used – no requests are sent to Google (see NEXT.JS docs)
 import { PublicEnvScript } from "next-runtime-env";
 //theme
 import "@/themes/theme_light.scss";
@@ -26,10 +26,9 @@ import { Backend } from "@/contexts/backend";
 import { BackendTime } from "@/contexts/backendTime";
 import CookieBanner from "@/components/cookie_banner";
 
-const sans = IBM_Plex_Sans({
+const sans = Inter({
   subsets: ["latin"],
   display: "swap",
-  weight: ["100", "400", "700"],
   variable: "--font-sans",
 });
 

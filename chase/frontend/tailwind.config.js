@@ -37,9 +37,14 @@ module.exports = {
   darkMode: "class",
   theme: {
     fontFamily: {
-      sans: ["Helvetica", "Arial", ...defaultTheme.fontFamily.sans],
-      serif: ["Vollkorn", ...defaultTheme.fontFamily.serif],
-      mono: ["NotoSans", ...defaultTheme.fontFamily.mono],
+      sans: [
+        "var(--font-sans)",
+        "Helvetica",
+        "Arial",
+        ...defaultTheme.fontFamily.sans,
+      ],
+      serif: ["var(--font-serif)", ...defaultTheme.fontFamily.serif],
+      mono: ["var(--font-mono)", ...defaultTheme.fontFamily.mono],
     },
     extend: {
       backgroundImage: {

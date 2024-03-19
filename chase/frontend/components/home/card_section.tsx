@@ -8,7 +8,7 @@ export default function CardSection() {
 
   return (
     <>
-      <div className="flex-1 flex flex-col lg:flex-row w-full justify-stretch p-8 gap-4">
+      <div className="flex-1 flex flex-col lg:flex-row w-full justify-stretch items-stretch p-8 gap-4">
         <Motion delay={0.2}>
           <Card
             src="/undraw/candidate.svg"

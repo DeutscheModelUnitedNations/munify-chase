@@ -17,7 +17,7 @@ export default function Card({
 }) {
   return (
     <>
-      <div className="flex flex-col items-center bg-white p-8 rounded-xl shadow-sm">
+      <div className="h-full flex flex-col items-center bg-white p-8 rounded-xl shadow-sm">
         <Image
           src={src}
           alt={alt}

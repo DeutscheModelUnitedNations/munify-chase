@@ -37,7 +37,12 @@ module.exports = {
   darkMode: "class",
   theme: {
     fontFamily: {
-      sans: ["var(--font-sans)", "Helvetica", "Arial", ...defaultTheme.fontFamily.sans],
+      sans: [
+        "var(--font-sans)",
+        "Helvetica",
+        "Arial",
+        ...defaultTheme.fontFamily.sans,
+      ],
       serif: ["var(--font-serif)", ...defaultTheme.fontFamily.serif],
       mono: ["var(--font-mono)", ...defaultTheme.fontFamily.mono],
     },

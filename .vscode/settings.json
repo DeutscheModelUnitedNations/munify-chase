@@ -25,6 +25,10 @@
         "detail": "Stylistic changes to the App"
       },
       {
+        "label": "🗺️ i18n",
+        "detail": "Make changes to the Internationalization files"
+      },
+      {
         "label": "🚧 wip",
         "detail": "Work in progress"
       },

@@ -106,7 +106,7 @@ export default function TimerWidget({
                 cardTitle=""
                 additionalClassNames={getClassNames()}
               >
-                <div className="flex flex-col justify-center items-center">
+                <div className="flex flex-col justify-center items-center text-center">
                   <div className="my-4">
                     <FontAwesomeIcon icon={getIcon()} size="3x" />
                   </div>

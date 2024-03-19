@@ -972,7 +972,7 @@ type RootTranslation = {
 	}
 	hub: {
 		/**
-		 * T​e​a​m​ ​H​u​b
+		 * M​i​s​s​i​o​n​ ​C​o​n​t​r​o​l
 		 */
 		CHAIR_HUB_TITLE: string
 		/**
@@ -2807,7 +2807,7 @@ export type TranslationFunctions = {
 	}
 	hub: {
 		/**
-		 * Team Hub
+		 * Mission Control
 		 */
 		CHAIR_HUB_TITLE: () => LocalizedString
 		/**

@@ -72,7 +72,7 @@ export default function Navbar({ children }: { children: React.ReactNode }) {
         />
         <div className="h-full pb-6 flex flex-col justify-center items-center gap-3">
           {children}
-          <div className="flex-1" />
+          <div className="h-4" />
           <SettingsSidebar
             settingsSidebarVisible={settingsSidebarVisible}
             setSettingsSidebarVisible={setSettingsSidebarVisible}

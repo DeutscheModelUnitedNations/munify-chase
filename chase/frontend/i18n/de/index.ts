@@ -342,7 +342,7 @@ const de = {
   },
 
   hub: {
-    CHAIR_HUB_TITLE: "Team Hub",
+    CHAIR_HUB_TITLE: "Mission Control",
     NA_HUB_TITLE: "Hub der Nichtstaatliche Akteure",
     GUEST_HUB_TITLE: "Gäste-Hub",
     SELECT_COMMITTEE: "Wähle ein Gremium",

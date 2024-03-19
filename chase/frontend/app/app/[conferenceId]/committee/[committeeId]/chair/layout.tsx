@@ -42,7 +42,7 @@ function ChairNavbar() {
         link="../../../hub/team/committees"
         title={LL.navbar.HUB()}
       />
-      <div className="flex-1" />
+      <div className="h-4" />
       <NavButton
         icon={faSquareSliders as IconProp}
         link={"./dashboard"}
@@ -71,7 +71,7 @@ function ChairNavbar() {
       <NavButton
         icon={faInbox as IconProp}
         link={"./inbox"}
-        title={LL.navbar.WHITEBOARD()}
+        title={LL.navbar.INBOX()}
         badge={messageCount ?? 0}
       />
       {/* <NavButton TODO add Resolution Editor page

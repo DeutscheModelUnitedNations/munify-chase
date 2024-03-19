@@ -56,6 +56,7 @@ export default function ChairHubLayout({
             link={"./committees"}
             title={LL.navbar.HUB()}
           />
+          <div className="h-4" />
           {userIdent &&
             role !== null &&
             (

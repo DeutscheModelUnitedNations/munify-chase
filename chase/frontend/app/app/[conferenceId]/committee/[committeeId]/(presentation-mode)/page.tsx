@@ -31,7 +31,7 @@ export default function CommitteePresentationMode({
   params: { conferenceId: string; committeeId: string };
 }) {
   const { LL } = useI18nContext();
-  const { toastError } = useToast();
+  const { disableToastsOnCurrentPage } = useToast();
   const { backend } = useBackend();
   const { category } = useContext(StatusTimer);
 
@@ -51,7 +51,7 @@ export default function CommitteePresentationMode({
         setCommitteeData(response.data);
       })
       .catch((error) => {
-        toastError(error);
+        console.error(error);
       });
   }
 
@@ -64,11 +64,12 @@ export default function CommitteePresentationMode({
         setAgendaItem(response.data);
       })
       .catch((error) => {
-        toastError(error);
+        console.error(error);
       });
   }
 
   useEffect(() => {
+    disableToastsOnCurrentPage();
     getCommitteeData();
     getAgendaItems();
     const intervalAPICall = setInterval(() => {

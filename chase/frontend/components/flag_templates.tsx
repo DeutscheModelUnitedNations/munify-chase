@@ -82,7 +82,7 @@ export function NormalFlag({
     <div className="rounded-md contrast:border contrast:border-primary-100 bg-white shadow-md overflow-hidden">
       {countryCode ? (
         <>
-          <div className="flex justify-center items-center w-[3rem] h-[2rem]">
+          <div className="flex justify-center items-center w-[3rem] h-[2.25rem]">
             <Image
               src={getFlagPathByCode(countryCode)}
               width={100}
@@ -99,7 +99,7 @@ export function NormalFlag({
           </div>
         </>
       ) : (
-        <Skeleton width="3rem" height="2rem" />
+        <Skeleton width="3rem" height="2.25rem" />
       )}
     </div>
   );
@@ -117,7 +117,7 @@ export function LargeFlag({
       className={`rounded-md contrast:border contrast:border-primary-100 bg-white shadow-md overflow-hidden ${className}`}
     >
       {countryCode ? (
-        <div className="flex justify-center items-center w-[6.5rem] h-[4.3rem]">
+        <div className="flex justify-center items-center w-[6.4rem] h-[4.8rem]">
           <Image
             src={getFlagPathByCode(countryCode)}
             width={300}
@@ -126,7 +126,7 @@ export function LargeFlag({
           />
         </div>
       ) : (
-        <Skeleton width="6.5rem" height="4.3rem" />
+        <Skeleton width="6.4rem" height="4.8rem" />
       )}
     </div>
   );

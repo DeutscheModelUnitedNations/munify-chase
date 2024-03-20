@@ -257,7 +257,7 @@ const de = {
     EMAIL_INVALID: "E-Mail-Adresse ungültig",
     CREATE_ACCOUNT: "Konto erstellen",
     PASSWORD_INVALID:
-      "Das Passwort ist ungültig. Es muss mindestens 8 Zeichen lang sein, und mindestens zwei Großbuchstaben, drei Kleinbuchstaben, zwei Zahlen und ein Sonderzeichen enthalten.",
+      "Das Passwort ist ungültig. Es muss mindestens 8 Zeichen lang sein, und mindesten einen Großbuchstaben, einen Kleinbuchstaben, eine Zahl und ein Sonderzeichen enthalten.",
     USER_FOUND: "Benutzer gefunden. Bitte geben Sie Ihr Passwort ein.",
     WHAT_ARE_PASSKEYS: "Was sind Passkeys?",
     CREATION_SUCCESS:

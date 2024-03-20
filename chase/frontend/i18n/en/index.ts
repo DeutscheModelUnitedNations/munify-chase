@@ -253,7 +253,7 @@ const en = {
     CREATION_SUCCESS:
       "Account successfully created. Please confirm your e-mail address via the link in the e-mail we sent you to activate your account.",
     PASSWORD_INVALID:
-      "The password is invalid. It must be at least 8 characters long and contain at least two upper case letters, three lower case letters, two numbers and one special character.",
+      "The password is invalid. It must be at least 8 characters long and contain at least one upper case letters, one lower case letters, one number and one special character.",
     WHAT_ARE_PASSKEYS: "What are Passkeys?",
     PASSWORD: "Password",
     LOGIN_DESCRIPTION: "Please enter your credentials to continue.",

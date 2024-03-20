@@ -25,10 +25,7 @@ export default function Card({
           height={400}
           className="mb-10 h-40"
         />
-        <h2
-          className="text-3xl text-center font-bold mb-4"
-          style={{ fontFamily: "Vollkorn" }}
-        >
+        <h2 className="text-3xl text-center font-bold font-serif mb-4">
           {header}
         </h2>
         <p className="text-md text-center">{text}</p>

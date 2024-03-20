@@ -162,6 +162,8 @@ export default function PresenceWidget({
         majorityInPercent={0.50001}
         staticMajority={
           // This handles Security Council [SC / UNSC] (or german Sicherheitsrat [SR]) edge case, where the simple majority is always 9
+          // TODO this is probably only a good temporary solution.
+          // We should integrate an override option in the backend schema for calculated majorities per committee.
           ["SR", "SC", "UNSC"].includes(committeeData?.abbreviation)
             ? 9
             : undefined

@@ -71,10 +71,7 @@ export default function LandingHero() {
               stiffness: 100,
             }}
           >
-            <h1
-              className="text-5xl lg:text-6xl font-bold text-center lg:text-right text-slate-900 mb-4 leading-tight"
-              style={{ fontFamily: "Vollkorn" }}
-            >
+            <h1 className="text-5xl lg:text-6xl font-bold font-serif text-center lg:text-right text-slate-900 mb-4 leading-tight">
               <span
                 style={{
                   background: "linear-gradient(to right, #3d7dd2, #0000d0)",

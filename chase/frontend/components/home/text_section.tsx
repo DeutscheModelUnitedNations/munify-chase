@@ -18,10 +18,7 @@ export default function TextSection({ title, text, button }: TextSectionProps) {
 
   return (
     <>
-      <h1
-        className="text-3xl lg:text-4xl font-bold text-center lg:text-right text-slate-900 leading-tight"
-        style={{ fontFamily: "Vollkorn" }}
-      >
+      <h1 className="text-3xl lg:text-4xl font-bold font-serif text-center lg:text-right text-slate-900 leading-tight">
         {title}
       </h1>
       <div className="pb-10 lg:pb-0">

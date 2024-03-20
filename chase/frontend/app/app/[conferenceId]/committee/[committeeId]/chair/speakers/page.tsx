@@ -4,7 +4,7 @@ import { ScrollPanel } from "primereact/scrollpanel";
 import { useI18nContext } from "@/i18n/i18n-react";
 import SpeakersListBlock from "@/components/speakers_list/speakers_list_block";
 import { ChairSpeechButtons } from "@/components/speakers_list/speech_buttons";
-import { $Enums } from "../../../../../../../../backend/prisma/generated/client";
+import { $Enums } from "@prisma/generated/client";
 import { CommitteeDataContext } from "@/contexts/committee_data";
 import NoDataPlaceholder from "@/components/no_data_placeholder";
 

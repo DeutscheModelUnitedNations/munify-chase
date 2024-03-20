@@ -13,7 +13,7 @@ import {
 } from "@fortawesome/pro-solid-svg-icons";
 import { IconProp } from "@fortawesome/fontawesome-svg-core";
 import { type BackendInstanceType } from "@/contexts/backend";
-import { $Enums } from "../../../backend/prisma/generated/client";
+import { $Enums } from "@prisma/generated/client";
 
 export type DelegationDataType = Awaited<
   ReturnType<

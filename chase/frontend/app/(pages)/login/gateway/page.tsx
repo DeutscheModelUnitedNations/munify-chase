@@ -9,7 +9,7 @@ import {
 import { useRouter } from "next/navigation";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import Button from "@/components/button";
-import { $Enums } from "../../../../../backend/prisma/generated/client";
+import { $Enums } from "@prisma/generated/client";
 import { LargeFlag } from "@/components/flag_templates";
 import getCountryNameByCode from "@/misc/get_country_name_by_code";
 import { useI18nContext } from "@/i18n/i18n-react";

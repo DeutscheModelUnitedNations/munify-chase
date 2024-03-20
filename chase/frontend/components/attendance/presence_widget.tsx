@@ -10,7 +10,7 @@ import {
 } from "@fortawesome/pro-solid-svg-icons";
 import { useBackend, type BackendInstanceType } from "@/contexts/backend";
 import { useToast } from "@/contexts/toast";
-import { $Enums } from "../../../backend/prisma/generated/client";
+import { $Enums } from "@prisma/generated/client";
 import {
   ConferenceIdContext,
   CommitteeIdContext,

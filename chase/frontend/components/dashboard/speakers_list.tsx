@@ -6,7 +6,7 @@ import QueueBlock from "@/components/speakers_list/queue_block";
 import { useI18nContext } from "@/i18n/i18n-react";
 import "./markdown.scss";
 import { AnimatePresence, motion } from "framer-motion";
-import { $Enums } from "../../../backend/prisma/generated/client";
+import { $Enums } from "@prisma/generated/client";
 import { SpeakersListDataProvider } from "@/contexts/speakers_list_data";
 
 /**

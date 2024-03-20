@@ -7,7 +7,7 @@ import { Tag } from "primereact/tag";
 import getCountryNameByCode from "@/misc/get_country_name_by_code";
 import { useToast } from "@/contexts/toast";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { $Enums } from "../../../backend/prisma/generated/client";
+import { $Enums } from "@prisma/generated/client";
 import {
   faCircleExclamation,
   faEnvelope,

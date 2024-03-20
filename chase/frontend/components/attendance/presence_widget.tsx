@@ -14,6 +14,7 @@ import { $Enums } from "../../../backend/prisma/generated/client";
 import {
   ConferenceIdContext,
   CommitteeIdContext,
+  CommitteeDataContext,
 } from "@/contexts/committee_data";
 
 type DelegationData = Awaited<
@@ -33,6 +34,7 @@ export default function PresenceWidget({
   const { toastError } = useToast();
   const conferenceId = useContext(ConferenceIdContext);
   const committeeId = useContext(CommitteeIdContext);
+  const committeeData = useContext(CommitteeDataContext);
   const { backend } = useBackend();
 
   const [delegationData, setDelegationData] = useState<DelegationData>([]);
@@ -86,9 +88,11 @@ export default function PresenceWidget({
   const MajorityInfo = ({
     name,
     majorityInPercent: majorityInDecimal,
+    staticMajority,
   }: {
     name: string;
     majorityInPercent: number;
+    staticMajority?: number;
   }) => {
     const majorityNeeded = (attendees: number) => {
       return Math.ceil(attendees * majorityInDecimal);
@@ -98,7 +102,7 @@ export default function PresenceWidget({
       <HeaderInfoBox>
         <div className="flex items-center">{name}</div>
         <div className="flex items-center mt-2 text-2xl font-bold tabular-nums">
-          {majorityNeeded(presentAttendees)}
+          {staticMajority ? staticMajority : majorityNeeded(presentAttendees)}
         </div>
       </HeaderInfoBox>
     );
@@ -153,7 +157,16 @@ export default function PresenceWidget({
           />
         </div>
       </HeaderInfoBox>
-      <MajorityInfo name="1/2" majorityInPercent={0.50001} />
+      <MajorityInfo
+        name="1/2"
+        majorityInPercent={0.50001}
+        staticMajority={
+          // This handles Security Council [SC / UNSC] (or german Sicherheitsrat [SR]) edge case, where the simple majority is always 9
+          ["SR", "SC", "UNSC"].includes(committeeData?.abbreviation)
+            ? 9
+            : undefined
+        }
+      />
       <MajorityInfo name="2/3" majorityInPercent={0.66666} />
     </div>
   );

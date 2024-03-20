@@ -15,7 +15,7 @@ import { ConfirmDialog } from "primereact/confirmdialog";
 import { useBackend } from "@/contexts/backend";
 import { ConferenceIdContext } from "@/contexts/committee_data";
 import Lockout from "@/components/lockout";
-import { $Enums } from "../../../../../../backend/prisma/generated/client";
+import { $Enums } from "@prisma/generated/client";
 import { useToast } from "@/contexts/toast";
 
 export default function AdminLayout({

@@ -11,7 +11,7 @@ import AddCommitteeDialog from "@/components/admin/structure/add_committee_dialo
 import useMousetrap from "mousetrap-react";
 import { useToast } from "@/contexts/toast";
 import { ConferenceIdContext } from "@/contexts/committee_data";
-import { $Enums } from "../../../../../../../backend/prisma/generated/client";
+import { $Enums } from "@prisma/generated/client";
 
 type CommitteesType = Awaited<
   ReturnType<

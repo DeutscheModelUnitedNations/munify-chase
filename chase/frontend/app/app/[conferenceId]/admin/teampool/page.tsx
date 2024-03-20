@@ -3,7 +3,6 @@ import React, { useContext, useEffect, useState } from "react";
 import { useI18nContext } from "@/i18n/i18n-react";
 import { useBackend, type BackendInstanceType } from "@/contexts/backend";
 import { useRouter } from "next/navigation";
-import OnboardingSteps from "@/components/admin/onboarding/steps";
 import ForwardBackButtons from "@/components/admin/onboarding/forward_back_bar";
 import TeamPoolTable from "@/components/admin/teampool/teampool_table";
 import AddTeammemberDialog from "@/components/admin/teampool/add_teammember_dialog";
@@ -102,12 +101,11 @@ export default function Teampool() {
 
   const handleSave = () => {
     setSaveLoading(true);
-    router.push(`/app/admin/onboarding/${conferenceId}/committees`);
+    router.push("./committees");
   };
 
   return (
     <>
-      <OnboardingSteps activeIndex={1} />
       <TeamPoolTable
         team={team}
         confirmDeleteAll={confirmDeleteAll}
@@ -117,7 +115,6 @@ export default function Teampool() {
       />
 
       <ForwardBackButtons
-        backURL={`/app/admin/onboarding/${conferenceId}/structure`}
         saveLoading={saveLoading}
         handleSaveFunction={handleSave}
       />

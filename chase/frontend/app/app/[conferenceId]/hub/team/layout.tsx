@@ -77,7 +77,7 @@ export default function ChairHubLayout({
           {userIdent && role === $Enums.ConferenceRole.ADMIN && (
             <NavButton
               icon={faGears as IconProp}
-              link={`/app/admin/onboarding/${conferenceId}/structure`}
+              link={"../../admin/structure"}
               title={LL.navbar.INBOX()}
             />
           )}

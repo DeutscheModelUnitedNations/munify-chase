@@ -1,7 +1,6 @@
 "use client";
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
-import OnboardingSteps from "@/components/admin/onboarding/steps";
 import ForwardBackButtons from "@/components/admin/onboarding/forward_back_bar";
 import ConfigWrapper from "@/components/dashboard/chair/config_wrapper";
 import { InputText } from "primereact/inputtext";
@@ -22,8 +21,6 @@ export default function loginVorsitz({
 
   return (
     <>
-      <OnboardingSteps activeIndex={5} />
-
       <ConfigWrapper
         title="Pressewebsite"
         description="Hier kannst du die URL der Pressewebsite konfigurieren."
@@ -42,13 +39,6 @@ export default function loginVorsitz({
           disabled
         />
       </ConfigWrapper>
-
-      <ForwardBackButtons
-        backURL={`/app/admin/onboarding/${params.conferenceId}/non_state_actors`}
-        handleSaveFunction={() => {
-          router.push(`/app/${params.conferenceId}/hub/team/committees`);
-        }}
-      />
     </>
   );
 }

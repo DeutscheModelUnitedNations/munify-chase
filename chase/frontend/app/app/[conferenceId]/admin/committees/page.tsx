@@ -3,7 +3,6 @@ import React, { useContext, useEffect, useState } from "react";
 
 import { useBackend, type BackendInstanceType } from "@/contexts/backend";
 import { useRouter } from "next/navigation";
-import OnboardingSteps from "@/components/admin/onboarding/steps";
 import ForwardBackButtons from "@/components/admin/onboarding/forward_back_bar";
 import { Accordion, AccordionTab } from "primereact/accordion";
 import AgendaItems from "@/components/admin/committee/agendaItems";
@@ -54,13 +53,11 @@ export default function OnboardingCommitteePage() {
 
   const handleSave = () => {
     setSaveLoading(true);
-    router.push(`/app/admin/onboarding/${conferenceId}/delegations`);
+    router.push("./delegations");
   };
 
   return (
     <>
-      <OnboardingSteps activeIndex={2} />
-
       <Accordion activeIndex={0} className="w-full">
         {committees?.map((committee) => (
           <AccordionTab header={HeaderTemplate(committee)} key={committee?.id}>
@@ -72,7 +69,6 @@ export default function OnboardingCommitteePage() {
       </Accordion>
 
       <ForwardBackButtons
-        backURL={`/app/admin/onboarding/${conferenceId}/teampool`}
         handleSaveFunction={handleSave}
         saveLoading={saveLoading}
         forwardDisabled={false}

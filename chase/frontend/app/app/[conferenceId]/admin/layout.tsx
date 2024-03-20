@@ -1,17 +1,30 @@
 "use client";
 import { useEffect, useState, useContext } from "react";
-
+import Navbar from "@/components/navbar/navbar";
+import NavButton from "@/components/navbar/button";
+import { IconProp } from "@fortawesome/fontawesome-svg-core";
+import {
+  faChalkboard,
+  faPodium,
+  faUsersLine,
+  faSquareSliders,
+  faNewspaper,
+  faCommentExclamation,
+  faInbox,
+  faChartNetwork,
+  faFlag,
+  faGears,
+  faMegaphone,
+  faTableTree,
+  faUsers,
+} from "@fortawesome/pro-solid-svg-icons";
 import Button from "@/components/button";
 import SettingsSidebar from "@/components/navbar/settings_sidebar";
 import { useI18nContext } from "@/i18n/i18n-react";
-import {
-  faFloppyDiskCircleArrowRight,
-  faGears,
-} from "@fortawesome/pro-solid-svg-icons";
 import { useRouter } from "next/navigation";
 import useMousetrap from "mousetrap-react";
 import { confirmPopup } from "primereact/confirmpopup";
-import { ConfirmDialog } from "primereact/confirmdialog";
+import { ScrollPanel } from "primereact/scrollpanel";
 import { useBackend } from "@/contexts/backend";
 import { ConferenceIdContext } from "@/contexts/committee_data";
 import Lockout from "@/components/lockout";
@@ -64,37 +77,59 @@ export default function AdminLayout({
 
   return (
     <>
-      <ConferenceIdContext.Provider value={params.conferenceId}>
-        <Lockout whitelist={[$Enums.ConferenceRole.ADMIN]} />
-        <ConfirmDialog />
-        <div className="flex justify-center items-start min-h-screen bg-primary">
-          <div className="flex-1 flex flex-col justify-center items-center m-10 mt-20">
-            <div className="absolute top-4 right-4 flex gap-2 w-full justify-end">
-              <Button
-                faIcon={faGears}
-                severity="secondary"
-                onClick={() => {
-                  setSettingsSidebarVisible(true);
-                }}
-              />
-              <Button
-                label={LL.admin.onboarding.SAVE_AND_QUIT()}
-                faIcon={faFloppyDiskCircleArrowRight}
-                severity="secondary"
-                onClick={(event) => saveAndQuit(event)}
-                keyboardShortcut="Ctrl + ⇧ + S"
-              />
-            </div>
-            <div className="flex-1 flex flex-col justify-center items-center bg-white dark:bg-primary-200 w-11/12 p-5 rounded-md shadow-lg">
-              {children}
-            </div>
-          </div>
-        </div>
-        <SettingsSidebar
-          settingsSidebarVisible={settingsSidebarVisible}
-          setSettingsSidebarVisible={setSettingsSidebarVisible}
-        />
-      </ConferenceIdContext.Provider>
+      <Lockout whitelist={[$Enums.ConferenceRole.ADMIN]} />
+      <div className="flex h-screen w-screen bg-white text-primary-100 dark:bg-primary-100 dark:text-primary-900 shadow-md overflow-hidden">
+        <AdminNavbar />
+        <ScrollPanel style={{ width: "calc(100% - 4rem)", height: "100%" }}>
+          <div className="p-6">{children}</div>
+        </ScrollPanel>
+      </div>
     </>
+  );
+}
+
+function AdminNavbar() {
+  const { LL } = useI18nContext();
+
+  return (
+    <Navbar>
+      <NavButton
+        icon={faChartNetwork as IconProp}
+        link="../hub/team/committees"
+        title={LL.navbar.HUB()}
+      />
+      <div className="h-4" />
+      <NavButton
+        icon={faTableTree as IconProp}
+        link={"./structure"}
+        title={LL.admin.onboarding.steps.STEP_1()}
+      />
+      <NavButton
+        icon={faUsers as IconProp}
+        link={"./teampool"}
+        title={LL.admin.onboarding.steps.STEP_2()}
+      />
+      <NavButton
+        icon={faPodium as IconProp}
+        link={"./committees"}
+        title={LL.admin.onboarding.steps.STEP_3()}
+      />
+      <NavButton
+        icon={faFlag as IconProp}
+        link={"./delegations"}
+        title={LL.admin.onboarding.steps.STEP_4()}
+      />
+      <NavButton
+        icon={faMegaphone as IconProp}
+        link={"./non_state_actors"}
+        title={LL.admin.onboarding.steps.STEP_5()}
+      />
+      <NavButton
+        icon={faGears as IconProp}
+        link={"./configs"}
+        title={LL.admin.onboarding.steps.STEP_6()}
+      />
+      <div className="flex-1" />
+    </Navbar>
   );
 }

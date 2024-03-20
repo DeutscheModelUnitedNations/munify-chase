@@ -2,7 +2,6 @@
 import AddDelegationDialog from "@/components/admin/delegations/add_delegation_dialog";
 import DelegationsTable from "@/components/admin/delegations/delegations_table";
 import ForwardBackButtons from "@/components/admin/onboarding/forward_back_bar";
-import OnboardingSteps from "@/components/admin/onboarding/steps";
 import { useBackend } from "@/contexts/backend";
 import { useRouter } from "next/navigation";
 import { useEffect, useState, useContext } from "react";
@@ -104,8 +103,6 @@ export default function AdminDelegationsPage() {
 
   return (
     <>
-      <OnboardingSteps activeIndex={3} />
-
       <DelegationsTable
         delegations={delegations}
         committees={committees}
@@ -124,9 +121,8 @@ export default function AdminDelegationsPage() {
       />
 
       <ForwardBackButtons
-        backURL={`/app/admin/onboarding/${conferenceId}/committees`}
         handleSaveFunction={() => {
-          router.push(`/app/admin/onboarding/${conferenceId}/non_state_actors`);
+          router.push("./non_state_actors");
         }}
       />
     </>

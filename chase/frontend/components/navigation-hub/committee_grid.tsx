@@ -63,7 +63,7 @@ export default function CommitteeGrid({
   }, []);
 
   return (
-    <div className="w-full flex flex-wrap justify-start items-start gap-4 py-4">
+    <div className="w-full flex flex-wrap justify-start items-start gap-4 p-4">
       {committees?.map((committee) => {
         return (
           <CommitteeCard
@@ -80,16 +80,16 @@ export default function CommitteeGrid({
       {!committees && (
         <>
           <Skeleton
-            height="15rem"
-            className="flex-1 min-w-[30rem] !bg-primary-900 rounded-lg"
+            height="20rem"
+            className="flex-1 min-w-[25rem] !bg-primary-900 rounded-lg"
           />
           <Skeleton
-            height="15rem"
-            className="flex-1 min-w-[30rem] !bg-primary-900 rounded-lg"
+            height="20rem"
+            className="flex-1 min-w-[25rem] !bg-primary-900 rounded-lg"
           />
           <Skeleton
-            height="15rem"
-            className="flex-1 min-w-[30rem] !bg-primary-900 rounded-lg"
+            height="20rem"
+            className="flex-1 min-w-[25rem] !bg-primary-900 rounded-lg"
           />
         </>
       )}
@@ -177,7 +177,7 @@ function CommitteeCard({
             onClick={() => {
               setLoading(true);
             }}
-            className="flex-1 min-w-[25rem] flex flex-col justify-between p-4 gap-2 bg-primary-950 dark:bg-primary-200 rounded-lg hover:scale-[102%] hover:shadow-lg transition-all duration-300 ease-in-out cursor-pointer"
+            className="flex-1 min-w-[25rem] flex flex-col justify-between p-4 gap-2 bg-primary-950 dark:bg-primary-200 rounded-lg pophover cursor-pointer"
           >
             <h3 className="text-lg truncate">{committee.name}</h3>
             <h1 className="flex-1 mt-4 mb-6 ml-4 text-4xl text-primary font-bold">

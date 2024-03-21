@@ -82,7 +82,7 @@
   "editor.tabSize": 2,
   "vscodemacros.userMacroCommands": [
     {
-      "path": "/workspaces/munify/.vscode/macros.ts",
+      "path": "./.vscode/macros.ts",
       "name": "OpenI18n"
     }
   ]

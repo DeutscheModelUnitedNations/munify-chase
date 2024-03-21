@@ -4,14 +4,18 @@ module.exports.macroCommands = {
   OpenI18n: {
     no: 1,
     func: async () => {
-      openI18nFile("/workspaces/munify/chase/frontend/i18n/en/index.ts");
+      const workingDirectory = vscode.workspace.workspaceFolders[0].uri
+      console.error(workingDirectory);
+
+      openI18nFile(`/${workingDirectory}/chase/frontend/i18n/en/index.ts`.replace("/file:", ""));
       setTimeout(async () => {
         await vscode.commands.executeCommand(
           "workbench.action.moveEditorToNextGroup",
         );
       }, 500);
       setTimeout(() => {
-        openI18nFile("/workspaces/munify/chase/frontend/i18n/de/index.ts");
+        // print current working directory
+        openI18nFile(`/${workingDirectory}/chase/frontend/i18n/de/index.ts`.replace("/file:", ""));
       }, 500);
     },
   },

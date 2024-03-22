@@ -489,6 +489,23 @@ const de = {
     },
   },
 
+  resolutionEditor: {
+    chairDashboard: {
+      HEADLINE_WORKING_PAPERS: "Arbeitspapiere",
+      DESCRIPTION_WORKING_PAPERS: "Arbeitspapiere des aktuellen Tagesordnungspunktes, die eingereicht wurden sind.",
+      HEADLINE_DRAFT_RESOLUTIONS: "Resolutionsentwürfe",
+      DESCRIPTION_DRAFT_RESOLUTIONS: "Resolutionsentwürfe des aktuellen Tagesordnungspunktes, die behandelt werden können.",
+      HEADLINE_RESOLUTIONS: "Resolutionen",
+      DESCRIPTION_RESOLUTIONS: "Angenommene Resolutionen aller Tagesordnungspunkte dieses Gremiums.",
+      SIGNATORIES: "Unterstützungen",
+      SUBMITTED_AT: "Eingereicht am {date} um {time} Uhr",
+      SIGNATORIES_CHANGED_AT: "Unterstützung zuletzt geändert am {date} um {time} Uhr",
+      ADOPTED_AT: "Verabschiedet am {date} um {time} Uhr",
+      AMENDMENTS: "Änderungsanträge",
+      NO_DATA: "Keine Dokumente"
+    }
+  },
+
   chairs: {
     CHAIR: "Vorsitz",
     dashboard: {

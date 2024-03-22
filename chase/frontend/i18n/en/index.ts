@@ -482,6 +482,23 @@ const en = {
     },
   },
 
+  resolutionEditor: {
+    chairDashboard: {
+      HEADLINE_WORKING_PAPERS: "Working Papers",
+      DESCRIPTION_WORKING_PAPERS: "Working papers on this agenda item that have been submitted.",
+      HEADLINE_DRAFT_RESOLUTIONS: "Draft Resolutions",
+      DESCRIPTION_DRAFT_RESOLUTIONS: "Draft resolutions on this agenda item that can be discussed.",
+      HEADLINE_RESOLUTIONS: "Resolutions",
+      DESCRIPTION_RESOLUTIONS: "Adopted resolutions of all items on the agenda of this body.",
+      SIGNATORIES: "Signatories",
+      SUBMITTED_AT: "Submitted {date:string} at {time:string}",
+      SIGNATORIES_CHANGED_AT: "Changed Signatories {date:string} at {time:string}",
+      ADOPTED_AT: "Adopted {date:string} at {time:string}",
+      AMENDMENTS: "Amendments",
+      NO_DATA: "No Documents"
+    }
+  },
+
   chairs: {
     CHAIR: "Chair",
     dashboard: {

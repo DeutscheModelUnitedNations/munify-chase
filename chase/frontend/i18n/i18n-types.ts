@@ -738,7 +738,7 @@ type RootTranslation = {
 		 */
 		CREATION_SUCCESS: string
 		/**
-		 * T​h​e​ ​p​a​s​s​w​o​r​d​ ​i​s​ ​i​n​v​a​l​i​d​.​ ​I​t​ ​m​u​s​t​ ​b​e​ ​a​t​ ​l​e​a​s​t​ ​8​ ​c​h​a​r​a​c​t​e​r​s​ ​l​o​n​g​ ​a​n​d​ ​c​o​n​t​a​i​n​ ​a​t​ ​l​e​a​s​t​ ​t​w​o​ ​u​p​p​e​r​ ​c​a​s​e​ ​l​e​t​t​e​r​s​,​ ​t​h​r​e​e​ ​l​o​w​e​r​ ​c​a​s​e​ ​l​e​t​t​e​r​s​,​ ​t​w​o​ ​n​u​m​b​e​r​s​ ​a​n​d​ ​o​n​e​ ​s​p​e​c​i​a​l​ ​c​h​a​r​a​c​t​e​r​.
+		 * T​h​e​ ​p​a​s​s​w​o​r​d​ ​i​s​ ​i​n​v​a​l​i​d​.​ ​I​t​ ​m​u​s​t​ ​b​e​ ​a​t​ ​l​e​a​s​t​ ​8​ ​c​h​a​r​a​c​t​e​r​s​ ​l​o​n​g​ ​a​n​d​ ​c​o​n​t​a​i​n​ ​a​t​ ​l​e​a​s​t​ ​o​n​e​ ​u​p​p​e​r​ ​c​a​s​e​ ​l​e​t​t​e​r​s​,​ ​o​n​e​ ​l​o​w​e​r​ ​c​a​s​e​ ​l​e​t​t​e​r​s​,​ ​o​n​e​ ​n​u​m​b​e​r​ ​a​n​d​ ​o​n​e​ ​s​p​e​c​i​a​l​ ​c​h​a​r​a​c​t​e​r​.
 		 */
 		PASSWORD_INVALID: string
 		/**
@@ -1372,6 +1372,64 @@ type RootTranslation = {
 				 */
 				BUTTON_IGNORE: string
 			}
+		}
+	}
+	resolutionEditor: {
+		chairDashboard: {
+			/**
+			 * W​o​r​k​i​n​g​ ​P​a​p​e​r​s
+			 */
+			HEADLINE_WORKING_PAPERS: string
+			/**
+			 * W​o​r​k​i​n​g​ ​p​a​p​e​r​s​ ​o​n​ ​t​h​i​s​ ​a​g​e​n​d​a​ ​i​t​e​m​ ​t​h​a​t​ ​h​a​v​e​ ​b​e​e​n​ ​s​u​b​m​i​t​t​e​d​.
+			 */
+			DESCRIPTION_WORKING_PAPERS: string
+			/**
+			 * D​r​a​f​t​ ​R​e​s​o​l​u​t​i​o​n​s
+			 */
+			HEADLINE_DRAFT_RESOLUTIONS: string
+			/**
+			 * D​r​a​f​t​ ​r​e​s​o​l​u​t​i​o​n​s​ ​o​n​ ​t​h​i​s​ ​a​g​e​n​d​a​ ​i​t​e​m​ ​t​h​a​t​ ​c​a​n​ ​b​e​ ​d​i​s​c​u​s​s​e​d​.
+			 */
+			DESCRIPTION_DRAFT_RESOLUTIONS: string
+			/**
+			 * R​e​s​o​l​u​t​i​o​n​s
+			 */
+			HEADLINE_RESOLUTIONS: string
+			/**
+			 * A​d​o​p​t​e​d​ ​r​e​s​o​l​u​t​i​o​n​s​ ​o​f​ ​a​l​l​ ​i​t​e​m​s​ ​o​n​ ​t​h​e​ ​a​g​e​n​d​a​ ​o​f​ ​t​h​i​s​ ​b​o​d​y​.
+			 */
+			DESCRIPTION_RESOLUTIONS: string
+			/**
+			 * S​i​g​n​a​t​o​r​i​e​s
+			 */
+			SIGNATORIES: string
+			/**
+			 * S​u​b​m​i​t​t​e​d​ ​{​d​a​t​e​}​ ​a​t​ ​{​t​i​m​e​}
+			 * @param {string} date
+			 * @param {string} time
+			 */
+			SUBMITTED_AT: RequiredParams<'date' | 'time'>
+			/**
+			 * C​h​a​n​g​e​d​ ​S​i​g​n​a​t​o​r​i​e​s​ ​{​d​a​t​e​}​ ​a​t​ ​{​t​i​m​e​}
+			 * @param {string} date
+			 * @param {string} time
+			 */
+			SIGNATORIES_CHANGED_AT: RequiredParams<'date' | 'time'>
+			/**
+			 * A​d​o​p​t​e​d​ ​{​d​a​t​e​}​ ​a​t​ ​{​t​i​m​e​}
+			 * @param {string} date
+			 * @param {string} time
+			 */
+			ADOPTED_AT: RequiredParams<'date' | 'time'>
+			/**
+			 * A​m​e​n​d​m​e​n​t​s
+			 */
+			AMENDMENTS: string
+			/**
+			 * N​o​ ​D​o​c​u​m​e​n​t​s
+			 */
+			NO_DATA: string
 		}
 	}
 	chairs: {
@@ -2573,7 +2631,7 @@ export type TranslationFunctions = {
 		 */
 		CREATION_SUCCESS: () => LocalizedString
 		/**
-		 * The password is invalid. It must be at least 8 characters long and contain at least two upper case letters, three lower case letters, two numbers and one special character.
+		 * The password is invalid. It must be at least 8 characters long and contain at least one upper case letters, one lower case letters, one number and one special character.
 		 */
 		PASSWORD_INVALID: () => LocalizedString
 		/**
@@ -3207,6 +3265,58 @@ export type TranslationFunctions = {
 				 */
 				BUTTON_IGNORE: () => LocalizedString
 			}
+		}
+	}
+	resolutionEditor: {
+		chairDashboard: {
+			/**
+			 * Working Papers
+			 */
+			HEADLINE_WORKING_PAPERS: () => LocalizedString
+			/**
+			 * Working papers on this agenda item that have been submitted.
+			 */
+			DESCRIPTION_WORKING_PAPERS: () => LocalizedString
+			/**
+			 * Draft Resolutions
+			 */
+			HEADLINE_DRAFT_RESOLUTIONS: () => LocalizedString
+			/**
+			 * Draft resolutions on this agenda item that can be discussed.
+			 */
+			DESCRIPTION_DRAFT_RESOLUTIONS: () => LocalizedString
+			/**
+			 * Resolutions
+			 */
+			HEADLINE_RESOLUTIONS: () => LocalizedString
+			/**
+			 * Adopted resolutions of all items on the agenda of this body.
+			 */
+			DESCRIPTION_RESOLUTIONS: () => LocalizedString
+			/**
+			 * Signatories
+			 */
+			SIGNATORIES: () => LocalizedString
+			/**
+			 * Submitted {date} at {time}
+			 */
+			SUBMITTED_AT: (arg: { date: string, time: string }) => LocalizedString
+			/**
+			 * Changed Signatories {date} at {time}
+			 */
+			SIGNATORIES_CHANGED_AT: (arg: { date: string, time: string }) => LocalizedString
+			/**
+			 * Adopted {date} at {time}
+			 */
+			ADOPTED_AT: (arg: { date: string, time: string }) => LocalizedString
+			/**
+			 * Amendments
+			 */
+			AMENDMENTS: () => LocalizedString
+			/**
+			 * No Documents
+			 */
+			NO_DATA: () => LocalizedString
 		}
 	}
 	chairs: {

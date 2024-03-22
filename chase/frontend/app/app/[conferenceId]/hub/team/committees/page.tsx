@@ -9,6 +9,8 @@ import { conferenceRoleTranslation } from "@/i18n/translation_utils";
 import { ConferenceIdContext } from "@/contexts/committee_data";
 import { useUserIdent } from "@/contexts/user_ident";
 import { useBackendTime } from "@/contexts/backendTime";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faRocketLaunch } from "@fortawesome/pro-solid-svg-icons";
 
 export default function ChairHub({
   params,
@@ -24,6 +26,10 @@ export default function ChairHub({
     <>
       <div className="flex-1 flex flex-col">
         <HeaderTemplate>
+          <FontAwesomeIcon
+            icon={faRocketLaunch}
+            className="text-4xl ml-6 mr-8 text-primary"
+          />
           <div className="flex flex-col items-start justify-center">
             <h1 className="text-2xl font-bold">{LL.hub.CHAIR_HUB_TITLE()}</h1>
             <h2 className="text-lg my-1">
@@ -44,7 +50,7 @@ export default function ChairHub({
           </div>
           <LargeFlag countryCode={"uno"} />
         </HeaderTemplate>
-        <ScrollPanel style={{ width: "100%", height: "90vh" }} className="px-4">
+        <ScrollPanel style={{ width: "100%", height: "90vh" }}>
           <CommitteeGrid conferenceId={params.conferenceId} isChair />
         </ScrollPanel>
       </div>

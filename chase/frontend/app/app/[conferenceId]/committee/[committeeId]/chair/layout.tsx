@@ -10,8 +10,8 @@ import {
   faNewspaper,
   faCommentExclamation,
   faInbox,
-  faChartNetwork,
-  faScroll
+  faScroll,
+  faRocketLaunch,
 } from "@fortawesome/pro-solid-svg-icons";
 import { useI18nContext } from "@/i18n/i18n-react";
 import { IconProp } from "@fortawesome/fontawesome-svg-core";
@@ -39,7 +39,7 @@ function ChairNavbar() {
   return (
     <Navbar>
       <NavButton
-        icon={faChartNetwork as IconProp}
+        icon={faRocketLaunch as IconProp}
         link="../../../hub/team/committees"
         title={LL.navbar.HUB()}
       />

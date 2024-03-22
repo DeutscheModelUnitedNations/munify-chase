@@ -7,6 +7,7 @@ import {
   faInbox,
   faChartNetwork,
   faGears,
+  faRocketLaunch,
 } from "@fortawesome/pro-solid-svg-icons";
 import { useI18nContext } from "@/i18n/i18n-react";
 import { IconProp } from "@fortawesome/fontawesome-svg-core";
@@ -52,7 +53,7 @@ export default function ChairHubLayout({
       <div className="flex h-screen w-screen bg-white text-primary-100 dark:bg-primary-100 dark:text-primary-900 shadow-md overflow-hidden">
         <Navbar>
           <NavButton
-            icon={faChartNetwork as IconProp}
+            icon={faRocketLaunch as IconProp}
             link={"./committees"}
             title={LL.navbar.HUB()}
           />

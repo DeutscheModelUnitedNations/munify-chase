@@ -11,6 +11,7 @@ import {
   faCommentExclamation,
   faInbox,
   faChartNetwork,
+  faScroll
 } from "@fortawesome/pro-solid-svg-icons";
 import { useI18nContext } from "@/i18n/i18n-react";
 import { IconProp } from "@fortawesome/fontawesome-svg-core";
@@ -74,11 +75,11 @@ function ChairNavbar() {
         title={LL.navbar.INBOX()}
         badge={messageCount ?? 0}
       />
-      {/* <NavButton TODO add Resolution Editor page
+      <NavButton
           icon={faScroll as IconProp}
           link={"./resolutions"}
           title={LL.navbar.RESOLUTIONS()}
-        /> */}
+        />
       <div className="flex-1" />
       <NavButton
         icon={faNewspaper as IconProp}

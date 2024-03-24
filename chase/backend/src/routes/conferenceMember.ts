@@ -1,15 +1,13 @@
 import { t, Elysia } from "elysia";
 import { db } from "../../prisma/db";
 import { conferenceRoleGuard } from "../auth/guards/conferenceRoles";
-import { ConferenceMember } from "../../prisma/generated/schema";
 import { openApiTag } from "../util/openApiTags";
 import { loggedInGuard } from "../auth/guards/loggedIn";
 import { committeeMemberGuard } from "../auth/guards/committeeMember";
-
-const ConferenceMembersWithoutRelations = t.Omit(ConferenceMember, [
-  "user",
-  "conference",
-]);
+import {
+  ConferenceMember,
+  ConferenceMemberPlain,
+} from "../../prisma/generated/schema/ConferenceMember";
 
 const ConferenceMemberCreationBody = t.Object({
   data: t.Pick(ConferenceMember, ["role"]),
@@ -33,12 +31,12 @@ export const conferenceMember = new Elysia({
     },
     {
       hasConferenceRole: ["ADMIN"],
-      response: [ConferenceMembersWithoutRelations],
+      response: [ConferenceMemberPlain],
       detail: {
         description: "Get all conference-members in this conference",
         tags: [openApiTag(import.meta.path)],
       },
-    },
+    }
   )
   .post(
     "/member",
@@ -52,14 +50,14 @@ export const conferenceMember = new Elysia({
     },
     {
       hasConferenceRole: ["ADMIN"],
-      response: [ConferenceMembersWithoutRelations],
+      response: [ConferenceMemberPlain],
       body: ConferenceMemberCreationBody,
       detail: {
         description:
           "Create a new conference-member in this conference. Must provide a role and count (how many members of this role to create) in the body.",
         tags: [openApiTag(import.meta.path)],
       },
-    },
+    }
   )
   .delete(
     "/member",
@@ -76,7 +74,7 @@ export const conferenceMember = new Elysia({
         description: "Delete all conference-members in this conference",
         tags: [openApiTag(import.meta.path)],
       },
-    },
+    }
   )
   .delete(
     "/member/:memberId",
@@ -93,5 +91,5 @@ export const conferenceMember = new Elysia({
         description: "Delete a specific conference-member in this conference",
         tags: [openApiTag(import.meta.path)],
       },
-    },
+    }
   );

@@ -3,7 +3,8 @@ import { db } from "../../prisma/db";
 import { committeeMemberGuard } from "../auth/guards/committeeMember";
 import { conferenceRoleGuard } from "../auth/guards/conferenceRoles";
 import { openApiTag } from "../util/openApiTags";
-import { CommitteeMember, Nation } from "../../prisma/generated/schema";
+import { Nation } from "../../prisma/generated/schema/Nation";
+import { CommitteeMember } from "../../prisma/generated/schema/CommitteeMember";
 
 const DelegationBody = t.Pick(Nation, ["alpha3Code"]);
 

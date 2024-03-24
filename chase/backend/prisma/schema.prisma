@@ -2,8 +2,8 @@
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
 generator client {
-  provider = "prisma-client-js"
-  output   = "./generated/client"
+  provider      = "prisma-client-js"
+  output        = "./generated/client"
   binaryTargets = ["native", "linux-musl-openssl-3.0.x"]
 }
 
@@ -12,9 +12,11 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-generator typebox {
-  provider = "prisma-typebox-generator"
-  output   = "./generated/schema"
+generator prismabox {
+  provider                    = "prismabox"
+  output                      = "./generated/schema"
+  typeboxImportVariableName   = "t"
+  typeboxImportDependencyName = "elysia"
 }
 
 // model Authenticator {
@@ -36,6 +38,7 @@ model Password {
   id           String @id @default(uuid())
   user         User   @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
   userId       String
+  /// @prismabox.hide
   passwordHash String
 }
 
@@ -43,6 +46,7 @@ model Password {
 /// e.g. confirming an email, resetting a password
 model Token {
   id        String   @id @default(uuid())
+  /// @prismabox.hide
   tokenHash String
   expiresAt DateTime
 

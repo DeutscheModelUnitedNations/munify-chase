@@ -3,7 +3,7 @@ import { db } from "../../../prisma/db";
 import { committeeMemberGuard } from "../../auth/guards/committeeMember";
 import { conferenceRoleGuard } from "../../auth/guards/conferenceRoles";
 import { openApiTag } from "../../util/openApiTags";
-import { SpeakersListCategory } from "../../../prisma/generated/schema";
+import { SpeakersListCategory } from "../../../prisma/generated/schema/SpeakersListCategory";
 
 export const speakersListGeneral = new Elysia({
   prefix: "/conference/:conferenceId/committee/:committeeId",

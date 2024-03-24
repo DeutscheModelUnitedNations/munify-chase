@@ -3,7 +3,7 @@ import { db } from "../../prisma/db";
 import { committeeMemberGuard } from "../auth/guards/committeeMember";
 import { conferenceRoleGuard } from "../auth/guards/conferenceRoles";
 import { openApiTag } from "../util/openApiTags";
-import { Message } from "../../prisma/generated/schema";
+import { Message } from "../../prisma/generated/schema/Message";
 import { $Enums } from "../../prisma/generated/client";
 
 export const messages = new Elysia({

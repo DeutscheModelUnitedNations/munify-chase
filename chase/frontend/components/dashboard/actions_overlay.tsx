@@ -23,7 +23,7 @@ import {
 } from "@/contexts/committee_data";
 import { MyDelegationContext, useUserIdent } from "@/contexts/user_ident";
 import { useToast } from "@/contexts/toast";
-import { $Enums } from "../../../backend/prisma/generated/client";
+import { $Enums } from "@prisma/generated/client";
 import { useBackend } from "@/contexts/backend";
 
 interface DropdownOptions {

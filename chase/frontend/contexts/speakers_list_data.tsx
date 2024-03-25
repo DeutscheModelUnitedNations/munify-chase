@@ -2,7 +2,7 @@
 import React, { createContext, useState, useEffect, useContext } from "react";
 import { useBackend, type BackendInstanceType } from "@/contexts/backend";
 import { ConferenceIdContext, CommitteeIdContext } from "./committee_data";
-import { $Enums } from "../../backend/prisma/generated/client";
+import { $Enums } from "@prisma/generated/client";
 import { useToast } from "./toast";
 
 export type SpeakersListDataType = Awaited<

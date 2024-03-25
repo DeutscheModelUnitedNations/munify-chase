@@ -14,7 +14,7 @@ import {
 } from "@fortawesome/pro-solid-svg-icons";
 import Button from "@/components/button";
 import useMousetrap from "mousetrap-react";
-import { $Enums } from "../../../../backend/prisma/generated/client";
+import { $Enums } from "@prisma/generated/client";
 import { type BackendInstanceType } from "@/contexts/backend";
 
 type AddCommitteePayloadType = {

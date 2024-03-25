@@ -3,7 +3,6 @@ import React, { useEffect, useContext, useState } from "react";
 import { useI18nContext } from "@/i18n/i18n-react";
 import { useBackend, type BackendInstanceType } from "@/contexts/backend";
 import { useRouter } from "next/navigation";
-import OnboardingSteps from "@/components/admin/onboarding/steps";
 import { confirmPopup } from "primereact/confirmpopup";
 import ForwardBackButtons from "@/components/admin/onboarding/forward_back_bar";
 import CommitteeTable from "@/components/admin/structure/committee_table";
@@ -11,7 +10,7 @@ import AddCommitteeDialog from "@/components/admin/structure/add_committee_dialo
 import useMousetrap from "mousetrap-react";
 import { useToast } from "@/contexts/toast";
 import { ConferenceIdContext } from "@/contexts/committee_data";
-import { $Enums } from "../../../../../../../backend/prisma/generated/client";
+import { $Enums } from "@prisma/generated/client";
 
 type CommitteesType = Awaited<
   ReturnType<
@@ -125,12 +124,11 @@ export default function structure() {
 
   const handleSave = () => {
     setSaveLoading(true);
-    router.push(`/app/admin/onboarding/${conferenceId}/teampool`);
+    router.push("./teampool");
   };
 
   return (
     <>
-      <OnboardingSteps activeIndex={0} />
       <CommitteeTable
         committees={committees}
         confirmDeleteAll={confirmDeleteAll}
@@ -139,7 +137,6 @@ export default function structure() {
       />
 
       <ForwardBackButtons
-        backURL="/admin/login"
         handleSaveFunction={handleSave}
         saveLoading={saveLoading}
         forwardDisabled={committees?.length === 0 || !committees}

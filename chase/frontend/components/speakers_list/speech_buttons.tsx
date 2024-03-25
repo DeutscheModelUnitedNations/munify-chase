@@ -23,7 +23,7 @@ import ChangeSpeechTimeOverlay from "./change_speech_time";
 import { IconProp } from "@fortawesome/fontawesome-svg-core";
 import useMousetrap from "mousetrap-react";
 import { useBackend, type BackendInstanceType } from "@/contexts/backend";
-import { $Enums } from "../../../backend/prisma/generated/client";
+import { $Enums } from "@prisma/generated/client";
 import { useToast } from "@/contexts/toast";
 import {
   ConferenceIdContext,

@@ -5,7 +5,7 @@ import { faPlus, faTimes } from "@fortawesome/pro-solid-svg-icons";
 import useMousetrap from "mousetrap-react";
 import CountryAutoComplete from "./country_auto_complete";
 import { useBackend } from "@/contexts/backend";
-import { $Enums } from "../../../backend/prisma/generated/client";
+import { $Enums } from "@prisma/generated/client";
 import { useToast } from "@/contexts/toast";
 import { SpeakersListDataContext } from "@/contexts/speakers_list_data";
 import {

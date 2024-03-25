@@ -1,4 +1,4 @@
-import { $Enums } from "../../backend/prisma/generated/client";
+import { $Enums } from "@prisma/generated/client";
 import { TranslationFunctions } from "./i18n-types";
 
 export const conferenceRoleTranslation = (

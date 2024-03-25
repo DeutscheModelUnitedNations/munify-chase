@@ -8,7 +8,7 @@ import { RadioButton } from "primereact/radiobutton";
 import { faPlus, faXmark } from "@fortawesome/pro-solid-svg-icons";
 import Button from "@/components/button";
 import useMousetrap from "mousetrap-react";
-import { ConferenceRole } from "../../../../backend/prisma/generated/client";
+import { ConferenceRole } from "@prisma/generated/client";
 
 type AddTeammemberDialogProps = {
   inputMaskVisible: boolean;

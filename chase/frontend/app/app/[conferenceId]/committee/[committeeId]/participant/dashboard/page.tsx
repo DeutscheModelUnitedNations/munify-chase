@@ -11,7 +11,7 @@ import {
   AgendaItemDataProvider,
   ConferenceIdContext,
 } from "@/contexts/committee_data";
-import { $Enums } from "../../../../../../../../backend/prisma/generated/client";
+import { $Enums } from "@prisma/generated/client";
 
 export default function participant_dashboard() {
   const conferenceId = useContext(ConferenceIdContext);

@@ -31,7 +31,7 @@ import getCountryNameByCode from "@/misc/get_country_name_by_code";
 import SmallInfoCard from "@/components/small_info_card";
 import { messageCategoryTranslation } from "@/i18n/translation_utils";
 import { useToast } from "@/contexts/toast";
-import { $Enums } from "../../../backend/prisma/generated/client";
+import { $Enums } from "@prisma/generated/client";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 type ChairMessages = Awaited<

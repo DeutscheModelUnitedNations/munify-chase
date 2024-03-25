@@ -64,7 +64,7 @@ export default function MessageCard({
         selected
           ? "bg-primary-500 text-white"
           : "bg-primary-950 text-black hover:bg-primary-900 hover:cursor-pointer"
-      } hover:scale-[1.01] transition-all duration-300`}
+      } pophover`}
       onClick={() => selectMessage()}
       onKeyUp={() => selectMessage()}
     >

@@ -80,6 +80,25 @@ module.exports = {
         });
       });
     }),
+    plugin(({ addUtilities, e }) => {
+      const newUtilities = {};
+
+      newUtilities[`.${e("pophover")}`] = {
+        "@apply hover:-translate-y-[4px]": {},
+        "@apply hover:-translate-x-[1px]": {},
+        "@apply hover:shadow-lg": {},
+        "@apply transition-all": {},
+        "@apply duration-300": {},
+        "@apply ease-in-out": {},
+      };
+
+      addUtilities(newUtilities, [
+        "responsive",
+        "hover",
+        "focus",
+        "group-hover",
+      ]);
+    }),
   ],
   variants: {
     extend: {

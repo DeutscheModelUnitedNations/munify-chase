@@ -1431,6 +1431,66 @@ type RootTranslation = {
 			 */
 			NO_DATA: string
 		}
+		editor: {
+			toolbar: {
+				/**
+				 * F​i​l​e
+				 */
+				FILE: string
+				/**
+				 * R​e​n​a​m​e​ ​T​a​g
+				 */
+				FILE_RENAME: string
+				/**
+				 * I​n​s​e​r​t
+				 */
+				INSERT: string
+				/**
+				 * P​r​e​a​m​b​l​e​ ​C​l​a​u​s​e
+				 */
+				INSERT_PREABLE: string
+				/**
+				 * O​p​e​r​a​t​i​v​e​ ​C​l​a​u​s​e
+				 */
+				INSERT_OPERATIVE: string
+				/**
+				 * T​o​o​l​s
+				 */
+				TOOLS: string
+				/**
+				 * R​e​n​u​m​b​e​r​ ​c​l​a​u​s​e​s
+				 */
+				TOOLS_RENUMBER: string
+				/**
+				 * S​h​a​r​e
+				 */
+				SHARE: string
+				/**
+				 * S​u​b​m​i​s​s​i​o​n
+				 */
+				SUBMISSION: string
+			}
+		}
+	}
+	resolution: {
+		header: {
+			/**
+			 * O​r​g​a​n
+			 */
+			ORGAN: string
+			/**
+			 * A​g​e​n​d​a​ ​I​t​e​m
+			 */
+			AGENDA_ITEM: string
+			/**
+			 * W​r​i​t​i​n​g​ ​D​e​l​e​g​a​t​i​o​n
+			 */
+			WRITER: string
+			/**
+			 * S​p​o​n​s​o​r​i​n​g​ ​D​e​l​e​g​a​t​i​o​n​s
+			 */
+			SPONSORS: string
+		}
 	}
 	chairs: {
 		/**
@@ -3317,6 +3377,66 @@ export type TranslationFunctions = {
 			 * No Documents
 			 */
 			NO_DATA: () => LocalizedString
+		}
+		editor: {
+			toolbar: {
+				/**
+				 * File
+				 */
+				FILE: () => LocalizedString
+				/**
+				 * Rename Tag
+				 */
+				FILE_RENAME: () => LocalizedString
+				/**
+				 * Insert
+				 */
+				INSERT: () => LocalizedString
+				/**
+				 * Preamble Clause
+				 */
+				INSERT_PREABLE: () => LocalizedString
+				/**
+				 * Operative Clause
+				 */
+				INSERT_OPERATIVE: () => LocalizedString
+				/**
+				 * Tools
+				 */
+				TOOLS: () => LocalizedString
+				/**
+				 * Renumber clauses
+				 */
+				TOOLS_RENUMBER: () => LocalizedString
+				/**
+				 * Share
+				 */
+				SHARE: () => LocalizedString
+				/**
+				 * Submission
+				 */
+				SUBMISSION: () => LocalizedString
+			}
+		}
+	}
+	resolution: {
+		header: {
+			/**
+			 * Organ
+			 */
+			ORGAN: () => LocalizedString
+			/**
+			 * Agenda Item
+			 */
+			AGENDA_ITEM: () => LocalizedString
+			/**
+			 * Writing Delegation
+			 */
+			WRITER: () => LocalizedString
+			/**
+			 * Sponsoring Delegations
+			 */
+			SPONSORS: () => LocalizedString
 		}
 	}
 	chairs: {

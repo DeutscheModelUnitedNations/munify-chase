@@ -503,6 +503,28 @@ const de = {
       ADOPTED_AT: "Verabschiedet am {date} um {time} Uhr",
       AMENDMENTS: "Änderungsanträge",
       NO_DATA: "Keine Dokumente"
+    },
+    editor: {
+      toolbar: {
+        FILE: "Datei",
+        FILE_RENAME: "Dokumentennummer anpassen",
+        INSERT: "Einfügen",
+        INSERT_PREABLE: "Präambelabsatz",
+        INSERT_OPERATIVE: "Operativer Absatz",
+        TOOLS: "Tools",
+        TOOLS_RENUMBER: "Nummerierung aktualisieren",
+        SHARE: "Teilen",
+        SUBMISSION: "Einreichen",
+      },
+    },
+  },
+
+  resolution: {
+    header: {
+      ORGAN: "Organ",
+      AGENDA_ITEM: "Thema",
+      WRITER: "Verfassende Delegation",
+      SPONSORS: "Unterstützende Delegationen",
     }
   },
 

@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useContext } from "react";
 import { NormalFlag, SmallFlag } from "@/components/flag_templates";
 import NoDataPlaceholder from "@/components/no_data_placeholder";
 import SmallInfoCard from "@/components/small_info_card";
@@ -23,6 +23,8 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { ScrollPanel } from "primereact/scrollpanel";
 import { ContextMenu } from "primereact/contextmenu";
 import { MenuItem } from 'primereact/menuitem';
+import { useRouter } from "next/navigation";
+import { ConferenceIdContext } from "@/contexts/committee_data";
 
 export default function ChairResolution() {
   const { LL } = useI18nContext();
@@ -266,9 +268,13 @@ function ResCard({
   openMenuFunction,
   children,
 }: { tag: string; openMenuFunction?: (e: React.SyntheticEvent) => void; children: React.ReactNode }) {
+  const router = useRouter();
+  const conferenceId = useContext(ConferenceIdContext);
+
   return (
     <div className="flex flex-col gap-2 bg-primary-900 p-4 rounded-lg pophover cursor-pointer"
     onContextMenu={(e) => (openMenuFunction?.(e))}
+    onClick={() => router.push(`/app/${conferenceId}/res/${encodeURIComponent(tag)}`)}
     >
       <div className="flex justify-between items-center mb-2">
         <h1 className="text-primary-50 font-bold text-lg">{tag}</h1>

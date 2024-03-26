@@ -496,6 +496,28 @@ const en = {
       ADOPTED_AT: "Adopted {date:string} at {time:string}",
       AMENDMENTS: "Amendments",
       NO_DATA: "No Documents"
+    },
+    editor: {
+      toolbar: {
+        FILE: "File",
+        FILE_RENAME: "Rename Tag",
+        INSERT: "Insert",
+        INSERT_PREABLE: "Preamble Clause",
+        INSERT_OPERATIVE: "Operative Clause",
+        TOOLS: "Tools",
+        TOOLS_RENUMBER: "Renumber clauses",
+        SHARE: "Share",
+        SUBMISSION: "Submission",
+      }
+    },
+  },
+
+  resolution: {
+    header: {
+      ORGAN: "Organ",
+      AGENDA_ITEM: "Agenda Item",
+      WRITER: "Writing Delegation",
+      SPONSORS: "Sponsoring Delegations",
     }
   },
 

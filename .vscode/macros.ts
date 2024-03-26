@@ -4,10 +4,15 @@ module.exports.macroCommands = {
   OpenI18n: {
     no: 1,
     func: async () => {
-      const workingDirectory = vscode.workspace.workspaceFolders[0].uri
+      const workingDirectory = vscode.workspace.workspaceFolders[0].uri;
       console.error(workingDirectory);
 
-      openI18nFile(`/${workingDirectory}/chase/frontend/i18n/en/index.ts`.replace("/file:", ""));
+      openI18nFile(
+        `/${workingDirectory}/chase/frontend/i18n/en/index.ts`.replace(
+          "/file:",
+          "",
+        ),
+      );
       setTimeout(async () => {
         await vscode.commands.executeCommand(
           "workbench.action.moveEditorToNextGroup",
@@ -15,7 +20,12 @@ module.exports.macroCommands = {
       }, 500);
       setTimeout(() => {
         // print current working directory
-        openI18nFile(`/${workingDirectory}/chase/frontend/i18n/de/index.ts`.replace("/file:", ""));
+        openI18nFile(
+          `/${workingDirectory}/chase/frontend/i18n/de/index.ts`.replace(
+            "/file:",
+            "",
+          ),
+        );
       }, 500);
     },
   },

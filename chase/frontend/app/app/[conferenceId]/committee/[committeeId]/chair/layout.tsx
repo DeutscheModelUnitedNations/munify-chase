@@ -76,10 +76,10 @@ function ChairNavbar() {
         badge={messageCount ?? 0}
       />
       <NavButton
-          icon={faScroll as IconProp}
-          link={"./resolutions"}
-          title={LL.navbar.RESOLUTIONS()}
-        />
+        icon={faScroll as IconProp}
+        link={"./resolutions"}
+        title={LL.navbar.RESOLUTIONS()}
+      />
       <div className="flex-1" />
       <NavButton
         icon={faNewspaper as IconProp}

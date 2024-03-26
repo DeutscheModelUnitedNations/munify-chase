@@ -5,7 +5,10 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import Markdown from "react-markdown";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { faGripDots, faTriangleExclamation } from "@fortawesome/pro-solid-svg-icons";
+import {
+  faGripDots,
+  faTriangleExclamation,
+} from "@fortawesome/pro-solid-svg-icons";
 import romanize from "@/misc/to_roman_numerals";
 
 export enum ResDelimiter {
@@ -62,7 +65,10 @@ export default function Clause({
       <div className="flex gap-2 justify-start items-start">
         {!clause.validOperator && (
           <div className="absolute -left-8" title="Invalid Operator">
-            <FontAwesomeIcon icon={faTriangleExclamation} className="text-2xl text-orange-500" />
+            <FontAwesomeIcon
+              icon={faTriangleExclamation}
+              className="text-2xl text-orange-500"
+            />
           </div>
         )}
         <div
@@ -75,11 +81,7 @@ export default function Clause({
           <FontAwesomeIcon icon={faGripDots} className="text-sm" />
         </div>
         <div className="indent-10">
-          <RenderClause
-            clause={clause}
-            noNumber={noNumbering}
-            layer={0}
-          />
+          <RenderClause clause={clause} noNumber={noNumbering} layer={0} />
         </div>
       </div>
     </div>
@@ -153,10 +155,7 @@ function RenderClause({
               textIndent: `${(layer + 1) * 2 + 2.5}rem`,
             }}
           >
-            <RenderClause
-              clause={part}
-              layer={layer + 1}
-            />
+            <RenderClause clause={part} layer={layer + 1} />
           </p>
         );
       })}

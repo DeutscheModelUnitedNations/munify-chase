@@ -22,7 +22,7 @@ import {
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { ScrollPanel } from "primereact/scrollpanel";
 import { ContextMenu } from "primereact/contextmenu";
-import { MenuItem } from 'primereact/menuitem';
+import { MenuItem } from "primereact/menuitem";
 import { useRouter } from "next/navigation";
 import { ConferenceIdContext } from "@/contexts/committee_data";
 
@@ -267,21 +267,29 @@ function ResCard({
   tag,
   openMenuFunction,
   children,
-}: { tag: string; openMenuFunction?: (e: React.SyntheticEvent) => void; children: React.ReactNode }) {
+}: {
+  tag: string;
+  openMenuFunction?: (e: React.SyntheticEvent) => void;
+  children: React.ReactNode;
+}) {
   const router = useRouter();
   const conferenceId = useContext(ConferenceIdContext);
 
   return (
-    <div className="flex flex-col gap-2 bg-primary-900 p-4 rounded-lg pophover cursor-pointer"
-    onContextMenu={(e) => (openMenuFunction?.(e))}
-    onClick={() => router.push(`/app/${conferenceId}/res/${encodeURIComponent(tag)}`)}
+    <div
+      className="flex flex-col gap-2 bg-primary-900 p-4 rounded-lg pophover cursor-pointer"
+      onContextMenu={(e) => openMenuFunction?.(e)}
+      onClick={() =>
+        router.push(`/app/${conferenceId}/res/${encodeURIComponent(tag)}`)
+      }
     >
       <div className="flex justify-between items-center mb-2">
         <h1 className="text-primary-50 font-bold text-lg">{tag}</h1>
         {openMenuFunction && (
           <div
             className="px-2 hover:scale-150 transition-all duration-300 cursor:menu"
-            onClick={(e) => openMenuFunction(e)} onKeyDown={(e) => openMenuFunction(e)}
+            onClick={(e) => openMenuFunction(e)}
+            onKeyDown={(e) => openMenuFunction(e)}
           >
             <FontAwesomeIcon icon={faEllipsis} className="text-primary-300" />
           </div>

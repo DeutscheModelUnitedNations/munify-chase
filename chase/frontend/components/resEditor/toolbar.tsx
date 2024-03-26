@@ -16,7 +16,6 @@ import {
 import { Menubar } from "primereact/menubar";
 import { MenuItem } from "primereact/menuitem";
 
-
 export default function Toolbar({
   resolutionTag,
 }: {

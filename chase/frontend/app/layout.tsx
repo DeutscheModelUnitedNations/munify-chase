@@ -83,12 +83,12 @@ export default function RootLayout({
         {/* <PrimeReactProvider value={{ pt: Tailwind }}> */}
         <TypesafeI18n locale={locale}>
           <ToastProvider>
-              <Backend>
-                <BackendTime>
-                  <CookieBanner />
-                  {children}
-                </BackendTime>
-              </Backend>
+            <Backend>
+              <BackendTime>
+                <CookieBanner />
+                {children}
+              </BackendTime>
+            </Backend>
           </ToastProvider>
         </TypesafeI18n>
         {/* </PrimeReactProvider> */}

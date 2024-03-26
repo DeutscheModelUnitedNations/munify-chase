@@ -1,8 +1,8 @@
 import { t, Elysia } from "elysia";
 import { db } from "../../prisma/db";
 import { loggedInGuard } from "../auth/guards/loggedIn";
-import { Nation } from "../../prisma/generated/schema";
 import { openApiTag } from "../util/openApiTags";
+import { Nation } from "../../prisma/generated/schema/Nation";
 
 export const baseData = new Elysia({ prefix: "/baseData" })
   .use(loggedInGuard)
@@ -11,10 +11,10 @@ export const baseData = new Elysia({ prefix: "/baseData" })
     () => db.nation.findMany({ select: { id: true, alpha3Code: true } }),
     {
       mustBeLoggedIn: true,
-      response: t.Array(t.Omit(Nation, ["delegations"])),
+      // response: t.Array(t.Omit(Nation, ["delegations"])), //TODO
       detail: {
         description: "Get all nations in the system",
         tags: [openApiTag(import.meta.path)],
       },
-    },
+    }
   );

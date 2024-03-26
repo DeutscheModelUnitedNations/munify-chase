@@ -30,8 +30,8 @@ export default function loginVorsitz() {
       .post({
         name: conferenceName,
         token: token,
-        start: dates ? dates[0]?.toISOString() : undefined,
-        end: dates ? dates[1]?.toISOString() : undefined,
+        start: dates?.at(0),
+        end: dates?.at(1),
       })
       .then((res) => {
         if (!res?.data?.id) throw new Error("No conference id returned");

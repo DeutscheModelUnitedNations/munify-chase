@@ -3,9 +3,9 @@ import { db } from "../../prisma/db";
 import { committeeMemberGuard } from "../auth/guards/committeeMember";
 import { conferenceRoleGuard } from "../auth/guards/conferenceRoles";
 import { openApiTag } from "../util/openApiTags";
-import { AgendaItem } from "../../prisma/generated/schema";
 import { recursiveNullFieldsToUndefined } from "../util/nullToUndefined";
 import { $Enums } from "../../prisma/generated/client";
+import { AgendaItem } from "../../prisma/generated/schema/AgendaItem";
 
 const AgendaItemWithoutRelations = t.Omit(AgendaItem, [
   "committee",

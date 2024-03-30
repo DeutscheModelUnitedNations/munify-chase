@@ -1,3 +1,5 @@
+// TODO: We should probably use a library for this
+
 /**
  * @param envName The env variable to load
  * @returns The variable value or undefined

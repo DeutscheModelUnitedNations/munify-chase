@@ -1,19 +1,17 @@
-import Elysia from "elysia";
+import Elysia, { t } from "elysia";
 import { session } from "../session";
-// import { TypeCompiler } from "@sinclair/typebox/compiler";
-// import { db } from "../../../prisma/db";
-
-// const parametersSchema = TypeCompiler.Compile(
-//   t.Object({
-//     conferenceId: t.String(),
-//     committeeId: t.String(),
-//   }),
-// );
+import { db } from "../../../prisma/db";
 
 export const committeeMemberGuard = new Elysia({
-  name: "conferenceMemberGuard",
+  name: "committeeMemberGuard",
 })
   .use(session)
+  .guard({
+    params: t.Object({
+      conferenceId: t.String(),
+      committeeId: t.String(),
+    }),
+  })
   .macro(({ onBeforeHandle }) => {
     return {
       /**
@@ -21,44 +19,29 @@ export const committeeMemberGuard = new Elysia({
        * You can also set the role to an array of roles to check if the user has any of the roles in the committee.
        */
       isCommitteeMember() {
-        onBeforeHandle(async () => {
-          // onBeforeHandle(async ({ session, set, params }) => {
-          // if (session.loggedIn !== true) {
-          //   // biome-ignore lint/suspicious/noAssignInExpressions: This is a valid use case
-          //   return (set.status = "Unauthorized");
-          // }
-          // if (!parametersSchema.Check(params)) {
-          //   set.status = "Bad Request";
-          //   return [...parametersSchema.Errors(params)];
-          // }
-          // const { conferenceId, committeeId } = parametersSchema.Decode(params);
-          // if (!session.userData) {
-          //   // biome-ignore lint/suspicious/noAssignInExpressions: This is a valid use case
-          //   return (set.status = "Unauthorized");
-          // }
-          // const res = await db.committeeMember.findFirst({
-          //   where: {
-          //     userId: session.userData.id,
-          //     committee: {
-          //       id: committeeId,
-          //       conference: {
-          //         id: conferenceId,
-          //       },
-          //     },
-          //   },
-          // });
-          // if (!res) {
-          //   // biome-ignore lint/suspicious/noAssignInExpressions: This is a valid use case
-          //   return (set.status = "Unauthorized");
-          // }
-        });
+        onBeforeHandle(
+          async ({ session, set, params: { committeeId, conferenceId } }) => {
+            if (session?.data?.loggedIn !== true) {
+              set.status = "Unauthorized";
+              return "Unauthorized";
+            }
+            const res = await db.committeeMember.findFirst({
+              where: {
+                userId: session.data.user?.id,
+                committee: {
+                  id: committeeId,
+                  conference: {
+                    id: conferenceId,
+                  },
+                },
+              },
+            });
+            if (!res) {
+              set.status = "Unauthorized";
+              return "Unauthorized";
+            }
+          }
+        );
       },
-    };
-  })
-  // just for correct typing
-  .derive(({ session }) => {
-    return {
-      // biome-ignore lint/style/noNonNullAssertion: we can safely assume that session.userData is defined here
-      session: { ...session, userData: session.userData! },
     };
   });

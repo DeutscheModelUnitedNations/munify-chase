@@ -17,33 +17,41 @@ import { messages } from "./routes/messages";
 import { time } from "./routes/time";
 import packagejson from "../package.json";
 import swagger from "@elysiajs/swagger";
-import { logger } from "@grotto/logysia";
 import { serverTiming } from "@elysiajs/server-timing";
 import { helmet } from "elysia-helmet";
-import { heapStats } from "bun:jsc";
-// import { generateHeapSnapshot } from "bun";
+import { generateHeapSnapshot } from "bun";
 
-setInterval(() => {
-  console.log(`Heap size: ${heapStats().heapSize / 10000}`);
-}, 1000);
+setInterval(
+  async () => {
+    const snapshot = generateHeapSnapshot();
+    await Bun.write(
+      `heapSnapshots/${Date.now()}.json`,
+      JSON.stringify(snapshot, null, 2)
+    );
+    console.info("Heap snapshot taken");
+  },
+  1000 * 60 * 10
+); // every 10 minutes
 
-const m = new Elysia()
+const m = new Elysia({
+  normalize: true,
+})
   .use(serverTiming())
+  .use(helmet())
   .use(
-    logger({
-      logIP: false,
-
-      writer: {
-        write(msg: string) {
-          console.info(msg);
+    swagger({
+      path: `/${appConfiguration.documentationPath}`,
+      documentation: {
+        info: {
+          title: `${appConfiguration.appName} documentation`,
+          description: `${appConfiguration.appName} documentation`,
+          version: packagejson.version,
         },
       },
     })
   )
-  .use(helmet())
   .use(errorLogging)
   .use(
-    // @ts-ignore
     cors({
       origin: appConfiguration.CORSOrigins,
       allowedHeaders: ["content-type"],
@@ -72,24 +80,7 @@ const m = new Elysia()
   .use(user)
   .use(auth)
   .use(time)
-  .use(baseData);
-
-// we make the api docs public
-// biome-ignore lint/suspicious/noExplicitAny: we explicitly dont want type checking here
-(new Elysia() as any) // just disable the type check for this object, since the middleware is causing issues
-  .use(
-    swagger({
-      path: `/${appConfiguration.documentationPath}`,
-      documentation: {
-        info: {
-          title: `${appConfiguration.appName} documentation`,
-          description: `${appConfiguration.appName} documentation`,
-          version: packagejson.version,
-        },
-      },
-    })
-  )
-  // .use(m)
+  .use(baseData)
   .listen(process.env.PORT ?? "3001");
 
 setTimeout(() => {

@@ -17,6 +17,7 @@ generator prismabox {
   output                      = "./generated/schema"
   typeboxImportVariableName   = "t"
   typeboxImportDependencyName = "elysia"
+  dataModel = true
 }
 
 // model Authenticator {
@@ -32,7 +33,7 @@ generator prismabox {
 //   transports           String[] @db.VarChar(255)
 // }
 
-// TODO a max amount would make sense
+// TODO a max amount for passwords would make sense
 
 model Password {
   id           String @id @default(uuid())

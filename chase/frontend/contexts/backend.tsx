@@ -1,6 +1,7 @@
-import React, { createContext, useContext, useState } from "react";
+import type React from "react";
+import { createContext, useContext, useState } from "react";
 import { treaty } from "@elysiajs/eden";
-import { App } from "../../backend/src/main";
+import type { App } from "../../backend/src/main";
 import { unstable_noStore as noStore } from "next/cache";
 import { env } from "next-runtime-env";
 

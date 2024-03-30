@@ -1,7 +1,8 @@
 "use client";
 import { useBackend, type BackendInstanceType } from "@/contexts/backend";
 import { useRouter } from "next/navigation";
-import React, { createContext, useContext, useEffect, useState } from "react";
+import type React from "react";
+import { createContext, useContext, useEffect, useState } from "react";
 import { ConferenceIdContext } from "./committee_data";
 
 export type User = NonNullable<

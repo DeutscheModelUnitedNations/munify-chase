@@ -2,11 +2,13 @@ import { t, Elysia } from "elysia";
 import { db } from "../../../prisma/db";
 import { openApiTag } from "../../util/openApiTags";
 import { loggedInGuard } from "../../auth/guards/loggedIn";
+import { session } from "../../auth/session";
 
 const passwordRegex =
   /^(?=.*[A-Z].*[A-Z])(?=.*[!@#$&*])(?=.*[0-9].*[0-9])(?=.*[a-z].*[a-z].*[a-z]).{8,}$/;
 
 export const passwords = new Elysia()
+  .use(session)
   .use(loggedInGuard)
   .post(
     "/password",
@@ -39,9 +41,9 @@ export const passwords = new Elysia()
             ...task,
             hit: await Bun.password.verify(
               credentialCreateToken,
-              task.token.tokenHash,
+              task.token.tokenHash
             ),
-          })),
+          }))
         )
       ).find((t) => t.hit);
 
@@ -55,7 +57,7 @@ export const passwords = new Elysia()
             foundEmail.user.passwords.map(async (p) => ({
               ...p,
               hit: await Bun.password.verify(password, p.passwordHash),
-            })),
+            }))
           )
         ).find((p) => p.hit)
       ) {
@@ -95,14 +97,14 @@ export const passwords = new Elysia()
         description: "Login with a password",
         tags: [openApiTag(import.meta.path)],
       },
-    },
+    }
   )
   .delete(
     "/password",
     async ({ body: { password }, session }) => {
       const user = await db.user.findUniqueOrThrow({
         where: {
-          id: session.userData.id,
+          id: session.data?.user?.id,
         },
         include: { passwords: true },
       });
@@ -112,7 +114,7 @@ export const passwords = new Elysia()
           user.passwords.map(async (p) => ({
             ...p,
             hit: await Bun.password.verify(password, p.passwordHash),
-          })),
+          }))
         )
       ).find((p) => p.hit);
 
@@ -135,7 +137,7 @@ export const passwords = new Elysia()
         description: "Delete a password",
         tags: [openApiTag(import.meta.path)],
       },
-    },
+    }
   )
   .post(
     "/password/login",
@@ -154,17 +156,21 @@ export const passwords = new Elysia()
         !(
           await Promise.all(
             foundEmail.user.passwords.map((p) =>
-              Bun.password.verify(password, p.passwordHash),
-            ),
+              Bun.password.verify(password, p.passwordHash)
+            )
           )
         ).some((p) => p)
       ) {
         throw new Error("Invalid password");
       }
 
-      session.setLoggedIn(true);
-      session.setUserData({
-        id: foundEmail.user.id,
+      session.setData({
+        loggedIn: true,
+        user: {
+          id: foundEmail.user.id,
+          email: foundEmail.email,
+          name: foundEmail.user.name,
+        },
       });
     },
     {
@@ -176,5 +182,5 @@ export const passwords = new Elysia()
         description: "Login with a password",
         tags: [openApiTag(import.meta.path)],
       },
-    },
+    }
   );

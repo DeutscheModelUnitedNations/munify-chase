@@ -18,7 +18,9 @@ export const errorLogging = new Elysia({
     return `Path ${path} doesn't exist (${error.message})`;
   }
 
-  console.error(JSON.stringify(error));
+  if (set.status === "Unavailable For Legal Reasons") {
+    return error;
+  }
 
   // prisma relation/entry not found
   // @ts-ignore
@@ -33,6 +35,8 @@ export const errorLogging = new Elysia({
     set.status = "Conflict";
     return error;
   }
+
+  console.error(JSON.stringify(error));
 
   return "Internal server error";
 });

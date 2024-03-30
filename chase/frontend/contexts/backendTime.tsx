@@ -1,5 +1,6 @@
 import { useBackend } from "./backend";
-import React, { createContext, useContext, useEffect, useState } from "react";
+import type React from "react";
+import { createContext, useContext, useEffect, useState } from "react";
 
 export const BackendTimeContext = createContext({} as BackendTimeContextType);
 export const useBackendTime = () => useContext(BackendTimeContext);

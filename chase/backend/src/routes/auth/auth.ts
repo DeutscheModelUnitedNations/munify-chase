@@ -9,11 +9,13 @@ import { nanoid } from "nanoid";
 import { appConfiguration } from "../../util/config";
 import { loggedInGuard } from "../../auth/guards/loggedIn";
 import { passwords } from "./passwords";
+import { session } from "../../auth/session";
 
 export const auth = new Elysia({
   prefix: "/auth",
 })
   .use(passwords)
+  .use(session)
   .use(loggedInGuard)
   .get(
     "/userState",
@@ -49,17 +51,13 @@ export const auth = new Elysia({
           "Returns some info on the user in the system. Can be used to check if the user is existing and validated.",
         tags: [openApiTag(import.meta.path)],
       },
-    },
+    }
   )
   .get(
     "/myInfo",
-    async ({ session, set }) => {
-      if (!session.userData) {
-        set.status = "Forbidden";
-        throw new Error("User is not logged in");
-      }
-      return await db.user.findUniqueOrThrow({
-        where: { id: session.userData.id },
+    async ({ session }) =>
+      db.user.findUniqueOrThrow({
+        where: { id: session.data?.user?.id },
         include: {
           emails: true,
           conferenceMemberships: {
@@ -84,15 +82,14 @@ export const auth = new Elysia({
             },
           },
         },
-      });
-    },
+      }),
     {
       mustBeLoggedIn: true,
       detail: {
         description: "Returns the user info when they are logged in",
         tags: [openApiTag(import.meta.path)],
       },
-    },
+    }
   )
   .post(
     "/validateEmail",
@@ -123,7 +120,7 @@ export const auth = new Elysia({
       if (
         !(await Bun.password.verify(
           token,
-          foundEmail.validationToken.tokenHash,
+          foundEmail.validationToken.tokenHash
         ))
       ) {
         return "invalidToken";
@@ -179,7 +176,7 @@ export const auth = new Elysia({
           "Validates the email of a user. The token is the token that was sent to the user via email. Returns a token which can be used to create credentials",
         tags: [openApiTag(import.meta.path)],
       },
-    },
+    }
   )
   .post(
     "/createUser",
@@ -221,7 +218,7 @@ export const auth = new Elysia({
         description: "Creates a user",
         tags: [openApiTag(import.meta.path)],
       },
-    },
+    }
   )
   //TODO spam protection?
   .get(
@@ -267,21 +264,18 @@ export const auth = new Elysia({
         description: "Sends a credential creation token to the users email",
         tags: [openApiTag(import.meta.path)],
       },
-    },
+    }
   )
   .get(
     "/logout",
     ({ session }) => {
-      session.setLoggedIn(false);
-      // delete the session cookie
-      return "ok";
+      session.setData({ loggedIn: false });
     },
     {
-      response: t.Literal("ok"),
       detail: {
         description:
           "Logs the user out. The user will be logged out on the next request",
         tags: [openApiTag(import.meta.path)],
       },
-    },
+    }
   );

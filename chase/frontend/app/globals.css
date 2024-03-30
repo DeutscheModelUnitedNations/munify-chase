@@ -1,7 +1,6 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-
 :root {
   --dmun-primary: #3d7dd2;
   --dmun-black: #000;
@@ -10,16 +9,24 @@
   --voting-against: #ff3d32;
 }
 
+ol {
+  list-style-type: upper-roman !important;
+  text-indent: 0 !important;
+}
+ol li > ol {
+  list-style-type: lower-alpha !important;
+}
+ol li > ol li > ol {
+  list-style-type: lower-roman !important;
+}
+ol li > ol li > ol li > ol {
+  list-style-type: decimal !important;
+}
+
 .tabular-nums {
   font-variant-numeric: tabular-nums;
   font-feature-settings: "tnum";
 }
-
-body {
-  font-family: var(--font-sans) sans-serif;
-}
-
-
 
 .custom-scrollbar .p-scrollpanel .p-scrollpanel-bar,
 .custom-scrollbar .p-scrollpanel .p-scrollpanel-bar-x,
@@ -35,52 +42,40 @@ html.dark .ql-snow {
   background-color: #183254 !important;
   color: #fff !important;
 }
-
 html.dark .ql-toolbar .ql-stroke {
   stroke: #3d7dd2;
 }
-
 html.dark .ql-toolbar .ql-fill {
   fill: #3d7dd2;
 }
-
 html.dark .ql-toolbar .ql-picker-label {
   color: #3d7dd2 !important;
 }
-
 html.dark .ql-toolbar .ql-picker-label.ql-active {
   color: #fff !important;
 }
-
 html.dark .ql-toolbar button.ql-active .ql-fill {
   fill: #fff !important;
 }
-
 html.dark .ql-toolbar button.ql-active .ql-stroke {
   stroke: #fff !important;
 }
-
 html.dark .p-editor-content,
 html.dark .ql-editor {
   background-color: #0c192a !important;
   color: #fff !important;
 }
-
 html.dark .p-editor-content code,
 html.dark .ql-editor code {
   background-color: #3164a8 !important;
   color: #fff !important;
 }
-
 html.dark .p-editor-content a,
 html.dark .ql-editor a {
   color: #b1cbed !important;
 }
-
 html.dark .p-editor-content pre.ql-syntax,
 html.dark .ql-editor pre.ql-syntax {
   background-color: #b1cbed !important;
   color: #0c192a !important;
-}
-
-/*# sourceMappingURL=globals.css.map */
+}/*# sourceMappingURL=globals.css.map */

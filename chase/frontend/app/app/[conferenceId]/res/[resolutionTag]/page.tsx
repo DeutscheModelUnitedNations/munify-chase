@@ -25,16 +25,33 @@ import Clause, {
 import getCountryNameByCode from "@/misc/get_country_name_by_code";
 import { Skeleton } from "primereact/skeleton";
 import { addDelimiterToClause, checkValidOperator } from "@/misc/res_parser";
+import Image from "next/image";
+import EditClauseModal from "@/components/resEditor/edit_clause";
+import { ScrollTop } from "primereact/scrolltop";
 
-type testDataType = {
-  resolutionTag: string;
+enum ResolutionType {
+  RES = "RES",
+  WP = "WP",
+  DRAFT = "DRAFT",
+}
+
+interface ResolutionTagType {
+  committee: string;
+  type: ResolutionType;
+  session: number;
+  number: number;
+}
+
+interface testDataType {
+  tag: ResolutionTagType;
   agendaItem: string;
   organ: string;
+  firstSentence: string;
   writer: string;
   sponsors: string[];
   preambleClauses: ClauseType[];
   operativeClauses: ClauseType[];
-};
+}
 
 export default function ResolutionEditor({
   params,
@@ -42,22 +59,33 @@ export default function ResolutionEditor({
   const { LL, locale } = useI18nContext();
   const { backend } = useBackend();
 
-  const [resolutionTag, _] = useState(decodeURIComponent(params.resolutionTag));
+  const [resolutionTag, setResolutionTag] = useState<
+    ResolutionTagType | undefined
+  >();
   const [writer, setWriter] = useState<string>();
   const [sponsors, setSponsors] = useState<string[]>([]);
   const [agendaItem, setAgendaItem] = useState<string>();
   const [organ, setOrgan] = useState<string>();
+  const [firstSentence, setFirstSentence] = useState<string>();
 
   const [preambleClauses, setPreambleClauses] = useState<ClauseType[]>([]);
   const [operativeClauses, setOperativeClauses] = useState<ClauseType[]>([]);
 
+  const [editResModalVisible, setEditResModalVisible] = useState(true);
+
   useEffect(() => {
     const testData: testDataType = {
-      resolutionTag: "SR/RES/2024/1",
+      tag: {
+        committee: "SR",
+        type: ResolutionType.RES,
+        session: 2024,
+        number: 1,
+      },
       agendaItem: "Situation in Haiti",
       writer: "cpv",
       sponsors: ["fra", "deu", "cze", "sur"],
-      organ: "Der Sicherheitsrat",
+      organ: "Sicherheitsrat",
+      firstSentence: "Der Sicherheitsrat",
       preambleClauses: [
         {
           id: "P1",
@@ -284,8 +312,10 @@ export default function ResolutionEditor({
       ],
     };
 
+    setResolutionTag(testData.tag);
     setAgendaItem(testData.agendaItem);
     setOrgan(testData.organ);
+    setFirstSentence(testData.firstSentence);
     setWriter(testData.writer);
     setSponsors(testData.sponsors);
     setPreambleClauses(
@@ -310,6 +340,16 @@ export default function ResolutionEditor({
       ),
     );
   }, []);
+
+  function getResTag() {
+    if (!resolutionTag) return null;
+    return `${resolutionTag.committee}/${resolutionTag.type}/${resolutionTag.session}/${resolutionTag.number}`;
+  }
+
+  function getResTagWithoutCommittee() {
+    if (!resolutionTag) return "";
+    return `${resolutionTag.type}/${resolutionTag.session}/${resolutionTag.number}`;
+  }
 
   function handlePreambleDragEnd(event) {
     const { active, over } = event;
@@ -347,83 +387,51 @@ export default function ResolutionEditor({
 
   return (
     <>
-      <div className="flex flex-col items-center bg-primary-950">
-        <Toolbar resolutionTag={resolutionTag} />
-        <div className="w-full p-4 py-20 flex flex-col items-center">
-          <div className="w-full max-w-[800px] shadow-lg rounded p-12 bg-white font-serif flex flex-col gap-2">
-            <div className="flex flex-col md:flex-row md:gap-4 justify-end">
-              <h2 className="text-xl lining-nums">{resolutionTag}</h2>
-            </div>
-            <div className="border-b border-black w-full mb-4" />
-            <div className="mx-4 ">
-              <h3 className="flex items-center">
-                {LL.resolution.header.ORGAN().toUpperCase()}:{" "}
-                {organ ?? (
-                  <Skeleton
-                    width="10rem"
-                    height="1rem"
-                    className="!bg-primary-950 ml-1"
-                  />
-                )}
-              </h3>
-              <h3 className="flex items-center">
-                {LL.resolution.header.AGENDA_ITEM().toUpperCase()}:{" "}
-                {agendaItem ?? (
-                  <Skeleton
-                    width="10rem"
-                    height="1rem"
-                    className="!bg-primary-950 ml-1"
-                  />
-                )}
-              </h3>
-              <h3 className="flex items-center">
-                {LL.resolution.header.WRITER().toUpperCase()}:{" "}
-                {writer ? (
-                  getCountryNameByCode(writer, locale)
+      <EditClauseModal modalVisible={editResModalVisible} closeFunction={() => setEditResModalVisible(false)} />
+      <div className="w-full bg-primary-950">
+        <Toolbar resolutionTag={getResTag()} openEditModalFunction={() => setEditResModalVisible(true)} />
+        <div className="w-full p-4 xl:pl-40 py-20 flex flex-col items-center">
+          <PaperWrapper>
+            <div className="flex flex-col md:flex-row md:gap-4 justify-between items-end">
+              <h2 className="text-lg ml-[110px]">{LL.resolution.UN()}</h2>
+              <h2 className="text-lg lining-nums flex flex-row items-end">
+                <span className="text-3xl">
+                  {resolutionTag?.committee ? (
+                    resolutionTag.committee
+                  ) : (
+                    <Skeleton
+                      width="2.25rem"
+                      height="2.25rem"
+                      className="!bg-primary-950"
+                    />
+                  )}
+                </span>
+                {resolutionTag ? (
+                  <>/{getResTagWithoutCommittee()}</>
                 ) : (
                   <Skeleton
-                    width="10rem"
-                    height="1rem"
+                    width="6rem"
+                    height="1.125rem"
                     className="!bg-primary-950 ml-1"
                   />
                 )}
-              </h3>
-              <h3 className="flex items-center">
-                {LL.resolution.header.SPONSORS().toUpperCase()}:{" "}
-                {sponsors && sponsors.length !== 0 ? (
-                  sponsors
-                    .sort((a, b) =>
-                      getCountryNameByCode(a, locale).localeCompare(
-                        getCountryNameByCode(b, locale),
-                      ),
-                    )
-                    .map((item, index) => {
-                      return `${getCountryNameByCode(
-                        item.toUpperCase(),
-                        locale,
-                      )}${index + 1 < sponsors.length ? ", " : ""}`;
-                    })
-                ) : (
-                  <Skeleton
-                    width="10rem"
-                    height="1rem"
-                    className="!bg-primary-950 ml-1"
-                  />
-                )}
-              </h3>
-              <h3 className="flex items-center mt-8">
-                {organ?.toUpperCase() ?? (
-                  <Skeleton
-                    width="10rem"
-                    height="1rem"
-                    className="!bg-primary-950 ml-1"
-                  />
-                )}
-                ,
-              </h3>
+              </h2>
             </div>
+            <div className="border-b border-black w-full" />
 
-            <div className="border-b w-full border-dashed" />
+            <InfoSection organ={organ}>
+              <ResolutionHeaderInfoBlock
+                agendaItem={agendaItem}
+                writer={writer}
+                sponsors={sponsors}
+              />
+            </InfoSection>
+
+            <div className="border-b border-black border-2 w-full mt-4" />
+
+            <FirstSentence>{firstSentence}</FirstSentence>
+
+            <SectionDivider title={LL.resolution.PREAMBLE().toUpperCase()} />
 
             <ResSection
               items={preambleClauses}
@@ -446,7 +454,9 @@ export default function ResolutionEditor({
               )}
             </ResSection>
 
-            <div className="border-b w-full border-dashed" />
+            <SectionDivider
+              title={LL.resolution.OPERATIVE_SECTION().toUpperCase()}
+            />
 
             <ResSection
               items={operativeClauses}
@@ -467,9 +477,10 @@ export default function ResolutionEditor({
                 />
               )}
             </ResSection>
-          </div>
+          </PaperWrapper>
         </div>
       </div>
+      <ScrollTop />
     </>
   );
 }
@@ -500,5 +511,126 @@ function ResSection({
         {children}
       </SortableContext>
     </DndContext>
+  );
+}
+
+function SectionDivider({ title }: { title: string }) {
+  return (
+    <div className="relative mt-2 mb-1">
+      <div className="border-b w-full border-dashed border-primary-500" />
+      <h5 className="absolute top-1/2 -translate-y-1/2 z-20 px-1 right-4 text-xs bg-white text-primary-500 font-bold font-sans">
+        {title}
+      </h5>
+    </div>
+  );
+}
+
+function FirstSentence({ children }: { children: React.ReactNode }) {
+  return (
+    <h3 className="mx-4 flex items-center mt-8 indent-10 italic">
+      {children ? (
+        `${children},`
+      ) : (
+        <Skeleton
+          width="10rem"
+          height="1rem"
+          className="!bg-primary-950 ml-10"
+        />
+      )}
+    </h3>
+  );
+}
+
+function ResolutionHeaderInfoBlock({
+  agendaItem,
+  writer,
+  sponsors,
+}: {
+  agendaItem?: string;
+  writer?: string;
+  sponsors?: string[];
+}) {
+  const { LL, locale } = useI18nContext();
+  return (
+    <>
+      <h3 className="flex items-center">
+        {LL.resolution.header.AGENDA_ITEM().toUpperCase()}:{" "}
+        {agendaItem ?? (
+          <Skeleton
+            width="10rem"
+            height="1rem"
+            className="!bg-primary-950 ml-1"
+          />
+        )}
+      </h3>
+      <h3 className="flex items-center">
+        {LL.resolution.header.WRITER().toUpperCase()}:{" "}
+        {writer ? (
+          getCountryNameByCode(writer, locale)
+        ) : (
+          <Skeleton
+            width="10rem"
+            height="1rem"
+            className="!bg-primary-950 ml-1"
+          />
+        )}
+      </h3>
+      <h3 className="flex items-center">
+        {LL.resolution.header.SPONSORS().toUpperCase()}:{" "}
+        {sponsors && sponsors.length !== 0 ? (
+          sponsors
+            .sort((a, b) =>
+              getCountryNameByCode(a, locale).localeCompare(
+                getCountryNameByCode(b, locale),
+              ),
+            )
+            .map((item, index) => {
+              return `${getCountryNameByCode(item.toUpperCase(), locale)}${
+                index + 1 < sponsors.length ? ", " : ""
+              }`;
+            })
+        ) : (
+          <Skeleton
+            width="10rem"
+            height="1rem"
+            className="!bg-primary-950 ml-1"
+          />
+        )}
+      </h3>
+    </>
+  );
+}
+
+function PaperWrapper({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="w-full max-w-[800px] shadow-lg rounded p-12 bg-white font-times flex flex-col gap-2">
+      {children}
+    </div>
+  );
+}
+
+function InfoSection({
+  organ,
+  children,
+}: { organ?: string; children: React.ReactNode }) {
+  const { LL } = useI18nContext();
+
+  return (
+    <div className="mx-4">
+      <div className="flex items-start mb-8">
+        <div className="w-20 h-20 flex items-center justify-center">
+          <Image src="/misc/un_logo.svg" width={80} height={80} alt="UN Logo" />
+        </div>
+        <h1 className="text-3xl mt-2 ml-[10px] font-bold">
+          {organ ?? (
+            <Skeleton width="15rem" height="2rem" className="!bg-primary-950" />
+          )}
+        </h1>
+      </div>
+      {children}
+      <p className="text-gray-400 mt-8 text-xs">
+        {LL.resolution.header.DISCLAIMER()}
+      </p>
+    </div>
   );
 }

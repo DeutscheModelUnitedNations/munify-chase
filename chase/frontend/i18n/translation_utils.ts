@@ -48,3 +48,23 @@ export const messageCategoryTranslation = (
       return LL.messageCategories.OTHER();
   }
 };
+
+enum ResolutionType {
+  RES = "RES",
+  WP = "WP",
+  DRAFT = "DRAFT",
+}
+
+export const resoltuionTypeTranslation = (
+  LL: TranslationFunctions,
+  status: ResolutionType | null | undefined,
+) => {
+  switch (status) {
+    case ResolutionType.RES:
+      return LL.resolution.type.RES();
+    case ResolutionType.WP:
+      return LL.resolution.type.WP();
+    case ResolutionType.DRAFT:
+      return LL.resolution.type.DRAFT();
+  }
+}

@@ -508,6 +508,7 @@ const de = {
       toolbar: {
         FILE: "Datei",
         FILE_RENAME: "Dokumentennummer anpassen",
+        FILE_PRINT: "Drucken",
         INSERT: "Einfügen",
         INSERT_PREABLE: "Präambelabsatz",
         INSERT_OPERATIVE: "Operativer Absatz",
@@ -516,16 +517,26 @@ const de = {
         SHARE: "Teilen",
         SUBMISSION: "Einreichen",
       },
+      INVALID_OPERATOR: "Ungültiger Operator",
     },
   },
 
   resolution: {
+    UN: "Vereinte Nationen",
     header: {
       ORGAN: "Organ",
       AGENDA_ITEM: "Thema",
       WRITER: "Verfassende Delegation",
       SPONSORS: "Unterstützende Delegationen",
-    }
+      DISCLAIMER: "Dieses Dokument ist Erzeugnis einer UN-Simulation und stellt keine offizielle Resolution der Vereinten Nationen dar. Es wurde von Teilnehmenden einer Model United Nations Konferenz erstellt.",
+    },
+    PREAMBLE: "Präambel",
+    OPERATIVE_SECTION: "Operativer Abschnitt",
+    type: {
+      RES: "RES", // Resolution
+      WP: "AP", // Arbeitspapier
+      DRAFT: "ENTWURF",
+    },
   },
 
   chairs: {

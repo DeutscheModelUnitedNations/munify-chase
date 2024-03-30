@@ -1442,6 +1442,10 @@ type RootTranslation = {
 				 */
 				FILE_RENAME: string
 				/**
+				 * P​r​i​n​t
+				 */
+				FILE_PRINT: string
+				/**
 				 * I​n​s​e​r​t
 				 */
 				INSERT: string
@@ -1470,9 +1474,17 @@ type RootTranslation = {
 				 */
 				SUBMISSION: string
 			}
+			/**
+			 * I​n​v​a​l​i​d​ ​O​p​e​r​a​t​o​r
+			 */
+			INVALID_OPERATOR: string
 		}
 	}
 	resolution: {
+		/**
+		 * U​n​i​t​e​d​ ​N​a​t​i​o​n​s
+		 */
+		UN: string
 		header: {
 			/**
 			 * O​r​g​a​n
@@ -1490,6 +1502,32 @@ type RootTranslation = {
 			 * S​p​o​n​s​o​r​i​n​g​ ​D​e​l​e​g​a​t​i​o​n​s
 			 */
 			SPONSORS: string
+			/**
+			 * T​h​i​s​ ​d​o​c​u​m​e​n​t​ ​i​s​ ​t​h​e​ ​p​r​o​d​u​c​t​ ​o​f​ ​a​ ​U​N​ ​s​i​m​u​l​a​t​i​o​n​ ​a​n​d​ ​i​s​ ​n​o​t​ ​a​n​ ​o​f​f​i​c​i​a​l​ ​r​e​s​o​l​u​t​i​o​n​ ​o​f​ ​t​h​e​ ​U​n​i​t​e​d​ ​N​a​t​i​o​n​s​.​ ​I​t​ ​w​a​s​ ​c​r​e​a​t​e​d​ ​b​y​ ​p​a​r​t​i​c​i​p​a​n​t​s​ ​o​f​ ​a​ ​M​o​d​e​l​ ​U​n​i​t​e​d​ ​N​a​t​i​o​n​s​ ​C​o​n​f​e​r​e​n​c​e​.
+			 */
+			DISCLAIMER: string
+		}
+		/**
+		 * P​r​e​a​m​b​l​e
+		 */
+		PREAMBLE: string
+		/**
+		 * O​p​e​r​a​t​i​v​e​ ​C​l​a​u​s​e​s
+		 */
+		OPERATIVE_SECTION: string
+		type: {
+			/**
+			 * R​E​S
+			 */
+			RES: string
+			/**
+			 * W​P
+			 */
+			WP: string
+			/**
+			 * D​R​A​F​T
+			 */
+			DRAFT: string
 		}
 	}
 	chairs: {
@@ -3389,6 +3427,10 @@ export type TranslationFunctions = {
 				 */
 				FILE_RENAME: () => LocalizedString
 				/**
+				 * Print
+				 */
+				FILE_PRINT: () => LocalizedString
+				/**
 				 * Insert
 				 */
 				INSERT: () => LocalizedString
@@ -3417,9 +3459,17 @@ export type TranslationFunctions = {
 				 */
 				SUBMISSION: () => LocalizedString
 			}
+			/**
+			 * Invalid Operator
+			 */
+			INVALID_OPERATOR: () => LocalizedString
 		}
 	}
 	resolution: {
+		/**
+		 * United Nations
+		 */
+		UN: () => LocalizedString
 		header: {
 			/**
 			 * Organ
@@ -3437,6 +3487,32 @@ export type TranslationFunctions = {
 			 * Sponsoring Delegations
 			 */
 			SPONSORS: () => LocalizedString
+			/**
+			 * This document is the product of a UN simulation and is not an official resolution of the United Nations. It was created by participants of a Model United Nations Conference.
+			 */
+			DISCLAIMER: () => LocalizedString
+		}
+		/**
+		 * Preamble
+		 */
+		PREAMBLE: () => LocalizedString
+		/**
+		 * Operative Clauses
+		 */
+		OPERATIVE_SECTION: () => LocalizedString
+		type: {
+			/**
+			 * RES
+			 */
+			RES: () => LocalizedString
+			/**
+			 * WP
+			 */
+			WP: () => LocalizedString
+			/**
+			 * DRAFT
+			 */
+			DRAFT: () => LocalizedString
 		}
 	}
 	chairs: {

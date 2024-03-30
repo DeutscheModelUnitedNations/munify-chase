@@ -501,6 +501,7 @@ const en = {
       toolbar: {
         FILE: "File",
         FILE_RENAME: "Rename Tag",
+        FILE_PRINT: "Print",
         INSERT: "Insert",
         INSERT_PREABLE: "Preamble Clause",
         INSERT_OPERATIVE: "Operative Clause",
@@ -508,17 +509,27 @@ const en = {
         TOOLS_RENUMBER: "Renumber clauses",
         SHARE: "Share",
         SUBMISSION: "Submission",
-      }
+      },
+      INVALID_OPERATOR: "Invalid Operator",
     },
   },
 
   resolution: {
+    UN: "United Nations",
     header: {
       ORGAN: "Organ",
       AGENDA_ITEM: "Agenda Item",
       WRITER: "Writing Delegation",
       SPONSORS: "Sponsoring Delegations",
-    }
+      DISCLAIMER: "This document is the product of a UN simulation and is not an official resolution of the United Nations. It was created by participants of a Model United Nations Conference.",
+    },
+    PREAMBLE: "Preamble",
+    OPERATIVE_SECTION: "Operative Clauses",
+    type: {
+      RES: "RES", // Resolution
+      WP: "WP", // Working paper
+      DRAFT: "DRAFT",
+    },
   },
 
   chairs: {

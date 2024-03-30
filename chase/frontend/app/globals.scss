@@ -10,16 +10,31 @@
   --voting-against: #ff3d32;
 }
 
+ol {
+  list-style-type: upper-roman !important;
+  text-indent: 0 !important;
+
+  li > ol {
+    list-style-type: lower-alpha !important;
+
+    li > ol {
+      list-style-type: lower-roman !important;
+
+      li > ol {
+        list-style-type: decimal !important;
+      }
+    }
+  }
+}
+
 .tabular-nums {
   font-variant-numeric: tabular-nums;
   font-feature-settings: "tnum";
 }
 
 .custom-scrollbar {
-
   .p-scrollpanel,
   .p-scrollpanel:active {
-
     .p-scrollpanel-bar,
     .p-scrollpanel-bar-x,
     .p-scrollpanel-bar-y {

@@ -45,6 +45,12 @@ module.exports = {
       ],
       serif: ["var(--font-serif)", ...defaultTheme.fontFamily.serif],
       mono: ["var(--font-mono)", ...defaultTheme.fontFamily.mono],
+      times: [
+        "Times New Roman",
+        "Times",
+        "var(--font-serif)",
+        ...defaultTheme.fontFamily.serif,
+      ],
     },
     extend: {
       backgroundImage: {
@@ -70,9 +76,16 @@ module.exports = {
           abstain: "#3d7dd2",
         },
       },
+      listStyleType: {
+        decimal: "decimal",
+        "lower-alpha": "lower-alpha",
+        "upper-roman": "upper-roman",
+        "lower-roman": "lower-roman",
+      },
     },
   },
   plugins: [
+    require("@tailwindcss/typography"),
     plugin(({ addVariant, e }) => {
       addVariant("contrast", ({ modifySelectors, separator }) => {
         modifySelectors(({ className }) => {

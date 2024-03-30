@@ -2,7 +2,6 @@ import React, { useState, useEffect } from "react";
 import { useI18nContext } from "@/i18n/i18n-react";
 import { useBackend } from "@/contexts/backend";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import Markdown from "react-markdown";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import {
@@ -10,6 +9,7 @@ import {
   faTriangleExclamation,
 } from "@fortawesome/pro-solid-svg-icons";
 import romanize from "@/misc/to_roman_numerals";
+import { Tooltip } from "primereact/tooltip";
 
 export enum ResDelimiter {
   COMMA = ",",
@@ -33,6 +33,8 @@ export default function Clause({
   noNumbering?: boolean;
   onClickFunction?: () => void;
 }) {
+  const { LL } = useI18nContext();
+
   const {
     attributes,
     listeners,
@@ -50,41 +52,48 @@ export default function Clause({
   const [hovering, setHovering] = useState(false);
 
   return (
-    <div
-      className={
-        "py-2 px-4 rounded-md hover:bg-primary-950 transition-colors duration-200 relative"
-      }
-      ref={setNodeRef}
-      style={style}
-      {...attributes}
-      onMouseOver={() => setHovering(true)}
-      onMouseLeave={() => setHovering(false)}
-      onFocus={() => setHovering(true)}
-      onBlur={() => setHovering(false)}
-    >
-      <div className="flex gap-2 justify-start items-start">
-        {!clause.validOperator && (
-          <div className="absolute -left-8" title="Invalid Operator">
-            <FontAwesomeIcon
-              icon={faTriangleExclamation}
-              className="text-2xl text-orange-500"
-            />
+    <>
+      <div
+        className={
+          "py-2 px-4 rounded-md hover:bg-primary-950 active:z-50 transition-colors duration-200 relative"
+        }
+        ref={setNodeRef}
+        style={style}
+        {...attributes}
+        onMouseOver={() => setHovering(true)}
+        onMouseLeave={() => setHovering(false)}
+        onFocus={() => setHovering(true)}
+        onBlur={() => setHovering(false)}
+      >
+        <div className="flex gap-2 justify-start items-start">
+          <Tooltip target=".invalid-operator-warning" pt={{text: { className: "!shadow-none !bg-orange-500" }}} />
+          {!clause.validOperator && (
+            <div
+              className="absolute -left-8 invalid-operator-warning"
+              data-pr-tooltip={LL.resolutionEditor.editor.INVALID_OPERATOR()}
+              data-pr-position="left"
+            >
+              <FontAwesomeIcon
+                icon={faTriangleExclamation}
+                className="text-2xl text-orange-500"
+              />
+            </div>
+          )}
+          <div
+            {...listeners}
+            ref={setActivatorNodeRef}
+            className={`absolute ${
+              hovering ? "opacity-100" : "opacity-0"
+            } cursor-grab active:cursor-grabbing hover:text-primary-500 hover:scale-125 transition-all duration-300 px-2`}
+          >
+            <FontAwesomeIcon icon={faGripDots} className="text-sm" />
           </div>
-        )}
-        <div
-          {...listeners}
-          ref={setActivatorNodeRef}
-          className={`absolute ${
-            hovering ? "opacity-100" : "opacity-0"
-          } cursor-grab active:cursor-grabbing hover:text-primary-500 hover:scale-125 transition-all duration-300 px-2`}
-        >
-          <FontAwesomeIcon icon={faGripDots} className="text-sm" />
-        </div>
-        <div className="indent-10">
-          <RenderClause clause={clause} noNumber={noNumbering} layer={0} />
+          <div className="indent-10">
+            <RenderClause clause={clause} noNumber={noNumbering} layer={0} />
+          </div>
         </div>
       </div>
-    </div>
+    </>
   );
 }
 

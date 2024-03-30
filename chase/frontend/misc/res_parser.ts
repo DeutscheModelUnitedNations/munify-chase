@@ -1,5 +1,6 @@
 import { ClauseType, ResDelimiter } from "@/components/resEditor/clause";
 import operators from "../data/operators.json";
+import { Descendant } from "slate";
 
 export function addDelimiterToClause(
   delimiter: ResDelimiter,
@@ -85,4 +86,33 @@ export function checkValidOperator(
     ...clause,
     validOperator: false,
   };
+}
+
+export function checkValidOperators(
+  clauses: Descendant[],
+  section: "operativeClauses" | "preambleClauses",
+) {
+
+  const operatorInClause = [];
+  for (const descendant of clauses) {
+    for (const child of descendant.children) {
+      if (child.operator) {
+        operatorInClause.push(child.text.trim());
+      }
+    }
+  }
+
+  const validOperators = operators[section];
+  if (!validOperators) {
+    return false;
+  }
+
+  for (const operator of validOperators) {
+    if (operator.split("|").every((part, index) => part === operatorInClause[index])) {
+      return true;
+    }
+  }
+
+  return false;
+
 }

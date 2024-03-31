@@ -1446,6 +1446,10 @@ type RootTranslation = {
 				 */
 				FILE_PRINT: string
 				/**
+				 * S​e​t​t​i​n​g​s
+				 */
+				FILE_SETTINGS: string
+				/**
 				 * I​n​s​e​r​t
 				 */
 				INSERT: string
@@ -1475,9 +1479,41 @@ type RootTranslation = {
 				SUBMISSION: string
 			}
 			/**
+			 * I​n​s​e​r​t​ ​y​o​u​r​ ​c​l​a​u​s​e​ ​h​e​r​e​ ​.​.​.
+			 */
+			PLACEHOLDER: string
+			/**
 			 * I​n​v​a​l​i​d​ ​O​p​e​r​a​t​o​r
 			 */
 			INVALID_OPERATOR: string
+			/**
+			 * T​h​e​ ​p​a​r​a​g​r​a​p​h​ ​c​o​n​t​a​i​n​s​ ​a​n​ ​i​n​v​a​l​i​d​ ​o​p​e​r​a​t​o​r​.​ ​E​i​t​h​e​r​ ​t​h​e​ ​o​p​e​r​a​t​o​r​ ​i​s​ ​n​o​t​ ​c​o​m​p​l​e​t​e​ ​o​r​ ​n​o​t​ ​m​a​r​k​e​d​ ​c​o​r​r​e​c​t​l​y​ ​o​r​ ​t​h​e​ ​o​p​e​r​a​t​o​r​ ​i​s​ ​n​o​t​ ​v​a​l​i​d​.
+			 */
+			INVALID_OPERATOR_DETAILS: string
+			/**
+			 * M​i​s​s​i​n​g​ ​O​p​e​r​a​t​o​r
+			 */
+			MISSING_OPERATOR: string
+			/**
+			 * T​h​e​ ​p​a​r​a​g​r​a​p​h​ ​m​u​s​t​ ​c​o​n​t​a​i​n​ ​a​ ​v​a​l​i​d​ ​o​p​e​r​a​t​o​r​,​ ​w​h​i​c​h​ ​m​u​s​t​ ​b​e​ ​m​a​r​k​e​d​ ​a​s​ ​s​u​c​h​.
+			 */
+			MISSING_OPERATOR_DETAILS: string
+			/**
+			 * V​a​l​i​d​ ​O​p​e​r​a​t​o​r
+			 */
+			VALID_OPERATOR: string
+			/**
+			 * T​h​e​ ​p​a​r​a​g​r​a​p​h​ ​c​o​n​t​a​i​n​s​ ​a​ ​v​a​l​i​d​ ​o​p​e​r​a​t​o​r​.
+			 */
+			VALID_OPERATOR_DETAILS: string
+			/**
+			 * S​a​v​e
+			 */
+			SAVE_CLAUSE: string
+			/**
+			 * D​e​l​e​t​e​ ​C​l​a​u​s​e
+			 */
+			DELETE_CLAUSE: string
 		}
 	}
 	resolution: {
@@ -3431,6 +3467,10 @@ export type TranslationFunctions = {
 				 */
 				FILE_PRINT: () => LocalizedString
 				/**
+				 * Settings
+				 */
+				FILE_SETTINGS: () => LocalizedString
+				/**
 				 * Insert
 				 */
 				INSERT: () => LocalizedString
@@ -3460,9 +3500,41 @@ export type TranslationFunctions = {
 				SUBMISSION: () => LocalizedString
 			}
 			/**
+			 * Insert your clause here ...
+			 */
+			PLACEHOLDER: () => LocalizedString
+			/**
 			 * Invalid Operator
 			 */
 			INVALID_OPERATOR: () => LocalizedString
+			/**
+			 * The paragraph contains an invalid operator. Either the operator is not complete or not marked correctly or the operator is not valid.
+			 */
+			INVALID_OPERATOR_DETAILS: () => LocalizedString
+			/**
+			 * Missing Operator
+			 */
+			MISSING_OPERATOR: () => LocalizedString
+			/**
+			 * The paragraph must contain a valid operator, which must be marked as such.
+			 */
+			MISSING_OPERATOR_DETAILS: () => LocalizedString
+			/**
+			 * Valid Operator
+			 */
+			VALID_OPERATOR: () => LocalizedString
+			/**
+			 * The paragraph contains a valid operator.
+			 */
+			VALID_OPERATOR_DETAILS: () => LocalizedString
+			/**
+			 * Save
+			 */
+			SAVE_CLAUSE: () => LocalizedString
+			/**
+			 * Delete Clause
+			 */
+			DELETE_CLAUSE: () => LocalizedString
 		}
 	}
 	resolution: {

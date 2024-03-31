@@ -1,118 +1,85 @@
-import { ClauseType, ResDelimiter } from "@/components/resEditor/clause";
+import { ClauseType, ClauseTypeEnum } from "@/components/resEditor/clause";
 import operators from "../data/operators.json";
 import { Descendant } from "slate";
 
-export function addDelimiterToClause(
-  delimiter: ResDelimiter,
-  clause: ClauseType,
-  isNested = false,
-  isLastPart = false,
-) {
-  if (typeof clause.content === "string") {
-    return {
-      ...clause,
-      content:
-        !isNested || isLastPart ? clause.content + delimiter : clause.content,
-    };
-  }
-
-  return {
-    ...clause,
-    content: clause.content.map((part, index) => {
-      if (typeof part === "string" && index === clause.content.length - 1) {
-        return part + delimiter;
-      }
-
-      if (typeof part === "string") {
-        return part;
-      }
-
-      return addDelimiterToClause(
-        delimiter,
-        part,
-        true,
-        index === clause.content.length - 1,
-      );
-    }),
-  };
+export enum OperatorValidity {
+  VALID = 1,
+  INVALID = -1,
+  NONE = 0,
 }
 
-function stringifyClause(clause: ClauseType): string {
-  if (typeof clause.content === "string") {
-    return clause.content;
-  }
-
-  return clause.content
-    .map((part) => {
-      if (typeof part === "string") {
-        return part;
-      }
-
-      return stringifyClause(part);
-    })
-    .join("");
-}
-
-export function checkValidOperator(
-  clause: ClauseType,
-  section: "operativeClauses" | "preambleClauses",
+/**
+ * Checks for operators in a clause and validates them against a given section.
+ * @param clause - The array of Descendant objects representing the clause.
+ * @param section - The section to validate the operators against ("operative" or "preamble").
+ * @returns The validity of the operators in the clause as an OperatorValidity enum (VALID, INVALID, or NONE).
+ */
+export function checkForOperatorsAndValidate(
+  clause: Descendant[],
+  section: ClauseTypeEnum,
 ) {
-  const stringifiedClause = stringifyClause(clause);
-  const regex = /<([^>]+)>/g;
 
-  const matches = [...stringifiedClause.matchAll(regex)].map(
-    (match) => match[1],
-  );
+  const operatorInClause: string[] = [];
 
-  if (!matches || matches?.length === 0) {
-    return {
-      ...clause,
-      validOperator: false,
-    };
-  }
-
-  const validOperators = operators[section];
-
-  for (const operator of validOperators) {
-    if (operator.split("|").every((part, index) => part === matches[index])) {
-      return {
-        ...clause,
-        validOperator: true,
-      };
+  /**
+   * Recursively finds operators in a Descendant node.
+   * @param node - The Descendant node to search for operators.
+   */
+  const findOperator = (node: Descendant) => {
+    if ("text" in node) {
+      if (node.operator) {
+        operatorInClause.push(node.text.trim());
+      }
+    } else {
+      node.children.forEach(findOperator);
     }
   }
 
-  return {
-    ...clause,
-    validOperator: false,
-  };
-}
+  clause.forEach(findOperator);
 
-export function checkValidOperators(
-  clauses: Descendant[],
-  section: "operativeClauses" | "preambleClauses",
-) {
-
-  const operatorInClause = [];
-  for (const descendant of clauses) {
-    for (const child of descendant.children) {
-      if (child.operator) {
-        operatorInClause.push(child.text.trim());
-      }
-    }
-  }
-
-  const validOperators = operators[section];
+  const validOperators = operators[section.toString()];
   if (!validOperators) {
-    return false;
+    return operatorInClause.length === 0 ? OperatorValidity.NONE : OperatorValidity.INVALID;
   }
 
   for (const operator of validOperators) {
     if (operator.split("|").every((part, index) => part === operatorInClause[index])) {
-      return true;
+      return OperatorValidity.VALID;
     }
   }
 
-  return false;
-
+  return operatorInClause.length === 0 ? OperatorValidity.NONE : OperatorValidity.INVALID;
 }
+
+
+/**
+ * Checks if a clause has a valid operator.
+ * 
+ * @param clause - The array of Descendant objects representing the clause.
+ * @param section - The section to validate the operators against. Can be either "operative" or "preamble".
+ * @returns Returns true if the clause has a valid operator, otherwise false.
+ */
+export function checkHasValidOperator(
+  clause: Descendant[],
+  section: ClauseTypeEnum,
+) {
+  return checkForOperatorsAndValidate(clause, section) === OperatorValidity.VALID;
+}
+
+/**
+ * Checks if a clause has a valid operator and adds a flag indicating its validity.
+ * 
+ * @param clause - The clause to check and add the flag to.
+ * @param section - The section to validate the operators against. Can be either "operative" or "preamble".
+ * @returns Returns the clause with the added validOperator flag.
+ */
+export function checkValidOperatorAndAddFlag(
+  clause: ClauseType,
+  section: ClauseTypeEnum,
+) {
+  return {
+    ...clause,
+    validOperator: checkHasValidOperator(clause.content, section),
+  };
+}
+

@@ -19,15 +19,20 @@ import {
 } from "@dnd-kit/sortable";
 import Toolbar from "@/components/resEditor/toolbar";
 import Clause, {
-  ResDelimiter,
   ClauseType,
+  ClauseTypeEnum,
 } from "@/components/resEditor/clause";
 import getCountryNameByCode from "@/misc/get_country_name_by_code";
 import { Skeleton } from "primereact/skeleton";
-import { addDelimiterToClause, checkValidOperator } from "@/misc/res_parser";
+import {
+  checkHasValidOperator,
+  checkValidOperatorAndAddFlag,
+} from "@/misc/res_parser";
 import Image from "next/image";
 import EditClauseModal from "@/components/resEditor/edit_clause";
 import { ScrollTop } from "primereact/scrolltop";
+import { Descendant } from "slate";
+import { Type as SlateParagraphType } from "@/components/resEditor/slate_types";
 
 enum ResolutionType {
   RES = "RES",
@@ -53,6 +58,15 @@ interface testDataType {
   operativeClauses: ClauseType[];
 }
 
+export interface ResDataManipulationType {
+  getClauseById: (clauseId: string) => ClauseType | undefined;
+  addPreambleClause: () => void;
+  addOperativeClause: () => void;
+  updateClause: (clauseId: string, newContent: Descendant[]) => void;
+  deleteClause: (clauseId: string) => void;
+  renumberClauses: () => void;
+}
+
 export default function ResolutionEditor({
   params,
 }: { params: { conferenceId: string; resolutionTag: string } }) {
@@ -71,9 +85,249 @@ export default function ResolutionEditor({
   const [preambleClauses, setPreambleClauses] = useState<ClauseType[]>([]);
   const [operativeClauses, setOperativeClauses] = useState<ClauseType[]>([]);
 
-  const [editResModalVisible, setEditResModalVisible] = useState(true);
+  const [clauseToEdit, setClauseToEdit] = useState<ClauseType | undefined>(
+    undefined,
+  );
 
   useEffect(() => {
+    // const testData: testDataType = {
+    //   tag: {
+    //     committee: "SR",
+    //     type: ResolutionType.RES,
+    //     session: 2024,
+    //     number: 1,
+    //   },
+    //   agendaItem: "Situation in Haiti",
+    //   writer: "cpv",
+    //   sponsors: ["fra", "deu", "cze", "sur"],
+    //   organ: "Sicherheitsrat",
+    //   firstSentence: "Der Sicherheitsrat",
+    //   preambleClauses: [
+    //     {
+    //       id: "P1",
+    //       number: 1,
+    //       content:
+    //         "<in Bekräftigung> der Resolutionen 1542 (2004), 1944 (2010), 2350 (2017), 2699 (2023) des UN-Sicherheitsrats über Haiti in Erwartung der Unterstützung der Mitglieder der Vereinten Nationen in Hinblick auf die Konfliktsituation in Haiti sowie des Programms BINUH der Vereinten Nationen in Haiti",
+    //     },
+    // {
+    //   id: "P2",
+    //   number: 2,
+    //   content:
+    //     "betonend, dass dringender Handlungsbedarf besteht, damit langfristig in Haiti auch ohne internationale Unterstützung ein funktionierender demokratischer Staat sowie ein funktionierendes Sicherheitssystem gewährleistet ist",
+    // },
+    // {
+    //   id: "P3",
+    //   number: 3,
+    //   content:
+    //     "die nationale Souveränität, territoriale Integrität, Unabhängigkeit und Einheit der Republik Haiti <bekräftigend>",
+    // },
+    // {
+    //   id: "P4",
+    //   number: 4,
+    //   content:
+    //     "die Wichtigkeit und die Wahrung der Menschenrechte nach dem Völkerrecht <betonend>",
+    // },
+    // {
+    //   id: "P5",
+    //   number: 5,
+    //   content:
+    //     "<beunruhigt>, dass die bisherigen Missionen die Stabilität des Landes beeinträchtigt haben und das Vertrauen der Bevölkerung verloren gegangen ist",
+    // },
+    // {
+    //   id: "P6",
+    //   number: 6,
+    //   content:
+    //     "<alarmiert>, dass nach dem Tod des vorherigen Präsidenten Jovenel Moise die Bandenkriminalität exponentiell zugenommen hat und weite Teile des Landes von Banden kontrolliert werden",
+    // },
+    // {
+    //   id: "P7",
+    //   number: 7,
+    //   content:
+    //     "<unter Berücksichtigung> der historischen Ereignisse Haitis, besonders der Bedeutung als erster unabhängiger Staat in der Karibik",
+    // },
+    // {
+    //   id: "P8",
+    //   number: 8,
+    //   content:
+    //     "<beunruhigt> durch die Zunahme der Gewalt, der kriminellen Tätigkeiten und der Menschenrechtsverletzungen und -übergriffe, die den Frieden, die Stabilität und die Sicherheit Haitis und der Region untergraben;  darunter Entführungen, sexuelle und geschlechtsspezifische Gewalt, Menschenhandel und Migrantenschleusung, Morde, außergerichtliche Tötungen sowie der Schmuggel von Rüstungsgütern, sowie durch deren Schwere und Anzahl",
+    // },
+    // {
+    //   id: "P9",
+    //   number: 9,
+    //   content:
+    //     "<erinnernd>, dass durch die sich weiter verschlechternde Situation in Haiti ohne internationale Unterstützung die politische Instabilität im Land weiter zunimmt und die humanitäre Lage sowie die fehlende Nahrung der Bevölkerung einen erheblichen Schaden zufügen",
+    // },
+    // {
+    //   id: "P10",
+    //   number: 10,
+    //   content:
+    //     "<unter Berücksichtigung> der dringenden Notwendigkeit, die humanitäre Krise anzugehen und langfristige Lösungen für die politische, wirtschaftliche und soziale Stabilität Haitis zu finden",
+    // },
+    // ],
+    // operativeClauses: [
+    // {
+    //   id: "O1",
+    //   number: 1,
+    //   content: [
+    //     "<fordert> ein Paket für Soforthilfemaßnahmen, welches beinhaltet, das",
+    //     {
+    //       id: "O1.1",
+    //       number: 1,
+    //       content:
+    //         "lebenswichtige Ressourcen wie Nahrungsmitteln, Wasser, Medikamente und Unterkünfte für die von der aktuellen Krise betroffenen Haitianer geliefert und bereitgestellt werden,",
+    //     },
+    //     {
+    //       id: "O1.2",
+    //       number: 2,
+    //       content:
+    //         "die humanitären Organisationen und internationalen Partnern mobilisiert werden, um die Effizienz und Reichweite der Hilfsmaßnahmen zu maximieren,",
+    //     },
+    //     {
+    //       id: "O1.3",
+    //       number: 3,
+    //       content:
+    //         "Notunterkünfte und medizinischen Einrichtungen zur Versorgung der Verletzten und Kranken eingerichtet werden, um das aktuelle Leid einzugrenzen",
+    //     },
+    //   ],
+    // },
+    // {
+    //   id: "O2",
+    //   number: 2,
+    //   content: [
+    //     "<unterstreicht> die Wichtigkeit für Sicherheit und Stabilität, indem",
+    //     {
+    //       id: "O2.1",
+    //       number: 1,
+    //       content:
+    //         "eine Unterstützung bei der Wiederherstellung der öffentlichen und rechtlichen Ordnung durch die Bereitstellung von Ressourcen für die Ausbildung und Ausrüstung der örtlichen Sicherheitskräfte geleistet wird,",
+    //     },
+    //     {
+    //       id: "O2.2",
+    //       number: 2,
+    //       content:
+    //         "dringend dazu aufgefordert wird den Dialog zwischen den politischen Akteuren und der Zivilgesellschaft zu fördern, um friedliche Lösungen für politische Konflikte zu finden und die Demokratie zu stärken",
+    //     },
+    //     {
+    //       id: "O2.3",
+    //       number: 3,
+    //       content:
+    //         "unter Bezug auf die UNCAC die Verbreitung von Korruption und illegalem Handel eingedämmt werden muss, um die Sicherheit und Stabilität des Landes langfristig zu gewährleisten",
+    //     },
+    //     {
+    //       id: "O2.4",
+    //       number: 4,
+    //       content:
+    //         "eine Geberkonferenz ausgerufen wird, in welchem die finanziellen Aspekte ausgearbeitet und finalisiert werden",
+    //     },
+    //   ],
+    // },
+    // {
+    //   id: "O3",
+    //   number: 3,
+    //   content:
+    //     "<fordert> alle Akteure <auf> insbesondere Banden und kriminelle Netzwerke, alle Rechtsverletzungen und Missbrauchshandlungen gegenüber Kindern, darunter Tötung und Verstümmelung, Erziehung und Einsatz, Vergewaltigung und andere Formen sexueller und geschlechtsspezifischer Gewalt, insbesondere gegen Mädchen, Angriffe auf Schulen und Krankenhäuser, Entführungen sofort zu beenden und zu verhindern",
+    // },
+    // {
+    //   id: "O4",
+    //   number: 4,
+    //   content:
+    //     "<beauftragt> die BINUH den haitianischen Staat beim Aufbau eines funktionierenden politischen Systems zu unterstützen, was lediglich struktureller Natur sein sollte, wobei die inhaltliche und gestalterische Entscheidungsfreiheit einzig der haitianischen Regierung obliegt, wobei beispielsweise eine von mehreren Möglichkeiten zur direkten Beteiligung für das haitianische Volk in der Durchführung von demokratischen Wahlen auf nationaler aber vor allem auch auf lokaler Ebene bestünde, und um eine Regierung zu ernennen, die das Vertrauen und die Anerkennung der Bevölkerung genießt, obwohl es insgesamt das Ziel aller Maßnahmen ist die Übergabe Haitis in die Selbstverwaltung und die Beendigung aller UN-Mandate",
+    // },
+    // {
+    //   id: "O5",
+    //   number: 5,
+    //   content:
+    //     "<drängt> auf die Unterstützung der haitianischen Polizei durch Lieferung von Ausrüstung, ausgenommen militärisches Gerät, und durch Schulungen in Zusammenarbeit mit dem BINUH und der geplanten MSS-Mission",
+    // },
+    // {
+    //   id: "O6",
+    //   number: 6,
+    //   content: [
+    //     "<beauftragt>, in Bezug auf die oben genannten Herausforderungen, den Inter-Agency Standing Committee (IASC),",
+    //     {
+    //       id: "O6.1",
+    //       number: 1,
+    //       content:
+    //         "Aktivierung des Humanitarian System-Wide Scale-Up Protokolls für einen Zeitraum von sechs Monaten,",
+    //     },
+    //     {
+    //       id: "O6.2",
+    //       number: 2,
+    //       content: [
+    //         "Verteilung folgender Aufgaben auf die Task Forces um die Situation der Bevölkerung zu verbessern und die Hilfen von NGOs und der BINUH zu stärken:",
+    //         {
+    //           id: "O6.2.1",
+    //           number: 1,
+    //           content:
+    //             "Koordination der humanitären Hilfeleistungen in Haiti und Optimierung der Ressourcennutzung und Vermeidung von Doppelarbeit, unter besonderer Berücksichtigung der Task Force für Lokalisierung, um die Einbindung lokaler und staatlicher Akteure zu stärken,",
+    //         },
+    //         {
+    //           id: "O6.2.2",
+    //           number: 2,
+    //           content:
+    //             "Führung und Organisation der Zusammenarbeit zwischen allen in Haiti aktiven humanitären Akteuren, unterstützt durch die Task Force für die Zentralität des Schutzes, um den Schutz der betroffenen Bevölkerung zu gewährleisten,",
+    //         },
+    //         {
+    //           id: "O6.2.3",
+    //           number: 3,
+    //           content:
+    //             "Kontrolle der humanitären Hilfe, wobei die Task Force für Rechenschaftspflicht gegenüber betroffenen Personen sicherstellt, dass die Bedürfnisse und das Feedback der Gemeinschaften berücksichtigt werden, um fehler der vorausgegangen Missionen nicht zu wiederholen,",
+    //         },
+    //         {
+    //           id: "O6.2.4",
+    //           number: 4,
+    //           content:
+    //             "Beschleunigung der Hilfsmaßnahmen und Sicherstellung, dass die Hilfe die betroffene Bevölkerung erreicht, wobei die Task Force für den Erhalt des humanitären Raums Leitlinien und Werkzeuge zur Überwindung bürokratischer Hindernisse bereitstellt",
+    //         },
+    //       ],
+    //     },
+    //   ],
+    // },
+    // {
+    //   id: "O7",
+    //   number: 7,
+    //   content:
+    //     "<betont> die Notwendigkeit des Schutzes von Kindern und Jugendlichen sowie der Sicherung von Bildungsmöglichkeiten",
+    // },
+    // {
+    //   id: "O8",
+    //   number: 8,
+    //   content:
+    //     "<betont> die Wichtigkeit der Förderung von Bildung und beruflicher Ausbildung, um der Perspektivlosigkeit von Kindern und Jugendlichen entgegenzuwirken und die langfristige wirtschaftliche Entwicklung und die Schaffung von Arbeitsplätzen zu unterstützen",
+    // },
+    // {
+    //   id: "O9",
+    //   number: 9,
+    //   content:
+    //     "<bittet nachdrücklich> um Investitionen in die Infrastruktur Haitis, insbesondere in den resilienten Wiederaufbau von Wohngebieten, Straßen, Schulen und medizinischen Einrichtungen, Nichtregierungsorganisationen und der Zivilgesellschaft, um eine effektive und kohärente Hilfeleistung sicherzustellen und über jene zu wachen",
+    // },
+    // {
+    //   id: "O10",
+    //   number: 10,
+    //   content:
+    //     "<hebt> die Bedeutung eines ausreichend ausgebauten und krisensicheren Katastrophenschutzes in Haiti, insbesondere im Bereich der krisensicheren Infrastruktur und des Überflutungsschutzes <hervor>",
+    // },
+    // {
+    //   id: "O11",
+    //   number: 11,
+    //   content:
+    //     "<bekräftigt> die Stärkung der Koordination und Zusammenarbeit zwischen den helfenden Regierungen und internationalen Organisationen",
+    // },
+    // {
+    //   id: "O12",
+    //   number: 12,
+    //   content:
+    //     "<befürwortet> die Mobilisierung von Ressourcen durch Spenden, Mitgliedsbeiträge, Kredite und die Etablierung von Partnerschaften mit internationalen Organisationen, um Aufbau- und Bildungsprogramme, adäquat zu finanzieren",
+    // },
+    // {
+    //   id: "O13",
+    //   number: 13,
+    //   content:
+    //     "<befürwortet> die Unterstützung von nachhaltigen Entwicklungsprojekten, die die Umwelt schützen und das ökologische Gleichgewicht wiederherstellen",
+    // },
+    // ],
+    // };
+
     const testData: testDataType = {
       tag: {
         committee: "SR",
@@ -86,228 +340,146 @@ export default function ResolutionEditor({
       sponsors: ["fra", "deu", "cze", "sur"],
       organ: "Sicherheitsrat",
       firstSentence: "Der Sicherheitsrat",
-      preambleClauses: [
-        {
-          id: "P1",
-          number: 1,
-          content:
-            "<in Bekräftigung> der Resolutionen 1542 (2004), 1944 (2010), 2350 (2017), 2699 (2023) des UN-Sicherheitsrats über Haiti in Erwartung der Unterstützung der Mitglieder der Vereinten Nationen in Hinblick auf die Konfliktsituation in Haiti sowie des Programms BINUH der Vereinten Nationen in Haiti",
-        },
-        {
-          id: "P2",
-          number: 2,
-          content:
-            "betonend, dass dringender Handlungsbedarf besteht, damit langfristig in Haiti auch ohne internationale Unterstützung ein funktionierender demokratischer Staat sowie ein funktionierendes Sicherheitssystem gewährleistet ist",
-        },
-        {
-          id: "P3",
-          number: 3,
-          content:
-            "die nationale Souveränität, territoriale Integrität, Unabhängigkeit und Einheit der Republik Haiti <bekräftigend>",
-        },
-        {
-          id: "P4",
-          number: 4,
-          content:
-            "die Wichtigkeit und die Wahrung der Menschenrechte nach dem Völkerrecht <betonend>",
-        },
-        {
-          id: "P5",
-          number: 5,
-          content:
-            "<beunruhigt>, dass die bisherigen Missionen die Stabilität des Landes beeinträchtigt haben und das Vertrauen der Bevölkerung verloren gegangen ist",
-        },
-        {
-          id: "P6",
-          number: 6,
-          content:
-            "<alarmiert>, dass nach dem Tod des vorherigen Präsidenten Jovenel Moise die Bandenkriminalität exponentiell zugenommen hat und weite Teile des Landes von Banden kontrolliert werden",
-        },
-        {
-          id: "P7",
-          number: 7,
-          content:
-            "<unter Berücksichtigung> der historischen Ereignisse Haitis, besonders der Bedeutung als erster unabhängiger Staat in der Karibik",
-        },
-        {
-          id: "P8",
-          number: 8,
-          content:
-            "<beunruhigt> durch die Zunahme der Gewalt, der kriminellen Tätigkeiten und der Menschenrechtsverletzungen und -übergriffe, die den Frieden, die Stabilität und die Sicherheit Haitis und der Region untergraben;  darunter Entführungen, sexuelle und geschlechtsspezifische Gewalt, Menschenhandel und Migrantenschleusung, Morde, außergerichtliche Tötungen sowie der Schmuggel von Rüstungsgütern, sowie durch deren Schwere und Anzahl",
-        },
-        {
-          id: "P9",
-          number: 9,
-          content:
-            "<erinnernd>, dass durch die sich weiter verschlechternde Situation in Haiti ohne internationale Unterstützung die politische Instabilität im Land weiter zunimmt und die humanitäre Lage sowie die fehlende Nahrung der Bevölkerung einen erheblichen Schaden zufügen",
-        },
-        {
-          id: "P10",
-          number: 10,
-          content:
-            "<unter Berücksichtigung> der dringenden Notwendigkeit, die humanitäre Krise anzugehen und langfristige Lösungen für die politische, wirtschaftliche und soziale Stabilität Haitis zu finden",
-        },
-      ],
+      preambleClauses: [],
       operativeClauses: [
         {
-          id: "O1",
+          id: "O0",
           number: 1,
+          type: ClauseTypeEnum.OPERATIVE,
           content: [
-            "<fordert> ein Paket für Soforthilfemaßnahmen, welches beinhaltet, das",
             {
-              id: "O1.1",
-              number: 1,
-              content:
-                "lebenswichtige Ressourcen wie Nahrungsmitteln, Wasser, Medikamente und Unterkünfte für die von der aktuellen Krise betroffenen Haitianer geliefert und bereitgestellt werden,",
-            },
-            {
-              id: "O1.2",
-              number: 2,
-              content:
-                "die humanitären Organisationen und internationalen Partnern mobilisiert werden, um die Effizienz und Reichweite der Hilfsmaßnahmen zu maximieren,",
-            },
-            {
-              id: "O1.3",
-              number: 3,
-              content:
-                "Notunterkünfte und medizinischen Einrichtungen zur Versorgung der Verletzten und Kranken eingerichtet werden, um das aktuelle Leid einzugrenzen",
-            },
-          ],
-        },
-        {
-          id: "O2",
-          number: 2,
-          content: [
-            "<unterstreicht> die Wichtigkeit für Sicherheit und Stabilität, indem",
-            {
-              id: "O2.1",
-              number: 1,
-              content:
-                "eine Unterstützung bei der Wiederherstellung der öffentlichen und rechtlichen Ordnung durch die Bereitstellung von Ressourcen für die Ausbildung und Ausrüstung der örtlichen Sicherheitskräfte geleistet wird,",
-            },
-            {
-              id: "O2.2",
-              number: 2,
-              content:
-                "dringend dazu aufgefordert wird den Dialog zwischen den politischen Akteuren und der Zivilgesellschaft zu fördern, um friedliche Lösungen für politische Konflikte zu finden und die Demokratie zu stärken",
-            },
-            {
-              id: "O2.3",
-              number: 3,
-              content:
-                "unter Bezug auf die UNCAC die Verbreitung von Korruption und illegalem Handel eingedämmt werden muss, um die Sicherheit und Stabilität des Landes langfristig zu gewährleisten",
-            },
-            {
-              id: "O2.4",
-              number: 4,
-              content:
-                "eine Geberkonferenz ausgerufen wird, in welchem die finanziellen Aspekte ausgearbeitet und finalisiert werden",
-            },
-          ],
-        },
-        {
-          id: "O3",
-          number: 3,
-          content:
-            "<fordert> alle Akteure <auf> insbesondere Banden und kriminelle Netzwerke, alle Rechtsverletzungen und Missbrauchshandlungen gegenüber Kindern, darunter Tötung und Verstümmelung, Erziehung und Einsatz, Vergewaltigung und andere Formen sexueller und geschlechtsspezifischer Gewalt, insbesondere gegen Mädchen, Angriffe auf Schulen und Krankenhäuser, Entführungen sofort zu beenden und zu verhindern",
-        },
-        {
-          id: "O4",
-          number: 4,
-          content:
-            "<beauftragt> die BINUH den haitianischen Staat beim Aufbau eines funktionierenden politischen Systems zu unterstützen, was lediglich struktureller Natur sein sollte, wobei die inhaltliche und gestalterische Entscheidungsfreiheit einzig der haitianischen Regierung obliegt, wobei beispielsweise eine von mehreren Möglichkeiten zur direkten Beteiligung für das haitianische Volk in der Durchführung von demokratischen Wahlen auf nationaler aber vor allem auch auf lokaler Ebene bestünde, und um eine Regierung zu ernennen, die das Vertrauen und die Anerkennung der Bevölkerung genießt, obwohl es insgesamt das Ziel aller Maßnahmen ist die Übergabe Haitis in die Selbstverwaltung und die Beendigung aller UN-Mandate",
-        },
-        {
-          id: "O5",
-          number: 5,
-          content:
-            "<drängt> auf die Unterstützung der haitianischen Polizei durch Lieferung von Ausrüstung, ausgenommen militärisches Gerät, und durch Schulungen in Zusammenarbeit mit dem BINUH und der geplanten MSS-Mission",
-        },
-        {
-          id: "O6",
-          number: 6,
-          content: [
-            "<beauftragt>, in Bezug auf die oben genannten Herausforderungen, den Inter-Agency Standing Committee (IASC),",
-            {
-              id: "O6.1",
-              number: 1,
-              content:
-                "Aktivierung des Humanitarian System-Wide Scale-Up Protokolls für einen Zeitraum von sechs Monaten,",
-            },
-            {
-              id: "O6.2",
-              number: 2,
-              content: [
-                "Verteilung folgender Aufgaben auf die Task Forces um die Situation der Bevölkerung zu verbessern und die Hilfen von NGOs und der BINUH zu stärken:",
+              type: "paragraph",
+              children: [
                 {
-                  id: "O6.2.1",
-                  number: 1,
-                  content:
-                    "Koordination der humanitären Hilfeleistungen in Haiti und Optimierung der Ressourcennutzung und Vermeidung von Doppelarbeit, unter besonderer Berücksichtigung der Task Force für Lokalisierung, um die Einbindung lokaler und staatlicher Akteure zu stärken,",
+                  text: "unterstreicht",
+                  operator: true,
                 },
                 {
-                  id: "O6.2.2",
-                  number: 2,
-                  content:
-                    "Führung und Organisation der Zusammenarbeit zwischen allen in Haiti aktiven humanitären Akteuren, unterstützt durch die Task Force für die Zentralität des Schutzes, um den Schutz der betroffenen Bevölkerung zu gewährleisten,",
-                },
-                {
-                  id: "O6.2.3",
-                  number: 3,
-                  content:
-                    "Kontrolle der humanitären Hilfe, wobei die Task Force für Rechenschaftspflicht gegenüber betroffenen Personen sicherstellt, dass die Bedürfnisse und das Feedback der Gemeinschaften berücksichtigt werden, um fehler der vorausgegangen Missionen nicht zu wiederholen,",
-                },
-                {
-                  id: "O6.2.4",
-                  number: 4,
-                  content:
-                    "Beschleunigung der Hilfsmaßnahmen und Sicherstellung, dass die Hilfe die betroffene Bevölkerung erreicht, wobei die Task Force für den Erhalt des humanitären Raums Leitlinien und Werkzeuge zur Überwindung bürokratischer Hindernisse bereitstellt",
+                  text: " die Wichtigkeit für Sicherheit und Stabilität, indem",
                 },
               ],
             },
+            {
+              children: [
+                {
+                  children: [
+                    {
+                      type: "list-item-text",
+                      children: [
+                        {
+                          text: "eine Unterstützung bei der Wiederherstellung der öffentlichen und rechtlichen Ordnung durch die Bereitstellung von Ressourcen für die Ausbildung und Ausrüstung der örtlichen Sicherheitskräfte geleistet wird,",
+                        },
+                      ],
+                    },
+                  ],
+                  type: "list-item",
+                },
+                {
+                  children: [
+                    {
+                      type: "list-item-text",
+                      children: [
+                        {
+                          text: "dringend dazu aufgefordert wird den Dialog zwischen den politischen Akteuren und der Zivilgesellschaft zu fördern, um friedliche Lösungen für politische Konflikte zu finden und die Demokratie zu stärken,",
+                        },
+                      ],
+                    },
+                  ],
+                  type: "list-item",
+                },
+                {
+                  children: [
+                    {
+                      type: "list-item-text",
+                      children: [
+                        {
+                          text: "unter Bezug auf die UNCAC die Verbreitung von Korruption und illegalem Handel eingedämmt werden muss, um die Sicherheit und Stabilität des Landes langfristig zu gewährleisten",
+                        },
+                      ],
+                    },
+                  ],
+                  type: "list-item",
+                },
+                {
+                  children: [
+                    {
+                      type: "list-item-text",
+                      children: [
+                        {
+                          text: "eine Geberkonferenz ausgerufen wird, in welchem die finanziellen Aspekte ausgearbeitet und finalisiert werden",
+                        },
+                      ],
+                    },
+                  ],
+                  type: "list-item",
+                },
+              ],
+              type: "ordered-list",
+            },
           ],
         },
         {
-          id: "O7",
-          number: 7,
-          content:
-            "<betont> die Notwendigkeit des Schutzes von Kindern und Jugendlichen sowie der Sicherung von Bildungsmöglichkeiten",
-        },
-        {
-          id: "O8",
-          number: 8,
-          content:
-            "<betont> die Wichtigkeit der Förderung von Bildung und beruflicher Ausbildung, um der Perspektivlosigkeit von Kindern und Jugendlichen entgegenzuwirken und die langfristige wirtschaftliche Entwicklung und die Schaffung von Arbeitsplätzen zu unterstützen",
-        },
-        {
-          id: "O9",
-          number: 9,
-          content:
-            "<bittet nachdrücklich> um Investitionen in die Infrastruktur Haitis, insbesondere in den resilienten Wiederaufbau von Wohngebieten, Straßen, Schulen und medizinischen Einrichtungen, Nichtregierungsorganisationen und der Zivilgesellschaft, um eine effektive und kohärente Hilfeleistung sicherzustellen und über jene zu wachen",
-        },
-        {
-          id: "O10",
-          number: 10,
-          content:
-            "<hebt> die Bedeutung eines ausreichend ausgebauten und krisensicheren Katastrophenschutzes in Haiti, insbesondere im Bereich der krisensicheren Infrastruktur und des Überflutungsschutzes <hervor>",
-        },
-        {
-          id: "O11",
-          number: 11,
-          content:
-            "<bekräftigt> die Stärkung der Koordination und Zusammenarbeit zwischen den helfenden Regierungen und internationalen Organisationen",
-        },
-        {
-          id: "O12",
-          number: 12,
-          content:
-            "<befürwortet> die Mobilisierung von Ressourcen durch Spenden, Mitgliedsbeiträge, Kredite und die Etablierung von Partnerschaften mit internationalen Organisationen, um Aufbau- und Bildungsprogramme, adäquat zu finanzieren",
-        },
-        {
-          id: "O13",
-          number: 13,
-          content:
-            "<befürwortet> die Unterstützung von nachhaltigen Entwicklungsprojekten, die die Umwelt schützen und das ökologische Gleichgewicht wiederherstellen",
+          id: "O1",
+          number: 2,
+          type: ClauseTypeEnum.OPERATIVE,
+          content: [
+            {
+              type: "paragraph",
+              children: [
+                {
+                  text: "fordert",
+                  operator: true,
+                },
+                {
+                  text: " ein Paket für Soforthilfemaßnahmen, welches beinhaltet, dass",
+                },
+              ],
+            },
+            {
+              children: [
+                {
+                  children: [
+                    {
+                      type: "list-item-text",
+                      children: [
+                        {
+                          text: "lebenswichtige Ressourcen wie Nahrungsmitteln, Wasser, Medikamente und Unterkünfte für die von der aktuellen Krise betroffenen Haitianer geliefert und bereitgestellt werden,",
+                        },
+                      ],
+                    },
+                  ],
+                  type: "list-item",
+                },
+                {
+                  children: [
+                    {
+                      type: "list-item-text",
+                      children: [
+                        {
+                          text: " die humanitären Organisationen und internationalen Partnern mobilisiert werden, um die Effizienz und Reichweite der Hilfsmaßnahmen zu maximieren,",
+                        },
+                      ],
+                    },
+                  ],
+                  type: "list-item",
+                },
+                {
+                  children: [
+                    {
+                      type: "list-item-text",
+                      children: [
+                        {
+                          text: "Notunterkünfte und medizinischen Einrichtungen zur Versorgung der Verletzten und Kranken eingerichtet werden, um das aktuelle Leid einzugrenzen",
+                        },
+                      ],
+                    },
+                  ],
+                  type: "list-item",
+                },
+              ],
+              type: "ordered-list",
+            },
+          ],
         },
       ],
     };
@@ -320,23 +492,12 @@ export default function ResolutionEditor({
     setSponsors(testData.sponsors);
     setPreambleClauses(
       testData.preambleClauses.map((clause) =>
-        checkValidOperator(
-          addDelimiterToClause(ResDelimiter.COMMA, clause),
-          "preambleClauses",
-        ),
+        checkValidOperatorAndAddFlag(clause, ClauseTypeEnum.PREAMBLE),
       ),
     );
     setOperativeClauses(
-      testData.operativeClauses.map((clause, index) =>
-        checkValidOperator(
-          addDelimiterToClause(
-            index !== testData.operativeClauses.length - 1
-              ? ResDelimiter.SEMICOLON
-              : ResDelimiter.PERIOD,
-            clause,
-          ),
-          "operativeClauses",
-        ),
+      testData.operativeClauses.map((clause) =>
+        checkValidOperatorAndAddFlag(clause, ClauseTypeEnum.OPERATIVE),
       ),
     );
   }, []);
@@ -385,11 +546,121 @@ export default function ResolutionEditor({
     }
   }
 
+  const ResDataManipulation: ResDataManipulationType = {
+    getClauseById: (clauseId: string) => {
+      const allClauses = [...preambleClauses, ...operativeClauses];
+      return allClauses.find((clause) => clause.id === clauseId);
+    },
+
+    addPreambleClause: () => {
+      const newClause: ClauseType = {
+        id: `P${preambleClauses.length + 1}`,
+        number: preambleClauses.length + 1,
+        type: ClauseTypeEnum.PREAMBLE,
+        content: [
+          { type: SlateParagraphType.PARAGRAPH, children: [{ text: "" }] },
+        ],
+      };
+
+      setPreambleClauses((preambleClauses) => [...preambleClauses, newClause]);
+      setClauseToEdit(newClause);
+    },
+
+    addOperativeClause: () => {
+      const newClause: ClauseType = {
+        id: `O${operativeClauses.length + 1}`,
+        number: operativeClauses.length + 1,
+        type: ClauseTypeEnum.OPERATIVE,
+        content: [
+          { type: SlateParagraphType.PARAGRAPH, children: [{ text: "" }] },
+        ],
+      };
+
+      setOperativeClauses((operativeClauses) => [
+        ...operativeClauses,
+        newClause,
+      ]);
+      setClauseToEdit(newClause);
+    },
+
+    updateClause: (clauseId: string, newContent: Descendant[]) => {
+      const clauseToUpdate = ResDataManipulation.getClauseById(clauseId);
+      if (!clauseToUpdate) return;
+      const updatedClause = { ...clauseToUpdate, content: newContent };
+
+      if (clauseToUpdate.type === ClauseTypeEnum.PREAMBLE) {
+        setPreambleClauses((preambleClauses) =>
+          preambleClauses.map((clause) => {
+            return {
+              ...(clause.id === clauseId ? updatedClause : clause),
+              validOperator: checkHasValidOperator(
+                updatedClause.content,
+                clause.type,
+              ),
+            };
+          }),
+        );
+      } else {
+        setOperativeClauses((operativeClauses) =>
+          operativeClauses.map((clause) => {
+            return {
+              ...(clause.id === clauseId ? updatedClause : clause),
+              validOperator: checkHasValidOperator(
+                updatedClause.content,
+                clause.type,
+              ),
+            };
+          }),
+        );
+      }
+    },
+
+    deleteClause: (clauseId: string) => {
+      const clauseToDelete = ResDataManipulation.getClauseById(clauseId);
+      if (!clauseToDelete) return;
+
+      if (clauseToDelete.type === ClauseTypeEnum.PREAMBLE) {
+        setPreambleClauses((preambleClauses) =>
+          preambleClauses.filter((clause) => clause.id !== clauseId),
+        );
+      } else {
+        setOperativeClauses((operativeClauses) =>
+          operativeClauses.filter((clause) => clause.id !== clauseId),
+        );
+      }
+    },
+
+    renumberClauses: () => {
+      const renumberedPreambleClauses = preambleClauses.map(
+        (clause, index) => ({
+          ...clause,
+          number: index + 1,
+        }),
+      );
+
+      const renumberedOperativeClauses = operativeClauses.map(
+        (clause, index) => ({
+          ...clause,
+          number: index + 1,
+        }),
+      );
+
+      setPreambleClauses(renumberedPreambleClauses);
+      setOperativeClauses(renumberedOperativeClauses);
+    },
+  };
+
   return (
     <>
-      <EditClauseModal modalVisible={editResModalVisible} closeFunction={() => setEditResModalVisible(false)} />
+      <EditClauseModal
+        clause={clauseToEdit}
+        closeFunction={() => {
+          setClauseToEdit(undefined);
+        }}
+        resDataManipulation={ResDataManipulation}
+      />
       <div className="w-full bg-primary-950">
-        <Toolbar resolutionTag={getResTag()} openEditModalFunction={() => setEditResModalVisible(true)} />
+        <Toolbar resDataManipulation={ResDataManipulation} />
         <div className="w-full p-4 xl:pl-40 py-20 flex flex-col items-center">
           <PaperWrapper>
             <div className="flex flex-col md:flex-row md:gap-4 justify-between items-end">
@@ -441,8 +712,7 @@ export default function ResolutionEditor({
                 <Clause
                   clause={clause}
                   key={clause.id}
-                  noNumbering={true}
-                  onClickFunction={() => console.log("Test")}
+                  onClickFunction={() => setClauseToEdit(clause)}
                 />
               ))}
               {preambleClauses.length === 0 && (
@@ -462,13 +732,18 @@ export default function ResolutionEditor({
               items={operativeClauses}
               handleDragEnd={handleOperativeDragEnd}
             >
-              {operativeClauses.map((clause) => (
-                <Clause
-                  clause={clause}
-                  key={clause.id}
-                  onClickFunction={() => console.log("Test")}
-                />
-              ))}
+              {operativeClauses.map((clause, index) => {
+                console.log(clause);
+
+                return (
+                  <Clause
+                    clause={clause}
+                    key={clause.id}
+                    onClickFunction={() => setClauseToEdit(clause)}
+                    isLastClause={index === operativeClauses.length - 1}
+                  />
+                );
+              })}
               {operativeClauses.length === 0 && (
                 <Skeleton
                   width="100%"

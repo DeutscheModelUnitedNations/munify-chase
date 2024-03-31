@@ -1,5 +1,5 @@
 {
-  "preambleClauses": [
+  "preamble": [
     "alarmiert",
     "anerkennend",
     "zutiefst bedauernd",
@@ -97,7 +97,7 @@
     "zur Kenntnis nehmend",
     "zuversichtlich"
   ],
-  "operativeClauses": [
+  "operative": [
     "akzeptiert",
     "anerkennt",
     "appelliert",

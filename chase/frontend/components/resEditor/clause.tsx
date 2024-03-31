@@ -1,6 +1,5 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { useI18nContext } from "@/i18n/i18n-react";
-import { useBackend } from "@/contexts/backend";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
@@ -8,8 +7,9 @@ import {
   faGripDots,
   faTriangleExclamation,
 } from "@fortawesome/pro-solid-svg-icons";
-import romanize from "@/misc/to_roman_numerals";
 import { Tooltip } from "primereact/tooltip";
+import SlateClauseEditor from "./slate_clause_editor";
+import { Descendant } from "slate";
 
 export enum ResDelimiter {
   COMMA = ",",
@@ -17,21 +17,27 @@ export enum ResDelimiter {
   PERIOD = ".",
 }
 
+export enum ClauseTypeEnum {
+  OPERATIVE = "operative",
+  PREAMBLE = "preamble",
+}
+
 export interface ClauseType {
   id: string;
   number: number;
-  content: string | (string | ClauseType)[];
+  content: Descendant[];
+  type: ClauseTypeEnum;
   validOperator?: boolean;
 }
 
 export default function Clause({
   clause,
-  noNumbering = false,
-  onClickFunction = undefined,
+  isLastClause = false,
+  onClickFunction,
 }: {
   clause: ClauseType;
-  noNumbering?: boolean;
-  onClickFunction?: () => void;
+  isLastClause?: boolean;
+  onClickFunction: () => void;
 }) {
   const { LL } = useI18nContext();
 
@@ -55,7 +61,7 @@ export default function Clause({
     <>
       <div
         className={
-          "py-2 px-4 rounded-md hover:bg-primary-950 active:z-50 transition-colors duration-200 relative"
+          "py-2 px-4 rounded-md hover:bg-primary-950 active:z-50 transition-colors duration-200 relative min-h-10"
         }
         ref={setNodeRef}
         style={style}
@@ -64,9 +70,14 @@ export default function Clause({
         onMouseLeave={() => setHovering(false)}
         onFocus={() => setHovering(true)}
         onBlur={() => setHovering(false)}
+        onClick={() => onClickFunction()}
+        onKeyDown={() => onClickFunction()}
       >
         <div className="flex gap-2 justify-start items-start">
-          <Tooltip target=".invalid-operator-warning" pt={{text: { className: "!shadow-none !bg-orange-500" }}} />
+          <Tooltip
+            target=".invalid-operator-warning"
+            pt={{ text: { className: "!shadow-none !bg-orange-500" } }}
+          />
           {!clause.validOperator && (
             <div
               className="absolute -left-8 invalid-operator-warning"
@@ -84,90 +95,30 @@ export default function Clause({
             ref={setActivatorNodeRef}
             className={`absolute ${
               hovering ? "opacity-100" : "opacity-0"
-            } cursor-grab active:cursor-grabbing hover:text-primary-500 hover:scale-125 transition-all duration-300 px-2`}
+            } cursor-grab active:cursor-grabbing hover:text-primary-500 hover:scale-125 transition-all duration-300 px-2 z-40`}
           >
             <FontAwesomeIcon icon={faGripDots} className="text-sm" />
           </div>
           <div className="indent-10">
-            <RenderClause clause={clause} noNumber={noNumbering} layer={0} />
+            <SlateClauseEditor
+              content={clause.content}
+              renderForResolution
+              clauseNumber={
+                clause.type === ClauseTypeEnum.OPERATIVE
+                  ? clause.number
+                  : undefined
+              }
+              delimiter={
+                clause.type === ClauseTypeEnum.OPERATIVE
+                  ? isLastClause
+                    ? ResDelimiter.PERIOD
+                    : ResDelimiter.SEMICOLON
+                  : ResDelimiter.COMMA
+              }
+            />
           </div>
         </div>
       </div>
-    </>
-  );
-}
-
-function RenderClause({
-  clause,
-  noNumber = false,
-  layer = 0,
-}: {
-  clause: ClauseType;
-  noNumber?: boolean;
-  layer: number;
-}) {
-  function italicizesOperators(text: string) {
-    // The Operators are wrapped in < and >
-    // Split the text using a regex that captures the content inside the brackets without including the brackets themselves
-    return text.split(/<([^>]+)>/).map((part, index) => {
-      // Every odd part is the one that was within brackets, so we italicize it
-      if (index % 2 === 1) {
-        return <span className="italic">{part}</span>;
-      }
-      // Even parts are outside of brackets and are returned as plain text
-      return part;
-    });
-  }
-
-  function addNumber(number: number, layer = 0, text?: React.ReactNode) {
-    let num = "";
-    if (layer === 0) {
-      num = number.toString();
-    }
-
-    if (layer === 1) {
-      num = romanize(number);
-    }
-
-    if (layer >= 2) {
-      num = String.fromCharCode(97 + number).repeat(layer - 1);
-    }
-
-    return (
-      <>
-        <span className="font-bold mr-4 lining-nums">{num}.</span>
-        {text}
-      </>
-    );
-  }
-
-  if (typeof clause.content === "string") {
-    const text = italicizesOperators(clause.content);
-    const res = !noNumber ? addNumber(clause.number, layer, text) : text;
-    return <span>{res}</span>;
-  }
-
-  return (
-    <>
-      {clause.content.map((part, index) => {
-        if (typeof part === "string") {
-          const text = italicizesOperators(part);
-          const res =
-            !noNumber && index === 0
-              ? addNumber(clause.number, layer, text)
-              : text;
-          return <p>{res}</p>;
-        }
-        return (
-          <p
-            style={{
-              textIndent: `${(layer + 1) * 2 + 2.5}rem`,
-            }}
-          >
-            <RenderClause clause={part} layer={layer + 1} />
-          </p>
-        );
-      })}
     </>
   );
 }

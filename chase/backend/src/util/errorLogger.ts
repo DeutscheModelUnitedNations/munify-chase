@@ -22,6 +22,10 @@ export const errorLogging = new Elysia({
     return error;
   }
 
+  if (set.status === "Unauthorized") {
+    return error;
+  }
+
   // prisma relation/entry not found
   // @ts-ignore
   if (error?.code === "P2025") {

@@ -9,10 +9,9 @@ export const loggedInGuard = new Elysia({
     return {
       mustBeLoggedIn(enabled = false) {
         if (!enabled) return;
-        onBeforeHandle(async ({ session, set }) => {
+        onBeforeHandle(async ({ session, error }) => {
           if (session?.data?.loggedIn !== true) {
-            set.status = "Unauthorized";
-            return "Unauthorized";
+            return error("Unauthorized");
           }
         });
       },

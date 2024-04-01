@@ -164,7 +164,7 @@ export const passwords = new Elysia()
         throw new Error("Invalid password");
       }
 
-      session.setData({
+      await session.setData({
         loggedIn: true,
         user: {
           id: foundEmail.user.id,

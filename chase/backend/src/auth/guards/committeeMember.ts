@@ -20,10 +20,9 @@ export const committeeMemberGuard = new Elysia({
        */
       isCommitteeMember() {
         onBeforeHandle(
-          async ({ session, set, params: { committeeId, conferenceId } }) => {
+          async ({ session, error, params: { committeeId, conferenceId } }) => {
             if (session?.data?.loggedIn !== true) {
-              set.status = "Unauthorized";
-              return "Unauthorized";
+              return error("Unauthorized");
             }
             const res = await db.committeeMember.findFirst({
               where: {
@@ -37,8 +36,7 @@ export const committeeMemberGuard = new Elysia({
               },
             });
             if (!res) {
-              set.status = "Unauthorized";
-              return "Unauthorized";
+              return error("Unauthorized");
             }
           }
         );

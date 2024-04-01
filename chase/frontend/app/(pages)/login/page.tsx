@@ -29,7 +29,7 @@ export default () => {
   const router = useRouter();
   const { showToast, toastError } = useToast();
 
-  const [initialLoarding, setInitialLoading] = useState(true);
+  const [initialLoading, setInitialLoading] = useState(true);
   const [userStateLoading, setUserStateLoading] = useState(false);
   const [userCreateLoading, setCreateLoading] = useState(false);
   const [loginLoading, setLoginLoading] = useState(false);
@@ -70,10 +70,13 @@ export default () => {
   }, [email]);
 
   useEffect(() => {
+    if (!email || email === "") {
+      return;
+    }
     (async () => {
       setUserStateLoading(true);
       const res = await backend.auth.userState.get({
-        $query: {
+        query: {
           email,
         },
       });
@@ -88,7 +91,7 @@ export default () => {
       }
       setUserStateLoading(false);
     })();
-  }, [email, showToast]);
+  }, [email]);
 
   async function submit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -137,7 +140,7 @@ export default () => {
 
   return (
     <>
-      {initialLoarding === true ? (
+      {initialLoading === true ? (
         <FontAwesomeIcon
           icon={faCircleNotch}
           spin

@@ -19,10 +19,9 @@ export const conferenceRoleGuard = new Elysia({
        * You can also set the role to an array of roles to check if the user has any of the roles in the conference.
        */
       hasConferenceRole(roles: ConferenceRole[] | "any") {
-        onBeforeHandle(async ({ session, set, params: { conferenceId } }) => {
+        onBeforeHandle(async ({ session, error, params: { conferenceId } }) => {
           if (session?.data?.loggedIn !== true) {
-            set.status = "Unauthorized";
-            return "Unauthorized";
+            return error("Unauthorized");
           }
           const res = await db.conferenceMember.findFirst({
             where: {
@@ -32,8 +31,7 @@ export const conferenceRoleGuard = new Elysia({
             },
           });
           if (!res) {
-            set.status = "Unauthorized";
-            return "Unauthorized";
+            return error("Unauthorized");
           }
         });
       },

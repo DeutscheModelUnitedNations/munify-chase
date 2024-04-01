@@ -1,5 +1,6 @@
+"use client";
 import type React from "react";
-import { createContext, useContext, useState } from "react";
+import { createContext, useContext, useEffect, useState } from "react";
 import { treaty } from "@elysiajs/eden";
 import type { App } from "../../backend/src/main";
 import { unstable_noStore as noStore } from "next/cache";
@@ -16,7 +17,10 @@ function getBackendUrl() {
 }
 
 export const Backend = ({ children }: { children: React.ReactNode }) => {
-  const [backend, _setBackend] = useState(
+  // ATTENTION: It is IMPORTANT to use a callback function here to prevent
+  // react from doing funky things with the backend instance when passing to the state hook
+  // please do not ask me why this is happening...
+  const [backend, _setBackend] = useState(() =>
     treaty<App>(getBackendUrl(), {
       fetch: {
         credentials: "include",

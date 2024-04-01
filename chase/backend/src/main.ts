@@ -17,9 +17,11 @@ import { messages } from "./routes/messages";
 import { time } from "./routes/time";
 import packagejson from "../package.json";
 import swagger from "@elysiajs/swagger";
-import { serverTiming } from "@elysiajs/server-timing";
 import { helmet } from "elysia-helmet";
 import { generateHeapSnapshot } from "bun";
+
+//TODO switch to new prismabox schema types
+//TODO remove use of set where applicable
 
 setInterval(
   async () => {
@@ -36,7 +38,6 @@ setInterval(
 const m = new Elysia({
   normalize: true,
 })
-  .use(serverTiming())
   .use(helmet())
   .use(
     swagger({
@@ -81,6 +82,11 @@ const m = new Elysia({
   .use(auth)
   .use(time)
   .use(baseData)
+  .get("/", () => ({
+    production: appConfiguration.production,
+    name: appConfiguration.appName,
+    version: packagejson.version,
+  }))
   .listen(process.env.PORT ?? "3001");
 
 setTimeout(() => {

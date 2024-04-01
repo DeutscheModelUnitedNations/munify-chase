@@ -92,7 +92,6 @@ export const agendaItem = new Elysia({
         tags: [openApiTag(import.meta.path)],
       },
       body: AgendaItemData,
-      response: AgendaItemWithoutRelations,
     },
   )
   .get(
@@ -171,7 +170,6 @@ export const agendaItem = new Elysia({
         description: "Get a single agenda item by id",
         tags: [openApiTag(import.meta.path)],
       },
-      response: AgendaItemWithoutRelations,
     },
   )
   .post(

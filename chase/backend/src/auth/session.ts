@@ -24,9 +24,6 @@ export type Session = {
    * In case the user has not given consent to set cookies, the data cannot be stored and will be undefined
    */
   data?: SessionData;
-  /**
-   * In case the user has not given consent to set cookies, the data cannot be stored and this will be undefined
-   */
   setData: SessionDataSetter;
 };
 
@@ -68,7 +65,8 @@ export const session = new Elysia({ name: "session" })
       };
       session.data = data;
 
-      const redisIdentifier = `user-session:${sessionId.value ?? nanoid()}`;
+      const sessionIdValue = sessionId.value ?? nanoid();
+      const redisIdentifier = `user-session:${sessionIdValue}`;
       const setData: SessionDataSetter = async (newData) => {
         if (newData?.loggedIn !== undefined) {
           data.loggedIn = newData.loggedIn;
@@ -83,6 +81,7 @@ export const session = new Elysia({ name: "session" })
         await redis.set(redisIdentifier, JSON.stringify(data), {
           EX: expirationDurationInMilliseconds,
         });
+        sessionId.value = sessionIdValue;
       };
       session.setData = setData;
 

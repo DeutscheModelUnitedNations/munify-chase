@@ -1,4 +1,4 @@
-import type { Nation } from "../../backend/prisma/generated/client";
+import type { Nation } from "@prisma/generated/client";
 
 /**
  * A country alpha3 code

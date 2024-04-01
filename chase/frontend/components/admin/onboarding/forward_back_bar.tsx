@@ -6,14 +6,12 @@ import { useRouter } from "next/navigation";
 import useMousetrap from "mousetrap-react";
 
 interface ForwardBackButtonsProps {
-  backURL: string;
   handleSaveFunction: () => void;
   saveLoading?: boolean;
   forwardDisabled?: boolean;
 }
 
 export default function ForwardBackButtons({
-  backURL,
   handleSaveFunction,
   saveLoading,
   forwardDisabled = false,
@@ -29,17 +27,9 @@ export default function ForwardBackButtons({
 
   return (
     <>
-      <div className="w-full mt-8 flex justify-between items-stretch gap-4">
-        <Button
-          label={LL.admin.onboarding.BUTTON_BACK()}
-          className=""
-          faIcon={faArrowLeft}
-          severity="danger"
-          onClick={() => router.push(backURL)}
-        />
+      <div className="w-full mt-8 flex justify-end items-stretch gap-4">
         <Button
           label={LL.admin.onboarding.BUTTON_ADVANCE()}
-          className=""
           faIcon={faCheck}
           onClick={handleSaveFunction}
           loading={saveLoading}

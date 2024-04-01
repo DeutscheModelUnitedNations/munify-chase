@@ -1,6 +1,6 @@
 "use client";
 import "./globals.scss";
-import { Inter } from "next/font/google"; // Even though Google Fonts are used – no requests are sent to Google (see NEXT.JS docs)
+import { Inter, Vollkorn, Noto_Sans_Mono } from "next/font/google"; // Even though Google Fonts are used – no requests are sent to Google (see NEXT.JS docs)
 import { PublicEnvScript } from "next-runtime-env";
 //theme
 import "@/themes/theme_light.scss";
@@ -26,7 +26,23 @@ import { Backend } from "@/contexts/backend";
 import { BackendTime } from "@/contexts/backendTime";
 import CookieBanner from "@/components/cookie_banner";
 
-const inter = Inter({ subsets: ["latin"] });
+const sans = Inter({
+  subsets: ["latin"],
+  display: "swap",
+  variable: "--font-sans",
+});
+
+const serif = Vollkorn({
+  subsets: ["latin"],
+  display: "swap",
+  variable: "--font-serif",
+});
+
+const mono = Noto_Sans_Mono({
+  subsets: ["latin"],
+  display: "swap",
+  variable: "--font-mono",
+});
 
 export default function RootLayout({
   children,
@@ -49,7 +65,10 @@ export default function RootLayout({
   loadLocale(locale);
 
   return (
-    <html lang="en">
+    <html
+      lang="en"
+      className={`${sans.variable} ${serif.variable} ${mono.variable}`}
+    >
       <head>
         <PublicEnvScript />
       </head>
@@ -60,7 +79,7 @@ export default function RootLayout({
       </Head>
      */}
 
-      <body className={inter.className}>
+      <body>
         {/* <PrimeReactProvider value={{ pt: Tailwind }}> */}
         <TypesafeI18n locale={locale}>
           <ToastProvider>

@@ -4,8 +4,20 @@ import { openApiTag } from "../../util/openApiTags";
 import { loggedInGuard } from "../../auth/guards/loggedIn";
 import { session } from "../../auth/session";
 
+/**
+ * === Regex for password requirements ===
+ * --> (?=(.*RULE){MIN_OCCURANCES,})
+ *
+ *  ^                               start anchor
+ *  (?=(.*[a-z]){1,})               lowercase letters.
+ *  (?=(.*[A-Z]){1,})               uppercase letters.
+ *  (?=(.*[0-9]){1,})               numbers.
+ *  (?=(.*[!@#$%^&*()\-__+.]){1,})  all the special characters in the [] fields. The ones used by regex are escaped by using the \ or the character itself.
+ *  {8,}                            indicates that you want 8 or more
+ *  $                               end anchor
+ */
 const passwordRegex =
-  /^(?=.*[A-Z].*[A-Z])(?=.*[!@#$&*])(?=.*[0-9].*[0-9])(?=.*[a-z].*[a-z].*[a-z]).{8,}$/;
+  /^(?=(.*[a-z]){1,})(?=(.*[A-Z]){1,})(?=(.*[0-9]){1,})(?=(.*[!@#$%^&*()\-__+.]){1,}).{8,}$/;
 
 export const passwords = new Elysia()
   .use(session)

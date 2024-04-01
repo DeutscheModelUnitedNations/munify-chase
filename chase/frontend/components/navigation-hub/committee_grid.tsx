@@ -61,7 +61,7 @@ export default function CommitteeGrid({
   }, []);
 
   return (
-    <div className="w-full flex flex-wrap justify-start items-center gap-4 p-10">
+    <div className="w-full flex flex-wrap justify-start items-start gap-4 p-4">
       {committees?.map((committee) => {
         return (
           <CommitteeCard
@@ -78,16 +78,16 @@ export default function CommitteeGrid({
       {!committees && (
         <>
           <Skeleton
-            height="15rem"
-            className="flex-1 min-w-[30rem] !bg-primary-900 rounded-lg"
+            height="20rem"
+            className="flex-1 min-w-[25rem] !bg-primary-900 rounded-lg"
           />
           <Skeleton
-            height="15rem"
-            className="flex-1 min-w-[30rem] !bg-primary-900 rounded-lg"
+            height="20rem"
+            className="flex-1 min-w-[25rem] !bg-primary-900 rounded-lg"
           />
           <Skeleton
-            height="15rem"
-            className="flex-1 min-w-[30rem] !bg-primary-900 rounded-lg"
+            height="20rem"
+            className="flex-1 min-w-[25rem] !bg-primary-900 rounded-lg"
           />
         </>
       )}
@@ -175,9 +175,9 @@ function CommitteeCard({
             onClick={() => {
               setLoading(true);
             }}
-            className="flex-1 min-w-[30rem] flex flex-col justify-between p-4 gap-2 bg-primary-950 dark:bg-primary-200 rounded-lg hover:scale-[102%] hover:shadow-lg transition-all duration-300 ease-in-out cursor-pointer"
+            className="flex-1 min-w-[25rem] flex flex-col justify-between p-4 gap-2 bg-primary-950 dark:bg-primary-200 rounded-lg pophover cursor-pointer"
           >
-            <h3 className="text-lg">{committee.name}</h3>
+            <h3 className="text-lg truncate">{committee.name}</h3>
             <h1 className="flex-1 mt-4 mb-6 ml-4 text-4xl text-primary font-bold">
               {loading ? (
                 <FontAwesomeIcon icon={faCircleNotch} className="fa-spin" />
@@ -190,7 +190,7 @@ function CommitteeCard({
               icon={faPodium}
               loading={!committee.agendaItems.find((i) => i.isActive)?.title}
             >
-              <h3 className="text-lg">
+              <h3 className="text-lg truncate">
                 {committee.agendaItems.find((i) => i.isActive)?.title}
               </h3>
             </SmallInfoCard>
@@ -203,7 +203,7 @@ function CommitteeCard({
                   committee?.stateOfDebate === ""
                 }
               >
-                <h3 className="text-lg truncate">{committee?.stateOfDebate}</h3>
+                <h3 className="text-lg">{committee?.stateOfDebate}</h3>
               </SmallInfoCard>
             )}
 
@@ -213,9 +213,11 @@ function CommitteeCard({
               classNameForContentBox={getColor(committee?.status)?.[1]}
               loading={!committee.statusUntil}
             >
-              <h3 className="text-lg">
-                {getHeadline(committee.status, committee?.statusHeadline)}{" "}
-                <span className="italic">
+              <div className="flex flex-col">
+                <h3 className="text-lg">
+                  {getHeadline(committee.status, committee?.statusHeadline)}
+                </h3>
+                <h3 className="text-md italic">
                   {LL.participants.dashboard.timerWidget.UNTIL(
                     committee?.statusUntil
                       ? new Date(committee?.statusUntil).toLocaleTimeString(
@@ -227,8 +229,8 @@ function CommitteeCard({
                         )
                       : "undefined",
                   )}
-                </span>
-              </h3>
+                </h3>
+              </div>
               <div className=" text-lg ml-auto font-mono font-extralight">
                 <Timer hideOnZero />
               </div>

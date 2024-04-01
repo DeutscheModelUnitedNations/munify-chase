@@ -5,7 +5,7 @@ import { apiTestData } from "@/test_data";
 import { useI18nContext } from "@/i18n/i18n-react";
 import SpeakersListBlock from "@/components/speakers_list/speakers_list_block";
 import { ParticipantSpeechButtons } from "@/components/speakers_list/speech_buttons";
-import { $Enums } from "../../../../../../../../backend/prisma/generated/client";
+import { $Enums } from "@prisma/generated/client";
 import { MyDelegationContext } from "@/contexts/user_ident";
 
 export default function SpeakersList() {

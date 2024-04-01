@@ -7,13 +7,14 @@ import {
   faInbox,
   faChartNetwork,
   faGears,
+  faRocketLaunch,
 } from "@fortawesome/pro-solid-svg-icons";
 import { useI18nContext } from "@/i18n/i18n-react";
 import type { IconProp } from "@fortawesome/fontawesome-svg-core";
 import { MyDelegationProvider, useUserIdent } from "@/contexts/user_ident";
 import { useContext, useEffect, useState } from "react";
 import { ConferenceIdContext } from "@/contexts/committee_data";
-import { $Enums } from "../../../../../../backend/prisma/generated/client";
+import { $Enums } from "@prisma/generated/client";
 import Lockout from "@/components/lockout";
 
 export default function ChairHubLayout({
@@ -52,10 +53,11 @@ export default function ChairHubLayout({
       <div className="flex h-screen w-screen bg-white text-primary-100 dark:bg-primary-100 dark:text-primary-900 shadow-md overflow-hidden">
         <Navbar>
           <NavButton
-            icon={faChartNetwork as IconProp}
+            icon={faRocketLaunch as IconProp}
             link={"./committees"}
             title={LL.navbar.HUB()}
           />
+          <div className="h-4" />
           {userIdent &&
             role !== null &&
             (
@@ -76,7 +78,7 @@ export default function ChairHubLayout({
           {userIdent && role === $Enums.ConferenceRole.ADMIN && (
             <NavButton
               icon={faGears as IconProp}
-              link={`/app/admin/onboarding/${conferenceId}/structure`}
+              link={"../../admin/structure"}
               title={LL.navbar.INBOX()}
             />
           )}

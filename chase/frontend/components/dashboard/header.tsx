@@ -11,7 +11,7 @@ import {
 } from "@/contexts/committee_data";
 import { useUserIdent } from "@/contexts/user_ident";
 import { conferenceRoleTranslation } from "@/i18n/translation_utils";
-import { $Enums } from "../../../backend/prisma/generated/client";
+import { $Enums } from "@prisma/generated/client";
 
 /**
  * This Component is used in the Dashboard. It uses the HeaderTemplate

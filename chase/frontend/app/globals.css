@@ -2,31 +2,6 @@
 @tailwind components;
 @tailwind utilities;
 
-@font-face {
-  font-family: 'Vollkorn';
-  src: url('/fonts/Vollkorn/Vollkorn-VariableFont_wght.ttf') format('truetype');
-  font-weight: normal;
-  font-style: normal;
-}
-
-@font-face {
-  font-family: 'Vollkorn';
-  src: url('/fonts/Vollkorn/Vollkorn-Italic-VariableFont_wght.ttf') format('truetype');
-  font-weight: normal;
-  font-style: italic;
-}
-
-@font-face {
-  font-family: 'NotoSans';
-  src: url('/fonts/Noto_Sans/NotoSansMono-VariableFont_wdth,wght.ttf') format('truetype');
-}
-
-@layer base {
-  html {
-    font-family: "Helvetica", "Arial", system-ui, sans-serif;
-  }
-}
-
 :root {
   --dmun-primary: #3d7dd2;
   --dmun-black: #000;
@@ -35,13 +10,13 @@
   --voting-against: #ff3d32;
 }
 
-body {
-  font-family: var(--font-family);
-}
-
 .tabular-nums {
   font-variant-numeric: tabular-nums;
   font-feature-settings: "tnum";
+}
+
+body {
+  font-family: var(--font-sans) sans-serif;
 }
 
 

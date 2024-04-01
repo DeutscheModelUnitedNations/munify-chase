@@ -5,7 +5,7 @@ import { ScrollPanel } from "primereact/scrollpanel";
 import { useI18nContext } from "@/i18n/i18n-react";
 import { useBackend } from "@/contexts/backend";
 import { useToast } from "@/contexts/toast";
-import { $Enums } from "../../../../../../../../backend/prisma/generated/client";
+import { $Enums } from "@prisma/generated/client";
 import PresenceWidget from "@/components/attendance/presence_widget";
 import {
   CommitteeIdContext,

@@ -9,7 +9,7 @@ import {
 import { useRouter } from "next/navigation";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import Button from "@/components/button";
-import { $Enums } from "../../../../../backend/prisma/generated/client";
+import { $Enums } from "@prisma/generated/client";
 import { LargeFlag } from "@/components/flag_templates";
 import getCountryNameByCode from "@/misc/get_country_name_by_code";
 import { useI18nContext } from "@/i18n/i18n-react";
@@ -93,7 +93,7 @@ export default function LoginRedirectPage() {
               {myInfoData.conferenceMemberships.map((conferenceMembership) => (
                 <Link
                   href={conferenceMemberRedirectPath(conferenceMembership)}
-                  className="w-full flex flex-col justify-center items-center p-4 bg-primary-950 rounded-lg mb-4 hover:cursor-pointer hover:shadow-xl hover:scale-[1.02] transition-all duration-500"
+                  className="w-full flex flex-col justify-center items-center p-4 bg-primary-950 rounded-lg mb-4 hover:cursor-pointer pophover"
                   key={conferenceMembership.id}
                 >
                   <h2 className="text-2xl font-bold mb-2">
@@ -126,7 +126,7 @@ export default function LoginRedirectPage() {
               {myInfoData.committeeMemberships.map((committeeMembership) => (
                 <Link
                   href={`/app/${committeeMembership.committee.conference.id}/committee/${committeeMembership.committee.id}/participant/dashboard`}
-                  className="w-full flex flex-col justify-center items-center p-4 bg-primary-950 rounded-lg mb-4 hover:cursor-pointer hover:shadow-xl hover:scale-[1.02] transition-all duration-500"
+                  className="w-full flex flex-col justify-center items-center p-4 bg-primary-950 rounded-lg mb-4 hover:cursor-pointer pophover"
                   key={committeeMembership.committee.id}
                 >
                   <h3 className="text-xl">

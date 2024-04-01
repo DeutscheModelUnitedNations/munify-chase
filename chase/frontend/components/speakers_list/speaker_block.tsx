@@ -98,10 +98,10 @@ export default function SpeakerBlock() {
             <div className="flex flex-row items-center justify-start">
               <LargeFlag countryCode={countryCode} />
               <div className="flex-1 flex flex-col ml-4">
-                <div className="font-bold text-md">
+                <div className="font-bold text-xl">
                   {getCountryNameByCode(countryCode, locale)}
                 </div>
-                <div className="text-md text-primary-300 dark:text-primary-600 flex items-center gap-3">
+                <div className="text-lg text-primary-300 dark:text-primary-600 flex items-center gap-3">
                   {timerState === "active" && <HourglasAnimation />}
                   {timerState === "paused" && (
                     <FontAwesomeIcon icon={faHourglassClock as IconProp} />
@@ -112,7 +112,17 @@ export default function SpeakerBlock() {
                       className="text-red-700 fa-shake"
                     />
                   )}
-                  <div>{timeLeft}</div>
+                  <div className="text-xl">
+                    {timeLeft}
+                    <span className="ml-2 text-xs text-primary-300 dark:text-primary-600">
+                      {"/ "}
+                      {Math.floor(speakersListData?.speakingTime / 60)}
+                      {":"}
+                      {speakersListData?.speakingTime % 60 < 10
+                        ? `0${speakersListData?.speakingTime % 60}`
+                        : speakersListData?.speakingTime % 60}
+                    </span>
+                  </div>
                 </div>
               </div>
             </div>

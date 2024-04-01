@@ -15,7 +15,7 @@ import type { BackendInstanceType } from "@/contexts/backend";
 import { useI18nContext } from "@/i18n/i18n-react";
 import getCountryNameByCode from "@/misc/get_country_name_by_code";
 import type { TranslationFunctions } from "@/i18n/i18n-types";
-import { $Enums } from "../../../backend/prisma/generated/client";
+import type { $Enums } from "@prisma/generated/client";
 
 type ChairMessages = Awaited<
   ReturnType<

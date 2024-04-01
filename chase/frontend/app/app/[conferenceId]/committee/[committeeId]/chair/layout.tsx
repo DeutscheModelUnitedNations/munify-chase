@@ -11,6 +11,7 @@ import {
   faCommentExclamation,
   faInbox,
   faChartNetwork,
+  faRocketLaunch,
 } from "@fortawesome/pro-solid-svg-icons";
 import { useI18nContext } from "@/i18n/i18n-react";
 import type { IconProp } from "@fortawesome/fontawesome-svg-core";
@@ -38,11 +39,11 @@ function ChairNavbar() {
   return (
     <Navbar>
       <NavButton
-        icon={faChartNetwork as IconProp}
+        icon={faRocketLaunch as IconProp}
         link="../../../hub/team/committees"
         title={LL.navbar.HUB()}
       />
-      <div className="flex-1" />
+      <div className="h-4" />
       <NavButton
         icon={faSquareSliders as IconProp}
         link={"./dashboard"}
@@ -71,7 +72,7 @@ function ChairNavbar() {
       <NavButton
         icon={faInbox as IconProp}
         link={"./inbox"}
-        title={LL.navbar.WHITEBOARD()}
+        title={LL.navbar.INBOX()}
         badge={messageCount ?? 0}
       />
       {/* <NavButton TODO add Resolution Editor page

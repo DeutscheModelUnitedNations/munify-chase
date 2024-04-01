@@ -195,7 +195,7 @@ export default () => {
                   />
                 ) : userState === "userNotFound" ? (
                   <>
-                    <SmallInfoCard icon={faUserPlus} noFixedHeight>
+                    <SmallInfoCard icon={faUserPlus}>
                       <p>{LL.login.ACCOUNT_NOT_YET_CREATED()}</p>
                     </SmallInfoCard>
                     <Button
@@ -211,7 +211,6 @@ export default () => {
                   <>
                     <SmallInfoCard
                       icon={faUserCheck}
-                      noFixedHeight
                       classNameForIconBox="bg-green-500 text-green-500 border-green-500"
                       classNameForContentBox="bg-green-500"
                     >
@@ -246,7 +245,6 @@ export default () => {
                 {userState === "emailNotValidated" ? (
                   <SmallInfoCard
                     icon={faEnvelopeDot}
-                    noFixedHeight
                     classNameForIconBox="bg-yellow-500 text-yellow-500 border-yellow-500"
                     classNameForContentBox="bg-yellow-500"
                   >

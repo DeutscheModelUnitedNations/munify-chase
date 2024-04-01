@@ -82,23 +82,24 @@ export function NormalFlag({
     <div className="rounded-md contrast:border contrast:border-primary-100 bg-white shadow-md overflow-hidden">
       {countryCode ? (
         <>
-          <Image
-            src={getFlagPathByCode(countryCode)}
-            width={39}
-            height={26}
-            alt="flag"
-            style={{ objectFit: "cover", height: "100%" }}
-            onMouseEnter={handleMouseEnter}
-            onMouseLeave={handleMouseLeave}
-          />
-          {isHovered && showNameOnHover && (
-            <div className="bg-primary text-white text-xs rounded-md shadow-md p-2 absolute mt-2 z-50">
-              {getCountryNameByCode(countryCode, locale)}
-            </div>
-          )}
+          <div className="flex justify-center items-center w-[3rem] h-[2.25rem]">
+            <Image
+              src={getFlagPathByCode(countryCode)}
+              width={100}
+              height={80}
+              alt="flag"
+              onMouseEnter={handleMouseEnter}
+              onMouseLeave={handleMouseLeave}
+            />
+            {isHovered && showNameOnHover && (
+              <div className="bg-primary text-white text-xs rounded-md shadow-md p-2 absolute mt-2 z-50">
+                {getCountryNameByCode(countryCode, locale)}
+              </div>
+            )}
+          </div>
         </>
       ) : (
-        <Skeleton width="39px" height="26px" />
+        <Skeleton width="3rem" height="2.25rem" />
       )}
     </div>
   );
@@ -116,14 +117,16 @@ export function LargeFlag({
       className={`rounded-md contrast:border contrast:border-primary-100 bg-white shadow-md overflow-hidden ${className}`}
     >
       {countryCode ? (
-        <Image
-          src={getFlagPathByCode(countryCode)}
-          width={99}
-          height={66}
-          alt="flag"
-        />
+        <div className="flex justify-center items-center w-[6.4rem] h-[4.8rem]">
+          <Image
+            src={getFlagPathByCode(countryCode)}
+            width={300}
+            height={200}
+            alt="flag"
+          />
+        </div>
       ) : (
-        <Skeleton width="99px" height="66px" />
+        <Skeleton width="6.4rem" height="4.8rem" />
       )}
     </div>
   );

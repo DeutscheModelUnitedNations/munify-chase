@@ -56,6 +56,7 @@ export default function Toolbar({
         {
           label: LL.resolutionEditor.editor.toolbar.FILE_PRINT(),
           icon: <MenuIcon icon={faPrint} />,
+          command: () => resDataManipulation.printResolution(),
         },
         {
           label: LL.resolutionEditor.editor.toolbar.FILE_SETTINGS(),
@@ -103,14 +104,14 @@ export default function Toolbar({
 
   return (
     <>
-      <div className="w-full p-8 fixed top-0 flex xl:hidden z-50">
+      <div className="w-full p-8 fixed top-0 flex xl:hidden print:hidden z-50">
         <Button
           faIcon={faBars}
           onClick={(e) => tieredMenu.current?.toggle(e)}
         />
         <TieredMenu model={items} popup ref={tieredMenu} breakpoint="500px" />
       </div>
-      <div className="p-8 fixed top-0 hidden xl:flex z-50">
+      <div className="p-8 fixed top-0 hidden xl:flex print:hidden z-50">
         <TieredMenu model={items} breakpoint="500px" />
       </div>
       <SettingsSidebar

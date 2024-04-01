@@ -37,6 +37,8 @@ export function checkForOperatorsAndValidate(
 
   clause.forEach(findOperator);
 
+  console.log(operatorInClause);
+
   const validOperators = operators[section.toString()];
   if (!validOperators) {
     return operatorInClause.length === 0 ? OperatorValidity.NONE : OperatorValidity.INVALID;

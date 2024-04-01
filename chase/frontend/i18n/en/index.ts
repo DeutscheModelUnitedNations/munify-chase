@@ -531,6 +531,7 @@ const en = {
       WRITER: "Writing Delegation",
       SPONSORS: "Sponsoring Delegations",
       DISCLAIMER: "This document is the product of a UN simulation and is not an official resolution of the United Nations. It was created by participants of a Model United Nations Conference.",
+      RESOLUTION: "Resolution",
     },
     PREAMBLE: "Preamble",
     OPERATIVE_SECTION: "Operative Clauses",

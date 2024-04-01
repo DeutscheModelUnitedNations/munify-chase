@@ -1542,6 +1542,10 @@ type RootTranslation = {
 			 * T​h​i​s​ ​d​o​c​u​m​e​n​t​ ​i​s​ ​t​h​e​ ​p​r​o​d​u​c​t​ ​o​f​ ​a​ ​U​N​ ​s​i​m​u​l​a​t​i​o​n​ ​a​n​d​ ​i​s​ ​n​o​t​ ​a​n​ ​o​f​f​i​c​i​a​l​ ​r​e​s​o​l​u​t​i​o​n​ ​o​f​ ​t​h​e​ ​U​n​i​t​e​d​ ​N​a​t​i​o​n​s​.​ ​I​t​ ​w​a​s​ ​c​r​e​a​t​e​d​ ​b​y​ ​p​a​r​t​i​c​i​p​a​n​t​s​ ​o​f​ ​a​ ​M​o​d​e​l​ ​U​n​i​t​e​d​ ​N​a​t​i​o​n​s​ ​C​o​n​f​e​r​e​n​c​e​.
 			 */
 			DISCLAIMER: string
+			/**
+			 * R​e​s​o​l​u​t​i​o​n
+			 */
+			RESOLUTION: string
 		}
 		/**
 		 * P​r​e​a​m​b​l​e
@@ -3563,6 +3567,10 @@ export type TranslationFunctions = {
 			 * This document is the product of a UN simulation and is not an official resolution of the United Nations. It was created by participants of a Model United Nations Conference.
 			 */
 			DISCLAIMER: () => LocalizedString
+			/**
+			 * Resolution
+			 */
+			RESOLUTION: () => LocalizedString
 		}
 		/**
 		 * Preamble

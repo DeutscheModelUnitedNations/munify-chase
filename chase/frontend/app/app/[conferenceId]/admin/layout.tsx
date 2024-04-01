@@ -29,6 +29,7 @@ export default function AdminLayout({
   children: React.ReactNode;
   params: { conferenceId: string };
 }) {
+  // const { LL } = useI18nContext();
   const { toastError } = useToast();
   const router = useRouter();
   const conferenceId = useContext(ConferenceIdContext);

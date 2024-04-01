@@ -5,10 +5,10 @@ import { useRouter } from "next/navigation";
 import ForwardBackButtons from "@/components/admin/onboarding/forward_back_bar";
 
 export default function loginVorsitz(
-  // {
-  // params,
+  //   {
+  //   params,
   // }: {
-  // params: { conferenceId: string };
+  //   params: { conferenceId: string };
   // }
 ) {
   const router = useRouter();

@@ -13,10 +13,7 @@ import { Column } from "primereact/column";
 import { ConfirmPopup } from "primereact/confirmpopup";
 import { Toolbar } from "primereact/toolbar";
 import useMousetrap from "mousetrap-react";
-import type {
-  ConferenceMember,
-  ConferenceRole,
-} from "@prisma/generated/client";
+import type { ConferenceMember, ConferenceRole } from "@prisma/generated/client";
 
 interface TeamPoolTableProps {
   team: ConferenceMember[] | undefined | null;

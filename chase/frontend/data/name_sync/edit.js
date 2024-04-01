@@ -4,7 +4,7 @@
 
 import german from "german_names_mundi.json";
 
-const fs = require("fs");
+const fs = require("node:fs");
 
 const data = JSON.parse(fs.readFileSync("../nations.json", "utf8"));
 

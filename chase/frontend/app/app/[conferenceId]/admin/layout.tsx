@@ -1,16 +1,10 @@
 "use client";
-import { useEffect, useState, useContext } from "react";
+import { useEffect, useContext } from "react";
 import Navbar from "@/components/navbar/navbar";
 import NavButton from "@/components/navbar/button";
-import { IconProp } from "@fortawesome/fontawesome-svg-core";
+import type { IconProp } from "@fortawesome/fontawesome-svg-core";
 import {
-  faChalkboard,
   faPodium,
-  faUsersLine,
-  faSquareSliders,
-  faNewspaper,
-  faCommentExclamation,
-  faInbox,
   faChartNetwork,
   faFlag,
   faGears,
@@ -18,12 +12,9 @@ import {
   faTableTree,
   faUsers,
 } from "@fortawesome/pro-solid-svg-icons";
-import Button from "@/components/button";
-import SettingsSidebar from "@/components/navbar/settings_sidebar";
 import { useI18nContext } from "@/i18n/i18n-react";
 import { useRouter } from "next/navigation";
 import useMousetrap from "mousetrap-react";
-import { confirmPopup } from "primereact/confirmpopup";
 import { ScrollPanel } from "primereact/scrollpanel";
 import { useBackend } from "@/contexts/backend";
 import { ConferenceIdContext } from "@/contexts/committee_data";
@@ -38,23 +29,22 @@ export default function AdminLayout({
   children: React.ReactNode;
   params: { conferenceId: string };
 }) {
-  const { LL } = useI18nContext();
   const { toastError } = useToast();
   const router = useRouter();
   const conferenceId = useContext(ConferenceIdContext);
   const { backend } = useBackend();
 
-  const [settingsSidebarVisible, setSettingsSidebarVisible] = useState(false);
+  // const [settingsSidebarVisible, setSettingsSidebarVisible] = useState(false);
 
-  const saveAndQuit = (e: React.MouseEvent<HTMLButtonElement>) => {
-    confirmPopup({
-      target: e.currentTarget,
-      message: LL.admin.onboarding.SAVE_AND_QUIT_MESSAGE(),
-      accept: () => {
-        router.push(`/app/${params.conferenceId}/hub/team/committees`);
-      },
-    });
-  };
+  // const saveAndQuit = (e: React.MouseEvent<HTMLButtonElement>) => {
+  //   confirmPopup({
+  //     target: e.currentTarget,
+  //     message: LL.admin.onboarding.SAVE_AND_QUIT_MESSAGE(),
+  //     accept: () => {
+  //       router.push(`/app/${params.conferenceId}/hub/team/committees`);
+  //     },
+  //   });
+  // };
 
   useMousetrap("ctrl+shift+s", () =>
     router.push(`/app/${params.conferenceId}/hub/team/committees`),

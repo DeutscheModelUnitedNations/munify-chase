@@ -5,12 +5,14 @@ import ForwardBackButtons from "@/components/admin/onboarding/forward_back_bar";
 import ConfigWrapper from "@/components/dashboard/chair/config_wrapper";
 import { InputText } from "primereact/inputtext";
 
-export default function loginVorsitz({
-  params,
-}: {
-  params: { conferenceId: string };
-}) {
-  const router = useRouter();
+export default function loginVorsitz(
+  // {
+  // params,
+  // }: {
+  // params: { conferenceId: string };
+  // }
+) {
+  // const router = useRouter();
 
   const [pressURL, setPressURL] = useState<string>("");
 

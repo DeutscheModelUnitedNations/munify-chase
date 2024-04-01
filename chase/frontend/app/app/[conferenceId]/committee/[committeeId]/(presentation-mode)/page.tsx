@@ -59,9 +59,11 @@ export default function CommitteePresentationMode({
     const presentationRem = localStorage.getItem("presentationRem");
 
     if (presentationRem) {
-      setRemSize(parseFloat(presentationRem));
+      setRemSize(Number.parseFloat(presentationRem));
     } else {
-      const bodyRem = parseFloat(getComputedStyle(document.body).fontSize);
+      const bodyRem = Number.parseFloat(
+        getComputedStyle(document.body).fontSize,
+      );
       setRemSize(bodyRem);
     }
   }, []);

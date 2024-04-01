@@ -18,14 +18,13 @@ import { time } from "./routes/time";
 import packagejson from "../package.json";
 import swagger from "@elysiajs/swagger";
 import { helmet } from "elysia-helmet";
-import { generateHeapSnapshot } from "bun";
 
 //TODO switch to new prismabox schema types
 //TODO remove use of set where applicable
 
 setInterval(
   async () => {
-    const snapshot = generateHeapSnapshot();
+    const snapshot = Bun.generateHeapSnapshot();
     await Bun.write(
       `heapSnapshots/${Date.now()}.json`,
       JSON.stringify(snapshot, null, 2)

@@ -30,7 +30,8 @@ export default function InboxPageResearchService() {
       <InboxTemplate
         isResearchService
         messages={messages}
-        selectedMessage={selectedMessage}
+        // biome-ignore lint/style/noNonNullAssertion: <explanation>
+        selectedMessage={selectedMessage!}
         setSelectedMessage={setSelectedMessage}
         getMessagesFunction={trigger}
       />

@@ -4,10 +4,10 @@ import getCountryNameByCode from "@/misc/get_country_name_by_code";
 import Fuse from "fuse.js";
 import {
   AutoComplete,
-  AutoCompleteCompleteEvent,
+  type AutoCompleteCompleteEvent,
 } from "primereact/autocomplete";
 import { SmallFlag } from "../flag_templates";
-import {
+import type {
   AllAvailableCountriesType,
   CountryDataType,
 } from "@/components/admin/delegations/add_delegation_dialog";

@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { CountryCode, Voting } from "@/custom_types/custom_types";
+import type { CountryCode, Voting } from "@/custom_types/custom_types";
 import { Button } from "primereact/button";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
@@ -10,7 +10,7 @@ import {
 } from "@fortawesome/pro-solid-svg-icons";
 import { useI18nContext } from "@/i18n/i18n-react";
 import { AnimatePresence, motion } from "framer-motion";
-import { IconProp } from "@fortawesome/fontawesome-svg-core";
+import type { IconProp } from "@fortawesome/fontawesome-svg-core";
 
 /**
  * This Component is used in the Voting Component.

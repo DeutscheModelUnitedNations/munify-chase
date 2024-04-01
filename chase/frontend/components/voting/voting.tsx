@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import WidgetTemplate from "../widget_template";
 import NoDataPlaceholder from "../no_data_placeholder";
-import { CountryCode, Voting } from "@/custom_types/custom_types";
+import type { CountryCode, Voting } from "@/custom_types/custom_types";
 import VotingBar from "@components/voting/voting_bar";
 import CastVote from "@components/voting/cast_vote";
 import CountryGrid from "@components/voting/country_grid";
@@ -16,7 +16,7 @@ import {
   faTrashAlt,
   faUndo,
 } from "@fortawesome/pro-solid-svg-icons";
-import { IconProp } from "@fortawesome/fontawesome-svg-core";
+import type { IconProp } from "@fortawesome/fontawesome-svg-core";
 
 /**
  * This Component is the main Component of the Voting Area. It combines several other

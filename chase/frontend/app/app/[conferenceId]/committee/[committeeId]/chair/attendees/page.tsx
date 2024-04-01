@@ -12,7 +12,7 @@ import {
   ConferenceIdContext,
 } from "@/contexts/committee_data";
 import AttendanceTable, {
-  DelegationDataType,
+  type DelegationDataType,
 } from "@/components/attendance/attendance_table";
 import Button from "@/components/button";
 import {

@@ -15,5 +15,5 @@ export const time = new Elysia().use(loggedInGuard).get(
         "Get the timestamp of the current time in the backend. Can be used for sync with frontend system timers",
       tags: [openApiTag(import.meta.path)],
     },
-  }
+  },
 );

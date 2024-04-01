@@ -1,6 +1,6 @@
 import { faker } from "@faker-js/faker";
 import Papa from "papaparse";
-import fs from "fs";
+import fs from "node:fs";
 import { $Enums, PrismaClient } from "../generated/client";
 const prisma = new PrismaClient();
 

@@ -1,5 +1,6 @@
 "use client";
-import React, { useContext, useEffect, useState } from "react";
+import type React from "react";
+import { useContext, useEffect, useState } from "react";
 import { useI18nContext } from "@/i18n/i18n-react";
 import { useBackend, type BackendInstanceType } from "@/contexts/backend";
 import { useRouter } from "next/navigation";
@@ -10,10 +11,10 @@ import AddTeammemberDialog from "@/components/admin/teampool/add_teammember_dial
 import { confirmPopup } from "primereact/confirmpopup";
 import { useToast } from "@/contexts/toast";
 import { ConferenceIdContext } from "@/contexts/committee_data";
-import { $Enums } from "../../../../../../../backend/prisma/generated/client";
+import type { $Enums } from "../../../../../../../backend/prisma/generated/client";
 
 type TeamType = Awaited<
-  ReturnType<BackendInstanceType["conference"]["conferenceId"]["member"]["get"]>
+  ReturnType<ReturnType<BackendInstanceType["conference"]>["member"]["get"]>
 >["data"];
 
 export default function Teampool() {

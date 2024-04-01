@@ -1,17 +1,22 @@
 "use client";
 import { useBackend, type BackendInstanceType } from "@/contexts/backend";
-import React, { createContext, useContext, useEffect, useState } from "react";
+import type React from "react";
+import { createContext, useContext, useEffect, useState } from "react";
 import { useToast } from "@/contexts/toast";
 
 type Committee = Awaited<
   ReturnType<
-    BackendInstanceType["conference"]["conferenceId"]["committee"]["committeeId"]["get"]
+    ReturnType<
+      ReturnType<BackendInstanceType["conference"]>["committee"]
+    >["get"]
   >
 >["data"];
 
 type AgendaItem = Awaited<
   ReturnType<
-    BackendInstanceType["conference"]["conferenceId"]["committee"]["committeeId"]["agendaItem"]["active"]["get"]
+    ReturnType<
+      ReturnType<BackendInstanceType["conference"]>["committee"]
+    >["agendaItem"]["active"]["get"]
   >
 >["data"];
 

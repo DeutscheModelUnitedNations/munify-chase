@@ -7,7 +7,7 @@ import {
   faPaperPlane,
 } from "@fortawesome/pro-solid-svg-icons";
 import { useI18nContext } from "@/i18n/i18n-react";
-import { IconProp } from "@fortawesome/fontawesome-svg-core";
+import type { IconProp } from "@fortawesome/fontawesome-svg-core";
 import { useBackend, type BackendInstanceType } from "@/contexts/backend";
 import { useToast } from "@/contexts/toast";
 import {
@@ -17,7 +17,9 @@ import {
 
 type Committee = Awaited<
   ReturnType<
-    BackendInstanceType["conference"]["conferenceId"]["committee"]["committeeId"]["get"]
+    ReturnType<
+      ReturnType<BackendInstanceType["conference"]>["committee"]
+    >["get"]
   >
 >["data"];
 

@@ -3,7 +3,7 @@ import React, { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import Link from "next/link";
-import { IconProp } from "@fortawesome/fontawesome-svg-core";
+import type { IconProp } from "@fortawesome/fontawesome-svg-core";
 import { Badge } from "primereact/badge";
 
 interface NavbarButtonProps {

@@ -5,7 +5,7 @@ import { useI18nContext } from "@/i18n/i18n-react";
 import { faPlus, faXmark } from "@fortawesome/pro-solid-svg-icons";
 import useMousetrap from "mousetrap-react";
 import { Dialog } from "primereact/dialog";
-import { FormEvent, useEffect, useState } from "react";
+import { type FormEvent, useEffect, useState } from "react";
 import { useToast } from "@/contexts/toast";
 
 export type AllAvailableCountriesType = Awaited<

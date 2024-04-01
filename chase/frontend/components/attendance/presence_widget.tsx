@@ -2,7 +2,7 @@ import React, { useState, useEffect, useContext } from "react";
 import { useI18nContext } from "@/i18n/i18n-react";
 import { HeaderInfoBox } from "../header_template";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { IconProp } from "@fortawesome/fontawesome-svg-core";
+import type { IconProp } from "@fortawesome/fontawesome-svg-core";
 import {
   faUserCheck,
   faUserClock,
@@ -18,7 +18,9 @@ import {
 
 type DelegationData = Awaited<
   ReturnType<
-    BackendInstanceType["conference"]["conferenceId"]["committee"]["committeeId"]["delegations"]["get"]
+    ReturnType<
+      ReturnType<BackendInstanceType["conference"]>["committee"]
+    >["delegations"]["get"]
   >
 >["data"];
 

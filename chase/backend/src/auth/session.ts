@@ -42,7 +42,7 @@ export const session = new Elysia({ name: "session" })
         sameSite: appConfiguration.development ? "none" : "strict",
         secure: true,
         path: "/",
-      }
+      },
     ),
   })
   .derive(
@@ -96,5 +96,5 @@ export const session = new Elysia({ name: "session" })
       setData({}); // refresh timeout for the redis entry
 
       return { session };
-    }
+    },
   );

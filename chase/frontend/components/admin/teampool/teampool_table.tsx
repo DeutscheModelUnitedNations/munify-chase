@@ -1,4 +1,5 @@
-import React, { useEffect, useState } from "react";
+import type React from "react";
+import { useEffect, useState } from "react";
 import { useI18nContext } from "@/i18n/i18n-react";
 import Button from "@/components/button";
 import {
@@ -12,7 +13,7 @@ import { Column } from "primereact/column";
 import { ConfirmPopup } from "primereact/confirmpopup";
 import { Toolbar } from "primereact/toolbar";
 import useMousetrap from "mousetrap-react";
-import {
+import type {
   ConferenceMember,
   ConferenceRole,
 } from "../../../../backend/prisma/generated/client";

@@ -1,4 +1,4 @@
-import React, { FormEvent, useState } from "react";
+import React, { type FormEvent, useState } from "react";
 import { useI18nContext } from "@/i18n/i18n-react";
 import { Dialog } from "primereact/dialog";
 import { InputText } from "primereact/inputtext";
@@ -14,8 +14,8 @@ import {
 } from "@fortawesome/pro-solid-svg-icons";
 import Button from "@/components/button";
 import useMousetrap from "mousetrap-react";
-import { $Enums } from "../../../../backend/prisma/generated/client";
-import { type BackendInstanceType } from "@/contexts/backend";
+import type { $Enums } from "../../../../backend/prisma/generated/client";
+import type { BackendInstanceType } from "@/contexts/backend";
 
 type AddCommitteePayloadType = {
   name: string;
@@ -25,9 +25,7 @@ type AddCommitteePayloadType = {
 };
 
 type CommitteesType = Awaited<
-  ReturnType<
-    BackendInstanceType["conference"]["conferenceId"]["committee"]["get"]
-  >
+  ReturnType<ReturnType<BackendInstanceType["conference"]>["committee"]["get"]>
 >["data"];
 
 export default function AddCommitteeDialog({

@@ -1,4 +1,4 @@
-import React from "react";
+import type React from "react";
 
 /**
  * This Component is the main template for any main header of a page inside the app.

@@ -38,7 +38,7 @@ export const committeeMemberGuard = new Elysia({
             if (!res) {
               return error("Unauthorized");
             }
-          }
+          },
         );
       },
     };

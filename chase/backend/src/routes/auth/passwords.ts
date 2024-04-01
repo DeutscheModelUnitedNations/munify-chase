@@ -41,9 +41,9 @@ export const passwords = new Elysia()
             ...task,
             hit: await Bun.password.verify(
               credentialCreateToken,
-              task.token.tokenHash
+              task.token.tokenHash,
             ),
-          }))
+          })),
         )
       ).find((t) => t.hit);
 
@@ -57,7 +57,7 @@ export const passwords = new Elysia()
             foundEmail.user.passwords.map(async (p) => ({
               ...p,
               hit: await Bun.password.verify(password, p.passwordHash),
-            }))
+            })),
           )
         ).find((p) => p.hit)
       ) {
@@ -97,7 +97,7 @@ export const passwords = new Elysia()
         description: "Login with a password",
         tags: [openApiTag(import.meta.path)],
       },
-    }
+    },
   )
   .delete(
     "/password",
@@ -114,7 +114,7 @@ export const passwords = new Elysia()
           user.passwords.map(async (p) => ({
             ...p,
             hit: await Bun.password.verify(password, p.passwordHash),
-          }))
+          })),
         )
       ).find((p) => p.hit);
 
@@ -137,7 +137,7 @@ export const passwords = new Elysia()
         description: "Delete a password",
         tags: [openApiTag(import.meta.path)],
       },
-    }
+    },
   )
   .post(
     "/password/login",
@@ -156,8 +156,8 @@ export const passwords = new Elysia()
         !(
           await Promise.all(
             foundEmail.user.passwords.map((p) =>
-              Bun.password.verify(password, p.passwordHash)
-            )
+              Bun.password.verify(password, p.passwordHash),
+            ),
           )
         ).some((p) => p)
       ) {
@@ -182,5 +182,5 @@ export const passwords = new Elysia()
         description: "Login with a password",
         tags: [openApiTag(import.meta.path)],
       },
-    }
+    },
   );

@@ -20,7 +20,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useI18nContext } from "@/i18n/i18n-react";
 import AddSpeakerOverlay from "./add_speaker";
 import ChangeSpeechTimeOverlay from "./change_speech_time";
-import { IconProp } from "@fortawesome/fontawesome-svg-core";
+import type { IconProp } from "@fortawesome/fontawesome-svg-core";
 import useMousetrap from "mousetrap-react";
 import { useBackend, type BackendInstanceType } from "@/contexts/backend";
 import { $Enums } from "../../../backend/prisma/generated/client";
@@ -32,11 +32,13 @@ import {
 import { SpeakersListDataContext } from "@/contexts/speakers_list_data";
 import { useUserIdent } from "@/contexts/user_ident";
 import { ConfirmDialog } from "primereact/confirmdialog";
-import { MenuItem } from "primereact/menuitem";
+import type { MenuItem } from "primereact/menuitem";
 
 type AllCountryCodes = Awaited<
   ReturnType<
-    BackendInstanceType["conference"]["conferenceId"]["committee"]["committeeId"]["allCountryCodes"]["get"]
+    ReturnType<
+      ReturnType<BackendInstanceType["conference"]>["committee"]
+    >["allCountryCodes"]["get"]
   >
 >["data"];
 

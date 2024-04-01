@@ -11,15 +11,17 @@ import {
 import { Dialog } from "primereact/dialog";
 import { faDownload } from "@fortawesome/pro-solid-svg-icons";
 import Button from "../button";
-import { type BackendInstanceType } from "@/contexts/backend";
+import type { BackendInstanceType } from "@/contexts/backend";
 import { useI18nContext } from "@/i18n/i18n-react";
 import getCountryNameByCode from "@/misc/get_country_name_by_code";
-import { TranslationFunctions } from "@/i18n/i18n-types";
+import type { TranslationFunctions } from "@/i18n/i18n-types";
 import { $Enums } from "../../../backend/prisma/generated/client";
 
 type ChairMessages = Awaited<
   ReturnType<
-    BackendInstanceType["conference"]["conferenceId"]["committee"]["committeeId"]["messages"]["get"]
+    ReturnType<
+      ReturnType<BackendInstanceType["conference"]>["committee"]
+    >["messages"]["get"]
   >
 >["data"];
 

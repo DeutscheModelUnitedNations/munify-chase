@@ -1,4 +1,4 @@
-import { NationTranslation } from "./nations";
+import type { NationTranslation } from "./nations";
 
 const specialPersons: NationTranslation[] = [
   {

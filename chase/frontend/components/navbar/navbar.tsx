@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useState } from "react";
+import type React from "react";
+import { useState } from "react";
 import Image from "next/image";
 
 import NavButton from "@/components/navbar/button";
@@ -15,7 +16,7 @@ import {
 } from "@fortawesome/pro-solid-svg-icons";
 
 import { useI18nContext } from "@/i18n/i18n-react";
-import { IconProp } from "@fortawesome/fontawesome-svg-core";
+import type { IconProp } from "@fortawesome/fontawesome-svg-core";
 import { useBackend } from "@/contexts/backend";
 import { useToast } from "@/contexts/toast";
 

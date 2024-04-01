@@ -51,7 +51,7 @@ export const auth = new Elysia({
           "Returns some info on the user in the system. Can be used to check if the user is existing and validated.",
         tags: [openApiTag(import.meta.path)],
       },
-    }
+    },
   )
   .get(
     "/myInfo",
@@ -89,7 +89,7 @@ export const auth = new Elysia({
         description: "Returns the user info when they are logged in",
         tags: [openApiTag(import.meta.path)],
       },
-    }
+    },
   )
   .post(
     "/validateEmail",
@@ -120,7 +120,7 @@ export const auth = new Elysia({
       if (
         !(await Bun.password.verify(
           token,
-          foundEmail.validationToken.tokenHash
+          foundEmail.validationToken.tokenHash,
         ))
       ) {
         return "invalidToken";
@@ -176,7 +176,7 @@ export const auth = new Elysia({
           "Validates the email of a user. The token is the token that was sent to the user via email. Returns a token which can be used to create credentials",
         tags: [openApiTag(import.meta.path)],
       },
-    }
+    },
   )
   .post(
     "/createUser",
@@ -218,7 +218,7 @@ export const auth = new Elysia({
         description: "Creates a user",
         tags: [openApiTag(import.meta.path)],
       },
-    }
+    },
   )
   //TODO spam protection?
   .get(
@@ -264,7 +264,7 @@ export const auth = new Elysia({
         description: "Sends a credential creation token to the users email",
         tags: [openApiTag(import.meta.path)],
       },
-    }
+    },
   )
   .get(
     "/logout",
@@ -277,5 +277,5 @@ export const auth = new Elysia({
           "Logs the user out. The user will be logged out on the next request",
         tags: [openApiTag(import.meta.path)],
       },
-    }
+    },
   );

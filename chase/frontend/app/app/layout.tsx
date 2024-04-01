@@ -1,6 +1,6 @@
 "use client";
 import { UserIdentProvider } from "@/contexts/user_ident";
-import React from "react";
+import type React from "react";
 
 export default function UserIdentLayout({
   children,

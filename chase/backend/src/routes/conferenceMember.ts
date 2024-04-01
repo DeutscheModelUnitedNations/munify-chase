@@ -36,7 +36,7 @@ export const conferenceMember = new Elysia({
         description: "Get all conference-members in this conference",
         tags: [openApiTag(import.meta.path)],
       },
-    }
+    },
   )
   .post(
     "/member",
@@ -57,7 +57,7 @@ export const conferenceMember = new Elysia({
           "Create a new conference-member in this conference. Must provide a role and count (how many members of this role to create) in the body.",
         tags: [openApiTag(import.meta.path)],
       },
-    }
+    },
   )
   .delete(
     "/member",
@@ -74,7 +74,7 @@ export const conferenceMember = new Elysia({
         description: "Delete all conference-members in this conference",
         tags: [openApiTag(import.meta.path)],
       },
-    }
+    },
   )
   .delete(
     "/member/:memberId",
@@ -91,5 +91,5 @@ export const conferenceMember = new Elysia({
         description: "Delete a specific conference-member in this conference",
         tags: [openApiTag(import.meta.path)],
       },
-    }
+    },
   );

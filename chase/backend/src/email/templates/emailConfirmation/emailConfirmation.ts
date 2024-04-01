@@ -1,5 +1,5 @@
 import { appConfiguration } from "../../../util/config";
-import { AvailableEmailLocales, EmailTemplate } from "../../email";
+import type { AvailableEmailLocales, EmailTemplate } from "../../email";
 import { parse, replaceTemplateVariables } from "../../parser";
 import template from "./template.mjml";
 import { readFile } from "node:fs/promises";

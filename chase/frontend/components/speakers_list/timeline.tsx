@@ -1,6 +1,6 @@
-import React from "react";
+import type React from "react";
 import FlipMove from "react-flip-move";
-import { SpeakersListData } from "./speakers_list_block";
+import type { SpeakersListData } from "./speakers_list_block";
 import { useI18nContext } from "@/i18n/i18n-react";
 
 /**

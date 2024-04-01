@@ -11,8 +11,8 @@ export const messages = new Elysia()
   .use(committeeMemberGuard)
   .get(
     "/conference/:conferenceId/messages/researchService",
-    ({ params: { conferenceId } }) => {
-      return db.message.findMany({
+    ({ params: { conferenceId } }) =>
+      db.message.findMany({
         where: {
           committee: {
             conferenceId,
@@ -36,8 +36,7 @@ export const messages = new Elysia()
         orderBy: {
           timestamp: "asc",
         },
-      });
-    },
+      }),
     {
       hasConferenceRole: [
         "ADMIN",
@@ -46,14 +45,11 @@ export const messages = new Elysia()
         "MISCELLANEOUS_TEAM",
         "SECRETARIAT",
       ],
-      response: t.Array(
-        t.Composite([MessagePlain, t.Pick(Message, ["author"])])
-      ),
       detail: {
         description: "Get all research service messages in this conference",
         tags: [openApiTag(import.meta.path)],
       },
-    }
+    },
   )
 
   .get(
@@ -95,7 +91,7 @@ export const messages = new Elysia()
         description: "Get all messages for the chair in this committee",
         tags: [openApiTag(import.meta.path)],
       },
-    }
+    },
   )
 
   .post(
@@ -132,7 +128,7 @@ export const messages = new Elysia()
         description: "Create a new message",
         tags: [openApiTag(import.meta.path)],
       },
-    }
+    },
   )
 
   .get(
@@ -157,7 +153,7 @@ export const messages = new Elysia()
           "Get the number of unread messages to the research service in this conference",
         tags: [openApiTag(import.meta.path)],
       },
-    }
+    },
   )
 
   .get(
@@ -180,7 +176,7 @@ export const messages = new Elysia()
           "Get the number of unread messages for the chair in this committee",
         tags: [openApiTag(import.meta.path)],
       },
-    }
+    },
   )
 
   .post(
@@ -217,7 +213,7 @@ export const messages = new Elysia()
         description: "Set a Status for a message from the MessageStatus enum",
         tags: [openApiTag(import.meta.path)],
       },
-    }
+    },
   )
 
   .post(
@@ -243,7 +239,7 @@ export const messages = new Elysia()
       }
 
       const updatedArray: $Enums.MessageStatus[] = message.status.filter(
-        (status) => status !== body.status
+        (status) => status !== body.status,
       );
 
       return await db.message.update({
@@ -260,7 +256,7 @@ export const messages = new Elysia()
         description: "Set a Status for a message from the MessageStatus enum",
         tags: [openApiTag(import.meta.path)],
       },
-    }
+    },
   )
 
   .post(
@@ -279,5 +275,5 @@ export const messages = new Elysia()
         description: "Forward a message to the research service",
         tags: [openApiTag(import.meta.path)],
       },
-    }
+    },
   );

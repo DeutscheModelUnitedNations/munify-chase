@@ -14,9 +14,7 @@ import {
 import { useToast } from "@/contexts/toast";
 
 type CommitteesType = Awaited<
-  ReturnType<
-    BackendInstanceType["conference"]["conferenceId"]["committee"]["get"]
-  >
+  ReturnType<ReturnType<BackendInstanceType["conference"]>["committee"]["get"]>
 >["data"];
 
 export default function OnboardingCommitteePage() {

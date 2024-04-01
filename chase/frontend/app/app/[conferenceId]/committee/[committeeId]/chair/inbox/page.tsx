@@ -12,7 +12,9 @@ import { ActionsOverlayResearchService } from "@/components/dashboard/actions_ov
 
 type ChairMessages = Awaited<
   ReturnType<
-    BackendInstanceType["conference"]["conferenceId"]["committee"]["committeeId"]["messages"]["get"]
+    ReturnType<
+      ReturnType<BackendInstanceType["conference"]>["committee"]
+    >["messages"]["get"]
   >
 >["data"];
 

@@ -1,13 +1,18 @@
 "use client";
-import React, { createContext, useState, useEffect, useContext } from "react";
+import type React from "react";
+import { createContext, useState, useEffect, useContext } from "react";
 import { useBackend, type BackendInstanceType } from "@/contexts/backend";
 import { ConferenceIdContext, CommitteeIdContext } from "./committee_data";
-import { $Enums } from "../../backend/prisma/generated/client";
+import type { $Enums } from "../../backend/prisma/generated/client";
 import { useToast } from "./toast";
 
 export type SpeakersListDataType = Awaited<
   ReturnType<
-    BackendInstanceType["conference"]["conferenceId"]["committee"]["committeeId"]["speakersList"]["type"]["get"]
+    ReturnType<
+      ReturnType<
+        ReturnType<BackendInstanceType["conference"]>["committee"]
+      >["speakersList"]
+    >["get"]
   >
 >["data"];
 

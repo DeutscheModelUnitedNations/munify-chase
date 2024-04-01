@@ -82,9 +82,9 @@ export default () => {
       });
       if (res.error) {
         if (res.error.status === 451) {
-          toastError(res.error, "Unavailable for legal reasons");
+          toastError(res.error.value as Error, "Unavailable for legal reasons");
         } else {
-          toastError(res.error);
+          toastError(res.error.value as Error);
         }
       } else {
         setUserState(res.data);
@@ -120,7 +120,7 @@ export default () => {
       if (res.error) {
         showToast({
           severity: "error",
-          summary: res.error.message,
+          summary: res.error.value as string,
         });
       } else {
         setCreatedSuccessfullyLoading(true);
@@ -131,7 +131,7 @@ export default () => {
 
   function forgotPassword(e: React.MouseEvent<HTMLButtonElement, MouseEvent>) {
     e.preventDefault();
-    backend.auth.sendCredentialCreateToken.get({ $query: { email, locale } });
+    backend.auth.sendCredentialCreateToken.get({ query: { email, locale } });
     showToast({
       severity: "info",
       summary: LL.login.SENT_EMAIL(),

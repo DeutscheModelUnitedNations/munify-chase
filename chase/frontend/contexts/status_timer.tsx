@@ -1,5 +1,6 @@
 "use client";
-import React, { createContext, useContext, useEffect, useState } from "react";
+import type React from "react";
+import { createContext, useContext, useEffect, useState } from "react";
 import { ToastContext } from "@/contexts/toast";
 import { useBackendTime } from "@/contexts/backendTime";
 import { useI18nContext } from "@/i18n/i18n-react";

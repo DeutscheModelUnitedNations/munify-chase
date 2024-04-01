@@ -27,11 +27,11 @@ setInterval(
     const snapshot = Bun.generateHeapSnapshot();
     await Bun.write(
       `heapSnapshots/${Date.now()}.json`,
-      JSON.stringify(snapshot, null, 2)
+      JSON.stringify(snapshot, null, 2),
     );
     console.info("Heap snapshot taken");
   },
-  1000 * 60 * 10
+  1000 * 60 * 10,
 ); // every 10 minutes
 
 const m = new Elysia({
@@ -48,7 +48,7 @@ const m = new Elysia({
           version: packagejson.version,
         },
       },
-    })
+    }),
   )
   .use(errorLogging)
   .use(
@@ -66,7 +66,7 @@ const m = new Elysia({
         "TRACE",
         "CONNECT",
       ],
-    })
+    }),
   )
   .use(conference)
   .use(conferenceMember)
@@ -96,7 +96,7 @@ setTimeout(() => {
         process.env.PORT ?? "3001"
       }/${appConfiguration.documentationPath}
       
-      `
+      `,
   );
 }, 3000);
 
@@ -107,7 +107,7 @@ if (appConfiguration.development) {
       
       Dummy emails sent to inbox at http://${appConfiguration.email.EMAIL_HOST}:3777
       
-      `
+      `,
     );
   }, 3000);
 }

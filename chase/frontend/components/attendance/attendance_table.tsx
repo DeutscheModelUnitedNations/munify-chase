@@ -11,13 +11,15 @@ import {
   faUserXmark,
   faUserClock,
 } from "@fortawesome/pro-solid-svg-icons";
-import { IconProp } from "@fortawesome/fontawesome-svg-core";
-import { type BackendInstanceType } from "@/contexts/backend";
+import type { IconProp } from "@fortawesome/fontawesome-svg-core";
+import type { BackendInstanceType } from "@/contexts/backend";
 import { $Enums } from "../../../backend/prisma/generated/client";
 
 export type DelegationDataType = Awaited<
   ReturnType<
-    BackendInstanceType["conference"]["conferenceId"]["committee"]["committeeId"]["delegations"]["get"]
+    ReturnType<
+      ReturnType<BackendInstanceType["conference"]>["committee"]
+    >["delegations"]["get"]
   >
 >["data"];
 

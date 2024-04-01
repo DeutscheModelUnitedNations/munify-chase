@@ -10,7 +10,9 @@ import {
 import { useToast } from "@/contexts/toast";
 type AgendaItems = Awaited<
   ReturnType<
-    BackendInstanceType["conference"]["conferenceId"]["committee"]["committeeId"]["agendaItem"]["get"]
+    ReturnType<
+      ReturnType<BackendInstanceType["conference"]>["committee"]
+    >["agendaItem"]["get"]
   >
 >["data"];
 

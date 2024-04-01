@@ -1,6 +1,6 @@
 import React from "react";
 import { useI18nContext } from "@/i18n/i18n-react";
-import { type BackendInstanceType } from "@/contexts/backend";
+import type { BackendInstanceType } from "@/contexts/backend";
 import { ScrollPanel } from "primereact/scrollpanel";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faInbox } from "@fortawesome/pro-solid-svg-icons";
@@ -10,7 +10,9 @@ import MessageDetails from "./message_details";
 
 type ChairMessages = Awaited<
   ReturnType<
-    BackendInstanceType["conference"]["conferenceId"]["committee"]["committeeId"]["messages"]["get"]
+    ReturnType<
+      ReturnType<BackendInstanceType["conference"]>["committee"]
+    >["messages"]["get"]
   >
 >["data"];
 

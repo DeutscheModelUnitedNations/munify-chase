@@ -16,12 +16,16 @@ import { useMediaQuery } from "react-responsive";
 
 type CommitteeType = Awaited<
   ReturnType<
-    BackendInstanceType["conference"]["conferenceId"]["committee"]["committeeId"]["get"]
+    ReturnType<
+      ReturnType<BackendInstanceType["conference"]>["committee"]
+    >["get"]
   >
 >["data"];
 type AgendaItems = Awaited<
   ReturnType<
-    BackendInstanceType["conference"]["conferenceId"]["committee"]["committeeId"]["agendaItem"]["get"]
+    ReturnType<
+      ReturnType<BackendInstanceType["conference"]>["committee"]
+    >["agendaItem"]["get"]
   >
 >["data"];
 

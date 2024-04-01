@@ -11,7 +11,7 @@ import {
 } from "@fortawesome/pro-solid-svg-icons";
 import { useI18nContext } from "@/i18n/i18n-react";
 import { AnimatePresence, motion } from "framer-motion";
-import { IconProp } from "@fortawesome/fontawesome-svg-core";
+import type { IconProp } from "@fortawesome/fontawesome-svg-core";
 import { Skeleton } from "primereact/skeleton";
 import Timer from "./countdown_timer";
 import { StatusTimer } from "@/contexts/status_timer";

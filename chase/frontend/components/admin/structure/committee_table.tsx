@@ -1,4 +1,4 @@
-import React from "react";
+import type React from "react";
 import { useI18nContext } from "@/i18n/i18n-react";
 import Button from "@/components/button";
 import {
@@ -14,12 +14,10 @@ import { Column } from "primereact/column";
 import { ConfirmPopup } from "primereact/confirmpopup";
 import { Toolbar } from "primereact/toolbar";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { type BackendInstanceType } from "@/contexts/backend";
+import type { BackendInstanceType } from "@/contexts/backend";
 
 type CommitteesType = Awaited<
-  ReturnType<
-    BackendInstanceType["conference"]["conferenceId"]["committee"]["get"]
-  >
+  ReturnType<ReturnType<BackendInstanceType["conference"]>["committee"]["get"]>
 >["data"];
 
 type CommitteeType = NonNullable<CommitteesType>[number];

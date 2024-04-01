@@ -9,7 +9,7 @@ import { useEffect, useState, useContext } from "react";
 import useMousetrap from "mousetrap-react";
 import { ConferenceIdContext } from "@/contexts/committee_data";
 import { useToast } from "@/contexts/toast";
-import {
+import type {
   CommitteesType,
   DelegationsType,
 } from "@/components/admin/delegations/delegations_table";

@@ -15,7 +15,7 @@ import {
   faForwardStep,
   faQuestion,
 } from "@fortawesome/pro-solid-svg-icons";
-import { IconProp } from "@fortawesome/fontawesome-svg-core";
+import type { IconProp } from "@fortawesome/fontawesome-svg-core";
 import SmallInfoCard from "../small_info_card";
 import {
   CommitteeDataProvider,
@@ -24,9 +24,7 @@ import {
 import { StatusTimerProvider } from "@/contexts/status_timer";
 
 type CommitteeArray = Awaited<
-  ReturnType<
-    BackendInstanceType["conference"][":conferenceId"]["committee"]["get"]
-  >
+  ReturnType<ReturnType<BackendInstanceType["conference"]>["committee"]["get"]>
 >["data"];
 type CommitteeType = NonNullable<CommitteeArray>[number];
 

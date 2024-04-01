@@ -1,4 +1,4 @@
-import React, { FormEvent, useRef, useState } from "react";
+import React, { type FormEvent, useRef, useState } from "react";
 import { useI18nContext } from "@/i18n/i18n-react";
 
 import { Dialog } from "primereact/dialog";
@@ -8,7 +8,7 @@ import { RadioButton } from "primereact/radiobutton";
 import { faPlus, faXmark } from "@fortawesome/pro-solid-svg-icons";
 import Button from "@/components/button";
 import useMousetrap from "mousetrap-react";
-import { ConferenceRole } from "../../../../backend/prisma/generated/client";
+import type { ConferenceRole } from "../../../../backend/prisma/generated/client";
 
 type AddTeammemberDialogProps = {
   inputMaskVisible: boolean;
@@ -120,7 +120,7 @@ export default function AddTeammemberDialog({
             id="count"
             type="number"
             onChange={(e) =>
-              setNewTeammemberCount(parseInt(e.currentTarget.value))
+              setNewTeammemberCount(Number.parseInt(e.currentTarget.value))
             }
             value={newTeammemberCount.toString()}
             min={1}

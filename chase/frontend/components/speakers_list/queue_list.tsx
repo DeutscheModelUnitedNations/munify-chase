@@ -14,7 +14,7 @@ import Button from "@components/button";
 import { useBackend } from "@/contexts/backend";
 import {
   SpeakersListDataContext,
-  SpeakersListDataType,
+  type SpeakersListDataType,
 } from "@/contexts/speakers_list_data";
 
 /**

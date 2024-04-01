@@ -3,11 +3,14 @@ import { db } from "../../prisma/db";
 import { conferenceRoleGuard } from "../auth/guards/conferenceRoles";
 import { openApiTag } from "../util/openApiTags";
 import { loggedInGuard } from "../auth/guards/loggedIn";
-import { ConferencePlain } from "../../prisma/generated/schema/Conference";
+import {
+  ConferencePlain,
+  ConferenceData as ConferenceDataSchema,
+} from "../../prisma/generated/schema/Conference";
 import { ConferenceCreateToken } from "../../prisma/generated/schema/ConferenceCreateToken";
 import { User } from "../../prisma/generated/schema/User";
 
-const ConferenceData = t.Omit(ConferencePlain, ["id"]);
+const ConferenceData = t.Omit(ConferenceDataSchema, ["id"]);
 
 export const conference = new Elysia()
   .use(loggedInGuard)
@@ -23,7 +26,7 @@ export const conference = new Elysia()
         description: "Get all conferences",
         tags: [openApiTag(import.meta.path)],
       },
-    }
+    },
   )
   .post(
     "/conference",
@@ -72,7 +75,7 @@ export const conference = new Elysia()
       },
       body: t.Composite([ConferenceData, ConferenceCreateToken]),
       response: ConferencePlain,
-    }
+    },
   )
   .get(
     "/conference/:conferenceId",
@@ -87,7 +90,7 @@ export const conference = new Elysia()
         tags: [openApiTag(import.meta.path)],
       },
       response: ConferencePlain,
-    }
+    },
   )
   .patch(
     "/conference/:conferenceId",
@@ -108,7 +111,7 @@ export const conference = new Elysia()
         description: "Update a conference by id",
         tags: [openApiTag(import.meta.path)],
       },
-    }
+    },
   )
   .patch(
     "/conference/:conferenceId/addAdmin",
@@ -147,7 +150,7 @@ export const conference = new Elysia()
         description: "Add an admin to a conference",
         tags: [openApiTag(import.meta.path)],
       },
-    }
+    },
   )
   .delete(
     "/conference/:conferenceId",
@@ -159,7 +162,7 @@ export const conference = new Elysia()
         description: "Delete a conference by id",
         tags: [openApiTag(import.meta.path)],
       },
-    }
+    },
   )
   .get("/conference/:conferenceId/checkAdminAccess", () => true, {
     hasConferenceRole: ["ADMIN"],

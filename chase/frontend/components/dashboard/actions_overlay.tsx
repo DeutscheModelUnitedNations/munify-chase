@@ -14,7 +14,7 @@ import {
   faUserTie,
 } from "@fortawesome/pro-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { IconProp } from "@fortawesome/fontawesome-svg-core";
+import type { IconProp } from "@fortawesome/fontawesome-svg-core";
 import {
   CommitteeIdContext,
   CommitteeDataContext,
@@ -23,7 +23,7 @@ import {
 } from "@/contexts/committee_data";
 import { MyDelegationContext, useUserIdent } from "@/contexts/user_ident";
 import { useToast } from "@/contexts/toast";
-import { $Enums } from "../../../backend/prisma/generated/client";
+import type { $Enums } from "../../../backend/prisma/generated/client";
 import { useBackend } from "@/contexts/backend";
 
 interface DropdownOptions {

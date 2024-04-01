@@ -17,7 +17,9 @@ import {
 
 type AgendaItemType = Awaited<
   ReturnType<
-    BackendInstanceType["conference"]["conferenceId"]["committee"]["committeeId"]["agendaItem"]["get"]
+    ReturnType<
+      ReturnType<BackendInstanceType["conference"]>["committee"]
+    >["agendaItem"]["get"]
   >
 >["data"];
 

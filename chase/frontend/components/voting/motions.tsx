@@ -2,7 +2,7 @@ import React from "react";
 import WidgetTemplate from "../widget_template";
 import WidgetBoxTemplate from "../widget_box_template";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { Motion } from "@/custom_types/custom_types";
+import type { Motion } from "@/custom_types/custom_types";
 import {
   faCircleCheck,
   faCheckToSlot,
@@ -15,7 +15,7 @@ import { SmallFlag } from "../flag_templates";
 import { useI18nContext } from "@/i18n/i18n-react";
 import FlipMove from "react-flip-move";
 import Button from "@/components/button";
-import { IconProp } from "@fortawesome/fontawesome-svg-core";
+import type { IconProp } from "@fortawesome/fontawesome-svg-core";
 
 /**
  * This Component is used on the Voting page and displays all open motions in a list format.

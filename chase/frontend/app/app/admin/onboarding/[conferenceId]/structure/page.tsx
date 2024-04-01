@@ -1,5 +1,6 @@
 "use client";
-import React, { useEffect, useContext, useState } from "react";
+import type React from "react";
+import { useEffect, useContext, useState } from "react";
 import { useI18nContext } from "@/i18n/i18n-react";
 import { useBackend, type BackendInstanceType } from "@/contexts/backend";
 import { useRouter } from "next/navigation";
@@ -11,12 +12,10 @@ import AddCommitteeDialog from "@/components/admin/structure/add_committee_dialo
 import useMousetrap from "mousetrap-react";
 import { useToast } from "@/contexts/toast";
 import { ConferenceIdContext } from "@/contexts/committee_data";
-import { $Enums } from "../../../../../../../backend/prisma/generated/client";
+import type { $Enums } from "../../../../../../../backend/prisma/generated/client";
 
 type CommitteesType = Awaited<
-  ReturnType<
-    BackendInstanceType["conference"]["conferenceId"]["committee"]["get"]
-  >
+  ReturnType<ReturnType<BackendInstanceType["conference"]>["committee"]["get"]>
 >["data"];
 
 export default function structure() {

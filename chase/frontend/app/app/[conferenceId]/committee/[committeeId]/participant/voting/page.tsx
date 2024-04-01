@@ -4,7 +4,7 @@ import Motions from "@/components/voting/motions";
 import VotingArea from "@/components/voting/voting";
 import { useI18nContext } from "@/i18n/i18n-react";
 import { motionTestData, myCountry } from "@/test_data";
-import { Motion } from "@/custom_types/custom_types";
+import type { Motion } from "@/custom_types/custom_types";
 import { TabMenu } from "primereact/tabmenu";
 
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -13,7 +13,7 @@ import {
   faHistory,
   faPollPeople,
 } from "@fortawesome/pro-solid-svg-icons";
-import { IconProp } from "@fortawesome/fontawesome-svg-core";
+import type { IconProp } from "@fortawesome/fontawesome-svg-core";
 
 type Tabs = "current-motions" | "recent-motions" | "recent-votings";
 

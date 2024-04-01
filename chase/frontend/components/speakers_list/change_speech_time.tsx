@@ -5,7 +5,7 @@ import { Button } from "primereact/button";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPlus, faTimes } from "@fortawesome/pro-solid-svg-icons";
 import { ToastContext } from "@/contexts/toast";
-import { IconProp } from "@fortawesome/fontawesome-svg-core";
+import type { IconProp } from "@fortawesome/fontawesome-svg-core";
 import { useBackend } from "@/contexts/backend";
 import { SpeakersListDataContext } from "@/contexts/speakers_list_data";
 
@@ -31,17 +31,17 @@ export default function ChangeSpeechTimeOverlay({
     if (!time) return false;
     const [minutes, seconds] = time.split(":");
     return (
-      parseInt(minutes) >= 0 &&
-      parseInt(minutes) <= 59 &&
-      parseInt(seconds) >= 0 &&
-      parseInt(seconds) <= 59
+      Number.parseInt(minutes) >= 0 &&
+      Number.parseInt(minutes) <= 59 &&
+      Number.parseInt(seconds) >= 0 &&
+      Number.parseInt(seconds) <= 59
     );
   };
 
   const convertTimeToSeconds = (time: string | null) => {
     if (!time) return 0;
     const [minutes, seconds] = time.split(":");
-    return parseInt(minutes) * 60 + parseInt(seconds);
+    return Number.parseInt(minutes) * 60 + Number.parseInt(seconds);
   };
 
   const sendNewTime = async (time: string | null) => {

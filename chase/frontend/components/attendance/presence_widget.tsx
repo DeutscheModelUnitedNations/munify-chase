@@ -166,7 +166,8 @@ export default function PresenceWidget({
           // This handles Security Council [SC / UNSC] (or german Sicherheitsrat [SR]) edge case, where the simple majority is always 9
           // TODO this is probably only a good temporary solution.
           // We should integrate an override option in the backend schema for calculated majorities per committee.
-          ["SR", "SC", "UNSC"].includes(committeeData?.abbreviation)
+          // biome-ignore lint/style/noNonNullAssertion: <explanation>
+          ["SR", "SC", "UNSC"].includes(committeeData?.abbreviation!)
             ? 9
             : undefined
         }

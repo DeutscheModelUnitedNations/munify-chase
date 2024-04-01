@@ -6,7 +6,7 @@ import {
   Delegation,
   DelegationPlain,
 } from "../../prisma/generated/schema/Delegation";
-import { Nullable } from "../../prisma/generated/schema/__nullable__";
+import { _Nullable } from "../../prisma/generated/schema/__nullable__";
 
 export const user = new Elysia({
   prefix: "/conference/:conferenceId",
@@ -31,7 +31,7 @@ export const user = new Elysia({
     },
     {
       hasConferenceRole: "any",
-      response: Nullable(
+      response: _Nullable(
         t.Composite([DelegationPlain, t.Pick(Delegation, ["nation"])]),
       ),
       detail: {

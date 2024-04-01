@@ -14,7 +14,7 @@ jobs:
         uses: oven-sh/setup-bun@v1
       
       - name: Install biome
-        run: bun i biome
+        run: bun add biome
 
       - name: Run biome
-        run: bun x biome ci .
+        run: bunx biome ci .

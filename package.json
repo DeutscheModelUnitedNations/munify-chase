@@ -16,5 +16,8 @@
     "@biomejs/biome": "^1.6.3",
     "bun-types": "latest",
     "concurrently": "^8.2.2"
+  },
+  "dependencies": {
+    "biome": "^0.3.3"
   }
 }

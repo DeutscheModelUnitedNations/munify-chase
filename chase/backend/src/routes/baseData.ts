@@ -2,7 +2,7 @@ import { t, Elysia } from "elysia";
 import { db } from "../../prisma/db";
 import { loggedInGuard } from "../auth/guards/loggedIn";
 import { openApiTag } from "../util/openApiTags";
-import { Nation, NationPlain } from "../../prisma/generated/schema/Nation";
+import { NationPlain } from "../../prisma/generated/schema/Nation";
 
 export const baseData = new Elysia({ prefix: "/baseData" })
   .use(loggedInGuard)
@@ -16,5 +16,5 @@ export const baseData = new Elysia({ prefix: "/baseData" })
         description: "Get all nations in the system",
         tags: [openApiTag(import.meta.path)],
       },
-    },
+    }
   );

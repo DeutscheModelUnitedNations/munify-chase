@@ -45,7 +45,7 @@ export default function Button({
           <FontAwesomeIcon
             icon={loading ? faSpinnerThird : faIcon}
             spin={loading ? true : false}
-            className={`${label && "mr-3"} + ${faIconClassName}`}
+            className={`${label && "mr-3 w-6"} + ${faIconClassName}`}
           />
         )
       }

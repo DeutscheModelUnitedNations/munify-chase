@@ -23,7 +23,7 @@ import { Skeleton } from "primereact/skeleton";
 import { TieredMenu } from "primereact/tieredmenu";
 import Button from "../button";
 import SettingsSidebar from "../navbar/settings_sidebar";
-import { ResDataManipulationType } from "@/app/app/[conferenceId]/res/[resolutionTag]/page";
+import { ResDataManipulationType } from "@/app/app/[conferenceId]/res/[resolutionId]/page";
 
 export default function Toolbar({
   resDataManipulation,

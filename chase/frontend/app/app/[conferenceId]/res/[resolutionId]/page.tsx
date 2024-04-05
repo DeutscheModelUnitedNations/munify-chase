@@ -93,7 +93,7 @@ export default function ResolutionEditor({
   useEffect(() => {
     const testData: testDataType = {
       tag: {
-        committee: "SR",
+        committee: "GV",
         type: ResolutionType.RES,
         session: 2024,
         number: 1,
@@ -101,8 +101,8 @@ export default function ResolutionEditor({
       agendaItem: "Situation in Haiti",
       writer: "cpv",
       sponsors: ["fra", "deu", "cze", "sur"],
-      organ: "Sicherheitsrat",
-      firstSentence: "Der Sicherheitsrat",
+      organ: "Generalversammlung",
+      firstSentence: "Die Generalversammlung",
       preambleClauses: [
         {
           id: "P0",
@@ -240,8 +240,8 @@ export default function ResolutionEditor({
           ],
         },
         {
-          id: "O1",
-          number: 2,
+          id: "O2",
+          number: 3,
           type: ClauseTypeEnum.OPERATIVE,
           content: [
             {
@@ -303,8 +303,8 @@ export default function ResolutionEditor({
           ],
         },
         {
-          id: "O1",
-          number: 2,
+          id: "O3",
+          number: 4,
           type: ClauseTypeEnum.OPERATIVE,
           content: [
             {
@@ -603,7 +603,8 @@ export default function ResolutionEditor({
     },
 
     printResolution: () => {
-      setPrintDialogVisible(true);
+      if (!window) return;
+      window.print();
     },
   };
 
@@ -616,7 +617,7 @@ export default function ResolutionEditor({
         }}
         resDataManipulation={ResDataManipulation}
       />
-      <div className="w-full bg-primary-950 print:bg-white">
+      <div className="w-full bg-primary-950 print:bg-white print:m-0">
         <Toolbar resDataManipulation={ResDataManipulation} />
         <div className="w-full p-4 xl:pl-40 py-20 print:p-0 flex flex-col items-center">
           <PaperWrapper>
@@ -848,7 +849,7 @@ function ResolutionHeaderInfoBlock({
 
 function PaperWrapper({ children }: { children: React.ReactNode }) {
   return (
-    <div className="w-full screen:max-w-[800px] screen:shadow-lg rounded p-12 bg-white font-times flex flex-col gap-2">
+    <div className="w-full screen:max-w-[800px] screen:shadow-lg rounded p-12 print:p-0 bg-white font-times flex flex-col gap-2">
       {children}
     </div>
   );

@@ -22,7 +22,7 @@ import {
   checkForOperatorsAndValidate,
 } from "@/misc/res_parser";
 import SmallInfoCard from "../small_info_card";
-import { ResDataManipulationType } from "@/app/app/[conferenceId]/res/[resolutionTag]/page";
+import { ResDataManipulationType } from "@/app/app/[conferenceId]/res/[resolutionId]/page";
 import Button from "../button";
 import useMousetrap from "mousetrap-react";
 

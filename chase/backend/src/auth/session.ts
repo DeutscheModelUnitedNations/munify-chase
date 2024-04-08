@@ -6,7 +6,7 @@ import type { Email, User } from "../../prisma/generated/client";
 
 //TODO periodically purge old sessions? Or does redis do that for us?
 
-const expirationDurationInMilliseconds = 1000 * 60 * 60 * 24 * 7; // a week
+const expirationDurationInSeconds = 60 * 60 * 24 * 7; // a week
 
 export type SessionData = {
   loggedIn: boolean;
@@ -38,7 +38,7 @@ export const session = new Elysia({ name: "session" })
         secrets: appConfiguration.cookie.secrets,
         sign: ["sessionId"],
         httpOnly: true,
-        maxAge: expirationDurationInMilliseconds,
+        maxAge: expirationDurationInSeconds,
         sameSite: appConfiguration.development ? "none" : "strict",
         secure: true,
         path: "/",
@@ -79,9 +79,15 @@ export const session = new Elysia({ name: "session" })
           data.user = newData.user;
         }
         await redis.set(redisIdentifier, JSON.stringify(data), {
-          EX: expirationDurationInMilliseconds,
+          EX: expirationDurationInSeconds,
         });
         sessionId.value = sessionIdValue;
+        sessionId.httpOnly = true;
+        sessionId.maxAge = expirationDurationInSeconds;
+        sessionId.sameSite = appConfiguration.development ? "none" : "strict";
+        sessionId.secure = true;
+        sessionId.path = "/";
+        sessionId.secrets = appConfiguration.cookie.secrets;
       };
       session.setData = setData;
 

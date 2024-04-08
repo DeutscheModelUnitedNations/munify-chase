@@ -1,6 +1,6 @@
 "use client";
 import React, { useState, useEffect, useContext } from "react";
-import { useBackend, type BackendInstanceType } from "@/contexts/backend";
+import { useBackend } from "@/contexts/backend";
 import {
   CommitteeIdContext,
   ConferenceIdContext,
@@ -9,45 +9,27 @@ import InboxTemplate from "@/components/inbox/inbox_template";
 import Button from "@/components/button";
 import { faPlus } from "@fortawesome/pro-solid-svg-icons";
 import { ActionsOverlayResearchService } from "@/components/dashboard/actions_overlay";
-
-type ChairMessages = Awaited<
-  ReturnType<
-    ReturnType<
-      ReturnType<BackendInstanceType["conference"]>["committee"]
-    >["messages"]["get"]
-  >
->["data"];
+import { pollBackendCall } from "@/hooks/pollBackendCall";
 
 export default function InboxPage() {
   const conferenceId = useContext(ConferenceIdContext);
   const committeeId = useContext(CommitteeIdContext);
   const { backend } = useBackend();
 
-  const [messages, setMessages] = useState<ChairMessages | null>(null);
+  const [messages, triggerMessages] = pollBackendCall(
+    backend
+      //TODO
+      // biome-ignore lint/style/noNonNullAssertion:
+      .conference({ conferenceId: conferenceId! })
+      //TODO
+      // biome-ignore lint/style/noNonNullAssertion:
+      .committee({ committeeId: committeeId! }).messages.get,
+    10000,
+  );
   const [selectedMessage, setSelectedMessage] = useState<
-    NonNullable<ChairMessages>[number] | null
+    (typeof messages)[number] | null
   >(null);
   const [displayResearchDialog, setDisplayResearchDialog] = useState(false);
-
-  async function getMessages() {
-    if (!conferenceId || !committeeId) return;
-    backend.conference[conferenceId].committee[committeeId].messages
-      .get()
-      .then((res) => {
-        setMessages(res.data);
-      })
-      .catch((err) => {
-        console.error(err);
-      });
-  }
-
-  useEffect(() => {
-    getMessages();
-    const interval = setInterval(() => {
-      getMessages();
-    }, 10000);
-    return () => clearInterval(interval);
-  }, []);
 
   useEffect(() => {
     setSelectedMessage(
@@ -67,7 +49,7 @@ export default function InboxPage() {
         messages={messages}
         selectedMessage={selectedMessage}
         setSelectedMessage={setSelectedMessage}
-        getMessagesFunction={getMessages}
+        getMessagesFunction={triggerMessages}
       />
       <div className="absolute bottom-5 right-5">
         <Button

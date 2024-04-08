@@ -2,7 +2,7 @@
 import type React from "react";
 import { useEffect, useContext, useState } from "react";
 import { useI18nContext } from "@/i18n/i18n-react";
-import { useBackend, type BackendInstanceType } from "@/contexts/backend";
+import { useBackend } from "@/contexts/backend";
 import { useRouter } from "next/navigation";
 import { confirmPopup } from "primereact/confirmpopup";
 import ForwardBackButtons from "@/components/admin/onboarding/forward_back_bar";
@@ -12,10 +12,7 @@ import useMousetrap from "mousetrap-react";
 import { useToast } from "@/contexts/toast";
 import { ConferenceIdContext } from "@/contexts/committee_data";
 import type { $Enums } from "@prisma/generated/client";
-
-type CommitteesType = Awaited<
-  ReturnType<ReturnType<BackendInstanceType["conference"]>["committee"]["get"]>
->["data"];
+import { useBackendCall } from "@/hooks/useBackendCall";
 
 export default function structure() {
   const { LL } = useI18nContext();
@@ -29,24 +26,17 @@ export default function structure() {
   const [saveLoading, setSaveLoading] = useState(false);
 
   const [updateCommittees, setUpdateCommittees] = useState(true);
-  const [committees, setCommittees] = useState<CommitteesType>(null);
-
-  async function getCommittees() {
-    if (!conferenceId) return;
-    await backend.conference[conferenceId].committee
-      .get()
-      .then((res) => {
-        if (res.status >= 400) throw new Error("Failed to fetch committees");
-        setCommittees(res.data);
-      })
-      .catch((error) => {
-        toastError(error);
-      });
-  }
+  const [committees, triggerCommittees] = useBackendCall(
+    //TODO
+    // biome-ignore lint/style/noNonNullAssertion:
+    backend.conference({ conferenceId: conferenceId! }).committee.get,
+    true,
+  );
 
   useEffect(() => {
     if (updateCommittees) {
-      getCommittees();
+      if (!conferenceId) return;
+      triggerCommittees();
       setUpdateCommittees(false);
     }
   }, [updateCommittees, conferenceId]);
@@ -104,7 +94,7 @@ export default function structure() {
     });
   };
 
-  async function handleDelete(rawData: NonNullable<CommitteesType>[number]) {
+  async function handleDelete(rawData: NonNullable<typeof committees>[number]) {
     if (!rawData || !conferenceId) return;
     backend.conference[conferenceId].committee[rawData.id]
       .delete()

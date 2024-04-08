@@ -1,6 +1,6 @@
 "use client";
-import React, { useEffect, useState } from "react";
-import { useBackend, type BackendInstanceType } from "@/contexts/backend";
+import React from "react";
+import { useBackend } from "@/contexts/backend";
 import {
   faCircleNotch,
   faRightFromBracket,
@@ -16,10 +16,7 @@ import { useI18nContext } from "@/i18n/i18n-react";
 import Link from "next/link";
 import { conferenceRoleTranslation } from "@/i18n/translation_utils";
 import { useToast } from "@/contexts/toast";
-
-type MyInfoDataType = Awaited<
-  ReturnType<BackendInstanceType["auth"]["myInfo"]["get"]>
->["data"];
+import { useBackendCall } from "@/hooks/useBackendCall";
 
 export default function LoginRedirectPage() {
   const router = useRouter();
@@ -27,29 +24,10 @@ export default function LoginRedirectPage() {
   const { toastError } = useToast();
   const { backend } = useBackend();
 
-  const [myInfoData, setMyInfoData] = useState<MyInfoDataType | null>(null);
-
-  async function fetchMyInfoData() {
-    await backend.auth.myInfo
-      .get()
-      .then((res) => {
-        if (res.status === 200) {
-          setMyInfoData(res.data);
-        } else {
-          throw new Error("Failed to fetch redirect data");
-        }
-      })
-      .catch((err) => {
-        toastError(err);
-      });
-  }
-
-  useEffect(() => {
-    fetchMyInfoData();
-  }, []);
+  const [myInfoData] = useBackendCall(backend.auth.myInfo.get, false);
 
   const conferenceMemberRedirectPath = (
-    conferenceMembership: NonNullable<MyInfoDataType>["conferenceMemberships"][number],
+    conferenceMembership: NonNullable<typeof myInfoData>["conferenceMemberships"][number],
   ) => {
     if (
       (

@@ -8,20 +8,14 @@ import {
 } from "@fortawesome/pro-solid-svg-icons";
 import { useI18nContext } from "@/i18n/i18n-react";
 import type { IconProp } from "@fortawesome/fontawesome-svg-core";
-import { useBackend, type BackendInstanceType } from "@/contexts/backend";
+import { useBackend } from "@/contexts/backend";
 import { useToast } from "@/contexts/toast";
 import {
   CommitteeIdContext,
   ConferenceIdContext,
 } from "@/contexts/committee_data";
-
-type Committee = Awaited<
-  ReturnType<
-    ReturnType<
-      ReturnType<BackendInstanceType["conference"]>["committee"]
-    >["get"]
-  >
->["data"];
+import { useBackendCall } from "@/hooks/useBackendCall";
+import { pollBackendCall } from "@/hooks/pollBackendCall";
 
 export default function ChairWhiteboard() {
   const { LL } = useI18nContext();
@@ -37,30 +31,21 @@ export default function ChairWhiteboard() {
     useState<boolean>(false);
   const [whiteboardButtonLoading, setWhiteboardButtonLoading] =
     useState<boolean>(false);
-  const [committeeData, setCommitteeData] = useState<Committee | null>(null);
-
-  async function getCommitteeData() {
-    if (!conferenceId || !committeeId) return;
-    await backend.conference[conferenceId].committee[committeeId]
-      .get()
-      .then((response) => {
-        setCommitteeData(response.data);
-        if (!whiteboardContentChanged || whiteboardContent === null) {
-          setWhiteboardContent(response.data?.whiteboardContent ?? null);
-        }
-      })
-      .catch((error) => {
-        toastError(error);
-      });
-  }
+  const [committeeData] = pollBackendCall(
+    backend
+      //TODO
+      // biome-ignore lint/style/noNonNullAssertion:
+      .conference({ conferenceId: conferenceId! })
+      // biome-ignore lint/style/noNonNullAssertion:
+      .committee({ committeeId: committeeId! }).get,
+  );
 
   useEffect(() => {
-    getCommitteeData();
-    const intervalAPICall = setInterval(() => {
-      getCommitteeData();
-    }, 5000);
-    return () => clearInterval(intervalAPICall);
-  }, []);
+    if (!whiteboardContentChanged || whiteboardContent === null) {
+      setWhiteboardContent(committeeData.whiteboardContent ?? null);
+    }
+    setWhiteboardContent(committeeData?.whiteboardContent ?? null);
+  }, [whiteboardContent]);
 
   useEffect(() => {
     if (whiteboardContent !== committeeData?.whiteboardContent) {

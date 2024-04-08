@@ -20,6 +20,7 @@ import SmallInfoCard from "@/components/small_info_card";
 import { Skeleton } from "primereact/skeleton";
 import { Message } from "primereact/message";
 import { useBackend } from "@/contexts/backend";
+import { useBackendCall } from "@/hooks/useBackendCall";
 
 const emailRegex =
   /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|.(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
@@ -35,8 +36,10 @@ export default () => {
   const [loginLoading, setLoginLoading] = useState(false);
   const [userCreatedSuccessfullyLoading, setCreatedSuccessfullyLoading] =
     useState(false);
-  const [userState, setUserState] =
-    useState<Awaited<ReturnType<typeof backend.auth.userState.get>>["data"]>();
+  const [userState, triggerUserState] = useBackendCall(
+    () => backend.auth.userState.get({ query: { email } }),
+    true,
+  );
   const [email, setEmail] = useState("");
   const [emailValid, setEmailValid] = useState<boolean | undefined>();
   const [password, setPassword] = useState("");
@@ -75,20 +78,7 @@ export default () => {
     }
     (async () => {
       setUserStateLoading(true);
-      const res = await backend.auth.userState.get({
-        query: {
-          email,
-        },
-      });
-      if (res.error) {
-        if (res.error.status === 451) {
-          toastError(res.error.value as Error, "Unavailable for legal reasons");
-        } else {
-          toastError(res.error.value as Error);
-        }
-      } else {
-        setUserState(res.data);
-      }
+      await triggerUserState();
       setUserStateLoading(false);
     })();
   }, [email]);

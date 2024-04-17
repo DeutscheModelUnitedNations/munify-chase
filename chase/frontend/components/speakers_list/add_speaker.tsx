@@ -55,9 +55,9 @@ export default function AddSpeakerOverlay({
 
   const sendAddSpeaker = async () => {
     if (selectedCountry && speakersListData?.id) {
-      await backend.speakersList[speakersListData.id].addSpeaker.code[
-        selectedCountry.alpha3Code
-      ]
+      await backend
+        .speakersList({ speakersListId: speakersListData.id })
+        .addSpeaker.code({ countryCode: selectedCountry.alpha3Code })
         .post()
         .then((res) => {
           if (res.status === 200) {

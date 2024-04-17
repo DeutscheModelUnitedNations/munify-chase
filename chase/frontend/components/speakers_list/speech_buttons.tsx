@@ -33,14 +33,7 @@ import { SpeakersListDataContext } from "@/contexts/speakers_list_data";
 import { useUserIdent } from "@/contexts/user_ident";
 import { ConfirmDialog } from "primereact/confirmdialog";
 import type { MenuItem } from "primereact/menuitem";
-
-type AllCountryCodes = Awaited<
-  ReturnType<
-    ReturnType<
-      ReturnType<BackendInstanceType["conference"]>["committee"]
-    >["allCountryCodes"]["get"]
-  >
->["data"];
+import { useBackendCall } from "@/hooks/useBackendCall";
 
 /**
  * This component is used to display the buttons for the Speakers List and Comment List on the Speakers List Page for participants.
@@ -71,7 +64,9 @@ export function ParticipantSpeechButtons() {
 
   async function addToSpeakersList() {
     if (!speakersListData || !userIdent?.id) return;
-    backend.speakersList[speakersListData.id].addSpeaker.user[userIdent.id]
+    backend
+      .speakersList({ speakersListId: speakersListData.id })
+      .addSpeaker.user({ userId: userIdent.id })
       .post()
       .then((res) => {
         if (res.status === 200) {
@@ -109,7 +104,9 @@ export function ParticipantSpeechButtons() {
 
   async function removeFromSpeakersList() {
     if (!speakersListData || !userIdent?.id) return;
-    backend.speakersList[speakersListData.id].removeSpeaker.user[userIdent.id]
+    backend
+      .speakersList({ speakersListId: speakersListData.id })
+      .removeSpeaker.user({ userId: userIdent.id })
       .delete()
       .then((res) => {
         if (res.status === 200) {
@@ -192,25 +189,14 @@ export function ChairSpeechButtons({
   const [changeSpeechTimeOverlayVisible, setChangeSpeechTimeOverlayVisible] =
     useState(false);
 
-  const [countries, setCountries] = useState<AllCountryCodes>([]);
-
-  async function getCountries() {
-    if (!conferenceId || !committeeId) return;
-    await backend.conference[conferenceId].committee[
-      committeeId
-    ].allCountryCodes
-      .get()
-      .then((response) => {
-        setCountries(response.data);
-      })
-      .catch((error) => {
-        toastError(error);
-      });
-  }
-
-  useEffect(() => {
-    getCountries();
-  }, []);
+  const [countries] = useBackendCall(
+    backend
+      // biome-ignore lint/style/noNonNullAssertion:
+      .conference({ conferenceId: conferenceId! })
+      // biome-ignore lint/style/noNonNullAssertion:
+      .committee({ committeeId: committeeId! }).allCountryCodes.get,
+    false,
+  );
 
   const splitButtonItems: MenuItem[] = [
     {
@@ -219,7 +205,9 @@ export function ChairSpeechButtons({
       visible: speakersListData?.isClosed,
       command: () => {
         if (!speakersListData) return;
-        backend.speakersList[speakersListData.id].open.post();
+        backend
+          .speakersList({ speakersListId: speakersListData.id })
+          .open.post();
       },
     },
     {
@@ -228,7 +216,9 @@ export function ChairSpeechButtons({
       visible: speakersListData && !speakersListData?.isClosed ? true : false,
       command: () => {
         if (!speakersListData) return;
-        backend.speakersList[speakersListData.id].close.post();
+        backend
+          .speakersList({ speakersListId: speakersListData.id })
+          .close.post();
       },
     },
     {
@@ -239,7 +229,9 @@ export function ChairSpeechButtons({
       disabled: speakersListData?.speakers.length === 0,
       command: () => {
         if (!speakersListData) return;
-        backend.speakersList[speakersListData.id].clearList.delete();
+        backend
+          .speakersList({ speakersListId: speakersListData.id })
+          .clearList.delete();
       },
     },
     {
@@ -260,9 +252,13 @@ export function ChairSpeechButtons({
     () => {
       if (addSpeakersOverlayVisible || !speakersListData) return;
       if (speakersListData?.startTimestamp == null) {
-        backend.speakersList[speakersListData.id].startTimer.post();
+        backend
+          .speakersList({ speakersListId: speakersListData.id })
+          .startTimer.post();
       } else {
-        backend.speakersList[speakersListData.id].stopTimer.post();
+        backend
+          .speakersList({ speakersListId: speakersListData.id })
+          .stopTimer.post();
       }
     },
   );
@@ -270,7 +266,9 @@ export function ChairSpeechButtons({
     $Enums.SpeakersListCategory.SPEAKERS_LIST === typeOfList ? "r" : "shift+r",
     () => {
       if (addSpeakersOverlayVisible || !speakersListData) return;
-      backend.speakersList[speakersListData.id].resetTimer.post();
+      backend
+        .speakersList({ speakersListId: speakersListData.id })
+        .resetTimer.post();
     },
   );
   useMousetrap(
@@ -313,7 +311,9 @@ export function ChairSpeechButtons({
         }
         accept={() => {
           if (!speakersListData) return;
-          backend.speakersList[speakersListData.id].nextSpeaker.post();
+          backend
+            .speakersList({ speakersListId: speakersListData.id })
+            .nextSpeaker.post();
         }}
         acceptLabel={LL.chairs.speakersList.confirm.NEXT_SPEAKER_ACCEPT()}
         rejectLabel={LL.chairs.speakersList.confirm.NEXT_SPEAKER_REJECT()}
@@ -335,7 +335,9 @@ export function ChairSpeechButtons({
           disabled={speakersListData?.speakers.length === 0}
           onClick={() => {
             if (!speakersListData) return;
-            backend.speakersList[speakersListData.id].startTimer.post();
+            backend
+              .speakersList({ speakersListId: speakersListData.id })
+              .startTimer.post();
           }}
         />
         <Button
@@ -351,7 +353,9 @@ export function ChairSpeechButtons({
           severity="danger"
           onClick={() => {
             if (!speakersListData) return;
-            backend.speakersList[speakersListData.id].stopTimer.post();
+            backend
+              .speakersList({ speakersListId: speakersListData.id })
+              .stopTimer.post();
           }}
         />
         <Button
@@ -370,7 +374,9 @@ export function ChairSpeechButtons({
           }
           onClick={() => {
             if (!speakersListData) return;
-            backend.speakersList[speakersListData.id].resetTimer.post();
+            backend
+              .speakersList({ speakersListId: speakersListData.id })
+              .resetTimer.post();
           }}
         />
         <Button
@@ -381,11 +387,11 @@ export function ChairSpeechButtons({
           disabled={speakersListData?.speakers.length === 0}
           onClick={() => {
             if (!speakersListData) return;
-            backend.speakersList[speakersListData.id].decreaseSpeakingTime.post(
-              {
+            backend
+              .speakersList({ speakersListId: speakersListData.id })
+              .decreaseSpeakingTime.post({
                 amount: 15,
-              },
-            );
+              });
           }}
         />
         <Button
@@ -396,11 +402,11 @@ export function ChairSpeechButtons({
           disabled={speakersListData?.speakers.length === 0}
           onClick={() => {
             if (!speakersListData) return;
-            backend.speakersList[speakersListData.id].increaseSpeakingTime.post(
-              {
+            backend
+              .speakersList({ speakersListId: speakersListData.id })
+              .increaseSpeakingTime.post({
                 amount: 15,
-              },
-            );
+              });
           }}
         />
       </div>

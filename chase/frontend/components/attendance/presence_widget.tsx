@@ -46,8 +46,10 @@ export default function PresenceWidget({
 
   async function getDelegationData() {
     if (!conferenceId || !committeeId) return;
-    await backend.conference[conferenceId].committee[committeeId].delegations
-      .get()
+    await backend
+      .conference({ conferenceId })
+      .committee({ committeeId })
+      .delegations.get()
       .then((response) => {
         setDelegationData(
           response.data?.filter(

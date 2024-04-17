@@ -24,6 +24,7 @@ import { helmet } from "elysia-helmet";
 
 setInterval(
   async () => {
+    //TODO save these to a real volume mount (docker)
     const snapshot = Bun.generateHeapSnapshot();
     await Bun.write(
       `heapSnapshots/${Date.now()}.json`,

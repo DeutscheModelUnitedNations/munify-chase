@@ -101,10 +101,10 @@ export const MyDelegationProvider = ({
   useEffect(() => {
     (async () => {
       if (!userIdentContext?.userIdent?.id || !conferenceId) return;
-      const res =
-        await backend.conference[conferenceId].user[
-          userIdentContext?.userIdent?.id
-        ].delegation.get();
+      const res = await backend
+        .conference({ conferenceId })
+        .user({ userId: userIdentContext?.userIdent?.id })
+        .delegation.get();
 
       setDelegation(res.data);
     })();

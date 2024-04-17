@@ -80,8 +80,10 @@ export default function ChairWhiteboard() {
       return;
     }
     if (!conferenceId || !committeeId) return;
-    await backend.conference[conferenceId].committee[committeeId].whiteboard
-      .post({
+    await backend
+      .conference({ conferenceId })
+      .committee({ committeeId })
+      .whiteboard.post({
         whiteboardContent: whiteboardContent,
       })
       .then((res) => {

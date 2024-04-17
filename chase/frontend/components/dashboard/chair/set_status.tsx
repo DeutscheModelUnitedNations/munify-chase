@@ -55,10 +55,16 @@ export default function SetStatusWidget() {
 
   async function updateStatus() {
     if (!conferenceId || !committeeId) return;
-    await backend.conference[conferenceId].committee[committeeId].status
-      .post({
+    await backend
+      .conference({ conferenceId })
+      .committee({ committeeId })
+      .status.post({
+        //TODO
+        // @ts-ignore
         status: selectedStatus ?? undefined,
+        // @ts-ignore
         statusUntil: selectedStatusUntil?.toISOString() ?? undefined,
+        // @ts-ignore
         statusHeadline: selectedStatusCustomText ?? undefined,
       })
       .then((res) => {

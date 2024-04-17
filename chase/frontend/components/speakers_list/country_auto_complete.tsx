@@ -10,7 +10,7 @@ import { SmallFlag } from "../flag_templates";
 import type {
   AllAvailableCountriesType,
   CountryDataType,
-} from "@/components/admin/delegations/add_delegation_dialog";
+} from "../admin/delegations/add_delegation_dialog";
 
 export default function CountryAutoComplete({
   allCountries,

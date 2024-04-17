@@ -56,7 +56,7 @@ export default function ChangeSpeechTimeOverlay({
       return;
     }
 
-    await backend.speakersList[speakersListId].setSpeakingTime.post({
+    await backend.speakersList({ speakersListId }).setSpeakingTime.post({
       speakingTime: convertTimeToSeconds(time),
     });
 

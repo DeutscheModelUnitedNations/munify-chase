@@ -8,13 +8,7 @@ import {
   ConferenceIdContext,
 } from "@/contexts/committee_data";
 import { useToast } from "@/contexts/toast";
-type AgendaItems = Awaited<
-  ReturnType<
-    ReturnType<
-      ReturnType<BackendInstanceType["conference"]>["committee"]
-    >["agendaItem"]["get"]
-  >
->["data"];
+import { pollBackendCall } from "@/hooks/pollBackendCall";
 
 export default function AgendaSelection() {
   const { LL } = useI18nContext();
@@ -23,37 +17,25 @@ export default function AgendaSelection() {
   const committeeId = useContext(CommitteeIdContext);
   const { backend } = useBackend();
 
-  const [agendaItems, setAgendaItems] = useState<AgendaItems | null>(null);
-
-  async function getAgendaItems() {
-    if (!conferenceId || !committeeId) return;
-    await backend.conference[conferenceId].committee[committeeId].agendaItem
-      .get()
-      .then((response) => {
-        setAgendaItems(response.data);
-      })
-      .catch((error) => {
-        toastError(error);
-      });
-  }
-
-  useEffect(() => {
-    getAgendaItems();
-    const intervalAPICall = setInterval(() => {
-      getAgendaItems();
-    }, 5000);
-    return () => clearInterval(intervalAPICall);
-  }, []);
+  const [agendaItems, triggerAgendaItems] = pollBackendCall(
+    backend
+      //TODO
+      // biome-ignore lint/style/noNonNullAssertion:
+      .conference({ conferenceId: conferenceId! })
+      // biome-ignore lint/style/noNonNullAssertion:
+      .committee({ committeeId: committeeId! }).agendaItem.get,
+  );
 
   async function activateAgendaItem(agendaItemId: string) {
     if (!conferenceId || !committeeId) return;
-    await backend.conference[conferenceId].committee[committeeId].agendaItem[
-      agendaItemId
-    ].activate
-      .post()
+    await backend
+      .conference({ conferenceId })
+      .committee({ committeeId })
+      .agendaItem({ agendaItemId })
+      .activate.post()
       .then((res) => {
         if (res.status === 200) {
-          getAgendaItems();
+          triggerAgendaItems();
           showToast({
             severity: "success",
             summary: LL.chairs.dashboard.configurations.agenda.TOAST_SUCCESS(),

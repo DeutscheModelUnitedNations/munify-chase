@@ -25,8 +25,10 @@ export default function StateOfDebateWidget() {
 
   async function saveStateOfDebate() {
     if (!conferenceId || !committeeId) return;
-    await backend.conference[conferenceId].committee[committeeId].stateOfDebate
-      .post({
+    await backend
+      .conference({ conferenceId })
+      .committee({ committeeId })
+      .stateOfDebate.post({
         stateOfDebate: stateOfDebate,
       })
       .then((res) => {

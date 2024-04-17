@@ -23,12 +23,13 @@ export default function Teampool() {
   const [team, triggerTeam] = useBackendCall(
     //TODO
     // biome-ignore lint/style/noNonNullAssertion:
-    backend.conference({ conferenceId: conferenceId! }).member.get, true);
+    backend.conference({ conferenceId: conferenceId! }).member.get,
+    true,
+  );
   const [inputMaskVisible, setInputMaskVisible] = useState(false);
   const [updateTable, setUpdateTable] = useState(true);
 
   const [saveLoading, setSaveLoading] = useState(false);
-
 
   useEffect(() => {
     if (updateTable) {
@@ -42,8 +43,9 @@ export default function Teampool() {
     count,
   }: { role: $Enums.ConferenceRole; count: number }) => {
     if (!conferenceId) return;
-    backend.conference[conferenceId].member
-      .post({
+    backend
+      .conference({ conferenceId })
+      .member.post({
         data: {
           role,
         },
@@ -64,8 +66,9 @@ export default function Teampool() {
       acceptClassName: "p-button-danger",
       accept: () => {
         if (!conferenceId) return;
-        backend.conference[conferenceId].member
-          .delete()
+        backend
+          .conference({ conferenceId })
+          .member.delete()
           .then(() => {
             setUpdateTable(true);
           })
@@ -78,8 +81,9 @@ export default function Teampool() {
 
   const handleDelete = (id: string) => {
     if (!conferenceId) return;
-    backend.conference[conferenceId].member[id]
-      .delete()
+    backend
+      .conference({ conferenceId })
+      .member({memberId: id}).delete()
       .then((_res) => {
         setUpdateTable(true);
       })

@@ -34,10 +34,10 @@ export default function SpeakersListAddingPolicyWidget() {
           checked={committeeData?.allowDelegationsToAddThemselvesToSpeakersList}
           onChange={async (_e) => {
             if (!conferenceId || !committeeId) return;
-            await backend.conference[conferenceId].committee[
-              committeeId
-            ].delegations.toggleAllowAddingThemselvesToSpeakersList
-              .post()
+            await backend
+              .conference({ conferenceId })
+              .committee({ committeeId })
+              .delegations.toggleAllowAddingThemselvesToSpeakersList.post()
               .then((res) => {
                 if (res.status === 200) {
                   showToast({

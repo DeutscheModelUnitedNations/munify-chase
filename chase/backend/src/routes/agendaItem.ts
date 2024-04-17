@@ -3,19 +3,13 @@ import { db } from "../../prisma/db";
 import { committeeMemberGuard } from "../auth/guards/committeeMember";
 import { conferenceRoleGuard } from "../auth/guards/conferenceRoles";
 import { openApiTag } from "../util/openApiTags";
-import { recursiveNullFieldsToUndefined } from "../util/nullToUndefined";
 import { $Enums } from "../../prisma/generated/client";
-import { AgendaItem } from "../../prisma/generated/schema/AgendaItem";
+import {
+  AgendaItem,
+  AgendaItemPlain,
+} from "../../prisma/generated/schema/AgendaItem";
 
-const AgendaItemWithoutRelations = t.Omit(AgendaItem, [
-  "committee",
-  "speakerLists",
-]);
-
-const AgendaItemData = t.Omit(AgendaItemWithoutRelations, [
-  "id",
-  "committeeId",
-]);
+const AgendaItemData = t.Omit(AgendaItem, ["id", "committeeId"]);
 
 export const agendaItem = new Elysia({
   prefix: "/conference/:conferenceId/committee/:committeeId",
@@ -24,21 +18,18 @@ export const agendaItem = new Elysia({
   .use(committeeMemberGuard)
   .get(
     "/agendaItem",
-    async ({ params: { conferenceId, committeeId } }) => {
-      const r = await db.agendaItem.findMany({
+    async ({ params: { conferenceId, committeeId } }) =>
+      db.agendaItem.findMany({
         where: {
           committee: {
             id: committeeId,
             conferenceId,
           },
         },
-      });
-
-      // the return schema expects description to be set or undefined https://github.com/adeyahya/prisma-typebox-generator/issues/19
-      return recursiveNullFieldsToUndefined(r);
-    },
+      }),
     {
       hasConferenceRole: "any",
+      response: t.Array(AgendaItemPlain),
       detail: {
         description: "Get all agenda items in this committee",
         tags: [openApiTag(import.meta.path)],

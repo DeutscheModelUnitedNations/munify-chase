@@ -109,26 +109,32 @@ export default function MessageDetails({
         tooltipOptions={{ showDelay: 800, hideDelay: 300, position: "bottom" }}
         onClick={async () => {
           if (message.status.includes($Enums.MessageStatus.UNREAD)) {
-            await backend.message[message.id].removeStatus
-              .post({
+            await backend
+              .message({ messageId: message.id })
+              .removeStatus.post({
                 status: "UNREAD",
               })
               .then((res) => {
                 if (res.status !== 200)
-                  throw new Error(res.error?.message ?? "Unknown error");
+                  throw new Error(
+                    (res.error?.value as string) ?? "Unknown error",
+                  );
                 getMessagesFunction();
               })
               .catch((err) => {
                 toastError(err);
               });
           } else {
-            await backend.message[message.id].setStatus
-              .post({
+            await backend
+              .message({ messageId: message.id })
+              .setStatus.post({
                 status: "UNREAD",
               })
               .then((res) => {
                 if (res.status !== 200)
-                  throw new Error(res.error?.message ?? "Unknown error");
+                  throw new Error(
+                    (res.error?.value as string) ?? "Unknown error",
+                  );
                 getMessagesFunction();
               })
               .catch((err) => {
@@ -149,26 +155,32 @@ export default function MessageDetails({
         }
         onClick={async () => {
           if (message.status.includes($Enums.MessageStatus.PRIORITY)) {
-            await backend.message[message.id].removeStatus
-              .post({
+            await backend
+              .message({ messageId: message.id })
+              .removeStatus.post({
                 status: "PRIORITY",
               })
               .then((res) => {
                 if (res.status !== 200)
-                  throw new Error(res.error?.message ?? "Unknown error");
+                  throw new Error(
+                    (res.error?.value as string) ?? "Unknown error",
+                  );
                 getMessagesFunction();
               })
               .catch((err) => {
                 toastError(err);
               });
           } else {
-            await backend.message[message.id].setStatus
-              .post({
+            await backend
+              .message({ messageId: message.id })
+              .setStatus.post({
                 status: "PRIORITY",
               })
               .then((res) => {
                 if (res.status !== 200)
-                  throw new Error(res.error?.message ?? "Unknown error");
+                  throw new Error(
+                    (res.error?.value as string) ?? "Unknown error",
+                  );
                 getMessagesFunction();
               })
               .catch((err) => {
@@ -193,26 +205,32 @@ export default function MessageDetails({
         }
         onClick={async () => {
           if (message.status.includes($Enums.MessageStatus.ASSIGNED)) {
-            await backend.message[message.id].removeStatus
-              .post({
+            await backend
+              .message({ messageId: message.id })
+              .removeStatus.post({
                 status: "ASSIGNED",
               })
               .then((res) => {
                 if (res.status !== 200)
-                  throw new Error(res.error?.message ?? "Unknown error");
+                  throw new Error(
+                    (res.error?.value as string) ?? "Unknown error",
+                  );
                 getMessagesFunction();
               })
               .catch((err) => {
                 toastError(err);
               });
           } else {
-            await backend.message[message.id].setStatus
-              .post({
+            await backend
+              .message({ messageId: message.id })
+              .setStatus.post({
                 status: "ASSIGNED",
               })
               .then((res) => {
                 if (res.status !== 200)
-                  throw new Error(res.error?.message ?? "Unknown error");
+                  throw new Error(
+                    (res.error?.value as string) ?? "Unknown error",
+                  );
                 getMessagesFunction();
               })
               .catch((err) => {
@@ -228,13 +246,16 @@ export default function MessageDetails({
         tooltip={LL.messageBoard.tooltips.DELETE()}
         tooltipOptions={{ showDelay: 800, hideDelay: 300, position: "bottom" }}
         onClick={async () => {
-          await backend.message[message.id].setStatus
-            .post({
+          await backend
+            .message({ messageId: message.id })
+            .setStatus.post({
               status: "ARCHIVED",
             })
             .then((res) => {
               if (res.status !== 200)
-                throw new Error(res.error?.message ?? "Unknown error");
+                throw new Error(
+                  (res.error?.value as string) ?? "Unknown error",
+                );
               showToast({
                 severity: "warn",
                 summary: LL.messageBoard.toast.ARCHIVED_SUMMARY(),
@@ -258,11 +279,14 @@ export default function MessageDetails({
         label={LL.messageBoard.BUTTON_FORWARD_TO_RESEARCH_SERVICE()}
         severity="warning"
         onClick={async () => {
-          await backend.message[message.id].forwardToResearchService
-            .post()
+          await backend
+            .message({ messageId: message.id })
+            .forwardToResearchService.post()
             .then((res) => {
               if (res.status !== 200)
-                throw new Error(res.error?.message ?? "Unknown error");
+                throw new Error(
+                  (res.error?.value as string as string) ?? "Unknown error",
+                );
               showToast({
                 severity: "success",
                 summary: LL.messageBoard.toast.FORWARDED_SUMMARY(),

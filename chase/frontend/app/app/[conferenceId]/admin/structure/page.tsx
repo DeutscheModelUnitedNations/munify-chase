@@ -26,12 +26,12 @@ export default function structure() {
   const [saveLoading, setSaveLoading] = useState(false);
 
   const [updateCommittees, setUpdateCommittees] = useState(true);
-  const [committees, triggerCommittees] = useBackendCall(
+  const [committees, triggerCommittees] = useBackendCall(backend
     //TODO
-    // biome-ignore lint/style/noNonNullAssertion:
-    backend.conference({ conferenceId: conferenceId! }).committee.get,
-    true,
-  );
+    // biome-ignore lint/style/noNonNullAssertion: 
+    .conference({ conferenceId: conferenceId! })
+    .committee.get, true);
+
 
   useEffect(() => {
     if (updateCommittees) {
@@ -53,8 +53,9 @@ export default function structure() {
     parentId?: string;
   }) {
     if (!conferenceId) return;
-    backend.conference[conferenceId].committee
-      .post({
+    backend
+      .conference({ conferenceId })
+      .committee.post({
         name,
         abbreviation,
         category,
@@ -82,8 +83,9 @@ export default function structure() {
       acceptClassName: "p-button-danger",
       accept: () => {
         if (!conferenceId) return;
-        backend.conference[conferenceId].committee
-          .delete()
+        backend
+          .conference({ conferenceId })
+          .committee.delete()
           .then((_res) => {
             setUpdateCommittees(true);
           })
@@ -96,8 +98,9 @@ export default function structure() {
 
   async function handleDelete(rawData: NonNullable<typeof committees>[number]) {
     if (!rawData || !conferenceId) return;
-    backend.conference[conferenceId].committee[rawData.id]
-      .delete()
+    backend
+      .conference({ conferenceId })
+      .committee({committeeId: rawData.id}).delete()
       .then((_res) => {
         setUpdateCommittees(true);
       })

@@ -36,9 +36,10 @@ export function SpeakersListDataProvider({
 
   async function getSpeakersListData() {
     if (!conferenceId || !committeeId) return;
-    await backend.conference[conferenceId].committee[committeeId].speakersList[
-      typeOfList
-    ]
+    await backend
+      .conference({ conferenceId })
+      .committee({ committeeId })
+      .speakersList({ type: typeOfList })
       .get()
       .then((response) => {
         if (response.status !== 200)

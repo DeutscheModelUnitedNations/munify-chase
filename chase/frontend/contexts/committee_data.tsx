@@ -39,7 +39,9 @@ export const CommitteeDataProvider = ({
 
   async function getCommitteeData() {
     if (!conferenceId || !committeeId) return;
-    await backend.conference[conferenceId].committee[committeeId]
+    await backend
+      .conference({ conferenceId })
+      .committee({ committeeId })
       .get()
       .then((response) => {
         setCommitteeData(response.data);
@@ -80,10 +82,10 @@ export const AgendaItemDataProvider = ({
 
   async function getAgendaItem() {
     if (!conferenceId || !committeeId) return;
-    await backend.conference[conferenceId].committee[
-      committeeId
-    ].agendaItem.active
-      .get()
+    await backend
+      .conference({ conferenceId })
+      .committee({ committeeId })
+      .agendaItem.active.get()
       .then((response) => {
         if (response.error?.status === 404) {
           setAgendaItem(null);

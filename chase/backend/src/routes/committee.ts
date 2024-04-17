@@ -3,7 +3,7 @@ import { db } from "../../prisma/db";
 import { committeeMemberGuard } from "../auth/guards/committeeMember";
 import { conferenceRoleGuard } from "../auth/guards/conferenceRoles";
 import { openApiTag } from "../util/openApiTags";
-import { Committee } from "../../prisma/generated/schema/Committee";
+import { Committee, CommitteeData as CommitteeInput } from "../../prisma/generated/schema/Committee";
 import { Nation } from "../../prisma/generated/schema/Nation";
 
 const CommitteeWithOnlyParentCommitteeRelation = t.Omit(Committee, [
@@ -104,7 +104,7 @@ export const committee = new Elysia({
         description: "Create a new committee in this conference",
         tags: [openApiTag(import.meta.path)],
       },
-      body: t.Pick(Committee, ["name", "abbreviation", "category", "parentId"]),
+      body: t.Pick(CommitteeInput, ["name", "abbreviation", "category", "parentId"]),
     },
   )
   .delete(

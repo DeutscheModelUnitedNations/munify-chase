@@ -1,23 +1,20 @@
 import Button from "@/components/button";
 import CountryAutoComplete from "@/components/speakers_list/country_auto_complete";
-import { useBackend, type BackendInstanceType } from "@/contexts/backend";
+import { useBackend } from "@/contexts/backend";
 import { useI18nContext } from "@/i18n/i18n-react";
 import { faPlus, faXmark } from "@fortawesome/pro-solid-svg-icons";
 import useMousetrap from "mousetrap-react";
 import { Dialog } from "primereact/dialog";
-import { type FormEvent, useEffect, useState } from "react";
-import { useToast } from "@/contexts/toast";
+import { type FormEvent, useState } from "react";
+import { useBackendCall } from "@/hooks/useBackendCall";
 
-export type AllAvailableCountriesType = Awaited<
-  ReturnType<BackendInstanceType["baseData"]["countries"]["get"]>
->["data"];
+export type AllAvailableCountriesType = NonNullable<
+  Awaited<
+    ReturnType<BackendInstanceType["baseData"]["countries"]["get"]>
+  >["data"]
+>;
 
-type CountryDataWithoutNameType =
-  NonNullable<AllAvailableCountriesType>[number];
-
-export type CountryDataType = CountryDataWithoutNameType & {
-  name?: string;
-};
+export type CountryDataType = AllAvailableCountriesType[number] & { name?: string };
 
 export default function AddDelegationDialog({
   inputMaskVisible,
@@ -29,34 +26,19 @@ export default function AddDelegationDialog({
   addDelegationToList: (alpha3Code: string) => void;
 }) {
   const { LL } = useI18nContext();
-  const { toastError } = useToast();
   const { backend } = useBackend();
 
-  const [delegationData, setDelegationData] = useState<CountryDataType | null>(
-    null,
+  const [allAvailableCountries] = useBackendCall(
+    backend.baseData.countries.get,
+    false,
   );
-  const [allAvailableCountries, setAllAvailableCountries] =
-    useState<AllAvailableCountriesType | null>(null);
+  const [delegationData, setDelegationData] = useState<
+    ((typeof allAvailableCountries)[number] & { name?: string }) | null
+  >(null);
 
   const resetInputMask = () => {
     setDelegationData(null);
   };
-
-  async function getAllBaseCountries() {
-    await backend.baseData.countries
-      .get()
-      .then((res) => {
-        if (res.status >= 400) throw new Error("Failed to fetch countries");
-        setAllAvailableCountries(res.data);
-      })
-      .catch((error) => {
-        toastError(error);
-      });
-  }
-
-  useEffect(() => {
-    getAllBaseCountries();
-  }, []);
 
   const addDelegation = (e: FormEvent | null = null) => {
     if (e) e.preventDefault();

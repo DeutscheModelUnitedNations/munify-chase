@@ -3,8 +3,9 @@ import { db } from "../../prisma/db";
 import { committeeMemberGuard } from "../auth/guards/committeeMember";
 import { conferenceRoleGuard } from "../auth/guards/conferenceRoles";
 import { openApiTag } from "../util/openApiTags";
-import { Message } from "../../prisma/generated/schema/Message";
+import { Message, MessageData } from "../../prisma/generated/schema/Message";
 import { $Enums } from "../../prisma/generated/client";
+import { MessageStatus } from "../../prisma/generated/schema/MessageStatus";
 
 export const messages = new Elysia()
   .use(conferenceRoleGuard)
@@ -114,7 +115,7 @@ export const messages = new Elysia()
     },
     {
       hasConferenceRole: "any",
-      body: t.Pick(Message, [
+      body: t.Pick(MessageData, [
         "subject",
         "message",
         "authorId",
@@ -181,34 +182,18 @@ export const messages = new Elysia()
 
   .post(
     "/message/:messageId/setStatus",
-    async ({ body, params: { messageId }, set }) => {
-      const message = await db.message.findUnique({
-        where: { id: messageId },
-      });
-
-      if (!message) {
-        set.status = "Not Found";
-        throw new Error("Message not found");
-      }
-
-      if (!body?.status) {
-        set.status = "Bad Request";
-        throw new Error("Status is required");
-      }
-
-      const updatedArray: $Enums.MessageStatus[] = message.status;
-      updatedArray.push(body.status as $Enums.MessageStatus);
-
-      return await db.message.update({
-        where: { id: messageId },
+    async ({ body, params }) =>
+      db.message.update({
+        where: { id: params.messageId },
         data: {
-          status: updatedArray,
+          status: {
+            push: body.status,
+          },
         },
-      });
-    },
+      }),
     {
       hasConferenceRole: "any",
-      body: t.Object({ status: t.String() }),
+      body: t.Object({ status: MessageStatus }),
       detail: {
         description: "Set a Status for a message from the MessageStatus enum",
         tags: [openApiTag(import.meta.path)],

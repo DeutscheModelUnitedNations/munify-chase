@@ -5,11 +5,9 @@ import { conferenceRoleGuard } from "../auth/guards/conferenceRoles";
 import { openApiTag } from "../util/openApiTags";
 import { $Enums } from "../../prisma/generated/client";
 import {
-  AgendaItem,
+  AgendaItemData,
   AgendaItemPlain,
 } from "../../prisma/generated/schema/AgendaItem";
-
-const AgendaItemData = t.Omit(AgendaItem, ["id", "committeeId"]);
 
 export const agendaItem = new Elysia({
   prefix: "/conference/:conferenceId/committee/:committeeId",
@@ -82,7 +80,7 @@ export const agendaItem = new Elysia({
         description: "Create a new agenda item in this committee",
         tags: [openApiTag(import.meta.path)],
       },
-      body: AgendaItemData,
+      body: t.Pick(AgendaItemData, ["title", "description"]),
     },
   )
   .get(

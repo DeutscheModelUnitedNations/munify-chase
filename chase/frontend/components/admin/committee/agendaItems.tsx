@@ -23,13 +23,13 @@ export default function agendaItem() {
   const committeeId = useContext(CommitteeIdContext);
   const { backend } = useBackend();
 
-  const [committeeAgendaItems, setCommitteeAgendaItems] = useBackendCall(
+  const [committeeAgendaItems, triggerItems] = useBackendCall(
     backend
       // biome-ignore lint/style/noNonNullAssertion:
       .conference({ conferenceId: conferenceId! })
       // biome-ignore lint/style/noNonNullAssertion:
       .committee({ committeeId: committeeId! }).agendaItem.get,
-    false,
+    true,
   );
   const [inputValue, setInputValue] = useState<string>("");
   const [update, setUpdate] = useState<boolean>(true);
@@ -43,7 +43,7 @@ export default function agendaItem() {
       .then((res) => {
         if (res.status > 400 || !res.data)
           throw new Error("Failed to fetch agenda items");
-        setCommitteeAgendaItems(res.data);
+        triggerItems();
       })
       .catch((error) => {
         toastError(error);

@@ -1,6 +1,6 @@
 import Button from "@/components/button";
 import CountryAutoComplete from "@/components/speakers_list/country_auto_complete";
-import { useBackend } from "@/contexts/backend";
+import { type BackendInstanceType, useBackend } from "@/contexts/backend";
 import { useI18nContext } from "@/i18n/i18n-react";
 import { faPlus, faXmark } from "@fortawesome/pro-solid-svg-icons";
 import useMousetrap from "mousetrap-react";

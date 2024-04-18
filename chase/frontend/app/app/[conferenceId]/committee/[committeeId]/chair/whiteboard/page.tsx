@@ -14,7 +14,6 @@ import {
   CommitteeIdContext,
   ConferenceIdContext,
 } from "@/contexts/committee_data";
-import { useBackendCall } from "@/hooks/useBackendCall";
 import { pollBackendCall } from "@/hooks/pollBackendCall";
 
 export default function ChairWhiteboard() {
@@ -31,7 +30,7 @@ export default function ChairWhiteboard() {
     useState<boolean>(false);
   const [whiteboardButtonLoading, setWhiteboardButtonLoading] =
     useState<boolean>(false);
-  const [committeeData] = pollBackendCall(
+  const [committeeData, triggerCommitteeData] = pollBackendCall(
     backend
       //TODO
       // biome-ignore lint/style/noNonNullAssertion:
@@ -89,7 +88,7 @@ export default function ChairWhiteboard() {
       .then((res) => {
         if (res.status >= 400)
           throw new Error("Failed to push whiteboard content");
-        getCommitteeData();
+        triggerCommitteeData();
         setWhiteboardContentChanged(false);
         setWhiteboardButtonLoading(false);
         showToast({

@@ -47,8 +47,8 @@ export default function loginVorsitz() {
       })
       .catch((err) => {
         toastError(err);
-        setLoading(false);
-      });
+      })
+      .finally(() => setLoading(false));
   };
 
   return (

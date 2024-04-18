@@ -1,7 +1,7 @@
 import { Elysia } from "elysia";
 import { cors } from "@elysiajs/cors";
 import { appConfiguration } from "./util/config";
-import { errorLogging } from "./util/errorLogger";
+import { logger } from "./util/logger";
 import { conference } from "./routes/conference";
 import { conferenceMember } from "./routes/conferenceMember";
 import { committee } from "./routes/committee";
@@ -51,7 +51,7 @@ const m = new Elysia({
       },
     }),
   )
-  .use(errorLogging)
+  .use(logger)
   .use(
     cors({
       origin: appConfiguration.CORSOrigins,

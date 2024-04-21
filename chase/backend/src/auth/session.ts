@@ -27,7 +27,7 @@ export type Session = {
   setData: SessionDataSetter;
 };
 
-export const session = new Elysia({ name: "session" })
+export const sessionPlugin = new Elysia({ name: "session" })
   .guard({
     cookie: t.Cookie(
       {
@@ -47,7 +47,10 @@ export const session = new Elysia({ name: "session" })
   })
   .derive(
     { as: "scoped" },
-    async ({ cookie: { sessionId, chaseCookieConsent }, set }) => {
+    async ({
+      cookie: { sessionId, chaseCookieConsent },
+      set,
+    }): Promise<{ session: Session }> => {
       const session: Session = {
         data: undefined,
         setData: () => {

@@ -27,6 +27,13 @@ export const logger = new Elysia({
       return error;
     }
 
+    // biome-ignore lint/suspicious/noExplicitAny:
+    if ((error as any).response === "Permission check failed.") {
+      set.status = "Unauthorized";
+      // biome-ignore lint/suspicious/noExplicitAny:
+      return (error as any).response;
+    }
+
     // prisma relation/entry not found
     // @ts-ignore
     if (error?.code === "P2025") {

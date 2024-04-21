@@ -2,7 +2,7 @@ import { t, Elysia } from "elysia";
 import { db } from "../../../prisma/db";
 import { openApiTag } from "../../util/openApiTags";
 import { loggedInGuard } from "../../auth/guards/loggedIn";
-import { session } from "../../auth/session";
+import { sessionPlugin } from "../../auth/session";
 
 /**
  * === Regex for password requirements ===
@@ -20,7 +20,7 @@ const passwordRegex =
   /^(?=(.*[a-z]){1,})(?=(.*[A-Z]){1,})(?=(.*[0-9]){1,})(?=(.*[!@#$%^&*()\-__+.]){1,}).{8,}$/;
 
 export const passwords = new Elysia()
-  .use(session)
+  .use(sessionPlugin)
   .use(loggedInGuard)
   .post(
     "/password",

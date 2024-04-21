@@ -2,22 +2,10 @@ import { Elysia } from "elysia";
 import { cors } from "@elysiajs/cors";
 import { appConfiguration } from "./util/config";
 import { logger } from "./util/logger";
-import { conference } from "./routes/conference";
-import { conferenceMember } from "./routes/conferenceMember";
-import { committee } from "./routes/committee";
-import { baseData } from "./routes/baseData";
-import { auth } from "./routes/auth/auth";
-import { agendaItem } from "./routes/agendaItem";
-import { delegation } from "./routes/delegation";
-import { user } from "./routes/user";
-import { speakersListGeneral } from "./routes/speakersList/general";
-import { speakersListModification } from "./routes/speakersList/modification";
-import { speakersListSpeakers } from "./routes/speakersList/speakers";
-import { messages } from "./routes/messages";
-import { time } from "./routes/time";
 import packagejson from "../package.json";
 import swagger from "@elysiajs/swagger";
 import { helmet } from "elysia-helmet";
+import { api } from "./api";
 
 //TODO switch to new prismabox schema types
 //TODO remove use of set where applicable
@@ -35,10 +23,15 @@ setInterval(
   1000 * 60 * 10,
 ); // every 10 minutes
 
-const m = new Elysia({
+const app = new Elysia({
   normalize: true,
-})
-  .use(helmet())
+});
+
+if (appConfiguration.production) {
+  app.use(helmet());
+}
+
+app
   .use(
     swagger({
       path: `/${appConfiguration.documentationPath}`,
@@ -69,24 +62,7 @@ const m = new Elysia({
       ],
     }),
   )
-  .use(conference)
-  .use(conferenceMember)
-  .use(committee)
-  .use(delegation)
-  .use(agendaItem)
-  .use(speakersListGeneral)
-  .use(speakersListModification)
-  .use(speakersListSpeakers)
-  .use(messages)
-  .use(user)
-  .use(auth)
-  .use(time)
-  .use(baseData)
-  .get("/", () => ({
-    production: appConfiguration.production,
-    name: appConfiguration.appName,
-    version: packagejson.version,
-  }))
+  .use(api)
   .listen(process.env.PORT ?? "3001");
 
 setTimeout(() => {
@@ -112,5 +88,3 @@ if (appConfiguration.development) {
     );
   }, 3000);
 }
-
-export type App = typeof m;

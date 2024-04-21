@@ -9,13 +9,13 @@ import { nanoid } from "nanoid";
 import { appConfiguration } from "../../util/config";
 import { loggedInGuard } from "../../auth/guards/loggedIn";
 import { passwords } from "./passwords";
-import { session } from "../../auth/session";
+import { sessionPlugin } from "../../auth/session";
 
 export const auth = new Elysia({
   prefix: "/auth",
 })
   .use(passwords)
-  .use(session)
+  .use(sessionPlugin)
   .use(loggedInGuard)
   .get(
     "/userState",

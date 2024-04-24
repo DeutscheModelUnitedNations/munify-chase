@@ -18,7 +18,7 @@ export const conference = new Elysia({
   .use(permissionsPlugin)
   .get(
     "/conference",
-    async ({ permissions }) => {
+    ({ permissions }) => {
       permissions.checkIf((a) => a.can("list", "Conference"));
       return db.conference.findMany();
     },
@@ -32,16 +32,15 @@ export const conference = new Elysia({
   )
   .post(
     "/conference",
-    async ({ body, session, permissions }) => {
-      // run this in a transaction, so if setting the permission/deleting the token fails, the conference is not created
-      const r = await db.$transaction(async (tx) => {
+    ({ body, session, permissions }) =>
+      db.$transaction(async (tx) => {
         permissions.checkIf((a) => a.can("create", "Conference"));
 
         await tx.conferenceCreateToken.delete({
           where: { token: body.token },
         });
 
-        return await tx.conference.create({
+        return tx.conference.create({
           data: {
             name: body.name,
             start: body.start,
@@ -58,10 +57,7 @@ export const conference = new Elysia({
             },
           },
         });
-      });
-
-      return r;
-    },
+      }),
     {
       body: t.Composite([ConferenceData, ConferenceCreateToken]),
       response: ConferencePlain,
@@ -73,7 +69,7 @@ export const conference = new Elysia({
   )
   .get(
     "/conference/:conferenceId",
-    async ({ params, permissions }) =>
+     ({ params, permissions }) => 
       db.conference.findUniqueOrThrow({
         where: {
           id: params.conferenceId,
@@ -90,8 +86,8 @@ export const conference = new Elysia({
   )
   .patch(
     "/conference/:conferenceId",
-    async ({ params, permissions, body }) => {
-      return db.conference.update({
+    ({ params, permissions, body }) =>
+      db.conference.update({
         where: {
           id: params.conferenceId,
           AND: [permissions.accessibleBy("update").Conference],
@@ -101,8 +97,7 @@ export const conference = new Elysia({
           start: body.start,
           end: body.end,
         },
-      });
-    },
+      }),
     {
       body: ConferenceData,
       response: ConferencePlain,
@@ -114,8 +109,8 @@ export const conference = new Elysia({
   )
   .patch(
     "/conference/:conferenceId/addAdmin",
-    async ({ params, body, permissions }) => {
-      return db.conferenceMember.upsert({
+    ({ params, body, permissions }) =>
+      db.conferenceMember.upsert({
         where: {
           userId_conferenceId: {
             conferenceId: params.conferenceId,
@@ -142,8 +137,7 @@ export const conference = new Elysia({
             },
           },
         },
-      });
-    },
+      }),
     {
       body: t.Object({
         user: t.Pick(User, ["id"]),

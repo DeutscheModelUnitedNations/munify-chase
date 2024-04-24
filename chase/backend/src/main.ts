@@ -65,6 +65,8 @@ app
   .use(api)
   .listen(process.env.PORT ?? "3001");
 
+console.info("Api running on port", appConfiguration.port);
+
 setTimeout(() => {
   console.info(
     `

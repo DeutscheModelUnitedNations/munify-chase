@@ -5,10 +5,10 @@ import { createClient } from "redis";
 // injects the actual types of the Prisma models into the data models at runtime
 // so CASL can extract those and run permission checks
 const brandExtension = Prisma.defineExtension((client) => {
-  type ModelKey = Exclude<keyof typeof client, `$${string}` | symbol>;
+  type ModelKey = Exclude<keyof typeof client, `__${string}` | symbol>;
   type Result = {
     [K in ModelKey]: {
-      $kind: {
+      __typename: {
         needs: Record<string, never>;
         compute: () => Capitalize<K>;
       };
@@ -17,14 +17,14 @@ const brandExtension = Prisma.defineExtension((client) => {
 
   const result = {} as Result;
   const modelKeys = Object.keys(client).filter(
-    (key) => !key.startsWith("$"),
+    (key) => !key.startsWith("__"),
   ) as ModelKey[];
 
   for (const k of modelKeys) {
     const capK = k.charAt(0).toUpperCase() + k.slice(1);
     result[k] = {
       // biome-ignore lint/suspicious/noExplicitAny:
-      $kind: { needs: {}, compute: () => capK as any },
+      __typename: { needs: {}, compute: () => capK as any },
     };
   }
 

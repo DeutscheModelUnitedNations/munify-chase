@@ -1,15 +1,21 @@
 import { type PureAbility, AbilityBuilder } from "@casl/ability";
-import type { Subjects } from "@casl/prisma";
 import { createPrismaAbility, type PrismaQuery } from "./casl-prisma";
 import type { Session } from "../session";
 import type { db } from "../../../prisma/db";
 
 export type Action = "list" | "read" | "create" | "update" | "delete";
 
+type WithTypename<T extends object, TName extends string> = T & {
+  __typename: TName;
+};
+type TaggedSubjects<T extends Record<string, Record<string, unknown>>> =
+  | keyof T
+  | { [K in keyof T]: WithTypename<T[K], K & string> }[keyof T];
+
 type AppAbility = PureAbility<
   [
     Action,
-    Subjects<{
+    TaggedSubjects<{
       Conference: Awaited<
         ReturnType<(typeof db.conference)["findUniqueOrThrow"]>
       >;
@@ -24,8 +30,8 @@ type AppAbility = PureAbility<
 export const defineAbilitiesForSession = (session: Session) => {
   const {
     can,
-    build,
     // cannot
+    build,
   } = new AbilityBuilder<AppAbility>(createPrismaAbility);
 
   if (session.data?.loggedIn) {
@@ -35,21 +41,21 @@ export const defineAbilitiesForSession = (session: Session) => {
       const user = session.data.user;
       can("read", "Conference", {
         OR: [
-          { members: { some: { id: user.id } } },
+          { members: { some: { user: { id: user.id } } } },
           {
             committees: {
-              some: { members: { some: { id: user.id } } },
+              some: { members: { some: { user: { id: user.id } } } },
             },
           },
         ],
       });
       can(["update", "delete"], "Conference", {
-        members: { some: { id: user.id, role: "ADMIN" } },
+        members: { some: { user: {id: user.id}, role: "ADMIN" } },
       });
     }
   }
 
   return build({
-    detectSubjectType: (object) => object.$kind,
+    detectSubjectType: (object) => object.__typename,
   });
 };

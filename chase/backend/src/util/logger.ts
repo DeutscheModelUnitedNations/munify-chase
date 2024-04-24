@@ -28,10 +28,15 @@ export const logger = new Elysia({
     }
 
     // biome-ignore lint/suspicious/noExplicitAny:
+    if ((error as any).name === "ForbiddenError") {
+      set.status = "Forbidden";
+      return "You are not allowed to perform this action";
+    }
+
+    // biome-ignore lint/suspicious/noExplicitAny:
     if ((error as any).response === "Permission check failed.") {
-      set.status = "Unauthorized";
-      // biome-ignore lint/suspicious/noExplicitAny:
-      return (error as any).response;
+      set.status = "Forbidden";
+      return "You are not allowed to perform this action";
     }
 
     // prisma relation/entry not found

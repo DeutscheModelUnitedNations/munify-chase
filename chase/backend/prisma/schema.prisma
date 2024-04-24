@@ -18,7 +18,7 @@ generator prismabox {
   typeboxImportVariableName   = "t"
   typeboxImportDependencyName = "elysia"
   dataModel                   = true
-  plainAdditionalFields       = ["$kind: String"]
+  plainAdditionalFields       = ["__typename: String"]
 }
 
 // model Authenticator {

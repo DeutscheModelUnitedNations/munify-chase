@@ -3,6 +3,7 @@ import { db } from "../../prisma/db";
 import { openApiTag } from "../util/openApiTags";
 import {
   ConferenceData,
+  ConferenceDataOptional,
   ConferencePlain,
 } from "../../prisma/generated/schema/Conference";
 import { ConferenceCreateToken } from "../../prisma/generated/schema/ConferenceCreateToken";
@@ -99,7 +100,7 @@ export const conference = new Elysia({
         },
       }),
     {
-      body: ConferenceData,
+      body: ConferenceDataOptional,
       response: ConferencePlain,
       detail: {
         description: "Update a conference by id",
@@ -158,6 +159,7 @@ export const conference = new Elysia({
         },
       }),
     {
+      response: ConferencePlain,
       detail: {
         description: "Delete a conference by id",
         tags: [openApiTag(import.meta.path)],

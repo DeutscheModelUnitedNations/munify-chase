@@ -13,9 +13,7 @@ import { speakersListSpeakers } from "./routes/speakersList/speakers";
 import { time } from "./routes/time";
 import { user } from "./routes/user";
 
-export const api = new Elysia({
-  normalize: true,
-}).use(conference);
+export const api = new Elysia().use(conference);
 // .use(conferenceMember)
 // .use(committee)
 // .use(delegation)

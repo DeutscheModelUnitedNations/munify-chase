@@ -2,8 +2,8 @@ import { t, Elysia } from "elysia";
 import { db } from "../../prisma/db";
 import { openApiTag } from "../util/openApiTags";
 import {
-  ConferenceData,
-  ConferenceDataOptional,
+  ConferenceDataPlain,
+  ConferenceDataPlainOptional,
   ConferencePlain,
 } from "../../prisma/generated/schema/Conference";
 import { ConferenceCreateToken } from "../../prisma/generated/schema/ConferenceCreateToken";
@@ -12,24 +12,22 @@ import { permissionsPlugin } from "../auth/permissions";
 import { sessionPlugin } from "../auth/session";
 import { ConferenceRole } from "../../prisma/generated/schema/ConferenceRole";
 
-export const conference = new Elysia({
-  normalize: true,
-})
+export const conference = new Elysia()
   .use(sessionPlugin)
   .use(permissionsPlugin)
   .get(
     "/conference",
-    ({ permissions }) => {
-      permissions.checkIf((a) => a.can("list", "Conference"));
-      return db.conference.findMany();
-    },
+    ({ permissions }) =>
+      db.conference.findMany({
+        where: permissions.accessibleBy("list").Conference,
+      }),
     {
       response: t.Array(ConferencePlain),
       detail: {
         description: "Get all conferences",
         tags: [openApiTag(import.meta.path)],
       },
-    },
+    }
   )
   .post(
     "/conference",
@@ -60,17 +58,17 @@ export const conference = new Elysia({
         });
       }),
     {
-      body: t.Composite([ConferenceData, ConferenceCreateToken]),
+      body: t.Composite([ConferenceDataPlain, t.Pick(ConferenceCreateToken, ["token"])]),
       response: ConferencePlain,
       detail: {
         description: "Create a new conference, consumes a token",
         tags: [openApiTag(import.meta.path)],
       },
-    },
+    }
   )
   .get(
     "/conference/:conferenceId",
-     ({ params, permissions }) => 
+    ({ params, permissions }) =>
       db.conference.findUniqueOrThrow({
         where: {
           id: params.conferenceId,
@@ -83,7 +81,7 @@ export const conference = new Elysia({
         description: "Get a single conference by id",
         tags: [openApiTag(import.meta.path)],
       },
-    },
+    }
   )
   .patch(
     "/conference/:conferenceId",
@@ -93,20 +91,16 @@ export const conference = new Elysia({
           id: params.conferenceId,
           AND: [permissions.accessibleBy("update").Conference],
         },
-        data: {
-          name: body.name,
-          start: body.start,
-          end: body.end,
-        },
+        data: body,
       }),
     {
-      body: ConferenceDataOptional,
+      body: ConferenceDataPlainOptional,
       response: ConferencePlain,
       detail: {
         description: "Update a conference by id",
         tags: [openApiTag(import.meta.path)],
       },
-    },
+    }
   )
   .patch(
     "/conference/:conferenceId/addAdmin",
@@ -147,7 +141,7 @@ export const conference = new Elysia({
         description: "Add an admin to a conference",
         tags: [openApiTag(import.meta.path)],
       },
-    },
+    }
   )
   .delete(
     "/conference/:conferenceId",
@@ -164,7 +158,7 @@ export const conference = new Elysia({
         description: "Delete a conference by id",
         tags: [openApiTag(import.meta.path)],
       },
-    },
+    }
   )
   .get(
     "/conference/:conferenceId/getOwnRole",
@@ -183,5 +177,5 @@ export const conference = new Elysia({
         description: "Check if you are an admin of a conference.",
         tags: [openApiTag(import.meta.path)],
       },
-    },
+    }
   );

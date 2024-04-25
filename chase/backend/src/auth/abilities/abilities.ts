@@ -3,7 +3,17 @@ import { createPrismaAbility, type PrismaQuery } from "./casl-prisma";
 import type { Session } from "../session";
 import type { db } from "../../../prisma/db";
 
-export type Action = "list" | "read" | "create" | "update" | "delete";
+/**
+ * Actions which can be run on entities in the system:
+ * 
+ * - `list`: List all entities of a type
+ * - `read`: Read a single entity
+ * - `create`: Create a new entity
+ * - `update`: Update an entity
+ * - `status-update`: Update the status of an entity (non critical data, such as state of debate for committees)
+ * - `delete`: Delete an entity
+ */
+export type Action = "list" | "read" | "create" | "update" | "status-update" | "delete";
 
 type WithTypename<T extends object, TName extends string> = T & {
   __typename: TName;

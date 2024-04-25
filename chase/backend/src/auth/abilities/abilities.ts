@@ -3,9 +3,11 @@ import { createPrismaAbility, type PrismaQuery } from "./casl-prisma";
 import type { Session } from "../session";
 import type { db } from "../../../prisma/db";
 
+const actions = ["list", "read", "create", "update", "status-update", "delete"] as const;
+
 /**
  * Actions which can be run on entities in the system:
- * 
+ *
  * - `list`: List all entities of a type
  * - `read`: Read a single entity
  * - `create`: Create a new entity
@@ -13,7 +15,7 @@ import type { db } from "../../../prisma/db";
  * - `status-update`: Update the status of an entity (non critical data, such as state of debate for committees)
  * - `delete`: Delete an entity
  */
-export type Action = "list" | "read" | "create" | "update" | "status-update" | "delete";
+export type Action = typeof actions[number];
 
 type WithTypename<T extends object, TName extends string> = T & {
   __typename: TName;
@@ -26,12 +28,21 @@ type AppAbility = PureAbility<
   [
     Action,
     TaggedSubjects<{
+      AgendaItem: Awaited<
+        ReturnType<(typeof db.agendaItem)["findUniqueOrThrow"]>
+      >;
       Conference: Awaited<
         ReturnType<(typeof db.conference)["findUniqueOrThrow"]>
+      >;
+      ConferenceMember: Awaited<
+        ReturnType<(typeof db.conferenceMember)["findUniqueOrThrow"]>
       >;
       Committee: Awaited<
         ReturnType<(typeof db.committee)["findUniqueOrThrow"]>
       >;
+      Delegation: Awaited<
+      ReturnType<(typeof db.delegation)["findUniqueOrThrow"]>
+    >;
     }>,
   ],
   PrismaQuery
@@ -60,7 +71,7 @@ export const defineAbilitiesForSession = (session: Session) => {
         ],
       });
       can(["update", "delete"], "Conference", {
-        members: { some: { user: {id: user.id}, role: "ADMIN" } },
+        members: { some: { user: { id: user.id }, role: "ADMIN" } },
       });
     }
   }

@@ -15,23 +15,23 @@ export const permissionsPlugin = new Elysia({
         abilities,
         /**
          * Prisma utility for running authorized database calls. Should be used in WHERE conditions in queries like this:
-         * 
+         *
          * ```ts
          * db.committee.deleteMany({
          *   where: {
          *     conferenceId: params.conferenceId,
-         *     AND: [permissions.accessibleBy("delete").Committee],
+         *     AND: [permissions.allowDatabaseAccessTo("delete").Committee],
          *   }
          * })
          * ```
          * The default operation is "read".
          */
-        accessibleBy: (action: Action = "read") =>
+        allowDatabaseAccessTo: (action: Action = "read") =>
           accessibleBy(abilities, action),
         /**
          * Utility that raises and error if the permissions check fails.
          * Allows for readable flow of permission checks which resemble natural language like this:
-         * 
+         *
          * ```ts
          * permissions.checkIf((user) => user.can("create", "Committee"));
          * ```

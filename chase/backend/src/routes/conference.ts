@@ -19,7 +19,7 @@ export const conference = new Elysia()
     "/conference",
     ({ permissions }) =>
       db.conference.findMany({
-        where: permissions.accessibleBy("list").Conference,
+        where: permissions.allowDatabaseAccessTo("list").Conference,
       }),
     {
       response: t.Array(ConferencePlain),
@@ -27,7 +27,7 @@ export const conference = new Elysia()
         description: "Get all conferences",
         tags: [openApiTag(import.meta.path)],
       },
-    }
+    },
   )
   .post(
     "/conference",
@@ -58,13 +58,16 @@ export const conference = new Elysia()
         });
       }),
     {
-      body: t.Composite([ConferenceDataPlain, t.Pick(ConferenceCreateToken, ["token"])]),
+      body: t.Composite([
+        ConferenceDataPlain,
+        t.Pick(ConferenceCreateToken, ["token"]),
+      ]),
       response: ConferencePlain,
       detail: {
         description: "Create a new conference, consumes a token",
         tags: [openApiTag(import.meta.path)],
       },
-    }
+    },
   )
   .get(
     "/conference/:conferenceId",
@@ -72,7 +75,7 @@ export const conference = new Elysia()
       db.conference.findUniqueOrThrow({
         where: {
           id: params.conferenceId,
-          AND: [permissions.accessibleBy().Conference],
+          AND: [permissions.allowDatabaseAccessTo().Conference],
         },
       }),
     {
@@ -81,7 +84,7 @@ export const conference = new Elysia()
         description: "Get a single conference by id",
         tags: [openApiTag(import.meta.path)],
       },
-    }
+    },
   )
   .patch(
     "/conference/:conferenceId",
@@ -89,7 +92,7 @@ export const conference = new Elysia()
       db.conference.update({
         where: {
           id: params.conferenceId,
-          AND: [permissions.accessibleBy("update").Conference],
+          AND: [permissions.allowDatabaseAccessTo("update").Conference],
         },
         data: body,
       }),
@@ -100,7 +103,7 @@ export const conference = new Elysia()
         description: "Update a conference by id",
         tags: [openApiTag(import.meta.path)],
       },
-    }
+    },
   )
   .patch(
     "/conference/:conferenceId/addAdmin",
@@ -112,8 +115,8 @@ export const conference = new Elysia()
             userId: body.user.id,
           },
           AND: [
-            permissions.accessibleBy("create").ConferenceMember,
-            permissions.accessibleBy("update").ConferenceMember,
+            permissions.allowDatabaseAccessTo("create").ConferenceMember,
+            permissions.allowDatabaseAccessTo("update").ConferenceMember,
           ],
         },
         update: {
@@ -141,7 +144,7 @@ export const conference = new Elysia()
         description: "Add an admin to a conference",
         tags: [openApiTag(import.meta.path)],
       },
-    }
+    },
   )
   .delete(
     "/conference/:conferenceId",
@@ -149,7 +152,7 @@ export const conference = new Elysia()
       db.conference.delete({
         where: {
           id: params.conferenceId,
-          AND: [permissions.accessibleBy("delete").Conference],
+          AND: [permissions.allowDatabaseAccessTo("delete").Conference],
         },
       }),
     {
@@ -158,7 +161,7 @@ export const conference = new Elysia()
         description: "Delete a conference by id",
         tags: [openApiTag(import.meta.path)],
       },
-    }
+    },
   )
   .get(
     "/conference/:conferenceId/getOwnRole",
@@ -167,7 +170,7 @@ export const conference = new Elysia()
         await db.conferenceMember.findFirstOrThrow({
           where: {
             userId: session.data?.user?.id,
-            AND: [permissions.accessibleBy("read").ConferenceMember],
+            AND: [permissions.allowDatabaseAccessTo("read").ConferenceMember],
           },
         })
       ).role,
@@ -177,5 +180,5 @@ export const conference = new Elysia()
         description: "Check if you are an admin of a conference.",
         tags: [openApiTag(import.meta.path)],
       },
-    }
+    },
   );

@@ -26,7 +26,7 @@ export const committee = new Elysia({
       return await db.committee.findMany({
         where: {
           conferenceId: params.conferenceId,
-          AND: [permissions.accessibleBy("list").Committee],
+          AND: [permissions.allowDatabaseAccessTo("list").Committee],
         },
         include: { agendaItems: true },
         orderBy: {
@@ -55,7 +55,7 @@ export const committee = new Elysia({
         where: {
           conferenceId: params.conferenceId,
           id: params.committeeId,
-          AND: [permissions.accessibleBy().Committee],
+          AND: [permissions.allowDatabaseAccessTo().Committee],
         },
         include: {
           agendaItems: true,
@@ -85,13 +85,13 @@ export const committee = new Elysia({
                 some: {
                   committee: {
                     id: params.committeeId,
-                    AND: [permissions.accessibleBy().Committee],
+                    AND: [permissions.allowDatabaseAccessTo().Committee],
                   },
                 },
               },
             },
           },
-          AND: [permissions.accessibleBy("list").Nation],
+          AND: [permissions.allowDatabaseAccessTo("list").Nation],
         },
       }),
     {
@@ -132,7 +132,7 @@ export const committee = new Elysia({
       db.committee.deleteMany({
         where: {
           conferenceId: params.conferenceId,
-          AND: [permissions.accessibleBy("delete").Committee],
+          AND: [permissions.allowDatabaseAccessTo("delete").Committee],
         },
       }),
     {
@@ -151,7 +151,7 @@ export const committee = new Elysia({
         where: {
           id: params.committeeId,
           conferenceId: params.conferenceId,
-          AND: [permissions.accessibleBy("delete").Committee],
+          AND: [permissions.allowDatabaseAccessTo("delete").Committee],
         },
       }),
     {
@@ -169,7 +169,7 @@ export const committee = new Elysia({
         where: {
           id: params.committeeId,
           conferenceId: params.conferenceId,
-          AND: [permissions.accessibleBy("update").Committee],
+          AND: [permissions.allowDatabaseAccessTo("update").Committee],
         },
         data: body,
       });
@@ -189,7 +189,7 @@ export const committee = new Elysia({
         where: {
           id: params.committeeId,
           conferenceId: params.conferenceId,
-          AND: [permissions.accessibleBy("status-update").Committee],
+          AND: [permissions.allowDatabaseAccessTo("status-update").Committee],
         },
         data: body,
       });
@@ -219,7 +219,7 @@ export const committee = new Elysia({
               committeeId: params.committeeId,
             },
           },
-          AND: [permissions.accessibleBy("list").Delegation],
+          AND: [permissions.allowDatabaseAccessTo("list").Delegation],
         },
         include: {
           nation: true,

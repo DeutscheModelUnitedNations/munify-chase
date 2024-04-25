@@ -1,24 +1,23 @@
 import { t, Elysia } from "elysia";
 import { db } from "../../prisma/db";
-import { committeeMemberGuard } from "../auth/guards/committeeMember";
-import { conferenceRoleGuard } from "../auth/guards/conferenceRoles";
 import { openApiTag } from "../util/openApiTags";
 import { Nation } from "../../prisma/generated/schema/Nation";
 import { CommitteeMember } from "../../prisma/generated/schema/CommitteeMember";
+import { permissionsPlugin } from "../auth/permissions";
 
 const DelegationBody = t.Pick(Nation, ["alpha3Code"]);
 
 export const delegation = new Elysia({
   prefix: "/conference/:conferenceId",
 })
-  .use(conferenceRoleGuard)
-  .use(committeeMemberGuard)
+  .use(permissionsPlugin)
   .get(
     "/delegation",
-    ({ params: { conferenceId } }) => {
+    ({ params: { conferenceId }, permissions }) => {
       return db.delegation.findMany({
         where: {
           conferenceId,
+          AND: [permissions.allowDatabaseAccessTo("list").Delegation],
         },
         include: {
           nation: true,
@@ -27,7 +26,6 @@ export const delegation = new Elysia({
       });
     },
     {
-      hasConferenceRole: "any",
       detail: {
         description: "Get all delegations in this conference",
         tags: [openApiTag(import.meta.path)],
@@ -36,7 +34,8 @@ export const delegation = new Elysia({
   )
   .post(
     "/delegation",
-    ({ body, params: { conferenceId } }) => {
+    ({ body, params: { conferenceId }, permissions }) => {
+      permissions.checkIf((user) => user.can("create", "Delegation"));
       return db.delegation.create({
         data: {
           conference: { connect: { id: conferenceId } },

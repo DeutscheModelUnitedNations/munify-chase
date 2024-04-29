@@ -82,7 +82,7 @@ export default function ChairWhiteboard() {
     await backend
       .conference({ conferenceId })
       .committee({ committeeId })
-      .whiteboard.post({
+      .patch({
         whiteboardContent: whiteboardContent,
       })
       .then((res) => {

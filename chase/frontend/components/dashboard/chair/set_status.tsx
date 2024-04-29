@@ -58,7 +58,7 @@ export default function SetStatusWidget() {
     await backend
       .conference({ conferenceId })
       .committee({ committeeId })
-      .status.post({
+      .patch({
         //TODO
         // @ts-ignore
         status: selectedStatus ?? undefined,

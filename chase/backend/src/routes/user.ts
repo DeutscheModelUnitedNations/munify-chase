@@ -1,6 +1,5 @@
 import { Elysia, t } from "elysia";
 import { db } from "../../prisma/db";
-import { conferenceRoleGuard } from "../auth/guards/conferenceRoles";
 import { openApiTag } from "../util/openApiTags";
 import {
   Delegation,

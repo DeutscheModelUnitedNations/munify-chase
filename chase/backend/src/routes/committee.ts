@@ -2,6 +2,7 @@ import { t, Elysia } from "elysia";
 import { db } from "../../prisma/db";
 import { openApiTag } from "../util/openApiTags";
 import {
+  CommitteeData,
   CommitteeDataPlain,
   CommitteeDataPlainOptional,
   CommitteePlain,
@@ -113,7 +114,7 @@ export const committee = new Elysia({
       });
     },
     {
-      body: t.Pick(CommitteeDataPlain, [
+      body: t.Pick(CommitteeData, [
         "name",
         "abbreviation",
         "category",

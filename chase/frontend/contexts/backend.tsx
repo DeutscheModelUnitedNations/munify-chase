@@ -1,15 +1,15 @@
 "use client";
 import type React from "react";
-import { createContext, useContext, useEffect, useState } from "react";
+import { createContext, useContext, useState } from "react";
 import { treaty } from "@elysiajs/eden";
-import type { App } from "../../backend/src/main";
+import type { Api } from "../../backend/src/api";
 import { unstable_noStore as noStore } from "next/cache";
 import { env } from "next-runtime-env";
 
 export const BackendContext = createContext({} as BackendContextType);
 export const useBackend = () => useContext(BackendContext);
 
-export type BackendInstanceType = ReturnType<typeof treaty<App>>;
+export type BackendInstanceType = ReturnType<typeof treaty<Api>>;
 
 function getBackendUrl() {
   noStore();
@@ -21,12 +21,13 @@ export const Backend = ({ children }: { children: React.ReactNode }) => {
   // react from doing funky things with the backend instance when passing to the state hook
   // please do not ask me why this is happening...
   const [backend, _setBackend] = useState(() =>
-    treaty<App>(getBackendUrl(), {
+    treaty<Api>(getBackendUrl(), {
       fetch: {
         credentials: "include",
       },
     }),
   );
+
 
   return (
     <BackendContext.Provider value={{ backend }}>

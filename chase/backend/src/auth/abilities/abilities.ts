@@ -2,8 +2,16 @@ import { type PureAbility, AbilityBuilder } from "@casl/ability";
 import { createPrismaAbility, type PrismaQuery } from "./casl-prisma";
 import type { Session } from "../session";
 import type { db } from "../../../prisma/db";
+import { appConfiguration } from "../../util/config";
 
-const actions = ["list", "read", "create", "update", "status-update", "delete"] as const;
+const actions = [
+  "list",
+  "read",
+  "create",
+  "update",
+  "status-update",
+  "delete",
+] as const;
 
 /**
  * Actions which can be run on entities in the system:
@@ -15,7 +23,7 @@ const actions = ["list", "read", "create", "update", "status-update", "delete"] 
  * - `status-update`: Update the status of an entity (non critical data, such as state of debate for committees)
  * - `delete`: Delete an entity
  */
-export type Action = typeof actions[number];
+export type Action = (typeof actions)[number];
 
 type WithTypename<T extends object, TName extends string> = T & {
   __typename: TName;
@@ -40,9 +48,16 @@ type AppAbility = PureAbility<
       Committee: Awaited<
         ReturnType<(typeof db.committee)["findUniqueOrThrow"]>
       >;
+      CommitteeMember: Awaited<
+        ReturnType<(typeof db.committeeMember)["findUniqueOrThrow"]>
+      >;
       Delegation: Awaited<
-      ReturnType<(typeof db.delegation)["findUniqueOrThrow"]>
-    >;
+        ReturnType<(typeof db.delegation)["findUniqueOrThrow"]>
+      >;
+      Message: Awaited<ReturnType<(typeof db.message)["findUniqueOrThrow"]>>;
+      SpeakerOnList: Awaited<
+        ReturnType<(typeof db.speakerOnList)["findUniqueOrThrow"]>
+      >;
     }>,
   ],
   PrismaQuery
@@ -56,6 +71,12 @@ export const defineAbilitiesForSession = (session: Session) => {
   } = new AbilityBuilder<AppAbility>(createPrismaAbility);
 
   if (session.data?.loggedIn) {
+    if (appConfiguration.development) {
+      console.info("Development mode: granting all permissions");
+      // biome-ignore lint/suspicious/noExplicitAny: https://casl.js.org/v6/en/guide/intro#basics
+      can("manage" as any, "all" as any);
+    }
+
     can("list", "Conference");
     can("create", "Conference"); // also requires creation token
     if (session.data.user) {

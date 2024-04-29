@@ -1,8 +1,7 @@
 import { t, Elysia } from "elysia";
 import { db } from "../../../prisma/db";
-import { committeeMemberGuard } from "../../auth/guards/committeeMember";
-import { conferenceRoleGuard } from "../../auth/guards/conferenceRoles";
 import { openApiTag } from "../../util/openApiTags";
+import { permissionsPlugin } from "../../auth/permissions";
 
 function calculateTimeLeft(
   startTimestamp: Date | null | undefined,
@@ -20,14 +19,14 @@ function calculateTimeLeft(
 export const speakersListModification = new Elysia({
   prefix: "/speakersList/:speakersListId",
 })
-  .use(conferenceRoleGuard)
-  .use(committeeMemberGuard)
+  .use(permissionsPlugin)
   .post(
     "/setSpeakingTime",
-    async ({ params: { speakersListId }, body }) => {
+    async ({ params: { speakersListId }, body, permissions }) => {
       const speakersList = await db.speakersList.update({
         where: {
           id: speakersListId,
+          AND: [permissions.allowDatabaseAccessTo("update").SpeakersList],
         },
         data: {
           speakingTime: body.speakingTime,
@@ -37,7 +36,6 @@ export const speakersListModification = new Elysia({
       return speakersList;
     },
     {
-      hasConferenceRole: "any",
       body: t.Object({
         speakingTime: t.Number(),
       }),
@@ -50,10 +48,11 @@ export const speakersListModification = new Elysia({
 
   .post(
     "/close",
-    async ({ params: { speakersListId } }) => {
+    async ({ params: { speakersListId }, permissions }) => {
       const speakersList = await db.speakersList.update({
         where: {
           id: speakersListId,
+          AND: [permissions.allowDatabaseAccessTo("update").SpeakersList],
         },
         data: {
           isClosed: true,
@@ -63,7 +62,6 @@ export const speakersListModification = new Elysia({
       return speakersList;
     },
     {
-      hasConferenceRole: "any",
       detail: {
         description: "Close a speakers list",
         tags: [openApiTag(import.meta.path)],
@@ -73,10 +71,11 @@ export const speakersListModification = new Elysia({
 
   .post(
     "/open",
-    async ({ params: { speakersListId } }) => {
+    async ({ params: { speakersListId }, permissions }) => {
       const speakersList = await db.speakersList.update({
         where: {
           id: speakersListId,
+          AND: [permissions.allowDatabaseAccessTo("update").SpeakersList],
         },
         data: {
           isClosed: false,
@@ -86,7 +85,6 @@ export const speakersListModification = new Elysia({
       return speakersList;
     },
     {
-      hasConferenceRole: "any",
       detail: {
         description: "Open a speakers list",
         tags: [openApiTag(import.meta.path)],
@@ -95,10 +93,11 @@ export const speakersListModification = new Elysia({
   )
   .post(
     "/startTimer",
-    async ({ params: { speakersListId }, set }) => {
+    async ({ params: { speakersListId }, set, permissions }) => {
       const speakersList = await db.speakersList.findUnique({
         where: {
           id: speakersListId,
+          AND: [permissions.allowDatabaseAccessTo("read").SpeakersList],
         },
         include: {
           agendaItem: {
@@ -157,7 +156,6 @@ export const speakersListModification = new Elysia({
       });
     },
     {
-      hasConferenceRole: "any",
       detail: {
         description: "Start the timer for a speakers list",
         tags: [openApiTag(import.meta.path)],
@@ -167,16 +165,18 @@ export const speakersListModification = new Elysia({
 
   .post(
     "/stopTimer",
-    async ({ params: { speakersListId } }) => {
+    async ({ params: { speakersListId }, permissions }) => {
       const speakersList = await db.speakersList.findUnique({
         where: {
           id: speakersListId,
+
         },
       });
 
       return await db.speakersList.update({
         where: {
           id: speakersListId,
+          AND: [permissions.allowDatabaseAccessTo("update").SpeakersList],
         },
         data: {
           timeLeft: calculateTimeLeft(
@@ -189,7 +189,6 @@ export const speakersListModification = new Elysia({
       });
     },
     {
-      hasConferenceRole: "any",
       detail: {
         description: "Stop the timer for a speakers list",
         tags: [openApiTag(import.meta.path)],
@@ -199,10 +198,11 @@ export const speakersListModification = new Elysia({
 
   .post(
     "/resetTimer",
-    async ({ params: { speakersListId } }) => {
+    async ({ params: { speakersListId }, permissions }) => {
       const SpeakersList = await db.speakersList.findUnique({
         where: {
           id: speakersListId,
+          AND: [permissions.allowDatabaseAccessTo("update").SpeakersList],
         },
       });
 
@@ -219,7 +219,6 @@ export const speakersListModification = new Elysia({
       });
     },
     {
-      hasConferenceRole: "any",
       detail: {
         description: "Reset the timer for a speakers list",
         tags: [openApiTag(import.meta.path)],
@@ -229,7 +228,7 @@ export const speakersListModification = new Elysia({
 
   .post(
     "/increaseSpeakingTime",
-    async ({ params: { speakersListId }, body, set }) => {
+    async ({ params: { speakersListId }, body, set, permissions }) => {
       const speakersList = await db.speakersList.findUnique({
         where: {
           id: speakersListId,
@@ -244,6 +243,7 @@ export const speakersListModification = new Elysia({
       return await db.speakersList.update({
         where: {
           id: speakersListId,
+          AND: [permissions.allowDatabaseAccessTo("update").SpeakersList],
         },
         data: {
           timeLeft: speakersList?.timeLeft + body.amount,
@@ -251,7 +251,6 @@ export const speakersListModification = new Elysia({
       });
     },
     {
-      hasConferenceRole: "any",
       body: t.Object({
         amount: t.Number(),
       }),
@@ -264,7 +263,7 @@ export const speakersListModification = new Elysia({
 
   .post(
     "/decreaseSpeakingTime",
-    async ({ params: { speakersListId }, body, set }) => {
+    async ({ params: { speakersListId }, body, set, permissions }) => {
       const speakersList = await db.speakersList.findUnique({
         where: {
           id: speakersListId,
@@ -279,6 +278,7 @@ export const speakersListModification = new Elysia({
       return await db.speakersList.update({
         where: {
           id: speakersListId,
+          AND: [permissions.allowDatabaseAccessTo("update").SpeakersList],
         },
         data: {
           timeLeft: speakersList?.timeLeft - body.amount,

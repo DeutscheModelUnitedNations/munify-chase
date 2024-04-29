@@ -241,6 +241,7 @@ model SpeakerOnList {
   speakersListId    String
   committeeMember   CommitteeMember @relation(fields: [committeeMemberId], references: [id])
   committeeMemberId String
+  //TODO replace this with a signle linked list for better concurrency/less necessary updates?
   position          Int
 
   @@unique([speakersListId, position])

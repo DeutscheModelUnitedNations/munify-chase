@@ -1,14 +1,14 @@
 import { Elysia, t } from "elysia";
 import { openApiTag } from "../util/openApiTags";
-import { loggedInGuard } from "../auth/guards/loggedIn";
+import { permissionsPlugin } from "../auth/permissions";
 
-export const time = new Elysia().use(loggedInGuard).get(
+export const time = new Elysia().use(permissionsPlugin).get(
   "/timestamp",
-  async () => {
+  async ({ permissions }) => {
+    permissions.mustBeLoggedIn();
     return Date.now();
   },
   {
-    mustBeLoggedIn: true,
     response: t.Number(),
     detail: {
       description:

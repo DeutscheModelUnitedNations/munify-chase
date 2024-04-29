@@ -7,16 +7,16 @@ import {
 } from "../../email/email";
 import { nanoid } from "nanoid";
 import { appConfiguration } from "../../util/config";
-import { loggedInGuard } from "../../auth/guards/loggedIn";
 import { passwords } from "./passwords";
 import { sessionPlugin } from "../../auth/session";
+import { permissionsPlugin } from "../../auth/permissions";
 
 export const auth = new Elysia({
   prefix: "/auth",
 })
   .use(passwords)
   .use(sessionPlugin)
-  .use(loggedInGuard)
+  .use(permissionsPlugin)
   .get(
     "/userState",
     async ({ query: { email } }) => {
@@ -55,8 +55,9 @@ export const auth = new Elysia({
   )
   .get(
     "/myInfo",
-    async ({ session }) =>
-      db.user.findUniqueOrThrow({
+    async ({ session, permissions }) => {
+      permissions.mustBeLoggedIn();
+      return db.user.findUniqueOrThrow({
         where: { id: session.data?.user?.id },
         include: {
           emails: true,
@@ -82,9 +83,9 @@ export const auth = new Elysia({
             },
           },
         },
-      }),
+      });
+    },
     {
-      mustBeLoggedIn: true,
       detail: {
         description: "Returns the user info when they are logged in",
         tags: [openApiTag(import.meta.path)],

@@ -3,6 +3,9 @@ import { sessionPlugin } from "./session";
 import { type Action, defineAbilitiesForSession } from "./abilities/abilities";
 import { accessibleBy } from "./abilities/casl-prisma";
 
+export type PermissionsType =
+  (typeof permissionsPlugin)["_ephemeral"]["resolve"]["permissions"];
+
 export const permissionsPlugin = new Elysia({
   name: "permissions",
 })
@@ -45,6 +48,11 @@ export const permissionsPlugin = new Elysia({
             if (!perms(abilities)) {
               throw error("Unauthorized", "Permission check failed.");
             }
+          }
+        },
+        mustBeLoggedIn: () => {
+          if (!session.data?.loggedIn) {
+            throw error("Unauthorized", "You are not logged in.");
           }
         },
       },

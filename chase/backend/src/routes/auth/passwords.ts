@@ -1,8 +1,8 @@
 import { t, Elysia } from "elysia";
 import { db } from "../../../prisma/db";
 import { openApiTag } from "../../util/openApiTags";
-import { loggedInGuard } from "../../auth/guards/loggedIn";
 import { sessionPlugin } from "../../auth/session";
+import { permissionsPlugin } from "../../auth/permissions";
 
 /**
  * === Regex for password requirements ===
@@ -21,7 +21,7 @@ const passwordRegex =
 
 export const passwords = new Elysia()
   .use(sessionPlugin)
-  .use(loggedInGuard)
+  .use(permissionsPlugin)
   .post(
     "/password",
     async ({ body: { email, password, credentialCreateToken } }) => {
@@ -113,7 +113,8 @@ export const passwords = new Elysia()
   )
   .delete(
     "/password",
-    async ({ body: { password }, session }) => {
+    async ({ body: { password }, session, permissions }) => {
+      permissions.mustBeLoggedIn();
       const user = await db.user.findUniqueOrThrow({
         where: {
           id: session.data?.user?.id,
@@ -141,7 +142,6 @@ export const passwords = new Elysia()
       });
     },
     {
-      mustBeLoggedIn: true,
       body: t.Object({
         password: t.String(),
       }),

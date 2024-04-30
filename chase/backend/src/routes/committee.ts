@@ -3,7 +3,6 @@ import { db } from "../../prisma/db";
 import { openApiTag } from "../util/openApiTags";
 import {
   CommitteeData,
-  CommitteeDataPlain,
   CommitteeDataPlainOptional,
   CommitteePlain,
   CommitteeRelations,

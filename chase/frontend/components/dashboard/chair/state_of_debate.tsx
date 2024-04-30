@@ -28,9 +28,7 @@ export default function StateOfDebateWidget() {
     await backend
       .conference({ conferenceId })
       .committee({ committeeId })
-      .stateOfDebate.post({
-        stateOfDebate: stateOfDebate,
-      })
+      .patch({ stateOfDebate })
       .then((res) => {
         if (res.status === 200) {
           showToast({

@@ -92,7 +92,7 @@ function CommitteeCard({
 
   const [loading, setLoading] = useState(false);
 
-  function getHeadline(category: CommitteeType["status"], headline?: string) {
+  function getHeadline(category: CommitteeType["status"], headline: string | null) {
     if (headline) return headline;
     switch (category) {
       case "FORMAL":

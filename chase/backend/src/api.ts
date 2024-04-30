@@ -6,7 +6,6 @@ import { sessionPlugin } from "./auth/session";
 import { permissionsPlugin } from "./auth/permissions";
 import {
   generateAllObjects,
-  generateAllQueries,
 } from "../prisma/generated/graphql/pothosCrud/autocrud";
 
 generateAllObjects();
@@ -14,7 +13,7 @@ generateAllObjects();
 // generateAllMutations()
 
 builder.queryType({});
-// builder.mutationType({});
+builder.mutationType({});
 
 import "./resolvers/conference";
 
@@ -25,6 +24,6 @@ const yoga = createYoga({
 export const GraphQLApi = new Elysia()
   .use(sessionPlugin)
   .use(permissionsPlugin)
-  .post("/graphql", ({ request, session, permissions }) => {
+  .all("/graphql", ({ request, session, permissions }) => {
     return yoga.handleRequest(request, { session, permissions });
   });

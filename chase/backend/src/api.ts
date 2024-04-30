@@ -1,38 +1,30 @@
 import Elysia from "elysia";
-import { agendaItem } from "./routes/agendaItem";
-import { auth } from "./routes/auth/auth";
-import { baseData } from "./routes/baseData";
-import { committee } from "./routes/committee";
-import { conference } from "./routes/conference";
-import { conferenceMember } from "./routes/conferenceMember";
-import { delegation } from "./routes/delegation";
-import { messages } from "./routes/messages";
-import { speakersListGeneral } from "./routes/speakersList/general";
-import { speakersListModification } from "./routes/speakersList/modification";
-import { speakersListSpeakers } from "./routes/speakersList/speakers";
-import { time } from "./routes/time";
-import { user } from "./routes/user";
-import { appConfiguration } from "./util/config";
-import packagejson from "../package.json";
+import { createYoga } from "graphql-yoga";
+import { builder } from "../builder";
 
-export const api = new Elysia()
-  .use(conference)
-  .use(conferenceMember)
-  .use(committee)
-  .use(delegation)
-  .use(agendaItem)
-  .use(speakersListGeneral)
-  .use(speakersListModification)
-  .use(speakersListSpeakers)
-  .use(messages)
-  .use(user)
-  .use(auth)
-  .use(time)
-  .use(baseData)
-  .get("/", () => ({
-    production: appConfiguration.production,
-    name: appConfiguration.appName,
-    version: packagejson.version,
-  }));
+import { sessionPlugin } from "./auth/session";
+import { permissionsPlugin } from "./auth/permissions";
+import {
+  generateAllObjects,
+  generateAllQueries,
+} from "../prisma/generated/graphql/pothosCrud/autocrud";
 
-export type Api = typeof api;
+generateAllObjects();
+// generateAllQueries();
+// generateAllMutations()
+
+builder.queryType({});
+// builder.mutationType({});
+
+import "./resolvers/conference";
+
+const yoga = createYoga({
+  schema: builder.toSchema(),
+});
+
+export const GraphQLApi = new Elysia()
+  .use(sessionPlugin)
+  .use(permissionsPlugin)
+  .post("/graphql", ({ request, session, permissions }) => {
+    return yoga.handleRequest(request, { session, permissions });
+  });

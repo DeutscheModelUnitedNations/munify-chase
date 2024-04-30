@@ -2,13 +2,8 @@ import { Elysia } from "elysia";
 import { cors } from "@elysiajs/cors";
 import { appConfiguration } from "./util/config";
 import { logger } from "./util/logger";
-import packagejson from "../package.json";
-import swagger from "@elysiajs/swagger";
 import { helmet } from "elysia-helmet";
-import { api } from "./api";
-
-//TODO switch to new prismabox schema types
-//TODO remove use of set where applicable
+import { GraphQLApi } from "./api";
 
 setInterval(
   async () => {
@@ -32,18 +27,6 @@ if (appConfiguration.production) {
 }
 
 app
-  .use(
-    swagger({
-      path: `/${appConfiguration.documentationPath}`,
-      documentation: {
-        info: {
-          title: `${appConfiguration.appName} documentation`,
-          description: `${appConfiguration.appName} documentation`,
-          version: packagejson.version,
-        },
-      },
-    }),
-  )
   .use(logger)
   .use(
     cors({
@@ -62,22 +45,10 @@ app
       ],
     }),
   )
-  .use(api)
+  .use(GraphQLApi)
   .listen(process.env.PORT ?? "3001");
 
 console.info("Api running on port", appConfiguration.port);
-
-setTimeout(() => {
-  console.info(
-    `
-      
-      Swagger documentation available at http://localhost:${
-        process.env.PORT ?? "3001"
-      }/${appConfiguration.documentationPath}
-      
-      `,
-  );
-}, 3000);
 
 if (appConfiguration.development) {
   setTimeout(() => {

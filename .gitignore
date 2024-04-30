@@ -16,12 +16,11 @@ yarn-error.log*
 next-env.d.ts
 .postgres-data
 .redis-data
-users.csv
+heapSnapshots
 
 chase/backend/prisma/generated
 fontawesome-pro-6.4.2/
 .env
 certificates
 .smtp4dev
-target
-heapSnapshots
+users.csv

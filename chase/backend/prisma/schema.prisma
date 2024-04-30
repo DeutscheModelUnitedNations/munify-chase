@@ -12,13 +12,15 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-generator prismabox {
-  provider                    = "prismabox"
-  output                      = "./generated/schema"
-  typeboxImportVariableName   = "t"
-  typeboxImportDependencyName = "elysia"
-  dataModel                   = true
-  plainAdditionalFields       = ["__typename: String"]
+generator pothos {
+  provider     = "prisma-pothos-types"
+  clientOutput = "../generated/client"
+  output       = "./generated/graphql/pothos-types.ts"
+}
+
+generator pothosCrud {
+  provider            = "prisma-generator-pothos-codegen"
+  generatorConfigPath = "./pothos.config.js"
 }
 
 // model Authenticator {
@@ -40,15 +42,14 @@ model Password {
   id           String @id @default(uuid())
   user         User   @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
   userId       String
-  /// @prismabox.hide
+  /// @Pothos.omit()
   passwordHash String
 }
 
-/// A token which can be used to grant one time access to something in the app
-/// e.g. confirming an email, resetting a password
+/// A token which can be used to grant one time access to something in the app e.g. confirming an email, resetting a password
 model Token {
   id        String   @id @default(uuid())
-  /// @prismabox.hide
+  /// @Pothos.omit()
   tokenHash String
   expiresAt DateTime
 
@@ -91,8 +92,9 @@ model User {
 }
 
 /// Consumeable token which grants the creation of a conference
-model ConferenceCreateToken {
-  token String @id
+model ConferenceCreationToken {
+  id    String @id @default(uuid())
+  token String @unique
 }
 
 /// A conference in the system
@@ -119,7 +121,7 @@ enum ConferenceRole {
   MISCELLANEOUS_TEAM
 }
 
-/// A user's membership in a conference, providing them with a role in the conference
+/// A users membership in a conference, providing them with a role in the conference
 model ConferenceMember {
   id           String         @id @default(uuid())
   conference   Conference     @relation(fields: [conferenceId], references: [id])
@@ -146,7 +148,7 @@ enum CommitteeStatus {
   INFORMAL
   PAUSE
   SUSPENSION
-  CLOSED /// Don't display a Widget
+  CLOSED // Dont display a Widget
 }
 
 /// A committee in a conference
@@ -181,7 +183,7 @@ enum Presence {
   ABSENT
 }
 
-/// A user's membership in a committee, providing them with a role in the committee
+/// A users membership in a committee, providing them with a role in the committee
 model CommitteeMember {
   id           String          @id @default(uuid())
   committee    Committee       @relation(fields: [committeeId], references: [id])

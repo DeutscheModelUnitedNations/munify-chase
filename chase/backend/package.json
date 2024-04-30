@@ -22,7 +22,7 @@
     "concurrently": "^8.2.2",
     "esbuild": "^0.20.2",
     "prisma": "^5.13.0",
-    "prismabox": "^0.3.3"
+    "prisma-generator-pothos-codegen": "^0.6.4"
   },
   "dependencies": {
     "@casl/ability": "^6.7.1",
@@ -30,11 +30,17 @@
     "@elysiajs/bearer": "^1.0.2",
     "@elysiajs/cors": "^1.0.2",
     "@elysiajs/eden": "^1.0.12",
-    "@elysiajs/swagger": "^1.0.4",
+    "@pothos/core": "^3.41.1",
+    "@pothos/plugin-complexity": "^3.13.0",
+    "@pothos/plugin-prisma": "^3.65.1",
+    "@pothos/plugin-tracing": "^0.5.8",
+    "@pothos/plugin-with-input": "^3.10.1",
     "@prisma/client": "^5.13.0",
     "@sinclair/typebox": "^0.32.27",
+    "add": "^2.0.6",
     "elysia": "^1.0.15",
     "elysia-helmet": "^1.0.2",
+    "graphql-yoga": "^5.3.0",
     "mjml": "^4.15.3",
     "nanoid": "^5.0.7",
     "nodemailer": "^6.9.13",

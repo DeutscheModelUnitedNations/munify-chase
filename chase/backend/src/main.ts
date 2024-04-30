@@ -56,6 +56,7 @@ if (appConfiguration.development) {
       `
       
       Dummy emails sent to inbox at http://${appConfiguration.email.EMAIL_HOST}:3777
+      API explorer at http://localhost:${appConfiguration.port}/graphql
       
       `,
     );

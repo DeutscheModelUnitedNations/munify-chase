@@ -2,6 +2,8 @@ module.exports = {
   /** Input type generation config */
   inputs: {
     outputFilePath: "./prisma/generated/graphql/pothosCrud/inputs.ts",
+    /** Create simpler inputs for easier customization and ~65% less generated code. Default: `false` */
+    simple: true,
     /** How to import the Prisma namespace. Default: `"import { Prisma } from '.prisma/client';"` */
     prismaImporter: "import { Prisma } from '../../client';",
     /** Map all Prisma fields with "@id" attribute to Graphql "ID" Scalar.
@@ -21,6 +23,6 @@ module.exports = {
     deleteOutputDirBeforeGenerate: true,
   },
   global: {
-    builderImporters: "import { builder } from '../builder';"
-  }
+    builderImporters: "import { builder } from '../builder';",
+  },
 };

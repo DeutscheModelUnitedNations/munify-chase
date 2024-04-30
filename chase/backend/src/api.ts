@@ -16,6 +16,7 @@ builder.queryType({});
 builder.mutationType({});
 
 import "./resolvers/conference";
+import "./resolvers/committee";
 
 const yoga = createYoga({
   schema: builder.toSchema(),

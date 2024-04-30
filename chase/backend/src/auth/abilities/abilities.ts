@@ -9,7 +9,6 @@ const actions = [
   "read",
   "create",
   "update",
-  "status-update",
   "delete",
 ] as const;
 
@@ -94,6 +93,39 @@ export const defineAbilitiesForSession = (session: Session) => {
       can(["update", "delete"], "Conference", {
         members: { some: { user: { id: user.id }, role: "ADMIN" } },
       });
+
+      // TODO
+
+      // example for field restrictions
+      can(
+        "update",
+        "Committee",
+        [ // only allow updating these fields
+          "status",
+          "statusHeadline",
+          "statusUntil",
+          "stateOfDebate",
+          "whiteboardContent",
+        ],
+        {
+          conference: {
+            members: {
+              some: {
+                user: { id: user.id },
+                role: {
+                  in: [
+                    "ADMIN",
+                    "CHAIR",
+                    "COMMITTEE_ADVISOR",
+                    "MISCELLANEOUS_TEAM",
+                    "SECRETARIAT",
+                  ],
+                },
+              },
+            },
+          },
+        },
+      );
     }
   }
 

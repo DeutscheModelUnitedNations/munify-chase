@@ -9,11 +9,19 @@ export enum Type {
   LIST_ITEM_TEXT = 'list-item-text',
 }
 
+export function isCustomElement(node: CustomElement | CustomText): node is CustomElement {
+  return (node as CustomElement).type !== undefined
+}
+
+export function isCustomText(node: CustomElement | CustomText): node is CustomText {
+  return (node as CustomText).text !== undefined
+}
+
 export type ResEditor = BaseEditor & ReactEditor
 
 export type CustomElement = {
   type: Type
-  children: CustomText[]
+  children: (CustomText | CustomElement)[]
 }
 
 export type FormattedText = { text: string; operator?: boolean; clauseNumber?: boolean; delimiter?: boolean }

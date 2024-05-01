@@ -98,6 +98,7 @@ model Conference {
   end         DateTime?
   delegations Delegation[]
   members     ConferenceMember[]
+  Resolution  Resolution[]
 }
 
 /// The role of a user in a conference
@@ -148,6 +149,7 @@ model Committee {
   id                                            String            @id @default(uuid())
   name                                          String
   abbreviation                                  String
+  resolutionIntroduction                        String? /// Like "The General Assembly," or "Die Generalversammlung". This is the first part of a resolution
   category                                      CommitteeCategory
   conference                                    Conference        @relation(fields: [conferenceId], references: [id])
   conferenceId                                  String
@@ -163,6 +165,7 @@ model Committee {
   statusHeadline                                String?
   statusUntil                                   DateTime?
   allowDelegationsToAddThemselvesToSpeakersList Boolean           @default(false)
+  Resolution                                    Resolution[]
 
   @@unique([name, conferenceId])
   @@unique([abbreviation, conferenceId])
@@ -301,4 +304,159 @@ model Message {
   metaDelegation String?
   metaCommittee  String?
   metaAgendaItem String?
+}
+
+enum DocumentCategory {
+  WP /// Working Paper
+  SUBMITTED_WP /// Submitted Working Paper
+  DRAFT /// Draft and therefore submitted to the chair, but not accepted as draft resolution yet
+  DRAFT_RESOLUTION
+  RESOLUTION
+}
+
+model Resolution {
+  id           String           @id @default(uuid())
+  category     DocumentCategory @default(WP)
+  tagCommittee String
+  tagNumber    Int
+  tagYear      Int
+  agendaItem   String
+
+  author      String
+  signatories String[]
+
+  conference   Conference @relation(fields: [conferenceId], references: [id])
+  conferenceId String
+  committee    Committee  @relation(fields: [committeeId], references: [id])
+  committeeId  String
+
+  clauses Clause[]
+
+  amendmentAdding AmendmentAdding[]
+
+  createdAt            DateTime
+  lastModifiedAt       DateTime
+  submittedAt          DateTime?
+  signatoriesUpdatedAt DateTime?
+  adoptedAt            DateTime?
+
+  adoptionResultFor     Int?
+  adoptionResultAgainst Int?
+  adoptionResultAbstain Int?
+}
+
+enum ClauseCategory {
+  PREAMBLE
+  OPERATIVE
+}
+
+model Clause {
+  id           String         @id @default(uuid())
+  category     ClauseCategory
+  resolution   Resolution     @relation(fields: [resolutionId], references: [id])
+  resolutionId String
+  number       Int
+  content      Json
+
+  amendmentDeleting AmendmentDeleting[]
+  amendmentEditing  AmendmentEditing[]
+  amendmentMoving   AmendmentMoving[]
+}
+
+enum OperatorCategory {
+  PREAMBLE
+  OPERATIVE
+}
+
+model ValidOperator {
+  id       String           @id @default(uuid())
+  operator String
+  category OperatorCategory
+}
+
+enum AmendmentAddingMode {
+  AFTER
+  BEFORE
+}
+
+model AmendmentAdding {
+  id String @id @default(uuid())
+
+  resolution   Resolution          @relation(fields: [resolutionId], references: [id])
+  resolutionId String
+  mode         AmendmentAddingMode
+  clauseNumber Int
+
+  author      String
+  signatories String[]
+
+  createdAt      DateTime
+  lastModifiedAt DateTime
+  submittedAt    DateTime?
+  adoptedAt      DateTime?
+
+  adoptionResultFor     Int?
+  adoptionResultAgainst Int?
+  adoptionResultAbstain Int?
+}
+
+model AmendmentDeleting {
+  id String @id @default(uuid())
+
+  clause   Clause @relation(fields: [clauseId], references: [id])
+  clauseId String
+
+  author      String
+  signatories String[]
+
+  createdAt      DateTime
+  lastModifiedAt DateTime
+  submittedAt    DateTime?
+  adoptedAt      DateTime?
+
+  adoptionResultFor     Int?
+  adoptionResultAgainst Int?
+  adoptionResultAbstain Int?
+}
+
+model AmendmentEditing {
+  id String @id @default(uuid())
+
+  clause   Clause @relation(fields: [clauseId], references: [id])
+  clauseId String
+
+  newContent Json
+
+  author      String
+  signatories String[]
+
+  createdAt      DateTime
+  lastModifiedAt DateTime
+  submittedAt    DateTime?
+  adoptedAt      DateTime?
+
+  adoptionResultFor     Int?
+  adoptionResultAgainst Int?
+  adoptionResultAbstain Int?
+}
+
+model AmendmentMoving {
+  id String @id @default(uuid())
+
+  clause   Clause @relation(fields: [clauseId], references: [id])
+  clauseId String
+
+  newClauseNumber Int
+
+  author      String
+  signatories String[]
+
+  createdAt      DateTime
+  lastModifiedAt DateTime
+  submittedAt    DateTime?
+  adoptedAt      DateTime?
+
+  adoptionResultFor     Int?
+  adoptionResultAgainst Int?
+  adoptionResultAbstain Int?
 }

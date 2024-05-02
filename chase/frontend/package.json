@@ -37,8 +37,8 @@
     "oidc-client-ts": "^3.0.1",
     "postcss": "8.4.38",
     "primeicons": "^7.0.0",
-    "primereact": "^10.6.3",
-    "quill": "^2.0.0",
+    "primereact": "^10.6.4",
+    "quill": "^2.0.1",
     "react": "18.3.1",
     "react-dom": "18.3.1",
     "react-flip-move": "^3.0.5",
@@ -56,11 +56,11 @@
     "yaml": "^2.4.2"
   },
   "devDependencies": {
-    "@types/node": "20.12.7",
+    "@types/node": "20.12.8",
     "concurrently": "^8.2.2",
-    "elysia": "^1.0.15",
+    "elysia": "^1.0.16",
     "bun-types": "latest",
     "nodemon": "^3.1.0",
-    "sass": "^1.75.0"
+    "sass": "^1.76.0"
   }
 }

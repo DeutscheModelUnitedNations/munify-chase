@@ -8,10 +8,10 @@ export const baseData = new Elysia({ prefix: "/baseData" })
   .use(permissionsPlugin)
   .get(
     "/countries",
-    ({ permissions }) =>
-      db.nation.findMany({
-        where: permissions.allowDatabaseAccessTo("list").Nation,
-      }),
+    ({ permissions }) => {
+      permissions.mustBeLoggedIn();
+      return db.nation.findMany();
+    },
     {
       response: t.Array(NationPlain),
       detail: {

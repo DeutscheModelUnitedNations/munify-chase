@@ -172,7 +172,7 @@ export const messages = new Elysia()
       db.message.update({
         where: {
           id: params.messageId,
-          AND: [permissions.allowDatabaseAccessTo("status-update").Message],
+          AND: [permissions.allowDatabaseAccessTo("update").Message],
         },
         data: {
           status: {
@@ -219,7 +219,7 @@ export const messages = new Elysia()
       return await db.message.update({
         where: {
           id: messageId,
-          AND: [permissions.allowDatabaseAccessTo("status-update").Message],
+          AND: [permissions.allowDatabaseAccessTo("update").Message],
         },
         data: {
           status: updatedArray,
@@ -242,7 +242,7 @@ export const messages = new Elysia()
       return await db.message.update({
         where: {
           id: messageId,
-          AND: [permissions.allowDatabaseAccessTo("status-update").Message],
+          AND: [permissions.allowDatabaseAccessTo("update").Message],
         },
         data: {
           forwarded: true,

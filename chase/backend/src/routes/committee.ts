@@ -189,7 +189,7 @@ export const committee = new Elysia({
         where: {
           id: params.committeeId,
           conferenceId: params.conferenceId,
-          AND: [permissions.allowDatabaseAccessTo("status-update").Committee],
+          AND: [permissions.allowDatabaseAccessTo("update").Committee],
         },
         data: body,
       });

@@ -47,7 +47,6 @@ export const conferenceMember = new Elysia({
       });
     },
     {
-      hasConferenceRole: ["ADMIN"],
       response: [ConferenceMemberPlain],
       body: ConferenceMemberCreationBody,
       detail: {

@@ -10,9 +10,18 @@ export default function getFlagPathByCode(countryCode: string): string {
     // TODO - this is a temporary solution until we have the correct logos
     path = "/flags/nsa.svg";
   } else if (
-    ["unm", "unw", "gsm", "gsw", "uno", "undw", "undm", "und", "un", "gs"].includes(
-      countryCode,
-    )
+    [
+      "unm",
+      "unw",
+      "gsm",
+      "gsw",
+      "uno",
+      "undw",
+      "undm",
+      "und",
+      "un",
+      "gs",
+    ].includes(countryCode)
   ) {
     path = "/flags/uno.svg";
   } else if (countryCode === "xxx") {

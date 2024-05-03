@@ -256,7 +256,7 @@ try {
 
   console.info("\nSeeding Database with SimSim Committees and Users");
 
-  await SimSimSeed(prisma)
+  await SimSimSeed(prisma);
 
   await prisma.$disconnect();
 } catch (e) {

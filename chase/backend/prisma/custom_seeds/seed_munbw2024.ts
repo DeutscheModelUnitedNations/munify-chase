@@ -92,22 +92,22 @@ try {
 
   console.info("\nCreated Committees:");
   console.info(
-    `  - Created ${committees.GV.abbreviation} with ID ${committees.GV.id}`
+    `  - Created ${committees.GV.abbreviation} with ID ${committees.GV.id}`,
   );
   console.info(
-    `  - Created ${committees.WiSo.abbreviation} with ID ${committees.WiSo.id}`
+    `  - Created ${committees.WiSo.abbreviation} with ID ${committees.WiSo.id}`,
   );
   console.info(
-    `  - Created ${committees.SR.abbreviation} with ID ${committees.SR.id}`
+    `  - Created ${committees.SR.abbreviation} with ID ${committees.SR.id}`,
   );
   console.info(
-    `  - Created ${committees.KWT.abbreviation} with ID ${committees.KWT.id}`
+    `  - Created ${committees.KWT.abbreviation} with ID ${committees.KWT.id}`,
   );
   console.info(
-    `  - Created ${committees.UV.abbreviation} with ID ${committees.UV.id}`
+    `  - Created ${committees.UV.abbreviation} with ID ${committees.UV.id}`,
   );
   console.info(
-    `  - Created ${committees.IGH.abbreviation} with ID ${committees.IGH.id}`
+    `  - Created ${committees.IGH.abbreviation} with ID ${committees.IGH.id}`,
   );
 
   // Committee seeding
@@ -190,7 +190,7 @@ try {
       },
     });
     console.info(
-      `  - Created Delegation for ${data.nation} with ID ${delegation.id}`
+      `  - Created Delegation for ${data.nation} with ID ${delegation.id}`,
     );
 
     if (data.GV) {
@@ -258,7 +258,7 @@ try {
     "nsa_dpa",
     "nsa_oxf",
     "nsa_rwb",
-  ]
+  ];
 
   for (const nonStateActor of nonStateActors) {
     const delegation = await prisma.delegation.create({
@@ -277,7 +277,7 @@ try {
           },
         });
         console.info(
-          `  - Created CommitteeMembership for ${nonStateActor} in ${committee.abbreviation}`
+          `  - Created CommitteeMembership for ${nonStateActor} in ${committee.abbreviation}`,
         );
       }
     }
@@ -309,7 +309,7 @@ try {
           },
         });
         console.info(
-          `  - Created CommitteeMembership for ${specialPerson.alpha3Code} in ${committee.abbreviation}`
+          `  - Created CommitteeMembership for ${specialPerson.alpha3Code} in ${committee.abbreviation}`,
         );
       }
     }

@@ -3,7 +3,7 @@ import Papa from "papaparse";
 import fs from "fs";
 import { $Enums, PrismaClient } from "../generated/client";
 
-// 
+//
 export async function SimSimSeed(prisma?: PrismaClient) {
   if (prisma === undefined) {
     // biome-ignore lint/style/noParameterAssign: This is a valid use case

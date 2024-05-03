@@ -6,7 +6,6 @@ import {
   AgendaItemData,
   AgendaItemDataPlain,
   AgendaItemPlain,
-  AgendaItemRelations,
 } from "../../prisma/generated/schema/AgendaItem";
 import { permissionsPlugin } from "../auth/permissions";
 

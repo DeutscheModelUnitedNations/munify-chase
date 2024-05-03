@@ -4,16 +4,9 @@ import { openApiTag } from "../util/openApiTags";
 import {
   CommitteeData,
   CommitteeDataPlainOptional,
-  CommitteePlain,
-  CommitteeRelations,
 } from "../../prisma/generated/schema/Committee";
-import { NationPlain } from "../../prisma/generated/schema/Nation";
 import { sessionPlugin } from "../auth/session";
 import { permissionsPlugin } from "../auth/permissions";
-import {
-  DelegationPlain,
-  DelegationRelations,
-} from "../../prisma/generated/schema/Delegation";
 
 export const committee = new Elysia({
   prefix: "/conference/:conferenceId",

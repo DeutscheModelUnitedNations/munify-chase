@@ -1,10 +1,6 @@
-import { Elysia, t } from "elysia";
+import { Elysia } from "elysia";
 import { db } from "../../prisma/db";
 import { openApiTag } from "../util/openApiTags";
-import {
-  Delegation,
-  DelegationPlain,
-} from "../../prisma/generated/schema/Delegation";
 import { _Nullable } from "../../prisma/generated/schema/__nullable__";
 import { permissionsPlugin } from "../auth/permissions";
 

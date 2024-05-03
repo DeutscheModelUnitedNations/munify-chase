@@ -169,7 +169,6 @@ export const speakersListModification = new Elysia({
       const speakersList = await db.speakersList.findUnique({
         where: {
           id: speakersListId,
-
         },
       });
 

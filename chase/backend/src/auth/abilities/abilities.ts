@@ -60,8 +60,8 @@ export type AppAbility = PureAbility<
         ReturnType<(typeof db.speakerOnList)["findUniqueOrThrow"]>
       >;
       SpeakersList: Awaited<
-      ReturnType<(typeof db.speakersList)["findUniqueOrThrow"]>
-    >;
+        ReturnType<(typeof db.speakersList)["findUniqueOrThrow"]>
+      >;
     }>,
   ],
   PrismaQuery

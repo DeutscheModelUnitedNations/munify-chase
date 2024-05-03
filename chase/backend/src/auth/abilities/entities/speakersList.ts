@@ -4,7 +4,7 @@ import type { Session } from "../../session";
 
 export const defineAbilitiesForSpeakersList = (
   session: Session,
-  { can }: AbilityBuilder<AppAbility>
+  { can }: AbilityBuilder<AppAbility>,
 ) => {
   if (session.data?.loggedIn && session.data.user) {
     const user = session.data.user;
@@ -14,8 +14,8 @@ export const defineAbilitiesForSpeakersList = (
           conference: {
             members: { some: { user: { id: user.id }, role: "ADMIN" } },
           },
-        }
-      }
+        },
+      },
     });
 
     can(["list", "read"], "SpeakersList", {
@@ -25,8 +25,8 @@ export const defineAbilitiesForSpeakersList = (
             { conference: { members: { some: { user: { id: user.id } } } } },
             { members: { some: { user: { id: user.id } } } },
           ],
-        }
-      }
+        },
+      },
     });
 
     //TODO: Restrict field access for non admins further
@@ -34,10 +34,15 @@ export const defineAbilitiesForSpeakersList = (
       agendaItem: {
         committee: {
           conference: {
-            members: { some: { user: { id: user.id }, role: {in: ["ADMIN", "CHAIR", "COMMITTEE_ADVISOR"]} } },
+            members: {
+              some: {
+                user: { id: user.id },
+                role: { in: ["ADMIN", "CHAIR", "COMMITTEE_ADVISOR"] },
+              },
+            },
           },
-        }
-      }
+        },
+      },
     });
   }
 };

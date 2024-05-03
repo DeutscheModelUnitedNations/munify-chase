@@ -11,7 +11,7 @@ export default function InboxPageResearchService() {
   const conferenceId = useContext(ConferenceIdContext);
   const { backend } = useBackend();
 
-  const [messages, trigger ] = pollBackendCall(
+  const [messages, trigger] = pollBackendCall(
     // biome-ignore lint/style/noNonNullAssertion: we assume the conference id is set
     backend.conference({ conferenceId: conferenceId! }).messages.researchService
       .get,

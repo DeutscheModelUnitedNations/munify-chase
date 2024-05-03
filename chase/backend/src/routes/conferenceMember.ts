@@ -27,8 +27,6 @@ export const conferenceMember = new Elysia({
       });
     },
     {
-      hasConferenceRole: ["ADMIN"],
-      response: [ConferenceMemberPlain],
       detail: {
         description: "Get all conference-members in this conference",
         tags: [openApiTag(import.meta.path)],
@@ -37,7 +35,7 @@ export const conferenceMember = new Elysia({
   )
   .post(
     "/member",
-    ({ params: { conferenceId }, body , permissions}) => {
+    ({ params: { conferenceId }, body, permissions }) => {
       permissions.checkIf((user) => user.can("create", "ConferenceMember"));
       return db.conferenceMember.createMany({
         data: new Array(body.count).fill({
@@ -47,7 +45,6 @@ export const conferenceMember = new Elysia({
       });
     },
     {
-      response: [ConferenceMemberPlain],
       body: ConferenceMemberCreationBody,
       detail: {
         description:

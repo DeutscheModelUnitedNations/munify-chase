@@ -14,7 +14,9 @@ export type AllAvailableCountriesType = NonNullable<
   >["data"]
 >;
 
-export type CountryDataType = AllAvailableCountriesType[number] & { name?: string };
+export type CountryDataType = AllAvailableCountriesType[number] & {
+  name?: string;
+};
 
 export default function AddDelegationDialog({
   inputMaskVisible,

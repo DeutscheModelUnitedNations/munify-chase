@@ -4,7 +4,7 @@ import { Session } from "../../session";
 
 export const defineAbilitiesForConferenceMembers = (
   session: Session,
-  { can }: AbilityBuilder<AppAbility>
+  { can }: AbilityBuilder<AppAbility>,
 ) => {
   if (session.data?.loggedIn && session.data.user) {
     const user = session.data.user;

@@ -33,8 +33,7 @@ const brandExtension = Prisma.defineExtension((client) => {
 
 export const db = new PrismaClient({
   datasourceUrl: appConfiguration.db.postgresUrl,
-})
-.$extends(brandExtension);
+}).$extends(brandExtension);
 
 export const redis = createClient({
   url: appConfiguration.db.redisUrl,

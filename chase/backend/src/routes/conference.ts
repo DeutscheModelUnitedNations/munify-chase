@@ -22,7 +22,6 @@ export const conference = new Elysia()
         where: permissions.allowDatabaseAccessTo("list").Conference,
       }),
     {
-      response: t.Array(ConferencePlain),
       detail: {
         description: "Get all conferences",
         tags: [openApiTag(import.meta.path)],
@@ -78,7 +77,6 @@ export const conference = new Elysia()
         },
       }),
     {
-      response: ConferencePlain,
       detail: {
         description: "Get a single conference by id",
         tags: [openApiTag(import.meta.path)],
@@ -97,7 +95,6 @@ export const conference = new Elysia()
       }),
     {
       body: ConferenceDataPlainOptional,
-      response: ConferencePlain,
       detail: {
         description: "Update a conference by id",
         tags: [openApiTag(import.meta.path)],
@@ -155,7 +152,6 @@ export const conference = new Elysia()
         },
       }),
     {
-      response: ConferencePlain,
       detail: {
         description: "Delete a conference by id",
         tags: [openApiTag(import.meta.path)],
@@ -174,7 +170,6 @@ export const conference = new Elysia()
         })
       ).role,
     {
-      response: t.Optional(ConferenceRole),
       detail: {
         description: "Check if you are an admin of a conference.",
         tags: [openApiTag(import.meta.path)],

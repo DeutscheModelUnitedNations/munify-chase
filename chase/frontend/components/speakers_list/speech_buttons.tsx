@@ -213,7 +213,7 @@ export function ChairSpeechButtons({
     {
       label: LL.chairs.speakersList.buttons.CLOSE_LIST(),
       icon: <FontAwesomeIcon icon={faLock as IconProp} className="mr-2" />,
-      visible: !!(speakersListData && !speakersListData?.isClosed ),
+      visible: !!(speakersListData && !speakersListData?.isClosed),
       command: () => {
         if (!speakersListData) return;
         backend
@@ -456,7 +456,7 @@ export function ChairSpeechButtons({
           closable={false}
         >
           <AddSpeakerOverlay
-            allCountries={countries.map(d => d.nation)}
+            allCountries={countries.map((d) => d.nation)}
             closeOverlay={() => setAddSpeakersOverlayVisible(false)}
             typeOfList={typeOfList}
           />

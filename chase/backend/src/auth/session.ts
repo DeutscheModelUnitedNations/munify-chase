@@ -46,7 +46,7 @@ export const sessionPlugin = new Elysia({ name: "session" })
     ),
   })
   .derive(
-    { as: "scoped" },
+    { as: "global" },
     async ({
       cookie: { sessionId, chaseCookieConsent },
       set,

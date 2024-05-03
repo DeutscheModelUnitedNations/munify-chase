@@ -4,7 +4,7 @@ import { Session } from "../../session";
 
 export const defineAbilitiesForAgendaItem = (
   session: Session,
-  { can }: AbilityBuilder<AppAbility>
+  { can }: AbilityBuilder<AppAbility>,
 ) => {
   if (session.data?.loggedIn && session.data.user) {
     const user = session.data.user;
@@ -34,11 +34,7 @@ export const defineAbilitiesForAgendaItem = (
             some: {
               user: { id: user.id },
               role: {
-                in: [
-                  "ADMIN",
-                  "CHAIR",
-                  "COMMITTEE_ADVISOR",
-                ],
+                in: ["ADMIN", "CHAIR", "COMMITTEE_ADVISOR"],
               },
             },
           },

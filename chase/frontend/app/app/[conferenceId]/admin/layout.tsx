@@ -53,7 +53,8 @@ export default function AdminLayout({
 
   useEffect(() => {
     if (!conferenceId) return;
-    backend.conference({conferenceId})
+    backend
+      .conference({ conferenceId })
       .get()
       .then((response) => {
         if (!response?.data?.id) {

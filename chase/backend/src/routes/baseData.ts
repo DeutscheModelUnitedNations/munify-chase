@@ -13,7 +13,6 @@ export const baseData = new Elysia({ prefix: "/baseData" })
       return db.nation.findMany();
     },
     {
-      response: t.Array(NationPlain),
       detail: {
         description: "Get all nations in the system",
         tags: [openApiTag(import.meta.path)],

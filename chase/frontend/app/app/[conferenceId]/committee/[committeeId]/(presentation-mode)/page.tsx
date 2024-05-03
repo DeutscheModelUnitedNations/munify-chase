@@ -65,7 +65,6 @@ export default function CommitteePresentationMode({
     localStorage.setItem("presentationRem", remSize.toString());
   }, [remSize]);
 
-
   useEffect(() => {
     disableToastsOnCurrentPage();
   }, []);

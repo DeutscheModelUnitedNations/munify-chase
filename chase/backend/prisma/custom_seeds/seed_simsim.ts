@@ -1,6 +1,4 @@
 import { faker } from "@faker-js/faker";
-import Papa from "papaparse";
-import fs from "fs";
 import { $Enums, PrismaClient } from "../generated/client";
 
 //

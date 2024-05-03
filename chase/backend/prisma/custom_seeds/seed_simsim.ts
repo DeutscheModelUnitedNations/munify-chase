@@ -142,8 +142,7 @@ export async function SimSimSeed(prisma?: PrismaClient) {
     { alpha3Code: "nsa_hrw", variant: $Enums.NationVariant.NON_STATE_ACTOR }, // Human Rights Watch
   ];
 
-  for (const country of allCountries) {
-    if (country.variant) continue;
+  for (const country of allCountries.filter((c) => !c.variant)) {
     const delegation = await prisma.delegation.create({
       data: {
         conference: { connect: { id: conference.id } },
@@ -165,13 +164,9 @@ export async function SimSimSeed(prisma?: PrismaClient) {
     });
   }
 
-  const nonStateActors = await prisma.nation.findMany({
-    where: {
-      variant: $Enums.NationVariant.NON_STATE_ACTOR,
-    },
-  });
-
-  for (const nonStateActor of nonStateActors) {
+  for (const nonStateActor of allCountries.filter(
+    (c) => c.variant === $Enums.NationVariant.NON_STATE_ACTOR,
+  )) {
     const delegation = await prisma.delegation.create({
       data: {
         conference: { connect: { id: conference.id } },

@@ -39,7 +39,7 @@ The App has two layers of access. Team members can access the Mission Control an
 - [ ] Non-State Actors Panel (work in progress)
 
 ## Code Structure
-The code for CHASE is split into two parts. The `frontend` and the `backend`. The [`frontend`](./frontend) is a [React](https://reactjs.org/)/[NEXT.js](https://nextjs.org/) application and the [`backend`](./backend) is currently being transformed to a [GraphQL](https://graphql.org/) API written in [Rust](https://www.rust-lang.org/).
+The code for CHASE is split into two parts. The `frontend` and the `backend`. The [`frontend`](./frontend) is a [React](https://reactjs.org/)/[NEXT.js](https://nextjs.org/) application and the [`backend`](./backend) is currently being transformed to a [GraphQL](https://graphql.org/) API.
 
 ## Impressions
 

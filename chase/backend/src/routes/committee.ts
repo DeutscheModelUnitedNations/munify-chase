@@ -35,12 +35,6 @@ export const committee = new Elysia({
       });
     },
     {
-      response: t.Array(
-        t.Composite([
-          CommitteePlain,
-          t.Pick(CommitteeRelations, ["agendaItems"]),
-        ]),
-      ),
       detail: {
         description:
           "Get all committees in this conference, including their agenda items",
@@ -63,10 +57,6 @@ export const committee = new Elysia({
       });
     },
     {
-      response: t.Composite([
-        CommitteePlain,
-        t.Pick(CommitteeRelations, ["agendaItems"]),
-      ]),
       detail: {
         description: "Get a single committee by id including the agenda items",
         tags: [openApiTag(import.meta.path)],
@@ -95,7 +85,6 @@ export const committee = new Elysia({
         },
       }),
     {
-      response: t.Array(NationPlain),
       detail: {
         description:
           "Get all nations of a committee (all delegations represented in this committee)",
@@ -119,7 +108,6 @@ export const committee = new Elysia({
         "category",
         "parentId",
       ]),
-      response: CommitteePlain,
       detail: {
         description: "Create a new committee in this conference",
         tags: [openApiTag(import.meta.path)],
@@ -136,7 +124,6 @@ export const committee = new Elysia({
         },
       }),
     {
-      response: t.Object({ count: t.Number() }),
       detail: {
         description: "Delete all committees in this conference",
         tags: [openApiTag(import.meta.path)],
@@ -155,7 +142,6 @@ export const committee = new Elysia({
         },
       }),
     {
-      response: CommitteePlain,
       detail: {
         description: "Delete a committee by id",
         tags: [openApiTag(import.meta.path)],
@@ -237,12 +223,6 @@ export const committee = new Elysia({
       });
     },
     {
-      response: t.Array(
-        t.Composite([
-          DelegationPlain,
-          t.Pick(DelegationRelations, ["members", "nation"]),
-        ]),
-      ),
       detail: {
         description: "Get all delegations of a committee",
         tags: [openApiTag(import.meta.path)],

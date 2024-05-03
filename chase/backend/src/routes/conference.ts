@@ -62,7 +62,6 @@ export const conference = new Elysia()
         ConferenceDataPlain,
         t.Pick(ConferenceCreateToken, ["token"]),
       ]),
-      response: ConferencePlain,
       detail: {
         description: "Create a new conference, consumes a token",
         tags: [openApiTag(import.meta.path)],

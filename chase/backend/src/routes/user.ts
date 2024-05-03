@@ -27,9 +27,6 @@ export const user = new Elysia().use(permissionsPlugin).get(
     });
   },
   {
-    response: _Nullable(
-      t.Composite([DelegationPlain, t.Pick(Delegation, ["nation"])]),
-    ),
     detail: {
       description: "Get the delegation of a user in this conference",
       tags: [openApiTag(import.meta.path)],

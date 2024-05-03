@@ -100,10 +100,6 @@ export const agendaItem = new Elysia({
       return r;
     },
     {
-      response: t.Composite([
-        AgendaItemPlain,
-        t.Pick(AgendaItemRelations, ["speakerLists"]),
-      ]),
       detail: {
         description: "Get all active agenda items in this committee",
         tags: [openApiTag(import.meta.path)],

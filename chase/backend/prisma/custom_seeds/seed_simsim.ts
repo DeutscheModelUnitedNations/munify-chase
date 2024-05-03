@@ -2,9 +2,13 @@ import { faker } from "@faker-js/faker";
 import Papa from "papaparse";
 import fs from "fs";
 import { $Enums, PrismaClient } from "../generated/client";
-const prisma = new PrismaClient();
 
-try {
+// 
+export async function SimSimSeed(prisma?: PrismaClient) {
+  if (prisma === undefined) {
+    // biome-ignore lint/style/noParameterAssign: This is a valid use case
+    prisma = new PrismaClient();
+  }
   // Conference for a SimSim
   const conferenceName = `${faker.color.human()} ${faker.animal.type()} SimSim Konferenz`;
   const conference = await prisma.conference.upsert({
@@ -133,12 +137,6 @@ try {
     { alpha3Code: "gbr" },
     { alpha3Code: "usa" },
     { alpha3Code: "zwe" },
-
-    { alpha3Code: "unm", variant: $Enums.NationVariant.SPECIAL_PERSON }, // Male General Secretary
-    { alpha3Code: "unw", variant: $Enums.NationVariant.SPECIAL_PERSON }, // Female General Secretary
-    { alpha3Code: "gsm", variant: $Enums.NationVariant.SPECIAL_PERSON }, // Male Guest Speaker
-    { alpha3Code: "gsw", variant: $Enums.NationVariant.SPECIAL_PERSON }, // Female Guest Speaker
-    { alpha3Code: "uno", variant: $Enums.NationVariant.SPECIAL_PERSON }, // MISC UN Official
 
     { alpha3Code: "nsa_amn", variant: $Enums.NationVariant.NON_STATE_ACTOR }, // Amnesty International
     { alpha3Code: "nsa_gnwp", variant: $Enums.NationVariant.NON_STATE_ACTOR }, // Global Network of Women Peacekeepers
@@ -343,8 +341,6 @@ try {
       role: "SimSim 2 Delegate",
     };
 
-    console.info(`${data.email},${data.password},${data.role}`);
-
     const user = await prisma.user.create({
       data: {
         name: data.email,
@@ -391,13 +387,5 @@ try {
     users.push(data);
   }
 
-  const csv = Papa.unparse(users);
-
-  fs.writeFileSync("users.csv", csv);
-
   await prisma.$disconnect();
-} catch (e) {
-  console.error(e);
-  await prisma.$disconnect();
-  process.exit(1);
 }

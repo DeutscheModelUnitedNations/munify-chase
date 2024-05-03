@@ -738,7 +738,7 @@ type RootTranslation = {
 		 */
 		CREATION_SUCCESS: string
 		/**
-		 * T​h​e​ ​p​a​s​s​w​o​r​d​ ​i​s​ ​i​n​v​a​l​i​d​.​ ​I​t​ ​m​u​s​t​ ​b​e​ ​a​t​ ​l​e​a​s​t​ ​8​ ​c​h​a​r​a​c​t​e​r​s​ ​l​o​n​g​ ​a​n​d​ ​c​o​n​t​a​i​n​ ​a​t​ ​l​e​a​s​t​ ​t​w​o​ ​u​p​p​e​r​ ​c​a​s​e​ ​l​e​t​t​e​r​s​,​ ​t​h​r​e​e​ ​l​o​w​e​r​ ​c​a​s​e​ ​l​e​t​t​e​r​s​,​ ​t​w​o​ ​n​u​m​b​e​r​s​ ​a​n​d​ ​o​n​e​ ​s​p​e​c​i​a​l​ ​c​h​a​r​a​c​t​e​r​.
+		 * T​h​e​ ​p​a​s​s​w​o​r​d​ ​i​s​ ​i​n​v​a​l​i​d​.​ ​I​t​ ​m​u​s​t​ ​b​e​ ​a​t​ ​l​e​a​s​t​ ​8​ ​c​h​a​r​a​c​t​e​r​s​ ​l​o​n​g​ ​a​n​d​ ​c​o​n​t​a​i​n​ ​a​t​ ​l​e​a​s​t​ ​o​n​e​ ​u​p​p​e​r​ ​c​a​s​e​ ​l​e​t​t​e​r​s​,​ ​o​n​e​ ​l​o​w​e​r​ ​c​a​s​e​ ​l​e​t​t​e​r​s​,​ ​o​n​e​ ​n​u​m​b​e​r​ ​a​n​d​ ​o​n​e​ ​s​p​e​c​i​a​l​ ​c​h​a​r​a​c​t​e​r​.
 		 */
 		PASSWORD_INVALID: string
 		/**
@@ -2573,7 +2573,7 @@ export type TranslationFunctions = {
 		 */
 		CREATION_SUCCESS: () => LocalizedString
 		/**
-		 * The password is invalid. It must be at least 8 characters long and contain at least two upper case letters, three lower case letters, two numbers and one special character.
+		 * The password is invalid. It must be at least 8 characters long and contain at least one upper case letters, one lower case letters, one number and one special character.
 		 */
 		PASSWORD_INVALID: () => LocalizedString
 		/**

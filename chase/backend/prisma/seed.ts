@@ -1,4 +1,5 @@
 // import { faker } from "@faker-js/faker";
+import { SimSimSeed } from "./custom_seeds/seed_simsim";
 import { $Enums, PrismaClient } from "./generated/client";
 const prisma = new PrismaClient();
 
@@ -196,11 +197,12 @@ export const allCountries = [
   { alpha3Code: "yem" },
   { alpha3Code: "zmb" },
   { alpha3Code: "zwe" },
+  { alpha3Code: "unk" }, // TODO Kosovo, only temporary for MUNBW 2024
 
   { alpha3Code: "unm", variant: $Enums.NationVariant.SPECIAL_PERSON }, // Male General Secretary
   { alpha3Code: "undm", variant: $Enums.NationVariant.SPECIAL_PERSON }, // Male Deputy General Secretary
-  // { alpha3Code: "unw", variant: $Enums.NationVariant.SPECIAL_PERSON }, // Female General Secretary
-  // { alpha3Code: "un", variant: $Enums.NationVariant.SPECIAL_PERSON }, // Gender Neutral General Secretary
+  { alpha3Code: "unw", variant: $Enums.NationVariant.SPECIAL_PERSON }, // Female General Secretary
+  { alpha3Code: "un", variant: $Enums.NationVariant.SPECIAL_PERSON }, // Gender Neutral General Secretary
   { alpha3Code: "undw", variant: $Enums.NationVariant.SPECIAL_PERSON }, // Female Deputy General Secretary
   { alpha3Code: "und", variant: $Enums.NationVariant.SPECIAL_PERSON }, // Gender Neutral Deputy General Secretary
   { alpha3Code: "gsm", variant: $Enums.NationVariant.SPECIAL_PERSON }, // Male Guest Speaker
@@ -211,7 +213,7 @@ export const allCountries = [
   { alpha3Code: "nsa_amn", variant: $Enums.NationVariant.NON_STATE_ACTOR }, // Amnesty International
   { alpha3Code: "nsa_gates", variant: $Enums.NationVariant.NON_STATE_ACTOR }, // Bill & Melinda Gates Foundation
   { alpha3Code: "nsa_gnwp", variant: $Enums.NationVariant.NON_STATE_ACTOR }, // Global Network of Women Peacekeepers
-  { alpha3Code: "nsa_gp", variant: $Enums.NationVariant.NON_STATE_ACTOR }, // Greenpeace
+  { alpha3Code: "nsa_gp", variant: $Enums.NationVariant.NON_STATE_ACTOR }, // Greenpeace International
   { alpha3Code: "nsa_hrw", variant: $Enums.NationVariant.NON_STATE_ACTOR }, // Human Rights Watch
   { alpha3Code: "nsa_iog", variant: $Enums.NationVariant.NON_STATE_ACTOR }, // International
   { alpha3Code: "nsa_icrc", variant: $Enums.NationVariant.NON_STATE_ACTOR }, // International Red Cross
@@ -221,6 +223,10 @@ export const allCountries = [
   { alpha3Code: "nsa_unwatch", variant: $Enums.NationVariant.NON_STATE_ACTOR }, // UN Watch
   { alpha3Code: "nsa_whh", variant: $Enums.NationVariant.NON_STATE_ACTOR }, // Welthungerhilfe
   { alpha3Code: "nsa_wef", variant: $Enums.NationVariant.NON_STATE_ACTOR }, // World Economic Forum
+  { alpha3Code: "nsa_dwb", variant: $Enums.NationVariant.NON_STATE_ACTOR }, // Doctors Without Borders
+  { alpha3Code: "nsa_dpa", variant: $Enums.NationVariant.NON_STATE_ACTOR }, // Data-Pop Alliance
+  { alpha3Code: "nsa_oxf", variant: $Enums.NationVariant.NON_STATE_ACTOR }, // Oxfam International
+  { alpha3Code: "nsa_rwb", variant: $Enums.NationVariant.NON_STATE_ACTOR }, // Reporters Without Borders
 ];
 
 try {
@@ -247,6 +253,10 @@ try {
   console.info(
     `==> Created ${countries.length} countries as base country data`,
   );
+
+  console.info("\nSeeding Database with SimSim Committees and Users");
+
+  await SimSimSeed(prisma)
 
   await prisma.$disconnect();
 } catch (e) {

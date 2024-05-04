@@ -456,7 +456,7 @@ export function ChairSpeechButtons({
           closable={false}
         >
           <AddSpeakerOverlay
-            allCountries={countries.map((d) => d.nation)}
+            allCountries={countries?.map((d) => d.nation) || []}
             closeOverlay={() => setAddSpeakersOverlayVisible(false)}
             typeOfList={typeOfList}
           />

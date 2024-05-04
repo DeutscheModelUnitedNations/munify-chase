@@ -60,7 +60,7 @@ export default function PrintMessageDocument({
                 label="Download PDF"
                 faIcon={faDownload}
                 loading={loading}
-                disabled={!loading && !error && url ? true : false}
+                disabled={!!(!loading && !error && url)}
               />
             )}
           </PDFDownloadLink>

@@ -56,16 +56,19 @@ export default function CountryAutoComplete({
     setQuery(selectedCountry.name);
   }, [selectedCountry]);
 
-  useEffect(() => {
-    if (query === "") {
-      setSelectedCountry(null);
-    } else {
-      const country = countries?.find((country) => country?.name === query);
-      if (country) {
-        setSelectedCountry(country);
-      }
-    }
-  }, [query, countries, setSelectedCountry]);
+  // useEffect(() => {
+  //   // TODO this does not work as expected and I (Tade) am not sure what this even is supposed to do
+  //   if (query === "") {
+  //     setSelectedCountry(null);
+  //   } else {
+  //     const country = countries?.find((country) => country?.name === query);
+  //     if (country) {
+  //       setSelectedCountry(country);
+  //     } else {
+  //       setSelectedCountry(null);
+  //     }
+  //   }
+  // }, [query, countries, selectedCountry]);
 
   const searchCountry = (event: AutoCompleteCompleteEvent) => {
     if (!fuse) return;

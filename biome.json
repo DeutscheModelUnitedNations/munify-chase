@@ -28,7 +28,8 @@
     "ignore": [
       "chase/frontend/i18n/*.ts",
       "chase/frontend/i18n/*.tsx",
-      ".devcontainer"
+      ".devcontainer",
+      ".vscode"
     ]
   }
 }

@@ -3,7 +3,7 @@ import { db } from "../../prisma/db";
 import { openApiTag } from "../util/openApiTags";
 import {
   ConferenceMember,
-  ConferenceMemberPlain,
+  // ConferenceMemberPlain,
 } from "../../prisma/generated/schema/ConferenceMember";
 import { permissionsPlugin } from "../auth/permissions";
 

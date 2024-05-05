@@ -5,7 +5,7 @@ import { $Enums } from "../../prisma/generated/client";
 import {
   AgendaItemData,
   AgendaItemDataPlain,
-  AgendaItemPlain,
+  // AgendaItemPlain,
 } from "../../prisma/generated/schema/AgendaItem";
 import { permissionsPlugin } from "../auth/permissions";
 

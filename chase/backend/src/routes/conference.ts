@@ -4,13 +4,13 @@ import { openApiTag } from "../util/openApiTags";
 import {
   ConferenceDataPlain,
   ConferenceDataPlainOptional,
-  ConferencePlain,
+  // ConferencePlain,
 } from "../../prisma/generated/schema/Conference";
 import { ConferenceCreateToken } from "../../prisma/generated/schema/ConferenceCreateToken";
 import { User } from "../../prisma/generated/schema/User";
 import { permissionsPlugin } from "../auth/permissions";
 import { sessionPlugin } from "../auth/session";
-import { ConferenceRole } from "../../prisma/generated/schema/ConferenceRole";
+// import { ConferenceRole } from "../../prisma/generated/schema/ConferenceRole";
 
 export const conference = new Elysia()
   .use(sessionPlugin)

@@ -1,4 +1,4 @@
-import worldCountries, { Country } from "world-countries";
+import worldCountries, { type Country } from "world-countries";
 
 export function alpha3ToAlpha2(alpha3: string): string {
   const res = worldCountries.find((country: Country) => {

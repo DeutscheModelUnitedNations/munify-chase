@@ -18,6 +18,7 @@
     "concurrently": "^8.2.2"
   },
   "dependencies": {
-    "next-runtime-env": "^3.2.0"
+    "next-runtime-env": "^3.2.0",
+    "world-countries": "^5.0.0"
   }
 }

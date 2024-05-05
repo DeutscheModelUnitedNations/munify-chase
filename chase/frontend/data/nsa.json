@@ -66,5 +66,29 @@
     "alpha3": "nsa_wef",
     "de": "Weltwirtschaftsforum",
     "en": "World Economic Forum"
+  },
+  {
+    "id": 15,
+    "alpha3": "nsa_dwb",
+    "de": "Ärzte ohne Grenzen",
+    "en": "Doctors Without Borders"
+  },
+  {
+    "id": 16,
+    "alpha3": "nsa_dpa",
+    "de": "Data-Pop Alliance",
+    "en": "Data-Pop Alliance"
+  },
+  {
+    "id": 17,
+    "alpha3": "nsa_oxf",
+    "de": "Oxfam International",
+    "en": "Oxfam International"
+  },
+  {
+    "id": 18,
+    "alpha3": "nsa_rwb",
+    "de": "Reporter ohne Grenzen",
+    "en": "Reporters Without Borders"
   }
 ]

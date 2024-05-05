@@ -18,6 +18,8 @@
     "concurrently": "^8.2.2"
   },
   "dependencies": {
-    "biome": "^0.3.3"
+    "next-runtime-env": "^3.2.0",
+    "biome": "^0.3.3",
+    "world-countries": "^5.0.0"
   }
 }

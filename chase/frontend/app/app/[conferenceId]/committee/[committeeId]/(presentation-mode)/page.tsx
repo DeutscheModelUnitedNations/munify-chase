@@ -65,7 +65,6 @@ export default function CommitteePresentationMode({
     localStorage.setItem("presentationRem", remSize.toString());
   }, [remSize]);
 
-
   useEffect(() => {
     disableToastsOnCurrentPage();
   }, []);
@@ -88,7 +87,7 @@ export default function CommitteePresentationMode({
               <div className="flex gap-2 items-center mt-2">
                 <FontAwesomeIcon className="mx-2" icon={faPodium} />
                 <h2 className="text-lg">
-                  {agendaItem.find((item) => item.isActive)?.title ?? (
+                  {agendaItem?.find((item) => item.isActive)?.title ?? (
                     <Skeleton
                       width="5rem"
                       height="1.75rem"

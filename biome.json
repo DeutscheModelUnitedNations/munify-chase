@@ -26,9 +26,12 @@
   },
   "files": {
     "ignore": [
+      "chase/backend/src/auth/abilities/casl-prisma.ts",
+      "chase/backend/builder.ts",
       "chase/frontend/i18n/*.ts",
       "chase/frontend/i18n/*.tsx",
-      ".devcontainer"
+      ".devcontainer",
+      ".vscode"
     ]
   }
 }

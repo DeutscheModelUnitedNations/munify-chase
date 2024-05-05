@@ -78,7 +78,7 @@ export default function AttendanceTable({
     <>
       <ConfigWrapper title={title} description={description}>
         {delegationData?.map((attendee) => (
-          <WidgetBoxTemplate>
+          <WidgetBoxTemplate key={attendee.id}>
             <Flag countryCode={attendee.nation.alpha3Code} />
             <div className="flex flex-col justify-center">
               <div className="text-sm font-bold text-gray-text dark:text-primary-800">

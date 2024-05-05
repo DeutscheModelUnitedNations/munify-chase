@@ -60,8 +60,8 @@ export type AppAbility = PureAbility<
         ReturnType<(typeof db.speakerOnList)["findUniqueOrThrow"]>
       >;
       SpeakersList: Awaited<
-      ReturnType<(typeof db.speakersList)["findUniqueOrThrow"]>
-    >;
+        ReturnType<(typeof db.speakersList)["findUniqueOrThrow"]>
+      >;
     }>,
   ],
   PrismaQuery
@@ -72,6 +72,12 @@ export const defineAbilitiesForSession = (session: Session) => {
 
   if (appConfiguration.development && session.data?.user) {
     console.info("Development mode: granting all permissions");
+    // biome-ignore lint/suspicious/noExplicitAny: https://casl.js.org/v6/en/guide/intro#basics
+    builder.can("manage" as any, "all" as any);
+  }
+
+  //TODO
+  if (session.data?.loggedIn && session.data.user) {
     // biome-ignore lint/suspicious/noExplicitAny: https://casl.js.org/v6/en/guide/intro#basics
     builder.can("manage" as any, "all" as any);
   }

@@ -44,6 +44,7 @@ export default function InboxTemplate({
               <div className="h-full flex flex-col gap-2 pt-2 pb-10">
                 {messages?.map((message) => (
                   <MessageCard
+                    key={message.id}
                     isResearchService={isResearchService}
                     message={message}
                     setSelected={setSelectedMessage}

@@ -28,7 +28,6 @@ export const Backend = ({ children }: { children: React.ReactNode }) => {
     }),
   );
 
-
   return (
     <BackendContext.Provider value={{ backend }}>
       {children}

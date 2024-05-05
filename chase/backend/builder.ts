@@ -11,13 +11,17 @@ import TracingPlugin, {
 } from "@pothos/plugin-tracing";
 import WithInputPlugin from "@pothos/plugin-with-input";
 import type PrismaTypes from "./prisma/generated/graphql/pothos-types";
-import type { Scalars } from 'prisma-generator-pothos-codegen';
+import type { Scalars } from "prisma-generator-pothos-codegen";
 import type { Prisma } from "./prisma/generated/client";
 
 //TODO @pothos/plugin-smart-subscriptions
 
 export const builder = new SchemaBuilder<{
-  Scalars: Scalars<Prisma.Decimal, Prisma.InputJsonValue | null, Prisma.InputJsonValue>;
+  Scalars: Scalars<
+    Prisma.Decimal,
+    Prisma.InputJsonValue | null,
+    Prisma.InputJsonValue
+  >;
   PrismaTypes: PrismaTypes;
   Context: {
     session: Session;
@@ -44,8 +48,8 @@ export const builder = new SchemaBuilder<{
     // Enable tracing for rootFields by default, other fields need to opt in
     default: (config) => isRootField(config),
     // Log resolver execution duration
-    wrap: (resolver, options, config) =>
-      wrapResolver(resolver, (error, duration) => {
+    wrap: (resolver, _options, config) =>
+      wrapResolver(resolver, (_error, duration) => {
         console.info(
           `Executed resolver ${config.parentType}.${config.name} in ${duration}ms`,
         );

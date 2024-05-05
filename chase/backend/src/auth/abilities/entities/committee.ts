@@ -1,10 +1,10 @@
-import { AbilityBuilder } from "@casl/ability";
-import { AppAbility } from "../abilities";
-import { Session } from "../../session";
+import type { AbilityBuilder } from "@casl/ability";
+import type { AppAbility } from "../abilities";
+import type { Session } from "../../session";
 
 export const defineAbilitiesForCommittee = (
   session: Session,
-  { can }: AbilityBuilder<AppAbility>
+  { can }: AbilityBuilder<AppAbility>,
 ) => {
   if (session.data?.loggedIn && session.data.user) {
     const user = session.data.user;
@@ -35,7 +35,7 @@ export const defineAbilitiesForCommittee = (
         "statusUntil",
         "stateOfDebate",
         "whiteboardContent",
-        "allowDelegationsToAddThemselvesToSpeakersList"
+        "allowDelegationsToAddThemselvesToSpeakersList",
       ],
       {
         conference: {
@@ -49,13 +49,13 @@ export const defineAbilitiesForCommittee = (
                   "COMMITTEE_ADVISOR",
                   "MISCELLANEOUS_TEAM",
                   "SECRETARIAT",
-                  "PARTICIPANT_CARE"
+                  "PARTICIPANT_CARE",
                 ],
               },
             },
           },
         },
-      }
+      },
     );
   }
 };

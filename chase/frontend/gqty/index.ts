@@ -12,7 +12,7 @@ import {
 
 const queryFetcher: QueryFetcher = async (
   { query, variables, operationName },
-  fetchOptions
+  fetchOptions,
 ) => {
   // Modify "http://localhost:3001/graphql" if needed
   const response = await fetch("http://localhost:3001/graphql", {
@@ -31,7 +31,7 @@ const queryFetcher: QueryFetcher = async (
 
   if (response.status >= 400) {
     throw new GQtyError(
-      `GraphQL endpoint responded with HTTP status ${response.status}.`
+      `GraphQL endpoint responded with HTTP status ${response.status}.`,
     );
   }
 
@@ -43,7 +43,7 @@ const queryFetcher: QueryFetcher = async (
     throw new GQtyError(
       `Malformed JSON response: ${
         text.length > 50 ? `${text.slice(0, 50)}...` : text
-      }`
+      }`,
     );
   }
 };
@@ -58,7 +58,7 @@ const cache = new Cache(
     maxAge: 0,
     staleWhileRevalidate: 5 * 60 * 1000,
     normalization: true,
-  }
+  },
 );
 
 export const client = createClient<GeneratedSchema>({

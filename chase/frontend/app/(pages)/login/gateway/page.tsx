@@ -27,7 +27,9 @@ export default function LoginRedirectPage() {
   const [myInfoData] = useBackendCall(backend.auth.myInfo.get, false);
 
   const conferenceMemberRedirectPath = (
-    conferenceMembership: NonNullable<typeof myInfoData>["conferenceMemberships"][number],
+    conferenceMembership: NonNullable<
+      typeof myInfoData
+    >["conferenceMemberships"][number],
   ) => {
     if (
       (

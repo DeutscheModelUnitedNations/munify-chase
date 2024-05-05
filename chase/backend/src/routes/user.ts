@@ -1,10 +1,6 @@
-import { Elysia, t } from "elysia";
+import { Elysia } from "elysia";
 import { db } from "../../prisma/db";
 import { openApiTag } from "../util/openApiTags";
-import {
-  Delegation,
-  DelegationPlain,
-} from "../../prisma/generated/schema/Delegation";
 import { _Nullable } from "../../prisma/generated/schema/__nullable__";
 import { permissionsPlugin } from "../auth/permissions";
 
@@ -27,9 +23,6 @@ export const user = new Elysia().use(permissionsPlugin).get(
     });
   },
   {
-    response: _Nullable(
-      t.Composite([DelegationPlain, t.Pick(Delegation, ["nation"])]),
-    ),
     detail: {
       description: "Get the delegation of a user in this conference",
       tags: [openApiTag(import.meta.path)],

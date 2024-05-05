@@ -5,8 +5,7 @@ import { $Enums } from "../../prisma/generated/client";
 import {
   AgendaItemData,
   AgendaItemDataPlain,
-  AgendaItemPlain,
-  AgendaItemRelations,
+  // AgendaItemPlain,
 } from "../../prisma/generated/schema/AgendaItem";
 import { permissionsPlugin } from "../auth/permissions";
 
@@ -27,7 +26,6 @@ export const agendaItem = new Elysia({
         },
       }),
     {
-      response: t.Array(AgendaItemPlain),
       detail: {
         description: "Get all agenda items in this committee",
         tags: [openApiTag(import.meta.path)],
@@ -76,7 +74,6 @@ export const agendaItem = new Elysia({
     },
     {
       body: t.Pick(AgendaItemData, ["title", "description"]),
-      response: AgendaItemPlain,
       detail: {
         description: "Create a new agenda item in this committee",
         tags: [openApiTag(import.meta.path)],
@@ -100,10 +97,6 @@ export const agendaItem = new Elysia({
       return r;
     },
     {
-      response: t.Composite([
-        AgendaItemPlain,
-        t.Pick(AgendaItemRelations, ["speakerLists"]),
-      ]),
       detail: {
         description: "Get all active agenda items in this committee",
         tags: [openApiTag(import.meta.path)],
@@ -209,7 +202,11 @@ export const agendaItem = new Elysia({
   )
   .patch(
     "/agendaItem/:agendaItemId",
-    async ({ params: { conferenceId, committeeId, agendaItemId }, body, permissions }) => {
+    async ({
+      params: { conferenceId, committeeId, agendaItemId },
+      body,
+      permissions,
+    }) => {
       return db.agendaItem.update({
         where: {
           id: agendaItemId,

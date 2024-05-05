@@ -26,12 +26,13 @@ export default function structure() {
   const [saveLoading, setSaveLoading] = useState(false);
 
   const [updateCommittees, setUpdateCommittees] = useState(true);
-  const [committees, triggerCommittees] = useBackendCall(backend
-    //TODO
-    // biome-ignore lint/style/noNonNullAssertion: 
-    .conference({ conferenceId: conferenceId! })
-    .committee.get, true);
-
+  const [committees, triggerCommittees] = useBackendCall(
+    backend
+      //TODO
+      // biome-ignore lint/style/noNonNullAssertion:
+      .conference({ conferenceId: conferenceId! }).committee.get,
+    true,
+  );
 
   useEffect(() => {
     if (updateCommittees) {
@@ -100,7 +101,8 @@ export default function structure() {
     if (!rawData || !conferenceId) return;
     backend
       .conference({ conferenceId })
-      .committee({committeeId: rawData.id}).delete()
+      .committee({ committeeId: rawData.id })
+      .delete()
       .then((_res) => {
         setUpdateCommittees(true);
       })

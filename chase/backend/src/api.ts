@@ -4,9 +4,7 @@ import { builder } from "../builder";
 
 import { sessionPlugin } from "./auth/session";
 import { permissionsPlugin } from "./auth/permissions";
-import {
-  generateAllObjects,
-} from "../prisma/generated/graphql/pothosCrud/autocrud";
+import { generateAllObjects } from "../prisma/generated/graphql/pothosCrud/autocrud";
 
 generateAllObjects();
 // generateAllQueries();

@@ -4,13 +4,13 @@ import { openApiTag } from "../util/openApiTags";
 import {
   ConferenceDataPlain,
   ConferenceDataPlainOptional,
-  ConferencePlain,
+  // ConferencePlain,
 } from "../../prisma/generated/schema/Conference";
 import { ConferenceCreateToken } from "../../prisma/generated/schema/ConferenceCreateToken";
 import { User } from "../../prisma/generated/schema/User";
 import { permissionsPlugin } from "../auth/permissions";
 import { sessionPlugin } from "../auth/session";
-import { ConferenceRole } from "../../prisma/generated/schema/ConferenceRole";
+// import { ConferenceRole } from "../../prisma/generated/schema/ConferenceRole";
 
 export const conference = new Elysia()
   .use(sessionPlugin)
@@ -22,7 +22,6 @@ export const conference = new Elysia()
         where: permissions.allowDatabaseAccessTo("list").Conference,
       }),
     {
-      response: t.Array(ConferencePlain),
       detail: {
         description: "Get all conferences",
         tags: [openApiTag(import.meta.path)],
@@ -62,7 +61,6 @@ export const conference = new Elysia()
         ConferenceDataPlain,
         t.Pick(ConferenceCreateToken, ["token"]),
       ]),
-      response: ConferencePlain,
       detail: {
         description: "Create a new conference, consumes a token",
         tags: [openApiTag(import.meta.path)],
@@ -79,7 +77,6 @@ export const conference = new Elysia()
         },
       }),
     {
-      response: ConferencePlain,
       detail: {
         description: "Get a single conference by id",
         tags: [openApiTag(import.meta.path)],
@@ -98,7 +95,6 @@ export const conference = new Elysia()
       }),
     {
       body: ConferenceDataPlainOptional,
-      response: ConferencePlain,
       detail: {
         description: "Update a conference by id",
         tags: [openApiTag(import.meta.path)],
@@ -156,7 +152,6 @@ export const conference = new Elysia()
         },
       }),
     {
-      response: ConferencePlain,
       detail: {
         description: "Delete a conference by id",
         tags: [openApiTag(import.meta.path)],
@@ -175,7 +170,6 @@ export const conference = new Elysia()
         })
       ).role,
     {
-      response: t.Optional(ConferenceRole),
       detail: {
         description: "Check if you are an admin of a conference.",
         tags: [openApiTag(import.meta.path)],

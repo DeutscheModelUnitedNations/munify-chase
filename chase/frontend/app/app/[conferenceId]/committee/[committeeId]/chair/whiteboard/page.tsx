@@ -11,6 +11,7 @@ import type { IconProp } from "@fortawesome/fontawesome-svg-core";
 import { useBackend } from "@/contexts/backend";
 import { useToast } from "@/contexts/toast";
 import {
+  CommitteeDataContext,
   CommitteeIdContext,
   ConferenceIdContext,
 } from "@/contexts/committee_data";
@@ -30,18 +31,11 @@ export default function ChairWhiteboard() {
     useState<boolean>(false);
   const [whiteboardButtonLoading, setWhiteboardButtonLoading] =
     useState<boolean>(false);
-  const [committeeData, triggerCommitteeData] = pollBackendCall(
-    backend
-      //TODO
-      // biome-ignore lint/style/noNonNullAssertion:
-      .conference({ conferenceId: conferenceId! })
-      // biome-ignore lint/style/noNonNullAssertion:
-      .committee({ committeeId: committeeId! }).get,
-  );
+  const committeeData = useContext(CommitteeDataContext);
 
   useEffect(() => {
     if (!whiteboardContentChanged || whiteboardContent === null) {
-      setWhiteboardContent(committeeData.whiteboardContent ?? null);
+      setWhiteboardContent(committeeData?.whiteboardContent ?? null);
     }
     setWhiteboardContent(committeeData?.whiteboardContent ?? null);
   }, [whiteboardContent]);
@@ -88,7 +82,6 @@ export default function ChairWhiteboard() {
       .then((res) => {
         if (res.status >= 400)
           throw new Error("Failed to push whiteboard content");
-        triggerCommitteeData();
         setWhiteboardContentChanged(false);
         setWhiteboardButtonLoading(false);
         showToast({

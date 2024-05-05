@@ -27,24 +27,6 @@ export type Session = {
   setData: SessionDataSetter;
 };
 
-const devSessionMock: Session = {
-  data: {
-    loggedIn: true,
-    user: {
-      id: "1234",
-      name: "FelixTestuser",
-      email: "felix@dmun.de",
-    },
-  },
-  setData(data: Partial<SessionData>): Promise<void> {
-    console.info(
-      "Not setting session data since mock is active! (development)",
-      data,
-    );
-    return Promise.resolve();
-  },
-};
-
 export const sessionPlugin = new Elysia({ name: "session" })
   .guard({
     cookie: t.Cookie(
@@ -64,15 +46,11 @@ export const sessionPlugin = new Elysia({ name: "session" })
     ),
   })
   .derive(
-    { as: "scoped" },
+    { as: "global" },
     async ({
       cookie: { sessionId, chaseCookieConsent },
       set,
     }): Promise<{ session: Session }> => {
-      if (appConfiguration.development) {
-        return { session: devSessionMock };
-      }
-
       const session: Session = {
         data: undefined,
         setData: () => {

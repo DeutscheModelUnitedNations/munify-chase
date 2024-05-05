@@ -83,7 +83,8 @@ export default function Teampool() {
     if (!conferenceId) return;
     backend
       .conference({ conferenceId })
-      .member({memberId: id}).delete()
+      .member({ memberId: id })
+      .delete()
       .then((_res) => {
         setUpdateTable(true);
       })

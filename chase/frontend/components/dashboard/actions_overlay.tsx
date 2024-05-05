@@ -14,7 +14,7 @@ import {
   faUserTie,
 } from "@fortawesome/pro-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { IconProp } from "@fortawesome/fontawesome-svg-core";
+import type { IconProp } from "@fortawesome/fontawesome-svg-core";
 import {
   CommitteeIdContext,
   CommitteeDataContext,
@@ -23,7 +23,7 @@ import {
 } from "@/contexts/committee_data";
 import { MyDelegationContext, useUserIdent } from "@/contexts/user_ident";
 import { useToast } from "@/contexts/toast";
-import { $Enums } from "@prisma/generated/client";
+import type { $Enums } from "@prisma/generated/client";
 import { useBackend } from "@/contexts/backend";
 
 interface DropdownOptions {
@@ -86,8 +86,10 @@ export function ActionsOverlayChairMessage({
       });
       return;
     }
-    await backend.conference[conferenceId].committee[committeeId].messages
-      .post({
+    await backend
+      .conference({ conferenceId })
+      .committee({ committeeId })
+      .messages.post({
         category: "TO_CHAIR",
         subject: subjectLine,
         message: message,
@@ -261,18 +263,20 @@ export function ActionsOverlayResearchService({
       return;
     }
 
-    await backend.conference[conferenceId].committee[committeeId].messages
-      .post({
+    await backend
+      .conference({ conferenceId })
+      .committee({ committeeId })
+      .messages.post({
         category: category,
         subject: subjectLine,
         message: message,
         authorId: userIdent?.id,
         metaEmail: userIdent?.emails[0]?.email,
-        metaDelegation: isChair
-          ? "uno"
-          : myDelegationData.delegation?.nation.alpha3Code,
-        metaCommittee: committeeData?.name,
-        metaAgendaItem: agendaItem?.title,
+        metaDelegation:
+          (isChair ? "uno" : myDelegationData.delegation?.nation.alpha3Code) ??
+          null,
+        metaCommittee: committeeData?.name ?? null,
+        metaAgendaItem: agendaItem?.title ?? null,
       })
       .then((res) => {
         if (res.status === 200) {

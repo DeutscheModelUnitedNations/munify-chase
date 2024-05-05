@@ -5,10 +5,10 @@ import { faPlus, faTimes } from "@fortawesome/pro-solid-svg-icons";
 import useMousetrap from "mousetrap-react";
 import CountryAutoComplete from "./country_auto_complete";
 import { useBackend } from "@/contexts/backend";
-import { $Enums } from "@prisma/generated/client";
+import type { $Enums } from "@prisma/generated/client";
 import { useToast } from "@/contexts/toast";
 import { SpeakersListDataContext } from "@/contexts/speakers_list_data";
-import {
+import type {
   AllAvailableCountriesType,
   CountryDataType,
 } from "@/components/admin/delegations/add_delegation_dialog";
@@ -55,9 +55,9 @@ export default function AddSpeakerOverlay({
 
   const sendAddSpeaker = async () => {
     if (selectedCountry && speakersListData?.id) {
-      await backend.speakersList[speakersListData.id].addSpeaker.code[
-        selectedCountry.alpha3Code
-      ]
+      await backend
+        .speakersList({ speakersListId: speakersListData.id })
+        .addSpeaker.code({ countryCode: selectedCountry.alpha3Code })
         .post()
         .then((res) => {
           if (res.status === 200) {

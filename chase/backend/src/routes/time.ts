@@ -1,9 +1,11 @@
 import { Elysia, t } from "elysia";
 import { openApiTag } from "../util/openApiTags";
+import { permissionsPlugin } from "../auth/permissions";
 
-export const time = new Elysia().get(
+export const time = new Elysia().use(permissionsPlugin).get(
   "/timestamp",
-  async () => {
+  async ({ permissions }) => {
+    permissions.mustBeLoggedIn();
     return Date.now();
   },
   {

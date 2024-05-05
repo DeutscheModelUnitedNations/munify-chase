@@ -14,7 +14,7 @@ import {
   faRocketLaunch,
 } from "@fortawesome/pro-solid-svg-icons";
 import { useI18nContext } from "@/i18n/i18n-react";
-import { IconProp } from "@fortawesome/fontawesome-svg-core";
+import type { IconProp } from "@fortawesome/fontawesome-svg-core";
 import { MessageCountContext, MessageCountProvider } from "@/contexts/messages";
 
 export default function Chair_Pages_Layout({

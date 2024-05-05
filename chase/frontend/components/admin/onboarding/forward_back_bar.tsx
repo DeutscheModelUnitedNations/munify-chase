@@ -17,7 +17,7 @@ export default function ForwardBackButtons({
   forwardDisabled = false,
 }: ForwardBackButtonsProps) {
   const { LL } = useI18nContext();
-  const router = useRouter();
+  // const router = useRouter();
 
   useMousetrap("alt+enter", () => {
     if (handleSaveFunction) {

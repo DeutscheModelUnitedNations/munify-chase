@@ -1,15 +1,11 @@
 import { t, Elysia } from "elysia";
 import { db } from "../../prisma/db";
-import { conferenceRoleGuard } from "../auth/guards/conferenceRoles";
-import { ConferenceMember } from "../../prisma/generated/schema";
 import { openApiTag } from "../util/openApiTags";
-import { loggedInGuard } from "../auth/guards/loggedIn";
-import { committeeMemberGuard } from "../auth/guards/committeeMember";
-
-const ConferenceMembersWithoutRelations = t.Omit(ConferenceMember, [
-  "user",
-  "conference",
-]);
+import {
+  ConferenceMember,
+  // ConferenceMemberPlain,
+} from "../../prisma/generated/schema/ConferenceMember";
+import { permissionsPlugin } from "../auth/permissions";
 
 const ConferenceMemberCreationBody = t.Object({
   data: t.Pick(ConferenceMember, ["role"]),
@@ -19,21 +15,18 @@ const ConferenceMemberCreationBody = t.Object({
 export const conferenceMember = new Elysia({
   prefix: "/conference/:conferenceId",
 })
-  .use(loggedInGuard)
-  .use(conferenceRoleGuard)
-  .use(committeeMemberGuard)
+  .use(permissionsPlugin)
   .get(
     "/member",
-    ({ params: { conferenceId } }) => {
+    ({ params: { conferenceId }, permissions }) => {
       return db.conferenceMember.findMany({
         where: {
           conferenceId,
+          AND: [permissions.allowDatabaseAccessTo("list").ConferenceMember],
         },
       });
     },
     {
-      hasConferenceRole: ["ADMIN"],
-      response: [ConferenceMembersWithoutRelations],
       detail: {
         description: "Get all conference-members in this conference",
         tags: [openApiTag(import.meta.path)],
@@ -42,7 +35,8 @@ export const conferenceMember = new Elysia({
   )
   .post(
     "/member",
-    ({ params: { conferenceId }, body }) => {
+    ({ params: { conferenceId }, body, permissions }) => {
+      permissions.checkIf((user) => user.can("create", "ConferenceMember"));
       return db.conferenceMember.createMany({
         data: new Array(body.count).fill({
           role: body.data.role,
@@ -51,8 +45,6 @@ export const conferenceMember = new Elysia({
       });
     },
     {
-      hasConferenceRole: ["ADMIN"],
-      response: [ConferenceMembersWithoutRelations],
       body: ConferenceMemberCreationBody,
       detail: {
         description:
@@ -63,15 +55,15 @@ export const conferenceMember = new Elysia({
   )
   .delete(
     "/member",
-    ({ params: { conferenceId } }) => {
+    ({ params: { conferenceId }, permissions }) => {
       return db.conferenceMember.deleteMany({
         where: {
           conferenceId,
+          AND: [permissions.allowDatabaseAccessTo("delete").ConferenceMember],
         },
       });
     },
     {
-      hasConferenceRole: ["ADMIN"],
       detail: {
         description: "Delete all conference-members in this conference",
         tags: [openApiTag(import.meta.path)],
@@ -80,15 +72,15 @@ export const conferenceMember = new Elysia({
   )
   .delete(
     "/member/:memberId",
-    ({ params: { memberId } }) => {
+    ({ params: { memberId }, permissions }) => {
       return db.conferenceMember.delete({
         where: {
           id: memberId,
+          AND: [permissions.allowDatabaseAccessTo("delete").ConferenceMember],
         },
       });
     },
     {
-      hasConferenceRole: ["ADMIN"],
       detail: {
         description: "Delete a specific conference-member in this conference",
         tags: [openApiTag(import.meta.path)],

@@ -1,33 +1,27 @@
 import { t, Elysia } from "elysia";
 import { db } from "../../prisma/db";
-import { conferenceRoleGuard } from "../auth/guards/conferenceRoles";
-import {
-  Conference,
-  ConferenceCreateToken,
-  User,
-} from "../../prisma/generated/schema";
 import { openApiTag } from "../util/openApiTags";
-import { loggedInGuard } from "../auth/guards/loggedIn";
-
-const ConferenceWithoutRelations = t.Omit(Conference, [
-  "committees",
-  "delegations",
-  "members",
-  "",
-]);
-
-const ConferenceData = t.Omit(ConferenceWithoutRelations, ["id"]);
+import {
+  ConferenceDataPlain,
+  ConferenceDataPlainOptional,
+  // ConferencePlain,
+} from "../../prisma/generated/schema/Conference";
+import { ConferenceCreateToken } from "../../prisma/generated/schema/ConferenceCreateToken";
+import { User } from "../../prisma/generated/schema/User";
+import { permissionsPlugin } from "../auth/permissions";
+import { sessionPlugin } from "../auth/session";
+// import { ConferenceRole } from "../../prisma/generated/schema/ConferenceRole";
 
 export const conference = new Elysia()
-  .use(loggedInGuard)
-  .use(conferenceRoleGuard) // we inject the conferenceRole macro here
+  .use(sessionPlugin)
+  .use(permissionsPlugin)
   .get(
     "/conference",
-    async () => {
-      return await db.conference.findMany();
-    },
+    ({ permissions }) =>
+      db.conference.findMany({
+        where: permissions.allowDatabaseAccessTo("list").Conference,
+      }),
     {
-      mustBeLoggedIn: true,
       detail: {
         description: "Get all conferences",
         tags: [openApiTag(import.meta.path)],
@@ -36,91 +30,71 @@ export const conference = new Elysia()
   )
   .post(
     "/conference",
-    // TODO related to the one below
-    // @ts-ignore
-    // biome-ignore lint/correctness/noUnusedVariables: <explanation>
-    async ({ body, session }) => {
-      // run this in a transaction, so if setting the permission/deleting the token fails, the conference is not created
-      const r = await db.$transaction(async (tx) => {
+    ({ body, session, permissions }) =>
+      db.$transaction(async (tx) => {
+        permissions.checkIf((a) => a.can("create", "Conference"));
+
         await tx.conferenceCreateToken.delete({
           where: { token: body.token },
         });
 
-        return await tx.conference.create({
+        return tx.conference.create({
           data: {
             name: body.name,
             start: body.start,
             end: body.end,
-            // TODO: add the user that created the conference as an admin
-            // members: {
-            //   create: {
-            //     role: "ADMIN",
-            //     user: {
-            //       connect: {
-            //         id: session.userData.id,
-            //       },
-            //     },
-            //   },
-            // },
+            members: {
+              create: {
+                role: "ADMIN",
+                user: {
+                  connect: {
+                    id: session.data?.user?.id,
+                  },
+                },
+              },
+            },
           },
         });
-      });
-
-      return {
-        id: r.id,
-        name: r.name,
-        end: r.end?.toISOString(),
-        start: r.start?.toISOString(),
-      };
-    },
+      }),
     {
-      isLoggedIn: true,
+      body: t.Composite([
+        ConferenceDataPlain,
+        t.Pick(ConferenceCreateToken, ["token"]),
+      ]),
       detail: {
         description: "Create a new conference, consumes a token",
         tags: [openApiTag(import.meta.path)],
       },
-      body: t.Composite([ConferenceData, ConferenceCreateToken]),
-      response: ConferenceWithoutRelations,
     },
   )
   .get(
     "/conference/:conferenceId",
-    async ({ params: { conferenceId } }) => {
-      const r = await db.conference.findUniqueOrThrow({
-        where: { id: conferenceId },
-      });
-
-      return {
-        id: r.id,
-        name: r.name,
-        start: r.start?.toISOString(),
-        end: r.end?.toISOString(),
-      };
-    },
+    ({ params, permissions }) =>
+      db.conference.findUniqueOrThrow({
+        where: {
+          id: params.conferenceId,
+          AND: [permissions.allowDatabaseAccessTo().Conference],
+        },
+      }),
     {
-      isLoggedIn: true,
       detail: {
         description: "Get a single conference by id",
         tags: [openApiTag(import.meta.path)],
       },
-      response: ConferenceWithoutRelations,
     },
   )
   .patch(
     "/conference/:conferenceId",
-    async ({ params: { conferenceId }, body }) => {
-      return db.conference.update({
-        where: { id: conferenceId },
-        data: {
-          name: body.name,
-          start: body.start,
-          end: body.end,
+    ({ params, permissions, body }) =>
+      db.conference.update({
+        where: {
+          id: params.conferenceId,
+          AND: [permissions.allowDatabaseAccessTo("update").Conference],
         },
-      });
-    },
+        data: body,
+      }),
     {
-      hasConferenceRole: ["ADMIN"],
-      body: ConferenceData,
+      body: ConferenceDataPlainOptional,
       detail: {
         description: "Update a conference by id",
         tags: [openApiTag(import.meta.path)],
@@ -129,13 +103,17 @@ export const conference = new Elysia()
   )
   .patch(
     "/conference/:conferenceId/addAdmin",
-    async ({ params: { conferenceId }, body }) => {
-      return db.conferenceMember.upsert({
+    ({ params, body, permissions }) =>
+      db.conferenceMember.upsert({
         where: {
           userId_conferenceId: {
-            conferenceId,
+            conferenceId: params.conferenceId,
             userId: body.user.id,
           },
+          AND: [
+            permissions.allowDatabaseAccessTo("create").ConferenceMember,
+            permissions.allowDatabaseAccessTo("update").ConferenceMember,
+          ],
         },
         update: {
           role: "ADMIN",
@@ -149,14 +127,12 @@ export const conference = new Elysia()
           },
           conference: {
             connect: {
-              id: conferenceId,
+              id: params.conferenceId,
             },
           },
         },
-      });
-    },
+      }),
     {
-      hasConferenceRole: ["ADMIN"],
       body: t.Object({
         user: t.Pick(User, ["id"]),
       }),
@@ -168,22 +144,35 @@ export const conference = new Elysia()
   )
   .delete(
     "/conference/:conferenceId",
-    ({ params: { conferenceId } }) =>
-      db.conference.delete({ where: { id: conferenceId } }),
+    ({ params, permissions }) =>
+      db.conference.delete({
+        where: {
+          id: params.conferenceId,
+          AND: [permissions.allowDatabaseAccessTo("delete").Conference],
+        },
+      }),
     {
-      hasConferenceRole: ["ADMIN"],
       detail: {
         description: "Delete a conference by id",
         tags: [openApiTag(import.meta.path)],
       },
     },
   )
-  .get("/conference/:conferenceId/checkAdminAccess", () => true, {
-    hasConferenceRole: ["ADMIN"],
-    response: t.Boolean(),
-    detail: {
-      description:
-        "Check if you are an admin of a conference. Returns true or errors in case you are not an admin.",
-      tags: [openApiTag(import.meta.path)],
+  .get(
+    "/conference/:conferenceId/getOwnRole",
+    async ({ session, permissions }) =>
+      (
+        await db.conferenceMember.findFirstOrThrow({
+          where: {
+            userId: session.data?.user?.id,
+            AND: [permissions.allowDatabaseAccessTo("read").ConferenceMember],
+          },
+        })
+      ).role,
+    {
+      detail: {
+        description: "Check if you are an admin of a conference.",
+        tags: [openApiTag(import.meta.path)],
+      },
     },
-  });
+  );

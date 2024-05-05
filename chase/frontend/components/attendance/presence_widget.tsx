@@ -2,7 +2,7 @@ import React, { useState, useEffect, useContext } from "react";
 import { useI18nContext } from "@/i18n/i18n-react";
 import { HeaderInfoBox } from "../header_template";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { IconProp } from "@fortawesome/fontawesome-svg-core";
+import type { IconProp } from "@fortawesome/fontawesome-svg-core";
 import {
   faUserCheck,
   faUserClock,
@@ -19,7 +19,9 @@ import {
 
 type DelegationData = Awaited<
   ReturnType<
-    BackendInstanceType["conference"]["conferenceId"]["committee"]["committeeId"]["delegations"]["get"]
+    ReturnType<
+      ReturnType<BackendInstanceType["conference"]>["committee"]
+    >["delegations"]["get"]
   >
 >["data"];
 
@@ -44,8 +46,10 @@ export default function PresenceWidget({
 
   async function getDelegationData() {
     if (!conferenceId || !committeeId) return;
-    await backend.conference[conferenceId].committee[committeeId].delegations
-      .get()
+    await backend
+      .conference({ conferenceId })
+      .committee({ committeeId })
+      .delegations.get()
       .then((response) => {
         setDelegationData(
           response.data?.filter(
@@ -164,7 +168,8 @@ export default function PresenceWidget({
           // This handles Security Council [SC / UNSC] (or german Sicherheitsrat [SR]) edge case, where the simple majority is always 9
           // TODO this is probably only a good temporary solution.
           // We should integrate an override option in the backend schema for calculated majorities per committee.
-          ["SR", "SC", "UNSC"].includes(committeeData?.abbreviation)
+          // biome-ignore lint/style/noNonNullAssertion: <explanation>
+          ["SR", "SC", "UNSC"].includes(committeeData?.abbreviation!)
             ? 9
             : undefined
         }

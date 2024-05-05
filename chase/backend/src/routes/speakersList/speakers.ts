@@ -1,17 +1,23 @@
 import { Elysia } from "elysia";
 import { db } from "../../../prisma/db";
-import { committeeMemberGuard } from "../../auth/guards/committeeMember";
-import { conferenceRoleGuard } from "../../auth/guards/conferenceRoles";
 import { openApiTag } from "../../util/openApiTags";
 import { $Enums } from "../../../prisma/generated/client";
+import {
+  type PermissionsType,
+  permissionsPlugin,
+} from "../../auth/permissions";
 
-async function calculatePosition(speakersListId: string) {
+async function calculatePosition(
+  speakersListId: string,
+  permissions: PermissionsType,
+) {
   const maxPosition = await db.speakerOnList.aggregate({
     _max: {
       position: true,
     },
     where: {
       speakersListId,
+      AND: [permissions.allowDatabaseAccessTo("read").SpeakerOnList],
     },
   });
 
@@ -23,12 +29,14 @@ async function calculatePosition(speakersListId: string) {
 async function createSpeakerOnList(
   speakersListId: string,
   committeeMemberId: string,
+  permissions: PermissionsType,
 ) {
+  permissions.checkIf((a) => a.can("create", "SpeakerOnList"));
   return await db.speakerOnList.create({
     data: {
       speakersListId,
       committeeMemberId,
-      position: await calculatePosition(speakersListId),
+      position: await calculatePosition(speakersListId, permissions),
     },
   });
 }
@@ -36,15 +44,14 @@ async function createSpeakerOnList(
 export const speakersListSpeakers = new Elysia({
   prefix: "/speakersList/:speakersListId",
 })
-  .use(conferenceRoleGuard)
-  .use(committeeMemberGuard)
-
+  .use(permissionsPlugin)
   .get(
     "",
-    async ({ params: { speakersListId } }) => {
+    async ({ params: { speakersListId }, permissions }) => {
       return await db.speakersList.findUnique({
         where: {
           id: speakersListId,
+          AND: [permissions.allowDatabaseAccessTo("read").SpeakersList],
         },
         include: {
           speakers: {
@@ -81,7 +88,6 @@ export const speakersListSpeakers = new Elysia({
       });
     },
     {
-      hasConferenceRole: "any",
       detail: {
         description: "Get all speakers on the speakers list",
         tags: [openApiTag(import.meta.path)],
@@ -91,11 +97,14 @@ export const speakersListSpeakers = new Elysia({
 
   .post(
     "/addSpeaker/committeeMember/:committeeMemberId",
-    async ({ params: { speakersListId, committeeMemberId } }) => {
-      return await createSpeakerOnList(speakersListId, committeeMemberId);
+    async ({ params: { speakersListId, committeeMemberId }, permissions }) => {
+      return await createSpeakerOnList(
+        speakersListId,
+        committeeMemberId,
+        permissions,
+      );
     },
     {
-      hasConferenceRole: "any",
       detail: {
         description:
           "Add a speaker to the speakers list by chairs via committeeMemberId",
@@ -106,10 +115,11 @@ export const speakersListSpeakers = new Elysia({
 
   .post(
     "/addSpeaker/user/:userId",
-    async ({ params: { speakersListId, userId }, set }) => {
+    async ({ params: { speakersListId, userId }, set, permissions }) => {
       const speakersList = await db.speakersList.findUnique({
         where: {
           id: speakersListId,
+          AND: [permissions.allowDatabaseAccessTo("read").SpeakersList],
         },
         include: {
           agendaItem: {
@@ -137,6 +147,7 @@ export const speakersListSpeakers = new Elysia({
       const committeeMember = await db.committeeMember.findFirst({
         where: {
           userId,
+          AND: [permissions.allowDatabaseAccessTo("read").CommitteeMember],
         },
       });
 
@@ -182,6 +193,7 @@ export const speakersListSpeakers = new Elysia({
       return await createSpeakerOnList(
         speakersListId,
         committeeMember.id,
+        permissions,
       ).catch((e) => {
         if (e.code === "P2002") {
           set.status = "Conflict";
@@ -192,7 +204,6 @@ export const speakersListSpeakers = new Elysia({
       });
     },
     {
-      hasConferenceRole: "any",
       detail: {
         description: "Add a speaker to the speakers list",
         tags: [openApiTag(import.meta.path)],
@@ -202,7 +213,7 @@ export const speakersListSpeakers = new Elysia({
 
   .post(
     "/addSpeaker/code/:countryCode",
-    async ({ params: { speakersListId, countryCode }, set }) => {
+    async ({ params: { speakersListId, countryCode }, set, permissions }) => {
       const committeeMember = await db.committeeMember.findFirst({
         where: {
           delegation: {
@@ -210,6 +221,7 @@ export const speakersListSpeakers = new Elysia({
               alpha3Code: countryCode,
             },
           },
+          AND: [permissions.allowDatabaseAccessTo("read").CommitteeMember],
         },
       });
 
@@ -218,10 +230,13 @@ export const speakersListSpeakers = new Elysia({
         throw new Error("Committee member not found");
       }
 
-      return await createSpeakerOnList(speakersListId, committeeMember.id);
+      return await createSpeakerOnList(
+        speakersListId,
+        committeeMember.id,
+        permissions,
+      );
     },
     {
-      hasConferenceRole: "any",
       detail: {
         description:
           "Add a speaker to the speakers list for chairs via countryCode",
@@ -232,15 +247,15 @@ export const speakersListSpeakers = new Elysia({
 
   .delete(
     "/removeSpeaker/:speakerId",
-    async ({ params: { speakerId } }) => {
+    async ({ params: { speakerId }, permissions }) => {
       return await db.speakerOnList.delete({
         where: {
           id: speakerId,
+          AND: [permissions.allowDatabaseAccessTo("delete").SpeakerOnList],
         },
       });
     },
     {
-      hasConferenceRole: "any",
       detail: {
         description: "Remove a speaker from the speakers list",
         tags: [openApiTag(import.meta.path)],
@@ -250,10 +265,11 @@ export const speakersListSpeakers = new Elysia({
 
   .delete(
     "/removeSpeaker/user/:userId",
-    async ({ params: { speakersListId, userId }, set }) => {
+    async ({ params: { speakersListId, userId }, set, permissions }) => {
       const committeeMember = await db.committeeMember.findFirst({
         where: {
           userId,
+          AND: [permissions.allowDatabaseAccessTo("read").CommitteeMember],
         },
       });
 
@@ -266,11 +282,11 @@ export const speakersListSpeakers = new Elysia({
         where: {
           speakersListId,
           committeeMemberId: committeeMember.id,
+          AND: [permissions.allowDatabaseAccessTo("delete").SpeakerOnList],
         },
       });
     },
     {
-      hasConferenceRole: "any",
       detail: {
         description: "Remove a speaker from the speakers list",
         tags: [openApiTag(import.meta.path)],
@@ -280,15 +296,15 @@ export const speakersListSpeakers = new Elysia({
 
   .delete(
     "/clearList",
-    async ({ params: { speakersListId } }) => {
+    async ({ params: { speakersListId }, permissions }) => {
       return await db.speakerOnList.deleteMany({
         where: {
           speakersListId,
+          AND: [permissions.allowDatabaseAccessTo("delete").SpeakerOnList],
         },
       });
     },
     {
-      hasConferenceRole: "any",
       detail: {
         description: "Clear the speakers list",
         tags: [openApiTag(import.meta.path)],
@@ -298,10 +314,11 @@ export const speakersListSpeakers = new Elysia({
 
   .post(
     "/moveSpeaker/:speakerId/up",
-    async ({ params: { speakersListId, speakerId }, set }) => {
+    async ({ params: { speakersListId, speakerId }, set, permissions }) => {
       const speaker = await db.speakerOnList.findUnique({
         where: {
           id: speakerId,
+          AND: [permissions.allowDatabaseAccessTo("read").SpeakerOnList],
         },
       });
 
@@ -314,6 +331,7 @@ export const speakersListSpeakers = new Elysia({
         where: {
           speakersListId,
           position: speaker.position - 1,
+          AND: [permissions.allowDatabaseAccessTo("read").SpeakerOnList],
         },
       });
 
@@ -325,6 +343,7 @@ export const speakersListSpeakers = new Elysia({
         db.speakerOnList.update({
           where: {
             id: speakerId,
+            AND: [permissions.allowDatabaseAccessTo("update").SpeakerOnList],
           },
           data: {
             position: -1,
@@ -333,6 +352,7 @@ export const speakersListSpeakers = new Elysia({
         db.speakerOnList.update({
           where: {
             id: previousSpeaker.id,
+            AND: [permissions.allowDatabaseAccessTo("update").SpeakerOnList],
           },
           data: {
             position: speaker.position,
@@ -341,6 +361,7 @@ export const speakersListSpeakers = new Elysia({
         db.speakerOnList.update({
           where: {
             id: speakerId,
+            AND: [permissions.allowDatabaseAccessTo("update").SpeakerOnList],
           },
           data: {
             position: previousSpeaker.position,
@@ -349,7 +370,6 @@ export const speakersListSpeakers = new Elysia({
       ]);
     },
     {
-      hasConferenceRole: "any",
       detail: {
         description: "Move a speaker up in the list",
         tags: [openApiTag(import.meta.path)],
@@ -359,10 +379,11 @@ export const speakersListSpeakers = new Elysia({
 
   .post(
     "/moveSpeaker/:speakerId/down",
-    async ({ params: { speakersListId, speakerId }, set }) => {
+    async ({ params: { speakersListId, speakerId }, set, permissions }) => {
       const speaker = await db.speakerOnList.findUnique({
         where: {
           id: speakerId,
+          AND: [permissions.allowDatabaseAccessTo("read").SpeakerOnList],
         },
       });
 
@@ -375,6 +396,7 @@ export const speakersListSpeakers = new Elysia({
         where: {
           speakersListId,
           position: speaker.position + 1,
+          AND: [permissions.allowDatabaseAccessTo("read").SpeakerOnList],
         },
       });
 
@@ -386,6 +408,7 @@ export const speakersListSpeakers = new Elysia({
         db.speakerOnList.update({
           where: {
             id: speakerId,
+            AND: [permissions.allowDatabaseAccessTo("update").SpeakerOnList],
           },
           data: {
             position: -1,
@@ -394,6 +417,7 @@ export const speakersListSpeakers = new Elysia({
         db.speakerOnList.update({
           where: {
             id: nextSpeaker.id,
+            AND: [permissions.allowDatabaseAccessTo("update").SpeakerOnList],
           },
           data: {
             position: speaker.position,
@@ -402,6 +426,7 @@ export const speakersListSpeakers = new Elysia({
         db.speakerOnList.update({
           where: {
             id: speakerId,
+            AND: [permissions.allowDatabaseAccessTo("update").SpeakerOnList],
           },
           data: {
             position: nextSpeaker.position,
@@ -410,7 +435,6 @@ export const speakersListSpeakers = new Elysia({
       ]);
     },
     {
-      hasConferenceRole: "any",
       detail: {
         description: "Move a speaker down in the list",
         tags: [openApiTag(import.meta.path)],
@@ -420,10 +444,11 @@ export const speakersListSpeakers = new Elysia({
 
   .post(
     "/moveSpeaker/:speakerId/toTheTop",
-    async ({ params: { speakersListId, speakerId }, set }) => {
+    async ({ params: { speakersListId, speakerId }, set, permissions }) => {
       const speaker = await db.speakerOnList.findUnique({
         where: {
           id: speakerId,
+          AND: [permissions.allowDatabaseAccessTo("read").SpeakerOnList],
         },
       });
 
@@ -441,6 +466,7 @@ export const speakersListSpeakers = new Elysia({
         },
         where: {
           speakersListId,
+          AND: [permissions.allowDatabaseAccessTo("read").SpeakerOnList],
         },
       });
 
@@ -456,6 +482,7 @@ export const speakersListSpeakers = new Elysia({
             gte: minPosition._min.position ?? 1,
             lt: speakerOriginalPosition,
           },
+          AND: [permissions.allowDatabaseAccessTo("read").SpeakerOnList],
         },
         orderBy: {
           position: "desc",
@@ -466,6 +493,7 @@ export const speakersListSpeakers = new Elysia({
         await tx.speakerOnList.update({
           where: {
             id: speakerId,
+            AND: [permissions.allowDatabaseAccessTo("update").SpeakerOnList],
           },
           data: {
             position: -1,
@@ -476,6 +504,7 @@ export const speakersListSpeakers = new Elysia({
           await tx.speakerOnList.update({
             where: {
               id: s.id,
+              AND: [permissions.allowDatabaseAccessTo("update").SpeakerOnList],
             },
             data: {
               position: s.position + 1,
@@ -485,6 +514,7 @@ export const speakersListSpeakers = new Elysia({
         await tx.speakerOnList.update({
           where: {
             id: speakerId,
+            AND: [permissions.allowDatabaseAccessTo("update").SpeakerOnList],
           },
           data: {
             position: minPosition._min.position ?? 1,
@@ -493,7 +523,6 @@ export const speakersListSpeakers = new Elysia({
       });
     },
     {
-      hasConferenceRole: "any",
       detail: {
         description: "Move a speaker to the top of the list",
         tags: [openApiTag(import.meta.path)],
@@ -503,10 +532,11 @@ export const speakersListSpeakers = new Elysia({
 
   .post(
     "/nextSpeaker",
-    async ({ params: { speakersListId }, set }) => {
+    async ({ params: { speakersListId }, set, permissions }) => {
       const currentSpeaker = await db.speakerOnList.findFirst({
         where: {
           speakersListId,
+          AND: [permissions.allowDatabaseAccessTo("read").SpeakerOnList],
         },
         orderBy: {
           position: "asc",
@@ -521,6 +551,7 @@ export const speakersListSpeakers = new Elysia({
       const speakersList = await db.speakersList.findUnique({
         where: {
           id: speakersListId,
+          AND: [permissions.allowDatabaseAccessTo("read").SpeakersList],
         },
         include: {
           agendaItem: {
@@ -540,11 +571,13 @@ export const speakersListSpeakers = new Elysia({
         db.speakerOnList.delete({
           where: {
             id: currentSpeaker.id,
+            AND: [permissions.allowDatabaseAccessTo("delete").SpeakerOnList],
           },
         }),
         db.speakersList.update({
           where: {
             id: speakersListId,
+            AND: [permissions.allowDatabaseAccessTo("update").SpeakersList],
           },
           data: {
             startTimestamp: null,
@@ -558,6 +591,7 @@ export const speakersListSpeakers = new Elysia({
           where: {
             agendaItemId: speakersList.agendaItem.id,
             type: "COMMENT_LIST",
+            AND: [permissions.allowDatabaseAccessTo("read").SpeakersList],
           },
         });
 
@@ -569,11 +603,13 @@ export const speakersListSpeakers = new Elysia({
           db.speakerOnList.deleteMany({
             where: {
               speakersListId: correspondingCommentList.id,
+              AND: [permissions.allowDatabaseAccessTo("delete").SpeakerOnList],
             },
           }),
           db.speakersList.update({
             where: {
               id: correspondingCommentList.id,
+              AND: [permissions.allowDatabaseAccessTo("update").SpeakersList],
             },
             data: {
               startTimestamp: null,
@@ -587,7 +623,6 @@ export const speakersListSpeakers = new Elysia({
       return await db.$transaction(transaction);
     },
     {
-      hasConferenceRole: "any",
       detail: {
         description:
           "Remove the current speaker from a speakersList, making the next speaker the current speaker. Also resetting the timer and commentList",

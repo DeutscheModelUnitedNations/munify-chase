@@ -1,4 +1,4 @@
-import React from "react";
+import type React from "react";
 
 /**
  * This Component is a style only component that provides a box for any list inside a widget.

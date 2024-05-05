@@ -20,6 +20,7 @@ import SmallInfoCard from "@/components/small_info_card";
 import { Skeleton } from "primereact/skeleton";
 import { Message } from "primereact/message";
 import { useBackend } from "@/contexts/backend";
+import { useBackendCall } from "@/hooks/useBackendCall";
 
 const emailRegex =
   /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|.(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
@@ -29,14 +30,16 @@ export default () => {
   const router = useRouter();
   const { showToast, toastError } = useToast();
 
-  const [initialLoarding, setInitialLoading] = useState(true);
+  const [initialLoading, setInitialLoading] = useState(true);
   const [userStateLoading, setUserStateLoading] = useState(false);
   const [userCreateLoading, setCreateLoading] = useState(false);
   const [loginLoading, setLoginLoading] = useState(false);
   const [userCreatedSuccessfullyLoading, setCreatedSuccessfullyLoading] =
     useState(false);
-  const [userState, setUserState] =
-    useState<Awaited<ReturnType<typeof backend.auth.userState.get>>["data"]>();
+  const [userState, triggerUserState] = useBackendCall(
+    () => backend.auth.userState.get({ query: { email } }),
+    true,
+  );
   const [email, setEmail] = useState("");
   const [emailValid, setEmailValid] = useState<boolean | undefined>();
   const [password, setPassword] = useState("");
@@ -70,25 +73,15 @@ export default () => {
   }, [email]);
 
   useEffect(() => {
+    if (!email || email === "") {
+      return;
+    }
     (async () => {
       setUserStateLoading(true);
-      const res = await backend.auth.userState.get({
-        $query: {
-          email,
-        },
-      });
-      if (res.error) {
-        if (res.error.status === 451) {
-          toastError(res.error, "Unavailable for legal reasons");
-        } else {
-          toastError(res.error);
-        }
-      } else {
-        setUserState(res.data);
-      }
+      await triggerUserState();
       setUserStateLoading(false);
     })();
-  }, [email, showToast]);
+  }, [email]);
 
   async function submit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -117,7 +110,7 @@ export default () => {
       if (res.error) {
         showToast({
           severity: "error",
-          summary: res.error.message,
+          summary: res.error.value as string,
         });
       } else {
         setCreatedSuccessfullyLoading(true);
@@ -128,7 +121,7 @@ export default () => {
 
   function forgotPassword(e: React.MouseEvent<HTMLButtonElement, MouseEvent>) {
     e.preventDefault();
-    backend.auth.sendCredentialCreateToken.get({ $query: { email, locale } });
+    backend.auth.sendCredentialCreateToken.get({ query: { email, locale } });
     showToast({
       severity: "info",
       summary: LL.login.SENT_EMAIL(),
@@ -137,7 +130,7 @@ export default () => {
 
   return (
     <>
-      {initialLoarding === true ? (
+      {initialLoading === true ? (
         <FontAwesomeIcon
           icon={faCircleNotch}
           spin

@@ -1,11 +1,12 @@
+"use client";
 import { useBackend } from "./backend";
-import React, { createContext, useContext, useEffect, useState } from "react";
+import type React from "react";
+import { createContext, useContext, useEffect, useState } from "react";
 
 export const BackendTimeContext = createContext({} as BackendTimeContextType);
 export const useBackendTime = () => useContext(BackendTimeContext);
 
 export const BackendTime = ({ children }: { children: React.ReactNode }) => {
-  //@ts-ignore
   const { backend } = useBackend();
   const [currentTime, setCurrentTime] = useState(new Date());
 
@@ -13,11 +14,11 @@ export const BackendTime = ({ children }: { children: React.ReactNode }) => {
     // biome-ignore lint/suspicious/noExplicitAny: timer type
     let interval: any;
     backend.timestamp.get().then((res) => {
-      if (res.status !== 200) {
-        throw new Error("Failed to get timestamp");
+      if (res.status !== 200 || res.error) {
+        console.error("Failed to get timestamp", res.error);
       }
 
-      const backendTimestamp = new Date(res.data);
+      const backendTimestamp = new Date(res.data ?? Date.now()); // in case we are not logged in we fall back to our own time
       const ourTimestamp = new Date();
       const offset = backendTimestamp.getTime() - ourTimestamp.getTime();
 

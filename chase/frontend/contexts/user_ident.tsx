@@ -1,7 +1,8 @@
 "use client";
 import { useBackend, type BackendInstanceType } from "@/contexts/backend";
 import { useRouter } from "next/navigation";
-import React, { createContext, useContext, useEffect, useState } from "react";
+import type React from "react";
+import { createContext, useContext, useEffect, useState } from "react";
 import { ConferenceIdContext } from "./committee_data";
 
 export type User = NonNullable<
@@ -12,7 +13,9 @@ type CommitteeMembership = User["committeeMemberships"][number];
 type Delegation = NonNullable<
   Awaited<
     ReturnType<
-      BackendInstanceType["conference"]["conferenceId"]["user"]["userId"]["delegation"]["get"]
+      ReturnType<
+        ReturnType<BackendInstanceType["conference"]>["user"]
+      >["delegation"]["get"]
     >
   >["data"]
 >;
@@ -98,10 +101,10 @@ export const MyDelegationProvider = ({
   useEffect(() => {
     (async () => {
       if (!userIdentContext?.userIdent?.id || !conferenceId) return;
-      const res =
-        await backend.conference[conferenceId].user[
-          userIdentContext?.userIdent?.id
-        ].delegation.get();
+      const res = await backend
+        .conference({ conferenceId })
+        .user({ userId: userIdentContext?.userIdent?.id })
+        .delegation.get();
 
       setDelegation(res.data);
     })();

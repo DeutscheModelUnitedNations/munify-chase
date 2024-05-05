@@ -1,20 +1,24 @@
-import { t, Elysia } from "elysia";
+import {
+  // t,
+  Elysia,
+} from "elysia";
 import { db } from "../../prisma/db";
-import { loggedInGuard } from "../auth/guards/loggedIn";
-import { Nation } from "../../prisma/generated/schema";
 import { openApiTag } from "../util/openApiTags";
+// import { NationPlain } from "../../prisma/generated/schema/Nation";
+import { permissionsPlugin } from "../auth/permissions";
 
 export const baseData = new Elysia({ prefix: "/baseData" })
-  .use(loggedInGuard)
+  .use(permissionsPlugin)
   .get(
     "/countries",
-    () => db.nation.findMany({ select: { id: true, alpha3Code: true } }),
+    ({ permissions }) => {
+      permissions.mustBeLoggedIn();
+      return db.nation.findMany();
+    },
     {
-      mustBeLoggedIn: true,
-      response: t.Array(t.Omit(Nation, ["delegations"])),
       detail: {
         description: "Get all nations in the system",
         tags: [openApiTag(import.meta.path)],
       },
-    },
+    }
   );

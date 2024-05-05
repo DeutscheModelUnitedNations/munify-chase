@@ -1,48 +1,28 @@
 "use client";
 import React, { useState, useEffect, useContext } from "react";
-import { useBackend, type BackendInstanceType } from "@/contexts/backend";
+import { useBackend } from "@/contexts/backend";
 import { ConferenceIdContext } from "@/contexts/committee_data";
 import InboxTemplate from "@/components/inbox/inbox_template";
+import { pollBackendCall } from "@/hooks/pollBackendCall";
 
-type ChairMessages = Awaited<
-  ReturnType<
-    BackendInstanceType["conference"]["conferenceId"]["messages"]["researchService"]["get"]
-  >
->["data"];
+//TODO we should use a context for message storage
 
 export default function InboxPageResearchService() {
   const conferenceId = useContext(ConferenceIdContext);
   const { backend } = useBackend();
 
-  const [messages, setMessages] = useState<ChairMessages | null>(null);
-  const [selectedMessage, setSelectedMessage] = useState<
-    NonNullable<ChairMessages>[number] | null
-  >(null);
+  const [messages, trigger] = pollBackendCall(
+    // biome-ignore lint/style/noNonNullAssertion: we assume the conference id is set
+    backend.conference({ conferenceId: conferenceId! }).messages.researchService
+      .get,
+    10000,
+  );
 
-  async function getMessages() {
-    if (!conferenceId) return;
-    backend.conference[conferenceId].messages.researchService
-      .get()
-      .then((res) => {
-        setMessages(res.data);
-      })
-      .catch((err) => {
-        console.error(err);
-      });
-  }
+  const [selectedMessage, setSelectedMessage] =
+    useState<(typeof messages)[number]>();
 
   useEffect(() => {
-    getMessages();
-    const interval = setInterval(() => {
-      getMessages();
-    }, 10000);
-    return () => clearInterval(interval);
-  }, []);
-
-  useEffect(() => {
-    setSelectedMessage(
-      messages?.find((m) => m.id === selectedMessage?.id) ?? null,
-    );
+    setSelectedMessage(messages?.find((m) => m.id === selectedMessage?.id));
   }, [messages]);
 
   return (
@@ -50,9 +30,10 @@ export default function InboxPageResearchService() {
       <InboxTemplate
         isResearchService
         messages={messages}
-        selectedMessage={selectedMessage}
+        // biome-ignore lint/style/noNonNullAssertion: <explanation>
+        selectedMessage={selectedMessage!}
         setSelectedMessage={setSelectedMessage}
-        getMessagesFunction={getMessages}
+        getMessagesFunction={trigger}
       />
     </>
   );

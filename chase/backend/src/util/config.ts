@@ -1,3 +1,5 @@
+// TODO: We should probably use a library for this
+
 /**
  * @param envName The env variable to load
  * @returns The variable value or undefined
@@ -44,7 +46,7 @@ export const appConfiguration = {
     EMAIL_HOST: development ? "localhost" : requireEnv("EMAIL_HOST"),
     EMAIL_PORT: development ? 5968 : Number.parseInt(requireEnv("EMAIL_PORT")),
     // EMAIL_SECURE: development ? false : requireEnv("EMAIL_SECURE") !== "false",
-    EMAIL_SECURE: development ? false : true,
+    EMAIL_SECURE: !development,
     EMAIL_AUTH_USER: development ? "dev" : requireEnv("EMAIL_AUTH_USER"),
     EMAIL_AUTH_PASS: development ? "dev" : requireEnv("EMAIL_AUTH_PASS"),
     EMAIL_FROM: development ? "noreply@localhost" : requireEnv("EMAIL_FROM"),

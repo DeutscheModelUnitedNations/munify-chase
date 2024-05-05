@@ -1,4 +1,4 @@
-import { NationTranslation } from "./nations";
+import type { NationTranslation } from "./nations";
 import specials from "./specials.json";
 
 const specialPersons: NationTranslation[] = specials;

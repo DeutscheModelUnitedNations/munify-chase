@@ -17,7 +17,9 @@ import {
 
 type ChairMessages = Awaited<
   ReturnType<
-    BackendInstanceType["conference"]["conferenceId"]["committee"]["committeeId"]["messages"]["get"]
+    ReturnType<
+      ReturnType<BackendInstanceType["conference"]>["committee"]
+    >["messages"]["get"]
   >
 >["data"];
 
@@ -42,13 +44,14 @@ export default function MessageCard({
   async function selectMessage() {
     setSelected(message);
     if (message.status.includes($Enums.MessageStatus.UNREAD)) {
-      await backend.message[message.id].removeStatus
-        .post({
+      await backend
+        .message({ messageId: message.id })
+        .removeStatus.post({
           status: "UNREAD",
         })
         .then((res) => {
           if (res.status !== 200)
-            throw new Error(res.error?.message ?? "Unknown error");
+            throw new Error((res.error?.value as string) ?? "Unknown error");
         })
         .catch((err) => {
           toastError(err);

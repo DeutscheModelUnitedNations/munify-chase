@@ -32,8 +32,9 @@ export function MessageCountProvider({
 
   async function getGlobalMessageCount() {
     if (!conferenceId) return;
-    backend.conference[conferenceId].messages.count
-      .get()
+    backend
+      .conference({ conferenceId })
+      .messages.count.get()
       .then((res) => {
         if (res.status === 200) {
           const newCount = res.data;
@@ -58,8 +59,10 @@ export function MessageCountProvider({
 
   async function getCommitteeMessageCount() {
     if (!conferenceId || !committeeId) return;
-    backend.conference[conferenceId].committee[committeeId].messages.count
-      .get()
+    backend
+      .conference({ conferenceId })
+      .committee({ committeeId })
+      .messages.count.get()
       .then((res) => {
         if (res.status === 200) {
           const newCount = res.data;

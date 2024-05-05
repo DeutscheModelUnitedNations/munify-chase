@@ -1,7 +1,8 @@
 "use client";
-import React, { useContext, useEffect, useState } from "react";
+import type React from "react";
+import { useContext, useEffect, useState } from "react";
 import { useI18nContext } from "@/i18n/i18n-react";
-import { useBackend, type BackendInstanceType } from "@/contexts/backend";
+import { useBackend } from "@/contexts/backend";
 import { useRouter } from "next/navigation";
 import ForwardBackButtons from "@/components/admin/onboarding/forward_back_bar";
 import TeamPoolTable from "@/components/admin/teampool/teampool_table";
@@ -9,11 +10,8 @@ import AddTeammemberDialog from "@/components/admin/teampool/add_teammember_dial
 import { confirmPopup } from "primereact/confirmpopup";
 import { useToast } from "@/contexts/toast";
 import { ConferenceIdContext } from "@/contexts/committee_data";
-import { $Enums } from "@prisma/generated/client";
-
-type TeamType = Awaited<
-  ReturnType<BackendInstanceType["conference"]["conferenceId"]["member"]["get"]>
->["data"];
+import type { $Enums } from "@prisma/generated/client";
+import { useBackendCall } from "@/hooks/useBackendCall";
 
 export default function Teampool() {
   const { LL } = useI18nContext();
@@ -22,28 +20,20 @@ export default function Teampool() {
   const conferenceId = useContext(ConferenceIdContext);
   const { backend } = useBackend();
 
-  const [team, setTeam] = useState<TeamType | null>(null);
+  const [team, triggerTeam] = useBackendCall(
+    //TODO
+    // biome-ignore lint/style/noNonNullAssertion:
+    backend.conference({ conferenceId: conferenceId! }).member.get,
+    true,
+  );
   const [inputMaskVisible, setInputMaskVisible] = useState(false);
   const [updateTable, setUpdateTable] = useState(true);
 
   const [saveLoading, setSaveLoading] = useState(false);
 
-  async function getTeam() {
-    if (!conferenceId) return;
-    await backend.conference[conferenceId].member
-      .get()
-      .then((res) => {
-        if (res.status >= 400) throw new Error("Failed to fetch team");
-        setTeam(res.data);
-      })
-      .catch((error) => {
-        toastError(error);
-      });
-  }
-
   useEffect(() => {
     if (updateTable) {
-      getTeam();
+      triggerTeam();
       setUpdateTable(false);
     }
   }, [updateTable]);
@@ -53,8 +43,9 @@ export default function Teampool() {
     count,
   }: { role: $Enums.ConferenceRole; count: number }) => {
     if (!conferenceId) return;
-    backend.conference[conferenceId].member
-      .post({
+    backend
+      .conference({ conferenceId })
+      .member.post({
         data: {
           role,
         },
@@ -75,8 +66,9 @@ export default function Teampool() {
       acceptClassName: "p-button-danger",
       accept: () => {
         if (!conferenceId) return;
-        backend.conference[conferenceId].member
-          .delete()
+        backend
+          .conference({ conferenceId })
+          .member.delete()
           .then(() => {
             setUpdateTable(true);
           })
@@ -89,7 +81,9 @@ export default function Teampool() {
 
   const handleDelete = (id: string) => {
     if (!conferenceId) return;
-    backend.conference[conferenceId].member[id]
+    backend
+      .conference({ conferenceId })
+      .member({ memberId: id })
       .delete()
       .then((_res) => {
         setUpdateTable(true);

@@ -1,14 +1,15 @@
-import React, { createContext, useContext, useState } from "react";
-import { edenTreaty } from "@elysiajs/eden";
-import { App } from "../../backend/src/main";
+"use client";
+import type React from "react";
+import { createContext, useContext, useState } from "react";
+import { treaty } from "@elysiajs/eden";
+import type { Api } from "../../backend/src/api";
 import { unstable_noStore as noStore } from "next/cache";
 import { env } from "next-runtime-env";
 
 export const BackendContext = createContext({} as BackendContextType);
 export const useBackend = () => useContext(BackendContext);
 
-//@ts-ignore
-export type BackendInstanceType = ReturnType<typeof edenTreaty<App>>;
+export type BackendInstanceType = ReturnType<typeof treaty<Api>>;
 
 function getBackendUrl() {
   noStore();
@@ -16,10 +17,12 @@ function getBackendUrl() {
 }
 
 export const Backend = ({ children }: { children: React.ReactNode }) => {
-  const [backend, _setBackend] = useState(
-    //@ts-ignore
-    edenTreaty<App>(getBackendUrl(), {
-      $fetch: {
+  // ATTENTION: It is IMPORTANT to use a callback function here to prevent
+  // react from doing funky things with the backend instance when passing to the state hook
+  // please do not ask me why this is happening...
+  const [backend, _setBackend] = useState(() =>
+    treaty<Api>(getBackendUrl(), {
+      fetch: {
         credentials: "include",
       },
     }),

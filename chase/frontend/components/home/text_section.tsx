@@ -1,6 +1,6 @@
 import React from "react";
 import Button from "../button";
-import { IconDefinition } from "@fortawesome/fontawesome-svg-core";
+import type { IconDefinition } from "@fortawesome/fontawesome-svg-core";
 import { useRouter } from "next/navigation";
 
 type TextSectionProps = {

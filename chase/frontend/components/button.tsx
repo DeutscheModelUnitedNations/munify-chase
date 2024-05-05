@@ -1,9 +1,9 @@
 import React from "react";
 import { Button as PrimeReactButton } from "primereact/button";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { IconProp } from "@fortawesome/fontawesome-svg-core";
+import type { IconProp } from "@fortawesome/fontawesome-svg-core";
 import { faSpinnerThird } from "@fortawesome/pro-solid-svg-icons";
-import { ButtonProps as PrimeReactButtonProps } from "primereact/button";
+import type { ButtonProps as PrimeReactButtonProps } from "primereact/button";
 
 /**
  * This Component is a wrapper for the PrimeReact Button Component.
@@ -44,7 +44,7 @@ export default function Button({
         faIcon && (
           <FontAwesomeIcon
             icon={loading ? faSpinnerThird : faIcon}
-            spin={loading ? true : false}
+            spin={!!loading}
             className={`${label && "mr-3"} + ${faIconClassName}`}
           />
         )

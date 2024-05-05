@@ -1,23 +1,23 @@
 import { t, Elysia } from "elysia";
 import { db } from "../../prisma/db";
-import { committeeMemberGuard } from "../auth/guards/committeeMember";
-import { conferenceRoleGuard } from "../auth/guards/conferenceRoles";
 import { openApiTag } from "../util/openApiTags";
-import { CommitteeMember, Nation } from "../../prisma/generated/schema";
+import { Nation } from "../../prisma/generated/schema/Nation";
+import { CommitteeMember } from "../../prisma/generated/schema/CommitteeMember";
+import { permissionsPlugin } from "../auth/permissions";
 
 const DelegationBody = t.Pick(Nation, ["alpha3Code"]);
 
 export const delegation = new Elysia({
   prefix: "/conference/:conferenceId",
 })
-  .use(conferenceRoleGuard)
-  .use(committeeMemberGuard)
+  .use(permissionsPlugin)
   .get(
     "/delegation",
-    ({ params: { conferenceId } }) => {
+    ({ params: { conferenceId }, permissions }) => {
       return db.delegation.findMany({
         where: {
           conferenceId,
+          AND: [permissions.allowDatabaseAccessTo("list").Delegation],
         },
         include: {
           nation: true,
@@ -26,7 +26,6 @@ export const delegation = new Elysia({
       });
     },
     {
-      hasConferenceRole: "any",
       detail: {
         description: "Get all delegations in this conference",
         tags: [openApiTag(import.meta.path)],
@@ -35,7 +34,8 @@ export const delegation = new Elysia({
   )
   .post(
     "/delegation",
-    ({ body, params: { conferenceId } }) => {
+    ({ body, params: { conferenceId }, permissions }) => {
+      permissions.checkIf((user) => user.can("create", "Delegation"));
       return db.delegation.create({
         data: {
           conference: { connect: { id: conferenceId } },
@@ -54,10 +54,11 @@ export const delegation = new Elysia({
   )
   .get(
     "/delegation/:delegationId",
-    ({ params: { delegationId } }) => {
+    ({ params: { delegationId }, permissions }) => {
       return db.delegation.findUnique({
         where: {
           id: delegationId,
+          AND: [permissions.allowDatabaseAccessTo().Delegation],
         },
         include: {
           members: true,
@@ -65,7 +66,6 @@ export const delegation = new Elysia({
       });
     },
     {
-      hasConferenceRole: "any",
       detail: {
         description: "Get a specific delegation in this conference",
         tags: [openApiTag(import.meta.path)],
@@ -74,22 +74,23 @@ export const delegation = new Elysia({
   )
   .delete(
     "/delegation/:delegationId",
-    ({ params: { delegationId } }) => {
+    ({ params: { delegationId }, permissions }) => {
       return db.$transaction([
         db.committeeMember.deleteMany({
           where: {
             id: delegationId,
+            AND: [permissions.allowDatabaseAccessTo("delete").CommitteeMember],
           },
         }),
         db.delegation.delete({
           where: {
             id: delegationId,
+            AND: [permissions.allowDatabaseAccessTo("delete").Delegation],
           },
         }),
       ]);
     },
     {
-      hasConferenceRole: ["ADMIN"],
       detail: {
         description:
           "Delete a delegation and all its committee members in this conference",
@@ -99,31 +100,37 @@ export const delegation = new Elysia({
   )
   .post(
     "/delegation/:delegationId/committee/:committeeId",
-    async ({ params: { delegationId, committeeId } }) => {
-      const committeeMember = await db.committeeMember.findFirst({
-        where: {
-          committeeId,
-          delegationId,
-        },
-      });
-
-      if (committeeMember) {
-        return db.committeeMember.delete({
+    async ({ params: { delegationId, committeeId }, permissions }) => {
+      return db.$transaction(async (tx) => {
+        const committeeMember = await tx.committeeMember.findFirst({
           where: {
-            id: committeeMember.id,
+            committeeId,
+            delegationId,
           },
         });
-      }
 
-      return await db.committeeMember.create({
-        data: {
-          committeeId,
-          delegationId,
-        },
+        if (committeeMember) {
+          return tx.committeeMember.delete({
+            where: {
+              id: committeeMember.id,
+              AND: [
+                permissions.allowDatabaseAccessTo("delete").CommitteeMember,
+              ],
+            },
+          });
+        }
+
+        permissions.checkIf((user) => user.can("create", "CommitteeMember"));
+
+        return await tx.committeeMember.create({
+          data: {
+            committeeId,
+            delegationId,
+          },
+        });
       });
     },
     {
-      hasConferenceRole: ["ADMIN"],
       detail: {
         description:
           "Connect a committee to a delegation in this conference. If the committee is already connected to the delegation, it will be disconnected.",
@@ -135,10 +142,11 @@ export const delegation = new Elysia({
   // Presence
   .post(
     "/delegation/:delegationId/presence/:memberId",
-    ({ body, params: { delegationId, memberId } }) => {
+    ({ body, params: { delegationId, memberId }, permissions }) => {
       return db.delegation.update({
         where: {
           id: delegationId,
+          AND: [permissions.allowDatabaseAccessTo("update").Delegation],
         },
         data: {
           members: {
@@ -166,10 +174,11 @@ export const delegation = new Elysia({
 
   .post(
     "/committee/:committeeId/presence/allAbsent",
-    async ({ params: { committeeId } }) => {
+    async ({ params: { committeeId }, permissions }) => {
       return await db.committeeMember.updateMany({
         where: {
           committeeId,
+          AND: [permissions.allowDatabaseAccessTo("update").CommitteeMember],
         },
         data: {
           presence: "ABSENT",
@@ -177,7 +186,6 @@ export const delegation = new Elysia({
       });
     },
     {
-      hasConferenceRole: ["ADMIN", "CHAIR"],
       detail: {
         description:
           "Get all delegations in a committee with all members absent",
@@ -187,10 +195,11 @@ export const delegation = new Elysia({
   )
   .post(
     "/committee/:committeeId/presence/allPresent",
-    async ({ params: { committeeId } }) => {
+    async ({ params: { committeeId }, permissions }) => {
       return await db.committeeMember.updateMany({
         where: {
           committeeId,
+          AND: [permissions.allowDatabaseAccessTo("update").CommitteeMember],
         },
         data: {
           presence: "PRESENT",
@@ -198,7 +207,6 @@ export const delegation = new Elysia({
       });
     },
     {
-      hasConferenceRole: ["ADMIN", "CHAIR"],
       detail: {
         description:
           "Get all delegations in a committee with all members absent",

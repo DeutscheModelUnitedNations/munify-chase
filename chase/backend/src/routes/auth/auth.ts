@@ -7,14 +7,16 @@ import {
 } from "../../email/email";
 import { nanoid } from "nanoid";
 import { appConfiguration } from "../../util/config";
-import { loggedInGuard } from "../../auth/guards/loggedIn";
 import { passwords } from "./passwords";
+import { sessionPlugin } from "../../auth/session";
+import { permissionsPlugin } from "../../auth/permissions";
 
 export const auth = new Elysia({
   prefix: "/auth",
 })
   .use(passwords)
-  .use(loggedInGuard)
+  .use(sessionPlugin)
+  .use(permissionsPlugin)
   .get(
     "/userState",
     async ({ query: { email } }) => {
@@ -53,13 +55,10 @@ export const auth = new Elysia({
   )
   .get(
     "/myInfo",
-    async ({ session, set }) => {
-      if (!session.userData) {
-        set.status = "Forbidden";
-        throw new Error("User is not logged in");
-      }
-      return await db.user.findUniqueOrThrow({
-        where: { id: session.userData.id },
+    async ({ session, permissions }) => {
+      permissions.mustBeLoggedIn();
+      return db.user.findUniqueOrThrow({
+        where: { id: session.data?.user?.id },
         include: {
           emails: true,
           conferenceMemberships: {
@@ -87,7 +86,6 @@ export const auth = new Elysia({
       });
     },
     {
-      mustBeLoggedIn: true,
       detail: {
         description: "Returns the user info when they are logged in",
         tags: [openApiTag(import.meta.path)],
@@ -272,12 +270,9 @@ export const auth = new Elysia({
   .get(
     "/logout",
     ({ session }) => {
-      session.setLoggedIn(false);
-      // delete the session cookie
-      return "ok";
+      session.setData({ loggedIn: false });
     },
     {
-      response: t.Literal("ok"),
       detail: {
         description:
           "Logs the user out. The user will be logged out on the next request",

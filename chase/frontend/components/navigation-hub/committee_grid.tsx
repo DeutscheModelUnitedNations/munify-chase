@@ -15,18 +15,17 @@ import {
   faForwardStep,
   faQuestion,
 } from "@fortawesome/pro-solid-svg-icons";
-import { IconProp } from "@fortawesome/fontawesome-svg-core";
+import type { IconProp } from "@fortawesome/fontawesome-svg-core";
 import SmallInfoCard from "../small_info_card";
 import {
   CommitteeDataProvider,
   CommitteeIdContext,
 } from "@/contexts/committee_data";
 import { StatusTimerProvider } from "@/contexts/status_timer";
+import { pollBackendCall } from "@/hooks/pollBackendCall";
 
 type CommitteeArray = Awaited<
-  ReturnType<
-    BackendInstanceType["conference"][":conferenceId"]["committee"]["get"]
-  >
+  ReturnType<ReturnType<BackendInstanceType["conference"]>["committee"]["get"]>
 >["data"];
 type CommitteeType = NonNullable<CommitteeArray>[number];
 
@@ -39,28 +38,11 @@ export default function CommitteeGrid({
 }) {
   const { LL } = useI18nContext();
   const { backend } = useBackend();
-  const { toastError } = useToast();
 
-  const [committees, setCommittees] = useState<CommitteeArray>(null);
-
-  async function getCommittees() {
-    await backend.conference[conferenceId].committee
-      .get()
-      .then((res) => {
-        if (res.status !== 200) throw new Error("Failed to fetch committees");
-        setCommittees(res.data);
-      })
-      .catch((err) => {
-        toastError(err);
-      });
-  }
-
-  useEffect(() => {
-    getCommittees();
-    setInterval(() => {
-      getCommittees();
-    }, 10000);
-  }, []);
+  const [committees] = pollBackendCall(
+    backend.conference({ conferenceId }).committee.get,
+    10000,
+  );
 
   return (
     <div className="w-full flex flex-wrap justify-start items-start gap-4 p-4">
@@ -110,7 +92,10 @@ function CommitteeCard({
 
   const [loading, setLoading] = useState(false);
 
-  function getHeadline(category: CommitteeType["status"], headline?: string) {
+  function getHeadline(
+    category: CommitteeType["status"],
+    headline: string | null,
+  ) {
     if (headline) return headline;
     switch (category) {
       case "FORMAL":

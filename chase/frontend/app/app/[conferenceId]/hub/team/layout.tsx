@@ -10,7 +10,7 @@ import {
   faRocketLaunch,
 } from "@fortawesome/pro-solid-svg-icons";
 import { useI18nContext } from "@/i18n/i18n-react";
-import { IconProp } from "@fortawesome/fontawesome-svg-core";
+import type { IconProp } from "@fortawesome/fontawesome-svg-core";
 import { MyDelegationProvider, useUserIdent } from "@/contexts/user_ident";
 import { useContext, useEffect, useState } from "react";
 import { ConferenceIdContext } from "@/contexts/committee_data";

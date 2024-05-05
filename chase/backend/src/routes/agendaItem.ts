@@ -1,44 +1,31 @@
 import { t, Elysia } from "elysia";
 import { db } from "../../prisma/db";
-import { committeeMemberGuard } from "../auth/guards/committeeMember";
-import { conferenceRoleGuard } from "../auth/guards/conferenceRoles";
 import { openApiTag } from "../util/openApiTags";
-import { AgendaItem } from "../../prisma/generated/schema";
-import { recursiveNullFieldsToUndefined } from "../util/nullToUndefined";
 import { $Enums } from "../../prisma/generated/client";
-
-const AgendaItemWithoutRelations = t.Omit(AgendaItem, [
-  "committee",
-  "speakerLists",
-]);
-
-const AgendaItemData = t.Omit(AgendaItemWithoutRelations, [
-  "id",
-  "committeeId",
-]);
+import {
+  AgendaItemData,
+  AgendaItemDataPlain,
+  // AgendaItemPlain,
+} from "../../prisma/generated/schema/AgendaItem";
+import { permissionsPlugin } from "../auth/permissions";
 
 export const agendaItem = new Elysia({
   prefix: "/conference/:conferenceId/committee/:committeeId",
 })
-  .use(conferenceRoleGuard)
-  .use(committeeMemberGuard)
+  .use(permissionsPlugin)
   .get(
     "/agendaItem",
-    async ({ params: { conferenceId, committeeId } }) => {
-      const r = await db.agendaItem.findMany({
+    async ({ params, permissions }) =>
+      db.agendaItem.findMany({
         where: {
           committee: {
-            id: committeeId,
-            conferenceId,
+            id: params.committeeId,
+            conferenceId: params.conferenceId,
           },
+          AND: [permissions.allowDatabaseAccessTo("list").AgendaItem],
         },
-      });
-
-      // the return schema expects description to be set or undefined https://github.com/adeyahya/prisma-typebox-generator/issues/19
-      return recursiveNullFieldsToUndefined(r);
-    },
+      }),
     {
-      hasConferenceRole: "any",
       detail: {
         description: "Get all agenda items in this committee",
         tags: [openApiTag(import.meta.path)],
@@ -47,7 +34,7 @@ export const agendaItem = new Elysia({
   )
   .post(
     "/agendaItem",
-    async ({ body, params: { conferenceId, committeeId } }) => {
+    async ({ body, params: { conferenceId, committeeId }, permissions }) => {
       //TODO is this used? @TadeSF
       // const committeeHasActiveAgendaItem = !!(await db.agendaItem.findFirst({
       //   where: {
@@ -55,20 +42,20 @@ export const agendaItem = new Elysia({
       //     isActive: true,
       //   },
       // }));
-      const agendaItem = await db.agendaItem
-        .create({
-          data: {
-            committee: {
-              connect: {
-                id: committeeId,
-                conferenceId,
-              },
+      permissions.checkIf((user) => user.can("create", "AgendaItem"));
+
+      const agendaItem = await db.agendaItem.create({
+        data: {
+          committee: {
+            connect: {
+              id: committeeId,
+              conferenceId,
             },
-            title: body.title,
-            description: body.description,
           },
-        })
-        .then((a) => ({ ...a, description: a.description || undefined }));
+          title: body.title,
+          description: body.description,
+        },
+      });
       await db.speakersList.createMany({
         data: [
           {
@@ -86,37 +73,30 @@ export const agendaItem = new Elysia({
       return agendaItem;
     },
     {
-      hasConferenceRole: ["ADMIN"],
+      body: t.Pick(AgendaItemData, ["title", "description"]),
       detail: {
         description: "Create a new agenda item in this committee",
         tags: [openApiTag(import.meta.path)],
       },
-      body: AgendaItemData,
-      response: AgendaItemWithoutRelations,
     },
   )
   .get(
     "/agendaItem/active",
-    async ({ params: { committeeId }, set }) => {
-      const r = await db.agendaItem.findFirst({
+    async ({ params: { committeeId }, permissions }) => {
+      const r = await db.agendaItem.findFirstOrThrow({
         where: {
           committeeId,
           isActive: true,
+          AND: [permissions.allowDatabaseAccessTo("list").AgendaItem],
         },
         include: {
           speakerLists: true,
         },
       });
 
-      if (!r) {
-        set.status = "Not Found";
-        throw new Error("No Active Committee");
-      }
-
-      return { ...r, description: r.description || undefined };
+      return r;
     },
     {
-      hasConferenceRole: "any",
       detail: {
         description: "Get all active agenda items in this committee",
         tags: [openApiTag(import.meta.path)],
@@ -125,29 +105,28 @@ export const agendaItem = new Elysia({
   )
   .get(
     "/agendaItem/active/:type",
-    async ({ params: { conferenceId, committeeId, type }, set }) => {
-      const r = await db.agendaItem.findFirst({
+    async ({ params: { conferenceId, committeeId, type }, permissions }) => {
+      const r = await db.agendaItem.findFirstOrThrow({
         where: {
           committee: {
             id: committeeId,
             conferenceId,
           },
           isActive: true,
+          AND: [permissions.allowDatabaseAccessTo("list").AgendaItem],
         },
         include: {
-          speakerLists: true,
+          speakerLists: {
+            where: {
+              type: type as $Enums.SpeakersListCategory,
+            },
+          },
         },
       });
 
-      if (!r) {
-        set.status = "Not Found";
-        throw new Error("No Active Committee");
-      }
-
-      return r?.speakerLists.find((sl) => sl.type === type) ?? null;
+      return r;
     },
     {
-      hasConferenceRole: "any",
       detail: {
         description: "Get all active agenda items in this committee",
         tags: [openApiTag(import.meta.path)],
@@ -156,32 +135,32 @@ export const agendaItem = new Elysia({
   )
   .get(
     "/agendaItem/:agendaItemId",
-    ({ params: { conferenceId, committeeId, agendaItemId } }) =>
+    ({ params: { conferenceId, committeeId, agendaItemId }, permissions }) =>
       db.agendaItem
         .findUniqueOrThrow({
           where: {
             id: agendaItemId,
             committee: { id: committeeId, conferenceId },
+            AND: [permissions.allowDatabaseAccessTo().AgendaItem],
           },
         })
         .then((a) => ({ ...a, description: a.description || undefined })),
     {
-      hasConferenceRole: "any",
       detail: {
         description: "Get a single agenda item by id",
         tags: [openApiTag(import.meta.path)],
       },
-      response: AgendaItemWithoutRelations,
     },
   )
   .post(
     "/agendaItem/:agendaItemId/activate",
-    ({ params: { conferenceId, committeeId, agendaItemId } }) =>
+    ({ params: { conferenceId, committeeId, agendaItemId }, permissions }) =>
       db.$transaction([
         db.agendaItem.update({
           where: {
             id: agendaItemId,
             committee: { id: committeeId, conferenceId },
+            AND: [permissions.allowDatabaseAccessTo("update").AgendaItem],
           },
           data: {
             isActive: true,
@@ -198,7 +177,6 @@ export const agendaItem = new Elysia({
         }),
       ]),
     {
-      hasConferenceRole: ["ADMIN"],
       detail: {
         description: "Activate an agenda item by id",
         tags: [openApiTag(import.meta.path)],
@@ -207,15 +185,15 @@ export const agendaItem = new Elysia({
   )
   .delete(
     "/agendaItem/:agendaItemId",
-    ({ params: { conferenceId, committeeId, agendaItemId } }) =>
+    ({ params: { conferenceId, committeeId, agendaItemId }, permissions }) =>
       db.agendaItem.delete({
         where: {
           id: agendaItemId,
           committee: { id: committeeId, conferenceId },
+          AND: [permissions.allowDatabaseAccessTo("delete").AgendaItem],
         },
       }),
     {
-      hasConferenceRole: ["ADMIN"],
       detail: {
         description: "Delete an agenda item by id",
         tags: [openApiTag(import.meta.path)],
@@ -224,11 +202,16 @@ export const agendaItem = new Elysia({
   )
   .patch(
     "/agendaItem/:agendaItemId",
-    async ({ params: { conferenceId, committeeId, agendaItemId }, body }) => {
+    async ({
+      params: { conferenceId, committeeId, agendaItemId },
+      body,
+      permissions,
+    }) => {
       return db.agendaItem.update({
         where: {
           id: agendaItemId,
           committee: { id: committeeId, conferenceId },
+          AND: [permissions.allowDatabaseAccessTo("update").AgendaItem],
         },
         data: {
           isActive: body.isActive,
@@ -238,8 +221,7 @@ export const agendaItem = new Elysia({
       });
     },
     {
-      hasConferenceRole: ["ADMIN"],
-      body: AgendaItemData,
+      body: AgendaItemDataPlain,
       detail: {
         description: "Update an agenda item by id",
         tags: [openApiTag(import.meta.path)],

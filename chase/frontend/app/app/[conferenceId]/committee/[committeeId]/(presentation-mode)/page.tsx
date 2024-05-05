@@ -18,17 +18,7 @@ import { useToast } from "@/contexts/toast";
 import WhiteboardWidget from "@/components/dashboard/whiteboard";
 import { StatusTimer } from "@/contexts/status_timer";
 import { useMediaQuery } from "react-responsive";
-
-type CommitteeType = Awaited<
-  ReturnType<
-    BackendInstanceType["conference"]["conferenceId"]["committee"]["committeeId"]["get"]
-  >
->["data"];
-type AgendaItems = Awaited<
-  ReturnType<
-    BackendInstanceType["conference"]["conferenceId"]["committee"]["committeeId"]["agendaItem"]["get"]
-  >
->["data"];
+import { pollBackendCall } from "@/hooks/pollBackendCall";
 
 export default function CommitteePresentationMode({
   params,
@@ -44,10 +34,16 @@ export default function CommitteePresentationMode({
     query: "(min-width: 768px)",
   });
 
-  const [committeeData, setCommitteeData] = useState<CommitteeType | null>(
-    null,
+  const [committeeData, _triggerCommitteedata] = pollBackendCall(
+    backend
+      .conference({ conferenceId: params.conferenceId })
+      .committee({ committeeId: params.committeeId }).get,
   );
-  const [agendaItem, setAgendaItem] = useState<AgendaItems | null>(null);
+  const [agendaItem, _triggerAgendaItem] = pollBackendCall(
+    backend
+      .conference({ conferenceId: params.conferenceId })
+      .committee({ committeeId: params.committeeId }).agendaItem.get,
+  );
 
   const [remSize, setRemSize] = useState<number>(16);
 
@@ -55,9 +51,11 @@ export default function CommitteePresentationMode({
     const presentationRem = localStorage.getItem("presentationRem");
 
     if (presentationRem) {
-      setRemSize(parseFloat(presentationRem));
+      setRemSize(Number.parseFloat(presentationRem));
     } else {
-      const bodyRem = parseFloat(getComputedStyle(document.body).fontSize);
+      const bodyRem = Number.parseFloat(
+        getComputedStyle(document.body).fontSize,
+      );
       setRemSize(bodyRem);
     }
   }, []);
@@ -67,39 +65,8 @@ export default function CommitteePresentationMode({
     localStorage.setItem("presentationRem", remSize.toString());
   }, [remSize]);
 
-  async function getCommitteeData() {
-    await backend.conference[params.conferenceId].committee[params.committeeId]
-      .get()
-      .then((response) => {
-        setCommitteeData(response.data);
-      })
-      .catch((error) => {
-        console.error(error);
-      });
-  }
-
-  async function getAgendaItems() {
-    await backend.conference[params.conferenceId].committee[
-      params.committeeId
-    ].agendaItem
-      .get()
-      .then((response) => {
-        setAgendaItem(response.data);
-      })
-      .catch((error) => {
-        console.error(error);
-      });
-  }
-
   useEffect(() => {
     disableToastsOnCurrentPage();
-    getCommitteeData();
-    getAgendaItems();
-    const intervalAPICall = setInterval(() => {
-      getCommitteeData();
-      getAgendaItems();
-    }, 5000);
-    return () => clearInterval(intervalAPICall);
   }, []);
 
   return (

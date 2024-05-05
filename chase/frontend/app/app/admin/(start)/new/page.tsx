@@ -1,5 +1,6 @@
 "use client";
-import React, { useState } from "react";
+import type React from "react";
+import { useState } from "react";
 import Image from "next/image";
 
 import { useI18nContext } from "@/i18n/i18n-react";
@@ -30,8 +31,8 @@ export default function loginVorsitz() {
       .post({
         name: conferenceName,
         token: token,
-        start: dates ? dates[0]?.toISOString() : undefined,
-        end: dates ? dates[1]?.toISOString() : undefined,
+        start: dates?.at(0),
+        end: dates?.at(1),
       })
       .then((res) => {
         if (!res?.data?.id) throw new Error("No conference id returned");
@@ -46,8 +47,8 @@ export default function loginVorsitz() {
       })
       .catch((err) => {
         toastError(err);
-        setLoading(false);
-      });
+      })
+      .finally(() => setLoading(false));
   };
 
   return (

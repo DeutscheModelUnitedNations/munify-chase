@@ -1,7 +1,8 @@
 import { t, Elysia } from "elysia";
 import { db } from "../../../prisma/db";
 import { openApiTag } from "../../util/openApiTags";
-import { loggedInGuard } from "../../auth/guards/loggedIn";
+import { sessionPlugin } from "../../auth/session";
+import { permissionsPlugin } from "../../auth/permissions";
 
 /**
  * === Regex for password requirements ===
@@ -19,7 +20,8 @@ const passwordRegex =
   /^(?=(.*[a-z]){1,})(?=(.*[A-Z]){1,})(?=(.*[0-9]){1,})(?=(.*[!@#$%^&*()\-__+.]){1,}).{8,}$/;
 
 export const passwords = new Elysia()
-  .use(loggedInGuard)
+  .use(sessionPlugin)
+  .use(permissionsPlugin)
   .post(
     "/password",
     async ({ body: { email, password, credentialCreateToken } }) => {
@@ -111,10 +113,11 @@ export const passwords = new Elysia()
   )
   .delete(
     "/password",
-    async ({ body: { password }, session }) => {
+    async ({ body: { password }, session, permissions }) => {
+      permissions.mustBeLoggedIn();
       const user = await db.user.findUniqueOrThrow({
         where: {
-          id: session.userData.id,
+          id: session.data?.user?.id,
         },
         include: { passwords: true },
       });
@@ -139,7 +142,6 @@ export const passwords = new Elysia()
       });
     },
     {
-      mustBeLoggedIn: true,
       body: t.Object({
         password: t.String(),
       }),
@@ -174,9 +176,13 @@ export const passwords = new Elysia()
         throw new Error("Invalid password");
       }
 
-      session.setLoggedIn(true);
-      session.setUserData({
-        id: foundEmail.user.id,
+      await session.setData({
+        loggedIn: true,
+        user: {
+          id: foundEmail.user.id,
+          email: foundEmail.email,
+          name: foundEmail.user.name,
+        },
       });
     },
     {

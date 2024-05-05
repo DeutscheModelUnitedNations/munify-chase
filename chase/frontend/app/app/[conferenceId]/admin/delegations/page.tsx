@@ -8,7 +8,7 @@ import { useEffect, useState, useContext } from "react";
 import useMousetrap from "mousetrap-react";
 import { ConferenceIdContext } from "@/contexts/committee_data";
 import { useToast } from "@/contexts/toast";
-import {
+import type {
   CommitteesType,
   DelegationsType,
 } from "@/components/admin/delegations/delegations_table";
@@ -26,8 +26,9 @@ export default function AdminDelegationsPage() {
 
   async function getCommittees() {
     if (!conferenceId) return;
-    await backend.conference[conferenceId].committee
-      .get()
+    await backend
+      .conference({ conferenceId })
+      .committee.get()
       .then((res) => {
         if (res.status >= 400) throw new Error("Failed to fetch committees");
         setCommittees(res.data);
@@ -39,8 +40,9 @@ export default function AdminDelegationsPage() {
 
   async function getDelegations() {
     if (!conferenceId) return;
-    await backend.conference[conferenceId].delegation
-      .get()
+    await backend
+      .conference({ conferenceId })
+      .delegation.get()
       .then((res) => {
         if (res.status >= 400) throw new Error("Failed to fetch delegations");
         setDelegations(res.data);
@@ -62,8 +64,9 @@ export default function AdminDelegationsPage() {
 
   async function createDelegation(alpha3Code: string) {
     if (!conferenceId) return;
-    await backend.conference[conferenceId].delegation
-      .post({
+    await backend
+      .conference({ conferenceId })
+      .delegation.post({
         alpha3Code,
       })
       .catch((error) => {
@@ -74,7 +77,9 @@ export default function AdminDelegationsPage() {
 
   async function deleteDelegation(delegationId: string) {
     if (!conferenceId) return;
-    await backend.conference[conferenceId].delegation[delegationId]
+    await backend
+      .conference({ conferenceId })
+      .delegation({ delegationId })
       .delete()
       .catch((error) => {
         toastError(error);
@@ -87,9 +92,10 @@ export default function AdminDelegationsPage() {
     committeeId: string,
   ) {
     if (!conferenceId) return;
-    await backend.conference[conferenceId].delegation[delegationId].committee[
-      committeeId
-    ]
+    await backend
+      .conference({ conferenceId })
+      .delegation({ delegationId })
+      .committee({ committeeId })
       .post()
       .then((res) => {
         if (res.status >= 400)

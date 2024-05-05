@@ -2,131 +2,108 @@ import Elysia, { t } from "elysia";
 import { nanoid } from "nanoid";
 import { redis } from "../../prisma/db";
 import { appConfiguration } from "../util/config";
-// import { generateKeyPairSync, createSign, createVerify } from "crypto";
+import type { Email, User } from "../../prisma/generated/client";
 
-// const { publicKey, privateKey } = generateKeyPairSync("rsa", {
-//   modulusLength: 2048,
-// });
+//TODO periodically purge old sessions? Or does redis do that for us?
 
-//TODO periodically purge old sessions
+const expirationDurationInSeconds = 60 * 60 * 24 * 7; // a week
 
-//TODO periodically purge old sessions
-
-interface UserData {
-  id: string;
-}
-
-// interface PassKeyChallenge {
-//   userID: string;
-//   email: string;
-//   // biome-ignore lint/suspicious/noExplicitAny:
-//   challenge: any;
-// }
-
-type sessionSchema = {
+export type SessionData = {
   loggedIn: boolean;
-  userData?: UserData;
-  // currentPasskeyChallenge?: PassKeyChallenge;
+  /**
+   * The user data is stored in the session. This is the user data. May be undefined in case the user is not logged in.
+   * CAREFUL: Existing data does not mean the user has a valid session. Check the loggedIn property for that.
+   */
+  user?: Pick<User, "id" | "name"> & Pick<Email, "email">;
 };
 
-export const session = new Elysia({ name: "session" })
+export type SessionDataSetter = (data: Partial<SessionData>) => Promise<void>;
+
+export type Session = {
+  /**
+   * In case the user has not given consent to set cookies, the data cannot be stored and will be undefined
+   */
+  data?: SessionData;
+  setData: SessionDataSetter;
+};
+
+export const sessionPlugin = new Elysia({ name: "session" })
   .guard({
-    cookie: t.Cookie({
-      sessionId: t.Optional(t.String()),
-      chaseCookieConsent: t.Optional(t.Boolean()),
-    }),
+    cookie: t.Cookie(
+      {
+        sessionId: t.Optional(t.String()),
+        chaseCookieConsent: t.Optional(t.Boolean()),
+      },
+      {
+        secrets: appConfiguration.cookie.secrets,
+        sign: ["sessionId"],
+        httpOnly: true,
+        maxAge: expirationDurationInSeconds,
+        sameSite: appConfiguration.development ? "none" : "strict",
+        secure: true,
+        path: "/",
+      },
+    ),
   })
-  .derive(async ({ cookie: { sessionId: sessionIdCookie } }) => {
-    //TODO refactor
-    // if (chaseCookieConsent.value !== true) {
-    //   set.status = "Unavailable For Legal Reasons";
-    //   throw new Error(
-    //     "User has not consented to cookies. Please ensure the 'chaseCookieConsent' cookie is set to true!",
-    //   );
-    // }
-
-    sessionIdCookie.httpOnly = true;
-    sessionIdCookie.maxAge = 60 * 60 * 24 * 7; // 7 days
-    sessionIdCookie.sameSite = appConfiguration.development ? "none" : "strict";
-    sessionIdCookie.secure = true;
-    sessionIdCookie.path = "/";
-
-    let sessionId = sessionIdCookie.value;
-    // let sessionId = sessionIdCookie.value?.split(".")[0];
-    // let sessionIdSignature = sessionIdCookie.value?.split(".")[1];
-    // if (sessionId) {
-    //   const verify = createVerify("SHA256");
-    //   verify.update(sessionId);
-    //   if (
-    //     !sessionIdSignature ||
-    //     !verify.verify(publicKey, sessionIdSignature, "hex")
-    //   ) {
-    //     // if the session signature is not valid, treat the user as if they have no session id cookie set
-    //     sessionId = undefined;
-    //     sessionIdSignature = undefined;
-    //   }
-    // }
-
-    let data: sessionSchema = { loggedIn: false };
-
-    // TODO: setter could be actual getters and setters
-    // const setPasskeyChallenge = async (
-    //   challenge: PassKeyChallenge | undefined,
-    // ) => {
-    //   data.currentPasskeyChallenge = challenge;
-    //   await redis.set(`user-session:${sessionId.value}`, JSON.stringify(data));
-    // };
-
-    const setUserData = async (userData: UserData) => {
-      data.userData = userData;
-      await redis.set(`user-session:${sessionId}`, JSON.stringify(data), {
-        EX: 1000 * 60 * 60 * 24 * 7, // a week
-      });
-    };
-
-    const setLoggedIn = async (loggedIn: boolean) => {
-      data.loggedIn = loggedIn;
-      if (!data.loggedIn) {
-        await redis.del(`user-session:${sessionId}`);
-        sessionIdCookie.remove();
-      } else {
-        await redis.set(`user-session:${sessionId}`, JSON.stringify(data), {
-          EX: 1000 * 60 * 60 * 24 * 7, // a week
-        });
-      }
-    };
-
-    const createNewSessionInDB = async () => {
-      sessionId = nanoid();
-      // const sign = createSign("SHA256");
-      // sign.update(sessionId);
-      // const signature = sign.sign(privateKey, "hex");
-      // sessionIdCookie.value = `${sessionId}.${signature}`; // sets the session id in the cookie
-      sessionIdCookie.value = sessionId; // sets the session id in the cookie
-      await redis.set(`user-session:${sessionId}`, JSON.stringify(data), {
-        EX: 1000 * 60 * 60 * 24 * 7, // a week
-      });
-
-      return {
-        // session: { ...data, setPasskeyChallenge, setUserData, setLoggedIn },
-        session: { ...data, setUserData, setLoggedIn },
+  .derive(
+    { as: "global" },
+    async ({
+      cookie: { sessionId, chaseCookieConsent },
+      set,
+    }): Promise<{ session: Session }> => {
+      const session: Session = {
+        data: undefined,
+        setData: () => {
+          set.status = "Unavailable For Legal Reasons";
+          throw new Error("You need to accept cookies to use this feature.");
+        },
       };
-    };
+      if (chaseCookieConsent.value !== true) {
+        return { session };
+      }
 
-    // no session id given by user? create a new session
-    if (!sessionId) {
-      return createNewSessionInDB();
-    }
+      const data: SessionData = {
+        loggedIn: false,
+        user: undefined,
+      };
+      session.data = data;
 
-    // if the user provides a session id, check if it exists in the db
-    const rawData = await redis.get(`user-session:${sessionId}`);
-    // if the session id doesn't exist in the db, create a new session
-    if (!rawData) {
-      return createNewSessionInDB();
-    }
-    data = JSON.parse(rawData);
-    return {
-      // session: { ...data, setPasskeyChallenge, setUserData, setLoggedIn },
-      session: { ...data, setUserData, setLoggedIn },
-    };
-  });
+      const sessionIdValue = sessionId.value ?? nanoid();
+      const redisIdentifier = `user-session:${sessionIdValue}`;
+      const setData: SessionDataSetter = async (newData) => {
+        if (newData?.loggedIn !== undefined) {
+          data.loggedIn = newData.loggedIn;
+          if (newData.loggedIn === false) {
+            sessionId.remove();
+            await redis.del(redisIdentifier);
+          }
+        }
+        if (newData?.user !== undefined) {
+          data.user = newData.user;
+        }
+        await redis.set(redisIdentifier, JSON.stringify(data), {
+          EX: expirationDurationInSeconds,
+        });
+        sessionId.value = sessionIdValue;
+        sessionId.httpOnly = true;
+        sessionId.maxAge = expirationDurationInSeconds;
+        sessionId.sameSite = appConfiguration.development ? "none" : "strict";
+        sessionId.secure = true;
+        sessionId.path = "/";
+        sessionId.secrets = appConfiguration.cookie.secrets;
+      };
+      session.setData = setData;
+
+      const rawRedisSessionData = sessionId
+        ? await redis.get(redisIdentifier)
+        : null;
+
+      if (rawRedisSessionData) {
+        Object.assign(data, JSON.parse(rawRedisSessionData));
+      }
+
+      setData({}); // refresh timeout for the redis entry
+
+      return { session };
+    },
+  );

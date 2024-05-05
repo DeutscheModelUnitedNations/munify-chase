@@ -1,4 +1,4 @@
-import { NationTranslation } from "./nations";
+import type { NationTranslation } from "./nations";
 import nsa from "./nsa.json";
 
 const nonStateActors: NationTranslation[] = nsa;

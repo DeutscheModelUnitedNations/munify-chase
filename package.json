@@ -13,12 +13,13 @@
   },
   "workspaces": ["chase/backend", "chase/frontend"],
   "devDependencies": {
-    "@biomejs/biome": "^1.5.3",
+    "@biomejs/biome": "^1.6.3",
     "bun-types": "latest",
     "concurrently": "^8.2.2"
   },
   "dependencies": {
     "next-runtime-env": "^3.2.0",
+    "biome": "^0.3.3",
     "world-countries": "^5.0.0"
   }
 }

@@ -1,4 +1,4 @@
-import React from "react";
+import type React from "react";
 import { useI18nContext } from "@/i18n/i18n-react";
 import Card from "@components/home/card";
 import { motion } from "framer-motion";

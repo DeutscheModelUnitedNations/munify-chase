@@ -1,33 +1,23 @@
 import { t, Elysia } from "elysia";
 import { db } from "../../../prisma/db";
-import { committeeMemberGuard } from "../../auth/guards/committeeMember";
-import { conferenceRoleGuard } from "../../auth/guards/conferenceRoles";
 import { openApiTag } from "../../util/openApiTags";
-import { SpeakersListCategory } from "../../../prisma/generated/schema";
+import { SpeakersListCategory } from "../../../prisma/generated/schema/SpeakersListCategory";
+import { permissionsPlugin } from "../../auth/permissions";
 
 export const speakersListGeneral = new Elysia({
   prefix: "/conference/:conferenceId/committee/:committeeId",
 })
-  .use(conferenceRoleGuard)
-  .use(committeeMemberGuard)
+  .use(permissionsPlugin)
   .get(
     "/speakersList",
-    async ({ params: { committeeId }, set }) => {
-      const agendaItem = await db.agendaItem.findFirst({
-        where: {
-          committeeId,
-          isActive: true,
-        },
-      });
-
-      if (!agendaItem) {
-        set.status = "Not Found";
-        throw new Error("No active agenda item found");
-      }
-
+    async ({ params: { committeeId }, permissions }) => {
       const speakersList = await db.speakersList.findMany({
         where: {
-          agendaItemId: agendaItem.id,
+          agendaItem: {
+            committeeId,
+            isActive: true,
+          },
+          AND: [permissions.allowDatabaseAccessTo("list").SpeakersList],
         },
         include: {
           speakers: {
@@ -56,7 +46,6 @@ export const speakersListGeneral = new Elysia({
       return speakersList;
     },
     {
-      hasConferenceRole: "any",
       detail: {
         description: "Get all speakers lists in this committee",
         tags: [openApiTag(import.meta.path)],
@@ -65,23 +54,15 @@ export const speakersListGeneral = new Elysia({
   )
   .get(
     "/speakersList/:type",
-    async ({ params: { committeeId, type }, set }) => {
-      const agendaItem = await db.agendaItem.findFirst({
-        where: {
-          committeeId,
-          isActive: true,
-        },
-      });
-
-      if (!agendaItem) {
-        set.status = "Not Found";
-        throw new Error("No active agenda item found");
-      }
-
+    async ({ params: { committeeId, type }, permissions }) => {
       return await db.speakersList.findFirst({
         where: {
-          agendaItemId: agendaItem.id,
+          agendaItem: {
+            committeeId,
+            isActive: true,
+          },
           type,
+          AND: [permissions.allowDatabaseAccessTo("read").SpeakersList],
         },
         include: {
           speakers: {

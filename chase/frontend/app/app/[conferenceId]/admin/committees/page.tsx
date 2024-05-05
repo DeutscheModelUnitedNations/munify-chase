@@ -10,42 +10,26 @@ import {
   CommitteeIdContext,
   ConferenceIdContext,
 } from "@/contexts/committee_data";
-import { useToast } from "@/contexts/toast";
-
-type CommitteesType = Awaited<
-  ReturnType<
-    BackendInstanceType["conference"]["conferenceId"]["committee"]["get"]
-  >
->["data"];
+import { useBackendCall } from "@/hooks/useBackendCall";
 
 export default function OnboardingCommitteePage() {
   const router = useRouter();
-  const { toastError } = useToast();
   const conferenceId = useContext(ConferenceIdContext);
   const { backend } = useBackend();
 
   const [saveLoading, setSaveLoading] = useState(false);
-  const [committees, setCommittees] = useState<CommitteesType | null>(null);
+  const [committees, triggerCommittees] = useBackendCall(
+    //TODO
+    // biome-ignore lint/style/noNonNullAssertion:
+    backend.conference({ conferenceId: conferenceId! }).committee.get,
+    true,
+  );
 
   const [update, setUpdate] = useState(true);
 
-  async function getCommittees() {
-    if (!conferenceId) return;
-    await backend.conference[conferenceId].committee
-      .get()
-      .then((res) => {
-        if (res.status > 400 || !res.data)
-          throw new Error("Failed to fetch committees");
-        setCommittees(res.data);
-      })
-      .catch((e) => {
-        toastError(e);
-      });
-  }
-
   useEffect(() => {
     if (update) {
-      getCommittees();
+      triggerCommittees();
 
       setUpdate(false);
     }
@@ -60,7 +44,16 @@ export default function OnboardingCommitteePage() {
     <>
       <Accordion activeIndex={0} className="w-full">
         {committees?.map((committee) => (
-          <AccordionTab header={HeaderTemplate(committee)} key={committee?.id}>
+          <AccordionTab
+            header={() => (
+              <div className="flex flex-wrap items-center gap-6">
+                <h2 className="font-bold text-lg">
+                  {committee.name} ({committee.abbreviation})
+                </h2>
+              </div>
+            )}
+            key={committee?.id}
+          >
             <CommitteeIdContext.Provider value={committee.id}>
               <AgendaItems />
             </CommitteeIdContext.Provider>
@@ -76,13 +69,3 @@ export default function OnboardingCommitteePage() {
     </>
   );
 }
-
-const HeaderTemplate = (committee: NonNullable<CommitteesType>[number]) => {
-  return (
-    <div className="flex flex-wrap items-center gap-6">
-      <h2 className="font-bold text-lg">
-        {committee.name} ({committee.abbreviation})
-      </h2>
-    </div>
-  );
-};

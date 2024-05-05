@@ -11,13 +11,15 @@ import {
   faUserXmark,
   faUserClock,
 } from "@fortawesome/pro-solid-svg-icons";
-import { IconProp } from "@fortawesome/fontawesome-svg-core";
-import { type BackendInstanceType } from "@/contexts/backend";
+import type { IconProp } from "@fortawesome/fontawesome-svg-core";
+import type { BackendInstanceType } from "@/contexts/backend";
 import { $Enums } from "@prisma/generated/client";
 
 export type DelegationDataType = Awaited<
   ReturnType<
-    BackendInstanceType["conference"]["conferenceId"]["committee"]["committeeId"]["delegations"]["get"]
+    ReturnType<
+      ReturnType<BackendInstanceType["conference"]>["committee"]
+    >["delegations"]["get"]
   >
 >["data"];
 
@@ -76,7 +78,7 @@ export default function AttendanceTable({
     <>
       <ConfigWrapper title={title} description={description}>
         {delegationData?.map((attendee) => (
-          <WidgetBoxTemplate>
+          <WidgetBoxTemplate key={attendee.id}>
             <Flag countryCode={attendee.nation.alpha3Code} />
             <div className="flex flex-col justify-center">
               <div className="text-sm font-bold text-gray-text dark:text-primary-800">

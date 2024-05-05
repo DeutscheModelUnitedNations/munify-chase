@@ -7,19 +7,14 @@ import {
   faPodium,
   faTrashAlt,
 } from "@fortawesome/pro-solid-svg-icons";
-import { useBackend, type BackendInstanceType } from "@/contexts/backend";
+import { useBackend } from "@/contexts/backend";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useToast } from "@/contexts/toast";
 import {
   CommitteeIdContext,
   ConferenceIdContext,
 } from "@/contexts/committee_data";
-
-type AgendaItemType = Awaited<
-  ReturnType<
-    BackendInstanceType["conference"]["conferenceId"]["committee"]["committeeId"]["agendaItem"]["get"]
-  >
->["data"];
+import { useBackendCall } from "@/hooks/useBackendCall";
 
 export default function agendaItem() {
   const { LL } = useI18nContext();
@@ -28,19 +23,27 @@ export default function agendaItem() {
   const committeeId = useContext(CommitteeIdContext);
   const { backend } = useBackend();
 
-  const [committeeAgendaItems, setCommitteeAgendaItems] =
-    useState<AgendaItemType | null>(null);
+  const [committeeAgendaItems, triggerItems] = useBackendCall(
+    backend
+      // biome-ignore lint/style/noNonNullAssertion:
+      .conference({ conferenceId: conferenceId! })
+      // biome-ignore lint/style/noNonNullAssertion:
+      .committee({ committeeId: committeeId! }).agendaItem.get,
+    true,
+  );
   const [inputValue, setInputValue] = useState<string>("");
   const [update, setUpdate] = useState<boolean>(true);
 
   async function getAgendaItems() {
     if (!conferenceId || !committeeId) return;
-    await backend.conference[conferenceId].committee[committeeId].agendaItem
-      .get()
+    await backend
+      .conference({ conferenceId })
+      .committee({ committeeId })
+      .agendaItem.get()
       .then((res) => {
         if (res.status > 400 || !res.data)
           throw new Error("Failed to fetch agenda items");
-        setCommitteeAgendaItems(res.data);
+        triggerItems();
       })
       .catch((error) => {
         toastError(error);
@@ -56,8 +59,10 @@ export default function agendaItem() {
 
   async function addAgendaItem() {
     if (!conferenceId || !committeeId) return;
-    await backend.conference[conferenceId].committee[committeeId].agendaItem
-      .post({
+    await backend
+      .conference({ conferenceId })
+      .committee({ committeeId })
+      .agendaItem.post({
         title: inputValue,
       })
       .then(() => {
@@ -71,9 +76,10 @@ export default function agendaItem() {
 
   async function deleteAgendaItem(agendaItemId: string) {
     if (!conferenceId || !committeeId) return;
-    await backend.conference[conferenceId].committee[committeeId].agendaItem[
-      agendaItemId
-    ]
+    await backend
+      .conference({ conferenceId })
+      .committee({ committeeId })
+      .agendaItem({ agendaItemId })
       .delete()
       .then(() => {
         setUpdate(true);

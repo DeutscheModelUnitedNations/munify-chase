@@ -1,12 +1,12 @@
-import React from "react";
+import type React from "react";
 import SpeakerBlock from "@/components/speakers_list/speaker_block";
 import SpeakerQueueList from "@/components/speakers_list/queue_list";
-import { type BackendInstanceType } from "@/contexts/backend";
+import type { BackendInstanceType } from "@/contexts/backend";
 import { SpeakersListDataProvider } from "@/contexts/speakers_list_data";
-import { $Enums } from "@prisma/generated/client";
+import type { $Enums } from "@prisma/generated/client";
 
 export type SpeakersListData = Awaited<
-  ReturnType<BackendInstanceType["speakersList"]["speakersListId"]["get"]>
+  ReturnType<ReturnType<BackendInstanceType["speakersList"]>["get"]>
 >["data"];
 
 /**

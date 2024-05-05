@@ -12,9 +12,13 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-generator typebox {
-  provider = "prisma-typebox-generator"
-  output   = "./generated/schema"
+generator prismabox {
+  provider                    = "prismabox"
+  output                      = "./generated/schema"
+  typeboxImportVariableName   = "t"
+  typeboxImportDependencyName = "elysia"
+  dataModel                   = true
+  plainAdditionalFields       = ["__typename: String"]
 }
 
 // model Authenticator {
@@ -30,12 +34,13 @@ generator typebox {
 //   transports           String[] @db.VarChar(255)
 // }
 
-// TODO a max amount would make sense
+// TODO a max amount for passwords would make sense
 
 model Password {
   id           String @id @default(uuid())
   user         User   @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
   userId       String
+  /// @prismabox.hide
   passwordHash String
 }
 
@@ -43,6 +48,7 @@ model Password {
 /// e.g. confirming an email, resetting a password
 model Token {
   id        String   @id @default(uuid())
+  /// @prismabox.hide
   tokenHash String
   expiresAt DateTime
 
@@ -235,6 +241,7 @@ model SpeakerOnList {
   speakersListId    String
   committeeMember   CommitteeMember @relation(fields: [committeeMemberId], references: [id])
   committeeMemberId String
+  //TODO replace this with a signle linked list for better concurrency/less necessary updates?
   position          Int
 
   @@unique([speakersListId, position])

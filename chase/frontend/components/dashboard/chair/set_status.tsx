@@ -21,7 +21,7 @@ import {
   CommitteeIdContext,
   ConferenceIdContext,
 } from "@/contexts/committee_data";
-import { $Enums } from "@prisma/generated/client";
+import type { $Enums } from "@prisma/generated/client";
 
 export default function SetStatusWidget() {
   const { LL, locale } = useI18nContext();
@@ -55,10 +55,16 @@ export default function SetStatusWidget() {
 
   async function updateStatus() {
     if (!conferenceId || !committeeId) return;
-    await backend.conference[conferenceId].committee[committeeId].status
-      .post({
+    await backend
+      .conference({ conferenceId })
+      .committee({ committeeId })
+      .patch({
+        //TODO
+        // @ts-ignore
         status: selectedStatus ?? undefined,
+        // @ts-ignore
         statusUntil: selectedStatusUntil?.toISOString() ?? undefined,
+        // @ts-ignore
         statusHeadline: selectedStatusCustomText ?? undefined,
       })
       .then((res) => {

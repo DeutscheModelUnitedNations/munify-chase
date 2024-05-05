@@ -12,7 +12,7 @@ import {
   ConferenceIdContext,
 } from "@/contexts/committee_data";
 import AttendanceTable, {
-  DelegationDataType,
+  type DelegationDataType,
 } from "@/components/attendance/attendance_table";
 import Button from "@/components/button";
 import {
@@ -36,8 +36,10 @@ export default function ChairAttendees() {
 
   async function getDelegationData() {
     if (!conferenceId || !committeeId) return;
-    await backend.conference[conferenceId].committee[committeeId].delegations
-      .get()
+    await backend
+      .conference({ conferenceId })
+      .committee({ committeeId })
+      .delegations.get()
       .then((response) => {
         setDelegationData(
           response.data
@@ -79,9 +81,10 @@ export default function ChairAttendees() {
     presence: $Enums.Presence,
   ) {
     if (!conferenceId || !committeeId) return;
-    await backend.conference[conferenceId].delegation[delegationId].presence[
-      memberId
-    ]
+    await backend
+      .conference({ conferenceId })
+      .delegation({ delegationId })
+      .presence({ memberId })
       .post({
         presence,
       })
@@ -108,10 +111,10 @@ export default function ChairAttendees() {
               label={LL.chairs.attendance.SET_ALL_ABSENT()}
               onClick={() => {
                 if (!conferenceId || !committeeId) return;
-                backend.conference[conferenceId].committee[
-                  committeeId
-                ].presence.allAbsent
-                  .post()
+                backend
+                  .conference({ conferenceId })
+                  .committee({ committeeId })
+                  .presence.allAbsent.post()
                   .then((res) => {
                     if (res.status !== 200)
                       throw new Error("Failed to set all absent");
@@ -127,10 +130,10 @@ export default function ChairAttendees() {
               label={LL.chairs.attendance.SET_ALL_PRESENT()}
               onClick={() => {
                 if (!conferenceId || !committeeId) return;
-                backend.conference[conferenceId].committee[
-                  committeeId
-                ].presence.allPresent
-                  .post()
+                backend
+                  .conference({ conferenceId })
+                  .committee({ committeeId })
+                  .presence.allPresent.post()
                   .then((res) => {
                     if (res.status !== 200)
                       throw new Error("Failed to set all absent");

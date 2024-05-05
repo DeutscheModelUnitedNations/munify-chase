@@ -23,4 +23,5 @@ fontawesome-pro-6.4.2/
 .env
 certificates
 .smtp4dev
-.memorysnaphots
+target
+heapSnapshots

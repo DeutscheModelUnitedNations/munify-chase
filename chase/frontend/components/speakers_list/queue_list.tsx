@@ -14,7 +14,7 @@ import Button from "@components/button";
 import { useBackend } from "@/contexts/backend";
 import {
   SpeakersListDataContext,
-  SpeakersListDataType,
+  type SpeakersListDataType,
 } from "@/contexts/speakers_list_data";
 
 /**
@@ -125,9 +125,10 @@ function CountryCard({
                     faIcon={faChevronDoubleUp}
                     onClick={async () => {
                       if (!listId) return;
-                      await backend.speakersList[listId].moveSpeaker[
-                        speakerData.id
-                      ].toTheTop.post();
+                      await backend
+                        .speakersList({ speakersListId: listId })
+                        .moveSpeaker({ speakerId: speakerData.id })
+                        .toTheTop.post();
                     }}
                     text
                     size="small"
@@ -137,9 +138,10 @@ function CountryCard({
                   faIcon={faChevronUp}
                   onClick={async () => {
                     if (!listId) return;
-                    await backend.speakersList[listId].moveSpeaker[
-                      speakerData.id
-                    ].up.post();
+                    await backend
+                      .speakersList({ speakersListId: listId })
+                      .moveSpeaker({ speakerId: speakerData.id })
+                      .up.post();
                   }}
                   text
                   size="small"
@@ -148,9 +150,10 @@ function CountryCard({
                   faIcon={faChevronDown}
                   onClick={async () => {
                     if (!listId) return;
-                    await backend.speakersList[listId].moveSpeaker[
-                      speakerData.id
-                    ].down.post();
+                    await backend
+                      .speakersList({ speakersListId: listId })
+                      .moveSpeaker({ speakerId: speakerData.id })
+                      .down.post();
                   }}
                   text
                   size="small"
@@ -163,9 +166,10 @@ function CountryCard({
               onClick={async () => {
                 if (!listId) return;
                 setLoadingDelete(true);
-                await backend.speakersList[listId].removeSpeaker[
-                  speakerData.id
-                ].delete();
+                await backend
+                  .speakersList({ speakersListId: listId })
+                  .removeSpeaker({ speakerId: speakerData.id })
+                  .delete();
               }}
               text
               size="small"

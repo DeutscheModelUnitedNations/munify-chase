@@ -1,26 +1,51 @@
 import { Elysia } from "elysia";
 import { cors } from "@elysiajs/cors";
 import { appConfiguration } from "./util/config";
-import { errorLogging } from "./util/errorLogger";
-import { conference } from "./routes/conference";
-import { conferenceMember } from "./routes/conferenceMember";
-import { committee } from "./routes/committee";
-import { baseData } from "./routes/baseData";
-import { auth } from "./routes/auth/auth";
-import { agendaItem } from "./routes/agendaItem";
-import { delegation } from "./routes/delegation";
-import { user } from "./routes/user";
-import { speakersListGeneral } from "./routes/speakersList/general";
-import { speakersListModification } from "./routes/speakersList/modification";
-import { speakersListSpeakers } from "./routes/speakersList/speakers";
-import { messages } from "./routes/messages";
-import { importexport } from "./routes/importexport/importexport";
-import { time } from "./routes/time";
+import { logger } from "./util/logger";
+import packagejson from "../package.json";
+import swagger from "@elysiajs/swagger";
+import { helmet } from "elysia-helmet";
+import { api } from "./api";
 
-const m = new Elysia()
-  .use(errorLogging)
+//TODO switch to new prismabox schema types
+//TODO remove use of set where applicable
+
+setInterval(
+  async () => {
+    //TODO save these to a real volume mount (docker)
+    const snapshot = Bun.generateHeapSnapshot();
+    await Bun.write(
+      `heapSnapshots/${Date.now()}.json`,
+      JSON.stringify(snapshot, null, 2),
+    );
+    console.info("Heap snapshot taken");
+  },
+  1000 * 60 * 10,
+); // every 10 minutes
+
+const app = new Elysia({
+  normalize: true,
+});
+
+if (appConfiguration.production) {
+  app.use(helmet());
+}
+
+app
   .use(
-    // @ts-ignore
+    swagger({
+      path: `/${appConfiguration.documentationPath}`,
+      documentation: {
+        info: {
+          title: `${appConfiguration.appName} documentation`,
+          description: `${appConfiguration.appName} documentation`,
+          version: packagejson.version,
+        },
+      },
+    }),
+  )
+  .use(logger)
+  .use(
     cors({
       origin: appConfiguration.CORSOrigins,
       allowedHeaders: ["content-type"],
@@ -37,38 +62,10 @@ const m = new Elysia()
       ],
     }),
   )
-  .use(conference)
-  .use(conferenceMember)
-  .use(committee)
-  .use(delegation)
-  .use(agendaItem)
-  .use(speakersListGeneral)
-  .use(speakersListModification)
-  .use(speakersListSpeakers)
-  .use(messages)
-  .use(user)
-  .use(auth)
-  .use(time)
-  .use(importexport)
-  .use(baseData);
-
-// we make the api docs public
-// biome-ignore lint/suspicious/noExplicitAny: we explicitly dont want type checking here
-(new Elysia() as any) // just disable the type check for this object, since the middleware is causing issues
-  // .use(
-  //   swagger({
-  //     path: `/${appConfiguration.documentationPath}`,
-  //     documentation: {
-  //       info: {
-  //         title: `${appConfiguration.appName} documentation`,
-  //         description: `${appConfiguration.appName} documentation`,
-  //         version: packagejson.version,
-  //       },
-  //     },
-  //   }),
-  // )
-  .use(m)
+  .use(api)
   .listen(process.env.PORT ?? "3001");
+
+console.info("Api running on port", appConfiguration.port);
 
 setTimeout(() => {
   console.info(
@@ -93,5 +90,3 @@ if (appConfiguration.development) {
     );
   }, 3000);
 }
-
-export type App = typeof m;

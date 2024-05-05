@@ -1,5 +1,5 @@
 import { Skeleton } from "primereact/skeleton";
-import React from "react";
+import type React from "react";
 
 interface WidgetTemplateProps {
   children: React.ReactNode;

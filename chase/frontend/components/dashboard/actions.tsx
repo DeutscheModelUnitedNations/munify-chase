@@ -4,7 +4,7 @@ import { Button } from "primereact/button";
 import { useI18nContext } from "@/i18n/i18n-react";
 import { faGavel, faPaperPlane } from "@fortawesome/pro-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { IconProp } from "@fortawesome/fontawesome-svg-core";
+import type { IconProp } from "@fortawesome/fontawesome-svg-core";
 import {
   ActionsOverlayChairMessage,
   ActionsOverlayResearchService,

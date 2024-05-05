@@ -7,19 +7,15 @@ import {
   faPaperPlane,
 } from "@fortawesome/pro-solid-svg-icons";
 import { useI18nContext } from "@/i18n/i18n-react";
-import { IconProp } from "@fortawesome/fontawesome-svg-core";
-import { useBackend, type BackendInstanceType } from "@/contexts/backend";
+import type { IconProp } from "@fortawesome/fontawesome-svg-core";
+import { useBackend } from "@/contexts/backend";
 import { useToast } from "@/contexts/toast";
 import {
+  CommitteeDataContext,
   CommitteeIdContext,
   ConferenceIdContext,
 } from "@/contexts/committee_data";
-
-type Committee = Awaited<
-  ReturnType<
-    BackendInstanceType["conference"]["conferenceId"]["committee"]["committeeId"]["get"]
-  >
->["data"];
+import { pollBackendCall } from "@/hooks/pollBackendCall";
 
 export default function ChairWhiteboard() {
   const { LL } = useI18nContext();
@@ -35,30 +31,14 @@ export default function ChairWhiteboard() {
     useState<boolean>(false);
   const [whiteboardButtonLoading, setWhiteboardButtonLoading] =
     useState<boolean>(false);
-  const [committeeData, setCommitteeData] = useState<Committee | null>(null);
-
-  async function getCommitteeData() {
-    if (!conferenceId || !committeeId) return;
-    await backend.conference[conferenceId].committee[committeeId]
-      .get()
-      .then((response) => {
-        setCommitteeData(response.data);
-        if (!whiteboardContentChanged || whiteboardContent === null) {
-          setWhiteboardContent(response.data?.whiteboardContent ?? null);
-        }
-      })
-      .catch((error) => {
-        toastError(error);
-      });
-  }
+  const committeeData = useContext(CommitteeDataContext);
 
   useEffect(() => {
-    getCommitteeData();
-    const intervalAPICall = setInterval(() => {
-      getCommitteeData();
-    }, 5000);
-    return () => clearInterval(intervalAPICall);
-  }, []);
+    if (!whiteboardContentChanged || whiteboardContent === null) {
+      setWhiteboardContent(committeeData?.whiteboardContent ?? null);
+    }
+    setWhiteboardContent(committeeData?.whiteboardContent ?? null);
+  }, [whiteboardContent]);
 
   useEffect(() => {
     if (whiteboardContent !== committeeData?.whiteboardContent) {
@@ -93,14 +73,15 @@ export default function ChairWhiteboard() {
       return;
     }
     if (!conferenceId || !committeeId) return;
-    await backend.conference[conferenceId].committee[committeeId].whiteboard
-      .post({
+    await backend
+      .conference({ conferenceId })
+      .committee({ committeeId })
+      .patch({
         whiteboardContent: whiteboardContent,
       })
       .then((res) => {
         if (res.status >= 400)
           throw new Error("Failed to push whiteboard content");
-        getCommitteeData();
         setWhiteboardContentChanged(false);
         setWhiteboardButtonLoading(false);
         showToast({

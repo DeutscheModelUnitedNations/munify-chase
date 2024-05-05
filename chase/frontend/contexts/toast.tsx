@@ -1,6 +1,7 @@
 "use client";
-import React, { createContext, useContext, useRef, useState } from "react";
-import { Toast, ToastMessage } from "primereact/toast";
+import type React from "react";
+import { createContext, useContext, useRef, useState } from "react";
+import { Toast, type ToastMessage } from "primereact/toast";
 import { useI18nContext } from "@/i18n/i18n-react";
 import { usePathname } from "next/navigation";
 

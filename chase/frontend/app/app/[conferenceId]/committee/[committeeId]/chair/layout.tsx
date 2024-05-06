@@ -1,5 +1,5 @@
 "use client";
-import { useContext } from "react";
+import { useContext, useEffect } from "react";
 import Navbar from "@/components/navbar/navbar";
 import NavButton from "@/components/navbar/button";
 import {
@@ -7,15 +7,13 @@ import {
   faPodium,
   faUsersLine,
   faSquareSliders,
-  faNewspaper,
-  faCommentExclamation,
   faInbox,
-  faChartNetwork,
   faRocketLaunch,
 } from "@fortawesome/pro-solid-svg-icons";
 import { useI18nContext } from "@/i18n/i18n-react";
 import type { IconProp } from "@fortawesome/fontawesome-svg-core";
 import { MessageCountContext, MessageCountProvider } from "@/contexts/messages";
+import ExternalLinks from "@/components/navbar/external_links";
 
 export default function Chair_Pages_Layout({
   children,
@@ -81,18 +79,7 @@ function ChairNavbar() {
           title={LL.navbar.RESOLUTIONS()}
         /> */}
       <div className="flex-1" />
-      <NavButton
-        icon={faNewspaper as IconProp}
-        newWindow
-        link="https://presse.mun-sh.de/" // TODO make this link configurable for the chair (Link to external News Page)
-        title={LL.navbar.NEWS()}
-      />
-      <NavButton
-        icon={faCommentExclamation as IconProp}
-        newWindow
-        link="https://chase-fb.dmun.de"
-        title={LL.navbar.BUG_REPORT()}
-      />
+      <ExternalLinks />
     </Navbar>
   );
 }

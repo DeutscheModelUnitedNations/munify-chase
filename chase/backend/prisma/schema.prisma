@@ -97,13 +97,15 @@ model ConferenceCreateToken {
 
 /// A conference in the system
 model Conference {
-  id          String             @id @default(uuid())
-  name        String             @unique
-  committees  Committee[]
-  start       DateTime?
-  end         DateTime?
-  delegations Delegation[]
-  members     ConferenceMember[]
+  id              String             @id @default(uuid())
+  name            String             @unique
+  committees      Committee[]
+  start           DateTime?
+  end             DateTime?
+  pressWebsite    String?
+  feedbackWebsite String?
+  delegations     Delegation[]
+  members         ConferenceMember[]
 }
 
 /// The role of a user in a conference

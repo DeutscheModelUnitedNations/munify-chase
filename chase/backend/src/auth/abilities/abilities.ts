@@ -76,11 +76,11 @@ export const defineAbilitiesForSession = (session: Session) => {
     builder.can("manage" as any, "all" as any);
   }
 
-    //TODO
-    if(session.data?.loggedIn && session.data.user) {
-      // biome-ignore lint/suspicious/noExplicitAny: https://casl.js.org/v6/en/guide/intro#basics
-      builder.can("manage" as any, "all" as any);
-    }
+  //TODO
+  if (session.data?.loggedIn && session.data.user) {
+    // biome-ignore lint/suspicious/noExplicitAny: https://casl.js.org/v6/en/guide/intro#basics
+    builder.can("manage" as any, "all" as any);
+  }
 
   defineAbilitiesForConference(session, builder);
   defineAbilitiesForCommittee(session, builder);

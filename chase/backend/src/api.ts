@@ -11,6 +11,7 @@ import { speakersListGeneral } from "./routes/speakersList/general";
 import { speakersListModification } from "./routes/speakersList/modification";
 import { speakersListSpeakers } from "./routes/speakersList/speakers";
 import { time } from "./routes/time";
+import { reportError } from "./routes/reportError";
 import { user } from "./routes/user";
 import { appConfiguration } from "./util/config";
 import packagejson from "../package.json";
@@ -29,6 +30,7 @@ export const api = new Elysia()
   .use(auth)
   .use(time)
   .use(baseData)
+  .use(reportError)
   .get("/", () => ({
     production: appConfiguration.production,
     name: appConfiguration.appName,

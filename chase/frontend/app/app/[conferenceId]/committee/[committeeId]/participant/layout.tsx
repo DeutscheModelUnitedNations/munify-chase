@@ -19,6 +19,9 @@ import { MyDelegationProvider, useUserIdent } from "@/contexts/user_ident";
 import { useContext, useEffect, useState } from "react";
 import { ConferenceIdContext } from "@/contexts/committee_data";
 import { $Enums } from "@prisma/generated/client";
+import { useBackend } from "@/contexts/backend";
+import { useBackendCall } from "@/hooks/useBackendCall";
+import ExternalLinks from "@/components/navbar/external_links";
 
 export default function Participant_Pages_Layout({
   children,
@@ -92,18 +95,7 @@ export default function Participant_Pages_Layout({
           title={LL.navbar.RESOLUTIONS()}
         /> */}
           <div className="flex-1" />
-          <NavButton
-            icon={faNewspaper as IconProp}
-            newWindow
-            link="https://presse.mun-sh.de/" // TODO make this link configurable for the chair (Link to external News Page)
-            title={LL.navbar.NEWS()}
-          />
-          <NavButton
-            icon={faCommentExclamation as IconProp}
-            newWindow
-            link="https://chase-fb.dmun.de"
-            title={LL.navbar.BUG_REPORT()}
-          />
+          <ExternalLinks />
         </Navbar>
         {children}
       </div>

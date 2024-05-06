@@ -211,6 +211,14 @@ const en = {
         },
       },
 
+      configs: {
+        pressWebsiteTitle: "Press Website",
+        pressWebsiteDescription: "Here you can configure the URL of the press website.",
+        feedbackWebsiteTitle: "Feedback Website",
+        feedbackWebsiteDescription: "Here you can configure the URL of the feedback website.",
+        successToast: "Configuration saved",
+      },
+
       steps: {
         STEP_1: "Structure",
         STEP_2: "Team Pool",

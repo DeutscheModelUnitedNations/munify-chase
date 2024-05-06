@@ -608,6 +608,28 @@ type RootTranslation = {
 					ADD_MORE_BUTTON: string
 				}
 			}
+			configs: {
+				/**
+				 * P​r​e​s​s​ ​W​e​b​s​i​t​e
+				 */
+				pressWebsiteTitle: string
+				/**
+				 * H​e​r​e​ ​y​o​u​ ​c​a​n​ ​c​o​n​f​i​g​u​r​e​ ​t​h​e​ ​U​R​L​ ​o​f​ ​t​h​e​ ​p​r​e​s​s​ ​w​e​b​s​i​t​e​.
+				 */
+				pressWebsiteDescription: string
+				/**
+				 * F​e​e​d​b​a​c​k​ ​W​e​b​s​i​t​e
+				 */
+				feedbackWebsiteTitle: string
+				/**
+				 * H​e​r​e​ ​y​o​u​ ​c​a​n​ ​c​o​n​f​i​g​u​r​e​ ​t​h​e​ ​U​R​L​ ​o​f​ ​t​h​e​ ​f​e​e​d​b​a​c​k​ ​w​e​b​s​i​t​e​.
+				 */
+				feedbackWebsiteDescription: string
+				/**
+				 * C​o​n​f​i​g​u​r​a​t​i​o​n​ ​s​a​v​e​d
+				 */
+				successToast: string
+			}
 			steps: {
 				/**
 				 * S​t​r​u​c​t​u​r​e
@@ -2442,6 +2464,28 @@ export type TranslationFunctions = {
 					 */
 					ADD_MORE_BUTTON: () => LocalizedString
 				}
+			}
+			configs: {
+				/**
+				 * Press Website
+				 */
+				pressWebsiteTitle: () => LocalizedString
+				/**
+				 * Here you can configure the URL of the press website.
+				 */
+				pressWebsiteDescription: () => LocalizedString
+				/**
+				 * Feedback Website
+				 */
+				feedbackWebsiteTitle: () => LocalizedString
+				/**
+				 * Here you can configure the URL of the feedback website.
+				 */
+				feedbackWebsiteDescription: () => LocalizedString
+				/**
+				 * Configuration saved
+				 */
+				successToast: () => LocalizedString
 			}
 			steps: {
 				/**

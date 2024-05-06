@@ -20,5 +20,5 @@ export const baseData = new Elysia({ prefix: "/baseData" })
         description: "Get all nations in the system",
         tags: [openApiTag(import.meta.path)],
       },
-    }
+    },
   );

@@ -2,10 +2,7 @@
 import Navbar from "@/components/navbar/navbar";
 import NavButton from "@/components/navbar/button";
 import {
-  faNewspaper,
-  faCommentExclamation,
   faInbox,
-  faChartNetwork,
   faGears,
   faRocketLaunch,
 } from "@fortawesome/pro-solid-svg-icons";
@@ -16,6 +13,7 @@ import { useContext, useEffect, useState } from "react";
 import { ConferenceIdContext } from "@/contexts/committee_data";
 import { $Enums } from "@prisma/generated/client";
 import Lockout from "@/components/lockout";
+import ExternalLinks from "@/components/navbar/external_links";
 
 export default function ChairHubLayout({
   children,
@@ -83,18 +81,7 @@ export default function ChairHubLayout({
             />
           )}
           <div className="flex-1" />
-          <NavButton
-            icon={faNewspaper as IconProp}
-            newWindow
-            link="https://presse.mun-sh.de/" // TODO make this link configurable for the chair (Link to external News Page)
-            title={LL.navbar.NEWS()}
-          />
-          <NavButton
-            icon={faCommentExclamation as IconProp}
-            newWindow
-            link="https://chase-fb.dmun.de"
-            title={LL.navbar.BUG_REPORT()}
-          />
+          <ExternalLinks />
         </Navbar>
         {children}
       </div>

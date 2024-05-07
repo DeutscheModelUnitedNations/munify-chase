@@ -24,7 +24,7 @@ export default function SpeakerBlock() {
   >([]);
 
   function getAlpha3Code(
-    listElement: NonNullable<typeof speakersList>[number],
+    listElement?: NonNullable<typeof speakersList>[number],
   ) {
     if (listElement?.committeeMember?.delegation?.nation?.alpha3Code) {
       return listElement.committeeMember.delegation.nation.alpha3Code;
@@ -86,7 +86,7 @@ export default function SpeakerBlock() {
     compressedList && (
       <AnimatePresence mode="wait">
         <motion.div
-          key={getAlpha3Code(speakersList[0])}
+          key={getAlpha3Code(speakersList?.[0])}
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}

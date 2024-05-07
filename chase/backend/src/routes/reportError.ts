@@ -12,7 +12,9 @@ export const reportError = new Elysia()
       permissions.mustBeLoggedIn();
       console.error(`
 ==============
-Incoming error report by ${session.data?.user?.name} (${session.data?.user?.email}) :
+Incoming error report by ${session.data?.user?.name} (${
+        session.data?.user?.email
+      }) :
     message: ${body.message}
     source: ${body.source}
     lineno: ${body.lineno}

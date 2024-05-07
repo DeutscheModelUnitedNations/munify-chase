@@ -109,13 +109,13 @@ export default function CommitteePresentationMode({
           </div>
           {category === "FORMAL" ? (
             <div className="flex-1 flex flex-col xl:contents gap-4">
-              <div className="flex-1 flex justify-center h-[calc(100vh-2rem)]">
+              <div className="flex-1 flex justify-center h-1/2 medium:h-[calc(100vh-2rem)]">
                 <SpeakersListBlock
                   listTitle={LL.participants.speakersList.SPEAKERS_LIST()}
                   typeOfList="SPEAKERS_LIST"
                 />
               </div>
-              <div className="flex-1 flex justify-center h-[calc(100vh-2rem)]">
+              <div className="flex-1 flex justify-center h-1/2 medium:h-[calc(100vh-2rem)]">
                 <SpeakersListBlock
                   listTitle={LL.participants.speakersList.COMMENT_LIST()}
                   typeOfList="COMMENT_LIST"

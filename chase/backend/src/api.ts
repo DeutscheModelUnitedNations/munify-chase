@@ -6,6 +6,8 @@ import { sessionPlugin } from "./auth/session";
 import { permissionsPlugin } from "./auth/permissions";
 import { generateAllObjects } from "../prisma/generated/graphql/pothosCrud/autocrud";
 
+//TODO robots.txt
+
 generateAllObjects();
 // generateAllQueries();
 // generateAllMutations()

@@ -428,7 +428,7 @@ const de = {
       REMOVE_FROM_LIST_BUTTON: "Zurückziehen",
       LIST_CLOSED_BUTTON: "Liste Geschlossen",
       LIST_CLOSED_MESSAGE: "Liste Geschlossen",
-      NO_SPEAKERS_MESSAGE: "Keine Redner*innen auf der Liste",
+      NO_SPEAKERS_MESSAGE: "Liste ist Leer",
       NO_ACTIVE_AGENDA_ITEM: "Kein aktiver Tagesordnungspunkt",
       toast: {
         ADDED_SUCCESS_SUMMARY: "Redebeitrag hinzugefügt",

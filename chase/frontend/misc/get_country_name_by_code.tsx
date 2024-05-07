@@ -65,7 +65,7 @@ export default function getCountryNameByCode(
   const res = combinedTranslations.find(
     (item) => item.alpha3 === countryCode?.toLowerCase(),
   );
-  if (!res) return "xxx"; // Country not found
+  if (!res) return "–"; // Country not found
 
   return res[languageCode as keyof typeof res] as string;
 }

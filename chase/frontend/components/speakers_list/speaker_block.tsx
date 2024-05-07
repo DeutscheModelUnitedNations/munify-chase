@@ -41,8 +41,10 @@ export default function SpeakerBlock() {
     if (
       !speakersListData?.speakers[0]?.committeeMember?.delegation?.nation
         .alpha3Code
-    )
+    ) {
+      setCountryCode("");
       return;
+    }
     setCountryCode(
       speakersListData.speakers[0].committeeMember.delegation.nation.alpha3Code,
     );
@@ -85,57 +87,65 @@ export default function SpeakerBlock() {
     return `${minutes}:${seconds.toString().padStart(2, "0")}`;
   };
 
+  const listHasActiveSpeaker: boolean =
+    (speakersListData?.speakers && speakersListData?.speakers.length !== 0) ??
+    false;
+
   return (
     <>
-      {speakersListData?.speakers && speakersListData?.speakers.length !== 0 ? (
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={countryCode}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-          >
-            <div className="flex flex-row items-center justify-start">
-              <LargeFlag countryCode={countryCode} />
-              <div className="flex-1 flex flex-col ml-4">
-                <div className="font-bold text-xl">
-                  {getCountryNameByCode(countryCode, locale)}
-                </div>
-                <div className="text-lg text-primary-300 dark:text-primary-600 flex items-center gap-3">
-                  {timerState === "active" && <HourglasAnimation />}
-                  {timerState === "paused" && (
-                    <FontAwesomeIcon icon={faHourglassClock as IconProp} />
+      <AnimatePresence mode="wait">
+        <motion.div
+          key={countryCode}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+        >
+          <div className="flex flex-row items-center justify-start">
+            <LargeFlag countryCode={countryCode ?? "xxx"} />
+            <div className="flex-1 flex flex-col ml-4">
+              <div className="font-bold text-xl truncate">
+                {listHasActiveSpeaker
+                  ? getCountryNameByCode(countryCode, locale)
+                  : LL.participants.speakersList.NO_SPEAKERS_MESSAGE()}
+              </div>
+              <div className="text-lg text-primary-300 dark:text-primary-600 flex items-center gap-3">
+                {timerState === "active" && <HourglasAnimation />}
+                {timerState === "paused" && (
+                  <FontAwesomeIcon icon={faHourglassClock as IconProp} />
+                )}
+                {timerState === "overtime" && (
+                  <FontAwesomeIcon
+                    icon={faBell as IconProp}
+                    className="text-red-700 fa-shake"
+                  />
+                )}
+                <div className="text-xl">
+                  {listHasActiveSpeaker ? (
+                    timeLeft
+                  ) : (
+                    <SpeakingTime time={speakersListData?.speakingTime} />
                   )}
-                  {timerState === "overtime" && (
-                    <FontAwesomeIcon
-                      icon={faBell as IconProp}
-                      className="text-red-700 fa-shake"
-                    />
-                  )}
-                  <div className="text-xl">
-                    {timeLeft}
-                    <span className="ml-2 text-xs text-primary-300 dark:text-primary-600">
-                      {"/ "}
-                      {Math.floor(speakersListData?.speakingTime / 60)}
-                      {":"}
-                      {speakersListData?.speakingTime % 60 < 10
-                        ? `0${speakersListData?.speakingTime % 60}`
-                        : speakersListData?.speakingTime % 60}
-                    </span>
-                  </div>
+                  <span className="ml-2 text-xs text-primary-300 dark:text-primary-600">
+                    / <SpeakingTime time={speakersListData?.speakingTime} />
+                  </span>
                 </div>
               </div>
             </div>
-          </motion.div>
-        </AnimatePresence>
-      ) : (
-        <div className="flex flex-col gap-2 items-start justify-center mt-3">
-          <NoDataPlaceholder
-            title={LL.participants.speakersList.NO_SPEAKERS_MESSAGE()}
-          />
-        </div>
-      )}
+          </div>
+        </motion.div>
+      </AnimatePresence>
     </>
+  );
+}
+
+function SpeakingTime({
+  time,
+}: {
+  time?: number;
+}) {
+  return (
+    time &&
+    `${Math.floor(time / 60)}:${time % 60 < 10 ? `0${time % 60}` : time % 60}`
   );
 }
 

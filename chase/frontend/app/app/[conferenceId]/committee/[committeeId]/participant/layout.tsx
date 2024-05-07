@@ -2,26 +2,15 @@
 
 import Navbar from "@/components/navbar/navbar";
 import NavButton from "@/components/navbar/button";
-import {
-  faPodium,
-  faNewspaper,
-  faCommentExclamation,
-  faEarthEurope,
-  faEarthOceania,
-  faEarthAsia,
-  faEarthAfrica,
-  faEarthAmericas,
-  faChartNetwork,
-} from "@fortawesome/pro-solid-svg-icons";
+import { faPodium, faChartNetwork } from "@fortawesome/pro-solid-svg-icons";
 import { useI18nContext } from "@/i18n/i18n-react";
 import type { IconProp } from "@fortawesome/fontawesome-svg-core";
 import { MyDelegationProvider, useUserIdent } from "@/contexts/user_ident";
-import { useContext, useEffect, useState } from "react";
+import { useContext } from "react";
 import { ConferenceIdContext } from "@/contexts/committee_data";
 import { $Enums } from "@prisma/generated/client";
-import { useBackend } from "@/contexts/backend";
-import { useBackendCall } from "@/hooks/useBackendCall";
 import ExternalLinks from "@/components/navbar/external_links";
+import { useFaGlobe } from "@/hooks/useFaGlobe";
 
 export default function Participant_Pages_Layout({
   children,
@@ -32,21 +21,7 @@ export default function Participant_Pages_Layout({
   const conferenceId = useContext(ConferenceIdContext);
   const { conferenceMembership } = useUserIdent();
 
-  const [homeIcon, setHomeIcon] = useState<IconProp>(faEarthEurope);
-
-  useEffect(() => {
-    // random out of this list
-    const icons = [
-      faEarthOceania,
-      faEarthAsia,
-      faEarthAfrica,
-      faEarthAmericas,
-      faEarthEurope,
-    ];
-
-    const randomIcon = icons[Math.floor(Math.random() * icons.length)];
-    setHomeIcon(randomIcon);
-  }, []);
+  const homeIcon = useFaGlobe();
 
   return (
     <MyDelegationProvider>

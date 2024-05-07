@@ -4,6 +4,15 @@ import getFlagPathByCode from "@/misc/get_flag_path_by_code";
 import getCountryNameByCode from "@/misc/get_country_name_by_code";
 import { useI18nContext } from "@/i18n/i18n-react";
 import { Skeleton } from "primereact/skeleton";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import {
+  faFlag,
+  faGlobe,
+  faGlobeAfrica,
+  faGlobeSnow,
+} from "@fortawesome/pro-solid-svg-icons";
+import NoDataPlaceholder from "./no_data_placeholder";
+import { useFaGlobe } from "@/hooks/useFaGlobe";
 
 /**
  * The following Components are all different sizes of flags.
@@ -57,7 +66,7 @@ export function SmallFlag({
             </div>
           </>
         ) : (
-          <Skeleton width="2rem" height="1.5rem" />
+          <FlagPlaceholder widthRem={2} />
         )}
       </div>
     </div>
@@ -101,7 +110,7 @@ export function NormalFlag({
           </div>
         </>
       ) : (
-        <Skeleton width="3rem" height="2.25rem" />
+        <FlagPlaceholder widthRem={3} />
       )}
     </div>
   );
@@ -128,8 +137,31 @@ export function LargeFlag({
           />
         </div>
       ) : (
-        <Skeleton width="6.4rem" height="4.8rem" />
+        <FlagPlaceholder widthRem={6.4} />
       )}
     </div>
+  );
+}
+
+export function FlagPlaceholder({
+  widthRem,
+}: {
+  widthRem: number;
+}) {
+  const globeIcon = useFaGlobe();
+
+  return (
+    <Skeleton
+      width={`${widthRem.toString()}rem`}
+      height={`${(widthRem * 0.75).toString()}rem`}
+      className="!bg-primary-800 flex justify-center items-center"
+      animation="none"
+    >
+      <FontAwesomeIcon
+        icon={globeIcon}
+        className="text-primary-700"
+        style={{ fontSize: `${widthRem / 3}rem` }}
+      />
+    </Skeleton>
   );
 }

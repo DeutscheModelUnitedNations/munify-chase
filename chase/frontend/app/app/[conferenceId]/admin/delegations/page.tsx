@@ -12,6 +12,7 @@ import type {
   CommitteesType,
   DelegationsType,
 } from "@/components/admin/delegations/delegations_table";
+import { useBackendCall } from "@/hooks/useBackendCall";
 
 export default function AdminDelegationsPage() {
   const { toastError } = useToast();
@@ -20,41 +21,25 @@ export default function AdminDelegationsPage() {
   const { backend } = useBackend();
 
   const [update, setUpdate] = useState(true);
-  const [committees, setCommittees] = useState<CommitteesType | null>(null);
-  const [delegations, setDelegations] = useState<DelegationsType | null>(null);
+  const [committees, triggerCommittees] = useBackendCall(
+    // TODO
+    backend.conference({ conferenceId! }).committee.get,
+    true,
+  );
+  const [delegations, triggerDelegations] = useBackendCall(
+    // TODO
+    backend.conference({ conferenceId! }).delegation.get,
+    true,
+  );
   const [inputMaskVisible, setInputMaskVisible] = useState(false);
 
   async function getCommittees() {
-    if (!conferenceId) return;
-    await backend
-      .conference({ conferenceId })
-      .committee.get()
-      .then((res) => {
-        if (res.status >= 400) throw new Error("Failed to fetch committees");
-        setCommittees(res.data);
-      })
-      .catch((error) => {
-        toastError(error);
-      });
-  }
-
-  async function getDelegations() {
-    if (!conferenceId) return;
-    await backend
-      .conference({ conferenceId })
-      .delegation.get()
-      .then((res) => {
-        if (res.status >= 400) throw new Error("Failed to fetch delegations");
-        setDelegations(res.data);
-      })
-      .catch((error) => {
-        toastError(error);
-      });
+    triggerCommittees();
   }
 
   useEffect(() => {
-    getCommittees();
-    getDelegations();
+    triggerCommittees();
+    triggerDelegations();
     setUpdate(false);
   }, [update]);
 

@@ -35,27 +35,29 @@ export function SmallFlag({
       <div className="flex-col justify-end items-center rounded-md contrast:border contrast:border-primary-100 bg-white shadow-md overflow-hidden">
         {countryCode ? (
           <>
-            <Image
-              src={getFlagPathByCode(countryCode)}
-              width={32}
-              height={32}
-              alt={`Flag of ${getCountryNameByCode(countryCode, locale)}`}
-              style={{ objectFit: "cover", height: "100%" }}
-              onMouseEnter={handleMouseEnter}
-              onMouseLeave={handleMouseLeave}
-            />
-            {showNameOnHover && (
-              <div
-                className={`bg-primary text-white ${
-                  isHovered ? "opacity-100" : "opacity-0"
-                } text-xs rounded-md shadow-md p-2 absolute mt-2 z-50 transition-all duration-300`}
-              >
-                {getCountryNameByCode(countryCode, locale)}
-              </div>
-            )}
+            <div className="flex justify-center items-center w-[2rem] h-[1.5rem]">
+              <Image
+                src={getFlagPathByCode(countryCode)}
+                width={100}
+                height={75}
+                alt={`Flag of ${getCountryNameByCode(countryCode, locale)}`}
+                style={{ objectFit: "cover", height: "100%" }}
+                onMouseEnter={handleMouseEnter}
+                onMouseLeave={handleMouseLeave}
+              />
+              {showNameOnHover && (
+                <div
+                  className={`bg-primary text-white ${
+                    isHovered ? "opacity-100" : "opacity-0"
+                  } text-xs rounded-md shadow-md p-2 absolute mt-2 z-50 transition-all duration-300`}
+                >
+                  {getCountryNameByCode(countryCode, locale)}
+                </div>
+              )}
+            </div>
           </>
         ) : (
-          <Skeleton width="32px" height="32px" />
+          <Skeleton width="2rem" height="1.5rem" />
         )}
       </div>
     </div>

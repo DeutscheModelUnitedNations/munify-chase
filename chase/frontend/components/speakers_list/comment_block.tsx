@@ -21,7 +21,7 @@ export default function CommentBlock({
   return (
     <>
       {speakersListLength > 0 && (
-        <div className="flex flex-col bg-white dark:bg-primary-100 rounded-lg p-3">
+        <div className="flex flex-col bg-primary-900 dark:bg-primary-100 rounded-lg shadow-md p-3">
           <div className="font-bold mb-2 text-lg">
             {LL.participants.dashboard.widgetHeadlines.COMMENT_LIST()}
           </div>

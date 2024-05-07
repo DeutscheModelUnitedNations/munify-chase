@@ -74,7 +74,7 @@ export default function SpeakerBlock() {
 
   useEffect(() => {
     if (!rawSpeakersList) return;
-    setSpeakersList(rawSpeakersList.slice(1));
+    setSpeakersList(rawSpeakersList);
   }, [rawSpeakersList]);
 
   useEffect(() => {
@@ -83,7 +83,7 @@ export default function SpeakerBlock() {
   }, [speakersList]);
 
   return (
-    speakersList && (
+    compressedList && (
       <AnimatePresence mode="wait">
         <motion.div
           key={getAlpha3Code(speakersList[0])}
@@ -94,7 +94,7 @@ export default function SpeakerBlock() {
           layout
         >
           <div className="flex gap-1">
-            {speakersList.length > 0 && (
+            {compressedList.length > 0 && (
               <>
                 <Arrow arrowName="top" />
                 <Flag
@@ -103,7 +103,7 @@ export default function SpeakerBlock() {
                 />
               </>
             )}
-            {speakersList.length > 1 && (
+            {compressedList.length > 1 && (
               <>
                 <Arrow arrowName="solid" />
                 <Flag
@@ -113,7 +113,7 @@ export default function SpeakerBlock() {
               </>
             )}
             {getWaitingPosition() <= 3 ? (
-              speakersList.length > 2 && (
+              compressedList.length > 2 && (
                 <>
                   <Arrow arrowName="solid" />
                   <Flag
@@ -137,16 +137,16 @@ export default function SpeakerBlock() {
                 />
               </>
             )}
-            {speakersList?.length > 3 &&
-              (getWaitingPosition() < speakersList?.length ||
+            {compressedList?.length > 3 &&
+              (getWaitingPosition() < compressedList?.length ||
                 getWaitingPosition() === 0) && (
                 <>
                   <Arrow arrowName="dashed" />
                   <div className="self-center px-2 py-1 bg-primary text-white rounded-md">
                     <div className="text-sm font-bold">
                       {getWaitingPosition() === 0
-                        ? speakersList.length - 3
-                        : speakersList.length - getWaitingPosition()}
+                        ? compressedList.length - 3
+                        : compressedList.length - getWaitingPosition()}
                     </div>
                   </div>
                 </>

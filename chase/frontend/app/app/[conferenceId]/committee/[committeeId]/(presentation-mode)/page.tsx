@@ -19,6 +19,7 @@ import WhiteboardWidget from "@/components/dashboard/whiteboard";
 import { StatusTimer } from "@/contexts/status_timer";
 import { useMediaQuery } from "react-responsive";
 import { pollBackendCall } from "@/hooks/pollBackendCall";
+import SpeakersListWidget from "@/components/dashboard/speakers_list";
 
 export default function CommitteePresentationMode({
   params,
@@ -122,8 +123,11 @@ export default function CommitteePresentationMode({
               </div>
             </div>
           ) : (
-            <div className="flex-1 flex justify-center h-[calc(100vh-2rem)]">
-              <WhiteboardWidget />
+            <div className="flex-1 flex flex-col gap-4 justify-center h-[calc(100vh-2rem)]">
+              <SpeakersListWidget />
+              <div className="flex-1 h-full w-full">
+                <WhiteboardWidget />
+              </div>
             </div>
           )}
         </div>

@@ -28,6 +28,19 @@ export const Backend = ({ children }: { children: React.ReactNode }) => {
     }),
   );
 
+  if (window) {
+    // report all occurring errors to the backend
+    window.onerror = (message, source, lineno, colno, error) => {
+      backend["report-error"].post({
+        colno,
+        error,
+        lineno,
+        message,
+        source,
+      });
+    };
+  }
+
   return (
     <BackendContext.Provider value={{ backend }}>
       {children}

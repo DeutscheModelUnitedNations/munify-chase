@@ -10,19 +10,6 @@ import { api } from "./api";
 //TODO switch to new prismabox schema types
 //TODO remove use of set where applicable
 
-setInterval(
-  async () => {
-    //TODO save these to a real volume mount (docker)
-    const snapshot = Bun.generateHeapSnapshot();
-    await Bun.write(
-      `heapSnapshots/${Date.now()}.json`,
-      JSON.stringify(snapshot, null, 2),
-    );
-    console.info("Heap snapshot taken");
-  },
-  1000 * 60 * 10,
-); // every 10 minutes
-
 const app = new Elysia({
   normalize: true,
 });

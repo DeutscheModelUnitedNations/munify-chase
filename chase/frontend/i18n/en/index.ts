@@ -533,6 +533,12 @@ const en = {
           TOAST_SUCCESS_DETAILS_NOT_ALLOWED:
             "Speakers can no longer add themselves.",
         },
+        overlay: {
+          TITLE: "Speakers List Overlay",
+          DESCRIPTION:
+            "This feature allows you to see the speakers list in a separate overlay on all other pages in the App.",
+          TOGGLE_BUTTON: "Toggle Overlay",
+        },
         presentationMode: {
           TITLE: "Open Presentation Mode",
           DESCRIPTION:

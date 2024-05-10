@@ -15,7 +15,6 @@ import {
   CommitteeIdContext,
   ConferenceIdContext,
 } from "@/contexts/committee_data";
-import { pollBackendCall } from "@/hooks/pollBackendCall";
 
 export default function ChairWhiteboard() {
   const { LL } = useI18nContext();

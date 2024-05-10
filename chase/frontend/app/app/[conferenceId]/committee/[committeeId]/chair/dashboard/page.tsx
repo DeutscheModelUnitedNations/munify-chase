@@ -16,14 +16,20 @@ import AgendaSelection from "@/components/dashboard/chair/agenda_selection";
 import SetStatusWidget from "@/components/dashboard/chair/set_status";
 import SpeakersListAddingPolicyWidget from "@/components/dashboard/chair/speakers_list_adding_policy";
 import Button from "@/components/button";
-import { faPresentationScreen } from "@fortawesome/pro-solid-svg-icons";
+import {
+  faPodium,
+  faPresentationScreen,
+} from "@fortawesome/pro-solid-svg-icons";
 import ConfigWrapper from "@/components/dashboard/chair/config_wrapper";
 import StateOfDebateWidget from "@/components/dashboard/chair/state_of_debate";
+import { useSpeakersListMiniature } from "@/contexts/speakers_list_miniature";
 
 export default function ChairDashboardPage() {
   const { LL } = useI18nContext();
   const conferenceId = useContext(ConferenceIdContext);
   const committeeId = useContext(CommitteeIdContext);
+
+  const { toggleSpeakersListMiniature } = useSpeakersListMiniature();
 
   return (
     <>
@@ -53,6 +59,18 @@ export default function ChairDashboardPage() {
                 <StateOfDebateWidget />
                 <AgendaSelection />
                 <SpeakersListAddingPolicyWidget />
+                <ConfigWrapper
+                  title={LL.chairs.dashboard.configurations.overlay.TITLE()}
+                  description={LL.chairs.dashboard.configurations.overlay.DESCRIPTION()}
+                >
+                  <Button
+                    faIcon={faPodium}
+                    label={LL.chairs.dashboard.configurations.overlay.TOGGLE_BUTTON()}
+                    keyboardShortcut="O"
+                    onClick={() => toggleSpeakersListMiniature()}
+                    className="w-full"
+                  />
+                </ConfigWrapper>
                 <ConfigWrapper
                   title={LL.chairs.dashboard.configurations.presentationMode.TITLE()}
                   description={LL.chairs.dashboard.configurations.presentationMode.DESCRIPTION()}

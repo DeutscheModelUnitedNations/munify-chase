@@ -14,6 +14,8 @@ import { useI18nContext } from "@/i18n/i18n-react";
 import type { IconProp } from "@fortawesome/fontawesome-svg-core";
 import { MessageCountContext, MessageCountProvider } from "@/contexts/messages";
 import ExternalLinks from "@/components/navbar/external_links";
+import { SpeakersListMiniatureProvider } from "@/contexts/speakers_list_miniature";
+import SpeakersListMiniature from "@/components/dashboard/chair/speakers_list_miniature";
 
 export default function Chair_Pages_Layout({
   children,
@@ -21,12 +23,15 @@ export default function Chair_Pages_Layout({
   children: React.ReactNode;
 }) {
   return (
-    <MessageCountProvider>
-      <div className="flex h-screen w-screen bg-white text-primary-100 dark:bg-primary-100 dark:text-primary-900 shadow-md overflow-hidden">
-        <ChairNavbar />
-        {children}
-      </div>
-    </MessageCountProvider>
+    <SpeakersListMiniatureProvider>
+      <SpeakersListMiniature />
+      <MessageCountProvider>
+        <div className="flex h-screen w-screen bg-white text-primary-100 dark:bg-primary-100 dark:text-primary-900 shadow-md overflow-hidden">
+          <ChairNavbar />
+          {children}
+        </div>
+      </MessageCountProvider>
+    </SpeakersListMiniatureProvider>
   );
 }
 

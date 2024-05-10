@@ -17,13 +17,21 @@ export default function SpeakersListMiniature() {
   const { backend } = useBackend();
   const router = useRouter();
 
-  // Context
-  const { showSpeakersListMiniature, toggleSpeakersListMiniature, setShowSpeakersListMiniature } =
-    useSpeakersListMiniature();
+  const {
+    showSpeakersListMiniature,
+    toggleSpeakersListMiniature,
+    setShowSpeakersListMiniature,
+  } = useSpeakersListMiniature();
 
   useMousetrap("o", (e) => {
     e.preventDefault();
     toggleSpeakersListMiniature();
+  });
+
+  useMousetrap("shift+o", (e) => {
+    e.preventDefault();
+    router.push("./speakers");
+    setShowSpeakersListMiniature(false);
   });
 
   return (
@@ -35,17 +43,21 @@ export default function SpeakersListMiniature() {
           <>
             <SpeakersListWidget />
             <div className="absolute top-0 right-0 p-4 flex gap-2">
-              <Button text faIcon={faArrowUpRightFromSquare}
+              <Button
+                text
+                faIcon={faArrowUpRightFromSquare}
                 onClick={() => {
                   router.push("./speakers");
                   setShowSpeakersListMiniature(false);
                 }}
+                keyboardShortcut="⇧ + O"
               />
 
               <Button
                 text
                 faIcon={faXmark}
                 onClick={() => setShowSpeakersListMiniature(false)}
+                severity="danger"
               />
             </div>
           </>

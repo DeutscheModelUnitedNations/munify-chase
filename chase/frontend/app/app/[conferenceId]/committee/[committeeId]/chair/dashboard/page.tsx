@@ -60,12 +60,12 @@ export default function ChairDashboardPage() {
                 <AgendaSelection />
                 <SpeakersListAddingPolicyWidget />
                 <ConfigWrapper
-                  title="Speakers List Overlay"
-                  description="This feature allows you to see the speakers list in a separate overlay an all other Pages in the App"
+                  title={LL.chairs.dashboard.configurations.overlay.TITLE()}
+                  description={LL.chairs.dashboard.configurations.overlay.DESCRIPTION()}
                 >
                   <Button
                     faIcon={faPodium}
-                    label="Open Speakers List Overlay"
+                    label={LL.chairs.dashboard.configurations.overlay.TOGGLE_BUTTON()}
                     keyboardShortcut="O"
                     onClick={() => toggleSpeakersListMiniature()}
                     className="w-full"

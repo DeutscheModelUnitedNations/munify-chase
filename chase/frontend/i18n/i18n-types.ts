@@ -1516,6 +1516,20 @@ type RootTranslation = {
 					 */
 					TOAST_SUCCESS_DETAILS_NOT_ALLOWED: string
 				}
+				overlay: {
+					/**
+					 * S​p​e​a​k​e​r​s​ ​L​i​s​t​ ​O​v​e​r​l​a​y
+					 */
+					TITLE: string
+					/**
+					 * T​h​i​s​ ​f​e​a​t​u​r​e​ ​a​l​l​o​w​s​ ​y​o​u​ ​t​o​ ​s​e​e​ ​t​h​e​ ​s​p​e​a​k​e​r​s​ ​l​i​s​t​ ​i​n​ ​a​ ​s​e​p​a​r​a​t​e​ ​o​v​e​r​l​a​y​ ​o​n​ ​a​l​l​ ​o​t​h​e​r​ ​p​a​g​e​s​ ​i​n​ ​t​h​e​ ​A​p​p​.
+					 */
+					DESCRIPTION: string
+					/**
+					 * T​o​g​g​l​e​ ​O​v​e​r​l​a​y
+					 */
+					TOGGLE_BUTTON: string
+				}
 				presentationMode: {
 					/**
 					 * O​p​e​n​ ​P​r​e​s​e​n​t​a​t​i​o​n​ ​M​o​d​e
@@ -3369,6 +3383,20 @@ export type TranslationFunctions = {
 					 * Speakers can no longer add themselves.
 					 */
 					TOAST_SUCCESS_DETAILS_NOT_ALLOWED: () => LocalizedString
+				}
+				overlay: {
+					/**
+					 * Speakers List Overlay
+					 */
+					TITLE: () => LocalizedString
+					/**
+					 * This feature allows you to see the speakers list in a separate overlay on all other pages in the App.
+					 */
+					DESCRIPTION: () => LocalizedString
+					/**
+					 * Toggle Overlay
+					 */
+					TOGGLE_BUTTON: () => LocalizedString
 				}
 				presentationMode: {
 					/**

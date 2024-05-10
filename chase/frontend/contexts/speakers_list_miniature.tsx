@@ -1,8 +1,5 @@
 import React, { createContext, useContext, useState } from "react";
 
-export const useSpeakersListMiniature = () => {
-  return useContext(SpeakersListMiniatureContext);
-};
 
 export const SpeakersListMiniatureContext = createContext(
   {} as {
@@ -11,6 +8,8 @@ export const SpeakersListMiniatureContext = createContext(
     toggleSpeakersListMiniature: () => void;
   },
 );
+
+export const useSpeakersListMiniature = () => useContext(SpeakersListMiniatureContext);
 
 export const SpeakersListMiniatureProvider = ({ children }) => {
   const [showSpeakersListMiniature, setShowSpeakersListMiniature] =

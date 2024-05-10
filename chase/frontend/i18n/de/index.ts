@@ -540,6 +540,12 @@ const de = {
           TOAST_SUCCESS_DETAILS_NOT_ALLOWED:
             "Delegierte können sich nicht mehr selbst hinzufügen.",
         },
+        overlay: {
+          TITLE: "Redeliste Overlay",
+          DESCRIPTION:
+            "Öffnet die Redeliste in einem kleinen Overlay am unteren Bildschirmrand.",
+          TOGGLE_BUTTON: "Overlay öffnen/schließen",
+        },
         presentationMode: {
           TITLE: "Präsentationsmodus öffnen",
           DESCRIPTION:

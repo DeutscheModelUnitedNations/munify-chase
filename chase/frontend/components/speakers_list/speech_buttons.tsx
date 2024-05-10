@@ -289,15 +289,42 @@ export function ChairSpeechButtons({
 
   return (
     <div className="flex gap-2 flex-col items-start justify-center mt-3">
-      <ConfirmDialog
+      <Dialog
         visible={nextSpeakerWarningVisible}
         onHide={() => setNextSpeakerWarningVisible(false)}
-        message={LL.chairs.speakersList.confirm.NEXT_SPEAKER_MESSAGE()}
         header={LL.chairs.speakersList.confirm.NEXT_SPEAKER_HEADER({
           list: listTypeMap[typeOfList as $Enums.SpeakersListCategory],
         })}
-        defaultFocus="accept"
-        icon={
+        footer={
+          <div className="flex w-full gap-2 items-center justify-start flex-row-reverse">
+            <Button
+              label={LL.chairs.speakersList.confirm.NEXT_SPEAKER_ACCEPT()}
+              onClick={() => {
+                if (!speakersListData) return;
+                backend
+                  .speakersList({ speakersListId: speakersListData.id })
+                  .nextSpeaker.post();
+                setNextSpeakerWarningVisible(false);
+              }}
+              severity={
+                typeOfList === $Enums.SpeakersListCategory.SPEAKERS_LIST
+                  ? "danger"
+                  : "warning"
+              }
+              autoFocus
+              keyboardShortcut="⏎"
+            />
+            <Button
+              label={LL.chairs.speakersList.confirm.NEXT_SPEAKER_REJECT()}
+              onClick={() => setNextSpeakerWarningVisible(false)}
+              text
+            />
+          </div>
+        }
+        closable={false}
+        dismissableMask
+      >
+        <div className="flex gap-10 mx-10 items-center justify-start">
           <FontAwesomeIcon
             icon={faExclamationTriangle}
             beatFade
@@ -308,19 +335,9 @@ export function ChairSpeechButtons({
                 : "text-yellow-500"
             }
           />
-        }
-        accept={() => {
-          if (!speakersListData) return;
-          backend
-            .speakersList({ speakersListId: speakersListData.id })
-            .nextSpeaker.post();
-        }}
-        acceptLabel={LL.chairs.speakersList.confirm.NEXT_SPEAKER_ACCEPT()}
-        rejectLabel={LL.chairs.speakersList.confirm.NEXT_SPEAKER_REJECT()}
-        closable={false}
-        closeOnEscape
-        dismissableMask
-      />
+          <div>{LL.chairs.speakersList.confirm.NEXT_SPEAKER_MESSAGE()}</div>
+        </div>
+      </Dialog>
       <div className="flex gap-2 items-center justify-center">
         <Button
           label={LL.chairs.speakersList.buttons.START_TIMER()}

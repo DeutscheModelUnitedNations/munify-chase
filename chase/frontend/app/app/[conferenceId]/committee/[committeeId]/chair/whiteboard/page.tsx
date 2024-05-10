@@ -27,34 +27,18 @@ export default function ChairWhiteboard() {
   const [whiteboardContent, setWhiteboardContent] = useState<
     string | null | undefined
   >(undefined);
-  const [whiteboardContentChanged, setWhiteboardContentChanged] =
-    useState<boolean>(false);
   const [whiteboardButtonLoading, setWhiteboardButtonLoading] =
     useState<boolean>(false);
   const committeeData = useContext(CommitteeDataContext);
 
   useEffect(() => {
-    if (!whiteboardContentChanged || whiteboardContent === null) {
-      setWhiteboardContent(committeeData?.whiteboardContent ?? null);
-    }
-    setWhiteboardContent(committeeData?.whiteboardContent ?? null);
-  }, [whiteboardContent]);
+    setWhiteboardContent(committeeData?.whiteboardContent ?? "");
+  }, []);
 
   useEffect(() => {
-    if (whiteboardContent !== committeeData?.whiteboardContent) {
-      setWhiteboardContentChanged(true);
-    } else {
-      setWhiteboardContentChanged(false);
-    }
-    if (whiteboardContent === null) {
-      showToast({
-        severity: "warn",
-        summary: LL.chairs.whiteboard.NO_CONTENT_TOAST(),
-        detail: LL.chairs.whiteboard.NO_CONTENT_TOAST_DETAILS(),
-        life: 3000,
-      });
-    }
-  }, [whiteboardContent, committeeData]);
+    if (whiteboardContent != null) return;
+    committeeData?.whiteboardContent ?? "";
+  }, [committeeData]);
 
   async function pushWhiteboardContent() {
     setWhiteboardButtonLoading(true);
@@ -82,7 +66,6 @@ export default function ChairWhiteboard() {
       .then((res) => {
         if (res.status >= 400)
           throw new Error("Failed to push whiteboard content");
-        setWhiteboardContentChanged(false);
         setWhiteboardButtonLoading(false);
         showToast({
           severity: "success",

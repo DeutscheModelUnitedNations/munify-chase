@@ -17,6 +17,7 @@ import SetStatusWidget from "@/components/dashboard/chair/set_status";
 import SpeakersListAddingPolicyWidget from "@/components/dashboard/chair/speakers_list_adding_policy";
 import Button from "@/components/button";
 import {
+  faEarth,
   faPodium,
   faPresentationScreen,
 } from "@fortawesome/pro-solid-svg-icons";
@@ -81,6 +82,23 @@ export default function ChairDashboardPage() {
                     onClick={() => {
                       window.open(
                         `/app/${conferenceId}/committee/${committeeId}`,
+                        "_blank",
+                        "noopener,noreferrer",
+                      );
+                    }}
+                    className="w-full"
+                  />
+                </ConfigWrapper>
+                <ConfigWrapper
+                  title={LL.chairs.dashboard.configurations.regionalGroups.TITLE()}
+                  description={LL.chairs.dashboard.configurations.regionalGroups.DESCRIPTION()}
+                >
+                  <Button
+                    faIcon={faEarth}
+                    label={LL.chairs.dashboard.configurations.regionalGroups.BUTTON()}
+                    onClick={() => {
+                      window.open(
+                        `/app/${conferenceId}/committee/${committeeId}/regional_groups`,
                         "_blank",
                         "noopener,noreferrer",
                       );

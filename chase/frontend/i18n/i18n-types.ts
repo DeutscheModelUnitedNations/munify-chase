@@ -1544,6 +1544,40 @@ type RootTranslation = {
 					 */
 					BUTTON: string
 				}
+				regionalGroups: {
+					/**
+					 * R​e​g​i​o​n​a​l​ ​G​r​o​u​p​s
+					 */
+					TITLE: string
+					/**
+					 * O​p​e​n​ ​t​h​e​ ​r​e​g​i​o​n​a​l​ ​g​r​o​u​p​s​ ​p​a​g​e​ ​t​o​ ​s​h​o​w​ ​t​h​e​ ​r​e​g​i​o​n​a​l​ ​g​r​o​u​p​s​ ​o​f​ ​t​h​e​ ​c​o​m​m​i​t​t​e​e​.
+					 */
+					DESCRIPTION: string
+					/**
+					 * O​p​e​n​ ​R​e​g​i​o​n​a​l​ ​G​r​o​u​p​s
+					 */
+					BUTTON: string
+					/**
+					 * A​f​r​i​c​a
+					 */
+					AFRICA: string
+					/**
+					 * A​s​i​a​ ​a​n​d​ ​P​a​c​i​f​i​c
+					 */
+					ASIA: string
+					/**
+					 * L​a​t​i​n​ ​A​m​e​r​i​c​a​ ​a​n​d​ ​C​a​r​i​b​b​e​a​n
+					 */
+					LATIN_AMERICA: string
+					/**
+					 * E​a​s​t​e​r​n​ ​E​u​r​o​p​e
+					 */
+					EASTERN_EUROPE: string
+					/**
+					 * W​e​s​t​e​r​n​ ​E​u​r​o​p​e​ ​a​n​d​ ​O​t​h​e​r​s
+					 */
+					WESTERN_EUROPE: string
+				}
 			}
 		}
 		attendance: {
@@ -3411,6 +3445,40 @@ export type TranslationFunctions = {
 					 * Presentation Mode
 					 */
 					BUTTON: () => LocalizedString
+				}
+				regionalGroups: {
+					/**
+					 * Regional Groups
+					 */
+					TITLE: () => LocalizedString
+					/**
+					 * Open the regional groups page to show the regional groups of the committee.
+					 */
+					DESCRIPTION: () => LocalizedString
+					/**
+					 * Open Regional Groups
+					 */
+					BUTTON: () => LocalizedString
+					/**
+					 * Africa
+					 */
+					AFRICA: () => LocalizedString
+					/**
+					 * Asia and Pacific
+					 */
+					ASIA: () => LocalizedString
+					/**
+					 * Latin America and Caribbean
+					 */
+					LATIN_AMERICA: () => LocalizedString
+					/**
+					 * Eastern Europe
+					 */
+					EASTERN_EUROPE: () => LocalizedString
+					/**
+					 * Western Europe and Others
+					 */
+					WESTERN_EUROPE: () => LocalizedString
 				}
 			}
 		}

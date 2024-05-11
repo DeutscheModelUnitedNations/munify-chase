@@ -552,6 +552,17 @@ const de = {
             "Öffne ein neues Fenster im Präsentationsmodus über den folgenden Link, um ihn auf einem Beamer für alle Teilnehmenden sichtbar anzuzeigen.",
           BUTTON: "Präsentationsmodus",
         },
+        regionalGroups: {
+          TITLE: "Regionalgruppen",
+          DESCRIPTION:
+            "Öffne eine Übersicht der Regionalgruppen und weise Delegationen zu.",
+          BUTTON: "Regionalgruppen Öffnen",
+          AFRICA: "Afrika",
+          ASIA: "Asien and Ozeanien",
+          LATIN_AMERICA: "Lateinamerika und Karibik",
+          EASTERN_EUROPE: "Osteuropa",
+          WESTERN_EUROPE: "Westeuropa und andere",
+        },
       },
     },
     attendance: {

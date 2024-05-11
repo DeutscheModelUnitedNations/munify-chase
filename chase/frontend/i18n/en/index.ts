@@ -545,6 +545,17 @@ const en = {
             "Open the presentation mode in a new window. This mode is designed to be displayed on a projector or a second screen and provides relevant committee data for delegates.",
           BUTTON: "Presentation Mode",
         },
+        regionalGroups: {
+          TITLE: "Regional Groups",
+          DESCRIPTION:
+            "Open the regional groups page to show the regional groups of the committee.",
+          BUTTON: "Open Regional Groups",
+          AFRICA: "Africa",
+          ASIA: "Asia and Pacific",
+          LATIN_AMERICA: "Latin America and Caribbean",
+          EASTERN_EUROPE: "Eastern Europe",
+          WESTERN_EUROPE: "Western Europe and Others",
+        }
       },
     },
     attendance: {

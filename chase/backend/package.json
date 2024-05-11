@@ -38,6 +38,7 @@
     "mjml": "^4.15.3",
     "nanoid": "^5.0.7",
     "nodemailer": "^6.9.13",
+    "react-svg-worldmap": "^2.0.0-alpha.16",
     "redis": "^4.6.13",
     "typescript": "5.4.5"
   },

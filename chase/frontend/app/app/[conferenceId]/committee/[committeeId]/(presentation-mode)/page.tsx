@@ -20,6 +20,9 @@ import { StatusTimer } from "@/contexts/status_timer";
 import { useMediaQuery } from "react-responsive";
 import { pollBackendCall } from "@/hooks/pollBackendCall";
 import SpeakersListWidget from "@/components/dashboard/speakers_list";
+import { Dialog } from "primereact/dialog";
+import { BigDisplayFlag, LargeFlag } from "@/components/flag_templates";
+import RoleCallPresentation from "@/components/dashboard/chair/role_call_presentation";
 
 export default function CommitteePresentationMode({
   params,
@@ -150,6 +153,8 @@ export default function CommitteePresentationMode({
           onClick={() => setRemSize(remSize + 1)}
         />
       </div>
+
+      <RoleCallPresentation />
     </>
   );
 }

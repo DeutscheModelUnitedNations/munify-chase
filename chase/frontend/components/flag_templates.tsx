@@ -13,6 +13,7 @@ import {
 } from "@fortawesome/pro-solid-svg-icons";
 import NoDataPlaceholder from "./no_data_placeholder";
 import { useFaGlobe } from "@/hooks/useFaGlobe";
+import { motion } from "framer-motion";
 
 /**
  * The following Components are all different sizes of flags.
@@ -119,16 +120,22 @@ export function NormalFlag({
 export function LargeFlag({
   countryCode,
   className,
+  enlarge = false,
 }: {
   countryCode?: string;
   className?: string;
+  enlarge?: boolean;
 }) {
+  const getSize: () => [number, number] = () => {
+    return enlarge ? [16, 12] : [6.4, 4.8];
+  };
+
   return (
     <div
       className={`rounded-md contrast:border contrast:border-primary-100 bg-white shadow-md overflow-hidden ${className}`}
     >
       {countryCode ? (
-        <div className="flex justify-center items-center w-[6.4rem] h-[4.8rem]">
+        <div className={`flex justify-center items-center w-[${getSize()[0]}rem] h-[${getSize()[1]}rem]`}>
           <Image
             src={getFlagPathByCode(countryCode)}
             width={300}
@@ -137,7 +144,7 @@ export function LargeFlag({
           />
         </div>
       ) : (
-        <FlagPlaceholder widthRem={6.4} />
+        <FlagPlaceholder widthRem={getSize()[0]} />
       )}
     </div>
   );

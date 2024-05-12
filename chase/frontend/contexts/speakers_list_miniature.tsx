@@ -1,6 +1,5 @@
 import React, { createContext, useContext, useState } from "react";
 
-
 export const SpeakersListMiniatureContext = createContext(
   {} as {
     showSpeakersListMiniature: boolean;
@@ -9,7 +8,8 @@ export const SpeakersListMiniatureContext = createContext(
   },
 );
 
-export const useSpeakersListMiniature = () => useContext(SpeakersListMiniatureContext);
+export const useSpeakersListMiniature = () =>
+  useContext(SpeakersListMiniatureContext);
 
 export const SpeakersListMiniatureProvider = ({ children }) => {
   const [showSpeakersListMiniature, setShowSpeakersListMiniature] =
@@ -21,7 +21,11 @@ export const SpeakersListMiniatureProvider = ({ children }) => {
 
   return (
     <SpeakersListMiniatureContext.Provider
-      value={{ showSpeakersListMiniature, setShowSpeakersListMiniature, toggleSpeakersListMiniature }}
+      value={{
+        showSpeakersListMiniature,
+        setShowSpeakersListMiniature,
+        toggleSpeakersListMiniature,
+      }}
     >
       {children}
     </SpeakersListMiniatureContext.Provider>

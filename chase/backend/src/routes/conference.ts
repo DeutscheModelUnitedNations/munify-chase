@@ -180,8 +180,8 @@ export const conference = new Elysia()
   )
   .post(
     "/conference/:conferenceId/populateMembers",
-    async ({ body, params, permissions }) =>
-      {return Promise.all(
+    async ({ body, params, permissions }) => {
+      return Promise.all(
         body.map((userData) =>
           db.$transaction(async (tx) => {
             const email = await tx.email.findFirst({
@@ -210,7 +210,9 @@ export const conference = new Elysia()
                   // biome-ignore lint/style/noNonNullAssertion: <explanation>
                   userId: user!.id,
                 },
-                AND: [permissions.allowDatabaseAccessTo("create").ConferenceMember]
+                AND: [
+                  permissions.allowDatabaseAccessTo("create").ConferenceMember,
+                ],
               },
               create: {
                 role: userData.role,
@@ -232,7 +234,8 @@ export const conference = new Elysia()
             });
           }),
         ),
-      )},
+      );
+    },
     {
       body: t.Array(
         t.Object({

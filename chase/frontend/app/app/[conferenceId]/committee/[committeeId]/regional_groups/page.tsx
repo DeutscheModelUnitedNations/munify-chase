@@ -46,6 +46,15 @@ export default function RegionalGroups() {
     );
   });
 
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentGroupIndex((prev) =>
+        prev === Object.keys(groupNames).length * 2 - 1 ? 0 : prev + 1,
+      );
+    }, 5000);
+    return () => clearInterval(interval);
+  }, []);
+
   const groupNames = {
     africa: LL.chairs.dashboard.configurations.regionalGroups.AFRICA(),
     asia: LL.chairs.dashboard.configurations.regionalGroups.ASIA(),
@@ -64,13 +73,22 @@ export default function RegionalGroups() {
     }
   };
 
-  function Group({
-    group,
-    groupName,
-  }: {
-    group: string;
-    groupName: string;
-  }) {
+  const getMapColor = (group: string) => {
+    switch (group) {
+      case "africa":
+        return "#FF0000";
+      case "asia":
+        return "#008800";
+      case "america":
+        return "#0000FF";
+      case "eastern_europe":
+        return "#FF8800";
+      case "western_europe":
+        return "#8800FF";
+    }
+  };
+
+  function Group({ group, groupName }: { group: string; groupName: string }) {
     return (
       <motion.div
         className="p-10 bg-primary-950 rounded-lg flex flex-col items-center absolute top-6 left-6 bottom-6 right-6"
@@ -84,7 +102,7 @@ export default function RegionalGroups() {
         <div className="flex flex-wrap gap-2 mt-10 max-h-[70vh] justify-center items-center">
           {currentGroupIndex % 2 === 0 ? (
             <WorldMap
-              color="blue"
+              color={getMapColor(group)}
               size="responsive"
               frame={false}
               strokeOpacity={1}

@@ -1,5 +1,5 @@
 "use client";
-import React, { useContext } from "react";
+import React, { useContext, useState } from "react";
 import { ScrollPanel } from "primereact/scrollpanel";
 import DashboardHeader from "@/components/dashboard/header";
 import { useI18nContext } from "@/i18n/i18n-react";
@@ -17,18 +17,24 @@ import SetStatusWidget from "@/components/dashboard/chair/set_status";
 import SpeakersListAddingPolicyWidget from "@/components/dashboard/chair/speakers_list_adding_policy";
 import Button from "@/components/button";
 import {
+  faArrowsRotate,
   faEarth,
+  faMagnifyingGlass,
   faPodium,
   faPresentationScreen,
+  faRecycle,
 } from "@fortawesome/pro-solid-svg-icons";
 import ConfigWrapper from "@/components/dashboard/chair/config_wrapper";
 import StateOfDebateWidget from "@/components/dashboard/chair/state_of_debate";
 import { useSpeakersListMiniature } from "@/contexts/speakers_list_miniature";
+import RegionalGroupsLookup from "@/components/dashboard/chair/regional_groups_lookup";
 
 export default function ChairDashboardPage() {
   const { LL } = useI18nContext();
   const conferenceId = useContext(ConferenceIdContext);
   const committeeId = useContext(CommitteeIdContext);
+
+  const [regionalGroupModalOpen, setRegionalGroupModalOpen] = useState(false);
 
   const { toggleSpeakersListMiniature } = useSpeakersListMiniature();
 
@@ -93,24 +99,36 @@ export default function ChairDashboardPage() {
                   title={LL.chairs.dashboard.configurations.regionalGroups.TITLE()}
                   description={LL.chairs.dashboard.configurations.regionalGroups.DESCRIPTION()}
                 >
-                  <Button
-                    faIcon={faEarth}
-                    label={LL.chairs.dashboard.configurations.regionalGroups.BUTTON()}
-                    onClick={() => {
-                      window.open(
-                        `/app/${conferenceId}/committee/${committeeId}/regional_groups`,
-                        "_blank",
-                        "noopener,noreferrer",
-                      );
-                    }}
-                    className="w-full"
-                  />
+                  <div className="flex gap-2 w-full">
+                    <Button
+                      faIcon={faMagnifyingGlass}
+                      label={LL.chairs.dashboard.configurations.regionalGroups.BUTTON_LOOKUP()}
+                      onClick={() => setRegionalGroupModalOpen(true)}
+                      className="w-full"
+                    />
+                    <Button
+                      faIcon={faArrowsRotate}
+                      label={LL.chairs.dashboard.configurations.regionalGroups.BUTTON_PRESENTATION()}
+                      onClick={() => {
+                        window.open(
+                          `/app/${conferenceId}/committee/${committeeId}/regional_groups`,
+                          "_blank",
+                          "noopener,noreferrer",
+                        );
+                      }}
+                      className="w-full"
+                    />
+                  </div>
                 </ConfigWrapper>
               </div>
             </div>
           </ScrollPanel>
         </div>
       </AgendaItemDataProvider>
+      <RegionalGroupsLookup
+        lookupVisible={regionalGroupModalOpen}
+        setLookupVisible={setRegionalGroupModalOpen}
+      />
     </>
   );
 }

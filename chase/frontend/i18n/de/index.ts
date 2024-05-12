@@ -215,9 +215,11 @@ const de = {
 
       configs: {
         pressWebsiteTitle: "Presse Website",
-        pressWebsiteDescription: "Hier kannst du die URL der Pressewebsite konfigurieren.",
+        pressWebsiteDescription:
+          "Hier kannst du die URL der Pressewebsite konfigurieren.",
         feedbackWebsiteTitle: "Feedback Website",
-        feedbackWebsiteDescription: "Hier kannst du die URL der Feedbackwebsite konfigurieren.",
+        feedbackWebsiteDescription:
+          "Hier kannst du die URL der Feedbackwebsite konfigurieren.",
         successToast: "Einstellungen gespeichert",
       },
 
@@ -556,7 +558,9 @@ const de = {
           TITLE: "Regionalgruppen",
           DESCRIPTION:
             "Öffne eine Übersicht der Regionalgruppen und weise Delegationen zu.",
-          BUTTON: "Regionalgruppen Öffnen",
+          BUTTON_PRESENTATION: "Präsentations-Loop",
+          BUTTON_LOOKUP: "Regionalgruppen nachschlagen",
+          FILTER: "Filtern...",
           AFRICA: "Afrika",
           ASIA: "Asien and Ozeanien",
           LATIN_AMERICA: "Lateinamerika und Karibik",

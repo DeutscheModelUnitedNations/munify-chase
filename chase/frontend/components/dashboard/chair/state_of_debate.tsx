@@ -1,4 +1,4 @@
-import React, { useState, useContext } from "react";
+import React, { useState, useContext, useEffect } from "react";
 import { useI18nContext } from "@/i18n/i18n-react";
 import { useBackend } from "@/contexts/backend";
 import ConfigWrapper from "@/components/dashboard/chair/config_wrapper";
@@ -38,13 +38,17 @@ export default function StateOfDebateWidget() {
                 state: stateOfDebate,
               }),
           });
-          setStateOfDebate("");
         } else throw new Error();
       })
       .catch((e) => {
         toastError(e);
       });
   }
+
+  useEffect(() => {
+    if (stateOfDebate !== "") return;
+    setStateOfDebate(committeeData?.stateOfDebate || "");
+  }, [committeeData?.stateOfDebate]);
 
   return (
     <>

@@ -1554,9 +1554,17 @@ type RootTranslation = {
 					 */
 					DESCRIPTION: string
 					/**
-					 * O​p​e​n​ ​R​e​g​i​o​n​a​l​ ​G​r​o​u​p​s
+					 * O​p​e​n​ ​i​n​ ​P​r​e​s​e​n​t​a​t​i​o​n​ ​M​o​d​e
 					 */
-					BUTTON: string
+					BUTTON_PRESENTATION: string
+					/**
+					 * O​p​e​n​ ​L​o​o​k​u​p
+					 */
+					BUTTON_LOOKUP: string
+					/**
+					 * F​i​l​t​e​r​.​.​.
+					 */
+					FILTER: string
 					/**
 					 * A​f​r​i​c​a
 					 */
@@ -3456,9 +3464,17 @@ export type TranslationFunctions = {
 					 */
 					DESCRIPTION: () => LocalizedString
 					/**
-					 * Open Regional Groups
+					 * Open in Presentation Mode
 					 */
-					BUTTON: () => LocalizedString
+					BUTTON_PRESENTATION: () => LocalizedString
+					/**
+					 * Open Lookup
+					 */
+					BUTTON_LOOKUP: () => LocalizedString
+					/**
+					 * Filter...
+					 */
+					FILTER: () => LocalizedString
 					/**
 					 * Africa
 					 */

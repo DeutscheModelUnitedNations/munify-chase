@@ -549,7 +549,9 @@ const en = {
           TITLE: "Regional Groups",
           DESCRIPTION:
             "Open the regional groups page to show the regional groups of the committee.",
-          BUTTON: "Open Regional Groups",
+          BUTTON_PRESENTATION: "Open in Presentation Mode",
+          BUTTON_LOOKUP: "Open Lookup",
+          FILTER: "Filter...",
           AFRICA: "Africa",
           ASIA: "Asia and Pacific",
           LATIN_AMERICA: "Latin America and Caribbean",

@@ -73,6 +73,7 @@ const de = {
     CONTRIBUTE_TEXT:
       "CHASE ist ein wichtiger Bestandteil der Open-Source-Initiative 'MUNify' von DMUN. Das bedeutet, dass jeder, der möchte, zur Entwicklung beitragen kann. Wir freuen uns über jede Hilfe, die wir bekommen können. Wenn Sie also Erfahrung im Web-Development haben, oder einfach nur neue Skills lernen und mithelfen möchten, schauen Sie doch mal auf unserem GitHub vorbei!",
     CONTRIBUTE_BUTTON_LABEL: "MUNify auf GitHub",
+    VERSION_BUTTON: "Version und Änderungen",
     footer: {
       sitemap: {
         TITEL: "Sitemap",
@@ -680,6 +681,20 @@ const de = {
       PRINT: "Nachricht drucken",
       REPLY_VIA_EMAIL: "Antworten per E-Mail",
     },
+  },
+  version: {
+    VERSION_MODAL_TITLE: "Version und Änderungsprotokoll",
+    VERSION: "Version",
+    CHANGELOG: "Änderungsprotokoll",
+    CHANGELOG_TEXT:
+      "Dieses Änderungsprotokoll zeigt die Änderungen in der aktuellen und den letzten 4 Versionen. Aktuell ist das Änderungsprotokoll ausschließlich auf Englisch verfügbar. Für weitere Informationen besuchen Sie unser GitHub-Repository, indem Sie auf den Link unten klicken.",
+    ALL_RELEASES: "Alle Versionen",
+    NEW_VERSION_AVAILABLE: "Neue Version verfügbar",
+    NEW_VERSION_AVAILABLE_TEXT: "Bitte wenden Sie sich an den Administrator, um die App zu aktualisieren.",
+    LATEST_VERSION: "Neueste Version",
+    LATEST_VERSION_TEXT: "Sie verwenden die neueste Version von CHASE.",
+    DEVELOPMENT_VERSION: "Entwicklerversion",
+    DEVELOPMENT_VERSION_TEXT: "Sie verwenden eine Entwicklerversion von CHASE.",
   },
 } satisfies Translation;
 

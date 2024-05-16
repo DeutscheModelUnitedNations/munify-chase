@@ -8,7 +8,8 @@ type TextSectionProps = {
   text: string;
   button?: {
     lable: string;
-    link: string;
+    link?: string;
+    onClick?: () => void;
     faIcon?: IconDefinition;
   };
 };
@@ -30,8 +31,15 @@ export default function TextSection({ title, text, button }: TextSectionProps) {
             <Button
               label={button.lable}
               onClick={() => {
-                //TODO this is not ideal, we should use actual anchor tags for this
-                Router.push(button.link);
+                if (button.onClick) {
+                  button.onClick();
+                  return;
+                }
+                if (button.link) {
+                  Router.push(button.link);
+                  return;
+                }
+                throw new Error("No link or onClick function provided");
               }}
               faIcon={button.faIcon}
               className="mt-4"

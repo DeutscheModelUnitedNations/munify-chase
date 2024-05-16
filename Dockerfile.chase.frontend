@@ -31,8 +31,10 @@ COPY --from=nextjs /app/staging/node_modules ./node_modules/
 COPY --from=builder /app/staging/chase/frontend/public ./public/
 COPY --from=builder /app/staging/chase/frontend/.next/standalone ./
 COPY --from=builder /app/staging/chase/frontend/.next/static ./.next/static
+ARG NEXT_PUBLIC_VERSION
 ENV NODE_ENV=production
 ENV PORT=3000
+ENV NEXT_PUBLIC_VERSION=${NEXT_PUBLIC_VERSION}
 # run the app
 USER bun
 EXPOSE 3000/tcp

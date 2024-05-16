@@ -1,17 +1,25 @@
 "use client";
-import React from "react";
+import React, { useState } from "react";
 import { useI18nContext } from "@/i18n/i18n-react";
 import Navbar from "@/components/home/navbar";
 import LandingHero from "@/components/home/landing_hero";
 import CardSection from "@/components/home/card_section";
 import TextSection from "@/components/home/text_section";
-import { faCodeBranch, faExternalLink } from "@fortawesome/pro-solid-svg-icons";
+import {
+  faCodeBranch,
+  faCodeCommit,
+  faExternalLink,
+  faStars,
+} from "@fortawesome/pro-solid-svg-icons";
 import Footer from "@/components/home/footer";
 import { useMediaQuery } from "react-responsive";
 import Image from "next/image";
+import VersionModal from "@/components/version_modal";
 
 export default function Home() {
   const { LL } = useI18nContext();
+
+  const [versionModalVisible, setVersionModalVisible] = useState(false);
 
   const _isDesktopOrLaptop = useMediaQuery({
     query: "(min-width: 1024px)",
@@ -48,6 +56,11 @@ export default function Home() {
             <TextSection
               title={LL.home.ABOUT_TITEL()}
               text={LL.home.ABOUT_TEXT()}
+              button={{
+                lable: LL.home.VERSION_BUTTON(),
+                onClick: () => setVersionModalVisible(true),
+                faIcon: faStars,
+              }}
             />
             <TextSection
               title={LL.home.MISSION_TITLE()}
@@ -71,6 +84,10 @@ export default function Home() {
         </div>
       </div>
       <Footer />
+      <VersionModal
+        visible={versionModalVisible}
+        setVisible={setVersionModalVisible}
+      />
     </>
   );
 }

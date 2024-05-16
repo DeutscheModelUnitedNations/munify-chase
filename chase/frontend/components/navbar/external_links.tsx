@@ -6,14 +6,18 @@ import type { IconProp } from "@fortawesome/fontawesome-svg-core";
 import {
   faCommentExclamation,
   faNewspaper,
+  faStars,
 } from "@fortawesome/pro-solid-svg-icons";
-import { useContext } from "react";
+import { useContext, useState } from "react";
 import NavButton from "./button";
+import VersionModal from "../version_modal";
 
 export default function ExternalLinks() {
   const { backend } = useBackend();
   const conferenceId = useContext(ConferenceIdContext);
   const { LL } = useI18nContext();
+
+  const [versionModalVisible, setVersionModalVisible] = useState(false);
 
   const [conferenceData] = useBackendCall(() => {
     //TODO
@@ -39,6 +43,18 @@ export default function ExternalLinks() {
           title={LL.navbar.BUG_REPORT()}
         />
       )}
+      <NavButton
+        icon={faStars as IconProp}
+        onClick={() => {
+          setVersionModalVisible(true);
+        }}
+        title={LL.home.VERSION_BUTTON()}
+      />
+      <VersionModal
+        visible={versionModalVisible}
+        setVisible={setVersionModalVisible}
+        autoOpen
+      />
     </>
   );
 }

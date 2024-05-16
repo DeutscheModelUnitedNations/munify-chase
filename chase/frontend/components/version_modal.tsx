@@ -47,7 +47,7 @@ export default function VersionModal({
     }
 
     fetch(
-      "https://api.github.com/repos/deutschemodelunitednations/munify/releases"
+      "https://api.github.com/repos/deutschemodelunitednations/munify/releases",
     )
       .then((res) => res.json())
       .then((data) => {
@@ -155,7 +155,7 @@ export default function VersionModal({
             label={LL.version.ALL_RELEASES()}
             onClick={() =>
               window.open(
-                "https://github.com/deutschemodelunitednations/munify/releases"
+                "https://github.com/deutschemodelunitednations/munify/releases",
               )
             }
             faIcon={faExternalLink}

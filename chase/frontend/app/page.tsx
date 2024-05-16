@@ -5,7 +5,12 @@ import Navbar from "@/components/home/navbar";
 import LandingHero from "@/components/home/landing_hero";
 import CardSection from "@/components/home/card_section";
 import TextSection from "@/components/home/text_section";
-import { faCodeBranch, faCodeCommit, faExternalLink, faStars } from "@fortawesome/pro-solid-svg-icons";
+import {
+  faCodeBranch,
+  faCodeCommit,
+  faExternalLink,
+  faStars,
+} from "@fortawesome/pro-solid-svg-icons";
 import Footer from "@/components/home/footer";
 import { useMediaQuery } from "react-responsive";
 import Image from "next/image";

@@ -12,6 +12,13 @@ jobs:
       - name: Setup Bun.js
         uses: oven-sh/setup-bun@v1
 
+      - uses: actions/cache@v4
+        with:
+          path: ~/.bun/install/cache
+          key: ${{ runner.os }}-${{ matrix.bun }}-bun-${{ hashFiles('**/bun.lockb') }}
+          restore-keys: |
+            ${{ runner.os }}-${{ matrix.bun }}-bun-
+
       - name: Install all dependencies
         run: bun i
         env:
@@ -34,6 +41,13 @@ jobs:
 
       - name: Setup Bun.js
         uses: oven-sh/setup-bun@v1
+
+      - uses: actions/cache@v4
+        with:
+          path: ~/.bun/install/cache
+          key: ${{ runner.os }}-${{ matrix.bun }}-bun-${{ hashFiles('**/bun.lockb') }}
+          restore-keys: |
+            ${{ runner.os }}-${{ matrix.bun }}-bun-
 
       - name: Install all dependencies
         run: bun i

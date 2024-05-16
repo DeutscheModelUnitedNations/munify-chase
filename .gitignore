@@ -1,3 +1,4 @@
+git-crypt-key
 node_modules
 .next
 **/*.pnp

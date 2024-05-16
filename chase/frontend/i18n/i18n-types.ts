@@ -192,6 +192,10 @@ type RootTranslation = {
 		 */
 		ABOUT_TEXT: string
 		/**
+		 * V​e​r​s​i​o​n​ ​a​n​d​ ​C​h​a​n​g​e​l​o​g
+		 */
+		VERSION_BUTTON: string
+		/**
 		 * O​u​r​ ​M​i​s​s​i​o​n
 		 */
 		MISSION_TITLE: string
@@ -1924,6 +1928,52 @@ type RootTranslation = {
 			REPLY_VIA_EMAIL: string
 		}
 	}
+	version: {
+		/**
+		 * V​e​r​s​i​o​n​ ​a​n​d​ ​C​h​a​n​g​e​l​o​g
+		 */
+		VERSION_MODAL_TITLE: string
+		/**
+		 * V​e​r​s​i​o​n
+		 */
+		VERSION: string
+		/**
+		 * C​h​a​n​g​e​l​o​g
+		 */
+		CHANGELOG: string
+		/**
+		 * T​h​i​s​ ​c​h​a​n​g​e​l​o​g​ ​s​h​o​w​s​ ​t​h​e​ ​c​h​a​n​g​e​s​ ​i​n​ ​t​h​e​ ​c​u​r​r​e​n​t​ ​a​n​d​ ​t​h​e​ ​p​a​s​t​ ​4​ ​v​e​r​s​i​o​n​s​.​ ​F​o​r​ ​m​o​r​e​ ​i​n​f​o​r​m​a​t​i​o​n​,​ ​v​i​s​i​t​ ​o​u​r​ ​G​i​t​H​u​b​ ​r​e​p​o​s​i​t​o​r​y​ ​b​y​ ​c​l​i​c​k​i​n​g​ ​t​h​e​ ​L​i​n​k​ ​a​t​ ​t​h​e​ ​b​o​t​t​o​m​.
+		 */
+		CHANGELOG_TEXT: string
+		/**
+		 * A​l​l​ ​R​e​l​e​a​s​e​s
+		 */
+		ALL_RELEASES: string
+		/**
+		 * O​u​t​d​a​t​e​d​ ​V​e​r​s​i​o​n
+		 */
+		NEW_VERSION_AVAILABLE: string
+		/**
+		 * A​ ​n​e​w​ ​v​e​r​s​i​o​n​ ​i​s​ ​a​v​a​i​l​a​b​l​e​.​ ​P​l​e​a​s​e​ ​n​o​t​i​f​y​ ​t​h​e​ ​s​e​r​v​e​r​ ​a​d​m​i​n​ ​t​o​ ​u​p​d​a​t​e​.
+		 */
+		NEW_VERSION_AVAILABLE_TEXT: string
+		/**
+		 * L​a​t​e​s​t​ ​V​e​r​s​i​o​n
+		 */
+		LATEST_VERSION: string
+		/**
+		 * Y​o​u​ ​a​r​e​ ​u​s​i​n​g​ ​t​h​e​ ​l​a​t​e​s​t​ ​v​e​r​s​i​o​n​ ​o​f​ ​C​H​A​S​E​.
+		 */
+		LATEST_VERSION_TEXT: string
+		/**
+		 * D​e​v​e​l​o​p​m​e​n​t​ ​V​e​r​s​i​o​n
+		 */
+		DEVELOPMENT_VERSION: string
+		/**
+		 * Y​o​u​ ​a​r​e​ ​u​s​i​n​g​ ​t​h​e​ ​d​e​v​e​l​o​p​m​e​n​t​ ​v​e​r​s​i​o​n​ ​o​f​ ​C​H​A​S​E​.
+		 */
+		DEVELOPMENT_VERSION_TEXT: string
+	}
 }
 
 export type TranslationFunctions = {
@@ -2104,6 +2154,10 @@ export type TranslationFunctions = {
 		 * CHASE (CHAirSoftwarE) is a web application for the management of debates in Model United Nations conferences. It is designed to be used by chairs and delegates alike. CHASE enables Chairs to manage debates with ease while delegates can follow along and collaborate with other delegates in a intuitive and structured matter. CHASE is free and open source software.
 		 */
 		ABOUT_TEXT: () => LocalizedString
+		/**
+		 * Version and Changelog
+		 */
+		VERSION_BUTTON: () => LocalizedString
 		/**
 		 * Our Mission
 		 */
@@ -3828,6 +3882,52 @@ export type TranslationFunctions = {
 			 */
 			REPLY_VIA_EMAIL: () => LocalizedString
 		}
+	}
+	version: {
+		/**
+		 * Version and Changelog
+		 */
+		VERSION_MODAL_TITLE: () => LocalizedString
+		/**
+		 * Version
+		 */
+		VERSION: () => LocalizedString
+		/**
+		 * Changelog
+		 */
+		CHANGELOG: () => LocalizedString
+		/**
+		 * This changelog shows the changes in the current and the past 4 versions. For more information, visit our GitHub repository by clicking the Link at the bottom.
+		 */
+		CHANGELOG_TEXT: () => LocalizedString
+		/**
+		 * All Releases
+		 */
+		ALL_RELEASES: () => LocalizedString
+		/**
+		 * Outdated Version
+		 */
+		NEW_VERSION_AVAILABLE: () => LocalizedString
+		/**
+		 * A new version is available. Please notify the server admin to update.
+		 */
+		NEW_VERSION_AVAILABLE_TEXT: () => LocalizedString
+		/**
+		 * Latest Version
+		 */
+		LATEST_VERSION: () => LocalizedString
+		/**
+		 * You are using the latest version of CHASE.
+		 */
+		LATEST_VERSION_TEXT: () => LocalizedString
+		/**
+		 * Development Version
+		 */
+		DEVELOPMENT_VERSION: () => LocalizedString
+		/**
+		 * You are using the development version of CHASE.
+		 */
+		DEVELOPMENT_VERSION_TEXT: () => LocalizedString
 	}
 }
 

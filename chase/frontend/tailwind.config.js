@@ -99,6 +99,7 @@ module.exports = {
         "group-hover",
       ]);
     }),
+    require("@tailwindcss/typography"),
   ],
   variants: {
     extend: {

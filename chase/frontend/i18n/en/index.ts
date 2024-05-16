@@ -65,6 +65,7 @@ const en = {
     ABOUT_TITEL: "About CHASE",
     ABOUT_TEXT:
       "CHASE (CHAirSoftwarE) is a web application for the management of debates in Model United Nations conferences. It is designed to be used by chairs and delegates alike. CHASE enables Chairs to manage debates with ease while delegates can follow along and collaborate with other delegates in a intuitive and structured matter. CHASE is free and open source software.",
+    VERSION_BUTTON: "Version and Changelog",
     MISSION_TITLE: "Our Mission",
     MISSION_TEXT:
       "CHASE is developed by members of the DMUN community. We want to provide a free and open source alternative to other existing debate management software. We want to make debate management more accessible to smaller conferences and make it easier for chairs to manage debates. CHASE is primarily developed for the german-speaking conferences of DMUN in Germany, which are MUN-SH, MUNBW and MUNBB, but we are always open to adapt CHASE to other conferences.",
@@ -213,9 +214,11 @@ const en = {
 
       configs: {
         pressWebsiteTitle: "Press Website",
-        pressWebsiteDescription: "Here you can configure the URL of the press website.",
+        pressWebsiteDescription:
+          "Here you can configure the URL of the press website.",
         feedbackWebsiteTitle: "Feedback Website",
-        feedbackWebsiteDescription: "Here you can configure the URL of the feedback website.",
+        feedbackWebsiteDescription:
+          "Here you can configure the URL of the feedback website.",
         successToast: "Configuration saved",
       },
 
@@ -557,7 +560,7 @@ const en = {
           LATIN_AMERICA: "Latin America and Caribbean",
           EASTERN_EUROPE: "Eastern Europe",
           WESTERN_EUROPE: "Western Europe and Others",
-        }
+        },
       },
     },
     attendance: {
@@ -671,6 +674,21 @@ const en = {
       PRINT: "Print message",
       REPLY_VIA_EMAIL: "Reply via Email",
     },
+  },
+  version: {
+    VERSION_MODAL_TITLE: "Version and Changelog",
+    VERSION: "Version",
+    CHANGELOG: "Changelog",
+    CHANGELOG_TEXT:
+      "This changelog shows the changes in the current and the past 4 versions. For more information, visit our GitHub repository by clicking the Link at the bottom.",
+    ALL_RELEASES: "All Releases",
+    NEW_VERSION_AVAILABLE: "Outdated Version",
+    NEW_VERSION_AVAILABLE_TEXT:
+      "A new version is available. Please notify the server admin to update.",
+    LATEST_VERSION: "Latest Version",
+    LATEST_VERSION_TEXT: "You are using the latest version of CHASE.",
+    DEVELOPMENT_VERSION: "Development Version",
+    DEVELOPMENT_VERSION_TEXT: "You are using the development version of CHASE.",
   },
 } satisfies BaseTranslation;
 

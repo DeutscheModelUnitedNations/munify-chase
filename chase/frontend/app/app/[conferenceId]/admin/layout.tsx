@@ -2,16 +2,6 @@
 import { useEffect, useContext } from "react";
 import Navbar from "@/components/navbar/navbar";
 import NavButton from "@/components/navbar/button";
-import type { IconProp } from "@fortawesome/fontawesome-svg-core";
-import {
-  faPodium,
-  faChartNetwork,
-  faFlag,
-  faGears,
-  faMegaphone,
-  faTableTree,
-  faUsers,
-} from "@fortawesome/pro-solid-svg-icons";
 import { useI18nContext } from "@/i18n/i18n-react";
 import { useRouter } from "next/navigation";
 import useMousetrap from "mousetrap-react";
@@ -86,38 +76,38 @@ function AdminNavbar() {
   return (
     <Navbar>
       <NavButton
-        icon={faChartNetwork as IconProp}
+        icon="chart-network"
         link="../hub/team/committees"
         title={LL.navbar.HUB()}
       />
       <div className="h-4" />
       <NavButton
-        icon={faTableTree as IconProp}
+        icon="table-tree"
         link={"./structure"}
         title={LL.admin.onboarding.steps.STEP_1()}
       />
       <NavButton
-        icon={faUsers as IconProp}
+        icon="users"
         link={"./teampool"}
         title={LL.admin.onboarding.steps.STEP_2()}
       />
       <NavButton
-        icon={faPodium as IconProp}
+        icon="podium"
         link={"./committees"}
         title={LL.admin.onboarding.steps.STEP_3()}
       />
       <NavButton
-        icon={faFlag as IconProp}
+        icon="flag"
         link={"./delegations"}
         title={LL.admin.onboarding.steps.STEP_4()}
       />
       <NavButton
-        icon={faMegaphone as IconProp}
+        icon="megaphone"
         link={"./non_state_actors"}
         title={LL.admin.onboarding.steps.STEP_5()}
       />
       <NavButton
-        icon={faGears as IconProp}
+        icon="gears"
         link={"./configs"}
         title={LL.admin.onboarding.steps.STEP_6()}
       />

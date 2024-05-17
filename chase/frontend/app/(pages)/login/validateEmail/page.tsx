@@ -4,10 +4,9 @@ import { useBackend } from "@/contexts/backend";
 import { useSearchParams } from "next/navigation";
 import Image from "next/image";
 import { Suspense, useEffect, useState } from "react";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faCircleNotch } from "@fortawesome/pro-solid-svg-icons";
 import { Button } from "primereact/button";
 import Link from "next/link";
+import FAIcon from "@/components/font_awesome_icon";
 
 export default () => {
   return (
@@ -123,8 +122,8 @@ function ValidateEmailComponent() {
       {errored === true ? <p>{errorMessage}</p> : undefined}
       {errored === false ? <p>{LL.login.EMAIL_CONFIRMED()}</p> : undefined}
       {errored === undefined ? (
-        <FontAwesomeIcon
-          icon={faCircleNotch}
+        <FAIcon
+          icon="circle-notch"
           spin
           size="3x"
           className="text-primary-500"

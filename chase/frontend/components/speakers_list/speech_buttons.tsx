@@ -2,27 +2,11 @@ import React, { useEffect, useState, useContext } from "react";
 import Button from "@components/button";
 import { SplitButton } from "primereact/splitbutton";
 import { Dialog } from "primereact/dialog";
-import {
-  faTrashCanXmark,
-  faHourglassClock,
-  faDiagramSuccessor,
-  faLock,
-  faLockOpen,
-  faMinus,
-  faPause,
-  faPodium,
-  faPlus,
-  faPlusCircle,
-  faRotateLeft,
-  faExclamationTriangle,
-} from "@fortawesome/pro-solid-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useI18nContext } from "@/i18n/i18n-react";
 import AddSpeakerOverlay from "./add_speaker";
 import ChangeSpeechTimeOverlay from "./change_speech_time";
-import type { IconProp } from "@fortawesome/fontawesome-svg-core";
 import useMousetrap from "mousetrap-react";
-import { useBackend, type BackendInstanceType } from "@/contexts/backend";
+import { useBackend } from "@/contexts/backend";
 import { $Enums } from "@prisma/generated/client";
 import { useToast } from "@/contexts/toast";
 import {
@@ -34,6 +18,7 @@ import { useUserIdent } from "@/contexts/user_ident";
 import { ConfirmDialog } from "primereact/confirmdialog";
 import type { MenuItem } from "primereact/menuitem";
 import { useBackendCall } from "@/hooks/useBackendCall";
+import FAIcon from "../font_awesome_icon";
 
 /**
  * This component is used to display the buttons for the Speakers List and Comment List on the Speakers List Page for participants.
@@ -135,7 +120,7 @@ export function ParticipantSpeechButtons() {
         {userOnSpeakersList ? (
           <Button
             label={LL.participants.speakersList.REMOVE_FROM_LIST_BUTTON()}
-            faIcon={faTrashCanXmark}
+            faIcon="trash-can-xmark"
             size="small"
             severity="danger"
             onClick={() => removeFromSpeakersList()}
@@ -147,7 +132,7 @@ export function ParticipantSpeechButtons() {
                 ? LL.participants.speakersList.LIST_CLOSED_BUTTON()
                 : LL.participants.speakersList.ADD_TO_LIST_BUTTON()
             }
-            faIcon={speakersListData?.isClosed ? faLock : faPodium}
+            faIcon={speakersListData?.isClosed ? "lock" : "podium"}
             size="small"
             disabled={speakersListData?.isClosed}
             onClick={() => addToSpeakersList()}
@@ -201,7 +186,7 @@ export function ChairSpeechButtons({
   const splitButtonItems: MenuItem[] = [
     {
       label: LL.chairs.speakersList.buttons.OPEN_LIST(),
-      icon: <FontAwesomeIcon icon={faLockOpen as IconProp} className="mr-2" />,
+      icon: <FAIcon icon={"lock-open"} className="mr-2" />,
       visible: speakersListData?.isClosed,
       command: () => {
         if (!speakersListData) return;
@@ -212,7 +197,7 @@ export function ChairSpeechButtons({
     },
     {
       label: LL.chairs.speakersList.buttons.CLOSE_LIST(),
-      icon: <FontAwesomeIcon icon={faLock as IconProp} className="mr-2" />,
+      icon: <FAIcon icon={"lock"} className="mr-2" />,
       visible: !!(speakersListData && !speakersListData?.isClosed),
       command: () => {
         if (!speakersListData) return;
@@ -223,9 +208,7 @@ export function ChairSpeechButtons({
     },
     {
       label: LL.chairs.speakersList.buttons.CLEAR_LIST(),
-      icon: (
-        <FontAwesomeIcon icon={faTrashCanXmark as IconProp} className="mr-2" />
-      ),
+      icon: <FAIcon icon="trash-can-xmark" className="mr-2" />,
       disabled: speakersListData?.speakers.length === 0,
       command: () => {
         if (!speakersListData) return;
@@ -236,9 +219,7 @@ export function ChairSpeechButtons({
     },
     {
       label: LL.chairs.speakersList.buttons.CHANGE_SPEECH_TIME(),
-      icon: (
-        <FontAwesomeIcon icon={faHourglassClock as IconProp} className="mr-2" />
-      ),
+      icon: <FAIcon icon="hourglass-clock" className="mr-2" />,
       command: () => setChangeSpeechTimeOverlayVisible(true),
     },
   ];
@@ -325,8 +306,8 @@ export function ChairSpeechButtons({
         dismissableMask
       >
         <div className="flex gap-10 mx-10 items-center justify-start">
-          <FontAwesomeIcon
-            icon={faExclamationTriangle}
+          <FAIcon
+            icon="exclamation-triangle"
             beatFade
             size={"3x"}
             className={
@@ -341,7 +322,7 @@ export function ChairSpeechButtons({
       <div className="flex gap-2 items-center justify-center">
         <Button
           label={LL.chairs.speakersList.buttons.START_TIMER()}
-          faIcon={faPodium}
+          faIcon="podium"
           size="small"
           keyboardShortcut={
             typeOfList === $Enums.SpeakersListCategory.SPEAKERS_LIST
@@ -359,7 +340,7 @@ export function ChairSpeechButtons({
         />
         <Button
           label={LL.chairs.speakersList.buttons.PAUSE_TIMER()}
-          faIcon={faPause}
+          faIcon="pause"
           size="small"
           keyboardShortcut={
             typeOfList === $Enums.SpeakersListCategory.SPEAKERS_LIST
@@ -376,7 +357,7 @@ export function ChairSpeechButtons({
           }}
         />
         <Button
-          faIcon={faRotateLeft}
+          faIcon="rotate-left"
           size="small"
           severity="danger"
           keyboardShortcut={
@@ -398,7 +379,7 @@ export function ChairSpeechButtons({
         />
         <Button
           label={LL.chairs.speakersList.buttons.REMOVE_TIME()}
-          faIcon={faMinus}
+          faIcon="minus"
           size="small"
           text
           disabled={speakersListData?.speakers.length === 0}
@@ -413,7 +394,7 @@ export function ChairSpeechButtons({
         />
         <Button
           label={LL.chairs.speakersList.buttons.ADD_TIME()}
-          faIcon={faPlus}
+          faIcon="plus"
           size="small"
           text
           disabled={speakersListData?.speakers.length === 0}
@@ -430,7 +411,7 @@ export function ChairSpeechButtons({
       <div className="flex gap-2 items-center justify-start flex-wrap">
         <Button
           label={LL.chairs.speakersList.buttons.NEXT_SPEAKER()}
-          faIcon={faDiagramSuccessor}
+          faIcon="diagram-successor"
           size="small"
           keyboardShortcut={
             typeOfList === $Enums.SpeakersListCategory.SPEAKERS_LIST
@@ -456,9 +437,7 @@ export function ChairSpeechButtons({
               </span>
             </>
           }
-          icon={
-            <FontAwesomeIcon icon={faPlusCircle as IconProp} className="mr-2" />
-          }
+          icon={<FAIcon icon="plus-circle" className="mr-2" />}
           size="small"
           onClick={() => setAddSpeakersOverlayVisible(true)}
           model={splitButtonItems}

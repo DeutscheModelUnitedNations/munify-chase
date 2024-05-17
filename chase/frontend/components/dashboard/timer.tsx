@@ -1,20 +1,11 @@
 import React, { useContext } from "react";
 import WidgetTemplate from "@components/widget_template";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import {
-  faComments,
-  faQuestion,
-  faPodium,
-  faMugHot,
-  faForwardStep,
-  faCircleNotch,
-} from "@fortawesome/pro-solid-svg-icons";
 import { useI18nContext } from "@/i18n/i18n-react";
 import { AnimatePresence, motion } from "framer-motion";
-import type { IconProp } from "@fortawesome/fontawesome-svg-core";
 import { Skeleton } from "primereact/skeleton";
 import Timer from "./countdown_timer";
 import { StatusTimer } from "@/contexts/status_timer";
+import FAIcon from "../font_awesome_icon";
 
 /**
  * This Component is used in the Dashboard. It shows the current timer status –
@@ -57,18 +48,18 @@ export default function TimerWidget({
     }
   };
 
-  const getIcon: () => IconProp = () => {
+  const getIcon: () => string = () => {
     switch (category) {
       case "FORMAL":
-        return faPodium as IconProp;
+        return "podium";
       case "INFORMAL":
-        return faComments as IconProp;
+        return "comments";
       case "PAUSE":
-        return faMugHot as IconProp;
+        return "mug-hot";
       case "SUSPENSION":
-        return faForwardStep as IconProp;
+        return "forward-step";
       default:
-        return faQuestion as IconProp;
+        return "question";
     }
   };
 
@@ -108,7 +99,7 @@ export default function TimerWidget({
               >
                 <div className="flex flex-col justify-center items-center text-center">
                   <div className="my-4">
-                    <FontAwesomeIcon icon={getIcon()} size="3x" />
+                    <FAIcon icon={getIcon()} size="3x" />
                   </div>
                   <div className="text-2xl font-bold">{getHeadline()}</div>
                   {until && (
@@ -129,8 +120,8 @@ export default function TimerWidget({
             <WidgetTemplate cardTitle="" additionalClassNames={getClassNames()}>
               <div className="flex flex-col justify-center items-center">
                 <div className="my-4">
-                  <FontAwesomeIcon
-                    icon={faCircleNotch}
+                  <FAIcon
+                    icon="circle-notch"
                     size="3x"
                     spin
                     className="text-primary-500"

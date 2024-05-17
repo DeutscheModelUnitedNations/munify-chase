@@ -1,7 +1,6 @@
 "use client";
 import React from "react";
 import Navbar from "@/components/home/navbar";
-import { faArrowLeft } from "@fortawesome/pro-solid-svg-icons";
 import Button from "@/components/button";
 import { useRouter } from "next/navigation";
 import { useI18nContext } from "@/i18n/i18n-react";
@@ -23,7 +22,7 @@ export default function Docs() {
             </p>
             <Button
               label={LL.docs.BACK_TO_HOME()}
-              faIcon={faArrowLeft}
+              faIcon="arrow-left"
               onClick={() => {
                 Router.push("/");
               }}

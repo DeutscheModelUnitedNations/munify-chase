@@ -3,7 +3,6 @@ import { useI18nContext } from "@/i18n/i18n-react";
 import { useBackend } from "@/contexts/backend";
 import ConfigWrapper from "@/components/dashboard/chair/config_wrapper";
 import Button from "@/components/button";
-import { faDiagramSubtask, faSave } from "@fortawesome/pro-solid-svg-icons";
 import {
   CommitteeDataContext,
   CommitteeIdContext,
@@ -57,7 +56,7 @@ export default function StateOfDebateWidget() {
         description={LL.chairs.dashboard.configurations.stateOfDebate.DESCRIPTION()}
       >
         <SmallInfoCard
-          icon={faDiagramSubtask}
+          icon="diagram-subtask"
           classNameForIconBox={
             committeeData?.stateOfDebate == null ||
             committeeData?.stateOfDebate === ""
@@ -82,7 +81,7 @@ export default function StateOfDebateWidget() {
             className="flex-1 w-full"
           />
           <Button
-            faIcon={faSave}
+            faIcon="save"
             onClick={() => {
               saveStateOfDebate();
             }}

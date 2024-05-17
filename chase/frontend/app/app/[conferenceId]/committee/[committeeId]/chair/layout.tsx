@@ -1,17 +1,8 @@
 "use client";
-import { useContext, useEffect } from "react";
+import { useContext } from "react";
 import Navbar from "@/components/navbar/navbar";
 import NavButton from "@/components/navbar/button";
-import {
-  faChalkboard,
-  faPodium,
-  faUsersLine,
-  faSquareSliders,
-  faInbox,
-  faRocketLaunch,
-} from "@fortawesome/pro-solid-svg-icons";
 import { useI18nContext } from "@/i18n/i18n-react";
-import type { IconProp } from "@fortawesome/fontawesome-svg-core";
 import { MessageCountContext, MessageCountProvider } from "@/contexts/messages";
 import ExternalLinks from "@/components/navbar/external_links";
 import { SpeakersListMiniatureProvider } from "@/contexts/speakers_list_miniature";
@@ -42,44 +33,44 @@ function ChairNavbar() {
   return (
     <Navbar>
       <NavButton
-        icon={faRocketLaunch as IconProp}
+        icon="rocket-launch"
         link="../../../hub/team/committees"
         title={LL.navbar.HUB()}
       />
       <div className="h-4" />
       <NavButton
-        icon={faSquareSliders as IconProp}
+        icon="square-sliders"
         link={"./dashboard"}
         title={LL.navbar.CONFIGURATION()}
       />
       <NavButton
-        icon={faUsersLine as IconProp}
+        icon="users-line"
         link={"./attendees"}
         title={LL.navbar.ATTENDEES()}
       />
       <NavButton
-        icon={faPodium as IconProp}
+        icon="podium"
         link={"./speakers"}
         title={LL.navbar.SPEAKERS()}
       />
       {/* <NavButton TODO add Voting page
-          icon={faPollPeople as IconProp}
+          icon="poll-people"
           link={"./voting"}
           title={LL.navbar.VOTING()} 
         /> */}
       <NavButton
-        icon={faChalkboard as IconProp}
+        icon="chalkboard"
         link={"./whiteboard"}
         title={LL.navbar.WHITEBOARD()}
       />
       <NavButton
-        icon={faInbox as IconProp}
+        icon="inbox"
         link={"./inbox"}
         title={LL.navbar.INBOX()}
         badge={messageCount ?? 0}
       />
       {/* <NavButton TODO add Resolution Editor page
-          icon={faScroll as IconProp}
+          icon="scroll"
           link={"./resolutions"}
           title={LL.navbar.RESOLUTIONS()}
         /> */}

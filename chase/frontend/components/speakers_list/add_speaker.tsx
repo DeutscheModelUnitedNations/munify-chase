@@ -1,7 +1,6 @@
 import { useContext, useState } from "react";
 import { useI18nContext } from "@/i18n/i18n-react";
 import Button from "@components/button";
-import { faPlus, faTimes } from "@fortawesome/pro-solid-svg-icons";
 import useMousetrap from "mousetrap-react";
 import CountryAutoComplete from "./country_auto_complete";
 import { useBackend } from "@/contexts/backend";
@@ -126,7 +125,7 @@ export default function AddSpeakerOverlay({
         <div className="flex gap-3 justify-end flex-wrap">
           <Button
             label={LL.chairs.speakersList.addSpeakerOverlay.BUTTON_CANCEL()}
-            faIcon={faTimes}
+            faIcon="times"
             onClick={closeOverlay}
             severity="danger"
             text
@@ -134,7 +133,7 @@ export default function AddSpeakerOverlay({
           />
           <Button
             label={LL.chairs.speakersList.addSpeakerOverlay.BUTTON_ADD_AND_CLOSE()}
-            faIcon={faPlus}
+            faIcon="plus"
             onClick={() => {
               sendAddSpeaker();
               closeOverlay();
@@ -144,7 +143,7 @@ export default function AddSpeakerOverlay({
           />
           <Button
             label={LL.chairs.speakersList.addSpeakerOverlay.BUTTON_ADD()}
-            faIcon={faPlus}
+            faIcon="plus"
             onClick={() => {
               sendAddSpeaker();
               setSelectedCountry(null);

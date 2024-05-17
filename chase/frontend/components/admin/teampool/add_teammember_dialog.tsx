@@ -5,7 +5,6 @@ import { Dialog } from "primereact/dialog";
 import { Toast } from "primereact/toast";
 import { InputText } from "primereact/inputtext";
 import { RadioButton } from "primereact/radiobutton";
-import { faPlus, faXmark } from "@fortawesome/pro-solid-svg-icons";
 import Button from "@/components/button";
 import useMousetrap from "mousetrap-react";
 import type { ConferenceRole } from "@prisma/generated/client";
@@ -136,7 +135,7 @@ export default function AddTeammemberDialog({
               className="w-full"
               type="button"
               severity="warning"
-              faIcon={faXmark}
+              faIcon="xmark"
               onClick={() => {
                 setInputMaskVisible(false);
                 resetInputMask();
@@ -146,7 +145,7 @@ export default function AddTeammemberDialog({
             <Button
               label={LL.admin.onboarding.structure.input.BUTTON_ADD()}
               className="w-full"
-              faIcon={faPlus}
+              faIcon="plus"
               type="submit"
               keyboardShortcut="⏎"
             />

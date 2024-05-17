@@ -1,23 +1,12 @@
 import React, { useState, useEffect, use } from "react";
 import { useI18nContext } from "@/i18n/i18n-react";
-import { useBackend } from "@/contexts/backend";
 import { Dialog } from "primereact/dialog";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import {
-  faCheck,
-  faCircle,
-  faCircleNotch,
-  faConstruction,
-  faExternalLink,
-  faPersonDigging,
-  faStars,
-  faTag,
-} from "@fortawesome/pro-solid-svg-icons";
 import Markdown from "react-markdown";
 import Button from "./button";
 import Link from "next/link";
 import SmallInfoCard from "./small_info_card";
 import { env } from "next-runtime-env";
+import FAIcon from "./font_awesome_icon";
 
 export default function VersionModal({
   visible,
@@ -63,7 +52,7 @@ export default function VersionModal({
       <Dialog
         header={
           <>
-            <FontAwesomeIcon icon={faStars} className="mr-3 text-orange-400" />
+            <FAIcon icon="stars" className="mr-3 text-orange-400" />
             {LL.version.VERSION_MODAL_TITLE()}
           </>
         }
@@ -76,12 +65,12 @@ export default function VersionModal({
           {LL.version.VERSION()}
         </h1>
         <div className="text-2xl font-mono font-bold text-white py-4 px-4 rounded-lg bg-primary-500 flex justify-center items-center mb-2">
-          <FontAwesomeIcon icon={faTag} className="mr-3" />
+          <FAIcon icon="tag" className="mr-3" />
           {version}
         </div>
         {version !== releases[0]?.name ? (
           version === "DEV" ? (
-            <SmallInfoCard icon={faConstruction}>
+            <SmallInfoCard icon="construction">
               <div className="flex flex-col">
                 <h3 className="font-bold">
                   {LL.version.DEVELOPMENT_VERSION()}
@@ -90,7 +79,7 @@ export default function VersionModal({
               </div>
             </SmallInfoCard>
           ) : (
-            <SmallInfoCard icon={faStars}>
+            <SmallInfoCard icon="stars">
               <div className="flex flex-col">
                 <h3 className="font-bold">
                   {LL.version.NEW_VERSION_AVAILABLE()}
@@ -101,7 +90,7 @@ export default function VersionModal({
           )
         ) : (
           <SmallInfoCard
-            icon={faCheck}
+            icon="check"
             classNameForContentBox="bg-green-500"
             classNameForIconBox="bg-green-500 text-green-500 border-green-500"
           >
@@ -132,7 +121,7 @@ export default function VersionModal({
                       className="text-2xl font-mono font-bold text-white py-2 px-4 rounded-lg bg-primary-500 flex justify-center items-center"
                       href={release.html_url}
                     >
-                      <FontAwesomeIcon icon={faTag} className="mr-3" />
+                      <FAIcon icon="tag" className="mr-3" />
                       {release.name}
                     </Link>
                     <div className="text-slate-900">
@@ -149,7 +138,7 @@ export default function VersionModal({
               );
             })
           ) : (
-            <FontAwesomeIcon icon={faCircleNotch} spin />
+            <FAIcon icon="circle-notch" spin />
           )}
           <Button
             label={LL.version.ALL_RELEASES()}
@@ -158,7 +147,7 @@ export default function VersionModal({
                 "https://github.com/deutschemodelunitednations/munify/releases",
               )
             }
-            faIcon={faExternalLink}
+            faIcon="external-link"
             className="mt-4"
           />
         </div>

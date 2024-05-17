@@ -5,13 +5,6 @@ import { InputText } from "primereact/inputtext";
 import { InputSwitch } from "primereact/inputswitch";
 import { SelectButton } from "primereact/selectbutton";
 import { Dropdown } from "primereact/dropdown";
-import {
-  faLightEmergencyOn,
-  faPlus,
-  faScaleBalanced,
-  faUsersLine,
-  faXmark,
-} from "@fortawesome/pro-solid-svg-icons";
 import Button from "@/components/button";
 import useMousetrap from "mousetrap-react";
 import type { $Enums } from "@prisma/generated/client";
@@ -75,17 +68,17 @@ export default function AddCommitteeDialog({
     {
       name: LL.admin.onboarding.structure.input.CATEGORY_SWITCH_COMMITTEE(),
       value: "COMMITTEE",
-      icon: faUsersLine,
+      icon: "users-line",
     },
     {
       name: LL.admin.onboarding.structure.input.CATEGORY_SWITCH_CRISIS(),
       value: "CRISIS",
-      icon: faLightEmergencyOn,
+      icon: "light-emergency-on",
     },
     {
       name: LL.admin.onboarding.structure.input.CATEGORY_SWITCH_ICJ(),
       value: "ICJ",
-      icon: faScaleBalanced,
+      icon: "scale-balance",
     },
   ];
 
@@ -171,7 +164,7 @@ export default function AddCommitteeDialog({
               label={LL.admin.onboarding.structure.input.BUTTON_CANCEL()}
               className="w-full"
               severity="warning"
-              faIcon={faXmark}
+              faIcon="xmark"
               onClick={() => {
                 setInputMaskVisible(false);
                 setNewCommitteeName("");
@@ -182,7 +175,7 @@ export default function AddCommitteeDialog({
             <Button
               label={LL.admin.onboarding.structure.input.BUTTON_ADD()}
               className="w-full"
-              faIcon={faPlus}
+              faIcon="plus"
               type="submit"
               keyboardShortcut="⏎"
             />

@@ -2,13 +2,11 @@ import React, { useState } from "react";
 import WidgetTemplate from "@components/widget_template";
 import { Button } from "primereact/button";
 import { useI18nContext } from "@/i18n/i18n-react";
-import { faGavel, faPaperPlane } from "@fortawesome/pro-solid-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import type { IconProp } from "@fortawesome/fontawesome-svg-core";
 import {
   ActionsOverlayChairMessage,
   ActionsOverlayResearchService,
 } from "./actions_overlay";
+import FAIcon from "../font_awesome_icon";
 
 /**
  * This Component is used in the Actions Widget on the Dashboard.
@@ -38,14 +36,14 @@ export default function ActionsWidget() {
           <Button
             label={LL.participants.dashboard.actionsWidget.CHAIR_BUTTON()}
             className="flex-1"
-            icon={<FontAwesomeIcon icon={faGavel as IconProp} />}
+            icon={<FAIcon icon="gavel" />}
             severity="warning"
             onClick={() => setDisplayChairDialog(true)}
           />
           <Button
             label={LL.participants.dashboard.actionsWidget.RESEARCH_SERVICE_BUTTON()}
             className="flex-1"
-            icon={<FontAwesomeIcon icon={faPaperPlane as IconProp} />}
+            icon={<FAIcon icon="paper-plane" />}
             severity="help"
             onClick={() => setDisplayResearchDialog(true)}
           />

@@ -7,19 +7,13 @@ import SpeakersListBlock from "@/components/speakers_list/speakers_list_block";
 import WidgetTemplate from "@/components/widget_template";
 import { useBackend, type BackendInstanceType } from "@/contexts/backend";
 import { Skeleton } from "primereact/skeleton";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import {
-  faArrowRotateLeft,
-  faMinus,
-  faPlus,
-  faPodium,
-} from "@fortawesome/pro-solid-svg-icons";
 import { useToast } from "@/contexts/toast";
 import WhiteboardWidget from "@/components/dashboard/whiteboard";
 import { StatusTimer } from "@/contexts/status_timer";
 import { useMediaQuery } from "react-responsive";
 import { pollBackendCall } from "@/hooks/pollBackendCall";
 import SpeakersListWidget from "@/components/dashboard/speakers_list";
+import FAIcon from "@/components/font_awesome_icon";
 
 export default function CommitteePresentationMode({
   params,
@@ -86,7 +80,7 @@ export default function CommitteePresentationMode({
                 )}
               </h1>
               <div className="flex gap-2 items-center mt-2">
-                <FontAwesomeIcon className="mx-2" icon={faPodium} />
+                <FAIcon className="mx-2" icon="podium" />
                 <h2 className="text-lg">
                   {agendaItem?.find((item) => item.isActive)?.title ?? (
                     <Skeleton
@@ -134,18 +128,18 @@ export default function CommitteePresentationMode({
       </div>
 
       <div className="absolute flex bottom-[10px] right-[10px] bg-white bg-opacity-50 rounded-full p-[10px] gap-[10px]">
-        <FontAwesomeIcon
-          icon={faArrowRotateLeft}
+        <FAIcon
+          icon="arrow-rotate-left"
           className="text-black text-[20px] cursor-pointer hover:scale-125 transition-transform duration-300 ease-in-out"
           onClick={() => setRemSize(16)}
         />
-        <FontAwesomeIcon
-          icon={faMinus}
+        <FAIcon
+          icon="minus"
           className="text-black text-[20px] cursor-pointer hover:scale-125 transition-transform duration-300 ease-in-out"
           onClick={() => setRemSize(remSize - 1)}
         />
-        <FontAwesomeIcon
-          icon={faPlus}
+        <FAIcon
+          icon="plus"
           className="text-black text-[20px] cursor-pointer hover:scale-125 transition-transform duration-300 ease-in-out"
           onClick={() => setRemSize(remSize + 1)}
         />

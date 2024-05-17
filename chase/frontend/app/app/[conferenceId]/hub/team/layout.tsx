@@ -1,13 +1,7 @@
 "use client";
 import Navbar from "@/components/navbar/navbar";
 import NavButton from "@/components/navbar/button";
-import {
-  faInbox,
-  faGears,
-  faRocketLaunch,
-} from "@fortawesome/pro-solid-svg-icons";
 import { useI18nContext } from "@/i18n/i18n-react";
-import type { IconProp } from "@fortawesome/fontawesome-svg-core";
 import { MyDelegationProvider, useUserIdent } from "@/contexts/user_ident";
 import { useContext, useEffect, useState } from "react";
 import { ConferenceIdContext } from "@/contexts/committee_data";
@@ -51,7 +45,7 @@ export default function ChairHubLayout({
       <div className="flex h-screen w-screen bg-white text-primary-100 dark:bg-primary-100 dark:text-primary-900 shadow-md overflow-hidden">
         <Navbar>
           <NavButton
-            icon={faRocketLaunch as IconProp}
+            icon="rocket-launch"
             link={"./committees"}
             title={LL.navbar.HUB()}
           />
@@ -68,14 +62,14 @@ export default function ChairHubLayout({
               ] as ($Enums.ConferenceRole | undefined)[]
             ).includes(role) && (
               <NavButton
-                icon={faInbox as IconProp}
+                icon="inbox"
                 link={"./inbox"}
                 title={LL.navbar.INBOX()}
               />
             )}
           {userIdent && role === $Enums.ConferenceRole.ADMIN && (
             <NavButton
-              icon={faGears as IconProp}
+              icon="gears"
               link={"../../admin/structure"}
               title={LL.navbar.INBOX()}
             />

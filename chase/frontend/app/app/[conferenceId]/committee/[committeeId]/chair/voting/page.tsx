@@ -6,15 +6,8 @@ import { useI18nContext } from "@/i18n/i18n-react";
 import { motionTestData } from "@/test_data";
 import type { Motion } from "@/custom_types/custom_types";
 import { TabMenu } from "primereact/tabmenu";
-
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import {
-  faCommentExclamation,
-  faClockRotateLeft,
-  faPollPeople,
-} from "@fortawesome/pro-solid-svg-icons";
 import { SplitButton } from "primereact/splitbutton";
-import type { IconProp } from "@fortawesome/fontawesome-svg-core";
+import FAIcon from "@/components/font_awesome_icon";
 
 type Tabs = "current-motions" | "recent-motions" | "recent-votings";
 
@@ -39,36 +32,21 @@ export default function ChairVoting() {
             model={[
               {
                 label: LL.participants.voting.ACTIVE_MOTIONS_TAB(),
-                icon: (
-                  <FontAwesomeIcon
-                    icon={faCommentExclamation as IconProp}
-                    className="mr-2"
-                  />
-                ),
+                icon: <FAIcon icon="comment-exclamation" className="mr-2" />,
                 command: () => {
                   setOpenTab("current-motions");
                 },
               },
               {
                 label: LL.participants.voting.RECENT_MOTIONS_TAB(),
-                icon: (
-                  <FontAwesomeIcon
-                    icon={faClockRotateLeft as IconProp}
-                    className="mr-2"
-                  />
-                ),
+                icon: <FAIcon icon="clock-rotate-left" className="mr-2" />,
                 command: () => {
                   setOpenTab("recent-motions");
                 },
               },
               {
                 label: LL.participants.voting.RECENT_VOTINGS_TAB(),
-                icon: (
-                  <FontAwesomeIcon
-                    icon={faPollPeople as IconProp}
-                    className="mr-2"
-                  />
-                ),
+                icon: <FAIcon icon="poll-people" className="mr-2" />,
                 command: () => {
                   setOpenTab("recent-votings");
                 },
@@ -83,12 +61,7 @@ export default function ChairVoting() {
               <>
                 <SplitButton
                   label={LL.chairs.voting.BUTTON_NEW_MOTION()}
-                  icon={
-                    <FontAwesomeIcon
-                      icon={faCommentExclamation as IconProp}
-                      className="mr-2"
-                    />
-                  }
+                  icon={<FAIcon icon="comment-exclamation" className="mr-2" />}
                   className="w-full"
                   onClick={() => {}}
                   model={[]}

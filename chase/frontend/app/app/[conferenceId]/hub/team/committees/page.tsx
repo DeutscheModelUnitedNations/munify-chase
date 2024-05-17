@@ -9,8 +9,7 @@ import { conferenceRoleTranslation } from "@/i18n/translation_utils";
 import { ConferenceIdContext } from "@/contexts/committee_data";
 import { useUserIdent } from "@/contexts/user_ident";
 import { useBackendTime } from "@/contexts/backendTime";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faRocketLaunch } from "@fortawesome/pro-solid-svg-icons";
+import FAIcon from "@/components/font_awesome_icon";
 
 export default function ChairHub({
   params,
@@ -26,8 +25,8 @@ export default function ChairHub({
     <>
       <div className="flex-1 flex flex-col">
         <HeaderTemplate>
-          <FontAwesomeIcon
-            icon={faRocketLaunch}
+          <FAIcon
+            icon="rocket-launch"
             className="text-4xl ml-6 mr-8 text-primary"
           />
           <div className="flex flex-col items-start justify-center">

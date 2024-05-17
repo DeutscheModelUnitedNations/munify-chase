@@ -1,6 +1,5 @@
 import React from "react";
 import Button from "../button";
-import type { IconDefinition } from "@fortawesome/fontawesome-svg-core";
 import { useRouter } from "next/navigation";
 
 type TextSectionProps = {
@@ -10,7 +9,7 @@ type TextSectionProps = {
     lable: string;
     link?: string;
     onClick?: () => void;
-    faIcon?: IconDefinition;
+    faIcon: string;
   };
 };
 

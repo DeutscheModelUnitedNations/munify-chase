@@ -2,12 +2,7 @@
 import React, { useContext, useEffect, useState } from "react";
 import Button from "@/components/button";
 import Whiteboard from "@/components/whiteboard";
-import {
-  faArrowRotateLeft,
-  faPaperPlane,
-} from "@fortawesome/pro-solid-svg-icons";
 import { useI18nContext } from "@/i18n/i18n-react";
-import type { IconProp } from "@fortawesome/fontawesome-svg-core";
 import { useBackend } from "@/contexts/backend";
 import { useToast } from "@/contexts/toast";
 import {
@@ -87,20 +82,20 @@ export default function ChairWhiteboard() {
         <div className="flex justify-end items-center gap-4">
           <Button
             label={LL.chairs.whiteboard.SAVE_BUTTON()}
-            faIcon={faPaperPlane as IconProp}
+            faIcon="paper-plane"
             onClick={() => pushWhiteboardContent()}
             loading={whiteboardButtonLoading}
             // disabled={!whiteboardContentChanged}
           />
           <Button
             label={LL.chairs.whiteboard.RESET_BUTTON()}
-            faIcon={faArrowRotateLeft as IconProp}
+            faIcon="arrow-rotate-left"
             severity="danger"
             onClick={() => resetWhiteboardContent()}
           />
         </div>
         <Whiteboard
-          value={whiteboardContent}
+          value="whiteboard-content"
           setContentFunction={setWhiteboardContent}
           className="flex-1 h-full max-h-[80vh]"
         />

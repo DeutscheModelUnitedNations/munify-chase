@@ -2,18 +2,8 @@
 import { useToast } from "@/contexts/toast";
 import Image from "next/image";
 import { useI18nContext } from "@/i18n/i18n-react";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { InputText } from "primereact/inputtext";
 import { useEffect, useState } from "react";
-import {
-  faArrowLeft,
-  faCircleNotch,
-  faEnvelopeDot,
-  faPaperPlane,
-  faRightToBracket,
-  faUserCheck,
-  faUserPlus,
-} from "@fortawesome/pro-solid-svg-icons";
 import Button from "@/components/button";
 import { useRouter } from "next/navigation";
 import SmallInfoCard from "@/components/small_info_card";
@@ -21,6 +11,7 @@ import { Skeleton } from "primereact/skeleton";
 import { Message } from "primereact/message";
 import { useBackend } from "@/contexts/backend";
 import { useBackendCall } from "@/hooks/useBackendCall";
+import FAIcon from "@/components/font_awesome_icon";
 
 const emailRegex =
   /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|.(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
@@ -131,8 +122,8 @@ export default () => {
   return (
     <>
       {initialLoading === true ? (
-        <FontAwesomeIcon
-          icon={faCircleNotch}
+        <FAIcon
+          icon="circle-notch"
           spin
           size="3x"
           className="text-primary-500"
@@ -148,7 +139,7 @@ export default () => {
           />
           <p>{LL.login.CREATION_SUCCESS()}</p>
           <Button
-            faIcon={faArrowLeft}
+            faIcon="arrow-left"
             label={LL.login.LOGIN_BUTTON()}
             onClick={() => router.refresh()}
             className="w-full mt-8"
@@ -185,12 +176,12 @@ export default () => {
                   />
                 ) : userState === "userNotFound" ? (
                   <>
-                    <SmallInfoCard icon={faUserPlus}>
+                    <SmallInfoCard icon="user-plus">
                       <p>{LL.login.ACCOUNT_NOT_YET_CREATED()}</p>
                     </SmallInfoCard>
                     <Button
                       type="submit"
-                      faIcon={faPaperPlane}
+                      faIcon="paper-plane"
                       label={LL.login.CREATE_ACCOUNT()}
                       loading={userCreateLoading}
                       className="w-full mt-3"
@@ -200,7 +191,7 @@ export default () => {
                 {userState === "ok" ? (
                   <>
                     <SmallInfoCard
-                      icon={faUserCheck}
+                      icon="user-check"
                       classNameForIconBox="bg-green-500 text-green-500 border-green-500"
                       classNameForContentBox="bg-green-500"
                     >
@@ -224,7 +215,7 @@ export default () => {
                       </button>
                     </small>
                     <Button
-                      faIcon={faRightToBracket}
+                      faIcon="right-to-bracket"
                       type="submit"
                       label={LL.login.LOGIN_BUTTON()}
                       loading={loginLoading}
@@ -234,7 +225,7 @@ export default () => {
                 ) : undefined}
                 {userState === "emailNotValidated" ? (
                   <SmallInfoCard
-                    icon={faEnvelopeDot}
+                    icon="envelope-dot"
                     classNameForIconBox="bg-yellow-500 text-yellow-500 border-yellow-500"
                     classNameForContentBox="bg-yellow-500"
                   >

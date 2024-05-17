@@ -3,26 +3,6 @@ import { useI18nContext } from "@/i18n/i18n-react";
 import { useBackend, type BackendInstanceType } from "@/contexts/backend";
 import { ScrollPanel } from "primereact/scrollpanel";
 import { LargeFlag } from "@/components/flag_templates";
-import {
-  faCircleQuestion,
-  faEnvelope,
-  faMicroscope,
-  faCircleExclamation,
-  faUserCheck,
-  faExclamationCircle,
-  faEye,
-  faEyeSlash,
-  faCommentExclamation,
-  faPodium,
-  faInboxFull,
-  faPaperPlane,
-  faPrint,
-  faTrash,
-  faUserTie,
-  faUserXmark,
-  faMailForward,
-  faMailReply,
-} from "@fortawesome/pro-solid-svg-icons";
 import { Tag } from "primereact/tag";
 import PrintMessageDocument from "@/components/inbox/print_message";
 import { Toolbar } from "primereact/toolbar";
@@ -32,7 +12,7 @@ import SmallInfoCard from "@/components/small_info_card";
 import { messageCategoryTranslation } from "@/i18n/translation_utils";
 import { useToast } from "@/contexts/toast";
 import { $Enums } from "@prisma/generated/client";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import FAIcon from "../font_awesome_icon";
 
 type ChairMessages = Awaited<
   ReturnType<
@@ -60,17 +40,17 @@ export default function MessageDetails({
   const getMessageCategoryIcon = () => {
     switch (message.category) {
       case $Enums.MessageCategory.TO_CHAIR:
-        return faInboxFull;
+        return "inbox-full";
       case $Enums.MessageCategory.GUEST_SPEAKER:
-        return faPodium;
+        return "podium";
       case $Enums.MessageCategory.FACT_CHECK:
-        return faCommentExclamation;
+        return "comment-exclamation";
       case $Enums.MessageCategory.INFORMATION:
-        return faCircleQuestion;
+        return "circle-question";
       case $Enums.MessageCategory.GENERAL_SECRETARY:
-        return faUserTie;
+        return "user-tie";
       case $Enums.MessageCategory.OTHER:
-        return faPaperPlane;
+        return "paper-plane";
     }
   };
 
@@ -102,8 +82,8 @@ export default function MessageDetails({
       <Button
         faIcon={
           message?.status.includes($Enums.MessageStatus.UNREAD)
-            ? faEyeSlash
-            : faEye
+            ? "eye-slash"
+            : "eye"
         }
         tooltip={LL.messageBoard.tooltips.UNREAD()}
         tooltipOptions={{ showDelay: 800, hideDelay: 300, position: "bottom" }}
@@ -145,7 +125,7 @@ export default function MessageDetails({
         }}
       />
       <Button
-        faIcon={faExclamationCircle}
+        faIcon="exclamation-circle"
         tooltip={LL.messageBoard.tooltips.PRIORITY()}
         tooltipOptions={{ showDelay: 800, hideDelay: 300, position: "bottom" }}
         severity={
@@ -195,8 +175,8 @@ export default function MessageDetails({
         tooltipOptions={{ showDelay: 800, hideDelay: 300, position: "bottom" }}
         faIcon={
           message?.status.includes($Enums.MessageStatus.ASSIGNED)
-            ? faUserXmark
-            : faUserCheck
+            ? "user-xmark"
+            : "user-check"
         }
         severity={
           message?.status.includes($Enums.MessageStatus.ASSIGNED)
@@ -241,7 +221,7 @@ export default function MessageDetails({
         }}
       />
       <Button
-        faIcon={faTrash}
+        faIcon="trash"
         severity="danger"
         tooltip={LL.messageBoard.tooltips.DELETE()}
         tooltipOptions={{ showDelay: 800, hideDelay: 300, position: "bottom" }}
@@ -275,7 +255,7 @@ export default function MessageDetails({
   const centerContent = (
     <div className="flex gap-2">
       <Button
-        faIcon={faMailForward}
+        faIcon="mail-forward"
         label={LL.messageBoard.BUTTON_FORWARD_TO_RESEARCH_SERVICE()}
         severity="warning"
         onClick={async () => {
@@ -306,13 +286,13 @@ export default function MessageDetails({
   const endContent = (
     <div className="flex gap-2">
       <Button
-        faIcon={faPrint}
+        faIcon="print"
         onClick={() => setShowPrintDialog(true)}
         tooltip={LL.messageBoard.tooltips.PRINT()}
         tooltipOptions={{ showDelay: 800, hideDelay: 300, position: "bottom" }}
       />
       <Button
-        faIcon={faMailReply}
+        faIcon="mail-reply"
         tooltip={LL.messageBoard.tooltips.REPLY_VIA_EMAIL()}
         tooltipOptions={{ showDelay: 800, hideDelay: 300, position: "bottom" }}
         onClick={() => window.open(`mailto:${message?.metaEmail}`)}
@@ -336,7 +316,7 @@ export default function MessageDetails({
                 value={LL.messageBoard.TAG_UNREAD()}
                 severity="info"
                 className="w-max"
-                icon={<FontAwesomeIcon icon={faEnvelope} className="mr-2" />}
+                icon={<FAIcon icon="envelope" className="mr-2" />}
               />
             )}
             {message.category !== $Enums.MessageCategory.TO_CHAIR &&
@@ -345,9 +325,7 @@ export default function MessageDetails({
                   value={LL.messageBoard.TAG_RESEARCH_SERVICE()}
                   severity="warning"
                   className="w-max"
-                  icon={
-                    <FontAwesomeIcon icon={faMicroscope} className="mr-2" />
-                  }
+                  icon={<FAIcon icon="microscope" className="mr-2" />}
                 />
               )}
             {message.status.includes($Enums.MessageStatus.PRIORITY) && (
@@ -355,12 +333,7 @@ export default function MessageDetails({
                 value={LL.messageBoard.TAG_PRIORITY()}
                 severity="danger"
                 className="w-max"
-                icon={
-                  <FontAwesomeIcon
-                    icon={faCircleExclamation}
-                    className="mr-2"
-                  />
-                }
+                icon={<FAIcon icon="circle-exclamation" className="mr-2" />}
               />
             )}
             {message.status.includes($Enums.MessageStatus.ASSIGNED) && (
@@ -368,7 +341,7 @@ export default function MessageDetails({
                 value={LL.messageBoard.TAG_ASSIGNED()}
                 severity="success"
                 className="w-max"
-                icon={<FontAwesomeIcon icon={faUserCheck} className="mr-2" />}
+                icon={<FAIcon icon="user-check" className="mr-2" />}
               />
             )}
           </div>

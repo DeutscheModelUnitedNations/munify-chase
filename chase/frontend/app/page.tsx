@@ -5,12 +5,6 @@ import Navbar from "@/components/home/navbar";
 import LandingHero from "@/components/home/landing_hero";
 import CardSection from "@/components/home/card_section";
 import TextSection from "@/components/home/text_section";
-import {
-  faCodeBranch,
-  faCodeCommit,
-  faExternalLink,
-  faStars,
-} from "@fortawesome/pro-solid-svg-icons";
 import Footer from "@/components/home/footer";
 import { useMediaQuery } from "react-responsive";
 import Image from "next/image";
@@ -42,7 +36,7 @@ export default function Home() {
                 objectFit="contain"
                 width={300}
                 height={100}
-                alt={"Chase Logo"}
+                alt="Chase Logo"
               />
             </div>
           )}
@@ -59,7 +53,7 @@ export default function Home() {
               button={{
                 lable: LL.home.VERSION_BUTTON(),
                 onClick: () => setVersionModalVisible(true),
-                faIcon: faStars,
+                faIcon: "stars",
               }}
             />
             <TextSection
@@ -68,7 +62,7 @@ export default function Home() {
               button={{
                 lable: LL.home.MISSION_BUTTON_LABEL(),
                 link: "https://www.dmun.de/",
-                faIcon: faExternalLink,
+                faIcon: "external-link",
               }}
             />
             <TextSection
@@ -77,7 +71,7 @@ export default function Home() {
               button={{
                 lable: LL.home.CONTRIBUTE_BUTTON_LABEL(),
                 link: "https://github.com/DeutscheModelUnitedNations/munify",
-                faIcon: faCodeBranch,
+                faIcon: "code-branch",
               }}
             />
           </div>

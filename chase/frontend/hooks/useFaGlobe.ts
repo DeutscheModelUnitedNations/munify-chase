@@ -1,24 +1,16 @@
-import type { IconDefinition } from "@fortawesome/fontawesome-svg-core";
-import {
-  faEarthAfrica,
-  faEarthAmericas,
-  faEarthAsia,
-  faEarthEurope,
-  faEarthOceania,
-} from "@fortawesome/pro-solid-svg-icons";
 import { useEffect, useState } from "react";
 
 export function useFaGlobe() {
-  const [icon, setIcon] = useState<IconDefinition>(faEarthOceania);
+  const [icon, setIcon] = useState<string>("earth-oceania");
 
   useEffect(() => {
     // random out of this list
     const icons = [
-      faEarthOceania,
-      faEarthAsia,
-      faEarthAfrica,
-      faEarthAmericas,
-      faEarthEurope,
+      "earth-oceania",
+      "earth-asia",
+      "earth-africa",
+      "earth-americas",
+      "earth-europe",
     ];
 
     const randomIcon = icons[Math.floor(Math.random() * icons.length)];

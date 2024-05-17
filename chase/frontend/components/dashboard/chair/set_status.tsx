@@ -6,22 +6,15 @@ import { useBackendTime } from "@/contexts/backendTime";
 import ConfigWrapper from "@/components/dashboard/chair/config_wrapper";
 import { Dropdown } from "primereact/dropdown";
 import Button from "@/components/button";
-import {
-  faComment,
-  faFloppyDisk,
-  faForwardStep,
-  faMugHot,
-  faPodium,
-} from "@fortawesome/pro-solid-svg-icons";
 import { InputText } from "primereact/inputtext";
 import { Calendar } from "primereact/calendar";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   CommitteeDataContext,
   CommitteeIdContext,
   ConferenceIdContext,
 } from "@/contexts/committee_data";
 import type { $Enums } from "@prisma/generated/client";
+import FAIcon from "@/components/font_awesome_icon";
 
 export default function SetStatusWidget() {
   const { LL, locale } = useI18nContext();
@@ -103,30 +96,30 @@ export default function SetStatusWidget() {
                 label:
                   LL.participants.dashboard.timerWidget.defaultHeadlines.FORMAL(),
                 value: "FORMAL",
-                icon: faPodium,
+                icon: "podium",
               },
               {
                 label:
                   LL.participants.dashboard.timerWidget.defaultHeadlines.INFORMAL(),
                 value: "INFORMAL",
-                icon: faComment,
+                icon: "comments",
               },
               {
                 label:
                   LL.participants.dashboard.timerWidget.defaultHeadlines.PAUSE(),
                 value: "PAUSE",
-                icon: faMugHot,
+                icon: "mug-hot",
               },
               {
                 label:
                   LL.participants.dashboard.timerWidget.defaultHeadlines.SUSPENSION(),
                 value: "SUSPENSION",
-                icon: faForwardStep,
+                icon: "forward-step",
               },
             ]}
             itemTemplate={(option) => (
               <div className="flex flex-gap items-center">
-                <FontAwesomeIcon icon={option.icon} className="w-8 mr-2" />
+                <FAIcon icon={option.icon} className="w-8 mr-2" />
                 {option.label}
               </div>
             )}
@@ -167,7 +160,7 @@ export default function SetStatusWidget() {
         />
 
         <Button
-          faIcon={faFloppyDisk}
+          faIcon="floppy-disk"
           label={LL.chairs.dashboard.configurations.statusTimer.BUTTON()}
           onClick={() => {
             updateStatus();

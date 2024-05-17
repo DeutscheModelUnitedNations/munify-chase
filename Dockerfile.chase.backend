@@ -3,7 +3,6 @@
 # install dependencies into temp directory
 # this will cache them and speed up future builds
 FROM oven/bun:latest AS install
-ENV FONTAWESOME_NPM_AUTH_TOKEN $FONTAWESOME_NPM_AUTH_TOKEN
 RUN mkdir -p /temp/dev
 COPY package.json bun.lockb bunfig.toml /temp/dev/
 COPY chase/backend/package.json /temp/dev/chase/backend/package.json

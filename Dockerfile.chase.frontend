@@ -1,6 +1,4 @@
 FROM oven/bun:latest AS install
-ARG FONTAWESOME_NPM_AUTH_TOKEN
-RUN export FONTAWESOME_NPM_AUTH_TOKEN=${FONTAWESOME_NPM_AUTH_TOKEN}
 COPY package.json bun.lockb bunfig.toml /temp/dev/
 COPY chase/backend/package.json /temp/dev/chase/backend/package.json
 COPY chase/frontend/package.json /temp/dev/chase/frontend/package.json

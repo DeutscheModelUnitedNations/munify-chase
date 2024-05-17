@@ -21,8 +21,6 @@ jobs:
 
       - name: Install all dependencies
         run: bun i
-        env:
-          FONTAWESOME_NPM_AUTH_TOKEN: ${{ secrets.FONTAWESOME_NPM_AUTH_TOKEN }}
 
         # typecheck the backend since it is required for the frontend
       - name: Typecheck backend
@@ -51,8 +49,6 @@ jobs:
 
       - name: Install all dependencies
         run: bun i
-        env:
-          FONTAWESOME_NPM_AUTH_TOKEN: ${{ secrets.FONTAWESOME_NPM_AUTH_TOKEN }}
 
       - name: Typecheck
         working-directory: ./chase/backend

@@ -31,7 +31,7 @@ export default function Participant_Pages_Layout({
             $Enums.ConferenceRole.NON_STATE_ACTOR && (
             <>
               <NavButton
-                icon={faChartNetwork}
+                icon="faChartNetwork"
                 link={`/app/${conferenceId}/hub/na`}
                 title="Hub"
               />
@@ -42,7 +42,7 @@ export default function Participant_Pages_Layout({
             $Enums.ConferenceRole.GUEST && (
             <>
               <NavButton
-                icon={faChartNetwork}
+                icon="faChartNetwork"
                 link={`/app/${conferenceId}/hub/guest`}
                 title="Hub"
               />
@@ -55,17 +55,17 @@ export default function Participant_Pages_Layout({
             title={LL.navbar.DASHBOARD()}
           />
           <NavButton
-            icon={faPodium as IconProp}
+            icon="podium"
             link={"./speakers"}
             title={LL.navbar.SPEAKERS()}
           />
           {/* <NavButton TODO add Voting Page
-          icon={faPollPeople as IconProp}
+          icon="poll-people"
           link={"./voting"}
           title={LL.navbar.VOTING()}
         /> */}
           {/* <NavButton TODO add Resolution Editor page
-          icon={faScroll as IconProp}
+          icon="scroll"
           link={"./resolutions"}
           title={LL.navbar.RESOLUTIONS()}
         /> */}

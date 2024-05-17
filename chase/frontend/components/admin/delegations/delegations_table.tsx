@@ -69,7 +69,7 @@ export default function DelegationsTable({
           <div className="w-full flex justify-end items-stretch gap-2">
             <Button
               label={LL.admin.onboarding.delegations.ADD_DELEGATION_BUTTON()}
-              faIcon={faPlus}
+              faIcon="plus"
               keyboardShortcut="N"
               onClick={() => openAddDelegationDialog(true)}
             />
@@ -128,8 +128,8 @@ export default function DelegationsTable({
                 <Button
                   faIcon={
                     delegationIsActive(delegation, committee)
-                      ? faCheck
-                      : faXmark
+                      ? "check"
+                      : "xmark"
                   }
                   size="small"
                   text={!delegationIsActive(delegation, committee)}
@@ -150,7 +150,7 @@ export default function DelegationsTable({
             <Button
               severity="danger"
               text
-              faIcon={faTrashAlt}
+              faIcon="trash-alt"
               onClick={() => deleteDelegation(delegation.id)}
               className="h-full"
             />

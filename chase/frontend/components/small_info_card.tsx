@@ -1,8 +1,7 @@
 import type React from "react";
 import { useEffect, useState } from "react";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import type { IconProp } from "@fortawesome/fontawesome-svg-core";
 import { Skeleton } from "primereact/skeleton";
+import FAIcon from "./font_awesome_icon";
 
 export default function SmallInfoCard({
   icon,
@@ -12,7 +11,7 @@ export default function SmallInfoCard({
   loading = false,
   children,
 }: {
-  icon: IconProp;
+  icon: string;
   classNameForIconBox?: string;
   classNameForContentBox?: string;
   className?: string;
@@ -30,7 +29,9 @@ export default function SmallInfoCard({
       <div
         className={`w-20 ${classNameForIconBox} border-l-[6px] sm:rounded-l-lg justify-center items-center w-full sm:w-auto bg-opacity-20 hidden sm:flex`}
       >
-        <FontAwesomeIcon icon={icon} className="text-2xl w-16" />
+        <div className="w-16 h-full flex justify-center items-center">
+        <FAIcon icon={icon} className="text-2xl" />
+        </div>
       </div>
       <div
         className={`w-full rounded-lg sm:rounded-none sm:rounded-r-lg flex items-center p-4 overflow-hidden text-center sm:text-left ${classNameForContentBox} bg-opacity-20`}

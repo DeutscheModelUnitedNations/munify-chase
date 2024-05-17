@@ -58,7 +58,7 @@ export default function RootLayout({
       baseLocale,
       locales,
       localStorageDetector,
-      navigatorDetector,
+      navigatorDetector
     );
   }
 
@@ -71,17 +71,26 @@ export default function RootLayout({
     >
       <head>
         <PublicEnvScript />
-        <script defer src="/fontawesome/js/fontawesome.min.js" />
+        {/* <script defer src="/fontawesome/js/fontawesome.min.js" />
         <script defer src="/fontawesome/js/brands.min.js" />
         <script defer src="/fontawesome/js/solid.min.js" />
-        <script defer src="/fontawesome/js/regular.min.js" />
+        <script defer src="/fontawesome/js/regular.min.js" /> */}
         {/* <script defer src="/fontawesome/js/light.min.js" />
         <script defer src="/fontawesome/js/thin.min.js" /> */}
-        <script defer src="/fontawesome/js/duotone.min.js" />
+        {/* <script defer src="/fontawesome/js/duotone.min.js" /> */}
         {/* <script defer src="/fontawesome/js/sharp-solid.min.js" />
         <script defer src="/fontawesome/js/sharp-regular.min.js" />
         <script defer src="/fontawesome/js/sharp-light.min.js" />
         <script defer src="/fontawesome/js/sharp-thin.min.js" /> */}
+        <link
+          href="/fontawesome/css/fontawesome.css"
+          rel="stylesheet"
+        />
+        <link
+          href="/fontawesome/css/brands.css"
+          rel="stylesheet"
+        />
+        <link href="/fontawesome/css/solid.css" rel="stylesheet" />
       </head>
 
       {/* <Head>

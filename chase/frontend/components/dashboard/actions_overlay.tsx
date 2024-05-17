@@ -13,7 +13,6 @@ import {
   faQuestionCircle,
   faUserTie,
 } from "@fortawesome/pro-solid-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import type { IconProp } from "@fortawesome/fontawesome-svg-core";
 import {
   CommitteeIdContext,
@@ -25,11 +24,12 @@ import { MyDelegationContext, useUserIdent } from "@/contexts/user_ident";
 import { useToast } from "@/contexts/toast";
 import type { $Enums } from "@prisma/generated/client";
 import { useBackend } from "@/contexts/backend";
+import FAIcon from "../font_awesome_icon";
 
 interface DropdownOptions {
   label: string;
   value: $Enums.MessageCategory;
-  icon: IconProp;
+  icon: string;
 }
 
 export function ActionsOverlayChairMessage({
@@ -177,31 +177,31 @@ export function ActionsOverlayResearchService({
       label:
         LL.participants.dashboard.actionsWidget.contactForm.categoryOptions.GUEST_SPEAKER(),
       value: "GUEST_SPEAKER",
-      icon: faPodium as IconProp,
+      icon: "podium",
     },
     {
       label:
         LL.participants.dashboard.actionsWidget.contactForm.categoryOptions.FACT_CHECK(),
       value: "FACT_CHECK",
-      icon: faExclamationTriangle as IconProp,
+      icon: "exclamation-triangle",
     },
     {
       label:
         LL.participants.dashboard.actionsWidget.contactForm.categoryOptions.INFORMATION(),
       value: "INFORMATION",
-      icon: faQuestionCircle as IconProp,
+      icon: "question-circle",
     },
     {
       label:
         LL.participants.dashboard.actionsWidget.contactForm.categoryOptions.GENERAL_SECRETARY(),
       value: "GENERAL_SECRETARY",
-      icon: faUserTie as IconProp,
+      icon: "user-tie",
     },
     {
       label:
         LL.participants.dashboard.actionsWidget.contactForm.categoryOptions.OTHER(),
       value: "OTHER",
-      icon: faPaperPlane as IconProp,
+      icon: "paper-plane"
     },
   ];
   const [subjectLine, setSubjectLine] = React.useState("");
@@ -210,7 +210,7 @@ export function ActionsOverlayResearchService({
   const categoryOptionTemplate = (option: DropdownOptions) => {
     return (
       <div className="flex items-center gap-4">
-        <FontAwesomeIcon icon={option.icon} />
+        <FAIcon icon={option.icon} />
         <span>{option.label}</span>
       </div>
     );
@@ -334,7 +334,7 @@ export function ActionsOverlayResearchService({
             onChange={(e) => setMessage(e.target.value)}
           />
           <p>
-            <FontAwesomeIcon icon={faInfoCircle as IconProp} />{" "}
+            <FAIcon icon="info-circle" />{" "}
             <small>
               {LL.participants.dashboard.actionsWidget.contactForm.INFO_MESSAGE()}
             </small>

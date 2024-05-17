@@ -121,7 +121,7 @@ function URLConfiguration({
           className="w-full"
         />
         <Button
-          faIcon={faSave}
+          faIcon="save"
           onClick={() => updateURLs()}
           disabled={disabled}
         />

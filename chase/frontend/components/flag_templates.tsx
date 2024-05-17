@@ -4,15 +4,9 @@ import getFlagPathByCode from "@/misc/get_flag_path_by_code";
 import getCountryNameByCode from "@/misc/get_country_name_by_code";
 import { useI18nContext } from "@/i18n/i18n-react";
 import { Skeleton } from "primereact/skeleton";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import {
-  faFlag,
-  faGlobe,
-  faGlobeAfrica,
-  faGlobeSnow,
-} from "@fortawesome/pro-solid-svg-icons";
 import NoDataPlaceholder from "./no_data_placeholder";
 import { useFaGlobe } from "@/hooks/useFaGlobe";
+import FAIcon from "./font_awesome_icon";
 
 /**
  * The following Components are all different sizes of flags.
@@ -157,7 +151,7 @@ export function FlagPlaceholder({
       className="!bg-primary-800 flex justify-center items-center"
       animation="none"
     >
-      <FontAwesomeIcon
+      <FAIcon
         icon={globeIcon}
         className="text-primary-700"
         style={{ fontSize: `${widthRem / 3}rem` }}

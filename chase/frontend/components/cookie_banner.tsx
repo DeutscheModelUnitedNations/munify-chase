@@ -42,7 +42,7 @@ export default function CookieBanner() {
           <div className="p-4">
             <Button
               severity="info"
-              faIcon={faCookieBite}
+              faIcon="cookie-bite"
               label={LL.cookieBanner.ACCEPT()}
               onClick={() => handleAcceptButtonClick()}
             />

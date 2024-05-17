@@ -58,7 +58,7 @@ export default function PrintMessageDocument({
             {({ url, loading, error }) => (
               <Button
                 label="Download PDF"
-                faIcon={faDownload}
+                faIcon="download"
                 loading={loading}
                 disabled={!!(!loading && !error && url)}
               />

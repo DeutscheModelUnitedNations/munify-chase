@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useContext } from "react";
 import { useI18nContext } from "@/i18n/i18n-react";
 import { HeaderInfoBox } from "../header_template";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import type { IconProp } from "@fortawesome/fontawesome-svg-core";
 import {
   faUserCheck,
@@ -16,6 +15,7 @@ import {
   CommitteeIdContext,
   CommitteeDataContext,
 } from "@/contexts/committee_data";
+import FAIcon from "../font_awesome_icon";
 
 type DelegationData = Awaited<
   ReturnType<
@@ -119,12 +119,12 @@ export default function PresenceWidget({
   }: {
     count: number;
     lable: string;
-    icon: IconProp;
+    icon: string;
   }) => {
     return (
       <>
         <div className="flex justify-self-center items-center">
-          <FontAwesomeIcon icon={icon} className="mr-2" />
+          <FAIcon icon={icon} className="mr-2" />
         </div>
         <div className="flex items-start">{lable}:</div>
         <div className="font-bold justify-self-center items-center ml-3 tabular-nums">
@@ -141,13 +141,13 @@ export default function PresenceWidget({
           <CounterCell
             count={presentAttendees}
             lable={LL.chairs.attendance.PRESENT()}
-            icon={faUserCheck as IconProp}
+            icon="user-check"
           />
           {showExcusedSeperately && (
             <CounterCell
               count={excusedAttendees}
               lable={LL.chairs.attendance.EXCUSED()}
-              icon={faUserClock as IconProp}
+              icon="user-clock"
             />
           )}
           <CounterCell
@@ -157,7 +157,7 @@ export default function PresenceWidget({
                 : absentAttendees + excusedAttendees
             }
             lable={LL.chairs.attendance.ABSENT()}
-            icon={faUserXmark as IconProp}
+            icon="user-xmark"
           />
         </div>
       </HeaderInfoBox>

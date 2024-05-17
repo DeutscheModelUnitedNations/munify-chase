@@ -1,13 +1,12 @@
 "use client";
 import React, { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import Link from "next/link";
-import type { IconProp } from "@fortawesome/fontawesome-svg-core";
 import { Badge } from "primereact/badge";
+import FAIcon from "../font_awesome_icon";
 
 interface NavbarButtonProps {
-  icon: IconProp;
+  icon: string;
   title: string;
   link?: string;
   badge?: number;
@@ -62,7 +61,7 @@ export default function NavbarButton({
 
   return (link === "" && onClick !== null) || newWindow ? (
     <div className={wrapperStyle} title={title}>
-      <FontAwesomeIcon
+      <FAIcon
         icon={icon}
         className=" text-xl m-3"
         onClick={newWindow ? openLinkInNewWindow : onClick}
@@ -71,11 +70,7 @@ export default function NavbarButton({
   ) : (
     <Link href={link} className="w-full" title={title}>
       <div className={wrapperStyle}>
-        <FontAwesomeIcon
-          icon={icon}
-          className="text-xl m-3"
-          beatFade={badge > 0}
-        />
+        <FAIcon icon={icon} className="text-xl m-3" beatFade={badge > 0} />
         {badge !== 0 && (
           <Badge
             value={badge}

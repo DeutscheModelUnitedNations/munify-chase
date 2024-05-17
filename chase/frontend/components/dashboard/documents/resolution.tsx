@@ -16,7 +16,7 @@ export default function Resolution({
   return (
     <Document
       documentId={documentId}
-      icon={faFileContract as IconProp}
+      icon="file-contract"
       topic={topic}
     />
   );

@@ -30,7 +30,7 @@ export default function ForwardBackButtons({
       <div className="w-full mt-8 flex justify-end items-stretch gap-4">
         <Button
           label={LL.admin.onboarding.BUTTON_ADVANCE()}
-          faIcon={faCheck}
+          faIcon="check"
           onClick={handleSaveFunction}
           loading={saveLoading}
           keyboardShortcut="⌥ + Enter"

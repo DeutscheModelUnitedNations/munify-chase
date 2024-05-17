@@ -53,7 +53,7 @@ export default function InboxPage() {
       />
       <div className="absolute bottom-5 right-5">
         <Button
-          faIcon={faPlus}
+          faIcon="plus"
           className="z-50"
           raised
           onClick={() => setDisplayResearchDialog(true)}

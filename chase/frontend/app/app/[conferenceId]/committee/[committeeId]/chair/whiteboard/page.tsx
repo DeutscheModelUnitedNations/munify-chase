@@ -87,20 +87,20 @@ export default function ChairWhiteboard() {
         <div className="flex justify-end items-center gap-4">
           <Button
             label={LL.chairs.whiteboard.SAVE_BUTTON()}
-            faIcon={faPaperPlane as IconProp}
+            faIcon="paper-plane"
             onClick={() => pushWhiteboardContent()}
             loading={whiteboardButtonLoading}
             // disabled={!whiteboardContentChanged}
           />
           <Button
             label={LL.chairs.whiteboard.RESET_BUTTON()}
-            faIcon={faArrowRotateLeft as IconProp}
+            faIcon="arrow-rotate-left"
             severity="danger"
             onClick={() => resetWhiteboardContent()}
           />
         </div>
         <Whiteboard
-          value={whiteboardContent}
+          value="whiteboard-content"
           setContentFunction={setWhiteboardContent}
           className="flex-1 h-full max-h-[80vh]"
         />

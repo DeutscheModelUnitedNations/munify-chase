@@ -126,7 +126,7 @@ export default function AddSpeakerOverlay({
         <div className="flex gap-3 justify-end flex-wrap">
           <Button
             label={LL.chairs.speakersList.addSpeakerOverlay.BUTTON_CANCEL()}
-            faIcon={faTimes}
+            faIcon="times"
             onClick={closeOverlay}
             severity="danger"
             text
@@ -134,7 +134,7 @@ export default function AddSpeakerOverlay({
           />
           <Button
             label={LL.chairs.speakersList.addSpeakerOverlay.BUTTON_ADD_AND_CLOSE()}
-            faIcon={faPlus}
+            faIcon="plus"
             onClick={() => {
               sendAddSpeaker();
               closeOverlay();
@@ -144,7 +144,7 @@ export default function AddSpeakerOverlay({
           />
           <Button
             label={LL.chairs.speakersList.addSpeakerOverlay.BUTTON_ADD()}
-            faIcon={faPlus}
+            faIcon="plus"
             onClick={() => {
               sendAddSpeaker();
               setSelectedCountry(null);

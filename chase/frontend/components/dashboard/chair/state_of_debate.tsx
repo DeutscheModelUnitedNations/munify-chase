@@ -57,7 +57,7 @@ export default function StateOfDebateWidget() {
         description={LL.chairs.dashboard.configurations.stateOfDebate.DESCRIPTION()}
       >
         <SmallInfoCard
-          icon={faDiagramSubtask}
+          icon="diagram-subtask"
           classNameForIconBox={
             committeeData?.stateOfDebate == null ||
             committeeData?.stateOfDebate === ""
@@ -82,7 +82,7 @@ export default function StateOfDebateWidget() {
             className="flex-1 w-full"
           />
           <Button
-            faIcon={faSave}
+            faIcon="save"
             onClick={() => {
               saveStateOfDebate();
             }}

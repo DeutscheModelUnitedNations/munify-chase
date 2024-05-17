@@ -108,7 +108,7 @@ export default function loginVorsitz() {
             <Button
               label={LL.admin.onboarding.submit()}
               className="w-full"
-              faIcon={faSparkles}
+              faIcon="sparkles"
               type="submit"
               loading={loading}
             />

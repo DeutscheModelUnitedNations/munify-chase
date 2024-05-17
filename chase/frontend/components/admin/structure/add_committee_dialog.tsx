@@ -171,7 +171,7 @@ export default function AddCommitteeDialog({
               label={LL.admin.onboarding.structure.input.BUTTON_CANCEL()}
               className="w-full"
               severity="warning"
-              faIcon={faXmark}
+              faIcon="xmark"
               onClick={() => {
                 setInputMaskVisible(false);
                 setNewCommitteeName("");
@@ -182,7 +182,7 @@ export default function AddCommitteeDialog({
             <Button
               label={LL.admin.onboarding.structure.input.BUTTON_ADD()}
               className="w-full"
-              faIcon={faPlus}
+              faIcon="plus"
               type="submit"
               keyboardShortcut="⏎"
             />

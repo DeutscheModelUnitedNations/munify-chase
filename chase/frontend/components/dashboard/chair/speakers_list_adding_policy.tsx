@@ -3,14 +3,13 @@ import { useI18nContext } from "@/i18n/i18n-react";
 import { useBackend } from "@/contexts/backend";
 import { useToast } from "@/contexts/toast";
 import ConfigWrapper from "@/components/dashboard/chair/config_wrapper";
-import { faLock, faLockOpen } from "@fortawesome/pro-solid-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { ToggleButton } from "primereact/togglebutton";
 import {
   CommitteeDataContext,
   CommitteeIdContext,
   ConferenceIdContext,
 } from "@/contexts/committee_data";
+import FAIcon from "@/components/font_awesome_icon";
 
 export default function SpeakersListAddingPolicyWidget() {
   const { LL } = useI18nContext();
@@ -29,8 +28,8 @@ export default function SpeakersListAddingPolicyWidget() {
         <ToggleButton
           onLabel={LL.chairs.dashboard.configurations.speakersListAdding.TOGGLE_BUTTON_ALLOWED()}
           offLabel={LL.chairs.dashboard.configurations.speakersListAdding.TOGGLE_BUTTON_NOT_ALLOWED()}
-          onIcon={<FontAwesomeIcon icon={faLockOpen} />}
-          offIcon={<FontAwesomeIcon icon={faLock} />}
+          onIcon={<FAIcon icon="lock-open" />}
+          offIcon={<FAIcon icon="lock" />}
           checked={committeeData?.allowDelegationsToAddThemselvesToSpeakersList}
           onChange={async (_e) => {
             if (!conferenceId || !committeeId) return;

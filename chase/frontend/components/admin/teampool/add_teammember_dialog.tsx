@@ -136,7 +136,7 @@ export default function AddTeammemberDialog({
               className="w-full"
               type="button"
               severity="warning"
-              faIcon={faXmark}
+              faIcon="xmark"
               onClick={() => {
                 setInputMaskVisible(false);
                 resetInputMask();
@@ -146,7 +146,7 @@ export default function AddTeammemberDialog({
             <Button
               label={LL.admin.onboarding.structure.input.BUTTON_ADD()}
               className="w-full"
-              faIcon={faPlus}
+              faIcon="plus"
               type="submit"
               keyboardShortcut="⏎"
             />

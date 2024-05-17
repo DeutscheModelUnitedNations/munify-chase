@@ -1,20 +1,9 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { useI18nContext } from "@/i18n/i18n-react";
 import { useBackend, type BackendInstanceType } from "@/contexts/backend";
 import { Skeleton } from "primereact/skeleton";
 import Link from "next/link";
 import Timer from "../dashboard/countdown_timer";
-import { useToast } from "@/contexts/toast";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import {
-  faCircleNotch,
-  faDiagramSubtask,
-  faPodium,
-  faComments,
-  faMugHot,
-  faForwardStep,
-  faQuestion,
-} from "@fortawesome/pro-solid-svg-icons";
 import type { IconProp } from "@fortawesome/fontawesome-svg-core";
 import SmallInfoCard from "../small_info_card";
 import {
@@ -23,6 +12,7 @@ import {
 } from "@/contexts/committee_data";
 import { StatusTimerProvider } from "@/contexts/status_timer";
 import { pollBackendCall } from "@/hooks/pollBackendCall";
+import FAIcon from "../font_awesome_icon";
 
 type CommitteeArray = Awaited<
   ReturnType<ReturnType<BackendInstanceType["conference"]>["committee"]["get"]>
@@ -111,20 +101,20 @@ function CommitteeCard({
     }
   }
 
-  const getIcon: (category: CommitteeType["status"]) => IconProp = (
+  const getIcon: (category: CommitteeType["status"]) => string = (
     category,
   ) => {
     switch (category) {
       case "FORMAL":
-        return faPodium as IconProp;
+        return "podium";
       case "INFORMAL":
-        return faComments as IconProp;
+        return "comments";
       case "PAUSE":
-        return faMugHot as IconProp;
+        return "mug-hot";
       case "SUSPENSION":
-        return faForwardStep as IconProp;
+        return "forward-step";
       default:
-        return faQuestion as IconProp;
+        return "question";
     }
   };
 
@@ -167,14 +157,14 @@ function CommitteeCard({
             <h3 className="text-lg truncate">{committee.name}</h3>
             <h1 className="flex-1 mt-4 mb-6 ml-4 text-4xl text-primary font-bold">
               {loading ? (
-                <FontAwesomeIcon icon={faCircleNotch} className="fa-spin" />
+                <FAIcon icon="circle-notch" className="fa-spin" />
               ) : (
                 committee.abbreviation
               )}
             </h1>
 
             <SmallInfoCard
-              icon={faPodium}
+              icon="podium"
               loading={!committee.agendaItems.find((i) => i.isActive)?.title}
             >
               <h3 className="text-lg truncate">
@@ -184,7 +174,7 @@ function CommitteeCard({
 
             {isChair && (
               <SmallInfoCard
-                icon={faDiagramSubtask}
+                icon="diagram-subtask"
                 loading={
                   committee?.stateOfDebate == null ||
                   committee?.stateOfDebate === ""

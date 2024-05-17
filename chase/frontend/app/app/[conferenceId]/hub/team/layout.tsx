@@ -51,7 +51,7 @@ export default function ChairHubLayout({
       <div className="flex h-screen w-screen bg-white text-primary-100 dark:bg-primary-100 dark:text-primary-900 shadow-md overflow-hidden">
         <Navbar>
           <NavButton
-            icon={faRocketLaunch as IconProp}
+            icon="rocket-launch"
             link={"./committees"}
             title={LL.navbar.HUB()}
           />
@@ -68,14 +68,14 @@ export default function ChairHubLayout({
               ] as ($Enums.ConferenceRole | undefined)[]
             ).includes(role) && (
               <NavButton
-                icon={faInbox as IconProp}
+                icon="inbox"
                 link={"./inbox"}
                 title={LL.navbar.INBOX()}
               />
             )}
           {userIdent && role === $Enums.ConferenceRole.ADMIN && (
             <NavButton
-              icon={faGears as IconProp}
+              icon="gears"
               link={"../../admin/structure"}
               title={LL.navbar.INBOX()}
             />

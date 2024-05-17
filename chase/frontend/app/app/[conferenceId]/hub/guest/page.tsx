@@ -28,7 +28,7 @@ export default function GuestHubPage({
             <CommitteeGrid conferenceId={params.conferenceId} />
             <Button
               className="mt-8"
-              faIcon={faArrowRightFromBracket}
+              faIcon="arrow-right-from-bracket"
               label={LL.hub.LOGOUT()}
               onClick={() => {
                 backend.auth.logout

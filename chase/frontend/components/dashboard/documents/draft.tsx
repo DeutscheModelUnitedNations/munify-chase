@@ -23,7 +23,7 @@ export default function Draft({
   return (
     <Document
       documentId={documentId}
-      icon={faFileLines as IconProp}
+      icon="file-lines"
       introducedBy={introducedBy}
       sponsors={sponsors}
     />

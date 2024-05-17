@@ -89,18 +89,18 @@ export default function VotingArea({
                       <div className="flex justify-center items-center gap-2 flex-wrap mt-5">
                         <Button
                           label={LL.chairs.voting.BUTTON_CHANGE_INFO()}
-                          faIcon={faMemoCircleInfo as IconProp}
+                          faIcon="memo-circle-info"
                           onClick={() => {}}
                         />
                         <Button
                           label={LL.chairs.voting.BUTTON_RESET()}
-                          faIcon={faUndo as IconProp}
+                          faIcon="undo"
                           onClick={() => {}}
                           severity="warning"
                         />
                         <Button
                           label={LL.chairs.voting.BUTTON_DELETE()}
-                          faIcon={faTrashAlt as IconProp}
+                          faIcon="trash-alt"
                           onClick={() => {}}
                           severity="danger"
                         />

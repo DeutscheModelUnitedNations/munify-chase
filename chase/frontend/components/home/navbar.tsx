@@ -130,7 +130,7 @@ export default function Navbar({
               />
             </Link>
             <Button
-              faIcon={faBars}
+              faIcon="bars"
               onClick={() => {
                 setShowMenu(!showMenu);
               }}
@@ -183,7 +183,7 @@ function NavButtons({
     <>
       {withAddButton && (
         <Button
-          faIcon={faPlus}
+          faIcon="plus"
           onClick={() => router.push("/app/admin/new")}
           text
           size="small"
@@ -193,7 +193,7 @@ function NavButtons({
         label={LL.home.navbar.DOCUMENTATION()}
         onClick={() => router.push("/docs")}
         severity="secondary"
-        faIcon={faBook}
+        faIcon="book"
         disabled={isDocs}
         size="small"
       />
@@ -201,14 +201,14 @@ function NavButtons({
         label={LL.home.navbar.FAQ()}
         onClick={() => router.push("/faq")}
         severity="secondary"
-        faIcon={faQuestionCircle}
+        faIcon="question-circle"
         disabled={isFAQ}
         size="small"
       />
       <Button
         label={LL.home.navbar.LOGIN_PARTICIPANT()}
         onClick={() => router.push("/login")}
-        faIcon={faRightToBracket}
+        faIcon="right-to-bracket"
         size="small"
       />
     </>

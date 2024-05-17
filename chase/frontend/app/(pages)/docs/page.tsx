@@ -23,7 +23,7 @@ export default function Docs() {
             </p>
             <Button
               label={LL.docs.BACK_TO_HOME()}
-              faIcon={faArrowLeft}
+              faIcon="arrow-left"
               onClick={() => {
                 Router.push("/");
               }}

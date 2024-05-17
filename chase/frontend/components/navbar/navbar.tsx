@@ -79,13 +79,13 @@ export default function Navbar({ children }: { children: React.ReactNode }) {
             setSettingsSidebarVisible={setSettingsSidebarVisible}
           />
           <NavButton
-            icon={faUserGear as IconProp}
+            icon="user-gear"
             onClick={() => setSettingsSidebarVisible(true)}
             title={LL.navbar.SETTINGS()}
           />
           <ConfirmDialog />
           <NavButton
-            icon={faRightFromBracket as IconProp}
+            icon="right-from-bracket"
             onClick={confirmLogout}
             title={LL.navbar.LOGOUT()}
           />

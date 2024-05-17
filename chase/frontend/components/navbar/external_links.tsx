@@ -29,7 +29,7 @@ export default function ExternalLinks() {
     <>
       {conferenceData?.pressWebsite && (
         <NavButton
-          icon={faNewspaper as IconProp}
+          icon="newspaper"
           newWindow
           link={conferenceData?.pressWebsite ?? "/"}
           title={LL.navbar.NEWS()}
@@ -37,14 +37,14 @@ export default function ExternalLinks() {
       )}
       {conferenceData?.feedbackWebsite && (
         <NavButton
-          icon={faCommentExclamation as IconProp}
+          icon="comment-exclamation"
           newWindow
           link={conferenceData?.feedbackWebsite ?? "/"}
           title={LL.navbar.BUG_REPORT()}
         />
       )}
       <NavButton
-        icon={faStars as IconProp}
+        icon="stars"
         onClick={() => {
           setVersionModalVisible(true);
         }}

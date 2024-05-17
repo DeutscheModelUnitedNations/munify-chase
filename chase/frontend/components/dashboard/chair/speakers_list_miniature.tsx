@@ -45,7 +45,7 @@ export default function SpeakersListMiniature() {
             <div className="absolute top-0 right-0 p-4 flex gap-2">
               <Button
                 text
-                faIcon={faArrowUpRightFromSquare}
+                faIcon="arrow-up-right-from-square"
                 onClick={() => {
                   router.push("./speakers");
                   setShowSpeakersListMiniature(false);
@@ -55,7 +55,7 @@ export default function SpeakersListMiniature() {
 
               <Button
                 text
-                faIcon={faXmark}
+                faIcon="xmark"
                 onClick={() => setShowSpeakersListMiniature(false)}
                 severity="danger"
               />

@@ -74,7 +74,7 @@ export default function TeamPoolTable({
             <div className="w-full flex justify-end items-stretch gap-2">
               <Button
                 label={LL.admin.onboarding.teampool.DELETE_ALL()}
-                faIcon={faTrashAlt}
+                faIcon="trash-alt"
                 disabled={team?.length === 0 || !team}
                 severity="danger"
                 onClick={(
@@ -83,7 +83,7 @@ export default function TeamPoolTable({
               />
               <Button
                 label={LL.admin.onboarding.teampool.ADD_TEAMMEMBER()}
-                faIcon={faPlus}
+                faIcon="plus"
                 keyboardShortcut="N"
                 onClick={() => setInputMaskVisible(true)}
               />
@@ -122,12 +122,12 @@ export default function TeamPoolTable({
             body={(rowData) => (
               <div className="flex gap-2">
                 <Button
-                  faIcon={faMinusCircle}
+                  faIcon="minus-circle"
                   severity="danger"
                   onClick={() => handleDelete(rowData.id[0])}
                 />
                 <Button
-                  faIcon={faPlusCircle}
+                  faIcon="plus-circle"
                   severity="success"
                   onClick={() =>
                     handleAdd({

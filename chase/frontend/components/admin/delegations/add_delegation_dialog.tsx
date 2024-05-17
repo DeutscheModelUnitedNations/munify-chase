@@ -89,7 +89,7 @@ export default function AddDelegationDialog({
             <Button
               label={LL.admin.onboarding.delegations.add_delegation.BACK_BUTTON()}
               severity="warning"
-              faIcon={faXmark}
+              faIcon="xmark"
               onClick={() => {
                 setInputMaskVisible(false);
                 resetInputMask();
@@ -99,14 +99,14 @@ export default function AddDelegationDialog({
             <div className="flex-1" />
             <Button
               label={LL.admin.onboarding.delegations.add_delegation.ADD_MORE_BUTTON()}
-              faIcon={faPlus}
+              faIcon="plus"
               type="submit"
               keyboardShortcut="⇧+⏎"
               onClick={() => addDelegationAndStay()}
             />
             <Button
               label={LL.admin.onboarding.delegations.add_delegation.ADD_BUTTON()}
-              faIcon={faPlus}
+              faIcon="plus"
               type="submit"
               keyboardShortcut="⏎"
               onClick={() => addDelegation()}

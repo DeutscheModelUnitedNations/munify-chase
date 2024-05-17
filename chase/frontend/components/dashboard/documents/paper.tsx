@@ -24,7 +24,7 @@ export default function Paper({
   return (
     <Document
       documentId={documentId}
-      icon={faClipboard as IconProp}
+      icon="clipboard"
       introducedBy={introducedBy}
       sponsors={sponsors}
       shared={shared}

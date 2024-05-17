@@ -107,7 +107,7 @@ export default function ChairAttendees() {
           />
           <div className="flex-1 flex gap-2 items-center justify-center">
             <Button
-              faIcon={faPersonFromPortal}
+              faIcon="person-from-portal"
               label={LL.chairs.attendance.SET_ALL_ABSENT()}
               onClick={() => {
                 if (!conferenceId || !committeeId) return;
@@ -126,7 +126,7 @@ export default function ChairAttendees() {
               severity="danger"
             />
             <Button
-              faIcon={faPersonToPortal}
+              faIcon="person-to-portal"
               label={LL.chairs.attendance.SET_ALL_PRESENT()}
               onClick={() => {
                 if (!conferenceId || !committeeId) return;

@@ -71,7 +71,7 @@ export default function ChairDashboardPage() {
                   description={LL.chairs.dashboard.configurations.overlay.DESCRIPTION()}
                 >
                   <Button
-                    faIcon={faPodium}
+                    faIcon="podium"
                     label={LL.chairs.dashboard.configurations.overlay.TOGGLE_BUTTON()}
                     keyboardShortcut="O"
                     onClick={() => toggleSpeakersListMiniature()}
@@ -83,7 +83,7 @@ export default function ChairDashboardPage() {
                   description={LL.chairs.dashboard.configurations.presentationMode.DESCRIPTION()}
                 >
                   <Button
-                    faIcon={faPresentationScreen}
+                    faIcon="presentation-screen"
                     label={LL.chairs.dashboard.configurations.presentationMode.BUTTON()}
                     onClick={() => {
                       window.open(
@@ -101,13 +101,13 @@ export default function ChairDashboardPage() {
                 >
                   <div className="flex gap-2 w-full">
                     <Button
-                      faIcon={faMagnifyingGlass}
+                      faIcon="magnifying-glass"
                       label={LL.chairs.dashboard.configurations.regionalGroups.BUTTON_LOOKUP()}
                       onClick={() => setRegionalGroupModalOpen(true)}
                       className="w-full"
                     />
                     <Button
-                      faIcon={faArrowsRotate}
+                      faIcon="arrows-rotate"
                       label={LL.chairs.dashboard.configurations.regionalGroups.BUTTON_PRESENTATION()}
                       onClick={() => {
                         window.open(

@@ -1,10 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { useI18nContext } from "@/i18n/i18n-react";
 import Markdown from "markdown-to-jsx";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faCircleNotch } from "@fortawesome/pro-solid-svg-icons";
 import styles from "./md_reader.module.css";
 import { useToast } from "@/contexts/toast";
+import FAIcon from "../font_awesome_icon";
 
 export default function MarkdownReader({ filename }: { filename: string }) {
   const { locale } = useI18nContext();
@@ -34,12 +33,7 @@ export default function MarkdownReader({ filename }: { filename: string }) {
     <>
       <div className="w-full flex flex-col items-center">
         {content === "" ? (
-          <FontAwesomeIcon
-            icon={faCircleNotch}
-            size="3x"
-            spin
-            className="text-primary"
-          />
+          <FAIcon icon="circle-notch" size="3x" spin className="text-primary" />
         ) : (
           <Markdown className={styles.container}>{content}</Markdown>
         )}

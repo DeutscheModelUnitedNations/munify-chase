@@ -2,19 +2,14 @@ import React, { useEffect, useContext, useState } from "react";
 import { useI18nContext } from "@/i18n/i18n-react";
 import { InputText } from "primereact/inputtext";
 import Button from "@/components/button";
-import {
-  faPlusCircle,
-  faPodium,
-  faTrashAlt,
-} from "@fortawesome/pro-solid-svg-icons";
 import { useBackend } from "@/contexts/backend";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useToast } from "@/contexts/toast";
 import {
   CommitteeIdContext,
   ConferenceIdContext,
 } from "@/contexts/committee_data";
 import { useBackendCall } from "@/hooks/useBackendCall";
+import FAIcon from "@/components/font_awesome_icon";
 
 export default function agendaItem() {
   const { LL } = useI18nContext();
@@ -101,11 +96,11 @@ export default function agendaItem() {
             key={item.id}
           >
             <div className="mx-4">
-              <FontAwesomeIcon icon={faPodium} className="text-primary-500" />
+              <FAIcon icon="podium" className="text-primary-500" />
             </div>
             <div className="flex-1 my-1">{item.title}</div>
             <Button
-              faIcon={faTrashAlt}
+              faIcon="trash-alt"
               severity="danger"
               text
               onClick={() => deleteAgendaItem(item.id)}
@@ -123,7 +118,7 @@ export default function agendaItem() {
           className="mt-3 flex-1"
         />
         <Button
-          faIcon={faPlusCircle}
+          faIcon="plus-circle"
           label={LL.admin.onboarding.committees.ADD_ITEM_BUTTON()}
           onClick={() => addAgendaItem()}
           disabled={inputValue === ""}

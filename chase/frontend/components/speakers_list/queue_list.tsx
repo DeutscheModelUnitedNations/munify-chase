@@ -122,7 +122,7 @@ function CountryCard({
               <>
                 {!isFirst && (
                   <Button
-                    faIcon={faChevronDoubleUp}
+                    faIcon="chevron-double-up"
                     onClick={async () => {
                       if (!listId) return;
                       await backend
@@ -135,7 +135,7 @@ function CountryCard({
                   />
                 )}
                 <Button
-                  faIcon={faChevronUp}
+                  faIcon="chevron-up"
                   onClick={async () => {
                     if (!listId) return;
                     await backend
@@ -147,7 +147,7 @@ function CountryCard({
                   size="small"
                 />
                 <Button
-                  faIcon={faChevronDown}
+                  faIcon="chevron-down"
                   onClick={async () => {
                     if (!listId) return;
                     await backend
@@ -162,7 +162,7 @@ function CountryCard({
               </>
             )}
             <Button
-              faIcon={faXmark}
+              faIcon="xmark"
               onClick={async () => {
                 if (!listId) return;
                 setLoadingDelete(true);

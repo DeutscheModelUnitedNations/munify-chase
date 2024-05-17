@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import type { CountryCode, Voting } from "@/custom_types/custom_types";
 import { Button } from "primereact/button";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faCircle,
   faMinusCircle,
@@ -11,6 +10,7 @@ import {
 import { useI18nContext } from "@/i18n/i18n-react";
 import { AnimatePresence, motion } from "framer-motion";
 import type { IconProp } from "@fortawesome/fontawesome-svg-core";
+import FAIcon from "../font_awesome_icon";
 
 /**
  * This Component is used in the Voting Component.
@@ -42,8 +42,8 @@ export default function CastVote({
               key={"loading"}
               className="flex justify-stretch items-center"
             >
-              <FontAwesomeIcon
-                icon={faCircleNotch as IconProp}
+              <FAIcon
+                icon="circle-notch"
                 className="text-primary animate-spin text-3xl"
               />
             </motion.div>
@@ -63,12 +63,7 @@ export default function CastVote({
                     color: "#fff",
                     borderColor: "var(--voting-for)",
                   }}
-                  icon={
-                    <FontAwesomeIcon
-                      icon={faPlusCircle as IconProp}
-                      className="mr-3"
-                    />
-                  }
+                  icon={<FAIcon icon="plus-circle" className="mr-3" />}
                   onClick={() => {
                     castVote("yes");
                   }}
@@ -81,12 +76,7 @@ export default function CastVote({
                       color: "#fff",
                       borderColor: "var(--voting-abstain)",
                     }}
-                    icon={
-                      <FontAwesomeIcon
-                        icon={faCircle as IconProp}
-                        className="mr-3"
-                      />
-                    }
+                    icon={<FAIcon icon="circle" className="mr-3" />}
                     onClick={() => {
                       castVote("abstain");
                     }}
@@ -99,12 +89,7 @@ export default function CastVote({
                     color: "#fff",
                     borderColor: "var(--voting-against)",
                   }}
-                  icon={
-                    <FontAwesomeIcon
-                      icon={faMinusCircle as IconProp}
-                      className="mr-3"
-                    />
-                  }
+                  icon={<FAIcon icon="minus-circle" className="mr-3" />}
                   onClick={() => {
                     castVote("no");
                   }}

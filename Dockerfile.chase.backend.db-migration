@@ -2,7 +2,7 @@
 # this will cache them and speed up future builds
 FROM oven/bun:latest AS install
 RUN mkdir -p /temp/dev
-COPY package.json bun.lockb bunfig.toml /temp/dev/
+COPY package.json bun.lockb /temp/dev/
 COPY chase/backend/package.json /temp/dev/chase/backend/package.json
 COPY chase/frontend/package.json /temp/dev/chase/frontend/package.json
 RUN cd /temp/dev/chase/backend && bun install @prisma/client

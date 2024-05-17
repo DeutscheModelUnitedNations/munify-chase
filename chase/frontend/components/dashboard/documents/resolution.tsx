@@ -1,7 +1,5 @@
 import React from "react";
-import { faFileContract } from "@fortawesome/pro-solid-svg-icons";
 import Document from "@components/dashboard/documents/document_template";
-import type { IconProp } from "@fortawesome/fontawesome-svg-core";
 
 /**
  * This Component is used in the Documents Widget on the Dashboard.

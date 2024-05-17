@@ -5,16 +5,10 @@ import useMousetrap from "mousetrap-react";
 import { Dialog } from "primereact/dialog";
 import SpeakersListWidget from "../speakers_list";
 import { useSpeakersListMiniature } from "@/contexts/speakers_list_miniature";
-import {
-  faArrowUpRightFromSquare,
-  faXmark,
-} from "@fortawesome/pro-solid-svg-icons";
 import Button from "@/components/button";
 import { useRouter } from "next/navigation";
 
 export default function SpeakersListMiniature() {
-  const { LL, locale } = useI18nContext();
-  const { backend } = useBackend();
   const router = useRouter();
 
   const {

@@ -3,7 +3,6 @@ import { useI18nContext } from "@/i18n/i18n-react";
 import CookieConsent from "react-cookie-consent";
 import Button from "./button";
 import Link from "next/link";
-import { faCookieBite } from "@fortawesome/pro-solid-svg-icons";
 
 export default function CookieBanner() {
   const { LL } = useI18nContext();

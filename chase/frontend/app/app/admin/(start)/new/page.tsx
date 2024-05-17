@@ -7,7 +7,6 @@ import { useI18nContext } from "@/i18n/i18n-react";
 import { InputText } from "primereact/inputtext";
 import { Calendar } from "primereact/calendar";
 import Button from "@/components/button";
-import { faSparkles } from "@fortawesome/pro-solid-svg-icons";
 import { useBackend } from "@/contexts/backend";
 import { useRouter } from "next/navigation";
 import { useToast } from "@/contexts/toast";

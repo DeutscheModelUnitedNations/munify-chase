@@ -9,7 +9,6 @@ import {
   PDFDownloadLink,
 } from "@react-pdf/renderer";
 import { Dialog } from "primereact/dialog";
-import { faDownload } from "@fortawesome/pro-solid-svg-icons";
 import Button from "../button";
 import type { BackendInstanceType } from "@/contexts/backend";
 import { useI18nContext } from "@/i18n/i18n-react";

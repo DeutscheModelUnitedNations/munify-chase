@@ -1,12 +1,6 @@
 import React, { useState, useEffect, useContext } from "react";
 import { useI18nContext } from "@/i18n/i18n-react";
 import { HeaderInfoBox } from "../header_template";
-import type { IconProp } from "@fortawesome/fontawesome-svg-core";
-import {
-  faUserCheck,
-  faUserClock,
-  faUserXmark,
-} from "@fortawesome/pro-solid-svg-icons";
 import { useBackend, type BackendInstanceType } from "@/contexts/backend";
 import { useToast } from "@/contexts/toast";
 import { $Enums } from "@prisma/generated/client";

@@ -1,7 +1,6 @@
 "use client";
 import React from "react";
 import Navbar from "@/components/home/navbar";
-import { faArrowLeft } from "@fortawesome/pro-solid-svg-icons";
 import Button from "@/components/button";
 import { useRouter } from "next/navigation";
 import MarkdownReader from "@/components/home/md_reader";

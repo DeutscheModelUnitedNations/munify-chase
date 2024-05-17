@@ -5,13 +5,6 @@ import Link from "next/link";
 import Image from "next/image";
 import Button from "@/components/button";
 import { useRouter } from "next/navigation";
-import {
-  faBars,
-  faBook,
-  faPlus,
-  faQuestionCircle,
-  faRightToBracket,
-} from "@fortawesome/pro-solid-svg-icons";
 import { AnimatePresence, motion } from "framer-motion";
 import { useMediaQuery } from "react-responsive";
 

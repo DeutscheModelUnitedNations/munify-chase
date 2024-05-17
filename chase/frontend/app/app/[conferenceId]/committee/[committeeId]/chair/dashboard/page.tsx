@@ -16,14 +16,6 @@ import AgendaSelection from "@/components/dashboard/chair/agenda_selection";
 import SetStatusWidget from "@/components/dashboard/chair/set_status";
 import SpeakersListAddingPolicyWidget from "@/components/dashboard/chair/speakers_list_adding_policy";
 import Button from "@/components/button";
-import {
-  faArrowsRotate,
-  faEarth,
-  faMagnifyingGlass,
-  faPodium,
-  faPresentationScreen,
-  faRecycle,
-} from "@fortawesome/pro-solid-svg-icons";
 import ConfigWrapper from "@/components/dashboard/chair/config_wrapper";
 import StateOfDebateWidget from "@/components/dashboard/chair/state_of_debate";
 import { useSpeakersListMiniature } from "@/contexts/speakers_list_miniature";

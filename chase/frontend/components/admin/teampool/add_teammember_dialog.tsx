@@ -5,7 +5,6 @@ import { Dialog } from "primereact/dialog";
 import { Toast } from "primereact/toast";
 import { InputText } from "primereact/inputtext";
 import { RadioButton } from "primereact/radiobutton";
-import { faPlus, faXmark } from "@fortawesome/pro-solid-svg-icons";
 import Button from "@/components/button";
 import useMousetrap from "mousetrap-react";
 import type { ConferenceRole } from "@prisma/generated/client";

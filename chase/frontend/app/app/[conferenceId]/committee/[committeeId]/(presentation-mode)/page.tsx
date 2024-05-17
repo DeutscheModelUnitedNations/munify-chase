@@ -7,12 +7,6 @@ import SpeakersListBlock from "@/components/speakers_list/speakers_list_block";
 import WidgetTemplate from "@/components/widget_template";
 import { useBackend, type BackendInstanceType } from "@/contexts/backend";
 import { Skeleton } from "primereact/skeleton";
-import {
-  faArrowRotateLeft,
-  faMinus,
-  faPlus,
-  faPodium,
-} from "@fortawesome/pro-solid-svg-icons";
 import { useToast } from "@/contexts/toast";
 import WhiteboardWidget from "@/components/dashboard/whiteboard";
 import { StatusTimer } from "@/contexts/status_timer";

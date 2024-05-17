@@ -4,7 +4,6 @@ import { useBackend, type BackendInstanceType } from "@/contexts/backend";
 import { Skeleton } from "primereact/skeleton";
 import Link from "next/link";
 import Timer from "../dashboard/countdown_timer";
-import type { IconProp } from "@fortawesome/fontawesome-svg-core";
 import SmallInfoCard from "../small_info_card";
 import {
   CommitteeDataProvider,

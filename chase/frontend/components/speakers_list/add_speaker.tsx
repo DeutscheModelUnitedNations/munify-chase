@@ -1,7 +1,6 @@
 import { useContext, useState } from "react";
 import { useI18nContext } from "@/i18n/i18n-react";
 import Button from "@components/button";
-import { faPlus, faTimes } from "@fortawesome/pro-solid-svg-icons";
 import useMousetrap from "mousetrap-react";
 import CountryAutoComplete from "./country_auto_complete";
 import { useBackend } from "@/contexts/backend";

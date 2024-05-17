@@ -2,16 +2,6 @@
 import { useEffect, useContext } from "react";
 import Navbar from "@/components/navbar/navbar";
 import NavButton from "@/components/navbar/button";
-import type { IconProp } from "@fortawesome/fontawesome-svg-core";
-import {
-  faPodium,
-  faChartNetwork,
-  faFlag,
-  faGears,
-  faMegaphone,
-  faTableTree,
-  faUsers,
-} from "@fortawesome/pro-solid-svg-icons";
 import { useI18nContext } from "@/i18n/i18n-react";
 import { useRouter } from "next/navigation";
 import useMousetrap from "mousetrap-react";

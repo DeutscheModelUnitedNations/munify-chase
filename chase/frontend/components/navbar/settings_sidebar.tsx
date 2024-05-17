@@ -2,16 +2,9 @@
 import React, { useEffect, useState } from "react";
 import { Sidebar } from "primereact/sidebar";
 import { SelectButton } from "primereact/selectbutton";
-import {
-  faDiamondHalfStroke,
-  faDisplay,
-  faMoon,
-  faSun,
-} from "@fortawesome/pro-solid-svg-icons";
 import { Dropdown } from "primereact/dropdown";
 import { SmallFlag } from "../flag_templates";
 import { useI18nContext } from "@/i18n/i18n-react";
-import type { IconProp } from "@fortawesome/fontawesome-svg-core";
 import FAIcon from "../font_awesome_icon";
 
 interface ColormodeOption {

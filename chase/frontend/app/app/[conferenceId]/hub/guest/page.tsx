@@ -3,7 +3,6 @@ import React from "react";
 import { useI18nContext } from "@/i18n/i18n-react";
 import CommitteeGrid from "@/components/navigation-hub/committee_grid";
 import Button from "@/components/button";
-import { faArrowRightFromBracket } from "@fortawesome/pro-solid-svg-icons";
 import { useBackend } from "@/contexts/backend";
 import { useRouter } from "next/navigation";
 import { useToast } from "@/contexts/toast";

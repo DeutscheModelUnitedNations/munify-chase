@@ -3,7 +3,6 @@ import { useI18nContext } from "@/i18n/i18n-react";
 import { useBackend } from "@/contexts/backend";
 import ConfigWrapper from "@/components/dashboard/chair/config_wrapper";
 import Button from "@/components/button";
-import { faDiagramSubtask, faSave } from "@fortawesome/pro-solid-svg-icons";
 import {
   CommitteeDataContext,
   CommitteeIdContext,

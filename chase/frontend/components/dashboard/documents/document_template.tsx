@@ -1,5 +1,4 @@
 import React from "react";
-import { faShareNodes } from "@fortawesome/pro-solid-svg-icons/faShareNodes";
 import WidgetBoxTemplate from "@/components/widget_box_template";
 import { SmallFlag } from "@/components/flag_templates";
 import type { CountryCode } from "@/custom_types/custom_types";

@@ -1,13 +1,7 @@
 import type { CountryCode, Voting } from "@/custom_types/custom_types";
 import getCountryNameByCode from "@/misc/get_country_name_by_code";
-import { faFlag } from "@fortawesome/pro-solid-svg-icons/faFlag";
-import { faGavel } from "@fortawesome/pro-solid-svg-icons/faGavel";
-import { faInfoCircle } from "@fortawesome/pro-solid-svg-icons/faInfoCircle";
-import { faPieChart } from "@fortawesome/pro-solid-svg-icons";
-import { faCheckToSlot } from "@fortawesome/pro-solid-svg-icons/faCheckToSlot";
 import { LargeFlag } from "@components/flag_templates";
 import { useI18nContext } from "@/i18n/i18n-react";
-import type { IconProp } from "@fortawesome/fontawesome-svg-core";
 import FAIcon from "../font_awesome_icon";
 
 /**

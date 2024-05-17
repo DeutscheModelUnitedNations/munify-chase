@@ -6,7 +6,6 @@ import { useI18nContext } from "@/i18n/i18n-react";
 import { useBackendCall } from "@/hooks/useBackendCall";
 import { useBackend } from "@/contexts/backend";
 import Button from "@/components/button";
-import { faSave } from "@fortawesome/pro-solid-svg-icons";
 import { ConferenceIdContext } from "@/contexts/committee_data";
 import { useToast } from "@/contexts/toast";
 

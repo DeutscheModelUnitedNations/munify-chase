@@ -15,10 +15,6 @@ import AttendanceTable, {
   type DelegationDataType,
 } from "@/components/attendance/attendance_table";
 import Button from "@/components/button";
-import {
-  faPersonFromPortal,
-  faPersonToPortal,
-} from "@fortawesome/pro-solid-svg-icons";
 import getCountryNameByCode from "@/misc/get_country_name_by_code";
 
 export default function ChairAttendees() {

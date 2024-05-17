@@ -2,12 +2,6 @@ import { useBackend } from "@/contexts/backend";
 import { ConferenceIdContext } from "@/contexts/committee_data";
 import { useBackendCall } from "@/hooks/useBackendCall";
 import { useI18nContext } from "@/i18n/i18n-react";
-import type { IconProp } from "@fortawesome/fontawesome-svg-core";
-import {
-  faCommentExclamation,
-  faNewspaper,
-  faStars,
-} from "@fortawesome/pro-solid-svg-icons";
 import { useContext, useState } from "react";
 import NavButton from "./button";
 import VersionModal from "../version_modal";

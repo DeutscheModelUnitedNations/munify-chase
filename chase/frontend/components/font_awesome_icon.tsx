@@ -1,7 +1,7 @@
 import type React from "react";
 import { useEffect, useState } from "react";
 
-interface FAIconProps {
+interface FAIconProps extends React.HTMLAttributes<HTMLElement> {
   icon: string;
   // Literal set of classes to add to the icon
   set?: "solid" | "regular" | "light" | "duotone" | "brands";

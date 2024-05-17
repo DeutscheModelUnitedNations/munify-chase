@@ -1,13 +1,6 @@
 import type { CountryCode, Voting } from "@/custom_types/custom_types";
 import React, { useEffect, useState } from "react";
 import { SmallFlag } from "../flag_templates";
-import {
-  faCircle,
-  faHourglassHalf,
-  faMinusCircle,
-  faPlusCircle,
-} from "@fortawesome/pro-solid-svg-icons";
-import type { IconProp } from "@fortawesome/fontawesome-svg-core";
 import { useI18nContext } from "@/i18n/i18n-react";
 import { AnimatePresence, motion } from "framer-motion";
 import FlipMove from "react-flip-move";

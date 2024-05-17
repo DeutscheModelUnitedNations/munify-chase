@@ -2,12 +2,6 @@ import type React from "react";
 import { useEffect, useState } from "react";
 import { useI18nContext } from "@/i18n/i18n-react";
 import Button from "@/components/button";
-import {
-  faMinusCircle,
-  faPlus,
-  faPlusCircle,
-  faTrashAlt,
-} from "@fortawesome/pro-solid-svg-icons";
 import { DataTable } from "primereact/datatable";
 import { Column } from "primereact/column";
 import { ConfirmPopup } from "primereact/confirmpopup";

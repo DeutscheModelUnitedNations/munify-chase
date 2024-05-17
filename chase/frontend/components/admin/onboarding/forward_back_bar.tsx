@@ -1,6 +1,5 @@
 import React from "react";
 import { useI18nContext } from "@/i18n/i18n-react";
-import { faArrowLeft, faCheck } from "@fortawesome/pro-solid-svg-icons";
 import Button from "@/components/button";
 import { useRouter } from "next/navigation";
 import useMousetrap from "mousetrap-react";

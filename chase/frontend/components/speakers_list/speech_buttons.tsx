@@ -5,9 +5,8 @@ import { Dialog } from "primereact/dialog";
 import { useI18nContext } from "@/i18n/i18n-react";
 import AddSpeakerOverlay from "./add_speaker";
 import ChangeSpeechTimeOverlay from "./change_speech_time";
-import type { IconProp } from "@fortawesome/fontawesome-svg-core";
 import useMousetrap from "mousetrap-react";
-import { useBackend, type BackendInstanceType } from "@/contexts/backend";
+import { useBackend } from "@/contexts/backend";
 import { $Enums } from "@prisma/generated/client";
 import { useToast } from "@/contexts/toast";
 import {

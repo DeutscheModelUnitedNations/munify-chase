@@ -3,12 +3,6 @@ import Button from "@/components/button";
 import { NormalFlag } from "@/components/flag_templates";
 import { useI18nContext } from "@/i18n/i18n-react";
 import getCountryNameByCode from "@/misc/get_country_name_by_code";
-import {
-  faCheck,
-  faPlus,
-  faTrashAlt,
-  faXmark,
-} from "@fortawesome/pro-solid-svg-icons";
 import { Column } from "primereact/column";
 import { DataTable } from "primereact/datatable";
 import { Toolbar } from "primereact/toolbar";

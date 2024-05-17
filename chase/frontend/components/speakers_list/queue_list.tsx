@@ -4,12 +4,6 @@ import getCountryNameByCode from "@/misc/get_country_name_by_code";
 import WidgetBoxTemplate from "../widget_box_template";
 import { NormalFlag as Flag } from "@components/flag_templates";
 import { useI18nContext } from "@/i18n/i18n-react";
-import {
-  faChevronDoubleUp,
-  faChevronDown,
-  faChevronUp,
-  faXmark,
-} from "@fortawesome/pro-solid-svg-icons";
 import Button from "@components/button";
 import { useBackend } from "@/contexts/backend";
 import {

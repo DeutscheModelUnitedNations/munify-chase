@@ -1,7 +1,6 @@
 "use client";
 import { useI18nContext } from "@/i18n/i18n-react";
 import Image from "next/image";
-import { faHome, faRightToBracket } from "@fortawesome/pro-solid-svg-icons";
 import Button from "@/components/button";
 
 export default () => {

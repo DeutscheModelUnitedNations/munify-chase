@@ -1,19 +1,18 @@
 import SchemaBuilder from "@pothos/core";
 import PrismaPlugin from "@pothos/plugin-prisma";
-import { db } from "./prisma/db";
-import { appConfiguration } from "./src/util/config";
-import type { PermissionsType } from "./src/auth/permissions";
-import type { Session } from "./src/auth/session";
+import { db } from "../../prisma/db";
+import { appConfiguration } from "../util/config";
+import type { PermissionsType } from "../auth/permissions";
+import type { Session } from "../auth/session";
 import ComplexityPlugin from "@pothos/plugin-complexity";
 import TracingPlugin, {
   wrapResolver,
   isRootField,
 } from "@pothos/plugin-tracing";
-import WithInputPlugin from "@pothos/plugin-with-input";
-import type PrismaTypes from "./prisma/generated/graphql/pothos-types";
+import PrismaUtils from "@pothos/plugin-prisma-utils";
 import type { Scalars } from "prisma-generator-pothos-codegen";
-import type { Prisma } from "./prisma/generated/client";
-
+import type { Prisma } from "../../prisma/generated/client";
+import type PrismaTypes from "../../prisma/generated/graphql/pothos-types";
 //TODO @pothos/plugin-smart-subscriptions
 
 export const builder = new SchemaBuilder<{
@@ -28,7 +27,7 @@ export const builder = new SchemaBuilder<{
     permissions: PermissionsType;
   };
 }>({
-  plugins: [PrismaPlugin, ComplexityPlugin, TracingPlugin, WithInputPlugin],
+  plugins: [PrismaPlugin, PrismaUtils, ComplexityPlugin, TracingPlugin],
   prisma: {
     client: db,
     exposeDescriptions: true,
@@ -39,7 +38,7 @@ export const builder = new SchemaBuilder<{
     defaultComplexity: 1,
     defaultListMultiplier: 10,
     limit: {
-      complexity: 500,
+      complexity: 1321,
       depth: 10,
       breadth: 50,
     },
@@ -55,12 +54,5 @@ export const builder = new SchemaBuilder<{
         );
       }),
   },
-  withInput: {
-    typeOptions: {
-      // default options for Input object types created by this plugin
-    },
-    argOptions: {
-      // set required: false to override default behavior
-    },
-  },
 });
+

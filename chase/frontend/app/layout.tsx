@@ -25,6 +25,7 @@ import { ToastProvider } from "@/contexts/toast";
 import { Backend } from "@/contexts/backend";
 import { BackendTime } from "@/contexts/backendTime";
 import CookieBanner from "@/components/cookie_banner";
+import { Head } from "next/document";
 
 const sans = Inter({
   subsets: ["latin"],
@@ -70,14 +71,9 @@ export default function RootLayout({
       className={`${sans.variable} ${serif.variable} ${mono.variable}`}
     >
       <head>
+        <title>Chase</title>
         <PublicEnvScript />
       </head>
-
-      {/* <Head>
-        <title>Chase</title> 
-        <PublicEnvScript />
-      </Head>
-     */}
 
       <body>
         {/* <PrimeReactProvider value={{ pt: Tailwind }}> */}

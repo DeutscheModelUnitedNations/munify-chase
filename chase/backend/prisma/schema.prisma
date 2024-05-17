@@ -14,29 +14,27 @@ datasource db {
 
 generator pothos {
   provider     = "prisma-pothos-types"
-  clientOutput = "../generated/client"
+  clientOutput = "../client"
   output       = "./generated/graphql/pothos-types.ts"
 }
 
 generator pothosCrud {
-  provider            = "prisma-generator-pothos-codegen"
+  provider = "prisma-generator-pothos-codegen"
   generatorConfigPath = "./pothos.config.js"
 }
 
 // TODO a max amount for passwords would make sense
 
 model Password {
-  id           String @id @default(uuid())
-  user         User   @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-  userId       String
-  /// @Pothos.omit()
+  id     String @id @default(uuid())
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  userId String
   passwordHash String
 }
 
 /// A token which can be used to grant one time access to something in the app e.g. confirming an email, resetting a password
 model Token {
-  id        String   @id @default(uuid())
-  /// @Pothos.omit()
+  id String @id @default(uuid())
   tokenHash String
   expiresAt DateTime
 
@@ -53,7 +51,7 @@ model PendingCredentialCreateTask {
 }
 
 model Email {
-  id      String @id @default(uuid())
+  id     String @id @default(uuid())
   email  String @unique
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
   userId String

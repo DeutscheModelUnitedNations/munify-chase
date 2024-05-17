@@ -1,22 +1,18 @@
 import Elysia from "elysia";
 import { createYoga } from "graphql-yoga";
-import { builder } from "../builder";
+import { builder } from "./resolvers/builder";
 
 import { sessionPlugin } from "./auth/session";
 import { permissionsPlugin } from "./auth/permissions";
-import { generateAllObjects } from "../prisma/generated/graphql/pothosCrud/autocrud";
 
 //TODO robots.txt
-
-generateAllObjects();
-// generateAllQueries();
-// generateAllMutations()
 
 builder.queryType({});
 builder.mutationType({});
 
 import "./resolvers/conference";
 import "./resolvers/committee";
+import "./resolvers/committeeMember";
 
 const yoga = createYoga({
   schema: builder.toSchema(),

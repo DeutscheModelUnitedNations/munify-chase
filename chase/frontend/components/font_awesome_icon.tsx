@@ -1,26 +1,7 @@
 import type React from "react";
+import { useEffect, useState } from "react";
 
-export default function FAIcon({
-  icon,
-  set = "solid",
-  className = "",
-  style = undefined,
-  size,
-  fixedWidth = false,
-  rotate,
-  flip,
-  beat,
-  fade,
-  beatFade,
-  bounce,
-  flipAnimation,
-  shake,
-  spin,
-  stackSize,
-  inverse,
-  powerTransform,
-  maskIcon,
-}: {
+interface FAIconProps {
   icon: string;
   // Literal set of classes to add to the icon
   set?: "solid" | "regular" | "light" | "duotone" | "brands";
@@ -69,34 +50,61 @@ export default function FAIcon({
   inverse?: boolean;
   powerTransform?: string;
   maskIcon?: string;
-}) {
-  const iconClassName = `fa-${set} fa-${icon}`;
+}
+
+export default function FAIcon({
+  icon,
+  set = "solid",
+  className = "",
+  size,
+  fixedWidth = false,
+  rotate,
+  flip,
+  beat,
+  fade,
+  beatFade,
+  bounce,
+  flipAnimation,
+  shake,
+  spin,
+  stackSize,
+  inverse,
+  powerTransform,
+  maskIcon,
+  ...props
+}: FAIconProps) {
+  const faIcon = () => {
+    return `fa-${set} fa-${icon}`;
+  };
+
+  const iconClassName = () => {
+    const classNames = [
+      faIcon(),
+      className,
+      size ? `fa-${size}` : "",
+      fixedWidth ? "fa-fw" : "",
+      rotate ? `fa-rotate-${rotate}` : "",
+      flip ? `fa-flip-${flip}` : "",
+      beat ? "fa-beat" : "",
+      fade ? "fa-fade" : "",
+      beatFade ? "fa-beat-fade" : "",
+      bounce ? "fa-bounce" : "",
+      flipAnimation ? "fa-flip-animation" : "",
+      shake ? "fa-shake" : "",
+      spin ? "fa-spin" : "",
+      stackSize ? `fa-stack-${stackSize}` : "",
+      inverse ? "fa-inverse" : "",
+    ];
+    return classNames.join(" ");
+  };
 
   return (
-    <>
-      <i
-        className={`
-          ${iconClassName}
-          ${className}
-          ${size ? `fa-${size}` : ""}
-          ${fixedWidth ? "fa-fw" : ""}
-          ${rotate ? `fa-rotate-${rotate}` : ""}
-          ${flip ? `fa-flip-${flip}` : ""}
-          ${beat ? "fa-beat" : ""}
-          ${fade ? "fa-fade" : ""}
-          ${beatFade ? "fa-beat-fade" : ""}
-          ${bounce ? "fa-bounce" : ""}
-          ${flipAnimation ? "fa-flip-animation" : ""}
-          ${shake ? "fa-shake" : ""}
-          ${spin ? "fa-spin" : ""}
-          ${stackSize ? `fa-stack-${stackSize}` : ""}
-          ${inverse ? "fa-inverse" : ""}
-        `}
-        style={style}
-        data-fa-transform={powerTransform}
-        data-fa-mask={maskIcon}
-      />
-    </>
+    <i
+      className={iconClassName()}
+      data-fa-transform={powerTransform}
+      data-fa-mask={maskIcon}
+      {...props}
+    />
   );
 }
 

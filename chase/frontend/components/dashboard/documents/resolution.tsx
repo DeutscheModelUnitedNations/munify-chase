@@ -12,10 +12,6 @@ export default function Resolution({
   topic,
 }: { documentId: string; topic?: string }) {
   return (
-    <Document
-      documentId={documentId}
-      icon="file-contract"
-      topic={topic}
-    />
+    <Document documentId={documentId} icon="file-contract" topic={topic} />
   );
 }

@@ -100,9 +100,7 @@ function CommitteeCard({
     }
   }
 
-  const getIcon: (category: CommitteeType["status"]) => string = (
-    category,
-  ) => {
+  const getIcon: (category: CommitteeType["status"]) => string = (category) => {
     switch (category) {
       case "FORMAL":
         return "podium";

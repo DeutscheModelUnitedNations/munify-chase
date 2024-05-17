@@ -192,7 +192,7 @@ export function ActionsOverlayResearchService({
       label:
         LL.participants.dashboard.actionsWidget.contactForm.categoryOptions.OTHER(),
       value: "OTHER",
-      icon: "paper-plane"
+      icon: "paper-plane",
     },
   ];
   const [subjectLine, setSubjectLine] = React.useState("");

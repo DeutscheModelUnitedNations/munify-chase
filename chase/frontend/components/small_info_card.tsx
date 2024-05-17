@@ -30,7 +30,7 @@ export default function SmallInfoCard({
         className={`w-20 ${classNameForIconBox} border-l-[6px] sm:rounded-l-lg justify-center items-center w-full sm:w-auto bg-opacity-20 hidden sm:flex`}
       >
         <div className="w-16 h-full flex justify-center items-center">
-        <FAIcon icon={icon} className="text-2xl" />
+          <FAIcon icon={icon} className="text-2xl" />
         </div>
       </div>
       <div

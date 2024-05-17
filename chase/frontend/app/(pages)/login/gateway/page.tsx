@@ -24,7 +24,7 @@ export default function LoginRedirectPage() {
   const conferenceMemberRedirectPath = (
     conferenceMembership: NonNullable<
       typeof myInfoData
-    >["conferenceMemberships"][number]
+    >["conferenceMemberships"][number],
   ) => {
     if (
       (
@@ -83,7 +83,7 @@ export default function LoginRedirectPage() {
                     label={LL.login.gateway.LAUNCH_BUTTON()}
                     onClick={() =>
                       router.push(
-                        conferenceMemberRedirectPath(conferenceMembership)
+                        conferenceMemberRedirectPath(conferenceMembership),
                       )
                     }
                   />
@@ -121,7 +121,7 @@ export default function LoginRedirectPage() {
                       {getCountryNameByCode(
                         committeeMembership.delegation?.nation.alpha3Code ??
                           "xxx",
-                        locale
+                        locale,
                       )}
                     </h2>
                   </div>

@@ -68,17 +68,17 @@ export default function AddCommitteeDialog({
     {
       name: LL.admin.onboarding.structure.input.CATEGORY_SWITCH_COMMITTEE(),
       value: "COMMITTEE",
-      icon: "users-line"
+      icon: "users-line",
     },
     {
       name: LL.admin.onboarding.structure.input.CATEGORY_SWITCH_CRISIS(),
       value: "CRISIS",
-      icon: "light-emergency-on"
+      icon: "light-emergency-on",
     },
     {
       name: LL.admin.onboarding.structure.input.CATEGORY_SWITCH_ICJ(),
       value: "ICJ",
-      icon: "scale-balance"
+      icon: "scale-balance",
     },
   ];
 

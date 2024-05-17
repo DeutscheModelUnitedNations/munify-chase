@@ -55,7 +55,7 @@ export default function RootLayout({
       baseLocale,
       locales,
       localStorageDetector,
-      navigatorDetector
+      navigatorDetector,
     );
   }
 
@@ -79,14 +79,8 @@ export default function RootLayout({
         <script defer src="/fontawesome/js/sharp-regular.min.js" />
         <script defer src="/fontawesome/js/sharp-light.min.js" />
         <script defer src="/fontawesome/js/sharp-thin.min.js" /> */}
-        <link
-          href="/fontawesome/css/fontawesome.css"
-          rel="stylesheet"
-        />
-        <link
-          href="/fontawesome/css/brands.css"
-          rel="stylesheet"
-        />
+        <link href="/fontawesome/css/fontawesome.css" rel="stylesheet" />
+        <link href="/fontawesome/css/brands.css" rel="stylesheet" />
         <link href="/fontawesome/css/solid.css" rel="stylesheet" />
       </head>
 

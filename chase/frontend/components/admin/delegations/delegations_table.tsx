@@ -3,12 +3,6 @@ import Button from "@/components/button";
 import { NormalFlag } from "@/components/flag_templates";
 import { useI18nContext } from "@/i18n/i18n-react";
 import getCountryNameByCode from "@/misc/get_country_name_by_code";
-import {
-  faCheck,
-  faPlus,
-  faTrashAlt,
-  faXmark,
-} from "@fortawesome/pro-solid-svg-icons";
 import { Column } from "primereact/column";
 import { DataTable } from "primereact/datatable";
 import { Toolbar } from "primereact/toolbar";
@@ -69,7 +63,7 @@ export default function DelegationsTable({
           <div className="w-full flex justify-end items-stretch gap-2">
             <Button
               label={LL.admin.onboarding.delegations.ADD_DELEGATION_BUTTON()}
-              faIcon={faPlus}
+              faIcon="plus"
               keyboardShortcut="N"
               onClick={() => openAddDelegationDialog(true)}
             />
@@ -128,8 +122,8 @@ export default function DelegationsTable({
                 <Button
                   faIcon={
                     delegationIsActive(delegation, committee)
-                      ? faCheck
-                      : faXmark
+                      ? "check"
+                      : "xmark"
                   }
                   size="small"
                   text={!delegationIsActive(delegation, committee)}
@@ -150,7 +144,7 @@ export default function DelegationsTable({
             <Button
               severity="danger"
               text
-              faIcon={faTrashAlt}
+              faIcon="trash-alt"
               onClick={() => deleteDelegation(delegation.id)}
               className="h-full"
             />

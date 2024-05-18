@@ -4,13 +4,13 @@ import { openApiTag } from "../util/openApiTags";
 import {
   ConferenceDataPlain,
   ConferenceDataPlainOptional,
-  // ConferencePlain,
 } from "../../prisma/generated/schema/Conference";
 import { ConferenceCreateToken } from "../../prisma/generated/schema/ConferenceCreateToken";
 import { User } from "../../prisma/generated/schema/User";
 import { permissionsPlugin } from "../auth/permissions";
 import { sessionPlugin } from "../auth/session";
-// import { ConferenceRole } from "../../prisma/generated/schema/ConferenceRole";
+import { ConferenceMember } from "../../prisma/generated/schema/ConferenceMember";
+import { Email } from "../../prisma/generated/schema/Email";
 
 export const conference = new Elysia()
   .use(sessionPlugin)
@@ -172,6 +172,78 @@ export const conference = new Elysia()
     {
       detail: {
         description: "Check if you are an admin of a conference.",
+        tags: [openApiTag(import.meta.path)],
+      },
+    },
+  )
+  .post(
+    "/conference/:conferenceId/populateMembers",
+    async ({ body, params, permissions }) => {
+      return Promise.all(
+        body.map((userData) =>
+          db.$transaction(async (tx) => {
+            const email = await tx.email.findFirst({
+              where: { email: userData.email },
+              include: { user: true },
+            });
+            let user = email?.user;
+            if (!email) {
+              user = await tx.user.create({
+                data: {
+                  name: userData.name,
+                  emails: {
+                    create: {
+                      email: userData.email,
+                      validated: true,
+                    },
+                  },
+                },
+              });
+            }
+
+            return tx.conferenceMember.upsert({
+              where: {
+                userId_conferenceId: {
+                  conferenceId: params.conferenceId,
+                  // biome-ignore lint/style/noNonNullAssertion: <explanation>
+                  userId: user!.id,
+                },
+                AND: [
+                  permissions.allowDatabaseAccessTo("create").ConferenceMember,
+                ],
+              },
+              create: {
+                role: userData.role,
+                user: {
+                  connect: {
+                    // biome-ignore lint/style/noNonNullAssertion: <explanation>
+                    id: user!.id,
+                  },
+                },
+                conference: {
+                  connect: {
+                    id: params.conferenceId,
+                  },
+                },
+              },
+              update: {
+                role: userData.role,
+              },
+            });
+          }),
+        ),
+      );
+    },
+    {
+      body: t.Array(
+        t.Object({
+          name: t.Index(User, ["name"]),
+          role: t.Index(ConferenceMember, ["role"]),
+          email: t.Index(Email, ["email"]),
+        }),
+      ),
+      detail: {
+        description: "Add conference members based on input data.",
         tags: [openApiTag(import.meta.path)],
       },
     },

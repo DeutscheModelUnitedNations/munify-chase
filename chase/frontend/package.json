@@ -47,6 +47,7 @@
     "react-cookie-consent": "^9.0.0",
     "react-dom": "18.3.1",
     "react-flip-move": "^3.0.5",
+    "react-github-button": "^0.1.11",
     "react-hook-form": "^7.51.3",
     "react-markdown": "^9.0.1",
     "react-responsive": "^10.0.0",
@@ -58,12 +59,13 @@
   },
   "devDependencies": {
     "@gqty/react": "^3.0.0-alpha-7b21563c.0",
-    "@types/node": "20.12.8",
     "bun-types": "latest",
-    "concurrently": "^8.2.2",
-    "elysia": "^1.0.16",
     "gqty": "^3.0.0-alpha-7b21563c.0",
     "graphql": "^16.8.1",
+    "@tailwindcss/typography": "^0.5.13",
+    "@types/node": "20.12.8",
+    "concurrently": "^8.2.2",
+    "elysia": "^1.0.16",
     "nodemon": "^3.1.0",
     "sass": "^1.76.0"
   }

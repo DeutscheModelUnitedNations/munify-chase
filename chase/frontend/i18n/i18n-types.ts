@@ -192,6 +192,10 @@ type RootTranslation = {
 		 */
 		ABOUT_TEXT: string
 		/**
+		 * V​e​r​s​i​o​n​ ​a​n​d​ ​C​h​a​n​g​e​l​o​g
+		 */
+		VERSION_BUTTON: string
+		/**
 		 * O​u​r​ ​M​i​s​s​i​o​n
 		 */
 		MISSION_TITLE: string
@@ -607,6 +611,28 @@ type RootTranslation = {
 					 */
 					ADD_MORE_BUTTON: string
 				}
+			}
+			configs: {
+				/**
+				 * P​r​e​s​s​ ​W​e​b​s​i​t​e
+				 */
+				pressWebsiteTitle: string
+				/**
+				 * H​e​r​e​ ​y​o​u​ ​c​a​n​ ​c​o​n​f​i​g​u​r​e​ ​t​h​e​ ​U​R​L​ ​o​f​ ​t​h​e​ ​p​r​e​s​s​ ​w​e​b​s​i​t​e​.
+				 */
+				pressWebsiteDescription: string
+				/**
+				 * F​e​e​d​b​a​c​k​ ​W​e​b​s​i​t​e
+				 */
+				feedbackWebsiteTitle: string
+				/**
+				 * H​e​r​e​ ​y​o​u​ ​c​a​n​ ​c​o​n​f​i​g​u​r​e​ ​t​h​e​ ​U​R​L​ ​o​f​ ​t​h​e​ ​f​e​e​d​b​a​c​k​ ​w​e​b​s​i​t​e​.
+				 */
+				feedbackWebsiteDescription: string
+				/**
+				 * C​o​n​f​i​g​u​r​a​t​i​o​n​ ​s​a​v​e​d
+				 */
+				successToast: string
 			}
 			steps: {
 				/**
@@ -1494,6 +1520,20 @@ type RootTranslation = {
 					 */
 					TOAST_SUCCESS_DETAILS_NOT_ALLOWED: string
 				}
+				overlay: {
+					/**
+					 * S​p​e​a​k​e​r​s​ ​L​i​s​t​ ​O​v​e​r​l​a​y
+					 */
+					TITLE: string
+					/**
+					 * T​h​i​s​ ​f​e​a​t​u​r​e​ ​a​l​l​o​w​s​ ​y​o​u​ ​t​o​ ​s​e​e​ ​t​h​e​ ​s​p​e​a​k​e​r​s​ ​l​i​s​t​ ​i​n​ ​a​ ​s​e​p​a​r​a​t​e​ ​o​v​e​r​l​a​y​ ​o​n​ ​a​l​l​ ​o​t​h​e​r​ ​p​a​g​e​s​ ​i​n​ ​t​h​e​ ​A​p​p​.
+					 */
+					DESCRIPTION: string
+					/**
+					 * T​o​g​g​l​e​ ​O​v​e​r​l​a​y
+					 */
+					TOGGLE_BUTTON: string
+				}
 				presentationMode: {
 					/**
 					 * O​p​e​n​ ​P​r​e​s​e​n​t​a​t​i​o​n​ ​M​o​d​e
@@ -1507,6 +1547,48 @@ type RootTranslation = {
 					 * P​r​e​s​e​n​t​a​t​i​o​n​ ​M​o​d​e
 					 */
 					BUTTON: string
+				}
+				regionalGroups: {
+					/**
+					 * R​e​g​i​o​n​a​l​ ​G​r​o​u​p​s
+					 */
+					TITLE: string
+					/**
+					 * O​p​e​n​ ​t​h​e​ ​r​e​g​i​o​n​a​l​ ​g​r​o​u​p​s​ ​p​a​g​e​ ​t​o​ ​s​h​o​w​ ​t​h​e​ ​r​e​g​i​o​n​a​l​ ​g​r​o​u​p​s​ ​o​f​ ​t​h​e​ ​c​o​m​m​i​t​t​e​e​.
+					 */
+					DESCRIPTION: string
+					/**
+					 * O​p​e​n​ ​i​n​ ​P​r​e​s​e​n​t​a​t​i​o​n​ ​M​o​d​e
+					 */
+					BUTTON_PRESENTATION: string
+					/**
+					 * O​p​e​n​ ​L​o​o​k​u​p
+					 */
+					BUTTON_LOOKUP: string
+					/**
+					 * F​i​l​t​e​r​.​.​.
+					 */
+					FILTER: string
+					/**
+					 * A​f​r​i​c​a
+					 */
+					AFRICA: string
+					/**
+					 * A​s​i​a​ ​a​n​d​ ​P​a​c​i​f​i​c
+					 */
+					ASIA: string
+					/**
+					 * L​a​t​i​n​ ​A​m​e​r​i​c​a​ ​a​n​d​ ​C​a​r​i​b​b​e​a​n
+					 */
+					LATIN_AMERICA: string
+					/**
+					 * E​a​s​t​e​r​n​ ​E​u​r​o​p​e
+					 */
+					EASTERN_EUROPE: string
+					/**
+					 * W​e​s​t​e​r​n​ ​E​u​r​o​p​e​ ​a​n​d​ ​O​t​h​e​r​s
+					 */
+					WESTERN_EUROPE: string
 				}
 			}
 		}
@@ -1846,6 +1928,52 @@ type RootTranslation = {
 			REPLY_VIA_EMAIL: string
 		}
 	}
+	version: {
+		/**
+		 * V​e​r​s​i​o​n​ ​a​n​d​ ​C​h​a​n​g​e​l​o​g
+		 */
+		VERSION_MODAL_TITLE: string
+		/**
+		 * V​e​r​s​i​o​n
+		 */
+		VERSION: string
+		/**
+		 * C​h​a​n​g​e​l​o​g
+		 */
+		CHANGELOG: string
+		/**
+		 * T​h​i​s​ ​c​h​a​n​g​e​l​o​g​ ​s​h​o​w​s​ ​t​h​e​ ​c​h​a​n​g​e​s​ ​i​n​ ​t​h​e​ ​c​u​r​r​e​n​t​ ​a​n​d​ ​t​h​e​ ​p​a​s​t​ ​4​ ​v​e​r​s​i​o​n​s​.​ ​F​o​r​ ​m​o​r​e​ ​i​n​f​o​r​m​a​t​i​o​n​,​ ​v​i​s​i​t​ ​o​u​r​ ​G​i​t​H​u​b​ ​r​e​p​o​s​i​t​o​r​y​ ​b​y​ ​c​l​i​c​k​i​n​g​ ​t​h​e​ ​L​i​n​k​ ​a​t​ ​t​h​e​ ​b​o​t​t​o​m​.
+		 */
+		CHANGELOG_TEXT: string
+		/**
+		 * A​l​l​ ​R​e​l​e​a​s​e​s
+		 */
+		ALL_RELEASES: string
+		/**
+		 * O​u​t​d​a​t​e​d​ ​V​e​r​s​i​o​n
+		 */
+		NEW_VERSION_AVAILABLE: string
+		/**
+		 * A​ ​n​e​w​ ​v​e​r​s​i​o​n​ ​i​s​ ​a​v​a​i​l​a​b​l​e​.​ ​P​l​e​a​s​e​ ​n​o​t​i​f​y​ ​t​h​e​ ​s​e​r​v​e​r​ ​a​d​m​i​n​ ​t​o​ ​u​p​d​a​t​e​.
+		 */
+		NEW_VERSION_AVAILABLE_TEXT: string
+		/**
+		 * L​a​t​e​s​t​ ​V​e​r​s​i​o​n
+		 */
+		LATEST_VERSION: string
+		/**
+		 * Y​o​u​ ​a​r​e​ ​u​s​i​n​g​ ​t​h​e​ ​l​a​t​e​s​t​ ​v​e​r​s​i​o​n​ ​o​f​ ​C​H​A​S​E​.
+		 */
+		LATEST_VERSION_TEXT: string
+		/**
+		 * D​e​v​e​l​o​p​m​e​n​t​ ​V​e​r​s​i​o​n
+		 */
+		DEVELOPMENT_VERSION: string
+		/**
+		 * Y​o​u​ ​a​r​e​ ​u​s​i​n​g​ ​t​h​e​ ​d​e​v​e​l​o​p​m​e​n​t​ ​v​e​r​s​i​o​n​ ​o​f​ ​C​H​A​S​E​.
+		 */
+		DEVELOPMENT_VERSION_TEXT: string
+	}
 }
 
 export type TranslationFunctions = {
@@ -2026,6 +2154,10 @@ export type TranslationFunctions = {
 		 * CHASE (CHAirSoftwarE) is a web application for the management of debates in Model United Nations conferences. It is designed to be used by chairs and delegates alike. CHASE enables Chairs to manage debates with ease while delegates can follow along and collaborate with other delegates in a intuitive and structured matter. CHASE is free and open source software.
 		 */
 		ABOUT_TEXT: () => LocalizedString
+		/**
+		 * Version and Changelog
+		 */
+		VERSION_BUTTON: () => LocalizedString
 		/**
 		 * Our Mission
 		 */
@@ -2442,6 +2574,28 @@ export type TranslationFunctions = {
 					 */
 					ADD_MORE_BUTTON: () => LocalizedString
 				}
+			}
+			configs: {
+				/**
+				 * Press Website
+				 */
+				pressWebsiteTitle: () => LocalizedString
+				/**
+				 * Here you can configure the URL of the press website.
+				 */
+				pressWebsiteDescription: () => LocalizedString
+				/**
+				 * Feedback Website
+				 */
+				feedbackWebsiteTitle: () => LocalizedString
+				/**
+				 * Here you can configure the URL of the feedback website.
+				 */
+				feedbackWebsiteDescription: () => LocalizedString
+				/**
+				 * Configuration saved
+				 */
+				successToast: () => LocalizedString
 			}
 			steps: {
 				/**
@@ -3326,6 +3480,20 @@ export type TranslationFunctions = {
 					 */
 					TOAST_SUCCESS_DETAILS_NOT_ALLOWED: () => LocalizedString
 				}
+				overlay: {
+					/**
+					 * Speakers List Overlay
+					 */
+					TITLE: () => LocalizedString
+					/**
+					 * This feature allows you to see the speakers list in a separate overlay on all other pages in the App.
+					 */
+					DESCRIPTION: () => LocalizedString
+					/**
+					 * Toggle Overlay
+					 */
+					TOGGLE_BUTTON: () => LocalizedString
+				}
 				presentationMode: {
 					/**
 					 * Open Presentation Mode
@@ -3339,6 +3507,48 @@ export type TranslationFunctions = {
 					 * Presentation Mode
 					 */
 					BUTTON: () => LocalizedString
+				}
+				regionalGroups: {
+					/**
+					 * Regional Groups
+					 */
+					TITLE: () => LocalizedString
+					/**
+					 * Open the regional groups page to show the regional groups of the committee.
+					 */
+					DESCRIPTION: () => LocalizedString
+					/**
+					 * Open in Presentation Mode
+					 */
+					BUTTON_PRESENTATION: () => LocalizedString
+					/**
+					 * Open Lookup
+					 */
+					BUTTON_LOOKUP: () => LocalizedString
+					/**
+					 * Filter...
+					 */
+					FILTER: () => LocalizedString
+					/**
+					 * Africa
+					 */
+					AFRICA: () => LocalizedString
+					/**
+					 * Asia and Pacific
+					 */
+					ASIA: () => LocalizedString
+					/**
+					 * Latin America and Caribbean
+					 */
+					LATIN_AMERICA: () => LocalizedString
+					/**
+					 * Eastern Europe
+					 */
+					EASTERN_EUROPE: () => LocalizedString
+					/**
+					 * Western Europe and Others
+					 */
+					WESTERN_EUROPE: () => LocalizedString
 				}
 			}
 		}
@@ -3672,6 +3882,52 @@ export type TranslationFunctions = {
 			 */
 			REPLY_VIA_EMAIL: () => LocalizedString
 		}
+	}
+	version: {
+		/**
+		 * Version and Changelog
+		 */
+		VERSION_MODAL_TITLE: () => LocalizedString
+		/**
+		 * Version
+		 */
+		VERSION: () => LocalizedString
+		/**
+		 * Changelog
+		 */
+		CHANGELOG: () => LocalizedString
+		/**
+		 * This changelog shows the changes in the current and the past 4 versions. For more information, visit our GitHub repository by clicking the Link at the bottom.
+		 */
+		CHANGELOG_TEXT: () => LocalizedString
+		/**
+		 * All Releases
+		 */
+		ALL_RELEASES: () => LocalizedString
+		/**
+		 * Outdated Version
+		 */
+		NEW_VERSION_AVAILABLE: () => LocalizedString
+		/**
+		 * A new version is available. Please notify the server admin to update.
+		 */
+		NEW_VERSION_AVAILABLE_TEXT: () => LocalizedString
+		/**
+		 * Latest Version
+		 */
+		LATEST_VERSION: () => LocalizedString
+		/**
+		 * You are using the latest version of CHASE.
+		 */
+		LATEST_VERSION_TEXT: () => LocalizedString
+		/**
+		 * Development Version
+		 */
+		DEVELOPMENT_VERSION: () => LocalizedString
+		/**
+		 * You are using the development version of CHASE.
+		 */
+		DEVELOPMENT_VERSION_TEXT: () => LocalizedString
 	}
 }
 

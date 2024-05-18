@@ -1,6 +1,6 @@
 "use client";
 import { UserIdentProvider } from "@/contexts/user_ident";
-import { useMutation, useQuery } from "@/gqty";
+import { useMutation } from "@/gqty";
 import type React from "react";
 
 export default function UserIdentLayout({

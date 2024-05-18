@@ -10,12 +10,14 @@ import {
   faTrashAlt,
   faXmarkCircle,
 } from "@fortawesome/pro-solid-svg-icons";
+import type { Motion } from "@/custom_types/custom_types";
 import NoDataPlaceholder from "../no_data_placeholder";
 import { SmallFlag } from "../flag_templates";
 import { useI18nContext } from "@/i18n/i18n-react";
 import FlipMove from "react-flip-move";
 import Button from "@/components/button";
 import type { IconProp } from "@fortawesome/fontawesome-svg-core";
+import FAIcon from "../font_awesome_icon";
 
 /**
  * This Component is used on the Voting page and displays all open motions in a list format.
@@ -68,34 +70,34 @@ export default function Motions({
                     </div>
 
                     {motion.status === "in-voting" && (
-                      <FontAwesomeIcon
-                        icon={faCheckToSlot as IconProp}
+                      <FAIcon
+                        icon="check-to-slot"
                         className=" text-3xl text-primary dark:text-primary-950 fa-beat-fade mr-1"
                       />
                     )}
 
                     {motion.status === "passed" &&
                       (motion.voting ? (
-                        <FontAwesomeIcon
-                          icon={faCheckToSlot as IconProp}
+                        <FAIcon
+                          icon="check-to-slot"
                           className="text-2xl text-green-700"
                         />
                       ) : (
-                        <FontAwesomeIcon
-                          icon={faCircleCheck as IconProp}
+                        <FAIcon
+                          icon="circle-check"
                           className="text-2xl text-green-700"
                         />
                       ))}
 
                     {motion.status === "failed" &&
                       (motion.voting ? (
-                        <FontAwesomeIcon
-                          icon={faXmarkToSlot as IconProp}
+                        <FAIcon
+                          icon="xmark-to-slot"
                           className="text-2xl text-red-600"
                         />
                       ) : (
-                        <FontAwesomeIcon
-                          icon={faXmarkCircle as IconProp}
+                        <FAIcon
+                          icon="xmark-circle"
                           className="text-2xl text-red-600"
                         />
                       ))}
@@ -105,26 +107,26 @@ export default function Motions({
                         {motion.status === "open" && (
                           <>
                             <Button
-                              faIcon={faCircleCheck as IconProp}
+                              faIcon="circle-check"
                               faIconClassName="text-voting-for text-xl"
                               size="small"
                               text
                             />
                             <Button
-                              faIcon={faXmarkCircle as IconProp}
+                              faIcon="xmark-circle"
                               faIconClassName="text-voting-against text-xl"
                               size="small"
                               text
                             />
                             <Button
-                              faIcon={faCheckToSlot as IconProp}
+                              faIcon="check-to-slot"
                               faIconClassName="dark:text-white text-xl"
                               size="small"
                             />
                           </>
                         )}
                         <Button
-                          faIcon={faTrashAlt as IconProp}
+                          faIcon="trash-alt"
                           faIconClassName="text-lg"
                           size="small"
                           severity="danger"

@@ -59,7 +59,7 @@ export default function AgendaSelection() {
       >
         <div className="flex gap-2 w-full">
           {/* <Button
-            faIcon={faPencil}
+            faIcon="pencil"
             onClick={() => {
               // TODO Implement Chairs creating new Agenda Items
               alert("Not implemented yet");

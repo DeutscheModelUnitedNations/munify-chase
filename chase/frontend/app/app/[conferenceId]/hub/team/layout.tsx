@@ -1,14 +1,6 @@
 "use client";
 import Navbar from "@/components/navbar/navbar";
 import NavButton from "@/components/navbar/button";
-import {
-  faNewspaper,
-  faCommentExclamation,
-  faInbox,
-  faChartNetwork,
-  faGears,
-  faRocketLaunch,
-} from "@fortawesome/pro-solid-svg-icons";
 import { useI18nContext } from "@/i18n/i18n-react";
 import type { IconProp } from "@fortawesome/fontawesome-svg-core";
 import { MyDelegationProvider, useUserIdent } from "@/contexts/user_ident";
@@ -16,6 +8,7 @@ import { useContext, useEffect, useState } from "react";
 import { ConferenceIdContext } from "@/contexts/committee_data";
 import { $Enums } from "@prisma/generated/client";
 import Lockout from "@/components/lockout";
+import ExternalLinks from "@/components/navbar/external_links";
 
 export default function ChairHubLayout({
   children,
@@ -53,7 +46,7 @@ export default function ChairHubLayout({
       <div className="flex h-screen w-screen bg-white text-primary-100 dark:bg-primary-100 dark:text-primary-900 shadow-md overflow-hidden">
         <Navbar>
           <NavButton
-            icon={faRocketLaunch as IconProp}
+            icon="rocket-launch"
             link={"./committees"}
             title={LL.navbar.HUB()}
           />
@@ -70,31 +63,20 @@ export default function ChairHubLayout({
               ] as ($Enums.ConferenceRole | undefined)[]
             ).includes(role) && (
               <NavButton
-                icon={faInbox as IconProp}
+                icon="inbox"
                 link={"./inbox"}
                 title={LL.navbar.INBOX()}
               />
             )}
           {userIdent && role === $Enums.ConferenceRole.ADMIN && (
             <NavButton
-              icon={faGears as IconProp}
+              icon="gears"
               link={"../../admin/structure"}
               title={LL.navbar.INBOX()}
             />
           )}
           <div className="flex-1" />
-          <NavButton
-            icon={faNewspaper as IconProp}
-            newWindow
-            link="https://presse.mun-sh.de/" // TODO make this link configurable for the chair (Link to external News Page)
-            title={LL.navbar.NEWS()}
-          />
-          <NavButton
-            icon={faCommentExclamation as IconProp}
-            newWindow
-            link="https://chase-fb.dmun.de"
-            title={LL.navbar.BUG_REPORT()}
-          />
+          <ExternalLinks />
         </Navbar>
         {children}
       </div>

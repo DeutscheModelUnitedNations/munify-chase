@@ -2,21 +2,15 @@
 import React, { useEffect, useState } from "react";
 import { Sidebar } from "primereact/sidebar";
 import { SelectButton } from "primereact/selectbutton";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import {
-  faDiamondHalfStroke,
-  faDisplay,
-  faMoon,
-  faSun,
-} from "@fortawesome/pro-solid-svg-icons";
 import { Dropdown } from "primereact/dropdown";
 import { SmallFlag } from "../flag_templates";
 import { useI18nContext } from "@/i18n/i18n-react";
 import type { IconProp } from "@fortawesome/fontawesome-svg-core";
+import FAIcon from "../font_awesome_icon";
 
 interface ColormodeOption {
   name: string;
-  icon: IconProp;
+  icon: string;
   value: string;
 }
 
@@ -41,22 +35,22 @@ export default function SettingsSidebar({
   const colortheme_items: ColormodeOption[] = [
     {
       name: LL.settings.colorTheme.SYSTEM(),
-      icon: faDisplay as IconProp,
+      icon: "display",
       value: "system",
     },
     {
       name: LL.settings.colorTheme.LIGHT(),
-      icon: faSun as IconProp,
+      icon: "sun",
       value: "light",
     },
     {
       name: LL.settings.colorTheme.DARK(),
-      icon: faMoon as IconProp,
+      icon: "moon",
       value: "dark",
     },
     {
       name: LL.settings.colorTheme.CONTRAST(),
-      icon: faDiamondHalfStroke as IconProp,
+      icon: "diamond-half-stroke",
       value: "contrast",
     },
   ];
@@ -86,7 +80,7 @@ export default function SettingsSidebar({
   const colorModeTemplate = (option: ColormodeOption) => {
     return (
       <>
-        <FontAwesomeIcon icon={option.icon} className="mr-2" />
+        <FAIcon icon={option.icon} className="mr-2" />
         <span className="p-ml-2 ml-2">{option.name}</span>
       </>
     );

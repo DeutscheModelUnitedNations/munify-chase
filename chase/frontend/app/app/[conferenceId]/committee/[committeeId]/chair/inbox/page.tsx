@@ -7,7 +7,6 @@ import {
 } from "@/contexts/committee_data";
 import InboxTemplate from "@/components/inbox/inbox_template";
 import Button from "@/components/button";
-import { faPlus } from "@fortawesome/pro-solid-svg-icons";
 import { ActionsOverlayResearchService } from "@/components/dashboard/actions_overlay";
 import { pollBackendCall } from "@/hooks/pollBackendCall";
 
@@ -53,7 +52,7 @@ export default function InboxPage() {
       />
       <div className="absolute bottom-5 right-5">
         <Button
-          faIcon={faPlus}
+          faIcon="plus"
           className="z-50"
           raised
           onClick={() => setDisplayResearchDialog(true)}

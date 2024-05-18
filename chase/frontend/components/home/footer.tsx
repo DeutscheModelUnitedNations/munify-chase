@@ -3,8 +3,7 @@ import React, { useEffect, useState } from "react";
 import { useI18nContext } from "@/i18n/i18n-react";
 import Link from "next/link";
 import Image from "next/image";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faGlobe } from "@fortawesome/pro-solid-svg-icons";
+import FAIcon from "../font_awesome_icon";
 
 export default function Footer() {
   const { LL } = useI18nContext();
@@ -80,7 +79,7 @@ export default function Footer() {
           {/* Languages */}
           <div>
             <h3 className="text-lg font-semibold mb-4">
-              <FontAwesomeIcon icon={faGlobe} />
+              <FAIcon icon="globe" />
             </h3>
             <ul className="space-y-1">
               <li

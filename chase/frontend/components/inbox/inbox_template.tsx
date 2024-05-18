@@ -2,11 +2,10 @@ import React from "react";
 import { useI18nContext } from "@/i18n/i18n-react";
 import type { BackendInstanceType } from "@/contexts/backend";
 import { ScrollPanel } from "primereact/scrollpanel";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faInbox } from "@fortawesome/pro-solid-svg-icons";
 import NoDataPlaceholder from "@/components/no_data_placeholder";
 import MessageCard from "./message_card";
 import MessageDetails from "./message_details";
+import FAIcon from "../font_awesome_icon";
 
 type ChairMessages = Awaited<
   ReturnType<
@@ -37,7 +36,7 @@ export default function InboxTemplate({
         <div className="w-1/3 h-full border-r border-gray-200">
           <div className="flex flex-col justify-stretch">
             <div className="p-4 flex gap-3 text-2xl items-center border-b border-gray-200">
-              <FontAwesomeIcon icon={faInbox} className="text-primary-500" />
+              <FAIcon icon="inbox" className="text-primary-500" />
               <h1 className="font-bold">{LL.navbar.INBOX()}</h1>
             </div>
             <ScrollPanel style={{ width: "100%", height: "90vh" }}>

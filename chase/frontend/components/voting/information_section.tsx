@@ -1,14 +1,9 @@
 import type { CountryCode, Voting } from "@/custom_types/custom_types";
 import getCountryNameByCode from "@/misc/get_country_name_by_code";
-import { faFlag } from "@fortawesome/pro-solid-svg-icons/faFlag";
-import { faGavel } from "@fortawesome/pro-solid-svg-icons/faGavel";
-import { faInfoCircle } from "@fortawesome/pro-solid-svg-icons/faInfoCircle";
-import { faPieChart } from "@fortawesome/pro-solid-svg-icons";
-import { faCheckToSlot } from "@fortawesome/pro-solid-svg-icons/faCheckToSlot";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { LargeFlag } from "@components/flag_templates";
 import { useI18nContext } from "@/i18n/i18n-react";
 import type { IconProp } from "@fortawesome/fontawesome-svg-core";
+import FAIcon from "../font_awesome_icon";
 
 /**
  * This Component is used in the Voting Component.
@@ -55,8 +50,8 @@ export default function InformationSection({
         <div className="text-lg font-bold col-span-2">{title}</div>
         {description && (
           <>
-            <FontAwesomeIcon
-              icon={faInfoCircle as IconProp}
+            <FAIcon
+              icon="info-circle"
               className="text-lg justify-self-center ml-2"
             />
             <div className="text-sm">{description}</div>
@@ -64,10 +59,7 @@ export default function InformationSection({
         )}
         {introducedBy && (
           <>
-            <FontAwesomeIcon
-              icon={faFlag as IconProp}
-              className="text-lg justify-self-center ml-2"
-            />
+            <FAIcon icon="flag" className="text-lg justify-self-center ml-2" />
             <div className="text-sm">
               {LL.participants.voting.votingInfo.INTRODUCED_BY()}{" "}
               {getCountryNameByCode(introducedBy, locale)}
@@ -76,8 +68,8 @@ export default function InformationSection({
         )}
         {substantiveVote ? (
           <>
-            <FontAwesomeIcon
-              icon={faCheckToSlot as IconProp}
+            <FAIcon
+              icon="check-to-slot"
               className="text-xl justify-self-center ml-2"
             />
             <div className="text-sm">
@@ -86,19 +78,13 @@ export default function InformationSection({
           </>
         ) : (
           <>
-            <FontAwesomeIcon
-              icon={faGavel as IconProp}
-              className="text-xl justify-self-center ml-2"
-            />
+            <FAIcon icon="gavel" className="text-xl justify-self-center ml-2" />
             <div className="text-sm">
               {LL.participants.voting.votingInfo.votingMode.PROCEDURAL_VOTING()}
             </div>
           </>
         )}
-        <FontAwesomeIcon
-          icon={faPieChart as IconProp}
-          className="text-xl justify-self-center ml-2"
-        />
+        <FAIcon icon="pie-chart" className="text-xl justify-self-center ml-2" />
         <div className="text-sm">{neededMajority()}</div>
       </div>
       <div className="flex flex-col justify-start items-center">

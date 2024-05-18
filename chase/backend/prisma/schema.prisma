@@ -19,22 +19,24 @@ generator pothos {
 }
 
 generator pothosCrud {
-  provider = "prisma-generator-pothos-codegen"
+  provider            = "prisma-generator-pothos-codegen"
   generatorConfigPath = "./pothos.config.js"
 }
 
 // TODO a max amount for passwords would make sense
 
 model Password {
-  id     String @id @default(uuid())
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-  userId String
+  id           String @id @default(uuid())
+  user         User   @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  userId       String
+  /// @prismabox.hide
   passwordHash String
 }
 
 /// A token which can be used to grant one time access to something in the app e.g. confirming an email, resetting a password
 model Token {
-  id String @id @default(uuid())
+  id        String   @id @default(uuid())
+  /// @prismabox.hide
   tokenHash String
   expiresAt DateTime
 
@@ -95,13 +97,15 @@ model ConferenceCreationToken {
 /// A conference in the system
 model Conference {
   /// @Pothos.omit(create, update)
-  id          String             @id @default(uuid())
-  name        String             @unique
-  start       DateTime?
-  end         DateTime?
-  delegations Delegation[]
-  members     ConferenceMember[]
-  committees  Committee[]
+  id              String             @id @default(uuid())
+  name            String             @unique
+  start           DateTime?
+  end             DateTime?
+  delegations     Delegation[]
+  members         ConferenceMember[]
+  committees      Committee[]
+  pressWebsite    String?
+  feedbackWebsite String?
 }
 
 /// The role of a user in a conference

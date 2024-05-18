@@ -5,13 +5,13 @@ import type { db } from "../../../prisma/db";
 import { defineAbilitiesForConference } from "./entities/conference";
 import { defineAbilitiesForCommittee } from "./entities/committee";
 import { defineAbilitiesForAgendaItem } from "./entities/agendaIems";
-import { appConfiguration } from "../../util/config";
 import { defineAbilitiesForConferenceMembers } from "./entities/conferenceMember";
 import { defineAbilitiesForDelegation } from "./entities/delegation";
 import { defineAbilitiesForMessages } from "./entities/messages";
 import { defineAbilitiesForSpeakersList } from "./entities/speakersList";
 import { defineAbilitiesForSpeakerOnList } from "./entities/speakerOnList";
 import { defineAbilitiesForCommitteeMembers } from "./entities/committeeMember.ts";
+import { appConfiguration } from "../../util/config";
 
 const actions = ["list", "create", "read", "update", "delete"] as const;
 
@@ -71,21 +71,20 @@ export type AppAbility = PureAbility<
 export const defineAbilitiesForSession = (session: Session) => {
   const builder = new AbilityBuilder<AppAbility>(createPrismaAbility);
 
-  // if (appConfiguration.development && session.data?.user) {
-  //   console.info("Development mode: granting all permissions");
-  //   // biome-ignore lint/suspicious/noExplicitAny: https://casl.js.org/v6/en/guide/intro#basics
-  //   builder.can("manage" as any, "all" as any);
-  // }
+  if (appConfiguration.development && session.data?.user) {
+    console.info("Development mode: granting all permissions");
+    // biome-ignore lint/suspicious/noExplicitAny: https://casl.js.org/v6/en/guide/intro#basics
+    builder.can("manage" as any, "all" as any);
+  }
 
-  // // TODO
-  // if (session.data?.loggedIn && session.data.user) {
-  //   // biome-ignore lint/suspicious/noExplicitAny: https://casl.js.org/v6/en/guide/intro#basics
-  //   builder.can("manage" as any, "all" as any);
-  // }
+  // TODO
+  if (session.data?.loggedIn && session.data.user) {
+    // biome-ignore lint/suspicious/noExplicitAny: https://casl.js.org/v6/en/guide/intro#basics
+    builder.can("manage" as any, "all" as any);
+  }
 
   defineAbilitiesForConference(session, builder);
   defineAbilitiesForCommittee(session, builder);
-  defineAbilitiesForCommitteeMembers(session, builder);
   defineAbilitiesForAgendaItem(session, builder);
   defineAbilitiesForConferenceMembers(session, builder);
   defineAbilitiesForDelegation(session, builder);

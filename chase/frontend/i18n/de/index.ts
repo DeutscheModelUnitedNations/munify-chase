@@ -73,6 +73,7 @@ const de = {
     CONTRIBUTE_TEXT:
       "CHASE ist ein wichtiger Bestandteil der Open-Source-Initiative 'MUNify' von DMUN. Das bedeutet, dass jeder, der möchte, zur Entwicklung beitragen kann. Wir freuen uns über jede Hilfe, die wir bekommen können. Wenn Sie also Erfahrung im Web-Development haben, oder einfach nur neue Skills lernen und mithelfen möchten, schauen Sie doch mal auf unserem GitHub vorbei!",
     CONTRIBUTE_BUTTON_LABEL: "MUNify auf GitHub",
+    VERSION_BUTTON: "Version und Änderungen",
     footer: {
       sitemap: {
         TITEL: "Sitemap",
@@ -211,6 +212,16 @@ const de = {
           ADD_BUTTON: "Hinzufügen und schließen",
           ADD_MORE_BUTTON: "Hinzufügen",
         },
+      },
+
+      configs: {
+        pressWebsiteTitle: "Presse Website",
+        pressWebsiteDescription:
+          "Hier kannst du die URL der Pressewebsite konfigurieren.",
+        feedbackWebsiteTitle: "Feedback Website",
+        feedbackWebsiteDescription:
+          "Hier kannst du die URL der Feedbackwebsite konfigurieren.",
+        successToast: "Einstellungen gespeichert",
       },
 
       steps: {
@@ -420,7 +431,7 @@ const de = {
       REMOVE_FROM_LIST_BUTTON: "Zurückziehen",
       LIST_CLOSED_BUTTON: "Liste Geschlossen",
       LIST_CLOSED_MESSAGE: "Liste Geschlossen",
-      NO_SPEAKERS_MESSAGE: "Keine Redner*innen auf der Liste",
+      NO_SPEAKERS_MESSAGE: "Liste ist leer",
       NO_ACTIVE_AGENDA_ITEM: "Kein aktiver Tagesordnungspunkt",
       toast: {
         ADDED_SUCCESS_SUMMARY: "Redebeitrag hinzugefügt",
@@ -532,11 +543,30 @@ const de = {
           TOAST_SUCCESS_DETAILS_NOT_ALLOWED:
             "Delegierte können sich nicht mehr selbst hinzufügen.",
         },
+        overlay: {
+          TITLE: "Redeliste Overlay",
+          DESCRIPTION:
+            "Öffnet die Redeliste in einem kleinen Overlay am unteren Bildschirmrand.",
+          TOGGLE_BUTTON: "Overlay öffnen/schließen",
+        },
         presentationMode: {
           TITLE: "Präsentationsmodus öffnen",
           DESCRIPTION:
             "Öffne ein neues Fenster im Präsentationsmodus über den folgenden Link, um ihn auf einem Beamer für alle Teilnehmenden sichtbar anzuzeigen.",
           BUTTON: "Präsentationsmodus",
+        },
+        regionalGroups: {
+          TITLE: "Regionalgruppen",
+          DESCRIPTION:
+            "Öffne eine Übersicht der Regionalgruppen und weise Delegationen zu.",
+          BUTTON_PRESENTATION: "Präsentations-Loop",
+          BUTTON_LOOKUP: "Regionalgruppen nachschlagen",
+          FILTER: "Filtern...",
+          AFRICA: "Afrika",
+          ASIA: "Asien and Ozeanien",
+          LATIN_AMERICA: "Lateinamerika und Karibik",
+          EASTERN_EUROPE: "Osteuropa",
+          WESTERN_EUROPE: "Westeuropa und andere",
         },
       },
     },
@@ -651,6 +681,20 @@ const de = {
       PRINT: "Nachricht drucken",
       REPLY_VIA_EMAIL: "Antworten per E-Mail",
     },
+  },
+  version: {
+    VERSION_MODAL_TITLE: "Version und Änderungsprotokoll",
+    VERSION: "Version",
+    CHANGELOG: "Änderungsprotokoll",
+    CHANGELOG_TEXT:
+      "Dieses Änderungsprotokoll zeigt die Änderungen in der aktuellen und den letzten 4 Versionen. Aktuell ist das Änderungsprotokoll ausschließlich auf Englisch verfügbar. Für weitere Informationen besuchen Sie unser GitHub-Repository, indem Sie auf den Link unten klicken.",
+    ALL_RELEASES: "Alle Versionen",
+    NEW_VERSION_AVAILABLE: "Neue Version verfügbar",
+    NEW_VERSION_AVAILABLE_TEXT: "Bitte wenden Sie sich an den Administrator, um die App zu aktualisieren.",
+    LATEST_VERSION: "Neueste Version",
+    LATEST_VERSION_TEXT: "Sie verwenden die neueste Version von CHASE.",
+    DEVELOPMENT_VERSION: "Entwicklerversion",
+    DEVELOPMENT_VERSION_TEXT: "Sie verwenden eine Entwicklerversion von CHASE.",
   },
 } satisfies Translation;
 

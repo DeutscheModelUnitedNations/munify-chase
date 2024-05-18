@@ -12,10 +12,15 @@ jobs:
       - name: Setup Bun.js
         uses: oven-sh/setup-bun@v1
 
+      - uses: actions/cache@v4
+        with:
+          path: ~/.bun/install/cache
+          key: ${{ runner.os }}-${{ matrix.bun }}-bun-${{ hashFiles('**/bun.lockb') }}
+          restore-keys: |
+            ${{ runner.os }}-${{ matrix.bun }}-bun-
+
       - name: Install all dependencies
         run: bun i
-        env:
-          FONTAWESOME_NPM_AUTH_TOKEN: ${{ secrets.FONTAWESOME_NPM_AUTH_TOKEN }}
 
         # typecheck the backend since it is required for the frontend
       - name: Typecheck backend
@@ -35,10 +40,15 @@ jobs:
       - name: Setup Bun.js
         uses: oven-sh/setup-bun@v1
 
+      - uses: actions/cache@v4
+        with:
+          path: ~/.bun/install/cache
+          key: ${{ runner.os }}-${{ matrix.bun }}-bun-${{ hashFiles('**/bun.lockb') }}
+          restore-keys: |
+            ${{ runner.os }}-${{ matrix.bun }}-bun-
+
       - name: Install all dependencies
         run: bun i
-        env:
-          FONTAWESOME_NPM_AUTH_TOKEN: ${{ secrets.FONTAWESOME_NPM_AUTH_TOKEN }}
 
       - name: Typecheck
         working-directory: ./chase/backend

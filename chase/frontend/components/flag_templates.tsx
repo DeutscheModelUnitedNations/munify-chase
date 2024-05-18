@@ -4,6 +4,9 @@ import getFlagPathByCode from "@/misc/get_flag_path_by_code";
 import getCountryNameByCode from "@/misc/get_country_name_by_code";
 import { useI18nContext } from "@/i18n/i18n-react";
 import { Skeleton } from "primereact/skeleton";
+import NoDataPlaceholder from "./no_data_placeholder";
+import { useFaGlobe } from "@/hooks/useFaGlobe";
+import FAIcon from "./font_awesome_icon";
 
 /**
  * The following Components are all different sizes of flags.
@@ -35,27 +38,29 @@ export function SmallFlag({
       <div className="flex-col justify-end items-center rounded-md contrast:border contrast:border-primary-100 bg-white shadow-md overflow-hidden">
         {countryCode ? (
           <>
-            <Image
-              src={getFlagPathByCode(countryCode)}
-              width={32}
-              height={32}
-              alt={`Flag of ${getCountryNameByCode(countryCode, locale)}`}
-              style={{ objectFit: "cover", height: "100%" }}
-              onMouseEnter={handleMouseEnter}
-              onMouseLeave={handleMouseLeave}
-            />
-            {showNameOnHover && (
-              <div
-                className={`bg-primary text-white ${
-                  isHovered ? "opacity-100" : "opacity-0"
-                } text-xs rounded-md shadow-md p-2 absolute mt-2 z-50 transition-all duration-300`}
-              >
-                {getCountryNameByCode(countryCode, locale)}
-              </div>
-            )}
+            <div className="flex justify-center items-center w-[2rem] h-[1.5rem]">
+              <Image
+                src={getFlagPathByCode(countryCode)}
+                width={100}
+                height={75}
+                alt={`Flag of ${getCountryNameByCode(countryCode, locale)}`}
+                style={{ objectFit: "cover", height: "100%" }}
+                onMouseEnter={handleMouseEnter}
+                onMouseLeave={handleMouseLeave}
+              />
+              {showNameOnHover && (
+                <div
+                  className={`bg-primary text-white ${
+                    isHovered ? "opacity-100" : "opacity-0"
+                  } text-xs rounded-md shadow-md p-2 absolute mt-2 z-50 transition-all duration-300`}
+                >
+                  {getCountryNameByCode(countryCode, locale)}
+                </div>
+              )}
+            </div>
           </>
         ) : (
-          <Skeleton width="32px" height="32px" />
+          <FlagPlaceholder widthRem={2} />
         )}
       </div>
     </div>
@@ -99,7 +104,7 @@ export function NormalFlag({
           </div>
         </>
       ) : (
-        <Skeleton width="3rem" height="2.25rem" />
+        <FlagPlaceholder widthRem={3} />
       )}
     </div>
   );
@@ -126,8 +131,31 @@ export function LargeFlag({
           />
         </div>
       ) : (
-        <Skeleton width="6.4rem" height="4.8rem" />
+        <FlagPlaceholder widthRem={6.4} />
       )}
     </div>
+  );
+}
+
+export function FlagPlaceholder({
+  widthRem,
+}: {
+  widthRem: number;
+}) {
+  const globeIcon = useFaGlobe();
+
+  return (
+    <Skeleton
+      width={`${widthRem.toString()}rem`}
+      height={`${(widthRem * 0.75).toString()}rem`}
+      className="!bg-primary-800 flex justify-center items-center"
+      animation="none"
+    >
+      <FAIcon
+        icon={globeIcon}
+        className="text-primary-700"
+        style={{ fontSize: `${widthRem / 3}rem` }}
+      />
+    </Skeleton>
   );
 }

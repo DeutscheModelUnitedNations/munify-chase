@@ -1,17 +1,19 @@
 "use client";
-import React from "react";
+import React, { useState } from "react";
 import { useI18nContext } from "@/i18n/i18n-react";
 import Navbar from "@/components/home/navbar";
 import LandingHero from "@/components/home/landing_hero";
 import CardSection from "@/components/home/card_section";
 import TextSection from "@/components/home/text_section";
-import { faCodeBranch, faExternalLink } from "@fortawesome/pro-solid-svg-icons";
 import Footer from "@/components/home/footer";
 import { useMediaQuery } from "react-responsive";
 import Image from "next/image";
+import VersionModal from "@/components/version_modal";
 
 export default function Home() {
   const { LL } = useI18nContext();
+
+  const [versionModalVisible, setVersionModalVisible] = useState(false);
 
   const _isDesktopOrLaptop = useMediaQuery({
     query: "(min-width: 1024px)",
@@ -34,7 +36,7 @@ export default function Home() {
                 objectFit="contain"
                 width={300}
                 height={100}
-                alt={"Chase Logo"}
+                alt="Chase Logo"
               />
             </div>
           )}
@@ -48,6 +50,11 @@ export default function Home() {
             <TextSection
               title={LL.home.ABOUT_TITEL()}
               text={LL.home.ABOUT_TEXT()}
+              button={{
+                lable: LL.home.VERSION_BUTTON(),
+                onClick: () => setVersionModalVisible(true),
+                faIcon: "stars",
+              }}
             />
             <TextSection
               title={LL.home.MISSION_TITLE()}
@@ -55,7 +62,7 @@ export default function Home() {
               button={{
                 lable: LL.home.MISSION_BUTTON_LABEL(),
                 link: "https://www.dmun.de/",
-                faIcon: faExternalLink,
+                faIcon: "external-link",
               }}
             />
             <TextSection
@@ -64,13 +71,17 @@ export default function Home() {
               button={{
                 lable: LL.home.CONTRIBUTE_BUTTON_LABEL(),
                 link: "https://github.com/DeutscheModelUnitedNations/munify",
-                faIcon: faCodeBranch,
+                faIcon: "code-branch",
               }}
             />
           </div>
         </div>
       </div>
       <Footer />
+      <VersionModal
+        visible={versionModalVisible}
+        setVisible={setVersionModalVisible}
+      />
     </>
   );
 }

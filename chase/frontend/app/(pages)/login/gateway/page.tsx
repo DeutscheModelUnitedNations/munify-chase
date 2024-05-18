@@ -7,7 +7,6 @@ import {
   faRocketLaunch,
 } from "@fortawesome/pro-solid-svg-icons";
 import { useRouter } from "next/navigation";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import Button from "@/components/button";
 import { $Enums } from "@prisma/generated/client";
 import { LargeFlag } from "@/components/flag_templates";
@@ -17,6 +16,7 @@ import Link from "next/link";
 import { conferenceRoleTranslation } from "@/i18n/translation_utils";
 import { useToast } from "@/contexts/toast";
 import { useBackendCall } from "@/hooks/useBackendCall";
+import FAIcon from "@/components/font_awesome_icon";
 
 export default function LoginRedirectPage() {
   const router = useRouter();
@@ -84,7 +84,7 @@ export default function LoginRedirectPage() {
                   </h3>
                   <Button
                     key={conferenceMembership.id}
-                    faIcon={faRocketLaunch}
+                    faIcon="rocket-launch"
                     label={LL.login.gateway.LAUNCH_BUTTON()}
                     onClick={() =>
                       router.push(
@@ -131,7 +131,7 @@ export default function LoginRedirectPage() {
                     </h2>
                   </div>
                   <Button
-                    faIcon={faRocketLaunch}
+                    faIcon="rocket-launch"
                     label={LL.login.gateway.LAUNCH_BUTTON()}
                   />
                 </Link>
@@ -143,7 +143,7 @@ export default function LoginRedirectPage() {
               <p>{LL.login.gateway.NO_MEMBERSHIP()}</p>
             )}
           <Button
-            faIcon={faRightFromBracket}
+            faIcon="right-from-bracket"
             label={LL.login.gateway.LOGOUT_BUTTON()}
             onClick={() => {
               backend.auth.logout
@@ -161,8 +161,8 @@ export default function LoginRedirectPage() {
           />
         </>
       ) : (
-        <FontAwesomeIcon
-          icon={faCircleNotch}
+        <FAIcon
+          icon="circle-notch"
           spin
           size="3x"
           className="text-primary-500"

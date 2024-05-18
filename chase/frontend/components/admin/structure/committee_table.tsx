@@ -1,20 +1,13 @@
 import type React from "react";
 import { useI18nContext } from "@/i18n/i18n-react";
 import Button from "@/components/button";
-import {
-  faDiagramSubtask,
-  faLightEmergencyOn,
-  faPlus,
-  faScaleBalanced,
-  faTrashAlt,
-  faUsersLine,
-} from "@fortawesome/pro-solid-svg-icons";
 import { DataTable } from "primereact/datatable";
 import { Column } from "primereact/column";
 import { ConfirmPopup } from "primereact/confirmpopup";
 import { Toolbar } from "primereact/toolbar";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import type { BackendInstanceType } from "@/contexts/backend";
+import FAIcon from "@/components/font_awesome_icon";
 
 type CommitteesType = Awaited<
   ReturnType<ReturnType<BackendInstanceType["conference"]>["committee"]["get"]>
@@ -44,7 +37,7 @@ export default function CommitteeTable({
             <div className="w-full flex justify-end items-stretch gap-2">
               <Button
                 label={LL.admin.onboarding.structure.DELETE_ALL()}
-                faIcon={faTrashAlt}
+                faIcon="trash-alt"
                 disabled={committees?.length === 0}
                 severity="danger"
                 onClick={(event: React.MouseEvent<HTMLButtonElement>) =>
@@ -53,7 +46,7 @@ export default function CommitteeTable({
               />
               <Button
                 label={LL.admin.onboarding.structure.ADD_COMMITTEE()}
-                faIcon={faPlus}
+                faIcon="plus"
                 keyboardShortcut="N"
                 onClick={() => setInputMaskVisible(true)}
               />
@@ -92,8 +85,8 @@ export default function CommitteeTable({
                   {rowData.category === "COMMITTEE" &&
                     (rowData.parentId ? (
                       <div className="m-0 flex items-center justify-start gap-2">
-                        <FontAwesomeIcon
-                          icon={faDiagramSubtask}
+                        <FAIcon
+                          icon="diagram-subtask"
                           className="text-2xl text-primary"
                         />
                         <span className="">
@@ -103,20 +96,20 @@ export default function CommitteeTable({
                         </span>
                       </div>
                     ) : (
-                      <FontAwesomeIcon
-                        icon={faUsersLine}
+                      <FAIcon
+                        icon="users-line"
                         className="text-2xl text-primary"
                       />
                     ))}
                   {rowData.category === "CRISIS" && (
-                    <FontAwesomeIcon
-                      icon={faLightEmergencyOn}
+                    <FAIcon
+                      icon="light-emergency-on"
                       className="text-2xl text-red-500"
                     />
                   )}
                   {rowData.category === "ICJ" && (
-                    <FontAwesomeIcon
-                      icon={faScaleBalanced}
+                    <FAIcon
+                      icon="scale-balanced"
                       className="text-2xl text-green-500"
                     />
                   )}
@@ -129,7 +122,7 @@ export default function CommitteeTable({
             className="w-1/6"
             body={(rawData) => (
               <Button
-                faIcon={faTrashAlt}
+                faIcon="trash-alt"
                 severity="danger"
                 onClick={() => handleDelete(rawData)}
               />

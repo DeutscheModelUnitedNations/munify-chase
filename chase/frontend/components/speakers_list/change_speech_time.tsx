@@ -2,12 +2,11 @@ import React, { useContext, useState } from "react";
 import { InputMask } from "primereact/inputmask";
 import { useI18nContext } from "@/i18n/i18n-react";
 import { Button } from "primereact/button";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faPlus, faTimes } from "@fortawesome/pro-solid-svg-icons";
 import { ToastContext } from "@/contexts/toast";
 import type { IconProp } from "@fortawesome/fontawesome-svg-core";
 import { useBackend } from "@/contexts/backend";
 import { SpeakersListDataContext } from "@/contexts/speakers_list_data";
+import FAIcon from "../font_awesome_icon";
 
 /**
  * This Component is used on the SpeakersListPage for the Chair to change the speech time of the current speaker
@@ -91,18 +90,14 @@ export default function ChangeSpeechTimeOverlay({
         <div className="flex gap-3 justify-end flex-wrap">
           <Button
             label={LL.chairs.speakersList.changeSpeechTimeOverlay.BUTTON_CANCEL()}
-            icon={
-              <FontAwesomeIcon icon={faTimes as IconProp} className="mr-2" />
-            }
+            icon={<FAIcon icon="times" className="mr-2" />}
             onClick={closeOverlay}
             severity="danger"
             text
           />
           <Button
             label={LL.chairs.speakersList.changeSpeechTimeOverlay.BUTTON_SET()}
-            icon={
-              <FontAwesomeIcon icon={faPlus as IconProp} className="mr-2" />
-            }
+            icon={<FAIcon icon="plus" className="mr-2" />}
             onClick={() => {
               sendNewTime(time);
             }}

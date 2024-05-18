@@ -12,6 +12,7 @@ import type { IconProp } from "@fortawesome/fontawesome-svg-core";
 import { useI18nContext } from "@/i18n/i18n-react";
 import { AnimatePresence, motion } from "framer-motion";
 import FlipMove from "react-flip-move";
+import FAIcon from "../font_awesome_icon";
 
 /**
  * This Component is used in the Voting Component.
@@ -67,21 +68,21 @@ export default function CountryGrid({
         <div className="flex-1 grid grid-cols-3 gap-2">
           <VotesCard
             category={LL.participants.voting.votingButtons.IN_FAVOUR()}
-            icon={faPlusCircle as IconProp}
+            icon="plus-circle"
             color="text-green-700"
             votes={yesVotes}
             motionId={motionId}
           />
           <VotesCard
             category={LL.participants.voting.votingButtons.ABSTENTION()}
-            icon={faCircle as IconProp}
+            icon="circle"
             color="text-primary"
             votes={abstainVotes}
             motionId={motionId}
           />
           <VotesCard
             category={LL.participants.voting.votingButtons.AGAINST()}
-            icon={faMinusCircle as IconProp}
+            icon="minus-circle"
             color="text-red-600"
             votes={noVotes}
             motionId={motionId}
@@ -89,7 +90,7 @@ export default function CountryGrid({
           {remainingVotes.length > 0 && (
             <VotesCard
               category={LL.participants.voting.votingButtons.REMAINING()}
-              icon={faHourglassHalf as IconProp}
+              icon="hourglass-half"
               color="text-black"
               votes={remainingVotes}
               colSpan={3}
@@ -101,14 +102,14 @@ export default function CountryGrid({
         <div className="flex-1 grid grid-cols-2 gap-2">
           <VotesCard
             category="Dafür"
-            icon={faPlusCircle as IconProp}
+            icon="plus-circle"
             color="text-green-700"
             votes={yesVotes}
             motionId={motionId}
           />
           <VotesCard
             category="Dagegen"
-            icon={faMinusCircle as IconProp}
+            icon="minus-circle"
             color="text-red-600"
             votes={noVotes}
             motionId={motionId}
@@ -116,7 +117,7 @@ export default function CountryGrid({
           {remainingVotes.length > 0 && (
             <VotesCard
               category="Ausstehend"
-              icon={faHourglassHalf as IconProp}
+              icon="hourglass-half"
               color="text-black dark:text-primary-700"
               votes={remainingVotes}
               colSpan={2}
@@ -139,7 +140,7 @@ function VotesCard({
 }: {
   motionId: string;
   category: string;
-  icon: IconProp;
+  icon: string;
   votes: CountryCode[];
   color: string;
   colSpan?: number;
@@ -154,7 +155,7 @@ function VotesCard({
       style={{ gridColumn: colSpanClass }}
     >
       <div className="flex justify-center items-center gap-3 text-lg">
-        <FontAwesomeIcon icon={icon} className={color} />
+        <FAIcon icon={icon} className={color} />
         <div className={categoryClasses}>{category}</div>
       </div>
       <AnimatePresence mode="wait">

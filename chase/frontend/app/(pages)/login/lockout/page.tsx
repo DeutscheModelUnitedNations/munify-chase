@@ -1,7 +1,6 @@
 "use client";
 import { useI18nContext } from "@/i18n/i18n-react";
 import Image from "next/image";
-import { faHome, faRightToBracket } from "@fortawesome/pro-solid-svg-icons";
 import Button from "@/components/button";
 
 export default () => {
@@ -21,7 +20,7 @@ export default () => {
       <div className="mt-6 w-full flex gap-4">
         <Button
           label="Log in"
-          faIcon={faRightToBracket}
+          faIcon="right-to-bracket"
           onClick={() => {
             window.location.href = "/login";
           }}
@@ -29,7 +28,7 @@ export default () => {
         />
         <Button
           label="Homepage"
-          faIcon={faHome}
+          faIcon="home"
           onClick={() => {
             window.location.href = "/";
           }}

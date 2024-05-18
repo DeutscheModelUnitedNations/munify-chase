@@ -3,18 +3,10 @@
 import type React from "react";
 import { useState } from "react";
 import Image from "next/image";
-
 import NavButton from "@/components/navbar/button";
 import SettingsSidebar from "@/components/navbar/settings_sidebar";
-
 import { useRouter } from "next/navigation";
 import { confirmDialog, ConfirmDialog } from "primereact/confirmdialog";
-
-import {
-  faRightFromBracket,
-  faUserGear,
-} from "@fortawesome/pro-solid-svg-icons";
-
 import { useI18nContext } from "@/i18n/i18n-react";
 import type { IconProp } from "@fortawesome/fontawesome-svg-core";
 import { useBackend } from "@/contexts/backend";
@@ -79,13 +71,13 @@ export default function Navbar({ children }: { children: React.ReactNode }) {
             setSettingsSidebarVisible={setSettingsSidebarVisible}
           />
           <NavButton
-            icon={faUserGear as IconProp}
+            icon="user-gear"
             onClick={() => setSettingsSidebarVisible(true)}
             title={LL.navbar.SETTINGS()}
           />
           <ConfirmDialog />
           <NavButton
-            icon={faRightFromBracket as IconProp}
+            icon="right-from-bracket"
             onClick={confirmLogout}
             title={LL.navbar.LOGOUT()}
           />

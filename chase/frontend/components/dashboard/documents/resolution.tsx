@@ -1,5 +1,4 @@
 import React from "react";
-import { faFileContract } from "@fortawesome/pro-solid-svg-icons";
 import Document from "@components/dashboard/documents/document_template";
 import type { IconProp } from "@fortawesome/fontawesome-svg-core";
 
@@ -14,10 +13,6 @@ export default function Resolution({
   topic,
 }: { documentId: string; topic?: string }) {
   return (
-    <Document
-      documentId={documentId}
-      icon={faFileContract as IconProp}
-      topic={topic}
-    />
+    <Document documentId={documentId} icon="file-contract" topic={topic} />
   );
 }

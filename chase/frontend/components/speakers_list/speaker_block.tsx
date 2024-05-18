@@ -1,21 +1,13 @@
 import React, { useEffect, useState, useContext } from "react";
 import getCountryNameByCode from "@/misc/get_country_name_by_code";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import {
-  faHourglassStart,
-  faHourglassHalf,
-  faHourglassEnd,
-  faHourglassClock,
-  faBell,
-} from "@fortawesome/pro-solid-svg-icons";
 import "./timer_animations.scss";
 import { LargeFlag } from "../flag_templates";
 import { useI18nContext } from "@/i18n/i18n-react";
 import { AnimatePresence, motion } from "framer-motion";
 import type { IconProp } from "@fortawesome/fontawesome-svg-core";
 import { SpeakersListDataContext } from "@/contexts/speakers_list_data";
-import NoDataPlaceholder from "../no_data_placeholder";
 import { useBackendTime } from "@/contexts/backendTime";
+import FAIcon from "../font_awesome_icon";
 
 /**
  * This Component is used in the SpeakersList. It creates a box for the current speaker,
@@ -41,8 +33,10 @@ export default function SpeakerBlock() {
     if (
       !speakersListData?.speakers[0]?.committeeMember?.delegation?.nation
         .alpha3Code
-    )
+    ) {
+      setCountryCode("");
       return;
+    }
     setCountryCode(
       speakersListData.speakers[0].committeeMember.delegation.nation.alpha3Code,
     );
@@ -85,63 +79,62 @@ export default function SpeakerBlock() {
     return `${minutes}:${seconds.toString().padStart(2, "0")}`;
   };
 
+  const listHasActiveSpeaker: boolean =
+    (speakersListData?.speakers && speakersListData?.speakers.length !== 0) ??
+    false;
+
   return (
     <>
-      {speakersListData?.speakers && speakersListData?.speakers.length !== 0 ? (
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={countryCode}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-          >
-            <div className="flex flex-row items-center justify-start">
-              <LargeFlag countryCode={countryCode} />
-              <div className="flex-1 flex flex-col ml-4">
-                <div className="font-bold text-xl">
-                  {getCountryNameByCode(countryCode, locale)}
-                </div>
-                <div className="text-lg text-primary-300 dark:text-primary-600 flex items-center gap-3">
-                  {timerState === "active" && <HourglasAnimation />}
-                  {timerState === "paused" && (
-                    <FontAwesomeIcon icon={faHourglassClock as IconProp} />
+      <AnimatePresence mode="wait">
+        <motion.div
+          key={countryCode}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+        >
+          <div className="flex flex-row items-center justify-start">
+            <LargeFlag countryCode={countryCode ?? "xxx"} />
+            <div className="flex-1 flex flex-col ml-4">
+              <div className="font-bold text-xl truncate">
+                {listHasActiveSpeaker
+                  ? getCountryNameByCode(countryCode, locale)
+                  : LL.participants.speakersList.NO_SPEAKERS_MESSAGE()}
+              </div>
+              <div className="text-lg text-primary-300 dark:text-primary-600 flex items-center gap-3">
+                {timerState === "active" && <HourglasAnimation />}
+                {timerState === "paused" && <FAIcon icon="hourglass-clock" />}
+                {timerState === "overtime" && (
+                  <FAIcon icon="bell" className="text-red-700 fa-shake" />
+                )}
+                <div className="text-xl">
+                  {listHasActiveSpeaker ? (
+                    timeLeft
+                  ) : (
+                    <SpeakingTime time={speakersListData?.speakingTime} />
                   )}
-                  {timerState === "overtime" && (
-                    <FontAwesomeIcon
-                      icon={faBell as IconProp}
-                      className="text-red-700 fa-shake"
-                    />
-                  )}
-                  <div className="text-xl">
-                    {timeLeft}
-                    <span className="ml-2 text-xs text-primary-300 dark:text-primary-600">
-                      {"/ "}
-                      {Math.floor(speakersListData?.speakingTime / 60)}
-                      {":"}
-                      {speakersListData?.speakingTime % 60 < 10
-                        ? `0${speakersListData?.speakingTime % 60}`
-                        : speakersListData?.speakingTime % 60}
-                    </span>
-                  </div>
+                  <span className="ml-2 text-xs text-primary-300 dark:text-primary-600">
+                    / <SpeakingTime time={speakersListData?.speakingTime} />
+                  </span>
                 </div>
               </div>
             </div>
-          </motion.div>
-        </AnimatePresence>
-      ) : (
-        <div className="flex flex-col gap-2 items-start justify-center mt-3">
-          <NoDataPlaceholder
-            title={LL.participants.speakersList.NO_SPEAKERS_MESSAGE()}
-          />
-        </div>
-      )}
+          </div>
+        </motion.div>
+      </AnimatePresence>
     </>
+  );
+}
+
+function SpeakingTime({ time }: { time?: number }) {
+  return (
+    time &&
+    `${Math.floor(time / 60)}:${time % 60 < 10 ? `0${time % 60}` : time % 60}`
   );
 }
 
 function HourglasAnimation() {
   const [_, setAnimationState] = React.useState<number>(0);
-  const [icon, setIcon] = React.useState(faHourglassStart);
+  const [icon, setIcon] = React.useState("hourglass-start");
   const [WrapperStyleClass, setWrapperStyleClass] =
     React.useState<string>("hourglass");
 
@@ -149,11 +142,11 @@ function HourglasAnimation() {
     const animation = setInterval(() => {
       setTimeout(() => {
         setAnimationState(1);
-        setIcon(faHourglassHalf);
+        setIcon("hourglass-half");
       }, 500);
       setTimeout(() => {
         setAnimationState(2);
-        setIcon(faHourglassEnd);
+        setIcon("hourglass-end");
       }, 1000);
       setTimeout(() => {
         setAnimationState(3);
@@ -161,7 +154,7 @@ function HourglasAnimation() {
       }, 1500);
       setTimeout(() => {
         setAnimationState(0);
-        setIcon(faHourglassStart);
+        setIcon("hourglass-start");
         setWrapperStyleClass("hourglass");
       }, 2000);
     }, 2000);
@@ -170,7 +163,7 @@ function HourglasAnimation() {
 
   return (
     <div className={WrapperStyleClass}>
-      <FontAwesomeIcon icon={icon as IconProp} />
+      <FAIcon icon={icon} />
     </div>
   );
 }

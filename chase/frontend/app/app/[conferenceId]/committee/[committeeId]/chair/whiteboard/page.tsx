@@ -2,10 +2,6 @@
 import React, { useContext, useEffect, useState } from "react";
 import Button from "@/components/button";
 import Whiteboard from "@/components/whiteboard";
-import {
-  faArrowRotateLeft,
-  faPaperPlane,
-} from "@fortawesome/pro-solid-svg-icons";
 import { useI18nContext } from "@/i18n/i18n-react";
 import type { IconProp } from "@fortawesome/fontawesome-svg-core";
 import { useBackend } from "@/contexts/backend";
@@ -27,34 +23,18 @@ export default function ChairWhiteboard() {
   const [whiteboardContent, setWhiteboardContent] = useState<
     string | null | undefined
   >(undefined);
-  const [whiteboardContentChanged, setWhiteboardContentChanged] =
-    useState<boolean>(false);
   const [whiteboardButtonLoading, setWhiteboardButtonLoading] =
     useState<boolean>(false);
   const committeeData = useContext(CommitteeDataContext);
 
   useEffect(() => {
-    if (!whiteboardContentChanged || whiteboardContent === null) {
-      setWhiteboardContent(committeeData?.whiteboardContent ?? null);
-    }
-    setWhiteboardContent(committeeData?.whiteboardContent ?? null);
-  }, [whiteboardContent]);
+    setWhiteboardContent(committeeData?.whiteboardContent ?? "");
+  }, []);
 
   useEffect(() => {
-    if (whiteboardContent !== committeeData?.whiteboardContent) {
-      setWhiteboardContentChanged(true);
-    } else {
-      setWhiteboardContentChanged(false);
-    }
-    if (whiteboardContent === null) {
-      showToast({
-        severity: "warn",
-        summary: LL.chairs.whiteboard.NO_CONTENT_TOAST(),
-        detail: LL.chairs.whiteboard.NO_CONTENT_TOAST_DETAILS(),
-        life: 3000,
-      });
-    }
-  }, [whiteboardContent, committeeData]);
+    if (whiteboardContent != null) return;
+    committeeData?.whiteboardContent ?? "";
+  }, [committeeData]);
 
   async function pushWhiteboardContent() {
     setWhiteboardButtonLoading(true);
@@ -82,7 +62,6 @@ export default function ChairWhiteboard() {
       .then((res) => {
         if (res.status >= 400)
           throw new Error("Failed to push whiteboard content");
-        setWhiteboardContentChanged(false);
         setWhiteboardButtonLoading(false);
         showToast({
           severity: "success",
@@ -105,20 +84,20 @@ export default function ChairWhiteboard() {
         <div className="flex justify-end items-center gap-4">
           <Button
             label={LL.chairs.whiteboard.SAVE_BUTTON()}
-            faIcon={faPaperPlane as IconProp}
+            faIcon="paper-plane"
             onClick={() => pushWhiteboardContent()}
             loading={whiteboardButtonLoading}
             // disabled={!whiteboardContentChanged}
           />
           <Button
             label={LL.chairs.whiteboard.RESET_BUTTON()}
-            faIcon={faArrowRotateLeft as IconProp}
+            faIcon="arrow-rotate-left"
             severity="danger"
             onClick={() => resetWhiteboardContent()}
           />
         </div>
         <Whiteboard
-          value={whiteboardContent}
+          value="whiteboard-content"
           setContentFunction={setWhiteboardContent}
           className="flex-1 h-full max-h-[80vh]"
         />

@@ -14,6 +14,7 @@ import {
 import type { IconProp } from "@fortawesome/fontawesome-svg-core";
 import type { BackendInstanceType } from "@/contexts/backend";
 import { $Enums } from "@prisma/generated/client";
+import FAIcon from "../font_awesome_icon";
 
 export type DelegationDataType = Awaited<
   ReturnType<
@@ -24,7 +25,7 @@ export type DelegationDataType = Awaited<
 >["data"];
 
 interface AttendanceButtonOptions {
-  icon: IconProp;
+  icon: string;
   label: string;
   value: $Enums.Presence;
 }
@@ -48,17 +49,17 @@ export default function AttendanceTable({
 
   const attendanceOptions: AttendanceButtonOptions[] = [
     {
-      icon: faUserCheck as IconProp,
+      icon: "user-check",
       label: LL.chairs.attendance.PRESENT(),
       value: $Enums.Presence.PRESENT,
     },
     {
-      icon: faUserClock as IconProp,
+      icon: "user-clock",
       label: LL.chairs.attendance.EXCUSED(),
       value: $Enums.Presence.EXCUSED,
     },
     {
-      icon: faUserXmark as IconProp,
+      icon: "user-xmark",
       label: LL.chairs.attendance.ABSENT(),
       value: $Enums.Presence.ABSENT,
     },
@@ -67,8 +68,8 @@ export default function AttendanceTable({
   const justifyTemplate = (option: AttendanceButtonOptions) => {
     return (
       <>
-        <FontAwesomeIcon icon={option.icon} />
-        {/* <FontAwesomeIcon icon={option.icon} className="mr-2" />  Option with icon and lable
+        <FAIcon icon={option.icon} />
+        {/* <FAIcon icon={option.icon} className="mr-2" />  Option with icon and lable
         {option.label} */}
       </>
     );

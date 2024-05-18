@@ -9,9 +9,6 @@ import "@/themes/theme_dark.scss";
 import "primereact/resources/primereact.min.css";
 //icons
 import "primeicons/primeicons.css";
-import { config } from "@fortawesome/fontawesome-svg-core";
-import "@fortawesome/fontawesome-svg-core/styles.css";
-config.autoAddCss = false; // Tell Font Awesome to skip adding the CSS automatically since it's being imported above, otherwise icons will be huge on load
 
 import {
   detectLocale,
@@ -73,6 +70,20 @@ export default function RootLayout({
       <head>
         <title>Chase</title>
         <PublicEnvScript />
+        {/* <script defer src="/fontawesome/js/fontawesome.min.js" />
+        <script defer src="/fontawesome/js/brands.min.js" />
+        <script defer src="/fontawesome/js/solid.min.js" />
+        <script defer src="/fontawesome/js/regular.min.js" /> */}
+        {/* <script defer src="/fontawesome/js/light.min.js" />
+        <script defer src="/fontawesome/js/thin.min.js" /> */}
+        {/* <script defer src="/fontawesome/js/duotone.min.js" /> */}
+        {/* <script defer src="/fontawesome/js/sharp-solid.min.js" />
+        <script defer src="/fontawesome/js/sharp-regular.min.js" />
+        <script defer src="/fontawesome/js/sharp-light.min.js" />
+        <script defer src="/fontawesome/js/sharp-thin.min.js" /> */}
+        <link href="/fontawesome/css/fontawesome.css" rel="stylesheet" />
+        <link href="/fontawesome/css/brands.css" rel="stylesheet" />
+        <link href="/fontawesome/css/solid.css" rel="stylesheet" />
       </head>
 
       <body>

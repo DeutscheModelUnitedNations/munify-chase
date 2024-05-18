@@ -6,14 +6,8 @@ import { SmallFlag } from "@/components/flag_templates";
 import { Tag } from "primereact/tag";
 import getCountryNameByCode from "@/misc/get_country_name_by_code";
 import { useToast } from "@/contexts/toast";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { $Enums } from "@prisma/generated/client";
-import {
-  faCircleExclamation,
-  faEnvelope,
-  faMicroscope,
-  faUserCheck,
-} from "@fortawesome/pro-solid-svg-icons";
+import FAIcon from "../font_awesome_icon";
 
 type ChairMessages = Awaited<
   ReturnType<
@@ -76,7 +70,7 @@ export default function MessageCard({
           <Tag
             severity="info"
             className="h-7 w-8"
-            icon={<FontAwesomeIcon icon={faEnvelope} />}
+            icon={<FAIcon icon="envelope" />}
           />
         )}
         {message.category !== $Enums.MessageCategory.TO_CHAIR &&
@@ -84,21 +78,21 @@ export default function MessageCard({
             <Tag
               severity="warning"
               className="h-7 w-8"
-              icon={<FontAwesomeIcon icon={faMicroscope} />}
+              icon={<FAIcon icon="microscope" />}
             />
           )}
         {message.status.includes($Enums.MessageStatus.PRIORITY) && (
           <Tag
             severity="danger"
             className="h-7 w-8"
-            icon={<FontAwesomeIcon icon={faCircleExclamation} />}
+            icon={<FAIcon icon="circle-exclamation" />}
           />
         )}
         {message.status.includes($Enums.MessageStatus.ASSIGNED) && (
           <Tag
             severity="success"
             className="h-7 w-8"
-            icon={<FontAwesomeIcon icon={faUserCheck} />}
+            icon={<FAIcon icon="user-check" />}
           />
         )}
         <div className="flex-1" />

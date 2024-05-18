@@ -2,21 +2,11 @@ import { Elysia } from "elysia";
 import { cors } from "@elysiajs/cors";
 import { appConfiguration } from "./util/config";
 import { logger } from "./util/logger";
-import { helmet } from "elysia-helmet";
 import { GraphQLApi } from "./api";
+import packagejson from "../package.json";
+import swagger from "@elysiajs/swagger";
+import { helmet } from "elysia-helmet";
 
-setInterval(
-  async () => {
-    //TODO save these to a real volume mount (docker)
-    const snapshot = Bun.generateHeapSnapshot();
-    await Bun.write(
-      `heapSnapshots/${Date.now()}.json`,
-      JSON.stringify(snapshot, null, 2),
-    );
-    console.info("Heap snapshot taken");
-  },
-  1000 * 60 * 10,
-); // every 10 minutes
 
 const app = new Elysia({
   normalize: true,
@@ -27,6 +17,18 @@ if (appConfiguration.production) {
 }
 
 app
+  .use(
+    swagger({
+      path: `/${appConfiguration.documentationPath}`,
+      documentation: {
+        info: {
+          title: `${appConfiguration.appName} documentation`,
+          description: `${appConfiguration.appName} documentation`,
+          version: packagejson.version,
+        },
+      },
+    }),
+  )
   .use(logger)
   .use(
     cors({

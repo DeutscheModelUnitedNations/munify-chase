@@ -2,23 +2,14 @@
 
 import Navbar from "@/components/navbar/navbar";
 import NavButton from "@/components/navbar/button";
-import {
-  faPodium,
-  faNewspaper,
-  faCommentExclamation,
-  faEarthEurope,
-  faEarthOceania,
-  faEarthAsia,
-  faEarthAfrica,
-  faEarthAmericas,
-  faChartNetwork,
-} from "@fortawesome/pro-solid-svg-icons";
 import { useI18nContext } from "@/i18n/i18n-react";
 import type { IconProp } from "@fortawesome/fontawesome-svg-core";
 import { MyDelegationProvider, useUserIdent } from "@/contexts/user_ident";
-import { useContext, useEffect, useState } from "react";
+import { useContext } from "react";
 import { ConferenceIdContext } from "@/contexts/committee_data";
 import { $Enums } from "@prisma/generated/client";
+import ExternalLinks from "@/components/navbar/external_links";
+import { useFaGlobe } from "@/hooks/useFaGlobe";
 
 export default function Participant_Pages_Layout({
   children,
@@ -29,21 +20,7 @@ export default function Participant_Pages_Layout({
   const conferenceId = useContext(ConferenceIdContext);
   const { conferenceMembership } = useUserIdent();
 
-  const [homeIcon, setHomeIcon] = useState<IconProp>(faEarthEurope);
-
-  useEffect(() => {
-    // random out of this list
-    const icons = [
-      faEarthOceania,
-      faEarthAsia,
-      faEarthAfrica,
-      faEarthAmericas,
-      faEarthEurope,
-    ];
-
-    const randomIcon = icons[Math.floor(Math.random() * icons.length)];
-    setHomeIcon(randomIcon);
-  }, []);
+  const homeIcon = useFaGlobe();
 
   return (
     <MyDelegationProvider>
@@ -53,7 +30,7 @@ export default function Participant_Pages_Layout({
             $Enums.ConferenceRole.NON_STATE_ACTOR && (
             <>
               <NavButton
-                icon={faChartNetwork}
+                icon="faChartNetwork"
                 link={`/app/${conferenceId}/hub/na`}
                 title="Hub"
               />
@@ -64,7 +41,7 @@ export default function Participant_Pages_Layout({
             $Enums.ConferenceRole.GUEST && (
             <>
               <NavButton
-                icon={faChartNetwork}
+                icon="faChartNetwork"
                 link={`/app/${conferenceId}/hub/guest`}
                 title="Hub"
               />
@@ -77,33 +54,22 @@ export default function Participant_Pages_Layout({
             title={LL.navbar.DASHBOARD()}
           />
           <NavButton
-            icon={faPodium as IconProp}
+            icon="podium"
             link={"./speakers"}
             title={LL.navbar.SPEAKERS()}
           />
           {/* <NavButton TODO add Voting Page
-          icon={faPollPeople as IconProp}
+          icon="poll-people"
           link={"./voting"}
           title={LL.navbar.VOTING()}
         /> */}
           {/* <NavButton TODO add Resolution Editor page
-          icon={faScroll as IconProp}
+          icon="scroll"
           link={"./resolutions"}
           title={LL.navbar.RESOLUTIONS()}
         /> */}
           <div className="flex-1" />
-          <NavButton
-            icon={faNewspaper as IconProp}
-            newWindow
-            link="https://presse.mun-sh.de/" // TODO make this link configurable for the chair (Link to external News Page)
-            title={LL.navbar.NEWS()}
-          />
-          <NavButton
-            icon={faCommentExclamation as IconProp}
-            newWindow
-            link="https://chase-fb.dmun.de"
-            title={LL.navbar.BUG_REPORT()}
-          />
+          <ExternalLinks />
         </Navbar>
         {children}
       </div>

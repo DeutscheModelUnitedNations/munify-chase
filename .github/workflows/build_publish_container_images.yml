@@ -21,6 +21,12 @@ jobs:
         uses: docker/metadata-action@v5
         with:
           images: deutschemodelunitednations/chase-frontend
+          flavor: |
+            latest=false
+          tags: |
+            type=semver,pattern={{version}},value=${{ github.event.release.tag_name }}
+            type=raw,value=nightly,enable=${{ github.event.release.prerelease }}
+            type=raw,value=latest,enable=${{ !github.event.release.prerelease }}
 
       - name: Log in to Docker Hub
         uses: docker/login-action@v3
@@ -50,6 +56,12 @@ jobs:
         uses: docker/metadata-action@v5
         with:
           images: deutschemodelunitednations/chase-backend
+          flavor: |
+            latest=false
+          tags: |
+            type=semver,pattern={{version}},value=${{ github.event.release.tag_name }}
+            type=raw,value=nightly,enable=${{ github.event.release.prerelease }}
+            type=raw,value=latest,enable=${{ !github.event.release.prerelease }}
 
       - name: Log in to Docker Hub
         uses: docker/login-action@v3
@@ -77,6 +89,12 @@ jobs:
         uses: docker/metadata-action@v5
         with:
           images: deutschemodelunitednations/chase-backend-db-migration
+          flavor: |
+            latest=false
+          tags: |
+            type=semver,pattern={{version}},value=${{ github.event.release.tag_name }}
+            type=raw,value=nightly,enable=${{ github.event.release.prerelease }}
+            type=raw,value=latest,enable=${{ !github.event.release.prerelease }}
 
       - name: Log in to Docker Hub
         uses: docker/login-action@v3

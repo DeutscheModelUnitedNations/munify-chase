@@ -7,6 +7,8 @@ import Link from "next/link";
 import SmallInfoCard from "./small_info_card";
 import { env } from "next-runtime-env";
 import FAIcon from "./font_awesome_icon";
+import remarkGfm from 'remark-gfm'
+import rehypeRaw from 'rehype-raw'
 
 export default function VersionModal({
   visible,
@@ -131,7 +133,7 @@ export default function VersionModal({
                       })}
                     </div>
                   </div>
-                  <Markdown className="prose prose-sm w-full overflow-x-scroll">
+                  <Markdown rehypePlugins={[remarkGfm,rehypeRaw]}  className="prose prose-sm !max-w-full w-full overflow-x-scroll">
                     {release.body}
                   </Markdown>
                 </div>

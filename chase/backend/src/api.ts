@@ -5,14 +5,21 @@ import { builder } from "./resolvers/builder";
 import { sessionPlugin } from "./auth/session";
 import { permissionsPlugin } from "./auth/permissions";
 
-//TODO robots.txt
-
 builder.queryType({});
 builder.mutationType({});
 
-import "./resolvers/conference";
+import "./resolvers/agendaItem";
 import "./resolvers/committee";
 import "./resolvers/committeeMember";
+import "./resolvers/conference";
+import "./resolvers/conferenceMember";
+import "./resolvers/delegation";
+import "./resolvers/email";
+import "./resolvers/message";
+import "./resolvers/nation";
+import "./resolvers/speakerOnList";
+import "./resolvers/speakersList";
+import "./resolvers/user";
 
 const yoga = createYoga({
   schema: builder.toSchema(),

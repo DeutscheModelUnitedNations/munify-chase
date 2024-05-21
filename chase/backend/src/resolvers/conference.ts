@@ -1,4 +1,11 @@
 import {
+  ConferenceCommitteesFieldObject,
+  ConferenceDelegationsFieldObject,
+  ConferenceEndFieldObject,
+  ConferenceFeedbackWebsiteFieldObject,
+  ConferenceIdFieldObject,
+  ConferenceNameFieldObject,
+  ConferencePressWebsiteFieldObject,
   ConferenceStartFieldObject,
   createOneConferenceMutationObject,
   deleteOneConferenceMutationObject,
@@ -11,18 +18,27 @@ import { builder } from "./builder";
 
 builder.prismaObject("Conference", {
   fields: (t) => ({
-    id: t.exposeID("id"),
-    name: t.exposeString("name"),
+    id: t.field(ConferenceIdFieldObject),
+    name: t.field(ConferenceNameFieldObject),
     start: t.field(ConferenceStartFieldObject),
-    end: t.field(ConferenceStartFieldObject),
+    end: t.field(ConferenceEndFieldObject),
+    pressWebsite: t.field(ConferencePressWebsiteFieldObject),
+    feedbackWebsite: t.field(ConferenceFeedbackWebsiteFieldObject),
     committees: t.relation("committees", {
-      query: (args, ctx) => ({
+      query: (_args, ctx) => ({
         where: ctx.permissions.allowDatabaseAccessTo("list").Committee,
       }),
     }),
-    // delegations Delegation[]
-    // members     ConferenceMember[]
-    // committees  Committee[]
+    delegations: t.relation("delegations", {
+      query: (_args, ctx) => ({
+        where: ctx.permissions.allowDatabaseAccessTo("list").Delegation,
+      }),
+    }),
+    members: t.relation("members", {
+      query: (_args, ctx) => ({
+        where: ctx.permissions.allowDatabaseAccessTo("list").ConferenceMember,
+      }),
+    }),
   }),
 });
 

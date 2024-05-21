@@ -12,6 +12,9 @@ import { defineAbilitiesForSpeakersList } from "./entities/speakersList";
 import { defineAbilitiesForSpeakerOnList } from "./entities/speakerOnList";
 import { defineAbilitiesForCommitteeMembers } from "./entities/committeeMember.ts";
 import { appConfiguration } from "../../util/config";
+import { defineAbilitiesForEmail } from "./entities/email";
+import { defineAbilitiesForNation } from "./entities/nation";
+import { defineAbilitiesForUser } from "./entities/user";
 
 const actions = ["list", "create", "read", "update", "delete"] as const;
 
@@ -63,6 +66,9 @@ export type AppAbility = PureAbility<
       SpeakersList: Awaited<
         ReturnType<(typeof db.speakersList)["findUniqueOrThrow"]>
       >;
+      Email: Awaited<
+      ReturnType<(typeof db.email)["findUniqueOrThrow"]>
+    >;
     }>,
   ],
   PrismaQuery
@@ -91,6 +97,9 @@ export const defineAbilitiesForSession = (session: Session) => {
   defineAbilitiesForMessages(session, builder);
   defineAbilitiesForSpeakersList(session, builder);
   defineAbilitiesForSpeakerOnList(session, builder);
+  defineAbilitiesForEmail(session, builder);
+  defineAbilitiesForNation(session, builder);
+  defineAbilitiesForUser(session, builder);
 
   return builder.build({
     detectSubjectType: (object) => object.__typename,

@@ -7,6 +7,7 @@ import packagejson from "../package.json";
 import swagger from "@elysiajs/swagger";
 import { helmet } from "elysia-helmet";
 
+//TODO robots.txt
 
 const app = new Elysia({
   normalize: true,

@@ -3,6 +3,9 @@ name: Build and publish container images
 on:
   release:
     types: [created]
+  push:
+    branches:
+      - nightly
 
 jobs:
   chase-frontend:
@@ -24,9 +27,10 @@ jobs:
           flavor: |
             latest=false
           tags: |
-            type=semver,pattern={{version}},value=${{ github.event.release.tag_name }}
-            type=raw,value=nightly,enable=${{ github.event.release.prerelease }}
-            type=raw,value=latest,enable=${{ !github.event.release.prerelease }}
+            type=semver,pattern={{version}},value=${{ github.event.release.tag_name }},enable=${{ github.event_name == 'release' }}
+            type=raw,value=prerelease,enable=${{ github.event_name == 'release' && github.event.release.prerelease }}
+            type=raw,value=latest,enable=${{ github.event_name == 'release' && !github.event.release.prerelease }}
+            type=raw,value=nightly,enable=${{ github.event_name == 'push' && github.ref == 'refs/heads/nightly' }}
 
       - name: Log in to Docker Hub
         uses: docker/login-action@v3
@@ -59,9 +63,10 @@ jobs:
           flavor: |
             latest=false
           tags: |
-            type=semver,pattern={{version}},value=${{ github.event.release.tag_name }}
-            type=raw,value=nightly,enable=${{ github.event.release.prerelease }}
-            type=raw,value=latest,enable=${{ !github.event.release.prerelease }}
+            type=semver,pattern={{version}},value=${{ github.event.release.tag_name }},enable=${{ github.event_name == 'release' }}
+            type=raw,value=prerelease,enable=${{ github.event_name == 'release' && github.event.release.prerelease }}
+            type=raw,value=latest,enable=${{ github.event_name == 'release' && !github.event.release.prerelease }}
+            type=raw,value=nightly,enable=${{ github.event_name == 'push' && github.ref == 'refs/heads/nightly' }}
 
       - name: Log in to Docker Hub
         uses: docker/login-action@v3
@@ -92,9 +97,10 @@ jobs:
           flavor: |
             latest=false
           tags: |
-            type=semver,pattern={{version}},value=${{ github.event.release.tag_name }}
-            type=raw,value=nightly,enable=${{ github.event.release.prerelease }}
-            type=raw,value=latest,enable=${{ !github.event.release.prerelease }}
+            type=semver,pattern={{version}},value=${{ github.event.release.tag_name }},enable=${{ github.event_name == 'release' }}
+            type=raw,value=prerelease,enable=${{ github.event_name == 'release' && github.event.release.prerelease }}
+            type=raw,value=latest,enable=${{ github.event_name == 'release' && !github.event.release.prerelease }}
+            type=raw,value=nightly,enable=${{ github.event_name == 'push' && github.ref == 'refs/heads/nightly' }}
 
       - name: Log in to Docker Hub
         uses: docker/login-action@v3

@@ -9,9 +9,8 @@ import { useRouter } from "next/navigation";
 import SmallInfoCard from "@/components/small_info_card";
 import { Skeleton } from "primereact/skeleton";
 import { Message } from "primereact/message";
-import { useBackend } from "@/contexts/backend";
-import { useBackendCall } from "@/hooks/useBackendCall";
 import FAIcon from "@/components/font_awesome_icon";
+import { useQuery } from "@/gqty";
 
 const emailRegex =
   /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|.(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
@@ -27,10 +26,7 @@ export default () => {
   const [loginLoading, setLoginLoading] = useState(false);
   const [userCreatedSuccessfullyLoading, setCreatedSuccessfullyLoading] =
     useState(false);
-  const [userState, triggerUserState] = useBackendCall(
-    () => backend.auth.userState.get({ query: { email } }),
-    true,
-  );
+  const { getUserState } = useQuery();
   const [email, setEmail] = useState("");
   const [emailValid, setEmailValid] = useState<boolean | undefined>();
   const [password, setPassword] = useState("");

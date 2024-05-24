@@ -8,6 +8,5 @@ export const defineAbilitiesForUser = (
 ) => {
   if (session.data?.loggedIn && session.data.user) {
     const user = session.data.user;
-
   }
 };

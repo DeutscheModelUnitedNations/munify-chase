@@ -55,4 +55,3 @@ export const builder = new SchemaBuilder<{
       }),
   },
 });
-

@@ -80,7 +80,9 @@ builder.mutationFields((t) => {
     createOneConferenceMember: t.prismaField({
       ...field,
       resolve: (query, root, args, ctx, info) => {
-        ctx.permissions.checkIf((user) => user.can("create", "ConferenceMember"));
+        ctx.permissions.checkIf((user) =>
+          user.can("create", "ConferenceMember"),
+        );
         return field.resolve(query, root, args, ctx, info);
       },
     }),
@@ -95,7 +97,9 @@ builder.mutationFields((t) => {
       resolve: (query, root, args, ctx, info) => {
         args.where = {
           ...args.where,
-          AND: [ctx.permissions.allowDatabaseAccessTo("update").ConferenceMember],
+          AND: [
+            ctx.permissions.allowDatabaseAccessTo("update").ConferenceMember,
+          ],
         };
         return field.resolve(query, root, args, ctx, info);
       },
@@ -111,7 +115,9 @@ builder.mutationFields((t) => {
       resolve: (query, root, args, ctx, info) => {
         args.where = {
           ...args.where,
-          AND: [ctx.permissions.allowDatabaseAccessTo("delete").ConferenceMember],
+          AND: [
+            ctx.permissions.allowDatabaseAccessTo("delete").ConferenceMember,
+          ],
         };
         return field.resolve(query, root, args, ctx, info);
       },

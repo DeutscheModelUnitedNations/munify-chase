@@ -1,11 +1,10 @@
-name: Lint
+name: Push
 
 on: [push]
 
 jobs:
-  biome-linter:
+  lint:
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout code
         uses: actions/checkout@v2

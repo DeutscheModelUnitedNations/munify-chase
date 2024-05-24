@@ -20,6 +20,7 @@ import "./resolvers/nation";
 import "./resolvers/speakerOnList";
 import "./resolvers/speakersList";
 import "./resolvers/user";
+import "./resolvers/time";
 
 const yoga = createYoga({
   schema: builder.toSchema(),

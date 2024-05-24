@@ -1,5 +1,4 @@
 import {
-  EmailIdFieldObject,
   EmailEmailFieldObject,
   EmailValidatedFieldObject,
   createOneEmailMutationObject,
@@ -13,7 +12,6 @@ import { builder } from "./builder";
 
 builder.prismaObject("Email", {
   fields: (t) => ({
-    id: t.field(EmailIdFieldObject),
     email: t.field(EmailEmailFieldObject),
     validated: t.field(EmailValidatedFieldObject),
     user: t.relation("user"),

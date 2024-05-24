@@ -19,7 +19,6 @@ import { loadLocale } from "@/i18n/i18n-util.sync";
 import { baseLocale, locales } from "@/i18n/i18n-util";
 import TypesafeI18n from "@/i18n/i18n-react";
 import { ToastProvider } from "@/contexts/toast";
-import { Backend } from "@/contexts/backend";
 import { BackendTime } from "@/contexts/backendTime";
 import CookieBanner from "@/components/cookie_banner";
 import { Head } from "next/document";
@@ -90,12 +89,10 @@ export default function RootLayout({
         {/* <PrimeReactProvider value={{ pt: Tailwind }}> */}
         <TypesafeI18n locale={locale}>
           <ToastProvider>
-            <Backend>
-              <BackendTime>
-                <CookieBanner />
-                {children}
-              </BackendTime>
-            </Backend>
+            <BackendTime>
+              <CookieBanner />
+              {children}
+            </BackendTime>
           </ToastProvider>
         </TypesafeI18n>
         {/* </PrimeReactProvider> */}

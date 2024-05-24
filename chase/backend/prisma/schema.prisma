@@ -53,8 +53,7 @@ model PendingCredentialCreateTask {
 }
 
 model Email {
-  id     String @id @default(uuid())
-  email  String @unique
+  email  String @id
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
   userId String
 

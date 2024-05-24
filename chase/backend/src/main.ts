@@ -3,9 +3,8 @@ import { cors } from "@elysiajs/cors";
 import { appConfiguration } from "./util/config";
 import { logger } from "./util/logger";
 import { GraphQLApi } from "./api";
-import packagejson from "../package.json";
-import swagger from "@elysiajs/swagger";
 import { helmet } from "elysia-helmet";
+import supertokens from "supertokens-node";
 
 //TODO robots.txt
 
@@ -18,23 +17,11 @@ if (appConfiguration.production) {
 }
 
 app
-  .use(
-    swagger({
-      path: `/${appConfiguration.documentationPath}`,
-      documentation: {
-        info: {
-          title: `${appConfiguration.appName} documentation`,
-          description: `${appConfiguration.appName} documentation`,
-          version: packagejson.version,
-        },
-      },
-    }),
-  )
   .use(logger)
   .use(
     cors({
       origin: appConfiguration.CORSOrigins,
-      allowedHeaders: ["content-type"],
+      allowedHeaders: ["content-type", ...supertokens.getAllCORSHeaders()],
       methods: [
         "GET",
         "PUT",
@@ -48,6 +35,7 @@ app
       ],
     }),
   )
+  .use(supertokensMiddleware)
   .use(GraphQLApi)
   .listen(process.env.PORT ?? "3001");
 

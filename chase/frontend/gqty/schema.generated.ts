@@ -20,7 +20,7 @@ export interface Scalars {
   Boolean: boolean;
   Int: number;
   Float: number;
-  DateTime: string;
+  DateTime: Date;
 }
 
 export interface AgendaItemCreateInput {
@@ -153,6 +153,7 @@ export interface CommitteeCreateInput {
   >;
   category: CommitteeCategory;
   conferenceId: Scalars["String"];
+  id?: InputMaybe<Scalars["String"]>;
   members?: InputMaybe<CommitteeMemberCreateNestedManyWithoutCommitteeInput>;
   messages?: InputMaybe<MessageCreateNestedManyWithoutCommitteeInput>;
   name: Scalars["String"];
@@ -378,6 +379,7 @@ export interface CommitteeUpdateInput {
   allowDelegationsToAddThemselvesToSpeakersList?: InputMaybe<BoolFieldUpdateOperationsInput>;
   category?: InputMaybe<EnumCommitteeCategoryFieldUpdateOperationsInput>;
   conferenceId?: InputMaybe<StringFieldUpdateOperationsInput>;
+  id?: InputMaybe<StringFieldUpdateOperationsInput>;
   members?: InputMaybe<CommitteeMemberUpdateManyWithoutCommitteeNestedInput>;
   messages?: InputMaybe<MessageUpdateManyWithoutCommitteeNestedInput>;
   name?: InputMaybe<StringFieldUpdateOperationsInput>;
@@ -394,6 +396,7 @@ export interface CommitteeUpdateManyMutationInput {
   abbreviation?: InputMaybe<StringFieldUpdateOperationsInput>;
   allowDelegationsToAddThemselvesToSpeakersList?: InputMaybe<BoolFieldUpdateOperationsInput>;
   category?: InputMaybe<EnumCommitteeCategoryFieldUpdateOperationsInput>;
+  id?: InputMaybe<StringFieldUpdateOperationsInput>;
   name?: InputMaybe<StringFieldUpdateOperationsInput>;
   stateOfDebate?: InputMaybe<NullableStringFieldUpdateOperationsInput>;
   status?: InputMaybe<EnumCommitteeStatusFieldUpdateOperationsInput>;
@@ -468,8 +471,11 @@ export interface ConferenceCreateInput {
   committees?: InputMaybe<CommitteeCreateNestedManyWithoutConferenceInput>;
   delegations?: InputMaybe<DelegationCreateNestedManyWithoutConferenceInput>;
   end?: InputMaybe<Scalars["DateTime"]>;
+  feedbackWebsite?: InputMaybe<Scalars["String"]>;
+  id?: InputMaybe<Scalars["String"]>;
   members?: InputMaybe<ConferenceMemberCreateNestedManyWithoutConferenceInput>;
   name: Scalars["String"];
+  pressWebsite?: InputMaybe<Scalars["String"]>;
   start?: InputMaybe<Scalars["DateTime"]>;
 }
 
@@ -509,6 +515,7 @@ export interface ConferenceCreationTokenWhereUniqueInput {
 
 export interface ConferenceMemberCreateInput {
   conferenceId: Scalars["String"];
+  id?: InputMaybe<Scalars["String"]>;
   role: ConferenceRole;
   userId?: InputMaybe<Scalars["String"]>;
 }
@@ -549,11 +556,13 @@ export enum ConferenceMemberScalarFieldEnum {
 
 export interface ConferenceMemberUpdateInput {
   conferenceId?: InputMaybe<StringFieldUpdateOperationsInput>;
+  id?: InputMaybe<StringFieldUpdateOperationsInput>;
   role?: InputMaybe<EnumConferenceRoleFieldUpdateOperationsInput>;
   userId?: InputMaybe<NullableStringFieldUpdateOperationsInput>;
 }
 
 export interface ConferenceMemberUpdateManyMutationInput {
+  id?: InputMaybe<StringFieldUpdateOperationsInput>;
   role?: InputMaybe<EnumConferenceRoleFieldUpdateOperationsInput>;
 }
 
@@ -603,9 +612,11 @@ export interface ConferenceOrderByWithRelationInput {
   committees?: InputMaybe<CommitteeOrderByRelationAggregateInput>;
   delegations?: InputMaybe<DelegationOrderByRelationAggregateInput>;
   end?: InputMaybe<SortOrder>;
+  feedbackWebsite?: InputMaybe<SortOrder>;
   id?: InputMaybe<SortOrder>;
   members?: InputMaybe<ConferenceMemberOrderByRelationAggregateInput>;
   name?: InputMaybe<SortOrder>;
+  pressWebsite?: InputMaybe<SortOrder>;
   start?: InputMaybe<SortOrder>;
 }
 
@@ -628,8 +639,10 @@ export enum ConferenceRole {
 
 export enum ConferenceScalarFieldEnum {
   end = "end",
+  feedbackWebsite = "feedbackWebsite",
   id = "id",
   name = "name",
+  pressWebsite = "pressWebsite",
   start = "start",
 }
 
@@ -637,14 +650,20 @@ export interface ConferenceUpdateInput {
   committees?: InputMaybe<CommitteeUpdateManyWithoutConferenceNestedInput>;
   delegations?: InputMaybe<DelegationUpdateManyWithoutConferenceNestedInput>;
   end?: InputMaybe<NullableDateTimeFieldUpdateOperationsInput>;
+  feedbackWebsite?: InputMaybe<NullableStringFieldUpdateOperationsInput>;
+  id?: InputMaybe<StringFieldUpdateOperationsInput>;
   members?: InputMaybe<ConferenceMemberUpdateManyWithoutConferenceNestedInput>;
   name?: InputMaybe<StringFieldUpdateOperationsInput>;
+  pressWebsite?: InputMaybe<NullableStringFieldUpdateOperationsInput>;
   start?: InputMaybe<NullableDateTimeFieldUpdateOperationsInput>;
 }
 
 export interface ConferenceUpdateManyMutationInput {
   end?: InputMaybe<NullableDateTimeFieldUpdateOperationsInput>;
+  feedbackWebsite?: InputMaybe<NullableStringFieldUpdateOperationsInput>;
+  id?: InputMaybe<StringFieldUpdateOperationsInput>;
   name?: InputMaybe<StringFieldUpdateOperationsInput>;
+  pressWebsite?: InputMaybe<NullableStringFieldUpdateOperationsInput>;
   start?: InputMaybe<NullableDateTimeFieldUpdateOperationsInput>;
 }
 
@@ -655,9 +674,11 @@ export interface ConferenceWhereInput {
   committees?: InputMaybe<CommitteeListRelationFilter>;
   delegations?: InputMaybe<DelegationListRelationFilter>;
   end?: InputMaybe<DateTimeNullableFilter>;
+  feedbackWebsite?: InputMaybe<StringNullableFilter>;
   id?: InputMaybe<StringFilter>;
   members?: InputMaybe<ConferenceMemberListRelationFilter>;
   name?: InputMaybe<StringFilter>;
+  pressWebsite?: InputMaybe<StringNullableFilter>;
   start?: InputMaybe<DateTimeNullableFilter>;
 }
 
@@ -668,9 +689,11 @@ export interface ConferenceWhereUniqueInput {
   committees?: InputMaybe<CommitteeListRelationFilter>;
   delegations?: InputMaybe<DelegationListRelationFilter>;
   end?: InputMaybe<DateTimeNullableFilter>;
+  feedbackWebsite?: InputMaybe<StringNullableFilter>;
   id?: InputMaybe<Scalars["String"]>;
   members?: InputMaybe<ConferenceMemberListRelationFilter>;
   name?: InputMaybe<Scalars["String"]>;
+  pressWebsite?: InputMaybe<StringNullableFilter>;
   start?: InputMaybe<DateTimeNullableFilter>;
 }
 
@@ -828,8 +851,9 @@ export interface DelegationWhereUniqueInput {
 
 export interface EmailCreateInput {
   email: Scalars["String"];
-  id?: InputMaybe<Scalars["String"]>;
   userId: Scalars["String"];
+  validated?: InputMaybe<Scalars["Boolean"]>;
+  validationTokenId?: InputMaybe<Scalars["String"]>;
 }
 
 export interface EmailCreateNestedManyWithoutUserInput {
@@ -852,7 +876,6 @@ export interface EmailOrderByRelationAggregateInput {
 
 export interface EmailOrderByWithRelationInput {
   email?: InputMaybe<SortOrder>;
-  id?: InputMaybe<SortOrder>;
   user?: InputMaybe<UserOrderByWithRelationInput>;
   userId?: InputMaybe<SortOrder>;
   validated?: InputMaybe<SortOrder>;
@@ -862,7 +885,6 @@ export interface EmailOrderByWithRelationInput {
 
 export enum EmailScalarFieldEnum {
   email = "email",
-  id = "id",
   userId = "userId",
   validated = "validated",
   validationTokenId = "validationTokenId",
@@ -870,13 +892,14 @@ export enum EmailScalarFieldEnum {
 
 export interface EmailUpdateInput {
   email?: InputMaybe<StringFieldUpdateOperationsInput>;
-  id?: InputMaybe<StringFieldUpdateOperationsInput>;
   userId?: InputMaybe<StringFieldUpdateOperationsInput>;
+  validated?: InputMaybe<BoolFieldUpdateOperationsInput>;
+  validationTokenId?: InputMaybe<NullableStringFieldUpdateOperationsInput>;
 }
 
 export interface EmailUpdateManyMutationInput {
   email?: InputMaybe<StringFieldUpdateOperationsInput>;
-  id?: InputMaybe<StringFieldUpdateOperationsInput>;
+  validated?: InputMaybe<BoolFieldUpdateOperationsInput>;
 }
 
 export interface EmailUpdateManyWithoutUserNestedInput {
@@ -901,7 +924,6 @@ export interface EmailWhereInput {
   NOT?: InputMaybe<Array<EmailWhereInput>>;
   OR?: InputMaybe<Array<EmailWhereInput>>;
   email?: InputMaybe<StringFilter>;
-  id?: InputMaybe<StringFilter>;
   user?: InputMaybe<UserWhereInput>;
   userId?: InputMaybe<StringFilter>;
   validated?: InputMaybe<BoolFilter>;
@@ -914,7 +936,6 @@ export interface EmailWhereUniqueInput {
   NOT?: InputMaybe<Array<EmailWhereInput>>;
   OR?: InputMaybe<Array<EmailWhereInput>>;
   email?: InputMaybe<Scalars["String"]>;
-  id?: InputMaybe<Scalars["String"]>;
   user?: InputMaybe<UserWhereInput>;
   userId?: InputMaybe<StringFilter>;
   userId_email?: InputMaybe<EmailUserIdEmailCompoundUniqueInput>;
@@ -2236,7 +2257,14 @@ export enum TransactionIsolationLevel {
 }
 
 export interface UserCreateInput {
+  committeeMemberships?: InputMaybe<CommitteeMemberCreateNestedManyWithoutUserInput>;
+  conferenceMemberships?: InputMaybe<ConferenceMemberCreateNestedManyWithoutUserInput>;
+  emails?: InputMaybe<EmailCreateNestedManyWithoutUserInput>;
+  id?: InputMaybe<Scalars["String"]>;
+  messages?: InputMaybe<MessageCreateNestedManyWithoutAuthorInput>;
   name: Scalars["String"];
+  passwords?: InputMaybe<PasswordCreateNestedManyWithoutUserInput>;
+  pendingCredentialCreationTasks?: InputMaybe<PendingCredentialCreateTaskCreateNestedManyWithoutUserInput>;
 }
 
 export interface UserNullableRelationFilter {
@@ -2266,10 +2294,18 @@ export enum UserScalarFieldEnum {
 }
 
 export interface UserUpdateInput {
+  committeeMemberships?: InputMaybe<CommitteeMemberUpdateManyWithoutUserNestedInput>;
+  conferenceMemberships?: InputMaybe<ConferenceMemberUpdateManyWithoutUserNestedInput>;
+  emails?: InputMaybe<EmailUpdateManyWithoutUserNestedInput>;
+  id?: InputMaybe<StringFieldUpdateOperationsInput>;
+  messages?: InputMaybe<MessageUpdateManyWithoutAuthorNestedInput>;
   name?: InputMaybe<StringFieldUpdateOperationsInput>;
+  passwords?: InputMaybe<PasswordUpdateManyWithoutUserNestedInput>;
+  pendingCredentialCreationTasks?: InputMaybe<PendingCredentialCreateTaskUpdateManyWithoutUserNestedInput>;
 }
 
 export interface UserUpdateManyMutationInput {
+  id?: InputMaybe<StringFieldUpdateOperationsInput>;
   name?: InputMaybe<StringFieldUpdateOperationsInput>;
 }
 
@@ -2341,21 +2377,10 @@ export const generatedSchema = {
   AgendaItem: {
     __typename: { __type: "String!" },
     committee: { __type: "Committee!" },
-    committeeId: { __type: "String!" },
     description: { __type: "String" },
     id: { __type: "ID!" },
     isActive: { __type: "Boolean!" },
-    speakerLists: {
-      __type: "[SpeakersList!]!",
-      __args: {
-        cursor: "SpeakersListWhereUniqueInput",
-        distinct: "[SpeakersListScalarFieldEnum!]",
-        orderBy: "[SpeakersListOrderByWithRelationInput!]",
-        skip: "Int",
-        take: "Int",
-        where: "SpeakersListWhereInput",
-      },
-    },
+    speakerLists: { __type: "[SpeakersList!]!" },
     title: { __type: "String!" },
   },
   AgendaItemCreateInput: {
@@ -2454,62 +2479,20 @@ export const generatedSchema = {
   Committee: {
     __typename: { __type: "String!" },
     abbreviation: { __type: "String!" },
-    agendaItems: {
-      __type: "[AgendaItem!]!",
-      __args: {
-        cursor: "AgendaItemWhereUniqueInput",
-        distinct: "[AgendaItemScalarFieldEnum!]",
-        orderBy: "[AgendaItemOrderByWithRelationInput!]",
-        skip: "Int",
-        take: "Int",
-        where: "AgendaItemWhereInput",
-      },
-    },
+    agendaItems: { __type: "[AgendaItem!]!" },
     allowDelegationsToAddThemselvesToSpeakersList: { __type: "Boolean!" },
     category: { __type: "CommitteeCategory!" },
     conference: { __type: "Conference!" },
-    conferenceId: { __type: "String!" },
     id: { __type: "ID!" },
-    members: {
-      __type: "[CommitteeMember!]!",
-      __args: {
-        cursor: "CommitteeMemberWhereUniqueInput",
-        distinct: "[CommitteeMemberScalarFieldEnum!]",
-        orderBy: "[CommitteeMemberOrderByWithRelationInput!]",
-        skip: "Int",
-        take: "Int",
-        where: "CommitteeMemberWhereInput",
-      },
-    },
-    messages: {
-      __type: "[Message!]!",
-      __args: {
-        cursor: "MessageWhereUniqueInput",
-        distinct: "[MessageScalarFieldEnum!]",
-        orderBy: "[MessageOrderByWithRelationInput!]",
-        skip: "Int",
-        take: "Int",
-        where: "MessageWhereInput",
-      },
-    },
+    members: { __type: "[CommitteeMember!]!" },
+    messages: { __type: "[Message!]!" },
     name: { __type: "String!" },
-    parent: { __type: "Committee" },
-    parentId: { __type: "String" },
+    parent: { __type: "Committee!" },
     stateOfDebate: { __type: "String" },
     status: { __type: "CommitteeStatus!" },
     statusHeadline: { __type: "String" },
     statusUntil: { __type: "DateTime" },
-    subCommittees: {
-      __type: "[Committee!]!",
-      __args: {
-        cursor: "CommitteeWhereUniqueInput",
-        distinct: "[CommitteeScalarFieldEnum!]",
-        orderBy: "[CommitteeOrderByWithRelationInput!]",
-        skip: "Int",
-        take: "Int",
-        where: "CommitteeWhereInput",
-      },
-    },
+    subCommittees: { __type: "[Committee!]!" },
     whiteboardContent: { __type: "String!" },
   },
   CommitteeAbbreviationConferenceIdCompoundUniqueInput: {
@@ -2522,6 +2505,7 @@ export const generatedSchema = {
     allowDelegationsToAddThemselvesToSpeakersList: { __type: "Boolean" },
     category: { __type: "CommitteeCategory!" },
     conferenceId: { __type: "String!" },
+    id: { __type: "String" },
     members: { __type: "CommitteeMemberCreateNestedManyWithoutCommitteeInput" },
     messages: { __type: "MessageCreateNestedManyWithoutCommitteeInput" },
     name: { __type: "String!" },
@@ -2547,24 +2531,11 @@ export const generatedSchema = {
   CommitteeMember: {
     __typename: { __type: "String!" },
     committee: { __type: "Committee!" },
-    committeeId: { __type: "String!" },
-    delegation: { __type: "Delegation" },
-    delegationId: { __type: "String" },
+    delegation: { __type: "Delegation!" },
     id: { __type: "ID!" },
     presence: { __type: "Presence!" },
-    speakerLists: {
-      __type: "[SpeakerOnList!]!",
-      __args: {
-        cursor: "SpeakerOnListWhereUniqueInput",
-        distinct: "[SpeakerOnListScalarFieldEnum!]",
-        orderBy: "[SpeakerOnListOrderByWithRelationInput!]",
-        skip: "Int",
-        take: "Int",
-        where: "SpeakerOnListWhereInput",
-      },
-    },
-    user: { __type: "User" },
-    userId: { __type: "String" },
+    speakerLists: { __type: "[SpeakerOnList!]!" },
+    user: { __type: "User!" },
   },
   CommitteeMemberCommitteeIdDelegationIdCompoundUniqueInput: {
     committeeId: { __type: "String!" },
@@ -2720,6 +2691,7 @@ export const generatedSchema = {
     },
     category: { __type: "EnumCommitteeCategoryFieldUpdateOperationsInput" },
     conferenceId: { __type: "StringFieldUpdateOperationsInput" },
+    id: { __type: "StringFieldUpdateOperationsInput" },
     members: { __type: "CommitteeMemberUpdateManyWithoutCommitteeNestedInput" },
     messages: { __type: "MessageUpdateManyWithoutCommitteeNestedInput" },
     name: { __type: "StringFieldUpdateOperationsInput" },
@@ -2737,6 +2709,7 @@ export const generatedSchema = {
       __type: "BoolFieldUpdateOperationsInput",
     },
     category: { __type: "EnumCommitteeCategoryFieldUpdateOperationsInput" },
+    id: { __type: "StringFieldUpdateOperationsInput" },
     name: { __type: "StringFieldUpdateOperationsInput" },
     stateOfDebate: { __type: "NullableStringFieldUpdateOperationsInput" },
     status: { __type: "EnumCommitteeStatusFieldUpdateOperationsInput" },
@@ -2808,57 +2781,28 @@ export const generatedSchema = {
   },
   Conference: {
     __typename: { __type: "String!" },
-    committees: {
-      __type: "[Committee!]!",
-      __args: {
-        cursor: "CommitteeWhereUniqueInput",
-        distinct: "[CommitteeScalarFieldEnum!]",
-        orderBy: "[CommitteeOrderByWithRelationInput!]",
-        skip: "Int",
-        take: "Int",
-        where: "CommitteeWhereInput",
-      },
-    },
-    delegations: {
-      __type: "[Delegation!]!",
-      __args: {
-        cursor: "DelegationWhereUniqueInput",
-        distinct: "[DelegationScalarFieldEnum!]",
-        orderBy: "[DelegationOrderByWithRelationInput!]",
-        skip: "Int",
-        take: "Int",
-        where: "DelegationWhereInput",
-      },
-    },
+    committees: { __type: "[Committee!]!" },
+    delegations: { __type: "[Delegation!]!" },
     end: { __type: "DateTime" },
+    feedbackWebsite: { __type: "String" },
     id: { __type: "ID!" },
-    members: {
-      __type: "[ConferenceMember!]!",
-      __args: {
-        cursor: "ConferenceMemberWhereUniqueInput",
-        distinct: "[ConferenceMemberScalarFieldEnum!]",
-        orderBy: "[ConferenceMemberOrderByWithRelationInput!]",
-        skip: "Int",
-        take: "Int",
-        where: "ConferenceMemberWhereInput",
-      },
-    },
+    members: { __type: "[ConferenceMember!]!" },
     name: { __type: "String!" },
+    pressWebsite: { __type: "String" },
     start: { __type: "DateTime" },
   },
   ConferenceCreateInput: {
     committees: { __type: "CommitteeCreateNestedManyWithoutConferenceInput" },
     delegations: { __type: "DelegationCreateNestedManyWithoutConferenceInput" },
     end: { __type: "DateTime" },
+    feedbackWebsite: { __type: "String" },
+    id: { __type: "String" },
     members: {
       __type: "ConferenceMemberCreateNestedManyWithoutConferenceInput",
     },
     name: { __type: "String!" },
+    pressWebsite: { __type: "String" },
     start: { __type: "DateTime" },
-  },
-  ConferenceCreationToken: {
-    __typename: { __type: "String!" },
-    token: { __type: "ID!" },
   },
   ConferenceCreationTokenCreateInput: { token: { __type: "String!" } },
   ConferenceCreationTokenOrderByWithRelationInput: {
@@ -2885,14 +2829,13 @@ export const generatedSchema = {
   ConferenceMember: {
     __typename: { __type: "String!" },
     conference: { __type: "Conference!" },
-    conferenceId: { __type: "String!" },
     id: { __type: "ID!" },
     role: { __type: "ConferenceRole!" },
-    user: { __type: "User" },
-    userId: { __type: "String" },
+    user: { __type: "User!" },
   },
   ConferenceMemberCreateInput: {
     conferenceId: { __type: "String!" },
+    id: { __type: "String" },
     role: { __type: "ConferenceRole!" },
     userId: { __type: "String" },
   },
@@ -2920,10 +2863,12 @@ export const generatedSchema = {
   },
   ConferenceMemberUpdateInput: {
     conferenceId: { __type: "StringFieldUpdateOperationsInput" },
+    id: { __type: "StringFieldUpdateOperationsInput" },
     role: { __type: "EnumConferenceRoleFieldUpdateOperationsInput" },
     userId: { __type: "NullableStringFieldUpdateOperationsInput" },
   },
   ConferenceMemberUpdateManyMutationInput: {
+    id: { __type: "StringFieldUpdateOperationsInput" },
     role: { __type: "EnumConferenceRoleFieldUpdateOperationsInput" },
   },
   ConferenceMemberUpdateManyWithoutConferenceNestedInput: {
@@ -2969,9 +2914,11 @@ export const generatedSchema = {
     committees: { __type: "CommitteeOrderByRelationAggregateInput" },
     delegations: { __type: "DelegationOrderByRelationAggregateInput" },
     end: { __type: "SortOrder" },
+    feedbackWebsite: { __type: "SortOrder" },
     id: { __type: "SortOrder" },
     members: { __type: "ConferenceMemberOrderByRelationAggregateInput" },
     name: { __type: "SortOrder" },
+    pressWebsite: { __type: "SortOrder" },
     start: { __type: "SortOrder" },
   },
   ConferenceRelationFilter: {
@@ -2982,15 +2929,21 @@ export const generatedSchema = {
     committees: { __type: "CommitteeUpdateManyWithoutConferenceNestedInput" },
     delegations: { __type: "DelegationUpdateManyWithoutConferenceNestedInput" },
     end: { __type: "NullableDateTimeFieldUpdateOperationsInput" },
+    feedbackWebsite: { __type: "NullableStringFieldUpdateOperationsInput" },
+    id: { __type: "StringFieldUpdateOperationsInput" },
     members: {
       __type: "ConferenceMemberUpdateManyWithoutConferenceNestedInput",
     },
     name: { __type: "StringFieldUpdateOperationsInput" },
+    pressWebsite: { __type: "NullableStringFieldUpdateOperationsInput" },
     start: { __type: "NullableDateTimeFieldUpdateOperationsInput" },
   },
   ConferenceUpdateManyMutationInput: {
     end: { __type: "NullableDateTimeFieldUpdateOperationsInput" },
+    feedbackWebsite: { __type: "NullableStringFieldUpdateOperationsInput" },
+    id: { __type: "StringFieldUpdateOperationsInput" },
     name: { __type: "StringFieldUpdateOperationsInput" },
+    pressWebsite: { __type: "NullableStringFieldUpdateOperationsInput" },
     start: { __type: "NullableDateTimeFieldUpdateOperationsInput" },
   },
   ConferenceWhereInput: {
@@ -3000,9 +2953,11 @@ export const generatedSchema = {
     committees: { __type: "CommitteeListRelationFilter" },
     delegations: { __type: "DelegationListRelationFilter" },
     end: { __type: "DateTimeNullableFilter" },
+    feedbackWebsite: { __type: "StringNullableFilter" },
     id: { __type: "StringFilter" },
     members: { __type: "ConferenceMemberListRelationFilter" },
     name: { __type: "StringFilter" },
+    pressWebsite: { __type: "StringNullableFilter" },
     start: { __type: "DateTimeNullableFilter" },
   },
   ConferenceWhereUniqueInput: {
@@ -3012,9 +2967,11 @@ export const generatedSchema = {
     committees: { __type: "CommitteeListRelationFilter" },
     delegations: { __type: "DelegationListRelationFilter" },
     end: { __type: "DateTimeNullableFilter" },
+    feedbackWebsite: { __type: "StringNullableFilter" },
     id: { __type: "String" },
     members: { __type: "ConferenceMemberListRelationFilter" },
     name: { __type: "String" },
+    pressWebsite: { __type: "StringNullableFilter" },
     start: { __type: "DateTimeNullableFilter" },
   },
   DateTimeFieldUpdateOperationsInput: { set: { __type: "DateTime" } },
@@ -3067,21 +3024,9 @@ export const generatedSchema = {
   Delegation: {
     __typename: { __type: "String!" },
     conference: { __type: "Conference!" },
-    conferenceId: { __type: "String!" },
     id: { __type: "ID!" },
-    members: {
-      __type: "[CommitteeMember!]!",
-      __args: {
-        cursor: "CommitteeMemberWhereUniqueInput",
-        distinct: "[CommitteeMemberScalarFieldEnum!]",
-        orderBy: "[CommitteeMemberOrderByWithRelationInput!]",
-        skip: "Int",
-        take: "Int",
-        where: "CommitteeMemberWhereInput",
-      },
-    },
+    members: { __type: "[CommitteeMember!]!" },
     nation: { __type: "Nation!" },
-    nationId: { __type: "String!" },
   },
   DelegationConferenceIdNationIdCompoundUniqueInput: {
     conferenceId: { __type: "String!" },
@@ -3167,18 +3112,15 @@ export const generatedSchema = {
   },
   Email: {
     __typename: { __type: "String!" },
-    email: { __type: "String!" },
-    id: { __type: "ID!" },
+    email: { __type: "ID!" },
     user: { __type: "User!" },
-    userId: { __type: "String!" },
     validated: { __type: "Boolean!" },
-    validationToken: { __type: "Token" },
-    validationTokenId: { __type: "String" },
   },
   EmailCreateInput: {
     email: { __type: "String!" },
-    id: { __type: "String" },
     userId: { __type: "String!" },
+    validated: { __type: "Boolean" },
+    validationTokenId: { __type: "String" },
   },
   EmailCreateNestedManyWithoutUserInput: {
     connect: { __type: "[EmailWhereUniqueInput!]" },
@@ -3194,7 +3136,6 @@ export const generatedSchema = {
   EmailOrderByRelationAggregateInput: { _count: { __type: "SortOrder" } },
   EmailOrderByWithRelationInput: {
     email: { __type: "SortOrder" },
-    id: { __type: "SortOrder" },
     user: { __type: "UserOrderByWithRelationInput" },
     userId: { __type: "SortOrder" },
     validated: { __type: "SortOrder" },
@@ -3203,12 +3144,13 @@ export const generatedSchema = {
   },
   EmailUpdateInput: {
     email: { __type: "StringFieldUpdateOperationsInput" },
-    id: { __type: "StringFieldUpdateOperationsInput" },
     userId: { __type: "StringFieldUpdateOperationsInput" },
+    validated: { __type: "BoolFieldUpdateOperationsInput" },
+    validationTokenId: { __type: "NullableStringFieldUpdateOperationsInput" },
   },
   EmailUpdateManyMutationInput: {
     email: { __type: "StringFieldUpdateOperationsInput" },
-    id: { __type: "StringFieldUpdateOperationsInput" },
+    validated: { __type: "BoolFieldUpdateOperationsInput" },
   },
   EmailUpdateManyWithoutUserNestedInput: {
     connect: { __type: "[EmailWhereUniqueInput!]" },
@@ -3229,7 +3171,6 @@ export const generatedSchema = {
     NOT: { __type: "[EmailWhereInput!]" },
     OR: { __type: "[EmailWhereInput!]" },
     email: { __type: "StringFilter" },
-    id: { __type: "StringFilter" },
     user: { __type: "UserWhereInput" },
     userId: { __type: "StringFilter" },
     validated: { __type: "BoolFilter" },
@@ -3241,7 +3182,6 @@ export const generatedSchema = {
     NOT: { __type: "[EmailWhereInput!]" },
     OR: { __type: "[EmailWhereInput!]" },
     email: { __type: "String" },
-    id: { __type: "String" },
     user: { __type: "UserWhereInput" },
     userId: { __type: "StringFilter" },
     userId_email: { __type: "EmailUserIdEmailCompoundUniqueInput" },
@@ -3440,10 +3380,8 @@ export const generatedSchema = {
   Message: {
     __typename: { __type: "String!" },
     author: { __type: "User!" },
-    authorId: { __type: "String!" },
     category: { __type: "MessageCategory!" },
     committee: { __type: "Committee!" },
-    committeeId: { __type: "String!" },
     forwarded: { __type: "Boolean!" },
     id: { __type: "ID!" },
     message: { __type: "String!" },
@@ -3580,17 +3518,7 @@ export const generatedSchema = {
   Nation: {
     __typename: { __type: "String!" },
     alpha3Code: { __type: "String!" },
-    delegations: {
-      __type: "[Delegation!]!",
-      __args: {
-        cursor: "DelegationWhereUniqueInput",
-        distinct: "[DelegationScalarFieldEnum!]",
-        orderBy: "[DelegationOrderByWithRelationInput!]",
-        skip: "Int",
-        take: "Int",
-        where: "DelegationWhereInput",
-      },
-    },
+    delegations: { __type: "[Delegation!]!" },
     id: { __type: "ID!" },
     variant: { __type: "NationVariant!" },
   },
@@ -3938,13 +3866,6 @@ export const generatedSchema = {
     set: { __type: "Int" },
   },
   NullableStringFieldUpdateOperationsInput: { set: { __type: "String" } },
-  Password: {
-    __typename: { __type: "String!" },
-    id: { __type: "ID!" },
-    passwordHash: { __type: "String!" },
-    user: { __type: "User!" },
-    userId: { __type: "String!" },
-  },
   PasswordCreateInput: {
     id: { __type: "String" },
     userId: { __type: "String!" },
@@ -3990,14 +3911,6 @@ export const generatedSchema = {
     id: { __type: "String" },
     user: { __type: "UserWhereInput" },
     userId: { __type: "StringFilter" },
-  },
-  PendingCredentialCreateTask: {
-    __typename: { __type: "String!" },
-    id: { __type: "ID!" },
-    token: { __type: "Token!" },
-    tokenId: { __type: "String!" },
-    user: { __type: "User!" },
-    userId: { __type: "String!" },
   },
   PendingCredentialCreateTaskCreateInput: {
     id: { __type: "String" },
@@ -4066,11 +3979,9 @@ export const generatedSchema = {
   SpeakerOnList: {
     __typename: { __type: "String!" },
     committeeMember: { __type: "CommitteeMember!" },
-    committeeMemberId: { __type: "String!" },
     id: { __type: "ID!" },
     position: { __type: "Int!" },
     speakersList: { __type: "SpeakersList!" },
-    speakersListId: { __type: "String!" },
   },
   SpeakerOnListCreateInput: {
     committeeMemberId: { __type: "String!" },
@@ -4159,20 +4070,9 @@ export const generatedSchema = {
   SpeakersList: {
     __typename: { __type: "String!" },
     agendaItem: { __type: "AgendaItem!" },
-    agendaItemId: { __type: "String!" },
     id: { __type: "ID!" },
     isClosed: { __type: "Boolean!" },
-    speakers: {
-      __type: "[SpeakerOnList!]!",
-      __args: {
-        cursor: "SpeakerOnListWhereUniqueInput",
-        distinct: "[SpeakerOnListScalarFieldEnum!]",
-        orderBy: "[SpeakerOnListOrderByWithRelationInput!]",
-        skip: "Int",
-        take: "Int",
-        where: "SpeakerOnListWhereInput",
-      },
-    },
+    speakers: { __type: "[SpeakerOnList!]!" },
     speakingTime: { __type: "Int!" },
     startTimestamp: { __type: "DateTime" },
     timeLeft: { __type: "Int" },
@@ -4339,34 +4239,6 @@ export const generatedSchema = {
     notIn: { __type: "[String!]" },
     startsWith: { __type: "String" },
   },
-  Token: {
-    __typename: { __type: "String!" },
-    expiresAt: { __type: "DateTime!" },
-    id: { __type: "ID!" },
-    pendingCredentialCreations: {
-      __type: "[PendingCredentialCreateTask!]!",
-      __args: {
-        cursor: "PendingCredentialCreateTaskWhereUniqueInput",
-        distinct: "[PendingCredentialCreateTaskScalarFieldEnum!]",
-        orderBy: "[PendingCredentialCreateTaskOrderByWithRelationInput!]",
-        skip: "Int",
-        take: "Int",
-        where: "PendingCredentialCreateTaskWhereInput",
-      },
-    },
-    pendingEmailConfirmations: {
-      __type: "[Email!]!",
-      __args: {
-        cursor: "EmailWhereUniqueInput",
-        distinct: "[EmailScalarFieldEnum!]",
-        orderBy: "[EmailOrderByWithRelationInput!]",
-        skip: "Int",
-        take: "Int",
-        where: "EmailWhereInput",
-      },
-    },
-    tokenHash: { __type: "String!" },
-  },
   TokenCreateInput: {
     expiresAt: { __type: "DateTime!" },
     id: { __type: "String" },
@@ -4431,76 +4303,29 @@ export const generatedSchema = {
   },
   User: {
     __typename: { __type: "String!" },
+    committeeMemberships: { __type: "[CommitteeMember!]!" },
+    conferenceMemberships: { __type: "[ConferenceMember!]!" },
+    emails: { __type: "[Email!]!" },
+    id: { __type: "ID!" },
+    messages: { __type: "[Message!]!" },
+    name: { __type: "String!" },
+  },
+  UserCreateInput: {
     committeeMemberships: {
-      __type: "[CommitteeMember!]!",
-      __args: {
-        cursor: "CommitteeMemberWhereUniqueInput",
-        distinct: "[CommitteeMemberScalarFieldEnum!]",
-        orderBy: "[CommitteeMemberOrderByWithRelationInput!]",
-        skip: "Int",
-        take: "Int",
-        where: "CommitteeMemberWhereInput",
-      },
+      __type: "CommitteeMemberCreateNestedManyWithoutUserInput",
     },
     conferenceMemberships: {
-      __type: "[ConferenceMember!]!",
-      __args: {
-        cursor: "ConferenceMemberWhereUniqueInput",
-        distinct: "[ConferenceMemberScalarFieldEnum!]",
-        orderBy: "[ConferenceMemberOrderByWithRelationInput!]",
-        skip: "Int",
-        take: "Int",
-        where: "ConferenceMemberWhereInput",
-      },
+      __type: "ConferenceMemberCreateNestedManyWithoutUserInput",
     },
-    emails: {
-      __type: "[Email!]!",
-      __args: {
-        cursor: "EmailWhereUniqueInput",
-        distinct: "[EmailScalarFieldEnum!]",
-        orderBy: "[EmailOrderByWithRelationInput!]",
-        skip: "Int",
-        take: "Int",
-        where: "EmailWhereInput",
-      },
-    },
-    id: { __type: "ID!" },
-    messages: {
-      __type: "[Message!]!",
-      __args: {
-        cursor: "MessageWhereUniqueInput",
-        distinct: "[MessageScalarFieldEnum!]",
-        orderBy: "[MessageOrderByWithRelationInput!]",
-        skip: "Int",
-        take: "Int",
-        where: "MessageWhereInput",
-      },
-    },
+    emails: { __type: "EmailCreateNestedManyWithoutUserInput" },
+    id: { __type: "String" },
+    messages: { __type: "MessageCreateNestedManyWithoutAuthorInput" },
     name: { __type: "String!" },
-    passwords: {
-      __type: "[Password!]!",
-      __args: {
-        cursor: "PasswordWhereUniqueInput",
-        distinct: "[PasswordScalarFieldEnum!]",
-        orderBy: "[PasswordOrderByWithRelationInput!]",
-        skip: "Int",
-        take: "Int",
-        where: "PasswordWhereInput",
-      },
-    },
+    passwords: { __type: "PasswordCreateNestedManyWithoutUserInput" },
     pendingCredentialCreationTasks: {
-      __type: "[PendingCredentialCreateTask!]!",
-      __args: {
-        cursor: "PendingCredentialCreateTaskWhereUniqueInput",
-        distinct: "[PendingCredentialCreateTaskScalarFieldEnum!]",
-        orderBy: "[PendingCredentialCreateTaskOrderByWithRelationInput!]",
-        skip: "Int",
-        take: "Int",
-        where: "PendingCredentialCreateTaskWhereInput",
-      },
+      __type: "PendingCredentialCreateTaskCreateNestedManyWithoutUserInput",
     },
   },
-  UserCreateInput: { name: { __type: "String!" } },
   UserNullableRelationFilter: {
     is: { __type: "UserWhereInput" },
     isNot: { __type: "UserWhereInput" },
@@ -4525,8 +4350,24 @@ export const generatedSchema = {
     is: { __type: "UserWhereInput" },
     isNot: { __type: "UserWhereInput" },
   },
-  UserUpdateInput: { name: { __type: "StringFieldUpdateOperationsInput" } },
+  UserUpdateInput: {
+    committeeMemberships: {
+      __type: "CommitteeMemberUpdateManyWithoutUserNestedInput",
+    },
+    conferenceMemberships: {
+      __type: "ConferenceMemberUpdateManyWithoutUserNestedInput",
+    },
+    emails: { __type: "EmailUpdateManyWithoutUserNestedInput" },
+    id: { __type: "StringFieldUpdateOperationsInput" },
+    messages: { __type: "MessageUpdateManyWithoutAuthorNestedInput" },
+    name: { __type: "StringFieldUpdateOperationsInput" },
+    passwords: { __type: "PasswordUpdateManyWithoutUserNestedInput" },
+    pendingCredentialCreationTasks: {
+      __type: "PendingCredentialCreateTaskUpdateManyWithoutUserNestedInput",
+    },
+  },
   UserUpdateManyMutationInput: {
+    id: { __type: "StringFieldUpdateOperationsInput" },
     name: { __type: "StringFieldUpdateOperationsInput" },
   },
   UserWhereInput: {
@@ -4561,48 +4402,311 @@ export const generatedSchema = {
   },
   mutation: {
     __typename: { __type: "String!" },
-    createCommittee: {
-      __type: "Committee!",
-      __args: { data: "CommitteeCreateInput!" },
+    createOneAgendaItem: {
+      __type: "AgendaItem!",
+      __args: { data: "AgendaItemCreateInput!" },
     },
-    createConference: {
+    createOneCommitteeMember: {
+      __type: "CommitteeMember!",
+      __args: { data: "CommitteeMemberCreateInput!" },
+    },
+    createOneConference: {
       __type: "Conference!",
-      __args: { data: "ConferenceCreateInput!", token: "String!" },
+      __args: { data: "ConferenceCreateInput!" },
     },
-    deleteCommittee: {
-      __type: "Committee",
-      __args: { where: "CommitteeWhereUniqueInput!" },
+    createOneConferenceMember: {
+      __type: "ConferenceMember!",
+      __args: { data: "ConferenceMemberCreateInput!" },
     },
-    deleteConference: {
+    createOneDelegation: {
+      __type: "Delegation!",
+      __args: { data: "DelegationCreateInput!" },
+    },
+    createOneEmail: { __type: "Email!", __args: { data: "EmailCreateInput!" } },
+    createOneMessage: {
+      __type: "Message!",
+      __args: { data: "MessageCreateInput!" },
+    },
+    createOneNation: {
+      __type: "Nation!",
+      __args: { data: "NationCreateInput!" },
+    },
+    createOneSpeakerOnList: {
+      __type: "SpeakerOnList!",
+      __args: { data: "SpeakerOnListCreateInput!" },
+    },
+    createOneSpeakersList: {
+      __type: "SpeakersList!",
+      __args: { data: "SpeakersListCreateInput!" },
+    },
+    createOneUser: { __type: "User!", __args: { data: "UserCreateInput!" } },
+    deleteOneAgendaItem: {
+      __type: "AgendaItem",
+      __args: { where: "AgendaItemWhereUniqueInput!" },
+    },
+    deleteOneCommitteeMember: {
+      __type: "CommitteeMember",
+      __args: { where: "CommitteeMemberWhereUniqueInput!" },
+    },
+    deleteOneConference: {
       __type: "Conference",
       __args: { where: "ConferenceWhereUniqueInput!" },
     },
-    updateCommittee: {
-      __type: "Committee",
+    deleteOneConferenceMember: {
+      __type: "ConferenceMember",
+      __args: { where: "ConferenceMemberWhereUniqueInput!" },
+    },
+    deleteOneDelegation: {
+      __type: "Delegation",
+      __args: { where: "DelegationWhereUniqueInput!" },
+    },
+    deleteOneEmail: {
+      __type: "Email",
+      __args: { where: "EmailWhereUniqueInput!" },
+    },
+    deleteOneMessage: {
+      __type: "Message",
+      __args: { where: "MessageWhereUniqueInput!" },
+    },
+    deleteOneNation: {
+      __type: "Nation",
+      __args: { where: "NationWhereUniqueInput!" },
+    },
+    deleteOneSpeakerOnList: {
+      __type: "SpeakerOnList",
+      __args: { where: "SpeakerOnListWhereUniqueInput!" },
+    },
+    deleteOneSpeakersList: {
+      __type: "SpeakersList",
+      __args: { where: "SpeakersListWhereUniqueInput!" },
+    },
+    deleteOneUser: {
+      __type: "User",
+      __args: { where: "UserWhereUniqueInput!" },
+    },
+    updateOneAgendaItem: {
+      __type: "AgendaItem",
       __args: {
-        data: "CommitteeUpdateInput!",
-        where: "CommitteeWhereUniqueInput!",
+        data: "AgendaItemUpdateInput!",
+        where: "AgendaItemWhereUniqueInput!",
       },
     },
-    updateConference: {
+    updateOneCommitteeMember: {
+      __type: "CommitteeMember",
+      __args: {
+        data: "CommitteeMemberUpdateInput!",
+        where: "CommitteeMemberWhereUniqueInput!",
+      },
+    },
+    updateOneConference: {
       __type: "Conference",
       __args: {
         data: "ConferenceUpdateInput!",
         where: "ConferenceWhereUniqueInput!",
       },
     },
+    updateOneConferenceMember: {
+      __type: "ConferenceMember",
+      __args: {
+        data: "ConferenceMemberUpdateInput!",
+        where: "ConferenceMemberWhereUniqueInput!",
+      },
+    },
+    updateOneDelegation: {
+      __type: "Delegation",
+      __args: {
+        data: "DelegationUpdateInput!",
+        where: "DelegationWhereUniqueInput!",
+      },
+    },
+    updateOneEmail: {
+      __type: "Email",
+      __args: { data: "EmailUpdateInput!", where: "EmailWhereUniqueInput!" },
+    },
+    updateOneMessage: {
+      __type: "Message",
+      __args: {
+        data: "MessageUpdateInput!",
+        where: "MessageWhereUniqueInput!",
+      },
+    },
+    updateOneNation: {
+      __type: "Nation",
+      __args: { data: "NationUpdateInput!", where: "NationWhereUniqueInput!" },
+    },
+    updateOneSpeakerOnList: {
+      __type: "SpeakerOnList",
+      __args: {
+        data: "SpeakerOnListUpdateInput!",
+        where: "SpeakerOnListWhereUniqueInput!",
+      },
+    },
+    updateOneSpeakersList: {
+      __type: "SpeakersList",
+      __args: {
+        data: "SpeakersListUpdateInput!",
+        where: "SpeakersListWhereUniqueInput!",
+      },
+    },
+    updateOneUser: {
+      __type: "User",
+      __args: { data: "UserUpdateInput!", where: "UserWhereUniqueInput!" },
+    },
   },
   query: {
     __typename: { __type: "String!" },
-    findManyCommittees: {
-      __type: "[Committee!]!",
+    findFirstAgendaItem: {
+      __type: "AgendaItem",
       __args: {
-        cursor: "CommitteeWhereUniqueInput",
-        distinct: "[CommitteeScalarFieldEnum!]",
-        orderBy: "[CommitteeOrderByWithRelationInput!]",
+        cursor: "AgendaItemWhereUniqueInput",
+        distinct: "[AgendaItemScalarFieldEnum!]",
+        orderBy: "[AgendaItemOrderByWithRelationInput!]",
         skip: "Int",
         take: "Int",
-        where: "CommitteeWhereInput",
+        where: "AgendaItemWhereInput",
+      },
+    },
+    findFirstCommitteeMember: {
+      __type: "CommitteeMember",
+      __args: {
+        cursor: "CommitteeMemberWhereUniqueInput",
+        distinct: "[CommitteeMemberScalarFieldEnum!]",
+        orderBy: "[CommitteeMemberOrderByWithRelationInput!]",
+        skip: "Int",
+        take: "Int",
+        where: "CommitteeMemberWhereInput",
+      },
+    },
+    findFirstConference: {
+      __type: "Conference",
+      __args: {
+        cursor: "ConferenceWhereUniqueInput",
+        distinct: "[ConferenceScalarFieldEnum!]",
+        orderBy: "[ConferenceOrderByWithRelationInput!]",
+        skip: "Int",
+        take: "Int",
+        where: "ConferenceWhereInput",
+      },
+    },
+    findFirstConferenceMember: {
+      __type: "ConferenceMember",
+      __args: {
+        cursor: "ConferenceMemberWhereUniqueInput",
+        distinct: "[ConferenceMemberScalarFieldEnum!]",
+        orderBy: "[ConferenceMemberOrderByWithRelationInput!]",
+        skip: "Int",
+        take: "Int",
+        where: "ConferenceMemberWhereInput",
+      },
+    },
+    findFirstDelegation: {
+      __type: "Delegation",
+      __args: {
+        cursor: "DelegationWhereUniqueInput",
+        distinct: "[DelegationScalarFieldEnum!]",
+        orderBy: "[DelegationOrderByWithRelationInput!]",
+        skip: "Int",
+        take: "Int",
+        where: "DelegationWhereInput",
+      },
+    },
+    findFirstEmail: {
+      __type: "Email",
+      __args: {
+        cursor: "EmailWhereUniqueInput",
+        distinct: "[EmailScalarFieldEnum!]",
+        orderBy: "[EmailOrderByWithRelationInput!]",
+        skip: "Int",
+        take: "Int",
+        where: "EmailWhereInput",
+      },
+    },
+    findFirstMessage: {
+      __type: "Message",
+      __args: {
+        cursor: "MessageWhereUniqueInput",
+        distinct: "[MessageScalarFieldEnum!]",
+        orderBy: "[MessageOrderByWithRelationInput!]",
+        skip: "Int",
+        take: "Int",
+        where: "MessageWhereInput",
+      },
+    },
+    findFirstNation: {
+      __type: "Nation",
+      __args: {
+        cursor: "NationWhereUniqueInput",
+        distinct: "[NationScalarFieldEnum!]",
+        orderBy: "[NationOrderByWithRelationInput!]",
+        skip: "Int",
+        take: "Int",
+        where: "NationWhereInput",
+      },
+    },
+    findFirstSpeakerOnList: {
+      __type: "SpeakerOnList",
+      __args: {
+        cursor: "SpeakerOnListWhereUniqueInput",
+        distinct: "[SpeakerOnListScalarFieldEnum!]",
+        orderBy: "[SpeakerOnListOrderByWithRelationInput!]",
+        skip: "Int",
+        take: "Int",
+        where: "SpeakerOnListWhereInput",
+      },
+    },
+    findFirstSpeakersList: {
+      __type: "SpeakersList",
+      __args: {
+        cursor: "SpeakersListWhereUniqueInput",
+        distinct: "[SpeakersListScalarFieldEnum!]",
+        orderBy: "[SpeakersListOrderByWithRelationInput!]",
+        skip: "Int",
+        take: "Int",
+        where: "SpeakersListWhereInput",
+      },
+    },
+    findFirstUser: {
+      __type: "User",
+      __args: {
+        cursor: "UserWhereUniqueInput",
+        distinct: "[UserScalarFieldEnum!]",
+        orderBy: "[UserOrderByWithRelationInput!]",
+        skip: "Int",
+        take: "Int",
+        where: "UserWhereInput",
+      },
+    },
+    findManyAgendaItems: {
+      __type: "[AgendaItem!]!",
+      __args: {
+        cursor: "AgendaItemWhereUniqueInput",
+        distinct: "[AgendaItemScalarFieldEnum!]",
+        orderBy: "[AgendaItemOrderByWithRelationInput!]",
+        skip: "Int",
+        take: "Int",
+        where: "AgendaItemWhereInput",
+      },
+    },
+    findManyCommitteeMembers: {
+      __type: "[CommitteeMember!]!",
+      __args: {
+        cursor: "CommitteeMemberWhereUniqueInput",
+        distinct: "[CommitteeMemberScalarFieldEnum!]",
+        orderBy: "[CommitteeMemberOrderByWithRelationInput!]",
+        skip: "Int",
+        take: "Int",
+        where: "CommitteeMemberWhereInput",
+      },
+    },
+    findManyConferenceMembers: {
+      __type: "[ConferenceMember!]!",
+      __args: {
+        cursor: "ConferenceMemberWhereUniqueInput",
+        distinct: "[ConferenceMemberScalarFieldEnum!]",
+        orderBy: "[ConferenceMemberOrderByWithRelationInput!]",
+        skip: "Int",
+        take: "Int",
+        where: "ConferenceMemberWhereInput",
       },
     },
     findManyConferences: {
@@ -4616,14 +4720,128 @@ export const generatedSchema = {
         where: "ConferenceWhereInput",
       },
     },
-    findUniqueCommittee: {
-      __type: "Committee",
-      __args: { where: "CommitteeWhereUniqueInput!" },
+    findManyDelegations: {
+      __type: "[Delegation!]!",
+      __args: {
+        cursor: "DelegationWhereUniqueInput",
+        distinct: "[DelegationScalarFieldEnum!]",
+        orderBy: "[DelegationOrderByWithRelationInput!]",
+        skip: "Int",
+        take: "Int",
+        where: "DelegationWhereInput",
+      },
+    },
+    findManyEmails: {
+      __type: "[Email!]!",
+      __args: {
+        cursor: "EmailWhereUniqueInput",
+        distinct: "[EmailScalarFieldEnum!]",
+        orderBy: "[EmailOrderByWithRelationInput!]",
+        skip: "Int",
+        take: "Int",
+        where: "EmailWhereInput",
+      },
+    },
+    findManyMessages: {
+      __type: "[Message!]!",
+      __args: {
+        cursor: "MessageWhereUniqueInput",
+        distinct: "[MessageScalarFieldEnum!]",
+        orderBy: "[MessageOrderByWithRelationInput!]",
+        skip: "Int",
+        take: "Int",
+        where: "MessageWhereInput",
+      },
+    },
+    findManyNations: {
+      __type: "[Nation!]!",
+      __args: {
+        cursor: "NationWhereUniqueInput",
+        distinct: "[NationScalarFieldEnum!]",
+        orderBy: "[NationOrderByWithRelationInput!]",
+        skip: "Int",
+        take: "Int",
+        where: "NationWhereInput",
+      },
+    },
+    findManySpeakerOnLists: {
+      __type: "[SpeakerOnList!]!",
+      __args: {
+        cursor: "SpeakerOnListWhereUniqueInput",
+        distinct: "[SpeakerOnListScalarFieldEnum!]",
+        orderBy: "[SpeakerOnListOrderByWithRelationInput!]",
+        skip: "Int",
+        take: "Int",
+        where: "SpeakerOnListWhereInput",
+      },
+    },
+    findManySpeakersLists: {
+      __type: "[SpeakersList!]!",
+      __args: {
+        cursor: "SpeakersListWhereUniqueInput",
+        distinct: "[SpeakersListScalarFieldEnum!]",
+        orderBy: "[SpeakersListOrderByWithRelationInput!]",
+        skip: "Int",
+        take: "Int",
+        where: "SpeakersListWhereInput",
+      },
+    },
+    findManyUsers: {
+      __type: "[User!]!",
+      __args: {
+        cursor: "UserWhereUniqueInput",
+        distinct: "[UserScalarFieldEnum!]",
+        orderBy: "[UserOrderByWithRelationInput!]",
+        skip: "Int",
+        take: "Int",
+        where: "UserWhereInput",
+      },
+    },
+    findUniqueAgendaItem: {
+      __type: "AgendaItem",
+      __args: { where: "AgendaItemWhereUniqueInput!" },
+    },
+    findUniqueCommitteeMember: {
+      __type: "CommitteeMember",
+      __args: { where: "CommitteeMemberWhereUniqueInput!" },
     },
     findUniqueConference: {
       __type: "Conference",
       __args: { where: "ConferenceWhereUniqueInput!" },
     },
+    findUniqueConferenceMember: {
+      __type: "ConferenceMember",
+      __args: { where: "ConferenceMemberWhereUniqueInput!" },
+    },
+    findUniqueDelegation: {
+      __type: "Delegation",
+      __args: { where: "DelegationWhereUniqueInput!" },
+    },
+    findUniqueEmail: {
+      __type: "Email",
+      __args: { where: "EmailWhereUniqueInput!" },
+    },
+    findUniqueMessage: {
+      __type: "Message",
+      __args: { where: "MessageWhereUniqueInput!" },
+    },
+    findUniqueNation: {
+      __type: "Nation",
+      __args: { where: "NationWhereUniqueInput!" },
+    },
+    findUniqueSpeakerOnList: {
+      __type: "SpeakerOnList",
+      __args: { where: "SpeakerOnListWhereUniqueInput!" },
+    },
+    findUniqueSpeakersList: {
+      __type: "SpeakersList",
+      __args: { where: "SpeakersListWhereUniqueInput!" },
+    },
+    findUniqueUser: {
+      __type: "User",
+      __args: { where: "UserWhereUniqueInput!" },
+    },
+    serverTime: { __type: "DateTime!" },
   },
   subscription: {},
 } as const;
@@ -4634,18 +4852,10 @@ export const generatedSchema = {
 export interface AgendaItem {
   __typename?: "AgendaItem";
   committee: Committee;
-  committeeId: ScalarsEnums["String"];
   description?: Maybe<ScalarsEnums["String"]>;
   id: ScalarsEnums["ID"];
   isActive: ScalarsEnums["Boolean"];
-  speakerLists: (args?: {
-    cursor?: Maybe<SpeakersListWhereUniqueInput>;
-    distinct?: Maybe<Array<SpeakersListScalarFieldEnum>>;
-    orderBy?: Maybe<Array<SpeakersListOrderByWithRelationInput>>;
-    skip?: Maybe<Scalars["Int"]>;
-    take?: Maybe<Scalars["Int"]>;
-    where?: Maybe<SpeakersListWhereInput>;
-  }) => Array<SpeakersList>;
+  speakerLists: Array<SpeakersList>;
   title: ScalarsEnums["String"];
 }
 
@@ -4666,50 +4876,20 @@ export interface BatchPayload {
 export interface Committee {
   __typename?: "Committee";
   abbreviation: ScalarsEnums["String"];
-  agendaItems: (args?: {
-    cursor?: Maybe<AgendaItemWhereUniqueInput>;
-    distinct?: Maybe<Array<AgendaItemScalarFieldEnum>>;
-    orderBy?: Maybe<Array<AgendaItemOrderByWithRelationInput>>;
-    skip?: Maybe<Scalars["Int"]>;
-    take?: Maybe<Scalars["Int"]>;
-    where?: Maybe<AgendaItemWhereInput>;
-  }) => Array<AgendaItem>;
+  agendaItems: Array<AgendaItem>;
   allowDelegationsToAddThemselvesToSpeakersList: ScalarsEnums["Boolean"];
   category: ScalarsEnums["CommitteeCategory"];
   conference: Conference;
-  conferenceId: ScalarsEnums["String"];
   id: ScalarsEnums["ID"];
-  members: (args?: {
-    cursor?: Maybe<CommitteeMemberWhereUniqueInput>;
-    distinct?: Maybe<Array<CommitteeMemberScalarFieldEnum>>;
-    orderBy?: Maybe<Array<CommitteeMemberOrderByWithRelationInput>>;
-    skip?: Maybe<Scalars["Int"]>;
-    take?: Maybe<Scalars["Int"]>;
-    where?: Maybe<CommitteeMemberWhereInput>;
-  }) => Array<CommitteeMember>;
-  messages: (args?: {
-    cursor?: Maybe<MessageWhereUniqueInput>;
-    distinct?: Maybe<Array<MessageScalarFieldEnum>>;
-    orderBy?: Maybe<Array<MessageOrderByWithRelationInput>>;
-    skip?: Maybe<Scalars["Int"]>;
-    take?: Maybe<Scalars["Int"]>;
-    where?: Maybe<MessageWhereInput>;
-  }) => Array<Message>;
+  members: Array<CommitteeMember>;
+  messages: Array<Message>;
   name: ScalarsEnums["String"];
-  parent?: Maybe<Committee>;
-  parentId?: Maybe<ScalarsEnums["String"]>;
+  parent: Committee;
   stateOfDebate?: Maybe<ScalarsEnums["String"]>;
   status: ScalarsEnums["CommitteeStatus"];
   statusHeadline?: Maybe<ScalarsEnums["String"]>;
   statusUntil?: Maybe<ScalarsEnums["DateTime"]>;
-  subCommittees: (args?: {
-    cursor?: Maybe<CommitteeWhereUniqueInput>;
-    distinct?: Maybe<Array<CommitteeScalarFieldEnum>>;
-    orderBy?: Maybe<Array<CommitteeOrderByWithRelationInput>>;
-    skip?: Maybe<Scalars["Int"]>;
-    take?: Maybe<Scalars["Int"]>;
-    where?: Maybe<CommitteeWhereInput>;
-  }) => Array<Committee>;
+  subCommittees: Array<Committee>;
   whiteboardContent: ScalarsEnums["String"];
 }
 
@@ -4719,21 +4899,11 @@ export interface Committee {
 export interface CommitteeMember {
   __typename?: "CommitteeMember";
   committee: Committee;
-  committeeId: ScalarsEnums["String"];
-  delegation?: Maybe<Delegation>;
-  delegationId?: Maybe<ScalarsEnums["String"]>;
+  delegation: Delegation;
   id: ScalarsEnums["ID"];
   presence: ScalarsEnums["Presence"];
-  speakerLists: (args?: {
-    cursor?: Maybe<SpeakerOnListWhereUniqueInput>;
-    distinct?: Maybe<Array<SpeakerOnListScalarFieldEnum>>;
-    orderBy?: Maybe<Array<SpeakerOnListOrderByWithRelationInput>>;
-    skip?: Maybe<Scalars["Int"]>;
-    take?: Maybe<Scalars["Int"]>;
-    where?: Maybe<SpeakerOnListWhereInput>;
-  }) => Array<SpeakerOnList>;
-  user?: Maybe<User>;
-  userId?: Maybe<ScalarsEnums["String"]>;
+  speakerLists: Array<SpeakerOnList>;
+  user: User;
 }
 
 /**
@@ -4741,42 +4911,15 @@ export interface CommitteeMember {
  */
 export interface Conference {
   __typename?: "Conference";
-  committees: (args?: {
-    cursor?: Maybe<CommitteeWhereUniqueInput>;
-    distinct?: Maybe<Array<CommitteeScalarFieldEnum>>;
-    orderBy?: Maybe<Array<CommitteeOrderByWithRelationInput>>;
-    skip?: Maybe<Scalars["Int"]>;
-    take?: Maybe<Scalars["Int"]>;
-    where?: Maybe<CommitteeWhereInput>;
-  }) => Array<Committee>;
-  delegations: (args?: {
-    cursor?: Maybe<DelegationWhereUniqueInput>;
-    distinct?: Maybe<Array<DelegationScalarFieldEnum>>;
-    orderBy?: Maybe<Array<DelegationOrderByWithRelationInput>>;
-    skip?: Maybe<Scalars["Int"]>;
-    take?: Maybe<Scalars["Int"]>;
-    where?: Maybe<DelegationWhereInput>;
-  }) => Array<Delegation>;
+  committees: Array<Committee>;
+  delegations: Array<Delegation>;
   end?: Maybe<ScalarsEnums["DateTime"]>;
+  feedbackWebsite?: Maybe<ScalarsEnums["String"]>;
   id: ScalarsEnums["ID"];
-  members: (args?: {
-    cursor?: Maybe<ConferenceMemberWhereUniqueInput>;
-    distinct?: Maybe<Array<ConferenceMemberScalarFieldEnum>>;
-    orderBy?: Maybe<Array<ConferenceMemberOrderByWithRelationInput>>;
-    skip?: Maybe<Scalars["Int"]>;
-    take?: Maybe<Scalars["Int"]>;
-    where?: Maybe<ConferenceMemberWhereInput>;
-  }) => Array<ConferenceMember>;
+  members: Array<ConferenceMember>;
   name: ScalarsEnums["String"];
+  pressWebsite?: Maybe<ScalarsEnums["String"]>;
   start?: Maybe<ScalarsEnums["DateTime"]>;
-}
-
-/**
- * Consumeable token which grants the creation of a conference
- */
-export interface ConferenceCreationToken {
-  __typename?: "ConferenceCreationToken";
-  token: ScalarsEnums["ID"];
 }
 
 /**
@@ -4785,51 +4928,31 @@ export interface ConferenceCreationToken {
 export interface ConferenceMember {
   __typename?: "ConferenceMember";
   conference: Conference;
-  conferenceId: ScalarsEnums["String"];
   id: ScalarsEnums["ID"];
   role: ScalarsEnums["ConferenceRole"];
-  user?: Maybe<User>;
-  userId?: Maybe<ScalarsEnums["String"]>;
+  user: User;
 }
 
 export interface Delegation {
   __typename?: "Delegation";
   conference: Conference;
-  conferenceId: ScalarsEnums["String"];
   id: ScalarsEnums["ID"];
-  members: (args?: {
-    cursor?: Maybe<CommitteeMemberWhereUniqueInput>;
-    distinct?: Maybe<Array<CommitteeMemberScalarFieldEnum>>;
-    orderBy?: Maybe<Array<CommitteeMemberOrderByWithRelationInput>>;
-    skip?: Maybe<Scalars["Int"]>;
-    take?: Maybe<Scalars["Int"]>;
-    where?: Maybe<CommitteeMemberWhereInput>;
-  }) => Array<CommitteeMember>;
+  members: Array<CommitteeMember>;
   nation: Nation;
-  nationId: ScalarsEnums["String"];
 }
 
 export interface Email {
   __typename?: "Email";
-  email: ScalarsEnums["String"];
-  id: ScalarsEnums["ID"];
+  email: ScalarsEnums["ID"];
   user: User;
-  userId: ScalarsEnums["String"];
   validated: ScalarsEnums["Boolean"];
-  /**
-   * @Pothos.omit(create, update)
-   */
-  validationToken?: Maybe<Token>;
-  validationTokenId?: Maybe<ScalarsEnums["String"]>;
 }
 
 export interface Message {
   __typename?: "Message";
   author: User;
-  authorId: ScalarsEnums["String"];
   category: ScalarsEnums["MessageCategory"];
   committee: Committee;
-  committeeId: ScalarsEnums["String"];
   /**
    * If the message was forwarded to the Research Service
    */
@@ -4854,33 +4977,9 @@ export interface Message {
 export interface Nation {
   __typename?: "Nation";
   alpha3Code: ScalarsEnums["String"];
-  delegations: (args?: {
-    cursor?: Maybe<DelegationWhereUniqueInput>;
-    distinct?: Maybe<Array<DelegationScalarFieldEnum>>;
-    orderBy?: Maybe<Array<DelegationOrderByWithRelationInput>>;
-    skip?: Maybe<Scalars["Int"]>;
-    take?: Maybe<Scalars["Int"]>;
-    where?: Maybe<DelegationWhereInput>;
-  }) => Array<Delegation>;
+  delegations: Array<Delegation>;
   id: ScalarsEnums["ID"];
   variant: ScalarsEnums["NationVariant"];
-}
-
-export interface Password {
-  __typename?: "Password";
-  id: ScalarsEnums["ID"];
-  passwordHash: ScalarsEnums["String"];
-  user: User;
-  userId: ScalarsEnums["String"];
-}
-
-export interface PendingCredentialCreateTask {
-  __typename?: "PendingCredentialCreateTask";
-  id: ScalarsEnums["ID"];
-  token: Token;
-  tokenId: ScalarsEnums["String"];
-  user: User;
-  userId: ScalarsEnums["String"];
 }
 
 /**
@@ -4889,11 +4988,9 @@ export interface PendingCredentialCreateTask {
 export interface SpeakerOnList {
   __typename?: "SpeakerOnList";
   committeeMember: CommitteeMember;
-  committeeMemberId: ScalarsEnums["String"];
   id: ScalarsEnums["ID"];
   position: ScalarsEnums["Int"];
   speakersList: SpeakersList;
-  speakersListId: ScalarsEnums["String"];
 }
 
 /**
@@ -4902,17 +4999,9 @@ export interface SpeakerOnList {
 export interface SpeakersList {
   __typename?: "SpeakersList";
   agendaItem: AgendaItem;
-  agendaItemId: ScalarsEnums["String"];
   id: ScalarsEnums["ID"];
   isClosed: ScalarsEnums["Boolean"];
-  speakers: (args?: {
-    cursor?: Maybe<SpeakerOnListWhereUniqueInput>;
-    distinct?: Maybe<Array<SpeakerOnListScalarFieldEnum>>;
-    orderBy?: Maybe<Array<SpeakerOnListOrderByWithRelationInput>>;
-    skip?: Maybe<Scalars["Int"]>;
-    take?: Maybe<Scalars["Int"]>;
-    where?: Maybe<SpeakerOnListWhereInput>;
-  }) => Array<SpeakerOnList>;
+  speakers: Array<SpeakerOnList>;
   /**
    * The time in seconds that a speaker has to speak
    */
@@ -4923,40 +5012,211 @@ export interface SpeakersList {
 }
 
 /**
- * A token which can be used to grant one time access to something in the app e.g. confirming an email, resetting a password
+ * A user in the system
  */
-export interface Token {
-  __typename?: "Token";
-  expiresAt: ScalarsEnums["DateTime"];
+export interface User {
+  __typename?: "User";
+  committeeMemberships: Array<CommitteeMember>;
+  conferenceMemberships: Array<ConferenceMember>;
+  emails: Array<Email>;
   id: ScalarsEnums["ID"];
-  pendingCredentialCreations: (args?: {
-    cursor?: Maybe<PendingCredentialCreateTaskWhereUniqueInput>;
-    distinct?: Maybe<Array<PendingCredentialCreateTaskScalarFieldEnum>>;
-    orderBy?: Maybe<Array<PendingCredentialCreateTaskOrderByWithRelationInput>>;
+  messages: Array<Message>;
+  name: ScalarsEnums["String"];
+}
+
+export interface Mutation {
+  __typename?: "Mutation";
+  createOneAgendaItem: (args: { data: AgendaItemCreateInput }) => AgendaItem;
+  createOneCommitteeMember: (args: {
+    data: CommitteeMemberCreateInput;
+  }) => CommitteeMember;
+  createOneConference: (args: { data: ConferenceCreateInput }) => Conference;
+  createOneConferenceMember: (args: {
+    data: ConferenceMemberCreateInput;
+  }) => ConferenceMember;
+  createOneDelegation: (args: { data: DelegationCreateInput }) => Delegation;
+  createOneEmail: (args: { data: EmailCreateInput }) => Email;
+  createOneMessage: (args: { data: MessageCreateInput }) => Message;
+  createOneNation: (args: { data: NationCreateInput }) => Nation;
+  createOneSpeakerOnList: (args: {
+    data: SpeakerOnListCreateInput;
+  }) => SpeakerOnList;
+  createOneSpeakersList: (args: {
+    data: SpeakersListCreateInput;
+  }) => SpeakersList;
+  createOneUser: (args: { data: UserCreateInput }) => User;
+  deleteOneAgendaItem: (args: {
+    where: AgendaItemWhereUniqueInput;
+  }) => Maybe<AgendaItem>;
+  deleteOneCommitteeMember: (args: {
+    where: CommitteeMemberWhereUniqueInput;
+  }) => Maybe<CommitteeMember>;
+  deleteOneConference: (args: {
+    where: ConferenceWhereUniqueInput;
+  }) => Maybe<Conference>;
+  deleteOneConferenceMember: (args: {
+    where: ConferenceMemberWhereUniqueInput;
+  }) => Maybe<ConferenceMember>;
+  deleteOneDelegation: (args: {
+    where: DelegationWhereUniqueInput;
+  }) => Maybe<Delegation>;
+  deleteOneEmail: (args: { where: EmailWhereUniqueInput }) => Maybe<Email>;
+  deleteOneMessage: (args: {
+    where: MessageWhereUniqueInput;
+  }) => Maybe<Message>;
+  deleteOneNation: (args: { where: NationWhereUniqueInput }) => Maybe<Nation>;
+  deleteOneSpeakerOnList: (args: {
+    where: SpeakerOnListWhereUniqueInput;
+  }) => Maybe<SpeakerOnList>;
+  deleteOneSpeakersList: (args: {
+    where: SpeakersListWhereUniqueInput;
+  }) => Maybe<SpeakersList>;
+  deleteOneUser: (args: { where: UserWhereUniqueInput }) => Maybe<User>;
+  updateOneAgendaItem: (args: {
+    data: AgendaItemUpdateInput;
+    where: AgendaItemWhereUniqueInput;
+  }) => Maybe<AgendaItem>;
+  updateOneCommitteeMember: (args: {
+    data: CommitteeMemberUpdateInput;
+    where: CommitteeMemberWhereUniqueInput;
+  }) => Maybe<CommitteeMember>;
+  updateOneConference: (args: {
+    data: ConferenceUpdateInput;
+    where: ConferenceWhereUniqueInput;
+  }) => Maybe<Conference>;
+  updateOneConferenceMember: (args: {
+    data: ConferenceMemberUpdateInput;
+    where: ConferenceMemberWhereUniqueInput;
+  }) => Maybe<ConferenceMember>;
+  updateOneDelegation: (args: {
+    data: DelegationUpdateInput;
+    where: DelegationWhereUniqueInput;
+  }) => Maybe<Delegation>;
+  updateOneEmail: (args: {
+    data: EmailUpdateInput;
+    where: EmailWhereUniqueInput;
+  }) => Maybe<Email>;
+  updateOneMessage: (args: {
+    data: MessageUpdateInput;
+    where: MessageWhereUniqueInput;
+  }) => Maybe<Message>;
+  updateOneNation: (args: {
+    data: NationUpdateInput;
+    where: NationWhereUniqueInput;
+  }) => Maybe<Nation>;
+  updateOneSpeakerOnList: (args: {
+    data: SpeakerOnListUpdateInput;
+    where: SpeakerOnListWhereUniqueInput;
+  }) => Maybe<SpeakerOnList>;
+  updateOneSpeakersList: (args: {
+    data: SpeakersListUpdateInput;
+    where: SpeakersListWhereUniqueInput;
+  }) => Maybe<SpeakersList>;
+  updateOneUser: (args: {
+    data: UserUpdateInput;
+    where: UserWhereUniqueInput;
+  }) => Maybe<User>;
+}
+
+export interface Query {
+  __typename?: "Query";
+  findFirstAgendaItem: (args?: {
+    cursor?: Maybe<AgendaItemWhereUniqueInput>;
+    distinct?: Maybe<Array<AgendaItemScalarFieldEnum>>;
+    orderBy?: Maybe<Array<AgendaItemOrderByWithRelationInput>>;
     skip?: Maybe<Scalars["Int"]>;
     take?: Maybe<Scalars["Int"]>;
-    where?: Maybe<PendingCredentialCreateTaskWhereInput>;
-  }) => Array<PendingCredentialCreateTask>;
-  pendingEmailConfirmations: (args?: {
+    where?: Maybe<AgendaItemWhereInput>;
+  }) => Maybe<AgendaItem>;
+  findFirstCommitteeMember: (args?: {
+    cursor?: Maybe<CommitteeMemberWhereUniqueInput>;
+    distinct?: Maybe<Array<CommitteeMemberScalarFieldEnum>>;
+    orderBy?: Maybe<Array<CommitteeMemberOrderByWithRelationInput>>;
+    skip?: Maybe<Scalars["Int"]>;
+    take?: Maybe<Scalars["Int"]>;
+    where?: Maybe<CommitteeMemberWhereInput>;
+  }) => Maybe<CommitteeMember>;
+  findFirstConference: (args?: {
+    cursor?: Maybe<ConferenceWhereUniqueInput>;
+    distinct?: Maybe<Array<ConferenceScalarFieldEnum>>;
+    orderBy?: Maybe<Array<ConferenceOrderByWithRelationInput>>;
+    skip?: Maybe<Scalars["Int"]>;
+    take?: Maybe<Scalars["Int"]>;
+    where?: Maybe<ConferenceWhereInput>;
+  }) => Maybe<Conference>;
+  findFirstConferenceMember: (args?: {
+    cursor?: Maybe<ConferenceMemberWhereUniqueInput>;
+    distinct?: Maybe<Array<ConferenceMemberScalarFieldEnum>>;
+    orderBy?: Maybe<Array<ConferenceMemberOrderByWithRelationInput>>;
+    skip?: Maybe<Scalars["Int"]>;
+    take?: Maybe<Scalars["Int"]>;
+    where?: Maybe<ConferenceMemberWhereInput>;
+  }) => Maybe<ConferenceMember>;
+  findFirstDelegation: (args?: {
+    cursor?: Maybe<DelegationWhereUniqueInput>;
+    distinct?: Maybe<Array<DelegationScalarFieldEnum>>;
+    orderBy?: Maybe<Array<DelegationOrderByWithRelationInput>>;
+    skip?: Maybe<Scalars["Int"]>;
+    take?: Maybe<Scalars["Int"]>;
+    where?: Maybe<DelegationWhereInput>;
+  }) => Maybe<Delegation>;
+  findFirstEmail: (args?: {
     cursor?: Maybe<EmailWhereUniqueInput>;
     distinct?: Maybe<Array<EmailScalarFieldEnum>>;
     orderBy?: Maybe<Array<EmailOrderByWithRelationInput>>;
     skip?: Maybe<Scalars["Int"]>;
     take?: Maybe<Scalars["Int"]>;
     where?: Maybe<EmailWhereInput>;
-  }) => Array<Email>;
-  tokenHash: ScalarsEnums["String"];
-}
-
-/**
- * A user in the system
- */
-export interface User {
-  __typename?: "User";
-  /**
-   * @Pothos.omit(create, update)
-   */
-  committeeMemberships: (args?: {
+  }) => Maybe<Email>;
+  findFirstMessage: (args?: {
+    cursor?: Maybe<MessageWhereUniqueInput>;
+    distinct?: Maybe<Array<MessageScalarFieldEnum>>;
+    orderBy?: Maybe<Array<MessageOrderByWithRelationInput>>;
+    skip?: Maybe<Scalars["Int"]>;
+    take?: Maybe<Scalars["Int"]>;
+    where?: Maybe<MessageWhereInput>;
+  }) => Maybe<Message>;
+  findFirstNation: (args?: {
+    cursor?: Maybe<NationWhereUniqueInput>;
+    distinct?: Maybe<Array<NationScalarFieldEnum>>;
+    orderBy?: Maybe<Array<NationOrderByWithRelationInput>>;
+    skip?: Maybe<Scalars["Int"]>;
+    take?: Maybe<Scalars["Int"]>;
+    where?: Maybe<NationWhereInput>;
+  }) => Maybe<Nation>;
+  findFirstSpeakerOnList: (args?: {
+    cursor?: Maybe<SpeakerOnListWhereUniqueInput>;
+    distinct?: Maybe<Array<SpeakerOnListScalarFieldEnum>>;
+    orderBy?: Maybe<Array<SpeakerOnListOrderByWithRelationInput>>;
+    skip?: Maybe<Scalars["Int"]>;
+    take?: Maybe<Scalars["Int"]>;
+    where?: Maybe<SpeakerOnListWhereInput>;
+  }) => Maybe<SpeakerOnList>;
+  findFirstSpeakersList: (args?: {
+    cursor?: Maybe<SpeakersListWhereUniqueInput>;
+    distinct?: Maybe<Array<SpeakersListScalarFieldEnum>>;
+    orderBy?: Maybe<Array<SpeakersListOrderByWithRelationInput>>;
+    skip?: Maybe<Scalars["Int"]>;
+    take?: Maybe<Scalars["Int"]>;
+    where?: Maybe<SpeakersListWhereInput>;
+  }) => Maybe<SpeakersList>;
+  findFirstUser: (args?: {
+    cursor?: Maybe<UserWhereUniqueInput>;
+    distinct?: Maybe<Array<UserScalarFieldEnum>>;
+    orderBy?: Maybe<Array<UserOrderByWithRelationInput>>;
+    skip?: Maybe<Scalars["Int"]>;
+    take?: Maybe<Scalars["Int"]>;
+    where?: Maybe<UserWhereInput>;
+  }) => Maybe<User>;
+  findManyAgendaItems: (args?: {
+    cursor?: Maybe<AgendaItemWhereUniqueInput>;
+    distinct?: Maybe<Array<AgendaItemScalarFieldEnum>>;
+    orderBy?: Maybe<Array<AgendaItemOrderByWithRelationInput>>;
+    skip?: Maybe<Scalars["Int"]>;
+    take?: Maybe<Scalars["Int"]>;
+    where?: Maybe<AgendaItemWhereInput>;
+  }) => Array<AgendaItem>;
+  findManyCommitteeMembers: (args?: {
     cursor?: Maybe<CommitteeMemberWhereUniqueInput>;
     distinct?: Maybe<Array<CommitteeMemberScalarFieldEnum>>;
     orderBy?: Maybe<Array<CommitteeMemberOrderByWithRelationInput>>;
@@ -4964,10 +5224,7 @@ export interface User {
     take?: Maybe<Scalars["Int"]>;
     where?: Maybe<CommitteeMemberWhereInput>;
   }) => Array<CommitteeMember>;
-  /**
-   * @Pothos.omit(create, update)
-   */
-  conferenceMemberships: (args?: {
+  findManyConferenceMembers: (args?: {
     cursor?: Maybe<ConferenceMemberWhereUniqueInput>;
     distinct?: Maybe<Array<ConferenceMemberScalarFieldEnum>>;
     orderBy?: Maybe<Array<ConferenceMemberOrderByWithRelationInput>>;
@@ -4975,87 +5232,6 @@ export interface User {
     take?: Maybe<Scalars["Int"]>;
     where?: Maybe<ConferenceMemberWhereInput>;
   }) => Array<ConferenceMember>;
-  /**
-   * @Pothos.omit(create, update)
-   */
-  emails: (args?: {
-    cursor?: Maybe<EmailWhereUniqueInput>;
-    distinct?: Maybe<Array<EmailScalarFieldEnum>>;
-    orderBy?: Maybe<Array<EmailOrderByWithRelationInput>>;
-    skip?: Maybe<Scalars["Int"]>;
-    take?: Maybe<Scalars["Int"]>;
-    where?: Maybe<EmailWhereInput>;
-  }) => Array<Email>;
-  id: ScalarsEnums["ID"];
-  /**
-   * @Pothos.omit(create, update)
-   */
-  messages: (args?: {
-    cursor?: Maybe<MessageWhereUniqueInput>;
-    distinct?: Maybe<Array<MessageScalarFieldEnum>>;
-    orderBy?: Maybe<Array<MessageOrderByWithRelationInput>>;
-    skip?: Maybe<Scalars["Int"]>;
-    take?: Maybe<Scalars["Int"]>;
-    where?: Maybe<MessageWhereInput>;
-  }) => Array<Message>;
-  name: ScalarsEnums["String"];
-  /**
-   * @Pothos.omit(create, update)
-   */
-  passwords: (args?: {
-    cursor?: Maybe<PasswordWhereUniqueInput>;
-    distinct?: Maybe<Array<PasswordScalarFieldEnum>>;
-    orderBy?: Maybe<Array<PasswordOrderByWithRelationInput>>;
-    skip?: Maybe<Scalars["Int"]>;
-    take?: Maybe<Scalars["Int"]>;
-    where?: Maybe<PasswordWhereInput>;
-  }) => Array<Password>;
-  /**
-   * @Pothos.omit(create, update)
-   */
-  pendingCredentialCreationTasks: (args?: {
-    cursor?: Maybe<PendingCredentialCreateTaskWhereUniqueInput>;
-    distinct?: Maybe<Array<PendingCredentialCreateTaskScalarFieldEnum>>;
-    orderBy?: Maybe<Array<PendingCredentialCreateTaskOrderByWithRelationInput>>;
-    skip?: Maybe<Scalars["Int"]>;
-    take?: Maybe<Scalars["Int"]>;
-    where?: Maybe<PendingCredentialCreateTaskWhereInput>;
-  }) => Array<PendingCredentialCreateTask>;
-}
-
-export interface Mutation {
-  __typename?: "Mutation";
-  createCommittee: (args: { data: CommitteeCreateInput }) => Committee;
-  createConference: (args: {
-    data: ConferenceCreateInput;
-    token: Scalars["String"];
-  }) => Conference;
-  deleteCommittee: (args: {
-    where: CommitteeWhereUniqueInput;
-  }) => Maybe<Committee>;
-  deleteConference: (args: {
-    where: ConferenceWhereUniqueInput;
-  }) => Maybe<Conference>;
-  updateCommittee: (args: {
-    data: CommitteeUpdateInput;
-    where: CommitteeWhereUniqueInput;
-  }) => Maybe<Committee>;
-  updateConference: (args: {
-    data: ConferenceUpdateInput;
-    where: ConferenceWhereUniqueInput;
-  }) => Maybe<Conference>;
-}
-
-export interface Query {
-  __typename?: "Query";
-  findManyCommittees: (args?: {
-    cursor?: Maybe<CommitteeWhereUniqueInput>;
-    distinct?: Maybe<Array<CommitteeScalarFieldEnum>>;
-    orderBy?: Maybe<Array<CommitteeOrderByWithRelationInput>>;
-    skip?: Maybe<Scalars["Int"]>;
-    take?: Maybe<Scalars["Int"]>;
-    where?: Maybe<CommitteeWhereInput>;
-  }) => Array<Committee>;
   findManyConferences: (args?: {
     cursor?: Maybe<ConferenceWhereUniqueInput>;
     distinct?: Maybe<Array<ConferenceScalarFieldEnum>>;
@@ -5064,12 +5240,93 @@ export interface Query {
     take?: Maybe<Scalars["Int"]>;
     where?: Maybe<ConferenceWhereInput>;
   }) => Array<Conference>;
-  findUniqueCommittee: (args: {
-    where: CommitteeWhereUniqueInput;
-  }) => Maybe<Committee>;
+  findManyDelegations: (args?: {
+    cursor?: Maybe<DelegationWhereUniqueInput>;
+    distinct?: Maybe<Array<DelegationScalarFieldEnum>>;
+    orderBy?: Maybe<Array<DelegationOrderByWithRelationInput>>;
+    skip?: Maybe<Scalars["Int"]>;
+    take?: Maybe<Scalars["Int"]>;
+    where?: Maybe<DelegationWhereInput>;
+  }) => Array<Delegation>;
+  findManyEmails: (args?: {
+    cursor?: Maybe<EmailWhereUniqueInput>;
+    distinct?: Maybe<Array<EmailScalarFieldEnum>>;
+    orderBy?: Maybe<Array<EmailOrderByWithRelationInput>>;
+    skip?: Maybe<Scalars["Int"]>;
+    take?: Maybe<Scalars["Int"]>;
+    where?: Maybe<EmailWhereInput>;
+  }) => Array<Email>;
+  findManyMessages: (args?: {
+    cursor?: Maybe<MessageWhereUniqueInput>;
+    distinct?: Maybe<Array<MessageScalarFieldEnum>>;
+    orderBy?: Maybe<Array<MessageOrderByWithRelationInput>>;
+    skip?: Maybe<Scalars["Int"]>;
+    take?: Maybe<Scalars["Int"]>;
+    where?: Maybe<MessageWhereInput>;
+  }) => Array<Message>;
+  findManyNations: (args?: {
+    cursor?: Maybe<NationWhereUniqueInput>;
+    distinct?: Maybe<Array<NationScalarFieldEnum>>;
+    orderBy?: Maybe<Array<NationOrderByWithRelationInput>>;
+    skip?: Maybe<Scalars["Int"]>;
+    take?: Maybe<Scalars["Int"]>;
+    where?: Maybe<NationWhereInput>;
+  }) => Array<Nation>;
+  findManySpeakerOnLists: (args?: {
+    cursor?: Maybe<SpeakerOnListWhereUniqueInput>;
+    distinct?: Maybe<Array<SpeakerOnListScalarFieldEnum>>;
+    orderBy?: Maybe<Array<SpeakerOnListOrderByWithRelationInput>>;
+    skip?: Maybe<Scalars["Int"]>;
+    take?: Maybe<Scalars["Int"]>;
+    where?: Maybe<SpeakerOnListWhereInput>;
+  }) => Array<SpeakerOnList>;
+  findManySpeakersLists: (args?: {
+    cursor?: Maybe<SpeakersListWhereUniqueInput>;
+    distinct?: Maybe<Array<SpeakersListScalarFieldEnum>>;
+    orderBy?: Maybe<Array<SpeakersListOrderByWithRelationInput>>;
+    skip?: Maybe<Scalars["Int"]>;
+    take?: Maybe<Scalars["Int"]>;
+    where?: Maybe<SpeakersListWhereInput>;
+  }) => Array<SpeakersList>;
+  findManyUsers: (args?: {
+    cursor?: Maybe<UserWhereUniqueInput>;
+    distinct?: Maybe<Array<UserScalarFieldEnum>>;
+    orderBy?: Maybe<Array<UserOrderByWithRelationInput>>;
+    skip?: Maybe<Scalars["Int"]>;
+    take?: Maybe<Scalars["Int"]>;
+    where?: Maybe<UserWhereInput>;
+  }) => Array<User>;
+  findUniqueAgendaItem: (args: {
+    where: AgendaItemWhereUniqueInput;
+  }) => Maybe<AgendaItem>;
+  findUniqueCommitteeMember: (args: {
+    where: CommitteeMemberWhereUniqueInput;
+  }) => Maybe<CommitteeMember>;
   findUniqueConference: (args: {
     where: ConferenceWhereUniqueInput;
   }) => Maybe<Conference>;
+  findUniqueConferenceMember: (args: {
+    where: ConferenceMemberWhereUniqueInput;
+  }) => Maybe<ConferenceMember>;
+  findUniqueDelegation: (args: {
+    where: DelegationWhereUniqueInput;
+  }) => Maybe<Delegation>;
+  findUniqueEmail: (args: { where: EmailWhereUniqueInput }) => Maybe<Email>;
+  findUniqueMessage: (args: {
+    where: MessageWhereUniqueInput;
+  }) => Maybe<Message>;
+  findUniqueNation: (args: { where: NationWhereUniqueInput }) => Maybe<Nation>;
+  findUniqueSpeakerOnList: (args: {
+    where: SpeakerOnListWhereUniqueInput;
+  }) => Maybe<SpeakerOnList>;
+  findUniqueSpeakersList: (args: {
+    where: SpeakersListWhereUniqueInput;
+  }) => Maybe<SpeakersList>;
+  findUniqueUser: (args: { where: UserWhereUniqueInput }) => Maybe<User>;
+  /**
+   * The current server time
+   */
+  serverTime: ScalarsEnums["DateTime"];
 }
 
 export interface Subscription {

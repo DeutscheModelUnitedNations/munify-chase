@@ -6,10 +6,14 @@ services:
       - POSTGRES_PASSWORD=postgres
     ports:
       - "5432:5432"
-  redis:
-    image: redis
-    ports:
-      - '6379:6379'
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -d postgres -U postgres"]
+      start_period: 20s
+      interval: 30s
+      retries: 5
+      timeout: 5s
+    volumes:
+      - ./docker/postgres:/var/lib/postgresql/data
   smtp4dev:
     image: rnwood/smtp4dev
     ports:
@@ -18,29 +22,82 @@ services:
     environment:
       - RelayOptions__Login=dev
       - RelayOptions__Password=dev
-  supertokens-postgres:
-    image: 'postgres'
-    environment:
-      POSTGRES_USER: supertokens_user 
-      POSTGRES_PASSWORD: somePassword 
-      POSTGRES_DB: supertokens
+
+  authentik-postgresql:
+    image: docker.io/library/postgres:12-alpine
     healthcheck:
-      test: ['CMD', 'pg_isready', '-U', 'supertokens_user', '-d', 'supertokens']
-      interval: 5s
-      timeout: 5s
+      test: ["CMD-SHELL", "pg_isready -d postgres -U postgres"]
+      start_period: 20s
+      interval: 30s
       retries: 5
-  supertokens:
-    image: registry.supertokens.io/supertokens/supertokens-postgresql:9.0.2
-    depends_on:
-      supertokens-postgres:
-        condition: service_healthy
+      timeout: 5s
+    environment:
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_USER: postgres
+      POSTGRES_DB: postgres
+    volumes:
+      - ./docker/authentik-postgres:/var/lib/postgresql/data
+  authentik-redis:
+    image: redis
+    command: --save 60 1 --loglevel warning
+    healthcheck:
+      test: ["CMD-SHELL", "redis-cli ping | grep PONG"]
+      start_period: 20s
+      interval: 30s
+      retries: 5
+      timeout: 3s
+    volumes:
+      - ./docker/authentik-redis:/data
+  authentik-server:
+    image: ghcr.io/goauthentik/server
+    command: server
+    environment:
+      AUTHENTIK_REDIS__HOST: authentik-redis
+      AUTHENTIK_POSTGRESQL__HOST: authentik-postgresql
+      AUTHENTIK_POSTGRESQL__USER: postgres
+      AUTHENTIK_POSTGRESQL__NAME: postgres
+      AUTHENTIK_POSTGRESQL__PASSWORD: postgres
+      AUTHENTIK_DISABLE_STARTUP_ANALYTICS: true
+      AUTHENTIK_ERROR_REPORTING__ENABLED: false
+      PG_PASS: postgres
+      AUTHENTIK_SECRET_KEY: GXXVexf9DcDk8CPfYbfK7y8AavtSLwopFbAuusTAGkQrro
     ports:
-      - 3567:3567
+      - 9000:9000
+      - 9443:9443
+    depends_on:
+      - authentik-postgresql
+      - authentik-redis
+    volumes:
+      - ./docker/authentik-media:/media
+      - ./docker/authentik-custom-templates:/templates
+  authentik-worker:
+    image: ghcr.io/goauthentik/server
+    command: worker
     environment:
-      POSTGRESQL_CONNECTION_URI: "postgresql://supertokens_user:somePassword@supertokens-postgres:5432/supertokens"
-    healthcheck:
-      test: >
-        bash -c 'exec 3<>/dev/tcp/127.0.0.1/3567 && echo -e "GET /hello HTTP/1.1\r\nhost: 127.0.0.1:3567\r\nConnection: close\r\n\r\n" >&3 && cat <&3 | grep "Hello"'
-      interval: 10s
-      timeout: 5s
-      retries: 5
+      AUTHENTIK_REDIS__HOST: authentik-redis
+      AUTHENTIK_POSTGRESQL__HOST: authentik-postgresql
+      AUTHENTIK_POSTGRESQL__USER: postgres
+      AUTHENTIK_POSTGRESQL__NAME: postgres
+      AUTHENTIK_POSTGRESQL__PASSWORD: postgres
+      PG_PASS: postgres
+      AUTHENTIK_SECRET_KEY: GXXVexf9DcDk8CPfYbfK7y8AavtSLwopFbAuusTAGkQrro
+      AUTHENTIK_EMAIL__HOST: smtp4dev
+      AUTHENTIK_EMAIL__PORT: 25
+      AUTHENTIK_EMAIL__USERNAME: dev
+      AUTHENTIK_EMAIL__PASSWORD: dev
+      AUTHENTIK_EMAIL__USE_TLS: false
+      AUTHENTIK_EMAIL__USE_SSL: false
+      AUTHENTIK_EMAIL__TIMEOUT: 10
+      AUTHENTIK_EMAIL__FROM: authentik@localhost
+      AUTHENTIK_BOOTSTRAP_PASSWORD: admin
+      AUTHENTIK_BOOTSTRAP_TOKEN: admin
+      AUTHENTIK_BOOTSTRAP_EMAIL: admin@admin.de
+    user: root
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./docker/authentik-media:/media
+      - ./docker/authentik-certs:/certs
+      - ./docker/authentik-custom-templates:/templates
+    depends_on:
+      - authentik-postgresql
+      - authentik-redis

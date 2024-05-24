@@ -1,3 +1,4 @@
+git-crypt-key
 node_modules
 .next
 **/*.pnp
@@ -22,5 +23,6 @@ chase/backend/prisma/generated
 fontawesome-pro-6.4.2/
 .env
 certificates
-.smtp4dev
 users.csv
+target
+chase/backend/docker

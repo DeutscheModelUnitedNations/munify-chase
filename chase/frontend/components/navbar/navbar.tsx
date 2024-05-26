@@ -8,7 +8,6 @@ import SettingsSidebar from "@/components/navbar/settings_sidebar";
 import { useRouter } from "next/navigation";
 import { confirmDialog, ConfirmDialog } from "primereact/confirmdialog";
 import { useI18nContext } from "@/i18n/i18n-react";
-import type { IconProp } from "@fortawesome/fontawesome-svg-core";
 import { useBackend } from "@/contexts/backend";
 import { useToast } from "@/contexts/toast";
 

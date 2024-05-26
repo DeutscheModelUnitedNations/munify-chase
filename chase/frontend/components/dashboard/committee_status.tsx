@@ -1,7 +1,6 @@
 import React from "react";
 import WidgetTemplate from "@components/widget_template";
 import { useI18nContext } from "@/i18n/i18n-react";
-import type { IconProp } from "@fortawesome/fontawesome-svg-core";
 import FAIcon from "../font_awesome_icon";
 
 /**

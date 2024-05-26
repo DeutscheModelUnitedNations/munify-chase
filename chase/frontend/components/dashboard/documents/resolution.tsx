@@ -1,6 +1,5 @@
 import React from "react";
 import Document from "@components/dashboard/documents/document_template";
-import type { IconProp } from "@fortawesome/fontawesome-svg-core";
 
 /**
  * This Component is used in the Documents Widget on the Dashboard.

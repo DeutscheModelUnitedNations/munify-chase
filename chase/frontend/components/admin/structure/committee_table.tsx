@@ -5,7 +5,6 @@ import { DataTable } from "primereact/datatable";
 import { Column } from "primereact/column";
 import { ConfirmPopup } from "primereact/confirmpopup";
 import { Toolbar } from "primereact/toolbar";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import type { BackendInstanceType } from "@/contexts/backend";
 import FAIcon from "@/components/font_awesome_icon";
 

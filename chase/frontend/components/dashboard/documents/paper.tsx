@@ -1,6 +1,4 @@
 import React from "react";
-import { faClipboard } from "@fortawesome/pro-solid-svg-icons";
-import type { IconProp } from "@fortawesome/fontawesome-svg-core";
 import type { CountryCode } from "@/custom_types/custom_types";
 import Document from "@components/dashboard/documents/document_template";
 

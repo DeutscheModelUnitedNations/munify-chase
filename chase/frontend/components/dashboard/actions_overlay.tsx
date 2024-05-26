@@ -6,16 +6,6 @@ import { InputTextarea } from "primereact/inputtextarea";
 import { Dropdown } from "primereact/dropdown";
 import { useI18nContext } from "@/i18n/i18n-react";
 import {
-  faExclamationTriangle,
-  faInfoCircle,
-  faPaperPlane,
-  faPodium,
-  faQuestionCircle,
-  faUserTie,
-} from "@fortawesome/pro-solid-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import type { IconProp } from "@fortawesome/fontawesome-svg-core";
-import {
   CommitteeIdContext,
   CommitteeDataContext,
   AgendaItemContext,

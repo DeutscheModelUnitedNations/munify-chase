@@ -1,7 +1,5 @@
 import type React from "react";
 import { useEffect, useState } from "react";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import type { IconProp } from "@fortawesome/fontawesome-svg-core";
 import { Skeleton } from "primereact/skeleton";
 import FAIcon from "./font_awesome_icon";
 

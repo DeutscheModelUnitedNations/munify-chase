@@ -1,22 +1,12 @@
 import React from "react";
 import WidgetTemplate from "../widget_template";
 import WidgetBoxTemplate from "../widget_box_template";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import type { Motion } from "@/custom_types/custom_types";
-import {
-  faCircleCheck,
-  faCheckToSlot,
-  faXmarkToSlot,
-  faTrashAlt,
-  faXmarkCircle,
-} from "@fortawesome/pro-solid-svg-icons";
 import type { Motion } from "@/custom_types/custom_types";
 import NoDataPlaceholder from "../no_data_placeholder";
 import { SmallFlag } from "../flag_templates";
 import { useI18nContext } from "@/i18n/i18n-react";
 import FlipMove from "react-flip-move";
 import Button from "@/components/button";
-import type { IconProp } from "@fortawesome/fontawesome-svg-core";
 import FAIcon from "../font_awesome_icon";
 
 /**

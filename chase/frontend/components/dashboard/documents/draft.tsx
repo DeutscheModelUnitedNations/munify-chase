@@ -1,7 +1,5 @@
 import React from "react";
-import { faFileLines } from "@fortawesome/pro-solid-svg-icons";
 import Document from "@components/dashboard/documents/document_template";
-import type { IconProp } from "@fortawesome/fontawesome-svg-core";
 import type { CountryCode } from "@/custom_types/custom_types";
 
 /**

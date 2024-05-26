@@ -2,9 +2,6 @@ import React, { useState } from "react";
 import WidgetTemplate from "@components/widget_template";
 import { Button } from "primereact/button";
 import { useI18nContext } from "@/i18n/i18n-react";
-import { faGavel, faPaperPlane } from "@fortawesome/pro-solid-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import type { IconProp } from "@fortawesome/fontawesome-svg-core";
 import {
   ActionsOverlayChairMessage,
   ActionsOverlayResearchService,

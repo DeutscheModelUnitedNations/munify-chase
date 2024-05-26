@@ -4,7 +4,6 @@ import "./timer_animations.scss";
 import { LargeFlag } from "../flag_templates";
 import { useI18nContext } from "@/i18n/i18n-react";
 import { AnimatePresence, motion } from "framer-motion";
-import type { IconProp } from "@fortawesome/fontawesome-svg-core";
 import { SpeakersListDataContext } from "@/contexts/speakers_list_data";
 import { useBackendTime } from "@/contexts/backendTime";
 import FAIcon from "../font_awesome_icon";

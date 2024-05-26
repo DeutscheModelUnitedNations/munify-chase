@@ -2,7 +2,6 @@ import React from "react";
 import WidgetBoxTemplate from "@/components/widget_box_template";
 import { SmallFlag } from "@/components/flag_templates";
 import type { CountryCode } from "@/custom_types/custom_types";
-import type { IconProp } from "@fortawesome/fontawesome-svg-core";
 import { useI18nContext } from "@/i18n/i18n-react";
 import FAIcon from "@/components/font_awesome_icon";
 

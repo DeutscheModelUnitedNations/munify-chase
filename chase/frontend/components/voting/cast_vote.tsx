@@ -3,7 +3,6 @@ import type { CountryCode, Voting } from "@/custom_types/custom_types";
 import { Button } from "primereact/button";
 import { useI18nContext } from "@/i18n/i18n-react";
 import { AnimatePresence, motion } from "framer-motion";
-import type { IconProp } from "@fortawesome/fontawesome-svg-core";
 import FAIcon from "../font_awesome_icon";
 
 /**

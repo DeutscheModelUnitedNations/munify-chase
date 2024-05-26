@@ -3,7 +3,6 @@ import { InputMask } from "primereact/inputmask";
 import { useI18nContext } from "@/i18n/i18n-react";
 import { Button } from "primereact/button";
 import { ToastContext } from "@/contexts/toast";
-import type { IconProp } from "@fortawesome/fontawesome-svg-core";
 import { useBackend } from "@/contexts/backend";
 import { SpeakersListDataContext } from "@/contexts/speakers_list_data";
 import FAIcon from "../font_awesome_icon";

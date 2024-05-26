@@ -2,7 +2,6 @@ import React, { useContext } from "react";
 import WidgetTemplate from "@components/widget_template";
 import { useI18nContext } from "@/i18n/i18n-react";
 import { AnimatePresence, motion } from "framer-motion";
-import type { IconProp } from "@fortawesome/fontawesome-svg-core";
 import { Skeleton } from "primereact/skeleton";
 import Timer from "./countdown_timer";
 import { StatusTimer } from "@/contexts/status_timer";

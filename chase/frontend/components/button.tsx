@@ -1,8 +1,5 @@
 import React from "react";
 import { Button as PrimeReactButton } from "primereact/button";
-import type { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import type { IconProp } from "@fortawesome/fontawesome-svg-core";
-import type { faSpinnerThird } from "@fortawesome/pro-solid-svg-icons";
 import type { ButtonProps as PrimeReactButtonProps } from "primereact/button";
 import type { ButtonProps as PrimeReactButtonProps } from "primereact/button";
 import FAIcon from "./font_awesome_icon";

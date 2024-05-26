@@ -3,7 +3,6 @@ import React, { useContext, useEffect, useState } from "react";
 import Button from "@/components/button";
 import Whiteboard from "@/components/whiteboard";
 import { useI18nContext } from "@/i18n/i18n-react";
-import type { IconProp } from "@fortawesome/fontawesome-svg-core";
 import { useBackend } from "@/contexts/backend";
 import { useToast } from "@/contexts/toast";
 import {

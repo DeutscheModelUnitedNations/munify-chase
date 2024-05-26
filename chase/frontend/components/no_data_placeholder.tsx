@@ -1,7 +1,4 @@
 import React from "react";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faBan } from "@fortawesome/pro-solid-svg-icons/faBan";
-import type { IconProp } from "@fortawesome/fontawesome-svg-core";
 import FAIcon from "./font_awesome_icon";
 
 /**

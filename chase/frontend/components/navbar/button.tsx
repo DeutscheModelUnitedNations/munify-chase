@@ -2,7 +2,6 @@
 import React, { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
-import type { IconProp } from "@fortawesome/fontawesome-svg-core";
 import { Badge } from "primereact/badge";
 import FAIcon from "../font_awesome_icon";
 

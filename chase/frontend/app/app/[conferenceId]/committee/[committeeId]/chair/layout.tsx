@@ -3,7 +3,6 @@ import { useContext } from "react";
 import Navbar from "@/components/navbar/navbar";
 import NavButton from "@/components/navbar/button";
 import { useI18nContext } from "@/i18n/i18n-react";
-import type { IconProp } from "@fortawesome/fontawesome-svg-core";
 import { MessageCountContext, MessageCountProvider } from "@/contexts/messages";
 import ExternalLinks from "@/components/navbar/external_links";
 import { SpeakersListMiniatureProvider } from "@/contexts/speakers_list_miniature";

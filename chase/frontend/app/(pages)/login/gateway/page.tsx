@@ -1,11 +1,6 @@
 "use client";
 import React from "react";
 import { useBackend } from "@/contexts/backend";
-import {
-  faCircleNotch,
-  faRightFromBracket,
-  faRocketLaunch,
-} from "@fortawesome/pro-solid-svg-icons";
 import { useRouter } from "next/navigation";
 import Button from "@/components/button";
 import { $Enums } from "@prisma/generated/client";

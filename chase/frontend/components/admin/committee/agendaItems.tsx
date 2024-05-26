@@ -2,12 +2,6 @@ import React, { useEffect, useContext, useState } from "react";
 import { useI18nContext } from "@/i18n/i18n-react";
 import { InputText } from "primereact/inputtext";
 import Button from "@/components/button";
-import {
-  faPlusCircle,
-  faPodium,
-  faTrashAlt,
-} from "@fortawesome/pro-solid-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useBackend } from "@/contexts/backend";
 import { useToast } from "@/contexts/toast";
 import {

@@ -1,10 +1,23 @@
 import Elysia, { t } from "elysia";
-import { Issuer } from "openid-client";
+import { type BaseClient, Issuer } from "openid-client";
 import { appConfiguration } from "../util/config";
 
-const issuer = await Issuer.discover(appConfiguration.oidc.issuer);
-const client = new issuer.Client({
-  client_id: appConfiguration.oidc.clientId,
+const client = await new Promise<BaseClient>((resolve) => {
+  const r = async () => {
+    try {
+      const issuer = await Issuer.discover(appConfiguration.oidc.issuer);
+      const client = new issuer.Client({
+        client_id: appConfiguration.oidc.clientId,
+      });
+      resolve(client);
+    } catch (error) {
+      console.error("Could not connect to OIDC server, retrying in 1s", error);
+      setTimeout(() => {
+        r();
+      }, 1000);
+    }
+  };
+  r();
 });
 
 export type IntrospectionResult = {

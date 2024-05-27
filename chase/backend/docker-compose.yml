@@ -52,37 +52,3 @@ services:
             }
           ]
         }
-
-  # zitadel:
-  #   image: ghcr.io/zitadel/zitadel:latest
-  #   command: 'start-from-init --masterkey "MasterkeyNeedsToHave32Characters" --tlsMode disabled'
-  #   environment:
-  #     ZITADEL_DATABASE_POSTGRES_HOST: zitadel-postgres
-  #     ZITADEL_DATABASE_POSTGRES_PORT: 5432
-  #     ZITADEL_DATABASE_POSTGRES_DATABASE: zitadel
-  #     ZITADEL_DATABASE_POSTGRES_USER_USERNAME: postgres
-  #     ZITADEL_DATABASE_POSTGRES_USER_PASSWORD: postgres
-  #     ZITADEL_DATABASE_POSTGRES_USER_SSL_MODE: disable
-  #     ZITADEL_DATABASE_POSTGRES_ADMIN_USERNAME: postgres
-  #     ZITADEL_DATABASE_POSTGRES_ADMIN_PASSWORD: postgres
-  #     ZITADEL_DATABASE_POSTGRES_ADMIN_SSL_MODE: disable
-  #     ZITADEL_EXTERNALSECURE: false
-  #   depends_on:
-  #     zitadel-postgres:
-  #       condition: 'service_healthy'
-  #   ports:
-  #     - '8080:8080'
-
-  # zitadel-postgres:
-  #   image: postgres
-  #   environment:
-  #     POSTGRES_USER: postgres
-  #     POSTGRES_PASSWORD: postgres
-  #   healthcheck:
-  #     test: ["CMD-SHELL", "pg_isready -d postgres -U postgres"]
-  #     start_period: 20s
-  #     interval: 30s
-  #     retries: 5
-  #     timeout: 5s
-  #   volumes:
-  #     - ./docker/zitadel-postgres:/var/lib/postgresql/data

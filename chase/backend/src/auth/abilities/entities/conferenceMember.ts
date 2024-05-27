@@ -1,13 +1,13 @@
 import type { AbilityBuilder } from "@casl/ability";
 import type { AppAbility } from "../abilities";
-import type { Session } from "../../session";
+import type { IntrospectionResult } from "../../oidc";
 
 export const defineAbilitiesForConferenceMembers = (
-  session: Session,
+  intro: IntrospectionResult,
   { can }: AbilityBuilder<AppAbility>,
 ) => {
-  if (session.data?.loggedIn && session.data.user) {
-    const user = session.data.user;
+  if (intro.user) {
+    const user = intro.user;
     // biome-ignore lint/suspicious/noExplicitAny:
     can("manage" as any, "ConferenceMember", {
       conference: {

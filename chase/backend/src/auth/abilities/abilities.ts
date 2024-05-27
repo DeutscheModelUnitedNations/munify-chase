@@ -1,6 +1,5 @@
 import { type PureAbility, AbilityBuilder } from "@casl/ability";
 import { createPrismaAbility, type PrismaQuery } from "./casl-prisma";
-import type { Session } from "../session";
 import type { db } from "../../../prisma/db";
 import { defineAbilitiesForConference } from "./entities/conference";
 import { defineAbilitiesForCommittee } from "./entities/committee";
@@ -12,9 +11,9 @@ import { defineAbilitiesForSpeakersList } from "./entities/speakersList";
 import { defineAbilitiesForSpeakerOnList } from "./entities/speakerOnList";
 import { defineAbilitiesForCommitteeMembers } from "./entities/committeeMember.ts";
 import { appConfiguration } from "../../util/config";
-import { defineAbilitiesForEmail } from "./entities/email";
 import { defineAbilitiesForNation } from "./entities/nation";
 import { defineAbilitiesForUser } from "./entities/user";
+import type { IntrospectionResult } from "../oidc";
 
 const actions = ["list", "create", "read", "update", "delete"] as const;
 
@@ -66,38 +65,43 @@ export type AppAbility = PureAbility<
       SpeakersList: Awaited<
         ReturnType<(typeof db.speakersList)["findUniqueOrThrow"]>
       >;
-      Email: Awaited<ReturnType<(typeof db.email)["findUniqueOrThrow"]>>;
+      User: Awaited<
+        ReturnType<(typeof db.user)["findUniqueOrThrow"]>
+      >;
+      Nation: Awaited<
+        ReturnType<(typeof db.nation)["findUniqueOrThrow"]>
+      >;
     }>,
   ],
   PrismaQuery
 >;
 
-export const defineAbilitiesForSession = (session: Session) => {
+export const defineAbilitiesForIntro = (intro: IntrospectionResult) => {
   const builder = new AbilityBuilder<AppAbility>(createPrismaAbility);
 
-  if (appConfiguration.development && session.data?.user) {
+  if (appConfiguration.development && intro.user) {
     console.info("Development mode: granting all permissions");
     // biome-ignore lint/suspicious/noExplicitAny: https://casl.js.org/v6/en/guide/intro#basics
     builder.can("manage" as any, "all" as any);
   }
 
   // TODO
-  if (session.data?.loggedIn && session.data.user) {
+  if (intro.user) {
     // biome-ignore lint/suspicious/noExplicitAny: https://casl.js.org/v6/en/guide/intro#basics
     builder.can("manage" as any, "all" as any);
   }
 
-  defineAbilitiesForConference(session, builder);
-  defineAbilitiesForCommittee(session, builder);
-  defineAbilitiesForAgendaItem(session, builder);
-  defineAbilitiesForConferenceMembers(session, builder);
-  defineAbilitiesForDelegation(session, builder);
-  defineAbilitiesForMessages(session, builder);
-  defineAbilitiesForSpeakersList(session, builder);
-  defineAbilitiesForSpeakerOnList(session, builder);
-  defineAbilitiesForEmail(session, builder);
-  defineAbilitiesForNation(session, builder);
-  defineAbilitiesForUser(session, builder);
+  defineAbilitiesForConference(intro, builder);
+  defineAbilitiesForCommittee(intro, builder);
+  defineAbilitiesForAgendaItem(intro, builder);
+  defineAbilitiesForConferenceMembers(intro, builder);
+  defineAbilitiesForDelegation(intro, builder);
+  defineAbilitiesForMessages(intro, builder);
+  defineAbilitiesForSpeakersList(intro, builder);
+  defineAbilitiesForSpeakerOnList(intro, builder);
+  defineAbilitiesForNation(intro, builder);
+  defineAbilitiesForUser(intro, builder);
+  defineAbilitiesForCommitteeMembers(intro, builder);
 
   return builder.build({
     detectSubjectType: (object) => object.__typename,

@@ -1,7 +1,7 @@
 import Elysia from "elysia";
-import { sessionPlugin } from "./session";
-import { type Action, defineAbilitiesForSession } from "./abilities/abilities";
+import { type Action, defineAbilitiesForIntro } from "./abilities/abilities";
 import { accessibleBy } from "./abilities/casl-prisma";
+import { oidcPlugin } from "./oidc";
 
 export type PermissionsType =
   (typeof permissionsPlugin)["_ephemeral"]["resolve"]["permissions"];
@@ -9,10 +9,9 @@ export type PermissionsType =
 export const permissionsPlugin = new Elysia({
   name: "permissions",
 })
-  .use(sessionPlugin)
-  .derive({ as: "scoped" }, ({ session, error }) => {
-    if (!session) throw new Error("Invalid state: session not found.");
-    const abilities = defineAbilitiesForSession(session);
+  .use(oidcPlugin)
+  .derive({ as: "scoped" }, ({ intro, error }) => {
+    const abilities = defineAbilitiesForIntro(intro);
     return {
       permissions: {
         abilities,
@@ -51,7 +50,7 @@ export const permissionsPlugin = new Elysia({
           }
         },
         mustBeLoggedIn: () => {
-          if (!session.data?.loggedIn) {
+          if (!intro.user) {
             throw error("Unauthorized", "You are not logged in.");
           }
         },

@@ -1,6 +1,4 @@
 import {
-  ConferenceCommitteesFieldObject,
-  ConferenceDelegationsFieldObject,
   ConferenceEndFieldObject,
   ConferenceFeedbackWebsiteFieldObject,
   ConferenceIdFieldObject,

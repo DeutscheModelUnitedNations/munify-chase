@@ -39,35 +39,14 @@ export const appConfiguration = {
     .map((origin) => origin.trim()),
   port: process.env.PORT ?? "3001",
   appName: process.env.APP_NAME ?? "CHASE",
-  cookie: {
-    secrets: requireEnvInProd("COOKIE_SECRETS", "not,very,secure")
-      .split(",")
-      .map((origin) => origin.trim()),
-  },
   db: {
     postgresUrl: requireEnvInProd(
       "DATABASE_URL",
       "postgresql://postgres:postgres@localhost:5432/postgres",
     ),
-    redisUrl: requireEnvInProd(
-      "REDIS_URL",
-      "redis://default:redispw@localhost:6379",
-    ),
   },
-  email: {
-    EMAIL_HOST: requireEnvInProd("EMAIL_HOST", "localhost"),
-    EMAIL_PORT: Number.parseInt(requireEnvInProd("EMAIL_PORT", "5968")),
-    EMAIL_SECURE: !development,
-    EMAIL_AUTH_USER: requireEnvInProd("EMAIL_AUTH_USER", "dev"),
-    EMAIL_AUTH_PASS: requireEnvInProd("EMAIL_AUTH_PASS", "dev"),
-    EMAIL_FROM: requireEnvInProd("EMAIL_FROM", "noreply@localhost"),
-    EMAIL_VERIFY_REDIRECT_URL: requireEnvInProd(
-      "EMAIL_VERIFY_REDIRECT_URL",
-      "http://localhost:3000/login/validateEmail",
-    ),
-    CREDENTIAL_CREATE_REDIRECT_URL: requireEnvInProd(
-      "CREDENTIAL_CREATE_REDIRECT_URL",
-      "http://localhost:3000/login/createCredentials",
-    ),
-  }
+  oidc: {
+    issuer: requireEnvInProd("OIDC_ISSUER", "http://localhost:8080"),
+    clientId: requireEnvInProd("OIDC_CLIENT_ID", "chase"),
+  },
 };

@@ -1,5 +1,4 @@
 // import { faker } from "@faker-js/faker";
-import { SimSimSeed } from "./custom_seeds/seed_simsim";
 import { $Enums, PrismaClient } from "./generated/client";
 const prisma = new PrismaClient();
 
@@ -255,8 +254,6 @@ try {
   );
 
   console.info("\nSeeding Database with SimSim Committees and Users");
-
-  await SimSimSeed(prisma);
 
   await prisma.$disconnect();
 } catch (e) {

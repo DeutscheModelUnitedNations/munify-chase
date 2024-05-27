@@ -3,7 +3,6 @@ import PrismaPlugin from "@pothos/plugin-prisma";
 import { db } from "../../prisma/db";
 import { appConfiguration } from "../util/config";
 import type { PermissionsType } from "../auth/permissions";
-import type { Session } from "../auth/session";
 import ComplexityPlugin from "@pothos/plugin-complexity";
 import TracingPlugin, {
   wrapResolver,
@@ -13,6 +12,7 @@ import PrismaUtils from "@pothos/plugin-prisma-utils";
 import type { Scalars } from "prisma-generator-pothos-codegen";
 import type { Prisma } from "../../prisma/generated/client";
 import type PrismaTypes from "../../prisma/generated/graphql/pothos-types";
+import type { IntrospectionResult } from "../auth/oidc";
 //TODO @pothos/plugin-smart-subscriptions
 
 export const builder = new SchemaBuilder<{
@@ -23,7 +23,7 @@ export const builder = new SchemaBuilder<{
   >;
   PrismaTypes: PrismaTypes;
   Context: {
-    session: Session;
+    intro: IntrospectionResult;
     permissions: PermissionsType;
   };
 }>({

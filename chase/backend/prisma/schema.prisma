@@ -23,59 +23,12 @@ generator pothosCrud {
   generatorConfigPath = "./pothos.config.js"
 }
 
-// TODO a max amount for passwords would make sense
-
-model Password {
-  id           String @id @default(uuid())
-  user         User   @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-  userId       String
-  /// @Pothos.omit()
-  passwordHash String
-}
-
-/// A token which can be used to grant one time access to something in the app e.g. confirming an email, resetting a password
-model Token {
-  id        String   @id @default(uuid())
-  /// @Pothos.omit()
-  tokenHash String
-  expiresAt DateTime
-
-  pendingEmailConfirmations  Email[]
-  pendingCredentialCreations PendingCredentialCreateTask[]
-}
-
-model PendingCredentialCreateTask {
-  id      String @id @default(uuid())
-  user    User   @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-  userId  String
-  token   Token  @relation(fields: [tokenId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-  tokenId String
-}
-
-model Email {
-  email  String @id
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-  userId String
-
-  validated         Boolean @default(false)
-  validationToken   Token?  @relation(fields: [validationTokenId], references: [id])
-  validationTokenId String?
-
-  @@unique([userId, email])
-}
-
 /// A user in the system
 model User {
   id                             String                        @id @default(uuid())
-  //TODO we need to protect names as they are sensitive data
-  name                           String
   conferenceMemberships          ConferenceMember[]
   committeeMemberships           CommitteeMember[]
   messages                       Message[]
-  //TODO we need to protect emails as they are sensitive data
-  emails                         Email[]
-  passwords                      Password[]
-  pendingCredentialCreationTasks PendingCredentialCreateTask[]
 }
 
 /// Consumeable token which grants the creation of a conference

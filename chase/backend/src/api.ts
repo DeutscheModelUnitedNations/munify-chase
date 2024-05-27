@@ -1,8 +1,7 @@
 import Elysia from "elysia";
 import { createYoga } from "graphql-yoga";
 import { builder } from "./resolvers/builder";
-
-import { sessionPlugin } from "./auth/session";
+import { oidcPlugin } from "./auth/oidc";
 import { permissionsPlugin } from "./auth/permissions";
 
 builder.queryType({});
@@ -14,7 +13,6 @@ import "./resolvers/committeeMember";
 import "./resolvers/conference";
 import "./resolvers/conferenceMember";
 import "./resolvers/delegation";
-import "./resolvers/email";
 import "./resolvers/message";
 import "./resolvers/nation";
 import "./resolvers/speakerOnList";
@@ -27,8 +25,8 @@ const yoga = createYoga({
 });
 
 export const GraphQLApi = new Elysia()
-  .use(sessionPlugin)
+  .use(oidcPlugin)
   .use(permissionsPlugin)
-  .all("/graphql", ({ request, session, permissions }) => {
-    return yoga.handleRequest(request, { session, permissions });
+  .all("/graphql", ({ request, intro, permissions }) => {
+    return yoga.handleRequest(request, { permissions, intro });
   });

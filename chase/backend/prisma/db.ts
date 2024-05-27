@@ -1,6 +1,5 @@
 import { appConfiguration } from "../src/util/config";
 import { Prisma, PrismaClient } from "./generated/client";
-import { createClient } from "redis";
 
 // injects the actual types of the Prisma models into the data models at runtime
 // so CASL can extract those and run permission checks
@@ -34,33 +33,3 @@ const brandExtension = Prisma.defineExtension((client) => {
 export const db = new PrismaClient({
   datasourceUrl: appConfiguration.db.postgresUrl,
 }).$extends(brandExtension);
-
-export const redis = createClient({
-  url: appConfiguration.db.redisUrl,
-});
-redis.on("error", (err) => console.error("Redis Client Error", err));
-await redis.connect();
-
-// maintanance
-setInterval(
-  async () => {
-    await db.pendingCredentialCreateTask.deleteMany({
-      where: {
-        token: {
-          expiresAt: {
-            lte: new Date(),
-          },
-        },
-      },
-    });
-
-    await db.token.deleteMany({
-      where: {
-        expiresAt: {
-          lte: new Date(),
-        },
-      },
-    });
-  },
-  1000 * 60 * 11,
-);

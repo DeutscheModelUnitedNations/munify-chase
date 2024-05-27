@@ -7,47 +7,41 @@ import { useI18nContext } from "@/i18n/i18n-react";
 import { InputText } from "primereact/inputtext";
 import { Calendar } from "primereact/calendar";
 import Button from "@/components/button";
-import { useBackend } from "@/contexts/backend";
 import { useRouter } from "next/navigation";
 import { useToast } from "@/contexts/toast";
+import { useMutation } from "@/gqty/gqty";
 
 export default function loginVorsitz() {
   const { LL } = useI18nContext();
-  const { showToast, toastError } = useToast();
+  const { showToast } = useToast();
   const router = useRouter();
-  const { backend } = useBackend();
 
   const [conferenceName, setConferenceName] = useState("");
   const [dates, setDates] = useState<Date[] | null>(null);
   const [token, setToken] = useState("");
-  const [loading, setLoading] = useState(false);
 
-  const submit = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    setLoading(true);
-
-    backend.conference
-      .post({
+  const [createConference, { isLoading }] = useMutation((mutation) =>
+    mutation.createOneConference({
+      data: {
         name: conferenceName,
-        token: token,
         start: dates?.at(0),
         end: dates?.at(1),
-      })
-      .then((res) => {
-        if (!res?.data?.id) throw new Error("No conference id returned");
-        const conferenceId = res.data.id;
-        showToast({
-          severity: "success",
-          summary: LL.admin.onboarding.success(),
-          detail: LL.admin.onboarding.successDetails(),
-        });
+      },
+      token,
+    }),
+  );
 
-        router.push(`/app/admin/onboarding/${conferenceId}/structure`);
-      })
-      .catch((err) => {
-        toastError(err);
-      })
-      .finally(() => setLoading(false));
+  const submit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+
+    const created = await createConference();
+
+    showToast({
+      severity: "success",
+      summary: LL.admin.onboarding.success(),
+      detail: LL.admin.onboarding.successDetails(),
+    });
+    router.push(`/app/admin/onboarding/${created.id}/structure`);
   };
 
   return (
@@ -109,7 +103,7 @@ export default function loginVorsitz() {
               className="w-full"
               faIcon="sparkles"
               type="submit"
-              loading={loading}
+              loading={isLoading}
             />
           </div>
         </form>

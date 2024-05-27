@@ -1,3 +1,4 @@
+import { db } from "../../prisma/db";
 import {
   ConferenceEndFieldObject,
   ConferenceFeedbackWebsiteFieldObject,
@@ -96,9 +97,26 @@ builder.mutationFields((t) => {
   return {
     createOneConference: t.prismaField({
       ...field,
-      resolve: (query, root, args, ctx, info) => {
+      args: { ...field.args, token: t.arg.string({ required: true }) },
+      resolve: async (query, root, args, ctx, info) => {
         ctx.permissions.checkIf((user) => user.can("create", "Conference"));
-        return field.resolve(query, root, args, ctx, info);
+
+        await db.conferenceCreationToken.delete({
+          where: { token: args.token },
+        });
+
+        const ret = await field.resolve(query, root, args, ctx, info);
+
+        await db.conferenceMember.create({
+          data: {
+            role: "ADMIN",
+            conference: { connect: { id: ret.id } },
+            // biome-ignore lint/style/noNonNullAssertion: we checked the permissions earlier, the user must exist
+            user: { connect: { id: ctx.intro.user!.id } },
+          },
+        });
+
+        return ret;
       },
     }),
   };

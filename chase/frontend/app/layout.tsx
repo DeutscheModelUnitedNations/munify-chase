@@ -1,14 +1,14 @@
 "use client";
-// import "./globals.scss";
+import "./globals.scss";
 import { Inter, Vollkorn, Noto_Sans_Mono } from "next/font/google"; // Even though Google Fonts are used – no requests are sent to Google (see NEXT.JS docs)
 import { PublicEnvScript } from "next-runtime-env";
 //theme
-// import "@/themes/theme_light.scss";
-// import "@/themes/theme_dark.scss";
+import "@/themes/theme_light.scss";
+import "@/themes/theme_dark.scss";
 // //core
-// import "primereact/resources/primereact.min.css";
+import "primereact/resources/primereact.min.css";
 // //icons
-// import "primeicons/primeicons.css";
+import "primeicons/primeicons.css";
 
 import {
   detectLocale,
@@ -21,81 +21,81 @@ import TypesafeI18n from "@/i18n/i18n-react";
 import { ToastProvider } from "@/contexts/toast";
 import { BackendTime } from "@/contexts/backendTime";
 import CookieBanner from "@/components/cookie_banner";
-import { Head } from "next/document";
+import { PrimeReactProvider } from "primereact/api";
 
-// const sans = Inter({
-//   subsets: ["latin"],
-//   display: "swap",
-//   variable: "--font-sans",
-// });
+const sans = Inter({
+  subsets: ["latin"],
+  display: "swap",
+  variable: "--font-sans",
+});
 
-// const serif = Vollkorn({
-//   subsets: ["latin"],
-//   display: "swap",
-//   variable: "--font-serif",
-// });
+const serif = Vollkorn({
+  subsets: ["latin"],
+  display: "swap",
+  variable: "--font-serif",
+});
 
-// const mono = Noto_Sans_Mono({
-//   subsets: ["latin"],
-//   display: "swap",
-//   variable: "--font-mono",
-// });
+const mono = Noto_Sans_Mono({
+  subsets: ["latin"],
+  display: "swap",
+  variable: "--font-mono",
+});
 
 export default function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  // const isBrowser = typeof window !== "undefined";
-  // let locale = baseLocale;
+  const isBrowser = typeof window !== "undefined";
+  let locale = baseLocale;
 
-  // if (isBrowser) {
-  //   // Only run this code in a browser context.
-  //   locale = detectLocale(
-  //     baseLocale,
-  //     locales,
-  //     localStorageDetector,
-  //     navigatorDetector,
-  //   );
-  // }
+  if (isBrowser) {
+    // Only run this code in a browser context.
+    locale = detectLocale(
+      baseLocale,
+      locales,
+      localStorageDetector,
+      navigatorDetector,
+    );
+  }
 
-  // loadLocale(locale);
+  loadLocale(locale);
 
   return (
     <html
       lang="en"
-      // className={`${sans.variable} ${serif.variable} ${mono.variable}`}
+      className={`${sans.variable} ${serif.variable} ${mono.variable}`}
     >
       <head>
         <title>Chase</title>
-        {/* <PublicEnvScript /> */}
-        {/* <script defer src="/fontawesome/js/fontawesome.min.js" />
+        <PublicEnvScript />
+        <script defer src="/fontawesome/js/fontawesome.min.js" />
         <script defer src="/fontawesome/js/brands.min.js" />
         <script defer src="/fontawesome/js/solid.min.js" />
-        <script defer src="/fontawesome/js/regular.min.js" /> */}
-        {/* <script defer src="/fontawesome/js/light.min.js" />
-        <script defer src="/fontawesome/js/thin.min.js" /> */}
-        {/* <script defer src="/fontawesome/js/duotone.min.js" /> */}
-        {/* <script defer src="/fontawesome/js/sharp-solid.min.js" />
+        <script defer src="/fontawesome/js/regular.min.js" />
+        <script defer src="/fontawesome/js/light.min.js" />
+        <script defer src="/fontawesome/js/thin.min.js" />
+        <script defer src="/fontawesome/js/duotone.min.js" />
+        <script defer src="/fontawesome/js/sharp-solid.min.js" />
         <script defer src="/fontawesome/js/sharp-regular.min.js" />
         <script defer src="/fontawesome/js/sharp-light.min.js" />
-        <script defer src="/fontawesome/js/sharp-thin.min.js" /> */}
-        {/* <link href="/fontawesome/css/fontawesome.css" rel="stylesheet" />
+        <script defer src="/fontawesome/js/sharp-thin.min.js" />
+        <link href="/fontawesome/css/fontawesome.css" rel="stylesheet" />
         <link href="/fontawesome/css/brands.css" rel="stylesheet" />
-        <link href="/fontawesome/css/solid.css" rel="stylesheet" /> */}
+        <link href="/fontawesome/css/solid.css" rel="stylesheet" />
       </head>
 
       <body>
-        {/* <PrimeReactProvider value={{ pt: Tailwind }}> */}
-        {/* <TypesafeI18n locale={locale}> */}
-        {/* <ToastProvider> */}
-        {/* <BackendTime> */}
-        {/* <CookieBanner /> */}
-        {children}
-        {/* </BackendTime> */}
-        {/* </ToastProvider> */}
-        {/* </TypesafeI18n> */}
-        {/* </PrimeReactProvider> */}
+        <PrimeReactProvider value={{ pt: Tailwind }}>
+          <TypesafeI18n locale={locale}>
+            <ToastProvider>
+              <BackendTime>
+                <CookieBanner />
+                {children}
+              </BackendTime>
+            </ToastProvider>
+          </TypesafeI18n>
+        </PrimeReactProvider>
       </body>
     </html>
   );

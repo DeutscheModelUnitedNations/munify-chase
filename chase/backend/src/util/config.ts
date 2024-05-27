@@ -69,20 +69,5 @@ export const appConfiguration = {
       "CREDENTIAL_CREATE_REDIRECT_URL",
       "http://localhost:3000/login/createCredentials",
     ),
-  },
-  supertokens: {
-    connectionURI: requireEnvInProd(
-      "SUPERTOKENS_CONNECTION_URI",
-      "http://localhost:3567",
-    ),
-    apiKey: requireEnvInProd("SUPERTOKENS_API_KEY", "123"),
-    apiDomain: requireEnvInProd(
-      "SUPERTOKENS_API_DOMAIN",
-      "http://localhost:3001",
-    ),
-    websiteDomain: requireEnvInProd(
-      "SUPERTOKENS_WEBSITE_DOMAIN",
-      "http://localhost:3000",
-    ),
-  },
+  }
 };

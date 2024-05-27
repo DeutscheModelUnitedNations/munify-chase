@@ -4,7 +4,6 @@ import { appConfiguration } from "./util/config";
 import { logger } from "./util/logger";
 import { GraphQLApi } from "./api";
 import { helmet } from "elysia-helmet";
-import supertokens from "supertokens-node";
 
 //TODO robots.txt
 
@@ -21,7 +20,7 @@ app
   .use(
     cors({
       origin: appConfiguration.CORSOrigins,
-      allowedHeaders: ["content-type", ...supertokens.getAllCORSHeaders()],
+      allowedHeaders: ["content-type"],
       methods: [
         "GET",
         "PUT",
@@ -35,7 +34,6 @@ app
       ],
     }),
   )
-  .use(supertokensMiddleware)
   .use(GraphQLApi)
   .listen(process.env.PORT ?? "3001");
 

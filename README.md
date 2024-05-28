@@ -59,15 +59,15 @@ A devcontainer is a containerized development environment. It is a good way to e
 
 #### Can I use this for my conference outside of DMUN?
 
-Yes. We encourage and allow usage for other conferences as long as it is non commercial. Please see our license for more detailed information on this.
+Yes. We encourage and allow usage for other conferences. Please see our license for more detailed information on this.
 
-Note that the project is still under development and it is not recommended to use it for a conference at the moment. If you are interested in using it, please contact us via the discussion section of this repository. We are happy to help you with the setup and usage.
+Note that the project is still under development and it is not recommended to use it without our consultation for a conference at the moment. The current state of the of the App is tested on a few DMUN conferences. If you are interested in using it, please contact us via the discussion section of this repository. We are happy to help you with the setup and usage, as long as you use it for your own conferences in line with our non-profit spirit.
 
-Note also that this is primarily a project for DMUN conferences and might not be 100% suitable for your conferences needs and compatable with your rules of procedure.
+Note also that this is primarily a project for DMUN conferences and might not be 100% suitable for your conferences needs and compatable with your rules of procedure. If you want guidlines on how to adapt the Code to your needs, please contact us via the discussion section of this repository. We are also happy to help.
 
 #### Ok, but how?
 
-You would need to deploy the app yourself, on your own servers and do all the neccessary setups. This can be an owerwhelming task so feel free to contact us when you need help. In some cases it might be possible for us to run the infrastructure and grant you access, please contact us in case you would like to know more about this.
+You would need to deploy the app yourself, on your own servers and do all the neccessary setups. This can be an owerwhelming task so feel free to contact us when you need help. In some cases it might be possible for us to run the infrastructure and grant you access, please contact us in case you would like to know more about this. Depending on the use case and complexity, we might need to charge a service fee.
 
 #### Can I help you building the project?
 

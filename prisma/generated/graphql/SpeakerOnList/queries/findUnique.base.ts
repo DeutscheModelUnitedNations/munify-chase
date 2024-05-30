@@ -1,13 +1,22 @@
-import * as Inputs from '../../inputs';
-import { db } from '../../../../db';
-import { builder } from '../../../../../src/resolvers/builder';
-import { defineQuery, defineQueryFunction, defineQueryPrismaObject } from '../../utils';
+import * as Inputs from "../../inputs";
+import { db } from "../../../../db";
+import { builder } from "../../../../../src/resolvers/builder";
+import {
+  defineQuery,
+  defineQueryFunction,
+  defineQueryPrismaObject,
+} from "../../utils";
 
-export const findUniqueSpeakerOnListQueryArgs = builder.args((t) => ({ where: t.field({ type: Inputs.SpeakerOnListWhereUniqueInput, required: true }) }))
+export const findUniqueSpeakerOnListQueryArgs = builder.args((t) => ({
+  where: t.field({
+    type: Inputs.SpeakerOnListWhereUniqueInput,
+    required: true,
+  }),
+}));
 
 export const findUniqueSpeakerOnListQueryObject = defineQueryFunction((t) =>
   defineQueryPrismaObject({
-    type: 'SpeakerOnList',
+    type: "SpeakerOnList",
     nullable: true,
     args: findUniqueSpeakerOnListQueryArgs,
     resolve: async (query, _root, args, _context, _info) =>

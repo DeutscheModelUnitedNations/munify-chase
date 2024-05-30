@@ -1,13 +1,17 @@
-import * as Inputs from '../../inputs';
-import { BatchPayload } from '../../objects';
-import { db } from '../../../../db';
-import { builder } from '../../../../../src/resolvers/builder';
-import { defineMutation, defineMutationFunction, defineMutationObject } from '../../utils';
+import * as Inputs from "../../inputs";
+import { BatchPayload } from "../../objects";
+import { db } from "../../../../db";
+import { builder } from "../../../../../src/resolvers/builder";
+import {
+  defineMutation,
+  defineMutationFunction,
+  defineMutationObject,
+} from "../../utils";
 
 export const updateManyNationMutationArgs = builder.args((t) => ({
-      where: t.field({ type: Inputs.NationWhereInput, required: false }),
-      data: t.field({ type: Inputs.NationUpdateManyMutationInput, required: true }),
-    }))
+  where: t.field({ type: Inputs.NationWhereInput, required: false }),
+  data: t.field({ type: Inputs.NationUpdateManyMutationInput, required: true }),
+}));
 
 export const updateManyNationMutationObject = defineMutationFunction((t) =>
   defineMutationObject({
@@ -15,7 +19,10 @@ export const updateManyNationMutationObject = defineMutationFunction((t) =>
     nullable: false,
     args: updateManyNationMutationArgs,
     resolve: async (_root, args, _context, _info) =>
-      await db.nation.updateMany({ where: args.where || undefined, data: args.data }),
+      await db.nation.updateMany({
+        where: args.where || undefined,
+        data: args.data,
+      }),
   }),
 );
 

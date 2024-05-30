@@ -1,17 +1,21 @@
-import * as Inputs from '../../inputs';
-import { db } from '../../../../db';
-import { builder } from '../../../../../src/resolvers/builder';
-import { defineMutation, defineMutationFunction, defineMutationPrismaObject } from '../../utils';
+import * as Inputs from "../../inputs";
+import { db } from "../../../../db";
+import { builder } from "../../../../../src/resolvers/builder";
+import {
+  defineMutation,
+  defineMutationFunction,
+  defineMutationPrismaObject,
+} from "../../utils";
 
 export const upsertOneUserMutationArgs = builder.args((t) => ({
-      where: t.field({ type: Inputs.UserWhereUniqueInput, required: true }),
-      create: t.field({ type: Inputs.UserCreateInput, required: true }),
-      update: t.field({ type: Inputs.UserUpdateInput, required: true }),
-    }))
+  where: t.field({ type: Inputs.UserWhereUniqueInput, required: true }),
+  create: t.field({ type: Inputs.UserCreateInput, required: true }),
+  update: t.field({ type: Inputs.UserUpdateInput, required: true }),
+}));
 
 export const upsertOneUserMutationObject = defineMutationFunction((t) =>
   defineMutationPrismaObject({
-    type: 'User',
+    type: "User",
     nullable: false,
     args: upsertOneUserMutationArgs,
     resolve: async (query, _root, args, _context, _info) =>

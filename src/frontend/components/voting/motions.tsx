@@ -1,4 +1,3 @@
-import React from "react";
 import WidgetTemplate from "../widget_template";
 import WidgetBoxTemplate from "../widget_box_template";
 import type { Motion } from "@/frontend/custom_types/custom_types";

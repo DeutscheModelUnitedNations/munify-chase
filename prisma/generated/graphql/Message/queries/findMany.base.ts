@@ -1,20 +1,27 @@
-import * as Inputs from '../../inputs';
-import { db } from '../../../../db';
-import { builder } from '../../../../../src/resolvers/builder';
-import { defineQuery, defineQueryFunction, defineQueryPrismaObject } from '../../utils';
+import * as Inputs from "../../inputs";
+import { db } from "../../../../db";
+import { builder } from "../../../../../src/resolvers/builder";
+import {
+  defineQuery,
+  defineQueryFunction,
+  defineQueryPrismaObject,
+} from "../../utils";
 
 export const findManyMessageQueryArgs = builder.args((t) => ({
   where: t.field({ type: Inputs.MessageWhereInput, required: false }),
-  orderBy: t.field({ type: [Inputs.MessageOrderByWithRelationInput], required: false }),
+  orderBy: t.field({
+    type: [Inputs.MessageOrderByWithRelationInput],
+    required: false,
+  }),
   cursor: t.field({ type: Inputs.MessageWhereUniqueInput, required: false }),
-  take: t.field({ type: 'Int', required: false }),
-  skip: t.field({ type: 'Int', required: false }),
+  take: t.field({ type: "Int", required: false }),
+  skip: t.field({ type: "Int", required: false }),
   distinct: t.field({ type: [Inputs.MessageScalarFieldEnum], required: false }),
-}))
+}));
 
 export const findManyMessageQueryObject = defineQueryFunction((t) =>
   defineQueryPrismaObject({
-    type: ['Message'],
+    type: ["Message"],
     nullable: false,
     args: findManyMessageQueryArgs,
     resolve: async (query, _root, args, _context, _info) =>

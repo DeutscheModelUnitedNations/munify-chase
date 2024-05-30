@@ -1,5 +1,5 @@
 "use client";
-import React, { useContext } from "react";
+import { useContext } from "react";
 import { ScrollPanel } from "primereact/scrollpanel";
 import DashboardHeader from "@/frontend/components/dashboard/header";
 import SpeakersListWidget from "@/frontend/components/dashboard/speakers_list";

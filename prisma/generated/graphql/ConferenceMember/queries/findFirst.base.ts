@@ -1,20 +1,33 @@
-import * as Inputs from '../../inputs';
-import { db } from '../../../../db';
-import { builder } from '../../../../../src/resolvers/builder';
-import { defineQuery, defineQueryFunction, defineQueryPrismaObject } from '../../utils';
+import * as Inputs from "../../inputs";
+import { db } from "../../../../db";
+import { builder } from "../../../../../src/resolvers/builder";
+import {
+  defineQuery,
+  defineQueryFunction,
+  defineQueryPrismaObject,
+} from "../../utils";
 
 export const findFirstConferenceMemberQueryArgs = builder.args((t) => ({
   where: t.field({ type: Inputs.ConferenceMemberWhereInput, required: false }),
-  orderBy: t.field({ type: [Inputs.ConferenceMemberOrderByWithRelationInput], required: false }),
-  cursor: t.field({ type: Inputs.ConferenceMemberWhereUniqueInput, required: false }),
-  take: t.field({ type: 'Int', required: false }),
-  skip: t.field({ type: 'Int', required: false }),
-  distinct: t.field({ type: [Inputs.ConferenceMemberScalarFieldEnum], required: false }),
-}))
+  orderBy: t.field({
+    type: [Inputs.ConferenceMemberOrderByWithRelationInput],
+    required: false,
+  }),
+  cursor: t.field({
+    type: Inputs.ConferenceMemberWhereUniqueInput,
+    required: false,
+  }),
+  take: t.field({ type: "Int", required: false }),
+  skip: t.field({ type: "Int", required: false }),
+  distinct: t.field({
+    type: [Inputs.ConferenceMemberScalarFieldEnum],
+    required: false,
+  }),
+}));
 
 export const findFirstConferenceMemberQueryObject = defineQueryFunction((t) =>
   defineQueryPrismaObject({
-    type: 'ConferenceMember',
+    type: "ConferenceMember",
     nullable: true,
     args: findFirstConferenceMemberQueryArgs,
     resolve: async (query, _root, args, _context, _info) =>
@@ -31,5 +44,7 @@ export const findFirstConferenceMemberQueryObject = defineQueryFunction((t) =>
 );
 
 export const findFirstConferenceMemberQuery = defineQuery((t) => ({
-  findFirstConferenceMember: t.prismaField(findFirstConferenceMemberQueryObject(t)),
+  findFirstConferenceMember: t.prismaField(
+    findFirstConferenceMemberQueryObject(t),
+  ),
 }));

@@ -1,20 +1,30 @@
-import * as Inputs from '../../inputs';
-import { db } from '../../../../db';
-import { builder } from '../../../../../src/resolvers/builder';
-import { defineQuery, defineQueryFunction, defineQueryObject } from '../../utils';
+import * as Inputs from "../../inputs";
+import { db } from "../../../../db";
+import { builder } from "../../../../../src/resolvers/builder";
+import {
+  defineQuery,
+  defineQueryFunction,
+  defineQueryObject,
+} from "../../utils";
 
 export const countDelegationQueryArgs = builder.args((t) => ({
   where: t.field({ type: Inputs.DelegationWhereInput, required: false }),
-  orderBy: t.field({ type: [Inputs.DelegationOrderByWithRelationInput], required: false }),
+  orderBy: t.field({
+    type: [Inputs.DelegationOrderByWithRelationInput],
+    required: false,
+  }),
   cursor: t.field({ type: Inputs.DelegationWhereUniqueInput, required: false }),
-  take: t.field({ type: 'Int', required: false }),
-  skip: t.field({ type: 'Int', required: false }),
-  distinct: t.field({ type: [Inputs.DelegationScalarFieldEnum], required: false }),
-}))
+  take: t.field({ type: "Int", required: false }),
+  skip: t.field({ type: "Int", required: false }),
+  distinct: t.field({
+    type: [Inputs.DelegationScalarFieldEnum],
+    required: false,
+  }),
+}));
 
 export const countDelegationQueryObject = defineQueryFunction((t) =>
   defineQueryObject({
-    type: 'Int',
+    type: "Int",
     nullable: false,
     args: countDelegationQueryArgs,
     resolve: async (_root, args, _context, _info) =>

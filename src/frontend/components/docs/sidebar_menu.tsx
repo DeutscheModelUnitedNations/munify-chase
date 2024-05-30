@@ -1,5 +1,3 @@
-import React from "react";
-
 // type SidebarMenuProps = {};
 
 export default function SidebarMenu() {

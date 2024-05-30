@@ -1,5 +1,3 @@
-# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
-
 # dependencies
 /node_modules
 /.pnp
@@ -34,3 +32,34 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# generated files
+generated
+
+# git-crypt
+git-crypt-key
+
+# database data
+.postgres-data
+.redis-data
+
+# heap snapshots
+heapSnapshots
+
+# fontawesome
+fontawesome-pro-6.4.2/
+
+# environment variables
+.env
+
+# certificates
+certificates
+
+# user data
+users.csv
+
+# build artifacts
+target
+
+# docker files
+docker

@@ -1,4 +1,4 @@
-import React, { type FormEvent, useRef, useState } from "react";
+import { type FormEvent, useRef, useState } from "react";
 import { useI18nContext } from "@/frontend/i18n/i18n-react";
 
 import { Dialog } from "primereact/dialog";

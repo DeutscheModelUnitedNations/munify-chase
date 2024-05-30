@@ -8,8 +8,8 @@ export {
   ConferenceFeedbackWebsiteFieldObject,
   ConferenceDelegationsFieldObject,
   ConferenceMembersFieldObject,
-  ConferenceCommitteesFieldObject
-} from './object.base';
+  ConferenceCommitteesFieldObject,
+} from "./object.base";
 export {
   createManyConferenceMutation,
   createOneConferenceMutation,
@@ -24,8 +24,8 @@ export {
   deleteOneConferenceMutationObject,
   updateManyConferenceMutationObject,
   updateOneConferenceMutationObject,
-  upsertOneConferenceMutationObject
-} from './mutations';
+  upsertOneConferenceMutationObject,
+} from "./mutations";
 export {
   findFirstConferenceQuery,
   findManyConferenceQuery,
@@ -34,5 +34,5 @@ export {
   findFirstConferenceQueryObject,
   findManyConferenceQueryObject,
   countConferenceQueryObject,
-  findUniqueConferenceQueryObject
-} from './queries';
+  findUniqueConferenceQueryObject,
+} from "./queries";

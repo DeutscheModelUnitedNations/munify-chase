@@ -1,20 +1,30 @@
-import * as Inputs from '../../inputs';
-import { db } from '../../../../db';
-import { builder } from '../../../../../src/resolvers/builder';
-import { defineQuery, defineQueryFunction, defineQueryPrismaObject } from '../../utils';
+import * as Inputs from "../../inputs";
+import { db } from "../../../../db";
+import { builder } from "../../../../../src/resolvers/builder";
+import {
+  defineQuery,
+  defineQueryFunction,
+  defineQueryPrismaObject,
+} from "../../utils";
 
 export const findFirstAgendaItemQueryArgs = builder.args((t) => ({
   where: t.field({ type: Inputs.AgendaItemWhereInput, required: false }),
-  orderBy: t.field({ type: [Inputs.AgendaItemOrderByWithRelationInput], required: false }),
+  orderBy: t.field({
+    type: [Inputs.AgendaItemOrderByWithRelationInput],
+    required: false,
+  }),
   cursor: t.field({ type: Inputs.AgendaItemWhereUniqueInput, required: false }),
-  take: t.field({ type: 'Int', required: false }),
-  skip: t.field({ type: 'Int', required: false }),
-  distinct: t.field({ type: [Inputs.AgendaItemScalarFieldEnum], required: false }),
-}))
+  take: t.field({ type: "Int", required: false }),
+  skip: t.field({ type: "Int", required: false }),
+  distinct: t.field({
+    type: [Inputs.AgendaItemScalarFieldEnum],
+    required: false,
+  }),
+}));
 
 export const findFirstAgendaItemQueryObject = defineQueryFunction((t) =>
   defineQueryPrismaObject({
-    type: 'AgendaItem',
+    type: "AgendaItem",
     nullable: true,
     args: findFirstAgendaItemQueryArgs,
     resolve: async (query, _root, args, _context, _info) =>

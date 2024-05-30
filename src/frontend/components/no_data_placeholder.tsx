@@ -1,4 +1,3 @@
-import React from "react";
 import FAIcon from "./font_awesome_icon";
 
 /**

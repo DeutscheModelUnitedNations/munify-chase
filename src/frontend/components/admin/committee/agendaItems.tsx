@@ -1,4 +1,4 @@
-import React, { useEffect, useContext, useState } from "react";
+import { useEffect, useContext, useState } from "react";
 import { useI18nContext } from "@/frontend/i18n/i18n-react";
 import { InputText } from "primereact/inputtext";
 import Button from "@/frontend/components/button";

@@ -1,4 +1,3 @@
-import React from "react";
 import Document from "@components/dashboard/documents/document_template";
 import type { CountryCode } from "@/frontend/custom_types/custom_types";
 

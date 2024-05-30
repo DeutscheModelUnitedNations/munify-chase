@@ -1,5 +1,5 @@
 "use client";
-import React, { useContext } from "react";
+import { useContext } from "react";
 import { useI18nContext } from "@/frontend/i18n/i18n-react";
 import CommitteeGrid from "@/frontend/components/navigation-hub/committee_grid";
 import HeaderTemplate from "@/frontend/components/header_template";

@@ -76,7 +76,7 @@ module.exports = {
     plugin(({ addVariant, e }) => {
       // @ts-ignore TODO: Fix this
       addVariant("contrast", ({ modifySelectors, separator }) => {
-      // @ts-ignore TODO: Fix this
+        // @ts-ignore TODO: Fix this
         modifySelectors(({ className }) => {
           return `.contrast .${e(`contrast${separator}${className}`)}`;
         });

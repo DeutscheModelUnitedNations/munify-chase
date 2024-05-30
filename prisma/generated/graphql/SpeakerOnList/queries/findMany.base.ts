@@ -1,20 +1,33 @@
-import * as Inputs from '../../inputs';
-import { db } from '../../../../db';
-import { builder } from '../../../../../src/resolvers/builder';
-import { defineQuery, defineQueryFunction, defineQueryPrismaObject } from '../../utils';
+import * as Inputs from "../../inputs";
+import { db } from "../../../../db";
+import { builder } from "../../../../../src/resolvers/builder";
+import {
+  defineQuery,
+  defineQueryFunction,
+  defineQueryPrismaObject,
+} from "../../utils";
 
 export const findManySpeakerOnListQueryArgs = builder.args((t) => ({
   where: t.field({ type: Inputs.SpeakerOnListWhereInput, required: false }),
-  orderBy: t.field({ type: [Inputs.SpeakerOnListOrderByWithRelationInput], required: false }),
-  cursor: t.field({ type: Inputs.SpeakerOnListWhereUniqueInput, required: false }),
-  take: t.field({ type: 'Int', required: false }),
-  skip: t.field({ type: 'Int', required: false }),
-  distinct: t.field({ type: [Inputs.SpeakerOnListScalarFieldEnum], required: false }),
-}))
+  orderBy: t.field({
+    type: [Inputs.SpeakerOnListOrderByWithRelationInput],
+    required: false,
+  }),
+  cursor: t.field({
+    type: Inputs.SpeakerOnListWhereUniqueInput,
+    required: false,
+  }),
+  take: t.field({ type: "Int", required: false }),
+  skip: t.field({ type: "Int", required: false }),
+  distinct: t.field({
+    type: [Inputs.SpeakerOnListScalarFieldEnum],
+    required: false,
+  }),
+}));
 
 export const findManySpeakerOnListQueryObject = defineQueryFunction((t) =>
   defineQueryPrismaObject({
-    type: ['SpeakerOnList'],
+    type: ["SpeakerOnList"],
     nullable: false,
     args: findManySpeakerOnListQueryArgs,
     resolve: async (query, _root, args, _context, _info) =>

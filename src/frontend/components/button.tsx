@@ -1,6 +1,4 @@
-import React from "react";
 import { Button as PrimeReactButton } from "primereact/button";
-import type { ButtonProps as PrimeReactButtonProps } from "primereact/button";
 import type { ButtonProps as PrimeReactButtonProps } from "primereact/button";
 import FAIcon from "./font_awesome_icon";
 

@@ -1,7 +1,7 @@
 export {
   ConferenceCreationTokenObject,
-  ConferenceCreationTokenTokenFieldObject
-} from './object.base';
+  ConferenceCreationTokenTokenFieldObject,
+} from "./object.base";
 export {
   createManyConferenceCreationTokenMutation,
   createOneConferenceCreationTokenMutation,
@@ -16,8 +16,8 @@ export {
   deleteOneConferenceCreationTokenMutationObject,
   updateManyConferenceCreationTokenMutationObject,
   updateOneConferenceCreationTokenMutationObject,
-  upsertOneConferenceCreationTokenMutationObject
-} from './mutations';
+  upsertOneConferenceCreationTokenMutationObject,
+} from "./mutations";
 export {
   findFirstConferenceCreationTokenQuery,
   findManyConferenceCreationTokenQuery,
@@ -26,5 +26,5 @@ export {
   findFirstConferenceCreationTokenQueryObject,
   findManyConferenceCreationTokenQueryObject,
   countConferenceCreationTokenQueryObject,
-  findUniqueConferenceCreationTokenQueryObject
-} from './queries';
+  findUniqueConferenceCreationTokenQueryObject,
+} from "./queries";

@@ -1,4 +1,3 @@
-import React from "react";
 import WidgetBoxTemplate from "@/frontend/components/widget_box_template";
 import { SmallFlag } from "@/frontend/components/flag_templates";
 import type { CountryCode } from "@/frontend/custom_types/custom_types";

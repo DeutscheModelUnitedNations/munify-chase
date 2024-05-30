@@ -3,8 +3,8 @@ export {
   UserIdFieldObject,
   UserConferenceMembershipsFieldObject,
   UserCommitteeMembershipsFieldObject,
-  UserMessagesFieldObject
-} from './object.base';
+  UserMessagesFieldObject,
+} from "./object.base";
 export {
   createManyUserMutation,
   createOneUserMutation,
@@ -19,8 +19,8 @@ export {
   deleteOneUserMutationObject,
   updateManyUserMutationObject,
   updateOneUserMutationObject,
-  upsertOneUserMutationObject
-} from './mutations';
+  upsertOneUserMutationObject,
+} from "./mutations";
 export {
   findFirstUserQuery,
   findManyUserQuery,
@@ -29,5 +29,5 @@ export {
   findFirstUserQueryObject,
   findManyUserQueryObject,
   countUserQueryObject,
-  findUniqueUserQueryObject
-} from './queries';
+  findUniqueUserQueryObject,
+} from "./queries";

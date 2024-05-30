@@ -1,28 +1,65 @@
-git-crypt-key
-node_modules
-.next
-**/*.pnp
-**/*.pnp.js
-coverage
-out
-build
+# dependencies
+/node_modules
+/.pnp
+.pnp.js
+.yarn/install-state.gz
+
+# testing
+/coverage
+
+# next.js
+/.next/
+/out/
+
+# production
+/build
+
+# misc
 .DS_Store
-**/*.pem
+*.pem
+
+# debug
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+
+# local env files
 .env*.local
+
+# vercel
 .vercel
+
+# typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# generated files
+generated
+
+# git-crypt
+git-crypt-key
+
+# database data
 .postgres-data
 .redis-data
+
+# heap snapshots
 heapSnapshots
 
-generated
+# fontawesome
 fontawesome-pro-6.4.2/
+
+# environment variables
 .env
+
+# certificates
 certificates
+
+# user data
 users.csv
+
+# build artifacts
 target
+
+# docker files
 docker

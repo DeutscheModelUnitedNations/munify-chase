@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext } from "react";
+import { useState, useEffect, useContext } from "react";
 import Timeline from "@components/speakers_list/timeline";
 import getCountryNameByCode from "@/frontend/misc/get_country_name_by_code";
 import WidgetBoxTemplate from "../widget_box_template";

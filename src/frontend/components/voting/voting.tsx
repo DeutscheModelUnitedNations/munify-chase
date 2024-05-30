@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import WidgetTemplate from "../widget_template";
 import NoDataPlaceholder from "../no_data_placeholder";
 import type { CountryCode, Voting } from "@/frontend/custom_types/custom_types";

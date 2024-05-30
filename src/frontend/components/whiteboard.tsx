@@ -1,6 +1,5 @@
 import { Editor } from "primereact/editor";
 import { Skeleton } from "primereact/skeleton";
-import React from "react";
 
 /**
  * This Component is a wrapper for the PrimeReact Editor Component.

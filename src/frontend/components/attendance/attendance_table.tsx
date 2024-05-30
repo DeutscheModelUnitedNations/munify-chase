@@ -1,4 +1,3 @@
-import React from "react";
 import WidgetBoxTemplate from "@/frontend/components/widget_box_template";
 import { SelectButton } from "primereact/selectbutton";
 import ConfigWrapper from "@/frontend/components/dashboard/chair/config_wrapper";

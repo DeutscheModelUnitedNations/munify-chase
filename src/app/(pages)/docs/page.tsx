@@ -1,5 +1,4 @@
 "use client";
-import React from "react";
 import Navbar from "@/frontend/components/home/navbar";
 import Button from "@/frontend/components/button";
 import { useRouter } from "next/navigation";

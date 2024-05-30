@@ -1,13 +1,19 @@
-import * as Inputs from '../../inputs';
-import { db } from '../../../../db';
-import { builder } from '../../../../../src/resolvers/builder';
-import { defineQuery, defineQueryFunction, defineQueryPrismaObject } from '../../utils';
+import * as Inputs from "../../inputs";
+import { db } from "../../../../db";
+import { builder } from "../../../../../src/resolvers/builder";
+import {
+  defineQuery,
+  defineQueryFunction,
+  defineQueryPrismaObject,
+} from "../../utils";
 
-export const findUniqueMessageQueryArgs = builder.args((t) => ({ where: t.field({ type: Inputs.MessageWhereUniqueInput, required: true }) }))
+export const findUniqueMessageQueryArgs = builder.args((t) => ({
+  where: t.field({ type: Inputs.MessageWhereUniqueInput, required: true }),
+}));
 
 export const findUniqueMessageQueryObject = defineQueryFunction((t) =>
   defineQueryPrismaObject({
-    type: 'Message',
+    type: "Message",
     nullable: true,
     args: findUniqueMessageQueryArgs,
     resolve: async (query, _root, args, _context, _info) =>

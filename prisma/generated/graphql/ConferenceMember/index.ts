@@ -5,8 +5,8 @@ export {
   ConferenceMemberConferenceIdFieldObject,
   ConferenceMemberUserFieldObject,
   ConferenceMemberUserIdFieldObject,
-  ConferenceMemberRoleFieldObject
-} from './object.base';
+  ConferenceMemberRoleFieldObject,
+} from "./object.base";
 export {
   createManyConferenceMemberMutation,
   createOneConferenceMemberMutation,
@@ -21,8 +21,8 @@ export {
   deleteOneConferenceMemberMutationObject,
   updateManyConferenceMemberMutationObject,
   updateOneConferenceMemberMutationObject,
-  upsertOneConferenceMemberMutationObject
-} from './mutations';
+  upsertOneConferenceMemberMutationObject,
+} from "./mutations";
 export {
   findFirstConferenceMemberQuery,
   findManyConferenceMemberQuery,
@@ -31,5 +31,5 @@ export {
   findFirstConferenceMemberQueryObject,
   findManyConferenceMemberQueryObject,
   countConferenceMemberQueryObject,
-  findUniqueConferenceMemberQueryObject
-} from './queries';
+  findUniqueConferenceMemberQueryObject,
+} from "./queries";

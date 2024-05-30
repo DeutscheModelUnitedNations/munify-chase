@@ -1,17 +1,17 @@
-import * as User from './User';
-import * as ConferenceCreationToken from './ConferenceCreationToken';
-import * as Conference from './Conference';
-import * as ConferenceMember from './ConferenceMember';
-import * as Committee from './Committee';
-import * as CommitteeMember from './CommitteeMember';
-import * as AgendaItem from './AgendaItem';
-import * as SpeakersList from './SpeakersList';
-import * as SpeakerOnList from './SpeakerOnList';
-import * as Delegation from './Delegation';
-import * as Nation from './Nation';
-import * as Message from './Message';
-import { builder } from '../../../src/resolvers/builder';
-import * as Objects from './objects';
+import * as User from "./User";
+import * as ConferenceCreationToken from "./ConferenceCreationToken";
+import * as Conference from "./Conference";
+import * as ConferenceMember from "./ConferenceMember";
+import * as Committee from "./Committee";
+import * as CommitteeMember from "./CommitteeMember";
+import * as AgendaItem from "./AgendaItem";
+import * as SpeakersList from "./SpeakersList";
+import * as SpeakerOnList from "./SpeakerOnList";
+import * as Delegation from "./Delegation";
+import * as Nation from "./Nation";
+import * as Message from "./Message";
+import { builder } from "../../../src/resolvers/builder";
+import type * as Objects from "./objects";
 
 type Model = Objects.Model;
 
@@ -44,19 +44,29 @@ export const Cruds: Record<
   ConferenceCreationToken: {
     Object: ConferenceCreationToken.ConferenceCreationTokenObject,
     queries: {
-      findFirst: ConferenceCreationToken.findFirstConferenceCreationTokenQueryObject,
-      findMany: ConferenceCreationToken.findManyConferenceCreationTokenQueryObject,
+      findFirst:
+        ConferenceCreationToken.findFirstConferenceCreationTokenQueryObject,
+      findMany:
+        ConferenceCreationToken.findManyConferenceCreationTokenQueryObject,
       count: ConferenceCreationToken.countConferenceCreationTokenQueryObject,
-      findUnique: ConferenceCreationToken.findUniqueConferenceCreationTokenQueryObject,
+      findUnique:
+        ConferenceCreationToken.findUniqueConferenceCreationTokenQueryObject,
     },
     mutations: {
-      createMany: ConferenceCreationToken.createManyConferenceCreationTokenMutationObject,
-      createOne: ConferenceCreationToken.createOneConferenceCreationTokenMutationObject,
-      deleteMany: ConferenceCreationToken.deleteManyConferenceCreationTokenMutationObject,
-      deleteOne: ConferenceCreationToken.deleteOneConferenceCreationTokenMutationObject,
-      updateMany: ConferenceCreationToken.updateManyConferenceCreationTokenMutationObject,
-      updateOne: ConferenceCreationToken.updateOneConferenceCreationTokenMutationObject,
-      upsertOne: ConferenceCreationToken.upsertOneConferenceCreationTokenMutationObject,
+      createMany:
+        ConferenceCreationToken.createManyConferenceCreationTokenMutationObject,
+      createOne:
+        ConferenceCreationToken.createOneConferenceCreationTokenMutationObject,
+      deleteMany:
+        ConferenceCreationToken.deleteManyConferenceCreationTokenMutationObject,
+      deleteOne:
+        ConferenceCreationToken.deleteOneConferenceCreationTokenMutationObject,
+      updateMany:
+        ConferenceCreationToken.updateManyConferenceCreationTokenMutationObject,
+      updateOne:
+        ConferenceCreationToken.updateOneConferenceCreationTokenMutationObject,
+      upsertOne:
+        ConferenceCreationToken.upsertOneConferenceCreationTokenMutationObject,
     },
   },
   Conference: {
@@ -248,7 +258,9 @@ function generateResolversByType(type: ResolverType, opts?: CrudOptions) {
   return crudEntries
     .filter(([modelName]) => includeModel(modelName, opts))
     .map(([modelName, config]) => {
-      const resolverEntries = Object.entries(config[type === "Query" ? "queries" : "mutations"]);
+      const resolverEntries = Object.entries(
+        config[type === "Query" ? "queries" : "mutations"],
+      );
 
       return resolverEntries.map(([operationName, resolverObjectDefiner]) => {
         const resolverName = operationName + modelName;
@@ -273,8 +285,8 @@ function generateResolversByType(type: ResolverType, opts?: CrudOptions) {
             [resolverName]: isPrismaField
               ? t.prismaField(handledField)
               : t.field(handledField),
-          }
-        }
+          };
+        };
 
         return type === "Query"
           ? builder.queryFields((t) => getFields(t))

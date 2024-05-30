@@ -1,5 +1,5 @@
 "use client";
-import React, { useContext, useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import Button from "@/frontend/components/button";
 import Whiteboard from "@/frontend/components/whiteboard";
 import { useI18nContext } from "@/frontend/i18n/i18n-react";
@@ -10,7 +10,6 @@ import {
   CommitteeIdContext,
   ConferenceIdContext,
 } from "@/contexts/committee_data";
-import { pollBackendCall } from "@/hooks/pollBackendCall";
 
 export default function ChairWhiteboard() {
   const { LL } = useI18nContext();

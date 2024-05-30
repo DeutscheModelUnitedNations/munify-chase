@@ -1,4 +1,4 @@
-import React, { useContext } from "react";
+import { useContext } from "react";
 import WidgetTemplate from "@components/widget_template";
 import { useI18nContext } from "@/frontend/i18n/i18n-react";
 import { AnimatePresence, motion } from "framer-motion";

@@ -8,8 +8,8 @@ export {
   CommitteeMemberSpeakerListsFieldObject,
   CommitteeMemberDelegationFieldObject,
   CommitteeMemberDelegationIdFieldObject,
-  CommitteeMemberPresenceFieldObject
-} from './object.base';
+  CommitteeMemberPresenceFieldObject,
+} from "./object.base";
 export {
   createManyCommitteeMemberMutation,
   createOneCommitteeMemberMutation,
@@ -24,8 +24,8 @@ export {
   deleteOneCommitteeMemberMutationObject,
   updateManyCommitteeMemberMutationObject,
   updateOneCommitteeMemberMutationObject,
-  upsertOneCommitteeMemberMutationObject
-} from './mutations';
+  upsertOneCommitteeMemberMutationObject,
+} from "./mutations";
 export {
   findFirstCommitteeMemberQuery,
   findManyCommitteeMemberQuery,
@@ -34,5 +34,5 @@ export {
   findFirstCommitteeMemberQueryObject,
   findManyCommitteeMemberQueryObject,
   countCommitteeMemberQueryObject,
-  findUniqueCommitteeMemberQueryObject
-} from './queries';
+  findUniqueCommitteeMemberQueryObject,
+} from "./queries";

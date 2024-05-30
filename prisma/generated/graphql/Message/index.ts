@@ -14,8 +14,8 @@ export {
   MessageMetaEmailFieldObject,
   MessageMetaDelegationFieldObject,
   MessageMetaCommitteeFieldObject,
-  MessageMetaAgendaItemFieldObject
-} from './object.base';
+  MessageMetaAgendaItemFieldObject,
+} from "./object.base";
 export {
   createManyMessageMutation,
   createOneMessageMutation,
@@ -30,8 +30,8 @@ export {
   deleteOneMessageMutationObject,
   updateManyMessageMutationObject,
   updateOneMessageMutationObject,
-  upsertOneMessageMutationObject
-} from './mutations';
+  upsertOneMessageMutationObject,
+} from "./mutations";
 export {
   findFirstMessageQuery,
   findManyMessageQuery,
@@ -40,5 +40,5 @@ export {
   findFirstMessageQueryObject,
   findManyMessageQueryObject,
   countMessageQueryObject,
-  findUniqueMessageQueryObject
-} from './queries';
+  findUniqueMessageQueryObject,
+} from "./queries";

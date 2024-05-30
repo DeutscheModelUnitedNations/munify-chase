@@ -1,10 +1,16 @@
-import * as Inputs from '../../inputs';
-import { BatchPayload } from '../../objects';
-import { db } from '../../../../db';
-import { builder } from '../../../../../src/resolvers/builder';
-import { defineMutation, defineMutationFunction, defineMutationObject } from '../../utils';
+import * as Inputs from "../../inputs";
+import { BatchPayload } from "../../objects";
+import { db } from "../../../../db";
+import { builder } from "../../../../../src/resolvers/builder";
+import {
+  defineMutation,
+  defineMutationFunction,
+  defineMutationObject,
+} from "../../utils";
 
-export const deleteManyConferenceMutationArgs = builder.args((t) => ({ where: t.field({ type: Inputs.ConferenceWhereInput, required: true }) }))
+export const deleteManyConferenceMutationArgs = builder.args((t) => ({
+  where: t.field({ type: Inputs.ConferenceWhereInput, required: true }),
+}));
 
 export const deleteManyConferenceMutationObject = defineMutationFunction((t) =>
   defineMutationObject({

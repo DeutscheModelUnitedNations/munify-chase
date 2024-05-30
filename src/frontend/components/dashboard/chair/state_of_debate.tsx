@@ -1,4 +1,4 @@
-import React, { useState, useContext, useEffect } from "react";
+import { useState, useContext, useEffect } from "react";
 import { useI18nContext } from "@/frontend/i18n/i18n-react";
 import { useBackend } from "@/contexts/backend";
 import ConfigWrapper from "@/frontend/components/dashboard/chair/config_wrapper";

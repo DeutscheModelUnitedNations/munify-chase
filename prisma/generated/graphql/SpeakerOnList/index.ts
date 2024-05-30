@@ -5,8 +5,8 @@ export {
   SpeakerOnListSpeakersListIdFieldObject,
   SpeakerOnListCommitteeMemberFieldObject,
   SpeakerOnListCommitteeMemberIdFieldObject,
-  SpeakerOnListPositionFieldObject
-} from './object.base';
+  SpeakerOnListPositionFieldObject,
+} from "./object.base";
 export {
   createManySpeakerOnListMutation,
   createOneSpeakerOnListMutation,
@@ -21,8 +21,8 @@ export {
   deleteOneSpeakerOnListMutationObject,
   updateManySpeakerOnListMutationObject,
   updateOneSpeakerOnListMutationObject,
-  upsertOneSpeakerOnListMutationObject
-} from './mutations';
+  upsertOneSpeakerOnListMutationObject,
+} from "./mutations";
 export {
   findFirstSpeakerOnListQuery,
   findManySpeakerOnListQuery,
@@ -31,5 +31,5 @@ export {
   findFirstSpeakerOnListQueryObject,
   findManySpeakerOnListQueryObject,
   countSpeakerOnListQueryObject,
-  findUniqueSpeakerOnListQueryObject
-} from './queries';
+  findUniqueSpeakerOnListQueryObject,
+} from "./queries";

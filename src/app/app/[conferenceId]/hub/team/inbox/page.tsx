@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect, useContext } from "react";
+import { useState, useEffect, useContext } from "react";
 import { useBackend } from "@/contexts/backend";
 import { ConferenceIdContext } from "@/contexts/committee_data";
 import InboxTemplate from "@/frontend/components/inbox/inbox_template";

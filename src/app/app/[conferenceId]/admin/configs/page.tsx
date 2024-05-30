@@ -1,5 +1,5 @@
 "use client";
-import React, { useContext, useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import ConfigWrapper from "@/frontend/components/dashboard/chair/config_wrapper";
 import { InputText } from "primereact/inputtext";
 import { useI18nContext } from "@/frontend/i18n/i18n-react";

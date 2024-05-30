@@ -1,4 +1,3 @@
-import React from "react";
 import Button from "@/frontend/components/button";
 import { NormalFlag } from "@/frontend/components/flag_templates";
 import { useI18nContext } from "@/frontend/i18n/i18n-react";

@@ -1,13 +1,19 @@
-import * as Inputs from '../../inputs';
-import { db } from '../../../../db';
-import { builder } from '../../../../../src/resolvers/builder';
-import { defineMutation, defineMutationFunction, defineMutationPrismaObject } from '../../utils';
+import * as Inputs from "../../inputs";
+import { db } from "../../../../db";
+import { builder } from "../../../../../src/resolvers/builder";
+import {
+  defineMutation,
+  defineMutationFunction,
+  defineMutationPrismaObject,
+} from "../../utils";
 
-export const deleteOneCommitteeMutationArgs = builder.args((t) => ({ where: t.field({ type: Inputs.CommitteeWhereUniqueInput, required: true }) }))
+export const deleteOneCommitteeMutationArgs = builder.args((t) => ({
+  where: t.field({ type: Inputs.CommitteeWhereUniqueInput, required: true }),
+}));
 
 export const deleteOneCommitteeMutationObject = defineMutationFunction((t) =>
   defineMutationPrismaObject({
-    type: 'Committee',
+    type: "Committee",
     nullable: true,
     args: deleteOneCommitteeMutationArgs,
     resolve: async (query, _root, args, _context, _info) =>

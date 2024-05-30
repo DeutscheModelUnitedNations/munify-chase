@@ -1,20 +1,33 @@
-import * as Inputs from '../../inputs';
-import { db } from '../../../../db';
-import { builder } from '../../../../../src/resolvers/builder';
-import { defineQuery, defineQueryFunction, defineQueryObject } from '../../utils';
+import * as Inputs from "../../inputs";
+import { db } from "../../../../db";
+import { builder } from "../../../../../src/resolvers/builder";
+import {
+  defineQuery,
+  defineQueryFunction,
+  defineQueryObject,
+} from "../../utils";
 
 export const countCommitteeMemberQueryArgs = builder.args((t) => ({
   where: t.field({ type: Inputs.CommitteeMemberWhereInput, required: false }),
-  orderBy: t.field({ type: [Inputs.CommitteeMemberOrderByWithRelationInput], required: false }),
-  cursor: t.field({ type: Inputs.CommitteeMemberWhereUniqueInput, required: false }),
-  take: t.field({ type: 'Int', required: false }),
-  skip: t.field({ type: 'Int', required: false }),
-  distinct: t.field({ type: [Inputs.CommitteeMemberScalarFieldEnum], required: false }),
-}))
+  orderBy: t.field({
+    type: [Inputs.CommitteeMemberOrderByWithRelationInput],
+    required: false,
+  }),
+  cursor: t.field({
+    type: Inputs.CommitteeMemberWhereUniqueInput,
+    required: false,
+  }),
+  take: t.field({ type: "Int", required: false }),
+  skip: t.field({ type: "Int", required: false }),
+  distinct: t.field({
+    type: [Inputs.CommitteeMemberScalarFieldEnum],
+    required: false,
+  }),
+}));
 
 export const countCommitteeMemberQueryObject = defineQueryFunction((t) =>
   defineQueryObject({
-    type: 'Int',
+    type: "Int",
     nullable: false,
     args: countCommitteeMemberQueryArgs,
     resolve: async (_root, args, _context, _info) =>

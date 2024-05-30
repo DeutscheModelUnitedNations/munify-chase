@@ -1,4 +1,4 @@
-import React, { useContext, useState, useEffect } from "react";
+import { useContext, useState, useEffect } from "react";
 import Image from "next/image";
 import { SmallFlag as Flag } from "@components/flag_templates";
 import { AnimatePresence, motion } from "framer-motion";

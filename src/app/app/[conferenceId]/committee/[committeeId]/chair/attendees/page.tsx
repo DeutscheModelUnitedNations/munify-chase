@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useState, useContext } from "react";
+import { useEffect, useState, useContext } from "react";
 import HeaderTemplate from "@/frontend/components/header_template";
 import { ScrollPanel } from "primereact/scrollpanel";
 import { useI18nContext } from "@/frontend/i18n/i18n-react";

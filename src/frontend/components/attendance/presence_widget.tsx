@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext } from "react";
+import { useState, useEffect, useContext } from "react";
 import { useI18nContext } from "@/frontend/i18n/i18n-react";
 import { HeaderInfoBox } from "../header_template";
 import { useBackend, type BackendInstanceType } from "@/contexts/backend";

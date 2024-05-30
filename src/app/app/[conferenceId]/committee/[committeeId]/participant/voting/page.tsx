@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import { useState } from "react";
 import Motions from "@/frontend/components/voting/motions";
 import VotingArea from "@/frontend/components/voting/voting";
 import { useI18nContext } from "@/frontend/i18n/i18n-react";

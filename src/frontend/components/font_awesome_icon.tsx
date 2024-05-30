@@ -1,5 +1,4 @@
 import type React from "react";
-import { useEffect, useState } from "react";
 
 interface FAIconProps extends React.HTMLAttributes<HTMLElement> {
   icon: string;

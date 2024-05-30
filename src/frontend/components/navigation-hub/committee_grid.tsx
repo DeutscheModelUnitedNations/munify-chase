@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { useI18nContext } from "@/frontend/i18n/i18n-react";
 import { useBackend, type BackendInstanceType } from "@/contexts/backend";
 import { Skeleton } from "primereact/skeleton";

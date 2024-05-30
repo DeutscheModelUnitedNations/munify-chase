@@ -1,11 +1,11 @@
 "use client";
-import React, { useState, useEffect, useContext } from "react";
+import { useState, useEffect, useContext } from "react";
 import { useI18nContext } from "@/frontend/i18n/i18n-react";
 import PresenceWidget from "@/frontend/components/attendance/presence_widget";
 import TimerWidget from "@/frontend/components/dashboard/timer";
 import SpeakersListBlock from "@/frontend/components/speakers_list/speakers_list_block";
 import WidgetTemplate from "@/frontend/components/widget_template";
-import { useBackend, type BackendInstanceType } from "@/contexts/backend";
+import { useBackend } from "@/contexts/backend";
 import { Skeleton } from "primereact/skeleton";
 import { useToast } from "@/frontend/contexts/toast";
 import WhiteboardWidget from "@/frontend/components/dashboard/whiteboard";

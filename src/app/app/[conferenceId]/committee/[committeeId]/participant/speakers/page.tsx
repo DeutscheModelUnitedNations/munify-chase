@@ -1,5 +1,5 @@
 "use client";
-import React, { useContext, useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { ScrollPanel } from "primereact/scrollpanel";
 import { apiTestData } from "@/test_data";
 import { useI18nContext } from "@/frontend/i18n/i18n-react";

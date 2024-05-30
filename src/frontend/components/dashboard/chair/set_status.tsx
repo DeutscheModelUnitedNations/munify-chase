@@ -1,4 +1,4 @@
-import React, { useState, useContext } from "react";
+import { useState, useContext } from "react";
 import { ToastContext } from "@/frontend/contexts/toast";
 import { useI18nContext } from "@/frontend/i18n/i18n-react";
 import { useBackend } from "@/contexts/backend";

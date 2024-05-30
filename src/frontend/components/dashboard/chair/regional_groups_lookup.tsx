@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext, useReducer } from "react";
+import { useState, useContext } from "react";
 import { useI18nContext } from "@/frontend/i18n/i18n-react";
 import { useBackend } from "@/contexts/backend";
 import { useBackendCall } from "@/hooks/useBackendCall";

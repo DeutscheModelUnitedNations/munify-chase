@@ -8,8 +8,8 @@ export {
   SpeakersListSpeakingTimeFieldObject,
   SpeakersListTimeLeftFieldObject,
   SpeakersListStartTimestampFieldObject,
-  SpeakersListIsClosedFieldObject
-} from './object.base';
+  SpeakersListIsClosedFieldObject,
+} from "./object.base";
 export {
   createManySpeakersListMutation,
   createOneSpeakersListMutation,
@@ -24,8 +24,8 @@ export {
   deleteOneSpeakersListMutationObject,
   updateManySpeakersListMutationObject,
   updateOneSpeakersListMutationObject,
-  upsertOneSpeakersListMutationObject
-} from './mutations';
+  upsertOneSpeakersListMutationObject,
+} from "./mutations";
 export {
   findFirstSpeakersListQuery,
   findManySpeakersListQuery,
@@ -34,5 +34,5 @@ export {
   findFirstSpeakersListQueryObject,
   findManySpeakersListQueryObject,
   countSpeakersListQueryObject,
-  findUniqueSpeakersListQueryObject
-} from './queries';
+  findUniqueSpeakersListQueryObject,
+} from "./queries";

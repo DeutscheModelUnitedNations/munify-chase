@@ -1,4 +1,3 @@
-import React from "react";
 import WidgetTemplate from "@components/widget_template";
 import Resolution from "@components/dashboard/documents/resolution";
 import Draft from "@components/dashboard/documents/draft";

@@ -17,8 +17,8 @@ export {
   CommitteeStateOfDebateFieldObject,
   CommitteeStatusHeadlineFieldObject,
   CommitteeStatusUntilFieldObject,
-  CommitteeAllowDelegationsToAddThemselvesToSpeakersListFieldObject
-} from './object.base';
+  CommitteeAllowDelegationsToAddThemselvesToSpeakersListFieldObject,
+} from "./object.base";
 export {
   createManyCommitteeMutation,
   createOneCommitteeMutation,
@@ -33,8 +33,8 @@ export {
   deleteOneCommitteeMutationObject,
   updateManyCommitteeMutationObject,
   updateOneCommitteeMutationObject,
-  upsertOneCommitteeMutationObject
-} from './mutations';
+  upsertOneCommitteeMutationObject,
+} from "./mutations";
 export {
   findFirstCommitteeQuery,
   findManyCommitteeQuery,
@@ -43,5 +43,5 @@ export {
   findFirstCommitteeQueryObject,
   findManyCommitteeQueryObject,
   countCommitteeQueryObject,
-  findUniqueCommitteeQueryObject
-} from './queries';
+  findUniqueCommitteeQueryObject,
+} from "./queries";

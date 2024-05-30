@@ -1,7 +1,7 @@
 "use client";
-import React, { useContext, useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 
-import { useBackend, type BackendInstanceType } from "@/contexts/backend";
+import { useBackend } from "@/contexts/backend";
 import { useRouter } from "next/navigation";
 import ForwardBackButtons from "@/frontend/components/admin/onboarding/forward_back_bar";
 import { Accordion, AccordionTab } from "primereact/accordion";

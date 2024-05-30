@@ -1,20 +1,33 @@
-import * as Inputs from '../../inputs';
-import { db } from '../../../../db';
-import { builder } from '../../../../../src/resolvers/builder';
-import { defineQuery, defineQueryFunction, defineQueryPrismaObject } from '../../utils';
+import * as Inputs from "../../inputs";
+import { db } from "../../../../db";
+import { builder } from "../../../../../src/resolvers/builder";
+import {
+  defineQuery,
+  defineQueryFunction,
+  defineQueryPrismaObject,
+} from "../../utils";
 
 export const findManyCommitteeMemberQueryArgs = builder.args((t) => ({
   where: t.field({ type: Inputs.CommitteeMemberWhereInput, required: false }),
-  orderBy: t.field({ type: [Inputs.CommitteeMemberOrderByWithRelationInput], required: false }),
-  cursor: t.field({ type: Inputs.CommitteeMemberWhereUniqueInput, required: false }),
-  take: t.field({ type: 'Int', required: false }),
-  skip: t.field({ type: 'Int', required: false }),
-  distinct: t.field({ type: [Inputs.CommitteeMemberScalarFieldEnum], required: false }),
-}))
+  orderBy: t.field({
+    type: [Inputs.CommitteeMemberOrderByWithRelationInput],
+    required: false,
+  }),
+  cursor: t.field({
+    type: Inputs.CommitteeMemberWhereUniqueInput,
+    required: false,
+  }),
+  take: t.field({ type: "Int", required: false }),
+  skip: t.field({ type: "Int", required: false }),
+  distinct: t.field({
+    type: [Inputs.CommitteeMemberScalarFieldEnum],
+    required: false,
+  }),
+}));
 
 export const findManyCommitteeMemberQueryObject = defineQueryFunction((t) =>
   defineQueryPrismaObject({
-    type: ['CommitteeMember'],
+    type: ["CommitteeMember"],
     nullable: false,
     args: findManyCommitteeMemberQueryArgs,
     resolve: async (query, _root, args, _context, _info) =>

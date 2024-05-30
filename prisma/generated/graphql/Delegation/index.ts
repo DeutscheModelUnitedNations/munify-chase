@@ -5,8 +5,8 @@ export {
   DelegationConferenceIdFieldObject,
   DelegationNationFieldObject,
   DelegationNationIdFieldObject,
-  DelegationMembersFieldObject
-} from './object.base';
+  DelegationMembersFieldObject,
+} from "./object.base";
 export {
   createManyDelegationMutation,
   createOneDelegationMutation,
@@ -21,8 +21,8 @@ export {
   deleteOneDelegationMutationObject,
   updateManyDelegationMutationObject,
   updateOneDelegationMutationObject,
-  upsertOneDelegationMutationObject
-} from './mutations';
+  upsertOneDelegationMutationObject,
+} from "./mutations";
 export {
   findFirstDelegationQuery,
   findManyDelegationQuery,
@@ -31,5 +31,5 @@ export {
   findFirstDelegationQueryObject,
   findManyDelegationQueryObject,
   countDelegationQueryObject,
-  findUniqueDelegationQueryObject
-} from './queries';
+  findUniqueDelegationQueryObject,
+} from "./queries";

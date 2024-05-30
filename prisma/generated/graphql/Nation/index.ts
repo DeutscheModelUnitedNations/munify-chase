@@ -3,8 +3,8 @@ export {
   NationIdFieldObject,
   NationAlpha3CodeFieldObject,
   NationVariantFieldObject,
-  NationDelegationsFieldObject
-} from './object.base';
+  NationDelegationsFieldObject,
+} from "./object.base";
 export {
   createManyNationMutation,
   createOneNationMutation,
@@ -19,8 +19,8 @@ export {
   deleteOneNationMutationObject,
   updateManyNationMutationObject,
   updateOneNationMutationObject,
-  upsertOneNationMutationObject
-} from './mutations';
+  upsertOneNationMutationObject,
+} from "./mutations";
 export {
   findFirstNationQuery,
   findManyNationQuery,
@@ -29,5 +29,5 @@ export {
   findFirstNationQueryObject,
   findManyNationQueryObject,
   countNationQueryObject,
-  findUniqueNationQueryObject
-} from './queries';
+  findUniqueNationQueryObject,
+} from "./queries";

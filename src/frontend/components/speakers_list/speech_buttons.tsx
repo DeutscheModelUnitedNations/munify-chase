@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useContext } from "react";
+import { useEffect, useState, useContext } from "react";
 import Button from "@components/button";
 import { SplitButton } from "primereact/splitbutton";
 import { Dialog } from "primereact/dialog";
@@ -15,7 +15,6 @@ import {
 } from "@/contexts/committee_data";
 import { SpeakersListDataContext } from "@/contexts/speakers_list_data";
 import { useUserIdent } from "@/contexts/user_ident";
-import { ConfirmDialog } from "primereact/confirmdialog";
 import type { MenuItem } from "primereact/menuitem";
 import { useBackendCall } from "@/hooks/useBackendCall";
 import FAIcon from "../font_awesome_icon";

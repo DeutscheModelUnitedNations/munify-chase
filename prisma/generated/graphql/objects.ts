@@ -1,4 +1,4 @@
-import { Prisma } from '../client';
+import type { Prisma } from "../client";
 export {
   UserObject,
   UserIdFieldObject,
@@ -26,8 +26,8 @@ export {
   findFirstUserQueryObject,
   findManyUserQueryObject,
   countUserQueryObject,
-  findUniqueUserQueryObject
-} from './User';
+  findUniqueUserQueryObject,
+} from "./User";
 export {
   ConferenceCreationTokenObject,
   ConferenceCreationTokenTokenFieldObject,
@@ -52,8 +52,8 @@ export {
   findFirstConferenceCreationTokenQueryObject,
   findManyConferenceCreationTokenQueryObject,
   countConferenceCreationTokenQueryObject,
-  findUniqueConferenceCreationTokenQueryObject
-} from './ConferenceCreationToken';
+  findUniqueConferenceCreationTokenQueryObject,
+} from "./ConferenceCreationToken";
 export {
   ConferenceObject,
   ConferenceIdFieldObject,
@@ -86,8 +86,8 @@ export {
   findFirstConferenceQueryObject,
   findManyConferenceQueryObject,
   countConferenceQueryObject,
-  findUniqueConferenceQueryObject
-} from './Conference';
+  findUniqueConferenceQueryObject,
+} from "./Conference";
 export {
   ConferenceMemberObject,
   ConferenceMemberIdFieldObject,
@@ -117,8 +117,8 @@ export {
   findFirstConferenceMemberQueryObject,
   findManyConferenceMemberQueryObject,
   countConferenceMemberQueryObject,
-  findUniqueConferenceMemberQueryObject
-} from './ConferenceMember';
+  findUniqueConferenceMemberQueryObject,
+} from "./ConferenceMember";
 export {
   CommitteeObject,
   CommitteeIdFieldObject,
@@ -160,8 +160,8 @@ export {
   findFirstCommitteeQueryObject,
   findManyCommitteeQueryObject,
   countCommitteeQueryObject,
-  findUniqueCommitteeQueryObject
-} from './Committee';
+  findUniqueCommitteeQueryObject,
+} from "./Committee";
 export {
   CommitteeMemberObject,
   CommitteeMemberIdFieldObject,
@@ -194,8 +194,8 @@ export {
   findFirstCommitteeMemberQueryObject,
   findManyCommitteeMemberQueryObject,
   countCommitteeMemberQueryObject,
-  findUniqueCommitteeMemberQueryObject
-} from './CommitteeMember';
+  findUniqueCommitteeMemberQueryObject,
+} from "./CommitteeMember";
 export {
   AgendaItemObject,
   AgendaItemIdFieldObject,
@@ -226,8 +226,8 @@ export {
   findFirstAgendaItemQueryObject,
   findManyAgendaItemQueryObject,
   countAgendaItemQueryObject,
-  findUniqueAgendaItemQueryObject
-} from './AgendaItem';
+  findUniqueAgendaItemQueryObject,
+} from "./AgendaItem";
 export {
   SpeakersListObject,
   SpeakersListIdFieldObject,
@@ -260,8 +260,8 @@ export {
   findFirstSpeakersListQueryObject,
   findManySpeakersListQueryObject,
   countSpeakersListQueryObject,
-  findUniqueSpeakersListQueryObject
-} from './SpeakersList';
+  findUniqueSpeakersListQueryObject,
+} from "./SpeakersList";
 export {
   SpeakerOnListObject,
   SpeakerOnListIdFieldObject,
@@ -291,8 +291,8 @@ export {
   findFirstSpeakerOnListQueryObject,
   findManySpeakerOnListQueryObject,
   countSpeakerOnListQueryObject,
-  findUniqueSpeakerOnListQueryObject
-} from './SpeakerOnList';
+  findUniqueSpeakerOnListQueryObject,
+} from "./SpeakerOnList";
 export {
   DelegationObject,
   DelegationIdFieldObject,
@@ -322,8 +322,8 @@ export {
   findFirstDelegationQueryObject,
   findManyDelegationQueryObject,
   countDelegationQueryObject,
-  findUniqueDelegationQueryObject
-} from './Delegation';
+  findUniqueDelegationQueryObject,
+} from "./Delegation";
 export {
   NationObject,
   NationIdFieldObject,
@@ -351,8 +351,8 @@ export {
   findFirstNationQueryObject,
   findManyNationQueryObject,
   countNationQueryObject,
-  findUniqueNationQueryObject
-} from './Nation';
+  findUniqueNationQueryObject,
+} from "./Nation";
 export {
   MessageObject,
   MessageIdFieldObject,
@@ -391,30 +391,36 @@ export {
   findFirstMessageQueryObject,
   findManyMessageQueryObject,
   countMessageQueryObject,
-  findUniqueMessageQueryObject
-} from './Message';
-import { builder } from '../../../src/resolvers/builder';
+  findUniqueMessageQueryObject,
+} from "./Message";
+import { builder } from "../../../src/resolvers/builder";
 
-export const BatchPayload = builder.objectType(builder.objectRef<Prisma.BatchPayload>('BatchPayload'), {
-  description: 'Batch payloads from prisma.',
-  fields: (t) => ({
-    count: t.exposeInt('count', { description: 'Prisma Batch Payload', nullable: false }),
-  }),
-});
+export const BatchPayload = builder.objectType(
+  builder.objectRef<Prisma.BatchPayload>("BatchPayload"),
+  {
+    description: "Batch payloads from prisma.",
+    fields: (t) => ({
+      count: t.exposeInt("count", {
+        description: "Prisma Batch Payload",
+        nullable: false,
+      }),
+    }),
+  },
+);
 
 export const modelNames = [
-  'User',
-  'ConferenceCreationToken',
-  'Conference',
-  'ConferenceMember',
-  'Committee',
-  'CommitteeMember',
-  'AgendaItem',
-  'SpeakersList',
-  'SpeakerOnList',
-  'Delegation',
-  'Nation',
-  'Message',
+  "User",
+  "ConferenceCreationToken",
+  "Conference",
+  "ConferenceMember",
+  "Committee",
+  "CommitteeMember",
+  "AgendaItem",
+  "SpeakersList",
+  "SpeakerOnList",
+  "Delegation",
+  "Nation",
+  "Message",
 ] as const;
 
-export type Model = typeof modelNames[number];
+export type Model = (typeof modelNames)[number];

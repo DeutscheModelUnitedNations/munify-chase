@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useI18nContext } from "@/frontend/i18n/i18n-react";
 import Markdown from "markdown-to-jsx";
 import styles from "./md_reader.module.css";

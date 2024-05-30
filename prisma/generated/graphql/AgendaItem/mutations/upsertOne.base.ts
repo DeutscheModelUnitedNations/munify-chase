@@ -1,17 +1,21 @@
-import * as Inputs from '../../inputs';
-import { db } from '../../../../db';
-import { builder } from '../../../../../src/resolvers/builder';
-import { defineMutation, defineMutationFunction, defineMutationPrismaObject } from '../../utils';
+import * as Inputs from "../../inputs";
+import { db } from "../../../../db";
+import { builder } from "../../../../../src/resolvers/builder";
+import {
+  defineMutation,
+  defineMutationFunction,
+  defineMutationPrismaObject,
+} from "../../utils";
 
 export const upsertOneAgendaItemMutationArgs = builder.args((t) => ({
-      where: t.field({ type: Inputs.AgendaItemWhereUniqueInput, required: true }),
-      create: t.field({ type: Inputs.AgendaItemCreateInput, required: true }),
-      update: t.field({ type: Inputs.AgendaItemUpdateInput, required: true }),
-    }))
+  where: t.field({ type: Inputs.AgendaItemWhereUniqueInput, required: true }),
+  create: t.field({ type: Inputs.AgendaItemCreateInput, required: true }),
+  update: t.field({ type: Inputs.AgendaItemUpdateInput, required: true }),
+}));
 
 export const upsertOneAgendaItemMutationObject = defineMutationFunction((t) =>
   defineMutationPrismaObject({
-    type: 'AgendaItem',
+    type: "AgendaItem",
     nullable: false,
     args: upsertOneAgendaItemMutationArgs,
     resolve: async (query, _root, args, _context, _info) =>

@@ -1,20 +1,30 @@
-import * as Inputs from '../../inputs';
-import { db } from '../../../../db';
-import { builder } from '../../../../../src/resolvers/builder';
-import { defineQuery, defineQueryFunction, defineQueryObject } from '../../utils';
+import * as Inputs from "../../inputs";
+import { db } from "../../../../db";
+import { builder } from "../../../../../src/resolvers/builder";
+import {
+  defineQuery,
+  defineQueryFunction,
+  defineQueryObject,
+} from "../../utils";
 
 export const countConferenceQueryArgs = builder.args((t) => ({
   where: t.field({ type: Inputs.ConferenceWhereInput, required: false }),
-  orderBy: t.field({ type: [Inputs.ConferenceOrderByWithRelationInput], required: false }),
+  orderBy: t.field({
+    type: [Inputs.ConferenceOrderByWithRelationInput],
+    required: false,
+  }),
   cursor: t.field({ type: Inputs.ConferenceWhereUniqueInput, required: false }),
-  take: t.field({ type: 'Int', required: false }),
-  skip: t.field({ type: 'Int', required: false }),
-  distinct: t.field({ type: [Inputs.ConferenceScalarFieldEnum], required: false }),
-}))
+  take: t.field({ type: "Int", required: false }),
+  skip: t.field({ type: "Int", required: false }),
+  distinct: t.field({
+    type: [Inputs.ConferenceScalarFieldEnum],
+    required: false,
+  }),
+}));
 
 export const countConferenceQueryObject = defineQueryFunction((t) =>
   defineQueryObject({
-    type: 'Int',
+    type: "Int",
     nullable: false,
     args: countConferenceQueryArgs,
     resolve: async (_root, args, _context, _info) =>

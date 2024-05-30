@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useI18nContext } from "@/frontend/i18n/i18n-react";
 import Link from "next/link";
 import Image from "next/image";

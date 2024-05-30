@@ -1,4 +1,3 @@
-import React from "react";
 import Document from "@components/dashboard/documents/document_template";
 
 /**

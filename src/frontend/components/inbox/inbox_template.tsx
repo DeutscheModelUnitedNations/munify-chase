@@ -1,4 +1,3 @@
-import React from "react";
 import { useI18nContext } from "@/frontend/i18n/i18n-react";
 import type { BackendInstanceType } from "@/contexts/backend";
 import { ScrollPanel } from "primereact/scrollpanel";

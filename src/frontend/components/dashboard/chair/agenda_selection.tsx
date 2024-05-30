@@ -1,6 +1,6 @@
-import React, { useState, useEffect, useContext } from "react";
+import { useContext } from "react";
 import { useI18nContext } from "@/frontend/i18n/i18n-react";
-import { useBackend, type BackendInstanceType } from "@/contexts/backend";
+import { useBackend } from "@/contexts/backend";
 import ConfigWrapper from "@/frontend/components/dashboard/chair/config_wrapper";
 import { Dropdown } from "primereact/dropdown";
 import {

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import type { CountryCode, Voting } from "@/frontend/custom_types/custom_types";
 import { Button } from "primereact/button";
 import { useI18nContext } from "@/frontend/i18n/i18n-react";

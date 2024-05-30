@@ -1,5 +1,4 @@
 "use client";
-import React from "react";
 
 import { useRouter } from "next/navigation";
 import ForwardBackButtons from "@/frontend/components/admin/onboarding/forward_back_bar";

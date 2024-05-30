@@ -1,4 +1,3 @@
-import React from "react";
 import WidgetTemplate from "@/frontend/components/widget_template";
 import SpeakerBlock from "@/frontend/components/speakers_list/speaker_block";
 import CommentBlock from "@/frontend/components/speakers_list/comment_block";

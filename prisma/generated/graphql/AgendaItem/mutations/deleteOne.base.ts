@@ -1,13 +1,19 @@
-import * as Inputs from '../../inputs';
-import { db } from '../../../../db';
-import { builder } from '../../../../../src/resolvers/builder';
-import { defineMutation, defineMutationFunction, defineMutationPrismaObject } from '../../utils';
+import * as Inputs from "../../inputs";
+import { db } from "../../../../db";
+import { builder } from "../../../../../src/resolvers/builder";
+import {
+  defineMutation,
+  defineMutationFunction,
+  defineMutationPrismaObject,
+} from "../../utils";
 
-export const deleteOneAgendaItemMutationArgs = builder.args((t) => ({ where: t.field({ type: Inputs.AgendaItemWhereUniqueInput, required: true }) }))
+export const deleteOneAgendaItemMutationArgs = builder.args((t) => ({
+  where: t.field({ type: Inputs.AgendaItemWhereUniqueInput, required: true }),
+}));
 
 export const deleteOneAgendaItemMutationObject = defineMutationFunction((t) =>
   defineMutationPrismaObject({
-    type: 'AgendaItem',
+    type: "AgendaItem",
     nullable: true,
     args: deleteOneAgendaItemMutationArgs,
     resolve: async (query, _root, args, _context, _info) =>

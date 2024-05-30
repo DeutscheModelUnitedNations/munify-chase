@@ -6,8 +6,8 @@ export {
   AgendaItemTitleFieldObject,
   AgendaItemDescriptionFieldObject,
   AgendaItemSpeakerListsFieldObject,
-  AgendaItemIsActiveFieldObject
-} from './object.base';
+  AgendaItemIsActiveFieldObject,
+} from "./object.base";
 export {
   createManyAgendaItemMutation,
   createOneAgendaItemMutation,
@@ -22,8 +22,8 @@ export {
   deleteOneAgendaItemMutationObject,
   updateManyAgendaItemMutationObject,
   updateOneAgendaItemMutationObject,
-  upsertOneAgendaItemMutationObject
-} from './mutations';
+  upsertOneAgendaItemMutationObject,
+} from "./mutations";
 export {
   findFirstAgendaItemQuery,
   findManyAgendaItemQuery,
@@ -32,5 +32,5 @@ export {
   findFirstAgendaItemQueryObject,
   findManyAgendaItemQueryObject,
   countAgendaItemQueryObject,
-  findUniqueAgendaItemQueryObject
-} from './queries';
+  findUniqueAgendaItemQueryObject,
+} from "./queries";

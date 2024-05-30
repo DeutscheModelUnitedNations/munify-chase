@@ -1,20 +1,30 @@
-import * as Inputs from '../../inputs';
-import { db } from '../../../../db';
-import { builder } from '../../../../../src/resolvers/builder';
-import { defineQuery, defineQueryFunction, defineQueryPrismaObject } from '../../utils';
+import * as Inputs from "../../inputs";
+import { db } from "../../../../db";
+import { builder } from "../../../../../src/resolvers/builder";
+import {
+  defineQuery,
+  defineQueryFunction,
+  defineQueryPrismaObject,
+} from "../../utils";
 
 export const findManyDelegationQueryArgs = builder.args((t) => ({
   where: t.field({ type: Inputs.DelegationWhereInput, required: false }),
-  orderBy: t.field({ type: [Inputs.DelegationOrderByWithRelationInput], required: false }),
+  orderBy: t.field({
+    type: [Inputs.DelegationOrderByWithRelationInput],
+    required: false,
+  }),
   cursor: t.field({ type: Inputs.DelegationWhereUniqueInput, required: false }),
-  take: t.field({ type: 'Int', required: false }),
-  skip: t.field({ type: 'Int', required: false }),
-  distinct: t.field({ type: [Inputs.DelegationScalarFieldEnum], required: false }),
-}))
+  take: t.field({ type: "Int", required: false }),
+  skip: t.field({ type: "Int", required: false }),
+  distinct: t.field({
+    type: [Inputs.DelegationScalarFieldEnum],
+    required: false,
+  }),
+}));
 
 export const findManyDelegationQueryObject = defineQueryFunction((t) =>
   defineQueryPrismaObject({
-    type: ['Delegation'],
+    type: ["Delegation"],
     nullable: false,
     args: findManyDelegationQueryArgs,
     resolve: async (query, _root, args, _context, _info) =>

@@ -1,5 +1,5 @@
 import type { CountryCode, Voting } from "@/frontend/custom_types/custom_types";
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { SmallFlag } from "../flag_templates";
 import { useI18nContext } from "@/frontend/i18n/i18n-react";
 import { AnimatePresence, motion } from "framer-motion";

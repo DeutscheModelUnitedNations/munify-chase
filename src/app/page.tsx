@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import { useState } from "react";
 import { useI18nContext } from "@/frontend/i18n/i18n-react";
 import Navbar from "@/frontend/components/home/navbar";
 import LandingHero from "@/frontend/components/home/landing_hero";

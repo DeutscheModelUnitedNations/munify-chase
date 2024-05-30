@@ -16,7 +16,6 @@ echo "Setting up Prisma Database"
 echo "--------------------------"
 
 sleep 1
-cd /workspaces/munify/chase/backend
 bun i
 bunx prisma migrate reset --force
 bunx prisma migrate dev -n initial_dev_migration

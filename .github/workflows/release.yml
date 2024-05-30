@@ -20,7 +20,7 @@ jobs:
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: deutschemodelunitednations/chase-frontend
+          images: deutschemodelunitednations/chase
           flavor: |
             latest=false
           tags: |
@@ -38,75 +38,9 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: .
-          file: ./chase/frontend/Dockerfile
+          file: ./Dockerfile
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           build-args: |
             NEXT_PUBLIC_VERSION=${{ github.event.release.tag_name }}
-
-  chase-backend:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Extract metadata (tags, labels) for Docker
-        id: meta
-        uses: docker/metadata-action@v5
-        with:
-          images: deutschemodelunitednations/chase-backend
-          flavor: |
-            latest=false
-          tags: |
-            type=semver,pattern={{version}},value=${{ github.event.release.tag_name }}
-            type=raw,value=nightly,enable=${{ github.event.release.prerelease }}
-            type=raw,value=latest,enable=${{ !github.event.release.prerelease }}
-
-      - name: Log in to Docker Hub
-        uses: docker/login-action@v3
-        with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
-
-      - name: Build and push Docker image
-        uses: docker/build-push-action@v5
-        with:
-          context: .
-          file: ./chase/backend/Dockerfile
-          push: true
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
-
-  chase-backend-migration:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Extract metadata (tags, labels) for Docker
-        id: meta
-        uses: docker/metadata-action@v5
-        with:
-          images: deutschemodelunitednations/chase-backend-db-migration
-          flavor: |
-            latest=false
-          tags: |
-            type=semver,pattern={{version}},value=${{ github.event.release.tag_name }}
-            type=raw,value=nightly,enable=${{ github.event.release.prerelease }}
-            type=raw,value=latest,enable=${{ !github.event.release.prerelease }}
-
-      - name: Log in to Docker Hub
-        uses: docker/login-action@v3
-        with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
-
-      - name: Build and push Docker image
-        uses: docker/build-push-action@v5
-        with:
-          context: .
-          file: ./chase/backend/Dockerfile.migration
-          push: true
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}

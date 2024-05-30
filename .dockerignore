@@ -19,10 +19,10 @@ next-env.d.ts
 .redis-data
 heapSnapshots
 
-chase/backend/prisma/generated
+generated
 fontawesome-pro-6.4.2/
 .env
 certificates
 users.csv
 target
-chase/backend/docker
+docker

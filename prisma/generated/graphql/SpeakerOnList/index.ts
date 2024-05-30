@@ -1,0 +1,35 @@
+export {
+  SpeakerOnListObject,
+  SpeakerOnListIdFieldObject,
+  SpeakerOnListSpeakersListFieldObject,
+  SpeakerOnListSpeakersListIdFieldObject,
+  SpeakerOnListCommitteeMemberFieldObject,
+  SpeakerOnListCommitteeMemberIdFieldObject,
+  SpeakerOnListPositionFieldObject
+} from './object.base';
+export {
+  createManySpeakerOnListMutation,
+  createOneSpeakerOnListMutation,
+  deleteManySpeakerOnListMutation,
+  deleteOneSpeakerOnListMutation,
+  updateManySpeakerOnListMutation,
+  updateOneSpeakerOnListMutation,
+  upsertOneSpeakerOnListMutation,
+  createManySpeakerOnListMutationObject,
+  createOneSpeakerOnListMutationObject,
+  deleteManySpeakerOnListMutationObject,
+  deleteOneSpeakerOnListMutationObject,
+  updateManySpeakerOnListMutationObject,
+  updateOneSpeakerOnListMutationObject,
+  upsertOneSpeakerOnListMutationObject
+} from './mutations';
+export {
+  findFirstSpeakerOnListQuery,
+  findManySpeakerOnListQuery,
+  countSpeakerOnListQuery,
+  findUniqueSpeakerOnListQuery,
+  findFirstSpeakerOnListQueryObject,
+  findManySpeakerOnListQueryObject,
+  countSpeakerOnListQueryObject,
+  findUniqueSpeakerOnListQueryObject
+} from './queries';

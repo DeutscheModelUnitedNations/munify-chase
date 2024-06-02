@@ -11,7 +11,11 @@ export const SpeakersListMiniatureContext = createContext(
 export const useSpeakersListMiniature = () =>
   useContext(SpeakersListMiniatureContext);
 
-export const SpeakersListMiniatureProvider = ({ children }) => {
+export const SpeakersListMiniatureProvider = ({
+  children,
+}: {
+  children: React.ReactNode;
+}) => {
   const [showSpeakersListMiniature, setShowSpeakersListMiniature] =
     useState(false);
 

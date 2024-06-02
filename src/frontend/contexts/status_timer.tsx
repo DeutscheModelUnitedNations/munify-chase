@@ -4,8 +4,7 @@ import { createContext, useContext, useEffect, useState } from "react";
 import { ToastContext } from "@/frontend/contexts/toast";
 import { useBackendTime } from "@/frontend/contexts/backendTime";
 import { useI18nContext } from "@/frontend/i18n/i18n-react";
-import { CommitteeDataContext } from "@/contexts/committee_data";
-import { $Enums } from "@prisma/generated/client";
+import { $Enums } from "../../../prisma/generated/client";
 
 export const StatusTimer = createContext(
   {} as {

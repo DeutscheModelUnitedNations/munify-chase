@@ -15,7 +15,6 @@ const queryFetcher: QueryFetcher = async (
   { query, variables, operationName },
   fetchOptions,
 ) => {
-  // Modify "/api/graphql" if needed
   const response = await fetch("/api/graphql", {
     method: "POST",
     headers: {
@@ -26,6 +25,7 @@ const queryFetcher: QueryFetcher = async (
       variables,
       operationName,
     }),
+    credentials: "include",
     mode: "cors",
     ...fetchOptions,
   });

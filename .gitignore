@@ -33,9 +33,6 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
-# generated files
-generated
-
 # git-crypt
 git-crypt-key
 
@@ -63,3 +60,5 @@ target
 
 # docker files
 docker
+
+prisma/generated/

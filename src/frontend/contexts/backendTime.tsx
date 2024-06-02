@@ -1,7 +1,7 @@
 "use client";
-import { useQuery } from "@/gqty";
 import type React from "react";
 import { createContext, useContext, useEffect, useState } from "react";
+import { useQuery } from "@/frontend/gqty/gqty";
 
 export const BackendTimeContext = createContext({} as BackendTimeContextType);
 export const useBackendTime = () => useContext(BackendTimeContext);

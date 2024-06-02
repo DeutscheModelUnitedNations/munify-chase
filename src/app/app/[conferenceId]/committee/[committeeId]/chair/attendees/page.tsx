@@ -1,21 +1,21 @@
 "use client";
 import { useEffect, useState, useContext } from "react";
-import HeaderTemplate from "@/frontend/components/header_template";
+import HeaderTemplate from "@/app/components/header_template";
 import { ScrollPanel } from "primereact/scrollpanel";
-import { useI18nContext } from "@/frontend/i18n/i18n-react";
+import { useI18nContext } from "@/app/i18n/i18n-react";
 import { useBackend } from "@/contexts/backend";
-import { useToast } from "@/frontend/contexts/toast";
+import { useToast } from "@/app/contexts/toast";
 import { $Enums } from "@prisma/generated/client";
-import PresenceWidget from "@/frontend/components/attendance/presence_widget";
+import PresenceWidget from "@/app/components/attendance/presence_widget";
 import {
   CommitteeIdContext,
   ConferenceIdContext,
 } from "@/contexts/committee_data";
 import AttendanceTable, {
   type DelegationDataType,
-} from "@/frontend/components/attendance/attendance_table";
-import Button from "@/frontend/components/button";
-import getCountryNameByCode from "@/frontend/misc/get_country_name_by_code";
+} from "@/app/components/attendance/attendance_table";
+import Button from "@/app/components/button";
+import getCountryNameByCode from "@/app/misc/get_country_name_by_code";
 
 export default function ChairAttendees() {
   const { LL, locale } = useI18nContext();

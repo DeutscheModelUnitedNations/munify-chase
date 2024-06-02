@@ -1,4 +1,4 @@
-import { db } from "chase-backend/prisma/db";
+import { db } from "../../../prisma/db";
 import {
   UserIdFieldObject,
   createOneUserMutationObject,
@@ -7,7 +7,7 @@ import {
   findManyUserQueryObject,
   findUniqueUserQueryObject,
   updateOneUserMutationObject,
-} from "chase-backend/prisma/generated/graphql/User";
+} from "../../../prisma/generated/graphql/User";
 import { builder } from "./builder";
 
 builder.prismaObject("User", {

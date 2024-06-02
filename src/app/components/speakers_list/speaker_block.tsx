@@ -1,11 +1,11 @@
 import React, { useEffect, useState, useContext } from "react";
-import getCountryNameByCode from "@/frontend/misc/get_country_name_by_code";
+import getCountryNameByCode from "@/app/misc/get_country_name_by_code";
 import "./timer_animations.scss";
 import { LargeFlag } from "../flag_templates";
-import { useI18nContext } from "@/frontend/i18n/i18n-react";
+import { useI18nContext } from "@/app/i18n/i18n-react";
 import { AnimatePresence, motion } from "framer-motion";
 import { SpeakersListDataContext } from "@/contexts/speakers_list_data";
-import { useBackendTime } from "@/frontend/contexts/backendTime";
+import { useBackendTime } from "@/app/contexts/backendTime";
 import FAIcon from "../font_awesome_icon";
 
 /**

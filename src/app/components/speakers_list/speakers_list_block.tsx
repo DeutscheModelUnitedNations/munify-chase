@@ -1,6 +1,6 @@
 import type React from "react";
-import SpeakerBlock from "@/frontend/components/speakers_list/speaker_block";
-import SpeakerQueueList from "@/frontend/components/speakers_list/queue_list";
+import SpeakerBlock from "@/app/components/speakers_list/speaker_block";
+import SpeakerQueueList from "@/app/components/speakers_list/queue_list";
 import type { BackendInstanceType } from "@/contexts/backend";
 import { SpeakersListDataProvider } from "@/contexts/speakers_list_data";
 import type { $Enums } from "@prisma/generated/client";

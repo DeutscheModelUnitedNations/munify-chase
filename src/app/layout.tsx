@@ -1,10 +1,9 @@
 "use client";
 import "./globals.scss";
 import { Inter, Vollkorn, Noto_Sans_Mono } from "next/font/google"; // Even though Google Fonts are used – no requests are sent to Google (see NEXT.JS docs)
-import { PublicEnvScript } from "next-runtime-env";
 //theme
-import "@/themes/theme_light.scss";
-import "@/themes/theme_dark.scss";
+import "@/app/themes/theme_light.scss";
+import "@/app/themes/theme_dark.scss";
 // //core
 import "primereact/resources/primereact.min.css";
 // //icons
@@ -15,12 +14,12 @@ import {
   navigatorDetector,
   localStorageDetector,
 } from "typesafe-i18n/detectors";
-import { loadLocale } from "@/frontend/i18n/i18n-util.sync";
-import { baseLocale, locales } from "@/frontend/i18n/i18n-util";
-import TypesafeI18n from "@/frontend/i18n/i18n-react";
-import { ToastProvider } from "@/frontend/contexts/toast";
-import { BackendTime } from "@/frontend/contexts/backendTime";
-import CookieBanner from "@/frontend/components/cookie_banner";
+import { loadLocale } from "@/app/i18n/i18n-util.sync";
+import { baseLocale, locales } from "@/app/i18n/i18n-util";
+import TypesafeI18n from "@/app/i18n/i18n-react";
+import { ToastProvider } from "@/app/contexts/toast";
+import { BackendTime } from "@/app/contexts/backendTime";
+import CookieBanner from "@/app/components/cookie_banner";
 import { PrimeReactProvider } from "primereact/api";
 
 const sans = Inter({
@@ -68,7 +67,6 @@ export default function RootLayout({
     >
       <head>
         <title>Chase</title>
-        <PublicEnvScript />
         <script defer src="/fontawesome/js/fontawesome.min.js" />
         <script defer src="/fontawesome/js/brands.min.js" />
         <script defer src="/fontawesome/js/solid.min.js" />
@@ -86,7 +84,7 @@ export default function RootLayout({
       </head>
 
       <body>
-        <PrimeReactProvider value={{ pt: Tailwind }}>
+        {/* <PrimeReactProvider value={{ pt: Tailwind }}> */}
           <TypesafeI18n locale={locale}>
             <ToastProvider>
               <BackendTime>
@@ -95,7 +93,7 @@ export default function RootLayout({
               </BackendTime>
             </ToastProvider>
           </TypesafeI18n>
-        </PrimeReactProvider>
+        {/* </PrimeReactProvider> */}
       </body>
     </html>
   );

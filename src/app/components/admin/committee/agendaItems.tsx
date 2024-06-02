@@ -1,15 +1,15 @@
 import { useEffect, useContext, useState } from "react";
-import { useI18nContext } from "@/frontend/i18n/i18n-react";
+import { useI18nContext } from "@/app/i18n/i18n-react";
 import { InputText } from "primereact/inputtext";
-import Button from "@/frontend/components/button";
+import Button from "@/app/components/button";
 import { useBackend } from "@/contexts/backend";
-import { useToast } from "@/frontend/contexts/toast";
+import { useToast } from "@/app/contexts/toast";
 import {
   CommitteeIdContext,
   ConferenceIdContext,
 } from "@/contexts/committee_data";
 import { useBackendCall } from "@/hooks/useBackendCall";
-import FAIcon from "@/frontend/components/font_awesome_icon";
+import FAIcon from "@/app/components/font_awesome_icon";
 
 export default function agendaItem() {
   const { LL } = useI18nContext();

@@ -2,13 +2,13 @@ import { useEffect, useState, useContext } from "react";
 import Button from "@components/button";
 import { SplitButton } from "primereact/splitbutton";
 import { Dialog } from "primereact/dialog";
-import { useI18nContext } from "@/frontend/i18n/i18n-react";
+import { useI18nContext } from "@/app/i18n/i18n-react";
 import AddSpeakerOverlay from "./add_speaker";
 import ChangeSpeechTimeOverlay from "./change_speech_time";
 import useMousetrap from "mousetrap-react";
 import { useBackend } from "@/contexts/backend";
 import { $Enums } from "@prisma/generated/client";
-import { useToast } from "@/frontend/contexts/toast";
+import { useToast } from "@/app/contexts/toast";
 import {
   ConferenceIdContext,
   CommitteeIdContext,

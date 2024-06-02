@@ -16,7 +16,7 @@ import {
   findManyMessageQueryObject,
   findUniqueMessageQueryObject,
   updateOneMessageMutationObject,
-} from "chase-backend/prisma/generated/graphql/Message";
+} from "../../../prisma/generated/graphql/Message";
 import { builder } from "./builder";
 
 builder.prismaObject("Message", {

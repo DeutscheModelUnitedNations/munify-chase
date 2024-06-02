@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
-import { useI18nContext } from "@/frontend/i18n/i18n-react";
+import { useI18nContext } from "@/app/i18n/i18n-react";
 import Link from "next/link";
 import Image from "next/image";
 import FAIcon from "../font_awesome_icon";

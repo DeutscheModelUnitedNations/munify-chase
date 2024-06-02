@@ -1,7 +1,7 @@
 import { useState } from "react";
 import WidgetTemplate from "@components/widget_template";
 import { Button } from "primereact/button";
-import { useI18nContext } from "@/frontend/i18n/i18n-react";
+import { useI18nContext } from "@/app/i18n/i18n-react";
 import {
   ActionsOverlayChairMessage,
   ActionsOverlayResearchService,

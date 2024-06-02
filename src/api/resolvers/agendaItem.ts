@@ -1,15 +1,15 @@
 import {
-  AgendaItemDescriptionFieldObject,
   AgendaItemIdFieldObject,
-  AgendaItemIsActiveFieldObject,
   AgendaItemTitleFieldObject,
-  createOneAgendaItemMutationObject,
-  deleteOneAgendaItemMutationObject,
-  findFirstAgendaItemQueryObject,
+  AgendaItemDescriptionFieldObject,
+  AgendaItemIsActiveFieldObject,
   findManyAgendaItemQueryObject,
+  findFirstAgendaItemQueryObject,
   findUniqueAgendaItemQueryObject,
+  createOneAgendaItemMutationObject,
   updateOneAgendaItemMutationObject,
-} from "chase-backend/prisma/generated/graphql/AgendaItem";
+  deleteOneAgendaItemMutationObject,
+} from "../../../prisma/generated/graphql/AgendaItem";
 import { builder } from "./builder";
 
 builder.prismaObject("AgendaItem", {

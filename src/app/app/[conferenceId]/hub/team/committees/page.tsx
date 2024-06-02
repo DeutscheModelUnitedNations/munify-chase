@@ -1,15 +1,13 @@
 "use client";
 import { useContext } from "react";
-import { useI18nContext } from "@/frontend/i18n/i18n-react";
-import CommitteeGrid from "@/frontend/components/navigation-hub/committee_grid";
-import HeaderTemplate from "@/frontend/components/header_template";
-import { LargeFlag } from "@/frontend/components/flag_templates";
+import { useI18nContext } from "@/app/i18n/i18n-react";
+import CommitteeGrid from "@/app/components/navigation-hub/committee_grid";
+import HeaderTemplate from "@/app/components/header_template";
+import { LargeFlag } from "@/app/components/flag_templates";
 import { ScrollPanel } from "primereact/scrollpanel";
-import { conferenceRoleTranslation } from "@/frontend/i18n/translation_utils";
-import { ConferenceIdContext } from "@/contexts/committee_data";
-import { useUserIdent } from "@/contexts/user_ident";
-import { useBackendTime } from "@/frontend/contexts/backendTime";
-import FAIcon from "@/frontend/components/font_awesome_icon";
+import { conferenceRoleTranslation } from "@/app/i18n/translation_utils";
+import { useBackendTime } from "@/app/contexts/backendTime";
+import FAIcon from "@/app/components/font_awesome_icon";
 
 export default function ChairHub({
   params,
@@ -17,8 +15,6 @@ export default function ChairHub({
   params: { conferenceId: string };
 }) {
   const { LL, locale } = useI18nContext();
-  const conferenceId = useContext(ConferenceIdContext);
-  const { conferenceMembership } = useUserIdent();
   const { currentTime } = useBackendTime();
 
   return (

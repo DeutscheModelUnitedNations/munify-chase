@@ -1,25 +1,25 @@
 "use client";
 import { useContext, useState } from "react";
 import { ScrollPanel } from "primereact/scrollpanel";
-import DashboardHeader from "@/frontend/components/dashboard/header";
-import { useI18nContext } from "@/frontend/i18n/i18n-react";
-import TimerWidget from "@/frontend/components/dashboard/timer";
-import WhiteboardWidget from "@/frontend/components/dashboard/whiteboard";
-import PresenceWidget from "@/frontend/components/attendance/presence_widget";
-import WidgetTemplate from "@/frontend/components/widget_template";
+import DashboardHeader from "@/app/components/dashboard/header";
+import { useI18nContext } from "@/app/i18n/i18n-react";
+import TimerWidget from "@/app/components/dashboard/timer";
+import WhiteboardWidget from "@/app/components/dashboard/whiteboard";
+import PresenceWidget from "@/app/components/attendance/presence_widget";
+import WidgetTemplate from "@/app/components/widget_template";
 import {
   AgendaItemDataProvider,
   ConferenceIdContext,
   CommitteeIdContext,
 } from "@/contexts/committee_data";
-import AgendaSelection from "@/frontend/components/dashboard/chair/agenda_selection";
-import SetStatusWidget from "@/frontend/components/dashboard/chair/set_status";
-import SpeakersListAddingPolicyWidget from "@/frontend/components/dashboard/chair/speakers_list_adding_policy";
-import Button from "@/frontend/components/button";
-import ConfigWrapper from "@/frontend/components/dashboard/chair/config_wrapper";
-import StateOfDebateWidget from "@/frontend/components/dashboard/chair/state_of_debate";
-import { useSpeakersListMiniature } from "@/frontend/contexts/speakers_list_miniature";
-import RegionalGroupsLookup from "@/frontend/components/dashboard/chair/regional_groups_lookup";
+import AgendaSelection from "@/app/components/dashboard/chair/agenda_selection";
+import SetStatusWidget from "@/app/components/dashboard/chair/set_status";
+import SpeakersListAddingPolicyWidget from "@/app/components/dashboard/chair/speakers_list_adding_policy";
+import Button from "@/app/components/button";
+import ConfigWrapper from "@/app/components/dashboard/chair/config_wrapper";
+import StateOfDebateWidget from "@/app/components/dashboard/chair/state_of_debate";
+import { useSpeakersListMiniature } from "@/app/contexts/speakers_list_miniature";
+import RegionalGroupsLookup from "@/app/components/dashboard/chair/regional_groups_lookup";
 
 export default function ChairDashboardPage() {
   const { LL } = useI18nContext();

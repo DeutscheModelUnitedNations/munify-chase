@@ -1,9 +1,9 @@
 "use client";
-import Navbar from "@/frontend/components/home/navbar";
-import Button from "@/frontend/components/button";
+import Navbar from "@/app/components/home/navbar";
+import Button from "@/app/components/button";
 import { useRouter } from "next/navigation";
-import { useI18nContext } from "@/frontend/i18n/i18n-react";
-import MarkdownReader from "@/frontend/components/home/md_reader";
+import { useI18nContext } from "@/app/i18n/i18n-react";
+import MarkdownReader from "@/app/components/home/md_reader";
 
 export default function Docs() {
   const Router = useRouter();

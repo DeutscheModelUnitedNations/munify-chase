@@ -2,9 +2,9 @@
 import { useContext, useEffect, useState } from "react";
 import { ScrollPanel } from "primereact/scrollpanel";
 import { apiTestData } from "@/test_data";
-import { useI18nContext } from "@/frontend/i18n/i18n-react";
-import SpeakersListBlock from "@/frontend/components/speakers_list/speakers_list_block";
-import { ParticipantSpeechButtons } from "@/frontend/components/speakers_list/speech_buttons";
+import { useI18nContext } from "@/app/i18n/i18n-react";
+import SpeakersListBlock from "@/app/components/speakers_list/speakers_list_block";
+import { ParticipantSpeechButtons } from "@/app/components/speakers_list/speech_buttons";
 import { $Enums } from "@prisma/generated/client";
 import { MyDelegationContext } from "@/contexts/user_ident";
 

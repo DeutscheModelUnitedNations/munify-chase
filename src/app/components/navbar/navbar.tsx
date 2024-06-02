@@ -3,13 +3,13 @@
 import type React from "react";
 import { useState } from "react";
 import Image from "next/image";
-import NavButton from "@/frontend/components/navbar/button";
-import SettingsSidebar from "@/frontend/components/navbar/settings_sidebar";
+import NavButton from "@/app/components/navbar/button";
+import SettingsSidebar from "@/app/components/navbar/settings_sidebar";
 import { useRouter } from "next/navigation";
 import { confirmDialog, ConfirmDialog } from "primereact/confirmdialog";
-import { useI18nContext } from "@/frontend/i18n/i18n-react";
+import { useI18nContext } from "@/app/i18n/i18n-react";
 import { useBackend } from "@/contexts/backend";
-import { useToast } from "@/frontend/contexts/toast";
+import { useToast } from "@/app/contexts/toast";
 
 /**
  * This Component is used in the Layout Component.

@@ -1,19 +1,19 @@
 "use client";
 import { useState, useEffect, useContext } from "react";
-import { useI18nContext } from "@/frontend/i18n/i18n-react";
-import PresenceWidget from "@/frontend/components/attendance/presence_widget";
-import TimerWidget from "@/frontend/components/dashboard/timer";
-import SpeakersListBlock from "@/frontend/components/speakers_list/speakers_list_block";
-import WidgetTemplate from "@/frontend/components/widget_template";
+import { useI18nContext } from "@/app/i18n/i18n-react";
+import PresenceWidget from "@/app/components/attendance/presence_widget";
+import TimerWidget from "@/app/components/dashboard/timer";
+import SpeakersListBlock from "@/app/components/speakers_list/speakers_list_block";
+import WidgetTemplate from "@/app/components/widget_template";
 import { useBackend } from "@/contexts/backend";
 import { Skeleton } from "primereact/skeleton";
-import { useToast } from "@/frontend/contexts/toast";
-import WhiteboardWidget from "@/frontend/components/dashboard/whiteboard";
-import { StatusTimer } from "@/frontend/contexts/status_timer";
+import { useToast } from "@/app/contexts/toast";
+import WhiteboardWidget from "@/app/components/dashboard/whiteboard";
+import { StatusTimer } from "@/app/contexts/status_timer";
 import { useMediaQuery } from "react-responsive";
 import { pollBackendCall } from "@/hooks/pollBackendCall";
-import SpeakersListWidget from "@/frontend/components/dashboard/speakers_list";
-import FAIcon from "@/frontend/components/font_awesome_icon";
+import SpeakersListWidget from "@/app/components/dashboard/speakers_list";
+import FAIcon from "@/app/components/font_awesome_icon";
 
 export default function CommitteePresentationMode({
   params,

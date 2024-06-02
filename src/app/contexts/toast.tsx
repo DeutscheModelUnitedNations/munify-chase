@@ -2,7 +2,7 @@
 import type React from "react";
 import { createContext, useContext, useRef, useState } from "react";
 import { Toast, type ToastMessage } from "primereact/toast";
-import { useI18nContext } from "@/frontend/i18n/i18n-react";
+import { useI18nContext } from "@/app/i18n/i18n-react";
 import { usePathname } from "next/navigation";
 
 export const ToastContext = createContext({} as ToastContextType);

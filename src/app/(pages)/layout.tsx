@@ -1,5 +1,5 @@
-import Footer from "@/frontend/components/home/footer";
-import Navbar from "@/frontend/components/home/navbar";
+import Footer from "@/app/components/home/footer";
+import Navbar from "@/app/components/home/navbar";
 
 export default ({
   children,

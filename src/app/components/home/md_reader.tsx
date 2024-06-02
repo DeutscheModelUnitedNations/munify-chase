@@ -1,8 +1,8 @@
 import { useState, useEffect } from "react";
-import { useI18nContext } from "@/frontend/i18n/i18n-react";
+import { useI18nContext } from "@/app/i18n/i18n-react";
 import Markdown from "markdown-to-jsx";
 import styles from "./md_reader.module.css";
-import { useToast } from "@/frontend/contexts/toast";
+import { useToast } from "@/app/contexts/toast";
 import FAIcon from "../font_awesome_icon";
 
 export default function MarkdownReader({ filename }: { filename: string }) {

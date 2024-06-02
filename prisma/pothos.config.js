@@ -12,9 +12,8 @@ module.exports = {
      *
      * ATTENTION: Mapping non String requires a conversion inside resolver, once GraphQl ID Input are coerced to String by definition. Default: false */
     mapIdFieldsToGraphqlId: true,
-
     replacer: (i) => {
-      return i.replace("../../../builder", "../../../src/resolvers/builder");
+      return i.replace("../../../../../builder", "@/api/resolvers/builder");
     },
   },
   crud: {
@@ -28,7 +27,7 @@ module.exports = {
     outputDir: "./prisma/generated/graphql",
     /** A function to replace generated source. Combined with global replacer config */
     replacer: (i) => {
-      return i.replace("../../../builder", "../../../src/resolvers/builder");
+      return i.replace("../../../../../builder", "@/api/resolvers/builder");
     },
     /** Export all crud queries/mutations/objects in objects.ts at root dir. Default: true */
     exportEverythingInObjectsDotTs: true,

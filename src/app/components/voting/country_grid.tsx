@@ -1,7 +1,7 @@
-import type { CountryCode, Voting } from "@/frontend/custom_types/custom_types";
+import type { CountryCode, Voting } from "@/app/custom_types/custom_types";
 import { useEffect, useState } from "react";
 import { SmallFlag } from "../flag_templates";
-import { useI18nContext } from "@/frontend/i18n/i18n-react";
+import { useI18nContext } from "@/app/i18n/i18n-react";
 import { AnimatePresence, motion } from "framer-motion";
 import FlipMove from "react-flip-move";
 import FAIcon from "../font_awesome_icon";

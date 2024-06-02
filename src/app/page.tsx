@@ -1,14 +1,14 @@
 "use client";
 import { useState } from "react";
-import { useI18nContext } from "@/frontend/i18n/i18n-react";
-import Navbar from "@/frontend/components/home/navbar";
-import LandingHero from "@/frontend/components/home/landing_hero";
-import CardSection from "@/frontend/components/home/card_section";
-import TextSection from "@/frontend/components/home/text_section";
-import Footer from "@/frontend/components/home/footer";
+import { useI18nContext } from "@/app/i18n/i18n-react";
+import Navbar from "@/app/components/home/navbar";
+import LandingHero from "@/app/components/home/landing_hero";
+import CardSection from "@/app/components/home/card_section";
+import TextSection from "@/app/components/home/text_section";
+import Footer from "@/app/components/home/footer";
 import { useMediaQuery } from "react-responsive";
 import Image from "next/image";
-import VersionModal from "@/frontend/components/version_modal";
+import VersionModal from "@/app/components/version_modal";
 
 export default function Home() {
   const { LL } = useI18nContext();

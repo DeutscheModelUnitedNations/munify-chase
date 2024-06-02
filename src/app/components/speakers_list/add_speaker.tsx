@@ -1,16 +1,16 @@
 import { useContext, useState } from "react";
-import { useI18nContext } from "@/frontend/i18n/i18n-react";
+import { useI18nContext } from "@/app/i18n/i18n-react";
 import Button from "@components/button";
 import useMousetrap from "mousetrap-react";
 import CountryAutoComplete from "./country_auto_complete";
 import { useBackend } from "@/contexts/backend";
 import type { $Enums } from "@prisma/generated/client";
-import { useToast } from "@/frontend/contexts/toast";
+import { useToast } from "@/app/contexts/toast";
 import { SpeakersListDataContext } from "@/contexts/speakers_list_data";
 import type {
   AllAvailableCountriesType,
   CountryDataType,
-} from "@/frontend/components/admin/delegations/add_delegation_dialog";
+} from "@/app/components/admin/delegations/add_delegation_dialog";
 
 /**
  * This component is used to display the overlay to add a speaker to the Speakers List on the Speakers List Page for chairs.

@@ -1,16 +1,10 @@
 "use client";
 import { useContext, useEffect, useState } from "react";
 
-import { useBackend } from "@/contexts/backend";
 import { useRouter } from "next/navigation";
-import ForwardBackButtons from "@/frontend/components/admin/onboarding/forward_back_bar";
+import ForwardBackButtons from "@/app/components/admin/onboarding/forward_back_bar";
 import { Accordion, AccordionTab } from "primereact/accordion";
-import AgendaItems from "@/frontend/components/admin/committee/agendaItems";
-import {
-  CommitteeIdContext,
-  ConferenceIdContext,
-} from "@/contexts/committee_data";
-import { useBackendCall } from "@/hooks/useBackendCall";
+import AgendaItems from "@/app/components/admin/committee/agendaItems";
 
 export default function OnboardingCommitteePage() {
   const router = useRouter();

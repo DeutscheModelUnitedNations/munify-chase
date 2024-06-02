@@ -6,7 +6,7 @@ import {
   findManyDelegationQueryObject,
   findUniqueDelegationQueryObject,
   updateOneDelegationMutationObject,
-} from "chase-backend/prisma/generated/graphql/Delegation";
+} from "../../../prisma/generated/graphql/Delegation";
 import { builder } from "./builder";
 
 builder.prismaObject("Delegation", {

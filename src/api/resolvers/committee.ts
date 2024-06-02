@@ -1,15 +1,15 @@
 import {
-  CommitteeAbbreviationFieldObject,
-  CommitteeAllowDelegationsToAddThemselvesToSpeakersListFieldObject,
-  CommitteeCategoryFieldObject,
   CommitteeIdFieldObject,
   CommitteeNameFieldObject,
-  CommitteeStateOfDebateFieldObject,
+  CommitteeAbbreviationFieldObject,
+  CommitteeCategoryFieldObject,
+  CommitteeWhiteboardContentFieldObject,
   CommitteeStatusFieldObject,
+  CommitteeStateOfDebateFieldObject,
   CommitteeStatusHeadlineFieldObject,
   CommitteeStatusUntilFieldObject,
-  CommitteeWhiteboardContentFieldObject,
-} from "chase-backend/prisma/generated/graphql/Committee";
+  CommitteeAllowDelegationsToAddThemselvesToSpeakersListFieldObject,
+} from "../../../prisma/generated/graphql/Committee";
 import { builder } from "./builder";
 
 builder.prismaObject("Committee", {

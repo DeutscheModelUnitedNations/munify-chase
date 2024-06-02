@@ -1,8 +1,8 @@
 import { useState, useEffect, useContext } from "react";
-import { useI18nContext } from "@/frontend/i18n/i18n-react";
+import { useI18nContext } from "@/app/i18n/i18n-react";
 import { HeaderInfoBox } from "../header_template";
 import { useBackend, type BackendInstanceType } from "@/contexts/backend";
-import { useToast } from "@/frontend/contexts/toast";
+import { useToast } from "@/app/contexts/toast";
 import { $Enums } from "@prisma/generated/client";
 import {
   ConferenceIdContext,

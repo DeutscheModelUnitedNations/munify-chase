@@ -1,12 +1,12 @@
 import type React from "react";
-import { useI18nContext } from "@/frontend/i18n/i18n-react";
-import Button from "@/frontend/components/button";
+import { useI18nContext } from "@/app/i18n/i18n-react";
+import Button from "@/app/components/button";
 import { DataTable } from "primereact/datatable";
 import { Column } from "primereact/column";
 import { ConfirmPopup } from "primereact/confirmpopup";
 import { Toolbar } from "primereact/toolbar";
 import type { BackendInstanceType } from "@/contexts/backend";
-import FAIcon from "@/frontend/components/font_awesome_icon";
+import FAIcon from "@/app/components/font_awesome_icon";
 
 type CommitteesType = Awaited<
   ReturnType<ReturnType<BackendInstanceType["conference"]>["committee"]["get"]>

@@ -1,6 +1,5 @@
 import SchemaBuilder from "@pothos/core";
 import PrismaPlugin from "@pothos/plugin-prisma";
-import { db } from "chase-backend/prisma/db";
 import { appConfiguration } from "../util/config";
 import type { PermissionsType } from "../auth/permissions";
 import ComplexityPlugin from "@pothos/plugin-complexity";
@@ -10,9 +9,10 @@ import TracingPlugin, {
 } from "@pothos/plugin-tracing";
 import PrismaUtils from "@pothos/plugin-prisma-utils";
 import type { Scalars } from "prisma-generator-pothos-codegen";
-import type { Prisma } from "chase-backend/prisma/generated/client";
-import type PrismaTypes from "chase-backend/prisma/generated/graphql/pothos-types";
 import type { IntrospectionResult } from "../auth/oidc";
+import { db } from "../../../prisma/db";
+import type { Prisma } from "../../../prisma/generated/client";
+import type PrismaTypes from "../../../prisma/generated/graphql/pothos-types";
 //TODO @pothos/plugin-smart-subscriptions
 
 export const builder = new SchemaBuilder<{

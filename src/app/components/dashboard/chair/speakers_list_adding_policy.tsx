@@ -1,15 +1,15 @@
 import { useContext } from "react";
-import { useI18nContext } from "@/frontend/i18n/i18n-react";
+import { useI18nContext } from "@/app/i18n/i18n-react";
 import { useBackend } from "@/contexts/backend";
-import { useToast } from "@/frontend/contexts/toast";
-import ConfigWrapper from "@/frontend/components/dashboard/chair/config_wrapper";
+import { useToast } from "@/app/contexts/toast";
+import ConfigWrapper from "@/app/components/dashboard/chair/config_wrapper";
 import { ToggleButton } from "primereact/togglebutton";
 import {
   CommitteeDataContext,
   CommitteeIdContext,
   ConferenceIdContext,
 } from "@/contexts/committee_data";
-import FAIcon from "@/frontend/components/font_awesome_icon";
+import FAIcon from "@/app/components/font_awesome_icon";
 
 export default function SpeakersListAddingPolicyWidget() {
   const { LL } = useI18nContext();

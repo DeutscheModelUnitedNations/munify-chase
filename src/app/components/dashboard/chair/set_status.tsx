@@ -1,11 +1,11 @@
 import { useState, useContext } from "react";
-import { ToastContext } from "@/frontend/contexts/toast";
-import { useI18nContext } from "@/frontend/i18n/i18n-react";
+import { ToastContext } from "@/app/contexts/toast";
+import { useI18nContext } from "@/app/i18n/i18n-react";
 import { useBackend } from "@/contexts/backend";
-import { useBackendTime } from "@/frontend/contexts/backendTime";
-import ConfigWrapper from "@/frontend/components/dashboard/chair/config_wrapper";
+import { useBackendTime } from "@/app/contexts/backendTime";
+import ConfigWrapper from "@/app/components/dashboard/chair/config_wrapper";
 import { Dropdown } from "primereact/dropdown";
-import Button from "@/frontend/components/button";
+import Button from "@/app/components/button";
 import { InputText } from "primereact/inputtext";
 import { Calendar } from "primereact/calendar";
 import {
@@ -14,7 +14,7 @@ import {
   ConferenceIdContext,
 } from "@/contexts/committee_data";
 import type { $Enums } from "@prisma/generated/client";
-import FAIcon from "@/frontend/components/font_awesome_icon";
+import FAIcon from "@/app/components/font_awesome_icon";
 
 export default function SetStatusWidget() {
   const { LL, locale } = useI18nContext();

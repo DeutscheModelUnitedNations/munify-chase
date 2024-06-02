@@ -11,7 +11,7 @@ import {
   findManySpeakersListQueryObject,
   findUniqueSpeakersListQueryObject,
   updateOneSpeakersListMutationObject,
-} from "chase-backend/prisma/generated/graphql/SpeakersList";
+} from "../../../prisma/generated/graphql/SpeakersList";
 import { builder } from "./builder";
 
 builder.prismaObject("SpeakersList", {

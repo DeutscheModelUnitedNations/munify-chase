@@ -1,4 +1,4 @@
-import type { TranslationFunctions } from "@/frontend/i18n/i18n-types";
+import type { TranslationFunctions } from "@/app/i18n/i18n-types";
 import { confirmDialog } from "primereact/confirmdialog";
 
 /**

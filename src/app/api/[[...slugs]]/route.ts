@@ -1,6 +1,7 @@
 import { server } from "@/api/server";
 import { Elysia } from "elysia";
 
+// this is a simple wrapper around the api
 const app = new Elysia({ prefix: "/api" }).use(server);
 
 export const GET = app.handle;

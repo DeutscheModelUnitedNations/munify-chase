@@ -1,9 +1,9 @@
-import WidgetBoxTemplate from "@/frontend/components/widget_box_template";
+import WidgetBoxTemplate from "@/app/components/widget_box_template";
 import { SelectButton } from "primereact/selectbutton";
-import ConfigWrapper from "@/frontend/components/dashboard/chair/config_wrapper";
-import getCountryNameByCode from "@/frontend/misc/get_country_name_by_code";
-import { NormalFlag as Flag } from "@/frontend/components/flag_templates";
-import { useI18nContext } from "@/frontend/i18n/i18n-react";
+import ConfigWrapper from "@/app/components/dashboard/chair/config_wrapper";
+import getCountryNameByCode from "@/app/misc/get_country_name_by_code";
+import { NormalFlag as Flag } from "@/app/components/flag_templates";
+import { useI18nContext } from "@/app/i18n/i18n-react";
 import type { BackendInstanceType } from "@/contexts/backend";
 import { $Enums } from "@prisma/generated/client";
 import FAIcon from "../font_awesome_icon";

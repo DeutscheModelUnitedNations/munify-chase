@@ -1,6 +1,5 @@
 import { type PureAbility, AbilityBuilder } from "@casl/ability";
 import { createPrismaAbility, type PrismaQuery } from "./casl-prisma.ts";
-import type { db } from "chase-backend/prisma/db";
 import { defineAbilitiesForConference } from "./entities/conference.ts";
 import { defineAbilitiesForCommittee } from "./entities/committee.ts";
 import { defineAbilitiesForAgendaItem } from "./entities/agendaIems.ts";
@@ -14,6 +13,7 @@ import { appConfiguration } from "../../util/config.ts";
 import { defineAbilitiesForNation } from "./entities/nation.ts";
 import { defineAbilitiesForUser } from "./entities/user.ts";
 import type { IntrospectionResult } from "../oidc.ts";
+import type { db } from "../../../../prisma/db.ts";
 
 const actions = ["list", "create", "read", "update", "delete"] as const;
 

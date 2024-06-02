@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import ForwardBackButtons from "@/frontend/components/admin/onboarding/forward_back_bar";
+import ForwardBackButtons from "@/app/components/admin/onboarding/forward_back_bar";
 
 export default function loginVorsitz(
   //   {

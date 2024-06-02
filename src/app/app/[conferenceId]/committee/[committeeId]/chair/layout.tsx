@@ -1,12 +1,12 @@
 "use client";
 import { useContext } from "react";
-import Navbar from "@/frontend/components/navbar/navbar";
-import NavButton from "@/frontend/components/navbar/button";
-import { useI18nContext } from "@/frontend/i18n/i18n-react";
+import Navbar from "@/app/components/navbar/navbar";
+import NavButton from "@/app/components/navbar/button";
+import { useI18nContext } from "@/app/i18n/i18n-react";
 import { MessageCountContext, MessageCountProvider } from "@/contexts/messages";
-import ExternalLinks from "@/frontend/components/navbar/external_links";
-import { SpeakersListMiniatureProvider } from "@/frontend/contexts/speakers_list_miniature";
-import SpeakersListMiniature from "@/frontend/components/dashboard/chair/speakers_list_miniature";
+import ExternalLinks from "@/app/components/navbar/external_links";
+import { SpeakersListMiniatureProvider } from "@/app/contexts/speakers_list_miniature";
+import SpeakersListMiniature from "@/app/components/dashboard/chair/speakers_list_miniature";
 
 export default function Chair_Pages_Layout({
   children,

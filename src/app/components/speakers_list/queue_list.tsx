@@ -1,9 +1,9 @@
 import { useState, useEffect, useContext } from "react";
 import Timeline from "@components/speakers_list/timeline";
-import getCountryNameByCode from "@/frontend/misc/get_country_name_by_code";
+import getCountryNameByCode from "@/app/misc/get_country_name_by_code";
 import WidgetBoxTemplate from "../widget_box_template";
 import { NormalFlag as Flag } from "@components/flag_templates";
-import { useI18nContext } from "@/frontend/i18n/i18n-react";
+import { useI18nContext } from "@/app/i18n/i18n-react";
 import Button from "@components/button";
 import { useBackend } from "@/contexts/backend";
 import {

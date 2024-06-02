@@ -1,7 +1,7 @@
-import Button from "@/frontend/components/button";
-import CountryAutoComplete from "@/frontend/components/speakers_list/country_auto_complete";
+import Button from "@/app/components/button";
+import CountryAutoComplete from "@/app/components/speakers_list/country_auto_complete";
 import { type BackendInstanceType, useBackend } from "@/contexts/backend";
-import { useI18nContext } from "@/frontend/i18n/i18n-react";
+import { useI18nContext } from "@/app/i18n/i18n-react";
 import useMousetrap from "mousetrap-react";
 import { Dialog } from "primereact/dialog";
 import { type FormEvent, useState } from "react";

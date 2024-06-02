@@ -2,8 +2,8 @@
 import Image from "next/image";
 import { Button } from "primereact/button";
 import Link from "next/link";
-import { useI18nContext } from "@/frontend/i18n/i18n-react";
-import Footer from "@/frontend/components/home/footer";
+import { useI18nContext } from "@/app/i18n/i18n-react";
+import Footer from "@/app/components/home/footer";
 
 export default function Home() {
   const { LL } = useI18nContext();

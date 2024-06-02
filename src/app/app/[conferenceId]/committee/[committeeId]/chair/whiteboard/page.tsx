@@ -1,10 +1,10 @@
 "use client";
 import { useContext, useEffect, useState } from "react";
-import Button from "@/frontend/components/button";
-import Whiteboard from "@/frontend/components/whiteboard";
-import { useI18nContext } from "@/frontend/i18n/i18n-react";
+import Button from "@/app/components/button";
+import Whiteboard from "@/app/components/whiteboard";
+import { useI18nContext } from "@/app/i18n/i18n-react";
 import { useBackend } from "@/contexts/backend";
-import { useToast } from "@/frontend/contexts/toast";
+import { useToast } from "@/app/contexts/toast";
 import {
   CommitteeDataContext,
   CommitteeIdContext,

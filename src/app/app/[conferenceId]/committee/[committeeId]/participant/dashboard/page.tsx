@@ -1,11 +1,11 @@
 "use client";
 import { useContext } from "react";
 import { ScrollPanel } from "primereact/scrollpanel";
-import DashboardHeader from "@/frontend/components/dashboard/header";
-import SpeakersListWidget from "@/frontend/components/dashboard/speakers_list";
-import TimerWidget from "@/frontend/components/dashboard/timer";
-import WhiteboardWidget from "@/frontend/components/dashboard/whiteboard";
-import ActionsWidget from "@/frontend/components/dashboard/actions";
+import DashboardHeader from "@/app/components/dashboard/header";
+import SpeakersListWidget from "@/app/components/dashboard/speakers_list";
+import TimerWidget from "@/app/components/dashboard/timer";
+import WhiteboardWidget from "@/app/components/dashboard/whiteboard";
+import ActionsWidget from "@/app/components/dashboard/actions";
 import { useUserIdent } from "@/contexts/user_ident";
 import {
   AgendaItemDataProvider,

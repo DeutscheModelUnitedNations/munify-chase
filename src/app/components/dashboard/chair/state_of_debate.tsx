@@ -1,16 +1,16 @@
 import { useState, useContext, useEffect } from "react";
-import { useI18nContext } from "@/frontend/i18n/i18n-react";
+import { useI18nContext } from "@/app/i18n/i18n-react";
 import { useBackend } from "@/contexts/backend";
-import ConfigWrapper from "@/frontend/components/dashboard/chair/config_wrapper";
-import Button from "@/frontend/components/button";
+import ConfigWrapper from "@/app/components/dashboard/chair/config_wrapper";
+import Button from "@/app/components/button";
 import {
   CommitteeDataContext,
   CommitteeIdContext,
   ConferenceIdContext,
 } from "@/contexts/committee_data";
-import { ToastContext } from "@/frontend/contexts/toast";
+import { ToastContext } from "@/app/contexts/toast";
 import { InputText } from "primereact/inputtext";
-import SmallInfoCard from "@/frontend/components/small_info_card";
+import SmallInfoCard from "@/app/components/small_info_card";
 
 export default function StateOfDebateWidget() {
   const { LL } = useI18nContext();

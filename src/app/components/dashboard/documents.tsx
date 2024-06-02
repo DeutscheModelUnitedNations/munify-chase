@@ -4,8 +4,8 @@ import Draft from "@components/dashboard/documents/draft";
 import Paper from "@components/dashboard/documents/paper";
 import { ScrollPanel } from "primereact/scrollpanel";
 import { Divider } from "primereact/divider";
-import type { Document } from "@/frontend/custom_types/custom_types";
-import { useI18nContext } from "@/frontend/i18n/i18n-react";
+import type { Document } from "@/app/custom_types/custom_types";
+import { useI18nContext } from "@/app/i18n/i18n-react";
 import FlipMove from "react-flip-move";
 
 /**

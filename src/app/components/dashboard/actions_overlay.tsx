@@ -4,7 +4,7 @@ import { Dialog } from "primereact/dialog";
 import { InputText } from "primereact/inputtext";
 import { InputTextarea } from "primereact/inputtextarea";
 import { Dropdown } from "primereact/dropdown";
-import { useI18nContext } from "@/frontend/i18n/i18n-react";
+import { useI18nContext } from "@/app/i18n/i18n-react";
 import {
   CommitteeIdContext,
   CommitteeDataContext,
@@ -12,7 +12,7 @@ import {
   ConferenceIdContext,
 } from "@/contexts/committee_data";
 import { MyDelegationContext, useUserIdent } from "@/contexts/user_ident";
-import { useToast } from "@/frontend/contexts/toast";
+import { useToast } from "@/app/contexts/toast";
 import type { $Enums } from "@prisma/generated/client";
 import { useBackend } from "@/contexts/backend";
 import FAIcon from "../font_awesome_icon";

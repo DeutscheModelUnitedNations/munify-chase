@@ -1,16 +1,16 @@
 import { useEffect, useState } from "react";
 import WidgetTemplate from "../widget_template";
 import NoDataPlaceholder from "../no_data_placeholder";
-import type { CountryCode, Voting } from "@/frontend/custom_types/custom_types";
-import VotingBar from "@/frontend/components/voting/voting_bar";
-import CastVote from "@/frontend/components/voting/cast_vote";
-import CountryGrid from "@/frontend/components/voting/country_grid";
+import type { CountryCode, Voting } from "@/app/custom_types/custom_types";
+import VotingBar from "@/app/components/voting/voting_bar";
+import CastVote from "@/app/components/voting/cast_vote";
+import CountryGrid from "@/app/components/voting/country_grid";
 import { ScrollPanel } from "primereact/scrollpanel";
-import InformationSection from "@/frontend/components/voting/information_section";
-import WaitingForResults from "@/frontend/components/voting/waiting_for_results";
-import { useI18nContext } from "@/frontend/i18n/i18n-react";
+import InformationSection from "@/app/components/voting/information_section";
+import WaitingForResults from "@/app/components/voting/waiting_for_results";
+import { useI18nContext } from "@/app/i18n/i18n-react";
 import FlipMove from "react-flip-move";
-import Button from "@/frontend/components/button";
+import Button from "@/app/components/button";
 
 /**
  * This Component is the main Component of the Voting Area. It combines several other

@@ -1,17 +1,17 @@
 "use client";
-import AddDelegationDialog from "@/frontend/components/admin/delegations/add_delegation_dialog";
-import DelegationsTable from "@/frontend/components/admin/delegations/delegations_table";
-import ForwardBackButtons from "@/frontend/components/admin/onboarding/forward_back_bar";
+import AddDelegationDialog from "@/app/components/admin/delegations/add_delegation_dialog";
+import DelegationsTable from "@/app/components/admin/delegations/delegations_table";
+import ForwardBackButtons from "@/app/components/admin/onboarding/forward_back_bar";
 import { useBackend } from "@/contexts/backend";
 import { useRouter } from "next/navigation";
 import { useEffect, useState, useContext } from "react";
 import useMousetrap from "mousetrap-react";
 import { ConferenceIdContext } from "@/contexts/committee_data";
-import { useToast } from "@/frontend/contexts/toast";
+import { useToast } from "@/app/contexts/toast";
 import type {
   CommitteesType,
   DelegationsType,
-} from "@/frontend/components/admin/delegations/delegations_table";
+} from "@/app/components/admin/delegations/delegations_table";
 
 export default function AdminDelegationsPage() {
   const { toastError } = useToast();

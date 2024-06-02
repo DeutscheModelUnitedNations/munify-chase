@@ -1,7 +1,7 @@
 import { useContext } from "react";
 import getCountryNameByCode from "../../misc/get_country_name_by_code";
 import HeaderTemplate from "../header_template";
-import { useI18nContext } from "@/frontend/i18n/i18n-react";
+import { useI18nContext } from "@/app/i18n/i18n-react";
 import { LargeFlag } from "../flag_templates";
 import { Skeleton } from "primereact/skeleton";
 import {
@@ -10,7 +10,7 @@ import {
   ConferenceIdContext,
 } from "@/contexts/committee_data";
 import { useUserIdent } from "@/contexts/user_ident";
-import { conferenceRoleTranslation } from "@/frontend/i18n/translation_utils";
+import { conferenceRoleTranslation } from "@/app/i18n/translation_utils";
 import { $Enums } from "@prisma/generated/client";
 
 /**

@@ -1,10 +1,10 @@
 import { useContext } from "react";
 import WidgetTemplate from "@components/widget_template";
-import { useI18nContext } from "@/frontend/i18n/i18n-react";
+import { useI18nContext } from "@/app/i18n/i18n-react";
 import { AnimatePresence, motion } from "framer-motion";
 import { Skeleton } from "primereact/skeleton";
 import Timer from "./countdown_timer";
-import { StatusTimer } from "@/frontend/contexts/status_timer";
+import { StatusTimer } from "@/app/contexts/status_timer";
 import FAIcon from "../font_awesome_icon";
 
 /**

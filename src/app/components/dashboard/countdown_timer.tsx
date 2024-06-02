@@ -1,4 +1,4 @@
-import { StatusTimer } from "@/frontend/contexts/status_timer";
+import { StatusTimer } from "@/app/contexts/status_timer";
 import { useContext } from "react";
 
 export default function Timer({

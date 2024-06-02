@@ -8,7 +8,7 @@ import {
   findManyNationQueryObject,
   findUniqueNationQueryObject,
   updateOneNationMutationObject,
-} from "chase-backend/prisma/generated/graphql/Nation";
+} from "../../../prisma/generated/graphql/Nation";
 import { builder } from "./builder";
 
 builder.prismaObject("Nation", {

@@ -1,16 +1,16 @@
 import { useState } from "react";
-import { useI18nContext } from "@/frontend/i18n/i18n-react";
+import { useI18nContext } from "@/app/i18n/i18n-react";
 import { useBackend, type BackendInstanceType } from "@/contexts/backend";
 import { ScrollPanel } from "primereact/scrollpanel";
-import { LargeFlag } from "@/frontend/components/flag_templates";
+import { LargeFlag } from "@/app/components/flag_templates";
 import { Tag } from "primereact/tag";
-import PrintMessageDocument from "@/frontend/components/inbox/print_message";
+import PrintMessageDocument from "@/app/components/inbox/print_message";
 import { Toolbar } from "primereact/toolbar";
-import Button from "@/frontend/components/button";
-import getCountryNameByCode from "@/frontend/misc/get_country_name_by_code";
-import SmallInfoCard from "@/frontend/components/small_info_card";
-import { messageCategoryTranslation } from "@/frontend/i18n/translation_utils";
-import { useToast } from "@/frontend/contexts/toast";
+import Button from "@/app/components/button";
+import getCountryNameByCode from "@/app/misc/get_country_name_by_code";
+import SmallInfoCard from "@/app/components/small_info_card";
+import { messageCategoryTranslation } from "@/app/i18n/translation_utils";
+import { useToast } from "@/app/contexts/toast";
 import { $Enums } from "@prisma/generated/client";
 import FAIcon from "../font_awesome_icon";
 

@@ -1,13 +1,13 @@
 import {
   CommitteeMemberIdFieldObject,
   CommitteeMemberPresenceFieldObject,
-  createOneCommitteeMemberMutationObject,
-  deleteOneCommitteeMemberMutationObject,
-  findFirstCommitteeMemberQueryObject,
   findManyCommitteeMemberQueryObject,
+  findFirstCommitteeMemberQueryObject,
   findUniqueCommitteeMemberQueryObject,
+  createOneCommitteeMemberMutationObject,
   updateOneCommitteeMemberMutationObject,
-} from "chase-backend/prisma/generated/graphql/CommitteeMember";
+  deleteOneCommitteeMemberMutationObject,
+} from "../../../prisma/generated/graphql/CommitteeMember";
 import { builder } from "./builder";
 
 builder.prismaObject("CommitteeMember", {

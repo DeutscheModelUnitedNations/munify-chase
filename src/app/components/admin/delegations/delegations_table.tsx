@@ -1,7 +1,7 @@
-import Button from "@/frontend/components/button";
-import { NormalFlag } from "@/frontend/components/flag_templates";
-import { useI18nContext } from "@/frontend/i18n/i18n-react";
-import getCountryNameByCode from "@/frontend/misc/get_country_name_by_code";
+import Button from "@/app/components/button";
+import { NormalFlag } from "@/app/components/flag_templates";
+import { useI18nContext } from "@/app/i18n/i18n-react";
+import getCountryNameByCode from "@/app/misc/get_country_name_by_code";
 import { Column } from "primereact/column";
 import { DataTable } from "primereact/datatable";
 import { Toolbar } from "primereact/toolbar";

@@ -4,7 +4,7 @@ import {
   CommitteeDataProvider,
   CommitteeIdContext,
 } from "@/contexts/committee_data";
-import { StatusTimerProvider } from "@/frontend/contexts/status_timer";
+import { StatusTimerProvider } from "@/app/contexts/status_timer";
 
 export default function Participant_Pages_Layout({
   children,

@@ -1,11 +1,11 @@
 import { type FormEvent, useState } from "react";
-import { useI18nContext } from "@/frontend/i18n/i18n-react";
+import { useI18nContext } from "@/app/i18n/i18n-react";
 import { Dialog } from "primereact/dialog";
 import { InputText } from "primereact/inputtext";
 import { InputSwitch } from "primereact/inputswitch";
 import { SelectButton } from "primereact/selectbutton";
 import { Dropdown } from "primereact/dropdown";
-import Button from "@/frontend/components/button";
+import Button from "@/app/components/button";
 import useMousetrap from "mousetrap-react";
 import type { $Enums } from "@prisma/generated/client";
 import type { BackendInstanceType } from "@/contexts/backend";

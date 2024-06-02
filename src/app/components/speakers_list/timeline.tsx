@@ -1,7 +1,7 @@
 import type React from "react";
 import FlipMove from "react-flip-move";
 import type { SpeakersListData } from "./speakers_list_block";
-import { useI18nContext } from "@/frontend/i18n/i18n-react";
+import { useI18nContext } from "@/app/i18n/i18n-react";
 
 /**
  * This Component is used in the Queue List Component on the Speakers List Page.

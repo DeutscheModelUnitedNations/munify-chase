@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { useI18nContext } from "@/frontend/i18n/i18n-react";
+import { useI18nContext } from "@/app/i18n/i18n-react";
 import CookieConsent from "react-cookie-consent";
 import Button from "./button";
 import Link from "next/link";

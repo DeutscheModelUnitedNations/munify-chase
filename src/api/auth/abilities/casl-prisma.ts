@@ -5,10 +5,7 @@ import {
   type Model,
 } from "@casl/prisma/runtime";
 import type { hkt } from "@casl/ability";
-import type {
-  Prisma,
-  PrismaClient,
-} from "chase-backend/prisma/generated/client";
+import type { Prisma, PrismaClient } from "../../../../prisma/generated/client";
 
 type ModelName = Prisma.ModelName;
 type ModelWhereInput = {

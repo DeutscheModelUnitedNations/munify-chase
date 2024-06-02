@@ -1,8 +1,8 @@
 import useMousetrap from "mousetrap-react";
 import { Dialog } from "primereact/dialog";
 import SpeakersListWidget from "../speakers_list";
-import { useSpeakersListMiniature } from "@/frontend/contexts/speakers_list_miniature";
-import Button from "@/frontend/components/button";
+import { useSpeakersListMiniature } from "@/app/contexts/speakers_list_miniature";
+import Button from "@/app/components/button";
 import { useRouter } from "next/navigation";
 
 export default function SpeakersListMiniature() {

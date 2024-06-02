@@ -1,11 +1,11 @@
 import WidgetTemplate from "../widget_template";
 import WidgetBoxTemplate from "../widget_box_template";
-import type { Motion } from "@/frontend/custom_types/custom_types";
+import type { Motion } from "@/app/custom_types/custom_types";
 import NoDataPlaceholder from "../no_data_placeholder";
 import { SmallFlag } from "../flag_templates";
-import { useI18nContext } from "@/frontend/i18n/i18n-react";
+import { useI18nContext } from "@/app/i18n/i18n-react";
 import FlipMove from "react-flip-move";
-import Button from "@/frontend/components/button";
+import Button from "@/app/components/button";
 import FAIcon from "../font_awesome_icon";
 
 /**

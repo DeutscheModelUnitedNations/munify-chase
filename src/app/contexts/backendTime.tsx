@@ -1,13 +1,13 @@
 "use client";
 import type React from "react";
 import { createContext, useContext, useEffect, useState } from "react";
-import { useQuery } from "@/frontend/gqty/gqty";
+import { useAuthorizedQuery } from "../hooks/gqty/useAuthorizedQuery";
 
 export const BackendTimeContext = createContext({} as BackendTimeContextType);
 export const useBackendTime = () => useContext(BackendTimeContext);
 
 export const BackendTime = ({ children }: { children: React.ReactNode }) => {
-  const { serverTime } = useQuery();
+  const { serverTime } = useAuthorizedQuery();
   const [currentTime, setCurrentTime] = useState(new Date());
 
   useEffect(() => {

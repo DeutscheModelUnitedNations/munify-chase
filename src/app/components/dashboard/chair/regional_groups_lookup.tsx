@@ -1,5 +1,5 @@
 import { useState, useContext } from "react";
-import { useI18nContext } from "@/frontend/i18n/i18n-react";
+import { useI18nContext } from "@/app/i18n/i18n-react";
 import { useBackend } from "@/contexts/backend";
 import { useBackendCall } from "@/hooks/useBackendCall";
 import regionalGroups from "@/data/regional_groups.json";
@@ -7,9 +7,9 @@ import {
   CommitteeIdContext,
   ConferenceIdContext,
 } from "@/contexts/committee_data";
-import { alpha3ToAlpha2 } from "@/frontend/misc/countryCodeUtils";
-import getCountryNameByCode from "@/frontend/misc/get_country_name_by_code";
-import { NormalFlag } from "@/frontend/components/flag_templates";
+import { alpha3ToAlpha2 } from "@/app/misc/countryCodeUtils";
+import getCountryNameByCode from "@/app/misc/get_country_name_by_code";
+import { NormalFlag } from "@/app/components/flag_templates";
 import { Dialog } from "primereact/dialog";
 import { InputText } from "primereact/inputtext";
 

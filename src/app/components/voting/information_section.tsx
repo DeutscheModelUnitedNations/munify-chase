@@ -1,7 +1,7 @@
-import type { CountryCode, Voting } from "@/frontend/custom_types/custom_types";
-import getCountryNameByCode from "@/frontend/misc/get_country_name_by_code";
+import type { CountryCode, Voting } from "@/app/custom_types/custom_types";
+import getCountryNameByCode from "@/app/misc/get_country_name_by_code";
 import { LargeFlag } from "@components/flag_templates";
-import { useI18nContext } from "@/frontend/i18n/i18n-react";
+import { useI18nContext } from "@/app/i18n/i18n-react";
 import FAIcon from "../font_awesome_icon";
 
 /**

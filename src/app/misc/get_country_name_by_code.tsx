@@ -1,6 +1,6 @@
 import nations from "../data/nations";
 import nonStateActors from "../data/nsa";
-import specialPersons from "@/frontend/data/specials";
+import specialPersons from "@/app/data/specials";
 
 /**
  * This function is used to get the name of a country in a given language.

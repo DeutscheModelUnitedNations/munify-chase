@@ -1,13 +1,13 @@
 "use client";
 import { useState } from "react";
-import Motions from "@/frontend/components/voting/motions";
-import VotingArea from "@/frontend/components/voting/voting";
-import { useI18nContext } from "@/frontend/i18n/i18n-react";
+import Motions from "@/app/components/voting/motions";
+import VotingArea from "@/app/components/voting/voting";
+import { useI18nContext } from "@/app/i18n/i18n-react";
 import { motionTestData } from "@/test_data";
-import type { Motion } from "@/frontend/custom_types/custom_types";
+import type { Motion } from "@/app/custom_types/custom_types";
 import { TabMenu } from "primereact/tabmenu";
 import { SplitButton } from "primereact/splitbutton";
-import FAIcon from "@/frontend/components/font_awesome_icon";
+import FAIcon from "@/app/components/font_awesome_icon";
 
 type Tabs = "current-motions" | "recent-motions" | "recent-votings";
 

@@ -1,6 +1,6 @@
 import type React from "react";
 import { useContext } from "react";
-import { useI18nContext } from "@/frontend/i18n/i18n-react";
+import { useI18nContext } from "@/app/i18n/i18n-react";
 import { SpeakersListDataContext } from "@/contexts/speakers_list_data";
 
 /**

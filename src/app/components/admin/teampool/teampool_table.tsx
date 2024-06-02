@@ -1,7 +1,7 @@
 import type React from "react";
 import { useEffect, useState } from "react";
-import { useI18nContext } from "@/frontend/i18n/i18n-react";
-import Button from "@/frontend/components/button";
+import { useI18nContext } from "@/app/i18n/i18n-react";
+import Button from "@/app/components/button";
 import { DataTable } from "primereact/datatable";
 import { Column } from "primereact/column";
 import { ConfirmPopup } from "primereact/confirmpopup";

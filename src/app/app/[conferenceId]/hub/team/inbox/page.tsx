@@ -2,7 +2,7 @@
 import { useState, useEffect, useContext } from "react";
 import { useBackend } from "@/contexts/backend";
 import { ConferenceIdContext } from "@/contexts/committee_data";
-import InboxTemplate from "@/frontend/components/inbox/inbox_template";
+import InboxTemplate from "@/app/components/inbox/inbox_template";
 import { pollBackendCall } from "@/hooks/pollBackendCall";
 
 //TODO we should use a context for message storage

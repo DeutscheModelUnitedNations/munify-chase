@@ -1,8 +1,8 @@
-import WidgetTemplate from "@/frontend/components/widget_template";
-import SpeakerBlock from "@/frontend/components/speakers_list/speaker_block";
-import CommentBlock from "@/frontend/components/speakers_list/comment_block";
-import QueueBlock from "@/frontend/components/speakers_list/queue_block";
-import { useI18nContext } from "@/frontend/i18n/i18n-react";
+import WidgetTemplate from "@/app/components/widget_template";
+import SpeakerBlock from "@/app/components/speakers_list/speaker_block";
+import CommentBlock from "@/app/components/speakers_list/comment_block";
+import QueueBlock from "@/app/components/speakers_list/queue_block";
+import { useI18nContext } from "@/app/i18n/i18n-react";
 import "./markdown.scss";
 import { AnimatePresence, motion } from "framer-motion";
 import { $Enums } from "@prisma/generated/client";

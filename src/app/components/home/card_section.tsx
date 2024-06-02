@@ -1,6 +1,6 @@
 import type React from "react";
-import { useI18nContext } from "@/frontend/i18n/i18n-react";
-import Card from "@components/home/card";
+import { useI18nContext } from "@/app/i18n/i18n-react";
+import Card from "@/app/components/home/card";
 import { motion } from "framer-motion";
 
 export default function CardSection() {

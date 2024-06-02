@@ -7,7 +7,7 @@ import {
   findManyConferenceMemberQueryObject,
   findUniqueConferenceMemberQueryObject,
   updateOneConferenceMemberMutationObject,
-} from "chase-backend/prisma/generated/graphql/ConferenceMember";
+} from "../../../prisma/generated/graphql/ConferenceMember";
 import { builder } from "./builder";
 
 builder.prismaObject("ConferenceMember", {

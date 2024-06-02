@@ -1,4 +1,4 @@
-import { useI18nContext } from "@/frontend/i18n/i18n-react";
+import { useI18nContext } from "@/app/i18n/i18n-react";
 import FAIcon from "../font_awesome_icon";
 
 /**

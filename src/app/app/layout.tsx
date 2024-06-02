@@ -1,5 +1,4 @@
 "use client";
-import { WebStorageStateStore } from "oidc-client-ts";
 import type React from "react";
 import { useEffect, useState } from "react";
 import { AuthProvider, hasAuthParams, useAuth } from "react-oidc-context";
@@ -19,11 +18,6 @@ export default function layout({
         //TODO
         console.log("Signin callback called");
       }}
-      userStore={
-        typeof window !== "undefined"
-          ? new WebStorageStateStore({ store: window.localStorage })
-          : undefined
-      }
     >
       <Auth>{children}</Auth>
     </AuthProvider>

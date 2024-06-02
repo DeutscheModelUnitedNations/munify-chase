@@ -1,10 +1,10 @@
-import { useI18nContext } from "@/frontend/i18n/i18n-react";
+import { useI18nContext } from "@/app/i18n/i18n-react";
 import { useBackend, type BackendInstanceType } from "@/contexts/backend";
-import { useBackendTime } from "@/frontend/contexts/backendTime";
-import { SmallFlag } from "@/frontend/components/flag_templates";
+import { useBackendTime } from "@/app/contexts/backendTime";
+import { SmallFlag } from "@/app/components/flag_templates";
 import { Tag } from "primereact/tag";
-import getCountryNameByCode from "@/frontend/misc/get_country_name_by_code";
-import { useToast } from "@/frontend/contexts/toast";
+import getCountryNameByCode from "@/app/misc/get_country_name_by_code";
+import { useToast } from "@/app/contexts/toast";
 import { $Enums } from "@prisma/generated/client";
 import FAIcon from "../font_awesome_icon";
 

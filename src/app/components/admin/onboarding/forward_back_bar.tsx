@@ -1,5 +1,5 @@
-import { useI18nContext } from "@/frontend/i18n/i18n-react";
-import Button from "@/frontend/components/button";
+import { useI18nContext } from "@/app/i18n/i18n-react";
+import Button from "@/app/components/button";
 import useMousetrap from "mousetrap-react";
 
 interface ForwardBackButtonsProps {

@@ -1,9 +1,9 @@
 "use client";
 import type React from "react";
 import { createContext, useContext, useEffect, useState } from "react";
-import { ToastContext } from "@/frontend/contexts/toast";
-import { useBackendTime } from "@/frontend/contexts/backendTime";
-import { useI18nContext } from "@/frontend/i18n/i18n-react";
+import { ToastContext } from "@/app/contexts/toast";
+import { useBackendTime } from "@/app/contexts/backendTime";
+import { useI18nContext } from "@/app/i18n/i18n-react";
 import { $Enums } from "../../../prisma/generated/client";
 
 export const StatusTimer = createContext(

@@ -1,4 +1,4 @@
-import { appConfiguration } from "../src/util/config";
+import { appConfiguration } from "@/api/util/config";
 import { Prisma, PrismaClient } from "./generated/client";
 
 // injects the actual types of the Prisma models into the data models at runtime

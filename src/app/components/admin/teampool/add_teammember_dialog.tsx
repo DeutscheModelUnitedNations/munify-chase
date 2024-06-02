@@ -1,11 +1,11 @@
 import { type FormEvent, useRef, useState } from "react";
-import { useI18nContext } from "@/frontend/i18n/i18n-react";
+import { useI18nContext } from "@/app/i18n/i18n-react";
 
 import { Dialog } from "primereact/dialog";
 import { Toast } from "primereact/toast";
 import { InputText } from "primereact/inputtext";
 import { RadioButton } from "primereact/radiobutton";
-import Button from "@/frontend/components/button";
+import Button from "@/app/components/button";
 import useMousetrap from "mousetrap-react";
 import type { ConferenceRole } from "@prisma/generated/client";
 

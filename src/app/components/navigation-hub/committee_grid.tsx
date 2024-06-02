@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useI18nContext } from "@/frontend/i18n/i18n-react";
+import { useI18nContext } from "@/app/i18n/i18n-react";
 import { useBackend, type BackendInstanceType } from "@/contexts/backend";
 import { Skeleton } from "primereact/skeleton";
 import Link from "next/link";
@@ -9,7 +9,7 @@ import {
   CommitteeDataProvider,
   CommitteeIdContext,
 } from "@/contexts/committee_data";
-import { StatusTimerProvider } from "@/frontend/contexts/status_timer";
+import { StatusTimerProvider } from "@/app/contexts/status_timer";
 import { pollBackendCall } from "@/hooks/pollBackendCall";
 import FAIcon from "../font_awesome_icon";
 

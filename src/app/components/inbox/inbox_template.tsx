@@ -1,7 +1,7 @@
-import { useI18nContext } from "@/frontend/i18n/i18n-react";
+import { useI18nContext } from "@/app/i18n/i18n-react";
 import type { BackendInstanceType } from "@/contexts/backend";
 import { ScrollPanel } from "primereact/scrollpanel";
-import NoDataPlaceholder from "@/frontend/components/no_data_placeholder";
+import NoDataPlaceholder from "@/app/components/no_data_placeholder";
 import MessageCard from "./message_card";
 import MessageDetails from "./message_details";
 import FAIcon from "../font_awesome_icon";

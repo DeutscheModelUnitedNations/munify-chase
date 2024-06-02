@@ -1,7 +1,7 @@
 import { useBackend } from "@/contexts/backend";
 import { ConferenceIdContext } from "@/contexts/committee_data";
 import { useBackendCall } from "@/hooks/useBackendCall";
-import { useI18nContext } from "@/frontend/i18n/i18n-react";
+import { useI18nContext } from "@/app/i18n/i18n-react";
 import { useContext, useState } from "react";
 import NavButton from "./button";
 import VersionModal from "../version_modal";

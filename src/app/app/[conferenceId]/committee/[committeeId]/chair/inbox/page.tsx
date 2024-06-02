@@ -1,12 +1,12 @@
 "use client";
 import { useState } from "react";
-import InboxTemplate from "@/frontend/components/inbox/inbox_template";
-import Button from "@/frontend/components/button";
-import { ActionsOverlayResearchService } from "@/frontend/components/dashboard/actions_overlay";
-import { useQuery } from "@/gqty";
+import InboxTemplate from "@/app/components/inbox/inbox_template";
+import Button from "@/app/components/button";
+import { ActionsOverlayResearchService } from "@/app/components/dashboard/actions_overlay";
+import { useAuthorizedQuery } from "@/app/hooks/gqty/useAuthorizedQuery";
 
 export default function InboxPage() {
-  const { findManyMessages } = useQuery();
+  const { findManyMessages } = useAuthorizedQuery();
   const [selectedMessageId, setSelectedMessageId] =
     useState<ReturnType<typeof findManyMessages>[number]["id"]>();
   const [displayResearchDialog, setDisplayResearchDialog] = useState(false);

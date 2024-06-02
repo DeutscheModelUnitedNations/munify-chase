@@ -1,8 +1,8 @@
 import { useContext, useState } from "react";
 import { InputMask } from "primereact/inputmask";
-import { useI18nContext } from "@/frontend/i18n/i18n-react";
+import { useI18nContext } from "@/app/i18n/i18n-react";
 import { Button } from "primereact/button";
-import { ToastContext } from "@/frontend/contexts/toast";
+import { ToastContext } from "@/app/contexts/toast";
 import { useBackend } from "@/contexts/backend";
 import { SpeakersListDataContext } from "@/contexts/speakers_list_data";
 import FAIcon from "../font_awesome_icon";

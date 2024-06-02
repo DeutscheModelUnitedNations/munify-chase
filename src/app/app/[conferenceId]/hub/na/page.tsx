@@ -1,10 +1,9 @@
 "use client";
-import { useI18nContext } from "@/frontend/i18n/i18n-react";
-import CommitteeGrid from "@/frontend/components/navigation-hub/committee_grid";
-import Button from "@/frontend/components/button";
-import { useBackend } from "@/contexts/backend";
+import { useI18nContext } from "@/app/i18n/i18n-react";
+import CommitteeGrid from "@/app/components/navigation-hub/committee_grid";
+import Button from "@/app/components/button";
 import { useRouter } from "next/navigation";
-import { useToast } from "@/frontend/contexts/toast";
+import { useToast } from "@/app/contexts/toast";
 
 export default function NAHubPage({
   params,

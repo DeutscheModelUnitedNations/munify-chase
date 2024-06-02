@@ -1,4 +1,4 @@
-import { db } from "chase-backend/prisma/db";
+import { db } from "../../../prisma/db";
 import {
   ConferenceEndFieldObject,
   ConferenceFeedbackWebsiteFieldObject,
@@ -12,7 +12,7 @@ import {
   findManyConferenceQueryObject,
   findUniqueConferenceQueryObject,
   updateOneConferenceMutationObject,
-} from "chase-backend/prisma/generated/graphql/Conference";
+} from "../../../prisma/generated/graphql/Conference";
 import { builder } from "./builder";
 
 builder.prismaObject("Conference", {

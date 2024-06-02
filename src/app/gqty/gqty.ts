@@ -12,13 +12,17 @@ import {
 } from "./schema.generated";
 
 const queryFetcher: QueryFetcher = async (
-  { query, variables, operationName },
+  { query, variables, operationName, extensions },
   fetchOptions,
 ) => {
   const response = await fetch("/api/graphql", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
+      Authorization: extensions?.access_token
+        ? `Bearer ${extensions.access_token}`
+        : // biome-ignore lint/suspicious/noExplicitAny:
+          (undefined as any),
     },
     body: JSON.stringify({
       query,

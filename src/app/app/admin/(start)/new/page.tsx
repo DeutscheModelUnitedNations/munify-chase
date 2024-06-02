@@ -3,13 +3,13 @@ import type React from "react";
 import { useState } from "react";
 import Image from "next/image";
 
-import { useI18nContext } from "@/frontend/i18n/i18n-react";
+import { useI18nContext } from "@/app/i18n/i18n-react";
 import { InputText } from "primereact/inputtext";
 import { Calendar } from "primereact/calendar";
-import Button from "@/frontend/components/button";
+import Button from "@/app/components/button";
 import { useRouter } from "next/navigation";
-import { useToast } from "@/frontend/contexts/toast";
-import { useMutation } from "@/frontend/gqty/gqty";
+import { useToast } from "@/app/contexts/toast";
+import { useMutation } from "@/app/gqty/gqty";
 
 export default function loginVorsitz() {
   const { LL } = useI18nContext();

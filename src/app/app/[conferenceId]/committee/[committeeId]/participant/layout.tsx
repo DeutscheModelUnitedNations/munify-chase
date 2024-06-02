@@ -1,14 +1,14 @@
 "use client";
 
-import Navbar from "@/frontend/components/navbar/navbar";
-import NavButton from "@/frontend/components/navbar/button";
-import { useI18nContext } from "@/frontend/i18n/i18n-react";
+import Navbar from "@/app/components/navbar/navbar";
+import NavButton from "@/app/components/navbar/button";
+import { useI18nContext } from "@/app/i18n/i18n-react";
 import { MyDelegationProvider, useUserIdent } from "@/contexts/user_ident";
 import { useContext } from "react";
 import { ConferenceIdContext } from "@/contexts/committee_data";
 import { $Enums } from "@prisma/generated/client";
-import ExternalLinks from "@/frontend/components/navbar/external_links";
-import { useFaGlobe } from "@/frontend/hooks/useFaGlobe";
+import ExternalLinks from "@/app/components/navbar/external_links";
+import { useFaGlobe } from "@/app/hooks/useFaGlobe";
 
 export default function Participant_Pages_Layout({
   children,

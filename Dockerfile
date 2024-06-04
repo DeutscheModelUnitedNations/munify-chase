@@ -1,4 +1,9 @@
-FROM oven/bun AS install
+FROM oven/bun AS dual-runtime
+WORKDIR /temp
+# we need to use node and bun for generating prisma files, see https://github.com/prisma/prisma/issues/21241
+RUN curl -fsSL https://nodejs.org/dist/v20.14.0/node-v20.14.0-linux-x64.tar.xz | tar -xJv -C /usr/local --strip-components=1
+
+FROM dual-runtime AS install
 COPY package.json bun.lockb /temp/dependencies/
 RUN cd /temp/dependencies && bun install --frozen-lockfile
 FROM oven/bun AS install-prisma-only
@@ -10,8 +15,6 @@ FROM install as prisma-builder
 WORKDIR /temp/prisma
 COPY prisma ./prisma/
 COPY /temp/dependencies/node_modules ./node_modules/
-# we need to use node and bun for generating prisma files, see https://github.com/prisma/prisma/issues/21241
-RUN curl -fsSL https://nodejs.org/dist/v20.14.0/node-v20.14.0-linux-x64.tar.xz | tar -xJv -C /usr/local --strip-components=1
 RUN bunx prisma generate --schema=./prisma/schema.prisma
 
 FROM prisma-builder AS builder
@@ -26,7 +29,7 @@ RUN bun run build
 COPY ./public ./.next/standalone/public/
 COPY ./.next/static ./.next/standalone/.next/static/
 
-FROM oven/bun AS release
+FROM dual-runtime AS release
 WORKDIR /app/prod
 COPY --from=builder /app/staging/.next/standalone ./
 COPY --from=prisma-builder /temp/prisma/prisma/migrations ./prisma/migrations/

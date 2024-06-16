@@ -1,5 +1,6 @@
 {
   "scalarTypes": {
-    "DateTime": "Date"
+    "DateTime": "string",
+    "Date": "string"
   }
 }

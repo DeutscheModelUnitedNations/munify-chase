@@ -1,3 +1,8 @@
+function replaceBuilderImports(input) {
+  const correctPath = "@/api/resolvers/builder";
+  return input.replaceAll(/(\.\.\/)+builder/g, correctPath);
+}
+
 module.exports = {
   /** Input type generation config */
   inputs: {
@@ -12,9 +17,7 @@ module.exports = {
      *
      * ATTENTION: Mapping non String requires a conversion inside resolver, once GraphQl ID Input are coerced to String by definition. Default: false */
     mapIdFieldsToGraphqlId: true,
-    replacer: (i) => {
-      return i.replace("../../../../../builder", "@/api/resolvers/builder");
-    },
+    replacer: replaceBuilderImports,
   },
   crud: {
     /** How to import the Prisma namespace at the objects.ts file. Default `"import { Prisma } from '.prisma/client';"`. Please use "resolverImports" to import prismaClient at resolvers. */
@@ -26,9 +29,7 @@ module.exports = {
     /** Directory to generate crud code into from project root. Default: `'./generated'` */
     outputDir: "./prisma/generated/graphql",
     /** A function to replace generated source. Combined with global replacer config */
-    replacer: (i) => {
-      return i.replace("../../../../../builder", "@/api/resolvers/builder");
-    },
+    replacer: replaceBuilderImports,
     /** Export all crud queries/mutations/objects in objects.ts at root dir. Default: true */
     exportEverythingInObjectsDotTs: true,
     /** Map all Prisma fields with "@id" attribute to Graphql "ID" Scalar. Default: 'Objects' */

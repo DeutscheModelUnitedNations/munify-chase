@@ -3,13 +3,13 @@ import { useState, useEffect, useContext } from "react";
 import { useI18nContext } from "@/app/i18n/i18n-react";
 import { useBackend } from "@/contexts/backend";
 import { useBackendCall } from "@/hooks/useBackendCall";
-import regionalGroups from "@/app/data/regional_groups.json";
+import regionalGroups from "@/app/util/data/regional_groups.json";
 import {
   CommitteeIdContext,
   ConferenceIdContext,
 } from "@/contexts/committee_data";
-import { alpha3ToAlpha2 } from "@/app/misc/countryCodeUtils";
-import getCountryNameByCode from "@/app/misc/get_country_name_by_code";
+import { alpha3ToAlpha2 } from "@/app/util/countryCodeUtils";
+import getCountryNameByCode from "@/app/util/get_country_name_by_code";
 import { NormalFlag } from "@/app/components/flag_templates";
 import { AnimatePresence, motion } from "framer-motion";
 import WorldMap from "react-svg-worldmap";

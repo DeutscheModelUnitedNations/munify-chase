@@ -1,5 +1,5 @@
 import Document from "@components/dashboard/documents/document_template";
-import type { CountryCode } from "@/app/custom_types/custom_types";
+import type { CountryCode } from "@/app/util/types";
 
 /**
  * This Component is used in the Documents Widget on the Dashboard.

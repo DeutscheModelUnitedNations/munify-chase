@@ -1,6 +1,6 @@
 import WidgetTemplate from "../widget_template";
 import WidgetBoxTemplate from "../widget_box_template";
-import type { Motion } from "@/app/custom_types/custom_types";
+import type { Motion } from "@/app/util/types";
 import NoDataPlaceholder from "../no_data_placeholder";
 import { SmallFlag } from "../flag_templates";
 import { useI18nContext } from "@/app/i18n/i18n-react";

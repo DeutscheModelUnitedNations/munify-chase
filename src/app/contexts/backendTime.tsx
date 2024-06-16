@@ -9,18 +9,28 @@ export const useBackendTime = () => useContext(BackendTimeContext);
 export const BackendTime = ({ children }: { children: React.ReactNode }) => {
   const { serverTime } = useAuthorizedQuery();
   const [currentTime, setCurrentTime] = useState(new Date());
+  const [offset, setOffset] = useState<number | null>(null);
 
   useEffect(() => {
-    const backendTimestamp = serverTime ?? new Date(Date.now()); // in case we are not logged in we fall back to our own time
-    const ourTimestamp = new Date();
-    const offset = backendTimestamp.getTime() - ourTimestamp.getTime();
+    if (serverTime) {
+      const serverDate = new Date(serverTime);
+      const clientDate = new Date();
+      const calculatedOffset = serverDate.getTime() - clientDate.getTime();
+      setOffset(calculatedOffset);
+      // Set the initial current time based on the offset
+      setCurrentTime(new Date(clientDate.getTime() + calculatedOffset));
+    }
+  }, [serverTime]);
 
-    const interval = setInterval(() => {
-      const newTime = new Date(new Date().getTime() + offset);
-      setCurrentTime(newTime);
-    }, 500);
-    return () => clearInterval(interval);
-  }, []);
+  useEffect(() => {
+    if (offset !== null) {
+      const interval = setInterval(() => {
+        setCurrentTime(new Date(new Date().getTime() + offset));
+      }, 500); // 60000 ms = 1 minute
+
+      return () => clearInterval(interval);
+    }
+  }, [offset]);
 
   return (
     <BackendTimeContext.Provider value={{ currentTime }}>

@@ -1,4 +1,4 @@
-import type { CountryCode } from "@/app/custom_types/custom_types";
+import type { CountryCode } from "@/app/util/types";
 import Document from "@components/dashboard/documents/document_template";
 
 /**

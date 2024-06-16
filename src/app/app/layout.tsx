@@ -2,6 +2,9 @@
 import type React from "react";
 import { useEffect, useState } from "react";
 import { AuthProvider, hasAuthParams, useAuth } from "react-oidc-context";
+import { BackendTime } from "../contexts/backendTime";
+import { env } from "next-runtime-env";
+import { usePathname, useSearchParams } from "next/navigation";
 
 export default function layout({
   children,
@@ -10,16 +13,19 @@ export default function layout({
 }) {
   return (
     <AuthProvider
-      authority="http://localhost:8080"
-      client_id="issuer1"
-      redirect_uri="http://localhost:3000/test"
+      authority={env("NEXT_PUBLIC_OIDC_AUTHORITY")}
+      client_id={env("NEXT_PUBLIC_OIDC_CLIENT")}
+      // TODO real navigation target
+      redirect_uri={`${typeof window !== "undefined" ? window.origin : ""}/${usePathname()}?${useSearchParams()}`}
       automaticSilentRenew={true}
       onSigninCallback={() => {
         //TODO
         console.log("Signin callback called");
       }}
     >
-      <Auth>{children}</Auth>
+      <Auth>
+        <BackendTime>{children}</BackendTime>
+      </Auth>
     </AuthProvider>
   );
 }
@@ -44,6 +50,14 @@ function Auth({
       setHasTriedSignin(true);
     }
   }, [auth, hasTriedSignin]);
+
+  if (auth.isLoading) {
+    return <div>Signing you in/out...</div>;
+  }
+
+  if (!auth.isAuthenticated) {
+    return <div>Unable to log in</div>;
+  }
 
   return children;
 }

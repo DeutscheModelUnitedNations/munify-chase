@@ -7,8 +7,8 @@ import {
   CommitteeIdContext,
   ConferenceIdContext,
 } from "@/contexts/committee_data";
-import { alpha3ToAlpha2 } from "@/app/misc/countryCodeUtils";
-import getCountryNameByCode from "@/app/misc/get_country_name_by_code";
+import { alpha3ToAlpha2 } from "@/app/util/countryCodeUtils";
+import getCountryNameByCode from "@/app/util/get_country_name_by_code";
 import { NormalFlag } from "@/app/components/flag_templates";
 import { Dialog } from "primereact/dialog";
 import { InputText } from "primereact/inputtext";

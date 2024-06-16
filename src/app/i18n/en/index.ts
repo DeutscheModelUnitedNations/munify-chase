@@ -48,7 +48,7 @@ const en = {
       LOGIN_CHAIR: "Chair",
       DOCUMENTATION: "Documentation",
       FAQ: "FAQs",
-      LOGIN_PARTICIPANT: "Login",
+      TO_APP: "Go to App",
     },
     heroCards: {
       CARD_1_TITLE: "Debates",

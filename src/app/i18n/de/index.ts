@@ -48,7 +48,7 @@ const de = {
       LOGIN_CHAIR: "Vorsitz",
       DOCUMENTATION: "Dokumentation",
       FAQ: "FAQ",
-      LOGIN_PARTICIPANT: "Login",
+      TO_APP: "Zur App",
     },
     heroCards: {
       CARD_1_TITLE: "Debatten",

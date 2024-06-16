@@ -11,7 +11,7 @@ import { Dialog } from "primereact/dialog";
 import Button from "../button";
 import type { BackendInstanceType } from "@/contexts/backend";
 import { useI18nContext } from "@/app/i18n/i18n-react";
-import getCountryNameByCode from "@/app/misc/get_country_name_by_code";
+import getCountryNameByCode from "@/app/util/get_country_name_by_code";
 import type { TranslationFunctions } from "@/app/i18n/i18n-types";
 import { $Enums } from "@prisma/generated/client";
 

@@ -15,6 +15,8 @@ const queryFetcher: QueryFetcher = async (
   { query, variables, operationName, extensions },
   fetchOptions,
 ) => {
+  console.log(extensions);
+  
   const response = await fetch("/api/graphql", {
     method: "POST",
     headers: {

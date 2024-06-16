@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import WidgetTemplate from "../widget_template";
 import NoDataPlaceholder from "../no_data_placeholder";
-import type { CountryCode, Voting } from "@/app/custom_types/custom_types";
+import type { CountryCode, Voting } from "@/app/util/types";
 import VotingBar from "@/app/components/voting/voting_bar";
 import CastVote from "@/app/components/voting/cast_vote";
 import CountryGrid from "@/app/components/voting/country_grid";

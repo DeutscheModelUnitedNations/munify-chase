@@ -3,7 +3,7 @@ import { useBackend, type BackendInstanceType } from "@/contexts/backend";
 import { useBackendTime } from "@/app/contexts/backendTime";
 import { SmallFlag } from "@/app/components/flag_templates";
 import { Tag } from "primereact/tag";
-import getCountryNameByCode from "@/app/misc/get_country_name_by_code";
+import getCountryNameByCode from "@/app/util/get_country_name_by_code";
 import { useToast } from "@/app/contexts/toast";
 import { $Enums } from "@prisma/generated/client";
 import FAIcon from "../font_awesome_icon";

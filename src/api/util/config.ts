@@ -46,7 +46,7 @@ export const appConfiguration = {
     ),
   },
   oidc: {
-    issuer: requireEnvInProd("OIDC_ISSUER", "http://localhost:8080"),
-    clientId: requireEnvInProd("OIDC_CLIENT_ID", "chase"),
+    issuer: requireEnvInProd("OIDC_AUTHORITY", "http://localhost:8080"),
+    clientId: requireEnvInProd("OIDC_CLIENT", "issuer1"),
   },
 };

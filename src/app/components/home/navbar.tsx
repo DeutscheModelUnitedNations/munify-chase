@@ -4,7 +4,6 @@ import { useI18nContext } from "@/app/i18n/i18n-react";
 import Link from "next/link";
 import Image from "next/image";
 import Button from "@/app/components/button";
-import { useRouter } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
 import { useMediaQuery } from "react-responsive";
 
@@ -145,11 +144,7 @@ export default function Navbar({
                 }}
               >
                 <div className="w-full flex flex-col justify-center items-center gap-4">
-                  <NavButtons
-                    isDocs={isDocs}
-                    isFAQ={isFAQ}
-                    withAddButton={false}
-                  />
+                  <NavButtons isDocs={isDocs} isFAQ={isFAQ} />
                 </div>
               </motion.div>
             )}
@@ -163,47 +158,39 @@ export default function Navbar({
 function NavButtons({
   isDocs = false,
   isFAQ = false,
-  withAddButton = true,
 }: {
   isDocs?: boolean;
   isFAQ?: boolean;
-  withAddButton?: boolean;
 }) {
   const { LL } = useI18nContext();
-  const router = useRouter();
 
   return (
     <>
-      {withAddButton && (
+      <Link href="/docs">
         <Button
-          faIcon="plus"
-          onClick={() => router.push("/app/admin/new")}
-          text
+          label={LL.home.navbar.DOCUMENTATION()}
+          severity="secondary"
+          faIcon="book"
+          disabled={isDocs}
           size="small"
         />
-      )}{" "}
-      <Button
-        label={LL.home.navbar.DOCUMENTATION()}
-        onClick={() => router.push("/docs")}
-        severity="secondary"
-        faIcon="book"
-        disabled={isDocs}
-        size="small"
-      />
-      <Button
-        label={LL.home.navbar.FAQ()}
-        onClick={() => router.push("/faq")}
-        severity="secondary"
-        faIcon="question-circle"
-        disabled={isFAQ}
-        size="small"
-      />
-      <Button
-        label={LL.home.navbar.LOGIN_PARTICIPANT()}
-        onClick={() => router.push("/login")}
-        faIcon="right-to-bracket"
-        size="small"
-      />
+      </Link>
+      <Link href="/faq">
+        <Button
+          label={LL.home.navbar.FAQ()}
+          severity="secondary"
+          faIcon="question-circle"
+          disabled={isFAQ}
+          size="small"
+        />
+      </Link>
+      <Link href="/app">
+        <Button
+          label={LL.home.navbar.TO_APP()}
+          faIcon="right-to-bracket"
+          size="small"
+        />
+      </Link>
     </>
   );
 }

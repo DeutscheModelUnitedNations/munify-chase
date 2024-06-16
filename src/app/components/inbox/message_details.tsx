@@ -7,7 +7,7 @@ import { Tag } from "primereact/tag";
 import PrintMessageDocument from "@/app/components/inbox/print_message";
 import { Toolbar } from "primereact/toolbar";
 import Button from "@/app/components/button";
-import getCountryNameByCode from "@/app/misc/get_country_name_by_code";
+import getCountryNameByCode from "@/app/util/get_country_name_by_code";
 import SmallInfoCard from "@/app/components/small_info_card";
 import { messageCategoryTranslation } from "@/app/i18n/translation_utils";
 import { useToast } from "@/app/contexts/toast";

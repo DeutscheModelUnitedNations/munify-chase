@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import type { Voting, VotingMajority } from "@/app/custom_types/custom_types";
+import type { Voting, VotingMajority } from "@/app/util/types";
 
 /**
  * This Component is used in the Voting Component.

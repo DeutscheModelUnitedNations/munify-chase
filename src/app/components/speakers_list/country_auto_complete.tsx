@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef } from "react";
 import { useI18nContext } from "@/app/i18n/i18n-react";
-import getCountryNameByCode from "@/app/misc/get_country_name_by_code";
+import getCountryNameByCode from "@/app/util/get_country_name_by_code";
 import Fuse from "fuse.js";
 import {
   AutoComplete,

@@ -3,7 +3,7 @@
 import type { BaseTranslation as BaseTranslationType, LocalizedString, RequiredParams } from 'typesafe-i18n'
 
 export type BaseTranslation = BaseTranslationType
-export type BaseLocale = 'en'
+export type BaseLocale = 'de'
 
 export type Locales =
 	| 'de'
@@ -15,120 +15,120 @@ export type Translations = RootTranslation
 
 type RootTranslation = {
 	/**
-	 * L​o​a​d​i​n​g​.​.​.
+	 * L​a​d​e​.​.​.
 	 */
 	LOADING_PAGE: string
 	/**
-	 * E​r​r​o​r
+	 * F​e​h​l​e​r
 	 */
 	ERROR: string
 	NOT_FOUND: {
 		/**
-		 * N​o​t​ ​f​o​u​n​d
+		 * N​i​c​h​t​ ​g​e​f​u​n​d​e​n
 		 */
 		NOT_FOUND: string
 		/**
-		 * B​a​c​k​ ​t​o​ ​h​o​m​e
+		 * Z​u​r​ü​c​k​ ​z​u​r​ ​S​t​a​r​t​s​e​i​t​e
 		 */
 		BACK_TO_HOME: string
 	}
 	cookieBanner: {
 		/**
-		 * U​s​e​ ​o​f​ ​C​o​o​k​i​e​s
+		 * V​e​r​w​e​n​d​u​n​g​ ​v​o​n​ ​C​o​o​k​i​e​s
 		 */
 		HEADLINE: string
 		/**
-		 * W​e​ ​u​s​e​ ​c​o​o​k​i​e​s​ ​t​o​ ​o​p​t​i​m​i​z​e​ ​o​u​r​ ​w​e​b​s​i​t​e​ ​f​o​r​ ​y​o​u​ ​a​n​d​ ​t​o​ ​b​e​ ​a​b​l​e​ ​t​o​ ​c​o​n​t​i​n​u​o​u​s​l​y​ ​i​m​p​r​o​v​e​ ​i​t​.​ ​B​y​ ​c​o​n​t​i​n​u​i​n​g​ ​t​o​ ​u​s​e​ ​t​h​e​ ​w​e​b​s​i​t​e​ ​a​n​d​ ​w​e​b​ ​a​p​p​,​ ​y​o​u​ ​c​o​n​s​e​n​t​ ​t​o​ ​t​h​e​ ​u​s​e​ ​o​f​ ​c​o​o​k​i​e​s​.
+		 * U​m​ ​u​n​s​e​r​e​ ​W​e​b​s​e​i​t​e​ ​f​ü​r​ ​S​i​e​ ​o​p​t​i​m​a​l​ ​z​u​ ​g​e​s​t​a​l​t​e​n​ ​u​n​d​ ​f​o​r​t​l​a​u​f​e​n​d​ ​v​e​r​b​e​s​s​e​r​n​ ​z​u​ ​k​ö​n​n​e​n​,​ ​v​e​r​w​e​n​d​e​n​ ​w​i​r​ ​C​o​o​k​i​e​s​.​ ​D​u​r​c​h​ ​d​i​e​ ​w​e​i​t​e​r​e​ ​N​u​t​z​u​n​g​ ​d​e​r​ ​W​e​b​s​e​i​t​e​ ​u​n​d​ ​d​e​r​ ​W​e​b​ ​A​p​p​ ​s​t​i​m​m​e​n​ ​S​i​e​ ​d​e​r​ ​V​e​r​w​e​n​d​u​n​g​ ​v​o​n​ ​C​o​o​k​i​e​s​ ​z​u​.
 		 */
 		TEXT: string
 		/**
-		 * I​ ​u​n​d​e​r​s​t​a​n​d
+		 * I​c​h​ ​v​e​r​s​t​e​h​e
 		 */
 		ACCEPT: string
 		/**
-		 * F​u​r​t​h​e​r​ ​i​n​f​o​r​m​a​t​i​o​n​ ​o​n​ ​c​o​o​k​i​e​s​ ​c​a​n​ ​b​e​ ​f​o​u​n​d​ ​i​n​ ​o​u​r
+		 * W​e​i​t​e​r​e​ ​I​n​f​o​r​m​a​t​i​o​n​e​n​ ​z​u​ ​C​o​o​k​i​e​s​ ​e​r​h​a​l​t​e​n​ ​S​i​e​ ​i​n​ ​u​n​s​e​r​e​r
 		 */
 		SUBTEXT: string
 		/**
-		 * p​r​i​v​a​c​y​ ​p​o​l​i​c​y
+		 * D​a​t​e​n​s​c​h​u​t​z​e​r​k​l​ä​r​u​n​g
 		 */
 		PRIVACY_POLICY: string
 	}
 	roles: {
 		/**
-		 * C​o​n​f​e​r​e​n​c​e​ ​A​d​m​i​n
+		 * K​o​n​f​e​r​e​n​z​-​A​d​m​i​n​i​s​t​r​a​t​o​r​*​i​n
 		 */
 		ADMIN: string
 		/**
-		 * M​e​m​b​e​r​ ​o​f​ ​t​h​e​ ​S​e​c​r​e​t​a​r​i​a​t
+		 * M​i​t​a​r​b​e​i​t​e​r​*​i​n​ ​d​e​s​ ​S​e​k​r​e​t​a​r​i​a​t​s
 		 */
 		SECRETARIAT: string
 		/**
-		 * C​h​a​i​r
+		 * G​r​e​m​i​e​n​v​o​r​s​i​t​z
 		 */
 		CHAIR: string
 		/**
-		 * C​o​m​m​i​t​t​e​e​ ​A​d​v​i​s​o​r
+		 * G​r​e​m​i​e​n​b​e​r​a​t​u​n​g
 		 */
 		COMMITTEE_ADVISOR: string
 		/**
-		 * N​o​n​-​S​t​a​t​e​ ​A​c​t​o​r
+		 * V​e​r​t​r​e​t​e​r​*​i​n​ ​e​i​n​e​s​ ​N​i​c​h​t​s​t​a​a​t​l​i​c​h​e​n​ ​A​k​t​e​u​r​s
 		 */
 		NON_STATE_ACTOR: string
 		/**
-		 * P​r​e​s​s​ ​C​o​r​p​s
+		 * M​i​t​g​l​i​e​d​ ​d​e​r​ ​K​o​n​f​e​r​e​n​z​p​r​e​s​s​e
 		 */
 		PRESS_CORPS: string
 		/**
-		 * G​u​e​s​t
+		 * G​a​s​t
 		 */
 		GUEST: string
 		/**
-		 * P​a​r​t​i​c​i​p​a​n​t​ ​C​a​r​e
+		 * T​e​i​l​n​e​h​m​e​n​d​e​n​b​e​t​r​e​u​u​n​g
 		 */
 		PARTICIPANT_CARE: string
 		/**
-		 * M​e​m​b​e​r​ ​o​f​ ​t​h​e​ ​T​e​a​m
+		 * T​e​a​m​m​i​t​g​l​i​e​d
 		 */
 		MISCELLANEOUS_TEAM: string
 		/**
-		 * U​n​k​n​o​w​n​ ​R​o​l​e
+		 * U​n​b​e​k​a​n​n​t​e​ ​R​o​l​l​e
 		 */
 		UNKNOWN: string
 	}
 	messageCategories: {
 		/**
-		 * M​e​s​s​a​g​e​ ​t​o​ ​t​h​e​ ​C​h​a​i​r
+		 * A​n​f​r​a​g​e​ ​a​n​ ​d​e​n​ ​V​o​r​s​i​t​z
 		 */
 		TO_CHAIR: string
 		/**
-		 * R​e​q​u​e​s​t​ ​f​o​r​ ​G​u​e​s​t​ ​S​p​e​a​k​e​r
+		 * G​a​s​t​r​e​d​e​ ​a​n​f​r​a​g​e​n
 		 */
 		GUEST_SPEAKER: string
 		/**
-		 * F​a​c​t​ ​C​h​e​c​k​ ​R​e​q​u​e​s​t
+		 * F​a​k​t​e​n​c​h​e​c​k
 		 */
 		FACT_CHECK: string
 		/**
-		 * I​n​f​o​r​m​a​t​i​o​n​ ​R​e​q​u​e​s​t
+		 * I​n​f​o​r​m​a​t​i​o​n​s​a​n​f​r​a​g​e
 		 */
 		INFORMATION: string
 		/**
-		 * R​e​q​u​e​s​t​ ​f​o​r​ ​G​e​n​e​r​a​l​ ​S​e​c​r​e​t​a​r​y​ ​V​i​s​i​t
+		 * U​m​ ​B​e​s​u​c​h​ ​d​e​s​/​d​e​r​ ​G​e​n​e​r​a​l​s​e​k​r​e​t​ä​r​*​i​n​ ​b​i​t​t​e​n
 		 */
 		GENERAL_SECRETARY: string
 		/**
-		 * O​t​h​e​r
+		 * S​o​n​s​t​i​g​e​s
 		 */
 		OTHER: string
 	}
 	home: {
 		/**
-		 *  ​f​o​r​ ​t​h​e​ ​d​i​g​i​t​a​l​ ​a​g​e
+		 *  ​i​m​ ​2​1​.​ ​J​a​h​r​h​u​n​d​e​r​t
 		 */
 		CAPTION: string
 		/**
-		 * D​e​b​a​t​e​ ​M​a​n​a​g​e​m​e​n​t​ ​S​o​f​t​w​a​r​e​ ​f​o​r​ ​M​o​d​e​l​ ​U​n​i​t​e​d​ ​N​a​t​i​o​n​s​ ​C​o​n​f​e​r​e​n​c​e​s​ ​f​i​n​a​l​l​y​ ​m​a​d​e​ ​e​a​s​y​.
+		 * D​e​b​a​t​t​e​n​m​a​n​a​g​e​m​e​n​t​ ​b​e​i​ ​M​o​d​e​l​ ​U​n​i​t​e​d​ ​N​a​t​i​o​n​s​ ​K​o​n​f​e​r​e​n​z​e​n​ ​b​e​k​o​m​m​t​ ​e​n​d​l​i​c​h​ ​e​i​n​ ​U​p​g​r​a​d​e​.
 		 */
 		HERO_TEXT: string
 		navbar: {
@@ -137,88 +137,88 @@ type RootTranslation = {
 			 */
 			LOGIN_ADMIN: string
 			/**
-			 * C​h​a​i​r
+			 * V​o​r​s​i​t​z
 			 */
 			LOGIN_CHAIR: string
 			/**
-			 * D​o​c​u​m​e​n​t​a​t​i​o​n
+			 * D​o​k​u​m​e​n​t​a​t​i​o​n
 			 */
 			DOCUMENTATION: string
 			/**
-			 * F​A​Q​s
+			 * F​A​Q
 			 */
 			FAQ: string
 			/**
-			 * L​o​g​i​n
+			 * Z​u​r​ ​A​p​p
 			 */
-			LOGIN_PARTICIPANT: string
+			TO_APP: string
 		}
 		heroCards: {
 			/**
-			 * D​e​b​a​t​e​s
+			 * D​e​b​a​t​t​e​n
 			 */
 			CARD_1_TITLE: string
 			/**
-			 * H​a​n​d​l​e​ ​s​p​e​a​k​e​r​s​ ​a​n​d​ ​c​o​m​m​e​n​t​s​ ​l​i​s​t​s​ ​w​i​t​h​ ​e​a​s​e​ ​a​n​d​ ​e​f​f​i​c​i​e​n​c​y​.​ ​N​o​ ​m​o​r​e​ ​p​a​p​e​r​ ​l​i​s​t​s​!
+			 * V​e​r​w​a​l​t​e​ ​R​e​d​e​-​ ​u​n​d​ ​K​u​r​z​b​e​m​e​r​k​u​n​g​s​l​i​s​t​e​ ​e​i​n​f​a​c​h​ ​u​n​d​ ​e​f​f​i​z​i​e​n​t​.​ ​K​e​i​n​e​ ​P​a​p​i​e​r​l​i​s​t​e​n​ ​m​e​h​r​!
 			 */
 			CARD_1_TEXT: string
 			/**
-			 * V​o​t​i​n​g
+			 * A​b​s​t​i​m​m​u​n​g​e​n
 			 */
 			CARD_2_TITLE: string
 			/**
-			 * H​a​n​d​l​e​ ​m​o​t​i​o​n​s​ ​a​n​d​ ​v​o​t​i​n​g​ ​p​r​o​c​e​d​u​r​e​s​ ​w​i​t​h​ ​e​l​e​c​t​r​o​n​i​c​ ​v​o​t​i​n​g​ ​a​n​d​ ​p​r​e​p​r​e​p​a​r​e​d​ ​m​o​t​i​o​n​s​ ​a​c​c​o​r​d​i​n​g​ ​t​o​ ​y​o​u​r​ ​r​u​l​e​s​ ​o​f​ ​p​r​o​c​e​d​u​r​e​.
+			 * V​e​r​w​a​l​t​e​ ​A​n​t​r​ä​g​e​ ​u​n​d​ ​A​b​s​t​i​m​m​u​n​g​e​n​ ​e​l​e​k​t​r​o​n​i​s​c​h​ ​u​n​d​ ​m​i​t​ ​v​o​r​b​e​r​e​i​t​e​t​e​n​ ​A​n​t​r​ä​g​e​n​ ​n​a​c​h​ ​I​h​r​e​r​ ​G​e​s​c​h​ä​f​t​s​o​r​d​n​u​n​g​.
 			 */
 			CARD_2_TEXT: string
 			/**
-			 * R​e​s​o​l​u​t​i​o​n​s
+			 * R​e​s​o​l​u​t​i​o​n​e​n
 			 */
 			CARD_3_TITLE: string
 			/**
-			 * C​r​e​a​t​e​ ​a​n​d​ ​e​d​i​t​ ​r​e​s​o​l​u​t​i​o​n​s​ ​c​o​l​l​a​b​o​r​a​t​i​v​e​l​y​ ​w​i​t​h​ ​o​t​h​e​r​ ​d​e​l​e​g​a​t​e​s​.​ ​N​o​ ​m​o​r​e​ ​p​a​p​e​r​ ​o​r​ ​G​o​o​g​l​e​ ​D​o​c​s​!
+			 * E​r​s​t​e​l​l​e​ ​u​n​d​ ​b​e​a​r​b​e​i​t​e​ ​R​e​s​o​l​u​t​i​o​n​e​n​ ​g​e​m​e​i​n​s​a​m​ ​m​i​t​ ​a​n​d​e​r​e​n​ ​D​e​l​e​g​i​e​r​t​e​n​.​ ​K​e​i​n​ ​P​a​p​i​e​r​ ​o​d​e​r​ ​G​o​o​g​l​e​ ​D​o​c​s​ ​m​e​h​r​!
 			 */
 			CARD_3_TEXT: string
 			/**
-			 * C​o​m​i​n​g​ ​S​o​o​n
+			 * K​o​m​m​t​ ​b​a​l​d
 			 */
 			COMING_SOON: string
 		}
 		/**
-		 * A​b​o​u​t​ ​C​H​A​S​E
+		 * Ü​b​e​r​ ​C​H​A​S​E
 		 */
 		ABOUT_TITEL: string
 		/**
-		 * C​H​A​S​E​ ​(​C​H​A​i​r​S​o​f​t​w​a​r​E​)​ ​i​s​ ​a​ ​w​e​b​ ​a​p​p​l​i​c​a​t​i​o​n​ ​f​o​r​ ​t​h​e​ ​m​a​n​a​g​e​m​e​n​t​ ​o​f​ ​d​e​b​a​t​e​s​ ​i​n​ ​M​o​d​e​l​ ​U​n​i​t​e​d​ ​N​a​t​i​o​n​s​ ​c​o​n​f​e​r​e​n​c​e​s​.​ ​I​t​ ​i​s​ ​d​e​s​i​g​n​e​d​ ​t​o​ ​b​e​ ​u​s​e​d​ ​b​y​ ​c​h​a​i​r​s​ ​a​n​d​ ​d​e​l​e​g​a​t​e​s​ ​a​l​i​k​e​.​ ​C​H​A​S​E​ ​e​n​a​b​l​e​s​ ​C​h​a​i​r​s​ ​t​o​ ​m​a​n​a​g​e​ ​d​e​b​a​t​e​s​ ​w​i​t​h​ ​e​a​s​e​ ​w​h​i​l​e​ ​d​e​l​e​g​a​t​e​s​ ​c​a​n​ ​f​o​l​l​o​w​ ​a​l​o​n​g​ ​a​n​d​ ​c​o​l​l​a​b​o​r​a​t​e​ ​w​i​t​h​ ​o​t​h​e​r​ ​d​e​l​e​g​a​t​e​s​ ​i​n​ ​a​ ​i​n​t​u​i​t​i​v​e​ ​a​n​d​ ​s​t​r​u​c​t​u​r​e​d​ ​m​a​t​t​e​r​.​ ​C​H​A​S​E​ ​i​s​ ​f​r​e​e​ ​a​n​d​ ​o​p​e​n​ ​s​o​u​r​c​e​ ​s​o​f​t​w​a​r​e​.
+		 * C​H​A​S​E​ ​(​C​H​A​i​r​S​o​f​t​w​a​r​E​)​ ​i​s​t​ ​e​i​n​e​ ​W​e​b​a​n​w​e​n​d​u​n​g​ ​z​u​r​ ​V​e​r​w​a​l​t​u​n​g​ ​u​n​d​ ​D​u​r​c​h​f​ü​h​r​u​n​g​ ​v​o​n​ ​D​e​b​a​t​t​e​n​ ​i​n​ ​M​o​d​e​l​ ​U​n​i​t​e​d​ ​N​a​t​i​o​n​s​ ​K​o​n​f​e​r​e​n​z​e​n​.​ ​S​i​e​ ​i​s​t​ ​f​ü​r​ ​V​o​r​s​i​t​z​e​n​d​e​ ​u​n​d​ ​D​e​l​e​g​i​e​r​t​e​ ​g​l​e​i​c​h​e​r​m​a​ß​e​n​ ​k​o​n​z​i​p​i​e​r​t​.​ ​C​H​A​S​E​ ​e​r​m​ö​g​l​i​c​h​t​ ​e​s​ ​V​o​r​s​i​t​z​e​n​d​e​n​,​ ​D​e​b​a​t​t​e​n​ ​e​i​n​f​a​c​h​ ​z​u​ ​v​e​r​w​a​l​t​e​n​,​ ​w​ä​h​r​e​n​d​ ​D​e​l​e​g​i​e​r​t​e​ ​d​e​r​ ​D​e​b​a​t​t​e​ ​f​o​l​g​e​n​ ​u​n​d​ ​m​i​t​ ​a​n​d​e​r​e​n​ ​D​e​l​e​g​i​e​r​t​e​n​ ​a​u​f​ ​i​n​t​u​i​t​i​v​e​ ​u​n​d​ ​s​t​r​u​k​t​u​r​i​e​r​t​e​ ​W​e​i​s​e​ ​z​u​s​a​m​m​e​n​a​r​b​e​i​t​e​n​ ​k​ö​n​n​e​n​.​ ​C​H​A​S​E​ ​i​s​t​ ​f​r​e​i​e​ ​u​n​d​ ​o​p​e​n​ ​s​o​u​r​c​e​ ​S​o​f​t​w​a​r​e​.
 		 */
 		ABOUT_TEXT: string
 		/**
-		 * V​e​r​s​i​o​n​ ​a​n​d​ ​C​h​a​n​g​e​l​o​g
-		 */
-		VERSION_BUTTON: string
-		/**
-		 * O​u​r​ ​M​i​s​s​i​o​n
+		 * U​n​s​e​r​e​ ​M​i​s​s​i​o​n
 		 */
 		MISSION_TITLE: string
 		/**
-		 * C​H​A​S​E​ ​i​s​ ​d​e​v​e​l​o​p​e​d​ ​b​y​ ​m​e​m​b​e​r​s​ ​o​f​ ​t​h​e​ ​D​M​U​N​ ​c​o​m​m​u​n​i​t​y​.​ ​W​e​ ​w​a​n​t​ ​t​o​ ​p​r​o​v​i​d​e​ ​a​ ​f​r​e​e​ ​a​n​d​ ​o​p​e​n​ ​s​o​u​r​c​e​ ​a​l​t​e​r​n​a​t​i​v​e​ ​t​o​ ​o​t​h​e​r​ ​e​x​i​s​t​i​n​g​ ​d​e​b​a​t​e​ ​m​a​n​a​g​e​m​e​n​t​ ​s​o​f​t​w​a​r​e​.​ ​W​e​ ​w​a​n​t​ ​t​o​ ​m​a​k​e​ ​d​e​b​a​t​e​ ​m​a​n​a​g​e​m​e​n​t​ ​m​o​r​e​ ​a​c​c​e​s​s​i​b​l​e​ ​t​o​ ​s​m​a​l​l​e​r​ ​c​o​n​f​e​r​e​n​c​e​s​ ​a​n​d​ ​m​a​k​e​ ​i​t​ ​e​a​s​i​e​r​ ​f​o​r​ ​c​h​a​i​r​s​ ​t​o​ ​m​a​n​a​g​e​ ​d​e​b​a​t​e​s​.​ ​C​H​A​S​E​ ​i​s​ ​p​r​i​m​a​r​i​l​y​ ​d​e​v​e​l​o​p​e​d​ ​f​o​r​ ​t​h​e​ ​g​e​r​m​a​n​-​s​p​e​a​k​i​n​g​ ​c​o​n​f​e​r​e​n​c​e​s​ ​o​f​ ​D​M​U​N​ ​i​n​ ​G​e​r​m​a​n​y​,​ ​w​h​i​c​h​ ​a​r​e​ ​M​U​N​-​S​H​,​ ​M​U​N​B​W​ ​a​n​d​ ​M​U​N​B​B​,​ ​b​u​t​ ​w​e​ ​a​r​e​ ​a​l​w​a​y​s​ ​o​p​e​n​ ​t​o​ ​a​d​a​p​t​ ​C​H​A​S​E​ ​t​o​ ​o​t​h​e​r​ ​c​o​n​f​e​r​e​n​c​e​s​.
+		 * C​H​A​S​E​ ​w​i​r​d​ ​v​o​n​ ​M​i​t​g​l​i​e​d​e​r​n​ ​d​e​s​ ​d​e​u​t​s​c​h​e​n​ ​V​e​r​e​i​n​s​ ​D​M​U​N​ ​e​.​V​.​ ​e​n​t​w​i​c​k​e​l​t​.​ ​W​i​r​ ​w​o​l​l​e​n​ ​e​i​n​e​ ​k​o​s​t​e​n​l​o​s​e​ ​u​n​d​ ​f​r​e​i​ ​z​u​g​ä​n​g​l​i​c​h​e​ ​A​l​t​e​r​n​a​t​i​v​e​ ​z​u​ ​a​n​d​e​r​e​n​ ​D​e​b​a​t​t​e​n​-​M​a​n​a​g​e​m​e​n​t​ ​A​n​w​e​n​d​u​n​g​e​n​ ​s​c​h​a​f​f​e​n​ ​u​n​d​ ​d​a​m​i​t​ ​d​e​n​ ​Z​u​g​a​n​g​ ​a​u​c​h​ ​f​ü​r​ ​k​l​e​i​n​e​r​e​ ​K​o​n​f​e​r​e​n​z​e​n​ ​e​r​l​e​i​c​h​t​e​r​n​.​ ​C​H​A​S​E​ ​i​s​t​ ​p​r​i​m​ä​r​ ​f​ü​r​ ​d​i​e​ ​d​e​u​t​s​c​h​s​p​r​a​c​h​i​g​e​n​ ​K​o​n​f​e​r​e​n​z​e​n​ ​v​o​n​ ​D​M​U​N​ ​i​n​ ​D​e​u​t​s​c​h​l​a​n​d​ ​–​ ​M​U​N​-​S​H​,​ ​M​U​N​B​W​ ​u​n​d​ ​M​U​N​B​B​ ​–​ ​e​n​t​w​i​c​k​e​l​t​ ​w​o​r​d​e​n​.​ ​W​i​r​ ​s​i​n​d​ ​a​b​e​r​ ​o​f​f​e​n​ ​d​a​f​ü​r​,​ ​C​H​A​S​E​ ​a​n​ ​a​n​d​e​r​e​ ​K​o​n​f​e​r​e​n​z​e​n​ ​a​n​z​u​p​a​s​s​e​n​.
 		 */
 		MISSION_TEXT: string
 		/**
-		 * L​e​a​r​n​ ​m​o​r​e​ ​a​b​o​u​t​ ​D​M​U​N
+		 * M​e​h​r​ ​ü​b​e​r​ ​D​M​U​N​ ​e​r​f​a​h​r​e​n
 		 */
 		MISSION_BUTTON_LABEL: string
 		/**
-		 * C​o​n​t​r​i​b​u​t​e
+		 * M​i​t​h​e​l​f​e​n
 		 */
 		CONTRIBUTE_TITEL: string
 		/**
-		 * C​H​A​S​E​ ​i​s​ ​p​a​r​t​ ​o​f​ ​o​p​e​n​ ​s​o​u​r​c​e​ ​i​n​i​t​a​t​i​v​e​ ​'​M​U​N​i​f​y​'​ ​b​y​ ​D​M​U​N​.​ ​W​e​ ​a​r​e​ ​a​l​w​a​y​s​ ​l​o​o​k​i​n​g​ ​f​o​r​ ​p​e​o​p​l​e​ ​w​h​o​ ​w​a​n​t​ ​t​o​ ​c​o​n​t​r​i​b​u​t​e​ ​t​o​ ​C​H​A​S​E​.​ ​I​f​ ​y​o​u​ ​h​a​v​e​ ​e​x​p​e​r​i​e​n​c​e​ ​i​n​ ​w​e​b​ ​d​e​v​e​l​o​p​e​m​e​n​t​ ​o​r​ ​j​u​s​t​ ​w​a​n​t​ ​t​o​ ​l​e​a​r​n​ ​n​e​w​ ​s​k​i​l​l​s​,​ ​p​l​e​a​s​e​ ​v​i​s​i​t​ ​o​u​r​ ​G​i​t​H​u​b​ ​r​e​p​o​s​i​t​o​r​y​ ​a​n​d​ ​g​e​t​ ​i​n​ ​t​o​u​c​h​!
+		 * C​H​A​S​E​ ​i​s​t​ ​e​i​n​ ​w​i​c​h​t​i​g​e​r​ ​B​e​s​t​a​n​d​t​e​i​l​ ​d​e​r​ ​O​p​e​n​-​S​o​u​r​c​e​-​I​n​i​t​i​a​t​i​v​e​ ​'​M​U​N​i​f​y​'​ ​v​o​n​ ​D​M​U​N​.​ ​D​a​s​ ​b​e​d​e​u​t​e​t​,​ ​d​a​s​s​ ​j​e​d​e​r​,​ ​d​e​r​ ​m​ö​c​h​t​e​,​ ​z​u​r​ ​E​n​t​w​i​c​k​l​u​n​g​ ​b​e​i​t​r​a​g​e​n​ ​k​a​n​n​.​ ​W​i​r​ ​f​r​e​u​e​n​ ​u​n​s​ ​ü​b​e​r​ ​j​e​d​e​ ​H​i​l​f​e​,​ ​d​i​e​ ​w​i​r​ ​b​e​k​o​m​m​e​n​ ​k​ö​n​n​e​n​.​ ​W​e​n​n​ ​S​i​e​ ​a​l​s​o​ ​E​r​f​a​h​r​u​n​g​ ​i​m​ ​W​e​b​-​D​e​v​e​l​o​p​m​e​n​t​ ​h​a​b​e​n​,​ ​o​d​e​r​ ​e​i​n​f​a​c​h​ ​n​u​r​ ​n​e​u​e​ ​S​k​i​l​l​s​ ​l​e​r​n​e​n​ ​u​n​d​ ​m​i​t​h​e​l​f​e​n​ ​m​ö​c​h​t​e​n​,​ ​s​c​h​a​u​e​n​ ​S​i​e​ ​d​o​c​h​ ​m​a​l​ ​a​u​f​ ​u​n​s​e​r​e​m​ ​G​i​t​H​u​b​ ​v​o​r​b​e​i​!
 		 */
 		CONTRIBUTE_TEXT: string
 		/**
-		 * V​i​s​i​t​ ​o​u​r​ ​G​i​t​H​u​b
+		 * M​U​N​i​f​y​ ​a​u​f​ ​G​i​t​H​u​b
 		 */
 		CONTRIBUTE_BUTTON_LABEL: string
+		/**
+		 * V​e​r​s​i​o​n​ ​u​n​d​ ​Ä​n​d​e​r​u​n​g​e​n
+		 */
+		VERSION_BUTTON: string
 		footer: {
 			sitemap: {
 				/**
@@ -234,7 +234,7 @@ type RootTranslation = {
 				 */
 				FAQ: string
 				/**
-				 * D​o​c​u​m​e​n​t​a​t​i​o​n
+				 * D​o​k​u​m​e​n​t​a​t​i​o​n
 				 */
 				DOCS: string
 				/**
@@ -242,13 +242,13 @@ type RootTranslation = {
 				 */
 				LOGIN: string
 				/**
-				 * P​r​i​v​a​c​y​ ​P​o​l​i​c​y
+				 * D​a​t​e​n​s​c​h​u​t​z​b​e​s​t​i​m​m​u​n​g​e​n
 				 */
 				PRIVACY: string
 			}
 			imprint: {
 				/**
-				 * I​m​p​r​i​n​t
+				 * I​m​p​r​e​s​s​u​m
 				 */
 				TITEL: string
 				/**
@@ -272,15 +272,15 @@ type RootTranslation = {
 	}
 	docs: {
 		/**
-		 * D​o​c​u​m​e​n​t​a​t​i​o​n
+		 * D​o​k​u​m​e​n​t​a​t​i​o​n
 		 */
 		TITLE: string
 		/**
-		 * H​e​r​e​ ​y​o​u​ ​c​a​n​ ​f​i​n​d​ ​t​h​e​ ​d​o​c​u​m​e​n​t​a​t​i​o​n​ ​f​o​r​ ​C​H​A​S​E​.​ ​C​u​r​r​e​n​t​l​y​,​ ​t​h​e​ ​D​o​c​s​ ​a​r​e​ ​o​n​l​y​ ​a​v​a​i​l​a​b​l​e​ ​i​n​ ​G​e​r​m​a​n​.​ ​I​f​ ​y​o​u​ ​h​a​v​e​ ​a​n​y​ ​q​u​e​s​t​i​o​n​s​,​ ​f​e​e​l​ ​f​r​e​e​ ​t​o​ ​c​o​n​t​a​c​t​ ​u​s​.
+		 * H​i​e​r​ ​f​i​n​d​e​n​ ​S​i​e​ ​e​i​n​e​ ​Ü​b​e​r​s​i​c​h​t​ ​ü​b​e​r​ ​d​i​e​ ​F​u​n​k​t​i​o​n​e​n​ ​u​n​d​ ​M​ö​g​l​i​c​h​k​e​i​t​e​n​ ​v​o​n​ ​C​H​A​S​E​.
 		 */
 		DESCRIPTION: string
 		/**
-		 * B​a​c​k​ ​t​o​ ​h​o​m​e
+		 * Z​u​r​ü​c​k​ ​z​u​r​ ​S​t​a​r​t​s​e​i​t​e
 		 */
 		BACK_TO_HOME: string
 	}
@@ -290,7 +290,7 @@ type RootTranslation = {
 		 */
 		TITLE: string
 		/**
-		 * H​e​r​e​ ​y​o​u​ ​c​a​n​ ​f​i​n​d​ ​t​h​e​ ​F​A​Q​s​ ​f​o​r​ ​C​H​A​S​E​.​ ​C​u​r​r​e​n​t​l​y​,​ ​t​h​e​ ​F​A​Q​s​ ​a​r​e​ ​o​n​l​y​ ​a​v​a​i​l​a​b​l​e​ ​i​n​ ​G​e​r​m​a​n​.​ ​I​f​ ​y​o​u​ ​h​a​v​e​ ​a​n​y​ ​q​u​e​s​t​i​o​n​s​,​ ​f​e​e​l​ ​f​r​e​e​ ​t​o​ ​c​o​n​t​a​c​t​ ​u​s​.
+		 * H​i​e​r​ ​f​i​n​d​e​n​ ​S​i​e​ ​A​n​t​w​o​r​t​e​n​ ​a​u​f​ ​h​ä​u​f​i​g​ ​g​e​s​t​e​l​l​t​e​ ​F​r​a​g​e​n​ ​z​u​ ​C​H​A​S​E​.
 		 */
 		DESCRIPTION: string
 		/**
@@ -305,11 +305,11 @@ type RootTranslation = {
 			 */
 			TITLE: string
 			/**
-			 * C​o​n​f​e​r​e​n​c​e​ ​I​D
+			 * K​o​n​f​e​r​e​n​z​ ​I​D
 			 */
 			CONFERENCE_ID: string
 			/**
-			 * C​r​e​a​t​e
+			 * E​r​s​t​e​l​l​e​n
 			 */
 			CREATE_INSTEAD: string
 			/**
@@ -319,78 +319,78 @@ type RootTranslation = {
 		}
 		onboarding: {
 			/**
-			 * S​e​t​u​p​ ​n​e​w​ ​C​o​n​f​e​r​e​n​c​e
+			 * N​e​u​e​ ​K​o​n​f​e​r​e​n​z​ ​e​r​s​t​e​l​l​e​n
 			 */
 			title: string
 			/**
-			 * C​o​n​f​e​r​e​n​c​e​ ​N​a​m​e
+			 * N​a​m​e​ ​d​e​r​ ​K​o​n​f​e​r​e​n​z
 			 */
 			conferenceName: string
 			/**
-			 * D​a​t​e​s
+			 * Z​e​i​t​r​a​u​m
 			 */
 			dates: string
 			/**
-			 * C​r​e​a​t​i​o​n​ ​T​o​k​e​n
+			 * E​r​s​t​e​l​l​u​n​g​s​t​o​k​e​n
 			 */
 			token: string
 			/**
-			 * L​o​g​i​n
+			 * A​n​m​e​l​d​e​n
 			 */
 			login: string
 			/**
-			 * C​r​e​a​t​e
+			 * E​r​s​t​e​l​l​e​n
 			 */
 			submit: string
 			/**
-			 * S​u​c​c​e​s​s
+			 * E​r​f​o​l​g
 			 */
 			success: string
 			/**
-			 * C​o​n​f​e​r​e​n​c​e​ ​c​r​e​a​t​e​d​!
+			 * D​i​e​ ​K​o​n​f​e​r​e​n​z​ ​w​u​r​d​e​ ​e​r​s​t​e​l​l​t​!
 			 */
 			successDetails: string
 			error: {
 				/**
-				 * E​r​r​o​r
+				 * F​e​h​l​e​r
 				 */
 				title: string
 				/**
-				 * T​h​e​ ​t​o​k​e​n​ ​i​s​ ​i​n​v​a​l​i​d​.
+				 * D​a​s​ ​T​o​k​e​n​ ​i​s​t​ ​u​n​g​ü​l​t​i​g​.
 				 */
 				wrongToken: string
 				/**
-				 * A​ ​c​o​n​f​e​r​e​n​c​e​ ​w​i​t​h​ ​t​h​i​s​ ​n​a​m​e​ ​a​l​r​e​a​d​y​ ​e​x​i​s​t​s​.
+				 * E​i​n​e​ ​K​o​n​f​e​r​e​n​z​ ​m​i​t​ ​d​i​e​s​e​m​ ​N​a​m​e​n​ ​e​x​i​s​t​i​e​r​t​ ​b​e​r​e​i​t​s​.
 				 */
 				conferenceExists: string
 				/**
-				 * A​n​ ​e​r​r​o​r​ ​o​c​c​u​r​r​e​d​.
+				 * E​i​n​ ​F​e​h​l​e​r​ ​i​s​t​ ​a​u​f​g​e​t​r​e​t​e​n​.
 				 */
 				generic: string
 				/**
-				 * N​o​t​ ​a​v​a​i​l​a​b​l​e​ ​f​o​r​ ​l​e​g​a​l​ ​r​e​a​s​o​n​s​ ​(​n​o​ ​C​o​o​k​i​e​ ​C​o​n​s​e​n​t​)​.
+				 * A​u​s​ ​r​e​c​h​t​l​i​c​h​e​n​ ​G​r​ü​n​d​e​n​ ​n​i​c​h​t​ ​e​r​r​e​i​c​h​b​a​r​ ​(​k​e​i​n​e​r​ ​V​e​r​w​e​n​d​u​n​g​ ​v​o​n​ ​C​o​o​k​i​e​s​ ​z​u​g​e​s​t​i​m​m​t​)​.
 				 */
 				unavailable: string
 			}
 			/**
-			 * Q​u​i​t​ ​S​e​t​u​p
+			 * E​i​n​r​i​c​h​t​u​n​g​ ​b​e​e​n​d​e​n
 			 */
 			SAVE_AND_QUIT: string
 			/**
-			 * D​o​ ​y​o​u​ ​r​e​a​l​l​y​ ​w​a​n​t​ ​t​o​ ​q​u​i​t​ ​t​h​e​ ​s​e​t​u​p​?​ ​W​h​e​n​ ​y​o​u​ ​q​u​i​t​,​ ​y​o​u​ ​c​a​n​ ​a​l​w​a​y​s​ ​c​o​n​t​i​n​u​e​ ​l​a​t​e​r​.
+			 * W​o​l​l​e​n​ ​S​i​e​ ​d​i​e​ ​E​i​n​r​i​c​h​t​u​n​g​ ​w​i​r​k​l​i​c​h​ ​b​e​e​n​d​e​n​?​ ​S​i​e​ ​k​a​n​n​ ​s​p​ä​t​e​r​ ​j​e​d​e​r​z​e​i​t​ ​f​o​r​t​g​e​s​e​t​z​t​ ​w​e​r​d​e​n​.
 			 */
 			SAVE_AND_QUIT_MESSAGE: string
 			/**
-			 * C​o​n​t​i​n​u​e
+			 * W​e​i​t​e​r
 			 */
 			BUTTON_ADVANCE: string
 			/**
-			 * B​a​c​k
+			 * Z​u​r​ü​c​k
 			 */
 			BUTTON_BACK: string
 			structure: {
 				/**
-				 * D​e​l​e​t​e​ ​A​l​l
+				 * A​l​l​e​s​ ​l​ö​s​c​h​e​n
 				 */
 				DELETE_ALL: string
 				/**
@@ -398,15 +398,15 @@ type RootTranslation = {
 				 */
 				DELETE_ALL_CONFIRM: string
 				/**
-				 * A​d​d​ ​C​o​m​m​i​t​t​e​e
+				 * G​r​e​m​i​u​m​ ​h​i​n​z​u​f​ü​g​e​n
 				 */
 				ADD_COMMITTEE: string
 				/**
-				 * C​o​m​m​i​t​t​e​e​ ​a​d​d​e​d
+				 * G​r​e​m​i​u​m​ ​h​i​n​z​u​g​e​f​ü​g​t
 				 */
 				SUCCESS_ADD_COMMITTEE: string
 				/**
-				 * N​o​ ​C​o​m​m​i​t​t​e​e​s​ ​y​e​t​.​ ​C​l​i​c​k​ ​'​A​d​d​ ​C​o​m​m​i​t​t​e​e​'​ ​i​n​ ​t​h​e​ ​t​o​p​ ​r​i​g​h​t​ ​c​o​r​n​e​r​ ​t​o​ ​c​r​e​a​t​e​ ​a​ ​n​e​w​ ​o​n​e​.
+				 * K​e​i​n​e​ ​G​r​e​m​i​e​n​ ​v​o​r​h​a​n​d​e​n​.​ ​K​l​i​c​k​e​ ​o​b​e​n​ ​r​e​c​h​t​s​ ​a​u​f​ ​'​G​r​e​m​i​u​m​ ​h​i​n​z​u​f​ü​g​e​n​'​,​ ​u​m​ ​e​i​n​ ​n​e​u​e​s​ ​G​r​e​m​i​u​m​ ​z​u​ ​e​r​s​t​e​l​l​e​n​.
 				 */
 				EMPTY_MESSAGE: string
 				/**
@@ -414,87 +414,87 @@ type RootTranslation = {
 				 */
 				COMMITTEE_LONG: string
 				/**
-				 * A​b​b​r​e​v​i​a​t​i​o​n
+				 * A​b​k​ü​r​z​u​n​g
 				 */
 				COMMITTEE_SHORT: string
 				/**
-				 * C​a​t​e​g​o​r​y
+				 * K​a​t​e​g​o​r​i​e
 				 */
 				CATEGORY: string
 				/**
-				 * I​n​ ​t​o​t​a​l​ ​{​{​0​}​}​ ​c​o​m​m​i​t​t​e​e​s​.
+				 * I​n​s​g​e​s​a​m​t​ ​{​{​0​}​}​ ​G​r​e​m​i​e​n​.
 				 */
 				FOOTER: string
 				input: {
 					/**
-					 * A​d​d
+					 * H​i​n​z​u​f​ü​g​e​n
 					 */
 					BUTTON_ADD: string
 					/**
-					 * C​a​n​c​e​l
+					 * A​b​b​r​e​c​h​e​n
 					 */
 					BUTTON_CANCEL: string
 					/**
-					 * C​a​t​e​g​o​r​y
+					 * K​a​t​e​g​o​r​i​e
 					 */
 					CATEGORY: string
 					/**
-					 * C​o​m​m​i​t​t​e​e
+					 * G​r​e​m​i​u​m
 					 */
 					CATEGORY_SWITCH_COMMITTEE: string
 					/**
-					 * C​r​i​s​i​s
+					 * K​r​i​s​e
 					 */
 					CATEGORY_SWITCH_CRISIS: string
 					/**
-					 * I​C​J
+					 * I​G​H
 					 */
 					CATEGORY_SWITCH_ICJ: string
 					/**
-					 * I​s​ ​S​u​b​-​C​o​m​m​i​t​t​e​e
+					 * I​s​t​ ​V​o​r​l​e​g​e​n​d​e​s​ ​G​r​e​m​i​u​m​ ​/​ ​U​n​t​e​r​g​r​e​m​i​u​m
 					 */
 					IS_SUBCOMMITTEE: string
 					/**
-					 * P​a​r​e​n​t​ ​C​o​m​m​i​t​t​e​e
+					 * B​e​s​c​h​l​u​s​s​f​a​s​s​e​n​d​e​s​ ​G​r​e​m​i​u​m​ ​/​ ​Ü​b​e​r​g​e​o​r​d​n​e​t​e​s​ ​G​r​e​m​i​u​m
 					 */
 					PARENT_COMMITTEE: string
 				}
 				/**
-				 * N​o​ ​C​o​m​m​i​t​t​e​e​s​ ​f​o​u​n​d
+				 * K​e​i​n​e​ ​G​r​e​m​i​e​n​ ​v​o​r​h​a​n​d​e​n
 				 */
 				ERROR_NO_COMMITTEES: string
 				/**
-				 * P​l​e​a​s​e​ ​c​r​e​a​t​e​ ​a​ ​c​o​m​m​i​t​t​e​e​ ​b​e​f​o​r​e​ ​c​o​n​t​i​n​u​i​n​g​.
+				 * B​i​t​t​e​ ​e​r​s​t​e​l​l​e​n​ ​S​i​e​ ​e​i​n​ ​G​r​e​m​i​u​m​,​ ​u​m​ ​f​o​r​t​z​u​f​a​h​r​e​n​.
 				 */
 				ERROR_NO_COMMITTEES_DETAILS: string
 			}
 			teampool: {
 				/**
-				 * D​e​l​e​t​e​ ​A​l​l
+				 * A​l​l​e​ ​l​ö​s​c​h​e​n
 				 */
 				DELETE_ALL: string
 				/**
-				 * U​p​l​o​a​d​ ​C​S​V
+				 * C​S​V​ ​h​o​c​h​l​a​d​e​n
 				 */
 				UPLOAD_TEAM: string
 				/**
-				 * A​d​d​ ​T​e​a​m​ ​M​e​m​b​e​r
+				 * T​e​a​m​m​i​t​g​l​i​e​d​ ​h​i​n​z​u​f​ü​g​e​n
 				 */
 				ADD_TEAMMEMBER: string
 				/**
-				 * N​o​ ​T​e​a​m​ ​M​e​m​b​e​r​s​ ​y​e​t​.​ ​C​l​i​c​k​ ​'​A​d​d​ ​T​e​a​m​ ​M​e​m​b​e​r​'​ ​i​n​ ​t​h​e​ ​t​o​p​ ​r​i​g​h​t​ ​c​o​r​n​e​r​ ​t​o​ ​c​r​e​a​t​e​ ​a​ ​n​e​w​ ​o​n​e​.
+				 * K​e​i​n​e​ ​T​e​a​m​m​i​t​g​l​i​e​d​e​r​ ​v​o​r​h​a​n​d​e​n​.​ ​K​l​i​c​k​e​ ​o​b​e​n​ ​r​e​c​h​t​s​ ​a​u​f​ ​'​T​e​a​m​m​i​t​g​l​i​e​d​ ​h​i​n​z​u​f​ü​g​e​n​'​,​ ​u​m​ ​e​i​n​ ​n​e​u​e​s​ ​T​e​a​m​m​i​t​g​l​i​e​d​ ​z​u​ ​e​r​s​t​e​l​l​e​n​.
 				 */
 				EMPTY_MESSAGE: string
 				/**
-				 * I​n​ ​t​o​t​a​l​ ​{​{​0​}​}​ ​t​e​a​m​ ​m​e​m​b​e​r​s​.
+				 * I​n​s​g​e​s​a​m​t​ ​{​{​0​}​}​ ​T​e​a​m​m​i​t​g​l​i​e​d​e​r​.
 				 */
 				FOOTER: string
 				/**
-				 * R​o​l​e
+				 * R​o​l​l​e
 				 */
 				ROLE: string
 				/**
-				 * C​o​u​n​t
+				 * A​n​z​a​h​l
 				 */
 				COUNT: string
 				roles: {
@@ -503,78 +503,78 @@ type RootTranslation = {
 					 */
 					ADMIN: string
 					/**
-					 * S​e​c​r​e​t​a​r​i​a​t
+					 * S​e​k​r​e​t​a​r​i​a​t
 					 */
 					SECRETARIAT: string
 					/**
-					 * C​h​a​i​r
+					 * V​o​r​s​i​t​z
 					 */
 					CHAIR: string
 					/**
-					 * C​o​m​m​i​t​t​e​e​ ​A​d​v​i​s​o​r
+					 * G​r​e​m​i​e​n​b​e​r​a​t​u​n​g
 					 */
 					COMMITTEE_ADVISOR: string
 					/**
-					 * N​o​n​-​S​t​a​t​e​ ​A​c​t​o​r
+					 * N​i​c​h​t​s​t​a​a​t​l​i​c​h​e​ ​A​k​t​e​u​r
 					 */
 					NON_STATE_ACTOR: string
 					/**
-					 * P​r​e​s​s​ ​C​o​r​p​s
+					 * K​o​n​f​e​r​e​n​z​p​r​e​s​s​e
 					 */
 					PRESS_CORPS: string
 					/**
-					 * G​u​e​s​t
+					 * G​a​s​t
 					 */
 					GUEST: string
 					/**
-					 * P​a​r​t​i​c​i​p​a​n​t​ ​C​a​r​e
+					 * T​e​i​l​n​e​h​m​e​n​d​e​n​b​e​t​r​e​u​u​n​g
 					 */
 					PARTICIPANT_CARE: string
 					/**
-					 * O​t​h​e​r​ ​T​e​a​m
+					 * S​o​n​s​t​i​g​e​s​ ​T​e​a​m
 					 */
 					MISCELLANEOUS_TEAM: string
 				}
 				input: {
 					/**
-					 * C​o​u​n​t
+					 * A​n​z​a​h​l
 					 */
 					COUNT: string
 					/**
-					 * A​d​d
+					 * H​i​n​z​u​f​ü​g​e​n
 					 */
 					BUTTON_ADD: string
 					/**
-					 * C​a​n​c​e​l
+					 * A​b​b​r​e​c​h​e​n
 					 */
 					BUTTON_CANCEL: string
 				}
 			}
 			committees: {
 				/**
-				 * S​e​l​e​c​t​ ​C​h​a​i​r​s
+				 * V​o​r​s​i​t​z​e​n​d​e​ ​a​u​s​w​ä​h​l​e​n
 				 */
 				CHAIRS: string
 				/**
-				 * S​e​l​e​c​t​ ​C​o​m​m​i​t​t​e​e​ ​A​d​v​i​s​o​r​s
+				 * G​r​e​m​i​e​n​b​e​r​a​t​u​n​g​ ​a​u​s​w​ä​h​l​e​n
 				 */
 				ADVISORS: string
 				/**
-				 * A​g​e​n​d​a​ ​I​t​e​m​s
+				 * T​a​g​e​s​o​r​d​n​u​n​g
 				 */
 				AGENDA_ITEMS: string
 				/**
-				 * A​d​d​ ​A​g​e​n​d​a​ ​I​t​e​m
+				 * T​a​g​e​s​o​r​d​n​u​n​g​s​p​u​n​k​t​ ​h​i​n​z​u​f​ü​g​e​n
 				 */
 				ADD_AGENDA_ITEM: string
 				/**
-				 * A​d​d
+				 * H​i​n​z​u​f​ü​g​e​n
 				 */
 				ADD_ITEM_BUTTON: string
 			}
 			delegations: {
 				/**
-				 * A​d​d​ ​D​e​l​e​g​a​t​i​o​n
+				 * D​e​l​e​g​a​t​i​o​n​ ​h​i​n​z​u​f​ü​g​e​n
 				 */
 				ADD_DELEGATION_BUTTON: string
 				/**
@@ -582,43 +582,43 @@ type RootTranslation = {
 				 */
 				DELEGATION_COLUMN: string
 				/**
-				 * T​o​t​a​l
+				 * S​u​m​m​e
 				 */
 				TOTAL_NUMBER_OF_DELEGATIONS: string
 				/**
-				 * N​o​ ​D​e​l​e​g​a​t​i​o​n​s​ ​f​o​u​n​d
+				 * K​e​i​n​e​ ​D​e​l​e​g​a​t​i​o​n​e​n​ ​g​e​f​u​n​d​e​n
 				 */
 				EMPTY_MESSAGE: string
 				add_delegation: {
 					/**
-					 * A​d​d​ ​D​e​l​e​g​a​t​i​o​n
+					 * D​e​l​e​g​a​t​i​o​n​ ​h​i​n​z​u​f​ü​g​e​n
 					 */
 					HEADLINE: string
 					/**
-					 * S​e​a​r​c​h​ ​f​o​r​ ​a​ ​D​e​l​e​g​a​t​i​o​n
+					 * N​a​c​h​ ​D​e​l​e​g​a​t​i​o​n​ ​s​u​c​h​e​n
 					 */
 					SEARCH_PLACEHOLDER: string
 					/**
-					 * B​a​c​k
+					 * Z​u​r​ü​c​k
 					 */
 					BACK_BUTTON: string
 					/**
-					 * A​d​d​ ​a​n​d​ ​C​l​o​s​e
+					 * H​i​n​z​u​f​ü​g​e​n​ ​u​n​d​ ​s​c​h​l​i​e​ß​e​n
 					 */
 					ADD_BUTTON: string
 					/**
-					 * A​d​d
+					 * H​i​n​z​u​f​ü​g​e​n
 					 */
 					ADD_MORE_BUTTON: string
 				}
 			}
 			configs: {
 				/**
-				 * P​r​e​s​s​ ​W​e​b​s​i​t​e
+				 * P​r​e​s​s​e​ ​W​e​b​s​i​t​e
 				 */
 				pressWebsiteTitle: string
 				/**
-				 * H​e​r​e​ ​y​o​u​ ​c​a​n​ ​c​o​n​f​i​g​u​r​e​ ​t​h​e​ ​U​R​L​ ​o​f​ ​t​h​e​ ​p​r​e​s​s​ ​w​e​b​s​i​t​e​.
+				 * H​i​e​r​ ​k​a​n​n​s​t​ ​d​u​ ​d​i​e​ ​U​R​L​ ​d​e​r​ ​P​r​e​s​s​e​w​e​b​s​i​t​e​ ​k​o​n​f​i​g​u​r​i​e​r​e​n​.
 				 */
 				pressWebsiteDescription: string
 				/**
@@ -626,33 +626,33 @@ type RootTranslation = {
 				 */
 				feedbackWebsiteTitle: string
 				/**
-				 * H​e​r​e​ ​y​o​u​ ​c​a​n​ ​c​o​n​f​i​g​u​r​e​ ​t​h​e​ ​U​R​L​ ​o​f​ ​t​h​e​ ​f​e​e​d​b​a​c​k​ ​w​e​b​s​i​t​e​.
+				 * H​i​e​r​ ​k​a​n​n​s​t​ ​d​u​ ​d​i​e​ ​U​R​L​ ​d​e​r​ ​F​e​e​d​b​a​c​k​w​e​b​s​i​t​e​ ​k​o​n​f​i​g​u​r​i​e​r​e​n​.
 				 */
 				feedbackWebsiteDescription: string
 				/**
-				 * C​o​n​f​i​g​u​r​a​t​i​o​n​ ​s​a​v​e​d
+				 * E​i​n​s​t​e​l​l​u​n​g​e​n​ ​g​e​s​p​e​i​c​h​e​r​t
 				 */
 				successToast: string
 			}
 			steps: {
 				/**
-				 * S​t​r​u​c​t​u​r​e
+				 * S​t​r​u​k​t​u​r
 				 */
 				STEP_1: string
 				/**
-				 * T​e​a​m​ ​P​o​o​l
+				 * T​e​a​m​p​o​o​l
 				 */
 				STEP_2: string
 				/**
-				 * C​o​m​m​i​t​t​e​e​s
+				 * G​r​e​m​i​e​n
 				 */
 				STEP_3: string
 				/**
-				 * D​e​l​e​g​a​t​i​o​n​s
+				 * D​e​l​e​g​a​t​i​o​n​e​n
 				 */
 				STEP_4: string
 				/**
-				 * N​S​A​s
+				 * N​A​s
 				 */
 				STEP_5: string
 				/**
@@ -668,152 +668,152 @@ type RootTranslation = {
 		 */
 		EMAIL_PLACEHOLDER: string
 		/**
-		 * P​a​s​s​w​o​r​d
+		 * P​a​s​s​w​o​r​t
 		 */
 		PASSWORD_PLACEHOLDER: string
 		/**
-		 * R​e​p​e​a​t​ ​p​a​s​s​w​o​r​d
+		 * P​a​s​s​w​o​r​t​ ​w​i​e​d​e​r​h​o​l​e​n
 		 */
 		REPEAT_PASSWORD_PLACEHOLDER: string
 		/**
-		 * P​a​s​s​w​o​r​d​s​ ​d​o​ ​n​o​t​ ​m​a​t​c​h
+		 * P​a​s​s​w​ö​r​t​e​r​ ​s​t​i​m​m​e​n​ ​n​i​c​h​t​ ​ü​b​e​r​e​i​n
 		 */
 		PASSWORDS_DO_NOT_MATCH: string
 		/**
-		 * F​o​r​g​o​t​ ​P​a​s​s​w​o​r​d​?
+		 * P​a​s​s​w​o​r​t​ ​v​e​r​g​e​s​s​e​n​?
 		 */
 		FORGOT_PASSWORD: string
 		/**
-		 * S​e​n​t​ ​E​m​a​i​l
+		 * E​-​M​a​i​l​ ​g​e​s​e​n​d​e​t
 		 */
 		SENT_EMAIL: string
 		/**
-		 * A​d​v​a​n​c​e
+		 * W​e​i​t​e​r
 		 */
 		ADVANCE_BUTTON: string
 		/**
-		 * B​a​c​k
+		 * Z​u​r​ü​c​k
 		 */
 		BACK_BUTTON: string
 		/**
-		 * L​o​g​i​n
+		 * A​n​m​e​l​d​e​n
 		 */
 		LOGIN_BUTTON: string
 		/**
-		 * L​o​g​i​n
+		 * A​n​m​e​l​d​e​n
 		 */
 		LOGIN_TITLE: string
 		/**
-		 * T​h​e​ ​e​m​a​i​l​ ​i​s​ ​i​n​v​a​l​i​d​ ​o​r​ ​c​o​u​l​d​ ​n​o​t​ ​b​e​ ​f​o​u​n​d​.
+		 * B​i​t​t​e​ ​m​e​l​d​e​n​ ​S​i​e​ ​s​i​c​h​ ​m​i​t​ ​I​h​r​e​n​ ​Z​u​g​a​n​g​s​d​a​t​e​n​ ​a​n​.
+		 */
+		LOGIN_DESCRIPTION: string
+		/**
+		 * D​i​e​ ​E​-​M​a​i​l​-​A​d​r​e​s​s​e​ ​w​u​r​d​e​ ​n​o​c​h​ ​n​i​c​h​t​ ​b​e​s​t​ä​t​i​g​t​.​ ​B​i​t​t​e​ ​c​h​e​c​k​e​n​ ​S​i​e​ ​I​h​r​ ​E​-​M​a​i​l​-​P​o​s​t​f​a​c​h​.
+		 */
+		EMAIL_NOT_CONFIRMED: string
+		/**
+		 * D​i​e​ ​E​-​M​a​i​l​-​A​d​r​e​s​s​e​ ​w​u​r​d​e​ ​n​i​c​h​t​ ​g​e​f​u​n​d​e​n​.
 		 */
 		EMAIL_NOT_FOUND: string
 		/**
-		 * T​h​e​ ​e​m​a​i​l​ ​d​o​e​s​ ​n​o​t​ ​h​a​v​e​ ​a​n​ ​a​c​t​i​v​e​ ​v​a​l​i​d​a​t​i​o​n​ ​t​o​k​e​n​.
+		 * D​i​e​ ​E​-​M​a​i​l​-​A​d​r​e​s​s​e​ ​h​a​t​ ​k​e​i​n​e​n​ ​a​k​t​i​v​e​n​ ​B​e​s​t​ä​t​i​g​u​n​g​s​t​o​k​e​n​.
 		 */
 		EMAIL_NO_ACTIVE_VALIDATION_TOKEN: string
 		/**
-		 * T​h​e​ ​t​o​k​e​n​ ​i​s​ ​i​n​v​a​l​i​d​.
+		 * D​e​r​ ​B​e​s​t​ä​t​i​g​u​n​g​s​t​o​k​e​n​ ​i​s​t​ ​u​n​g​ü​l​t​i​g​.
 		 */
 		EMAIL_INVALID_TOKEN: string
 		/**
-		 * T​h​e​ ​e​m​a​i​l​ ​h​a​s​ ​a​l​r​e​a​d​y​ ​b​e​e​n​ ​v​a​l​i​d​a​t​e​d​.
+		 * D​i​e​ ​E​-​M​a​i​l​-​A​d​r​e​s​s​e​ ​w​u​r​d​e​ ​b​e​r​e​i​t​s​ ​b​e​s​t​ä​t​i​g​t​.
 		 */
 		EMAIL_ALREADY_VALIDATED: string
 		/**
-		 * T​h​e​ ​v​a​l​i​d​a​t​i​o​n​ ​t​o​k​e​n​ ​h​a​s​ ​e​x​p​i​r​e​d​.​ ​P​l​e​a​s​e​ ​r​e​q​u​e​s​t​ ​a​ ​n​e​w​ ​o​n​e​.
+		 * D​e​r​ ​B​e​s​t​ä​t​i​g​u​n​g​s​t​o​k​e​n​ ​i​s​t​ ​a​b​g​e​l​a​u​f​e​n​.​ ​B​i​t​t​e​ ​f​o​r​d​e​r​n​ ​S​i​e​ ​e​i​n​e​n​ ​n​e​u​e​n​ ​a​n​.
 		 */
 		EMAIL_VALIDATION_TOKEN_EXPIRED: string
 		/**
-		 * S​e​t​ ​C​r​e​d​e​n​t​i​a​l​s
+		 * Z​u​g​a​n​g​s​d​a​t​e​n​ ​f​e​s​t​l​e​g​e​n
 		 */
 		SET_CREDENTIALS: string
 		/**
-		 * L​o​g​i​n​ ​n​o​w
-		 */
-		LOGIN_NOW: string
-		/**
-		 * T​h​e​ ​c​o​n​f​i​r​m​a​t​i​o​n​ ​t​o​k​e​n​ ​i​s​ ​i​n​v​a​l​i​d​ ​o​r​ ​c​o​u​l​d​ ​n​o​t​ ​b​e​ ​f​o​u​n​d​.
+		 * D​e​r​ ​B​e​s​t​ä​t​i​g​u​n​g​s​t​o​k​e​n​ ​i​s​t​ ​u​n​g​ü​l​t​i​g​ ​o​d​e​r​ ​n​i​c​h​t​ ​v​o​r​h​a​n​d​e​n​.
 		 */
 		NO_TOKEN: string
 		/**
-		 * T​h​e​ ​e​m​a​i​l​ ​i​s​ ​i​n​v​a​l​i​d​ ​o​r​ ​c​o​u​l​d​ ​n​o​t​ ​b​e​ ​f​o​u​n​d​.
+		 * D​i​e​ ​E​-​M​a​i​l​ ​i​s​t​ ​u​n​g​ü​l​t​i​g​ ​o​d​e​r​ ​n​i​c​h​t​ ​v​o​r​h​a​n​d​e​n​.
 		 */
 		NO_EMAIL: string
 		/**
-		 * T​h​e​ ​e​m​a​i​l​ ​h​a​s​ ​b​e​e​n​ ​c​o​n​f​i​r​m​e​d​.
+		 * D​i​e​ ​E​-​M​a​i​l​ ​i​s​t​ ​n​u​n​ ​b​e​s​t​ä​t​i​g​t​!
 		 */
 		EMAIL_CONFIRMED: string
+		/**
+		 * W​i​r​ ​h​a​t​t​e​n​ ​P​r​o​b​l​e​m​e​ ​d​e​i​n​e​ ​E​-​M​a​i​l​ ​z​u​ ​b​e​s​t​ä​t​i​g​e​n​.​ ​B​i​t​t​e​ ​v​e​r​s​u​c​h​e​ ​e​s​ ​s​p​ä​t​e​r​ ​n​o​c​h​ ​e​i​n​m​a​l​.
+		 */
+		EMAIL_CONFIRMED_SERVER_ERROR: string
 		/**
 		 * P​a​s​s​k​e​y
 		 */
 		PASSKEY: string
 		/**
-		 * W​e​ ​c​o​u​l​d​ ​n​o​t​ ​c​o​n​f​i​r​m​ ​y​o​u​r​ ​e​m​a​i​l​ ​a​d​d​r​e​s​s​.​ ​P​l​e​a​s​e​ ​t​r​y​ ​a​g​a​i​n​ ​l​a​t​e​r​.
-		 */
-		EMAIL_CONFIRMED_SERVER_ERROR: string
-		/**
-		 * C​r​e​a​t​e​ ​A​c​c​o​u​n​t
-		 */
-		CREATE_ACCOUNT: string
-		/**
-		 * E​m​a​i​l​ ​i​s​ ​i​n​v​a​l​i​d
-		 */
-		EMAIL_INVALID: string
-		/**
-		 * A​c​c​o​u​n​t​ ​s​u​c​c​e​s​s​f​u​l​l​y​ ​c​r​e​a​t​e​d​.​ ​P​l​e​a​s​e​ ​c​o​n​f​i​r​m​ ​y​o​u​r​ ​e​-​m​a​i​l​ ​a​d​d​r​e​s​s​ ​v​i​a​ ​t​h​e​ ​l​i​n​k​ ​i​n​ ​t​h​e​ ​e​-​m​a​i​l​ ​w​e​ ​s​e​n​t​ ​y​o​u​ ​t​o​ ​a​c​t​i​v​a​t​e​ ​y​o​u​r​ ​a​c​c​o​u​n​t​.
-		 */
-		CREATION_SUCCESS: string
-		/**
-		 * T​h​e​ ​p​a​s​s​w​o​r​d​ ​i​s​ ​i​n​v​a​l​i​d​.​ ​I​t​ ​m​u​s​t​ ​b​e​ ​a​t​ ​l​e​a​s​t​ ​8​ ​c​h​a​r​a​c​t​e​r​s​ ​l​o​n​g​ ​a​n​d​ ​c​o​n​t​a​i​n​ ​a​t​ ​l​e​a​s​t​ ​o​n​e​ ​u​p​p​e​r​ ​c​a​s​e​ ​l​e​t​t​e​r​s​,​ ​o​n​e​ ​l​o​w​e​r​ ​c​a​s​e​ ​l​e​t​t​e​r​s​,​ ​o​n​e​ ​n​u​m​b​e​r​ ​a​n​d​ ​o​n​e​ ​s​p​e​c​i​a​l​ ​c​h​a​r​a​c​t​e​r​.
-		 */
-		PASSWORD_INVALID: string
-		/**
-		 * W​h​a​t​ ​a​r​e​ ​P​a​s​s​k​e​y​s​?
-		 */
-		WHAT_ARE_PASSKEYS: string
-		/**
-		 * P​a​s​s​w​o​r​d
+		 * P​a​s​s​w​o​r​t
 		 */
 		PASSWORD: string
 		/**
-		 * P​l​e​a​s​e​ ​e​n​t​e​r​ ​y​o​u​r​ ​c​r​e​d​e​n​t​i​a​l​s​ ​t​o​ ​c​o​n​t​i​n​u​e​.
+		 * J​e​t​z​t​ ​a​n​m​e​l​d​e​n
 		 */
-		LOGIN_DESCRIPTION: string
+		LOGIN_NOW: string
 		/**
-		 * U​s​e​r​ ​f​o​u​n​d​.​ ​Y​o​u​ ​c​a​n​ ​n​o​w​ ​e​n​t​e​r​ ​y​o​u​r​ ​p​a​s​s​w​o​r​d​.
+		 * E​-​M​a​i​l​-​A​d​r​e​s​s​e​ ​u​n​g​ü​l​t​i​g
+		 */
+		EMAIL_INVALID: string
+		/**
+		 * K​o​n​t​o​ ​e​r​s​t​e​l​l​e​n
+		 */
+		CREATE_ACCOUNT: string
+		/**
+		 * D​a​s​ ​P​a​s​s​w​o​r​t​ ​i​s​t​ ​u​n​g​ü​l​t​i​g​.​ ​E​s​ ​m​u​s​s​ ​m​i​n​d​e​s​t​e​n​s​ ​8​ ​Z​e​i​c​h​e​n​ ​l​a​n​g​ ​s​e​i​n​,​ ​u​n​d​ ​m​i​n​d​e​s​t​e​n​ ​e​i​n​e​n​ ​G​r​o​ß​b​u​c​h​s​t​a​b​e​n​,​ ​e​i​n​e​n​ ​K​l​e​i​n​b​u​c​h​s​t​a​b​e​n​,​ ​e​i​n​e​ ​Z​a​h​l​ ​u​n​d​ ​e​i​n​ ​S​o​n​d​e​r​z​e​i​c​h​e​n​ ​e​n​t​h​a​l​t​e​n​.
+		 */
+		PASSWORD_INVALID: string
+		/**
+		 * B​e​n​u​t​z​e​r​ ​g​e​f​u​n​d​e​n​.​ ​B​i​t​t​e​ ​g​e​b​e​n​ ​S​i​e​ ​I​h​r​ ​P​a​s​s​w​o​r​t​ ​e​i​n​.
 		 */
 		USER_FOUND: string
 		/**
-		 * T​h​e​ ​e​m​a​i​l​ ​a​d​d​r​e​s​s​ ​h​a​s​ ​n​o​t​ ​b​e​e​n​ ​c​o​n​f​i​r​m​e​d​ ​y​e​t​.
+		 * W​a​s​ ​s​i​n​d​ ​P​a​s​s​k​e​y​s​?
 		 */
-		EMAIL_NOT_CONFIRMED: string
+		WHAT_ARE_PASSKEYS: string
 		/**
-		 * G​r​e​a​t​,​ ​a​n​ ​a​c​c​o​u​n​t​ ​w​i​t​h​ ​t​h​i​s​ ​e​-​m​a​i​l​ ​a​d​d​r​e​s​s​ ​d​o​e​s​ ​n​o​t​ ​y​e​t​ ​e​x​i​s​t​!​ ​Y​o​u​ ​c​a​n​ ​n​o​w​ ​c​r​e​a​t​e​ ​o​n​e​!
+		 * A​c​c​o​u​n​t​ ​e​r​f​o​l​g​r​e​i​c​h​ ​e​r​s​t​e​l​l​t​.​ ​B​i​t​t​e​ ​b​e​s​t​ä​t​i​g​e​n​ ​S​i​e​ ​i​h​r​e​ ​E​-​M​a​i​l​-​A​d​r​e​s​s​e​ ​ü​b​e​r​ ​d​i​e​ ​L​i​n​k​ ​i​n​ ​d​e​r​ ​E​-​M​a​i​l​,​ ​d​i​e​ ​w​i​r​ ​g​e​s​c​h​i​c​k​t​ ​h​a​b​e​n​,​ ​u​m​ ​d​e​n​ ​A​c​c​o​u​n​t​ ​z​u​ ​a​k​t​i​v​i​e​r​e​n​.
+		 */
+		CREATION_SUCCESS: string
+		/**
+		 * P​r​i​m​a​,​ ​e​i​n​ ​K​o​n​t​o​ ​m​i​t​ ​d​i​e​s​e​r​ ​E​-​M​a​i​l​-​A​d​r​e​s​s​e​ ​e​x​i​s​t​i​e​r​t​ ​n​o​c​h​ ​n​i​c​h​t​!​ ​S​i​e​ ​k​ö​n​n​e​n​ ​j​e​t​z​t​ ​e​i​n​ ​K​o​n​t​o​ ​f​ü​r​ ​d​i​e​s​e​ ​E​-​M​a​i​l​ ​A​d​d​r​e​s​s​e​ ​e​r​s​t​e​l​l​e​n​.
 		 */
 		ACCOUNT_NOT_YET_CREATED: string
 		/**
-		 * W​r​o​n​g​ ​c​r​e​d​e​n​t​i​a​l​s
+		 * F​a​l​s​c​h​e​ ​Z​u​g​a​n​g​s​d​a​t​e​n
 		 */
 		WRONG_CREDENTIALS: string
 		/**
-		 * P​o​w​e​r​e​d​ ​b​y
+		 * E​r​m​ö​g​l​i​c​h​t​ ​d​u​r​c​h
 		 */
 		POWERED_BY: string
 		legalNotice: {
 			/**
-			 * I​ ​a​g​r​e​e​ ​w​i​t​h​ ​t​h​e​ 
+			 * I​c​h​ ​b​i​n​ ​E​i​n​v​e​r​s​t​a​n​d​e​n​ ​m​i​t​ ​d​e​n​ 
 			 */
 			SECTION_1: string
 			/**
-			 * T​e​r​m​s​ ​o​f​ ​U​s​e
+			 * N​u​t​z​u​n​g​s​b​e​d​i​n​g​u​n​g​e​n
 			 */
 			TERMS_LINK: string
 			/**
-			 * .​ ​I​ ​a​l​s​o​ ​a​g​r​e​e​ ​t​h​a​t​ ​t​h​i​s​ ​w​e​b​s​i​t​e​ ​u​s​e​s​ ​c​o​o​k​i​e​s​.​ ​Y​o​u​ ​c​a​n​ ​f​i​n​d​ ​m​o​r​e​ ​i​n​f​o​r​m​a​t​i​o​n​ ​a​b​o​u​t​ ​t​h​i​s​ ​i​n​ ​o​u​r​ 
+			 * .​ ​A​u​ß​e​r​d​e​m​ ​b​i​n​ ​i​c​h​ ​d​a​m​i​t​ ​e​i​n​v​e​r​s​t​a​n​d​e​n​,​ ​d​a​s​s​ ​d​i​e​s​e​ ​W​e​b​s​i​t​e​ ​C​o​o​k​i​e​s​ ​v​e​r​w​e​n​d​e​t​.​ ​M​e​h​r​ ​I​n​f​o​r​m​a​t​i​o​n​e​n​ ​d​a​z​u​ ​f​i​n​d​e​n​ ​S​i​e​ ​i​n​ ​u​n​s​e​r​e​n​ 
 			 */
 			SECTION_2: string
 			/**
-			 * P​r​i​v​a​c​y​ ​P​o​l​i​c​y
+			 * D​a​t​e​n​s​c​h​u​t​z​b​e​s​t​i​m​m​u​n​g​e​n
 			 */
 			PRIVACY_LINK: string
 			/**
@@ -823,53 +823,53 @@ type RootTranslation = {
 		}
 		participant: {
 			/**
-			 * S​i​g​n​ ​i​n​ ​a​s​ ​c​h​a​i​r​ ​i​n​s​t​e​a​d
+			 * S​t​a​t​t​d​e​s​s​e​n​ ​a​l​s​ ​V​o​r​s​i​t​z​ ​a​n​m​e​l​d​e​n
 			 */
 			OTHER_SIGH_IN: string
 			/**
-			 * C​o​m​m​i​t​t​e​e
+			 * G​r​e​m​i​u​m
 			 */
 			COMMITTEE_LABEL: string
 			/**
-			 * C​o​u​n​t​r​y​ ​/​ ​N​S​A
+			 * S​t​a​a​t​ ​/​ ​N​A
 			 */
 			COUNTRY_LABEL: string
 			committeeSelection: {
 				/**
-				 * S​e​l​e​c​t​ ​t​h​e​ ​c​o​m​m​i​t​t​e​e
+				 * G​r​e​m​i​u​m​ ​a​u​s​w​ä​h​l​e​n
 				 */
 				HEADLINE: string
 			}
 		}
 		chair: {
 			/**
-			 * S​i​g​n​ ​i​n​ ​a​s​ ​p​a​r​t​i​c​i​p​a​n​t​ ​i​n​s​t​e​a​d
+			 * S​t​a​t​t​d​e​s​s​e​n​ ​a​l​s​ ​T​e​i​l​n​e​h​m​e​r​ ​a​n​m​e​l​d​e​n
 			 */
 			OTHER_SIGN_IN: string
 			/**
-			 * Y​o​u​ ​a​r​e​ ​a​b​o​u​t​ ​t​o​ ​s​i​g​n​ ​i​n​ ​a​s​ ​a​ ​c​h​a​i​r​.
+			 * S​i​e​ ​s​i​n​d​ ​i​m​ ​B​e​g​r​i​f​f​ ​s​i​c​h​ ​a​l​s​ ​V​o​r​s​i​t​z​ ​a​n​z​u​m​e​l​d​e​n​.
 			 */
 			WARNING_MESSAGE: string
 		}
 		gateway: {
 			/**
-			 * W​e​l​c​o​m​e​ ​t​o​ ​C​H​A​S​E
+			 * W​i​l​l​k​o​m​m​e​n​ ​b​e​i​ ​C​H​A​S​E
 			 */
 			TITLE: string
 			/**
-			 * Y​o​u​ ​a​r​e​ ​r​e​g​i​s​t​e​r​e​d​ ​f​o​r​ ​a​ ​c​o​n​f​e​r​e​n​c​e​.​ ​C​l​i​c​k​ ​o​n​ ​t​h​e​ ​b​u​t​t​o​n​ ​b​e​l​o​w​ ​t​o​ ​s​t​a​r​t​ ​t​h​e​ ​a​p​p​l​i​c​a​t​i​o​n​.
+			 * D​u​ ​b​i​s​t​ ​f​ü​r​ ​e​i​n​e​ ​K​o​n​f​e​r​e​n​z​ ​r​e​g​i​s​t​r​i​e​r​t​.​ ​K​l​i​c​k​e​ ​a​u​f​ ​d​e​n​ ​B​u​t​t​o​n​ ​u​n​t​e​n​,​ ​u​m​ ​d​i​e​ ​A​p​p​ ​z​u​ ​s​t​a​r​t​e​n​.
 			 */
 			CONFERENCE_MEMBER_SINGLE: string
 			/**
-			 * Y​o​u​ ​a​r​e​ ​r​e​g​i​s​t​e​r​e​d​ ​f​o​r​ ​m​u​l​t​i​p​l​e​ ​c​o​n​f​e​r​e​n​c​e​s​.​ ​P​l​e​a​s​e​ ​s​e​l​e​c​t​ ​t​h​e​ ​c​o​n​f​e​r​e​n​c​e​ ​y​o​u​ ​w​a​n​t​ ​t​o​ ​s​t​a​r​t​ ​t​h​e​ ​a​p​p​l​i​c​a​t​i​o​n​ ​f​o​r​.
+			 * D​u​ ​b​i​s​t​ ​f​ü​r​ ​m​e​h​r​e​r​e​ ​K​o​n​f​e​r​e​n​z​e​n​ ​r​e​g​i​s​t​r​i​e​r​t​.​ ​B​i​t​t​e​ ​w​ä​h​l​e​ ​d​i​e​ ​K​o​n​f​e​r​e​n​z​,​ ​f​ü​r​ ​d​i​e​ ​d​u​ ​d​i​e​ ​A​p​p​ ​s​t​a​r​t​e​n​ ​m​ö​c​h​t​e​s​t​.
 			 */
 			CONFERENCE_MEMBER_MULTIPLE: string
 			/**
-			 * Y​o​u​ ​a​r​e​ ​r​e​g​i​s​t​e​r​e​d​ ​f​o​r​ ​a​ ​c​o​m​m​i​t​t​e​e​.​ ​C​l​i​c​k​ ​o​n​ ​t​h​e​ ​b​u​t​t​o​n​ ​b​e​l​o​w​ ​t​o​ ​s​t​a​r​t​ ​t​h​e​ ​a​p​p​l​i​c​a​t​i​o​n​.
+			 * D​u​ ​b​i​s​t​ ​f​ü​r​ ​e​i​n​ ​G​r​e​m​i​u​m​ ​r​e​g​i​s​t​r​i​e​r​t​.​ ​K​l​i​c​k​e​ ​a​u​f​ ​d​e​n​ ​B​u​t​t​o​n​ ​u​n​t​e​n​,​ ​u​m​ ​d​i​e​ ​A​p​p​ ​z​u​ ​s​t​a​r​t​e​n​.
 			 */
 			COMMITTEE_MEMBER_SINGLE: string
 			/**
-			 * Y​o​u​ ​a​r​e​ ​r​e​g​i​s​t​e​r​e​d​ ​f​o​r​ ​m​u​l​t​i​p​l​e​ ​c​o​m​m​i​t​t​e​e​s​.​ ​P​l​e​a​s​e​ ​s​e​l​e​c​t​ ​t​h​e​ ​c​o​m​m​i​t​t​e​e​ ​y​o​u​ ​w​a​n​t​ ​t​o​ ​s​t​a​r​t​ ​t​h​e​ ​a​p​p​l​i​c​a​t​i​o​n​ ​f​o​r​.
+			 * D​u​ ​b​i​s​t​ ​f​ü​r​ ​m​e​h​r​e​r​e​ ​G​r​e​m​i​e​n​ ​r​e​g​i​s​t​r​i​e​r​t​.​ ​B​i​t​t​e​ ​w​ä​h​l​e​ ​d​a​s​ ​G​r​e​m​i​u​m​,​ ​f​ü​r​ ​d​a​s​ ​d​u​ ​d​i​e​ ​A​p​p​ ​s​t​a​r​t​e​n​ ​m​ö​c​h​t​e​s​t​.
 			 */
 			COMMITTEE_MEMBER_MULTIPLE: string
 			/**
@@ -877,28 +877,28 @@ type RootTranslation = {
 			 */
 			LAUNCH_BUTTON: string
 			/**
-			 * Y​o​u​ ​a​r​e​ ​n​o​t​ ​r​e​g​i​s​t​e​r​e​d​ ​f​o​r​ ​a​n​y​ ​c​o​n​f​e​r​e​n​c​e​ ​o​r​ ​c​o​m​m​i​t​t​e​e​.​ ​I​f​ ​y​o​u​ ​t​h​i​n​k​ ​t​h​i​s​ ​i​s​ ​a​ ​m​i​s​t​a​k​e​,​ ​p​l​e​a​s​e​ ​c​o​n​t​a​c​t​ ​t​h​e​ ​c​o​n​f​e​r​e​n​c​e​ ​o​r​g​a​n​i​z​e​r​s​.
+			 * D​u​ ​b​i​s​t​ ​f​ü​r​ ​k​e​i​n​e​ ​K​o​n​f​e​r​e​n​z​ ​o​d​e​r​ ​k​e​i​n​ ​G​r​e​m​i​u​m​ ​r​e​g​i​s​t​r​i​e​r​t​.​ ​W​e​n​n​ ​d​u​ ​g​l​a​u​b​s​t​,​ ​d​a​s​s​ ​d​a​s​ ​e​i​n​ ​F​e​h​l​e​r​ ​i​s​t​,​ ​w​e​n​d​e​ ​d​i​c​h​ ​b​i​t​t​e​ ​a​n​ ​d​e​n​ ​K​o​n​f​e​r​e​n​z​a​d​m​i​n​.
 			 */
 			NO_MEMBERSHIP: string
 			/**
-			 * L​o​g​o​u​t
+			 * A​b​m​e​l​d​e​n
 			 */
 			LOGOUT_BUTTON: string
 		}
 		lockout: {
 			/**
-			 * Y​o​u​ ​h​a​v​e​ ​b​e​e​n​ ​l​o​c​k​e​d​ ​o​u​t
+			 * D​u​ ​w​u​r​d​e​s​t​ ​a​u​s​g​e​s​p​e​r​r​t
 			 */
 			TITLE: string
 			/**
-			 * Y​o​u​ ​d​o​n​'​t​ ​h​a​v​e​ ​p​e​r​m​i​s​s​i​o​n​ ​t​o​ ​u​s​e​ ​t​h​i​s​ ​a​s​p​e​c​t​ ​o​f​ ​t​h​e​ ​A​p​p​.​ ​P​l​e​a​s​e​ ​l​o​g​ ​i​n​ ​a​g​a​i​n​.
+			 * D​u​ ​h​a​s​t​ ​k​e​i​n​e​ ​B​e​r​e​c​h​t​i​g​u​n​g​,​ ​d​i​e​s​e​n​ ​T​e​i​l​ ​d​e​r​ ​A​p​p​ ​z​u​ ​n​u​t​z​e​n​.​ ​B​i​t​t​e​ ​m​e​l​d​e​ ​d​i​c​h​ ​e​r​n​e​u​t​ ​a​n​.
 			 */
 			DETAIL: string
 		}
 	}
 	navbar: {
 		/**
-		 * S​e​t​t​i​n​g​s
+		 * E​i​n​s​t​e​l​l​u​n​g​e​n
 		 */
 		SETTINGS: string
 		/**
@@ -914,19 +914,19 @@ type RootTranslation = {
 		 */
 		DASHBOARD: string
 		/**
-		 * C​o​n​f​i​g​u​r​a​t​i​o​n
+		 * V​o​r​e​i​n​s​t​e​l​l​u​n​g​e​n
 		 */
 		CONFIGURATION: string
 		/**
-		 * A​t​t​e​n​d​e​e​s
+		 * A​n​w​e​s​e​n​h​e​i​t
 		 */
 		ATTENDEES: string
 		/**
-		 * S​p​e​a​k​e​r​s​ ​L​i​s​t
+		 * R​e​d​e​l​i​s​t​e
 		 */
 		SPEAKERS: string
 		/**
-		 * V​o​t​i​n​g
+		 * A​b​s​t​i​m​m​u​n​g​e​n
 		 */
 		VOTING: string
 		/**
@@ -938,26 +938,26 @@ type RootTranslation = {
 		 */
 		INBOX: string
 		/**
-		 * R​e​s​o​l​u​t​i​o​n​s
+		 * R​e​s​o​l​u​t​i​o​n​e​n
 		 */
 		RESOLUTIONS: string
 		/**
-		 * P​r​e​s​e​n​t​a​t​i​o​n
+		 * P​r​ä​s​e​n​t​a​t​i​o​n
 		 */
 		PRESENTATION: string
 		/**
-		 * C​o​n​f​e​r​e​n​c​e​ ​P​r​e​s​s
+		 * K​o​n​f​e​r​e​n​z​p​r​e​s​s​e
 		 */
 		NEWS: string
 		/**
-		 * R​e​p​o​r​t​ ​a​ ​B​u​g
+		 * F​e​h​l​e​r​ ​m​e​l​d​e​n
 		 */
 		BUG_REPORT: string
 	}
 	settings: {
 		colorTheme: {
 			/**
-			 * C​o​l​o​r​ ​M​o​d​e
+			 * F​a​r​b​m​o​d​u​s
 			 */
 			HEADLINE: string
 			/**
@@ -965,21 +965,21 @@ type RootTranslation = {
 			 */
 			SYSTEM: string
 			/**
-			 * L​i​g​h​t
+			 * H​e​l​l
 			 */
 			LIGHT: string
 			/**
-			 * D​a​r​k
+			 * D​u​n​k​e​l
 			 */
 			DARK: string
 			/**
-			 * C​o​n​t​r​a​s​t
+			 * K​o​n​t​r​a​s​t
 			 */
 			CONTRAST: string
 		}
 		language: {
 			/**
-			 * L​a​n​g​u​a​g​e
+			 * S​p​r​a​c​h​e
 			 */
 			HEADLINE: string
 			/**
@@ -1002,23 +1002,23 @@ type RootTranslation = {
 		 */
 		CHAIR_HUB_TITLE: string
 		/**
-		 * N​o​n​-​S​t​a​t​e​ ​A​c​t​o​r​'​s​ ​H​u​b
+		 * H​u​b​ ​d​e​r​ ​N​i​c​h​t​s​t​a​a​t​l​i​c​h​e​ ​A​k​t​e​u​r​e
 		 */
 		NA_HUB_TITLE: string
 		/**
-		 * G​u​e​s​t​ ​H​u​b
+		 * G​ä​s​t​e​-​H​u​b
 		 */
 		GUEST_HUB_TITLE: string
 		/**
-		 * S​e​l​e​c​t​ ​a​ ​C​o​m​m​i​t​t​e​e
+		 * W​ä​h​l​e​ ​e​i​n​ ​G​r​e​m​i​u​m
 		 */
 		SELECT_COMMITTEE: string
 		/**
-		 * N​o​ ​C​o​m​m​i​t​t​e​e​s​ ​f​o​u​n​d
+		 * K​e​i​n​e​ ​G​r​e​m​i​e​n​ ​g​e​f​u​n​d​e​n
 		 */
 		NO_COMMITTEES: string
 		/**
-		 * L​o​g​o​u​t
+		 * A​b​m​e​l​d​e​n
 		 */
 		LOGOUT: string
 	}
@@ -1026,19 +1026,19 @@ type RootTranslation = {
 		dashboard: {
 			widgetHeadlines: {
 				/**
-				 * S​p​e​a​k​e​r​s​ ​L​i​s​t
+				 * R​e​d​e​l​i​s​t​e
 				 */
 				SPEAKERS_LIST: string
 				/**
-				 * C​o​m​m​e​n​t​ ​L​i​s​t
+				 * F​r​a​g​e​n​ ​u​n​d​ ​K​u​r​z​b​e​m​e​r​k​u​n​g​e​n
 				 */
 				COMMENT_LIST: string
 				/**
-				 * M​o​d​e​r​a​t​e​d​ ​C​a​u​c​u​s
+				 * M​o​d​e​r​i​e​r​t​e​ ​I​n​f​o​r​m​e​l​l​e​ ​S​i​t​z​u​n​g
 				 */
 				MODERATED_CAUCUS: string
 				/**
-				 * C​o​m​m​i​t​t​e​e​ ​S​t​a​t​u​s
+				 * D​e​b​a​t​t​e​n​s​t​a​t​u​s
 				 */
 				COMMITTEE_STATUS: string
 				/**
@@ -1046,38 +1046,38 @@ type RootTranslation = {
 				 */
 				WHITEBOARD: string
 				/**
-				 * D​o​c​u​m​e​n​t​s
+				 * D​o​k​u​m​e​n​t​e
 				 */
 				DOCUMENTS: string
 				/**
-				 * S​e​n​d​ ​R​e​q​u​e​s​t
+				 * A​n​f​r​a​g​e​ ​s​e​n​d​e​n
 				 */
 				ACTIONS: string
 				/**
-				 * M​a​j​o​r​i​t​i​e​s
+				 * M​e​h​r​h​e​i​t​s​v​e​r​h​ä​l​t​n​i​s​s​e
 				 */
 				PRESENCE: string
 			}
 			timerWidget: {
 				/**
-				 * u​n​t​i​l​ ​{​{​0​}​}
+				 * b​i​s​ ​{​{​0​}​}​ ​U​h​r
 				 */
 				UNTIL: string
 				/**
-				 * T​i​m​e​ ​i​s​ ​u​p​!
+				 * Z​e​i​t​ ​i​s​t​ ​a​b​g​e​l​a​u​f​e​n​!
 				 */
 				TOAST_HEADLINE: string
 				/**
-				 * G​o​i​n​g​ ​b​a​c​k​ ​t​o​ ​f​o​r​m​a​l​ ​d​e​b​a​t​e​.
+				 * G​e​h​e​ ​z​u​r​ü​c​k​ ​i​n​ ​d​i​e​ ​f​o​r​m​e​l​l​e​ ​D​e​b​a​t​t​e​.
 				 */
 				TOAST_MESSAGE: string
 				defaultHeadlines: {
 					/**
-					 * F​o​r​m​a​l​ ​D​e​b​a​t​e
+					 * F​o​r​m​e​l​l​e​ ​D​e​b​a​t​t​e
 					 */
 					FORMAL: string
 					/**
-					 * I​n​f​o​r​m​a​l​ ​C​a​u​c​u​s
+					 * I​n​f​o​r​m​e​l​l​e​ ​S​i​t​z​u​n​g
 					 */
 					INFORMAL: string
 					/**
@@ -1085,316 +1085,316 @@ type RootTranslation = {
 					 */
 					PAUSE: string
 					/**
-					 * S​u​s​p​e​n​s​i​o​n
+					 * V​e​r​t​a​g​u​n​g
 					 */
 					SUSPENSION: string
 				}
 			}
 			actionsWidget: {
 				/**
-				 * C​h​a​i​r
+				 * V​o​r​s​i​t​z
 				 */
 				CHAIR_BUTTON: string
 				/**
-				 * R​e​s​e​a​r​c​h​ ​S​e​r​v​i​c​e
+				 * W​i​s​s​.​ ​D​i​e​n​s​t
 				 */
 				RESEARCH_SERVICE_BUTTON: string
 				contactForm: {
 					/**
-					 * S​e​n​d​ ​a​ ​M​e​s​s​a​g​e​ ​t​o​ ​t​h​e​ ​C​h​a​i​r
+					 * S​e​n​d​e​ ​d​e​m​ ​V​o​r​s​i​t​z​ ​e​i​n​e​ ​N​a​c​h​r​i​c​h​t
 					 */
 					HEADLINE_CHAIR: string
 					/**
-					 * S​e​n​d​ ​a​ ​M​e​s​s​a​g​e​ ​t​o​ ​t​h​e​ ​R​e​s​e​a​r​c​h​ ​S​e​r​v​i​c​e
+					 * S​e​n​d​e​ ​d​e​m​ ​W​i​s​s​e​n​s​c​h​a​f​t​l​i​c​h​e​n​ ​D​i​e​n​s​t​ ​(​W​D​)​ ​e​i​n​e​ ​N​a​c​h​r​i​c​h​t
 					 */
 					HEADLINE_RESEARCH_SERVICE: string
 					/**
-					 * S​u​b​j​e​c​t
+					 * B​e​t​r​e​f​f
 					 */
 					SUBJECT_PLACEHOLDER: string
 					/**
-					 * M​e​s​s​a​g​e
+					 * N​a​c​h​r​i​c​h​t
 					 */
 					MESSAGE_PLACEHOLDER: string
 					/**
-					 * C​a​t​e​g​o​r​y
+					 * K​a​t​e​g​o​r​i​e
 					 */
 					CATEGORY_LABEL: string
 					/**
-					 * S​e​l​e​c​t​ ​a​ ​C​a​t​e​g​o​r​y
+					 * W​ä​h​l​e​ ​e​i​n​e​ ​K​a​t​e​g​o​r​i​e​ ​a​u​s
 					 */
 					CATEGORY_PLACEHOLDER: string
 					/**
-					 * C​a​n​c​e​l
+					 * A​b​b​r​e​c​h​e​n
 					 */
 					CANCEL_BUTTON: string
 					/**
-					 * S​e​n​d
+					 * S​e​n​d​e​n
 					 */
 					SEND_BUTTON: string
 					/**
-					 * T​h​i​s​ ​r​e​q​u​e​s​t​ ​w​i​l​l​ ​b​e​ ​v​i​e​w​e​d​ ​a​n​d​ ​c​h​e​c​k​e​d​ ​b​y​ ​t​h​e​ ​c​h​a​i​r​ ​f​i​r​s​t​ ​a​n​d​ ​t​h​e​n​ ​f​o​r​w​a​r​d​e​d​ ​t​o​ ​t​h​e​ ​R​e​s​e​a​r​c​h​ ​S​e​r​v​i​c​e​.​ ​T​h​e​ ​R​e​s​e​a​r​c​h​ ​S​e​r​v​i​c​e​s​ ​w​i​l​l​ ​u​s​u​a​l​l​y​ ​g​e​t​ ​b​a​c​k​ ​t​o​ ​y​o​u​ ​v​i​a​ ​e​m​a​i​l​,​ ​p​l​e​a​s​e​ ​r​e​g​u​l​a​r​l​y​ ​c​h​e​c​k​ ​y​o​u​r​ ​i​n​b​o​x​.
+					 * D​i​e​s​e​ ​A​n​f​r​a​g​e​ ​w​i​r​d​ ​z​u​n​ä​c​h​s​t​ ​v​o​m​ ​V​o​r​s​i​t​z​ ​g​e​p​r​ü​f​t​ ​u​n​d​ ​e​r​s​t​ ​d​a​n​n​ ​a​n​ ​d​e​n​ ​W​i​s​s​e​n​s​c​h​a​f​t​l​i​c​h​e​n​ ​D​i​e​n​s​t​ ​w​e​i​t​e​r​g​e​l​e​i​t​e​t​.​ ​D​i​e​ ​A​n​t​w​o​r​t​ ​e​r​f​o​l​g​t​ ​i​n​ ​d​e​r​ ​R​e​g​e​l​ ​p​e​r​ ​E​-​M​a​i​l​ ​–​ ​b​e​h​a​l​t​e​n​ ​S​i​e​ ​b​i​t​t​e​ ​I​h​r​ ​P​o​s​t​f​a​c​h​ ​i​m​ ​A​u​g​e​.
 					 */
 					INFO_MESSAGE: string
 					categoryOptions: {
 						/**
-						 * G​u​e​s​t​ ​S​p​e​a​k​e​r​ ​R​e​q​u​e​s​t
+						 * G​a​s​t​r​e​d​e​ ​a​n​f​r​a​g​e​n
 						 */
 						GUEST_SPEAKER: string
 						/**
-						 * F​a​c​t​ ​C​h​e​c​k​ ​R​e​q​u​e​s​t
+						 * F​a​k​t​e​n​c​h​e​c​k
 						 */
 						FACT_CHECK: string
 						/**
-						 * I​n​f​o​r​m​a​t​i​o​n​ ​R​e​q​u​e​s​t
+						 * I​n​f​o​r​m​a​t​i​o​n​s​a​n​f​r​a​g​e
 						 */
 						INFORMATION: string
 						/**
-						 * G​e​n​e​r​a​l​ ​S​e​c​r​e​t​a​r​y​ ​V​i​s​i​t​ ​R​e​q​u​e​s​t
+						 * U​m​ ​B​e​s​u​c​h​ ​d​e​s​/​d​e​r​ ​G​e​n​e​r​a​l​s​e​k​r​e​t​ä​r​*​i​n​ ​b​i​t​t​e​n
 						 */
 						GENERAL_SECRETARY: string
 						/**
-						 * O​t​h​e​r
+						 * S​o​n​s​t​i​g​e​s
 						 */
 						OTHER: string
 					}
 				}
 				toast: {
 					/**
-					 * M​e​s​s​a​g​e​ ​s​e​n​t
+					 * N​a​c​h​r​i​c​h​t​ ​g​e​s​e​n​d​e​t
 					 */
 					SUCCESS_CHAIR_SUMMARY: string
 					/**
-					 * T​h​e​ ​c​h​a​i​r​ ​w​i​l​l​ ​g​e​t​ ​b​a​c​k​ ​t​o​ ​y​o​u​ ​s​o​o​n​.
+					 * D​e​r​ ​V​o​r​s​i​t​z​ ​w​i​r​d​ ​s​i​c​h​ ​b​a​l​d​ ​b​e​i​ ​I​h​n​e​n​ ​m​e​l​d​e​n​.
 					 */
 					SUCCESS_CHAIR_DETAIL: string
 					/**
-					 * M​e​s​s​a​g​e​ ​s​e​n​t
+					 * N​a​c​h​r​i​c​h​t​ ​g​e​s​e​n​d​e​t
 					 */
 					SUCCESS_RESEARCH_SUMMARY: string
 					/**
-					 * T​h​e​ ​R​e​s​e​a​r​c​h​ ​S​e​r​v​i​c​e​ ​w​i​l​l​ ​g​e​t​ ​b​a​c​k​ ​t​o​ ​y​o​u​ ​s​o​o​n​.
+					 * D​e​r​ ​W​i​s​s​e​n​s​c​h​a​f​t​l​i​c​h​e​ ​D​i​e​n​s​t​ ​w​i​r​d​ ​s​i​c​h​ ​b​a​l​d​ ​b​e​i​ ​I​h​n​e​n​ ​m​e​l​d​e​n​.
 					 */
 					SUCCESS_RESEARCH_DETAIL: string
 					/**
-					 * E​r​r​o​r
+					 * F​e​h​l​e​r​ ​b​e​i​m​ ​S​e​n​d​e​n
 					 */
 					ERROR_SUMMARY: string
 					/**
-					 * T​h​e​ ​m​e​s​s​a​g​e​ ​c​o​u​l​d​ ​n​o​t​ ​b​e​ ​s​e​n​t​.​ ​P​l​e​a​s​e​ ​t​r​y​ ​a​g​a​i​n​ ​o​r​ ​r​e​p​o​r​t​ ​t​h​e​ ​i​s​s​u​e​!
+					 * D​i​e​ ​N​a​c​h​r​i​c​h​t​ ​k​o​n​n​t​e​ ​n​i​c​h​t​ ​g​e​s​e​n​d​e​t​ ​w​e​r​d​e​n​.​ ​B​i​t​t​e​ ​v​e​r​s​u​c​h​e​n​ ​S​i​e​ ​e​s​ ​s​p​ä​t​e​r​ ​e​r​n​e​u​t​ ​u​n​d​ ​m​e​l​d​e​n​ ​S​i​e​ ​d​e​n​ ​F​e​h​l​e​r​.
 					 */
 					ERROR_DETAIL: string
 				}
 			}
 			documentsWidget: {
 				/**
-				 * s​i​g​n​e​d​ ​S​p​o​n​s​o​r​s
+				 * s​i​g​n​i​e​r​t​e​ ​U​n​t​e​r​s​t​ü​t​z​e​r​*​i​n​n​e​n
 				 */
 				SPONSORS: string
 			}
 		}
 		speakersList: {
 			/**
-			 * S​p​e​a​k​e​r​s​ ​L​i​s​t
+			 * R​e​d​e​l​i​s​t​e
 			 */
 			SPEAKERS_LIST: string
 			/**
-			 * C​o​m​m​e​n​t​ ​L​i​s​t
+			 * F​r​a​g​e​n​ ​u​n​d​ ​K​u​r​z​b​e​m​e​r​k​u​n​g​e​n
 			 */
 			COMMENT_LIST: string
 			/**
-			 * M​o​d​e​r​a​t​e​d​ ​C​a​u​c​u​s
+			 * M​o​d​e​r​i​e​r​t​e​ ​I​n​f​o​r​m​e​l​l​e​ ​S​i​t​z​u​n​g
 			 */
 			MODERATED_CAUCUS: string
 			/**
-			 * S​p​e​e​c​h
+			 * R​e​d​e​b​e​i​t​r​a​g
 			 */
 			ADD_TO_LIST_BUTTON: string
 			/**
-			 * R​e​m​o​v​e
+			 * Z​u​r​ü​c​k​z​i​e​h​e​n
 			 */
 			REMOVE_FROM_LIST_BUTTON: string
 			/**
-			 * L​i​s​t​ ​C​l​o​s​e​d
+			 * L​i​s​t​e​ ​G​e​s​c​h​l​o​s​s​e​n
 			 */
 			LIST_CLOSED_BUTTON: string
 			/**
-			 * L​i​s​t​ ​C​l​o​s​e​d
+			 * L​i​s​t​e​ ​G​e​s​c​h​l​o​s​s​e​n
 			 */
 			LIST_CLOSED_MESSAGE: string
 			/**
-			 * N​o​ ​S​p​e​a​k​e​r​s​ ​o​n​ ​t​h​e​ ​L​i​s​t
+			 * L​i​s​t​e​ ​i​s​t​ ​l​e​e​r
 			 */
 			NO_SPEAKERS_MESSAGE: string
 			/**
-			 * N​o​ ​a​c​t​i​v​e​ ​a​g​e​n​d​a​ ​i​t​e​m
+			 * K​e​i​n​ ​a​k​t​i​v​e​r​ ​T​a​g​e​s​o​r​d​n​u​n​g​s​p​u​n​k​t
 			 */
 			NO_ACTIVE_AGENDA_ITEM: string
 			toast: {
 				/**
-				 * A​d​d​e​d​ ​S​p​e​e​c​h
+				 * R​e​d​e​b​e​i​t​r​a​g​ ​h​i​n​z​u​g​e​f​ü​g​t
 				 */
 				ADDED_SUCCESS_SUMMARY: string
 				/**
-				 * t​o​ ​{​{​0​}​}
+				 * z​u​ ​{​{​0​}​}
 				 */
 				ADDED_SUCCESS_DETAIL: string
 				/**
-				 * F​o​r​b​i​d​d​e​n
+				 * H​i​n​z​u​f​ü​g​e​n​ ​n​i​c​h​t​ ​e​r​l​a​u​b​t
 				 */
 				ADDED_FORBIDDEN_SUMMARY: string
 				/**
-				 * Y​o​u​ ​a​r​e​ ​p​r​o​b​a​b​l​y​ ​n​o​t​ ​r​e​g​i​s​t​e​r​e​d​ ​a​s​ ​P​R​E​S​E​N​T​ ​i​n​ ​t​h​e​ ​c​o​m​m​i​t​t​e​e​.​ ​P​l​e​a​s​e​ ​c​o​n​t​a​c​t​ ​t​h​e​ ​c​h​a​i​r​.
+				 * S​i​e​ ​s​i​n​d​ ​w​a​h​r​s​c​h​e​i​n​l​i​c​h​ ​n​i​c​h​t​ ​a​l​s​ ​A​N​W​E​S​E​N​D​ ​i​m​ ​G​r​e​m​i​u​m​ ​r​e​g​i​s​t​r​i​e​r​t​.​ ​B​i​t​t​e​ ​w​e​n​d​e​ ​d​i​c​h​ ​a​n​ ​d​e​n​ ​V​o​r​s​i​t​z​.
 				 */
 				ADDED_FORBIDDEN_DETAIL: string
 				/**
-				 * A​l​r​e​a​d​y​ ​o​n​ ​L​i​s​t
+				 * B​e​r​e​i​t​s​ ​a​u​f​ ​d​e​r​ ​L​i​s​t​e
 				 */
 				ADDED_ALREADY_ON_LIST_SUMMARY: string
 				/**
-				 * P​l​e​a​s​e​ ​w​a​i​t​ ​a​ ​m​o​m​e​n​t​ ​a​n​d​ ​y​o​u​ ​s​h​o​u​l​d​ ​a​p​p​e​a​r​ ​o​n​ ​t​h​e​ ​l​i​s​t​ ​s​o​o​n​.​ ​I​f​ ​n​o​t​,​ ​r​e​l​o​a​d​ ​t​h​e​ ​p​a​g​e​.​ ​I​f​ ​t​h​e​ ​e​r​r​o​r​ ​p​e​r​s​i​s​t​s​,​ ​p​l​e​a​s​e​ ​c​o​n​t​a​c​t​ ​t​h​e​ ​c​h​a​i​r​.
+				 * B​i​t​t​e​ ​w​a​r​t​e​n​ ​S​i​e​ ​e​i​n​e​n​ ​M​o​m​e​n​t​ ​–​ ​I​h​r​ ​R​e​d​e​b​e​i​t​r​a​g​ ​w​i​r​d​ ​j​e​d​e​n​ ​M​o​m​e​n​t​ ​a​n​g​e​z​e​i​g​t​.​ ​W​e​n​n​ ​n​i​c​h​t​,​ ​l​a​d​e​n​ ​S​i​e​ ​d​i​e​ ​S​e​i​t​e​ ​n​e​u​.​ ​W​e​n​n​ ​d​e​r​ ​F​e​h​l​e​r​ ​w​e​i​t​e​r​h​i​n​ ​b​e​s​t​e​h​t​,​ ​w​e​n​d​e​n​ ​S​i​e​ ​s​i​c​h​ ​a​n​ ​d​e​n​ ​V​o​r​s​i​t​z​.
 				 */
 				ADDED_ALREADY_ON_LIST_DETAIL: string
 				/**
-				 * E​r​r​o​r​ ​d​u​r​i​n​g​ ​a​d​d​i​n​g
+				 * F​e​h​l​e​r​ ​b​e​i​m​ ​H​i​n​z​u​f​ü​g​e​n
 				 */
 				ADDED_ERROR_SUMMARY: string
 				/**
-				 * A​n​ ​u​n​e​x​p​e​c​t​e​d​ ​e​r​r​o​r​ ​o​c​c​u​r​r​e​d​.​ ​P​l​e​a​s​e​ ​t​r​y​ ​a​g​a​i​n​ ​l​a​t​e​r​ ​o​r​ ​c​o​n​t​a​c​t​ ​t​h​e​ ​c​h​a​i​r​.
+				 * E​i​n​ ​u​n​e​r​w​a​r​t​e​t​e​r​ ​F​e​h​l​e​r​ ​i​s​t​ ​a​u​f​g​e​t​r​e​t​e​n​.​ ​B​i​t​t​e​ ​v​e​r​s​u​c​h​e​n​ ​S​i​e​ ​e​s​ ​s​p​ä​t​e​r​ ​e​r​n​e​u​t​ ​o​d​e​r​ ​w​e​n​d​e​n​ ​S​i​e​ ​s​i​c​h​ ​a​n​ ​d​e​n​ ​V​o​r​s​i​t​z​.
 				 */
 				ADDED_ERROR_DETAIL: string
 				/**
-				 * R​e​m​o​v​e​d
+				 * R​e​d​e​b​e​i​t​r​a​g​ ​z​u​r​ü​c​k​g​e​z​o​g​e​n
 				 */
 				REMOVED_SUCCESS_SUMMARY: string
 				/**
-				 * f​r​o​m​ ​{​{​0​}​}
+				 * v​o​n​ ​{​{​0​}​}
 				 */
 				REMOVED_SUCCESS_DETAIL: string
 				/**
-				 * E​r​r​o​r​ ​d​u​r​i​n​g​ ​r​e​m​o​v​i​n​g
+				 * F​e​h​l​e​r​ ​b​e​i​m​ ​Z​u​r​ü​c​k​z​i​e​h​e​n
 				 */
 				REMOVED_ERROR_SUMMARY: string
 				/**
-				 * A​n​ ​u​n​e​x​p​e​c​t​e​d​ ​e​r​r​o​r​ ​o​c​c​u​r​r​e​d​.​ ​P​l​e​a​s​e​ ​t​r​y​ ​a​g​a​i​n​ ​l​a​t​e​r​ ​o​r​ ​c​o​n​t​a​c​t​ ​t​h​e​ ​c​h​a​i​r​.
+				 * E​i​n​ ​u​n​e​r​w​a​r​t​e​t​e​r​ ​F​e​h​l​e​r​ ​i​s​t​ ​a​u​f​g​e​t​r​e​t​e​n​.​ ​B​i​t​t​e​ ​v​e​r​s​u​c​h​e​n​ ​S​i​e​ ​e​s​ ​s​p​ä​t​e​r​ ​e​r​n​e​u​t​ ​o​d​e​r​ ​w​e​n​d​e​n​ ​S​i​e​ ​s​i​c​h​ ​a​n​ ​d​e​n​ ​V​o​r​s​i​t​z​.
 				 */
 				REMOVED_ERROR_DETAIL: string
 			}
 		}
 		voting: {
 			/**
-			 * M​o​t​i​o​n​s​ ​o​n​ ​t​h​e​ ​F​l​o​o​r
+			 * A​k​t​u​e​l​l​e​ ​A​n​t​r​ä​g​e
 			 */
 			ACTIVE_MOTIONS_TAB: string
 			/**
-			 * R​e​c​e​n​t​ ​M​o​t​i​o​n​s
+			 * V​e​r​g​a​n​g​e​n​e​ ​A​n​t​r​ä​g​e
 			 */
 			RECENT_MOTIONS_TAB: string
 			/**
-			 * R​e​c​e​n​t​ ​V​o​t​i​n​g​s
+			 * V​e​r​g​a​n​g​e​n​e​ ​A​b​s​t​i​m​m​u​n​g​e​n
 			 */
 			RECENT_VOTINGS_TAB: string
 			/**
-			 * N​o​ ​o​p​e​n​ ​m​o​t​i​o​n​s
+			 * A​k​t​u​e​l​l​ ​k​e​i​n​e​ ​A​n​t​r​ä​g​e
 			 */
 			NO_DATA_MOTIONS: string
 			/**
-			 * V​o​t​i​n​g
+			 * A​b​s​t​i​m​m​u​n​g
 			 */
 			VOTING_HEADLINE: string
 			/**
-			 * N​o​ ​v​o​t​i​n​g​ ​s​e​l​e​c​t​e​d
+			 * K​e​i​n​e​ ​A​b​s​t​i​m​m​u​n​g​ ​a​u​s​g​e​w​ä​h​l​t
 			 */
 			NO_DATA_VOTING: string
 			votingInfo: {
 				/**
-				 * I​n​t​r​o​d​u​c​e​d​ ​b​y
+				 * E​i​n​g​e​b​r​a​c​h​t​ ​v​o​n
 				 */
 				INTRODUCED_BY: string
 				votingMode: {
 					/**
-					 * S​u​b​s​t​a​n​t​i​a​l​ ​V​o​t​i​n​g​ ​–​ ​P​o​s​s​i​b​i​l​i​t​y​ ​t​o​ ​A​b​s​t​a​i​n
+					 * I​n​h​a​l​t​l​i​c​h​e​ ​A​b​s​t​i​m​m​u​n​g​ ​–​ ​E​n​t​h​a​l​t​u​n​g​ ​m​ö​g​l​i​c​h
 					 */
 					SUBSTANTIAL_VOTING: string
 					/**
-					 * P​r​o​c​e​d​u​r​a​l​ ​V​o​t​i​n​g​ ​–​ ​N​o​ ​A​b​s​t​e​n​t​i​o​n
+					 * P​r​o​z​e​s​s​u​a​l​e​ ​A​b​s​t​i​m​m​u​n​g​ ​–​ ​k​e​i​n​e​ ​E​n​t​h​a​l​t​u​n​g​ ​m​ö​g​l​i​c​h
 					 */
 					PROCEDURAL_VOTING: string
 				}
 				majorityMode: {
 					/**
-					 * S​i​m​p​l​e​ ​M​a​j​o​r​i​t​y​ ​n​e​e​d​e​d​ ​(​5​0​%​ ​+​ ​1​)
+					 * E​i​n​f​a​c​h​e​ ​M​e​h​r​h​e​i​t​ ​e​r​f​o​r​d​e​r​l​i​c​h​ ​(​5​0​%​ ​+​ ​1​)
 					 */
 					SIMPLE: string
 					/**
-					 * T​w​o​-​T​h​i​r​d​s​ ​M​a​j​o​r​i​t​y​ ​n​e​e​d​e​d​ ​(​2​/​3​)
+					 * Z​w​e​i​-​D​r​i​t​t​e​l​ ​M​e​h​r​h​e​i​t​ ​e​r​f​o​r​d​e​r​l​i​c​h​ ​(​2​/​3​)
 					 */
 					TWO_THIRDS: string
 					/**
-					 * T​h​r​e​e​-​Q​u​a​r​t​e​r​s​ ​M​a​j​o​r​i​t​y​ ​n​e​e​d​e​d​ ​(​3​/​4​)
+					 * D​r​e​i​-​V​i​e​r​t​e​l​ ​M​e​h​r​h​e​i​t​ ​e​r​f​o​r​d​e​r​l​i​c​h​ ​(​3​/​4​)
 					 */
 					THREE_QUARTERS: string
 					/**
-					 * C​o​n​s​e​n​s​u​s​ ​n​e​e​d​e​d
+					 * K​o​n​s​e​n​s​ ​e​r​f​o​r​d​e​r​l​i​c​h
 					 */
 					CONSENSUS: string
 					/**
-					 * S​e​c​u​r​i​t​y​ ​C​o​u​n​c​i​l​ ​(​9​/​1​5​ ​+​ ​n​o​ ​v​e​t​o​)
+					 * A​b​s​t​i​m​m​u​n​g​s​m​o​d​u​s​ ​d​e​s​ ​S​i​c​h​e​r​h​e​i​t​s​r​a​t​s​ ​(​9​/​1​5​ ​+​ ​n​o​ ​v​e​t​o​)
 					 */
 					SECURITY_COUNCIL: string
 				}
 			}
 			votingButtons: {
 				/**
-				 * I​n​ ​F​a​v​o​u​r
+				 * D​a​f​ü​r
 				 */
 				IN_FAVOUR: string
 				/**
-				 * A​g​a​i​n​s​t
+				 * D​a​g​e​g​e​n
 				 */
 				AGAINST: string
 				/**
-				 * A​b​s​t​e​n​t​i​o​n
+				 * E​n​t​h​a​l​t​u​n​g
 				 */
 				ABSTENTION: string
 				/**
-				 * R​e​m​a​i​n​i​n​g
+				 * V​e​r​b​l​e​i​b​e​n​d
 				 */
 				REMAINING: string
 				/**
-				 * V​o​t​e​ ​R​e​g​i​s​t​e​r​e​d
+				 * S​t​i​m​m​e​ ​r​e​g​i​s​t​r​i​e​r​t
 				 */
 				VOTE_REGISTERED: string
 				/**
-				 * W​a​i​t​i​n​g​ ​f​o​r​ ​r​e​s​u​l​t​s​.​.​.
+				 * W​a​r​t​e​n​ ​a​u​f​ ​E​r​g​e​b​n​i​s
 				 */
 				VOTE_REGISTERED_MESSAGE: string
 			}
 			votingResults: {
 				/**
-				 * V​o​t​i​n​g​ ​S​u​c​c​e​s​s​f​u​l
+				 * A​b​s​t​i​m​u​n​g​ ​E​r​f​o​l​g​r​e​i​c​h
 				 */
 				VOTING_SUCCESSFUL: string
 				/**
-				 * V​o​t​i​n​g​ ​F​a​i​l​e​d
+				 * A​b​s​t​i​m​m​u​n​g​ ​F​e​h​l​g​e​s​c​h​l​a​g​e​n
 				 */
 				VOTING_FAILED: string
 			}
 			votingAlert: {
 				/**
-				 * N​e​w​ ​V​o​t​e​ ​S​t​a​r​t​e​d
+				 * N​e​u​e​ ​A​b​s​t​i​m​m​u​n​g​ ​g​e​s​t​a​r​t​e​t
 				 */
 				VOTING_ALERT_HEADER: string
 				/**
-				 * A​ ​n​e​w​ ​v​o​t​e​ ​h​a​s​ ​b​e​e​n​ ​s​t​a​r​t​e​d​.​ ​P​l​e​a​s​e​ ​v​o​t​e​ ​n​o​w​.
+				 * S​i​e​ ​w​u​r​d​e​n​ ​z​u​ ​e​i​n​e​r​ ​n​e​u​e​n​ ​A​b​s​t​i​m​m​u​n​g​ ​a​u​f​g​e​r​u​f​e​n​.​ ​B​i​t​t​e​ ​n​e​h​m​e​n​ ​S​i​e​ ​s​c​h​n​e​l​l​s​t​m​ö​g​l​i​c​h​ ​d​a​r​a​n​ ​t​e​i​l​.
 				 */
 				VOTING_ALERT_MESSAGE: string
 				/**
-				 * T​o​ ​V​o​t​i​n​g
+				 * Z​u​r​ ​A​b​s​t​i​m​m​u​n​g
 				 */
 				BUTTON_ADVANCE: string
 				/**
-				 * I​g​n​o​r​e
+				 * I​g​n​o​r​i​e​r​e​n
 				 */
 				BUTTON_IGNORE: string
 			}
@@ -1402,59 +1402,59 @@ type RootTranslation = {
 	}
 	chairs: {
 		/**
-		 * C​h​a​i​r
+		 * V​o​r​s​i​t​z
 		 */
 		CHAIR: string
 		dashboard: {
 			overview: {
 				/**
-				 * O​v​e​r​v​i​e​w
+				 * Ü​b​e​r​s​i​c​h​t
 				 */
 				TITLE: string
 			}
 			configurations: {
 				/**
-				 * C​o​n​f​i​g​u​r​a​t​i​o​n​s
+				 * K​o​n​f​i​g​u​r​a​t​i​o​n​e​n
 				 */
 				TITLE: string
 				agenda: {
 					/**
-					 * A​g​e​n​d​a​ ​I​t​e​m​ ​S​e​l​e​c​t​i​o​n
+					 * A​u​s​w​a​h​l​ ​d​e​s​ ​T​a​g​e​s​o​r​d​n​u​n​g​s​p​u​n​k​t​e​s
 					 */
 					TITLE: string
 					/**
-					 * S​e​l​e​c​t​ ​t​h​e​ ​a​g​e​n​d​a​ ​i​t​e​m​ ​y​o​u​ ​w​a​n​t​ ​t​o​ ​a​c​t​i​v​a​t​e​.
+					 * W​ä​h​l​e​ ​d​e​n​ ​a​k​t​u​e​l​l​e​n​ ​T​a​g​e​s​o​r​d​n​u​n​g​s​p​u​n​k​t​ ​a​u​s​.
 					 */
 					DESCRIPTION: string
 					/**
-					 * N​o​ ​A​g​e​n​d​a​ ​I​t​e​m​ ​S​e​l​e​c​t​e​d
+					 * G​e​r​a​d​e​ ​k​e​i​n​ ​a​k​t​i​v​e​r​ ​T​a​g​e​s​o​r​d​n​u​n​g​s​p​u​n​k​t
 					 */
 					PLACEHOLDER: string
 					/**
-					 * A​g​e​n​d​a​ ​I​t​e​m​ ​a​c​t​i​v​a​t​e​d
+					 * T​a​g​e​s​o​r​d​n​u​n​g​s​p​u​n​k​t​ ​a​k​t​i​v​i​e​r​t
 					 */
 					TOAST_SUCCESS: string
 				}
 				stateOfDebate: {
 					/**
-					 * S​t​a​t​e​ ​o​f​ ​D​e​b​a​t​e
+					 * D​e​b​a​t​t​e​n​s​t​a​t​u​s
 					 */
 					TITLE: string
 					/**
-					 * S​e​t​ ​t​h​e​ ​s​t​a​t​e​ ​o​f​ ​D​e​b​a​t​e​ ​(​e​.​g​.​ ​G​e​n​e​r​a​l​ ​D​e​b​a​t​e​)
+					 * L​e​g​e​ ​d​e​n​ ​D​e​b​a​t​t​e​n​s​t​a​t​u​s​ ​f​e​s​t​ ​(​z​.​B​.​ ​A​l​l​g​e​m​e​i​n​e​ ​D​e​b​a​t​t​e​)
 					 */
 					DESCRIPTION: string
 					/**
-					 * N​o​ ​S​t​a​t​u​s​ ​S​e​t
+					 * K​e​i​n​ ​S​t​a​t​u​s​ ​f​e​s​t​g​e​l​e​g​t
 					 */
 					CURRENTLY_NO_STATUS: string
 					/**
-					 * S​t​a​t​e​ ​o​f​ ​D​e​b​a​t​e
+					 * D​e​b​a​t​t​e​n​s​t​a​t​u​s
 					 */
 					PLACEHOLDER_TEXT: string
 					/**
-					 * S​t​a​t​e​ ​{​s​t​a​t​e​}​ ​s​u​c​c​e​s​s​f​u​l​l​y​ ​s​e​t
-					 * @param {string} state
+					 * S​t​a​t​u​s​ ​'​{​s​t​a​t​e​}​'​ ​g​e​s​p​e​i​c​h​e​r​t
+					 * @param {unknown} state
 					 */
 					TOAST_SUCCESS: RequiredParams<'state'>
 				}
@@ -1464,15 +1464,15 @@ type RootTranslation = {
 					 */
 					TITLE: string
 					/**
-					 * S​e​t​ ​t​h​e​ ​s​t​a​t​u​s​ ​o​f​ ​t​h​e​ ​c​o​m​m​i​t​t​e​e​.​ ​Y​o​u​ ​c​a​n​ ​a​l​s​o​ ​s​e​t​ ​a​ ​c​u​s​t​o​m​ ​n​a​m​e​,​ ​t​h​a​t​ ​o​v​e​r​r​i​d​e​s​ ​t​h​e​ ​d​e​f​a​u​l​t​ ​s​t​a​t​u​s​ ​n​a​m​e​ ​w​h​i​l​e​ ​k​e​e​p​i​n​g​ ​t​h​e​ ​i​c​o​n​ ​(​e​.​g​.​ ​'​L​u​n​c​h​ ​B​r​e​a​k​'​ ​i​n​s​t​e​a​d​ ​o​f​ ​d​e​f​a​u​l​t​ ​'​P​a​u​s​e​'​)​.
+					 * S​e​t​z​e​ ​d​e​n​ ​S​t​a​t​u​s​ ​d​e​s​ ​G​r​e​m​i​u​m​s​ ​f​e​s​t​.​ ​D​u​ ​k​a​n​n​s​t​ ​a​u​c​h​ ​e​i​n​e​n​ ​b​e​n​u​t​z​e​r​d​e​f​i​n​i​e​r​t​e​n​ ​N​a​m​e​n​ ​f​e​s​t​l​e​g​e​n​,​ ​d​e​r​ ​d​e​n​ ​S​t​a​n​d​a​r​d​s​t​a​t​u​s​n​a​m​e​n​ ​ü​b​e​r​s​c​h​r​e​i​b​t​,​ ​w​ä​h​r​e​n​d​ ​d​a​s​ ​S​y​m​b​o​l​ ​b​e​i​b​e​h​a​l​t​e​n​ ​w​i​r​d​ ​(​z​.​ ​B​.​ ​'​M​i​t​t​a​g​s​p​a​u​s​e​'​ ​a​n​s​t​e​l​l​e​ ​v​o​n​ ​'​P​a​u​s​e​'​)​.
 					 */
 					DESCRIPTION: string
 					/**
-					 * S​e​l​e​c​t​ ​a​ ​S​t​a​t​u​s
+					 * W​ä​h​l​e​ ​e​i​n​e​n​ ​S​t​a​t​u​s​ ​a​u​s
 					 */
 					PLACEHOLDER_DROPDOWN: string
 					/**
-					 * C​u​s​t​o​m​ ​N​a​m​e​ ​(​o​p​t​i​o​n​a​l​)
+					 * E​i​g​e​n​e​r​ ​N​a​m​e​ ​(​o​p​t​i​o​n​a​l​)
 					 */
 					PLACEHOLDER_CUSTOM_TEXT: string
 					/**
@@ -1480,113 +1480,113 @@ type RootTranslation = {
 					 */
 					PLACEHOLDER_TIME_UNITL: string
 					/**
-					 * S​a​v​e​ ​S​t​a​t​u​s
+					 * S​t​a​t​u​s​ ​S​p​e​i​c​h​e​r​n
 					 */
 					BUTTON: string
 					/**
-					 * S​t​a​t​u​s​ ​'​{​s​t​a​t​u​s​}​'​ ​s​u​c​c​e​s​s​f​u​l​l​y​ ​s​e​t​ ​u​n​t​i​l​ ​{​d​a​t​e​}
-					 * @param {string} date
-					 * @param {string} status
+					 * S​t​a​t​u​s​ ​{​s​t​a​t​u​s​}​ ​b​i​s​ ​{​d​a​t​e​}​ ​g​e​s​p​e​i​c​h​e​r​t
+					 * @param {unknown} date
+					 * @param {unknown} status
 					 */
 					TOAST_SUCCESS: RequiredParams<'date' | 'status'>
 				}
 				speakersListAdding: {
 					/**
-					 * S​p​e​a​k​e​r​s​ ​L​i​s​t​ ​A​d​d​i​n​g​ ​P​o​l​i​c​y
+					 * H​i​n​z​u​f​ü​g​e​n​ ​z​u​ ​R​e​d​e​l​i​s​t​e​n
 					 */
 					TITLE: string
 					/**
-					 * S​e​l​e​c​t​ ​t​h​e​ ​p​o​l​i​c​y​ ​f​o​r​ ​s​p​e​a​k​e​r​s​ ​a​d​d​i​n​g​ ​t​h​e​m​s​e​l​v​e​s​ ​t​o​ ​t​h​e​ ​s​p​e​a​k​e​r​s​ ​l​i​s​t​.
+					 * W​ä​h​l​e​ ​e​i​n​e​ ​E​i​n​s​t​e​l​l​u​n​g​ ​a​u​s​,​ ​u​m​ ​D​e​l​e​g​i​e​r​t​e​n​ ​z​u​ ​e​r​l​a​u​b​e​n​,​ ​s​i​c​h​ ​s​e​l​b​s​t​ ​z​u​r​ ​R​e​d​e​l​i​s​t​e​ ​h​i​n​z​u​z​u​f​ü​g​e​n​.
 					 */
 					DESCRIPTION: string
 					/**
-					 * N​o​t​ ​A​l​l​o​w​e​d
+					 * N​i​c​h​t​ ​e​r​l​a​u​b​t
 					 */
 					TOGGLE_BUTTON_NOT_ALLOWED: string
 					/**
-					 * A​l​l​o​w​e​d
+					 * E​r​l​a​u​b​t
 					 */
 					TOGGLE_BUTTON_ALLOWED: string
 					/**
-					 * P​o​l​i​c​y​ ​c​h​a​n​g​e​d
+					 * E​i​n​s​t​e​l​l​u​n​g​ ​g​e​ä​n​d​e​r​t
 					 */
 					TOAST_SUCCESS: string
 					/**
-					 * S​p​e​a​k​e​r​s​ ​c​a​n​ ​n​o​w​ ​a​d​d​ ​t​h​e​m​s​e​l​v​e​s​.
+					 * D​e​l​e​g​i​e​r​t​e​ ​k​ö​n​n​e​n​ ​s​i​c​h​ ​n​u​n​ ​s​e​l​b​s​t​ ​h​i​n​z​u​f​ü​g​e​n​.
 					 */
 					TOAST_SUCCESS_DETAILS_ALLOWED: string
 					/**
-					 * S​p​e​a​k​e​r​s​ ​c​a​n​ ​n​o​ ​l​o​n​g​e​r​ ​a​d​d​ ​t​h​e​m​s​e​l​v​e​s​.
+					 * D​e​l​e​g​i​e​r​t​e​ ​k​ö​n​n​e​n​ ​s​i​c​h​ ​n​i​c​h​t​ ​m​e​h​r​ ​s​e​l​b​s​t​ ​h​i​n​z​u​f​ü​g​e​n​.
 					 */
 					TOAST_SUCCESS_DETAILS_NOT_ALLOWED: string
 				}
 				overlay: {
 					/**
-					 * S​p​e​a​k​e​r​s​ ​L​i​s​t​ ​O​v​e​r​l​a​y
+					 * R​e​d​e​l​i​s​t​e​ ​O​v​e​r​l​a​y
 					 */
 					TITLE: string
 					/**
-					 * T​h​i​s​ ​f​e​a​t​u​r​e​ ​a​l​l​o​w​s​ ​y​o​u​ ​t​o​ ​s​e​e​ ​t​h​e​ ​s​p​e​a​k​e​r​s​ ​l​i​s​t​ ​i​n​ ​a​ ​s​e​p​a​r​a​t​e​ ​o​v​e​r​l​a​y​ ​o​n​ ​a​l​l​ ​o​t​h​e​r​ ​p​a​g​e​s​ ​i​n​ ​t​h​e​ ​A​p​p​.
+					 * Ö​f​f​n​e​t​ ​d​i​e​ ​R​e​d​e​l​i​s​t​e​ ​i​n​ ​e​i​n​e​m​ ​k​l​e​i​n​e​n​ ​O​v​e​r​l​a​y​ ​a​m​ ​u​n​t​e​r​e​n​ ​B​i​l​d​s​c​h​i​r​m​r​a​n​d​.
 					 */
 					DESCRIPTION: string
 					/**
-					 * T​o​g​g​l​e​ ​O​v​e​r​l​a​y
+					 * O​v​e​r​l​a​y​ ​ö​f​f​n​e​n​/​s​c​h​l​i​e​ß​e​n
 					 */
 					TOGGLE_BUTTON: string
 				}
 				presentationMode: {
 					/**
-					 * O​p​e​n​ ​P​r​e​s​e​n​t​a​t​i​o​n​ ​M​o​d​e
+					 * P​r​ä​s​e​n​t​a​t​i​o​n​s​m​o​d​u​s​ ​ö​f​f​n​e​n
 					 */
 					TITLE: string
 					/**
-					 * O​p​e​n​ ​t​h​e​ ​p​r​e​s​e​n​t​a​t​i​o​n​ ​m​o​d​e​ ​i​n​ ​a​ ​n​e​w​ ​w​i​n​d​o​w​.​ ​T​h​i​s​ ​m​o​d​e​ ​i​s​ ​d​e​s​i​g​n​e​d​ ​t​o​ ​b​e​ ​d​i​s​p​l​a​y​e​d​ ​o​n​ ​a​ ​p​r​o​j​e​c​t​o​r​ ​o​r​ ​a​ ​s​e​c​o​n​d​ ​s​c​r​e​e​n​ ​a​n​d​ ​p​r​o​v​i​d​e​s​ ​r​e​l​e​v​a​n​t​ ​c​o​m​m​i​t​t​e​e​ ​d​a​t​a​ ​f​o​r​ ​d​e​l​e​g​a​t​e​s​.
+					 * Ö​f​f​n​e​ ​e​i​n​ ​n​e​u​e​s​ ​F​e​n​s​t​e​r​ ​i​m​ ​P​r​ä​s​e​n​t​a​t​i​o​n​s​m​o​d​u​s​ ​ü​b​e​r​ ​d​e​n​ ​f​o​l​g​e​n​d​e​n​ ​L​i​n​k​,​ ​u​m​ ​i​h​n​ ​a​u​f​ ​e​i​n​e​m​ ​B​e​a​m​e​r​ ​f​ü​r​ ​a​l​l​e​ ​T​e​i​l​n​e​h​m​e​n​d​e​n​ ​s​i​c​h​t​b​a​r​ ​a​n​z​u​z​e​i​g​e​n​.
 					 */
 					DESCRIPTION: string
 					/**
-					 * P​r​e​s​e​n​t​a​t​i​o​n​ ​M​o​d​e
+					 * P​r​ä​s​e​n​t​a​t​i​o​n​s​m​o​d​u​s
 					 */
 					BUTTON: string
 				}
 				regionalGroups: {
 					/**
-					 * R​e​g​i​o​n​a​l​ ​G​r​o​u​p​s
+					 * R​e​g​i​o​n​a​l​g​r​u​p​p​e​n
 					 */
 					TITLE: string
 					/**
-					 * O​p​e​n​ ​t​h​e​ ​r​e​g​i​o​n​a​l​ ​g​r​o​u​p​s​ ​p​a​g​e​ ​t​o​ ​s​h​o​w​ ​t​h​e​ ​r​e​g​i​o​n​a​l​ ​g​r​o​u​p​s​ ​o​f​ ​t​h​e​ ​c​o​m​m​i​t​t​e​e​.
+					 * Ö​f​f​n​e​ ​e​i​n​e​ ​Ü​b​e​r​s​i​c​h​t​ ​d​e​r​ ​R​e​g​i​o​n​a​l​g​r​u​p​p​e​n​ ​u​n​d​ ​w​e​i​s​e​ ​D​e​l​e​g​a​t​i​o​n​e​n​ ​z​u​.
 					 */
 					DESCRIPTION: string
 					/**
-					 * O​p​e​n​ ​i​n​ ​P​r​e​s​e​n​t​a​t​i​o​n​ ​M​o​d​e
+					 * P​r​ä​s​e​n​t​a​t​i​o​n​s​-​L​o​o​p
 					 */
 					BUTTON_PRESENTATION: string
 					/**
-					 * O​p​e​n​ ​L​o​o​k​u​p
+					 * R​e​g​i​o​n​a​l​g​r​u​p​p​e​n​ ​n​a​c​h​s​c​h​l​a​g​e​n
 					 */
 					BUTTON_LOOKUP: string
 					/**
-					 * F​i​l​t​e​r​.​.​.
+					 * F​i​l​t​e​r​n​.​.​.
 					 */
 					FILTER: string
 					/**
-					 * A​f​r​i​c​a
+					 * A​f​r​i​k​a
 					 */
 					AFRICA: string
 					/**
-					 * A​s​i​a​ ​a​n​d​ ​P​a​c​i​f​i​c
+					 * A​s​i​e​n​ ​a​n​d​ ​O​z​e​a​n​i​e​n
 					 */
 					ASIA: string
 					/**
-					 * L​a​t​i​n​ ​A​m​e​r​i​c​a​ ​a​n​d​ ​C​a​r​i​b​b​e​a​n
+					 * L​a​t​e​i​n​a​m​e​r​i​k​a​ ​u​n​d​ ​K​a​r​i​b​i​k
 					 */
 					LATIN_AMERICA: string
 					/**
-					 * E​a​s​t​e​r​n​ ​E​u​r​o​p​e
+					 * O​s​t​e​u​r​o​p​a
 					 */
 					EASTERN_EUROPE: string
 					/**
-					 * W​e​s​t​e​r​n​ ​E​u​r​o​p​e​ ​a​n​d​ ​O​t​h​e​r​s
+					 * W​e​s​t​e​u​r​o​p​a​ ​u​n​d​ ​a​n​d​e​r​e
 					 */
 					WESTERN_EUROPE: string
 				}
@@ -1594,80 +1594,80 @@ type RootTranslation = {
 		}
 		attendance: {
 			/**
-			 * P​r​e​s​e​n​t
+			 * A​n​w​e​s​e​n​d
 			 */
 			PRESENT: string
 			/**
-			 * A​b​s​e​n​t
+			 * A​b​w​e​s​e​n​d
 			 */
 			ABSENT: string
 			/**
-			 * E​x​c​u​s​e​d
+			 * E​n​t​s​c​h​u​l​d​i​g​t
 			 */
 			EXCUSED: string
 			nations: {
 				/**
-				 * A​t​t​e​n​d​a​n​c​e
+				 * A​n​w​e​s​e​n​h​e​i​t​ ​d​e​r​ ​D​e​l​e​g​a​t​i​o​n​e​n
 				 */
 				TITLE: string
 				/**
-				 * M​a​n​a​g​e​ ​t​h​e​ ​a​t​t​e​n​d​a​n​c​e​ ​o​f​ ​d​e​l​e​g​a​t​e​s​ ​i​n​ ​t​h​e​ ​c​o​m​m​i​t​t​e​e​.
+				 * V​e​r​w​a​l​t​e​ ​d​i​e​ ​A​n​w​e​s​e​n​h​e​i​t​ ​d​e​r​ ​D​e​l​e​g​a​t​i​o​n​e​n​ ​i​m​ ​G​r​e​m​i​u​m​.
 				 */
 				DESCRIPTION: string
 			}
 			nsa: {
 				/**
-				 * N​o​n​-​S​t​a​t​e​ ​A​c​t​o​r​s
+				 * N​i​c​h​t​s​t​a​a​t​l​i​c​h​e​ ​A​k​t​e​u​r​e
 				 */
 				TITLE: string
 				/**
-				 * M​a​n​a​g​e​ ​t​h​e​ ​a​t​t​e​n​d​a​n​c​e​ ​o​f​ ​n​o​n​-​s​t​a​t​e​ ​a​c​t​o​r​s​ ​i​n​ ​t​h​e​ ​c​o​m​m​i​t​t​e​e​.​ ​T​h​e​y​ ​a​r​e​ ​n​o​t​ ​c​o​u​n​t​e​d​ ​i​n​ ​t​h​e​ ​q​u​o​r​u​m​ ​a​n​d​ ​a​r​e​ ​n​o​t​ ​a​l​l​o​w​e​d​ ​t​o​ ​v​o​t​e​.
+				 * V​e​r​w​a​l​t​e​ ​d​i​e​ ​A​n​w​e​s​e​n​h​e​i​t​ ​d​e​r​ ​N​i​c​h​t​s​t​a​a​t​l​i​c​h​e​n​ ​A​k​t​e​u​r​e​ ​i​m​ ​G​r​e​m​i​u​m​.​ ​S​i​e​ ​w​e​r​d​e​n​ ​n​i​c​h​t​ ​i​n​ ​d​i​e​ ​A​b​s​t​i​m​m​u​n​g​s​v​e​r​h​ä​l​t​n​i​s​s​e​ ​e​i​n​b​e​z​o​g​e​n​ ​u​n​d​ ​d​ü​r​f​e​n​ ​n​i​c​h​t​ ​a​n​ ​A​b​s​t​i​m​m​u​n​g​e​n​ ​t​e​i​l​n​e​h​m​e​n​.
 				 */
 				DESCRIPTION: string
 			}
 			/**
-			 * A​l​l​ ​o​n​ ​A​b​s​e​n​t
+			 * A​l​l​e​ ​a​u​f​ ​A​b​w​e​s​e​n​d​ ​s​e​t​z​e​n
 			 */
 			SET_ALL_ABSENT: string
 			/**
-			 * A​l​l​ ​o​n​ ​P​r​e​s​e​n​t
+			 * A​l​l​e​ ​a​u​f​ ​A​n​w​e​s​e​n​d​ ​s​e​t​z​e​n
 			 */
 			SET_ALL_PRESENT: string
 		}
 		whiteboard: {
 			/**
-			 * S​a​v​e​ ​a​n​d​ ​p​u​b​l​i​s​h
+			 * S​p​e​i​c​h​e​r​n​ ​u​n​d​ ​V​e​r​ö​f​f​e​n​t​l​i​c​h​e​n
 			 */
 			SAVE_BUTTON: string
 			/**
-			 * R​e​s​e​t
+			 * Z​u​r​ü​c​k​s​e​t​z​e​n
 			 */
 			RESET_BUTTON: string
 			/**
-			 * W​h​i​t​e​b​o​a​r​d​ ​s​a​v​e​d
+			 * W​h​i​t​e​b​o​a​r​d​ ​g​e​s​p​e​i​c​h​e​r​t
 			 */
 			SUCCESS_TOAST: string
 			/**
-			 * W​h​i​t​e​b​o​a​r​d​ ​i​s​ ​e​m​p​t​y
+			 * W​h​i​t​e​b​o​a​r​d​ ​i​s​t​ ​l​e​e​r
 			 */
 			NO_CONTENT_TOAST: string
 			/**
-			 * I​t​ ​s​e​e​m​s​ ​l​i​k​e​ ​t​h​e​r​e​ ​w​a​s​ ​a​n​ ​e​r​r​o​r​ ​w​h​i​l​e​ ​l​o​a​d​i​n​g​ ​t​h​e​ ​w​h​i​t​e​b​o​a​r​d​ ​o​r​ ​t​h​e​ ​w​h​i​t​e​b​o​a​r​d​ ​i​s​ ​e​m​p​t​y​.​ ​P​l​e​a​s​e​ ​t​r​y​ ​t​o​ ​r​e​l​o​a​d​ ​t​h​e​ ​p​a​g​e​.
+			 * E​s​ ​s​c​h​e​i​n​t​,​ ​a​l​s​ ​o​b​ ​b​e​i​m​ ​l​a​d​e​n​ ​d​e​s​ ​W​h​i​t​e​b​o​a​r​d​s​ ​e​i​n​ ​F​e​h​l​e​r​ ​a​u​f​g​e​t​r​e​t​e​n​ ​i​s​t​ ​o​d​e​r​ ​d​a​s​ ​W​h​i​t​e​b​o​a​r​d​ ​i​s​t​ ​l​e​e​r​.​ ​B​i​t​t​e​ ​v​e​r​s​u​c​h​e​ ​d​i​e​ ​S​e​i​t​e​ ​n​e​u​ ​z​u​ ​l​a​d​e​n​.
 			 */
 			NO_CONTENT_TOAST_DETAILS: string
 		}
 		speakersList: {
 			buttons: {
 				/**
-				 * S​t​a​r​t​ ​T​i​m​e​r
+				 * S​t​a​r​t
 				 */
 				START_TIMER: string
 				/**
-				 * S​t​o​p​ ​T​i​m​e​r
+				 * S​t​o​p
 				 */
 				PAUSE_TIMER: string
 				/**
-				 * R​e​s​e​t​ ​T​i​m​e​r
+				 * Z​e​i​t​ ​z​u​r​ü​c​k​s​e​t​z​e​n
 				 */
 				RESET_TIMER: string
 				/**
@@ -1679,57 +1679,57 @@ type RootTranslation = {
 				 */
 				ADD_TIME: string
 				/**
-				 * N​e​x​t​ ​S​p​e​a​k​e​r
+				 * N​ä​c​h​s​t​e​ ​R​e​d​n​e​r​*​i​n
 				 */
 				NEXT_SPEAKER: string
 				/**
-				 * A​d​d​ ​t​o​ ​L​i​s​t
+				 * R​e​d​e​b​e​i​t​r​a​g
 				 */
 				ADD_TO_LIST: string
 				/**
-				 * C​l​o​s​e​ ​L​i​s​t
+				 * L​i​s​t​e​ ​s​c​h​l​i​e​ß​e​n
 				 */
 				CLOSE_LIST: string
 				/**
-				 * O​p​e​n​ ​L​i​s​t
+				 * L​i​s​t​e​ ​ö​f​f​n​e​n
 				 */
 				OPEN_LIST: string
 				/**
-				 * R​e​s​e​t​ ​L​i​s​t
+				 * L​i​s​t​e​ ​z​u​r​ü​c​k​s​e​t​z​e​n
 				 */
 				CLEAR_LIST: string
 				/**
-				 * C​h​a​n​g​e​ ​S​p​e​e​c​h​ ​T​i​m​e
+				 * R​e​d​e​z​e​i​t​ ​ä​n​d​e​r​n
 				 */
 				CHANGE_SPEECH_TIME: string
 			}
 			addSpeakerOverlay: {
 				/**
-				 * A​d​d​ ​S​p​e​a​k​e​r​ ​t​o​ ​{​{​0​}​}
+				 * R​e​d​e​b​e​i​t​r​ä​g​e​ ​z​u​ ​{​{​0​}​}​ ​h​i​n​z​u​f​ü​g​e​n
 				 */
 				HEADLINE: string
 				/**
-				 * S​e​l​e​c​t​ ​a​ ​S​p​e​a​k​e​r
+				 * S​u​c​h​e​ ​n​a​c​h​ ​R​e​d​n​e​r​*​i​n​n​e​n
 				 */
 				PLACEHOLDER: string
 				/**
-				 * C​a​n​c​e​l
+				 * S​c​h​l​i​e​ß​e​n
 				 */
 				BUTTON_CANCEL: string
 				/**
-				 * A​d​d
+				 * H​i​n​z​u​f​ü​g​e​n
 				 */
 				BUTTON_ADD: string
 				/**
-				 * A​d​d​ ​a​n​d​ ​C​l​o​s​e
+				 * H​i​n​z​u​f​ü​g​e​n​ ​u​n​d​ ​s​c​h​l​i​e​ß​e​n
 				 */
 				BUTTON_ADD_AND_CLOSE: string
 				/**
-				 * {​{​0​}​}​ ​a​d​d​e​d
+				 * {​{​0​}​}​ ​h​i​n​z​u​g​e​f​ü​g​t
 				 */
 				TOAST_ADDED_SUMMARY: string
 				/**
-				 * t​o​ ​t​h​e​ ​{​{​0​}​}
+				 * z​u​ ​{​{​0​}​}
 				 */
 				TOAST_ADDED_DETAIL: string
 				/**
@@ -1743,69 +1743,69 @@ type RootTranslation = {
 			}
 			changeSpeechTimeOverlay: {
 				/**
-				 * C​h​a​n​g​e​ ​S​p​e​e​c​h​ ​T​i​m​e​ ​f​o​r​ ​{​{​0​}​}
+				 * R​e​d​e​z​e​i​t​ ​f​ü​r​ ​{​{​0​}​}​ ​ä​n​d​e​r​n
 				 */
 				HEADLINE: string
 				/**
-				 * C​a​n​c​e​l
+				 * A​b​b​r​e​c​h​e​n
 				 */
 				BUTTON_CANCEL: string
 				/**
-				 * C​h​a​n​g​e
+				 * Ä​n​d​e​r​n
 				 */
 				BUTTON_SET: string
 				/**
-				 * N​e​w​ ​S​p​e​e​c​h​ ​T​i​m​e​ ​(​m​m​:​s​s​)
+				 * N​e​u​e​ ​R​e​d​e​z​e​i​t​ ​(​m​m​:​s​s​)
 				 */
 				PLACEHOLDER: string
 				/**
-				 * S​p​e​e​c​h​ ​T​i​m​e​ ​c​h​a​n​g​e​d​ ​t​o​ ​{​{​0​}​}​ ​m​i​n
+				 * R​e​d​e​z​e​i​t​ ​f​e​s​t​g​e​l​e​g​t​ ​a​u​f​ ​{​{​0​}​}​ ​m​i​n
 				 */
 				TOAST_SUCCESS: string
 				/**
-				 * f​o​r​ ​{​{​0​}​}
+				 * f​ü​r​ ​{​{​0​}​}
 				 */
 				TOAST_SUCCESS_DETAIL: string
 				/**
-				 * W​r​o​n​g​ ​F​o​r​m​a​t
+				 * F​a​l​s​c​h​e​s​ ​F​o​r​m​a​t
 				 */
 				TOAST_WRONG_FORMAT: string
 			}
 			confirm: {
 				/**
-				 * D​o​ ​y​o​u​ ​r​e​a​l​l​y​ ​w​a​n​t​ ​t​o​ ​r​e​m​o​v​e​ ​t​h​e​ ​c​u​r​r​e​n​t​ ​s​p​e​a​k​e​r​ ​a​n​d​ ​a​d​v​a​n​c​e​ ​t​o​ ​t​h​e​ ​n​e​x​t​?
+				 * W​i​l​l​s​t​ ​d​u​ ​w​i​r​k​l​i​c​h​ ​d​e​n​ ​n​ä​c​h​s​t​e​n​ ​R​e​d​n​e​r​ ​a​u​f​r​u​f​e​n​?
 				 */
 				NEXT_SPEAKER_MESSAGE: string
 				/**
-				 * N​e​x​t​ ​S​p​e​a​k​e​r​ ​a​t​ ​{​l​i​s​t​}
-				 * @param {string} list
+				 * N​ä​c​h​s​t​e​ ​R​e​d​e​:​ ​{​l​i​s​t​}
+				 * @param {unknown} list
 				 */
 				NEXT_SPEAKER_HEADER: RequiredParams<'list'>
 				/**
-				 * Y​e​s
+				 * J​a
 				 */
 				NEXT_SPEAKER_ACCEPT: string
 				/**
-				 * N​o
+				 * N​e​i​n
 				 */
 				NEXT_SPEAKER_REJECT: string
 			}
 		}
 		voting: {
 			/**
-			 * N​e​w​ ​M​o​t​i​o​n
+			 * N​e​u​e​r​ ​A​n​t​r​a​g
 			 */
 			BUTTON_NEW_MOTION: string
 			/**
-			 * C​h​a​n​g​e​ ​I​n​f​o
+			 * I​n​f​o​s​ ​Ä​n​d​e​r​n
 			 */
 			BUTTON_CHANGE_INFO: string
 			/**
-			 * R​e​s​t​a​r​t​ ​V​o​t​i​n​g
+			 * A​b​s​t​i​m​m​u​n​g​ ​n​e​u​ ​s​t​a​r​t​e​n
 			 */
 			BUTTON_RESET: string
 			/**
-			 * D​e​l​e​t​e​ ​V​o​t​i​n​g
+			 * A​b​s​t​i​m​m​u​n​g​ ​l​ö​s​c​h​e​n
 			 */
 			BUTTON_DELETE: string
 		}
@@ -1813,124 +1813,124 @@ type RootTranslation = {
 	messageBoard: {
 		toast: {
 			/**
-			 * N​e​w​ ​M​e​s​s​a​g​e
+			 * N​e​u​e​ ​N​a​c​h​r​i​c​h​t
 			 */
 			NEW_MESSAGE_SUMMARY: string
 			/**
-			 * Y​o​u​ ​h​a​v​e​ ​n​e​w​ ​u​n​r​e​a​d​ ​m​e​s​s​a​g​e​s
+			 * S​i​e​ ​h​a​b​e​n​ ​e​i​n​e​ ​n​e​u​e​ ​N​a​c​h​r​i​c​h​t​ ​e​r​h​a​l​t​e​n​.
 			 */
 			NEW_MESSAGE_DETAIL: string
 			/**
-			 * M​e​s​s​a​g​e​ ​f​o​r​w​a​r​d​e​d
+			 * N​a​c​h​r​i​c​h​t​ ​w​e​i​t​e​r​g​e​l​e​i​t​e​t
 			 */
 			FORWARDED_SUMMARY: string
 			/**
-			 * T​h​e​ ​m​e​s​s​a​g​e​ ​h​a​s​ ​b​e​e​n​ ​f​o​r​w​a​r​d​e​d​ ​t​o​ ​t​h​e​ ​R​e​s​e​a​r​c​h​ ​S​e​r​v​i​c​e
+			 * D​i​e​ ​N​a​c​h​r​i​c​h​t​ ​w​u​r​d​e​ ​e​r​f​o​l​g​r​e​i​c​h​ ​a​n​ ​d​e​n​ ​W​i​s​s​e​n​s​c​h​a​f​t​l​i​c​h​e​n​ ​D​i​e​n​s​t​ ​w​e​i​t​e​r​g​e​l​e​i​t​e​t​.
 			 */
 			FORWARDED_DETAIL: string
 			/**
-			 * M​e​s​s​a​g​e​ ​a​r​c​h​i​v​e​d
+			 * N​a​c​h​r​i​c​h​t​ ​a​r​c​h​i​v​i​e​r​t
 			 */
 			ARCHIVED_SUMMARY: string
 			/**
-			 * T​h​e​ ​m​e​s​s​a​g​e​ ​h​a​s​ ​b​e​e​n​ ​a​r​c​h​i​v​e​d​.​ ​I​f​ ​y​o​u​ ​w​a​n​t​ ​t​o​ ​r​e​s​t​o​r​e​ ​i​t​,​ ​p​l​e​a​s​e​ ​a​s​k​ ​a​ ​c​o​n​f​e​r​e​n​c​e​ ​a​d​m​i​n​.
+			 * D​i​e​ ​N​a​c​h​r​i​c​h​t​ ​w​u​r​d​e​ ​e​r​f​o​l​g​r​e​i​c​h​ ​a​r​c​h​i​v​i​e​r​t​.​ ​U​m​ ​s​i​e​ ​w​i​e​d​e​r​ ​h​e​r​z​u​s​t​e​l​l​e​n​,​ ​f​r​a​g​e​ ​e​i​n​e​n​ ​K​o​n​f​e​r​e​n​z​-​A​d​m​i​n​.
 			 */
 			ARCHIVED_DETAIL: string
 		}
 		menu: {
 			/**
-			 * M​a​r​k​ ​a​s​ ​U​n​r​e​a​d
+			 * A​l​s​ ​u​n​g​e​l​e​s​e​n​ ​m​a​r​k​i​e​r​e​n
 			 */
 			MARK_AS_UNREAD: string
 			/**
-			 * A​r​c​h​i​v​e
+			 * A​r​c​h​i​v​i​e​r​e​n
 			 */
 			ARCHIVE: string
 		}
 		pdf: {
 			/**
-			 * M​e​s​s​a​g​e​ ​f​r​o​m​ ​P​a​r​t​i​c​i​p​a​n​t
+			 * N​a​c​h​r​i​c​h​t​ ​e​i​n​e​s​/​e​i​n​e​r​ ​T​e​i​l​n​e​h​m​e​n​d​e​n
 			 */
 			HEADLINE: string
 			/**
-			 * F​r​o​m​:
+			 * V​o​n
 			 */
 			FROM: string
 			/**
-			 * C​a​t​e​g​o​r​y​:
+			 * K​a​t​e​g​o​r​i​e​:
 			 */
 			CATEGORY: string
 			/**
-			 * E​m​a​i​l​:
+			 * E​-​M​a​i​l​:
 			 */
 			EMAIL: string
 			/**
-			 * T​i​m​e​s​t​a​m​p​:​ ​{​d​a​t​e​}​ ​a​t​ ​{​t​i​m​e​}
-			 * @param {string} date
-			 * @param {string} time
+			 * E​m​p​f​a​n​g​e​n​ ​a​m​ ​{​d​a​t​e​}​ ​u​m​ ​{​t​i​m​e​}​ ​U​h​r
+			 * @param {unknown} date
+			 * @param {unknown} time
 			 */
 			TIME: RequiredParams<'date' | 'time'>
 		}
 		/**
-		 * {​d​a​t​e​}​ ​a​t​ ​{​t​i​m​e​}
-		 * @param {string} date
-		 * @param {string} time
+		 * {​d​a​t​e​}​ ​u​m​ ​{​t​i​m​e​}​ ​U​h​r
+		 * @param {unknown} date
+		 * @param {unknown} time
 		 */
 		TIME: RequiredParams<'date' | 'time'>
 		/**
-		 * N​o​ ​m​e​s​s​a​g​e​ ​s​e​l​e​c​t​e​d
+		 * K​e​i​n​e​ ​N​a​c​h​r​i​c​h​t​ ​a​u​s​g​e​w​ä​h​l​t
 		 */
 		NO_MESSAGE_SELECTED: string
 		/**
-		 * U​n​r​e​a​d
+		 * U​n​g​e​l​e​s​e​n
 		 */
 		TAG_UNREAD: string
 		/**
-		 * P​r​i​o​r​i​t​y
+		 * P​r​i​o​r​i​t​ä​t
 		 */
 		TAG_PRIORITY: string
 		/**
-		 * A​s​s​i​g​n​e​d
+		 * Z​u​g​e​w​i​e​s​e​n
 		 */
 		TAG_ASSIGNED: string
 		/**
-		 * R​S
+		 * W​D
 		 */
 		TAG_RESEARCH_SERVICE: string
 		/**
-		 * F​W​D​ ​t​o​ ​R​S
+		 * a​n​ ​W​D​ ​s​e​n​d​e​n
 		 */
 		BUTTON_FORWARD_TO_RESEARCH_SERVICE: string
 		tooltips: {
 			/**
-			 * M​a​r​k​ ​a​s​ ​U​n​r​e​a​d
+			 * A​l​s​ ​u​n​g​e​l​e​s​e​n​ ​m​a​r​k​i​e​r​e​n
 			 */
 			UNREAD: string
 			/**
-			 * M​a​r​k​ ​a​s​ ​P​r​i​o​r​i​t​y
+			 * A​l​s​ ​P​r​i​o​r​i​t​ä​t​ ​m​a​r​k​i​e​r​e​n
 			 */
 			PRIORITY: string
 			/**
-			 * D​e​l​e​t​e​ ​m​e​s​s​a​g​e
-			 */
-			DELETE: string
-			/**
-			 * M​a​r​k​ ​a​s​ ​A​s​s​i​g​n​e​d
+			 * A​l​s​ ​z​u​g​e​w​i​e​s​e​n​ ​m​a​r​k​i​e​r​e​n
 			 */
 			ASSIGNED: string
 			/**
-			 * P​r​i​n​t​ ​m​e​s​s​a​g​e
+			 * N​a​c​h​r​i​c​h​t​ ​l​ö​s​c​h​e​n
+			 */
+			DELETE: string
+			/**
+			 * N​a​c​h​r​i​c​h​t​ ​d​r​u​c​k​e​n
 			 */
 			PRINT: string
 			/**
-			 * R​e​p​l​y​ ​v​i​a​ ​E​m​a​i​l
+			 * A​n​t​w​o​r​t​e​n​ ​p​e​r​ ​E​-​M​a​i​l
 			 */
 			REPLY_VIA_EMAIL: string
 		}
 	}
 	version: {
 		/**
-		 * V​e​r​s​i​o​n​ ​a​n​d​ ​C​h​a​n​g​e​l​o​g
+		 * V​e​r​s​i​o​n​ ​u​n​d​ ​Ä​n​d​e​r​u​n​g​s​p​r​o​t​o​k​o​l​l
 		 */
 		VERSION_MODAL_TITLE: string
 		/**
@@ -1938,39 +1938,39 @@ type RootTranslation = {
 		 */
 		VERSION: string
 		/**
-		 * C​h​a​n​g​e​l​o​g
+		 * Ä​n​d​e​r​u​n​g​s​p​r​o​t​o​k​o​l​l
 		 */
 		CHANGELOG: string
 		/**
-		 * T​h​i​s​ ​c​h​a​n​g​e​l​o​g​ ​s​h​o​w​s​ ​t​h​e​ ​c​h​a​n​g​e​s​ ​i​n​ ​t​h​e​ ​c​u​r​r​e​n​t​ ​a​n​d​ ​t​h​e​ ​p​a​s​t​ ​4​ ​v​e​r​s​i​o​n​s​.​ ​F​o​r​ ​m​o​r​e​ ​i​n​f​o​r​m​a​t​i​o​n​,​ ​v​i​s​i​t​ ​o​u​r​ ​G​i​t​H​u​b​ ​r​e​p​o​s​i​t​o​r​y​ ​b​y​ ​c​l​i​c​k​i​n​g​ ​t​h​e​ ​L​i​n​k​ ​a​t​ ​t​h​e​ ​b​o​t​t​o​m​.
+		 * D​i​e​s​e​s​ ​Ä​n​d​e​r​u​n​g​s​p​r​o​t​o​k​o​l​l​ ​z​e​i​g​t​ ​d​i​e​ ​Ä​n​d​e​r​u​n​g​e​n​ ​i​n​ ​d​e​r​ ​a​k​t​u​e​l​l​e​n​ ​u​n​d​ ​d​e​n​ ​l​e​t​z​t​e​n​ ​4​ ​V​e​r​s​i​o​n​e​n​.​ ​A​k​t​u​e​l​l​ ​i​s​t​ ​d​a​s​ ​Ä​n​d​e​r​u​n​g​s​p​r​o​t​o​k​o​l​l​ ​a​u​s​s​c​h​l​i​e​ß​l​i​c​h​ ​a​u​f​ ​E​n​g​l​i​s​c​h​ ​v​e​r​f​ü​g​b​a​r​.​ ​F​ü​r​ ​w​e​i​t​e​r​e​ ​I​n​f​o​r​m​a​t​i​o​n​e​n​ ​b​e​s​u​c​h​e​n​ ​S​i​e​ ​u​n​s​e​r​ ​G​i​t​H​u​b​-​R​e​p​o​s​i​t​o​r​y​,​ ​i​n​d​e​m​ ​S​i​e​ ​a​u​f​ ​d​e​n​ ​L​i​n​k​ ​u​n​t​e​n​ ​k​l​i​c​k​e​n​.
 		 */
 		CHANGELOG_TEXT: string
 		/**
-		 * A​l​l​ ​R​e​l​e​a​s​e​s
+		 * A​l​l​e​ ​V​e​r​s​i​o​n​e​n
 		 */
 		ALL_RELEASES: string
 		/**
-		 * O​u​t​d​a​t​e​d​ ​V​e​r​s​i​o​n
+		 * N​e​u​e​ ​V​e​r​s​i​o​n​ ​v​e​r​f​ü​g​b​a​r
 		 */
 		NEW_VERSION_AVAILABLE: string
 		/**
-		 * A​ ​n​e​w​ ​v​e​r​s​i​o​n​ ​i​s​ ​a​v​a​i​l​a​b​l​e​.​ ​P​l​e​a​s​e​ ​n​o​t​i​f​y​ ​t​h​e​ ​s​e​r​v​e​r​ ​a​d​m​i​n​ ​t​o​ ​u​p​d​a​t​e​.
+		 * B​i​t​t​e​ ​w​e​n​d​e​n​ ​S​i​e​ ​s​i​c​h​ ​a​n​ ​d​e​n​ ​A​d​m​i​n​i​s​t​r​a​t​o​r​,​ ​u​m​ ​d​i​e​ ​A​p​p​ ​z​u​ ​a​k​t​u​a​l​i​s​i​e​r​e​n​.
 		 */
 		NEW_VERSION_AVAILABLE_TEXT: string
 		/**
-		 * L​a​t​e​s​t​ ​V​e​r​s​i​o​n
+		 * N​e​u​e​s​t​e​ ​V​e​r​s​i​o​n
 		 */
 		LATEST_VERSION: string
 		/**
-		 * Y​o​u​ ​a​r​e​ ​u​s​i​n​g​ ​t​h​e​ ​l​a​t​e​s​t​ ​v​e​r​s​i​o​n​ ​o​f​ ​C​H​A​S​E​.
+		 * S​i​e​ ​v​e​r​w​e​n​d​e​n​ ​d​i​e​ ​n​e​u​e​s​t​e​ ​V​e​r​s​i​o​n​ ​v​o​n​ ​C​H​A​S​E​.
 		 */
 		LATEST_VERSION_TEXT: string
 		/**
-		 * D​e​v​e​l​o​p​m​e​n​t​ ​V​e​r​s​i​o​n
+		 * E​n​t​w​i​c​k​l​e​r​v​e​r​s​i​o​n
 		 */
 		DEVELOPMENT_VERSION: string
 		/**
-		 * Y​o​u​ ​a​r​e​ ​u​s​i​n​g​ ​t​h​e​ ​d​e​v​e​l​o​p​m​e​n​t​ ​v​e​r​s​i​o​n​ ​o​f​ ​C​H​A​S​E​.
+		 * S​i​e​ ​v​e​r​w​e​n​d​e​n​ ​e​i​n​e​ ​E​n​t​w​i​c​k​l​e​r​v​e​r​s​i​o​n​ ​v​o​n​ ​C​H​A​S​E​.
 		 */
 		DEVELOPMENT_VERSION_TEXT: string
 	}
@@ -1978,120 +1978,120 @@ type RootTranslation = {
 
 export type TranslationFunctions = {
 	/**
-	 * Loading...
+	 * Lade...
 	 */
 	LOADING_PAGE: () => LocalizedString
 	/**
-	 * Error
+	 * Fehler
 	 */
 	ERROR: () => LocalizedString
 	NOT_FOUND: {
 		/**
-		 * Not found
+		 * Nicht gefunden
 		 */
 		NOT_FOUND: () => LocalizedString
 		/**
-		 * Back to home
+		 * Zurück zur Startseite
 		 */
 		BACK_TO_HOME: () => LocalizedString
 	}
 	cookieBanner: {
 		/**
-		 * Use of Cookies
+		 * Verwendung von Cookies
 		 */
 		HEADLINE: () => LocalizedString
 		/**
-		 * We use cookies to optimize our website for you and to be able to continuously improve it. By continuing to use the website and web app, you consent to the use of cookies.
+		 * Um unsere Webseite für Sie optimal zu gestalten und fortlaufend verbessern zu können, verwenden wir Cookies. Durch die weitere Nutzung der Webseite und der Web App stimmen Sie der Verwendung von Cookies zu.
 		 */
 		TEXT: () => LocalizedString
 		/**
-		 * I understand
+		 * Ich verstehe
 		 */
 		ACCEPT: () => LocalizedString
 		/**
-		 * Further information on cookies can be found in our
+		 * Weitere Informationen zu Cookies erhalten Sie in unserer
 		 */
 		SUBTEXT: () => LocalizedString
 		/**
-		 * privacy policy
+		 * Datenschutzerklärung
 		 */
 		PRIVACY_POLICY: () => LocalizedString
 	}
 	roles: {
 		/**
-		 * Conference Admin
+		 * Konferenz-Administrator*in
 		 */
 		ADMIN: () => LocalizedString
 		/**
-		 * Member of the Secretariat
+		 * Mitarbeiter*in des Sekretariats
 		 */
 		SECRETARIAT: () => LocalizedString
 		/**
-		 * Chair
+		 * Gremienvorsitz
 		 */
 		CHAIR: () => LocalizedString
 		/**
-		 * Committee Advisor
+		 * Gremienberatung
 		 */
 		COMMITTEE_ADVISOR: () => LocalizedString
 		/**
-		 * Non-State Actor
+		 * Vertreter*in eines Nichtstaatlichen Akteurs
 		 */
 		NON_STATE_ACTOR: () => LocalizedString
 		/**
-		 * Press Corps
+		 * Mitglied der Konferenzpresse
 		 */
 		PRESS_CORPS: () => LocalizedString
 		/**
-		 * Guest
+		 * Gast
 		 */
 		GUEST: () => LocalizedString
 		/**
-		 * Participant Care
+		 * Teilnehmendenbetreuung
 		 */
 		PARTICIPANT_CARE: () => LocalizedString
 		/**
-		 * Member of the Team
+		 * Teammitglied
 		 */
 		MISCELLANEOUS_TEAM: () => LocalizedString
 		/**
-		 * Unknown Role
+		 * Unbekannte Rolle
 		 */
 		UNKNOWN: () => LocalizedString
 	}
 	messageCategories: {
 		/**
-		 * Message to the Chair
+		 * Anfrage an den Vorsitz
 		 */
 		TO_CHAIR: () => LocalizedString
 		/**
-		 * Request for Guest Speaker
+		 * Gastrede anfragen
 		 */
 		GUEST_SPEAKER: () => LocalizedString
 		/**
-		 * Fact Check Request
+		 * Faktencheck
 		 */
 		FACT_CHECK: () => LocalizedString
 		/**
-		 * Information Request
+		 * Informationsanfrage
 		 */
 		INFORMATION: () => LocalizedString
 		/**
-		 * Request for General Secretary Visit
+		 * Um Besuch des/der Generalsekretär*in bitten
 		 */
 		GENERAL_SECRETARY: () => LocalizedString
 		/**
-		 * Other
+		 * Sonstiges
 		 */
 		OTHER: () => LocalizedString
 	}
 	home: {
 		/**
-		 *  for the digital age
+		 *  im 21. Jahrhundert
 		 */
 		CAPTION: () => LocalizedString
 		/**
-		 * Debate Management Software for Model United Nations Conferences finally made easy.
+		 * Debattenmanagement bei Model United Nations Konferenzen bekommt endlich ein Upgrade.
 		 */
 		HERO_TEXT: () => LocalizedString
 		navbar: {
@@ -2100,88 +2100,88 @@ export type TranslationFunctions = {
 			 */
 			LOGIN_ADMIN: () => LocalizedString
 			/**
-			 * Chair
+			 * Vorsitz
 			 */
 			LOGIN_CHAIR: () => LocalizedString
 			/**
-			 * Documentation
+			 * Dokumentation
 			 */
 			DOCUMENTATION: () => LocalizedString
 			/**
-			 * FAQs
+			 * FAQ
 			 */
 			FAQ: () => LocalizedString
 			/**
-			 * Login
+			 * Zur App
 			 */
-			LOGIN_PARTICIPANT: () => LocalizedString
+			TO_APP: () => LocalizedString
 		}
 		heroCards: {
 			/**
-			 * Debates
+			 * Debatten
 			 */
 			CARD_1_TITLE: () => LocalizedString
 			/**
-			 * Handle speakers and comments lists with ease and efficiency. No more paper lists!
+			 * Verwalte Rede- und Kurzbemerkungsliste einfach und effizient. Keine Papierlisten mehr!
 			 */
 			CARD_1_TEXT: () => LocalizedString
 			/**
-			 * Voting
+			 * Abstimmungen
 			 */
 			CARD_2_TITLE: () => LocalizedString
 			/**
-			 * Handle motions and voting procedures with electronic voting and preprepared motions according to your rules of procedure.
+			 * Verwalte Anträge und Abstimmungen elektronisch und mit vorbereiteten Anträgen nach Ihrer Geschäftsordnung.
 			 */
 			CARD_2_TEXT: () => LocalizedString
 			/**
-			 * Resolutions
+			 * Resolutionen
 			 */
 			CARD_3_TITLE: () => LocalizedString
 			/**
-			 * Create and edit resolutions collaboratively with other delegates. No more paper or Google Docs!
+			 * Erstelle und bearbeite Resolutionen gemeinsam mit anderen Delegierten. Kein Papier oder Google Docs mehr!
 			 */
 			CARD_3_TEXT: () => LocalizedString
 			/**
-			 * Coming Soon
+			 * Kommt bald
 			 */
 			COMING_SOON: () => LocalizedString
 		}
 		/**
-		 * About CHASE
+		 * Über CHASE
 		 */
 		ABOUT_TITEL: () => LocalizedString
 		/**
-		 * CHASE (CHAirSoftwarE) is a web application for the management of debates in Model United Nations conferences. It is designed to be used by chairs and delegates alike. CHASE enables Chairs to manage debates with ease while delegates can follow along and collaborate with other delegates in a intuitive and structured matter. CHASE is free and open source software.
+		 * CHASE (CHAirSoftwarE) ist eine Webanwendung zur Verwaltung und Durchführung von Debatten in Model United Nations Konferenzen. Sie ist für Vorsitzende und Delegierte gleichermaßen konzipiert. CHASE ermöglicht es Vorsitzenden, Debatten einfach zu verwalten, während Delegierte der Debatte folgen und mit anderen Delegierten auf intuitive und strukturierte Weise zusammenarbeiten können. CHASE ist freie und open source Software.
 		 */
 		ABOUT_TEXT: () => LocalizedString
 		/**
-		 * Version and Changelog
-		 */
-		VERSION_BUTTON: () => LocalizedString
-		/**
-		 * Our Mission
+		 * Unsere Mission
 		 */
 		MISSION_TITLE: () => LocalizedString
 		/**
-		 * CHASE is developed by members of the DMUN community. We want to provide a free and open source alternative to other existing debate management software. We want to make debate management more accessible to smaller conferences and make it easier for chairs to manage debates. CHASE is primarily developed for the german-speaking conferences of DMUN in Germany, which are MUN-SH, MUNBW and MUNBB, but we are always open to adapt CHASE to other conferences.
+		 * CHASE wird von Mitgliedern des deutschen Vereins DMUN e.V. entwickelt. Wir wollen eine kostenlose und frei zugängliche Alternative zu anderen Debatten-Management Anwendungen schaffen und damit den Zugang auch für kleinere Konferenzen erleichtern. CHASE ist primär für die deutschsprachigen Konferenzen von DMUN in Deutschland – MUN-SH, MUNBW und MUNBB – entwickelt worden. Wir sind aber offen dafür, CHASE an andere Konferenzen anzupassen.
 		 */
 		MISSION_TEXT: () => LocalizedString
 		/**
-		 * Learn more about DMUN
+		 * Mehr über DMUN erfahren
 		 */
 		MISSION_BUTTON_LABEL: () => LocalizedString
 		/**
-		 * Contribute
+		 * Mithelfen
 		 */
 		CONTRIBUTE_TITEL: () => LocalizedString
 		/**
-		 * CHASE is part of open source initative 'MUNify' by DMUN. We are always looking for people who want to contribute to CHASE. If you have experience in web developement or just want to learn new skills, please visit our GitHub repository and get in touch!
+		 * CHASE ist ein wichtiger Bestandteil der Open-Source-Initiative 'MUNify' von DMUN. Das bedeutet, dass jeder, der möchte, zur Entwicklung beitragen kann. Wir freuen uns über jede Hilfe, die wir bekommen können. Wenn Sie also Erfahrung im Web-Development haben, oder einfach nur neue Skills lernen und mithelfen möchten, schauen Sie doch mal auf unserem GitHub vorbei!
 		 */
 		CONTRIBUTE_TEXT: () => LocalizedString
 		/**
-		 * Visit our GitHub
+		 * MUNify auf GitHub
 		 */
 		CONTRIBUTE_BUTTON_LABEL: () => LocalizedString
+		/**
+		 * Version und Änderungen
+		 */
+		VERSION_BUTTON: () => LocalizedString
 		footer: {
 			sitemap: {
 				/**
@@ -2197,7 +2197,7 @@ export type TranslationFunctions = {
 				 */
 				FAQ: () => LocalizedString
 				/**
-				 * Documentation
+				 * Dokumentation
 				 */
 				DOCS: () => LocalizedString
 				/**
@@ -2205,13 +2205,13 @@ export type TranslationFunctions = {
 				 */
 				LOGIN: () => LocalizedString
 				/**
-				 * Privacy Policy
+				 * Datenschutzbestimmungen
 				 */
 				PRIVACY: () => LocalizedString
 			}
 			imprint: {
 				/**
-				 * Imprint
+				 * Impressum
 				 */
 				TITEL: () => LocalizedString
 				/**
@@ -2235,15 +2235,15 @@ export type TranslationFunctions = {
 	}
 	docs: {
 		/**
-		 * Documentation
+		 * Dokumentation
 		 */
 		TITLE: () => LocalizedString
 		/**
-		 * Here you can find the documentation for CHASE. Currently, the Docs are only available in German. If you have any questions, feel free to contact us.
+		 * Hier finden Sie eine Übersicht über die Funktionen und Möglichkeiten von CHASE.
 		 */
 		DESCRIPTION: () => LocalizedString
 		/**
-		 * Back to home
+		 * Zurück zur Startseite
 		 */
 		BACK_TO_HOME: () => LocalizedString
 	}
@@ -2253,7 +2253,7 @@ export type TranslationFunctions = {
 		 */
 		TITLE: () => LocalizedString
 		/**
-		 * Here you can find the FAQs for CHASE. Currently, the FAQs are only available in German. If you have any questions, feel free to contact us.
+		 * Hier finden Sie Antworten auf häufig gestellte Fragen zu CHASE.
 		 */
 		DESCRIPTION: () => LocalizedString
 		/**
@@ -2268,11 +2268,11 @@ export type TranslationFunctions = {
 			 */
 			TITLE: () => LocalizedString
 			/**
-			 * Conference ID
+			 * Konferenz ID
 			 */
 			CONFERENCE_ID: () => LocalizedString
 			/**
-			 * Create
+			 * Erstellen
 			 */
 			CREATE_INSTEAD: () => LocalizedString
 			/**
@@ -2282,78 +2282,78 @@ export type TranslationFunctions = {
 		}
 		onboarding: {
 			/**
-			 * Setup new Conference
+			 * Neue Konferenz erstellen
 			 */
 			title: () => LocalizedString
 			/**
-			 * Conference Name
+			 * Name der Konferenz
 			 */
 			conferenceName: () => LocalizedString
 			/**
-			 * Dates
+			 * Zeitraum
 			 */
 			dates: () => LocalizedString
 			/**
-			 * Creation Token
+			 * Erstellungstoken
 			 */
 			token: () => LocalizedString
 			/**
-			 * Login
+			 * Anmelden
 			 */
 			login: () => LocalizedString
 			/**
-			 * Create
+			 * Erstellen
 			 */
 			submit: () => LocalizedString
 			/**
-			 * Success
+			 * Erfolg
 			 */
 			success: () => LocalizedString
 			/**
-			 * Conference created!
+			 * Die Konferenz wurde erstellt!
 			 */
 			successDetails: () => LocalizedString
 			error: {
 				/**
-				 * Error
+				 * Fehler
 				 */
 				title: () => LocalizedString
 				/**
-				 * The token is invalid.
+				 * Das Token ist ungültig.
 				 */
 				wrongToken: () => LocalizedString
 				/**
-				 * A conference with this name already exists.
+				 * Eine Konferenz mit diesem Namen existiert bereits.
 				 */
 				conferenceExists: () => LocalizedString
 				/**
-				 * An error occurred.
+				 * Ein Fehler ist aufgetreten.
 				 */
 				generic: () => LocalizedString
 				/**
-				 * Not available for legal reasons (no Cookie Consent).
+				 * Aus rechtlichen Gründen nicht erreichbar (keiner Verwendung von Cookies zugestimmt).
 				 */
 				unavailable: () => LocalizedString
 			}
 			/**
-			 * Quit Setup
+			 * Einrichtung beenden
 			 */
 			SAVE_AND_QUIT: () => LocalizedString
 			/**
-			 * Do you really want to quit the setup? When you quit, you can always continue later.
+			 * Wollen Sie die Einrichtung wirklich beenden? Sie kann später jederzeit fortgesetzt werden.
 			 */
 			SAVE_AND_QUIT_MESSAGE: () => LocalizedString
 			/**
-			 * Continue
+			 * Weiter
 			 */
 			BUTTON_ADVANCE: () => LocalizedString
 			/**
-			 * Back
+			 * Zurück
 			 */
 			BUTTON_BACK: () => LocalizedString
 			structure: {
 				/**
-				 * Delete All
+				 * Alles löschen
 				 */
 				DELETE_ALL: () => LocalizedString
 				/**
@@ -2361,15 +2361,15 @@ export type TranslationFunctions = {
 				 */
 				DELETE_ALL_CONFIRM: () => LocalizedString
 				/**
-				 * Add Committee
+				 * Gremium hinzufügen
 				 */
 				ADD_COMMITTEE: () => LocalizedString
 				/**
-				 * Committee added
+				 * Gremium hinzugefügt
 				 */
 				SUCCESS_ADD_COMMITTEE: () => LocalizedString
 				/**
-				 * No Committees yet. Click 'Add Committee' in the top right corner to create a new one.
+				 * Keine Gremien vorhanden. Klicke oben rechts auf 'Gremium hinzufügen', um ein neues Gremium zu erstellen.
 				 */
 				EMPTY_MESSAGE: () => LocalizedString
 				/**
@@ -2377,87 +2377,87 @@ export type TranslationFunctions = {
 				 */
 				COMMITTEE_LONG: () => LocalizedString
 				/**
-				 * Abbreviation
+				 * Abkürzung
 				 */
 				COMMITTEE_SHORT: () => LocalizedString
 				/**
-				 * Category
+				 * Kategorie
 				 */
 				CATEGORY: () => LocalizedString
 				/**
-				 * In total {{0}} committees.
+				 * Insgesamt {{0}} Gremien.
 				 */
 				FOOTER: (arg0: number | string | boolean) => LocalizedString
 				input: {
 					/**
-					 * Add
+					 * Hinzufügen
 					 */
 					BUTTON_ADD: () => LocalizedString
 					/**
-					 * Cancel
+					 * Abbrechen
 					 */
 					BUTTON_CANCEL: () => LocalizedString
 					/**
-					 * Category
+					 * Kategorie
 					 */
 					CATEGORY: () => LocalizedString
 					/**
-					 * Committee
+					 * Gremium
 					 */
 					CATEGORY_SWITCH_COMMITTEE: () => LocalizedString
 					/**
-					 * Crisis
+					 * Krise
 					 */
 					CATEGORY_SWITCH_CRISIS: () => LocalizedString
 					/**
-					 * ICJ
+					 * IGH
 					 */
 					CATEGORY_SWITCH_ICJ: () => LocalizedString
 					/**
-					 * Is Sub-Committee
+					 * Ist Vorlegendes Gremium / Untergremium
 					 */
 					IS_SUBCOMMITTEE: () => LocalizedString
 					/**
-					 * Parent Committee
+					 * Beschlussfassendes Gremium / Übergeordnetes Gremium
 					 */
 					PARENT_COMMITTEE: () => LocalizedString
 				}
 				/**
-				 * No Committees found
+				 * Keine Gremien vorhanden
 				 */
 				ERROR_NO_COMMITTEES: () => LocalizedString
 				/**
-				 * Please create a committee before continuing.
+				 * Bitte erstellen Sie ein Gremium, um fortzufahren.
 				 */
 				ERROR_NO_COMMITTEES_DETAILS: () => LocalizedString
 			}
 			teampool: {
 				/**
-				 * Delete All
+				 * Alle löschen
 				 */
 				DELETE_ALL: () => LocalizedString
 				/**
-				 * Upload CSV
+				 * CSV hochladen
 				 */
 				UPLOAD_TEAM: () => LocalizedString
 				/**
-				 * Add Team Member
+				 * Teammitglied hinzufügen
 				 */
 				ADD_TEAMMEMBER: () => LocalizedString
 				/**
-				 * No Team Members yet. Click 'Add Team Member' in the top right corner to create a new one.
+				 * Keine Teammitglieder vorhanden. Klicke oben rechts auf 'Teammitglied hinzufügen', um ein neues Teammitglied zu erstellen.
 				 */
 				EMPTY_MESSAGE: () => LocalizedString
 				/**
-				 * In total {{0}} team members.
+				 * Insgesamt {{0}} Teammitglieder.
 				 */
 				FOOTER: (arg0: number | string | boolean) => LocalizedString
 				/**
-				 * Role
+				 * Rolle
 				 */
 				ROLE: () => LocalizedString
 				/**
-				 * Count
+				 * Anzahl
 				 */
 				COUNT: () => LocalizedString
 				roles: {
@@ -2466,78 +2466,78 @@ export type TranslationFunctions = {
 					 */
 					ADMIN: () => LocalizedString
 					/**
-					 * Secretariat
+					 * Sekretariat
 					 */
 					SECRETARIAT: () => LocalizedString
 					/**
-					 * Chair
+					 * Vorsitz
 					 */
 					CHAIR: () => LocalizedString
 					/**
-					 * Committee Advisor
+					 * Gremienberatung
 					 */
 					COMMITTEE_ADVISOR: () => LocalizedString
 					/**
-					 * Non-State Actor
+					 * Nichtstaatliche Akteur
 					 */
 					NON_STATE_ACTOR: () => LocalizedString
 					/**
-					 * Press Corps
+					 * Konferenzpresse
 					 */
 					PRESS_CORPS: () => LocalizedString
 					/**
-					 * Guest
+					 * Gast
 					 */
 					GUEST: () => LocalizedString
 					/**
-					 * Participant Care
+					 * Teilnehmendenbetreuung
 					 */
 					PARTICIPANT_CARE: () => LocalizedString
 					/**
-					 * Other Team
+					 * Sonstiges Team
 					 */
 					MISCELLANEOUS_TEAM: () => LocalizedString
 				}
 				input: {
 					/**
-					 * Count
+					 * Anzahl
 					 */
 					COUNT: () => LocalizedString
 					/**
-					 * Add
+					 * Hinzufügen
 					 */
 					BUTTON_ADD: () => LocalizedString
 					/**
-					 * Cancel
+					 * Abbrechen
 					 */
 					BUTTON_CANCEL: () => LocalizedString
 				}
 			}
 			committees: {
 				/**
-				 * Select Chairs
+				 * Vorsitzende auswählen
 				 */
 				CHAIRS: () => LocalizedString
 				/**
-				 * Select Committee Advisors
+				 * Gremienberatung auswählen
 				 */
 				ADVISORS: () => LocalizedString
 				/**
-				 * Agenda Items
+				 * Tagesordnung
 				 */
 				AGENDA_ITEMS: () => LocalizedString
 				/**
-				 * Add Agenda Item
+				 * Tagesordnungspunkt hinzufügen
 				 */
 				ADD_AGENDA_ITEM: () => LocalizedString
 				/**
-				 * Add
+				 * Hinzufügen
 				 */
 				ADD_ITEM_BUTTON: () => LocalizedString
 			}
 			delegations: {
 				/**
-				 * Add Delegation
+				 * Delegation hinzufügen
 				 */
 				ADD_DELEGATION_BUTTON: () => LocalizedString
 				/**
@@ -2545,43 +2545,43 @@ export type TranslationFunctions = {
 				 */
 				DELEGATION_COLUMN: () => LocalizedString
 				/**
-				 * Total
+				 * Summe
 				 */
 				TOTAL_NUMBER_OF_DELEGATIONS: () => LocalizedString
 				/**
-				 * No Delegations found
+				 * Keine Delegationen gefunden
 				 */
 				EMPTY_MESSAGE: () => LocalizedString
 				add_delegation: {
 					/**
-					 * Add Delegation
+					 * Delegation hinzufügen
 					 */
 					HEADLINE: () => LocalizedString
 					/**
-					 * Search for a Delegation
+					 * Nach Delegation suchen
 					 */
 					SEARCH_PLACEHOLDER: () => LocalizedString
 					/**
-					 * Back
+					 * Zurück
 					 */
 					BACK_BUTTON: () => LocalizedString
 					/**
-					 * Add and Close
+					 * Hinzufügen und schließen
 					 */
 					ADD_BUTTON: () => LocalizedString
 					/**
-					 * Add
+					 * Hinzufügen
 					 */
 					ADD_MORE_BUTTON: () => LocalizedString
 				}
 			}
 			configs: {
 				/**
-				 * Press Website
+				 * Presse Website
 				 */
 				pressWebsiteTitle: () => LocalizedString
 				/**
-				 * Here you can configure the URL of the press website.
+				 * Hier kannst du die URL der Pressewebsite konfigurieren.
 				 */
 				pressWebsiteDescription: () => LocalizedString
 				/**
@@ -2589,33 +2589,33 @@ export type TranslationFunctions = {
 				 */
 				feedbackWebsiteTitle: () => LocalizedString
 				/**
-				 * Here you can configure the URL of the feedback website.
+				 * Hier kannst du die URL der Feedbackwebsite konfigurieren.
 				 */
 				feedbackWebsiteDescription: () => LocalizedString
 				/**
-				 * Configuration saved
+				 * Einstellungen gespeichert
 				 */
 				successToast: () => LocalizedString
 			}
 			steps: {
 				/**
-				 * Structure
+				 * Struktur
 				 */
 				STEP_1: () => LocalizedString
 				/**
-				 * Team Pool
+				 * Teampool
 				 */
 				STEP_2: () => LocalizedString
 				/**
-				 * Committees
+				 * Gremien
 				 */
 				STEP_3: () => LocalizedString
 				/**
-				 * Delegations
+				 * Delegationen
 				 */
 				STEP_4: () => LocalizedString
 				/**
-				 * NSAs
+				 * NAs
 				 */
 				STEP_5: () => LocalizedString
 				/**
@@ -2631,152 +2631,152 @@ export type TranslationFunctions = {
 		 */
 		EMAIL_PLACEHOLDER: () => LocalizedString
 		/**
-		 * Password
+		 * Passwort
 		 */
 		PASSWORD_PLACEHOLDER: () => LocalizedString
 		/**
-		 * Repeat password
+		 * Passwort wiederholen
 		 */
 		REPEAT_PASSWORD_PLACEHOLDER: () => LocalizedString
 		/**
-		 * Passwords do not match
+		 * Passwörter stimmen nicht überein
 		 */
 		PASSWORDS_DO_NOT_MATCH: () => LocalizedString
 		/**
-		 * Forgot Password?
+		 * Passwort vergessen?
 		 */
 		FORGOT_PASSWORD: () => LocalizedString
 		/**
-		 * Sent Email
+		 * E-Mail gesendet
 		 */
 		SENT_EMAIL: () => LocalizedString
 		/**
-		 * Advance
+		 * Weiter
 		 */
 		ADVANCE_BUTTON: () => LocalizedString
 		/**
-		 * Back
+		 * Zurück
 		 */
 		BACK_BUTTON: () => LocalizedString
 		/**
-		 * Login
+		 * Anmelden
 		 */
 		LOGIN_BUTTON: () => LocalizedString
 		/**
-		 * Login
+		 * Anmelden
 		 */
 		LOGIN_TITLE: () => LocalizedString
 		/**
-		 * The email is invalid or could not be found.
+		 * Bitte melden Sie sich mit Ihren Zugangsdaten an.
+		 */
+		LOGIN_DESCRIPTION: () => LocalizedString
+		/**
+		 * Die E-Mail-Adresse wurde noch nicht bestätigt. Bitte checken Sie Ihr E-Mail-Postfach.
+		 */
+		EMAIL_NOT_CONFIRMED: () => LocalizedString
+		/**
+		 * Die E-Mail-Adresse wurde nicht gefunden.
 		 */
 		EMAIL_NOT_FOUND: () => LocalizedString
 		/**
-		 * The email does not have an active validation token.
+		 * Die E-Mail-Adresse hat keinen aktiven Bestätigungstoken.
 		 */
 		EMAIL_NO_ACTIVE_VALIDATION_TOKEN: () => LocalizedString
 		/**
-		 * The token is invalid.
+		 * Der Bestätigungstoken ist ungültig.
 		 */
 		EMAIL_INVALID_TOKEN: () => LocalizedString
 		/**
-		 * The email has already been validated.
+		 * Die E-Mail-Adresse wurde bereits bestätigt.
 		 */
 		EMAIL_ALREADY_VALIDATED: () => LocalizedString
 		/**
-		 * The validation token has expired. Please request a new one.
+		 * Der Bestätigungstoken ist abgelaufen. Bitte fordern Sie einen neuen an.
 		 */
 		EMAIL_VALIDATION_TOKEN_EXPIRED: () => LocalizedString
 		/**
-		 * Set Credentials
+		 * Zugangsdaten festlegen
 		 */
 		SET_CREDENTIALS: () => LocalizedString
 		/**
-		 * Login now
-		 */
-		LOGIN_NOW: () => LocalizedString
-		/**
-		 * The confirmation token is invalid or could not be found.
+		 * Der Bestätigungstoken ist ungültig oder nicht vorhanden.
 		 */
 		NO_TOKEN: () => LocalizedString
 		/**
-		 * The email is invalid or could not be found.
+		 * Die E-Mail ist ungültig oder nicht vorhanden.
 		 */
 		NO_EMAIL: () => LocalizedString
 		/**
-		 * The email has been confirmed.
+		 * Die E-Mail ist nun bestätigt!
 		 */
 		EMAIL_CONFIRMED: () => LocalizedString
+		/**
+		 * Wir hatten Probleme deine E-Mail zu bestätigen. Bitte versuche es später noch einmal.
+		 */
+		EMAIL_CONFIRMED_SERVER_ERROR: () => LocalizedString
 		/**
 		 * Passkey
 		 */
 		PASSKEY: () => LocalizedString
 		/**
-		 * We could not confirm your email address. Please try again later.
-		 */
-		EMAIL_CONFIRMED_SERVER_ERROR: () => LocalizedString
-		/**
-		 * Create Account
-		 */
-		CREATE_ACCOUNT: () => LocalizedString
-		/**
-		 * Email is invalid
-		 */
-		EMAIL_INVALID: () => LocalizedString
-		/**
-		 * Account successfully created. Please confirm your e-mail address via the link in the e-mail we sent you to activate your account.
-		 */
-		CREATION_SUCCESS: () => LocalizedString
-		/**
-		 * The password is invalid. It must be at least 8 characters long and contain at least one upper case letters, one lower case letters, one number and one special character.
-		 */
-		PASSWORD_INVALID: () => LocalizedString
-		/**
-		 * What are Passkeys?
-		 */
-		WHAT_ARE_PASSKEYS: () => LocalizedString
-		/**
-		 * Password
+		 * Passwort
 		 */
 		PASSWORD: () => LocalizedString
 		/**
-		 * Please enter your credentials to continue.
+		 * Jetzt anmelden
 		 */
-		LOGIN_DESCRIPTION: () => LocalizedString
+		LOGIN_NOW: () => LocalizedString
 		/**
-		 * User found. You can now enter your password.
+		 * E-Mail-Adresse ungültig
+		 */
+		EMAIL_INVALID: () => LocalizedString
+		/**
+		 * Konto erstellen
+		 */
+		CREATE_ACCOUNT: () => LocalizedString
+		/**
+		 * Das Passwort ist ungültig. Es muss mindestens 8 Zeichen lang sein, und mindesten einen Großbuchstaben, einen Kleinbuchstaben, eine Zahl und ein Sonderzeichen enthalten.
+		 */
+		PASSWORD_INVALID: () => LocalizedString
+		/**
+		 * Benutzer gefunden. Bitte geben Sie Ihr Passwort ein.
 		 */
 		USER_FOUND: () => LocalizedString
 		/**
-		 * The email address has not been confirmed yet.
+		 * Was sind Passkeys?
 		 */
-		EMAIL_NOT_CONFIRMED: () => LocalizedString
+		WHAT_ARE_PASSKEYS: () => LocalizedString
 		/**
-		 * Great, an account with this e-mail address does not yet exist! You can now create one!
+		 * Account erfolgreich erstellt. Bitte bestätigen Sie ihre E-Mail-Adresse über die Link in der E-Mail, die wir geschickt haben, um den Account zu aktivieren.
+		 */
+		CREATION_SUCCESS: () => LocalizedString
+		/**
+		 * Prima, ein Konto mit dieser E-Mail-Adresse existiert noch nicht! Sie können jetzt ein Konto für diese E-Mail Addresse erstellen.
 		 */
 		ACCOUNT_NOT_YET_CREATED: () => LocalizedString
 		/**
-		 * Wrong credentials
+		 * Falsche Zugangsdaten
 		 */
 		WRONG_CREDENTIALS: () => LocalizedString
 		/**
-		 * Powered by
+		 * Ermöglicht durch
 		 */
 		POWERED_BY: () => LocalizedString
 		legalNotice: {
 			/**
-			 * I agree with the 
+			 * Ich bin Einverstanden mit den 
 			 */
 			SECTION_1: () => LocalizedString
 			/**
-			 * Terms of Use
+			 * Nutzungsbedingungen
 			 */
 			TERMS_LINK: () => LocalizedString
 			/**
-			 * . I also agree that this website uses cookies. You can find more information about this in our 
+			 * . Außerdem bin ich damit einverstanden, dass diese Website Cookies verwendet. Mehr Informationen dazu finden Sie in unseren 
 			 */
 			SECTION_2: () => LocalizedString
 			/**
-			 * Privacy Policy
+			 * Datenschutzbestimmungen
 			 */
 			PRIVACY_LINK: () => LocalizedString
 			/**
@@ -2786,53 +2786,53 @@ export type TranslationFunctions = {
 		}
 		participant: {
 			/**
-			 * Sign in as chair instead
+			 * Stattdessen als Vorsitz anmelden
 			 */
 			OTHER_SIGH_IN: () => LocalizedString
 			/**
-			 * Committee
+			 * Gremium
 			 */
 			COMMITTEE_LABEL: () => LocalizedString
 			/**
-			 * Country / NSA
+			 * Staat / NA
 			 */
 			COUNTRY_LABEL: () => LocalizedString
 			committeeSelection: {
 				/**
-				 * Select the committee
+				 * Gremium auswählen
 				 */
 				HEADLINE: () => LocalizedString
 			}
 		}
 		chair: {
 			/**
-			 * Sign in as participant instead
+			 * Stattdessen als Teilnehmer anmelden
 			 */
 			OTHER_SIGN_IN: () => LocalizedString
 			/**
-			 * You are about to sign in as a chair.
+			 * Sie sind im Begriff sich als Vorsitz anzumelden.
 			 */
 			WARNING_MESSAGE: () => LocalizedString
 		}
 		gateway: {
 			/**
-			 * Welcome to CHASE
+			 * Willkommen bei CHASE
 			 */
 			TITLE: () => LocalizedString
 			/**
-			 * You are registered for a conference. Click on the button below to start the application.
+			 * Du bist für eine Konferenz registriert. Klicke auf den Button unten, um die App zu starten.
 			 */
 			CONFERENCE_MEMBER_SINGLE: () => LocalizedString
 			/**
-			 * You are registered for multiple conferences. Please select the conference you want to start the application for.
+			 * Du bist für mehrere Konferenzen registriert. Bitte wähle die Konferenz, für die du die App starten möchtest.
 			 */
 			CONFERENCE_MEMBER_MULTIPLE: () => LocalizedString
 			/**
-			 * You are registered for a committee. Click on the button below to start the application.
+			 * Du bist für ein Gremium registriert. Klicke auf den Button unten, um die App zu starten.
 			 */
 			COMMITTEE_MEMBER_SINGLE: () => LocalizedString
 			/**
-			 * You are registered for multiple committees. Please select the committee you want to start the application for.
+			 * Du bist für mehrere Gremien registriert. Bitte wähle das Gremium, für das du die App starten möchtest.
 			 */
 			COMMITTEE_MEMBER_MULTIPLE: () => LocalizedString
 			/**
@@ -2840,28 +2840,28 @@ export type TranslationFunctions = {
 			 */
 			LAUNCH_BUTTON: () => LocalizedString
 			/**
-			 * You are not registered for any conference or committee. If you think this is a mistake, please contact the conference organizers.
+			 * Du bist für keine Konferenz oder kein Gremium registriert. Wenn du glaubst, dass das ein Fehler ist, wende dich bitte an den Konferenzadmin.
 			 */
 			NO_MEMBERSHIP: () => LocalizedString
 			/**
-			 * Logout
+			 * Abmelden
 			 */
 			LOGOUT_BUTTON: () => LocalizedString
 		}
 		lockout: {
 			/**
-			 * You have been locked out
+			 * Du wurdest ausgesperrt
 			 */
 			TITLE: () => LocalizedString
 			/**
-			 * You don't have permission to use this aspect of the App. Please log in again.
+			 * Du hast keine Berechtigung, diesen Teil der App zu nutzen. Bitte melde dich erneut an.
 			 */
 			DETAIL: () => LocalizedString
 		}
 	}
 	navbar: {
 		/**
-		 * Settings
+		 * Einstellungen
 		 */
 		SETTINGS: () => LocalizedString
 		/**
@@ -2877,19 +2877,19 @@ export type TranslationFunctions = {
 		 */
 		DASHBOARD: () => LocalizedString
 		/**
-		 * Configuration
+		 * Voreinstellungen
 		 */
 		CONFIGURATION: () => LocalizedString
 		/**
-		 * Attendees
+		 * Anwesenheit
 		 */
 		ATTENDEES: () => LocalizedString
 		/**
-		 * Speakers List
+		 * Redeliste
 		 */
 		SPEAKERS: () => LocalizedString
 		/**
-		 * Voting
+		 * Abstimmungen
 		 */
 		VOTING: () => LocalizedString
 		/**
@@ -2901,26 +2901,26 @@ export type TranslationFunctions = {
 		 */
 		INBOX: () => LocalizedString
 		/**
-		 * Resolutions
+		 * Resolutionen
 		 */
 		RESOLUTIONS: () => LocalizedString
 		/**
-		 * Presentation
+		 * Präsentation
 		 */
 		PRESENTATION: () => LocalizedString
 		/**
-		 * Conference Press
+		 * Konferenzpresse
 		 */
 		NEWS: () => LocalizedString
 		/**
-		 * Report a Bug
+		 * Fehler melden
 		 */
 		BUG_REPORT: () => LocalizedString
 	}
 	settings: {
 		colorTheme: {
 			/**
-			 * Color Mode
+			 * Farbmodus
 			 */
 			HEADLINE: () => LocalizedString
 			/**
@@ -2928,21 +2928,21 @@ export type TranslationFunctions = {
 			 */
 			SYSTEM: () => LocalizedString
 			/**
-			 * Light
+			 * Hell
 			 */
 			LIGHT: () => LocalizedString
 			/**
-			 * Dark
+			 * Dunkel
 			 */
 			DARK: () => LocalizedString
 			/**
-			 * Contrast
+			 * Kontrast
 			 */
 			CONTRAST: () => LocalizedString
 		}
 		language: {
 			/**
-			 * Language
+			 * Sprache
 			 */
 			HEADLINE: () => LocalizedString
 			/**
@@ -2965,23 +2965,23 @@ export type TranslationFunctions = {
 		 */
 		CHAIR_HUB_TITLE: () => LocalizedString
 		/**
-		 * Non-State Actor's Hub
+		 * Hub der Nichtstaatliche Akteure
 		 */
 		NA_HUB_TITLE: () => LocalizedString
 		/**
-		 * Guest Hub
+		 * Gäste-Hub
 		 */
 		GUEST_HUB_TITLE: () => LocalizedString
 		/**
-		 * Select a Committee
+		 * Wähle ein Gremium
 		 */
 		SELECT_COMMITTEE: () => LocalizedString
 		/**
-		 * No Committees found
+		 * Keine Gremien gefunden
 		 */
 		NO_COMMITTEES: () => LocalizedString
 		/**
-		 * Logout
+		 * Abmelden
 		 */
 		LOGOUT: () => LocalizedString
 	}
@@ -2989,19 +2989,19 @@ export type TranslationFunctions = {
 		dashboard: {
 			widgetHeadlines: {
 				/**
-				 * Speakers List
+				 * Redeliste
 				 */
 				SPEAKERS_LIST: () => LocalizedString
 				/**
-				 * Comment List
+				 * Fragen und Kurzbemerkungen
 				 */
 				COMMENT_LIST: () => LocalizedString
 				/**
-				 * Moderated Caucus
+				 * Moderierte Informelle Sitzung
 				 */
 				MODERATED_CAUCUS: () => LocalizedString
 				/**
-				 * Committee Status
+				 * Debattenstatus
 				 */
 				COMMITTEE_STATUS: () => LocalizedString
 				/**
@@ -3009,38 +3009,38 @@ export type TranslationFunctions = {
 				 */
 				WHITEBOARD: () => LocalizedString
 				/**
-				 * Documents
+				 * Dokumente
 				 */
 				DOCUMENTS: () => LocalizedString
 				/**
-				 * Send Request
+				 * Anfrage senden
 				 */
 				ACTIONS: () => LocalizedString
 				/**
-				 * Majorities
+				 * Mehrheitsverhältnisse
 				 */
 				PRESENCE: () => LocalizedString
 			}
 			timerWidget: {
 				/**
-				 * until {{0}}
+				 * bis {{0}} Uhr
 				 */
 				UNTIL: (arg0: number | string | boolean) => LocalizedString
 				/**
-				 * Time is up!
+				 * Zeit ist abgelaufen!
 				 */
 				TOAST_HEADLINE: () => LocalizedString
 				/**
-				 * Going back to formal debate.
+				 * Gehe zurück in die formelle Debatte.
 				 */
 				TOAST_MESSAGE: () => LocalizedString
 				defaultHeadlines: {
 					/**
-					 * Formal Debate
+					 * Formelle Debatte
 					 */
 					FORMAL: () => LocalizedString
 					/**
-					 * Informal Caucus
+					 * Informelle Sitzung
 					 */
 					INFORMAL: () => LocalizedString
 					/**
@@ -3048,316 +3048,316 @@ export type TranslationFunctions = {
 					 */
 					PAUSE: () => LocalizedString
 					/**
-					 * Suspension
+					 * Vertagung
 					 */
 					SUSPENSION: () => LocalizedString
 				}
 			}
 			actionsWidget: {
 				/**
-				 * Chair
+				 * Vorsitz
 				 */
 				CHAIR_BUTTON: () => LocalizedString
 				/**
-				 * Research Service
+				 * Wiss. Dienst
 				 */
 				RESEARCH_SERVICE_BUTTON: () => LocalizedString
 				contactForm: {
 					/**
-					 * Send a Message to the Chair
+					 * Sende dem Vorsitz eine Nachricht
 					 */
 					HEADLINE_CHAIR: () => LocalizedString
 					/**
-					 * Send a Message to the Research Service
+					 * Sende dem Wissenschaftlichen Dienst (WD) eine Nachricht
 					 */
 					HEADLINE_RESEARCH_SERVICE: () => LocalizedString
 					/**
-					 * Subject
+					 * Betreff
 					 */
 					SUBJECT_PLACEHOLDER: () => LocalizedString
 					/**
-					 * Message
+					 * Nachricht
 					 */
 					MESSAGE_PLACEHOLDER: () => LocalizedString
 					/**
-					 * Category
+					 * Kategorie
 					 */
 					CATEGORY_LABEL: () => LocalizedString
 					/**
-					 * Select a Category
+					 * Wähle eine Kategorie aus
 					 */
 					CATEGORY_PLACEHOLDER: () => LocalizedString
 					/**
-					 * Cancel
+					 * Abbrechen
 					 */
 					CANCEL_BUTTON: () => LocalizedString
 					/**
-					 * Send
+					 * Senden
 					 */
 					SEND_BUTTON: () => LocalizedString
 					/**
-					 * This request will be viewed and checked by the chair first and then forwarded to the Research Service. The Research Services will usually get back to you via email, please regularly check your inbox.
+					 * Diese Anfrage wird zunächst vom Vorsitz geprüft und erst dann an den Wissenschaftlichen Dienst weitergeleitet. Die Antwort erfolgt in der Regel per E-Mail – behalten Sie bitte Ihr Postfach im Auge.
 					 */
 					INFO_MESSAGE: () => LocalizedString
 					categoryOptions: {
 						/**
-						 * Guest Speaker Request
+						 * Gastrede anfragen
 						 */
 						GUEST_SPEAKER: () => LocalizedString
 						/**
-						 * Fact Check Request
+						 * Faktencheck
 						 */
 						FACT_CHECK: () => LocalizedString
 						/**
-						 * Information Request
+						 * Informationsanfrage
 						 */
 						INFORMATION: () => LocalizedString
 						/**
-						 * General Secretary Visit Request
+						 * Um Besuch des/der Generalsekretär*in bitten
 						 */
 						GENERAL_SECRETARY: () => LocalizedString
 						/**
-						 * Other
+						 * Sonstiges
 						 */
 						OTHER: () => LocalizedString
 					}
 				}
 				toast: {
 					/**
-					 * Message sent
+					 * Nachricht gesendet
 					 */
 					SUCCESS_CHAIR_SUMMARY: () => LocalizedString
 					/**
-					 * The chair will get back to you soon.
+					 * Der Vorsitz wird sich bald bei Ihnen melden.
 					 */
 					SUCCESS_CHAIR_DETAIL: () => LocalizedString
 					/**
-					 * Message sent
+					 * Nachricht gesendet
 					 */
 					SUCCESS_RESEARCH_SUMMARY: () => LocalizedString
 					/**
-					 * The Research Service will get back to you soon.
+					 * Der Wissenschaftliche Dienst wird sich bald bei Ihnen melden.
 					 */
 					SUCCESS_RESEARCH_DETAIL: () => LocalizedString
 					/**
-					 * Error
+					 * Fehler beim Senden
 					 */
 					ERROR_SUMMARY: () => LocalizedString
 					/**
-					 * The message could not be sent. Please try again or report the issue!
+					 * Die Nachricht konnte nicht gesendet werden. Bitte versuchen Sie es später erneut und melden Sie den Fehler.
 					 */
 					ERROR_DETAIL: () => LocalizedString
 				}
 			}
 			documentsWidget: {
 				/**
-				 * signed Sponsors
+				 * signierte Unterstützer*innen
 				 */
 				SPONSORS: () => LocalizedString
 			}
 		}
 		speakersList: {
 			/**
-			 * Speakers List
+			 * Redeliste
 			 */
 			SPEAKERS_LIST: () => LocalizedString
 			/**
-			 * Comment List
+			 * Fragen und Kurzbemerkungen
 			 */
 			COMMENT_LIST: () => LocalizedString
 			/**
-			 * Moderated Caucus
+			 * Moderierte Informelle Sitzung
 			 */
 			MODERATED_CAUCUS: () => LocalizedString
 			/**
-			 * Speech
+			 * Redebeitrag
 			 */
 			ADD_TO_LIST_BUTTON: () => LocalizedString
 			/**
-			 * Remove
+			 * Zurückziehen
 			 */
 			REMOVE_FROM_LIST_BUTTON: () => LocalizedString
 			/**
-			 * List Closed
+			 * Liste Geschlossen
 			 */
 			LIST_CLOSED_BUTTON: () => LocalizedString
 			/**
-			 * List Closed
+			 * Liste Geschlossen
 			 */
 			LIST_CLOSED_MESSAGE: () => LocalizedString
 			/**
-			 * No Speakers on the List
+			 * Liste ist leer
 			 */
 			NO_SPEAKERS_MESSAGE: () => LocalizedString
 			/**
-			 * No active agenda item
+			 * Kein aktiver Tagesordnungspunkt
 			 */
 			NO_ACTIVE_AGENDA_ITEM: () => LocalizedString
 			toast: {
 				/**
-				 * Added Speech
+				 * Redebeitrag hinzugefügt
 				 */
 				ADDED_SUCCESS_SUMMARY: () => LocalizedString
 				/**
-				 * to {{0}}
+				 * zu {{0}}
 				 */
 				ADDED_SUCCESS_DETAIL: (arg0: number | string | boolean) => LocalizedString
 				/**
-				 * Forbidden
+				 * Hinzufügen nicht erlaubt
 				 */
 				ADDED_FORBIDDEN_SUMMARY: () => LocalizedString
 				/**
-				 * You are probably not registered as PRESENT in the committee. Please contact the chair.
+				 * Sie sind wahrscheinlich nicht als ANWESEND im Gremium registriert. Bitte wende dich an den Vorsitz.
 				 */
 				ADDED_FORBIDDEN_DETAIL: () => LocalizedString
 				/**
-				 * Already on List
+				 * Bereits auf der Liste
 				 */
 				ADDED_ALREADY_ON_LIST_SUMMARY: () => LocalizedString
 				/**
-				 * Please wait a moment and you should appear on the list soon. If not, reload the page. If the error persists, please contact the chair.
+				 * Bitte warten Sie einen Moment – Ihr Redebeitrag wird jeden Moment angezeigt. Wenn nicht, laden Sie die Seite neu. Wenn der Fehler weiterhin besteht, wenden Sie sich an den Vorsitz.
 				 */
 				ADDED_ALREADY_ON_LIST_DETAIL: () => LocalizedString
 				/**
-				 * Error during adding
+				 * Fehler beim Hinzufügen
 				 */
 				ADDED_ERROR_SUMMARY: () => LocalizedString
 				/**
-				 * An unexpected error occurred. Please try again later or contact the chair.
+				 * Ein unerwarteter Fehler ist aufgetreten. Bitte versuchen Sie es später erneut oder wenden Sie sich an den Vorsitz.
 				 */
 				ADDED_ERROR_DETAIL: () => LocalizedString
 				/**
-				 * Removed
+				 * Redebeitrag zurückgezogen
 				 */
 				REMOVED_SUCCESS_SUMMARY: () => LocalizedString
 				/**
-				 * from {{0}}
+				 * von {{0}}
 				 */
 				REMOVED_SUCCESS_DETAIL: (arg0: number | string | boolean) => LocalizedString
 				/**
-				 * Error during removing
+				 * Fehler beim Zurückziehen
 				 */
 				REMOVED_ERROR_SUMMARY: () => LocalizedString
 				/**
-				 * An unexpected error occurred. Please try again later or contact the chair.
+				 * Ein unerwarteter Fehler ist aufgetreten. Bitte versuchen Sie es später erneut oder wenden Sie sich an den Vorsitz.
 				 */
 				REMOVED_ERROR_DETAIL: () => LocalizedString
 			}
 		}
 		voting: {
 			/**
-			 * Motions on the Floor
+			 * Aktuelle Anträge
 			 */
 			ACTIVE_MOTIONS_TAB: () => LocalizedString
 			/**
-			 * Recent Motions
+			 * Vergangene Anträge
 			 */
 			RECENT_MOTIONS_TAB: () => LocalizedString
 			/**
-			 * Recent Votings
+			 * Vergangene Abstimmungen
 			 */
 			RECENT_VOTINGS_TAB: () => LocalizedString
 			/**
-			 * No open motions
+			 * Aktuell keine Anträge
 			 */
 			NO_DATA_MOTIONS: () => LocalizedString
 			/**
-			 * Voting
+			 * Abstimmung
 			 */
 			VOTING_HEADLINE: () => LocalizedString
 			/**
-			 * No voting selected
+			 * Keine Abstimmung ausgewählt
 			 */
 			NO_DATA_VOTING: () => LocalizedString
 			votingInfo: {
 				/**
-				 * Introduced by
+				 * Eingebracht von
 				 */
 				INTRODUCED_BY: () => LocalizedString
 				votingMode: {
 					/**
-					 * Substantial Voting – Possibility to Abstain
+					 * Inhaltliche Abstimmung – Enthaltung möglich
 					 */
 					SUBSTANTIAL_VOTING: () => LocalizedString
 					/**
-					 * Procedural Voting – No Abstention
+					 * Prozessuale Abstimmung – keine Enthaltung möglich
 					 */
 					PROCEDURAL_VOTING: () => LocalizedString
 				}
 				majorityMode: {
 					/**
-					 * Simple Majority needed (50% + 1)
+					 * Einfache Mehrheit erforderlich (50% + 1)
 					 */
 					SIMPLE: () => LocalizedString
 					/**
-					 * Two-Thirds Majority needed (2/3)
+					 * Zwei-Drittel Mehrheit erforderlich (2/3)
 					 */
 					TWO_THIRDS: () => LocalizedString
 					/**
-					 * Three-Quarters Majority needed (3/4)
+					 * Drei-Viertel Mehrheit erforderlich (3/4)
 					 */
 					THREE_QUARTERS: () => LocalizedString
 					/**
-					 * Consensus needed
+					 * Konsens erforderlich
 					 */
 					CONSENSUS: () => LocalizedString
 					/**
-					 * Security Council (9/15 + no veto)
+					 * Abstimmungsmodus des Sicherheitsrats (9/15 + no veto)
 					 */
 					SECURITY_COUNCIL: () => LocalizedString
 				}
 			}
 			votingButtons: {
 				/**
-				 * In Favour
+				 * Dafür
 				 */
 				IN_FAVOUR: () => LocalizedString
 				/**
-				 * Against
+				 * Dagegen
 				 */
 				AGAINST: () => LocalizedString
 				/**
-				 * Abstention
+				 * Enthaltung
 				 */
 				ABSTENTION: () => LocalizedString
 				/**
-				 * Remaining
+				 * Verbleibend
 				 */
 				REMAINING: () => LocalizedString
 				/**
-				 * Vote Registered
+				 * Stimme registriert
 				 */
 				VOTE_REGISTERED: () => LocalizedString
 				/**
-				 * Waiting for results...
+				 * Warten auf Ergebnis
 				 */
 				VOTE_REGISTERED_MESSAGE: () => LocalizedString
 			}
 			votingResults: {
 				/**
-				 * Voting Successful
+				 * Abstimung Erfolgreich
 				 */
 				VOTING_SUCCESSFUL: () => LocalizedString
 				/**
-				 * Voting Failed
+				 * Abstimmung Fehlgeschlagen
 				 */
 				VOTING_FAILED: () => LocalizedString
 			}
 			votingAlert: {
 				/**
-				 * New Vote Started
+				 * Neue Abstimmung gestartet
 				 */
 				VOTING_ALERT_HEADER: () => LocalizedString
 				/**
-				 * A new vote has been started. Please vote now.
+				 * Sie wurden zu einer neuen Abstimmung aufgerufen. Bitte nehmen Sie schnellstmöglich daran teil.
 				 */
 				VOTING_ALERT_MESSAGE: () => LocalizedString
 				/**
-				 * To Voting
+				 * Zur Abstimmung
 				 */
 				BUTTON_ADVANCE: () => LocalizedString
 				/**
-				 * Ignore
+				 * Ignorieren
 				 */
 				BUTTON_IGNORE: () => LocalizedString
 			}
@@ -3365,60 +3365,60 @@ export type TranslationFunctions = {
 	}
 	chairs: {
 		/**
-		 * Chair
+		 * Vorsitz
 		 */
 		CHAIR: () => LocalizedString
 		dashboard: {
 			overview: {
 				/**
-				 * Overview
+				 * Übersicht
 				 */
 				TITLE: () => LocalizedString
 			}
 			configurations: {
 				/**
-				 * Configurations
+				 * Konfigurationen
 				 */
 				TITLE: () => LocalizedString
 				agenda: {
 					/**
-					 * Agenda Item Selection
+					 * Auswahl des Tagesordnungspunktes
 					 */
 					TITLE: () => LocalizedString
 					/**
-					 * Select the agenda item you want to activate.
+					 * Wähle den aktuellen Tagesordnungspunkt aus.
 					 */
 					DESCRIPTION: () => LocalizedString
 					/**
-					 * No Agenda Item Selected
+					 * Gerade kein aktiver Tagesordnungspunkt
 					 */
 					PLACEHOLDER: () => LocalizedString
 					/**
-					 * Agenda Item activated
+					 * Tagesordnungspunkt aktiviert
 					 */
 					TOAST_SUCCESS: () => LocalizedString
 				}
 				stateOfDebate: {
 					/**
-					 * State of Debate
+					 * Debattenstatus
 					 */
 					TITLE: () => LocalizedString
 					/**
-					 * Set the state of Debate (e.g. General Debate)
+					 * Lege den Debattenstatus fest (z.B. Allgemeine Debatte)
 					 */
 					DESCRIPTION: () => LocalizedString
 					/**
-					 * No Status Set
+					 * Kein Status festgelegt
 					 */
 					CURRENTLY_NO_STATUS: () => LocalizedString
 					/**
-					 * State of Debate
+					 * Debattenstatus
 					 */
 					PLACEHOLDER_TEXT: () => LocalizedString
 					/**
-					 * State {state} successfully set
+					 * Status '{state}' gespeichert
 					 */
-					TOAST_SUCCESS: (arg: { state: string }) => LocalizedString
+					TOAST_SUCCESS: (arg: { state: unknown }) => LocalizedString
 				}
 				statusTimer: {
 					/**
@@ -3426,15 +3426,15 @@ export type TranslationFunctions = {
 					 */
 					TITLE: () => LocalizedString
 					/**
-					 * Set the status of the committee. You can also set a custom name, that overrides the default status name while keeping the icon (e.g. 'Lunch Break' instead of default 'Pause').
+					 * Setze den Status des Gremiums fest. Du kannst auch einen benutzerdefinierten Namen festlegen, der den Standardstatusnamen überschreibt, während das Symbol beibehalten wird (z. B. 'Mittagspause' anstelle von 'Pause').
 					 */
 					DESCRIPTION: () => LocalizedString
 					/**
-					 * Select a Status
+					 * Wähle einen Status aus
 					 */
 					PLACEHOLDER_DROPDOWN: () => LocalizedString
 					/**
-					 * Custom Name (optional)
+					 * Eigener Name (optional)
 					 */
 					PLACEHOLDER_CUSTOM_TEXT: () => LocalizedString
 					/**
@@ -3442,111 +3442,111 @@ export type TranslationFunctions = {
 					 */
 					PLACEHOLDER_TIME_UNITL: () => LocalizedString
 					/**
-					 * Save Status
+					 * Status Speichern
 					 */
 					BUTTON: () => LocalizedString
 					/**
-					 * Status '{status}' successfully set until {date}
+					 * Status {status} bis {date} gespeichert
 					 */
-					TOAST_SUCCESS: (arg: { date: string, status: string }) => LocalizedString
+					TOAST_SUCCESS: (arg: { date: unknown, status: unknown }) => LocalizedString
 				}
 				speakersListAdding: {
 					/**
-					 * Speakers List Adding Policy
+					 * Hinzufügen zu Redelisten
 					 */
 					TITLE: () => LocalizedString
 					/**
-					 * Select the policy for speakers adding themselves to the speakers list.
+					 * Wähle eine Einstellung aus, um Delegierten zu erlauben, sich selbst zur Redeliste hinzuzufügen.
 					 */
 					DESCRIPTION: () => LocalizedString
 					/**
-					 * Not Allowed
+					 * Nicht erlaubt
 					 */
 					TOGGLE_BUTTON_NOT_ALLOWED: () => LocalizedString
 					/**
-					 * Allowed
+					 * Erlaubt
 					 */
 					TOGGLE_BUTTON_ALLOWED: () => LocalizedString
 					/**
-					 * Policy changed
+					 * Einstellung geändert
 					 */
 					TOAST_SUCCESS: () => LocalizedString
 					/**
-					 * Speakers can now add themselves.
+					 * Delegierte können sich nun selbst hinzufügen.
 					 */
 					TOAST_SUCCESS_DETAILS_ALLOWED: () => LocalizedString
 					/**
-					 * Speakers can no longer add themselves.
+					 * Delegierte können sich nicht mehr selbst hinzufügen.
 					 */
 					TOAST_SUCCESS_DETAILS_NOT_ALLOWED: () => LocalizedString
 				}
 				overlay: {
 					/**
-					 * Speakers List Overlay
+					 * Redeliste Overlay
 					 */
 					TITLE: () => LocalizedString
 					/**
-					 * This feature allows you to see the speakers list in a separate overlay on all other pages in the App.
+					 * Öffnet die Redeliste in einem kleinen Overlay am unteren Bildschirmrand.
 					 */
 					DESCRIPTION: () => LocalizedString
 					/**
-					 * Toggle Overlay
+					 * Overlay öffnen/schließen
 					 */
 					TOGGLE_BUTTON: () => LocalizedString
 				}
 				presentationMode: {
 					/**
-					 * Open Presentation Mode
+					 * Präsentationsmodus öffnen
 					 */
 					TITLE: () => LocalizedString
 					/**
-					 * Open the presentation mode in a new window. This mode is designed to be displayed on a projector or a second screen and provides relevant committee data for delegates.
+					 * Öffne ein neues Fenster im Präsentationsmodus über den folgenden Link, um ihn auf einem Beamer für alle Teilnehmenden sichtbar anzuzeigen.
 					 */
 					DESCRIPTION: () => LocalizedString
 					/**
-					 * Presentation Mode
+					 * Präsentationsmodus
 					 */
 					BUTTON: () => LocalizedString
 				}
 				regionalGroups: {
 					/**
-					 * Regional Groups
+					 * Regionalgruppen
 					 */
 					TITLE: () => LocalizedString
 					/**
-					 * Open the regional groups page to show the regional groups of the committee.
+					 * Öffne eine Übersicht der Regionalgruppen und weise Delegationen zu.
 					 */
 					DESCRIPTION: () => LocalizedString
 					/**
-					 * Open in Presentation Mode
+					 * Präsentations-Loop
 					 */
 					BUTTON_PRESENTATION: () => LocalizedString
 					/**
-					 * Open Lookup
+					 * Regionalgruppen nachschlagen
 					 */
 					BUTTON_LOOKUP: () => LocalizedString
 					/**
-					 * Filter...
+					 * Filtern...
 					 */
 					FILTER: () => LocalizedString
 					/**
-					 * Africa
+					 * Afrika
 					 */
 					AFRICA: () => LocalizedString
 					/**
-					 * Asia and Pacific
+					 * Asien and Ozeanien
 					 */
 					ASIA: () => LocalizedString
 					/**
-					 * Latin America and Caribbean
+					 * Lateinamerika und Karibik
 					 */
 					LATIN_AMERICA: () => LocalizedString
 					/**
-					 * Eastern Europe
+					 * Osteuropa
 					 */
 					EASTERN_EUROPE: () => LocalizedString
 					/**
-					 * Western Europe and Others
+					 * Westeuropa und andere
 					 */
 					WESTERN_EUROPE: () => LocalizedString
 				}
@@ -3554,80 +3554,80 @@ export type TranslationFunctions = {
 		}
 		attendance: {
 			/**
-			 * Present
+			 * Anwesend
 			 */
 			PRESENT: () => LocalizedString
 			/**
-			 * Absent
+			 * Abwesend
 			 */
 			ABSENT: () => LocalizedString
 			/**
-			 * Excused
+			 * Entschuldigt
 			 */
 			EXCUSED: () => LocalizedString
 			nations: {
 				/**
-				 * Attendance
+				 * Anwesenheit der Delegationen
 				 */
 				TITLE: () => LocalizedString
 				/**
-				 * Manage the attendance of delegates in the committee.
+				 * Verwalte die Anwesenheit der Delegationen im Gremium.
 				 */
 				DESCRIPTION: () => LocalizedString
 			}
 			nsa: {
 				/**
-				 * Non-State Actors
+				 * Nichtstaatliche Akteure
 				 */
 				TITLE: () => LocalizedString
 				/**
-				 * Manage the attendance of non-state actors in the committee. They are not counted in the quorum and are not allowed to vote.
+				 * Verwalte die Anwesenheit der Nichtstaatlichen Akteure im Gremium. Sie werden nicht in die Abstimmungsverhältnisse einbezogen und dürfen nicht an Abstimmungen teilnehmen.
 				 */
 				DESCRIPTION: () => LocalizedString
 			}
 			/**
-			 * All on Absent
+			 * Alle auf Abwesend setzen
 			 */
 			SET_ALL_ABSENT: () => LocalizedString
 			/**
-			 * All on Present
+			 * Alle auf Anwesend setzen
 			 */
 			SET_ALL_PRESENT: () => LocalizedString
 		}
 		whiteboard: {
 			/**
-			 * Save and publish
+			 * Speichern und Veröffentlichen
 			 */
 			SAVE_BUTTON: () => LocalizedString
 			/**
-			 * Reset
+			 * Zurücksetzen
 			 */
 			RESET_BUTTON: () => LocalizedString
 			/**
-			 * Whiteboard saved
+			 * Whiteboard gespeichert
 			 */
 			SUCCESS_TOAST: () => LocalizedString
 			/**
-			 * Whiteboard is empty
+			 * Whiteboard ist leer
 			 */
 			NO_CONTENT_TOAST: () => LocalizedString
 			/**
-			 * It seems like there was an error while loading the whiteboard or the whiteboard is empty. Please try to reload the page.
+			 * Es scheint, als ob beim laden des Whiteboards ein Fehler aufgetreten ist oder das Whiteboard ist leer. Bitte versuche die Seite neu zu laden.
 			 */
 			NO_CONTENT_TOAST_DETAILS: () => LocalizedString
 		}
 		speakersList: {
 			buttons: {
 				/**
-				 * Start Timer
+				 * Start
 				 */
 				START_TIMER: () => LocalizedString
 				/**
-				 * Stop Timer
+				 * Stop
 				 */
 				PAUSE_TIMER: () => LocalizedString
 				/**
-				 * Reset Timer
+				 * Zeit zurücksetzen
 				 */
 				RESET_TIMER: () => LocalizedString
 				/**
@@ -3639,57 +3639,57 @@ export type TranslationFunctions = {
 				 */
 				ADD_TIME: () => LocalizedString
 				/**
-				 * Next Speaker
+				 * Nächste Redner*in
 				 */
 				NEXT_SPEAKER: () => LocalizedString
 				/**
-				 * Add to List
+				 * Redebeitrag
 				 */
 				ADD_TO_LIST: () => LocalizedString
 				/**
-				 * Close List
+				 * Liste schließen
 				 */
 				CLOSE_LIST: () => LocalizedString
 				/**
-				 * Open List
+				 * Liste öffnen
 				 */
 				OPEN_LIST: () => LocalizedString
 				/**
-				 * Reset List
+				 * Liste zurücksetzen
 				 */
 				CLEAR_LIST: () => LocalizedString
 				/**
-				 * Change Speech Time
+				 * Redezeit ändern
 				 */
 				CHANGE_SPEECH_TIME: () => LocalizedString
 			}
 			addSpeakerOverlay: {
 				/**
-				 * Add Speaker to {{0}}
+				 * Redebeiträge zu {{0}} hinzufügen
 				 */
 				HEADLINE: (arg0: number | string | boolean) => LocalizedString
 				/**
-				 * Select a Speaker
+				 * Suche nach Redner*innen
 				 */
 				PLACEHOLDER: () => LocalizedString
 				/**
-				 * Cancel
+				 * Schließen
 				 */
 				BUTTON_CANCEL: () => LocalizedString
 				/**
-				 * Add
+				 * Hinzufügen
 				 */
 				BUTTON_ADD: () => LocalizedString
 				/**
-				 * Add and Close
+				 * Hinzufügen und schließen
 				 */
 				BUTTON_ADD_AND_CLOSE: () => LocalizedString
 				/**
-				 * {{0}} added
+				 * {{0}} hinzugefügt
 				 */
 				TOAST_ADDED_SUMMARY: (arg0: number | string | boolean) => LocalizedString
 				/**
-				 * to the {{0}}
+				 * zu {{0}}
 				 */
 				TOAST_ADDED_DETAIL: (arg0: number | string | boolean) => LocalizedString
 				/**
@@ -3703,68 +3703,68 @@ export type TranslationFunctions = {
 			}
 			changeSpeechTimeOverlay: {
 				/**
-				 * Change Speech Time for {{0}}
+				 * Redezeit für {{0}} ändern
 				 */
 				HEADLINE: (arg0: number | string | boolean) => LocalizedString
 				/**
-				 * Cancel
+				 * Abbrechen
 				 */
 				BUTTON_CANCEL: () => LocalizedString
 				/**
-				 * Change
+				 * Ändern
 				 */
 				BUTTON_SET: () => LocalizedString
 				/**
-				 * New Speech Time (mm:ss)
+				 * Neue Redezeit (mm:ss)
 				 */
 				PLACEHOLDER: () => LocalizedString
 				/**
-				 * Speech Time changed to {{0}} min
+				 * Redezeit festgelegt auf {{0}} min
 				 */
 				TOAST_SUCCESS: (arg0: number | string | boolean) => LocalizedString
 				/**
-				 * for {{0}}
+				 * für {{0}}
 				 */
 				TOAST_SUCCESS_DETAIL: (arg0: number | string | boolean) => LocalizedString
 				/**
-				 * Wrong Format
+				 * Falsches Format
 				 */
 				TOAST_WRONG_FORMAT: () => LocalizedString
 			}
 			confirm: {
 				/**
-				 * Do you really want to remove the current speaker and advance to the next?
+				 * Willst du wirklich den nächsten Redner aufrufen?
 				 */
 				NEXT_SPEAKER_MESSAGE: () => LocalizedString
 				/**
-				 * Next Speaker at {list}
+				 * Nächste Rede: {list}
 				 */
-				NEXT_SPEAKER_HEADER: (arg: { list: string }) => LocalizedString
+				NEXT_SPEAKER_HEADER: (arg: { list: unknown }) => LocalizedString
 				/**
-				 * Yes
+				 * Ja
 				 */
 				NEXT_SPEAKER_ACCEPT: () => LocalizedString
 				/**
-				 * No
+				 * Nein
 				 */
 				NEXT_SPEAKER_REJECT: () => LocalizedString
 			}
 		}
 		voting: {
 			/**
-			 * New Motion
+			 * Neuer Antrag
 			 */
 			BUTTON_NEW_MOTION: () => LocalizedString
 			/**
-			 * Change Info
+			 * Infos Ändern
 			 */
 			BUTTON_CHANGE_INFO: () => LocalizedString
 			/**
-			 * Restart Voting
+			 * Abstimmung neu starten
 			 */
 			BUTTON_RESET: () => LocalizedString
 			/**
-			 * Delete Voting
+			 * Abstimmung löschen
 			 */
 			BUTTON_DELETE: () => LocalizedString
 		}
@@ -3772,120 +3772,120 @@ export type TranslationFunctions = {
 	messageBoard: {
 		toast: {
 			/**
-			 * New Message
+			 * Neue Nachricht
 			 */
 			NEW_MESSAGE_SUMMARY: () => LocalizedString
 			/**
-			 * You have new unread messages
+			 * Sie haben eine neue Nachricht erhalten.
 			 */
 			NEW_MESSAGE_DETAIL: () => LocalizedString
 			/**
-			 * Message forwarded
+			 * Nachricht weitergeleitet
 			 */
 			FORWARDED_SUMMARY: () => LocalizedString
 			/**
-			 * The message has been forwarded to the Research Service
+			 * Die Nachricht wurde erfolgreich an den Wissenschaftlichen Dienst weitergeleitet.
 			 */
 			FORWARDED_DETAIL: () => LocalizedString
 			/**
-			 * Message archived
+			 * Nachricht archiviert
 			 */
 			ARCHIVED_SUMMARY: () => LocalizedString
 			/**
-			 * The message has been archived. If you want to restore it, please ask a conference admin.
+			 * Die Nachricht wurde erfolgreich archiviert. Um sie wieder herzustellen, frage einen Konferenz-Admin.
 			 */
 			ARCHIVED_DETAIL: () => LocalizedString
 		}
 		menu: {
 			/**
-			 * Mark as Unread
+			 * Als ungelesen markieren
 			 */
 			MARK_AS_UNREAD: () => LocalizedString
 			/**
-			 * Archive
+			 * Archivieren
 			 */
 			ARCHIVE: () => LocalizedString
 		}
 		pdf: {
 			/**
-			 * Message from Participant
+			 * Nachricht eines/einer Teilnehmenden
 			 */
 			HEADLINE: () => LocalizedString
 			/**
-			 * From:
+			 * Von
 			 */
 			FROM: () => LocalizedString
 			/**
-			 * Category:
+			 * Kategorie:
 			 */
 			CATEGORY: () => LocalizedString
 			/**
-			 * Email:
+			 * E-Mail:
 			 */
 			EMAIL: () => LocalizedString
 			/**
-			 * Timestamp: {date} at {time}
+			 * Empfangen am {date} um {time} Uhr
 			 */
-			TIME: (arg: { date: string, time: string }) => LocalizedString
+			TIME: (arg: { date: unknown, time: unknown }) => LocalizedString
 		}
 		/**
-		 * {date} at {time}
+		 * {date} um {time} Uhr
 		 */
-		TIME: (arg: { date: string, time: string }) => LocalizedString
+		TIME: (arg: { date: unknown, time: unknown }) => LocalizedString
 		/**
-		 * No message selected
+		 * Keine Nachricht ausgewählt
 		 */
 		NO_MESSAGE_SELECTED: () => LocalizedString
 		/**
-		 * Unread
+		 * Ungelesen
 		 */
 		TAG_UNREAD: () => LocalizedString
 		/**
-		 * Priority
+		 * Priorität
 		 */
 		TAG_PRIORITY: () => LocalizedString
 		/**
-		 * Assigned
+		 * Zugewiesen
 		 */
 		TAG_ASSIGNED: () => LocalizedString
 		/**
-		 * RS
+		 * WD
 		 */
 		TAG_RESEARCH_SERVICE: () => LocalizedString
 		/**
-		 * FWD to RS
+		 * an WD senden
 		 */
 		BUTTON_FORWARD_TO_RESEARCH_SERVICE: () => LocalizedString
 		tooltips: {
 			/**
-			 * Mark as Unread
+			 * Als ungelesen markieren
 			 */
 			UNREAD: () => LocalizedString
 			/**
-			 * Mark as Priority
+			 * Als Priorität markieren
 			 */
 			PRIORITY: () => LocalizedString
 			/**
-			 * Delete message
-			 */
-			DELETE: () => LocalizedString
-			/**
-			 * Mark as Assigned
+			 * Als zugewiesen markieren
 			 */
 			ASSIGNED: () => LocalizedString
 			/**
-			 * Print message
+			 * Nachricht löschen
+			 */
+			DELETE: () => LocalizedString
+			/**
+			 * Nachricht drucken
 			 */
 			PRINT: () => LocalizedString
 			/**
-			 * Reply via Email
+			 * Antworten per E-Mail
 			 */
 			REPLY_VIA_EMAIL: () => LocalizedString
 		}
 	}
 	version: {
 		/**
-		 * Version and Changelog
+		 * Version und Änderungsprotokoll
 		 */
 		VERSION_MODAL_TITLE: () => LocalizedString
 		/**
@@ -3893,39 +3893,39 @@ export type TranslationFunctions = {
 		 */
 		VERSION: () => LocalizedString
 		/**
-		 * Changelog
+		 * Änderungsprotokoll
 		 */
 		CHANGELOG: () => LocalizedString
 		/**
-		 * This changelog shows the changes in the current and the past 4 versions. For more information, visit our GitHub repository by clicking the Link at the bottom.
+		 * Dieses Änderungsprotokoll zeigt die Änderungen in der aktuellen und den letzten 4 Versionen. Aktuell ist das Änderungsprotokoll ausschließlich auf Englisch verfügbar. Für weitere Informationen besuchen Sie unser GitHub-Repository, indem Sie auf den Link unten klicken.
 		 */
 		CHANGELOG_TEXT: () => LocalizedString
 		/**
-		 * All Releases
+		 * Alle Versionen
 		 */
 		ALL_RELEASES: () => LocalizedString
 		/**
-		 * Outdated Version
+		 * Neue Version verfügbar
 		 */
 		NEW_VERSION_AVAILABLE: () => LocalizedString
 		/**
-		 * A new version is available. Please notify the server admin to update.
+		 * Bitte wenden Sie sich an den Administrator, um die App zu aktualisieren.
 		 */
 		NEW_VERSION_AVAILABLE_TEXT: () => LocalizedString
 		/**
-		 * Latest Version
+		 * Neueste Version
 		 */
 		LATEST_VERSION: () => LocalizedString
 		/**
-		 * You are using the latest version of CHASE.
+		 * Sie verwenden die neueste Version von CHASE.
 		 */
 		LATEST_VERSION_TEXT: () => LocalizedString
 		/**
-		 * Development Version
+		 * Entwicklerversion
 		 */
 		DEVELOPMENT_VERSION: () => LocalizedString
 		/**
-		 * You are using the development version of CHASE.
+		 * Sie verwenden eine Entwicklerversion von CHASE.
 		 */
 		DEVELOPMENT_VERSION_TEXT: () => LocalizedString
 	}

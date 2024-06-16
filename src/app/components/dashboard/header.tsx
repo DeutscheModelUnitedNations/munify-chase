@@ -1,5 +1,5 @@
 import { useContext } from "react";
-import getCountryNameByCode from "../../misc/get_country_name_by_code";
+import getCountryNameByCode from "../../util/get_country_name_by_code";
 import HeaderTemplate from "../header_template";
 import { useI18nContext } from "@/app/i18n/i18n-react";
 import { LargeFlag } from "../flag_templates";

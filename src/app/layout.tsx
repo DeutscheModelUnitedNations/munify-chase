@@ -1,14 +1,11 @@
 "use client";
-import "./globals.scss";
+import "./styles/global.scss";
 import { Inter, Vollkorn, Noto_Sans_Mono } from "next/font/google"; // Even though Google Fonts are used – no requests are sent to Google (see NEXT.JS docs)
-//theme
-import "@/app/themes/theme_light.scss";
-import "@/app/themes/theme_dark.scss";
-// //core
+import "@/app/styles/themes/theme_light.scss";
+import "@/app/styles/themes/theme_dark.scss";
 import "primereact/resources/primereact.min.css";
-// //icons
 import "primeicons/primeicons.css";
-
+import { PrimeReactProvider } from "primereact/api";
 import {
   detectLocale,
   navigatorDetector,
@@ -18,9 +15,8 @@ import { loadLocale } from "@/app/i18n/i18n-util.sync";
 import { baseLocale, locales } from "@/app/i18n/i18n-util";
 import TypesafeI18n from "@/app/i18n/i18n-react";
 import { ToastProvider } from "@/app/contexts/toast";
-import { BackendTime } from "@/app/contexts/backendTime";
 import CookieBanner from "@/app/components/cookie_banner";
-import { PrimeReactProvider } from "primereact/api";
+import { PublicEnvScript } from "next-runtime-env";
 
 const sans = Inter({
   subsets: ["latin"],
@@ -81,19 +77,18 @@ export default function RootLayout({
         <link href="/fontawesome/css/fontawesome.css" rel="stylesheet" />
         <link href="/fontawesome/css/brands.css" rel="stylesheet" />
         <link href="/fontawesome/css/solid.css" rel="stylesheet" />
+        <PublicEnvScript />
       </head>
 
       <body>
-        {/* <PrimeReactProvider value={{ pt: Tailwind }}> */}
-          <TypesafeI18n locale={locale}>
+        <TypesafeI18n locale={locale}>
+          <PrimeReactProvider>
             <ToastProvider>
-              <BackendTime>
-                <CookieBanner />
-                {children}
-              </BackendTime>
+              <CookieBanner />
+              {children}
             </ToastProvider>
-          </TypesafeI18n>
-        {/* </PrimeReactProvider> */}
+          </PrimeReactProvider>
+        </TypesafeI18n>
       </body>
     </html>
   );

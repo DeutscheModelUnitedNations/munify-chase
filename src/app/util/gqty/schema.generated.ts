@@ -2,6 +2,8 @@
  * GQty AUTO-GENERATED CODE: PLEASE DO NOT MODIFY MANUALLY
  */
 
+import { type ScalarsEnumsHash } from "gqty";
+
 export type Maybe<T> = T | null;
 export type InputMaybe<T> = Maybe<T>;
 export type Exact<T extends { [key: string]: unknown }> = {
@@ -13,23 +15,32 @@ export type MakeOptional<T, K extends keyof T> = Omit<T, K> & {
 export type MakeMaybe<T, K extends keyof T> = Omit<T, K> & {
   [SubKey in K]: Maybe<T[SubKey]>;
 };
+export type MakeEmpty<
+  T extends { [key: string]: unknown },
+  K extends keyof T
+> = { [_ in K]?: never };
+export type Incremental<T> =
+  | T
+  | {
+      [P in keyof T]?: P extends " $fragmentName" | "__typename" ? T[P] : never;
+    };
 /** All built-in and custom scalars, mapped to their actual values */
 export interface Scalars {
-  ID: string;
-  String: string;
-  Boolean: boolean;
-  Int: number;
-  Float: number;
-  DateTime: Date;
+  ID: { input: string; output: string };
+  String: { input: string; output: string };
+  Boolean: { input: boolean; output: boolean };
+  Int: { input: number; output: number };
+  Float: { input: number; output: number };
+  DateTime: { input: string; output: string };
 }
 
 export interface AgendaItemCreateInput {
-  committeeId: Scalars["String"];
-  description?: InputMaybe<Scalars["String"]>;
-  id?: InputMaybe<Scalars["String"]>;
-  isActive?: InputMaybe<Scalars["Boolean"]>;
+  committeeId: Scalars["String"]["input"];
+  description?: InputMaybe<Scalars["String"]["input"]>;
+  id?: InputMaybe<Scalars["String"]["input"]>;
+  isActive?: InputMaybe<Scalars["Boolean"]["input"]>;
   speakerLists?: InputMaybe<SpeakersListCreateNestedManyWithoutAgendaItemInput>;
-  title: Scalars["String"];
+  title: Scalars["String"]["input"];
 }
 
 export interface AgendaItemCreateNestedManyWithoutCommitteeInput {
@@ -111,18 +122,18 @@ export interface AgendaItemWhereUniqueInput {
   committee?: InputMaybe<CommitteeWhereInput>;
   committeeId?: InputMaybe<StringFilter>;
   description?: InputMaybe<StringNullableFilter>;
-  id?: InputMaybe<Scalars["String"]>;
+  id?: InputMaybe<Scalars["String"]["input"]>;
   isActive?: InputMaybe<BoolFilter>;
   speakerLists?: InputMaybe<SpeakersListListRelationFilter>;
   title?: InputMaybe<StringFilter>;
 }
 
 export interface BoolFieldUpdateOperationsInput {
-  set?: InputMaybe<Scalars["Boolean"]>;
+  set?: InputMaybe<Scalars["Boolean"]["input"]>;
 }
 
 export interface BoolFilter {
-  equals?: InputMaybe<Scalars["Boolean"]>;
+  equals?: InputMaybe<Scalars["Boolean"]["input"]>;
   not?: InputMaybe<NestedBoolFilter>;
 }
 
@@ -130,13 +141,13 @@ export interface BoolWithAggregatesFilter {
   _count?: InputMaybe<NestedIntFilter>;
   _max?: InputMaybe<NestedBoolFilter>;
   _min?: InputMaybe<NestedBoolFilter>;
-  equals?: InputMaybe<Scalars["Boolean"]>;
+  equals?: InputMaybe<Scalars["Boolean"]["input"]>;
   not?: InputMaybe<NestedBoolWithAggregatesFilter>;
 }
 
 export interface CommitteeAbbreviationConferenceIdCompoundUniqueInput {
-  abbreviation: Scalars["String"];
-  conferenceId: Scalars["String"];
+  abbreviation: Scalars["String"]["input"];
+  conferenceId: Scalars["String"]["input"];
 }
 
 export enum CommitteeCategory {
@@ -146,24 +157,24 @@ export enum CommitteeCategory {
 }
 
 export interface CommitteeCreateInput {
-  abbreviation: Scalars["String"];
+  abbreviation: Scalars["String"]["input"];
   agendaItems?: InputMaybe<AgendaItemCreateNestedManyWithoutCommitteeInput>;
   allowDelegationsToAddThemselvesToSpeakersList?: InputMaybe<
-    Scalars["Boolean"]
+    Scalars["Boolean"]["input"]
   >;
   category: CommitteeCategory;
-  conferenceId: Scalars["String"];
-  id?: InputMaybe<Scalars["String"]>;
+  conferenceId: Scalars["String"]["input"];
+  id?: InputMaybe<Scalars["String"]["input"]>;
   members?: InputMaybe<CommitteeMemberCreateNestedManyWithoutCommitteeInput>;
   messages?: InputMaybe<MessageCreateNestedManyWithoutCommitteeInput>;
-  name: Scalars["String"];
-  parentId?: InputMaybe<Scalars["String"]>;
-  stateOfDebate?: InputMaybe<Scalars["String"]>;
+  name: Scalars["String"]["input"];
+  parentId?: InputMaybe<Scalars["String"]["input"]>;
+  stateOfDebate?: InputMaybe<Scalars["String"]["input"]>;
   status?: InputMaybe<CommitteeStatus>;
-  statusHeadline?: InputMaybe<Scalars["String"]>;
-  statusUntil?: InputMaybe<Scalars["DateTime"]>;
+  statusHeadline?: InputMaybe<Scalars["String"]["input"]>;
+  statusUntil?: InputMaybe<Scalars["DateTime"]["input"]>;
   subCommittees?: InputMaybe<CommitteeCreateNestedManyWithoutParentInput>;
-  whiteboardContent?: InputMaybe<Scalars["String"]>;
+  whiteboardContent?: InputMaybe<Scalars["String"]["input"]>;
 }
 
 export interface CommitteeCreateNestedManyWithoutConferenceInput {
@@ -181,22 +192,22 @@ export interface CommitteeListRelationFilter {
 }
 
 export interface CommitteeMemberCommitteeIdDelegationIdCompoundUniqueInput {
-  committeeId: Scalars["String"];
-  delegationId: Scalars["String"];
+  committeeId: Scalars["String"]["input"];
+  delegationId: Scalars["String"]["input"];
 }
 
 export interface CommitteeMemberCommitteeIdUserIdCompoundUniqueInput {
-  committeeId: Scalars["String"];
-  userId: Scalars["String"];
+  committeeId: Scalars["String"]["input"];
+  userId: Scalars["String"]["input"];
 }
 
 export interface CommitteeMemberCreateInput {
-  committeeId: Scalars["String"];
-  delegationId?: InputMaybe<Scalars["String"]>;
-  id?: InputMaybe<Scalars["String"]>;
+  committeeId: Scalars["String"]["input"];
+  delegationId?: InputMaybe<Scalars["String"]["input"]>;
+  id?: InputMaybe<Scalars["String"]["input"]>;
   presence?: InputMaybe<Presence>;
   speakerLists?: InputMaybe<SpeakerOnListCreateNestedManyWithoutCommitteeMemberInput>;
-  userId?: InputMaybe<Scalars["String"]>;
+  userId?: InputMaybe<Scalars["String"]["input"]>;
 }
 
 export interface CommitteeMemberCreateNestedManyWithoutCommitteeInput {
@@ -303,7 +314,7 @@ export interface CommitteeMemberWhereUniqueInput {
   committeeId_userId?: InputMaybe<CommitteeMemberCommitteeIdUserIdCompoundUniqueInput>;
   delegation?: InputMaybe<DelegationWhereInput>;
   delegationId?: InputMaybe<StringNullableFilter>;
-  id?: InputMaybe<Scalars["String"]>;
+  id?: InputMaybe<Scalars["String"]["input"]>;
   presence?: InputMaybe<EnumPresenceFilter>;
   speakerLists?: InputMaybe<SpeakerOnListListRelationFilter>;
   user?: InputMaybe<UserWhereInput>;
@@ -311,8 +322,8 @@ export interface CommitteeMemberWhereUniqueInput {
 }
 
 export interface CommitteeNameConferenceIdCompoundUniqueInput {
-  conferenceId: Scalars["String"];
-  name: Scalars["String"];
+  conferenceId: Scalars["String"]["input"];
+  name: Scalars["String"]["input"];
 }
 
 export interface CommitteeNullableRelationFilter {
@@ -452,7 +463,7 @@ export interface CommitteeWhereUniqueInput {
   category?: InputMaybe<EnumCommitteeCategoryFilter>;
   conference?: InputMaybe<ConferenceWhereInput>;
   conferenceId?: InputMaybe<StringFilter>;
-  id?: InputMaybe<Scalars["String"]>;
+  id?: InputMaybe<Scalars["String"]["input"]>;
   members?: InputMaybe<CommitteeMemberListRelationFilter>;
   messages?: InputMaybe<MessageListRelationFilter>;
   name?: InputMaybe<StringFilter>;
@@ -470,17 +481,17 @@ export interface CommitteeWhereUniqueInput {
 export interface ConferenceCreateInput {
   committees?: InputMaybe<CommitteeCreateNestedManyWithoutConferenceInput>;
   delegations?: InputMaybe<DelegationCreateNestedManyWithoutConferenceInput>;
-  end?: InputMaybe<Scalars["DateTime"]>;
-  feedbackWebsite?: InputMaybe<Scalars["String"]>;
-  id?: InputMaybe<Scalars["String"]>;
+  end?: InputMaybe<Scalars["DateTime"]["input"]>;
+  feedbackWebsite?: InputMaybe<Scalars["String"]["input"]>;
+  id?: InputMaybe<Scalars["String"]["input"]>;
   members?: InputMaybe<ConferenceMemberCreateNestedManyWithoutConferenceInput>;
-  name: Scalars["String"];
-  pressWebsite?: InputMaybe<Scalars["String"]>;
-  start?: InputMaybe<Scalars["DateTime"]>;
+  name: Scalars["String"]["input"];
+  pressWebsite?: InputMaybe<Scalars["String"]["input"]>;
+  start?: InputMaybe<Scalars["DateTime"]["input"]>;
 }
 
 export interface ConferenceCreationTokenCreateInput {
-  token: Scalars["String"];
+  token: Scalars["String"]["input"];
 }
 
 export interface ConferenceCreationTokenOrderByWithRelationInput {
@@ -510,14 +521,14 @@ export interface ConferenceCreationTokenWhereUniqueInput {
   AND?: InputMaybe<Array<ConferenceCreationTokenWhereInput>>;
   NOT?: InputMaybe<Array<ConferenceCreationTokenWhereInput>>;
   OR?: InputMaybe<Array<ConferenceCreationTokenWhereInput>>;
-  token?: InputMaybe<Scalars["String"]>;
+  token?: InputMaybe<Scalars["String"]["input"]>;
 }
 
 export interface ConferenceMemberCreateInput {
-  conferenceId: Scalars["String"];
-  id?: InputMaybe<Scalars["String"]>;
+  conferenceId: Scalars["String"]["input"];
+  id?: InputMaybe<Scalars["String"]["input"]>;
   role: ConferenceRole;
-  userId?: InputMaybe<Scalars["String"]>;
+  userId?: InputMaybe<Scalars["String"]["input"]>;
 }
 
 export interface ConferenceMemberCreateNestedManyWithoutConferenceInput {
@@ -579,8 +590,8 @@ export interface ConferenceMemberUpdateManyWithoutUserNestedInput {
 }
 
 export interface ConferenceMemberUserIdConferenceIdCompoundUniqueInput {
-  conferenceId: Scalars["String"];
-  userId: Scalars["String"];
+  conferenceId: Scalars["String"]["input"];
+  userId: Scalars["String"]["input"];
 }
 
 export interface ConferenceMemberWhereInput {
@@ -601,7 +612,7 @@ export interface ConferenceMemberWhereUniqueInput {
   OR?: InputMaybe<Array<ConferenceMemberWhereInput>>;
   conference?: InputMaybe<ConferenceWhereInput>;
   conferenceId?: InputMaybe<StringFilter>;
-  id?: InputMaybe<Scalars["String"]>;
+  id?: InputMaybe<Scalars["String"]["input"]>;
   role?: InputMaybe<EnumConferenceRoleFilter>;
   user?: InputMaybe<UserWhereInput>;
   userId?: InputMaybe<StringNullableFilter>;
@@ -690,77 +701,77 @@ export interface ConferenceWhereUniqueInput {
   delegations?: InputMaybe<DelegationListRelationFilter>;
   end?: InputMaybe<DateTimeNullableFilter>;
   feedbackWebsite?: InputMaybe<StringNullableFilter>;
-  id?: InputMaybe<Scalars["String"]>;
+  id?: InputMaybe<Scalars["String"]["input"]>;
   members?: InputMaybe<ConferenceMemberListRelationFilter>;
-  name?: InputMaybe<Scalars["String"]>;
+  name?: InputMaybe<Scalars["String"]["input"]>;
   pressWebsite?: InputMaybe<StringNullableFilter>;
   start?: InputMaybe<DateTimeNullableFilter>;
 }
 
 export interface DateTimeFieldUpdateOperationsInput {
-  set?: InputMaybe<Scalars["DateTime"]>;
+  set?: InputMaybe<Scalars["DateTime"]["input"]>;
 }
 
 export interface DateTimeFilter {
-  equals?: InputMaybe<Scalars["DateTime"]>;
-  gt?: InputMaybe<Scalars["DateTime"]>;
-  gte?: InputMaybe<Scalars["DateTime"]>;
-  in?: InputMaybe<Array<Scalars["DateTime"]>>;
-  lt?: InputMaybe<Scalars["DateTime"]>;
-  lte?: InputMaybe<Scalars["DateTime"]>;
+  equals?: InputMaybe<Scalars["DateTime"]["input"]>;
+  gt?: InputMaybe<Scalars["DateTime"]["input"]>;
+  gte?: InputMaybe<Scalars["DateTime"]["input"]>;
+  in?: InputMaybe<Array<Scalars["DateTime"]["input"]>>;
+  lt?: InputMaybe<Scalars["DateTime"]["input"]>;
+  lte?: InputMaybe<Scalars["DateTime"]["input"]>;
   not?: InputMaybe<NestedDateTimeFilter>;
-  notIn?: InputMaybe<Array<Scalars["DateTime"]>>;
+  notIn?: InputMaybe<Array<Scalars["DateTime"]["input"]>>;
 }
 
 export interface DateTimeNullableFilter {
-  equals?: InputMaybe<Scalars["DateTime"]>;
-  gt?: InputMaybe<Scalars["DateTime"]>;
-  gte?: InputMaybe<Scalars["DateTime"]>;
-  in?: InputMaybe<Array<Scalars["DateTime"]>>;
-  lt?: InputMaybe<Scalars["DateTime"]>;
-  lte?: InputMaybe<Scalars["DateTime"]>;
+  equals?: InputMaybe<Scalars["DateTime"]["input"]>;
+  gt?: InputMaybe<Scalars["DateTime"]["input"]>;
+  gte?: InputMaybe<Scalars["DateTime"]["input"]>;
+  in?: InputMaybe<Array<Scalars["DateTime"]["input"]>>;
+  lt?: InputMaybe<Scalars["DateTime"]["input"]>;
+  lte?: InputMaybe<Scalars["DateTime"]["input"]>;
   not?: InputMaybe<NestedDateTimeNullableFilter>;
-  notIn?: InputMaybe<Array<Scalars["DateTime"]>>;
+  notIn?: InputMaybe<Array<Scalars["DateTime"]["input"]>>;
 }
 
 export interface DateTimeNullableWithAggregatesFilter {
   _count?: InputMaybe<NestedIntNullableFilter>;
   _max?: InputMaybe<NestedDateTimeNullableFilter>;
   _min?: InputMaybe<NestedDateTimeNullableFilter>;
-  equals?: InputMaybe<Scalars["DateTime"]>;
-  gt?: InputMaybe<Scalars["DateTime"]>;
-  gte?: InputMaybe<Scalars["DateTime"]>;
-  in?: InputMaybe<Array<Scalars["DateTime"]>>;
-  lt?: InputMaybe<Scalars["DateTime"]>;
-  lte?: InputMaybe<Scalars["DateTime"]>;
+  equals?: InputMaybe<Scalars["DateTime"]["input"]>;
+  gt?: InputMaybe<Scalars["DateTime"]["input"]>;
+  gte?: InputMaybe<Scalars["DateTime"]["input"]>;
+  in?: InputMaybe<Array<Scalars["DateTime"]["input"]>>;
+  lt?: InputMaybe<Scalars["DateTime"]["input"]>;
+  lte?: InputMaybe<Scalars["DateTime"]["input"]>;
   not?: InputMaybe<NestedDateTimeNullableWithAggregatesFilter>;
-  notIn?: InputMaybe<Array<Scalars["DateTime"]>>;
+  notIn?: InputMaybe<Array<Scalars["DateTime"]["input"]>>;
 }
 
 export interface DateTimeWithAggregatesFilter {
   _count?: InputMaybe<NestedIntFilter>;
   _max?: InputMaybe<NestedDateTimeFilter>;
   _min?: InputMaybe<NestedDateTimeFilter>;
-  equals?: InputMaybe<Scalars["DateTime"]>;
-  gt?: InputMaybe<Scalars["DateTime"]>;
-  gte?: InputMaybe<Scalars["DateTime"]>;
-  in?: InputMaybe<Array<Scalars["DateTime"]>>;
-  lt?: InputMaybe<Scalars["DateTime"]>;
-  lte?: InputMaybe<Scalars["DateTime"]>;
+  equals?: InputMaybe<Scalars["DateTime"]["input"]>;
+  gt?: InputMaybe<Scalars["DateTime"]["input"]>;
+  gte?: InputMaybe<Scalars["DateTime"]["input"]>;
+  in?: InputMaybe<Array<Scalars["DateTime"]["input"]>>;
+  lt?: InputMaybe<Scalars["DateTime"]["input"]>;
+  lte?: InputMaybe<Scalars["DateTime"]["input"]>;
   not?: InputMaybe<NestedDateTimeWithAggregatesFilter>;
-  notIn?: InputMaybe<Array<Scalars["DateTime"]>>;
+  notIn?: InputMaybe<Array<Scalars["DateTime"]["input"]>>;
 }
 
 export interface DelegationConferenceIdNationIdCompoundUniqueInput {
-  conferenceId: Scalars["String"];
-  nationId: Scalars["String"];
+  conferenceId: Scalars["String"]["input"];
+  nationId: Scalars["String"]["input"];
 }
 
 export interface DelegationCreateInput {
-  conferenceId: Scalars["String"];
-  id?: InputMaybe<Scalars["String"]>;
+  conferenceId: Scalars["String"]["input"];
+  id?: InputMaybe<Scalars["String"]["input"]>;
   members?: InputMaybe<CommitteeMemberCreateNestedManyWithoutDelegationInput>;
-  nationId: Scalars["String"];
+  nationId: Scalars["String"]["input"];
 }
 
 export interface DelegationCreateNestedManyWithoutConferenceInput {
@@ -843,7 +854,7 @@ export interface DelegationWhereUniqueInput {
   conference?: InputMaybe<ConferenceWhereInput>;
   conferenceId?: InputMaybe<StringFilter>;
   conferenceId_nationId?: InputMaybe<DelegationConferenceIdNationIdCompoundUniqueInput>;
-  id?: InputMaybe<Scalars["String"]>;
+  id?: InputMaybe<Scalars["String"]["input"]>;
   members?: InputMaybe<CommitteeMemberListRelationFilter>;
   nation?: InputMaybe<NationWhereInput>;
   nationId?: InputMaybe<StringFilter>;
@@ -938,7 +949,7 @@ export interface EnumMessageStatusNullableListFilter {
   has?: InputMaybe<MessageStatus>;
   hasEvery?: InputMaybe<Array<MessageStatus>>;
   hasSome?: InputMaybe<Array<MessageStatus>>;
-  isEmpty?: InputMaybe<Scalars["Boolean"]>;
+  isEmpty?: InputMaybe<Scalars["Boolean"]["input"]>;
 }
 
 export interface EnumNationVariantFieldUpdateOperationsInput {
@@ -1005,33 +1016,33 @@ export interface EnumSpeakersListCategoryWithAggregatesFilter {
 }
 
 export interface IntFieldUpdateOperationsInput {
-  decrement?: InputMaybe<Scalars["Int"]>;
-  divide?: InputMaybe<Scalars["Int"]>;
-  increment?: InputMaybe<Scalars["Int"]>;
-  multiply?: InputMaybe<Scalars["Int"]>;
-  set?: InputMaybe<Scalars["Int"]>;
+  decrement?: InputMaybe<Scalars["Int"]["input"]>;
+  divide?: InputMaybe<Scalars["Int"]["input"]>;
+  increment?: InputMaybe<Scalars["Int"]["input"]>;
+  multiply?: InputMaybe<Scalars["Int"]["input"]>;
+  set?: InputMaybe<Scalars["Int"]["input"]>;
 }
 
 export interface IntFilter {
-  equals?: InputMaybe<Scalars["Int"]>;
-  gt?: InputMaybe<Scalars["Int"]>;
-  gte?: InputMaybe<Scalars["Int"]>;
-  in?: InputMaybe<Array<Scalars["Int"]>>;
-  lt?: InputMaybe<Scalars["Int"]>;
-  lte?: InputMaybe<Scalars["Int"]>;
+  equals?: InputMaybe<Scalars["Int"]["input"]>;
+  gt?: InputMaybe<Scalars["Int"]["input"]>;
+  gte?: InputMaybe<Scalars["Int"]["input"]>;
+  in?: InputMaybe<Array<Scalars["Int"]["input"]>>;
+  lt?: InputMaybe<Scalars["Int"]["input"]>;
+  lte?: InputMaybe<Scalars["Int"]["input"]>;
   not?: InputMaybe<NestedIntFilter>;
-  notIn?: InputMaybe<Array<Scalars["Int"]>>;
+  notIn?: InputMaybe<Array<Scalars["Int"]["input"]>>;
 }
 
 export interface IntNullableFilter {
-  equals?: InputMaybe<Scalars["Int"]>;
-  gt?: InputMaybe<Scalars["Int"]>;
-  gte?: InputMaybe<Scalars["Int"]>;
-  in?: InputMaybe<Array<Scalars["Int"]>>;
-  lt?: InputMaybe<Scalars["Int"]>;
-  lte?: InputMaybe<Scalars["Int"]>;
+  equals?: InputMaybe<Scalars["Int"]["input"]>;
+  gt?: InputMaybe<Scalars["Int"]["input"]>;
+  gte?: InputMaybe<Scalars["Int"]["input"]>;
+  in?: InputMaybe<Array<Scalars["Int"]["input"]>>;
+  lt?: InputMaybe<Scalars["Int"]["input"]>;
+  lte?: InputMaybe<Scalars["Int"]["input"]>;
   not?: InputMaybe<NestedIntNullableFilter>;
-  notIn?: InputMaybe<Array<Scalars["Int"]>>;
+  notIn?: InputMaybe<Array<Scalars["Int"]["input"]>>;
 }
 
 export interface IntNullableWithAggregatesFilter {
@@ -1040,14 +1051,14 @@ export interface IntNullableWithAggregatesFilter {
   _max?: InputMaybe<NestedIntNullableFilter>;
   _min?: InputMaybe<NestedIntNullableFilter>;
   _sum?: InputMaybe<NestedIntNullableFilter>;
-  equals?: InputMaybe<Scalars["Int"]>;
-  gt?: InputMaybe<Scalars["Int"]>;
-  gte?: InputMaybe<Scalars["Int"]>;
-  in?: InputMaybe<Array<Scalars["Int"]>>;
-  lt?: InputMaybe<Scalars["Int"]>;
-  lte?: InputMaybe<Scalars["Int"]>;
+  equals?: InputMaybe<Scalars["Int"]["input"]>;
+  gt?: InputMaybe<Scalars["Int"]["input"]>;
+  gte?: InputMaybe<Scalars["Int"]["input"]>;
+  in?: InputMaybe<Array<Scalars["Int"]["input"]>>;
+  lt?: InputMaybe<Scalars["Int"]["input"]>;
+  lte?: InputMaybe<Scalars["Int"]["input"]>;
   not?: InputMaybe<NestedIntNullableWithAggregatesFilter>;
-  notIn?: InputMaybe<Array<Scalars["Int"]>>;
+  notIn?: InputMaybe<Array<Scalars["Int"]["input"]>>;
 }
 
 export interface IntWithAggregatesFilter {
@@ -1056,14 +1067,14 @@ export interface IntWithAggregatesFilter {
   _max?: InputMaybe<NestedIntFilter>;
   _min?: InputMaybe<NestedIntFilter>;
   _sum?: InputMaybe<NestedIntFilter>;
-  equals?: InputMaybe<Scalars["Int"]>;
-  gt?: InputMaybe<Scalars["Int"]>;
-  gte?: InputMaybe<Scalars["Int"]>;
-  in?: InputMaybe<Array<Scalars["Int"]>>;
-  lt?: InputMaybe<Scalars["Int"]>;
-  lte?: InputMaybe<Scalars["Int"]>;
+  equals?: InputMaybe<Scalars["Int"]["input"]>;
+  gt?: InputMaybe<Scalars["Int"]["input"]>;
+  gte?: InputMaybe<Scalars["Int"]["input"]>;
+  in?: InputMaybe<Array<Scalars["Int"]["input"]>>;
+  lt?: InputMaybe<Scalars["Int"]["input"]>;
+  lte?: InputMaybe<Scalars["Int"]["input"]>;
   not?: InputMaybe<NestedIntWithAggregatesFilter>;
-  notIn?: InputMaybe<Array<Scalars["Int"]>>;
+  notIn?: InputMaybe<Array<Scalars["Int"]["input"]>>;
 }
 
 export enum MessageCategory {
@@ -1076,19 +1087,19 @@ export enum MessageCategory {
 }
 
 export interface MessageCreateInput {
-  authorId: Scalars["String"];
+  authorId: Scalars["String"]["input"];
   category?: InputMaybe<MessageCategory>;
-  committeeId: Scalars["String"];
-  forwarded?: InputMaybe<Scalars["Boolean"]>;
-  id?: InputMaybe<Scalars["String"]>;
-  message: Scalars["String"];
-  metaAgendaItem?: InputMaybe<Scalars["String"]>;
-  metaCommittee?: InputMaybe<Scalars["String"]>;
-  metaDelegation?: InputMaybe<Scalars["String"]>;
-  metaEmail?: InputMaybe<Scalars["String"]>;
+  committeeId: Scalars["String"]["input"];
+  forwarded?: InputMaybe<Scalars["Boolean"]["input"]>;
+  id?: InputMaybe<Scalars["String"]["input"]>;
+  message: Scalars["String"]["input"];
+  metaAgendaItem?: InputMaybe<Scalars["String"]["input"]>;
+  metaCommittee?: InputMaybe<Scalars["String"]["input"]>;
+  metaDelegation?: InputMaybe<Scalars["String"]["input"]>;
+  metaEmail?: InputMaybe<Scalars["String"]["input"]>;
   status?: InputMaybe<Array<MessageStatus>>;
-  subject: Scalars["String"];
-  timestamp: Scalars["DateTime"];
+  subject: Scalars["String"]["input"];
+  timestamp: Scalars["DateTime"]["input"];
 }
 
 export interface MessageCreateNestedManyWithoutAuthorInput {
@@ -1223,7 +1234,7 @@ export interface MessageWhereUniqueInput {
   committee?: InputMaybe<CommitteeWhereInput>;
   committeeId?: InputMaybe<StringFilter>;
   forwarded?: InputMaybe<BoolFilter>;
-  id?: InputMaybe<Scalars["String"]>;
+  id?: InputMaybe<Scalars["String"]["input"]>;
   message?: InputMaybe<StringFilter>;
   metaAgendaItem?: InputMaybe<StringNullableFilter>;
   metaCommittee?: InputMaybe<StringNullableFilter>;
@@ -1235,9 +1246,9 @@ export interface MessageWhereUniqueInput {
 }
 
 export interface NationCreateInput {
-  alpha3Code: Scalars["String"];
+  alpha3Code: Scalars["String"]["input"];
   delegations?: InputMaybe<DelegationCreateNestedManyWithoutNationInput>;
-  id?: InputMaybe<Scalars["String"]>;
+  id?: InputMaybe<Scalars["String"]["input"]>;
   variant?: InputMaybe<NationVariant>;
 }
 
@@ -1292,14 +1303,14 @@ export interface NationWhereUniqueInput {
   AND?: InputMaybe<Array<NationWhereInput>>;
   NOT?: InputMaybe<Array<NationWhereInput>>;
   OR?: InputMaybe<Array<NationWhereInput>>;
-  alpha3Code?: InputMaybe<Scalars["String"]>;
+  alpha3Code?: InputMaybe<Scalars["String"]["input"]>;
   delegations?: InputMaybe<DelegationListRelationFilter>;
-  id?: InputMaybe<Scalars["String"]>;
+  id?: InputMaybe<Scalars["String"]["input"]>;
   variant?: InputMaybe<EnumNationVariantFilter>;
 }
 
 export interface NestedBoolFilter {
-  equals?: InputMaybe<Scalars["Boolean"]>;
+  equals?: InputMaybe<Scalars["Boolean"]["input"]>;
   not?: InputMaybe<NestedBoolFilter>;
 }
 
@@ -1307,58 +1318,58 @@ export interface NestedBoolWithAggregatesFilter {
   _count?: InputMaybe<NestedIntFilter>;
   _max?: InputMaybe<NestedBoolFilter>;
   _min?: InputMaybe<NestedBoolFilter>;
-  equals?: InputMaybe<Scalars["Boolean"]>;
+  equals?: InputMaybe<Scalars["Boolean"]["input"]>;
   not?: InputMaybe<NestedBoolWithAggregatesFilter>;
 }
 
 export interface NestedDateTimeFilter {
-  equals?: InputMaybe<Scalars["DateTime"]>;
-  gt?: InputMaybe<Scalars["DateTime"]>;
-  gte?: InputMaybe<Scalars["DateTime"]>;
-  in?: InputMaybe<Array<Scalars["DateTime"]>>;
-  lt?: InputMaybe<Scalars["DateTime"]>;
-  lte?: InputMaybe<Scalars["DateTime"]>;
+  equals?: InputMaybe<Scalars["DateTime"]["input"]>;
+  gt?: InputMaybe<Scalars["DateTime"]["input"]>;
+  gte?: InputMaybe<Scalars["DateTime"]["input"]>;
+  in?: InputMaybe<Array<Scalars["DateTime"]["input"]>>;
+  lt?: InputMaybe<Scalars["DateTime"]["input"]>;
+  lte?: InputMaybe<Scalars["DateTime"]["input"]>;
   not?: InputMaybe<NestedDateTimeFilter>;
-  notIn?: InputMaybe<Array<Scalars["DateTime"]>>;
+  notIn?: InputMaybe<Array<Scalars["DateTime"]["input"]>>;
 }
 
 export interface NestedDateTimeNullableFilter {
-  equals?: InputMaybe<Scalars["DateTime"]>;
-  gt?: InputMaybe<Scalars["DateTime"]>;
-  gte?: InputMaybe<Scalars["DateTime"]>;
-  in?: InputMaybe<Array<Scalars["DateTime"]>>;
-  lt?: InputMaybe<Scalars["DateTime"]>;
-  lte?: InputMaybe<Scalars["DateTime"]>;
+  equals?: InputMaybe<Scalars["DateTime"]["input"]>;
+  gt?: InputMaybe<Scalars["DateTime"]["input"]>;
+  gte?: InputMaybe<Scalars["DateTime"]["input"]>;
+  in?: InputMaybe<Array<Scalars["DateTime"]["input"]>>;
+  lt?: InputMaybe<Scalars["DateTime"]["input"]>;
+  lte?: InputMaybe<Scalars["DateTime"]["input"]>;
   not?: InputMaybe<NestedDateTimeNullableFilter>;
-  notIn?: InputMaybe<Array<Scalars["DateTime"]>>;
+  notIn?: InputMaybe<Array<Scalars["DateTime"]["input"]>>;
 }
 
 export interface NestedDateTimeNullableWithAggregatesFilter {
   _count?: InputMaybe<NestedIntNullableFilter>;
   _max?: InputMaybe<NestedDateTimeNullableFilter>;
   _min?: InputMaybe<NestedDateTimeNullableFilter>;
-  equals?: InputMaybe<Scalars["DateTime"]>;
-  gt?: InputMaybe<Scalars["DateTime"]>;
-  gte?: InputMaybe<Scalars["DateTime"]>;
-  in?: InputMaybe<Array<Scalars["DateTime"]>>;
-  lt?: InputMaybe<Scalars["DateTime"]>;
-  lte?: InputMaybe<Scalars["DateTime"]>;
+  equals?: InputMaybe<Scalars["DateTime"]["input"]>;
+  gt?: InputMaybe<Scalars["DateTime"]["input"]>;
+  gte?: InputMaybe<Scalars["DateTime"]["input"]>;
+  in?: InputMaybe<Array<Scalars["DateTime"]["input"]>>;
+  lt?: InputMaybe<Scalars["DateTime"]["input"]>;
+  lte?: InputMaybe<Scalars["DateTime"]["input"]>;
   not?: InputMaybe<NestedDateTimeNullableWithAggregatesFilter>;
-  notIn?: InputMaybe<Array<Scalars["DateTime"]>>;
+  notIn?: InputMaybe<Array<Scalars["DateTime"]["input"]>>;
 }
 
 export interface NestedDateTimeWithAggregatesFilter {
   _count?: InputMaybe<NestedIntFilter>;
   _max?: InputMaybe<NestedDateTimeFilter>;
   _min?: InputMaybe<NestedDateTimeFilter>;
-  equals?: InputMaybe<Scalars["DateTime"]>;
-  gt?: InputMaybe<Scalars["DateTime"]>;
-  gte?: InputMaybe<Scalars["DateTime"]>;
-  in?: InputMaybe<Array<Scalars["DateTime"]>>;
-  lt?: InputMaybe<Scalars["DateTime"]>;
-  lte?: InputMaybe<Scalars["DateTime"]>;
+  equals?: InputMaybe<Scalars["DateTime"]["input"]>;
+  gt?: InputMaybe<Scalars["DateTime"]["input"]>;
+  gte?: InputMaybe<Scalars["DateTime"]["input"]>;
+  in?: InputMaybe<Array<Scalars["DateTime"]["input"]>>;
+  lt?: InputMaybe<Scalars["DateTime"]["input"]>;
+  lte?: InputMaybe<Scalars["DateTime"]["input"]>;
   not?: InputMaybe<NestedDateTimeWithAggregatesFilter>;
-  notIn?: InputMaybe<Array<Scalars["DateTime"]>>;
+  notIn?: InputMaybe<Array<Scalars["DateTime"]["input"]>>;
 }
 
 export interface NestedEnumCommitteeCategoryFilter {
@@ -1481,47 +1492,47 @@ export interface NestedEnumSpeakersListCategoryWithAggregatesFilter {
 }
 
 export interface NestedFloatFilter {
-  equals?: InputMaybe<Scalars["Float"]>;
-  gt?: InputMaybe<Scalars["Float"]>;
-  gte?: InputMaybe<Scalars["Float"]>;
-  in?: InputMaybe<Array<Scalars["Float"]>>;
-  lt?: InputMaybe<Scalars["Float"]>;
-  lte?: InputMaybe<Scalars["Float"]>;
+  equals?: InputMaybe<Scalars["Float"]["input"]>;
+  gt?: InputMaybe<Scalars["Float"]["input"]>;
+  gte?: InputMaybe<Scalars["Float"]["input"]>;
+  in?: InputMaybe<Array<Scalars["Float"]["input"]>>;
+  lt?: InputMaybe<Scalars["Float"]["input"]>;
+  lte?: InputMaybe<Scalars["Float"]["input"]>;
   not?: InputMaybe<NestedFloatFilter>;
-  notIn?: InputMaybe<Array<Scalars["Float"]>>;
+  notIn?: InputMaybe<Array<Scalars["Float"]["input"]>>;
 }
 
 export interface NestedFloatNullableFilter {
-  equals?: InputMaybe<Scalars["Float"]>;
-  gt?: InputMaybe<Scalars["Float"]>;
-  gte?: InputMaybe<Scalars["Float"]>;
-  in?: InputMaybe<Array<Scalars["Float"]>>;
-  lt?: InputMaybe<Scalars["Float"]>;
-  lte?: InputMaybe<Scalars["Float"]>;
+  equals?: InputMaybe<Scalars["Float"]["input"]>;
+  gt?: InputMaybe<Scalars["Float"]["input"]>;
+  gte?: InputMaybe<Scalars["Float"]["input"]>;
+  in?: InputMaybe<Array<Scalars["Float"]["input"]>>;
+  lt?: InputMaybe<Scalars["Float"]["input"]>;
+  lte?: InputMaybe<Scalars["Float"]["input"]>;
   not?: InputMaybe<NestedFloatNullableFilter>;
-  notIn?: InputMaybe<Array<Scalars["Float"]>>;
+  notIn?: InputMaybe<Array<Scalars["Float"]["input"]>>;
 }
 
 export interface NestedIntFilter {
-  equals?: InputMaybe<Scalars["Int"]>;
-  gt?: InputMaybe<Scalars["Int"]>;
-  gte?: InputMaybe<Scalars["Int"]>;
-  in?: InputMaybe<Array<Scalars["Int"]>>;
-  lt?: InputMaybe<Scalars["Int"]>;
-  lte?: InputMaybe<Scalars["Int"]>;
+  equals?: InputMaybe<Scalars["Int"]["input"]>;
+  gt?: InputMaybe<Scalars["Int"]["input"]>;
+  gte?: InputMaybe<Scalars["Int"]["input"]>;
+  in?: InputMaybe<Array<Scalars["Int"]["input"]>>;
+  lt?: InputMaybe<Scalars["Int"]["input"]>;
+  lte?: InputMaybe<Scalars["Int"]["input"]>;
   not?: InputMaybe<NestedIntFilter>;
-  notIn?: InputMaybe<Array<Scalars["Int"]>>;
+  notIn?: InputMaybe<Array<Scalars["Int"]["input"]>>;
 }
 
 export interface NestedIntNullableFilter {
-  equals?: InputMaybe<Scalars["Int"]>;
-  gt?: InputMaybe<Scalars["Int"]>;
-  gte?: InputMaybe<Scalars["Int"]>;
-  in?: InputMaybe<Array<Scalars["Int"]>>;
-  lt?: InputMaybe<Scalars["Int"]>;
-  lte?: InputMaybe<Scalars["Int"]>;
+  equals?: InputMaybe<Scalars["Int"]["input"]>;
+  gt?: InputMaybe<Scalars["Int"]["input"]>;
+  gte?: InputMaybe<Scalars["Int"]["input"]>;
+  in?: InputMaybe<Array<Scalars["Int"]["input"]>>;
+  lt?: InputMaybe<Scalars["Int"]["input"]>;
+  lte?: InputMaybe<Scalars["Int"]["input"]>;
   not?: InputMaybe<NestedIntNullableFilter>;
-  notIn?: InputMaybe<Array<Scalars["Int"]>>;
+  notIn?: InputMaybe<Array<Scalars["Int"]["input"]>>;
 }
 
 export interface NestedIntNullableWithAggregatesFilter {
@@ -1530,14 +1541,14 @@ export interface NestedIntNullableWithAggregatesFilter {
   _max?: InputMaybe<NestedIntNullableFilter>;
   _min?: InputMaybe<NestedIntNullableFilter>;
   _sum?: InputMaybe<NestedIntNullableFilter>;
-  equals?: InputMaybe<Scalars["Int"]>;
-  gt?: InputMaybe<Scalars["Int"]>;
-  gte?: InputMaybe<Scalars["Int"]>;
-  in?: InputMaybe<Array<Scalars["Int"]>>;
-  lt?: InputMaybe<Scalars["Int"]>;
-  lte?: InputMaybe<Scalars["Int"]>;
+  equals?: InputMaybe<Scalars["Int"]["input"]>;
+  gt?: InputMaybe<Scalars["Int"]["input"]>;
+  gte?: InputMaybe<Scalars["Int"]["input"]>;
+  in?: InputMaybe<Array<Scalars["Int"]["input"]>>;
+  lt?: InputMaybe<Scalars["Int"]["input"]>;
+  lte?: InputMaybe<Scalars["Int"]["input"]>;
   not?: InputMaybe<NestedIntNullableWithAggregatesFilter>;
-  notIn?: InputMaybe<Array<Scalars["Int"]>>;
+  notIn?: InputMaybe<Array<Scalars["Int"]["input"]>>;
 }
 
 export interface NestedIntWithAggregatesFilter {
@@ -1546,92 +1557,92 @@ export interface NestedIntWithAggregatesFilter {
   _max?: InputMaybe<NestedIntFilter>;
   _min?: InputMaybe<NestedIntFilter>;
   _sum?: InputMaybe<NestedIntFilter>;
-  equals?: InputMaybe<Scalars["Int"]>;
-  gt?: InputMaybe<Scalars["Int"]>;
-  gte?: InputMaybe<Scalars["Int"]>;
-  in?: InputMaybe<Array<Scalars["Int"]>>;
-  lt?: InputMaybe<Scalars["Int"]>;
-  lte?: InputMaybe<Scalars["Int"]>;
+  equals?: InputMaybe<Scalars["Int"]["input"]>;
+  gt?: InputMaybe<Scalars["Int"]["input"]>;
+  gte?: InputMaybe<Scalars["Int"]["input"]>;
+  in?: InputMaybe<Array<Scalars["Int"]["input"]>>;
+  lt?: InputMaybe<Scalars["Int"]["input"]>;
+  lte?: InputMaybe<Scalars["Int"]["input"]>;
   not?: InputMaybe<NestedIntWithAggregatesFilter>;
-  notIn?: InputMaybe<Array<Scalars["Int"]>>;
+  notIn?: InputMaybe<Array<Scalars["Int"]["input"]>>;
 }
 
 export interface NestedStringFilter {
-  contains?: InputMaybe<Scalars["String"]>;
-  endsWith?: InputMaybe<Scalars["String"]>;
-  equals?: InputMaybe<Scalars["String"]>;
-  gt?: InputMaybe<Scalars["String"]>;
-  gte?: InputMaybe<Scalars["String"]>;
-  in?: InputMaybe<Array<Scalars["String"]>>;
-  lt?: InputMaybe<Scalars["String"]>;
-  lte?: InputMaybe<Scalars["String"]>;
+  contains?: InputMaybe<Scalars["String"]["input"]>;
+  endsWith?: InputMaybe<Scalars["String"]["input"]>;
+  equals?: InputMaybe<Scalars["String"]["input"]>;
+  gt?: InputMaybe<Scalars["String"]["input"]>;
+  gte?: InputMaybe<Scalars["String"]["input"]>;
+  in?: InputMaybe<Array<Scalars["String"]["input"]>>;
+  lt?: InputMaybe<Scalars["String"]["input"]>;
+  lte?: InputMaybe<Scalars["String"]["input"]>;
   not?: InputMaybe<NestedStringFilter>;
-  notIn?: InputMaybe<Array<Scalars["String"]>>;
-  startsWith?: InputMaybe<Scalars["String"]>;
+  notIn?: InputMaybe<Array<Scalars["String"]["input"]>>;
+  startsWith?: InputMaybe<Scalars["String"]["input"]>;
 }
 
 export interface NestedStringNullableFilter {
-  contains?: InputMaybe<Scalars["String"]>;
-  endsWith?: InputMaybe<Scalars["String"]>;
-  equals?: InputMaybe<Scalars["String"]>;
-  gt?: InputMaybe<Scalars["String"]>;
-  gte?: InputMaybe<Scalars["String"]>;
-  in?: InputMaybe<Array<Scalars["String"]>>;
-  lt?: InputMaybe<Scalars["String"]>;
-  lte?: InputMaybe<Scalars["String"]>;
+  contains?: InputMaybe<Scalars["String"]["input"]>;
+  endsWith?: InputMaybe<Scalars["String"]["input"]>;
+  equals?: InputMaybe<Scalars["String"]["input"]>;
+  gt?: InputMaybe<Scalars["String"]["input"]>;
+  gte?: InputMaybe<Scalars["String"]["input"]>;
+  in?: InputMaybe<Array<Scalars["String"]["input"]>>;
+  lt?: InputMaybe<Scalars["String"]["input"]>;
+  lte?: InputMaybe<Scalars["String"]["input"]>;
   not?: InputMaybe<NestedStringNullableFilter>;
-  notIn?: InputMaybe<Array<Scalars["String"]>>;
-  startsWith?: InputMaybe<Scalars["String"]>;
+  notIn?: InputMaybe<Array<Scalars["String"]["input"]>>;
+  startsWith?: InputMaybe<Scalars["String"]["input"]>;
 }
 
 export interface NestedStringNullableWithAggregatesFilter {
   _count?: InputMaybe<NestedIntNullableFilter>;
   _max?: InputMaybe<NestedStringNullableFilter>;
   _min?: InputMaybe<NestedStringNullableFilter>;
-  contains?: InputMaybe<Scalars["String"]>;
-  endsWith?: InputMaybe<Scalars["String"]>;
-  equals?: InputMaybe<Scalars["String"]>;
-  gt?: InputMaybe<Scalars["String"]>;
-  gte?: InputMaybe<Scalars["String"]>;
-  in?: InputMaybe<Array<Scalars["String"]>>;
-  lt?: InputMaybe<Scalars["String"]>;
-  lte?: InputMaybe<Scalars["String"]>;
+  contains?: InputMaybe<Scalars["String"]["input"]>;
+  endsWith?: InputMaybe<Scalars["String"]["input"]>;
+  equals?: InputMaybe<Scalars["String"]["input"]>;
+  gt?: InputMaybe<Scalars["String"]["input"]>;
+  gte?: InputMaybe<Scalars["String"]["input"]>;
+  in?: InputMaybe<Array<Scalars["String"]["input"]>>;
+  lt?: InputMaybe<Scalars["String"]["input"]>;
+  lte?: InputMaybe<Scalars["String"]["input"]>;
   not?: InputMaybe<NestedStringNullableWithAggregatesFilter>;
-  notIn?: InputMaybe<Array<Scalars["String"]>>;
-  startsWith?: InputMaybe<Scalars["String"]>;
+  notIn?: InputMaybe<Array<Scalars["String"]["input"]>>;
+  startsWith?: InputMaybe<Scalars["String"]["input"]>;
 }
 
 export interface NestedStringWithAggregatesFilter {
   _count?: InputMaybe<NestedIntFilter>;
   _max?: InputMaybe<NestedStringFilter>;
   _min?: InputMaybe<NestedStringFilter>;
-  contains?: InputMaybe<Scalars["String"]>;
-  endsWith?: InputMaybe<Scalars["String"]>;
-  equals?: InputMaybe<Scalars["String"]>;
-  gt?: InputMaybe<Scalars["String"]>;
-  gte?: InputMaybe<Scalars["String"]>;
-  in?: InputMaybe<Array<Scalars["String"]>>;
-  lt?: InputMaybe<Scalars["String"]>;
-  lte?: InputMaybe<Scalars["String"]>;
+  contains?: InputMaybe<Scalars["String"]["input"]>;
+  endsWith?: InputMaybe<Scalars["String"]["input"]>;
+  equals?: InputMaybe<Scalars["String"]["input"]>;
+  gt?: InputMaybe<Scalars["String"]["input"]>;
+  gte?: InputMaybe<Scalars["String"]["input"]>;
+  in?: InputMaybe<Array<Scalars["String"]["input"]>>;
+  lt?: InputMaybe<Scalars["String"]["input"]>;
+  lte?: InputMaybe<Scalars["String"]["input"]>;
   not?: InputMaybe<NestedStringWithAggregatesFilter>;
-  notIn?: InputMaybe<Array<Scalars["String"]>>;
-  startsWith?: InputMaybe<Scalars["String"]>;
+  notIn?: InputMaybe<Array<Scalars["String"]["input"]>>;
+  startsWith?: InputMaybe<Scalars["String"]["input"]>;
 }
 
 export interface NullableDateTimeFieldUpdateOperationsInput {
-  set?: InputMaybe<Scalars["DateTime"]>;
+  set?: InputMaybe<Scalars["DateTime"]["input"]>;
 }
 
 export interface NullableIntFieldUpdateOperationsInput {
-  decrement?: InputMaybe<Scalars["Int"]>;
-  divide?: InputMaybe<Scalars["Int"]>;
-  increment?: InputMaybe<Scalars["Int"]>;
-  multiply?: InputMaybe<Scalars["Int"]>;
-  set?: InputMaybe<Scalars["Int"]>;
+  decrement?: InputMaybe<Scalars["Int"]["input"]>;
+  divide?: InputMaybe<Scalars["Int"]["input"]>;
+  increment?: InputMaybe<Scalars["Int"]["input"]>;
+  multiply?: InputMaybe<Scalars["Int"]["input"]>;
+  set?: InputMaybe<Scalars["Int"]["input"]>;
 }
 
 export interface NullableStringFieldUpdateOperationsInput {
-  set?: InputMaybe<Scalars["String"]>;
+  set?: InputMaybe<Scalars["String"]["input"]>;
 }
 
 export enum NullsOrder {
@@ -1656,10 +1667,10 @@ export enum SortOrder {
 }
 
 export interface SpeakerOnListCreateInput {
-  committeeMemberId: Scalars["String"];
-  id?: InputMaybe<Scalars["String"]>;
-  position: Scalars["Int"];
-  speakersListId: Scalars["String"];
+  committeeMemberId: Scalars["String"]["input"];
+  id?: InputMaybe<Scalars["String"]["input"]>;
+  position: Scalars["Int"]["input"];
+  speakersListId: Scalars["String"]["input"];
 }
 
 export interface SpeakerOnListCreateNestedManyWithoutCommitteeMemberInput {
@@ -1697,13 +1708,13 @@ export enum SpeakerOnListScalarFieldEnum {
 }
 
 export interface SpeakerOnListSpeakersListIdCommitteeMemberIdCompoundUniqueInput {
-  committeeMemberId: Scalars["String"];
-  speakersListId: Scalars["String"];
+  committeeMemberId: Scalars["String"]["input"];
+  speakersListId: Scalars["String"]["input"];
 }
 
 export interface SpeakerOnListSpeakersListIdPositionCompoundUniqueInput {
-  position: Scalars["Int"];
-  speakersListId: Scalars["String"];
+  position: Scalars["Int"]["input"];
+  speakersListId: Scalars["String"]["input"];
 }
 
 export interface SpeakerOnListUpdateInput {
@@ -1748,7 +1759,7 @@ export interface SpeakerOnListWhereUniqueInput {
   OR?: InputMaybe<Array<SpeakerOnListWhereInput>>;
   committeeMember?: InputMaybe<CommitteeMemberWhereInput>;
   committeeMemberId?: InputMaybe<StringFilter>;
-  id?: InputMaybe<Scalars["String"]>;
+  id?: InputMaybe<Scalars["String"]["input"]>;
   position?: InputMaybe<IntFilter>;
   speakersList?: InputMaybe<SpeakersListWhereInput>;
   speakersListId?: InputMaybe<StringFilter>;
@@ -1757,7 +1768,7 @@ export interface SpeakerOnListWhereUniqueInput {
 }
 
 export interface SpeakersListAgendaItemIdTypeCompoundUniqueInput {
-  agendaItemId: Scalars["String"];
+  agendaItemId: Scalars["String"]["input"];
   type: SpeakersListCategory;
 }
 
@@ -1768,13 +1779,13 @@ export enum SpeakersListCategory {
 }
 
 export interface SpeakersListCreateInput {
-  agendaItemId: Scalars["String"];
-  id?: InputMaybe<Scalars["String"]>;
-  isClosed?: InputMaybe<Scalars["Boolean"]>;
+  agendaItemId: Scalars["String"]["input"];
+  id?: InputMaybe<Scalars["String"]["input"]>;
+  isClosed?: InputMaybe<Scalars["Boolean"]["input"]>;
   speakers?: InputMaybe<SpeakerOnListCreateNestedManyWithoutSpeakersListInput>;
-  speakingTime: Scalars["Int"];
-  startTimestamp?: InputMaybe<Scalars["DateTime"]>;
-  timeLeft?: InputMaybe<Scalars["Int"]>;
+  speakingTime: Scalars["Int"]["input"];
+  startTimestamp?: InputMaybe<Scalars["DateTime"]["input"]>;
+  timeLeft?: InputMaybe<Scalars["Int"]["input"]>;
   type: SpeakersListCategory;
 }
 
@@ -1867,7 +1878,7 @@ export interface SpeakersListWhereUniqueInput {
   agendaItem?: InputMaybe<AgendaItemWhereInput>;
   agendaItemId?: InputMaybe<StringFilter>;
   agendaItemId_type?: InputMaybe<SpeakersListAgendaItemIdTypeCompoundUniqueInput>;
-  id?: InputMaybe<Scalars["String"]>;
+  id?: InputMaybe<Scalars["String"]["input"]>;
   isClosed?: InputMaybe<BoolFilter>;
   speakers?: InputMaybe<SpeakerOnListListRelationFilter>;
   speakingTime?: InputMaybe<IntFilter>;
@@ -1877,73 +1888,73 @@ export interface SpeakersListWhereUniqueInput {
 }
 
 export interface StringFieldUpdateOperationsInput {
-  set?: InputMaybe<Scalars["String"]>;
+  set?: InputMaybe<Scalars["String"]["input"]>;
 }
 
 export interface StringFilter {
-  contains?: InputMaybe<Scalars["String"]>;
-  endsWith?: InputMaybe<Scalars["String"]>;
-  equals?: InputMaybe<Scalars["String"]>;
-  gt?: InputMaybe<Scalars["String"]>;
-  gte?: InputMaybe<Scalars["String"]>;
-  in?: InputMaybe<Array<Scalars["String"]>>;
-  lt?: InputMaybe<Scalars["String"]>;
-  lte?: InputMaybe<Scalars["String"]>;
+  contains?: InputMaybe<Scalars["String"]["input"]>;
+  endsWith?: InputMaybe<Scalars["String"]["input"]>;
+  equals?: InputMaybe<Scalars["String"]["input"]>;
+  gt?: InputMaybe<Scalars["String"]["input"]>;
+  gte?: InputMaybe<Scalars["String"]["input"]>;
+  in?: InputMaybe<Array<Scalars["String"]["input"]>>;
+  lt?: InputMaybe<Scalars["String"]["input"]>;
+  lte?: InputMaybe<Scalars["String"]["input"]>;
   mode?: InputMaybe<QueryMode>;
   not?: InputMaybe<NestedStringFilter>;
-  notIn?: InputMaybe<Array<Scalars["String"]>>;
-  startsWith?: InputMaybe<Scalars["String"]>;
+  notIn?: InputMaybe<Array<Scalars["String"]["input"]>>;
+  startsWith?: InputMaybe<Scalars["String"]["input"]>;
 }
 
 export interface StringNullableFilter {
-  contains?: InputMaybe<Scalars["String"]>;
-  endsWith?: InputMaybe<Scalars["String"]>;
-  equals?: InputMaybe<Scalars["String"]>;
-  gt?: InputMaybe<Scalars["String"]>;
-  gte?: InputMaybe<Scalars["String"]>;
-  in?: InputMaybe<Array<Scalars["String"]>>;
-  lt?: InputMaybe<Scalars["String"]>;
-  lte?: InputMaybe<Scalars["String"]>;
+  contains?: InputMaybe<Scalars["String"]["input"]>;
+  endsWith?: InputMaybe<Scalars["String"]["input"]>;
+  equals?: InputMaybe<Scalars["String"]["input"]>;
+  gt?: InputMaybe<Scalars["String"]["input"]>;
+  gte?: InputMaybe<Scalars["String"]["input"]>;
+  in?: InputMaybe<Array<Scalars["String"]["input"]>>;
+  lt?: InputMaybe<Scalars["String"]["input"]>;
+  lte?: InputMaybe<Scalars["String"]["input"]>;
   mode?: InputMaybe<QueryMode>;
   not?: InputMaybe<NestedStringNullableFilter>;
-  notIn?: InputMaybe<Array<Scalars["String"]>>;
-  startsWith?: InputMaybe<Scalars["String"]>;
+  notIn?: InputMaybe<Array<Scalars["String"]["input"]>>;
+  startsWith?: InputMaybe<Scalars["String"]["input"]>;
 }
 
 export interface StringNullableWithAggregatesFilter {
   _count?: InputMaybe<NestedIntNullableFilter>;
   _max?: InputMaybe<NestedStringNullableFilter>;
   _min?: InputMaybe<NestedStringNullableFilter>;
-  contains?: InputMaybe<Scalars["String"]>;
-  endsWith?: InputMaybe<Scalars["String"]>;
-  equals?: InputMaybe<Scalars["String"]>;
-  gt?: InputMaybe<Scalars["String"]>;
-  gte?: InputMaybe<Scalars["String"]>;
-  in?: InputMaybe<Array<Scalars["String"]>>;
-  lt?: InputMaybe<Scalars["String"]>;
-  lte?: InputMaybe<Scalars["String"]>;
+  contains?: InputMaybe<Scalars["String"]["input"]>;
+  endsWith?: InputMaybe<Scalars["String"]["input"]>;
+  equals?: InputMaybe<Scalars["String"]["input"]>;
+  gt?: InputMaybe<Scalars["String"]["input"]>;
+  gte?: InputMaybe<Scalars["String"]["input"]>;
+  in?: InputMaybe<Array<Scalars["String"]["input"]>>;
+  lt?: InputMaybe<Scalars["String"]["input"]>;
+  lte?: InputMaybe<Scalars["String"]["input"]>;
   mode?: InputMaybe<QueryMode>;
   not?: InputMaybe<NestedStringNullableWithAggregatesFilter>;
-  notIn?: InputMaybe<Array<Scalars["String"]>>;
-  startsWith?: InputMaybe<Scalars["String"]>;
+  notIn?: InputMaybe<Array<Scalars["String"]["input"]>>;
+  startsWith?: InputMaybe<Scalars["String"]["input"]>;
 }
 
 export interface StringWithAggregatesFilter {
   _count?: InputMaybe<NestedIntFilter>;
   _max?: InputMaybe<NestedStringFilter>;
   _min?: InputMaybe<NestedStringFilter>;
-  contains?: InputMaybe<Scalars["String"]>;
-  endsWith?: InputMaybe<Scalars["String"]>;
-  equals?: InputMaybe<Scalars["String"]>;
-  gt?: InputMaybe<Scalars["String"]>;
-  gte?: InputMaybe<Scalars["String"]>;
-  in?: InputMaybe<Array<Scalars["String"]>>;
-  lt?: InputMaybe<Scalars["String"]>;
-  lte?: InputMaybe<Scalars["String"]>;
+  contains?: InputMaybe<Scalars["String"]["input"]>;
+  endsWith?: InputMaybe<Scalars["String"]["input"]>;
+  equals?: InputMaybe<Scalars["String"]["input"]>;
+  gt?: InputMaybe<Scalars["String"]["input"]>;
+  gte?: InputMaybe<Scalars["String"]["input"]>;
+  in?: InputMaybe<Array<Scalars["String"]["input"]>>;
+  lt?: InputMaybe<Scalars["String"]["input"]>;
+  lte?: InputMaybe<Scalars["String"]["input"]>;
   mode?: InputMaybe<QueryMode>;
   not?: InputMaybe<NestedStringWithAggregatesFilter>;
-  notIn?: InputMaybe<Array<Scalars["String"]>>;
-  startsWith?: InputMaybe<Scalars["String"]>;
+  notIn?: InputMaybe<Array<Scalars["String"]["input"]>>;
+  startsWith?: InputMaybe<Scalars["String"]["input"]>;
 }
 
 export enum TransactionIsolationLevel {
@@ -1956,7 +1967,7 @@ export enum TransactionIsolationLevel {
 export interface UserCreateInput {
   committeeMemberships?: InputMaybe<CommitteeMemberCreateNestedManyWithoutUserInput>;
   conferenceMemberships?: InputMaybe<ConferenceMemberCreateNestedManyWithoutUserInput>;
-  id?: InputMaybe<Scalars["String"]>;
+  id?: InputMaybe<Scalars["String"]["input"]>;
   messages?: InputMaybe<MessageCreateNestedManyWithoutAuthorInput>;
 }
 
@@ -2008,11 +2019,11 @@ export interface UserWhereUniqueInput {
   OR?: InputMaybe<Array<UserWhereInput>>;
   committeeMemberships?: InputMaybe<CommitteeMemberListRelationFilter>;
   conferenceMemberships?: InputMaybe<ConferenceMemberListRelationFilter>;
-  id?: InputMaybe<Scalars["String"]>;
+  id?: InputMaybe<Scalars["String"]["input"]>;
   messages?: InputMaybe<MessageListRelationFilter>;
 }
 
-export const scalarsEnumsHash: import("gqty").ScalarsEnumsHash = {
+export const scalarsEnumsHash: ScalarsEnumsHash = {
   AgendaItemScalarFieldEnum: true,
   Boolean: true,
   CommitteeCategory: true,
@@ -4376,7 +4387,7 @@ export interface Mutation {
   }) => CommitteeMember;
   createOneConference: (args: {
     data: ConferenceCreateInput;
-    token: Scalars["String"];
+    token: ScalarsEnums["String"];
   }) => Conference;
   createOneConferenceMember: (args: {
     data: ConferenceMemberCreateInput;
@@ -4469,160 +4480,160 @@ export interface Query {
     cursor?: Maybe<AgendaItemWhereUniqueInput>;
     distinct?: Maybe<Array<AgendaItemScalarFieldEnum>>;
     orderBy?: Maybe<Array<AgendaItemOrderByWithRelationInput>>;
-    skip?: Maybe<Scalars["Int"]>;
-    take?: Maybe<Scalars["Int"]>;
+    skip?: Maybe<ScalarsEnums["Int"]>;
+    take?: Maybe<ScalarsEnums["Int"]>;
     where?: Maybe<AgendaItemWhereInput>;
   }) => Maybe<AgendaItem>;
   findFirstCommitteeMember: (args?: {
     cursor?: Maybe<CommitteeMemberWhereUniqueInput>;
     distinct?: Maybe<Array<CommitteeMemberScalarFieldEnum>>;
     orderBy?: Maybe<Array<CommitteeMemberOrderByWithRelationInput>>;
-    skip?: Maybe<Scalars["Int"]>;
-    take?: Maybe<Scalars["Int"]>;
+    skip?: Maybe<ScalarsEnums["Int"]>;
+    take?: Maybe<ScalarsEnums["Int"]>;
     where?: Maybe<CommitteeMemberWhereInput>;
   }) => Maybe<CommitteeMember>;
   findFirstConference: (args?: {
     cursor?: Maybe<ConferenceWhereUniqueInput>;
     distinct?: Maybe<Array<ConferenceScalarFieldEnum>>;
     orderBy?: Maybe<Array<ConferenceOrderByWithRelationInput>>;
-    skip?: Maybe<Scalars["Int"]>;
-    take?: Maybe<Scalars["Int"]>;
+    skip?: Maybe<ScalarsEnums["Int"]>;
+    take?: Maybe<ScalarsEnums["Int"]>;
     where?: Maybe<ConferenceWhereInput>;
   }) => Maybe<Conference>;
   findFirstConferenceMember: (args?: {
     cursor?: Maybe<ConferenceMemberWhereUniqueInput>;
     distinct?: Maybe<Array<ConferenceMemberScalarFieldEnum>>;
     orderBy?: Maybe<Array<ConferenceMemberOrderByWithRelationInput>>;
-    skip?: Maybe<Scalars["Int"]>;
-    take?: Maybe<Scalars["Int"]>;
+    skip?: Maybe<ScalarsEnums["Int"]>;
+    take?: Maybe<ScalarsEnums["Int"]>;
     where?: Maybe<ConferenceMemberWhereInput>;
   }) => Maybe<ConferenceMember>;
   findFirstDelegation: (args?: {
     cursor?: Maybe<DelegationWhereUniqueInput>;
     distinct?: Maybe<Array<DelegationScalarFieldEnum>>;
     orderBy?: Maybe<Array<DelegationOrderByWithRelationInput>>;
-    skip?: Maybe<Scalars["Int"]>;
-    take?: Maybe<Scalars["Int"]>;
+    skip?: Maybe<ScalarsEnums["Int"]>;
+    take?: Maybe<ScalarsEnums["Int"]>;
     where?: Maybe<DelegationWhereInput>;
   }) => Maybe<Delegation>;
   findFirstMessage: (args?: {
     cursor?: Maybe<MessageWhereUniqueInput>;
     distinct?: Maybe<Array<MessageScalarFieldEnum>>;
     orderBy?: Maybe<Array<MessageOrderByWithRelationInput>>;
-    skip?: Maybe<Scalars["Int"]>;
-    take?: Maybe<Scalars["Int"]>;
+    skip?: Maybe<ScalarsEnums["Int"]>;
+    take?: Maybe<ScalarsEnums["Int"]>;
     where?: Maybe<MessageWhereInput>;
   }) => Maybe<Message>;
   findFirstNation: (args?: {
     cursor?: Maybe<NationWhereUniqueInput>;
     distinct?: Maybe<Array<NationScalarFieldEnum>>;
     orderBy?: Maybe<Array<NationOrderByWithRelationInput>>;
-    skip?: Maybe<Scalars["Int"]>;
-    take?: Maybe<Scalars["Int"]>;
+    skip?: Maybe<ScalarsEnums["Int"]>;
+    take?: Maybe<ScalarsEnums["Int"]>;
     where?: Maybe<NationWhereInput>;
   }) => Maybe<Nation>;
   findFirstSpeakerOnList: (args?: {
     cursor?: Maybe<SpeakerOnListWhereUniqueInput>;
     distinct?: Maybe<Array<SpeakerOnListScalarFieldEnum>>;
     orderBy?: Maybe<Array<SpeakerOnListOrderByWithRelationInput>>;
-    skip?: Maybe<Scalars["Int"]>;
-    take?: Maybe<Scalars["Int"]>;
+    skip?: Maybe<ScalarsEnums["Int"]>;
+    take?: Maybe<ScalarsEnums["Int"]>;
     where?: Maybe<SpeakerOnListWhereInput>;
   }) => Maybe<SpeakerOnList>;
   findFirstSpeakersList: (args?: {
     cursor?: Maybe<SpeakersListWhereUniqueInput>;
     distinct?: Maybe<Array<SpeakersListScalarFieldEnum>>;
     orderBy?: Maybe<Array<SpeakersListOrderByWithRelationInput>>;
-    skip?: Maybe<Scalars["Int"]>;
-    take?: Maybe<Scalars["Int"]>;
+    skip?: Maybe<ScalarsEnums["Int"]>;
+    take?: Maybe<ScalarsEnums["Int"]>;
     where?: Maybe<SpeakersListWhereInput>;
   }) => Maybe<SpeakersList>;
   findFirstUser: (args?: {
     cursor?: Maybe<UserWhereUniqueInput>;
     distinct?: Maybe<Array<UserScalarFieldEnum>>;
     orderBy?: Maybe<Array<UserOrderByWithRelationInput>>;
-    skip?: Maybe<Scalars["Int"]>;
-    take?: Maybe<Scalars["Int"]>;
+    skip?: Maybe<ScalarsEnums["Int"]>;
+    take?: Maybe<ScalarsEnums["Int"]>;
     where?: Maybe<UserWhereInput>;
   }) => Maybe<User>;
   findManyAgendaItems: (args?: {
     cursor?: Maybe<AgendaItemWhereUniqueInput>;
     distinct?: Maybe<Array<AgendaItemScalarFieldEnum>>;
     orderBy?: Maybe<Array<AgendaItemOrderByWithRelationInput>>;
-    skip?: Maybe<Scalars["Int"]>;
-    take?: Maybe<Scalars["Int"]>;
+    skip?: Maybe<ScalarsEnums["Int"]>;
+    take?: Maybe<ScalarsEnums["Int"]>;
     where?: Maybe<AgendaItemWhereInput>;
   }) => Array<AgendaItem>;
   findManyCommitteeMembers: (args?: {
     cursor?: Maybe<CommitteeMemberWhereUniqueInput>;
     distinct?: Maybe<Array<CommitteeMemberScalarFieldEnum>>;
     orderBy?: Maybe<Array<CommitteeMemberOrderByWithRelationInput>>;
-    skip?: Maybe<Scalars["Int"]>;
-    take?: Maybe<Scalars["Int"]>;
+    skip?: Maybe<ScalarsEnums["Int"]>;
+    take?: Maybe<ScalarsEnums["Int"]>;
     where?: Maybe<CommitteeMemberWhereInput>;
   }) => Array<CommitteeMember>;
   findManyConferenceMembers: (args?: {
     cursor?: Maybe<ConferenceMemberWhereUniqueInput>;
     distinct?: Maybe<Array<ConferenceMemberScalarFieldEnum>>;
     orderBy?: Maybe<Array<ConferenceMemberOrderByWithRelationInput>>;
-    skip?: Maybe<Scalars["Int"]>;
-    take?: Maybe<Scalars["Int"]>;
+    skip?: Maybe<ScalarsEnums["Int"]>;
+    take?: Maybe<ScalarsEnums["Int"]>;
     where?: Maybe<ConferenceMemberWhereInput>;
   }) => Array<ConferenceMember>;
   findManyConferences: (args?: {
     cursor?: Maybe<ConferenceWhereUniqueInput>;
     distinct?: Maybe<Array<ConferenceScalarFieldEnum>>;
     orderBy?: Maybe<Array<ConferenceOrderByWithRelationInput>>;
-    skip?: Maybe<Scalars["Int"]>;
-    take?: Maybe<Scalars["Int"]>;
+    skip?: Maybe<ScalarsEnums["Int"]>;
+    take?: Maybe<ScalarsEnums["Int"]>;
     where?: Maybe<ConferenceWhereInput>;
   }) => Array<Conference>;
   findManyDelegations: (args?: {
     cursor?: Maybe<DelegationWhereUniqueInput>;
     distinct?: Maybe<Array<DelegationScalarFieldEnum>>;
     orderBy?: Maybe<Array<DelegationOrderByWithRelationInput>>;
-    skip?: Maybe<Scalars["Int"]>;
-    take?: Maybe<Scalars["Int"]>;
+    skip?: Maybe<ScalarsEnums["Int"]>;
+    take?: Maybe<ScalarsEnums["Int"]>;
     where?: Maybe<DelegationWhereInput>;
   }) => Array<Delegation>;
   findManyMessages: (args?: {
     cursor?: Maybe<MessageWhereUniqueInput>;
     distinct?: Maybe<Array<MessageScalarFieldEnum>>;
     orderBy?: Maybe<Array<MessageOrderByWithRelationInput>>;
-    skip?: Maybe<Scalars["Int"]>;
-    take?: Maybe<Scalars["Int"]>;
+    skip?: Maybe<ScalarsEnums["Int"]>;
+    take?: Maybe<ScalarsEnums["Int"]>;
     where?: Maybe<MessageWhereInput>;
   }) => Array<Message>;
   findManyNations: (args?: {
     cursor?: Maybe<NationWhereUniqueInput>;
     distinct?: Maybe<Array<NationScalarFieldEnum>>;
     orderBy?: Maybe<Array<NationOrderByWithRelationInput>>;
-    skip?: Maybe<Scalars["Int"]>;
-    take?: Maybe<Scalars["Int"]>;
+    skip?: Maybe<ScalarsEnums["Int"]>;
+    take?: Maybe<ScalarsEnums["Int"]>;
     where?: Maybe<NationWhereInput>;
   }) => Array<Nation>;
   findManySpeakerOnLists: (args?: {
     cursor?: Maybe<SpeakerOnListWhereUniqueInput>;
     distinct?: Maybe<Array<SpeakerOnListScalarFieldEnum>>;
     orderBy?: Maybe<Array<SpeakerOnListOrderByWithRelationInput>>;
-    skip?: Maybe<Scalars["Int"]>;
-    take?: Maybe<Scalars["Int"]>;
+    skip?: Maybe<ScalarsEnums["Int"]>;
+    take?: Maybe<ScalarsEnums["Int"]>;
     where?: Maybe<SpeakerOnListWhereInput>;
   }) => Array<SpeakerOnList>;
   findManySpeakersLists: (args?: {
     cursor?: Maybe<SpeakersListWhereUniqueInput>;
     distinct?: Maybe<Array<SpeakersListScalarFieldEnum>>;
     orderBy?: Maybe<Array<SpeakersListOrderByWithRelationInput>>;
-    skip?: Maybe<Scalars["Int"]>;
-    take?: Maybe<Scalars["Int"]>;
+    skip?: Maybe<ScalarsEnums["Int"]>;
+    take?: Maybe<ScalarsEnums["Int"]>;
     where?: Maybe<SpeakersListWhereInput>;
   }) => Array<SpeakersList>;
   findManyUsers: (args?: {
     cursor?: Maybe<UserWhereUniqueInput>;
     distinct?: Maybe<Array<UserScalarFieldEnum>>;
     orderBy?: Maybe<Array<UserOrderByWithRelationInput>>;
-    skip?: Maybe<Scalars["Int"]>;
-    take?: Maybe<Scalars["Int"]>;
+    skip?: Maybe<ScalarsEnums["Int"]>;
+    take?: Maybe<ScalarsEnums["Int"]>;
     where?: Maybe<UserWhereInput>;
   }) => Array<User>;
   findUniqueAgendaItem: (args: {
@@ -4667,35 +4678,33 @@ export interface GeneratedSchema {
   subscription: Subscription;
 }
 
-export type MakeNullable<T> = {
-  [K in keyof T]: T[K] | undefined;
+export type ScalarsEnums = {
+  [Key in keyof Scalars]: Scalars[Key] extends { output: unknown }
+    ? Scalars[Key]["output"]
+    : never;
+} & {
+  AgendaItemScalarFieldEnum: AgendaItemScalarFieldEnum;
+  CommitteeCategory: CommitteeCategory;
+  CommitteeMemberScalarFieldEnum: CommitteeMemberScalarFieldEnum;
+  CommitteeScalarFieldEnum: CommitteeScalarFieldEnum;
+  CommitteeStatus: CommitteeStatus;
+  ConferenceCreationTokenScalarFieldEnum: ConferenceCreationTokenScalarFieldEnum;
+  ConferenceMemberScalarFieldEnum: ConferenceMemberScalarFieldEnum;
+  ConferenceRole: ConferenceRole;
+  ConferenceScalarFieldEnum: ConferenceScalarFieldEnum;
+  DelegationScalarFieldEnum: DelegationScalarFieldEnum;
+  MessageCategory: MessageCategory;
+  MessageScalarFieldEnum: MessageScalarFieldEnum;
+  MessageStatus: MessageStatus;
+  NationScalarFieldEnum: NationScalarFieldEnum;
+  NationVariant: NationVariant;
+  NullsOrder: NullsOrder;
+  Presence: Presence;
+  QueryMode: QueryMode;
+  SortOrder: SortOrder;
+  SpeakerOnListScalarFieldEnum: SpeakerOnListScalarFieldEnum;
+  SpeakersListCategory: SpeakersListCategory;
+  SpeakersListScalarFieldEnum: SpeakersListScalarFieldEnum;
+  TransactionIsolationLevel: TransactionIsolationLevel;
+  UserScalarFieldEnum: UserScalarFieldEnum;
 };
-
-export interface ScalarsEnums extends MakeNullable<Scalars> {
-  AgendaItemScalarFieldEnum: AgendaItemScalarFieldEnum | undefined;
-  CommitteeCategory: CommitteeCategory | undefined;
-  CommitteeMemberScalarFieldEnum: CommitteeMemberScalarFieldEnum | undefined;
-  CommitteeScalarFieldEnum: CommitteeScalarFieldEnum | undefined;
-  CommitteeStatus: CommitteeStatus | undefined;
-  ConferenceCreationTokenScalarFieldEnum:
-    | ConferenceCreationTokenScalarFieldEnum
-    | undefined;
-  ConferenceMemberScalarFieldEnum: ConferenceMemberScalarFieldEnum | undefined;
-  ConferenceRole: ConferenceRole | undefined;
-  ConferenceScalarFieldEnum: ConferenceScalarFieldEnum | undefined;
-  DelegationScalarFieldEnum: DelegationScalarFieldEnum | undefined;
-  MessageCategory: MessageCategory | undefined;
-  MessageScalarFieldEnum: MessageScalarFieldEnum | undefined;
-  MessageStatus: MessageStatus | undefined;
-  NationScalarFieldEnum: NationScalarFieldEnum | undefined;
-  NationVariant: NationVariant | undefined;
-  NullsOrder: NullsOrder | undefined;
-  Presence: Presence | undefined;
-  QueryMode: QueryMode | undefined;
-  SortOrder: SortOrder | undefined;
-  SpeakerOnListScalarFieldEnum: SpeakerOnListScalarFieldEnum | undefined;
-  SpeakersListCategory: SpeakersListCategory | undefined;
-  SpeakersListScalarFieldEnum: SpeakersListScalarFieldEnum | undefined;
-  TransactionIsolationLevel: TransactionIsolationLevel | undefined;
-  UserScalarFieldEnum: UserScalarFieldEnum | undefined;
-}

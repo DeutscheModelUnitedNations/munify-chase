@@ -4,7 +4,7 @@ import Motions from "@/app/components/voting/motions";
 import VotingArea from "@/app/components/voting/voting";
 import { useI18nContext } from "@/app/i18n/i18n-react";
 import { motionTestData } from "@/test_data";
-import type { Motion } from "@/app/custom_types/custom_types";
+import type { Motion } from "@/app/util/types";
 import { TabMenu } from "primereact/tabmenu";
 import { SplitButton } from "primereact/splitbutton";
 import FAIcon from "@/app/components/font_awesome_icon";

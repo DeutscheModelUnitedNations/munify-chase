@@ -1,4 +1,4 @@
-import type { CountryCode, Voting } from "@/app/custom_types/custom_types";
+import type { CountryCode, Voting } from "@/app/util/types";
 import { useEffect, useState } from "react";
 import { SmallFlag } from "../flag_templates";
 import { useI18nContext } from "@/app/i18n/i18n-react";

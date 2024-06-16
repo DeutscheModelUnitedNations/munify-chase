@@ -1,6 +1,6 @@
 import WidgetBoxTemplate from "@/app/components/widget_box_template";
 import { SmallFlag } from "@/app/components/flag_templates";
-import type { CountryCode } from "@/app/custom_types/custom_types";
+import type { CountryCode } from "@/app/util/types";
 import { useI18nContext } from "@/app/i18n/i18n-react";
 import FAIcon from "@/app/components/font_awesome_icon";
 

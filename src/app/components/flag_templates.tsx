@@ -1,7 +1,7 @@
 import { useState } from "react";
 import Image from "next/image";
-import getFlagPathByCode from "@/app/misc/get_flag_path_by_code";
-import getCountryNameByCode from "@/app/misc/get_country_name_by_code";
+import getFlagPathByCode from "@/app/util/get_flag_path_by_code";
+import getCountryNameByCode from "@/app/util/get_country_name_by_code";
 import { useI18nContext } from "@/app/i18n/i18n-react";
 import { Skeleton } from "primereact/skeleton";
 import { useFaGlobe } from "@/app/hooks/useFaGlobe";

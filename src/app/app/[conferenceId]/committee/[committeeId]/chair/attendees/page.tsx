@@ -15,7 +15,7 @@ import AttendanceTable, {
   type DelegationDataType,
 } from "@/app/components/attendance/attendance_table";
 import Button from "@/app/components/button";
-import getCountryNameByCode from "@/app/misc/get_country_name_by_code";
+import getCountryNameByCode from "@/app/util/get_country_name_by_code";
 
 export default function ChairAttendees() {
   const { LL, locale } = useI18nContext();

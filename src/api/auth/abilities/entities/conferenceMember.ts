@@ -14,5 +14,9 @@ export const defineAbilitiesForConferenceMembers = (
         members: { some: { user: { id: user.id }, role: "ADMIN" } },
       },
     });
+
+    can("read", "ConferenceMember", {
+      user: { id: { equals: user.id } },
+    });
   }
 };

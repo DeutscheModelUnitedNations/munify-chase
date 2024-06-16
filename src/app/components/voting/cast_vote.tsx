@@ -1,5 +1,5 @@
 import { useState } from "react";
-import type { CountryCode, Voting } from "@/app/custom_types/custom_types";
+import type { CountryCode, Voting } from "@/app/util/types";
 import { Button } from "primereact/button";
 import { useI18nContext } from "@/app/i18n/i18n-react";
 import { AnimatePresence, motion } from "framer-motion";

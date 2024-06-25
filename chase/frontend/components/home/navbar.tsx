@@ -68,8 +68,7 @@ export default function Navbar({
                   duration: 0,
                   delay: 0,
                 }
-          }
-        >
+          }>
           <Link href="/">
             <Image
               src="/logo/png/chase_logo_blue.png"
@@ -111,8 +110,7 @@ export default function Navbar({
                     duration: 0,
                     delay: 0,
                   }
-            }
-          >
+            }>
             <Link href="/">
               <Image
                 src="/logo/png/chase_logo_blue.png"
@@ -142,14 +140,9 @@ export default function Navbar({
                   type: "spring",
                   damping: 20,
                   stiffness: 70,
-                }}
-              >
+                }}>
                 <div className="w-full flex flex-col justify-center items-center gap-4">
-                  <NavButtons
-                    isDocs={isDocs}
-                    isFAQ={isFAQ}
-                    withAddButton={false}
-                  />
+                  <NavButtons isDocs={isDocs} isFAQ={isFAQ} />
                 </div>
               </motion.div>
             )}
@@ -163,25 +156,15 @@ export default function Navbar({
 function NavButtons({
   isDocs = false,
   isFAQ = false,
-  withAddButton = true,
 }: {
   isDocs?: boolean;
   isFAQ?: boolean;
-  withAddButton?: boolean;
 }) {
   const { LL } = useI18nContext();
   const router = useRouter();
 
   return (
     <>
-      {withAddButton && (
-        <Button
-          faIcon="plus"
-          onClick={() => router.push("/app/admin/new")}
-          text
-          size="small"
-        />
-      )}{" "}
       <Button
         label={LL.home.navbar.DOCUMENTATION()}
         onClick={() => router.push("/docs")}

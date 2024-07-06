@@ -37,15 +37,12 @@ If you are using the vscode extension [rioukkevin.vscode-git-commit](https://mar
 Below are examples of well-formatted commits:
 
 ```
-✨ feat (CHASE Frontend): implement login button and modal
+✨ feat (Frontend): implement login button and modal
 branch: login
 
-🐞 fix (MUNify): address error in login body
+🐞 fix (General): address error in login body
 branch: login
 
-📚 docs (CHASE Backend): add examples
+📚 docs (Backend): add examples
 branch: setup
 ```
-
-## Getting started with the codebase
-This is a monorepo, which means that multiple projects reside in their respective directories. Each project contains documentation on its own which should get you going with the details. E.g. if you want to contribute to chase, see the [chase directory](./chase).

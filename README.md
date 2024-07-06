@@ -1,31 +1,17 @@
-# MUNify
+# MUNify CHASE
 
-MUNify is a collection of tools to organize and run a [model united nations](https://en.wikipedia.org/wiki/Model_United_Nations) conference. It aims to simplify aspects like participant management, document organization, commitee sessions (including speakers lists, voting and attendance tracking) and communication at the conference.
+MUNify CHASE is a Software to managing Debates of Model United Nations Conferences with tools like speakers lists, digital voting and resolution editing. It is part of the MUNify Project, which aims to provide a comprehensive Software Suite for Model United Nations Conferences. MUNify is an Open Source Project by the german non-profit organization [Deutsche Model United Nations (DMUN) e.V.](https://dmun.de).
 
 ![munify](./screenshots/chase_landing_page.png)
 *(Landing page of the CHASE software component)*
 
 The project is still under development. It is currently not recommended to use it for a conference. If you are interested in using it, please contact us via the discussion section of this repository.
 
-The project has been initiated by members of [DMUN](https://de.wikipedia.org/wiki/Deutsche_Model_United_Nations).
-
-It is composed of multiple software components which can be found in their separate directories inside this monorepo.
-
-## Components
-
-See the existing components and their directory below
-
-- [CHASE (CHAiring SoftwarE)](./chase) -> A tool to manage the speakers list, voting and attendance tracking in commitees. It also supports messaging and resolution editing/sharing.
-
-### Planned Components
-
-- A participant management system/database
-- A renewal of the DMUN conferences Websites ([mun-sh.de](https://mun-sh.de), [munbw.de](https://munbw.de) and [munbb.de](https://mun-bb.de))
-- An inventory management system for conference materials
+We are happy to recieve feedback, contributions and donations. Please see below for more information.
 
 ### Internal Tools
 
-- [todo-sync](./todo-sync) -> A tool to sync #todo comments from the code to [this static website](https://deutschemodelunitednations.github.io/munify/)
+- [todo-sync](./todo-sync) -> A tool to sync #todo comments from the code to [this static website](https://deutschemodelunitednations.github.io/munify-chase/)
 
 ## Develop Locally
 
@@ -34,13 +20,13 @@ Make sure you have [Docker](https://www.docker.com/get-started/), [bun](https://
 Clone the project
 
 ```bash
-  git clone https://github.com/DeutscheModelUnitedNations/munify
+  git clone https://github.com/DeutscheModelUnitedNations/munify-chase
 ```
 
 Go to the project directory
 
 ```bash
-  cd munify
+  cd munify-chase
 ```
 
 Install root dependencies
@@ -75,7 +61,7 @@ Yes, you can! Please refer to the contributing section below.
 
 #### Can you add a feature?
 
-For feature suggestions, please post in the discussion section of this repository. You can find it [here](https://github.com/DeutscheModelUnitedNations/munify/discussions). If you want to write it yourself, please see the contributing section below.
+For feature suggestions, please post in the discussion section of this repository. You can find it [here](https://github.com/DeutscheModelUnitedNations/munify-chase/discussions). If you want to write it yourself, please see the contributing section below.
 
 ## Contributing
 
@@ -90,3 +76,14 @@ By contributing you agree to release your contributtion under the projects licen
 *This aspect is work in progress since the project is currently in its development phase. If you want to use the project or one of its components nonetheless, please contact us via the discussion section.*
 
 [LICENSE](./LICENSE)
+
+## Support us / Donations
+You can support our work by donating to our non-profit organization [Deutsche Model United Nations (DMUN) e.V.](https://dmun.de).
+Please contact our board for details on how to donate by sending an email to [vorstand@dmun.de](mailto:vorstand@dmun.de).
+
+All donations are tax deductible in Germany and we are happy to provide you with a donation receipt. The money will be used to support our development of MUNify if you don't specify a different purpose.
+
+## Impressions
+
+![munify](/screenshots/chase_mission_control.png)
+![munify](/screenshots/chase_speakers_list.png)

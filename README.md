@@ -1,31 +1,19 @@
-# MUNify
+# MUNify CHASE
 
-MUNify is a collection of tools to organize and run a [model united nations](https://en.wikipedia.org/wiki/Model_United_Nations) conference. It aims to simplify aspects like participant management, document organization, commitee sessions (including speakers lists, voting and attendance tracking) and communication at the conference.
+> CHASE stands for *CHAiring SoftwarE*
+
+MUNify CHASE is a Software to managing Debates of Model United Nations Conferences with tools like speakers lists, digital voting and resolution editing. It is part of the MUNify Project, which aims to provide a comprehensive Software Suite for Model United Nations Conferences. MUNify is an Open Source Project by the german non-profit organization [Deutsche Model United Nations (DMUN) e.V.](https://dmun.de).
 
 ![munify](./screenshots/chase_landing_page.png)
 *(Landing page of the CHASE software component)*
 
 The project is still under development. It is currently not recommended to use it for a conference. If you are interested in using it, please contact us via the discussion section of this repository.
 
-The project has been initiated by members of [DMUN](https://de.wikipedia.org/wiki/Deutsche_Model_United_Nations).
-
-It is composed of multiple software components which can be found in their separate directories inside this monorepo.
-
-## Components
-
-See the existing components and their directory below
-
-- [CHASE (CHAiring SoftwarE)](./chase) -> A tool to manage the speakers list, voting and attendance tracking in commitees. It also supports messaging and resolution editing/sharing.
-
-### Planned Components
-
-- A participant management system/database
-- A renewal of the DMUN conferences Websites ([mun-sh.de](https://mun-sh.de), [munbw.de](https://munbw.de) and [munbb.de](https://mun-bb.de))
-- An inventory management system for conference materials
+We are happy to recieve feedback, contributions and donations. Please see below for more information.
 
 ### Internal Tools
 
-- [todo-sync](./todo-sync) -> A tool to sync #todo comments from the code to [this static website](https://deutschemodelunitednations.github.io/munify/)
+- [todo-sync](./todo-sync) -> A tool to sync #todo comments from the code to [this static website](https://deutschemodelunitednations.github.io/munify-chase/)
 
 ## Develop Locally
 
@@ -34,13 +22,13 @@ Make sure you have [Docker](https://www.docker.com/get-started/), [bun](https://
 Clone the project
 
 ```bash
-  git clone https://github.com/DeutscheModelUnitedNations/munify
+  git clone https://github.com/DeutscheModelUnitedNations/munify-chase
 ```
 
 Go to the project directory
 
 ```bash
-  cd munify
+  cd munify-chase
 ```
 
 Install root dependencies
@@ -59,15 +47,15 @@ A devcontainer is a containerized development environment. It is a good way to e
 
 #### Can I use this for my conference outside of DMUN?
 
-Yes. We encourage and allow usage for other conferences as long as it is non commercial. Please see our license for more detailed information on this.
+Yes. We encourage and allow usage for other conferences. Please see our license for more detailed information on this.
 
-Note that the project is still under development and it is not recommended to use it for a conference at the moment. If you are interested in using it, please contact us via the discussion section of this repository. We are happy to help you with the setup and usage.
+Note that the project is still under development and it is not recommended to use it without our consultation for a conference at the moment. The current state of the of the App is tested on a few DMUN conferences. If you are interested in using it, please contact us via the discussion section of this repository. We are happy to help you with the setup and usage, as long as you use it for your own conferences in line with our non-profit spirit.
 
-Note also that this is primarily a project for DMUN conferences and might not be 100% suitable for your conferences needs and compatable with your rules of procedure.
+Note also that this is primarily a project for DMUN conferences and might not be 100% suitable for your conferences needs and compatable with your rules of procedure. If you want guidlines on how to adapt the Code to your needs, please contact us via the discussion section of this repository. We are also happy to help.
 
 #### Ok, but how?
 
-You would need to deploy the app yourself, on your own servers and do all the neccessary setups. This can be an owerwhelming task so feel free to contact us when you need help. In some cases it might be possible for us to run the infrastructure and grant you access, please contact us in case you would like to know more about this.
+You would need to deploy the app yourself, on your own servers and do all the neccessary setups. This can be an owerwhelming task so feel free to contact us when you need help. In some cases it might be possible for us to run the infrastructure and grant you access, please contact us in case you would like to know more about this. Depending on the use case and complexity, we might need to charge a service fee.
 
 #### Can I help you building the project?
 
@@ -75,7 +63,7 @@ Yes, you can! Please refer to the contributing section below.
 
 #### Can you add a feature?
 
-For feature suggestions, please post in the discussion section of this repository. You can find it [here](https://github.com/DeutscheModelUnitedNations/munify/discussions). If you want to write it yourself, please see the contributing section below.
+For feature suggestions, please post in the discussion section of this repository. You can find it [here](https://github.com/DeutscheModelUnitedNations/munify-chase/discussions). If you want to write it yourself, please see the contributing section below.
 
 ## Contributing
 
@@ -90,3 +78,14 @@ By contributing you agree to release your contributtion under the projects licen
 *This aspect is work in progress since the project is currently in its development phase. If you want to use the project or one of its components nonetheless, please contact us via the discussion section.*
 
 [LICENSE](./LICENSE)
+
+## Support us / Donations
+You can support our work by donating to our non-profit organization [Deutsche Model United Nations (DMUN) e.V.](https://dmun.de).
+Please contact our board for details on how to donate by sending an email to [vorstand@dmun.de](mailto:vorstand@dmun.de).
+
+All donations are tax deductible in Germany and we are happy to provide you with a donation receipt. The money will be used to support our development of MUNify if you don't specify a different purpose.
+
+## Impressions
+
+![munify](/screenshots/chase_mission_control.png)
+![munify](/screenshots/chase_speakers_list.png)

@@ -21,14 +21,15 @@ try {
     },
   });
   console.info("\n----------------\n");
-  console.info(`Created a MINI-MUN 2024 Conference with the ID ${conference.id}`);
+  console.info(
+    `Created a MINI-MUN 2024 Conference with the ID ${conference.id}`,
+  );
 
   // Committees
 
   const committees = {} as {
     SR: Awaited<ReturnType<typeof prisma.committee.create>> | undefined;
   };
-
 
   committees.SR = await prisma.committee.create({
     data: {
@@ -47,9 +48,7 @@ try {
   // Committee seeding
 
   const agendaItems = {
-    SR: [
-      "Desinfektion Kampagnen"
-    ],
+    SR: ["Desinfektion Kampagnen"],
   };
 
   for (const committee of Object.keys(committees)) {

@@ -7,6 +7,7 @@ import Link from "next/link";
 export default function CookieBanner() {
   const { LL } = useI18nContext();
   const [domain, setDomain] = useState<string>();
+  const [isVisible, setIsVisible] = useState<boolean>(false);
 
   useEffect(() => {
     if (window?.location?.hostname) {
@@ -19,11 +20,22 @@ export default function CookieBanner() {
 
   const handleAcceptButtonClick = () => {
     cookieConsentRef?.current?.accept();
+    setIsVisible(false);
   };
 
-  // TODO: Fix cookie interference with the backend
+  useEffect(() => {
+    if (cookieConsentRef.current) {
+      setIsVisible(cookieConsentRef.current.state.visible);
+    }
+  }, [cookieConsentRef.current?.state.visible]);
+
+
+   // TODO: Fix cookie interference with the backend
   return (
     <>
+      {isVisible && (
+        <div className="fixed top-0 left-0 w-full h-full bg-black bg-opacity-50 z-[999]" />
+      )}
       <CookieConsent
         ref={cookieConsentRef}
         location="bottom"
@@ -43,7 +55,7 @@ export default function CookieBanner() {
               severity="info"
               faIcon="cookie-bite"
               label={LL.cookieBanner.ACCEPT()}
-              onClick={() => handleAcceptButtonClick()}
+              onClick={handleAcceptButtonClick}
             />
           </div>
         )}

@@ -34,7 +34,7 @@ export default function CookieBanner() {
   return (
     <>
       {isVisible && (
-        <div className="fixed top-0 left-0 w-full h-full bg-black bg-opacity-50 z-[999]" />
+        <div className="fixed top-0 left-0 w-full h-full bg-black bg-opacity-50 z-[999] backdrop-blur-sm" />
       )}
       <CookieConsent
         ref={cookieConsentRef}

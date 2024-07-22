@@ -7,7 +7,7 @@ import {
   CommitteeIdContext,
   ConferenceIdContext,
 } from "@/contexts/committee_data";
-import { alpha3ToAlpha2 } from "@/misc/countryCodeUtils";
+import { Alpha3 } from "convert-iso-codes";
 import getCountryNameByCode from "@/misc/get_country_name_by_code";
 import { NormalFlag } from "@/components/flag_templates";
 import { Dialog } from "primereact/dialog";
@@ -57,7 +57,7 @@ export default function RegionalGroupsLookup({
 
   const checkInRegionalGroup = (alpha3Code: string, group) => {
     try {
-      return regionalGroups[group].includes(alpha3ToAlpha2(alpha3Code));
+      return regionalGroups[group].includes(Alpha3.toAlpha2(alpha3Code));
     } catch {
       return false;
     }

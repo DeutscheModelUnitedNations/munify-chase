@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect, useContext, useReducer } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import { useI18nContext } from "@/i18n/i18n-react";
 import { useBackend } from "@/contexts/backend";
 import { useBackendCall } from "@/hooks/useBackendCall";
@@ -8,12 +8,12 @@ import {
   CommitteeIdContext,
   ConferenceIdContext,
 } from "@/contexts/committee_data";
-import { alpha3ToAlpha2 } from "@/misc/countryCodeUtils";
 import getCountryNameByCode from "@/misc/get_country_name_by_code";
 import { NormalFlag } from "@/components/flag_templates";
 import { AnimatePresence, motion } from "framer-motion";
 import WorldMap from "react-svg-worldmap";
 import useMousetrap from "mousetrap-react";
+import { Alpha3 } from "convert-iso-codes";
 
 export default function RegionalGroups() {
   const { LL, locale } = useI18nContext();
@@ -67,7 +67,7 @@ export default function RegionalGroups() {
 
   const checkInRegionalGroup = (alpha3Code: string, group) => {
     try {
-      return regionalGroups[group].includes(alpha3ToAlpha2(alpha3Code));
+      return regionalGroups[group].includes(Alpha3.toAlpha2(alpha3Code));
     } catch {
       return false;
     }
@@ -117,7 +117,7 @@ export default function RegionalGroups() {
                         ),
                       )
                       .map((delegation) => ({
-                        country: alpha3ToAlpha2(delegation.nation.alpha3Code),
+                        country: Alpha3.toAlpha2(delegation.nation.alpha3Code),
                         value: 100,
                       }))
                   : []

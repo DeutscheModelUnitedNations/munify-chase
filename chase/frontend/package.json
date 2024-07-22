@@ -18,6 +18,7 @@
     "@types/react-dom": "18.3.0",
     "autoprefixer": "10.4.19",
     "bun-types": "latest",
+    "convert-iso-codes": "^1.0.9",
     "framer-motion": "^11.1.7",
     "fuse.js": "^7.0.0",
     "markdown-to-jsx": "^7.4.7",

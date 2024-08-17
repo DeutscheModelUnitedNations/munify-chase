@@ -45,8 +45,10 @@ export default function CountryAutoComplete({
     setCountries(countryData);
 
     const options = {
-      keys: ["name", "alpha3"],
+      keys: ["name"], // "alpha3Code"],  //alpha3Code is disabled because this leads to unexpected results. For example, typing "W" yields Samoa because its alpha3Code is WSM
       includeScore: true,
+      minMatchCharLength: 1,
+      ignoreFieldNorm: true
     };
     setFuse(new Fuse(countryData, options));
   }, [allCountries, locale]);

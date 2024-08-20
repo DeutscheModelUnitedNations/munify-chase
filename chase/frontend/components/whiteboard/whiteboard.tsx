@@ -1,16 +1,7 @@
 import { Editor } from "primereact/editor";
 import { Skeleton } from "primereact/skeleton";
-import React from "react";
-
-/**
- * This Component is a wrapper for the PrimeReact Editor Component.
- * It allows easy usage of the Editor Component as a Whiteboard.
- * @param value The value (content / text) of the Whiteboard in html format
- * @param readOnly Whether the Whiteboard is read only or not. When readOnly is true, the Header of the Editor is hidden.
- * @param setContentFunction The function that is called when the content of the Whiteboard changes
- * @param rest The rest of the props that are passed to the PrimeReact Editor Component
- * @returns A Whiteboard Component
- */
+import React, { useEffect } from "react";
+import "./whiteboard.css";
 
 export default function ChairWhiteboard({
   value,

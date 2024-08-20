@@ -1,7 +1,7 @@
 import React, { useContext } from "react";
 import WidgetTemplate from "@components/widget_template";
 import { useI18nContext } from "@/i18n/i18n-react";
-import Whiteboard from "@/components/whiteboard";
+import Whiteboard from "@/components/whiteboard/whiteboard";
 import { Skeleton } from "primereact/skeleton";
 import { CommitteeDataContext } from "@/contexts/committee_data";
 

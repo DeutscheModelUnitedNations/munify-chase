@@ -16,9 +16,9 @@ import { CommitteeDataContext } from "@/contexts/committee_data";
 export default function WhiteboardWidget() {
   const { LL } = useI18nContext();
   const whiteboardValue = useContext(CommitteeDataContext)?.whiteboardContent;
-  const [fontSize, setFontSize] = useState(16);
+  const [fontSize, setFontSize] = useState<number>(18);
 
-  const increaseFontSize = () => setFontSize((prev) => Math.min(prev + 1, 24));
+  const increaseFontSize = () => setFontSize((prev) => Math.min(prev + 1, 28));
   const decreaseFontSize = () => setFontSize((prev) => Math.max(prev - 1, 12));
 
   return (
@@ -51,6 +51,7 @@ export default function WhiteboardWidget() {
             style={{ border: "none", fontSize: `${fontSize}px` }}
             value={whiteboardValue}
             readOnly={true}
+            fontSiz={fontSize}
           />
         ) : (
           <Skeleton width="100%" height="10rem" />

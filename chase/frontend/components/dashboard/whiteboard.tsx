@@ -26,7 +26,6 @@ export default function WhiteboardWidget() {
       cardTitle={LL.participants.dashboard.widgetHeadlines.WHITEBOARD()}
       titleAdditionalContent={() => (
         <div className="flex items-center space-x-2">
-          <span className="text-sm mr-2">Font size:</span>
           {/* biome-ignore lint/a11y/useButtonType: <explanation> */}
           <button
             onClick={decreaseFontSize}

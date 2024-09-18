@@ -22,7 +22,7 @@
     "fuse.js": "^7.0.0",
     "markdown-to-jsx": "^7.4.7",
     "mousetrap-react": "^0.0.3",
-    "next": "14.2.3",
+    "next": "14.2.10",
     "next-runtime-env": "^3.2.1",
     "oidc-client-ts": "^3.0.1",
     "postcss": "8.4.38",

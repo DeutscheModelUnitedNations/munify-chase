@@ -17,19 +17,19 @@ export default function ChairWhiteboard({
   value,
   readOnly = false,
   setContentFunction,
-  fontSize,
+  fontSize = 18,
   ...rest
 }: {
   value?: string | null;
   readOnly?: boolean;
   setContentFunction?: (content: string) => void;
-  fontSize: number;
+  fontSize?: number;
   [key: string]: unknown;
 }) {
   const editorRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (editorRef.current) {
+    if (fontSize && editorRef.current) {
       const editorElement = editorRef.current.querySelector(
         ".p-editor-container .ql-container .ql-editor"
       ) as HTMLElement;

@@ -50,7 +50,7 @@ export default function WhiteboardWidget() {
             style={{ border: "none", fontSize: `${fontSize}px` }}
             value={whiteboardValue}
             readOnly={true}
-            fontSiz={fontSize}
+            fontSize={fontSize}
           />
         ) : (
           <Skeleton width="100%" height="10rem" />

@@ -68,7 +68,8 @@ export default function Navbar({
                   duration: 0,
                   delay: 0,
                 }
-          }>
+          }
+        >
           <Link href="/">
             <Image
               src="/logo/png/chase_logo_blue.png"
@@ -110,7 +111,8 @@ export default function Navbar({
                     duration: 0,
                     delay: 0,
                   }
-            }>
+            }
+          >
             <Link href="/">
               <Image
                 src="/logo/png/chase_logo_blue.png"
@@ -140,7 +142,8 @@ export default function Navbar({
                   type: "spring",
                   damping: 20,
                   stiffness: 70,
-                }}>
+                }}
+              >
                 <div className="w-full flex flex-col justify-center items-center gap-4">
                   <NavButtons isDocs={isDocs} isFAQ={isFAQ} />
                 </div>

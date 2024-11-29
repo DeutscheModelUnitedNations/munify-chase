@@ -1,6 +1,7 @@
 // import { faker } from "@faker-js/faker";
 import { $Enums, PrismaClient } from "../generated/client";
-import delegationData from "./mun-sh_delegations.json";
+import delegationData from "./bbvn_berlin_2024.json";
+import { alpha2ToAlpha3 } from "../countryCodeUtils";
 const prisma = new PrismaClient();
 
 try {
@@ -92,11 +93,13 @@ try {
     const delegation = await prisma.delegation.create({
       data: {
         conference: { connect: { id: conference.id } },
-        nation: { connect: { alpha3Code: data.alpha3Code } },
+        nation: { connect: { alpha3Code: alpha2ToAlpha3(data.alpha2Code) } },
       },
     });
     console.info(
-      `  - Created Delegation for ${data.alpha3Code} with ID ${delegation.id}`,
+      `  - Created Delegation for ${alpha2ToAlpha3(data.alpha2Code)} with ID ${
+        delegation.id
+      }`,
     );
 
     if (data.GV) {

@@ -1,6 +1,7 @@
 // import { faker } from "@faker-js/faker";
 import { $Enums, PrismaClient } from "../generated/client";
-import delegationData from "./mun-sh_delegations.json";
+import delegationData from "./bbvn_berlin_2024.json";
+import { alpha2ToAlpha3 } from "../countryCodeUtils";
 const prisma = new PrismaClient();
 
 try {
@@ -22,7 +23,7 @@ try {
   });
   console.info("\n----------------\n");
   console.info(
-    `Created a BBVN Berlin 2024 Conference with the ID ${conference.id}`,
+    `Created a BBVN Berlin 2024 Conference with the ID ${conference.id}`
   );
 
   // Committees
@@ -42,7 +43,7 @@ try {
 
   console.info("\nCreated Committees:");
   console.info(
-    `  - Created ${committees.GV.abbreviation} with ID ${committees.GV.id}`,
+    `  - Created ${committees.GV.abbreviation} with ID ${committees.GV.id}`
   );
 
   // Committee seeding
@@ -92,11 +93,11 @@ try {
     const delegation = await prisma.delegation.create({
       data: {
         conference: { connect: { id: conference.id } },
-        nation: { connect: { alpha3Code: data.alpha3Code } },
+        nation: { connect: { alpha3Code: alpha2ToAlpha3(data.alpha2Code) } },
       },
     });
     console.info(
-      `  - Created Delegation for ${data.alpha3Code} with ID ${delegation.id}`,
+      `  - Created Delegation for ${alpha2ToAlpha3(data.alpha2Code)} with ID ${delegation.id}`
     );
 
     if (data.GV) {
@@ -131,7 +132,7 @@ try {
           },
         });
         console.info(
-          `  - Created CommitteeMembership for ${nonStateActor} in ${committee.abbreviation}`,
+          `  - Created CommitteeMembership for ${nonStateActor} in ${committee.abbreviation}`
         );
       }
     }
@@ -163,7 +164,7 @@ try {
           },
         });
         console.info(
-          `  - Created CommitteeMembership for ${specialPerson.alpha3Code} in ${committee.abbreviation}`,
+          `  - Created CommitteeMembership for ${specialPerson.alpha3Code} in ${committee.abbreviation}`
         );
       }
     }

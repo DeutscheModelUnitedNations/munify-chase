@@ -23,7 +23,7 @@ try {
   });
   console.info("\n----------------\n");
   console.info(
-    `Created a BBVN Berlin 2024 Conference with the ID ${conference.id}`
+    `Created a BBVN Berlin 2024 Conference with the ID ${conference.id}`,
   );
 
   // Committees
@@ -43,7 +43,7 @@ try {
 
   console.info("\nCreated Committees:");
   console.info(
-    `  - Created ${committees.GV.abbreviation} with ID ${committees.GV.id}`
+    `  - Created ${committees.GV.abbreviation} with ID ${committees.GV.id}`,
   );
 
   // Committee seeding
@@ -97,7 +97,9 @@ try {
       },
     });
     console.info(
-      `  - Created Delegation for ${alpha2ToAlpha3(data.alpha2Code)} with ID ${delegation.id}`
+      `  - Created Delegation for ${alpha2ToAlpha3(data.alpha2Code)} with ID ${
+        delegation.id
+      }`,
     );
 
     if (data.GV) {
@@ -132,7 +134,7 @@ try {
           },
         });
         console.info(
-          `  - Created CommitteeMembership for ${nonStateActor} in ${committee.abbreviation}`
+          `  - Created CommitteeMembership for ${nonStateActor} in ${committee.abbreviation}`,
         );
       }
     }
@@ -164,7 +166,7 @@ try {
           },
         });
         console.info(
-          `  - Created CommitteeMembership for ${specialPerson.alpha3Code} in ${committee.abbreviation}`
+          `  - Created CommitteeMembership for ${specialPerson.alpha3Code} in ${committee.abbreviation}`,
         );
       }
     }

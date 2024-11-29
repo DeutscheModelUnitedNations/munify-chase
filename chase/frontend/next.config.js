@@ -4,6 +4,10 @@ const nextConfig = {
   images: {
     unoptimized: true,
   },
+  experimental: {
+    // Enable built-in module resolution
+    serverComponentsExternalPackages: [],
+  }
 };
 
 module.exports = nextConfig;

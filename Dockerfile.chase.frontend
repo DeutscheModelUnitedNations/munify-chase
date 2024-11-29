@@ -27,13 +27,17 @@ FROM oven/bun:latest AS release
 WORKDIR /app/prod
 COPY --from=nextjs /app/staging/node_modules ./node_modules/
 COPY --from=builder /app/staging/chase/frontend/public ./public/
+# Copy the entire standalone directory
 COPY --from=builder /app/staging/chase/frontend/.next/standalone ./
 COPY --from=builder /app/staging/chase/frontend/.next/static ./.next/static
+# Add this line to copy required server files
+COPY --from=builder /app/staging/chase/frontend/.next/server ./.next/server
+
 ARG NEXT_PUBLIC_VERSION
 ENV NODE_ENV=production
 ENV PORT=3000
 ENV NEXT_PUBLIC_VERSION=${NEXT_PUBLIC_VERSION}
-# run the app
+
 USER bun
 EXPOSE 3000/tcp
 ENTRYPOINT [ "bunx", "next", "start" ]

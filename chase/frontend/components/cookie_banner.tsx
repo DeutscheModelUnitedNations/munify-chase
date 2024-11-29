@@ -29,8 +29,7 @@ export default function CookieBanner() {
     }
   }, [cookieConsentRef.current?.state.visible]);
 
-
-   // TODO: Fix cookie interference with the backend
+  // TODO: Fix cookie interference with the backend
   return (
     <>
       {isVisible && (

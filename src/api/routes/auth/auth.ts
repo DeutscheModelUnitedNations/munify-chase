@@ -1,10 +1,6 @@
 import { t, Elysia } from "elysia";
 import { db } from "../../../../prisma/db";
 import { openApiTag } from "../../util/openApiTags";
-import {
-  sendEmailConfirmationEmail,
-  sendCredentialCreationEmail,
-} from "../../email/email";
 import { nanoid } from "nanoid";
 import { appConfiguration } from "../../util/config";
 import { passwords } from "./passwords";
@@ -202,13 +198,6 @@ export const auth = new Elysia({
           },
         },
       });
-
-      //TODO: report back errors in sending emails to the frontend in structured way
-      await sendEmailConfirmationEmail({
-        email,
-        locale,
-        redirectLink: `${appConfiguration.email.EMAIL_VERIFY_REDIRECT_URL}?token=${emailValidationToken}&email=${email}`,
-      });
     },
     {
       body: t.Object({
@@ -248,13 +237,6 @@ export const auth = new Elysia({
             },
           },
         },
-      });
-
-      //TODO: report back errors in sending emails to the frontend in structured way
-      await sendCredentialCreationEmail({
-        email,
-        locale,
-        redirectLink: `${appConfiguration.email.CREDENTIAL_CREATE_REDIRECT_URL}?token=${token}&email=${email}`,
       });
     },
     {

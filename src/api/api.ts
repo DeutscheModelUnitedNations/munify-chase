@@ -14,7 +14,7 @@ import { time } from "./routes/time";
 import { reportError } from "./routes/reportError";
 import { user } from "./routes/user";
 import { appConfiguration } from "./util/config";
-import packagejson from "../package.json";
+import packagejson from "@/../package.json";
 
 export const api = new Elysia()
   .use(conference)

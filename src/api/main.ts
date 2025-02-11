@@ -2,7 +2,7 @@ import { Elysia } from "elysia";
 import { cors } from "@elysiajs/cors";
 import { appConfiguration } from "./util/config";
 import { logger } from "./util/logger";
-import packagejson from "../package.json";
+import packagejson from "@/../package.json";
 import swagger from "@elysiajs/swagger";
 import { helmet } from "elysia-helmet";
 import { api } from "./api";

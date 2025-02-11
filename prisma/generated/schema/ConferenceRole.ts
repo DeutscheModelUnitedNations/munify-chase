@@ -1,6 +1,8 @@
 import { t } from "elysia";
 
-import { _Nullable } from "./__nullable__";
+import { __transformDate__ } from "./__transformDate__";
+
+import { __nullable__ } from "./__nullable__";
 
 export const ConferenceRole = t.Union(
   [
@@ -15,7 +17,7 @@ export const ConferenceRole = t.Union(
     t.Literal("MISCELLANEOUS_TEAM"),
   ],
   {
-    description: `The role of a user in a conference`,
     additionalProperties: false,
+    description: `The role of a user in a conference`,
   },
 );

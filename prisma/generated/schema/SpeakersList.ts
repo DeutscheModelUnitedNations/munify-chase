@@ -1,11 +1,13 @@
 import { t } from "elysia";
 
-import { _Nullable } from "./__nullable__";
+import { __transformDate__ } from "./__transformDate__";
+
+import { __nullable__ } from "./__nullable__";
 
 export const SpeakersListPlain = t.Object(
   {
-    id: t.String({ description: ``, additionalProperties: false }),
-    agendaItemId: t.String({ description: ``, additionalProperties: false }),
+    id: t.String({ additionalProperties: false }),
+    agendaItemId: t.String({ additionalProperties: false }),
     type: t.Union(
       [
         t.Literal("SPEAKERS_LIST"),
@@ -13,25 +15,21 @@ export const SpeakersListPlain = t.Object(
         t.Literal("MODERATED_CAUCUS"),
       ],
       {
-        description: `The type of a speakers list`,
         additionalProperties: false,
+        description: `The type of a speakers list`,
       },
     ),
     speakingTime: t.Integer({
-      description: `The time in seconds that a speaker has to speak`,
       additionalProperties: false,
+      description: `The time in seconds that a speaker has to speak`,
     }),
-    timeLeft: _Nullable(
-      t.Integer({ description: ``, additionalProperties: false }),
-    ),
-    startTimestamp: _Nullable(
-      t.Date({ description: ``, additionalProperties: false }),
-    ),
-    isClosed: t.Boolean({ description: ``, additionalProperties: false }),
+    timeLeft: __nullable__(t.Integer({ additionalProperties: false })),
+    startTimestamp: __nullable__(t.Date({ additionalProperties: false })),
+    isClosed: t.Boolean({ additionalProperties: false }),
   },
   {
-    description: `A speakers list in a committee`,
     additionalProperties: false,
+    description: `A speakers list in a committee`,
   },
 );
 
@@ -39,182 +37,39 @@ export const SpeakersListRelations = t.Object(
   {
     agendaItem: t.Object(
       {
-        id: t.String({ description: ``, additionalProperties: false }),
-        committeeId: t.String({ description: ``, additionalProperties: false }),
-        title: t.String({ description: ``, additionalProperties: false }),
-        description: _Nullable(
-          t.String({ description: ``, additionalProperties: false }),
-        ),
-        isActive: t.Boolean({ description: ``, additionalProperties: false }),
+        id: t.String({ additionalProperties: false }),
+        committeeId: t.String({ additionalProperties: false }),
+        title: t.String({ additionalProperties: false }),
+        description: __nullable__(t.String({ additionalProperties: false })),
+        isActive: t.Boolean({ additionalProperties: false }),
       },
       {
-        description: `An agenda item in a committee. This is a topic of discussion in a committee.`,
         additionalProperties: false,
+        description: `An agenda item in a committee. This is a topic of discussion in a committee.`,
       },
     ),
     speakers: t.Array(
       t.Object(
         {
-          id: t.String({ description: ``, additionalProperties: false }),
-          speakersListId: t.String({
-            description: ``,
-            additionalProperties: false,
-          }),
-          committeeMemberId: t.String({
-            description: ``,
-            additionalProperties: false,
-          }),
-          position: t.Integer({ description: ``, additionalProperties: false }),
+          id: t.String({ additionalProperties: false }),
+          speakersListId: t.String({ additionalProperties: false }),
+          committeeMemberId: t.String({ additionalProperties: false }),
+          position: t.Integer({ additionalProperties: false }),
         },
         {
-          description: `A speaker on a speakers list, storing their position in the list`,
           additionalProperties: false,
+          description: `A speaker on a speakers list, storing their position in the list`,
         },
       ),
     ),
   },
   {
+    additionalProperties: false,
     description: `A speakers list in a committee`,
-    additionalProperties: false,
   },
 );
 
-export const SpeakersList = t.Composite(
-  [SpeakersListPlain, SpeakersListRelations],
-  {
-    description: `Composition of SpeakersListPlain, SpeakersListRelations`,
-    additionalProperties: false,
-  },
-);
-
-export const SpeakersListWhere = t.Union([
-  t.Composite([
-    t.Pick(
-      t.Required(
-        t.Composite([
-          t.Object({
-            agendaItemId_type: t.Object(
-              {
-                agendaItemId: t.String({
-                  description: ``,
-                  additionalProperties: false,
-                }),
-                type: t.Union(
-                  [
-                    t.Literal("SPEAKERS_LIST"),
-                    t.Literal("COMMENT_LIST"),
-                    t.Literal("MODERATED_CAUCUS"),
-                  ],
-                  {
-                    description: `The type of a speakers list`,
-                    additionalProperties: false,
-                  },
-                ),
-              },
-              { description: ``, additionalProperties: false },
-            ),
-          }),
-          t.Pick(SpeakersListPlain, ["id"]),
-        ]),
-      ),
-      ["id"],
-    ),
-    t.Omit(
-      t.Partial(
-        t.Composite([
-          t.Object({
-            agendaItemId_type: t.Object(
-              {
-                agendaItemId: t.String({
-                  description: ``,
-                  additionalProperties: false,
-                }),
-                type: t.Union(
-                  [
-                    t.Literal("SPEAKERS_LIST"),
-                    t.Literal("COMMENT_LIST"),
-                    t.Literal("MODERATED_CAUCUS"),
-                  ],
-                  {
-                    description: `The type of a speakers list`,
-                    additionalProperties: false,
-                  },
-                ),
-              },
-              { description: ``, additionalProperties: false },
-            ),
-          }),
-          t.Pick(SpeakersListPlain, ["id"]),
-        ]),
-      ),
-      ["id"],
-    ),
-  ]),
-  t.Composite([
-    t.Pick(
-      t.Required(
-        t.Composite([
-          t.Object({
-            agendaItemId_type: t.Object(
-              {
-                agendaItemId: t.String({
-                  description: ``,
-                  additionalProperties: false,
-                }),
-                type: t.Union(
-                  [
-                    t.Literal("SPEAKERS_LIST"),
-                    t.Literal("COMMENT_LIST"),
-                    t.Literal("MODERATED_CAUCUS"),
-                  ],
-                  {
-                    description: `The type of a speakers list`,
-                    additionalProperties: false,
-                  },
-                ),
-              },
-              { description: ``, additionalProperties: false },
-            ),
-          }),
-          t.Pick(SpeakersListPlain, ["id"]),
-        ]),
-      ),
-      ["agendaItemId_type"],
-    ),
-    t.Omit(
-      t.Partial(
-        t.Composite([
-          t.Object({
-            agendaItemId_type: t.Object(
-              {
-                agendaItemId: t.String({
-                  description: ``,
-                  additionalProperties: false,
-                }),
-                type: t.Union(
-                  [
-                    t.Literal("SPEAKERS_LIST"),
-                    t.Literal("COMMENT_LIST"),
-                    t.Literal("MODERATED_CAUCUS"),
-                  ],
-                  {
-                    description: `The type of a speakers list`,
-                    additionalProperties: false,
-                  },
-                ),
-              },
-              { description: ``, additionalProperties: false },
-            ),
-          }),
-          t.Pick(SpeakersListPlain, ["id"]),
-        ]),
-      ),
-      ["agendaItemId_type"],
-    ),
-  ]),
-]);
-
-export const SpeakersListDataPlain = t.Object(
+export const SpeakersListPlainInputCreate = t.Object(
   {
     type: t.Union(
       [
@@ -223,97 +78,321 @@ export const SpeakersListDataPlain = t.Object(
         t.Literal("MODERATED_CAUCUS"),
       ],
       {
-        description: `The type of a speakers list`,
         additionalProperties: false,
+        description: `The type of a speakers list`,
       },
     ),
     speakingTime: t.Integer({
-      description: `The time in seconds that a speaker has to speak`,
       additionalProperties: false,
+      description: `The time in seconds that a speaker has to speak`,
     }),
     timeLeft: t.Optional(
-      _Nullable(t.Integer({ description: ``, additionalProperties: false })),
+      __nullable__(t.Integer({ additionalProperties: false })),
     ),
     startTimestamp: t.Optional(
-      _Nullable(t.Date({ description: ``, additionalProperties: false })),
+      __nullable__(t.Date({ additionalProperties: false })),
     ),
-    isClosed: t.Boolean({ description: ``, additionalProperties: false }),
+    isClosed: t.Optional(t.Boolean({ additionalProperties: false })),
   },
   {
+    additionalProperties: false,
     description: `A speakers list in a committee`,
-    additionalProperties: false,
   },
 );
 
-export const SpeakersListDataRelations = t.Object(
-  { agendaItemId: t.String({ description: ``, additionalProperties: false }) },
+export const SpeakersListPlainInputUpdate = t.Object(
   {
+    type: t.Union(
+      [
+        t.Literal("SPEAKERS_LIST"),
+        t.Literal("COMMENT_LIST"),
+        t.Literal("MODERATED_CAUCUS"),
+      ],
+      {
+        additionalProperties: false,
+        description: `The type of a speakers list`,
+      },
+    ),
+    speakingTime: t.Integer({
+      additionalProperties: false,
+      description: `The time in seconds that a speaker has to speak`,
+    }),
+    timeLeft: __nullable__(t.Integer({ additionalProperties: false })),
+    startTimestamp: __nullable__(t.Date({ additionalProperties: false })),
+    isClosed: t.Optional(t.Boolean({ additionalProperties: false })),
+  },
+  {
+    additionalProperties: false,
     description: `A speakers list in a committee`,
-    additionalProperties: false,
   },
 );
 
-export const SpeakersListData = t.Composite(
-  [SpeakersListDataPlain, SpeakersListDataRelations],
+export const SpeakersListRelationsInputCreate = t.Object(
   {
-    description: `Composition of SpeakersListDataPlain, SpeakersListDataRelations`,
-    additionalProperties: false,
-  },
-);
-
-export const SpeakersListDataPlainOptional = t.Object(
-  {
-    type: t.Optional(
-      t.Union(
-        [
-          t.Literal("SPEAKERS_LIST"),
-          t.Literal("COMMENT_LIST"),
-          t.Literal("MODERATED_CAUCUS"),
-        ],
+    agendaItem: t.Object(
+      {
+        connect: t.Object(
+          {
+            id: t.String({ additionalProperties: false }),
+          },
+          { additionalProperties: false },
+        ),
+      },
+      { additionalProperties: false },
+    ),
+    speakers: t.Optional(
+      t.Object(
         {
-          description: `The type of a speakers list`,
-          additionalProperties: false,
+          connect: t.Array(
+            t.Object(
+              {
+                id: t.String({ additionalProperties: false }),
+              },
+              { additionalProperties: false },
+            ),
+          ),
         },
+        { additionalProperties: false },
       ),
     ),
-    speakingTime: t.Optional(
-      t.Integer({
-        description: `The time in seconds that a speaker has to speak`,
-        additionalProperties: false,
-      }),
-    ),
-    timeLeft: t.Optional(
-      _Nullable(t.Integer({ description: ``, additionalProperties: false })),
-    ),
-    startTimestamp: t.Optional(
-      _Nullable(t.Date({ description: ``, additionalProperties: false })),
-    ),
-    isClosed: t.Optional(
-      t.Boolean({ description: ``, additionalProperties: false }),
-    ),
   },
   {
-    description: `A speakers list in a committee`,
     additionalProperties: false,
+    description: `A speakers list in a committee`,
   },
 );
 
-export const SpeakersListDataRelationsOptional = t.Object(
-  {
-    agendaItemId: t.Optional(
-      t.String({ description: ``, additionalProperties: false }),
-    ),
-  },
-  {
-    description: `A speakers list in a committee`,
-    additionalProperties: false,
-  },
+export const SpeakersListRelationsInputUpdate = t.Partial(
+  t.Object(
+    {
+      agendaItem: t.Object(
+        {
+          connect: t.Object(
+            {
+              id: t.String({ additionalProperties: false }),
+            },
+            { additionalProperties: false },
+          ),
+        },
+        { additionalProperties: false },
+      ),
+      speakers: t.Partial(
+        t.Object(
+          {
+            connect: t.Array(
+              t.Object(
+                {
+                  id: t.String({ additionalProperties: false }),
+                },
+                { additionalProperties: false },
+              ),
+            ),
+            disconnect: t.Array(
+              t.Object(
+                {
+                  id: t.String({ additionalProperties: false }),
+                },
+                { additionalProperties: false },
+              ),
+            ),
+          },
+          { additionalProperties: false },
+        ),
+        { additionalProperties: false },
+      ),
+    },
+    {
+      additionalProperties: false,
+      description: `A speakers list in a committee`,
+    },
+  ),
+  { additionalProperties: false },
 );
 
-export const SpeakersListDataOptional = t.Composite(
-  [SpeakersListDataPlainOptional, SpeakersListDataRelationsOptional],
-  {
-    description: `Composition of SpeakersListDataPlainOptional, SpeakersListDataRelationsOptional`,
-    additionalProperties: false,
-  },
+export const SpeakersListWhere = t.Partial(
+  t.Recursive(
+    (Self) =>
+      t.Object(
+        {
+          AND: t.Union([Self, t.Array(Self)]),
+          NOT: t.Union([Self, t.Array(Self)]),
+          OR: t.Array(Self),
+          id: t.String(),
+          agendaItemId: t.String(),
+          type: t.Union(
+            [
+              t.Literal("SPEAKERS_LIST"),
+              t.Literal("COMMENT_LIST"),
+              t.Literal("MODERATED_CAUCUS"),
+            ],
+            {
+              additionalProperties: false,
+              description: `The type of a speakers list`,
+            },
+          ),
+          speakingTime: t.Integer({
+            description: `The time in seconds that a speaker has to speak`,
+          }),
+          timeLeft: t.Integer(),
+          startTimestamp: t.Date(),
+          isClosed: t.Boolean(),
+        },
+        { description: `A speakers list in a committee` },
+      ),
+    { $id: "SpeakersList" },
+  ),
+  { additionalProperties: false },
+);
+
+export const SpeakersListWhereUnique = t.Recursive(
+  (Self) =>
+    t.Intersect([
+      t.Partial(
+        t.Object(
+          {
+            id: t.String(),
+            agendaItemId_type: t.Object({
+              agendaItemId: t.String(),
+              type: t.Union(
+                [
+                  t.Literal("SPEAKERS_LIST"),
+                  t.Literal("COMMENT_LIST"),
+                  t.Literal("MODERATED_CAUCUS"),
+                ],
+                {
+                  additionalProperties: false,
+                  description: `The type of a speakers list`,
+                },
+              ),
+            }),
+          },
+          { description: `A speakers list in a committee` },
+        ),
+      ),
+      t.Union([
+        t.Object({ id: t.String() }),
+        t.Object({
+          agendaItemId_type: t.Object({
+            agendaItemId: t.String(),
+            type: t.Union(
+              [
+                t.Literal("SPEAKERS_LIST"),
+                t.Literal("COMMENT_LIST"),
+                t.Literal("MODERATED_CAUCUS"),
+              ],
+              {
+                additionalProperties: false,
+                description: `The type of a speakers list`,
+              },
+            ),
+          }),
+        }),
+      ]),
+      t.Partial(
+        t.Object({
+          AND: t.Union([Self, t.Array(Self)]),
+          NOT: t.Union([Self, t.Array(Self)]),
+          OR: t.Array(Self),
+        }),
+      ),
+      t.Partial(
+        t.Object(
+          {
+            id: t.String(),
+            agendaItemId: t.String(),
+            type: t.Union(
+              [
+                t.Literal("SPEAKERS_LIST"),
+                t.Literal("COMMENT_LIST"),
+                t.Literal("MODERATED_CAUCUS"),
+              ],
+              {
+                additionalProperties: false,
+                description: `The type of a speakers list`,
+              },
+            ),
+            speakingTime: t.Integer({
+              description: `The time in seconds that a speaker has to speak`,
+            }),
+            timeLeft: t.Integer(),
+            startTimestamp: t.Date(),
+            isClosed: t.Boolean(),
+          },
+          { additionalProperties: false },
+        ),
+        { additionalProperties: false },
+      ),
+    ]),
+  { $id: "SpeakersList" },
+);
+
+export const SpeakersListSelect = t.Partial(
+  t.Object(
+    {
+      id: t.Boolean(),
+      agendaItem: t.Boolean(),
+      agendaItemId: t.Boolean(),
+      type: t.Boolean(),
+      speakers: t.Boolean(),
+      speakingTime: t.Boolean(),
+      timeLeft: t.Boolean(),
+      startTimestamp: t.Boolean(),
+      isClosed: t.Boolean(),
+      _count: t.Boolean(),
+    },
+    {
+      additionalProperties: false,
+      description: `A speakers list in a committee`,
+    },
+  ),
+  { additionalProperties: false },
+);
+
+export const SpeakersListInclude = t.Partial(
+  t.Object(
+    {
+      agendaItem: t.Boolean(),
+      type: t.Boolean(),
+      speakers: t.Boolean(),
+      _count: t.Boolean(),
+    },
+    {
+      additionalProperties: false,
+      description: `A speakers list in a committee`,
+    },
+  ),
+  { additionalProperties: false },
+);
+
+export const SpeakersListOrderBy = t.Partial(
+  t.Object(
+    {
+      id: t.Union([t.Literal("asc"), t.Literal("desc")]),
+      agendaItemId: t.Union([t.Literal("asc"), t.Literal("desc")]),
+      speakingTime: t.Union([t.Literal("asc"), t.Literal("desc")]),
+      timeLeft: t.Union([t.Literal("asc"), t.Literal("desc")]),
+      startTimestamp: t.Union([t.Literal("asc"), t.Literal("desc")]),
+      isClosed: t.Union([t.Literal("asc"), t.Literal("desc")]),
+    },
+    {
+      additionalProperties: false,
+      description: `A speakers list in a committee`,
+    },
+  ),
+  { additionalProperties: false },
+);
+
+export const SpeakersList = t.Composite(
+  [SpeakersListPlain, SpeakersListRelations],
+  { additionalProperties: false },
+);
+
+export const SpeakersListInputCreate = t.Composite(
+  [SpeakersListPlainInputCreate, SpeakersListRelationsInputCreate],
+  { additionalProperties: false },
+);
+
+export const SpeakersListInputUpdate = t.Composite(
+  [SpeakersListPlainInputUpdate, SpeakersListRelationsInputUpdate],
+  { additionalProperties: false },
 );

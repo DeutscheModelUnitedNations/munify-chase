@@ -17,7 +17,7 @@ generator prismabox {
   output                      = "./generated/schema"
   typeboxImportVariableName   = "t"
   typeboxImportDependencyName = "elysia"
-  dataModel                   = true
+  inputModel                  = true
   plainAdditionalFields       = ["__typename: String"]
 }
 

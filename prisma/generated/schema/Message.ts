@@ -1,11 +1,13 @@
 import { t } from "elysia";
 
-import { _Nullable } from "./__nullable__";
+import { __transformDate__ } from "./__transformDate__";
+
+import { __nullable__ } from "./__nullable__";
 
 export const MessagePlain = t.Object(
   {
-    id: t.String({ description: ``, additionalProperties: false }),
-    subject: t.String({ description: ``, additionalProperties: false }),
+    id: t.String({ additionalProperties: false }),
+    subject: t.String({ additionalProperties: false }),
     category: t.Union(
       [
         t.Literal("TO_CHAIR"),
@@ -15,146 +17,12 @@ export const MessagePlain = t.Object(
         t.Literal("GENERAL_SECRETARY"),
         t.Literal("OTHER"),
       ],
-      { description: ``, additionalProperties: false },
+      { additionalProperties: false },
     ),
-    message: t.String({ description: ``, additionalProperties: false }),
-    committeeId: t.String({ description: ``, additionalProperties: false }),
-    authorId: t.String({ description: ``, additionalProperties: false }),
-    timestamp: t.Date({ description: ``, additionalProperties: false }),
-    status: t.Union(
-      [
-        t.Literal("UNREAD"),
-        t.Literal("PRIORITY"),
-        t.Literal("ASSIGNED"),
-        t.Literal("ARCHIVED"),
-      ],
-      { description: ``, additionalProperties: false },
-    ),
-    forwarded: t.Boolean({
-      description: `If the message was forwarded to the Research Service`,
-      additionalProperties: false,
-    }),
-    metaEmail: _Nullable(
-      t.String({
-        description: `Saved Metadata without relation`,
-        additionalProperties: false,
-      }),
-    ),
-    metaDelegation: _Nullable(
-      t.String({ description: ``, additionalProperties: false }),
-    ),
-    metaCommittee: _Nullable(
-      t.String({ description: ``, additionalProperties: false }),
-    ),
-    metaAgendaItem: _Nullable(
-      t.String({ description: ``, additionalProperties: false }),
-    ),
-  },
-  { description: ``, additionalProperties: false },
-);
-
-export const MessageRelations = t.Object(
-  {
-    committee: t.Object(
-      {
-        id: t.String({ description: ``, additionalProperties: false }),
-        name: t.String({ description: ``, additionalProperties: false }),
-        abbreviation: t.String({
-          description: ``,
-          additionalProperties: false,
-        }),
-        category: t.Union(
-          [t.Literal("COMMITTEE"), t.Literal("CRISIS"), t.Literal("ICJ")],
-          {
-            description: `The type of a committee in a conference`,
-            additionalProperties: false,
-          },
-        ),
-        conferenceId: t.String({
-          description: ``,
-          additionalProperties: false,
-        }),
-        parentId: _Nullable(
-          t.String({ description: ``, additionalProperties: false }),
-        ),
-        whiteboardContent: t.String({
-          description: ``,
-          additionalProperties: false,
-        }),
-        status: t.Union(
-          [
-            t.Literal("FORMAL"),
-            t.Literal("INFORMAL"),
-            t.Literal("PAUSE"),
-            t.Literal("SUSPENSION"),
-            t.Literal("CLOSED"),
-          ],
-          { description: ``, additionalProperties: false },
-        ),
-        stateOfDebate: _Nullable(
-          t.String({ description: ``, additionalProperties: false }),
-        ),
-        statusHeadline: _Nullable(
-          t.String({ description: ``, additionalProperties: false }),
-        ),
-        statusUntil: _Nullable(
-          t.Date({ description: ``, additionalProperties: false }),
-        ),
-        allowDelegationsToAddThemselvesToSpeakersList: t.Boolean({
-          description: ``,
-          additionalProperties: false,
-        }),
-      },
-      {
-        description: `A committee in a conference`,
-        additionalProperties: false,
-      },
-    ),
-    author: t.Object(
-      {
-        id: t.String({ description: ``, additionalProperties: false }),
-        name: t.String({ description: ``, additionalProperties: false }),
-      },
-      { description: `A user in the system`, additionalProperties: false },
-    ),
-  },
-  { description: ``, additionalProperties: false },
-);
-
-export const Message = t.Composite([MessagePlain, MessageRelations], {
-  description: `Composition of MessagePlain, MessageRelations`,
-  additionalProperties: false,
-});
-
-export const MessageWhere = t.Union([
-  t.Composite([
-    t.Pick(
-      t.Required(t.Composite([t.Object({}), t.Pick(MessagePlain, ["id"])])),
-      ["id"],
-    ),
-    t.Omit(
-      t.Partial(t.Composite([t.Object({}), t.Pick(MessagePlain, ["id"])])),
-      ["id"],
-    ),
-  ]),
-]);
-
-export const MessageDataPlain = t.Object(
-  {
-    subject: t.String({ description: ``, additionalProperties: false }),
-    category: t.Union(
-      [
-        t.Literal("TO_CHAIR"),
-        t.Literal("GUEST_SPEAKER"),
-        t.Literal("FACT_CHECK"),
-        t.Literal("INFORMATION"),
-        t.Literal("GENERAL_SECRETARY"),
-        t.Literal("OTHER"),
-      ],
-      { description: ``, additionalProperties: false },
-    ),
-    message: t.String({ description: ``, additionalProperties: false }),
-    timestamp: t.Date({ description: ``, additionalProperties: false }),
+    message: t.String({ additionalProperties: false }),
+    committeeId: t.String({ additionalProperties: false }),
+    authorId: t.String({ additionalProperties: false }),
+    timestamp: t.Date({ additionalProperties: false }),
     status: t.Array(
       t.Union(
         [
@@ -163,55 +31,79 @@ export const MessageDataPlain = t.Object(
           t.Literal("ASSIGNED"),
           t.Literal("ARCHIVED"),
         ],
-        { description: ``, additionalProperties: false },
+        { additionalProperties: false },
       ),
     ),
     forwarded: t.Boolean({
-      description: `If the message was forwarded to the Research Service`,
       additionalProperties: false,
+      description: `If the message was forwarded to the Research Service`,
     }),
-    metaEmail: t.Optional(
-      _Nullable(
-        t.String({
-          description: `Saved Metadata without relation`,
+    metaEmail: __nullable__(
+      t.String({
+        additionalProperties: false,
+        description: `Saved Metadata without relation`,
+      }),
+    ),
+    metaDelegation: __nullable__(t.String({ additionalProperties: false })),
+    metaCommittee: __nullable__(t.String({ additionalProperties: false })),
+    metaAgendaItem: __nullable__(t.String({ additionalProperties: false })),
+  },
+  { additionalProperties: false },
+);
+
+export const MessageRelations = t.Object(
+  {
+    committee: t.Object(
+      {
+        id: t.String({ additionalProperties: false }),
+        name: t.String({ additionalProperties: false }),
+        abbreviation: t.String({ additionalProperties: false }),
+        category: t.Union(
+          [t.Literal("COMMITTEE"), t.Literal("CRISIS"), t.Literal("ICJ")],
+          {
+            additionalProperties: false,
+            description: `The type of a committee in a conference`,
+          },
+        ),
+        conferenceId: t.String({ additionalProperties: false }),
+        parentId: __nullable__(t.String({ additionalProperties: false })),
+        whiteboardContent: t.String({ additionalProperties: false }),
+        status: t.Union(
+          [
+            t.Literal("FORMAL"),
+            t.Literal("INFORMAL"),
+            t.Literal("PAUSE"),
+            t.Literal("SUSPENSION"),
+            t.Literal("CLOSED"),
+          ],
+          { additionalProperties: false },
+        ),
+        stateOfDebate: __nullable__(t.String({ additionalProperties: false })),
+        statusHeadline: __nullable__(t.String({ additionalProperties: false })),
+        statusUntil: __nullable__(t.Date({ additionalProperties: false })),
+        allowDelegationsToAddThemselvesToSpeakersList: t.Boolean({
           additionalProperties: false,
         }),
-      ),
+      },
+      {
+        additionalProperties: false,
+        description: `A committee in a conference`,
+      },
     ),
-    metaDelegation: t.Optional(
-      _Nullable(t.String({ description: ``, additionalProperties: false })),
-    ),
-    metaCommittee: t.Optional(
-      _Nullable(t.String({ description: ``, additionalProperties: false })),
-    ),
-    metaAgendaItem: t.Optional(
-      _Nullable(t.String({ description: ``, additionalProperties: false })),
+    author: t.Object(
+      {
+        id: t.String({ additionalProperties: false }),
+        name: t.String({ additionalProperties: false }),
+      },
+      { additionalProperties: false, description: `A user in the system` },
     ),
   },
-  { description: ``, additionalProperties: false },
+  { additionalProperties: false },
 );
 
-export const MessageDataRelations = t.Object(
+export const MessagePlainInputCreate = t.Object(
   {
-    committeeId: t.String({ description: ``, additionalProperties: false }),
-    authorId: t.String({ description: ``, additionalProperties: false }),
-  },
-  { description: ``, additionalProperties: false },
-);
-
-export const MessageData = t.Composite(
-  [MessageDataPlain, MessageDataRelations],
-  {
-    description: `Composition of MessageDataPlain, MessageDataRelations`,
-    additionalProperties: false,
-  },
-);
-
-export const MessageDataPlainOptional = t.Object(
-  {
-    subject: t.Optional(
-      t.String({ description: ``, additionalProperties: false }),
-    ),
+    subject: t.String({ additionalProperties: false }),
     category: t.Optional(
       t.Union(
         [
@@ -222,15 +114,11 @@ export const MessageDataPlainOptional = t.Object(
           t.Literal("GENERAL_SECRETARY"),
           t.Literal("OTHER"),
         ],
-        { description: ``, additionalProperties: false },
+        { additionalProperties: false },
       ),
     ),
-    message: t.Optional(
-      t.String({ description: ``, additionalProperties: false }),
-    ),
-    timestamp: t.Optional(
-      t.Date({ description: ``, additionalProperties: false }),
-    ),
+    message: t.String({ additionalProperties: false }),
+    timestamp: t.Date({ additionalProperties: false }),
     status: t.Optional(
       t.Array(
         t.Union(
@@ -240,53 +128,324 @@ export const MessageDataPlainOptional = t.Object(
             t.Literal("ASSIGNED"),
             t.Literal("ARCHIVED"),
           ],
-          { description: ``, additionalProperties: false },
+          { additionalProperties: false },
         ),
       ),
     ),
     forwarded: t.Optional(
       t.Boolean({
-        description: `If the message was forwarded to the Research Service`,
         additionalProperties: false,
+        description: `If the message was forwarded to the Research Service`,
       }),
     ),
     metaEmail: t.Optional(
-      _Nullable(
+      __nullable__(
         t.String({
-          description: `Saved Metadata without relation`,
           additionalProperties: false,
+          description: `Saved Metadata without relation`,
         }),
       ),
     ),
     metaDelegation: t.Optional(
-      _Nullable(t.String({ description: ``, additionalProperties: false })),
+      __nullable__(t.String({ additionalProperties: false })),
     ),
     metaCommittee: t.Optional(
-      _Nullable(t.String({ description: ``, additionalProperties: false })),
+      __nullable__(t.String({ additionalProperties: false })),
     ),
     metaAgendaItem: t.Optional(
-      _Nullable(t.String({ description: ``, additionalProperties: false })),
+      __nullable__(t.String({ additionalProperties: false })),
     ),
   },
-  { description: ``, additionalProperties: false },
+  { additionalProperties: false },
 );
 
-export const MessageDataRelationsOptional = t.Object(
+export const MessagePlainInputUpdate = t.Object(
   {
-    committeeId: t.Optional(
-      t.String({ description: ``, additionalProperties: false }),
+    subject: t.String({ additionalProperties: false }),
+    category: t.Optional(
+      t.Union(
+        [
+          t.Literal("TO_CHAIR"),
+          t.Literal("GUEST_SPEAKER"),
+          t.Literal("FACT_CHECK"),
+          t.Literal("INFORMATION"),
+          t.Literal("GENERAL_SECRETARY"),
+          t.Literal("OTHER"),
+        ],
+        { additionalProperties: false },
+      ),
     ),
-    authorId: t.Optional(
-      t.String({ description: ``, additionalProperties: false }),
+    message: t.String({ additionalProperties: false }),
+    timestamp: t.Date({ additionalProperties: false }),
+    status: t.Optional(
+      t.Array(
+        t.Union(
+          [
+            t.Literal("UNREAD"),
+            t.Literal("PRIORITY"),
+            t.Literal("ASSIGNED"),
+            t.Literal("ARCHIVED"),
+          ],
+          { additionalProperties: false },
+        ),
+      ),
     ),
+    forwarded: t.Optional(
+      t.Boolean({
+        additionalProperties: false,
+        description: `If the message was forwarded to the Research Service`,
+      }),
+    ),
+    metaEmail: __nullable__(
+      t.String({
+        additionalProperties: false,
+        description: `Saved Metadata without relation`,
+      }),
+    ),
+    metaDelegation: __nullable__(t.String({ additionalProperties: false })),
+    metaCommittee: __nullable__(t.String({ additionalProperties: false })),
+    metaAgendaItem: __nullable__(t.String({ additionalProperties: false })),
   },
-  { description: ``, additionalProperties: false },
+  { additionalProperties: false },
 );
 
-export const MessageDataOptional = t.Composite(
-  [MessageDataPlainOptional, MessageDataRelationsOptional],
+export const MessageRelationsInputCreate = t.Object(
   {
-    description: `Composition of MessageDataPlainOptional, MessageDataRelationsOptional`,
-    additionalProperties: false,
+    committee: t.Object(
+      {
+        connect: t.Object(
+          {
+            id: t.String({ additionalProperties: false }),
+          },
+          { additionalProperties: false },
+        ),
+      },
+      { additionalProperties: false },
+    ),
+    author: t.Object(
+      {
+        connect: t.Object(
+          {
+            id: t.String({ additionalProperties: false }),
+          },
+          { additionalProperties: false },
+        ),
+      },
+      { additionalProperties: false },
+    ),
   },
+  { additionalProperties: false },
+);
+
+export const MessageRelationsInputUpdate = t.Partial(
+  t.Object(
+    {
+      committee: t.Object(
+        {
+          connect: t.Object(
+            {
+              id: t.String({ additionalProperties: false }),
+            },
+            { additionalProperties: false },
+          ),
+        },
+        { additionalProperties: false },
+      ),
+      author: t.Object(
+        {
+          connect: t.Object(
+            {
+              id: t.String({ additionalProperties: false }),
+            },
+            { additionalProperties: false },
+          ),
+        },
+        { additionalProperties: false },
+      ),
+    },
+    { additionalProperties: false },
+  ),
+  { additionalProperties: false },
+);
+
+export const MessageWhere = t.Partial(
+  t.Recursive(
+    (Self) =>
+      t.Object({
+        AND: t.Union([Self, t.Array(Self)]),
+        NOT: t.Union([Self, t.Array(Self)]),
+        OR: t.Array(Self),
+        id: t.String(),
+        subject: t.String(),
+        category: t.Union(
+          [
+            t.Literal("TO_CHAIR"),
+            t.Literal("GUEST_SPEAKER"),
+            t.Literal("FACT_CHECK"),
+            t.Literal("INFORMATION"),
+            t.Literal("GENERAL_SECRETARY"),
+            t.Literal("OTHER"),
+          ],
+          { additionalProperties: false },
+        ),
+        message: t.String(),
+        committeeId: t.String(),
+        authorId: t.String(),
+        timestamp: t.Date(),
+        status: t.Array(
+          t.Union(
+            [
+              t.Literal("UNREAD"),
+              t.Literal("PRIORITY"),
+              t.Literal("ASSIGNED"),
+              t.Literal("ARCHIVED"),
+            ],
+            { additionalProperties: false },
+          ),
+        ),
+        forwarded: t.Boolean({
+          description: `If the message was forwarded to the Research Service`,
+        }),
+        metaEmail: t.String({ description: `Saved Metadata without relation` }),
+        metaDelegation: t.String(),
+        metaCommittee: t.String(),
+        metaAgendaItem: t.String(),
+      }),
+    { $id: "Message" },
+  ),
+  { additionalProperties: false },
+);
+
+export const MessageWhereUnique = t.Recursive(
+  (Self) =>
+    t.Intersect([
+      t.Partial(t.Object({ id: t.String() })),
+      t.Union([t.Object({ id: t.String() })]),
+      t.Partial(
+        t.Object({
+          AND: t.Union([Self, t.Array(Self)]),
+          NOT: t.Union([Self, t.Array(Self)]),
+          OR: t.Array(Self),
+        }),
+      ),
+      t.Partial(
+        t.Object(
+          {
+            id: t.String(),
+            subject: t.String(),
+            category: t.Union(
+              [
+                t.Literal("TO_CHAIR"),
+                t.Literal("GUEST_SPEAKER"),
+                t.Literal("FACT_CHECK"),
+                t.Literal("INFORMATION"),
+                t.Literal("GENERAL_SECRETARY"),
+                t.Literal("OTHER"),
+              ],
+              { additionalProperties: false },
+            ),
+            message: t.String(),
+            committeeId: t.String(),
+            authorId: t.String(),
+            timestamp: t.Date(),
+            status: t.Array(
+              t.Union(
+                [
+                  t.Literal("UNREAD"),
+                  t.Literal("PRIORITY"),
+                  t.Literal("ASSIGNED"),
+                  t.Literal("ARCHIVED"),
+                ],
+                { additionalProperties: false },
+              ),
+            ),
+            forwarded: t.Boolean({
+              description: `If the message was forwarded to the Research Service`,
+            }),
+            metaEmail: t.String({
+              description: `Saved Metadata without relation`,
+            }),
+            metaDelegation: t.String(),
+            metaCommittee: t.String(),
+            metaAgendaItem: t.String(),
+          },
+          { additionalProperties: false },
+        ),
+        { additionalProperties: false },
+      ),
+    ]),
+  { $id: "Message" },
+);
+
+export const MessageSelect = t.Partial(
+  t.Object(
+    {
+      id: t.Boolean(),
+      subject: t.Boolean(),
+      category: t.Boolean(),
+      message: t.Boolean(),
+      committee: t.Boolean(),
+      committeeId: t.Boolean(),
+      author: t.Boolean(),
+      authorId: t.Boolean(),
+      timestamp: t.Boolean(),
+      status: t.Boolean(),
+      forwarded: t.Boolean(),
+      metaEmail: t.Boolean(),
+      metaDelegation: t.Boolean(),
+      metaCommittee: t.Boolean(),
+      metaAgendaItem: t.Boolean(),
+      _count: t.Boolean(),
+    },
+    { additionalProperties: false },
+  ),
+  { additionalProperties: false },
+);
+
+export const MessageInclude = t.Partial(
+  t.Object(
+    {
+      category: t.Boolean(),
+      committee: t.Boolean(),
+      author: t.Boolean(),
+      status: t.Boolean(),
+      _count: t.Boolean(),
+    },
+    { additionalProperties: false },
+  ),
+  { additionalProperties: false },
+);
+
+export const MessageOrderBy = t.Partial(
+  t.Object(
+    {
+      id: t.Union([t.Literal("asc"), t.Literal("desc")]),
+      subject: t.Union([t.Literal("asc"), t.Literal("desc")]),
+      message: t.Union([t.Literal("asc"), t.Literal("desc")]),
+      committeeId: t.Union([t.Literal("asc"), t.Literal("desc")]),
+      authorId: t.Union([t.Literal("asc"), t.Literal("desc")]),
+      timestamp: t.Union([t.Literal("asc"), t.Literal("desc")]),
+      forwarded: t.Union([t.Literal("asc"), t.Literal("desc")]),
+      metaEmail: t.Union([t.Literal("asc"), t.Literal("desc")]),
+      metaDelegation: t.Union([t.Literal("asc"), t.Literal("desc")]),
+      metaCommittee: t.Union([t.Literal("asc"), t.Literal("desc")]),
+      metaAgendaItem: t.Union([t.Literal("asc"), t.Literal("desc")]),
+    },
+    { additionalProperties: false },
+  ),
+  { additionalProperties: false },
+);
+
+export const Message = t.Composite([MessagePlain, MessageRelations], {
+  additionalProperties: false,
+});
+
+export const MessageInputCreate = t.Composite(
+  [MessagePlainInputCreate, MessageRelationsInputCreate],
+  { additionalProperties: false },
+);
+
+export const MessageInputUpdate = t.Composite(
+  [MessagePlainInputUpdate, MessageRelationsInputUpdate],
+  { additionalProperties: false },
 );

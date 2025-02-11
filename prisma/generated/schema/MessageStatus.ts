@@ -1,6 +1,8 @@
 import { t } from "elysia";
 
-import { _Nullable } from "./__nullable__";
+import { __transformDate__ } from "./__transformDate__";
+
+import { __nullable__ } from "./__nullable__";
 
 export const MessageStatus = t.Union(
   [
@@ -9,5 +11,5 @@ export const MessageStatus = t.Union(
     t.Literal("ASSIGNED"),
     t.Literal("ARCHIVED"),
   ],
-  { description: ``, additionalProperties: false },
+  { additionalProperties: false },
 );

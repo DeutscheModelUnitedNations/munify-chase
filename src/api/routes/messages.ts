@@ -1,7 +1,7 @@
 import { t, Elysia } from "elysia";
 import { db } from "../../../prisma/db";
 import { openApiTag } from "../util/openApiTags";
-import { MessageData } from "../../../prisma/generated/schema/Message";
+import { MessagePlainInputCreate } from "@prisma/generated/schema/Message";
 import { $Enums } from "../../../prisma/generated/client";
 import { MessageStatus } from "../../../prisma/generated/schema/MessageStatus";
 import { permissionsPlugin } from "../auth/permissions";
@@ -101,7 +101,7 @@ export const messages = new Elysia()
       });
     },
     {
-      body: t.Pick(MessageData, [
+      body: t.Pick(MessagePlainInputCreate, [
         "subject",
         "message",
         "authorId",

@@ -1,6 +1,8 @@
 import { t } from "elysia";
 
-import { _Nullable } from "./__nullable__";
+import { __transformDate__ } from "./__transformDate__";
+
+import { __nullable__ } from "./__nullable__";
 
 export const MessageCategory = t.Union(
   [
@@ -11,5 +13,5 @@ export const MessageCategory = t.Union(
     t.Literal("GENERAL_SECRETARY"),
     t.Literal("OTHER"),
   ],
-  { description: ``, additionalProperties: false },
+  { additionalProperties: false },
 );

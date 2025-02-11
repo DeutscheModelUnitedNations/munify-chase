@@ -1,101 +1,156 @@
 import { t } from "elysia";
 
-import { _Nullable } from "./__nullable__";
+import { __transformDate__ } from "./__transformDate__";
+
+import { __nullable__ } from "./__nullable__";
 
 export const ConferenceCreateTokenPlain = t.Object(
-  { token: t.String({ description: ``, additionalProperties: false }) },
+  { token: t.String({ additionalProperties: false }) },
   {
-    description: `Consumeable token which grants the creation of a conference`,
     additionalProperties: false,
+    description: `Consumeable token which grants the creation of a conference`,
   },
 );
 
 export const ConferenceCreateTokenRelations = t.Object(
   {},
   {
-    description: `Consumeable token which grants the creation of a conference`,
     additionalProperties: false,
+    description: `Consumeable token which grants the creation of a conference`,
   },
+);
+
+export const ConferenceCreateTokenPlainInputCreate = t.Object(
+  {},
+  {
+    additionalProperties: false,
+    description: `Consumeable token which grants the creation of a conference`,
+  },
+);
+
+export const ConferenceCreateTokenPlainInputUpdate = t.Object(
+  {},
+  {
+    additionalProperties: false,
+    description: `Consumeable token which grants the creation of a conference`,
+  },
+);
+
+export const ConferenceCreateTokenRelationsInputCreate = t.Object(
+  {},
+  {
+    additionalProperties: false,
+    description: `Consumeable token which grants the creation of a conference`,
+  },
+);
+
+export const ConferenceCreateTokenRelationsInputUpdate = t.Partial(
+  t.Object(
+    {},
+    {
+      additionalProperties: false,
+      description: `Consumeable token which grants the creation of a conference`,
+    },
+  ),
+  { additionalProperties: false },
+);
+
+export const ConferenceCreateTokenWhere = t.Partial(
+  t.Recursive(
+    (Self) =>
+      t.Object(
+        {
+          AND: t.Union([Self, t.Array(Self)]),
+          NOT: t.Union([Self, t.Array(Self)]),
+          OR: t.Array(Self),
+          token: t.String(),
+        },
+        {
+          description: `Consumeable token which grants the creation of a conference`,
+        },
+      ),
+    { $id: "ConferenceCreateToken" },
+  ),
+  { additionalProperties: false },
+);
+
+export const ConferenceCreateTokenWhereUnique = t.Recursive(
+  (Self) =>
+    t.Intersect([
+      t.Partial(
+        t.Object(
+          { token: t.String() },
+          {
+            description: `Consumeable token which grants the creation of a conference`,
+          },
+        ),
+      ),
+      t.Union([t.Object({ token: t.String() })]),
+      t.Partial(
+        t.Object({
+          AND: t.Union([Self, t.Array(Self)]),
+          NOT: t.Union([Self, t.Array(Self)]),
+          OR: t.Array(Self),
+        }),
+      ),
+      t.Partial(
+        t.Object({ token: t.String() }, { additionalProperties: false }),
+        { additionalProperties: false },
+      ),
+    ]),
+  { $id: "ConferenceCreateToken" },
+);
+
+export const ConferenceCreateTokenSelect = t.Partial(
+  t.Object(
+    { token: t.Boolean(), _count: t.Boolean() },
+    {
+      additionalProperties: false,
+      description: `Consumeable token which grants the creation of a conference`,
+    },
+  ),
+  { additionalProperties: false },
+);
+
+export const ConferenceCreateTokenInclude = t.Partial(
+  t.Object(
+    { _count: t.Boolean() },
+    {
+      additionalProperties: false,
+      description: `Consumeable token which grants the creation of a conference`,
+    },
+  ),
+  { additionalProperties: false },
+);
+
+export const ConferenceCreateTokenOrderBy = t.Partial(
+  t.Object(
+    { token: t.Union([t.Literal("asc"), t.Literal("desc")]) },
+    {
+      additionalProperties: false,
+      description: `Consumeable token which grants the creation of a conference`,
+    },
+  ),
+  { additionalProperties: false },
 );
 
 export const ConferenceCreateToken = t.Composite(
   [ConferenceCreateTokenPlain, ConferenceCreateTokenRelations],
-  {
-    description: `Composition of ConferenceCreateTokenPlain, ConferenceCreateTokenRelations`,
-    additionalProperties: false,
-  },
+  { additionalProperties: false },
 );
 
-export const ConferenceCreateTokenWhere = t.Union([
-  t.Composite([
-    t.Pick(
-      t.Required(
-        t.Composite([
-          t.Object({}),
-          t.Pick(ConferenceCreateTokenPlain, ["token"]),
-        ]),
-      ),
-      ["token"],
-    ),
-    t.Omit(
-      t.Partial(
-        t.Composite([
-          t.Object({}),
-          t.Pick(ConferenceCreateTokenPlain, ["token"]),
-        ]),
-      ),
-      ["token"],
-    ),
-  ]),
-]);
-
-export const ConferenceCreateTokenDataPlain = t.Object(
-  {},
-  {
-    description: `Consumeable token which grants the creation of a conference`,
-    additionalProperties: false,
-  },
-);
-
-export const ConferenceCreateTokenDataRelations = t.Object(
-  {},
-  {
-    description: `Consumeable token which grants the creation of a conference`,
-    additionalProperties: false,
-  },
-);
-
-export const ConferenceCreateTokenData = t.Composite(
-  [ConferenceCreateTokenDataPlain, ConferenceCreateTokenDataRelations],
-  {
-    description: `Composition of ConferenceCreateTokenDataPlain, ConferenceCreateTokenDataRelations`,
-    additionalProperties: false,
-  },
-);
-
-export const ConferenceCreateTokenDataPlainOptional = t.Object(
-  {},
-  {
-    description: `Consumeable token which grants the creation of a conference`,
-    additionalProperties: false,
-  },
-);
-
-export const ConferenceCreateTokenDataRelationsOptional = t.Object(
-  {},
-  {
-    description: `Consumeable token which grants the creation of a conference`,
-    additionalProperties: false,
-  },
-);
-
-export const ConferenceCreateTokenDataOptional = t.Composite(
+export const ConferenceCreateTokenInputCreate = t.Composite(
   [
-    ConferenceCreateTokenDataPlainOptional,
-    ConferenceCreateTokenDataRelationsOptional,
+    ConferenceCreateTokenPlainInputCreate,
+    ConferenceCreateTokenRelationsInputCreate,
   ],
-  {
-    description: `Composition of ConferenceCreateTokenDataPlainOptional, ConferenceCreateTokenDataRelationsOptional`,
-    additionalProperties: false,
-  },
+  { additionalProperties: false },
+);
+
+export const ConferenceCreateTokenInputUpdate = t.Composite(
+  [
+    ConferenceCreateTokenPlainInputUpdate,
+    ConferenceCreateTokenRelationsInputUpdate,
+  ],
+  { additionalProperties: false },
 );

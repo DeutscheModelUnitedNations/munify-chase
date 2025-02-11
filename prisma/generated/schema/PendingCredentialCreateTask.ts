@@ -1,119 +1,202 @@
 import { t } from "elysia";
 
-import { _Nullable } from "./__nullable__";
+import { __transformDate__ } from "./__transformDate__";
+
+import { __nullable__ } from "./__nullable__";
 
 export const PendingCredentialCreateTaskPlain = t.Object(
   {
-    id: t.String({ description: ``, additionalProperties: false }),
-    userId: t.String({ description: ``, additionalProperties: false }),
-    tokenId: t.String({ description: ``, additionalProperties: false }),
+    id: t.String({ additionalProperties: false }),
+    userId: t.String({ additionalProperties: false }),
+    tokenId: t.String({ additionalProperties: false }),
   },
-  { description: ``, additionalProperties: false },
+  { additionalProperties: false },
 );
 
 export const PendingCredentialCreateTaskRelations = t.Object(
   {
     user: t.Object(
       {
-        id: t.String({ description: ``, additionalProperties: false }),
-        name: t.String({ description: ``, additionalProperties: false }),
+        id: t.String({ additionalProperties: false }),
+        name: t.String({ additionalProperties: false }),
       },
-      { description: `A user in the system`, additionalProperties: false },
+      { additionalProperties: false, description: `A user in the system` },
     ),
     token: t.Object(
       {
-        id: t.String({ description: ``, additionalProperties: false }),
-        expiresAt: t.Date({ description: ``, additionalProperties: false }),
+        id: t.String({ additionalProperties: false }),
+        expiresAt: t.Date({ additionalProperties: false }),
       },
       {
+        additionalProperties: false,
         description: `A token which can be used to grant one time access to something in the app
 e.g. confirming an email, resetting a password`,
-        additionalProperties: false,
       },
     ),
   },
-  { description: ``, additionalProperties: false },
+  { additionalProperties: false },
+);
+
+export const PendingCredentialCreateTaskPlainInputCreate = t.Object(
+  {},
+  { additionalProperties: false },
+);
+
+export const PendingCredentialCreateTaskPlainInputUpdate = t.Object(
+  {},
+  { additionalProperties: false },
+);
+
+export const PendingCredentialCreateTaskRelationsInputCreate = t.Object(
+  {
+    user: t.Object(
+      {
+        connect: t.Object(
+          {
+            id: t.String({ additionalProperties: false }),
+          },
+          { additionalProperties: false },
+        ),
+      },
+      { additionalProperties: false },
+    ),
+    token: t.Object(
+      {
+        connect: t.Object(
+          {
+            id: t.String({ additionalProperties: false }),
+          },
+          { additionalProperties: false },
+        ),
+      },
+      { additionalProperties: false },
+    ),
+  },
+  { additionalProperties: false },
+);
+
+export const PendingCredentialCreateTaskRelationsInputUpdate = t.Partial(
+  t.Object(
+    {
+      user: t.Object(
+        {
+          connect: t.Object(
+            {
+              id: t.String({ additionalProperties: false }),
+            },
+            { additionalProperties: false },
+          ),
+        },
+        { additionalProperties: false },
+      ),
+      token: t.Object(
+        {
+          connect: t.Object(
+            {
+              id: t.String({ additionalProperties: false }),
+            },
+            { additionalProperties: false },
+          ),
+        },
+        { additionalProperties: false },
+      ),
+    },
+    { additionalProperties: false },
+  ),
+  { additionalProperties: false },
+);
+
+export const PendingCredentialCreateTaskWhere = t.Partial(
+  t.Recursive(
+    (Self) =>
+      t.Object({
+        AND: t.Union([Self, t.Array(Self)]),
+        NOT: t.Union([Self, t.Array(Self)]),
+        OR: t.Array(Self),
+        id: t.String(),
+        userId: t.String(),
+        tokenId: t.String(),
+      }),
+    { $id: "PendingCredentialCreateTask" },
+  ),
+  { additionalProperties: false },
+);
+
+export const PendingCredentialCreateTaskWhereUnique = t.Recursive(
+  (Self) =>
+    t.Intersect([
+      t.Partial(t.Object({ id: t.String() })),
+      t.Union([t.Object({ id: t.String() })]),
+      t.Partial(
+        t.Object({
+          AND: t.Union([Self, t.Array(Self)]),
+          NOT: t.Union([Self, t.Array(Self)]),
+          OR: t.Array(Self),
+        }),
+      ),
+      t.Partial(
+        t.Object(
+          { id: t.String(), userId: t.String(), tokenId: t.String() },
+          { additionalProperties: false },
+        ),
+        { additionalProperties: false },
+      ),
+    ]),
+  { $id: "PendingCredentialCreateTask" },
+);
+
+export const PendingCredentialCreateTaskSelect = t.Partial(
+  t.Object(
+    {
+      id: t.Boolean(),
+      user: t.Boolean(),
+      userId: t.Boolean(),
+      token: t.Boolean(),
+      tokenId: t.Boolean(),
+      _count: t.Boolean(),
+    },
+    { additionalProperties: false },
+  ),
+  { additionalProperties: false },
+);
+
+export const PendingCredentialCreateTaskInclude = t.Partial(
+  t.Object(
+    { user: t.Boolean(), token: t.Boolean(), _count: t.Boolean() },
+    { additionalProperties: false },
+  ),
+  { additionalProperties: false },
+);
+
+export const PendingCredentialCreateTaskOrderBy = t.Partial(
+  t.Object(
+    {
+      id: t.Union([t.Literal("asc"), t.Literal("desc")]),
+      userId: t.Union([t.Literal("asc"), t.Literal("desc")]),
+      tokenId: t.Union([t.Literal("asc"), t.Literal("desc")]),
+    },
+    { additionalProperties: false },
+  ),
+  { additionalProperties: false },
 );
 
 export const PendingCredentialCreateTask = t.Composite(
   [PendingCredentialCreateTaskPlain, PendingCredentialCreateTaskRelations],
-  {
-    description: `Composition of PendingCredentialCreateTaskPlain, PendingCredentialCreateTaskRelations`,
-    additionalProperties: false,
-  },
+  { additionalProperties: false },
 );
 
-export const PendingCredentialCreateTaskWhere = t.Union([
-  t.Composite([
-    t.Pick(
-      t.Required(
-        t.Composite([
-          t.Object({}),
-          t.Pick(PendingCredentialCreateTaskPlain, ["id"]),
-        ]),
-      ),
-      ["id"],
-    ),
-    t.Omit(
-      t.Partial(
-        t.Composite([
-          t.Object({}),
-          t.Pick(PendingCredentialCreateTaskPlain, ["id"]),
-        ]),
-      ),
-      ["id"],
-    ),
-  ]),
-]);
-
-export const PendingCredentialCreateTaskDataPlain = t.Object(
-  {},
-  { description: ``, additionalProperties: false },
-);
-
-export const PendingCredentialCreateTaskDataRelations = t.Object(
-  {
-    userId: t.String({ description: ``, additionalProperties: false }),
-    tokenId: t.String({ description: ``, additionalProperties: false }),
-  },
-  { description: ``, additionalProperties: false },
-);
-
-export const PendingCredentialCreateTaskData = t.Composite(
+export const PendingCredentialCreateTaskInputCreate = t.Composite(
   [
-    PendingCredentialCreateTaskDataPlain,
-    PendingCredentialCreateTaskDataRelations,
+    PendingCredentialCreateTaskPlainInputCreate,
+    PendingCredentialCreateTaskRelationsInputCreate,
   ],
-  {
-    description: `Composition of PendingCredentialCreateTaskDataPlain, PendingCredentialCreateTaskDataRelations`,
-    additionalProperties: false,
-  },
+  { additionalProperties: false },
 );
 
-export const PendingCredentialCreateTaskDataPlainOptional = t.Object(
-  {},
-  { description: ``, additionalProperties: false },
-);
-
-export const PendingCredentialCreateTaskDataRelationsOptional = t.Object(
-  {
-    userId: t.Optional(
-      t.String({ description: ``, additionalProperties: false }),
-    ),
-    tokenId: t.Optional(
-      t.String({ description: ``, additionalProperties: false }),
-    ),
-  },
-  { description: ``, additionalProperties: false },
-);
-
-export const PendingCredentialCreateTaskDataOptional = t.Composite(
+export const PendingCredentialCreateTaskInputUpdate = t.Composite(
   [
-    PendingCredentialCreateTaskDataPlainOptional,
-    PendingCredentialCreateTaskDataRelationsOptional,
+    PendingCredentialCreateTaskPlainInputUpdate,
+    PendingCredentialCreateTaskRelationsInputUpdate,
   ],
-  {
-    description: `Composition of PendingCredentialCreateTaskDataPlainOptional, PendingCredentialCreateTaskDataRelationsOptional`,
-    additionalProperties: false,
-  },
+  { additionalProperties: false },
 );

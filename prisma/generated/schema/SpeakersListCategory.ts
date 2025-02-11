@@ -1,6 +1,8 @@
 import { t } from "elysia";
 
-import { _Nullable } from "./__nullable__";
+import { __transformDate__ } from "./__transformDate__";
+
+import { __nullable__ } from "./__nullable__";
 
 export const SpeakersListCategory = t.Union(
   [
@@ -8,5 +10,5 @@ export const SpeakersListCategory = t.Union(
     t.Literal("COMMENT_LIST"),
     t.Literal("MODERATED_CAUCUS"),
   ],
-  { description: `The type of a speakers list`, additionalProperties: false },
+  { additionalProperties: false, description: `The type of a speakers list` },
 );

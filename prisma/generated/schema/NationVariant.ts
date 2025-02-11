@@ -1,6 +1,8 @@
 import { t } from "elysia";
 
-import { _Nullable } from "./__nullable__";
+import { __transformDate__ } from "./__transformDate__";
+
+import { __nullable__ } from "./__nullable__";
 
 export const NationVariant = t.Union(
   [
@@ -8,5 +10,5 @@ export const NationVariant = t.Union(
     t.Literal("NON_STATE_ACTOR"),
     t.Literal("SPECIAL_PERSON"),
   ],
-  { description: ``, additionalProperties: false },
+  { additionalProperties: false },
 );

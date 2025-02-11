@@ -1,6 +1,8 @@
 import { t } from "elysia";
 
-import { _Nullable } from "./__nullable__";
+import { __transformDate__ } from "./__transformDate__";
+
+import { __nullable__ } from "./__nullable__";
 
 export const CommitteeStatus = t.Union(
   [
@@ -10,5 +12,5 @@ export const CommitteeStatus = t.Union(
     t.Literal("SUSPENSION"),
     t.Literal("CLOSED"),
   ],
-  { description: ``, additionalProperties: false },
+  { additionalProperties: false },
 );

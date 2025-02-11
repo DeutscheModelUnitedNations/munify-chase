@@ -1,28 +1,26 @@
 import { t } from "elysia";
 
-import { _Nullable } from "./__nullable__";
+import { __transformDate__ } from "./__transformDate__";
+
+import { __nullable__ } from "./__nullable__";
 
 export const CommitteeMemberPlain = t.Object(
   {
-    id: t.String({ description: ``, additionalProperties: false }),
-    committeeId: t.String({ description: ``, additionalProperties: false }),
-    userId: _Nullable(
-      t.String({ description: ``, additionalProperties: false }),
-    ),
-    delegationId: _Nullable(
-      t.String({ description: ``, additionalProperties: false }),
-    ),
+    id: t.String({ additionalProperties: false }),
+    committeeId: t.String({ additionalProperties: false }),
+    userId: __nullable__(t.String({ additionalProperties: false })),
+    delegationId: __nullable__(t.String({ additionalProperties: false })),
     presence: t.Union(
       [t.Literal("PRESENT"), t.Literal("EXCUSED"), t.Literal("ABSENT")],
       {
-        description: `The presence status of a CommitteeMember`,
         additionalProperties: false,
+        description: `The presence status of a CommitteeMember`,
       },
     ),
   },
   {
-    description: `A user's membership in a committee, providing them with a role in the committee`,
     additionalProperties: false,
+    description: `A user's membership in a committee, providing them with a role in the committee`,
   },
 );
 
@@ -30,30 +28,19 @@ export const CommitteeMemberRelations = t.Object(
   {
     committee: t.Object(
       {
-        id: t.String({ description: ``, additionalProperties: false }),
-        name: t.String({ description: ``, additionalProperties: false }),
-        abbreviation: t.String({
-          description: ``,
-          additionalProperties: false,
-        }),
+        id: t.String({ additionalProperties: false }),
+        name: t.String({ additionalProperties: false }),
+        abbreviation: t.String({ additionalProperties: false }),
         category: t.Union(
           [t.Literal("COMMITTEE"), t.Literal("CRISIS"), t.Literal("ICJ")],
           {
-            description: `The type of a committee in a conference`,
             additionalProperties: false,
+            description: `The type of a committee in a conference`,
           },
         ),
-        conferenceId: t.String({
-          description: ``,
-          additionalProperties: false,
-        }),
-        parentId: _Nullable(
-          t.String({ description: ``, additionalProperties: false }),
-        ),
-        whiteboardContent: t.String({
-          description: ``,
-          additionalProperties: false,
-        }),
+        conferenceId: t.String({ additionalProperties: false }),
+        parentId: __nullable__(t.String({ additionalProperties: false })),
+        whiteboardContent: t.String({ additionalProperties: false }),
         status: t.Union(
           [
             t.Literal("FORMAL"),
@@ -62,401 +49,396 @@ export const CommitteeMemberRelations = t.Object(
             t.Literal("SUSPENSION"),
             t.Literal("CLOSED"),
           ],
-          { description: ``, additionalProperties: false },
+          { additionalProperties: false },
         ),
-        stateOfDebate: _Nullable(
-          t.String({ description: ``, additionalProperties: false }),
-        ),
-        statusHeadline: _Nullable(
-          t.String({ description: ``, additionalProperties: false }),
-        ),
-        statusUntil: _Nullable(
-          t.Date({ description: ``, additionalProperties: false }),
-        ),
+        stateOfDebate: __nullable__(t.String({ additionalProperties: false })),
+        statusHeadline: __nullable__(t.String({ additionalProperties: false })),
+        statusUntil: __nullable__(t.Date({ additionalProperties: false })),
         allowDelegationsToAddThemselvesToSpeakersList: t.Boolean({
-          description: ``,
           additionalProperties: false,
         }),
       },
       {
-        description: `A committee in a conference`,
         additionalProperties: false,
+        description: `A committee in a conference`,
       },
     ),
-    user: _Nullable(
+    user: __nullable__(
       t.Object(
         {
-          id: t.String({ description: ``, additionalProperties: false }),
-          name: t.String({ description: ``, additionalProperties: false }),
+          id: t.String({ additionalProperties: false }),
+          name: t.String({ additionalProperties: false }),
         },
-        { description: `A user in the system`, additionalProperties: false },
+        { additionalProperties: false, description: `A user in the system` },
       ),
     ),
     speakerLists: t.Array(
       t.Object(
         {
-          id: t.String({ description: ``, additionalProperties: false }),
-          speakersListId: t.String({
-            description: ``,
-            additionalProperties: false,
-          }),
-          committeeMemberId: t.String({
-            description: ``,
-            additionalProperties: false,
-          }),
-          position: t.Integer({ description: ``, additionalProperties: false }),
+          id: t.String({ additionalProperties: false }),
+          speakersListId: t.String({ additionalProperties: false }),
+          committeeMemberId: t.String({ additionalProperties: false }),
+          position: t.Integer({ additionalProperties: false }),
         },
         {
-          description: `A speaker on a speakers list, storing their position in the list`,
           additionalProperties: false,
+          description: `A speaker on a speakers list, storing their position in the list`,
         },
       ),
     ),
-    delegation: _Nullable(
+    delegation: __nullable__(
       t.Object(
         {
-          id: t.String({ description: ``, additionalProperties: false }),
-          conferenceId: t.String({
-            description: ``,
-            additionalProperties: false,
-          }),
-          nationId: t.String({ description: ``, additionalProperties: false }),
+          id: t.String({ additionalProperties: false }),
+          conferenceId: t.String({ additionalProperties: false }),
+          nationId: t.String({ additionalProperties: false }),
         },
-        { description: ``, additionalProperties: false },
+        { additionalProperties: false },
       ),
     ),
   },
   {
+    additionalProperties: false,
     description: `A user's membership in a committee, providing them with a role in the committee`,
-    additionalProperties: false,
   },
 );
 
-export const CommitteeMember = t.Composite(
-  [CommitteeMemberPlain, CommitteeMemberRelations],
-  {
-    description: `Composition of CommitteeMemberPlain, CommitteeMemberRelations`,
-    additionalProperties: false,
-  },
-);
-
-export const CommitteeMemberWhere = t.Union([
-  t.Composite([
-    t.Pick(
-      t.Required(
-        t.Composite([
-          t.Object({
-            committeeId_delegationId: t.Object(
-              {
-                committeeId: t.String({
-                  description: ``,
-                  additionalProperties: false,
-                }),
-                delegationId: t.Optional(
-                  _Nullable(
-                    t.String({ description: ``, additionalProperties: false }),
-                  ),
-                ),
-              },
-              { description: ``, additionalProperties: false },
-            ),
-            committeeId_userId: t.Object(
-              {
-                committeeId: t.String({
-                  description: ``,
-                  additionalProperties: false,
-                }),
-                userId: t.Optional(
-                  _Nullable(
-                    t.String({ description: ``, additionalProperties: false }),
-                  ),
-                ),
-              },
-              { description: ``, additionalProperties: false },
-            ),
-          }),
-          t.Pick(CommitteeMemberPlain, ["id"]),
-        ]),
-      ),
-      ["id"],
-    ),
-    t.Omit(
-      t.Partial(
-        t.Composite([
-          t.Object({
-            committeeId_delegationId: t.Object(
-              {
-                committeeId: t.String({
-                  description: ``,
-                  additionalProperties: false,
-                }),
-                delegationId: t.Optional(
-                  _Nullable(
-                    t.String({ description: ``, additionalProperties: false }),
-                  ),
-                ),
-              },
-              { description: ``, additionalProperties: false },
-            ),
-            committeeId_userId: t.Object(
-              {
-                committeeId: t.String({
-                  description: ``,
-                  additionalProperties: false,
-                }),
-                userId: t.Optional(
-                  _Nullable(
-                    t.String({ description: ``, additionalProperties: false }),
-                  ),
-                ),
-              },
-              { description: ``, additionalProperties: false },
-            ),
-          }),
-          t.Pick(CommitteeMemberPlain, ["id"]),
-        ]),
-      ),
-      ["id"],
-    ),
-  ]),
-  t.Composite([
-    t.Pick(
-      t.Required(
-        t.Composite([
-          t.Object({
-            committeeId_delegationId: t.Object(
-              {
-                committeeId: t.String({
-                  description: ``,
-                  additionalProperties: false,
-                }),
-                delegationId: t.Optional(
-                  _Nullable(
-                    t.String({ description: ``, additionalProperties: false }),
-                  ),
-                ),
-              },
-              { description: ``, additionalProperties: false },
-            ),
-            committeeId_userId: t.Object(
-              {
-                committeeId: t.String({
-                  description: ``,
-                  additionalProperties: false,
-                }),
-                userId: t.Optional(
-                  _Nullable(
-                    t.String({ description: ``, additionalProperties: false }),
-                  ),
-                ),
-              },
-              { description: ``, additionalProperties: false },
-            ),
-          }),
-          t.Pick(CommitteeMemberPlain, ["id"]),
-        ]),
-      ),
-      ["committeeId_delegationId"],
-    ),
-    t.Omit(
-      t.Partial(
-        t.Composite([
-          t.Object({
-            committeeId_delegationId: t.Object(
-              {
-                committeeId: t.String({
-                  description: ``,
-                  additionalProperties: false,
-                }),
-                delegationId: t.Optional(
-                  _Nullable(
-                    t.String({ description: ``, additionalProperties: false }),
-                  ),
-                ),
-              },
-              { description: ``, additionalProperties: false },
-            ),
-            committeeId_userId: t.Object(
-              {
-                committeeId: t.String({
-                  description: ``,
-                  additionalProperties: false,
-                }),
-                userId: t.Optional(
-                  _Nullable(
-                    t.String({ description: ``, additionalProperties: false }),
-                  ),
-                ),
-              },
-              { description: ``, additionalProperties: false },
-            ),
-          }),
-          t.Pick(CommitteeMemberPlain, ["id"]),
-        ]),
-      ),
-      ["committeeId_delegationId"],
-    ),
-  ]),
-  t.Composite([
-    t.Pick(
-      t.Required(
-        t.Composite([
-          t.Object({
-            committeeId_delegationId: t.Object(
-              {
-                committeeId: t.String({
-                  description: ``,
-                  additionalProperties: false,
-                }),
-                delegationId: t.Optional(
-                  _Nullable(
-                    t.String({ description: ``, additionalProperties: false }),
-                  ),
-                ),
-              },
-              { description: ``, additionalProperties: false },
-            ),
-            committeeId_userId: t.Object(
-              {
-                committeeId: t.String({
-                  description: ``,
-                  additionalProperties: false,
-                }),
-                userId: t.Optional(
-                  _Nullable(
-                    t.String({ description: ``, additionalProperties: false }),
-                  ),
-                ),
-              },
-              { description: ``, additionalProperties: false },
-            ),
-          }),
-          t.Pick(CommitteeMemberPlain, ["id"]),
-        ]),
-      ),
-      ["committeeId_userId"],
-    ),
-    t.Omit(
-      t.Partial(
-        t.Composite([
-          t.Object({
-            committeeId_delegationId: t.Object(
-              {
-                committeeId: t.String({
-                  description: ``,
-                  additionalProperties: false,
-                }),
-                delegationId: t.Optional(
-                  _Nullable(
-                    t.String({ description: ``, additionalProperties: false }),
-                  ),
-                ),
-              },
-              { description: ``, additionalProperties: false },
-            ),
-            committeeId_userId: t.Object(
-              {
-                committeeId: t.String({
-                  description: ``,
-                  additionalProperties: false,
-                }),
-                userId: t.Optional(
-                  _Nullable(
-                    t.String({ description: ``, additionalProperties: false }),
-                  ),
-                ),
-              },
-              { description: ``, additionalProperties: false },
-            ),
-          }),
-          t.Pick(CommitteeMemberPlain, ["id"]),
-        ]),
-      ),
-      ["committeeId_userId"],
-    ),
-  ]),
-]);
-
-export const CommitteeMemberDataPlain = t.Object(
-  {
-    presence: t.Union(
-      [t.Literal("PRESENT"), t.Literal("EXCUSED"), t.Literal("ABSENT")],
-      {
-        description: `The presence status of a CommitteeMember`,
-        additionalProperties: false,
-      },
-    ),
-  },
-  {
-    description: `A user's membership in a committee, providing them with a role in the committee`,
-    additionalProperties: false,
-  },
-);
-
-export const CommitteeMemberDataRelations = t.Object(
-  {
-    committeeId: t.String({ description: ``, additionalProperties: false }),
-    userId: t.Optional(
-      _Nullable(t.String({ description: ``, additionalProperties: false })),
-    ),
-    delegationId: t.Optional(
-      _Nullable(t.String({ description: ``, additionalProperties: false })),
-    ),
-  },
-  {
-    description: `A user's membership in a committee, providing them with a role in the committee`,
-    additionalProperties: false,
-  },
-);
-
-export const CommitteeMemberData = t.Composite(
-  [CommitteeMemberDataPlain, CommitteeMemberDataRelations],
-  {
-    description: `Composition of CommitteeMemberDataPlain, CommitteeMemberDataRelations`,
-    additionalProperties: false,
-  },
-);
-
-export const CommitteeMemberDataPlainOptional = t.Object(
+export const CommitteeMemberPlainInputCreate = t.Object(
   {
     presence: t.Optional(
       t.Union(
         [t.Literal("PRESENT"), t.Literal("EXCUSED"), t.Literal("ABSENT")],
         {
-          description: `The presence status of a CommitteeMember`,
           additionalProperties: false,
+          description: `The presence status of a CommitteeMember`,
         },
       ),
     ),
   },
   {
-    description: `A user's membership in a committee, providing them with a role in the committee`,
     additionalProperties: false,
+    description: `A user's membership in a committee, providing them with a role in the committee`,
   },
 );
 
-export const CommitteeMemberDataRelationsOptional = t.Object(
+export const CommitteeMemberPlainInputUpdate = t.Object(
   {
-    committeeId: t.Optional(
-      t.String({ description: ``, additionalProperties: false }),
-    ),
-    userId: t.Optional(
-      _Nullable(t.String({ description: ``, additionalProperties: false })),
-    ),
-    delegationId: t.Optional(
-      _Nullable(t.String({ description: ``, additionalProperties: false })),
+    presence: t.Optional(
+      t.Union(
+        [t.Literal("PRESENT"), t.Literal("EXCUSED"), t.Literal("ABSENT")],
+        {
+          additionalProperties: false,
+          description: `The presence status of a CommitteeMember`,
+        },
+      ),
     ),
   },
   {
-    description: `A user's membership in a committee, providing them with a role in the committee`,
     additionalProperties: false,
+    description: `A user's membership in a committee, providing them with a role in the committee`,
   },
 );
 
-export const CommitteeMemberDataOptional = t.Composite(
-  [CommitteeMemberDataPlainOptional, CommitteeMemberDataRelationsOptional],
+export const CommitteeMemberRelationsInputCreate = t.Object(
   {
-    description: `Composition of CommitteeMemberDataPlainOptional, CommitteeMemberDataRelationsOptional`,
-    additionalProperties: false,
+    committee: t.Object(
+      {
+        connect: t.Object(
+          {
+            id: t.String({ additionalProperties: false }),
+          },
+          { additionalProperties: false },
+        ),
+      },
+      { additionalProperties: false },
+    ),
+    user: t.Optional(
+      t.Object(
+        {
+          connect: t.Object(
+            {
+              id: t.String({ additionalProperties: false }),
+            },
+            { additionalProperties: false },
+          ),
+        },
+        { additionalProperties: false },
+      ),
+    ),
+    speakerLists: t.Optional(
+      t.Object(
+        {
+          connect: t.Array(
+            t.Object(
+              {
+                id: t.String({ additionalProperties: false }),
+              },
+              { additionalProperties: false },
+            ),
+          ),
+        },
+        { additionalProperties: false },
+      ),
+    ),
+    delegation: t.Optional(
+      t.Object(
+        {
+          connect: t.Object(
+            {
+              id: t.String({ additionalProperties: false }),
+            },
+            { additionalProperties: false },
+          ),
+        },
+        { additionalProperties: false },
+      ),
+    ),
   },
+  {
+    additionalProperties: false,
+    description: `A user's membership in a committee, providing them with a role in the committee`,
+  },
+);
+
+export const CommitteeMemberRelationsInputUpdate = t.Partial(
+  t.Object(
+    {
+      committee: t.Object(
+        {
+          connect: t.Object(
+            {
+              id: t.String({ additionalProperties: false }),
+            },
+            { additionalProperties: false },
+          ),
+        },
+        { additionalProperties: false },
+      ),
+      user: t.Partial(
+        t.Object(
+          {
+            connect: t.Object(
+              {
+                id: t.String({ additionalProperties: false }),
+              },
+              { additionalProperties: false },
+            ),
+            disconnect: t.Boolean(),
+          },
+          { additionalProperties: false },
+        ),
+        { additionalProperties: false },
+      ),
+      speakerLists: t.Partial(
+        t.Object(
+          {
+            connect: t.Array(
+              t.Object(
+                {
+                  id: t.String({ additionalProperties: false }),
+                },
+                { additionalProperties: false },
+              ),
+            ),
+            disconnect: t.Array(
+              t.Object(
+                {
+                  id: t.String({ additionalProperties: false }),
+                },
+                { additionalProperties: false },
+              ),
+            ),
+          },
+          { additionalProperties: false },
+        ),
+        { additionalProperties: false },
+      ),
+      delegation: t.Partial(
+        t.Object(
+          {
+            connect: t.Object(
+              {
+                id: t.String({ additionalProperties: false }),
+              },
+              { additionalProperties: false },
+            ),
+            disconnect: t.Boolean(),
+          },
+          { additionalProperties: false },
+        ),
+        { additionalProperties: false },
+      ),
+    },
+    {
+      additionalProperties: false,
+      description: `A user's membership in a committee, providing them with a role in the committee`,
+    },
+  ),
+  { additionalProperties: false },
+);
+
+export const CommitteeMemberWhere = t.Partial(
+  t.Recursive(
+    (Self) =>
+      t.Object(
+        {
+          AND: t.Union([Self, t.Array(Self)]),
+          NOT: t.Union([Self, t.Array(Self)]),
+          OR: t.Array(Self),
+          id: t.String(),
+          committeeId: t.String(),
+          userId: t.String(),
+          delegationId: t.String(),
+          presence: t.Union(
+            [t.Literal("PRESENT"), t.Literal("EXCUSED"), t.Literal("ABSENT")],
+            {
+              additionalProperties: false,
+              description: `The presence status of a CommitteeMember`,
+            },
+          ),
+        },
+        {
+          description: `A user's membership in a committee, providing them with a role in the committee`,
+        },
+      ),
+    { $id: "CommitteeMember" },
+  ),
+  { additionalProperties: false },
+);
+
+export const CommitteeMemberWhereUnique = t.Recursive(
+  (Self) =>
+    t.Intersect([
+      t.Partial(
+        t.Object(
+          {
+            id: t.String(),
+            committeeId_delegationId: t.Object({
+              committeeId: t.String(),
+              delegationId: t.String(),
+            }),
+            committeeId_userId: t.Object({
+              committeeId: t.String(),
+              userId: t.String(),
+            }),
+          },
+          {
+            description: `A user's membership in a committee, providing them with a role in the committee`,
+          },
+        ),
+      ),
+      t.Union([
+        t.Object({ id: t.String() }),
+        t.Object({
+          committeeId_delegationId: t.Object({
+            committeeId: t.String(),
+            delegationId: t.String(),
+          }),
+        }),
+        t.Object({
+          committeeId_userId: t.Object({
+            committeeId: t.String(),
+            userId: t.String(),
+          }),
+        }),
+      ]),
+      t.Partial(
+        t.Object({
+          AND: t.Union([Self, t.Array(Self)]),
+          NOT: t.Union([Self, t.Array(Self)]),
+          OR: t.Array(Self),
+        }),
+      ),
+      t.Partial(
+        t.Object(
+          {
+            id: t.String(),
+            committeeId: t.String(),
+            userId: t.String(),
+            delegationId: t.String(),
+            presence: t.Union(
+              [t.Literal("PRESENT"), t.Literal("EXCUSED"), t.Literal("ABSENT")],
+              {
+                additionalProperties: false,
+                description: `The presence status of a CommitteeMember`,
+              },
+            ),
+          },
+          { additionalProperties: false },
+        ),
+        { additionalProperties: false },
+      ),
+    ]),
+  { $id: "CommitteeMember" },
+);
+
+export const CommitteeMemberSelect = t.Partial(
+  t.Object(
+    {
+      id: t.Boolean(),
+      committee: t.Boolean(),
+      committeeId: t.Boolean(),
+      user: t.Boolean(),
+      userId: t.Boolean(),
+      speakerLists: t.Boolean(),
+      delegation: t.Boolean(),
+      delegationId: t.Boolean(),
+      presence: t.Boolean(),
+      _count: t.Boolean(),
+    },
+    {
+      additionalProperties: false,
+      description: `A user's membership in a committee, providing them with a role in the committee`,
+    },
+  ),
+  { additionalProperties: false },
+);
+
+export const CommitteeMemberInclude = t.Partial(
+  t.Object(
+    {
+      committee: t.Boolean(),
+      user: t.Boolean(),
+      speakerLists: t.Boolean(),
+      delegation: t.Boolean(),
+      presence: t.Boolean(),
+      _count: t.Boolean(),
+    },
+    {
+      additionalProperties: false,
+      description: `A user's membership in a committee, providing them with a role in the committee`,
+    },
+  ),
+  { additionalProperties: false },
+);
+
+export const CommitteeMemberOrderBy = t.Partial(
+  t.Object(
+    {
+      id: t.Union([t.Literal("asc"), t.Literal("desc")]),
+      committeeId: t.Union([t.Literal("asc"), t.Literal("desc")]),
+      userId: t.Union([t.Literal("asc"), t.Literal("desc")]),
+      delegationId: t.Union([t.Literal("asc"), t.Literal("desc")]),
+    },
+    {
+      additionalProperties: false,
+      description: `A user's membership in a committee, providing them with a role in the committee`,
+    },
+  ),
+  { additionalProperties: false },
+);
+
+export const CommitteeMember = t.Composite(
+  [CommitteeMemberPlain, CommitteeMemberRelations],
+  { additionalProperties: false },
+);
+
+export const CommitteeMemberInputCreate = t.Composite(
+  [CommitteeMemberPlainInputCreate, CommitteeMemberRelationsInputCreate],
+  { additionalProperties: false },
+);
+
+export const CommitteeMemberInputUpdate = t.Composite(
+  [CommitteeMemberPlainInputUpdate, CommitteeMemberRelationsInputUpdate],
+  { additionalProperties: false },
 );

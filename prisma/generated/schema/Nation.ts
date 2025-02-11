@@ -1,23 +1,25 @@
 import { t } from "elysia";
 
-import { _Nullable } from "./__nullable__";
+import { __transformDate__ } from "./__transformDate__";
+
+import { __nullable__ } from "./__nullable__";
 
 export const NationPlain = t.Object(
   {
-    id: t.String({ description: ``, additionalProperties: false }),
-    alpha3Code: t.String({ description: ``, additionalProperties: false }),
+    id: t.String({ additionalProperties: false }),
+    alpha3Code: t.String({ additionalProperties: false }),
     variant: t.Union(
       [
         t.Literal("NATION"),
         t.Literal("NON_STATE_ACTOR"),
         t.Literal("SPECIAL_PERSON"),
       ],
-      { description: ``, additionalProperties: false },
+      { additionalProperties: false },
     ),
   },
   {
-    description: `A nation in the system. E.g. Germany`,
     additionalProperties: false,
+    description: `A nation in the system. E.g. Germany`,
   },
 );
 
@@ -26,95 +28,23 @@ export const NationRelations = t.Object(
     delegations: t.Array(
       t.Object(
         {
-          id: t.String({ description: ``, additionalProperties: false }),
-          conferenceId: t.String({
-            description: ``,
-            additionalProperties: false,
-          }),
-          nationId: t.String({ description: ``, additionalProperties: false }),
+          id: t.String({ additionalProperties: false }),
+          conferenceId: t.String({ additionalProperties: false }),
+          nationId: t.String({ additionalProperties: false }),
         },
-        { description: ``, additionalProperties: false },
+        { additionalProperties: false },
       ),
     ),
   },
   {
-    description: `A nation in the system. E.g. Germany`,
     additionalProperties: false,
+    description: `A nation in the system. E.g. Germany`,
   },
 );
 
-export const Nation = t.Composite([NationPlain, NationRelations], {
-  description: `Composition of NationPlain, NationRelations`,
-  additionalProperties: false,
-});
-
-export const NationWhere = t.Union([
-  t.Composite([
-    t.Pick(
-      t.Required(
-        t.Composite([t.Object({}), t.Pick(NationPlain, ["id", "alpha3Code"])]),
-      ),
-      ["id"],
-    ),
-    t.Omit(
-      t.Partial(
-        t.Composite([t.Object({}), t.Pick(NationPlain, ["id", "alpha3Code"])]),
-      ),
-      ["id"],
-    ),
-  ]),
-  t.Composite([
-    t.Pick(
-      t.Required(
-        t.Composite([t.Object({}), t.Pick(NationPlain, ["id", "alpha3Code"])]),
-      ),
-      ["alpha3Code"],
-    ),
-    t.Omit(
-      t.Partial(
-        t.Composite([t.Object({}), t.Pick(NationPlain, ["id", "alpha3Code"])]),
-      ),
-      ["alpha3Code"],
-    ),
-  ]),
-]);
-
-export const NationDataPlain = t.Object(
+export const NationPlainInputCreate = t.Object(
   {
-    alpha3Code: t.String({ description: ``, additionalProperties: false }),
-    variant: t.Union(
-      [
-        t.Literal("NATION"),
-        t.Literal("NON_STATE_ACTOR"),
-        t.Literal("SPECIAL_PERSON"),
-      ],
-      { description: ``, additionalProperties: false },
-    ),
-  },
-  {
-    description: `A nation in the system. E.g. Germany`,
-    additionalProperties: false,
-  },
-);
-
-export const NationDataRelations = t.Object(
-  {},
-  {
-    description: `A nation in the system. E.g. Germany`,
-    additionalProperties: false,
-  },
-);
-
-export const NationData = t.Composite([NationDataPlain, NationDataRelations], {
-  description: `Composition of NationDataPlain, NationDataRelations`,
-  additionalProperties: false,
-});
-
-export const NationDataPlainOptional = t.Object(
-  {
-    alpha3Code: t.Optional(
-      t.String({ description: ``, additionalProperties: false }),
-    ),
+    alpha3Code: t.String({ additionalProperties: false }),
     variant: t.Optional(
       t.Union(
         [
@@ -122,28 +52,216 @@ export const NationDataPlainOptional = t.Object(
           t.Literal("NON_STATE_ACTOR"),
           t.Literal("SPECIAL_PERSON"),
         ],
-        { description: ``, additionalProperties: false },
+        { additionalProperties: false },
       ),
     ),
   },
   {
-    description: `A nation in the system. E.g. Germany`,
     additionalProperties: false,
+    description: `A nation in the system. E.g. Germany`,
   },
 );
 
-export const NationDataRelationsOptional = t.Object(
-  {},
+export const NationPlainInputUpdate = t.Object(
   {
-    description: `A nation in the system. E.g. Germany`,
+    alpha3Code: t.String({ additionalProperties: false }),
+    variant: t.Optional(
+      t.Union(
+        [
+          t.Literal("NATION"),
+          t.Literal("NON_STATE_ACTOR"),
+          t.Literal("SPECIAL_PERSON"),
+        ],
+        { additionalProperties: false },
+      ),
+    ),
+  },
+  {
     additionalProperties: false,
+    description: `A nation in the system. E.g. Germany`,
   },
 );
 
-export const NationDataOptional = t.Composite(
-  [NationDataPlainOptional, NationDataRelationsOptional],
+export const NationRelationsInputCreate = t.Object(
   {
-    description: `Composition of NationDataPlainOptional, NationDataRelationsOptional`,
-    additionalProperties: false,
+    delegations: t.Optional(
+      t.Object(
+        {
+          connect: t.Array(
+            t.Object(
+              {
+                id: t.String({ additionalProperties: false }),
+              },
+              { additionalProperties: false },
+            ),
+          ),
+        },
+        { additionalProperties: false },
+      ),
+    ),
   },
+  {
+    additionalProperties: false,
+    description: `A nation in the system. E.g. Germany`,
+  },
+);
+
+export const NationRelationsInputUpdate = t.Partial(
+  t.Object(
+    {
+      delegations: t.Partial(
+        t.Object(
+          {
+            connect: t.Array(
+              t.Object(
+                {
+                  id: t.String({ additionalProperties: false }),
+                },
+                { additionalProperties: false },
+              ),
+            ),
+            disconnect: t.Array(
+              t.Object(
+                {
+                  id: t.String({ additionalProperties: false }),
+                },
+                { additionalProperties: false },
+              ),
+            ),
+          },
+          { additionalProperties: false },
+        ),
+        { additionalProperties: false },
+      ),
+    },
+    {
+      additionalProperties: false,
+      description: `A nation in the system. E.g. Germany`,
+    },
+  ),
+  { additionalProperties: false },
+);
+
+export const NationWhere = t.Partial(
+  t.Recursive(
+    (Self) =>
+      t.Object(
+        {
+          AND: t.Union([Self, t.Array(Self)]),
+          NOT: t.Union([Self, t.Array(Self)]),
+          OR: t.Array(Self),
+          id: t.String(),
+          alpha3Code: t.String(),
+          variant: t.Union(
+            [
+              t.Literal("NATION"),
+              t.Literal("NON_STATE_ACTOR"),
+              t.Literal("SPECIAL_PERSON"),
+            ],
+            { additionalProperties: false },
+          ),
+        },
+        { description: `A nation in the system. E.g. Germany` },
+      ),
+    { $id: "Nation" },
+  ),
+  { additionalProperties: false },
+);
+
+export const NationWhereUnique = t.Recursive(
+  (Self) =>
+    t.Intersect([
+      t.Partial(
+        t.Object(
+          { id: t.String(), alpha3Code: t.String() },
+          { description: `A nation in the system. E.g. Germany` },
+        ),
+      ),
+      t.Union([
+        t.Object({ id: t.String() }),
+        t.Object({ alpha3Code: t.String() }),
+      ]),
+      t.Partial(
+        t.Object({
+          AND: t.Union([Self, t.Array(Self)]),
+          NOT: t.Union([Self, t.Array(Self)]),
+          OR: t.Array(Self),
+        }),
+      ),
+      t.Partial(
+        t.Object(
+          {
+            id: t.String(),
+            alpha3Code: t.String(),
+            variant: t.Union(
+              [
+                t.Literal("NATION"),
+                t.Literal("NON_STATE_ACTOR"),
+                t.Literal("SPECIAL_PERSON"),
+              ],
+              { additionalProperties: false },
+            ),
+          },
+          { additionalProperties: false },
+        ),
+        { additionalProperties: false },
+      ),
+    ]),
+  { $id: "Nation" },
+);
+
+export const NationSelect = t.Partial(
+  t.Object(
+    {
+      id: t.Boolean(),
+      alpha3Code: t.Boolean(),
+      variant: t.Boolean(),
+      delegations: t.Boolean(),
+      _count: t.Boolean(),
+    },
+    {
+      additionalProperties: false,
+      description: `A nation in the system. E.g. Germany`,
+    },
+  ),
+  { additionalProperties: false },
+);
+
+export const NationInclude = t.Partial(
+  t.Object(
+    { variant: t.Boolean(), delegations: t.Boolean(), _count: t.Boolean() },
+    {
+      additionalProperties: false,
+      description: `A nation in the system. E.g. Germany`,
+    },
+  ),
+  { additionalProperties: false },
+);
+
+export const NationOrderBy = t.Partial(
+  t.Object(
+    {
+      id: t.Union([t.Literal("asc"), t.Literal("desc")]),
+      alpha3Code: t.Union([t.Literal("asc"), t.Literal("desc")]),
+    },
+    {
+      additionalProperties: false,
+      description: `A nation in the system. E.g. Germany`,
+    },
+  ),
+  { additionalProperties: false },
+);
+
+export const Nation = t.Composite([NationPlain, NationRelations], {
+  additionalProperties: false,
+});
+
+export const NationInputCreate = t.Composite(
+  [NationPlainInputCreate, NationRelationsInputCreate],
+  { additionalProperties: false },
+);
+
+export const NationInputUpdate = t.Composite(
+  [NationPlainInputUpdate, NationRelationsInputUpdate],
+  { additionalProperties: false },
 );

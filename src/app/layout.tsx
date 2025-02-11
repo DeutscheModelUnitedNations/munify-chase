@@ -1,7 +1,6 @@
 "use client";
 import "./globals.scss";
 import { Inter, Vollkorn, Noto_Sans_Mono } from "next/font/google"; // Even though Google Fonts are used – no requests are sent to Google (see NEXT.JS docs)
-import { PublicEnvScript } from "next-runtime-env";
 //theme
 import "@/themes/theme_light.scss";
 import "@/themes/theme_dark.scss";
@@ -67,7 +66,6 @@ export default function RootLayout({
       className={`${sans.variable} ${serif.variable} ${mono.variable}`}
     >
       <head>
-        <PublicEnvScript />
         {/* <script defer src="/fontawesome/js/fontawesome.min.js" />
         <script defer src="/fontawesome/js/brands.min.js" />
         <script defer src="/fontawesome/js/solid.min.js" />

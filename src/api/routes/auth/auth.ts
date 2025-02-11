@@ -45,7 +45,7 @@ export const auth = new Elysia({
       detail: {
         description:
           "Returns some info on the user in the system. Can be used to check if the user is existing and validated.",
-        tags: [openApiTag(import.meta.path)],
+        tags: [openApiTag(import.meta.filename)],
       },
     }
   )
@@ -84,7 +84,7 @@ export const auth = new Elysia({
     {
       detail: {
         description: "Returns the user info when they are logged in",
-        tags: [openApiTag(import.meta.path)],
+        tags: [openApiTag(import.meta.filename)],
       },
     }
   )
@@ -171,7 +171,7 @@ export const auth = new Elysia({
       detail: {
         description:
           "Validates the email of a user. The token is the token that was sent to the user via email. Returns a token which can be used to create credentials",
-        tags: [openApiTag(import.meta.path)],
+        tags: [openApiTag(import.meta.filename)],
       },
     }
   )
@@ -179,9 +179,8 @@ export const auth = new Elysia({
     "/createUser",
     async ({ body: { email, locale, name } }) => {
       const emailValidationToken = nanoid(32);
-      const emailValidationTokenHash = await Bun.password.hash(
-        emailValidationToken
-      );
+      const emailValidationTokenHash =
+        await Bun.password.hash(emailValidationToken);
       await db.user.create({
         data: {
           name: name ?? email,
@@ -207,7 +206,7 @@ export const auth = new Elysia({
       }),
       detail: {
         description: "Creates a user",
-        tags: [openApiTag(import.meta.path)],
+        tags: [openApiTag(import.meta.filename)],
       },
     }
   )
@@ -246,7 +245,7 @@ export const auth = new Elysia({
       }),
       detail: {
         description: "Sends a credential creation token to the users email",
-        tags: [openApiTag(import.meta.path)],
+        tags: [openApiTag(import.meta.filename)],
       },
     }
   )
@@ -259,7 +258,7 @@ export const auth = new Elysia({
       detail: {
         description:
           "Logs the user out. The user will be logged out on the next request",
-        tags: [openApiTag(import.meta.path)],
+        tags: [openApiTag(import.meta.filename)],
       },
     }
   );

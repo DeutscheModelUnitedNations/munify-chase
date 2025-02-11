@@ -1,4 +1,3 @@
-// import { faker } from "@faker-js/faker";
 import { $Enums, PrismaClient } from "../generated/client";
 import { alpha2ToAlpha3 } from "../countryCodeUtils";
 import delegationData from "./munbw2024_delegations.json";

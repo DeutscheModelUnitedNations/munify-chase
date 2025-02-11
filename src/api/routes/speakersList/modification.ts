@@ -41,7 +41,7 @@ export const speakersListModification = new Elysia({
       }),
       detail: {
         description: "Set the time for a speakers list",
-        tags: [openApiTag(import.meta.path)],
+        tags: [openApiTag(import.meta.filename)],
       },
     }
   )
@@ -64,7 +64,7 @@ export const speakersListModification = new Elysia({
     {
       detail: {
         description: "Close a speakers list",
-        tags: [openApiTag(import.meta.path)],
+        tags: [openApiTag(import.meta.filename)],
       },
     }
   )
@@ -87,7 +87,7 @@ export const speakersListModification = new Elysia({
     {
       detail: {
         description: "Open a speakers list",
-        tags: [openApiTag(import.meta.path)],
+        tags: [openApiTag(import.meta.filename)],
       },
     }
   )
@@ -158,7 +158,7 @@ export const speakersListModification = new Elysia({
     {
       detail: {
         description: "Start the timer for a speakers list",
-        tags: [openApiTag(import.meta.path)],
+        tags: [openApiTag(import.meta.filename)],
       },
     }
   )
@@ -190,7 +190,7 @@ export const speakersListModification = new Elysia({
     {
       detail: {
         description: "Stop the timer for a speakers list",
-        tags: [openApiTag(import.meta.path)],
+        tags: [openApiTag(import.meta.filename)],
       },
     }
   )
@@ -220,7 +220,7 @@ export const speakersListModification = new Elysia({
     {
       detail: {
         description: "Reset the timer for a speakers list",
-        tags: [openApiTag(import.meta.path)],
+        tags: [openApiTag(import.meta.filename)],
       },
     }
   )
@@ -255,7 +255,7 @@ export const speakersListModification = new Elysia({
       }),
       detail: {
         description: "Increase the speaking time for a speakers list",
-        tags: [openApiTag(import.meta.path)],
+        tags: [openApiTag(import.meta.filename)],
       },
     }
   )
@@ -291,7 +291,7 @@ export const speakersListModification = new Elysia({
       }),
       detail: {
         description: "Decrease the speaking time for a speakers list",
-        tags: [openApiTag(import.meta.path)],
+        tags: [openApiTag(import.meta.filename)],
       },
     }
   );

@@ -1,7 +1,6 @@
 import { Elysia } from "elysia";
 import { db } from "../../../prisma/db";
 import { openApiTag } from "../util/openApiTags";
-import { _Nullable } from "../../../prisma/generated/schema/__nullable__";
 import { permissionsPlugin } from "../auth/permissions";
 
 export const user = new Elysia().use(permissionsPlugin).get(
@@ -25,7 +24,7 @@ export const user = new Elysia().use(permissionsPlugin).get(
   {
     detail: {
       description: "Get the delegation of a user in this conference",
-      tags: [openApiTag(import.meta.path)],
+      tags: [openApiTag(import.meta.filename)],
     },
   }
 );

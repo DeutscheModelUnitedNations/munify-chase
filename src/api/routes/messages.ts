@@ -40,7 +40,7 @@ export const messages = new Elysia()
     {
       detail: {
         description: "Get all research service messages in this conference",
-        tags: [openApiTag(import.meta.path)],
+        tags: [openApiTag(import.meta.filename)],
       },
     }
   )
@@ -76,7 +76,7 @@ export const messages = new Elysia()
     {
       detail: {
         description: "Get all messages for the chair in this committee",
-        tags: [openApiTag(import.meta.path)],
+        tags: [openApiTag(import.meta.filename)],
       },
     }
   )
@@ -113,7 +113,7 @@ export const messages = new Elysia()
       ]),
       detail: {
         description: "Create a new message",
-        tags: [openApiTag(import.meta.path)],
+        tags: [openApiTag(import.meta.filename)],
       },
     }
   )
@@ -138,7 +138,7 @@ export const messages = new Elysia()
       detail: {
         description:
           "Get the number of unread messages to the research service in this conference",
-        tags: [openApiTag(import.meta.path)],
+        tags: [openApiTag(import.meta.filename)],
       },
     }
   )
@@ -161,7 +161,7 @@ export const messages = new Elysia()
       detail: {
         description:
           "Get the number of unread messages for the chair in this committee",
-        tags: [openApiTag(import.meta.path)],
+        tags: [openApiTag(import.meta.filename)],
       },
     }
   )
@@ -185,7 +185,7 @@ export const messages = new Elysia()
       body: t.Object({ status: MessageStatus }),
       detail: {
         description: "Set a Status for a message from the MessageStatus enum",
-        tags: [openApiTag(import.meta.path)],
+        tags: [openApiTag(import.meta.filename)],
       },
     }
   )
@@ -231,7 +231,7 @@ export const messages = new Elysia()
       body: t.Object({ status: t.String() }),
       detail: {
         description: "Set a Status for a message from the MessageStatus enum",
-        tags: [openApiTag(import.meta.path)],
+        tags: [openApiTag(import.meta.filename)],
       },
     }
   )
@@ -252,7 +252,7 @@ export const messages = new Elysia()
     {
       detail: {
         description: "Forward a message to the research service",
-        tags: [openApiTag(import.meta.path)],
+        tags: [openApiTag(import.meta.filename)],
       },
     }
   );

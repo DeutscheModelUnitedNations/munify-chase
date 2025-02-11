@@ -1,4 +1,3 @@
-// import { faker } from "@faker-js/faker";
 import { SimSimSeed } from "./custom_seeds/seed_simsim";
 import { $Enums, PrismaClient } from "./generated/client";
 const prisma = new PrismaClient();

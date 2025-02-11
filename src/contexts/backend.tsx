@@ -2,26 +2,20 @@
 import type React from "react";
 import { createContext, useContext, useState } from "react";
 import { treaty } from "@elysiajs/eden";
-import type { Api } from "../api/src/api";
-import { unstable_noStore as noStore } from "next/cache";
-import { env } from "next-runtime-env";
+import type { Api } from "@/api/api";
 
 export const BackendContext = createContext({} as BackendContextType);
 export const useBackend = () => useContext(BackendContext);
 
 export type BackendInstanceType = ReturnType<typeof treaty<Api>>;
 
-function getBackendUrl() {
-  noStore();
-  return env("NEXT_PUBLIC_BACKEND_URL") || "https://chase-backend.dmun.de";
-}
 
 export const Backend = ({ children }: { children: React.ReactNode }) => {
   // ATTENTION: It is IMPORTANT to use a callback function here to prevent
   // react from doing funky things with the backend instance when passing to the state hook
   // please do not ask me why this is happening...
-  const [backend, _setBackend] = useState(() =>
-    treaty<Api>(getBackendUrl(), {
+  const [backend] = useState(() =>
+    treaty<Api>("/api", {
       fetch: {
         credentials: "include",
       },

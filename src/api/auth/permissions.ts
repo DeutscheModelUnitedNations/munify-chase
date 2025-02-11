@@ -2,9 +2,7 @@ import Elysia from "elysia";
 import { sessionPlugin } from "./session";
 import { type Action, defineAbilitiesForSession } from "./abilities/abilities";
 import { accessibleBy } from "./abilities/casl-prisma";
-
-export type PermissionsType =
-  (typeof permissionsPlugin)["_ephemeral"]["resolve"]["permissions"];
+import type { ExtractPluginParamType } from "../helpers/pluginParamExtractor";
 
 export const permissionsPlugin = new Elysia({
   name: "permissions",
@@ -58,3 +56,10 @@ export const permissionsPlugin = new Elysia({
       },
     };
   });
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const _typeDummy = new Elysia().use(permissionsPlugin);
+
+export type PermissionsType = ExtractPluginParamType<
+  typeof _typeDummy
+>["permissions"];

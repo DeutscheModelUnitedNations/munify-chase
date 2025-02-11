@@ -2,12 +2,8 @@ import { t, Elysia } from "elysia";
 import { db } from "../../../prisma/db";
 import { openApiTag } from "../util/openApiTags";
 import { $Enums } from "../../../prisma/generated/client";
-import {
-  AgendaItemData,
-  AgendaItemDataPlain,
-  // AgendaItemPlain,
-} from "../../../prisma/generated/schema/AgendaItem";
 import { permissionsPlugin } from "../auth/permissions";
+import { AgendaItemInputCreate, AgendaItemPlainInputUpdate } from "@prisma/generated/schema/AgendaItem";
 
 export const agendaItem = new Elysia({
   prefix: "/conference/:conferenceId/committee/:committeeId",
@@ -28,7 +24,7 @@ export const agendaItem = new Elysia({
     {
       detail: {
         description: "Get all agenda items in this committee",
-        tags: [openApiTag(import.meta.path)],
+        tags: [openApiTag(import.meta.filename)],
       },
     }
   )
@@ -73,10 +69,10 @@ export const agendaItem = new Elysia({
       return agendaItem;
     },
     {
-      body: t.Pick(AgendaItemData, ["title", "description"]),
+      body: t.Pick(AgendaItemInputCreate, ["title", "description"]),
       detail: {
         description: "Create a new agenda item in this committee",
-        tags: [openApiTag(import.meta.path)],
+        tags: [openApiTag(import.meta.filename)],
       },
     }
   )
@@ -99,7 +95,7 @@ export const agendaItem = new Elysia({
     {
       detail: {
         description: "Get all active agenda items in this committee",
-        tags: [openApiTag(import.meta.path)],
+        tags: [openApiTag(import.meta.filename)],
       },
     }
   )
@@ -129,7 +125,7 @@ export const agendaItem = new Elysia({
     {
       detail: {
         description: "Get all active agenda items in this committee",
-        tags: [openApiTag(import.meta.path)],
+        tags: [openApiTag(import.meta.filename)],
       },
     }
   )
@@ -148,7 +144,7 @@ export const agendaItem = new Elysia({
     {
       detail: {
         description: "Get a single agenda item by id",
-        tags: [openApiTag(import.meta.path)],
+        tags: [openApiTag(import.meta.filename)],
       },
     }
   )
@@ -179,7 +175,7 @@ export const agendaItem = new Elysia({
     {
       detail: {
         description: "Activate an agenda item by id",
-        tags: [openApiTag(import.meta.path)],
+        tags: [openApiTag(import.meta.filename)],
       },
     }
   )
@@ -196,7 +192,7 @@ export const agendaItem = new Elysia({
     {
       detail: {
         description: "Delete an agenda item by id",
-        tags: [openApiTag(import.meta.path)],
+        tags: [openApiTag(import.meta.filename)],
       },
     }
   )
@@ -221,10 +217,10 @@ export const agendaItem = new Elysia({
       });
     },
     {
-      body: AgendaItemDataPlain,
+      body: AgendaItemPlainInputUpdate,
       detail: {
         description: "Update an agenda item by id",
-        tags: [openApiTag(import.meta.path)],
+        tags: [openApiTag(import.meta.filename)],
       },
     }
   );

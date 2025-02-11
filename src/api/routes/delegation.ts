@@ -28,7 +28,7 @@ export const delegation = new Elysia({
     {
       detail: {
         description: "Get all delegations in this conference",
-        tags: [openApiTag(import.meta.path)],
+        tags: [openApiTag(import.meta.filename)],
       },
     }
   )
@@ -48,7 +48,7 @@ export const delegation = new Elysia({
       body: DelegationBody,
       detail: {
         description: "Create a new delegation in this conference",
-        tags: [openApiTag(import.meta.path)],
+        tags: [openApiTag(import.meta.filename)],
       },
     }
   )
@@ -68,7 +68,7 @@ export const delegation = new Elysia({
     {
       detail: {
         description: "Get a specific delegation in this conference",
-        tags: [openApiTag(import.meta.path)],
+        tags: [openApiTag(import.meta.filename)],
       },
     }
   )
@@ -94,7 +94,7 @@ export const delegation = new Elysia({
       detail: {
         description:
           "Delete a delegation and all its committee members in this conference",
-        tags: [openApiTag(import.meta.path)],
+        tags: [openApiTag(import.meta.filename)],
       },
     }
   )
@@ -134,7 +134,7 @@ export const delegation = new Elysia({
       detail: {
         description:
           "Connect a committee to a delegation in this conference. If the committee is already connected to the delegation, it will be disconnected.",
-        tags: [openApiTag(import.meta.path)],
+        tags: [openApiTag(import.meta.filename)],
       },
     }
   )
@@ -167,7 +167,7 @@ export const delegation = new Elysia({
       body: t.Pick(CommitteeMember, ["presence"]),
       detail: {
         description: "Update a member's presence in a delegation",
-        tags: [openApiTag(import.meta.path)],
+        tags: [openApiTag(import.meta.filename)],
       },
     }
   )
@@ -189,7 +189,7 @@ export const delegation = new Elysia({
       detail: {
         description:
           "Get all delegations in a committee with all members absent",
-        tags: [openApiTag(import.meta.path)],
+        tags: [openApiTag(import.meta.filename)],
       },
     }
   )
@@ -210,7 +210,7 @@ export const delegation = new Elysia({
       detail: {
         description:
           "Get all delegations in a committee with all members absent",
-        tags: [openApiTag(import.meta.path)],
+        tags: [openApiTag(import.meta.filename)],
       },
     }
   );

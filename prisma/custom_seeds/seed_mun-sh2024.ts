@@ -1,4 +1,3 @@
-// import { faker } from "@faker-js/faker";
 import { $Enums, PrismaClient } from "../generated/client";
 import delegationData from "./mun-sh_delegations.json";
 const prisma = new PrismaClient();

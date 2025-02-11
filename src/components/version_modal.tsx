@@ -1,11 +1,10 @@
-import React, { useState, useEffect, use } from "react";
+import React, { useState, useEffect } from "react";
 import { useI18nContext } from "@/i18n/i18n-react";
 import { Dialog } from "primereact/dialog";
 import Markdown from "react-markdown";
 import Button from "./button";
 import Link from "next/link";
 import SmallInfoCard from "./small_info_card";
-import { env } from "next-runtime-env";
 import FAIcon from "./font_awesome_icon";
 import remarkGfm from "remark-gfm";
 import rehypeRaw from "rehype-raw";
@@ -27,7 +26,7 @@ export default function VersionModal({
   const [version, setVersion] = useState<string>("DEV");
 
   useEffect(() => {
-    const v = env("NEXT_PUBLIC_VERSION") || "DEV";
+    const v = process.env.NEXT_PUBLIC_VERSION || "DEV";
     setVersion(v);
 
     if (

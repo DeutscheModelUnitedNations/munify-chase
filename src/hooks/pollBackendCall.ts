@@ -4,9 +4,9 @@ import { useBackendCall } from "./useBackendCall";
 /**
  * Repetetively calls the backend for something. Returns the value and a trigger
  */
-export function pollBackendCall<SuccessReturn, Error>(
+export function usePollBackendCall<SuccessReturn, Error>(
   apiCall: () => Promise<{ data: SuccessReturn | null; error: Error | null }>,
-  intervalDuration = 5000,
+  intervalDuration = 5000
 ) {
   const [value, trigger] = useBackendCall(apiCall, true);
 

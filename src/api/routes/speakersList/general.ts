@@ -107,7 +107,6 @@ export const speakersListGeneral = new Elysia({
         committeeId: t.String(),
         conferenceId: t.String(),
       }),
-      hasConferenceRole: "any",
       detail: {
         description: "Get a single speakers list by type",
         tags: [openApiTag(import.meta.filename)],

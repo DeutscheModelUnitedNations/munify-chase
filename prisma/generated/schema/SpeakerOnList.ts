@@ -82,7 +82,7 @@ export const SpeakerOnListPlainInputCreate = t.Object(
 );
 
 export const SpeakerOnListPlainInputUpdate = t.Object(
-  { position: t.Integer({ additionalProperties: false }) },
+  { position: t.Optional(t.Integer({ additionalProperties: false })) },
   {
     additionalProperties: false,
     description: `A speaker on a speakers list, storing their position in the list`,

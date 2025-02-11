@@ -89,7 +89,7 @@ function CreateCredentialsComponent() {
     if (r.error) {
       toast.showToast({
         severity: "error",
-        summary: r.error.value as string,
+        summary: r.error.value.summary,
       });
       return;
     }

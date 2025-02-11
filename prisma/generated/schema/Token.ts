@@ -59,7 +59,7 @@ e.g. confirming an email, resetting a password`,
 );
 
 export const TokenPlainInputUpdate = t.Object(
-  { expiresAt: t.Date({ additionalProperties: false }) },
+  { expiresAt: t.Optional(t.Date({ additionalProperties: false })) },
   {
     additionalProperties: false,
     description: `A token which can be used to grant one time access to something in the app

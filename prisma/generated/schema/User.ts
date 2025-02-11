@@ -161,7 +161,7 @@ export const UserPlainInputCreate = t.Object(
 );
 
 export const UserPlainInputUpdate = t.Object(
-  { name: t.String({ additionalProperties: false }) },
+  { name: t.Optional(t.String({ additionalProperties: false })) },
   { additionalProperties: false, description: `A user in the system` },
 );
 

@@ -1,7 +1,7 @@
 import { t, Elysia } from "elysia";
 import { db } from "../../../prisma/db";
 import { openApiTag } from "../util/openApiTags";
-import { MessagePlainInputCreate } from "@prisma/generated/schema/Message";
+import { MessageInputCreate, MessagePlainInputCreate } from "@prisma/generated/schema/Message";
 import { $Enums } from "../../../prisma/generated/client";
 import { MessageStatus } from "../../../prisma/generated/schema/MessageStatus";
 import { permissionsPlugin } from "../auth/permissions";
@@ -90,7 +90,7 @@ export const messages = new Elysia()
           committee: { connect: { id: committeeId } },
           subject: body.subject,
           message: body.message,
-          author: { connect: { id: body.authorId } },
+          author: body.author,
           timestamp: new Date(Date.now()),
           metaEmail: body.metaEmail,
           metaDelegation: body.metaDelegation,
@@ -101,10 +101,10 @@ export const messages = new Elysia()
       });
     },
     {
-      body: t.Pick(MessagePlainInputCreate, [
+      body: t.Pick(MessageInputCreate, [
         "subject",
         "message",
-        "authorId",
+        "author",
         "metaEmail",
         "metaDelegation",
         "metaCommittee",
@@ -181,7 +181,6 @@ export const messages = new Elysia()
         },
       }),
     {
-      hasConferenceRole: "any",
       body: t.Object({ status: MessageStatus }),
       detail: {
         description: "Set a Status for a message from the MessageStatus enum",
@@ -227,7 +226,6 @@ export const messages = new Elysia()
       });
     },
     {
-      hasConferenceRole: "any",
       body: t.Object({ status: t.String() }),
       detail: {
         description: "Set a Status for a message from the MessageStatus enum",

@@ -8,7 +8,7 @@ export const logger = new Elysia({
   })
   .onError({ as: "global" }, ({ error, code, path, set, request }) => {
     console.error(
-      `Error in ${request.method} ${path}: ${code} ${error.message}. Thrown at ${error.stack}`,
+      `Error in ${request.method} ${path}: ${code} ${(error as any)?.message ?? ""}. Thrown at ${(error as any)?.stack ?? ""}`,
     );
 
     if (code === "VALIDATION") {

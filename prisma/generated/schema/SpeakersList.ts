@@ -86,12 +86,8 @@ export const SpeakersListPlainInputCreate = t.Object(
       additionalProperties: false,
       description: `The time in seconds that a speaker has to speak`,
     }),
-    timeLeft: t.Optional(
-      __nullable__(t.Integer({ additionalProperties: false })),
-    ),
-    startTimestamp: t.Optional(
-      __nullable__(t.Date({ additionalProperties: false })),
-    ),
+    timeLeft: __nullable__(t.Integer({ additionalProperties: false })),
+    startTimestamp: __nullable__(t.Date({ additionalProperties: false })),
     isClosed: t.Optional(t.Boolean({ additionalProperties: false })),
   },
   {
@@ -102,23 +98,31 @@ export const SpeakersListPlainInputCreate = t.Object(
 
 export const SpeakersListPlainInputUpdate = t.Object(
   {
-    type: t.Union(
-      [
-        t.Literal("SPEAKERS_LIST"),
-        t.Literal("COMMENT_LIST"),
-        t.Literal("MODERATED_CAUCUS"),
-      ],
-      {
-        additionalProperties: false,
-        description: `The type of a speakers list`,
-      },
+    type: t.Optional(
+      t.Union(
+        [
+          t.Literal("SPEAKERS_LIST"),
+          t.Literal("COMMENT_LIST"),
+          t.Literal("MODERATED_CAUCUS"),
+        ],
+        {
+          additionalProperties: false,
+          description: `The type of a speakers list`,
+        },
+      ),
     ),
-    speakingTime: t.Integer({
-      additionalProperties: false,
-      description: `The time in seconds that a speaker has to speak`,
-    }),
-    timeLeft: __nullable__(t.Integer({ additionalProperties: false })),
-    startTimestamp: __nullable__(t.Date({ additionalProperties: false })),
+    speakingTime: t.Optional(
+      t.Integer({
+        additionalProperties: false,
+        description: `The time in seconds that a speaker has to speak`,
+      }),
+    ),
+    timeLeft: t.Optional(
+      __nullable__(t.Integer({ additionalProperties: false })),
+    ),
+    startTimestamp: t.Optional(
+      __nullable__(t.Date({ additionalProperties: false })),
+    ),
     isClosed: t.Optional(t.Boolean({ additionalProperties: false })),
   },
   {

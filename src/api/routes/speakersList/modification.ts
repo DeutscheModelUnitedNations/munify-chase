@@ -285,7 +285,6 @@ export const speakersListModification = new Elysia({
       });
     },
     {
-      hasConferenceRole: "any",
       body: t.Object({
         amount: t.Number(),
       }),

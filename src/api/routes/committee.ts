@@ -96,7 +96,7 @@ export const committee = new Elysia({
         "name",
         "abbreviation",
         "category",
-        "parentId",
+        "parent",
       ]),
       detail: {
         description: "Create a new committee in this conference",

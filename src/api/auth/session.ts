@@ -58,7 +58,7 @@ export const sessionPlugin = new Elysia({ name: "session" })
           throw new Error("You need to accept cookies to use this feature.");
         },
       };
-      if (chaseCookieConsent.value !== true) {
+      if (!chaseCookieConsent.value) {
         return { session };
       }
 

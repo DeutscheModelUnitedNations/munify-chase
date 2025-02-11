@@ -64,7 +64,7 @@ export const NationPlainInputCreate = t.Object(
 
 export const NationPlainInputUpdate = t.Object(
   {
-    alpha3Code: t.String({ additionalProperties: false }),
+    alpha3Code: t.Optional(t.String({ additionalProperties: false })),
     variant: t.Optional(
       t.Union(
         [

@@ -44,7 +44,6 @@ export const delegation = new Elysia({
       });
     },
     {
-      hasConferenceRole: ["ADMIN"],
       body: DelegationBody,
       detail: {
         description: "Create a new delegation in this conference",
@@ -163,7 +162,6 @@ export const delegation = new Elysia({
       });
     },
     {
-      hasConferenceRole: ["ADMIN"],
       body: t.Pick(CommitteeMember, ["presence"]),
       detail: {
         description: "Update a member's presence in a delegation",

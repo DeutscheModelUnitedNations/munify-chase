@@ -138,30 +138,22 @@ export const MessagePlainInputCreate = t.Object(
         description: `If the message was forwarded to the Research Service`,
       }),
     ),
-    metaEmail: t.Optional(
-      __nullable__(
-        t.String({
-          additionalProperties: false,
-          description: `Saved Metadata without relation`,
-        }),
-      ),
+    metaEmail: __nullable__(
+      t.String({
+        additionalProperties: false,
+        description: `Saved Metadata without relation`,
+      }),
     ),
-    metaDelegation: t.Optional(
-      __nullable__(t.String({ additionalProperties: false })),
-    ),
-    metaCommittee: t.Optional(
-      __nullable__(t.String({ additionalProperties: false })),
-    ),
-    metaAgendaItem: t.Optional(
-      __nullable__(t.String({ additionalProperties: false })),
-    ),
+    metaDelegation: __nullable__(t.String({ additionalProperties: false })),
+    metaCommittee: __nullable__(t.String({ additionalProperties: false })),
+    metaAgendaItem: __nullable__(t.String({ additionalProperties: false })),
   },
   { additionalProperties: false },
 );
 
 export const MessagePlainInputUpdate = t.Object(
   {
-    subject: t.String({ additionalProperties: false }),
+    subject: t.Optional(t.String({ additionalProperties: false })),
     category: t.Optional(
       t.Union(
         [
@@ -175,8 +167,8 @@ export const MessagePlainInputUpdate = t.Object(
         { additionalProperties: false },
       ),
     ),
-    message: t.String({ additionalProperties: false }),
-    timestamp: t.Date({ additionalProperties: false }),
+    message: t.Optional(t.String({ additionalProperties: false })),
+    timestamp: t.Optional(t.Date({ additionalProperties: false })),
     status: t.Optional(
       t.Array(
         t.Union(
@@ -196,15 +188,23 @@ export const MessagePlainInputUpdate = t.Object(
         description: `If the message was forwarded to the Research Service`,
       }),
     ),
-    metaEmail: __nullable__(
-      t.String({
-        additionalProperties: false,
-        description: `Saved Metadata without relation`,
-      }),
+    metaEmail: t.Optional(
+      __nullable__(
+        t.String({
+          additionalProperties: false,
+          description: `Saved Metadata without relation`,
+        }),
+      ),
     ),
-    metaDelegation: __nullable__(t.String({ additionalProperties: false })),
-    metaCommittee: __nullable__(t.String({ additionalProperties: false })),
-    metaAgendaItem: __nullable__(t.String({ additionalProperties: false })),
+    metaDelegation: t.Optional(
+      __nullable__(t.String({ additionalProperties: false })),
+    ),
+    metaCommittee: t.Optional(
+      __nullable__(t.String({ additionalProperties: false })),
+    ),
+    metaAgendaItem: t.Optional(
+      __nullable__(t.String({ additionalProperties: false })),
+    ),
   },
   { additionalProperties: false },
 );

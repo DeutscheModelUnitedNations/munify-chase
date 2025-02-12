@@ -15,7 +15,8 @@ export const Backend = ({ children }: { children: React.ReactNode }) => {
   // react from doing funky things with the backend instance when passing to the state hook
   // please do not ask me why this is happening...
   const [backend] = useState(() =>
-    treaty<Api>("/api", {
+    // use the current relative /api path
+    treaty<Api>( `${window.location.origin}/api`  , {
       fetch: {
         credentials: "include",
       },

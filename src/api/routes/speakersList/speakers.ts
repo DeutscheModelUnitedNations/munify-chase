@@ -90,7 +90,6 @@ export const speakersListSpeakers = new Elysia({
     {
       detail: {
         description: "Get all speakers on the speakers list",
-        tags: [openApiTag(import.meta.filename)],
       },
     }
   )
@@ -108,7 +107,6 @@ export const speakersListSpeakers = new Elysia({
       detail: {
         description:
           "Add a speaker to the speakers list by chairs via committeeMemberId",
-        tags: [openApiTag(import.meta.filename)],
       },
     }
   )
@@ -206,7 +204,6 @@ export const speakersListSpeakers = new Elysia({
     {
       detail: {
         description: "Add a speaker to the speakers list",
-        tags: [openApiTag(import.meta.filename)],
       },
     }
   )
@@ -240,7 +237,6 @@ export const speakersListSpeakers = new Elysia({
       detail: {
         description:
           "Add a speaker to the speakers list for chairs via countryCode",
-        tags: [openApiTag(import.meta.filename)],
       },
     }
   )
@@ -258,7 +254,6 @@ export const speakersListSpeakers = new Elysia({
     {
       detail: {
         description: "Remove a speaker from the speakers list",
-        tags: [openApiTag(import.meta.filename)],
       },
     }
   )
@@ -289,7 +284,6 @@ export const speakersListSpeakers = new Elysia({
     {
       detail: {
         description: "Remove a speaker from the speakers list",
-        tags: [openApiTag(import.meta.filename)],
       },
     }
   )
@@ -307,7 +301,6 @@ export const speakersListSpeakers = new Elysia({
     {
       detail: {
         description: "Clear the speakers list",
-        tags: [openApiTag(import.meta.filename)],
       },
     }
   )
@@ -372,7 +365,6 @@ export const speakersListSpeakers = new Elysia({
     {
       detail: {
         description: "Move a speaker up in the list",
-        tags: [openApiTag(import.meta.filename)],
       },
     }
   )
@@ -437,7 +429,6 @@ export const speakersListSpeakers = new Elysia({
     {
       detail: {
         description: "Move a speaker down in the list",
-        tags: [openApiTag(import.meta.filename)],
       },
     }
   )
@@ -525,7 +516,6 @@ export const speakersListSpeakers = new Elysia({
     {
       detail: {
         description: "Move a speaker to the top of the list",
-        tags: [openApiTag(import.meta.filename)],
       },
     }
   )
@@ -626,7 +616,6 @@ export const speakersListSpeakers = new Elysia({
       detail: {
         description:
           "Remove the current speaker from a speakersList, making the next speaker the current speaker. Also resetting the timer and commentList",
-        tags: [openApiTag(import.meta.filename)],
       },
     }
   );

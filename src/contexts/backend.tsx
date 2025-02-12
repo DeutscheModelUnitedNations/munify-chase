@@ -9,39 +9,37 @@ export const useBackend = () => useContext(BackendContext);
 
 export type BackendInstanceType = ReturnType<typeof treaty<Api>>;
 
-
 export const Backend = ({ children }: { children: React.ReactNode }) => {
-  // ATTENTION: It is IMPORTANT to use a callback function here to prevent
-  // react from doing funky things with the backend instance when passing to the state hook
-  // please do not ask me why this is happening...
-  const [backend] = useState(() =>
-    // use the current relative /api path
-    treaty<Api>( `${window.location.origin}/api`  , {
-      fetch: {
-        credentials: "include",
-      },
-    }),
-  );
+	// ATTENTION: It is IMPORTANT to use a callback function here to prevent
+	// react from doing funky things with the backend instance when passing to the state hook
+	// please do not ask me why this is happening...
+	const [backend] = useState(() =>
+		treaty<Api>(`${window !== undefined ? window.location.origin : ""}/api`, {
+			fetch: {
+				credentials: "include",
+			},
+		}),
+	);
 
-  if (typeof window !== "undefined") {
-    window.onerror = (message, source, lineno, colno, error) => {
-      backend["report-error"].post({
-        colno,
-        error,
-        lineno,
-        message,
-        source,
-      });
-    };
-  }
+	if (typeof window !== "undefined") {
+		window.onerror = (message, source, lineno, colno, error) => {
+			backend["report-error"].post({
+				colno,
+				error,
+				lineno,
+				message,
+				source,
+			});
+		};
+	}
 
-  return (
-    <BackendContext.Provider value={{ backend }}>
-      {children}
-    </BackendContext.Provider>
-  );
+	return (
+		<BackendContext.Provider value={{ backend }}>
+			{children}
+		</BackendContext.Provider>
+	);
 };
 
 export interface BackendContextType {
-  backend: BackendInstanceType;
+	backend: BackendInstanceType;
 }

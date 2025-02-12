@@ -31,7 +31,6 @@ export const committee = new Elysia({
       detail: {
         description:
           "Get all committees in this conference, including their agenda items",
-        tags: [openApiTag(import.meta.filename)],
       },
     }
   )
@@ -52,7 +51,6 @@ export const committee = new Elysia({
     {
       detail: {
         description: "Get a single committee by id including the agenda items",
-        tags: [openApiTag(import.meta.filename)],
       },
     }
   )
@@ -81,7 +79,6 @@ export const committee = new Elysia({
       detail: {
         description:
           "Get all nations of a committee (all delegations represented in this committee)",
-        tags: [openApiTag(import.meta.filename)],
       },
     }
   )
@@ -110,7 +107,6 @@ export const committee = new Elysia({
       ]),
       detail: {
         description: "Create a new committee in this conference",
-        tags: [openApiTag(import.meta.filename)],
       },
     }
   )
@@ -126,7 +122,6 @@ export const committee = new Elysia({
     {
       detail: {
         description: "Delete all committees in this conference",
-        tags: [openApiTag(import.meta.filename)],
       },
     }
   )
@@ -144,7 +139,6 @@ export const committee = new Elysia({
     {
       detail: {
         description: "Delete a committee by id",
-        tags: [openApiTag(import.meta.filename)],
       },
     }
   )
@@ -164,7 +158,6 @@ export const committee = new Elysia({
       body: CommitteePlainInputUpdate,
       detail: {
         description: "Update a committee by id",
-        tags: [openApiTag(import.meta.filename)],
       },
     }
   )
@@ -190,7 +183,6 @@ export const committee = new Elysia({
       ]),
       detail: {
         description: "Update a committee status by id",
-        tags: [openApiTag(import.meta.filename)],
       },
     }
   )
@@ -225,7 +217,6 @@ export const committee = new Elysia({
     {
       detail: {
         description: "Get all delegations of a committee",
-        tags: [openApiTag(import.meta.filename)],
       },
     }
   );

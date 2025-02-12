@@ -107,7 +107,6 @@ export const passwords = new Elysia()
       }),
       detail: {
         description: "Login with a password",
-        tags: [openApiTag(import.meta.filename)],
       },
     }
   )
@@ -147,7 +146,6 @@ export const passwords = new Elysia()
       }),
       detail: {
         description: "Delete a password",
-        tags: [openApiTag(import.meta.filename)],
       },
     }
   )
@@ -192,7 +190,6 @@ export const passwords = new Elysia()
       }),
       detail: {
         description: "Login with a password",
-        tags: [openApiTag(import.meta.filename)],
       },
     }
   );

@@ -48,7 +48,6 @@ export const speakersListGeneral = new Elysia({
     {
       detail: {
         description: "Get all speakers lists in this committee",
-        tags: [openApiTag(import.meta.filename)],
       },
     }
   )
@@ -109,7 +108,6 @@ export const speakersListGeneral = new Elysia({
       }),
       detail: {
         description: "Get a single speakers list by type",
-        tags: [openApiTag(import.meta.filename)],
       },
     }
   );

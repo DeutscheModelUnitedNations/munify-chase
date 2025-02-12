@@ -7,7 +7,10 @@ import { permissionsPlugin } from "../auth/permissions";
 import { sessionPlugin } from "../auth/session";
 import { ConferenceMember } from "../../../prisma/generated/schema/ConferenceMember";
 import { Email } from "../../../prisma/generated/schema/Email";
-import { ConferencePlainInputCreate, ConferencePlainInputUpdate } from "@prisma/generated/schema/Conference";
+import {
+  ConferencePlainInputCreate,
+  ConferencePlainInputUpdate,
+} from "@prisma/generated/schema/Conference";
 // import { ConferenceRole } from "../../prisma/generated/schema/ConferenceRole";
 
 export const conference = new Elysia()
@@ -22,7 +25,6 @@ export const conference = new Elysia()
     {
       detail: {
         description: "Get all conferences",
-        tags: [openApiTag(import.meta.filename)],
       },
     }
   )
@@ -61,7 +63,6 @@ export const conference = new Elysia()
       ]),
       detail: {
         description: "Create a new conference, consumes a token",
-        tags: [openApiTag(import.meta.filename)],
       },
     }
   )
@@ -77,7 +78,6 @@ export const conference = new Elysia()
     {
       detail: {
         description: "Get a single conference by id",
-        tags: [openApiTag(import.meta.filename)],
       },
     }
   )
@@ -95,7 +95,6 @@ export const conference = new Elysia()
       body: ConferencePlainInputUpdate,
       detail: {
         description: "Update a conference by id",
-        tags: [openApiTag(import.meta.filename)],
       },
     }
   )
@@ -136,7 +135,6 @@ export const conference = new Elysia()
       }),
       detail: {
         description: "Add an admin to a conference",
-        tags: [openApiTag(import.meta.filename)],
       },
     }
   )
@@ -152,7 +150,6 @@ export const conference = new Elysia()
     {
       detail: {
         description: "Delete a conference by id",
-        tags: [openApiTag(import.meta.filename)],
       },
     }
   )
@@ -170,7 +167,6 @@ export const conference = new Elysia()
     {
       detail: {
         description: "Check if you are an admin of a conference.",
-        tags: [openApiTag(import.meta.filename)],
       },
     }
   )
@@ -242,7 +238,6 @@ export const conference = new Elysia()
       ),
       detail: {
         description: "Add conference members based on input data.",
-        tags: [openApiTag(import.meta.filename)],
       },
     }
   );

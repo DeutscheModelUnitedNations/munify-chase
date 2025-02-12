@@ -18,7 +18,6 @@ export const baseData = new Elysia({ prefix: "/baseData" })
     {
       detail: {
         description: "Get all nations in the system",
-        tags: [openApiTag(import.meta.filename)],
       },
     }
   );

@@ -97,7 +97,9 @@ export const AgendaItemRelations = t.Object(
 export const AgendaItemPlainInputCreate = t.Object(
   {
     title: t.String({ additionalProperties: false }),
-    description: __nullable__(t.String({ additionalProperties: false })),
+    description: t.Optional(
+      __nullable__(t.String({ additionalProperties: false })),
+    ),
     isActive: t.Optional(t.Boolean({ additionalProperties: false })),
   },
   {

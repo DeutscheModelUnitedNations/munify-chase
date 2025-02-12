@@ -87,7 +87,7 @@ export const AgendaItemDataProvider = ({
       .committee({ committeeId })
       .agendaItem.active.get()
       .then((response) => {
-        if (response.error?.status === 404) {
+        if (response.error) {
           setAgendaItem(null);
           return;
         }

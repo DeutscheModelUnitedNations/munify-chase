@@ -1,6 +1,5 @@
 import Elysia, { t } from "elysia";
 import { nanoid } from "nanoid";
-import { redis } from "../../../prisma/db";
 import { appConfiguration } from "../util/config";
 import type { Email, User } from "../../../prisma/generated/client";
 
@@ -35,7 +34,6 @@ export const sessionPlugin = new Elysia({ name: "session" })
         chaseCookieConsent: t.Optional(t.Boolean()),
       },
       {
-        secrets: appConfiguration.cookie.secrets,
         sign: ["sessionId"],
         httpOnly: true,
         maxAge: expirationDurationInSeconds,
@@ -61,49 +59,6 @@ export const sessionPlugin = new Elysia({ name: "session" })
       if (!chaseCookieConsent.value) {
         return { session };
       }
-
-      const data: SessionData = {
-        loggedIn: false,
-        user: undefined,
-      };
-      session.data = data;
-
-      const sessionIdValue = sessionId.value ?? nanoid();
-      const redisIdentifier = `user-session:${sessionIdValue}`;
-      const setData: SessionDataSetter = async (newData) => {
-        if (newData?.loggedIn !== undefined) {
-          data.loggedIn = newData.loggedIn;
-          if (newData.loggedIn === false) {
-            sessionId.remove();
-            await redis.del(redisIdentifier);
-          }
-        }
-        if (newData?.user !== undefined) {
-          data.user = newData.user;
-        }
-        await redis.set(redisIdentifier, JSON.stringify(data), {
-          EX: expirationDurationInSeconds,
-        });
-        sessionId.value = sessionIdValue;
-        sessionId.httpOnly = true;
-        sessionId.maxAge = expirationDurationInSeconds;
-        sessionId.sameSite = appConfiguration.development ? "none" : "strict";
-        sessionId.secure = true;
-        sessionId.path = "/";
-        sessionId.secrets = appConfiguration.cookie.secrets;
-      };
-      session.setData = setData;
-
-      const rawRedisSessionData = sessionId
-        ? await redis.get(redisIdentifier)
-        : null;
-
-      if (rawRedisSessionData) {
-        Object.assign(data, JSON.parse(rawRedisSessionData));
-      }
-
-      setData({}); // refresh timeout for the redis entry
-
       return { session };
     }
   );

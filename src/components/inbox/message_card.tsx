@@ -45,7 +45,7 @@ export default function MessageCard({
         })
         .then((res) => {
           if (res.status !== 200)
-            throw new Error((res.error?.value as string) ?? "Unknown error");
+            throw res.error;
         })
         .catch((err) => {
           toastError(err);

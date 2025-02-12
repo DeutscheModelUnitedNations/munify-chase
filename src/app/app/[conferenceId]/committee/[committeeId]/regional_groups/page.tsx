@@ -65,9 +65,9 @@ export default function RegionalGroups() {
       LL.chairs.dashboard.configurations.regionalGroups.WESTERN_EUROPE(),
   };
 
-  const checkInRegionalGroup = (alpha3Code: string, group) => {
+  const checkInRegionalGroup = (alpha3Code: string, group: any) => {
     try {
-      return regionalGroups[group].includes(alpha3ToAlpha2(alpha3Code));
+      return (regionalGroups as any)[group].includes(alpha3ToAlpha2(alpha3Code));
     } catch {
       return false;
     }
@@ -157,7 +157,7 @@ export default function RegionalGroups() {
           {(currentGroupIndex === Object.keys(groupNames).indexOf(group) * 2 ||
             currentGroupIndex ===
               Object.keys(groupNames).indexOf(group) * 2 + 1) && (
-            <Group key={group} group={group} groupName={groupNames[group]} />
+            <Group key={group} group={group} groupName={(groupNames as any)[group]} />
           )}
         </AnimatePresence>
       ))}

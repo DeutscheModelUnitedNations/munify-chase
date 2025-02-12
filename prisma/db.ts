@@ -32,14 +32,8 @@ const brandExtension = Prisma.defineExtension((client) => {
 });
 
 export const db = new PrismaClient({
-  datasourceUrl: appConfiguration.db.postgresUrl,
+  datasourceUrl: appConfiguration.db,
 }).$extends(brandExtension);
-
-export const redis = createClient({
-  url: appConfiguration.db.redisUrl,
-});
-redis.on("error", (err) => console.error("Redis Client Error", err));
-await redis.connect();
 
 // maintanance
 setInterval(async () => {

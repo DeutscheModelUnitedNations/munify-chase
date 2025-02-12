@@ -108,10 +108,14 @@ export const ConferenceRelations = t.Object(
 export const ConferencePlainInputCreate = t.Object(
   {
     name: t.String({ additionalProperties: false }),
-    start: __nullable__(t.Date({ additionalProperties: false })),
-    end: __nullable__(t.Date({ additionalProperties: false })),
-    pressWebsite: __nullable__(t.String({ additionalProperties: false })),
-    feedbackWebsite: __nullable__(t.String({ additionalProperties: false })),
+    start: t.Optional(__nullable__(t.Date({ additionalProperties: false }))),
+    end: t.Optional(__nullable__(t.Date({ additionalProperties: false }))),
+    pressWebsite: t.Optional(
+      __nullable__(t.String({ additionalProperties: false })),
+    ),
+    feedbackWebsite: t.Optional(
+      __nullable__(t.String({ additionalProperties: false })),
+    ),
   },
   { additionalProperties: false, description: `A conference in the system` },
 );

@@ -28,7 +28,7 @@ export function ActionsOverlayChairMessage({
   setShowOverlay,
 }: {
   showOverlay: boolean;
-  setShowOverlay: (boolean) => void;
+  setShowOverlay: (arg: boolean) => void;
 }) {
   const { LL } = useI18nContext();
   const conferenceId = useContext(ConferenceIdContext);
@@ -84,10 +84,14 @@ export function ActionsOverlayChairMessage({
         category: "TO_CHAIR",
         subject: subjectLine,
         message: message,
-        authorId: userIdent?.id,
         metaEmail: userIdent?.emails[0]?.email,
         metaDelegation: myDelegationData.delegation?.nation.alpha3Code,
         metaCommittee: committeeData?.name,
+        author: {
+          connect: {
+            id: userIdent.id
+          }
+        }
       })
       .then((res) => {
         if (res.status === 200) {
@@ -147,7 +151,7 @@ export function ActionsOverlayResearchService({
   isChair = false,
 }: {
   showOverlay: boolean;
-  setShowOverlay: (boolean) => void;
+  setShowOverlay: (arg: boolean) => void;
   isChair?: boolean;
 }) {
   const { LL } = useI18nContext();
@@ -261,7 +265,11 @@ export function ActionsOverlayResearchService({
         category: category,
         subject: subjectLine,
         message: message,
-        authorId: userIdent?.id,
+        author: {
+          connect: {
+            id: userIdent.id
+          }
+        },
         metaEmail: userIdent?.emails[0]?.email,
         metaDelegation:
           (isChair ? "uno" : myDelegationData.delegation?.nation.alpha3Code) ??

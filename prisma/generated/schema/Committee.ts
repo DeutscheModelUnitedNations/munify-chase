@@ -261,9 +261,15 @@ export const CommitteePlainInputCreate = t.Object(
         { additionalProperties: false },
       ),
     ),
-    stateOfDebate: __nullable__(t.String({ additionalProperties: false })),
-    statusHeadline: __nullable__(t.String({ additionalProperties: false })),
-    statusUntil: __nullable__(t.Date({ additionalProperties: false })),
+    stateOfDebate: t.Optional(
+      __nullable__(t.String({ additionalProperties: false })),
+    ),
+    statusHeadline: t.Optional(
+      __nullable__(t.String({ additionalProperties: false })),
+    ),
+    statusUntil: t.Optional(
+      __nullable__(t.Date({ additionalProperties: false })),
+    ),
     allowDelegationsToAddThemselvesToSpeakersList: t.Optional(
       t.Boolean({ additionalProperties: false }),
     ),

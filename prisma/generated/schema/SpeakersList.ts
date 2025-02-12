@@ -86,8 +86,12 @@ export const SpeakersListPlainInputCreate = t.Object(
       additionalProperties: false,
       description: `The time in seconds that a speaker has to speak`,
     }),
-    timeLeft: __nullable__(t.Integer({ additionalProperties: false })),
-    startTimestamp: __nullable__(t.Date({ additionalProperties: false })),
+    timeLeft: t.Optional(
+      __nullable__(t.Integer({ additionalProperties: false })),
+    ),
+    startTimestamp: t.Optional(
+      __nullable__(t.Date({ additionalProperties: false })),
+    ),
     isClosed: t.Optional(t.Boolean({ additionalProperties: false })),
   },
   {

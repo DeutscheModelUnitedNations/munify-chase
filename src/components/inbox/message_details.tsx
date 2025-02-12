@@ -96,9 +96,7 @@ export default function MessageDetails({
               })
               .then((res) => {
                 if (res.status !== 200)
-                  throw new Error(
-                    (res.error?.value as string) ?? "Unknown error",
-                  );
+                  throw res.error;
                 getMessagesFunction();
               })
               .catch((err) => {
@@ -112,9 +110,7 @@ export default function MessageDetails({
               })
               .then((res) => {
                 if (res.status !== 200)
-                  throw new Error(
-                    (res.error?.value as string) ?? "Unknown error",
-                  );
+                  throw res.error;
                 getMessagesFunction();
               })
               .catch((err) => {
@@ -142,9 +138,7 @@ export default function MessageDetails({
               })
               .then((res) => {
                 if (res.status !== 200)
-                  throw new Error(
-                    (res.error?.value as string) ?? "Unknown error",
-                  );
+                  throw res.error;
                 getMessagesFunction();
               })
               .catch((err) => {
@@ -158,9 +152,7 @@ export default function MessageDetails({
               })
               .then((res) => {
                 if (res.status !== 200)
-                  throw new Error(
-                    (res.error?.value as string) ?? "Unknown error",
-                  );
+                  throw res.error;
                 getMessagesFunction();
               })
               .catch((err) => {
@@ -192,9 +184,7 @@ export default function MessageDetails({
               })
               .then((res) => {
                 if (res.status !== 200)
-                  throw new Error(
-                    (res.error?.value as string) ?? "Unknown error",
-                  );
+                  throw res.error;
                 getMessagesFunction();
               })
               .catch((err) => {
@@ -208,9 +198,7 @@ export default function MessageDetails({
               })
               .then((res) => {
                 if (res.status !== 200)
-                  throw new Error(
-                    (res.error?.value as string) ?? "Unknown error",
-                  );
+                  throw res.error;
                 getMessagesFunction();
               })
               .catch((err) => {
@@ -233,9 +221,7 @@ export default function MessageDetails({
             })
             .then((res) => {
               if (res.status !== 200)
-                throw new Error(
-                  (res.error?.value as string) ?? "Unknown error",
-                );
+                throw res.error;
               showToast({
                 severity: "warn",
                 summary: LL.messageBoard.toast.ARCHIVED_SUMMARY(),
@@ -264,9 +250,7 @@ export default function MessageDetails({
             .forwardToResearchService.post()
             .then((res) => {
               if (res.status !== 200)
-                throw new Error(
-                  (res.error?.value as string as string) ?? "Unknown error",
-                );
+                throw res.error;
               showToast({
                 severity: "success",
                 summary: LL.messageBoard.toast.FORWARDED_SUMMARY(),

@@ -3,7 +3,10 @@ import { db } from "../../../prisma/db";
 import { openApiTag } from "../util/openApiTags";
 import { sessionPlugin } from "../auth/session";
 import { permissionsPlugin } from "../auth/permissions";
-import { CommitteeInputCreate, CommitteePlainInputUpdate } from "@prisma/generated/schema/Committee";
+import {
+  CommitteeInputCreate,
+  CommitteePlainInputUpdate,
+} from "@prisma/generated/schema/Committee";
 
 export const committee = new Elysia({
   prefix: "/conference/:conferenceId",
@@ -88,7 +91,14 @@ export const committee = new Elysia({
       permissions.checkIf((user) => user.can("create", "Committee"));
 
       return db.committee.create({
-        data: { conferenceId: params.conferenceId, ...body },
+        data: {
+          conference: {
+            connect: {
+              id: params.conferenceId,
+            },
+          },
+          ...body,
+        },
       });
     },
     {

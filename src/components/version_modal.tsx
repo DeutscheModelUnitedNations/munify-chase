@@ -16,7 +16,7 @@ export default function VersionModal({
   autoOpen,
 }: {
   visible: boolean;
-  setVisible: (boolean) => void;
+  setVisible: (arg: boolean) => void;
   autoOpen?: boolean;
 }) {
   const { LL, locale } = useI18nContext();

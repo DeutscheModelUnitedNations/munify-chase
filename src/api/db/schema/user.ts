@@ -7,18 +7,6 @@ export const users = pgTable('users', {
 	name: text('name').notNull()
 });
 
-export const usersRelations = relations(users, ({ many }) => ({
-	posts: many(posts)
-}));
-
-export const posts = pgTable('posts', {
-	id: serial('id').primaryKey(),
-	content: text('content').notNull(),
-	authorId: integer('author_id').references(() => users.id, {
-		onDelete: 'cascade'
-	})
-});
-
-export const postsRelations = relations(posts, ({ one }) => ({
-	author: one(users, { fields: [posts.authorId], references: [users.id] })
-}));
+// export const usersRelations = relations(users, ({ many }) => ({
+// 	posts: many(posts)
+// }));

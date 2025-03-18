@@ -2,6 +2,7 @@
 	import { page } from '$app/state';
 	import { enableViewTransitionApi } from '$lib/helpers/viewTransitionApi.svelte';
 	import { locales, localizeHref } from '$lib/paraglide/runtime';
+	import { SvelteToast } from '@zerodevx/svelte-toast';
 	import '../app.css';
 
 	let { children } = $props();
@@ -16,3 +17,5 @@
 		<a href={localizeHref(page.url.pathname, { locale })}>{locale}</a>
 	{/each}
 </div>
+
+<SvelteToast options={{}} />

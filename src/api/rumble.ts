@@ -6,6 +6,9 @@ export const { abilityBuilder, schemaBuilder, arg, object, query, pubsub, yoga }
 	db,
 	context,
 	nativeServerOptions: {
-		graphqlEndpoint: '/api/graphql'
+		graphqlEndpoint: '/api/graphql',
+		graphiql: {
+			subscriptionsProtocol: 'WS'
+		}
 	}
 });

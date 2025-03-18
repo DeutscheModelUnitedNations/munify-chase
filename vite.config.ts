@@ -6,9 +6,9 @@ import { defineConfig } from 'vite';
 
 export default defineConfig({
 	plugins: [
-		houdini(),
-		paraglideVitePlugin({ project: './project.inlang', outdir: './src/lib/paraglide' }),
 		tailwindcss(),
+		paraglideVitePlugin({ project: './project.inlang', outdir: './src/lib/paraglide' }),
+		houdini(),
 		sveltekit()
 	]
 });

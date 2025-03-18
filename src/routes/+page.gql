@@ -1,0 +1,6 @@
+query MyExampleQuery {
+	findManyUsers {
+		id
+		name
+	}
+}

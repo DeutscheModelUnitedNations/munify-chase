@@ -4,25 +4,25 @@ Indicates exactly one field must be supplied and this field must not be `null`.
 directive @oneOf on INPUT_OBJECT
 
 type Mutation {
-	upsertSelf: User
+  upsertSelf: User
 }
 
 type Query {
-	findFirstUsers(where: usersWhere_DefaultRumbleQueryArgument): User
-	findManyUsers(where: usersWhere_DefaultRumbleQueryArgument): [User!]
+  findFirstUsers(where: usersWhere_DefaultRumbleQueryArgument): User
+  findManyUsers(where: usersWhere_DefaultRumbleQueryArgument): [User!]
 }
 
 type Subscription {
-	findFirstUsers(where: usersWhere_DefaultRumbleQueryArgument): User
-	findManyUsers(where: usersWhere_DefaultRumbleQueryArgument): [User!]
+  findFirstUsers(where: usersWhere_DefaultRumbleQueryArgument): User
+  findManyUsers(where: usersWhere_DefaultRumbleQueryArgument): [User!]
 }
 
 type User {
-	id: Int
-	name: String
+  id: Int
+  name: String
 }
 
 input usersWhere_DefaultRumbleQueryArgument {
-	id: Int
-	name: String
+  id: Int
+  name: String
 }

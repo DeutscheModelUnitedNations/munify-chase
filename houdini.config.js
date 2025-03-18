@@ -7,8 +7,11 @@ const config = {
 	},
 	runtimeDir: '.houdini',
 	plugins: {
-		'houdini-svelte': {}
-	}
+		'houdini-svelte': {
+			forceRunesMode: true
+		}
+	},
+	exclude: ["src/lib/paraglide/**/*"]
 };
 
 export default config;

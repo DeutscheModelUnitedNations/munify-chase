@@ -1,23 +1,23 @@
-import { yoga } from "./rumble";
-import type { WebSocketHandler } from "svelte-adapter-bun";
+import { yoga } from './rumble';
+import type { WebSocketHandler } from 'svelte-adapter-bun';
 
-import "./handlers/register";
+import './handlers/register';
 
 export const yogaInstance = yoga();
 
 export const webSocketHandler: WebSocketHandler = {
 	open(ws) {
-		console.log("WebSocket opened");
-		ws.send("Slava Ukraїni");
+		console.log('WebSocket opened');
+		ws.send('Slava Ukraїni');
 	},
 	upgrade(request, upgrade) {
 		const url = new URL(request.url);
-		if (url.pathname.startsWith("/api/graphql")) {
+		if (url.pathname.startsWith('/api/graphql')) {
 			return upgrade(request);
 		}
-        return false;
+		return false;
 	},
-    message(ws, message) {
-        console.log(message);
-    },
+	message(ws, message) {
+		console.log(message);
+	}
 };

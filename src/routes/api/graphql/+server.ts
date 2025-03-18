@@ -1,3 +1,3 @@
-import  { yogaInstance } from "$api/http";
+import { yogaInstance } from '$api/http';
 
 export { yogaInstance as GET, yogaInstance as POST };

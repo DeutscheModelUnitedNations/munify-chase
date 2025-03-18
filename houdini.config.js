@@ -11,7 +11,7 @@ const config = {
 			forceRunesMode: true
 		}
 	},
-	exclude: ["src/lib/paraglide/**/*"]
+	exclude: ['src/lib/paraglide/**/*']
 };
 
 export default config;

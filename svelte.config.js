@@ -7,7 +7,7 @@ const config = {
 
 	kit: {
 		adapter: adapter({
-			precompress: true,
+			precompress: true
 		}),
 		alias: {
 			$api: 'src/api',

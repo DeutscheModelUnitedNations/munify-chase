@@ -17,12 +17,12 @@
 		"lint": "prettier --check . && eslint .",
 		"db:push": "drizzle-kit push",
 		"db:migrate": "drizzle-kit migrate",
-		"db:studio": "drizzle-kit studio"
+		"db:studio": "drizzle-kit studio",
+		"machine-translate": "inlang machine translate --project project.inlang"
 	},
 	"devDependencies": {
 		"@eslint/compat": "^1.2.7",
 		"@eslint/js": "^9.22.0",
-		"@inlang/plugin-message-format": "^4.0.0",
 		"@m1212e/rumble": "^0.2.1",
 		"@sveltejs/adapter-auto": "^4.0.0",
 		"@sveltejs/kit": "^2.20.0",
@@ -44,9 +44,8 @@
 		"tailwindcss": "^4.0.14",
 		"typescript": "^5.8.2",
 		"typescript-eslint": "^8.26.1",
-		"vite": "^6.2.2"
-	},
-	"dependencies": {
-		"@inlang/paraglide-sveltekit": "^0.16.1"
+		"vite": "^6.2.2",
+		"@inlang/paraglide-js": "2.0.1",
+		"@inlang/cli": "^3.0.0"
 	}
 }

@@ -1,6 +1,7 @@
-import type { RequestEvent } from '@sveltejs/kit';
+// import type { RequestEvent } from '@sveltejs/kit';
 
-export async function context(req: RequestEvent) {
+// _req: RequestEvent
+export async function context() {
 	// const oidcValue = await oidc(req.cookies);
 	// const perms = permissions(oidcValue);
 	// return { permissions: perms, oidc: oidcValue, url: req.url };

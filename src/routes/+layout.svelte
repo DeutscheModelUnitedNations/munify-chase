@@ -1,10 +1,15 @@
 <script lang="ts">
-	import { i18n } from '$lib/i18n';
-	import { ParaglideJS } from '@inlang/paraglide-sveltekit';
+	import { page } from '$app/state';
+	import { locales, localizeHref } from '$lib/paraglide/runtime';
 	import '../app.css';
+
 	let { children } = $props();
 </script>
 
-<ParaglideJS {i18n}>
-	{@render children()}
-</ParaglideJS>
+{@render children()}
+
+<div aria-hidden="true" style="display:none">
+	{#each locales as locale, index (index)}
+		<a href={localizeHref(page.url.pathname, { locale })}>{locale}</a>
+	{/each}
+</div>

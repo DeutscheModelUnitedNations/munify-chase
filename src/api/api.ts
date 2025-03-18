@@ -1,3 +1,3 @@
-import { yoga } from "./rumble";
+import { yoga } from './rumble';
 
 export const yogaInstance = yoga();

@@ -1,9 +1,12 @@
 <script lang="ts">
 	import { page } from '$app/state';
+	import { enableViewTransitionApi } from '$lib/helpers/viewTransitionApi.svelte';
 	import { locales, localizeHref } from '$lib/paraglide/runtime';
 	import '../app.css';
 
 	let { children } = $props();
+
+	enableViewTransitionApi();
 </script>
 
 {@render children()}

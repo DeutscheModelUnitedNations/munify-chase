@@ -9,6 +9,6 @@ export default defineConfig({
 		tailwindcss(),
 		paraglideVitePlugin({ project: './project.inlang', outdir: './src/lib/paraglide' }),
 		houdini(),
-		sveltekit(),
+		sveltekit()
 	]
 });

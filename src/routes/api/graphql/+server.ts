@@ -8,5 +8,5 @@ import { makeHooks } from 'graphql-ws/use/crossws';
 
 //TODO https://github.com/sveltejs/kit/pull/12973
 export const socket = makeHooks({
-	schema: schemaBuilder.toSchema(),
-})
+	schema: schemaBuilder.toSchema()
+});

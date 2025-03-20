@@ -113,8 +113,6 @@ export const committeeMember = pgTable('committee_member', {
 	role: text('role').notNull() // ??? Really a good idea? (Nicht wertend gemeint, total objektiv)
 });
 
-
-
 // export const usersRelations = relations(users, ({ many }) => ({
 // 	posts: many(posts)
 // }));

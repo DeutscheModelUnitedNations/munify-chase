@@ -1,8 +1,8 @@
 import { drizzle } from 'drizzle-orm/node-postgres';
 import * as schemaInternal from './schema';
+import { DATABASE_URL } from '$env/static/private';
 
-// biome-ignore lint/style/noNonNullAssertion: must exist
-export const db = drizzle(process.env.DATABASE_URL!, {
+export const db = drizzle(DATABASE_URL, {
 	schema: schemaInternal
 });
 

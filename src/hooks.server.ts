@@ -1,6 +1,5 @@
 import type { Handle } from '@sveltejs/kit';
 import { paraglideMiddleware } from '$lib/paraglide/server';
-import { webSocketHandler } from '$api/http';
 
 // creating a handle to use the paraglide middleware
 const paraglideHandle: Handle = ({ event, resolve }) =>
@@ -14,5 +13,3 @@ const paraglideHandle: Handle = ({ event, resolve }) =>
 	});
 
 export const handle: Handle = paraglideHandle;
-
-export const handleWebsocket = webSocketHandler;

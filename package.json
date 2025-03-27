@@ -40,7 +40,6 @@
 		"eslint-plugin-svelte": "^3.3.3",
 		"globals": "^16.0.0",
 		"graphql": "^16.10.0",
-		"graphql-sse": "^2.5.4",
 		"graphql-ws": "^6.0.4",
 		"houdini": "^1.5.4",
 		"houdini-svelte": "^2.1.12",

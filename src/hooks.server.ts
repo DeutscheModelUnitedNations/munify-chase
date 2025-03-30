@@ -1,6 +1,6 @@
 import type { Handle } from '@sveltejs/kit';
 import { paraglideMiddleware } from '$lib/paraglide/server';
-import { handleProtectedRoute } from '$api/services/OIDC';
+import { applyAuth } from '$api/services/OIDC';
 
 // creating a handle to use the paraglide middleware
 const paraglideHandle: Handle = ({ event, resolve }) =>
@@ -16,9 +16,6 @@ const paraglideHandle: Handle = ({ event, resolve }) =>
 const authenticatedRoutes = ['/app'];
 
 export const handle: Handle = async ({ event, resolve }) => {
-	if (authenticatedRoutes.map((r) => event.url.pathname.startsWith(r)).some(Boolean)) {
-		event.locals.user = await handleProtectedRoute(event);
-		return paraglideHandle({ event, resolve });
-	}
+	event.locals.user = await applyAuth({ event, authenticatedRoutes });
 	return paraglideHandle({ event, resolve });
 };

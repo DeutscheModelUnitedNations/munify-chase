@@ -4,12 +4,15 @@
 	import type { PageData } from './$houdini';
 
 	let { data }: { data: PageData } = $props();
-	let { MyExampleQuery } = $derived(data);
 </script>
 
 {m.example_message()}
 
 <br />
 
-<button onclick={() => setLocale('de')}>de</button>
+<a href="/app">Login</a>
+
+<br />
+
+<button onclick={() => setLocale('de')}>de</button>|
 <button onclick={() => setLocale('en')}>en</button>

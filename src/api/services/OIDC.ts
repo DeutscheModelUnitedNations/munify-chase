@@ -12,7 +12,8 @@ import {
 	randomState,
 	refreshTokenGrant,
 	tokenIntrospection,
-	type TokenEndpointResponse
+	type TokenEndpointResponse,
+	type TokenEndpointResponseHelpers
 } from 'openid-client';
 import { createRemoteJWKSet, jwtVerify } from 'jose';
 import { z } from 'zod';
@@ -25,16 +26,6 @@ import { db, schema } from '$api/db/db';
  * Roles the issuer can pass along which we should respect
  */
 export const oidcRoles = ['admin', 'member', 'service_user'] as const;
-/**
- * Route where the user will be redirected after login.
- * Must match the actual path in fs based routing
- */
-export const loginRoute = '/auth/login-callback';
-/**
- * Route where the user will be redirected after logout.
- * Must match the actual path in fs based routing
- */
-export const logoutRoute = '/auth/logout-callback';
 
 // cookie names
 const cookiePrefix = 'auth_oidc_';
@@ -97,7 +88,7 @@ const jwks = lazy(async () => {
 
 const cryptr = new Cryptr(configPrivate.SECRET);
 
-export async function startSignin(visitedUrl: URL) {
+async function startSignin(visitedUrl: URL) {
 	const code_verifier = randomPKCECodeVerifier();
 	const encrypted_verifier = cryptr.encrypt(code_verifier);
 	const code_challenge = await calculatePKCECodeChallenge(code_verifier);
@@ -125,11 +116,7 @@ export async function startSignin(visitedUrl: URL) {
 	};
 }
 
-export async function resolveSignin(
-	visitedUrl: URL,
-	encrypted_verifier: string,
-	encrypted_state: string
-) {
+async function resolveSignin(visitedUrl: URL, encrypted_verifier: string, encrypted_state: string) {
 	const verifier = cryptr.decrypt(encrypted_verifier);
 	const state = JSON.parse(cryptr.decrypt(encrypted_state)) as OIDCFlowState;
 	const tokens = await authorizationCodeGrant(await config(), visitedUrl, {
@@ -142,7 +129,7 @@ export async function resolveSignin(
 	return { tokens, state: strippedState };
 }
 
-export async function validateTokens({
+async function validateTokens({
 	access_token,
 	id_token
 }: Pick<TokenEndpointResponse, 'access_token' | 'id_token'>): Promise<OIDCUser> {
@@ -190,16 +177,13 @@ export async function validateTokens({
 	}
 }
 
-export async function refresh(refresh_token: string) {
+async function refresh(refresh_token: string) {
 	return refreshTokenGrant(await config(), refresh_token);
 }
 
 export async function getLogoutUrl(visitedUrl: URL) {
-	if (configPrivate.NODE_ENV === 'production') {
-		visitedUrl.protocol = 'https:';
-	}
 	return buildEndSessionUrl(await config(), {
-		post_logout_redirect_uri: `${visitedUrl.origin}${logoutRoute}`
+		post_logout_redirect_uri: `${visitedUrl.origin}${configPublic.PUBLIC_OIDC_LOGOUT_CALLBACK_ROUTE}`
 	});
 }
 
@@ -207,7 +191,7 @@ export async function fetchUserInfoFromIssuer(access_token: string, expectedSubj
 	return fetchUserInfo(await config(), access_token, expectedSubject);
 }
 
-export async function handleLoginRedirect(req: RequestEvent) {
+async function handleLoginRedirect(req: RequestEvent) {
 	const verifier = req.cookies.get(codeVerifierCookieName);
 	if (!verifier) error(400, 'No code verifier cookie found.');
 	const oidcState = req.cookies.get(oidcStateCookieName);
@@ -215,6 +199,40 @@ export async function handleLoginRedirect(req: RequestEvent) {
 
 	const { state, tokens } = await resolveSignin(req.url, verifier, oidcState);
 
+	setTokenCookiesOnRequest(req, tokens);
+
+	req.cookies.delete(codeVerifierCookieName, { path: '/' });
+	req.cookies.delete(oidcStateCookieName, { path: '/' });
+
+	const user = await validateTokens(tokens);
+
+	await db
+		.insert(schema.user)
+		.values({
+			locale: user.locale ?? configPublic.PUBLIC_DEFAULT_LOCALE,
+			preferredUsername: user.preferred_username,
+			email: user.email,
+			familyName: user.family_name,
+			givenName: user.given_name
+		})
+		.onConflictDoUpdate({
+			target: schema.user.id,
+			set: {
+				locale: user.locale ?? configPublic.PUBLIC_DEFAULT_LOCALE,
+				preferredUsername: user.preferred_username,
+				email: user.email,
+				familyName: user.family_name,
+				givenName: user.given_name
+			}
+		});
+
+	return redirect(302, state.visitedUrl);
+}
+
+function setTokenCookiesOnRequest(
+	req: RequestEvent,
+	tokens: TokenEndpointResponse & TokenEndpointResponseHelpers
+) {
 	const cookieOptions: Parameters<typeof req.cookies.set>[2] = {
 		path: '/',
 		httpOnly: true,
@@ -241,37 +259,9 @@ export async function handleLoginRedirect(req: RequestEvent) {
 	if (tokens.token_type) {
 		req.cookies.set(tokenTypeCookieName, tokens.token_type, cookieOptions);
 	}
-
-	req.cookies.delete(codeVerifierCookieName, { path: '/' });
-	req.cookies.delete(oidcStateCookieName, { path: '/' });
-
-	const user = await validateTokens(tokens);
-
-	await db
-		.insert(schema.user)
-		.values({
-			id: user.sub,
-			locale: user.locale ?? configPublic.PUBLIC_DEFAULT_LOCALE,
-			preferredUsername: user.preferred_username,
-			email: user.email,
-			familyName: user.family_name,
-			givenName: user.given_name
-		})
-		.onConflictDoUpdate({
-			target: schema.user.id,
-			set: {
-				locale: user.locale ?? configPublic.PUBLIC_DEFAULT_LOCALE,
-				preferredUsername: user.preferred_username,
-				email: user.email,
-				familyName: user.family_name,
-				givenName: user.given_name
-			}
-		});
-
-	return redirect(302, state.visitedUrl);
 }
 
-export async function handleLogoutRedirect(req: RequestEvent) {
+async function handleLogoutRedirect(req: RequestEvent) {
 	req.cookies.delete(codeVerifierCookieName, { path: '/' });
 	req.cookies.delete(oidcStateCookieName, { path: '/' });
 	req.cookies.delete(accessTokenCookieName, { path: '/' });
@@ -284,10 +274,28 @@ export async function handleLogoutRedirect(req: RequestEvent) {
 	return redirect(303, '/');
 }
 
-export async function handleProtectedRoute(req: RequestEvent) {
+export async function applyAuth({
+	event,
+	authenticatedRoutes
+}: {
+	event: RequestEvent;
+	authenticatedRoutes: string[];
+}) {
+	if (event.url.pathname.startsWith(configPublic.PUBLIC_OIDC_LOGIN_CALLBACK_ROUTE)) {
+		return handleLoginRedirect(event);
+	}
+
+	if (event.url.pathname.startsWith(configPublic.PUBLIC_OIDC_LOGOUT_CALLBACK_ROUTE)) {
+		return handleLogoutRedirect(event);
+	}
+
+	if (!authenticatedRoutes.map((r) => event.url.pathname.startsWith(r)).some(Boolean)) {
+		return;
+	}
+
 	try {
-		const accessToken = req.cookies.get(accessTokenCookieName);
-		const idToken = req.cookies.get(idTokenCookieName);
+		const accessToken = event.cookies.get(accessTokenCookieName);
+		const idToken = event.cookies.get(idTokenCookieName);
 		if (!accessToken) {
 			throw new Error('No access token found');
 		}
@@ -299,9 +307,23 @@ export async function handleProtectedRoute(req: RequestEvent) {
 		return user;
 	} catch (error) {
 		console.warn('Error validating tokens', error);
-		const { encrypted_state, encrypted_verifier, redirect_uri } = await startSignin(req.url);
 
-		req.cookies.set(codeVerifierCookieName, encrypted_verifier, {
+		const refreshToken = event.cookies.get(refreshTokenCookieName);
+		if (refreshToken) {
+			try {
+				const newTokenSet = await refresh(refreshToken);
+				setTokenCookiesOnRequest(event, newTokenSet);
+				return await validateTokens(newTokenSet);
+			} catch (error) {
+				console.warn('Error refreshing token', error);
+			}
+		}
+
+		// if neither validation nor refresh worked, start login flow
+
+		const { encrypted_state, encrypted_verifier, redirect_uri } = await startSignin(event.url);
+
+		event.cookies.set(codeVerifierCookieName, encrypted_verifier, {
 			sameSite: 'lax',
 			maxAge: 60 * 5,
 			path: '/',
@@ -309,7 +331,7 @@ export async function handleProtectedRoute(req: RequestEvent) {
 			httpOnly: true
 		});
 
-		req.cookies.set(oidcStateCookieName, encrypted_state, {
+		event.cookies.set(oidcStateCookieName, encrypted_state, {
 			sameSite: 'lax',
 			maxAge: 60 * 5,
 			path: '/',

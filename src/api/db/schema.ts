@@ -3,7 +3,7 @@ import { integer, pgTable, serial, text, timestamp, uuid } from 'drizzle-orm/pg-
 import { relations, sql } from 'drizzle-orm';
 
 export const user = pgTable('user', {
-	id: uuid('id').primaryKey().unique().notNull(),
+	id: uuid('id').defaultRandom().primaryKey().unique().notNull(),
 	email: text('email').notNull().unique(),
 	familyName: text('family_name').notNull(),
 	givenName: text('given_name').notNull(),
@@ -11,8 +11,9 @@ export const user = pgTable('user', {
 	preferredUsername: text('preferred_username').notNull(),
 	createdAt: timestamp('created_at').defaultNow().notNull(),
 	updatedAt: timestamp('updated_at')
+		.defaultNow()
 		.notNull()
-		.$onUpdate(() => sql`now() `)
+		.$onUpdate(() => new Date())
 });
 
 // export const usersRelations = relations(users, ({ many }) => ({

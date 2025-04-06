@@ -209,6 +209,7 @@ async function handleLoginRedirect(req: RequestEvent) {
 	await db
 		.insert(schema.user)
 		.values({
+			id: user.sub,
 			locale: user.locale ?? configPublic.PUBLIC_DEFAULT_LOCALE,
 			preferredUsername: user.preferred_username,
 			email: user.email,
@@ -289,10 +290,6 @@ export async function applyAuth({
 		return handleLogoutRedirect(event);
 	}
 
-	if (!authenticatedRoutes.map((r) => event.url.pathname.startsWith(r)).some(Boolean)) {
-		return;
-	}
-
 	try {
 		const accessToken = event.cookies.get(accessTokenCookieName);
 		const idToken = event.cookies.get(idTokenCookieName);
@@ -304,10 +301,9 @@ export async function applyAuth({
 			id_token: idToken
 		});
 
+		event.locals.user = user;
 		return user;
 	} catch (error) {
-		console.warn('Error validating tokens', error);
-
 		const refreshToken = event.cookies.get(refreshTokenCookieName);
 		if (refreshToken) {
 			try {
@@ -320,6 +316,10 @@ export async function applyAuth({
 		}
 
 		// if neither validation nor refresh worked, start login flow
+		// but only if a route is protected
+		if (!authenticatedRoutes.map((r) => event.url.pathname.startsWith(r)).some(Boolean)) {
+			return;
+		}
 
 		const { encrypted_state, encrypted_verifier, redirect_uri } = await startSignin(event.url);
 

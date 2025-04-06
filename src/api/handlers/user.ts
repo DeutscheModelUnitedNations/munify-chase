@@ -1,4 +1,7 @@
-import { object, pubsub, query, schemaBuilder } from '$api/rumble';
+import { abilityBuilder, object, pubsub, query, schemaBuilder } from '$api/rumble';
+
+// TODO
+abilityBuilder.user.allow('read');
 
 const UserRef = object({
 	name: 'User',

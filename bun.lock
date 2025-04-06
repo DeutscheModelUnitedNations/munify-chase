@@ -9,7 +9,7 @@
         "@inlang/cli": "^3.0.10",
         "@inlang/paraglide-js": "2.0.11",
         "@m1212e/graphql-scalars-houdini": "^0.0.1",
-        "@m1212e/rumble": "^0.3.3",
+        "@m1212e/rumble": "^0.3.7",
         "@sveltejs/adapter-node": "^5.2.12",
         "@sveltejs/kit": "^2.20.4",
         "@sveltejs/vite-plugin-svelte": "^5.0.3",
@@ -25,6 +25,7 @@
         "eslint-plugin-svelte": "^3.5.1",
         "globals": "^16.0.0",
         "graphql": "^16.10.0",
+        "graphql-sse": "^2.5.4",
         "graphql-ws": "^6.0.4",
         "houdini": "^1.5.4",
         "houdini-svelte": "^2.1.12",
@@ -197,7 +198,7 @@
 
     "@m1212e/graphql-scalars-houdini": ["@m1212e/graphql-scalars-houdini@0.0.1", "", { "dependencies": { "graphql-scalars": "^1.24" }, "peerDependencies": { "houdini": "^1", "typescript": "^5" } }, "sha512-sbehs8H45vQ5rSo4Md6LxfOu0c0BkxUVEJDAUdofWK4ea1WJf5rytqok03fPhV8K3rC/oIfGk0LAi31X0/OQMw=="],
 
-    "@m1212e/rumble": ["@m1212e/rumble@0.3.3", "", { "dependencies": { "@pothos/core": "^4.5.0", "@pothos/plugin-drizzle": "^0.7.0", "@pothos/plugin-smart-subscriptions": "^4.1.1", "graphql-scalars": "^1.24.2", "graphql-yoga": "^5.12.2" }, "peerDependencies": { "drizzle-orm": "^0.40", "typescript": "^5" } }, "sha512-8JmFbjcs6JIM9Tk34TABmoHd6GJCChytkSwxKethVQYdPRS9A6bm9wtOlCGJFFNHeeSRbls814HN5nEgedn3Xw=="],
+    "@m1212e/rumble": ["@m1212e/rumble@0.3.7", "", { "dependencies": { "@pothos/core": "^4.5.0", "@pothos/plugin-drizzle": "^0.7.0", "@pothos/plugin-smart-subscriptions": "^4.1.1", "graphql-scalars": "^1.24.2", "graphql-yoga": "^5.12.2" }, "peerDependencies": { "drizzle-orm": "^0.40", "typescript": "^5" } }, "sha512-HoLswR+4XPT0exGibx1kjTbwqYk8bmXWM04tBVOKEYYVMVEbBTKp1DhS3flHdy99Ik7mp+Am2IIbMIPUQqDGjA=="],
 
     "@nodelib/fs.scandir": ["@nodelib/fs.scandir@2.1.5", "", { "dependencies": { "@nodelib/fs.stat": "2.0.5", "run-parallel": "^1.1.9" } }, "sha512-vq24Bq3ym5HEQm2NKCr3yXDwjc7vTsEThRDnkp2DK9p1uqLR+DHurm/NOTo0KG7HYHU7eppKZj3MyqYuMBf62g=="],
 
@@ -554,6 +555,8 @@
     "graphql": ["graphql@16.10.0", "", {}, "sha512-AjqGKbDGUFRKIRCP9tCKiIGHyriz2oHEbPIbEtcSLSs4YjReZOIPQQWek4+6hjw62H9QShXHyaGivGiYVLeYFQ=="],
 
     "graphql-scalars": ["graphql-scalars@1.24.2", "", { "dependencies": { "tslib": "^2.5.0" }, "peerDependencies": { "graphql": "^0.8.0 || ^0.9.0 || ^0.10.0 || ^0.11.0 || ^0.12.0 || ^0.13.0 || ^14.0.0 || ^15.0.0 || ^16.0.0" } }, "sha512-FoZ11yxIauEnH0E5rCUkhDXHVn/A6BBfovJdimRZCQlFCl+h7aVvarKmI15zG4VtQunmCDdqdtNs6ixThy3uAg=="],
+
+    "graphql-sse": ["graphql-sse@2.5.4", "", { "peerDependencies": { "graphql": ">=0.11 <=16" } }, "sha512-8PIGHQPv1vokYboL8KsoBomvyJCUMJCAwSp5f+bR2qVoYtPo7CYowrYV7LFiXuiirX0cxVzgUBFNa5BaI4rZ2A=="],
 
     "graphql-ws": ["graphql-ws@6.0.4", "", { "peerDependencies": { "@fastify/websocket": "^10 || ^11", "graphql": "^15.10.1 || ^16", "uWebSockets.js": "^20", "ws": "^8" }, "optionalPeers": ["@fastify/websocket", "uWebSockets.js", "ws"] }, "sha512-8b4OZtNOvv8+NZva8HXamrc0y1jluYC0+13gdh7198FKjVzXyTvVc95DCwGzaKEfn3YuWZxUqjJlHe3qKM/F2g=="],
 

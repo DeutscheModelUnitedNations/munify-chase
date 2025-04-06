@@ -18,38 +18,61 @@ The `JSON` scalar type represents JSON values as specified by [ECMA-404](http://
 """
 scalar JSON
 
+type Message {
+	content: String!
+	createdAt: DateTime!
+	id: ID!
+	updatedAt: DateTime!
+	user(where: UserWhereInputArgument): User!
+	userId: String!
+}
+
+input MessageWhereInputArgument {
+	content: String
+	createdAt: DateTime
+	id: ID
+	updatedAt: DateTime
+	userId: String
+}
+
 type Mutation {
-  dummy: User
+	dummy: User
+	postMessage(content: String!): Message
 }
 
 type Query {
-  findFirstUser(where: userWhere_DefaultRumbleQueryArgument): User
-  findManyUser(where: userWhere_DefaultRumbleQueryArgument): [User!]
+	findFirstMessage(where: MessageWhereInputArgument): Message!
+	findFirstUser(where: UserWhereInputArgument): User!
+	findManyMessage(where: MessageWhereInputArgument): [Message!]!
+	findManyUser(where: UserWhereInputArgument): [User!]!
 }
 
 type Subscription {
-  findFirstUser(where: userWhere_DefaultRumbleQueryArgument): User
-  findManyUser(where: userWhere_DefaultRumbleQueryArgument): [User!]
+	findFirstMessage(where: MessageWhereInputArgument): Message!
+	findFirstUser(where: UserWhereInputArgument): User!
+	findManyMessage(where: MessageWhereInputArgument): [Message!]!
+	findManyUser(where: UserWhereInputArgument): [User!]!
 }
 
 type User {
-  createdAt: DateTime
-  email: String
-  familyName: String
-  givenName: String
-  id: ID
-  locale: String
-  preferredUsername: String
-  updatedAt: DateTime
+	createdAt: DateTime!
+	email: String!
+	familyName: String!
+	givenName: String!
+	id: String!
+	locale: String!
+	messages(where: MessageWhereInputArgument): [Message!]!
+	preferredUsername: String!
+	updatedAt: DateTime!
 }
 
-input userWhere_DefaultRumbleQueryArgument {
-  createdAt: DateTime
-  email: String
-  familyName: String
-  givenName: String
-  id: ID
-  locale: String
-  preferredUsername: String
-  updatedAt: DateTime
+input UserWhereInputArgument {
+	createdAt: DateTime
+	email: String
+	familyName: String
+	givenName: String
+	id: String
+	locale: String
+	preferredUsername: String
+	updatedAt: DateTime
 }

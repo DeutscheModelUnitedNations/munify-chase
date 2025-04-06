@@ -16,6 +16,6 @@ const paraglideHandle: Handle = ({ event, resolve }) =>
 const authenticatedRoutes = ['/app'];
 
 export const handle: Handle = async ({ event, resolve }) => {
-	event.locals.user = await applyAuth({ event, authenticatedRoutes });
+	await applyAuth({ event, authenticatedRoutes });
 	return paraglideHandle({ event, resolve });
 };

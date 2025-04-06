@@ -2,10 +2,12 @@ import { HoudiniClient } from '$houdini';
 import { toast } from '@zerodevx/svelte-toast';
 import { error } from '@sveltejs/kit';
 import { subscription } from '$houdini/plugins';
+import { createClient } from 'graphql-sse';
 
 const url = '/api/graphql';
 export default new HoudiniClient({
 	url,
+	plugins: [subscription(() => createClient({ url }))],
 	throwOnError: {
 		operations: ['mutation', 'subscription'],
 		error: (errors, ctx) => {

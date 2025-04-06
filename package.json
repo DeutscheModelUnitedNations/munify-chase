@@ -33,6 +33,7 @@
 		"@types/pg": "^8.11.11",
 		"@zerodevx/svelte-toast": "^0.9.6",
 		"concurrently": "^9.1.2",
+		"cryptr": "^6.3.0",
 		"drizzle-kit": "^0.30.6",
 		"drizzle-orm": "^0.40.1",
 		"eslint": "^9.23.0",
@@ -43,7 +44,10 @@
 		"graphql-ws": "^6.0.4",
 		"houdini": "^1.5.4",
 		"houdini-svelte": "^2.1.12",
+		"jose": "^6.0.10",
 		"lefthook": "^1.11.5",
+		"nanoid": "^5.1.5",
+		"openid-client": "^6.3.4",
 		"pg": "^8.14.1",
 		"prettier": "^3.5.3",
 		"prettier-plugin-svelte": "^3.3.3",
@@ -53,6 +57,7 @@
 		"tailwindcss": "^4.0.17",
 		"typescript": "^5.8.2",
 		"typescript-eslint": "^8.28.0",
-		"vite": "^6.2.3"
+		"vite": "^6.2.3",
+		"zod": "^3.24.2"
 	}
 }

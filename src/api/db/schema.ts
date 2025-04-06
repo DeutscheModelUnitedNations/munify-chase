@@ -26,7 +26,6 @@ import { relations, sql } from 'drizzle-orm';
 export const user = pgTable('user', {
 	// we can't use uuid for this because the ID provider might not stick to uuid format
 	id: text('id').primaryKey().unique().notNull(),
-	name: text('name').notNull(),
 	email: text('email').notNull().unique(),
 	familyName: text('family_name').notNull(),
 	givenName: text('given_name').notNull(),

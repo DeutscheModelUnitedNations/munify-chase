@@ -24,6 +24,7 @@ import { relations, sql } from 'drizzle-orm';
 // updatedAt DateTime @default(now()) @updatedAt
 
 export const user = pgTable('user', {
+	// we can't use uuid for this because the ID provider might not stick to uuid format
 	id: text('id').primaryKey().unique().notNull(),
 	name: text('name').notNull(),
 	email: text('email').notNull().unique(),

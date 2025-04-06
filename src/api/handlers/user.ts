@@ -1,9 +1,11 @@
-import { object, query, schemaBuilder } from '$api/rumble';
+import { object, pubsub, query, schemaBuilder } from '$api/rumble';
 
 const UserRef = object({
 	name: 'User',
 	tableName: 'user'
 });
+
+const userPubSub = pubsub({ tableName: 'user' });
 
 query({
 	tableName: 'user'
@@ -14,6 +16,7 @@ schemaBuilder.mutationFields((t) => {
 		dummy: t.drizzleField({
 			type: UserRef,
 			resolve: async (query, root, args, ctx, info) => {
+				// userPubSub.updated("1")
 				// TODO
 				return {
 					id: '1',

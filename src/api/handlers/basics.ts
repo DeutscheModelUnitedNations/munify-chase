@@ -10,12 +10,12 @@ export function basics<TableName extends Parameters<typeof object>[0]['tableName
 		tableName
 	});
 	const pubsub = rumblePubsub({ tableName });
-    const arg = rumbleArg({ tableName })
+	const arg = rumbleArg({ tableName });
 	query({
 		tableName
 	});
 	return {
-        arg,
+		arg,
 		ref,
 		pubsub
 	};

@@ -4,103 +4,103 @@ Indicates exactly one field must be supplied and this field must not be `null`.
 directive @oneOf on INPUT_OBJECT
 
 type Committee {
-  abbreviation: String!
-  allowDelegationsToAddThemselvesToSpeakersList: Boolean!
-  conference(where: ConferenceWhereInputArgument): Conference!
-  conferenceId: ID!
-  createdAt: DateTime!
-  id: ID!
-  name: String!
-  showWhiteboard: Boolean!
-  stateOfDebate: String
-  status: CommitteeStatusEnum!
-  statusHeadline: String
-  statusUntil: DateTime!
-  updatedAt: DateTime!
-  whiteboardContent: String
+	abbreviation: String!
+	allowDelegationsToAddThemselvesToSpeakersList: Boolean!
+	conference(where: ConferenceWhereInputArgument): Conference!
+	conferenceId: ID!
+	createdAt: DateTime!
+	id: ID!
+	name: String!
+	showWhiteboard: Boolean!
+	stateOfDebate: String
+	status: CommitteeStatusEnum!
+	statusHeadline: String
+	statusUntil: DateTime!
+	updatedAt: DateTime!
+	whiteboardContent: String
 }
 
 type CommitteeMember {
-  committee(where: CommitteeWhereInputArgument): Committee!
-  committeeId: ID!
-  conferenceMember(where: ConferenceMemberWhereInputArgument): ConferenceMember!
-  conferenceMemberId: ID!
-  createdAt: DateTime!
-  id: ID!
-  present: Boolean!
-  role: String!
-  updatedAt: DateTime!
+	committee(where: CommitteeWhereInputArgument): Committee!
+	committeeId: ID!
+	conferenceMember(where: ConferenceMemberWhereInputArgument): ConferenceMember!
+	conferenceMemberId: ID!
+	createdAt: DateTime!
+	id: ID!
+	present: Boolean!
+	role: String!
+	updatedAt: DateTime!
 }
 
 input CommitteeMemberWhereInputArgument {
-  committeeId: ID
-  conferenceMemberId: ID
-  createdAt: DateTime
-  id: ID
-  present: Boolean
-  role: String
-  updatedAt: DateTime
+	committeeId: ID
+	conferenceMemberId: ID
+	createdAt: DateTime
+	id: ID
+	present: Boolean
+	role: String
+	updatedAt: DateTime
 }
 
 enum CommitteeStatusEnum {
-  formal
-  informal
-  pause
-  suspension
+	formal
+	informal
+	pause
+	suspension
 }
 
 input CommitteeWhereInputArgument {
-  abbreviation: String
-  allowDelegationsToAddThemselvesToSpeakersList: Boolean
-  conferenceId: ID
-  createdAt: DateTime
-  id: ID
-  name: String
-  showWhiteboard: Boolean
-  stateOfDebate: String
-  status: CommitteeStatusEnum
-  statusHeadline: String
-  statusUntil: DateTime
-  updatedAt: DateTime
-  whiteboardContent: String
+	abbreviation: String
+	allowDelegationsToAddThemselvesToSpeakersList: Boolean
+	conferenceId: ID
+	createdAt: DateTime
+	id: ID
+	name: String
+	showWhiteboard: Boolean
+	stateOfDebate: String
+	status: CommitteeStatusEnum
+	statusHeadline: String
+	statusUntil: DateTime
+	updatedAt: DateTime
+	whiteboardContent: String
 }
 
 type Conference {
-  committees(where: CommitteeWhereInputArgument): [Committee!]!
-  createdAt: DateTime!
-  enabled: Boolean!
-  id: ID!
-  members(where: ConferenceMemberWhereInputArgument): [ConferenceMember!]!
-  pressWebsite: String
-  updatedAt: DateTime!
+	committees(where: CommitteeWhereInputArgument): [Committee!]!
+	createdAt: DateTime!
+	enabled: Boolean!
+	id: ID!
+	members(where: ConferenceMemberWhereInputArgument): [ConferenceMember!]!
+	pressWebsite: String
+	updatedAt: DateTime!
 }
 
 type ConferenceMember {
-  conference(where: ConferenceWhereInputArgument): Conference!
-  conferenceId: ID!
-  createdAt: DateTime!
-  id: ID!
-  role: RoleEnum!
-  updatedAt: DateTime!
-  user(where: UserWhereInputArgument): User!
-  userId: String!
+	conference(where: ConferenceWhereInputArgument): Conference!
+	conferenceId: ID!
+	createdAt: DateTime!
+	id: ID!
+	role: RoleEnum!
+	updatedAt: DateTime!
+	user(where: UserWhereInputArgument): User!
+	userId: String!
 }
 
 input ConferenceMemberWhereInputArgument {
-  conferenceId: ID
-  createdAt: DateTime
-  id: ID
-  role: RoleEnum
-  updatedAt: DateTime
-  userId: String
+	conferenceId: ID
+	createdAt: DateTime
+	id: ID
+	role: RoleEnum
+	updatedAt: DateTime
+	userId: String
 }
 
 input ConferenceWhereInputArgument {
-  createdAt: DateTime
-  enabled: Boolean
-  id: ID
-  pressWebsite: String
-  updatedAt: DateTime
+	createdAt: DateTime
+	enabled: Boolean
+	id: ID
+	pressWebsite: String
+	updatedAt: DateTime
 }
 
 """
@@ -119,61 +119,61 @@ The `JSON` scalar type represents JSON values as specified by [ECMA-404](http://
 scalar JSON
 
 type Mutation {
-  dummy: User
+	dummy: User
 }
 
 type Query {
-  findFirstCommittee(where: CommitteeWhereInputArgument): Committee!
-  findFirstCommitteeMember(where: CommitteeMemberWhereInputArgument): CommitteeMember!
-  findFirstConference(where: ConferenceWhereInputArgument): Conference!
-  findFirstConferenceMember(where: ConferenceMemberWhereInputArgument): ConferenceMember!
-  findFirstUser(where: UserWhereInputArgument): User!
-  findManyCommittee(where: CommitteeWhereInputArgument): [Committee!]!
-  findManyCommitteeMember(where: CommitteeMemberWhereInputArgument): [CommitteeMember!]!
-  findManyConference(where: ConferenceWhereInputArgument): [Conference!]!
-  findManyConferenceMember(where: ConferenceMemberWhereInputArgument): [ConferenceMember!]!
-  findManyUser(where: UserWhereInputArgument): [User!]!
+	findFirstCommittee(where: CommitteeWhereInputArgument): Committee!
+	findFirstCommitteeMember(where: CommitteeMemberWhereInputArgument): CommitteeMember!
+	findFirstConference(where: ConferenceWhereInputArgument): Conference!
+	findFirstConferenceMember(where: ConferenceMemberWhereInputArgument): ConferenceMember!
+	findFirstUser(where: UserWhereInputArgument): User!
+	findManyCommittee(where: CommitteeWhereInputArgument): [Committee!]!
+	findManyCommitteeMember(where: CommitteeMemberWhereInputArgument): [CommitteeMember!]!
+	findManyConference(where: ConferenceWhereInputArgument): [Conference!]!
+	findManyConferenceMember(where: ConferenceMemberWhereInputArgument): [ConferenceMember!]!
+	findManyUser(where: UserWhereInputArgument): [User!]!
 }
 
 enum RoleEnum {
-  admin
-  participant
-  spectator
-  team
+	admin
+	participant
+	spectator
+	team
 }
 
 type Subscription {
-  findFirstCommittee(where: CommitteeWhereInputArgument): Committee!
-  findFirstCommitteeMember(where: CommitteeMemberWhereInputArgument): CommitteeMember!
-  findFirstConference(where: ConferenceWhereInputArgument): Conference!
-  findFirstConferenceMember(where: ConferenceMemberWhereInputArgument): ConferenceMember!
-  findFirstUser(where: UserWhereInputArgument): User!
-  findManyCommittee(where: CommitteeWhereInputArgument): [Committee!]!
-  findManyCommitteeMember(where: CommitteeMemberWhereInputArgument): [CommitteeMember!]!
-  findManyConference(where: ConferenceWhereInputArgument): [Conference!]!
-  findManyConferenceMember(where: ConferenceMemberWhereInputArgument): [ConferenceMember!]!
-  findManyUser(where: UserWhereInputArgument): [User!]!
+	findFirstCommittee(where: CommitteeWhereInputArgument): Committee!
+	findFirstCommitteeMember(where: CommitteeMemberWhereInputArgument): CommitteeMember!
+	findFirstConference(where: ConferenceWhereInputArgument): Conference!
+	findFirstConferenceMember(where: ConferenceMemberWhereInputArgument): ConferenceMember!
+	findFirstUser(where: UserWhereInputArgument): User!
+	findManyCommittee(where: CommitteeWhereInputArgument): [Committee!]!
+	findManyCommitteeMember(where: CommitteeMemberWhereInputArgument): [CommitteeMember!]!
+	findManyConference(where: ConferenceWhereInputArgument): [Conference!]!
+	findManyConferenceMember(where: ConferenceMemberWhereInputArgument): [ConferenceMember!]!
+	findManyUser(where: UserWhereInputArgument): [User!]!
 }
 
 type User {
-  conferenceMemberships(where: ConferenceMemberWhereInputArgument): [ConferenceMember!]!
-  createdAt: DateTime!
-  email: String!
-  familyName: String!
-  givenName: String!
-  id: String!
-  locale: String!
-  preferredUsername: String!
-  updatedAt: DateTime!
+	conferenceMemberships(where: ConferenceMemberWhereInputArgument): [ConferenceMember!]!
+	createdAt: DateTime!
+	email: String!
+	familyName: String!
+	givenName: String!
+	id: String!
+	locale: String!
+	preferredUsername: String!
+	updatedAt: DateTime!
 }
 
 input UserWhereInputArgument {
-  createdAt: DateTime
-  email: String
-  familyName: String
-  givenName: String
-  id: String
-  locale: String
-  preferredUsername: String
-  updatedAt: DateTime
+	createdAt: DateTime
+	email: String
+	familyName: String
+	givenName: String
+	id: String
+	locale: String
+	preferredUsername: String
+	updatedAt: DateTime
 }

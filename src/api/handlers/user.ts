@@ -3,7 +3,6 @@ import { basics } from './basics';
 
 const { arg, ref, pubsub } = basics('user');
 
-
 schemaBuilder.mutationFields((t) => {
 	return {
 		dummy: t.drizzleField({

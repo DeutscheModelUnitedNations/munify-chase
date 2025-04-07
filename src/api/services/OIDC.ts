@@ -22,6 +22,8 @@ import Cryptr from 'cryptr';
 import { error, redirect, type RequestEvent } from '@sveltejs/kit';
 import { db, schema } from '$api/db/db';
 
+// TODO: this could be a library
+
 /**
  * Roles the issuer can pass along which we should respect
  */

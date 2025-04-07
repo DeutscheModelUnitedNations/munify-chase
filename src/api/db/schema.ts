@@ -1,27 +1,5 @@
-import {
-	integer,
-	pgTable,
-	serial,
-	text,
-	timestamp,
-	unique,
-	uuid,
-	pgEnum,
-	boolean
-} from 'drizzle-orm/pg-core';
+import { pgTable, text, timestamp, unique, uuid, pgEnum, boolean } from 'drizzle-orm/pg-core';
 import { relations, sql } from 'drizzle-orm';
-
-// id String @id @default(nanoid())
-
-// // these are OIDC fields and only will be updated by the issuer in the login flow
-// email              String @unique
-// family_name        String
-// given_name         String
-// locale             String
-// preferred_username String
-
-// createdAt DateTime @default(now())
-// updatedAt DateTime @default(now()) @updatedAt
 
 export const user = pgTable('user', {
 	// we can't use uuid for this because the ID provider might not stick to uuid format
@@ -37,6 +15,10 @@ export const user = pgTable('user', {
 		.$onUpdate(() => sql`now() `)
 });
 
+export const usersRelations = relations(user, ({ one, many }) => ({
+	conferenceMemberships: many(conferenceMember)
+}));
+
 export const conference = pgTable('conference', {
 	id: uuid('id').primaryKey().unique().notNull(),
 	createdAt: timestamp('created_at').defaultNow().notNull(),
@@ -46,6 +28,11 @@ export const conference = pgTable('conference', {
 	enabled: boolean('enabled').notNull().default(true),
 	pressWebsite: text('press_website')
 });
+
+export const conferenceRelations = relations(conference, ({ one, many }) => ({
+	committees: many(committee),
+	members: many(conferenceMember)
+}));
 
 export const committeeStatus = pgEnum('committee_status', [
 	'formal',
@@ -84,6 +71,13 @@ export const committee = pgTable(
 	(t) => [unique().on(t.conferenceId, t.name), unique().on(t.conferenceId, t.abbreviation)]
 );
 
+export const committeeRelations = relations(committee, ({ one }) => ({
+	conference: one(conference, {
+		fields: [committee.conferenceId],
+		references: [conference.id]
+	})
+}));
+
 export const conferenceRole = pgEnum('role', ['admin', 'team', 'spectator', 'participant']);
 
 export const conferenceMember = pgTable('conference_member', {
@@ -93,11 +87,24 @@ export const conferenceMember = pgTable('conference_member', {
 		.notNull()
 		.$onUpdate(() => sql`now()`),
 	role: conferenceRole('conference_role').notNull(),
-	userId: text('user').references(() => user.id),
+	userId: text('user')
+		.notNull()
+		.references(() => user.id),
 	conferenceId: uuid('conference')
 		.notNull()
 		.references(() => conference.id)
 });
+
+export const conferenceMemberRelations = relations(conferenceMember, ({ one }) => ({
+	user: one(user, {
+		fields: [conferenceMember.userId],
+		references: [user.id]
+	}),
+	conference: one(conference, {
+		fields: [conferenceMember.conferenceId],
+		references: [conference.id]
+	})
+}));
 
 export const committeeMember = pgTable('committee_member', {
 	id: uuid('id').primaryKey().unique().notNull(),
@@ -109,6 +116,19 @@ export const committeeMember = pgTable('committee_member', {
 	conferenceMemberId: uuid('conference_member')
 		.notNull()
 		.references(() => conferenceMember.id),
-	committeeId: uuid('committee').references(() => committee.id),
+	committeeId: uuid('committee')
+		.notNull()
+		.references(() => committee.id),
 	role: text('role').notNull() // ??? Really a good idea? (Nicht wertend gemeint, total objektiv)
 });
+
+export const committeeMemberRelations = relations(committeeMember, ({ one }) => ({
+	conferenceMember: one(conferenceMember, {
+		fields: [committeeMember.conferenceMemberId],
+		references: [conferenceMember.id]
+	}),
+	committee: one(committee, {
+		fields: [committeeMember.committeeId],
+		references: [committee.id]
+	})
+}));

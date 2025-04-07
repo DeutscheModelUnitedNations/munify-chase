@@ -214,7 +214,9 @@ async function handleLoginRedirect(req: RequestEvent) {
 			preferredUsername: user.preferred_username,
 			email: user.email,
 			familyName: user.family_name,
-			givenName: user.given_name
+			givenName: user.given_name,
+			createdAt: new Date(),
+			updatedAt: new Date()
 		})
 		.onConflictDoUpdate({
 			target: schema.user.id,
@@ -223,7 +225,8 @@ async function handleLoginRedirect(req: RequestEvent) {
 				preferredUsername: user.preferred_username,
 				email: user.email,
 				familyName: user.family_name,
-				givenName: user.given_name
+				givenName: user.given_name,
+				updatedAt: new Date()
 			}
 		});
 
@@ -311,7 +314,7 @@ export async function applyAuth({
 				setTokenCookiesOnRequest(event, newTokenSet);
 				return await validateTokens(newTokenSet);
 			} catch (error) {
-				console.warn('Error refreshing token', error);
+				// console.warn('Error refreshing token', error);
 			}
 		}
 

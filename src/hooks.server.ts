@@ -1,9 +1,9 @@
 import type { Handle } from '@sveltejs/kit';
 import { paraglideMiddleware } from '$lib/paraglide/server';
-import { applyAuth } from '$api/services/OIDC';
+import { sequence } from '@sveltejs/kit/hooks';
+import { OIDC } from '$api/services/OIDC';
 
-// creating a handle to use the paraglide middleware
-const paraglideHandle: Handle = ({ event, resolve }) =>
+export const handle: Handle = sequence(OIDC.handle, ({ event, resolve }) =>
 	paraglideMiddleware(event.request, ({ request: localizedRequest, locale }) => {
 		event.request = localizedRequest;
 		return resolve(event, {
@@ -11,11 +11,5 @@ const paraglideHandle: Handle = ({ event, resolve }) =>
 				return html.replace('%lang%', locale);
 			}
 		});
-	});
-
-const authenticatedRoutes = ['/app'];
-
-export const handle: Handle = async ({ event, resolve }) => {
-	await applyAuth({ event, authenticatedRoutes });
-	return paraglideHandle({ event, resolve });
-};
+	})
+);

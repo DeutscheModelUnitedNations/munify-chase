@@ -70,7 +70,7 @@ export const committee = pgTable(
 		abbreviation: text().notNull(),
 		conferenceId: uuid()
 			.notNull()
-			.references(() => conference.id),
+			.references(() => conference.id, { onDelete: 'cascade' }),
 		whiteboardContent: text().default('<p>Whiteboard</p>'),
 		showWhiteboard: boolean().notNull().default(true),
 		status: committeeStatus().notNull().default('SUSPENSION'),
@@ -114,10 +114,10 @@ export const conferenceUser = pgTable('conference_user', {
 	conferenceUserType: conferenceUserType().notNull(),
 	userId: text()
 		.notNull()
-		.references(() => user.id),
+		.references(() => user.id, { onDelete: 'cascade' }),
 	conferenceId: uuid()
 		.notNull()
-		.references(() => conference.id),
+		.references(() => conference.id, { onDelete: 'cascade' }),
 	conferenceMemberId: uuid(),
 	committeeMemberId: uuid()
 });
@@ -152,7 +152,7 @@ export const conferenceMember = pgTable('conference_member', {
 	...defaultIdAndTimestamps,
 	conferenceId: uuid()
 		.notNull()
-		.references(() => conference.id),
+		.references(() => conference.id, { onDelete: 'cascade' }),
 	representationId: uuid()
 		.notNull()
 		.references(() => representation.id)
@@ -175,7 +175,7 @@ export const committeeMember = pgTable('committee_member', {
 	present: boolean().notNull().default(false),
 	committeeId: uuid()
 		.notNull()
-		.references(() => committee.id),
+		.references(() => committee.id, { onDelete: 'cascade' }),
 	representationId: uuid()
 		.notNull()
 		.references(() => representation.id)
@@ -246,10 +246,12 @@ export const speakerOnList = pgTable(
 	'speaker_on_list',
 	{
 		...defaultIdAndTimestamps,
-		committeeMemberId: uuid().references(() => committeeMember.id),
-		conferenceMemberId: uuid().references((): AnyPgColumn => conferenceMember.id),
+		committeeMemberId: uuid().references(() => committeeMember.id, { onDelete: 'cascade' }),
+		conferenceMemberId: uuid().references((): AnyPgColumn => conferenceMember.id, {
+			onDelete: 'cascade'
+		}),
 		speakersListId: uuid()
-			.references(() => speakersList.id)
+			.references(() => speakersList.id, { onDelete: 'cascade' })
 			.notNull(),
 		position: smallint().notNull()
 	},

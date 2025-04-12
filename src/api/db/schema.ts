@@ -12,18 +12,31 @@ import {
 } from 'drizzle-orm/pg-core';
 import { relations, sql } from 'drizzle-orm';
 
-export const user = pgTable('user', {
-	// we can't use uuid for this because the ID provider might not stick to uuid format
-	id: text('id').primaryKey().unique().notNull(),
-	email: text('email').notNull().unique(),
-	familyName: text('family_name').notNull(),
-	givenName: text('given_name').notNull(),
-	locale: text('locale').notNull(),
-	preferredUsername: text('preferred_username').notNull(),
-	createdAt: timestamp('created_at').defaultNow().notNull(),
-	updatedAt: timestamp('updated_at')
+const defaultIdAndTimestamps = {
+	id: uuid().primaryKey().unique().notNull(),
+	createdAt: timestamp().defaultNow().notNull(),
+	updatedAt: timestamp()
 		.notNull()
 		.$onUpdate(() => sql`now()`)
+};
+const defaultTimestamps = {
+	createdAt: timestamp().defaultNow().notNull(),
+	updatedAt: timestamp()
+		.notNull()
+		.$onUpdate(() => sql`now()`)
+};
+
+export const user = pgTable('user', {
+	// we can't use uuid for this because the ID provider might not stick to uuid format
+	id: text().primaryKey().unique().notNull(),
+	...defaultTimestamps,
+
+	// OIDC fields
+	email: text().notNull().unique(),
+	familyName: text().notNull(),
+	givenName: text().notNull(),
+	locale: text(),
+	preferredUsername: text().notNull()
 });
 
 export const usersRelations = relations(user, ({ one, many }) => ({
@@ -31,18 +44,15 @@ export const usersRelations = relations(user, ({ one, many }) => ({
 }));
 
 export const conference = pgTable('conference', {
-	id: uuid('id').primaryKey().unique().notNull(),
-	createdAt: timestamp('created_at').defaultNow().notNull(),
-	updatedAt: timestamp('updated_at')
-		.notNull()
-		.$onUpdate(() => sql`now()`),
-	enabled: boolean('enabled').notNull().default(true),
-	pressWebsite: text('press_website')
+	...defaultIdAndTimestamps,
+	enabled: boolean().notNull().default(true),
+	pressWebsite: text()
 });
 
 export const conferenceRelations = relations(conference, ({ one, many }) => ({
 	committees: many(committee),
-	members: many(conferenceUser)
+	users: many(conferenceUser),
+	members: many(conferenceMember)
 }));
 
 export const committeeStatus = pgEnum('committee_status', [
@@ -55,30 +65,22 @@ export const committeeStatus = pgEnum('committee_status', [
 export const committee = pgTable(
 	'committee',
 	{
-		id: uuid('id').primaryKey().unique().notNull(),
-		createdAt: timestamp('created_at').defaultNow().notNull(),
-		updatedAt: timestamp('updated_at')
-			.notNull()
-			.$onUpdate(() => sql`now()`),
-		name: text('name').notNull(),
-		abbreviation: text('abbreviation').notNull(),
-		conferenceId: uuid('conference')
+		...defaultIdAndTimestamps,
+		name: text().notNull(),
+		abbreviation: text().notNull(),
+		conferenceId: uuid()
 			.notNull()
 			.references(() => conference.id),
-		whiteboardContent: text('whiteboard_content').default('<p>Whiteboard</p>'),
-		showWhiteboard: boolean('show_whiteboard').notNull().default(true),
-		status: committeeStatus('status').notNull().default('SUSPENSION'),
-		statusHeadline: text('status_headline').default(''),
-		statusUntil: timestamp('status_until')
+		whiteboardContent: text().default('<p>Whiteboard</p>'),
+		showWhiteboard: boolean().notNull().default(true),
+		status: committeeStatus().notNull().default('SUSPENSION'),
+		statusHeadline: text().notNull().default(''),
+		statusUntil: timestamp()
 			.notNull()
 			.default(sql`now()`),
-		stateOfDebate: text('state_of_debate').default(''),
-		allowDelegationsToAddThemselvesToSpeakersList: boolean(
-			'allow_delegations_to_add_themselves_to_speakers_list'
-		)
-			.notNull()
-			.default(false),
-		activeAgendaItemId: uuid('active_agenda_item').references((): AnyPgColumn => agendaItem.id)
+		stateOfDebate: text(),
+		allowDelegationsToAddThemselvesToSpeakersList: boolean().notNull().default(false),
+		activeAgendaItemId: uuid().references((): AnyPgColumn => agendaItem.id)
 	},
 	(t) => [unique().on(t.conferenceId, t.name), unique().on(t.conferenceId, t.abbreviation)]
 );
@@ -90,12 +92,16 @@ export const committeeRelations = relations(committee, ({ one, many }) => ({
 	}),
 	activeAgendaItem: one(agendaItem, {
 		fields: [committee.activeAgendaItemId],
-		references: [agendaItem.id]
+		references: [agendaItem.id],
+		relationName: 'activeAgendaItem'
 	}),
-	agendaItems: many(agendaItem)
+	agendaItems: many(agendaItem, {
+		relationName: 'associatedAgendaItems'
+	}),
+	members: many(committeeMember)
 }));
 
-export const conferenceUserType = pgEnum('conferenceUserType', [
+export const conferenceUserType = pgEnum('conference_user_type', [
 	'ADMIN',
 	'TEAM',
 	'SPECTATOR',
@@ -104,20 +110,16 @@ export const conferenceUserType = pgEnum('conferenceUserType', [
 ]);
 
 export const conferenceUser = pgTable('conference_user', {
-	id: uuid('id').primaryKey().unique().notNull(),
-	createdAt: timestamp('created_at').defaultNow().notNull(),
-	updatedAt: timestamp('updated_at')
-		.notNull()
-		.$onUpdate(() => sql`now()`),
-	conferenceUserType: conferenceUserType('conference_user_type').notNull(),
-	userId: text('user')
+	...defaultIdAndTimestamps,
+	conferenceUserType: conferenceUserType().notNull(),
+	userId: text()
 		.notNull()
 		.references(() => user.id),
-	conferenceId: uuid('conference')
+	conferenceId: uuid()
 		.notNull()
 		.references(() => conference.id),
-	conferenceMemberId: uuid('conference_member'),
-	committeeMemberId: uuid('committee_member')
+	conferenceMemberId: uuid(),
+	committeeMemberId: uuid()
 });
 
 export const conferenceUserRelations = relations(conferenceUser, ({ one }) => ({
@@ -131,88 +133,96 @@ export const conferenceUserRelations = relations(conferenceUser, ({ one }) => ({
 	})
 }));
 
-export const representationType = pgEnum('representationType', ['DELEGATION', 'NSA', 'UN']);
+export const representationType = pgEnum('representation_type', ['DELEGATION', 'NSA', 'UN']);
 
 export const representation = pgTable('representation', {
-	id: uuid('id').primaryKey().unique().notNull(),
-	createdAt: timestamp('created_at').defaultNow().notNull(),
-	updatedAt: timestamp('updated_at')
-		.notNull()
-		.$onUpdate(() => sql`now()`),
+	...defaultIdAndTimestamps,
 	name: text(),
 	alpha2Code: text(),
 	alpha3Code: text(),
 	type: representationType().notNull()
 });
 
+export const representationRelations = relations(representation, ({ many }) => ({
+	conferenceMembers: many(conferenceMember),
+	committeeMembers: many(committeeMember)
+}));
+
 export const conferenceMember = pgTable('conference_member', {
-	id: uuid('id').primaryKey().unique().notNull(),
-	createdAt: timestamp('created_at').defaultNow().notNull(),
-	updatedAt: timestamp('updated_at')
+	...defaultIdAndTimestamps,
+	conferenceId: uuid()
 		.notNull()
-		.$onUpdate(() => sql`now()`),
-	representationId: uuid('representation')
+		.references(() => conference.id),
+	representationId: uuid()
 		.notNull()
 		.references(() => representation.id)
 });
 
+export const conferenceMemberRelations = relations(conferenceMember, ({ one, many }) => ({
+	conference: one(conference, {
+		fields: [conferenceMember.conferenceId],
+		references: [conference.id]
+	}),
+	representation: one(representation, {
+		fields: [conferenceMember.representationId],
+		references: [representation.id]
+	}),
+	speakerOnList: many(speakerOnList)
+}));
+
 export const committeeMember = pgTable('committee_member', {
-	id: uuid('id').primaryKey().unique().notNull(),
-	createdAt: timestamp('created_at').defaultNow().notNull(),
-	updatedAt: timestamp('updated_at')
-		.notNull()
-		.$onUpdate(() => sql`now()`),
-	present: boolean('present').notNull().default(false),
-	committeeId: uuid('committee')
+	...defaultIdAndTimestamps,
+	present: boolean().notNull().default(false),
+	committeeId: uuid()
 		.notNull()
 		.references(() => committee.id),
-	representationId: uuid('representation')
+	representationId: uuid()
 		.notNull()
 		.references(() => representation.id)
 });
 
 export const committeeMemberRelations = relations(committeeMember, ({ one, many }) => ({
-	conferenceMember: one(conferenceUser, {
-		fields: [committeeMember.conferenceMemberId],
-		references: [conferenceUser.id]
-	}),
 	committee: one(committee, {
 		fields: [committeeMember.committeeId],
 		references: [committee.id]
+	}),
+	representation: one(representation, {
+		fields: [committeeMember.representationId],
+		references: [representation.id]
 	}),
 	speakerOnList: many(speakerOnList)
 }));
 
 export const agendaItem = pgTable('agenda_item', {
-	id: uuid('id').primaryKey().unique().notNull(),
-	createdAt: timestamp('created_at').defaultNow().notNull(),
-	updatedAt: timestamp('updated_at')
-		.notNull()
-		.$onUpdate(() => sql`now()`),
-	committeeId: uuid('committee')
+	...defaultIdAndTimestamps,
+	committeeId: uuid()
 		.references(() => committee.id, { onDelete: 'cascade' })
 		.notNull(),
-	title: text('title').notNull()
+	title: text().notNull()
 });
 
 export const agendaItemRelations = relations(agendaItem, ({ one }) => ({
 	committee: one(committee, {
 		fields: [agendaItem.committeeId],
-		references: [committee.id]
+		references: [committee.id],
+		relationName: 'associatedAgendaItems'
+	}),
+	speakersList: one(speakersList, {
+		fields: [agendaItem.id],
+		references: [speakersList.agendaItemId]
 	})
 }));
 
-export const speakersListCategory = pgEnum('committee_status', ['SPEAKERS_LIST', 'COMMENT_LIST']);
+export const speakersListCategory = pgEnum('speakers_list_category', [
+	'SPEAKERS_LIST',
+	'COMMENT_LIST'
+]);
 
 export const speakersList = pgTable(
 	'speakers_list',
 	{
-		id: uuid('id').primaryKey().unique().notNull(),
-		createdAt: timestamp('created_at').defaultNow().notNull(),
-		updatedAt: timestamp('updated_at')
-			.notNull()
-			.$onUpdate(() => sql`now()`),
-		agendaItemId: uuid('agendaItem')
+		...defaultIdAndTimestamps,
+		agendaItemId: uuid()
 			.references(() => committee.id, { onDelete: 'cascade' })
 			.notNull(),
 		type: speakersListCategory().notNull(),
@@ -224,30 +234,29 @@ export const speakersList = pgTable(
 	(t) => [unique().on(t.agendaItemId, t.type)]
 );
 
-export const speakersListRelations = relations(speakersList, ({ many }) => ({
-	agendaItems: many(agendaItem),
+export const speakersListRelations = relations(speakersList, ({ many, one }) => ({
+	agendaItem: one(agendaItem, {
+		fields: [speakersList.agendaItemId],
+		references: [agendaItem.id]
+	}),
 	speakers: many(speakerOnList)
 }));
 
 export const speakerOnList = pgTable(
 	'speaker_on_list',
 	{
-		id: uuid('id').primaryKey().unique().notNull(),
-		createdAt: timestamp('created_at').defaultNow().notNull(),
-		updatedAt: timestamp('updated_at')
-			.notNull()
-			.$onUpdate(() => sql`now()`),
-		committeeMemberId: uuid('committee_member')
-			.references(() => committeeMember.id)
-			.notNull(),
-		speakersListId: uuid('speakers_list')
+		...defaultIdAndTimestamps,
+		committeeMemberId: uuid().references(() => committeeMember.id),
+		conferenceMemberId: uuid().references((): AnyPgColumn => conferenceMember.id),
+		speakersListId: uuid()
 			.references(() => speakersList.id)
 			.notNull(),
 		position: smallint().notNull()
 	},
 	(t) => [
 		unique().on(t.speakersListId, t.position),
-		unique().on(t.speakersListId, t.committeeMemberId)
+		unique().on(t.speakersListId, t.committeeMemberId),
+		unique().on(t.speakersListId, t.conferenceMemberId)
 	]
 );
 
@@ -259,5 +268,9 @@ export const speakerOnListRelations = relations(speakerOnList, ({ one }) => ({
 	committeeMember: one(committeeMember, {
 		fields: [speakerOnList.committeeMemberId],
 		references: [committeeMember.id]
+	}),
+	conferenceMember: one(conferenceMember, {
+		fields: [speakerOnList.conferenceMemberId],
+		references: [conferenceMember.id]
 	})
 }));

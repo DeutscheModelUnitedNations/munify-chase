@@ -3,7 +3,8 @@ import * as schemaInternal from './schema';
 import { DATABASE_URL } from '$env/static/private';
 
 export const db = drizzle(DATABASE_URL, {
-	schema: schemaInternal
+	schema: schemaInternal,
+	casing: 'snake_case'
 });
 
 export const schema = schemaInternal;

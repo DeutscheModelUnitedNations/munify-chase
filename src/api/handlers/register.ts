@@ -1,5 +1,11 @@
-import './user';
-import './conference';
+import './agendaItem';
 import './committee';
-import './conferenceMember';
 import './committeeMember';
+import './conference';
+import './conferenceMember';
+import './conferenceUser';
+import './representation';
+import './speakerOnList';
+import './speakersList';
+import './time';
+import './user';

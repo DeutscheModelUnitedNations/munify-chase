@@ -45,7 +45,6 @@ export const usersRelations = relations(user, ({ one, many }) => ({
 
 export const conference = pgTable('conference', {
 	...defaultIdAndTimestamps,
-	enabled: boolean().notNull().default(true),
 	pressWebsite: text()
 });
 

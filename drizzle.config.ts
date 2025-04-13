@@ -9,5 +9,5 @@ export default defineConfig({
 	verbose: true,
 	strict: true,
 	dialect: 'postgresql',
-	casing: "snake_case",
+	casing: 'snake_case'
 });

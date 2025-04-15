@@ -9,7 +9,7 @@
         "@inlang/cli": "^3.0.10",
         "@inlang/paraglide-js": "2.0.11",
         "@m1212e/graphql-scalars-houdini": "^0.0.1",
-        "@m1212e/rumble": "^0.3.14",
+        "@m1212e/rumble": "^0.4.0",
         "@m1212e/sveltekit-oidc": "^0.0.27",
         "@sveltejs/adapter-node": "^5.2.12",
         "@sveltejs/kit": "^2.20.5",
@@ -201,7 +201,7 @@
 
     "@m1212e/graphql-scalars-houdini": ["@m1212e/graphql-scalars-houdini@0.0.1", "", { "dependencies": { "graphql-scalars": "^1.24" }, "peerDependencies": { "houdini": "^1", "typescript": "^5" } }, "sha512-sbehs8H45vQ5rSo4Md6LxfOu0c0BkxUVEJDAUdofWK4ea1WJf5rytqok03fPhV8K3rC/oIfGk0LAi31X0/OQMw=="],
 
-    "@m1212e/rumble": ["@m1212e/rumble@0.3.14", "", { "dependencies": { "@pothos/core": "^4.5.0", "@pothos/plugin-drizzle": "^0.7.0", "@pothos/plugin-smart-subscriptions": "^4.1.1", "graphql-scalars": "^1.24.2", "graphql-yoga": "^5.12.2" }, "peerDependencies": { "drizzle-orm": "^0", "typescript": "^5" } }, "sha512-AMnfHzaX9ZTF3U32Je7r4753Rm3In1oZ8E2NCUJXTEnOekSu683+ayc7acr8OcTgkTZ3Es1CpgMV4OGKGX/sVg=="],
+    "@m1212e/rumble": ["@m1212e/rumble@0.4.0", "", { "dependencies": { "@pothos/core": "^4.5.0", "@pothos/plugin-drizzle": "^0.7.0", "@pothos/plugin-smart-subscriptions": "^4.1.1", "graphql-scalars": "^1.24.2", "graphql-yoga": "^5.12.2" }, "peerDependencies": { "drizzle-orm": "^0", "typescript": "^5" } }, "sha512-mg+aGZ0vGfiV9eakOP2Fasb/xk3q6UXY0jmlKuIIPafJWg0TgDU1WArJKJxuwDdcXAbeAuV+NmBsnMC67hDRRg=="],
 
     "@m1212e/sveltekit-oidc": ["@m1212e/sveltekit-oidc@0.0.27", "", { "dependencies": { "@sinclair/typebox": "^0.34.33" }, "peerDependencies": { "svelte": "^5.0.0" } }, "sha512-pw+jtrwSc4tgz8Tq5zGRzzcYEHtKCeRwqKm6FhTDanpw+aJrpQ+5kC9XQmxHMGEDjRt4HUe+Phih9+cDvzwsNg=="],
 

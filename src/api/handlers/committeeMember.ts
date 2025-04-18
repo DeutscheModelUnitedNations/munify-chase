@@ -1,17 +1,16 @@
 import { db, schema } from '$api/db/db';
 import { schemaBuilder } from '$api/rumble';
-import { and, eq } from 'drizzle-orm';
+import { and, inArray } from 'drizzle-orm';
 import { basics } from './basics';
-import { assertFindFirstExists } from '@m1212e/rumble';
 
 const { arg, ref, pubsub } = basics('committeeMember');
 
 schemaBuilder.mutationFields((t) => {
 	return {
-		setPresenceForCommitteeMember: t.drizzleField({
-			type: ref,
+		setPresenceForCommitteeMembers: t.drizzleField({
+			type: [ref],
 			args: {
-				id: t.arg.id({ required: true }),
+				ids: t.arg.idList({ required: true }),
 				present: t.arg.boolean({ required: true })
 			},
 			resolve: async (query, root, args, ctx, info) => {
@@ -22,22 +21,20 @@ schemaBuilder.mutationFields((t) => {
 					})
 					.where(
 						and(
-							eq(schema.committeeMember.id, args.id),
+							inArray(schema.committeeMember.id, args.ids),
 							ctx.abilities.committeeMember.filter('update').single.where
 						)
 					);
 
-				pubsub.updated(args.id);
+				pubsub.updated(args.ids);
 
-				return db.query.committeeMember
-					.findFirst(
-						query(
-							ctx.abilities.committeeMember.filter('read', {
-								inject: { where: { id: eq(schema.committeeMember.id, args.id) } }
-							}).single
-						)
+				return db.query.committeeMember.findMany(
+					query(
+						ctx.abilities.committeeMember.filter('read', {
+							inject: { where: { id: inArray(schema.committeeMember.id, args.ids) } }
+						}).single
 					)
-					.then(assertFindFirstExists);
+				);
 			}
 		})
 	};

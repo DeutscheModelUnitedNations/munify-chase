@@ -99,7 +99,6 @@ input CommitteeWhereInputArgument {
 type Conference {
   committees(where: CommitteeWhereInputArgument): [Committee!]!
   createdAt: DateTime!
-  enabled: Boolean!
   id: ID!
   members(where: ConferenceMemberWhereInputArgument): [ConferenceMember!]!
   pressWebsite: String
@@ -166,7 +165,6 @@ input ConferenceUserWhereInputArgument {
 input ConferenceWhereInputArgument {
   committees: CommitteeWhereInputArgument
   createdAt: DateTime
-  enabled: Boolean
   id: ID
   members: ConferenceMemberWhereInputArgument
   pressWebsite: String
@@ -190,7 +188,7 @@ The `JSON` scalar type represents JSON values as specified by [ECMA-404](http://
 scalar JSON
 
 type Mutation {
-  dummy: User
+  setPresenceForCommitteeMember(id: ID!, present: Boolean!): CommitteeMember
 }
 
 type Query {

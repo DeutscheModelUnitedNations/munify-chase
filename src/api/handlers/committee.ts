@@ -1,10 +1,10 @@
-import { db, schema } from '$api/db/db';
+import { db } from '$api/db/db';
 import { enum_, schemaBuilder } from '$api/rumble';
 import { and, eq } from 'drizzle-orm';
 import { basics } from './basics';
 import { assertFindFirstExists } from '@m1212e/rumble';
 
-const { arg, ref, pubsub } = basics('committee');
+const { arg, ref, pubsub, table } = basics('committee');
 const statusEnum = enum_({
 	enumVariableName: 'committeeStatus'
 });
@@ -32,7 +32,7 @@ schemaBuilder.mutationFields((t) => {
 			},
 			resolve: async (query, root, args, ctx, info) => {
 				await db
-					.update(schema.committee)
+					.update(table)
 					.set({
 						whiteboardContent: args.whiteboardContent ?? undefined,
 						showWhiteboard: args.showWhiteboard ?? undefined,
@@ -44,7 +44,7 @@ schemaBuilder.mutationFields((t) => {
 					})
 					.where(
 						and(
-							eq(schema.committee.id, args.id),
+							eq(table.id, args.id),
 							ctx.abilities.committee.filter('update').single.where
 						)
 					);
@@ -55,7 +55,7 @@ schemaBuilder.mutationFields((t) => {
 					.findFirst(
 						query(
 							ctx.abilities.committee.filter('read', {
-								inject: { where: { id: eq(schema.committee.id, args.id) } }
+								inject: { where: { id: eq(table.id, args.id) } }
 							}).single
 						)
 					)

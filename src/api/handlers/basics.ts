@@ -1,3 +1,4 @@
+import { schema } from '$api/db/db';
 import { object, pubsub as rumblePubsub, query, arg as rumbleArg } from '$api/rumble';
 
 /**
@@ -17,6 +18,7 @@ export function basics<TableName extends Parameters<typeof object>[0]['tableName
 	return {
 		arg,
 		ref,
-		pubsub
+		pubsub,
+		table: schema[tableName]
 	};
 }

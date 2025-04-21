@@ -1,4 +1,4 @@
 import { schemaBuilder } from '$api/rumble';
 import { basics } from './basics';
 
-const { arg, ref, pubsub } = basics('user');
+const { arg, ref, pubsub, table } = basics('user');

@@ -1,3 +1,3 @@
 import { basics } from './basics';
 
-const { arg, ref, pubsub } = basics('conferenceUser');
+const { arg, ref, pubsub, table } = basics('conferenceUser');

@@ -1,9 +1,9 @@
-import { db, schema } from '$api/db/db';
+import { db } from '$api/db/db';
 import { schemaBuilder } from '$api/rumble';
 import { and, inArray } from 'drizzle-orm';
 import { basics } from './basics';
 
-const { arg, ref, pubsub } = basics('committeeMember');
+const { arg, ref, pubsub, table } = basics('committeeMember');
 
 schemaBuilder.mutationFields((t) => {
 	return {
@@ -15,13 +15,13 @@ schemaBuilder.mutationFields((t) => {
 			},
 			resolve: async (query, root, args, ctx, info) => {
 				await db
-					.update(schema.committeeMember)
+					.update(table)
 					.set({
 						present: args.present
 					})
 					.where(
 						and(
-							inArray(schema.committeeMember.id, args.ids),
+							inArray(table.id, args.ids),
 							ctx.abilities.committeeMember.filter('update').single.where
 						)
 					);
@@ -31,7 +31,7 @@ schemaBuilder.mutationFields((t) => {
 				return db.query.committeeMember.findMany(
 					query(
 						ctx.abilities.committeeMember.filter('read', {
-							inject: { where: { id: inArray(schema.committeeMember.id, args.ids) } }
+							inject: { where: { id: inArray(table.id, args.ids) } }
 						}).single
 					)
 				);

@@ -13,7 +13,7 @@ import {
 import { relations, sql } from 'drizzle-orm';
 
 const defaultIdAndTimestamps = {
-	id: uuid().primaryKey().notNull(),
+	id: uuid().defaultRandom().primaryKey().notNull(),
 	createdAt: timestamp().defaultNow().notNull(),
 	updatedAt: timestamp()
 		.notNull()

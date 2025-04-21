@@ -2,11 +2,14 @@ import { schemaBuilder } from '$api/rumble';
 import { GraphQLError } from 'graphql';
 import { basics } from './basics';
 import { db, schema } from '$api/db/db';
-import { and, count, eq, gt, gte, sql } from 'drizzle-orm';
+import { and, count, eq, gt, gte, lt, sql } from 'drizzle-orm';
 import { assertFindFirstExists, assertFirstEntryExists } from '@m1212e/rumble';
 import { SpeakersListRef } from './speakersList';
 
 const { arg, ref, pubsub, table } = basics('speakerOnList');
+
+// TODO: These could use some validation for the position values. E.g. only allow positons
+// which are in bounds and so on
 
 schemaBuilder.mutationFields((t) => {
 	return {
@@ -135,6 +138,81 @@ schemaBuilder.mutationFields((t) => {
 						query(
 							ctx.abilities.speakersList.filter('read', {
 								inject: { where: { id: eq(schema.speakersList.id, removed.speakersListId) } }
+							}).single
+						)
+					)
+					.then(assertFindFirstExists);
+			}
+		}),
+		moveSpeakerToPosition: t.drizzleField({
+			type: ref,
+			args: {
+				id: t.arg.id({ required: true }),
+				position: t.arg.int({ required: true })
+			},
+			resolve: async (query, root, args, ctx, info) => {
+				const updatedEntityIds = await db.transaction(async (tx) => {
+					const aboutToMoveSpeakerOnList = await tx.query.speakerOnList
+						.findFirst({
+							where: and(
+								eq(table.id, args.id),
+								ctx.abilities.speakerOnList.filter('update').single.where
+							)
+						})
+						.then(assertFindFirstExists);
+
+					await tx
+						.update(table)
+						.set({
+							position: -1
+						})
+						.where(eq(table.id, aboutToMoveSpeakerOnList.id));
+
+					const updatedEntityIds = [aboutToMoveSpeakerOnList.id];
+
+					const shift = async (direction: 'up' | 'down') => {
+						const updated = await tx
+							.update(table)
+							.set({
+								position: sql`${table.position} ${direction === 'up' ? '-' : '+'} 1`
+							})
+							.where(
+								and(
+									gt(table.position, aboutToMoveSpeakerOnList.position),
+									lt(table.position, args.position),
+									eq(table.speakersListId, aboutToMoveSpeakerOnList.speakersListId),
+									ctx.abilities.speakerOnList.filter('update').single.where
+								)
+							)
+							.returning({ id: table.id });
+
+						updatedEntityIds.push(...updated.map((u) => u.id));
+
+						return updated;
+					};
+
+					if (args.position > aboutToMoveSpeakerOnList.position) {
+						await shift('up');
+					} else if (args.position < aboutToMoveSpeakerOnList.position) {
+						await shift('down');
+					}
+
+					await tx
+						.update(table)
+						.set({
+							position: args.position
+						})
+						.where(eq(table.id, aboutToMoveSpeakerOnList.id));
+
+					return updatedEntityIds;
+				});
+				pubsub.updated(updatedEntityIds);
+
+				return db.query.speakerOnList
+					.findFirst(
+						query(
+							ctx.abilities.speakerOnList.filter('read', {
+								inject: { where: { id: eq(table.id, args.id) } }
 							}).single
 						)
 					)

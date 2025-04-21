@@ -5,6 +5,7 @@ import { basics } from './basics';
 import { assertFindFirstExists } from '@m1212e/rumble';
 
 const { arg, ref, pubsub, table } = basics('speakersList');
+export const SpeakersListRef = ref;
 
 schemaBuilder.mutationFields((t) => {
 	return {
@@ -29,10 +30,7 @@ schemaBuilder.mutationFields((t) => {
 						isClosed: args.isClosed ?? undefined
 					})
 					.where(
-						and(
-							eq(table.id, args.id),
-							ctx.abilities.speakersList.filter('update').single.where
-						)
+						and(eq(table.id, args.id), ctx.abilities.speakersList.filter('update').single.where)
 					);
 
 				pubsub.updated(args.id);

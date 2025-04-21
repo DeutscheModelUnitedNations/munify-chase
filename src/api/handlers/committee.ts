@@ -42,12 +42,7 @@ schemaBuilder.mutationFields((t) => {
 						stateOfDebate: args.stateOfDebate ?? undefined,
 						activeAgendaItemId: args.activeAgendaItemId ?? undefined
 					})
-					.where(
-						and(
-							eq(table.id, args.id),
-							ctx.abilities.committee.filter('update').single.where
-						)
-					);
+					.where(and(eq(table.id, args.id), ctx.abilities.committee.filter('update').single.where));
 
 				pubsub.updated(args.id);
 

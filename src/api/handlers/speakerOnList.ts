@@ -1,9 +1,10 @@
 import { schemaBuilder } from '$api/rumble';
 import { GraphQLError } from 'graphql';
 import { basics } from './basics';
-import { db } from '$api/db/db';
-import { and, count, eq, gte, sql } from 'drizzle-orm';
+import { db, schema } from '$api/db/db';
+import { and, count, eq, gt, gte, sql } from 'drizzle-orm';
 import { assertFindFirstExists, assertFirstEntryExists } from '@m1212e/rumble';
+import { SpeakersListRef } from './speakersList';
 
 const { arg, ref, pubsub, table } = basics('speakerOnList');
 
@@ -85,6 +86,53 @@ schemaBuilder.mutationFields((t) => {
 						query(
 							ctx.abilities.speakerOnList.filter('read', {
 								inject: { where: { id: eq(table.id, createdId) } }
+							}).single
+						)
+					)
+					.then(assertFindFirstExists);
+			}
+		}),
+		removeSpeakerOnList: t.drizzleField({
+			type: SpeakersListRef,
+			args: {
+				speakerOnListId: t.arg.id({ required: true })
+			},
+			resolve: async (query, root, args, ctx, info) => {
+				const removed = await db.transaction(async (tx) => {
+					const deleted = await tx
+						.delete(table)
+						.where(
+							and(
+								eq(table.id, args.speakerOnListId),
+								ctx.abilities.speakerOnList.filter('delete').single.where
+							)
+						)
+						.returning()
+						.then(assertFirstEntryExists);
+
+					await tx
+						.update(table)
+						.set({
+							position: sql`${table.position} - 1`
+						})
+						.where(
+							and(
+								eq(table.speakersListId, deleted.speakersListId),
+								gt(table.position, deleted.position),
+								ctx.abilities.speakerOnList.filter('update').single.where
+							)
+						);
+
+					pubsub.removed();
+
+					return deleted;
+				});
+
+				return db.query.speakersList
+					.findFirst(
+						query(
+							ctx.abilities.speakersList.filter('read', {
+								inject: { where: { id: eq(schema.speakersList.id, removed.speakersListId) } }
 							}).single
 						)
 					)

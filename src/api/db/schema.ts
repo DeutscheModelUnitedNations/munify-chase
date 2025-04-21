@@ -200,16 +200,13 @@ export const agendaItem = pgTable('agenda_item', {
 	title: text().notNull()
 });
 
-export const agendaItemRelations = relations(agendaItem, ({ one }) => ({
+export const agendaItemRelations = relations(agendaItem, ({ one, many }) => ({
 	committee: one(committee, {
 		fields: [agendaItem.committeeId],
 		references: [committee.id],
 		relationName: 'associatedAgendaItems'
 	}),
-	speakersList: one(speakersList, {
-		fields: [agendaItem.id],
-		references: [speakersList.agendaItemId]
-	})
+	speakersList: many(speakersList)
 }));
 
 export const speakersListCategory = pgEnum('speakers_list_category', [

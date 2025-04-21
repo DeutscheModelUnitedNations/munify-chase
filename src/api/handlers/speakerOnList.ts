@@ -13,6 +13,8 @@ schemaBuilder.mutationFields((t) => {
 		addSpeakerOnList: t.drizzleField({
 			type: ref,
 			args: {
+				//TOOD do we need the userId here?
+				//TOOD do we need the reference by nation here?
 				committeeMemberId: t.arg.id(),
 				conferenceMemberId: t.arg.id(),
 				speakersListId: t.arg.id({ required: true }),
@@ -76,10 +78,9 @@ schemaBuilder.mutationFields((t) => {
 						.returning({ id: table.id })
 						.then(assertFirstEntryExists);
 
-					pubsub.created();
-
 					return created.id;
 				});
+				pubsub.created();
 
 				return db.query.speakerOnList
 					.findFirst(
@@ -95,6 +96,8 @@ schemaBuilder.mutationFields((t) => {
 		removeSpeakerOnList: t.drizzleField({
 			type: SpeakersListRef,
 			args: {
+				//TOOD do we need the userId here?
+				//TOOD do we need the reference by nation here?
 				speakerOnListId: t.arg.id({ required: true })
 			},
 			resolve: async (query, root, args, ctx, info) => {
@@ -123,10 +126,9 @@ schemaBuilder.mutationFields((t) => {
 							)
 						);
 
-					pubsub.removed();
-
 					return deleted;
 				});
+				pubsub.removed(removed.id);
 
 				return db.query.speakersList
 					.findFirst(

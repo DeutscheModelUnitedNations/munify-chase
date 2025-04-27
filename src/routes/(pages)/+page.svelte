@@ -2,17 +2,11 @@
 	import { m } from '$lib/paraglide/messages';
 	import { setLocale } from '$lib/paraglide/runtime';
 	import type { PageData } from './$houdini';
+	import Footer from './Footer.svelte';
 
 	let { data }: { data: PageData } = $props();
 </script>
 
-{m.example_message()}
-
 <br />
 
 <a href="/app">Login</a>
-
-<br />
-
-<button onclick={() => setLocale('de')}>de</button>|
-<button onclick={() => setLocale('en')}>en</button>

@@ -1,29 +1,10 @@
 {
-	"name": "munify-chase",
-	"private": true,
-	"version": "0.0.1",
-	"type": "module",
-	"scripts": {
-		"dev": "concurrently \"bun run dev:server\" \"bun run dev:docker\"",
-		"dev:server": "while true; do svelte-kit sync && bun run vite-dev; echo 'Server crashed, restarting...'; sleep 1; done",
-		"dev:docker": "docker compose -f ./dev.docker-compose.yml up",
-		"vite-dev": "vite dev",
-		"build": "vite build",
-		"preview": "vite preview",
-		"prepare": "svelte-kit sync || echo ''",
-		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
-		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
-		"format": "prettier --write .",
-		"lint": "prettier --check . && eslint .",
-		"db:push": "drizzle-kit push",
-		"db:migrate": "drizzle-kit migrate",
-		"db:studio": "drizzle-kit studio",
-		"machine-translate": "inlang machine translate --project project.inlang",
-		"typecheck": "tsc --noEmit"
-	},
 	"devDependencies": {
 		"@eslint/compat": "^1.2.8",
 		"@eslint/js": "^9.24.0",
+		"@fontsource/outfit": "^5.1.1",
+		"@fontsource/roboto-mono": "^5.1.1",
+		"@fontsource/vollkorn": "^5.1.2",
 		"@inlang/cli": "^3.0.10",
 		"@inlang/paraglide-js": "2.0.11",
 		"@m1212e/graphql-scalars-houdini": "^0.0.1",
@@ -37,6 +18,7 @@
 		"@zerodevx/svelte-toast": "^0.9.6",
 		"concurrently": "^9.1.2",
 		"cryptr": "^6.3.0",
+		"daisyui": "^5.0.28",
 		"drizzle-kit": "^0.31.0",
 		"drizzle-orm": "^0.42.0",
 		"eslint": "^9.24.0",
@@ -63,7 +45,29 @@
 		"vite": "^6.3.2",
 		"zod": "^3.24.3"
 	},
+	"name": "munify-chase",
+	"private": true,
 	"resolutions": {
 		"@sveltejs/kit": "^2.20.5"
-	}
+	},
+	"scripts": {
+		"build": "vite build",
+		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
+		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
+		"db:migrate": "drizzle-kit migrate",
+		"db:push": "drizzle-kit push",
+		"db:studio": "drizzle-kit studio",
+		"dev": "concurrently \"bun run dev:server\" \"bun run dev:docker\"",
+		"dev:docker": "docker compose -f ./dev.docker-compose.yml up",
+		"dev:server": "while true; do svelte-kit sync && bun run vite-dev; echo 'Server crashed, restarting...'; sleep 1; done",
+		"format": "prettier --write .",
+		"lint": "prettier --check . && eslint .",
+		"machine-translate": "inlang machine translate --project project.inlang",
+		"prepare": "svelte-kit sync || echo ''",
+		"preview": "vite preview",
+		"typecheck": "tsc --noEmit",
+		"vite-dev": "vite dev"
+	},
+	"type": "module",
+	"version": "0.0.1"
 }

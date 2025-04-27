@@ -1,1 +1,81 @@
 @import 'tailwindcss';
+
+@theme {
+	--font-sans: 'Outfit', system-ui, sans-serif;
+	--font-serif: 'Vollkorn', ui-serif, serif;
+	--font-mono: 'Roboto Mono', ui-monospace, monospace;
+
+	--color-primary: #3d7dd2;
+	--color-primary-50: #f1f7fd;
+	--color-primary-100: #dfeefa;
+	--color-primary-200: #c7e1f6;
+	--color-primary-300: #a0cff0;
+	--color-primary-400: #73b5e7;
+	--color-primary-500: #5298df;
+	--color-primary-600: #3d7dd2;
+	--color-primary-700: #3469c1;
+	--color-primary-800: #30579d;
+	--color-primary-900: #2c4a7c;
+	--color-primary-950: #1f2e4c;
+}
+
+@plugin "daisyui" {
+	themes:
+		light --default,
+		dark --prefersdark;
+	root: ':root';
+}
+
+@plugin "daisyui/theme" {
+	name: 'light';
+	default: true;
+	/* set as default */
+	prefersdark: false;
+	/* set as default dark mode (prefers-color-scheme:dark) */
+	color-scheme: light;
+	/* color of browser-provided UI */
+
+	--color-base-100: #ffffff;
+	--color-base-200: #f6f7fb;
+	--color-base-300: #f0f0f0;
+	--color-base-content: #000000;
+	--color-primary: #3d7dd2 --color-primary-content: #ffffff;
+	--color-secondary: #00b5b4 --color-secondary-content: #ffffff;
+	--color-accent: #ff301c;
+	--color-accent-content: #ffffff;
+	--color-neutral: #0f1023 --color-neutral-content: #ffffff;
+	--color-info: #98d7f0 --color-info-content: #000000;
+	--color-success: #9cdcc5 --color-success-content: #000000;
+	--color-warning: #e0ca96;
+	--color-warning-content: #000000;
+	--color-error: #f8bbb0;
+	--color-error-content: #000000;
+}
+
+@plugin "daisyui/theme" {
+	name: 'dark';
+	default: false;
+	prefersdark: true;
+	color-scheme: dark;
+
+	--color-base-100: #393b51;
+	--color-base-200: #2b2d43;
+	--color-base-300: #0f1023;
+	--color-base-content: #ffffff;
+	--color-primary: #3d7dd2;
+	--color-primary-content: #ffffff;
+	--color-secondary: #00b5b4;
+	--color-secondary-content: #ffffff;
+	--color-accent: #ff301c;
+	--color-accent-content: #ffffff;
+	--color-neutral: #4e5168;
+	--color-neutral-content: #ffffff;
+	--color-info: #98d7f0;
+	--color-info-content: #000000;
+	--color-success: #9cdcc5;
+	--color-success-content: #000000;
+	--color-warning: #e0ca96;
+	--color-warning-content: #000000;
+	--color-error: #f8bbb0;
+	--color-error-content: #000000;
+}

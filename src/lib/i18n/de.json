@@ -1,0 +1,9 @@
+{
+	"$schema": "https://inlang.com/schema/inlang-message-format",
+	"home": "Home",
+	"imprintAndPrivacy": "Impressum & Datenschutz",
+	"aServiceBy": "Ein Service von",
+	"allRightsReservedby": "Alle Rechte vorbehalten von",
+	"version": "Version",
+	"sha": "SHA"
+}

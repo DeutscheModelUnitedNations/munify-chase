@@ -44,7 +44,7 @@ export default ts.config(
 			'svelte/valid-compile': 'warn',
 			'no-undef': 'warn',
 			'no-irregular-whitespace': 'warn',
-			'svelte/require-each-key': 'warn',
+			'svelte/require-each-key': 'warn'
 		}
 	}
 );

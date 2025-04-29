@@ -11,5 +11,10 @@
 	"launcher": "Launcher",
 	"launcherDescription": "Select the conference",
 	"launcherNoConferences": "You are not registered for a conference.",
-	"launcherWelcome": "Welcome back, {name} !"
+	"launcherWelcome": "Welcome back, {name}!",
+	"admin": "Admin",
+	"teamMember": "Team Member",
+	"spectator": "Spectator",
+	"delegate": "Delegate",
+	"nonStateActor": "Non-state Actor"
 }

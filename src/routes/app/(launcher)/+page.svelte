@@ -2,12 +2,37 @@
 	import { m } from '$lib/paraglide/messages';
 	import Footer from '$lib/components/Footer.svelte';
 	import type { PageData } from './$houdini';
+	import type { ConferenceUserTypeEnum$options } from '$houdini';
 
 	let { data }: { data: PageData } = $props();
 
 	let launcherQuery = $derived(data?.LauncherQuery);
-	$inspect($launcherQuery);
 	let conferenceData = $derived($launcherQuery.data?.findManyConferenceUser ?? []);
+
+	const getType = (type: ConferenceUserTypeEnum$options) => {
+		switch (type) {
+			case 'ADMIN':
+				return m.admin();
+			case 'TEAM':
+				return m.teamMember();
+			case 'SPECTATOR':
+				return m.spectator();
+			case 'DELEGATE':
+				return m.delegate();
+			case 'NON_STATE_ACTOR':
+				return m.nonStateActor();
+			default:
+				return '';
+		}
+	};
+
+	const getUrl = (type: ConferenceUserTypeEnum$options, id: string) => {
+		if (['ADMIN', 'TEAM'].includes(type)) {
+			return `/app/${id}/mission-control`;
+		} else {
+			return `/app/${id}`;
+		}
+	};
 </script>
 
 <div class="navbar bg-base-200 relative shadow-sm">
@@ -43,9 +68,15 @@
 				{:else}
 					{#each conferenceData as c}
 						{@const conf = c.conference}
-						<a href={`/app/${conf.id}`} class="btn btn-lg w-full max-w-xs shadow-xs">
+						<a
+							href={getUrl(c.conferenceUserType, c.conference.id)}
+							class="btn btn-lg w-full max-w-xs shadow-xs"
+						>
 							<i class="fa-duotone fa-rocket-launch mr-2"></i>
-							{conf.title}
+							<div>
+								{conf.title}
+								<span class="ml-2 text-xs font-normal">{getType(c.conferenceUserType)}</span>
+							</div>
 						</a>
 					{/each}
 				{/if}

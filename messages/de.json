@@ -11,5 +11,10 @@
 	"launcher": "Launcher",
 	"launcherDescription": "Wähle die Konferenz aus",
 	"launcherNoConferences": "Du bist für keine Konferenz angemeldet.",
-	"launcherWelcome": "Willkommen zurück, {name}!"
+	"launcherWelcome": "Willkommen zurück, {name}!",
+	"admin": "Admin",
+	"teamMember": "Teammitglied",
+	"spectator": "Zuschauer*in",
+	"delegate": "Delegierte*r",
+	"nonStateActor": "Nichtstaatlicher Akteur"
 }

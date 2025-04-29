@@ -5,17 +5,16 @@ import { and, eq } from 'drizzle-orm';
 
 const { arg, ref, pubsub, table } = basics('user');
 
-abilityBuilder.user.allow('read').when(({ user }) => {
-	if (user) {
+abilityBuilder.user.allow('read').when(({ oidc }) => {
+	if (oidc?.user) {
 		return {
-			where: eq(schema.user.id, user.sub)
+			where: eq(schema.user.id, oidc.user.sub)
 		};
 	}
 });
 
-abilityBuilder.user.allow('read').when(({ user }) => {
-	// TODO
-	if (user) {
-		return {};
+abilityBuilder.user.allow('read').when(({ oidc }) => {
+	if (oidc?.user) {
+		return "allow";
 	}
 });

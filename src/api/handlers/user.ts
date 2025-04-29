@@ -15,6 +15,6 @@ abilityBuilder.user.allow('read').when(({ oidc }) => {
 
 abilityBuilder.user.allow('read').when(({ oidc }) => {
 	if (oidc?.user) {
-		return "allow";
+		return 'allow';
 	}
 });

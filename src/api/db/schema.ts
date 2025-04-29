@@ -12,18 +12,15 @@ import {
 } from 'drizzle-orm/pg-core';
 import { relations, sql } from 'drizzle-orm';
 
-const defaultIdAndTimestamps = {
-	id: uuid().defaultRandom().primaryKey().notNull(),
-	createdAt: timestamp().defaultNow().notNull(),
-	updatedAt: timestamp()
-		.notNull()
-		.$onUpdate(() => sql`now()`)
-};
 const defaultTimestamps = {
 	createdAt: timestamp().defaultNow().notNull(),
 	updatedAt: timestamp()
 		.notNull()
 		.$onUpdate(() => sql`now()`)
+};
+const defaultIdAndTimestamps = {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	...defaultTimestamps
 };
 
 export const user = pgTable('user', {
@@ -45,6 +42,7 @@ export const usersRelations = relations(user, ({ one, many }) => ({
 
 export const conference = pgTable('conference', {
 	...defaultIdAndTimestamps,
+	title: text().notNull(),
 	pressWebsite: text()
 });
 

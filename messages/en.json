@@ -1,0 +1,15 @@
+{
+	"$schema": "https://inlang.com/schema/inlang-message-format",
+	"home": "Home",
+	"imprintAndPrivacy": "Imprint &amp; Privacy Policy",
+	"aServiceBy": "A service from",
+	"allRightsReservedby": "All rights reserved by",
+	"version": "Version",
+	"sha": "SHA",
+	"login": "Register",
+	"logout": "Log out",
+	"launcher": "Launcher",
+	"launcherDescription": "Select the conference",
+	"launcherNoConferences": "You are not registered for a conference.",
+	"launcherWelcome": "Welcome back, {name} !"
+}

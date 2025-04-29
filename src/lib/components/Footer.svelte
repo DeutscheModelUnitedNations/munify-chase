@@ -1,12 +1,14 @@
 <script lang="ts">
-	import dmunLogo from '$assets/logo/dmun_logo.png';
+	import dmunLogo from '$assets/dmunlogo/logo.png';
 	import { configPublic } from '$config/public';
 	import LanguageSwitcher from '$lib/components/LanguageSwitcher.svelte';
 	import * as m from '$lib/paraglide/messages.js';
 </script>
 
 <div class="w-full p-4">
-	<footer class="footer footer-center bg-base-200 text-base-content mt-3 rounded-xl p-10">
+	<footer
+		class="footer footer-center bg-base-200 text-base-content mt-3 flex flex-col rounded-xl p-10"
+	>
 		<nav class="flex flex-col flex-wrap justify-center gap-4 md:flex-row">
 			<a class="link-hover link" href="/">{m.home()}</a>
 			<a class="link-hover link" href="https://dmun.de/impressum" target="_blank"

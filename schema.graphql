@@ -223,6 +223,14 @@ type Query {
   serverTime: DateTime
 }
 
+enum RegionalGroupEnum {
+  AFRICA
+  ASIA_PACIFIC
+  EASTERN_EUROPE
+  LATIN_AMERICA_CARIBBEAN
+  WESTERN_EUROPE_OTHERS
+}
+
 type Representation {
   alpha2Code: String
   alpha3Code: String
@@ -231,6 +239,7 @@ type Representation {
   createdAt: DateTime!
   id: ID!
   name: String
+  regionalGroup: RegionalGroupEnum
   type: RepresentationTypeEnum!
   updatedAt: DateTime!
 }
@@ -249,6 +258,7 @@ input RepresentationWhereInputArgument {
   createdAt: DateTime
   id: ID
   name: String
+  regionalGroup: RegionalGroupEnum
   type: RepresentationTypeEnum
   updatedAt: DateTime
 }

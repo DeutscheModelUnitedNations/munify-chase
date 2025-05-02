@@ -130,13 +130,21 @@ export const conferenceUserRelations = relations(conferenceUser, ({ one }) => ({
 }));
 
 export const representationType = pgEnum('representation_type', ['DELEGATION', 'NSA', 'UN']);
+export const regionalGroup = pgEnum('regional_group', [
+	'AFRICA',
+	'ASIA_PACIFIC',
+	'EASTERN_EUROPE',
+	'LATIN_AMERICA_CARIBBEAN',
+	'WESTERN_EUROPE_OTHERS'
+]);
 
 export const representation = pgTable('representation', {
 	...defaultIdAndTimestamps,
 	name: text(),
 	alpha2Code: text(),
 	alpha3Code: text(),
-	type: representationType().notNull()
+	type: representationType().notNull(),
+	regionalGroup: regionalGroup()
 });
 
 export const representationRelations = relations(representation, ({ many }) => ({

@@ -96,7 +96,7 @@
 						"type": "array",
 						"items": {
 							"type": "object",
-							"required": ["name", "abbreviation", "agendaItems"],
+							"required": ["name", "abbreviation", "agendaItems", "countries"],
 							"properties": {
 								"name": {
 									"type": "string",
@@ -122,6 +122,13 @@
 											}
 										},
 										"additionalProperties": false
+									}
+								},
+								"countries": {
+									"type": "array",
+									"items": {
+										"type": "string",
+										"description": "List of countries represented in the conference by their ISO 3166-1 alpha-2 codes"
 									}
 								}
 							},

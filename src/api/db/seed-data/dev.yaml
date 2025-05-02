@@ -29,9 +29,41 @@ conferences:
           - title: Boosting climate adaptation financing
             active: true
           - title: Promoting inclusive multilateralism
+        countries:
+          - cn
+          - us
+          - ru
+          - fr
+          - gb
+          - dz
+          - gy
+          - kr
+          - sl
+          - si
+          - pk
+          - so
+          - pa
+          - dk
+          - gr
       - name: Security Council
         abbreviation: SC
         agendaItems:
           - title: Addressing conflict root causes
           - title: Examining tech's impact on peace
             active: true
+        countries:
+          - cn
+          - us
+          - ru
+          - fr
+          - gb
+          - dz
+          - gy
+          - kr
+          - sl
+          - si
+          - pk
+          - so
+          - pa
+          - dk
+          - gr

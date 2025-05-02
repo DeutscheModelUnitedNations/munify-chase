@@ -7,7 +7,6 @@ import {
 	pgEnum,
 	boolean,
 	smallint,
-	primaryKey,
 	type AnyPgColumn
 } from 'drizzle-orm/pg-core';
 import { relations, sql } from 'drizzle-orm';
@@ -217,7 +216,7 @@ export const speakersList = pgTable(
 	{
 		...defaultIdAndTimestamps,
 		agendaItemId: uuid()
-			.references(() => committee.id, { onDelete: 'cascade' })
+			.references(() => agendaItem.id, { onDelete: 'cascade' })
 			.notNull(),
 		type: speakersListCategory().notNull(),
 		speakingTime: smallint().notNull(),

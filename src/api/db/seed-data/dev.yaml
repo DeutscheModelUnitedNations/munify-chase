@@ -1,0 +1,37 @@
+# yaml-language-server: $schema=schema.json
+users:
+  - id: admin
+    email: admin@mail.com
+    familyName: Doe
+    givenName: John
+    locale: en
+    preferredUsername: admin
+    conferenceUserType: ADMIN
+  - id: user
+    email: user@mail.com
+    familyName: Doe
+    givenName: Jane
+    locale: en
+    preferredUsername: user
+    conferenceUserType: TEAM
+conferences:
+  - title: Dev Conference
+    pressWebsite: 'https://devconf.com'
+    conferenceUsers:
+      - userId: admin
+        conferenceUserType: ADMIN
+      - userId: user
+        conferenceUserType: TEAM
+    committees:
+      - name: General Assembly
+        abbreviation: GV
+        agendaItems:
+          - title: Boosting climate adaptation financing
+            active: true
+          - title: Promoting inclusive multilateralism
+      - name: Security Council
+        abbreviation: SC
+        agendaItems:
+          - title: Addressing conflict root causes
+          - title: Examining tech's impact on peace
+            active: true

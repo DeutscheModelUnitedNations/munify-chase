@@ -1,0 +1,137 @@
+{
+	"$schema": "http://json-schema.org/draft-07/schema#",
+	"title": "Seed Data",
+	"description": "Schema for development seed data",
+	"type": "object",
+	"required": ["users", "conferences"],
+	"properties": {
+		"$schema": {
+			"type": "string",
+			"description": "Reference to the JSON schema that validates this document"
+		},
+		"users": {
+			"type": "array",
+			"description": "List of users",
+			"items": {
+				"type": "object",
+				"required": [
+					"id",
+					"email",
+					"familyName",
+					"givenName",
+					"locale",
+					"preferredUsername",
+					"conferenceUserType"
+				],
+				"properties": {
+					"id": {
+						"type": "string",
+						"description": "Unique identifier for the user"
+					},
+					"email": {
+						"type": "string",
+						"format": "email",
+						"description": "User's email address"
+					},
+					"familyName": {
+						"type": "string",
+						"description": "User's family name"
+					},
+					"givenName": {
+						"type": "string",
+						"description": "User's given name"
+					},
+					"locale": {
+						"type": "string",
+						"description": "User's locale"
+					},
+					"preferredUsername": {
+						"type": "string",
+						"description": "User's preferred username"
+					},
+					"conferenceUserType": {
+						"type": "string",
+						"enum": ["ADMIN", "TEAM", "SPECTATOR", "DELEGATE", "NON_STATE_ACTOR"],
+						"description": "Type of the conference user"
+					}
+				},
+				"additionalProperties": false
+			}
+		},
+		"conferences": {
+			"type": "array",
+			"items": {
+				"type": "object",
+				"required": ["title", "conferenceUsers", "committees"],
+				"properties": {
+					"title": {
+						"type": "string",
+						"description": "Title of the conference"
+					},
+					"pressWebsite": {
+						"type": "string",
+						"format": "uri",
+						"description": "URL of the conference's press website"
+					},
+					"conferenceUsers": {
+						"type": "array",
+						"items": {
+							"type": "object",
+							"required": ["userId", "conferenceUserType"],
+							"properties": {
+								"userId": {
+									"type": "string",
+									"description": "User ID reference"
+								},
+								"conferenceUserType": {
+									"type": "string",
+									"enum": ["ADMIN", "TEAM"],
+									"description": "Type of the conference user"
+								}
+							},
+							"additionalProperties": false
+						}
+					},
+					"committees": {
+						"type": "array",
+						"items": {
+							"type": "object",
+							"required": ["name", "abbreviation", "agendaItems"],
+							"properties": {
+								"name": {
+									"type": "string",
+									"description": "Name of the committee"
+								},
+								"abbreviation": {
+									"type": "string",
+									"description": "Abbreviation of the committee name"
+								},
+								"agendaItems": {
+									"type": "array",
+									"items": {
+										"type": "object",
+										"required": ["title"],
+										"properties": {
+											"title": {
+												"type": "string",
+												"description": "Title of the agenda item"
+											},
+											"active": {
+												"type": "boolean",
+												"description": "Indicates if the agenda item is active"
+											}
+										},
+										"additionalProperties": false
+									}
+								}
+							},
+							"additionalProperties": false
+						}
+					}
+				},
+				"additionalProperties": false
+			}
+		}
+	},
+	"additionalProperties": false
+}

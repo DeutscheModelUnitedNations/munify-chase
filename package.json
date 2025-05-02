@@ -60,9 +60,10 @@
 		"db:migrate": "drizzle-kit migrate",
 		"db:push": "drizzle-kit push",
 		"db:reset": "bun ./src/api/db/reset.ts",
-		"db:seed:dev": "bun ./src/api/db/seed-dev.ts",
+		"db:seed:dev": "bun ./src/api/db/conferenceSeed.ts dev.yaml",
 		"db:studio": "drizzle-kit studio",
-		"dev": "concurrently \"bun run dev:server\" \"bun run dev:docker\"",
+		"compile-seed-schema": "bunx json-schema-to-typescript ./src/api/db/seed-data/schema.json > ./src/api/db/seed-data/schema.d.ts",
+		"dev": "concurrently \"bun run dev:server\" \"bun run dev:docker\" \"compile-seed-schema\"",
 		"dev:docker": "docker compose -f ./dev.docker-compose.yml up",
 		"dev:server": "while true; do svelte-kit sync && bun run vite-dev; echo 'Server crashed, restarting...'; sleep 1; done",
 		"format": "prettier --write .",
@@ -73,5 +74,10 @@
 		"typecheck": "tsc --noEmit",
 		"vite-dev": "vite dev"
 	},
-	"type": "module"
+	"type": "module",
+	"dependencies": {
+		"@types/js-yaml": "^4.0.9",
+		"js-yaml": "^4.1.0",
+		"json-schema-to-typescript": "^15.0.4"
+	}
 }

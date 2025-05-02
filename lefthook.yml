@@ -5,3 +5,5 @@ pre-commit:
       run: bunx eslint "{staged_files}"
     format:
       run: bunx prettier --ignore-unknown --write "{staged_files}"
+    test:
+      run: echo $PATH

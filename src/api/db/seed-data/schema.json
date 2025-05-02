@@ -134,6 +134,25 @@
 							},
 							"additionalProperties": false
 						}
+					},
+					"customRepresentations": {
+						"type": "array",
+						"items": {
+							"type": "object",
+							"required": ["name", "type"],
+							"properties": {
+								"name": {
+									"type": "string",
+									"description": "Name of the custom representation"
+								},
+								"type": {
+									"type": "string",
+									"enum": ["NSA", "UN"],
+									"description": "Type of the custom representation"
+								}
+							},
+							"additionalProperties": false
+						}
 					}
 				},
 				"additionalProperties": false

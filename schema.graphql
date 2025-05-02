@@ -102,6 +102,7 @@ type Conference {
   id: ID!
   members(where: ConferenceMemberWhereInputArgument): [ConferenceMember!]!
   pressWebsite: String
+  representations(where: RepresentationWhereInputArgument): [Representation!]!
   title: String!
   updatedAt: DateTime!
   users(where: ConferenceUserWhereInputArgument): [ConferenceUser!]!
@@ -169,6 +170,7 @@ input ConferenceWhereInputArgument {
   id: ID
   members: ConferenceMemberWhereInputArgument
   pressWebsite: String
+  representations: RepresentationWhereInputArgument
   title: String
   updatedAt: DateTime
   users: ConferenceUserWhereInputArgument
@@ -235,6 +237,8 @@ type Representation {
   alpha2Code: String
   alpha3Code: String
   committeeMembers(where: CommitteeMemberWhereInputArgument): [CommitteeMember!]!
+  conference(where: ConferenceWhereInputArgument): Conference!
+  conferenceId: ID!
   conferenceMembers(where: ConferenceMemberWhereInputArgument): [ConferenceMember!]!
   createdAt: DateTime!
   id: ID!
@@ -254,6 +258,8 @@ input RepresentationWhereInputArgument {
   alpha2Code: String
   alpha3Code: String
   committeeMembers: CommitteeMemberWhereInputArgument
+  conference: ConferenceWhereInputArgument
+  conferenceId: ID
   conferenceMembers: ConferenceMemberWhereInputArgument
   createdAt: DateTime
   id: ID

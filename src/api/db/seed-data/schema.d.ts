@@ -86,5 +86,15 @@ export interface SeedData {
 			}[];
 			countries: string[];
 		}[];
+		customRepresentations?: {
+			/**
+			 * Name of the custom representation
+			 */
+			name: string;
+			/**
+			 * Type of the custom representation
+			 */
+			type: 'NSA' | 'UN';
+		}[];
 	}[];
 }

@@ -3,8 +3,9 @@ import * as schema from './schema';
 import { reset, seed } from 'drizzle-seed';
 import { assertFirstEntryExists } from '@m1212e/rumble';
 import yaml from 'js-yaml';
-import type { SeedData } from './seed-data/schema.d.ts';
+import type { SeedData } from './seed-data/schema';
 import * as fs from 'fs';
+import { getCountryData } from './seedUtils';
 
 const db = drizzle(process.env.DATABASE_URL!, {
 	schema: schema,
@@ -55,6 +56,40 @@ try {
 			console.info(`    - ${user.preferredUsername} (${user.conferenceUserType})`);
 		}
 
+		const delegations: Record<string, any> = {};
+		for (const alpha2Code of conference.committees.flatMap((committee) => committee.countries)) {
+			if (delegations[alpha2Code]) {
+				continue;
+			}
+			delegations[alpha2Code] = await db
+				.insert(schema.representation)
+				.values({
+					...getCountryData(alpha2Code),
+					conferenceId: conferenceEntry.id
+				})
+				.returning()
+				.then(assertFirstEntryExists);
+		}
+		console.info(`   Delegations: ${Object.keys(delegations).length}`);
+
+		console.info('   Custom representations:');
+		for (const representation of conference.customRepresentations ?? []) {
+			const representationEntry = await db
+				.insert(schema.representation)
+				.values({
+					...representation,
+					conferenceId: conferenceEntry.id
+				})
+				.returning()
+				.then(assertFirstEntryExists);
+
+			await db.insert(schema.conferenceMember).values({
+				conferenceId: conferenceEntry.id,
+				representationId: representationEntry.id
+			});
+			console.info(`    - ${representation.name} (${representation.type})`);
+		}
+
 		console.info('   Committees:');
 		for (const committee of conference.committees) {
 			const committeeEntry = await db
@@ -92,6 +127,19 @@ try {
 					speakingTime: 30
 				});
 			}
+
+			for (const country of committee.countries) {
+				const delegation = delegations[country];
+				if (!delegation) {
+					throw new Error(`Delegation ${country} not found`);
+				}
+
+				await db.insert(schema.committeeMember).values({
+					committeeId: committeeEntry.id,
+					representationId: delegation.id
+				});
+			}
+			console.info(`      Countries: ${committee.countries.length}`);
 		}
 	}
 

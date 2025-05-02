@@ -22,6 +22,11 @@ conferences:
         conferenceUserType: ADMIN
       - userId: user
         conferenceUserType: TEAM
+    customRepresentations:
+      - name: General Secretary
+        type: UN
+      - name: ICRC
+        type: NSA
     committees:
       - name: General Assembly
         abbreviation: GV

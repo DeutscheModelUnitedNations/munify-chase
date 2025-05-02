@@ -48,7 +48,8 @@ export const conference = pgTable('conference', {
 export const conferenceRelations = relations(conference, ({ one, many }) => ({
 	committees: many(committee),
 	users: many(conferenceUser),
-	members: many(conferenceMember)
+	members: many(conferenceMember),
+	representations: many(representation)
 }));
 
 export const committeeStatus = pgEnum('committee_status', [
@@ -138,16 +139,30 @@ export const regionalGroup = pgEnum('regional_group', [
 	'WESTERN_EUROPE_OTHERS'
 ]);
 
-export const representation = pgTable('representation', {
-	...defaultIdAndTimestamps,
-	name: text(),
-	alpha2Code: text(),
-	alpha3Code: text(),
-	type: representationType().notNull(),
-	regionalGroup: regionalGroup()
-});
+export const representation = pgTable(
+	'representation',
+	{
+		...defaultIdAndTimestamps,
+		name: text(),
+		alpha2Code: text(),
+		alpha3Code: text(),
+		type: representationType().notNull(),
+		regionalGroup: regionalGroup(),
+		conferenceId: uuid()
+			.notNull()
+			.references(() => conference.id, { onDelete: 'cascade' })
+	},
+	(t) => [
+		unique().on(t.conferenceId, t.name),
+		unique().on(t.conferenceId, t.alpha2Code, t.alpha3Code)
+	]
+);
 
-export const representationRelations = relations(representation, ({ many }) => ({
+export const representationRelations = relations(representation, ({ one, many }) => ({
+	conference: one(conference, {
+		fields: [representation.conferenceId],
+		references: [conference.id]
+	}),
 	conferenceMembers: many(conferenceMember),
 	committeeMembers: many(committeeMember)
 }));

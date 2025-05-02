@@ -2,7 +2,7 @@
 	import * as m from '$lib/paraglide/messages.js';
 </script>
 
-<div class="navbar bg-base-200 relative shadow-sm">
+<div class="navbar bg-base-100 relative shadow-sm">
 	<div class="flex-none">
 		<i class="fa-duotone fa-podium ml-6 text-4xl"></i>
 	</div>

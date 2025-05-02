@@ -1,5 +1,5 @@
 import { db } from '$api/db/db';
-import { enum_, schemaBuilder } from '$api/rumble';
+import { abilityBuilder, enum_, schemaBuilder } from '$api/rumble';
 import { and, eq } from 'drizzle-orm';
 import { basics } from './basics';
 import { assertFindFirstExists } from '@m1212e/rumble';
@@ -8,6 +8,8 @@ const { arg, ref, pubsub, table } = basics('committee');
 const statusEnum = enum_({
 	enumVariableName: 'committeeStatus'
 });
+
+abilityBuilder.conference.allow('read');
 
 schemaBuilder.mutationFields((t) => {
 	return {

@@ -13,6 +13,7 @@ await reset(db, schema);
 
 console.info('Seeding database...');
 
+// Conference
 await seed(db, { users: schema.user }).refine((f) => ({
 	users: {
 		columns: {
@@ -25,6 +26,7 @@ await seed(db, { users: schema.user }).refine((f) => ({
 	}
 }));
 
+// Users
 await db.insert(schema.user).values({
 	id: 'admin',
 	email: 'admin@mail.com',
@@ -52,6 +54,7 @@ const devConf = await db
 	.returning()
 	.then(assertFirstEntryExists);
 
+// Connect users to conference
 await db.insert(schema.conferenceUser).values({
 	conferenceId: devConf.id,
 	userId: 'admin',
@@ -62,6 +65,19 @@ await db.insert(schema.conferenceUser).values({
 	conferenceId: devConf.id,
 	userId: 'user',
 	conferenceUserType: 'TEAM'
+});
+
+// Committees
+const gv = await db.insert(schema.committee).values({
+	name: 'General Assembly',
+	abbreviation: 'GV',
+	conferenceId: devConf.id
+});
+
+const sr = await db.insert(schema.committee).values({
+	name: 'Scientific Committee',
+	abbreviation: 'SR',
+	conferenceId: devConf.id
 });
 
 console.info('Seeding database done.');

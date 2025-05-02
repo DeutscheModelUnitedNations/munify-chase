@@ -16,5 +16,11 @@
 	"teamMember": "Teammitglied",
 	"spectator": "Zuschauer*in",
 	"delegate": "Delegierte*r",
-	"nonStateActor": "Nichtstaatlicher Akteur"
+	"nonStateActor": "Nichtstaatlicher Akteur",
+	"formalDebate": "Formale Debatte",
+	"informalCaucus": "Informelle Sitzung",
+	"pause": "Pause",
+	"suspension": "Vertagung",
+	"until": "bis {time} Uhr",
+	"unknown": "unbekannt"
 }

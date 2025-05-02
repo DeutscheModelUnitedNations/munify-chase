@@ -7,7 +7,7 @@
 
 <div class="w-full p-4">
 	<footer
-		class="footer footer-center bg-base-200 text-base-content mt-3 flex flex-col rounded-xl p-10"
+		class="footer footer-center bg-base-100 text-base-content mt-3 flex flex-col rounded-xl p-10"
 	>
 		<nav class="flex flex-col flex-wrap justify-center gap-4 md:flex-row">
 			<a class="link-hover link" href="/">{m.home()}</a>

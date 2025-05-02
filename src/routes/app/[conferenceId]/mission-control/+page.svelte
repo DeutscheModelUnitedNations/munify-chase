@@ -9,6 +9,8 @@
 	let query = $derived(data?.MissionControlQuery);
 	let conference = $derived($query.data?.findFirstConference);
 
+	$inspect(conference);
+
 	let currentTime = $state(new Date());
 
 	$effect(() => {
@@ -22,7 +24,7 @@
 	$inspect($query);
 </script>
 
-<div class="navbar bg-base-100 relative shadow-sm">
+<div class="navbar bg-base-100 shadow-sm">
 	<h1 class=" ml-4 flex-1 text-3xl font-bold">Mission Control</h1>
 	<div class="flex-none">
 		<h2 class="mr-4 font-mono text-3xl font-bold">
@@ -42,8 +44,8 @@
 	</div>
 </div>
 
-<div class="bg-base-200 w-full">
+<div class="bg-base-200 h-full w-full">
 	{#if conference}
-		<CommitteeGrid {conference} />
+		<CommitteeGrid {conference} environment="TEAM" />
 	{/if}
 </div>

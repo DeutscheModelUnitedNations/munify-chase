@@ -9,7 +9,7 @@ const statusEnum = enum_({
 	enumVariableName: 'committeeStatus'
 });
 
-abilityBuilder.conference.allow('read');
+abilityBuilder.committee.allow('read');
 
 schemaBuilder.mutationFields((t) => {
 	return {

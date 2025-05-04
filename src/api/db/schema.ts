@@ -13,9 +13,9 @@ import { relations, sql } from 'drizzle-orm';
 
 const defaultTimestamps = {
 	createdAt: timestamp().defaultNow().notNull(),
-	updatedAt: timestamp()
-		.notNull()
-		.$onUpdate(() => sql`now()`)
+	updatedAt: timestamp({ mode: 'date' })
+		.defaultNow()
+		.$onUpdate(() => new Date())
 };
 const defaultIdAndTimestamps = {
 	id: uuid().defaultRandom().primaryKey().notNull(),

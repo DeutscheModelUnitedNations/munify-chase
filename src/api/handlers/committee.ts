@@ -48,15 +48,13 @@ schemaBuilder.mutationFields((t) => {
 
 				pubsub.updated(args.id);
 
-				return db.query.committee
-					.findFirst(
-						query(
-							ctx.abilities.committee.filter('read', {
-								inject: { where: { id: eq(table.id, args.id) } }
-							}).single
-						)
+				return db.query.committee.findFirst(
+					query(
+						ctx.abilities.committee.filter('read', {
+							inject: { where: eq(table.id, args.id) }
+						}).single
 					)
-					.then(assertFindFirstExists);
+				);
 			}
 		})
 	};

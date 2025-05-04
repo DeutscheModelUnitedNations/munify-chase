@@ -1,6 +1,9 @@
 <script lang="ts">
+	import { cache, graphql } from '$houdini';
 	import { m } from '$lib/paraglide/messages';
+	import toast from 'svelte-french-toast';
 	import WhiteboardEditor from './WhiteboardEditor.svelte';
+	import { invalidateAll } from '$app/navigation';
 
 	interface Props {
 		open: boolean;
@@ -13,7 +16,33 @@
 
 	let newWhiteboardContent = $state<string | null | undefined>(whiteboardContent);
 
-	$inspect(newWhiteboardContent);
+	const UpdateWhiteboardMutation = graphql(`
+		mutation UpdateWhiteboard($committeeId: ID!, $whiteboardContent: String!) {
+			updateCommittee(id: $committeeId, whiteboardContent: $whiteboardContent) {
+				id
+				whiteboardContent
+			}
+		}
+	`);
+
+	const publishChanges = async () => {
+		if (!committeeId) {
+			return;
+		}
+
+		await toast.promise(
+			UpdateWhiteboardMutation.mutate({
+				committeeId,
+				whiteboardContent: newWhiteboardContent
+			}),
+			{
+				loading: m.updatingWhiteboard(),
+				success: m.whiteboardUpdated(),
+				error: m.errorUpdatingWhiteboard()
+			}
+		);
+		close();
+	};
 </script>
 
 <dialog class="modal" {open}>
@@ -26,7 +55,7 @@
 			<button class="btn btn-error" onclick={() => close()}
 				><i class="fas fa-xmark"></i>{m.abort()}</button
 			>
-			<button class="btn btn-primary" onclick={() => close()}
+			<button class="btn btn-primary" onclick={publishChanges}
 				><i class="fas fa-paper-plane"></i>{m.publishChanges()}</button
 			>
 		</div>

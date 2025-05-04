@@ -3,6 +3,7 @@
 	import { enableViewTransitionApi } from '$lib/helpers/viewTransitionApi.svelte';
 	import { locales, localizeHref } from '$lib/paraglide/runtime';
 	import { SvelteToast } from '@zerodevx/svelte-toast';
+	import toast, { Toaster } from 'svelte-french-toast';
 	import '../app.css';
 
 	import '@fontsource/outfit/100.css';
@@ -68,3 +69,5 @@
 </div>
 
 <SvelteToast options={{}} />
+
+<Toaster />

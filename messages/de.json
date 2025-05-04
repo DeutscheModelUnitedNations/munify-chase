@@ -56,5 +56,8 @@
 	"undo": "Rückgängig",
 	"redo": "Wiederholen",
 	"whiteboardPlaceholder": "Beginne hier zu schreiben...",
-	"selected": "Ausgewählt"
+	"selected": "Ausgewählt",
+	"errorUpdatingWhiteboard": "Fehler beim Veröffentlichen des Whiteboards",
+	"whiteboardUpdated": "Whiteboard veröffentlicht",
+	"updatingWhiteboard": "Whiteboard veröffentlichen..."
 }

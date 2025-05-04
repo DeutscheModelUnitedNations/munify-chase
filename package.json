@@ -91,6 +91,7 @@
 		"@tiptap/pm": "^2.11.9",
 		"@tiptap/starter-kit": "^2.11.9",
 		"svelte-editorjs": "^0.1.0",
+		"svelte-french-toast": "^1.2.0",
 		"svelte-tiptap": "^2.1.0"
 	}
 }

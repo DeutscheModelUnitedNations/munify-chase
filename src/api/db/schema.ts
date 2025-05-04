@@ -77,7 +77,10 @@ export const committee = pgTable(
 			.default(sql`now()`),
 		stateOfDebate: text(),
 		allowDelegationsToAddThemselvesToSpeakersList: boolean().notNull().default(false),
-		activeAgendaItemId: uuid().references((): AnyPgColumn => agendaItem.id)
+		activeAgendaItemId: uuid().references((): AnyPgColumn => agendaItem.id),
+		customSimpleMajority: smallint(), // 50% by default
+		customTwoThirdsMajority: smallint(), // 66% by default
+		customPaperSupportThreshold: smallint() // 10% by default
 	},
 	(t) => [unique().on(t.conferenceId, t.name), unique().on(t.conferenceId, t.abbreviation)]
 );

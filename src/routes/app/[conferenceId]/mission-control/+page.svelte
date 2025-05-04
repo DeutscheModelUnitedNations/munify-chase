@@ -1,40 +1,20 @@
 <script lang="ts">
 	import type { PageData } from './$houdini';
-	import { getLocale } from '$lib/paraglide/runtime';
 	import CommitteeGrid from '$lib/components/CommitteeGrid.svelte';
 	import ThemeSwitcher from '$lib/components/ThemeSwitcher.svelte';
+	import CurrentTime from '$lib/components/CurrentTime.svelte';
+	import * as m from '$lib/paraglide/messages.js';
 
 	let { data }: { data: PageData } = $props();
 
 	let query = $derived(data?.MissionControlQuery);
 	let conference = $derived($query.data?.findFirstConference);
-
-	$inspect(conference);
-
-	let currentTime = $state(new Date());
-
-	$effect(() => {
-		const interval = setInterval(() => {
-			currentTime = new Date();
-		}, 1000);
-
-		return () => clearInterval(interval);
-	});
-
-	$inspect($query);
 </script>
 
 <div class="navbar bg-base-100 shadow-sm">
-	<h1 class=" ml-4 flex-1 text-3xl font-bold">Mission Control</h1>
+	<h1 class=" ml-4 flex-1 text-3xl font-bold">{m.missionControl()}</h1>
 	<div class="flex-none">
-		<h2 class="mr-4 font-mono text-3xl font-bold">
-			{currentTime.toLocaleTimeString(getLocale(), {
-				hour: '2-digit',
-				minute: '2-digit',
-				second: '2-digit',
-				hour12: false
-			})}
-		</h2>
+		<CurrentTime />
 	</div>
 	<div class="flex-none">
 		<ThemeSwitcher />
@@ -44,8 +24,6 @@
 	</div>
 </div>
 
-<div class="bg-base-200 h-full w-full">
-	{#if conference}
-		<CommitteeGrid {conference} environment="TEAM" />
-	{/if}
-</div>
+{#if conference}
+	<CommitteeGrid {conference} environment="TEAM" />
+{/if}

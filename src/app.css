@@ -1,4 +1,5 @@
 @import 'tailwindcss';
+@plugin '@tailwindcss/typography';
 
 @theme {
 	--font-sans: 'Outfit', system-ui, sans-serif;
@@ -94,4 +95,17 @@
 	--border: 1px;
 	--depth: 1;
 	--noise: 0;
+}
+
+/* TipTap */
+.ProseMirror:focus {
+	outline: none;
+}
+
+.tiptap p.is-editor-empty:first-child::before {
+	color: #adb5bd;
+	content: attr(data-placeholder);
+	float: left;
+	height: 0;
+	pointer-events: none;
 }

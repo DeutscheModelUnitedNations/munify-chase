@@ -32,6 +32,9 @@ type Committee {
   conference(where: ConferenceWhereInputArgument): Conference!
   conferenceId: ID!
   createdAt: DateTime!
+  customPaperSupportThreshold: Int
+  customSimpleMajority: Int
+  customTwoThirdsMajority: Int
   id: ID!
   members(where: CommitteeMemberWhereInputArgument): [CommitteeMember!]!
   name: String!
@@ -84,6 +87,9 @@ input CommitteeWhereInputArgument {
   conference: ConferenceWhereInputArgument
   conferenceId: ID
   createdAt: DateTime
+  customPaperSupportThreshold: Int
+  customSimpleMajority: Int
+  customTwoThirdsMajority: Int
   id: ID
   members: CommitteeMemberWhereInputArgument
   name: String

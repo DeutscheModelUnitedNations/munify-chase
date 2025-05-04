@@ -1,0 +1,23 @@
+query CommitteeTeamQuery($committeeId: ID!) {
+	findFirstCommittee(where: { id: $committeeId }) {
+		id
+		abbreviation
+		name
+		stateOfDebate
+		status
+		statusHeadline
+		statusUntil
+		activeAgendaItem {
+			id
+			title
+		}
+		agendaItems {
+			id
+			title
+		}
+		whiteboardContent
+		customSimpleMajority
+		customTwoThirdsMajority
+		customPaperSupportThreshold
+	}
+}

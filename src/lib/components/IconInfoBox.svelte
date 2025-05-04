@@ -58,7 +58,7 @@
 </script>
 
 <div
-	class="alert block w-full text-lg shadow-xs {committeeStatus
+	class="alert block w-full text-lg shadow-sm {committeeStatus
 		? getCommitteeStatusBackground(committeeStatus)
 		: ''}"
 >

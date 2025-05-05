@@ -1,25 +1,19 @@
 <script lang="ts">
-	import type { Readable } from 'svelte/store';
-	import { createEditor, Editor, EditorContent } from 'svelte-tiptap';
-	import { extensions } from './whiteboardEditorConfig';
+	import { m } from '$lib/paraglide/messages';
 
 	interface Props {
 		data?: string | null;
 	}
 
 	let { data }: Props = $props();
-
-	$effect(() => {
-		editor = createEditor({
-			extensions,
-			content: data,
-			editable: false
-		});
-	});
-
-	let editor = $state<Readable<Editor>>();
 </script>
 
-{#if $editor}
-	<EditorContent editor={$editor} class="prose" />
-{/if}
+<div class="prose leading-1">
+	{#if data && data !== '<p></p>'}
+		{@html data}
+	{:else}
+		<p class="text-center opacity-60">
+			<i class="fas fa-align-slash mr-2"></i>{m.whiteboardIsEmpty()}
+		</p>
+	{/if}
+</div>

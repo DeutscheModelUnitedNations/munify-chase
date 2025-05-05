@@ -2,8 +2,9 @@
 	import { page } from '$app/state';
 	import { enableViewTransitionApi } from '$lib/helpers/viewTransitionApi.svelte';
 	import { locales, localizeHref } from '$lib/paraglide/runtime';
-	import { SvelteToast } from '@zerodevx/svelte-toast';
-	import toast, { Toaster } from 'svelte-french-toast';
+	import { Toaster } from 'svelte-french-toast';
+	import dayjs from 'dayjs';
+	import duration from 'dayjs/plugin/duration';
 	import '../app.css';
 
 	import '@fontsource/outfit/100.css';
@@ -29,6 +30,8 @@
 	import '@fontsource/vollkorn/800.css';
 	import '@fontsource/vollkorn/900.css';
 	import { browser } from '$app/environment';
+
+	dayjs.extend(duration);
 
 	let { children } = $props();
 
@@ -68,6 +71,4 @@
 	{/each}
 </div>
 
-<SvelteToast options={{}} />
-
-<Toaster />
+<Toaster position="top-right" />

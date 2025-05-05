@@ -34,8 +34,7 @@ export const extensions = [
 	HorizontalRule,
 	OrderedList,
 	Image.configure({
-		allowBase64: true,
-		inline: true
+		allowBase64: true
 	}),
 	History,
 	Dropcursor

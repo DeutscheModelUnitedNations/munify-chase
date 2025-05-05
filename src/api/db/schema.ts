@@ -68,7 +68,7 @@ export const committee = pgTable(
 		conferenceId: uuid()
 			.notNull()
 			.references(() => conference.id, { onDelete: 'cascade' }),
-		whiteboardContent: text().default('<p>Whiteboard</p>'),
+		whiteboardContent: text().default('<p></p>'),
 		showWhiteboard: boolean().notNull().default(true),
 		status: committeeStatus().notNull().default('SUSPENSION'),
 		statusHeadline: text().notNull().default(''),

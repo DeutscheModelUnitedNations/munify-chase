@@ -57,7 +57,15 @@
 	"redo": "Wiederholen",
 	"whiteboardPlaceholder": "Beginne hier zu schreiben...",
 	"selected": "Ausgewählt",
-	"errorUpdatingWhiteboard": "Fehler beim Veröffentlichen des Whiteboards",
+	"errorUpdatingWhiteboard": "Veröffentlichung fehlgeschlagen",
 	"whiteboardUpdated": "Whiteboard veröffentlicht",
-	"updatingWhiteboard": "Whiteboard veröffentlichen..."
+	"updatingWhiteboard": "Whiteboard veröffentlichen...",
+	"whiteboardIsEmpty": "Das Whiteboard ist momentan leer...",
+	"customName": "Benutzerdefinierter Name...",
+	"submitStatus": "Status setzen",
+	"DateCannotBeInPast": "Das Datum darf nicht in der Vergangenheit liegen!",
+	"dateCannotBeInPast": "Das Datum darf nicht in der Vergangenheit liegen!",
+	"updatingStatus": "Status wird gesetzt...",
+	"statusUpdated": "Status wurde gesetzt",
+	"errorUpdatingStatus": "Status konnte nicht gesetzt werden"
 }

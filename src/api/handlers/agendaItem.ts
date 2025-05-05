@@ -3,4 +3,4 @@ import { basics } from './basics';
 
 const { arg, ref, pubsub, table } = basics('agendaItem');
 
-abilityBuilder.conference.allow('read');
+abilityBuilder.agendaItem.allow(['read']);

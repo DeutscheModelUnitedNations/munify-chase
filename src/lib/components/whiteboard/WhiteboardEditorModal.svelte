@@ -39,8 +39,13 @@
 				loading: m.updatingWhiteboard(),
 				success: m.whiteboardUpdated(),
 				error: m.errorUpdatingWhiteboard()
+			},
+			{
+				position: 'top-center'
 			}
 		);
+		// cache.markStale('Committee');
+		// invalidateAll();
 		close();
 	};
 </script>

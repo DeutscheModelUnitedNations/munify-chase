@@ -10,7 +10,7 @@ type AgendaItem {
   id: ID!
   speakersList(where: SpeakersListWhereInputArgument): [SpeakersList!]!
   title: String!
-  updatedAt: DateTime!
+  updatedAt: DateTime
 }
 
 input AgendaItemWhereInputArgument {
@@ -43,7 +43,7 @@ type Committee {
   status: CommitteeStatusEnum!
   statusHeadline: String!
   statusUntil: DateTime!
-  updatedAt: DateTime!
+  updatedAt: DateTime
   whiteboardContent: String
 }
 
@@ -56,7 +56,7 @@ type CommitteeMember {
   representation(where: RepresentationWhereInputArgument): Representation!
   representationId: ID!
   speakerOnList(where: SpeakerOnListWhereInputArgument): [SpeakerOnList!]!
-  updatedAt: DateTime!
+  updatedAt: DateTime
 }
 
 input CommitteeMemberWhereInputArgument {
@@ -110,7 +110,7 @@ type Conference {
   pressWebsite: String
   representations(where: RepresentationWhereInputArgument): [Representation!]!
   title: String!
-  updatedAt: DateTime!
+  updatedAt: DateTime
   users(where: ConferenceUserWhereInputArgument): [ConferenceUser!]!
 }
 
@@ -122,7 +122,7 @@ type ConferenceMember {
   representation(where: RepresentationWhereInputArgument): Representation!
   representationId: ID!
   speakerOnList(where: SpeakerOnListWhereInputArgument): [SpeakerOnList!]!
-  updatedAt: DateTime!
+  updatedAt: DateTime
 }
 
 input ConferenceMemberWhereInputArgument {
@@ -144,7 +144,7 @@ type ConferenceUser {
   conferenceUserType: ConferenceUserTypeEnum!
   createdAt: DateTime!
   id: ID!
-  updatedAt: DateTime!
+  updatedAt: DateTime
   user(where: UserWhereInputArgument): User!
   userId: String!
 }
@@ -251,7 +251,7 @@ type Representation {
   name: String
   regionalGroup: RegionalGroupEnum
   type: RepresentationTypeEnum!
-  updatedAt: DateTime!
+  updatedAt: DateTime
 }
 
 enum RepresentationTypeEnum {
@@ -285,7 +285,7 @@ type SpeakerOnList {
   position: Int!
   speakersList(where: SpeakersListWhereInputArgument): SpeakersList!
   speakersListId: ID!
-  updatedAt: DateTime!
+  updatedAt: DateTime
 }
 
 input SpeakerOnListWhereInputArgument {
@@ -312,7 +312,7 @@ type SpeakersList {
   startTimestamp: DateTime
   timeLeft: Int!
   type: SpeakersListCategoryEnum!
-  updatedAt: DateTime!
+  updatedAt: DateTime
 }
 
 enum SpeakersListCategoryEnum {
@@ -366,7 +366,7 @@ type User {
   id: String!
   locale: String
   preferredUsername: String!
-  updatedAt: DateTime!
+  updatedAt: DateTime
 }
 
 input UserWhereInputArgument {

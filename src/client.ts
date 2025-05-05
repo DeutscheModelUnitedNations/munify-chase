@@ -13,10 +13,14 @@ export default new HoudiniClient({
 		error: (errors, ctx) => {
 			const err = errors.at(0);
 			if (err) {
-				toast.error(err.message);
+				toast.error(err.message, {
+					position: 'bottom-right'
+				});
 				error(500, `${errors.map((err) => err.message).join('. ')} (${ctx.artifact.name})`);
 			} else {
-				toast.error('Something went wrong');
+				toast.error('Something went wrong', {
+					position: 'bottom-right'
+				});
 				error(500, 'Something went wrong');
 			}
 		}

@@ -25,6 +25,7 @@
 		light --default,
 		dark --prefersdark;
 	root: ':root';
+	exclude: [ 'status'];
 }
 
 @plugin "daisyui/theme" {

@@ -6,6 +6,7 @@ import yaml from 'js-yaml';
 import type { SeedData } from './seed-data/schema';
 import * as fs from 'fs';
 import { getCountryData } from './seedUtils';
+import { eq } from 'drizzle-orm';
 
 const db = drizzle(process.env.DATABASE_URL!, {
 	schema: schema,
@@ -113,6 +114,13 @@ try {
 					})
 					.returning()
 					.then(assertFirstEntryExists);
+
+				if (agendaItem.active) {
+					await db
+						.update(schema.committee)
+						.set({ activeAgendaItemId: agendaItemEntry.id })
+						.where(eq(schema.committee.id, committeeEntry.id));
+				}
 
 				console.info(`       - ${agendaItem.title}${agendaItem.active ? ' (active)' : ''}`);
 

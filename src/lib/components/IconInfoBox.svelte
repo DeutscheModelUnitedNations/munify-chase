@@ -7,7 +7,6 @@
 	import { getLocale } from '$lib/paraglide/runtime';
 	import dayjs from 'dayjs';
 	import duration from 'dayjs/plugin/duration';
-	dayjs.extend(duration);
 
 	interface Props {
 		text: string;
@@ -23,6 +22,7 @@
 	let isOverflowing = $state(false);
 
 	function checkOverflow() {
+		console.log(textElement?.scrollWidth, textElement?.clientWidth);
 		if (textElement) {
 			isOverflowing = textElement.scrollWidth > textElement.clientWidth;
 		}
@@ -46,12 +46,14 @@
 	});
 
 	$effect(() => {
+		const calculateCountdown = () => {
+			const now = dayjs(new Date());
+			const untilDate = dayjs(until);
+			countdownDelta = dayjs.duration(untilDate.diff(now));
+		};
 		if (until) {
-			const interval = setInterval(() => {
-				const now = dayjs(new Date());
-				const untilDate = dayjs(until);
-				countdownDelta = dayjs.duration(untilDate.diff(now));
-			}, 1000);
+			calculateCountdown();
+			const interval = setInterval(() => calculateCountdown(), 1000);
 			return () => clearInterval(interval);
 		}
 	});
@@ -66,10 +68,10 @@
 		<i class="fas fa-{faIcon.replace('fa-', '')} w-6 flex-none text-center"></i>
 
 		{#if !isOverflowing || !marqueeOnOverflow || until}
-			<div class="flex w-full flex-1 flex-col">
-				<div bind:this={textElement} class="w-full text-nowrap">
+			<div class="flex w-full flex-1 flex-col overflow-hidden">
+				<h3 bind:this={textElement} class="w-full text-nowrap">
 					{text}
-				</div>
+				</h3>
 				{#if until}
 					<p class="text-sm">
 						{m.until({

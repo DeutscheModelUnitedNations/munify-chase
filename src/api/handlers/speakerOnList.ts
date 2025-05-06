@@ -55,19 +55,18 @@ schemaBuilder.mutationFields((t) => {
 								and(
 									eq(table.speakersListId, args.speakersListId),
 									gte(table.position, position),
-									ctx.abilities.speakerOnList.filter('update').single.where
+									ctx.abilities.speakerOnList.filter('update').sql.where
 								)
 							);
 					}
 
 					// we do query this for checking the required permissions
 					const speakersList = await tx.query.speakersList
-						.findFirst({
-							where: and(
-								eq(table.id, args.speakersListId),
-								ctx.abilities.speakersList.filter('update').single.where
-							)
-						})
+						.findFirst(
+							ctx.abilities.speakersList.filter('update', {
+								inject: { where: { id: args.speakersListId } }
+							}).query.single
+						)
 						.then(assertFindFirstExists);
 
 					const created = await tx
@@ -89,8 +88,8 @@ schemaBuilder.mutationFields((t) => {
 					.findFirst(
 						query(
 							ctx.abilities.speakerOnList.filter('read', {
-								inject: { where: { id: eq(table.id, createdId) } }
-							}).single
+								inject: { where: { id: createdId } }
+							}).query.single
 						)
 					)
 					.then(assertFindFirstExists);
@@ -110,7 +109,7 @@ schemaBuilder.mutationFields((t) => {
 						.where(
 							and(
 								eq(table.id, args.speakerOnListId),
-								ctx.abilities.speakerOnList.filter('delete').single.where
+								ctx.abilities.speakerOnList.filter('delete').sql.where
 							)
 						)
 						.returning()
@@ -125,7 +124,7 @@ schemaBuilder.mutationFields((t) => {
 							and(
 								eq(table.speakersListId, deleted.speakersListId),
 								gt(table.position, deleted.position),
-								ctx.abilities.speakerOnList.filter('update').single.where
+								ctx.abilities.speakerOnList.filter('update').sql.where
 							)
 						);
 
@@ -137,8 +136,8 @@ schemaBuilder.mutationFields((t) => {
 					.findFirst(
 						query(
 							ctx.abilities.speakersList.filter('read', {
-								inject: { where: { id: eq(schema.speakersList.id, removed.speakersListId) } }
-							}).single
+								inject: { where: { id: removed.speakersListId } }
+							}).query.single
 						)
 					)
 					.then(assertFindFirstExists);
@@ -153,12 +152,10 @@ schemaBuilder.mutationFields((t) => {
 			resolve: async (query, root, args, ctx, info) => {
 				const updatedEntityIds = await db.transaction(async (tx) => {
 					const aboutToMoveSpeakerOnList = await tx.query.speakerOnList
-						.findFirst({
-							where: and(
-								eq(table.id, args.id),
-								ctx.abilities.speakerOnList.filter('update').single.where
-							)
-						})
+						.findFirst(
+							ctx.abilities.speakerOnList.filter('update', { inject: { where: { id: args.id } } })
+								.query.single.where
+						)
 						.then(assertFindFirstExists);
 
 					await tx
@@ -181,7 +178,7 @@ schemaBuilder.mutationFields((t) => {
 									gt(table.position, aboutToMoveSpeakerOnList.position),
 									lt(table.position, args.position),
 									eq(table.speakersListId, aboutToMoveSpeakerOnList.speakersListId),
-									ctx.abilities.speakerOnList.filter('update').single.where
+									ctx.abilities.speakerOnList.filter('update').sql.where
 								)
 							)
 							.returning({ id: table.id });
@@ -212,8 +209,8 @@ schemaBuilder.mutationFields((t) => {
 					.findFirst(
 						query(
 							ctx.abilities.speakerOnList.filter('read', {
-								inject: { where: { id: eq(table.id, args.id) } }
-							}).single
+								inject: { where: { id: args.id } }
+							}).query.single
 						)
 					)
 					.then(assertFindFirstExists);

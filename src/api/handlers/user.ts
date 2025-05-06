@@ -8,7 +8,7 @@ const { arg, ref, pubsub, table } = basics('user');
 abilityBuilder.user.allow('read').when(({ oidc }) => {
 	if (oidc?.user) {
 		return {
-			where: eq(schema.user.id, oidc.user.sub)
+			where: { id: oidc.user.sub }
 		};
 	}
 });

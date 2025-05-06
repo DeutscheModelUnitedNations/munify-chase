@@ -2,11 +2,10 @@ import { db } from '$api/db/db';
 import { abilityBuilder, enum_, schemaBuilder } from '$api/rumble';
 import { and, eq } from 'drizzle-orm';
 import { basics } from './basics';
-import { assertFindFirstExists } from '@m1212e/rumble';
 
 const { arg, ref, pubsub, table } = basics('committee');
 const statusEnum = enum_({
-	enumVariableName: 'committeeStatus'
+	tsName: 'committeeStatus'
 });
 
 abilityBuilder.committee.allow(['read', 'update']);
@@ -44,15 +43,19 @@ schemaBuilder.mutationFields((t) => {
 						stateOfDebate: args.stateOfDebate ?? undefined,
 						activeAgendaItemId: args.activeAgendaItemId ?? undefined
 					})
-					.where(and(eq(table.id, args.id), ctx.abilities.committee.filter('update').single.where));
+					.where(and(eq(table.id, args.id), ctx.abilities.committee.filter('update').sql.where));
 
 				pubsub.updated(args.id);
 
 				return db.query.committee.findFirst(
 					query(
 						ctx.abilities.committee.filter('read', {
-							inject: { where: eq(table.id, args.id) }
-						}).single
+							inject: {
+								where: {
+									id: args.id
+								}
+							}
+						}).query.single
 					)
 				);
 			}

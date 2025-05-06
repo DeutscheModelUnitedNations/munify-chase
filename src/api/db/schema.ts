@@ -9,7 +9,7 @@ import {
 	smallint,
 	type AnyPgColumn
 } from 'drizzle-orm/pg-core';
-import { relations, sql } from 'drizzle-orm';
+import { sql } from 'drizzle-orm';
 
 const defaultTimestamps = {
 	createdAt: timestamp().defaultNow().notNull(),
@@ -35,22 +35,11 @@ export const user = pgTable('user', {
 	preferredUsername: text().notNull()
 });
 
-export const usersRelations = relations(user, ({ one, many }) => ({
-	conferenceMemberships: many(conferenceUser)
-}));
-
 export const conference = pgTable('conference', {
 	...defaultIdAndTimestamps,
 	title: text().notNull(),
 	pressWebsite: text()
 });
-
-export const conferenceRelations = relations(conference, ({ one, many }) => ({
-	committees: many(committee),
-	users: many(conferenceUser),
-	members: many(conferenceMember),
-	representations: many(representation)
-}));
 
 export const committeeStatus = pgEnum('committee_status', [
 	'FORMAL',
@@ -85,22 +74,6 @@ export const committee = pgTable(
 	(t) => [unique().on(t.conferenceId, t.name), unique().on(t.conferenceId, t.abbreviation)]
 );
 
-export const committeeRelations = relations(committee, ({ one, many }) => ({
-	conference: one(conference, {
-		fields: [committee.conferenceId],
-		references: [conference.id]
-	}),
-	activeAgendaItem: one(agendaItem, {
-		fields: [committee.activeAgendaItemId],
-		references: [agendaItem.id],
-		relationName: 'activeAgendaItem'
-	}),
-	agendaItems: many(agendaItem, {
-		relationName: 'associatedAgendaItems'
-	}),
-	members: many(committeeMember)
-}));
-
 export const conferenceUserType = pgEnum('conference_user_type', [
 	'ADMIN',
 	'TEAM',
@@ -121,17 +94,6 @@ export const conferenceUser = pgTable('conference_user', {
 	conferenceMemberId: uuid(),
 	committeeMemberId: uuid()
 });
-
-export const conferenceUserRelations = relations(conferenceUser, ({ one }) => ({
-	user: one(user, {
-		fields: [conferenceUser.userId],
-		references: [user.id]
-	}),
-	conference: one(conference, {
-		fields: [conferenceUser.conferenceId],
-		references: [conference.id]
-	})
-}));
 
 export const representationType = pgEnum('representation_type', ['DELEGATION', 'NSA', 'UN']);
 export const regionalGroup = pgEnum('regional_group', [
@@ -161,15 +123,6 @@ export const representation = pgTable(
 	]
 );
 
-export const representationRelations = relations(representation, ({ one, many }) => ({
-	conference: one(conference, {
-		fields: [representation.conferenceId],
-		references: [conference.id]
-	}),
-	conferenceMembers: many(conferenceMember),
-	committeeMembers: many(committeeMember)
-}));
-
 export const conferenceMember = pgTable('conference_member', {
 	...defaultIdAndTimestamps,
 	conferenceId: uuid()
@@ -179,18 +132,6 @@ export const conferenceMember = pgTable('conference_member', {
 		.notNull()
 		.references(() => representation.id)
 });
-
-export const conferenceMemberRelations = relations(conferenceMember, ({ one, many }) => ({
-	conference: one(conference, {
-		fields: [conferenceMember.conferenceId],
-		references: [conference.id]
-	}),
-	representation: one(representation, {
-		fields: [conferenceMember.representationId],
-		references: [representation.id]
-	}),
-	speakerOnList: many(speakerOnList)
-}));
 
 export const committeeMember = pgTable('committee_member', {
 	...defaultIdAndTimestamps,
@@ -203,18 +144,6 @@ export const committeeMember = pgTable('committee_member', {
 		.references(() => representation.id)
 });
 
-export const committeeMemberRelations = relations(committeeMember, ({ one, many }) => ({
-	committee: one(committee, {
-		fields: [committeeMember.committeeId],
-		references: [committee.id]
-	}),
-	representation: one(representation, {
-		fields: [committeeMember.representationId],
-		references: [representation.id]
-	}),
-	speakerOnList: many(speakerOnList)
-}));
-
 export const agendaItem = pgTable('agenda_item', {
 	...defaultIdAndTimestamps,
 	committeeId: uuid()
@@ -222,15 +151,6 @@ export const agendaItem = pgTable('agenda_item', {
 		.notNull(),
 	title: text().notNull()
 });
-
-export const agendaItemRelations = relations(agendaItem, ({ one, many }) => ({
-	committee: one(committee, {
-		fields: [agendaItem.committeeId],
-		references: [committee.id],
-		relationName: 'associatedAgendaItems'
-	}),
-	speakersList: many(speakersList)
-}));
 
 export const speakersListCategory = pgEnum('speakers_list_category', [
 	'SPEAKERS_LIST',
@@ -253,14 +173,6 @@ export const speakersList = pgTable(
 	(t) => [unique().on(t.agendaItemId, t.type)]
 );
 
-export const speakersListRelations = relations(speakersList, ({ many, one }) => ({
-	agendaItem: one(agendaItem, {
-		fields: [speakersList.agendaItemId],
-		references: [agendaItem.id]
-	}),
-	speakers: many(speakerOnList)
-}));
-
 export const speakerOnList = pgTable(
 	'speaker_on_list',
 	{
@@ -280,18 +192,3 @@ export const speakerOnList = pgTable(
 		unique().on(t.speakersListId, t.conferenceMemberId)
 	]
 );
-
-export const speakerOnListRelations = relations(speakerOnList, ({ one }) => ({
-	speakersList: one(speakersList, {
-		fields: [speakerOnList.speakersListId],
-		references: [speakersList.id]
-	}),
-	committeeMember: one(committeeMember, {
-		fields: [speakerOnList.committeeMemberId],
-		references: [committeeMember.id]
-	}),
-	conferenceMember: one(conferenceMember, {
-		fields: [speakerOnList.conferenceMemberId],
-		references: [conferenceMember.id]
-	})
-}));

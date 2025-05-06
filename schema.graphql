@@ -222,7 +222,7 @@ type Query {
   findManySpeakerOnList(where: SpeakerOnListWhereInputArgument): [SpeakerOnList!]!
   findManySpeakersList(where: SpeakersListWhereInputArgument): [SpeakersList!]!
   findManyUser(where: UserWhereInputArgument): [User!]!
-  serverTime: DateTime
+  serverTime: DateTime!
 }
 
 enum RegionalGroupEnum {

@@ -4,7 +4,7 @@ Indicates exactly one field must be supplied and this field must not be `null`.
 directive @oneOf on INPUT_OBJECT
 
 type AgendaItem {
-  committee(where: CommitteeWhereInputArgument): Committee!
+  committee(where: CommitteeWhereInputArgument): Committee
   committeeId: ID!
   createdAt: DateTime!
   id: ID!
@@ -29,7 +29,7 @@ type Committee {
   activeAgendaItemId: ID
   agendaItems(where: AgendaItemWhereInputArgument): [AgendaItem!]!
   allowDelegationsToAddThemselvesToSpeakersList: Boolean!
-  conference(where: ConferenceWhereInputArgument): Conference!
+  conference(where: ConferenceWhereInputArgument): Conference
   conferenceId: ID!
   createdAt: DateTime!
   customPaperSupportThreshold: Int
@@ -48,26 +48,20 @@ type Committee {
 }
 
 type CommitteeMember {
-  committee(where: CommitteeWhereInputArgument): Committee!
   committeeId: ID!
   createdAt: DateTime!
   id: ID!
   present: Boolean!
-  representation(where: RepresentationWhereInputArgument): Representation!
   representationId: ID!
-  speakerOnList(where: SpeakerOnListWhereInputArgument): [SpeakerOnList!]!
   updatedAt: DateTime
 }
 
 input CommitteeMemberWhereInputArgument {
-  committee: CommitteeWhereInputArgument
   committeeId: ID
   createdAt: DateTime
   id: ID
   present: Boolean
-  representation: RepresentationWhereInputArgument
   representationId: ID
-  speakerOnList: SpeakerOnListWhereInputArgument
   updatedAt: DateTime
 }
 
@@ -115,11 +109,11 @@ type Conference {
 }
 
 type ConferenceMember {
-  conference(where: ConferenceWhereInputArgument): Conference!
+  conference(where: ConferenceWhereInputArgument): Conference
   conferenceId: ID!
   createdAt: DateTime!
   id: ID!
-  representation(where: RepresentationWhereInputArgument): Representation!
+  representation(where: RepresentationWhereInputArgument): Representation
   representationId: ID!
   speakerOnList(where: SpeakerOnListWhereInputArgument): [SpeakerOnList!]!
   updatedAt: DateTime
@@ -138,14 +132,14 @@ input ConferenceMemberWhereInputArgument {
 
 type ConferenceUser {
   committeeMemberId: ID
-  conference(where: ConferenceWhereInputArgument): Conference!
+  conference(where: ConferenceWhereInputArgument): Conference
   conferenceId: ID!
   conferenceMemberId: ID
   conferenceUserType: ConferenceUserTypeEnum!
   createdAt: DateTime!
   id: ID!
   updatedAt: DateTime
-  user(where: UserWhereInputArgument): User!
+  user(where: UserWhereInputArgument): User
   userId: String!
 }
 
@@ -243,7 +237,7 @@ type Representation {
   alpha2Code: String
   alpha3Code: String
   committeeMembers(where: CommitteeMemberWhereInputArgument): [CommitteeMember!]!
-  conference(where: ConferenceWhereInputArgument): Conference!
+  conference(where: ConferenceWhereInputArgument): Conference
   conferenceId: ID!
   conferenceMembers(where: ConferenceMemberWhereInputArgument): [ConferenceMember!]!
   createdAt: DateTime!
@@ -283,7 +277,7 @@ type SpeakerOnList {
   createdAt: DateTime!
   id: ID!
   position: Int!
-  speakersList(where: SpeakersListWhereInputArgument): SpeakersList!
+  speakersList(where: SpeakersListWhereInputArgument): SpeakersList
   speakersListId: ID!
   updatedAt: DateTime
 }
@@ -302,7 +296,7 @@ input SpeakerOnListWhereInputArgument {
 }
 
 type SpeakersList {
-  agendaItem(where: AgendaItemWhereInputArgument): AgendaItem!
+  agendaItem(where: AgendaItemWhereInputArgument): AgendaItem
   agendaItemId: ID!
   createdAt: DateTime!
   id: ID!

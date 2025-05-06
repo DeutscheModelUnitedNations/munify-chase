@@ -9,7 +9,6 @@ import {
 	smallint,
 	type AnyPgColumn
 } from 'drizzle-orm/pg-core';
-import { sql } from 'drizzle-orm';
 
 const defaultTimestamps = {
 	createdAt: timestamp().defaultNow().notNull(),
@@ -61,9 +60,7 @@ export const committee = pgTable(
 		showWhiteboard: boolean().notNull().default(true),
 		status: committeeStatus().notNull().default('SUSPENSION'),
 		statusHeadline: text().notNull().default(''),
-		statusUntil: timestamp()
-			.notNull()
-			.default(sql`now()`),
+		statusUntil: timestamp({ mode: 'date' }).defaultNow().notNull(),
 		stateOfDebate: text(),
 		allowDelegationsToAddThemselvesToSpeakersList: boolean().notNull().default(false),
 		activeAgendaItemId: uuid().references((): AnyPgColumn => agendaItem.id),

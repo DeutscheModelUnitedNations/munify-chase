@@ -47,9 +47,6 @@
 				statusHeadline: $customName
 			) {
 				id
-				status
-				statusUntil
-				statusHeadline
 			}
 		}
 	`);

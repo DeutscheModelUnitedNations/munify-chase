@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { m } from '$lib/paraglide/messages';
-	import type { PageData } from '../../settings/$houdini';
+	import type { PageData } from './$houdini';
 	import IconInfoBox from '$lib/components/IconInfoBox.svelte';
 	import { getCommitteeStatusIcon, getCommitteeStatusText } from '$lib/utils/committeeStatus';
 	import UndrawError from '$lib/components/UndrawError.svelte';
@@ -10,11 +10,45 @@
 	import WhiteboardViewer from '$lib/components/whiteboard/WhiteboardViewer.svelte';
 	import WhiteboardEditorModal from '$lib/components/whiteboard/WhiteboardEditorModal.svelte';
 	import StatusChanger from './StatusChanger.svelte';
+	import { graphql } from '$houdini';
+	import { onMount } from 'svelte';
 
 	let { data }: { data: PageData } = $props();
 
+	let committeeSub = graphql(`
+		subscription CommitteeSubscription($id: ID!) {
+			findFirstCommittee(where: { id: $id }) {
+				id
+				abbreviation
+				name
+				stateOfDebate
+				status
+				statusHeadline
+				statusUntil
+				activeAgendaItem {
+					id
+					title
+				}
+				agendaItems {
+					id
+					title
+				}
+				whiteboardContent
+				customSimpleMajority
+				customTwoThirdsMajority
+				customPaperSupportThreshold
+			}
+		}
+	`);
+
 	let query = $derived(data?.CommitteeTeamQuery);
-	let committee = $derived($query.data?.findFirstCommittee);
+	let committee = $derived(
+		$committeeSub.data?.findFirstCommittee ?? $query.data?.findFirstCommittee
+	);
+
+	onMount(() => {
+		committeeSub.listen({ id: data.committeeId });
+	});
 
 	let editWhiteboardModalOpen = $state(false);
 </script>

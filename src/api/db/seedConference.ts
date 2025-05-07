@@ -1,6 +1,6 @@
 import { drizzle } from 'drizzle-orm/node-postgres';
 import * as schema from './schema';
-import { reset, seed } from 'drizzle-seed';
+import { reset } from 'drizzle-seed';
 import { assertFirstEntryExists } from '@m1212e/rumble';
 import yaml from 'js-yaml';
 import type { SeedData } from './seed-data/schema';

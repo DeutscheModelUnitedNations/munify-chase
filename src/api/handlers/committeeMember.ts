@@ -22,7 +22,7 @@ schemaBuilder.mutationFields((t) => {
 					.where(
 						and(
 							inArray(table.id, args.ids),
-							ctx.abilities.committeeMember.filter('update').single.where
+							ctx.abilities.committeeMember.filter('update').sql.where
 						)
 					);
 
@@ -31,8 +31,14 @@ schemaBuilder.mutationFields((t) => {
 				return db.query.committeeMember.findMany(
 					query(
 						ctx.abilities.committeeMember.filter('read', {
-							inject: { where: { id: inArray(table.id, args.ids) } }
-						}).single
+							inject: {
+								where: {
+									id: {
+										in: args.ids
+									}
+								}
+							}
+						}).query.single
 					)
 				);
 			}

@@ -29,9 +29,7 @@ schemaBuilder.mutationFields((t) => {
 						startTimestamp: args.startTimestamp ?? undefined,
 						isClosed: args.isClosed ?? undefined
 					})
-					.where(
-						and(eq(table.id, args.id), ctx.abilities.speakersList.filter('update').single.where)
-					);
+					.where(and(eq(table.id, args.id), ctx.abilities.speakersList.filter('update').sql.where));
 
 				speakersListPubSub.updated(args.id);
 
@@ -39,8 +37,8 @@ schemaBuilder.mutationFields((t) => {
 					.findFirst(
 						query(
 							ctx.abilities.speakersList.filter('read', {
-								inject: { where: { id: eq(table.id, args.id) } }
-							}).single
+								inject: { where: { id: args.id } }
+							}).query.single
 						)
 					)
 					.then(assertFindFirstExists);
@@ -57,21 +55,21 @@ schemaBuilder.mutationFields((t) => {
 					.where(
 						and(
 							eq(schema.speakerOnList.speakersListId, args.id),
-							ctx.abilities.speakerOnList.filter('delete').single.where
+							ctx.abilities.speakerOnList.filter('delete').sql.where
 						)
 					)
 					.returning();
 
 				if (deleted.length > 0) {
-					pubsub({ tableName: 'speakerOnList' }).removed(deleted.map((d) => d.id));
+					pubsub({ table: 'speakerOnList' }).removed(deleted.map((d) => d.id));
 				}
 
 				return db.query.speakersList
 					.findFirst(
 						query(
 							ctx.abilities.speakersList.filter('read', {
-								inject: { where: { id: eq(schema.speakersList.id, args.id) } }
-							}).single
+								inject: { where: { id: args.id } }
+							}).query.single
 						)
 					)
 					.then(assertFindFirstExists);

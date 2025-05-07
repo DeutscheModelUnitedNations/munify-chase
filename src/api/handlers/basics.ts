@@ -4,21 +4,19 @@ import { object, pubsub as rumblePubsub, query, arg as rumbleArg } from '$api/ru
 /**
  * Implements basic CRUD stuff for a table using the rumble helpers
  */
-export function basics<TableName extends Parameters<typeof object>[0]['tableName']>(
-	tableName: TableName
-) {
+export function basics<TableName extends Parameters<typeof object>[0]['table']>(table: TableName) {
 	const ref = object({
-		tableName
+		table
 	});
-	const pubsub = rumblePubsub({ tableName });
-	const arg = rumbleArg({ tableName });
+	const pubsub = rumblePubsub({ table: table });
+	const arg = rumbleArg({ table: table });
 	query({
-		tableName
+		table: table
 	});
 	return {
 		arg,
 		ref,
 		pubsub,
-		table: schema[tableName]
+		table: schema[table]
 	};
 }

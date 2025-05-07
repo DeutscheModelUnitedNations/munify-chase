@@ -22,7 +22,6 @@
 	let isOverflowing = $state(false);
 
 	function checkOverflow() {
-		console.log(textElement?.scrollWidth, textElement?.clientWidth);
 		if (textElement) {
 			isOverflowing = textElement.scrollWidth > textElement.clientWidth;
 		}

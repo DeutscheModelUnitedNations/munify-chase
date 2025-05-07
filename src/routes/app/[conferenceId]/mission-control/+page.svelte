@@ -4,6 +4,7 @@
 	import ThemeSwitcher from '$lib/components/ThemeSwitcher.svelte';
 	import CurrentTime from '$lib/components/CurrentTime.svelte';
 	import * as m from '$lib/paraglide/messages.js';
+	import NavbarBurgerMenu from '$lib/components/NavbarBurgerMenu.svelte';
 
 	let { data }: { data: PageData } = $props();
 
@@ -17,10 +18,15 @@
 		<CurrentTime />
 	</div>
 	<div class="flex-none">
-		<ThemeSwitcher />
-		<a class="btn btn-ghost btn-square" href="/app" aria-label="Go back to app">
-			<i class="fa-duotone fa-home"></i>
-		</a>
+		<NavbarBurgerMenu
+			items={[
+				{
+					faIcon: 'fa-home',
+					title: m.home(),
+					href: '..'
+				}
+			]}
+		/>
 	</div>
 </div>
 

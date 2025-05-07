@@ -1,13 +1,15 @@
 <script lang="ts">
-	let checkbox: HTMLInputElement;
+	import { getTheme, toggleTheme } from '$lib/utils/theme.svelte';
 </script>
 
-<button class="btn btn-ghost btn-square" aria-label="Toggle theme" onclick={() => checkbox.click()}>
-	<label class="swap swap-rotate">
-		<input type="checkbox" class="theme-controller" value="dark" bind:this={checkbox} />
-
-		<i class="fa-duotone fa-sun swap-off"></i>
-
-		<i class="fa-duotone fa-moon swap-on"></i>
-	</label>
+<button class="btn flex-1" onclick={() => toggleTheme()}>
+	{#if getTheme() === 'dark'}
+		<i class="fa-duotone fa-moon w-6 text-center"></i>
+	{:else if getTheme() === 'light'}
+		<i class="fa-duotone fa-sun w-6 text-center"></i>
+	{:else if getTheme() === 'system'}
+		<i class="fa-duotone fa-desktop w-6 text-center"></i>
+	{:else}
+		<i class="fa-duotone fa-question w-6 text-center"></i>
+	{/if}
 </button>

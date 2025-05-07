@@ -20,6 +20,8 @@
 	--color-primary-950: #1f2e4c;
 }
 
+@custom-variant dark (&:where([data-theme=dark], [data-theme=dark] *));
+
 @plugin "daisyui" {
 	themes:
 		light --default,

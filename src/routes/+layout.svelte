@@ -30,6 +30,8 @@
 	import '@fontsource/vollkorn/800.css';
 	import '@fontsource/vollkorn/900.css';
 	import { browser } from '$app/environment';
+	import { initialSetTheme } from '$lib/utils/theme.svelte';
+	import { onMount } from 'svelte';
 
 	dayjs.extend(duration);
 
@@ -39,7 +41,8 @@
 
 	const changeFaDuotoneTheme = () => {
 		const r = document.querySelector(':root');
-		if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+		const html = document.querySelector('html');
+		if (html?.getAttribute('data-theme') === 'dark') {
 			(r as any)?.style.setProperty('--fa-primary-color', '#b1cbed');
 			(r as any)?.style.setProperty('--fa-primary-opacity', '1');
 			(r as any)?.style.setProperty('--fa-secondary-color', '#3d7dd2');
@@ -58,9 +61,27 @@
 
 	if (browser) {
 		changeFaDuotoneTheme();
-		const colorSchemeMediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
-		colorSchemeMediaQuery.addEventListener('change', changeFaDuotoneTheme);
+		const observer = new MutationObserver((mutationsList) => {
+			for (const mutation of mutationsList) {
+				if (mutation.type === 'attributes' && mutation.attributeName === 'data-theme') {
+					changeFaDuotoneTheme();
+				}
+			}
+		});
+
+		observer.observe(document.documentElement, {
+			attributes: true,
+			attributeFilter: ['data-theme']
+		});
 	}
+
+	onMount(() => {
+		initialSetTheme();
+		const matchMedia = window.matchMedia('(prefers-color-scheme: dark)');
+		matchMedia.addEventListener('change', (e) => {
+			initialSetTheme();
+		});
+	});
 </script>
 
 {@render children()}

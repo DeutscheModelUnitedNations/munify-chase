@@ -67,5 +67,6 @@
 	"dateCannotBeInPast": "Das Datum darf nicht in der Vergangenheit liegen!",
 	"updatingStatus": "Status wird gesetzt...",
 	"statusUpdated": "Status wurde gesetzt",
-	"errorUpdatingStatus": "Status konnte nicht gesetzt werden"
+	"errorUpdatingStatus": "Status konnte nicht gesetzt werden",
+	"theme": "Theme"
 }

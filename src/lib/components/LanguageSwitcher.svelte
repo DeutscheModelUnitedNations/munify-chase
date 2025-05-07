@@ -1,19 +1,18 @@
-<script>
+<script lang="ts">
 	import { page } from '$app/state';
 	import { locales, localizeHref, getLocale } from '$lib/paraglide/runtime';
+
+	const getNextLocale = () => {
+		const currentIndex = locales.indexOf(getLocale());
+		const nextIndex = (currentIndex + 1) % locales.length;
+		return locales[nextIndex];
+	};
 </script>
 
-<span class="flex">
-	{#each locales as locale, i}
-		<a
-			class={getLocale() === locale ? 'font-bold' : ''}
-			href={localizeHref(page.url.pathname, { locale })}
-			aria-current={locale === getLocale() ? 'page' : undefined}
-		>
-			{locale.toUpperCase()}
-		</a>
-		{#if locales.length > i + 1}
-			|
-		{/if}
-	{/each}
-</span>
+<a class="btn flex-1" href={localizeHref(page.url.pathname, { locale: getNextLocale() })}>
+	{#if getLocale() === 'de'}
+		🇩🇪
+	{:else if getLocale() === 'en'}
+		🇬🇧
+	{/if}
+</a>

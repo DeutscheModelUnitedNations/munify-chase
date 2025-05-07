@@ -4,6 +4,7 @@
 	import CurrentTime from '$lib/components/CurrentTime.svelte';
 	import DevPlaceholder from '$lib/components/DevPlaceholder.svelte';
 	import JoinedButtons, { type Button } from '$lib/components/JoinedButtons.svelte';
+	import NavbarBurgerMenu from '$lib/components/NavbarBurgerMenu.svelte';
 	import ThemeSwitcher from '$lib/components/ThemeSwitcher.svelte';
 	import * as m from '$lib/paraglide/messages.js';
 	import hotkeys from 'hotkeys-js';
@@ -66,9 +67,18 @@
 	</div>
 
 	<div class="flex-none">
-		<ThemeSwitcher />
+		
 		<a class="btn btn-ghost btn-square" href="../mission-control" aria-label="Go back to app">
 			<i class="fa-duotone fa-home"></i>
 		</a>
+		<NavbarBurgerMenu
+			items={[
+				{
+					faIcon: 'fa-rocket-launch',
+					title: m.missionControl(),
+					href: '..'
+				}
+			]}
+		/>
 	</div>
 </div>

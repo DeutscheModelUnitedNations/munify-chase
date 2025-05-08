@@ -7,16 +7,27 @@
 	import { getLocale } from '$lib/paraglide/runtime';
 	import dayjs from 'dayjs';
 	import duration from 'dayjs/plugin/duration';
+	import { check } from 'drizzle-orm/gel-core';
 
 	interface Props {
 		text: string;
-		faIcon: string;
+		faIcon?: string;
+		iconText?: string;
 		committeeStatus?: CommitteeStatusEnum$options;
 		until?: Date;
 		marqueeOnOverflow?: boolean;
+		fullHeight?: boolean;
 	}
 
-	let { text, faIcon, committeeStatus, until, marqueeOnOverflow = true }: Props = $props();
+	let {
+		text,
+		faIcon,
+		iconText,
+		committeeStatus,
+		until,
+		marqueeOnOverflow = true,
+		fullHeight = false
+	}: Props = $props();
 
 	let textElement = $state<HTMLParagraphElement>();
 	let isOverflowing = $state(false);
@@ -61,10 +72,14 @@
 <div
 	class="alert block w-full text-lg shadow-sm {committeeStatus
 		? getCommitteeStatusBackground(committeeStatus)
-		: ''}"
+		: ''} {fullHeight ? 'h-full' : ''}"
 >
-	<div class="flex w-full flex-1 flex-row items-center gap-4 overflow-hidden">
-		<i class="fas fa-{faIcon.replace('fa-', '')} w-6 flex-none text-center"></i>
+	<div class="flex h-full w-full flex-1 flex-row items-center gap-4 overflow-hidden">
+		{#if iconText}
+			<div class="flex-none text-center text-4xl font-bold">{iconText}</div>
+		{:else if faIcon}
+			<i class="fas fa-{faIcon.replace('fa-', '')} w-6 flex-none text-center"></i>
+		{/if}
 
 		{#if !isOverflowing || !marqueeOnOverflow || until}
 			<div class="flex w-full flex-1 flex-col overflow-hidden">

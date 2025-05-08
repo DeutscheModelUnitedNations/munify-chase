@@ -5,6 +5,8 @@
       "name": "munify-chase",
       "dependencies": {
         "bits-ui": "^1.4.6",
+        "gridstack": "^12.1.2",
+        "svelte-grid-extended": "^1.2.1",
       },
       "devDependencies": {
         "@eslint/compat": "^1.2.8",
@@ -714,6 +716,8 @@
 
     "graphql-yoga": ["graphql-yoga@5.13.4", "", { "dependencies": { "@envelop/core": "^5.2.3", "@envelop/instrumentation": "^1.0.0", "@graphql-tools/executor": "^1.4.0", "@graphql-tools/schema": "^10.0.11", "@graphql-tools/utils": "^10.6.2", "@graphql-yoga/logger": "^2.0.1", "@graphql-yoga/subscription": "^5.0.5", "@whatwg-node/fetch": "^0.10.6", "@whatwg-node/promise-helpers": "^1.2.4", "@whatwg-node/server": "^0.10.5", "dset": "^3.1.4", "lru-cache": "^10.0.0", "tslib": "^2.8.1" }, "peerDependencies": { "graphql": "^15.2.0 || ^16.0.0" } }, "sha512-q5l3HEvgXnZCKG6K38fz3XNBX41GkHkIYspJbdVl9QVsm5Ah0EFUkY303tEOx8IucyB0h2hb8OfbYXEcoNCLMw=="],
 
+    "gridstack": ["gridstack@12.1.2", "", {}, "sha512-IC1mkm5xonhAnftwIxsG+B3bawxC61ciKWEvX15ExpVQPbNVN7O9aZZhM7Y/eE4JaIR8PXrdkjd12gMnwNYRLQ=="],
+
     "has-flag": ["has-flag@4.0.0", "", {}, "sha512-EykJT/Q1KjTWctppgIAgfSO0tKVuZUjhgMr17kqTumMl6Afv3EISleU7qZUzoXDFTAHTDC4NOoG/ZxU3EvlMPQ=="],
 
     "has-own-prop": ["has-own-prop@2.0.0", "", {}, "sha512-Pq0h+hvsVm6dDEa8x82GnLSYHOzNDt7f0ddFa3FqcQlgzEiptPqL+XrOJNavjOzSYiYWIrgeVYYgGlLmnxwilQ=="],
@@ -1111,6 +1115,8 @@
     "svelte-fast-marquee": ["svelte-fast-marquee@0.8.0", "", { "dependencies": { "svelte": "^4.2.19" } }, "sha512-y+WXfoc/mdahf6jb/Y4dsNvmd3CNSL9du508s5o4wDaDloTRHnpqdgli+cdqeoMtCuBmYJ3QfmeTOT+QrxTKOA=="],
 
     "svelte-french-toast": ["svelte-french-toast@2.0.0-alpha.0", "", { "dependencies": { "svelte-writable-derived": "^3.1.1" }, "peerDependencies": { "svelte": "^5.0.0" } }, "sha512-81wcVaY9UZ/0JuzLEizMSoIXqNbX7yhfTZavBuw94T3cnT2HmJ9O+qXY/c91h9FkeMwboo0KHZVmzOEQVTXDFg=="],
+
+    "svelte-grid-extended": ["svelte-grid-extended@1.2.1", "", { "peerDependencies": { "svelte": "^4.0.0" } }, "sha512-ASEN5L6cHQMsyBkBsG//nR1vrRNJxlzqg0QhmbNLh9r4jp9tMNGg2v2UQ6Bh4jp9IbqIgpX4jRD/Ds/wFzyULg=="],
 
     "svelte-highlight": ["svelte-highlight@7.8.3", "", { "dependencies": { "highlight.js": "11.11.1" } }, "sha512-i4CE/6yda1fCh0ovUVATk1S1feu1y3+CV+l1brgtMPPRO9VTGq+hPpUjVEJWQkE7hPAgwgVpHccoa5M2gpKxYQ=="],
 

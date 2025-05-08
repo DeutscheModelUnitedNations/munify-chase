@@ -91,6 +91,8 @@
 	},
 	"type": "module",
 	"dependencies": {
-		"bits-ui": "^1.4.6"
+		"bits-ui": "^1.4.6",
+		"gridstack": "^12.1.2",
+		"svelte-grid-extended": "^1.2.1"
 	}
 }

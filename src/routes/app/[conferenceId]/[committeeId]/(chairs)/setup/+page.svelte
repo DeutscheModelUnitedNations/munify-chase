@@ -72,12 +72,14 @@
 						until={new Date(committee.statusUntil)}
 					/>
 				</BasicCard>
-				<Majorities
-					totalPresent={20}
-					customSimpleMajority={committee.customSimpleMajority}
-					customTwoThirdsMajority={committee.customTwoThirdsMajority}
-					customPaperSupportThreshold={committee.customPaperSupportThreshold}
-				/>
+				<BasicCard>
+					<Majorities
+						totalPresent={20}
+						customSimpleMajority={committee.customSimpleMajority}
+						customTwoThirdsMajority={committee.customTwoThirdsMajority}
+						customPaperSupportThreshold={committee.customPaperSupportThreshold}
+					/>
+				</BasicCard>
 				<BasicCard className="relative group">
 					<button
 						class="btn mb-4"

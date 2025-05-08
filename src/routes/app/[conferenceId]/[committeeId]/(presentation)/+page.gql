@@ -1,17 +1,12 @@
-query CommitteeTeamQuery($committeeId: ID!) @blocking {
+query CommitteePresentationQuery($committeeId: ID!) @blocking {
 	findFirstCommittee(where: { id: $committeeId }) {
 		id
 		abbreviation
 		name
-		stateOfDebate
 		status
 		statusHeadline
 		statusUntil
 		activeAgendaItem {
-			id
-			title
-		}
-		agendaItems {
 			id
 			title
 		}

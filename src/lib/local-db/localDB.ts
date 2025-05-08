@@ -1,17 +1,18 @@
+import type { PresentationLayoutPresetOptions } from '$lib/data/presentationLayoutPresets';
 import Dexie, { type EntityTable } from 'dexie';
 
-interface PresentationShowWhiteboard {
-	conferenceId: string;
-	enabled: boolean;
+interface PresentationLayout {
+	committeeId: string;
+	layout: PresentationLayoutPresetOptions;
 }
 
 const localDB = new Dexie('local-db') as Dexie & {
-	presentationRoleCall: EntityTable<PresentationShowWhiteboard, 'conferenceId'>;
+	presentationLayout: EntityTable<PresentationLayout, 'committeeId'>;
 };
 
 localDB.version(1).stores({
-	presentation: '++conferenceId, enabled'
+	presentation: '++committeeId, layout'
 });
 
-export type { PresentationShowWhiteboard };
+export type { PresentationLayout };
 export { localDB };

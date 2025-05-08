@@ -27,6 +27,10 @@
 				status
 				statusHeadline
 				statusUntil
+				totalPresent
+				simpleMajority
+				twoThirdsMajority
+				paperSupportThreshold
 				activeAgendaItem {
 					id
 					title
@@ -36,9 +40,6 @@
 					title
 				}
 				whiteboardContent
-				customSimpleMajority
-				customTwoThirdsMajority
-				customPaperSupportThreshold
 			}
 		}
 	`);
@@ -74,10 +75,10 @@
 				</BasicCard>
 				<BasicCard>
 					<Majorities
-						totalPresent={20}
-						customSimpleMajority={committee.customSimpleMajority}
-						customTwoThirdsMajority={committee.customTwoThirdsMajority}
-						customPaperSupportThreshold={committee.customPaperSupportThreshold}
+						totalPresent={committee.totalPresent}
+						simpleMajority={committee.simpleMajority}
+						twoThirdsMajority={committee.twoThirdsMajority}
+						paperSupportThreshold={committee.paperSupportThreshold}
 					/>
 				</BasicCard>
 				<BasicCard className="relative group">

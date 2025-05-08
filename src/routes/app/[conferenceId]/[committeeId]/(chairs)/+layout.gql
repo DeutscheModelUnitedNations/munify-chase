@@ -7,6 +7,10 @@ query CommitteeTeamQuery($committeeId: ID!) @blocking {
 		status
 		statusHeadline
 		statusUntil
+		totalPresent
+		simpleMajority
+		twoThirdsMajority
+		paperSupportThreshold
 		activeAgendaItem {
 			id
 			title
@@ -16,8 +20,5 @@ query CommitteeTeamQuery($committeeId: ID!) @blocking {
 			title
 		}
 		whiteboardContent
-		customSimpleMajority
-		customTwoThirdsMajority
-		customPaperSupportThreshold
 	}
 }

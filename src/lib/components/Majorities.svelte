@@ -1,29 +1,17 @@
 <script lang="ts">
-	import {
-		getPaperSupportThreshold,
-		getSimpleMajority,
-		getTwoThirdsMajority
-	} from '$lib/utils/majorities';
-	import BasicCard from './BasicCard.svelte';
-
 	interface Props {
-		totalPresent: number;
-		customSimpleMajority?: number | null;
-		customTwoThirdsMajority?: number | null;
-		customPaperSupportThreshold?: number | null;
+		totalPresent: number | null;
+		simpleMajority: number | null;
+		twoThirdsMajority: number | null;
+		paperSupportThreshold: number | null;
 	}
 
-	let {
-		totalPresent,
-		customSimpleMajority,
-		customTwoThirdsMajority,
-		customPaperSupportThreshold
-	}: Props = $props();
+	let { totalPresent, simpleMajority, twoThirdsMajority, paperSupportThreshold }: Props = $props();
 </script>
 
 {#snippet Card(cardData: { number: number | null | undefined; text?: string; faIcon?: string })}
 	{@const { number, text, faIcon } = cardData}
-	<div class="card bg-base-200 flex-1 flex-col items-center justify-center p-4 shadow-sm h-full">
+	<div class="card bg-base-200 h-full flex-1 flex-col items-center justify-center p-4 shadow-sm">
 		<div class="h-7 text-lg">
 			{#if text}
 				<p class="whitespace-nowrap">{@html text}</p>
@@ -35,21 +23,18 @@
 	</div>
 {/snippet}
 
-<div class="flex gap-2 h-full">
-	{@render Card({ number: totalPresent, faIcon: 'fa-users' })}
+<div class="flex h-full gap-2">
+	{@render Card({ number: totalPresent ?? 0, faIcon: 'fa-users' })}
 	{@render Card({
-		number: customSimpleMajority ?? getSimpleMajority(totalPresent),
+		number: simpleMajority ?? 0,
 		text: '50%&thinsp;+&thinsp;1'
 	})}
 	{@render Card({
-		number:
-			(customTwoThirdsMajority ?? getTwoThirdsMajority(totalPresent) >= (customSimpleMajority ?? 0))
-				? getTwoThirdsMajority(totalPresent)
-				: customSimpleMajority,
+		number: twoThirdsMajority ?? 0,
 		text: '2/3'
 	})}
 	{@render Card({
-		number: customPaperSupportThreshold ?? getPaperSupportThreshold(totalPresent),
+		number: paperSupportThreshold ?? 0,
 		faIcon: 'fa-file-lines'
 	})}
 </div>

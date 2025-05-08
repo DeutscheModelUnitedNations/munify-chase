@@ -38,11 +38,15 @@ type Committee {
   id: ID!
   members(where: CommitteeMemberWhereInputArgument): [CommitteeMember!]!
   name: String!
+  paperSupportThreshold: Int
   showWhiteboard: Boolean!
+  simpleMajority: Int
   stateOfDebate: String
   status: CommitteeStatusEnum!
   statusHeadline: String!
   statusUntil: DateTime!
+  totalPresent: Int
+  twoThirdsMajority: Int
   updatedAt: DateTime
   whiteboardContent: String
 }

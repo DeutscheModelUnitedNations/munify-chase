@@ -22,7 +22,7 @@
 	let layoutKey = liveQuery(() => localDB.presentationLayout.get(data.committeeId));
 
 	let layout = $derived(
-		($layoutKey && getPresentationLayoutPreset($layoutKey.layout)) ?? getPresentationLayoutPreset()
+		($layoutKey && getPresentationLayoutPreset($layoutKey.layout)) ?? getPresentationLayoutPreset("smallScreen")
 	);
 
 	let itemSize = $derived({ height: 60 });

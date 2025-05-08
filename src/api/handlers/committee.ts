@@ -1,11 +1,86 @@
-import { db } from '$api/db/db';
-import { abilityBuilder, enum_, schemaBuilder } from '$api/rumble';
-import { and, eq } from 'drizzle-orm';
-import { basics } from './basics';
+import { db, schema } from '$api/db/db';
+import {
+	abilityBuilder,
+	enum_,
+	object,
+	query,
+	pubsub as rumblePubsub,
+	schemaBuilder,
+	arg as rumbleArg
+} from '$api/rumble';
+import { assertFirstEntryExists } from '@m1212e/rumble';
+import { and, count, eq, type InferSelectModel } from 'drizzle-orm';
 
-const { arg, ref, pubsub, table } = basics('committee');
 const statusEnum = enum_({
 	tsName: 'committeeStatus'
+});
+
+const getTotalPresentCount = async (
+	parent: InferSelectModel<typeof schema.committee> & {
+		members: InferSelectModel<typeof schema.committeeMember>[];
+	}
+) => {
+	if (typeof parent.members?.at(0)?.present === 'boolean') {
+		return parent.members.filter((x) => x.present).length;
+	}
+	return (
+		await db
+			.select({ count: count() })
+			.from(schema.committeeMember)
+			.where(
+				and(
+					eq(schema.committeeMember.committeeId, parent.id),
+					eq(schema.committeeMember.present, true)
+				)
+			)
+			.then(assertFirstEntryExists)
+	).count;
+};
+
+const ref = object({
+	table: 'committee',
+	extend: (t) => ({
+		totalPresent: t.field({
+			type: 'Int',
+			//TODO remove as any when rumble fixed it's types
+			resolve: (parent, args, context, info) => getTotalPresentCount(parent as any)
+		}),
+		simpleMajority: t.field({
+			type: 'Int',
+			resolve: async (parent, args, context, info) => {
+				if (parent.customSimpleMajority) {
+					return parent.customSimpleMajority;
+				}
+				const total = await getTotalPresentCount(parent as any);
+				return Math.ceil(total / 2) + 1;
+			}
+		}),
+		twoThirdsMajority: t.field({
+			type: 'Int',
+			resolve: async (parent, args, context, info) => {
+				if (parent.customTwoThirdsMajority) {
+					return parent.customSimpleMajority;
+				}
+				const total = await getTotalPresentCount(parent as any);
+				return Math.ceil((total * 2) / 3);
+			}
+		}),
+		paperSupportThreshold: t.field({
+			type: 'Int',
+			resolve: async (parent, args, context, info) => {
+				if (parent.customPaperSupportThreshold) {
+					return parent.customPaperSupportThreshold;
+				}
+				const total = await getTotalPresentCount(parent as any);
+				return Math.ceil(total * 0.1);
+			}
+		})
+	})
+});
+const pubsub = rumblePubsub({ table: 'committee' });
+const arg = rumbleArg({ table: 'committee' });
+query({
+	table: 'committee'
 });
 
 abilityBuilder.committee.allow(['read', 'update']);
@@ -33,7 +108,7 @@ schemaBuilder.mutationFields((t) => {
 			},
 			resolve: async (query, root, args, ctx, info) => {
 				await db
-					.update(table)
+					.update(schema.committee)
 					.set({
 						whiteboardContent: args.whiteboardContent ?? undefined,
 						showWhiteboard: args.showWhiteboard ?? undefined,
@@ -43,7 +118,12 @@ schemaBuilder.mutationFields((t) => {
 						stateOfDebate: args.stateOfDebate ?? undefined,
 						activeAgendaItemId: args.activeAgendaItemId ?? undefined
 					})
-					.where(and(eq(table.id, args.id), ctx.abilities.committee.filter('update').sql.where));
+					.where(
+						and(
+							eq(schema.committee.id, args.id),
+							ctx.abilities.committee.filter('update').sql.where
+						)
+					);
 
 				pubsub.updated(args.id);
 

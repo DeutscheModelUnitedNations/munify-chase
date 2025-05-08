@@ -63,10 +63,10 @@
 	"whiteboardIsEmpty": "Das Whiteboard ist momentan leer...",
 	"customName": "Benutzerdefinierter Name...",
 	"submitStatus": "Status setzen",
-	"DateCannotBeInPast": "Das Datum darf nicht in der Vergangenheit liegen!",
 	"dateCannotBeInPast": "Das Datum darf nicht in der Vergangenheit liegen!",
 	"updatingStatus": "Status wird gesetzt...",
 	"statusUpdated": "Status wurde gesetzt",
 	"errorUpdatingStatus": "Status konnte nicht gesetzt werden",
-	"theme": "Theme"
+	"theme": "Theme",
+	"setStatus": "Status ändern"
 }

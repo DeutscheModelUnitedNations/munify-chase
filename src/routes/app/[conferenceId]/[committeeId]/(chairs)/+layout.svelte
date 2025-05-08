@@ -3,6 +3,7 @@
 	import ChairNavbar from './ChairNavbar.svelte';
 	import type { LayoutData } from './$houdini';
 	import * as m from '$lib/paraglide/messages';
+	import StatusChangerModal from '$lib/components/committee/StatusChangerModal.svelte';
 
 	interface Props {
 		children: Snippet;
@@ -18,3 +19,9 @@
 <ChairNavbar title={committee?.abbreviation} />
 
 {@render children()}
+
+<StatusChangerModal
+	committeeId={data.committeeId}
+	oldUntil={committee?.statusUntil}
+	oldCustomName={committee?.statusHeadline}
+/>

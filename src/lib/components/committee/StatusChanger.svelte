@@ -1,6 +1,5 @@
 <script lang="ts">
 	import { graphql, type CommitteeStatusEnum$options } from '$houdini';
-	import BasicCard from '$lib/components/BasicCard.svelte';
 	import Tabs from '$lib/components/Tabs.svelte';
 	import dayjs from 'dayjs';
 	import { m } from '$lib/paraglide/messages';
@@ -10,8 +9,9 @@
 		committeeId: string;
 		oldUntil?: Date;
 		oldCustomName?: string;
+		abort?: () => void;
 	};
-	let { committeeId, oldUntil, oldCustomName = '' }: Props = $props();
+	let { committeeId, oldUntil, oldCustomName = '', abort }: Props = $props();
 
 	const categories: {
 		id: CommitteeStatusEnum$options;
@@ -77,7 +77,7 @@
 	});
 </script>
 
-<BasicCard>
+<div class="flex flex-col gap-4">
 	<Tabs tabs={categories} bind:activeTab={activeCategory} />
 	<div class="card bg-base-200 flex flex-row items-center gap-2 p-2">
 		<i class="fa-duotone fa-clock w-8 text-center text-2xl"></i>
@@ -162,13 +162,29 @@
 			placeholder={m.customName()}
 		/>
 	{/if}
-	<button
-		class="btn btn-primary btn-lg w-full {until.isBefore(dayjs()) ? 'btn-disabled' : ''}"
-		onclick={() => {
-			submitStatus();
-		}}
-	>
-		<i class="fas fa-save mr-2"></i>
-		{m.submitStatus()}
-	</button>
-</BasicCard>
+	<div class="flex w-full gap-2">
+		{#if abort}
+			<button
+				class="btn btn-error btn-lg"
+				onclick={() => {
+					abort();
+				}}
+			>
+				<i class="fas fa-xmark mr-2"></i>
+				{m.abort()}
+			</button>
+		{/if}
+		<button
+			class="btn btn-primary btn-lg w-full flex-1 {until.isBefore(dayjs()) ? 'btn-disabled' : ''}"
+			onclick={() => {
+				submitStatus();
+				if (abort) {
+					abort();
+				}
+			}}
+		>
+			<i class="fas fa-save mr-2"></i>
+			{m.submitStatus()}
+		</button>
+	</div>
+</div>

@@ -19,10 +19,11 @@
 	let committeeQuery = $derived(data?.CommitteePresentationQuery);
 	let committee = $derived($committeeQuery.data?.findFirstCommittee);
 
-	let layoutKey = liveQuery(() => localDB.presentationLayout.get(data.committeeId));
+	let committeeSettings = liveQuery(() => localDB.committeeSettings.get(data.committeeId));
 
 	let layout = $derived(
-		($layoutKey && getPresentationLayoutPreset($layoutKey.layout)) ?? getPresentationLayoutPreset("smallScreen")
+		($committeeSettings && getPresentationLayoutPreset($committeeSettings.layout)) ??
+			getPresentationLayoutPreset()
 	);
 
 	let itemSize = $derived({ height: 60 });
@@ -37,6 +38,10 @@
 				status
 				statusHeadline
 				statusUntil
+				totalPresent
+				simpleMajority
+				twoThirdsMajority
+				paperSupportThreshold
 				activeAgendaItem {
 					id
 					title
@@ -46,9 +51,6 @@
 					title
 				}
 				whiteboardContent
-				customSimpleMajority
-				customTwoThirdsMajority
-				customPaperSupportThreshold
 			}
 		}
 	`);
@@ -102,10 +104,10 @@
 			{@const gridProps = layout.majorities}
 			<GridItem {...gridProps} class="card bg-base-100 gap-2 overflow-hidden p-4" id="majorities">
 				<Majorities
-					totalPresent={20}
-					customSimpleMajority={committee.customSimpleMajority}
-					customTwoThirdsMajority={committee.customTwoThirdsMajority}
-					customPaperSupportThreshold={committee.customPaperSupportThreshold}
+					totalPresent={committee.totalPresent}
+					simpleMajority={committee.simpleMajority}
+					twoThirdsMajority={committee.twoThirdsMajority}
+					paperSupportThreshold={committee.paperSupportThreshold}
 				/>
 			</GridItem>
 		{/if}

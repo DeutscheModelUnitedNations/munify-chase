@@ -6,13 +6,14 @@ query CommitteePresentationQuery($committeeId: ID!) @blocking {
 		status
 		statusHeadline
 		statusUntil
+		totalPresent
+		simpleMajority
+		twoThirdsMajority
+		paperSupportThreshold
 		activeAgendaItem {
 			id
 			title
 		}
 		whiteboardContent
-		customSimpleMajority
-		customTwoThirdsMajority
-		customPaperSupportThreshold
 	}
 }

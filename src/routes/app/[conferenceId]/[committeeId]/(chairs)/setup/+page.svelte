@@ -14,6 +14,7 @@
 	import { onMount } from 'svelte';
 	import StateOfDebate from '$lib/components/committee/StateOfDebateChanger.svelte';
 	import AgendaItemChanger from '$lib/components/committee/AgendaItemChanger.svelte';
+	import PresentationSettings from './PresentationSettings.svelte';
 
 	let { data }: { data: PageData } = $props();
 
@@ -112,6 +113,13 @@
 						activeAgendaItem={committee.activeAgendaItem}
 						agendaItems={committee.agendaItems}
 					/>
+				</BasicCard>
+				<BasicCard title={m.presentationMode()}>
+					<a href="." class="btn btn-primary mb-4" target="_blank">
+						<i class="fas fa-projector"></i>
+						{m.openPresentation()}
+					</a>
+					<PresentationSettings committeeId={data.committeeId} />
 				</BasicCard>
 			</div>
 		</div>

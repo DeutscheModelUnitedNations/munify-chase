@@ -1,18 +1,18 @@
 import type { PresentationLayoutPresetOptions } from '$lib/data/presentationLayoutPresets';
 import Dexie, { type EntityTable } from 'dexie';
 
-interface PresentationLayout {
+interface CommitteeSettings {
 	committeeId: string;
 	layout: PresentationLayoutPresetOptions;
 }
 
 const localDB = new Dexie('local-db') as Dexie & {
-	presentationLayout: EntityTable<PresentationLayout, 'committeeId'>;
+	committeeSettings: EntityTable<CommitteeSettings, 'committeeId'>;
 };
 
 localDB.version(1).stores({
-	presentation: '++committeeId, layout'
+	committeeSettings: '++committeeId, layout'
 });
 
-export type { PresentationLayout };
+export type { CommitteeSettings };
 export { localDB };

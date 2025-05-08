@@ -89,5 +89,25 @@
 	"toastLoading": "{targetName} wird geladen...",
 	"toastSuccess": "{targetName} geladen",
 	"toastError": "{targetName} konnte nicht geladen werden",
-	"committeeStatus": "Gremienstatus"
+	"committeeStatus": "Gremienstatus",
+	"presentationMode": "Präsentationsansicht",
+	"openPresentation": "Präsentationsansicht öffnen",
+	"layout": "Layout",
+	"layoutDescription": "Layout-Vorlagen für die Präsentationsansicht. Bitte beachte, dass du manuelle Änderungen am Layout überschreibst, wenn du die Layoutvorlage hier änders.",
+	"layoutSelect": "Layout auswählen",
+	"layoutPreset": [
+		{
+			"declarations": [
+				"input preset"
+			],
+			"selectors": [
+				"preset"
+			],
+			"match": {
+				"preset=default": "Standard Layout",
+				"preset=smallScreen": "Layout für kleine Bildschirme",
+				"preset=*": "Unbekanntes Layout"
+			}
+		}
+	]
 }

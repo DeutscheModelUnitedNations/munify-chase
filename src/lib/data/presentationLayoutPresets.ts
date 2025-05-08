@@ -161,3 +161,7 @@ export const getPresentationLayoutPreset = (
 ): PresentationLayoutPresets => {
 	return presentationLayoutPresets[preset];
 };
+
+export const getPresentationLayoutPresets = () => {
+	return Object.keys(presentationLayoutPresets);
+};

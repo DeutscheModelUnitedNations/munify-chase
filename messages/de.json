@@ -68,5 +68,11 @@
 	"statusUpdated": "Status wurde gesetzt",
 	"errorUpdatingStatus": "Status konnte nicht gesetzt werden",
 	"theme": "Theme",
-	"setStatus": "Status ändern"
+	"setStatus": "Status ändern",
+	"stateOfDebate": "Debattenstand",
+	"updatingStateOfDebate": "Debattenstatus wird gespeichert...",
+	"updatedStateOfDebate": "Debattenstatus gespeichert",
+	"errorUpdatingStateOfDebate": "Fehler beim Speichern des Debattenstatus",
+	"submitStateOfDebate": "Debattenstatus speichern",
+	"noResults": "Keine Ergebnisse"
 }

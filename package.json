@@ -89,5 +89,8 @@
 		"typecheck": "tsc --noEmit",
 		"vite-dev": "vite dev"
 	},
-	"type": "module"
+	"type": "module",
+	"dependencies": {
+		"bits-ui": "^1.4.6"
+	}
 }

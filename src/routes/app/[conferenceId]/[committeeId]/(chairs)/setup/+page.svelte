@@ -12,6 +12,7 @@
 	import StatusChanger from '../../../../../../lib/components/committee/StatusChanger.svelte';
 	import { graphql } from '$houdini';
 	import { onMount } from 'svelte';
+	import StateOfDebate from '$lib/components/committee/StateOfDebate.svelte';
 
 	let { data }: { data: PageData } = $props();
 
@@ -58,8 +59,8 @@
 		<div class="flex h-full w-full max-w-screen-xl flex-col gap-6 p-6 lg:flex-row">
 			<div class="top-22 flex h-full flex-col gap-4 lg:sticky lg:w-lg">
 				<BasicCard>
-					<IconInfoBox text={committee.activeAgendaItem?.title ?? '—'} faIcon="podium" />
-					<IconInfoBox text={committee.stateOfDebate ?? '—'} faIcon="diagram-next" />
+					<IconInfoBox text={committee.activeAgendaItem?.title || '—'} faIcon="podium" />
+					<IconInfoBox text={committee.stateOfDebate || '—'} faIcon="diagram-next" />
 					<IconInfoBox
 						text={committee.statusHeadline.length > 0
 							? committee.statusHeadline
@@ -96,6 +97,9 @@
 						oldUntil={committee.statusUntil}
 						oldCustomName={committee.statusHeadline}
 					/>
+				</BasicCard>
+				<BasicCard title={m.stateOfDebate()} kbd="⌥ + D">
+					<StateOfDebate committeeId={committee.id} oldStateOfDebate={committee.stateOfDebate} />
 				</BasicCard>
 			</div>
 		</div>

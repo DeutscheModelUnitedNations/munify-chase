@@ -92,4 +92,4 @@
 	{/each}
 </div>
 
-<Toaster position="top-right" />
+<Toaster />

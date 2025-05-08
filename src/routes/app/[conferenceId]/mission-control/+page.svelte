@@ -10,6 +10,14 @@
 
 	let query = $derived(data?.MissionControlQuery);
 	let conference = $derived($query.data?.findFirstConference);
+
+	const menubarItems = [
+		{
+			faIcon: 'fa-home',
+			title: m.home(),
+			href: '..'
+		}
+	];
 </script>
 
 <div class="navbar bg-base-100 shadow-sm">
@@ -18,15 +26,7 @@
 		<CurrentTime />
 	</div>
 	<div class="flex-none">
-		<NavbarBurgerMenu
-			items={[
-				{
-					faIcon: 'fa-home',
-					title: m.home(),
-					href: '..'
-				}
-			]}
-		/>
+		<NavbarBurgerMenu items={menubarItems} />
 	</div>
 </div>
 

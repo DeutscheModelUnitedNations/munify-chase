@@ -67,9 +67,6 @@
 	</div>
 
 	<div class="flex-none">
-		<a class="btn btn-ghost btn-square" href="../mission-control" aria-label="Go back to app">
-			<i class="fa-duotone fa-home"></i>
-		</a>
 		<NavbarBurgerMenu
 			items={[
 				{

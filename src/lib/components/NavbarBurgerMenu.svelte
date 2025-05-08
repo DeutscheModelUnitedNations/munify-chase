@@ -17,7 +17,7 @@
 	let menuVisible = $state(false);
 </script>
 
-<button class="btn relative" onclick={() => (menuVisible = true)}>
+<button class="btn relative" aria-label="Open menu" onclick={() => (menuVisible = true)}>
 	<i class="fa-duotone fa-bars"></i>
 </button>
 

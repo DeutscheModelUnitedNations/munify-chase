@@ -12,7 +12,7 @@
 
 	let { committeeId, oldUntil, oldCustomName }: Props = $props();
 
-	let open = $state(true);
+	let open = $state(false);
 
 	$effect(() => {
 		hotkeys('alt+s, esc', (event, handler) => {

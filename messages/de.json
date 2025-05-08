@@ -74,5 +74,20 @@
 	"updatedStateOfDebate": "Debattenstatus gespeichert",
 	"errorUpdatingStateOfDebate": "Fehler beim Speichern des Debattenstatus",
 	"submitStateOfDebate": "Debattenstatus speichern",
-	"noResults": "Keine Ergebnisse"
+	"noResults": "Keine Ergebnisse",
+	"agendaItem": "Tagesordnungspunkt",
+	"selectAgendaItem": "Tagesordnungspunkt auswählen...",
+	"toastCreateLoading": "{targetName} wird erstellt...",
+	"toastCreateSuccess": "{targetName} erstellt",
+	"toastCreateError": "{targetName} konnte nicht erstellt werden",
+	"toastDeleteLoading": "{targetName} wird gelöscht...",
+	"toastDeleteSuccess": "{targetName} gelöscht",
+	"toastDeleteError": "{targetName} konnte nicht gelöscht werden",
+	"toastUpdateLoading": "{targetName} wird aktualisiert...",
+	"toastUpdateSuccess": "{targetName} aktualisiert",
+	"toastUpdateError": "{targetName} konnte nicht aktualisiert werden",
+	"toastLoading": "{targetName} wird geladen...",
+	"toastSuccess": "{targetName} geladen",
+	"toastError": "{targetName} konnte nicht geladen werden",
+	"committeeStatus": "Gremienstatus"
 }

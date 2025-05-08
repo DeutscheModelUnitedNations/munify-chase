@@ -4,6 +4,7 @@
 	import Combobox from '../Combobox.svelte';
 	import { graphql } from '$houdini';
 	import stateOfDebateTemplates from '$lib/data/stateOfDebateTemplates';
+	import { promiseToastStrings } from '$lib/utils/toast';
 
 	interface Props {
 		committeeId: string;
@@ -34,11 +35,7 @@
 				stateOfDebate: value,
 				committeeId
 			}),
-			{
-				loading: m.updatingStateOfDebate(),
-				success: m.updatedStateOfDebate(),
-				error: m.errorUpdatingStateOfDebate()
-			}
+			promiseToastStrings(m.stateOfDebate(), 'update')
 		);
 	};
 </script>

@@ -3,14 +3,16 @@
 	import { m } from '$lib/paraglide/messages';
 	import StatusChanger from './StatusChanger.svelte';
 	import hotkeys from 'hotkeys-js';
+	import type { CommitteeStatusEnum$options } from '$houdini';
 
 	interface Props {
 		committeeId: string;
+		oldStatus?: CommitteeStatusEnum$options;
 		oldUntil?: Date;
 		oldCustomName?: string;
 	}
 
-	let { committeeId, oldUntil, oldCustomName }: Props = $props();
+	let { committeeId, oldStatus, oldUntil, oldCustomName }: Props = $props();
 
 	let open = $state(false);
 
@@ -30,5 +32,11 @@
 </script>
 
 <Modal bind:open>
-	<StatusChanger {committeeId} {oldUntil} {oldCustomName} abort={() => (open = false)} />
+	<StatusChanger
+		{committeeId}
+		{oldStatus}
+		{oldUntil}
+		{oldCustomName}
+		abort={() => (open = false)}
+	/>
 </Modal>

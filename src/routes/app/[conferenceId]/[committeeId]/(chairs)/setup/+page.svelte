@@ -12,7 +12,8 @@
 	import StatusChanger from '../../../../../../lib/components/committee/StatusChanger.svelte';
 	import { graphql } from '$houdini';
 	import { onMount } from 'svelte';
-	import StateOfDebate from '$lib/components/committee/StateOfDebate.svelte';
+	import StateOfDebate from '$lib/components/committee/StateOfDebateChanger.svelte';
+	import AgendaItemChanger from '$lib/components/committee/AgendaItemChanger.svelte';
 
 	let { data }: { data: PageData } = $props();
 
@@ -94,12 +95,20 @@
 				<BasicCard title={m.setStatus()} kbd="⌥ + S">
 					<StatusChanger
 						committeeId={committee.id}
+						oldStatus={committee.status}
 						oldUntil={committee.statusUntil}
 						oldCustomName={committee.statusHeadline}
 					/>
 				</BasicCard>
 				<BasicCard title={m.stateOfDebate()} kbd="⌥ + D">
 					<StateOfDebate committeeId={committee.id} oldStateOfDebate={committee.stateOfDebate} />
+				</BasicCard>
+				<BasicCard title={m.agendaItem()}>
+					<AgendaItemChanger
+						committeeId={committee.id}
+						activeAgendaItem={committee.activeAgendaItem}
+						agendaItems={committee.agendaItems}
+					/>
 				</BasicCard>
 			</div>
 		</div>

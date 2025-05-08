@@ -4,6 +4,7 @@
 	import toast from 'svelte-french-toast';
 	import WhiteboardEditor from './WhiteboardEditor.svelte';
 	import { invalidateAll } from '$app/navigation';
+	import { promiseToastStrings } from '$lib/utils/toast';
 
 	interface Props {
 		open: boolean;
@@ -33,16 +34,9 @@
 		await toast.promise(
 			UpdateWhiteboardMutation.mutate({
 				committeeId,
-				whiteboardContent: newWhiteboardContent
+				whiteboardContent: newWhiteboardContent ?? ''
 			}),
-			{
-				loading: m.updatingWhiteboard(),
-				success: m.whiteboardUpdated(),
-				error: m.errorUpdatingWhiteboard()
-			},
-			{
-				position: 'top-center'
-			}
+			promiseToastStrings(m.whiteboard(), 'update')
 		);
 		// cache.markStale('Committee');
 		// invalidateAll();

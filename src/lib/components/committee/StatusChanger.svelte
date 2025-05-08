@@ -4,14 +4,16 @@
 	import dayjs from 'dayjs';
 	import { m } from '$lib/paraglide/messages';
 	import toast from 'svelte-french-toast';
+	import { promiseToastStrings } from '$lib/utils/toast';
 
 	type Props = {
 		committeeId: string;
+		oldStatus?: CommitteeStatusEnum$options;
 		oldUntil?: Date;
 		oldCustomName?: string;
 		abort?: () => void;
 	};
-	let { committeeId, oldUntil, oldCustomName = '', abort }: Props = $props();
+	let { committeeId, oldStatus, oldUntil, oldCustomName = '', abort }: Props = $props();
 
 	const categories: {
 		id: CommitteeStatusEnum$options;
@@ -62,17 +64,26 @@
 				customName: customName,
 				committeeId: committeeId
 			}),
-			{
-				loading: m.updatingStatus(),
-				success: m.statusUpdated(),
-				error: m.errorUpdatingStatus()
-			}
+			promiseToastStrings(m.committeeStatus(), 'update')
 		);
 	};
 
 	$effect(() => {
 		if (customName) {
 			customNameOpen = true;
+		}
+	});
+
+	$effect(() => {
+		if (oldStatus) {
+			switch (oldStatus) {
+				case 'FORMAL':
+					activeCategory = 'INFORMAL';
+					break;
+				default:
+					activeCategory = 'FORMAL';
+					break;
+			}
 		}
 	});
 </script>

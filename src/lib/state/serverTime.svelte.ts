@@ -12,7 +12,18 @@ export const serverTime = derived(
 	timeQuery,
 	(time, set) => {
 		if (time.data?.serverTime) {
-			set(dayjs(new Date(time.data.serverTime)));
+			const servertime = dayjs(new Date(time.data.serverTime));
+			set(servertime);
+
+			const delta = dayjs().diff(servertime);
+
+			const interval = setInterval(() => {
+				set(dayjs().add(delta, 'millisecond'));
+			}, 1000);
+
+			return () => {
+				clearInterval(interval);
+			};
 		}
 	},
 	dayjs(new Date())

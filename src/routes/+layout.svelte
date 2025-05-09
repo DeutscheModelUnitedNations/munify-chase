@@ -6,6 +6,7 @@
 	import dayjs from 'dayjs';
 	import duration from 'dayjs/plugin/duration';
 	import '../app.css';
+	import '/node_modules/flag-icons/css/flag-icons.min.css';
 
 	import '@fontsource/outfit/100.css';
 	import '@fontsource/outfit/200.css';

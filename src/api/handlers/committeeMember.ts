@@ -1,9 +1,11 @@
 import { db } from '$api/db/db';
-import { schemaBuilder } from '$api/rumble';
+import { abilityBuilder, schemaBuilder } from '$api/rumble';
 import { and, inArray } from 'drizzle-orm';
 import { basics } from './basics';
 
 const { arg, ref, pubsub, table } = basics('committeeMember');
+
+abilityBuilder.committeeMember.allow(['read', 'update']);
 
 schemaBuilder.mutationFields((t) => {
 	return {

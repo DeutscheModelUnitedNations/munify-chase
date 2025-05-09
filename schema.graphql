@@ -56,6 +56,7 @@ type CommitteeMember {
   createdAt: DateTime!
   id: ID!
   present: Boolean!
+  representation(where: RepresentationWhereInputArgument): Representation
   representationId: ID!
   updatedAt: DateTime
 }
@@ -65,6 +66,7 @@ input CommitteeMemberWhereInputArgument {
   createdAt: DateTime
   id: ID
   present: Boolean
+  representation: RepresentationWhereInputArgument
   representationId: ID
   updatedAt: DateTime
 }

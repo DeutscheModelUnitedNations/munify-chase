@@ -58,7 +58,7 @@ try {
 		}
 
 		const delegations: Record<string, any> = {};
-		for (const alpha2Code of conference.committees.flatMap((committee) => committee.countries)) {
+		for (const alpha2Code of conference.committees.flatMap((committee) => committee.countries.map((country) => country.toLowerCase()))) {
 			if (delegations[alpha2Code]) {
 				continue;
 			}
@@ -137,9 +137,9 @@ try {
 			}
 
 			for (const country of committee.countries) {
-				const delegation = delegations[country];
+				const delegation = delegations[country.toLowerCase()];
 				if (!delegation) {
-					throw new Error(`Delegation ${country} not found`);
+					throw new Error(`Delegation ${country.toLowerCase()} not found`);
 				}
 
 				await db.insert(schema.committeeMember).values({

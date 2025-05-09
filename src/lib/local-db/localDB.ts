@@ -4,6 +4,8 @@ import Dexie, { type EntityTable } from 'dexie';
 interface CommitteeSettings {
 	committeeId: string;
 	layout: PresentationLayoutPresetOptions;
+	displayRegionalGroups: boolean;
+	roleCall: string | null;
 }
 
 const localDB = new Dexie('local-db') as Dexie & {
@@ -11,7 +13,7 @@ const localDB = new Dexie('local-db') as Dexie & {
 };
 
 localDB.version(1).stores({
-	committeeSettings: '++committeeId, layout'
+	committeeSettings: '++committeeId, layout, displayRegionalGroups, roleCall'
 });
 
 export type { CommitteeSettings };

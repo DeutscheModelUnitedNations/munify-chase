@@ -92,6 +92,7 @@
 	"type": "module",
 	"dependencies": {
 		"bits-ui": "^1.4.6",
+		"flag-icons": "^7.3.2",
 		"gridstack": "^12.1.2",
 		"svelte-grid-extended": "^1.2.1"
 	}

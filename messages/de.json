@@ -109,5 +109,26 @@
 				"preset=*": "Unbekanntes Layout"
 			}
 		}
+	],
+	"displayRegionalGroups": "Regionalgruppenanzeige",
+	"on": "An",
+	"off": "Aus",
+	"regionalGroups": [
+		{
+			"declarations": [
+				"input group"
+			],
+			"selectors": [
+				"group"
+			],
+			"match": {
+				"group=AFRICA": "Afrika",
+				"group=ASIA_PACIFIC": "Asien",
+				"group=EASTERN_EUROPE": "Osteuropa",
+				"group=LATIN_AMERICA_CARIBBEAN": "Lateinamerika und Karibik",
+				"group=WESTERN_EUROPE_OTHERS": "Westeuropa und restliche Staaten",
+				"group=*": "Regionalgruppen"
+			}
+		}
 	]
 }

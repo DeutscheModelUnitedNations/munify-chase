@@ -13,6 +13,9 @@
 	import { getPresentationLayoutPreset } from '$lib/data/presentationLayoutPresets';
 	import { graphql } from '$houdini';
 	import AbbreviationInfoBox from '$lib/components/AbbreviationInfoBox.svelte';
+	import UndrawError from '$lib/components/UndrawError.svelte';
+	import emptyStreet from '$assets/undraw/empty_street.svg';
+	import RegionalGroups from './RegionalGroups.svelte';
 
 	let { data }: { data: PageData } = $props();
 
@@ -131,6 +134,16 @@
 			></GridItem>
 		{/if}
 	</Grid>
+
+	<RegionalGroups
+		open={$committeeSettings?.displayRegionalGroups ?? false}
+		committeeMembers={committee.members}
+	/>
 {:else}
-	<DevPlaceholder {data} />
+	<UndrawError
+		undrawImage={emptyStreet}
+		title={m.committeeDoesNotExist()}
+		buttonText={m.back()}
+		buttonLink="/app"
+	/>
 {/if}

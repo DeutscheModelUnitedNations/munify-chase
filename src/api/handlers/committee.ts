@@ -15,6 +15,8 @@ const statusEnum = enum_({
 	tsName: 'committeeStatus'
 });
 
+abilityBuilder.committee.allow(['read', 'update']);
+
 const getTotalPresentCount = async (
 	parent: InferSelectModel<typeof schema.committee> & {
 		members: InferSelectModel<typeof schema.committeeMember>[];
@@ -82,8 +84,6 @@ const arg = rumbleArg({ table: 'committee' });
 query({
 	table: 'committee'
 });
-
-abilityBuilder.committee.allow(['read', 'update']);
 
 schemaBuilder.mutationFields((t) => {
 	return {

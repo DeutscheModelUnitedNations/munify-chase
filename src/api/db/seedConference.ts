@@ -58,7 +58,9 @@ try {
 		}
 
 		const delegations: Record<string, any> = {};
-		for (const alpha2Code of conference.committees.flatMap((committee) => committee.countries.map((country) => country.toLowerCase()))) {
+		for (const alpha2Code of conference.committees.flatMap((committee) =>
+			committee.countries.map((country) => country.toLowerCase())
+		)) {
 			if (delegations[alpha2Code]) {
 				continue;
 			}

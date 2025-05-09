@@ -16,7 +16,7 @@ users:
     conferenceUserType: TEAM
 conferences:
   - title: Dev Conference
-    pressWebsite: "https://devconf.com"
+    pressWebsite: 'https://devconf.com'
     conferenceUsers:
       - userId: admin
         conferenceUserType: ADMIN

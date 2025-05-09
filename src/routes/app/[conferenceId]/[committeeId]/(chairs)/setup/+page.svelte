@@ -10,48 +10,21 @@
 	import WhiteboardViewer from '$lib/components/whiteboard/WhiteboardViewer.svelte';
 	import WhiteboardEditorModal from '$lib/components/whiteboard/WhiteboardEditorModal.svelte';
 	import StatusChanger from '../../../../../../lib/components/committee/StatusChanger.svelte';
-	import { graphql } from '$houdini';
 	import { onMount } from 'svelte';
 	import StateOfDebate from '$lib/components/committee/StateOfDebateChanger.svelte';
 	import AgendaItemChanger from '$lib/components/committee/AgendaItemChanger.svelte';
 	import PresentationSettings from './PresentationSettings.svelte';
+	import { CommitteeSubscription } from '../committeeSubscription';
 
 	let { data }: { data: PageData } = $props();
 
-	let committeeSub = graphql(`
-		subscription CommitteeSubscription($id: ID!) {
-			findFirstCommittee(where: { id: $id }) {
-				id
-				abbreviation
-				name
-				stateOfDebate
-				status
-				statusHeadline
-				statusUntil
-				totalPresent
-				simpleMajority
-				twoThirdsMajority
-				paperSupportThreshold
-				activeAgendaItem {
-					id
-					title
-				}
-				agendaItems {
-					id
-					title
-				}
-				whiteboardContent
-			}
-		}
-	`);
-
 	let query = $derived(data?.CommitteeTeamQuery);
 	let committee = $derived(
-		$committeeSub.data?.findFirstCommittee ?? $query.data?.findFirstCommittee
+		$CommitteeSubscription.data?.findFirstCommittee ?? $query.data?.findFirstCommittee
 	);
 
 	onMount(() => {
-		committeeSub.listen({ id: data.committeeId });
+		CommitteeSubscription.listen({ id: data.committeeId });
 	});
 
 	let editWhiteboardModalOpen = $state(false);

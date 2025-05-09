@@ -19,20 +19,30 @@ abilityBuilder.committee.allow(['read', 'update']);
 
 const getTotalPresentCount = async (
 	parent: InferSelectModel<typeof schema.committee> & {
-		members: InferSelectModel<typeof schema.committeeMember>[];
+		members: (InferSelectModel<typeof schema.committeeMember> & {
+			representation: InferSelectModel<typeof schema.representation>;
+		})[];
 	}
 ) => {
-	if (typeof parent.members?.at(0)?.present === 'boolean') {
-		return parent.members.filter((x) => x.present).length;
+	if (
+		typeof parent.members?.at(0)?.present === 'boolean' &&
+		parent.members?.at(0)?.representation.type
+	) {
+		return parent.members.filter((x) => x.present && x.representation.type === 'DELEGATION').length;
 	}
 	return (
 		await db
 			.select({ count: count() })
 			.from(schema.committeeMember)
+			.innerJoin(
+				schema.representation,
+				eq(schema.committeeMember.representationId, schema.representation.id)
+			)
 			.where(
 				and(
 					eq(schema.committeeMember.committeeId, parent.id),
-					eq(schema.committeeMember.present, true)
+					eq(schema.committeeMember.present, true),
+					eq(schema.representation.type, 'DELEGATION')
 				)
 			)
 			.then(assertFirstEntryExists)

@@ -7,7 +7,7 @@
 		icon?: string;
 	}
 
-	let { size = 'md', alpha2Code, nsa = false, icon = 'fa-hand-point-up' }: Props = $props();
+	let { size = 'md', alpha2Code, nsa = false, icon = 'fa-bullhorn' }: Props = $props();
 
 	const flagClassNames = () => {
 		switch (size) {
@@ -46,7 +46,7 @@
 
 <div
 	class="{flagClassNames()} card items-center justify-center overflow-hidden shadow-sm {nsa &&
-		'bg-base-300'}"
+		'bg-error text-error-content'}"
 >
 	{#if nsa}
 		<i class="fa-solid fa-{icon.replace('fa-', '')} {iconClassNames()}"></i>

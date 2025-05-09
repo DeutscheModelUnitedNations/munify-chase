@@ -247,6 +247,7 @@ type Representation {
   conferenceId: ID!
   conferenceMembers(where: ConferenceMemberWhereInputArgument): [ConferenceMember!]!
   createdAt: DateTime!
+  faIcon: String
   id: ID!
   name: String
   regionalGroup: RegionalGroupEnum
@@ -268,6 +269,7 @@ input RepresentationWhereInputArgument {
   conferenceId: ID
   conferenceMembers: ConferenceMemberWhereInputArgument
   createdAt: DateTime
+  faIcon: String
   id: ID
   name: String
   regionalGroup: RegionalGroupEnum

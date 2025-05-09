@@ -76,6 +76,7 @@ try {
 		console.info(`   Delegations: ${Object.keys(delegations).length}`);
 
 		console.info('   Custom representations:');
+		const customRepresentations = [];
 		for (const representation of conference.customRepresentations ?? []) {
 			const representationEntry = await db
 				.insert(schema.representation)
@@ -86,10 +87,16 @@ try {
 				.returning()
 				.then(assertFirstEntryExists);
 
-			await db.insert(schema.conferenceMember).values({
-				conferenceId: conferenceEntry.id,
-				representationId: representationEntry.id
-			});
+			customRepresentations.push(
+				await db
+					.insert(schema.conferenceMember)
+					.values({
+						conferenceId: conferenceEntry.id,
+						representationId: representationEntry.id
+					})
+					.returning()
+					.then(assertFirstEntryExists)
+			);
 			console.info(`    - ${representation.name} (${representation.type})`);
 		}
 
@@ -150,6 +157,16 @@ try {
 				});
 			}
 			console.info(`      Countries: ${committee.countries.length}`);
+
+			for (const customRepresentation of customRepresentations) {
+				if (customRepresentation.representationId === committeeEntry.id) {
+					continue;
+				}
+				await db.insert(schema.committeeMember).values({
+					committeeId: committeeEntry.id,
+					representationId: customRepresentation.representationId
+				});
+			}
 		}
 	}
 

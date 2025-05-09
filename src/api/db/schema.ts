@@ -109,6 +109,7 @@ export const representation = pgTable(
 		alpha2Code: text(),
 		alpha3Code: text(),
 		type: representationType().notNull(),
+		faIcon: text(),
 		regionalGroup: regionalGroup(),
 		conferenceId: uuid()
 			.notNull()

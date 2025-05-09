@@ -95,6 +95,10 @@ export interface SeedData {
 			 * Type of the custom representation
 			 */
 			type: 'NSA' | 'UN';
+			/**
+			 * Font Awesome icon class for the custom representation
+			 */
+			faIcon?: string;
 		}[];
 	}[];
 }

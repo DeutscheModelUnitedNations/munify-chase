@@ -149,6 +149,10 @@
 									"type": "string",
 									"enum": ["NSA", "UN"],
 									"description": "Type of the custom representation"
+								},
+								"faIcon": {
+									"type": "string",
+									"description": "Font Awesome icon class for the custom representation"
 								}
 							},
 							"additionalProperties": false

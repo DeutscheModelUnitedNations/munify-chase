@@ -12,5 +12,6 @@ if (dev) {
 export const { abilityBuilder, schemaBuilder, arg, object, query, pubsub, createYoga, enum_ } =
 	rumble({
 		db,
-		context
+		context,
+		defaultLimit: 300
 	});

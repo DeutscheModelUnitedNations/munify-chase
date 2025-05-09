@@ -10,7 +10,7 @@
 	import PresenceActions from './PresenceActions.svelte';
 	import { assertDirective } from 'graphql';
 	import Flag from '$lib/components/Flag.svelte';
-	import { representation } from '$api/db/schema';
+	import { regionalGroup, representation } from '$api/db/schema';
 	import Tabs from '$lib/components/Tabs.svelte';
 	import { SetPresenceMutation } from './presenceMutations';
 	import toast from 'svelte-french-toast';
@@ -19,6 +19,7 @@
 		getFullTranslatedCountryNameFromISO3Code,
 		sortTranslatedCountries
 	} from '$lib/utils/nationTranslationHelper.svelte';
+	import ChairRollCall from '$lib/components/rollCall/ChairRollCall.svelte';
 
 	let { data }: { data: PageData } = $props();
 
@@ -46,8 +47,7 @@
 			.sort((a, b) => a.representation!.name!.localeCompare(b.representation!.name!)) ?? []
 	);
 
-	$inspect(committee?.members?.filter((member) => member.representation?.name));
-	$inspect(nsas);
+	let rollCallActive = $state(false);
 
 	onMount(() => {
 		CommitteeSubscription.listen({ id: data.committeeId });
@@ -90,7 +90,7 @@
 					/>
 				</BasicCard>
 				<BasicCard>
-					<button class="btn btn-primary btn-xl">
+					<button class="btn btn-primary btn-xl" onclick={() => (rollCallActive = true)}>
 						<i class="fas fa-user-magnifying-glass mr-2"></i>
 						{m.rollCall()}
 					</button>
@@ -138,6 +138,25 @@
 									{m.unknown()}
 								{/if}
 							</h3>
+							{#if member.representation?.regionalGroup}
+								{@const group = member.representation.regionalGroup}
+								<div
+									class="tooltip tooltip-left text-xl"
+									data-tip={m.regionalGroups({ group: member.representation?.regionalGroup ?? '' })}
+								>
+									{#if group === 'AFRICA'}
+										<i class="fas fa-earth-africa text-blue-500"></i>
+									{:else if group === 'ASIA_PACIFIC'}
+										<i class="fas fa-earth-asia text-green-500"></i>
+									{:else if group === 'EASTERN_EUROPE'}
+										<i class="fas fa-earth-europe text-red-500"></i>
+									{:else if group === 'LATIN_AMERICA_CARIBBEAN'}
+										<i class="fas fa-earth-americas text-pink-500"></i>
+									{:else if group === 'WESTERN_EUROPE_OTHERS'}
+										<i class="fas fa-earth-europe text-yellow-500"></i>
+									{/if}
+								</div>
+							{/if}
 							<Tabs
 								activeTab={member.present}
 								tabs={presenceTabs}
@@ -159,3 +178,5 @@
 		buttonLink="/app"
 	/>
 {/if}
+
+<ChairRollCall bind:active={rollCallActive} members={countries} committeeId={data.committeeId} />

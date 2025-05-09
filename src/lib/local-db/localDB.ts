@@ -5,7 +5,7 @@ interface CommitteeSettings {
 	committeeId: string;
 	layout: PresentationLayoutPresetOptions;
 	displayRegionalGroups: boolean;
-	roleCall: string | null;
+	rollCall: number | null;
 }
 
 const localDB = new Dexie('local-db') as Dexie & {
@@ -13,7 +13,7 @@ const localDB = new Dexie('local-db') as Dexie & {
 };
 
 localDB.version(1).stores({
-	committeeSettings: '++committeeId, layout, displayRegionalGroups, roleCall'
+	committeeSettings: '++committeeId, layout, displayRegionalGroups, rollCall'
 });
 
 export type { CommitteeSettings };

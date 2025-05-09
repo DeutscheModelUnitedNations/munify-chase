@@ -43,7 +43,7 @@
 				committeeId,
 				layout: 'default',
 				displayRegionalGroups: false,
-				roleCall: null
+				rollCall: null
 			});
 		}
 	});

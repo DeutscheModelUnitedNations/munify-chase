@@ -16,6 +16,8 @@
 	import UndrawError from '$lib/components/UndrawError.svelte';
 	import emptyStreet from '$assets/undraw/empty_street.svg';
 	import RegionalGroups from './RegionalGroups.svelte';
+	import PresentationRollCall from '$lib/components/rollCall/PresentationRollCall.svelte';
+	import { sortTranslatedCountries } from '$lib/utils/nationTranslationHelper.svelte';
 
 	let { data }: { data: PageData } = $props();
 
@@ -45,6 +47,7 @@
 				simpleMajority
 				twoThirdsMajority
 				paperSupportThreshold
+				whiteboardContent
 				activeAgendaItem {
 					id
 					title
@@ -53,7 +56,19 @@
 					id
 					title
 				}
-				whiteboardContent
+				members {
+					id
+					present
+					representation {
+						id
+						type
+						name
+						alpha2Code
+						alpha3Code
+						regionalGroup
+						faIcon
+					}
+				}
 			}
 		}
 	`);
@@ -138,6 +153,15 @@
 	<RegionalGroups
 		open={$committeeSettings?.displayRegionalGroups ?? false}
 		committeeMembers={committee.members}
+	/>
+
+	<PresentationRollCall
+		committeeId={data.committeeId}
+		members={committee.members
+			.filter((x) => x.representation?.type === 'DELEGATION')
+			.sort((a, b) =>
+				sortTranslatedCountries(a.representation!.alpha3Code!, b.representation!.alpha3Code!)
+			)}
 	/>
 {:else}
 	<UndrawError

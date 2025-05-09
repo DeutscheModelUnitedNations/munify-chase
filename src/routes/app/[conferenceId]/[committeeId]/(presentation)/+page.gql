@@ -25,6 +25,7 @@ query CommitteePresentationQuery($committeeId: ID!) @blocking {
 				alpha2Code
 				alpha3Code
 				regionalGroup
+				faIcon
 			}
 		}
 	}

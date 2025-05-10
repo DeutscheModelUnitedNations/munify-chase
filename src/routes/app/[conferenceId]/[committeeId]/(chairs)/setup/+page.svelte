@@ -15,6 +15,7 @@
 	import AgendaItemChanger from '$lib/components/committee/AgendaItemChanger.svelte';
 	import PresentationSettings from './PresentationSettings.svelte';
 	import { CommitteeSubscription } from '../committeeSubscription';
+	import { ScrollArea } from 'bits-ui';
 
 	let { data }: { data: PageData } = $props();
 

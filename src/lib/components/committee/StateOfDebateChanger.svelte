@@ -41,7 +41,7 @@
 </script>
 
 <div class="flex flex-col gap-4">
-	<Combobox bind:value options={presets} side="top" />
+	<Combobox bind:value options={presets} side="top" placeholder={m.stateOfDebate()} />
 	<div class="flex w-full gap-2">
 		{#if abort}
 			<button

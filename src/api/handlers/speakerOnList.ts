@@ -1,4 +1,4 @@
-import { schemaBuilder } from '$api/rumble';
+import { abilityBuilder, schemaBuilder } from '$api/rumble';
 import { GraphQLError } from 'graphql';
 import { basics } from './basics';
 import { db, schema } from '$api/db/db';
@@ -10,6 +10,8 @@ const { arg, ref, pubsub, table } = basics('speakerOnList');
 
 // TODO: These could use some validation for the position values. E.g. only allow positons
 // which are in bounds and so on
+
+abilityBuilder.speakerOnList.allow(['read']);
 
 schemaBuilder.mutationFields((t) => {
 	return {

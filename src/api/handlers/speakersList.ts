@@ -1,11 +1,13 @@
 import { db, schema } from '$api/db/db';
-import { schemaBuilder, pubsub } from '$api/rumble';
+import { schemaBuilder, pubsub, abilityBuilder } from '$api/rumble';
 import { and, eq } from 'drizzle-orm';
 import { basics } from './basics';
 import { assertFindFirstExists } from '@m1212e/rumble';
 
 const { arg, ref, pubsub: speakersListPubSub, table } = basics('speakersList');
 export const SpeakersListRef = ref;
+
+abilityBuilder.speakersList.allow(['read']);
 
 schemaBuilder.mutationFields((t) => {
 	return {

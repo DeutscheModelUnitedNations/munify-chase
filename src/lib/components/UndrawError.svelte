@@ -16,7 +16,7 @@
 			<img src={undrawImage} alt="Error illustration" class="h-auto w-full max-w-md" />
 			<h2 class="mt-4 text-center text-2xl font-bold">{title}</h2>
 			{#if description}
-				<p class="text-lg">{description}</p>
+				<p class="text-center text-lg">{description}</p>
 			{/if}
 			{#if buttonText && buttonLink}
 				<a href={buttonLink} class="btn btn-primary mt-4 w-full max-w-sm">{buttonText}</a>

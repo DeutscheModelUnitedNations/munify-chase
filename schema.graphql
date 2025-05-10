@@ -8,6 +8,7 @@ type AgendaItem {
   committeeId: ID!
   createdAt: DateTime!
   id: ID!
+  isActive: Boolean
   speakersList(where: SpeakersListWhereInputArgument): [SpeakersList!]!
   title: String!
   updatedAt: DateTime

@@ -2,12 +2,9 @@
 	import type { CommitteeTeamQuery$result } from '$houdini';
 	import { m } from '$lib/paraglide/messages';
 	import { getFullTranslatedCountryNameFromISO3Code } from '$lib/utils/nationTranslationHelper.svelte';
-	import toast from 'svelte-french-toast';
 	import Flag from '../Flag.svelte';
-	import { SetPresenceMutation } from '../../../routes/app/[conferenceId]/[committeeId]/(chairs)/presence/presenceMutations';
-	import { promiseToastStrings } from '$lib/utils/toast';
 	import { scale } from 'svelte/transition';
-	import { cubicIn, cubicOut } from 'svelte/easing';
+	import { cubicOut } from 'svelte/easing';
 
 	interface Props {
 		currentIndex: number;
@@ -71,7 +68,7 @@
 						: ''}"
 				>
 					<Flag alpha2Code={rep?.alpha2Code} size="md" />
-					<h3 class="flex-1 text-2xl {notPresent ? 'line-through opacity-40' : ''}">
+					<h3 class="flex-1 text-2xl {notPresent ? 'opacity-40' : ''} transition-all duration-500">
 						{#if rep && (rep.name || rep.alpha3Code)}
 							{rep.name ?? getFullTranslatedCountryNameFromISO3Code(rep.alpha3Code!)}
 						{:else}

@@ -4,10 +4,17 @@
 		size?: 'xs' | 'sm' | 'md' | 'lg' | 'full';
 		alpha2Code?: string | null;
 		nsa?: boolean;
-		icon?: string;
+		icon?: string | null;
+		placeholder?: boolean;
 	}
 
-	let { size = 'md', alpha2Code, nsa = false, icon = 'fa-bullhorn' }: Props = $props();
+	let {
+		size = 'md',
+		alpha2Code,
+		nsa = false,
+		icon = 'fa-bullhorn',
+		placeholder = false
+	}: Props = $props();
 
 	const flagClassNames = () => {
 		switch (size) {
@@ -36,20 +43,16 @@
 				return 'text-5xl';
 		}
 	};
-
-	onMount(() => {
-		if (!alpha2Code && !nsa) {
-			throw new Error('No alpha2Code or NSA-Flag provided');
-		}
-	});
 </script>
 
 <div
-	class="{flagClassNames()} card items-center justify-center overflow-hidden shadow-sm {nsa &&
-		'bg-error text-error-content'}"
+	class="{flagClassNames()} card items-center justify-center overflow-hidden shadow-md {nsa &&
+		'bg-error text-error-content'} {placeholder && 'bg-base-200 text-base-content opacity-50'}"
 >
-	{#if nsa}
-		<i class="fa-solid fa-{icon.replace('fa-', '')} {iconClassNames()}"></i>
+	{#if placeholder}
+		<i class="fa-solid fa-earth {iconClassNames()}"></i>
+	{:else if nsa}
+		<i class="fa-solid fa-{icon?.replace('fa-', '')} {iconClassNames()}"></i>
 	{:else}
 		<span class="fi fi-{alpha2Code}"></span>
 	{/if}

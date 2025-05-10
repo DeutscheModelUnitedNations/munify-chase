@@ -97,12 +97,8 @@
 	"layoutSelect": "Layout auswählen",
 	"layoutPreset": [
 		{
-			"declarations": [
-				"input preset"
-			],
-			"selectors": [
-				"preset"
-			],
+			"declarations": ["input preset"],
+			"selectors": ["preset"],
 			"match": {
 				"preset=default": "Standard Layout",
 				"preset=smallScreen": "Layout für kleine Bildschirme",
@@ -115,12 +111,8 @@
 	"off": "Aus",
 	"regionalGroups": [
 		{
-			"declarations": [
-				"input group"
-			],
-			"selectors": [
-				"group"
-			],
+			"declarations": ["input group"],
+			"selectors": ["group"],
 			"match": {
 				"group=AFRICA": "Afrika",
 				"group=ASIA_PACIFIC": "Asien",
@@ -139,5 +131,14 @@
 	"absent": "Abwesend",
 	"nonStateActors": "Nichtstaatliche Akteure",
 	"rollCollError": "Gremienmitglied nicht gefunden",
-	"rollCollSuccess": "Anwesenheitsfeststellung abgeschlossen"
+	"rollCollSuccess": "Anwesenheitsfeststellung abgeschlossen",
+	"noAgendaItemSelected": "Kein Tagesordnungspunkt aktiv",
+	"noAgendaItemSelectedDescription": "Um mit Redelisten arbeiten zu können muss zunächst ein Tagesordnungspunkt ausgewählt werden",
+	"gotoSettings": "Zu den Einstellungen",
+	"countryNsaOrCustomRole": "Land, NA oder spezielle Rolle",
+	"chairControls": "Chair Controls",
+	"searchCommitteeMembers": "Gremienmitglieder durchsuchen",
+	"loose_slow_reindeer_build": "Gremienmitglieder",
+	"committeeMembers": "Gremienmitglieder",
+	"noCurrentSpeaker": "Keine Rede"
 }

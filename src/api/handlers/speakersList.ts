@@ -3,6 +3,7 @@ import { schemaBuilder, pubsub, abilityBuilder } from '$api/rumble';
 import { and, eq } from 'drizzle-orm';
 import { basics } from './basics';
 import { assertFindFirstExists } from '@m1212e/rumble';
+import { GraphQLError } from 'graphql';
 
 const { arg, ref, pubsub: speakersListPubSub, table } = basics('speakersList');
 export const SpeakersListRef = ref;
@@ -20,15 +21,20 @@ schemaBuilder.mutationFields((t) => {
 				startTimestamp: t.arg({
 					type: 'DateTime'
 				}),
+				stopTimer: t.arg.boolean(),
 				isClosed: t.arg.boolean()
 			},
 			resolve: async (query, root, args, ctx, info) => {
+				if (args.startTimestamp && args.stopTimer) {
+					throw new GraphQLError('startTimestamp and stopTimer are mutually exclusive');
+				}
+
 				await db
 					.update(table)
 					.set({
 						speakingTime: args.speakingTime ?? undefined,
 						timeLeft: args.timeLeft ?? undefined,
-						startTimestamp: args.startTimestamp ?? undefined,
+						startTimestamp: args.stopTimer ? null : (args.startTimestamp ?? undefined),
 						isClosed: args.isClosed ?? undefined
 					})
 					.where(and(eq(table.id, args.id), ctx.abilities.speakersList.filter('update').sql.where));

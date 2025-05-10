@@ -80,7 +80,7 @@
 							<i
 								class="fas fa-circle-xmark text-error absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-center text-3xl"
 								transition:scale={{
-									delay: 400,
+									delay: 600,
 									duration: 500,
 									easing: cubicOut,
 									opacity: 0
@@ -90,7 +90,7 @@
 							<i
 								class="fas fa-check fa-beatfade text-success absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-center text-3xl"
 								in:scale={{
-									delay: 200,
+									delay: 600,
 									duration: 500,
 									easing: cubicOut,
 									opacity: 0

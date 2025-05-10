@@ -2,7 +2,7 @@ import { graphql } from '$houdini';
 import dayjs from 'dayjs';
 import { derived } from 'svelte/store';
 
-const timeQuery = graphql(`
+export const timeQuery = graphql(`
 	query ServerTime @load {
 		serverTime
 	}
@@ -21,10 +21,8 @@ export const serverTime = derived(
 				set(dayjs().add(delta, 'millisecond'));
 			}, 1000);
 
-			return () => {
-				clearInterval(interval);
-			};
+			return () => clearInterval(interval);
 		}
 	},
-	dayjs(new Date())
+	dayjs()
 );

@@ -20,10 +20,10 @@
 
 	let currentIndex = $state(0);
 
-	const setPresence = (present: boolean) => {
+	const setPresence = async (present: boolean) => {
 		const member = members[currentIndex];
 		if (member) {
-			toast.promise(
+			await toast.promise(
 				SetPresenceMutation.mutate({
 					memberIds: [member.id],
 					present

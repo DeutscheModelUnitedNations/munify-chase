@@ -5,6 +5,7 @@
 	import { m } from '$lib/paraglide/messages';
 	import toast from 'svelte-french-toast';
 	import { promiseToastStrings } from '$lib/utils/toast';
+	import { serverTime } from '$lib/state/serverTime.svelte';
 
 	type Props = {
 		committeeId: string;
@@ -29,7 +30,7 @@
 	const relativeTimes = [3, 5, 10, 15, 20, 25, 30];
 
 	let activeCategory: CommitteeStatusEnum$options = $state('INFORMAL');
-	let until = $state(dayjs(oldUntil) ?? dayjs());
+	let until = $state(dayjs(oldUntil) ?? $serverTime);
 	let untilFormatted = $derived(dayjs(until).format('HH:mm:ss'));
 	let customName = $state(oldCustomName);
 
@@ -54,7 +55,7 @@
 	`);
 
 	const submitStatus = async () => {
-		if (until.isBefore(dayjs())) {
+		if (until.isBefore($serverTime)) {
 			toast.error(m.dateCannotBeInPast());
 		}
 		await toast.promise(
@@ -99,9 +100,9 @@
 				<button
 					class="btn bg-base-100 flex-1"
 					onclick={() =>
-						(until = dayjs().minute(time).second(0).isBefore(dayjs())
-							? dayjs().add(1, 'hour').minute(time).second(0)
-							: dayjs().minute(time).second(0))}
+						(until = $serverTime.minute(time).second(0).isBefore($serverTime)
+							? $serverTime.add(1, 'hour').minute(time).second(0)
+							: $serverTime.minute(time).second(0))}
 				>
 					{time}
 				</button>
@@ -114,7 +115,7 @@
 			{#each relativeTimes as time}
 				<button
 					class="btn bg-base-100 flex-1"
-					onclick={() => (until = dayjs().add(time, 'minute'))}
+					onclick={() => (until = $serverTime.add(time, 'minute'))}
 				>
 					{time}
 				</button>
@@ -129,7 +130,7 @@
 			onchange={(e) => {
 				const inputValue = (e.target as HTMLInputElement).value;
 				const parts = inputValue.split(':');
-				until = dayjs()
+				until =$serverTime
 					.hour(parseInt(parts[0], 10))
 					.minute(parseInt(parts[1], 10))
 					.second(parseInt(parts[2], 10));
@@ -162,7 +163,7 @@
 			}}
 			aria-label="Increase time"
 		>
-			<i class="fa-solid fa-pencil"></i>
+			<i class="fa-solid fa-tag"></i>
 		</button>
 	</div>
 	{#if customNameOpen}
@@ -186,7 +187,7 @@
 			</button>
 		{/if}
 		<button
-			class="btn btn-primary btn-lg w-full flex-1 {until.isBefore(dayjs()) ? 'btn-disabled' : ''}"
+			class="btn btn-primary btn-lg w-full flex-1 {until.isBefore($serverTime) ? 'btn-disabled' : ''}"
 			onclick={() => {
 				submitStatus();
 				if (abort) {

@@ -8,6 +8,7 @@
 	import dayjs from 'dayjs';
 	import duration from 'dayjs/plugin/duration';
 	import { check } from 'drizzle-orm/gel-core';
+	import { serverTime } from '$lib/state/serverTime.svelte';
 
 	interface Props {
 		text: string;
@@ -48,18 +49,16 @@
 
 	let countdownDeltaInFuture = $derived(() => {
 		if (until) {
-			const now = dayjs(new Date());
 			const untilDate = dayjs(until);
-			return now.isBefore(untilDate);
+			return $serverTime.isBefore(untilDate);
 		}
 		return false;
 	});
 
 	$effect(() => {
 		const calculateCountdown = () => {
-			const now = dayjs(new Date());
 			const untilDate = dayjs(until);
-			countdownDelta = dayjs.duration(untilDate.diff(now));
+			countdownDelta = dayjs.duration(untilDate.diff($serverTime));
 		};
 		if (until) {
 			calculateCountdown();

@@ -72,7 +72,7 @@
 				{
 					faIcon: 'fa-rocket-launch',
 					title: m.missionControl(),
-					href: '..'
+					href: '../mission-control'
 				}
 			]}
 		/>

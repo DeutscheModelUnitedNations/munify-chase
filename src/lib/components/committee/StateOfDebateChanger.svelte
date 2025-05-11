@@ -41,7 +41,32 @@
 </script>
 
 <div class="flex flex-col gap-4">
-	<Combobox bind:value options={presets} side="top" placeholder={m.stateOfDebate()} />
+	<Combobox
+		bind:value
+		options={presets}
+		side="top"
+		placeholder={m.stateOfDebate()}
+		getStringValue={({ label }) => label}
+		filter={(options, v) =>
+			options.filter(({ label }) => label.toLowerCase().includes(v.toLowerCase()))}
+	>
+		{#snippet ListItem(option)}
+			<div class="flex items-center gap-2">
+				<i class="fas fa-file-alt"></i>
+				<span>{option.label}</span>
+			</div>
+		{/snippet}
+
+		{#snippet AdditionalButtons()}
+			<button
+				class="btn btn-square input-lg join-item"
+				aria-label="Clear selection"
+				onclick={() => (value = '')}
+			>
+				<i class="fas fa-trash"></i>
+			</button>
+		{/snippet}
+	</Combobox>
 	<div class="flex w-full gap-2">
 		{#if abort}
 			<button

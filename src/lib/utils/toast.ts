@@ -1,6 +1,9 @@
 import { m } from '$lib/paraglide/messages';
 
-export function promiseToastStrings(targetName: string, action?: 'create' | 'delete' | 'update') {
+export function promiseToastStrings(
+	targetName: string,
+	action?: 'create' | 'delete' | 'update' | 'add'
+) {
 	switch (action) {
 		case 'create':
 			return {
@@ -19,6 +22,12 @@ export function promiseToastStrings(targetName: string, action?: 'create' | 'del
 				loading: m.toastUpdateLoading({ targetName }),
 				success: m.toastUpdateSuccess({ targetName }),
 				error: m.toastUpdateError({ targetName })
+			};
+		case 'add':
+			return {
+				loading: m.toastAddLoading({ targetName }),
+				success: m.toastAddSuccess({ targetName }),
+				error: m.toastAddError({ targetName })
 			};
 		default:
 			return {

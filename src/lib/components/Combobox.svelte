@@ -1,39 +1,36 @@
-<script lang="ts">
+<script lang="ts" generics="T">
 	import { m } from '$lib/paraglide/messages';
 	import { Combobox } from 'bits-ui';
 	import type { Snippet } from 'svelte';
 
-	export interface Options {
-		label: string;
-		faIcon?: string;
-	}
-
 	interface Props {
 		value: string;
-		options: Options[];
+		options: T[];
 		placeholder?: string;
 		side?: 'top' | 'bottom' | 'left' | 'right';
+		kbd?: string;
+		filter: (option: T[], value: string) => T[];
+		getStringValue: (value: T) => string;
+		ListItem: Snippet<[T]>;
 		AdditionalButtons?: Snippet;
 	}
 
-	let { value = $bindable(), placeholder, options, side, AdditionalButtons }: Props = $props();
+	let {
+		value = $bindable(),
+		options,
+		placeholder,
+		side,
+		kbd,
+		filter,
+		getStringValue,
+		ListItem,
+		AdditionalButtons
+	}: Props = $props();
 
-	const filteredOptions = $derived(
-		value === ''
-			? options
-			: options.filter((option) => option.label.toLowerCase().includes(value.toLowerCase()))
-	);
-
-	function getValue() {
-		return value;
-	}
-
-	function setValue(newValue: string) {
-		value = newValue;
-	}
+	let filteredOptions: T[] = $derived(filter(options, value));
 </script>
 
-<Combobox.Root type="single" bind:value={getValue, setValue}>
+<Combobox.Root type="single" bind:value>
 	<div class="join">
 		<Combobox.Input>
 			{#snippet child({ props })}
@@ -42,20 +39,13 @@
 					{placeholder}
 					aria-label={placeholder}
 					oninput={(e) => {
-						setValue(e.target.value);
+						value = e.target.value;
 					}}
 					bind:value
 					{...props}
 				/>
 			{/snippet}
 		</Combobox.Input>
-		<button
-			class="btn btn-square input-lg join-item"
-			aria-label="Clear selection"
-			onclick={() => setValue('')}
-		>
-			<i class="fas fa-trash"></i>
-		</button>
 		<Combobox.Trigger class="btn btn-square input-lg join-item">
 			<i class="fas fa-magnifying-glass"></i>
 		</Combobox.Trigger>
@@ -73,19 +63,16 @@
 				<i class="fas fa-caret-up"></i>
 			</Combobox.ScrollUpButton>
 			<Combobox.Viewport class="p-1">
-				{#each filteredOptions as option, i (i + option.label)}
+				{#each filteredOptions as option, i}
 					<Combobox.Item
 						class="hover:bg-base-200 active:bg-base-300 data-highlighted:bg-base-300 flex w-full cursor-pointer items-center rounded-md py-3 pl-5 text-sm outline-hidden transition-all duration-200 select-none"
-						value={option.label}
-						label={option.label}
+						value={getStringValue(option)}
+						label={getStringValue(option)}
 						onclick={() => {
-							setValue(option.label);
+							value = getStringValue(option);
 						}}
 					>
-						{#if option.faIcon}
-							<i class="fa-solid fa-{option.faIcon} mr-2 text-lg"></i>
-						{/if}
-						{option.label}
+						{@render ListItem(option)}
 					</Combobox.Item>
 				{:else}
 					<div

@@ -75,6 +75,8 @@ schemaBuilder.mutationFields((t) => {
 					pubsub({ table: 'speakerOnList' }).removed(deleted.map((d) => d.id));
 				}
 
+				speakersListPubSub.updated(args.id);
+
 				return db.query.speakersList
 					.findFirst(
 						query(

@@ -1,7 +1,7 @@
 <script lang="ts">
 	import type { CommitteeTeamQuery$result } from '$houdini';
 	import Flag from '../Flag.svelte';
-	import { getFullTranslatedCountryNameFromISO3Code } from '$lib/utils/nationTranslationHelper.svelte';
+	import { getTranslatedCountryNameFromAlpha3Code } from '$lib/utils/nationTranslationHelper.svelte';
 	import { m } from '$lib/paraglide/messages';
 	import Timer from './Timer.svelte';
 	import { scale } from 'svelte/transition';
@@ -43,7 +43,7 @@
 		{#if currentSpeaker}
 			<h2 class="text-2xl font-bold">
 				{currentSpeaker.committeeMember?.representation?.name ||
-					getFullTranslatedCountryNameFromISO3Code(
+					getTranslatedCountryNameFromAlpha3Code(
 						currentSpeaker.committeeMember?.representation?.alpha3Code
 					)}
 			</h2>

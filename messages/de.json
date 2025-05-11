@@ -159,5 +159,9 @@
 	"changeSpeakersTime": "Redezeit ändern",
 	"clearList": "Liste zurücksetzen",
 	"clearListDescription": "Bist du dir sicher, dass du die gesamte Liste zurücksetzen möchtest?",
-	"yes": "Ja"
+	"yes": "Ja",
+	"speaker": "Redner*in",
+	"toastAddLoading": "{ targetName } wird hinzugefügt...",
+	"toastAddSuccess": "{ targetName } hinzugefügt",
+	"toastAddError": "{ targetName } konnte nicht hinzugefügt werden"
 }

@@ -5,7 +5,6 @@
 		SpeakersListCategoryEnum$options
 	} from '$houdini';
 	import { m } from '$lib/paraglide/messages';
-	import { getFullTranslatedCountryNameFromISO3Code } from '$lib/utils/nationTranslationHelper.svelte';
 	import { Command } from 'bits-ui';
 	import hotkeys from 'hotkeys-js';
 	import { onMount } from 'svelte';
@@ -36,5 +35,5 @@
 		<MoreOptions {type} {speakersList} />
 	</div>
 
-	<AddSpeakers />
+	<AddSpeakers {members} {speakersList} />
 </div>

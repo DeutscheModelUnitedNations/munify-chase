@@ -16,7 +16,7 @@
 	import toast from 'svelte-french-toast';
 	import { promiseToastStrings } from '$lib/utils/toast';
 	import {
-		getFullTranslatedCountryNameFromISO3Code,
+		getTranslatedCountryNameFromAlpha3Code,
 		sortTranslatedCountries
 	} from '$lib/utils/nationTranslationHelper.svelte';
 	import ChairRollCall from '$lib/components/rollCall/ChairRollCall.svelte';
@@ -133,7 +133,7 @@
 							<Flag alpha2Code={rep?.alpha2Code} size="sm" />
 							<h3 class="flex-1 text-lg">
 								{#if rep && (rep.name || rep.alpha3Code)}
-									{rep.name ?? getFullTranslatedCountryNameFromISO3Code(rep.alpha3Code!)}
+									{rep.name ?? getTranslatedCountryNameFromAlpha3Code(rep.alpha3Code!)}
 								{:else}
 									{m.unknown()}
 								{/if}

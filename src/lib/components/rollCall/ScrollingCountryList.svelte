@@ -1,7 +1,7 @@
 <script lang="ts">
 	import type { CommitteeTeamQuery$result } from '$houdini';
 	import { m } from '$lib/paraglide/messages';
-	import { getFullTranslatedCountryNameFromISO3Code } from '$lib/utils/nationTranslationHelper.svelte';
+	import { getTranslatedCountryNameFromAlpha3Code } from '$lib/utils/nationTranslationHelper.svelte';
 	import Flag from '../Flag.svelte';
 	import { scale } from 'svelte/transition';
 	import { cubicOut } from 'svelte/easing';
@@ -70,7 +70,7 @@
 					<Flag alpha2Code={rep?.alpha2Code} size="md" />
 					<h3 class="flex-1 text-2xl {notPresent ? 'opacity-40' : ''} transition-all duration-500">
 						{#if rep && (rep.name || rep.alpha3Code)}
-							{rep.name ?? getFullTranslatedCountryNameFromISO3Code(rep.alpha3Code!)}
+							{rep.name ?? getTranslatedCountryNameFromAlpha3Code(rep.alpha3Code!)}
 						{:else}
 							{m.unknown()}
 						{/if}

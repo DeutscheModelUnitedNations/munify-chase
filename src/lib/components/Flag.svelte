@@ -47,7 +47,8 @@
 
 <div
 	class="{flagClassNames()} card items-center justify-center overflow-hidden shadow-md {nsa &&
-		'bg-error text-error-content'} {placeholder && 'bg-base-200 text-base-content opacity-50'}"
+		'bg-error text-error-content'} {placeholder &&
+		'bg-base-200 text-base-content opacity-50'} {size === 'xs' && 'rounded-sm'}"
 >
 	{#if placeholder}
 		<i class="fa-solid fa-earth {iconClassNames()}"></i>

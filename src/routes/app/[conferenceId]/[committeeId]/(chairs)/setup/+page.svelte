@@ -70,7 +70,7 @@
 				</BasicCard>
 			</div>
 			<div class="flex h-full w-full flex-3 flex-col gap-4">
-				<BasicCard title={m.setStatus()} kbd="⌥ + S">
+				<BasicCard title={m.setStatus()} kbd="⌥ S">
 					<StatusChanger
 						committeeId={committee.id}
 						oldStatus={committee.status}
@@ -78,7 +78,7 @@
 						oldCustomName={committee.statusHeadline}
 					/>
 				</BasicCard>
-				<BasicCard title={m.stateOfDebate()} kbd="⌥ + D">
+				<BasicCard title={m.stateOfDebate()} kbd="⌥ D">
 					<StateOfDebate committeeId={committee.id} oldStateOfDebate={committee.stateOfDebate} />
 				</BasicCard>
 				<BasicCard title={m.agendaItem()}>

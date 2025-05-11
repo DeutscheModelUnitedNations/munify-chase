@@ -11,7 +11,7 @@ const { arg, ref, pubsub, table } = basics('speakerOnList');
 // TODO: These could use some validation for the position values. E.g. only allow positons
 // which are in bounds and so on
 
-abilityBuilder.speakerOnList.allow(['read']);
+abilityBuilder.speakerOnList.allow(['read', 'update', 'delete']);
 
 schemaBuilder.mutationFields((t) => {
 	return {

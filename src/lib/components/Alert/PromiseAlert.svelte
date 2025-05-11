@@ -1,0 +1,80 @@
+<script lang="ts">
+	import { AlertDialog } from 'bits-ui';
+	import { onMount, type Snippet } from 'svelte';
+	import { alertDialogStore } from './alert';
+	import { browser } from '$app/environment';
+	import hotkeys from 'hotkeys-js';
+	import { fade, scale } from 'svelte/transition';
+
+	$effect(() => {
+		if (browser && $alertDialogStore) {
+			hotkeys('enter', (event, handler) => {
+				event.preventDefault();
+				switch (handler.key) {
+					case 'enter':
+						if (!$alertDialogStore) return;
+						$alertDialogStore.onConfirm!();
+						break;
+				}
+			});
+		} else if (browser) {
+			hotkeys.unbind('enter');
+		}
+	});
+
+	let open = $state(false);
+
+	$effect(() => {
+		if (browser && $alertDialogStore) {
+			open = true;
+		} else if (browser) {
+			open = false;
+		}
+	});
+
+	$effect(() => {
+		if (!open) {
+			$alertDialogStore = null;
+		}
+	});
+</script>
+
+<AlertDialog.Root bind:open>
+	<AlertDialog.Portal>
+		<AlertDialog.Overlay class="fixed inset-0 z-30 backdrop-blur-sm backdrop-brightness-70" />
+		<AlertDialog.Content
+			class="card bg-base-100 fixed top-1/2 left-1/2 z-40 m-4 w-full max-w-xl -translate-x-1/2 -translate-y-1/2 shadow-md"
+		>
+			<div class="card bg-base-100 shadow-md">
+				<div
+					class="card-body flex w-full flex-col items-center justify-center gap-6"
+					transition:scale={{ duration: 500, opacity: 0, start: 50 }}
+				>
+					<div class="flex w-full flex-col items-center justify-center gap-2">
+						<AlertDialog.Title class="text-2xl font-bold">
+							{$alertDialogStore?.title}
+						</AlertDialog.Title>
+						<AlertDialog.Description class="text-base">
+							{$alertDialogStore?.description}
+						</AlertDialog.Description>
+					</div>
+					<div class="modal-actions flex w-full gap-2">
+						<AlertDialog.Cancel onclick={$alertDialogStore?.onClose} class="btn btn-lg flex-1">
+							<i class="fas fa-xmark"></i>
+							{$alertDialogStore?.cancelText}
+							<kbd class="kbd kbd-sm"> esc </kbd>
+						</AlertDialog.Cancel>
+						<AlertDialog.Action
+							onclick={$alertDialogStore?.onConfirm}
+							class="btn btn-{$alertDialogStore?.confirmColor ?? 'primary'} btn-lg flex-1"
+						>
+							<i class="fas fa-check"></i>
+							{$alertDialogStore?.confirmText}
+							<kbd class="kbd kbd-sm text-base-content"> ↵ </kbd>
+						</AlertDialog.Action>
+					</div>
+				</div>
+			</div>
+		</AlertDialog.Content>
+	</AlertDialog.Portal>
+</AlertDialog.Root>

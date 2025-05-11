@@ -33,26 +33,23 @@
 	});
 </script>
 
-<div class="relative h-8 w-8 text-xl">
+<div class="relative h-10 w-10 text-2xl">
 	{#if status === 'active'}
 		<div class="absolute inset-0 flex items-center justify-center">
-			<i class="fa-duotone {activeIcon}" in:blur={{ duration: 200 }} out:blur={{ duration: 200 }}
+			<i class="fa-duotone {activeIcon}" in:blur={{ duration: 500 }} out:blur={{ duration: 500 }}
 			></i>
 		</div>
 	{:else if status === 'paused'}
 		<div class="absolute inset-0 flex items-center justify-center">
-			<i
-				class="fa-duotone fa-hourglass-clock"
-				in:blur={{ duration: 200 }}
-				out:blur={{ duration: 200 }}
+			<i class="fa-duotone fa-circle-pause" in:blur={{ duration: 500 }} out:blur={{ duration: 500 }}
 			></i>
 		</div>
 	{:else if status === 'overtime'}
 		<div class="absolute inset-0 flex items-center justify-center">
 			<i
 				class="fas fa-bell fa-shake text-error"
-				in:blur={{ duration: 200 }}
-				out:blur={{ duration: 200 }}
+				in:blur={{ duration: 500 }}
+				out:blur={{ duration: 500 }}
 			></i>
 		</div>
 	{/if}

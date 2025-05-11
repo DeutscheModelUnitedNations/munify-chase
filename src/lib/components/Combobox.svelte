@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { m } from '$lib/paraglide/messages';
 	import { Combobox } from 'bits-ui';
+	import type { Snippet } from 'svelte';
 
 	export interface Options {
 		label: string;
@@ -12,9 +13,10 @@
 		options: Options[];
 		placeholder?: string;
 		side?: 'top' | 'bottom' | 'left' | 'right';
+		AdditionalButtons?: Snippet;
 	}
 
-	let { value = $bindable(), placeholder, options, side }: Props = $props();
+	let { value = $bindable(), placeholder, options, side, AdditionalButtons }: Props = $props();
 
 	const filteredOptions = $derived(
 		value === ''
@@ -57,6 +59,9 @@
 		<Combobox.Trigger class="btn btn-square input-lg join-item">
 			<i class="fas fa-magnifying-glass"></i>
 		</Combobox.Trigger>
+		{#if AdditionalButtons}
+			{@render AdditionalButtons()}
+		{/if}
 	</div>
 	<Combobox.Portal>
 		<Combobox.Content
@@ -70,7 +75,7 @@
 			<Combobox.Viewport class="p-1">
 				{#each filteredOptions as option, i (i + option.label)}
 					<Combobox.Item
-						class="hover:bg-base-200 active:bg-base-300 flex w-full cursor-pointer rounded-md py-3 pl-5 text-sm outline-hidden transition-all duration-200 select-none"
+						class="hover:bg-base-200 active:bg-base-300 data-highlighted:bg-base-300 flex w-full cursor-pointer items-center rounded-md py-3 pl-5 text-sm outline-hidden transition-all duration-200 select-none"
 						value={option.label}
 						label={option.label}
 						onclick={() => {
@@ -78,7 +83,7 @@
 						}}
 					>
 						{#if option.faIcon}
-							<i class={`fa-solid fa-${option.faIcon} mr-2`}></i>
+							<i class="fa-solid fa-{option.faIcon} mr-2 text-lg"></i>
 						{/if}
 						{option.label}
 					</Combobox.Item>

@@ -8,7 +8,7 @@ import { GraphQLError } from 'graphql';
 const { arg, ref, pubsub: speakersListPubSub, table } = basics('speakersList');
 export const SpeakersListRef = ref;
 
-abilityBuilder.speakersList.allow(['read']);
+abilityBuilder.speakersList.allow(['read', 'update', 'delete']);
 
 schemaBuilder.mutationFields((t) => {
 	return {
@@ -21,7 +21,10 @@ schemaBuilder.mutationFields((t) => {
 				startTimestamp: t.arg({
 					type: 'DateTime'
 				}),
-				stopTimer: t.arg.boolean(),
+				stopTimer: t.arg({
+					type: 'Boolean',
+					defaultValue: false
+				}),
 				isClosed: t.arg.boolean()
 			},
 			resolve: async (query, root, args, ctx, info) => {

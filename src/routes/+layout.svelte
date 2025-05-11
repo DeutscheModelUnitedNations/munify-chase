@@ -34,6 +34,7 @@
 	import { initialSetTheme } from '$lib/utils/theme.svelte';
 	import { onMount } from 'svelte';
 	import { timeQuery } from '$lib/state/serverTime.svelte';
+	import Alert from '$lib/components/Alert/PromiseAlert.svelte';
 
 	dayjs.extend(duration);
 
@@ -96,3 +97,4 @@
 </div>
 
 <Toaster />
+<Alert />

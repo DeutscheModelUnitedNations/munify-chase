@@ -306,17 +306,17 @@ export const translatedNationCodeAddressFormOptions = $state(
 		.sort((a, b) => (a.value === 'DEU' ? -1 : b.value === 'DEU' ? 1 : 0))
 );
 
-export const getFullTranslatedCountryNameFromISO3Code = (isoCode?: string | null) => {
-	if (!isoCode) return 'N/A';
-	const found = NationIso3ToLocalNamesMap.get(isoCode.toUpperCase());
+export const getTranslatedCountryNameFromAlpha3Code = (alpha3Code?: string | null) => {
+	if (!alpha3Code) return 'N/A';
+	const found = NationIso3ToLocalNamesMap.get(alpha3Code.toUpperCase());
 	if (found) return found[getLocale()];
 
-	console.warn('Could not translate country code', isoCode);
+	console.warn('Could not translate country code', alpha3Code);
 	return 'N/A';
 };
 
 export const sortTranslatedCountries = (alpha3CodeA: string, alpha3CodeB: string) => {
-	return getFullTranslatedCountryNameFromISO3Code(alpha3CodeA).localeCompare(
-		getFullTranslatedCountryNameFromISO3Code(alpha3CodeB)
+	return getTranslatedCountryNameFromAlpha3Code(alpha3CodeA).localeCompare(
+		getTranslatedCountryNameFromAlpha3Code(alpha3CodeB)
 	);
 };

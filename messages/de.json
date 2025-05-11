@@ -97,8 +97,12 @@
 	"layoutSelect": "Layout auswählen",
 	"layoutPreset": [
 		{
-			"declarations": ["input preset"],
-			"selectors": ["preset"],
+			"declarations": [
+				"input preset"
+			],
+			"selectors": [
+				"preset"
+			],
 			"match": {
 				"preset=default": "Standard Layout",
 				"preset=smallScreen": "Layout für kleine Bildschirme",
@@ -111,8 +115,12 @@
 	"off": "Aus",
 	"regionalGroups": [
 		{
-			"declarations": ["input group"],
-			"selectors": ["group"],
+			"declarations": [
+				"input group"
+			],
+			"selectors": [
+				"group"
+			],
 			"match": {
 				"group=AFRICA": "Afrika",
 				"group=ASIA_PACIFIC": "Asien",
@@ -140,5 +148,16 @@
 	"searchCommitteeMembers": "Gremienmitglieder durchsuchen",
 	"loose_slow_reindeer_build": "Gremienmitglieder",
 	"committeeMembers": "Gremienmitglieder",
-	"noCurrentSpeaker": "Keine Rede"
+	"noCurrentSpeaker": "Keine Rede",
+	"timer": "Zeit",
+	"nextSpeaker": "Nächste Rede",
+	"commentList": "Fragen und Kurzbemerkungen",
+	"errorUpdatingTimer": "Redezeit konnte nicht aktualisiert werden",
+	"timeOver": "Redezeit ist abgelaufen!",
+	"closeList": "Liste schließen",
+	"changeSpeakersName": "Name ändern",
+	"changeSpeakersTime": "Redezeit ändern",
+	"clearList": "Liste zurücksetzen",
+	"clearListDescription": "Bist du dir sicher, dass du die gesamte Liste zurücksetzen möchtest?",
+	"yes": "Ja"
 }

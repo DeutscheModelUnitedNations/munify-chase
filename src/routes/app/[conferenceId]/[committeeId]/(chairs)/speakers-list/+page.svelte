@@ -8,7 +8,7 @@
 	import { SpeakersListSubscription } from '../speakersListSubscription';
 	import UndrawError from '$lib/components/UndrawError.svelte';
 	import BasicCard from '$lib/components/BasicCard.svelte';
-	import ChairControls from '$lib/components/speakersList/ChairControls.svelte';
+	import ChairControls from '$lib/components/speakersList/chairControls/ChairControls.svelte';
 	import CurrentSpeaker from '$lib/components/speakersList/CurrentSpeaker.svelte';
 	import dayjs from 'dayjs';
 
@@ -44,26 +44,27 @@
 {:else}
 	<div class="flex h-full w-full items-center justify-center">
 		<div class="flex h-full w-full max-w-screen-xl flex-col gap-6 p-6 lg:flex-row">
-			<BasicCard>
-				<CurrentSpeaker
-					currentSpeaker={speakersList?.speakers.at(0)}
-					speakingTime={speakersList?.speakingTime}
-					startTimestamp={dayjs(speakersList?.startTimestamp)}
-					timeLeft={speakersList?.timeLeft}
-				/>
-				<ChairControls
-					committeeId={data.committeeId}
-					members={committee.members}
-					type="SPEAKERS_LIST"
-				/>
+			<BasicCard title={m.speakersList()}>
+				<div class="flex flex-col gap-8">
+					<CurrentSpeaker {speakersList} />
+					<ChairControls
+						committeeId={data.committeeId}
+						{speakersList}
+						members={committee.members}
+						type="SPEAKERS_LIST"
+					/>
+				</div>
 			</BasicCard>
-			<BasicCard>
-				<CurrentSpeaker currentSpeaker={speakersList?.speakers.at(0)} />
-				<ChairControls
-					committeeId={data.committeeId}
-					members={committee.members}
-					type="COMMENT_LIST"
-				/>
+			<BasicCard title={m.commentList()}>
+				<div class="flex flex-col gap-8">
+					<CurrentSpeaker speakersList={commentList} />
+					<ChairControls
+						committeeId={data.committeeId}
+						members={committee.members}
+						speakersList={commentList}
+						type="COMMENT_LIST"
+					/>
+				</div>
 			</BasicCard>
 		</div>
 	</div>

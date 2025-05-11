@@ -1,64 +1,63 @@
 <script lang="ts">
 	import type { CommitteeTeamQuery$result } from '$houdini';
-	import type { Dayjs } from 'dayjs';
 	import Flag from '../Flag.svelte';
 	import { getFullTranslatedCountryNameFromISO3Code } from '$lib/utils/nationTranslationHelper.svelte';
 	import { m } from '$lib/paraglide/messages';
 	import Timer from './Timer.svelte';
+	import { scale } from 'svelte/transition';
+	import { cubicOut } from 'svelte/easing';
 
 	interface Props {
-		currentSpeaker?: CommitteeTeamQuery$result['findFirstCommittee']['activeAgendaItem']['speakersList'][0]['speakers'][0];
-		speakingTime?: number | null;
-		startTimestamp?: Dayjs | null;
-		timeLeft?: number | null;
+		speakersList?: NonNullable<
+			CommitteeTeamQuery$result['findFirstCommittee']['activeAgendaItem']
+		>['speakersList'][number];
 	}
 
-	let { currentSpeaker, speakingTime, startTimestamp, timeLeft }: Props = $props();
+	let { speakersList }: Props = $props();
+
+	let currentSpeaker = $derived(speakersList?.speakers.at(0));
 </script>
 
-<div class="flex gap-6">
+<div class="relative flex items-center gap-6">
 	{#if currentSpeaker}
 		<Flag
-			alpha2Code={currentSpeaker.representation?.alpha2Code}
-			nsa={!currentSpeaker.representation?.alpha2Code}
-			icon={currentSpeaker.representation?.faIcon}
+			alpha2Code={currentSpeaker.committeeMember?.representation?.alpha2Code}
+			nsa={!currentSpeaker.committeeMember?.representation?.alpha2Code}
+			icon={currentSpeaker.committeeMember?.representation?.faIcon}
 			size="lg"
 		/>
 	{:else}
 		<Flag placeholder icon="earth" size="lg" />
 	{/if}
+	{#if speakersList?.isClosed}
+		<div
+			class="bg-error text-content-error absolute top-0 left-0 flex h-8 w-8 -translate-x-1/3 -translate-y-1/3 items-center justify-center rounded-full shadow-md"
+			in:scale={{ duration: 800, opacity: 0, start: 20, easing: cubicOut }}
+			out:scale={{ duration: 500, opacity: 0, start: 0.5 }}
+		>
+			<i class="fas fa-lock"></i>
+		</div>
+	{/if}
 
-	<div class="ml-4 flex flex-1 flex-col">
+	<div class="flex flex-1 flex-col {!currentSpeaker && 'opacity-50'}">
 		{#if currentSpeaker}
-			<h2 class="truncate text-xl font-bold">
-				{currentSpeaker.representation?.name ||
-					getFullTranslatedCountryNameFromISO3Code(currentSpeaker.representation?.alpha3Code)}
+			<h2 class="text-2xl font-bold">
+				{currentSpeaker.committeeMember?.representation?.name ||
+					getFullTranslatedCountryNameFromISO3Code(
+						currentSpeaker.committeeMember?.representation?.alpha3Code
+					)}
 			</h2>
 		{:else}
-			<h2 class="text-xl font-bold opacity-50">
+			<h2 class="text-2xl font-bold">
 				{m.noCurrentSpeaker()}
 			</h2>
 		{/if}
 
-		<Timer />
-
-		<!-- <div class="text-lg flex items-center gap-3">
-          {#if timerState === "active"}
-            <i icon="hourglass-half" class="hourglass" />
-          {:else if timerState === "paused"}
-            <i class="fas fa-hourglass-clock text-primary"></i>
-            {:else if timerState === "overtime"}
-            <i class="fas fa-bell fa-shake text-error"></i>
-          {/if}
-          <div class="text-xl">
-            {listHasActiveSpeaker ? (
-              timeLeft
-            ) : (
-              <SpeakingTime time={speakersListData?.speakingTime} />
-            )}
-            <span className="ml-2 text-xs text-primary-300 dark:text-primary-600">
-              / <SpeakingTime time={speakersListData?.speakingTime} />
-            </span>
-          </div> -->
+		<Timer
+			noSpeaker={!currentSpeaker}
+			speakingTime={speakersList?.speakingTime}
+			startTimestamp={speakersList?.startTimestamp}
+			timeLeft={speakersList?.timeLeft}
+		/>
 	</div>
 </div>

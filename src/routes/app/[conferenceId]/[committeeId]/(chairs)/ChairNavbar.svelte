@@ -20,21 +20,21 @@
 			faIcon: 'fa-gears',
 			label: m.setup(),
 			href: './setup',
-			shortcut: '⌥ + 1',
+			shortcut: '⌥ 1',
 			active: page.route.id?.endsWith('setup')
 		},
 		{
 			faIcon: 'fa-users',
 			label: m.presence(),
 			href: './presence',
-			shortcut: '⌥ + 2',
+			shortcut: '⌥ 2',
 			active: page.route.id?.endsWith('presence')
 		},
 		{
 			faIcon: 'fa-podium',
 			label: m.speakersList(),
 			href: './speakers-list',
-			shortcut: '⌥ + 3',
+			shortcut: '⌥ 3',
 			active: page.route.id?.endsWith('speakers-list')
 		}
 	]);

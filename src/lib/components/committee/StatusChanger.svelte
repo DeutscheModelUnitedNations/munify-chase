@@ -130,7 +130,7 @@
 			onchange={(e) => {
 				const inputValue = (e.target as HTMLInputElement).value;
 				const parts = inputValue.split(':');
-				until =$serverTime
+				until = $serverTime
 					.hour(parseInt(parts[0], 10))
 					.minute(parseInt(parts[1], 10))
 					.second(parseInt(parts[2], 10));
@@ -187,7 +187,9 @@
 			</button>
 		{/if}
 		<button
-			class="btn btn-primary btn-lg w-full flex-1 {until.isBefore($serverTime) ? 'btn-disabled' : ''}"
+			class="btn btn-primary btn-lg w-full flex-1 {until.isBefore($serverTime)
+				? 'btn-disabled'
+				: ''}"
 			onclick={() => {
 				submitStatus();
 				if (abort) {

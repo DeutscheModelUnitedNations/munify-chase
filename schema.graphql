@@ -205,7 +205,7 @@ type Mutation {
   removeSpeakerOnList(speakerOnListId: ID!): SpeakersList
   setPresenceForCommitteeMembers(ids: [ID!]!, present: Boolean!): [CommitteeMember!]
   updateCommittee(activeAgendaItemId: ID, id: ID!, showWhiteboard: Boolean, stateOfDebate: String, status: CommitteeStatusEnum, statusHeadline: String, statusUntil: DateTime, whiteboardContent: String): Committee
-  updateSpeakersList(id: ID!, isClosed: Boolean, speakingTime: Int, startTimestamp: DateTime, timeLeft: Int): SpeakersList
+  updateSpeakersList(id: ID!, isClosed: Boolean, speakingTime: Int, startTimestamp: DateTime, stopTimer: Boolean = false, timeLeft: Int): SpeakersList
 }
 
 type Query {

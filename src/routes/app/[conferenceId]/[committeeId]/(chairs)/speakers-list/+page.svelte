@@ -53,7 +53,7 @@
 						{speakersList}
 						members={committee.members}
 						type="SPEAKERS_LIST"
-						childListId={commentList?.id}
+						childList={commentList}
 					/>
 					<SpeakersQueuePresentation rawSpeakers={speakersList?.speakers} />
 				</div>
@@ -65,6 +65,7 @@
 						committeeId={data.committeeId}
 						members={committee.members}
 						speakersList={commentList}
+						otherList={speakersList}
 						type="COMMENT_LIST"
 					/>
 					<SpeakersQueuePresentation rawSpeakers={commentList?.speakers} />

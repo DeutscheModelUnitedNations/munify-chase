@@ -16,23 +16,52 @@
 					CommitteeTeamQuery$result['findFirstCommittee']['activeAgendaItem']
 			  >['speakersList'][number]
 			| null;
-		childListId?: string;
+		childList?:
+			| NonNullable<
+					CommitteeTeamQuery$result['findFirstCommittee']['activeAgendaItem']
+			  >['speakersList'][number]
+			| null;
 		type: SpeakersListCategoryEnum$options;
 	}
 
-	let { speakersList, childListId, type }: Props = $props();
+	let { speakersList, type, childList }: Props = $props();
 
 	const NextSpeakerMutation = graphql(`
-		mutation NextSpeaker($speakerOnListId: ID!) {
+		mutation NextSpeaker($speakerOnListId: ID!, $speakersListId: ID!, $speakingTime: Int) {
 			removeSpeakerOnList(speakerOnListId: $speakerOnListId) {
+				id
+			}
+
+			updateSpeakersList(id: $speakersListId, timeLeft: $speakingTime, stopTimer: true) {
 				id
 			}
 		}
 	`);
 
 	const NextSpeakerMutationWithChildListClearance = graphql(`
-		mutation NextSpeakerWithChildListClearance($speakerOnListId: ID!, $childSpeakersListId: ID!) {
+		mutation NextSpeakerWithChildListClearance(
+			$speakerOnListId: ID!
+			$speakersListId: ID!
+			$speakingTime: Int!
+			$childSpeakersListId: ID!
+			$childSpeakersListSpeakingTime: Int!
+		) {
 			removeSpeakerOnList(speakerOnListId: $speakerOnListId) {
+				id
+			}
+			updateSpeakersListMain: updateSpeakersList(
+				id: $speakersListId
+				timeLeft: $speakingTime
+				stopTimer: true
+			) {
+				id
+			}
+
+			updateSpeakersListChild: updateSpeakersList(
+				id: $childSpeakersListId
+				timeLeft: $childSpeakersListSpeakingTime
+				stopTimer: true
+			) {
 				id
 			}
 
@@ -45,17 +74,27 @@
 	const nextSpeaker = async () => {
 		if (speakersList && speakersList?.speakers.length > 0) {
 			const speaker = speakersList.speakers[0];
-			toast.promise(
-				childListId
-					? NextSpeakerMutationWithChildListClearance.mutate({
-							speakerOnListId: speaker.id,
-							childSpeakersListId: childListId
-						})
-					: NextSpeakerMutation.mutate({
-							speakerOnListId: speaker.id
-						}),
-				promiseToastStrings(m.nextSpeaker(), 'update')
-			);
+			if (childList) {
+				toast.promise(
+					NextSpeakerMutationWithChildListClearance.mutate({
+						speakerOnListId: speaker.id,
+						speakersListId: speakersList.id,
+						speakingTime: speakersList.speakingTime,
+						childSpeakersListId: childList.id,
+						childSpeakersListSpeakingTime: childList.speakingTime
+					}),
+					promiseToastStrings(m.nextSpeaker(), 'update')
+				);
+			} else {
+				toast.promise(
+					NextSpeakerMutation.mutate({
+						speakerOnListId: speaker.id,
+						speakersListId: speakersList.id,
+						speakingTime: speakersList.speakingTime
+					}),
+					promiseToastStrings(m.nextSpeaker(), 'update')
+				);
+			}
 		}
 	};
 

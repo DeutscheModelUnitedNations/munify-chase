@@ -11,21 +11,21 @@
 	import { onMount } from 'svelte';
 	import toast from 'svelte-french-toast';
 
+	type List =
+		| NonNullable<
+				CommitteeTeamQuery$result['findFirstCommittee']['activeAgendaItem']
+		  >['speakersList'][number]
+		| null;
+
 	interface Props {
 		type: SpeakersListCategoryEnum$options;
-		speakersList?:
-			| NonNullable<
-					CommitteeTeamQuery$result['findFirstCommittee']['activeAgendaItem']
-			  >['speakersList'][number]
-			| null;
+		speakersList?: List;
+		otherList?: List;
 	}
 
-	let { speakersList, type }: Props = $props();
+	let { speakersList, type, otherList }: Props = $props();
 
 	let timerRunning = $derived(!!speakersList?.startTimestamp);
-
-	$inspect(timerRunning);
-	$inspect(speakersList);
 
 	const UpdateSpeakersListTimingsMutation = graphql(`
 		mutation UpdateSpeakersListTimings(
@@ -46,18 +46,57 @@
 		}
 	`);
 
+	const UpdateSpeakersListTimingsWithOtherListMutation = graphql(`
+		mutation UpdateSpeakersListWithOtherListTimings(
+			$speakersListId: ID!
+			$startTimestamp: DateTime
+			$timeLeft: Int
+			$stopTimer: Boolean
+			$otherListId: ID!
+			$otherListStartTimestamp: DateTime
+			$otherListTimeLeft: Int
+			$otherListStopTimer: Boolean
+		) {
+			MainUpdateSpeakersList: updateSpeakersList(
+				id: $speakersListId
+				timeLeft: $timeLeft
+				startTimestamp: $startTimestamp
+				stopTimer: $stopTimer
+			) {
+				speakingTime
+				startTimestamp
+			}
+
+			OtherUpdateSpeakersList: updateSpeakersList(
+				id: $otherListId
+				timeLeft: $otherListTimeLeft
+				startTimestamp: $otherListStartTimestamp
+				stopTimer: $otherListStopTimer
+			) {
+				speakingTime
+				startTimestamp
+			}
+		}
+	`);
+
 	const startTimer = async () => {
 		if (!speakersList) return;
 
-		await UpdateSpeakersListTimingsMutation.mutate({
-			speakersListId: speakersList.id,
-			startTimestamp: $serverTime.toDate()
-		}).then((r) => {
-			if (r.error) {
-				toast.error(m.errorUpdatingTimer());
-				console.error('Error starting timer:', r.error);
-			}
-		});
+		if (otherList?.startTimestamp) {
+			await UpdateSpeakersListTimingsWithOtherListMutation.mutate({
+				speakersListId: speakersList.id,
+				startTimestamp: $serverTime.toDate(),
+				otherListId: otherList.id,
+				otherListStopTimer: true,
+				otherListTimeLeft:
+					otherList.type === 'SPEAKERS_LIST' ? speakersList.speakingTime : otherList.speakingTime
+			});
+		} else {
+			await UpdateSpeakersListTimingsMutation.mutate({
+				speakersListId: speakersList.id,
+				startTimestamp: $serverTime.toDate()
+			});
+		}
 	};
 
 	const stopTimer = async () => {

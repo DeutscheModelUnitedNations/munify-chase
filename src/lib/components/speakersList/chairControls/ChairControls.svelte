@@ -1,8 +1,5 @@
 <script lang="ts">
-	import type {
-		CommitteeTeamQuery$result,
-		SpeakersListCategoryEnum$options
-	} from '$houdini';
+	import type { CommitteeTeamQuery$result, SpeakersListCategoryEnum$options } from '$houdini';
 	import SpeechControls from './SpeechControls.svelte';
 	import MoreOptions from './MoreOptions.svelte';
 	import NextSpeech from './NextSpeech.svelte';

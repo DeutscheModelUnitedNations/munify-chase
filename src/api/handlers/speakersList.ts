@@ -1,12 +1,52 @@
 import { db, schema } from '$api/db/db';
-import { schemaBuilder, pubsub, abilityBuilder } from '$api/rumble';
+import {
+	schemaBuilder,
+	pubsub as rumblePubsub,
+	arg as rumbleArg,
+	abilityBuilder,
+	object,
+	query
+} from '$api/rumble';
 import { and, eq } from 'drizzle-orm';
 import { basics } from './basics';
 import { assertFindFirstExists } from '@m1212e/rumble';
 import { GraphQLError } from 'graphql';
+import { SpeakerOnListRef, SpeakerOnWhereArgs } from './speakerOnList';
 
-const { arg, ref, pubsub: speakersListPubSub, table } = basics('speakersList');
+// const { arg, ref, pubsub: speakersListPubSub, table } = basics('speakersList');
+
+const ref = object({
+	table: 'speakersList'
+	// extend(t) {
+	// 	return {
+	// 		speakers: t.relation('speakers', {
+	// 			args: {
+	// 				where: t.arg({ type: SpeakerOnWhereArgs, required: false })
+	// 			},
+	// 			nullable: false,
+	// 			query: (args: any, ctx: any) => {
+	// 				const queryFilter = ctx.abilities.speakerOnList.filter('read', {
+	// 					inject: { where: args.where }
+	// 				}).query.many;
+
+	// 				return {
+	// 					...queryFilter,
+	// 					orderBy: {
+	// 						position: 'asc'
+	// 					}
+	// 				};
+	// 			}
+	// 		})
+	// 	};
+	// }
+});
+
 export const SpeakersListRef = ref;
+const speakersListPubSub = rumblePubsub({ table: 'speakersList' });
+const arg = rumbleArg({ table: 'speakersList' });
+query({
+	table: 'speakersList'
+});
 
 abilityBuilder.speakersList.allow(['read', 'update', 'delete']);
 
@@ -33,14 +73,19 @@ schemaBuilder.mutationFields((t) => {
 				}
 
 				await db
-					.update(table)
+					.update(schema.speakersList)
 					.set({
 						speakingTime: args.speakingTime ?? undefined,
 						timeLeft: args.timeLeft ?? undefined,
 						startTimestamp: args.stopTimer ? null : (args.startTimestamp ?? undefined),
 						isClosed: args.isClosed ?? undefined
 					})
-					.where(and(eq(table.id, args.id), ctx.abilities.speakersList.filter('update').sql.where));
+					.where(
+						and(
+							eq(schema.speakersList.id, args.id),
+							ctx.abilities.speakersList.filter('update').sql.where
+						)
+					);
 
 				speakersListPubSub.updated(args.id);
 
@@ -72,7 +117,7 @@ schemaBuilder.mutationFields((t) => {
 					.returning();
 
 				if (deleted.length > 0) {
-					pubsub({ table: 'speakerOnList' }).removed(deleted.map((d) => d.id));
+					rumblePubsub({ table: 'speakerOnList' }).removed(deleted.map((d) => d.id));
 				}
 
 				speakersListPubSub.updated(args.id);

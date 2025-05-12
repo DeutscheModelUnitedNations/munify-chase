@@ -88,7 +88,7 @@
 			console.log('hotkeys');
 			hotkeys('cmd+p', (event, handler) => {
 				event.preventDefault();
-                console.log(handler.key)
+				console.log(handler.key);
 				switch (handler.key) {
 					case 'cmd+p':
 						console.log('enter');

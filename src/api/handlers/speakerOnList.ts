@@ -8,6 +8,9 @@ import { SpeakersListRef } from './speakersList';
 
 const { arg, ref, pubsub, table } = basics('speakerOnList');
 
+export const SpeakerOnListRef = ref;
+export const SpeakerOnWhereArgs = arg;
+
 // TODO: These could use some validation for the position values. E.g. only allow positons
 // which are in bounds and so on
 

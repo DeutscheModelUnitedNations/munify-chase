@@ -18,6 +18,9 @@
 	import RegionalGroups from './RegionalGroups.svelte';
 	import PresentationRollCall from '$lib/components/rollCall/PresentationRollCall.svelte';
 	import { sortTranslatedCountries } from '$lib/utils/nationTranslationHelper.svelte';
+	import CurrentSpeaker from '$lib/components/speakersList/CurrentSpeaker.svelte';
+	import { PresentationSubscription } from './committeeSubscription';
+	import SpeakersQueue from '$lib/components/speakersList/SpeakersQueue.svelte';
 
 	let { data }: { data: PageData } = $props();
 
@@ -33,48 +36,8 @@
 
 	let itemSize = $derived({ height: 60 });
 
-	let presentationSub = graphql(`
-		subscription PresentationSubscription($id: ID!) {
-			findFirstCommittee(where: { id: $id }) {
-				id
-				abbreviation
-				name
-				stateOfDebate
-				status
-				statusHeadline
-				statusUntil
-				totalPresent
-				simpleMajority
-				twoThirdsMajority
-				paperSupportThreshold
-				whiteboardContent
-				activeAgendaItem {
-					id
-					title
-				}
-				agendaItems {
-					id
-					title
-				}
-				members {
-					id
-					present
-					representation {
-						id
-						type
-						name
-						alpha2Code
-						alpha3Code
-						regionalGroup
-						faIcon
-					}
-				}
-			}
-		}
-	`);
-
 	onMount(() => {
-		presentationSub.listen({ id: data.committeeId });
+		PresentationSubscription.listen({ id: data.committeeId });
 	});
 </script>
 
@@ -139,14 +102,38 @@
 
 		{#if layout.speakersList}
 			{@const gridProps = layout.speakersList}
-			<GridItem {...gridProps} class="card bg-base-100 gap-2 overflow-hidden p-4" id="speakers-list"
-			></GridItem>
+			<GridItem
+				{...gridProps}
+				class="card bg-base-100 gap-8 overflow-hidden p-4"
+				id="speakers-list"
+			>
+				<CurrentSpeaker
+					speakersList={committee.activeAgendaItem?.speakersList.find(
+						(x) => x.type === 'SPEAKERS_LIST'
+					)}
+				/>
+				<SpeakersQueue
+					rawSpeakers={committee.activeAgendaItem?.speakersList.find(
+						(x) => x.type === 'SPEAKERS_LIST'
+					)?.speakers}
+				/>
+			</GridItem>
 		{/if}
 
 		{#if layout.commentsList}
 			{@const gridProps = layout.commentsList}
-			<GridItem {...gridProps} class="card bg-base-100 gap-2 overflow-hidden p-4" id="comment-list"
-			></GridItem>
+			<GridItem {...gridProps} class="card bg-base-100 gap-8 overflow-hidden p-4" id="comment-list">
+				<CurrentSpeaker
+					speakersList={committee.activeAgendaItem?.speakersList.find(
+						(x) => x.type === 'COMMENT_LIST'
+					)}
+				/>
+				<SpeakersQueue
+					rawSpeakers={committee.activeAgendaItem?.speakersList.find(
+						(x) => x.type === 'COMMENT_LIST'
+					)?.speakers}
+				/>
+			</GridItem>
 		{/if}
 	</Grid>
 

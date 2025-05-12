@@ -11,6 +11,7 @@
 	import ChairControls from '$lib/components/speakersList/chairControls/ChairControls.svelte';
 	import CurrentSpeaker from '$lib/components/speakersList/CurrentSpeaker.svelte';
 	import dayjs from 'dayjs';
+	import SpeakersQueuePresentation from '$lib/components/speakersList/SpeakersQueue.svelte';
 
 	let { data }: { data: PageData } = $props();
 
@@ -52,7 +53,9 @@
 						{speakersList}
 						members={committee.members}
 						type="SPEAKERS_LIST"
+						childListId={commentList?.id}
 					/>
+					<SpeakersQueuePresentation rawSpeakers={speakersList?.speakers} />
 				</div>
 			</BasicCard>
 			<BasicCard title={m.commentList()}>
@@ -64,6 +67,7 @@
 						speakersList={commentList}
 						type="COMMENT_LIST"
 					/>
+					<SpeakersQueuePresentation rawSpeakers={commentList?.speakers} />
 				</div>
 			</BasicCard>
 		</div>

@@ -6,6 +6,7 @@
 	interface Props {
 		value: string;
 		options: T[];
+		focused?: boolean;
 		placeholder?: string;
 		side?: 'top' | 'bottom' | 'left' | 'right';
 		kbd?: string;
@@ -18,6 +19,7 @@
 	let {
 		value = $bindable(),
 		options,
+		focused = $bindable(),
 		placeholder,
 		side,
 		kbd,
@@ -35,6 +37,7 @@
 		<Combobox.Input>
 			{#snippet child({ props })}
 				<input
+					bind:focused
 					class="input input-lg join-item w-full flex-1"
 					{placeholder}
 					aria-label={placeholder}

@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { representation } from '$api/db/schema';
+	import { browser } from '$app/environment';
 	import { graphql, type CommitteeTeamQuery$result } from '$houdini';
 	import Combobox from '$lib/components/Combobox.svelte';
 	import Flag from '$lib/components/Flag.svelte';
@@ -7,6 +8,7 @@
 	import { getTranslatedCountryNameFromAlpha3Code } from '$lib/utils/nationTranslationHelper.svelte';
 	import { promiseToastStrings } from '$lib/utils/toast';
 	import Fuse, { type IFuseOptions } from 'fuse.js';
+	import hotkeys from 'hotkeys-js';
 	import toast from 'svelte-french-toast';
 
 	interface Props {
@@ -23,6 +25,7 @@
 	let { speakersList, members }: Props = $props();
 
 	let value = $state('');
+	let focused = $state(false);
 
 	const getName = (member: Member) =>
 		member.representation?.name
@@ -79,10 +82,30 @@
 
 		value = '';
 	};
+
+	$effect(() => {
+		if (browser && focused) {
+			console.log('hotkeys');
+			hotkeys('cmd+p', (event, handler) => {
+				event.preventDefault();
+                console.log(handler.key)
+				switch (handler.key) {
+					case 'cmd+p':
+						console.log('enter');
+						addSpeakerToList();
+						break;
+				}
+			});
+		} else if (browser) {
+			console.log('unbind');
+			// hotkeys.unbind('cmd+p');
+		}
+	});
 </script>
 
 <Combobox
 	bind:value
+	bind:focused
 	options={members ?? []}
 	filter={(member, value) => filter(member, value)}
 	placeholder="Search for a country"

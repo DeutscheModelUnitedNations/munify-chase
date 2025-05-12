@@ -1,13 +1,8 @@
 <script lang="ts">
 	import type {
-		CommitteeTeamQuery,
 		CommitteeTeamQuery$result,
 		SpeakersListCategoryEnum$options
 	} from '$houdini';
-	import { m } from '$lib/paraglide/messages';
-	import { Command } from 'bits-ui';
-	import hotkeys from 'hotkeys-js';
-	import { onMount } from 'svelte';
 	import SpeechControls from './SpeechControls.svelte';
 	import MoreOptions from './MoreOptions.svelte';
 	import NextSpeech from './NextSpeech.svelte';
@@ -22,16 +17,17 @@
 					CommitteeTeamQuery$result['findFirstCommittee']['activeAgendaItem']
 			  >['speakersList'][number]
 			| null;
+		childListId?: string;
 	}
 
-	let { committeeId, members, type, speakersList }: Props = $props();
+	let { committeeId, members, type, speakersList, childListId }: Props = $props();
 </script>
 
 <div class="flex flex-col gap-4">
 	<SpeechControls {type} {speakersList} />
 
 	<div class="flex gap-2">
-		<NextSpeech {type} {speakersList} />
+		<NextSpeech {speakersList} {childListId} {type} />
 		<MoreOptions {type} {speakersList} />
 	</div>
 

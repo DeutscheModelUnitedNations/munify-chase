@@ -125,7 +125,11 @@
 	{/snippet}
 
 	{#snippet AdditionalButtons()}
-		<button class="btn btn-lg btn-square join-item" aria-label="add-speaker" onclick={addSpeakerToList}>
+		<button
+			class="btn btn-lg btn-square join-item"
+			aria-label="add-speaker"
+			onclick={addSpeakerToList}
+		>
 			<i class="fas fa-plus"></i>
 		</button>
 	{/snippet}

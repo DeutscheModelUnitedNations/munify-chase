@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { fade } from "svelte/transition";
+	import { fade } from 'svelte/transition';
 
 	interface Props {
 		stripeColor?: string;

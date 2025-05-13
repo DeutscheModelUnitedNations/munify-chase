@@ -15,7 +15,7 @@
 	import { alertDialog } from '$lib/components/Alert/alert';
 
 	interface Props {
-		speakersList:
+		speakersList?:
 			| NonNullable<
 					CommitteeTeamQuery$result['findFirstCommittee']['activeAgendaItem']
 			  >['speakersList'][number]

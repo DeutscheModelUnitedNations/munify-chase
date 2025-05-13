@@ -65,6 +65,7 @@
 
 	const addSpeakerToList = async () => {
 		if (!speakersList?.id) return;
+		if (!value) return;
 		const committeeMember = members.find((x) => getName(x) === value);
 
 		if (!committeeMember) {
@@ -124,7 +125,7 @@
 	{/snippet}
 
 	{#snippet AdditionalButtons()}
-		<button class="btn btn-lg join-item" aria-label="add-speaker" onclick={addSpeakerToList}>
+		<button class="btn btn-lg btn-square join-item" aria-label="add-speaker" onclick={addSpeakerToList}>
 			<i class="fas fa-plus"></i>
 		</button>
 	{/snippet}

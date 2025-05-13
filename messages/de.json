@@ -163,5 +163,8 @@
 	"speaker": "Redner*in",
 	"toastAddLoading": "{ targetName } wird hinzugefügt...",
 	"toastAddSuccess": "{ targetName } hinzugefügt",
-	"toastAddError": "{ targetName } konnte nicht hinzugefügt werden"
+	"toastAddError": "{ targetName } konnte nicht hinzugefügt werden",
+	"listEmpty": "Keine Rede",
+	"listClosed": "Liste geschlossen",
+	"nextSpeakerDescription": "Möchtest du wirklich die nächste Rede aufrufen? Eventuelle Fragen- und Kurzbemerkungen werden verfallen."
 }

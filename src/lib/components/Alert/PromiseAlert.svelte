@@ -4,7 +4,7 @@
 	import { alertDialogStore } from './alert';
 	import { browser } from '$app/environment';
 	import hotkeys from 'hotkeys-js';
-	import { fade, scale } from 'svelte/transition';
+	import { fade, fly, scale } from 'svelte/transition';
 
 	$effect(() => {
 		if (browser && $alertDialogStore) {
@@ -41,40 +41,47 @@
 
 <AlertDialog.Root bind:open>
 	<AlertDialog.Portal>
-		<AlertDialog.Overlay class="fixed inset-0 z-30 backdrop-blur-sm backdrop-brightness-70" />
-		<AlertDialog.Content
-			class="card bg-base-100 fixed top-1/2 left-1/2 z-40 m-4 w-full max-w-xl -translate-x-1/2 -translate-y-1/2 shadow-md"
-		>
-			<div class="card bg-base-100 shadow-md">
+		<AlertDialog.Overlay forceMount>
+			{#if open}
 				<div
-					class="card-body flex w-full flex-col items-center justify-center gap-6"
-					transition:scale={{ duration: 500, opacity: 0, start: 50 }}
-				>
-					<div class="flex w-full flex-col items-center justify-center gap-2">
-						<AlertDialog.Title class="text-2xl font-bold">
-							{$alertDialogStore?.title}
-						</AlertDialog.Title>
-						<AlertDialog.Description class="text-base">
-							{$alertDialogStore?.description}
-						</AlertDialog.Description>
+					class="fixed inset-0 z-30 backdrop-blur-sm backdrop-brightness-70"
+					transition:fade={{ duration: 300 }}
+				></div>
+			{/if}
+		</AlertDialog.Overlay>
+		{#if open}
+			<div
+				class="card bg-base-100 fixed top-1/2 left-1/2 z-40 m-4 w-full max-w-xl -translate-x-1/2 -translate-y-1/2 shadow-md"
+				transition:fly={{ duration: 500 }}
+			>
+				<AlertDialog.Content>
+					<div class="card-body flex w-full flex-col items-center justify-center gap-6">
+						<div class="flex w-full flex-col items-center justify-center gap-2">
+							<AlertDialog.Title class="text-2xl font-bold">
+								{$alertDialogStore?.title}
+							</AlertDialog.Title>
+							<AlertDialog.Description class="text-base">
+								{$alertDialogStore?.description}
+							</AlertDialog.Description>
+						</div>
+						<div class="modal-actions flex w-full gap-2">
+							<AlertDialog.Cancel onclick={$alertDialogStore?.onClose} class="btn btn-lg flex-1">
+								<i class="fas fa-xmark"></i>
+								{$alertDialogStore?.cancelText}
+								<kbd class="kbd kbd-sm"> esc </kbd>
+							</AlertDialog.Cancel>
+							<AlertDialog.Action
+								onclick={$alertDialogStore?.onConfirm}
+								class="btn btn-{$alertDialogStore?.confirmColor ?? 'primary'} btn-lg flex-1"
+							>
+								<i class="fas fa-check"></i>
+								{$alertDialogStore?.confirmText}
+								<kbd class="kbd kbd-sm text-base-content"> ↵ </kbd>
+							</AlertDialog.Action>
+						</div>
 					</div>
-					<div class="modal-actions flex w-full gap-2">
-						<AlertDialog.Cancel onclick={$alertDialogStore?.onClose} class="btn btn-lg flex-1">
-							<i class="fas fa-xmark"></i>
-							{$alertDialogStore?.cancelText}
-							<kbd class="kbd kbd-sm"> esc </kbd>
-						</AlertDialog.Cancel>
-						<AlertDialog.Action
-							onclick={$alertDialogStore?.onConfirm}
-							class="btn btn-{$alertDialogStore?.confirmColor ?? 'primary'} btn-lg flex-1"
-						>
-							<i class="fas fa-check"></i>
-							{$alertDialogStore?.confirmText}
-							<kbd class="kbd kbd-sm text-base-content"> ↵ </kbd>
-						</AlertDialog.Action>
-					</div>
-				</div>
+				</AlertDialog.Content>
 			</div>
-		</AlertDialog.Content>
+		{/if}
 	</AlertDialog.Portal>
 </AlertDialog.Root>

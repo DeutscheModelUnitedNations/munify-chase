@@ -4,6 +4,7 @@
 		type CommitteeTeamQuery$result,
 		type SpeakersListCategoryEnum$options
 	} from '$houdini';
+	import { alertDialog } from '$lib/components/Alert/alert';
 	import { m } from '$lib/paraglide/messages';
 	import { promiseToastStrings } from '$lib/utils/toast';
 	import hotkeys from 'hotkeys-js';
@@ -75,16 +76,25 @@
 		if (speakersList && speakersList?.speakers.length > 0) {
 			const speaker = speakersList.speakers[0];
 			if (childList) {
-				toast.promise(
-					NextSpeakerMutationWithChildListClearance.mutate({
-						speakerOnListId: speaker.id,
-						speakersListId: speakersList.id,
-						speakingTime: speakersList.speakingTime,
-						childSpeakersListId: childList.id,
-						childSpeakersListSpeakingTime: childList.speakingTime
-					}),
-					promiseToastStrings(m.nextSpeaker(), 'update')
-				);
+				if (
+					await alertDialog({
+						title: m.nextSpeaker(),
+						description: m.nextSpeakerDescription(),
+						confirmText: m.nextSpeaker(),
+						cancelText: m.abort(),
+						confirmColor: 'error'
+					})
+				)
+					toast.promise(
+						NextSpeakerMutationWithChildListClearance.mutate({
+							speakerOnListId: speaker.id,
+							speakersListId: speakersList.id,
+							speakingTime: speakersList.speakingTime,
+							childSpeakersListId: childList.id,
+							childSpeakersListSpeakingTime: childList.speakingTime
+						}),
+						promiseToastStrings(m.nextSpeaker(), 'update')
+					);
 			} else {
 				toast.promise(
 					NextSpeakerMutation.mutate({
@@ -99,15 +109,15 @@
 	};
 
 	onMount(() => {
-		hotkeys('cmd+n, cmd+shift+n', (event, handler) => {
+		hotkeys('alt+n, alt+shift+n', (event, handler) => {
 			event.preventDefault();
 			switch (handler.key) {
-				case 'cmd+s':
+				case 'alt+n':
 					if (type === 'SPEAKERS_LIST') {
 						nextSpeaker();
 					}
 					break;
-				case 'cmd+shift+s':
+				case 'alt+shift+n':
 					if (type === 'COMMENT_LIST') {
 						nextSpeaker();
 					}

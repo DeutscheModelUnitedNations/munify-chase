@@ -45,7 +45,7 @@
 {:else}
 	<div class="flex h-full w-full items-center justify-center">
 		<div class="flex h-full w-full max-w-screen-xl flex-col gap-6 p-6 lg:flex-row">
-			<BasicCard title={m.speakersList()}>
+			<BasicCard title={m.speakersList()} className="min-h-[calc(100vh-8rem)]">
 				<div class="flex flex-col gap-8">
 					<CurrentSpeaker {speakersList} />
 					<ChairControls
@@ -55,7 +55,10 @@
 						type="SPEAKERS_LIST"
 						childList={commentList}
 					/>
-					<SpeakersQueuePresentation rawSpeakers={speakersList?.speakers} />
+					<SpeakersQueuePresentation
+						rawSpeakers={speakersList?.speakers}
+						closed={speakersList?.isClosed}
+					/>
 				</div>
 			</BasicCard>
 			<BasicCard title={m.commentList()}>
@@ -68,7 +71,10 @@
 						otherList={speakersList}
 						type="COMMENT_LIST"
 					/>
-					<SpeakersQueuePresentation rawSpeakers={commentList?.speakers} />
+					<SpeakersQueuePresentation
+						rawSpeakers={commentList?.speakers}
+						closed={commentList?.isClosed}
+					/>
 				</div>
 			</BasicCard>
 		</div>

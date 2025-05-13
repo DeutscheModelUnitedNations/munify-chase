@@ -5,20 +5,23 @@
 	import Flag from '../Flag.svelte';
 	import { cubicInOut, cubicOut } from 'svelte/easing';
 	import { blur, fly } from 'svelte/transition';
+	import StripesAlert from './StripesAlert.svelte';
+	import { m } from '$lib/paraglide/messages';
 
 	interface Props {
 		rawSpeakers?: NonNullable<
 			CommitteeTeamQuery$result['findFirstCommittee']['activeAgendaItem']
 		>['speakersList'][number]['speakers'];
+		closed?: boolean;
 	}
 
-	let { rawSpeakers }: Props = $props();
+	let { rawSpeakers, closed = false }: Props = $props();
 
 	let speakers = $derived(rawSpeakers?.toSpliced(0, 1));
 </script>
 
-<div class="flex flex-col gap-4">
-	{#if speakers}
+<div class="flex w-full flex-col gap-4">
+	{#if speakers && speakers.length > 0}
 		{#each speakers as speaker, i (speaker.id)}
 			<div
 				class="flex items-center gap-4"
@@ -41,5 +44,10 @@
 				</h2>
 			</div>
 		{/each}
+	{:else}
+		<StripesAlert badgeText={m.listEmpty()} />
+	{/if}
+	{#if closed}
+		<StripesAlert badgeColor="error" stripeColor="error" faIcon="lock" badgeText={m.listClosed()} />
 	{/if}
 </div>

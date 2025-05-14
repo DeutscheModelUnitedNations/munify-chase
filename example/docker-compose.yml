@@ -40,10 +40,9 @@ services:
       #
       # for login and logout callbacks.
       # You can set those in the redirect settings of your auth provider!
-    
+
     # if you would like to disable the database migrations, you can use the following command instead
     # command: bun ./index.js
-
 
 volumes:
   chase:

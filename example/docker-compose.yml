@@ -14,7 +14,7 @@ services:
       - chase:/var/lib/postgresql/data
 
   chase:
-    image: deutschemodelunitednations/chase:latest
+    image: deutschemodelunitednations/munify-chase:latest
     depends_on:
       - postgres
     ports:

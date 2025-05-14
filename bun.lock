@@ -19,7 +19,7 @@
         "@inlang/paraglide-js": "2.0.11",
         "@m1212e/graphql-scalars-houdini": "^0.0.1",
         "@m1212e/rumble": "^0.6.6",
-        "@m1212e/sveltekit-oidc": "^0.0.30",
+        "@m1212e/sveltekit-oidc": "^0.0.31",
         "@sveltejs/adapter-node": "^5.2.12",
         "@sveltejs/kit": "^2.21.0",
         "@sveltejs/vite-plugin-svelte": "^5.0.3",
@@ -258,7 +258,7 @@
 
     "@m1212e/rumble": ["@m1212e/rumble@0.6.6", "", { "dependencies": { "@pothos/core": "^4.6.2", "@pothos/plugin-drizzle": "^0.10.2", "@pothos/plugin-smart-subscriptions": "^4.1.2", "graphql-scalars": "^1.24.2", "graphql-yoga": "^5.13.4" }, "peerDependencies": { "drizzle-orm": "^1", "typescript": "^5" } }, "sha512-cqfcqmGtmoL8qpYVJ98FgPZbYi9cw7e4vrMn9PONPXOGgU7LAegS3RllwKnxJFZ/TEc3kxWQzzH54Y7UI9j0AQ=="],
 
-    "@m1212e/sveltekit-oidc": ["@m1212e/sveltekit-oidc@0.0.30", "", { "dependencies": { "@sinclair/typebox": "^0.34.33" }, "peerDependencies": { "svelte": "^5.0.0" } }, "sha512-hhdPzzAgAOSIBD13OjyJi7BomirVfXfY5CyajTd2P1ctwK3TfJjjBf0QkKpOxkdR18vAF/rqqVycTqrZNt3a3Q=="],
+    "@m1212e/sveltekit-oidc": ["@m1212e/sveltekit-oidc@0.0.31", "", { "dependencies": { "@sinclair/typebox": "^0.34.33" }, "peerDependencies": { "svelte": "^5.0.0" } }, "sha512-mnQAXDfw6gbUYS8Do1lwlijZNyrk7XMCCRRNhmt95XDkn97Q4gPhXc9+7oKT4vd9MTgpqQJ9WEkiYzMrNg5tTA=="],
 
     "@modelcontextprotocol/sdk": ["@modelcontextprotocol/sdk@1.11.2", "", { "dependencies": { "content-type": "^1.0.5", "cors": "^2.8.5", "cross-spawn": "^7.0.3", "eventsource": "^3.0.2", "express": "^5.0.1", "express-rate-limit": "^7.5.0", "pkce-challenge": "^5.0.0", "raw-body": "^3.0.0", "zod": "^3.23.8", "zod-to-json-schema": "^3.24.1" } }, "sha512-H9vwztj5OAqHg9GockCQC06k1natgcxWQSRpQcPJf6i5+MWBzfKkRtxGbjQf0X2ihii0ffLZCRGbYV2f2bjNCQ=="],
 

@@ -10,7 +10,7 @@
 		"@inlang/paraglide-js": "2.0.11",
 		"@m1212e/graphql-scalars-houdini": "^0.0.1",
 		"@m1212e/rumble": "^0.6.6",
-		"@m1212e/sveltekit-oidc": "^0.0.30",
+		"@m1212e/sveltekit-oidc": "^0.0.31",
 		"@sveltejs/adapter-node": "^5.2.12",
 		"@sveltejs/kit": "^2.21.0",
 		"@sveltejs/vite-plugin-svelte": "^5.0.3",

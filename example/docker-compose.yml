@@ -1,0 +1,49 @@
+services:
+  postgres:
+    image: postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -d postgres -U postgres']
+      start_period: 20s
+      interval: 30s
+      retries: 5
+      timeout: 5s
+    volumes:
+      - chase:/var/lib/postgresql/data
+
+  chase:
+    image: deutschemodelunitednations/chase:latest
+    depends_on:
+      - postgres
+    ports:
+      - 3000:3000
+
+    # for config options, please refer to the 'src/lib/config' directory
+    # for server/proxu config options, please refer to https://svelte.dev/docs/kit/adapter-node#Environment-variables-PORT-HOST-and-SOCKET_PATH
+    environment:
+      # - PORT=3000
+      # - HOST=0.0.0.0
+      - DATABASE_URL=postgres://postgres:postgres@postgres:5432/postgres
+      # change this to where the app is located at. E.g. https://chase.munify.cloud
+      - ORIGIN=https://{your orign}
+
+      # variables which are exposed to the client must be prefixed with PUBLIC_
+      - PUBLIC_OIDC_AUTHORITY=https://guard.munify.cloud
+      - PUBLIC_OIDC_CLIENT_ID=275671515582758948@dev
+      #
+      # Please make sure that your OIDC auth provider allows
+      #
+      # https://{your orign}/auth/login-callback
+      # https://{your orign}/auth/logout-callback
+      #
+      # for login and logout callbacks.
+      # You can set those in the redirect settings of your auth provider!
+    
+    # if you would like to disable the database migrations, you can use the following command instead
+    # command: bun ./index.js
+
+
+volumes:
+  chase:

@@ -21,7 +21,7 @@
 
 	let { rawSpeakers, closed = false, resizeFn = $bindable() }: Props = $props();
 
-	let speakers = $derived(rawSpeakers?.toSpliced(0, 1));
+	let speakers = $derived(rawSpeakers?.toSpliced(0, 1).sort((a, b) => a.position - b.position));
 
 	let container = $state<HTMLElement | null>(null);
 	let overflowContainer = $state<HTMLElement | null>(null);

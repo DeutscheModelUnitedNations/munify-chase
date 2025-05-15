@@ -1,5 +1,5 @@
 <script lang="ts">
-	import type { CommitteeTeamQuery$result } from '$houdini';
+	import { graphql, type CommitteeTeamQuery$result } from '$houdini';
 	import { getTranslatedCountryNameFromAlpha3Code } from '$lib/utils/nationTranslationHelper.svelte';
 	import { flip } from 'svelte/animate';
 	import Flag from '../Flag.svelte';
@@ -7,6 +7,8 @@
 	import { blur, fly } from 'svelte/transition';
 	import StripesAlert from './StripesAlert.svelte';
 	import { m } from '$lib/paraglide/messages';
+	import toast from 'svelte-french-toast';
+	import { promiseToastStrings } from '$lib/utils/toast';
 
 	interface Props {
 		rawSpeakers?: NonNullable<
@@ -18,6 +20,46 @@
 	let { rawSpeakers, closed = false }: Props = $props();
 
 	let speakers = $derived(rawSpeakers?.toSpliced(0, 1));
+
+	const RemoveSpeakerOnListMutation = graphql(`
+		mutation RemoveSpeakerOnListMutation($speakerOnListId: ID!) {
+			removeSpeakerOnList(speakerOnListId: $speakerOnListId) {
+				id
+			}
+		}
+	`);
+
+	const removeSpeaker = (speakerOnListId: string) => {
+		if (!speakerOnListId) return;
+
+		toast.promise(
+			RemoveSpeakerOnListMutation.mutate({
+				speakerOnListId
+			}),
+			promiseToastStrings(m.speaker(), 'delete')
+		);
+	};
+
+	const MoveSpeakerMutation = graphql(`
+		mutation MoveSpeakerMutation($speakerOnListId: ID!, $position: Int!) {
+			moveSpeakerToPosition(id: $speakerOnListId, position: $position) {
+				id
+				position
+			}
+		}
+	`);
+
+	const moveSpeaker = (speakerOnListId: string, position: number) => {
+		if (!speakerOnListId || position < 0) return;
+
+		toast.promise(
+			MoveSpeakerMutation.mutate({
+				speakerOnListId,
+				position
+			}),
+			promiseToastStrings(m.speaker(), 'update')
+		);
+	};
 </script>
 
 <div class="flex w-full flex-col">
@@ -48,24 +90,28 @@
 					<button
 						class="btn btn-sm join-item btn-square btn-error btn-soft"
 						aria-label="Delete Speaker"
+						onclick={() => removeSpeaker(speaker.id)}
 					>
 						<i class="fa-solid fa-trash"></i>
 					</button>
 					<button
 						class="btn btn-sm join-item btn-square btn-soft btn-primary"
 						aria-label="Move Speaker Up"
+						onclick={() => moveSpeaker(speaker.id, speaker.position - 1)}
 					>
 						<i class="fa-solid fa-chevron-up"></i>
 					</button>
 					<button
 						class="btn btn-sm join-item btn-square btn-soft btn-primary"
 						aria-label="Move Speaker Down"
+						onclick={() => moveSpeaker(speaker.id, speaker.position + 1)}
 					>
 						<i class="fa-solid fa-chevron-down"></i>
 					</button>
 					<button
 						class="btn btn-sm join-item btn-square btn-primary btn-soft"
 						aria-label="Move Speaker to Top"
+						onclick={() => moveSpeaker(speaker.id, 0)}
 					>
 						<i class="fa-solid fa-chevrons-up"></i>
 					</button>

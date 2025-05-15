@@ -7,7 +7,7 @@
 	import { getCommitteeStatusIcon, getCommitteeStatusText } from '$lib/utils/committeeStatus';
 	import WhiteboardViewer from '$lib/components/whiteboard/WhiteboardViewer.svelte';
 	import Majorities from '$lib/components/Majorities.svelte';
-	import { onMount } from 'svelte';
+	import { onMount, type Component } from 'svelte';
 	import { liveQuery } from 'dexie';
 	import { localDB } from '$lib/local-db/localDB';
 	import { getPresentationLayoutPreset } from '$lib/data/presentationLayoutPresets';
@@ -43,13 +43,28 @@
 
 	let itemSize = $derived({ height: 60 });
 
+	let speakersQueueResizeFn: () => void;
+	let commentsQueueResizeFn: () => void;
+
+	$effect(() => {
+		if (!layout || !committee) {
+			return;
+		}
+		resizeQueues();
+	});
+
+	const resizeQueues = () => {
+		speakersQueueResizeFn?.();
+		commentsQueueResizeFn?.();
+	};
+
 	onMount(() => {
 		PresentationSubscription.listen({ id: data.committeeId });
 	});
 </script>
 
 {#if committee}
-	<Grid {itemSize} cols={12}>
+	<Grid {itemSize} cols={12} on:change={resizeQueues}>
 		{#if layout.committeeTitle}
 			{@const gridProps = layout.committeeTitle}
 			<GridItem
@@ -115,7 +130,11 @@
 				id="speakers-list"
 			>
 				<CurrentSpeaker {speakersList} />
-				<SpeakersQueue rawSpeakers={speakersList?.speakers} closed={speakersList?.isClosed} />
+				<SpeakersQueue
+					rawSpeakers={speakersList?.speakers}
+					closed={speakersList?.isClosed}
+					bind:resizeFn={speakersQueueResizeFn}
+				/>
 			</GridItem>
 		{/if}
 
@@ -123,7 +142,11 @@
 			{@const gridProps = layout.commentsList}
 			<GridItem {...gridProps} class="card bg-base-100 gap-8 overflow-hidden p-4" id="comment-list">
 				<CurrentSpeaker speakersList={commentsList} />
-				<SpeakersQueue rawSpeakers={commentsList?.speakers} closed={commentsList?.isClosed} />
+				<SpeakersQueue
+					rawSpeakers={commentsList?.speakers}
+					closed={commentsList?.isClosed}
+					bind:resizeFn={commentsQueueResizeFn}
+				/>
 			</GridItem>
 		{/if}
 	</Grid>

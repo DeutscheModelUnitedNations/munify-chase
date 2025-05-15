@@ -8,7 +8,8 @@ export const OIDC = await makeOIDC({
 	development: dev,
 	oidcAuthority: configPublic.PUBLIC_OIDC_AUTHORITY,
 	oidcClientId: configPublic.PUBLIC_OIDC_CLIENT_ID,
-	secret: configPrivate.OIDC_CLIENT_SECRET,
+	oidcClientSecret: configPrivate.OIDC_CLIENT_SECRET,
+	secret: configPrivate.SECRET,
 	authenticatedRoutes: ['/app'],
 	async userLoggedInSuccessfully({ user }) {
 		await db

@@ -187,7 +187,7 @@
 
 <div class="flex gap-2">
 	<button
-		class="btn {timerRunning ? 'bg-error' : 'bg-primary'} btn-lg join-item flex flex-1 gap-2"
+		class="btn {timerRunning ? 'bg-error' : 'bg-success'} btn-lg join-item flex flex-1 gap-2"
 		onclick={timerRunning ? stopTimer : startTimer}
 	>
 		{#if timerRunning}

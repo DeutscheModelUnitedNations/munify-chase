@@ -11,7 +11,7 @@
 	import ChairControls from '$lib/components/speakersList/chairControls/ChairControls.svelte';
 	import CurrentSpeaker from '$lib/components/speakersList/CurrentSpeaker.svelte';
 	import dayjs from 'dayjs';
-	import SpeakersQueuePresentation from '$lib/components/speakersList/SpeakersQueue.svelte';
+	import SpeakersQueuePresentation from '$lib/components/speakersList/ChairSpeakersQueue.svelte';
 
 	let { data }: { data: PageData } = $props();
 

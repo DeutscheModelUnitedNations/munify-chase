@@ -11,7 +11,6 @@
 	import { liveQuery } from 'dexie';
 	import { localDB } from '$lib/local-db/localDB';
 	import { getPresentationLayoutPreset } from '$lib/data/presentationLayoutPresets';
-	import { graphql } from '$houdini';
 	import AbbreviationInfoBox from '$lib/components/AbbreviationInfoBox.svelte';
 	import UndrawError from '$lib/components/UndrawError.svelte';
 	import emptyStreet from '$assets/undraw/empty_street.svg';
@@ -20,7 +19,7 @@
 	import { sortTranslatedCountries } from '$lib/utils/nationTranslationHelper.svelte';
 	import CurrentSpeaker from '$lib/components/speakersList/CurrentSpeaker.svelte';
 	import { PresentationSubscription } from './committeeSubscription';
-	import SpeakersQueue from '$lib/components/speakersList/SpeakersQueue.svelte';
+	import SpeakersQueue from '$lib/components/speakersList/PresentationSpeakersQueue.svelte';
 
 	let { data }: { data: PageData } = $props();
 

@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
+
 	interface Props {
 		size?: 'xs' | 'sm' | 'md' | 'lg' | 'full';
 		alpha2Code?: string | null;

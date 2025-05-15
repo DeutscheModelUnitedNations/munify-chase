@@ -51,7 +51,7 @@ const getTotalPresentCount = async (
 
 const ref = object({
 	table: 'committee',
-	extend: (t) => ({
+	adjust: (t) => ({
 		totalPresent: t.field({
 			type: 'Int',
 			//TODO remove as any when rumble fixed it's types

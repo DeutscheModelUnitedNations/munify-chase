@@ -13,7 +13,7 @@ import { and, count, eq, type InferSelectModel } from 'drizzle-orm';
 
 const ref = object({
 	table: 'agendaItem',
-	extend: (t) => ({
+	adjust: (t) => ({
 		isActive: t.field({
 			type: 'Boolean',
 			//TODO remove as any when rumble fixed it's types

@@ -16,29 +16,29 @@ import { SpeakerOnListRef, SpeakerOnWhereArgs } from './speakerOnList';
 // const { arg, ref, pubsub: speakersListPubSub, table } = basics('speakersList');
 
 const ref = object({
-	table: 'speakersList',
-	adjust(t) {
-		return {
-			speakers: t.relation('speakers', {
-				args: {
-					where: t.arg({ type: SpeakerOnWhereArgs, required: false })
-				},
-				nullable: false,
-				query: (args: any, ctx: any) => {
-					const queryFilter = ctx.abilities.speakerOnList.filter('read', {
-						inject: { where: args.where }
-					}).query.many;
+	table: 'speakersList'
+	// adjust(t) {
+	// 	return {
+	// 		speakers: t.relation('speakers', {
+	// 			args: {
+	// 				where: t.arg({ type: SpeakerOnWhereArgs, required: false })
+	// 			},
+	// 			nullable: false,
+	// 			query: (args: any, ctx: any) => {
+	// 				const queryFilter = ctx.abilities.speakerOnList.filter('read', {
+	// 					inject: { where: args.where }
+	// 				}).query.many;
 
-					return {
-						...queryFilter,
-						orderBy: {
-							position: 'asc'
-						}
-					};
-				}
-			})
-		};
-	}
+	// 				return {
+	// 					...queryFilter,
+	// 					orderBy: {
+	// 						position: 'asc'
+	// 					}
+	// 				};
+	// 			}
+	// 		})
+	// 	};
+	// }
 });
 
 export const SpeakersListRef = ref;

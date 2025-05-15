@@ -16,7 +16,7 @@
 	style="--stripe-color-1: var(--color-{stripeColor})"
 	in:fade={{ duration: 500 }}
 >
-	<div class="badge badge-xl badge-{badgeColor} shadow-sm">
+	<div class="badge badge-xl badge-{badgeColor} m-4 shadow-sm">
 		{#if faIcon}
 			<i class="fa-solid fa-{faIcon.replace('fa-', '')} text-base-content"></i>
 		{/if}

@@ -8,6 +8,7 @@
 	import UndrawError from '$lib/components/UndrawError.svelte';
 	import emptyStreet from '$assets/undraw/empty_street.svg';
 	import StatusWidget from '../StatusWidget.svelte';
+	import ShowOfHandsVotingSetup from '$lib/components/voting/ShowOfHandsVotingSetup.svelte';
 
 	let { data }: { data: PageData } = $props();
 
@@ -35,11 +36,9 @@
 			</div>
 			<div class="flex h-full w-full flex-3 flex-col gap-4">
 				<BasicCard title={m.showOfHandsVoting()}>
-					asd
+					<ShowOfHandsVotingSetup />
 				</BasicCard>
-				<BasicCard title={m.rollCallVoting()}>
-					asd
-				</BasicCard>
+				<BasicCard title={m.rollCallVoting()}>asd</BasicCard>
 			</div>
 		</div>
 	</div>

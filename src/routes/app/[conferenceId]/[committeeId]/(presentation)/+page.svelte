@@ -34,6 +34,14 @@
 			getPresentationLayoutPreset()
 	);
 
+	let speakersList = $derived(
+		committee?.activeAgendaItem?.speakersList.find((x) => x.type === 'SPEAKERS_LIST')
+	);
+
+	let commentsList = $derived(
+		committee?.activeAgendaItem?.speakersList.find((x) => x.type === 'COMMENT_LIST')
+	);
+
 	let itemSize = $derived({ height: 60 });
 
 	onMount(() => {
@@ -107,32 +115,16 @@
 				class="card bg-base-100 gap-8 overflow-hidden p-4"
 				id="speakers-list"
 			>
-				<CurrentSpeaker
-					speakersList={committee.activeAgendaItem?.speakersList.find(
-						(x) => x.type === 'SPEAKERS_LIST'
-					)}
-				/>
-				<SpeakersQueue
-					rawSpeakers={committee.activeAgendaItem?.speakersList.find(
-						(x) => x.type === 'SPEAKERS_LIST'
-					)?.speakers}
-				/>
+				<CurrentSpeaker {speakersList} />
+				<SpeakersQueue rawSpeakers={speakersList?.speakers} closed={speakersList?.isClosed} />
 			</GridItem>
 		{/if}
 
 		{#if layout.commentsList}
 			{@const gridProps = layout.commentsList}
 			<GridItem {...gridProps} class="card bg-base-100 gap-8 overflow-hidden p-4" id="comment-list">
-				<CurrentSpeaker
-					speakersList={committee.activeAgendaItem?.speakersList.find(
-						(x) => x.type === 'COMMENT_LIST'
-					)}
-				/>
-				<SpeakersQueue
-					rawSpeakers={committee.activeAgendaItem?.speakersList.find(
-						(x) => x.type === 'COMMENT_LIST'
-					)?.speakers}
-				/>
+				<CurrentSpeaker speakersList={commentsList} />
+				<SpeakersQueue rawSpeakers={commentsList?.speakers} closed={commentsList?.isClosed} />
 			</GridItem>
 		{/if}
 	</Grid>

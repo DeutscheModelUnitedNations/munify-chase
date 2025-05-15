@@ -97,12 +97,8 @@
 	"layoutSelect": "Layout auswählen",
 	"layoutPreset": [
 		{
-			"declarations": [
-				"input preset"
-			],
-			"selectors": [
-				"preset"
-			],
+			"declarations": ["input preset"],
+			"selectors": ["preset"],
 			"match": {
 				"preset=default": "Standard Layout",
 				"preset=smallScreen": "Layout für kleine Bildschirme",
@@ -115,12 +111,8 @@
 	"off": "Aus",
 	"regionalGroups": [
 		{
-			"declarations": [
-				"input group"
-			],
-			"selectors": [
-				"group"
-			],
+			"declarations": ["input group"],
+			"selectors": ["group"],
 			"match": {
 				"group=AFRICA": "Afrika",
 				"group=ASIA_PACIFIC": "Asien",
@@ -166,5 +158,7 @@
 	"toastAddError": "{ targetName } konnte nicht hinzugefügt werden",
 	"listEmpty": "Keine Rede",
 	"listClosed": "Liste geschlossen",
-	"nextSpeakerDescription": "Möchtest du wirklich die nächste Rede aufrufen? Eventuelle Fragen- und Kurzbemerkungen werden verfallen."
+	"nextSpeakerDescription": "Möchtest du wirklich die nächste Rede aufrufen? Eventuelle Fragen- und Kurzbemerkungen werden verfallen.",
+	"committeeStatusExpired": "{status} abgelaufen!",
+	"speakersListOvertime": "Redezeit abgelaufen!"
 }

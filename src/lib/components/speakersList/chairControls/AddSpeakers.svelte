@@ -69,7 +69,6 @@
 		const committeeMember = members.find((x) => getName(x) === value);
 
 		if (!committeeMember) {
-			toast.error('Member not found');
 			return;
 		}
 
@@ -85,21 +84,23 @@
 	};
 
 	$effect(() => {
-		if (browser && focused) {
-			console.log('hotkeys');
-			hotkeys('cmd+p', (event, handler) => {
+		if (!focused) {
+			hotkeys('alt+a, alt+shift+a', (event, handler) => {
 				event.preventDefault();
-				console.log(handler.key);
+				console.log('hotkey', handler.key);
 				switch (handler.key) {
-					case 'cmd+p':
-						console.log('enter');
-						addSpeakerToList();
+					case 'alt+a':
+						if (speakersList?.type === 'SPEAKERS_LIST') {
+							focused = true;
+						}
+						break;
+					case 'alt+shift+a':
+						if (speakersList?.type === 'COMMENT_LIST') {
+							focused = true;
+						}
 						break;
 				}
 			});
-		} else if (browser) {
-			console.log('unbind');
-			// hotkeys.unbind('cmd+p');
 		}
 	});
 </script>
@@ -111,6 +112,8 @@
 	filter={(member, value) => filter(member, value)}
 	placeholder="Search for a country"
 	getStringValue={(member) => getName(member)}
+	kbd={speakersList?.type === 'COMMENT_LIST' ? '⌥ ⇧ A' : '⌥ A'}
+	submit={() => addSpeakerToList()}
 >
 	{#snippet ListItem(option)}
 		<Flag

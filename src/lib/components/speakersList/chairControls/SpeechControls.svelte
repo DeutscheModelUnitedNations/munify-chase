@@ -146,10 +146,10 @@
 	};
 
 	onMount(() => {
-		hotkeys('cmd+s, cmd+shift+s, cmd+r, cmd+shift+r', (event, handler) => {
+		hotkeys('space, shift+space, alt+r, alt+shift+r', (event, handler) => {
 			event.preventDefault();
 			switch (handler.key) {
-				case 'cmd+s':
+				case 'space':
 					if (type === 'SPEAKERS_LIST') {
 						if (timerRunning) {
 							stopTimer();
@@ -158,7 +158,7 @@
 						}
 					}
 					break;
-				case 'cmd+shift+s':
+				case 'shift+space':
 					if (type === 'COMMENT_LIST') {
 						console.log('Start /Stop Timer Comment List');
 						if (timerRunning) {
@@ -168,13 +168,13 @@
 						}
 					}
 					break;
-				case 'cmd+r':
+				case 'alt+r':
 					if (type === 'SPEAKERS_LIST') {
 						console.log('Reset Timer Speakers List');
 						resetTimer();
 					}
 					break;
-				case 'cmd+shift+r':
+				case 'alt+shift+r':
 					if (type === 'COMMENT_LIST') {
 						console.log('Reset Timer Comment List');
 						resetTimer();
@@ -198,9 +198,9 @@
 		{m.timer()}
 		<span class="kbd text-base-content">
 			{#if type === 'COMMENT_LIST'}
-				⌘ ⇧ S
+				⇧ ␣
 			{:else if type === 'SPEAKERS_LIST'}
-				⌘ S
+				␣
 			{/if}
 		</span>
 	</button>
@@ -216,9 +216,9 @@
 			<i class="fas fa-rotate-left"></i>
 			<span class="kbd text-base-content">
 				{#if type === 'COMMENT_LIST'}
-					⌘ ⇧ R
+					⌥ ⇧ R
 				{:else if type === 'SPEAKERS_LIST'}
-					⌘ R
+					⌥ R
 				{/if}
 			</span>
 		</button>

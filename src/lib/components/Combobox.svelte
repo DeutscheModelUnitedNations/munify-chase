@@ -2,6 +2,7 @@
 	import { m } from '$lib/paraglide/messages';
 	import { Combobox } from 'bits-ui';
 	import type { Snippet } from 'svelte';
+	import { crossfade } from 'svelte/transition';
 
 	interface Props {
 		value: string;
@@ -14,6 +15,7 @@
 		getStringValue: (value: T) => string;
 		ListItem: Snippet<[T]>;
 		AdditionalButtons?: Snippet;
+		submit?: (value?: string) => void;
 	}
 
 	let {
@@ -26,32 +28,58 @@
 		filter,
 		getStringValue,
 		ListItem,
-		AdditionalButtons
+		AdditionalButtons,
+		submit
 	}: Props = $props();
 
 	let filteredOptions: T[] = $derived(filter(options, value));
+
+	let input: HTMLInputElement | undefined;
+
+	$effect(() => {
+		if (focused && input) {
+			input.focus();
+		}
+	});
 </script>
 
 <Combobox.Root type="single" bind:value>
 	<div class="join">
-		<Combobox.Input>
-			{#snippet child({ props })}
-				<input
-					bind:focused
-					class="input input-lg join-item w-full flex-1"
-					{placeholder}
-					aria-label={placeholder}
-					oninput={(e) => {
-						value = e.target.value;
-					}}
-					bind:value
-					{...props}
-				/>
-			{/snippet}
-		</Combobox.Input>
 		<Combobox.Trigger class="btn btn-square input-lg join-item">
 			<i class="fas fa-magnifying-glass"></i>
 		</Combobox.Trigger>
+		<Combobox.Input>
+			{#snippet child({ props })}
+				<label class="input input-lg join-item w-full flex-1" {...props}>
+					<input
+						bind:focused
+						bind:this={input}
+						{placeholder}
+						aria-label={placeholder}
+						oninput={(e) => {
+							value = e.target.value;
+						}}
+						bind:value
+						onkeydown={(e) => {
+							if (e.key === 'Escape') {
+								focused = false;
+								value = '';
+								e.target.blur();
+							} else if (e.key === 'Enter' && submit) {
+								submit(value);
+							}
+						}}
+					/>
+					{#if kbd && !focused}
+						<span class="kbd">
+							{kbd}
+						</span>
+					{:else if kbd}
+						<span class="kbd"> Esc </span>
+					{/if}
+				</label>
+			{/snippet}
+		</Combobox.Input>
 		{#if AdditionalButtons}
 			{@render AdditionalButtons()}
 		{/if}
@@ -66,7 +94,7 @@
 				<i class="fas fa-caret-up"></i>
 			</Combobox.ScrollUpButton>
 			<Combobox.Viewport class="p-1">
-				{#each filteredOptions as option, i}
+				{#each filteredOptions as option, i (i)}
 					<Combobox.Item
 						class="hover:bg-base-200 active:bg-base-300 data-highlighted:bg-base-300 flex w-full cursor-pointer items-center rounded-md py-3 pl-5 text-sm outline-hidden transition-all duration-200 select-none"
 						value={getStringValue(option)}

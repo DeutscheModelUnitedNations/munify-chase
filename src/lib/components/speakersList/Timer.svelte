@@ -54,13 +54,6 @@
 			delta.hours() !== 0 ? delta.format('mm:') : delta.format('m:')
 		}${delta.format('ss')}`;
 	};
-
-	$effect(() => {
-		if (overtime)
-			toast.success(m.timeOver(), {
-				icon: BellIcon
-			});
-	});
 </script>
 
 <div class="flex items-center gap-2">

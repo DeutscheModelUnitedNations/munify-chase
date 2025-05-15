@@ -5,7 +5,7 @@
 	import { m } from '$lib/paraglide/messages';
 	import Timer from './Timer.svelte';
 	import { blur, scale } from 'svelte/transition';
-	import { cubicOut } from 'svelte/easing';
+	import { bounceOut, cubicOut } from 'svelte/easing';
 
 	interface Props {
 		speakersList?: NonNullable<
@@ -34,8 +34,8 @@
 	{#if speakersList?.isClosed}
 		<div
 			class="bg-error text-content-error absolute top-0 left-0 flex h-8 w-8 -translate-x-1/3 -translate-y-1/3 items-center justify-center rounded-full shadow-md"
-			in:scale={{ duration: 800, opacity: 0, start: 20, easing: cubicOut }}
-			out:scale={{ duration: 500, opacity: 0, start: 0.5 }}
+			in:scale={{ duration: 800, opacity: 0.5, start: 0, easing: bounceOut }}
+			out:scale={{ duration: 500, opacity: 0.5, start: 0 }}
 		>
 			<i class="fas fa-lock"></i>
 		</div>

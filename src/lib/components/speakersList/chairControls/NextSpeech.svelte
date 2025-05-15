@@ -134,9 +134,9 @@
 	{m.nextSpeaker()}
 	<span class="kbd text-base-content">
 		{#if type === 'COMMENT_LIST'}
-			⌘ ⇧ N
+			⌥ ⇧ N
 		{:else if type === 'SPEAKERS_LIST'}
-			⌘ N
+			⌥ N
 		{/if}
 	</span>
 </button>

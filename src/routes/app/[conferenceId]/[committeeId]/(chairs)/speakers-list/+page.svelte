@@ -5,19 +5,20 @@
 	import question from '$assets/undraw/question.svg';
 
 	import type { PageData } from './$houdini';
-	import { SpeakersListSubscription } from '../speakersListSubscription';
 	import UndrawError from '$lib/components/UndrawError.svelte';
 	import BasicCard from '$lib/components/BasicCard.svelte';
 	import ChairControls from '$lib/components/speakersList/chairControls/ChairControls.svelte';
 	import CurrentSpeaker from '$lib/components/speakersList/CurrentSpeaker.svelte';
-	import dayjs from 'dayjs';
 	import SpeakersQueuePresentation from '$lib/components/speakersList/ChairSpeakersQueue.svelte';
+	import StatusWidget from '../StatusWidget.svelte';
+	import Majorities from '$lib/components/Majorities.svelte';
+	import { CommitteeSubscription } from '../committeeSubscription';
 
 	let { data }: { data: PageData } = $props();
 
 	let committeeQuery = $derived(data?.CommitteeTeamQuery);
 	let committee = $derived(
-		$SpeakersListSubscription.data?.findFirstCommittee ?? $committeeQuery.data?.findFirstCommittee
+		$CommitteeSubscription.data?.findFirstCommittee ?? $committeeQuery.data?.findFirstCommittee
 	);
 
 	let speakersList = $derived(
@@ -28,8 +29,8 @@
 	);
 
 	onMount(() => {
-		SpeakersListSubscription.listen({
-			committeeId: data.committeeId
+		CommitteeSubscription.listen({
+			id: data.committeeId
 		});
 	});
 </script>
@@ -43,40 +44,53 @@
 		buttonLink="./setup"
 	/>
 {:else}
-	<div class="flex h-full w-full items-center justify-center">
-		<div class="flex h-full w-full max-w-screen-xl flex-col gap-6 p-6 lg:flex-row">
-			<BasicCard title={m.speakersList()} className="min-h-[calc(100vh-8rem)]">
-				<div class="flex flex-col gap-8">
-					<CurrentSpeaker {speakersList} />
-					<ChairControls
-						committeeId={data.committeeId}
-						{speakersList}
-						members={committee.members}
-						type="SPEAKERS_LIST"
-						childList={commentList}
-					/>
-					<SpeakersQueuePresentation
-						rawSpeakers={speakersList?.speakers}
-						closed={speakersList?.isClosed}
-					/>
-				</div>
+	<div
+		class="flex w-full flex-col items-center justify-center gap-6 p-6 lg:flex-row lg:items-start"
+	>
+		<div class="top-22 hidden h-full flex-col gap-4 2xl:sticky 2xl:flex">
+			<BasicCard>
+				<StatusWidget {committee} />
 			</BasicCard>
-			<BasicCard title={m.commentList()}>
-				<div class="flex flex-col gap-8">
-					<CurrentSpeaker speakersList={commentList} />
-					<ChairControls
-						committeeId={data.committeeId}
-						members={committee.members}
-						speakersList={commentList}
-						otherList={speakersList}
-						type="COMMENT_LIST"
-					/>
-					<SpeakersQueuePresentation
-						rawSpeakers={commentList?.speakers}
-						closed={commentList?.isClosed}
-					/>
-				</div>
+			<BasicCard>
+				<Majorities
+					totalPresent={committee.totalPresent}
+					simpleMajority={committee.simpleMajority}
+					twoThirdsMajority={committee.twoThirdsMajority}
+					paperSupportThreshold={committee.paperSupportThreshold}
+				/>
 			</BasicCard>
 		</div>
+		<BasicCard title={m.speakersList()} className="min-h-[calc(100vh-8rem)] max-w-xl w-full">
+			<div class="flex flex-col gap-8">
+				<CurrentSpeaker {speakersList} />
+				<ChairControls
+					committeeId={data.committeeId}
+					{speakersList}
+					members={committee.members}
+					type="SPEAKERS_LIST"
+					childList={commentList}
+				/>
+				<SpeakersQueuePresentation
+					rawSpeakers={speakersList?.speakers}
+					closed={speakersList?.isClosed}
+				/>
+			</div>
+		</BasicCard>
+		<BasicCard title={m.commentList()} className="min-h-[calc(100vh-8rem)] max-w-xl  w-full">
+			<div class="flex flex-col gap-8">
+				<CurrentSpeaker speakersList={commentList} />
+				<ChairControls
+					committeeId={data.committeeId}
+					members={committee.members}
+					speakersList={commentList}
+					otherList={speakersList}
+					type="COMMENT_LIST"
+				/>
+				<SpeakersQueuePresentation
+					rawSpeakers={commentList?.speakers}
+					closed={commentList?.isClosed}
+				/>
+			</div>
+		</BasicCard>
 	</div>
 {/if}

@@ -23,6 +23,47 @@ export const CommitteeSubscription = graphql(`
 				title
 			}
 			whiteboardContent
+			activeAgendaItem {
+				id
+				title
+				speakersList {
+					id
+					type
+					isClosed
+					speakingTime
+					startTimestamp
+					timeLeft
+					speakers {
+						id
+						position
+						committeeMember {
+							id
+							representation {
+								id
+								type
+								name
+								regionalGroup
+								alpha2Code
+								alpha3Code
+								faIcon
+							}
+							present
+						}
+						conferenceMember {
+							id
+							representation {
+								id
+								type
+								name
+								regionalGroup
+								alpha2Code
+								alpha3Code
+								faIcon
+							}
+						}
+					}
+				}
+			}
 			members {
 				id
 				present

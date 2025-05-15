@@ -20,6 +20,7 @@
 		sortTranslatedCountries
 	} from '$lib/utils/nationTranslationHelper.svelte';
 	import ChairRollCall from '$lib/components/rollCall/ChairRollCall.svelte';
+	import StatusWidget from '../StatusWidget.svelte';
 
 	let { data }: { data: PageData } = $props();
 
@@ -81,6 +82,9 @@
 	<div class="flex h-full w-full items-center justify-center">
 		<div class="flex h-full w-full max-w-screen-xl flex-col gap-6 p-6 lg:flex-row">
 			<div class="top-22 flex h-full flex-col gap-4 lg:sticky lg:w-lg">
+				<BasicCard>
+					<StatusWidget {committee} />
+				</BasicCard>
 				<BasicCard>
 					<Majorities
 						totalPresent={committee.totalPresent}

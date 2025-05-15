@@ -16,6 +16,7 @@
 	import PresentationSettings from './PresentationSettings.svelte';
 	import { CommitteeSubscription } from '../committeeSubscription';
 	import { ScrollArea } from 'bits-ui';
+	import StatusWidget from '../StatusWidget.svelte';
 
 	let { data }: { data: PageData } = $props();
 
@@ -36,17 +37,7 @@
 		<div class="flex h-full w-full max-w-screen-xl flex-col gap-6 p-6 lg:flex-row">
 			<div class="top-22 flex h-full flex-col gap-4 lg:sticky lg:w-lg">
 				<BasicCard>
-					<IconInfoBox text={committee.activeAgendaItem?.title || '—'} faIcon="podium" />
-					<IconInfoBox text={committee.stateOfDebate || '—'} faIcon="diagram-next" />
-					<IconInfoBox
-						text={committee.statusHeadline.length > 0
-							? committee.statusHeadline
-							: getCommitteeStatusText(committee.status)}
-						faIcon={getCommitteeStatusIcon(committee.status)}
-						committeeStatus={committee.status}
-						marqueeOnOverflow={false}
-						until={new Date(committee.statusUntil)}
-					/>
+					<StatusWidget {committee} />
 				</BasicCard>
 				<BasicCard>
 					<Majorities

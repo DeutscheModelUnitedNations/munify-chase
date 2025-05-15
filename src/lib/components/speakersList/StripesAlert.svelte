@@ -29,7 +29,7 @@
 <style lang="postcss">
 	.stripes {
 		--stripe-color-1: #eee;
-		--stripe-color-2: #fff;
+		--stripe-color-2: transparent;
 		--stripe-thickness: 4px;
 
 		/* No fixed width or height */

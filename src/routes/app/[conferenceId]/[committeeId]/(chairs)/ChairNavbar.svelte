@@ -36,11 +36,18 @@
 			href: './speakers-list',
 			shortcut: '⌥ 3',
 			active: page.route.id?.endsWith('speakers-list')
+		},
+		{
+			faIcon: 'fa-box-ballot',
+			label: m.voting(),
+			href: './voting',
+			shortcut: '⌥ 4',
+			active: page.route.id?.endsWith('voting')
 		}
 	]);
 
 	$effect(() => {
-		hotkeys('alt+1, alt+2, alt+3', (event, handler) => {
+		hotkeys('alt+1, alt+2, alt+3, alt+4', (event, handler) => {
 			event.preventDefault();
 			switch (handler.key) {
 				case 'alt+1':
@@ -51,6 +58,9 @@
 					break;
 				case 'alt+3':
 					goto('./speakers-list');
+					break;
+				case 'alt+4':
+					goto('./voting');
 					break;
 			}
 		});

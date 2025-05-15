@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { representation } from '$api/db/schema';
 	import type { CommitteeTeamQuery$result } from '$houdini';
 	import Combobox from '$lib/components/Combobox.svelte';
 	import Flag from '$lib/components/Flag.svelte';

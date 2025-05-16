@@ -64,6 +64,7 @@ export const committee = pgTable(
 		stateOfDebate: text(),
 		allowDelegationsToAddThemselvesToSpeakersList: boolean().notNull().default(false),
 		activeAgendaItemId: uuid().references((): AnyPgColumn => agendaItem.id),
+		//TODO should these defaults be set at DB level?
 		customSimpleMajority: smallint(), // 50% by default
 		customTwoThirdsMajority: smallint(), // 66% by default
 		customPaperSupportThreshold: smallint() // 10% by default

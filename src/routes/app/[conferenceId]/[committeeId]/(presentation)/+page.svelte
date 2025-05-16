@@ -20,6 +20,7 @@
 	import CurrentSpeaker from '$lib/components/speakersList/CurrentSpeaker.svelte';
 	import { PresentationSubscription } from './committeeSubscription';
 	import SpeakersQueue from '$lib/components/speakersList/PresentationSpeakersQueue.svelte';
+	import ShowOfHandsVotingPresentation from '$lib/components/voting/ShowOfHandsVotingPresentation.svelte';
 
 	let { data }: { data: PageData } = $props();
 
@@ -164,6 +165,8 @@
 				sortTranslatedCountries(a.representation!.alpha3Code!, b.representation!.alpha3Code!)
 			)}
 	/>
+
+	<ShowOfHandsVotingPresentation committeeSettings={$committeeSettings} />
 {:else}
 	<UndrawError
 		undrawImage={emptyStreet}

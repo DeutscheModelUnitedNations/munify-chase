@@ -174,5 +174,9 @@
 	"twoThirdsMajority": "Zwei-Drittel",
 	"withAbstentions": "Enthaltungen",
 	"withoutAbstentions": "Keine Enthaltungen",
-	"startVote": "Abstimmung starten"
+	"startVote": "Abstimmung starten",
+	"pro": "Dafür",
+	"con": "Dagegen",
+	"abstain": "Enthaltung",
+	"forward": "Weiter"
 }

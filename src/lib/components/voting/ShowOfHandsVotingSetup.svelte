@@ -5,10 +5,10 @@
 	import ShowOfHandsVotingChair, { type MajorityType } from './ShowOfHandsVotingChair.svelte';
 
 	interface Props {
-		members: CommitteeTeamQuery$result['findFirstCommittee']['members'];
+		committee: CommitteeTeamQuery$result['findFirstCommittee'];
 	}
 
-	let { members }: Props = $props();
+	let { committee }: Props = $props();
 
 	let voteName: string = $state('');
 	let majority: MajorityType = $state('SIMPLE');
@@ -21,7 +21,6 @@
 		label: string;
 	}[] = [
 		{ id: 'SIMPLE', label: m.simpleMajority() },
-		{ id: 'ABSOLUTE', label: m.absoluteMajority() },
 		{ id: 'TWO_THIRDS', label: m.twoThirdsMajority() }
 	];
 
@@ -33,11 +32,6 @@
 
 <div class="flex flex-col gap-2">
 	<fieldset class="fieldset bg-base-200 border-base-300 rounded-box w-full border p-4">
-		<legend class="fieldset-legend">{m.voteTitel()}</legend>
-		<input type="text" class="input w-full" placeholder={m.voting()} bind:value={voteName} />
-		<p class="label whitespace-normal">{m.voteTitleDescription()}</p>
-	</fieldset>
-	<fieldset class="fieldset bg-base-200 border-base-300 rounded-box w-full border p-4">
 		<legend class="fieldset-legend">{m.majoritySettings()}</legend>
 		<p class="label whitespace-normal">{m.majoritySettingsDescriptions()}</p>
 		<Tabs activeTab={majority} tabs={majorityTabs} onTabChange={(tab) => (majority = tab)} />
@@ -47,6 +41,11 @@
 			onTabChange={(tab) => (withAbstentions = tab)}
 		/>
 	</fieldset>
+	<fieldset class="fieldset bg-base-200 border-base-300 rounded-box w-full border p-4">
+		<legend class="fieldset-legend">{m.voteTitel()}</legend>
+		<input type="text" class="input w-full" placeholder={m.voting()} bind:value={voteName} />
+		<p class="label whitespace-normal">{m.voteTitleDescription()}</p>
+	</fieldset>
 
 	<button class="btn btn-primary w-full" onclick={() => (modalOpen = true)}>
 		<i class="fas fa-box-ballot"></i>
@@ -54,4 +53,10 @@
 	</button>
 </div>
 
-<ShowOfHandsVotingChair bind:active={modalOpen} {members} {voteName} {majority} {withAbstentions} />
+<ShowOfHandsVotingChair
+	bind:active={modalOpen}
+	{committee}
+	{voteName}
+	{majority}
+	{withAbstentions}
+/>

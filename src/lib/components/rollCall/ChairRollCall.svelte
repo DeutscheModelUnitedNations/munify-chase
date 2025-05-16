@@ -1,7 +1,7 @@
 <script lang="ts">
 	import type { CommitteeTeamQuery$result } from '$houdini';
 	import { m } from '$lib/paraglide/messages';
-	import { onMount } from 'svelte';
+	import { onDestroy, onMount } from 'svelte';
 	import Modal from '../Modal.svelte';
 	import ScrollingCountryList from './ScrollingCountryList.svelte';
 	import hotkeys from 'hotkeys-js';
@@ -45,33 +45,34 @@
 		}
 	};
 
-	onMount(() => {
-		hotkeys('up, down, left, right, esc', (event, handler) => {
-			event.preventDefault();
-			switch (handler.key) {
-				case 'up':
-					currentIndex = (currentIndex - 1 + members.length) % members.length;
-					break;
-				case 'down':
-					currentIndex = (currentIndex + 1) % members.length;
-					break;
-				case 'left':
-					setPresence(false);
-					break;
-				case 'right':
-					setPresence(true);
-					break;
-				case 'esc':
-					active = false;
-			}
-		});
+	$effect(() => {
+		if (active) {
+			hotkeys('up, down, left, right, esc', (event, handler) => {
+				event.preventDefault();
+				switch (handler.key) {
+					case 'up':
+						currentIndex = (currentIndex - 1 + members.length) % members.length;
+						break;
+					case 'down':
+						currentIndex = (currentIndex + 1) % members.length;
+						break;
+					case 'left':
+						setPresence(false);
+						break;
+					case 'right':
+						setPresence(true);
+						break;
+					case 'esc':
+						active = false;
+				}
+			});
+		} else {
+			hotkeys.unbind('up, down, left, right, esc');
+		}
 	});
 
 	$effect(() => {
-		console.log('Roll call active:', active);
-		console.log('Current index:', currentIndex);
 		if (active && currentIndex !== undefined) {
-			console.log('Updating roll call index:', currentIndex);
 			localDB.committeeSettings.update(committeeId, {
 				rollCall: currentIndex
 			});

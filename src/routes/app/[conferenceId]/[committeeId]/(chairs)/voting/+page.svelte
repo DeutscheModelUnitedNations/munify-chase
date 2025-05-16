@@ -36,9 +36,9 @@
 			</div>
 			<div class="flex h-full w-full flex-3 flex-col gap-4">
 				<BasicCard title={m.showOfHandsVoting()}>
-					<ShowOfHandsVotingSetup />
+					<ShowOfHandsVotingSetup {committee} />
 				</BasicCard>
-				<BasicCard title={m.rollCallVoting()}>asd</BasicCard>
+				<BasicCard title={m.rollCallVoting()}>Coming Soon</BasicCard>
 			</div>
 		</div>
 	</div>

@@ -15,7 +15,9 @@
 
 	let { speakersList }: Props = $props();
 
-	let currentSpeaker = $derived(speakersList?.speakers.at(0));
+	let currentSpeaker = $derived(
+		speakersList?.speakers.toSorted((a, b) => a.position - b.position).at(0)
+	);
 </script>
 
 <div class="relative flex items-center gap-6">

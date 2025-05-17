@@ -82,7 +82,9 @@ try {
 				.insert(schema.representation)
 				.values({
 					...representation,
-					conferenceId: conferenceEntry.id
+					conferenceId: conferenceEntry.id,
+					alpha2Code: representation.type === 'UN' ? 'un' : undefined,
+					alpha3Code: representation.type === 'UN' ? 'uno' : undefined
 				})
 				.returning()
 				.then(assertFirstEntryExists);

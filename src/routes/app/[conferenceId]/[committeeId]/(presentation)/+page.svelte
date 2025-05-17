@@ -92,6 +92,7 @@
 					marqueeOnOverflow={false}
 					until={new Date(committee.statusUntil)}
 					fullHeight
+					hideCountdown={committee.status === 'FORMAL'}
 				/>
 			</GridItem>
 		{/if}

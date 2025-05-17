@@ -1,5 +1,5 @@
 import { db, schema } from '$api/db/db';
-import { schemaBuilder } from '$api/rumble';
+import { enum_, schemaBuilder } from '$api/rumble';
 import { assertFirstEntryExists } from '@m1212e/rumble';
 import { ConferenceRef } from './conference';
 import { GraphQLError } from 'graphql';
@@ -18,6 +18,30 @@ schemaBuilder.mutationFields((t) => ({
 									fields: (t) => ({
 										name: t.string({ required: true }),
 										abbreviation: t.string({ required: true })
+									})
+								})
+							],
+							required: true
+						}),
+						members: t.field({
+							type: [
+								schemaBuilder.inputType('ImportDataUser', {
+									fields: (t) => ({
+										conferenceUserType: t.field({
+											type: enum_({ tsName: 'conferenceUserType' }),
+											required: true
+										}),
+										userId: t.id()
+
+										// 	userId: text()
+										// 		.notNull()
+										// 		.references(() => user.id, { onDelete: 'cascade' }),
+										// 	conferenceId: uuid()
+										// 		.notNull()
+										// 		.references(() => conference.id, { onDelete: 'cascade' }),
+										// 	conferenceMemberId: uuid(),
+										// 	committeeMemberId: uuid()
+										// });
 									})
 								})
 							],

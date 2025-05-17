@@ -81,6 +81,7 @@
 
 	const clearList = async () => {
 		if (!speakersList?.id) return;
+		isOpen = false;
 		if (
 			await alertDialog({
 				title: m.clearList(),

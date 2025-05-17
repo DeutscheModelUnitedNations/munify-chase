@@ -10,11 +10,21 @@
 
 	let { committee }: Props = $props();
 
+	let voteType: 'SHOW_OF_HANDS' | 'ROLL_CALL' = $state('SHOW_OF_HANDS');
 	let voteName: string = $state('');
 	let majority: MajorityType = $state('SIMPLE');
 	let withAbstentions: boolean = $state(false);
 
-	let modalOpen: boolean = $state(false);
+	let showOfHandModalOpen: boolean = $state(false);
+
+	const voteTypeTabs: {
+		id: 'SHOW_OF_HANDS' | 'ROLL_CALL';
+		label: string;
+		faIcon: string;
+	}[] = [
+		{ id: 'SHOW_OF_HANDS', label: m.showOfHandsVoting(), faIcon: 'hand-wave' },
+		{ id: 'ROLL_CALL', label: m.rollCallVoting(), faIcon: 'list-check' }
+	];
 
 	const majorityTabs: {
 		id: MajorityType;
@@ -32,6 +42,10 @@
 
 <div class="flex flex-col gap-2">
 	<fieldset class="fieldset bg-base-200 border-base-300 rounded-box w-full border p-4">
+		<legend class="fieldset-legend">{m.typeOfVoting()}</legend>
+		<Tabs activeTab={voteType} tabs={voteTypeTabs} onTabChange={(tab) => (voteType = tab)} />
+	</fieldset>
+	<fieldset class="fieldset bg-base-200 border-base-300 rounded-box w-full border p-4">
 		<legend class="fieldset-legend">{m.majoritySettings()}</legend>
 		<p class="label whitespace-normal">{m.majoritySettingsDescriptions()}</p>
 		<Tabs activeTab={majority} tabs={majorityTabs} onTabChange={(tab) => (majority = tab)} />
@@ -47,14 +61,14 @@
 		<p class="label whitespace-normal">{m.voteTitleDescription()}</p>
 	</fieldset>
 
-	<button class="btn btn-primary w-full" onclick={() => (modalOpen = true)}>
+	<button class="btn btn-primary w-full" onclick={() => (showOfHandModalOpen = true)}>
 		<i class="fas fa-box-ballot"></i>
 		{m.startVote()}
 	</button>
 </div>
 
 <ShowOfHandsVotingChair
-	bind:active={modalOpen}
+	bind:active={showOfHandModalOpen}
 	{committee}
 	{voteName}
 	{majority}

@@ -65,7 +65,7 @@
 </script>
 
 {#if committee}
-	<Grid {itemSize} cols={12} on:change={resizeQueues} collision="compress">
+	<Grid {itemSize} cols={12} on:change={resizeQueues} collision="none">
 		{#if layout.committeeTitle}
 			{@const gridProps = layout.committeeTitle}
 			<GridItem

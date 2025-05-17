@@ -25,6 +25,7 @@ query CommitteeTeamQuery($committeeId: ID!) @blocking {
 				speakers {
 					id
 					position
+					overwriteName
 					committeeMember {
 						id
 						representation {

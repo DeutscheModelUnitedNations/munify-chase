@@ -96,5 +96,5 @@
 	{/each}
 </div>
 
-<Toaster />
+<Toaster containerClassName="mt-16" toastOptions={{ className: 'border-2' }} />
 <Alert />

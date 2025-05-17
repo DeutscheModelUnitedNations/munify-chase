@@ -182,7 +182,8 @@ export const speakerOnList = pgTable(
 		speakersListId: uuid()
 			.references(() => speakersList.id, { onDelete: 'cascade' })
 			.notNull(),
-		position: smallint().notNull()
+		position: smallint().notNull(),
+		overwriteName: text()
 	},
 	(t) => [
 		unique().on(t.speakersListId, t.position),

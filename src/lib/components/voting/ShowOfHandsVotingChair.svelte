@@ -87,7 +87,7 @@
 	};
 
 	onMount(() => {
-		hotkeys('enter, esc', (event, handler) => {
+		hotkeys('enter, esc, backspace', (event, handler) => {
 			event.preventDefault();
 			switch (handler.key) {
 				case 'enter':
@@ -95,6 +95,10 @@
 					break;
 				case 'esc':
 					exit();
+					break;
+				case 'backspace':
+					previousState();
+					break;
 			}
 		});
 	});
@@ -174,22 +178,27 @@
 	</div>
 
 	<div class="modal-action justify-around">
-		<button
-			class="btn btn-error btn-lg flex gap-2"
-			onclick={previousState}
-			disabled={currentState === 'PRO'}
-		>
+		<button class="btn btn-lg flex gap-2" onclick={previousState} disabled={currentState === 'PRO'}>
 			<i class="fas fa-arrow-left"></i>
 			{m.back()}
+			<kbd class="kbd">⌫</kbd>
 		</button>
 		<button
-			class="btn btn-success btn-lg flex gap-2"
+			class="btn {currentState === 'EVALUATION' ? 'btn-error' : 'btn-success'} btn-lg flex gap-2"
 			onclick={() => {
 				nextState();
 			}}
 		>
-			<i class="fas fa-arrow-right"></i>
-			{m.forward()}
+			{#if currentState === 'EVALUATION'}
+				<i class="fas fa-xmark"></i>
+				{m.close()}
+			{:else if currentState === 'ABSTAIN' || (!withAbstentions && currentState === 'CON')}
+				<i class="fas fa-paper-plane"></i>
+				{m.publish()}
+			{:else}
+				<i class="fas fa-arrow-right"></i>
+				{m.forward()}
+			{/if}
 			<kbd class="kbd">↵</kbd>
 		</button>
 

@@ -7,6 +7,7 @@
 	import { m } from '$lib/paraglide/messages';
 	import { getTranslatedCountryNameFromAlpha3Code } from '$lib/utils/nationTranslationHelper.svelte';
 	import { promiseToastStrings } from '$lib/utils/toast';
+	import { Tooltip } from 'bits-ui';
 	import Fuse, { type IFuseOptions } from 'fuse.js';
 	import hotkeys from 'hotkeys-js';
 	import toast from 'svelte-french-toast';
@@ -131,9 +132,12 @@
 			nsa={!option.representation?.alpha2Code}
 			icon={option.representation?.faIcon}
 		/>
-		<span class="ml-2">
+		<span class="ml-2 flex-1">
 			{getName(option)}
 		</span>
+		{#if !option.present}
+			<i class="fa-duotone fa-user-xmark mr-4"></i>
+		{/if}
 	{/snippet}
 
 	{#snippet AdditionalButtons()}

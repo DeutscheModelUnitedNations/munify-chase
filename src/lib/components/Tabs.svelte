@@ -14,11 +14,11 @@
 	let { tabs, activeTab = $bindable(), onTabChange }: Props = $props();
 </script>
 
-<div class="tabs tabs-box" role="tablist">
+<div class="tabs tabs-box h-auto" role="tablist">
 	{#each tabs as tab}
 		<button
 			role="tab"
-			class="tab flex-1 {activeTab === tab.id ? 'tab-active' : ''} items-center"
+			class="tab flex-1 {activeTab === tab.id ? 'tab-active' : ''} h-auto items-center py-3"
 			aria-selected={activeTab === tab.id}
 			aria-label={tab.label ?? tab.faIcon}
 			tabindex={activeTab === tab.id ? 0 : -1}
@@ -31,7 +31,8 @@
 			}}
 		>
 			{#if tab.faIcon}
-				<i class="fa-solid fa-{tab.faIcon?.replace('fa-', '')} {tab.label ? 'mr-2' : ''}"></i>
+				<i class="fa-solid fa-{tab.faIcon?.replace('fa-', '')} {tab.label ? 'mr-2' : ''} text-lg"
+				></i>
 			{/if}
 			{#if tab.label}
 				<span class="tab-label">{tab.label}</span>

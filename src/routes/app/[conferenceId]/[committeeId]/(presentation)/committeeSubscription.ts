@@ -26,6 +26,7 @@ export const PresentationSubscription = graphql(`
 					speakers {
 						id
 						position
+						overwriteName
 						committeeMember {
 							id
 							representation {

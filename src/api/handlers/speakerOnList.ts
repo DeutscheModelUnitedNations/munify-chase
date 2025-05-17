@@ -18,6 +18,32 @@ abilityBuilder.speakerOnList.allow(['read', 'update', 'delete']);
 
 schemaBuilder.mutationFields((t) => {
 	return {
+		updateSpeakerOnList: t.drizzleField({
+			type: ref,
+			args: {
+				id: t.arg.id({ required: true }),
+				overwriteName: t.arg.string()
+			},
+			resolve: async (query, _root, args, ctx, _info) => {
+				const updated = await db
+					.update(table)
+					.set({
+						overwriteName: args.overwriteName ? args.overwriteName : null
+					})
+					.where(
+						and(
+							eq(schema.speakerOnList.id, args.id),
+							ctx.abilities.speakerOnList.filter('update').sql.where
+						)
+					)
+					.returning()
+					.then(assertFirstEntryExists);
+
+				pubsub.updated(args.id);
+
+				return updated;
+			}
+		}),
 		addSpeakerOnList: t.drizzleField({
 			type: ref,
 			args: {

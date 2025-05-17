@@ -30,7 +30,7 @@
 				size="lg"
 			/>
 		{:else}
-			<Flag placeholder icon="earth" size="lg" />
+			<Flag placeholder size="lg" />
 		{/if}
 	</div>
 	{#if speakersList?.isClosed}

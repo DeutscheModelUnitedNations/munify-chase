@@ -65,7 +65,7 @@
 </script>
 
 {#if committee}
-	<Grid {itemSize} cols={12} on:change={resizeQueues}>
+	<Grid {itemSize} cols={12} on:change={resizeQueues} collision="compress">
 		{#if layout.committeeTitle}
 			{@const gridProps = layout.committeeTitle}
 			<GridItem
@@ -73,10 +73,7 @@
 				class="card bg-base-100 gap-2 overflow-hidden p-4"
 				id="committee-title"
 			>
-				<AbbreviationInfoBox
-					text={committee.activeAgendaItem?.title || '—'}
-					abbreviation={committee.abbreviation}
-				/>
+				<AbbreviationInfoBox text={committee.name || '—'} abbreviation={committee.abbreviation} />
 			</GridItem>
 		{/if}
 		{#if layout.committeeStatus}

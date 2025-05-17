@@ -20,9 +20,9 @@
 		members: CommitteeTeamQuery$result['findFirstCommittee']['members'];
 	}
 
-	type Member = NonNullable<typeof members>[number];
-
 	let { speakersList, members }: Props = $props();
+
+	type Member = NonNullable<typeof members>[number];
 
 	let value = $state('');
 	let focused = $state(false);
@@ -43,12 +43,21 @@
 	let fuse = $state(new Fuse(members ?? [], fuseOptions));
 
 	const filter = (members: Member[], value: string) => {
+		const excludeMembersAlreadyOnList = (member: Member) => {
+			if (!speakersList?.id) return true;
+			return !speakersList.speakers.some((speaker) => speaker.committeeMember?.id === member.id);
+		};
+
 		if (value.length !== 0) {
-			fuse.setCollection(members.map((x) => ({ ...x, label: getName(x) })) ?? []);
+			fuse.setCollection(
+				members.filter(excludeMembersAlreadyOnList).map((x) => ({ ...x, label: getName(x) })) ?? []
+			);
 			const search = fuse.search(value);
 			return search.map((result) => result.item);
 		} else {
-			return members.sort((a, b) => getName(a).localeCompare(getName(b)));
+			return members
+				.filter(excludeMembersAlreadyOnList)
+				.sort((a, b) => getName(a).localeCompare(getName(b)));
 		}
 	};
 

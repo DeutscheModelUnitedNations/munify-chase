@@ -22,6 +22,7 @@
 	import SpeakersQueue from '$lib/components/speakersList/PresentationSpeakersQueue.svelte';
 	import ShowOfHandsVotingPresentation from '$lib/components/voting/ShowOfHandsVotingPresentation.svelte';
 	import RollCallVotingPresentation from '$lib/components/voting/RollCallVotingPresentation.svelte';
+	import { browser } from '$app/environment';
 
 	let { data }: { data: PageData } = $props();
 
@@ -70,7 +71,7 @@
 
 {#if committee}
 	<Grid
-		itemSize={{ height: $committeeSettings?.presentationGridHeight }}
+		itemSize={{ height: browser ? window.innerHeight / 16 : 60 }}
 		cols={12}
 		on:change={resizeQueues}
 		collision="none"

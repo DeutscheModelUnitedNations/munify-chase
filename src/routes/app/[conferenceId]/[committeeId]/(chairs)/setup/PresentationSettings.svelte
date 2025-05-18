@@ -44,7 +44,6 @@
 				layout: 'default',
 				displayRegionalGroups: false,
 				presentationRootFontSize: 16,
-				presentationGridHeight: 60,
 				rollCall: null,
 
 				showOfHandsVotingActive: false,
@@ -93,86 +92,22 @@
 	</select>
 	<p class="label w-full whitespace-normal">{m.layoutDescription()}</p>
 	<div class="divider"></div>
-	<div class="flex items-center gap-4">
-		<i class="fa-duotone fa-text-size text-2xl"></i>
-		<div class="join">
-			<button
-				class="btn join-item"
-				onclick={() => {
+	<div class="flex flex-col gap-4">
+		<div class="flex items-center gap-4">
+			<i class="fa-duotone fa-text-size text-2xl"></i>
+			<input
+				type="range"
+				min="10"
+				max="30"
+				step="1"
+				value={$committeeSettings?.presentationRootFontSize || 16}
+				oninput={(e) =>
 					localDB.committeeSettings.update(committeeId, {
-						presentationRootFontSize: ($committeeSettings?.presentationRootFontSize || 16) - 1
-					});
-				}}
-				aria-label="Font Size Decrease"
-			>
-				<i class="fas fa-minus"></i>
-			</button>
-			<div class="btn join-item btn-active">
-				{$committeeSettings?.presentationRootFontSize || '?'}
-			</div>
-			<button
-				class="btn join-item"
-				onclick={() => {
-					localDB.committeeSettings.update(committeeId, {
-						presentationRootFontSize: ($committeeSettings?.presentationRootFontSize || 16) + 1
-					});
-				}}
-				aria-label="Font Size Increase"
-			>
-				<i class="fas fa-plus"></i>
-			</button>
-			<button
-				class="btn join-item"
-				onclick={() => {
-					localDB.committeeSettings.update(committeeId, {
-						presentationRootFontSize: 16
-					});
-				}}
-				aria-label="Font Size Reset"
-			>
-				<i class="fas fa-rotate-left"></i>
-			</button>
-		</div>
-	</div>
-	<div class="flex items-center gap-4">
-		<i class="fa-duotone fa-line-height text-2xl"></i>
-		<div class="join">
-			<button
-				class="btn join-item"
-				onclick={() => {
-					localDB.committeeSettings.update(committeeId, {
-						presentationRootFontSize: ($committeeSettings?.presentationGridHeight || 60) - 10
-					});
-				}}
-				aria-label="Font Size Decrease"
-			>
-				<i class="fas fa-minus"></i>
-			</button>
-			<div class="btn join-item btn-active">
-				{$committeeSettings?.presentationGridHeight || '?'}
-			</div>
-			<button
-				class="btn join-item"
-				onclick={() => {
-					localDB.committeeSettings.update(committeeId, {
-						presentationRootFontSize: ($committeeSettings?.presentationGridHeight || 60) + 10
-					});
-				}}
-				aria-label="Font Size Increase"
-			>
-				<i class="fas fa-plus"></i>
-			</button>
-			<button
-				class="btn join-item"
-				onclick={() => {
-					localDB.committeeSettings.update(committeeId, {
-						presentationGridHeight: 60
-					});
-				}}
-				aria-label="Font Size Reset"
-			>
-				<i class="fas fa-rotate-left"></i>
-			</button>
+						presentationRootFontSize: +e.target.value
+					})}
+				class="range range-primary w-full"
+			/>
+			<span class="w-10 text-center">{$committeeSettings?.presentationRootFontSize || '?'}</span>
 		</div>
 	</div>
 	<p class="label w-full whitespace-normal">{m.baseFontSizeDescription()}</p>

@@ -31,7 +31,6 @@
 	let visibleCount = $derived(Math.floor((containerHeight - reservedHeight) / rowHeight));
 
 	const resize = () => {
-		console.log('Resizing speakers list');
 		if (container && overflowContainer) {
 			containerHeight = container.clientHeight;
 			rowHeight = container.children[0]?.clientHeight || 20;

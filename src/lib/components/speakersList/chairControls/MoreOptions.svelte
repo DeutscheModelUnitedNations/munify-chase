@@ -115,13 +115,14 @@
 	const changeSpeakersName = async () => {
 		if (!speakersList?.id || !changeSpeakersNameValue) return;
 
-		console.log({
-			speakerOnListId: speakersList.id,
-			overwriteName: changeSpeakersNameValue
-		});
+		const existingSpeakerId = speakersList.speakers
+			.sort((a, b) => a.position - b.position)
+			.at(0)?.id;
+
+		if (!existingSpeakerId) return;
 		await toast.promise(
 			updateSpeakerOnListMutation.mutate({
-				speakerOnListId: speakersList.id,
+				speakerOnListId: existingSpeakerId,
 				overwriteName: changeSpeakersNameValue
 			}),
 			promiseToastStrings(

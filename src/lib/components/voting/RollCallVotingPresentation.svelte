@@ -96,12 +96,7 @@
 				{/each}
 			</FlagRow>
 
-			<FlagRow
-				color="success"
-				faIcon="circle-plus"
-				countValue={proMembers?.length}
-				className="-z-10"
-			>
+			<FlagRow color="success" faIcon="circle-plus" countValue={proMembers?.length}>
 				{#each proMembers?.toReversed() ?? [] as member (member.id)}
 					<div
 						animate:flip={flipOptions}

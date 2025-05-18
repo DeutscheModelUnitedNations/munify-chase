@@ -192,5 +192,6 @@
 	"typeOfVoting": "Abstimmungsart",
 	"close": "Schließen",
 	"publish": "Veröffentlichen",
-	"notPresent": "Nicht anwesend"
+	"notPresent": "Nicht anwesend",
+	"nothingChanged": "Nichts verändert"
 }

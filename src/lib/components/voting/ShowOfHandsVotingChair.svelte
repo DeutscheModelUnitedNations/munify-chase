@@ -4,17 +4,15 @@
 	import { onMount } from 'svelte';
 	import Modal from '../Modal.svelte';
 	import hotkeys from 'hotkeys-js';
-	import { localDB, type VotingStage } from '$lib/local-db/localDB';
+	import { localDB, type VotingMajority, type VotingStage } from '$lib/local-db/localDB';
 	import VoteClicker from './VoteClicker.svelte';
 	import ResultChart from './ResultChart.svelte';
-
-	export type MajorityType = 'SIMPLE' | 'TWO_THIRDS';
 
 	interface Props {
 		active: boolean;
 		committee?: CommitteeTeamQuery$result['findFirstCommittee'] | null;
 		voteName?: string;
-		majority: MajorityType;
+		majority: VotingMajority;
 		withAbstentions: boolean;
 	}
 
@@ -108,27 +106,27 @@
 		if (active) {
 			localDB.committeeSettings.update(committee.id, {
 				showOfHandsVotingActive: true,
-				showOfHandsVotingVoteName: voteName,
 				showOfHandsVotingStage: currentState,
-				showOfHandsVotingMajority: majority,
-				showOfHandsVotingWithAbstentions: withAbstentions,
 				showOfHandsVotingVotesPro: votesPro,
 				showOfHandsVotingVotesCon: votesCon,
 				showOfHandsVotingVotesAbstain: votesAbstain,
 				showOfHandsVotingVotesTotal: votesOutstanding,
-				showOfHandsVotingMajorityAmount: majorityAmount
+				votingVoteName: voteName,
+				votingMajority: majority,
+				votingWithAbstentions: withAbstentions,
+				votingMajorityAmount: majorityAmount
 			});
 		} else {
 			localDB.committeeSettings.update(committee.id, {
 				showOfHandsVotingActive: false,
-				showOfHandsVotingVoteName: null,
-				showOfHandsVotingMajority: null,
-				showOfHandsVotingWithAbstentions: false,
 				showOfHandsVotingVotesPro: 0,
 				showOfHandsVotingVotesCon: 0,
 				showOfHandsVotingVotesAbstain: 0,
 				showOfHandsVotingVotesTotal: 0,
-				showOfHandsVotingMajorityAmount: null
+				votingVoteName: null,
+				votingMajority: null,
+				votingWithAbstentions: false,
+				votingMajorityAmount: null
 			});
 		}
 	});

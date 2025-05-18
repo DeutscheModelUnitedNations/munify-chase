@@ -1,8 +1,10 @@
 <script lang="ts">
 	import type { CommitteeTeamQuery$result } from '$houdini';
+	import type { VotingMajority } from '$lib/local-db/localDB';
 	import { m } from '$lib/paraglide/messages';
 	import Tabs from '../Tabs.svelte';
-	import ShowOfHandsVotingChair, { type MajorityType } from './ShowOfHandsVotingChair.svelte';
+	import RollCallVotingChair from './RollCallVotingChair.svelte';
+	import ShowOfHandsVotingChair from './ShowOfHandsVotingChair.svelte';
 
 	interface Props {
 		committee: CommitteeTeamQuery$result['findFirstCommittee'];
@@ -12,10 +14,11 @@
 
 	let voteType: 'SHOW_OF_HANDS' | 'ROLL_CALL' = $state('SHOW_OF_HANDS');
 	let voteName: string = $state('');
-	let majority: MajorityType = $state('SIMPLE');
+	let majority: VotingMajority = $state('SIMPLE');
 	let withAbstentions: boolean = $state(false);
 
 	let showOfHandModalOpen: boolean = $state(false);
+	let rollCallModalOpen: boolean = $state(true);
 
 	const voteTypeTabs: {
 		id: 'SHOW_OF_HANDS' | 'ROLL_CALL';
@@ -61,7 +64,16 @@
 		<p class="label whitespace-normal">{m.voteTitleDescription()}</p>
 	</fieldset>
 
-	<button class="btn btn-primary w-full" onclick={() => (showOfHandModalOpen = true)}>
+	<button
+		class="btn btn-primary w-full"
+		onclick={() => {
+			if (voteType === 'SHOW_OF_HANDS') {
+				showOfHandModalOpen = true;
+			} else if (voteType === 'ROLL_CALL') {
+				rollCallModalOpen = true;
+			}
+		}}
+	>
 		<i class="fas fa-box-ballot"></i>
 		{m.startVote()}
 	</button>
@@ -69,6 +81,14 @@
 
 <ShowOfHandsVotingChair
 	bind:active={showOfHandModalOpen}
+	{committee}
+	{voteName}
+	{majority}
+	{withAbstentions}
+/>
+
+<RollCallVotingChair
+	bind:active={rollCallModalOpen}
 	{committee}
 	{voteName}
 	{majority}

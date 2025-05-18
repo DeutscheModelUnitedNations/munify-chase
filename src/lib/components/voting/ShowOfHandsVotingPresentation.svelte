@@ -22,7 +22,7 @@
 				classes: 'bg-success text-success-content'
 			}
 		];
-		if (committeeSettings?.showOfHandsVotingWithAbstentions) {
+		if (committeeSettings?.votingWithAbstentions) {
 			boxes.push({
 				faIcon: 'fa-circle',
 				value: committeeSettings?.showOfHandsVotingVotesAbstain || 0,
@@ -101,7 +101,7 @@
 			out:fly={{ y: 100, duration: 1000, easing: cubicIn }}
 		>
 			<h2 class="mb-8 w-full text-center text-4xl font-bold">
-				{committeeSettings.showOfHandsVotingVoteName || m.showOfHandsVoting()}
+				{committeeSettings.votingVoteName || m.showOfHandsVoting()}
 			</h2>
 
 			{#if committeeSettings.showOfHandsVotingStage === 'PRO'}
@@ -120,7 +120,7 @@
 						votesCon={committeeSettings.showOfHandsVotingVotesCon}
 						votesAbstain={committeeSettings.showOfHandsVotingVotesAbstain}
 						total={committeeSettings.showOfHandsVotingVotesTotal}
-						majorityAmount={committeeSettings.showOfHandsVotingMajorityAmount}
+						majorityAmount={committeeSettings.votingMajorityAmount}
 					/>
 
 					<div class="flex items-center justify-center gap-6">

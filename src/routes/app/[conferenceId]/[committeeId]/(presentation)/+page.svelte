@@ -21,6 +21,7 @@
 	import { PresentationSubscription } from './committeeSubscription';
 	import SpeakersQueue from '$lib/components/speakersList/PresentationSpeakersQueue.svelte';
 	import ShowOfHandsVotingPresentation from '$lib/components/voting/ShowOfHandsVotingPresentation.svelte';
+	import RollCallVotingPresentation from '$lib/components/voting/RollCallVotingPresentation.svelte';
 
 	let { data }: { data: PageData } = $props();
 
@@ -165,6 +166,7 @@
 	/>
 
 	<ShowOfHandsVotingPresentation committeeSettings={$committeeSettings} />
+	<RollCallVotingPresentation committeeSettings={$committeeSettings} {committee} />
 {:else}
 	<UndrawError
 		undrawImage={emptyStreet}

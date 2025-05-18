@@ -9,9 +9,10 @@
 	interface Props {
 		currentIndex: number;
 		members: CommitteeTeamQuery$result['findFirstCommittee']['members'];
+		height?: string;
 	}
 
-	let { currentIndex, members }: Props = $props();
+	let { currentIndex, members, height = '70vh' }: Props = $props();
 
 	let containerRef: HTMLElement;
 	let listContainerRef: HTMLElement;
@@ -46,7 +47,7 @@
 	<div class="absolute top-0 right-0 bottom-0 z-40 flex items-center justify-center">
 		<i class="fas fa-caret-left text-4xl"></i>
 	</div>
-	<div class="relative max-h-[70vh] overflow-hidden" bind:this={listContainerRef}>
+	<div class="relative overflow-hidden" bind:this={listContainerRef} style="max-height: {height};">
 		<div
 			class="from-base-100 pointer-events-none absolute top-0 left-0 z-40 h-32 w-full bg-gradient-to-b to-transparent"
 		></div>

@@ -193,5 +193,6 @@
 	"close": "Schließen",
 	"publish": "Veröffentlichen",
 	"notPresent": "Nicht anwesend",
-	"nothingChanged": "Nichts verändert"
+	"nothingChanged": "Nichts verändert",
+	"baseFontSizeDescription": "Hier kann die Basis-Schriftgröße für die Präsentationsansicht festgelegt werden"
 }

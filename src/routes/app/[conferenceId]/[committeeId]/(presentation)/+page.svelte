@@ -42,9 +42,6 @@
 	let commentsList = $derived(
 		committee?.activeAgendaItem?.speakersList.find((x) => x.type === 'COMMENT_LIST')
 	);
-
-	let itemSize = $derived({ height: 60 });
-
 	let speakersQueueResizeFn: () => void;
 	let commentsQueueResizeFn: () => void;
 
@@ -63,10 +60,21 @@
 	onMount(() => {
 		PresentationSubscription.listen({ id: data.committeeId });
 	});
+
+	$effect(() => {
+		if ($committeeSettings?.presentationRootFontSize) {
+			document.documentElement.style.fontSize = `${$committeeSettings.presentationRootFontSize}px`;
+		}
+	});
 </script>
 
 {#if committee}
-	<Grid {itemSize} cols={12} on:change={resizeQueues} collision="none">
+	<Grid
+		itemSize={{ height: $committeeSettings?.presentationGridHeight }}
+		cols={12}
+		on:change={resizeQueues}
+		collision="none"
+	>
 		{#if layout.committeeTitle}
 			{@const gridProps = layout.committeeTitle}
 			<GridItem

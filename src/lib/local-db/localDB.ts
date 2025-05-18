@@ -7,6 +7,8 @@ export type VotingMajority = 'SIMPLE' | 'TWO_THIRDS';
 interface CommitteeSettings {
 	committeeId: string;
 	layout: PresentationLayoutPresetOptions;
+	presentationRootFontSize: number;
+	presentationGridHeight: number;
 	displayRegionalGroups: boolean;
 	rollCall: number | null;
 
@@ -36,9 +38,12 @@ localDB.version(1).stores({
 	committeeSettings: `
 	++committeeId,
 	layout,
+	presentationRootFontSize,
+	presentationGridHeight,
 	displayRegionalGroups,
 	rollCall,
 	currentVoting,
+
 	showOfHandsVotingActive,
 	showOfHandsVotingStage,
 	showOfHandsVotingVotesPro,

@@ -43,7 +43,26 @@
 				committeeId,
 				layout: 'default',
 				displayRegionalGroups: false,
-				rollCall: null
+				presentationRootFontSize: 16,
+				presentationGridHeight: 60,
+				rollCall: null,
+
+				showOfHandsVotingActive: false,
+				showOfHandsVotingStage: null,
+				showOfHandsVotingVotesPro: 0,
+				showOfHandsVotingVotesCon: 0,
+				showOfHandsVotingVotesAbstain: 0,
+				showOfHandsVotingVotesTotal: 0,
+
+				rollCallVotingActive: false,
+				rollCallVotingPro: [],
+				rollCallVotingCon: [],
+				rollCallVotingAbstain: [],
+
+				votingVoteName: '',
+				votingMajority: null,
+				votingWithAbstentions: null,
+				votingMajorityAmount: null
 			});
 		}
 	});
@@ -73,6 +92,90 @@
 		{/each}
 	</select>
 	<p class="label w-full whitespace-normal">{m.layoutDescription()}</p>
+	<div class="divider"></div>
+	<div class="flex items-center gap-4">
+		<i class="fa-duotone fa-text-size text-2xl"></i>
+		<div class="join">
+			<button
+				class="btn join-item"
+				onclick={() => {
+					localDB.committeeSettings.update(committeeId, {
+						presentationRootFontSize: ($committeeSettings?.presentationRootFontSize || 16) - 1
+					});
+				}}
+				aria-label="Font Size Decrease"
+			>
+				<i class="fas fa-minus"></i>
+			</button>
+			<div class="btn join-item btn-active">
+				{$committeeSettings?.presentationRootFontSize || '?'}
+			</div>
+			<button
+				class="btn join-item"
+				onclick={() => {
+					localDB.committeeSettings.update(committeeId, {
+						presentationRootFontSize: ($committeeSettings?.presentationRootFontSize || 16) + 1
+					});
+				}}
+				aria-label="Font Size Increase"
+			>
+				<i class="fas fa-plus"></i>
+			</button>
+			<button
+				class="btn join-item"
+				onclick={() => {
+					localDB.committeeSettings.update(committeeId, {
+						presentationRootFontSize: 16
+					});
+				}}
+				aria-label="Font Size Reset"
+			>
+				<i class="fas fa-rotate-left"></i>
+			</button>
+		</div>
+	</div>
+	<div class="flex items-center gap-4">
+		<i class="fa-duotone fa-line-height text-2xl"></i>
+		<div class="join">
+			<button
+				class="btn join-item"
+				onclick={() => {
+					localDB.committeeSettings.update(committeeId, {
+						presentationRootFontSize: ($committeeSettings?.presentationGridHeight || 60) - 10
+					});
+				}}
+				aria-label="Font Size Decrease"
+			>
+				<i class="fas fa-minus"></i>
+			</button>
+			<div class="btn join-item btn-active">
+				{$committeeSettings?.presentationGridHeight || '?'}
+			</div>
+			<button
+				class="btn join-item"
+				onclick={() => {
+					localDB.committeeSettings.update(committeeId, {
+						presentationRootFontSize: ($committeeSettings?.presentationGridHeight || 60) + 10
+					});
+				}}
+				aria-label="Font Size Increase"
+			>
+				<i class="fas fa-plus"></i>
+			</button>
+			<button
+				class="btn join-item"
+				onclick={() => {
+					localDB.committeeSettings.update(committeeId, {
+						presentationGridHeight: 60
+					});
+				}}
+				aria-label="Font Size Reset"
+			>
+				<i class="fas fa-rotate-left"></i>
+			</button>
+		</div>
+	</div>
+	<p class="label w-full whitespace-normal">{m.baseFontSizeDescription()}</p>
 </fieldset>
 
 <fieldset class="fieldset bg-base-200 border-base-300 rounded-box w-full border p-4">

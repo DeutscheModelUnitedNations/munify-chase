@@ -181,7 +181,7 @@
 		<button class="btn btn-lg flex gap-2" onclick={previousState} disabled={currentState === 'PRO'}>
 			<i class="fas fa-arrow-left"></i>
 			{m.back()}
-			<kbd class="kbd">⌫</kbd>
+			<span class="kbd">⌫</span>
 		</button>
 		<button
 			class="btn {currentState === 'EVALUATION' ? 'btn-error' : 'btn-success'} btn-lg flex gap-2"
@@ -199,7 +199,7 @@
 				<i class="fas fa-arrow-right"></i>
 				{m.forward()}
 			{/if}
-			<kbd class="kbd">↵</kbd>
+			<span class="kbd">↵</span>
 		</button>
 
 		<div class="absolute top-3 right-3">

@@ -98,7 +98,7 @@
 		>
 			<i class="fas fa-xmark"></i>
 			{m.absent()}
-			<kbd class="kbd">←</kbd>
+			<span class="kbd">←</span>
 		</button>
 		<div class="join">
 			<button
@@ -128,7 +128,7 @@
 		>
 			<i class="fas fa-check"></i>
 			{m.present()}
-			<kbd class="kbd">→</kbd>
+			<span class="kbd">→</span>
 		</button>
 
 		<div class="absolute top-3 right-3">

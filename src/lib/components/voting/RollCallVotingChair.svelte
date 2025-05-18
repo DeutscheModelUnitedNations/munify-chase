@@ -46,6 +46,30 @@
 	let rollCallVotingPro = $derived($chairSettings?.rollCallVotingPro ?? []);
 	let rollCallVotingCon = $derived($chairSettings?.rollCallVotingCon ?? []);
 
+	let scrollingListIcons = $derived.by(() => {
+		return members.map((member) => {
+			let icon: string = '';
+			let color: 'info' | 'success' | 'error' = 'info';
+			if (rollCallVotingAbstain?.includes(member.id)) {
+				icon = 'fa-circle';
+				color = 'info';
+			} else if (rollCallVotingPro?.includes(member.id)) {
+				icon = 'fa-circle-plus';
+				color = 'success';
+			} else if (rollCallVotingCon?.includes(member.id)) {
+				icon = 'fa-circle-minus';
+				color = 'error';
+			} else {
+				icon = 'fa-question'; // Default icon if no vote is set
+			}
+			return {
+				id: member.id,
+				icon,
+				color
+			};
+		});
+	});
+
 	const changeVote = async (member: (typeof members)[number], vote: VotingOptions) => {
 		if (!committee) return;
 		if (
@@ -173,7 +197,7 @@
 	{#if stage === 'ROLL_CALL'}
 		<div class="h-2"></div>
 
-		<ScrollingCountryList {members} {currentIndex} height="50vh" />
+		<ScrollingCountryList {members} {currentIndex} icons={scrollingListIcons} height="50vh" />
 
 		<div class="modal-action flex-col justify-around">
 			<div class="flex flex-row justify-center gap-4">

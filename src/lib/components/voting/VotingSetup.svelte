@@ -18,7 +18,7 @@
 	let withAbstentions: boolean = $state(false);
 
 	let showOfHandModalOpen: boolean = $state(false);
-	let rollCallModalOpen: boolean = $state(true);
+	let rollCallModalOpen: boolean = $state(false);
 
 	const voteTypeTabs: {
 		id: 'SHOW_OF_HANDS' | 'ROLL_CALL';
@@ -30,7 +30,7 @@
 	];
 
 	const majorityTabs: {
-		id: MajorityType;
+		id: VotingMajority;
 		label: string;
 	}[] = [
 		{ id: 'SIMPLE', label: m.simpleMajority() },

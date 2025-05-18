@@ -80,9 +80,10 @@
 					/>
 				</BasicCard>
 				<BasicCard title={m.presentationMode()}>
-					<a href="." class="btn btn-primary mb-4" target="_blank">
+					<a href="." class="btn btn-primary btn-lg mb-4 flex items-center gap-3" target="_blank">
 						<i class="fas fa-projector"></i>
 						{m.openPresentation()}
+						<span class="kbd text-base-content">⌥ P</span>
 					</a>
 					<PresentationSettings committeeId={data.committeeId} />
 				</BasicCard>

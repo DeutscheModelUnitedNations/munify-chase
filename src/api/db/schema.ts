@@ -64,6 +64,7 @@ export const committee = pgTable(
 		stateOfDebate: text(),
 		allowDelegationsToAddThemselvesToSpeakersList: boolean().notNull().default(false),
 		activeAgendaItemId: uuid().references((): AnyPgColumn => agendaItem.id),
+		//TODO should these defaults be set at DB level?
 		customSimpleMajority: smallint(), // 50% by default
 		customTwoThirdsMajority: smallint(), // 66% by default
 		customPaperSupportThreshold: smallint() // 10% by default
@@ -78,19 +79,6 @@ export const conferenceUserType = pgEnum('conference_user_type', [
 	'DELEGATE',
 	'NON_STATE_ACTOR'
 ]);
-
-export const conferenceUser = pgTable('conference_user', {
-	...defaultIdAndTimestamps,
-	conferenceUserType: conferenceUserType().notNull(),
-	userId: text()
-		.notNull()
-		.references(() => user.id, { onDelete: 'cascade' }),
-	conferenceId: uuid()
-		.notNull()
-		.references(() => conference.id, { onDelete: 'cascade' }),
-	conferenceMemberId: uuid(),
-	committeeMemberId: uuid()
-});
 
 export const representationType = pgEnum('representation_type', ['DELEGATION', 'NSA', 'UN']);
 export const regionalGroup = pgEnum('regional_group', [
@@ -140,6 +128,19 @@ export const committeeMember = pgTable('committee_member', {
 	representationId: uuid()
 		.notNull()
 		.references(() => representation.id)
+});
+
+export const conferenceUser = pgTable('conference_user', {
+	...defaultIdAndTimestamps,
+	conferenceUserType: conferenceUserType().notNull(),
+	userId: text()
+		.notNull()
+		.references(() => user.id, { onDelete: 'cascade' }),
+	conferenceId: uuid()
+		.notNull()
+		.references(() => conference.id, { onDelete: 'cascade' }),
+	conferenceMemberId: uuid().references(() => conferenceMember.id, { onDelete: 'cascade' }),
+	committeeMemberId: uuid().references(() => committeeMember.id, { onDelete: 'cascade' })
 });
 
 export const agendaItem = pgTable('agenda_item', {

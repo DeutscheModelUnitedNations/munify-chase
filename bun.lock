@@ -3,12 +3,6 @@
   "workspaces": {
     "": {
       "name": "munify-chase",
-      "dependencies": {
-        "bits-ui": "^1.4.6",
-        "flag-icons": "^7.3.2",
-        "gridstack": "^12.1.2",
-        "svelte-grid-extended": "^1.2.1",
-      },
       "devDependencies": {
         "@eslint/compat": "^1.2.8",
         "@eslint/js": "^9.24.0",
@@ -19,8 +13,8 @@
         "@inlang/cli": "^3.0.10",
         "@inlang/paraglide-js": "2.0.11",
         "@m1212e/graphql-scalars-houdini": "^0.0.1",
-        "@m1212e/rumble": "^0.7.6",
-        "@m1212e/sveltekit-oidc": "^0.0.27",
+        "@m1212e/rumble": "^0.7.7",
+        "@m1212e/sveltekit-oidc": "^0.0.31",
         "@sveltejs/adapter-node": "^5.2.12",
         "@sveltejs/kit": "^2.20.7",
         "@sveltejs/vite-plugin-svelte": "^5.0.3",
@@ -34,6 +28,7 @@
         "@types/js-yaml": "^4.0.9",
         "@types/pg": "^8.11.13",
         "@zerodevx/svelte-toast": "^0.9.6",
+        "bits-ui": "^1.4.6",
         "concurrently": "^9.1.2",
         "cryptr": "^6.3.0",
         "daisyui": "^5.0.28",
@@ -45,9 +40,12 @@
         "eslint": "^9.24.0",
         "eslint-config-prettier": "^10.1.2",
         "eslint-plugin-svelte": "^3.5.1",
+        "flag-icons": "^7.3.2",
+        "fuse.js": "^7.1.0",
         "globals": "^16.0.0",
         "graphql": "^16.10.0",
         "graphql-sse": "^2.5.4",
+        "gridstack": "^12.1.2",
         "hotkeys-js": "^3.13.9",
         "houdini": "^1.5.5",
         "houdini-svelte": "^2.1.14",
@@ -65,6 +63,7 @@
         "svelte-check": "^4.1.6",
         "svelte-fast-marquee": "^0.8.0",
         "svelte-french-toast": "2.0.0-alpha.0",
+        "svelte-grid-extended": "^1.2.1",
         "svelte-tiptap": "^2.1.0",
         "tailwindcss": "^4.1.4",
         "typescript": "^5.8.3",
@@ -253,9 +252,9 @@
 
     "@m1212e/graphql-scalars-houdini": ["@m1212e/graphql-scalars-houdini@0.0.1", "", { "dependencies": { "graphql-scalars": "^1.24" }, "peerDependencies": { "houdini": "^1", "typescript": "^5" } }, "sha512-sbehs8H45vQ5rSo4Md6LxfOu0c0BkxUVEJDAUdofWK4ea1WJf5rytqok03fPhV8K3rC/oIfGk0LAi31X0/OQMw=="],
 
-    "@m1212e/rumble": ["@m1212e/rumble@0.7.6", "", { "dependencies": { "@pothos/core": "^4.6.2", "@pothos/plugin-drizzle": "^0.10.2", "@pothos/plugin-smart-subscriptions": "^4.1.2", "graphql-scalars": "^1.24.2", "graphql-yoga": "^5.13.4" }, "peerDependencies": { "drizzle-orm": "^1", "typescript": "^5" } }, "sha512-hRhHPP4u1wt+9vGzELVMEwy9jzcIshQjik1ssFDb9vfe5PA5AhxGxLhMoJPCQCIGXXfNkmq3b9y0rGsUeEFB8Q=="],
+    "@m1212e/rumble": ["@m1212e/rumble@0.7.7", "", { "dependencies": { "@pothos/core": "^4.6.2", "@pothos/plugin-drizzle": "^0.10.2", "@pothos/plugin-smart-subscriptions": "^4.1.2", "graphql-scalars": "^1.24.2", "graphql-yoga": "^5.13.4" }, "peerDependencies": { "drizzle-orm": "^1", "typescript": "^5" } }, "sha512-+Mhm1xznQBSSXDDJRItcqTbGzvpjt8/96CMJ2ChMUI6VShOvxMTIyNhICJPTlB7NQ3KRzB6UTUjopGRDnbCDRw=="],
 
-    "@m1212e/sveltekit-oidc": ["@m1212e/sveltekit-oidc@0.0.27", "", { "dependencies": { "@sinclair/typebox": "^0.34.33" }, "peerDependencies": { "svelte": "^5.0.0" } }, "sha512-pw+jtrwSc4tgz8Tq5zGRzzcYEHtKCeRwqKm6FhTDanpw+aJrpQ+5kC9XQmxHMGEDjRt4HUe+Phih9+cDvzwsNg=="],
+    "@m1212e/sveltekit-oidc": ["@m1212e/sveltekit-oidc@0.0.31", "", { "dependencies": { "@sinclair/typebox": "^0.34.33" }, "peerDependencies": { "svelte": "^5.0.0" } }, "sha512-mnQAXDfw6gbUYS8Do1lwlijZNyrk7XMCCRRNhmt95XDkn97Q4gPhXc9+7oKT4vd9MTgpqQJ9WEkiYzMrNg5tTA=="],
 
     "@nodelib/fs.scandir": ["@nodelib/fs.scandir@2.1.5", "", { "dependencies": { "@nodelib/fs.stat": "2.0.5", "run-parallel": "^1.1.9" } }, "sha512-vq24Bq3ym5HEQm2NKCr3yXDwjc7vTsEThRDnkp2DK9p1uqLR+DHurm/NOTo0KG7HYHU7eppKZj3MyqYuMBf62g=="],
 
@@ -694,6 +693,8 @@
     "fsevents": ["fsevents@2.3.3", "", { "os": "darwin" }, "sha512-5xoDfX+fL7faATnagmWPpbFtwh/R77WmMMqqHGS65C3vvB0YHrgF+B1YmZ3441tMj5n63k0212XNoJwzlhffQw=="],
 
     "function-bind": ["function-bind@1.1.2", "", {}, "sha512-7XHNxH7qX9xG5mIwxkhumTox/MIRNcOgDrxWsMt2pAr23WHp6MrRlN7FBSFpCpr+oVO0F744iUgR82nJMfG2SA=="],
+
+    "fuse.js": ["fuse.js@7.1.0", "", {}, "sha512-trLf4SzuuUxfusZADLINj+dE8clK1frKdmqiJNb1Es75fmI5oY6X2mxLVUciLLjxqw/xr72Dhy+lER6dGd02FQ=="],
 
     "get-caller-file": ["get-caller-file@2.0.5", "", {}, "sha512-DyFP3BM/3YHTQOCUL/w0OZHR0lpKeGrxotcHWcqNEdnltqFwXVfhEBQ94eIo34AfQpo0rGki4cyIiftY06h2Fg=="],
 

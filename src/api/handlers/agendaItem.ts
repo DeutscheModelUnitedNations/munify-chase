@@ -16,7 +16,6 @@ const ref = object({
 	adjust: (t) => ({
 		isActive: t.field({
 			type: 'Boolean',
-			//TODO remove as any when rumble fixed it's types
 			resolve: async (parent, args, context, info) => {
 				const parentId = parent.id;
 				const res = await db.query.committee

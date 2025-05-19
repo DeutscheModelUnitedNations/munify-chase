@@ -147,7 +147,7 @@ type ConferenceUser {
   id: ID!
   updatedAt: DateTime
   user(where: UserWhereInputArgument): User
-  userId: String!
+  userEmail: String!
 }
 
 enum ConferenceUserTypeEnum {
@@ -168,7 +168,7 @@ input ConferenceUserWhereInputArgument {
   id: ID
   updatedAt: DateTime
   user: UserWhereInputArgument
-  userId: String
+  userEmail: String
 }
 
 input ConferenceWhereInputArgument {

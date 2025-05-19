@@ -1,13 +1,11 @@
 <script lang="ts">
-	import type { PageData } from './$types';
-	import { onMount } from 'svelte';
 	import { goto } from '$app/navigation';
 	import { m } from '$lib/paraglide/messages';
 	import { graphql } from '$houdini';
 	import yaml from 'js-yaml';
 	import toast from 'svelte-french-toast';
 
-	let { data }: PageData = $props();
+	// let { data }: PageData = $props();
 
 	let file: File | null = $state(null);
 	let loading = $state(false);
@@ -18,12 +16,13 @@
 		file = target.files && target.files[0] ? target.files[0] : null;
 	}
 
-	// TODO add GraphQL mutation for conference creation
-	// const ConferenceCreationMutation = graphql(`
-	// 	mutation ConferenceCreation($input: ConferenceCreationInput!) {
-	// 	    importDelegatorConference()
-	// 	}
-	// `);
+	const ConferenceCreationMutation = graphql(`
+		mutation ConferenceCreation($data: ImportData!) {
+			importDelegatorConference(data: $data) {
+				id
+			}
+		}
+	`);
 
 	async function parseFile(file: File): Promise<any> {
 		const ext = file.name.split('.').pop()?.toLowerCase();
@@ -40,7 +39,7 @@
 	async function createConference() {
 		if (!file) return;
 		loading = true;
-		let parsedData: object;
+		let parsedData: any;
 		try {
 			parsedData = await parseFile(file);
 		} catch (e) {
@@ -49,14 +48,12 @@
 			return;
 		}
 		console.log('Parsed Data:', parsedData);
-		// TODO add Schema validation for parsedData
-
-		// const res = await ConferenceCreationMutation.mutate({ input: parsedData });
-		// conferenceId = res.data.conferenceId
+		const res = await ConferenceCreationMutation.mutate({ data: parsedData });
+		conferenceId = res.data?.importDelegatorConference?.id;
 		loading = false;
-		// setTimeout(() => {
-		// 	goto('/app');
-		// }, 3000);
+		setTimeout(() => {
+			goto('/app');
+		}, 3000);
 	}
 </script>
 

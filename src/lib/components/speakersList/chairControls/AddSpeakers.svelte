@@ -7,6 +7,7 @@
 	import { m } from '$lib/paraglide/messages';
 	import { getTranslatedCountryNameFromAlpha3Code } from '$lib/utils/nationTranslationHelper.svelte';
 	import { promiseToastStrings } from '$lib/utils/toast';
+	import { Tooltip } from 'bits-ui';
 	import Fuse, { type IFuseOptions } from 'fuse.js';
 	import hotkeys from 'hotkeys-js';
 	import toast from 'svelte-french-toast';
@@ -20,9 +21,9 @@
 		members: CommitteeTeamQuery$result['findFirstCommittee']['members'];
 	}
 
-	type Member = NonNullable<typeof members>[number];
-
 	let { speakersList, members }: Props = $props();
+
+	type Member = NonNullable<typeof members>[number];
 
 	let value = $state('');
 	let focused = $state(false);
@@ -43,12 +44,21 @@
 	let fuse = $state(new Fuse(members ?? [], fuseOptions));
 
 	const filter = (members: Member[], value: string) => {
+		const excludeMembersAlreadyOnList = (member: Member) => {
+			if (!speakersList?.id) return true;
+			return !speakersList.speakers.some((speaker) => speaker.committeeMember?.id === member.id);
+		};
+
 		if (value.length !== 0) {
-			fuse.setCollection(members.map((x) => ({ ...x, label: getName(x) })) ?? []);
+			fuse.setCollection(
+				members.filter(excludeMembersAlreadyOnList).map((x) => ({ ...x, label: getName(x) })) ?? []
+			);
 			const search = fuse.search(value);
 			return search.map((result) => result.item);
 		} else {
-			return members.sort((a, b) => getName(a).localeCompare(getName(b)));
+			return members
+				.filter(excludeMembersAlreadyOnList)
+				.sort((a, b) => getName(a).localeCompare(getName(b)));
 		}
 	};
 
@@ -122,9 +132,12 @@
 			nsa={!option.representation?.alpha2Code}
 			icon={option.representation?.faIcon}
 		/>
-		<span class="ml-2">
+		<span class="ml-2 flex-1">
 			{getName(option)}
 		</span>
+		{#if !option.present}
+			<i class="fa-duotone fa-user-xmark mr-4"></i>
+		{/if}
 	{/snippet}
 
 	{#snippet AdditionalButtons()}

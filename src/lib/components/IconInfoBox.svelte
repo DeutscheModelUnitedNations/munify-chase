@@ -18,6 +18,7 @@
 		until?: Date;
 		marqueeOnOverflow?: boolean;
 		fullHeight?: boolean;
+		hideCountdown?: boolean;
 	}
 
 	let {
@@ -27,7 +28,8 @@
 		committeeStatus,
 		until,
 		marqueeOnOverflow = true,
-		fullHeight = false
+		fullHeight = false,
+		hideCountdown = false
 	}: Props = $props();
 
 	let textElement = $state<HTMLParagraphElement>();
@@ -109,7 +111,7 @@
 			</Marquee>
 		{/if}
 
-		{#if until && countdownDelta}
+		{#if until && countdownDelta && !hideCountdown}
 			{#if countdownDeltaInFuture()}
 				<p class="flex-none font-mono">
 					{countdownDelta.hours() !== 0 ? countdownDelta.format('H:') : ''}{countdownDelta.format(

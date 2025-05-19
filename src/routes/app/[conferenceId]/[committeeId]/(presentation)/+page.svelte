@@ -20,6 +20,9 @@
 	import CurrentSpeaker from '$lib/components/speakersList/CurrentSpeaker.svelte';
 	import { PresentationSubscription } from './committeeSubscription';
 	import SpeakersQueue from '$lib/components/speakersList/PresentationSpeakersQueue.svelte';
+	import ShowOfHandsVotingPresentation from '$lib/components/voting/ShowOfHandsVotingPresentation.svelte';
+	import RollCallVotingPresentation from '$lib/components/voting/RollCallVotingPresentation.svelte';
+	import { browser } from '$app/environment';
 
 	let { data }: { data: PageData } = $props();
 
@@ -40,9 +43,6 @@
 	let commentsList = $derived(
 		committee?.activeAgendaItem?.speakersList.find((x) => x.type === 'COMMENT_LIST')
 	);
-
-	let itemSize = $derived({ height: 60 });
-
 	let speakersQueueResizeFn: () => void;
 	let commentsQueueResizeFn: () => void;
 
@@ -61,10 +61,21 @@
 	onMount(() => {
 		PresentationSubscription.listen({ id: data.committeeId });
 	});
+
+	$effect(() => {
+		if ($committeeSettings?.presentationRootFontSize) {
+			document.documentElement.style.fontSize = `${$committeeSettings.presentationRootFontSize}px`;
+		}
+	});
 </script>
 
 {#if committee}
-	<Grid {itemSize} cols={12} on:change={resizeQueues}>
+	<Grid
+		itemSize={{ height: browser ? window.innerHeight / 16 : 60 }}
+		cols={12}
+		on:change={resizeQueues}
+		collision="none"
+	>
 		{#if layout.committeeTitle}
 			{@const gridProps = layout.committeeTitle}
 			<GridItem
@@ -72,10 +83,7 @@
 				class="card bg-base-100 gap-2 overflow-hidden p-4"
 				id="committee-title"
 			>
-				<AbbreviationInfoBox
-					text={committee.activeAgendaItem?.title || '—'}
-					abbreviation={committee.abbreviation}
-				/>
+				<AbbreviationInfoBox text={committee.name || '—'} abbreviation={committee.abbreviation} />
 			</GridItem>
 		{/if}
 		{#if layout.committeeStatus}
@@ -94,6 +102,7 @@
 					marqueeOnOverflow={false}
 					until={new Date(committee.statusUntil)}
 					fullHeight
+					hideCountdown={committee.status === 'FORMAL'}
 				/>
 			</GridItem>
 		{/if}
@@ -164,6 +173,9 @@
 				sortTranslatedCountries(a.representation!.alpha3Code!, b.representation!.alpha3Code!)
 			)}
 	/>
+
+	<ShowOfHandsVotingPresentation committeeSettings={$committeeSettings} />
+	<RollCallVotingPresentation committeeSettings={$committeeSettings} {committee} />
 {:else}
 	<UndrawError
 		undrawImage={emptyStreet}

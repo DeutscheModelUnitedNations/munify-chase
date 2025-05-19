@@ -4,16 +4,12 @@
 	import { fly } from 'svelte/transition';
 
 	interface Props {
+		open?: boolean;
 		Trigger: Snippet;
 		Content: Snippet;
 	}
 
-	let { Trigger, Content }: Props = $props();
-
-	let open = $state(false);
-
-	let width = $state(1024);
-	let height = $state(768);
+	let { open = $bindable(false), Trigger, Content }: Props = $props();
 </script>
 
 <Popover.Root bind:open>

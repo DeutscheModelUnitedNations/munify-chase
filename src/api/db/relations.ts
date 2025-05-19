@@ -5,7 +5,7 @@ export const relations = defineRelations(schema, (r) => ({
 	user: {
 		conferenceMemberships: r.many.conferenceUser({
 			from: r.user.id,
-			to: r.conferenceUser.userId
+			to: r.conferenceUser.userEmail
 		})
 	},
 	conference: {
@@ -52,7 +52,7 @@ export const relations = defineRelations(schema, (r) => ({
 	},
 	conferenceUser: {
 		user: r.one.user({
-			from: r.conferenceUser.userId,
+			from: r.conferenceUser.userEmail,
 			to: r.user.id
 		}),
 		conference: r.one.conference({

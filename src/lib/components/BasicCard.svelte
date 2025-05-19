@@ -19,7 +19,7 @@
 					{title}
 
 					{#if kbd}
-						<kbd class="kbd kbd-lg ml-2">{kbd}</kbd>
+						<div class="kbd ml-2">{kbd}</div>
 					{/if}
 				</h2>
 			</div>

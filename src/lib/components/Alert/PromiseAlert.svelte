@@ -68,7 +68,7 @@
 							<AlertDialog.Cancel onclick={$alertDialogStore?.onClose} class="btn btn-lg flex-1">
 								<i class="fas fa-xmark"></i>
 								{$alertDialogStore?.cancelText}
-								<kbd class="kbd kbd-sm"> esc </kbd>
+								<span class="kbd kbd-sm"> esc </span>
 							</AlertDialog.Cancel>
 							<AlertDialog.Action
 								onclick={$alertDialogStore?.onConfirm}
@@ -76,7 +76,7 @@
 							>
 								<i class="fas fa-check"></i>
 								{$alertDialogStore?.confirmText}
-								<kbd class="kbd kbd-sm text-base-content"> ↵ </kbd>
+								<span class="kbd kbd-sm text-base-content"> ↵ </span>
 							</AlertDialog.Action>
 						</div>
 					</div>

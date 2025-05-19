@@ -18,6 +18,40 @@ abilityBuilder.speakerOnList.allow(['read', 'update', 'delete']);
 
 schemaBuilder.mutationFields((t) => {
 	return {
+		updateSpeakerOnList: t.drizzleField({
+			type: ref,
+			args: {
+				id: t.arg.id({ required: true }),
+				overwriteName: t.arg.string()
+			},
+			resolve: async (query, _root, args, ctx, _info) => {
+				const updated = await db
+					.update(table)
+					.set({
+						overwriteName: args.overwriteName ? args.overwriteName : null
+					})
+					.where(
+						and(
+							eq(schema.speakerOnList.id, args.id),
+							ctx.abilities.speakerOnList.filter('update').sql.where
+						)
+					)
+					.returning()
+					.then(assertFirstEntryExists);
+
+				pubsub.updated(args.id);
+
+				return db.query.speakerOnList
+					.findFirst(
+						query(
+							ctx.abilities.speakerOnList.filter('read', {
+								inject: { where: { id: updated.id } }
+							}).query.single
+						)
+					)
+					.then(assertFindFirstExists);
+			}
+		}),
 		addSpeakerOnList: t.drizzleField({
 			type: ref,
 			args: {
@@ -155,6 +189,9 @@ schemaBuilder.mutationFields((t) => {
 				position: t.arg.int({ required: true })
 			},
 			resolve: async (query, root, args, ctx, info) => {
+				if (args.position < 0) {
+					throw new GraphQLError('Position must be a non-negative integer');
+				}
 				const updatedEntityIds = await db.transaction(async (tx) => {
 					const aboutToMoveSpeakerOnList = await tx.query.speakerOnList
 						.findFirst(
@@ -176,43 +213,65 @@ schemaBuilder.mutationFields((t) => {
 					const updatedEntityIds = [aboutToMoveSpeakerOnList.id];
 
 					if (args.position > aboutToMoveSpeakerOnList.position) {
-						updatedEntityIds.push(
-							...(
-								await tx
-									.update(table)
-									.set({
-										position: sql`${table.position} - 1`
-									})
-									.where(
-										and(
-											gt(table.position, aboutToMoveSpeakerOnList.position),
-											lte(table.position, args.position),
-											eq(table.speakersListId, aboutToMoveSpeakerOnList.speakersListId),
-											ctx.abilities.speakerOnList.filter('update').sql.where
-										)
-									)
-									.returning({ id: table.id })
-							).map((u) => u.id)
-						);
+						const toUpdate = await tx.query.speakerOnList.findMany({
+							where: {
+								AND: [
+									{
+										position: {
+											gt: aboutToMoveSpeakerOnList.position,
+											lte: args.position
+										}
+									},
+									{
+										speakersListId: aboutToMoveSpeakerOnList.speakersListId
+									}
+								]
+							},
+							orderBy: {
+								position: 'asc'
+							}
+						});
+
+						for (const entry of toUpdate) {
+							await tx
+								.update(table)
+								.set({
+									position: sql`${table.position} - 1`
+								})
+								.where(eq(table.id, entry.id));
+
+							updatedEntityIds.push(entry.id);
+						}
 					} else if (args.position < aboutToMoveSpeakerOnList.position) {
-						updatedEntityIds.push(
-							...(
-								await tx
-									.update(table)
-									.set({
-										position: sql`${table.position} + 1`
-									})
-									.where(
-										and(
-											gte(table.position, args.position),
-											lt(table.position, aboutToMoveSpeakerOnList.position),
-											eq(table.speakersListId, aboutToMoveSpeakerOnList.speakersListId),
-											ctx.abilities.speakerOnList.filter('update').sql.where
-										)
-									)
-									.returning({ id: table.id })
-							).map((u) => u.id)
-						);
+						const toUpdate = await tx.query.speakerOnList.findMany({
+							where: {
+								AND: [
+									{
+										position: {
+											lt: aboutToMoveSpeakerOnList.position,
+											gte: args.position
+										}
+									},
+									{
+										speakersListId: aboutToMoveSpeakerOnList.speakersListId
+									}
+								]
+							},
+							orderBy: {
+								position: 'desc'
+							}
+						});
+
+						for (const entry of toUpdate) {
+							await tx
+								.update(table)
+								.set({
+									position: sql`${table.position} + 1`
+								})
+								.where(eq(table.id, entry.id));
+
+							updatedEntityIds.push(entry.id);
+						}
 					}
 
 					await tx

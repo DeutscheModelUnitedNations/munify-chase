@@ -133,9 +133,7 @@ export const committeeMember = pgTable('committee_member', {
 export const conferenceUser = pgTable('conference_user', {
 	...defaultIdAndTimestamps,
 	conferenceUserType: conferenceUserType().notNull(),
-	userId: text()
-		.notNull()
-		.references(() => user.id, { onDelete: 'cascade' }),
+	userEmail: text().notNull(), // using email instead of uuid to allow creating OIDC users by email adress without having to wait for the user to create an account
 	conferenceId: uuid()
 		.notNull()
 		.references(() => conference.id, { onDelete: 'cascade' }),
@@ -183,7 +181,8 @@ export const speakerOnList = pgTable(
 		speakersListId: uuid()
 			.references(() => speakersList.id, { onDelete: 'cascade' })
 			.notNull(),
-		position: smallint().notNull()
+		position: smallint().notNull(),
+		overwriteName: text()
 	},
 	(t) => [
 		unique().on(t.speakersListId, t.position),

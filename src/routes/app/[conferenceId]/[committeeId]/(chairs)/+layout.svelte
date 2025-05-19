@@ -1,5 +1,5 @@
 <script lang="ts">
-	import type { Snippet } from 'svelte';
+	import { onDestroy, onMount, type Snippet } from 'svelte';
 	import ChairNavbar from './ChairNavbar.svelte';
 	import type { LayoutData } from './$houdini';
 	import * as m from '$lib/paraglide/messages';
@@ -10,6 +10,7 @@
 	import { getCommitteeStatusText } from '$lib/utils/committeeStatus';
 	import BellIcon from '$lib/components/toast/BellIcon.svelte';
 	import { serverTime } from '$lib/state/serverTime.svelte';
+	import hotkeys from 'hotkeys-js';
 
 	interface Props {
 		children: Snippet;
@@ -70,6 +71,17 @@
 			}
 		}, 1000);
 		return () => clearInterval(interval);
+	});
+
+	onMount(() => {
+		hotkeys('alt+p', (event) => {
+			event.preventDefault();
+			window.open('.', '_blank');
+		});
+	});
+
+	onDestroy(() => {
+		hotkeys.unbind('alt+p');
 	});
 </script>
 

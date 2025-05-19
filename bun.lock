@@ -3,6 +3,11 @@
   "workspaces": {
     "": {
       "name": "munify-chase",
+      "dependencies": {
+        "drizzle-kit": "^1.0.0-beta.1-c0277c0",
+        "drizzle-orm": "^1.0.0-beta.1-c0277c0",
+        "pg": "^8.15.6",
+      },
       "devDependencies": {
         "@eslint/compat": "^1.2.8",
         "@eslint/js": "^9.24.0",
@@ -34,8 +39,6 @@
         "daisyui": "^5.0.28",
         "dayjs": "^1.11.13",
         "dexie": "^4.0.11",
-        "drizzle-kit": "^1.0.0-beta.1-c0277c0",
-        "drizzle-orm": "^1.0.0-beta.1-c0277c0",
         "drizzle-seed": "^0.3.1-c0277c0",
         "eslint": "^9.24.0",
         "eslint-config-prettier": "^10.1.2",
@@ -55,7 +58,6 @@
         "lefthook": "^1.11.10",
         "nanoid": "^5.1.5",
         "openid-client": "^6.4.2",
-        "pg": "^8.15.6",
         "prettier": "^3.5.3",
         "prettier-plugin-svelte": "^3.3.3",
         "prettier-plugin-tailwindcss": "^0.6.11",

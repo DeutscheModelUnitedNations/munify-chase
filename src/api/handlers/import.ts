@@ -72,7 +72,7 @@ schemaBuilder.mutationFields((t) => ({
 							type: [
 								schemaBuilder.inputType('ImportDataConferenceUser', {
 									fields: (t) => ({
-										id: t.id({ required: true }),
+										id: t.id(),
 										conferenceUserType: t.field({
 											type: enum_({ tsName: 'conferenceUserType' }),
 											required: true
@@ -107,85 +107,98 @@ schemaBuilder.mutationFields((t) => ({
 				throw new GraphQLError('You must have the admin role!');
 			}
 
-			await db.insert(schema.conference).values({
-				id: args.data.id,
-				title: args.data.title
-			});
+			//TODO maybe use upserts instead?
+			await db.transaction(async (tx) => {
+				await tx.insert(schema.conference).values({
+					id: args.data.id,
+					title: args.data.title
+				});
 
-			await db.insert(schema.committee).values(
-				args.data.committees.map((committee) => ({
-					id: committee.id,
-					name: committee.name,
-					abbreviation: committee.abbreviation,
-					conferenceId: args.data.id
-				}))
-			);
-
-			await db.insert(schema.representation).values(
-				args.data.representations.map((representation) => ({
-					id: representation.id,
-					name: representation.name,
-					alpha2Code: representation.alpha2Code,
-					alpha3Code: representation.alpha3Code,
-					type: representation.type,
-					faIcon: representation.faIcon,
-					regionalGroup: representation.regionalGroup,
-					conferenceId: args.data.id
-				}))
-			);
-
-			await db.insert(schema.conferenceMember).values(
-				args.data.conferenceMembers.map((member) => ({
-					id: member.id,
-					conferenceId: args.data.id,
-					representationId: member.representationId
-				}))
-			);
-
-			await db.insert(schema.committeeMember).values(
-				args.data.committeeMembers.map((member) => ({
-					id: member.id,
-					committeeId: member.committeeId,
-					representationId: member.representationId,
-					present: member.present
-				}))
-			);
-
-			await db.insert(schema.conferenceUser).values(
-				args.data.conferenceUsers.map((user) => ({
-					id: user.id,
-					conferenceUserType: user.conferenceUserType,
-					userEmail: user.userEmail,
-					conferenceMemberId: user.conferenceMemberId,
-					committeeMemberId: user.committeeMemberId,
-					conferenceId: args.data.id
-				}))
-			);
-
-			const agendaItems = await db
-				.insert(schema.agendaItem)
-				.values(
-					args.data.agendaItems.map((item) => ({
-						id: item.id,
-						committeeId: item.committeeId,
-						title: item.title,
+				await tx.insert(schema.committee).values(
+					args.data.committees.map((committee) => ({
+						id: committee.id,
+						name: committee.name,
+						abbreviation: committee.abbreviation,
 						conferenceId: args.data.id
 					}))
-				)
-				.returning();
+				);
 
-			for (const agendaItem of agendaItems) {
-				await db.insert(schema.speakersList).values({
-					agendaItemId: agendaItem.id,
-					speakingTime: 180,
-					type: 'SPEAKERS_LIST'
-				});
-				await db.insert(schema.speakersList).values({
-					agendaItemId: agendaItem.id,
-					speakingTime: 30,
-					type: 'COMMENT_LIST'
-				});
-			}
+				await tx.insert(schema.representation).values(
+					args.data.representations.map((representation) => ({
+						id: representation.id,
+						name: representation.name,
+						alpha2Code: representation.alpha2Code,
+						alpha3Code: representation.alpha3Code,
+						type: representation.representationType,
+						faIcon: representation.faIcon,
+						regionalGroup: representation.regionalGroup,
+						conferenceId: args.data.id
+					}))
+				);
+
+				await tx.insert(schema.conferenceMember).values(
+					args.data.conferenceMembers.map((member) => ({
+						id: member.id,
+						conferenceId: args.data.id,
+						representationId: member.representationId
+					}))
+				);
+
+				await tx.insert(schema.committeeMember).values(
+					args.data.committeeMembers.map((member) => ({
+						id: member.id,
+						committeeId: member.committeeId,
+						representationId: member.representationId
+					}))
+				);
+
+				await tx.insert(schema.conferenceUser).values(
+					args.data.conferenceUsers.map((user) => ({
+						id: user.id ?? undefined,
+						conferenceUserType: user.conferenceUserType,
+						userEmail: user.userEmail,
+						conferenceMemberId: user.conferenceMemberId,
+						committeeMemberId: user.committeeMemberId,
+						conferenceId: args.data.id
+					}))
+				);
+
+				// if the creating user is not found in the dataset, we want to make them an admin anyway!
+				if (!args.data.conferenceUsers.find((u) => u.userEmail === ctx.oidc!.user.email)) {
+					await tx.insert(schema.conferenceUser).values({
+						conferenceId: args.data.id,
+						conferenceUserType: 'ADMIN',
+						userEmail: ctx.oidc!.user.email!
+					});
+				}
+
+				if (args.data.agendaItems && args.data.agendaItems.length > 0) {
+					const agendaItems = await tx
+						.insert(schema.agendaItem)
+						.values(
+							args.data.agendaItems.map((item) => ({
+								id: item.id,
+								committeeId: item.committeeId,
+								title: item.title,
+								conferenceId: args.data.id
+							}))
+						)
+						.returning();
+
+					for (const agendaItem of agendaItems) {
+						await tx.insert(schema.speakersList).values({
+							agendaItemId: agendaItem.id,
+							speakingTime: 180,
+							type: 'SPEAKERS_LIST'
+						});
+						await tx.insert(schema.speakersList).values({
+							agendaItemId: agendaItem.id,
+							speakingTime: 30,
+							type: 'COMMENT_LIST'
+						});
+					}
+				}
+			});
 
 			return db.query.conference.findFirst(
 				query(

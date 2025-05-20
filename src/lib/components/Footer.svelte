@@ -14,6 +14,7 @@
 			<a class="link-hover link" href="https://dmun.de/impressum" target="_blank"
 				>{@html m.imprintAndPrivacy()}</a
 			>
+			<a class="link-hover link" href="/app/create">{@html m.createConference()}</a>
 		</nav>
 		<LanguageSwitcher />
 		<nav>

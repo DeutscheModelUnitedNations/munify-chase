@@ -4,7 +4,7 @@ import * as schema from './schema';
 export const relations = defineRelations(schema, (r) => ({
 	user: {
 		conferenceMemberships: r.many.conferenceUser({
-			from: r.user.id,
+			from: r.user.email,
 			to: r.conferenceUser.userEmail
 		})
 	},
@@ -53,7 +53,7 @@ export const relations = defineRelations(schema, (r) => ({
 	conferenceUser: {
 		user: r.one.user({
 			from: r.conferenceUser.userEmail,
-			to: r.user.id
+			to: r.user.email
 		}),
 		conference: r.one.conference({
 			from: r.conferenceUser.conferenceId,

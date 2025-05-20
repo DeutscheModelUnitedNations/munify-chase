@@ -1,5 +1,5 @@
 {
-	"id": "dcc52c56-adb7-4df7-b717-acfb183209a0",
+	"id": "1a1d5536-603e-483c-8415-c5e71e6fce85",
 	"prevId": "00000000-0000-0000-0000-000000000000",
 	"version": "7",
 	"dialect": "postgresql",
@@ -10,10 +10,9 @@
 			"columns": {
 				"id": {
 					"name": "id",
-					"type": "uuid",
+					"type": "text",
 					"primaryKey": true,
-					"notNull": true,
-					"default": "gen_random_uuid()"
+					"notNull": true
 				},
 				"created_at": {
 					"name": "created_at",
@@ -31,7 +30,7 @@
 				},
 				"committee_id": {
 					"name": "committee_id",
-					"type": "uuid",
+					"type": "text",
 					"primaryKey": false,
 					"notNull": true
 				},
@@ -66,10 +65,9 @@
 			"columns": {
 				"id": {
 					"name": "id",
-					"type": "uuid",
+					"type": "text",
 					"primaryKey": true,
-					"notNull": true,
-					"default": "gen_random_uuid()"
+					"notNull": true
 				},
 				"created_at": {
 					"name": "created_at",
@@ -99,7 +97,7 @@
 				},
 				"conference_id": {
 					"name": "conference_id",
-					"type": "uuid",
+					"type": "text",
 					"primaryKey": false,
 					"notNull": true
 				},
@@ -154,7 +152,7 @@
 				},
 				"active_agenda_item_id": {
 					"name": "active_agenda_item_id",
-					"type": "uuid",
+					"type": "text",
 					"primaryKey": false,
 					"notNull": false
 				},
@@ -221,10 +219,9 @@
 			"columns": {
 				"id": {
 					"name": "id",
-					"type": "uuid",
+					"type": "text",
 					"primaryKey": true,
-					"notNull": true,
-					"default": "gen_random_uuid()"
+					"notNull": true
 				},
 				"created_at": {
 					"name": "created_at",
@@ -249,13 +246,13 @@
 				},
 				"committee_id": {
 					"name": "committee_id",
-					"type": "uuid",
+					"type": "text",
 					"primaryKey": false,
 					"notNull": true
 				},
 				"representation_id": {
 					"name": "representation_id",
-					"type": "uuid",
+					"type": "text",
 					"primaryKey": false,
 					"notNull": true
 				}
@@ -293,10 +290,9 @@
 			"columns": {
 				"id": {
 					"name": "id",
-					"type": "uuid",
+					"type": "text",
 					"primaryKey": true,
-					"notNull": true,
-					"default": "gen_random_uuid()"
+					"notNull": true
 				},
 				"created_at": {
 					"name": "created_at",
@@ -339,10 +335,9 @@
 			"columns": {
 				"id": {
 					"name": "id",
-					"type": "uuid",
+					"type": "text",
 					"primaryKey": true,
-					"notNull": true,
-					"default": "gen_random_uuid()"
+					"notNull": true
 				},
 				"created_at": {
 					"name": "created_at",
@@ -360,13 +355,13 @@
 				},
 				"conference_id": {
 					"name": "conference_id",
-					"type": "uuid",
+					"type": "text",
 					"primaryKey": false,
 					"notNull": true
 				},
 				"representation_id": {
 					"name": "representation_id",
-					"type": "uuid",
+					"type": "text",
 					"primaryKey": false,
 					"notNull": true
 				}
@@ -404,10 +399,9 @@
 			"columns": {
 				"id": {
 					"name": "id",
-					"type": "uuid",
+					"type": "text",
 					"primaryKey": true,
-					"notNull": true,
-					"default": "gen_random_uuid()"
+					"notNull": true
 				},
 				"created_at": {
 					"name": "created_at",
@@ -430,47 +424,56 @@
 					"primaryKey": false,
 					"notNull": true
 				},
-				"user_id": {
-					"name": "user_id",
+				"user_email": {
+					"name": "user_email",
 					"type": "text",
 					"primaryKey": false,
 					"notNull": true
 				},
 				"conference_id": {
 					"name": "conference_id",
-					"type": "uuid",
+					"type": "text",
 					"primaryKey": false,
 					"notNull": true
 				},
 				"conference_member_id": {
 					"name": "conference_member_id",
-					"type": "uuid",
+					"type": "text",
 					"primaryKey": false,
 					"notNull": false
 				},
 				"committee_member_id": {
 					"name": "committee_member_id",
-					"type": "uuid",
+					"type": "text",
 					"primaryKey": false,
 					"notNull": false
 				}
 			},
 			"indexes": {},
 			"foreignKeys": {
-				"conference_user_user_id_user_id_fk": {
-					"name": "conference_user_user_id_user_id_fk",
-					"tableFrom": "conference_user",
-					"tableTo": "user",
-					"columnsFrom": ["user_id"],
-					"columnsTo": ["id"],
-					"onDelete": "cascade",
-					"onUpdate": "no action"
-				},
 				"conference_user_conference_id_conference_id_fk": {
 					"name": "conference_user_conference_id_conference_id_fk",
 					"tableFrom": "conference_user",
 					"tableTo": "conference",
 					"columnsFrom": ["conference_id"],
+					"columnsTo": ["id"],
+					"onDelete": "cascade",
+					"onUpdate": "no action"
+				},
+				"conference_user_conference_member_id_conference_member_id_fk": {
+					"name": "conference_user_conference_member_id_conference_member_id_fk",
+					"tableFrom": "conference_user",
+					"tableTo": "conference_member",
+					"columnsFrom": ["conference_member_id"],
+					"columnsTo": ["id"],
+					"onDelete": "cascade",
+					"onUpdate": "no action"
+				},
+				"conference_user_committee_member_id_committee_member_id_fk": {
+					"name": "conference_user_committee_member_id_committee_member_id_fk",
+					"tableFrom": "conference_user",
+					"tableTo": "committee_member",
+					"columnsFrom": ["committee_member_id"],
 					"columnsTo": ["id"],
 					"onDelete": "cascade",
 					"onUpdate": "no action"
@@ -488,10 +491,9 @@
 			"columns": {
 				"id": {
 					"name": "id",
-					"type": "uuid",
+					"type": "text",
 					"primaryKey": true,
-					"notNull": true,
-					"default": "gen_random_uuid()"
+					"notNull": true
 				},
 				"created_at": {
 					"name": "created_at",
@@ -547,7 +549,7 @@
 				},
 				"conference_id": {
 					"name": "conference_id",
-					"type": "uuid",
+					"type": "text",
 					"primaryKey": false,
 					"notNull": true
 				}
@@ -587,10 +589,9 @@
 			"columns": {
 				"id": {
 					"name": "id",
-					"type": "uuid",
+					"type": "text",
 					"primaryKey": true,
-					"notNull": true,
-					"default": "gen_random_uuid()"
+					"notNull": true
 				},
 				"created_at": {
 					"name": "created_at",
@@ -608,19 +609,19 @@
 				},
 				"committee_member_id": {
 					"name": "committee_member_id",
-					"type": "uuid",
+					"type": "text",
 					"primaryKey": false,
 					"notNull": false
 				},
 				"conference_member_id": {
 					"name": "conference_member_id",
-					"type": "uuid",
+					"type": "text",
 					"primaryKey": false,
 					"notNull": false
 				},
 				"speakers_list_id": {
 					"name": "speakers_list_id",
-					"type": "uuid",
+					"type": "text",
 					"primaryKey": false,
 					"notNull": true
 				},
@@ -629,6 +630,12 @@
 					"type": "smallint",
 					"primaryKey": false,
 					"notNull": true
+				},
+				"overwrite_name": {
+					"name": "overwrite_name",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": false
 				}
 			},
 			"indexes": {},
@@ -689,10 +696,9 @@
 			"columns": {
 				"id": {
 					"name": "id",
-					"type": "uuid",
+					"type": "text",
 					"primaryKey": true,
-					"notNull": true,
-					"default": "gen_random_uuid()"
+					"notNull": true
 				},
 				"created_at": {
 					"name": "created_at",
@@ -710,7 +716,7 @@
 				},
 				"agenda_item_id": {
 					"name": "agenda_item_id",
-					"type": "uuid",
+					"type": "text",
 					"primaryKey": false,
 					"notNull": true
 				},

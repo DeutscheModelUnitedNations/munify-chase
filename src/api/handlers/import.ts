@@ -103,9 +103,9 @@ schemaBuilder.mutationFields((t) => ({
 			})
 		},
 		resolve: async (query, root, args, ctx, info) => {
-			if (!ctx.hasRole('admin')) {
-				throw new GraphQLError('You must have the admin role!');
-			}
+			// if (!ctx.hasRole('admin')) {
+			// 	throw new GraphQLError('You must have the admin role!');
+			// }
 
 			//TODO maybe use upserts instead?
 			await db.transaction(async (tx) => {

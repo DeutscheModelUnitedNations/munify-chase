@@ -89,7 +89,7 @@ schemaBuilder.mutationFields((t) => ({
 							type: [
 								schemaBuilder.inputType('ImportDataAgendaItem', {
 									fields: (t) => ({
-										id: t.id({ required: true }),
+										id: t.id(),
 										committeeId: t.id({ required: true }),
 										title: t.string({ required: true })
 									})
@@ -177,7 +177,7 @@ schemaBuilder.mutationFields((t) => ({
 						.insert(schema.agendaItem)
 						.values(
 							args.data.agendaItems.map((item) => ({
-								id: item.id,
+								id: item.id ?? undefined,
 								committeeId: item.committeeId,
 								title: item.title,
 								conferenceId: args.data.id

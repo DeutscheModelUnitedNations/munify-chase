@@ -6,29 +6,15 @@
 	import { importDataSchema } from '$lib/utils/import';
 	import { z } from 'zod/v4';
 	import Footer from '$lib/components/Footer.svelte';
-	import testData from './test.json';
 	import { onMount } from 'svelte';
 	import Flag from '$lib/components/Flag.svelte';
-	import type { ConferenceUserWhereInputArgument } from '$houdini/runtime/generated';
 	import WorldCountries from 'world-countries';
-	import { representation } from '$api/db/schema';
-	import { getTranslatedCountryNameFromAlpha3Code } from '$lib/utils/nationTranslationHelper.svelte';
 
 	// let { data }: PageData = $props();
 
 	let file: File | null = $state(null);
 	let loading = $state(false);
 	let importData = $state<z.infer<typeof importDataSchema>>();
-
-	onMount(() => {
-		// Test data for development
-		if (import.meta.env.MODE === 'development') {
-			importData = importDataSchema.parse(testData);
-			if (importData.$schema) {
-				delete importData.$schema;
-			}
-		}
-	});
 
 	function handleFileChange(event: Event) {
 		const target = event.target as HTMLInputElement;
@@ -77,6 +63,7 @@
 				delete parsedData.$schema;
 			}
 			importData = parsedData;
+			loading = false;
 		} catch (e) {
 			toast.error(m.fileParseError());
 			loading = false;

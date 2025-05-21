@@ -10,6 +10,9 @@
 	import { onMount } from 'svelte';
 	import Flag from '$lib/components/Flag.svelte';
 	import type { ConferenceUserWhereInputArgument } from '$houdini/runtime/generated';
+	import WorldCountries from 'world-countries';
+	import { representation } from '$api/db/schema';
+	import { getTranslatedCountryNameFromAlpha3Code } from '$lib/utils/nationTranslationHelper.svelte';
 
 	// let { data }: PageData = $props();
 
@@ -18,12 +21,13 @@
 	let conferenceId = $state<string>();
 	let importData = $state<z.infer<typeof importDataSchema>>();
 
-	$inspect(importData);
-
 	onMount(() => {
 		// Test data for development
 		if (import.meta.env.MODE === 'development') {
 			importData = importDataSchema.parse(testData);
+			if (importData.$schema) {
+				delete importData.$schema;
+			}
 		}
 	});
 
@@ -70,6 +74,9 @@
 		let parsedData: any;
 		try {
 			parsedData = await parseFile(file);
+			if (parsedData.$schema) {
+				delete parsedData.$schema;
+			}
 			importData = parsedData;
 		} catch (e) {
 			toast.error(m.fileParseError());
@@ -79,13 +86,12 @@
 	}
 
 	async function createConference() {
+		if (loading) return;
+		loading = true;
 		if (!importData) return;
 		const res = await ConferenceCreationMutation.mutate({ data: importData });
 		conferenceId = res.data?.importDelegatorConference?.id;
 		loading = false;
-		setTimeout(() => {
-			goto('/app');
-		}, 3000);
 	}
 
 	const addCommittee = () =>
@@ -113,6 +119,30 @@
 		});
 		importData?.conferenceMembers.push({
 			id: crypto.randomUUID(),
+			representationId: repId
+		});
+	};
+
+	const addCommitteeMember = (committeeId: string) => {
+		const alpha2Code = prompt(m.enterAlpha2Code())?.toLowerCase();
+		const country = WorldCountries.find((x) => x.cca2.toLowerCase() === alpha2Code);
+		if (!alpha2Code || !country) {
+			toast.error(m.countryNotFound());
+			return;
+		}
+		let repId = importData?.representations.find((x) => x.alpha2Code === alpha2Code)?.id;
+		if (!repId) {
+			repId = crypto.randomUUID();
+			importData?.representations.push({
+				alpha2Code,
+				alpha3Code: country.cca3,
+				representationType: 'DELEGATION',
+				id: repId
+			});
+		}
+		importData?.committeeMembers.push({
+			id: crypto.randomUUID(),
+			committeeId: committeeId,
 			representationId: repId
 		});
 	};
@@ -169,9 +199,7 @@
 					(member) => member.committeeId === committee.id
 				)}
 
-				<fieldset
-					class="fieldset bg-base-100 border-base-300 rounded-box group relative border p-4"
-				>
+				<fieldset class="fieldset bg-base-100 border-base-300 rounded-box relative border p-4">
 					<legend class="fieldset-legend">{m.committee()}</legend>
 
 					<input
@@ -231,17 +259,45 @@
 								<i class="fa-duotone fa-sigma"></i>
 								<span class="ml-2">{committeeMembers.length}</span>
 							</div>
-							{#each committeeMembers as member}
+							{#each committeeMembers.toSorted((a, b) => importData!.representations
+										.find((rep) => rep.id === a.representationId)
+										?.alpha2Code?.localeCompare(importData!.representations.find((rep) => rep.id === b.representationId)?.alpha2Code ?? '') ?? 0) as member}
 								{@const rep = importData.representations.find(
 									(rep) => rep.id === member.representationId
 								)}
-								<Flag alpha2Code={rep?.alpha2Code} size="xs" />
+								<div class="card bg-base-100 group flex w-12 flex-wrap items-center p-1">
+									<Flag alpha2Code={rep?.alpha2Code} size="xs" />
+									<div class="mt-2 font-mono uppercase">
+										{rep?.alpha2Code}
+									</div>
+									<button
+										class="btn btn-error btn-sm btn-circle absolute top-1/2 right-1/2 z-40 translate-x-1/2 -translate-y-1/2 opacity-0 transition-all duration-300 group-hover:opacity-100"
+										aria-label="Remove committee member"
+										onclick={() => {
+											importData!.committeeMembers = importData!.committeeMembers.filter(
+												(i) => i.id !== member.id
+											);
+										}}
+									>
+										<i class="fa-solid fa-trash"></i>
+									</button>
+								</div>
 							{/each}
 						</div>
+						<button
+							class="btn btn-primary btn-sm mt-2"
+							aria-label="Add committee member"
+							onclick={() => {
+								addCommitteeMember(committee.id);
+							}}
+						>
+							<i class="fa-solid fa-plus"></i>
+							{m.addCountry()}
+						</button>
 					</fieldset>
 
 					<button
-						class="btn btn-error btn-circle absolute top-0 right-0 translate-x-1/2 -translate-y-3/4 opacity-0 transition-all duration-300 group-hover:opacity-100"
+						class="btn btn-error btn-circle absolute top-0 right-0 translate-x-1/2 -translate-y-3/4 transition-all duration-300"
 						aria-label="Remove committee"
 						onclick={() => {
 							importData!.committees = importData!.committees.filter((i) => i.id !== committee.id);
@@ -362,9 +418,19 @@
 		</div>
 	{/if}
 
-	<pre class="bg-base-100 w-full max-w-3xl overflow-x-auto rounded-lg p-4 shadow-sm">
-	{JSON.stringify(importData, null, 4)}
-	</pre>
+	<button
+		class="btn btn-primary fixed right-0 bottom-0 left-0 m-4"
+		aria-label="Create conference"
+		onclick={createConference}
+		disabled={!importData || loading}
+	>
+		{#if loading}
+			<span class="loading loading-spinner"></span>
+		{:else}
+			<i class="fa-solid fa-paper-plane"></i>
+			<span>{m.createConference()}</span>
+		{/if}
+	</button>
 </div>
 
 <Footer />

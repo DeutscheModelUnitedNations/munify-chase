@@ -42,6 +42,13 @@
 			{m.logout()}
 		</a>
 	</div>
+	<div class="flex-1"></div>
+	<div class="flex-none">
+		<a class="btn btn-ghost" href="./app/import">
+			{m.createConference()}
+			<i class="fa-duotone fa-plus mr-2"></i>
+		</a>
+	</div>
 </div>
 
 <div class="bg-base-200 h-full w-full">

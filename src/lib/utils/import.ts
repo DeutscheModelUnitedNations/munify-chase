@@ -39,13 +39,13 @@ export const importDataSchema = z.object({
 		z.object({
 			id: z.string(),
 			representationId: z.string(),
-			committeeId: z.string().optional()
+			committeeId: z.string()
 		})
 	),
 	conferenceUsers: z.array(
 		z.object({
 			id: z.string(),
-			conferenceUserType: z.string(),
+			conferenceUserType: z.enum(['ADMIN', 'DELEGATE', 'NON_STATE_ACTOR', 'SPECTATOR', 'TEAM']),
 			userEmail: z.string()
 		})
 	),

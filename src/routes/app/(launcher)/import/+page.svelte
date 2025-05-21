@@ -1,12 +1,15 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import { m } from '$lib/paraglide/messages';
-	import { graphql } from '$houdini';
+	import { graphql, type RepresentationTypeEnum$options } from '$houdini';
 	import toast from 'svelte-french-toast';
 	import { importDataSchema } from '$lib/utils/import';
 	import { z } from 'zod/v4';
 	import Footer from '$lib/components/Footer.svelte';
-	import Navbar from '../../../(pages)/Navbar.svelte';
+	import testData from './test.json';
+	import { onMount } from 'svelte';
+	import Flag from '$lib/components/Flag.svelte';
+	import type { ConferenceUserWhereInputArgument } from '$houdini/runtime/generated';
 
 	// let { data }: PageData = $props();
 
@@ -14,6 +17,15 @@
 	let loading = $state(false);
 	let conferenceId = $state<string>();
 	let importData = $state<z.infer<typeof importDataSchema>>();
+
+	$inspect(importData);
+
+	onMount(() => {
+		// Test data for development
+		if (import.meta.env.MODE === 'development') {
+			importData = importDataSchema.parse(testData);
+		}
+	});
 
 	function handleFileChange(event: Event) {
 		const target = event.target as HTMLInputElement;
@@ -52,54 +64,307 @@
 		}
 	}
 
-	async function createConference() {
+	async function importDataUpload(): Promise<void> {
 		if (!file) return;
 		loading = true;
 		let parsedData: any;
 		try {
 			parsedData = await parseFile(file);
+			importData = parsedData;
 		} catch (e) {
 			toast.error(m.fileParseError());
 			loading = false;
 			return;
 		}
-		console.log('Parsed Data:', parsedData);
-		const res = await ConferenceCreationMutation.mutate({ data: parsedData });
+	}
+
+	async function createConference() {
+		if (!importData) return;
+		const res = await ConferenceCreationMutation.mutate({ data: importData });
 		conferenceId = res.data?.importDelegatorConference?.id;
 		loading = false;
 		setTimeout(() => {
 			goto('/app');
 		}, 3000);
 	}
+
+	const addCommittee = () =>
+		importData?.committees.push({
+			id: crypto.randomUUID(),
+			name: '',
+			abbreviation: ''
+		});
+
+	const addAgendaItem = (committeeId: string) =>
+		importData?.agendaItems.push({
+			committeeId,
+			title: ''
+		});
+
+	const addRepresentationAndConferenceMember = (type: RepresentationTypeEnum$options) => {
+		const repId = crypto.randomUUID();
+		importData?.representations.push({
+			name: '',
+			faIcon: type === 'NSA' ? 'megaphone' : undefined,
+			alpha2Code: type === 'UN' ? 'un' : undefined,
+			alpha3Code: type === 'UN' ? 'uno' : undefined,
+			representationType: type,
+			id: repId
+		});
+		importData?.conferenceMembers.push({
+			id: crypto.randomUUID(),
+			representationId: repId
+		});
+	};
 </script>
 
-<Navbar />
+<div class="navbar bg-base-100 relative shadow-sm">
+	<div class="flex-none">
+		<a class="btn btn-ghost" href=".">
+			<i class="fa-duotone fa-arrow-left mr-2"></i>
+			{m.back()}
+		</a>
+	</div>
+</div>
 
 <div class="bg-base-200 flex min-h-screen flex-col items-center justify-center">
-	<div class="bg-base-100 card flex w-full max-w-md flex-col items-center p-8 shadow-sm">
-		<h1 class="mb-8 text-3xl font-bold">{m.importFromDelegator()}</h1>
-		{#if !conferenceId}
+	{#if !importData}
+		<div class="bg-base-100 card flex w-full max-w-md flex-col items-center p-8 shadow-sm">
+			<h1 class="mb-8 text-3xl font-bold">{m.importFromDelegator()}</h1>
 			<input
 				type="file"
 				class="file-input file-input-bordered mb-6 w-full"
 				onchange={handleFileChange}
 				accept=".json"
 			/>
-			<button class="btn btn-primary w-full" onclick={createConference} disabled={loading || !file}>
+			<button class="btn btn-primary w-full" onclick={importDataUpload} disabled={loading || !file}>
 				{#if loading}
 					<span class="loading loading-spinner"></span>
 				{:else}
 					<i class="fas fa-paper-plane"></i>
-					<span>{m.submit()}</span>
+					<span>{m.upload()}</span>
 				{/if}
 			</button>
-		{:else}
-			<div class="alert alert-success mb-4 shadow-lg">
-				<i class="fas fa-check"></i>
-				<span>{m.conferenceCreationSuccessful()}</span>
-			</div>
-		{/if}
-	</div>
+		</div>
+	{:else}
+		<div class="m-10 flex w-full max-w-3xl flex-col gap-4">
+			<input
+				type="text"
+				class="input input-bordered input-xl w-full"
+				bind:value={importData.title}
+				placeholder={m.conferenceTitle()}
+			/>
+			<input
+				type="text"
+				class="input input-bordered w-full"
+				bind:value={importData.id}
+				placeholder={m.conferenceId()}
+			/>
+
+			{#each importData.committees as committee}
+				{@const agendaItems = importData.agendaItems.filter(
+					(item) => item.committeeId === committee.id
+				)}
+				{@const committeeMembers = importData.committeeMembers.filter(
+					(member) => member.committeeId === committee.id
+				)}
+
+				<fieldset
+					class="fieldset bg-base-100 border-base-300 rounded-box group relative border p-4"
+				>
+					<legend class="fieldset-legend">{m.committee()}</legend>
+
+					<input
+						type="text"
+						class="input input-bordered input-lg w-full"
+						bind:value={committee.abbreviation}
+						placeholder={m.committeeAbbreviation()}
+					/>
+					<input
+						type="text"
+						class="input input-bordered w-full"
+						bind:value={committee.name}
+						placeholder={m.committeeName()}
+					/>
+					<input
+						type="text"
+						class="input input-bordered w-full"
+						bind:value={committee.id}
+						placeholder={m.committeeId()}
+					/>
+					<fieldset class="fieldset bg-base-200 border-base-300 rounded-box border p-4">
+						<legend class="fieldset-legend">{m.agendaItems()}</legend>
+						{#each agendaItems as item}
+							<div class="join">
+								<input
+									type="text"
+									class="input input-bordered join-item w-full"
+									bind:value={item.title}
+									placeholder={m.agendaItem()}
+								/>
+								<button
+									class="btn join-item"
+									aria-label="Remove agenda item"
+									onclick={() => {
+										importData!.agendaItems = importData!.agendaItems.filter(
+											(i) => i.title !== item.title
+										);
+									}}
+								>
+									<i class="fa-solid fa-trash"></i>
+								</button>
+							</div>
+						{/each}
+						<button
+							class="btn"
+							aria-label="Add agenda item"
+							onclick={() => addAgendaItem(committee.id)}
+						>
+							<i class="fa-solid fa-plus"></i>
+							{m.addAgendaItem()}
+						</button>
+					</fieldset>
+					<fieldset class="fieldset bg-base-200 border-base-300 rounded-box border p-4">
+						<legend class="fieldset-legend">{m.committeeMember()}</legend>
+						<div class="flex flex-wrap gap-1">
+							<div class="badge badge-primary badge-outline">
+								<i class="fa-duotone fa-sigma"></i>
+								<span class="ml-2">{committeeMembers.length}</span>
+							</div>
+							{#each committeeMembers as member}
+								{@const rep = importData.representations.find(
+									(rep) => rep.id === member.representationId
+								)}
+								<Flag alpha2Code={rep?.alpha2Code} size="xs" />
+							{/each}
+						</div>
+					</fieldset>
+
+					<button
+						class="btn btn-error btn-circle absolute top-0 right-0 translate-x-1/2 -translate-y-3/4 opacity-0 transition-all duration-300 group-hover:opacity-100"
+						aria-label="Remove committee"
+						onclick={() => {
+							importData!.committees = importData!.committees.filter((i) => i.id !== committee.id);
+							importData!.agendaItems = importData!.agendaItems.filter(
+								(i) => i.committeeId !== committee.id
+							);
+							importData!.committeeMembers = importData!.committeeMembers.filter(
+								(i) => i.committeeId !== committee.id
+							);
+						}}
+					>
+						<i class="fa-solid fa-trash"></i>
+					</button>
+				</fieldset>
+			{/each}
+
+			<button class="btn" aria-label="Add agenda item" onclick={() => addCommittee()}>
+				<i class="fa-solid fa-plus"></i>
+				{m.addCommittee()}
+			</button>
+
+			<div class="divider"></div>
+
+			<fieldset class="fieldset bg-base-100 border-base-300 rounded-box border p-4">
+				<legend class="fieldset-legend">{m.nonStateActors()}</legend>
+				{#each importData.representations.filter((x) => x.representationType === 'NSA') as rep}
+					{@const conferenceMembers = importData.conferenceMembers.filter(
+						(member) => member.representationId === rep.id
+					)}
+					<div class="join">
+						<div class="btn join-item w-14">
+							<i class="fa-solid fa-{rep.faIcon?.replace('fa-', '')}"></i>
+						</div>
+						<input
+							type="text"
+							class="input input-bordered join-item w-full flex-1"
+							bind:value={rep.faIcon}
+							placeholder={m.icon()}
+						/>
+						<input
+							type="text"
+							class="input input-bordered join-item w-sm"
+							bind:value={rep.name}
+							placeholder={m.nonStateActor()}
+						/>
+						<div class="btn join-item {conferenceMembers.length === 0 ? 'btn-error' : ''}">
+							<i class="fas fa-users"></i>
+							<span class="ml-2">{conferenceMembers.length}</span>
+						</div>
+						<button
+							class="btn join-item"
+							aria-label="Remove agenda item"
+							onclick={() => {
+								importData!.representations = importData!.representations.filter(
+									(i) => i.id !== rep.id
+								);
+								importData!.conferenceMembers = importData!.conferenceMembers.filter(
+									(i) => i.representationId !== rep.id
+								);
+							}}
+						>
+							<i class="fa-solid fa-trash"></i>
+						</button>
+					</div>
+				{/each}
+				<button
+					class="btn"
+					aria-label="Add agenda item"
+					onclick={() => addRepresentationAndConferenceMember('NSA')}
+				>
+					<i class="fa-solid fa-plus"></i>
+					{m.addNonStateActor()}
+				</button>
+			</fieldset>
+
+			<fieldset class="fieldset bg-base-100 border-base-300 rounded-box border p-4">
+				<legend class="fieldset-legend">{m.unActors()}</legend>
+				{#each importData.representations.filter((x) => x.representationType === 'UN') as rep}
+					{@const conferenceMembers = importData.conferenceMembers.filter(
+						(member) => member.representationId === rep.id
+					)}
+					<div class="join">
+						<input
+							type="text"
+							class="input input-bordered join-item w-full"
+							bind:value={rep.name}
+							placeholder={m.unActor()}
+						/>
+						<div class="btn join-item {conferenceMembers.length === 0 ? 'btn-error' : ''}">
+							<i class="fas fa-users"></i>
+							<span class="ml-2">{conferenceMembers.length}</span>
+						</div>
+						<button
+							class="btn join-item"
+							aria-label="Remove agenda item"
+							onclick={() => {
+								importData!.representations = importData!.representations.filter(
+									(i) => i.id !== rep.id
+								);
+								importData!.conferenceMembers = importData!.conferenceMembers.filter(
+									(i) => i.representationId !== rep.id
+								);
+							}}
+						>
+							<i class="fa-solid fa-trash"></i>
+						</button>
+					</div>
+				{/each}
+				<button
+					class="btn"
+					aria-label="Add agenda item"
+					onclick={() => addRepresentationAndConferenceMember('UN')}
+				>
+					<i class="fa-solid fa-plus"></i>
+					{m.addUnActor()}
+				</button>
+			</fieldset>
+		</div>
+	{/if}
+
+	<pre class="bg-base-100 w-full max-w-3xl overflow-x-auto rounded-lg p-4 shadow-sm">
+	{JSON.stringify(importData, null, 4)}
+	</pre>
 </div>
 
 <Footer />

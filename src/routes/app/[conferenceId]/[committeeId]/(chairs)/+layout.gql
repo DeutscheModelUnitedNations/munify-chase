@@ -71,5 +71,19 @@ query CommitteeTeamQuery($committeeId: ID!) @blocking {
 				faIcon
 			}
 		}
+		conference {
+			members {
+				id
+				representation {
+					id
+					type
+					name
+					regionalGroup
+					alpha2Code
+					alpha3Code
+					faIcon
+				}
+			}
+		}
 	}
 }

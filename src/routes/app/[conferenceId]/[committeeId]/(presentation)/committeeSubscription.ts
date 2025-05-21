@@ -69,6 +69,20 @@ export const PresentationSubscription = graphql(`
 					faIcon
 				}
 			}
+			conference {
+				members {
+					id
+					representation {
+						id
+						type
+						name
+						regionalGroup
+						alpha2Code
+						alpha3Code
+						faIcon
+					}
+				}
+			}
 		}
 	}
 `);

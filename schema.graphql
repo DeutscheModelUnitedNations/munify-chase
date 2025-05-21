@@ -206,7 +206,7 @@ input ImportData {
 
 input ImportDataAgendaItem {
   committeeId: ID!
-  id: ID!
+  id: ID
   title: String!
 }
 

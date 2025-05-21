@@ -97,12 +97,8 @@
 	"layoutSelect": "Layout auswählen",
 	"layoutPreset": [
 		{
-			"declarations": [
-				"input preset"
-			],
-			"selectors": [
-				"preset"
-			],
+			"declarations": ["input preset"],
+			"selectors": ["preset"],
 			"match": {
 				"preset=default": "Standard Layout",
 				"preset=smallScreen": "Layout für kleine Bildschirme",
@@ -115,12 +111,8 @@
 	"off": "Aus",
 	"regionalGroups": [
 		{
-			"declarations": [
-				"input group"
-			],
-			"selectors": [
-				"group"
-			],
+			"declarations": ["input group"],
+			"selectors": ["group"],
 			"match": {
 				"group=AFRICA": "Afrika",
 				"group=ASIA_PACIFIC": "Asien",
@@ -221,5 +213,22 @@
 	"homeHeroCardVotingTitle": "Abstimmungen",
 	"homeHeroCardSpeakersListText": "Verwalte Rede- und Kurzbemerkungsliste einfach und effizient. Keine Papierlisten mehr!",
 	"homeHeroCardSpeakersListTitle": "Debatten",
-	"createConference": "Konferenz erstellen"
+	"createConference": "Konferenz erstellen",
+	"conferenceTitle": "Konferenztitel",
+	"conferenceId": "Konferenz-ID",
+	"maroon_bland_ray_renew": "Gremien-Abkürzung",
+	"committeeAbbreviation": "Gremien-Akürzung",
+	"committeeId": "Gremien-ID",
+	"committeeName": "Gremienname",
+	"agendaItems": "Tagesordnungspunkte",
+	"addAgendaItem": "Punkt hinzufügen",
+	"short_sleek_snake_hint": "Gremium",
+	"committee": "Gremium",
+	"committeeMember": "Gremienmitglied",
+	"addNonStateActor": "NA hinzufügen",
+	"icon": "Icon",
+	"unActors": "UN-Akteure",
+	"unActor": "UN-Akteur",
+	"addUnActor": "UN-Akteur hinzufügen",
+	"addCommittee": "Gremium hinzufügen"
 }

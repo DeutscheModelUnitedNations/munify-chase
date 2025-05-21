@@ -18,7 +18,6 @@
 
 	let file: File | null = $state(null);
 	let loading = $state(false);
-	let conferenceId = $state<string>();
 	let importData = $state<z.infer<typeof importDataSchema>>();
 
 	onMount(() => {
@@ -88,9 +87,19 @@
 	async function createConference() {
 		if (loading) return;
 		loading = true;
+
+		console.log(importData?.conferenceUsers.filter((x) => !x.userEmail));
+
 		if (!importData) return;
-		const res = await ConferenceCreationMutation.mutate({ data: importData });
-		conferenceId = res.data?.importDelegatorConference?.id;
+		const res = await ConferenceCreationMutation.mutate({ data: importData }).catch((e) => {
+			toast.error(m.conferenceCreationError());
+			console.error('Error creating conference:', e);
+			loading = false;
+		});
+		if (res) {
+			toast.success(m.conferenceCreated());
+			goto(`/app`);
+		}
 		loading = false;
 	}
 

@@ -97,12 +97,8 @@
 	"layoutSelect": "Layout auswählen",
 	"layoutPreset": [
 		{
-			"declarations": [
-				"input preset"
-			],
-			"selectors": [
-				"preset"
-			],
+			"declarations": ["input preset"],
+			"selectors": ["preset"],
 			"match": {
 				"preset=default": "Standard Layout",
 				"preset=smallScreen": "Layout für kleine Bildschirme",
@@ -115,12 +111,8 @@
 	"off": "Aus",
 	"regionalGroups": [
 		{
-			"declarations": [
-				"input group"
-			],
-			"selectors": [
-				"group"
-			],
+			"declarations": ["input group"],
+			"selectors": ["group"],
 			"match": {
 				"group=AFRICA": "Afrika",
 				"group=ASIA_PACIFIC": "Asien",
@@ -242,5 +234,7 @@
 	"countries": "Länder",
 	"addCountry": "Land hinzufügen",
 	"enterAlpha2Code": "Bitte Alpha2Code eingeben",
-	"countryNotFound": "Land konnte nicht gefunden werden"
+	"countryNotFound": "Land konnte nicht gefunden werden",
+	"conferenceCreationError": "Konferenz konnte nicht erstellt werden",
+	"conferenceCreated": "Konferenz erstellt!"
 }

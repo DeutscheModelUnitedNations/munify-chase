@@ -73,7 +73,6 @@ input CommitteeMemberWhereInputArgument {
 	representationId: ID
 	updatedAt: DateTime
 	user: ConferenceUserWhereInputArgument
-
 }
 
 enum CommitteeStatusEnum {

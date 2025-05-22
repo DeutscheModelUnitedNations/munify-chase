@@ -9,8 +9,11 @@ export const OIDC = await makeOIDC({
 	oidcAuthority: configPublic.PUBLIC_OIDC_AUTHORITY,
 	oidcClientId: configPublic.PUBLIC_OIDC_CLIENT_ID,
 	oidcClientSecret: configPrivate.OIDC_CLIENT_SECRET,
+	loginCallbackRoute: configPublic.PUBLIC_OIDC_LOGIN_CALLBACK_ROUTE,
+	logoutCallbackRoute: configPublic.PUBLIC_OIDC_LOGOUT_CALLBACK_ROUTE,
 	secret: configPrivate.SECRET,
 	authenticatedRoutes: ['/app'],
+	logoutPath: '',
 	async userLoggedInSuccessfully({ user }) {
 		await db
 			.insert(schema.user)
@@ -26,11 +29,10 @@ export const OIDC = await makeOIDC({
 				target: schema.user.id,
 				set: {
 					locale: user.locale ?? configPublic.PUBLIC_DEFAULT_LOCALE,
-					preferredUsername: user.preferred_username,
-					email: user.email,
-					familyName: user.family_name,
-					givenName: user.given_name,
-					updatedAt: new Date()
+					preferredUsername: user.preferred_username!,
+					email: user.email!,
+					familyName: user.family_name!,
+					givenName: user.given_name!
 				}
 			});
 	}

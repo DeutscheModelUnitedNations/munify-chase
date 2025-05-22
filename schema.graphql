@@ -4,185 +4,185 @@ Indicates exactly one field must be supplied and this field must not be `null`.
 directive @oneOf on INPUT_OBJECT
 
 type AgendaItem {
-  committee(where: CommitteeWhereInputArgument): Committee
-  committeeId: ID!
-  createdAt: DateTime!
-  id: ID!
-  isActive: Boolean
-  speakersList(where: SpeakersListWhereInputArgument): [SpeakersList!]!
-  title: String!
-  updatedAt: DateTime
+	committee(where: CommitteeWhereInputArgument): Committee
+	committeeId: ID!
+	createdAt: DateTime!
+	id: ID!
+	isActive: Boolean
+	speakersList(where: SpeakersListWhereInputArgument): [SpeakersList!]!
+	title: String!
+	updatedAt: DateTime
 }
 
 input AgendaItemWhereInputArgument {
-  committee: CommitteeWhereInputArgument
-  committeeId: ID
-  createdAt: DateTime
-  id: ID
-  speakersList: SpeakersListWhereInputArgument
-  title: String
-  updatedAt: DateTime
+	committee: CommitteeWhereInputArgument
+	committeeId: ID
+	createdAt: DateTime
+	id: ID
+	speakersList: SpeakersListWhereInputArgument
+	title: String
+	updatedAt: DateTime
 }
 
 type Committee {
-  abbreviation: String!
-  activeAgendaItem(where: AgendaItemWhereInputArgument): AgendaItem
-  activeAgendaItemId: ID
-  agendaItems(where: AgendaItemWhereInputArgument): [AgendaItem!]!
-  allowDelegationsToAddThemselvesToSpeakersList: Boolean!
-  conference(where: ConferenceWhereInputArgument): Conference
-  conferenceId: ID!
-  createdAt: DateTime!
-  customPaperSupportThreshold: Int
-  customSimpleMajority: Int
-  customTwoThirdsMajority: Int
-  id: ID!
-  lastResolutionAdoptionDate: DateTime
-  members(where: CommitteeMemberWhereInputArgument): [CommitteeMember!]!
-  name: String!
-  paperSupportThreshold: Int
-  showWhiteboard: Boolean!
-  simpleMajority: Int
-  stateOfDebate: String
-  status: CommitteeStatusEnum!
-  statusHeadline: String!
-  statusUntil: DateTime!
-  totalPresent: Int
-  twoThirdsMajority: Int
-  updatedAt: DateTime
-  whiteboardContent: String
+	abbreviation: String!
+	activeAgendaItem(where: AgendaItemWhereInputArgument): AgendaItem
+	activeAgendaItemId: ID
+	agendaItems(where: AgendaItemWhereInputArgument): [AgendaItem!]!
+	allowDelegationsToAddThemselvesToSpeakersList: Boolean!
+	conference(where: ConferenceWhereInputArgument): Conference
+	conferenceId: ID!
+	createdAt: DateTime!
+	customPaperSupportThreshold: Int
+	customSimpleMajority: Int
+	customTwoThirdsMajority: Int
+	id: ID!
+	lastResolutionAdoptionDate: DateTime
+	members(where: CommitteeMemberWhereInputArgument): [CommitteeMember!]!
+	name: String!
+	paperSupportThreshold: Int
+	showWhiteboard: Boolean!
+	simpleMajority: Int
+	stateOfDebate: String
+	status: CommitteeStatusEnum!
+	statusHeadline: String!
+	statusUntil: DateTime!
+	totalPresent: Int
+	twoThirdsMajority: Int
+	updatedAt: DateTime
+	whiteboardContent: String
 }
 
 type CommitteeMember {
-  committeeId: ID!
-  createdAt: DateTime!
-  id: ID!
-  present: Boolean!
-  representation(where: RepresentationWhereInputArgument): Representation
-  representationId: ID!
-  updatedAt: DateTime
+	committeeId: ID!
+	createdAt: DateTime!
+	id: ID!
+	present: Boolean!
+	representation(where: RepresentationWhereInputArgument): Representation
+	representationId: ID!
+	updatedAt: DateTime
 }
 
 input CommitteeMemberWhereInputArgument {
-  committeeId: ID
-  createdAt: DateTime
-  id: ID
-  present: Boolean
-  representation: RepresentationWhereInputArgument
-  representationId: ID
-  updatedAt: DateTime
+	committeeId: ID
+	createdAt: DateTime
+	id: ID
+	present: Boolean
+	representation: RepresentationWhereInputArgument
+	representationId: ID
+	updatedAt: DateTime
 }
 
 enum CommitteeStatusEnum {
-  FORMAL
-  INFORMAL
-  PAUSE
-  SUSPENSION
+	FORMAL
+	INFORMAL
+	PAUSE
+	SUSPENSION
 }
 
 input CommitteeWhereInputArgument {
-  abbreviation: String
-  activeAgendaItem: AgendaItemWhereInputArgument
-  activeAgendaItemId: ID
-  agendaItems: AgendaItemWhereInputArgument
-  allowDelegationsToAddThemselvesToSpeakersList: Boolean
-  conference: ConferenceWhereInputArgument
-  conferenceId: ID
-  createdAt: DateTime
-  customPaperSupportThreshold: Int
-  customSimpleMajority: Int
-  customTwoThirdsMajority: Int
-  id: ID
-  lastResolutionAdoptionDate: DateTime
-  members: CommitteeMemberWhereInputArgument
-  name: String
-  showWhiteboard: Boolean
-  stateOfDebate: String
-  status: CommitteeStatusEnum
-  statusHeadline: String
-  statusUntil: DateTime
-  updatedAt: DateTime
-  whiteboardContent: String
+	abbreviation: String
+	activeAgendaItem: AgendaItemWhereInputArgument
+	activeAgendaItemId: ID
+	agendaItems: AgendaItemWhereInputArgument
+	allowDelegationsToAddThemselvesToSpeakersList: Boolean
+	conference: ConferenceWhereInputArgument
+	conferenceId: ID
+	createdAt: DateTime
+	customPaperSupportThreshold: Int
+	customSimpleMajority: Int
+	customTwoThirdsMajority: Int
+	id: ID
+	lastResolutionAdoptionDate: DateTime
+	members: CommitteeMemberWhereInputArgument
+	name: String
+	showWhiteboard: Boolean
+	stateOfDebate: String
+	status: CommitteeStatusEnum
+	statusHeadline: String
+	statusUntil: DateTime
+	updatedAt: DateTime
+	whiteboardContent: String
 }
 
 type Conference {
-  committees(where: CommitteeWhereInputArgument): [Committee!]!
-  createdAt: DateTime!
-  id: ID!
-  members(where: ConferenceMemberWhereInputArgument): [ConferenceMember!]!
-  pressWebsite: String
-  representations(where: RepresentationWhereInputArgument): [Representation!]!
-  title: String!
-  updatedAt: DateTime
-  users(where: ConferenceUserWhereInputArgument): [ConferenceUser!]!
+	committees(where: CommitteeWhereInputArgument): [Committee!]!
+	createdAt: DateTime!
+	id: ID!
+	members(where: ConferenceMemberWhereInputArgument): [ConferenceMember!]!
+	pressWebsite: String
+	representations(where: RepresentationWhereInputArgument): [Representation!]!
+	title: String!
+	updatedAt: DateTime
+	users(where: ConferenceUserWhereInputArgument): [ConferenceUser!]!
 }
 
 type ConferenceMember {
-  conference(where: ConferenceWhereInputArgument): Conference
-  conferenceId: ID!
-  createdAt: DateTime!
-  id: ID!
-  representation(where: RepresentationWhereInputArgument): Representation
-  representationId: ID!
-  speakerOnList(where: SpeakerOnListWhereInputArgument): [SpeakerOnList!]!
-  updatedAt: DateTime
+	conference(where: ConferenceWhereInputArgument): Conference
+	conferenceId: ID!
+	createdAt: DateTime!
+	id: ID!
+	representation(where: RepresentationWhereInputArgument): Representation
+	representationId: ID!
+	speakerOnList(where: SpeakerOnListWhereInputArgument): [SpeakerOnList!]!
+	updatedAt: DateTime
 }
 
 input ConferenceMemberWhereInputArgument {
-  conference: ConferenceWhereInputArgument
-  conferenceId: ID
-  createdAt: DateTime
-  id: ID
-  representation: RepresentationWhereInputArgument
-  representationId: ID
-  speakerOnList: SpeakerOnListWhereInputArgument
-  updatedAt: DateTime
+	conference: ConferenceWhereInputArgument
+	conferenceId: ID
+	createdAt: DateTime
+	id: ID
+	representation: RepresentationWhereInputArgument
+	representationId: ID
+	speakerOnList: SpeakerOnListWhereInputArgument
+	updatedAt: DateTime
 }
 
 type ConferenceUser {
-  committeeMemberId: ID
-  conference(where: ConferenceWhereInputArgument): Conference
-  conferenceId: ID!
-  conferenceMemberId: ID
-  conferenceUserType: ConferenceUserTypeEnum!
-  createdAt: DateTime!
-  id: ID!
-  updatedAt: DateTime
-  user(where: UserWhereInputArgument): User
-  userEmail: String!
+	committeeMemberId: ID
+	conference(where: ConferenceWhereInputArgument): Conference
+	conferenceId: ID!
+	conferenceMemberId: ID
+	conferenceUserType: ConferenceUserTypeEnum!
+	createdAt: DateTime!
+	id: ID!
+	updatedAt: DateTime
+	user(where: UserWhereInputArgument): User
+	userEmail: String!
 }
 
 enum ConferenceUserTypeEnum {
-  ADMIN
-  DELEGATE
-  NON_STATE_ACTOR
-  SPECTATOR
-  TEAM
+	ADMIN
+	DELEGATE
+	NON_STATE_ACTOR
+	SPECTATOR
+	TEAM
 }
 
 input ConferenceUserWhereInputArgument {
-  committeeMemberId: ID
-  conference: ConferenceWhereInputArgument
-  conferenceId: ID
-  conferenceMemberId: ID
-  conferenceUserType: ConferenceUserTypeEnum
-  createdAt: DateTime
-  id: ID
-  updatedAt: DateTime
-  user: UserWhereInputArgument
-  userEmail: String
+	committeeMemberId: ID
+	conference: ConferenceWhereInputArgument
+	conferenceId: ID
+	conferenceMemberId: ID
+	conferenceUserType: ConferenceUserTypeEnum
+	createdAt: DateTime
+	id: ID
+	updatedAt: DateTime
+	user: UserWhereInputArgument
+	userEmail: String
 }
 
 input ConferenceWhereInputArgument {
-  committees: CommitteeWhereInputArgument
-  createdAt: DateTime
-  id: ID
-  members: ConferenceMemberWhereInputArgument
-  pressWebsite: String
-  representations: RepresentationWhereInputArgument
-  title: String
-  updatedAt: DateTime
-  users: ConferenceUserWhereInputArgument
+	committees: CommitteeWhereInputArgument
+	createdAt: DateTime
+	id: ID
+	members: ConferenceMemberWhereInputArgument
+	pressWebsite: String
+	representations: RepresentationWhereInputArgument
+	title: String
+	updatedAt: DateTime
+	users: ConferenceUserWhereInputArgument
 }
 
 """
@@ -196,55 +196,55 @@ A date-time string at UTC, such as 2007-12-03T10:15:30Z, compliant with the `dat
 scalar DateTime
 
 input ImportData {
-  agendaItems: [ImportDataAgendaItem!]!
-  committeeMembers: [ImportDataCommitteeMember!]!
-  committees: [ImportDataCommittee!]!
-  conferenceMembers: [ImportDataConferenceMember!]!
-  conferenceUsers: [ImportDataConferenceUser!]!
-  id: ID!
-  representations: [ImportDataRepresentation!]!
-  title: String!
+	agendaItems: [ImportDataAgendaItem!]!
+	committeeMembers: [ImportDataCommitteeMember!]!
+	committees: [ImportDataCommittee!]!
+	conferenceMembers: [ImportDataConferenceMember!]!
+	conferenceUsers: [ImportDataConferenceUser!]!
+	id: ID!
+	representations: [ImportDataRepresentation!]!
+	title: String!
 }
 
 input ImportDataAgendaItem {
-  committeeId: ID!
-  id: ID
-  title: String!
+	committeeId: ID!
+	id: ID
+	title: String!
 }
 
 input ImportDataCommittee {
-  abbreviation: String!
-  id: ID!
-  name: String!
+	abbreviation: String!
+	id: ID!
+	name: String!
 }
 
 input ImportDataCommitteeMember {
-  committeeId: ID!
-  id: ID!
-  representationId: ID!
+	committeeId: ID!
+	id: ID!
+	representationId: ID!
 }
 
 input ImportDataConferenceMember {
-  id: ID!
-  representationId: ID!
+	id: ID!
+	representationId: ID!
 }
 
 input ImportDataConferenceUser {
-  committeeMemberId: ID
-  conferenceMemberId: ID
-  conferenceUserType: ConferenceUserTypeEnum!
-  id: ID
-  userEmail: String!
+	committeeMemberId: ID
+	conferenceMemberId: ID
+	conferenceUserType: ConferenceUserTypeEnum!
+	id: ID
+	userEmail: String!
 }
 
 input ImportDataRepresentation {
-  alpha2Code: String
-  alpha3Code: String
-  faIcon: String
-  id: ID!
-  name: String
-  regionalGroup: RegionalGroupEnum
-  representationType: RepresentationTypeEnum!
+	alpha2Code: String
+	alpha3Code: String
+	faIcon: String
+	id: ID!
+	name: String
+	regionalGroup: RegionalGroupEnum
+	representationType: RepresentationTypeEnum!
 }
 
 """
@@ -253,191 +253,213 @@ The `JSON` scalar type represents JSON values as specified by [ECMA-404](http://
 scalar JSON
 
 type Mutation {
-  addSpeakerOnList(committeeMemberId: ID, conferenceMemberId: ID, position: Int, speakersListId: ID!): SpeakerOnList
-  clearSpeakersList(id: ID!): SpeakersList
-  importDelegatorConference(data: ImportData!): Conference
-  moveSpeakerToPosition(id: ID!, position: Int!): SpeakerOnList
-  removeSpeakerOnList(speakerOnListId: ID!): SpeakersList
-  setPresenceForCommitteeMembers(ids: [ID!]!, present: Boolean!): [CommitteeMember!]
-  updateCommittee(activeAgendaItemId: ID, id: ID!, lastResolutionAdoptionDate: DateTime, showWhiteboard: Boolean, stateOfDebate: String, status: CommitteeStatusEnum, statusHeadline: String, statusUntil: DateTime, whiteboardContent: String): Committee
-  updateSpeakerOnList(id: ID!, overwriteName: String): SpeakerOnList
-  updateSpeakersList(id: ID!, isClosed: Boolean, speakingTime: Int, startTimestamp: DateTime, stopTimer: Boolean = false, timeLeft: Int): SpeakersList
+	addSpeakerOnList(
+		committeeMemberId: ID
+		conferenceMemberId: ID
+		position: Int
+		speakersListId: ID!
+	): SpeakerOnList
+	clearSpeakersList(id: ID!): SpeakersList
+	importDelegatorConference(data: ImportData!): Conference
+	moveSpeakerToPosition(id: ID!, position: Int!): SpeakerOnList
+	removeSpeakerOnList(speakerOnListId: ID!): SpeakersList
+	setPresenceForCommitteeMembers(ids: [ID!]!, present: Boolean!): [CommitteeMember!]
+	updateCommittee(
+		activeAgendaItemId: ID
+		id: ID!
+		lastResolutionAdoptionDate: DateTime
+		showWhiteboard: Boolean
+		stateOfDebate: String
+		status: CommitteeStatusEnum
+		statusHeadline: String
+		statusUntil: DateTime
+		whiteboardContent: String
+	): Committee
+	updateSpeakerOnList(id: ID!, overwriteName: String): SpeakerOnList
+	updateSpeakersList(
+		id: ID!
+		isClosed: Boolean
+		speakingTime: Int
+		startTimestamp: DateTime
+		stopTimer: Boolean = false
+		timeLeft: Int
+	): SpeakersList
 }
 
 type Query {
-  findFirstAgendaItem(where: AgendaItemWhereInputArgument): AgendaItem!
-  findFirstCommittee(where: CommitteeWhereInputArgument): Committee!
-  findFirstCommitteeMember(where: CommitteeMemberWhereInputArgument): CommitteeMember!
-  findFirstConference(where: ConferenceWhereInputArgument): Conference!
-  findFirstConferenceMember(where: ConferenceMemberWhereInputArgument): ConferenceMember!
-  findFirstConferenceUser(where: ConferenceUserWhereInputArgument): ConferenceUser!
-  findFirstRepresentation(where: RepresentationWhereInputArgument): Representation!
-  findFirstSpeakerOnList(where: SpeakerOnListWhereInputArgument): SpeakerOnList!
-  findFirstSpeakersList(where: SpeakersListWhereInputArgument): SpeakersList!
-  findFirstUser(where: UserWhereInputArgument): User!
-  findManyAgendaItem(where: AgendaItemWhereInputArgument): [AgendaItem!]!
-  findManyCommittee(where: CommitteeWhereInputArgument): [Committee!]!
-  findManyCommitteeMember(where: CommitteeMemberWhereInputArgument): [CommitteeMember!]!
-  findManyConference(where: ConferenceWhereInputArgument): [Conference!]!
-  findManyConferenceMember(where: ConferenceMemberWhereInputArgument): [ConferenceMember!]!
-  findManyConferenceUser(where: ConferenceUserWhereInputArgument): [ConferenceUser!]!
-  findManyRepresentation(where: RepresentationWhereInputArgument): [Representation!]!
-  findManySpeakerOnList(where: SpeakerOnListWhereInputArgument): [SpeakerOnList!]!
-  findManySpeakersList(where: SpeakersListWhereInputArgument): [SpeakersList!]!
-  findManyUser(where: UserWhereInputArgument): [User!]!
-  serverTime: DateTime!
+	findFirstAgendaItem(where: AgendaItemWhereInputArgument): AgendaItem!
+	findFirstCommittee(where: CommitteeWhereInputArgument): Committee!
+	findFirstCommitteeMember(where: CommitteeMemberWhereInputArgument): CommitteeMember!
+	findFirstConference(where: ConferenceWhereInputArgument): Conference!
+	findFirstConferenceMember(where: ConferenceMemberWhereInputArgument): ConferenceMember!
+	findFirstConferenceUser(where: ConferenceUserWhereInputArgument): ConferenceUser!
+	findFirstRepresentation(where: RepresentationWhereInputArgument): Representation!
+	findFirstSpeakerOnList(where: SpeakerOnListWhereInputArgument): SpeakerOnList!
+	findFirstSpeakersList(where: SpeakersListWhereInputArgument): SpeakersList!
+	findFirstUser(where: UserWhereInputArgument): User!
+	findManyAgendaItem(where: AgendaItemWhereInputArgument): [AgendaItem!]!
+	findManyCommittee(where: CommitteeWhereInputArgument): [Committee!]!
+	findManyCommitteeMember(where: CommitteeMemberWhereInputArgument): [CommitteeMember!]!
+	findManyConference(where: ConferenceWhereInputArgument): [Conference!]!
+	findManyConferenceMember(where: ConferenceMemberWhereInputArgument): [ConferenceMember!]!
+	findManyConferenceUser(where: ConferenceUserWhereInputArgument): [ConferenceUser!]!
+	findManyRepresentation(where: RepresentationWhereInputArgument): [Representation!]!
+	findManySpeakerOnList(where: SpeakerOnListWhereInputArgument): [SpeakerOnList!]!
+	findManySpeakersList(where: SpeakersListWhereInputArgument): [SpeakersList!]!
+	findManyUser(where: UserWhereInputArgument): [User!]!
+	serverTime: DateTime!
 }
 
 enum RegionalGroupEnum {
-  AFRICA
-  ASIA_PACIFIC
-  EASTERN_EUROPE
-  LATIN_AMERICA_CARIBBEAN
-  WESTERN_EUROPE_OTHERS
+	AFRICA
+	ASIA_PACIFIC
+	EASTERN_EUROPE
+	LATIN_AMERICA_CARIBBEAN
+	WESTERN_EUROPE_OTHERS
 }
 
 type Representation {
-  alpha2Code: String
-  alpha3Code: String
-  committeeMembers(where: CommitteeMemberWhereInputArgument): [CommitteeMember!]!
-  conference(where: ConferenceWhereInputArgument): Conference
-  conferenceId: ID!
-  conferenceMembers(where: ConferenceMemberWhereInputArgument): [ConferenceMember!]!
-  createdAt: DateTime!
-  faIcon: String
-  id: ID!
-  name: String
-  regionalGroup: RegionalGroupEnum
-  type: RepresentationTypeEnum!
-  updatedAt: DateTime
+	alpha2Code: String
+	alpha3Code: String
+	committeeMembers(where: CommitteeMemberWhereInputArgument): [CommitteeMember!]!
+	conference(where: ConferenceWhereInputArgument): Conference
+	conferenceId: ID!
+	conferenceMembers(where: ConferenceMemberWhereInputArgument): [ConferenceMember!]!
+	createdAt: DateTime!
+	faIcon: String
+	id: ID!
+	name: String
+	regionalGroup: RegionalGroupEnum
+	type: RepresentationTypeEnum!
+	updatedAt: DateTime
 }
 
 enum RepresentationTypeEnum {
-  DELEGATION
-  NSA
-  UN
+	DELEGATION
+	NSA
+	UN
 }
 
 input RepresentationWhereInputArgument {
-  alpha2Code: String
-  alpha3Code: String
-  committeeMembers: CommitteeMemberWhereInputArgument
-  conference: ConferenceWhereInputArgument
-  conferenceId: ID
-  conferenceMembers: ConferenceMemberWhereInputArgument
-  createdAt: DateTime
-  faIcon: String
-  id: ID
-  name: String
-  regionalGroup: RegionalGroupEnum
-  type: RepresentationTypeEnum
-  updatedAt: DateTime
+	alpha2Code: String
+	alpha3Code: String
+	committeeMembers: CommitteeMemberWhereInputArgument
+	conference: ConferenceWhereInputArgument
+	conferenceId: ID
+	conferenceMembers: ConferenceMemberWhereInputArgument
+	createdAt: DateTime
+	faIcon: String
+	id: ID
+	name: String
+	regionalGroup: RegionalGroupEnum
+	type: RepresentationTypeEnum
+	updatedAt: DateTime
 }
 
 type SpeakerOnList {
-  committeeMember(where: CommitteeMemberWhereInputArgument): CommitteeMember
-  committeeMemberId: ID
-  conferenceMember(where: ConferenceMemberWhereInputArgument): ConferenceMember
-  conferenceMemberId: ID
-  createdAt: DateTime!
-  id: ID!
-  overwriteName: String
-  position: Int!
-  speakersList(where: SpeakersListWhereInputArgument): SpeakersList
-  speakersListId: ID!
-  updatedAt: DateTime
+	committeeMember(where: CommitteeMemberWhereInputArgument): CommitteeMember
+	committeeMemberId: ID
+	conferenceMember(where: ConferenceMemberWhereInputArgument): ConferenceMember
+	conferenceMemberId: ID
+	createdAt: DateTime!
+	id: ID!
+	overwriteName: String
+	position: Int!
+	speakersList(where: SpeakersListWhereInputArgument): SpeakersList
+	speakersListId: ID!
+	updatedAt: DateTime
 }
 
 input SpeakerOnListWhereInputArgument {
-  committeeMember: CommitteeMemberWhereInputArgument
-  committeeMemberId: ID
-  conferenceMember: ConferenceMemberWhereInputArgument
-  conferenceMemberId: ID
-  createdAt: DateTime
-  id: ID
-  overwriteName: String
-  position: Int
-  speakersList: SpeakersListWhereInputArgument
-  speakersListId: ID
-  updatedAt: DateTime
+	committeeMember: CommitteeMemberWhereInputArgument
+	committeeMemberId: ID
+	conferenceMember: ConferenceMemberWhereInputArgument
+	conferenceMemberId: ID
+	createdAt: DateTime
+	id: ID
+	overwriteName: String
+	position: Int
+	speakersList: SpeakersListWhereInputArgument
+	speakersListId: ID
+	updatedAt: DateTime
 }
 
 type SpeakersList {
-  agendaItem(where: AgendaItemWhereInputArgument): AgendaItem
-  agendaItemId: ID!
-  createdAt: DateTime!
-  id: ID!
-  isClosed: Boolean!
-  speakers(where: SpeakerOnListWhereInputArgument): [SpeakerOnList!]!
-  speakingTime: Int!
-  startTimestamp: DateTime
-  timeLeft: Int!
-  type: SpeakersListCategoryEnum!
-  updatedAt: DateTime
+	agendaItem(where: AgendaItemWhereInputArgument): AgendaItem
+	agendaItemId: ID!
+	createdAt: DateTime!
+	id: ID!
+	isClosed: Boolean!
+	speakers(where: SpeakerOnListWhereInputArgument): [SpeakerOnList!]!
+	speakingTime: Int!
+	startTimestamp: DateTime
+	timeLeft: Int!
+	type: SpeakersListCategoryEnum!
+	updatedAt: DateTime
 }
 
 enum SpeakersListCategoryEnum {
-  COMMENT_LIST
-  SPEAKERS_LIST
+	COMMENT_LIST
+	SPEAKERS_LIST
 }
 
 input SpeakersListWhereInputArgument {
-  agendaItem: AgendaItemWhereInputArgument
-  agendaItemId: ID
-  createdAt: DateTime
-  id: ID
-  isClosed: Boolean
-  speakers: SpeakerOnListWhereInputArgument
-  speakingTime: Int
-  startTimestamp: DateTime
-  timeLeft: Int
-  type: SpeakersListCategoryEnum
-  updatedAt: DateTime
+	agendaItem: AgendaItemWhereInputArgument
+	agendaItemId: ID
+	createdAt: DateTime
+	id: ID
+	isClosed: Boolean
+	speakers: SpeakerOnListWhereInputArgument
+	speakingTime: Int
+	startTimestamp: DateTime
+	timeLeft: Int
+	type: SpeakersListCategoryEnum
+	updatedAt: DateTime
 }
 
 type Subscription {
-  findFirstAgendaItem(where: AgendaItemWhereInputArgument): AgendaItem!
-  findFirstCommittee(where: CommitteeWhereInputArgument): Committee!
-  findFirstCommitteeMember(where: CommitteeMemberWhereInputArgument): CommitteeMember!
-  findFirstConference(where: ConferenceWhereInputArgument): Conference!
-  findFirstConferenceMember(where: ConferenceMemberWhereInputArgument): ConferenceMember!
-  findFirstConferenceUser(where: ConferenceUserWhereInputArgument): ConferenceUser!
-  findFirstRepresentation(where: RepresentationWhereInputArgument): Representation!
-  findFirstSpeakerOnList(where: SpeakerOnListWhereInputArgument): SpeakerOnList!
-  findFirstSpeakersList(where: SpeakersListWhereInputArgument): SpeakersList!
-  findFirstUser(where: UserWhereInputArgument): User!
-  findManyAgendaItem(where: AgendaItemWhereInputArgument): [AgendaItem!]!
-  findManyCommittee(where: CommitteeWhereInputArgument): [Committee!]!
-  findManyCommitteeMember(where: CommitteeMemberWhereInputArgument): [CommitteeMember!]!
-  findManyConference(where: ConferenceWhereInputArgument): [Conference!]!
-  findManyConferenceMember(where: ConferenceMemberWhereInputArgument): [ConferenceMember!]!
-  findManyConferenceUser(where: ConferenceUserWhereInputArgument): [ConferenceUser!]!
-  findManyRepresentation(where: RepresentationWhereInputArgument): [Representation!]!
-  findManySpeakerOnList(where: SpeakerOnListWhereInputArgument): [SpeakerOnList!]!
-  findManySpeakersList(where: SpeakersListWhereInputArgument): [SpeakersList!]!
-  findManyUser(where: UserWhereInputArgument): [User!]!
+	findFirstAgendaItem(where: AgendaItemWhereInputArgument): AgendaItem!
+	findFirstCommittee(where: CommitteeWhereInputArgument): Committee!
+	findFirstCommitteeMember(where: CommitteeMemberWhereInputArgument): CommitteeMember!
+	findFirstConference(where: ConferenceWhereInputArgument): Conference!
+	findFirstConferenceMember(where: ConferenceMemberWhereInputArgument): ConferenceMember!
+	findFirstConferenceUser(where: ConferenceUserWhereInputArgument): ConferenceUser!
+	findFirstRepresentation(where: RepresentationWhereInputArgument): Representation!
+	findFirstSpeakerOnList(where: SpeakerOnListWhereInputArgument): SpeakerOnList!
+	findFirstSpeakersList(where: SpeakersListWhereInputArgument): SpeakersList!
+	findFirstUser(where: UserWhereInputArgument): User!
+	findManyAgendaItem(where: AgendaItemWhereInputArgument): [AgendaItem!]!
+	findManyCommittee(where: CommitteeWhereInputArgument): [Committee!]!
+	findManyCommitteeMember(where: CommitteeMemberWhereInputArgument): [CommitteeMember!]!
+	findManyConference(where: ConferenceWhereInputArgument): [Conference!]!
+	findManyConferenceMember(where: ConferenceMemberWhereInputArgument): [ConferenceMember!]!
+	findManyConferenceUser(where: ConferenceUserWhereInputArgument): [ConferenceUser!]!
+	findManyRepresentation(where: RepresentationWhereInputArgument): [Representation!]!
+	findManySpeakerOnList(where: SpeakerOnListWhereInputArgument): [SpeakerOnList!]!
+	findManySpeakersList(where: SpeakersListWhereInputArgument): [SpeakersList!]!
+	findManyUser(where: UserWhereInputArgument): [User!]!
 }
 
 type User {
-  conferenceMemberships(where: ConferenceUserWhereInputArgument): [ConferenceUser!]!
-  createdAt: DateTime!
-  email: String!
-  familyName: String!
-  givenName: String!
-  id: ID!
-  locale: String
-  preferredUsername: String!
-  updatedAt: DateTime
+	conferenceMemberships(where: ConferenceUserWhereInputArgument): [ConferenceUser!]!
+	createdAt: DateTime!
+	email: String!
+	familyName: String!
+	givenName: String!
+	id: ID!
+	locale: String
+	preferredUsername: String!
+	updatedAt: DateTime
 }
 
 input UserWhereInputArgument {
-  conferenceMemberships: ConferenceUserWhereInputArgument
-  createdAt: DateTime
-  email: String
-  familyName: String
-  givenName: String
-  id: ID
-  locale: String
-  preferredUsername: String
-  updatedAt: DateTime
+	conferenceMemberships: ConferenceUserWhereInputArgument
+	createdAt: DateTime
+	email: String
+	familyName: String
+	givenName: String
+	id: ID
+	locale: String
+	preferredUsername: String
+	updatedAt: DateTime
 }

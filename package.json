@@ -63,7 +63,8 @@
 		"typescript-eslint": "^8.30.1",
 		"vite": "^6.3.2",
 		"world-countries": "^5.1.0",
-		"zod": "^3.25.7"
+		"zod": "^3.25.7",
+		"svelte-confetti": "^2.0.0"
 	},
 	"name": "munify-chase",
 	"private": true,
@@ -93,12 +94,8 @@
 	},
 	"type": "module",
 	"dependencies": {
-		"@tsparticles/confetti": "^3.8.1",
-		"@tsparticles/slim": "^3.8.1",
-		"@tsparticles/svelte": "^3.1.1",
 		"drizzle-kit": "^1.0.0-beta.1-c0277c0",
 		"drizzle-orm": "^1.0.0-beta.1-c0277c0",
-		"pg": "^8.15.6",
-		"svelte-confetti": "^2.0.0"
+		"pg": "^8.15.6"
 	}
 }

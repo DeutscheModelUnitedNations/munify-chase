@@ -13,6 +13,7 @@ export const PresentationSubscription = graphql(`
 			simpleMajority
 			twoThirdsMajority
 			paperSupportThreshold
+			lastResolutionAdoptionDate
 			activeAgendaItem {
 				id
 				title

@@ -50,7 +50,7 @@ try {
 		console.info('   Conference users:');
 		for (const user of data.users) {
 			await db.insert(schema.conferenceUser).values({
-				userId: user.id,
+				userEmail: user.email,
 				conferenceId: conferenceEntry.id,
 				conferenceUserType: user.conferenceUserType
 			});

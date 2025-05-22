@@ -5,6 +5,8 @@
 	import CurrentTime from '$lib/components/CurrentTime.svelte';
 	import * as m from '$lib/paraglide/messages.js';
 	import NavbarBurgerMenu from '$lib/components/NavbarBurgerMenu.svelte';
+	import { onMount } from 'svelte';
+	import { MissionControlSubscription } from './missionControlSubscription';
 
 	let { data }: { data: PageData } = $props();
 
@@ -18,6 +20,10 @@
 			href: '..'
 		}
 	];
+
+	onMount(() => {
+		MissionControlSubscription.listen({ conferenceId: data.conferenceId });
+	});
 </script>
 
 <div class="navbar bg-base-100 shadow-sm">

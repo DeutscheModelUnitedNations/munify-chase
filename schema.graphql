@@ -37,6 +37,7 @@ type Committee {
 	customSimpleMajority: Int
 	customTwoThirdsMajority: Int
 	id: ID!
+	lastResolutionAdoptionDate: DateTime
 	members(where: CommitteeMemberWhereInputArgument): [CommitteeMember!]!
 	name: String!
 	paperSupportThreshold: Int
@@ -94,6 +95,7 @@ input CommitteeWhereInputArgument {
 	customSimpleMajority: Int
 	customTwoThirdsMajority: Int
 	id: ID
+	lastResoltionAdoptionDate: DateTime
 	members: CommitteeMemberWhereInputArgument
 	name: String
 	showWhiteboard: Boolean
@@ -113,13 +115,13 @@ type Conference {
 	pressWebsite: String
 	representations(where: RepresentationWhereInputArgument): [Representation!]!
 	title: String!
-
 	"""
 	Returns a conference member for each existent non state actor. Useful to display a non duplicated list of non state actors.
 	"""
 	uniqueNonStateActorsConferenceMembers(
 		where: ConferenceMemberWhereInputArgument
 	): [ConferenceMember!]
+
 	updatedAt: DateTime
 	users(where: ConferenceUserWhereInputArgument): [ConferenceUser!]!
 }
@@ -279,6 +281,7 @@ type Mutation {
 	updateCommittee(
 		activeAgendaItemId: ID
 		id: ID!
+		lastResolutionAdoptionDate: DateTime
 		showWhiteboard: Boolean
 		stateOfDebate: String
 		status: CommitteeStatusEnum

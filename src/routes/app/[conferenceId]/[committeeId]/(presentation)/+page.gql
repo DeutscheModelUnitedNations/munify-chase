@@ -10,6 +10,7 @@ query CommitteePresentationQuery($committeeId: ID!) @blocking {
 		simpleMajority
 		twoThirdsMajority
 		paperSupportThreshold
+		lastResolutionAdoptionDate
 		activeAgendaItem {
 			id
 			title

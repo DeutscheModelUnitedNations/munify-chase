@@ -72,7 +72,8 @@ export const committee = pgTable(
 		//TODO should these defaults be set at DB level?
 		customSimpleMajority: smallint(), // 50% by default
 		customTwoThirdsMajority: smallint(), // 66% by default
-		customPaperSupportThreshold: smallint() // 10% by default
+		customPaperSupportThreshold: smallint(), // 10% by default
+		lastResolutionAdoptionDate: timestamp({ mode: 'date' })
 	},
 	(t) => [unique().on(t.conferenceId, t.name), unique().on(t.conferenceId, t.abbreviation)]
 );

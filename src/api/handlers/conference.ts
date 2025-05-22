@@ -1,7 +1,12 @@
-import { abilityBuilder } from '$api/rumble';
-import { basics } from './basics';
-
-const { arg, ref, pubsub, table } = basics('conference');
+import { db } from '$api/db/db';
+import {
+	abilityBuilder,
+	object,
+	query,
+	pubsub as rumblePubsub,
+	arg as rumbleArg
+} from '$api/rumble';
+import { ConferenceMemberRef, ConferenceMemberWhereInput } from './conferenceMember';
 
 abilityBuilder.conference.allow('read');
 // .when(({ user }) => {
@@ -9,3 +14,65 @@ abilityBuilder.conference.allow('read');
 // 		return {};
 // 	}
 // });
+
+const ref = object({
+	table: 'conference',
+	adjust: (t) => ({
+		uniqueNonStateActorsConferenceMembers: t.drizzleField({
+			type: [ConferenceMemberRef],
+			description:
+				'Returns a conference member for each existent non state actor. Useful to display a non duplicated list of non state actors.',
+			args: {
+				where: t.arg({ type: ConferenceMemberWhereInput, required: false })
+			},
+			// TODO
+			// smartSubscription: true,
+			// subscribe: (subscriptions, root, args, ctx, info) => {
+			// 	registerOnInstance({
+			// 		instance: subscriptions,
+			// 		action: 'created'
+			// 	});
+			// 	registerOnInstance({
+			// 		instance: subscriptions,
+			// 		action: 'removed'
+			// 	});
+			// },
+			resolve: async (query, _root, args, ctx, _info) => {
+				const touchedNSARepresentation = new Set<string>();
+				return (
+					await db.query.conferenceMember.findMany(
+						query({
+							...ctx.abilities.conferenceMember.filter('read', {
+								inject: {
+									where: {
+										...args.where,
+										representation: {
+											type: 'NSA'
+										}
+									}
+								}
+							}).query.many,
+							with: {
+								representation: true
+							}
+						})
+					)
+				).filter((member) => {
+					if (touchedNSARepresentation.has(member.representation!.id!)) {
+						return false;
+					}
+					touchedNSARepresentation.add(member.representation!.id!);
+					return true;
+				});
+			}
+		})
+	})
+});
+
+const pubsub = rumblePubsub({ table: 'committee' });
+const arg = rumbleArg({ table: 'committee' });
+query({
+	table: 'conference'
+});
+
+export const ConferenceRef = ref;

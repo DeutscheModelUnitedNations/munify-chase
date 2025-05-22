@@ -19,7 +19,7 @@
 
 	let { rawSpeakers, closed = false }: Props = $props();
 
-	let speakers = $derived(rawSpeakers?.toSpliced(0, 1));
+	let speakers = $derived(rawSpeakers?.toSorted((a, b) => a.position - b.position).toSpliced(0, 1));
 
 	const RemoveSpeakerOnListMutation = graphql(`
 		mutation RemoveSpeakerOnListMutation($speakerOnListId: ID!) {

@@ -50,7 +50,7 @@ try {
 		console.info('   Conference users:');
 		for (const user of data.users) {
 			await db.insert(schema.conferenceUser).values({
-				userId: user.id,
+				userEmail: user.email,
 				conferenceId: conferenceEntry.id,
 				conferenceUserType: user.conferenceUserType
 			});
@@ -82,7 +82,9 @@ try {
 				.insert(schema.representation)
 				.values({
 					...representation,
-					conferenceId: conferenceEntry.id
+					conferenceId: conferenceEntry.id,
+					alpha2Code: representation.type === 'UN' ? 'un' : undefined,
+					alpha3Code: representation.type === 'UN' ? 'uno' : undefined
 				})
 				.returning()
 				.then(assertFirstEntryExists);

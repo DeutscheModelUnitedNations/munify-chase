@@ -5,6 +5,7 @@ query CommitteeOverviewQuery($conferenceId: ID!) {
 			id
 			name
 			abbreviation
+			lastResolutionAdoptionDate
 			activeAgendaItem {
 				id
 				title

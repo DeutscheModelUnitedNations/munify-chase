@@ -44,6 +44,18 @@
 				return 'text-5xl';
 		}
 	};
+
+	const placeholderIcon = () => {
+		const worldIcons = [
+			'earth-americas',
+			'earth-europe',
+			'earth-asia',
+			'earth-africa',
+			'earth-oceania'
+		];
+		const randomIndex = Math.floor(Math.random() * worldIcons.length);
+		return worldIcons[randomIndex];
+	};
 </script>
 
 <div
@@ -52,7 +64,7 @@
 		'bg-base-200 text-base-content opacity-50'} {size === 'xs' && 'rounded-sm'}"
 >
 	{#if placeholder}
-		<i class="fa-solid fa-earth {iconClassNames()}"></i>
+		<i class="fa-solid fa-{placeholderIcon()} {iconClassNames()}"></i>
 	{:else if nsa}
 		<i class="fa-solid fa-{icon?.replace('fa-', '')} {iconClassNames()}"></i>
 	{:else}

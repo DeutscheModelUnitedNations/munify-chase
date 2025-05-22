@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { m } from '$lib/paraglide/messages';
+	import hotkeys from 'hotkeys-js';
 	import type { Snippet } from 'svelte';
 
 	interface Props {
@@ -8,6 +9,16 @@
 	}
 
 	let { open = $bindable(), children }: Props = $props();
+
+	$effect(() => {
+		if (open) {
+			hotkeys('esc', () => {
+				open = false;
+			});
+		} else {
+			hotkeys.unbind('esc');
+		}
+	});
 </script>
 
 <dialog class="modal z-30" {open}>

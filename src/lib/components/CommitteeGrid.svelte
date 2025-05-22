@@ -3,6 +3,7 @@
 	import IconInfoBox from './IconInfoBox.svelte';
 	import { getCommitteeStatusIcon, getCommitteeStatusText } from '$lib/utils/committeeStatus';
 	import { type CommitteeOverviewQuery$result, type MissionControlQuery$result } from '$houdini';
+	import AdoptionConfetti from './AdoptionConfetti.svelte';
 
 	interface Props {
 		conference:
@@ -50,5 +51,13 @@
 				/>
 			</div>
 		</a>
+
+		<AdoptionConfetti
+			agendaItem={committee.activeAgendaItem?.title ?? '—'}
+			committeeName={committee.name}
+			lastAdoptionDate={committee.lastResolutionAdoptionDate}
+			confettiDurationSec={90}
+			showBanner
+		/>
 	{/each}
 </div>

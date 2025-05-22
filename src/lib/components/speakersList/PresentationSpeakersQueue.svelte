@@ -21,7 +21,7 @@
 
 	let { rawSpeakers, closed = false, resizeFn = $bindable() }: Props = $props();
 
-	let speakers = $derived(rawSpeakers?.toSpliced(0, 1));
+	let speakers = $derived(rawSpeakers?.toSorted((a, b) => a.position - b.position).toSpliced(0, 1));
 
 	let container = $state<HTMLElement | null>(null);
 	let overflowContainer = $state<HTMLElement | null>(null);
@@ -31,7 +31,6 @@
 	let visibleCount = $derived(Math.floor((containerHeight - reservedHeight) / rowHeight));
 
 	const resize = () => {
-		console.log('Resizing speakers list');
 		if (container && overflowContainer) {
 			containerHeight = container.clientHeight;
 			rowHeight = container.children[0]?.clientHeight || 20;

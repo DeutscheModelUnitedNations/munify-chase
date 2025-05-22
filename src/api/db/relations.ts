@@ -4,8 +4,8 @@ import * as schema from './schema';
 export const relations = defineRelations(schema, (r) => ({
 	user: {
 		conferenceMemberships: r.many.conferenceUser({
-			from: r.user.id,
-			to: r.conferenceUser.userId
+			from: r.user.email,
+			to: r.conferenceUser.userEmail
 		})
 	},
 	conference: {
@@ -48,12 +48,17 @@ export const relations = defineRelations(schema, (r) => ({
 		representation: r.one.representation({
 			from: r.committeeMember.representationId,
 			to: r.representation.id
+		}),
+		user: r.one.conferenceUser({
+			from: r.committeeMember.id,
+			to: r.conferenceUser.committeeMemberId,
+			optional: true
 		})
 	},
 	conferenceUser: {
 		user: r.one.user({
-			from: r.conferenceUser.userId,
-			to: r.user.id
+			from: r.conferenceUser.userEmail,
+			to: r.user.email
 		}),
 		conference: r.one.conference({
 			from: r.conferenceUser.conferenceId,
@@ -86,6 +91,11 @@ export const relations = defineRelations(schema, (r) => ({
 		speakerOnList: r.many.speakerOnList({
 			from: r.conferenceMember.id,
 			to: r.speakerOnList.conferenceMemberId
+		}),
+		user: r.one.conferenceUser({
+			from: r.conferenceMember.id,
+			to: r.conferenceUser.conferenceMemberId,
+			optional: true
 		})
 	},
 	agendaItem: {

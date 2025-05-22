@@ -43,7 +43,7 @@
 	);
 
 	let nsas = $derived(
-		committee?.members
+		committee?.conference?.members
 			.filter((member) => member.representation?.name && member.representation.type === 'NSA')
 			.sort((a, b) => a.representation!.name!.localeCompare(b.representation!.name!)) ?? []
 	);
@@ -104,30 +104,6 @@
 				</BasicCard>
 			</div>
 			<div class="flex h-full w-full flex-3 flex-col gap-4">
-				<BasicCard title={m.nonStateActors()}>
-					{#each nsas as member}
-						{@const rep = member.representation}
-						<div
-							class="hover:bg-base-200 card flex w-full flex-row items-center gap-4 p-2 transition-all duration-300"
-						>
-							<Flag nsa icon={rep?.faIcon ?? undefined} size="sm" />
-							<h3 class="flex-1 text-lg">
-								{#if rep && rep.name}
-									{rep.name}
-								{:else}
-									{m.unknown()}
-								{/if}
-							</h3>
-							<Tabs
-								activeTab={member.present}
-								tabs={presenceTabs}
-								onTabChange={(tab) => {
-									setPresence(tab, member.id);
-								}}
-							/>
-						</div>
-					{/each}
-				</BasicCard>
 				<BasicCard title={m.delegations()}>
 					{#each countries as member}
 						{@const rep = member.representation}
@@ -168,6 +144,23 @@
 									setPresence(tab, member.id);
 								}}
 							/>
+						</div>
+					{/each}
+				</BasicCard>
+				<BasicCard title={m.nonStateActors()}>
+					{#each nsas as member}
+						{@const rep = member.representation}
+						<div
+							class="hover:bg-base-200 card flex w-full flex-row items-center gap-4 p-2 transition-all duration-300"
+						>
+							<Flag nsa icon={rep?.faIcon ?? undefined} size="sm" />
+							<h3 class="flex-1 text-lg">
+								{#if rep && rep.name}
+									{rep.name}
+								{:else}
+									{m.unknown()}
+								{/if}
+							</h3>
 						</div>
 					{/each}
 				</BasicCard>

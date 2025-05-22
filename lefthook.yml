@@ -1,9 +1,9 @@
 pre-commit:
-  # parallel: true
+  parallel: true
   commands:
     lint:
       run: bunx eslint "{staged_files}"
+      stage_fixed: true
     format:
       run: bunx prettier --ignore-unknown --write "{staged_files}"
-    test:
-      run: echo $PATH
+      stage_fixed: true

@@ -10,6 +10,7 @@ query CommitteePresentationQuery($committeeId: ID!) @blocking {
 		simpleMajority
 		twoThirdsMajority
 		paperSupportThreshold
+		lastResolutionAdoptionDate
 		activeAgendaItem {
 			id
 			title
@@ -23,6 +24,7 @@ query CommitteePresentationQuery($committeeId: ID!) @blocking {
 				speakers {
 					id
 					position
+					overwriteName
 					committeeMember {
 						id
 						representation {
@@ -63,6 +65,20 @@ query CommitteePresentationQuery($committeeId: ID!) @blocking {
 				alpha3Code
 				regionalGroup
 				faIcon
+			}
+		}
+		conference {
+			members {
+				id
+				representation {
+					id
+					type
+					name
+					regionalGroup
+					alpha2Code
+					alpha3Code
+					faIcon
+				}
 			}
 		}
 	}

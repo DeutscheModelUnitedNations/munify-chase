@@ -43,7 +43,25 @@
 				committeeId,
 				layout: 'default',
 				displayRegionalGroups: false,
-				rollCall: null
+				presentationRootFontSize: 16,
+				rollCall: null,
+
+				showOfHandsVotingActive: false,
+				showOfHandsVotingStage: null,
+				showOfHandsVotingVotesPro: 0,
+				showOfHandsVotingVotesCon: 0,
+				showOfHandsVotingVotesAbstain: 0,
+				showOfHandsVotingVotesTotal: 0,
+
+				rollCallVotingActive: false,
+				rollCallVotingPro: [],
+				rollCallVotingCon: [],
+				rollCallVotingAbstain: [],
+
+				votingVoteName: '',
+				votingMajority: null,
+				votingWithAbstentions: null,
+				votingMajorityAmount: null
 			});
 		}
 	});
@@ -73,6 +91,26 @@
 		{/each}
 	</select>
 	<p class="label w-full whitespace-normal">{m.layoutDescription()}</p>
+	<div class="divider"></div>
+	<div class="flex flex-col gap-4">
+		<div class="flex items-center gap-4">
+			<i class="fa-duotone fa-text-size text-2xl"></i>
+			<input
+				type="range"
+				min="10"
+				max="30"
+				step="1"
+				value={$committeeSettings?.presentationRootFontSize || 16}
+				oninput={(e) =>
+					localDB.committeeSettings.update(committeeId, {
+						presentationRootFontSize: +e.target.value
+					})}
+				class="range range-primary w-full"
+			/>
+			<span class="w-10 text-center">{$committeeSettings?.presentationRootFontSize || '?'}</span>
+		</div>
+	</div>
+	<p class="label w-full whitespace-normal">{m.baseFontSizeDescription()}</p>
 </fieldset>
 
 <fieldset class="fieldset bg-base-200 border-base-300 rounded-box w-full border p-4">

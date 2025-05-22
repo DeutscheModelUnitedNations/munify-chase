@@ -4,145 +4,206 @@
 	import { onMount } from 'svelte';
 	import Modal from '../Modal.svelte';
 	import hotkeys from 'hotkeys-js';
-	import toast from 'svelte-french-toast';
-	import { SetPresenceMutation } from '../../../routes/app/[conferenceId]/[committeeId]/(chairs)/presence/presenceMutations';
-	import { promiseToastStrings } from '$lib/utils/toast';
-	import { localDB } from '$lib/local-db/localDB';
-
-	export type MajorityType = 'SIMPLE' | 'ABSOLUTE' | 'TWO_THIRDS';
-	type VotingStages = 'PRO' | 'CON' | 'ABSTAIN' | 'EVALUATION';
+	import { localDB, type VotingMajority, type VotingStage } from '$lib/local-db/localDB';
+	import VoteClicker from './VoteClicker.svelte';
+	import ResultChart from './ResultChart.svelte';
 
 	interface Props {
 		active: boolean;
-		members: CommitteeTeamQuery$result['findFirstCommittee']['members'];
+		committee?: CommitteeTeamQuery$result['findFirstCommittee'] | null;
 		voteName?: string;
-		majority: MajorityType;
+		majority: VotingMajority;
 		withAbstentions: boolean;
 	}
 
-	let { active = $bindable(), voteName, majority, withAbstentions, members }: Props = $props();
+	let { active = $bindable(), voteName, majority, withAbstentions, committee }: Props = $props();
 
-	let currentState = $state<VotingStages>('PRO');
+	let currentState = $state<VotingStage>('PRO');
 
-	// const setPresence = async (present: boolean) => {
-	// 	const member = members[currentIndex];
-	// 	if (member) {
-	// 		await toast.promise(
-	// 			SetPresenceMutation.mutate({
-	// 				memberIds: [member.id],
-	// 				present
-	// 			}),
-	// 			promiseToastStrings(m.presence(), 'update'),
-	// 			{
-	// 				duration: 1000,
-	// 				position: 'top-right'
-	// 			}
-	// 		);
+	let votesPro = $state(0);
+	let votesCon = $state(0);
+	let votesAbstain = $state(0);
+	let votesOutstanding = $derived(
+		committee?.totalPresent ?? 0 - (votesPro + votesCon + votesAbstain)
+	);
+	let majorityAmount = $derived.by(() => {
+		switch (majority) {
+			case 'SIMPLE':
+				return committee?.simpleMajority ?? 0;
+			case 'TWO_THIRDS':
+				return committee?.twoThirdsMajority ?? 0;
+			default:
+				return 0;
+		}
+	});
 
-	// 		if (currentIndex === members.length - 1) {
-	// 			toast.success(m.rollCollSuccess());
-	// 			active = false;
-	// 		}
-	// 		currentIndex = (currentIndex + 1) % members.length;
-	// 	} else {
-	// 		toast.error(m.rollCollError());
-	// 	}
-	// };
+	const exit = () => {
+		votesPro = 0;
+		votesCon = 0;
+		votesAbstain = 0;
+		currentState = 'PRO';
+		active = false;
+	};
 
-	// onMount(() => {
-	// 	hotkeys('up, down, left, right, esc', (event, handler) => {
-	// 		event.preventDefault();
-	// 		switch (handler.key) {
-	// 			case 'up':
-	// 				currentIndex = (currentIndex - 1 + members.length) % members.length;
-	// 				break;
-	// 			case 'down':
-	// 				currentIndex = (currentIndex + 1) % members.length;
-	// 				break;
-	// 			case 'left':
-	// 				setPresence(false);
-	// 				break;
-	// 			case 'right':
-	// 				setPresence(true);
-	// 				break;
-	// 			case 'esc':
-	// 				active = false;
-	// 		}
-	// 	});
-	// });
+	const nextState = () => {
+		switch (currentState) {
+			case 'PRO':
+				currentState = 'CON';
+				break;
+			case 'CON':
+				if (withAbstentions) {
+					currentState = 'ABSTAIN';
+				} else {
+					currentState = 'EVALUATION';
+				}
+				break;
+			case 'ABSTAIN':
+				currentState = 'EVALUATION';
+				break;
+			case 'EVALUATION':
+				exit();
+				break;
+		}
+	};
 
-	// $effect(() => {
-	// 	console.log('Roll call active:', active);
-	// 	console.log('Current index:', currentIndex);
-	// 	if (active && currentIndex !== undefined) {
-	// 		console.log('Updating roll call index:', currentIndex);
-	// 		localDB.committeeSettings.update(committeeId, {
-	// 			rollCall: currentIndex
-	// 		});
-	// 	} else if (!active) {
-	// 		currentIndex = 0;
-	// 		localDB.committeeSettings.update(committeeId, {
-	// 			rollCall: null
-	// 		});
-	// 	}
-	// });
+	const previousState = () => {
+		switch (currentState) {
+			case 'CON':
+				currentState = 'PRO';
+				break;
+			case 'ABSTAIN':
+				currentState = 'CON';
+				break;
+			case 'EVALUATION':
+				if (withAbstentions) {
+					currentState = 'ABSTAIN';
+				} else {
+					currentState = 'CON';
+				}
+				break;
+		}
+	};
+
+	onMount(() => {
+		hotkeys('enter, esc, backspace', (event, handler) => {
+			event.preventDefault();
+			switch (handler.key) {
+				case 'enter':
+					nextState();
+					break;
+				case 'esc':
+					exit();
+					break;
+				case 'backspace':
+					previousState();
+					break;
+			}
+		});
+	});
+
+	$effect(() => {
+		if (!committee) return;
+		if (active) {
+			localDB.committeeSettings.update(committee.id, {
+				showOfHandsVotingActive: true,
+				showOfHandsVotingStage: currentState,
+				showOfHandsVotingVotesPro: votesPro,
+				showOfHandsVotingVotesCon: votesCon,
+				showOfHandsVotingVotesAbstain: votesAbstain,
+				showOfHandsVotingVotesTotal: votesOutstanding,
+				votingVoteName: voteName,
+				votingMajority: majority,
+				votingWithAbstentions: withAbstentions,
+				votingMajorityAmount: majorityAmount
+			});
+		} else {
+			localDB.committeeSettings.update(committee.id, {
+				showOfHandsVotingActive: false,
+				showOfHandsVotingVotesPro: 0,
+				showOfHandsVotingVotesCon: 0,
+				showOfHandsVotingVotesAbstain: 0,
+				showOfHandsVotingVotesTotal: 0,
+				votingVoteName: null,
+				votingMajority: null,
+				votingWithAbstentions: false,
+				votingMajorityAmount: null
+			});
+		}
+	});
 </script>
 
 <Modal bind:open={active}>
-	<h1 class="mb-4 text-2xl font-bold">{m.showOfHandsVoting()}</h1>
+	<h1 class="mb-2 text-2xl font-bold">{voteName || m.voting()}</h1>
+	<h3 class="mb-4 text-lg font-semibold">
+		{m.showOfHandsVoting()}
+	</h3>
 
-	<!-- <div class="modal-action justify-around">
-		<button
-			class="btn btn-error btn-lg flex gap-2"
-			onclick={() => {
-				setPresence(false);
-			}}
+	<ResultChart
+		total={committee?.totalPresent}
+		{votesPro}
+		{votesCon}
+		{votesAbstain}
+		{majorityAmount}
+	/>
+
+	<div class="mt-6 flex gap-4">
+		<div
+			class="{currentState === 'PRO'
+				? 'bg-success text-success-content border-black'
+				: 'bg-success/20'} card border-base-100 mb-4 w-full items-center justify-center gap-4 border-3 p-4 shadow-sm"
 		>
-			<i class="fas fa-xmark"></i>
-			{m.absent()}
-			<kbd class="kbd">←</kbd>
-		</button>
-		<div class="join">
-			<button
-				class="btn btn-outline btn-lg join-item"
-				aria-label="Move up"
-				onclick={() => {
-					currentIndex = (currentIndex - 1 + members.length) % members.length;
-				}}
-			>
-				<i class="fas fa-chevron-up"></i>
-			</button>
-			<button
-				class="btn btn-outline btn-lg join-item"
-				aria-label="Move down"
-				onclick={() => {
-					currentIndex = (currentIndex + 1) % members.length;
-				}}
-			>
-				<i class="fas fa-chevron-down"></i>
-			</button>
+			<h3 class="text-lg font-bold">{m.pro()}</h3>
+			<VoteClicker active={currentState === 'PRO'} bind:value={votesPro} />
 		</div>
+		<div
+			class="{currentState === 'CON'
+				? 'bg-error text-error-content border-black'
+				: 'bg-error/20'} card border-base-100 mb-4 w-full items-center justify-center gap-4 border-3 p-4 shadow-sm"
+		>
+			<h3 class="text-lg font-bold">{m.con()}</h3>
+			<VoteClicker active={currentState === 'CON'} bind:value={votesCon} />
+		</div>
+		{#if withAbstentions}
+			<div
+				class="{currentState === 'ABSTAIN'
+					? 'bg-info text-info-content border-black'
+					: 'bg-info/20'} card border-base-100 mb-4 w-full items-center justify-center gap-4 border-3 p-4 shadow-sm"
+			>
+				<h3 class="text-lg font-bold">{m.abstain()}</h3>
+				<VoteClicker active={currentState === 'ABSTAIN'} bind:value={votesAbstain} />
+			</div>
+		{/if}
+	</div>
+
+	<div class="modal-action justify-around">
+		<button class="btn btn-lg flex gap-2" onclick={previousState} disabled={currentState === 'PRO'}>
+			<i class="fas fa-arrow-left"></i>
+			{m.back()}
+			<span class="kbd">⌫</span>
+		</button>
 		<button
-			class="btn btn-success btn-lg flex gap-2"
+			class="btn {currentState === 'EVALUATION' ? 'btn-error' : 'btn-success'} btn-lg flex gap-2"
 			onclick={() => {
-				setPresence(true);
+				nextState();
 			}}
 		>
-			<i class="fas fa-check"></i>
-			{m.present()}
-			<kbd class="kbd">→</kbd>
+			{#if currentState === 'EVALUATION'}
+				<i class="fas fa-xmark"></i>
+				{m.close()}
+			{:else if currentState === 'ABSTAIN' || (!withAbstentions && currentState === 'CON')}
+				<i class="fas fa-paper-plane"></i>
+				{m.publish()}
+			{:else}
+				<i class="fas fa-arrow-right"></i>
+				{m.forward()}
+			{/if}
+			<span class="kbd">↵</span>
 		</button>
 
 		<div class="absolute top-3 right-3">
-			<button
-				aria-label="Close modal"
-				class="btn btn-ghost btn-circle btn-sm"
-				onclick={() => {
-					active = false;
-				}}
-			>
+			<button aria-label="Close modal" class="btn btn-ghost btn-circle btn-sm" onclick={exit}>
 				<i class="fa-duotone fa-xmark"></i>
 			</button>
 		</div>
-	</div> -->
+	</div>
 </Modal>

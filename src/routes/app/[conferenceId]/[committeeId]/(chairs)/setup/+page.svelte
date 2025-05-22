@@ -17,6 +17,8 @@
 	import { CommitteeSubscription } from '../committeeSubscription';
 	import { ScrollArea } from 'bits-ui';
 	import StatusWidget from '../StatusWidget.svelte';
+	import { graphql } from '$houdini';
+	import dayjs from 'dayjs';
 
 	let { data }: { data: PageData } = $props();
 
@@ -30,6 +32,15 @@
 	});
 
 	let editWhiteboardModalOpen = $state(false);
+
+	const AnnounceAdoptionMutation = graphql(`
+		mutation AnnounceAdoption($committeeId: ID!, $lastResolutionAdoptionDate: DateTime!) {
+			updateCommittee(id: $committeeId, lastResolutionAdoptionDate: $lastResolutionAdoptionDate) {
+				id
+				lastResolutionAdoptionDate
+			}
+		}
+	`);
 </script>
 
 {#if committee}
@@ -80,11 +91,26 @@
 					/>
 				</BasicCard>
 				<BasicCard title={m.presentationMode()}>
-					<a href="." class="btn btn-primary mb-4" target="_blank">
+					<a href="." class="btn btn-primary btn-lg mb-4 flex items-center gap-3" target="_blank">
 						<i class="fas fa-projector"></i>
 						{m.openPresentation()}
+						<span class="kbd text-base-content">⌥ P</span>
 					</a>
 					<PresentationSettings committeeId={data.committeeId} />
+				</BasicCard>
+				<BasicCard title={m.announceAdoption()}>
+					<button
+						class="btn btn-primary btn-lg mb-4 flex items-center gap-3"
+						onclick={() => {
+							AnnounceAdoptionMutation.mutate({
+								committeeId: committee.id,
+								lastResolutionAdoptionDate: dayjs().toDate()
+							});
+						}}
+					>
+						<i class="fas fa-party-horn"></i>
+						{m.announceAdoption()}
+					</button>
 				</BasicCard>
 			</div>
 		</div>

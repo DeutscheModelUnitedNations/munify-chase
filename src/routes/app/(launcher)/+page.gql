@@ -1,5 +1,5 @@
-query LauncherQuery($userId: String!) @blocking {
-	findManyConferenceUser(where: { userId: $userId }) {
+query LauncherQuery($userId: ID!) @blocking {
+	findManyConferenceUser(where: { user: { id: $userId } }) {
 		id
 		conferenceUserType
 		conference {

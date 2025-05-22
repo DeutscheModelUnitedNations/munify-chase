@@ -75,8 +75,6 @@
 		if (loading) return;
 		loading = true;
 
-		console.log(importData?.conferenceUsers.filter((x) => !x.userEmail));
-
 		if (!importData) return;
 		const res = await ConferenceCreationMutation.mutate({ data: importData }).catch((e) => {
 			toast.error(m.conferenceCreationError());

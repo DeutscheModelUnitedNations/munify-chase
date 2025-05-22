@@ -114,7 +114,10 @@ schemaBuilder.mutationFields((t) => {
 					type: 'DateTime'
 				}),
 				stateOfDebate: t.arg.string(),
-				activeAgendaItemId: t.arg.id()
+				activeAgendaItemId: t.arg.id(),
+				lastResolutionAdoptionDate: t.arg({
+					type: 'DateTime'
+				})
 			},
 			resolve: async (query, root, args, ctx, info) => {
 				await db
@@ -126,7 +129,8 @@ schemaBuilder.mutationFields((t) => {
 						statusHeadline: args.statusHeadline ?? undefined,
 						statusUntil: args.statusUntil ?? undefined,
 						stateOfDebate: args.stateOfDebate ?? undefined,
-						activeAgendaItemId: args.activeAgendaItemId ?? undefined
+						activeAgendaItemId: args.activeAgendaItemId ?? undefined,
+						lastResolutionAdoptionDate: args.lastResolutionAdoptionDate ?? undefined
 					})
 					.where(
 						and(

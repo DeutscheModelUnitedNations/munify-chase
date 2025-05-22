@@ -37,6 +37,7 @@ type Committee {
   customSimpleMajority: Int
   customTwoThirdsMajority: Int
   id: ID!
+  lastResolutionAdoptionDate: DateTime
   members(where: CommitteeMemberWhereInputArgument): [CommitteeMember!]!
   name: String!
   paperSupportThreshold: Int
@@ -92,6 +93,7 @@ input CommitteeWhereInputArgument {
   customSimpleMajority: Int
   customTwoThirdsMajority: Int
   id: ID
+  lastResolutionAdoptionDate: DateTime
   members: CommitteeMemberWhereInputArgument
   name: String
   showWhiteboard: Boolean
@@ -257,7 +259,7 @@ type Mutation {
   moveSpeakerToPosition(id: ID!, position: Int!): SpeakerOnList
   removeSpeakerOnList(speakerOnListId: ID!): SpeakersList
   setPresenceForCommitteeMembers(ids: [ID!]!, present: Boolean!): [CommitteeMember!]
-  updateCommittee(activeAgendaItemId: ID, id: ID!, showWhiteboard: Boolean, stateOfDebate: String, status: CommitteeStatusEnum, statusHeadline: String, statusUntil: DateTime, whiteboardContent: String): Committee
+  updateCommittee(activeAgendaItemId: ID, id: ID!, lastResolutionAdoptionDate: DateTime, showWhiteboard: Boolean, stateOfDebate: String, status: CommitteeStatusEnum, statusHeadline: String, statusUntil: DateTime, whiteboardContent: String): Committee
   updateSpeakerOnList(id: ID!, overwriteName: String): SpeakerOnList
   updateSpeakersList(id: ID!, isClosed: Boolean, speakingTime: Int, startTimestamp: DateTime, stopTimer: Boolean = false, timeLeft: Int): SpeakersList
 }

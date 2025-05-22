@@ -93,8 +93,12 @@
 	},
 	"type": "module",
 	"dependencies": {
-		"pg": "^8.15.6",
+		"@tsparticles/confetti": "^3.8.1",
+		"@tsparticles/slim": "^3.8.1",
+		"@tsparticles/svelte": "^3.1.1",
 		"drizzle-kit": "^1.0.0-beta.1-c0277c0",
-		"drizzle-orm": "^1.0.0-beta.1-c0277c0"
+		"drizzle-orm": "^1.0.0-beta.1-c0277c0",
+		"pg": "^8.15.6",
+		"svelte-confetti": "^2.0.0"
 	}
 }

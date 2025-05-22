@@ -90,13 +90,15 @@ schemaBuilder.mutationFields((t) => {
 							})
 							.then(assertFindFirstExists);
 
-						await tx.insert(schema.spokenTimePeriod).values({
-							endTimestamp: new Date(),
-							startTimestamp: speakersList.startTimestamp!,
-							speakersListId: speakersList.id,
-							committeeMemberId: speakersList.speakers[0].committeeMemberId,
-							conferenceMemberId: speakersList.speakers[0].conferenceMemberId
-						});
+						if (speakersList.startTimestamp) {
+							await tx.insert(schema.spokenTimePeriod).values({
+								endTimestamp: new Date(),
+								startTimestamp: speakersList.startTimestamp!,
+								speakersListId: speakersList.id,
+								committeeMemberId: speakersList.speakers[0].committeeMemberId,
+								conferenceMemberId: speakersList.speakers[0].conferenceMemberId
+							});
+						}
 					}
 
 					await tx

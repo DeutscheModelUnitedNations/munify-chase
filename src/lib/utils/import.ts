@@ -1,4 +1,3 @@
-import { regionalGroup } from '$api/db/schema';
 import { z } from 'zod/v4';
 
 export const importDataSchema = z.object({
@@ -21,13 +20,15 @@ export const importDataSchema = z.object({
 				alpha2Code: z.string().optional(),
 				name: z.string().optional(),
 				faIcon: z.string().optional(),
-				regionalGroup: z.enum([
-					'AFRICA',
-					'ASIA_PACIFIC',
-					'EASTERN_EUROPE',
-					'LATIN_AMERICA_CARIBBEAN',
-					'WESTERN_EUROPE_OTHERS'
-				])
+				regionalGroup: z
+					.enum([
+						'AFRICA',
+						'ASIA_PACIFIC',
+						'EASTERN_EUROPE',
+						'LATIN_AMERICA_CARIBBEAN',
+						'WESTERN_EUROPE_OTHERS'
+					])
+					.optional()
 			})
 			.refine(
 				(data) =>
@@ -55,13 +56,14 @@ export const importDataSchema = z.object({
 			id: z.string(),
 			conferenceUserType: z.enum(['ADMIN', 'DELEGATE', 'NON_STATE_ACTOR', 'SPECTATOR', 'TEAM']),
 			userEmail: z.string(),
-			conferenceMemberId: z.string(),
-			committeeMemberId: z.string()
+			//TODO enforce that one has to be set?
+			conferenceMemberId: z.string().optional(),
+			committeeMemberId: z.string().optional()
 		})
 	),
 	agendaItems: z.array(
 		z.object({
-			id: z.string(),
+			id: z.string().optional(),
 			committeeId: z.string(),
 			title: z.string()
 		})

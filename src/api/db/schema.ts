@@ -199,11 +199,11 @@ export const speakerOnList = pgTable(
 
 export const spokenTimePeriod = pgTable('spoken_time_period', {
 	...defaultIdAndTimestamps,
-	committeeMemberId: uuid().references(() => committeeMember.id, { onDelete: 'cascade' }),
-	conferenceMemberId: uuid().references((): AnyPgColumn => conferenceMember.id, {
+	committeeMemberId: text().references(() => committeeMember.id, { onDelete: 'cascade' }),
+	conferenceMemberId: text().references((): AnyPgColumn => conferenceMember.id, {
 		onDelete: 'cascade'
 	}),
-	speakersListId: uuid()
+	speakersListId: text()
 		.references(() => speakersList.id, { onDelete: 'cascade' })
 		.notNull(),
 	startTimestamp: timestamp().notNull(),

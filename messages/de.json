@@ -97,8 +97,12 @@
 	"layoutSelect": "Layout auswählen",
 	"layoutPreset": [
 		{
-			"declarations": ["input preset"],
-			"selectors": ["preset"],
+			"declarations": [
+				"input preset"
+			],
+			"selectors": [
+				"preset"
+			],
 			"match": {
 				"preset=default": "Standard Layout",
 				"preset=smallScreen": "Layout für kleine Bildschirme",
@@ -111,8 +115,12 @@
 	"off": "Aus",
 	"regionalGroups": [
 		{
-			"declarations": ["input group"],
-			"selectors": ["group"],
+			"declarations": [
+				"input group"
+			],
+			"selectors": [
+				"group"
+			],
 			"match": {
 				"group=AFRICA": "Afrika",
 				"group=ASIA_PACIFIC": "Asien",
@@ -238,5 +246,7 @@
 	"conferenceCreationError": "Konferenz konnte nicht erstellt werden",
 	"conferenceCreated": "Konferenz erstellt!",
 	"adoptionAnnouncement": "BREAKING: Verabschiedung einer Resolution zum Thema \"{agendaItem}\" im Gremium {committeeName}",
-	"announceAdoption": "Verabschiedung verkünden"
+	"announceAdoption": "Verabschiedung verkünden",
+	"download": "Download",
+	"speakersListNotFound": "Redeliste nicht gefunden"
 }

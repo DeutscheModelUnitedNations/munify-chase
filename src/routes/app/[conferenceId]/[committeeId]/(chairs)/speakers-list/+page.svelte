@@ -66,7 +66,8 @@
 				<ChairControls
 					committeeId={data.committeeId}
 					{speakersList}
-					members={committee.members}
+					committeeMembers={committee.members}
+					conferenceMembers={committee.conference?.uniqueConferenceMembers ?? []}
 					type="SPEAKERS_LIST"
 					childList={commentList}
 				/>
@@ -81,7 +82,8 @@
 				<CurrentSpeaker speakersList={commentList} />
 				<ChairControls
 					committeeId={data.committeeId}
-					members={committee.members}
+					committeeMembers={committee.members}
+					conferenceMembers={committee.conference?.uniqueConferenceMembers ?? []}
 					speakersList={commentList}
 					otherList={speakersList}
 					type="COMMENT_LIST"

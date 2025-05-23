@@ -73,13 +73,34 @@ query CommitteeTeamQuery($committeeId: ID!) @blocking {
 			}
 		}
 		conference {
-			members {
+			uniqueUNConferenceMembers {
 				id
 				representation {
 					id
 					type
 					name
-					regionalGroup
+					alpha2Code
+					alpha3Code
+					faIcon
+				}
+			}
+			uniqueNSAConferenceMembers {
+				id
+				representation {
+					id
+					type
+					name
+					alpha2Code
+					alpha3Code
+					faIcon
+				}
+			}
+			uniqueConferenceMembers {
+				id
+				representation {
+					id
+					type
+					name
 					alpha2Code
 					alpha3Code
 					faIcon

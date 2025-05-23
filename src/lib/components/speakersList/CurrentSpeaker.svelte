@@ -18,15 +18,20 @@
 	let currentSpeaker = $derived(
 		speakersList?.speakers.toSorted((a, b) => a.position - b.position).at(0)
 	);
+
+	let representation = $derived(
+		currentSpeaker?.committeeMember?.representation ||
+			currentSpeaker?.conferenceMember?.representation
+	);
 </script>
 
 <div class="relative flex items-center gap-6">
 	<div class="relative">
 		{#if currentSpeaker}
 			<Flag
-				alpha2Code={currentSpeaker.committeeMember?.representation?.alpha2Code}
-				nsa={!currentSpeaker.committeeMember?.representation?.alpha2Code}
-				icon={currentSpeaker.committeeMember?.representation?.faIcon}
+				alpha2Code={representation?.alpha2Code}
+				nsa={!!representation?.faIcon}
+				icon={representation?.faIcon}
 				size="lg"
 			/>
 		{:else}
@@ -46,10 +51,7 @@
 	<div class="flex flex-1 flex-col {!currentSpeaker && 'opacity-50'}">
 		{#if currentSpeaker}
 			<h2 class="text-2xl font-bold">
-				{currentSpeaker.committeeMember?.representation?.name ||
-					getTranslatedCountryNameFromAlpha3Code(
-						currentSpeaker.committeeMember?.representation?.alpha3Code
-					)}
+				{representation?.name || getTranslatedCountryNameFromAlpha3Code(representation?.alpha3Code)}
 			</h2>
 		{:else}
 			<h2 class="text-2xl font-bold">

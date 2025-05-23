@@ -21,6 +21,14 @@
 
 	let speakers = $derived(rawSpeakers?.toSorted((a, b) => a.position - b.position).toSpliced(0, 1));
 
+	const getRepresentation = (speaker: NonNullable<Props['rawSpeakers']>[number]) => {
+		return speaker.committeeMember
+			? speaker.committeeMember.representation
+			: speaker.conferenceMember
+				? speaker.conferenceMember.representation
+				: null;
+	};
+
 	const RemoveSpeakerOnListMutation = graphql(`
 		mutation RemoveSpeakerOnListMutation($speakerOnListId: ID!) {
 			removeSpeakerOnList(speakerOnListId: $speakerOnListId) {
@@ -65,6 +73,7 @@
 <div class="flex w-full flex-col">
 	{#if speakers && speakers.length > 0}
 		{#each speakers as speaker, i (speaker.id)}
+			{@const representation = getRepresentation(speaker)}
 			<div
 				class="hover:border-primary/30 border-base-100 card group relative flex flex-row items-center gap-4 border-1 p-4 transition-colors duration-300"
 				animate:flip={{ duration: 500, easing: cubicInOut }}
@@ -73,16 +82,14 @@
 			>
 				<div class="w-4 text-sm opacity-50">{i + 1}.</div>
 				<Flag
-					alpha2Code={speaker.committeeMember?.representation?.alpha2Code}
-					nsa={!speaker.committeeMember?.representation?.alpha2Code}
-					icon={speaker.committeeMember?.representation?.faIcon}
+					alpha2Code={representation?.alpha2Code}
+					nsa={!!representation?.faIcon}
+					icon={representation?.faIcon}
 					size="sm"
 				/>
 				<h2 class="flex-1 text-lg font-bold">
-					{speaker.committeeMember?.representation?.name ||
-						getTranslatedCountryNameFromAlpha3Code(
-							speaker.committeeMember?.representation?.alpha3Code
-						)}
+					{representation?.name ||
+						getTranslatedCountryNameFromAlpha3Code(representation?.alpha3Code)}
 				</h2>
 				<div
 					class="join invisible absolute right-4 opacity-0 transition-all duration-300 group-hover:visible group-hover:opacity-100"

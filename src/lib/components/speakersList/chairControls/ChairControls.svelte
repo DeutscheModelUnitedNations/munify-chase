@@ -14,13 +14,26 @@
 	interface Props {
 		committeeId: string;
 		type: SpeakersListCategoryEnum$options;
-		members: CommitteeTeamQuery$result['findFirstCommittee']['members'];
+		committeeMembers: CommitteeTeamQuery$result['findFirstCommittee']['members'];
+		conferenceMembers: NonNullable<
+			NonNullable<
+				CommitteeTeamQuery$result['findFirstCommittee']['conference']
+			>['uniqueConferenceMembers']
+		>;
 		speakersList?: List;
 		childList?: List;
 		otherList?: List;
 	}
 
-	let { committeeId, members, type, speakersList, childList, otherList }: Props = $props();
+	let {
+		committeeId,
+		committeeMembers,
+		conferenceMembers,
+		type,
+		speakersList,
+		childList,
+		otherList
+	}: Props = $props();
 </script>
 
 <div class="flex flex-col gap-4">
@@ -31,5 +44,5 @@
 		<MoreOptions {type} {speakersList} />
 	</div>
 
-	<AddSpeakers {members} {speakersList} />
+	<AddSpeakers {committeeMembers} {conferenceMembers} {speakersList} />
 </div>

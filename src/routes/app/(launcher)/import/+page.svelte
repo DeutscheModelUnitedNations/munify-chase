@@ -9,6 +9,7 @@
 	import { onMount } from 'svelte';
 	import Flag from '$lib/components/Flag.svelte';
 	import WorldCountries from 'world-countries';
+	import { page } from '$app/state';
 
 	// let { data }: PageData = $props();
 
@@ -69,6 +70,22 @@
 			loading = false;
 			return;
 		}
+	}
+
+	async function downloadFile(): Promise<void> {
+		if (!importData) return;
+		if (!importData.$schema) {
+			importData.$schema = `${page.url.origin}/api/schemas/import`;
+		}
+		const blob = new Blob([JSON.stringify(importData, null, 2)], { type: 'application/json' });
+		const url = URL.createObjectURL(blob);
+		const a = document.createElement('a');
+		a.href = url;
+		a.download = `${importData.title || 'conference'}-import.json`;
+		document.body.appendChild(a);
+		a.click();
+		document.body.removeChild(a);
+		URL.revokeObjectURL(url);
 	}
 
 	async function createConference() {
@@ -148,6 +165,15 @@
 			<i class="fa-duotone fa-arrow-left mr-2"></i>
 			{m.back()}
 		</a>
+		<button
+			class="btn btn-ghost"
+			aria-label="Download import data"
+			onclick={downloadFile}
+			disabled={!importData}
+		>
+			<i class="fa-solid fa-download"></i>
+			{m.download()}
+		</button>
 	</div>
 </div>
 

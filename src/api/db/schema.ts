@@ -196,3 +196,16 @@ export const speakerOnList = pgTable(
 		unique().on(t.speakersListId, t.conferenceMemberId)
 	]
 );
+
+export const spokenTimePeriod = pgTable('spoken_time_period', {
+	...defaultIdAndTimestamps,
+	committeeMemberId: text().references(() => committeeMember.id, { onDelete: 'cascade' }),
+	conferenceMemberId: text().references((): AnyPgColumn => conferenceMember.id, {
+		onDelete: 'cascade'
+	}),
+	speakersListId: text()
+		.references(() => speakersList.id, { onDelete: 'cascade' })
+		.notNull(),
+	startTimestamp: timestamp().notNull(),
+	endTimestamp: timestamp().notNull()
+});

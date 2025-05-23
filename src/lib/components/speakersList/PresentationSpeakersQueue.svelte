@@ -4,7 +4,7 @@
 	import { flip } from 'svelte/animate';
 	import Flag from '../Flag.svelte';
 	import { cubicInOut, cubicOut } from 'svelte/easing';
-	import { blur, fly } from 'svelte/transition';
+	import { fly } from 'svelte/transition';
 	import StripesAlert from './StripesAlert.svelte';
 	import { m } from '$lib/paraglide/messages';
 	import Marquee from 'svelte-fast-marquee';

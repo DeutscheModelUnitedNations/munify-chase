@@ -33,6 +33,12 @@
 		mutation RemoveSpeakerOnListMutation($speakerOnListId: ID!) {
 			removeSpeakerOnList(speakerOnListId: $speakerOnListId) {
 				id
+				speakersList {
+					speakers {
+						id
+						position
+					}
+				}
 			}
 		}
 	`);

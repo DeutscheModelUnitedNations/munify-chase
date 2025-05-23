@@ -72,20 +72,50 @@ schemaBuilder.mutationFields((t) => {
 					throw new GraphQLError('startTimestamp and stopTimer are mutually exclusive');
 				}
 
-				await db
-					.update(schema.speakersList)
-					.set({
-						speakingTime: args.speakingTime ?? undefined,
-						timeLeft: args.timeLeft ?? undefined,
-						startTimestamp: args.stopTimer ? null : (args.startTimestamp ?? undefined),
-						isClosed: args.isClosed ?? undefined
-					})
-					.where(
-						and(
-							eq(schema.speakersList.id, args.id),
-							ctx.abilities.speakersList.filter('update').sql.where
-						)
-					);
+				await db.transaction(async (tx) => {
+					if (args.stopTimer) {
+						const speakersList = await tx.query.speakersList
+							.findFirst({
+								where: {
+									id: args.id
+								},
+								with: {
+									speakers: {
+										orderBy: {
+											position: 'asc'
+										},
+										limit: 1
+									}
+								}
+							})
+							.then(assertFindFirstExists);
+
+						if (speakersList.startTimestamp) {
+							await tx.insert(schema.spokenTimePeriod).values({
+								endTimestamp: new Date(),
+								startTimestamp: speakersList.startTimestamp!,
+								speakersListId: speakersList.id,
+								committeeMemberId: speakersList.speakers[0].committeeMemberId,
+								conferenceMemberId: speakersList.speakers[0].conferenceMemberId
+							});
+						}
+					}
+
+					await tx
+						.update(schema.speakersList)
+						.set({
+							speakingTime: args.speakingTime ?? undefined,
+							timeLeft: args.timeLeft ?? undefined,
+							startTimestamp: args.stopTimer ? null : (args.startTimestamp ?? undefined),
+							isClosed: args.isClosed ?? undefined
+						})
+						.where(
+							and(
+								eq(schema.speakersList.id, args.id),
+								ctx.abilities.speakersList.filter('update').sql.where
+							)
+						);
+				});
 
 				speakersListPubSub.updated(args.id);
 

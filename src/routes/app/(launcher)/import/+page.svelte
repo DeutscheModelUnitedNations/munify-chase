@@ -4,7 +4,7 @@
 	import { graphql, type RepresentationTypeEnum$options } from '$houdini';
 	import toast from 'svelte-french-toast';
 	import { importDataSchema } from '$lib/utils/import';
-	import { z } from 'zod/v4';
+	import { nanoid, z } from 'zod/v4';
 	import Footer from '$lib/components/Footer.svelte';
 	import { onMount } from 'svelte';
 	import Flag from '$lib/components/Flag.svelte';
@@ -70,6 +70,41 @@
 			loading = false;
 			return;
 		}
+	}
+
+	const transformRegionalGroup = (regionalGroup: string | undefined) => {
+		switch (regionalGroup) {
+			case 'African Group':
+				return 'AFRICA';
+			case 'Asia and the Pacific Group':
+				return 'ASIA_PACIFIC';
+			case 'Eastern European Group':
+				return 'EASTERN_EUROPE';
+			case 'Latin American and Caribbean Group':
+				return 'LATIN_AMERICA_CARIBBEAN';
+			case 'Western European and Others Group':
+				return 'WESTERN_EUROPE_OTHERS';
+			default:
+				return undefined;
+		}
+	};
+
+	async function createFreshData(): Promise<void> {
+		importData = {
+			title: '',
+			id: crypto.randomUUID(),
+			committees: [],
+			agendaItems: [],
+			representations: WorldCountries.filter((x) => x.unMember).map((nation) => ({
+				id: crypto.randomUUID(),
+				representationType: 'DELEGATION',
+				alpha3Code: nation.cca3,
+				alpha2Code: nation.cca3,
+				regionalGroup: transformRegionalGroup(nation.unRegionalGroup)
+			})),
+			conferenceMembers: [],
+			committeeMembers: []
+		} as unknown as z.infer<typeof importDataSchema>;
 	}
 
 	async function downloadFile(): Promise<void> {
@@ -193,6 +228,14 @@
 				{:else}
 					<i class="fas fa-paper-plane"></i>
 					<span>{m.upload()}</span>
+				{/if}
+			</button>
+			<button class="btn w-full" onclick={createFreshData} disabled={loading}>
+				{#if loading}
+					<span class="loading loading-spinner"></span>
+				{:else}
+					<i class="fas fa-plus"></i>
+					<span>{m.create()}</span>
 				{/if}
 			</button>
 		</div>
@@ -439,7 +482,7 @@
 	{/if}
 
 	<button
-		class="btn btn-primary fixed right-0 bottom-0 left-0 m-4"
+		class="btn btn-primary fixed right-0 bottom-0 left-0 z-50 m-4"
 		aria-label="Create conference"
 		onclick={createConference}
 		disabled={!importData || loading}

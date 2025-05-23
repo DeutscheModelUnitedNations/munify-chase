@@ -248,5 +248,6 @@
 	"adoptionAnnouncement": "BREAKING: Verabschiedung einer Resolution zum Thema \"{agendaItem}\" im Gremium {committeeName}",
 	"announceAdoption": "Verabschiedung verkünden",
 	"download": "Download",
-	"speakersListNotFound": "Redeliste nicht gefunden"
+	"speakersListNotFound": "Redeliste nicht gefunden",
+	"create": "Erstellen"
 }

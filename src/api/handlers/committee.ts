@@ -8,6 +8,7 @@ import {
 	schemaBuilder,
 	arg as rumbleArg
 } from '$api/rumble';
+import { isDMUNEmail } from '$api/services/isDMUNEmail';
 import { assertFirstEntryExists } from '@m1212e/rumble';
 import { and, count, eq, type InferSelectModel } from 'drizzle-orm';
 
@@ -15,7 +16,12 @@ const statusEnum = enum_({
 	tsName: 'committeeStatus'
 });
 
-abilityBuilder.committee.allow(['read', 'update']);
+abilityBuilder.committee.allow(['read', 'update']).when(({ mustBeLoggedIn }) => {
+	const user = mustBeLoggedIn();
+	if (user?.email && isDMUNEmail(user.email)) {
+		return 'allow';
+	}
+});
 
 const getTotalPresentCount = async (
 	parent: InferSelectModel<typeof schema.committee> & {

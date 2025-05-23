@@ -2,10 +2,16 @@ import { db } from '$api/db/db';
 import { abilityBuilder, schemaBuilder } from '$api/rumble';
 import { and, inArray } from 'drizzle-orm';
 import { basics } from './basics';
+import { isDMUNEmail } from '$api/services/isDMUNEmail';
 
 const { arg, ref, pubsub, table } = basics('committeeMember');
 
-abilityBuilder.committeeMember.allow(['read', 'update']);
+abilityBuilder.committeeMember.allow(['read', 'update']).when(({ mustBeLoggedIn }) => {
+	const user = mustBeLoggedIn();
+	if (user?.email && isDMUNEmail(user.email)) {
+		return 'allow';
+	}
+});
 
 schemaBuilder.mutationFields((t) => {
 	return {

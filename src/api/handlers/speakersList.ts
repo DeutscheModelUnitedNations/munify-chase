@@ -12,6 +12,7 @@ import { basics } from './basics';
 import { assertFindFirstExists } from '@m1212e/rumble';
 import { GraphQLError } from 'graphql';
 import { SpeakerOnListRef, SpeakerOnWhereArgs } from './speakerOnList';
+import { isDMUNEmail } from '$api/services/isDMUNEmail';
 
 // const { arg, ref, pubsub: speakersListPubSub, table } = basics('speakersList');
 
@@ -48,7 +49,12 @@ query({
 	table: 'speakersList'
 });
 
-abilityBuilder.speakersList.allow(['read', 'update', 'delete']);
+abilityBuilder.speakersList.allow(['read', 'update', 'delete']).when(({ mustBeLoggedIn }) => {
+	const user = mustBeLoggedIn();
+	if (user?.email && isDMUNEmail(user.email)) {
+		return 'allow';
+	}
+});
 
 schemaBuilder.mutationFields((t) => {
 	return {

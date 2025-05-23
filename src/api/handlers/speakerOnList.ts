@@ -2,9 +2,10 @@ import { abilityBuilder, schemaBuilder } from '$api/rumble';
 import { GraphQLError } from 'graphql';
 import { basics } from './basics';
 import { db, schema } from '$api/db/db';
-import { and, count, eq, gt, gte, lt, lte, sql } from 'drizzle-orm';
+import { and, count, eq, gt, gte, sql } from 'drizzle-orm';
 import { assertFindFirstExists, assertFirstEntryExists } from '@m1212e/rumble';
 import { SpeakersListRef } from './speakersList';
+import { isDMUNEmail } from '$api/services/isDMUNEmail';
 
 const { arg, ref, pubsub, table } = basics('speakerOnList');
 
@@ -14,7 +15,12 @@ export const SpeakerOnWhereArgs = arg;
 // TODO: These could use some validation for the position values. E.g. only allow positons
 // which are in bounds and so on
 
-abilityBuilder.speakerOnList.allow(['read', 'update', 'delete']);
+abilityBuilder.speakerOnList.allow(['read', 'update', 'delete']).when(({ mustBeLoggedIn }) => {
+	const user = mustBeLoggedIn();
+	if (user?.email && isDMUNEmail(user.email)) {
+		return 'allow';
+	}
+});
 
 schemaBuilder.mutationFields((t) => {
 	return {

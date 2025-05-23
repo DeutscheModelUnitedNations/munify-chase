@@ -1,5 +1,6 @@
 import { schema } from '$api/db/db';
 import { abilityBuilder, schemaBuilder } from '$api/rumble';
+import { isDMUNEmail } from '$api/services/isDMUNEmail';
 import { basics } from './basics';
 import { and, eq } from 'drizzle-orm';
 
@@ -13,8 +14,9 @@ abilityBuilder.user.allow('read').when(({ oidc }) => {
 	}
 });
 
-abilityBuilder.user.allow('read').when(({ oidc }) => {
-	if (oidc?.user) {
+abilityBuilder.user.allow('read').when(({ mustBeLoggedIn }) => {
+	const user = mustBeLoggedIn();
+	if (user?.email && isDMUNEmail(user.email)) {
 		return 'allow';
 	}
 });

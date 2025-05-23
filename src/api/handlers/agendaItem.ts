@@ -8,6 +8,7 @@ import {
 	schemaBuilder,
 	arg as rumbleArg
 } from '$api/rumble';
+import { isDMUNEmail } from '$api/services/isDMUNEmail';
 import { assertFirstEntryExists } from '@m1212e/rumble';
 import { and, count, eq, type InferSelectModel } from 'drizzle-orm';
 
@@ -36,4 +37,9 @@ query({
 	table: 'agendaItem'
 });
 
-abilityBuilder.agendaItem.allow(['read']);
+abilityBuilder.agendaItem.allow(['read']).when(({ mustBeLoggedIn }) => {
+	const user = mustBeLoggedIn();
+	if (user?.email && isDMUNEmail(user.email)) {
+		return 'allow';
+	}
+});

@@ -13,6 +13,7 @@ query MissionControlQuery($conferenceId: ID!) {
 			statusHeadline
 			statusUntil
 			stateOfDebate
+			lastResolutionAdoptionDate
 		}
 	}
 }

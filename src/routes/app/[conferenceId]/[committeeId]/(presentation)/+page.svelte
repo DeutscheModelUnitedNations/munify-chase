@@ -23,6 +23,7 @@
 	import ShowOfHandsVotingPresentation from '$lib/components/voting/ShowOfHandsVotingPresentation.svelte';
 	import RollCallVotingPresentation from '$lib/components/voting/RollCallVotingPresentation.svelte';
 	import { browser } from '$app/environment';
+	import AdoptionConfetti from '$lib/components/AdoptionConfetti.svelte';
 
 	let { data }: { data: PageData } = $props();
 
@@ -176,6 +177,13 @@
 
 	<ShowOfHandsVotingPresentation committeeSettings={$committeeSettings} />
 	<RollCallVotingPresentation committeeSettings={$committeeSettings} {committee} />
+
+	<AdoptionConfetti
+		lastAdoptionDate={committee?.lastResolutionAdoptionDate}
+		agendaItem={committee?.activeAgendaItem?.title ?? m.unknown()}
+		committeeName={committee?.name ?? m.unknown()}
+		confettiDurationSec={90}
+	/>
 {:else}
 	<UndrawError
 		undrawImage={emptyStreet}

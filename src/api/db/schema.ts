@@ -3,12 +3,15 @@ import {
 	text,
 	timestamp,
 	unique,
-	uuid,
 	pgEnum,
 	boolean,
 	smallint,
 	type AnyPgColumn
 } from 'drizzle-orm/pg-core';
+import { customAlphabet } from 'nanoid';
+
+// https://github.com/CyberAP/nanoid-dictionary?tab=readme-ov-file#nolookalikessafe
+const nanoid = customAlphabet('6789BCDFGHJKLMNPQRTWbcdfghjkmnpqrtwz', 30);
 
 const defaultTimestamps = {
 	createdAt: timestamp().defaultNow().notNull(),
@@ -17,12 +20,14 @@ const defaultTimestamps = {
 		.$onUpdate(() => new Date())
 };
 const defaultIdAndTimestamps = {
-	id: uuid().defaultRandom().primaryKey().notNull(),
+	id: text()
+		.$defaultFn(() => nanoid())
+		.primaryKey()
+		.notNull(),
 	...defaultTimestamps
 };
 
 export const user = pgTable('user', {
-	// we can't use uuid for this because the ID provider might not stick to uuid format
 	id: text().primaryKey().unique().notNull(),
 	...defaultTimestamps,
 
@@ -53,7 +58,7 @@ export const committee = pgTable(
 		...defaultIdAndTimestamps,
 		name: text().notNull(),
 		abbreviation: text().notNull(),
-		conferenceId: uuid()
+		conferenceId: text()
 			.notNull()
 			.references(() => conference.id, { onDelete: 'cascade' }),
 		whiteboardContent: text().default('<p></p>'),
@@ -63,11 +68,12 @@ export const committee = pgTable(
 		statusUntil: timestamp({ mode: 'date' }).defaultNow().notNull(),
 		stateOfDebate: text(),
 		allowDelegationsToAddThemselvesToSpeakersList: boolean().notNull().default(false),
-		activeAgendaItemId: uuid().references((): AnyPgColumn => agendaItem.id),
+		activeAgendaItemId: text().references((): AnyPgColumn => agendaItem.id),
 		//TODO should these defaults be set at DB level?
 		customSimpleMajority: smallint(), // 50% by default
 		customTwoThirdsMajority: smallint(), // 66% by default
-		customPaperSupportThreshold: smallint() // 10% by default
+		customPaperSupportThreshold: smallint(), // 10% by default
+		lastResolutionAdoptionDate: timestamp({ mode: 'date' })
 	},
 	(t) => [unique().on(t.conferenceId, t.name), unique().on(t.conferenceId, t.abbreviation)]
 );
@@ -99,7 +105,7 @@ export const representation = pgTable(
 		type: representationType().notNull(),
 		faIcon: text(),
 		regionalGroup: regionalGroup(),
-		conferenceId: uuid()
+		conferenceId: text()
 			.notNull()
 			.references(() => conference.id, { onDelete: 'cascade' })
 	},
@@ -111,10 +117,10 @@ export const representation = pgTable(
 
 export const conferenceMember = pgTable('conference_member', {
 	...defaultIdAndTimestamps,
-	conferenceId: uuid()
+	conferenceId: text()
 		.notNull()
 		.references(() => conference.id, { onDelete: 'cascade' }),
-	representationId: uuid()
+	representationId: text()
 		.notNull()
 		.references(() => representation.id)
 });
@@ -122,10 +128,10 @@ export const conferenceMember = pgTable('conference_member', {
 export const committeeMember = pgTable('committee_member', {
 	...defaultIdAndTimestamps,
 	present: boolean().notNull().default(false),
-	committeeId: uuid()
+	committeeId: text()
 		.notNull()
 		.references(() => committee.id, { onDelete: 'cascade' }),
-	representationId: uuid()
+	representationId: text()
 		.notNull()
 		.references(() => representation.id)
 });
@@ -134,16 +140,16 @@ export const conferenceUser = pgTable('conference_user', {
 	...defaultIdAndTimestamps,
 	conferenceUserType: conferenceUserType().notNull(),
 	userEmail: text().notNull(), // using email instead of uuid to allow creating OIDC users by email adress without having to wait for the user to create an account
-	conferenceId: uuid()
+	conferenceId: text()
 		.notNull()
 		.references(() => conference.id, { onDelete: 'cascade' }),
-	conferenceMemberId: uuid().references(() => conferenceMember.id, { onDelete: 'cascade' }),
-	committeeMemberId: uuid().references(() => committeeMember.id, { onDelete: 'cascade' })
+	conferenceMemberId: text().references(() => conferenceMember.id, { onDelete: 'cascade' }),
+	committeeMemberId: text().references(() => committeeMember.id, { onDelete: 'cascade' })
 });
 
 export const agendaItem = pgTable('agenda_item', {
 	...defaultIdAndTimestamps,
-	committeeId: uuid()
+	committeeId: text()
 		.references(() => committee.id, { onDelete: 'cascade' })
 		.notNull(),
 	title: text().notNull()
@@ -158,7 +164,7 @@ export const speakersList = pgTable(
 	'speakers_list',
 	{
 		...defaultIdAndTimestamps,
-		agendaItemId: uuid()
+		agendaItemId: text()
 			.references(() => agendaItem.id, { onDelete: 'cascade' })
 			.notNull(),
 		type: speakersListCategory().notNull(),
@@ -174,11 +180,11 @@ export const speakerOnList = pgTable(
 	'speaker_on_list',
 	{
 		...defaultIdAndTimestamps,
-		committeeMemberId: uuid().references(() => committeeMember.id, { onDelete: 'cascade' }),
-		conferenceMemberId: uuid().references((): AnyPgColumn => conferenceMember.id, {
+		committeeMemberId: text().references(() => committeeMember.id, { onDelete: 'cascade' }),
+		conferenceMemberId: text().references((): AnyPgColumn => conferenceMember.id, {
 			onDelete: 'cascade'
 		}),
-		speakersListId: uuid()
+		speakersListId: text()
 			.references(() => speakersList.id, { onDelete: 'cascade' })
 			.notNull(),
 		position: smallint().notNull(),
@@ -190,3 +196,16 @@ export const speakerOnList = pgTable(
 		unique().on(t.speakersListId, t.conferenceMemberId)
 	]
 );
+
+export const spokenTimePeriod = pgTable('spoken_time_period', {
+	...defaultIdAndTimestamps,
+	committeeMemberId: text().references(() => committeeMember.id, { onDelete: 'cascade' }),
+	conferenceMemberId: text().references((): AnyPgColumn => conferenceMember.id, {
+		onDelete: 'cascade'
+	}),
+	speakersListId: text()
+		.references(() => speakersList.id, { onDelete: 'cascade' })
+		.notNull(),
+	startTimestamp: timestamp().notNull(),
+	endTimestamp: timestamp().notNull()
+});

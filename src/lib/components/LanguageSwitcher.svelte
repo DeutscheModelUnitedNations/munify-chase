@@ -26,7 +26,7 @@
 </script>
 
 <button
-	class="btn btn-lg relative flex-1 text-2xl"
+	class="btn btn-lg relative min-h-10 flex-1 text-2xl"
 	onclick={() => {
 		locale = getNextLocale();
 		window.location.href = localizeHref(page.url.pathname, { locale: getNextLocale() });

@@ -14,6 +14,7 @@ export const CommitteeSubscription = graphql(`
 			simpleMajority
 			twoThirdsMajority
 			paperSupportThreshold
+			lastResolutionAdoptionDate
 			activeAgendaItem {
 				id
 				title
@@ -76,6 +77,41 @@ export const CommitteeSubscription = graphql(`
 					alpha2Code
 					alpha3Code
 					faIcon
+				}
+			}
+			conference {
+				uniqueUNConferenceMembers {
+					id
+					representation {
+						id
+						type
+						name
+						alpha2Code
+						alpha3Code
+						faIcon
+					}
+				}
+				uniqueNSAConferenceMembers {
+					id
+					representation {
+						id
+						type
+						name
+						alpha2Code
+						alpha3Code
+						faIcon
+					}
+				}
+				uniqueConferenceMembers {
+					id
+					representation {
+						id
+						type
+						name
+						alpha2Code
+						alpha3Code
+						faIcon
+					}
 				}
 			}
 		}

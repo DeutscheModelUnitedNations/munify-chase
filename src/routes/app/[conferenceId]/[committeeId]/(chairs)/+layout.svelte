@@ -11,6 +11,7 @@
 	import BellIcon from '$lib/components/toast/BellIcon.svelte';
 	import { serverTime } from '$lib/state/serverTime.svelte';
 	import hotkeys from 'hotkeys-js';
+	import AdoptionConfetti from '$lib/components/AdoptionConfetti.svelte';
 
 	interface Props {
 		children: Snippet;
@@ -99,4 +100,11 @@
 <StateOfDebateChangerModal
 	committeeId={data.committeeId}
 	oldStateOfDebate={committee?.stateOfDebate}
+/>
+
+<AdoptionConfetti
+	lastAdoptionDate={committee?.lastResolutionAdoptionDate}
+	agendaItem={committee?.activeAgendaItem?.title ?? m.unknown()}
+	committeeName={committee?.name ?? m.unknown()}
+	confettiDurationSec={20}
 />

@@ -7,7 +7,6 @@
 	import { m } from '$lib/paraglide/messages';
 	import { getTranslatedCountryNameFromAlpha3Code } from '$lib/utils/nationTranslationHelper.svelte';
 	import { promiseToastStrings } from '$lib/utils/toast';
-	import { Tooltip } from 'bits-ui';
 	import Fuse, { type IFuseOptions } from 'fuse.js';
 	import hotkeys from 'hotkeys-js';
 	import toast from 'svelte-french-toast';
@@ -18,12 +17,21 @@
 					CommitteeTeamQuery$result['findFirstCommittee']['activeAgendaItem']
 			  >['speakersList'][number]
 			| null;
-		members: CommitteeTeamQuery$result['findFirstCommittee']['members'];
+		committeeMembers: CommitteeTeamQuery$result['findFirstCommittee']['members'];
+		conferenceMembers: NonNullable<
+			NonNullable<
+				CommitteeTeamQuery$result['findFirstCommittee']['conference']
+			>['uniqueConferenceMembers']
+		>;
 	}
 
-	let { speakersList, members }: Props = $props();
+	let { speakersList, committeeMembers, conferenceMembers }: Props = $props();
 
-	type Member = NonNullable<typeof members>[number];
+	type Member =
+		| NonNullable<typeof committeeMembers>[number]
+		| NonNullable<typeof conferenceMembers>[number];
+
+	let members = $derived([...committeeMembers, ...conferenceMembers]);
 
 	let value = $state('');
 	let focused = $state(false);
@@ -41,7 +49,7 @@
 		shouldSort: true
 	};
 
-	let fuse = $state(new Fuse(members ?? [], fuseOptions));
+	let fuse = $state(new Fuse(committeeMembers ?? [], fuseOptions));
 
 	const filter = (members: Member[], value: string) => {
 		const excludeMembersAlreadyOnList = (member: Member) => {
@@ -63,8 +71,16 @@
 	};
 
 	const AddSpeakerToListMutation = graphql(`
-		mutation AddSpeakerToList($committeeMemberId: ID!, $speakersListId: ID!) {
-			addSpeakerOnList(committeeMemberId: $committeeMemberId, speakersListId: $speakersListId) {
+		mutation AddSpeakerToList(
+			$committeeMemberId: ID
+			$conferenceMemberId: ID
+			$speakersListId: ID!
+		) {
+			addSpeakerOnList(
+				committeeMemberId: $committeeMemberId
+				conferenceMemberId: $conferenceMemberId
+				speakersListId: $speakersListId
+			) {
 				id
 				speakersList {
 					id
@@ -74,20 +90,26 @@
 	`);
 
 	const addSpeakerToList = async () => {
-		if (!speakersList?.id) return;
+		if (!speakersList?.id) {
+			toast.error(m.speakersListNotFound());
+			return;
+		}
 		if (!value) return;
-		const committeeMember = members.find((x) => getName(x) === value);
 
-		if (!committeeMember) {
+		const committeeMember = committeeMembers.find((x) => getName(x) === value);
+		const conferenceMember = conferenceMembers.find((x) => getName(x) === value);
+
+		if (!committeeMember && !conferenceMember) {
 			return;
 		}
 
 		await toast.promise(
 			AddSpeakerToListMutation.mutate({
-				committeeMemberId: committeeMember.id,
+				committeeMemberId: committeeMember?.id,
+				conferenceMemberId: conferenceMember?.id,
 				speakersListId: speakersList.id
 			}),
-			promiseToastStrings(getName(committeeMember), 'add')
+			promiseToastStrings(getName(committeeMember ? committeeMember : conferenceMember!), 'add')
 		);
 
 		value = '';
@@ -118,7 +140,7 @@
 <Combobox
 	bind:value
 	bind:focused
-	options={members ?? []}
+	options={members}
 	filter={(member, value) => filter(member, value)}
 	placeholder="Search for a country"
 	getStringValue={(member) => getName(member)}
@@ -135,7 +157,7 @@
 		<span class="ml-2 flex-1">
 			{getName(option)}
 		</span>
-		{#if !option.present}
+		{#if option.present && !option.present}
 			<i class="fa-duotone fa-user-xmark mr-4"></i>
 		{/if}
 	{/snippet}
@@ -144,7 +166,7 @@
 		<button
 			class="btn btn-lg btn-square join-item"
 			aria-label="add-speaker"
-			onclick={addSpeakerToList}
+			onclick={() => addSpeakerToList()}
 		>
 			<i class="fas fa-plus"></i>
 		</button>

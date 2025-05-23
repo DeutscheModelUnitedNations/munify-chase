@@ -37,6 +37,7 @@ type Committee {
   customSimpleMajority: Int
   customTwoThirdsMajority: Int
   id: ID!
+  lastResolutionAdoptionDate: DateTime
   members(where: CommitteeMemberWhereInputArgument): [CommitteeMember!]!
   name: String!
   paperSupportThreshold: Int
@@ -60,6 +61,7 @@ type CommitteeMember {
   representation(where: RepresentationWhereInputArgument): Representation
   representationId: ID!
   updatedAt: DateTime
+  user(where: ConferenceUserWhereInputArgument): ConferenceUser
 }
 
 input CommitteeMemberWhereInputArgument {
@@ -70,6 +72,7 @@ input CommitteeMemberWhereInputArgument {
   representation: RepresentationWhereInputArgument
   representationId: ID
   updatedAt: DateTime
+  user: ConferenceUserWhereInputArgument
 }
 
 enum CommitteeStatusEnum {
@@ -92,6 +95,7 @@ input CommitteeWhereInputArgument {
   customSimpleMajority: Int
   customTwoThirdsMajority: Int
   id: ID
+  lastResolutionAdoptionDate: DateTime
   members: CommitteeMemberWhereInputArgument
   name: String
   showWhiteboard: Boolean
@@ -111,6 +115,21 @@ type Conference {
   pressWebsite: String
   representations(where: RepresentationWhereInputArgument): [Representation!]!
   title: String!
+
+  """
+  Returns a conference member for each existent non state actor. Useful to display a non duplicated list of non state actors.
+  """
+  uniqueConferenceMembers(where: ConferenceMemberWhereInputArgument): [ConferenceMember!]
+
+  """
+  Returns a conference member for each existent non state actor. Useful to display a non duplicated list of non state actors.
+  """
+  uniqueNSAConferenceMembers(where: ConferenceMemberWhereInputArgument): [ConferenceMember!]
+
+  """
+  Returns a conference member for each existent non state actor. Useful to display a non duplicated list of non state actors.
+  """
+  uniqueUNConferenceMembers(where: ConferenceMemberWhereInputArgument): [ConferenceMember!]
   updatedAt: DateTime
   users(where: ConferenceUserWhereInputArgument): [ConferenceUser!]!
 }
@@ -124,6 +143,7 @@ type ConferenceMember {
   representationId: ID!
   speakerOnList(where: SpeakerOnListWhereInputArgument): [SpeakerOnList!]!
   updatedAt: DateTime
+  user(where: ConferenceUserWhereInputArgument): ConferenceUser
 }
 
 input ConferenceMemberWhereInputArgument {
@@ -135,6 +155,7 @@ input ConferenceMemberWhereInputArgument {
   representationId: ID
   speakerOnList: SpeakerOnListWhereInputArgument
   updatedAt: DateTime
+  user: ConferenceUserWhereInputArgument
 }
 
 type ConferenceUser {
@@ -193,6 +214,59 @@ A date-time string at UTC, such as 2007-12-03T10:15:30Z, compliant with the `dat
 """
 scalar DateTime
 
+"""Import data. You can find the JSON schema here: /api/schema/import"""
+input ImportData {
+  agendaItems: [ImportDataAgendaItem!]!
+  committeeMembers: [ImportDataCommitteeMember!]!
+  committees: [ImportDataCommittee!]!
+  conferenceMembers: [ImportDataConferenceMember!]!
+  conferenceUsers: [ImportDataConferenceUser!]!
+  id: ID!
+  representations: [ImportDataRepresentation!]!
+  title: String!
+}
+
+input ImportDataAgendaItem {
+  committeeId: ID!
+  id: ID
+  title: String!
+}
+
+input ImportDataCommittee {
+  abbreviation: String!
+  id: ID!
+  name: String!
+}
+
+input ImportDataCommitteeMember {
+  committeeId: ID!
+  id: ID!
+  representationId: ID!
+}
+
+input ImportDataConferenceMember {
+  id: ID!
+  representationId: ID!
+}
+
+input ImportDataConferenceUser {
+  committeeMemberId: ID
+  conferenceMemberId: ID
+  conferenceUserType: ConferenceUserTypeEnum!
+  id: ID
+  userEmail: String!
+}
+
+input ImportDataRepresentation {
+  alpha2Code: String
+  alpha3Code: String
+  faIcon: String
+  id: ID!
+  name: String
+  regionalGroup: RegionalGroupEnum
+  representationType: RepresentationTypeEnum!
+}
+
 """
 The `JSON` scalar type represents JSON values as specified by [ECMA-404](http://www.ecma-international.org/publications/files/ECMA-ST/ECMA-404.pdf).
 """
@@ -201,10 +275,11 @@ scalar JSON
 type Mutation {
   addSpeakerOnList(committeeMemberId: ID, conferenceMemberId: ID, position: Int, speakersListId: ID!): SpeakerOnList
   clearSpeakersList(id: ID!): SpeakersList
+  importDelegatorConference(data: ImportData!): Conference
   moveSpeakerToPosition(id: ID!, position: Int!): SpeakerOnList
   removeSpeakerOnList(speakerOnListId: ID!): SpeakersList
   setPresenceForCommitteeMembers(ids: [ID!]!, present: Boolean!): [CommitteeMember!]
-  updateCommittee(activeAgendaItemId: ID, id: ID!, showWhiteboard: Boolean, stateOfDebate: String, status: CommitteeStatusEnum, statusHeadline: String, statusUntil: DateTime, whiteboardContent: String): Committee
+  updateCommittee(activeAgendaItemId: ID, id: ID!, lastResolutionAdoptionDate: DateTime, showWhiteboard: Boolean, stateOfDebate: String, status: CommitteeStatusEnum, statusHeadline: String, statusUntil: DateTime, whiteboardContent: String): Committee
   updateSpeakerOnList(id: ID!, overwriteName: String): SpeakerOnList
   updateSpeakersList(id: ID!, isClosed: Boolean, speakingTime: Int, startTimestamp: DateTime, stopTimer: Boolean = false, timeLeft: Int): SpeakersList
 }
@@ -369,7 +444,7 @@ type User {
   email: String!
   familyName: String!
   givenName: String!
-  id: String!
+  id: ID!
   locale: String
   preferredUsername: String!
   updatedAt: DateTime
@@ -381,7 +456,7 @@ input UserWhereInputArgument {
   email: String
   familyName: String
   givenName: String
-  id: String
+  id: ID
   locale: String
   preferredUsername: String
   updatedAt: DateTime

@@ -4,7 +4,7 @@ import * as schema from './schema';
 export const relations = defineRelations(schema, (r) => ({
 	user: {
 		conferenceMemberships: r.many.conferenceUser({
-			from: r.user.id,
+			from: r.user.email,
 			to: r.conferenceUser.userEmail
 		})
 	},
@@ -48,12 +48,17 @@ export const relations = defineRelations(schema, (r) => ({
 		representation: r.one.representation({
 			from: r.committeeMember.representationId,
 			to: r.representation.id
+		}),
+		user: r.one.conferenceUser({
+			from: r.committeeMember.id,
+			to: r.conferenceUser.committeeMemberId,
+			optional: true
 		})
 	},
 	conferenceUser: {
 		user: r.one.user({
 			from: r.conferenceUser.userEmail,
-			to: r.user.id
+			to: r.user.email
 		}),
 		conference: r.one.conference({
 			from: r.conferenceUser.conferenceId,
@@ -86,6 +91,11 @@ export const relations = defineRelations(schema, (r) => ({
 		speakerOnList: r.many.speakerOnList({
 			from: r.conferenceMember.id,
 			to: r.speakerOnList.conferenceMemberId
+		}),
+		user: r.one.conferenceUser({
+			from: r.conferenceMember.id,
+			to: r.conferenceUser.conferenceMemberId,
+			optional: true
 		})
 	},
 	agendaItem: {
@@ -120,6 +130,20 @@ export const relations = defineRelations(schema, (r) => ({
 		conferenceMember: r.one.conferenceMember({
 			from: r.speakerOnList.conferenceMemberId,
 			to: r.conferenceMember.id
+		})
+	},
+	spokenTimePeriod: {
+		committeeMember: r.one.committeeMember({
+			from: r.spokenTimePeriod.committeeMemberId,
+			to: r.committeeMember.id
+		}),
+		conferenceMember: r.one.conferenceMember({
+			from: r.spokenTimePeriod.conferenceMemberId,
+			to: r.conferenceMember.id
+		}),
+		speakersList: r.one.speakersList({
+			from: r.spokenTimePeriod.speakersListId,
+			to: r.speakersList.id
 		})
 	}
 }));

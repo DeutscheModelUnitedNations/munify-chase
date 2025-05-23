@@ -1,4 +1,4 @@
 ---
-title: "✨ feature: "
+title: '✨ feature: '
 labels: feature
 ---

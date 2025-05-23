@@ -1,0 +1,19 @@
+query MissionControlQuery($conferenceId: ID!) {
+	findFirstConference(where: { id: $conferenceId }) {
+		id
+		committees {
+			id
+			name
+			abbreviation
+			activeAgendaItem {
+				id
+				title
+			}
+			status
+			statusHeadline
+			statusUntil
+			stateOfDebate
+			lastResolutionAdoptionDate
+		}
+	}
+}

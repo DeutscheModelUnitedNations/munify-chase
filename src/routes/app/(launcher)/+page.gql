@@ -1,0 +1,10 @@
+query LauncherQuery($userId: ID!) @blocking {
+	findManyConferenceUser(where: { user: { id: $userId } }) {
+		id
+		conferenceUserType
+		conference {
+			id
+			title
+		}
+	}
+}

@@ -1,4 +1,4 @@
 ---
-title: "🐞 fix: "
+title: '🐞 fix: '
 labels: bug
 ---

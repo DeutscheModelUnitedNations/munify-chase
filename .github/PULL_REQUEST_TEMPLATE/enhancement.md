@@ -1,5 +1,4 @@
 ---
-title: "🚀 enhancement: "
+title: '🚀 enhancement: '
 labels: enhancement
-
 ---

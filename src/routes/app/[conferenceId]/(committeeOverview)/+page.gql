@@ -1,0 +1,18 @@
+query CommitteeOverviewQuery($conferenceId: ID!) {
+	findFirstConference(where: { id: $conferenceId }) {
+		id
+		committees {
+			id
+			name
+			abbreviation
+			lastResolutionAdoptionDate
+			activeAgendaItem {
+				id
+				title
+			}
+			status
+			statusHeadline
+			statusUntil
+		}
+	}
+}

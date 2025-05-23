@@ -1,4 +1,4 @@
 ---
-title: "📚 docs: "
+title: '📚 docs: '
 labels: documentation
 ---

@@ -34,8 +34,7 @@ export const importDataSchema = z.object({
 				(data) =>
 					(data.representationType === 'DELEGATION' && data.alpha3Code && data.alpha2Code) ||
 					(data.representationType === 'NSA' && data.name && data.faIcon) ||
-					(data.representationType === 'UN' &&
-						((data.name && data.faIcon) || (data.name && data.alpha3Code && data.alpha2Code)))
+					data.representationType === 'UN'
 			)
 	),
 	conferenceMembers: z.array(

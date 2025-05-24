@@ -160,16 +160,18 @@ schemaBuilder.mutationFields((t) => ({
 					}))
 				);
 
-				await tx.insert(schema.conferenceUser).values(
-					data.conferenceUsers.map((user) => ({
-						id: user.id ?? undefined,
-						conferenceUserType: user.conferenceUserType,
-						userEmail: user.userEmail,
-						conferenceMemberId: user.conferenceMemberId,
-						committeeMemberId: user.committeeMemberId,
-						conferenceId: data.id
-					}))
-				);
+				if (data.conferenceUsers.length !== 0) {
+					await tx.insert(schema.conferenceUser).values(
+						data.conferenceUsers.map((user) => ({
+							id: user.id ?? undefined,
+							conferenceUserType: user.conferenceUserType,
+							userEmail: user.userEmail,
+							conferenceMemberId: user.conferenceMemberId,
+							committeeMemberId: user.committeeMemberId,
+							conferenceId: data.id
+						}))
+					);
+				}
 
 				// if the creating user is not found in the dataset, we want to make them an admin anyway!
 				if (!data.conferenceUsers.find((u) => u.userEmail === ctx.oidc!.user.email)) {

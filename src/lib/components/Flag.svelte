@@ -5,6 +5,7 @@
 		size?: 'xs' | 'sm' | 'md' | 'lg' | 'full';
 		alpha2Code?: string | null;
 		nsa?: boolean;
+		un?: boolean;
 		icon?: string | null;
 		placeholder?: boolean;
 	}
@@ -13,6 +14,7 @@
 		size = 'md',
 		alpha2Code,
 		nsa = false,
+		un = false,
 		icon = 'fa-bullhorn',
 		placeholder = false
 	}: Props = $props();
@@ -68,7 +70,7 @@
 	{:else if nsa}
 		<i class="fa-solid fa-{icon?.replace('fa-', '')} {iconClassNames()}"></i>
 	{:else}
-		<span class="fi fi-{alpha2Code}"></span>
+		<span class="fi fi-{un ? 'un' : alpha2Code}"></span>
 	{/if}
 </div>
 

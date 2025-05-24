@@ -176,12 +176,7 @@
 						<div
 							class="hover:bg-base-200 card flex w-full flex-row items-center gap-4 p-2 transition-all duration-300"
 						>
-							<Flag
-								nsa={!!rep?.faIcon}
-								icon={rep?.faIcon ?? undefined}
-								size="sm"
-								alpha2Code={rep?.alpha2Code}
-							/>
+							<Flag un size="sm" />
 							<h3 class="flex-1 text-lg">
 								{#if rep && rep.name}
 									{rep.name}

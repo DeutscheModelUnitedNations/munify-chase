@@ -67,7 +67,8 @@
 				<div class="w-4 text-sm opacity-50">{i + 1}.</div>
 				<Flag
 					alpha2Code={speaker.committeeMember?.representation?.alpha2Code}
-					nsa={!speaker.committeeMember?.representation?.alpha2Code}
+					nsa={speaker.committeeMember?.representation?.type === 'NSA'}
+					un={speaker.committeeMember?.representation?.type === 'UN'}
 					icon={speaker.committeeMember?.representation?.faIcon}
 					size="sm"
 				/>
@@ -92,7 +93,8 @@
 							<div class="w-4 text-sm opacity-50">{i + 1 + visibleCount}.</div>
 							<Flag
 								alpha2Code={speaker.committeeMember?.representation?.alpha2Code}
-								nsa={!speaker.committeeMember?.representation?.alpha2Code}
+								nsa={speaker.committeeMember?.representation?.type === 'NSA'}
+								un={speaker.committeeMember?.representation?.type === 'UN'}
 								icon={speaker.committeeMember?.representation?.faIcon}
 								size="full"
 							/>

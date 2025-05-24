@@ -87,7 +87,8 @@
 				<div class="w-4 text-sm opacity-50">{i + 1}.</div>
 				<Flag
 					alpha2Code={representation?.alpha2Code}
-					nsa={!!representation?.faIcon}
+					un={representation?.type === 'UN'}
+					nsa={representation?.type === 'NSA'}
 					icon={representation?.faIcon}
 					size="sm"
 				/>

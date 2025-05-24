@@ -151,7 +151,8 @@
 		<Flag
 			size="xs"
 			alpha2Code={option.representation?.alpha2Code}
-			nsa={!option.representation?.alpha2Code}
+			nsa={option.representation?.type === 'NSA'}
+			un={option.representation?.type === 'UN'}
 			icon={option.representation?.faIcon}
 		/>
 		<span class="ml-2 flex-1">

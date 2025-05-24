@@ -98,8 +98,8 @@
 			representations: WorldCountries.filter((x) => x.unMember).map((nation) => ({
 				id: crypto.randomUUID(),
 				representationType: 'DELEGATION',
-				alpha3Code: nation.cca3,
-				alpha2Code: nation.cca3,
+				alpha3Code: nation.cca3.toLowerCase(),
+				alpha2Code: nation.cca3.toLowerCase(),
 				regionalGroup: transformRegionalGroup(nation.unRegionalGroup)
 			})),
 			conferenceMembers: [],
@@ -176,12 +176,14 @@
 			toast.error(m.countryNotFound());
 			return;
 		}
-		let repId = importData?.representations.find((x) => x.alpha2Code === alpha2Code)?.id;
+		let repId = importData?.representations.find(
+			(x) => x.alpha2Code?.toLocaleLowerCase() === alpha2Code.toLowerCase()
+		)?.id;
 		if (!repId) {
 			repId = crypto.randomUUID();
 			importData?.representations.push({
 				alpha2Code,
-				alpha3Code: country.cca3,
+				alpha3Code: country.cca3.toLowerCase(),
 				representationType: 'DELEGATION',
 				id: repId
 			});

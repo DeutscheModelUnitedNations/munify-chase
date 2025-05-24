@@ -30,7 +30,8 @@
 		{#if currentSpeaker}
 			<Flag
 				alpha2Code={representation?.alpha2Code}
-				nsa={!!representation?.faIcon}
+				nsa={representation?.type === 'NSA'}
+				un={representation?.type === 'UN'}
 				icon={representation?.faIcon}
 				size="lg"
 			/>

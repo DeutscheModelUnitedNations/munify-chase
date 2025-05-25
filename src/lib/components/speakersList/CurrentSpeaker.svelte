@@ -52,7 +52,9 @@
 	<div class="flex flex-1 flex-col {!currentSpeaker && 'opacity-50'}">
 		{#if currentSpeaker}
 			<h2 class="text-2xl font-bold">
-				{representation?.name || getTranslatedCountryNameFromAlpha3Code(representation?.alpha3Code)}
+				{currentSpeaker.overwriteName ||
+					representation?.name ||
+					getTranslatedCountryNameFromAlpha3Code(representation?.alpha3Code)}
 			</h2>
 		{:else}
 			<h2 class="text-2xl font-bold">

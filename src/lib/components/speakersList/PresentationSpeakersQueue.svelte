@@ -58,6 +58,7 @@
 <div class="relative flex h-full w-full flex-col overflow-hidden" bind:this={container}>
 	{#if speakers && speakers.length > 0}
 		{#each speakers.slice(0, visibleCount) as speaker, i (speaker.id)}
+			{@const member = speaker.committeeMember || speaker.conferenceMember}
 			<div
 				class="flex items-center gap-4 py-2"
 				animate:flip={{ duration: 500, easing: cubicInOut }}
@@ -66,17 +67,15 @@
 			>
 				<div class="w-4 text-sm opacity-50">{i + 1}.</div>
 				<Flag
-					alpha2Code={speaker.committeeMember?.representation?.alpha2Code}
-					nsa={speaker.committeeMember?.representation?.type === 'NSA'}
-					un={speaker.committeeMember?.representation?.type === 'UN'}
-					icon={speaker.committeeMember?.representation?.faIcon}
+					alpha2Code={member?.representation?.alpha2Code}
+					nsa={member?.representation?.type === 'NSA'}
+					un={member?.representation?.type === 'UN'}
+					icon={member?.representation?.faIcon}
 					size="sm"
 				/>
 				<h2 class="text-lg font-bold">
-					{speaker.committeeMember?.representation?.name ||
-						getTranslatedCountryNameFromAlpha3Code(
-							speaker.committeeMember?.representation?.alpha3Code
-						)}
+					{member?.representation?.name ||
+						getTranslatedCountryNameFromAlpha3Code(member?.representation?.alpha3Code)}
 				</h2>
 			</div>
 		{/each}

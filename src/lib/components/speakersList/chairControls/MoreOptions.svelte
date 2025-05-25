@@ -175,7 +175,7 @@
 <Popover bind:open={isOpen}>
 	{#snippet Trigger()}
 		<button class="btn btn-lg" aria-label="More options">
-			<i class="fas fa-caret-down"></i>
+			<i class="fas fa-gears"></i>
 		</button>
 	{/snippet}
 	{#snippet Content()}

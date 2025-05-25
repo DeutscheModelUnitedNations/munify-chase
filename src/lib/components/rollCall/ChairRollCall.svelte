@@ -47,7 +47,7 @@
 
 	$effect(() => {
 		if (active) {
-			hotkeys('up, down, left, right, esc', (event, handler) => {
+			hotkeys('up, down, left, right, esc', 'rollCall', (event, handler) => {
 				event.preventDefault();
 				switch (handler.key) {
 					case 'up':
@@ -66,8 +66,9 @@
 						active = false;
 				}
 			});
+			hotkeys.setScope('rollCall');
 		} else {
-			hotkeys.unbind('up, down, left, right, esc');
+			hotkeys.deleteScope('rollCall');
 		}
 	});
 

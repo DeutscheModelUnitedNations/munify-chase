@@ -189,8 +189,11 @@
 				onTabChange={(newStatus) => openOrCloseList(newStatus)}
 			/>
 			<button
-				class="btn"
+				class={speakersList?.speakers?.length
+					? 'btn'
+					: 'btn btn-disabled'}
 				onclick={() => {
+					if (!speakersList?.speakers?.length) return;
 					changeSpeakersNameModalOpen = true;
 					isOpen = false;
 				}}
@@ -251,6 +254,13 @@
 			const target = e.target as HTMLInputElement;
 			const [minutes, seconds] = target.value.split(':').map(Number);
 			changeSpeakingTimeValue = minutes * 60 + seconds;
+		}}
+		onkeydown={(e) => {
+		if (e.key === 'Enter') {
+			changeSpeakersTime();
+		} else if (e.key === 'Escape') {
+			changeSpeakingTimeModalOpen = false;
+			}
 		}}
 	/>
 	<div class="modal-action">

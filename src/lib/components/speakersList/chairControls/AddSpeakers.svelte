@@ -1,6 +1,4 @@
 <script lang="ts">
-	import { representation } from '$api/db/schema';
-	import { browser } from '$app/environment';
 	import { graphql, type CommitteeTeamQuery$result } from '$houdini';
 	import Combobox from '$lib/components/Combobox.svelte';
 	import Flag from '$lib/components/Flag.svelte';
@@ -158,7 +156,7 @@
 		<span class="ml-2 flex-1">
 			{getName(option)}
 		</span>
-		{#if option.present && !option.present}
+		{#if (option as any).present && !(option as any).present}
 			<i class="fa-duotone fa-user-xmark mr-4"></i>
 		{/if}
 	{/snippet}

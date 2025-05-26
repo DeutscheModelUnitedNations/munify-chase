@@ -1,12 +1,9 @@
 <script lang="ts">
 	import type { CommitteeTeamQuery$result } from '$houdini';
 	import { m } from '$lib/paraglide/messages';
-	import { onDestroy, onMount } from 'svelte';
 	import Modal from '../Modal.svelte';
 	import hotkeys from 'hotkeys-js';
 	import toast from 'svelte-french-toast';
-	import { SetPresenceMutation } from '../../../routes/app/[conferenceId]/[committeeId]/(chairs)/presence/presenceMutations';
-	import { promiseToastStrings } from '$lib/utils/toast';
 	import { localDB, type VotingMajority, type VotingOptions } from '$lib/local-db/localDB';
 	import ScrollingCountryList from '../rollCall/ScrollingCountryList.svelte';
 	import { liveQuery } from 'dexie';
@@ -128,27 +125,32 @@
 
 	$effect(() => {
 		if (active) {
-			hotkeys('down, left, right, esc', (event, handler) => {
+			hotkeys('left, right, down, esc', 'rollCallVote', (event, handler) => {
 				event.preventDefault();
 				switch (handler.key) {
 					case 'down':
-						if (withAbstentions) {
+						if (stage === 'ROLL_CALL' && withAbstentions) {
 							setVote('ABSTAIN');
 						}
 						break;
 					case 'left':
-						setVote('PRO');
+						if (stage === 'ROLL_CALL') {
+							setVote('PRO');
+						}
 						break;
 					case 'right':
-						setVote('CON');
+						if (stage === 'ROLL_CALL') {
+							setVote('CON');
+						}
 						break;
 					case 'esc':
 						active = false;
 						break;
 				}
 			});
+			hotkeys.setScope('rollCallVote');
 		} else {
-			hotkeys.unbind('down, left, right, esc');
+			hotkeys.deleteScope('rollCallVote');
 		}
 	});
 

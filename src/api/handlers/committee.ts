@@ -70,7 +70,13 @@ const ref = object({
 					return parent.customSimpleMajority;
 				}
 				const total = await getTotalPresentCount(parent as any);
-				return Math.ceil(total / 2) + 1;
+				let majority: number;
+				if ((total / 2) % 1 == 0) {
+					majority = total / 2 + 1;
+				} else {
+					majority = Math.ceil(total / 2);
+				}
+				return majority > total ? total : majority;
 			}
 		}),
 		twoThirdsMajority: t.field({

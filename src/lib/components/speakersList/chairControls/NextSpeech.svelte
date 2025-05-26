@@ -111,6 +111,7 @@
 	onMount(() => {
 		hotkeys('alt+n, alt+shift+n', (event, handler) => {
 			event.preventDefault();
+			if (!speakersList?.speakers?.length) return;
 			switch (handler.key) {
 				case 'alt+n':
 					if (type === 'SPEAKERS_LIST') {
@@ -127,7 +128,9 @@
 </script>
 
 <button
-	class="btn {type === 'SPEAKERS_LIST' ? 'btn-error' : 'btn-warning'} btn-lg flex flex-1 gap-2"
+	class="btn btn-lg flex flex-1 gap-2
+		{(!speakersList?.speakers?.length && 'btn-disabled') ||
+		(type === 'SPEAKERS_LIST' ? 'btn-error' : 'btn-warning')}"
 	onclick={nextSpeaker}
 >
 	<i class="fas fa-diagram-next"></i>

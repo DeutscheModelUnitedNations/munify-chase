@@ -119,7 +119,10 @@
 			.sort((a, b) => a.position - b.position)
 			.at(0)?.id;
 
-		if (!existingSpeakerId) return;
+		if (!existingSpeakerId) {
+			toast.error(m.noCurrentSpeaker());
+			return;
+		}
 		await toast.promise(
 			updateSpeakerOnListMutation.mutate({
 				speakerOnListId: existingSpeakerId,
@@ -174,8 +177,8 @@
 
 <Popover bind:open={isOpen}>
 	{#snippet Trigger()}
-		<button class="btn btn-lg" aria-label="More options">
-			<i class="fas fa-gears"></i>
+		<button class="btn btn-lg" aria-label="More options" tabindex="-1">
+			<i class="fas fa-gears"> </i>
 		</button>
 	{/snippet}
 	{#snippet Content()}
@@ -186,8 +189,9 @@
 				onTabChange={(newStatus) => openOrCloseList(newStatus)}
 			/>
 			<button
-				class="btn"
+				class={speakersList?.speakers?.length ? 'btn' : 'btn btn-disabled'}
 				onclick={() => {
+					if (!speakersList?.speakers?.length) return;
 					changeSpeakersNameModalOpen = true;
 					isOpen = false;
 				}}
@@ -220,6 +224,13 @@
 		class="input input-lg w-full"
 		bind:value={changeSpeakersNameValue}
 		placeholder={m.speakersListNamePlaceholder()}
+		onkeydown={(e) => {
+			if (e.key === 'Enter') {
+				changeSpeakersName();
+			} else if (e.key === 'Escape') {
+				changeSpeakersNameModalOpen = false;
+			}
+		}}
 	/>
 	<div class="modal-action">
 		<button class="btn" onclick={() => (changeSpeakersNameModalOpen = false)}>
@@ -241,6 +252,13 @@
 			const target = e.target as HTMLInputElement;
 			const [minutes, seconds] = target.value.split(':').map(Number);
 			changeSpeakingTimeValue = minutes * 60 + seconds;
+		}}
+		onkeydown={(e) => {
+			if (e.key === 'Enter') {
+				changeSpeakersTime();
+			} else if (e.key === 'Escape') {
+				changeSpeakingTimeModalOpen = false;
+			}
 		}}
 	/>
 	<div class="modal-action">

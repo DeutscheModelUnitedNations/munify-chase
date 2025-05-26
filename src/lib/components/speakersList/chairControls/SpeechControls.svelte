@@ -148,6 +148,7 @@
 	onMount(() => {
 		hotkeys('space, shift+space, alt+r, alt+shift+r', (event, handler) => {
 			event.preventDefault();
+			if (!speakersList?.speakers?.length) return;
 			switch (handler.key) {
 				case 'space':
 					if (type === 'SPEAKERS_LIST') {
@@ -187,7 +188,8 @@
 
 <div class="flex gap-2">
 	<button
-		class="btn {timerRunning ? 'bg-error' : 'bg-success'} btn-lg join-item flex flex-1 gap-2"
+		class="btn btn-lg join-item flex flex-1 gap-2
+			{(!speakersList?.speakers?.length && 'btn-disabled') || (timerRunning ? 'bg-error' : 'bg-success')}"
 		onclick={timerRunning ? stopTimer : startTimer}
 	>
 		{#if timerRunning}
@@ -206,13 +208,18 @@
 	</button>
 	<div class="join">
 		<button
-			class="btn btn-square btn-lg join-item flex gap-2"
+			class="btn btn-lg join-item flex gap-2
+				{!speakersList?.speakers?.length ? 'btn-disabled' : 'btn-square'}"
 			aria-label="remove time"
 			onclick={() => changeTimer(-10)}
 		>
 			<i class="fas fa-minus"></i>
 		</button>
-		<button class="btn btn-lg join-item flex gap-2" onclick={resetTimer}>
+		<button
+			class="btn btn-lg join-item flex gap-2
+				{!speakersList?.speakers?.length ? 'btn-disabled' : ''}"
+			onclick={resetTimer}
+		>
 			<i class="fas fa-rotate-left"></i>
 			<span class="kbd text-base-content">
 				{#if type === 'COMMENT_LIST'}
@@ -223,7 +230,8 @@
 			</span>
 		</button>
 		<button
-			class="btn btn-square btn-lg join-item flex gap-2"
+			class="btn btn-lg join-item flex gap-2
+				{!speakersList?.speakers?.length ? 'btn-disabled' : 'btn-square'}"
 			aria-label="add time"
 			onclick={() => changeTimer(10)}
 		>

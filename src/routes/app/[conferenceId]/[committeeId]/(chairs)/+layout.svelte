@@ -53,6 +53,8 @@
 				const overtime =
 					dayjs(speakersList.startTimestamp).diff($serverTime, 'seconds') + speakersList.timeLeft <
 					0;
+
+				//	XAND only fire if both are false. Both true can be ignored, case should not happen.
 				if (overtime && speakersListOvertimeAlerted === commentListOvertimeAlerted) {
 					toast.error(m.speakersListOvertime(), {
 						icon: BellIcon

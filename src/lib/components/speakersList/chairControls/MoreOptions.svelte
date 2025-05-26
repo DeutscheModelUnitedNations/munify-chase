@@ -223,6 +223,13 @@
 		class="input input-lg w-full"
 		bind:value={changeSpeakersNameValue}
 		placeholder={m.speakersListNamePlaceholder()}
+		onkeydown={(e) => {
+		if (e.key === 'Enter') {
+			changeSpeakersName();
+		} else if (e.key === 'Escape') {
+			changeSpeakersNameModalOpen = false;
+			}
+		}}
 	/>
 	<div class="modal-action">
 		<button class="btn" onclick={() => (changeSpeakersNameModalOpen = false)}>

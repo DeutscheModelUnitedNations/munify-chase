@@ -35,6 +35,10 @@
 	};
 </script>
 
+<svelte:head>
+	<title>{m.launcher()} - MUNify CHASE</title>
+</svelte:head>
+
 <div class="navbar bg-base-100 relative shadow-sm">
 	<div class="flex-none">
 		<a class="btn btn-ghost" href="/logout">

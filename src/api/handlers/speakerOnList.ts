@@ -160,18 +160,24 @@ schemaBuilder.mutationFields((t) => {
 						.returning()
 						.then(assertFirstEntryExists);
 
-					await tx
-						.update(table)
-						.set({
-							position: sql`${table.position} - 1`
-						})
-						.where(
-							and(
-								eq(table.speakersListId, deleted.speakersListId),
-								gt(table.position, deleted.position),
-								ctx.abilities.speakerOnList.filter('update').sql.where
-							)
-						);
+					const aboutToBeShiftedDown = await tx.query.speakerOnList.findMany({
+						where: {
+							speakersListId: deleted.speakersListId,
+							position: {
+								gt: deleted.position
+							}
+						},
+						orderBy: { position: 'asc' }
+					});
+
+					for (const speaker of aboutToBeShiftedDown) {
+						await tx
+							.update(table)
+							.set({
+								position: sql`${table.position} - 1`
+							})
+							.where(eq(table.id, speaker.id));
+					}
 
 					return deleted;
 				});

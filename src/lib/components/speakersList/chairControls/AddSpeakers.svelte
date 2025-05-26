@@ -2,6 +2,7 @@
 	import { graphql, type CommitteeTeamQuery$result } from '$houdini';
 	import Combobox from '$lib/components/Combobox.svelte';
 	import Flag from '$lib/components/Flag.svelte';
+	import type { MergeWithUndefined } from '$lib/helpers/utilityTypes';
 	import { m } from '$lib/paraglide/messages';
 	import { getTranslatedCountryNameFromAlpha3Code } from '$lib/utils/nationTranslationHelper.svelte';
 	import { promiseToastStrings } from '$lib/utils/toast';
@@ -25,19 +26,20 @@
 
 	let { speakersList, committeeMembers, conferenceMembers }: Props = $props();
 
-	type Member =
-		| NonNullable<typeof committeeMembers>[number]
-		| NonNullable<typeof conferenceMembers>[number];
+	type Member = MergeWithUndefined<
+		NonNullable<typeof committeeMembers>[number],
+		NonNullable<typeof conferenceMembers>[number]
+	>;
 
-	let members = $derived([...committeeMembers, ...conferenceMembers]);
+	let members = $derived([...committeeMembers, ...conferenceMembers] as Member[]);
 
 	let value = $state('');
 	let focused = $state(false);
 
-	const getName = (member: Member) =>
-		member.representation?.name
-			? member.representation.name
-			: getTranslatedCountryNameFromAlpha3Code(member.representation?.alpha3Code);
+	const getName = (member: Member | undefined) =>
+		member?.representation?.name
+			? member?.representation.name
+			: getTranslatedCountryNameFromAlpha3Code(member?.representation?.alpha3Code);
 
 	const fuseOptions: IFuseOptions<any> = {
 		keys: ['label'],
@@ -52,7 +54,10 @@
 	const filter = (members: Member[], value: string) => {
 		const excludeMembersAlreadyOnList = (member: Member) => {
 			if (!speakersList?.id) return true;
-			return !speakersList.speakers.some((speaker) => speaker.committeeMember?.id === member.id);
+			return !speakersList.speakers.some(
+				(speaker) =>
+					speaker.committeeMember?.id === member.id || speaker.conferenceMember?.id === member.id
+			);
 		};
 
 		if (value.length !== 0) {
@@ -95,7 +100,7 @@
 		if (!value) return;
 
 		const committeeMember = committeeMembers.find((x) => getName(x) === value);
-		const conferenceMember = conferenceMembers.find((x) => getName(x) === value);
+		const conferenceMember = conferenceMembers.find((x) => getName(x as Member) === value);
 
 		if (!committeeMember && !conferenceMember) {
 			return;
@@ -107,7 +112,7 @@
 				conferenceMemberId: conferenceMember?.id,
 				speakersListId: speakersList.id
 			}),
-			promiseToastStrings(getName(committeeMember ? committeeMember : conferenceMember!), 'add')
+			promiseToastStrings(getName(committeeMember ?? committeeMember), 'add')
 		);
 
 		value = '';
@@ -156,7 +161,7 @@
 		<span class="ml-2 flex-1">
 			{getName(option)}
 		</span>
-		{#if (option as any).present && !(option as any).present}
+		{#if typeof option.present === 'boolean' && !option.present}
 			<i class="fa-duotone fa-user-xmark mr-4"></i>
 		{/if}
 	{/snippet}

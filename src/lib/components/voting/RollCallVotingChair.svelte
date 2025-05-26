@@ -8,6 +8,10 @@
 	import ScrollingCountryList from '../rollCall/ScrollingCountryList.svelte';
 	import { liveQuery } from 'dexie';
 	import ResultChart from './ResultChart.svelte';
+	import {
+		getTranslatedCountryNameFromAlpha3Code,
+		sortTranslatedCountries
+	} from '$lib/utils/nationTranslationHelper.svelte';
 
 	interface Props {
 		active: boolean;
@@ -22,11 +26,15 @@
 	let currentIndex = $state(0);
 	let stage = $state<'ROLL_CALL' | 'EVALUATION'>('ROLL_CALL');
 
-	let members = $derived(
-		committee?.members.filter(
-			(member) => member.present && member.representation?.type === 'DELEGATION'
-		)
+	let members = committee?.members
+	.filter(
+		(member) =>
+			member.present && member.representation?.type === 'DELEGATION'
+	)
+	.sort((a, b) =>
+				sortTranslatedCountries(a.representation!.alpha3Code!, b.representation!.alpha3Code!)
 	);
+
 	let majorityAmount = $derived.by(() => {
 		switch (majority) {
 			case 'SIMPLE':

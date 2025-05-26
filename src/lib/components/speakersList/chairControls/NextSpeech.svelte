@@ -74,7 +74,7 @@
 
 	const nextSpeaker = async () => {
 		if (speakersList && speakersList?.speakers.length > 0) {
-			const speaker = speakersList.speakers[0];
+			const speaker = speakersList.speakers.sort((a, b) => a.position - b.position)[0];
 			if (childList) {
 				if (
 					await alertDialog({

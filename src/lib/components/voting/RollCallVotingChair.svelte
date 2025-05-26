@@ -27,13 +27,10 @@
 	let stage = $state<'ROLL_CALL' | 'EVALUATION'>('ROLL_CALL');
 
 	let members = committee?.members
-	.filter(
-		(member) =>
-			member.present && member.representation?.type === 'DELEGATION'
-	)
-	.sort((a, b) =>
-				sortTranslatedCountries(a.representation!.alpha3Code!, b.representation!.alpha3Code!)
-	);
+		.filter((member) => member.present && member.representation?.type === 'DELEGATION')
+		.sort((a, b) =>
+			sortTranslatedCountries(a.representation!.alpha3Code!, b.representation!.alpha3Code!)
+		);
 
 	let majorityAmount = $derived.by(() => {
 		switch (majority) {

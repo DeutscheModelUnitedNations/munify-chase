@@ -26,6 +26,10 @@
 	});
 </script>
 
+<svelte:head>
+	<title>{m.missionControl()} - MUNify CHASE</title>
+</svelte:head>
+
 <div class="navbar bg-base-100 shadow-sm">
 	<h1 class=" ml-4 flex-1 text-3xl font-bold">{m.missionControl()}</h1>
 	<div class="flex-none">

@@ -11,6 +11,9 @@ jobs:
   build:
     name: Build and publish container images
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        runtime: [node, bun]
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -44,16 +47,16 @@ jobs:
             deutschemodelunitednations/chase
             ghcr.io/${{ github.repository_owner }}/${{ github.repository }}
           tags: |
-            type=raw,value=${{ github.sha }}
+            type=raw,value=${{ github.sha }},suffix=${{ matrix.runtime != 'bun' ? matrix.runtime : '' }}
 
-            type=semver,pattern={{version}},value=${{ github.event.release.tag_name }},enable=${{ github.event_name == 'release' }}
+            type=semver,pattern={{version}},value=${{ github.event.release.tag_name }},enable=${{ github.event_name == 'release' }},suffix=${{ matrix.runtime != 'bun' ? matrix.runtime : '' }}
 
             type=raw,value=latest,enable=${{ github.event_name == 'release' && !github.event.release.prerelease }}
-            type=semver,pattern={{major}},value=${{ github.event.release.tag_name }},enable=${{ github.event_name == 'release' && !github.event.release.prerelease }}
-            type=semver,pattern={{major}}.{{minor}},value=${{ github.event.release.tag_name }},enable=${{ github.event_name == 'release' && !github.event.release.prerelease }}
+            type=semver,pattern={{major}},value=${{ github.event.release.tag_name }},enable=${{ github.event_name == 'release' && !github.event.release.prerelease }},suffix=${{ matrix.runtime != 'bun' ? matrix.runtime : '' }}
+            type=semver,pattern={{major}}.{{minor}},value=${{ github.event.release.tag_name }},enable=${{ github.event_name == 'release' && !github.event.release.prerelease }},suffix=${{ matrix.runtime != 'bun' ? matrix.runtime : '' }}
 
-            type=raw,value=prerelease,enable=${{ github.event_name == 'release' && github.event.release.prerelease }}
-            type=raw,value=nightly,enable=${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+            type=raw,value=prerelease,enable=${{ github.event_name == 'release' && github.event.release.prerelease }},suffix=${{ matrix.runtime != 'bun' ? matrix.runtime : '' }}
+            type=raw,value=nightly,enable=${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }},suffix=${{ matrix.runtime != 'bun' ? matrix.runtime : '' }}
 
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
@@ -63,6 +66,7 @@ jobs:
           # platforms: linux/amd64,linux/arm64
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
+          file: ./Dockerfile.${{ matrix.runtime }}
           build-args: |
             VERSION=${{ github.event.release.tag_name }}
             SHA=${{ github.sha }}

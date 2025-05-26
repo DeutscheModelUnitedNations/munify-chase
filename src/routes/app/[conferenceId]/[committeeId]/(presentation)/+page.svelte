@@ -70,6 +70,10 @@
 	});
 </script>
 
+<svelte:head>
+	<title>{committee?.abbreviation ?? 'N/A'} {m.presentationMode()} - MUNify CHASE</title>
+</svelte:head>
+
 {#if committee}
 	<Grid
 		itemSize={{ height: browser ? window.innerHeight / 16 : 60 }}

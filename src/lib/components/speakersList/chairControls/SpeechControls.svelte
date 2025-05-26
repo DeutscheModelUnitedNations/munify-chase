@@ -188,9 +188,8 @@
 
 <div class="flex gap-2">
 	<button
-		class="btn btn-lg join-item flex flex-1 gap-2 
-			{(!speakersList?.speakers?.length && 'btn-disabled') || 
-   			(timerRunning ? 'bg-error' : 'bg-success')}"
+		class="btn btn-lg join-item flex flex-1 gap-2
+			{(!speakersList?.speakers?.length && 'btn-disabled') || (timerRunning ? 'bg-error' : 'bg-success')}"
 		onclick={timerRunning ? stopTimer : startTimer}
 	>
 		{#if timerRunning}
@@ -216,8 +215,11 @@
 		>
 			<i class="fas fa-minus"></i>
 		</button>
-		<button class="btn btn-lg join-item flex gap-2
-				{!speakersList?.speakers?.length ? 'btn-disabled' : ''}" onclick={resetTimer}>
+		<button
+			class="btn btn-lg join-item flex gap-2
+				{!speakersList?.speakers?.length ? 'btn-disabled' : ''}"
+			onclick={resetTimer}
+		>
 			<i class="fas fa-rotate-left"></i>
 			<span class="kbd text-base-content">
 				{#if type === 'COMMENT_LIST'}

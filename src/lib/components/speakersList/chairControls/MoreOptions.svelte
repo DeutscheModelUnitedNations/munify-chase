@@ -120,8 +120,8 @@
 			.at(0)?.id;
 
 		if (!existingSpeakerId) {
-		toast.error(m.noCurrentSpeaker());
-		return;
+			toast.error(m.noCurrentSpeaker());
+			return;
 		}
 		await toast.promise(
 			updateSpeakerOnListMutation.mutate({
@@ -177,7 +177,7 @@
 
 <Popover bind:open={isOpen}>
 	{#snippet Trigger()}
-		<button class="btn btn-lg" aria-label="More options" tabindex="-1"> 
+		<button class="btn btn-lg" aria-label="More options" tabindex="-1">
 			<i class="fas fa-gears"> </i>
 		</button>
 	{/snippet}
@@ -189,9 +189,7 @@
 				onTabChange={(newStatus) => openOrCloseList(newStatus)}
 			/>
 			<button
-				class={speakersList?.speakers?.length
-					? 'btn'
-					: 'btn btn-disabled'}
+				class={speakersList?.speakers?.length ? 'btn' : 'btn btn-disabled'}
 				onclick={() => {
 					if (!speakersList?.speakers?.length) return;
 					changeSpeakersNameModalOpen = true;
@@ -227,10 +225,10 @@
 		bind:value={changeSpeakersNameValue}
 		placeholder={m.speakersListNamePlaceholder()}
 		onkeydown={(e) => {
-		if (e.key === 'Enter') {
-			changeSpeakersName();
-		} else if (e.key === 'Escape') {
-			changeSpeakersNameModalOpen = false;
+			if (e.key === 'Enter') {
+				changeSpeakersName();
+			} else if (e.key === 'Escape') {
+				changeSpeakersNameModalOpen = false;
 			}
 		}}
 	/>
@@ -256,10 +254,10 @@
 			changeSpeakingTimeValue = minutes * 60 + seconds;
 		}}
 		onkeydown={(e) => {
-		if (e.key === 'Enter') {
-			changeSpeakersTime();
-		} else if (e.key === 'Escape') {
-			changeSpeakingTimeModalOpen = false;
+			if (e.key === 'Enter') {
+				changeSpeakersTime();
+			} else if (e.key === 'Escape') {
+				changeSpeakingTimeModalOpen = false;
 			}
 		}}
 	/>

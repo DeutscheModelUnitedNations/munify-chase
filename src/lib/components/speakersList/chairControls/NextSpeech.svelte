@@ -129,8 +129,8 @@
 
 <button
 	class="btn btn-lg flex flex-1 gap-2
-		{(!speakersList?.speakers?.length && 'btn-disabled') || 
-   			(type === 'SPEAKERS_LIST' ? 'btn-error' : 'btn-warning')}"
+		{(!speakersList?.speakers?.length && 'btn-disabled') ||
+		(type === 'SPEAKERS_LIST' ? 'btn-error' : 'btn-warning')}"
 	onclick={nextSpeaker}
 >
 	<i class="fas fa-diagram-next"></i>

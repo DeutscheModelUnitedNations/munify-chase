@@ -47,16 +47,16 @@ jobs:
             deutschemodelunitednations/chase
             ghcr.io/${{ github.repository_owner }}/${{ github.repository }}
           tags: |
-            type=raw,value=${{ github.sha }},suffix=${{ matrix.runtime != 'bun' ? matrix.runtime : '' }}
+            type=raw,value=${{ github.sha }},suffix=${{ matrix.runtime != 'bun' && format('-{0}', matrix.runtime) || '' }}
 
-            type=semver,pattern={{version}},value=${{ github.event.release.tag_name }},enable=${{ github.event_name == 'release' }},suffix=${{ matrix.runtime != 'bun' ? matrix.runtime : '' }}
+            type=semver,pattern={{version}},value=${{ github.event.release.tag_name }},enable=${{ github.event_name == 'release' }},suffix=${{ matrix.runtime != 'bun' && format('-{0}', matrix.runtime) || '' }}
 
             type=raw,value=latest,enable=${{ github.event_name == 'release' && !github.event.release.prerelease }}
-            type=semver,pattern={{major}},value=${{ github.event.release.tag_name }},enable=${{ github.event_name == 'release' && !github.event.release.prerelease }},suffix=${{ matrix.runtime != 'bun' ? matrix.runtime : '' }}
-            type=semver,pattern={{major}}.{{minor}},value=${{ github.event.release.tag_name }},enable=${{ github.event_name == 'release' && !github.event.release.prerelease }},suffix=${{ matrix.runtime != 'bun' ? matrix.runtime : '' }}
+            type=semver,pattern={{major}},value=${{ github.event.release.tag_name }},enable=${{ github.event_name == 'release' && !github.event.release.prerelease }},suffix=${{ matrix.runtime != 'bun' && format('-{0}', matrix.runtime) || '' }}
+            type=semver,pattern={{major}}.{{minor}},value=${{ github.event.release.tag_name }},enable=${{ github.event_name == 'release' && !github.event.release.prerelease }},suffix=${{ matrix.runtime != 'bun' && format('-{0}', matrix.runtime) || '' }}
 
-            type=raw,value=prerelease,enable=${{ github.event_name == 'release' && github.event.release.prerelease }},suffix=${{ matrix.runtime != 'bun' ? matrix.runtime : '' }}
-            type=raw,value=nightly,enable=${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }},suffix=${{ matrix.runtime != 'bun' ? matrix.runtime : '' }}
+            type=raw,value=prerelease,enable=${{ github.event_name == 'release' && github.event.release.prerelease }},suffix=${{ matrix.runtime != 'bun' && format('-{0}', matrix.runtime) || '' }}
+            type=raw,value=nightly,enable=${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }},suffix=${{ matrix.runtime != 'bun' && format('-{0}', matrix.runtime) || '' }}
 
       - name: Build and push Docker image
         uses: docker/build-push-action@v5

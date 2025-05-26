@@ -72,9 +72,9 @@ const ref = object({
 				const total = await getTotalPresentCount(parent as any);
 				let majority: number;
 				if ((total / 2) % 1 == 0) {
-					majority = total / 2 + 1
+					majority = total / 2 + 1;
 				} else {
-					majority = Math.ceil(total / 2)
+					majority = Math.ceil(total / 2);
 				}
 				return majority > total ? total : majority;
 			}

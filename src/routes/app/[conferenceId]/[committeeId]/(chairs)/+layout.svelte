@@ -86,6 +86,10 @@
 	});
 </script>
 
+<svelte:head>
+	<title>{committee?.abbreviation ?? 'N/A'} {m.chairControls()} - MUNify CHASE</title>
+</svelte:head>
+
 <ChairNavbar title={committee?.abbreviation} />
 
 {@render children()}

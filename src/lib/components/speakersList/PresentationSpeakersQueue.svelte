@@ -88,17 +88,18 @@
 			<Marquee speed={30} gap="3rem">
 				<div class="flex items-center justify-center gap-2 py-4" bind:this={overflowContainer}>
 					{#each speakers.slice(visibleCount) as speaker, i (i)}
+						{@const member = speaker.committeeMember || speaker.conferenceMember}
 						<div class="card bg-base-100 flex w-16 items-center justify-center gap-1 p-2 shadow-sm">
 							<div class="w-4 text-sm opacity-50">{i + 1 + visibleCount}.</div>
 							<Flag
-								alpha2Code={speaker.committeeMember?.representation?.alpha2Code}
-								nsa={speaker.committeeMember?.representation?.type === 'NSA'}
-								un={speaker.committeeMember?.representation?.type === 'UN'}
-								icon={speaker.committeeMember?.representation?.faIcon}
+								alpha2Code={member?.representation?.alpha2Code}
+								nsa={member?.representation?.type === 'NSA'}
+								un={member?.representation?.type === 'UN'}
+								icon={member?.representation?.faIcon}
 								size="full"
 							/>
 							<div class="text-center font-mono font-bold">
-								{speaker.committeeMember?.representation?.alpha2Code?.toUpperCase() || '...'}
+								{member?.representation?.alpha2Code?.toUpperCase() || 'N/A'}
 							</div>
 						</div>
 					{/each}

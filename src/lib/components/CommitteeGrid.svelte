@@ -40,7 +40,7 @@
 				</div>
 				<IconInfoBox text={committee.activeAgendaItem?.title ?? '—'} faIcon="podium" />
 				{#if environment === 'TEAM'}
-					<IconInfoBox text={committee.stateOfDebate ?? '—'} faIcon="diagram-next" />
+					<IconInfoBox text={(committee as any).stateOfDebate ?? '—'} faIcon="diagram-next" />
 				{/if}
 				<IconInfoBox
 					text={getCommitteeStatusText(committee.status)}

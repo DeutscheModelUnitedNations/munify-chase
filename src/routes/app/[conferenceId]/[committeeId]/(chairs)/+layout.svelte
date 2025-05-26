@@ -53,7 +53,7 @@
 				const overtime =
 					dayjs(speakersList.startTimestamp).diff($serverTime, 'seconds') + speakersList.timeLeft <
 					0;
-				if (overtime && !speakersListOvertimeAlerted) {
+				if (overtime && speakersListOvertimeAlerted === commentListOvertimeAlerted) {
 					toast.error(m.speakersListOvertime(), {
 						icon: BellIcon
 					});

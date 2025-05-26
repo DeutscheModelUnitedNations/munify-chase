@@ -6,6 +6,7 @@
 	import toast from 'svelte-french-toast';
 	import { m } from '$lib/paraglide/messages';
 	import BellIcon from '../toast/BellIcon.svelte';
+	import type { Duration } from 'dayjs/plugin/duration';
 
 	interface Props {
 		noSpeaker?: boolean;
@@ -49,7 +50,7 @@
 		return 'paused';
 	});
 
-	let countdownDeltaFormatted = (delta) => {
+	let countdownDeltaFormatted = (delta: Duration) => {
 		return `${delta.hours() !== 0 ? delta.format('H:') : ''}${
 			delta.hours() !== 0 ? delta.format('mm:') : delta.format('m:')
 		}${delta.format('ss')}`;

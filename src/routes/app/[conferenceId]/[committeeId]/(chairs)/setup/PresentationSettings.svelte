@@ -103,7 +103,7 @@
 				value={$committeeSettings?.presentationRootFontSize || 16}
 				oninput={(e) =>
 					localDB.committeeSettings.update(committeeId, {
-						presentationRootFontSize: +e.target.value
+						presentationRootFontSize: +(e.target as HTMLInputElement).value
 					})}
 				class="range range-primary w-full"
 			/>

@@ -57,14 +57,14 @@
 						{placeholder}
 						aria-label={placeholder}
 						oninput={(e) => {
-							value = e.target.value;
+							value = (e.target as HTMLInputElement).value;
 						}}
 						bind:value
 						onkeydown={(e) => {
 							if (e.key === 'Escape') {
 								focused = false;
 								value = '';
-								e.target.blur();
+								(e.target as HTMLInputElement).blur();
 							} else if (e.key === 'Enter' && submit) {
 								submit(value);
 							}

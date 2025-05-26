@@ -24,9 +24,9 @@ COPY . .
 # the build command generates a few things, such as i18n outputs
 # therefore we need to run the build command BEFORE we check for correctness
 RUN bun run build
-# RUN bun run check
+RUN bun run check
 
-FROM base AS release
+FROM node:24.0-slim AS release
 WORKDIR /app/release
 
 ARG VERSION
@@ -39,10 +39,10 @@ COPY ./drizzle.config.ts .
 COPY ./src/api/db/schema.ts ./src/api/db/schema.ts
 COPY --from=runtime-dependencies /build/dependencies .
 
-RUN chown -R bun:bun .
-USER bun
+RUN chown -R node:node .
+USER node
 ENV NODE_ENV=production
 EXPOSE 3000/tcp
 # TODO
 # HEALTHCHECK --interval=15s --timeout=10s --retries=3 CMD curl -f http://0.0.0.0:3000/api/health/ready || exit 1
-CMD ["sh", "-c", "bunx drizzle-kit migrate && bun ./index.js"]
+CMD ["sh", "-c", "npx drizzle-kit migrate && node ./index.js"]

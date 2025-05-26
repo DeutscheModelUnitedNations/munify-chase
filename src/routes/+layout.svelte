@@ -88,6 +88,10 @@
 	});
 </script>
 
+<svelte:head>
+	<title>MUNify CHASE</title>
+</svelte:head>
+
 {@render children()}
 
 <div aria-hidden="true" style="display:none">

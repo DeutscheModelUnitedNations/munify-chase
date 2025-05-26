@@ -119,7 +119,10 @@
 			.sort((a, b) => a.position - b.position)
 			.at(0)?.id;
 
-		if (!existingSpeakerId) return;
+		if (!existingSpeakerId) {
+		toast.error(m.noCurrentSpeaker());
+		return;
+		}
 		await toast.promise(
 			updateSpeakerOnListMutation.mutate({
 				speakerOnListId: existingSpeakerId,

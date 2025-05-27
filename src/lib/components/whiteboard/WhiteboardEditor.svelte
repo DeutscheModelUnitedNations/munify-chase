@@ -36,7 +36,7 @@
 
 {#if editor && $editor}
 	<WhiteboardStaticMenu editor={$editor} />
-	<EditorContent editor={$editor} class="prose leading-1" />
+	<EditorContent editor={$editor} class="prose leading-7" />
 	<BubbleMenu editor={$editor}>
 		<WhiteboardBubbleMenu editor={$editor} />
 	</BubbleMenu>

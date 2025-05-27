@@ -2,7 +2,7 @@
 name: Enhancement
 about: Create a report to help us improve
 title: ''
-type: 'Enhancement'
+type: 'Feature'
 assignees: ''
 ---
 

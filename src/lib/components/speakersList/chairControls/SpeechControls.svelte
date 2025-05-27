@@ -82,7 +82,7 @@
 	const startTimer = async () => {
 		if (!speakersList) return;
 
-		if (otherList?.startTimestamp) {
+		if (otherList) {
 			await UpdateSpeakersListTimingsWithOtherListMutation.mutate(
 				{
 					speakersListId: speakersList.id,

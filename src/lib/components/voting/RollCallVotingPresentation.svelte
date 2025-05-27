@@ -60,7 +60,7 @@
 	<div class="card card-bordered bg-base-200 items-center gap-1 p-2 shadow-sm">
 		<Flag representation={member.representation} size="sm" />
 		<h3 class="font-mono text-lg font-bold uppercase">
-			{member.representation?.alpha2Code}
+			{member.representation?.name || member.representation?.alpha2Code}
 		</h3>
 	</div>
 {/snippet}

@@ -56,7 +56,9 @@
 
 <div
 	class="{flagClassNames()} card items-center justify-center overflow-hidden shadow-md {representation?.type ===
-		'NSA' && 'bg-error text-error-content'} {placeholder &&
+	'NSA'
+		? 'bg-error text-error-content'
+		: representation?.type === 'DELEGATION' && 'text-base-content bg-[#bea162]'} {placeholder &&
 		'bg-base-200 text-base-content opacity-50'} {size === 'xs' && 'rounded-sm'}"
 >
 	{#if placeholder}

@@ -31,12 +31,7 @@
 
 	let countries = $derived(
 		committee?.members
-			.filter(
-				(member) =>
-					member.representation?.alpha2Code &&
-					member.representation?.alpha3Code &&
-					member.representation.type === 'DELEGATION'
-			)
+			.filter((member) => member.representation.type === 'DELEGATION')
 			.sort((a, b) =>
 				sortTranslatedCountries(a.representation!.alpha3Code!, b.representation!.alpha3Code!)
 			) ?? []

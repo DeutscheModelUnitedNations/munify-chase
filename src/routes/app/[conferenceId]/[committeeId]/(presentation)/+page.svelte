@@ -174,9 +174,7 @@
 		committeeId={data.committeeId}
 		members={committee.members
 			.filter((x) => x.representation?.type === 'DELEGATION')
-			.sort((a, b) =>
-				sortTranslatedCountries(a.representation!.alpha3Code!, b.representation!.alpha3Code!)
-			)}
+			.sort((a, b) => sortTranslatedCountries(a.representation!, b.representation!))}
 	/>
 
 	<ShowOfHandsVotingPresentation committeeSettings={$committeeSettings} />

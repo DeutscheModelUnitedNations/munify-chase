@@ -83,19 +83,42 @@
 		if (!speakersList) return;
 
 		if (otherList?.startTimestamp) {
-			await UpdateSpeakersListTimingsWithOtherListMutation.mutate({
-				speakersListId: speakersList.id,
-				startTimestamp: $serverTime.toDate(),
-				otherListId: otherList.id,
-				otherListStopTimer: true,
-				otherListTimeLeft:
-					otherList.type === 'SPEAKERS_LIST' ? speakersList.speakingTime : otherList.speakingTime
-			});
+			await UpdateSpeakersListTimingsWithOtherListMutation.mutate(
+				{
+					speakersListId: speakersList.id,
+					startTimestamp: $serverTime.toDate(),
+					otherListId: otherList.id,
+					otherListStopTimer: true,
+					otherListTimeLeft:
+						otherList.type === 'SPEAKERS_LIST' ? speakersList.speakingTime : otherList.speakingTime
+				},
+				{
+					optimisticResponse: {
+						MainUpdateSpeakersList: {
+							speakingTime: speakersList.speakingTime,
+							startTimestamp: $serverTime.toDate()
+						},
+						OtherUpdateSpeakersList: {
+							speakingTime: otherList.speakingTime
+						}
+					}
+				}
+			);
 		} else {
-			await UpdateSpeakersListTimingsMutation.mutate({
-				speakersListId: speakersList.id,
-				startTimestamp: $serverTime.toDate()
-			});
+			await UpdateSpeakersListTimingsMutation.mutate(
+				{
+					speakersListId: speakersList.id,
+					startTimestamp: $serverTime.toDate()
+				},
+				{
+					optimisticResponse: {
+						updateSpeakersList: {
+							speakingTime: speakersList.speakingTime,
+							startTimestamp: $serverTime.toDate()
+						}
+					}
+				}
+			);
 		}
 	};
 

@@ -8,7 +8,7 @@
 	let { data }: Props = $props();
 </script>
 
-<div class="prose leading-1">
+<div class="prose leading-6">
 	{#if data && data !== '<p></p>'}
 		{@html data}
 	{:else}

@@ -59,7 +59,7 @@
 		<div class="flex h-full w-full flex-wrap items-center justify-center gap-4">
 			{#each getGroupMembers(group) as member}
 				<div class="flex w-22 flex-col items-center justify-start gap-1">
-					<Flag alpha2Code={member.representation?.alpha2Code} size="full" />
+					<Flag representation={member.representation} size="full" />
 					<div class="text-center font-mono font-bold">
 						{member.representation?.alpha2Code?.toUpperCase()}
 					</div>

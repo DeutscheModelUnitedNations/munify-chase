@@ -151,13 +151,7 @@
 	submit={() => addSpeakerToList()}
 >
 	{#snippet ListItem(option)}
-		<Flag
-			size="xs"
-			alpha2Code={option.representation?.alpha2Code}
-			nsa={option.representation?.type === 'NSA'}
-			un={option.representation?.type === 'UN'}
-			icon={option.representation?.faIcon}
-		/>
+		<Flag size="xs" representation={option.representation} />
 		<span class="ml-2 flex-1">
 			{getName(option)}
 		</span>

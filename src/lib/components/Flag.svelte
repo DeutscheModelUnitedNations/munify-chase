@@ -1,23 +1,17 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
+	import { type CommitteePresentationQuery$result } from '$houdini';
 
 	interface Props {
 		size?: 'xs' | 'sm' | 'md' | 'lg' | 'full';
-		alpha2Code?: string | null;
-		nsa?: boolean;
-		un?: boolean;
-		icon?: string | null;
+		representation?: Partial<
+			NonNullable<
+				CommitteePresentationQuery$result['findFirstCommittee']['members']
+			>[number]['representation']
+		>;
 		placeholder?: boolean;
 	}
 
-	let {
-		size = 'md',
-		alpha2Code,
-		nsa = false,
-		un = false,
-		icon = 'fa-bullhorn',
-		placeholder = false
-	}: Props = $props();
+	let { size = 'md', placeholder = false, representation }: Props = $props();
 
 	const flagClassNames = () => {
 		switch (size) {
@@ -61,16 +55,16 @@
 </script>
 
 <div
-	class="{flagClassNames()} card items-center justify-center overflow-hidden shadow-md {nsa &&
-		'bg-error text-error-content'} {placeholder &&
+	class="{flagClassNames()} card items-center justify-center overflow-hidden shadow-md {representation?.type ===
+		'NSA' && 'bg-error text-error-content'} {placeholder &&
 		'bg-base-200 text-base-content opacity-50'} {size === 'xs' && 'rounded-sm'}"
 >
 	{#if placeholder}
 		<i class="fa-solid fa-{placeholderIcon()} {iconClassNames()}"></i>
-	{:else if nsa}
-		<i class="fa-solid fa-{icon?.replace('fa-', '')} {iconClassNames()}"></i>
+	{:else if representation?.faIcon}
+		<i class="fa-solid fa-{representation.faIcon?.replace('fa-', '')} {iconClassNames()}"></i>
 	{:else}
-		<span class="fi fi-{un ? 'un' : alpha2Code}"></span>
+		<span class="fi fi-{representation?.type === 'UN' ? 'un' : representation?.alpha2Code}"></span>
 	{/if}
 </div>
 

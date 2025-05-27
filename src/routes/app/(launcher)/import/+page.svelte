@@ -331,7 +331,7 @@
 									(rep) => rep.id === member.representationId
 								)}
 								<div class="card bg-base-100 group flex w-12 flex-wrap items-center p-1">
-									<Flag alpha2Code={rep?.alpha2Code} size="xs" />
+									<Flag representation={rep} size="xs" />
 									<div class="mt-2 font-mono uppercase">
 										{rep?.alpha2Code}
 									</div>

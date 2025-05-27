@@ -116,7 +116,7 @@
 						<div
 							class="hover:bg-base-200 card flex w-full flex-row items-center gap-4 p-2 transition-all duration-300"
 						>
-							<Flag alpha2Code={rep?.alpha2Code} size="sm" />
+							<Flag representation={rep} size="sm" />
 							<h3 class="flex-1 text-lg">
 								{#if rep && (rep.name || rep.alpha3Code)}
 									{rep.name ?? getTranslatedCountryNameFromAlpha3Code(rep.alpha3Code!)}
@@ -159,7 +159,7 @@
 						<div
 							class="hover:bg-base-200 card flex w-full flex-row items-center gap-4 p-2 transition-all duration-300"
 						>
-							<Flag nsa icon={rep?.faIcon ?? undefined} size="sm" />
+							<Flag representation={rep} size="sm" />
 							<h3 class="flex-1 text-lg">
 								{#if rep && rep.name}
 									{rep.name}
@@ -176,7 +176,7 @@
 						<div
 							class="hover:bg-base-200 card flex w-full flex-row items-center gap-4 p-2 transition-all duration-300"
 						>
-							<Flag un size="sm" />
+							<Flag representation={member.representation} size="sm" />
 							<h3 class="flex-1 text-lg">
 								{#if rep && rep.name}
 									{rep.name}

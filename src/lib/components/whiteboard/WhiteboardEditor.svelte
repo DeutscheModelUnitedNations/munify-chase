@@ -1,9 +1,8 @@
 <script lang="ts">
 	import type { Readable } from 'svelte/store';
-	import { BubbleMenu, createEditor, Editor, EditorContent, FloatingMenu } from 'svelte-tiptap';
+	import { BubbleMenu, createEditor, Editor, EditorContent } from 'svelte-tiptap';
 	import { Placeholder } from '@tiptap/extension-placeholder';
 	import WhiteboardBubbleMenu from './WhiteboardBubbleMenu.svelte';
-	import StarterKit from '@tiptap/starter-kit';
 	import WhiteboardStaticMenu from './WhiteboardStaticMenu.svelte';
 	import { extensions } from './whiteboardEditorConfig';
 	import { m } from '$lib/paraglide/messages';

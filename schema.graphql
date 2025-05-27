@@ -275,6 +275,7 @@ scalar JSON
 type Mutation {
   addSpeakerOnList(committeeMemberId: ID, conferenceMemberId: ID, position: Int, speakersListId: ID!): SpeakerOnList
   clearSpeakersList(id: ID!): SpeakersList
+  createAgendaItem(committeeId: ID!, title: String!): AgendaItem
   importDelegatorConference(data: ImportData!): Conference
   moveSpeakerToPosition(id: ID!, position: Int!): SpeakerOnList
   removeSpeakerOnList(speakerOnListId: ID!): SpeakersList

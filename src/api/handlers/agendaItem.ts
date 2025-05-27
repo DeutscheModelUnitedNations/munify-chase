@@ -10,7 +10,6 @@ import {
 } from '$api/rumble';
 import { isDMUNEmail } from '$api/services/isDMUNEmail';
 import { assertFirstEntryExists } from '@m1212e/rumble';
-import { and, count, eq, type InferSelectModel } from 'drizzle-orm';
 
 const ref = object({
 	table: 'agendaItem',
@@ -42,4 +41,45 @@ abilityBuilder.agendaItem.allow(['read']).when(({ mustBeLoggedIn }) => {
 	if (user?.email && isDMUNEmail(user.email)) {
 		return 'allow';
 	}
+});
+
+schemaBuilder.mutationFields((t) => {
+	return {
+		createAgendaItem: t.drizzleField({
+			type: ref,
+			args: {
+				title: t.arg({ type: 'String', required: true }),
+				committeeId: t.arg({ type: 'ID', required: true })
+			},
+			resolve: async (query, root, args, ctx, info) => {
+				const res = await db
+					.insert(schema.agendaItem)
+					.values({
+						title: args.title,
+						committeeId: args.committeeId,
+						id: crypto.randomUUID()
+					})
+					.returning()
+					.then(assertFirstEntryExists);
+
+				pubsub.updated(res.id);
+
+				await db.insert(schema.speakersList).values({
+					agendaItemId: res.id,
+					id: crypto.randomUUID(),
+					type: 'SPEAKERS_LIST',
+					speakingTime: 180
+				});
+
+				await db.insert(schema.speakersList).values({
+					agendaItemId: res.id,
+					id: crypto.randomUUID(),
+					type: 'COMMENT_LIST',
+					speakingTime: 30
+				});
+
+				return res;
+			}
+		})
+	};
 });

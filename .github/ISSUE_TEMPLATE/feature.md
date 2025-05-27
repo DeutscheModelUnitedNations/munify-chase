@@ -1,10 +1,9 @@
 ---
-name: Enhancement
-about: Create a report to help us improve
+name: Feature request
+about: Create a request to help us improve
 title: ''
 type: 'Feature'
 assignees: ''
 ---
 
-**Describe, which feature we can how improve**
-A clear and concise description of what you want in the app.
+**Describe, which feature you want us to add**

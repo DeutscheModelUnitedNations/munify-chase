@@ -28,9 +28,7 @@
 
 	let members = committee?.members
 		.filter((member) => member.present && member.representation?.type === 'DELEGATION')
-		.sort((a, b) =>
-			sortTranslatedCountries(a.representation!.alpha3Code!, b.representation!.alpha3Code!)
-		);
+		.sort((a, b) => sortTranslatedCountries(a.representation!, b.representation!));
 
 	let majorityAmount = $derived.by(() => {
 		switch (majority) {

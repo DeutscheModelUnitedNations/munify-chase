@@ -66,13 +66,7 @@
 				out:fly={{ duration: 500, y: -20, easing: cubicOut }}
 			>
 				<div class="w-4 text-sm opacity-50">{i + 1}.</div>
-				<Flag
-					alpha2Code={member?.representation?.alpha2Code}
-					nsa={member?.representation?.type === 'NSA'}
-					un={member?.representation?.type === 'UN'}
-					icon={member?.representation?.faIcon}
-					size="sm"
-				/>
+				<Flag representation={member?.representation} size="sm" />
 				<h2 class="text-lg font-bold">
 					{member?.representation?.name ||
 						getTranslatedCountryNameFromAlpha3Code(member?.representation?.alpha3Code)}
@@ -91,13 +85,7 @@
 						{@const member = speaker.committeeMember || speaker.conferenceMember}
 						<div class="card bg-base-100 flex w-16 items-center justify-center gap-1 p-2 shadow-sm">
 							<div class="w-4 text-sm opacity-50">{i + 1 + visibleCount}.</div>
-							<Flag
-								alpha2Code={member?.representation?.alpha2Code}
-								nsa={member?.representation?.type === 'NSA'}
-								un={member?.representation?.type === 'UN'}
-								icon={member?.representation?.faIcon}
-								size="full"
-							/>
+							<Flag representation={member?.representation} size="full" />
 							<div class="text-center font-mono font-bold">
 								{member?.representation?.alpha2Code?.toUpperCase() || 'N/A'}
 							</div>

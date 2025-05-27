@@ -28,13 +28,7 @@
 <div class="relative flex items-center gap-6">
 	<div class="relative">
 		{#if currentSpeaker}
-			<Flag
-				alpha2Code={representation?.alpha2Code}
-				nsa={representation?.type === 'NSA'}
-				un={representation?.type === 'UN'}
-				icon={representation?.faIcon}
-				size="lg"
-			/>
+			<Flag {representation} size="lg" />
 		{:else}
 			<Flag placeholder size="lg" />
 		{/if}

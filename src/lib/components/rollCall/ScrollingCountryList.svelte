@@ -75,7 +75,7 @@
 						? 'card-active'
 						: ''}"
 				>
-					<Flag alpha2Code={rep?.alpha2Code} size="md" />
+					<Flag representation={member.representation} size="md" />
 					<h3 class="flex-1 text-2xl {notPresent ? 'opacity-40' : ''} transition-all duration-500">
 						{#if rep && (rep.name || rep.alpha3Code)}
 							{rep.name ?? getTranslatedCountryNameFromAlpha3Code(rep.alpha3Code!)}

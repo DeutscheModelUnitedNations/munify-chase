@@ -21,6 +21,11 @@
 	} from '$lib/utils/nationTranslationHelper.svelte';
 	import ChairRollCall from '$lib/components/rollCall/ChairRollCall.svelte';
 	import StatusWidget from '../StatusWidget.svelte';
+	import {
+		isDelegationMember,
+		isNSAMember,
+		isUNMember
+	} from '$lib/helpers/distinguishConferenceMembers';
 
 	let { data }: { data: PageData } = $props();
 
@@ -31,20 +36,20 @@
 
 	let countries = $derived(
 		committee?.members
-			.filter((member) => member.representation?.type === 'DELEGATION')
+			.filter(isDelegationMember)
 			.sort((a, b) => sortTranslatedCountries(a.representation!, b.representation!)) ?? []
 	);
 
 	let nsas = $derived(
-		committee?.conference?.uniqueNSAConferenceMembers?.sort((a, b) =>
-			a.representation!.name!.localeCompare(b.representation!.name!)
-		) ?? []
+		committee?.conference?.uniqueConferenceMembers
+			?.filter(isNSAMember)
+			.sort((a, b) => a.representation!.name!.localeCompare(b.representation!.name!)) ?? []
 	);
 
 	let un = $derived(
-		committee?.conference?.uniqueUNConferenceMembers?.sort((a, b) =>
-			a.representation!.name!.localeCompare(b.representation!.name!)
-		) ?? []
+		committee?.conference?.uniqueConferenceMembers
+			?.filter(isUNMember)
+			?.sort((a, b) => a.representation!.name!.localeCompare(b.representation!.name!)) ?? []
 	);
 
 	let rollCallActive = $state(false);

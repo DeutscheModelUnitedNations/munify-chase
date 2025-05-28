@@ -36,7 +36,7 @@
 	<div class="z-20 flex w-full flex-col items-center lg:w-1/2 lg:items-end">
 		<div in:fly={{ y: 10, duration: 1000, delay: 700 }}>
 			<h1
-				class="mb-4 text-center font-serif text-5xl leading-tight font-bold text-slate-900 lg:text-right lg:text-6xl"
+				class="mb-4 text-center font-serif text-5xl leading-tight font-bold text-slate-900 lg:text-right lg:text-6xl dark:text-white"
 			>
 				<span
 					style="background: linear-gradient(to right, #3d7dd2, #0000d0); background-clip: text; -webkit-background-clip: text; color: transparent;"
@@ -47,7 +47,9 @@
 			</h1>
 		</div>
 		<div in:fade={{ duration: 1500, delay: 1000 }}>
-			<h2 class="text-center text-xl leading-normal text-slate-900 lg:text-right lg:text-2xl">
+			<h2
+				class="text-center text-xl leading-normal text-slate-900 lg:text-right lg:text-2xl dark:text-white"
+			>
 				{m.homeHeroText()}
 			</h2>
 		</div>

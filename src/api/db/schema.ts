@@ -1,3 +1,4 @@
+import { nanoid } from '../../lib/helpers/nanoid';
 import {
 	pgTable,
 	text,
@@ -8,10 +9,6 @@ import {
 	smallint,
 	type AnyPgColumn
 } from 'drizzle-orm/pg-core';
-import { customAlphabet } from 'nanoid';
-
-// https://github.com/CyberAP/nanoid-dictionary?tab=readme-ov-file#nolookalikessafe
-const nanoid = customAlphabet('6789BCDFGHJKLMNPQRTWbcdfghjkmnpqrtwz', 30);
 
 const defaultTimestamps = {
 	createdAt: timestamp().defaultNow().notNull(),
@@ -215,4 +212,13 @@ export const committeeTopicChangedTimestamp = pgTable('committee_topic_changed_t
 	committeeId: text().references(() => committee.id, { onDelete: 'cascade' }),
 	agendaItemId: text().references(() => agendaItem.id, { onDelete: 'cascade' }),
 	timestamp: timestamp().notNull()
+});
+
+export const presenceChangedTimestamp = pgTable('presence_changed_timestamp', {
+	...defaultIdAndTimestamps,
+	committeeMemberId: text()
+		.notNull()
+		.references(() => committeeMember.id, { onDelete: 'cascade' }),
+	timestamp: timestamp().notNull(),
+	presentSetTo: boolean().notNull()
 });

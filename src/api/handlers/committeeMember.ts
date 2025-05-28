@@ -1,4 +1,4 @@
-import { db } from '$api/db/db';
+import { db, schema } from '$api/db/db';
 import { abilityBuilder, schemaBuilder } from '$api/rumble';
 import { and, inArray } from 'drizzle-orm';
 import { basics } from './basics';
@@ -22,7 +22,7 @@ schemaBuilder.mutationFields((t) => {
 				present: t.arg.boolean({ required: true })
 			},
 			resolve: async (query, root, args, ctx, info) => {
-				await db
+				const res = await db
 					.update(table)
 					.set({
 						present: args.present
@@ -32,7 +32,18 @@ schemaBuilder.mutationFields((t) => {
 							inArray(table.id, args.ids),
 							ctx.abilities.committeeMember.filter('update').sql.where
 						)
-					);
+					)
+					.returning({
+						id: table.id
+					});
+
+				await db.insert(schema.presenceChangedTimestamp).values(
+					res.map((committeeMember) => ({
+						committeeMemberId: committeeMember.id,
+						presentSetTo: args.present,
+						timestamp: new Date()
+					}))
+				);
 
 				pubsub.updated(args.ids);
 

@@ -1,5 +1,5 @@
 {
-	"id": "7716ce4d-c7c8-4c95-8315-1081bc00dcea",
+	"id": "b0919364-785b-4d58-be70-b04de2cf729c",
 	"prevId": "eeaee9c9-bc33-4428-bc2b-6479d37af3df",
 	"version": "7",
 	"dialect": "postgresql",
@@ -548,6 +548,67 @@
 				"conference_user_committee_member_id_committee_member_id_fk": {
 					"name": "conference_user_committee_member_id_committee_member_id_fk",
 					"tableFrom": "conference_user",
+					"tableTo": "committee_member",
+					"columnsFrom": ["committee_member_id"],
+					"columnsTo": ["id"],
+					"onDelete": "cascade",
+					"onUpdate": "no action"
+				}
+			},
+			"compositePrimaryKeys": {},
+			"uniqueConstraints": {},
+			"policies": {},
+			"checkConstraints": {},
+			"isRLSEnabled": false
+		},
+		"public.presence_changed_timestamp": {
+			"name": "presence_changed_timestamp",
+			"schema": "",
+			"columns": {
+				"id": {
+					"name": "id",
+					"type": "text",
+					"primaryKey": true,
+					"notNull": true
+				},
+				"created_at": {
+					"name": "created_at",
+					"type": "timestamp",
+					"primaryKey": false,
+					"notNull": true,
+					"default": "now()"
+				},
+				"updated_at": {
+					"name": "updated_at",
+					"type": "timestamp",
+					"primaryKey": false,
+					"notNull": false,
+					"default": "now()"
+				},
+				"committee_member_id": {
+					"name": "committee_member_id",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"timestamp": {
+					"name": "timestamp",
+					"type": "timestamp",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"present_set_to": {
+					"name": "present_set_to",
+					"type": "boolean",
+					"primaryKey": false,
+					"notNull": true
+				}
+			},
+			"indexes": {},
+			"foreignKeys": {
+				"presence_changed_timestamp_committee_member_id_committee_member_id_fk": {
+					"name": "presence_changed_timestamp_committee_member_id_committee_member_id_fk",
+					"tableFrom": "presence_changed_timestamp",
 					"tableTo": "committee_member",
 					"columnsFrom": ["committee_member_id"],
 					"columnsTo": ["id"],

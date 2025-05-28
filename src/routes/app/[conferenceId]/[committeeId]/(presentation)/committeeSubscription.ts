@@ -71,18 +71,7 @@ export const PresentationSubscription = graphql(`
 				}
 			}
 			conference {
-				uniqueUNConferenceMembers {
-					id
-					representation {
-						id
-						type
-						name
-						alpha2Code
-						alpha3Code
-						faIcon
-					}
-				}
-				uniqueNSAConferenceMembers {
+				uniqueConferenceMembers {
 					id
 					representation {
 						id

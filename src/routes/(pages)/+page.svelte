@@ -47,14 +47,14 @@
 			>
 				<TextSection title={m.homeAboutTitle()} text={m.homeAboutText()} />
 				<TextSection title={m.homeMissionTitle()} text={m.homeMissionText()}>
-					<a class="btn btn-primary" href="https://dmun.de" target="_blank">
+					<a class="btn btn-primary mt-3" href="https://dmun.de" target="_blank">
 						<i class="fas fa-external-link mr-2"></i>
 						{m.homeMissionButtonLabel()}
 					</a>
 				</TextSection>
 				<TextSection title={m.homeContributeTitle()} text={m.homeContributeText()}>
 					<a
-						class="btn btn-primary"
+						class="btn btn-primary mt-3"
 						href="https://github.com/DeutscheModelUnitedNations/munify-chase"
 						target="_blank"
 					>

@@ -1,5 +1,6 @@
 <script lang="ts">
-	import { graphql, type CommitteeTeamQuery$result } from '$houdini';
+	import { invalidateAll } from '$app/navigation';
+	import { cache, graphql, type CommitteeTeamQuery$result } from '$houdini';
 	import { m } from '$lib/paraglide/messages';
 	import { promiseToastStrings } from '$lib/utils/toast';
 	import toast from 'svelte-french-toast';
@@ -26,6 +27,15 @@
 		}
 	`);
 
+	const AddAgendaItemMutation = graphql(`
+		mutation AddAgendaItem($committeeId: ID!, $title: String!) {
+			createAgendaItem(committeeId: $committeeId, title: $title) {
+				id
+				title
+			}
+		}
+	`);
+
 	const update = async () => {
 		if (value === activeAgendaItem?.id) {
 			return;
@@ -38,15 +48,36 @@
 			promiseToastStrings(m.agendaItem(), 'update')
 		);
 	};
+
+	const addAgendaItem = async () => {
+		const title = prompt(m.agendaItemTitle());
+		if (!title) return;
+
+		await toast.promise(
+			AddAgendaItemMutation.mutate({
+				committeeId,
+				title
+			}),
+			promiseToastStrings(m.agendaItem(), 'create')
+		);
+
+		cache.markStale();
+		invalidateAll();
+	};
 </script>
 
-<select class="select select-lg w-full" onchange={update} bind:value>
-	<option disabled selected={!activeAgendaItem}>
-		{m.selectAgendaItem()}
-	</option>
-	{#each agendaItems ?? [] as item}
-		<option value={item.id} selected={value === item.id}>
-			{item.title}
+<div class="join">
+	<select class="select select-lg join-item w-full" onchange={update} bind:value>
+		<option disabled selected={!activeAgendaItem}>
+			{m.selectAgendaItem()}
 		</option>
-	{/each}
-</select>
+		{#each agendaItems ?? [] as item}
+			<option value={item.id} selected={value === item.id}>
+				{item.title}
+			</option>
+		{/each}
+	</select>
+	<button class="btn join-item btn-lg" onclick={addAgendaItem} aria-label={m.addAgendaItem()}>
+		<i class="fas fa-plus"></i>
+	</button>
+</div>

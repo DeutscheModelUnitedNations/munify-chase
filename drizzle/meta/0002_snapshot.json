@@ -1,5 +1,5 @@
 {
-	"id": "488890cb-c751-4334-8571-8f1c487047ad",
+	"id": "b0919364-785b-4d58-be70-b04de2cf729c",
 	"prevId": "eeaee9c9-bc33-4428-bc2b-6479d37af3df",
 	"version": "7",
 	"dialect": "postgresql",
@@ -281,6 +281,76 @@
 					"columnsFrom": ["representation_id"],
 					"columnsTo": ["id"],
 					"onDelete": "no action",
+					"onUpdate": "no action"
+				}
+			},
+			"compositePrimaryKeys": {},
+			"uniqueConstraints": {},
+			"policies": {},
+			"checkConstraints": {},
+			"isRLSEnabled": false
+		},
+		"public.committee_topic_changed_timestamp": {
+			"name": "committee_topic_changed_timestamp",
+			"schema": "",
+			"columns": {
+				"id": {
+					"name": "id",
+					"type": "text",
+					"primaryKey": true,
+					"notNull": true
+				},
+				"created_at": {
+					"name": "created_at",
+					"type": "timestamp",
+					"primaryKey": false,
+					"notNull": true,
+					"default": "now()"
+				},
+				"updated_at": {
+					"name": "updated_at",
+					"type": "timestamp",
+					"primaryKey": false,
+					"notNull": false,
+					"default": "now()"
+				},
+				"committee_id": {
+					"name": "committee_id",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"agenda_item_id": {
+					"name": "agenda_item_id",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"timestamp": {
+					"name": "timestamp",
+					"type": "timestamp",
+					"primaryKey": false,
+					"notNull": true
+				}
+			},
+			"indexes": {},
+			"foreignKeys": {
+				"committee_topic_changed_timestamp_committee_id_committee_id_fk": {
+					"name": "committee_topic_changed_timestamp_committee_id_committee_id_fk",
+					"tableFrom": "committee_topic_changed_timestamp",
+					"tableTo": "committee",
+					"columnsFrom": ["committee_id"],
+					"columnsTo": ["id"],
+					"onDelete": "cascade",
+					"onUpdate": "no action"
+				},
+				"committee_topic_changed_timestamp_agenda_item_id_agenda_item_id_fk": {
+					"name": "committee_topic_changed_timestamp_agenda_item_id_agenda_item_id_fk",
+					"tableFrom": "committee_topic_changed_timestamp",
+					"tableTo": "agenda_item",
+					"columnsFrom": ["agenda_item_id"],
+					"columnsTo": ["id"],
+					"onDelete": "cascade",
 					"onUpdate": "no action"
 				}
 			},

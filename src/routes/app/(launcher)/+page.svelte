@@ -62,7 +62,7 @@
 			<h3 class="text-center text-2xl">MUNify</h3>
 			<h3 class="text-center text-5xl font-bold">CHASE</h3>
 			<p class="mt-4 text-center text-lg">
-				{m.launcherWelcome({ name: data?.user.given_name })}
+				{m.launcherWelcome({ name: data!.user!.given_name! })}
 			</p>
 		</div>
 		<div class="card bg-base-100 w-full max-w-2xl shadow-sm">
@@ -81,7 +81,7 @@
 						{#each conferenceData as c}
 							{@const conf = c.conference}
 							<a
-								href={getUrl(c.conferenceUserType, c.conference.id)}
+								href={getUrl(c.conferenceUserType, c.id)}
 								class="btn btn-lg w-full max-w-xs shadow-xs"
 							>
 								<i class="fa-duotone fa-rocket-launch mr-2"></i>

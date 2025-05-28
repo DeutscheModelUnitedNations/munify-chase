@@ -150,7 +150,7 @@ input ConferenceMemberWhereInputArgument {
 
 type ConferenceUser {
   committeeMemberId: ID
-  conference(where: ConferenceWhereInputArgument): Conference
+  conference(where: ConferenceWhereInputArgument): Conference!
   conferenceId: ID!
   conferenceMemberId: ID
   conferenceUserType: ConferenceUserTypeEnum!

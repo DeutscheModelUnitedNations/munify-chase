@@ -85,7 +85,7 @@
 				out:fly={{ duration: 500, y: -20, easing: cubicOut }}
 			>
 				<div class="w-4 text-sm opacity-50">{i + 1}.</div>
-				<Flag {representation} size="sm" />
+				<Flag representation={representation ?? undefined} size="sm" />
 				<h2 class="flex-1 text-lg font-bold">
 					{representation?.name ||
 						getTranslatedCountryNameFromAlpha3Code(representation?.alpha3Code)}

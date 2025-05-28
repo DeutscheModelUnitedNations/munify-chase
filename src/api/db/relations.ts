@@ -63,7 +63,8 @@ export const relations = defineRelations(schema, (r) => ({
 		}),
 		conference: r.one.conference({
 			from: r.conferenceUser.conferenceId,
-			to: r.conference.id
+			to: r.conference.id,
+			optional: false
 		})
 	},
 	representation: {

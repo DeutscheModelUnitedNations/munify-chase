@@ -58,7 +58,7 @@ type CommitteeMember {
   createdAt: DateTime!
   id: ID!
   present: Boolean!
-  representation(where: RepresentationWhereInputArgument): Representation
+  representation(where: RepresentationWhereInputArgument): Representation!
   representationId: ID!
   updatedAt: DateTime
   user(where: ConferenceUserWhereInputArgument): ConferenceUser
@@ -117,19 +117,9 @@ type Conference {
   title: String!
 
   """
-  Returns a conference member for each existent non state actor. Useful to display a non duplicated list of non state actors.
+  Returns a conference member for each existent representation. Useful to display a non duplicated list of non state actors.
   """
   uniqueConferenceMembers(where: ConferenceMemberWhereInputArgument): [ConferenceMember!]
-
-  """
-  Returns a conference member for each existent non state actor. Useful to display a non duplicated list of non state actors.
-  """
-  uniqueNSAConferenceMembers(where: ConferenceMemberWhereInputArgument): [ConferenceMember!]
-
-  """
-  Returns a conference member for each existent non state actor. Useful to display a non duplicated list of non state actors.
-  """
-  uniqueUNConferenceMembers(where: ConferenceMemberWhereInputArgument): [ConferenceMember!]
   updatedAt: DateTime
   users(where: ConferenceUserWhereInputArgument): [ConferenceUser!]!
 }
@@ -139,7 +129,7 @@ type ConferenceMember {
   conferenceId: ID!
   createdAt: DateTime!
   id: ID!
-  representation(where: RepresentationWhereInputArgument): Representation
+  representation(where: RepresentationWhereInputArgument): Representation!
   representationId: ID!
   speakerOnList(where: SpeakerOnListWhereInputArgument): [SpeakerOnList!]!
   updatedAt: DateTime
@@ -160,7 +150,7 @@ input ConferenceMemberWhereInputArgument {
 
 type ConferenceUser {
   committeeMemberId: ID
-  conference(where: ConferenceWhereInputArgument): Conference
+  conference(where: ConferenceWhereInputArgument): Conference!
   conferenceId: ID!
   conferenceMemberId: ID
   conferenceUserType: ConferenceUserTypeEnum!

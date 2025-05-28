@@ -128,6 +128,10 @@
 		loading = true;
 
 		if (!importData) return;
+		if (importData.$schema) {
+			delete importData.$schema;
+		}
+
 		const res = await ConferenceCreationMutation.mutate({ data: importData }).catch((e) => {
 			toast.error(m.conferenceCreationError());
 			console.error('Error creating conference:', e);
@@ -158,8 +162,8 @@
 		importData?.representations.push({
 			name: '',
 			faIcon: type === 'NSA' ? 'megaphone' : undefined,
-			alpha2Code: type === 'UN' ? 'un' : undefined,
-			alpha3Code: type === 'UN' ? 'uno' : undefined,
+			// alpha2Code: type === 'UN' ? 'un' : undefined,
+			// alpha3Code: type === 'UN' ? 'uno' : undefined,
 			representationType: type,
 			id: repId
 		});

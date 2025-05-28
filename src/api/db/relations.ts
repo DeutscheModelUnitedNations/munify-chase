@@ -47,7 +47,8 @@ export const relations = defineRelations(schema, (r) => ({
 	committeeMember: {
 		representation: r.one.representation({
 			from: r.committeeMember.representationId,
-			to: r.representation.id
+			to: r.representation.id,
+			optional: false
 		}),
 		user: r.one.conferenceUser({
 			from: r.committeeMember.id,
@@ -86,7 +87,8 @@ export const relations = defineRelations(schema, (r) => ({
 		}),
 		representation: r.one.representation({
 			from: r.conferenceMember.representationId,
-			to: r.representation.id
+			to: r.representation.id,
+			optional: false
 		}),
 		speakerOnList: r.many.speakerOnList({
 			from: r.conferenceMember.id,

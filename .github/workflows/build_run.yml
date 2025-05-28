@@ -13,6 +13,7 @@ jobs:
       - run: bun install --frozen-lockfile
       - run: bun run build
       - run: bun run check
+      # TODO
       # - run: |
       #     bun run preview &
       #     sleep 10

@@ -66,7 +66,9 @@ schemaBuilder.mutationFields((t) => {
 								user: {
 									id: ctx.mustBeLoggedIn().sub
 								},
-								conferenceUserType: 'ADMIN'
+								conferenceUserType: {
+									in: ['ADMIN', 'TEAM']
+								}
 							}
 						})
 						.then(assertFindFirstExists);

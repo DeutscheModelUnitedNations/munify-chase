@@ -30,9 +30,9 @@ const ref = object({
 			description:
 				'Returns a conference member for each existent representation. Useful to display a non duplicated list of non state actors.',
 			args: {
-				where: t.arg({ type: ConferenceMemberWhereInput, required: false })
+				where: t.arg({ type: ConferenceMemberWhereInput })
 			},
-			resolve: async (query, _root, args, ctx, _info) => {
+			resolve: async (query, parent, args, ctx, _info) => {
 				const touchedRepresentation = new Set<string>();
 				return (
 					await db.query.conferenceMember.findMany(
@@ -40,7 +40,8 @@ const ref = object({
 							...ctx.abilities.conferenceMember.filter('read', {
 								inject: {
 									where: {
-										...args.where
+										...args.where,
+										conferenceId: parent.id
 									}
 								}
 							}).query.many,

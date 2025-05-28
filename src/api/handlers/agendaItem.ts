@@ -18,10 +18,9 @@ const ref = object({
 		isActive: t.field({
 			type: 'Boolean',
 			resolve: async (parent, args, context, info) => {
-				const parentId = parent.id;
 				const res = await db.query.committee
 					.findFirst({
-						where: { activeAgendaItemId: parentId }
+						where: { activeAgendaItemId: parent.id }
 					})
 					.then((r) => {
 						return !!r;

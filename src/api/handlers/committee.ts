@@ -151,6 +151,14 @@ schemaBuilder.mutationFields((t) => {
 						)
 					);
 
+				if (args.activeAgendaItemId) {
+					await db.insert(schema.committeeTopicChangedTimestamp).values({
+						committeeId: args.id,
+						agendaItemId: args.activeAgendaItemId,
+						timestamp: new Date()
+					});
+				}
+
 				pubsub.updated(args.id);
 
 				return db.query.committee.findFirst(

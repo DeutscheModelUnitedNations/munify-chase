@@ -209,3 +209,10 @@ export const spokenTimePeriod = pgTable('spoken_time_period', {
 	startTimestamp: timestamp().notNull(),
 	endTimestamp: timestamp().notNull()
 });
+
+export const committeeTopicChangedTimestamp = pgTable('committee_topic_changed_timestamp', {
+	...defaultIdAndTimestamps,
+	committeeId: text().references(() => committee.id, { onDelete: 'cascade' }),
+	agendaItemId: text().references(() => agendaItem.id, { onDelete: 'cascade' }),
+	timestamp: timestamp().notNull()
+});

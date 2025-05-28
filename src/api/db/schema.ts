@@ -209,3 +209,12 @@ export const spokenTimePeriod = pgTable('spoken_time_period', {
 	startTimestamp: timestamp().notNull(),
 	endTimestamp: timestamp().notNull()
 });
+
+export const presenceChangedTimestamp = pgTable('presence_changed_timestamp', {
+	...defaultIdAndTimestamps,
+	committeeMemberId: text()
+		.notNull()
+		.references(() => committeeMember.id, { onDelete: 'cascade' }),
+	timestamp: timestamp().notNull(),
+	presentSetTo: boolean().notNull()
+});

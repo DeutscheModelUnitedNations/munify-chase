@@ -148,5 +148,11 @@ export const relations = defineRelations(schema, (r) => ({
 			from: r.spokenTimePeriod.speakersListId,
 			to: r.speakersList.id
 		})
+	},
+	presenceChangedTimestamp: {
+		committeeMember: r.one.committeeMember({
+			from: r.presenceChangedTimestamp.committeeMemberId,
+			to: r.committeeMember.id
+		})
 	}
 }));

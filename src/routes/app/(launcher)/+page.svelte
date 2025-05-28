@@ -81,7 +81,7 @@
 						{#each conferenceData as c}
 							{@const conf = c.conference}
 							<a
-								href={getUrl(c.conferenceUserType, c.id)}
+								href={getUrl(c.conferenceUserType, c.conference.id)}
 								class="btn btn-lg w-full max-w-xs shadow-xs"
 							>
 								<i class="fa-duotone fa-rocket-launch mr-2"></i>

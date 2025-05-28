@@ -4,12 +4,13 @@
 	import { graphql, type RepresentationTypeEnum$options } from '$houdini';
 	import toast from 'svelte-french-toast';
 	import { importDataSchema } from '$lib/utils/import';
-	import { nanoid, z } from 'zod/v4';
+	import { z } from 'zod/v4';
 	import Footer from '$lib/components/Footer.svelte';
 	import { onMount } from 'svelte';
 	import Flag from '$lib/components/Flag.svelte';
 	import WorldCountries from 'world-countries';
 	import { page } from '$app/state';
+	import { nanoid } from '$lib/helpers/nanoid';
 
 	// let { data }: PageData = $props();
 
@@ -92,11 +93,11 @@
 	async function createFreshData(): Promise<void> {
 		importData = {
 			title: '',
-			id: crypto.randomUUID(),
+			id: nanoid(),
 			committees: [],
 			agendaItems: [],
 			representations: WorldCountries.filter((x) => x.unMember).map((nation) => ({
-				id: crypto.randomUUID(),
+				id: nanoid(),
 				representationType: 'DELEGATION',
 				alpha3Code: nation.cca3.toLowerCase(),
 				alpha2Code: nation.cca3.toLowerCase(),
@@ -146,7 +147,7 @@
 
 	const addCommittee = () =>
 		importData?.committees.push({
-			id: crypto.randomUUID(),
+			id: nanoid(),
 			name: '',
 			abbreviation: ''
 		});
@@ -158,7 +159,7 @@
 		});
 
 	const addRepresentationAndConferenceMember = (type: RepresentationTypeEnum$options) => {
-		const repId = crypto.randomUUID();
+		const repId = nanoid();
 		importData?.representations.push({
 			name: '',
 			faIcon: type === 'NSA' ? 'megaphone' : undefined,
@@ -168,7 +169,7 @@
 			id: repId
 		});
 		importData?.conferenceMembers.push({
-			id: crypto.randomUUID(),
+			id: nanoid(),
 			representationId: repId
 		});
 	};
@@ -184,7 +185,7 @@
 			(x) => x.alpha2Code?.toLocaleLowerCase() === alpha2Code.toLowerCase()
 		)?.id;
 		if (!repId) {
-			repId = crypto.randomUUID();
+			repId = nanoid();
 			importData?.representations.push({
 				alpha2Code,
 				alpha3Code: country.cca3.toLowerCase(),
@@ -193,7 +194,7 @@
 			});
 		}
 		importData?.committeeMembers.push({
-			id: crypto.randomUUID(),
+			id: nanoid(),
 			committeeId: committeeId,
 			representationId: repId
 		});

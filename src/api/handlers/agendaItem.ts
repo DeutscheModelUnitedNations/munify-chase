@@ -1,7 +1,6 @@
 import { db, schema } from '$api/db/db';
 import {
 	abilityBuilder,
-	enum_,
 	object,
 	query,
 	pubsub as rumblePubsub,
@@ -9,8 +8,9 @@ import {
 	arg as rumbleArg
 } from '$api/rumble';
 import { isDMUNEmail } from '$api/services/isDMUNEmail';
-import { assertFirstEntryExists } from '@m1212e/rumble';
-import { and, count, eq, type InferSelectModel } from 'drizzle-orm';
+import { nanoid } from '$lib/helpers/nanoid';
+import { assertFindFirstExists, assertFirstEntryExists } from '@m1212e/rumble';
+import { GraphQLError } from 'graphql';
 
 const ref = object({
 	table: 'agendaItem',
@@ -41,4 +41,78 @@ abilityBuilder.agendaItem.allow(['read']).when(({ mustBeLoggedIn }) => {
 	if (user?.email && isDMUNEmail(user.email)) {
 		return 'allow';
 	}
+});
+
+schemaBuilder.mutationFields((t) => {
+	return {
+		createAgendaItem: t.drizzleField({
+			type: ref,
+			args: {
+				title: t.arg({ type: 'String', required: true }),
+				committeeId: t.arg({ type: 'ID', required: true })
+			},
+			resolve: async (query, root, args, ctx, info) => {
+				if (!ctx.hasRole('admin')) {
+					// TODO: rumble should support something like this
+					await db.query.conferenceUser
+						.findFirst({
+							where: {
+								conference: {
+									committees: {
+										id: args.committeeId
+									}
+								},
+								user: {
+									id: ctx.mustBeLoggedIn().sub
+								},
+								conferenceUserType: {
+									in: ['ADMIN', 'TEAM']
+								}
+							}
+						})
+						.then(assertFindFirstExists);
+				}
+
+				return await db.transaction(async (tx) => {
+					const res = await tx
+						.insert(schema.agendaItem)
+						.values({
+							title: args.title,
+							committeeId: args.committeeId,
+							id: nanoid()
+						})
+						.returning()
+						.then(assertFirstEntryExists);
+
+					pubsub.updated(res.id);
+
+					await tx.insert(schema.speakersList).values({
+						agendaItemId: res.id,
+						id: nanoid(),
+						type: 'SPEAKERS_LIST',
+						speakingTime: 180
+					});
+
+					await tx.insert(schema.speakersList).values({
+						agendaItemId: res.id,
+						id: nanoid(),
+						type: 'COMMENT_LIST',
+						speakingTime: 30
+					});
+
+					return await tx.query.agendaItem
+						.findFirst(
+							query(
+								ctx.abilities.agendaItem.filter('read', {
+									inject: {
+										where: { id: res.id }
+									}
+								}).query.single
+							)
+						)
+						.then(assertFindFirstExists);
+				});
+			}
+		})
+	};
 });

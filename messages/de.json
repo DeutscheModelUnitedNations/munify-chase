@@ -241,5 +241,6 @@
 	"announceAdoption": "Verabschiedung verkünden",
 	"download": "Download",
 	"speakersListNotFound": "Redeliste nicht gefunden",
-	"create": "Erstellen"
+	"create": "Erstellen",
+	"agendaItemTitle": "Titel des Tagesordnungspunkts"
 }

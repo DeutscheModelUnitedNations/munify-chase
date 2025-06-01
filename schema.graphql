@@ -9,7 +9,7 @@ type AgendaItem {
   createdAt: DateTime!
   id: ID!
   isActive: Boolean
-  speakersList(where: SpeakersListWhereInputArgument): [SpeakersList!]!
+  speakersList(limit: Int, offset: Int, where: SpeakersListWhereInputArgument): [SpeakersList!]!
   title: String!
   updatedAt: DateTime
 }
@@ -28,7 +28,7 @@ type Committee {
   abbreviation: String!
   activeAgendaItem(where: AgendaItemWhereInputArgument): AgendaItem
   activeAgendaItemId: ID
-  agendaItems(where: AgendaItemWhereInputArgument): [AgendaItem!]!
+  agendaItems(limit: Int, offset: Int, where: AgendaItemWhereInputArgument): [AgendaItem!]!
   allowDelegationsToAddThemselvesToSpeakersList: Boolean!
   conference(where: ConferenceWhereInputArgument): Conference
   conferenceId: ID!
@@ -38,7 +38,7 @@ type Committee {
   customTwoThirdsMajority: Int
   id: ID!
   lastResolutionAdoptionDate: DateTime
-  members(where: CommitteeMemberWhereInputArgument): [CommitteeMember!]!
+  members(limit: Int, offset: Int, where: CommitteeMemberWhereInputArgument): [CommitteeMember!]!
   name: String!
   paperSupportThreshold: Int
   showWhiteboard: Boolean!
@@ -108,12 +108,12 @@ input CommitteeWhereInputArgument {
 }
 
 type Conference {
-  committees(where: CommitteeWhereInputArgument): [Committee!]!
+  committees(limit: Int, offset: Int, where: CommitteeWhereInputArgument): [Committee!]!
   createdAt: DateTime!
   id: ID!
-  members(where: ConferenceMemberWhereInputArgument): [ConferenceMember!]!
+  members(limit: Int, offset: Int, where: ConferenceMemberWhereInputArgument): [ConferenceMember!]!
   pressWebsite: String
-  representations(where: RepresentationWhereInputArgument): [Representation!]!
+  representations(limit: Int, offset: Int, where: RepresentationWhereInputArgument): [Representation!]!
   title: String!
 
   """
@@ -121,7 +121,7 @@ type Conference {
   """
   uniqueConferenceMembers(where: ConferenceMemberWhereInputArgument): [ConferenceMember!]
   updatedAt: DateTime
-  users(where: ConferenceUserWhereInputArgument): [ConferenceUser!]!
+  users(limit: Int, offset: Int, where: ConferenceUserWhereInputArgument): [ConferenceUser!]!
 }
 
 type ConferenceMember {
@@ -131,7 +131,7 @@ type ConferenceMember {
   id: ID!
   representation(where: RepresentationWhereInputArgument): Representation!
   representationId: ID!
-  speakerOnList(where: SpeakerOnListWhereInputArgument): [SpeakerOnList!]!
+  speakerOnList(limit: Int, offset: Int, where: SpeakerOnListWhereInputArgument): [SpeakerOnList!]!
   updatedAt: DateTime
   user(where: ConferenceUserWhereInputArgument): ConferenceUser
 }
@@ -275,6 +275,26 @@ type Mutation {
   updateSpeakersList(id: ID!, isClosed: Boolean, speakingTime: Int, startTimestamp: DateTime, stopTimer: Boolean = false, timeLeft: Int): SpeakersList
 }
 
+type PresenceChangedTimestamp {
+  committeeMember(where: CommitteeMemberWhereInputArgument): CommitteeMember
+  committeeMemberId: ID!
+  createdAt: DateTime!
+  id: ID!
+  presentSetTo: Boolean!
+  timestamp: DateTime!
+  updatedAt: DateTime
+}
+
+input PresenceChangedTimestampWhereInputArgument {
+  committeeMember: CommitteeMemberWhereInputArgument
+  committeeMemberId: ID
+  createdAt: DateTime
+  id: ID
+  presentSetTo: Boolean
+  timestamp: DateTime
+  updatedAt: DateTime
+}
+
 type Query {
   findFirstAgendaItem(where: AgendaItemWhereInputArgument): AgendaItem!
   findFirstCommittee(where: CommitteeWhereInputArgument): Committee!
@@ -282,20 +302,22 @@ type Query {
   findFirstConference(where: ConferenceWhereInputArgument): Conference!
   findFirstConferenceMember(where: ConferenceMemberWhereInputArgument): ConferenceMember!
   findFirstConferenceUser(where: ConferenceUserWhereInputArgument): ConferenceUser!
+  findFirstPresenceChangedTimestamp(where: PresenceChangedTimestampWhereInputArgument): PresenceChangedTimestamp!
   findFirstRepresentation(where: RepresentationWhereInputArgument): Representation!
   findFirstSpeakerOnList(where: SpeakerOnListWhereInputArgument): SpeakerOnList!
   findFirstSpeakersList(where: SpeakersListWhereInputArgument): SpeakersList!
   findFirstUser(where: UserWhereInputArgument): User!
-  findManyAgendaItem(where: AgendaItemWhereInputArgument): [AgendaItem!]!
-  findManyCommittee(where: CommitteeWhereInputArgument): [Committee!]!
-  findManyCommitteeMember(where: CommitteeMemberWhereInputArgument): [CommitteeMember!]!
-  findManyConference(where: ConferenceWhereInputArgument): [Conference!]!
-  findManyConferenceMember(where: ConferenceMemberWhereInputArgument): [ConferenceMember!]!
-  findManyConferenceUser(where: ConferenceUserWhereInputArgument): [ConferenceUser!]!
-  findManyRepresentation(where: RepresentationWhereInputArgument): [Representation!]!
-  findManySpeakerOnList(where: SpeakerOnListWhereInputArgument): [SpeakerOnList!]!
-  findManySpeakersList(where: SpeakersListWhereInputArgument): [SpeakersList!]!
-  findManyUser(where: UserWhereInputArgument): [User!]!
+  findManyAgendaItem(limit: Int, offset: Int, where: AgendaItemWhereInputArgument): [AgendaItem!]!
+  findManyCommittee(limit: Int, offset: Int, where: CommitteeWhereInputArgument): [Committee!]!
+  findManyCommitteeMember(limit: Int, offset: Int, where: CommitteeMemberWhereInputArgument): [CommitteeMember!]!
+  findManyConference(limit: Int, offset: Int, where: ConferenceWhereInputArgument): [Conference!]!
+  findManyConferenceMember(limit: Int, offset: Int, where: ConferenceMemberWhereInputArgument): [ConferenceMember!]!
+  findManyConferenceUser(limit: Int, offset: Int, where: ConferenceUserWhereInputArgument): [ConferenceUser!]!
+  findManyPresenceChangedTimestamp(limit: Int, offset: Int, where: PresenceChangedTimestampWhereInputArgument): [PresenceChangedTimestamp!]!
+  findManyRepresentation(limit: Int, offset: Int, where: RepresentationWhereInputArgument): [Representation!]!
+  findManySpeakerOnList(limit: Int, offset: Int, where: SpeakerOnListWhereInputArgument): [SpeakerOnList!]!
+  findManySpeakersList(limit: Int, offset: Int, where: SpeakersListWhereInputArgument): [SpeakersList!]!
+  findManyUser(limit: Int, offset: Int, where: UserWhereInputArgument): [User!]!
   serverTime: DateTime!
 }
 
@@ -310,10 +332,10 @@ enum RegionalGroupEnum {
 type Representation {
   alpha2Code: String
   alpha3Code: String
-  committeeMembers(where: CommitteeMemberWhereInputArgument): [CommitteeMember!]!
+  committeeMembers(limit: Int, offset: Int, where: CommitteeMemberWhereInputArgument): [CommitteeMember!]!
   conference(where: ConferenceWhereInputArgument): Conference
   conferenceId: ID!
-  conferenceMembers(where: ConferenceMemberWhereInputArgument): [ConferenceMember!]!
+  conferenceMembers(limit: Int, offset: Int, where: ConferenceMemberWhereInputArgument): [ConferenceMember!]!
   createdAt: DateTime!
   faIcon: String
   id: ID!
@@ -379,7 +401,7 @@ type SpeakersList {
   createdAt: DateTime!
   id: ID!
   isClosed: Boolean!
-  speakers(where: SpeakerOnListWhereInputArgument): [SpeakerOnList!]!
+  speakers(limit: Int, offset: Int, where: SpeakerOnListWhereInputArgument): [SpeakerOnList!]!
   speakingTime: Int!
   startTimestamp: DateTime
   timeLeft: Int!
@@ -413,24 +435,26 @@ type Subscription {
   findFirstConference(where: ConferenceWhereInputArgument): Conference!
   findFirstConferenceMember(where: ConferenceMemberWhereInputArgument): ConferenceMember!
   findFirstConferenceUser(where: ConferenceUserWhereInputArgument): ConferenceUser!
+  findFirstPresenceChangedTimestamp(where: PresenceChangedTimestampWhereInputArgument): PresenceChangedTimestamp!
   findFirstRepresentation(where: RepresentationWhereInputArgument): Representation!
   findFirstSpeakerOnList(where: SpeakerOnListWhereInputArgument): SpeakerOnList!
   findFirstSpeakersList(where: SpeakersListWhereInputArgument): SpeakersList!
   findFirstUser(where: UserWhereInputArgument): User!
-  findManyAgendaItem(where: AgendaItemWhereInputArgument): [AgendaItem!]!
-  findManyCommittee(where: CommitteeWhereInputArgument): [Committee!]!
-  findManyCommitteeMember(where: CommitteeMemberWhereInputArgument): [CommitteeMember!]!
-  findManyConference(where: ConferenceWhereInputArgument): [Conference!]!
-  findManyConferenceMember(where: ConferenceMemberWhereInputArgument): [ConferenceMember!]!
-  findManyConferenceUser(where: ConferenceUserWhereInputArgument): [ConferenceUser!]!
-  findManyRepresentation(where: RepresentationWhereInputArgument): [Representation!]!
-  findManySpeakerOnList(where: SpeakerOnListWhereInputArgument): [SpeakerOnList!]!
-  findManySpeakersList(where: SpeakersListWhereInputArgument): [SpeakersList!]!
-  findManyUser(where: UserWhereInputArgument): [User!]!
+  findManyAgendaItem(limit: Int, offset: Int, where: AgendaItemWhereInputArgument): [AgendaItem!]!
+  findManyCommittee(limit: Int, offset: Int, where: CommitteeWhereInputArgument): [Committee!]!
+  findManyCommitteeMember(limit: Int, offset: Int, where: CommitteeMemberWhereInputArgument): [CommitteeMember!]!
+  findManyConference(limit: Int, offset: Int, where: ConferenceWhereInputArgument): [Conference!]!
+  findManyConferenceMember(limit: Int, offset: Int, where: ConferenceMemberWhereInputArgument): [ConferenceMember!]!
+  findManyConferenceUser(limit: Int, offset: Int, where: ConferenceUserWhereInputArgument): [ConferenceUser!]!
+  findManyPresenceChangedTimestamp(limit: Int, offset: Int, where: PresenceChangedTimestampWhereInputArgument): [PresenceChangedTimestamp!]!
+  findManyRepresentation(limit: Int, offset: Int, where: RepresentationWhereInputArgument): [Representation!]!
+  findManySpeakerOnList(limit: Int, offset: Int, where: SpeakerOnListWhereInputArgument): [SpeakerOnList!]!
+  findManySpeakersList(limit: Int, offset: Int, where: SpeakersListWhereInputArgument): [SpeakersList!]!
+  findManyUser(limit: Int, offset: Int, where: UserWhereInputArgument): [User!]!
 }
 
 type User {
-  conferenceMemberships(where: ConferenceUserWhereInputArgument): [ConferenceUser!]!
+  conferenceMemberships(limit: Int, offset: Int, where: ConferenceUserWhereInputArgument): [ConferenceUser!]!
   createdAt: DateTime!
   email: String!
   familyName: String!

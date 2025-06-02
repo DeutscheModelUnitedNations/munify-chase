@@ -18,6 +18,8 @@
 				representation {
 					id
 					alpha3Code
+					alpha2Code
+					faIcon
 					type
 					name
 				}
@@ -45,7 +47,9 @@
 
 		// TODO the file downloads could be refactored into a helper function
 		// TODO maybe a schema export just like with the endpoints would make sense?
-		const blob = new Blob([JSON.stringify(result.data, null, 2)], { type: 'application/json' });
+		const blob = new Blob([JSON.stringify(result.data?.findManyCommitteeMember, null, 2)], {
+			type: 'application/json'
+		});
 		const url = URL.createObjectURL(blob);
 		const a = document.createElement('a');
 		a.href = url;

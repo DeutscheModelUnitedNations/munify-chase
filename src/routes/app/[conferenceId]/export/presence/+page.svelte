@@ -11,7 +11,15 @@
 			findManyCommitteeMember(where: { representation: { conferenceId: $conferenceId } }) {
 				id
 				user {
+					id
 					userEmail
+				}
+				committeeId
+				representation {
+					id
+					alpha3Code
+					type
+					name
 				}
 				presenceChangedTimestamps {
 					id

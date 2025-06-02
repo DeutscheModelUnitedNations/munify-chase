@@ -57,6 +57,7 @@ type CommitteeMember {
   committeeId: ID!
   createdAt: DateTime!
   id: ID!
+  presenceChangedTimestamps(limit: Int, offset: Int, where: PresenceChangedTimestampWhereInputArgument): [PresenceChangedTimestamp!]!
   present: Boolean!
   representation(where: RepresentationWhereInputArgument): Representation!
   representationId: ID!
@@ -68,6 +69,7 @@ input CommitteeMemberWhereInputArgument {
   committeeId: ID
   createdAt: DateTime
   id: ID
+  presenceChangedTimestamps: PresenceChangedTimestampWhereInputArgument
   present: Boolean
   representation: RepresentationWhereInputArgument
   representationId: ID

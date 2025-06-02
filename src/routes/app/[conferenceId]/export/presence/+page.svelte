@@ -7,26 +7,16 @@
 	let loading = $state(false);
 
 	const dataQuery = graphql(`
-		query PresenceDataQuery($conferenceId: ID!, $offset: Int, $limit: Int) {
-			findManyPresenceChangedTimestamp(
-				limit: $limit
-				offset: $offset
-				where: { committeeMember: { representation: { conference: { id: $conferenceId } } } }
-			) {
+		query PresenceDataQuery($conferenceId: ID!) {
+			findManyCommitteeMember(where: { representation: { conferenceId: $conferenceId } }) {
 				id
-				presentSetTo
-				timestamp
-				committeeMember {
+				user {
+					userEmail
+				}
+				presenceChangedTimestamps {
 					id
-					user {
-						id
-						userEmail
-					}
-					representation {
-						id
-						alpha2Code
-						alpha3Code
-					}
+					presentSetTo
+					timestamp
 				}
 			}
 		}
@@ -35,27 +25,19 @@
 	async function download() {
 		loading = true;
 
-		let returnedAmount = 1;
-		let aggregatedData: any[] = [];
-		let chunkSize = 100;
+		const result = await dataQuery.fetch({
+			variables: {
+				conferenceId: data.conferenceId
+			}
+		});
 
-		while (returnedAmount > 0) {
-			const result = await dataQuery.fetch({
-				variables: {
-					conferenceId: data.conferenceId,
-					offset: aggregatedData.length,
-					limit: chunkSize
-				}
-			});
-			returnedAmount = result.data?.findManyPresenceChangedTimestamp.length || 0;
-			aggregatedData = [
-				...aggregatedData,
-				...(result.data?.findManyPresenceChangedTimestamp || [])
-			];
+		if (result.errors) {
+			throw new Error(result.errors[0].message);
 		}
 
+		// TODO the file downloads could be refactored into a helper function
 		// TODO maybe a schema export just like with the endpoints would make sense?
-		const blob = new Blob([JSON.stringify(aggregatedData, null, 2)], { type: 'application/json' });
+		const blob = new Blob([JSON.stringify(result.data, null, 2)], { type: 'application/json' });
 		const url = URL.createObjectURL(blob);
 		const a = document.createElement('a');
 		a.href = url;
@@ -69,4 +51,11 @@
 	}
 </script>
 
-<button onclick={download}> Download Delegator presence data </button>
+<!-- TODO styling and general concept of data export menu layouts -->
+<button
+	onclick={download}
+	class="btn btn-square input-lg join-item m-5"
+	aria-label="Clear selection"
+>
+	Download Delegator presence data
+</button>

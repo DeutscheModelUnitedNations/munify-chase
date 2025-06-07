@@ -8,7 +8,15 @@ The project is still under development. If you are interested in using it, pleas
 
 We are happy to recieve feedback, contributions and donations. Please see below for more information.
 
-## Develop Locally
+## Dependencies
+
+CHASE has no built-in authentication system. It is designed to be used alongside a OIDC compliant auth system. If you don't bring your own, we recommend using [pocket-id](https://github.com/pocket-id/pocket-id) if a passkey-only solution is sufficient for you. Otherwise, we would recommend setting up a [Zitadel](https://zitadel.com/) or [Logto](https://logto.io/) instance.
+
+You will also need a PostgreSQL database to store the data.
+
+Lastly, it is worth mentioning that CHASE is designed to go hand in hand with [MUNify DELEGATOR](https://github.com/DeutscheModelUnitedNations/munify-delegator), which is the MUNify App for Registration and Participant Management. It is not required to use the DELEGATOR, but some manual steps are required to set up CHASE without the export files from the DELEGATOR.
+
+## Develop locally
 
 Make sure you have [Docker](https://www.docker.com/get-started/), [bun](https://bun.sh/) and [node](https://nodejs.org/en/download/current) installed
 

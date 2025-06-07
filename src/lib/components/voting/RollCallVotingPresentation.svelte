@@ -11,6 +11,7 @@
 	import { flip } from 'svelte/animate';
 	import FlagRow from './FlagRow.svelte';
 	import { crossfade } from 'svelte/transition';
+	import { sortTranslatedCountries } from '$lib/utils/nationTranslationHelper.svelte';
 
 	interface Props {
 		committeeSettings?: CommitteeSettings;
@@ -30,9 +31,9 @@
 	};
 
 	let members = $derived(
-		committee?.members.filter(
-			(member) => member.present && member.representation?.type === 'DELEGATION'
-		)
+		committee?.members
+			.filter((member) => member.present && member.representation?.type === 'DELEGATION')
+			.sort((a, b) => sortTranslatedCountries(a.representation!, b.representation!))
 	);
 
 	let remainingMembers = $derived(

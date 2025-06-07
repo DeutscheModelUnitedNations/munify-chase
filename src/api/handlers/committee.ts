@@ -11,6 +11,7 @@ import {
 import { isDMUNEmail } from '$api/services/isDMUNEmail';
 import { assertFirstEntryExists } from '@m1212e/rumble';
 import { and, count, eq, type InferSelectModel } from 'drizzle-orm';
+import { calculateMajority } from '$api/handlers/majorities';
 
 const statusEnum = enum_({
 	tsName: 'committeeStatus'
@@ -70,13 +71,7 @@ const ref = object({
 					return parent.customSimpleMajority;
 				}
 				const total = await getTotalPresentCount(parent as any);
-				let majority: number;
-				if ((total / 2) % 1 == 0) {
-					majority = total / 2 + 1;
-				} else {
-					majority = Math.ceil(total / 2);
-				}
-				return majority > total ? total : majority;
+				return calculateMajority(total, 'simple');
 			}
 		}),
 		twoThirdsMajority: t.field({
@@ -86,7 +81,7 @@ const ref = object({
 					return parent.customSimpleMajority;
 				}
 				const total = await getTotalPresentCount(parent as any);
-				return Math.ceil((total * 2) / 3);
+				return calculateMajority(total, 'twoThirds');
 			}
 		}),
 		paperSupportThreshold: t.field({

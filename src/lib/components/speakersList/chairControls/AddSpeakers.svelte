@@ -112,7 +112,7 @@
 				conferenceMemberId: conferenceMember?.id,
 				speakersListId: speakersList.id
 			}),
-			promiseToastStrings(getName(committeeMember ?? conferenceMember as Member), 'add')
+			promiseToastStrings(getName(committeeMember ?? (conferenceMember as Member)), 'add')
 		);
 
 		value = '';

@@ -62,6 +62,7 @@
 				id: $childSpeakersListId
 				timeLeft: $childSpeakersListSpeakingTime
 				stopTimer: true
+				isClosed: false
 			) {
 				id
 			}

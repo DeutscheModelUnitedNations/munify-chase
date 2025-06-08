@@ -1,9 +1,14 @@
 <script lang="ts">
 	import { graphql } from '$houdini';
-	import type { PageData } from './$houdini';
+	import { m } from '$lib/paraglide/messages';
 
-	let { data }: { data: PageData } = $props();
-	let conferenceTitleQuery = data.PresenceExportConferenceName;
+	interface Props {
+		conferenceTitle?: string;
+		conferenceId?: string;
+	}
+
+	let { conferenceTitle, conferenceId }: Props = $props();
+
 	let loading = $state(false);
 
 	const dataQuery = graphql(`
@@ -34,10 +39,14 @@
 
 	async function download() {
 		loading = true;
+		if (!conferenceId) {
+			loading = false;
+			throw new Error('No conference ID provided');
+		}
 
 		const result = await dataQuery.fetch({
 			variables: {
-				conferenceId: data.conferenceId
+				conferenceId
 			}
 		});
 
@@ -53,7 +62,7 @@
 		const url = URL.createObjectURL(blob);
 		const a = document.createElement('a');
 		a.href = url;
-		a.download = `${$conferenceTitleQuery.data?.findFirstConference.title || 'conference'}-presence-export.json`;
+		a.download = `${conferenceTitle || 'conference'}-presence-export.json`;
 		document.body.appendChild(a);
 		a.click();
 		document.body.removeChild(a);
@@ -63,11 +72,9 @@
 	}
 </script>
 
-<!-- TODO styling and general concept of data export menu layouts -->
-<button
-	onclick={download}
-	class="btn btn-square input-lg join-item m-5"
-	aria-label="Clear selection"
->
-	Download Delegator presence data
-</button>
+<li>
+	<button onclick={download} class="" aria-label="Download Delegator presence data">
+		<i class="fa-duotone fa-download w-6 text-center"></i>
+		{m.downloadPresenceData()}
+	</button>
+</li>

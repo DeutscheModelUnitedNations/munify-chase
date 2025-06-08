@@ -7,6 +7,7 @@
 	import NavbarBurgerMenu from '$lib/components/NavbarBurgerMenu.svelte';
 	import { onMount } from 'svelte';
 	import { MissionControlSubscription } from './missionControlSubscription';
+	import DownloadPresenceData from './DownloadPresenceData.svelte';
 
 	let { data }: { data: PageData } = $props();
 
@@ -36,7 +37,11 @@
 		<CurrentTime />
 	</div>
 	<div class="flex-none">
-		<NavbarBurgerMenu items={menubarItems} />
+		<NavbarBurgerMenu items={menubarItems}>
+			{#snippet CustomListItems()}
+				<DownloadPresenceData conferenceTitle={conference?.title} conferenceId={conference?.id} />
+			{/snippet}
+		</NavbarBurgerMenu>
 	</div>
 </div>
 

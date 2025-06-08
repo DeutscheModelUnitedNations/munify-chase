@@ -1,6 +1,0 @@
-query PresenceExportConferenceName($conferenceId: ID!) {
-	findFirstConference(where: { id: $conferenceId }) {
-		id
-		title
-	}
-}

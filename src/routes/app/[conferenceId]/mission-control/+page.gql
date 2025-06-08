@@ -1,6 +1,7 @@
 query MissionControlQuery($conferenceId: ID!) {
 	findFirstConference(where: { id: $conferenceId }) {
 		id
+		title
 		committees {
 			id
 			name

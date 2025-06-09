@@ -3,6 +3,7 @@
 	import ThemeSwitcher from './ThemeSwitcher.svelte';
 	import { m } from '$lib/paraglide/messages';
 	import LanguageSwitcher from './LanguageSwitcher.svelte';
+	import type { Snippet } from 'svelte';
 
 	interface Props {
 		items: {
@@ -10,9 +11,10 @@
 			title: string;
 			href: string;
 		}[];
+		CustomListItems?: Snippet;
 	}
 
-	let { items }: Props = $props();
+	let { items, CustomListItems }: Props = $props();
 
 	let menuVisible = $state(false);
 </script>
@@ -35,6 +37,9 @@
 				</a>
 			</li>
 		{/each}
+		{#if CustomListItems}
+			{@render CustomListItems()}
+		{/if}
 		<!-- <div class="divider"></div> -->
 		<div class="mt-4 flex w-full gap-1">
 			<ThemeSwitcher />

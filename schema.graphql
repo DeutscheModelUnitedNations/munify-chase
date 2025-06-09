@@ -57,6 +57,7 @@ type CommitteeMember {
   committeeId: ID!
   createdAt: DateTime!
   id: ID!
+  presenceChangedTimestamps(where: PresenceChangedTimestampWhereInputArgument): [PresenceChangedTimestamp!]!
   present: Boolean!
   representation(where: RepresentationWhereInputArgument): Representation!
   representationId: ID!
@@ -68,6 +69,7 @@ input CommitteeMemberWhereInputArgument {
   committeeId: ID
   createdAt: DateTime
   id: ID
+  presenceChangedTimestamps: PresenceChangedTimestampWhereInputArgument
   present: Boolean
   representation: RepresentationWhereInputArgument
   representationId: ID
@@ -275,6 +277,26 @@ type Mutation {
   updateSpeakersList(id: ID!, isClosed: Boolean, speakingTime: Int, startTimestamp: DateTime, stopTimer: Boolean = false, timeLeft: Int): SpeakersList
 }
 
+type PresenceChangedTimestamp {
+  committeeMember(where: CommitteeMemberWhereInputArgument): CommitteeMember
+  committeeMemberId: ID!
+  createdAt: DateTime!
+  id: ID!
+  presentSetTo: Boolean!
+  timestamp: DateTime!
+  updatedAt: DateTime
+}
+
+input PresenceChangedTimestampWhereInputArgument {
+  committeeMember: CommitteeMemberWhereInputArgument
+  committeeMemberId: ID
+  createdAt: DateTime
+  id: ID
+  presentSetTo: Boolean
+  timestamp: DateTime
+  updatedAt: DateTime
+}
+
 type Query {
   findFirstAgendaItem(where: AgendaItemWhereInputArgument): AgendaItem!
   findFirstCommittee(where: CommitteeWhereInputArgument): Committee!
@@ -282,6 +304,7 @@ type Query {
   findFirstConference(where: ConferenceWhereInputArgument): Conference!
   findFirstConferenceMember(where: ConferenceMemberWhereInputArgument): ConferenceMember!
   findFirstConferenceUser(where: ConferenceUserWhereInputArgument): ConferenceUser!
+  findFirstPresenceChangedTimestamp(where: PresenceChangedTimestampWhereInputArgument): PresenceChangedTimestamp!
   findFirstRepresentation(where: RepresentationWhereInputArgument): Representation!
   findFirstSpeakerOnList(where: SpeakerOnListWhereInputArgument): SpeakerOnList!
   findFirstSpeakersList(where: SpeakersListWhereInputArgument): SpeakersList!
@@ -292,6 +315,7 @@ type Query {
   findManyConference(where: ConferenceWhereInputArgument): [Conference!]!
   findManyConferenceMember(where: ConferenceMemberWhereInputArgument): [ConferenceMember!]!
   findManyConferenceUser(where: ConferenceUserWhereInputArgument): [ConferenceUser!]!
+  findManyPresenceChangedTimestamp(where: PresenceChangedTimestampWhereInputArgument): [PresenceChangedTimestamp!]!
   findManyRepresentation(where: RepresentationWhereInputArgument): [Representation!]!
   findManySpeakerOnList(where: SpeakerOnListWhereInputArgument): [SpeakerOnList!]!
   findManySpeakersList(where: SpeakersListWhereInputArgument): [SpeakersList!]!
@@ -413,6 +437,7 @@ type Subscription {
   findFirstConference(where: ConferenceWhereInputArgument): Conference!
   findFirstConferenceMember(where: ConferenceMemberWhereInputArgument): ConferenceMember!
   findFirstConferenceUser(where: ConferenceUserWhereInputArgument): ConferenceUser!
+  findFirstPresenceChangedTimestamp(where: PresenceChangedTimestampWhereInputArgument): PresenceChangedTimestamp!
   findFirstRepresentation(where: RepresentationWhereInputArgument): Representation!
   findFirstSpeakerOnList(where: SpeakerOnListWhereInputArgument): SpeakerOnList!
   findFirstSpeakersList(where: SpeakersListWhereInputArgument): SpeakersList!
@@ -423,6 +448,7 @@ type Subscription {
   findManyConference(where: ConferenceWhereInputArgument): [Conference!]!
   findManyConferenceMember(where: ConferenceMemberWhereInputArgument): [ConferenceMember!]!
   findManyConferenceUser(where: ConferenceUserWhereInputArgument): [ConferenceUser!]!
+  findManyPresenceChangedTimestamp(where: PresenceChangedTimestampWhereInputArgument): [PresenceChangedTimestamp!]!
   findManyRepresentation(where: RepresentationWhereInputArgument): [Representation!]!
   findManySpeakerOnList(where: SpeakerOnListWhereInputArgument): [SpeakerOnList!]!
   findManySpeakersList(where: SpeakersListWhereInputArgument): [SpeakersList!]!

@@ -242,5 +242,6 @@
 	"download": "Download",
 	"speakersListNotFound": "Redeliste nicht gefunden",
 	"create": "Erstellen",
-	"agendaItemTitle": "Titel des Tagesordnungspunkts"
+	"agendaItemTitle": "Titel des Tagesordnungspunkts",
+	"downloadPresenceData": "Anwesenheitsdaten"
 }

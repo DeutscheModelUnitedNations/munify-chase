@@ -54,6 +54,10 @@ export const relations = defineRelations(schema, (r) => ({
 			from: r.committeeMember.id,
 			to: r.conferenceUser.committeeMemberId,
 			optional: true
+		}),
+		presenceChangedTimestamps: r.many.presenceChangedTimestamp({
+			from: r.committeeMember.id,
+			to: r.presenceChangedTimestamp.committeeMemberId
 		})
 	},
 	conferenceUser: {

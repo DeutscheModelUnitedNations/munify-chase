@@ -12,7 +12,7 @@
 		getTranslatedCountryNameFromAlpha3Code,
 		sortTranslatedCountries
 	} from '$lib/utils/nationTranslationHelper.svelte';
-	import { calculateMajority } from '$api/handlers/majorities';
+	import { calculateMajority } from '$lib/utils/majorities';
 
 	interface Props {
 		active: boolean;

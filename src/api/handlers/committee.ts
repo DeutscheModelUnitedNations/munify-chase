@@ -11,7 +11,7 @@ import {
 import { isDMUNEmail } from '$api/services/isDMUNEmail';
 import { assertFirstEntryExists } from '@m1212e/rumble';
 import { and, count, eq, type InferSelectModel } from 'drizzle-orm';
-import { calculateMajority } from '$api/handlers/majorities';
+import { calculateMajority } from '$lib/utils/majorities';
 
 const statusEnum = enum_({
 	tsName: 'committeeStatus'

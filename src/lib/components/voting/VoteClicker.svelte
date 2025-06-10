@@ -55,10 +55,14 @@
 	</button>
 	<!-- <div class="countdown font-mono text-5xl">
 		<span style="--value:{value};" aria-live="polite" aria-label={value.toString()}>{value}</span>
-	</div> -->
-	<div class="font-mono text-5xl">
-		<span aria-live="polite" aria-label={value.toString()}>{value}</span>
-	</div>
+	</div>-->
+	<input
+		class="w-16 text-center font-mono text-2xl"
+		type="text"
+		inputmode="numeric"
+		bind:value
+		oninput={(e) => (value = parseInt((e.target as HTMLInputElement).value) || 0)}
+	/>
 	<button
 		class="btn btn-lg"
 		aria-label="decrease-vote"

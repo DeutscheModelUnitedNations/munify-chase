@@ -60,6 +60,7 @@
 		class="w-16 text-center font-mono text-2xl"
 		type="text"
 		inputmode="numeric"
+		disabled={!active}
 		bind:value
 		oninput={(e) => (value = parseInt((e.target as HTMLInputElement).value) || 0)}
 	/>

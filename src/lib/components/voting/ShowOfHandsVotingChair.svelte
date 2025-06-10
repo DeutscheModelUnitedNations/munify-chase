@@ -27,14 +27,24 @@
 	let votesOutstanding = $derived(
 		committee?.totalPresent ?? 0 - (votesPro + votesCon + votesAbstain)
 	);
+	let votesTotal = $derived.by(() => {
+		switch (majority) {
+			case 'SIMPLE':
+			case 'TWO_THIRDS':
+				return votesPro + votesCon;
+			case 'ABSOLUTE':
+				return votesPro + votesCon + votesAbstain;
+			default:
+				return 0;
+		}
+	});
 	let majorityAmount = $derived.by(() => {
 		switch (majority) {
 			case 'SIMPLE':
-				return calculateMajority(votesPro + votesCon, 'simple');
 			case 'ABSOLUTE':
-				return calculateMajority(votesPro + votesCon + votesAbstain, 'simple');
+				return calculateMajority(votesTotal, 'simple');
 			case 'TWO_THIRDS':
-				return calculateMajority(votesPro + votesCon, 'twoThirds');
+				return calculateMajority(votesTotal, 'twoThirds');
 			default:
 				return 0;
 		}
@@ -113,7 +123,7 @@
 				showOfHandsVotingVotesPro: votesPro,
 				showOfHandsVotingVotesCon: votesCon,
 				showOfHandsVotingVotesAbstain: votesAbstain,
-				showOfHandsVotingVotesTotal: votesOutstanding,
+				showOfHandsVotingVotesTotal: votesTotal,
 				votingVoteName: voteName,
 				votingMajority: majority,
 				votingWithAbstentions: withAbstentions,
@@ -141,7 +151,7 @@
 		{m.showOfHandsVoting()}
 	</h3>
 
-	<ResultChart total={committee?.totalPresent} {votesPro} {votesCon} {majorityAmount} />
+	<ResultChart total={votesTotal} {votesPro} {votesCon} {majorityAmount} />
 
 	<div class="mt-6 flex gap-4">
 		<div

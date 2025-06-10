@@ -87,7 +87,10 @@
 		in:fly={{ duration: 500, delay: 500, easing: cubicOut, x: 10 }}
 		out:fly={{ duration: 500, easing: cubicIn, x: -10 }}
 	>
-		<i class="fas fa-{getFaIcon(stage).replace('fa-', '')} fa-beat text-7xl" style="--fa-animation-duration: 2s;"></i>
+		<i
+			class="fas fa-{getFaIcon(stage).replace('fa-', '')} fa-beat text-7xl"
+			style="--fa-animation-duration: 2s;"
+		></i>
 		<h3 class="text-5xl font-bold">{getText(stage)}</h3>
 	</div>
 {/snippet}

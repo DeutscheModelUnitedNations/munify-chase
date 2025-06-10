@@ -30,20 +30,11 @@
 	let majorityAmount = $derived.by(() => {
 		switch (majority) {
 			case 'SIMPLE':
-				return calculateMajority(
-					(votesPro + votesCon),
-					'simple'
-				);
+				return calculateMajority(votesPro + votesCon, 'simple');
 			case 'ABSOLUTE':
-				return calculateMajority(
-					(votesPro + votesCon + votesAbstain),
-					'simple'
-				);
+				return calculateMajority(votesPro + votesCon + votesAbstain, 'simple');
 			case 'TWO_THIRDS':
-				return calculateMajority(
-					(votesPro + votesCon),
-					'twoThirds'
-				);
+				return calculateMajority(votesPro + votesCon, 'twoThirds');
 			default:
 				return 0;
 		}
@@ -150,12 +141,7 @@
 		{m.showOfHandsVoting()}
 	</h3>
 
-	<ResultChart
-		total={committee?.totalPresent}
-		{votesPro}
-		{votesCon}
-		{majorityAmount}
-	/>
+	<ResultChart total={committee?.totalPresent} {votesPro} {votesCon} {majorityAmount} />
 
 	<div class="mt-6 flex gap-4">
 		<div

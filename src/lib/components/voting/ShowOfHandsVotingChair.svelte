@@ -7,6 +7,7 @@
 	import { localDB, type VotingMajority, type VotingStage } from '$lib/local-db/localDB';
 	import VoteClicker from './VoteClicker.svelte';
 	import ResultChart from './ResultChart.svelte';
+	import { calculateMajority } from '$lib/utils/majorities';
 
 	interface Props {
 		active: boolean;
@@ -29,9 +30,20 @@
 	let majorityAmount = $derived.by(() => {
 		switch (majority) {
 			case 'SIMPLE':
-				return committee?.simpleMajority ?? 0;
+				return calculateMajority(
+					(votesPro + votesCon),
+					'simple'
+				);
+			case 'ABSOLUTE':
+				return calculateMajority(
+					(votesPro + votesCon + votesAbstain),
+					'simple'
+				);
 			case 'TWO_THIRDS':
-				return committee?.twoThirdsMajority ?? 0;
+				return calculateMajority(
+					(votesPro + votesCon),
+					'twoThirds'
+				);
 			default:
 				return 0;
 		}
@@ -142,7 +154,6 @@
 		total={committee?.totalPresent}
 		{votesPro}
 		{votesCon}
-		{votesAbstain}
 		{majorityAmount}
 	/>
 

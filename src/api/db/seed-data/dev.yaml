@@ -1,14 +1,14 @@
 # yaml-language-server: $schema=schema.json
 users:
   - id: admin
-    email: admin@mail.com
+    email: admin@dmun.de
     familyName: Doe
     givenName: John
     locale: en
     preferredUsername: admin
     conferenceUserType: ADMIN
   - id: user
-    email: user@mail.com
+    email: user@dmun.de
     familyName: Doe
     givenName: Jane
     locale: en

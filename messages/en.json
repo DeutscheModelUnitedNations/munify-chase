@@ -67,5 +67,6 @@
 	"updatingStatus": "Status is being set...",
 	"statusUpdated": "Status has been set",
 	"errorUpdatingStatus": "Status could not be set",
-	"theme": "Theme"
+	"theme": "Theme",
+	"moderatedInformalCaucus": "Moderated informal caucus"
 }

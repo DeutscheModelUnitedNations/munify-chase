@@ -11,6 +11,8 @@ export function getCommitteeStatusText(
 			return m.formalDebate();
 		case 'INFORMAL':
 			return m.informalCaucus();
+		case 'MODERATED_INFORMAL':
+			return m.moderatedInformalCaucus();
 		case 'PAUSE':
 			return m.pause();
 		case 'SUSPENSION':
@@ -26,6 +28,8 @@ export function getCommitteeStatusIcon(category: CommitteeStatusEnum$options) {
 			return 'podium';
 		case 'INFORMAL':
 			return 'comments';
+		case 'MODERATED_INFORMAL':
+			return 'comments';
 		case 'PAUSE':
 			return 'mug-hot';
 		case 'SUSPENSION':
@@ -40,6 +44,8 @@ export function getCommitteeStatusBackground(category: CommitteeStatusEnum$optio
 		case 'FORMAL':
 			return 'bg-base-200';
 		case 'INFORMAL':
+			return 'bg-error';
+		case 'MODERATED_INFORMAL':
 			return 'bg-error';
 		case 'PAUSE':
 			return 'bg-warning';

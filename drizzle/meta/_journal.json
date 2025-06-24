@@ -22,6 +22,13 @@
 			"when": 1748455384043,
 			"tag": "0002_panoramic_agent_brand",
 			"breakpoints": true
+		},
+		{
+			"idx": 3,
+			"version": "7",
+			"when": 1750785323213,
+			"tag": "0003_mighty_maestro",
+			"breakpoints": true
 		}
 	]
 }

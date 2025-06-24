@@ -27,9 +27,9 @@ export function getCommitteeStatusIcon(category: CommitteeStatusEnum$options) {
 		case 'FORMAL':
 			return 'podium';
 		case 'INFORMAL':
-			return 'comments';
+			return 'messages';
 		case 'MODERATED_INFORMAL':
-			return 'comments';
+			return 'comments-question-check';
 		case 'PAUSE':
 			return 'mug-hot';
 		case 'SUSPENSION':

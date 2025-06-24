@@ -39,7 +39,8 @@ export const user = pgTable('user', {
 export const conference = pgTable('conference', {
 	...defaultIdAndTimestamps,
 	title: text().notNull(),
-	pressWebsite: text()
+	pressWebsite: text(),
+	hasModeratedCaucus: boolean().notNull().default(false)
 });
 
 export const committeeStatus = pgEnum('committee_status', [

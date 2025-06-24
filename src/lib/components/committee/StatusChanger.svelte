@@ -12,19 +12,34 @@
 		oldStatus?: CommitteeStatusEnum$options;
 		oldUntil?: Date;
 		oldCustomName?: string;
+		hasModeratedCaucus?: boolean;
 		abort?: () => void;
 	};
-	let { committeeId, oldStatus, oldUntil, oldCustomName = '', abort }: Props = $props();
+	let {
+		committeeId,
+		oldStatus,
+		oldUntil,
+		oldCustomName = '',
+		hasModeratedCaucus = false,
+		abort
+	}: Props = $props();
 
 	const categories: {
 		id: CommitteeStatusEnum$options;
 		faIcon: string;
 	}[] = [
 		{ id: 'FORMAL', faIcon: 'podium' },
-		{ id: 'INFORMAL', faIcon: 'comments' },
-		{ id: 'MODERATED_INFORMAL', faIcon: 'comments' },
+		{ id: 'INFORMAL', faIcon: 'messages' },
 		{ id: 'PAUSE', faIcon: 'mug-saucer' },
-		{ id: 'SUSPENSION', faIcon: 'forward-step' }
+		{ id: 'SUSPENSION', faIcon: 'forward-step' },
+		...(hasModeratedCaucus
+			? [
+					{
+						id: 'MODERATED_INFORMAL' as CommitteeStatusEnum$options,
+						faIcon: 'comments-question-check'
+					}
+				]
+			: [])
 	];
 
 	const absoluteTimes = [0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55];

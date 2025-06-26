@@ -1,0 +1,1 @@
+ALTER TABLE "conference" ADD COLUMN "has_moderated_caucus" boolean DEFAULT false NOT NULL;

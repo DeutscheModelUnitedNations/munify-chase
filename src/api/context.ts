@@ -1,5 +1,6 @@
 import { configPrivate } from '$config/private';
 import type { RequestEvent } from '@sveltejs/kit';
+import { GraphQLError } from 'graphql';
 
 export const oidcRoles = ['admin', 'member', 'service_user'] as const;
 
@@ -20,7 +21,7 @@ export async function context(req: RequestEvent) {
 		...req.locals,
 		mustBeLoggedIn: () => {
 			if (!req.locals.oidc?.user) {
-				throw new Error('Must be logged in');
+				throw new GraphQLError('Must be logged in');
 			}
 
 			return req.locals.oidc.user;

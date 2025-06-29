@@ -97,8 +97,12 @@
 	"layoutSelect": "Layout auswählen",
 	"layoutPreset": [
 		{
-			"declarations": ["input preset"],
-			"selectors": ["preset"],
+			"declarations": [
+				"input preset"
+			],
+			"selectors": [
+				"preset"
+			],
 			"match": {
 				"preset=default": "Standard Layout",
 				"preset=smallScreen": "Layout für kleine Bildschirme",
@@ -111,8 +115,12 @@
 	"off": "Aus",
 	"regionalGroups": [
 		{
-			"declarations": ["input group"],
-			"selectors": ["group"],
+			"declarations": [
+				"input group"
+			],
+			"selectors": [
+				"group"
+			],
 			"match": {
 				"group=AFRICA": "Afrika",
 				"group=ASIA_PACIFIC": "Asien",
@@ -130,8 +138,6 @@
 	"present": "Anwesend",
 	"absent": "Abwesend",
 	"nonStateActors": "Nichtstaatliche Akteure",
-	"rollCollError": "Gremienmitglied nicht gefunden",
-	"rollCollSuccess": "Anwesenheitsfeststellung abgeschlossen",
 	"noAgendaItemSelected": "Kein Tagesordnungspunkt aktiv",
 	"noAgendaItemSelectedDescription": "Um mit Redelisten arbeiten zu können muss zunächst ein Tagesordnungspunkt ausgewählt werden",
 	"gotoSettings": "Zu den Einstellungen",
@@ -216,13 +222,11 @@
 	"createConference": "Konferenz erstellen",
 	"conferenceTitle": "Konferenztitel",
 	"conferenceId": "Konferenz-ID",
-	"maroon_bland_ray_renew": "Gremien-Abkürzung",
 	"committeeAbbreviation": "Gremien-Akürzung",
 	"committeeId": "Gremien-ID",
 	"committeeName": "Gremienname",
 	"agendaItems": "Tagesordnungspunkte",
 	"addAgendaItem": "Punkt hinzufügen",
-	"short_sleek_snake_hint": "Gremium",
 	"committee": "Gremium",
 	"committeeMember": "Gremienmitglied",
 	"addNonStateActor": "NA hinzufügen",
@@ -243,5 +247,7 @@
 	"speakersListNotFound": "Redeliste nicht gefunden",
 	"create": "Erstellen",
 	"agendaItemTitle": "Titel des Tagesordnungspunkts",
-	"downloadPresenceData": "Anwesenheitsdaten"
+	"downloadPresenceData": "Anwesenheitsdaten",
+	"rollCallError": "Gremienmitglied nicht gefunden",
+	"rollCallSuccess": "Anwesenheitsfeststellung abgeschlossen"
 }

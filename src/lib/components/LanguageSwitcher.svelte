@@ -20,7 +20,7 @@
 	});
 
 	const localeLookup = {
-		en: '🇬🇧',
+		en: 'EN',
 		de: '🇩🇪'
 	};
 </script>

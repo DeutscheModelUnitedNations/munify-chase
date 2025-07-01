@@ -47,7 +47,7 @@
 
 	$effect(() => {
 		if (active) {
-			hotkeys('up, down, left, right, esc', 'rollCall', (event, handler) => {
+			hotkeys('up, down, j, l, esc', 'rollCall', (event, handler) => {
 				event.preventDefault();
 				switch (handler.key) {
 					case 'up':
@@ -56,10 +56,10 @@
 					case 'down':
 						currentIndex = (currentIndex + 1) % members.length;
 						break;
-					case 'left':
+					case 'j':
 						setPresence(false);
 						break;
-					case 'right':
+					case 'l':
 						setPresence(true);
 						break;
 					case 'esc':
@@ -99,7 +99,7 @@
 		>
 			<i class="fas fa-xmark"></i>
 			{m.absent()}
-			<span class="kbd">←</span>
+			<span class="kbd">J</span>
 		</button>
 		<div class="join">
 			<button
@@ -129,7 +129,7 @@
 		>
 			<i class="fas fa-check"></i>
 			{m.present()}
-			<span class="kbd">→</span>
+			<span class="kbd">L</span>
 		</button>
 
 		<div class="absolute top-3 right-3">

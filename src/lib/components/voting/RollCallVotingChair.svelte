@@ -128,20 +128,20 @@
 
 	$effect(() => {
 		if (active) {
-			hotkeys('left, right, up, esc', 'rollCallVote', (event, handler) => {
+			hotkeys('j, k, l, esc', 'rollCallVote', (event, handler) => {
 				event.preventDefault();
 				switch (handler.key) {
-					case 'up':
+					case 'k':
 						if (stage === 'ROLL_CALL' && withAbstentions) {
 							setVote('ABSTAIN');
 						}
 						break;
-					case 'right':
+					case 'l':
 						if (stage === 'ROLL_CALL') {
 							setVote('PRO');
 						}
 						break;
-					case 'left':
+					case 'j':
 						if (stage === 'ROLL_CALL') {
 							setVote('CON');
 						}
@@ -225,7 +225,7 @@
 				>
 					<i class="fas fa-circle-minus"></i>
 					{m.con()}
-					<span class="kbd">←</span>
+					<span class="kbd">J</span>
 				</button>
 				{#if withAbstentions}
 					<button
@@ -236,7 +236,7 @@
 					>
 						<i class="fas fa-circle"></i>
 						{m.abstain()}
-						<span class="kbd">↑</span>
+						<span class="kbd">K</span>
 					</button>
 				{/if}
 				<button
@@ -247,7 +247,7 @@
 				>
 					<i class="fas fa-circle-plus"></i>
 					{m.pro()}
-					<span class="kbd">→</span>
+					<span class="kbd">L</span>
 				</button>
 			</div>
 		</div>

@@ -97,8 +97,12 @@
 	"layoutSelect": "Select Layout",
 	"layoutPreset": [
 		{
-			"declarations": ["input preset"],
-			"selectors": ["preset"],
+			"declarations": [
+				"input preset"
+			],
+			"selectors": [
+				"preset"
+			],
 			"match": {
 				"preset=default": "Default Layout",
 				"preset=smallScreen": "Layout for Small Screens",
@@ -111,8 +115,12 @@
 	"off": "Off",
 	"regionalGroups": [
 		{
-			"declarations": ["input group"],
-			"selectors": ["group"],
+			"declarations": [
+				"input group"
+			],
+			"selectors": [
+				"group"
+			],
 			"match": {
 				"group=AFRICA": "Africa",
 				"group=ASIA_PACIFIC": "Asia-Pacific",
@@ -143,7 +151,6 @@
 	"nextSpeaker": "Next Speech",
 	"commentList": "Point of Information",
 	"errorUpdatingTimer": "Could not update speaking time",
-	"timeOver": "Speaking time over!",
 	"closeList": "Close List",
 	"changeSpeakersName": "Change Name",
 	"changeSpeakersTime": "Change Speaking Time",
@@ -189,7 +196,6 @@
 	"nothingChanged": "Nothing changed",
 	"baseFontSizeDescription": "Here you can set the base font size for the presentation view.",
 	"baseFontSize": "Base Font Size",
-	"homeVersionButton": "CHASE (CHAirSoftwarE) is a web application for managing and conducting debates at Model United Nations conferences. It is designed for both chairs and delegates. CHASE allows chairs to easily manage debates, while delegates can follow the discussion and collaborate with others in an intuitive and structured way. CHASE is free and open-source software.",
 	"homeMissionTitle": "Our Mission",
 	"homeMissionText": "CHASE is developed by members of the German organization DMUN e.V. We aim to provide a free and accessible alternative to other debate management tools, making it easier even for smaller conferences to participate. CHASE was initially developed for German-speaking DMUN conferences – MUN-SH, MUNBW, and MUNBB – but we are open to adapting it to other conferences.",
 	"homeMissionButtonLabel": "Learn more about DMUN",

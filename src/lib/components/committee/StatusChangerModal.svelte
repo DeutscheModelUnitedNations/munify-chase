@@ -10,9 +10,10 @@
 		oldStatus?: CommitteeStatusEnum$options;
 		oldUntil?: Date;
 		oldCustomName?: string;
+		hasModeratedCaucus?: boolean;
 	}
 
-	let { committeeId, oldStatus, oldUntil, oldCustomName }: Props = $props();
+	let { committeeId, oldStatus, oldUntil, oldCustomName, hasModeratedCaucus }: Props = $props();
 
 	let open = $state(false);
 

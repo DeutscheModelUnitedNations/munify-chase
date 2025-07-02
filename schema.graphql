@@ -80,6 +80,7 @@ input CommitteeMemberWhereInputArgument {
 enum CommitteeStatusEnum {
   FORMAL
   INFORMAL
+  MODERATED_INFORMAL
   PAUSE
   SUSPENSION
 }
@@ -112,6 +113,7 @@ input CommitteeWhereInputArgument {
 type Conference {
   committees(where: CommitteeWhereInputArgument): [Committee!]!
   createdAt: DateTime!
+  hasModeratedCaucus: Boolean!
   id: ID!
   members(where: ConferenceMemberWhereInputArgument): [ConferenceMember!]!
   pressWebsite: String
@@ -187,6 +189,7 @@ input ConferenceUserWhereInputArgument {
 input ConferenceWhereInputArgument {
   committees: CommitteeWhereInputArgument
   createdAt: DateTime
+  hasModeratedCaucus: Boolean
   id: ID
   members: ConferenceMemberWhereInputArgument
   pressWebsite: String

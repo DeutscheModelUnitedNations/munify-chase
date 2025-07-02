@@ -78,6 +78,7 @@
 						oldStatus={committee.status}
 						oldUntil={committee.statusUntil}
 						oldCustomName={committee.statusHeadline}
+						hasModeratedCaucus={committee.conference?.hasModeratedCaucus}
 					/>
 				</BasicCard>
 				<BasicCard title={m.stateOfDebate()} kbd="⌥ D">

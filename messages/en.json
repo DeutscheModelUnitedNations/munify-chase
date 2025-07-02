@@ -68,6 +68,7 @@
 	"statusUpdated": "Status has been set",
 	"errorUpdatingStatus": "Status could not be set",
 	"theme": "Theme",
+	"moderatedInformalCaucus": "Moderated informal caucus",
 	"setStatus": "Change status",
 	"stateOfDebate": "State of Debate",
 	"updatingStateOfDebate": "Saving debate status...",

@@ -76,6 +76,7 @@ export const CommitteeSubscription = graphql(`
 				}
 			}
 			conference {
+				hasModeratedCaucus
 				uniqueConferenceMembers {
 					id
 					representation {

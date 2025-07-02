@@ -101,6 +101,7 @@
 	oldStatus={committee?.status}
 	oldUntil={committee?.statusUntil}
 	oldCustomName={committee?.statusHeadline}
+	hasModeratedCaucus={committee?.conference?.hasModeratedCaucus}
 />
 
 <StateOfDebateChangerModal

@@ -128,20 +128,20 @@
 
 	$effect(() => {
 		if (active) {
-			hotkeys('left, right, down, esc', 'rollCallVote', (event, handler) => {
+			hotkeys('j, k, l, esc', 'rollCallVote', (event, handler) => {
 				event.preventDefault();
 				switch (handler.key) {
-					case 'down':
+					case 'k':
 						if (stage === 'ROLL_CALL' && withAbstentions) {
 							setVote('ABSTAIN');
 						}
 						break;
-					case 'left':
+					case 'l':
 						if (stage === 'ROLL_CALL') {
 							setVote('PRO');
 						}
 						break;
-					case 'right':
+					case 'j':
 						if (stage === 'ROLL_CALL') {
 							setVote('CON');
 						}
@@ -218,14 +218,14 @@
 			</div>
 			<div class="flex flex-row justify-center gap-4">
 				<button
-					class="btn btn-success btn-lg flex gap-2"
+					class="btn btn-error btn-lg flex gap-2"
 					onclick={() => {
-						setVote('PRO');
+						setVote('CON');
 					}}
 				>
-					<i class="fas fa-circle-plus"></i>
-					{m.pro()}
-					<span class="kbd">←</span>
+					<i class="fas fa-circle-minus"></i>
+					{m.con()}
+					<span class="kbd">J</span>
 				</button>
 				{#if withAbstentions}
 					<button
@@ -236,18 +236,18 @@
 					>
 						<i class="fas fa-circle"></i>
 						{m.abstain()}
-						<span class="kbd">↓</span>
+						<span class="kbd">K</span>
 					</button>
 				{/if}
 				<button
-					class="btn btn-error btn-lg flex gap-2"
+					class="btn btn-success btn-lg flex gap-2"
 					onclick={() => {
-						setVote('CON');
+						setVote('PRO');
 					}}
 				>
-					<i class="fas fa-circle-minus"></i>
-					{m.con()}
-					<span class="kbd">→</span>
+					<i class="fas fa-circle-plus"></i>
+					{m.pro()}
+					<span class="kbd">L</span>
 				</button>
 			</div>
 		</div>

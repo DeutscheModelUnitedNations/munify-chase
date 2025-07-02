@@ -24,9 +24,6 @@
 	let votesPro = $state(0);
 	let votesCon = $state(0);
 	let votesAbstain = $state(0);
-	let votesOutstanding = $derived(
-		committee?.totalPresent ?? 0 - (votesPro + votesCon + votesAbstain)
-	);
 	let votesTotal = $derived.by(() => {
 		switch (majority) {
 			case 'SIMPLE':

@@ -122,7 +122,7 @@
 			}
 			currentIndex = (currentIndex + 1) % members.length;
 		} else {
-			toast.error(m.rollCollError());
+			toast.error(m.rollCallError());
 		}
 	};
 

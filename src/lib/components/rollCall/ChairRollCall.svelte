@@ -36,12 +36,12 @@
 			);
 
 			if (currentIndex === members.length - 1) {
-				toast.success(m.rollCollSuccess());
+				toast.success(m.rollCallSuccess());
 				active = false;
 			}
 			currentIndex = (currentIndex + 1) % members.length;
 		} else {
-			toast.error(m.rollCollError());
+			toast.error(m.rollCallError());
 		}
 	};
 

@@ -87,9 +87,11 @@
 		in:fly={{ duration: 500, delay: 500, easing: cubicOut, x: 10 }}
 		out:fly={{ duration: 500, easing: cubicIn, x: -10 }}
 	>
-		<i class="fas fa-{getFaIcon(stage).replace('fa-', '')} text-7xl"></i>
+		<i
+			class="fas fa-{getFaIcon(stage).replace('fa-', '')} fa-beat text-7xl"
+			style="--fa-animation-duration: 2s;"
+		></i>
 		<h3 class="text-5xl font-bold">{getText(stage)}</h3>
-		<i class="fas fa-spinner fa-spin text-2xl"></i>
 	</div>
 {/snippet}
 
@@ -118,7 +120,6 @@
 					<ResultChart
 						votesPro={committeeSettings.showOfHandsVotingVotesPro}
 						votesCon={committeeSettings.showOfHandsVotingVotesCon}
-						votesAbstain={committeeSettings.showOfHandsVotingVotesAbstain}
 						total={committeeSettings.showOfHandsVotingVotesTotal}
 						majorityAmount={committeeSettings.votingMajorityAmount}
 					/>

@@ -7,6 +7,7 @@
 	import { localDB, type VotingMajority, type VotingStage } from '$lib/local-db/localDB';
 	import VoteClicker from './VoteClicker.svelte';
 	import ResultChart from './ResultChart.svelte';
+	import { calculateMajority } from '$lib/utils/majorities';
 
 	interface Props {
 		active: boolean;
@@ -23,15 +24,24 @@
 	let votesPro = $state(0);
 	let votesCon = $state(0);
 	let votesAbstain = $state(0);
-	let votesOutstanding = $derived(
-		committee?.totalPresent ?? 0 - (votesPro + votesCon + votesAbstain)
-	);
+	let votesTotal = $derived.by(() => {
+		switch (majority) {
+			case 'SIMPLE':
+			case 'TWO_THIRDS':
+				return votesPro + votesCon;
+			case 'ABSOLUTE':
+				return votesPro + votesCon + votesAbstain;
+			default:
+				return 0;
+		}
+	});
 	let majorityAmount = $derived.by(() => {
 		switch (majority) {
 			case 'SIMPLE':
-				return committee?.simpleMajority ?? 0;
+			case 'ABSOLUTE':
+				return calculateMajority(votesTotal, 'simple');
 			case 'TWO_THIRDS':
-				return committee?.twoThirdsMajority ?? 0;
+				return calculateMajority(votesTotal, 'twoThirds');
 			default:
 				return 0;
 		}
@@ -110,7 +120,7 @@
 				showOfHandsVotingVotesPro: votesPro,
 				showOfHandsVotingVotesCon: votesCon,
 				showOfHandsVotingVotesAbstain: votesAbstain,
-				showOfHandsVotingVotesTotal: votesOutstanding,
+				showOfHandsVotingVotesTotal: votesTotal,
 				votingVoteName: voteName,
 				votingMajority: majority,
 				votingWithAbstentions: withAbstentions,
@@ -138,13 +148,7 @@
 		{m.showOfHandsVoting()}
 	</h3>
 
-	<ResultChart
-		total={committee?.totalPresent}
-		{votesPro}
-		{votesCon}
-		{votesAbstain}
-		{majorityAmount}
-	/>
+	<ResultChart total={votesTotal} {votesPro} {votesCon} {majorityAmount} />
 
 	<div class="mt-6 flex gap-4">
 		<div

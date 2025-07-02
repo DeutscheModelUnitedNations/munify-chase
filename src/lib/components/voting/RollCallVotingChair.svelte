@@ -12,6 +12,7 @@
 		getTranslatedCountryNameFromAlpha3Code,
 		sortTranslatedCountries
 	} from '$lib/utils/nationTranslationHelper.svelte';
+	import { calculateMajority } from '$lib/utils/majorities';
 
 	interface Props {
 		active: boolean;
@@ -30,9 +31,19 @@
 		.filter((member) => member.present && member.representation?.type === 'DELEGATION')
 		.sort((a, b) => sortTranslatedCountries(a.representation!, b.representation!));
 
+	let chairSettings = liveQuery(() => localDB.committeeSettings.get(committee.id));
+	let rollCallVotingAbstain = $derived($chairSettings?.rollCallVotingAbstain ?? []);
+	let rollCallVotingPro = $derived($chairSettings?.rollCallVotingPro ?? []);
+	let rollCallVotingCon = $derived($chairSettings?.rollCallVotingCon ?? []);
+
 	let majorityAmount = $derived.by(() => {
 		switch (majority) {
 			case 'SIMPLE':
+				return calculateMajority(
+					(committee?.totalPresent ?? 0) - (rollCallVotingAbstain?.length ?? 0),
+					'simple'
+				);
+			case 'ABSOLUTE':
 				return committee?.simpleMajority ?? 0;
 			case 'TWO_THIRDS':
 				return committee?.twoThirdsMajority ?? 0;
@@ -40,11 +51,6 @@
 				return 0;
 		}
 	});
-
-	let chairSettings = liveQuery(() => localDB.committeeSettings.get(committee.id));
-	let rollCallVotingAbstain = $derived($chairSettings?.rollCallVotingAbstain ?? []);
-	let rollCallVotingPro = $derived($chairSettings?.rollCallVotingPro ?? []);
-	let rollCallVotingCon = $derived($chairSettings?.rollCallVotingCon ?? []);
 
 	let scrollingListIcons = $derived.by(() => {
 		return members.map((member) => {
@@ -128,6 +134,14 @@
 
 	$effect(() => {
 		if (active) {
+			localDB.committeeSettings.update(committee.id, {
+				votingMajorityAmount: majorityAmount
+			});
+		}
+	});
+
+	$effect(() => {
+		if (active) {
 			hotkeys('j, k, l, esc', 'rollCallVote', (event, handler) => {
 				event.preventDefault();
 				switch (handler.key) {
@@ -169,8 +183,7 @@
 				rollCallVotingPro: [],
 				rollCallVotingCon: [],
 				rollCallVotingAbstain: [],
-				votingWithAbstentions: withAbstentions,
-				votingMajorityAmount: majorityAmount
+				votingWithAbstentions: withAbstentions
 			});
 		} else {
 			localDB.committeeSettings.update(committee.id, {

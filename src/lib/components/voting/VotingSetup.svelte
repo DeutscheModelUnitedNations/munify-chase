@@ -34,6 +34,7 @@
 		label: string;
 	}[] = [
 		{ id: 'SIMPLE', label: m.simpleMajority() },
+		{ id: 'ABSOLUTE', label: m.absoluteMajority() },
 		{ id: 'TWO_THIRDS', label: m.twoThirdsMajority() }
 	];
 

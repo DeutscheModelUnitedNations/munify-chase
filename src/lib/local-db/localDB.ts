@@ -3,7 +3,7 @@ import Dexie, { type EntityTable } from 'dexie';
 
 export type VotingStage = 'PRO' | 'CON' | 'ABSTAIN' | 'EVALUATION';
 export type VotingOptions = 'PRO' | 'CON' | 'ABSTAIN';
-export type VotingMajority = 'SIMPLE' | 'TWO_THIRDS';
+export type VotingMajority = 'SIMPLE' | 'ABSOLUTE' | 'TWO_THIRDS';
 interface CommitteeSettings {
 	committeeId: string;
 	layout: PresentationLayoutPresetOptions;

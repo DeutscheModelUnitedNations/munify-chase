@@ -68,11 +68,11 @@
 	</div>
 
 	<div
-		class="bg-neutral absolute h-full w-2 -translate-x-1/2"
+		class="bg-neutral absolute h-full w-2 -translate-x-1/2 transition-all duration-500"
 		style="left: {getMajorityPercent()};"
 	></div>
 	<div
-		class="badge badge-neutral absolute top-2 -translate-x-1/2"
+		class="badge badge-neutral absolute top-2 -translate-x-1/2 transition-all duration-500"
 		style="left: {getMajorityPercent()};"
 	>
 		{majorityAmount ? majorityAmount : '—'}

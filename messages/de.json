@@ -18,6 +18,7 @@
 	"delegate": "Delegierte*r",
 	"nonStateActor": "Nichtstaatlicher Akteur",
 	"formalDebate": "Formale Debatte",
+	"informalCaucus": "Informelle Sitzung",
 	"pause": "Pause",
 	"suspension": "Vertagung",
 	"until": "bis {time} Uhr",
@@ -96,12 +97,8 @@
 	"layoutSelect": "Layout auswählen",
 	"layoutPreset": [
 		{
-			"declarations": [
-				"input preset"
-			],
-			"selectors": [
-				"preset"
-			],
+			"declarations": ["input preset"],
+			"selectors": ["preset"],
 			"match": {
 				"preset=default": "Standard Layout",
 				"preset=smallScreen": "Layout für kleine Bildschirme",
@@ -114,12 +111,8 @@
 	"off": "Aus",
 	"regionalGroups": [
 		{
-			"declarations": [
-				"input group"
-			],
-			"selectors": [
-				"group"
-			],
+			"declarations": ["input group"],
+			"selectors": ["group"],
 			"match": {
 				"group=AFRICA": "Afrika",
 				"group=ASIA_PACIFIC": "Asien",
@@ -250,6 +243,5 @@
 	"speakersListNotFound": "Redeliste nicht gefunden",
 	"create": "Erstellen",
 	"agendaItemTitle": "Titel des Tagesordnungspunkts",
-	"downloadPresenceData": "Anwesenheitsdaten",
-	"moderatedInformalCaucus": "Moderierte informelle Sitzung"
+	"downloadPresenceData": "Anwesenheitsdaten"
 }

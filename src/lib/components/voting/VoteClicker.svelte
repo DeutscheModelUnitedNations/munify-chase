@@ -57,7 +57,7 @@
 		<span style="--value:{value};" aria-live="polite" aria-label={value.toString()}>{value}</span>
 	</div>-->
 	<input
-		class="w-16 text-center font-mono text-2xl"
+		class="input input-xl text-center font-mono text-2xl"
 		type="text"
 		inputmode="numeric"
 		disabled={!active}

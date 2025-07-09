@@ -122,45 +122,53 @@ schemaBuilder.mutationFields((t) => ({
 					title: data.title
 				});
 
-				await tx.insert(schema.committee).values(
-					data.committees.map((committee) => ({
-						id: committee.id,
-						name: committee.name,
-						abbreviation: committee.abbreviation,
-						conferenceId: data.id
-					}))
-				);
+				if (data.committees.length > 0) {
+					await tx.insert(schema.committee).values(
+						data.committees.map((committee) => ({
+							id: committee.id,
+							name: committee.name,
+							abbreviation: committee.abbreviation,
+							conferenceId: data.id
+						}))
+					);
+				}
 
-				await tx.insert(schema.representation).values(
-					data.representations.map((representation) => ({
-						id: representation.id,
-						name: representation.name,
-						alpha2Code: representation.alpha2Code,
-						alpha3Code: representation.alpha3Code,
-						type: representation.representationType,
-						faIcon: representation.faIcon,
-						regionalGroup: representation.regionalGroup,
-						conferenceId: data.id
-					}))
-				);
+				if (data.representations.length > 0) {
+					await tx.insert(schema.representation).values(
+						data.representations.map((representation) => ({
+							id: representation.id,
+							name: representation.name,
+							alpha2Code: representation.alpha2Code,
+							alpha3Code: representation.alpha3Code,
+							type: representation.representationType,
+							faIcon: representation.faIcon,
+							regionalGroup: representation.regionalGroup,
+							conferenceId: data.id
+						}))
+					);
+				}
 
-				await tx.insert(schema.conferenceMember).values(
-					data.conferenceMembers.map((member) => ({
-						id: member.id,
-						conferenceId: data.id,
-						representationId: member.representationId
-					}))
-				);
+				if (data.conferenceMembers.length > 0) {
+					await tx.insert(schema.conferenceMember).values(
+						data.conferenceMembers.map((member) => ({
+							id: member.id,
+							conferenceId: data.id,
+							representationId: member.representationId
+						}))
+					);
+				}
 
-				await tx.insert(schema.committeeMember).values(
-					data.committeeMembers.map((member) => ({
-						id: member.id,
-						committeeId: member.committeeId,
-						representationId: member.representationId
-					}))
-				);
+				if (data.committeeMembers.length > 0) {
+					await tx.insert(schema.committeeMember).values(
+						data.committeeMembers.map((member) => ({
+							id: member.id,
+							committeeId: member.committeeId,
+							representationId: member.representationId
+						}))
+					);
+				}
 
-				if (data.conferenceUsers.length !== 0) {
+				if (data.conferenceUsers.length > 0) {
 					await tx.insert(schema.conferenceUser).values(
 						data.conferenceUsers.map((user) => ({
 							id: user.id ?? undefined,

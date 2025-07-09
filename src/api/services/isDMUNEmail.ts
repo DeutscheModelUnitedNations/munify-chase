@@ -1,5 +1,9 @@
-// TODO: this is a TEMPORARY solution for munbw 2025
-// this should be changed!
-export function isDMUNEmail(email: string) {
-	return email.endsWith('@dmun.de') || email.endsWith('@munbw.de') || email.endsWith('@mun-sh.de');
+import { configPrivate } from '$config/private';
+
+export function isWhitelistedEmail(email: string) {
+	const whitelistEmails = configPrivate.ADMIN_EMAIL_WHITELIST.split(',');
+	const whitelistDomains = configPrivate.ADMIN_DOMAIN_WHITELIST.split(',');
+	const domain = email.split('@')[1];
+
+	return whitelistEmails.includes(email) || whitelistDomains.includes(domain);
 }

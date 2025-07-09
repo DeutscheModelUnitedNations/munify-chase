@@ -17,7 +17,9 @@ const schema = z.object({
 	OTEL_SERVICE_NAME: z.string().default('MUNIFY-CHASE'),
 	OTEL_SERVICE_VERSION: z.optional(z.string()),
 	OTEL_ENDPOINT_URL: z.optional(z.string()),
-	OTEL_AUTHORIZATION_HEADER: z.optional(z.string())
+	OTEL_AUTHORIZATION_HEADER: z.optional(z.string()),
+	ADMIN_EMAIL_WHITELIST: z.string().optional().default(''),
+	ADMIN_DOMAIN_WHITELIST: z.string().optional().default('')
 });
 
 export const configPrivate = getConfig({ schema, envSource: env });

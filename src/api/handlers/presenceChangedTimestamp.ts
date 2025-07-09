@@ -1,5 +1,5 @@
 import { abilityBuilder } from '$api/rumble';
-import { isDMUNEmail } from '$api/services/isDMUNEmail';
+import { isWhitelistedEmail } from '$api/services/isDMUNEmail';
 import { basics } from './basics';
 
 const { arg, ref, pubsub, table } = basics('presenceChangedTimestamp');

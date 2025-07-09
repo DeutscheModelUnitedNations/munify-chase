@@ -6,13 +6,13 @@ import {
 	pubsub as rumblePubsub,
 	arg as rumbleArg
 } from '$api/rumble';
-import { isDMUNEmail } from '$api/services/isDMUNEmail';
+import { isWhitelistedEmail } from '$api/services/isDMUNEmail';
 import { ConferenceMemberRef, ConferenceMemberWhereInput } from './conferenceMember';
 
 abilityBuilder.conference.allow('read').when(({ mustBeLoggedIn }) => {
 	const user = mustBeLoggedIn();
 
-	if (user?.email && isDMUNEmail(user.email)) {
+	if (user?.email && isWhitelistedEmail(user.email)) {
 		return 'allow';
 	}
 });

@@ -8,7 +8,7 @@ import {
 	schemaBuilder,
 	arg as rumbleArg
 } from '$api/rumble';
-import { isDMUNEmail } from '$api/services/isDMUNEmail';
+import { isWhitelistedEmail } from '$api/services/isDMUNEmail';
 import { assertFirstEntryExists } from '@m1212e/rumble';
 import { and, count, eq, type InferSelectModel } from 'drizzle-orm';
 import { calculateMajority } from '$lib/utils/majorities';
@@ -19,7 +19,7 @@ const statusEnum = enum_({
 
 abilityBuilder.committee.allow(['read', 'update']).when(({ mustBeLoggedIn }) => {
 	const user = mustBeLoggedIn();
-	if (user?.email && isDMUNEmail(user.email)) {
+	if (user?.email && isWhitelistedEmail(user.email)) {
 		return 'allow';
 	}
 });

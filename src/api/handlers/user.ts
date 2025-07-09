@@ -1,6 +1,6 @@
 import { schema } from '$api/db/db';
 import { abilityBuilder, schemaBuilder } from '$api/rumble';
-import { isDMUNEmail } from '$api/services/isDMUNEmail';
+import { isWhitelistedEmail } from '$api/services/isDMUNEmail';
 import { basics } from './basics';
 import { and, eq } from 'drizzle-orm';
 

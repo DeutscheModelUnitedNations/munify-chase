@@ -12,7 +12,7 @@ import { basics } from './basics';
 import { assertFindFirstExists } from '@m1212e/rumble';
 import { GraphQLError } from 'graphql';
 import { SpeakerOnListRef, SpeakerOnWhereArgs } from './speakerOnList';
-import { isDMUNEmail } from '$api/services/isDMUNEmail';
+import { isWhitelistedEmail } from '$api/services/isDMUNEmail';
 
 // const { arg, ref, pubsub: speakersListPubSub, table } = basics('speakersList');
 
@@ -51,7 +51,7 @@ query({
 
 abilityBuilder.speakersList.allow(['read', 'update', 'delete']).when(({ mustBeLoggedIn }) => {
 	const user = mustBeLoggedIn();
-	if (user?.email && isDMUNEmail(user.email)) {
+	if (user?.email && isWhitelistedEmail(user.email)) {
 		return 'allow';
 	}
 });

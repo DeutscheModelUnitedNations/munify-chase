@@ -5,7 +5,7 @@ import { db, schema } from '$api/db/db';
 import { and, count, eq, gt, gte, sql } from 'drizzle-orm';
 import { assertFindFirstExists, assertFirstEntryExists } from '@m1212e/rumble';
 import { SpeakersListRef } from './speakersList';
-import { isDMUNEmail } from '$api/services/isDMUNEmail';
+import { isWhitelistedEmail } from '$api/services/isDMUNEmail';
 
 const { arg, ref, pubsub, table } = basics('speakerOnList');
 
@@ -17,7 +17,7 @@ export const SpeakerOnWhereArgs = arg;
 
 abilityBuilder.speakerOnList.allow(['read', 'update', 'delete']).when(({ mustBeLoggedIn }) => {
 	const user = mustBeLoggedIn();
-	if (user?.email && isDMUNEmail(user.email)) {
+	if (user?.email && isWhitelistedEmail(user.email)) {
 		return 'allow';
 	}
 });

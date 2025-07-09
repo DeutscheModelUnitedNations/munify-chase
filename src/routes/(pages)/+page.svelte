@@ -27,8 +27,8 @@
 		<div class="max-w-7xl">
 			<LandingHero />
 
-			{#if $media.isTabletOrMobile}
-				<div class="flex h-40 w-full items-center justify-center bg-white">
+			<!-- {#if $media.isTabletOrMobile}
+				<div class="flex h-40 w-full items-center justify-center bg-base-100">
 					<img
 						src="/logo/svg/chase_logo_blue_text.svg"
 						style="object-fit:contain"
@@ -37,7 +37,7 @@
 						alt="Chase Logo"
 					/>
 				</div>
-			{/if}
+			{/if} -->
 
 			<CardSection />
 

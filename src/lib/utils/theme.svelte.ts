@@ -29,7 +29,7 @@ export function setTheme(newTheme: Theme) {
 export function updateTheme() {
 	if (!browser) return;
 	const storedTheme = localStorage.getItem('theme') as Theme | 'undefined';
-	if (storedTheme === 'undefined') {
+	if (storedTheme === 'undefined' || !storedTheme) {
 		localStorage.setItem('theme', 'system');
 		theme = 'system';
 	} else {

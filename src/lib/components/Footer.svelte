@@ -3,6 +3,7 @@
 	import { configPublic } from '$config/public';
 	import LanguageSwitcher from '$lib/components/LanguageSwitcher.svelte';
 	import * as m from '$lib/paraglide/messages.js';
+	import ThemeSwitcher from './ThemeSwitcher.svelte';
 </script>
 
 <div class="w-full p-4">
@@ -15,7 +16,10 @@
 				>{@html m.imprintAndPrivacy()}</a
 			>
 		</nav>
-		<LanguageSwitcher />
+		<div class="flex">
+			<ThemeSwitcher />
+			<LanguageSwitcher />
+		</div>
 		<nav>
 			<div class="grid grid-flow-col gap-4" id="socials">
 				<a href="https://www.instagram.com/dmun_ev/" aria-label="Instagram">

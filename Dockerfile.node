@@ -26,7 +26,7 @@ COPY . .
 RUN bun run build
 RUN bun run check
 
-FROM node:24.0-slim AS release
+FROM node:24.8-slim AS release
 WORKDIR /app/release
 
 ARG VERSION

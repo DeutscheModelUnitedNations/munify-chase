@@ -1,4 +1,4 @@
-name: Build and run
+name: Check build and types on PR
 
 on:
   pull_request:
@@ -13,8 +13,3 @@ jobs:
       - run: bun install --frozen-lockfile
       - run: bun run build
       - run: bun run check
-      # TODO
-      # - run: |
-      #     bun run preview &
-      #     sleep 10
-      #     curl -f http://localhost:4173

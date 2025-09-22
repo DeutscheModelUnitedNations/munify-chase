@@ -10,10 +10,7 @@ const config = {
 			precompress: true
 		}),
 		alias: {
-			$api: 'src/api',
-			$assets: 'src/assets',
-			$houdini: '.houdini/',
-			$config: 'src/lib/config'
+			$api: 'src/api'
 		}
 	}
 };

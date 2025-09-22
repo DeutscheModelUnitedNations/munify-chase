@@ -195,6 +195,9 @@
 	"homeContributeButtonLabel": "MUNify auf GitHub",
 	"homeAboutTitle": "Über CHASE",
 	"homeAboutText": "CHASE (CHAirSoftwarE) ist eine Webanwendung zur Verwaltung und Durchführung von Debatten in Model United Nations Konferenzen. Sie ist für Vorsitzende und Delegierte gleichermaßen konzipiert. CHASE ermöglicht es Vorsitzenden, Debatten einfach zu verwalten, während Delegierte der Debatte folgen und mit anderen Delegierten auf intuitive und strukturierte Weise zusammenarbeiten können. CHASE ist freie und open source Software.",
+	" im 21": {
+		" Jahrhundert": "homeCaption"
+	},
 	"homeHeroText": "Debattenmanagement bei Model United Nations Konferenzen bekommt endlich ein Upgrade.",
 	"homeCaption": "im 21. Jahrhundert",
 	"comingSoon": "bald verfügbar",

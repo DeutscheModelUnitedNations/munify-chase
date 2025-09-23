@@ -1,10 +1,12 @@
 import { drizzle } from 'drizzle-orm/postgres-js';
-import postgres from 'postgres';
-import * as schema from './schema';
-import { env } from '$env/dynamic/private';
+import * as schemaInternal from './schema';
+import { configPrivate } from '$config/private';
+import { relations as relationsInternal } from './relations';
 
-if (!env.DATABASE_URL) throw new Error('DATABASE_URL is not set');
+export const db = drizzle(configPrivate.DATABASE_URL, {
+	relations: relationsInternal,
+	casing: 'snake_case'
+});
 
-const client = postgres(env.DATABASE_URL);
-
-export const db = drizzle(client, { schema });
+export const schema = schemaInternal;
+export const relations = relationsInternal;

@@ -19,8 +19,8 @@
 		"db:generate": "drizzle-kit generate",
 		"db:migrate": "drizzle-kit migrate",
 		"db:studio": "drizzle-kit studio",
-		"db:reset": "bun ./src/api/db/reset.ts",
-		"db:seed:dev": "bun ./src/api/db/seedConference.ts dev.yaml",
+		"db:reset": "bun ./src/lib/server/db/reset.ts",
+		"db:seed:dev": "bun ./src/lib/server/db/seedConference.ts dev.yaml",
 		"compile-seed-schema": "json-schema-to-typescript ./src/api/db/seed-data/schema.json > ./src/api/db/seed-data/schema.d.ts",
 		"machine-translate": "inlang machine translate --project project.inlang",
 		"typecheck": "tsc --noEmit"

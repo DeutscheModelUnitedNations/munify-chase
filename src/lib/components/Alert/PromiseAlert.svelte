@@ -44,14 +44,14 @@
 		<AlertDialog.Overlay forceMount>
 			{#if open}
 				<div
-					class="fixed inset-0 z-30 backdrop-blur-sm backdrop-brightness-70"
+					class="backdrop-brightness-70 fixed inset-0 z-30 backdrop-blur-sm"
 					transition:fade={{ duration: 300 }}
 				></div>
 			{/if}
 		</AlertDialog.Overlay>
 		{#if open}
 			<div
-				class="card bg-base-100 fixed top-1/2 left-1/2 z-40 m-4 w-full max-w-xl -translate-x-1/2 -translate-y-1/2 shadow-md"
+				class="card bg-base-100 fixed left-1/2 top-1/2 z-40 m-4 w-full max-w-xl -translate-x-1/2 -translate-y-1/2 shadow-md"
 				transition:fly={{ duration: 500 }}
 			>
 				<AlertDialog.Content>

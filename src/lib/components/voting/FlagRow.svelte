@@ -18,7 +18,7 @@
 		: 'base-100'} flex flex-1 flex-row items-center gap-4 overflow-hidden p-4 shadow-sm {className ||
 		''}"
 >
-	<div class="flex w-26 flex-shrink-0 flex-col items-center gap-2 font-mono text-5xl">
+	<div class="w-26 flex flex-shrink-0 flex-col items-center gap-2 font-mono text-5xl">
 		{#if faIcon}
 			<i class="fas fa-{faIcon.replace('fa-', '')} text-{color || 'content'}"></i>
 		{/if}

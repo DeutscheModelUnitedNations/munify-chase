@@ -68,7 +68,7 @@
 {#if committeeSettings && committeeSettings.rollCallVotingActive}
 	<div class="modal modal-open">
 		<div
-			class="modal-box bg-base-200 relative flex h-full max-h-11/12 w-full max-w-11/12 flex-col gap-4"
+			class="modal-box bg-base-200 max-h-11/12 max-w-11/12 relative flex h-full w-full flex-col gap-4"
 			in:fly={{ y: 100, duration: 1000, easing: cubicOut }}
 			out:fly={{ y: 100, duration: 1000, easing: cubicIn }}
 		>

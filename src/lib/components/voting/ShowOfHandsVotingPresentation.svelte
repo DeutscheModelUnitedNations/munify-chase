@@ -83,7 +83,7 @@
 	<div
 		class="{getClasses(
 			stage
-		)} card absolute inset-10 top-30 mb-4 items-center justify-center gap-4 p-10 shadow-sm"
+		)} card top-30 absolute inset-10 mb-4 items-center justify-center gap-4 p-10 shadow-sm"
 		in:fly={{ duration: 500, delay: 500, easing: cubicOut, x: 10 }}
 		out:fly={{ duration: 500, easing: cubicIn, x: -10 }}
 	>
@@ -96,7 +96,7 @@
 {#if committeeSettings && committeeSettings.showOfHandsVotingActive}
 	<div class="modal modal-open">
 		<div
-			class="modal-box bg-base-200 relative h-full max-h-9/12 w-full max-w-9/12"
+			class="modal-box bg-base-200 max-h-9/12 max-w-9/12 relative h-full w-full"
 			in:fly={{ y: 100, duration: 1000, easing: cubicOut }}
 			out:fly={{ y: 100, duration: 1000, easing: cubicIn }}
 		>
@@ -112,7 +112,7 @@
 				{@render VoteNowBox('ABSTAIN')}
 			{:else if committeeSettings.showOfHandsVotingStage === 'EVALUATION'}
 				<div
-					class="absolute inset-10 top-30 mb-4 flex flex-col items-stretch justify-center gap-4 p-10"
+					class="top-30 absolute inset-10 mb-4 flex flex-col items-stretch justify-center gap-4 p-10"
 					in:fly={{ duration: 500, delay: 500, easing: cubicOut, y: 40 }}
 				>
 					<ResultChart

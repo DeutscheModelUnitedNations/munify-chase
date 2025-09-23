@@ -27,7 +27,7 @@
 	};
 </script>
 
-<div class="bg-base-300 card relative h-26 w-full flex-row overflow-hidden shadow-sm">
+<div class="bg-base-300 card h-26 relative w-full flex-row overflow-hidden shadow-sm">
 	<div
 		class="bg-success h-full transition-all duration-300 w-[{getPercentage(
 			votesPro
@@ -47,7 +47,7 @@
 		)}"
 	></div>
 	<div
-		class="bg-info border-base-200 flex h-full items-end justify-end border-x-1 transition-all duration-300"
+		class="bg-info border-base-200 border-x-1 flex h-full items-end justify-end transition-all duration-300"
 		style="width: {getPercentage(votesAbstain)}"
 	>
 		{#if showNumbers && votesAbstain != null && votesAbstain !== 0}
@@ -61,7 +61,7 @@
 		style="width: {getPercentage(votesCon)}"
 	>
 		{#if showNumbers && votesCon != null && votesCon !== 0}
-			<span class="badge badge-error border-base-100 -translate-x-2 border-1 shadow-sm"
+			<span class="badge badge-error border-base-100 border-1 -translate-x-2 shadow-sm"
 				>{votesCon ?? 0}</span
 			>
 		{/if}

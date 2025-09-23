@@ -49,7 +49,7 @@
 
 {#snippet Modal(group: RegionalGroupEnum$options)}
 	<div
-		class="modal-box bg-base-200 max-h-9/12 w-full max-w-9/12"
+		class="modal-box bg-base-200 max-h-9/12 max-w-9/12 w-full"
 		in:fly={{ x: 100, duration: 1000, delay: 700, easing: cubicOut }}
 		out:fly={{ x: -100, duration: 1000, easing: cubicIn }}
 	>
@@ -58,7 +58,7 @@
 		</h2>
 		<div class="flex h-full w-full flex-wrap items-center justify-center gap-4">
 			{#each getGroupMembers(group) as member}
-				<div class="flex w-22 flex-col items-center justify-start gap-1">
+				<div class="w-22 flex flex-col items-center justify-start gap-1">
 					<Flag representation={member.representation} size="full" />
 					<div class="text-center font-mono font-bold">
 						{member.representation?.alpha2Code?.toUpperCase()}

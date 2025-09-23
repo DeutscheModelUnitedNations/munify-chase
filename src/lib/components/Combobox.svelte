@@ -86,7 +86,7 @@
 	</div>
 	<Combobox.Portal>
 		<Combobox.Content
-			class="bg-base-100 border-base-300 shadow-popover card z-30 max-h-60 w-[var(--bits-combobox-anchor-width)] min-w-[var(--bits-combobox-anchor-width)] border px-1 py-3 shadow-lg outline-hidden select-none data-[side=bottom]:translate-y-1 data-[side=left]:-translate-x-1 data-[side=right]:translate-x-1 data-[side=top]:-translate-y-1"
+			class="bg-base-100 border-base-300 shadow-popover card outline-hidden z-30 max-h-60 w-[var(--bits-combobox-anchor-width)] min-w-[var(--bits-combobox-anchor-width)] select-none border px-1 py-3 shadow-lg data-[side=bottom]:translate-y-1 data-[side=left]:-translate-x-1 data-[side=right]:translate-x-1 data-[side=top]:-translate-y-1"
 			sideOffset={10}
 			{side}
 		>
@@ -96,7 +96,7 @@
 			<Combobox.Viewport class="p-1">
 				{#each filteredOptions as option, i (i)}
 					<Combobox.Item
-						class="hover:bg-base-200 active:bg-base-300 data-highlighted:bg-base-300 flex w-full cursor-pointer items-center rounded-md py-3 pl-5 text-sm outline-hidden transition-all duration-200 select-none"
+						class="hover:bg-base-200 active:bg-base-300 data-highlighted:bg-base-300 outline-hidden flex w-full cursor-pointer select-none items-center rounded-md py-3 pl-5 text-sm transition-all duration-200"
 						value={getStringValue(option)}
 						label={getStringValue(option)}
 						onclick={() => {

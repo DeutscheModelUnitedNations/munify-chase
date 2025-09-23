@@ -82,7 +82,7 @@
 							{@const conf = c.conference}
 							<a
 								href={getUrl(c.conferenceUserType, c.conference.id)}
-								class="btn btn-lg w-full max-w-xs shadow-xs"
+								class="btn btn-lg shadow-xs w-full max-w-xs"
 							>
 								<i class="fa-duotone fa-rocket-launch mr-2"></i>
 								<div>

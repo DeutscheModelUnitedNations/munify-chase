@@ -34,7 +34,7 @@
 >
 	{#each locales as l}
 		{#if locale === l}
-			<div class="absolute top-0 right-0 bottom-0 left-0 flex items-center justify-center">
+			<div class="absolute bottom-0 left-0 right-0 top-0 flex items-center justify-center">
 				<div in:fly={{ x: -20 }} out:fly={{ x: 20 }} class="fi fi-{localeLookup[l]}"></div>
 			</div>
 		{/if}

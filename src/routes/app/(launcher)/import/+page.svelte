@@ -341,7 +341,7 @@
 										{rep?.alpha2Code}
 									</div>
 									<button
-										class="btn btn-error btn-sm btn-circle absolute top-1/2 right-1/2 z-40 translate-x-1/2 -translate-y-1/2 opacity-0 transition-all duration-300 group-hover:opacity-100"
+										class="btn btn-error btn-sm btn-circle absolute right-1/2 top-1/2 z-40 -translate-y-1/2 translate-x-1/2 opacity-0 transition-all duration-300 group-hover:opacity-100"
 										aria-label="Remove committee member"
 										onclick={() => {
 											importData!.committeeMembers = importData!.committeeMembers.filter(
@@ -367,7 +367,7 @@
 					</fieldset>
 
 					<button
-						class="btn btn-error btn-circle absolute top-0 right-0 translate-x-1/2 -translate-y-3/4 transition-all duration-300"
+						class="btn btn-error btn-circle absolute right-0 top-0 -translate-y-3/4 translate-x-1/2 transition-all duration-300"
 						aria-label="Remove committee"
 						onclick={() => {
 							importData!.committees = importData!.committees.filter((i) => i.id !== committee.id);
@@ -489,7 +489,7 @@
 	{/if}
 
 	<button
-		class="btn btn-primary fixed right-0 bottom-0 left-0 z-50 m-4"
+		class="btn btn-primary fixed bottom-0 left-0 right-0 z-50 m-4"
 		aria-label="Create conference"
 		onclick={createConference}
 		disabled={!importData || loading}

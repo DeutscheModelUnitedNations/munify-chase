@@ -132,7 +132,7 @@
 			<span class="kbd">L</span>
 		</button>
 
-		<div class="absolute top-3 right-3">
+		<div class="absolute right-3 top-3">
 			<button
 				aria-label="Close modal"
 				class="btn btn-ghost btn-circle btn-sm"

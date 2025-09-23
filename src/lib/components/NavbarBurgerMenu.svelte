@@ -25,7 +25,7 @@
 
 {#if menuVisible}
 	<ul
-		class="menu bg-base-100 rounded-box absolute top-5 right-5 z-50 min-w-52 shadow-md"
+		class="menu bg-base-100 rounded-box absolute right-5 top-5 z-50 min-w-52 shadow-md"
 		in:fly={{ y: -10 }}
 		out:fly={{ y: -10 }}
 	>
@@ -53,7 +53,7 @@
 		in:fade={{ duration: 200 }}
 		out:fade={{ duration: 200 }}
 		type="button"
-		class="fixed top-0 right-0 bottom-0 left-0 z-40 backdrop-brightness-50"
+		class="fixed bottom-0 left-0 right-0 top-0 z-40 backdrop-brightness-50"
 		aria-label="Close menu"
 		onclick={() => (menuVisible = false)}
 	></button>

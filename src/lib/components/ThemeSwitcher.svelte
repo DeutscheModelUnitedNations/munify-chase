@@ -6,7 +6,7 @@
 <button class="btn btn-lg relative flex-1" onclick={() => toggleTheme()}>
 	{#if getTheme() === 'dark'}
 		<div
-			class="absolute top-0 right-0 bottom-0 left-0 flex items-center justify-center"
+			class="absolute bottom-0 left-0 right-0 top-0 flex items-center justify-center"
 			in:fly={{ x: -20 }}
 			out:fly={{ x: 20 }}
 		>
@@ -14,7 +14,7 @@
 		</div>
 	{:else if getTheme() === 'light'}
 		<div
-			class="absolute top-0 right-0 bottom-0 left-0 flex items-center justify-center"
+			class="absolute bottom-0 left-0 right-0 top-0 flex items-center justify-center"
 			in:fly={{ x: -20 }}
 			out:fly={{ x: 20 }}
 		>
@@ -22,7 +22,7 @@
 		</div>
 	{:else if getTheme() === 'system'}
 		<div
-			class="absolute top-0 right-0 bottom-0 left-0 flex items-center justify-center"
+			class="absolute bottom-0 left-0 right-0 top-0 flex items-center justify-center"
 			in:fly={{ x: -20 }}
 			out:fly={{ x: 20 }}
 		>
@@ -30,7 +30,7 @@
 		</div>
 	{:else}
 		<div
-			class="absolute top-0 right-0 bottom-0 left-0 flex items-center justify-center"
+			class="absolute bottom-0 left-0 right-0 top-0 flex items-center justify-center"
 			in:fly={{ x: -20 }}
 			out:fly={{ x: 20 }}
 		>

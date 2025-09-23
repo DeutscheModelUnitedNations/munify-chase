@@ -74,7 +74,7 @@
 			</div>
 		{/each}
 		<div
-			class="bg-base-200 card mt-2 flex w-full items-center justify-center inset-shadow-sm {speakers.length >
+			class="bg-base-200 card inset-shadow-sm mt-2 flex w-full items-center justify-center {speakers.length >
 			visibleCount
 				? 'opacity-100'
 				: 'opacity-0'} transition-all duration-300"

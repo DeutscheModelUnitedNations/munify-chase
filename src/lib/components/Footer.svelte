@@ -57,7 +57,7 @@
 				</div>
 				<div class="flex max-w-[15ch] flex-col sm:flex-row sm:gap-2 md:max-w-max">
 					<div>{m.sha()}:</div>
-					<div class="overflow-hidden font-mono overflow-ellipsis">
+					<div class="overflow-hidden overflow-ellipsis font-mono">
 						{#if !configPublic.PUBLIC_SHA || configPublic.PUBLIC_SHA.length === 0}
 							unknown
 						{:else}

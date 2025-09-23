@@ -35,7 +35,7 @@
 	</div>
 	{#if speakersList?.isClosed}
 		<div
-			class="bg-error text-content-error absolute top-0 left-0 flex h-8 w-8 -translate-x-1/3 -translate-y-1/3 items-center justify-center rounded-full shadow-md"
+			class="bg-error text-content-error absolute left-0 top-0 flex h-8 w-8 -translate-x-1/3 -translate-y-1/3 items-center justify-center rounded-full shadow-md"
 			in:scale={{ duration: 800, opacity: 0.5, start: 0, easing: bounceOut }}
 			out:scale={{ duration: 500, opacity: 0.5, start: 0 }}
 		>

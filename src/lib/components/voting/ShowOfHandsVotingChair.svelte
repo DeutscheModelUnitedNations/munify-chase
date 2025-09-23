@@ -150,7 +150,7 @@
 		<div
 			class="{currentState === 'PRO'
 				? 'bg-success text-success-content border-black'
-				: 'bg-success/20'} card border-base-100 mb-4 w-full items-center justify-center gap-4 border-3 p-4 shadow-sm"
+				: 'bg-success/20'} card border-base-100 border-3 mb-4 w-full items-center justify-center gap-4 p-4 shadow-sm"
 		>
 			<h3 class="text-lg font-bold">{m.pro()}</h3>
 			<VoteClicker active={currentState === 'PRO'} bind:value={votesPro} />
@@ -158,7 +158,7 @@
 		<div
 			class="{currentState === 'CON'
 				? 'bg-error text-error-content border-black'
-				: 'bg-error/20'} card border-base-100 mb-4 w-full items-center justify-center gap-4 border-3 p-4 shadow-sm"
+				: 'bg-error/20'} card border-base-100 border-3 mb-4 w-full items-center justify-center gap-4 p-4 shadow-sm"
 		>
 			<h3 class="text-lg font-bold">{m.con()}</h3>
 			<VoteClicker active={currentState === 'CON'} bind:value={votesCon} />
@@ -167,7 +167,7 @@
 			<div
 				class="{currentState === 'ABSTAIN'
 					? 'bg-info text-info-content border-black'
-					: 'bg-info/20'} card border-base-100 mb-4 w-full items-center justify-center gap-4 border-3 p-4 shadow-sm"
+					: 'bg-info/20'} card border-base-100 border-3 mb-4 w-full items-center justify-center gap-4 p-4 shadow-sm"
 			>
 				<h3 class="text-lg font-bold">{m.abstain()}</h3>
 				<VoteClicker active={currentState === 'ABSTAIN'} bind:value={votesAbstain} />
@@ -200,7 +200,7 @@
 			<span class="kbd">↵</span>
 		</button>
 
-		<div class="absolute top-3 right-3">
+		<div class="absolute right-3 top-3">
 			<button aria-label="Close modal" class="btn btn-ghost btn-circle btn-sm" onclick={exit}>
 				<i class="fa-duotone fa-xmark"></i>
 			</button>

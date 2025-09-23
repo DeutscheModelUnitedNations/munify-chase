@@ -26,7 +26,7 @@
 <div class="flex h-full w-full flex-wrap gap-4 p-4">
 	{#each conference.committees.sort( (a, b) => a.abbreviation.localeCompare(b.abbreviation) ) as committee}
 		<a
-			class="card bg-base-100 relative min-w-md flex-1 shadow-sm transition-all duration-300 ease-in-out hover:-translate-y-1 hover:shadow-md"
+			class="card bg-base-100 min-w-md relative flex-1 shadow-sm transition-all duration-300 ease-in-out hover:-translate-y-1 hover:shadow-md"
 			href={getHref(committee.id)}
 		>
 			<div class="card-body">

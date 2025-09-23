@@ -50,7 +50,7 @@
 
 {#if timeSinceLastAdoption && timeSinceLastAdoption < confettiDurationSec}
 	<div
-		class="pointer-events-none fixed -top-[50px] right-0 bottom-0 left-0 z-50 flex justify-center overflow-hidden"
+		class="pointer-events-none fixed -top-[50px] bottom-0 left-0 right-0 z-50 flex justify-center overflow-hidden"
 		out:fade={{ duration: 3000 }}
 	>
 		<Confetti
@@ -74,10 +74,10 @@
 
 	{#if showBanner}
 		<div
-			class="h-md bg-primary text-primary-content fixed right-0 bottom-0 left-0 z-50"
+			class="h-md bg-primary text-primary-content fixed bottom-0 left-0 right-0 z-50"
 			transition:fly={{ y: 100, easing: cubicInOut, duration: 1000 }}
 		>
-			<Marquee class="h-full w-full overflow-hidden py-6 whitespace-nowrap" speed={50} gap="4rem">
+			<Marquee class="h-full w-full overflow-hidden whitespace-nowrap py-6" speed={50} gap="4rem">
 				<h1 class="text-4xl font-bold">
 					{m.adoptionAnnouncement({
 						committeeName,

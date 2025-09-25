@@ -3,6 +3,7 @@
 	import Footer from '$lib/components/Footer.svelte';
 	import type { PageData } from './$houdini';
 	import type { ConferenceUserTypeEnum$options } from '$houdini';
+	import { addToPanel } from 'svelte-inspect-value';
 
 	let { data }: { data: PageData } = $props();
 
@@ -33,6 +34,8 @@
 			return `/app/${id}`;
 		}
 	};
+
+	addToPanel('data', () => launcherQuery);
 </script>
 
 <svelte:head>

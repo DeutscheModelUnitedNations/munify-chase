@@ -1,6 +1,7 @@
 // world-countries
 
 import { getLocale, locales } from '$lib/paraglide/runtime';
+import { SvelteMap } from 'svelte/reactivity';
 import allNations from 'world-countries';
 
 const addressNations = [
@@ -283,7 +284,7 @@ function nationCodeToLocalName(code: string, locale = getLocale(), official = fa
 
 // we build an index of nation codes to translation objects
 type TranslationObject = { [key in (typeof locales)[number]]: string };
-export const NationIso3ToLocalNamesMap = new Map<string, TranslationObject>();
+export const NationIso3ToLocalNamesMap = new SvelteMap<string, TranslationObject>();
 
 for (const nation of allNations) {
 	const translationObject: TranslationObject = {} as any;

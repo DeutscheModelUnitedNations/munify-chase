@@ -8,33 +8,12 @@
 	import '../app.css';
 	import '/node_modules/flag-icons/css/flag-icons.min.css';
 
-	import '@fontsource/outfit/100.css';
-	import '@fontsource/outfit/200.css';
-	import '@fontsource/outfit/300.css';
-	import '@fontsource/outfit/400.css';
-	import '@fontsource/outfit/500.css';
-	import '@fontsource/outfit/600.css';
-	import '@fontsource/outfit/700.css';
-	import '@fontsource/outfit/800.css';
-	import '@fontsource/outfit/900.css';
-	import '@fontsource/roboto-mono/100.css';
-	import '@fontsource/roboto-mono/200.css';
-	import '@fontsource/roboto-mono/300.css';
-	import '@fontsource/roboto-mono/400.css';
-	import '@fontsource/roboto-mono/500.css';
-	import '@fontsource/roboto-mono/600.css';
-	import '@fontsource/roboto-mono/700.css';
-	import '@fontsource/vollkorn/400.css';
-	import '@fontsource/vollkorn/500.css';
-	import '@fontsource/vollkorn/600.css';
-	import '@fontsource/vollkorn/700.css';
-	import '@fontsource/vollkorn/800.css';
-	import '@fontsource/vollkorn/900.css';
-	import { browser } from '$app/environment';
+	import { browser, dev } from '$app/environment';
 	import { initialSetTheme } from '$lib/utils/theme.svelte';
 	import { onMount } from 'svelte';
 	import { timeQuery } from '$lib/state/serverTime.svelte';
 	import Alert from '$lib/components/Alert/PromiseAlert.svelte';
+	import Inspect from 'svelte-inspect-value';
 
 	dayjs.extend(duration);
 
@@ -102,3 +81,7 @@
 
 <Toaster containerClassName="mt-16" toastOptions={{ className: 'border-2' }} />
 <Alert />
+
+{#if dev}
+	<Inspect.Panel />
+{/if}

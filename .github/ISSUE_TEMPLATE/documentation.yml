@@ -1,0 +1,91 @@
+name: Documentation Issue
+description: Report an error, problem, or suggestion for our documentation
+tags: ['documentation']
+type: Task
+assignees: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for helping us improve our documentation! Please provide details about the documentation issue you've found.
+
+  - type: dropdown
+    id: doc-type
+    attributes:
+      label: Documentation Type
+      description: What type of documentation issue is this?
+      options:
+        - Error/Correction (Something is wrong or outdated)
+        - Missing Information (Something important is not documented)
+        - Improvement Suggestion (Documentation could be clearer or better organized)
+        - New Documentation Request (Need docs for a new feature or process)
+    validations:
+      required: true
+
+  - type: dropdown
+    id: doc-location
+    attributes:
+      label: Documentation Location
+      description: Where is this documentation located?
+      options:
+        - GitHub README
+        - GitHub Wiki
+        - Project Website
+        - Code Comments/Inline Documentation
+        - API Documentation
+        - User Guide/Manual
+        - Developer Documentation
+        - Other (please specify below)
+    validations:
+      required: true
+
+  - type: input
+    id: doc-url
+    attributes:
+      label: Documentation URL or File Path
+      description: Please provide the URL or file path of the documentation in question
+      placeholder: https://example.com/docs or /path/to/file.md
+
+  - type: textarea
+    id: issue-description
+    attributes:
+      label: Issue Description
+      description: Describe what you want to be changed in our documentation
+      placeholder: Clearly explain what's wrong, missing, or could be improved...
+    validations:
+      required: true
+
+  - type: textarea
+    id: current-content
+    attributes:
+      label: Current Content (if applicable)
+      description: If reporting an error, please include the current incorrect content
+      placeholder: Copy and paste the current documentation that needs to be fixed...
+
+  - type: textarea
+    id: suggested-content
+    attributes:
+      label: Suggested Content
+      description: If you have a suggestion for how to fix or improve the documentation, please include it here
+      placeholder: Provide your suggested changes or new content...
+
+  - type: dropdown
+    id: audience
+    attributes:
+      label: Target Audience
+      description: Who is the primary audience for this documentation?
+      options:
+        - End Users (Delegates/Participants)
+        - Administrators (Conference Organizers)
+        - Developers (Contributors)
+        - All Users
+        - Other (please specify in additional context)
+    validations:
+      required: true
+
+  - type: textarea
+    id: additional-context
+    attributes:
+      label: Additional Context
+      description: Add any other context, examples, or references that might help us understand the documentation issue
+      placeholder: Any additional information that might help us improve the documentation...

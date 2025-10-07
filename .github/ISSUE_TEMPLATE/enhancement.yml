@@ -1,0 +1,116 @@
+name: Enhancement/Improvement
+description: Suggest an improvement to existing functionality
+type: Enhancement
+assignees: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for suggesting an improvement to Chase! This template is for enhancements to existing features. For completely new features, please use the "New Feature Implementation" template.
+
+  - type: dropdown
+    id: enhancement-type
+    attributes:
+      label: Enhancement Type
+      description: What type of enhancement is this?
+      options:
+        - UI/UX Improvement (Better design, usability)
+        - Performance Optimization (Speed, efficiency)
+        - Code Quality/Refactoring (Internal improvements)
+        - Accessibility Improvement (Better accessibility support)
+        - Mobile/Responsive Improvement (Better mobile experience)
+        - Security Enhancement (Improved security)
+        - Developer Experience (Better tooling, debugging)
+        - Other (please specify in description)
+    validations:
+      required: true
+
+  - type: textarea
+    id: current-behavior
+    attributes:
+      label: Current Behavior
+      description: Describe how the feature currently works
+      placeholder: Explain the current state of the feature you want to improve...
+    validations:
+
+  - type: textarea
+    id: proposed-improvement
+    attributes:
+      label: Proposed Improvement
+      description: Describe how you think it could be improved
+      placeholder: Explain specifically what you'd like to see changed or improved...
+    validations:
+      required: true
+
+  - type: textarea
+    id: benefits
+    attributes:
+      label: Benefits
+      description: What benefits would this improvement provide?
+      placeholder: |
+        - Improved user experience
+        - Better performance
+        - Easier maintenance
+        - Better accessibility
+    validations:
+      required: true
+
+  - type: dropdown
+    id: impact-level
+    attributes:
+      label: Impact Level
+      description: How significant would the impact of this improvement be?
+      options:
+        - High Impact (Affects many users or core functionality)
+        - Medium Impact (Noticeable improvement for some users)
+        - Low Impact (Small improvement, quality of life)
+    validations:
+      required: true
+
+  - type: dropdown
+    id: effort-estimate
+    attributes:
+      label: Estimated Effort
+      description: How much effort do you think this improvement would require?
+      options:
+        - Small (Few hours to a day)
+        - Medium (Few days to a week)
+        - Large (Multiple weeks)
+        - Unknown (Needs investigation)
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: affected-areas
+    attributes:
+      label: Affected Areas
+      description: Which areas would this improvement affect? (Select all that apply)
+      options:
+        - label: User Interface
+        - label: Performance
+        - label: Accessibility
+        - label: Mobile Experience
+        - label: Code Quality
+        - label: Developer Tools
+        - label: Documentation
+        - label: Testing
+        - label: Security
+        - label: Workflow/Process
+
+  - type: textarea
+    id: implementation-ideas
+    attributes:
+      label: Implementation Ideas
+      description: Do you have any ideas about how this could be implemented?
+      placeholder: Share any technical thoughts or implementation approaches you've considered...
+
+  - type: textarea
+    id: additional-context
+    attributes:
+      label: Additional Context
+      description: Any additional context, examples, or references
+      placeholder: |
+        - Screenshots of current behavior
+        - Examples from other applications
+        - User feedback or pain points
+        - Related issues or discussions

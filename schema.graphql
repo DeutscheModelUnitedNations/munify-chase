@@ -210,7 +210,7 @@ input ImportData {
   committeeMembers: [ImportDataCommitteeMember!]!
   committees: [ImportDataCommittee!]!
   conferenceMembers: [ImportDataConferenceMember!]!
-  conferenceUsers: [ImportDataConferenceUser!]!
+  conferenceUsers: [ImportDataConferenceUser!]
   id: ID!
   representations: [ImportDataRepresentation!]!
   title: String!

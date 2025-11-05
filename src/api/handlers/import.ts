@@ -80,7 +80,7 @@ const Input = schemaBuilder.inputType('ImportData', {
 					})
 				})
 			],
-			required: true
+			required: false
 		}),
 		agendaItems: t.field({
 			type: [
@@ -150,7 +150,7 @@ schemaBuilder.mutationFields((t) => ({
 
 				if (data.conferenceMembers.length > 0) {
 					await tx.insert(schema.conferenceMember).values(
-						data.conferenceMembers.map((member) => ({
+						data.conferenceMembers!.map((member) => ({
 							id: member.id,
 							conferenceId: data.id,
 							representationId: member.representationId
@@ -160,7 +160,7 @@ schemaBuilder.mutationFields((t) => ({
 
 				if (data.committeeMembers.length > 0) {
 					await tx.insert(schema.committeeMember).values(
-						data.committeeMembers.map((member) => ({
+						data.committeeMembers!.map((member) => ({
 							id: member.id,
 							committeeId: member.committeeId,
 							representationId: member.representationId
@@ -168,9 +168,9 @@ schemaBuilder.mutationFields((t) => ({
 					);
 				}
 
-				if (data.conferenceUsers.length > 0) {
+				if ((data.conferenceUsers?.length ?? 0) > 0) {
 					await tx.insert(schema.conferenceUser).values(
-						data.conferenceUsers.map((user) => ({
+						data.conferenceUsers!.map((user) => ({
 							id: user.id ?? undefined,
 							conferenceUserType: user.conferenceUserType,
 							userEmail: user.userEmail,
@@ -182,7 +182,7 @@ schemaBuilder.mutationFields((t) => ({
 				}
 
 				// if the creating user is not found in the dataset, we want to make them an admin anyway!
-				if (!data.conferenceUsers.find((u) => u.userEmail === ctx.oidc!.user.email)) {
+				if (!data.conferenceUsers?.find((u) => u.userEmail === ctx.oidc!.user.email)) {
 					await tx.insert(schema.conferenceUser).values({
 						conferenceId: data.id,
 						conferenceUserType: 'ADMIN',

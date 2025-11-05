@@ -19,11 +19,11 @@ export const importDataSchema = z.object({
 				alpha3Code: z
 					.string()
 					.optional()
-					.refine((data) => data?.length === 3),
+					.refine((data) => data === undefined || data?.length === 3),
 				alpha2Code: z
 					.string()
 					.optional()
-					.refine((data) => data?.length === 2),
+					.refine((data) => data === undefined || data?.length === 2),
 				name: z.string().optional(),
 				faIcon: z.string().optional(),
 				regionalGroup: z

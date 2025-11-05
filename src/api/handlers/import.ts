@@ -148,7 +148,7 @@ schemaBuilder.mutationFields((t) => ({
 					);
 				}
 
-				if (data.conferenceMembers?.length ?? 0 > 0) {
+				if (data.conferenceMembers.length > 0) {
 					await tx.insert(schema.conferenceMember).values(
 						data.conferenceMembers!.map((member) => ({
 							id: member.id,
@@ -158,7 +158,7 @@ schemaBuilder.mutationFields((t) => ({
 					);
 				}
 
-				if (data.committeeMembers?.length ?? 0 > 0) {
+				if (data.committeeMembers.length > 0) {
 					await tx.insert(schema.committeeMember).values(
 						data.committeeMembers!.map((member) => ({
 							id: member.id,
@@ -168,7 +168,7 @@ schemaBuilder.mutationFields((t) => ({
 					);
 				}
 
-				if (data.conferenceUsers?.length ?? 0 > 0) {
+				if ((data.conferenceUsers?.length ?? 0) > 0) {
 					await tx.insert(schema.conferenceUser).values(
 						data.conferenceUsers!.map((user) => ({
 							id: user.id ?? undefined,

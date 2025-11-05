@@ -100,7 +100,7 @@
 				id: nanoid(),
 				representationType: 'DELEGATION',
 				alpha3Code: nation.cca3.toLowerCase(),
-				alpha2Code: nation.cca3.toLowerCase(),
+				alpha2Code: nation.cca2.toLowerCase(),
 				regionalGroup: transformRegionalGroup(nation.unRegionalGroup)
 			})),
 			conferenceMembers: [],
@@ -168,6 +168,9 @@
 			representationType: type,
 			id: repId
 		});
+		if (importData?.conferenceMembers === undefined) {
+			importData!.conferenceMembers = [];
+		}
 		importData?.conferenceMembers.push({
 			id: nanoid(),
 			representationId: repId
@@ -192,6 +195,9 @@
 				representationType: 'DELEGATION',
 				id: repId
 			});
+		}
+		if (importData?.committeeMembers === undefined) {
+			importData!.committeeMembers = [];
 		}
 		importData?.committeeMembers.push({
 			id: nanoid(),
@@ -265,7 +271,7 @@
 				{@const agendaItems = importData.agendaItems.filter(
 					(item) => item.committeeId === committee.id
 				)}
-				{@const committeeMembers = importData.committeeMembers.filter(
+				{@const committeeMembers = importData.committeeMembers?.filter(
 					(member) => member.committeeId === committee.id
 				)}
 
@@ -344,7 +350,7 @@
 										class="btn btn-error btn-sm btn-circle absolute top-1/2 right-1/2 z-40 translate-x-1/2 -translate-y-1/2 opacity-0 transition-all duration-300 group-hover:opacity-100"
 										aria-label="Remove committee member"
 										onclick={() => {
-											importData!.committeeMembers = importData!.committeeMembers.filter(
+											importData!.committeeMembers = importData!.committeeMembers?.filter(
 												(i) => i.id !== member.id
 											);
 										}}
@@ -374,7 +380,7 @@
 							importData!.agendaItems = importData!.agendaItems.filter(
 								(i) => i.committeeId !== committee.id
 							);
-							importData!.committeeMembers = importData!.committeeMembers.filter(
+							importData!.committeeMembers = importData!.committeeMembers?.filter(
 								(i) => i.committeeId !== committee.id
 							);
 						}}
@@ -394,7 +400,7 @@
 			<fieldset class="fieldset bg-base-100 border-base-300 rounded-box border p-4">
 				<legend class="fieldset-legend">{m.nonStateActors()}</legend>
 				{#each importData.representations.filter((x) => x.representationType === 'NSA') as rep}
-					{@const conferenceMembers = importData.conferenceMembers.filter(
+					{@const conferenceMembers = importData.conferenceMembers?.filter(
 						(member) => member.representationId === rep.id
 					)}
 					<div class="join">
@@ -413,9 +419,9 @@
 							bind:value={rep.name}
 							placeholder={m.nonStateActor()}
 						/>
-						<div class="btn join-item {conferenceMembers.length === 0 ? 'btn-error' : ''}">
+						<div class="btn join-item {conferenceMembers?.length === 0 ? 'btn-error' : ''}">
 							<i class="fas fa-users"></i>
-							<span class="ml-2">{conferenceMembers.length}</span>
+							<span class="ml-2">{conferenceMembers?.length}</span>
 						</div>
 						<button
 							class="btn join-item"
@@ -424,7 +430,7 @@
 								importData!.representations = importData!.representations.filter(
 									(i) => i.id !== rep.id
 								);
-								importData!.conferenceMembers = importData!.conferenceMembers.filter(
+								importData!.conferenceMembers = importData!.conferenceMembers?.filter(
 									(i) => i.representationId !== rep.id
 								);
 							}}
@@ -446,7 +452,7 @@
 			<fieldset class="fieldset bg-base-100 border-base-300 rounded-box border p-4">
 				<legend class="fieldset-legend">{m.unActors()}</legend>
 				{#each importData.representations.filter((x) => x.representationType === 'UN') as rep}
-					{@const conferenceMembers = importData.conferenceMembers.filter(
+					{@const conferenceMembers = importData.conferenceMembers?.filter(
 						(member) => member.representationId === rep.id
 					)}
 					<div class="join">
@@ -467,7 +473,7 @@
 								importData!.representations = importData!.representations.filter(
 									(i) => i.id !== rep.id
 								);
-								importData!.conferenceMembers = importData!.conferenceMembers.filter(
+								importData!.conferenceMembers = importData!.conferenceMembers?.filter(
 									(i) => i.representationId !== rep.id
 								);
 							}}

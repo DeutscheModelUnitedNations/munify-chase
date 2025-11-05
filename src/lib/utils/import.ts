@@ -16,8 +16,14 @@ export const importDataSchema = z.object({
 			.object({
 				id: z.string(),
 				representationType: z.enum(['DELEGATION', 'NSA', 'UN']),
-				alpha3Code: z.string().optional(),
-				alpha2Code: z.string().optional(),
+				alpha3Code: z
+					.string()
+					.optional()
+					.refine((data) => data?.length === 3),
+				alpha2Code: z
+					.string()
+					.optional()
+					.refine((data) => data?.length === 2),
 				name: z.string().optional(),
 				faIcon: z.string().optional(),
 				regionalGroup: z
@@ -50,16 +56,18 @@ export const importDataSchema = z.object({
 			committeeId: z.string()
 		})
 	),
-	conferenceUsers: z.array(
-		z.object({
-			id: z.string(),
-			conferenceUserType: z.enum(['ADMIN', 'DELEGATE', 'NON_STATE_ACTOR', 'SPECTATOR', 'TEAM']),
-			userEmail: z.string(),
-			//TODO enforce that one has to be set?
-			conferenceMemberId: z.string().optional(),
-			committeeMemberId: z.string().optional()
-		})
-	),
+	conferenceUsers: z
+		.array(
+			z.object({
+				id: z.string(),
+				conferenceUserType: z.enum(['ADMIN', 'DELEGATE', 'NON_STATE_ACTOR', 'SPECTATOR', 'TEAM']),
+				userEmail: z.string(),
+				//TODO enforce that one has to be set?
+				conferenceMemberId: z.string().optional(),
+				committeeMemberId: z.string().optional()
+			})
+		)
+		.optional(),
 	agendaItems: z.array(
 		z.object({
 			id: z.string().optional(),

@@ -92,6 +92,7 @@
 
 	async function createFreshData(): Promise<void> {
 		importData = {
+			$schema: `${page.url.origin}/api/schemas/import`,
 			title: '',
 			id: nanoid(),
 			committees: [],

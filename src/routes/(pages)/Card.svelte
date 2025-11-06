@@ -1,15 +1,15 @@
 <script lang="ts">
-	import ComingSoonRibbon from './ComingSoonRibbon.svelte';
+import ComingSoonRibbon from "./ComingSoonRibbon.svelte";
 
-	interface Props {
-		src: string;
-		alt: string;
-		header: string;
-		text: string;
-		comingSoonRibbon?: boolean;
-	}
+interface Props {
+	src: string;
+	alt: string;
+	header: string;
+	text: string;
+	comingSoonRibbon?: boolean;
+}
 
-	let { src, alt, header, text, comingSoonRibbon = false }: Props = $props();
+const { src, alt, header, text, comingSoonRibbon = false }: Props = $props();
 </script>
 
 <div class="card bg-base-100 relative h-full flex-1 shadow-sm">

@@ -1,5 +1,5 @@
 <script lang="ts">
-	import * as m from '$lib/paraglide/messages.js';
+import * as m from "$lib/paraglide/messages.js";
 </script>
 
 <div class="navbar bg-base-100 relative shadow-sm">

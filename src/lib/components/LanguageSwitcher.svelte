@@ -1,28 +1,28 @@
 <script lang="ts">
-	import { browser } from '$app/environment';
-	import { goto } from '$app/navigation';
-	import { page } from '$app/state';
-	import { locales, localizeHref, getLocale } from '$lib/paraglide/runtime';
-	import { fly } from 'svelte/transition';
+import { fly } from "svelte/transition";
+import { browser } from "$app/environment";
+import { goto } from "$app/navigation";
+import { page } from "$app/state";
+import { getLocale, locales, localizeHref } from "$lib/paraglide/runtime";
 
-	const getNextLocale = () => {
-		const currentIndex = locales.indexOf(getLocale());
-		const nextIndex = (currentIndex + 1) % locales.length;
-		return locales[nextIndex];
-	};
+const getNextLocale = () => {
+	const currentIndex = locales.indexOf(getLocale());
+	const nextIndex = (currentIndex + 1) % locales.length;
+	return locales[nextIndex];
+};
 
-	let locale = $state(getLocale());
+let locale = $state(getLocale());
 
-	$effect(() => {
-		if (browser) {
-			locale = getLocale();
-		}
-	});
+$effect(() => {
+	if (browser) {
+		locale = getLocale();
+	}
+});
 
-	const localeLookup = {
-		en: 'gb',
-		de: 'de'
-	};
+const localeLookup = {
+	en: "gb",
+	de: "de",
+};
 </script>
 
 <button

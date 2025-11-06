@@ -1,26 +1,32 @@
 <script lang="ts">
-	import * as m from '$lib/paraglide/messages.js';
-	import IconInfoBox from './IconInfoBox.svelte';
-	import { getCommitteeStatusIcon, getCommitteeStatusText } from '$lib/utils/committeeStatus';
-	import { type CommitteeOverviewQuery$result, type MissionControlQuery$result } from '$houdini';
-	import AdoptionConfetti from './AdoptionConfetti.svelte';
+import type {
+	CommitteeOverviewQuery$result,
+	MissionControlQuery$result,
+} from "$houdini";
+import * as m from "$lib/paraglide/messages.js";
+import {
+	getCommitteeStatusIcon,
+	getCommitteeStatusText,
+} from "$lib/utils/committeeStatus";
+import AdoptionConfetti from "./AdoptionConfetti.svelte";
+import IconInfoBox from "./IconInfoBox.svelte";
 
-	interface Props {
-		conference:
-			| MissionControlQuery$result['findFirstConference']
-			| CommitteeOverviewQuery$result['findFirstConference'];
-		environment?: 'SPECTATOR' | 'TEAM';
+interface Props {
+	conference:
+		| MissionControlQuery$result["findFirstConference"]
+		| CommitteeOverviewQuery$result["findFirstConference"];
+	environment?: "SPECTATOR" | "TEAM";
+}
+
+const { conference, environment = "SPECTATOR" }: Props = $props();
+
+const getHref = (committeeId: string) => {
+	if (environment === "TEAM") {
+		return `/app/${conference.id}/${committeeId}/setup`;
+	} else {
+		return `/app/${conference.id}/${committeeId}`;
 	}
-
-	let { conference, environment = 'SPECTATOR' }: Props = $props();
-
-	const getHref = (committeeId: string) => {
-		if (environment === 'TEAM') {
-			return `/app/${conference.id}/${committeeId}/setup`;
-		} else {
-			return `/app/${conference.id}/${committeeId}`;
-		}
-	};
+};
 </script>
 
 <div class="flex h-full w-full flex-wrap gap-4 p-4">

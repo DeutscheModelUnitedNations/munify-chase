@@ -1,42 +1,42 @@
 <script lang="ts">
-	import { AlertDialog } from 'bits-ui';
-	import { onMount, type Snippet } from 'svelte';
-	import { alertDialogStore } from './alert';
-	import { browser } from '$app/environment';
-	import hotkeys from 'hotkeys-js';
-	import { fade, fly, scale } from 'svelte/transition';
+import { AlertDialog } from "bits-ui";
+import hotkeys from "hotkeys-js";
+import { onMount, type Snippet } from "svelte";
+import { fade, fly, scale } from "svelte/transition";
+import { browser } from "$app/environment";
+import { alertDialogStore } from "./alert";
 
-	$effect(() => {
-		if (browser && $alertDialogStore) {
-			hotkeys('enter', (event, handler) => {
-				event.preventDefault();
-				switch (handler.key) {
-					case 'enter':
-						if (!$alertDialogStore) return;
-						$alertDialogStore.onConfirm!();
-						break;
-				}
-			});
-		} else if (browser) {
-			hotkeys.unbind('enter');
-		}
-	});
+$effect(() => {
+	if (browser && $alertDialogStore) {
+		hotkeys("enter", (event, handler) => {
+			event.preventDefault();
+			switch (handler.key) {
+				case "enter":
+					if (!$alertDialogStore) return;
+					$alertDialogStore.onConfirm!();
+					break;
+			}
+		});
+	} else if (browser) {
+		hotkeys.unbind("enter");
+	}
+});
 
-	let open = $state(false);
+let open = $state(false);
 
-	$effect(() => {
-		if (browser && $alertDialogStore) {
-			open = true;
-		} else if (browser) {
-			open = false;
-		}
-	});
+$effect(() => {
+	if (browser && $alertDialogStore) {
+		open = true;
+	} else if (browser) {
+		open = false;
+	}
+});
 
-	$effect(() => {
-		if (!open) {
-			$alertDialogStore = null;
-		}
-	});
+$effect(() => {
+	if (!open) {
+		$alertDialogStore = null;
+	}
+});
 </script>
 
 <AlertDialog.Root bind:open>

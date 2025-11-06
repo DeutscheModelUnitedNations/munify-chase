@@ -1,66 +1,68 @@
-import { db, schema } from '$api/db/db';
-import { abilityBuilder, schemaBuilder } from '$api/rumble';
-import { and, inArray } from 'drizzle-orm';
-import { basics } from './basics';
-import { isDMUNEmail } from '$api/services/isDMUNEmail';
+import { and, inArray } from "drizzle-orm";
+import { db, schema } from "$api/db/db";
+import { abilityBuilder, schemaBuilder } from "$api/rumble";
+import { isDMUNEmail } from "$api/services/isDMUNEmail";
+import { basics } from "./basics";
 
-const { arg, ref, pubsub, table } = basics('committeeMember');
+const { arg, ref, pubsub, table } = basics("committeeMember");
 
-abilityBuilder.committeeMember.allow(['read', 'update']).when(({ mustBeLoggedIn }) => {
-	const user = mustBeLoggedIn();
-	if (user?.email && isDMUNEmail(user.email)) {
-		return 'allow';
-	}
-});
+abilityBuilder.committeeMember
+  .allow(["read", "update"])
+  .when(({ mustBeLoggedIn }) => {
+    const user = mustBeLoggedIn();
+    if (user?.email && isDMUNEmail(user.email)) {
+      return "allow";
+    }
+  });
 
 schemaBuilder.mutationFields((t) => {
-	return {
-		setPresenceForCommitteeMembers: t.drizzleField({
-			type: [ref],
-			args: {
-				ids: t.arg.idList({ required: true }),
-				present: t.arg.boolean({ required: true })
-			},
-			resolve: async (query, root, args, ctx, info) => {
-				const res = await db
-					.update(table)
-					.set({
-						present: args.present
-					})
-					.where(
-						and(
-							inArray(table.id, args.ids),
-							ctx.abilities.committeeMember.filter('update').sql.where
-						)
-					)
-					.returning({
-						id: table.id
-					});
+  return {
+    setPresenceForCommitteeMembers: t.drizzleField({
+      type: [ref],
+      args: {
+        ids: t.arg.idList({ required: true }),
+        present: t.arg.boolean({ required: true }),
+      },
+      resolve: async (query, root, args, ctx, info) => {
+        const res = await db
+          .update(table)
+          .set({
+            present: args.present,
+          })
+          .where(
+            and(
+              inArray(table.id, args.ids),
+              ctx.abilities.committeeMember.filter("update").sql.where,
+            ),
+          )
+          .returning({
+            id: table.id,
+          });
 
-				await db.insert(schema.presenceChangedTimestamp).values(
-					res.map((committeeMember) => ({
-						committeeMemberId: committeeMember.id,
-						presentSetTo: args.present,
-						timestamp: new Date()
-					}))
-				);
+        await db.insert(schema.presenceChangedTimestamp).values(
+          res.map((committeeMember) => ({
+            committeeMemberId: committeeMember.id,
+            presentSetTo: args.present,
+            timestamp: new Date(),
+          })),
+        );
 
-				pubsub.updated(args.ids);
+        pubsub.updated(args.ids);
 
-				return db.query.committeeMember.findMany(
-					query(
-						ctx.abilities.committeeMember.filter('read', {
-							inject: {
-								where: {
-									id: {
-										in: args.ids
-									}
-								}
-							}
-						}).query.single
-					)
-				);
-			}
-		})
-	};
+        return db.query.committeeMember.findMany(
+          query(
+            ctx.abilities.committeeMember.filter("read", {
+              inject: {
+                where: {
+                  id: {
+                    in: args.ids,
+                  },
+                },
+              },
+            }).query.single,
+          ),
+        );
+      },
+    }),
+  };
 });

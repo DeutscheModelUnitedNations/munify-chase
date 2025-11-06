@@ -1,35 +1,39 @@
 <script lang="ts">
-	import { graphql, type CommitteeTeamQuery$result } from '$houdini';
-	import { getTranslatedCountryNameFromAlpha3Code } from '$lib/utils/nationTranslationHelper.svelte';
-	import { flip } from 'svelte/animate';
-	import Flag from '../Flag.svelte';
-	import { cubicInOut, cubicOut } from 'svelte/easing';
-	import { blur, fly } from 'svelte/transition';
-	import StripesAlert from './StripesAlert.svelte';
-	import { m } from '$lib/paraglide/messages';
-	import toast from 'svelte-french-toast';
-	import { promiseToastStrings } from '$lib/utils/toast';
+import { flip } from "svelte/animate";
+import { cubicInOut, cubicOut } from "svelte/easing";
+import { blur, fly } from "svelte/transition";
+import toast from "svelte-french-toast";
+import { type CommitteeTeamQuery$result, graphql } from "$houdini";
+import { m } from "$lib/paraglide/messages";
+import { getTranslatedCountryNameFromAlpha3Code } from "$lib/utils/nationTranslationHelper.svelte";
+import { promiseToastStrings } from "$lib/utils/toast";
+import Flag from "../Flag.svelte";
+import StripesAlert from "./StripesAlert.svelte";
 
-	interface Props {
-		rawSpeakers?: NonNullable<
-			CommitteeTeamQuery$result['findFirstCommittee']['activeAgendaItem']
-		>['speakersList'][number]['speakers'];
-		closed?: boolean;
-	}
+interface Props {
+	rawSpeakers?: NonNullable<
+		CommitteeTeamQuery$result["findFirstCommittee"]["activeAgendaItem"]
+	>["speakersList"][number]["speakers"];
+	closed?: boolean;
+}
 
-	let { rawSpeakers, closed = false }: Props = $props();
+const { rawSpeakers, closed = false }: Props = $props();
 
-	let speakers = $derived(rawSpeakers?.toSorted((a, b) => a.position - b.position).toSpliced(0, 1));
+const speakers = $derived(
+	rawSpeakers?.toSorted((a, b) => a.position - b.position).toSpliced(0, 1),
+);
 
-	const getRepresentation = (speaker: NonNullable<Props['rawSpeakers']>[number]) => {
-		return speaker.committeeMember
-			? speaker.committeeMember.representation
-			: speaker.conferenceMember
-				? speaker.conferenceMember.representation
-				: null;
-	};
+const getRepresentation = (
+	speaker: NonNullable<Props["rawSpeakers"]>[number],
+) => {
+	return speaker.committeeMember
+		? speaker.committeeMember.representation
+		: speaker.conferenceMember
+			? speaker.conferenceMember.representation
+			: null;
+};
 
-	const RemoveSpeakerOnListMutation = graphql(`
+const RemoveSpeakerOnListMutation = graphql(`
 		mutation RemoveSpeakerOnListMutation($speakerOnListId: ID!) {
 			removeSpeakerOnList(speakerOnListId: $speakerOnListId) {
 				id
@@ -41,18 +45,18 @@
 		}
 	`);
 
-	const removeSpeaker = (speakerOnListId: string) => {
-		if (!speakerOnListId) return;
+const removeSpeaker = (speakerOnListId: string) => {
+	if (!speakerOnListId) return;
 
-		toast.promise(
-			RemoveSpeakerOnListMutation.mutate({
-				speakerOnListId
-			}),
-			promiseToastStrings(m.speaker(), 'delete')
-		);
-	};
+	toast.promise(
+		RemoveSpeakerOnListMutation.mutate({
+			speakerOnListId,
+		}),
+		promiseToastStrings(m.speaker(), "delete"),
+	);
+};
 
-	const MoveSpeakerMutation = graphql(`
+const MoveSpeakerMutation = graphql(`
 		mutation MoveSpeakerMutation($speakerOnListId: ID!, $position: Int!) {
 			moveSpeakerToPosition(id: $speakerOnListId, position: $position) {
 				id
@@ -61,17 +65,17 @@
 		}
 	`);
 
-	const moveSpeaker = (speakerOnListId: string, position: number) => {
-		if (!speakerOnListId || position < 0) return;
+const moveSpeaker = (speakerOnListId: string, position: number) => {
+	if (!speakerOnListId || position < 0) return;
 
-		toast.promise(
-			MoveSpeakerMutation.mutate({
-				speakerOnListId,
-				position
-			}),
-			promiseToastStrings(m.speaker(), 'update')
-		);
-	};
+	toast.promise(
+		MoveSpeakerMutation.mutate({
+			speakerOnListId,
+			position,
+		}),
+		promiseToastStrings(m.speaker(), "update"),
+	);
+};
 </script>
 
 <div class="flex w-full flex-col">

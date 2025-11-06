@@ -1,51 +1,51 @@
 <script lang="ts">
-	import { m } from '$lib/paraglide/messages';
-	import type { Dayjs } from 'dayjs';
-	import dayjs from 'dayjs';
-	import { onMount } from 'svelte';
-	import { Confetti } from 'svelte-confetti';
-	import Marquee from 'svelte-fast-marquee';
-	import { cubicInOut } from 'svelte/easing';
-	import { fade, fly } from 'svelte/transition';
+import type { Dayjs } from "dayjs";
+import dayjs from "dayjs";
+import { onMount } from "svelte";
+import { cubicInOut } from "svelte/easing";
+import { fade, fly } from "svelte/transition";
+import { Confetti } from "svelte-confetti";
+import Marquee from "svelte-fast-marquee";
+import { m } from "$lib/paraglide/messages";
 
-	interface Props {
-		agendaItem: string;
-		committeeName: string;
-		lastAdoptionDate?: Date | null;
-		confettiDurationSec?: number;
-		showBanner?: boolean;
-	}
+interface Props {
+	agendaItem: string;
+	committeeName: string;
+	lastAdoptionDate?: Date | null;
+	confettiDurationSec?: number;
+	showBanner?: boolean;
+}
 
-	let {
-		lastAdoptionDate,
-		agendaItem,
-		committeeName,
-		confettiDurationSec = 30,
-		showBanner = false
-	}: Props = $props();
+const {
+	lastAdoptionDate,
+	agendaItem,
+	committeeName,
+	confettiDurationSec = 30,
+	showBanner = false,
+}: Props = $props();
 
-	let timeSinceLastAdoption = $state(
-		lastAdoptionDate && dayjs().diff(dayjs(lastAdoptionDate), 'seconds')
-	);
+let timeSinceLastAdoption = $state(
+	lastAdoptionDate && dayjs().diff(dayjs(lastAdoptionDate), "seconds"),
+);
 
-	onMount(() => {
-		const interval = setInterval(() => {
-			if (lastAdoptionDate) {
-				timeSinceLastAdoption = dayjs().diff(lastAdoptionDate, 'seconds');
-			}
-		}, 1000);
-		return () => {
-			clearInterval(interval);
-		};
-	});
+onMount(() => {
+	const interval = setInterval(() => {
+		if (lastAdoptionDate) {
+			timeSinceLastAdoption = dayjs().diff(lastAdoptionDate, "seconds");
+		}
+	}, 1000);
+	return () => {
+		clearInterval(interval);
+	};
+});
 
-	let confettiExplosionCount = $derived(Math.floor(confettiDurationSec) * 1.6);
-	function randomPercentage() {
-		return Math.random() * 100;
-	}
-	function randomDelay() {
-		return Math.random() * confettiDurationSec * 1000;
-	}
+const confettiExplosionCount = $derived(Math.floor(confettiDurationSec) * 1.6);
+function randomPercentage() {
+	return Math.random() * 100;
+}
+function randomDelay() {
+	return Math.random() * confettiDurationSec * 1000;
+}
 </script>
 
 {#if timeSinceLastAdoption && timeSinceLastAdoption < confettiDurationSec}

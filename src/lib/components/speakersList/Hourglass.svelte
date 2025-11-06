@@ -1,36 +1,36 @@
 <script lang="ts">
-	import { blur } from 'svelte/transition';
+import { blur } from "svelte/transition";
 
-	export type HourglassStatus = 'active' | 'paused' | 'overtime';
+export type HourglassStatus = "active" | "paused" | "overtime";
 
-	interface Props {
-		status: HourglassStatus;
+interface Props {
+	status: HourglassStatus;
+}
+
+const { status }: Props = $props();
+
+let activeIcon = $state("fa-hourglass-start");
+
+$effect(() => {
+	if (status !== "active") {
+		return;
 	}
-
-	let { status }: Props = $props();
-
-	let activeIcon = $state('fa-hourglass-start');
-
-	$effect(() => {
-		if (status !== 'active') {
-			return;
-		}
-		const animation = setInterval(() => {
-			setTimeout(() => {
-				activeIcon = 'fa-hourglass-half';
-			}, 500);
-			setTimeout(() => {
-				activeIcon = 'fa-hourglass-end';
-			}, 1000);
-			setTimeout(() => {
-				activeIcon += ' hourglass-animation';
-			}, 1500);
-			setTimeout(() => {
-				activeIcon = 'fa-hourglass-start';
-			}, 2000);
+	const animation = setInterval(() => {
+		setTimeout(() => {
+			activeIcon = "fa-hourglass-half";
+		}, 500);
+		setTimeout(() => {
+			activeIcon = "fa-hourglass-end";
+		}, 1000);
+		setTimeout(() => {
+			activeIcon += " hourglass-animation";
+		}, 1500);
+		setTimeout(() => {
+			activeIcon = "fa-hourglass-start";
 		}, 2000);
-		return () => clearInterval(animation);
-	});
+	}, 2000);
+	return () => clearInterval(animation);
+});
 </script>
 
 <div class="relative h-10 w-10 text-2xl">

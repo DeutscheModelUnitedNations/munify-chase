@@ -1,11 +1,10 @@
 <script lang="ts">
-	import Card from './Card.svelte';
-	import { m } from '$lib/paraglide/messages';
-	import { fly } from 'svelte/transition';
-
-	import candidate from '$assets/undraw/candidate.svg';
-	import voting from '$assets/undraw/voting.svg';
-	import teamCollaboration from '$assets/undraw/team_collaboration.svg';
+import { fly } from "svelte/transition";
+import candidate from "$assets/undraw/candidate.svg";
+import teamCollaboration from "$assets/undraw/team_collaboration.svg";
+import voting from "$assets/undraw/voting.svg";
+import { m } from "$lib/paraglide/messages";
+import Card from "./Card.svelte";
 </script>
 
 <div class="grid grid-cols-1 justify-stretch gap-4 p-4 md:grid-cols-3">

@@ -1,46 +1,46 @@
 <script lang="ts">
-	import type { CommitteeTeamQuery$result } from '$houdini';
-	import type { VotingMajority } from '$lib/local-db/localDB';
-	import { m } from '$lib/paraglide/messages';
-	import Tabs from '../Tabs.svelte';
-	import RollCallVotingChair from './RollCallVotingChair.svelte';
-	import ShowOfHandsVotingChair from './ShowOfHandsVotingChair.svelte';
+import type { CommitteeTeamQuery$result } from "$houdini";
+import type { VotingMajority } from "$lib/local-db/localDB";
+import { m } from "$lib/paraglide/messages";
+import Tabs from "../Tabs.svelte";
+import RollCallVotingChair from "./RollCallVotingChair.svelte";
+import ShowOfHandsVotingChair from "./ShowOfHandsVotingChair.svelte";
 
-	interface Props {
-		committee: CommitteeTeamQuery$result['findFirstCommittee'];
-	}
+interface Props {
+	committee: CommitteeTeamQuery$result["findFirstCommittee"];
+}
 
-	let { committee }: Props = $props();
+const { committee }: Props = $props();
 
-	let voteType: 'SHOW_OF_HANDS' | 'ROLL_CALL' = $state('SHOW_OF_HANDS');
-	let voteName: string = $state('');
-	let majority: VotingMajority = $state('SIMPLE');
-	let withAbstentions: boolean = $state(false);
+const voteType: "SHOW_OF_HANDS" | "ROLL_CALL" = $state("SHOW_OF_HANDS");
+const voteName: string = $state("");
+const majority: VotingMajority = $state("SIMPLE");
+const withAbstentions: boolean = $state(false);
 
-	let showOfHandModalOpen: boolean = $state(false);
-	let rollCallModalOpen: boolean = $state(false);
+const showOfHandModalOpen: boolean = $state(false);
+const rollCallModalOpen: boolean = $state(false);
 
-	const voteTypeTabs: {
-		id: 'SHOW_OF_HANDS' | 'ROLL_CALL';
-		label: string;
-		faIcon: string;
-	}[] = [
-		{ id: 'SHOW_OF_HANDS', label: m.showOfHandsVoting(), faIcon: 'hand-wave' },
-		{ id: 'ROLL_CALL', label: m.rollCallVoting(), faIcon: 'list-check' }
-	];
+const voteTypeTabs: {
+	id: "SHOW_OF_HANDS" | "ROLL_CALL";
+	label: string;
+	faIcon: string;
+}[] = [
+	{ id: "SHOW_OF_HANDS", label: m.showOfHandsVoting(), faIcon: "hand-wave" },
+	{ id: "ROLL_CALL", label: m.rollCallVoting(), faIcon: "list-check" },
+];
 
-	const majorityTabs: {
-		id: VotingMajority;
-		label: string;
-	}[] = [
-		{ id: 'SIMPLE', label: m.simpleMajority() },
-		{ id: 'TWO_THIRDS', label: m.twoThirdsMajority() }
-	];
+const majorityTabs: {
+	id: VotingMajority;
+	label: string;
+}[] = [
+	{ id: "SIMPLE", label: m.simpleMajority() },
+	{ id: "TWO_THIRDS", label: m.twoThirdsMajority() },
+];
 
-	const withAbstentionsTabs = [
-		{ id: false, label: m.withoutAbstentions() },
-		{ id: true, label: m.withAbstentions() }
-	];
+const withAbstentionsTabs = [
+	{ id: false, label: m.withoutAbstentions() },
+	{ id: true, label: m.withAbstentions() },
+];
 </script>
 
 <div class="flex flex-col gap-2">

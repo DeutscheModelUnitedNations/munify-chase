@@ -1,29 +1,29 @@
 <script lang="ts">
-	import { goto } from '$app/navigation';
-	import { m } from '$lib/paraglide/messages';
-	import { graphql, type RepresentationTypeEnum$options } from '$houdini';
-	import toast from 'svelte-french-toast';
-	import { importDataSchema } from '$lib/utils/import';
-	import { z } from 'zod/v4';
-	import Footer from '$lib/components/Footer.svelte';
-	import { onMount } from 'svelte';
-	import Flag from '$lib/components/Flag.svelte';
-	import WorldCountries from 'world-countries';
-	import { page } from '$app/state';
-	import { nanoid } from '$lib/helpers/nanoid';
+import { onMount } from "svelte";
+import toast from "svelte-french-toast";
+import WorldCountries from "world-countries";
+import { z } from "zod/v4";
+import { goto } from "$app/navigation";
+import { page } from "$app/state";
+import { graphql, type RepresentationTypeEnum$options } from "$houdini";
+import Flag from "$lib/components/Flag.svelte";
+import Footer from "$lib/components/Footer.svelte";
+import { nanoid } from "$lib/helpers/nanoid";
+import { m } from "$lib/paraglide/messages";
+import { importDataSchema } from "$lib/utils/import";
 
-	// let { data }: PageData = $props();
+// let { data }: PageData = $props();
 
-	let file: File | null = $state(null);
-	let loading = $state(false);
-	let importData = $state<z.infer<typeof importDataSchema>>();
+let file: File | null = $state(null);
+let loading = $state(false);
+let importData = $state<z.infer<typeof importDataSchema>>();
 
-	function handleFileChange(event: Event) {
-		const target = event.target as HTMLInputElement;
-		file = target.files && target.files[0] ? target.files[0] : null;
-	}
+function handleFileChange(event: Event) {
+	const target = event.target as HTMLInputElement;
+	file = target.files && target.files[0] ? target.files[0] : null;
+}
 
-	const ConferenceCreationMutation = graphql(`
+const ConferenceCreationMutation = graphql(`
 		mutation ConferenceCreation($data: ImportData!) {
 			importDelegatorConference(data: $data) {
 				id
@@ -31,174 +31,182 @@
 		}
 	`);
 
-	async function parseFile(file: File): Promise<any> {
-		const ext = file.name.split('.').pop()?.toLowerCase();
-		const text = await file.text();
-		if (ext !== 'json') throw new Error('Unsupported file type');
+async function parseFile(file: File): Promise<any> {
+	const ext = file.name.split(".").pop()?.toLowerCase();
+	const text = await file.text();
+	if (ext !== "json") throw new Error("Unsupported file type");
 
-		// validate JSON structure
-		try {
-			const data = importDataSchema.parse(JSON.parse(text));
-			// Strip out the $schema property
-			if (data.$schema) {
-				delete data.$schema;
-			}
-			return data;
-		} catch (e) {
-			if (e instanceof SyntaxError) {
-				toast.error(m.fileParseError());
-				throw new Error('Invalid JSON structure');
-			} else if (e instanceof z.ZodError) {
-				toast.error(m.fileParseError());
-				console.error('Validation error:', e);
-			}
+	// validate JSON structure
+	try {
+		const data = importDataSchema.parse(JSON.parse(text));
+		// Strip out the $schema property
+		if (data.$schema) {
+			delete data.$schema;
 		}
-	}
-
-	async function importDataUpload(): Promise<void> {
-		if (!file) return;
-		loading = true;
-		let parsedData: any;
-		try {
-			parsedData = await parseFile(file);
-			if (parsedData.$schema) {
-				delete parsedData.$schema;
-			}
-			importData = parsedData;
-			loading = false;
-		} catch (e) {
+		return data;
+	} catch (e) {
+		if (e instanceof SyntaxError) {
 			toast.error(m.fileParseError());
-			loading = false;
-			return;
+			throw new Error("Invalid JSON structure");
+		} else if (e instanceof z.ZodError) {
+			toast.error(m.fileParseError());
+			console.error("Validation error:", e);
 		}
 	}
+}
 
-	const transformRegionalGroup = (regionalGroup: string | undefined) => {
-		switch (regionalGroup) {
-			case 'African Group':
-				return 'AFRICA';
-			case 'Asia and the Pacific Group':
-				return 'ASIA_PACIFIC';
-			case 'Eastern European Group':
-				return 'EASTERN_EUROPE';
-			case 'Latin American and Caribbean Group':
-				return 'LATIN_AMERICA_CARIBBEAN';
-			case 'Western European and Others Group':
-				return 'WESTERN_EUROPE_OTHERS';
-			default:
-				return undefined;
+async function importDataUpload(): Promise<void> {
+	if (!file) return;
+	loading = true;
+	let parsedData: any;
+	try {
+		parsedData = await parseFile(file);
+		if (parsedData.$schema) {
+			delete parsedData.$schema;
 		}
-	};
-
-	async function createFreshData(): Promise<void> {
-		importData = {
-			title: '',
-			id: nanoid(),
-			committees: [],
-			agendaItems: [],
-			representations: WorldCountries.filter((x) => x.unMember).map((nation) => ({
-				id: nanoid(),
-				representationType: 'DELEGATION',
-				alpha3Code: nation.cca3.toLowerCase(),
-				alpha2Code: nation.cca3.toLowerCase(),
-				regionalGroup: transformRegionalGroup(nation.unRegionalGroup)
-			})),
-			conferenceMembers: [],
-			committeeMembers: []
-		} as unknown as z.infer<typeof importDataSchema>;
-	}
-
-	async function downloadFile(): Promise<void> {
-		if (!importData) return;
-		if (!importData.$schema) {
-			importData.$schema = `${page.url.origin}/api/schemas/import`;
-		}
-		const blob = new Blob([JSON.stringify(importData, null, 2)], { type: 'application/json' });
-		const url = URL.createObjectURL(blob);
-		const a = document.createElement('a');
-		a.href = url;
-		a.download = `${importData.title || 'conference'}-import.json`;
-		document.body.appendChild(a);
-		a.click();
-		document.body.removeChild(a);
-		URL.revokeObjectURL(url);
-	}
-
-	async function createConference() {
-		if (loading) return;
-		loading = true;
-
-		if (!importData) return;
-		if (importData.$schema) {
-			delete importData.$schema;
-		}
-
-		const res = await ConferenceCreationMutation.mutate({ data: importData }).catch((e) => {
-			toast.error(m.conferenceCreationError());
-			console.error('Error creating conference:', e);
-			loading = false;
-		});
-		if (res) {
-			toast.success(m.conferenceCreated());
-			goto(`/app`);
-		}
+		importData = parsedData;
 		loading = false;
+	} catch (e) {
+		toast.error(m.fileParseError());
+		loading = false;
+		return;
+	}
+}
+
+const transformRegionalGroup = (regionalGroup: string | undefined) => {
+	switch (regionalGroup) {
+		case "African Group":
+			return "AFRICA";
+		case "Asia and the Pacific Group":
+			return "ASIA_PACIFIC";
+		case "Eastern European Group":
+			return "EASTERN_EUROPE";
+		case "Latin American and Caribbean Group":
+			return "LATIN_AMERICA_CARIBBEAN";
+		case "Western European and Others Group":
+			return "WESTERN_EUROPE_OTHERS";
+		default:
+			return undefined;
+	}
+};
+
+async function createFreshData(): Promise<void> {
+	importData = {
+		title: "",
+		id: nanoid(),
+		committees: [],
+		agendaItems: [],
+		representations: WorldCountries.filter((x) => x.unMember).map((nation) => ({
+			id: nanoid(),
+			representationType: "DELEGATION",
+			alpha3Code: nation.cca3.toLowerCase(),
+			alpha2Code: nation.cca3.toLowerCase(),
+			regionalGroup: transformRegionalGroup(nation.unRegionalGroup),
+		})),
+		conferenceMembers: [],
+		committeeMembers: [],
+	} as unknown as z.infer<typeof importDataSchema>;
+}
+
+async function downloadFile(): Promise<void> {
+	if (!importData) return;
+	if (!importData.$schema) {
+		importData.$schema = `${page.url.origin}/api/schemas/import`;
+	}
+	const blob = new Blob([JSON.stringify(importData, null, 2)], {
+		type: "application/json",
+	});
+	const url = URL.createObjectURL(blob);
+	const a = document.createElement("a");
+	a.href = url;
+	a.download = `${importData.title || "conference"}-import.json`;
+	document.body.appendChild(a);
+	a.click();
+	document.body.removeChild(a);
+	URL.revokeObjectURL(url);
+}
+
+async function createConference() {
+	if (loading) return;
+	loading = true;
+
+	if (!importData) return;
+	if (importData.$schema) {
+		delete importData.$schema;
 	}
 
-	const addCommittee = () =>
-		importData?.committees.push({
-			id: nanoid(),
-			name: '',
-			abbreviation: ''
-		});
+	const res = await ConferenceCreationMutation.mutate({
+		data: importData,
+	}).catch((e) => {
+		toast.error(m.conferenceCreationError());
+		console.error("Error creating conference:", e);
+		loading = false;
+	});
+	if (res) {
+		toast.success(m.conferenceCreated());
+		goto(`/app`);
+	}
+	loading = false;
+}
 
-	const addAgendaItem = (committeeId: string) =>
-		importData?.agendaItems.push({
-			committeeId,
-			title: ''
-		});
+const addCommittee = () =>
+	importData?.committees.push({
+		id: nanoid(),
+		name: "",
+		abbreviation: "",
+	});
 
-	const addRepresentationAndConferenceMember = (type: RepresentationTypeEnum$options) => {
-		const repId = nanoid();
+const addAgendaItem = (committeeId: string) =>
+	importData?.agendaItems.push({
+		committeeId,
+		title: "",
+	});
+
+const addRepresentationAndConferenceMember = (
+	type: RepresentationTypeEnum$options,
+) => {
+	const repId = nanoid();
+	importData?.representations.push({
+		name: "",
+		faIcon: type === "NSA" ? "megaphone" : undefined,
+		// alpha2Code: type === 'UN' ? 'un' : undefined,
+		// alpha3Code: type === 'UN' ? 'uno' : undefined,
+		representationType: type,
+		id: repId,
+	});
+	importData?.conferenceMembers.push({
+		id: nanoid(),
+		representationId: repId,
+	});
+};
+
+const addCommitteeMember = (committeeId: string) => {
+	const alpha2Code = prompt(m.enterAlpha2Code())?.toLowerCase();
+	const country = WorldCountries.find(
+		(x) => x.cca2.toLowerCase() === alpha2Code,
+	);
+	if (!alpha2Code || !country) {
+		toast.error(m.countryNotFound());
+		return;
+	}
+	let repId = importData?.representations.find(
+		(x) => x.alpha2Code?.toLocaleLowerCase() === alpha2Code.toLowerCase(),
+	)?.id;
+	if (!repId) {
+		repId = nanoid();
 		importData?.representations.push({
-			name: '',
-			faIcon: type === 'NSA' ? 'megaphone' : undefined,
-			// alpha2Code: type === 'UN' ? 'un' : undefined,
-			// alpha3Code: type === 'UN' ? 'uno' : undefined,
-			representationType: type,
-			id: repId
+			alpha2Code,
+			alpha3Code: country.cca3.toLowerCase(),
+			representationType: "DELEGATION",
+			id: repId,
 		});
-		importData?.conferenceMembers.push({
-			id: nanoid(),
-			representationId: repId
-		});
-	};
-
-	const addCommitteeMember = (committeeId: string) => {
-		const alpha2Code = prompt(m.enterAlpha2Code())?.toLowerCase();
-		const country = WorldCountries.find((x) => x.cca2.toLowerCase() === alpha2Code);
-		if (!alpha2Code || !country) {
-			toast.error(m.countryNotFound());
-			return;
-		}
-		let repId = importData?.representations.find(
-			(x) => x.alpha2Code?.toLocaleLowerCase() === alpha2Code.toLowerCase()
-		)?.id;
-		if (!repId) {
-			repId = nanoid();
-			importData?.representations.push({
-				alpha2Code,
-				alpha3Code: country.cca3.toLowerCase(),
-				representationType: 'DELEGATION',
-				id: repId
-			});
-		}
-		importData?.committeeMembers.push({
-			id: nanoid(),
-			committeeId: committeeId,
-			representationId: repId
-		});
-	};
+	}
+	importData?.committeeMembers.push({
+		id: nanoid(),
+		committeeId: committeeId,
+		representationId: repId,
+	});
+};
 </script>
 
 <div class="navbar bg-base-100 relative shadow-sm">

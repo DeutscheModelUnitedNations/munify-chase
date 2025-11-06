@@ -1,85 +1,92 @@
 <script lang="ts">
-	import { m } from '$lib/paraglide/messages';
-	import type { PageData } from './$houdini';
-	import { onMount } from 'svelte';
-	import { CommitteeSubscription } from '../committeeSubscription';
-	import BasicCard from '$lib/components/BasicCard.svelte';
-	import Majorities from '$lib/components/Majorities.svelte';
-	import UndrawError from '$lib/components/UndrawError.svelte';
-	import emptyStreet from '$assets/undraw/empty_street.svg';
-	import PresenceActions from './PresenceActions.svelte';
-	import { assertDirective } from 'graphql';
-	import Flag from '$lib/components/Flag.svelte';
-	import { regionalGroup, representation } from '$api/db/schema';
-	import Tabs from '$lib/components/Tabs.svelte';
-	import { SetPresenceMutation } from './presenceMutations';
-	import toast from 'svelte-french-toast';
-	import { promiseToastStrings } from '$lib/utils/toast';
-	import {
-		getTranslatedCountryNameFromAlpha3Code,
-		sortTranslatedCountries
-	} from '$lib/utils/nationTranslationHelper.svelte';
-	import ChairRollCall from '$lib/components/rollCall/ChairRollCall.svelte';
-	import StatusWidget from '../StatusWidget.svelte';
-	import {
-		isDelegationMember,
-		isNSAMember,
-		isUNMember
-	} from '$lib/helpers/distinguishConferenceMembers';
+import { assertDirective } from "graphql";
+import { onMount } from "svelte";
+import toast from "svelte-french-toast";
+import { regionalGroup, representation } from "$api/db/schema";
+import emptyStreet from "$assets/undraw/empty_street.svg";
+import BasicCard from "$lib/components/BasicCard.svelte";
+import Flag from "$lib/components/Flag.svelte";
+import Majorities from "$lib/components/Majorities.svelte";
+import ChairRollCall from "$lib/components/rollCall/ChairRollCall.svelte";
+import Tabs from "$lib/components/Tabs.svelte";
+import UndrawError from "$lib/components/UndrawError.svelte";
+import {
+	isDelegationMember,
+	isNSAMember,
+	isUNMember,
+} from "$lib/helpers/distinguishConferenceMembers";
+import { m } from "$lib/paraglide/messages";
+import {
+	getTranslatedCountryNameFromAlpha3Code,
+	sortTranslatedCountries,
+} from "$lib/utils/nationTranslationHelper.svelte";
+import { promiseToastStrings } from "$lib/utils/toast";
+import { CommitteeSubscription } from "../committeeSubscription";
+import StatusWidget from "../StatusWidget.svelte";
+import type { PageData } from "./$houdini";
+import PresenceActions from "./PresenceActions.svelte";
+import { SetPresenceMutation } from "./presenceMutations";
 
-	let { data }: { data: PageData } = $props();
+const { data }: { data: PageData } = $props();
 
-	let query = $derived(data?.CommitteeTeamQuery);
-	let committee = $derived(
-		$CommitteeSubscription.data?.findFirstCommittee ?? $query.data?.findFirstCommittee
+const query = $derived(data?.CommitteeTeamQuery);
+const committee = $derived(
+	$CommitteeSubscription.data?.findFirstCommittee ??
+		$query.data?.findFirstCommittee,
+);
+
+const countries = $derived(
+	committee?.members
+		.filter(isDelegationMember)
+		.sort((a, b) =>
+			sortTranslatedCountries(a.representation!, b.representation!),
+		) ?? [],
+);
+
+const nsas = $derived(
+	committee?.conference?.uniqueConferenceMembers
+		?.filter(isNSAMember)
+		.sort((a, b) =>
+			a.representation!.name!.localeCompare(b.representation!.name!),
+		) ?? [],
+);
+
+const un = $derived(
+	committee?.conference?.uniqueConferenceMembers
+		?.filter(isUNMember)
+		?.sort((a, b) =>
+			a.representation!.name!.localeCompare(b.representation!.name!),
+		) ?? [],
+);
+
+const rollCallActive = $state(false);
+
+onMount(() => {
+	CommitteeSubscription.listen({ id: data.committeeId });
+});
+
+const presenceTabs = [
+	{
+		id: false,
+		name: m.absent(),
+		faIcon: "fa-xmark",
+	},
+	{
+		id: true,
+		name: m.present(),
+		faIcon: "fa-check",
+	},
+];
+
+const setPresence = (tab: boolean, id: string) => {
+	toast.promise(
+		SetPresenceMutation.mutate({
+			memberIds: [id],
+			present: tab,
+		}),
+		promiseToastStrings(m.presence(), "update"),
 	);
-
-	let countries = $derived(
-		committee?.members
-			.filter(isDelegationMember)
-			.sort((a, b) => sortTranslatedCountries(a.representation!, b.representation!)) ?? []
-	);
-
-	let nsas = $derived(
-		committee?.conference?.uniqueConferenceMembers
-			?.filter(isNSAMember)
-			.sort((a, b) => a.representation!.name!.localeCompare(b.representation!.name!)) ?? []
-	);
-
-	let un = $derived(
-		committee?.conference?.uniqueConferenceMembers
-			?.filter(isUNMember)
-			?.sort((a, b) => a.representation!.name!.localeCompare(b.representation!.name!)) ?? []
-	);
-
-	let rollCallActive = $state(false);
-
-	onMount(() => {
-		CommitteeSubscription.listen({ id: data.committeeId });
-	});
-
-	const presenceTabs = [
-		{
-			id: false,
-			name: m.absent(),
-			faIcon: 'fa-xmark'
-		},
-		{
-			id: true,
-			name: m.present(),
-			faIcon: 'fa-check'
-		}
-	];
-
-	const setPresence = (tab: boolean, id: string) => {
-		toast.promise(
-			SetPresenceMutation.mutate({
-				memberIds: [id],
-				present: tab
-			}),
-			promiseToastStrings(m.presence(), 'update')
-		);
-	};
+};
 </script>
 
 {#if committee}

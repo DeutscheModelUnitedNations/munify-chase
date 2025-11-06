@@ -1,14 +1,14 @@
 <script lang="ts">
-	import type { Snippet } from 'svelte';
+import type { Snippet } from "svelte";
 
-	interface Props {
-		children: Snippet;
-		className?: string;
-		title?: string;
-		kbd?: string;
-	}
+interface Props {
+	children: Snippet;
+	className?: string;
+	title?: string;
+	kbd?: string;
+}
 
-	let { children, className = '', title, kbd }: Props = $props();
+const { children, className = "", title, kbd }: Props = $props();
 </script>
 
 <div class="card bg-base-100 w-full {className}">

@@ -1,14 +1,19 @@
 <script lang="ts">
-	import { fade } from 'svelte/transition';
+import { fade } from "svelte/transition";
 
-	interface Props {
-		stripeColor?: string;
-		badgeColor?: string;
-		faIcon?: string;
-		badgeText?: string;
-	}
+interface Props {
+	stripeColor?: string;
+	badgeColor?: string;
+	faIcon?: string;
+	badgeText?: string;
+}
 
-	let { stripeColor = 'base-300', badgeColor = 'primary', faIcon, badgeText }: Props = $props();
+const {
+	stripeColor = "base-300",
+	badgeColor = "primary",
+	faIcon,
+	badgeText,
+}: Props = $props();
 </script>
 
 <div

@@ -1,30 +1,30 @@
 <script lang="ts">
-	interface Props {
-		votesPro?: number | null;
-		votesCon?: number | null;
-		votesAbstain?: number | null;
-		total?: number | null;
-		majorityAmount?: number | null;
-		showNumbers?: boolean;
-	}
+interface Props {
+	votesPro?: number | null;
+	votesCon?: number | null;
+	votesAbstain?: number | null;
+	total?: number | null;
+	majorityAmount?: number | null;
+	showNumbers?: boolean;
+}
 
-	let {
-		votesPro,
-		votesCon,
-		votesAbstain,
-		total,
-		majorityAmount,
-		showNumbers = false
-	}: Props = $props();
+const {
+	votesPro,
+	votesCon,
+	votesAbstain,
+	total,
+	majorityAmount,
+	showNumbers = false,
+}: Props = $props();
 
-	const getPercentage = (value: number | undefined | null) => {
-		if (value === null || value === undefined || total === 0) return 0;
-		return `${(value / (total ?? 1)) * 100}%`;
-	};
+const getPercentage = (value: number | undefined | null) => {
+	if (value === null || value === undefined || total === 0) return 0;
+	return `${(value / (total ?? 1)) * 100}%`;
+};
 
-	const getMajorityPercent = () => {
-		return `${((majorityAmount ?? 0) / (total || 1)) * 100}%`;
-	};
+const getMajorityPercent = () => {
+	return `${((majorityAmount ?? 0) / (total || 1)) * 100}%`;
+};
 </script>
 
 <div class="bg-base-300 card h-26 relative w-full flex-row overflow-hidden shadow-sm">

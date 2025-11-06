@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { m } from '$lib/paraglide/messages';
+import { m } from "$lib/paraglide/messages";
 </script>
 
 <div class="absolute right-0 top-0">

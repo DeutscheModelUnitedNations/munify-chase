@@ -1,5 +1,5 @@
-import dayjs from 'dayjs';
-import { derived } from 'svelte/store';
+import dayjs from "dayjs";
+import { derived } from "svelte/store";
 
 // export const serverTime = derived(
 // 	timeQuery,

@@ -1,38 +1,40 @@
 <script lang="ts">
-	import { m } from '$lib/paraglide/messages';
-	import Footer from '$lib/components/Footer.svelte';
-	import type { PageData } from './$houdini';
-	import type { ConferenceUserTypeEnum$options } from '$houdini';
+import type { ConferenceUserTypeEnum$options } from "$houdini";
+import Footer from "$lib/components/Footer.svelte";
+import { m } from "$lib/paraglide/messages";
+import type { PageData } from "./$houdini";
 
-	let { data }: { data: PageData } = $props();
+const { data }: { data: PageData } = $props();
 
-	let launcherQuery = $derived(data?.LauncherQuery);
-	let conferenceData = $derived($launcherQuery.data?.findManyConferenceUser ?? []);
+const launcherQuery = $derived(data?.LauncherQuery);
+const conferenceData = $derived(
+	$launcherQuery.data?.findManyConferenceUser ?? [],
+);
 
-	const getType = (type: ConferenceUserTypeEnum$options) => {
-		switch (type) {
-			case 'ADMIN':
-				return m.admin();
-			case 'TEAM':
-				return m.teamMember();
-			case 'SPECTATOR':
-				return m.spectator();
-			case 'DELEGATE':
-				return m.delegate();
-			case 'NON_STATE_ACTOR':
-				return m.nonStateActor();
-			default:
-				return '';
-		}
-	};
+const getType = (type: ConferenceUserTypeEnum$options) => {
+	switch (type) {
+		case "ADMIN":
+			return m.admin();
+		case "TEAM":
+			return m.teamMember();
+		case "SPECTATOR":
+			return m.spectator();
+		case "DELEGATE":
+			return m.delegate();
+		case "NON_STATE_ACTOR":
+			return m.nonStateActor();
+		default:
+			return "";
+	}
+};
 
-	const getUrl = (type: ConferenceUserTypeEnum$options, id: string) => {
-		if (['ADMIN', 'TEAM'].includes(type)) {
-			return `/app/${id}/mission-control`;
-		} else {
-			return `/app/${id}`;
-		}
-	};
+const getUrl = (type: ConferenceUserTypeEnum$options, id: string) => {
+	if (["ADMIN", "TEAM"].includes(type)) {
+		return `/app/${id}/mission-control`;
+	} else {
+		return `/app/${id}`;
+	}
+};
 </script>
 
 <svelte:head>

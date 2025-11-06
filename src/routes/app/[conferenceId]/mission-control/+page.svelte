@@ -1,30 +1,30 @@
 <script lang="ts">
-	import type { PageData } from './$houdini';
-	import CommitteeGrid from '$lib/components/CommitteeGrid.svelte';
-	import ThemeSwitcher from '$lib/components/ThemeSwitcher.svelte';
-	import CurrentTime from '$lib/components/CurrentTime.svelte';
-	import * as m from '$lib/paraglide/messages.js';
-	import NavbarBurgerMenu from '$lib/components/NavbarBurgerMenu.svelte';
-	import { onMount } from 'svelte';
-	import { MissionControlSubscription } from './missionControlSubscription';
-	import DownloadPresenceData from './DownloadPresenceData.svelte';
+import { onMount } from "svelte";
+import CommitteeGrid from "$lib/components/CommitteeGrid.svelte";
+import CurrentTime from "$lib/components/CurrentTime.svelte";
+import NavbarBurgerMenu from "$lib/components/NavbarBurgerMenu.svelte";
+import ThemeSwitcher from "$lib/components/ThemeSwitcher.svelte";
+import * as m from "$lib/paraglide/messages.js";
+import type { PageData } from "./$houdini";
+import DownloadPresenceData from "./DownloadPresenceData.svelte";
+import { MissionControlSubscription } from "./missionControlSubscription";
 
-	let { data }: { data: PageData } = $props();
+const { data }: { data: PageData } = $props();
 
-	let query = $derived(data?.MissionControlQuery);
-	let conference = $derived($query.data?.findFirstConference);
+const query = $derived(data?.MissionControlQuery);
+const conference = $derived($query.data?.findFirstConference);
 
-	const menubarItems = [
-		{
-			faIcon: 'fa-home',
-			title: m.home(),
-			href: '..'
-		}
-	];
+const menubarItems = [
+	{
+		faIcon: "fa-home",
+		title: m.home(),
+		href: "..",
+	},
+];
 
-	onMount(() => {
-		MissionControlSubscription.listen({ conferenceId: data.conferenceId });
-	});
+onMount(() => {
+	MissionControlSubscription.listen({ conferenceId: data.conferenceId });
+});
 </script>
 
 <svelte:head>

@@ -1,38 +1,42 @@
 <script lang="ts">
-	import DevPlaceholder from '$lib/components/DevPlaceholder.svelte';
-	import { m } from '$lib/paraglide/messages';
-	import { onMount } from 'svelte';
-	import question from '$assets/undraw/question.svg';
+import { onMount } from "svelte";
+import question from "$assets/undraw/question.svg";
+import BasicCard from "$lib/components/BasicCard.svelte";
+import DevPlaceholder from "$lib/components/DevPlaceholder.svelte";
+import Majorities from "$lib/components/Majorities.svelte";
+import SpeakersQueuePresentation from "$lib/components/speakersList/ChairSpeakersQueue.svelte";
+import CurrentSpeaker from "$lib/components/speakersList/CurrentSpeaker.svelte";
+import ChairControls from "$lib/components/speakersList/chairControls/ChairControls.svelte";
+import UndrawError from "$lib/components/UndrawError.svelte";
+import { m } from "$lib/paraglide/messages";
+import { CommitteeSubscription } from "../committeeSubscription";
+import StatusWidget from "../StatusWidget.svelte";
+import type { PageData } from "./$houdini";
 
-	import type { PageData } from './$houdini';
-	import UndrawError from '$lib/components/UndrawError.svelte';
-	import BasicCard from '$lib/components/BasicCard.svelte';
-	import ChairControls from '$lib/components/speakersList/chairControls/ChairControls.svelte';
-	import CurrentSpeaker from '$lib/components/speakersList/CurrentSpeaker.svelte';
-	import SpeakersQueuePresentation from '$lib/components/speakersList/ChairSpeakersQueue.svelte';
-	import StatusWidget from '../StatusWidget.svelte';
-	import Majorities from '$lib/components/Majorities.svelte';
-	import { CommitteeSubscription } from '../committeeSubscription';
+const { data }: { data: PageData } = $props();
 
-	let { data }: { data: PageData } = $props();
+const committeeQuery = $derived(data?.CommitteeTeamQuery);
+const committee = $derived(
+	$CommitteeSubscription.data?.findFirstCommittee ??
+		$committeeQuery.data?.findFirstCommittee,
+);
 
-	let committeeQuery = $derived(data?.CommitteeTeamQuery);
-	let committee = $derived(
-		$CommitteeSubscription.data?.findFirstCommittee ?? $committeeQuery.data?.findFirstCommittee
-	);
+const speakersList = $derived(
+	committee?.activeAgendaItem?.speakersList.find(
+		(item) => item.type === "SPEAKERS_LIST",
+	),
+);
+const commentList = $derived(
+	committee?.activeAgendaItem?.speakersList.find(
+		(item) => item.type === "COMMENT_LIST",
+	),
+);
 
-	let speakersList = $derived(
-		committee?.activeAgendaItem?.speakersList.find((item) => item.type === 'SPEAKERS_LIST')
-	);
-	let commentList = $derived(
-		committee?.activeAgendaItem?.speakersList.find((item) => item.type === 'COMMENT_LIST')
-	);
-
-	onMount(() => {
-		CommitteeSubscription.listen({
-			id: data.committeeId
-		});
+onMount(() => {
+	CommitteeSubscription.listen({
+		id: data.committeeId,
 	});
+});
 </script>
 
 {#if !committee?.activeAgendaItem}

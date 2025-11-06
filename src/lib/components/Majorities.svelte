@@ -1,12 +1,17 @@
 <script lang="ts">
-	interface Props {
-		totalPresent: number | null;
-		simpleMajority: number | null;
-		twoThirdsMajority: number | null;
-		paperSupportThreshold: number | null;
-	}
+interface Props {
+	totalPresent: number | null;
+	simpleMajority: number | null;
+	twoThirdsMajority: number | null;
+	paperSupportThreshold: number | null;
+}
 
-	let { totalPresent, simpleMajority, twoThirdsMajority, paperSupportThreshold }: Props = $props();
+const {
+	totalPresent,
+	simpleMajority,
+	twoThirdsMajority,
+	paperSupportThreshold,
+}: Props = $props();
 </script>
 
 {#snippet Card(cardData: {

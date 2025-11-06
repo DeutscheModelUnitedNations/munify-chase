@@ -1,73 +1,83 @@
 <script lang="ts">
-	import DevPlaceholder from '$lib/components/DevPlaceholder.svelte';
-	import { m } from '$lib/paraglide/messages';
-	import type { PageData } from './$houdini';
-	import Grid, { GridItem } from 'svelte-grid-extended';
-	import IconInfoBox from '$lib/components/IconInfoBox.svelte';
-	import { getCommitteeStatusIcon, getCommitteeStatusText } from '$lib/utils/committeeStatus';
-	import WhiteboardViewer from '$lib/components/whiteboard/WhiteboardViewer.svelte';
-	import Majorities from '$lib/components/Majorities.svelte';
-	import { onMount, type Component } from 'svelte';
-	import { liveQuery } from 'dexie';
-	import { localDB } from '$lib/local-db/localDB';
-	import { getPresentationLayoutPreset } from '$lib/data/presentationLayoutPresets';
-	import AbbreviationInfoBox from '$lib/components/AbbreviationInfoBox.svelte';
-	import UndrawError from '$lib/components/UndrawError.svelte';
-	import emptyStreet from '$assets/undraw/empty_street.svg';
-	import RegionalGroups from './RegionalGroups.svelte';
-	import PresentationRollCall from '$lib/components/rollCall/PresentationRollCall.svelte';
-	import { sortTranslatedCountries } from '$lib/utils/nationTranslationHelper.svelte';
-	import CurrentSpeaker from '$lib/components/speakersList/CurrentSpeaker.svelte';
-	import { PresentationSubscription } from './committeeSubscription';
-	import SpeakersQueue from '$lib/components/speakersList/PresentationSpeakersQueue.svelte';
-	import ShowOfHandsVotingPresentation from '$lib/components/voting/ShowOfHandsVotingPresentation.svelte';
-	import RollCallVotingPresentation from '$lib/components/voting/RollCallVotingPresentation.svelte';
-	import { browser } from '$app/environment';
-	import AdoptionConfetti from '$lib/components/AdoptionConfetti.svelte';
+import { liveQuery } from "dexie";
+import { type Component, onMount } from "svelte";
+import Grid, { GridItem } from "svelte-grid-extended";
+import { browser } from "$app/environment";
+import emptyStreet from "$assets/undraw/empty_street.svg";
+import AbbreviationInfoBox from "$lib/components/AbbreviationInfoBox.svelte";
+import AdoptionConfetti from "$lib/components/AdoptionConfetti.svelte";
+import DevPlaceholder from "$lib/components/DevPlaceholder.svelte";
+import IconInfoBox from "$lib/components/IconInfoBox.svelte";
+import Majorities from "$lib/components/Majorities.svelte";
+import PresentationRollCall from "$lib/components/rollCall/PresentationRollCall.svelte";
+import CurrentSpeaker from "$lib/components/speakersList/CurrentSpeaker.svelte";
+import SpeakersQueue from "$lib/components/speakersList/PresentationSpeakersQueue.svelte";
+import UndrawError from "$lib/components/UndrawError.svelte";
+import RollCallVotingPresentation from "$lib/components/voting/RollCallVotingPresentation.svelte";
+import ShowOfHandsVotingPresentation from "$lib/components/voting/ShowOfHandsVotingPresentation.svelte";
+import WhiteboardViewer from "$lib/components/whiteboard/WhiteboardViewer.svelte";
+import { getPresentationLayoutPreset } from "$lib/data/presentationLayoutPresets";
+import { localDB } from "$lib/local-db/localDB";
+import { m } from "$lib/paraglide/messages";
+import {
+	getCommitteeStatusIcon,
+	getCommitteeStatusText,
+} from "$lib/utils/committeeStatus";
+import { sortTranslatedCountries } from "$lib/utils/nationTranslationHelper.svelte";
+import type { PageData } from "./$houdini";
+import { PresentationSubscription } from "./committeeSubscription";
+import RegionalGroups from "./RegionalGroups.svelte";
 
-	let { data }: { data: PageData } = $props();
+const { data }: { data: PageData } = $props();
 
-	let committeeQuery = $derived(data?.CommitteePresentationQuery);
-	let committee = $derived($committeeQuery.data?.findFirstCommittee);
+const committeeQuery = $derived(data?.CommitteePresentationQuery);
+const committee = $derived($committeeQuery.data?.findFirstCommittee);
 
-	let committeeSettings = liveQuery(() => localDB.committeeSettings.get(data.committeeId));
+const committeeSettings = liveQuery(() =>
+	localDB.committeeSettings.get(data.committeeId),
+);
 
-	let layout = $derived(
-		($committeeSettings && getPresentationLayoutPreset($committeeSettings.layout)) ??
-			getPresentationLayoutPreset()
-	);
+const layout = $derived(
+	($committeeSettings &&
+		getPresentationLayoutPreset($committeeSettings.layout)) ??
+		getPresentationLayoutPreset(),
+);
 
-	let speakersList = $derived(
-		committee?.activeAgendaItem?.speakersList.find((x) => x.type === 'SPEAKERS_LIST')
-	);
+const speakersList = $derived(
+	committee?.activeAgendaItem?.speakersList.find(
+		(x) => x.type === "SPEAKERS_LIST",
+	),
+);
 
-	let commentsList = $derived(
-		committee?.activeAgendaItem?.speakersList.find((x) => x.type === 'COMMENT_LIST')
-	);
-	let speakersQueueResizeFn: () => void;
-	let commentsQueueResizeFn: () => void;
+const commentsList = $derived(
+	committee?.activeAgendaItem?.speakersList.find(
+		(x) => x.type === "COMMENT_LIST",
+	),
+);
+let speakersQueueResizeFn: () => void;
+let commentsQueueResizeFn: () => void;
 
-	$effect(() => {
-		if (!layout || !committee) {
-			return;
-		}
-		resizeQueues();
-	});
+$effect(() => {
+	if (!layout || !committee) {
+		return;
+	}
+	resizeQueues();
+});
 
-	const resizeQueues = () => {
-		speakersQueueResizeFn?.();
-		commentsQueueResizeFn?.();
-	};
+const resizeQueues = () => {
+	speakersQueueResizeFn?.();
+	commentsQueueResizeFn?.();
+};
 
-	onMount(() => {
-		PresentationSubscription.listen({ id: data.committeeId });
-	});
+onMount(() => {
+	PresentationSubscription.listen({ id: data.committeeId });
+});
 
-	$effect(() => {
-		if ($committeeSettings?.presentationRootFontSize) {
-			document.documentElement.style.fontSize = `${$committeeSettings.presentationRootFontSize}px`;
-		}
-	});
+$effect(() => {
+	if ($committeeSettings?.presentationRootFontSize) {
+		document.documentElement.style.fontSize = `${$committeeSettings.presentationRootFontSize}px`;
+	}
+});
 </script>
 
 <svelte:head>

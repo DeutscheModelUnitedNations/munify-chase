@@ -1,7 +1,7 @@
 <script lang="ts">
-	import { page } from '$app/state';
+import { page } from "$app/state";
 
-	let { data }: { data: any } = $props();
+const { data }: { data: any } = $props();
 </script>
 
 <div class="max-w-lg overflow-x-scroll p-4">

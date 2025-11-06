@@ -1,23 +1,30 @@
 <script lang="ts">
-	import { cache, graphql } from '$houdini';
-	import { m } from '$lib/paraglide/messages';
-	import toast from 'svelte-french-toast';
-	import WhiteboardEditor from './WhiteboardEditor.svelte';
-	import { invalidateAll } from '$app/navigation';
-	import { promiseToastStrings } from '$lib/utils/toast';
+import toast from "svelte-french-toast";
+import { invalidateAll } from "$app/navigation";
+import { cache, graphql } from "$houdini";
+import { m } from "$lib/paraglide/messages";
+import { promiseToastStrings } from "$lib/utils/toast";
+import WhiteboardEditor from "./WhiteboardEditor.svelte";
 
-	interface Props {
-		open: boolean;
-		committeeId?: string | null;
-		whiteboardContent?: string | null;
-		close: () => void;
-	}
+interface Props {
+	open: boolean;
+	committeeId?: string | null;
+	whiteboardContent?: string | null;
+	close: () => void;
+}
 
-	let { open = $bindable(), committeeId, whiteboardContent, close }: Props = $props();
+const {
+	open = $bindable(),
+	committeeId,
+	whiteboardContent,
+	close,
+}: Props = $props();
 
-	let newWhiteboardContent = $state<string | null | undefined>(whiteboardContent);
+const newWhiteboardContent = $state<string | null | undefined>(
+	whiteboardContent,
+);
 
-	const UpdateWhiteboardMutation = graphql(`
+const UpdateWhiteboardMutation = graphql(`
 		mutation UpdateWhiteboard($committeeId: ID!, $whiteboardContent: String!) {
 			updateCommittee(id: $committeeId, whiteboardContent: $whiteboardContent) {
 				id
@@ -26,22 +33,22 @@
 		}
 	`);
 
-	const publishChanges = async () => {
-		if (!committeeId) {
-			return;
-		}
+const publishChanges = async () => {
+	if (!committeeId) {
+		return;
+	}
 
-		await toast.promise(
-			UpdateWhiteboardMutation.mutate({
-				committeeId,
-				whiteboardContent: newWhiteboardContent ?? ''
-			}),
-			promiseToastStrings(m.whiteboard(), 'update')
-		);
-		// cache.markStale('Committee');
-		// invalidateAll();
-		close();
-	};
+	await toast.promise(
+		UpdateWhiteboardMutation.mutate({
+			committeeId,
+			whiteboardContent: newWhiteboardContent ?? "",
+		}),
+		promiseToastStrings(m.whiteboard(), "update"),
+	);
+	// cache.markStale('Committee');
+	// invalidateAll();
+	close();
+};
 </script>
 
 <dialog class="modal" {open}>

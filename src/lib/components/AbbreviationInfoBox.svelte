@@ -1,27 +1,27 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
+import { onMount } from "svelte";
 
-	interface Props {
-		text: string;
-		abbreviation?: string;
+interface Props {
+	text: string;
+	abbreviation?: string;
+}
+
+const { text, abbreviation }: Props = $props();
+
+const textElement = $state<HTMLParagraphElement>();
+let isOverflowing = $state(false);
+
+function checkOverflow() {
+	if (textElement) {
+		isOverflowing = textElement.scrollWidth > textElement.clientWidth;
 	}
+}
 
-	let { text, abbreviation }: Props = $props();
-
-	let textElement = $state<HTMLParagraphElement>();
-	let isOverflowing = $state(false);
-
-	function checkOverflow() {
-		if (textElement) {
-			isOverflowing = textElement.scrollWidth > textElement.clientWidth;
-		}
-	}
-
-	onMount(() => {
-		checkOverflow();
-		window.addEventListener('resize', checkOverflow);
-		return () => window.removeEventListener('resize', checkOverflow);
-	});
+onMount(() => {
+	checkOverflow();
+	window.addEventListener("resize", checkOverflow);
+	return () => window.removeEventListener("resize", checkOverflow);
+});
 </script>
 
 <div class="alert block h-full w-full justify-center text-lg shadow-sm">

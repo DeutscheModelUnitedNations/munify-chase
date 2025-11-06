@@ -1,22 +1,22 @@
 <script lang="ts">
-	import { fade, fly } from 'svelte/transition';
-	import ThemeSwitcher from './ThemeSwitcher.svelte';
-	import { m } from '$lib/paraglide/messages';
-	import LanguageSwitcher from './LanguageSwitcher.svelte';
-	import type { Snippet } from 'svelte';
+import type { Snippet } from "svelte";
+import { fade, fly } from "svelte/transition";
+import { m } from "$lib/paraglide/messages";
+import LanguageSwitcher from "./LanguageSwitcher.svelte";
+import ThemeSwitcher from "./ThemeSwitcher.svelte";
 
-	interface Props {
-		items: {
-			faIcon: string;
-			title: string;
-			href: string;
-		}[];
-		CustomListItems?: Snippet;
-	}
+interface Props {
+	items: {
+		faIcon: string;
+		title: string;
+		href: string;
+	}[];
+	CustomListItems?: Snippet;
+}
 
-	let { items, CustomListItems }: Props = $props();
+const { items, CustomListItems }: Props = $props();
 
-	let menuVisible = $state(false);
+const menuVisible = $state(false);
 </script>
 
 <button class="btn relative" aria-label="Open menu" onclick={() => (menuVisible = true)}>

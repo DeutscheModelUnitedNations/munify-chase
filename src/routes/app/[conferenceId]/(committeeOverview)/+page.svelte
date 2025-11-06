@@ -1,14 +1,14 @@
 <script lang="ts">
-	import type { PageData } from './$houdini';
-	import CommitteeGrid from '$lib/components/CommitteeGrid.svelte';
-	import ThemeSwitcher from '$lib/components/ThemeSwitcher.svelte';
-	import CurrentTime from '$lib/components/CurrentTime.svelte';
-	import * as m from '$lib/paraglide/messages.js';
+import CommitteeGrid from "$lib/components/CommitteeGrid.svelte";
+import CurrentTime from "$lib/components/CurrentTime.svelte";
+import ThemeSwitcher from "$lib/components/ThemeSwitcher.svelte";
+import * as m from "$lib/paraglide/messages.js";
+import type { PageData } from "./$houdini";
 
-	let { data }: { data: PageData } = $props();
+const { data }: { data: PageData } = $props();
 
-	let query = $derived(data?.CommitteeOverviewQuery);
-	let conference = $derived($query.data?.findFirstConference);
+const query = $derived(data?.CommitteeOverviewQuery);
+const conference = $derived($query.data?.findFirstConference);
 </script>
 
 <div class="navbar bg-base-100 shadow-sm">

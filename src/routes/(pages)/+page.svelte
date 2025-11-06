@@ -1,21 +1,21 @@
 <script lang="ts">
-	import { m } from '$lib/paraglide/messages';
-	import type { PageData } from './$houdini';
-	import LandingHero from './LandingHero.svelte';
-	import CardSection from './CardSection.svelte';
-	import TextSection from './TextSection.svelte';
-	import { media } from '$lib/utils/media.svelte';
-	import { navigating } from '$app/state';
-	import { onMount } from 'svelte';
+import { onMount } from "svelte";
+import { navigating } from "$app/state";
+import { m } from "$lib/paraglide/messages";
+import { media } from "$lib/utils/media.svelte";
+import type { PageData } from "./$houdini";
+import CardSection from "./CardSection.svelte";
+import LandingHero from "./LandingHero.svelte";
+import TextSection from "./TextSection.svelte";
 
-	let { data }: { data: PageData } = $props();
+const { data }: { data: PageData } = $props();
 
-	// Modal state
-	let versionModalVisible = false;
+// Modal state
+const versionModalVisible = false;
 
-	let loading = $state(true);
+let loading = $state(true);
 
-	onMount(() => (loading = false));
+onMount(() => (loading = false));
 </script>
 
 <div class="flex min-h-screen flex-col items-center">

@@ -1,14 +1,17 @@
 <script lang="ts">
-	import IconInfoBox from '$lib/components/IconInfoBox.svelte';
-	import { getCommitteeStatusIcon, getCommitteeStatusText } from '$lib/utils/committeeStatus';
-	import type { CommitteeTeamQuery$result } from '$houdini';
-	import { m } from '$lib/paraglide/messages';
+import type { CommitteeTeamQuery$result } from "$houdini";
+import IconInfoBox from "$lib/components/IconInfoBox.svelte";
+import { m } from "$lib/paraglide/messages";
+import {
+	getCommitteeStatusIcon,
+	getCommitteeStatusText,
+} from "$lib/utils/committeeStatus";
 
-	interface Props {
-		committee?: CommitteeTeamQuery$result['findFirstCommittee'] | null;
-	}
+interface Props {
+	committee?: CommitteeTeamQuery$result["findFirstCommittee"] | null;
+}
 
-	let { committee }: Props = $props();
+const { committee }: Props = $props();
 </script>
 
 <IconInfoBox text={committee?.activeAgendaItem?.title || '—'} faIcon="podium" />

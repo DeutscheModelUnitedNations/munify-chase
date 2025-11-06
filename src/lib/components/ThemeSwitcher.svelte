@@ -1,6 +1,6 @@
 <script lang="ts">
-	import { getTheme, toggleTheme } from '$lib/utils/theme.svelte';
-	import { fly } from 'svelte/transition';
+import { fly } from "svelte/transition";
+import { getTheme, toggleTheme } from "$lib/utils/theme.svelte";
 </script>
 
 <button class="btn btn-lg relative flex-1" onclick={() => toggleTheme()}>

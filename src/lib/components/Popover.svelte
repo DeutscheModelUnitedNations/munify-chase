@@ -1,15 +1,15 @@
 <script lang="ts">
-	import { Popover, Separator, Toggle } from 'bits-ui';
-	import type { Snippet } from 'svelte';
-	import { fly } from 'svelte/transition';
+import { Popover, Separator, Toggle } from "bits-ui";
+import type { Snippet } from "svelte";
+import { fly } from "svelte/transition";
 
-	interface Props {
-		open?: boolean;
-		Trigger: Snippet;
-		Content: Snippet;
-	}
+interface Props {
+	open?: boolean;
+	Trigger: Snippet;
+	Content: Snippet;
+}
 
-	let { open = $bindable(false), Trigger, Content }: Props = $props();
+const { open = $bindable(false), Trigger, Content }: Props = $props();
 </script>
 
 <Popover.Root bind:open>

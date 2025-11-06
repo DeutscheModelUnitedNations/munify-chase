@@ -1,73 +1,73 @@
 <script lang="ts">
-	import type { CommitteeStatusEnum$options } from '$houdini';
-	import { getCommitteeStatusBackground } from '$lib/utils/committeeStatus';
-	import Marquee from 'svelte-fast-marquee';
-	import { onMount } from 'svelte';
-	import * as m from '$lib/paraglide/messages.js';
-	import { getLocale } from '$lib/paraglide/runtime';
-	import dayjs from 'dayjs';
-	import duration from 'dayjs/plugin/duration';
-	import { check } from 'drizzle-orm/gel-core';
-	import { serverTime } from '$lib/state/serverTime.svelte';
+import dayjs from "dayjs";
+import type duration from "dayjs/plugin/duration";
+import { check } from "drizzle-orm/gel-core";
+import { onMount } from "svelte";
+import Marquee from "svelte-fast-marquee";
+import type { CommitteeStatusEnum$options } from "$houdini";
+import * as m from "$lib/paraglide/messages.js";
+import { getLocale } from "$lib/paraglide/runtime";
+import { serverTime } from "$lib/state/serverTime.svelte";
+import { getCommitteeStatusBackground } from "$lib/utils/committeeStatus";
 
-	interface Props {
-		text: string;
-		faIcon?: string;
-		iconText?: string;
-		committeeStatus?: CommitteeStatusEnum$options;
-		until?: Date;
-		marqueeOnOverflow?: boolean;
-		fullHeight?: boolean;
-		hideCountdown?: boolean;
+interface Props {
+	text: string;
+	faIcon?: string;
+	iconText?: string;
+	committeeStatus?: CommitteeStatusEnum$options;
+	until?: Date;
+	marqueeOnOverflow?: boolean;
+	fullHeight?: boolean;
+	hideCountdown?: boolean;
+}
+
+const {
+	text,
+	faIcon,
+	iconText,
+	committeeStatus,
+	until,
+	marqueeOnOverflow = true,
+	fullHeight = false,
+	hideCountdown = false,
+}: Props = $props();
+
+const textElement = $state<HTMLParagraphElement>();
+let isOverflowing = $state(false);
+
+function checkOverflow() {
+	if (textElement) {
+		isOverflowing = textElement.scrollWidth > textElement.clientWidth;
 	}
+}
 
-	let {
-		text,
-		faIcon,
-		iconText,
-		committeeStatus,
-		until,
-		marqueeOnOverflow = true,
-		fullHeight = false,
-		hideCountdown = false
-	}: Props = $props();
+onMount(() => {
+	checkOverflow();
+	window.addEventListener("resize", checkOverflow);
+	return () => window.removeEventListener("resize", checkOverflow);
+});
 
-	let textElement = $state<HTMLParagraphElement>();
-	let isOverflowing = $state(false);
+let countdownDelta = $state<duration.Duration>();
 
-	function checkOverflow() {
-		if (textElement) {
-			isOverflowing = textElement.scrollWidth > textElement.clientWidth;
-		}
+const countdownDeltaInFuture = $derived(() => {
+	if (until) {
+		const untilDate = dayjs(until);
+		return $serverTime.isBefore(untilDate);
 	}
+	return false;
+});
 
-	onMount(() => {
-		checkOverflow();
-		window.addEventListener('resize', checkOverflow);
-		return () => window.removeEventListener('resize', checkOverflow);
-	});
-
-	let countdownDelta = $state<duration.Duration>();
-
-	let countdownDeltaInFuture = $derived(() => {
-		if (until) {
-			const untilDate = dayjs(until);
-			return $serverTime.isBefore(untilDate);
-		}
-		return false;
-	});
-
-	$effect(() => {
-		const calculateCountdown = () => {
-			const untilDate = dayjs(until);
-			countdownDelta = dayjs.duration(untilDate.diff($serverTime));
-		};
-		if (until) {
-			calculateCountdown();
-			const interval = setInterval(() => calculateCountdown(), 1000);
-			return () => clearInterval(interval);
-		}
-	});
+$effect(() => {
+	const calculateCountdown = () => {
+		const untilDate = dayjs(until);
+		countdownDelta = dayjs.duration(untilDate.diff($serverTime));
+	};
+	if (until) {
+		calculateCountdown();
+		const interval = setInterval(() => calculateCountdown(), 1000);
+		return () => clearInterval(interval);
+	}
+});
 </script>
 
 <div

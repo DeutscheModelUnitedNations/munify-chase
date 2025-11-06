@@ -1,20 +1,20 @@
-import { abilityBuilder } from '$api/rumble';
-import { isDMUNEmail } from '$api/services/isDMUNEmail';
-import { basics } from './basics';
+import { abilityBuilder } from "$api/rumble";
+import { isDMUNEmail } from "$api/services/isDMUNEmail";
+import { basics } from "./basics";
 
-const { ref, pubsub, table } = basics('user');
+const { ref, pubsub, table } = basics("user");
 
-abilityBuilder.user.allow('read').when(({ oidc }) => {
-	if (oidc?.user) {
-		return {
-			where: { id: oidc.user.sub }
-		};
-	}
+abilityBuilder.user.allow("read").when(({ oidc }) => {
+  if (oidc?.user) {
+    return {
+      where: { id: oidc.user.sub },
+    };
+  }
 });
 
-abilityBuilder.user.allow('read').when(({ mustBeLoggedIn }) => {
-	const user = mustBeLoggedIn();
-	if (user?.email && isDMUNEmail(user.email)) {
-		return 'allow';
-	}
+abilityBuilder.user.allow("read").when(({ mustBeLoggedIn }) => {
+  const user = mustBeLoggedIn();
+  if (user?.email && isDMUNEmail(user.email)) {
+    return "allow";
+  }
 });

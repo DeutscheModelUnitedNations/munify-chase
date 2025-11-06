@@ -1,21 +1,22 @@
 <script lang="ts">
-	import { m } from '$lib/paraglide/messages';
-	import type { PageData } from './$houdini';
-	import { onMount } from 'svelte';
-	import { CommitteeSubscription } from '../committeeSubscription';
-	import BasicCard from '$lib/components/BasicCard.svelte';
-	import Majorities from '$lib/components/Majorities.svelte';
-	import UndrawError from '$lib/components/UndrawError.svelte';
-	import emptyStreet from '$assets/undraw/empty_street.svg';
-	import StatusWidget from '../StatusWidget.svelte';
-	import VotingSetup from '$lib/components/voting/VotingSetup.svelte';
+import { onMount } from "svelte";
+import emptyStreet from "$assets/undraw/empty_street.svg";
+import BasicCard from "$lib/components/BasicCard.svelte";
+import Majorities from "$lib/components/Majorities.svelte";
+import UndrawError from "$lib/components/UndrawError.svelte";
+import VotingSetup from "$lib/components/voting/VotingSetup.svelte";
+import { m } from "$lib/paraglide/messages";
+import { CommitteeSubscription } from "../committeeSubscription";
+import StatusWidget from "../StatusWidget.svelte";
+import type { PageData } from "./$houdini";
 
-	let { data }: { data: PageData } = $props();
+const { data }: { data: PageData } = $props();
 
-	let query = $derived(data?.CommitteeTeamQuery);
-	let committee = $derived(
-		$CommitteeSubscription.data?.findFirstCommittee ?? $query.data?.findFirstCommittee
-	);
+const query = $derived(data?.CommitteeTeamQuery);
+const committee = $derived(
+	$CommitteeSubscription.data?.findFirstCommittee ??
+		$query.data?.findFirstCommittee,
+);
 </script>
 
 {#if committee}

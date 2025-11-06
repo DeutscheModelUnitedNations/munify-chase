@@ -1,21 +1,22 @@
 <script lang="ts">
-	import { fly, fade } from 'svelte/transition';
-	import { m } from '$lib/paraglide/messages';
+import { fade, fly } from "svelte/transition";
+import blob1 from "$assets/misc/blobs/blob_1.svg";
+import blob2 from "$assets/misc/blobs/blob_2.svg";
+import blob3 from "$assets/misc/blobs/blob_3.svg";
+import blob4 from "$assets/misc/blobs/blob_4.svg";
+import blob5 from "$assets/misc/blobs/blob_5.svg";
+import aroundTheWorld from "$assets/undraw/around_the_world.svg";
+import theWorldIsMine from "$assets/undraw/the_world_is_mine.svg";
+import world from "$assets/undraw/world.svg";
+import { m } from "$lib/paraglide/messages";
 
-	import theWorldIsMine from '$assets/undraw/the_world_is_mine.svg';
-	import world from '$assets/undraw/world.svg';
-	import aroundTheWorld from '$assets/undraw/around_the_world.svg';
-	import blob1 from '$assets/misc/blobs/blob_1.svg';
-	import blob2 from '$assets/misc/blobs/blob_2.svg';
-	import blob3 from '$assets/misc/blobs/blob_3.svg';
-	import blob4 from '$assets/misc/blobs/blob_4.svg';
-	import blob5 from '$assets/misc/blobs/blob_5.svg';
+const availableIllustrations = [theWorldIsMine, world, aroundTheWorld];
+const availableBlobs = [blob1, blob2, blob3, blob4, blob5];
 
-	const availableIllustrations = [theWorldIsMine, world, aroundTheWorld];
-	const availableBlobs = [blob1, blob2, blob3, blob4, blob5];
-
-	let illustration = $state(Math.floor(Math.random() * availableIllustrations.length));
-	let blob = $state(Math.floor(Math.random() * availableBlobs.length));
+const illustration = $state(
+	Math.floor(Math.random() * availableIllustrations.length),
+);
+const blob = $state(Math.floor(Math.random() * availableBlobs.length));
 </script>
 
 <div

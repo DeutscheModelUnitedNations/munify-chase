@@ -1,13 +1,14 @@
 <script lang="ts">
-	interface Props {
-		undrawImage: string;
-		title: string;
-		description?: string;
-		buttonText?: string;
-		buttonLink?: string;
-	}
+interface Props {
+	undrawImage: string;
+	title: string;
+	description?: string;
+	buttonText?: string;
+	buttonLink?: string;
+}
 
-	let { undrawImage, title, description, buttonText, buttonLink }: Props = $props();
+const { undrawImage, title, description, buttonText, buttonLink }: Props =
+	$props();
 </script>
 
 <div class="flex h-full w-full flex-col items-center justify-center gap-4 p-4">

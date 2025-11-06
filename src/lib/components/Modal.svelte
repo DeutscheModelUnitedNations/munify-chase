@@ -1,24 +1,24 @@
 <script lang="ts">
-	import { m } from '$lib/paraglide/messages';
-	import hotkeys from 'hotkeys-js';
-	import type { Snippet } from 'svelte';
+import hotkeys from "hotkeys-js";
+import type { Snippet } from "svelte";
+import { m } from "$lib/paraglide/messages";
 
-	interface Props {
-		open: boolean;
-		children: Snippet;
+interface Props {
+	open: boolean;
+	children: Snippet;
+}
+
+let { open = $bindable(), children }: Props = $props();
+
+$effect(() => {
+	if (open) {
+		hotkeys("esc", () => {
+			open = false;
+		});
+	} else {
+		hotkeys.unbind("esc");
 	}
-
-	let { open = $bindable(), children }: Props = $props();
-
-	$effect(() => {
-		if (open) {
-			hotkeys('esc', () => {
-				open = false;
-			});
-		} else {
-			hotkeys.unbind('esc');
-		}
-	});
+});
 </script>
 
 <dialog class="modal z-30" {open}>

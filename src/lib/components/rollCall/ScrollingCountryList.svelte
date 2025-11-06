@@ -1,48 +1,48 @@
 <script lang="ts">
-	import type { CommitteeTeamQuery$result } from '$houdini';
-	import { m } from '$lib/paraglide/messages';
-	import { getTranslatedCountryNameFromAlpha3Code } from '$lib/utils/nationTranslationHelper.svelte';
-	import Flag from '../Flag.svelte';
-	import { scale } from 'svelte/transition';
-	import { cubicOut } from 'svelte/easing';
+import { cubicOut } from "svelte/easing";
+import { scale } from "svelte/transition";
+import type { CommitteeTeamQuery$result } from "$houdini";
+import { m } from "$lib/paraglide/messages";
+import { getTranslatedCountryNameFromAlpha3Code } from "$lib/utils/nationTranslationHelper.svelte";
+import Flag from "../Flag.svelte";
 
-	interface Props {
-		currentIndex: number;
-		members: CommitteeTeamQuery$result['findFirstCommittee']['members'];
-		height?: string;
-		icons?: {
-			id: string;
-			icon: string;
-			color?: 'info' | 'success' | 'error';
-		}[];
+interface Props {
+	currentIndex: number;
+	members: CommitteeTeamQuery$result["findFirstCommittee"]["members"];
+	height?: string;
+	icons?: {
+		id: string;
+		icon: string;
+		color?: "info" | "success" | "error";
+	}[];
+}
+
+const { currentIndex, members, height = "70vh", icons }: Props = $props();
+
+let containerRef: HTMLElement;
+let listContainerRef: HTMLElement;
+
+let offset = $state(0);
+
+function centerSelectedCountry() {
+	if (!containerRef || !listContainerRef) return;
+
+	const parentHeight = listContainerRef.clientHeight;
+
+	const containerHeight = containerRef.clientHeight;
+
+	const elementHeight = containerHeight / members.length;
+	const elementOffset = elementHeight * currentIndex + elementHeight / 2;
+
+	offset = -elementOffset + parentHeight / 2;
+}
+
+// Watch for changes in currentCountry
+$effect(() => {
+	if (currentIndex !== undefined) {
+		centerSelectedCountry();
 	}
-
-	let { currentIndex, members, height = '70vh', icons }: Props = $props();
-
-	let containerRef: HTMLElement;
-	let listContainerRef: HTMLElement;
-
-	let offset = $state(0);
-
-	function centerSelectedCountry() {
-		if (!containerRef || !listContainerRef) return;
-
-		const parentHeight = listContainerRef.clientHeight;
-
-		const containerHeight = containerRef.clientHeight;
-
-		const elementHeight = containerHeight / members.length;
-		const elementOffset = elementHeight * currentIndex + elementHeight / 2;
-
-		offset = -elementOffset + parentHeight / 2;
-	}
-
-	// Watch for changes in currentCountry
-	$effect(() => {
-		if (currentIndex !== undefined) {
-			centerSelectedCountry();
-		}
-	});
+});
 </script>
 
 <div class="relative flex h-full w-full flex-col gap-2 overflow-hidden pl-6 pr-6">

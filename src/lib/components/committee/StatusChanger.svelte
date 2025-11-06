@@ -1,42 +1,48 @@
 <script lang="ts">
-	import { graphql, type CommitteeStatusEnum$options } from '$houdini';
-	import Tabs from '$lib/components/Tabs.svelte';
-	import dayjs from 'dayjs';
-	import { m } from '$lib/paraglide/messages';
-	import toast from 'svelte-french-toast';
-	import { promiseToastStrings } from '$lib/utils/toast';
-	import { serverTime } from '$lib/state/serverTime.svelte';
+import dayjs from "dayjs";
+import toast from "svelte-french-toast";
+import { type CommitteeStatusEnum$options, graphql } from "$houdini";
+import Tabs from "$lib/components/Tabs.svelte";
+import { m } from "$lib/paraglide/messages";
+import { serverTime } from "$lib/state/serverTime.svelte";
+import { promiseToastStrings } from "$lib/utils/toast";
 
-	type Props = {
-		committeeId: string;
-		oldStatus?: CommitteeStatusEnum$options;
-		oldUntil?: Date;
-		oldCustomName?: string;
-		abort?: () => void;
-	};
-	let { committeeId, oldStatus, oldUntil, oldCustomName = '', abort }: Props = $props();
+type Props = {
+	committeeId: string;
+	oldStatus?: CommitteeStatusEnum$options;
+	oldUntil?: Date;
+	oldCustomName?: string;
+	abort?: () => void;
+};
+const {
+	committeeId,
+	oldStatus,
+	oldUntil,
+	oldCustomName = "",
+	abort,
+}: Props = $props();
 
-	const categories: {
-		id: CommitteeStatusEnum$options;
-		faIcon: string;
-	}[] = [
-		{ id: 'FORMAL', faIcon: 'podium' },
-		{ id: 'INFORMAL', faIcon: 'comments' },
-		{ id: 'PAUSE', faIcon: 'mug-saucer' },
-		{ id: 'SUSPENSION', faIcon: 'forward-step' }
-	];
+const categories: {
+	id: CommitteeStatusEnum$options;
+	faIcon: string;
+}[] = [
+	{ id: "FORMAL", faIcon: "podium" },
+	{ id: "INFORMAL", faIcon: "comments" },
+	{ id: "PAUSE", faIcon: "mug-saucer" },
+	{ id: "SUSPENSION", faIcon: "forward-step" },
+];
 
-	const absoluteTimes = [0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55];
-	const relativeTimes = [3, 5, 10, 15, 20, 25, 30];
+const absoluteTimes = [0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55];
+const relativeTimes = [3, 5, 10, 15, 20, 25, 30];
 
-	let activeCategory: CommitteeStatusEnum$options = $state('INFORMAL');
-	let until = $state(dayjs(oldUntil) ?? $serverTime);
-	let untilFormatted = $derived(dayjs(until).format('HH:mm:ss'));
-	let customName = $state(oldCustomName);
+let activeCategory: CommitteeStatusEnum$options = $state("INFORMAL");
+const until = $state(dayjs(oldUntil) ?? $serverTime);
+const untilFormatted = $derived(dayjs(until).format("HH:mm:ss"));
+const customName = $state(oldCustomName);
 
-	let customNameOpen = $state(false);
+let customNameOpen = $state(false);
 
-	const StatusChangerMutation = graphql(`
+const StatusChangerMutation = graphql(`
 		mutation StatusChanger(
 			$status: CommitteeStatusEnum!
 			$until: DateTime!
@@ -54,39 +60,39 @@
 		}
 	`);
 
-	const submitStatus = async () => {
-		if (until.isBefore($serverTime)) {
-			toast.error(m.dateCannotBeInPast());
-		}
-		await toast.promise(
-			StatusChangerMutation.mutate({
-				status: activeCategory,
-				until: until.toDate(),
-				customName: customName,
-				committeeId: committeeId
-			}),
-			promiseToastStrings(m.committeeStatus(), 'update')
-		);
-	};
+const submitStatus = async () => {
+	if (until.isBefore($serverTime)) {
+		toast.error(m.dateCannotBeInPast());
+	}
+	await toast.promise(
+		StatusChangerMutation.mutate({
+			status: activeCategory,
+			until: until.toDate(),
+			customName: customName,
+			committeeId: committeeId,
+		}),
+		promiseToastStrings(m.committeeStatus(), "update"),
+	);
+};
 
-	$effect(() => {
-		if (customName) {
-			customNameOpen = true;
-		}
-	});
+$effect(() => {
+	if (customName) {
+		customNameOpen = true;
+	}
+});
 
-	$effect(() => {
-		if (oldStatus) {
-			switch (oldStatus) {
-				case 'FORMAL':
-					activeCategory = 'INFORMAL';
-					break;
-				default:
-					activeCategory = 'FORMAL';
-					break;
-			}
+$effect(() => {
+	if (oldStatus) {
+		switch (oldStatus) {
+			case "FORMAL":
+				activeCategory = "INFORMAL";
+				break;
+			default:
+				activeCategory = "FORMAL";
+				break;
 		}
-	});
+	}
+});
 </script>
 
 <div class="flex flex-col gap-4">

@@ -1,21 +1,21 @@
 <script lang="ts">
-	import { invalidateAll } from '$app/navigation';
-	import { cache, graphql, type CommitteeTeamQuery$result } from '$houdini';
-	import { m } from '$lib/paraglide/messages';
-	import { promiseToastStrings } from '$lib/utils/toast';
-	import toast from 'svelte-french-toast';
+import toast from "svelte-french-toast";
+import { invalidateAll } from "$app/navigation";
+import { type CommitteeTeamQuery$result, cache, graphql } from "$houdini";
+import { m } from "$lib/paraglide/messages";
+import { promiseToastStrings } from "$lib/utils/toast";
 
-	interface Props {
-		committeeId: string;
-		activeAgendaItem?: CommitteeTeamQuery$result['findFirstCommittee']['activeAgendaItem'];
-		agendaItems?: CommitteeTeamQuery$result['findFirstCommittee']['agendaItems'];
-	}
+interface Props {
+	committeeId: string;
+	activeAgendaItem?: CommitteeTeamQuery$result["findFirstCommittee"]["activeAgendaItem"];
+	agendaItems?: CommitteeTeamQuery$result["findFirstCommittee"]["agendaItems"];
+}
 
-	let { committeeId, activeAgendaItem, agendaItems }: Props = $props();
+const { committeeId, activeAgendaItem, agendaItems }: Props = $props();
 
-	let value = $state(activeAgendaItem?.id ?? '');
+const value = $state(activeAgendaItem?.id ?? "");
 
-	const UpdateActiveAgendaItemMutation = graphql(`
+const UpdateActiveAgendaItemMutation = graphql(`
 		mutation UpdateActiveAgendaItem($agendaItemId: ID!, $committeeId: ID!) {
 			updateCommittee(id: $committeeId, activeAgendaItemId: $agendaItemId) {
 				id
@@ -27,7 +27,7 @@
 		}
 	`);
 
-	const AddAgendaItemMutation = graphql(`
+const AddAgendaItemMutation = graphql(`
 		mutation AddAgendaItem($committeeId: ID!, $title: String!) {
 			createAgendaItem(committeeId: $committeeId, title: $title) {
 				id
@@ -36,34 +36,34 @@
 		}
 	`);
 
-	const update = async () => {
-		if (value === activeAgendaItem?.id) {
-			return;
-		}
-		await toast.promise(
-			UpdateActiveAgendaItemMutation.mutate({
-				agendaItemId: value,
-				committeeId
-			}),
-			promiseToastStrings(m.agendaItem(), 'update')
-		);
-	};
+const update = async () => {
+	if (value === activeAgendaItem?.id) {
+		return;
+	}
+	await toast.promise(
+		UpdateActiveAgendaItemMutation.mutate({
+			agendaItemId: value,
+			committeeId,
+		}),
+		promiseToastStrings(m.agendaItem(), "update"),
+	);
+};
 
-	const addAgendaItem = async () => {
-		const title = prompt(m.agendaItemTitle());
-		if (!title) return;
+const addAgendaItem = async () => {
+	const title = prompt(m.agendaItemTitle());
+	if (!title) return;
 
-		await toast.promise(
-			AddAgendaItemMutation.mutate({
-				committeeId,
-				title
-			}),
-			promiseToastStrings(m.agendaItem(), 'create')
-		);
+	await toast.promise(
+		AddAgendaItemMutation.mutate({
+			committeeId,
+			title,
+		}),
+		promiseToastStrings(m.agendaItem(), "create"),
+	);
 
-		cache.markStale();
-		invalidateAll();
-	};
+	cache.markStale();
+	invalidateAll();
+};
 </script>
 
 <div class="join">

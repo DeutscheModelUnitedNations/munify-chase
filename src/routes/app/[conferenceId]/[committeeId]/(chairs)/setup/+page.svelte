@@ -1,39 +1,43 @@
 <script lang="ts">
-	import { m } from '$lib/paraglide/messages';
-	import type { PageData } from './$houdini';
-	import IconInfoBox from '$lib/components/IconInfoBox.svelte';
-	import { getCommitteeStatusIcon, getCommitteeStatusText } from '$lib/utils/committeeStatus';
-	import UndrawError from '$lib/components/UndrawError.svelte';
-	import emptyStreet from '$assets/undraw/empty_street.svg';
-	import BasicCard from '$lib/components/BasicCard.svelte';
-	import Majorities from '$lib/components/Majorities.svelte';
-	import WhiteboardViewer from '$lib/components/whiteboard/WhiteboardViewer.svelte';
-	import WhiteboardEditorModal from '$lib/components/whiteboard/WhiteboardEditorModal.svelte';
-	import StatusChanger from '../../../../../../lib/components/committee/StatusChanger.svelte';
-	import { onMount } from 'svelte';
-	import StateOfDebate from '$lib/components/committee/StateOfDebateChanger.svelte';
-	import AgendaItemChanger from '$lib/components/committee/AgendaItemChanger.svelte';
-	import PresentationSettings from './PresentationSettings.svelte';
-	import { CommitteeSubscription } from '../committeeSubscription';
-	import { ScrollArea } from 'bits-ui';
-	import StatusWidget from '../StatusWidget.svelte';
-	import { graphql } from '$houdini';
-	import dayjs from 'dayjs';
+import { ScrollArea } from "bits-ui";
+import dayjs from "dayjs";
+import { onMount } from "svelte";
+import emptyStreet from "$assets/undraw/empty_street.svg";
+import { graphql } from "$houdini";
+import BasicCard from "$lib/components/BasicCard.svelte";
+import AgendaItemChanger from "$lib/components/committee/AgendaItemChanger.svelte";
+import StateOfDebate from "$lib/components/committee/StateOfDebateChanger.svelte";
+import IconInfoBox from "$lib/components/IconInfoBox.svelte";
+import Majorities from "$lib/components/Majorities.svelte";
+import UndrawError from "$lib/components/UndrawError.svelte";
+import WhiteboardEditorModal from "$lib/components/whiteboard/WhiteboardEditorModal.svelte";
+import WhiteboardViewer from "$lib/components/whiteboard/WhiteboardViewer.svelte";
+import { m } from "$lib/paraglide/messages";
+import {
+	getCommitteeStatusIcon,
+	getCommitteeStatusText,
+} from "$lib/utils/committeeStatus";
+import StatusChanger from "../../../../../../lib/components/committee/StatusChanger.svelte";
+import { CommitteeSubscription } from "../committeeSubscription";
+import StatusWidget from "../StatusWidget.svelte";
+import type { PageData } from "./$houdini";
+import PresentationSettings from "./PresentationSettings.svelte";
 
-	let { data }: { data: PageData } = $props();
+const { data }: { data: PageData } = $props();
 
-	let query = $derived(data?.CommitteeTeamQuery);
-	let committee = $derived(
-		$CommitteeSubscription.data?.findFirstCommittee ?? $query.data?.findFirstCommittee
-	);
+const query = $derived(data?.CommitteeTeamQuery);
+const committee = $derived(
+	$CommitteeSubscription.data?.findFirstCommittee ??
+		$query.data?.findFirstCommittee,
+);
 
-	onMount(() => {
-		CommitteeSubscription.listen({ id: data.committeeId });
-	});
+onMount(() => {
+	CommitteeSubscription.listen({ id: data.committeeId });
+});
 
-	let editWhiteboardModalOpen = $state(false);
+const editWhiteboardModalOpen = $state(false);
 
-	const AnnounceAdoptionMutation = graphql(`
+const AnnounceAdoptionMutation = graphql(`
 		mutation AnnounceAdoption($committeeId: ID!, $lastResolutionAdoptionDate: DateTime!) {
 			updateCommittee(id: $committeeId, lastResolutionAdoptionDate: $lastResolutionAdoptionDate) {
 				id

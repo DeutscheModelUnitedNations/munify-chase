@@ -1,60 +1,70 @@
 <script lang="ts">
-	import dayjs, { type Dayjs } from 'dayjs';
-	import Hourglass, { type HourglassStatus } from './Hourglass.svelte';
-	import { serverTime } from '$lib/state/serverTime.svelte';
-	import { scale } from 'svelte/transition';
-	import toast from 'svelte-french-toast';
-	import { m } from '$lib/paraglide/messages';
-	import BellIcon from '../toast/BellIcon.svelte';
-	import type { Duration } from 'dayjs/plugin/duration';
+import dayjs, { type Dayjs } from "dayjs";
+import type { Duration } from "dayjs/plugin/duration";
+import { scale } from "svelte/transition";
+import toast from "svelte-french-toast";
+import { m } from "$lib/paraglide/messages";
+import { serverTime } from "$lib/state/serverTime.svelte";
+import BellIcon from "../toast/BellIcon.svelte";
+import Hourglass, { type HourglassStatus } from "./Hourglass.svelte";
 
-	interface Props {
-		noSpeaker?: boolean;
-		speakingTime?: number | null;
-		startTimestamp?: Date | null;
-		timeLeft?: number | null;
+interface Props {
+	noSpeaker?: boolean;
+	speakingTime?: number | null;
+	startTimestamp?: Date | null;
+	timeLeft?: number | null;
+}
+
+const {
+	noSpeaker = true,
+	speakingTime,
+	startTimestamp,
+	timeLeft,
+}: Props = $props();
+
+const calculatedTimeLeft = $derived.by(() => {
+	if (startTimestamp && timeLeft !== null && timeLeft !== undefined) {
+		return dayjs(startTimestamp).diff($serverTime, "seconds") + timeLeft;
 	}
+	if (timeLeft !== null && timeLeft !== undefined) {
+		return timeLeft;
+	}
+	return undefined;
+});
+const countdownDelta = $derived.by(() => {
+	if (noSpeaker) {
+		return dayjs.duration(speakingTime ?? 0, "seconds");
+	}
+	if (!startTimestamp || calculatedTimeLeft === undefined) {
+		return dayjs.duration(
+			timeLeft ? Math.abs(timeLeft) : (speakingTime ?? 0),
+			"seconds",
+		);
+	}
+	return dayjs.duration(Math.abs(calculatedTimeLeft), "seconds");
+});
 
-	let { noSpeaker = true, speakingTime, startTimestamp, timeLeft }: Props = $props();
+const speakingTimeDelta = $derived(
+	dayjs.duration(speakingTime ?? 0, "seconds"),
+);
 
-	let calculatedTimeLeft = $derived.by(() => {
-		if (startTimestamp && timeLeft !== null && timeLeft !== undefined) {
-			return dayjs(startTimestamp).diff($serverTime, 'seconds') + timeLeft;
-		}
-		if (timeLeft !== null && timeLeft !== undefined) {
-			return timeLeft;
-		}
-		return undefined;
-	});
-	let countdownDelta = $derived.by(() => {
-		if (noSpeaker) {
-			return dayjs.duration(speakingTime ?? 0, 'seconds');
-		}
-		if (!startTimestamp || calculatedTimeLeft === undefined) {
-			return dayjs.duration(timeLeft ? Math.abs(timeLeft) : (speakingTime ?? 0), 'seconds');
-		}
-		return dayjs.duration(Math.abs(calculatedTimeLeft), 'seconds');
-	});
+const overtime = $derived((calculatedTimeLeft ?? 0) < 0);
 
-	let speakingTimeDelta = $derived(dayjs.duration(speakingTime ?? 0, 'seconds'));
+const status: HourglassStatus = $derived.by(() => {
+	if (startTimestamp && (calculatedTimeLeft ?? 0) < 0) {
+		return "overtime";
+	}
+	if (startTimestamp && (calculatedTimeLeft ?? 0) >= 0) {
+		return "active";
+	}
+	return "paused";
+});
 
-	let overtime = $derived((calculatedTimeLeft ?? 0) < 0);
-
-	let status: HourglassStatus = $derived.by(() => {
-		if (startTimestamp && (calculatedTimeLeft ?? 0) < 0) {
-			return 'overtime';
-		}
-		if (startTimestamp && (calculatedTimeLeft ?? 0) >= 0) {
-			return 'active';
-		}
-		return 'paused';
-	});
-
-	let countdownDeltaFormatted = (delta: Duration) => {
-		return `${delta.hours() !== 0 ? delta.format('H:') : ''}${
-			delta.hours() !== 0 ? delta.format('mm:') : delta.format('m:')
-		}${delta.format('ss')}`;
-	};
+const countdownDeltaFormatted = (delta: Duration) => {
+	return `${delta.hours() !== 0 ? delta.format("H:") : ""}${
+		delta.hours() !== 0 ? delta.format("mm:") : delta.format("m:")
+	}${delta.format("ss")}`;
+};
 </script>
 
 <div class="flex items-center gap-2">

@@ -1,17 +1,17 @@
 <script lang="ts" generics="T">
-	type Tab = {
-		id: T;
-		faIcon?: string;
-		label?: string;
-	};
+type Tab = {
+	id: T;
+	faIcon?: string;
+	label?: string;
+};
 
-	interface Props {
-		tabs: Tab[];
-		activeTab: T;
-		onTabChange?: (tab: T) => void;
-	}
+interface Props {
+	tabs: Tab[];
+	activeTab: T;
+	onTabChange?: (tab: T) => void;
+}
 
-	let { tabs, activeTab = $bindable(), onTabChange }: Props = $props();
+const { tabs, activeTab = $bindable(), onTabChange }: Props = $props();
 </script>
 
 <div class="tabs tabs-box h-auto" role="tablist">

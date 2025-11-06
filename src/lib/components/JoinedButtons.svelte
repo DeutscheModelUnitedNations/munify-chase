@@ -1,33 +1,33 @@
 <script lang="ts">
-	interface Props {
-		buttons: Button[];
+interface Props {
+	buttons: Button[];
+}
+
+export interface Button {
+	faIcon?: string;
+	label: string;
+	shortcut?: string;
+	action?: () => void;
+	href?: string;
+	active?: boolean;
+}
+
+const { buttons }: Props = $props();
+
+let container: HTMLDivElement;
+let overflowKbd = $state(false);
+
+const checkOverflow = () => {
+	if (container) {
+		overflowKbd = container.scrollWidth > container.clientWidth;
 	}
+};
 
-	export interface Button {
-		faIcon?: string;
-		label: string;
-		shortcut?: string;
-		action?: () => void;
-		href?: string;
-		active?: boolean;
-	}
-
-	let { buttons }: Props = $props();
-
-	let container: HTMLDivElement;
-	let overflowKbd = $state(false);
-
-	const checkOverflow = () => {
-		if (container) {
-			overflowKbd = container.scrollWidth > container.clientWidth;
-		}
-	};
-
-	$effect(() => {
-		checkOverflow();
-		window.addEventListener('resize', checkOverflow);
-		return () => window.removeEventListener('resize', checkOverflow);
-	});
+$effect(() => {
+	checkOverflow();
+	window.addEventListener("resize", checkOverflow);
+	return () => window.removeEventListener("resize", checkOverflow);
+});
 </script>
 
 {#snippet ButtonContent(button: Button)}

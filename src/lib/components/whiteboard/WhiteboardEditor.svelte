@@ -1,36 +1,41 @@
 <script lang="ts">
-	import type { Readable } from 'svelte/store';
-	import { BubbleMenu, createEditor, Editor, EditorContent } from 'svelte-tiptap';
-	import { Placeholder } from '@tiptap/extension-placeholder';
-	import WhiteboardBubbleMenu from './WhiteboardBubbleMenu.svelte';
-	import WhiteboardStaticMenu from './WhiteboardStaticMenu.svelte';
-	import { extensions } from './whiteboardEditorConfig';
-	import { m } from '$lib/paraglide/messages';
-	import { onMount } from 'svelte';
+import { Placeholder } from "@tiptap/extension-placeholder";
+import { onMount } from "svelte";
+import type { Readable } from "svelte/store";
+import {
+	BubbleMenu,
+	createEditor,
+	type Editor,
+	EditorContent,
+} from "svelte-tiptap";
+import { m } from "$lib/paraglide/messages";
+import WhiteboardBubbleMenu from "./WhiteboardBubbleMenu.svelte";
+import WhiteboardStaticMenu from "./WhiteboardStaticMenu.svelte";
+import { extensions } from "./whiteboardEditorConfig";
 
-	interface Props {
-		whiteboardContent?: string | null;
-	}
+interface Props {
+	whiteboardContent?: string | null;
+}
 
-	let { whiteboardContent = $bindable() }: Props = $props();
+let { whiteboardContent = $bindable() }: Props = $props();
 
-	onMount(() => {
-		editor = createEditor({
-			extensions: [
-				Placeholder.configure({
-					placeholder: m.whiteboardPlaceholder()
-				}),
-				...extensions
-			],
-			content: whiteboardContent,
-			autofocus: true,
-			onUpdate: ({ editor }) => {
-				whiteboardContent = editor.getHTML();
-			}
-		});
+onMount(() => {
+	editor = createEditor({
+		extensions: [
+			Placeholder.configure({
+				placeholder: m.whiteboardPlaceholder(),
+			}),
+			...extensions,
+		],
+		content: whiteboardContent,
+		autofocus: true,
+		onUpdate: ({ editor }) => {
+			whiteboardContent = editor.getHTML();
+		},
 	});
+});
 
-	let editor = $state<Readable<Editor>>();
+let editor = $state<Readable<Editor>>();
 </script>
 
 {#if editor && $editor}

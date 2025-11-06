@@ -1,8 +1,8 @@
 <script lang="ts">
-	import dmunLogo from '$assets/dmunlogo/logo.png';
-	import { configPublic } from '$config/public';
-	import LanguageSwitcher from '$lib/components/LanguageSwitcher.svelte';
-	import * as m from '$lib/paraglide/messages.js';
+import dmunLogo from "$assets/dmunlogo/logo.png";
+import { configPublic } from "$config/public";
+import LanguageSwitcher from "$lib/components/LanguageSwitcher.svelte";
+import * as m from "$lib/paraglide/messages.js";
 </script>
 
 <div class="w-full p-4">

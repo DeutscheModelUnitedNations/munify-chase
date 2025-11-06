@@ -1,79 +1,79 @@
 <script lang="ts">
-	import { m } from '$lib/paraglide/messages';
+import { m } from "$lib/paraglide/messages";
 
-	interface Props {
-		showModal: boolean;
-		resolve: (value: string | null) => void;
-	}
+interface Props {
+	showModal: boolean;
+	resolve: (value: string | null) => void;
+}
 
-	let { showModal = $bindable(), resolve }: Props = $props();
+let { showModal = $bindable(), resolve }: Props = $props();
 
-	let activeTab = $state<'UPLOAD' | 'URL'>('UPLOAD');
-	let imageUrl = $state('');
-	let uploadedFile = $state<File | null>(null);
-	let isUploading = $state(false);
-	let uploadError = $state('');
+const activeTab = $state<"UPLOAD" | "URL">("UPLOAD");
+const imageUrl = $state("");
+let uploadedFile = $state<File | null>(null);
+let isUploading = $state(false);
+let uploadError = $state("");
 
-	const MAX_FILE_SIZE = 1048576; // 1MB in bytes
+const MAX_FILE_SIZE = 1048576; // 1MB in bytes
 
-	// Utility function to convert File to Base64
-	function fileToBase64(file: File): Promise<string> {
-		return new Promise((resolve, reject) => {
-			const reader = new FileReader();
-			reader.readAsDataURL(file);
-			reader.onload = () => resolve(reader.result as string);
-			reader.onerror = (error) => reject(error);
-		});
-	}
+// Utility function to convert File to Base64
+function fileToBase64(file: File): Promise<string> {
+	return new Promise((resolve, reject) => {
+		const reader = new FileReader();
+		reader.readAsDataURL(file);
+		reader.onload = () => resolve(reader.result as string);
+		reader.onerror = (error) => reject(error);
+	});
+}
 
-	function handleFileInput(event: Event) {
-		const input = event.target as HTMLInputElement;
-		if (input.files && input.files[0]) {
-			const file = input.files[0];
+function handleFileInput(event: Event) {
+	const input = event.target as HTMLInputElement;
+	if (input.files && input.files[0]) {
+		const file = input.files[0];
 
-			if (file.size > MAX_FILE_SIZE) {
-				uploadError = 'File size exceeds 1MB limit';
-				uploadedFile = null;
-				return;
-			}
-
-			uploadedFile = file;
-			uploadError = '';
-		}
-	}
-
-	async function handleUpload() {
-		if (!uploadedFile) {
-			uploadError = 'Please select a file';
+		if (file.size > MAX_FILE_SIZE) {
+			uploadError = "File size exceeds 1MB limit";
+			uploadedFile = null;
 			return;
 		}
 
-		isUploading = true;
+		uploadedFile = file;
+		uploadError = "";
+	}
+}
 
-		try {
-			// Convert file to Base64 string
-			const base64String = await fileToBase64(uploadedFile);
-			resolve(base64String);
-			showModal = false;
-		} catch (error) {
-			uploadError = 'Upload failed';
-		} finally {
-			isUploading = false;
-		}
+async function handleUpload() {
+	if (!uploadedFile) {
+		uploadError = "Please select a file";
+		return;
 	}
 
-	function handleUrlSubmit() {
-		if (!imageUrl) {
-			return;
-		}
-		resolve(imageUrl);
+	isUploading = true;
+
+	try {
+		// Convert file to Base64 string
+		const base64String = await fileToBase64(uploadedFile);
+		resolve(base64String);
 		showModal = false;
+	} catch (error) {
+		uploadError = "Upload failed";
+	} finally {
+		isUploading = false;
 	}
+}
 
-	function handleCancel() {
-		resolve(null);
-		showModal = false;
+function handleUrlSubmit() {
+	if (!imageUrl) {
+		return;
 	}
+	resolve(imageUrl);
+	showModal = false;
+}
+
+function handleCancel() {
+	resolve(null);
+	showModal = false;
+}
 </script>
 
 <dialog class="modal" open={showModal}>

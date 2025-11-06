@@ -1,11 +1,11 @@
 <script lang="ts">
-	import { m } from '$lib/paraglide/messages';
+import { m } from "$lib/paraglide/messages";
 
-	interface Props {
-		data?: string | null;
-	}
+interface Props {
+	data?: string | null;
+}
 
-	let { data }: Props = $props();
+const { data }: Props = $props();
 </script>
 
 <div class="prose leading-6">

@@ -1,26 +1,26 @@
 <script lang="ts">
-	import { m, stateOfDebate } from '$lib/paraglide/messages';
-	import toast from 'svelte-french-toast';
-	import Combobox from '../Combobox.svelte';
-	import { graphql } from '$houdini';
-	import stateOfDebateTemplates from '$lib/data/stateOfDebateTemplates';
-	import { promiseToastStrings } from '$lib/utils/toast';
+import toast from "svelte-french-toast";
+import { graphql } from "$houdini";
+import stateOfDebateTemplates from "$lib/data/stateOfDebateTemplates";
+import { m, stateOfDebate } from "$lib/paraglide/messages";
+import { promiseToastStrings } from "$lib/utils/toast";
+import Combobox from "../Combobox.svelte";
 
-	interface Props {
-		committeeId: string;
-		oldStateOfDebate?: string | null;
-		abort?: () => void;
-	}
+interface Props {
+	committeeId: string;
+	oldStateOfDebate?: string | null;
+	abort?: () => void;
+}
 
-	let { committeeId, oldStateOfDebate, abort }: Props = $props();
+const { committeeId, oldStateOfDebate, abort }: Props = $props();
 
-	let value = $state(oldStateOfDebate ?? '');
+const value = $state(oldStateOfDebate ?? "");
 
-	const presets = stateOfDebateTemplates.map((preset) => ({
-		label: preset
-	}));
+const presets = stateOfDebateTemplates.map((preset) => ({
+	label: preset,
+}));
 
-	const UpdateStateOfDebateMutation = graphql(`
+const UpdateStateOfDebateMutation = graphql(`
 		mutation UpdateStateOfDebate($stateOfDebate: String!, $committeeId: ID!) {
 			updateCommittee(id: $committeeId, stateOfDebate: $stateOfDebate) {
 				id
@@ -29,15 +29,15 @@
 		}
 	`);
 
-	const submitState = async () => {
-		await toast.promise(
-			UpdateStateOfDebateMutation.mutate({
-				stateOfDebate: value,
-				committeeId
-			}),
-			promiseToastStrings(m.stateOfDebate(), 'update')
-		);
-	};
+const submitState = async () => {
+	await toast.promise(
+		UpdateStateOfDebateMutation.mutate({
+			stateOfDebate: value,
+			committeeId,
+		}),
+		promiseToastStrings(m.stateOfDebate(), "update"),
+	);
+};
 </script>
 
 <div class="flex flex-col gap-4">

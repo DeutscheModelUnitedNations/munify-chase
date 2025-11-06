@@ -1,57 +1,57 @@
 <script lang="ts">
-	import { type CommitteePresentationQuery$result } from '$houdini';
+import type { CommitteePresentationQuery$result } from "$houdini";
 
-	interface Props {
-		size?: 'xs' | 'sm' | 'md' | 'lg' | 'full';
-		representation?: Partial<
-			NonNullable<
-				CommitteePresentationQuery$result['findFirstCommittee']['members']
-			>[number]['representation']
-		>;
-		placeholder?: boolean;
+interface Props {
+	size?: "xs" | "sm" | "md" | "lg" | "full";
+	representation?: Partial<
+		NonNullable<
+			CommitteePresentationQuery$result["findFirstCommittee"]["members"]
+		>[number]["representation"]
+	>;
+	placeholder?: boolean;
+}
+
+const { size = "md", placeholder = false, representation }: Props = $props();
+
+const flagClassNames = () => {
+	switch (size) {
+		case "xs":
+			return "w-[2rem] h-[1.5rem]";
+		case "sm":
+			return "w-[4rem] h-[3rem]";
+		case "md":
+			return "w-[6rem] h-[4.5rem]";
+		case "lg":
+			return "w-[8rem] h-[6rem]";
+		case "full":
+			return "w-full aspect-[4/3]";
 	}
+};
 
-	let { size = 'md', placeholder = false, representation }: Props = $props();
+const iconClassNames = () => {
+	switch (size) {
+		case "xs":
+			return "text-base";
+		case "sm":
+			return "text-lg";
+		case "md":
+			return "text-2xl";
+		case "lg":
+			return "text-5xl";
+	}
+};
 
-	const flagClassNames = () => {
-		switch (size) {
-			case 'xs':
-				return 'w-[2rem] h-[1.5rem]';
-			case 'sm':
-				return 'w-[4rem] h-[3rem]';
-			case 'md':
-				return 'w-[6rem] h-[4.5rem]';
-			case 'lg':
-				return 'w-[8rem] h-[6rem]';
-			case 'full':
-				return 'w-full aspect-[4/3]';
-		}
-	};
-
-	const iconClassNames = () => {
-		switch (size) {
-			case 'xs':
-				return 'text-base';
-			case 'sm':
-				return 'text-lg';
-			case 'md':
-				return 'text-2xl';
-			case 'lg':
-				return 'text-5xl';
-		}
-	};
-
-	const placeholderIcon = () => {
-		const worldIcons = [
-			'earth-americas',
-			'earth-europe',
-			'earth-asia',
-			'earth-africa',
-			'earth-oceania'
-		];
-		const randomIndex = Math.floor(Math.random() * worldIcons.length);
-		return worldIcons[randomIndex];
-	};
+const placeholderIcon = () => {
+	const worldIcons = [
+		"earth-americas",
+		"earth-europe",
+		"earth-asia",
+		"earth-africa",
+		"earth-oceania",
+	];
+	const randomIndex = Math.floor(Math.random() * worldIcons.length);
+	return worldIcons[randomIndex];
+};
 </script>
 
 <div

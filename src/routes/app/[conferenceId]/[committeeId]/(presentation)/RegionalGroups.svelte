@@ -1,50 +1,55 @@
 <script lang="ts">
-	import type { CommitteePresentationQuery$result, RegionalGroupEnum$options } from '$houdini';
-	import Flag from '$lib/components/Flag.svelte';
-	import { m } from '$lib/paraglide/messages';
-	import hotkeys from 'hotkeys-js';
-	import { onMount } from 'svelte';
-	import { cubicIn, cubicOut } from 'svelte/easing';
-	import { fly } from 'svelte/transition';
+import hotkeys from "hotkeys-js";
+import { onMount } from "svelte";
+import { cubicIn, cubicOut } from "svelte/easing";
+import { fly } from "svelte/transition";
+import type {
+	CommitteePresentationQuery$result,
+	RegionalGroupEnum$options,
+} from "$houdini";
+import Flag from "$lib/components/Flag.svelte";
+import { m } from "$lib/paraglide/messages";
 
-	interface Props {
-		open: boolean;
-		committeeMembers: CommitteePresentationQuery$result['findFirstCommittee']['members'];
+interface Props {
+	open: boolean;
+	committeeMembers: CommitteePresentationQuery$result["findFirstCommittee"]["members"];
+}
+
+const { open, committeeMembers }: Props = $props();
+
+let activeGroup: RegionalGroupEnum$options = $state("AFRICA");
+
+const nextGroup = (group: RegionalGroupEnum$options) => {
+	switch (group) {
+		case "AFRICA":
+			return "ASIA_PACIFIC";
+		case "ASIA_PACIFIC":
+			return "EASTERN_EUROPE";
+		case "EASTERN_EUROPE":
+			return "LATIN_AMERICA_CARIBBEAN";
+		case "LATIN_AMERICA_CARIBBEAN":
+			return "WESTERN_EUROPE_OTHERS";
+		default:
+			return "AFRICA";
 	}
+};
 
-	let { open, committeeMembers }: Props = $props();
+const getGroupMembers = (group: RegionalGroupEnum$options) =>
+	committeeMembers.filter(
+		(member) => member.representation?.regionalGroup === group,
+	);
 
-	let activeGroup: RegionalGroupEnum$options = $state('AFRICA');
-
-	const nextGroup = (group: RegionalGroupEnum$options) => {
-		switch (group) {
-			case 'AFRICA':
-				return 'ASIA_PACIFIC';
-			case 'ASIA_PACIFIC':
-				return 'EASTERN_EUROPE';
-			case 'EASTERN_EUROPE':
-				return 'LATIN_AMERICA_CARIBBEAN';
-			case 'LATIN_AMERICA_CARIBBEAN':
-				return 'WESTERN_EUROPE_OTHERS';
-			default:
-				return 'AFRICA';
-		}
-	};
-
-	const getGroupMembers = (group: RegionalGroupEnum$options) =>
-		committeeMembers.filter((member) => member.representation?.regionalGroup === group);
-
-	$effect(() => {
-		if (activeGroup) {
-			setTimeout(
-				() => {
-					activeGroup = nextGroup(activeGroup);
-				},
-				Math.max(getGroupMembers(activeGroup).length * 500, 5000)
-			);
-			console.log(Math.max(getGroupMembers(activeGroup).length * 500, 5000));
-		}
-	});
+$effect(() => {
+	if (activeGroup) {
+		setTimeout(
+			() => {
+				activeGroup = nextGroup(activeGroup);
+			},
+			Math.max(getGroupMembers(activeGroup).length * 500, 5000),
+		);
+		console.log(Math.max(getGroupMembers(activeGroup).length * 500, 5000));
+	}
+});
 </script>
 
 {#snippet Modal(group: RegionalGroupEnum$options)}

@@ -4,7 +4,7 @@ import { basics } from './basics';
 import { schema } from '$api/db/db';
 import { isDMUNEmail } from '$api/services/isDMUNEmail';
 
-const { arg, ref, pubsub, table } = basics('conferenceUser');
+const { ref, pubsub, table } = basics('conferenceUser');
 
 abilityBuilder.conferenceUser.allow('read').when(({ mustBeLoggedIn }) => {
 	const user = mustBeLoggedIn();

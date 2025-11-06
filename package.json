@@ -32,7 +32,7 @@
 		"@fontsource/roboto-mono": "^5.2.8",
 		"@fontsource/vollkorn": "^5.2.10",
 		"@inlang/paraglide-js": "^2.3.2",
-		"@m1212e/rumble": "^0.11.6",
+		"@m1212e/rumble": "^0.12.13",
 		"@m1212e/sveltekit-oidc": "^0.0.33",
 		"@sveltejs/adapter-node": "^5.3.2",
 		"@sveltejs/kit": "^2.43.1",
@@ -51,9 +51,10 @@
 		"@types/pg": "^8.15.5",
 		"bits-ui": "^2.11.0",
 		"concurrently": "^9.2.1",
+		"daisyui": "^5.1.14",
 		"dayjs": "^1.11.18",
 		"dexie": "^4.2.0",
-		"drizzle-seed": "^0.3.1-f92627f",
+		"drizzle-seed": "^0.3.1-dfa4db3",
 		"eslint": "^9.36.0",
 		"eslint-config-prettier": "^10.1.8",
 		"eslint-plugin-svelte": "^3.12.4",
@@ -85,8 +86,8 @@
 		"zod": "^4.1.11"
 	},
 	"dependencies": {
-		"drizzle-kit": "^1.0.0-beta.1-f92627f",
-		"drizzle-orm": "^1.0.0-beta.1-f92627f",
+		"drizzle-kit": "^1.0.0-beta.1-dfa4db3",
+		"drizzle-orm": "^1.0.0-beta.1-dfa4db3",
 		"postgres": "^3.4.7"
 	}
 }

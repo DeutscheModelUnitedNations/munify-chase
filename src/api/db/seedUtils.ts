@@ -1,4 +1,3 @@
-import type { RegionalGroupEnum$options, RepresentationTypeEnum$options } from '$houdini';
 import worldCountries from 'world-countries';
 
 const regionalGroupMapping: Record<

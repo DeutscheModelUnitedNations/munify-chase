@@ -1,17 +1,8 @@
 import { db, schema } from '$api/db/db';
-import {
-	schemaBuilder,
-	pubsub as rumblePubsub,
-	arg as rumbleArg,
-	abilityBuilder,
-	object,
-	query
-} from '$api/rumble';
+import { schemaBuilder, pubsub as rumblePubsub, abilityBuilder, object, query } from '$api/rumble';
 import { and, eq } from 'drizzle-orm';
-import { basics } from './basics';
 import { assertFindFirstExists } from '@m1212e/rumble';
 import { GraphQLError } from 'graphql';
-import { SpeakerOnListRef, SpeakerOnWhereArgs } from './speakerOnList';
 import { isDMUNEmail } from '$api/services/isDMUNEmail';
 
 // const { arg, ref, pubsub: speakersListPubSub, table } = basics('speakersList');

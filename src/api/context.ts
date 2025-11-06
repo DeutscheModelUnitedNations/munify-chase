@@ -1,4 +1,4 @@
-import { configPrivate } from '$config/private';
+import { configPrivate } from '$lib/config/private';
 import type { RequestEvent } from '@sveltejs/kit';
 
 export const oidcRoles = ['admin', 'member', 'service_user'] as const;

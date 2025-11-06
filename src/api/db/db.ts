@@ -1,6 +1,6 @@
 import { drizzle } from 'drizzle-orm/postgres-js';
 import * as schemaInternal from './schema';
-import { configPrivate } from '$config/private';
+import { configPrivate } from '$lib/config/private';
 import { relations as relationsInternal } from './relations';
 
 export const db = drizzle(configPrivate.DATABASE_URL, {

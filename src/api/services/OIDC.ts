@@ -1,7 +1,7 @@
 import { db, schema } from '$api/db/db';
 import { building, dev } from '$app/environment';
-import { configPrivate } from '$config/private';
-import { configPublic } from '$config/public';
+import { configPrivate } from '$lib/config/private';
+import { configPublic } from '$lib/config/public';
 import { makeOIDC } from '@m1212e/sveltekit-oidc';
 
 export const OIDC = !building

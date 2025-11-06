@@ -1,4 +1,3 @@
-import type { CommitteeStatusEnum$options } from '$houdini';
 import * as m from '$lib/paraglide/messages.js';
 
 export function getCommitteeStatusText(

@@ -10,9 +10,9 @@
  * @typeParam U - The second type.
  */
 export type MergeWithUndefined<T, U> = {
-  [K in keyof T | keyof U]: K extends keyof T
-    ? T[K]
-    : K extends keyof U
-      ? U[K]
-      : undefined;
+	[K in keyof T | keyof U]: K extends keyof T
+		? T[K]
+		: K extends keyof U
+			? U[K]
+			: undefined;
 };

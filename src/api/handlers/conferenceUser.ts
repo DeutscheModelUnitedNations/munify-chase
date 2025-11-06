@@ -7,10 +7,10 @@ import { basics } from "./basics";
 const { ref, pubsub, table } = basics("conferenceUser");
 
 abilityBuilder.conferenceUser.allow("read").when(({ mustBeLoggedIn }) => {
-  const user = mustBeLoggedIn();
-  if (user?.email && isDMUNEmail(user.email)) {
-    return "allow";
-  }
+	const user = mustBeLoggedIn();
+	if (user?.email && isDMUNEmail(user.email)) {
+		return "allow";
+	}
 });
 
 // abilityBuilder.conferenceUser.allow('read').when(({ user }) => {

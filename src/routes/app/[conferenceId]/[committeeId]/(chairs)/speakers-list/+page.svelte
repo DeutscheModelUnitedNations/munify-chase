@@ -1,6 +1,6 @@
 <script lang="ts">
 import { onMount } from "svelte";
-import question from "$assets/undraw/question.svg";
+import question from "$lib/assets/undraw/question.svg";
 import BasicCard from "$lib/components/BasicCard.svelte";
 import DevPlaceholder from "$lib/components/DevPlaceholder.svelte";
 import Majorities from "$lib/components/Majorities.svelte";

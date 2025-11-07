@@ -2,8 +2,8 @@
 import { ScrollArea } from "bits-ui";
 import dayjs from "dayjs";
 import { onMount } from "svelte";
-import emptyStreet from "$assets/undraw/empty_street.svg";
 import { graphql } from "$houdini";
+import emptyStreet from "$lib/assets/undraw/empty_street.svg";
 import BasicCard from "$lib/components/BasicCard.svelte";
 import AgendaItemChanger from "$lib/components/committee/AgendaItemChanger.svelte";
 import StateOfDebate from "$lib/components/committee/StateOfDebateChanger.svelte";

@@ -1,7 +1,7 @@
 <script lang="ts">
-import dmunLogo from "$assets/dmunlogo/logo.png";
-import { configPublic } from "$config/public";
+import dmunLogo from "$lib/assets/dmunlogo/logo.png";
 import LanguageSwitcher from "$lib/components/LanguageSwitcher.svelte";
+import { configPublic } from "$lib/config/public";
 import * as m from "$lib/paraglide/messages.js";
 </script>
 

@@ -14,7 +14,7 @@
         "@fontsource/roboto-mono": "^5.2.8",
         "@fontsource/vollkorn": "^5.2.10",
         "@inlang/paraglide-js": "^2.4.0",
-        "@m1212e/rumble": "^0.12.14",
+        "@m1212e/rumble": "^0.12.16",
         "@m1212e/sveltekit-oidc": "^0.0.33",
         "@sveltejs/adapter-node": "^5.4.0",
         "@sveltejs/kit": "^2.48.4",
@@ -224,7 +224,7 @@
 
     "@lix-js/server-protocol-schema": ["@lix-js/server-protocol-schema@0.1.1", "", {}, "sha512-jBeALB6prAbtr5q4vTuxnRZZv1M2rKe8iNqRQhFJ4Tv7150unEa0vKyz0hs8Gl3fUGsWaNJBh3J8++fpbrpRBQ=="],
 
-    "@m1212e/rumble": ["@m1212e/rumble@0.12.14", "", { "dependencies": { "@escape.tech/graphql-armor": "^3.1.7", "@graphql-yoga/plugin-disable-introspection": "^2.17.1", "@pothos/core": "^4.10.0", "@pothos/plugin-drizzle": "^0.13.0", "@pothos/plugin-smart-subscriptions": "^4.1.4", "@urql/core": "^6.0.1", "@urql/exchange-graphcache": "^8.1.0", "es-toolkit": "^1.41.0", "graphql": "^16.12.0", "graphql-scalars": "^1.25.0", "graphql-yoga": "^5.16.1", "pluralize": "^8.0.0", "sofa-api": "^0.18.8", "wonka": "^6.3.5" }, "peerDependencies": { "drizzle-orm": "^1", "typescript": "^5" } }, "sha512-KkCAVQlKvcNRu8N+rxA+odwwkoyQVzllt2osi9S3gPYczjyL3+q7nLyhZw4/y4/Heekr5w4bRd0Wf1ywZwDwXQ=="],
+    "@m1212e/rumble": ["@m1212e/rumble@0.12.16", "", { "dependencies": { "@escape.tech/graphql-armor": "^3.1.7", "@graphql-yoga/plugin-disable-introspection": "^2.17.1", "@pothos/core": "^4.10.0", "@pothos/plugin-drizzle": "^0.13.0", "@pothos/plugin-smart-subscriptions": "^4.1.4", "@urql/core": "^6.0.1", "@urql/exchange-graphcache": "^8.1.0", "es-toolkit": "^1.41.0", "graphql": "^16.12.0", "graphql-scalars": "^1.25.0", "graphql-yoga": "^5.16.1", "pluralize": "^8.0.0", "sofa-api": "^0.18.8", "wonka": "^6.3.5" }, "peerDependencies": { "drizzle-orm": "^1", "typescript": "^5" } }, "sha512-X9M35tZcMfSHyhMNdY9JOh7WwBs7hHI14xLisAR45DKhduNJ3Nhd7/FYAmAhg3I9LAvAHb5dJD6NOIfKzuWSeg=="],
 
     "@m1212e/sveltekit-oidc": ["@m1212e/sveltekit-oidc@0.0.33", "", { "dependencies": { "@sinclair/typebox": "^0.34.37", "cryptr": "^6.3.0", "jose": "^6.0.11", "openid-client": "^6.6.1" }, "peerDependencies": { "svelte": "^5.0.0" } }, "sha512-T/M/GErz8/X6F2vVGuOEOw/OZV9ktP2Yo/D/NInNseO2j9RY1Lp36QSQOGtMlL1LF/kBKOyKbxpbpH0KESKCvw=="],
 

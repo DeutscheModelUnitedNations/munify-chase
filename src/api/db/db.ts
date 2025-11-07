@@ -5,6 +5,7 @@ import * as schemaInternal from "./schema";
 
 export const db = drizzle(configPrivate.DATABASE_URL, {
 	relations: relationsInternal,
+	schema: schemaInternal,
 	casing: "snake_case",
 });
 

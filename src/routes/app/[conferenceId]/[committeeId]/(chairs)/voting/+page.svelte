@@ -1,6 +1,6 @@
 <script lang="ts">
 import { onMount } from "svelte";
-import emptyStreet from "$assets/undraw/empty_street.svg";
+import emptyStreet from "$lib/assets/undraw/empty_street.svg";
 import BasicCard from "$lib/components/BasicCard.svelte";
 import Majorities from "$lib/components/Majorities.svelte";
 import UndrawError from "$lib/components/UndrawError.svelte";

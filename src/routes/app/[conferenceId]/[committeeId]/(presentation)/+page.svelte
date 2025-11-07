@@ -3,7 +3,7 @@ import { liveQuery } from "dexie";
 import { type Component, onMount } from "svelte";
 import Grid, { GridItem } from "svelte-grid-extended";
 import { browser } from "$app/environment";
-import emptyStreet from "$assets/undraw/empty_street.svg";
+import emptyStreet from "$lib/assets/undraw/empty_street.svg";
 import AbbreviationInfoBox from "$lib/components/AbbreviationInfoBox.svelte";
 import AdoptionConfetti from "$lib/components/AdoptionConfetti.svelte";
 import DevPlaceholder from "$lib/components/DevPlaceholder.svelte";

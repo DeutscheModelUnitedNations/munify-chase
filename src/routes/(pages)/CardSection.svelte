@@ -1,8 +1,8 @@
 <script lang="ts">
 import { fly } from "svelte/transition";
-import candidate from "$assets/undraw/candidate.svg";
-import teamCollaboration from "$assets/undraw/team_collaboration.svg";
-import voting from "$assets/undraw/voting.svg";
+import candidate from "$lib/assets/undraw/candidate.svg";
+import teamCollaboration from "$lib/assets/undraw/team_collaboration.svg";
+import voting from "$lib/assets/undraw/voting.svg";
 import { m } from "$lib/paraglide/messages";
 import Card from "./Card.svelte";
 </script>

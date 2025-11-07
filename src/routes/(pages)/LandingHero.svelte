@@ -1,13 +1,13 @@
 <script lang="ts">
 import { fade, fly } from "svelte/transition";
-import blob1 from "$assets/misc/blobs/blob_1.svg";
-import blob2 from "$assets/misc/blobs/blob_2.svg";
-import blob3 from "$assets/misc/blobs/blob_3.svg";
-import blob4 from "$assets/misc/blobs/blob_4.svg";
-import blob5 from "$assets/misc/blobs/blob_5.svg";
-import aroundTheWorld from "$assets/undraw/around_the_world.svg";
-import theWorldIsMine from "$assets/undraw/the_world_is_mine.svg";
-import world from "$assets/undraw/world.svg";
+import blob1 from "$lib/assets/misc/blobs/blob_1.svg";
+import blob2 from "$lib/assets/misc/blobs/blob_2.svg";
+import blob3 from "$lib/assets/misc/blobs/blob_3.svg";
+import blob4 from "$lib/assets/misc/blobs/blob_4.svg";
+import blob5 from "$lib/assets/misc/blobs/blob_5.svg";
+import aroundTheWorld from "$lib/assets/undraw/around_the_world.svg";
+import theWorldIsMine from "$lib/assets/undraw/the_world_is_mine.svg";
+import world from "$lib/assets/undraw/world.svg";
 import { m } from "$lib/paraglide/messages";
 
 const availableIllustrations = [theWorldIsMine, world, aroundTheWorld];

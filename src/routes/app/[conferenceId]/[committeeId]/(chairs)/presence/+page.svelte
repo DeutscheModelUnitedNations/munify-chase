@@ -3,7 +3,7 @@ import { assertDirective } from "graphql";
 import { onMount } from "svelte";
 import toast from "svelte-french-toast";
 import { regionalGroup, representation } from "$api/db/schema";
-import emptyStreet from "$assets/undraw/empty_street.svg";
+import emptyStreet from "$lib/assets/undraw/empty_street.svg";
 import BasicCard from "$lib/components/BasicCard.svelte";
 import Flag from "$lib/components/Flag.svelte";
 import Majorities from "$lib/components/Majorities.svelte";

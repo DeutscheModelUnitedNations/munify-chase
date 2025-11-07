@@ -13,6 +13,11 @@ const config = {
 			$api: "src/api",
 		},
 	},
+	compilerOptions: {
+		experimental: {
+			async: true,
+		},
+	},
 };
 
 export default config;

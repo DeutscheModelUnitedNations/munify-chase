@@ -4,7 +4,7 @@ import { blur } from "svelte/transition";
 export type HourglassStatus = "active" | "paused" | "overtime";
 
 interface Props {
-	status: HourglassStatus;
+  status: HourglassStatus;
 }
 
 const { status }: Props = $props();
@@ -12,24 +12,24 @@ const { status }: Props = $props();
 let activeIcon = $state("fa-hourglass-start");
 
 $effect(() => {
-	if (status !== "active") {
-		return;
-	}
-	const animation = setInterval(() => {
-		setTimeout(() => {
-			activeIcon = "fa-hourglass-half";
-		}, 500);
-		setTimeout(() => {
-			activeIcon = "fa-hourglass-end";
-		}, 1000);
-		setTimeout(() => {
-			activeIcon += " hourglass-animation";
-		}, 1500);
-		setTimeout(() => {
-			activeIcon = "fa-hourglass-start";
-		}, 2000);
-	}, 2000);
-	return () => clearInterval(animation);
+  if (status !== "active") {
+    return;
+  }
+  const animation = setInterval(() => {
+    setTimeout(() => {
+      activeIcon = "fa-hourglass-half";
+    }, 500);
+    setTimeout(() => {
+      activeIcon = "fa-hourglass-end";
+    }, 1000);
+    setTimeout(() => {
+      activeIcon += " hourglass-animation";
+    }, 1500);
+    setTimeout(() => {
+      activeIcon = "fa-hourglass-start";
+    }, 2000);
+  }, 2000);
+  return () => clearInterval(animation);
 });
 </script>
 

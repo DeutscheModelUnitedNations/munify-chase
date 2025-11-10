@@ -2,11 +2,11 @@
 import ComingSoonRibbon from "./ComingSoonRibbon.svelte";
 
 interface Props {
-	src: string;
-	alt: string;
-	header: string;
-	text: string;
-	comingSoonRibbon?: boolean;
+  src: string;
+  alt: string;
+  header: string;
+  text: string;
+  comingSoonRibbon?: boolean;
 }
 
 const { src, alt, header, text, comingSoonRibbon = false }: Props = $props();

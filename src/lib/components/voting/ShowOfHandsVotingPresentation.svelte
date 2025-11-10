@@ -4,8 +4,8 @@ import { onMount } from "svelte";
 import { cubicIn, cubicOut } from "svelte/easing";
 import { blur, fly } from "svelte/transition";
 import type {
-	CommitteePresentationQuery$result,
-	RegionalGroupEnum$options,
+  CommitteePresentationQuery$result,
+  RegionalGroupEnum$options,
 } from "$houdini";
 import Flag from "$lib/components/Flag.svelte";
 import type { CommitteeSettings, VotingStage } from "$lib/local-db/localDB";
@@ -13,72 +13,72 @@ import { m } from "$lib/paraglide/messages";
 import ResultChart from "./ResultChart.svelte";
 
 interface Props {
-	committeeSettings?: CommitteeSettings;
+  committeeSettings?: CommitteeSettings;
 }
 const { committeeSettings }: Props = $props();
 
 const resultBoxes = $derived.by(() => {
-	const boxes = [
-		{
-			faIcon: "fa-circle-plus",
-			value: committeeSettings?.showOfHandsVotingVotesPro || 0,
-			classes: "bg-success text-success-content",
-		},
-	];
-	if (committeeSettings?.votingWithAbstentions) {
-		boxes.push({
-			faIcon: "fa-circle",
-			value: committeeSettings?.showOfHandsVotingVotesAbstain || 0,
-			classes: "bg-info text-info-content",
-		});
-	}
+  const boxes = [
+    {
+      faIcon: "fa-circle-plus",
+      value: committeeSettings?.showOfHandsVotingVotesPro || 0,
+      classes: "bg-success text-success-content",
+    },
+  ];
+  if (committeeSettings?.votingWithAbstentions) {
+    boxes.push({
+      faIcon: "fa-circle",
+      value: committeeSettings?.showOfHandsVotingVotesAbstain || 0,
+      classes: "bg-info text-info-content",
+    });
+  }
 
-	boxes.push({
-		faIcon: "fa-circle-minus",
-		value: committeeSettings?.showOfHandsVotingVotesCon || 0,
-		classes: "bg-error text-error-content",
-	});
+  boxes.push({
+    faIcon: "fa-circle-minus",
+    value: committeeSettings?.showOfHandsVotingVotesCon || 0,
+    classes: "bg-error text-error-content",
+  });
 
-	return boxes;
+  return boxes;
 });
 
 const getClasses = (stage: VotingStage) => {
-	switch (stage) {
-		case "PRO":
-			return "bg-success text-success-content";
-		case "CON":
-			return "bg-error text-error-content";
-		case "ABSTAIN":
-			return "bg-info text-info-content";
-		default:
-			return "bg-base-200 text-base-content";
-	}
+  switch (stage) {
+    case "PRO":
+      return "bg-success text-success-content";
+    case "CON":
+      return "bg-error text-error-content";
+    case "ABSTAIN":
+      return "bg-info text-info-content";
+    default:
+      return "bg-base-200 text-base-content";
+  }
 };
 
 const getFaIcon = (stage: VotingStage) => {
-	switch (stage) {
-		case "PRO":
-			return "fa-circle-plus";
-		case "CON":
-			return "fa-circle-minus";
-		case "ABSTAIN":
-			return "fa-circle";
-		default:
-			return "";
-	}
+  switch (stage) {
+    case "PRO":
+      return "fa-circle-plus";
+    case "CON":
+      return "fa-circle-minus";
+    case "ABSTAIN":
+      return "fa-circle";
+    default:
+      return "";
+  }
 };
 
 const getText = (stage: VotingStage) => {
-	switch (stage) {
-		case "PRO":
-			return m.pro();
-		case "CON":
-			return m.con();
-		case "ABSTAIN":
-			return m.abstain();
-		default:
-			return "";
-	}
+  switch (stage) {
+    case "PRO":
+      return m.pro();
+    case "CON":
+      return m.con();
+    case "ABSTAIN":
+      return m.abstain();
+    default:
+      return "";
+  }
 };
 </script>
 

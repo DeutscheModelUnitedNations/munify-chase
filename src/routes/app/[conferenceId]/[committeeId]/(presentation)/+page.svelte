@@ -20,8 +20,8 @@ import { getPresentationLayoutPreset } from "$lib/data/presentationLayoutPresets
 import { localDB } from "$lib/local-db/localDB";
 import { m } from "$lib/paraglide/messages";
 import {
-	getCommitteeStatusIcon,
-	getCommitteeStatusText,
+  getCommitteeStatusIcon,
+  getCommitteeStatusText,
 } from "$lib/utils/committeeStatus";
 import { sortTranslatedCountries } from "$lib/utils/nationTranslationHelper.svelte";
 import type { PageData } from "./$houdini";
@@ -34,49 +34,49 @@ const committeeQuery = $derived(data?.CommitteePresentationQuery);
 const committee = $derived($committeeQuery.data?.findFirstCommittee);
 
 const committeeSettings = liveQuery(() =>
-	localDB.committeeSettings.get(data.committeeId),
+  localDB.committeeSettings.get(data.committeeId),
 );
 
 const layout = $derived(
-	($committeeSettings &&
-		getPresentationLayoutPreset($committeeSettings.layout)) ??
-		getPresentationLayoutPreset(),
+  ($committeeSettings &&
+    getPresentationLayoutPreset($committeeSettings.layout)) ??
+    getPresentationLayoutPreset(),
 );
 
 const speakersList = $derived(
-	committee?.activeAgendaItem?.speakersList.find(
-		(x) => x.type === "SPEAKERS_LIST",
-	),
+  committee?.activeAgendaItem?.speakersList.find(
+    (x) => x.type === "SPEAKERS_LIST",
+  ),
 );
 
 const commentsList = $derived(
-	committee?.activeAgendaItem?.speakersList.find(
-		(x) => x.type === "COMMENT_LIST",
-	),
+  committee?.activeAgendaItem?.speakersList.find(
+    (x) => x.type === "COMMENT_LIST",
+  ),
 );
 let speakersQueueResizeFn: () => void;
 let commentsQueueResizeFn: () => void;
 
 $effect(() => {
-	if (!layout || !committee) {
-		return;
-	}
-	resizeQueues();
+  if (!layout || !committee) {
+    return;
+  }
+  resizeQueues();
 });
 
 const resizeQueues = () => {
-	speakersQueueResizeFn?.();
-	commentsQueueResizeFn?.();
+  speakersQueueResizeFn?.();
+  commentsQueueResizeFn?.();
 };
 
 onMount(() => {
-	PresentationSubscription.listen({ id: data.committeeId });
+  PresentationSubscription.listen({ id: data.committeeId });
 });
 
 $effect(() => {
-	if ($committeeSettings?.presentationRootFontSize) {
-		document.documentElement.style.fontSize = `${$committeeSettings.presentationRootFontSize}px`;
-	}
+  if ($committeeSettings?.presentationRootFontSize) {
+    document.documentElement.style.fontSize = `${$committeeSettings.presentationRootFontSize}px`;
+  }
 });
 </script>
 

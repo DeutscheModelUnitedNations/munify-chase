@@ -9,101 +9,101 @@
  * Schema for development seed data
  */
 export interface SeedData {
-	/**
-	 * Reference to the JSON schema that validates this document
-	 */
-	$schema?: string;
-	/**
-	 * List of users
-	 */
-	users: {
-		/**
-		 * Unique identifier for the user
-		 */
-		id: string;
-		/**
-		 * User's email address
-		 */
-		email: string;
-		/**
-		 * User's family name
-		 */
-		familyName: string;
-		/**
-		 * User's given name
-		 */
-		givenName: string;
-		/**
-		 * User's locale
-		 */
-		locale: string;
-		/**
-		 * User's preferred username
-		 */
-		preferredUsername: string;
-		/**
-		 * Type of the conference user
-		 */
-		conferenceUserType:
-			| "ADMIN"
-			| "TEAM"
-			| "SPECTATOR"
-			| "DELEGATE"
-			| "NON_STATE_ACTOR";
-	}[];
-	conferences: {
-		/**
-		 * Title of the conference
-		 */
-		title: string;
-		/**
-		 * URL of the conference's press website
-		 */
-		pressWebsite?: string;
-		conferenceUsers: {
-			/**
-			 * User ID reference
-			 */
-			userId: string;
-			/**
-			 * Type of the conference user
-			 */
-			conferenceUserType: "ADMIN" | "TEAM";
-		}[];
-		committees: {
-			/**
-			 * Name of the committee
-			 */
-			name: string;
-			/**
-			 * Abbreviation of the committee name
-			 */
-			abbreviation: string;
-			agendaItems: {
-				/**
-				 * Title of the agenda item
-				 */
-				title: string;
-				/**
-				 * Indicates if the agenda item is active
-				 */
-				active?: boolean;
-			}[];
-			countries: string[];
-		}[];
-		customRepresentations?: {
-			/**
-			 * Name of the custom representation
-			 */
-			name: string;
-			/**
-			 * Type of the custom representation
-			 */
-			type: "NSA" | "UN";
-			/**
-			 * Font Awesome icon class for the custom representation
-			 */
-			faIcon?: string;
-		}[];
-	}[];
+  /**
+   * Reference to the JSON schema that validates this document
+   */
+  $schema?: string;
+  /**
+   * List of users
+   */
+  users: {
+    /**
+     * Unique identifier for the user
+     */
+    id: string;
+    /**
+     * User's email address
+     */
+    email: string;
+    /**
+     * User's family name
+     */
+    familyName: string;
+    /**
+     * User's given name
+     */
+    givenName: string;
+    /**
+     * User's locale
+     */
+    locale: string;
+    /**
+     * User's preferred username
+     */
+    preferredUsername: string;
+    /**
+     * Type of the conference user
+     */
+    conferenceUserType:
+      | "ADMIN"
+      | "TEAM"
+      | "SPECTATOR"
+      | "DELEGATE"
+      | "NON_STATE_ACTOR";
+  }[];
+  conferences: {
+    /**
+     * Title of the conference
+     */
+    title: string;
+    /**
+     * URL of the conference's press website
+     */
+    pressWebsite?: string;
+    conferenceUsers: {
+      /**
+       * User ID reference
+       */
+      userId: string;
+      /**
+       * Type of the conference user
+       */
+      conferenceUserType: "ADMIN" | "TEAM";
+    }[];
+    committees: {
+      /**
+       * Name of the committee
+       */
+      name: string;
+      /**
+       * Abbreviation of the committee name
+       */
+      abbreviation: string;
+      agendaItems: {
+        /**
+         * Title of the agenda item
+         */
+        title: string;
+        /**
+         * Indicates if the agenda item is active
+         */
+        active?: boolean;
+      }[];
+      countries: string[];
+    }[];
+    customRepresentations?: {
+      /**
+       * Name of the custom representation
+       */
+      name: string;
+      /**
+       * Type of the custom representation
+       */
+      type: "NSA" | "UN";
+      /**
+       * Font Awesome icon class for the custom representation
+       */
+      faIcon?: string;
+    }[];
+  }[];
 }

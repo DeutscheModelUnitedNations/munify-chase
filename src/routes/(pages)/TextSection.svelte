@@ -2,9 +2,9 @@
 import type { Snippet } from "svelte";
 
 interface Props {
-	title: string;
-	text: string;
-	children?: Snippet;
+  title: string;
+  text: string;
+  children?: Snippet;
 }
 
 const { title, text, children }: Props = $props();

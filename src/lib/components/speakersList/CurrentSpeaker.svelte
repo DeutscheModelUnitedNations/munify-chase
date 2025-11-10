@@ -8,20 +8,20 @@ import Flag from "../Flag.svelte";
 import Timer from "./Timer.svelte";
 
 interface Props {
-	speakersList?: NonNullable<
-		CommitteeTeamQuery$result["findFirstCommittee"]["activeAgendaItem"]
-	>["speakersList"][number];
+  speakersList?: NonNullable<
+    CommitteeTeamQuery$result["findFirstCommittee"]["activeAgendaItem"]
+  >["speakersList"][number];
 }
 
 const { speakersList }: Props = $props();
 
 const currentSpeaker = $derived(
-	speakersList?.speakers.toSorted((a, b) => a.position - b.position).at(0),
+  speakersList?.speakers.toSorted((a, b) => a.position - b.position).at(0),
 );
 
 const representation = $derived(
-	currentSpeaker?.committeeMember?.representation ||
-		currentSpeaker?.conferenceMember?.representation,
+  currentSpeaker?.committeeMember?.representation ||
+    currentSpeaker?.conferenceMember?.representation,
 );
 </script>
 

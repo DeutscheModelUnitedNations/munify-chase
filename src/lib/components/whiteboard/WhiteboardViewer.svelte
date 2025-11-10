@@ -2,7 +2,7 @@
 import { m } from "$lib/paraglide/messages";
 
 interface Props {
-	data?: string | null;
+  data?: string | null;
 }
 
 const { data }: Props = $props();

@@ -4,19 +4,19 @@ import { building } from "$app/environment";
  * Lazy initializer for static values
  */
 export function lazy<Result>(
-	initializer: () => Result,
-	mockOnBuild = false,
+  initializer: () => Result,
+  mockOnBuild = false,
 ): () => Result {
-	let value: Result | undefined;
-	return () => {
-		if (building && mockOnBuild) {
-			return value as Result;
-		}
+  let value: Result | undefined;
+  return () => {
+    if (building && mockOnBuild) {
+      return value as Result;
+    }
 
-		if (value === undefined) {
-			value = initializer();
-			return value;
-		}
-		return value;
-	};
+    if (value === undefined) {
+      value = initializer();
+      return value;
+    }
+    return value;
+  };
 }

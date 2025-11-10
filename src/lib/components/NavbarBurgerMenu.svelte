@@ -6,12 +6,12 @@ import LanguageSwitcher from "./LanguageSwitcher.svelte";
 import ThemeSwitcher from "./ThemeSwitcher.svelte";
 
 interface Props {
-	items: {
-		faIcon: string;
-		title: string;
-		href: string;
-	}[];
-	CustomListItems?: Snippet;
+  items: {
+    faIcon: string;
+    title: string;
+    href: string;
+  }[];
+  CustomListItems?: Snippet;
 }
 
 const { items, CustomListItems }: Props = $props();

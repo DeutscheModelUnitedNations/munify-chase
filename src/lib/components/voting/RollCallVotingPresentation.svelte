@@ -5,8 +5,8 @@ import { flip } from "svelte/animate";
 import { cubicIn, cubicInOut, cubicOut } from "svelte/easing";
 import { blur, crossfade, fly } from "svelte/transition";
 import type {
-	CommitteePresentationQuery$result,
-	RegionalGroupEnum$options,
+  CommitteePresentationQuery$result,
+  RegionalGroupEnum$options,
 } from "$houdini";
 import Flag from "$lib/components/Flag.svelte";
 import type { CommitteeSettings, VotingStage } from "$lib/local-db/localDB";
@@ -15,52 +15,52 @@ import FlagRow from "./FlagRow.svelte";
 import ResultChart from "./ResultChart.svelte";
 
 interface Props {
-	committeeSettings?: CommitteeSettings;
-	committee?: CommitteePresentationQuery$result["findFirstCommittee"];
+  committeeSettings?: CommitteeSettings;
+  committee?: CommitteePresentationQuery$result["findFirstCommittee"];
 }
 const { committeeSettings, committee }: Props = $props();
 
 const [send, receive] = crossfade({
-	duration: 1000,
-	easing: cubicInOut,
+  duration: 1000,
+  easing: cubicInOut,
 });
 
 const flipOptions = {
-	duration: 500,
-	delay: 250,
-	easing: cubicInOut,
+  duration: 500,
+  delay: 250,
+  easing: cubicInOut,
 };
 
 const members = $derived(
-	committee?.members.filter(
-		(member) => member.present && member.representation?.type === "DELEGATION",
-	),
+  committee?.members.filter(
+    (member) => member.present && member.representation?.type === "DELEGATION",
+  ),
 );
 
 const remainingMembers = $derived(
-	members?.filter(
-		(member) =>
-			[
-				...(committeeSettings?.rollCallVotingPro ?? []),
-				...(committeeSettings?.rollCallVotingCon ?? []),
-				...(committeeSettings?.rollCallVotingAbstain ?? []),
-			].includes(member.id) === false,
-	),
+  members?.filter(
+    (member) =>
+      [
+        ...(committeeSettings?.rollCallVotingPro ?? []),
+        ...(committeeSettings?.rollCallVotingCon ?? []),
+        ...(committeeSettings?.rollCallVotingAbstain ?? []),
+      ].includes(member.id) === false,
+  ),
 );
 const proMembers = $derived(
-	members?.filter((member) =>
-		committeeSettings?.rollCallVotingPro?.includes(member.id),
-	),
+  members?.filter((member) =>
+    committeeSettings?.rollCallVotingPro?.includes(member.id),
+  ),
 );
 const conMembers = $derived(
-	members?.filter((member) =>
-		committeeSettings?.rollCallVotingCon?.includes(member.id),
-	),
+  members?.filter((member) =>
+    committeeSettings?.rollCallVotingCon?.includes(member.id),
+  ),
 );
 const abstainMembers = $derived(
-	members?.filter((member) =>
-		committeeSettings?.rollCallVotingAbstain?.includes(member.id),
-	),
+  members?.filter((member) =>
+    committeeSettings?.rollCallVotingAbstain?.includes(member.id),
+  ),
 );
 </script>
 

@@ -11,26 +11,26 @@ import Flag from "../Flag.svelte";
 import StripesAlert from "./StripesAlert.svelte";
 
 interface Props {
-	rawSpeakers?: NonNullable<
-		CommitteeTeamQuery$result["findFirstCommittee"]["activeAgendaItem"]
-	>["speakersList"][number]["speakers"];
-	closed?: boolean;
+  rawSpeakers?: NonNullable<
+    CommitteeTeamQuery$result["findFirstCommittee"]["activeAgendaItem"]
+  >["speakersList"][number]["speakers"];
+  closed?: boolean;
 }
 
 const { rawSpeakers, closed = false }: Props = $props();
 
 const speakers = $derived(
-	rawSpeakers?.toSorted((a, b) => a.position - b.position).toSpliced(0, 1),
+  rawSpeakers?.toSorted((a, b) => a.position - b.position).toSpliced(0, 1),
 );
 
 const getRepresentation = (
-	speaker: NonNullable<Props["rawSpeakers"]>[number],
+  speaker: NonNullable<Props["rawSpeakers"]>[number],
 ) => {
-	return speaker.committeeMember
-		? speaker.committeeMember.representation
-		: speaker.conferenceMember
-			? speaker.conferenceMember.representation
-			: null;
+  return speaker.committeeMember
+    ? speaker.committeeMember.representation
+    : speaker.conferenceMember
+      ? speaker.conferenceMember.representation
+      : null;
 };
 
 const RemoveSpeakerOnListMutation = graphql(`
@@ -46,14 +46,14 @@ const RemoveSpeakerOnListMutation = graphql(`
 	`);
 
 const removeSpeaker = (speakerOnListId: string) => {
-	if (!speakerOnListId) return;
+  if (!speakerOnListId) return;
 
-	toast.promise(
-		RemoveSpeakerOnListMutation.mutate({
-			speakerOnListId,
-		}),
-		promiseToastStrings(m.speaker(), "delete"),
-	);
+  toast.promise(
+    RemoveSpeakerOnListMutation.mutate({
+      speakerOnListId,
+    }),
+    promiseToastStrings(m.speaker(), "delete"),
+  );
 };
 
 const MoveSpeakerMutation = graphql(`
@@ -66,15 +66,15 @@ const MoveSpeakerMutation = graphql(`
 	`);
 
 const moveSpeaker = (speakerOnListId: string, position: number) => {
-	if (!speakerOnListId || position < 0) return;
+  if (!speakerOnListId || position < 0) return;
 
-	toast.promise(
-		MoveSpeakerMutation.mutate({
-			speakerOnListId,
-			position,
-		}),
-		promiseToastStrings(m.speaker(), "update"),
-	);
+  toast.promise(
+    MoveSpeakerMutation.mutate({
+      speakerOnListId,
+      position,
+    }),
+    promiseToastStrings(m.speaker(), "update"),
+  );
 };
 </script>
 

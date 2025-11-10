@@ -4,82 +4,82 @@ import { onMount } from "svelte";
 import toast from "svelte-french-toast";
 import Tabs from "$lib/components/Tabs.svelte";
 import {
-	getPresentationLayoutPresets,
-	type PresentationLayoutPresetOptions,
+  getPresentationLayoutPresets,
+  type PresentationLayoutPresetOptions,
 } from "$lib/data/presentationLayoutPresets";
 import { localDB } from "$lib/local-db/localDB";
 import { m } from "$lib/paraglide/messages";
 import { promiseToastStrings } from "$lib/utils/toast";
 
 interface Props {
-	committeeId: string;
+  committeeId: string;
 }
 
 const { committeeId }: Props = $props();
 
 const committeeSettings = liveQuery(() =>
-	localDB.committeeSettings.get(committeeId),
+  localDB.committeeSettings.get(committeeId),
 );
 
 const changeLayoutKey = async (e: Event) => {
-	await toast.promise(
-		localDB.committeeSettings.update(committeeId, {
-			layout: (e.target as HTMLSelectElement)
-				.value as PresentationLayoutPresetOptions,
-		}),
-		promiseToastStrings(m.layout(), "update"),
-	);
+  await toast.promise(
+    localDB.committeeSettings.update(committeeId, {
+      layout: (e.target as HTMLSelectElement)
+        .value as PresentationLayoutPresetOptions,
+    }),
+    promiseToastStrings(m.layout(), "update"),
+  );
 };
 
 const toggleRegionalGroups = async (tab: boolean | undefined) => {
-	await toast.promise(
-		localDB.committeeSettings.update(committeeId, {
-			displayRegionalGroups: tab || false,
-		}),
-		promiseToastStrings(m.displayRegionalGroups(), "update"),
-	);
+  await toast.promise(
+    localDB.committeeSettings.update(committeeId, {
+      displayRegionalGroups: tab || false,
+    }),
+    promiseToastStrings(m.displayRegionalGroups(), "update"),
+  );
 };
 
 onMount(async () => {
-	if (!(await localDB.committeeSettings.get(committeeId))) {
-		await localDB.committeeSettings.add({
-			committeeId,
-			layout: "default",
-			displayRegionalGroups: false,
-			presentationRootFontSize: 16,
-			rollCall: null,
+  if (!(await localDB.committeeSettings.get(committeeId))) {
+    await localDB.committeeSettings.add({
+      committeeId,
+      layout: "default",
+      displayRegionalGroups: false,
+      presentationRootFontSize: 16,
+      rollCall: null,
 
-			showOfHandsVotingActive: false,
-			showOfHandsVotingStage: null,
-			showOfHandsVotingVotesPro: 0,
-			showOfHandsVotingVotesCon: 0,
-			showOfHandsVotingVotesAbstain: 0,
-			showOfHandsVotingVotesTotal: 0,
+      showOfHandsVotingActive: false,
+      showOfHandsVotingStage: null,
+      showOfHandsVotingVotesPro: 0,
+      showOfHandsVotingVotesCon: 0,
+      showOfHandsVotingVotesAbstain: 0,
+      showOfHandsVotingVotesTotal: 0,
 
-			rollCallVotingActive: false,
-			rollCallVotingPro: [],
-			rollCallVotingCon: [],
-			rollCallVotingAbstain: [],
+      rollCallVotingActive: false,
+      rollCallVotingPro: [],
+      rollCallVotingCon: [],
+      rollCallVotingAbstain: [],
 
-			votingVoteName: "",
-			votingMajority: null,
-			votingWithAbstentions: null,
-			votingMajorityAmount: null,
-		});
-	}
+      votingVoteName: "",
+      votingMajority: null,
+      votingWithAbstentions: null,
+      votingMajorityAmount: null,
+    });
+  }
 });
 
 const regionalGroupTabs = [
-	{
-		id: true,
-		label: m.on(),
-		faIcon: "fa-check",
-	},
-	{
-		id: false,
-		label: m.off(),
-		faIcon: "fa-xmark",
-	},
+  {
+    id: true,
+    label: m.on(),
+    faIcon: "fa-check",
+  },
+  {
+    id: false,
+    label: m.off(),
+    faIcon: "fa-xmark",
+  },
 ];
 </script>
 

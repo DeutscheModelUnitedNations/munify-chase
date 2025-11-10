@@ -6,9 +6,9 @@ import { m } from "$lib/paraglide/messages";
 import { promiseToastStrings } from "$lib/utils/toast";
 
 interface Props {
-	committeeId: string;
-	activeAgendaItem?: CommitteeTeamQuery$result["findFirstCommittee"]["activeAgendaItem"];
-	agendaItems?: CommitteeTeamQuery$result["findFirstCommittee"]["agendaItems"];
+  committeeId: string;
+  activeAgendaItem?: CommitteeTeamQuery$result["findFirstCommittee"]["activeAgendaItem"];
+  agendaItems?: CommitteeTeamQuery$result["findFirstCommittee"]["agendaItems"];
 }
 
 const { committeeId, activeAgendaItem, agendaItems }: Props = $props();
@@ -37,32 +37,32 @@ const AddAgendaItemMutation = graphql(`
 	`);
 
 const update = async () => {
-	if (value === activeAgendaItem?.id) {
-		return;
-	}
-	await toast.promise(
-		UpdateActiveAgendaItemMutation.mutate({
-			agendaItemId: value,
-			committeeId,
-		}),
-		promiseToastStrings(m.agendaItem(), "update"),
-	);
+  if (value === activeAgendaItem?.id) {
+    return;
+  }
+  await toast.promise(
+    UpdateActiveAgendaItemMutation.mutate({
+      agendaItemId: value,
+      committeeId,
+    }),
+    promiseToastStrings(m.agendaItem(), "update"),
+  );
 };
 
 const addAgendaItem = async () => {
-	const title = prompt(m.agendaItemTitle());
-	if (!title) return;
+  const title = prompt(m.agendaItemTitle());
+  if (!title) return;
 
-	await toast.promise(
-		AddAgendaItemMutation.mutate({
-			committeeId,
-			title,
-		}),
-		promiseToastStrings(m.agendaItem(), "create"),
-	);
+  await toast.promise(
+    AddAgendaItemMutation.mutate({
+      committeeId,
+      title,
+    }),
+    promiseToastStrings(m.agendaItem(), "create"),
+  );
 
-	cache.markStale();
-	invalidateAll();
+  cache.markStale();
+  invalidateAll();
 };
 </script>
 

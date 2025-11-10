@@ -9,61 +9,61 @@ import BellIcon from "../toast/BellIcon.svelte";
 import Hourglass, { type HourglassStatus } from "./Hourglass.svelte";
 
 interface Props {
-	noSpeaker?: boolean;
-	speakingTime?: number | null;
-	startTimestamp?: Date | null;
-	timeLeft?: number | null;
+  noSpeaker?: boolean;
+  speakingTime?: number | null;
+  startTimestamp?: Date | null;
+  timeLeft?: number | null;
 }
 
 const {
-	noSpeaker = true,
-	speakingTime,
-	startTimestamp,
-	timeLeft,
+  noSpeaker = true,
+  speakingTime,
+  startTimestamp,
+  timeLeft,
 }: Props = $props();
 
 const calculatedTimeLeft = $derived.by(() => {
-	if (startTimestamp && timeLeft !== null && timeLeft !== undefined) {
-		return dayjs(startTimestamp).diff($serverTime, "seconds") + timeLeft;
-	}
-	if (timeLeft !== null && timeLeft !== undefined) {
-		return timeLeft;
-	}
-	return undefined;
+  if (startTimestamp && timeLeft !== null && timeLeft !== undefined) {
+    return dayjs(startTimestamp).diff($serverTime, "seconds") + timeLeft;
+  }
+  if (timeLeft !== null && timeLeft !== undefined) {
+    return timeLeft;
+  }
+  return undefined;
 });
 const countdownDelta = $derived.by(() => {
-	if (noSpeaker) {
-		return dayjs.duration(speakingTime ?? 0, "seconds");
-	}
-	if (!startTimestamp || calculatedTimeLeft === undefined) {
-		return dayjs.duration(
-			timeLeft ? Math.abs(timeLeft) : (speakingTime ?? 0),
-			"seconds",
-		);
-	}
-	return dayjs.duration(Math.abs(calculatedTimeLeft), "seconds");
+  if (noSpeaker) {
+    return dayjs.duration(speakingTime ?? 0, "seconds");
+  }
+  if (!startTimestamp || calculatedTimeLeft === undefined) {
+    return dayjs.duration(
+      timeLeft ? Math.abs(timeLeft) : (speakingTime ?? 0),
+      "seconds",
+    );
+  }
+  return dayjs.duration(Math.abs(calculatedTimeLeft), "seconds");
 });
 
 const speakingTimeDelta = $derived(
-	dayjs.duration(speakingTime ?? 0, "seconds"),
+  dayjs.duration(speakingTime ?? 0, "seconds"),
 );
 
 const overtime = $derived((calculatedTimeLeft ?? 0) < 0);
 
 const status: HourglassStatus = $derived.by(() => {
-	if (startTimestamp && (calculatedTimeLeft ?? 0) < 0) {
-		return "overtime";
-	}
-	if (startTimestamp && (calculatedTimeLeft ?? 0) >= 0) {
-		return "active";
-	}
-	return "paused";
+  if (startTimestamp && (calculatedTimeLeft ?? 0) < 0) {
+    return "overtime";
+  }
+  if (startTimestamp && (calculatedTimeLeft ?? 0) >= 0) {
+    return "active";
+  }
+  return "paused";
 });
 
 const countdownDeltaFormatted = (delta: Duration) => {
-	return `${delta.hours() !== 0 ? delta.format("H:") : ""}${
-		delta.hours() !== 0 ? delta.format("mm:") : delta.format("m:")
-	}${delta.format("ss")}`;
+  return `${delta.hours() !== 0 ? delta.format("H:") : ""}${
+    delta.hours() !== 0 ? delta.format("mm:") : delta.format("m:")
+  }${delta.format("ss")}`;
 };
 </script>
 

@@ -14,8 +14,8 @@ import WhiteboardEditorModal from "$lib/components/whiteboard/WhiteboardEditorMo
 import WhiteboardViewer from "$lib/components/whiteboard/WhiteboardViewer.svelte";
 import { m } from "$lib/paraglide/messages";
 import {
-	getCommitteeStatusIcon,
-	getCommitteeStatusText,
+  getCommitteeStatusIcon,
+  getCommitteeStatusText,
 } from "$lib/utils/committeeStatus";
 import StatusChanger from "../../../../../../lib/components/committee/StatusChanger.svelte";
 import { CommitteeSubscription } from "../committeeSubscription";
@@ -27,12 +27,12 @@ const { data }: { data: PageData } = $props();
 
 const query = $derived(data?.CommitteeTeamQuery);
 const committee = $derived(
-	$CommitteeSubscription.data?.findFirstCommittee ??
-		$query.data?.findFirstCommittee,
+  $CommitteeSubscription.data?.findFirstCommittee ??
+    $query.data?.findFirstCommittee,
 );
 
 onMount(() => {
-	CommitteeSubscription.listen({ id: data.committeeId });
+  CommitteeSubscription.listen({ id: data.committeeId });
 });
 
 const editWhiteboardModalOpen = $state(false);

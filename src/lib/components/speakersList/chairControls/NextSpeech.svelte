@@ -3,26 +3,26 @@ import hotkeys from "hotkeys-js";
 import { onMount } from "svelte";
 import toast from "svelte-french-toast";
 import {
-	type CommitteeTeamQuery$result,
-	graphql,
-	type SpeakersListCategoryEnum$options,
+  type CommitteeTeamQuery$result,
+  graphql,
+  type SpeakersListCategoryEnum$options,
 } from "$houdini";
 import { alertDialog } from "$lib/components/Alert/alert";
 import { m } from "$lib/paraglide/messages";
 import { promiseToastStrings } from "$lib/utils/toast";
 
 interface Props {
-	speakersList?:
-		| NonNullable<
-				CommitteeTeamQuery$result["findFirstCommittee"]["activeAgendaItem"]
-		  >["speakersList"][number]
-		| null;
-	childList?:
-		| NonNullable<
-				CommitteeTeamQuery$result["findFirstCommittee"]["activeAgendaItem"]
-		  >["speakersList"][number]
-		| null;
-	type: SpeakersListCategoryEnum$options;
+  speakersList?:
+    | NonNullable<
+        CommitteeTeamQuery$result["findFirstCommittee"]["activeAgendaItem"]
+      >["speakersList"][number]
+    | null;
+  childList?:
+    | NonNullable<
+        CommitteeTeamQuery$result["findFirstCommittee"]["activeAgendaItem"]
+      >["speakersList"][number]
+    | null;
+  type: SpeakersListCategoryEnum$options;
 }
 
 const { speakersList, type, childList }: Props = $props();
@@ -74,59 +74,59 @@ const NextSpeakerMutationWithChildListClearance = graphql(`
 	`);
 
 const nextSpeaker = async () => {
-	if (speakersList && speakersList?.speakers.length > 0) {
-		const speaker = speakersList.speakers.sort(
-			(a, b) => a.position - b.position,
-		)[0];
-		if (childList) {
-			if (
-				await alertDialog({
-					title: m.nextSpeaker(),
-					description: m.nextSpeakerDescription(),
-					confirmText: m.nextSpeaker(),
-					cancelText: m.abort(),
-					confirmColor: "error",
-				})
-			)
-				toast.promise(
-					NextSpeakerMutationWithChildListClearance.mutate({
-						speakerOnListId: speaker.id,
-						speakersListId: speakersList.id,
-						speakingTime: speakersList.speakingTime,
-						childSpeakersListId: childList.id,
-						childSpeakersListSpeakingTime: childList.speakingTime,
-					}),
-					promiseToastStrings(m.nextSpeaker(), "update"),
-				);
-		} else {
-			toast.promise(
-				NextSpeakerMutation.mutate({
-					speakerOnListId: speaker.id,
-					speakersListId: speakersList.id,
-					speakingTime: speakersList.speakingTime,
-				}),
-				promiseToastStrings(m.nextSpeaker(), "update"),
-			);
-		}
-	}
+  if (speakersList && speakersList?.speakers.length > 0) {
+    const speaker = speakersList.speakers.sort(
+      (a, b) => a.position - b.position,
+    )[0];
+    if (childList) {
+      if (
+        await alertDialog({
+          title: m.nextSpeaker(),
+          description: m.nextSpeakerDescription(),
+          confirmText: m.nextSpeaker(),
+          cancelText: m.abort(),
+          confirmColor: "error",
+        })
+      )
+        toast.promise(
+          NextSpeakerMutationWithChildListClearance.mutate({
+            speakerOnListId: speaker.id,
+            speakersListId: speakersList.id,
+            speakingTime: speakersList.speakingTime,
+            childSpeakersListId: childList.id,
+            childSpeakersListSpeakingTime: childList.speakingTime,
+          }),
+          promiseToastStrings(m.nextSpeaker(), "update"),
+        );
+    } else {
+      toast.promise(
+        NextSpeakerMutation.mutate({
+          speakerOnListId: speaker.id,
+          speakersListId: speakersList.id,
+          speakingTime: speakersList.speakingTime,
+        }),
+        promiseToastStrings(m.nextSpeaker(), "update"),
+      );
+    }
+  }
 };
 
 onMount(() => {
-	hotkeys("alt+n, alt+shift+n", (event, handler) => {
-		event.preventDefault();
-		if (!speakersList?.speakers?.length) return;
-		switch (handler.key) {
-			case "alt+n":
-				if (type === "SPEAKERS_LIST") {
-					nextSpeaker();
-				}
-				break;
-			case "alt+shift+n":
-				if (type === "COMMENT_LIST") {
-					nextSpeaker();
-				}
-		}
-	});
+  hotkeys("alt+n, alt+shift+n", (event, handler) => {
+    event.preventDefault();
+    if (!speakersList?.speakers?.length) return;
+    switch (handler.key) {
+      case "alt+n":
+        if (type === "SPEAKERS_LIST") {
+          nextSpeaker();
+        }
+        break;
+      case "alt+shift+n":
+        if (type === "COMMENT_LIST") {
+          nextSpeaker();
+        }
+    }
+  });
 });
 </script>
 

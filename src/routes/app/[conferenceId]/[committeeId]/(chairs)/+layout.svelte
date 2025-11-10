@@ -14,8 +14,8 @@ import type { LayoutData } from "./$houdini";
 import ChairNavbar from "./ChairNavbar.svelte";
 
 interface Props {
-	children: Snippet;
-	data: LayoutData;
+  children: Snippet;
+  data: LayoutData;
 }
 
 const { data, children }: Props = $props();
@@ -28,70 +28,70 @@ let speakersListOvertimeAlerted = $state(false);
 let commentListOvertimeAlerted = $state(false);
 
 $effect(() => {
-	// Toast Effect
-	if (!committee) return;
+  // Toast Effect
+  if (!committee) return;
 
-	const interval = setInterval(() => {
-		if (dayjs(committee.statusUntil).diff($serverTime) < 0) {
-			if (!committeeStatusExpiredAlerted) {
-				toast.error(
-					m.committeeStatusExpired({
-						status: getCommitteeStatusText(
-							committee.status,
-							committee.statusHeadline,
-						),
-					}),
-					{
-						icon: BellIcon,
-						duration: 10000,
-					},
-				);
-				committeeStatusExpiredAlerted = true;
-			}
-		} else {
-			committeeStatusExpiredAlerted = false;
-		}
+  const interval = setInterval(() => {
+    if (dayjs(committee.statusUntil).diff($serverTime) < 0) {
+      if (!committeeStatusExpiredAlerted) {
+        toast.error(
+          m.committeeStatusExpired({
+            status: getCommitteeStatusText(
+              committee.status,
+              committee.statusHeadline,
+            ),
+          }),
+          {
+            icon: BellIcon,
+            duration: 10000,
+          },
+        );
+        committeeStatusExpiredAlerted = true;
+      }
+    } else {
+      committeeStatusExpiredAlerted = false;
+    }
 
-		for (const speakersList of committee.activeAgendaItem?.speakersList ?? []) {
-			const overtime =
-				dayjs(speakersList.startTimestamp).diff($serverTime, "seconds") +
-					speakersList.timeLeft <
-				0;
+    for (const speakersList of committee.activeAgendaItem?.speakersList ?? []) {
+      const overtime =
+        dayjs(speakersList.startTimestamp).diff($serverTime, "seconds") +
+          speakersList.timeLeft <
+        0;
 
-			//	XAND only fire if both are false. Both true can be ignored, case should not happen.
-			if (
-				overtime &&
-				speakersListOvertimeAlerted === commentListOvertimeAlerted
-			) {
-				toast.error(m.speakersListOvertime(), {
-					icon: BellIcon,
-				});
-				if (speakersList.type === "SPEAKERS_LIST") {
-					speakersListOvertimeAlerted = true;
-				} else if (speakersList.type === "COMMENT_LIST") {
-					commentListOvertimeAlerted = true;
-				}
-			} else if (!overtime) {
-				if (speakersList.type === "SPEAKERS_LIST") {
-					speakersListOvertimeAlerted = false;
-				} else if (speakersList.type === "COMMENT_LIST") {
-					commentListOvertimeAlerted = false;
-				}
-			}
-		}
-	}, 1000);
-	return () => clearInterval(interval);
+      //	XAND only fire if both are false. Both true can be ignored, case should not happen.
+      if (
+        overtime &&
+        speakersListOvertimeAlerted === commentListOvertimeAlerted
+      ) {
+        toast.error(m.speakersListOvertime(), {
+          icon: BellIcon,
+        });
+        if (speakersList.type === "SPEAKERS_LIST") {
+          speakersListOvertimeAlerted = true;
+        } else if (speakersList.type === "COMMENT_LIST") {
+          commentListOvertimeAlerted = true;
+        }
+      } else if (!overtime) {
+        if (speakersList.type === "SPEAKERS_LIST") {
+          speakersListOvertimeAlerted = false;
+        } else if (speakersList.type === "COMMENT_LIST") {
+          commentListOvertimeAlerted = false;
+        }
+      }
+    }
+  }, 1000);
+  return () => clearInterval(interval);
 });
 
 onMount(() => {
-	hotkeys("alt+p", (event) => {
-		event.preventDefault();
-		window.open(".", "_blank");
-	});
+  hotkeys("alt+p", (event) => {
+    event.preventDefault();
+    window.open(".", "_blank");
+  });
 });
 
 onDestroy(() => {
-	hotkeys.unbind("alt+p");
+  hotkeys.unbind("alt+p");
 });
 </script>
 

@@ -1,15 +1,15 @@
 <script lang="ts">
 interface Props {
-	buttons: Button[];
+  buttons: Button[];
 }
 
 export interface Button {
-	faIcon?: string;
-	label: string;
-	shortcut?: string;
-	action?: () => void;
-	href?: string;
-	active?: boolean;
+  faIcon?: string;
+  label: string;
+  shortcut?: string;
+  action?: () => void;
+  href?: string;
+  active?: boolean;
 }
 
 const { buttons }: Props = $props();
@@ -18,15 +18,15 @@ let container: HTMLDivElement;
 let overflowKbd = $state(false);
 
 const checkOverflow = () => {
-	if (container) {
-		overflowKbd = container.scrollWidth > container.clientWidth;
-	}
+  if (container) {
+    overflowKbd = container.scrollWidth > container.clientWidth;
+  }
 };
 
 $effect(() => {
-	checkOverflow();
-	window.addEventListener("resize", checkOverflow);
-	return () => window.removeEventListener("resize", checkOverflow);
+  checkOverflow();
+  window.addEventListener("resize", checkOverflow);
+  return () => window.removeEventListener("resize", checkOverflow);
 });
 </script>
 

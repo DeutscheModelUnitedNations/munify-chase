@@ -1,15 +1,27 @@
-import { abilityBuilder } from "$api/rumble";
+import {
+  abilityBuilder,
+  countQuery,
+  object,
+  query,
+  whereArg,
+} from "$api/rumble";
 import { isDMUNEmail } from "$api/services/isDMUNEmail";
-import { basics } from "./basics";
-
-const { arg, ref, pubsub, table } = basics("conferenceMember");
 
 abilityBuilder.conferenceMember.allow("read").when(({ mustBeLoggedIn }) => {
-	const user = mustBeLoggedIn();
-	if (user?.email && isDMUNEmail(user.email)) {
-		return "allow";
-	}
+  const user = mustBeLoggedIn();
+  if (user?.email && isDMUNEmail(user.email)) {
+    return "allow";
+  }
 });
 
-export const ConferenceMemberWhereInput = arg;
+const ref = object({ table: "conferenceMember" });
+query({ table: "conferenceMember" });
+countQuery({
+  table: "conferenceMember",
+});
+// const pubsub = rumblePubsub({ table: "conferenceMember" });
+
+export const ConferenceMemberWhereInput = whereArg({
+  table: "conferenceMember",
+});
 export const ConferenceMemberRef = ref;

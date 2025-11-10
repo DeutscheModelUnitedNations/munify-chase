@@ -7,9 +7,9 @@ import { promiseToastStrings } from "$lib/utils/toast";
 import Combobox from "../Combobox.svelte";
 
 interface Props {
-	committeeId: string;
-	oldStateOfDebate?: string | null;
-	abort?: () => void;
+  committeeId: string;
+  oldStateOfDebate?: string | null;
+  abort?: () => void;
 }
 
 const { committeeId, oldStateOfDebate, abort }: Props = $props();
@@ -17,7 +17,7 @@ const { committeeId, oldStateOfDebate, abort }: Props = $props();
 const value = $state(oldStateOfDebate ?? "");
 
 const presets = stateOfDebateTemplates.map((preset) => ({
-	label: preset,
+  label: preset,
 }));
 
 const UpdateStateOfDebateMutation = graphql(`
@@ -30,13 +30,13 @@ const UpdateStateOfDebateMutation = graphql(`
 	`);
 
 const submitState = async () => {
-	await toast.promise(
-		UpdateStateOfDebateMutation.mutate({
-			stateOfDebate: value,
-			committeeId,
-		}),
-		promiseToastStrings(m.stateOfDebate(), "update"),
-	);
+  await toast.promise(
+    UpdateStateOfDebateMutation.mutate({
+      stateOfDebate: value,
+      committeeId,
+    }),
+    promiseToastStrings(m.stateOfDebate(), "update"),
+  );
 };
 </script>
 

@@ -3,12 +3,12 @@ import type { CommitteeTeamQuery$result } from "$houdini";
 import IconInfoBox from "$lib/components/IconInfoBox.svelte";
 import { m } from "$lib/paraglide/messages";
 import {
-	getCommitteeStatusIcon,
-	getCommitteeStatusText,
+  getCommitteeStatusIcon,
+  getCommitteeStatusText,
 } from "$lib/utils/committeeStatus";
 
 interface Props {
-	committee?: CommitteeTeamQuery$result["findFirstCommittee"] | null;
+  committee?: CommitteeTeamQuery$result["findFirstCommittee"] | null;
 }
 
 const { committee }: Props = $props();

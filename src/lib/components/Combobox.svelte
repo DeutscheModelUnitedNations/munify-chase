@@ -5,31 +5,31 @@ import { crossfade } from "svelte/transition";
 import { m } from "$lib/paraglide/messages";
 
 interface Props {
-	value: string;
-	options: T[];
-	focused?: boolean;
-	placeholder?: string;
-	side?: "top" | "bottom" | "left" | "right";
-	kbd?: string;
-	filter: (option: T[], value: string) => T[];
-	getStringValue: (value: T) => string;
-	ListItem: Snippet<[T]>;
-	AdditionalButtons?: Snippet;
-	submit?: (value?: string) => void;
+  value: string;
+  options: T[];
+  focused?: boolean;
+  placeholder?: string;
+  side?: "top" | "bottom" | "left" | "right";
+  kbd?: string;
+  filter: (option: T[], value: string) => T[];
+  getStringValue: (value: T) => string;
+  ListItem: Snippet<[T]>;
+  AdditionalButtons?: Snippet;
+  submit?: (value?: string) => void;
 }
 
 const {
-	value = $bindable(),
-	options,
-	focused = $bindable(),
-	placeholder,
-	side,
-	kbd,
-	filter,
-	getStringValue,
-	ListItem,
-	AdditionalButtons,
-	submit,
+  value = $bindable(),
+  options,
+  focused = $bindable(),
+  placeholder,
+  side,
+  kbd,
+  filter,
+  getStringValue,
+  ListItem,
+  AdditionalButtons,
+  submit,
 }: Props = $props();
 
 const filteredOptions: T[] = $derived(filter(options, value));
@@ -37,9 +37,9 @@ const filteredOptions: T[] = $derived(filter(options, value));
 let input: HTMLInputElement | undefined;
 
 $effect(() => {
-	if (focused && input) {
-		input.focus();
-	}
+  if (focused && input) {
+    input.focus();
+  }
 });
 </script>
 

@@ -15,15 +15,15 @@ const query = $derived(data?.MissionControlQuery);
 const conference = $derived($query.data?.findFirstConference);
 
 const menubarItems = [
-	{
-		faIcon: "fa-home",
-		title: m.home(),
-		href: "..",
-	},
+  {
+    faIcon: "fa-home",
+    title: m.home(),
+    href: "..",
+  },
 ];
 
 onMount(() => {
-	MissionControlSubscription.listen({ conferenceId: data.conferenceId });
+  MissionControlSubscription.listen({ conferenceId: data.conferenceId });
 });
 </script>
 

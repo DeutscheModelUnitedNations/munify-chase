@@ -17,25 +17,25 @@ const { data }: { data: PageData } = $props();
 
 const committeeQuery = $derived(data?.CommitteeTeamQuery);
 const committee = $derived(
-	$CommitteeSubscription.data?.findFirstCommittee ??
-		$committeeQuery.data?.findFirstCommittee,
+  $CommitteeSubscription.data?.findFirstCommittee ??
+    $committeeQuery.data?.findFirstCommittee,
 );
 
 const speakersList = $derived(
-	committee?.activeAgendaItem?.speakersList.find(
-		(item) => item.type === "SPEAKERS_LIST",
-	),
+  committee?.activeAgendaItem?.speakersList.find(
+    (item) => item.type === "SPEAKERS_LIST",
+  ),
 );
 const commentList = $derived(
-	committee?.activeAgendaItem?.speakersList.find(
-		(item) => item.type === "COMMENT_LIST",
-	),
+  committee?.activeAgendaItem?.speakersList.find(
+    (item) => item.type === "COMMENT_LIST",
+  ),
 );
 
 onMount(() => {
-	CommitteeSubscription.listen({
-		id: data.committeeId,
-	});
+  CommitteeSubscription.listen({
+    id: data.committeeId,
+  });
 });
 </script>
 

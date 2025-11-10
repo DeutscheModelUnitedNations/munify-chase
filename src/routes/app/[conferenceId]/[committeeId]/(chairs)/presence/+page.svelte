@@ -11,14 +11,14 @@ import ChairRollCall from "$lib/components/rollCall/ChairRollCall.svelte";
 import Tabs from "$lib/components/Tabs.svelte";
 import UndrawError from "$lib/components/UndrawError.svelte";
 import {
-	isDelegationMember,
-	isNSAMember,
-	isUNMember,
+  isDelegationMember,
+  isNSAMember,
+  isUNMember,
 } from "$lib/helpers/distinguishConferenceMembers";
 import { m } from "$lib/paraglide/messages";
 import {
-	getTranslatedCountryNameFromAlpha3Code,
-	sortTranslatedCountries,
+  getTranslatedCountryNameFromAlpha3Code,
+  sortTranslatedCountries,
 } from "$lib/utils/nationTranslationHelper.svelte";
 import { promiseToastStrings } from "$lib/utils/toast";
 import { CommitteeSubscription } from "../committeeSubscription";
@@ -31,61 +31,61 @@ const { data }: { data: PageData } = $props();
 
 const query = $derived(data?.CommitteeTeamQuery);
 const committee = $derived(
-	$CommitteeSubscription.data?.findFirstCommittee ??
-		$query.data?.findFirstCommittee,
+  $CommitteeSubscription.data?.findFirstCommittee ??
+    $query.data?.findFirstCommittee,
 );
 
 const countries = $derived(
-	committee?.members
-		.filter(isDelegationMember)
-		.sort((a, b) =>
-			sortTranslatedCountries(a.representation!, b.representation!),
-		) ?? [],
+  committee?.members
+    .filter(isDelegationMember)
+    .sort((a, b) =>
+      sortTranslatedCountries(a.representation!, b.representation!),
+    ) ?? [],
 );
 
 const nsas = $derived(
-	committee?.conference?.uniqueConferenceMembers
-		?.filter(isNSAMember)
-		.sort((a, b) =>
-			a.representation!.name!.localeCompare(b.representation!.name!),
-		) ?? [],
+  committee?.conference?.uniqueConferenceMembers
+    ?.filter(isNSAMember)
+    .sort((a, b) =>
+      a.representation!.name!.localeCompare(b.representation!.name!),
+    ) ?? [],
 );
 
 const un = $derived(
-	committee?.conference?.uniqueConferenceMembers
-		?.filter(isUNMember)
-		?.sort((a, b) =>
-			a.representation!.name!.localeCompare(b.representation!.name!),
-		) ?? [],
+  committee?.conference?.uniqueConferenceMembers
+    ?.filter(isUNMember)
+    ?.sort((a, b) =>
+      a.representation!.name!.localeCompare(b.representation!.name!),
+    ) ?? [],
 );
 
 const rollCallActive = $state(false);
 
 onMount(() => {
-	CommitteeSubscription.listen({ id: data.committeeId });
+  CommitteeSubscription.listen({ id: data.committeeId });
 });
 
 const presenceTabs = [
-	{
-		id: false,
-		name: m.absent(),
-		faIcon: "fa-xmark",
-	},
-	{
-		id: true,
-		name: m.present(),
-		faIcon: "fa-check",
-	},
+  {
+    id: false,
+    name: m.absent(),
+    faIcon: "fa-xmark",
+  },
+  {
+    id: true,
+    name: m.present(),
+    faIcon: "fa-check",
+  },
 ];
 
 const setPresence = (tab: boolean, id: string) => {
-	toast.promise(
-		SetPresenceMutation.mutate({
-			memberIds: [id],
-			present: tab,
-		}),
-		promiseToastStrings(m.presence(), "update"),
-	);
+  toast.promise(
+    SetPresenceMutation.mutate({
+      memberIds: [id],
+      present: tab,
+    }),
+    promiseToastStrings(m.presence(), "update"),
+  );
 };
 </script>
 

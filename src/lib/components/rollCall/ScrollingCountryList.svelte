@@ -7,14 +7,14 @@ import { getTranslatedCountryNameFromAlpha3Code } from "$lib/utils/nationTransla
 import Flag from "../Flag.svelte";
 
 interface Props {
-	currentIndex: number;
-	members: CommitteeTeamQuery$result["findFirstCommittee"]["members"];
-	height?: string;
-	icons?: {
-		id: string;
-		icon: string;
-		color?: "info" | "success" | "error";
-	}[];
+  currentIndex: number;
+  members: CommitteeTeamQuery$result["findFirstCommittee"]["members"];
+  height?: string;
+  icons?: {
+    id: string;
+    icon: string;
+    color?: "info" | "success" | "error";
+  }[];
 }
 
 const { currentIndex, members, height = "70vh", icons }: Props = $props();
@@ -25,23 +25,23 @@ let listContainerRef: HTMLElement;
 let offset = $state(0);
 
 function centerSelectedCountry() {
-	if (!containerRef || !listContainerRef) return;
+  if (!containerRef || !listContainerRef) return;
 
-	const parentHeight = listContainerRef.clientHeight;
+  const parentHeight = listContainerRef.clientHeight;
 
-	const containerHeight = containerRef.clientHeight;
+  const containerHeight = containerRef.clientHeight;
 
-	const elementHeight = containerHeight / members.length;
-	const elementOffset = elementHeight * currentIndex + elementHeight / 2;
+  const elementHeight = containerHeight / members.length;
+  const elementOffset = elementHeight * currentIndex + elementHeight / 2;
 
-	offset = -elementOffset + parentHeight / 2;
+  offset = -elementOffset + parentHeight / 2;
 }
 
 // Watch for changes in currentCountry
 $effect(() => {
-	if (currentIndex !== undefined) {
-		centerSelectedCountry();
-	}
+  if (currentIndex !== undefined) {
+    centerSelectedCountry();
+  }
 });
 </script>
 

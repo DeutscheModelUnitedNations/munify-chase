@@ -2,9 +2,9 @@
 import dayjs from "dayjs";
 import toast from "svelte-french-toast";
 import {
-	type CommitteeTeamQuery$result,
-	graphql,
-	type SpeakersListCategoryEnum$options,
+  type CommitteeTeamQuery$result,
+  graphql,
+  type SpeakersListCategoryEnum$options,
 } from "$houdini";
 import { alertDialog } from "$lib/components/Alert/alert";
 import Modal from "$lib/components/Modal.svelte";
@@ -14,12 +14,12 @@ import { m } from "$lib/paraglide/messages";
 import { promiseToastStrings } from "$lib/utils/toast";
 
 interface Props {
-	speakersList?:
-		| NonNullable<
-				CommitteeTeamQuery$result["findFirstCommittee"]["activeAgendaItem"]
-		  >["speakersList"][number]
-		| null;
-	type: SpeakersListCategoryEnum$options;
+  speakersList?:
+    | NonNullable<
+        CommitteeTeamQuery$result["findFirstCommittee"]["activeAgendaItem"]
+      >["speakersList"][number]
+    | null;
+  type: SpeakersListCategoryEnum$options;
 }
 
 const { speakersList, type }: Props = $props();
@@ -31,18 +31,18 @@ let changeSpeakersNameValue = $state("");
 let changeSpeakingTimeModalOpen = $state(false);
 const changeSpeakingTimeValue = $state(speakersList?.speakingTime ?? 0);
 const chageSpeakingTimeDisplayValue = $derived(
-	dayjs.duration(changeSpeakingTimeValue, "seconds").format("mm:ss"),
+  dayjs.duration(changeSpeakingTimeValue, "seconds").format("mm:ss"),
 );
 
 const closeListTabs = [
-	{
-		id: false,
-		faIcon: "lock-open",
-	},
-	{
-		id: true,
-		faIcon: "lock",
-	},
+  {
+    id: false,
+    faIcon: "lock-open",
+  },
+  {
+    id: true,
+    faIcon: "lock",
+  },
 ];
 
 const OpenOrCloseListMutation = graphql(`
@@ -55,17 +55,17 @@ const OpenOrCloseListMutation = graphql(`
 	`);
 
 const openOrCloseList = async (isClosed: boolean) => {
-	if (!speakersList?.id) return;
-	await toast.promise(
-		OpenOrCloseListMutation.mutate({
-			speakersListId: speakersList.id,
-			isClosed,
-		}),
-		promiseToastStrings(
-			speakersList.type === "COMMENT_LIST" ? m.commentList() : m.speakersList(),
-			"update",
-		),
-	);
+  if (!speakersList?.id) return;
+  await toast.promise(
+    OpenOrCloseListMutation.mutate({
+      speakersListId: speakersList.id,
+      isClosed,
+    }),
+    promiseToastStrings(
+      speakersList.type === "COMMENT_LIST" ? m.commentList() : m.speakersList(),
+      "update",
+    ),
+  );
 };
 
 const ClearListMutation = graphql(`
@@ -80,29 +80,29 @@ const ClearListMutation = graphql(`
 	`);
 
 const clearList = async () => {
-	if (!speakersList?.id) return;
-	isOpen = false;
-	if (
-		await alertDialog({
-			title: m.clearList(),
-			description: m.clearListDescription(),
-			confirmText: m.yes(),
-			cancelText: m.abort(),
-			confirmColor: "error",
-		})
-	) {
-		await toast.promise(
-			ClearListMutation.mutate({
-				speakersListId: speakersList.id,
-			}),
-			promiseToastStrings(
-				speakersList.type === "COMMENT_LIST"
-					? m.commentList()
-					: m.speakersList(),
-				"delete",
-			),
-		);
-	}
+  if (!speakersList?.id) return;
+  isOpen = false;
+  if (
+    await alertDialog({
+      title: m.clearList(),
+      description: m.clearListDescription(),
+      confirmText: m.yes(),
+      cancelText: m.abort(),
+      confirmColor: "error",
+    })
+  ) {
+    await toast.promise(
+      ClearListMutation.mutate({
+        speakersListId: speakersList.id,
+      }),
+      promiseToastStrings(
+        speakersList.type === "COMMENT_LIST"
+          ? m.commentList()
+          : m.speakersList(),
+        "delete",
+      ),
+    );
+  }
 };
 
 const updateSpeakerOnListMutation = graphql(`
@@ -115,27 +115,27 @@ const updateSpeakerOnListMutation = graphql(`
 	`);
 
 const changeSpeakersName = async () => {
-	if (!speakersList?.id || !changeSpeakersNameValue) return;
+  if (!speakersList?.id || !changeSpeakersNameValue) return;
 
-	const existingSpeakerId = speakersList.speakers
-		.sort((a, b) => a.position - b.position)
-		.at(0)?.id;
+  const existingSpeakerId = speakersList.speakers
+    .sort((a, b) => a.position - b.position)
+    .at(0)?.id;
 
-	if (!existingSpeakerId) {
-		toast.error(m.noCurrentSpeaker());
-		return;
-	}
-	await toast.promise(
-		updateSpeakerOnListMutation.mutate({
-			speakerOnListId: existingSpeakerId,
-			overwriteName: changeSpeakersNameValue,
-		}),
-		promiseToastStrings(
-			speakersList.type === "COMMENT_LIST" ? m.commentList() : m.speakersList(),
-			"update",
-		),
-	);
-	changeSpeakersNameModalOpen = false;
+  if (!existingSpeakerId) {
+    toast.error(m.noCurrentSpeaker());
+    return;
+  }
+  await toast.promise(
+    updateSpeakerOnListMutation.mutate({
+      speakerOnListId: existingSpeakerId,
+      overwriteName: changeSpeakersNameValue,
+    }),
+    promiseToastStrings(
+      speakersList.type === "COMMENT_LIST" ? m.commentList() : m.speakersList(),
+      "update",
+    ),
+  );
+  changeSpeakersNameModalOpen = false;
 };
 
 const updateSpeakersListMutation = graphql(`
@@ -152,28 +152,28 @@ const updateSpeakersListMutation = graphql(`
 	`);
 
 const changeSpeakersTime = async () => {
-	if (!speakersList?.id || changeSpeakingTimeValue < 0) return;
+  if (!speakersList?.id || changeSpeakingTimeValue < 0) return;
 
-	await toast.promise(
-		updateSpeakersListMutation.mutate({
-			speakersListId: speakersList.id,
-			speakingTime: changeSpeakingTimeValue,
-		}),
-		promiseToastStrings(
-			speakersList.type === "COMMENT_LIST" ? m.commentList() : m.speakersList(),
-			"update",
-		),
-	);
-	changeSpeakingTimeModalOpen = false;
+  await toast.promise(
+    updateSpeakersListMutation.mutate({
+      speakersListId: speakersList.id,
+      speakingTime: changeSpeakingTimeValue,
+    }),
+    promiseToastStrings(
+      speakersList.type === "COMMENT_LIST" ? m.commentList() : m.speakersList(),
+      "update",
+    ),
+  );
+  changeSpeakingTimeModalOpen = false;
 };
 
 $effect(() => {
-	if (speakersList && speakersList?.speakers.length > 0) {
-		const overwriteName = speakersList.speakers
-			.toSorted((a, b) => a.position - b.position)
-			.at(0)?.overwriteName;
-		changeSpeakersNameValue = overwriteName || "";
-	}
+  if (speakersList && speakersList?.speakers.length > 0) {
+    const overwriteName = speakersList.speakers
+      .toSorted((a, b) => a.position - b.position)
+      .at(0)?.overwriteName;
+    changeSpeakersNameValue = overwriteName || "";
+  }
 });
 </script>
 

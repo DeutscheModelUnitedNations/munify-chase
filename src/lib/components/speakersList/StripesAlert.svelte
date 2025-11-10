@@ -2,17 +2,17 @@
 import { fade } from "svelte/transition";
 
 interface Props {
-	stripeColor?: string;
-	badgeColor?: string;
-	faIcon?: string;
-	badgeText?: string;
+  stripeColor?: string;
+  badgeColor?: string;
+  faIcon?: string;
+  badgeText?: string;
 }
 
 const {
-	stripeColor = "base-300",
-	badgeColor = "primary",
-	faIcon,
-	badgeText,
+  stripeColor = "base-300",
+  badgeColor = "primary",
+  faIcon,
+  badgeText,
 }: Props = $props();
 </script>
 

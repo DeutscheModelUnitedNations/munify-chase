@@ -2,8 +2,8 @@
 import { m } from "$lib/paraglide/messages";
 
 interface Props {
-	showModal: boolean;
-	resolve: (value: string | null) => void;
+  showModal: boolean;
+  resolve: (value: string | null) => void;
 }
 
 let { showModal = $bindable(), resolve }: Props = $props();
@@ -18,61 +18,61 @@ const MAX_FILE_SIZE = 1048576; // 1MB in bytes
 
 // Utility function to convert File to Base64
 function fileToBase64(file: File): Promise<string> {
-	return new Promise((resolve, reject) => {
-		const reader = new FileReader();
-		reader.readAsDataURL(file);
-		reader.onload = () => resolve(reader.result as string);
-		reader.onerror = (error) => reject(error);
-	});
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = () => resolve(reader.result as string);
+    reader.onerror = (error) => reject(error);
+  });
 }
 
 function handleFileInput(event: Event) {
-	const input = event.target as HTMLInputElement;
-	if (input.files && input.files[0]) {
-		const file = input.files[0];
+  const input = event.target as HTMLInputElement;
+  if (input.files && input.files[0]) {
+    const file = input.files[0];
 
-		if (file.size > MAX_FILE_SIZE) {
-			uploadError = "File size exceeds 1MB limit";
-			uploadedFile = null;
-			return;
-		}
+    if (file.size > MAX_FILE_SIZE) {
+      uploadError = "File size exceeds 1MB limit";
+      uploadedFile = null;
+      return;
+    }
 
-		uploadedFile = file;
-		uploadError = "";
-	}
+    uploadedFile = file;
+    uploadError = "";
+  }
 }
 
 async function handleUpload() {
-	if (!uploadedFile) {
-		uploadError = "Please select a file";
-		return;
-	}
+  if (!uploadedFile) {
+    uploadError = "Please select a file";
+    return;
+  }
 
-	isUploading = true;
+  isUploading = true;
 
-	try {
-		// Convert file to Base64 string
-		const base64String = await fileToBase64(uploadedFile);
-		resolve(base64String);
-		showModal = false;
-	} catch (error) {
-		uploadError = "Upload failed";
-	} finally {
-		isUploading = false;
-	}
+  try {
+    // Convert file to Base64 string
+    const base64String = await fileToBase64(uploadedFile);
+    resolve(base64String);
+    showModal = false;
+  } catch (error) {
+    uploadError = "Upload failed";
+  } finally {
+    isUploading = false;
+  }
 }
 
 function handleUrlSubmit() {
-	if (!imageUrl) {
-		return;
-	}
-	resolve(imageUrl);
-	showModal = false;
+  if (!imageUrl) {
+    return;
+  }
+  resolve(imageUrl);
+  showModal = false;
 }
 
 function handleCancel() {
-	resolve(null);
-	showModal = false;
+  resolve(null);
+  showModal = false;
 }
 </script>
 

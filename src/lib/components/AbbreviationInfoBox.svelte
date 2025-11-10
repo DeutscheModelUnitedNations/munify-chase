@@ -2,8 +2,8 @@
 import { onMount } from "svelte";
 
 interface Props {
-	text: string;
-	abbreviation?: string;
+  text: string;
+  abbreviation?: string;
 }
 
 const { text, abbreviation }: Props = $props();
@@ -12,15 +12,15 @@ const textElement = $state<HTMLParagraphElement>();
 let isOverflowing = $state(false);
 
 function checkOverflow() {
-	if (textElement) {
-		isOverflowing = textElement.scrollWidth > textElement.clientWidth;
-	}
+  if (textElement) {
+    isOverflowing = textElement.scrollWidth > textElement.clientWidth;
+  }
 }
 
 onMount(() => {
-	checkOverflow();
-	window.addEventListener("resize", checkOverflow);
-	return () => window.removeEventListener("resize", checkOverflow);
+  checkOverflow();
+  window.addEventListener("resize", checkOverflow);
+  return () => window.removeEventListener("resize", checkOverflow);
 });
 </script>
 

@@ -6,22 +6,22 @@ import { page } from "$app/state";
 import { getLocale, locales, localizeHref } from "$lib/paraglide/runtime";
 
 const getNextLocale = () => {
-	const currentIndex = locales.indexOf(getLocale());
-	const nextIndex = (currentIndex + 1) % locales.length;
-	return locales[nextIndex];
+  const currentIndex = locales.indexOf(getLocale());
+  const nextIndex = (currentIndex + 1) % locales.length;
+  return locales[nextIndex];
 };
 
 let locale = $state(getLocale());
 
 $effect(() => {
-	if (browser) {
-		locale = getLocale();
-	}
+  if (browser) {
+    locale = getLocale();
+  }
 });
 
 const localeLookup = {
-	en: "gb",
-	de: "de",
+  en: "gb",
+  de: "de",
 };
 </script>
 

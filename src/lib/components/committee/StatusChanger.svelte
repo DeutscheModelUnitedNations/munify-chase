@@ -8,28 +8,28 @@ import { serverTime } from "$lib/state/serverTime.svelte";
 import { promiseToastStrings } from "$lib/utils/toast";
 
 type Props = {
-	committeeId: string;
-	oldStatus?: CommitteeStatusEnum$options;
-	oldUntil?: Date;
-	oldCustomName?: string;
-	abort?: () => void;
+  committeeId: string;
+  oldStatus?: CommitteeStatusEnum$options;
+  oldUntil?: Date;
+  oldCustomName?: string;
+  abort?: () => void;
 };
 const {
-	committeeId,
-	oldStatus,
-	oldUntil,
-	oldCustomName = "",
-	abort,
+  committeeId,
+  oldStatus,
+  oldUntil,
+  oldCustomName = "",
+  abort,
 }: Props = $props();
 
 const categories: {
-	id: CommitteeStatusEnum$options;
-	faIcon: string;
+  id: CommitteeStatusEnum$options;
+  faIcon: string;
 }[] = [
-	{ id: "FORMAL", faIcon: "podium" },
-	{ id: "INFORMAL", faIcon: "comments" },
-	{ id: "PAUSE", faIcon: "mug-saucer" },
-	{ id: "SUSPENSION", faIcon: "forward-step" },
+  { id: "FORMAL", faIcon: "podium" },
+  { id: "INFORMAL", faIcon: "comments" },
+  { id: "PAUSE", faIcon: "mug-saucer" },
+  { id: "SUSPENSION", faIcon: "forward-step" },
 ];
 
 const absoluteTimes = [0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55];
@@ -61,37 +61,37 @@ const StatusChangerMutation = graphql(`
 	`);
 
 const submitStatus = async () => {
-	if (until.isBefore($serverTime)) {
-		toast.error(m.dateCannotBeInPast());
-	}
-	await toast.promise(
-		StatusChangerMutation.mutate({
-			status: activeCategory,
-			until: until.toDate(),
-			customName: customName,
-			committeeId: committeeId,
-		}),
-		promiseToastStrings(m.committeeStatus(), "update"),
-	);
+  if (until.isBefore($serverTime)) {
+    toast.error(m.dateCannotBeInPast());
+  }
+  await toast.promise(
+    StatusChangerMutation.mutate({
+      status: activeCategory,
+      until: until.toDate(),
+      customName: customName,
+      committeeId: committeeId,
+    }),
+    promiseToastStrings(m.committeeStatus(), "update"),
+  );
 };
 
 $effect(() => {
-	if (customName) {
-		customNameOpen = true;
-	}
+  if (customName) {
+    customNameOpen = true;
+  }
 });
 
 $effect(() => {
-	if (oldStatus) {
-		switch (oldStatus) {
-			case "FORMAL":
-				activeCategory = "INFORMAL";
-				break;
-			default:
-				activeCategory = "FORMAL";
-				break;
-		}
-	}
+  if (oldStatus) {
+    switch (oldStatus) {
+      case "FORMAL":
+        activeCategory = "INFORMAL";
+        break;
+      default:
+        activeCategory = "FORMAL";
+        break;
+    }
+  }
 });
 </script>
 

@@ -1,11 +1,14 @@
-import { abilityBuilder } from "$api/rumble";
-import { isDMUNEmail } from "$api/services/isDMUNEmail";
-import { basics } from "./basics";
-
-const { arg, ref, pubsub, table } = basics("presenceChangedTimestamp");
+import { abilityBuilder, countQuery, object, query } from "$api/rumble";
 
 abilityBuilder.presenceChangedTimestamp.allow(["read"]).when(({ hasRole }) => {
-	if (hasRole("admin")) {
-		return "allow";
-	}
+  if (hasRole("admin")) {
+    return "allow";
+  }
+});
+
+const _ref = object({ table: "presenceChangedTimestamp" });
+// const pubsub = rumblePubsub({ table: "presenceChangedTimestamp" });
+query({ table: "presenceChangedTimestamp" });
+countQuery({
+  table: "presenceChangedTimestamp",
 });

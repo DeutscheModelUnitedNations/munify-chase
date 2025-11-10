@@ -1,7 +1,7 @@
 <script lang="ts">
 import type {
-	CommitteeTeamQuery$result,
-	SpeakersListCategoryEnum$options,
+  CommitteeTeamQuery$result,
+  SpeakersListCategoryEnum$options,
 } from "$houdini";
 import AddSpeakers from "./AddSpeakers.svelte";
 import MoreOptions from "./MoreOptions.svelte";
@@ -9,33 +9,33 @@ import NextSpeech from "./NextSpeech.svelte";
 import SpeechControls from "./SpeechControls.svelte";
 
 type List =
-	| NonNullable<
-			CommitteeTeamQuery$result["findFirstCommittee"]["activeAgendaItem"]
-	  >["speakersList"][number]
-	| null;
+  | NonNullable<
+      CommitteeTeamQuery$result["findFirstCommittee"]["activeAgendaItem"]
+    >["speakersList"][number]
+  | null;
 
 interface Props {
-	committeeId: string;
-	type: SpeakersListCategoryEnum$options;
-	committeeMembers: CommitteeTeamQuery$result["findFirstCommittee"]["members"];
-	conferenceMembers: NonNullable<
-		NonNullable<
-			CommitteeTeamQuery$result["findFirstCommittee"]["conference"]
-		>["uniqueConferenceMembers"]
-	>;
-	speakersList?: List;
-	childList?: List;
-	otherList?: List;
+  committeeId: string;
+  type: SpeakersListCategoryEnum$options;
+  committeeMembers: CommitteeTeamQuery$result["findFirstCommittee"]["members"];
+  conferenceMembers: NonNullable<
+    NonNullable<
+      CommitteeTeamQuery$result["findFirstCommittee"]["conference"]
+    >["uniqueConferenceMembers"]
+  >;
+  speakersList?: List;
+  childList?: List;
+  otherList?: List;
 }
 
 const {
-	committeeId,
-	committeeMembers,
-	conferenceMembers,
-	type,
-	speakersList,
-	childList,
-	otherList,
+  committeeId,
+  committeeMembers,
+  conferenceMembers,
+  type,
+  speakersList,
+  childList,
+  otherList,
 }: Props = $props();
 </script>
 

@@ -1,14 +1,18 @@
-import { abilityBuilder } from "$api/rumble";
+import { abilityBuilder, countQuery, object, query } from "$api/rumble";
 import { isDMUNEmail } from "$api/services/isDMUNEmail";
-import { basics } from "./basics";
-
-const { arg, ref, pubsub, table } = basics("representation");
 
 abilityBuilder.representation
-	.allow(["read", "update"])
-	.when(({ mustBeLoggedIn }) => {
-		const user = mustBeLoggedIn();
-		if (user?.email && isDMUNEmail(user.email)) {
-			return "allow";
-		}
-	});
+  .allow(["read", "update"])
+  .when(({ mustBeLoggedIn }) => {
+    const user = mustBeLoggedIn();
+    if (user?.email && isDMUNEmail(user.email)) {
+      return "allow";
+    }
+  });
+
+const _ref = object({ table: "representation" });
+// const pubsub = rumblePubsub({ table: "representation" });
+query({ table: "representation" });
+countQuery({
+  table: "representation",
+});

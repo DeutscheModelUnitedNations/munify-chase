@@ -1,29 +1,29 @@
 <script lang="ts">
 interface Props {
-	votesPro?: number | null;
-	votesCon?: number | null;
-	votesAbstain?: number | null;
-	total?: number | null;
-	majorityAmount?: number | null;
-	showNumbers?: boolean;
+  votesPro?: number | null;
+  votesCon?: number | null;
+  votesAbstain?: number | null;
+  total?: number | null;
+  majorityAmount?: number | null;
+  showNumbers?: boolean;
 }
 
 const {
-	votesPro,
-	votesCon,
-	votesAbstain,
-	total,
-	majorityAmount,
-	showNumbers = false,
+  votesPro,
+  votesCon,
+  votesAbstain,
+  total,
+  majorityAmount,
+  showNumbers = false,
 }: Props = $props();
 
 const getPercentage = (value: number | undefined | null) => {
-	if (value === null || value === undefined || total === 0) return 0;
-	return `${(value / (total ?? 1)) * 100}%`;
+  if (value === null || value === undefined || total === 0) return 0;
+  return `${(value / (total ?? 1)) * 100}%`;
 };
 
 const getMajorityPercent = () => {
-	return `${((majorityAmount ?? 0) / (total || 1)) * 100}%`;
+  return `${((majorityAmount ?? 0) / (total || 1)) * 100}%`;
 };
 </script>
 

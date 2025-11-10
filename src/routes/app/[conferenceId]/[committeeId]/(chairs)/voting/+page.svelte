@@ -14,8 +14,8 @@ const { data }: { data: PageData } = $props();
 
 const query = $derived(data?.CommitteeTeamQuery);
 const committee = $derived(
-	$CommitteeSubscription.data?.findFirstCommittee ??
-		$query.data?.findFirstCommittee,
+  $CommitteeSubscription.data?.findFirstCommittee ??
+    $query.data?.findFirstCommittee,
 );
 </script>
 

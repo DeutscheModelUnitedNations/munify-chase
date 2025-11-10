@@ -12,17 +12,17 @@ import Flag from "../Flag.svelte";
 import StripesAlert from "./StripesAlert.svelte";
 
 interface Props {
-	rawSpeakers?: NonNullable<
-		CommitteeTeamQuery$result["findFirstCommittee"]["activeAgendaItem"]
-	>["speakersList"][number]["speakers"];
-	closed?: boolean;
-	resizeFn?: () => void;
+  rawSpeakers?: NonNullable<
+    CommitteeTeamQuery$result["findFirstCommittee"]["activeAgendaItem"]
+  >["speakersList"][number]["speakers"];
+  closed?: boolean;
+  resizeFn?: () => void;
 }
 
 let { rawSpeakers, closed = false, resizeFn = $bindable() }: Props = $props();
 
 const speakers = $derived(
-	rawSpeakers?.toSorted((a, b) => a.position - b.position).toSpliced(0, 1),
+  rawSpeakers?.toSorted((a, b) => a.position - b.position).toSpliced(0, 1),
 );
 
 const container = $state<HTMLElement | null>(null);
@@ -31,31 +31,31 @@ let containerHeight = $state(250);
 let rowHeight = $state(70);
 let reservedHeight = $state(50); // Reserve space for the header and footer, adjust as needed
 const visibleCount = $derived(
-	Math.floor((containerHeight - reservedHeight) / rowHeight),
+  Math.floor((containerHeight - reservedHeight) / rowHeight),
 );
 
 const resize = () => {
-	if (container && overflowContainer) {
-		containerHeight = container.clientHeight;
-		rowHeight = container.children[0]?.clientHeight || 20;
-		reservedHeight = overflowContainer?.clientHeight || 50;
-	}
+  if (container && overflowContainer) {
+    containerHeight = container.clientHeight;
+    rowHeight = container.children[0]?.clientHeight || 20;
+    reservedHeight = overflowContainer?.clientHeight || 50;
+  }
 };
 
 $effect(() => {
-	if (browser) {
-		resize();
-		window.addEventListener("resize", resize);
-		container?.addEventListener("reset", resize);
-		return () => {
-			window.removeEventListener("resize", resize);
-			container?.removeEventListener("reset", resize);
-		};
-	}
+  if (browser) {
+    resize();
+    window.addEventListener("resize", resize);
+    container?.addEventListener("reset", resize);
+    return () => {
+      window.removeEventListener("resize", resize);
+      container?.removeEventListener("reset", resize);
+    };
+  }
 });
 
 onMount(() => {
-	resizeFn = resize;
+  resizeFn = resize;
 });
 </script>
 

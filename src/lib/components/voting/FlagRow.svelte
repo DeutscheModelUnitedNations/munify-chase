@@ -2,11 +2,11 @@
 import type { Snippet } from "svelte";
 
 interface Props {
-	children?: Snippet;
-	faIcon?: string;
-	color?: "info" | "success" | "warning" | "error";
-	countValue?: number;
-	className?: string;
+  children?: Snippet;
+  faIcon?: string;
+  color?: "info" | "success" | "warning" | "error";
+  countValue?: number;
+  className?: string;
 }
 
 const { children, faIcon, color, countValue = 0, className }: Props = $props();

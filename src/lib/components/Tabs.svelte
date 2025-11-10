@@ -1,14 +1,14 @@
 <script lang="ts" generics="T">
 type Tab = {
-	id: T;
-	faIcon?: string;
-	label?: string;
+  id: T;
+  faIcon?: string;
+  label?: string;
 };
 
 interface Props {
-	tabs: Tab[];
-	activeTab: T;
-	onTabChange?: (tab: T) => void;
+  tabs: Tab[];
+  activeTab: T;
+  onTabChange?: (tab: T) => void;
 }
 
 const { tabs, activeTab = $bindable(), onTabChange }: Props = $props();

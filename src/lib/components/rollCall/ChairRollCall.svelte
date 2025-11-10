@@ -11,9 +11,9 @@ import Modal from "../Modal.svelte";
 import ScrollingCountryList from "./ScrollingCountryList.svelte";
 
 interface Props {
-	active: boolean;
-	members: CommitteeTeamQuery$result["findFirstCommittee"]["members"];
-	committeeId: string;
+  active: boolean;
+  members: CommitteeTeamQuery$result["findFirstCommittee"]["members"];
+  committeeId: string;
 }
 
 let { active = $bindable(), members, committeeId }: Props = $props();
@@ -21,68 +21,68 @@ let { active = $bindable(), members, committeeId }: Props = $props();
 let currentIndex = $state(0);
 
 const setPresence = async (present: boolean) => {
-	const member = members[currentIndex];
-	if (member) {
-		await toast.promise(
-			SetPresenceMutation.mutate({
-				memberIds: [member.id],
-				present,
-			}),
-			promiseToastStrings(m.presence(), "update"),
-			{
-				duration: 1000,
-				position: "top-right",
-			},
-		);
+  const member = members[currentIndex];
+  if (member) {
+    await toast.promise(
+      SetPresenceMutation.mutate({
+        memberIds: [member.id],
+        present,
+      }),
+      promiseToastStrings(m.presence(), "update"),
+      {
+        duration: 1000,
+        position: "top-right",
+      },
+    );
 
-		if (currentIndex === members.length - 1) {
-			toast.success(m.rollCallSuccess());
-			active = false;
-		}
-		currentIndex = (currentIndex + 1) % members.length;
-	} else {
-		toast.error(m.rollCallError());
-	}
+    if (currentIndex === members.length - 1) {
+      toast.success(m.rollCallSuccess());
+      active = false;
+    }
+    currentIndex = (currentIndex + 1) % members.length;
+  } else {
+    toast.error(m.rollCallError());
+  }
 };
 
 $effect(() => {
-	if (active) {
-		hotkeys("up, down, j, l, esc", "rollCall", (event, handler) => {
-			event.preventDefault();
-			switch (handler.key) {
-				case "up":
-					currentIndex = (currentIndex - 1 + members.length) % members.length;
-					break;
-				case "down":
-					currentIndex = (currentIndex + 1) % members.length;
-					break;
-				case "j":
-					setPresence(false);
-					break;
-				case "l":
-					setPresence(true);
-					break;
-				case "esc":
-					active = false;
-			}
-		});
-		hotkeys.setScope("rollCall");
-	} else {
-		hotkeys.deleteScope("rollCall");
-	}
+  if (active) {
+    hotkeys("up, down, j, l, esc", "rollCall", (event, handler) => {
+      event.preventDefault();
+      switch (handler.key) {
+        case "up":
+          currentIndex = (currentIndex - 1 + members.length) % members.length;
+          break;
+        case "down":
+          currentIndex = (currentIndex + 1) % members.length;
+          break;
+        case "j":
+          setPresence(false);
+          break;
+        case "l":
+          setPresence(true);
+          break;
+        case "esc":
+          active = false;
+      }
+    });
+    hotkeys.setScope("rollCall");
+  } else {
+    hotkeys.deleteScope("rollCall");
+  }
 });
 
 $effect(() => {
-	if (active && currentIndex !== undefined) {
-		localDB.committeeSettings.update(committeeId, {
-			rollCall: currentIndex,
-		});
-	} else if (!active) {
-		currentIndex = 0;
-		localDB.committeeSettings.update(committeeId, {
-			rollCall: null,
-		});
-	}
+  if (active && currentIndex !== undefined) {
+    localDB.committeeSettings.update(committeeId, {
+      rollCall: currentIndex,
+    });
+  } else if (!active) {
+    currentIndex = 0;
+    localDB.committeeSettings.update(committeeId, {
+      rollCall: null,
+    });
+  }
 });
 </script>
 

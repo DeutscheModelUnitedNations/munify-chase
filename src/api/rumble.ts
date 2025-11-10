@@ -6,22 +6,23 @@ import { db } from "./db/db";
 // this tells the dev server to reload the cache of the schema builder to prevent buildup of non
 // existent fields/queries
 if (dev) {
-	import("$api/handlers/register");
+  import("$api/handlers/register");
 }
 
 export const {
-	abilityBuilder,
-	schemaBuilder,
-	object,
-	query,
-	pubsub,
-	createYoga,
-	enum_,
-	clientCreator,
-	orderArg,
-	whereArg,
+  abilityBuilder,
+  schemaBuilder,
+  object,
+  query,
+  pubsub,
+  createYoga,
+  enum_,
+  clientCreator,
+  orderArg,
+  whereArg,
+  countQuery,
 } = rumble({
-	db,
-	context,
-	defaultLimit: 300,
+  db,
+  context,
+  defaultLimit: 300,
 });

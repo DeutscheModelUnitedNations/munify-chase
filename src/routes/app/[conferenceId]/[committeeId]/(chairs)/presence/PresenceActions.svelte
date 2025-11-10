@@ -6,19 +6,19 @@ import { promiseToastStrings } from "$lib/utils/toast";
 import { SetPresenceMutation } from "./presenceMutations";
 
 interface Props {
-	memberIds: string[];
+  memberIds: string[];
 }
 
 const { memberIds }: Props = $props();
 
 const setAllPresence = (present: boolean) => {
-	toast.promise(
-		SetPresenceMutation.mutate({
-			memberIds,
-			present,
-		}),
-		promiseToastStrings(m.presence(), "update"),
-	);
+  toast.promise(
+    SetPresenceMutation.mutate({
+      memberIds,
+      present,
+    }),
+    promiseToastStrings(m.presence(), "update"),
+  );
 };
 </script>
 

@@ -8,32 +8,32 @@ const { data }: { data: PageData } = $props();
 
 const launcherQuery = $derived(data?.LauncherQuery);
 const conferenceData = $derived(
-	$launcherQuery.data?.findManyConferenceUser ?? [],
+  $launcherQuery.data?.findManyConferenceUser ?? [],
 );
 
 const getType = (type: ConferenceUserTypeEnum$options) => {
-	switch (type) {
-		case "ADMIN":
-			return m.admin();
-		case "TEAM":
-			return m.teamMember();
-		case "SPECTATOR":
-			return m.spectator();
-		case "DELEGATE":
-			return m.delegate();
-		case "NON_STATE_ACTOR":
-			return m.nonStateActor();
-		default:
-			return "";
-	}
+  switch (type) {
+    case "ADMIN":
+      return m.admin();
+    case "TEAM":
+      return m.teamMember();
+    case "SPECTATOR":
+      return m.spectator();
+    case "DELEGATE":
+      return m.delegate();
+    case "NON_STATE_ACTOR":
+      return m.nonStateActor();
+    default:
+      return "";
+  }
 };
 
 const getUrl = (type: ConferenceUserTypeEnum$options, id: string) => {
-	if (["ADMIN", "TEAM"].includes(type)) {
-		return `/app/${id}/mission-control`;
-	} else {
-		return `/app/${id}`;
-	}
+  if (["ADMIN", "TEAM"].includes(type)) {
+    return `/app/${id}/mission-control`;
+  } else {
+    return `/app/${id}`;
+  }
 };
 </script>
 

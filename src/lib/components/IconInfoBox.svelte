@@ -11,62 +11,62 @@ import { serverTime } from "$lib/state/serverTime.svelte";
 import { getCommitteeStatusBackground } from "$lib/utils/committeeStatus";
 
 interface Props {
-	text: string;
-	faIcon?: string;
-	iconText?: string;
-	committeeStatus?: CommitteeStatusEnum$options;
-	until?: Date;
-	marqueeOnOverflow?: boolean;
-	fullHeight?: boolean;
-	hideCountdown?: boolean;
+  text: string;
+  faIcon?: string;
+  iconText?: string;
+  committeeStatus?: CommitteeStatusEnum$options;
+  until?: Date;
+  marqueeOnOverflow?: boolean;
+  fullHeight?: boolean;
+  hideCountdown?: boolean;
 }
 
 const {
-	text,
-	faIcon,
-	iconText,
-	committeeStatus,
-	until,
-	marqueeOnOverflow = true,
-	fullHeight = false,
-	hideCountdown = false,
+  text,
+  faIcon,
+  iconText,
+  committeeStatus,
+  until,
+  marqueeOnOverflow = true,
+  fullHeight = false,
+  hideCountdown = false,
 }: Props = $props();
 
 const textElement = $state<HTMLParagraphElement>();
 let isOverflowing = $state(false);
 
 function checkOverflow() {
-	if (textElement) {
-		isOverflowing = textElement.scrollWidth > textElement.clientWidth;
-	}
+  if (textElement) {
+    isOverflowing = textElement.scrollWidth > textElement.clientWidth;
+  }
 }
 
 onMount(() => {
-	checkOverflow();
-	window.addEventListener("resize", checkOverflow);
-	return () => window.removeEventListener("resize", checkOverflow);
+  checkOverflow();
+  window.addEventListener("resize", checkOverflow);
+  return () => window.removeEventListener("resize", checkOverflow);
 });
 
 let countdownDelta = $state<duration.Duration>();
 
 const countdownDeltaInFuture = $derived(() => {
-	if (until) {
-		const untilDate = dayjs(until);
-		return $serverTime.isBefore(untilDate);
-	}
-	return false;
+  if (until) {
+    const untilDate = dayjs(until);
+    return $serverTime.isBefore(untilDate);
+  }
+  return false;
 });
 
 $effect(() => {
-	const calculateCountdown = () => {
-		const untilDate = dayjs(until);
-		countdownDelta = dayjs.duration(untilDate.diff($serverTime));
-	};
-	if (until) {
-		calculateCountdown();
-		const interval = setInterval(() => calculateCountdown(), 1000);
-		return () => clearInterval(interval);
-	}
+  const calculateCountdown = () => {
+    const untilDate = dayjs(until);
+    countdownDelta = dayjs.duration(untilDate.diff($serverTime));
+  };
+  if (until) {
+    calculateCountdown();
+    const interval = setInterval(() => calculateCountdown(), 1000);
+    return () => clearInterval(interval);
+  }
 });
 </script>
 

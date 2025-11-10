@@ -4,20 +4,20 @@ import type { Snippet } from "svelte";
 import { m } from "$lib/paraglide/messages";
 
 interface Props {
-	open: boolean;
-	children: Snippet;
+  open: boolean;
+  children: Snippet;
 }
 
 let { open = $bindable(), children }: Props = $props();
 
 $effect(() => {
-	if (open) {
-		hotkeys("esc", () => {
-			open = false;
-		});
-	} else {
-		hotkeys.unbind("esc");
-	}
+  if (open) {
+    hotkeys("esc", () => {
+      open = false;
+    });
+  } else {
+    hotkeys.unbind("esc");
+  }
 });
 </script>
 

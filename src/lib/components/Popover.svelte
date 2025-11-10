@@ -4,9 +4,9 @@ import type { Snippet } from "svelte";
 import { fly } from "svelte/transition";
 
 interface Props {
-	open?: boolean;
-	Trigger: Snippet;
-	Content: Snippet;
+  open?: boolean;
+  Trigger: Snippet;
+  Content: Snippet;
 }
 
 const { open = $bindable(false), Trigger, Content }: Props = $props();

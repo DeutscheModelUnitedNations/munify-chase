@@ -7,21 +7,21 @@ import { promiseToastStrings } from "$lib/utils/toast";
 import WhiteboardEditor from "./WhiteboardEditor.svelte";
 
 interface Props {
-	open: boolean;
-	committeeId?: string | null;
-	whiteboardContent?: string | null;
-	close: () => void;
+  open: boolean;
+  committeeId?: string | null;
+  whiteboardContent?: string | null;
+  close: () => void;
 }
 
 const {
-	open = $bindable(),
-	committeeId,
-	whiteboardContent,
-	close,
+  open = $bindable(),
+  committeeId,
+  whiteboardContent,
+  close,
 }: Props = $props();
 
 const newWhiteboardContent = $state<string | null | undefined>(
-	whiteboardContent,
+  whiteboardContent,
 );
 
 const UpdateWhiteboardMutation = graphql(`
@@ -34,20 +34,20 @@ const UpdateWhiteboardMutation = graphql(`
 	`);
 
 const publishChanges = async () => {
-	if (!committeeId) {
-		return;
-	}
+  if (!committeeId) {
+    return;
+  }
 
-	await toast.promise(
-		UpdateWhiteboardMutation.mutate({
-			committeeId,
-			whiteboardContent: newWhiteboardContent ?? "",
-		}),
-		promiseToastStrings(m.whiteboard(), "update"),
-	);
-	// cache.markStale('Committee');
-	// invalidateAll();
-	close();
+  await toast.promise(
+    UpdateWhiteboardMutation.mutate({
+      committeeId,
+      whiteboardContent: newWhiteboardContent ?? "",
+    }),
+    promiseToastStrings(m.whiteboard(), "update"),
+  );
+  // cache.markStale('Committee');
+  // invalidateAll();
+  close();
 };
 </script>
 

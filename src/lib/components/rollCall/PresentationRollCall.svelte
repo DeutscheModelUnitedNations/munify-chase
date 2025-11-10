@@ -7,14 +7,14 @@ import Modal from "../Modal.svelte";
 import ScrollingCountryList from "./ScrollingCountryList.svelte";
 
 interface Props {
-	members: CommitteeTeamQuery$result["findFirstCommittee"]["members"];
-	committeeId: string;
+  members: CommitteeTeamQuery$result["findFirstCommittee"]["members"];
+  committeeId: string;
 }
 
 const { members, committeeId }: Props = $props();
 
 const committeeSettingsQuery = liveQuery(() =>
-	localDB.committeeSettings.get(committeeId),
+  localDB.committeeSettings.get(committeeId),
 );
 const currentIndex = $derived($committeeSettingsQuery?.rollCall);
 </script>

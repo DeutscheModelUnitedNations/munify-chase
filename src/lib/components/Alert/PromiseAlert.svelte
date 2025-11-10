@@ -7,35 +7,35 @@ import { browser } from "$app/environment";
 import { alertDialogStore } from "./alert";
 
 $effect(() => {
-	if (browser && $alertDialogStore) {
-		hotkeys("enter", (event, handler) => {
-			event.preventDefault();
-			switch (handler.key) {
-				case "enter":
-					if (!$alertDialogStore) return;
-					$alertDialogStore.onConfirm!();
-					break;
-			}
-		});
-	} else if (browser) {
-		hotkeys.unbind("enter");
-	}
+  if (browser && $alertDialogStore) {
+    hotkeys("enter", (event, handler) => {
+      event.preventDefault();
+      switch (handler.key) {
+        case "enter":
+          if (!$alertDialogStore) return;
+          $alertDialogStore.onConfirm!();
+          break;
+      }
+    });
+  } else if (browser) {
+    hotkeys.unbind("enter");
+  }
 });
 
 let open = $state(false);
 
 $effect(() => {
-	if (browser && $alertDialogStore) {
-		open = true;
-	} else if (browser) {
-		open = false;
-	}
+  if (browser && $alertDialogStore) {
+    open = true;
+  } else if (browser) {
+    open = false;
+  }
 });
 
 $effect(() => {
-	if (!open) {
-		$alertDialogStore = null;
-	}
+  if (!open) {
+    $alertDialogStore = null;
+  }
 });
 </script>
 

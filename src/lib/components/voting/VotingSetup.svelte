@@ -7,7 +7,7 @@ import RollCallVotingChair from "./RollCallVotingChair.svelte";
 import ShowOfHandsVotingChair from "./ShowOfHandsVotingChair.svelte";
 
 interface Props {
-	committee: CommitteeTeamQuery$result["findFirstCommittee"];
+  committee: CommitteeTeamQuery$result["findFirstCommittee"];
 }
 
 const { committee }: Props = $props();
@@ -21,25 +21,25 @@ const showOfHandModalOpen: boolean = $state(false);
 const rollCallModalOpen: boolean = $state(false);
 
 const voteTypeTabs: {
-	id: "SHOW_OF_HANDS" | "ROLL_CALL";
-	label: string;
-	faIcon: string;
+  id: "SHOW_OF_HANDS" | "ROLL_CALL";
+  label: string;
+  faIcon: string;
 }[] = [
-	{ id: "SHOW_OF_HANDS", label: m.showOfHandsVoting(), faIcon: "hand-wave" },
-	{ id: "ROLL_CALL", label: m.rollCallVoting(), faIcon: "list-check" },
+  { id: "SHOW_OF_HANDS", label: m.showOfHandsVoting(), faIcon: "hand-wave" },
+  { id: "ROLL_CALL", label: m.rollCallVoting(), faIcon: "list-check" },
 ];
 
 const majorityTabs: {
-	id: VotingMajority;
-	label: string;
+  id: VotingMajority;
+  label: string;
 }[] = [
-	{ id: "SIMPLE", label: m.simpleMajority() },
-	{ id: "TWO_THIRDS", label: m.twoThirdsMajority() },
+  { id: "SIMPLE", label: m.simpleMajority() },
+  { id: "TWO_THIRDS", label: m.twoThirdsMajority() },
 ];
 
 const withAbstentionsTabs = [
-	{ id: false, label: m.withoutAbstentions() },
-	{ id: true, label: m.withAbstentions() },
+  { id: false, label: m.withoutAbstentions() },
+  { id: true, label: m.withAbstentions() },
 ];
 </script>
 

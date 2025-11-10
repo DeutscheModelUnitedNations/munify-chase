@@ -14,7 +14,7 @@ const availableIllustrations = [theWorldIsMine, world, aroundTheWorld];
 const availableBlobs = [blob1, blob2, blob3, blob4, blob5];
 
 const illustration = $state(
-	Math.floor(Math.random() * availableIllustrations.length),
+  Math.floor(Math.random() * availableIllustrations.length),
 );
 const blob = $state(Math.floor(Math.random() * availableBlobs.length));
 </script>

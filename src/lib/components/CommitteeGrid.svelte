@@ -1,31 +1,31 @@
 <script lang="ts">
 import type {
-	CommitteeOverviewQuery$result,
-	MissionControlQuery$result,
+  CommitteeOverviewQuery$result,
+  MissionControlQuery$result,
 } from "$houdini";
 import * as m from "$lib/paraglide/messages.js";
 import {
-	getCommitteeStatusIcon,
-	getCommitteeStatusText,
+  getCommitteeStatusIcon,
+  getCommitteeStatusText,
 } from "$lib/utils/committeeStatus";
 import AdoptionConfetti from "./AdoptionConfetti.svelte";
 import IconInfoBox from "./IconInfoBox.svelte";
 
 interface Props {
-	conference:
-		| MissionControlQuery$result["findFirstConference"]
-		| CommitteeOverviewQuery$result["findFirstConference"];
-	environment?: "SPECTATOR" | "TEAM";
+  conference:
+    | MissionControlQuery$result["findFirstConference"]
+    | CommitteeOverviewQuery$result["findFirstConference"];
+  environment?: "SPECTATOR" | "TEAM";
 }
 
 const { conference, environment = "SPECTATOR" }: Props = $props();
 
 const getHref = (committeeId: string) => {
-	if (environment === "TEAM") {
-		return `/app/${conference.id}/${committeeId}/setup`;
-	} else {
-		return `/app/${conference.id}/${committeeId}`;
-	}
+  if (environment === "TEAM") {
+    return `/app/${conference.id}/${committeeId}/setup`;
+  } else {
+    return `/app/${conference.id}/${committeeId}`;
+  }
 };
 </script>
 

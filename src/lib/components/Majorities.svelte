@@ -1,16 +1,16 @@
 <script lang="ts">
 interface Props {
-	totalPresent: number | null;
-	simpleMajority: number | null;
-	twoThirdsMajority: number | null;
-	paperSupportThreshold: number | null;
+  totalPresent: number | null;
+  simpleMajority: number | null;
+  twoThirdsMajority: number | null;
+  paperSupportThreshold: number | null;
 }
 
 const {
-	totalPresent,
-	simpleMajority,
-	twoThirdsMajority,
-	paperSupportThreshold,
+  totalPresent,
+  simpleMajority,
+  twoThirdsMajority,
+  paperSupportThreshold,
 }: Props = $props();
 </script>
 

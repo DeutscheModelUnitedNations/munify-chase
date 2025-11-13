@@ -1,5 +1,5 @@
 import { clientCreator } from "$api/rumble";
-import { dev } from "$app/environment";
+import { building, dev } from "$app/environment";
 
 import "./agendaItem";
 import "./committee";
@@ -15,9 +15,10 @@ import "./user";
 import "./import";
 import "./presenceChangedTimestamp";
 
-if (dev) {
+if (dev || building) {
   clientCreator({
-    outputPath: "src/lib/rumbleClient",
+    outputPath: "src/lib/api/rumbleClient",
     apiUrl: "/api/graphql",
+    useExternalUrqlClient: "../customClient",
   });
 }

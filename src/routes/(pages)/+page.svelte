@@ -2,6 +2,7 @@
 import { onMount } from "svelte";
 import { navigating } from "$app/state";
 import { m } from "$lib/paraglide/messages";
+import { serverTime } from "$lib/state/serverTime.svelte";
 import { media } from "$lib/utils/media.svelte";
 import type { PageData } from "./$houdini";
 import CardSection from "./CardSection.svelte";
@@ -17,6 +18,8 @@ let loading = $state(true);
 
 onMount(() => (loading = false));
 </script>
+
+{serverTime}
 
 <div class="flex min-h-screen flex-col items-center">
 	{#if loading}

@@ -1,5 +1,5 @@
 import dayjs from "dayjs";
-import { derived } from "svelte/store";
+import { client } from "$lib/api/rumbleClient/client";
 
 // export const serverTime = derived(
 // 	timeQuery,
@@ -19,3 +19,10 @@ import { derived } from "svelte/store";
 // 	},
 // 	dayjs()
 // );
+
+export const serverTime = $state({ value: dayjs() });
+
+(async () => {
+  const time = await client.query.serverTime();
+  serverTime.value = dayjs(time);
+})();

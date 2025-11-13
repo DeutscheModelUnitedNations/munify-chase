@@ -33,7 +33,6 @@ import "@fontsource/vollkorn/900.css";
 import { onMount } from "svelte";
 import { browser } from "$app/environment";
 import Alert from "$lib/components/Alert/PromiseAlert.svelte";
-import { timeQuery } from "$lib/state/serverTime.svelte";
 import { initialSetTheme } from "$lib/utils/theme.svelte";
 
 dayjs.extend(duration);
@@ -83,7 +82,6 @@ if (browser) {
 
 onMount(() => {
   initialSetTheme();
-  timeQuery.fetch();
   const matchMedia = window.matchMedia("(prefers-color-scheme: dark)");
   matchMedia.addEventListener("change", (e) => {
     initialSetTheme();

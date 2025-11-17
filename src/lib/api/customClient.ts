@@ -13,6 +13,8 @@ const remoteFunctionsExchange: Exchange = ({ forward }) => {
     const filtered = pipe(
       operations,
       filter((operation) => {
+        console.log(operation);
+
         return operation.kind !== "teardown";
       }),
       mergeMap((operation) => {
@@ -22,28 +24,42 @@ const remoteFunctionsExchange: Exchange = ({ forward }) => {
           return never;
         }
 
+        //     operation,
+        // data: result.data,
+        // error: Array.isArray(result.errors)
+        //   ? new CombinedError({
+        //       graphQLErrors: result.errors,
+        //       response,
+        //     })
+        //   : undefined,
+        // extensions: result.extensions ? { ...result.extensions } : undefined,
+        // hasNext: result.hasNext == null ? defaultHasNext : result.hasNext,
+        // stale: false,
+
         if (operation.kind === "query") {
-          return fromValue(
-            graphqlQuery({
+          return fromValue({
+            ...graphqlQuery({
               query: operation.query,
               variables: operation.variables as Exclude<
                 typeof operation.variables,
                 void
               >,
             }),
-          );
+            operation,
+          });
         }
 
         if (operation.kind === "mutation") {
-          return fromValue(
-            graphqlMutation({
+          return fromValue({
+            ...graphqlMutation({
               query: operation.query,
               variables: operation.variables as Exclude<
                 typeof operation.variables,
                 void
               >,
             }),
-          );
+            operation,
+          });
         }
 
         return empty;
@@ -73,7 +89,7 @@ export const urqlClient = new Client({
   exchanges: [
     // TODO
     // cacheExchange({ schema }),
-    cacheExchange(),
+    // cacheExchange(),
     nativeDateExchange,
     remoteFunctionsExchange,
     fetchExchange,

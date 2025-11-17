@@ -1,27 +1,28 @@
 <script lang="ts">
-import { onMount } from "svelte";
-import { navigating } from "$app/state";
-import { m } from "$lib/paraglide/messages";
+// import { onMount } from "svelte";
+// import { navigating } from "$app/state";
+// import { m } from "$lib/paraglide/messages";
 import { serverTime } from "$lib/state/serverTime.svelte";
-import { media } from "$lib/utils/media.svelte";
-import type { PageData } from "./$houdini";
-import CardSection from "./CardSection.svelte";
-import LandingHero from "./LandingHero.svelte";
-import TextSection from "./TextSection.svelte";
+
+// import { media } from "$lib/utils/media.svelte";
+// import type { PageData } from "./$houdini";
+// import CardSection from "./CardSection.svelte";
+// import LandingHero from "./LandingHero.svelte";
+// import TextSection from "./TextSection.svelte";
 
 const { data }: { data: PageData } = $props();
 
 // Modal state
-const versionModalVisible = false;
+// const versionModalVisible = false;
 
-let loading = $state(true);
+// let loading = $state(true);
 
-onMount(() => (loading = false));
+// onMount(() => (loading = false));
 </script>
 
-{serverTime}
+{serverTime.value.toString()}
 
-<div class="flex min-h-screen flex-col items-center">
+<!-- <div class="flex min-h-screen flex-col items-center">
 	{#if loading}
 		<div class="absolute bottom-0 left-0 right-0 top-0 z-50 flex items-center justify-center">
 			<div class="loading loading-dots"></div>
@@ -68,4 +69,4 @@ onMount(() => (loading = false));
 			</div>
 		</div>
 	{/if}
-</div>
+</div> -->

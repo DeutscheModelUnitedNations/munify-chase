@@ -13,8 +13,6 @@ const remoteFunctionsExchange: Exchange = ({ forward }) => {
     const filtered = pipe(
       operations,
       filter((operation) => {
-        console.log(operation);
-
         return operation.kind !== "teardown";
       }),
       mergeMap((operation) => {

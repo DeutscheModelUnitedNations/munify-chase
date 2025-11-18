@@ -1,7 +1,21 @@
 import { nativeDateExchange } from "@m1212e/rumble";
-import { Client, type Exchange, fetchExchange } from "@urql/core";
+import {
+  Client,
+  CombinedError,
+  type Exchange,
+  fetchExchange,
+} from "@urql/core";
 import { cacheExchange } from "@urql/exchange-graphcache";
-import { empty, filter, fromValue, merge, mergeMap, never, pipe } from "wonka";
+import {
+  empty,
+  filter,
+  fromPromise,
+  fromValue,
+  merge,
+  mergeMap,
+  never,
+  pipe,
+} from "wonka";
 import { graphqlMutation, graphqlQuery } from "$api/graphql.remote";
 import { browser } from "$app/environment";
 
@@ -22,42 +36,42 @@ const remoteFunctionsExchange: Exchange = ({ forward }) => {
           return never;
         }
 
-        //     operation,
-        // data: result.data,
-        // error: Array.isArray(result.errors)
-        //   ? new CombinedError({
-        //       graphQLErrors: result.errors,
-        //       response,
-        //     })
-        //   : undefined,
-        // extensions: result.extensions ? { ...result.extensions } : undefined,
-        // hasNext: result.hasNext == null ? defaultHasNext : result.hasNext,
-        // stale: false,
+        const processResult = (
+          caller: typeof graphqlQuery | typeof graphqlMutation,
+        ) => {
+          return fromPromise(
+            (async () => {
+              const result = await caller({
+                query: operation.query,
+                variables: operation.variables as Exclude<
+                  typeof operation.variables,
+                  void
+                >,
+              });
+
+              return {
+                operation,
+                data: result.data,
+                error: Array.isArray(result.errors)
+                  ? new CombinedError({
+                      graphQLErrors: result.errors,
+                    })
+                  : undefined,
+                extensions: result.extensions
+                  ? { ...result.extensions }
+                  : undefined,
+                stale: false,
+              };
+            })(),
+          );
+        };
 
         if (operation.kind === "query") {
-          return fromValue({
-            ...graphqlQuery({
-              query: operation.query,
-              variables: operation.variables as Exclude<
-                typeof operation.variables,
-                void
-              >,
-            }),
-            operation,
-          });
+          return processResult(graphqlQuery);
         }
 
         if (operation.kind === "mutation") {
-          return fromValue({
-            ...graphqlMutation({
-              query: operation.query,
-              variables: operation.variables as Exclude<
-                typeof operation.variables,
-                void
-              >,
-            }),
-            operation,
-          });
+          return processResult(graphqlMutation);
         }
 
         return empty;

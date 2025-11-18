@@ -14,24 +14,17 @@ const graphqlRequestSchema = z.object({
   variables: z.record(z.string(), z.any()).optional(),
 });
 
-export const graphqlQuery = query(graphqlRequestSchema, async (p) => {
+const performQuery = async (p) => {
   const result = await execute({
     schema,
     document: p.query,
     variableValues: p.variables,
-    contextValue: context(getRequestEvent()),
+    //TODO: how to do this properly so the rumble context injection is run on request?
+    // contextValue: await context(getRequestEvent()),
   });
 
   return result;
-});
+};
 
-export const graphqlMutation = command(graphqlRequestSchema, async (p) => {
-  const result = await execute({
-    schema,
-    document: p.query,
-    variableValues: p.variables,
-    contextValue: context(getRequestEvent()),
-  });
-
-  return result;
-});
+export const graphqlQuery = query(graphqlRequestSchema, performQuery);
+export const graphqlMutation = command(graphqlRequestSchema, performQuery);

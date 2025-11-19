@@ -10,13 +10,13 @@ import type { PageData } from "./$types";
 const { user }: PageData = $props();
 
 const conferenceData = await client.query.conferenceUsers({
-  __args: {
-    where: {
-      user: {
-        id: { equals: user?.sub },
-      },
-    },
-  },
+  //   __args: {
+  //     where: {
+  //       user: {
+  //         id: { equals: user?.sub },
+  //       },
+  //     },
+  //   },
   id: true,
   conferenceUserType: true,
   conference: {
@@ -24,6 +24,8 @@ const conferenceData = await client.query.conferenceUsers({
     title: true,
   },
 });
+
+console.log({ conferenceData });
 
 const getType = (type: ConferenceusertypeEnum) => {
   switch (type) {
@@ -86,13 +88,13 @@ const getUrl = (type: ConferenceusertypeEnum, id: string) => {
 					{m.launcherDescription()}
 				</p>
 				<div class="mt-6 flex flex-col items-center gap-2">
-					{#if conferenceData.length === 0}
+					{#if $conferenceData.length === 0}
 						<div class="alert alert-warning shadow-sm">
 							<i class="fas fa-exclamation-triangle"></i>
 							{m.launcherNoConferences()}
 						</div>
 					{:else}
-						{#each conferenceData as c}
+						{#each $conferenceData as c}
 							{@const conf = c.conference}
 							<a
 								href={getUrl(c.conferenceUserType, c.conference.id)}

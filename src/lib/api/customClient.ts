@@ -33,7 +33,7 @@ const remoteFunctionsExchange: Exchange = ({ forward }) => {
         if (!browser && operation.kind === "subscription") {
           // we cannot do subscriptions on the server yet https://github.com/sveltejs/kit/pull/12973#issuecomment-2981290155
           // for SSR we return empty here and let the fetchExchange handle it in the browser
-          return never;
+          return empty;
         }
 
         const processResult = (

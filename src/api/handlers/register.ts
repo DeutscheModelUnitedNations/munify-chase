@@ -14,6 +14,7 @@ import "./time";
 import "./user";
 import "./import";
 import "./presenceChangedTimestamp";
+import "./auth";
 
 if (dev || building) {
   clientCreator({

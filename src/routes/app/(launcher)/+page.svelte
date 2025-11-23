@@ -5,15 +5,37 @@ import {
 } from "$lib/api/rumbleClient/client";
 import Footer from "$lib/components/Footer.svelte";
 import { m } from "$lib/paraglide/messages";
-import type { PageData } from "./$types";
 
-const { user }: PageData = $props();
+const user = $derived(
+  await (async () => {
+    try {
+      const res = await client.query.me({
+        email: true,
+        family_name: true,
+        given_name: true,
+        locale: true,
+        phone: true,
+        preferred_username: true,
+        sub: true,
+      });
+      return res;
+    } catch (_error) {}
+  })(),
+);
 
+<<<<<<< HEAD
 const conferenceData = client.query.conferenceUsers({
   __args: {
     where: {
       user: {
         id: { equals: user?.sub },
+=======
+const conferenceData = await client.query.conferenceUsers({
+  __args: {
+    where: {
+      user: {
+        id: user?.sub,
+>>>>>>> bebe424c (🚧 wip: client user fetching for queries)
       },
     },
   },
@@ -50,23 +72,23 @@ const getUrl = (type: ConferenceusertypeEnum, id: string) => {
 </script>
 
 <svelte:head>
-	<title>{m.launcher()} - MUNify CHASE</title>
+  <title>{m.launcher()} - MUNify CHASE</title>
 </svelte:head>
 
 <div class="navbar bg-base-100 relative shadow-sm">
-	<div class="flex-none">
-		<a class="btn btn-ghost" href="/logout">
-			<i class="fa-duotone fa-arrow-left mr-2"></i>
-			{m.logout()}
-		</a>
-	</div>
-	<div class="flex-1"></div>
-	<div class="flex-none">
-		<a class="btn btn-ghost" href="./app/import">
-			{m.createConference()}
-			<i class="fa-duotone fa-plus mr-2"></i>
-		</a>
-	</div>
+  <div class="flex-none">
+    <a class="btn btn-ghost" href="/logout">
+      <i class="fa-duotone fa-arrow-left mr-2"></i>
+      {m.logout()}
+    </a>
+  </div>
+  <div class="flex-1"></div>
+  <div class="flex-none">
+    <a class="btn btn-ghost" href="./app/import">
+      {m.createConference()}
+      <i class="fa-duotone fa-plus mr-2"></i>
+    </a>
+  </div>
 </div>
 
 <div class="bg-base-200 h-full w-full">
@@ -111,5 +133,5 @@ const getUrl = (type: ConferenceusertypeEnum, id: string) => {
 		</div>
 	</div>
 
-	<Footer />
+  <Footer />
 </div>

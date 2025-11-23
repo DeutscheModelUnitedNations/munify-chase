@@ -26,7 +26,7 @@
     "typecheck": "tsc --noEmit"
   },
   "devDependencies": {
-    "@biomejs/biome": "2.3.5",
+    "@biomejs/biome": "2.3.7",
     "@fontsource/outfit": "^5.2.8",
     "@fontsource/roboto-mono": "^5.2.8",
     "@fontsource/vollkorn": "^5.2.10",
@@ -34,7 +34,7 @@
     "@m1212e/rumble": "^0.12.20",
     "@m1212e/sveltekit-oidc": "^0.0.33",
     "@sveltejs/adapter-node": "^5.4.0",
-    "@sveltejs/kit": "^2.48.5",
+    "@sveltejs/kit": "^2.49.0",
     "@sveltejs/vite-plugin-svelte": "^6.2.1",
     "@tailwindcss/vite": "^4.1.17",
     "@tiptap/core": "^3.10.2",
@@ -62,7 +62,7 @@
     "json-schema-to-typescript": "^15.0.4",
     "lefthook": "^2.0.4",
     "nanoid": "^5.1.6",
-    "svelte": "^5.43.8",
+    "svelte": "^5.43.14",
     "svelte-check": "^4.3.4",
     "svelte-confetti": "^2.3.2",
     "svelte-fast-marquee": "^1.0.2",
@@ -71,7 +71,7 @@
     "svelte-tiptap": "^3.0.1",
     "tailwindcss": "^4.1.17",
     "typescript": "^5.9.3",
-    "vite": "^7.2.2",
+    "vite": "^7.2.4",
     "vite-plugin-devtools-json": "^1.0.0",
     "world-countries": "^5.1.0",
     "zod": "^4.1.12"

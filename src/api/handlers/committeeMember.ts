@@ -8,16 +8,15 @@ import {
   pubsub as rumblePubsub,
   schemaBuilder,
 } from "$api/rumble";
-import { isDMUNEmail } from "$api/services/isDMUNEmail";
 
-abilityBuilder.committeeMember
-  .allow(["read", "update"])
-  .when(({ mustBeLoggedIn }) => {
-    const user = mustBeLoggedIn();
-    if (user?.email && isDMUNEmail(user.email)) {
-      return "allow";
-    }
-  });
+// abilityBuilder.committeeMember
+//   .allow(["read", "update"])
+//   .when(({ mustBeLoggedIn }) => {
+//     const user = mustBeLoggedIn();
+//     if (user?.email && isDMUNEmail(user.email)) {
+//       return "allow";
+//     }
+//   });
 
 const ref = object({ table: "committeeMember" });
 query({ table: "committeeMember" });

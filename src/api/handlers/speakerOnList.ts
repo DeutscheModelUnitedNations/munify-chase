@@ -11,17 +11,16 @@ import {
   schemaBuilder,
   whereArg,
 } from "$api/rumble";
-import { isDMUNEmail } from "$api/services/isDMUNEmail";
 import { SpeakersListRef } from "./speakersList";
 
-abilityBuilder.speakerOnList
-  .allow(["read", "update", "delete"])
-  .when(({ mustBeLoggedIn }) => {
-    const user = mustBeLoggedIn();
-    if (user?.email && isDMUNEmail(user.email)) {
-      return "allow";
-    }
-  });
+// abilityBuilder.speakerOnList
+//   .allow(["read", "update", "delete"])
+//   .when(({ mustBeLoggedIn }) => {
+//     const user = mustBeLoggedIn();
+//     if (user?.email && isDMUNEmail(user.email)) {
+//       return "allow";
+//     }
+//   });
 
 const ref = object({ table: "speakerOnList" });
 query({ table: "speakerOnList" });

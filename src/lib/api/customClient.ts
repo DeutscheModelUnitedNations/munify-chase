@@ -18,6 +18,7 @@ import {
 } from "wonka";
 import { graphqlMutation, graphqlQuery } from "$api/graphql.remote";
 import { browser } from "$app/environment";
+import { schema } from "./rumbleClient/schema";
 
 /**
  * Exchange to perform graphql calls via sveltekit remote functions (if possible)
@@ -26,11 +27,10 @@ const remoteFunctionsExchange: Exchange = ({ forward }) => {
   return (operations) => {
     const filtered = pipe(
       operations,
-      filter((operation) => {
-        return operation.kind !== "teardown";
-      }),
+      // we only wanna use remote functions on the server
+      filter((operation) => operation.kind !== "teardown" && !browser),
       mergeMap((operation) => {
-        if (!browser && operation.kind === "subscription") {
+        if (operation.kind === "subscription") {
           // we cannot do subscriptions on the server yet https://github.com/sveltejs/kit/pull/12973#issuecomment-2981290155
           // for SSR we return empty here and let the fetchExchange handle it in the browser
           return empty;
@@ -83,9 +83,8 @@ const remoteFunctionsExchange: Exchange = ({ forward }) => {
       filter((operation) => {
         return (
           operation.kind === "teardown" ||
-          // subscriptions are not supported in sveltekit remote functions yet
-          // and need to run via default fetchExchange when inside the browser
-          (browser && operation.kind === "subscription")
+          // we want to use the fetch action when we are in the browser
+          browser
         );
       }),
       forward,
@@ -99,9 +98,12 @@ export const urqlClient = new Client({
   url: "/api/graphql",
   fetchSubscriptions: true,
   exchanges: [
-    // TODO
-    // cacheExchange({ schema }),
-    // cacheExchange(),
+    cacheExchange({
+      schema,
+      keys: {
+        AuthenticatedUserData: (data) => (data as any).sub,
+      },
+    }),
     nativeDateExchange,
     remoteFunctionsExchange,
     fetchExchange,

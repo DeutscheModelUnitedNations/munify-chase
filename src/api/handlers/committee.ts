@@ -10,16 +10,15 @@ import {
   pubsub as rumblePubsub,
   schemaBuilder,
 } from "$api/rumble";
-import { isDMUNEmail } from "$api/services/isDMUNEmail";
 
-abilityBuilder.committee
-  .allow(["read", "update"])
-  .when(({ mustBeLoggedIn }) => {
-    const user = mustBeLoggedIn();
-    if (user?.email && isDMUNEmail(user.email)) {
-      return "allow";
-    }
-  });
+// abilityBuilder.committee
+//   .allow(["read", "update"])
+//   .when(({ mustBeLoggedIn }) => {
+//     const user = mustBeLoggedIn();
+//     if (user?.email && isDMUNEmail(user.email)) {
+//       return "allow";
+//     }
+//   });
 
 const statusEnum = enum_({
   tsName: "committeeStatus",

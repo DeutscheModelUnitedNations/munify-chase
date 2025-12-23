@@ -1,16 +1,12 @@
-import { client } from "./rumbleClient/client";
+import { client } from "$lib/api/rumbleClient/client";
 
-export const authenticatedUserPromise = async () => {
-  try {
-    const res = await client.query.me({
-      email: true,
-      family_name: true,
-      given_name: true,
-      locale: true,
-      phone: true,
-      preferred_username: true,
-      sub: true,
-    });
-    return res;
-  } catch (_error) {}
-};
+export const authenticatedUser = async () =>
+  client.query.me({
+    email: true,
+    family_name: true,
+    given_name: true,
+    locale: true,
+    phone: true,
+    preferred_username: true,
+    sub: true,
+  });

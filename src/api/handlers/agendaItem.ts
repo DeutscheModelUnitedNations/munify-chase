@@ -8,15 +8,11 @@ import {
   pubsub as rumblePubsub,
   schemaBuilder,
 } from "$api/rumble";
-import { isDMUNEmail } from "$api/services/isDMUNEmail";
 import { nanoid } from "$lib/helpers/nanoid";
 
-abilityBuilder.agendaItem.allow(["read"]).when(({ mustBeLoggedIn }) => {
-  const user = mustBeLoggedIn();
-  if (user?.email && isDMUNEmail(user.email)) {
-    return "allow";
-  }
-});
+// abilityBuilder.agendaItem.allow(["read"]).when(({ mustBeLoggedIn }) => {
+//   const user = mustBeLoggedIn();
+// });
 
 const pubsub = rumblePubsub({ table: "agendaItem" });
 

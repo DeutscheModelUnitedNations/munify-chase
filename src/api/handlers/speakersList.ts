@@ -10,16 +10,15 @@ import {
   pubsub as rumblePubsub,
   schemaBuilder,
 } from "$api/rumble";
-import { isDMUNEmail } from "$api/services/isDMUNEmail";
 
-abilityBuilder.speakersList
-  .allow(["read", "update", "delete"])
-  .when(({ mustBeLoggedIn }) => {
-    const user = mustBeLoggedIn();
-    if (user?.email && isDMUNEmail(user.email)) {
-      return "allow";
-    }
-  });
+// abilityBuilder.speakersList
+//   .allow(["read", "update", "delete"])
+//   .when(({ mustBeLoggedIn }) => {
+//     const user = mustBeLoggedIn();
+//     if (user?.email && isDMUNEmail(user.email)) {
+//       return "allow";
+//     }
+//   });
 
 const ref = object({
   table: "speakersList",

@@ -1,16 +1,16 @@
-FROM oven/bun:1.2-slim AS base
+FROM oven/bun:1.2 AS build-base
 
-FROM base AS dependencies
+FROM build-base AS dependencies
 WORKDIR /build/dependencies
 COPY package.json bun.lock tsconfig.json ./
 RUN bun install --frozen-lockfile
 
-FROM base AS runtime-dependencies
+FROM build-base AS runtime-dependencies
 WORKDIR /build/dependencies
 COPY package.json bun.lock tsconfig.json ./
 RUN bun install --frozen-lockfile --production
 
-FROM base AS builder
+FROM build-base AS builder
 WORKDIR /build/staging
 
 ARG VERSION
@@ -26,7 +26,7 @@ COPY . .
 RUN bun run build
 RUN bun run check
 
-FROM node:24.8-slim AS release
+FROM node:24.12-slim AS release
 WORKDIR /app/release
 
 ARG VERSION

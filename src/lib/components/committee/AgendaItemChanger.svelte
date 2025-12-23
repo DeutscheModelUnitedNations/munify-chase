@@ -15,35 +15,21 @@ const { committeeId, activeAgendaItem, agendaItems }: Props = $props();
 
 const value = $state(activeAgendaItem?.id ?? "");
 
-const UpdateActiveAgendaItemMutation = graphql(`
-		mutation UpdateActiveAgendaItem($agendaItemId: ID!, $committeeId: ID!) {
-			updateCommittee(id: $committeeId, activeAgendaItemId: $agendaItemId) {
-				id
-				activeAgendaItem {
-					id
-					title
-				}
-			}
-		}
-	`);
-
-const AddAgendaItemMutation = graphql(`
-		mutation AddAgendaItem($committeeId: ID!, $title: String!) {
-			createAgendaItem(committeeId: $committeeId, title: $title) {
-				id
-				title
-			}
-		}
-	`);
-
 const update = async () => {
   if (value === activeAgendaItem?.id) {
     return;
   }
   await toast.promise(
-    UpdateActiveAgendaItemMutation.mutate({
-      agendaItemId: value,
-      committeeId,
+    client.mutate.updateCommittee({
+      __args: {
+        id: committeeId,
+        activeAgendaItemId: value,
+      },
+      id: true,
+      activeAgendaItem: {
+        id: true,
+        title: true,
+      },
     }),
     promiseToastStrings(m.agendaItem(), "update"),
   );
@@ -54,30 +40,39 @@ const addAgendaItem = async () => {
   if (!title) return;
 
   await toast.promise(
-    AddAgendaItemMutation.mutate({
-      committeeId,
-      title,
+    client.mutate.createAgendaItem({
+      __args: {
+        committeeId,
+        title,
+      },
+      id: true,
+      title: true,
     }),
     promiseToastStrings(m.agendaItem(), "create"),
   );
-
-  cache.markStale();
-  invalidateAll();
 };
 </script>
 
 <div class="join">
-	<select class="select select-lg join-item w-full" onchange={update} bind:value>
-		<option disabled selected={!activeAgendaItem}>
-			{m.selectAgendaItem()}
-		</option>
-		{#each agendaItems ?? [] as item}
-			<option value={item.id} selected={value === item.id}>
-				{item.title}
-			</option>
-		{/each}
-	</select>
-	<button class="btn join-item btn-lg" onclick={addAgendaItem} aria-label={m.addAgendaItem()}>
-		<i class="fas fa-plus"></i>
-	</button>
+  <select
+    class="select select-lg join-item w-full"
+    onchange={update}
+    bind:value
+  >
+    <option disabled selected={!activeAgendaItem}>
+      {m.selectAgendaItem()}
+    </option>
+    {#each agendaItems ?? [] as item}
+      <option value={item.id} selected={value === item.id}>
+        {item.title}
+      </option>
+    {/each}
+  </select>
+  <button
+    class="btn join-item btn-lg"
+    onclick={addAgendaItem}
+    aria-label={m.addAgendaItem()}
+  >
+    <i class="fas fa-plus"></i>
+  </button>
 </div>

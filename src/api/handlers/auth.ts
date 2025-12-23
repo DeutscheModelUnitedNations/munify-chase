@@ -1,5 +1,4 @@
 import type { RequestEvent } from "@sveltejs/kit";
-import { log } from "console";
 import { schemaBuilder } from "$api/rumble";
 
 export type AuthenticatedUserData = NonNullable<

@@ -1,7 +1,7 @@
 <script lang="ts">
 import dayjs from "dayjs";
 import toast from "svelte-french-toast";
-import { type CommitteeStatusEnum$options, graphql } from "$houdini";
+import type { CommitteestatusEnum } from "$lib/api/rumbleClient/client";
 import Tabs from "$lib/components/Tabs.svelte";
 import { m } from "$lib/paraglide/messages";
 import { serverTime } from "$lib/state/serverTime.svelte";
@@ -9,7 +9,7 @@ import { promiseToastStrings } from "$lib/utils/toast";
 
 type Props = {
   committeeId: string;
-  oldStatus?: CommitteeStatusEnum$options;
+  oldStatus?: CommitteestatusEnum;
   oldUntil?: Date;
   oldCustomName?: string;
   abort?: () => void;
@@ -23,7 +23,7 @@ const {
 }: Props = $props();
 
 const categories: {
-  id: CommitteeStatusEnum$options;
+  id: CommitteestatusEnum;
   faIcon: string;
 }[] = [
   { id: "FORMAL", faIcon: "podium" },
@@ -35,8 +35,8 @@ const categories: {
 const absoluteTimes = [0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55];
 const relativeTimes = [3, 5, 10, 15, 20, 25, 30];
 
-let activeCategory: CommitteeStatusEnum$options = $state("INFORMAL");
-const until = $state(dayjs(oldUntil) ?? $serverTime);
+let activeCategory: CommitteestatusEnum = $state("INFORMAL");
+const until = $state(dayjs(oldUntil) ?? serverTime.value);
 const untilFormatted = $derived(dayjs(until).format("HH:mm:ss"));
 const customName = $state(oldCustomName);
 
@@ -61,7 +61,7 @@ const StatusChangerMutation = graphql(`
 	`);
 
 const submitStatus = async () => {
-  if (until.isBefore($serverTime)) {
+  if (until.isBefore(serverTime.value)) {
     toast.error(m.dateCannotBeInPast());
   }
   await toast.promise(
@@ -106,7 +106,7 @@ $effect(() => {
 				<button
 					class="btn bg-base-100 flex-1"
 					onclick={() =>
-						(until = $serverTime.minute(time).second(0).isBefore($serverTime)
+						(until = serverTime.value.minute(time).second(0).isBefore($serverTime)
 							? $serverTime.add(1, 'hour').minute(time).second(0)
 							: $serverTime.minute(time).second(0))}
 				>

@@ -90,16 +90,16 @@ onMount(() => {
 </script>
 
 <svelte:head>
-	<title>MUNify CHASE</title>
+  <title>MUNify CHASE</title>
 </svelte:head>
 
 {@render children()}
 
 <div aria-hidden="true" style="display:none">
-	{#each locales as locale, index (index)}
-		<a href={localizeHref(page.url.pathname, { locale })}>{locale}</a>
-	{/each}
+  {#each locales as locale, index (index)}
+    <a href={localizeHref(page.url.pathname, { locale })}>{locale}</a>
+  {/each}
 </div>
 
-<Toaster containerClassName="mt-16" toastOptions={{ className: 'border-2' }} />
+<Toaster containerClassName="mt-16" toastOptions={{ className: "border-2" }} />
 <Alert />

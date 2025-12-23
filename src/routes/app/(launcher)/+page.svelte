@@ -1,52 +1,52 @@
 <script lang="ts">
-  import { authenticatedUser } from "$lib/api/auth.svelte";
-  import {
-    type ConferenceusertypeEnum,
-    client,
-  } from "$lib/api/rumbleClient/client";
-  import Footer from "$lib/components/Footer.svelte";
-  import { m } from "$lib/paraglide/messages";
+import { authenticatedUser } from "$lib/api/auth.svelte";
+import {
+  type ConferenceusertypeEnum,
+  client,
+} from "$lib/api/rumbleClient/client";
+import Footer from "$lib/components/Footer.svelte";
+import { m } from "$lib/paraglide/messages";
 
-  const user = await authenticatedUser();
-  
-  const conferenceData = await client.query.conferenceUsers({
-    __args: {
-      where: {
-        user: {
-          id: user.sub,
-        },
+const user = await authenticatedUser();
+
+const conferenceData = await client.query.conferenceUsers({
+  __args: {
+    where: {
+      user: {
+        id: user.sub,
       },
     },
+  },
+  id: true,
+  conferenceUserType: true,
+  conference: {
     id: true,
-    conferenceUserType: true,
-    conference: {
-      id: true,
-      title: true,
-    },
-  });
+    title: true,
+  },
+});
 
-  const getType = (type: ConferenceusertypeEnum) => {
-    switch (type) {
-      case "ADMIN":
-        return m.admin();
-      case "TEAM":
-        return m.teamMember();
-      case "SPECTATOR":
-        return m.spectator();
-      case "DELEGATE":
-        return m.delegate();
-      case "NON_STATE_ACTOR":
-        return m.nonStateActor();
-    }
-  };
+const getType = (type: ConferenceusertypeEnum) => {
+  switch (type) {
+    case "ADMIN":
+      return m.admin();
+    case "TEAM":
+      return m.teamMember();
+    case "SPECTATOR":
+      return m.spectator();
+    case "DELEGATE":
+      return m.delegate();
+    case "NON_STATE_ACTOR":
+      return m.nonStateActor();
+  }
+};
 
-  const getUrl = (type: ConferenceusertypeEnum, id: string) => {
-    if (["ADMIN", "TEAM"].includes(type)) {
-      return `/app/${id}/mission-control`;
-    } else {
-      return `/app/${id}`;
-    }
-  };
+const getUrl = (type: ConferenceusertypeEnum, id: string) => {
+  if (["ADMIN", "TEAM"].includes(type)) {
+    return `/app/${id}/mission-control`;
+  } else {
+    return `/app/${id}`;
+  }
+};
 </script>
 
 <svelte:head>

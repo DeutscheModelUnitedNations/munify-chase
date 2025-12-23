@@ -4,7 +4,7 @@ import IconInfoBox from "$lib/components/IconInfoBox.svelte";
 import { m } from "$lib/paraglide/messages";
 import {
   getCommitteeStatusIcon,
-  getCommitteeStatusText,
+  translateCommitteeStatusText,
 } from "$lib/utils/committeeStatus";
 
 interface Props {
@@ -19,7 +19,7 @@ const { committee }: Props = $props();
 <IconInfoBox
 	text={(committee?.statusHeadline.length || 0) > 0
 		? committee!.statusHeadline
-		: getCommitteeStatusText(committee?.status || 'FORMAL')}
+		: translateCommitteeStatusText(committee?.status || 'FORMAL')}
 	faIcon={getCommitteeStatusIcon(committee?.status || 'FORMAL')}
 	committeeStatus={committee?.status}
 	marqueeOnOverflow={false}

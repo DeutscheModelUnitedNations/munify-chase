@@ -82,23 +82,23 @@ const filter = (members: Member[], value: string) => {
 };
 
 const AddSpeakerToListMutation = graphql(`
-		mutation AddSpeakerToList(
-			$committeeMemberId: ID
-			$conferenceMemberId: ID
-			$speakersListId: ID!
-		) {
-			addSpeakerOnList(
-				committeeMemberId: $committeeMemberId
-				conferenceMemberId: $conferenceMemberId
-				speakersListId: $speakersListId
-			) {
-				id
-				speakersList {
-					id
-				}
-			}
-		}
-	`);
+    mutation AddSpeakerToList(
+      $committeeMemberId: ID
+      $conferenceMemberId: ID
+      $speakersListId: ID!
+    ) {
+      addSpeakerOnList(
+        committeeMemberId: $committeeMemberId
+        conferenceMemberId: $conferenceMemberId
+        speakersListId: $speakersListId
+      ) {
+        id
+        speakersList {
+          id
+        }
+      }
+    }
+  `);
 
 const addSpeakerToList = async () => {
   if (!speakersList?.id) {
@@ -154,32 +154,32 @@ $effect(() => {
 </script>
 
 <Combobox
-	bind:value
-	bind:focused
-	options={members}
-	filter={(member, value) => filter(member, value)}
-	placeholder="Search for a country"
-	getStringValue={(member) => getName(member)}
-	kbd={speakersList?.type === 'COMMENT_LIST' ? '⌥ ⇧ A' : '⌥ A'}
-	submit={() => addSpeakerToList()}
+  bind:value
+  bind:focused
+  options={members}
+  filter={(member, value) => filter(member, value)}
+  placeholder="Search for a country"
+  getStringValue={(member) => getName(member)}
+  kbd={speakersList?.type === "COMMENT_LIST" ? "⌥ ⇧ A" : "⌥ A"}
+  submit={() => addSpeakerToList()}
 >
-	{#snippet ListItem(option)}
-		<Flag size="xs" representation={option.representation} />
-		<span class="ml-2 flex-1">
-			{getName(option)}
-		</span>
-		{#if typeof option.present === 'boolean' && !option.present}
-			<i class="fa-duotone fa-user-xmark mr-4"></i>
-		{/if}
-	{/snippet}
+  {#snippet ListItem(option)}
+    <Flag size="xs" representation={option.representation} />
+    <span class="ml-2 flex-1">
+      {getName(option)}
+    </span>
+    {#if typeof option.present === "boolean" && !option.present}
+      <i class="fa-duotone fa-user-xmark mr-4"></i>
+    {/if}
+  {/snippet}
 
-	{#snippet AdditionalButtons()}
-		<button
-			class="btn btn-lg btn-square join-item"
-			aria-label="add-speaker"
-			onclick={() => addSpeakerToList()}
-		>
-			<i class="fas fa-plus"></i>
-		</button>
-	{/snippet}
+  {#snippet AdditionalButtons()}
+    <button
+      class="btn btn-lg btn-square join-item"
+      aria-label="add-speaker"
+      onclick={() => addSpeakerToList()}
+    >
+      <i class="fas fa-plus"></i>
+    </button>
+  {/snippet}
 </Combobox>

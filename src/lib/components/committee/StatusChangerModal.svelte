@@ -7,7 +7,7 @@ import StatusChanger from "./StatusChanger.svelte";
 
 interface Props {
   committeeId: string;
-  oldStatus?: CommitteeStatusEnum$options;
+  oldStatus?: CommitteestatusEnum;
   oldUntil?: Date;
   oldCustomName?: string;
 }
@@ -32,11 +32,11 @@ $effect(() => {
 </script>
 
 <Modal bind:open>
-	<StatusChanger
-		{committeeId}
-		{oldStatus}
-		{oldUntil}
-		{oldCustomName}
-		abort={() => (open = false)}
-	/>
+  <StatusChanger
+    {committeeId}
+    {oldStatus}
+    {oldUntil}
+    {oldCustomName}
+    abort={() => (open = false)}
+  />
 </Modal>

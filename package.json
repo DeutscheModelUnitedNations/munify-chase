@@ -31,7 +31,7 @@
     "@fontsource/roboto-mono": "^5.2.8",
     "@fontsource/vollkorn": "^5.2.10",
     "@inlang/paraglide-js": "^2.7.0",
-    "@m1212e/rumble": "^0.13.3",
+    "@m1212e/rumble": "^0.14.2",
     "@m1212e/sveltekit-oidc": "^0.0.33",
     "@sveltejs/adapter-node": "^5.4.0",
     "@sveltejs/kit": "^2.49.2",

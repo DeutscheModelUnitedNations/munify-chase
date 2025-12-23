@@ -14,7 +14,7 @@ interface Props {
   text: string;
   faIcon?: string;
   iconText?: string;
-  committeeStatus?: CommitteeStatusEnum$options;
+  committeeStatus?: CommitteestatusEnum;
   until?: Date;
   marqueeOnOverflow?: boolean;
   fullHeight?: boolean;

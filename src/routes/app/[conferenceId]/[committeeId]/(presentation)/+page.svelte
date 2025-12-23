@@ -21,7 +21,7 @@ import { localDB } from "$lib/local-db/localDB";
 import { m } from "$lib/paraglide/messages";
 import {
   getCommitteeStatusIcon,
-  getCommitteeStatusText,
+  translateCommitteeStatusText,
 } from "$lib/utils/committeeStatus";
 import { sortTranslatedCountries } from "$lib/utils/nationTranslationHelper.svelte";
 import type { PageData } from "./$houdini";
@@ -111,7 +111,7 @@ $effect(() => {
 				<IconInfoBox
 					text={committee.statusHeadline.length > 0
 						? committee.statusHeadline
-						: getCommitteeStatusText(committee.status)}
+						: translateCommitteeStatusText(committee.status)}
 					faIcon={getCommitteeStatusIcon(committee.status)}
 					committeeStatus={committee.status}
 					marqueeOnOverflow={false}

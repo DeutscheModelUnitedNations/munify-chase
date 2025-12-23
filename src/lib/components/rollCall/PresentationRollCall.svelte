@@ -20,8 +20,8 @@ const currentIndex = $derived($committeeSettingsQuery?.rollCall);
 </script>
 
 <Modal open={!!currentIndex || currentIndex === 0}>
-	<h1 class="text-2xl font-bold">{m.rollCall()}</h1>
-	{#if currentIndex || currentIndex === 0}
-		<ScrollingCountryList {members} {currentIndex} />
-	{/if}
+  <h1 class="text-2xl font-bold">{m.rollCall()}</h1>
+  {#if currentIndex || currentIndex === 0}
+    <ScrollingCountryList {members} {currentIndex} />
+  {/if}
 </Modal>

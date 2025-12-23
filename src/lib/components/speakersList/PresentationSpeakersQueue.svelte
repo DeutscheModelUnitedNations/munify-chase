@@ -59,57 +59,73 @@ onMount(() => {
 });
 </script>
 
-<div class="relative flex h-full w-full flex-col overflow-hidden" bind:this={container}>
-	{#if speakers && speakers.length > 0}
-		{#each speakers.slice(0, visibleCount) as speaker, i (speaker.id)}
-			{@const member = speaker.committeeMember || speaker.conferenceMember}
-			<div
-				class="flex items-center gap-4 py-2"
-				animate:flip={{ duration: 500, easing: cubicInOut }}
-				in:fly={{ duration: 500, y: 20, easing: cubicOut }}
-				out:fly={{ duration: 500, y: -20, easing: cubicOut }}
-			>
-				<div class="w-4 text-sm opacity-50">{i + 1}.</div>
-				<Flag representation={member?.representation} size="sm" />
-				<h2 class="text-lg font-bold">
-					{member?.representation?.name ||
-						getTranslatedCountryNameFromAlpha3Code(member?.representation?.alpha3Code)}
-				</h2>
-			</div>
-		{/each}
-		<div
-			class="bg-base-200 card inset-shadow-sm mt-2 flex w-full items-center justify-center {speakers.length >
-			visibleCount
-				? 'opacity-100'
-				: 'opacity-0'} transition-all duration-300"
-		>
-			<Marquee speed={30} gap="3rem">
-				<div class="flex items-center justify-center gap-2 py-4" bind:this={overflowContainer}>
-					{#each speakers.slice(visibleCount) as speaker, i (i)}
-						{@const member = speaker.committeeMember || speaker.conferenceMember}
-						<div class="card bg-base-100 flex w-16 items-center justify-center gap-1 p-2 shadow-sm">
-							<div class="w-4 text-sm opacity-50">{i + 1 + visibleCount}.</div>
-							<Flag representation={member?.representation} size="full" />
-							<div class="text-center font-mono font-bold">
-								{member?.representation?.alpha2Code?.toUpperCase() || 'N/A'}
-							</div>
-						</div>
-					{/each}
-				</div>
-				{#if closed}
-					<StripesAlert
-						badgeColor="error"
-						stripeColor="error"
-						faIcon="lock"
-						badgeText={m.listClosed()}
-					/>
-				{/if}
-			</Marquee>
-		</div>
-	{:else}
-		<StripesAlert badgeText={m.listEmpty()} />
-	{/if}
-	{#if closed && (speakers?.length || 0) <= visibleCount}
-		<StripesAlert badgeColor="error" stripeColor="error" faIcon="lock" badgeText={m.listClosed()} />
-	{/if}
+<div
+  class="relative flex h-full w-full flex-col overflow-hidden"
+  bind:this={container}
+>
+  {#if speakers && speakers.length > 0}
+    {#each speakers.slice(0, visibleCount) as speaker, i (speaker.id)}
+      {@const member = speaker.committeeMember || speaker.conferenceMember}
+      <div
+        class="flex items-center gap-4 py-2"
+        animate:flip={{ duration: 500, easing: cubicInOut }}
+        in:fly={{ duration: 500, y: 20, easing: cubicOut }}
+        out:fly={{ duration: 500, y: -20, easing: cubicOut }}
+      >
+        <div class="w-4 text-sm opacity-50">{i + 1}.</div>
+        <Flag representation={member?.representation} size="sm" />
+        <h2 class="text-lg font-bold">
+          {member?.representation?.name ||
+            getTranslatedCountryNameFromAlpha3Code(
+              member?.representation?.alpha3Code,
+            )}
+        </h2>
+      </div>
+    {/each}
+    <div
+      class="bg-base-200 card inset-shadow-sm mt-2 flex w-full items-center justify-center {speakers.length >
+      visibleCount
+        ? 'opacity-100'
+        : 'opacity-0'} transition-all duration-300"
+    >
+      <Marquee speed={30} gap="3rem">
+        <div
+          class="flex items-center justify-center gap-2 py-4"
+          bind:this={overflowContainer}
+        >
+          {#each speakers.slice(visibleCount) as speaker, i (i)}
+            {@const member =
+              speaker.committeeMember || speaker.conferenceMember}
+            <div
+              class="card bg-base-100 flex w-16 items-center justify-center gap-1 p-2 shadow-sm"
+            >
+              <div class="w-4 text-sm opacity-50">{i + 1 + visibleCount}.</div>
+              <Flag representation={member?.representation} size="full" />
+              <div class="text-center font-mono font-bold">
+                {member?.representation?.alpha2Code?.toUpperCase() || "N/A"}
+              </div>
+            </div>
+          {/each}
+        </div>
+        {#if closed}
+          <StripesAlert
+            badgeColor="error"
+            stripeColor="error"
+            faIcon="lock"
+            badgeText={m.listClosed()}
+          />
+        {/if}
+      </Marquee>
+    </div>
+  {:else}
+    <StripesAlert badgeText={m.listEmpty()} />
+  {/if}
+  {#if closed && (speakers?.length || 0) <= visibleCount}
+    <StripesAlert
+      badgeColor="error"
+      stripeColor="error"
+      faIcon="lock"
+      badgeText={m.listClosed()}
+    />
+  {/if}
 </div>

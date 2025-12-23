@@ -9,7 +9,7 @@ import StatusChangerModal from "$lib/components/committee/StatusChangerModal.sve
 import BellIcon from "$lib/components/toast/BellIcon.svelte";
 import * as m from "$lib/paraglide/messages";
 import { serverTime } from "$lib/state/serverTime.svelte";
-import { getCommitteeStatusText } from "$lib/utils/committeeStatus";
+import { translateCommitteeStatusText } from "$lib/utils/committeeStatus";
 import type { LayoutData } from "./$houdini";
 import ChairNavbar from "./ChairNavbar.svelte";
 
@@ -36,7 +36,7 @@ $effect(() => {
       if (!committeeStatusExpiredAlerted) {
         toast.error(
           m.committeeStatusExpired({
-            status: getCommitteeStatusText(
+            status: translateCommitteeStatusText(
               committee.status,
               committee.statusHeadline,
             ),

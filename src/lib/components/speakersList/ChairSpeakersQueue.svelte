@@ -33,45 +33,35 @@ const getRepresentation = (
       : null;
 };
 
-const RemoveSpeakerOnListMutation = graphql(`
-		mutation RemoveSpeakerOnListMutation($speakerOnListId: ID!) {
-			removeSpeakerOnList(speakerOnListId: $speakerOnListId) {
-				id
-				speakers {
-					id
-					position
-				}
-			}
-		}
-	`);
-
 const removeSpeaker = (speakerOnListId: string) => {
   if (!speakerOnListId) return;
 
   toast.promise(
-    RemoveSpeakerOnListMutation.mutate({
-      speakerOnListId,
+    client.mutate.removeSpeakerOnList({
+      __args: {
+        speakerOnListId,
+      },
+      id: true,
+      speakers: {
+        id: true,
+        position: true,
+      },
     }),
     promiseToastStrings(m.speaker(), "delete"),
   );
 };
 
-const MoveSpeakerMutation = graphql(`
-		mutation MoveSpeakerMutation($speakerOnListId: ID!, $position: Int!) {
-			moveSpeakerToPosition(id: $speakerOnListId, position: $position) {
-				id
-				position
-			}
-		}
-	`);
-
 const moveSpeaker = (speakerOnListId: string, position: number) => {
   if (!speakerOnListId || position < 0) return;
 
   toast.promise(
-    MoveSpeakerMutation.mutate({
-      speakerOnListId,
-      position,
+    client.mutate.moveSpeakerToPosition({
+      __args: {
+        id: speakerOnListId,
+        position,
+      },
+      id: true,
+      position: true,
     }),
     promiseToastStrings(m.speaker(), "update"),
   );

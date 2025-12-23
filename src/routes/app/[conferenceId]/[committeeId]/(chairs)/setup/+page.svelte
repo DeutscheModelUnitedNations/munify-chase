@@ -15,7 +15,7 @@ import WhiteboardViewer from "$lib/components/whiteboard/WhiteboardViewer.svelte
 import { m } from "$lib/paraglide/messages";
 import {
   getCommitteeStatusIcon,
-  getCommitteeStatusText,
+  translateCommitteeStatusText,
 } from "$lib/utils/committeeStatus";
 import StatusChanger from "../../../../../../lib/components/committee/StatusChanger.svelte";
 import { CommitteeSubscription } from "../committeeSubscription";

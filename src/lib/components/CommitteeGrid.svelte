@@ -1,32 +1,30 @@
 <script lang="ts">
-import type {
-  CommitteeOverviewQuery$result,
-  MissionControlQuery$result,
-} from "$houdini";
-import * as m from "$lib/paraglide/messages.js";
-import {
-  getCommitteeStatusIcon,
-  translateCommitteeStatusText,
-} from "$lib/utils/committeeStatus";
-import AdoptionConfetti from "./AdoptionConfetti.svelte";
-import IconInfoBox from "./IconInfoBox.svelte";
+  import * as m from "$lib/paraglide/messages.js";
+  import type { committeeOverviewQuery } from "$lib/queries/committeeOverview.svelte";
+  import type { missionControlQuery } from "$lib/queries/missionControlQuery.svelte";
+  import {
+    getCommitteeStatusIcon,
+    translateCommitteeStatusText,
+  } from "$lib/utils/committeeStatus";
+  import AdoptionConfetti from "./AdoptionConfetti.svelte";
+  import IconInfoBox from "./IconInfoBox.svelte";
 
-interface Props {
-  conference:
-    | MissionControlQuery$result["findFirstConference"]
-    | CommitteeOverviewQuery$result["findFirstConference"];
-  environment?: "SPECTATOR" | "TEAM";
-}
-
-const { conference, environment = "SPECTATOR" }: Props = $props();
-
-const getHref = (committeeId: string) => {
-  if (environment === "TEAM") {
-    return `/app/${conference.id}/${committeeId}/setup`;
-  } else {
-    return `/app/${conference.id}/${committeeId}`;
+  interface Props {
+    conference:
+      | Awaited<ReturnType<typeof missionControlQuery>>
+      | Awaited<ReturnType<typeof committeeOverviewQuery>>;
+    environment?: "SPECTATOR" | "TEAM";
   }
-};
+
+  const { conference, environment = "SPECTATOR" }: Props = $props();
+
+  const getHref = (committeeId: string) => {
+    if (environment === "TEAM") {
+      return `/app/${conference.id}/${committeeId}/setup`;
+    } else {
+      return `/app/${conference.id}/${committeeId}`;
+    }
+  };
 </script>
 
 <div class="flex h-full w-full flex-wrap gap-4 p-4">

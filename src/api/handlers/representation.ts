@@ -1,4 +1,4 @@
-import { abilityBuilder, countQuery, object, query } from "$api/rumble";
+import { abilityBuilder, countQuery, object, query } from '$api/rumble';
 
 // abilityBuilder.representation
 //   .allow(["read", "update"])
@@ -9,9 +9,9 @@ import { abilityBuilder, countQuery, object, query } from "$api/rumble";
 //     }
 //   });
 
-const _ref = object({ table: "representation" });
+const _ref = object({ table: 'representation' });
 // const pubsub = rumblePubsub({ table: "representation" });
-query({ table: "representation" });
+query({ table: 'representation' });
 countQuery({
-  table: "representation",
+  table: 'representation'
 });

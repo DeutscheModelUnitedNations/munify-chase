@@ -1,9 +1,9 @@
-import Dexie, { type EntityTable } from "dexie";
-import type { PresentationLayoutPresetOptions } from "$lib/data/presentationLayoutPresets";
+import Dexie, { type EntityTable } from 'dexie';
+import type { PresentationLayoutPresetOptions } from '$lib/data/presentationLayoutPresets';
 
-export type VotingStage = "PRO" | "CON" | "ABSTAIN" | "EVALUATION";
-export type VotingOptions = "PRO" | "CON" | "ABSTAIN";
-export type VotingMajority = "SIMPLE" | "TWO_THIRDS";
+export type VotingStage = 'PRO' | 'CON' | 'ABSTAIN' | 'EVALUATION';
+export type VotingOptions = 'PRO' | 'CON' | 'ABSTAIN';
+export type VotingMajority = 'SIMPLE' | 'TWO_THIRDS';
 interface CommitteeSettings {
   committeeId: string;
   layout: PresentationLayoutPresetOptions;
@@ -29,8 +29,8 @@ interface CommitteeSettings {
   votingMajorityAmount: number | null;
 }
 
-const localDB = new Dexie("local-db") as Dexie & {
-  committeeSettings: EntityTable<CommitteeSettings, "committeeId">;
+const localDB = new Dexie('local-db') as Dexie & {
+  committeeSettings: EntityTable<CommitteeSettings, 'committeeId'>;
 };
 
 localDB.version(1).stores({
@@ -58,7 +58,7 @@ localDB.version(1).stores({
 	votingMajority,
 	votingWithAbstentions,
 	votingMajorityAmount
-	`,
+	`
 });
 
 export type { CommitteeSettings };

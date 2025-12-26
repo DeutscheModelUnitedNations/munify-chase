@@ -1,13 +1,13 @@
-import { and, inArray } from "drizzle-orm";
-import { db, schema } from "$api/db/db";
+import { and, inArray } from 'drizzle-orm';
+import { db, schema } from '$api/db/db';
 import {
   abilityBuilder,
   countQuery,
   object,
   query,
   pubsub as rumblePubsub,
-  schemaBuilder,
-} from "$api/rumble";
+  schemaBuilder
+} from '$api/rumble';
 
 // abilityBuilder.committeeMember
 //   .allow(["read", "update"])
@@ -18,12 +18,12 @@ import {
 //     }
 //   });
 
-const ref = object({ table: "committeeMember" });
-query({ table: "committeeMember" });
+const ref = object({ table: 'committeeMember' });
+query({ table: 'committeeMember' });
 countQuery({
-  table: "committeeMember",
+  table: 'committeeMember'
 });
-const pubsub = rumblePubsub({ table: "committeeMember" });
+const pubsub = rumblePubsub({ table: 'committeeMember' });
 
 schemaBuilder.mutationFields((t) => {
   return {
@@ -31,46 +31,46 @@ schemaBuilder.mutationFields((t) => {
       type: [ref],
       args: {
         ids: t.arg.idList({ required: true }),
-        present: t.arg.boolean({ required: true }),
+        present: t.arg.boolean({ required: true })
       },
       resolve: async (query, _root, args, ctx) => {
         const res = await db
           .update(schema.committeeMember)
           .set({
-            present: args.present,
+            present: args.present
           })
           .where(
             and(
               inArray(schema.committeeMember.id, args.ids),
-              ctx.abilities.committeeMember.filter("update").sql.where,
-            ),
+              ctx.abilities.committeeMember.filter('update').sql.where
+            )
           )
           .returning({
-            id: schema.committeeMember.id,
+            id: schema.committeeMember.id
           });
 
         await db.insert(schema.presenceChangedTimestamp).values(
           res.map((committeeMember) => ({
             committeeMemberId: committeeMember.id,
             presentSetTo: args.present,
-            timestamp: new Date(),
-          })),
+            timestamp: new Date()
+          }))
         );
 
         pubsub.updated(args.ids);
 
         return db.query.committeeMember.findMany(
           query(
-            ctx.abilities.committeeMember.filter("read").merge({
+            ctx.abilities.committeeMember.filter('read').merge({
               where: {
                 id: {
-                  in: args.ids,
-                },
-              },
-            }).query.single,
-          ),
+                  in: args.ids
+                }
+              }
+            }).query.single
+          )
         );
-      },
-    }),
+      }
+    })
   };
 });

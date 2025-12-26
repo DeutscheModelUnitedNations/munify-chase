@@ -1,12 +1,9 @@
-import { building } from "$app/environment";
+import { building } from '$app/environment';
 
 /**
  * Lazy initializer for static values
  */
-export function lazy<Result>(
-  initializer: () => Result,
-  mockOnBuild = false,
-): () => Result {
+export function lazy<Result>(initializer: () => Result, mockOnBuild = false): () => Result {
   let value: Result | undefined;
   return () => {
     if (building && mockOnBuild) {

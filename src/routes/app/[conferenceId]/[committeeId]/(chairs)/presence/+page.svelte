@@ -1,53 +1,47 @@
 <script lang="ts">
-  import toast from "svelte-french-toast";
-  import emptyStreet from "$lib/assets/undraw/empty_street.svg";
-  import BasicCard from "$lib/components/BasicCard.svelte";
-  import Flag from "$lib/components/Flag.svelte";
-  import { page } from "$app/state";
-  import Majorities from "$lib/components/Majorities.svelte";
-  import ChairRollCall from "$lib/components/rollCall/ChairRollCall.svelte";
-  import Tabs from "$lib/components/Tabs.svelte";
-  import UndrawError from "$lib/components/UndrawError.svelte";
+  import toast from 'svelte-french-toast';
+  import emptyStreet from '$lib/assets/undraw/empty_street.svg';
+  import BasicCard from '$lib/components/BasicCard.svelte';
+  import Flag from '$lib/components/Flag.svelte';
+  import { page } from '$app/state';
+  import Majorities from '$lib/components/Majorities.svelte';
+  import ChairRollCall from '$lib/components/rollCall/ChairRollCall.svelte';
+  import Tabs from '$lib/components/Tabs.svelte';
+  import UndrawError from '$lib/components/UndrawError.svelte';
   import {
     isDelegationMember,
     isNSAMember,
-    isUNMember,
-  } from "$lib/helpers/distinguishConferenceMembers";
-  import { m } from "$lib/paraglide/messages";
+    isUNMember
+  } from '$lib/helpers/distinguishConferenceMembers';
+  import { m } from '$lib/paraglide/messages';
   import {
     getTranslatedCountryNameFromAlpha3Code,
-    sortTranslatedCountries,
-  } from "$lib/utils/nationTranslationHelper.svelte";
-  import { promiseToastStrings } from "$lib/utils/toast";
-  import StatusWidget from "../StatusWidget.svelte";
-  import PresenceActions from "./PresenceActions.svelte";
-  import { committeeQuery } from "$lib/queries/commitee";
-  import { client } from "$lib/api/rumbleClient/client";
+    sortTranslatedCountries
+  } from '$lib/utils/nationTranslationHelper.svelte';
+  import { promiseToastStrings } from '$lib/utils/toast';
+  import StatusWidget from '../StatusWidget.svelte';
+  import PresenceActions from './PresenceActions.svelte';
+  import { client } from '$lib/api/rumbleClient/client';
+  import { committeeQuery } from '$lib/queries/commitee.svelte';
 
   const committee = await committeeQuery();
 
   const countries = $derived(
-    committee?.members
+    $committee?.members
       .filter(isDelegationMember)
-      .sort((a, b) =>
-        sortTranslatedCountries(a.representation!, b.representation!),
-      ) ?? [],
+      .sort((a, b) => sortTranslatedCountries(a.representation!, b.representation!)) ?? []
   );
 
   const nsas = $derived(
     committee?.conference?.uniqueConferenceMembers
       ?.filter(isNSAMember)
-      .sort((a, b) =>
-        a.representation!.name!.localeCompare(b.representation!.name!),
-      ) ?? [],
+      .sort((a, b) => a.representation!.name!.localeCompare(b.representation!.name!)) ?? []
   );
 
   const un = $derived(
     committee?.conference?.uniqueConferenceMembers
       ?.filter(isUNMember)
-      ?.sort((a, b) =>
-        a.representation!.name!.localeCompare(b.representation!.name!),
-      ) ?? [],
+      ?.sort((a, b) => a.representation!.name!.localeCompare(b.representation!.name!)) ?? []
   );
 
   let rollCallActive = $state(false);
@@ -56,13 +50,13 @@
     {
       id: false,
       name: m.absent(),
-      faIcon: "fa-xmark",
+      faIcon: 'fa-xmark'
     },
     {
       id: true,
       name: m.present(),
-      faIcon: "fa-check",
-    },
+      faIcon: 'fa-check'
+    }
   ];
 
   const setPresence = (tab: boolean, id: string) => {
@@ -70,24 +64,22 @@
       client.mutate.setPresenceForCommitteeMembers({
         __args: {
           ids: [id],
-          present: tab,
+          present: tab
         },
         id: true,
-        present: true,
+        present: true
       }),
-      promiseToastStrings(m.presence(), "update"),
+      promiseToastStrings(m.presence(), 'update')
     );
   };
 </script>
 
 {#if $committee}
   <div class="flex h-full w-full items-center justify-center">
-    <div
-      class="flex h-full w-full max-w-screen-xl flex-col gap-6 p-6 lg:flex-row"
-    >
-      <div class="top-22 lg:w-lg flex h-full flex-col gap-4 lg:sticky">
+    <div class="flex h-full w-full max-w-screen-xl flex-col gap-6 p-6 lg:flex-row">
+      <div class="top-22 flex h-full flex-col gap-4 lg:sticky lg:w-lg">
         <BasicCard>
-          <StatusWidget committee={$committee} />
+          <StatusWidget {committee} />
         </BasicCard>
         <BasicCard>
           <Majorities
@@ -98,10 +90,7 @@
           />
         </BasicCard>
         <BasicCard>
-          <button
-            class="btn btn-primary btn-xl"
-            onclick={() => (rollCallActive = true)}
-          >
+          <button class="btn btn-xl btn-primary" onclick={() => (rollCallActive = true)}>
             <i class="fas fa-user-magnifying-glass mr-2"></i>
             {m.rollCall()}
           </button>
@@ -110,18 +99,17 @@
           <PresenceActions memberIds={committee.members.map((x) => x.id)} />
         </BasicCard>
       </div>
-      <div class="flex-3 flex h-full w-full flex-col gap-4">
+      <div class="flex h-full w-full flex-3 flex-col gap-4">
         <BasicCard title={m.delegations()}>
-          {#each countries as member}
+          {#each countries as member (member.id)}
             {@const rep = member.representation}
             <div
-              class="hover:bg-base-200 card flex w-full flex-row items-center gap-4 p-2 transition-all duration-300"
+              class="card flex w-full flex-row items-center gap-4 p-2 transition-all duration-300 hover:bg-base-200"
             >
               <Flag representation={rep} size="sm" />
               <h3 class="flex-1 text-lg">
                 {#if rep && (rep.name || rep.alpha3Code)}
-                  {rep.name ??
-                    getTranslatedCountryNameFromAlpha3Code(rep.alpha3Code!)}
+                  {rep.name ?? getTranslatedCountryNameFromAlpha3Code(rep.alpha3Code!)}
                 {:else}
                   {m.unknown()}
                 {/if}
@@ -131,18 +119,18 @@
                 <div
                   class="tooltip tooltip-left text-xl"
                   data-tip={m.regionalGroups({
-                    group: member.representation?.regionalGroup ?? "",
+                    group: member.representation?.regionalGroup ?? ''
                   })}
                 >
-                  {#if group === "AFRICA"}
+                  {#if group === 'AFRICA'}
                     <i class="fas fa-earth-africa text-blue-500"></i>
-                  {:else if group === "ASIA_PACIFIC"}
+                  {:else if group === 'ASIA_PACIFIC'}
                     <i class="fas fa-earth-asia text-green-500"></i>
-                  {:else if group === "EASTERN_EUROPE"}
+                  {:else if group === 'EASTERN_EUROPE'}
                     <i class="fas fa-earth-europe text-red-500"></i>
-                  {:else if group === "LATIN_AMERICA_CARIBBEAN"}
+                  {:else if group === 'LATIN_AMERICA_CARIBBEAN'}
                     <i class="fas fa-earth-americas text-pink-500"></i>
-                  {:else if group === "WESTERN_EUROPE_OTHERS"}
+                  {:else if group === 'WESTERN_EUROPE_OTHERS'}
                     <i class="fas fa-earth-europe text-yellow-500"></i>
                   {/if}
                 </div>
@@ -158,10 +146,10 @@
           {/each}
         </BasicCard>
         <BasicCard title={m.nonStateActors()}>
-          {#each nsas as member}
+          {#each nsas as member (member.id)}
             {@const rep = member.representation}
             <div
-              class="hover:bg-base-200 card flex w-full flex-row items-center gap-4 p-2 transition-all duration-300"
+              class="card flex w-full flex-row items-center gap-4 p-2 transition-all duration-300 hover:bg-base-200"
             >
               <Flag representation={rep} size="sm" />
               <h3 class="flex-1 text-lg">
@@ -175,10 +163,10 @@
           {/each}
         </BasicCard>
         <BasicCard title={m.unActors()}>
-          {#each un as member}
+          {#each un as member (member.id)}
             {@const rep = member.representation}
             <div
-              class="hover:bg-base-200 card flex w-full flex-row items-center gap-4 p-2 transition-all duration-300"
+              class="card flex w-full flex-row items-center gap-4 p-2 transition-all duration-300 hover:bg-base-200"
             >
               <Flag representation={member.representation} size="sm" />
               <h3 class="flex-1 text-lg">

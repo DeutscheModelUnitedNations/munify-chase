@@ -1,18 +1,18 @@
 <script lang="ts">
-  import hotkeys from "hotkeys-js";
-  import { onDestroy, onMount } from "svelte";
-  import toast from "svelte-french-toast";
-  import { localDB } from "$lib/local-db/localDB";
-  import { m } from "$lib/paraglide/messages";
-  import { promiseToastStrings } from "$lib/utils/toast";
-  import Modal from "../Modal.svelte";
-  import ScrollingCountryList from "./ScrollingCountryList.svelte";
-  import type { committeeTeamQuery } from "$lib/queries/committeeTeamQuery.svelte";
-  import { client } from "$lib/api/rumbleClient/client";
+  import hotkeys from 'hotkeys-js';
+  import { onDestroy, onMount } from 'svelte';
+  import toast from 'svelte-french-toast';
+  import { localDB } from '$lib/local-db/localDB';
+  import { m } from '$lib/paraglide/messages';
+  import { promiseToastStrings } from '$lib/utils/toast';
+  import Modal from '../Modal.svelte';
+  import ScrollingCountryList from './ScrollingCountryList.svelte';
+  import type { committeeTeamQuery } from '$lib/queries/committeeTeamQuery.svelte';
+  import { client } from '$lib/api/rumbleClient/client';
 
   interface Props {
     active: boolean;
-    members: Awaited<ReturnType<typeof committeeTeamQuery>>["members"];
+    members: Awaited<ReturnType<typeof committeeTeamQuery>>['members'];
     committeeId: string;
   }
 
@@ -27,16 +27,16 @@
         client.mutate.setPresenceForCommitteeMembers({
           __args: {
             ids: [member.id],
-            present,
+            present
           },
           id: true,
-          present: true,
+          present: true
         }),
-        promiseToastStrings(m.presence(), "update"),
+        promiseToastStrings(m.presence(), 'update'),
         {
           duration: 1000,
-          position: "top-right",
-        },
+          position: 'top-right'
+        }
       );
 
       if (currentIndex === members.length - 1) {
@@ -51,40 +51,40 @@
 
   $effect(() => {
     if (active) {
-      hotkeys("up, down, j, l, esc", "rollCall", (event, handler) => {
+      hotkeys('up, down, j, l, esc', 'rollCall', (event, handler) => {
         event.preventDefault();
         switch (handler.key) {
-          case "up":
+          case 'up':
             currentIndex = (currentIndex - 1 + members.length) % members.length;
             break;
-          case "down":
+          case 'down':
             currentIndex = (currentIndex + 1) % members.length;
             break;
-          case "j":
+          case 'j':
             setPresence(false);
             break;
-          case "l":
+          case 'l':
             setPresence(true);
             break;
-          case "esc":
+          case 'esc':
             active = false;
         }
       });
-      hotkeys.setScope("rollCall");
+      hotkeys.setScope('rollCall');
     } else {
-      hotkeys.deleteScope("rollCall");
+      hotkeys.deleteScope('rollCall');
     }
   });
 
   $effect(() => {
     if (active && currentIndex !== undefined) {
       localDB.committeeSettings.update(committeeId, {
-        rollCall: currentIndex,
+        rollCall: currentIndex
       });
     } else if (!active) {
       currentIndex = 0;
       localDB.committeeSettings.update(committeeId, {
-        rollCall: null,
+        rollCall: null
       });
     }
   });
@@ -96,7 +96,7 @@
 
   <div class="modal-action justify-around">
     <button
-      class="btn btn-error btn-lg flex gap-2"
+      class="btn flex gap-2 btn-lg btn-error"
       onclick={() => {
         setPresence(false);
       }}
@@ -107,7 +107,7 @@
     </button>
     <div class="join">
       <button
-        class="btn btn-outline btn-lg join-item"
+        class="btn join-item btn-outline btn-lg"
         aria-label="Move up"
         onclick={() => {
           currentIndex = (currentIndex - 1 + members.length) % members.length;
@@ -116,7 +116,7 @@
         <i class="fas fa-chevron-up"></i>
       </button>
       <button
-        class="btn btn-outline btn-lg join-item"
+        class="btn join-item btn-outline btn-lg"
         aria-label="Move down"
         onclick={() => {
           currentIndex = (currentIndex + 1) % members.length;
@@ -126,7 +126,7 @@
       </button>
     </div>
     <button
-      class="btn btn-success btn-lg flex gap-2"
+      class="btn flex gap-2 btn-lg btn-success"
       onclick={() => {
         setPresence(true);
       }}
@@ -136,10 +136,10 @@
       <span class="kbd">L</span>
     </button>
 
-    <div class="absolute right-3 top-3">
+    <div class="absolute top-3 right-3">
       <button
         aria-label="Close modal"
-        class="btn btn-ghost btn-circle btn-sm"
+        class="btn btn-circle btn-ghost btn-sm"
         onclick={() => {
           active = false;
         }}

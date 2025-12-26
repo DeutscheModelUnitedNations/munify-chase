@@ -1,23 +1,20 @@
 <script lang="ts">
-  import dayjs from "dayjs";
-  import toast from "svelte-french-toast";
-  import { alertDialog } from "$lib/components/Alert/alert";
-  import Modal from "$lib/components/Modal.svelte";
-  import Popover from "$lib/components/Popover.svelte";
-  import Tabs from "$lib/components/Tabs.svelte";
-  import { m } from "$lib/paraglide/messages";
-  import { promiseToastStrings } from "$lib/utils/toast";
-  import type { committeeTeamQuery } from "$lib/queries/committeeTeamQuery.svelte";
-  import {
-    client,
-    type SpeakerslistcategoryEnum,
-  } from "$lib/api/rumbleClient/client";
+  import dayjs from 'dayjs';
+  import toast from 'svelte-french-toast';
+  import { alertDialog } from '$lib/components/Alert/alert';
+  import Modal from '$lib/components/Modal.svelte';
+  import Popover from '$lib/components/Popover.svelte';
+  import Tabs from '$lib/components/Tabs.svelte';
+  import { m } from '$lib/paraglide/messages';
+  import { promiseToastStrings } from '$lib/utils/toast';
+  import type { committeeTeamQuery } from '$lib/queries/committeeTeamQuery.svelte';
+  import { client, type SpeakerslistcategoryEnum } from '$lib/api/rumbleClient/client';
 
   interface Props {
     speakersList?:
       | NonNullable<
-          Awaited<ReturnType<typeof committeeTeamQuery>>["activeAgendaItem"]
-        >["speakersList"][number]
+          Awaited<ReturnType<typeof committeeTeamQuery>>['activeAgendaItem']
+        >['speakersList'][number]
       | null;
     type: SpeakerslistcategoryEnum;
   }
@@ -27,22 +24,22 @@
   let isOpen = $state(false);
 
   let changeSpeakersNameModalOpen = $state(false);
-  let changeSpeakersNameValue = $state("");
+  let changeSpeakersNameValue = $state('');
   let changeSpeakingTimeModalOpen = $state(false);
   let changeSpeakingTimeValue = $state(speakersList?.speakingTime ?? 0);
   const chageSpeakingTimeDisplayValue = $derived(
-    dayjs.duration(changeSpeakingTimeValue, "seconds").format("mm:ss"),
+    dayjs.duration(changeSpeakingTimeValue, 'seconds').format('mm:ss')
   );
 
   const closeListTabs = [
     {
       id: false,
-      faIcon: "lock-open",
+      faIcon: 'lock-open'
     },
     {
       id: true,
-      faIcon: "lock",
-    },
+      faIcon: 'lock'
+    }
   ];
 
   const openOrCloseList = async (isClosed: boolean) => {
@@ -51,17 +48,15 @@
       client.mutate.updateSpeakersList({
         __args: {
           id: speakersList.id,
-          isClosed,
+          isClosed
         },
         id: true,
-        isClosed: true,
+        isClosed: true
       }),
       promiseToastStrings(
-        speakersList.type === "COMMENT_LIST"
-          ? m.commentList()
-          : m.speakersList(),
-        "update",
-      ),
+        speakersList.type === 'COMMENT_LIST' ? m.commentList() : m.speakersList(),
+        'update'
+      )
     );
   };
 
@@ -74,25 +69,23 @@
         description: m.clearListDescription(),
         confirmText: m.yes(),
         cancelText: m.abort(),
-        confirmColor: "error",
+        confirmColor: 'error'
       })
     ) {
       await toast.promise(
         client.mutate.clearSpeakersList({
           __args: {
-            id: speakersList.id,
+            id: speakersList.id
           },
           id: true,
           speakers: {
-            id: true,
-          },
+            id: true
+          }
         }),
         promiseToastStrings(
-          speakersList.type === "COMMENT_LIST"
-            ? m.commentList()
-            : m.speakersList(),
-          "delete",
-        ),
+          speakersList.type === 'COMMENT_LIST' ? m.commentList() : m.speakersList(),
+          'delete'
+        )
       );
     }
   };
@@ -112,17 +105,15 @@
       client.mutate.updateSpeakerOnList({
         __args: {
           id: existingSpeakerId,
-          overwriteName: changeSpeakersNameValue,
+          overwriteName: changeSpeakersNameValue
         },
         id: true,
-        overwriteName: true,
+        overwriteName: true
       }),
       promiseToastStrings(
-        speakersList.type === "COMMENT_LIST"
-          ? m.commentList()
-          : m.speakersList(),
-        "update",
-      ),
+        speakersList.type === 'COMMENT_LIST' ? m.commentList() : m.speakersList(),
+        'update'
+      )
     );
     changeSpeakersNameModalOpen = false;
   };
@@ -135,17 +126,15 @@
         __args: {
           id: speakersList.id,
           speakingTime: changeSpeakingTimeValue,
-          timeLeft: changeSpeakingTimeValue,
+          timeLeft: changeSpeakingTimeValue
         },
         id: true,
-        speakingTime: true,
+        speakingTime: true
       }),
       promiseToastStrings(
-        speakersList.type === "COMMENT_LIST"
-          ? m.commentList()
-          : m.speakersList(),
-        "update",
-      ),
+        speakersList.type === 'COMMENT_LIST' ? m.commentList() : m.speakersList(),
+        'update'
+      )
     );
     changeSpeakingTimeModalOpen = false;
   };
@@ -155,7 +144,7 @@
       const overwriteName = speakersList.speakers
         .toSorted((a, b) => a.position - b.position)
         .at(0)?.overwriteName;
-      changeSpeakersNameValue = overwriteName || "";
+      changeSpeakersNameValue = overwriteName || '';
     }
   });
 </script>
@@ -174,7 +163,7 @@
         onTabChange={(newStatus) => openOrCloseList(newStatus)}
       />
       <button
-        class={speakersList?.speakers?.length ? "btn" : "btn btn-disabled"}
+        class={speakersList?.speakers?.length ? 'btn' : 'btn btn-disabled'}
         onclick={() => {
           if (!speakersList?.speakers?.length) return;
           changeSpeakersNameModalOpen = true;
@@ -210,9 +199,9 @@
     bind:value={changeSpeakersNameValue}
     placeholder={m.speakersListNamePlaceholder()}
     onkeydown={(e) => {
-      if (e.key === "Enter") {
+      if (e.key === 'Enter') {
         changeSpeakersName();
-      } else if (e.key === "Escape") {
+      } else if (e.key === 'Escape') {
         changeSpeakersNameModalOpen = false;
       }
     }}
@@ -235,13 +224,13 @@
     type="time"
     onchange={(e: Event) => {
       const target = e.target as HTMLInputElement;
-      const [minutes, seconds] = target.value.split(":").map(Number);
+      const [minutes, seconds] = target.value.split(':').map(Number);
       changeSpeakingTimeValue = minutes * 60 + seconds;
     }}
     onkeydown={(e) => {
-      if (e.key === "Enter") {
+      if (e.key === 'Enter') {
         changeSpeakersTime();
-      } else if (e.key === "Escape") {
+      } else if (e.key === 'Escape') {
         changeSpeakingTimeModalOpen = false;
       }
     }}

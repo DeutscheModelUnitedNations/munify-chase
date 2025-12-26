@@ -1,17 +1,17 @@
 <script lang="ts">
-  import dayjs from "dayjs";
-  import hotkeys from "hotkeys-js";
-  import { onDestroy, onMount, type Snippet } from "svelte";
-  import toast from "svelte-french-toast";
-  import AdoptionConfetti from "$lib/components/AdoptionConfetti.svelte";
-  import StateOfDebateChangerModal from "$lib/components/committee/StateOfDebateChangerModal.svelte";
-  import StatusChangerModal from "$lib/components/committee/StatusChangerModal.svelte";
-  import BellIcon from "$lib/components/toast/BellIcon.svelte";
-  import * as m from "$lib/paraglide/messages";
-  import { serverTime } from "$lib/state/serverTime.svelte";
-  import { translateCommitteeStatusText } from "$lib/utils/committeeStatus";
-  import ChairNavbar from "./ChairNavbar.svelte";
-  import { committeeTeamQuery } from "$lib/queries/committeeTeamQuery.svelte";
+  import dayjs from 'dayjs';
+  import hotkeys from 'hotkeys-js';
+  import { onDestroy, onMount, type Snippet } from 'svelte';
+  import toast from 'svelte-french-toast';
+  import AdoptionConfetti from '$lib/components/AdoptionConfetti.svelte';
+  import StateOfDebateChangerModal from '$lib/components/committee/StateOfDebateChangerModal.svelte';
+  import StatusChangerModal from '$lib/components/committee/StatusChangerModal.svelte';
+  import BellIcon from '$lib/components/toast/BellIcon.svelte';
+  import * as m from '$lib/paraglide/messages';
+  import { serverTime } from '$lib/state/serverTime.svelte';
+  import { translateCommitteeStatusText } from '$lib/utils/committeeStatus';
+  import ChairNavbar from './ChairNavbar.svelte';
+  import { committeeTeamQuery } from '$lib/queries/committeeTeamQuery.svelte';
 
   interface Props {
     children: Snippet;
@@ -34,15 +34,12 @@
         if (!committeeStatusExpiredAlerted) {
           toast.error(
             m.committeeStatusExpired({
-              status: translateCommitteeStatusText(
-                $committee.status,
-                $committee.statusHeadline,
-              ),
+              status: translateCommitteeStatusText($committee.status, $committee.statusHeadline)
             }),
             {
               icon: BellIcon,
-              duration: 10000,
-            },
+              duration: 10000
+            }
           );
           committeeStatusExpiredAlerted = true;
         }
@@ -50,30 +47,26 @@
         committeeStatusExpiredAlerted = false;
       }
 
-      for (const speakersList of committee.activeAgendaItem?.speakersList ??
-        []) {
+      for (const speakersList of committee.activeAgendaItem?.speakersList ?? []) {
         const overtime =
-          dayjs(speakersList.startTimestamp).diff(serverTime.value, "seconds") +
+          dayjs(speakersList.startTimestamp).diff(serverTime.value, 'seconds') +
             speakersList.timeLeft <
           0;
 
         //	XAND only fire if both are false. Both true can be ignored, case should not happen.
-        if (
-          overtime &&
-          speakersListOvertimeAlerted === commentListOvertimeAlerted
-        ) {
+        if (overtime && speakersListOvertimeAlerted === commentListOvertimeAlerted) {
           toast.error(m.speakersListOvertime(), {
-            icon: BellIcon,
+            icon: BellIcon
           });
-          if (speakersList.type === "SPEAKERS_LIST") {
+          if (speakersList.type === 'SPEAKERS_LIST') {
             speakersListOvertimeAlerted = true;
-          } else if (speakersList.type === "COMMENT_LIST") {
+          } else if (speakersList.type === 'COMMENT_LIST') {
             commentListOvertimeAlerted = true;
           }
         } else if (!overtime) {
-          if (speakersList.type === "SPEAKERS_LIST") {
+          if (speakersList.type === 'SPEAKERS_LIST') {
             speakersListOvertimeAlerted = false;
-          } else if (speakersList.type === "COMMENT_LIST") {
+          } else if (speakersList.type === 'COMMENT_LIST') {
             commentListOvertimeAlerted = false;
           }
         }
@@ -83,20 +76,20 @@
   });
 
   onMount(() => {
-    hotkeys("alt+p", (event) => {
+    hotkeys('alt+p', (event) => {
       event.preventDefault();
-      window.open(".", "_blank");
+      window.open('.', '_blank');
     });
   });
 
   onDestroy(() => {
-    hotkeys.unbind("alt+p");
+    hotkeys.unbind('alt+p');
   });
 </script>
 
 <svelte:head>
   <title
-    >{committee?.abbreviation ?? "N/A"}
+    >{committee?.abbreviation ?? 'N/A'}
     {m.chairControls()} - MUNify CHASE</title
   >
 </svelte:head>

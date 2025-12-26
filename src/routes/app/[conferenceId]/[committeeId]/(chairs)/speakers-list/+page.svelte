@@ -1,28 +1,24 @@
 <script lang="ts">
-  import { onMount } from "svelte";
-  import question from "$lib/assets/undraw/question.svg";
-  import BasicCard from "$lib/components/BasicCard.svelte";
-  import DevPlaceholder from "$lib/components/DevPlaceholder.svelte";
-  import Majorities from "$lib/components/Majorities.svelte";
-  import SpeakersQueuePresentation from "$lib/components/speakersList/ChairSpeakersQueue.svelte";
-  import CurrentSpeaker from "$lib/components/speakersList/CurrentSpeaker.svelte";
-  import ChairControls from "$lib/components/speakersList/chairControls/ChairControls.svelte";
-  import UndrawError from "$lib/components/UndrawError.svelte";
-  import { m } from "$lib/paraglide/messages";
-  import StatusWidget from "../StatusWidget.svelte";
-  import { committeeTeamQuery } from "$lib/queries/committeeTeamQuery.svelte";
+  import { onMount } from 'svelte';
+  import question from '$lib/assets/undraw/question.svg';
+  import BasicCard from '$lib/components/BasicCard.svelte';
+  import DevPlaceholder from '$lib/components/DevPlaceholder.svelte';
+  import Majorities from '$lib/components/Majorities.svelte';
+  import SpeakersQueuePresentation from '$lib/components/speakersList/ChairSpeakersQueue.svelte';
+  import CurrentSpeaker from '$lib/components/speakersList/CurrentSpeaker.svelte';
+  import ChairControls from '$lib/components/speakersList/chairControls/ChairControls.svelte';
+  import UndrawError from '$lib/components/UndrawError.svelte';
+  import { m } from '$lib/paraglide/messages';
+  import StatusWidget from '../StatusWidget.svelte';
+  import { committeeTeamQuery } from '$lib/queries/committeeTeamQuery.svelte';
 
   const committee = await committeeTeamQuery();
 
   const speakersList = $derived(
-    $committee?.activeAgendaItem?.speakersList.find(
-      (item) => item.type === "SPEAKERS_LIST",
-    ),
+    $committee?.activeAgendaItem?.speakersList.find((item) => item.type === 'SPEAKERS_LIST')
   );
   const commentList = $derived(
-    $committee?.activeAgendaItem?.speakersList.find(
-      (item) => item.type === "COMMENT_LIST",
-    ),
+    $committee?.activeAgendaItem?.speakersList.find((item) => item.type === 'COMMENT_LIST')
   );
 </script>
 
@@ -51,18 +47,14 @@
         />
       </BasicCard>
     </div>
-    <BasicCard
-      title={m.speakersList()}
-      className="min-h-[calc(100vh-8rem)] max-w-xl w-full"
-    >
+    <BasicCard title={m.speakersList()} className="min-h-[calc(100vh-8rem)] max-w-xl w-full">
       <div class="flex flex-col gap-8">
         <CurrentSpeaker {speakersList} />
         <ChairControls
           committeeId={$committee.id}
           {speakersList}
           committeeMembers={$committee.members}
-          conferenceMembers={$committee.conference?.uniqueConferenceMembers ??
-            []}
+          conferenceMembers={$committee.conference?.uniqueConferenceMembers ?? []}
           type="SPEAKERS_LIST"
           childList={commentList}
         />
@@ -72,17 +64,13 @@
         />
       </div>
     </BasicCard>
-    <BasicCard
-      title={m.commentList()}
-      className="min-h-[calc(100vh-8rem)] max-w-xl  w-full"
-    >
+    <BasicCard title={m.commentList()} className="min-h-[calc(100vh-8rem)] max-w-xl  w-full">
       <div class="flex flex-col gap-8">
         <CurrentSpeaker speakersList={commentList} />
         <ChairControls
           committeeId={$committee.id}
           committeeMembers={$committee.members}
-          conferenceMembers={$committee.conference?.uniqueConferenceMembers ??
-            []}
+          conferenceMembers={$committee.conference?.uniqueConferenceMembers ?? []}
           speakersList={commentList}
           otherList={speakersList}
           type="COMMENT_LIST"

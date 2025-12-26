@@ -1,8 +1,8 @@
-import { makeOIDC } from "@m1212e/sveltekit-oidc";
-import { db, schema } from "$api/db/db";
-import { building, dev } from "$app/environment";
-import { configPrivate } from "$lib/config/private";
-import { configPublic } from "$lib/config/public";
+import { makeOIDC } from '@m1212e/sveltekit-oidc';
+import { db, schema } from '$api/db/db';
+import { building, dev } from '$app/environment';
+import { configPrivate } from '$lib/config/private';
+import { configPublic } from '$lib/config/public';
 
 export const OIDC = !building
   ? await makeOIDC({
@@ -13,8 +13,8 @@ export const OIDC = !building
       loginCallbackRoute: configPublic.PUBLIC_OIDC_LOGIN_CALLBACK_ROUTE,
       logoutCallbackRoute: configPublic.PUBLIC_OIDC_LOGOUT_CALLBACK_ROUTE,
       secret: configPrivate.SECRET,
-      authenticatedRoutes: ["/app"],
-      logoutPath: "",
+      authenticatedRoutes: ['/app'],
+      logoutPath: '',
       async userLoggedInSuccessfully({ user }) {
         await db
           .insert(schema.user)
@@ -24,7 +24,7 @@ export const OIDC = !building
             preferredUsername: user.preferred_username!,
             email: user.email!,
             familyName: user.family_name!,
-            givenName: user.given_name!,
+            givenName: user.given_name!
           })
           .onConflictDoUpdate({
             target: schema.user.id,
@@ -33,9 +33,9 @@ export const OIDC = !building
               preferredUsername: user.preferred_username!,
               email: user.email!,
               familyName: user.family_name!,
-              givenName: user.given_name!,
-            },
+              givenName: user.given_name!
+            }
           });
-      },
+      }
     })
   : ({} as Awaited<ReturnType<typeof makeOIDC>>);

@@ -51,13 +51,7 @@
           },
           "conferenceUserType": {
             "type": "string",
-            "enum": [
-              "ADMIN",
-              "TEAM",
-              "SPECTATOR",
-              "DELEGATE",
-              "NON_STATE_ACTOR"
-            ],
+            "enum": ["ADMIN", "TEAM", "SPECTATOR", "DELEGATE", "NON_STATE_ACTOR"],
             "description": "Type of the conference user"
           }
         },

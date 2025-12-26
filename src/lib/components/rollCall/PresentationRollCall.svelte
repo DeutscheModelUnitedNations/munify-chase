@@ -1,22 +1,20 @@
 <script lang="ts">
-import { liveQuery } from "dexie";
-import { localDB } from "$lib/local-db/localDB";
-import { m } from "$lib/paraglide/messages";
-import Modal from "../Modal.svelte";
-import ScrollingCountryList from "./ScrollingCountryList.svelte";
-    import type { committeeTeamQuery } from "$lib/queries/committeeTeamQuery.svelte";
+  import { liveQuery } from 'dexie';
+  import { localDB } from '$lib/local-db/localDB';
+  import { m } from '$lib/paraglide/messages';
+  import Modal from '../Modal.svelte';
+  import ScrollingCountryList from './ScrollingCountryList.svelte';
+  import type { committeeTeamQuery } from '$lib/queries/committeeTeamQuery.svelte';
 
-interface Props {
-  members: Awaited<ReturnType<typeof committeeTeamQuery>>["members"];
-  committeeId: string;
-}
+  interface Props {
+    members: Awaited<ReturnType<typeof committeeTeamQuery>>['members'];
+    committeeId: string;
+  }
 
-const { members, committeeId }: Props = $props();
+  const { members, committeeId }: Props = $props();
 
-const committeeSettingsQuery = liveQuery(() =>
-  localDB.committeeSettings.get(committeeId),
-);
-const currentIndex = $derived($committeeSettingsQuery?.rollCall);
+  const committeeSettingsQuery = liveQuery(() => localDB.committeeSettings.get(committeeId));
+  const currentIndex = $derived($committeeSettingsQuery?.rollCall);
 </script>
 
 <Modal open={!!currentIndex || currentIndex === 0}>

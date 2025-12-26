@@ -1,4 +1,4 @@
-import { abilityBuilder, countQuery, object, query } from "$api/rumble";
+import { abilityBuilder, countQuery, object, query } from '$api/rumble';
 
 // abilityBuilder.user.allow("read").when(({ oidc }) => {
 //   if (oidc?.user) {
@@ -15,9 +15,9 @@ import { abilityBuilder, countQuery, object, query } from "$api/rumble";
 //   }
 // });
 
-const _ref = object({ table: "user" });
-query({ table: "user" });
+const _ref = object({ table: 'user' });
+query({ table: 'user' });
 countQuery({
-  table: "user",
+  table: 'user'
 });
 // const pubsub = rumblePubsub({ table: "user" });

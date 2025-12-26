@@ -1,9 +1,9 @@
-import { createYoga } from "$api/rumble";
+import { createYoga } from '$api/rumble';
 
-import "$api/handlers/register";
+import '$api/handlers/register';
 
 const yogaInstance = createYoga({
-  graphqlEndpoint: "/api/graphql",
+  graphqlEndpoint: '/api/graphql',
   fetchAPI: {
     fetch,
     Request,
@@ -22,8 +22,8 @@ const yogaInstance = createYoga({
     TextDecoder,
     URLPattern,
     URL,
-    URLSearchParams,
-  },
+    URLSearchParams
+  }
 });
 
 export { yogaInstance as GET, yogaInstance as POST };

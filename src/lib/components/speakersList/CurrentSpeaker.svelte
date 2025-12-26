@@ -1,27 +1,27 @@
 <script lang="ts">
-  import { bounceOut, cubicOut } from "svelte/easing";
-  import { blur, scale } from "svelte/transition";
-  import { m } from "$lib/paraglide/messages";
-  import { getTranslatedCountryNameFromAlpha3Code } from "$lib/utils/nationTranslationHelper.svelte";
-  import Flag from "../Flag.svelte";
-  import Timer from "./Timer.svelte";
-  import { committeeTeamQuery } from "$lib/queries/committeeTeamQuery.svelte";
+  import { bounceOut, cubicOut } from 'svelte/easing';
+  import { blur, scale } from 'svelte/transition';
+  import { m } from '$lib/paraglide/messages';
+  import { getTranslatedCountryNameFromAlpha3Code } from '$lib/utils/nationTranslationHelper.svelte';
+  import Flag from '../Flag.svelte';
+  import Timer from './Timer.svelte';
+  import { committeeTeamQuery } from '$lib/queries/committeeTeamQuery.svelte';
 
   interface Props {
     speakersList?: NonNullable<
-      Awaited<ReturnType<typeof committeeTeamQuery>>["activeAgendaItem"]
-    >["speakersList"][number];
+      Awaited<ReturnType<typeof committeeTeamQuery>>['activeAgendaItem']
+    >['speakersList'][number];
   }
 
   const { speakersList }: Props = $props();
 
   const currentSpeaker = $derived(
-    speakersList?.speakers.toSorted((a, b) => a.position - b.position).at(0),
+    speakersList?.speakers.toSorted((a, b) => a.position - b.position).at(0)
   );
 
   const representation = $derived(
     currentSpeaker?.committeeMember?.representation ||
-      currentSpeaker?.conferenceMember?.representation,
+      currentSpeaker?.conferenceMember?.representation
   );
 </script>
 
@@ -35,7 +35,7 @@
   </div>
   {#if speakersList?.isClosed}
     <div
-      class="bg-error text-content-error absolute left-0 top-0 flex h-8 w-8 -translate-x-1/3 -translate-y-1/3 items-center justify-center rounded-full shadow-md"
+      class="text-content-error absolute top-0 left-0 flex h-8 w-8 -translate-x-1/3 -translate-y-1/3 items-center justify-center rounded-full bg-error shadow-md"
       in:scale={{ duration: 800, opacity: 0.5, start: 0, easing: bounceOut }}
       out:scale={{ duration: 500, opacity: 0.5, start: 0 }}
     >

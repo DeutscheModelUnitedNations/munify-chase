@@ -1,11 +1,11 @@
-import { schemaBuilder } from "$api/rumble";
+import { schemaBuilder } from '$api/rumble';
 
 schemaBuilder.queryFields((t) => {
   return {
     serverTime: t.field({
-      type: "DateTime",
+      type: 'DateTime',
       nullable: false,
-      resolve: () => new Date(),
-    }),
+      resolve: () => new Date()
+    })
   };
 });

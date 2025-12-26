@@ -1,77 +1,65 @@
 <script lang="ts">
-import { cubicOut } from "svelte/easing";
-import { scale } from "svelte/transition";
-import { m } from "$lib/paraglide/messages";
-import { getTranslatedCountryNameFromAlpha3Code } from "$lib/utils/nationTranslationHelper.svelte";
-import Flag from "../Flag.svelte";
-    import type { committeeTeamQuery } from "$lib/queries/committeeTeamQuery.svelte";
+  import { cubicOut } from 'svelte/easing';
+  import { scale } from 'svelte/transition';
+  import { m } from '$lib/paraglide/messages';
+  import { getTranslatedCountryNameFromAlpha3Code } from '$lib/utils/nationTranslationHelper.svelte';
+  import Flag from '../Flag.svelte';
+  import type { committeeTeamQuery } from '$lib/queries/committeeTeamQuery.svelte';
 
-interface Props {
-  currentIndex: number;
-  members: Awaited<ReturnType<typeof committeeTeamQuery>>["members"];
-  height?: string;
-  icons?: {
-    id: string;
-    icon: string;
-    color?: "info" | "success" | "error";
-  }[];
-}
-
-const { currentIndex, members, height = "70vh", icons }: Props = $props();
-
-let containerRef: HTMLElement;
-let listContainerRef: HTMLElement;
-
-let offset = $state(0);
-
-function centerSelectedCountry() {
-  if (!containerRef || !listContainerRef) return;
-
-  const parentHeight = listContainerRef.clientHeight;
-
-  const containerHeight = containerRef.clientHeight;
-
-  const elementHeight = containerHeight / members.length;
-  const elementOffset = elementHeight * currentIndex + elementHeight / 2;
-
-  offset = -elementOffset + parentHeight / 2;
-}
-
-// Watch for changes in currentCountry
-$effect(() => {
-  if (currentIndex !== undefined) {
-    centerSelectedCountry();
+  interface Props {
+    currentIndex: number;
+    members: Awaited<ReturnType<typeof committeeTeamQuery>>['members'];
+    height?: string;
+    icons?: {
+      id: string;
+      icon: string;
+      color?: 'info' | 'success' | 'error';
+    }[];
   }
-});
+
+  const { currentIndex, members, height = '70vh', icons }: Props = $props();
+
+  let containerRef: HTMLElement;
+  let listContainerRef: HTMLElement;
+
+  let offset = $state(0);
+
+  function centerSelectedCountry() {
+    if (!containerRef || !listContainerRef) return;
+
+    const parentHeight = listContainerRef.clientHeight;
+
+    const containerHeight = containerRef.clientHeight;
+
+    const elementHeight = containerHeight / members.length;
+    const elementOffset = elementHeight * currentIndex + elementHeight / 2;
+
+    offset = -elementOffset + parentHeight / 2;
+  }
+
+  // Watch for changes in currentCountry
+  $effect(() => {
+    if (currentIndex !== undefined) {
+      centerSelectedCountry();
+    }
+  });
 </script>
 
-<div
-  class="relative flex h-full w-full flex-col gap-2 overflow-hidden pl-6 pr-6"
->
-  <div
-    class="absolute bottom-0 left-0 top-0 z-40 flex items-center justify-center"
-  >
+<div class="relative flex h-full w-full flex-col gap-2 overflow-hidden pr-6 pl-6">
+  <div class="absolute top-0 bottom-0 left-0 z-40 flex items-center justify-center">
     <i class="fas fa-caret-right text-4xl"></i>
   </div>
-  <div
-    class="absolute bottom-0 right-0 top-0 z-40 flex items-center justify-center"
-  >
+  <div class="absolute top-0 right-0 bottom-0 z-40 flex items-center justify-center">
     <i class="fas fa-caret-left text-4xl"></i>
   </div>
-  <div
-    class="relative overflow-hidden"
-    bind:this={listContainerRef}
-    style="max-height: {height};"
-  >
+  <div class="relative overflow-hidden" bind:this={listContainerRef} style="max-height: {height};">
     <div
-      class="from-base-100 pointer-events-none absolute left-0 top-0 z-40 h-32 w-full bg-gradient-to-b to-transparent"
+      class="pointer-events-none absolute top-0 left-0 z-40 h-32 w-full bg-gradient-to-b from-base-100 to-transparent"
     ></div>
     <div
-      class="from-base-100 pointer-events-none absolute bottom-0 left-0 z-40 h-32 w-full bg-gradient-to-t to-transparent"
+      class="pointer-events-none absolute bottom-0 left-0 z-40 h-32 w-full bg-gradient-to-t from-base-100 to-transparent"
     ></div>
-    <div
-      class="card bg-base-300 h-22 absolute left-0 top-1/2 -z-10 w-full -translate-y-1/2"
-    ></div>
+    <div class="card absolute top-1/2 left-0 -z-10 h-22 w-full -translate-y-1/2 bg-base-300"></div>
     <div
       class="transition-transform duration-500"
       style="transform: translateY({offset}px);"
@@ -83,20 +71,14 @@ $effect(() => {
         {@const present = member.present && index < currentIndex}
         {@const notPresent = !member.present && index < currentIndex}
         <div
-          class="flex w-full flex-shrink-0 flex-row items-center gap-4 p-2 {currentIndex ===
-          index
+          class="flex w-full flex-shrink-0 flex-row items-center gap-4 p-2 {currentIndex === index
             ? 'card-active'
             : ''}"
         >
           <Flag representation={member.representation} size="md" />
-          <h3
-            class="flex-1 text-2xl {notPresent
-              ? 'opacity-40'
-              : ''} transition-all duration-500"
-          >
+          <h3 class="flex-1 text-2xl {notPresent ? 'opacity-40' : ''} transition-all duration-500">
             {#if rep && (rep.name || rep.alpha3Code)}
-              {rep.name ??
-                getTranslatedCountryNameFromAlpha3Code(rep.alpha3Code!)}
+              {rep.name ?? getTranslatedCountryNameFromAlpha3Code(rep.alpha3Code!)}
             {:else}
               {m.unknown()}
             {/if}
@@ -106,33 +88,33 @@ $effect(() => {
               <i
                 class="fas fa-{icon.icon.replace(
                   'fa-',
-                  '',
-                )} absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-center text-2xl text-{icon.color}"
+                  ''
+                )} absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-center text-2xl text-{icon.color}"
                 transition:scale={{
                   delay: 600,
                   duration: 500,
                   easing: cubicOut,
-                  opacity: 0,
+                  opacity: 0
                 }}
               ></i>
             {:else if notPresent}
               <i
-                class="fas fa-circle-xmark text-error absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-center text-3xl"
+                class="fas fa-circle-xmark absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-center text-3xl text-error"
                 transition:scale={{
                   delay: 600,
                   duration: 500,
                   easing: cubicOut,
-                  opacity: 0,
+                  opacity: 0
                 }}
               ></i>
             {:else if present}
               <i
-                class="fas fa-check fa-beatfade text-success absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-center text-3xl"
+                class="fas fa-check fa-beatfade absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-center text-3xl text-success"
                 in:scale={{
                   delay: 600,
                   duration: 500,
                   easing: cubicOut,
-                  opacity: 0,
+                  opacity: 0
                 }}
               ></i>
             {/if}

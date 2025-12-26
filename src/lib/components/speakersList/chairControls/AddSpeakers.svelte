@@ -1,27 +1,27 @@
 <script lang="ts">
-  import Fuse, { type IFuseOptions } from "fuse.js";
-  import hotkeys from "hotkeys-js";
-  import toast from "svelte-french-toast";
-  import Combobox from "$lib/components/Combobox.svelte";
-  import Flag from "$lib/components/Flag.svelte";
-  import type { MergeWithUndefined } from "$lib/helpers/utilityTypes";
-  import { m } from "$lib/paraglide/messages";
-  import { getTranslatedCountryNameFromAlpha3Code } from "$lib/utils/nationTranslationHelper.svelte";
-  import { promiseToastStrings } from "$lib/utils/toast";
-  import type { committeeTeamQuery } from "$lib/queries/committeeTeamQuery.svelte";
-  import { client } from "$lib/api/rumbleClient/client";
+  import Fuse, { type IFuseOptions } from 'fuse.js';
+  import hotkeys from 'hotkeys-js';
+  import toast from 'svelte-french-toast';
+  import Combobox from '$lib/components/Combobox.svelte';
+  import Flag from '$lib/components/Flag.svelte';
+  import type { MergeWithUndefined } from '$lib/helpers/utilityTypes';
+  import { m } from '$lib/paraglide/messages';
+  import { getTranslatedCountryNameFromAlpha3Code } from '$lib/utils/nationTranslationHelper.svelte';
+  import { promiseToastStrings } from '$lib/utils/toast';
+  import type { committeeTeamQuery } from '$lib/queries/committeeTeamQuery.svelte';
+  import { client } from '$lib/api/rumbleClient/client';
 
   interface Props {
     speakersList?:
       | NonNullable<
-          Awaited<ReturnType<typeof committeeTeamQuery>>["activeAgendaItem"]
-        >["speakersList"][number]
+          Awaited<ReturnType<typeof committeeTeamQuery>>['activeAgendaItem']
+        >['speakersList'][number]
       | null;
-    committeeMembers: Awaited<ReturnType<typeof committeeTeamQuery>>["members"];
+    committeeMembers: Awaited<ReturnType<typeof committeeTeamQuery>>['members'];
     conferenceMembers: NonNullable<
       NonNullable<
-        Awaited<ReturnType<typeof committeeTeamQuery>>["conference"]
-      >["uniqueConferenceMembers"]
+        Awaited<ReturnType<typeof committeeTeamQuery>>['conference']
+      >['uniqueConferenceMembers']
     >;
   }
 
@@ -32,27 +32,22 @@
     NonNullable<typeof conferenceMembers>[number]
   >;
 
-  const members = $derived([
-    ...committeeMembers,
-    ...conferenceMembers,
-  ] as Member[]);
+  const members = $derived([...committeeMembers, ...conferenceMembers] as Member[]);
 
-  let value = $state("");
+  let value = $state('');
   let focused = $state(false);
 
   const getName = (member: Member | undefined) =>
     member?.representation?.name
       ? member?.representation.name
-      : getTranslatedCountryNameFromAlpha3Code(
-          member?.representation?.alpha3Code,
-        );
+      : getTranslatedCountryNameFromAlpha3Code(member?.representation?.alpha3Code);
 
   const fuseOptions: IFuseOptions<any> = {
-    keys: ["label"],
+    keys: ['label'],
     // threshold: 0.3, // Adjust the threshold for fuzzy matching
     ignoreFieldNorm: true,
     ignoreDiacritics: true,
-    shouldSort: true,
+    shouldSort: true
   };
 
   const fuse = $state(new Fuse(committeeMembers ?? [], fuseOptions));
@@ -62,16 +57,13 @@
       if (!speakersList?.id) return true;
       return !speakersList.speakers.some(
         (speaker) =>
-          speaker.committeeMember?.id === member.id ||
-          speaker.conferenceMember?.id === member.id,
+          speaker.committeeMember?.id === member.id || speaker.conferenceMember?.id === member.id
       );
     };
 
     if (value.length !== 0) {
       fuse.setCollection(
-        members
-          .filter(excludeMembersAlreadyOnList)
-          .map((x) => ({ ...x, label: getName(x) })) ?? [],
+        members.filter(excludeMembersAlreadyOnList).map((x) => ({ ...x, label: getName(x) })) ?? []
       );
       const search = fuse.search(value);
       return search.map((result) => result.item);
@@ -90,9 +82,7 @@
     if (!value) return;
 
     const committeeMember = committeeMembers.find((x) => getName(x) === value);
-    const conferenceMember = conferenceMembers.find(
-      (x) => getName(x as Member) === value,
-    );
+    const conferenceMember = conferenceMembers.find((x) => getName(x as Member) === value);
 
     if (!committeeMember && !conferenceMember) {
       return;
@@ -103,35 +93,32 @@
         __args: {
           committeeMemberId: committeeMember?.id,
           conferenceMemberId: conferenceMember?.id,
-          speakersListId: speakersList.id,
+          speakersListId: speakersList.id
         },
         id: true,
         speakersList: {
-          id: true,
-        },
+          id: true
+        }
       }),
-      promiseToastStrings(
-        getName(committeeMember ?? (conferenceMember as Member)),
-        "add",
-      ),
+      promiseToastStrings(getName(committeeMember ?? (conferenceMember as Member)), 'add')
     );
 
-    value = "";
+    value = '';
   };
 
   $effect(() => {
     if (!focused) {
-      hotkeys("alt+a, alt+shift+a", (event, handler) => {
+      hotkeys('alt+a, alt+shift+a', (event, handler) => {
         event.preventDefault();
-        console.log("hotkey", handler.key);
+        console.log('hotkey', handler.key);
         switch (handler.key) {
-          case "alt+a":
-            if (speakersList?.type === "SPEAKERS_LIST") {
+          case 'alt+a':
+            if (speakersList?.type === 'SPEAKERS_LIST') {
               focused = true;
             }
             break;
-          case "alt+shift+a":
-            if (speakersList?.type === "COMMENT_LIST") {
+          case 'alt+shift+a':
+            if (speakersList?.type === 'COMMENT_LIST') {
               focused = true;
             }
             break;
@@ -148,7 +135,7 @@
   filter={(member, value) => filter(member, value)}
   placeholder="Search for a country"
   getStringValue={(member) => getName(member)}
-  kbd={speakersList?.type === "COMMENT_LIST" ? "⌥ ⇧ A" : "⌥ A"}
+  kbd={speakersList?.type === 'COMMENT_LIST' ? '⌥ ⇧ A' : '⌥ A'}
   submit={() => addSpeakerToList()}
 >
   {#snippet ListItem(option)}
@@ -156,14 +143,14 @@
     <span class="ml-2 flex-1">
       {getName(option)}
     </span>
-    {#if typeof option.present === "boolean" && !option.present}
+    {#if typeof option.present === 'boolean' && !option.present}
       <i class="fa-duotone fa-user-xmark mr-4"></i>
     {/if}
   {/snippet}
 
   {#snippet AdditionalButtons()}
     <button
-      class="btn btn-lg btn-square join-item"
+      class="btn join-item btn-square btn-lg"
       aria-label="add-speaker"
       onclick={() => addSpeakerToList()}
     >

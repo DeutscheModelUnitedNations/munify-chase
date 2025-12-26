@@ -1,20 +1,17 @@
 <script lang="ts">
-  import dayjs from "dayjs";
-  import hotkeys from "hotkeys-js";
-  import { onMount } from "svelte";
-  import toast from "svelte-french-toast";
-  import { m } from "$lib/paraglide/messages";
-  import { serverTime } from "$lib/state/serverTime.svelte";
-  import type { committeeTeamQuery } from "$lib/queries/committeeTeamQuery.svelte";
-  import {
-    client,
-    type SpeakerslistcategoryEnum,
-  } from "$lib/api/rumbleClient/client";
+  import dayjs from 'dayjs';
+  import hotkeys from 'hotkeys-js';
+  import { onMount } from 'svelte';
+  import toast from 'svelte-french-toast';
+  import { m } from '$lib/paraglide/messages';
+  import { serverTime } from '$lib/state/serverTime.svelte';
+  import type { committeeTeamQuery } from '$lib/queries/committeeTeamQuery.svelte';
+  import { client, type SpeakerslistcategoryEnum } from '$lib/api/rumbleClient/client';
 
   type List =
     | NonNullable<
-        Awaited<ReturnType<typeof committeeTeamQuery>>["activeAgendaItem"]
-      >["speakersList"][number]
+        Awaited<ReturnType<typeof committeeTeamQuery>>['activeAgendaItem']
+      >['speakersList'][number]
     | null;
 
   interface Props {
@@ -89,36 +86,36 @@
         client.mutate.updateSpeakersList({
           __args: {
             id: speakersList.id,
-            startTimestamp: serverTime.value.toDate(),
+            startTimestamp: serverTime.value.toDate()
           },
           id: true,
           speakingTime: true,
-          startTimestamp: true,
+          startTimestamp: true
         }),
         client.mutate.updateSpeakersList({
           __args: {
             id: otherList.id,
             timeLeft:
-              otherList.type === "SPEAKERS_LIST"
+              otherList.type === 'SPEAKERS_LIST'
                 ? speakersList.speakingTime
                 : otherList.speakingTime,
             startTimestamp: serverTime.value.toDate(),
-            stopTimer: true,
+            stopTimer: true
           },
           id: true,
           speakingTime: true,
-          startTimestamp: true,
-        }),
+          startTimestamp: true
+        })
       ]);
     } else {
       await client.mutate.updateSpeakersList({
         __args: {
           id: speakersList.id,
-          startTimestamp: serverTime.value.toDate(),
+          startTimestamp: serverTime.value.toDate()
         },
         id: true,
         speakingTime: true,
-        startTimestamp: true,
+        startTimestamp: true
       });
     }
   };
@@ -129,13 +126,13 @@
     await UpdateSpeakersListTimingsMutation.mutate({
       speakersListId: speakersList.id,
       timeLeft:
-        dayjs(speakersList.startTimestamp).diff(serverTime.value, "seconds") +
+        dayjs(speakersList.startTimestamp).diff(serverTime.value, 'seconds') +
         speakersList.timeLeft,
-      stopTimer: true,
+      stopTimer: true
     }).then((r) => {
       if (r.errors) {
         toast.error(m.errorUpdatingTimer());
-        console.error("Error starting timer:", r.errors);
+        console.error('Error starting timer:', r.errors);
       }
     });
   };
@@ -146,14 +143,12 @@
     await UpdateSpeakersListTimingsMutation.mutate({
       speakersListId: speakersList.id,
       timeLeft: speakersList.speakingTime,
-      startTimestamp: speakersList.startTimestamp
-        ? serverTime.value.toDate()
-        : undefined,
-      stopTimer: !speakersList.startTimestamp,
+      startTimestamp: speakersList.startTimestamp ? serverTime.value.toDate() : undefined,
+      stopTimer: !speakersList.startTimestamp
     }).then((r) => {
       if (r.errors) {
         toast.error(m.errorUpdatingTimer());
-        console.error("Error starting timer:", r.errors);
+        console.error('Error starting timer:', r.errors);
       }
     });
   };
@@ -163,22 +158,22 @@
 
     await UpdateSpeakersListTimingsMutation.mutate({
       speakersListId: speakersList.id,
-      timeLeft: speakersList.timeLeft + delta,
+      timeLeft: speakersList.timeLeft + delta
     }).then((r) => {
       if (r.errors) {
         toast.error(m.errorUpdatingTimer());
-        console.error("Error starting timer:", r.errors);
+        console.error('Error starting timer:', r.errors);
       }
     });
   };
 
   onMount(() => {
-    hotkeys("space, shift+space, alt+r, alt+shift+r", (event, handler) => {
+    hotkeys('space, shift+space, alt+r, alt+shift+r', (event, handler) => {
       event.preventDefault();
       if (!speakersList?.speakers?.length) return;
       switch (handler.key) {
-        case "space":
-          if (type === "SPEAKERS_LIST") {
+        case 'space':
+          if (type === 'SPEAKERS_LIST') {
             if (timerRunning) {
               stopTimer();
             } else {
@@ -186,9 +181,9 @@
             }
           }
           break;
-        case "shift+space":
-          if (type === "COMMENT_LIST") {
-            console.log("Start /Stop Timer Comment List");
+        case 'shift+space':
+          if (type === 'COMMENT_LIST') {
+            console.log('Start /Stop Timer Comment List');
             if (timerRunning) {
               stopTimer();
             } else {
@@ -196,15 +191,15 @@
             }
           }
           break;
-        case "alt+r":
-          if (type === "SPEAKERS_LIST") {
-            console.log("Reset Timer Speakers List");
+        case 'alt+r':
+          if (type === 'SPEAKERS_LIST') {
+            console.log('Reset Timer Speakers List');
             resetTimer();
           }
           break;
-        case "alt+shift+r":
-          if (type === "COMMENT_LIST") {
-            console.log("Reset Timer Comment List");
+        case 'alt+shift+r':
+          if (type === 'COMMENT_LIST') {
+            console.log('Reset Timer Comment List');
             resetTimer();
           }
           break;
@@ -215,9 +210,8 @@
 
 <div class="flex gap-2">
   <button
-    class="btn btn-lg join-item flex flex-1 gap-2
-			{(!speakersList?.speakers?.length && 'btn-disabled') ||
-      (timerRunning ? 'bg-error' : 'bg-success')}"
+    class="btn join-item flex flex-1 gap-2 btn-lg
+			{(!speakersList?.speakers?.length && 'btn-disabled') || (timerRunning ? 'bg-error' : 'bg-success')}"
     onclick={timerRunning ? stopTimer : startTimer}
   >
     {#if timerRunning}
@@ -227,16 +221,16 @@
     {/if}
     {m.timer()}
     <span class="kbd text-base-content">
-      {#if type === "COMMENT_LIST"}
+      {#if type === 'COMMENT_LIST'}
         ⇧ ␣
-      {:else if type === "SPEAKERS_LIST"}
+      {:else if type === 'SPEAKERS_LIST'}
         ␣
       {/if}
     </span>
   </button>
   <div class="join">
     <button
-      class="btn btn-lg join-item flex gap-2
+      class="btn join-item flex gap-2 btn-lg
 				{!speakersList?.speakers?.length ? 'btn-disabled' : 'btn-square'}"
       aria-label="remove time"
       onclick={() => changeTimer(-10)}
@@ -244,21 +238,21 @@
       <i class="fas fa-minus"></i>
     </button>
     <button
-      class="btn btn-lg join-item flex gap-2
+      class="btn join-item flex gap-2 btn-lg
 				{!speakersList?.speakers?.length ? 'btn-disabled' : ''}"
       onclick={resetTimer}
     >
       <i class="fas fa-rotate-left"></i>
       <span class="kbd text-base-content">
-        {#if type === "COMMENT_LIST"}
+        {#if type === 'COMMENT_LIST'}
           ⌥ ⇧ R
-        {:else if type === "SPEAKERS_LIST"}
+        {:else if type === 'SPEAKERS_LIST'}
           ⌥ R
         {/if}
       </span>
     </button>
     <button
-      class="btn btn-lg join-item flex gap-2
+      class="btn join-item flex gap-2 btn-lg
 				{!speakersList?.speakers?.length ? 'btn-disabled' : 'btn-square'}"
       aria-label="add time"
       onclick={() => changeTimer(10)}

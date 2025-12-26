@@ -1,10 +1,4 @@
-import {
-  abilityBuilder,
-  countQuery,
-  object,
-  query,
-  whereArg,
-} from "$api/rumble";
+import { abilityBuilder, countQuery, object, query, whereArg } from '$api/rumble';
 
 // abilityBuilder.conferenceMember.allow("read").when(({ mustBeLoggedIn }) => {
 //   const user = mustBeLoggedIn();
@@ -13,14 +7,14 @@ import {
 //   }
 // });
 
-const ref = object({ table: "conferenceMember" });
-query({ table: "conferenceMember" });
+const ref = object({ table: 'conferenceMember' });
+query({ table: 'conferenceMember' });
 countQuery({
-  table: "conferenceMember",
+  table: 'conferenceMember'
 });
 // const pubsub = rumblePubsub({ table: "conferenceMember" });
 
 export const ConferenceMemberWhereInput = whereArg({
-  table: "conferenceMember",
+  table: 'conferenceMember'
 });
 export const ConferenceMemberRef = ref;

@@ -1,10 +1,10 @@
-import { page } from "$app/state";
-import { client } from "$lib/api/rumbleClient/client";
+import { page } from '$app/state';
+import { client } from '$lib/api/rumbleClient/client';
 
 export const committeePresentationQuery = () =>
   client.liveQuery.committee({
     __args: {
-      id: page.params.committeeId!,
+      id: page.params.committeeId!
     },
     id: true,
     abbreviation: true,
@@ -40,9 +40,9 @@ export const committeePresentationQuery = () =>
               regionalGroup: true,
               alpha2Code: true,
               alpha3Code: true,
-              faIcon: true,
+              faIcon: true
             },
-            present: true,
+            present: true
           },
           conferenceMember: {
             id: true,
@@ -53,11 +53,11 @@ export const committeePresentationQuery = () =>
               regionalGroup: true,
               alpha2Code: true,
               alpha3Code: true,
-              faIcon: true,
-            },
-          },
-        },
-      },
+              faIcon: true
+            }
+          }
+        }
+      }
     },
     whiteboardContent: true,
     members: {
@@ -70,8 +70,8 @@ export const committeePresentationQuery = () =>
         alpha2Code: true,
         alpha3Code: true,
         regionalGroup: true,
-        faIcon: true,
-      },
+        faIcon: true
+      }
     },
     conference: {
       uniqueConferenceMembers: {
@@ -83,8 +83,8 @@ export const committeePresentationQuery = () =>
           regionalGroup: true,
           alpha2Code: true,
           alpha3Code: true,
-          faIcon: true,
-        },
-      },
-    },
+          faIcon: true
+        }
+      }
+    }
   });

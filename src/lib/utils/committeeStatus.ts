@@ -1,52 +1,50 @@
-import type { CommitteestatusEnum } from "$lib/api/rumbleClient/client";
-import * as m from "$lib/paraglide/messages.js";
+import type { CommitteestatusEnum } from '$lib/api/rumbleClient/client';
+import * as m from '$lib/paraglide/messages.js';
 
 export function translateCommitteeStatusText(
   category: CommitteestatusEnum,
-  overwriteText?: string,
+  overwriteText?: string
 ): string {
   if (overwriteText) return overwriteText;
   switch (category) {
-    case "FORMAL":
+    case 'FORMAL':
       return m.formalDebate();
-    case "INFORMAL":
+    case 'INFORMAL':
       return m.informalCaucus();
-    case "PAUSE":
+    case 'PAUSE':
       return m.pause();
-    case "SUSPENSION":
+    case 'SUSPENSION':
       return m.suspension();
     default:
-      return "";
+      return '';
   }
 }
 
 export function getCommitteeStatusIcon(category: CommitteestatusEnum) {
   switch (category) {
-    case "FORMAL":
-      return "podium";
-    case "INFORMAL":
-      return "comments";
-    case "PAUSE":
-      return "mug-hot";
-    case "SUSPENSION":
-      return "forward-step";
+    case 'FORMAL':
+      return 'podium';
+    case 'INFORMAL':
+      return 'comments';
+    case 'PAUSE':
+      return 'mug-hot';
+    case 'SUSPENSION':
+      return 'forward-step';
     default:
-      return "question";
+      return 'question';
   }
 }
 
-export function getCommitteeStatusBackground(
-  category: CommitteeStatusEnum$options,
-) {
+export function getCommitteeStatusBackground(category: CommitteeStatusEnum$options) {
   switch (category) {
-    case "FORMAL":
-      return "bg-base-200";
-    case "INFORMAL":
-      return "bg-error";
-    case "PAUSE":
-      return "bg-warning";
-    case "SUSPENSION":
-      return "bg-info";
+    case 'FORMAL':
+      return 'bg-base-200';
+    case 'INFORMAL':
+      return 'bg-error';
+    case 'PAUSE':
+      return 'bg-warning';
+    case 'SUSPENSION':
+      return 'bg-info';
     default:
       return undefined;
   }

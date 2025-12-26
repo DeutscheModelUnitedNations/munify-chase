@@ -1,4 +1,4 @@
-import { client } from "$lib/api/rumbleClient/client";
+import { client } from '$lib/api/rumbleClient/client';
 
 export const authenticatedUser = async () =>
   client.query.me({
@@ -7,5 +7,5 @@ export const authenticatedUser = async () =>
     given_name: true,
     locale: true,
     preferred_username: true,
-    sub: true,
+    sub: true
   });

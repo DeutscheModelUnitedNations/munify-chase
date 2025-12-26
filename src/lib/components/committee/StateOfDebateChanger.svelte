@@ -1,10 +1,10 @@
 <script lang="ts">
-  import toast from "svelte-french-toast";
-  import stateOfDebateTemplates from "$lib/data/stateOfDebateTemplates";
-  import { m } from "$lib/paraglide/messages";
-  import { promiseToastStrings } from "$lib/utils/toast";
-  import Combobox from "../Combobox.svelte";
-  import { client } from "$lib/api/rumbleClient/client";
+  import toast from 'svelte-french-toast';
+  import stateOfDebateTemplates from '$lib/data/stateOfDebateTemplates';
+  import { m } from '$lib/paraglide/messages';
+  import { promiseToastStrings } from '$lib/utils/toast';
+  import Combobox from '../Combobox.svelte';
+  import { client } from '$lib/api/rumbleClient/client';
 
   interface Props {
     committeeId: string;
@@ -14,10 +14,10 @@
 
   const { committeeId, oldStateOfDebate, abort }: Props = $props();
 
-  let value = $state(oldStateOfDebate ?? "");
+  let value = $state(oldStateOfDebate ?? '');
 
   const presets = stateOfDebateTemplates.map((preset) => ({
-    label: preset,
+    label: preset
   }));
 
   const submitState = async () => {
@@ -25,12 +25,12 @@
       client.mutate.updateCommittee({
         __args: {
           id: committeeId,
-          stateOfDebate: value,
+          stateOfDebate: value
         },
         id: true,
-        stateOfDebate: true,
+        stateOfDebate: true
       }),
-      promiseToastStrings(m.stateOfDebate(), "update"),
+      promiseToastStrings(m.stateOfDebate(), 'update')
     );
   };
 </script>
@@ -43,9 +43,7 @@
     placeholder={m.stateOfDebate()}
     getStringValue={({ label }) => label}
     filter={(options, v) =>
-      options.filter(({ label }) =>
-        label.toLowerCase().includes(v.toLowerCase()),
-      )}
+      options.filter(({ label }) => label.toLowerCase().includes(v.toLowerCase()))}
   >
     {#snippet ListItem(option)}
       <div class="flex items-center gap-2">
@@ -56,9 +54,9 @@
 
     {#snippet AdditionalButtons()}
       <button
-        class="btn btn-square input-lg join-item"
+        class="btn input-lg join-item btn-square"
         aria-label="Clear selection"
-        onclick={() => (value = "")}
+        onclick={() => (value = '')}
       >
         <i class="fas fa-trash"></i>
       </button>
@@ -67,7 +65,7 @@
   <div class="flex w-full gap-2">
     {#if abort}
       <button
-        class="btn btn-error btn-lg"
+        class="btn btn-lg btn-error"
         onclick={() => {
           abort();
         }}
@@ -77,7 +75,7 @@
       </button>
     {/if}
     <button
-      class="btn btn-primary btn-lg w-full flex-1"
+      class="btn w-full flex-1 btn-lg btn-primary"
       onclick={() => {
         submitState();
         if (abort) {

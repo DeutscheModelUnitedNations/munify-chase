@@ -1,101 +1,100 @@
-import { GraphQLError } from "graphql";
-import { db, schema } from "$api/db/db";
-import { enum_, schemaBuilder } from "$api/rumble";
-import { importDataSchema } from "$lib/utils/import";
-import { ConferenceRef } from "./conference";
+import { GraphQLError } from 'graphql';
+import { db, schema } from '$api/db/db';
+import { enum_, schemaBuilder } from '$api/rumble';
+import { importDataSchema } from '$lib/utils/import';
+import { ConferenceRef } from './conference';
 
-const Input = schemaBuilder.inputType("ImportData", {
-  description:
-    "Import data. You can find the JSON schema here: /api/schema/import",
+const Input = schemaBuilder.inputType('ImportData', {
+  description: 'Import data. You can find the JSON schema here: /api/schema/import',
   fields: (t) => ({
     id: t.id({ required: true }),
     title: t.string({ required: true }),
     committees: t.field({
       type: [
-        schemaBuilder.inputType("ImportDataCommittee", {
+        schemaBuilder.inputType('ImportDataCommittee', {
           fields: (t) => ({
             id: t.id({ required: true }),
             name: t.string({ required: true }),
-            abbreviation: t.string({ required: true }),
-          }),
-        }),
+            abbreviation: t.string({ required: true })
+          })
+        })
       ],
-      required: true,
+      required: true
     }),
     representations: t.field({
       type: [
-        schemaBuilder.inputType("ImportDataRepresentation", {
+        schemaBuilder.inputType('ImportDataRepresentation', {
           fields: (t) => ({
             id: t.id({ required: true }),
             name: t.string(),
             alpha2Code: t.string(),
             alpha3Code: t.string(),
             representationType: t.field({
-              type: enum_({ tsName: "representationType" }),
-              required: true,
+              type: enum_({ tsName: 'representationType' }),
+              required: true
             }),
             faIcon: t.string(),
             regionalGroup: t.field({
-              type: enum_({ tsName: "regionalGroup" }),
-            }),
-          }),
-        }),
+              type: enum_({ tsName: 'regionalGroup' })
+            })
+          })
+        })
       ],
-      required: true,
+      required: true
     }),
     conferenceMembers: t.field({
       type: [
-        schemaBuilder.inputType("ImportDataConferenceMember", {
+        schemaBuilder.inputType('ImportDataConferenceMember', {
           fields: (t) => ({
             id: t.id({ required: true }),
-            representationId: t.id({ required: true }),
-          }),
-        }),
+            representationId: t.id({ required: true })
+          })
+        })
       ],
-      required: true,
+      required: true
     }),
     committeeMembers: t.field({
       type: [
-        schemaBuilder.inputType("ImportDataCommitteeMember", {
+        schemaBuilder.inputType('ImportDataCommitteeMember', {
           fields: (t) => ({
             id: t.id({ required: true }),
             committeeId: t.id({ required: true }),
-            representationId: t.id({ required: true }),
-          }),
-        }),
+            representationId: t.id({ required: true })
+          })
+        })
       ],
-      required: true,
+      required: true
     }),
     conferenceUsers: t.field({
       type: [
-        schemaBuilder.inputType("ImportDataConferenceUser", {
+        schemaBuilder.inputType('ImportDataConferenceUser', {
           fields: (t) => ({
             id: t.id(),
             conferenceUserType: t.field({
-              type: enum_({ tsName: "conferenceUserType" }),
-              required: true,
+              type: enum_({ tsName: 'conferenceUserType' }),
+              required: true
             }),
             userEmail: t.string({ required: true }),
             conferenceMemberId: t.id(),
-            committeeMemberId: t.id(),
-          }),
-        }),
+            committeeMemberId: t.id()
+          })
+        })
       ],
-      required: true,
+      required: true
     }),
     agendaItems: t.field({
       type: [
-        schemaBuilder.inputType("ImportDataAgendaItem", {
+        schemaBuilder.inputType('ImportDataAgendaItem', {
           fields: (t) => ({
             id: t.id(),
             committeeId: t.id({ required: true }),
-            title: t.string({ required: true }),
-          }),
-        }),
+            title: t.string({ required: true })
+          })
+        })
       ],
-      required: true,
-    }),
-  }),
+      required: true
+    })
+  })
 });
 
 schemaBuilder.mutationFields((t) => ({
@@ -104,12 +103,12 @@ schemaBuilder.mutationFields((t) => ({
     args: {
       data: t.arg({
         type: Input,
-        required: true,
-      }),
+        required: true
+      })
     },
     resolve: async (query, root, args, ctx, info) => {
-      if (!ctx.hasRole("admin")) {
-        throw new GraphQLError("You must have the admin role!");
+      if (!ctx.hasRole('admin')) {
+        throw new GraphQLError('You must have the admin role!');
       }
 
       // we want to ensure consistency between frontend and backend
@@ -120,7 +119,7 @@ schemaBuilder.mutationFields((t) => ({
       await db.transaction(async (tx) => {
         await tx.insert(schema.conference).values({
           id: data.id,
-          title: data.title,
+          title: data.title
         });
 
         await tx.insert(schema.committee).values(
@@ -128,8 +127,8 @@ schemaBuilder.mutationFields((t) => ({
             id: committee.id,
             name: committee.name,
             abbreviation: committee.abbreviation,
-            conferenceId: data.id,
-          })),
+            conferenceId: data.id
+          }))
         );
 
         await tx.insert(schema.representation).values(
@@ -141,24 +140,24 @@ schemaBuilder.mutationFields((t) => ({
             type: representation.representationType,
             faIcon: representation.faIcon,
             regionalGroup: representation.regionalGroup,
-            conferenceId: data.id,
-          })),
+            conferenceId: data.id
+          }))
         );
 
         await tx.insert(schema.conferenceMember).values(
           data.conferenceMembers.map((member) => ({
             id: member.id,
             conferenceId: data.id,
-            representationId: member.representationId,
-          })),
+            representationId: member.representationId
+          }))
         );
 
         await tx.insert(schema.committeeMember).values(
           data.committeeMembers.map((member) => ({
             id: member.id,
             committeeId: member.committeeId,
-            representationId: member.representationId,
-          })),
+            representationId: member.representationId
+          }))
         );
 
         if (data.conferenceUsers.length !== 0) {
@@ -169,21 +168,17 @@ schemaBuilder.mutationFields((t) => ({
               userEmail: user.userEmail,
               conferenceMemberId: user.conferenceMemberId,
               committeeMemberId: user.committeeMemberId,
-              conferenceId: data.id,
-            })),
+              conferenceId: data.id
+            }))
           );
         }
 
         // if the creating user is not found in the dataset, we want to make them an admin anyway!
-        if (
-          !data.conferenceUsers.find(
-            (u) => u.userEmail === ctx.oidc!.user.email,
-          )
-        ) {
+        if (!data.conferenceUsers.find((u) => u.userEmail === ctx.oidc!.user.email)) {
           await tx.insert(schema.conferenceUser).values({
             conferenceId: data.id,
-            conferenceUserType: "ADMIN",
-            userEmail: ctx.oidc!.user.email!,
+            conferenceUserType: 'ADMIN',
+            userEmail: ctx.oidc!.user.email!
           });
         }
 
@@ -195,8 +190,8 @@ schemaBuilder.mutationFields((t) => ({
                 id: item.id ?? undefined,
                 committeeId: item.committeeId,
                 title: item.title,
-                conferenceId: data.id,
-              })),
+                conferenceId: data.id
+              }))
             )
             .returning();
 
@@ -204,12 +199,12 @@ schemaBuilder.mutationFields((t) => ({
             await tx.insert(schema.speakersList).values({
               agendaItemId: agendaItem.id,
               speakingTime: 180,
-              type: "SPEAKERS_LIST",
+              type: 'SPEAKERS_LIST'
             });
             await tx.insert(schema.speakersList).values({
               agendaItemId: agendaItem.id,
               speakingTime: 30,
-              type: "COMMENT_LIST",
+              type: 'COMMENT_LIST'
             });
           }
         }
@@ -217,13 +212,13 @@ schemaBuilder.mutationFields((t) => ({
 
       return db.query.conference.findFirst(
         query(
-          ctx.abilities.conference.filter("read").merge({
+          ctx.abilities.conference.filter('read').merge({
             where: {
-              id: data.id,
-            },
-          }).query.single,
-        ),
+              id: data.id
+            }
+          }).query.single
+        )
       );
-    },
-  }),
+    }
+  })
 }));

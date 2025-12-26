@@ -1,10 +1,10 @@
-import { page } from "$app/state";
-import { client } from "$lib/api/rumbleClient/client";
+import { page } from '$app/state';
+import { client } from '$lib/api/rumbleClient/client';
 
 export const committeeQuery = () =>
   client.liveQuery.committee({
     __args: {
-      id: page.params.conferenceId!,
+      id: page.params.conferenceId!
     },
     id: true,
     abbreviation: true,
@@ -30,8 +30,8 @@ export const committeeQuery = () =>
           regionalGroup: true,
           alpha2Code: true,
           alpha3Code: true,
-          faIcon: true,
-        },
+          faIcon: true
+        }
       }
     },
     members: {
@@ -44,8 +44,8 @@ export const committeeQuery = () =>
         regionalGroup: true,
         alpha2Code: true,
         alpha3Code: true,
-        faIcon: true,
-      },
+        faIcon: true
+      }
     },
     activeAgendaItem: {
       id: true,
@@ -70,9 +70,9 @@ export const committeeQuery = () =>
               regionalGroup: true,
               alpha2Code: true,
               alpha3Code: true,
-              faIcon: true,
+              faIcon: true
             },
-            present: true,
+            present: true
           },
           conferenceMember: {
             id: true,
@@ -83,12 +83,12 @@ export const committeeQuery = () =>
               regionalGroup: true,
               alpha2Code: true,
               alpha3Code: true,
-              faIcon: true,
-            },
+              faIcon: true
+            }
           },
           agendaItems: {
             id: true,
-            title: true,
+            title: true
           },
           members: {
             id: true,
@@ -100,8 +100,8 @@ export const committeeQuery = () =>
               regionalGroup: true,
               alpha2Code: true,
               alpha3Code: true,
-              faIcon: true,
-            },
+              faIcon: true
+            }
           },
           conference: {
             hasModeratedCaucus: true,
@@ -113,11 +113,11 @@ export const committeeQuery = () =>
                 name: true,
                 alpha2Code: true,
                 alpha3Code: true,
-                faIcon: true,
-              },
-            },
-          },
-        },
-      },
-    },
+                faIcon: true
+              }
+            }
+          }
+        }
+      }
+    }
   });

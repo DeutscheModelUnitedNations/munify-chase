@@ -1,18 +1,14 @@
 <script lang="ts">
-  import { liveQuery } from "dexie";
-  import hotkeys from "hotkeys-js";
-  import toast from "svelte-french-toast";
-  import {
-    localDB,
-    type VotingMajority,
-    type VotingOptions,
-  } from "$lib/local-db/localDB";
-  import { m } from "$lib/paraglide/messages";
-  import { sortTranslatedCountries } from "$lib/utils/nationTranslationHelper.svelte";
-  import Modal from "../Modal.svelte";
-  import ScrollingCountryList from "../rollCall/ScrollingCountryList.svelte";
-  import ResultChart from "./ResultChart.svelte";
-  import type { committeeTeamQuery } from "$lib/queries/committeeTeamQuery.svelte";
+  import { liveQuery } from 'dexie';
+  import hotkeys from 'hotkeys-js';
+  import toast from 'svelte-french-toast';
+  import { localDB, type VotingMajority, type VotingOptions } from '$lib/local-db/localDB';
+  import { m } from '$lib/paraglide/messages';
+  import { sortTranslatedCountries } from '$lib/utils/nationTranslationHelper.svelte';
+  import Modal from '../Modal.svelte';
+  import ScrollingCountryList from '../rollCall/ScrollingCountryList.svelte';
+  import ResultChart from './ResultChart.svelte';
+  import type { committeeTeamQuery } from '$lib/queries/committeeTeamQuery.svelte';
 
   interface Props {
     active: boolean;
@@ -22,115 +18,91 @@
     withAbstentions?: boolean;
   }
 
-  let {
-    active = $bindable(),
-    committee,
-    voteName,
-    majority,
-    withAbstentions,
-  }: Props = $props();
+  let { active = $bindable(), committee, voteName, majority, withAbstentions }: Props = $props();
 
   let currentIndex = $state(0);
-  let stage = $state<"ROLL_CALL" | "EVALUATION">("ROLL_CALL");
+  let stage = $state<'ROLL_CALL' | 'EVALUATION'>('ROLL_CALL');
 
   const members = committee?.members
-    .filter(
-      (member) =>
-        member.present && member.representation?.type === "DELEGATION",
-    )
-    .sort((a, b) =>
-      sortTranslatedCountries(a.representation!, b.representation!),
-    );
+    .filter((member) => member.present && member.representation?.type === 'DELEGATION')
+    .sort((a, b) => sortTranslatedCountries(a.representation!, b.representation!));
 
   const majorityAmount = $derived.by(() => {
     switch (majority) {
-      case "SIMPLE":
+      case 'SIMPLE':
         return $committee?.simpleMajority ?? 0;
-      case "TWO_THIRDS":
+      case 'TWO_THIRDS':
         return $committee?.twoThirdsMajority ?? 0;
       default:
         return 0;
     }
   });
 
-  const chairSettings = liveQuery(() =>
-    localDB.committeeSettings.get($committee.id),
-  );
-  const rollCallVotingAbstain = $derived(
-    $chairSettings?.rollCallVotingAbstain ?? [],
-  );
+  const chairSettings = liveQuery(() => localDB.committeeSettings.get($committee.id));
+  const rollCallVotingAbstain = $derived($chairSettings?.rollCallVotingAbstain ?? []);
   const rollCallVotingPro = $derived($chairSettings?.rollCallVotingPro ?? []);
   const rollCallVotingCon = $derived($chairSettings?.rollCallVotingCon ?? []);
 
   const scrollingListIcons = $derived.by(() => {
     return members.map((member) => {
-      let icon: string = "";
-      let color: "info" | "success" | "error" = "info";
+      let icon: string = '';
+      let color: 'info' | 'success' | 'error' = 'info';
       if (rollCallVotingAbstain?.includes(member.id)) {
-        icon = "fa-circle";
-        color = "info";
+        icon = 'fa-circle';
+        color = 'info';
       } else if (rollCallVotingPro?.includes(member.id)) {
-        icon = "fa-circle-plus";
-        color = "success";
+        icon = 'fa-circle-plus';
+        color = 'success';
       } else if (rollCallVotingCon?.includes(member.id)) {
-        icon = "fa-circle-minus";
-        color = "error";
+        icon = 'fa-circle-minus';
+        color = 'error';
       } else {
-        icon = "fa-question"; // Default icon if no vote is set
+        icon = 'fa-question'; // Default icon if no vote is set
       }
       return {
         id: member.id,
         icon,
-        color,
+        color
       };
     });
   });
 
-  const changeVote = async (
-    member: (typeof members)[number],
-    vote: VotingOptions,
-  ) => {
+  const changeVote = async (member: (typeof members)[number], vote: VotingOptions) => {
     if (!$committee) return;
     if (
-      [
-        ...rollCallVotingPro,
-        ...rollCallVotingCon,
-        ...rollCallVotingAbstain,
-      ].includes(member.id)
+      [...rollCallVotingPro, ...rollCallVotingCon, ...rollCallVotingAbstain].includes(member.id)
     ) {
       await localDB.committeeSettings.update($committee.id, {
         rollCallVotingPro: rollCallVotingPro?.filter((id) => id !== member.id),
         rollCallVotingCon: rollCallVotingCon?.filter((id) => id !== member.id),
-        rollCallVotingAbstain: rollCallVotingAbstain?.filter(
-          (id) => id !== member.id,
-        ),
+        rollCallVotingAbstain: rollCallVotingAbstain?.filter((id) => id !== member.id)
       });
     }
     switch (vote) {
-      case "PRO": {
+      case 'PRO': {
         const updatedPro = rollCallVotingPro?.includes(member.id)
           ? rollCallVotingPro
           : [...(rollCallVotingPro ?? []), member.id];
         await localDB.committeeSettings.update($committee.id, {
-          rollCallVotingPro: updatedPro,
+          rollCallVotingPro: updatedPro
         });
         break;
       }
-      case "CON": {
+      case 'CON': {
         const updatedCon = rollCallVotingCon?.includes(member.id)
           ? rollCallVotingCon
           : [...(rollCallVotingCon ?? []), member.id];
         await localDB.committeeSettings.update($committee.id, {
-          rollCallVotingCon: updatedCon,
+          rollCallVotingCon: updatedCon
         });
         break;
       }
-      case "ABSTAIN": {
+      case 'ABSTAIN': {
         const updatedAbstain = rollCallVotingAbstain?.includes(member.id)
           ? rollCallVotingAbstain
           : [...(rollCallVotingAbstain ?? []), member.id];
         await localDB.committeeSettings.update($committee.id, {
-          rollCallVotingAbstain: updatedAbstain,
+          rollCallVotingAbstain: updatedAbstain
         });
         break;
       }
@@ -143,7 +115,7 @@
       await changeVote(member, vote);
 
       if (currentIndex === members.length - 1) {
-        stage = "EVALUATION";
+        stage = 'EVALUATION';
       }
       currentIndex = (currentIndex + 1) % members.length;
     } else {
@@ -153,39 +125,39 @@
 
   $effect(() => {
     if (active) {
-      hotkeys("j, k, l, esc", "rollCallVote", (event, handler) => {
+      hotkeys('j, k, l, esc', 'rollCallVote', (event, handler) => {
         event.preventDefault();
         switch (handler.key) {
-          case "k":
-            if (stage === "ROLL_CALL" && withAbstentions) {
-              setVote("ABSTAIN");
+          case 'k':
+            if (stage === 'ROLL_CALL' && withAbstentions) {
+              setVote('ABSTAIN');
             }
             break;
-          case "l":
-            if (stage === "ROLL_CALL") {
-              setVote("PRO");
+          case 'l':
+            if (stage === 'ROLL_CALL') {
+              setVote('PRO');
             }
             break;
-          case "j":
-            if (stage === "ROLL_CALL") {
-              setVote("CON");
+          case 'j':
+            if (stage === 'ROLL_CALL') {
+              setVote('CON');
             }
             break;
-          case "esc":
+          case 'esc':
             active = false;
             break;
         }
       });
-      hotkeys.setScope("rollCallVote");
+      hotkeys.setScope('rollCallVote');
     } else {
-      hotkeys.deleteScope("rollCallVote");
+      hotkeys.deleteScope('rollCallVote');
     }
   });
 
   $effect(() => {
     if (!$committee) return;
     if (active) {
-      stage = "ROLL_CALL";
+      stage = 'ROLL_CALL';
       currentIndex = 0;
       localDB.committeeSettings.update($committee.id, {
         rollCallVotingActive: true,
@@ -195,7 +167,7 @@
         rollCallVotingCon: [],
         rollCallVotingAbstain: [],
         votingWithAbstentions: withAbstentions,
-        votingMajorityAmount: majorityAmount,
+        votingMajorityAmount: majorityAmount
       });
     } else {
       localDB.committeeSettings.update($committee.id, {
@@ -206,7 +178,7 @@
         votingVoteName: null,
         votingMajority: null,
         votingWithAbstentions: false,
-        votingMajorityAmount: null,
+        votingMajorityAmount: null
       });
     }
   });
@@ -224,20 +196,15 @@
     showNumbers
   />
 
-  {#if stage === "ROLL_CALL"}
+  {#if stage === 'ROLL_CALL'}
     <div class="h-2"></div>
 
-    <ScrollingCountryList
-      {members}
-      {currentIndex}
-      icons={scrollingListIcons}
-      height="50vh"
-    />
+    <ScrollingCountryList {members} {currentIndex} icons={scrollingListIcons} height="50vh" />
 
     <div class="modal-action flex-col justify-around">
       <div class="flex flex-row justify-center gap-4">
         <button
-          class="btn btn-outline btn-lg join-item"
+          class="btn join-item btn-outline btn-lg"
           aria-label="Move up"
           onclick={() => {
             currentIndex = (currentIndex - 1 + members.length) % members.length;
@@ -248,9 +215,9 @@
       </div>
       <div class="flex flex-row justify-center gap-4">
         <button
-          class="btn btn-error btn-lg flex gap-2"
+          class="btn flex gap-2 btn-lg btn-error"
           onclick={() => {
-            setVote("CON");
+            setVote('CON');
           }}
         >
           <i class="fas fa-circle-minus"></i>
@@ -259,9 +226,9 @@
         </button>
         {#if withAbstentions}
           <button
-            class="btn btn-info btn-lg flex gap-2"
+            class="btn flex gap-2 btn-lg btn-info"
             onclick={() => {
-              setVote("ABSTAIN");
+              setVote('ABSTAIN');
             }}
           >
             <i class="fas fa-circle"></i>
@@ -270,9 +237,9 @@
           </button>
         {/if}
         <button
-          class="btn btn-success btn-lg flex gap-2"
+          class="btn flex gap-2 btn-lg btn-success"
           onclick={() => {
-            setVote("PRO");
+            setVote('PRO');
           }}
         >
           <i class="fas fa-circle-plus"></i>
@@ -284,7 +251,7 @@
   {:else}
     <div class="modal-action">
       <button
-        class="btn btn-lg flex gap-2"
+        class="btn flex gap-2 btn-lg"
         onclick={() => {
           active = false;
         }}
@@ -296,10 +263,10 @@
     </div>
   {/if}
 
-  <div class="absolute right-3 top-3">
+  <div class="absolute top-3 right-3">
     <button
       aria-label="Close modal"
-      class="btn btn-ghost btn-circle btn-sm"
+      class="btn btn-circle btn-ghost btn-sm"
       onclick={() => {
         active = false;
       }}

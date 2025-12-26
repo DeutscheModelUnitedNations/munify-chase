@@ -1,10 +1,10 @@
-import { page } from "$app/state";
-import { client } from "$lib/api/rumbleClient/client";
+import { page } from '$app/state';
+import { client } from '$lib/api/rumbleClient/client';
 
 export const committeeOverviewQuery = () =>
   client.liveQuery.conference({
     __args: {
-      id: page.params.conferenceId!,
+      id: page.params.conferenceId!
     },
     id: true,
     committees: {
@@ -14,10 +14,10 @@ export const committeeOverviewQuery = () =>
       lastResolutionAdoptionDate: true,
       activeAgendaItem: {
         id: true,
-        title: true,
+        title: true
       },
       status: true,
       statusHeadline: true,
-      statusUntil: true,
-    },
+      statusUntil: true
+    }
   });

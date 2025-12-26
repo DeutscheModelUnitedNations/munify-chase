@@ -1,15 +1,15 @@
-import { assertFindFirstExists } from "@m1212e/rumble";
-import { and, eq } from "drizzle-orm";
-import { GraphQLError } from "graphql";
-import { db, schema } from "$api/db/db";
+import { assertFindFirstExists } from '@m1212e/rumble';
+import { and, eq } from 'drizzle-orm';
+import { GraphQLError } from 'graphql';
+import { db, schema } from '$api/db/db';
 import {
   abilityBuilder,
   countQuery,
   object,
   query,
   pubsub as rumblePubsub,
-  schemaBuilder,
-} from "$api/rumble";
+  schemaBuilder
+} from '$api/rumble';
 
 // abilityBuilder.speakersList
 //   .allow(["read", "update", "delete"])
@@ -21,17 +21,17 @@ import {
 //   });
 
 const ref = object({
-  table: "speakersList",
+  table: 'speakersList'
 });
 export const SpeakersListRef = ref;
 
-const speakersListPubSub = rumblePubsub({ table: "speakersList" });
+const speakersListPubSub = rumblePubsub({ table: 'speakersList' });
 
 query({
-  table: "speakersList",
+  table: 'speakersList'
 });
 countQuery({
-  table: "speakersList",
+  table: 'speakersList'
 });
 
 schemaBuilder.mutationFields((t) => {
@@ -43,19 +43,17 @@ schemaBuilder.mutationFields((t) => {
         speakingTime: t.arg.int(),
         timeLeft: t.arg.int(),
         startTimestamp: t.arg({
-          type: "DateTime",
+          type: 'DateTime'
         }),
         stopTimer: t.arg({
-          type: "Boolean",
-          defaultValue: false,
+          type: 'Boolean',
+          defaultValue: false
         }),
-        isClosed: t.arg.boolean(),
+        isClosed: t.arg.boolean()
       },
       resolve: async (query, root, args, ctx, info) => {
         if (args.startTimestamp && args.stopTimer) {
-          throw new GraphQLError(
-            "startTimestamp and stopTimer are mutually exclusive",
-          );
+          throw new GraphQLError('startTimestamp and stopTimer are mutually exclusive');
         }
 
         await db.transaction(async (tx) => {
@@ -63,16 +61,16 @@ schemaBuilder.mutationFields((t) => {
             const speakersList = await tx.query.speakersList
               .findFirst({
                 where: {
-                  id: args.id,
+                  id: args.id
                 },
                 with: {
                   speakers: {
                     orderBy: {
-                      position: "asc",
+                      position: 'asc'
                     },
-                    limit: 1,
-                  },
-                },
+                    limit: 1
+                  }
+                }
               })
               .then(assertFindFirstExists);
 
@@ -82,7 +80,7 @@ schemaBuilder.mutationFields((t) => {
                 startTimestamp: speakersList.startTimestamp!,
                 speakersListId: speakersList.id,
                 committeeMemberId: speakersList.speakers[0].committeeMemberId,
-                conferenceMemberId: speakersList.speakers[0].conferenceMemberId,
+                conferenceMemberId: speakersList.speakers[0].conferenceMemberId
               });
             }
           }
@@ -92,16 +90,14 @@ schemaBuilder.mutationFields((t) => {
             .set({
               speakingTime: args.speakingTime ?? undefined,
               timeLeft: args.timeLeft ?? undefined,
-              startTimestamp: args.stopTimer
-                ? null
-                : (args.startTimestamp ?? undefined),
-              isClosed: args.isClosed ?? undefined,
+              startTimestamp: args.stopTimer ? null : (args.startTimestamp ?? undefined),
+              isClosed: args.isClosed ?? undefined
             })
             .where(
               and(
                 eq(schema.speakersList.id, args.id),
-                ctx.abilities.speakersList.filter("update").sql.where,
-              ),
+                ctx.abilities.speakersList.filter('update').sql.where
+              )
             );
         });
 
@@ -110,18 +106,18 @@ schemaBuilder.mutationFields((t) => {
         return db.query.speakersList
           .findFirst(
             query(
-              ctx.abilities.speakersList.filter("read").merge({
-                where: { id: args.id },
-              }).query.single,
-            ),
+              ctx.abilities.speakersList.filter('read').merge({
+                where: { id: args.id }
+              }).query.single
+            )
           )
           .then(assertFindFirstExists);
-      },
+      }
     }),
     clearSpeakersList: t.drizzleField({
       type: SpeakersListRef,
       args: {
-        id: t.arg.id({ required: true }),
+        id: t.arg.id({ required: true })
       },
       resolve: async (query, root, args, ctx, info) => {
         const deleted = await db
@@ -129,13 +125,13 @@ schemaBuilder.mutationFields((t) => {
           .where(
             and(
               eq(schema.speakerOnList.speakersListId, args.id),
-              ctx.abilities.speakerOnList.filter("delete").sql.where,
-            ),
+              ctx.abilities.speakerOnList.filter('delete').sql.where
+            )
           )
           .returning();
 
         if (deleted.length > 0) {
-          rumblePubsub({ table: "speakerOnList" }).removed();
+          rumblePubsub({ table: 'speakerOnList' }).removed();
         }
 
         speakersListPubSub.updated(args.id);
@@ -143,13 +139,13 @@ schemaBuilder.mutationFields((t) => {
         return db.query.speakersList
           .findFirst(
             query(
-              ctx.abilities.speakersList.filter("read").merge({
-                where: { id: args.id },
-              }).query.single,
-            ),
+              ctx.abilities.speakersList.filter('read').merge({
+                where: { id: args.id }
+              }).query.single
+            )
           )
           .then(assertFindFirstExists);
-      },
-    }),
+      }
+    })
   };
 });

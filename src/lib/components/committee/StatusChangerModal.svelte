@@ -1,8 +1,8 @@
 <script lang="ts">
-  import hotkeys from "hotkeys-js";
-  import Modal from "../Modal.svelte";
-  import StatusChanger from "./StatusChanger.svelte";
-  import type { CommitteestatusEnum } from "$lib/api/rumbleClient/client";
+  import hotkeys from 'hotkeys-js';
+  import Modal from '../Modal.svelte';
+  import StatusChanger from './StatusChanger.svelte';
+  import type { CommitteestatusEnum } from '$lib/api/rumbleClient/client';
 
   interface Props {
     committeeId: string;
@@ -16,13 +16,13 @@
   let open = $state(false);
 
   $effect(() => {
-    hotkeys("alt+s, esc", (event, handler) => {
+    hotkeys('alt+s, esc', (event, handler) => {
       event.preventDefault();
       switch (handler.key) {
-        case "alt+s":
+        case 'alt+s':
           open = !open;
           break;
-        case "esc":
+        case 'esc':
           open = false;
           break;
       }

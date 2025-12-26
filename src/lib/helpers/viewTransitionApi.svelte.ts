@@ -1,4 +1,4 @@
-import { onNavigate } from "$app/navigation";
+import { onNavigate } from '$app/navigation';
 
 /**
  * Enables the new view transition API.

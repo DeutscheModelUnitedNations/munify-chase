@@ -1,25 +1,25 @@
 <script lang="ts">
-    import type { SpeakerslistcategoryEnum } from "$lib/api/rumbleClient/client";
-  import type { committeeTeamQuery } from "$lib/queries/committeeTeamQuery.svelte";
-  import AddSpeakers from "./AddSpeakers.svelte";
-  import MoreOptions from "./MoreOptions.svelte";
-  import NextSpeech from "./NextSpeech.svelte";
-  import SpeechControls from "./SpeechControls.svelte";
+  import type { SpeakerslistcategoryEnum } from '$lib/api/rumbleClient/client';
+  import type { committeeTeamQuery } from '$lib/queries/committeeTeamQuery.svelte';
+  import AddSpeakers from './AddSpeakers.svelte';
+  import MoreOptions from './MoreOptions.svelte';
+  import NextSpeech from './NextSpeech.svelte';
+  import SpeechControls from './SpeechControls.svelte';
 
   type List =
     | NonNullable<
-        Awaited<ReturnType<typeof committeeTeamQuery>>["activeAgendaItem"]
-      >["speakersList"][number]
+        Awaited<ReturnType<typeof committeeTeamQuery>>['activeAgendaItem']
+      >['speakersList'][number]
     | null;
 
   interface Props {
     committeeId: string;
     type: SpeakerslistcategoryEnum;
-    committeeMembers: Awaited<ReturnType<typeof committeeTeamQuery>>["members"];
+    committeeMembers: Awaited<ReturnType<typeof committeeTeamQuery>>['members'];
     conferenceMembers: NonNullable<
       NonNullable<
-        Awaited<ReturnType<typeof committeeTeamQuery>>["conference"]
-      >["uniqueConferenceMembers"]
+        Awaited<ReturnType<typeof committeeTeamQuery>>['conference']
+      >['uniqueConferenceMembers']
     >;
     speakersList?: List;
     childList?: List;
@@ -33,7 +33,7 @@
     type,
     speakersList,
     childList,
-    otherList,
+    otherList
   }: Props = $props();
 </script>
 

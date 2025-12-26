@@ -1,6 +1,6 @@
-import dayjs from "dayjs";
-import { browser } from "$app/environment";
-import { client } from "$lib/api/rumbleClient/client";
+import dayjs from 'dayjs';
+import { browser } from '$app/environment';
+import { client } from '$lib/api/rumbleClient/client';
 
 export const serverTime = $state({ value: dayjs() });
 
@@ -13,7 +13,7 @@ const fetchRemoteTime = async () => {
 };
 
 const updateLocalTime = () => {
-  serverTime.value = dayjs().add(lastCalculatedDelta, "millisecond");
+  serverTime.value = dayjs().add(lastCalculatedDelta, 'millisecond');
 };
 
 if (browser) {

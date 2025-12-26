@@ -1,22 +1,19 @@
 <script lang="ts">
-  import toast from "svelte-french-toast";
-  import { invalidateAll } from "$app/navigation";
-  import { m } from "$lib/paraglide/messages";
-  import { promiseToastStrings } from "$lib/utils/toast";
-  import { client } from "$lib/api/rumbleClient/client";
-  import type { committeeTeamQuery } from "$lib/queries/committeeTeamQuery.svelte";
+  import toast from 'svelte-french-toast';
+  import { m } from '$lib/paraglide/messages';
+  import { promiseToastStrings } from '$lib/utils/toast';
+  import { client } from '$lib/api/rumbleClient/client';
+  import type { committeeTeamQuery } from '$lib/queries/committeeTeamQuery.svelte';
 
   interface Props {
     committeeId: string;
-    activeAgendaItem?: Awaited<
-      ReturnType<typeof committeeTeamQuery>
-    >["activeAgendaItem"];
-    agendaItems?: Awaited<ReturnType<typeof committeeTeamQuery>>["agendaItems"];
+    activeAgendaItem?: Awaited<ReturnType<typeof committeeTeamQuery>>['activeAgendaItem'];
+    agendaItems?: Awaited<ReturnType<typeof committeeTeamQuery>>['agendaItems'];
   }
 
   const { committeeId, activeAgendaItem, agendaItems }: Props = $props();
 
-  let value = $state(activeAgendaItem?.id ?? "");
+  let value = $state(activeAgendaItem?.id ?? '');
 
   const update = async () => {
     if (value === activeAgendaItem?.id) {
@@ -26,15 +23,15 @@
       client.mutate.updateCommittee({
         __args: {
           id: committeeId,
-          activeAgendaItemId: value,
+          activeAgendaItemId: value
         },
         id: true,
         activeAgendaItem: {
           id: true,
-          title: true,
-        },
+          title: true
+        }
       }),
-      promiseToastStrings(m.agendaItem(), "update"),
+      promiseToastStrings(m.agendaItem(), 'update')
     );
   };
 
@@ -46,22 +43,18 @@
       client.mutate.createAgendaItem({
         __args: {
           committeeId,
-          title,
+          title
         },
         id: true,
-        title: true,
+        title: true
       }),
-      promiseToastStrings(m.agendaItem(), "create"),
+      promiseToastStrings(m.agendaItem(), 'create')
     );
   };
 </script>
 
 <div class="join">
-  <select
-    class="select select-lg join-item w-full"
-    onchange={update}
-    bind:value
-  >
+  <select class="select join-item w-full select-lg" onchange={update} bind:value>
     <option disabled selected={!activeAgendaItem}>
       {m.selectAgendaItem()}
     </option>
@@ -71,11 +64,7 @@
       </option>
     {/each}
   </select>
-  <button
-    class="btn join-item btn-lg"
-    onclick={addAgendaItem}
-    aria-label={m.addAgendaItem()}
-  >
+  <button class="btn join-item btn-lg" onclick={addAgendaItem} aria-label={m.addAgendaItem()}>
     <i class="fas fa-plus"></i>
   </button>
 </div>

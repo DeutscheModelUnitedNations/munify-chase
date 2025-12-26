@@ -1,9 +1,9 @@
 <script lang="ts">
-  import CommitteeGrid from "$lib/components/CommitteeGrid.svelte";
-  import CurrentTime from "$lib/components/CurrentTime.svelte";
-  import ThemeSwitcher from "$lib/components/ThemeSwitcher.svelte";
-  import * as m from "$lib/paraglide/messages.js";
-  import { committeeOverviewQuery } from "$lib/queries/committeeOverview.svelte";
+  import CommitteeGrid from '$lib/components/CommitteeGrid.svelte';
+  import CurrentTime from '$lib/components/CurrentTime.svelte';
+  import ThemeSwitcher from '$lib/components/ThemeSwitcher.svelte';
+  import * as m from '$lib/paraglide/messages.js';
+  import { committeeOverviewQuery } from '$lib/queries/committeeOverview.svelte';
 
   const conference = await committeeOverviewQuery();
 </script>
@@ -15,7 +15,7 @@
   </div>
   <div class="flex-none">
     <ThemeSwitcher />
-    <a class="btn btn-ghost btn-square" href="/app" aria-label="Go back to app">
+    <a class="btn btn-square btn-ghost" href="/app" aria-label="Go back to app">
       <i class="fa-duotone fa-home"></i>
     </a>
   </div>

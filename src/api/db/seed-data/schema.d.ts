@@ -44,12 +44,7 @@ export interface SeedData {
     /**
      * Type of the conference user
      */
-    conferenceUserType:
-      | "ADMIN"
-      | "TEAM"
-      | "SPECTATOR"
-      | "DELEGATE"
-      | "NON_STATE_ACTOR";
+    conferenceUserType: 'ADMIN' | 'TEAM' | 'SPECTATOR' | 'DELEGATE' | 'NON_STATE_ACTOR';
   }[];
   conferences: {
     /**
@@ -68,7 +63,7 @@ export interface SeedData {
       /**
        * Type of the conference user
        */
-      conferenceUserType: "ADMIN" | "TEAM";
+      conferenceUserType: 'ADMIN' | 'TEAM';
     }[];
     committees: {
       /**
@@ -99,7 +94,7 @@ export interface SeedData {
       /**
        * Type of the custom representation
        */
-      type: "NSA" | "UN";
+      type: 'NSA' | 'UN';
       /**
        * Font Awesome icon class for the custom representation
        */

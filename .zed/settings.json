@@ -1,0 +1,31 @@
+{
+  "languages": {
+    "Svelte": {
+      "hard_tabs": false,
+      "tab_size": 2,
+      "formatter": "prettier",
+      "language_servers": ["!biome", "..."]
+    },
+    "TypeScript": {
+      "hard_tabs": false,
+      "tab_size": 2,
+      "formatter": "prettier",
+      "language_servers": ["!biome", "..."]
+    },
+    "CSS": {
+      "hard_tabs": false,
+      "tab_size": 2,
+      "formatter": "prettier",
+      "language_servers": ["!biome", "..."]
+    },
+    "JSON": {
+      "hard_tabs": false,
+      "tab_size": 2,
+      "formatter": "prettier",
+      "language_servers": ["!biome", "..."]
+    }
+  },
+  "prettier": {
+    "allowed": true
+  }
+}

@@ -1,10 +1,10 @@
 <script lang="ts">
-  import type { VotingMajority } from "$lib/local-db/localDB";
-  import { m } from "$lib/paraglide/messages";
-  import type { committeeTeamQuery } from "$lib/queries/committeeTeamQuery.svelte";
-  import Tabs from "../Tabs.svelte";
-  import RollCallVotingChair from "./RollCallVotingChair.svelte";
-  import ShowOfHandsVotingChair from "./ShowOfHandsVotingChair.svelte";
+  import type { VotingMajority } from '$lib/local-db/localDB';
+  import { m } from '$lib/paraglide/messages';
+  import type { committeeTeamQuery } from '$lib/queries/committeeTeamQuery.svelte';
+  import Tabs from '../Tabs.svelte';
+  import RollCallVotingChair from './RollCallVotingChair.svelte';
+  import ShowOfHandsVotingChair from './ShowOfHandsVotingChair.svelte';
 
   interface Props {
     committee: Awaited<ReturnType<typeof committeeTeamQuery>>;
@@ -12,83 +12,64 @@
 
   const { committee }: Props = $props();
 
-  let voteType: "SHOW_OF_HANDS" | "ROLL_CALL" = $state("SHOW_OF_HANDS");
-  let voteName: string = $state("");
-  let majority: VotingMajority = $state("SIMPLE");
+  let voteType: 'SHOW_OF_HANDS' | 'ROLL_CALL' = $state('SHOW_OF_HANDS');
+  let voteName: string = $state('');
+  let majority: VotingMajority = $state('SIMPLE');
   let withAbstentions: boolean = $state(false);
 
   let showOfHandModalOpen: boolean = $state(false);
   let rollCallModalOpen: boolean = $state(false);
 
   const voteTypeTabs: {
-    id: "SHOW_OF_HANDS" | "ROLL_CALL";
+    id: 'SHOW_OF_HANDS' | 'ROLL_CALL';
     label: string;
     faIcon: string;
   }[] = [
-    { id: "SHOW_OF_HANDS", label: m.showOfHandsVoting(), faIcon: "hand-wave" },
-    { id: "ROLL_CALL", label: m.rollCallVoting(), faIcon: "list-check" },
+    { id: 'SHOW_OF_HANDS', label: m.showOfHandsVoting(), faIcon: 'hand-wave' },
+    { id: 'ROLL_CALL', label: m.rollCallVoting(), faIcon: 'list-check' }
   ];
 
   const majorityTabs: {
     id: VotingMajority;
     label: string;
   }[] = [
-    { id: "SIMPLE", label: m.simpleMajority() },
-    { id: "TWO_THIRDS", label: m.twoThirdsMajority() },
+    { id: 'SIMPLE', label: m.simpleMajority() },
+    { id: 'TWO_THIRDS', label: m.twoThirdsMajority() }
   ];
 
   const withAbstentionsTabs = [
     { id: false, label: m.withoutAbstentions() },
-    { id: true, label: m.withAbstentions() },
+    { id: true, label: m.withAbstentions() }
   ];
 </script>
 
 <div class="flex flex-col gap-2">
-  <fieldset
-    class="fieldset bg-base-200 border-base-300 rounded-box w-full border p-4"
-  >
+  <fieldset class="fieldset w-full rounded-box border border-base-300 bg-base-200 p-4">
     <legend class="fieldset-legend">{m.typeOfVoting()}</legend>
-    <Tabs
-      activeTab={voteType}
-      tabs={voteTypeTabs}
-      onTabChange={(tab) => (voteType = tab)}
-    />
+    <Tabs activeTab={voteType} tabs={voteTypeTabs} onTabChange={(tab) => (voteType = tab)} />
   </fieldset>
-  <fieldset
-    class="fieldset bg-base-200 border-base-300 rounded-box w-full border p-4"
-  >
+  <fieldset class="fieldset w-full rounded-box border border-base-300 bg-base-200 p-4">
     <legend class="fieldset-legend">{m.majoritySettings()}</legend>
     <p class="label whitespace-normal">{m.majoritySettingsDescriptions()}</p>
-    <Tabs
-      activeTab={majority}
-      tabs={majorityTabs}
-      onTabChange={(tab) => (majority = tab)}
-    />
+    <Tabs activeTab={majority} tabs={majorityTabs} onTabChange={(tab) => (majority = tab)} />
     <Tabs
       activeTab={withAbstentions}
       tabs={withAbstentionsTabs}
       onTabChange={(tab) => (withAbstentions = tab)}
     />
   </fieldset>
-  <fieldset
-    class="fieldset bg-base-200 border-base-300 rounded-box w-full border p-4"
-  >
+  <fieldset class="fieldset w-full rounded-box border border-base-300 bg-base-200 p-4">
     <legend class="fieldset-legend">{m.voteTitel()}</legend>
-    <input
-      type="text"
-      class="input w-full"
-      placeholder={m.voting()}
-      bind:value={voteName}
-    />
+    <input type="text" class="input w-full" placeholder={m.voting()} bind:value={voteName} />
     <p class="label whitespace-normal">{m.voteTitleDescription()}</p>
   </fieldset>
 
   <button
-    class="btn btn-primary w-full"
+    class="btn w-full btn-primary"
     onclick={() => {
-      if (voteType === "SHOW_OF_HANDS") {
+      if (voteType === 'SHOW_OF_HANDS') {
         showOfHandModalOpen = true;
-      } else if (voteType === "ROLL_CALL") {
+      } else if (voteType === 'ROLL_CALL') {
         rollCallModalOpen = true;
       }
     }}

@@ -1,53 +1,43 @@
 <script lang="ts">
-  import { liveQuery } from "dexie";
-  import { onMount } from "svelte";
-  import Grid, { GridItem } from "svelte-grid-extended";
-  import { browser } from "$app/environment";
-  import emptyStreet from "$lib/assets/undraw/empty_street.svg";
-  import AbbreviationInfoBox from "$lib/components/AbbreviationInfoBox.svelte";
-  import AdoptionConfetti from "$lib/components/AdoptionConfetti.svelte";
-  import IconInfoBox from "$lib/components/IconInfoBox.svelte";
-  import Majorities from "$lib/components/Majorities.svelte";
-  import PresentationRollCall from "$lib/components/rollCall/PresentationRollCall.svelte";
-  import CurrentSpeaker from "$lib/components/speakersList/CurrentSpeaker.svelte";
-  import SpeakersQueue from "$lib/components/speakersList/PresentationSpeakersQueue.svelte";
-  import UndrawError from "$lib/components/UndrawError.svelte";
-  import RollCallVotingPresentation from "$lib/components/voting/RollCallVotingPresentation.svelte";
-  import ShowOfHandsVotingPresentation from "$lib/components/voting/ShowOfHandsVotingPresentation.svelte";
-  import WhiteboardViewer from "$lib/components/whiteboard/WhiteboardViewer.svelte";
-  import { getPresentationLayoutPreset } from "$lib/data/presentationLayoutPresets";
-  import { localDB } from "$lib/local-db/localDB";
-  import { m } from "$lib/paraglide/messages";
-  import {
-    getCommitteeStatusIcon,
-    translateCommitteeStatusText,
-  } from "$lib/utils/committeeStatus";
-  import { sortTranslatedCountries } from "$lib/utils/nationTranslationHelper.svelte";
-  import RegionalGroups from "./RegionalGroups.svelte";
-  import { committeePresentationQuery } from "$lib/queries/committeePresentation.svelte";
+  import { liveQuery } from 'dexie';
+  import { onMount } from 'svelte';
+  import Grid, { GridItem } from 'svelte-grid-extended';
+  import { browser } from '$app/environment';
+  import emptyStreet from '$lib/assets/undraw/empty_street.svg';
+  import AbbreviationInfoBox from '$lib/components/AbbreviationInfoBox.svelte';
+  import AdoptionConfetti from '$lib/components/AdoptionConfetti.svelte';
+  import IconInfoBox from '$lib/components/IconInfoBox.svelte';
+  import Majorities from '$lib/components/Majorities.svelte';
+  import PresentationRollCall from '$lib/components/rollCall/PresentationRollCall.svelte';
+  import CurrentSpeaker from '$lib/components/speakersList/CurrentSpeaker.svelte';
+  import SpeakersQueue from '$lib/components/speakersList/PresentationSpeakersQueue.svelte';
+  import UndrawError from '$lib/components/UndrawError.svelte';
+  import RollCallVotingPresentation from '$lib/components/voting/RollCallVotingPresentation.svelte';
+  import ShowOfHandsVotingPresentation from '$lib/components/voting/ShowOfHandsVotingPresentation.svelte';
+  import WhiteboardViewer from '$lib/components/whiteboard/WhiteboardViewer.svelte';
+  import { getPresentationLayoutPreset } from '$lib/data/presentationLayoutPresets';
+  import { localDB } from '$lib/local-db/localDB';
+  import { m } from '$lib/paraglide/messages';
+  import { getCommitteeStatusIcon, translateCommitteeStatusText } from '$lib/utils/committeeStatus';
+  import { sortTranslatedCountries } from '$lib/utils/nationTranslationHelper.svelte';
+  import RegionalGroups from './RegionalGroups.svelte';
+  import { committeePresentationQuery } from '$lib/queries/committeePresentation.svelte';
 
   const committee = await committeePresentationQuery();
 
-  const committeeSettings = liveQuery(() =>
-    localDB.committeeSettings.get(committee.id),
-  );
+  const committeeSettings = liveQuery(() => localDB.committeeSettings.get(committee.id));
 
   const layout = $derived(
-    ($committeeSettings &&
-      getPresentationLayoutPreset($committeeSettings.layout)) ??
-      getPresentationLayoutPreset(),
+    ($committeeSettings && getPresentationLayoutPreset($committeeSettings.layout)) ??
+      getPresentationLayoutPreset()
   );
 
   const speakersList = $derived(
-    committee?.activeAgendaItem?.speakersList.find(
-      (x) => x.type === "SPEAKERS_LIST",
-    ),
+    committee?.activeAgendaItem?.speakersList.find((x) => x.type === 'SPEAKERS_LIST')
   );
 
   const commentsList = $derived(
-    committee?.activeAgendaItem?.speakersList.find(
-      (x) => x.type === "COMMENT_LIST",
-    ),
+    committee?.activeAgendaItem?.speakersList.find((x) => x.type === 'COMMENT_LIST')
   );
   let speakersQueueResizeFn: () => void;
   let commentsQueueResizeFn: () => void;
@@ -73,7 +63,7 @@
 
 <svelte:head>
   <title
-    >{committee?.abbreviation ?? "N/A"}
+    >{committee?.abbreviation ?? 'N/A'}
     {m.presentationMode()} - MUNify CHASE</title
   >
 </svelte:head>
@@ -89,20 +79,17 @@
       {@const gridProps = layout.committeeTitle}
       <GridItem
         {...gridProps}
-        class="card bg-base-100 gap-2 overflow-hidden p-4"
+        class="card gap-2 overflow-hidden bg-base-100 p-4"
         id="committee-title"
       >
-        <AbbreviationInfoBox
-          text={committee.name || "—"}
-          abbreviation={committee.abbreviation}
-        />
+        <AbbreviationInfoBox text={committee.name || '—'} abbreviation={committee.abbreviation} />
       </GridItem>
     {/if}
     {#if layout.committeeStatus}
       {@const gridProps = layout.committeeStatus}
       <GridItem
         {...gridProps}
-        class="card bg-base-100 gap-2 overflow-hidden p-4"
+        class="card gap-2 overflow-hidden bg-base-100 p-4"
         id="committee-status"
       >
         <IconInfoBox
@@ -114,31 +101,19 @@
           marqueeOnOverflow={false}
           until={new Date(committee.statusUntil)}
           fullHeight
-          hideCountdown={committee.status === "FORMAL"}
+          hideCountdown={committee.status === 'FORMAL'}
         />
       </GridItem>
     {/if}
     {#if layout.agendaItem}
       {@const gridProps = layout.agendaItem}
-      <GridItem
-        {...gridProps}
-        class="card bg-base-100 gap-2 overflow-hidden p-4"
-        id="agenda-item"
-      >
-        <IconInfoBox
-          text={committee.activeAgendaItem?.title || "—"}
-          faIcon="podium"
-          fullHeight
-        />
+      <GridItem {...gridProps} class="card gap-2 overflow-hidden bg-base-100 p-4" id="agenda-item">
+        <IconInfoBox text={committee.activeAgendaItem?.title || '—'} faIcon="podium" fullHeight />
       </GridItem>
     {/if}
     {#if layout.majorities}
       {@const gridProps = layout.majorities}
-      <GridItem
-        {...gridProps}
-        class="card bg-base-100 gap-2 overflow-hidden p-4"
-        id="majorities"
-      >
+      <GridItem {...gridProps} class="card gap-2 overflow-hidden bg-base-100 p-4" id="majorities">
         <Majorities
           totalPresent={committee.totalPresent}
           simpleMajority={committee.simpleMajority}
@@ -150,11 +125,7 @@
 
     {#if layout.whiteboard}
       {@const gridProps = layout.whiteboard}
-      <GridItem
-        {...gridProps}
-        class="card bg-base-100 gap-2 overflow-hidden p-4"
-        id="whiteboard"
-      >
+      <GridItem {...gridProps} class="card gap-2 overflow-hidden bg-base-100 p-4" id="whiteboard">
         <WhiteboardViewer data={committee.whiteboardContent} />
       </GridItem>
     {/if}
@@ -163,7 +134,7 @@
       {@const gridProps = layout.speakersList}
       <GridItem
         {...gridProps}
-        class="card bg-base-100 gap-8 overflow-hidden p-4"
+        class="card gap-8 overflow-hidden bg-base-100 p-4"
         id="speakers-list"
       >
         <CurrentSpeaker {speakersList} />
@@ -177,11 +148,7 @@
 
     {#if layout.commentsList}
       {@const gridProps = layout.commentsList}
-      <GridItem
-        {...gridProps}
-        class="card bg-base-100 gap-8 overflow-hidden p-4"
-        id="comment-list"
-      >
+      <GridItem {...gridProps} class="card gap-8 overflow-hidden bg-base-100 p-4" id="comment-list">
         <CurrentSpeaker speakersList={commentsList} />
         <SpeakersQueue
           rawSpeakers={commentsList?.speakers}
@@ -200,17 +167,12 @@
   <PresentationRollCall
     committeeId={committee.id}
     members={committee.members
-      .filter((x) => x.representation?.type === "DELEGATION")
-      .sort((a, b) =>
-        sortTranslatedCountries(a.representation!, b.representation!),
-      )}
+      .filter((x) => x.representation?.type === 'DELEGATION')
+      .sort((a, b) => sortTranslatedCountries(a.representation!, b.representation!))}
   />
 
   <ShowOfHandsVotingPresentation committeeSettings={$committeeSettings} />
-  <RollCallVotingPresentation
-    committeeSettings={$committeeSettings}
-    {committee}
-  />
+  <RollCallVotingPresentation committeeSettings={$committeeSettings} {committee} />
 
   <AdoptionConfetti
     lastAdoptionDate={committee?.lastResolutionAdoptionDate}

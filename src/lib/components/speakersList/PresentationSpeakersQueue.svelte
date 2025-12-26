@@ -1,20 +1,20 @@
 <script lang="ts">
-  import { onMount } from "svelte";
-  import { flip } from "svelte/animate";
-  import { cubicInOut, cubicOut } from "svelte/easing";
-  import { fly } from "svelte/transition";
-  import Marquee from "svelte-fast-marquee";
-  import { browser } from "$app/environment";
-  import { m } from "$lib/paraglide/messages";
-  import { getTranslatedCountryNameFromAlpha3Code } from "$lib/utils/nationTranslationHelper.svelte";
-  import Flag from "../Flag.svelte";
-  import StripesAlert from "./StripesAlert.svelte";
-  import { committeeTeamQuery } from "$lib/queries/committeeTeamQuery.svelte";
+  import { onMount } from 'svelte';
+  import { flip } from 'svelte/animate';
+  import { cubicInOut, cubicOut } from 'svelte/easing';
+  import { fly } from 'svelte/transition';
+  import Marquee from 'svelte-fast-marquee';
+  import { browser } from '$app/environment';
+  import { m } from '$lib/paraglide/messages';
+  import { getTranslatedCountryNameFromAlpha3Code } from '$lib/utils/nationTranslationHelper.svelte';
+  import Flag from '../Flag.svelte';
+  import StripesAlert from './StripesAlert.svelte';
+  import { committeeTeamQuery } from '$lib/queries/committeeTeamQuery.svelte';
 
   interface Props {
     rawSpeakers?: NonNullable<
-      Awaited<ReturnType<typeof committeeTeamQuery>>["activeAgendaItem"]
-    >["speakersList"][number]["speakers"];
+      Awaited<ReturnType<typeof committeeTeamQuery>>['activeAgendaItem']
+    >['speakersList'][number]['speakers'];
     closed?: boolean;
     resizeFn?: () => void;
   }
@@ -22,7 +22,7 @@
   let { rawSpeakers, closed = false, resizeFn = $bindable() }: Props = $props();
 
   const speakers = $derived(
-    rawSpeakers?.toSorted((a, b) => a.position - b.position).toSpliced(0, 1),
+    rawSpeakers?.toSorted((a, b) => a.position - b.position).toSpliced(0, 1)
   );
 
   let container = $state<HTMLElement | null>(null);
@@ -30,9 +30,7 @@
   let containerHeight = $state(250);
   let rowHeight = $state(70);
   let reservedHeight = $state(50); // Reserve space for the header and footer, adjust as needed
-  const visibleCount = $derived(
-    Math.floor((containerHeight - reservedHeight) / rowHeight),
-  );
+  const visibleCount = $derived(Math.floor((containerHeight - reservedHeight) / rowHeight));
 
   const resize = () => {
     if (container && overflowContainer) {
@@ -45,11 +43,11 @@
   $effect(() => {
     if (browser) {
       resize();
-      window.addEventListener("resize", resize);
-      container?.addEventListener("reset", resize);
+      window.addEventListener('resize', resize);
+      container?.addEventListener('reset', resize);
       return () => {
-        window.removeEventListener("resize", resize);
-        container?.removeEventListener("reset", resize);
+        window.removeEventListener('resize', resize);
+        container?.removeEventListener('reset', resize);
       };
     }
   });
@@ -59,10 +57,7 @@
   });
 </script>
 
-<div
-  class="relative flex h-full w-full flex-col overflow-hidden"
-  bind:this={container}
->
+<div class="relative flex h-full w-full flex-col overflow-hidden" bind:this={container}>
   {#if speakers && speakers.length > 0}
     {#each speakers.slice(0, visibleCount) as speaker, i (speaker.id)}
       {@const member = speaker.committeeMember || speaker.conferenceMember}
@@ -76,33 +71,25 @@
         <Flag representation={member?.representation} size="sm" />
         <h2 class="text-lg font-bold">
           {member?.representation?.name ||
-            getTranslatedCountryNameFromAlpha3Code(
-              member?.representation?.alpha3Code,
-            )}
+            getTranslatedCountryNameFromAlpha3Code(member?.representation?.alpha3Code)}
         </h2>
       </div>
     {/each}
     <div
-      class="bg-base-200 card inset-shadow-sm mt-2 flex w-full items-center justify-center {speakers.length >
+      class="card mt-2 flex w-full items-center justify-center bg-base-200 inset-shadow-sm {speakers.length >
       visibleCount
         ? 'opacity-100'
         : 'opacity-0'} transition-all duration-300"
     >
       <Marquee speed={30} gap="3rem">
-        <div
-          class="flex items-center justify-center gap-2 py-4"
-          bind:this={overflowContainer}
-        >
+        <div class="flex items-center justify-center gap-2 py-4" bind:this={overflowContainer}>
           {#each speakers.slice(visibleCount) as speaker, i (i)}
-            {@const member =
-              speaker.committeeMember || speaker.conferenceMember}
-            <div
-              class="card bg-base-100 flex w-16 items-center justify-center gap-1 p-2 shadow-sm"
-            >
+            {@const member = speaker.committeeMember || speaker.conferenceMember}
+            <div class="card flex w-16 items-center justify-center gap-1 bg-base-100 p-2 shadow-sm">
               <div class="w-4 text-sm opacity-50">{i + 1 + visibleCount}.</div>
               <Flag representation={member?.representation} size="full" />
               <div class="text-center font-mono font-bold">
-                {member?.representation?.alpha2Code?.toUpperCase() || "N/A"}
+                {member?.representation?.alpha2Code?.toUpperCase() || 'N/A'}
               </div>
             </div>
           {/each}
@@ -121,11 +108,6 @@
     <StripesAlert badgeText={m.listEmpty()} />
   {/if}
   {#if closed && (speakers?.length || 0) <= visibleCount}
-    <StripesAlert
-      badgeColor="error"
-      stripeColor="error"
-      faIcon="lock"
-      badgeText={m.listClosed()}
-    />
+    <StripesAlert badgeColor="error" stripeColor="error" faIcon="lock" badgeText={m.listClosed()} />
   {/if}
 </div>

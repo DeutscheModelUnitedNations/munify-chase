@@ -1,16 +1,12 @@
 <script lang="ts">
-  import hotkeys from "hotkeys-js";
-  import { onMount } from "svelte";
-  import {
-    localDB,
-    type VotingMajority,
-    type VotingStage,
-  } from "$lib/local-db/localDB";
-  import { m } from "$lib/paraglide/messages";
-  import Modal from "../Modal.svelte";
-  import ResultChart from "./ResultChart.svelte";
-  import VoteClicker from "./VoteClicker.svelte";
-  import { committeeTeamQuery } from "$lib/queries/committeeTeamQuery.svelte";
+  import hotkeys from 'hotkeys-js';
+  import { onMount } from 'svelte';
+  import { localDB, type VotingMajority, type VotingStage } from '$lib/local-db/localDB';
+  import { m } from '$lib/paraglide/messages';
+  import Modal from '../Modal.svelte';
+  import ResultChart from './ResultChart.svelte';
+  import VoteClicker from './VoteClicker.svelte';
+  import { committeeTeamQuery } from '$lib/queries/committeeTeamQuery.svelte';
 
   interface Props {
     active: boolean;
@@ -20,27 +16,21 @@
     withAbstentions: boolean;
   }
 
-  let {
-    active = $bindable(),
-    voteName,
-    majority,
-    withAbstentions,
-    committee,
-  }: Props = $props();
+  let { active = $bindable(), voteName, majority, withAbstentions, committee }: Props = $props();
 
-  let currentState = $state<VotingStage>("PRO");
+  let currentState = $state<VotingStage>('PRO');
 
   let votesPro = $state(0);
   let votesCon = $state(0);
   let votesAbstain = $state(0);
   const votesOutstanding = $derived(
-    $committee?.totalPresent ?? 0 - (votesPro + votesCon + votesAbstain),
+    $committee?.totalPresent ?? 0 - (votesPro + votesCon + votesAbstain)
   );
   const majorityAmount = $derived.by(() => {
     switch (majority) {
-      case "SIMPLE":
+      case 'SIMPLE':
         return $committee?.simpleMajority ?? 0;
-      case "TWO_THIRDS":
+      case 'TWO_THIRDS':
         return $committee?.twoThirdsMajority ?? 0;
       default:
         return 0;
@@ -51,26 +41,26 @@
     votesPro = 0;
     votesCon = 0;
     votesAbstain = 0;
-    currentState = "PRO";
+    currentState = 'PRO';
     active = false;
   };
 
   const nextState = () => {
     switch (currentState) {
-      case "PRO":
-        currentState = "CON";
+      case 'PRO':
+        currentState = 'CON';
         break;
-      case "CON":
+      case 'CON':
         if (withAbstentions) {
-          currentState = "ABSTAIN";
+          currentState = 'ABSTAIN';
         } else {
-          currentState = "EVALUATION";
+          currentState = 'EVALUATION';
         }
         break;
-      case "ABSTAIN":
-        currentState = "EVALUATION";
+      case 'ABSTAIN':
+        currentState = 'EVALUATION';
         break;
-      case "EVALUATION":
+      case 'EVALUATION':
         exit();
         break;
     }
@@ -78,33 +68,33 @@
 
   const previousState = () => {
     switch (currentState) {
-      case "CON":
-        currentState = "PRO";
+      case 'CON':
+        currentState = 'PRO';
         break;
-      case "ABSTAIN":
-        currentState = "CON";
+      case 'ABSTAIN':
+        currentState = 'CON';
         break;
-      case "EVALUATION":
+      case 'EVALUATION':
         if (withAbstentions) {
-          currentState = "ABSTAIN";
+          currentState = 'ABSTAIN';
         } else {
-          currentState = "CON";
+          currentState = 'CON';
         }
         break;
     }
   };
 
   onMount(() => {
-    hotkeys("enter, esc, backspace", (event, handler) => {
+    hotkeys('enter, esc, backspace', (event, handler) => {
       event.preventDefault();
       switch (handler.key) {
-        case "enter":
+        case 'enter':
           nextState();
           break;
-        case "esc":
+        case 'esc':
           exit();
           break;
-        case "backspace":
+        case 'backspace':
           previousState();
           break;
       }
@@ -124,7 +114,7 @@
         votingVoteName: voteName,
         votingMajority: majority,
         votingWithAbstentions: withAbstentions,
-        votingMajorityAmount: majorityAmount,
+        votingMajorityAmount: majorityAmount
       });
     } else {
       localDB.committeeSettings.update($committee.id, {
@@ -136,7 +126,7 @@
         votingVoteName: null,
         votingMajority: null,
         votingWithAbstentions: false,
-        votingMajorityAmount: null,
+        votingMajorityAmount: null
       });
     }
   });
@@ -159,57 +149,48 @@
   <div class="mt-6 flex gap-4">
     <div
       class="{currentState === 'PRO'
-        ? 'bg-success text-success-content border-black'
-        : 'bg-success/20'} card border-base-100 border-3 mb-4 w-full items-center justify-center gap-4 p-4 shadow-sm"
+        ? 'border-black bg-success text-success-content'
+        : 'bg-success/20'} card mb-4 w-full items-center justify-center gap-4 border-3 border-base-100 p-4 shadow-sm"
     >
       <h3 class="text-lg font-bold">{m.pro()}</h3>
-      <VoteClicker active={currentState === "PRO"} bind:value={votesPro} />
+      <VoteClicker active={currentState === 'PRO'} bind:value={votesPro} />
     </div>
     <div
       class="{currentState === 'CON'
-        ? 'bg-error text-error-content border-black'
-        : 'bg-error/20'} card border-base-100 border-3 mb-4 w-full items-center justify-center gap-4 p-4 shadow-sm"
+        ? 'border-black bg-error text-error-content'
+        : 'bg-error/20'} card mb-4 w-full items-center justify-center gap-4 border-3 border-base-100 p-4 shadow-sm"
     >
       <h3 class="text-lg font-bold">{m.con()}</h3>
-      <VoteClicker active={currentState === "CON"} bind:value={votesCon} />
+      <VoteClicker active={currentState === 'CON'} bind:value={votesCon} />
     </div>
     {#if withAbstentions}
       <div
         class="{currentState === 'ABSTAIN'
-          ? 'bg-info text-info-content border-black'
-          : 'bg-info/20'} card border-base-100 border-3 mb-4 w-full items-center justify-center gap-4 p-4 shadow-sm"
+          ? 'border-black bg-info text-info-content'
+          : 'bg-info/20'} card mb-4 w-full items-center justify-center gap-4 border-3 border-base-100 p-4 shadow-sm"
       >
         <h3 class="text-lg font-bold">{m.abstain()}</h3>
-        <VoteClicker
-          active={currentState === "ABSTAIN"}
-          bind:value={votesAbstain}
-        />
+        <VoteClicker active={currentState === 'ABSTAIN'} bind:value={votesAbstain} />
       </div>
     {/if}
   </div>
 
   <div class="modal-action justify-around">
-    <button
-      class="btn btn-lg flex gap-2"
-      onclick={previousState}
-      disabled={currentState === "PRO"}
-    >
+    <button class="btn flex gap-2 btn-lg" onclick={previousState} disabled={currentState === 'PRO'}>
       <i class="fas fa-arrow-left"></i>
       {m.back()}
       <span class="kbd">⌫</span>
     </button>
     <button
-      class="btn {currentState === 'EVALUATION'
-        ? 'btn-error'
-        : 'btn-success'} btn-lg flex gap-2"
+      class="btn {currentState === 'EVALUATION' ? 'btn-error' : 'btn-success'} flex gap-2 btn-lg"
       onclick={() => {
         nextState();
       }}
     >
-      {#if currentState === "EVALUATION"}
+      {#if currentState === 'EVALUATION'}
         <i class="fas fa-xmark"></i>
         {m.close()}
-      {:else if currentState === "ABSTAIN" || (!withAbstentions && currentState === "CON")}
+      {:else if currentState === 'ABSTAIN' || (!withAbstentions && currentState === 'CON')}
         <i class="fas fa-paper-plane"></i>
         {m.publish()}
       {:else}
@@ -219,12 +200,8 @@
       <span class="kbd">↵</span>
     </button>
 
-    <div class="absolute right-3 top-3">
-      <button
-        aria-label="Close modal"
-        class="btn btn-ghost btn-circle btn-sm"
-        onclick={exit}
-      >
+    <div class="absolute top-3 right-3">
+      <button aria-label="Close modal" class="btn btn-circle btn-ghost btn-sm" onclick={exit}>
         <i class="fa-duotone fa-xmark"></i>
       </button>
     </div>

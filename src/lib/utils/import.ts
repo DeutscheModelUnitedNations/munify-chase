@@ -1,4 +1,4 @@
-import { z } from "zod/v4";
+import { z } from 'zod/v4';
 
 export const importDataSchema = z.object({
   $schema: z.string().optional(),
@@ -8,73 +8,65 @@ export const importDataSchema = z.object({
     z.object({
       id: z.string(),
       name: z.string(),
-      abbreviation: z.string(),
-    }),
+      abbreviation: z.string()
+    })
   ),
   representations: z.array(
     z
       .object({
         id: z.string(),
-        representationType: z.enum(["DELEGATION", "NSA", "UN"]),
+        representationType: z.enum(['DELEGATION', 'NSA', 'UN']),
         alpha3Code: z.string().optional(),
         alpha2Code: z.string().optional(),
         name: z.string().optional(),
         faIcon: z.string().optional(),
         regionalGroup: z
           .enum([
-            "AFRICA",
-            "ASIA_PACIFIC",
-            "EASTERN_EUROPE",
-            "LATIN_AMERICA_CARIBBEAN",
-            "WESTERN_EUROPE_OTHERS",
+            'AFRICA',
+            'ASIA_PACIFIC',
+            'EASTERN_EUROPE',
+            'LATIN_AMERICA_CARIBBEAN',
+            'WESTERN_EUROPE_OTHERS'
           ])
-          .optional(),
+          .optional()
       })
       .refine(
         (data) =>
-          (data.representationType === "DELEGATION" &&
-            data.alpha3Code &&
-            data.alpha2Code) ||
-          (data.representationType === "NSA" && data.name && data.faIcon) ||
-          data.representationType === "UN",
-      ),
+          (data.representationType === 'DELEGATION' && data.alpha3Code && data.alpha2Code) ||
+          (data.representationType === 'NSA' && data.name && data.faIcon) ||
+          data.representationType === 'UN'
+      )
   ),
   conferenceMembers: z.array(
     z.object({
       id: z.string(),
-      representationId: z.string(),
-    }),
+      representationId: z.string()
+    })
   ),
   committeeMembers: z.array(
     z.object({
       id: z.string(),
       representationId: z.string(),
-      committeeId: z.string(),
-    }),
+      committeeId: z.string()
+    })
   ),
   conferenceUsers: z.array(
     z.object({
       id: z.string(),
-      conferenceUserType: z.enum([
-        "ADMIN",
-        "DELEGATE",
-        "NON_STATE_ACTOR",
-        "SPECTATOR",
-        "TEAM",
-      ]),
+      conferenceUserType: z.enum(['ADMIN', 'DELEGATE', 'NON_STATE_ACTOR', 'SPECTATOR', 'TEAM']),
       userEmail: z.string(),
       //TODO enforce that one has to be set?
       conferenceMemberId: z.string().optional(),
-      committeeMemberId: z.string().optional(),
-    }),
+      committeeMemberId: z.string().optional()
+    })
   ),
   agendaItems: z.array(
     z.object({
       id: z.string().optional(),
       committeeId: z.string(),
-      title: z.string(),
-    }),
-  ),
+      title: z.string()
+    })
+  )
 });
 
 // export interface ImportData {

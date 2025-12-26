@@ -7,16 +7,17 @@
   import { promiseToastStrings } from '$lib/utils/toast';
   import type { committeeTeamQuery } from '$lib/queries/committeeTeamQuery.svelte';
   import { client, type SpeakerslistcategoryEnum } from '$lib/api/rumbleClient/client';
+  import type { QueryResponseType } from '$lib/helpers/utilityTypes';
 
   interface Props {
     speakersList?:
       | NonNullable<
-          Awaited<ReturnType<typeof committeeTeamQuery>>['activeAgendaItem']
+          QueryResponseType<typeof committeeTeamQuery>['activeAgendaItem']
         >['speakersList'][number]
       | null;
     childList?:
       | NonNullable<
-          Awaited<ReturnType<typeof committeeTeamQuery>>['activeAgendaItem']
+          QueryResponseType<typeof committeeTeamQuery>['activeAgendaItem']
         >['speakersList'][number]
       | null;
     type: SpeakerslistcategoryEnum;

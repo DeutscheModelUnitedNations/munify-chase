@@ -107,8 +107,8 @@
 {#if editWhiteboardModalOpen}
   <WhiteboardEditorModal
     bind:open={editWhiteboardModalOpen}
-    committeeId={committee?.id}
-    whiteboardContent={committee?.whiteboardContent}
+    committeeId={$committee?.id}
+    whiteboardContent={$committee?.whiteboardContent}
     close={() => {
       editWhiteboardModalOpen = false;
     }}

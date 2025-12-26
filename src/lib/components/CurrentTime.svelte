@@ -4,7 +4,7 @@
 </script>
 
 <h2 class="mr-4 font-mono text-3xl font-bold">
-  {serverTime.value.toLocaleTimeString(getLocale(), {
+  {serverTime.value.toDate().toLocaleTimeString(getLocale(), {
     hour: '2-digit',
     minute: '2-digit',
     second: '2-digit'

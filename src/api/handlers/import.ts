@@ -3,6 +3,7 @@ import { db, schema } from '$api/db/db';
 import { enum_, schemaBuilder } from '$api/rumble';
 import { importDataSchema } from '$lib/utils/import';
 import { ConferenceRef } from './conference';
+import { assertFindFirstExists } from '@m1212e/rumble';
 
 const Input = schemaBuilder.inputType('ImportData', {
   description: 'Import data. You can find the JSON schema here: /api/schema/import',
@@ -106,7 +107,7 @@ schemaBuilder.mutationFields((t) => ({
         required: true
       })
     },
-    resolve: async (query, root, args, ctx, info) => {
+    resolve: async (query, root, args, ctx) => {
       if (!ctx.hasRole('admin')) {
         throw new GraphQLError('You must have the admin role!');
       }
@@ -210,15 +211,17 @@ schemaBuilder.mutationFields((t) => ({
         }
       });
 
-      return db.query.conference.findFirst(
-        query(
-          ctx.abilities.conference.filter('read').merge({
-            where: {
-              id: data.id
-            }
-          }).query.single
+      return db.query.conference
+        .findFirst(
+          query(
+            ctx.abilities.conference.filter('read').merge({
+              where: {
+                id: data.id
+              }
+            }).query.single
+          )
         )
-      );
+        .then(assertFindFirstExists);
     }
   })
 }));

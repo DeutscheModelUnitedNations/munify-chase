@@ -1,7 +1,7 @@
 <script lang="ts">
   import dayjs from 'dayjs';
   import toast from 'svelte-french-toast';
-  import type { CommitteestatusEnum } from '$lib/api/rumbleClient/client';
+  import { client, type CommitteestatusEnum } from '$lib/api/rumbleClient/client';
   import Tabs from '$lib/components/Tabs.svelte';
   import { m } from '$lib/paraglide/messages';
   import { serverTime } from '$lib/state/serverTime.svelte';
@@ -30,40 +30,28 @@
   const relativeTimes = [3, 5, 10, 15, 20, 25, 30];
 
   let activeCategory: CommitteestatusEnum = $state('INFORMAL');
-  const until = $state(dayjs(oldUntil) ?? serverTime.value);
+  let until = $state(dayjs(oldUntil) ?? serverTime.value);
   const untilFormatted = $derived(dayjs(until).format('HH:mm:ss'));
-  const customName = $state(oldCustomName);
+  let customName = $state(oldCustomName);
 
   let customNameOpen = $state(false);
-
-  const StatusChangerMutation = graphql(`
-    mutation StatusChanger(
-      $status: CommitteeStatusEnum!
-      $until: DateTime!
-      $customName: String!
-      $committeeId: ID!
-    ) {
-      updateCommittee(
-        id: $committeeId
-        status: $status
-        statusUntil: $until
-        statusHeadline: $customName
-      ) {
-        id
-      }
-    }
-  `);
 
   const submitStatus = async () => {
     if (until.isBefore(serverTime.value)) {
       toast.error(m.dateCannotBeInPast());
     }
     await toast.promise(
-      StatusChangerMutation.mutate({
-        status: activeCategory,
-        until: until.toDate(),
-        customName: customName,
-        committeeId: committeeId
+      client.mutate.updateCommittee({
+        __args: {
+          status: activeCategory,
+          statusUntil: until.toDate(),
+          statusHeadline: customName,
+          id: committeeId
+        },
+        id: true,
+        status: true,
+        statusUntil: true,
+        statusHeadline: true
       }),
       promiseToastStrings(m.committeeStatus(), 'update')
     );
@@ -96,7 +84,7 @@
     <div
       class="grid flex-1 grid-cols-4 items-center gap-1 md:grid-cols-5 lg:grid-cols-8 xl:grid-cols-12"
     >
-      {#each absoluteTimes as time}
+      {#each absoluteTimes as time, index (index)}
         <button
           class="btn flex-1 bg-base-100"
           onclick={() =>
@@ -112,7 +100,7 @@
   <div class="card flex flex-row items-center gap-2 bg-base-200 p-2">
     <i class="fa-duotone fa-timer w-8 text-center text-2xl"></i>
     <div class="grid flex-1 grid-cols-4 items-center gap-1 md:grid-cols-5 lg:grid-cols-7">
-      {#each relativeTimes as time}
+      {#each relativeTimes as time, index (index)}
         <button
           class="btn flex-1 bg-base-100"
           onclick={() => (until = serverTime.value.add(time, 'minute'))}

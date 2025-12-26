@@ -1,8 +1,9 @@
+import type { RegionalgroupEnum, RepresentationtypeEnum } from '$lib/api/rumbleClient/client';
 import worldCountries from 'world-countries';
 
 const regionalGroupMapping: Record<
   (typeof worldCountries)[0]['unRegionalGroup'],
-  RegionalGroupEnum$options | undefined
+  RegionalgroupEnum | undefined
 > = {
   'African Group': 'AFRICA',
   'Asia and the Pacific Group': 'ASIA_PACIFIC',
@@ -22,7 +23,7 @@ export function getCountryData(alpha2Code: string) {
   return {
     alpha3Code: country.cca3.toLowerCase(),
     alpha2Code: country.cca2.toLowerCase(),
-    type: 'DELEGATION' as RepresentationTypeEnum$options,
+    type: 'DELEGATION' as RepresentationtypeEnum,
     regionalGroup: regionalGroupMapping[country.unRegionalGroup]
   };
 }

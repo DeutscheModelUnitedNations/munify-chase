@@ -1,13 +1,14 @@
 import dayjs from 'dayjs';
 import { browser } from '$app/environment';
 import { client } from '$lib/api/rumbleClient/client';
+import { get } from 'svelte/store';
 
 export const serverTime = $state({ value: dayjs() });
 
 let lastCalculatedDelta = 0;
 
 const fetchRemoteTime = async () => {
-  const time = await client.query.serverTime();
+  const time = get(await client.query.serverTime());
   serverTime.value = dayjs(time);
   lastCalculatedDelta = dayjs().diff(serverTime.value);
 };

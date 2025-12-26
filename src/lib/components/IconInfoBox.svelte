@@ -32,7 +32,7 @@
     hideCountdown = false
   }: Props = $props();
 
-  const textElement = $state<HTMLParagraphElement>();
+  let textElement = $state<HTMLParagraphElement>();
   let isOverflowing = $state(false);
 
   function checkOverflow() {

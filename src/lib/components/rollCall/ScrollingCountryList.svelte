@@ -5,10 +5,11 @@
   import { getTranslatedCountryNameFromAlpha3Code } from '$lib/utils/nationTranslationHelper.svelte';
   import Flag from '../Flag.svelte';
   import type { committeeTeamQuery } from '$lib/queries/committeeTeamQuery.svelte';
+  import type { QueryResponseType } from '$lib/helpers/utilityTypes';
 
   interface Props {
     currentIndex: number;
-    members: Awaited<ReturnType<typeof committeeTeamQuery>>['members'];
+    members: QueryResponseType<typeof committeeTeamQuery>['members'];
     height?: string;
     icons?: {
       id: string;

@@ -8,18 +8,18 @@
   import { m } from '$lib/paraglide/messages';
   import { promiseToastStrings } from '$lib/utils/toast';
   import type { committeeTeamQuery } from '$lib/queries/committeeTeamQuery.svelte';
-  import { client, type SpeakerslistcategoryEnum } from '$lib/api/rumbleClient/client';
+  import { client } from '$lib/api/rumbleClient/client';
+  import type { QueryResponseType } from '$lib/helpers/utilityTypes';
 
   interface Props {
     speakersList?:
       | NonNullable<
-          Awaited<ReturnType<typeof committeeTeamQuery>>['activeAgendaItem']
+          QueryResponseType<typeof committeeTeamQuery>['activeAgendaItem']
         >['speakersList'][number]
       | null;
-    type: SpeakerslistcategoryEnum;
   }
 
-  const { speakersList, type }: Props = $props();
+  const { speakersList }: Props = $props();
 
   let isOpen = $state(false);
 

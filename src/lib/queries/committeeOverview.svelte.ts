@@ -18,6 +18,7 @@ export const committeeOverviewQuery = () =>
       },
       status: true,
       statusHeadline: true,
-      statusUntil: true
+      statusUntil: true,
+      stateOfDebate: true
     }
   });

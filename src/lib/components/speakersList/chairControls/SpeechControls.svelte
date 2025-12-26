@@ -7,10 +7,11 @@
   import { serverTime } from '$lib/state/serverTime.svelte';
   import type { committeeTeamQuery } from '$lib/queries/committeeTeamQuery.svelte';
   import { client, type SpeakerslistcategoryEnum } from '$lib/api/rumbleClient/client';
+  import type { QueryResponseType } from '$lib/helpers/utilityTypes';
 
   type List =
     | NonNullable<
-        Awaited<ReturnType<typeof committeeTeamQuery>>['activeAgendaItem']
+        QueryResponseType<typeof committeeTeamQuery>['activeAgendaItem']
       >['speakersList'][number]
     | null;
 
@@ -23,58 +24,6 @@
   const { speakersList, type, otherList }: Props = $props();
 
   const timerRunning = $derived(!!speakersList?.startTimestamp);
-
-  // const UpdateSpeakersListTimingsMutation = graphql(`
-  // 		mutation UpdateSpeakersListTimings(
-  // 			$speakersListId: ID!
-  // 			$startTimestamp: DateTime
-  // 			$timeLeft: Int
-  // 			$stopTimer: Boolean
-  // 		) {
-  // 			updateSpeakersList(
-  // 				id: $speakersListId
-  // 				timeLeft: $timeLeft
-  // 				startTimestamp: $startTimestamp
-  // 				stopTimer: $stopTimer
-  // 			) {
-  // 				speakingTime
-  // 				startTimestamp
-  // 			}
-  // 		}
-  // 	`);
-
-  // const UpdateSpeakersListTimingsWithOtherListMutation = graphql(`
-  // 		mutation UpdateSpeakersListWithOtherListTimings(
-  // 			$speakersListId: ID!
-  // 			$startTimestamp: DateTime
-  // 			$timeLeft: Int
-  // 			$stopTimer: Boolean
-  // 			$otherListId: ID!
-  // 			$otherListStartTimestamp: DateTime
-  // 			$otherListTimeLeft: Int
-  // 			$otherListStopTimer: Boolean
-  // 		) {
-  // 			MainUpdateSpeakersList: updateSpeakersList(
-  // 				id: $speakersListId
-  // 				timeLeft: $timeLeft
-  // 				startTimestamp: $startTimestamp
-  // 				stopTimer: $stopTimer
-  // 			) {
-  // 				speakingTime
-  // 				startTimestamp
-  // 			}
-
-  // 			OtherUpdateSpeakersList: updateSpeakersList(
-  // 				id: $otherListId
-  // 				timeLeft: $otherListTimeLeft
-  // 				startTimestamp: $otherListStartTimestamp
-  // 				stopTimer: $otherListStopTimer
-  // 			) {
-  // 				speakingTime
-  // 				startTimestamp
-  // 			}
-  // 		}
-  // 	`);
 
   const startTimer = async () => {
     if (!speakersList) return;
@@ -122,48 +71,49 @@
 
   const stopTimer = async () => {
     if (!speakersList) return;
-
-    await UpdateSpeakersListTimingsMutation.mutate({
-      speakersListId: speakersList.id,
-      timeLeft:
-        dayjs(speakersList.startTimestamp).diff(serverTime.value, 'seconds') +
-        speakersList.timeLeft,
-      stopTimer: true
-    }).then((r) => {
-      if (r.errors) {
-        toast.error(m.errorUpdatingTimer());
-        console.error('Error starting timer:', r.errors);
-      }
+    await client.mutate.updateSpeakersList({
+      __args: {
+        id: speakersList.id,
+        timeLeft:
+          dayjs(speakersList.startTimestamp).diff(serverTime.value, 'seconds') +
+          speakersList.timeLeft,
+        stopTimer: true
+      },
+      id: true,
+      speakingTime: true,
+      startTimestamp: true
     });
   };
 
   const resetTimer = async () => {
     if (!speakersList) return;
 
-    await UpdateSpeakersListTimingsMutation.mutate({
-      speakersListId: speakersList.id,
-      timeLeft: speakersList.speakingTime,
-      startTimestamp: speakersList.startTimestamp ? serverTime.value.toDate() : undefined,
-      stopTimer: !speakersList.startTimestamp
-    }).then((r) => {
-      if (r.errors) {
-        toast.error(m.errorUpdatingTimer());
-        console.error('Error starting timer:', r.errors);
-      }
+    await client.mutate.updateSpeakersList({
+      __args: {
+        id: speakersList.id,
+        timeLeft:
+          dayjs(speakersList.startTimestamp).diff(serverTime.value, 'seconds') +
+          speakersList.timeLeft,
+        stopTimer: !speakersList.startTimestamp,
+        startTimestamp: speakersList.startTimestamp ? serverTime.value.toDate() : undefined
+      },
+      id: true,
+      speakingTime: true,
+      startTimestamp: true
     });
   };
 
   const changeTimer = async (delta: number) => {
     if (!speakersList) return;
 
-    await UpdateSpeakersListTimingsMutation.mutate({
-      speakersListId: speakersList.id,
-      timeLeft: speakersList.timeLeft + delta
-    }).then((r) => {
-      if (r.errors) {
-        toast.error(m.errorUpdatingTimer());
-        console.error('Error starting timer:', r.errors);
-      }
+    await client.mutate.updateSpeakersList({
+      __args: {
+        id: speakersList.id,
+        timeLeft: speakersList.timeLeft + delta
+      },
+      id: true,
+      speakingTime: true,
+      startTimestamp: true
     });
   };
 

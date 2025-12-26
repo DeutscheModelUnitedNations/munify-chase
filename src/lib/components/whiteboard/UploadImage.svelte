@@ -8,8 +8,8 @@
 
   let { showModal = $bindable(), resolve }: Props = $props();
 
-  const activeTab = $state<'UPLOAD' | 'URL'>('UPLOAD');
-  const imageUrl = $state('');
+  let activeTab = $state<'UPLOAD' | 'URL'>('UPLOAD');
+  let imageUrl = $state('');
   let uploadedFile = $state<File | null>(null);
   let isUploading = $state(false);
   let uploadError = $state('');

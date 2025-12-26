@@ -1,4 +1,4 @@
-import { drizzle } from 'drizzle-orm/postgres-js';
+import { drizzle } from 'drizzle-orm/node-postgres';
 import { configPrivate } from '$lib/config/private';
 import { relations as relationsInternal } from './relations';
 import * as schemaInternal from './schema';

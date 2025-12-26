@@ -9,10 +9,11 @@
   import ScrollingCountryList from '../rollCall/ScrollingCountryList.svelte';
   import ResultChart from './ResultChart.svelte';
   import type { committeeTeamQuery } from '$lib/queries/committeeTeamQuery.svelte';
+  import type { QueryResponseType } from '$lib/helpers/utilityTypes';
 
   interface Props {
     active: boolean;
-    committee: Awaited<ReturnType<typeof committeeTeamQuery>>;
+    committee: QueryResponseType<typeof committeeTeamQuery>;
     voteName?: string;
     majority?: VotingMajority;
     withAbstentions?: boolean;
@@ -23,22 +24,24 @@
   let currentIndex = $state(0);
   let stage = $state<'ROLL_CALL' | 'EVALUATION'>('ROLL_CALL');
 
-  const members = committee?.members
-    .filter((member) => member.present && member.representation?.type === 'DELEGATION')
-    .sort((a, b) => sortTranslatedCountries(a.representation!, b.representation!));
+  const members = $derived(
+    committee?.members
+      .filter((member) => member.present && member.representation?.type === 'DELEGATION')
+      .sort((a, b) => sortTranslatedCountries(a.representation!, b.representation!))
+  );
 
   const majorityAmount = $derived.by(() => {
     switch (majority) {
       case 'SIMPLE':
-        return $committee?.simpleMajority ?? 0;
+        return committee?.simpleMajority ?? 0;
       case 'TWO_THIRDS':
-        return $committee?.twoThirdsMajority ?? 0;
+        return committee?.twoThirdsMajority ?? 0;
       default:
         return 0;
     }
   });
 
-  const chairSettings = liveQuery(() => localDB.committeeSettings.get($committee.id));
+  const chairSettings = liveQuery(() => localDB.committeeSettings.get(committee.id));
   const rollCallVotingAbstain = $derived($chairSettings?.rollCallVotingAbstain ?? []);
   const rollCallVotingPro = $derived($chairSettings?.rollCallVotingPro ?? []);
   const rollCallVotingCon = $derived($chairSettings?.rollCallVotingCon ?? []);
@@ -68,11 +71,11 @@
   });
 
   const changeVote = async (member: (typeof members)[number], vote: VotingOptions) => {
-    if (!$committee) return;
+    if (!committee) return;
     if (
       [...rollCallVotingPro, ...rollCallVotingCon, ...rollCallVotingAbstain].includes(member.id)
     ) {
-      await localDB.committeeSettings.update($committee.id, {
+      await localDB.committeeSettings.update(committee.id, {
         rollCallVotingPro: rollCallVotingPro?.filter((id) => id !== member.id),
         rollCallVotingCon: rollCallVotingCon?.filter((id) => id !== member.id),
         rollCallVotingAbstain: rollCallVotingAbstain?.filter((id) => id !== member.id)
@@ -83,7 +86,7 @@
         const updatedPro = rollCallVotingPro?.includes(member.id)
           ? rollCallVotingPro
           : [...(rollCallVotingPro ?? []), member.id];
-        await localDB.committeeSettings.update($committee.id, {
+        await localDB.committeeSettings.update(committee.id, {
           rollCallVotingPro: updatedPro
         });
         break;
@@ -92,7 +95,7 @@
         const updatedCon = rollCallVotingCon?.includes(member.id)
           ? rollCallVotingCon
           : [...(rollCallVotingCon ?? []), member.id];
-        await localDB.committeeSettings.update($committee.id, {
+        await localDB.committeeSettings.update(committee.id, {
           rollCallVotingCon: updatedCon
         });
         break;
@@ -101,7 +104,7 @@
         const updatedAbstain = rollCallVotingAbstain?.includes(member.id)
           ? rollCallVotingAbstain
           : [...(rollCallVotingAbstain ?? []), member.id];
-        await localDB.committeeSettings.update($committee.id, {
+        await localDB.committeeSettings.update(committee.id, {
           rollCallVotingAbstain: updatedAbstain
         });
         break;
@@ -155,11 +158,11 @@
   });
 
   $effect(() => {
-    if (!$committee) return;
+    if (!committee) return;
     if (active) {
       stage = 'ROLL_CALL';
       currentIndex = 0;
-      localDB.committeeSettings.update($committee.id, {
+      localDB.committeeSettings.update(committee.id, {
         rollCallVotingActive: true,
         votingVoteName: voteName,
         votingMajority: majority,
@@ -170,7 +173,7 @@
         votingMajorityAmount: majorityAmount
       });
     } else {
-      localDB.committeeSettings.update($committee.id, {
+      localDB.committeeSettings.update(committee.id, {
         rollCallVotingActive: false,
         rollCallVotingPro: [],
         rollCallVotingCon: [],

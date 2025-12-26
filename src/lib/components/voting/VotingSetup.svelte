@@ -1,4 +1,5 @@
 <script lang="ts">
+  import type { QueryResponseType } from '$lib/helpers/utilityTypes';
   import type { VotingMajority } from '$lib/local-db/localDB';
   import { m } from '$lib/paraglide/messages';
   import type { committeeTeamQuery } from '$lib/queries/committeeTeamQuery.svelte';
@@ -7,7 +8,7 @@
   import ShowOfHandsVotingChair from './ShowOfHandsVotingChair.svelte';
 
   interface Props {
-    committee: Awaited<ReturnType<typeof committeeTeamQuery>>;
+    committee: QueryResponseType<typeof committeeTeamQuery>;
   }
 
   const { committee }: Props = $props();

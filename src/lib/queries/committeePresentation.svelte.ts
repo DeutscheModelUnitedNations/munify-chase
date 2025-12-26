@@ -1,5 +1,6 @@
 import { page } from '$app/state';
 import { client } from '$lib/api/rumbleClient/client';
+import type { QueryResponseType } from '$lib/helpers/utilityTypes';
 
 export const committeePresentationQuery = () =>
   client.liveQuery.committee({

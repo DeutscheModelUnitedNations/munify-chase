@@ -7,10 +7,11 @@
   import ResultChart from './ResultChart.svelte';
   import VoteClicker from './VoteClicker.svelte';
   import { committeeTeamQuery } from '$lib/queries/committeeTeamQuery.svelte';
+  import type { QueryResponseType } from '$lib/helpers/utilityTypes';
 
   interface Props {
     active: boolean;
-    committee?: Awaited<ReturnType<typeof committeeTeamQuery>> | null;
+    committee?: QueryResponseType<typeof committeeTeamQuery> | null;
     voteName?: string;
     majority: VotingMajority;
     withAbstentions: boolean;
@@ -24,14 +25,14 @@
   let votesCon = $state(0);
   let votesAbstain = $state(0);
   const votesOutstanding = $derived(
-    $committee?.totalPresent ?? 0 - (votesPro + votesCon + votesAbstain)
+    committee?.totalPresent ?? 0 - (votesPro + votesCon + votesAbstain)
   );
   const majorityAmount = $derived.by(() => {
     switch (majority) {
       case 'SIMPLE':
-        return $committee?.simpleMajority ?? 0;
+        return committee?.simpleMajority ?? 0;
       case 'TWO_THIRDS':
-        return $committee?.twoThirdsMajority ?? 0;
+        return committee?.twoThirdsMajority ?? 0;
       default:
         return 0;
     }
@@ -102,9 +103,9 @@
   });
 
   $effect(() => {
-    if (!$committee) return;
+    if (!committee) return;
     if (active) {
-      localDB.committeeSettings.update($committee.id, {
+      localDB.committeeSettings.update(committee.id, {
         showOfHandsVotingActive: true,
         showOfHandsVotingStage: currentState,
         showOfHandsVotingVotesPro: votesPro,
@@ -117,7 +118,7 @@
         votingMajorityAmount: majorityAmount
       });
     } else {
-      localDB.committeeSettings.update($committee.id, {
+      localDB.committeeSettings.update(committee.id, {
         showOfHandsVotingActive: false,
         showOfHandsVotingVotesPro: 0,
         showOfHandsVotingVotesCon: 0,
@@ -139,7 +140,7 @@
   </h3>
 
   <ResultChart
-    total={$committee?.totalPresent}
+    total={committee?.totalPresent}
     {votesPro}
     {votesCon}
     {votesAbstain}

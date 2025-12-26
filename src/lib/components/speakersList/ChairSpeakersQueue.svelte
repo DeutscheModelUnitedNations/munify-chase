@@ -1,7 +1,7 @@
 <script lang="ts">
   import { flip } from 'svelte/animate';
   import { cubicInOut, cubicOut } from 'svelte/easing';
-  import { blur, fly } from 'svelte/transition';
+  import { fly } from 'svelte/transition';
   import toast from 'svelte-french-toast';
   import { m } from '$lib/paraglide/messages';
   import { getTranslatedCountryNameFromAlpha3Code } from '$lib/utils/nationTranslationHelper.svelte';
@@ -10,10 +10,11 @@
   import StripesAlert from './StripesAlert.svelte';
   import type { committeeTeamQuery } from '$lib/queries/committeeTeamQuery.svelte';
   import { client } from '$lib/api/rumbleClient/client';
+  import type { QueryResponseType } from '$lib/helpers/utilityTypes';
 
   interface Props {
     rawSpeakers?: NonNullable<
-      Awaited<ReturnType<typeof committeeTeamQuery>>['activeAgendaItem']
+      QueryResponseType<typeof committeeTeamQuery>['activeAgendaItem']
     >['speakersList'][number]['speakers'];
     closed?: boolean;
   }

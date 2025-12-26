@@ -2,7 +2,6 @@
   import CommitteeGrid from '$lib/components/CommitteeGrid.svelte';
   import CurrentTime from '$lib/components/CurrentTime.svelte';
   import NavbarBurgerMenu from '$lib/components/NavbarBurgerMenu.svelte';
-  import ThemeSwitcher from '$lib/components/ThemeSwitcher.svelte';
   import * as m from '$lib/paraglide/messages.js';
   import DownloadPresenceData from './DownloadPresenceData.svelte';
   import { missionControlQuery } from '$lib/queries/missionControlQuery.svelte';
@@ -30,7 +29,7 @@
   <div class="flex-none">
     <NavbarBurgerMenu items={menubarItems}>
       {#snippet CustomListItems()}
-        <DownloadPresenceData conferenceTitle={conference?.title} conferenceId={conference?.id} />
+        <DownloadPresenceData conferenceTitle={$conference?.title} conferenceId={$conference?.id} />
       {/snippet}
     </NavbarBurgerMenu>
   </div>

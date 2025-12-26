@@ -1,4 +1,4 @@
-import { assertFirstEntryExists } from '@m1212e/rumble';
+import { assertFindFirstExists, assertFirstEntryExists } from '@m1212e/rumble';
 import { and, count, eq, type InferSelectModel } from 'drizzle-orm';
 import { db, schema } from '$api/db/db';
 import {
@@ -92,8 +92,9 @@ const ref = object({
     twoThirdsMajority: t.field({
       type: 'Int',
       resolve: async (parent, args, context, info) => {
-        if (parent.customTwoThirdsMajority) {
-          return parent.customSimpleMajority;
+        const parentVal = parent.customSimpleMajority;
+        if (parentVal) {
+          return parentVal;
         }
         const total = await getTotalPresentCount(parent as any);
         return Math.ceil((total * 2) / 3);
@@ -136,7 +137,7 @@ schemaBuilder.mutationFields((t) => {
           type: 'DateTime'
         })
       },
-      resolve: async (query, root, args, ctx, info) => {
+      resolve: async (query, root, args, ctx) => {
         await db
           .update(schema.committee)
           .set({
@@ -166,15 +167,17 @@ schemaBuilder.mutationFields((t) => {
 
         pubsub.updated(args.id);
 
-        return db.query.committee.findFirst(
-          query(
-            ctx.abilities.committee.filter('read').merge({
-              where: {
-                id: args.id
-              }
-            }).query.single
+        return db.query.committee
+          .findFirst(
+            query(
+              ctx.abilities.committee.filter('read').merge({
+                where: {
+                  id: args.id
+                }
+              }).query.single
+            )
           )
-        );
+          .then(assertFindFirstExists);
       }
     })
   };

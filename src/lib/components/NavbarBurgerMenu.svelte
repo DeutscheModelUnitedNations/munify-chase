@@ -16,7 +16,7 @@
 
   const { items, CustomListItems }: Props = $props();
 
-  const menuVisible = $state(false);
+  let menuVisible = $state(false);
 </script>
 
 <button class="btn relative" aria-label="Open menu" onclick={() => (menuVisible = true)}>
@@ -29,7 +29,7 @@
     in:fly={{ y: -10 }}
     out:fly={{ y: -10 }}
   >
-    {#each items as { href, title, faIcon }}
+    {#each items as { href, title, faIcon }, index (index)}
       <li>
         <a {href}>
           <i class="fa-duotone w-6 text-center fa-{faIcon.replace('fa-', '')}"></i>

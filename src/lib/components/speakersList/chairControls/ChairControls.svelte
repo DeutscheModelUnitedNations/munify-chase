@@ -1,5 +1,6 @@
 <script lang="ts">
   import type { SpeakerslistcategoryEnum } from '$lib/api/rumbleClient/client';
+  import type { QueryResponseType } from '$lib/helpers/utilityTypes';
   import type { committeeTeamQuery } from '$lib/queries/committeeTeamQuery.svelte';
   import AddSpeakers from './AddSpeakers.svelte';
   import MoreOptions from './MoreOptions.svelte';
@@ -8,17 +9,16 @@
 
   type List =
     | NonNullable<
-        Awaited<ReturnType<typeof committeeTeamQuery>>['activeAgendaItem']
+        QueryResponseType<typeof committeeTeamQuery>['activeAgendaItem']
       >['speakersList'][number]
     | null;
 
   interface Props {
-    committeeId: string;
     type: SpeakerslistcategoryEnum;
-    committeeMembers: Awaited<ReturnType<typeof committeeTeamQuery>>['members'];
+    committeeMembers: QueryResponseType<typeof committeeTeamQuery>['members'];
     conferenceMembers: NonNullable<
       NonNullable<
-        Awaited<ReturnType<typeof committeeTeamQuery>>['conference']
+        QueryResponseType<typeof committeeTeamQuery>['conference']
       >['uniqueConferenceMembers']
     >;
     speakersList?: List;
@@ -26,15 +26,8 @@
     otherList?: List;
   }
 
-  const {
-    committeeId,
-    committeeMembers,
-    conferenceMembers,
-    type,
-    speakersList,
-    childList,
-    otherList
-  }: Props = $props();
+  const { committeeMembers, conferenceMembers, type, speakersList, childList, otherList }: Props =
+    $props();
 </script>
 
 <div class="flex flex-col gap-4">
@@ -42,7 +35,7 @@
 
   <div class="flex gap-2">
     <NextSpeech {speakersList} {childList} {type} />
-    <MoreOptions {type} {speakersList} />
+    <MoreOptions {speakersList} />
   </div>
 
   <AddSpeakers {committeeMembers} {conferenceMembers} {speakersList} />

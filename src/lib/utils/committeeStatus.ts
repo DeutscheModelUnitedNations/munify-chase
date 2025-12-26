@@ -35,7 +35,7 @@ export function getCommitteeStatusIcon(category: CommitteestatusEnum) {
   }
 }
 
-export function getCommitteeStatusBackground(category: CommitteeStatusEnum$options) {
+export function getCommitteeStatusBackground(category: CommitteestatusEnum) {
   switch (category) {
     case 'FORMAL':
       return 'bg-base-200';

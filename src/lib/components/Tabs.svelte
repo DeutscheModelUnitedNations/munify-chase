@@ -11,11 +11,11 @@
     onTabChange?: (tab: T) => void;
   }
 
-  const { tabs, activeTab = $bindable(), onTabChange }: Props = $props();
+  let { tabs, activeTab = $bindable(), onTabChange }: Props = $props();
 </script>
 
 <div class="tabs-box tabs h-auto" role="tablist">
-  {#each tabs as tab}
+  {#each tabs as tab (tab.id)}
     <button
       role="tab"
       class="tab flex-1 {activeTab === tab.id ? 'tab-active' : ''} h-auto items-center py-3"

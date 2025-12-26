@@ -4,11 +4,12 @@
   import { promiseToastStrings } from '$lib/utils/toast';
   import { client } from '$lib/api/rumbleClient/client';
   import type { committeeTeamQuery } from '$lib/queries/committeeTeamQuery.svelte';
+  import type { QueryResponseType } from '$lib/helpers/utilityTypes';
 
   interface Props {
     committeeId: string;
-    activeAgendaItem?: Awaited<ReturnType<typeof committeeTeamQuery>>['activeAgendaItem'];
-    agendaItems?: Awaited<ReturnType<typeof committeeTeamQuery>>['agendaItems'];
+    activeAgendaItem?: QueryResponseType<typeof committeeTeamQuery>['activeAgendaItem'];
+    agendaItems?: QueryResponseType<typeof committeeTeamQuery>['agendaItems'];
   }
 
   const { committeeId, activeAgendaItem, agendaItems }: Props = $props();

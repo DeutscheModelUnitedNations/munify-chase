@@ -4,7 +4,7 @@
   import toast from 'svelte-french-toast';
   import Combobox from '$lib/components/Combobox.svelte';
   import Flag from '$lib/components/Flag.svelte';
-  import type { MergeWithUndefined } from '$lib/helpers/utilityTypes';
+  import type { MergeWithUndefined, QueryResponseType } from '$lib/helpers/utilityTypes';
   import { m } from '$lib/paraglide/messages';
   import { getTranslatedCountryNameFromAlpha3Code } from '$lib/utils/nationTranslationHelper.svelte';
   import { promiseToastStrings } from '$lib/utils/toast';
@@ -14,13 +14,13 @@
   interface Props {
     speakersList?:
       | NonNullable<
-          Awaited<ReturnType<typeof committeeTeamQuery>>['activeAgendaItem']
+          QueryResponseType<typeof committeeTeamQuery>['activeAgendaItem']
         >['speakersList'][number]
       | null;
-    committeeMembers: Awaited<ReturnType<typeof committeeTeamQuery>>['members'];
+    committeeMembers: QueryResponseType<typeof committeeTeamQuery>['members'];
     conferenceMembers: NonNullable<
       NonNullable<
-        Awaited<ReturnType<typeof committeeTeamQuery>>['conference']
+        QueryResponseType<typeof committeeTeamQuery>['conference']
       >['uniqueConferenceMembers']
     >;
   }

@@ -1,8 +1,6 @@
 <script lang="ts">
-  import { onMount } from 'svelte';
   import question from '$lib/assets/undraw/question.svg';
   import BasicCard from '$lib/components/BasicCard.svelte';
-  import DevPlaceholder from '$lib/components/DevPlaceholder.svelte';
   import Majorities from '$lib/components/Majorities.svelte';
   import SpeakersQueuePresentation from '$lib/components/speakersList/ChairSpeakersQueue.svelte';
   import CurrentSpeaker from '$lib/components/speakersList/CurrentSpeaker.svelte';
@@ -51,7 +49,6 @@
       <div class="flex flex-col gap-8">
         <CurrentSpeaker {speakersList} />
         <ChairControls
-          committeeId={$committee.id}
           {speakersList}
           committeeMembers={$committee.members}
           conferenceMembers={$committee.conference?.uniqueConferenceMembers ?? []}
@@ -68,7 +65,6 @@
       <div class="flex flex-col gap-8">
         <CurrentSpeaker speakersList={commentList} />
         <ChairControls
-          committeeId={$committee.id}
           committeeMembers={$committee.members}
           conferenceMembers={$committee.conference?.uniqueConferenceMembers ?? []}
           speakersList={commentList}

@@ -29,7 +29,7 @@
       </div>
       <div class="flex h-full w-full flex-3 flex-col gap-4">
         <BasicCard title={m.voting()}>
-          <VotingSetup {committee} />
+          <VotingSetup committee={$committee} />
         </BasicCard>
       </div>
     </div>

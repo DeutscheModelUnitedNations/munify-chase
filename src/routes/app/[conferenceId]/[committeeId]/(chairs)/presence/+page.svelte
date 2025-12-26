@@ -33,13 +33,13 @@
   );
 
   const nsas = $derived(
-    committee?.conference?.uniqueConferenceMembers
+    $committee?.conference?.uniqueConferenceMembers
       ?.filter(isNSAMember)
       .sort((a, b) => a.representation!.name!.localeCompare(b.representation!.name!)) ?? []
   );
 
   const un = $derived(
-    committee?.conference?.uniqueConferenceMembers
+    $committee?.conference?.uniqueConferenceMembers
       ?.filter(isUNMember)
       ?.sort((a, b) => a.representation!.name!.localeCompare(b.representation!.name!)) ?? []
   );
@@ -96,7 +96,7 @@
           </button>
         </BasicCard>
         <BasicCard>
-          <PresenceActions memberIds={committee.members.map((x) => x.id)} />
+          <PresenceActions memberIds={$committee.members.map((x) => x.id)} />
         </BasicCard>
       </div>
       <div class="flex h-full w-full flex-3 flex-col gap-4">

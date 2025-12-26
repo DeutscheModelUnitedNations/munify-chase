@@ -12,3 +12,7 @@
 export type MergeWithUndefined<T, U> = {
   [K in keyof T | keyof U]: K extends keyof T ? T[K] : K extends keyof U ? U[K] : undefined;
 };
+
+export type QueryResponseType<
+  Query extends (...args: any[]) => { subscribe: (callback: (data: any) => void) => void }
+> = Parameters<Parameters<Awaited<ReturnType<Query>>['subscribe']>[0]>[0];

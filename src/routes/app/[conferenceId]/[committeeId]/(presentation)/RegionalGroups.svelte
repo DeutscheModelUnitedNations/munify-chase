@@ -5,10 +5,11 @@
   import { m } from '$lib/paraglide/messages';
   import type { RegionalgroupEnum } from '$lib/api/rumbleClient/client';
   import type { committeePresentationQuery } from '$lib/queries/committeePresentation.svelte';
+  import type { QueryResponseType } from '$lib/helpers/utilityTypes';
 
   interface Props {
     open: boolean;
-    committeeMembers: Awaited<ReturnType<typeof committeePresentationQuery>>['members'];
+    committeeMembers: QueryResponseType<typeof committeePresentationQuery>['members'];
   }
 
   const { open, committeeMembers }: Props = $props();
@@ -31,7 +32,7 @@
   };
 
   const getGroupMembers = (group: RegionalgroupEnum) =>
-    committeeMembers.filter((member) => member.representation?.regionalGroup === group);
+    committeeMembers.filter((member: any) => member.representation?.regionalGroup === group);
 
   $effect(() => {
     if (activeGroup) {

@@ -1,14 +1,12 @@
 <script lang="ts">
+  import type { QueryResponseType } from '$lib/helpers/utilityTypes';
   import type { committeePresentationQuery } from '$lib/queries/committeePresentation.svelte';
 
   interface Props {
     size?: 'xs' | 'sm' | 'md' | 'lg' | 'full';
-    // representation?: Partial<
-    //   NonNullable<
-    //     CommitteePresentationQuery$result["findFirstCommittee"]["members"]
-    //   >[number]["representation"]
-    // >;
-    representation?: Awaited<ReturnType<typeof committeePresentationQuery>>[''];
+    representation?: QueryResponseType<
+      typeof committeePresentationQuery
+    >['members'][number]['representation'];
     placeholder?: boolean;
   }
 

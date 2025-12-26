@@ -10,10 +10,11 @@
   import Flag from '../Flag.svelte';
   import StripesAlert from './StripesAlert.svelte';
   import { committeeTeamQuery } from '$lib/queries/committeeTeamQuery.svelte';
+  import type { QueryResponseType } from '$lib/helpers/utilityTypes';
 
   interface Props {
     rawSpeakers?: NonNullable<
-      Awaited<ReturnType<typeof committeeTeamQuery>>['activeAgendaItem']
+      QueryResponseType<typeof committeeTeamQuery>['activeAgendaItem']
     >['speakersList'][number]['speakers'];
     closed?: boolean;
     resizeFn?: () => void;
@@ -26,7 +27,7 @@
   );
 
   let container = $state<HTMLElement | null>(null);
-  const overflowContainer = $state<HTMLElement | null>(null);
+  let overflowContainer = $state<HTMLElement | null>(null);
   let containerHeight = $state(250);
   let rowHeight = $state(70);
   let reservedHeight = $state(50); // Reserve space for the header and footer, adjust as needed

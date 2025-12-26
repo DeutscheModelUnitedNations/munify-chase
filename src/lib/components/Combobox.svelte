@@ -18,7 +18,7 @@
     submit?: (value?: string) => void;
   }
 
-  const {
+  let {
     value = $bindable(),
     options,
     focused = $bindable(),

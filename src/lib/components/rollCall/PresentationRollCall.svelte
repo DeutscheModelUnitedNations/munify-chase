@@ -5,9 +5,10 @@
   import Modal from '../Modal.svelte';
   import ScrollingCountryList from './ScrollingCountryList.svelte';
   import type { committeeTeamQuery } from '$lib/queries/committeeTeamQuery.svelte';
+  import type { QueryResponseType } from '$lib/helpers/utilityTypes';
 
   interface Props {
-    members: Awaited<ReturnType<typeof committeeTeamQuery>>['members'];
+    members: QueryResponseType<typeof committeeTeamQuery>['members'];
     committeeId: string;
   }
 

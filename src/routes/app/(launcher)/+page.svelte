@@ -10,7 +10,7 @@
     __args: {
       where: {
         user: {
-          id: user.sub
+          id: $user.sub
         }
       }
     },
@@ -73,7 +73,7 @@
       <h3 class="text-center text-2xl">MUNify</h3>
       <h3 class="text-center text-5xl font-bold">CHASE</h3>
       <p class="mt-4 text-center text-lg">
-        {m.launcherWelcome({ name: user.given_name! })}
+        {m.launcherWelcome({ name: $user.given_name! })}
       </p>
     </div>
     <div class="card w-full max-w-2xl bg-base-100 shadow-sm">

@@ -1,15 +1,16 @@
 <script lang="ts">
-  import { bounceOut, cubicOut } from 'svelte/easing';
-  import { blur, scale } from 'svelte/transition';
+  import { bounceOut } from 'svelte/easing';
+  import { scale } from 'svelte/transition';
   import { m } from '$lib/paraglide/messages';
   import { getTranslatedCountryNameFromAlpha3Code } from '$lib/utils/nationTranslationHelper.svelte';
   import Flag from '../Flag.svelte';
   import Timer from './Timer.svelte';
   import { committeeTeamQuery } from '$lib/queries/committeeTeamQuery.svelte';
+  import type { QueryResponseType } from '$lib/helpers/utilityTypes';
 
   interface Props {
     speakersList?: NonNullable<
-      Awaited<ReturnType<typeof committeeTeamQuery>>['activeAgendaItem']
+      QueryResponseType<typeof committeeTeamQuery>['activeAgendaItem']
     >['speakersList'][number];
   }
 

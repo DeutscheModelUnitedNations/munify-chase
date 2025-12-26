@@ -259,7 +259,7 @@
         placeholder={m.conferenceId()}
       />
 
-      {#each importData.committees as committee}
+      {#each importData.committees as committee (committee.id)}
         {@const agendaItems = importData.agendaItems.filter(
           (item) => item.committeeId === committee.id
         )}
@@ -290,7 +290,7 @@
           />
           <fieldset class="fieldset rounded-box border border-base-300 bg-base-200 p-4">
             <legend class="fieldset-legend">{m.agendaItems()}</legend>
-            {#each agendaItems as item}
+            {#each agendaItems as item (item.id)}
               <div class="join">
                 <input
                   type="text"
@@ -329,12 +329,23 @@
               </div>
               {#each committeeMembers.toSorted((a, b) => importData!.representations
                     .find((rep) => rep.id === a.representationId)
-                    ?.alpha2Code?.localeCompare(importData!.representations.find((rep) => rep.id === b.representationId)?.alpha2Code ?? '') ?? 0) as member}
+                    ?.alpha2Code?.localeCompare(importData!.representations.find((rep) => rep.id === b.representationId)?.alpha2Code ?? '') ?? 0) as member (member.id)}
                 {@const rep = importData.representations.find(
                   (rep) => rep.id === member.representationId
                 )}
                 <div class="group card flex w-12 flex-wrap items-center bg-base-100 p-1">
-                  <Flag representation={rep} size="xs" />
+                  <Flag
+                    representation={{
+                      alpha2Code: rep?.alpha2Code ?? null,
+                      alpha3Code: rep?.alpha3Code ?? null,
+                      name: rep?.name ?? null,
+                      faIcon: rep?.faIcon ?? null,
+                      regionalGroup: rep?.regionalGroup ?? null,
+                      id: rep!.id,
+                      type: rep!.representationType
+                    }}
+                    size="xs"
+                  />
                   <div class="mt-2 font-mono uppercase">
                     {rep?.alpha2Code}
                   </div>
@@ -391,7 +402,7 @@
 
       <fieldset class="fieldset rounded-box border border-base-300 bg-base-100 p-4">
         <legend class="fieldset-legend">{m.nonStateActors()}</legend>
-        {#each importData.representations.filter((x) => x.representationType === 'NSA') as rep}
+        {#each importData.representations.filter((x) => x.representationType === 'NSA') as rep (rep.id)}
           {@const conferenceMembers = importData.conferenceMembers.filter(
             (member) => member.representationId === rep.id
           )}
@@ -443,7 +454,7 @@
 
       <fieldset class="fieldset rounded-box border border-base-300 bg-base-100 p-4">
         <legend class="fieldset-legend">{m.unActors()}</legend>
-        {#each importData.representations.filter((x) => x.representationType === 'UN') as rep}
+        {#each importData.representations.filter((x) => x.representationType === 'UN') as rep (rep.id)}
           {@const conferenceMembers = importData.conferenceMembers.filter(
             (member) => member.representationId === rep.id
           )}

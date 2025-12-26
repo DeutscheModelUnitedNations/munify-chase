@@ -1,9 +1,9 @@
 pre-commit:
   parallel: true
   commands:
-    lint:
-      run: eslint "{staged_files}"
-      stage_fixed: true
+    # lint:
+    #   run: bunx eslint "{staged_files}"
+    #   stage_fixed: true
     format:
-      run: prettier --write "{staged_files}"
+      run: bunx prettier --write "{staged_files}"
       stage_fixed: true

@@ -1,19 +1,18 @@
 <script lang="ts">
-  import hotkeys from 'hotkeys-js';
-  import { onMount } from 'svelte';
   import { flip } from 'svelte/animate';
   import { cubicIn, cubicInOut, cubicOut } from 'svelte/easing';
-  import { blur, crossfade, fly } from 'svelte/transition';
+  import { crossfade, fly } from 'svelte/transition';
   import Flag from '$lib/components/Flag.svelte';
-  import type { CommitteeSettings, VotingStage } from '$lib/local-db/localDB';
+  import type { CommitteeSettings } from '$lib/local-db/localDB';
   import { m } from '$lib/paraglide/messages';
   import FlagRow from './FlagRow.svelte';
   import ResultChart from './ResultChart.svelte';
   import type { committeePresentationQuery } from '$lib/queries/committeePresentation.svelte';
+  import type { QueryResponseType } from '$lib/helpers/utilityTypes';
 
   interface Props {
     committeeSettings?: CommitteeSettings;
-    committee?: Awaited<ReturnType<typeof committeePresentationQuery>>;
+    committee?: QueryResponseType<typeof committeePresentationQuery>;
   }
   const { committeeSettings, committee }: Props = $props();
 

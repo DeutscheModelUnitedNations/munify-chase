@@ -1,6 +1,5 @@
 <script lang="ts">
   import hotkeys from 'hotkeys-js';
-  import { onDestroy, onMount } from 'svelte';
   import toast from 'svelte-french-toast';
   import { localDB } from '$lib/local-db/localDB';
   import { m } from '$lib/paraglide/messages';
@@ -9,10 +8,11 @@
   import ScrollingCountryList from './ScrollingCountryList.svelte';
   import type { committeeTeamQuery } from '$lib/queries/committeeTeamQuery.svelte';
   import { client } from '$lib/api/rumbleClient/client';
+  import type { QueryResponseType } from '$lib/helpers/utilityTypes';
 
   interface Props {
     active: boolean;
-    members: Awaited<ReturnType<typeof committeeTeamQuery>>['members'];
+    members: QueryResponseType<typeof committeeTeamQuery>['members'];
     committeeId: string;
   }
 

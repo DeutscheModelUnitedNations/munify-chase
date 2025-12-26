@@ -27,7 +27,7 @@
 
   $effect(() => {
     // Toast Effect
-    if (!committee) return;
+    if (!$committee) return;
 
     const interval = setInterval(() => {
       if (dayjs($committee.statusUntil).diff(serverTime.value) < 0) {
@@ -47,7 +47,7 @@
         committeeStatusExpiredAlerted = false;
       }
 
-      for (const speakersList of committee.activeAgendaItem?.speakersList ?? []) {
+      for (const speakersList of $committee.activeAgendaItem?.speakersList ?? []) {
         const overtime =
           dayjs(speakersList.startTimestamp).diff(serverTime.value, 'seconds') +
             speakersList.timeLeft <
@@ -89,30 +89,30 @@
 
 <svelte:head>
   <title
-    >{committee?.abbreviation ?? 'N/A'}
+    >{$committee?.abbreviation ?? 'N/A'}
     {m.chairControls()} - MUNify CHASE</title
   >
 </svelte:head>
 
-<ChairNavbar title={committee?.abbreviation} />
+<ChairNavbar title={$committee?.abbreviation} />
 
 {@render children()}
 
 <StatusChangerModal
-  committeeId={data.committeeId}
-  oldStatus={committee?.status}
-  oldUntil={committee?.statusUntil}
-  oldCustomName={committee?.statusHeadline}
+  committeeId={$committee.id}
+  oldStatus={$committee?.status}
+  oldUntil={$committee?.statusUntil}
+  oldCustomName={$committee?.statusHeadline}
 />
 
 <StateOfDebateChangerModal
-  committeeId={data.committeeId}
-  oldStateOfDebate={committee?.stateOfDebate}
+  committeeId={$committee.id}
+  oldStateOfDebate={$committee?.stateOfDebate}
 />
 
 <AdoptionConfetti
-  lastAdoptionDate={committee?.lastResolutionAdoptionDate}
-  agendaItem={committee?.activeAgendaItem?.title ?? m.unknown()}
-  committeeName={committee?.name ?? m.unknown()}
+  lastAdoptionDate={$committee?.lastResolutionAdoptionDate}
+  agendaItem={$committee?.activeAgendaItem?.title ?? m.unknown()}
+  committeeName={$committee?.name ?? m.unknown()}
   confettiDurationSec={20}
 />

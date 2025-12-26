@@ -1,4 +1,3 @@
-/** biome-ignore-all lint/style/noNonNullAssertion: we assume the app has been correctly configured and the OIDC data is sufficient */
 import { makeOIDC } from "@m1212e/sveltekit-oidc";
 import { db, schema } from "$api/db/db";
 import { building, dev } from "$app/environment";

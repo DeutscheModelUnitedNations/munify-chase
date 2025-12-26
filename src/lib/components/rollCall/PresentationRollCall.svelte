@@ -1,13 +1,13 @@
 <script lang="ts">
 import { liveQuery } from "dexie";
-import type { CommitteeTeamQuery$result } from "$houdini";
 import { localDB } from "$lib/local-db/localDB";
 import { m } from "$lib/paraglide/messages";
 import Modal from "../Modal.svelte";
 import ScrollingCountryList from "./ScrollingCountryList.svelte";
+    import type { committeeTeamQuery } from "$lib/queries/committeeTeamQuery.svelte";
 
 interface Props {
-  members: CommitteeTeamQuery$result["findFirstCommittee"]["members"];
+  members: Awaited<ReturnType<typeof committeeTeamQuery>>["members"];
   committeeId: string;
 }
 

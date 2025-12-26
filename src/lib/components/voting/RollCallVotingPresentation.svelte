@@ -4,19 +4,16 @@ import { onMount } from "svelte";
 import { flip } from "svelte/animate";
 import { cubicIn, cubicInOut, cubicOut } from "svelte/easing";
 import { blur, crossfade, fly } from "svelte/transition";
-import type {
-  CommitteePresentationQuery$result,
-  RegionalGroupEnum$options,
-} from "$houdini";
 import Flag from "$lib/components/Flag.svelte";
 import type { CommitteeSettings, VotingStage } from "$lib/local-db/localDB";
 import { m } from "$lib/paraglide/messages";
 import FlagRow from "./FlagRow.svelte";
 import ResultChart from "./ResultChart.svelte";
+    import type { committeePresentationQuery } from "$lib/queries/committeePresentation.svelte";
 
 interface Props {
   committeeSettings?: CommitteeSettings;
-  committee?: CommitteePresentationQuery$result["findFirstCommittee"];
+  committee?: Awaited<ReturnType<typeof committeePresentationQuery>>;
 }
 const { committeeSettings, committee }: Props = $props();
 

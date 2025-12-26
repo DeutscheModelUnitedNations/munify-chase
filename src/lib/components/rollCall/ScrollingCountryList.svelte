@@ -1,14 +1,14 @@
 <script lang="ts">
 import { cubicOut } from "svelte/easing";
 import { scale } from "svelte/transition";
-import type { CommitteeTeamQuery$result } from "$houdini";
 import { m } from "$lib/paraglide/messages";
 import { getTranslatedCountryNameFromAlpha3Code } from "$lib/utils/nationTranslationHelper.svelte";
 import Flag from "../Flag.svelte";
+    import type { committeeTeamQuery } from "$lib/queries/committeeTeamQuery.svelte";
 
 interface Props {
   currentIndex: number;
-  members: CommitteeTeamQuery$result["findFirstCommittee"]["members"];
+  members: Awaited<ReturnType<typeof committeeTeamQuery>>["members"];
   height?: string;
   icons?: {
     id: string;

@@ -1,156 +1,144 @@
 <script lang="ts">
-import Fuse, { type IFuseOptions } from "fuse.js";
-import hotkeys from "hotkeys-js";
-import toast from "svelte-french-toast";
-import { type CommitteeTeamQuery$result, graphql } from "$houdini";
-import Combobox from "$lib/components/Combobox.svelte";
-import Flag from "$lib/components/Flag.svelte";
-import type { MergeWithUndefined } from "$lib/helpers/utilityTypes";
-import { m } from "$lib/paraglide/messages";
-import { getTranslatedCountryNameFromAlpha3Code } from "$lib/utils/nationTranslationHelper.svelte";
-import { promiseToastStrings } from "$lib/utils/toast";
+  import Fuse, { type IFuseOptions } from "fuse.js";
+  import hotkeys from "hotkeys-js";
+  import toast from "svelte-french-toast";
+  import Combobox from "$lib/components/Combobox.svelte";
+  import Flag from "$lib/components/Flag.svelte";
+  import type { MergeWithUndefined } from "$lib/helpers/utilityTypes";
+  import { m } from "$lib/paraglide/messages";
+  import { getTranslatedCountryNameFromAlpha3Code } from "$lib/utils/nationTranslationHelper.svelte";
+  import { promiseToastStrings } from "$lib/utils/toast";
+  import type { committeeTeamQuery } from "$lib/queries/committeeTeamQuery.svelte";
+  import { client } from "$lib/api/rumbleClient/client";
 
-interface Props {
-  speakersList?:
-    | NonNullable<
-        CommitteeTeamQuery$result["findFirstCommittee"]["activeAgendaItem"]
-      >["speakersList"][number]
-    | null;
-  committeeMembers: CommitteeTeamQuery$result["findFirstCommittee"]["members"];
-  conferenceMembers: NonNullable<
-    NonNullable<
-      CommitteeTeamQuery$result["findFirstCommittee"]["conference"]
-    >["uniqueConferenceMembers"]
+  interface Props {
+    speakersList?:
+      | NonNullable<
+          Awaited<ReturnType<typeof committeeTeamQuery>>["activeAgendaItem"]
+        >["speakersList"][number]
+      | null;
+    committeeMembers: Awaited<ReturnType<typeof committeeTeamQuery>>["members"];
+    conferenceMembers: NonNullable<
+      NonNullable<
+        Awaited<ReturnType<typeof committeeTeamQuery>>["conference"]
+      >["uniqueConferenceMembers"]
+    >;
+  }
+
+  const { speakersList, committeeMembers, conferenceMembers }: Props = $props();
+
+  type Member = MergeWithUndefined<
+    NonNullable<typeof committeeMembers>[number],
+    NonNullable<typeof conferenceMembers>[number]
   >;
-}
 
-const { speakersList, committeeMembers, conferenceMembers }: Props = $props();
+  const members = $derived([
+    ...committeeMembers,
+    ...conferenceMembers,
+  ] as Member[]);
 
-type Member = MergeWithUndefined<
-  NonNullable<typeof committeeMembers>[number],
-  NonNullable<typeof conferenceMembers>[number]
->;
+  let value = $state("");
+  let focused = $state(false);
 
-const members = $derived([
-  ...committeeMembers,
-  ...conferenceMembers,
-] as Member[]);
+  const getName = (member: Member | undefined) =>
+    member?.representation?.name
+      ? member?.representation.name
+      : getTranslatedCountryNameFromAlpha3Code(
+          member?.representation?.alpha3Code,
+        );
 
-let value = $state("");
-let focused = $state(false);
-
-const getName = (member: Member | undefined) =>
-  member?.representation?.name
-    ? member?.representation.name
-    : getTranslatedCountryNameFromAlpha3Code(
-        member?.representation?.alpha3Code,
-      );
-
-const fuseOptions: IFuseOptions<any> = {
-  keys: ["label"],
-  // threshold: 0.3, // Adjust the threshold for fuzzy matching
-  ignoreFieldNorm: true,
-  ignoreDiacritics: true,
-  shouldSort: true,
-};
-
-const fuse = $state(new Fuse(committeeMembers ?? [], fuseOptions));
-
-const filter = (members: Member[], value: string) => {
-  const excludeMembersAlreadyOnList = (member: Member) => {
-    if (!speakersList?.id) return true;
-    return !speakersList.speakers.some(
-      (speaker) =>
-        speaker.committeeMember?.id === member.id ||
-        speaker.conferenceMember?.id === member.id,
-    );
+  const fuseOptions: IFuseOptions<any> = {
+    keys: ["label"],
+    // threshold: 0.3, // Adjust the threshold for fuzzy matching
+    ignoreFieldNorm: true,
+    ignoreDiacritics: true,
+    shouldSort: true,
   };
 
-  if (value.length !== 0) {
-    fuse.setCollection(
-      members
+  const fuse = $state(new Fuse(committeeMembers ?? [], fuseOptions));
+
+  const filter = (members: Member[], value: string) => {
+    const excludeMembersAlreadyOnList = (member: Member) => {
+      if (!speakersList?.id) return true;
+      return !speakersList.speakers.some(
+        (speaker) =>
+          speaker.committeeMember?.id === member.id ||
+          speaker.conferenceMember?.id === member.id,
+      );
+    };
+
+    if (value.length !== 0) {
+      fuse.setCollection(
+        members
+          .filter(excludeMembersAlreadyOnList)
+          .map((x) => ({ ...x, label: getName(x) })) ?? [],
+      );
+      const search = fuse.search(value);
+      return search.map((result) => result.item);
+    } else {
+      return members
         .filter(excludeMembersAlreadyOnList)
-        .map((x) => ({ ...x, label: getName(x) })) ?? [],
-    );
-    const search = fuse.search(value);
-    return search.map((result) => result.item);
-  } else {
-    return members
-      .filter(excludeMembersAlreadyOnList)
-      .sort((a, b) => getName(a).localeCompare(getName(b)));
-  }
-};
-
-const AddSpeakerToListMutation = graphql(`
-    mutation AddSpeakerToList(
-      $committeeMemberId: ID
-      $conferenceMemberId: ID
-      $speakersListId: ID!
-    ) {
-      addSpeakerOnList(
-        committeeMemberId: $committeeMemberId
-        conferenceMemberId: $conferenceMemberId
-        speakersListId: $speakersListId
-      ) {
-        id
-        speakersList {
-          id
-        }
-      }
+        .sort((a, b) => getName(a).localeCompare(getName(b)));
     }
-  `);
+  };
 
-const addSpeakerToList = async () => {
-  if (!speakersList?.id) {
-    toast.error(m.speakersListNotFound());
-    return;
-  }
-  if (!value) return;
+  const addSpeakerToList = async () => {
+    if (!speakersList?.id) {
+      toast.error(m.speakersListNotFound());
+      return;
+    }
+    if (!value) return;
 
-  const committeeMember = committeeMembers.find((x) => getName(x) === value);
-  const conferenceMember = conferenceMembers.find(
-    (x) => getName(x as Member) === value,
-  );
+    const committeeMember = committeeMembers.find((x) => getName(x) === value);
+    const conferenceMember = conferenceMembers.find(
+      (x) => getName(x as Member) === value,
+    );
 
-  if (!committeeMember && !conferenceMember) {
-    return;
-  }
+    if (!committeeMember && !conferenceMember) {
+      return;
+    }
 
-  await toast.promise(
-    AddSpeakerToListMutation.mutate({
-      committeeMemberId: committeeMember?.id,
-      conferenceMemberId: conferenceMember?.id,
-      speakersListId: speakersList.id,
-    }),
-    promiseToastStrings(
-      getName(committeeMember ?? (conferenceMember as Member)),
-      "add",
-    ),
-  );
+    await toast.promise(
+      client.mutate.addSpeakerOnList({
+        __args: {
+          committeeMemberId: committeeMember?.id,
+          conferenceMemberId: conferenceMember?.id,
+          speakersListId: speakersList.id,
+        },
+        id: true,
+        speakersList: {
+          id: true,
+        },
+      }),
+      promiseToastStrings(
+        getName(committeeMember ?? (conferenceMember as Member)),
+        "add",
+      ),
+    );
 
-  value = "";
-};
+    value = "";
+  };
 
-$effect(() => {
-  if (!focused) {
-    hotkeys("alt+a, alt+shift+a", (event, handler) => {
-      event.preventDefault();
-      console.log("hotkey", handler.key);
-      switch (handler.key) {
-        case "alt+a":
-          if (speakersList?.type === "SPEAKERS_LIST") {
-            focused = true;
-          }
-          break;
-        case "alt+shift+a":
-          if (speakersList?.type === "COMMENT_LIST") {
-            focused = true;
-          }
-          break;
-      }
-    });
-  }
-});
+  $effect(() => {
+    if (!focused) {
+      hotkeys("alt+a, alt+shift+a", (event, handler) => {
+        event.preventDefault();
+        console.log("hotkey", handler.key);
+        switch (handler.key) {
+          case "alt+a":
+            if (speakersList?.type === "SPEAKERS_LIST") {
+              focused = true;
+            }
+            break;
+          case "alt+shift+a":
+            if (speakersList?.type === "COMMENT_LIST") {
+              focused = true;
+            }
+            break;
+        }
+      });
+    }
+  });
 </script>
 
 <Combobox

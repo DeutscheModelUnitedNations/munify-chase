@@ -1,38 +1,38 @@
 <script lang="ts">
-import toast from "svelte-french-toast";
-import { graphql } from "$houdini";
-import stateOfDebateTemplates from "$lib/data/stateOfDebateTemplates";
-import { m, stateOfDebate } from "$lib/paraglide/messages";
-import { promiseToastStrings } from "$lib/utils/toast";
-import Combobox from "../Combobox.svelte";
+  import toast from "svelte-french-toast";
+  import stateOfDebateTemplates from "$lib/data/stateOfDebateTemplates";
+  import { m } from "$lib/paraglide/messages";
+  import { promiseToastStrings } from "$lib/utils/toast";
+  import Combobox from "../Combobox.svelte";
+  import { client } from "$lib/api/rumbleClient/client";
 
-interface Props {
-  committeeId: string;
-  oldStateOfDebate?: string | null;
-  abort?: () => void;
-}
+  interface Props {
+    committeeId: string;
+    oldStateOfDebate?: string | null;
+    abort?: () => void;
+  }
 
-const { committeeId, oldStateOfDebate, abort }: Props = $props();
+  const { committeeId, oldStateOfDebate, abort }: Props = $props();
 
-const value = $state(oldStateOfDebate ?? "");
+  let value = $state(oldStateOfDebate ?? "");
 
-const presets = stateOfDebateTemplates.map((preset) => ({
-  label: preset,
-}));
+  const presets = stateOfDebateTemplates.map((preset) => ({
+    label: preset,
+  }));
 
-const submitState = async () => {
-  await toast.promise(
-    client.mutate.updateCommittee({
-      __args: {
-        id: committeeId,
-        stateOfDebate: value,
-      },
-      id: true,
-      stateOfDebate: true,
-    }),
-    promiseToastStrings(m.stateOfDebate(), "update"),
-  );
-};
+  const submitState = async () => {
+    await toast.promise(
+      client.mutate.updateCommittee({
+        __args: {
+          id: committeeId,
+          stateOfDebate: value,
+        },
+        id: true,
+        stateOfDebate: true,
+      }),
+      promiseToastStrings(m.stateOfDebate(), "update"),
+    );
+  };
 </script>
 
 <div class="flex flex-col gap-4">

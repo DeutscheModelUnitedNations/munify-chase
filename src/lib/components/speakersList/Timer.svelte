@@ -24,7 +24,7 @@ const {
 
 const calculatedTimeLeft = $derived.by(() => {
   if (startTimestamp && timeLeft !== null && timeLeft !== undefined) {
-    return dayjs(startTimestamp).diff($serverTime, "seconds") + timeLeft;
+    return dayjs(startTimestamp).diff(serverTime.value, "seconds") + timeLeft;
   }
   if (timeLeft !== null && timeLeft !== undefined) {
     return timeLeft;

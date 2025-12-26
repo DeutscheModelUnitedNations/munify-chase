@@ -1,56 +1,59 @@
 <script lang="ts">
-import toast from "svelte-french-toast";
-import { invalidateAll } from "$app/navigation";
-import { type CommitteeTeamQuery$result, cache, graphql } from "$houdini";
-import { m } from "$lib/paraglide/messages";
-import { promiseToastStrings } from "$lib/utils/toast";
+  import toast from "svelte-french-toast";
+  import { invalidateAll } from "$app/navigation";
+  import { m } from "$lib/paraglide/messages";
+  import { promiseToastStrings } from "$lib/utils/toast";
+  import { client } from "$lib/api/rumbleClient/client";
+  import type { committeeTeamQuery } from "$lib/queries/committeeTeamQuery.svelte";
 
-interface Props {
-  committeeId: string;
-  activeAgendaItem?: CommitteeTeamQuery$result["findFirstCommittee"]["activeAgendaItem"];
-  agendaItems?: CommitteeTeamQuery$result["findFirstCommittee"]["agendaItems"];
-}
-
-const { committeeId, activeAgendaItem, agendaItems }: Props = $props();
-
-const value = $state(activeAgendaItem?.id ?? "");
-
-const update = async () => {
-  if (value === activeAgendaItem?.id) {
-    return;
+  interface Props {
+    committeeId: string;
+    activeAgendaItem?: Awaited<
+      ReturnType<typeof committeeTeamQuery>
+    >["activeAgendaItem"];
+    agendaItems?: Awaited<ReturnType<typeof committeeTeamQuery>>["agendaItems"];
   }
-  await toast.promise(
-    client.mutate.updateCommittee({
-      __args: {
-        id: committeeId,
-        activeAgendaItemId: value,
-      },
-      id: true,
-      activeAgendaItem: {
+
+  const { committeeId, activeAgendaItem, agendaItems }: Props = $props();
+
+  let value = $state(activeAgendaItem?.id ?? "");
+
+  const update = async () => {
+    if (value === activeAgendaItem?.id) {
+      return;
+    }
+    await toast.promise(
+      client.mutate.updateCommittee({
+        __args: {
+          id: committeeId,
+          activeAgendaItemId: value,
+        },
+        id: true,
+        activeAgendaItem: {
+          id: true,
+          title: true,
+        },
+      }),
+      promiseToastStrings(m.agendaItem(), "update"),
+    );
+  };
+
+  const addAgendaItem = async () => {
+    const title = prompt(m.agendaItemTitle());
+    if (!title) return;
+
+    await toast.promise(
+      client.mutate.createAgendaItem({
+        __args: {
+          committeeId,
+          title,
+        },
         id: true,
         title: true,
-      },
-    }),
-    promiseToastStrings(m.agendaItem(), "update"),
-  );
-};
-
-const addAgendaItem = async () => {
-  const title = prompt(m.agendaItemTitle());
-  if (!title) return;
-
-  await toast.promise(
-    client.mutate.createAgendaItem({
-      __args: {
-        committeeId,
-        title,
-      },
-      id: true,
-      title: true,
-    }),
-    promiseToastStrings(m.agendaItem(), "create"),
-  );
-};
+      }),
+      promiseToastStrings(m.agendaItem(), "create"),
+    );
+  };
 </script>
 
 <div class="join">

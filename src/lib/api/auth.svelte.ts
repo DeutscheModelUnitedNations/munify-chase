@@ -6,7 +6,6 @@ export const authenticatedUser = async () =>
     family_name: true,
     given_name: true,
     locale: true,
-    phone: true,
     preferred_username: true,
     sub: true,
   });

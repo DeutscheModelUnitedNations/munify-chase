@@ -1,34 +1,33 @@
 <script lang="ts">
-import hotkeys from "hotkeys-js";
-import type { CommitteeStatusEnum$options } from "$houdini";
-import { m } from "$lib/paraglide/messages";
-import Modal from "../Modal.svelte";
-import StatusChanger from "./StatusChanger.svelte";
+  import hotkeys from "hotkeys-js";
+  import Modal from "../Modal.svelte";
+  import StatusChanger from "./StatusChanger.svelte";
+  import type { CommitteestatusEnum } from "$lib/api/rumbleClient/client";
 
-interface Props {
-  committeeId: string;
-  oldStatus?: CommitteestatusEnum;
-  oldUntil?: Date;
-  oldCustomName?: string;
-}
+  interface Props {
+    committeeId: string;
+    oldStatus?: CommitteestatusEnum;
+    oldUntil?: Date;
+    oldCustomName?: string;
+  }
 
-const { committeeId, oldStatus, oldUntil, oldCustomName }: Props = $props();
+  const { committeeId, oldStatus, oldUntil, oldCustomName }: Props = $props();
 
-let open = $state(false);
+  let open = $state(false);
 
-$effect(() => {
-  hotkeys("alt+s, esc", (event, handler) => {
-    event.preventDefault();
-    switch (handler.key) {
-      case "alt+s":
-        open = !open;
-        break;
-      case "esc":
-        open = false;
-        break;
-    }
+  $effect(() => {
+    hotkeys("alt+s, esc", (event, handler) => {
+      event.preventDefault();
+      switch (handler.key) {
+        case "alt+s":
+          open = !open;
+          break;
+        case "esc":
+          open = false;
+          break;
+      }
+    });
   });
-});
 </script>
 
 <Modal bind:open>

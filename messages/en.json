@@ -97,8 +97,12 @@
   "layoutSelect": "Select Layout",
   "layoutPreset": [
     {
-      "declarations": ["input preset"],
-      "selectors": ["preset"],
+      "declarations": [
+        "input preset"
+      ],
+      "selectors": [
+        "preset"
+      ],
       "match": {
         "preset=default": "Default Layout",
         "preset=smallScreen": "Layout for Small Screens",
@@ -111,8 +115,12 @@
   "off": "Off",
   "regionalGroups": [
     {
-      "declarations": ["input group"],
-      "selectors": ["group"],
+      "declarations": [
+        "input group"
+      ],
+      "selectors": [
+        "group"
+      ],
       "match": {
         "group=AFRICA": "Africa",
         "group=ASIA_PACIFIC": "Asia-Pacific",

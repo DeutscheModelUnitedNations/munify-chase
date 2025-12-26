@@ -106,9 +106,9 @@ $effect(() => {
 				<button
 					class="btn bg-base-100 flex-1"
 					onclick={() =>
-						(until = serverTime.value.minute(time).second(0).isBefore($serverTime)
-							? $serverTime.add(1, 'hour').minute(time).second(0)
-							: $serverTime.minute(time).second(0))}
+						(until = serverTime.value.minute(time).second(0).isBefore(serverTime.value)
+							? serverTime.value.add(1, 'hour').minute(time).second(0)
+							: serverTime.value.minute(time).second(0))}
 				>
 					{time}
 				</button>
@@ -121,7 +121,7 @@ $effect(() => {
 			{#each relativeTimes as time}
 				<button
 					class="btn bg-base-100 flex-1"
-					onclick={() => (until = $serverTime.add(time, 'minute'))}
+					onclick={() => (until = serverTime.value.add(time, 'minute'))}
 				>
 					{time}
 				</button>
@@ -136,7 +136,7 @@ $effect(() => {
 			onchange={(e) => {
 				const inputValue = (e.target as HTMLInputElement).value;
 				const parts = inputValue.split(':');
-				until = $serverTime
+				until = serverTime.value
 					.hour(parseInt(parts[0], 10))
 					.minute(parseInt(parts[1], 10))
 					.second(parseInt(parts[2], 10));
@@ -193,7 +193,7 @@ $effect(() => {
 			</button>
 		{/if}
 		<button
-			class="btn btn-primary btn-lg w-full flex-1 {until.isBefore($serverTime)
+			class="btn btn-primary btn-lg w-full flex-1 {until.isBefore(serverTime.value)
 				? 'btn-disabled'
 				: ''}"
 			onclick={() => {

@@ -4,11 +4,11 @@ import type duration from "dayjs/plugin/duration";
 import { check } from "drizzle-orm/gel-core";
 import { onMount } from "svelte";
 import Marquee from "svelte-fast-marquee";
-import type { CommitteeStatusEnum$options } from "$houdini";
 import * as m from "$lib/paraglide/messages.js";
 import { getLocale } from "$lib/paraglide/runtime";
 import { serverTime } from "$lib/state/serverTime.svelte";
 import { getCommitteeStatusBackground } from "$lib/utils/committeeStatus";
+    import type { CommitteestatusEnum } from "$lib/api/rumbleClient/client";
 
 interface Props {
   text: string;
@@ -52,7 +52,7 @@ let countdownDelta = $state<duration.Duration>();
 const countdownDeltaInFuture = $derived(() => {
   if (until) {
     const untilDate = dayjs(until);
-    return $serverTime.isBefore(untilDate);
+    return serverTime.value.isBefore(untilDate);
   }
   return false;
 });
@@ -60,7 +60,7 @@ const countdownDeltaInFuture = $derived(() => {
 $effect(() => {
   const calculateCountdown = () => {
     const untilDate = dayjs(until);
-    countdownDelta = dayjs.duration(untilDate.diff($serverTime));
+    countdownDelta = dayjs.duration(untilDate.diff(serverTime.value));
   };
   if (until) {
     calculateCountdown();

@@ -1,7 +1,7 @@
 import { client } from "$lib/api/rumbleClient/client";
 import { page } from "$app/state";
 
-export const missionControlQuery = () =>
+export const committeeTeamQuery = () =>
   client.liveQuery.committee({
     __args: {
       id: page.params.conferenceId!,

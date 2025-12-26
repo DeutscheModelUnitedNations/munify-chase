@@ -1,22 +1,15 @@
 <script lang="ts">
-import { ScrollArea } from "bits-ui";
 import dayjs from "dayjs";
 import { onMount } from "svelte";
-import { graphql } from "$houdini";
 import emptyStreet from "$lib/assets/undraw/empty_street.svg";
 import BasicCard from "$lib/components/BasicCard.svelte";
 import AgendaItemChanger from "$lib/components/committee/AgendaItemChanger.svelte";
 import StateOfDebate from "$lib/components/committee/StateOfDebateChanger.svelte";
-import IconInfoBox from "$lib/components/IconInfoBox.svelte";
 import Majorities from "$lib/components/Majorities.svelte";
 import UndrawError from "$lib/components/UndrawError.svelte";
 import WhiteboardEditorModal from "$lib/components/whiteboard/WhiteboardEditorModal.svelte";
 import WhiteboardViewer from "$lib/components/whiteboard/WhiteboardViewer.svelte";
 import { m } from "$lib/paraglide/messages";
-import {
-  getCommitteeStatusIcon,
-  translateCommitteeStatusText,
-} from "$lib/utils/committeeStatus";
 import StatusChanger from "../../../../../../lib/components/committee/StatusChanger.svelte";
 import { CommitteeSubscription } from "../committeeSubscription";
 import StatusWidget from "../StatusWidget.svelte";

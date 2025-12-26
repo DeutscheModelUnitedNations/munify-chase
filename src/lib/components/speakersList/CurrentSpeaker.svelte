@@ -1,28 +1,28 @@
 <script lang="ts">
-import { bounceOut, cubicOut } from "svelte/easing";
-import { blur, scale } from "svelte/transition";
-import type { CommitteeTeamQuery$result } from "$houdini";
-import { m } from "$lib/paraglide/messages";
-import { getTranslatedCountryNameFromAlpha3Code } from "$lib/utils/nationTranslationHelper.svelte";
-import Flag from "../Flag.svelte";
-import Timer from "./Timer.svelte";
+  import { bounceOut, cubicOut } from "svelte/easing";
+  import { blur, scale } from "svelte/transition";
+  import { m } from "$lib/paraglide/messages";
+  import { getTranslatedCountryNameFromAlpha3Code } from "$lib/utils/nationTranslationHelper.svelte";
+  import Flag from "../Flag.svelte";
+  import Timer from "./Timer.svelte";
+  import { committeeTeamQuery } from "$lib/queries/committeeTeamQuery.svelte";
 
-interface Props {
-  speakersList?: NonNullable<
-    CommitteeTeamQuery$result["findFirstCommittee"]["activeAgendaItem"]
-  >["speakersList"][number];
-}
+  interface Props {
+    speakersList?: NonNullable<
+      Awaited<ReturnType<typeof committeeTeamQuery>>["activeAgendaItem"]
+    >["speakersList"][number];
+  }
 
-const { speakersList }: Props = $props();
+  const { speakersList }: Props = $props();
 
-const currentSpeaker = $derived(
-  speakersList?.speakers.toSorted((a, b) => a.position - b.position).at(0),
-);
+  const currentSpeaker = $derived(
+    speakersList?.speakers.toSorted((a, b) => a.position - b.position).at(0),
+  );
 
-const representation = $derived(
-  currentSpeaker?.committeeMember?.representation ||
-    currentSpeaker?.conferenceMember?.representation,
-);
+  const representation = $derived(
+    currentSpeaker?.committeeMember?.representation ||
+      currentSpeaker?.conferenceMember?.representation,
+  );
 </script>
 
 <div class="relative flex items-center gap-6">

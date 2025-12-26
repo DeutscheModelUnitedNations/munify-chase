@@ -94,6 +94,10 @@ export const urqlClient = new Client({
       keys: {
         AuthenticatedUserData: (data) => (data as any).sub,
       },
+      // TODO: https://nearform.com/open-source/urql/docs/graphcache/cache-updates/#optimistic-updates
+      // optimistic: {
+        
+      // }
     }),
     nativeDateExchange,
     remoteFunctionsExchange,

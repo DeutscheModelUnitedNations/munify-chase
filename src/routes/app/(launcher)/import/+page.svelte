@@ -5,12 +5,13 @@ import WorldCountries from "world-countries";
 import { z } from "zod/v4";
 import { goto } from "$app/navigation";
 import { page } from "$app/state";
-import { graphql, type RepresentationTypeEnum$options } from "$houdini";
+import { graphql } from "$houdini";
 import Flag from "$lib/components/Flag.svelte";
 import Footer from "$lib/components/Footer.svelte";
 import { nanoid } from "$lib/helpers/nanoid";
 import { m } from "$lib/paraglide/messages";
 import { importDataSchema } from "$lib/utils/import";
+    import type { RepresentationtypeEnum } from "$lib/api/rumbleClient/client";
 
 // let { data }: PageData = $props();
 
@@ -163,7 +164,7 @@ const addAgendaItem = (committeeId: string) =>
   });
 
 const addRepresentationAndConferenceMember = (
-  type: RepresentationTypeEnum$options,
+  type: RepresentationtypeEnum,
 ) => {
   const repId = nanoid();
   importData?.representations.push({

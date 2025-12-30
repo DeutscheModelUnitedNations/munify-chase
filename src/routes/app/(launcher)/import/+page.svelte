@@ -124,18 +124,12 @@
       delete importData.$schema;
     }
 
-    const res = await client.mutate
-      .importDelegatorConference({
-        __args: {
-          data: importData
-        },
-        id: true
-      })
-      .catch((e) => {
-        toast.error(m.conferenceCreationError());
-        console.error('Error creating conference:', e);
-        loading = false;
-      });
+    const res = await client.mutate.importDelegatorConference({
+      __args: {
+        data: importData
+      },
+      id: true
+    });
     if (res) {
       toast.success(m.conferenceCreated());
       goto(`/app`);

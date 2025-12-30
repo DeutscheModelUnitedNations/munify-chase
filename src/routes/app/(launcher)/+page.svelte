@@ -89,7 +89,7 @@
               {m.launcherNoConferences()}
             </div>
           {:else}
-            {#each $conferenceData as c}
+            {#each $conferenceData as c (c.id)}
               {@const conf = c.conference}
               <a
                 href={getUrl(c.conferenceUserType, c.conference.id)}

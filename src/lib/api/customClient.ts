@@ -1,4 +1,4 @@
-import { nativeDateExchange } from '@m1212e/rumble';
+import { nativeDateExchange } from '@m1212e/rumble/client';
 import { Client, CombinedError, type Exchange, fetchExchange } from '@urql/core';
 import { cacheExchange } from '@urql/exchange-graphcache';
 import { empty, filter, fromPromise, merge, mergeMap, pipe } from 'wonka';

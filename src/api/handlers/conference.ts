@@ -2,15 +2,20 @@ import { db } from '$api/db/db';
 import { abilityBuilder, countQuery, object, query } from '$api/rumble';
 import { ConferenceMemberRef, ConferenceMemberWhereInput } from './conferenceMember';
 
-// abilityBuilder.conference.allow("read").when(({ mustBeLoggedIn }) => {
-//   const user = mustBeLoggedIn();
+abilityBuilder.conference.allow('read').when(({ mustBeLoggedIn }) => {
+  const user = mustBeLoggedIn();
 
-//   if (user?.email && isDMUNEmail(user.email)) {
-//     return "allow";
-//   }
-// });
+  return {
+    where: {
+      users: {
+        user: {
+          id: user.sub
+        }
+      }
+    }
+  };
+});
 
-// const pubsub = rumblePubsub({ table: "committee" });
 query({
   table: 'conference'
 });

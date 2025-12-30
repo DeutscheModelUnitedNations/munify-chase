@@ -5,7 +5,7 @@
   import { page } from '$app/state';
   import { enableViewTransitionApi } from '$lib/helpers/viewTransitionApi.svelte';
   import { locales, localizeHref } from '$lib/paraglide/runtime';
-  import '../app.css';
+  import './layout.css';
   import '/node_modules/flag-icons/css/flag-icons.min.css';
 
   import '@fontsource/outfit/100.css';

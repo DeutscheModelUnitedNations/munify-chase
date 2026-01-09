@@ -7,3 +7,9 @@ pre-commit:
     format:
       run: bunx prettier --ignore-unknown --write "{staged_files}"
       stage_fixed: true
+pre-push:
+  commands:
+    test:
+      run: bun test
+    lint:
+      run: bunx eslint "{push_files}"

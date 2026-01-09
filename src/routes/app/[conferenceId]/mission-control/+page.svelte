@@ -13,14 +13,29 @@
 
 	let query = $derived(data?.MissionControlQuery);
 	let conference = $derived($query.data?.findFirstConference);
+	let currentUserRole = $derived($query.data?.currentUserRole?.[0]);
+	let isAdmin = $derived(currentUserRole?.conferenceUserType === 'ADMIN');
 
-	const menubarItems = [
+	const baseMenuItems = [
 		{
 			faIcon: 'fa-home',
 			title: m.home(),
 			href: '..'
 		}
 	];
+
+	let menubarItems = $derived(
+		isAdmin
+			? [
+					...baseMenuItems,
+					{
+						faIcon: 'fa-gear',
+						title: m.configuration(),
+						href: 'mission-control/config'
+					}
+				]
+			: baseMenuItems
+	);
 
 	onMount(() => {
 		MissionControlSubscription.listen({ conferenceId: data.conferenceId });

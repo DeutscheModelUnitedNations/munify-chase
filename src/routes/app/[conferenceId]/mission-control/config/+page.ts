@@ -1,4 +1,5 @@
 import { graphql } from '$houdini';
+import { error } from '@sveltejs/kit';
 import type { ConferenceConfigQueryVariables } from './$houdini';
 
 export const _houdini_load = graphql(`
@@ -24,8 +25,11 @@ export const _houdini_load = graphql(`
 
 export const _ConferenceConfigQueryVariables: ConferenceConfigQueryVariables = async (event) => {
 	const { user } = await event.parent();
+	if (!user?.sub) {
+		error(401, 'Unauthorized');
+	}
 	return {
 		conferenceId: event.params.conferenceId,
-		userId: user?.sub ?? ''
+		userId: user.sub
 	};
 };

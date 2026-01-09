@@ -131,6 +131,30 @@ schemaBuilder.mutationFields((t) => ({
 
 			await assertConferenceAdmin(ctx, conferenceUser.conferenceId);
 
+			const currentUser = ctx.mustBeLoggedIn();
+
+			// Prevent self-deletion
+			if (conferenceUser.userEmail === currentUser.email) {
+				throw new GraphQLError('You cannot delete yourself from the conference');
+			}
+
+			// Prevent deleting the last ADMIN
+			if (conferenceUser.conferenceUserType === 'ADMIN') {
+				const remainingAdmins = await db.query.conferenceUser.findMany({
+					where: {
+						conferenceId: conferenceUser.conferenceId,
+						conferenceUserType: 'ADMIN',
+						id: { ne: args.id }
+					}
+				});
+
+				if (remainingAdmins.length === 0) {
+					throw new GraphQLError(
+						'Cannot delete the last ADMIN. Promote another user to ADMIN first.'
+					);
+				}
+			}
+
 			await db.delete(schema.conferenceUser).where(eq(schema.conferenceUser.id, args.id));
 
 			pubsub.removed(args.id);

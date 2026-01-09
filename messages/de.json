@@ -28,7 +28,7 @@
 	"bulkAddMembers": "Mehrere Mitglieder hinzufügen",
 	"bulkEmailPlaceholder": "E-Mail-Adressen eingeben (eine pro Zeile oder kommagetrennt)",
 	"bulletedList": "Aufzählungsliste",
-	"chairControls": "Chair Controls",
+	"chairControls": "Vorsitz-Steuerung",
 	"changeSpeakersName": "Name ändern",
 	"changeSpeakersTime": "Redezeit ändern",
 	"clearFormatting": "Formatierung löschen",
@@ -41,7 +41,7 @@
 	"comingSoon": "bald verfügbar",
 	"commentList": "Fragen und Kurzbemerkungen",
 	"committee": "Gremium",
-	"committeeAbbreviation": "Gremien-Akürzung",
+	"committeeAbbreviation": "Gremien-Abkürzung",
 	"committeeDoesNotExist": "Das Gremium existiert nicht.",
 	"committeeId": "Gremien-ID",
 	"committeeMember": "Gremienmitglied",
@@ -119,7 +119,7 @@
 	"launcherNoConferences": "Du bist für keine Konferenz angemeldet.",
 	"launcherWelcome": "Willkommen zurück, {name}!",
 	"layout": "Layout",
-	"layoutDescription": "Layout-Vorlagen für die Präsentationsansicht. Bitte beachte, dass du manuelle Änderungen am Layout überschreibst, wenn du die Layoutvorlage hier änders.",
+	"layoutDescription": "Layout-Vorlagen für die Präsentationsansicht. Bitte beachte, dass du manuelle Änderungen am Layout überschreibst, wenn du die Layoutvorlage hier änderst.",
 	"layoutPreset": [
 		{
 			"declarations": ["input preset"],

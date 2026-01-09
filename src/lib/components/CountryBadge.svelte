@@ -21,6 +21,7 @@
 	</div>
 	{#if onRemove}
 		<button
+			type="button"
 			class="btn btn-error btn-xs btn-circle absolute top-1/2 right-1/2 z-40 translate-x-1/2 -translate-y-1/2 opacity-0 transition-all duration-300 group-hover:opacity-100"
 			aria-label="Remove"
 			onclick={onRemove}

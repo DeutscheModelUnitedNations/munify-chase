@@ -376,15 +376,17 @@
 								{@const rep = importData.representations.find(
 									(rep) => rep.id === member.representationId
 								)}
-								<CountryBadge
-									alpha2Code={rep?.alpha2Code ?? ''}
-									alpha3Code={rep?.alpha3Code}
-									onRemove={() => {
-										importData!.committeeMembers = importData!.committeeMembers?.filter(
-											(i) => i.id !== member.id
-										);
-									}}
-								/>
+								{#if rep?.alpha2Code}
+									<CountryBadge
+										alpha2Code={rep.alpha2Code}
+										alpha3Code={rep.alpha3Code}
+										onRemove={() => {
+											importData!.committeeMembers = importData!.committeeMembers?.filter(
+												(i) => i.id !== member.id
+											);
+										}}
+									/>
+								{/if}
 							{/each}
 						</div>
 						<button

@@ -27,6 +27,15 @@
 		parseInput(inputText);
 	});
 
+	// Clear state when modal is closed externally (ESC/backdrop)
+	$effect(() => {
+		if (!open) {
+			inputText = '';
+			parsedCountries = [];
+			unrecognizedStrings = [];
+		}
+	});
+
 	function parseInput(text: string) {
 		// Split by various delimiters: newline, comma, semicolon, space, tab
 		const tokens = text

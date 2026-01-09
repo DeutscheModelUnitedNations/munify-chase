@@ -244,5 +244,12 @@
 	"downloadPresenceData": "Presence Data",
 	"rollCallError": "Committee member not found",
 	"rollCallSuccess": "Roll call completed",
-	"moderatedInformalCaucus": "Moderated informal caucus"
+	"moderatedInformalCaucus": "Moderated informal caucus",
+	"timeOver": "Speaking time is up!",
+	"short_sleek_snake_hint": "Committee",
+	"rollCollError": "Committee member not found",
+	"rollCollSuccess": "Roll call complete",
+	"homeVersionButton": "CHASE (CHAirSoftwarE) is a web application for managing and conducting debates in Model United Nations conferences. It is designed for chairmen and delegates alike. CHASE allows chairs to easily manage debates, while delegates can follow the debate and collaborate with other delegates in an intuitive and structured way. CHASE is free and open source software.",
+	"maroon_bland_ray_renew": "Committee abbreviation",
+	"notPresent": "Not present"
 }

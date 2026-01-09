@@ -25,3 +25,5 @@ vite.config.ts.timestamp-*
 
 .houdini
 .claude
+
+.lazyi18n

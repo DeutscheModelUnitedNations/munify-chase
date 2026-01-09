@@ -1,3 +1,27 @@
 # Trivy ignore file
 # Add CVE IDs to ignore specific vulnerabilities
-# Example: CVE-2024-12345
+
+# esbuild Go stdlib vulnerabilities (build-time tool only)
+# esbuild is a JS/TS bundler that doesn't use these Go stdlib features
+
+# net/netip: IPv4-mapped IPv6 address parsing - esbuild doesn't do network ops
+CVE-2024-24790
+
+# net/http, x/net/http2: HTTP/2 DoS vulnerabilities - esbuild doesn't serve HTTP
+CVE-2023-39325
+CVE-2023-45288
+
+# filepath: Windows \??\ path prefix - Linux containers only
+CVE-2023-45283
+
+# encoding/gob: nested struct decoding - esbuild doesn't use gob
+CVE-2024-34156
+
+# database/sql: Postgres race condition - esbuild doesn't use databases
+CVE-2025-47907
+
+# archive/tar: GNU sparse map allocation - esbuild doesn't parse tar files
+CVE-2025-58183
+
+# crypto/x509: certificate error string DoS - esbuild doesn't validate certs
+CVE-2025-61729

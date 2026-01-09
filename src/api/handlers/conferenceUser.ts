@@ -160,6 +160,34 @@ schemaBuilder.mutationFields((t) => ({
 
 			await assertConferenceAdmin(ctx, conferenceUser.conferenceId);
 
+			const currentUser = ctx.mustBeLoggedIn();
+
+			// Prevent self-demotion from ADMIN
+			if (
+				conferenceUser.userEmail === currentUser.email &&
+				conferenceUser.conferenceUserType === 'ADMIN' &&
+				args.conferenceUserType !== 'ADMIN'
+			) {
+				throw new GraphQLError('You cannot demote yourself from ADMIN');
+			}
+
+			// Prevent orphaning the conference (removing the last ADMIN)
+			if (conferenceUser.conferenceUserType === 'ADMIN' && args.conferenceUserType !== 'ADMIN') {
+				const remainingAdmins = await db.query.conferenceUser.findMany({
+					where: {
+						conferenceId: conferenceUser.conferenceId,
+						conferenceUserType: 'ADMIN',
+						id: { ne: args.id }
+					}
+				});
+
+				if (remainingAdmins.length === 0) {
+					throw new GraphQLError(
+						'Cannot demote the last ADMIN. Promote another user to ADMIN first.'
+					);
+				}
+			}
+
 			await db
 				.update(schema.conferenceUser)
 				.set({ conferenceUserType: args.conferenceUserType })

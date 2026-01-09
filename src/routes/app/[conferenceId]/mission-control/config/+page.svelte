@@ -5,11 +5,15 @@
 	import BasicCard from '$lib/components/BasicCard.svelte';
 	import { cache, graphql } from '$houdini';
 	import { invalidateAll } from '$app/navigation';
+	import toast from 'svelte-french-toast';
+	import { promiseToastStrings } from '$lib/utils/toast';
 
 	let { data }: { data: PageData } = $props();
 
 	let query = $derived(data?.ConferenceConfigQuery);
 	let conference = $derived(query ? $query.data?.findFirstConference : undefined);
+	let currentUserRole = $derived($query.data?.currentUserRole?.[0]);
+	let isAdmin = $derived(currentUserRole?.conferenceUserType === 'ADMIN');
 	let conferenceUsers = $derived(
 		[...(conference?.users ?? [])].sort((a, b) => a.userEmail.localeCompare(b.userEmail))
 	);
@@ -66,12 +70,18 @@
 		return currentUserEmail === email;
 	}
 
+	function isValidEmail(email: string): boolean {
+		// Simple but robust email validation regex
+		const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+		return emailRegex.test(email);
+	}
+
 	function parseEmails(input: string): string[] {
-		// Split by newlines, commas, or semicolons, then trim and filter empty
+		// Split by newlines, commas, or semicolons, then trim, normalize, and validate
 		return input
 			.split(/[\n,;]+/)
-			.map((email) => email.trim())
-			.filter((email) => email.length > 0 && email.includes('@'));
+			.map((email) => email.trim().toLowerCase())
+			.filter((email) => email.length > 0 && isValidEmail(email));
 	}
 
 	async function addBulkMembers() {
@@ -83,15 +93,14 @@
 		isBulkSubmitting = true;
 		try {
 			for (const email of emails) {
-				try {
-					await CreateConferenceUserMutation.mutate({
+				await toast.promise(
+					CreateConferenceUserMutation.mutate({
 						conferenceId: conference.id,
 						userEmail: email,
 						conferenceUserType: newRole
-					});
-				} catch (error) {
-					console.error(`Failed to add member ${email}:`, error);
-				}
+					}),
+					promiseToastStrings(m.member(), 'add')
+				);
 			}
 			bulkEmails = '';
 		} finally {
@@ -104,13 +113,12 @@
 	async function removeMember(id: string) {
 		if (!confirm(m.confirmRemoveMember()) || !query) return;
 
-		try {
-			await DeleteConferenceUserMutation.mutate({ id });
-			cache.markStale();
-			await invalidateAll();
-		} catch (error) {
-			console.error('Failed to remove member:', error);
-		}
+		await toast.promise(
+			DeleteConferenceUserMutation.mutate({ id }),
+			promiseToastStrings(m.member(), 'delete')
+		);
+		cache.markStale();
+		await invalidateAll();
 	}
 
 	async function updateMemberRole(
@@ -118,16 +126,16 @@
 		newType: 'ADMIN' | 'TEAM' | 'SPECTATOR' | 'DELEGATE' | 'NON_STATE_ACTOR'
 	) {
 		if (!query) return;
-		try {
-			await UpdateConferenceUserMutation.mutate({
+
+		await toast.promise(
+			UpdateConferenceUserMutation.mutate({
 				id,
 				conferenceUserType: newType
-			});
-			cache.markStale();
-			await invalidateAll();
-		} catch (error) {
-			console.error('Failed to update member:', error);
-		}
+			}),
+			promiseToastStrings(m.member(), 'update')
+		);
+		cache.markStale();
+		await invalidateAll();
 	}
 </script>
 
@@ -144,7 +152,12 @@
 
 <div class="flex h-full w-full items-start justify-center p-6">
 	<div class="flex w-full max-w-screen-lg flex-col gap-6">
-		{#if conference}
+		{#if !isAdmin}
+			<div class="alert alert-error">
+				<i class="fas fa-exclamation-triangle"></i>
+				<span>{m.notAuthorized()}</span>
+			</div>
+		{:else if conference}
 			<h2 class="text-xl font-semibold">{conference.title}</h2>
 
 			<BasicCard title={m.conferenceMembers()}>

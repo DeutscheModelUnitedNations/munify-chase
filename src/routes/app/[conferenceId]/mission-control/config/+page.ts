@@ -2,7 +2,7 @@ import { graphql } from '$houdini';
 import type { ConferenceConfigQueryVariables } from './$houdini';
 
 export const _houdini_load = graphql(`
-	query ConferenceConfigQuery($conferenceId: ID!) {
+	query ConferenceConfigQuery($conferenceId: ID!, $userId: ID!) {
 		findFirstConference(where: { id: $conferenceId }) {
 			id
 			title
@@ -12,11 +12,20 @@ export const _houdini_load = graphql(`
 				conferenceUserType
 			}
 		}
+		currentUserRole: findManyConferenceUser(
+			where: { conferenceId: $conferenceId, user: { id: $userId } }
+			limit: 1
+		) {
+			id
+			conferenceUserType
+		}
 	}
 `);
 
-export const _ConferenceConfigQueryVariables: ConferenceConfigQueryVariables = (event) => {
+export const _ConferenceConfigQueryVariables: ConferenceConfigQueryVariables = async (event) => {
+	const { user } = await event.parent();
 	return {
-		conferenceId: event.params.conferenceId
+		conferenceId: event.params.conferenceId,
+		userId: user?.sub ?? ''
 	};
 };

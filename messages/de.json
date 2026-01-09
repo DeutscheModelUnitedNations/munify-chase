@@ -262,5 +262,7 @@
 	"bulkEmailPlaceholder": "E-Mail-Adressen eingeben (eine pro Zeile oder kommagetrennt)",
 	"addAll": "Alle hinzufügen",
 	"youCannotEditYourself": "Sie können Ihre eigene Rolle nicht bearbeiten",
-	"you": "Du"
+	"you": "Du",
+	"notAuthorized": "Sie sind nicht berechtigt, auf diese Seite zuzugreifen",
+	"member": "Mitglied"
 }

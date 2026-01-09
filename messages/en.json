@@ -253,5 +253,7 @@
 	"bulkEmailPlaceholder": "Enter email addresses (one per line or comma-separated)",
 	"addAll": "Add All",
 	"youCannotEditYourself": "You cannot edit your own role",
-	"you": "You"
+	"you": "You",
+	"notAuthorized": "You are not authorized to access this page",
+	"member": "Member"
 }

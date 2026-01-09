@@ -1,24 +1,15 @@
 import { graphql } from '$houdini';
-import type { MissionControlQueryVariables } from './$houdini';
+import type { ConferenceConfigQueryVariables } from './$houdini';
 
 export const _houdini_load = graphql(`
-	query MissionControlQuery($conferenceId: ID!, $userId: ID!) {
+	query ConferenceConfigQuery($conferenceId: ID!, $userId: ID!) {
 		findFirstConference(where: { id: $conferenceId }) {
 			id
 			title
-			committees {
+			users {
 				id
-				name
-				abbreviation
-				activeAgendaItem {
-					id
-					title
-				}
-				status
-				statusHeadline
-				statusUntil
-				stateOfDebate
-				lastResolutionAdoptionDate
+				userEmail
+				conferenceUserType
 			}
 		}
 		currentUserRole: findManyConferenceUser(
@@ -31,7 +22,7 @@ export const _houdini_load = graphql(`
 	}
 `);
 
-export const _MissionControlQueryVariables: MissionControlQueryVariables = async (event) => {
+export const _ConferenceConfigQueryVariables: ConferenceConfigQueryVariables = async (event) => {
 	const { user } = await event.parent();
 	return {
 		conferenceId: event.params.conferenceId,

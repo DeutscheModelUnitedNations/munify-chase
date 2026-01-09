@@ -266,11 +266,14 @@ type Mutation {
   addSpeakerOnList(committeeMemberId: ID, conferenceMemberId: ID, position: Int, speakersListId: ID!): SpeakerOnList
   clearSpeakersList(id: ID!): SpeakersList
   createAgendaItem(committeeId: ID!, title: String!): AgendaItem
+  createConferenceUser(conferenceId: ID!, conferenceUserType: ConferenceUserTypeEnum!, userEmail: String!): ConferenceUser
+  deleteConferenceUser(id: ID!): Boolean
   importDelegatorConference(data: ImportData!): Conference
   moveSpeakerToPosition(id: ID!, position: Int!): SpeakerOnList
   removeSpeakerOnList(speakerOnListId: ID!): SpeakersList
   setPresenceForCommitteeMembers(ids: [ID!]!, present: Boolean!): [CommitteeMember!]
   updateCommittee(activeAgendaItemId: ID, id: ID!, lastResolutionAdoptionDate: DateTime, showWhiteboard: Boolean, stateOfDebate: String, status: CommitteeStatusEnum, statusHeadline: String, statusUntil: DateTime, whiteboardContent: String): Committee
+  updateConferenceUser(conferenceUserType: ConferenceUserTypeEnum!, id: ID!): ConferenceUser
   updateSpeakerOnList(id: ID!, overwriteName: String): SpeakerOnList
   updateSpeakersList(id: ID!, isClosed: Boolean, speakingTime: Int, startTimestamp: DateTime, stopTimer: Boolean = false, timeLeft: Int): SpeakersList
 }

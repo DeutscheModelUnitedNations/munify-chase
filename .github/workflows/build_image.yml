@@ -1,11 +1,14 @@
-name: Build and publish container images
+name: Build and publish container image
 
 on:
-  release:
-    types: [published]
   push:
     branches:
-      - main
+      - 'main'
+    tags:
+      - '*'
+  pull_request:
+    branches:
+      - 'main'
 
 jobs:
   build:
@@ -18,8 +21,29 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v3
+      - name: Set up bun
+        uses: oven-sh/setup-bun@v2
+
+      - name: Install dependencies
+        run: bun i --frozen-lockfile
+
+      - name: Run Trivy scanner on fs
+        uses: aquasecurity/trivy-action@0.32.0
+        with:
+          scan-type: 'fs'
+          scan-ref: '.'
+          exit-code: 1
+          format: 'table'
+          ignore-unfixed: true
+          vuln-type: 'os,library'
+          severity: 'CRITICAL,HIGH'
+          trivyignores: .trivyignore
+          # don't scan for secrets in PRs
+          scanners: ${{ github.event_name == 'pull_request' && 'vuln,license' || 'vuln,secret,misconfig,license'}}
+
+      # TODO: enable if we also plan on building for ARM natively
+      # - name: Set up QEMU
+      #   uses: docker/setup-qemu-action@v3
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -44,29 +68,69 @@ jobs:
           flavor: |
             latest=false
           images: |
+            ghcr.io/${{ github.repository }}
             deutschemodelunitednations/chase
-            ghcr.io/${{ github.repository_owner }}/${{ github.repository }}
           tags: |
-            type=raw,value=${{ github.sha }},suffix=${{ matrix.runtime != 'bun' && format('-{0}', matrix.runtime) || '' }}
+            type=ref,event=branch,suffix=${{ matrix.runtime != 'bun' && format('-{0}', matrix.runtime) || '' }}
+            type=ref,event=pr,suffix=${{ matrix.runtime != 'bun' && format('-{0}', matrix.runtime) || '' }}
+            type=semver,pattern={{version}},suffix=${{ matrix.runtime != 'bun' && format('-{0}', matrix.runtime) || '' }}
+            type=semver,pattern={{major}}.{{minor}},suffix=${{ matrix.runtime != 'bun' && format('-{0}', matrix.runtime) || '' }}
+            type=semver,pattern={{major}},suffix=${{ matrix.runtime != 'bun' && format('-{0}', matrix.runtime) || '' }}
+            type=raw,value=latest,enable=${{ github.ref_type == 'tag' && matrix.runtime == 'bun' }}
 
-            type=semver,pattern={{version}},value=${{ github.event.release.tag_name }},enable=${{ github.event_name == 'release' }},suffix=${{ matrix.runtime != 'bun' && format('-{0}', matrix.runtime) || '' }}
+      - name: Build Docker image
+        uses: docker/build-push-action@v5
+        id: build
+        with:
+          context: .
+          load: true
+          push: false
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          file: ./Dockerfile.${{ matrix.runtime }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          build-args: |
+            VERSION=${{ github.ref_name }}
+            SHA=${{ github.sha }}
 
-            type=raw,value=latest,enable=${{ github.event_name == 'release' && !github.event.release.prerelease }}
-            type=semver,pattern={{major}},value=${{ github.event.release.tag_name }},enable=${{ github.event_name == 'release' && !github.event.release.prerelease }},suffix=${{ matrix.runtime != 'bun' && format('-{0}', matrix.runtime) || '' }}
-            type=semver,pattern={{major}}.{{minor}},value=${{ github.event.release.tag_name }},enable=${{ github.event_name == 'release' && !github.event.release.prerelease }},suffix=${{ matrix.runtime != 'bun' && format('-{0}', matrix.runtime) || '' }}
+      - name: Get first built image ref
+        id: split-tags
+        run: echo "fragment=$(echo "${DOCKER_METADATA_OUTPUT_TAGS}" | head -n 1)" >> $GITHUB_OUTPUT
 
-            type=raw,value=prerelease,enable=${{ github.event_name == 'release' && github.event.release.prerelease }},suffix=${{ matrix.runtime != 'bun' && format('-{0}', matrix.runtime) || '' }}
-            type=raw,value=nightly,enable=${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }},suffix=${{ matrix.runtime != 'bun' && format('-{0}', matrix.runtime) || '' }}
+      - name: Run Trivy vulnerability scanner on the built image
+        uses: aquasecurity/trivy-action@0.32.0
+        with:
+          image-ref: ${{ steps.split-tags.outputs.fragment }}
+          format: 'table'
+          exit-code: '1'
+          ignore-unfixed: true
+          vuln-type: 'os,library'
+          severity: 'CRITICAL,HIGH'
+          skip-setup-trivy: true
+          trivyignores: .trivyignore
+          scanners: ${{ github.event_name == 'pull_request' && 'vuln' || 'vuln,secret,misconfig'}}
 
-      - name: Build and push Docker image
+      - name: Publish docker image
+        if: github.event_name != 'pull_request'
         uses: docker/build-push-action@v5
         with:
           context: .
           push: true
+          # TODO: enable if we also plan on building for ARM natively
           # platforms: linux/amd64,linux/arm64
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           file: ./Dockerfile.${{ matrix.runtime }}
+          cache-from: type=gha
           build-args: |
-            VERSION=${{ github.event.release.tag_name }}
+            VERSION=${{ github.ref_name }}
             SHA=${{ github.sha }}
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        if: github.ref_type == 'tag' && matrix.runtime == 'bun'
+        with:
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

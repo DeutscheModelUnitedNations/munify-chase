@@ -1,5 +1,6 @@
 {
 	"devDependencies": {
+		"@lingual/i18n-check": "^0.8.14",
 		"@deutschemodelunitednations/corporate-identity": "^1.1.10",
 		"@eslint/compat": "^1.4.0",
 		"@eslint/js": "^9.36.0",
@@ -87,6 +88,8 @@
 		"dev:docker": "docker compose -f ./dev.docker-compose.yml up",
 		"dev:server": "while true; do svelte-kit sync && bun run vite-dev; echo 'Server crashed, restarting...'; sleep 1; done",
 		"format": "prettier --write .",
+		"i18n:check": "i18n-check --source \"de\" --locales ./messages --format \"i18next\"",
+		"i18n:validate": "inlang validate --project project.inlang",
 		"lint": "prettier --check . && eslint .",
 		"machine-translate": "inlang machine translate --project project.inlang",
 		"prepare": "svelte-kit sync || echo ''",

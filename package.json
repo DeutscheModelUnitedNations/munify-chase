@@ -32,7 +32,7 @@
     "@fontsource/roboto-mono": "^5.2.8",
     "@fontsource/vollkorn": "^5.2.10",
     "@inlang/paraglide-js": "^2.7.1",
-    "@m1212e/rumble": "^0.16.7",
+    "@m1212e/rumble": "^0.16.12",
     "@m1212e/sveltekit-oidc": "^0.0.33",
     "@sveltejs/adapter-node": "^5.4.0",
     "@sveltejs/kit": "^2.49.2",
@@ -54,7 +54,7 @@
     "daisyui": "^5.5.14",
     "dayjs": "^1.11.19",
     "dexie": "^4.2.1",
-    "drizzle-seed": "^1.0.0-beta.4-4605abe",
+    "drizzle-seed": "^1.0.0-beta.8-734e789",
     "eslint": "^9.39.2",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-svelte": "^3.13.1",
@@ -85,8 +85,8 @@
     "zod": "^4.2.1"
   },
   "dependencies": {
-    "drizzle-kit": "^1.0.0-beta.4-4605abe",
-    "drizzle-orm": "^1.0.0-beta.4-4605abe",
+    "drizzle-kit": "^1.0.0-beta.8-734e789",
+    "drizzle-orm": "^1.0.0-beta.8-734e789",
     "pg": "^8.16.3"
   }
 }

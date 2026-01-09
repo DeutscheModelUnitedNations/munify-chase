@@ -21,7 +21,6 @@ if (dev || building) {
     outputPath: 'src/lib/api/rumbleClient',
     apiUrl: '/api/graphql',
     useExternalUrqlClient: '../customClient',
-    removeExisting: false,
-    forceReactivity: true
+    removeExisting: false
   });
 }

@@ -6,11 +6,11 @@
 
   const user = await authenticatedUser();
 
-  const conferenceData = await client.query.conferenceUsers({
+  const conferenceData = await client.liveQuery.conferenceUsers({
     __args: {
       where: {
         user: {
-          id: $user.sub
+          id: user.sub
         }
       }
     },
@@ -73,7 +73,7 @@
       <h3 class="text-center text-2xl">MUNify</h3>
       <h3 class="text-center text-5xl font-bold">CHASE</h3>
       <p class="mt-4 text-center text-lg">
-        {m.launcherWelcome({ name: $user.given_name! })}
+        {m.launcherWelcome({ name: user.given_name! })}
       </p>
     </div>
     <div class="card w-full max-w-2xl bg-base-100 shadow-sm">
@@ -83,16 +83,16 @@
           {m.launcherDescription()}
         </p>
         <div class="mt-6 flex flex-col items-center gap-2">
-          {#if $conferenceData?.length === 0}
+          {#if conferenceData?.length === 0}
             <div class="alert alert-warning shadow-sm">
               <i class="fas fa-exclamation-triangle"></i>
               {m.launcherNoConferences()}
             </div>
           {:else}
-            {#each $conferenceData as c (c.id)}
+            {#each conferenceData as c (c.id)}
               {@const conf = c.conference}
               <a
-                href={getUrl(c.conferenceUserType, c.conference.id)}
+                href={getUrl(c.conferenceUserType, conf.id)}
                 class="btn w-full max-w-xs shadow-xs btn-lg"
               >
                 <i class="fa-duotone fa-rocket-launch mr-2"></i>

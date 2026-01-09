@@ -255,14 +255,14 @@
 	"memberAdded": "Mitglied erfolgreich hinzugefügt",
 	"memberRemoved": "Mitglied erfolgreich entfernt",
 	"memberUpdated": "Mitglied erfolgreich aktualisiert",
-	"confirmRemoveMember": "Möchten Sie dieses Mitglied wirklich entfernen?",
+	"confirmRemoveMember": "Möchtest du dieses Mitglied wirklich entfernen?",
 	"noMembers": "Noch keine Mitglieder",
 	"userAlreadyExists": "Benutzer existiert bereits in dieser Konferenz: {email}",
 	"bulkAddMembers": "Mehrere Mitglieder hinzufügen",
 	"bulkEmailPlaceholder": "E-Mail-Adressen eingeben (eine pro Zeile oder kommagetrennt)",
 	"addAll": "Alle hinzufügen",
-	"youCannotEditYourself": "Sie können Ihre eigene Rolle nicht bearbeiten",
+	"youCannotEditYourself": "Du kannst deine eigene Rolle nicht bearbeiten",
 	"you": "Du",
-	"notAuthorized": "Sie sind nicht berechtigt, auf diese Seite zuzugreifen",
+	"notAuthorized": "Du bist nicht berechtigt, auf diese Seite zuzugreifen",
 	"member": "Mitglied"
 }

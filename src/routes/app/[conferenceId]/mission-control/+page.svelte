@@ -13,7 +13,7 @@
 
 	let query = $derived(data?.MissionControlQuery);
 	let conference = $derived($query.data?.findFirstConference);
-	let currentUserRole = $derived($query.data?.currentUserRole);
+	let currentUserRole = $derived($query.data?.currentUserRole?.[0]);
 	let isAdmin = $derived(currentUserRole?.conferenceUserType === 'ADMIN');
 
 	const baseMenuItems = [
@@ -31,7 +31,7 @@
 					{
 						faIcon: 'fa-gear',
 						title: m.configuration(),
-						href: './config'
+						href: 'mission-control/config'
 					}
 				]
 			: baseMenuItems

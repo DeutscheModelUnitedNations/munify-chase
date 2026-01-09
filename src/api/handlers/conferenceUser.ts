@@ -85,7 +85,7 @@ schemaBuilder.mutationFields((t) => ({
 			});
 
 			if (existing) {
-				throw new GraphQLError('This user already has a role in this conference');
+				throw new GraphQLError(`User already exists in this conference: ${args.userEmail}`);
 			}
 
 			const result = await db

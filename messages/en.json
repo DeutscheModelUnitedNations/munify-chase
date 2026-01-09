@@ -248,5 +248,10 @@
 	"memberUpdated": "Member updated successfully",
 	"confirmRemoveMember": "Are you sure you want to remove this member?",
 	"noMembers": "No members yet",
-	"userAlreadyExists": "This user already has a role in this conference"
+	"userAlreadyExists": "User already exists in this conference: {email}",
+	"bulkAddMembers": "Bulk Add Members",
+	"bulkEmailPlaceholder": "Enter email addresses (one per line or comma-separated)",
+	"addAll": "Add All",
+	"youCannotEditYourself": "You cannot edit your own role",
+	"you": "You"
 }

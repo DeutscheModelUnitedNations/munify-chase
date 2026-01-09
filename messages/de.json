@@ -257,5 +257,10 @@
 	"memberUpdated": "Mitglied erfolgreich aktualisiert",
 	"confirmRemoveMember": "Möchten Sie dieses Mitglied wirklich entfernen?",
 	"noMembers": "Noch keine Mitglieder",
-	"userAlreadyExists": "Dieser Benutzer hat bereits eine Rolle in dieser Konferenz"
+	"userAlreadyExists": "Benutzer existiert bereits in dieser Konferenz: {email}",
+	"bulkAddMembers": "Mehrere Mitglieder hinzufügen",
+	"bulkEmailPlaceholder": "E-Mail-Adressen eingeben (eine pro Zeile oder kommagetrennt)",
+	"addAll": "Alle hinzufügen",
+	"youCannotEditYourself": "Sie können Ihre eigene Rolle nicht bearbeiten",
+	"you": "Du"
 }

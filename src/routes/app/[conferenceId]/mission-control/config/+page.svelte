@@ -3,13 +3,17 @@
 	import { m } from '$lib/paraglide/messages';
 	import NavbarBurgerMenu from '$lib/components/NavbarBurgerMenu.svelte';
 	import BasicCard from '$lib/components/BasicCard.svelte';
-	import { graphql } from '$houdini';
+	import { cache, graphql } from '$houdini';
+	import { invalidateAll } from '$app/navigation';
 
 	let { data }: { data: PageData } = $props();
 
 	let query = $derived(data?.ConferenceConfigQuery);
-	let conference = $derived($query.data?.findFirstConference);
-	let conferenceUsers = $derived(conference?.users ?? []);
+	let conference = $derived(query ? $query.data?.findFirstConference : undefined);
+	let conferenceUsers = $derived(
+		[...(conference?.users ?? [])].sort((a, b) => a.userEmail.localeCompare(b.userEmail))
+	);
+	let currentUserEmail = $derived(data.user?.email);
 
 	const menubarItems = [
 		{
@@ -20,9 +24,9 @@
 	];
 
 	// Form state
-	let newEmail = $state('');
+	let bulkEmails = $state('');
 	let newRole = $state<'ADMIN' | 'TEAM' | 'SPECTATOR' | 'DELEGATE' | 'NON_STATE_ACTOR'>('TEAM');
-	let isSubmitting = $state(false);
+	let isBulkSubmitting = $state(false);
 
 	const CreateConferenceUserMutation = graphql(`
 		mutation CreateConferenceUser(
@@ -58,32 +62,52 @@
 		}
 	`);
 
-	async function addMember() {
-		if (!newEmail.trim() || !conference?.id) return;
+	function isCurrentUser(email: string): boolean {
+		return currentUserEmail === email;
+	}
 
-		isSubmitting = true;
+	function parseEmails(input: string): string[] {
+		// Split by newlines, commas, or semicolons, then trim and filter empty
+		return input
+			.split(/[\n,;]+/)
+			.map((email) => email.trim())
+			.filter((email) => email.length > 0 && email.includes('@'));
+	}
+
+	async function addBulkMembers() {
+		if (!conference?.id || !query) return;
+
+		const emails = parseEmails(bulkEmails);
+		if (emails.length === 0) return;
+
+		isBulkSubmitting = true;
 		try {
-			await CreateConferenceUserMutation.mutate({
-				conferenceId: conference.id,
-				userEmail: newEmail.trim(),
-				conferenceUserType: newRole
-			});
-			newEmail = '';
-			// Refetch the query to get updated data
-			await query.fetch();
-		} catch (error) {
-			console.error('Failed to add member:', error);
+			for (const email of emails) {
+				try {
+					await CreateConferenceUserMutation.mutate({
+						conferenceId: conference.id,
+						userEmail: email,
+						conferenceUserType: newRole
+					});
+				} catch (error) {
+					console.error(`Failed to add member ${email}:`, error);
+				}
+			}
+			bulkEmails = '';
 		} finally {
-			isSubmitting = false;
+			isBulkSubmitting = false;
+			cache.markStale();
+			await invalidateAll();
 		}
 	}
 
 	async function removeMember(id: string) {
-		if (!confirm(m.confirmRemoveMember())) return;
+		if (!confirm(m.confirmRemoveMember()) || !query) return;
 
 		try {
 			await DeleteConferenceUserMutation.mutate({ id });
-			await query.fetch();
+			cache.markStale();
+			await invalidateAll();
 		} catch (error) {
 			console.error('Failed to remove member:', error);
 		}
@@ -93,31 +117,16 @@
 		id: string,
 		newType: 'ADMIN' | 'TEAM' | 'SPECTATOR' | 'DELEGATE' | 'NON_STATE_ACTOR'
 	) {
+		if (!query) return;
 		try {
 			await UpdateConferenceUserMutation.mutate({
 				id,
 				conferenceUserType: newType
 			});
-			await query.fetch();
+			cache.markStale();
+			await invalidateAll();
 		} catch (error) {
 			console.error('Failed to update member:', error);
-		}
-	}
-
-	function getRoleLabel(role: string): string {
-		switch (role) {
-			case 'ADMIN':
-				return m.admin();
-			case 'TEAM':
-				return m.teamMember();
-			case 'SPECTATOR':
-				return m.spectator();
-			case 'DELEGATE':
-				return m.delegate();
-			case 'NON_STATE_ACTOR':
-				return m.nonStateActor();
-			default:
-				return role;
 		}
 	}
 </script>
@@ -158,13 +167,21 @@
 								</tr>
 							{:else}
 								{#each conferenceUsers as user (user.id)}
+									{@const isSelf = isCurrentUser(user.userEmail)}
 									<tr>
-										<td>{user.userEmail}</td>
+										<td>
+											{user.userEmail}
+											{#if isSelf}
+												<span class="badge badge-sm ml-2">{m.you()}</span>
+											{/if}
+										</td>
 										<td>
 											<select
 												class="select select-bordered select-sm"
 												value={user.conferenceUserType}
 												onchange={(e) => updateMemberRole(user.id, e.currentTarget.value as any)}
+												disabled={isSelf}
+												title={isSelf ? m.youCannotEditYourself() : ''}
 											>
 												<option value="ADMIN">{m.admin()}</option>
 												<option value="TEAM">{m.teamMember()}</option>
@@ -178,6 +195,8 @@
 												class="btn btn-error btn-sm"
 												onclick={() => removeMember(user.id)}
 												aria-label={m.removeMember()}
+												disabled={isSelf}
+												title={isSelf ? m.youCannotEditYourself() : ''}
 											>
 												<i class="fas fa-trash"></i>
 											</button>
@@ -189,49 +208,44 @@
 					</table>
 				</div>
 
-				<!-- Add member form -->
-				<div class="divider"></div>
-				<form
-					class="flex flex-wrap items-end gap-4"
-					onsubmit={(e) => {
-						e.preventDefault();
-						addMember();
-					}}
-				>
-					<div class="form-control flex-1">
-						<label class="label" for="email-input">
-							<span class="label-text">{m.email()}</span>
-						</label>
-						<input
-							id="email-input"
-							type="email"
-							class="input input-bordered"
-							placeholder="user@example.com"
-							bind:value={newEmail}
-							required
-						/>
+				<!-- Add members fieldset -->
+				<fieldset class="fieldset bg-base-200 border-base-300 rounded-box mt-6 border p-4">
+					<legend class="fieldset-legend px-2 text-sm font-semibold">{m.addMember()}</legend>
+					<div class="flex flex-col gap-4">
+						<textarea
+							class="textarea textarea-bordered h-24 w-full"
+							placeholder={m.bulkEmailPlaceholder()}
+							bind:value={bulkEmails}
+						></textarea>
+						<div class="flex flex-wrap items-end gap-4">
+							<div class="form-control">
+								<label class="label" for="role-select">
+									<span class="label-text">{m.role()}</span>
+								</label>
+								<select id="role-select" class="select select-bordered" bind:value={newRole}>
+									<option value="ADMIN">{m.admin()}</option>
+									<option value="TEAM">{m.teamMember()}</option>
+									<option value="SPECTATOR">{m.spectator()}</option>
+									<option value="DELEGATE">{m.delegate()}</option>
+									<option value="NON_STATE_ACTOR">{m.nonStateActor()}</option>
+								</select>
+							</div>
+							<button
+								type="button"
+								class="btn btn-primary"
+								onclick={addBulkMembers}
+								disabled={isBulkSubmitting || !bulkEmails.trim()}
+							>
+								{#if isBulkSubmitting}
+									<span class="loading loading-spinner loading-sm"></span>
+								{:else}
+									<i class="fas fa-plus"></i>
+								{/if}
+								{m.addMember()}
+							</button>
+						</div>
 					</div>
-					<div class="form-control">
-						<label class="label" for="role-select">
-							<span class="label-text">{m.role()}</span>
-						</label>
-						<select id="role-select" class="select select-bordered" bind:value={newRole}>
-							<option value="ADMIN">{m.admin()}</option>
-							<option value="TEAM">{m.teamMember()}</option>
-							<option value="SPECTATOR">{m.spectator()}</option>
-							<option value="DELEGATE">{m.delegate()}</option>
-							<option value="NON_STATE_ACTOR">{m.nonStateActor()}</option>
-						</select>
-					</div>
-					<button type="submit" class="btn btn-primary" disabled={isSubmitting || !newEmail.trim()}>
-						{#if isSubmitting}
-							<span class="loading loading-spinner loading-sm"></span>
-						{:else}
-							<i class="fas fa-plus"></i>
-						{/if}
-						{m.addMember()}
-					</button>
-				</form>
+				</fieldset>
 			</BasicCard>
 		{:else}
 			<div class="flex items-center justify-center">

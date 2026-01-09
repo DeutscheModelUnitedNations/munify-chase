@@ -21,8 +21,9 @@ export const _houdini_load = graphql(`
 				lastResolutionAdoptionDate
 			}
 		}
-		currentUserRole: findFirstConferenceUser(
+		currentUserRole: findManyConferenceUser(
 			where: { conferenceId: $conferenceId, user: { id: $userId } }
+			limit: 1
 		) {
 			id
 			conferenceUserType

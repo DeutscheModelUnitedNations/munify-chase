@@ -20,9 +20,3 @@ export const _ConferenceConfigQueryVariables: ConferenceConfigQueryVariables = (
 		conferenceId: event.params.conferenceId
 	};
 };
-
-export const load = (event) => {
-	return {
-		conferenceId: event.params.conferenceId
-	};
-};

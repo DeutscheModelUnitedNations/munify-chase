@@ -1,8 +1,9 @@
 <script lang="ts">
 	import { m } from '$lib/paraglide/messages';
 	import Modal from './Modal.svelte';
-	import Flag from './Flag.svelte';
+	import CountryBadge from './CountryBadge.svelte';
 	import WorldCountries from 'world-countries';
+	import { SvelteSet } from 'svelte/reactivity';
 
 	interface ParsedCountry {
 		alpha2Code: string;
@@ -35,7 +36,7 @@
 
 		const countries: ParsedCountry[] = [];
 		const unrecognized: string[] = [];
-		const addedCodes = new Set<string>();
+		const addedCodes = new SvelteSet<string>();
 
 		for (const token of tokens) {
 			const normalized = token.toLowerCase();
@@ -96,20 +97,16 @@
 <Modal bind:open>
 	<h3 class="mb-4 text-lg font-bold">{m.addCountry()}</h3>
 
-	<div class="form-control mb-4">
-		<label class="label" for="country-codes-input">
-			<span class="label-text">{m.enterCountryCodes()}</span>
-		</label>
+	<fieldset class="fieldset bg-base-200 border-base-300 rounded-box mb-4 w-full border p-4">
+		<legend class="fieldset-legend">{m.enterCountryCodes()}</legend>
 		<textarea
 			id="country-codes-input"
-			class="textarea textarea-bordered h-32 font-mono"
+			class="textarea h-32 w-full font-mono"
 			bind:value={inputText}
 			placeholder={m.countryCodesPlaceholder()}
 		></textarea>
-		<label class="label">
-			<span class="label-text-alt">{m.countryCodesHelp()}</span>
-		</label>
-	</div>
+		<p class="label break-words whitespace-normal">{m.countryCodesHelp()}</p>
+	</fieldset>
 
 	{#if parsedCountries.length > 0 || unrecognizedStrings.length > 0}
 		<div class="divider"></div>
@@ -134,16 +131,11 @@
 				<h4 class="mb-2 text-sm font-semibold">{m.parsedCountries()}</h4>
 				<div class="flex max-h-48 flex-wrap gap-1 overflow-y-auto">
 					{#each parsedCountries as country}
-						<div
-							class="bg-base-200 flex items-center gap-1 rounded-md p-1 pr-2"
-							title={country.name}
-						>
-							<Flag
-								representation={{ alpha2Code: country.alpha2Code, alpha3Code: country.alpha3Code }}
-								size="xs"
-							/>
-							<span class="font-mono text-xs uppercase">{country.alpha2Code}</span>
-						</div>
+						<CountryBadge
+							alpha2Code={country.alpha2Code}
+							alpha3Code={country.alpha3Code}
+							name={country.name}
+						/>
 					{/each}
 				</div>
 			</div>

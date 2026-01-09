@@ -24,3 +24,4 @@ vite.config.ts.timestamp-*
 
 
 .houdini
+.claude

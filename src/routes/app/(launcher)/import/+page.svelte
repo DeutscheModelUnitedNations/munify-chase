@@ -7,7 +7,7 @@
 	import { z } from 'zod/v4';
 	import Footer from '$lib/components/Footer.svelte';
 	import { onMount } from 'svelte';
-	import Flag from '$lib/components/Flag.svelte';
+	import CountryBadge from '$lib/components/CountryBadge.svelte';
 	import AddCountriesModal from '$lib/components/AddCountriesModal.svelte';
 	import WorldCountries from 'world-countries';
 	import { page } from '$app/state';
@@ -221,7 +221,9 @@
 					alpha3Code: country.alpha3Code,
 					representationType: 'DELEGATION',
 					id: repId,
-					regionalGroup: worldCountry ? transformRegionalGroup(worldCountry.unRegionalGroup) : undefined
+					regionalGroup: worldCountry
+						? transformRegionalGroup(worldCountry.unRegionalGroup)
+						: undefined
 				});
 			}
 
@@ -374,23 +376,15 @@
 								{@const rep = importData.representations.find(
 									(rep) => rep.id === member.representationId
 								)}
-								<div class="card bg-base-100 group flex w-12 flex-wrap items-center p-1">
-									<Flag representation={rep} size="xs" />
-									<div class="mt-2 font-mono uppercase">
-										{rep?.alpha2Code}
-									</div>
-									<button
-										class="btn btn-error btn-sm btn-circle absolute top-1/2 right-1/2 z-40 translate-x-1/2 -translate-y-1/2 opacity-0 transition-all duration-300 group-hover:opacity-100"
-										aria-label="Remove committee member"
-										onclick={() => {
-											importData!.committeeMembers = importData!.committeeMembers?.filter(
-												(i) => i.id !== member.id
-											);
-										}}
-									>
-										<i class="fa-solid fa-trash"></i>
-									</button>
-								</div>
+								<CountryBadge
+									alpha2Code={rep?.alpha2Code ?? ''}
+									alpha3Code={rep?.alpha3Code}
+									onRemove={() => {
+										importData!.committeeMembers = importData!.committeeMembers?.filter(
+											(i) => i.id !== member.id
+										);
+									}}
+								/>
 							{/each}
 						</div>
 						<button

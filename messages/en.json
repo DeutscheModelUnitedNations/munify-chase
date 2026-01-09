@@ -236,5 +236,17 @@
 	"downloadPresenceData": "Presence Data",
 	"rollCallError": "Committee member not found",
 	"rollCallSuccess": "Roll call completed",
-	"moderatedInformalCaucus": "Moderated informal caucus"
+	"moderatedInformalCaucus": "Moderated informal caucus",
+	"configuration": "Configuration",
+	"conferenceMembers": "Conference Members",
+	"addMember": "Add Member",
+	"email": "Email",
+	"role": "Role",
+	"removeMember": "Remove",
+	"memberAdded": "Member added successfully",
+	"memberRemoved": "Member removed successfully",
+	"memberUpdated": "Member updated successfully",
+	"confirmRemoveMember": "Are you sure you want to remove this member?",
+	"noMembers": "No members yet",
+	"userAlreadyExists": "This user already has a role in this conference"
 }

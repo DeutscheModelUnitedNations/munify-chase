@@ -2,7 +2,7 @@ import { graphql } from '$houdini';
 import type { MissionControlQueryVariables } from './$houdini';
 
 export const _houdini_load = graphql(`
-	query MissionControlQuery($conferenceId: ID!) {
+	query MissionControlQuery($conferenceId: ID!, $userId: ID!) {
 		findFirstConference(where: { id: $conferenceId }) {
 			id
 			title
@@ -21,11 +21,19 @@ export const _houdini_load = graphql(`
 				lastResolutionAdoptionDate
 			}
 		}
+		currentUserRole: findFirstConferenceUser(
+			where: { conferenceId: $conferenceId, user: { id: $userId } }
+		) {
+			id
+			conferenceUserType
+		}
 	}
 `);
 
-export const _MissionControlQueryVariables: MissionControlQueryVariables = (event) => {
+export const _MissionControlQueryVariables: MissionControlQueryVariables = async (event) => {
+	const { user } = await event.parent();
 	return {
-		conferenceId: event.params.conferenceId
+		conferenceId: event.params.conferenceId,
+		userId: user?.sub ?? ''
 	};
 };

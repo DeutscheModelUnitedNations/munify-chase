@@ -245,5 +245,17 @@
 	"notPresent": "Nicht anwesend",
 	"homeVersionButton": "CHASE (CHAirSoftwarE) ist eine Webanwendung zur Verwaltung und Durchführung von Debatten in Model United Nations Konferenzen. Sie ist für Vorsitzende und Delegierte gleichermaßen konzipiert. CHASE ermöglicht es Vorsitzenden, Debatten einfach zu verwalten, während Delegierte der Debatte folgen und mit anderen Delegierten auf intuitive und strukturierte Weise zusammenarbeiten können. CHASE ist freie und open source Software.",
 	"maroon_bland_ray_renew": "Gremien-Abkürzung",
-	"short_sleek_snake_hint": "Gremium"
+	"short_sleek_snake_hint": "Gremium",
+	"configuration": "Konfiguration",
+	"conferenceMembers": "Konferenzmitglieder",
+	"addMember": "Mitglied hinzufügen",
+	"email": "E-Mail",
+	"role": "Rolle",
+	"removeMember": "Entfernen",
+	"memberAdded": "Mitglied erfolgreich hinzugefügt",
+	"memberRemoved": "Mitglied erfolgreich entfernt",
+	"memberUpdated": "Mitglied erfolgreich aktualisiert",
+	"confirmRemoveMember": "Möchten Sie dieses Mitglied wirklich entfernen?",
+	"noMembers": "Noch keine Mitglieder",
+	"userAlreadyExists": "Dieser Benutzer hat bereits eine Rolle in dieser Konferenz"
 }

@@ -3,3 +3,5 @@ package-lock.json
 pnpm-lock.yaml
 yarn.lock
 schema.graphql
+.claude/**
+drizzle/meta/**

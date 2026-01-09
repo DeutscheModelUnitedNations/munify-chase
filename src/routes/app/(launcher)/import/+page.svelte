@@ -7,10 +7,15 @@
 	import { z } from 'zod/v4';
 	import Footer from '$lib/components/Footer.svelte';
 	import { onMount } from 'svelte';
-	import Flag from '$lib/components/Flag.svelte';
+	import CountryBadge from '$lib/components/CountryBadge.svelte';
+	import AddCountriesModal from '$lib/components/AddCountriesModal.svelte';
 	import WorldCountries from 'world-countries';
 	import { page } from '$app/state';
 	import { nanoid } from '$lib/helpers/nanoid';
+
+	// State for the add countries modal
+	let addCountriesModalOpen = $state(false);
+	let activeCommitteeId = $state<string | null>(null);
 
 	// let { data }: PageData = $props();
 
@@ -178,33 +183,62 @@
 		});
 	};
 
-	const addCommitteeMember = (committeeId: string) => {
-		const alpha2Code = prompt(m.enterAlpha2Code())?.toLowerCase();
-		const country = WorldCountries.find((x) => x.cca2.toLowerCase() === alpha2Code);
-		if (!alpha2Code || !country) {
-			toast.error(m.countryNotFound());
-			return;
-		}
-		let repId = importData?.representations.find(
-			(x) => x.alpha2Code?.toLocaleLowerCase() === alpha2Code.toLowerCase()
-		)?.id;
-		if (!repId) {
-			repId = nanoid();
-			importData?.representations.push({
-				alpha2Code,
-				alpha3Code: country.cca3.toLowerCase(),
-				representationType: 'DELEGATION',
-				id: repId
+	const openAddCountriesModal = (committeeId: string) => {
+		activeCommitteeId = committeeId;
+		addCountriesModalOpen = true;
+	};
+
+	const handleAddCountries = (
+		countries: Array<{ alpha2Code: string; alpha3Code: string; name: string }>
+	) => {
+		if (!activeCommitteeId || !importData) return;
+
+		for (const country of countries) {
+			// Check if this country is already a member of this committee
+			const existingRep = importData.representations.find(
+				(x) => x.alpha2Code?.toLowerCase() === country.alpha2Code.toLowerCase()
+			);
+
+			let repId: string;
+
+			if (existingRep) {
+				repId = existingRep.id;
+				// Check if already a member of this committee
+				const alreadyMember = importData.committeeMembers?.some(
+					(m) => m.committeeId === activeCommitteeId && m.representationId === repId
+				);
+				if (alreadyMember) {
+					continue; // Skip this country, already a member
+				}
+			} else {
+				// Create a new representation
+				repId = nanoid();
+				const worldCountry = WorldCountries.find(
+					(x) => x.cca2.toLowerCase() === country.alpha2Code.toLowerCase()
+				);
+				importData.representations.push({
+					alpha2Code: country.alpha2Code,
+					alpha3Code: country.alpha3Code,
+					representationType: 'DELEGATION',
+					id: repId,
+					regionalGroup: worldCountry
+						? transformRegionalGroup(worldCountry.unRegionalGroup)
+						: undefined
+				});
+			}
+
+			if (importData.committeeMembers === undefined) {
+				importData.committeeMembers = [];
+			}
+
+			importData.committeeMembers.push({
+				id: nanoid(),
+				committeeId: activeCommitteeId,
+				representationId: repId
 			});
 		}
-		if (importData?.committeeMembers === undefined) {
-			importData!.committeeMembers = [];
-		}
-		importData?.committeeMembers.push({
-			id: nanoid(),
-			committeeId: committeeId,
-			representationId: repId
-		});
+
+		activeCommitteeId = null;
 	};
 </script>
 
@@ -342,30 +376,24 @@
 								{@const rep = importData.representations.find(
 									(rep) => rep.id === member.representationId
 								)}
-								<div class="card bg-base-100 group flex w-12 flex-wrap items-center p-1">
-									<Flag representation={rep} size="xs" />
-									<div class="mt-2 font-mono uppercase">
-										{rep?.alpha2Code}
-									</div>
-									<button
-										class="btn btn-error btn-sm btn-circle absolute top-1/2 right-1/2 z-40 translate-x-1/2 -translate-y-1/2 opacity-0 transition-all duration-300 group-hover:opacity-100"
-										aria-label="Remove committee member"
-										onclick={() => {
+								{#if rep?.alpha2Code}
+									<CountryBadge
+										alpha2Code={rep.alpha2Code}
+										alpha3Code={rep.alpha3Code}
+										onRemove={() => {
 											importData!.committeeMembers = importData!.committeeMembers?.filter(
 												(i) => i.id !== member.id
 											);
 										}}
-									>
-										<i class="fa-solid fa-trash"></i>
-									</button>
-								</div>
+									/>
+								{/if}
 							{/each}
 						</div>
 						<button
 							class="btn btn-primary btn-sm mt-2"
 							aria-label="Add committee member"
 							onclick={() => {
-								addCommitteeMember(committee.id);
+								openAddCountriesModal(committee.id);
 							}}
 						>
 							<i class="fa-solid fa-plus"></i>
@@ -509,5 +537,7 @@
 		{/if}
 	</button>
 </div>
+
+<AddCountriesModal bind:open={addCountriesModalOpen} onSubmit={handleAddCountries} />
 
 <Footer />

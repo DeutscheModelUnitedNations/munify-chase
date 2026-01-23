@@ -6,9 +6,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 MUNify CHASE (CHAiring SoftwarE) is a conference management application for Model United Nations debates. Built by Deutsche Model United Nations (DMUN) e.V., it provides speakers lists, digital voting, resolution editing, committee status tracking, and roll-call management.
 
-**Tech Stack**: SvelteKit + TypeScript, PostgreSQL + Drizzle ORM, GraphQL (Yoga + Houdini), Tailwind CSS + DaisyUI, Paraglide i18n
+**Tech Stack**: SvelteKit + TypeScript, PostgreSQL + Drizzle ORM, GraphQL (Yoga + Rumble), Tailwind CSS + DaisyUI, Paraglide i18n
 
-**GraphQL Generation**: Uses [Rumble](https://github.com/m1212e/rumble) (`@m1212e/rumble`), a custom glue package that generates GraphQL schemas and resolvers directly from Drizzle ORM definitions with built-in ability-based access control.
+**GraphQL Generation**: Uses [Rumble](https://github.com/m1212e/rumble) (`@m1212e/rumble`), a custom glue package that generates GraphQL schemas and resolvers directly from Drizzle ORM definitions with built-in ability-based access control. See [RUMBLE.md](./RUMBLE.md) for detailed documentation on abilities, handlers, and frontend integration patterns.
 
 ## Common Commands
 
@@ -65,7 +65,7 @@ bun run preview          # Preview production build
 
 - `schema.graphql` - Generated GraphQL schema
 - `src/lib/paraglide/` - Generated i18n code
-- `.houdini/` - Generated GraphQL client code
+- `src/lib/api/rumbleClient/` - Generated Rumble GraphQL client
 - `drizzle/` - Generated database migrations
 
 ## Conventions

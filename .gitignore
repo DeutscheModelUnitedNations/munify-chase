@@ -26,3 +26,6 @@ vite.config.ts.timestamp-*
 src/lib/paraglide
 
 src/lib/api/rumbleClient
+
+# Claude
+.claude

@@ -46,7 +46,8 @@ export const committeeStatus = pgEnum('committee_status', [
   'FORMAL',
   'INFORMAL',
   'PAUSE',
-  'SUSPENSION'
+  'SUSPENSION',
+  'MODERATED_INFORMAL'
 ]);
 
 export const committee = pgTable(
@@ -61,6 +62,7 @@ export const committee = pgTable(
     whiteboardContent: text().default('<p></p>'),
     showWhiteboard: boolean().notNull().default(true),
     status: committeeStatus().notNull().default('SUSPENSION'),
+    hasModeratedCaucus: boolean().notNull().default(false),
     statusHeadline: text().notNull().default(''),
     statusUntil: timestamp({ mode: 'date' }).defaultNow().notNull(),
     stateOfDebate: text(),

@@ -1,0 +1,28 @@
+@import '@deutschemodelunitednations/corporate-identity/css/fonts';
+@import '@deutschemodelunitednations/corporate-identity/css/shades/dmun';
+
+@import 'tailwindcss';
+@plugin '@tailwindcss/typography';
+@plugin "daisyui";
+
+@import '@deutschemodelunitednations/corporate-identity/css/theme/dmun-light';
+@import '@deutschemodelunitednations/corporate-identity/css/theme/dmun-dark';
+
+/* TipTap */
+.ProseMirror:focus {
+	outline: none;
+}
+
+.tiptap p.is-editor-empty:first-child::before {
+	color: #adb5bd;
+	content: attr(data-placeholder);
+	float: left;
+	height: 0;
+	pointer-events: none;
+}
+
+/* https://github.com/kbrgl/svelte-french-toast/issues/103 */
+.toaster > .wrapper > .base > .indicator > .status {
+	height: auto !important;
+	width: auto !important;
+}

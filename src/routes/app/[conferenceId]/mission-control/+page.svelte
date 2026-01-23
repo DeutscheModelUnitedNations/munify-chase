@@ -1,40 +1,65 @@
 <script lang="ts">
-  import CommitteeGrid from '$lib/components/CommitteeGrid.svelte';
-  import CurrentTime from '$lib/components/CurrentTime.svelte';
-  import NavbarBurgerMenu from '$lib/components/NavbarBurgerMenu.svelte';
-  import * as m from '$lib/paraglide/messages.js';
-  import DownloadPresenceData from './DownloadPresenceData.svelte';
-  import { missionControlQuery } from '$lib/queries/missionControlQuery.svelte';
+	import type { PageData } from './$houdini';
+	import CommitteeGrid from '$lib/components/CommitteeGrid.svelte';
+	import ThemeSwitcher from '$lib/components/ThemeSwitcher.svelte';
+	import CurrentTime from '$lib/components/CurrentTime.svelte';
+	import * as m from '$lib/paraglide/messages.js';
+	import NavbarBurgerMenu from '$lib/components/NavbarBurgerMenu.svelte';
+	import { onMount } from 'svelte';
+	import { MissionControlSubscription } from './missionControlSubscription';
+	import DownloadPresenceData from './DownloadPresenceData.svelte';
 
-  const conference = await missionControlQuery();
+	let { data }: { data: PageData } = $props();
 
-  const menubarItems = [
-    {
-      faIcon: 'fa-home',
-      title: m.home(),
-      href: '..'
-    }
-  ];
+	let query = $derived(data?.MissionControlQuery);
+	let conference = $derived($query.data?.findFirstConference);
+	let currentUserRole = $derived($query.data?.currentUserRole?.[0]);
+	let isAdmin = $derived(currentUserRole?.conferenceUserType === 'ADMIN');
+
+	const baseMenuItems = [
+		{
+			faIcon: 'fa-home',
+			title: m.home(),
+			href: '..'
+		}
+	];
+
+	let menubarItems = $derived(
+		isAdmin
+			? [
+					...baseMenuItems,
+					{
+						faIcon: 'fa-gear',
+						title: m.configuration(),
+						href: 'mission-control/config'
+					}
+				]
+			: baseMenuItems
+	);
+
+	onMount(() => {
+		MissionControlSubscription.listen({ conferenceId: data.conferenceId });
+	});
 </script>
 
 <svelte:head>
-  <title>{m.missionControl()} - MUNify CHASE</title>
+	<title>{m.missionControl()} - MUNify CHASE</title>
 </svelte:head>
 
 <div class="navbar bg-base-100 shadow-sm">
-  <h1 class=" ml-4 flex-1 text-3xl font-bold">{m.missionControl()}</h1>
-  <div class="flex-none">
-    <CurrentTime />
-  </div>
-  <div class="flex-none">
-    <NavbarBurgerMenu items={menubarItems}>
-      {#snippet CustomListItems()}
-        <DownloadPresenceData conferenceTitle={$conference?.title} conferenceId={$conference?.id} />
-      {/snippet}
-    </NavbarBurgerMenu>
-  </div>
+	<h1 class=" ml-4 flex-1 text-3xl font-bold">{m.missionControl()}</h1>
+	<div class="flex-none">
+		<CurrentTime />
+	</div>
+	<div class="flex-none">
+		<NavbarBurgerMenu items={menubarItems}>
+			{#snippet CustomListItems()}
+				<DownloadPresenceData conferenceTitle={conference?.title} conferenceId={conference?.id} />
+			{/snippet}
+		</NavbarBurgerMenu>
+	</div>
 </div>
 
 {#if conference}
-  <CommitteeGrid {conference} environment="TEAM" />
+	<CommitteeGrid {conference} environment="TEAM" />
 {/if}

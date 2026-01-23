@@ -1,0 +1,92 @@
+name: Feature Request
+description: Suggest a new feature or enhancement for the project
+type: Feature
+assignees: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for suggesting a new feature for Chase! Please provide as much detail as possible to help us understand your request.
+
+  - type: textarea
+    id: feature-description
+    attributes:
+      label: Feature Description
+      description: A clear and concise description of the feature you'd like to see implemented.
+      placeholder: Describe the feature you want...
+    validations:
+      required: true
+
+  - type: textarea
+    id: problem-solution
+    attributes:
+      label: Problem or Use Case
+      description: Describe the problem this feature would solve or the use case it would address.
+      placeholder: What problem does this feature solve? Who would benefit from it?
+    validations:
+
+  - type: textarea
+    id: proposed-solution
+    attributes:
+      label: Proposed Solution
+      description: Describe how you envision this feature working.
+      placeholder: How should this feature work? What should the user experience be like?
+    validations:
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternative Solutions
+      description: Describe any alternative solutions or features you've considered.
+      placeholder: Have you considered any other approaches to solving this problem?
+
+  - type: dropdown
+    id: priority
+    attributes:
+      label: Priority
+      description: How important is this feature to you?
+      options:
+        - Critical (Blocking current work)
+        - High (Would significantly improve workflow)
+        - Medium (Nice to have)
+        - Low (Minor improvement)
+    validations:
+      required: true
+
+  - type: dropdown
+    id: user-type
+    attributes:
+      label: User Type
+      description: What type of user would primarily benefit from this feature?
+      options:
+        - End User (Delegates/Participants)
+        - Administrator (Conference Organizers)
+        - Developer (Technical Users)
+        - All Users
+        - Other (please specify in additional context)
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: feature-areas
+    attributes:
+      label: Related Areas
+      description: Which areas of the application does this feature relate to? (Select all that apply)
+      options:
+        - label: User Interface/UX
+        - label: Authentication/Authorization
+        - label: Data Management
+        - label: Communication/Messaging
+        - label: Workflow/Process Management
+        - label: Reporting/Analytics
+        - label: Integration/API
+        - label: Performance/Optimization
+        - label: Mobile Experience
+        - label: Accessibility
+
+  - type: textarea
+    id: additional-context
+    attributes:
+      label: Additional Context
+      description: Add any other context, mockups, examples, or references about the feature request here.
+      placeholder: Any additional information, links, or examples that might help us understand your request...

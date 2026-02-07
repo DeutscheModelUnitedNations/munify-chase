@@ -126,7 +126,7 @@
 								{@const group = member.representation.regionalGroup}
 								<div
 									class="tooltip tooltip-left text-xl"
-									data-tip={m.regionalGroups({ group: member.representation?.regionalGroup ?? '' })}
+									data-tip={m.regionalGroups({ group })}
 								>
 									{#if group === 'AFRICA'}
 										<i class="fas fa-earth-africa text-blue-500"></i>

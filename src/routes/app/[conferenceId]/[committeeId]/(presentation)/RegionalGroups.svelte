@@ -2,6 +2,7 @@
 	import type { CommitteePresentationQuery$result, RegionalGroupEnum$options } from '$houdini';
 	import Flag from '$lib/components/Flag.svelte';
 	import { m } from '$lib/paraglide/messages';
+	import { translateRegionalGroupEnum } from '$lib/utils/enumTranslationHelper';
 	import hotkeys from 'hotkeys-js';
 	import { onMount } from 'svelte';
 	import { cubicIn, cubicOut } from 'svelte/easing';
@@ -54,7 +55,7 @@
 		out:fly={{ x: -100, duration: 1000, easing: cubicIn }}
 	>
 		<h2 class="mb-8 w-full text-center text-4xl font-bold">
-			{m.regionalGroups({ group })}
+			{translateRegionalGroupEnum(group)}
 		</h2>
 		<div class="flex h-full w-full flex-wrap items-center justify-center gap-4">
 			{#each getGroupMembers(group) as member}

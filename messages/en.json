@@ -174,20 +174,12 @@
 	"publish": "Publish",
 	"publishChanges": "Publish changes",
 	"redo": "Repeat",
-	"regionalGroups": [
-		{
-			"declarations": ["input group"],
-			"match": {
-				"group=*": "Regional Bloc",
-				"group=AFRICA": "Africa",
-				"group=ASIA_PACIFIC": "Asia-Pacific",
-				"group=EASTERN_EUROPE": "Eastern Europe",
-				"group=LATIN_AMERICA_CARIBBEAN": "Latin America and the Caribbean",
-				"group=WESTERN_EUROPE_OTHERS": "Western Europe and Others"
-			},
-			"selectors": ["group"]
-		}
-	],
+	"regionalGroup_africa": "Africa",
+	"regionalGroup_asiaPacific": "Asia",
+	"regionalGroup_easternEurope": "Eastern Europe",
+	"regionalGroup_latinAmericaCaribbean": "Latin America and the Caribbeans",
+	"regionalGroup_westernEuropeOthers": "Western Europe and Others",
+	"regionalGroups": "Regional Bloc",
 	"removeMember": "Remove",
 	"role": "Role",
 	"rollCall": "Roll Call",

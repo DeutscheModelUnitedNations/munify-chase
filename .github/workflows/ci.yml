@@ -1,0 +1,248 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+    tags: ['*']
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  # ============================================
+  # LAYER 1: PARALLEL CI JOBS
+  # ============================================
+
+  format:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup-bun
+      - run: bun run format:check
+
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup-bun
+      - run: bunx svelte-kit sync
+      - run: bun run lint
+
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup-bun
+      - run: bunx svelte-kit sync
+      - run: bun run test
+
+  i18n:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup-bun
+      - run: bun run i18n:check
+      - run: bun run i18n:validate
+
+  security:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup-bun
+      - uses: aquasecurity/trivy-action@0.32.0
+        with:
+          scan-type: 'fs'
+          scan-ref: '.'
+          exit-code: 1
+          format: 'table'
+          ignore-unfixed: true
+          vuln-type: 'os,library'
+          severity: 'CRITICAL,HIGH'
+          trivyignores: .trivyignore
+          scanners: ${{ github.event_name == 'pull_request' && 'vuln,license' || 'vuln,secret,misconfig,license' }}
+
+  typecheck:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup-bun
+      - run: bunx svelte-kit sync
+      - run: bunx @inlang/paraglide-js compile --project ./project.inlang --outdir ./src/lib/paraglide
+      - run: bunx houdini generate
+      - run: bun run check
+
+  build:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    env:
+      NODE_OPTIONS: '--max-old-space-size=8192'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup-bun
+      - run: bunx svelte-kit sync
+      - run: bunx @inlang/paraglide-js compile --project ./project.inlang --outdir ./src/lib/paraglide
+      - run: bunx houdini generate
+      - run: bun run build
+
+  # ============================================
+  # LAYER 2: DOCKER BUILD (push only)
+  # ============================================
+
+  docker-build:
+    if: github.event_name == 'push'
+    needs: [format, lint, test, i18n, security, typecheck]
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        runtime: [node, bun]
+    env:
+      SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+      SENTRY_URL: ${{ secrets.SENTRY_URL }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: docker/setup-buildx-action@v3
+
+      - uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - id: meta
+        uses: docker/metadata-action@v5
+        with:
+          flavor: |
+            latest=false
+          images: |
+            ghcr.io/${{ github.repository }}
+            deutschemodelunitednations/chase
+          tags: |
+            type=ref,event=branch,suffix=${{ matrix.runtime != 'bun' && format('-{0}', matrix.runtime) || '' }}
+            type=semver,pattern={{version}},suffix=${{ matrix.runtime != 'bun' && format('-{0}', matrix.runtime) || '' }}
+            type=semver,pattern={{major}}.{{minor}},suffix=${{ matrix.runtime != 'bun' && format('-{0}', matrix.runtime) || '' }}
+            type=semver,pattern={{major}},suffix=${{ matrix.runtime != 'bun' && format('-{0}', matrix.runtime) || '' }}
+            type=raw,value=latest,enable=${{ github.ref_type == 'tag' && matrix.runtime == 'bun' }}
+
+      - id: build
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          file: ./Dockerfile.${{ matrix.runtime }}
+          cache-from: type=gha,scope=${{ matrix.runtime }}
+          cache-to: type=gha,mode=max,scope=${{ matrix.runtime }}
+          build-args: |
+            VERSION=${{ github.ref_name }}
+            SHA=${{ github.sha }}
+
+      - id: split-tags
+        run: echo "fragment=$(echo "${DOCKER_METADATA_OUTPUT_TAGS}" | head -n 1)" >> "$GITHUB_OUTPUT"
+
+      - uses: aquasecurity/trivy-action@0.32.0
+        with:
+          image-ref: ${{ steps.split-tags.outputs.fragment }}
+          format: 'table'
+          exit-code: '1'
+          ignore-unfixed: true
+          vuln-type: 'os,library'
+          severity: 'CRITICAL,HIGH'
+          trivyignores: .trivyignore
+          scanners: 'vuln,secret,misconfig'
+
+      - name: Upload sourcemaps to Bugsink
+        if: github.ref_type == 'tag' && matrix.runtime == 'bun' && env.SENTRY_AUTH_TOKEN != '' && env.SENTRY_URL != ''
+        env:
+          SENTRY_PROJECT: ${{ vars.SENTRY_PROJECT || 'chase' }}
+        run: |
+          echo "::group::Extracting build artifacts from Docker image"
+          CONTAINER_ID=$(docker create "${{ steps.split-tags.outputs.fragment }}")
+          mkdir -p ./build-artifacts
+          docker cp "$CONTAINER_ID:/app/release/build" ./build-artifacts/
+          docker rm "$CONTAINER_ID"
+          echo "Extracted build artifacts to ./build-artifacts/build"
+          ls -la ./build-artifacts/build
+          echo "::endgroup::"
+
+          echo "::group::Installing sentry-cli v2 (v3 has Bugsink compatibility issues)"
+          npm install -g @sentry/cli@2
+          echo "::endgroup::"
+
+          echo "::group::Injecting debug IDs into sourcemaps"
+          sentry-cli sourcemaps inject ./build-artifacts/build
+          echo "::endgroup::"
+
+          echo "::group::Uploading sourcemaps to Bugsink (project: $SENTRY_PROJECT)"
+          sentry-cli --url "$SENTRY_URL" sourcemaps \
+            --org bugsinkhasnoorgs \
+            --project "$SENTRY_PROJECT" \
+            upload ./build-artifacts/build
+          echo "Sourcemaps uploaded successfully"
+          echo "::endgroup::"
+
+      - name: Sourcemap upload skipped
+        if: github.ref_type == 'tag' && matrix.runtime == 'bun' && (env.SENTRY_AUTH_TOKEN == '' || env.SENTRY_URL == '')
+        run: |
+          echo "::warning::Sourcemap upload skipped - SENTRY_AUTH_TOKEN or SENTRY_URL not configured"
+          echo "To enable sourcemap uploads, add the following secrets to your repository:"
+          echo "  - SENTRY_AUTH_TOKEN: Your Bugsink authentication token"
+          echo "  - SENTRY_URL: Your Bugsink instance URL (e.g., https://bugsink.example.com/)"
+
+  # ============================================
+  # LAYER 3: RELEASE (tag push only)
+  # ============================================
+
+  release:
+    if: github.ref_type == 'tag'
+    needs: [docker-build]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Extract version
+        id: version
+        run: echo "number=${GITHUB_REF_NAME#v}" >> "$GITHUB_OUTPUT"
+
+      - uses: softprops/action-gh-release@v2
+        with:
+          generate_release_notes: true
+          body: |
+            <div align="center">
+
+            # MUNify CHASE `${{ github.ref_name }}`
+
+            [![SvelteKit](https://img.shields.io/badge/SvelteKit-FF3E00?style=for-the-badge&logo=svelte&logoColor=white)](https://svelte.dev)
+            [![Drizzle](https://img.shields.io/badge/Drizzle-C5F74F?style=for-the-badge&logo=drizzle&logoColor=black)](https://orm.drizzle.team)
+            [![GraphQL](https://img.shields.io/badge/GraphQL-E10098?style=for-the-badge&logo=graphql&logoColor=white)](https://graphql.org)
+            [![Docker](https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white)](https://hub.docker.com/r/deutschemodelunitednations/chase)
+
+            </div>
+
+            ### Docker images
+
+            ```bash
+            docker pull ghcr.io/${{ github.repository }}:${{ steps.version.outputs.number }}
+            ```
+
+            <details><summary>DockerHub mirror</summary>
+
+            ```bash
+            docker pull deutschemodelunitednations/chase:${{ steps.version.outputs.number }}
+            ```
+
+            </details>
+
+            ---
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

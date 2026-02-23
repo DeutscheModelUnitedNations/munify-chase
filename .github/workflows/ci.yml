@@ -139,8 +139,8 @@ jobs:
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           file: ./Dockerfile.${{ matrix.runtime }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+          cache-from: type=gha,scope=${{ matrix.runtime }}
+          cache-to: type=gha,mode=max,scope=${{ matrix.runtime }}
           build-args: |
             VERSION=${{ github.ref_name }}
             SHA=${{ github.sha }}
@@ -165,7 +165,7 @@ jobs:
           SENTRY_PROJECT: ${{ vars.SENTRY_PROJECT || 'chase' }}
         run: |
           echo "::group::Extracting build artifacts from Docker image"
-          CONTAINER_ID=$(docker create ${{ steps.split-tags.outputs.fragment }})
+          CONTAINER_ID=$(docker create "${{ steps.split-tags.outputs.fragment }}")
           mkdir -p ./build-artifacts
           docker cp "$CONTAINER_ID:/app/release/build" ./build-artifacts/
           docker rm "$CONTAINER_ID"

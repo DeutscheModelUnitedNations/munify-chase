@@ -26,6 +26,45 @@ CVE-2025-58183
 # crypto/x509: certificate error string DoS - esbuild doesn't validate certs
 CVE-2025-61729
 
+# net/url: bracketed IPv6 hostname validation - esbuild doesn't parse URLs
+CVE-2025-47912
+
+# encoding/asn1: DER payload memory exhaustion - esbuild doesn't parse ASN.1
+CVE-2025-58185
+
+# net/http: cookie parsing memory exhaustion - esbuild doesn't serve HTTP
+CVE-2025-58186
+
+# crypto/x509: quadratic name constraint checking - esbuild doesn't validate certs
+CVE-2025-58187
+
+# crypto/x509: DSA public key certificate panic - esbuild doesn't validate certs
+CVE-2025-58188
+
+# crypto/tls: ALPN negotiation error text leak - esbuild doesn't do TLS
+CVE-2025-58189
+
+# encoding/pem: quadratic parsing of invalid inputs - esbuild doesn't parse PEM
+CVE-2025-61723
+
+# net/textproto: excessive CPU in ReadResponse - esbuild doesn't do text protocol I/O
+CVE-2025-61724
+
+# net/mail: excessive CPU in ParseAddress - esbuild doesn't parse email
+CVE-2025-61725
+
+# cmd/cgo: comment parsing code smuggling - esbuild binary is pre-compiled, no cgo at runtime
+CVE-2025-61732
+
+# golang.org/x/net/html: infinite loop in html.Parse - esbuild doesn't parse HTML
+CVE-2025-58190
+
+# golang.org/x/net/html: quadratic complexity in html.Parse - esbuild doesn't parse HTML
+CVE-2025-47911
+
+# net/http: request smuggling - esbuild doesn't serve HTTP
+CVE-2025-22871
+
 # Debian system packages - not used by Node.js runtime
 
 # libgnutls30: GnuTLS SAN export - Node.js uses OpenSSL, not GnuTLS

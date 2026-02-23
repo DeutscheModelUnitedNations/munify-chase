@@ -174,20 +174,12 @@
 	"publish": "Veröffentlichen",
 	"publishChanges": "Änderungen Veröffentlichen",
 	"redo": "Wiederholen",
-	"regionalGroups": [
-		{
-			"declarations": ["input group"],
-			"match": {
-				"group=*": "Regionalgruppen",
-				"group=AFRICA": "Afrika",
-				"group=ASIA_PACIFIC": "Asien",
-				"group=EASTERN_EUROPE": "Osteuropa",
-				"group=LATIN_AMERICA_CARIBBEAN": "Lateinamerika und Karibik",
-				"group=WESTERN_EUROPE_OTHERS": "Westeuropa und restliche Staaten"
-			},
-			"selectors": ["group"]
-		}
-	],
+	"regionalGroup_africa": "Afrika",
+	"regionalGroup_asiaPacific": "Asien",
+	"regionalGroup_easternEurope": "Osteuropa",
+	"regionalGroup_latinAmericaCaribbean": "Lateinamerika und Karibik",
+	"regionalGroup_westernEuropeOthers": "Westeuropa und Andere",
+	"regionalGroups": "Regionalgruppen",
 	"removeMember": "Entfernen",
 	"role": "Rolle",
 	"rollCall": "Anwesenheitsfeststellung",

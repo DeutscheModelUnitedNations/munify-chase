@@ -8,9 +8,7 @@
 	import UndrawError from '$lib/components/UndrawError.svelte';
 	import emptyStreet from '$assets/undraw/empty_street.svg';
 	import PresenceActions from './PresenceActions.svelte';
-	import { assertDirective } from 'graphql';
 	import Flag from '$lib/components/Flag.svelte';
-	import { regionalGroup, representation } from '$api/db/schema';
 	import Tabs from '$lib/components/Tabs.svelte';
 	import { SetPresenceMutation } from './presenceMutations';
 	import toast from 'svelte-french-toast';
@@ -26,6 +24,7 @@
 		isNSAMember,
 		isUNMember
 	} from '$lib/helpers/distinguishConferenceMembers';
+	import { translateRegionalGroupEnum } from '$lib/utils/enumTranslationHelper';
 
 	let { data }: { data: PageData } = $props();
 
@@ -126,7 +125,7 @@
 								{@const group = member.representation.regionalGroup}
 								<div
 									class="tooltip tooltip-left text-xl"
-									data-tip={m.regionalGroups({ group: member.representation?.regionalGroup ?? '' })}
+									data-tip={translateRegionalGroupEnum(group)}
 								>
 									{#if group === 'AFRICA'}
 										<i class="fas fa-earth-africa text-blue-500"></i>

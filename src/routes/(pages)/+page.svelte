@@ -4,6 +4,7 @@
 	import LandingHero from './LandingHero.svelte';
 	import CardSection from './CardSection.svelte';
 	import TextSection from './TextSection.svelte';
+	import ContactSection from './ContactSection.svelte';
 	import { media } from '$lib/utils/media.svelte';
 	import { navigating } from '$app/state';
 	import { onMount } from 'svelte';
@@ -16,7 +17,50 @@
 	let loading = $state(true);
 
 	onMount(() => (loading = false));
+
+	const jsonLd = $derived(
+		JSON.stringify({
+			'@context': 'https://schema.org',
+			'@type': 'SoftwareApplication',
+			name: 'MUNify CHASE',
+			applicationCategory: 'BusinessApplication',
+			operatingSystem: 'Web',
+			url: 'https://chase.munify.cloud/',
+			description: m.seoDescription(),
+			offers: {
+				'@type': 'Offer',
+				price: '0',
+				priceCurrency: 'EUR'
+			},
+			author: {
+				'@type': 'Organization',
+				name: 'Deutsche Model United Nations (DMUN) e.V.',
+				url: 'https://dmun.de'
+			}
+		})
+	);
 </script>
+
+<svelte:head>
+	<title>{m.seoTitle()}</title>
+	<meta name="description" content={m.seoDescription()} />
+	<link rel="canonical" href="https://chase.munify.cloud/" />
+
+	<meta property="og:type" content="website" />
+	<meta property="og:url" content="https://chase.munify.cloud/" />
+	<meta property="og:title" content={m.seoTitle()} />
+	<meta property="og:description" content={m.seoDescription()} />
+	<meta property="og:site_name" content="MUNify CHASE" />
+	<meta property="og:image" content="https://chase.munify.cloud/favicon-96x96.png" />
+
+	<meta name="twitter:card" content="summary" />
+	<meta name="twitter:title" content={m.seoTitle()} />
+	<meta name="twitter:description" content={m.seoDescription()} />
+	<meta name="twitter:image" content="https://chase.munify.cloud/favicon-96x96.png" />
+
+	<!-- eslint-disable-next-line svelte/no-at-html-tags -->
+	{@html `<${'script'} type="application/ld+json">${jsonLd}</${'script'}>`}
+</svelte:head>
 
 <div class="flex min-h-screen flex-col items-center">
 	{#if loading}
@@ -63,6 +107,8 @@
 					</a>
 				</TextSection>
 			</div>
+
+			<ContactSection />
 		</div>
 	{/if}
 </div>

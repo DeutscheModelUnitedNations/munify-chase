@@ -1,0 +1,7 @@
+User-agent: *
+Allow: /
+Disallow: /app/
+Disallow: /api/
+Disallow: /logout/
+
+Sitemap: https://chase.munify.cloud/sitemap.xml

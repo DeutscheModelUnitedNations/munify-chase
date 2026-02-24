@@ -5,18 +5,30 @@ changelog:
     authors:
       - dependabot[bot]
   categories:
-    - title: ✨ Features
+    - title: 🚀 Features
       labels:
         - 'PR: Feature'
-    - title: 🚀 Enhancements
+    - title: 🌟 Enhancements
       labels:
         - 'PR: Enhancement'
-    - title: 🐞 Bug Fixes
+    - title: 🐛 Bug Fixes
       labels:
         - 'PR: Bug'
+    - title: ⚡ Performance
+      labels:
+        - 'PR: Performance'
+    - title: 🧹 Refactoring & Code Quality
+      labels:
+        - 'PR: Refactor'
     - title: 📚 Documentation
       labels:
         - documentation
-    - title: Other Changes
+    - title: 🛠️ Infrastructure & CI
       labels:
-        - '*' # Catch-all for pull requests that didn't match any of the previous categories
+        - 'PR: Infrastructure'
+    - title: 📦 Dependencies
+      labels:
+        - dependencies
+    - title: 🔄 Other Changes
+      labels:
+        - '*'

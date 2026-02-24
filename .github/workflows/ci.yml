@@ -244,5 +244,11 @@ jobs:
             </details>
 
             ---
+
+            <div align="center">
+            <sub>A project by <a href="https://dmun.de">Deutsche Model United Nations (DMUN) e.V.</a></sub>
+            <br>
+            <sub>Proudly free and open source — built for the MUN community worldwide 🌍</sub>
+            </div>
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

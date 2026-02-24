@@ -15,7 +15,7 @@
 >
 	{title}
 </h1>
-<div class="pb-10 lg:pb-0">
+<div class="pb-10 lg:pb-0 flex flex-col items-center lg:items-start">
 	<p
 		class="text-md text-center leading-normal text-slate-900 lg:text-left lg:text-lg dark:text-white"
 	>

@@ -12,7 +12,7 @@
 	let { src, alt, header, text, comingSoonRibbon = false }: Props = $props();
 </script>
 
-<div class="card bg-base-100 relative h-full flex-1 shadow-sm">
+<div class="card bg-base-100 border border-base-300 relative h-full flex-1 shadow-lg">
 	<div class="card-header flex max-h-60 items-center justify-center p-8">
 		<img {src} {alt} class="h-full w-full" />
 	</div>

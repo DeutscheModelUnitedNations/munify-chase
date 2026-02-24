@@ -4,7 +4,9 @@
 </script>
 
 {#if configPublic.PUBLIC_CONTACT_EMAIL}
-	<div class="flex flex-col items-center gap-6 p-4 pb-20 lg:p-20">
+	<div
+		class="flex flex-col items-center gap-6 mx-4 p-4 py-20 lg:p-20 bg-base-100 rounded-box border-base-300 border shadow-lg"
+	>
 		<h1
 			class="text-center font-serif text-3xl leading-tight font-bold text-slate-900 lg:text-4xl dark:text-white"
 		>
@@ -19,5 +21,6 @@
 			<i class="fas fa-envelope mr-2"></i>
 			{m.homeContactButton()}
 		</a>
+		<pre class="text-xs text-center text-base-content/50">{configPublic.PUBLIC_CONTACT_EMAIL}</pre>
 	</div>
 {/if}

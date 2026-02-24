@@ -129,7 +129,7 @@ jobs:
             type=semver,pattern={{version}},suffix=${{ matrix.runtime != 'bun' && format('-{0}', matrix.runtime) || '' }}
             type=semver,pattern={{major}}.{{minor}},suffix=${{ matrix.runtime != 'bun' && format('-{0}', matrix.runtime) || '' }}
             type=semver,pattern={{major}},suffix=${{ matrix.runtime != 'bun' && format('-{0}', matrix.runtime) || '' }}
-            type=raw,value=latest,enable=${{ github.ref_type == 'tag' && matrix.runtime == 'bun' }}
+            type=raw,value=latest,enable=${{ github.ref_type == 'tag' }},suffix=${{ matrix.runtime != 'bun' && format('-{0}', matrix.runtime) || '' }}
 
       - id: build
         uses: docker/build-push-action@v5

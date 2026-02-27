@@ -1,6 +1,6 @@
 <script lang="ts">
   import { m } from '$lib/paraglide/messages';
-  import { configPublic } from '$config/public';
+  import { configPublic } from '$lib/config/public';
 </script>
 
 {#if configPublic.PUBLIC_CONTACT_EMAIL}

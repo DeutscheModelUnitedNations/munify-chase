@@ -23,6 +23,7 @@
   import PresenceActions from './PresenceActions.svelte';
   import { client } from '$lib/api/rumbleClient/client';
   import { committeeQuery } from '$lib/queries/commitee.svelte';
+  import { translateRegionalGroupEnum } from '$lib/utils/enumTranslationHelper';
 
   const committee = await committeeQuery();
 
@@ -118,9 +119,7 @@
                 {@const group = member.representation.regionalGroup}
                 <div
                   class="tooltip tooltip-left text-xl"
-                  data-tip={m.regionalGroups({
-                    group: member.representation?.regionalGroup ?? ''
-                  })}
+                  data-tip={translateRegionalGroupEnum(group)}
                 >
                   {#if group === 'AFRICA'}
                     <i class="fas fa-earth-africa text-blue-500"></i>

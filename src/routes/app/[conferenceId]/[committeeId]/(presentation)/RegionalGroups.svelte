@@ -6,6 +6,7 @@
   import type { RegionalgroupEnum } from '$lib/api/rumbleClient/client';
   import type { committeePresentationQuery } from '$lib/queries/committeePresentation.svelte';
   import type { QueryResponseType } from '$lib/helpers/utilityTypes';
+  import { translateRegionalGroupEnum } from '$lib/utils/enumTranslationHelper';
 
   interface Props {
     open: boolean;
@@ -54,7 +55,7 @@
     out:fly={{ x: -100, duration: 1000, easing: cubicIn }}
   >
     <h2 class="mb-8 w-full text-center text-4xl font-bold">
-      {m.regionalGroups({ group })}
+      {translateRegionalGroupEnum(group)}
     </h2>
     <div class="flex h-full w-full flex-wrap items-center justify-center gap-4">
       {#each getGroupMembers(group) as member}

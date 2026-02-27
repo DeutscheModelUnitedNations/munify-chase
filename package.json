@@ -13,7 +13,9 @@
     "check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
     "check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
     "format": "prettier --write .",
-    "lint": "eslint . && prettier --check .",
+    "format:check": "prettier --check .",
+    "lint": "eslint .",
+    "test": "vitest run",
     "db:start": "docker compose up",
     "db:push": "drizzle-kit push",
     "db:generate": "drizzle-kit generate",
@@ -81,6 +83,7 @@
     "typescript-eslint": "^8.50.1",
     "vite": "^7.3.0",
     "vite-plugin-devtools-json": "^1.0.0",
+    "vitest": "^4.0.18",
     "world-countries": "^5.1.0",
     "zod": "^4.2.1"
   },

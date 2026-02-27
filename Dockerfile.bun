@@ -1,16 +1,16 @@
-FROM oven/bun:1.2 AS build-base
+FROM oven/bun:1.2-slim AS base
 
-FROM build-base AS dependencies
+FROM base AS dependencies
 WORKDIR /build/dependencies
 COPY package.json bun.lock tsconfig.json ./
 RUN bun install --frozen-lockfile
 
-FROM build-base AS runtime-dependencies
+FROM base AS runtime-dependencies
 WORKDIR /build/dependencies
 COPY package.json bun.lock tsconfig.json ./
 RUN bun install --frozen-lockfile --production
 
-FROM build-base AS builder
+FROM base AS builder
 WORKDIR /build/staging
 
 ARG VERSION
@@ -26,7 +26,7 @@ COPY . .
 RUN bun run build
 RUN bun run check
 
-FROM node:24.12-slim AS release
+FROM base AS release
 WORKDIR /app/release
 
 ARG VERSION
@@ -39,10 +39,10 @@ COPY ./drizzle.config.ts .
 COPY ./src/api/db/schema.ts ./src/api/db/schema.ts
 COPY --from=runtime-dependencies /build/dependencies .
 
-RUN chown -R node:node .
-USER node
+RUN chown -R bun:bun .
+USER bun
 ENV NODE_ENV=production
 EXPOSE 3000/tcp
 # TODO
 # HEALTHCHECK --interval=15s --timeout=10s --retries=3 CMD curl -f http://0.0.0.0:3000/api/health/ready || exit 1
-CMD ["sh", "-c", "./node_modules/.bin/drizzle-kit migrate && node ./index.js"]
+CMD ["sh", "-c", "./node_modules/.bin/drizzle-kit migrate && bun ./index.js"]

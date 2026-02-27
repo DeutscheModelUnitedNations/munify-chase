@@ -1,0 +1,1 @@
+ALTER TYPE "public"."committee_status" ADD VALUE 'MODERATED_INFORMAL' BEFORE 'PAUSE';

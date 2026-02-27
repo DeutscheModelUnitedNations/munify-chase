@@ -1,0 +1,34 @@
+changelog:
+  exclude:
+    labels:
+      - skip-changelog
+    authors:
+      - dependabot[bot]
+  categories:
+    - title: 🚀 Features
+      labels:
+        - 'PR: Feature'
+    - title: 🌟 Enhancements
+      labels:
+        - 'PR: Enhancement'
+    - title: 🐛 Bug Fixes
+      labels:
+        - 'PR: Bug'
+    - title: ⚡ Performance
+      labels:
+        - 'PR: Performance'
+    - title: 🧹 Refactoring & Code Quality
+      labels:
+        - 'PR: Refactor'
+    - title: 📚 Documentation
+      labels:
+        - documentation
+    - title: 🛠️ Infrastructure & CI
+      labels:
+        - 'PR: Infrastructure'
+    - title: 📦 Dependencies
+      labels:
+        - dependencies
+    - title: 🔄 Other Changes
+      labels:
+        - '*'

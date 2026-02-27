@@ -1,0 +1,106 @@
+name: Task / Chore
+description: Administrative tasks, maintenance, refactoring, or other development chores
+type: Task
+assignees: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        This template is for administrative tasks, maintenance work, technical debt, refactoring, or other development chores that need to be tracked for the Chase project.
+
+  - type: dropdown
+    id: task-type
+    attributes:
+      label: Task Type
+      description: What type of task is this?
+      options:
+        - Maintenance (Routine upkeep, dependency updates)
+        - Refactoring (Code cleanup, restructuring)
+        - Technical Debt (Address accumulated technical debt)
+        - Documentation (Update docs, add missing documentation)
+        - Testing (Add tests, improve test coverage)
+        - Infrastructure (CI/CD, deployment, tooling)
+        - Security (Security updates, vulnerability fixes)
+        - Performance (Optimization, monitoring setup)
+        - Cleanup (Remove dead code, unused files)
+        - Configuration (Settings, environment setup)
+        - Dependencies (Update libraries, resolve conflicts)
+        - Other (please specify in description)
+    validations:
+      required: true
+
+  - type: textarea
+    id: task-description
+    attributes:
+      label: Task Description
+      description: Describe what needs to be done
+      placeholder: Clearly explain the task that needs to be completed...
+    validations:
+      required: true
+
+  - type: textarea
+    id: motivation
+    attributes:
+      label: Motivation / Reason
+      description: Why does this task need to be done?
+      placeholder: |
+        - Technical debt is causing issues
+        - Dependencies are outdated and pose security risks
+        - Code is difficult to maintain
+        - Missing documentation is blocking new contributors
+    validations:
+      required: true
+
+  - type: dropdown
+    id: priority
+    attributes:
+      label: Priority
+      description: How urgent is this task?
+      options:
+        - Critical (Blocking or security issue)
+        - High (Should be done soon)
+        - Medium (Important but not urgent)
+        - Low (Can be done when time permits)
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: affected-areas
+    attributes:
+      label: Affected Areas
+      description: Which areas of the project does this task affect? (Select all that apply)
+      options:
+        - label: Frontend Code
+        - label: Backend Code
+        - label: Database
+        - label: Configuration Files
+        - label: Documentation
+        - label: Tests
+        - label: CI/CD Pipeline
+        - label: Dependencies
+        - label: Development Tools
+        - label: Deployment/Infrastructure
+        - label: Security
+        - label: Performance
+
+  - type: textarea
+    id: implementation-notes
+    attributes:
+      label: Implementation Notes
+      description: Any specific requirements, constraints, or implementation details
+      placeholder: |
+        - Specific tools or approaches to use
+        - Things to be careful about
+        - Dependencies that need to be considered
+        - Breaking changes to avoid
+
+  - type: textarea
+    id: additional-context
+    attributes:
+      label: Additional Context
+      description: Any other relevant information, links, or context
+      placeholder: |
+        - Links to relevant documentation
+        - References to best practices
+        - Examples from other projects
+        - Previous discussions or decisions

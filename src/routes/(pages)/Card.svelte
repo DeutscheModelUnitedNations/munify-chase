@@ -12,9 +12,9 @@
   const { src, alt, header, text, comingSoonRibbon = false }: Props = $props();
 </script>
 
-<div class="card relative h-full flex-1 bg-base-100 shadow-sm">
-  <div class="card-header flex h-60 items-center justify-center p-8">
-    <img {src} {alt} />
+<div class="card relative h-full flex-1 border border-base-300 bg-base-100 shadow-lg">
+  <div class="card-header flex max-h-60 items-center justify-center p-8">
+    <img {src} {alt} class="h-full w-full" />
   </div>
   <div class="card-body">
     <h2 class="mb-4 text-center font-serif text-3xl font-bold">

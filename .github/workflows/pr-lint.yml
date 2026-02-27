@@ -1,0 +1,118 @@
+name: PR Lint
+
+on:
+  pull_request_target:
+    types: [opened, labeled, unlabeled, synchronize, edited]
+
+jobs:
+  pr-lint:
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+    steps:
+      - uses: actions/github-script@v7
+        with:
+          script: |
+            const MARKER = '<!-- pr-lint -->';
+
+            const REQUIRED_LABELS = [
+              'PR: Feature',
+              'PR: Enhancement',
+              'PR: Bug',
+              'PR: Performance',
+              'PR: Refactor',
+              'documentation',
+              'PR: Infrastructure',
+              'dependencies',
+              'PR: Tests',
+            ];
+
+            const ALLOWED_TYPES = [
+              'feat', 'fix', 'style', 'refactor', 'perf',
+              'docs', 'test', 'chore', 'build', 'ci', 'deps',
+            ];
+
+            const TITLE_REGEX = new RegExp(`^(${ALLOWED_TYPES.join('|')})(\\s*\\(.+\\))?\\s*:\\s*.+$`);
+
+            // --- Collect errors ---
+
+            const errors = [];
+            const pr = context.payload.pull_request;
+
+            // Label check
+            const prLabels = pr.labels.map(l => l.name);
+            const hasRequiredLabel = prLabels.some(l => REQUIRED_LABELS.includes(l));
+            if (!hasRequiredLabel) {
+              errors.push({
+                check: 'Label',
+                message: `PR must have at least one of these labels:\n${REQUIRED_LABELS.map(l => `\`${l}\``).join(', ')}`,
+              });
+            }
+
+            // Title check
+            if (!TITLE_REGEX.test(pr.title)) {
+              errors.push({
+                check: 'Title',
+                message: [
+                  `PR title must follow conventional commit format:`,
+                  '```',
+                  'type: description',
+                  'type (scope): description',
+                  '```',
+                  `Allowed types: ${ALLOWED_TYPES.map(t => `\`${t}\``).join(', ')}`,
+                  '',
+                  `Example: \`feat (Frontend): add login modal\``,
+                ].join('\n'),
+              });
+            }
+
+            // --- Find existing comment ---
+
+            const comments = await github.paginate(github.rest.issues.listComments, {
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: pr.number,
+            });
+            const existing = comments.find(c => c.body?.includes(MARKER));
+
+            // --- Post, update, or delete comment ---
+
+            if (errors.length > 0) {
+              const body = [
+                MARKER,
+                '## PR Lint',
+                '',
+                ...errors.map(e => [
+                  `### ${e.check}`,
+                  '',
+                  e.message,
+                ].join('\n')),
+              ].join('\n');
+
+              if (existing) {
+                await github.rest.issues.updateComment({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  comment_id: existing.id,
+                  body,
+                });
+              } else {
+                await github.rest.issues.createComment({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: pr.number,
+                  body,
+                });
+              }
+
+              core.setFailed(`PR lint failed: ${errors.map(e => e.check).join(', ')}`);
+            } else {
+              if (existing) {
+                await github.rest.issues.deleteComment({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  comment_id: existing.id,
+                });
+              }
+              core.info('PR lint passed');
+            }

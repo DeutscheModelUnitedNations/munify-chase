@@ -1,0 +1,117 @@
+# Trivy ignore file
+# Add CVE IDs to ignore specific vulnerabilities
+
+# esbuild Go stdlib vulnerabilities (build-time tool only)
+# esbuild is a JS/TS bundler that doesn't use these Go stdlib features
+
+# net/netip: IPv4-mapped IPv6 address parsing - esbuild doesn't do network ops
+CVE-2024-24790
+
+# net/http, x/net/http2: HTTP/2 DoS vulnerabilities - esbuild doesn't serve HTTP
+CVE-2023-39325
+CVE-2023-45288
+
+# filepath: Windows \??\ path prefix - Linux containers only
+CVE-2023-45283
+
+# encoding/gob: nested struct decoding - esbuild doesn't use gob
+CVE-2024-34156
+
+# database/sql: Postgres race condition - esbuild doesn't use databases
+CVE-2025-47907
+
+# archive/tar: GNU sparse map allocation - esbuild doesn't parse tar files
+CVE-2025-58183
+
+# crypto/x509: certificate error string DoS - esbuild doesn't validate certs
+CVE-2025-61729
+
+# net/url: bracketed IPv6 hostname validation - esbuild doesn't parse URLs
+CVE-2025-47912
+
+# encoding/asn1: DER payload memory exhaustion - esbuild doesn't parse ASN.1
+CVE-2025-58185
+
+# net/http: cookie parsing memory exhaustion - esbuild doesn't serve HTTP
+CVE-2025-58186
+
+# crypto/x509: quadratic name constraint checking - esbuild doesn't validate certs
+CVE-2025-58187
+
+# crypto/x509: DSA public key certificate panic - esbuild doesn't validate certs
+CVE-2025-58188
+
+# crypto/tls: ALPN negotiation error text leak - esbuild doesn't do TLS
+CVE-2025-58189
+
+# encoding/pem: quadratic parsing of invalid inputs - esbuild doesn't parse PEM
+CVE-2025-61723
+
+# net/textproto: excessive CPU in ReadResponse - esbuild doesn't do text protocol I/O
+CVE-2025-61724
+
+# net/mail: excessive CPU in ParseAddress - esbuild doesn't parse email
+CVE-2025-61725
+
+# cmd/cgo: comment parsing code smuggling - esbuild binary is pre-compiled, no cgo at runtime
+CVE-2025-61732
+
+# golang.org/x/net/html: infinite loop in html.Parse - esbuild doesn't parse HTML
+CVE-2025-58190
+
+# golang.org/x/net/html: quadratic complexity in html.Parse - esbuild doesn't parse HTML
+CVE-2025-47911
+
+# net/http: request smuggling - esbuild doesn't serve HTTP
+CVE-2025-22871
+
+# crypto/tls: unexpected session resumption - esbuild doesn't do TLS
+CVE-2025-68121
+
+# net/url: memory exhaustion in query parameter parsing - esbuild doesn't parse URLs
+CVE-2025-61726
+
+# archive/zip: excessive CPU building archive index - esbuild doesn't process zip files
+CVE-2025-61728
+
+# crypto/tls: TLS 1.3 handshake multiple messages in records - esbuild doesn't do TLS
+CVE-2025-61730
+
+# Debian system packages - not used by Node.js runtime
+
+# libgnutls30: GnuTLS SAN export - Node.js uses OpenSSL, not GnuTLS
+CVE-2025-32988
+
+# libgnutls30: GnuTLS certtool parsing - certtool not used at runtime
+CVE-2025-32990
+
+# perl-base: CPAN TLS verification - CPAN module installer not used at runtime
+CVE-2023-31484
+
+# gpgv: GnuPG out-of-bounds write - gpg signature verification not used at runtime
+CVE-2025-68973
+
+# libpam: directory traversal - PAM auth not used by Node.js/Bun runtime
+CVE-2025-6020
+
+# minimatch: ReDoS via crafted glob patterns - transitive dep, not exposed to user input
+CVE-2026-26996
+
+# node-tar: symlink poisoning, path traversal, race condition, hardlink exploits
+# tar is a transitive build/install dep, not used to extract untrusted archives at runtime
+CVE-2026-23745
+CVE-2026-23950
+CVE-2026-24842
+CVE-2026-26960
+
+# TODO: Remove these ignores once fixed
+
+# TODO: glob command injection - Already fixed in bun.lock (10.5.0+)
+# Check: Rebuild Docker image and re-run Trivy scan to confirm fix
+# Remove this ignore once scan passes without it
+CVE-2025-64756
+
+# TODO: glibc setuid/dlopen vulnerability
+# Check: Update base image when Debian 12.12 is released (fixes libc 2.36-9+deb12u11)
+# Remove this ignore once base image is updated
+CVE-2025-4802

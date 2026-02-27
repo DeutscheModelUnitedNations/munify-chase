@@ -51,6 +51,7 @@
     "@types/js-yaml": "^4.0.9",
     "@types/node": "^25.0.3",
     "@types/pg": "^8.16.0",
+    "@vitejs/plugin-basic-ssl": "^2.1.4",
     "bits-ui": "^2.14.4",
     "concurrently": "^9.2.1",
     "daisyui": "^5.5.14",

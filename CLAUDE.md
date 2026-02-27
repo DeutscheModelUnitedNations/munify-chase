@@ -95,3 +95,16 @@ bun run dev              # Start everything
 
 Database: `localhost:5432` (postgres/postgres)
 Mock OIDC: `localhost:8080`
+Dev server: `https://localhost:5173` (HTTPS/HTTP2)
+
+### HTTPS / HTTP/2 in Development
+
+The dev server uses `@vitejs/plugin-basic-ssl` to enable HTTPS, which automatically activates HTTP/2 in Vite.
+
+**Why this is needed:** The app uses SSE (Server-Sent Events) via `fetchSubscriptions` in urql for live GraphQL subscriptions. Each `liveQuery` holds a persistent HTTP connection. Under HTTP/1.1, browsers limit concurrent connections to 6 per domain — opening the app in multiple tabs (e.g. chairs view + presentation view) can exhaust this limit, causing connections to queue or fail with `AbortError`. HTTP/2 multiplexes all streams over a single TCP connection, eliminating this bottleneck.
+
+**First visit:** Chrome will show a certificate warning for the self-signed cert. Click "Advanced → Proceed to localhost" once per session.
+
+### Rumble Client: Date Serialization
+
+The Rumble client's `stringifyArgumentValue` cannot serialize JavaScript `Date` objects in mutation arguments (it tries to look them up as `INPUT_OBJECT`, but `DateTime` is a `SCALAR`). Always pass dates as ISO strings (`.toISOString()`) in mutation `__args`, not as `Date` objects (`.toDate()`).

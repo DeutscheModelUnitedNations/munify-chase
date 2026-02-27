@@ -12,15 +12,24 @@
 
   const committee = await committeeTeamQuery();
 
+  let lastActiveAgendaItem = $state(committee?.activeAgendaItem);
+  $effect(() => {
+    if (committee?.activeAgendaItem) {
+      lastActiveAgendaItem = committee.activeAgendaItem;
+    }
+  });
+
+  const activeAgendaItem = $derived(committee?.activeAgendaItem ?? lastActiveAgendaItem);
+
   const speakersList = $derived(
-    committee?.activeAgendaItem?.speakersList.find((item) => item.type === 'SPEAKERS_LIST')
+    activeAgendaItem?.speakersList.find((item) => item.type === 'SPEAKERS_LIST')
   );
   const commentList = $derived(
-    committee?.activeAgendaItem?.speakersList.find((item) => item.type === 'COMMENT_LIST')
+    activeAgendaItem?.speakersList.find((item) => item.type === 'COMMENT_LIST')
   );
 </script>
 
-{#if !committee?.activeAgendaItem}
+{#if !activeAgendaItem}
   <UndrawError
     undrawImage={question}
     title={m.noAgendaItemSelected()}

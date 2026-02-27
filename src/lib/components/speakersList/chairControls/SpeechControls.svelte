@@ -48,7 +48,6 @@
               otherList.type === 'SPEAKERS_LIST'
                 ? speakersList.speakingTime
                 : otherList.speakingTime,
-            startTimestamp: serverTime.value.toISOString(),
             stopTimer: true
           },
           id: true,
@@ -88,12 +87,14 @@
   const resetTimer = async () => {
     if (!speakersList) return;
 
+    const timeLeft = speakersList.startTimestamp
+      ? dayjs(speakersList.startTimestamp).diff(serverTime.value, 'seconds') + speakersList.timeLeft
+      : speakersList.speakingTime;
+
     await client.mutate.updateSpeakersList({
       __args: {
         id: speakersList.id,
-        timeLeft:
-          dayjs(speakersList.startTimestamp).diff(serverTime.value, 'seconds') +
-          speakersList.timeLeft,
+        timeLeft,
         stopTimer: !speakersList.startTimestamp,
         startTimestamp: speakersList.startTimestamp ? serverTime.value.toISOString() : undefined
       },

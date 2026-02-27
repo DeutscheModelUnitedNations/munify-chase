@@ -15,14 +15,14 @@
   const { committee }: Props = $props();
 </script>
 
-<IconInfoBox text={$committee?.activeAgendaItem?.title || '—'} faIcon="podium" />
-<IconInfoBox text={$committee?.stateOfDebate || '—'} faIcon="diagram-next" />
+<IconInfoBox text={committee?.activeAgendaItem?.title || '—'} faIcon="podium" />
+<IconInfoBox text={committee?.stateOfDebate || '—'} faIcon="diagram-next" />
 <IconInfoBox
-  text={($committee?.statusHeadline.length || 0) > 0
-    ? $committee!.statusHeadline
-    : translateCommitteeStatusText($committee?.status || 'FORMAL')}
-  faIcon={getCommitteeStatusIcon($committee?.status || 'FORMAL')}
-  committeeStatus={$committee?.status}
+  text={(committee?.statusHeadline.length || 0) > 0
+    ? committee!.statusHeadline
+    : translateCommitteeStatusText(committee?.status || 'FORMAL')}
+  faIcon={getCommitteeStatusIcon(committee?.status || 'FORMAL')}
+  committeeStatus={committee?.status}
   marqueeOnOverflow={false}
-  until={new Date($committee?.statusUntil || Date.now())}
+  until={new Date(committee?.statusUntil || Date.now())}
 />

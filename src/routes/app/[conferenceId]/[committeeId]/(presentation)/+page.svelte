@@ -24,7 +24,7 @@
 
   const committee = await committeePresentationQuery();
 
-  const committeeSettings = liveQuery(() => localDB.committeeSettings.get($committee.id));
+  const committeeSettings = liveQuery(() => localDB.committeeSettings.get(committee.id));
 
   const layout = $derived(
     ($committeeSettings && getPresentationLayoutPreset($committeeSettings.layout)) ??
@@ -32,11 +32,11 @@
   );
 
   const speakersList = $derived(
-    $committee?.activeAgendaItem?.speakersList.find((x) => x.type === 'SPEAKERS_LIST')
+    committee?.activeAgendaItem?.speakersList.find((x) => x.type === 'SPEAKERS_LIST')
   );
 
   const commentsList = $derived(
-    $committee?.activeAgendaItem?.speakersList.find((x) => x.type === 'COMMENT_LIST')
+    committee?.activeAgendaItem?.speakersList.find((x) => x.type === 'COMMENT_LIST')
   );
   let speakersQueueResizeFn: () => void;
   let commentsQueueResizeFn: () => void;
@@ -62,12 +62,12 @@
 
 <svelte:head>
   <title
-    >{$committee?.abbreviation ?? 'N/A'}
+    >{committee?.abbreviation ?? 'N/A'}
     {m.presentationMode()} - MUNify CHASE</title
   >
 </svelte:head>
 
-{#if $committee}
+{#if committee}
   <Grid
     itemSize={{ height: browser ? window.innerHeight / 16 : 60 }}
     cols={12}
@@ -81,7 +81,7 @@
         class="card gap-2 overflow-hidden bg-base-100 p-4"
         id="committee-title"
       >
-        <AbbreviationInfoBox text={$committee.name || '—'} abbreviation={$committee.abbreviation} />
+        <AbbreviationInfoBox text={committee.name || '—'} abbreviation={committee.abbreviation} />
       </GridItem>
     {/if}
     {#if layout.committeeStatus}
@@ -92,32 +92,32 @@
         id="committee-status"
       >
         <IconInfoBox
-          text={$committee.statusHeadline.length > 0
-            ? $committee.statusHeadline
-            : translateCommitteeStatusText($committee.status)}
-          faIcon={getCommitteeStatusIcon($committee.status)}
-          committeeStatus={$committee.status}
+          text={committee.statusHeadline.length > 0
+            ? committee.statusHeadline
+            : translateCommitteeStatusText(committee.status)}
+          faIcon={getCommitteeStatusIcon(committee.status)}
+          committeeStatus={committee.status}
           marqueeOnOverflow={false}
-          until={new Date($committee.statusUntil)}
+          until={new Date(committee.statusUntil)}
           fullHeight
-          hideCountdown={$committee.status === 'FORMAL'}
+          hideCountdown={committee.status === 'FORMAL'}
         />
       </GridItem>
     {/if}
     {#if layout.agendaItem}
       {@const gridProps = layout.agendaItem}
       <GridItem {...gridProps} class="card gap-2 overflow-hidden bg-base-100 p-4" id="agenda-item">
-        <IconInfoBox text={$committee.activeAgendaItem?.title || '—'} faIcon="podium" fullHeight />
+        <IconInfoBox text={committee.activeAgendaItem?.title || '—'} faIcon="podium" fullHeight />
       </GridItem>
     {/if}
     {#if layout.majorities}
       {@const gridProps = layout.majorities}
       <GridItem {...gridProps} class="card gap-2 overflow-hidden bg-base-100 p-4" id="majorities">
         <Majorities
-          totalPresent={$committee.totalPresent}
-          simpleMajority={$committee.simpleMajority}
-          twoThirdsMajority={$committee.twoThirdsMajority}
-          paperSupportThreshold={$committee.paperSupportThreshold}
+          totalPresent={committee.totalPresent}
+          simpleMajority={committee.simpleMajority}
+          twoThirdsMajority={committee.twoThirdsMajority}
+          paperSupportThreshold={committee.paperSupportThreshold}
         />
       </GridItem>
     {/if}
@@ -125,7 +125,7 @@
     {#if layout.whiteboard}
       {@const gridProps = layout.whiteboard}
       <GridItem {...gridProps} class="card gap-2 overflow-hidden bg-base-100 p-4" id="whiteboard">
-        <WhiteboardViewer data={$committee.whiteboardContent} />
+        <WhiteboardViewer data={committee.whiteboardContent} />
       </GridItem>
     {/if}
 
@@ -160,23 +160,23 @@
 
   <RegionalGroups
     open={$committeeSettings?.displayRegionalGroups ?? false}
-    committeeMembers={$committee.members}
+    committeeMembers={committee.members}
   />
 
   <PresentationRollCall
-    committeeId={$committee.id}
-    members={$committee.members
+    committeeId={committee.id}
+    members={committee.members
       .filter((x) => x.representation?.type === 'DELEGATION')
       .sort((a, b) => sortTranslatedCountries(a.representation!, b.representation!))}
   />
 
   <ShowOfHandsVotingPresentation committeeSettings={$committeeSettings} />
-  <RollCallVotingPresentation committeeSettings={$committeeSettings} committee={$committee} />
+  <RollCallVotingPresentation committeeSettings={$committeeSettings} {committee} />
 
   <AdoptionConfetti
-    lastAdoptionDate={$committee?.lastResolutionAdoptionDate}
-    agendaItem={$committee?.activeAgendaItem?.title ?? m.unknown()}
-    committeeName={$committee?.name ?? m.unknown()}
+    lastAdoptionDate={committee?.lastResolutionAdoptionDate}
+    agendaItem={committee?.activeAgendaItem?.title ?? m.unknown()}
+    committeeName={committee?.name ?? m.unknown()}
     confettiDurationSec={90}
   />
 {:else}

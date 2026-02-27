@@ -1,7 +1,6 @@
 <script lang="ts">
   import dayjs from 'dayjs';
   import type duration from 'dayjs/plugin/duration';
-  import { check } from 'drizzle-orm/gel-core';
   import { onMount } from 'svelte';
   import Marquee from 'svelte-fast-marquee';
   import * as m from '$lib/paraglide/messages.js';
@@ -26,11 +25,14 @@
     faIcon,
     iconText,
     committeeStatus,
-    until,
+    until: untilRaw,
     marqueeOnOverflow = true,
     fullHeight = false,
     hideCountdown = false
   }: Props = $props();
+
+  // Rumble may return Date fields as ISO strings or Proxy-wrapped Dates
+  const until = $derived(untilRaw ? new Date(untilRaw as any) : undefined);
 
   let textElement = $state<HTMLParagraphElement>();
   let isOverflowing = $state(false);

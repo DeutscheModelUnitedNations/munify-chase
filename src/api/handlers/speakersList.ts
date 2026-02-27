@@ -11,14 +11,24 @@ import {
   schemaBuilder
 } from '$api/rumble';
 
-// abilityBuilder.speakersList
-//   .allow(["read", "update", "delete"])
-//   .when(({ mustBeLoggedIn }) => {
-//     const user = mustBeLoggedIn();
-//     if (user?.email && isDMUNEmail(user.email)) {
-//       return "allow";
-//     }
-//   });
+abilityBuilder.speakersList.allow(['read', 'update', 'delete']).when(({ mustBeLoggedIn }) => {
+  const user = mustBeLoggedIn();
+  return {
+    where: {
+      agendaItem: {
+        committee: {
+          conference: {
+            users: {
+              user: {
+                id: user.sub
+              }
+            }
+          }
+        }
+      }
+    }
+  };
+});
 
 const ref = object({
   table: 'speakersList'

@@ -28,19 +28,19 @@
   const committee = await committeeQuery();
 
   const countries = $derived(
-    $committee?.members
+    committee?.members
       .filter(isDelegationMember)
       .sort((a, b) => sortTranslatedCountries(a.representation!, b.representation!)) ?? []
   );
 
   const nsas = $derived(
-    $committee?.conference?.uniqueConferenceMembers
+    committee?.conference?.uniqueConferenceMembers
       ?.filter(isNSAMember)
       .sort((a, b) => a.representation!.name!.localeCompare(b.representation!.name!)) ?? []
   );
 
   const un = $derived(
-    $committee?.conference?.uniqueConferenceMembers
+    committee?.conference?.uniqueConferenceMembers
       ?.filter(isUNMember)
       ?.sort((a, b) => a.representation!.name!.localeCompare(b.representation!.name!)) ?? []
   );
@@ -75,7 +75,7 @@
   };
 </script>
 
-{#if $committee}
+{#if committee}
   <div class="flex h-full w-full items-center justify-center">
     <div class="flex h-full w-full max-w-screen-xl flex-col gap-6 p-6 lg:flex-row">
       <div class="top-22 flex h-full flex-col gap-4 lg:sticky lg:w-lg">
@@ -84,10 +84,10 @@
         </BasicCard>
         <BasicCard>
           <Majorities
-            totalPresent={$committee.totalPresent}
-            simpleMajority={$committee.simpleMajority}
-            twoThirdsMajority={$committee.twoThirdsMajority}
-            paperSupportThreshold={$committee.paperSupportThreshold}
+            totalPresent={committee.totalPresent}
+            simpleMajority={committee.simpleMajority}
+            twoThirdsMajority={committee.twoThirdsMajority}
+            paperSupportThreshold={committee.paperSupportThreshold}
           />
         </BasicCard>
         <BasicCard>
@@ -97,7 +97,7 @@
           </button>
         </BasicCard>
         <BasicCard>
-          <PresenceActions memberIds={$committee.members.map((x) => x.id)} />
+          <PresenceActions memberIds={committee.members.map((x) => x.id)} />
         </BasicCard>
       </div>
       <div class="flex h-full w-full flex-3 flex-col gap-4">

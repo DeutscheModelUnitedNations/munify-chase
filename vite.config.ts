@@ -13,5 +13,14 @@ export default defineConfig({
       project: './project.inlang',
       outdir: './src/lib/paraglide'
     })
-  ]
+  ],
+  server: {
+    proxy: {
+      '/dmun-cdn': {
+        target: 'https://dmuncdnstorage.blob.core.windows.net/cdn',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/dmun-cdn/, '')
+      }
+    }
+  }
 });

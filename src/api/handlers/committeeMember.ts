@@ -9,14 +9,22 @@ import {
   schemaBuilder
 } from '$api/rumble';
 
-// abilityBuilder.committeeMember
-//   .allow(["read", "update"])
-//   .when(({ mustBeLoggedIn }) => {
-//     const user = mustBeLoggedIn();
-//     if (user?.email && isDMUNEmail(user.email)) {
-//       return "allow";
-//     }
-//   });
+abilityBuilder.committeeMember.allow(['read', 'update']).when(({ mustBeLoggedIn }) => {
+  const user = mustBeLoggedIn();
+  return {
+    where: {
+      committee: {
+        conference: {
+          users: {
+            user: {
+              id: user.sub
+            }
+          }
+        }
+      }
+    }
+  };
+});
 
 const ref = object({ table: 'committeeMember' });
 query({ table: 'committeeMember' });

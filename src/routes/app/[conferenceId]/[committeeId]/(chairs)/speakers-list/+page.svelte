@@ -13,14 +13,14 @@
   const committee = await committeeTeamQuery();
 
   const speakersList = $derived(
-    $committee?.activeAgendaItem?.speakersList.find((item) => item.type === 'SPEAKERS_LIST')
+    committee?.activeAgendaItem?.speakersList.find((item) => item.type === 'SPEAKERS_LIST')
   );
   const commentList = $derived(
-    $committee?.activeAgendaItem?.speakersList.find((item) => item.type === 'COMMENT_LIST')
+    committee?.activeAgendaItem?.speakersList.find((item) => item.type === 'COMMENT_LIST')
   );
 </script>
 
-{#if !$committee?.activeAgendaItem}
+{#if !committee?.activeAgendaItem}
   <UndrawError
     undrawImage={question}
     title={m.noAgendaItemSelected()}
@@ -38,10 +38,10 @@
       </BasicCard>
       <BasicCard>
         <Majorities
-          totalPresent={$committee.totalPresent}
-          simpleMajority={$committee.simpleMajority}
-          twoThirdsMajority={$committee.twoThirdsMajority}
-          paperSupportThreshold={$committee.paperSupportThreshold}
+          totalPresent={committee.totalPresent}
+          simpleMajority={committee.simpleMajority}
+          twoThirdsMajority={committee.twoThirdsMajority}
+          paperSupportThreshold={committee.paperSupportThreshold}
         />
       </BasicCard>
     </div>
@@ -50,8 +50,8 @@
         <CurrentSpeaker {speakersList} />
         <ChairControls
           {speakersList}
-          committeeMembers={$committee.members}
-          conferenceMembers={$committee.conference?.uniqueConferenceMembers ?? []}
+          committeeMembers={committee.members}
+          conferenceMembers={committee.conference?.uniqueConferenceMembers ?? []}
           type="SPEAKERS_LIST"
           childList={commentList}
         />
@@ -65,8 +65,8 @@
       <div class="flex flex-col gap-8">
         <CurrentSpeaker speakersList={commentList} />
         <ChairControls
-          committeeMembers={$committee.members}
-          conferenceMembers={$committee.conference?.uniqueConferenceMembers ?? []}
+          committeeMembers={committee.members}
+          conferenceMembers={committee.conference?.uniqueConferenceMembers ?? []}
           speakersList={commentList}
           otherList={speakersList}
           type="COMMENT_LIST"

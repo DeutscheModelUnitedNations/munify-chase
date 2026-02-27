@@ -13,14 +13,26 @@ import {
 } from '$api/rumble';
 import { SpeakersListRef } from './speakersList';
 
-// abilityBuilder.speakerOnList
-//   .allow(["read", "update", "delete"])
-//   .when(({ mustBeLoggedIn }) => {
-//     const user = mustBeLoggedIn();
-//     if (user?.email && isDMUNEmail(user.email)) {
-//       return "allow";
-//     }
-//   });
+abilityBuilder.speakerOnList.allow(['read', 'update', 'delete']).when(({ mustBeLoggedIn }) => {
+  const user = mustBeLoggedIn();
+  return {
+    where: {
+      speakersList: {
+        agendaItem: {
+          committee: {
+            conference: {
+              users: {
+                user: {
+                  id: user.sub
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  };
+});
 
 const ref = object({ table: 'speakerOnList' });
 query({ table: 'speakerOnList' });

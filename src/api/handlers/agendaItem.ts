@@ -10,9 +10,22 @@ import {
 } from '$api/rumble';
 import { nanoid } from '$lib/helpers/nanoid';
 
-// abilityBuilder.agendaItem.allow(["read"]).when(({ mustBeLoggedIn }) => {
-//   const user = mustBeLoggedIn();
-// });
+abilityBuilder.agendaItem.allow(['read']).when(({ mustBeLoggedIn }) => {
+  const user = mustBeLoggedIn();
+  return {
+    where: {
+      committee: {
+        conference: {
+          users: {
+            user: {
+              id: user.sub
+            }
+          }
+        }
+      }
+    }
+  };
+});
 
 const pubsub = rumblePubsub({ table: 'agendaItem' });
 

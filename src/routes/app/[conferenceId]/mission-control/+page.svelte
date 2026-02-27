@@ -29,7 +29,7 @@
   <div class="flex-none">
     <NavbarBurgerMenu items={menubarItems}>
       {#snippet CustomListItems()}
-        <DownloadPresenceData conferenceTitle={$conference?.title} conferenceId={$conference?.id} />
+        <DownloadPresenceData conferenceTitle={conference?.title} conferenceId={conference?.id} />
       {/snippet}
     </NavbarBurgerMenu>
   </div>

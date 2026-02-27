@@ -11,14 +11,20 @@ import {
   schemaBuilder
 } from '$api/rumble';
 
-// abilityBuilder.committee
-//   .allow(["read", "update"])
-//   .when(({ mustBeLoggedIn }) => {
-//     const user = mustBeLoggedIn();
-//     if (user?.email && isDMUNEmail(user.email)) {
-//       return "allow";
-//     }
-//   });
+abilityBuilder.committee.allow(['read', 'update']).when(({ mustBeLoggedIn }) => {
+  const user = mustBeLoggedIn();
+  return {
+    where: {
+      conference: {
+        users: {
+          user: {
+            id: user.sub
+          }
+        }
+      }
+    }
+  };
+});
 
 const statusEnum = enum_({
   tsName: 'committeeStatus'

@@ -27,14 +27,14 @@
 
   $effect(() => {
     // Toast Effect
-    if (!$committee) return;
+    if (!committee) return;
 
     const interval = setInterval(() => {
-      if (dayjs($committee.statusUntil).diff(serverTime.value) < 0) {
+      if (dayjs(committee.statusUntil).diff(serverTime.value) < 0) {
         if (!committeeStatusExpiredAlerted) {
           toast.error(
             m.committeeStatusExpired({
-              status: translateCommitteeStatusText($committee.status, $committee.statusHeadline)
+              status: translateCommitteeStatusText(committee.status, committee.statusHeadline)
             }),
             {
               icon: BellIcon,
@@ -47,7 +47,7 @@
         committeeStatusExpiredAlerted = false;
       }
 
-      for (const speakersList of $committee.activeAgendaItem?.speakersList ?? []) {
+      for (const speakersList of committee.activeAgendaItem?.speakersList ?? []) {
         const overtime =
           dayjs(speakersList.startTimestamp).diff(serverTime.value, 'seconds') +
             speakersList.timeLeft <
@@ -89,30 +89,27 @@
 
 <svelte:head>
   <title
-    >{$committee?.abbreviation ?? 'N/A'}
+    >{committee?.abbreviation ?? 'N/A'}
     {m.chairControls()} - MUNify CHASE</title
   >
 </svelte:head>
 
-<ChairNavbar title={$committee?.abbreviation} />
+<ChairNavbar title={committee?.abbreviation} />
 
 {@render children()}
 
 <StatusChangerModal
-  committeeId={$committee.id}
-  oldStatus={$committee?.status}
-  oldUntil={$committee?.statusUntil}
-  oldCustomName={$committee?.statusHeadline}
+  committeeId={committee.id}
+  oldStatus={committee?.status}
+  oldUntil={committee?.statusUntil}
+  oldCustomName={committee?.statusHeadline}
 />
 
-<StateOfDebateChangerModal
-  committeeId={$committee.id}
-  oldStateOfDebate={$committee?.stateOfDebate}
-/>
+<StateOfDebateChangerModal committeeId={committee.id} oldStateOfDebate={committee?.stateOfDebate} />
 
 <AdoptionConfetti
-  lastAdoptionDate={$committee?.lastResolutionAdoptionDate}
-  agendaItem={$committee?.activeAgendaItem?.title ?? m.unknown()}
-  committeeName={$committee?.name ?? m.unknown()}
+  lastAdoptionDate={committee?.lastResolutionAdoptionDate}
+  agendaItem={committee?.activeAgendaItem?.title ?? m.unknown()}
+  committeeName={committee?.name ?? m.unknown()}
   confettiDurationSec={20}
 />

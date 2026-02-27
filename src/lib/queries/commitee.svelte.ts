@@ -4,7 +4,7 @@ import { client } from '$lib/api/rumbleClient/client';
 export const committeeQuery = () =>
   client.liveQuery.committee({
     __args: {
-      id: page.params.conferenceId!
+      id: page.params.committeeId!
     },
     id: true,
     abbreviation: true,
@@ -33,6 +33,10 @@ export const committeeQuery = () =>
           faIcon: true
         }
       }
+    },
+    agendaItems: {
+      id: true,
+      title: true
     },
     members: {
       id: true,
@@ -84,37 +88,6 @@ export const committeeQuery = () =>
               alpha2Code: true,
               alpha3Code: true,
               faIcon: true
-            }
-          },
-          agendaItems: {
-            id: true,
-            title: true
-          },
-          members: {
-            id: true,
-            present: true,
-            representation: {
-              id: true,
-              type: true,
-              name: true,
-              regionalGroup: true,
-              alpha2Code: true,
-              alpha3Code: true,
-              faIcon: true
-            }
-          },
-          conference: {
-            hasModeratedCaucus: true,
-            uniqueConferenceMembers: {
-              id: true,
-              representation: {
-                id: true,
-                type: true,
-                name: true,
-                alpha2Code: true,
-                alpha3Code: true,
-                faIcon: true
-              }
             }
           }
         }

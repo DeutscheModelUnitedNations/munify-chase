@@ -20,16 +20,16 @@
         </BasicCard>
         <BasicCard>
           <Majorities
-            totalPresent={$committee.totalPresent}
-            simpleMajority={$committee.simpleMajority}
-            twoThirdsMajority={$committee.twoThirdsMajority}
-            paperSupportThreshold={$committee.paperSupportThreshold}
+            totalPresent={committee.totalPresent}
+            simpleMajority={committee.simpleMajority}
+            twoThirdsMajority={committee.twoThirdsMajority}
+            paperSupportThreshold={committee.paperSupportThreshold}
           />
         </BasicCard>
       </div>
       <div class="flex h-full w-full flex-3 flex-col gap-4">
         <BasicCard title={m.voting()}>
-          <VotingSetup committee={$committee} />
+          <VotingSetup {committee} />
         </BasicCard>
       </div>
     </div>

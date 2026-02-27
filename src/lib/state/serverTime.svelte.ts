@@ -1,15 +1,18 @@
 import dayjs from 'dayjs';
 import { browser } from '$app/environment';
-import { client } from '$lib/api/rumbleClient/client';
-import { get } from 'svelte/store';
 
 export const serverTime = $state({ value: dayjs() });
 
 let lastCalculatedDelta = 0;
 
 const fetchRemoteTime = async () => {
-  const time = get(await client.query.serverTime());
-  serverTime.value = dayjs(time);
+  const res = await fetch('/api/graphql', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ query: '{ serverTime }' })
+  });
+  const data = await res.json();
+  serverTime.value = dayjs(data.data.serverTime);
   lastCalculatedDelta = dayjs().diff(serverTime.value);
 };
 

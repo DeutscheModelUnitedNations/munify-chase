@@ -19,7 +19,7 @@
   let editWhiteboardModalOpen = $state(false);
 </script>
 
-{#if $committee}
+{#if committee}
   <div class="flex h-full w-full items-center justify-center">
     <div class="flex h-full w-full max-w-screen-xl flex-col gap-6 p-6 lg:flex-row">
       <div class="top-22 flex h-full flex-col gap-4 lg:sticky lg:w-lg">
@@ -28,10 +28,10 @@
         </BasicCard>
         <BasicCard>
           <Majorities
-            totalPresent={$committee.totalPresent}
-            simpleMajority={$committee.simpleMajority}
-            twoThirdsMajority={$committee.twoThirdsMajority}
-            paperSupportThreshold={$committee.paperSupportThreshold}
+            totalPresent={committee.totalPresent}
+            simpleMajority={committee.simpleMajority}
+            twoThirdsMajority={committee.twoThirdsMajority}
+            paperSupportThreshold={committee.paperSupportThreshold}
           />
         </BasicCard>
         <BasicCard className="relative group">
@@ -44,26 +44,26 @@
             <i class="fas fa-pencil"></i>
             {m.edit()}
           </button>
-          <WhiteboardViewer data={$committee.whiteboardContent} />
+          <WhiteboardViewer data={committee.whiteboardContent} />
         </BasicCard>
       </div>
       <div class="flex h-full w-full flex-3 flex-col gap-4">
         <BasicCard title={m.setStatus()} kbd="⌥ S">
           <StatusChanger
-            committeeId={$committee.id}
-            oldStatus={$committee.status}
-            oldUntil={$committee.statusUntil}
-            oldCustomName={$committee.statusHeadline}
+            committeeId={committee.id}
+            oldStatus={committee.status}
+            oldUntil={committee.statusUntil}
+            oldCustomName={committee.statusHeadline}
           />
         </BasicCard>
         <BasicCard title={m.stateOfDebate()} kbd="⌥ D">
-          <StateOfDebate committeeId={$committee.id} oldStateOfDebate={$committee.stateOfDebate} />
+          <StateOfDebate committeeId={committee.id} oldStateOfDebate={committee.stateOfDebate} />
         </BasicCard>
         <BasicCard title={m.agendaItem()}>
           <AgendaItemChanger
-            committeeId={$committee.id}
-            activeAgendaItem={$committee.activeAgendaItem}
-            agendaItems={$committee.agendaItems}
+            committeeId={committee.id}
+            activeAgendaItem={committee.activeAgendaItem}
+            agendaItems={committee.agendaItems}
           />
         </BasicCard>
         <BasicCard title={m.presentationMode()}>
@@ -72,7 +72,7 @@
             {m.openPresentation()}
             <span class="kbd text-base-content">⌥ P</span>
           </a>
-          <PresentationSettings committeeId={$committee.id} />
+          <PresentationSettings committeeId={committee.id} />
         </BasicCard>
         <BasicCard title={m.announceAdoption()}>
           <button
@@ -80,7 +80,7 @@
             onclick={() => {
               client.mutate.updateCommittee({
                 __args: {
-                  id: $committee.id,
+                  id: committee.id,
                   lastResolutionAdoptionDate: dayjs().toDate()
                 },
                 id: true,
@@ -107,8 +107,8 @@
 {#if editWhiteboardModalOpen}
   <WhiteboardEditorModal
     bind:open={editWhiteboardModalOpen}
-    committeeId={$committee?.id}
-    whiteboardContent={$committee?.whiteboardContent}
+    committeeId={committee?.id}
+    whiteboardContent={committee?.whiteboardContent}
     close={() => {
       editWhiteboardModalOpen = false;
     }}

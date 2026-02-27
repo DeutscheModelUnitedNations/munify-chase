@@ -4,7 +4,7 @@ import { page } from '$app/state';
 export const committeeTeamQuery = () =>
   client.liveQuery.committee({
     __args: {
-      id: page.params.conferenceId!
+      id: page.params.committeeId!
     },
     id: true,
     abbreviation: true,

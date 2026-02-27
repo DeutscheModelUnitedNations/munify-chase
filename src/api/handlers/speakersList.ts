@@ -66,6 +66,15 @@ schemaBuilder.mutationFields((t) => {
           throw new GraphQLError('startTimestamp and stopTimer are mutually exclusive');
         }
 
+        // Pre-check: verify user has update access via relational filter
+        await db.query.speakersList
+          .findFirst(
+            ctx.abilities.speakersList.filter('update').merge({
+              where: { id: args.id }
+            }).query.single
+          )
+          .then(assertFindFirstExists);
+
         await db.transaction(async (tx) => {
           if (args.stopTimer) {
             const speakersList = await tx.query.speakersList
@@ -103,12 +112,7 @@ schemaBuilder.mutationFields((t) => {
               startTimestamp: args.stopTimer ? null : (args.startTimestamp ?? undefined),
               isClosed: args.isClosed ?? undefined
             })
-            .where(
-              and(
-                eq(schema.speakersList.id, args.id),
-                ctx.abilities.speakersList.filter('update').sql.where
-              )
-            );
+            .where(eq(schema.speakersList.id, args.id));
         });
 
         speakersListPubSub.updated(args.id);
@@ -130,14 +134,18 @@ schemaBuilder.mutationFields((t) => {
         id: t.arg.id({ required: true })
       },
       resolve: async (query, root, args, ctx, info) => {
+        // Pre-check: verify user has delete access to speakers on this list
+        await db.query.speakersList
+          .findFirst(
+            ctx.abilities.speakersList.filter('delete').merge({
+              where: { id: args.id }
+            }).query.single
+          )
+          .then(assertFindFirstExists);
+
         const deleted = await db
           .delete(schema.speakerOnList)
-          .where(
-            and(
-              eq(schema.speakerOnList.speakersListId, args.id),
-              ctx.abilities.speakerOnList.filter('delete').sql.where
-            )
-          )
+          .where(eq(schema.speakerOnList.speakersListId, args.id))
           .returning();
 
         if (deleted.length > 0) {

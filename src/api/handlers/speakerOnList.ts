@@ -56,17 +56,21 @@ schemaBuilder.mutationFields((t) => {
         overwriteName: t.arg.string()
       },
       resolve: async (query, _root, args, ctx, _info) => {
+        // Pre-check: verify user has update access via relational filter
+        await db.query.speakerOnList
+          .findFirst(
+            ctx.abilities.speakerOnList.filter('update').merge({
+              where: { id: args.id }
+            }).query.single
+          )
+          .then(assertFindFirstExists);
+
         const updated = await db
           .update(schema.speakerOnList)
           .set({
             overwriteName: args.overwriteName ? args.overwriteName : null
           })
-          .where(
-            and(
-              eq(schema.speakerOnList.id, args.id),
-              ctx.abilities.speakerOnList.filter('update').sql.where
-            )
-          )
+          .where(eq(schema.speakerOnList.id, args.id))
           .returning()
           .then(assertFirstEntryExists);
 
@@ -124,8 +128,7 @@ schemaBuilder.mutationFields((t) => {
               .where(
                 and(
                   eq(schema.speakerOnList.speakersListId, args.speakersListId),
-                  gte(schema.speakerOnList.position, position),
-                  ctx.abilities.speakerOnList.filter('update').sql.where
+                  gte(schema.speakerOnList.position, position)
                 )
               );
           }
@@ -173,15 +176,19 @@ schemaBuilder.mutationFields((t) => {
         speakerOnListId: t.arg.id({ required: true })
       },
       resolve: async (query, root, args, ctx, info) => {
+        // Pre-check: verify user has delete access via relational filter
+        await db.query.speakerOnList
+          .findFirst(
+            ctx.abilities.speakerOnList.filter('delete').merge({
+              where: { id: args.speakerOnListId }
+            }).query.single
+          )
+          .then(assertFindFirstExists);
+
         const removed = await db.transaction(async (tx) => {
           const deleted = await tx
             .delete(schema.speakerOnList)
-            .where(
-              and(
-                eq(schema.speakerOnList.id, args.speakerOnListId),
-                ctx.abilities.speakerOnList.filter('delete').sql.where
-              )
-            )
+            .where(eq(schema.speakerOnList.id, args.speakerOnListId))
             .returning()
             .then(assertFirstEntryExists);
 

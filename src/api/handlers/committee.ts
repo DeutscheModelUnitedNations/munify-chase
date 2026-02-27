@@ -144,6 +144,15 @@ schemaBuilder.mutationFields((t) => {
         })
       },
       resolve: async (query, root, args, ctx) => {
+        // Pre-check: verify user has update access via relational filter
+        await db.query.committee
+          .findFirst(
+            ctx.abilities.committee.filter('update').merge({
+              where: { id: args.id }
+            }).query.single
+          )
+          .then(assertFindFirstExists);
+
         await db
           .update(schema.committee)
           .set({
@@ -156,12 +165,7 @@ schemaBuilder.mutationFields((t) => {
             activeAgendaItemId: args.activeAgendaItemId ?? undefined,
             lastResolutionAdoptionDate: args.lastResolutionAdoptionDate ?? undefined
           })
-          .where(
-            and(
-              eq(schema.committee.id, args.id),
-              ctx.abilities.committee.filter('update').sql.where
-            )
-          );
+          .where(eq(schema.committee.id, args.id));
 
         if (args.activeAgendaItemId) {
           await db.insert(schema.committeeTopicChangedTimestamp).values({

@@ -35,7 +35,7 @@
         client.mutate.updateSpeakersList({
           __args: {
             id: speakersList.id,
-            startTimestamp: serverTime.value.toDate()
+            startTimestamp: serverTime.value.toISOString()
           },
           id: true,
           speakingTime: true,
@@ -48,7 +48,7 @@
               otherList.type === 'SPEAKERS_LIST'
                 ? speakersList.speakingTime
                 : otherList.speakingTime,
-            startTimestamp: serverTime.value.toDate(),
+            startTimestamp: serverTime.value.toISOString(),
             stopTimer: true
           },
           id: true,
@@ -60,7 +60,7 @@
       await client.mutate.updateSpeakersList({
         __args: {
           id: speakersList.id,
-          startTimestamp: serverTime.value.toDate()
+          startTimestamp: serverTime.value.toISOString()
         },
         id: true,
         speakingTime: true,
@@ -95,7 +95,7 @@
           dayjs(speakersList.startTimestamp).diff(serverTime.value, 'seconds') +
           speakersList.timeLeft,
         stopTimer: !speakersList.startTimestamp,
-        startTimestamp: speakersList.startTimestamp ? serverTime.value.toDate() : undefined
+        startTimestamp: speakersList.startTimestamp ? serverTime.value.toISOString() : undefined
       },
       id: true,
       speakingTime: true,

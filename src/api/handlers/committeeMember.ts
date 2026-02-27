@@ -1,3 +1,4 @@
+import { assertFindFirstExists } from '@m1212e/rumble';
 import { and, inArray } from 'drizzle-orm';
 import { db, schema } from '$api/db/db';
 import {
@@ -42,17 +43,22 @@ schemaBuilder.mutationFields((t) => {
         present: t.arg.boolean({ required: true })
       },
       resolve: async (query, _root, args, ctx) => {
+        // Pre-check: verify user has update access to at least one of the members
+        // (all members belong to same committee, so if one is accessible, all are)
+        await db.query.committeeMember
+          .findFirst(
+            ctx.abilities.committeeMember.filter('update').merge({
+              where: { id: { in: args.ids } }
+            }).query.single
+          )
+          .then(assertFindFirstExists);
+
         const res = await db
           .update(schema.committeeMember)
           .set({
             present: args.present
           })
-          .where(
-            and(
-              inArray(schema.committeeMember.id, args.ids),
-              ctx.abilities.committeeMember.filter('update').sql.where
-            )
-          )
+          .where(inArray(schema.committeeMember.id, args.ids))
           .returning({
             id: schema.committeeMember.id
           });

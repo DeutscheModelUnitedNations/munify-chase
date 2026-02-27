@@ -44,7 +44,7 @@
       client.mutate.updateCommittee({
         __args: {
           status: activeCategory,
-          statusUntil: until.toDate(),
+          statusUntil: until.toISOString(),
           statusHeadline: customName,
           id: committeeId
         },

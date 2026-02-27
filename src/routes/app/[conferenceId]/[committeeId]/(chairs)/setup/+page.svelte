@@ -81,7 +81,7 @@
               client.mutate.updateCommittee({
                 __args: {
                   id: committee.id,
-                  lastResolutionAdoptionDate: dayjs().toDate()
+                  lastResolutionAdoptionDate: dayjs().toISOString()
                 },
                 id: true,
                 lastResolutionAdoptionDate: true

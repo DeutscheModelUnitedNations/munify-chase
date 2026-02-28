@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { SvelteSet } from 'svelte/reactivity';
   import { m } from '$lib/paraglide/messages';
   import Modal from './Modal.svelte';
   import CountryBadge from './CountryBadge.svelte';
@@ -28,7 +29,7 @@
 
     const countries: ParsedCountry[] = [];
     const unrecognized: string[] = [];
-    const addedCodes = new Set<string>();
+    const addedCodes = new SvelteSet<string>();
 
     for (const token of tokens) {
       const normalized = token.toLowerCase();

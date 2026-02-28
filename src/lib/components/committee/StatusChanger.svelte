@@ -22,6 +22,7 @@
   }[] = [
     { id: 'FORMAL', faIcon: 'podium' },
     { id: 'INFORMAL', faIcon: 'comments' },
+    { id: 'MODERATED_INFORMAL', faIcon: 'comments-question-check' },
     { id: 'PAUSE', faIcon: 'mug-saucer' },
     { id: 'SUSPENSION', faIcon: 'forward-step' }
   ];

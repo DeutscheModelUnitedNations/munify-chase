@@ -8,6 +8,7 @@
   import VoteClicker from './VoteClicker.svelte';
   import { committeeTeamQuery } from '$lib/queries/committeeTeamQuery.svelte';
   import type { QueryResponseType } from '$lib/helpers/utilityTypes';
+  import { calculateMajority } from '$lib/utils/majorities';
 
   interface Props {
     active: boolean;
@@ -27,10 +28,24 @@
   const votesOutstanding = $derived(
     committee?.totalPresent ?? 0 - (votesPro + votesCon + votesAbstain)
   );
+  const votesTotal = $derived.by(() => {
+    switch (majority) {
+      case 'SIMPLE':
+        return votesPro + votesCon;
+      case 'TWO_THIRDS':
+        return votesPro + votesCon;
+      case 'ABSOLUTE':
+        return votesPro + votesCon + votesAbstain;
+      default:
+        return 0;
+    }
+  });
   const majorityAmount = $derived.by(() => {
     switch (majority) {
       case 'SIMPLE':
         return committee?.simpleMajority ?? 0;
+      case 'ABSOLUTE':
+        return calculateMajority(votesTotal, 'simple');
       case 'TWO_THIRDS':
         return committee?.twoThirdsMajority ?? 0;
       default:

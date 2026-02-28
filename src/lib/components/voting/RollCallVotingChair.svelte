@@ -10,6 +10,7 @@
   import ResultChart from './ResultChart.svelte';
   import type { committeeTeamQuery } from '$lib/queries/committeeTeamQuery.svelte';
   import type { QueryResponseType } from '$lib/helpers/utilityTypes';
+  import { calculateMajority } from '$lib/utils/majorities';
 
   interface Props {
     active: boolean;
@@ -30,21 +31,38 @@
       .sort((a, b) => sortTranslatedCountries(a.representation!, b.representation!))
   );
 
+  const chairSettings = liveQuery(() => localDB.committeeSettings.get(committee.id));
+  const rollCallVotingAbstain = $derived($chairSettings?.rollCallVotingAbstain ?? []);
+  const rollCallVotingPro = $derived($chairSettings?.rollCallVotingPro ?? []);
+  const rollCallVotingCon = $derived($chairSettings?.rollCallVotingCon ?? []);
+
+  const rollCallVotesTotal = $derived.by(() => {
+    const pro = rollCallVotingPro?.length ?? 0;
+    const con = rollCallVotingCon?.length ?? 0;
+    const abstain = rollCallVotingAbstain?.length ?? 0;
+    switch (majority) {
+      case 'SIMPLE':
+        return pro + con;
+      case 'TWO_THIRDS':
+        return pro + con;
+      case 'ABSOLUTE':
+        return pro + con + abstain;
+      default:
+        return 0;
+    }
+  });
   const majorityAmount = $derived.by(() => {
     switch (majority) {
       case 'SIMPLE':
         return committee?.simpleMajority ?? 0;
+      case 'ABSOLUTE':
+        return calculateMajority(rollCallVotesTotal, 'simple');
       case 'TWO_THIRDS':
         return committee?.twoThirdsMajority ?? 0;
       default:
         return 0;
     }
   });
-
-  const chairSettings = liveQuery(() => localDB.committeeSettings.get(committee.id));
-  const rollCallVotingAbstain = $derived($chairSettings?.rollCallVotingAbstain ?? []);
-  const rollCallVotingPro = $derived($chairSettings?.rollCallVotingPro ?? []);
-  const rollCallVotingCon = $derived($chairSettings?.rollCallVotingCon ?? []);
 
   const scrollingListIcons = $derived.by(() => {
     return members.map((member) => {

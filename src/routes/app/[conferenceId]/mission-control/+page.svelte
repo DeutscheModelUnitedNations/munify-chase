@@ -13,6 +13,11 @@
       faIcon: 'fa-home',
       title: m.home(),
       href: '..'
+    },
+    {
+      faIcon: 'fa-gear',
+      title: m.configuration(),
+      href: 'mission-control/config'
     }
   ];
 </script>

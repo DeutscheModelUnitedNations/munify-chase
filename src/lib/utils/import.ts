@@ -16,10 +16,10 @@ export const importDataSchema = z.object({
       .object({
         id: z.string(),
         representationType: z.enum(['DELEGATION', 'NSA', 'UN']),
-        alpha3Code: z.string().optional(),
-        alpha2Code: z.string().optional(),
-        name: z.string().optional(),
-        faIcon: z.string().optional(),
+        alpha3Code: z.string().nullish(),
+        alpha2Code: z.string().nullish(),
+        name: z.string().nullish(),
+        faIcon: z.string().nullish(),
         regionalGroup: z
           .enum([
             'AFRICA',
@@ -28,7 +28,7 @@ export const importDataSchema = z.object({
             'LATIN_AMERICA_CARIBBEAN',
             'WESTERN_EUROPE_OTHERS'
           ])
-          .optional()
+          .nullish()
       })
       .refine(
         (data) =>

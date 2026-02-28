@@ -45,6 +45,7 @@ export const conference = pgTable('conference', {
 export const committeeStatus = pgEnum('committee_status', [
   'FORMAL',
   'INFORMAL',
+  'MODERATED_INFORMAL',
   'PAUSE',
   'SUSPENSION'
 ]);

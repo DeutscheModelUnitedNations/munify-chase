@@ -69,7 +69,7 @@
 <li>
   <button
     onclick={download}
-    class="flex items-center justify-center"
+    class="flex items-center"
     aria-label="Download Delegator presence data"
     disabled={loading}
   >

@@ -3,7 +3,6 @@
   import Modal from './Modal.svelte';
   import CountryBadge from './CountryBadge.svelte';
   import WorldCountries from 'world-countries';
-  import { SvelteSet } from 'svelte/reactivity';
 
   interface ParsedCountry {
     alpha2Code: string;
@@ -19,50 +18,30 @@
   let { open = $bindable(), onSubmit }: Props = $props();
 
   let inputText = $state('');
-  let parsedCountries = $state<ParsedCountry[]>([]);
-  let unrecognizedStrings = $state<string[]>([]);
 
-  // Parse the input text whenever it changes
-  $effect(() => {
-    parseInput(inputText);
-  });
-
-  // Clear state when modal is closed externally (ESC/backdrop)
-  $effect(() => {
-    if (!open) {
-      inputText = '';
-      parsedCountries = [];
-      unrecognizedStrings = [];
-    }
-  });
-
-  function parseInput(text: string) {
-    // Split by various delimiters: newline, comma, semicolon, space, tab
-    const tokens = text
+  // Derive parsed results from inputText — no $effect needed
+  const parseResult = $derived.by(() => {
+    const tokens = inputText
       .split(/[\n\r,;\s\t]+/)
       .map((t) => t.trim())
       .filter((t) => t.length > 0);
 
     const countries: ParsedCountry[] = [];
     const unrecognized: string[] = [];
-    const addedCodes = new SvelteSet<string>();
+    const addedCodes = new Set<string>();
 
     for (const token of tokens) {
       const normalized = token.toLowerCase();
 
-      // Skip if we've already added this country
       if (addedCodes.has(normalized)) {
         continue;
       }
 
       let country: (typeof WorldCountries)[0] | undefined;
 
-      // Try to match as Alpha-2 code (2 characters)
       if (token.length === 2) {
         country = WorldCountries.find((c) => c.cca2.toLowerCase() === normalized);
-      }
-      // Try to match as Alpha-3 code (3 characters)
-      else if (token.length === 3) {
+      } else if (token.length === 3) {
         country = WorldCountries.find((c) => c.cca3.toLowerCase() === normalized);
       }
 
@@ -75,30 +54,33 @@
         addedCodes.add(country.cca2.toLowerCase());
         addedCodes.add(country.cca3.toLowerCase());
       } else if (token.length >= 2 && token.length <= 3) {
-        // Only mark as unrecognized if it looks like a country code (2-3 chars)
         unrecognized.push(token.toUpperCase());
       }
     }
 
-    parsedCountries = countries;
-    unrecognizedStrings = [...new Set(unrecognized)]; // Remove duplicates
-  }
+    return { countries, unrecognized: [...new Set(unrecognized)] };
+  });
+
+  const parsedCountries = $derived(parseResult.countries);
+  const unrecognizedStrings = $derived(parseResult.unrecognized);
+
+  // Clear input when modal is closed externally (ESC/backdrop)
+  $effect(() => {
+    if (!open) {
+      inputText = '';
+    }
+  });
 
   function handleSubmit() {
     if (parsedCountries.length > 0) {
       onSubmit(parsedCountries);
-      // Reset state
       inputText = '';
-      parsedCountries = [];
-      unrecognizedStrings = [];
       open = false;
     }
   }
 
   function handleClose() {
     inputText = '';
-    parsedCountries = [];
-    unrecognizedStrings = [];
     open = false;
   }
 </script>

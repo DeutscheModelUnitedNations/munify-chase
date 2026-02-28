@@ -10,6 +10,11 @@
   import { m } from '$lib/paraglide/messages';
   import { importDataSchema } from '$lib/utils/import';
   import { client, type RepresentationtypeEnum } from '$lib/api/rumbleClient/client';
+  import AddCountriesModal from '$lib/components/AddCountriesModal.svelte';
+
+  // State for the add countries modal
+  let addCountriesModalOpen = $state(false);
+  let activeCommitteeId = $state<string | null>(null);
 
   let file: File | null = $state(null);
   let loading = $state(false);
@@ -89,11 +94,12 @@
         id: nanoid(),
         representationType: 'DELEGATION',
         alpha3Code: nation.cca3.toLowerCase(),
-        alpha2Code: nation.cca3.toLowerCase(),
+        alpha2Code: nation.cca2.toLowerCase(),
         regionalGroup: transformRegionalGroup(nation.unRegionalGroup)
       })),
       conferenceMembers: [],
-      committeeMembers: []
+      committeeMembers: [],
+      conferenceUsers: []
     } as unknown as z.infer<typeof importDataSchema>;
   }
 
@@ -164,6 +170,44 @@
       id: nanoid(),
       representationId: repId
     });
+  };
+
+  const openAddCountriesModal = (committeeId: string) => {
+    activeCommitteeId = committeeId;
+    addCountriesModalOpen = true;
+  };
+
+  const handleAddCountries = (
+    countries: Array<{ alpha2Code: string; alpha3Code: string; name: string }>
+  ) => {
+    if (!activeCommitteeId || !importData) return;
+
+    for (const country of countries) {
+      // Ensure representation exists
+      let repId = importData.representations.find(
+        (x) => x.alpha2Code?.toLowerCase() === country.alpha2Code.toLowerCase()
+      )?.id;
+      if (!repId) {
+        repId = nanoid();
+        importData.representations.push({
+          alpha2Code: country.alpha2Code,
+          alpha3Code: country.alpha3Code,
+          representationType: 'DELEGATION',
+          id: repId
+        });
+      }
+      // Avoid duplicates in committee members
+      const alreadyExists = importData.committeeMembers.some(
+        (m) => m.committeeId === activeCommitteeId && m.representationId === repId
+      );
+      if (!alreadyExists) {
+        importData.committeeMembers.push({
+          id: nanoid(),
+          committeeId: activeCommitteeId,
+          representationId: repId
+        });
+      }
+    }
   };
 
   const addCommitteeMember = (committeeId: string) => {
@@ -357,16 +401,18 @@
                 </div>
               {/each}
             </div>
-            <button
-              class="btn mt-2 btn-sm btn-primary"
-              aria-label="Add committee member"
-              onclick={() => {
-                addCommitteeMember(committee.id);
-              }}
-            >
-              <i class="fa-solid fa-plus"></i>
-              {m.addCountry()}
-            </button>
+            <div class="mt-2 flex gap-2">
+              <button
+                class="btn btn-sm btn-primary"
+                aria-label="Add countries"
+                onclick={() => {
+                  openAddCountriesModal(committee.id);
+                }}
+              >
+                <i class="fa-solid fa-plus"></i>
+                {m.addCountry()}
+              </button>
+            </div>
           </fieldset>
 
           <button
@@ -507,3 +553,5 @@
 </div>
 
 <Footer />
+
+<AddCountriesModal bind:open={addCountriesModalOpen} onSubmit={handleAddCountries} />

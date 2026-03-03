@@ -2,14 +2,19 @@
 	import * as m from '$lib/paraglide/messages.js';
 	import IconInfoBox from './IconInfoBox.svelte';
 	import { getCommitteeStatusIcon, getCommitteeStatusText } from '$lib/utils/committeeStatus';
-	import { type CommitteeOverviewQuery$result, type MissionControlQuery$result } from '$houdini';
+	import {
+		type CommitteeOverviewQuery$result,
+		type MissionControlQuery$result,
+		type ParticipantConferenceQuery$result
+	} from '$houdini';
 	import AdoptionConfetti from './AdoptionConfetti.svelte';
 
 	interface Props {
 		conference:
 			| MissionControlQuery$result['findFirstConference']
-			| CommitteeOverviewQuery$result['findFirstConference'];
-		environment?: 'SPECTATOR' | 'TEAM';
+			| CommitteeOverviewQuery$result['findFirstConference']
+			| ParticipantConferenceQuery$result['findFirstConference'];
+		environment?: 'SPECTATOR' | 'TEAM' | 'PARTICIPANT';
 	}
 
 	let { conference, environment = 'SPECTATOR' }: Props = $props();
@@ -17,6 +22,8 @@
 	const getHref = (committeeId: string) => {
 		if (environment === 'TEAM') {
 			return `/app/${conference.id}/${committeeId}/setup`;
+		} else if (environment === 'PARTICIPANT') {
+			return `/app/${conference.id}/participant/${committeeId}`;
 		} else {
 			return `/app/${conference.id}/${committeeId}`;
 		}

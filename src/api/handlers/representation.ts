@@ -10,3 +10,8 @@ abilityBuilder.representation.allow(['read', 'update']).when(({ mustBeLoggedIn }
 		return 'allow';
 	}
 });
+
+abilityBuilder.representation.allow('read').when(({ mustBeLoggedIn }) => {
+	mustBeLoggedIn();
+	return 'allow';
+});

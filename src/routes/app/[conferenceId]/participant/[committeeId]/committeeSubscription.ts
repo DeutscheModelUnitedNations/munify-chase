@@ -1,22 +1,21 @@
 import { graphql } from '$houdini';
 
-export const CommitteeSubscription = graphql(`
-	subscription CommitteeSubscription($id: ID!) {
+export const ParticipantCommitteeSubscription = graphql(`
+	subscription ParticipantCommitteeSubscription($id: ID!) {
 		findFirstCommittee(where: { id: $id }) {
 			id
 			abbreviation
 			name
-			stateOfDebate
 			status
 			statusHeadline
 			statusUntil
+			showWhiteboard
+			whiteboardContent
+			allowDelegationsToAddThemselvesToSpeakersList
 			totalPresent
 			simpleMajority
 			twoThirdsMajority
 			paperSupportThreshold
-			whiteboardContent
-			lastResolutionAdoptionDate
-			allowDelegationsToAddThemselvesToSpeakersList
 			activeAgendaItem {
 				id
 				title
@@ -59,10 +58,6 @@ export const CommitteeSubscription = graphql(`
 					}
 				}
 			}
-			agendaItems {
-				id
-				title
-			}
 			members {
 				id
 				present
@@ -70,24 +65,8 @@ export const CommitteeSubscription = graphql(`
 					id
 					type
 					name
-					regionalGroup
 					alpha2Code
-					alpha3Code
 					faIcon
-				}
-			}
-			conference {
-				hasModeratedCaucus
-				uniqueConferenceMembers {
-					id
-					representation {
-						id
-						type
-						name
-						alpha2Code
-						alpha3Code
-						faIcon
-					}
 				}
 			}
 		}

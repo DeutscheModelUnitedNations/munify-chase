@@ -11,5 +11,10 @@ abilityBuilder.conferenceMember.allow('read').when(({ mustBeLoggedIn }) => {
 	}
 });
 
+abilityBuilder.conferenceMember.allow('read').when(({ mustBeLoggedIn }) => {
+	mustBeLoggedIn();
+	return 'allow';
+});
+
 export const ConferenceMemberWhereInput = arg;
 export const ConferenceMemberRef = ref;

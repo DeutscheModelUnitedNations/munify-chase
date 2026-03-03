@@ -1,22 +1,22 @@
 import { graphql } from '$houdini';
+import type { ParticipantCommitteeQueryVariables } from './$houdini';
 
-export const CommitteeSubscription = graphql(`
-	subscription CommitteeSubscription($id: ID!) {
-		findFirstCommittee(where: { id: $id }) {
+export const _houdini_load = graphql(`
+	query ParticipantCommitteeQuery($committeeId: ID!) {
+		findFirstCommittee(where: { id: $committeeId }) {
 			id
 			abbreviation
 			name
-			stateOfDebate
 			status
 			statusHeadline
 			statusUntil
+			showWhiteboard
+			whiteboardContent
+			allowDelegationsToAddThemselvesToSpeakersList
 			totalPresent
 			simpleMajority
 			twoThirdsMajority
 			paperSupportThreshold
-			whiteboardContent
-			lastResolutionAdoptionDate
-			allowDelegationsToAddThemselvesToSpeakersList
 			activeAgendaItem {
 				id
 				title
@@ -59,10 +59,6 @@ export const CommitteeSubscription = graphql(`
 					}
 				}
 			}
-			agendaItems {
-				id
-				title
-			}
 			members {
 				id
 				present
@@ -70,26 +66,16 @@ export const CommitteeSubscription = graphql(`
 					id
 					type
 					name
-					regionalGroup
 					alpha2Code
-					alpha3Code
 					faIcon
-				}
-			}
-			conference {
-				hasModeratedCaucus
-				uniqueConferenceMembers {
-					id
-					representation {
-						id
-						type
-						name
-						alpha2Code
-						alpha3Code
-						faIcon
-					}
 				}
 			}
 		}
 	}
 `);
+
+export const _ParticipantCommitteeQueryVariables: ParticipantCommitteeQueryVariables = (event) => {
+	return {
+		committeeId: event.params.committeeId
+	};
+};

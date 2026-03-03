@@ -17,6 +17,7 @@ export const _houdini_load = graphql(`
 			paperSupportThreshold
 			whiteboardContent
 			lastResolutionAdoptionDate
+			allowDelegationsToAddThemselvesToSpeakersList
 			activeAgendaItem {
 				id
 				title

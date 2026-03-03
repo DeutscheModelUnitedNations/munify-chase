@@ -26,11 +26,17 @@
 		}
 	};
 
-	const getUrl = (type: ConferenceUserTypeEnum$options, id: string) => {
+	const getUrl = (
+		type: ConferenceUserTypeEnum$options,
+		id: string,
+		committeeMember?: { committeeId: string } | null
+	) => {
 		if (['ADMIN', 'TEAM'].includes(type)) {
 			return `/app/${id}/mission-control`;
+		} else if (type === 'DELEGATE' && committeeMember?.committeeId) {
+			return `/app/${id}/participant/${committeeMember.committeeId}`;
 		} else {
-			return `/app/${id}`;
+			return `/app/${id}/participant`;
 		}
 	};
 </script>
@@ -81,7 +87,7 @@
 						{#each conferenceData as c}
 							{@const conf = c.conference}
 							<a
-								href={getUrl(c.conferenceUserType, c.conference.id)}
+								href={getUrl(c.conferenceUserType, c.conference.id, c.committeeMember)}
 								class="btn btn-lg w-full max-w-xs shadow-xs"
 							>
 								<i class="fa-duotone fa-rocket-launch mr-2"></i>

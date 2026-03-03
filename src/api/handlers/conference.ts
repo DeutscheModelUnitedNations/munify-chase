@@ -16,11 +16,11 @@ abilityBuilder.conference.allow('read').when(({ mustBeLoggedIn }) => {
 		return 'allow';
 	}
 });
-// .when(({ user }) => {
-// 	if (user) {
-// 		return {};
-// 	}
-// });
+
+abilityBuilder.conference.allow('read').when(({ mustBeLoggedIn }) => {
+	mustBeLoggedIn();
+	return 'allow';
+});
 
 const ref = object({
 	table: 'conference',

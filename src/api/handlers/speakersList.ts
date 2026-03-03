@@ -56,6 +56,11 @@ abilityBuilder.speakersList.allow(['read', 'update', 'delete']).when(({ mustBeLo
 	}
 });
 
+abilityBuilder.speakersList.allow('read').when(({ mustBeLoggedIn }) => {
+	mustBeLoggedIn();
+	return 'allow';
+});
+
 schemaBuilder.mutationFields((t) => {
 	return {
 		updateSpeakersList: t.drizzleField({

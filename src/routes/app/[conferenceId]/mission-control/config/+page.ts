@@ -11,6 +11,60 @@ export const _houdini_load = graphql(`
 				id
 				userEmail
 				conferenceUserType
+				user {
+					givenName
+					familyName
+				}
+				committeeMember {
+					id
+					representation {
+						id
+						name
+						alpha2Code
+						alpha3Code
+						faIcon
+					}
+					committee {
+						id
+						name
+						abbreviation
+					}
+				}
+				conferenceMember {
+					id
+					representation {
+						id
+						name
+						alpha3Code
+						type
+						faIcon
+					}
+				}
+			}
+			committees {
+				id
+				name
+				abbreviation
+				members {
+					id
+					representation {
+						id
+						name
+						alpha2Code
+						alpha3Code
+						faIcon
+					}
+				}
+			}
+			members {
+				id
+				representation {
+					id
+					name
+					alpha3Code
+					type
+					faIcon
+				}
 			}
 		}
 		currentUserRole: findManyConferenceUser(

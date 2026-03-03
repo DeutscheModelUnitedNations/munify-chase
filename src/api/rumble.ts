@@ -13,5 +13,5 @@ export const { abilityBuilder, schemaBuilder, arg, object, query, pubsub, create
 	rumble({
 		db,
 		context,
-		defaultLimit: 300
+		defaultLimit: 1000
 	});

@@ -43,6 +43,11 @@ abilityBuilder.agendaItem.allow(['read']).when(({ mustBeLoggedIn }) => {
 	}
 });
 
+abilityBuilder.agendaItem.allow('read').when(({ mustBeLoggedIn }) => {
+	mustBeLoggedIn();
+	return 'allow';
+});
+
 schemaBuilder.mutationFields((t) => {
 	return {
 		createAgendaItem: t.drizzleField({

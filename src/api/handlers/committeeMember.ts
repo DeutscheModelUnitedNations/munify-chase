@@ -13,6 +13,11 @@ abilityBuilder.committeeMember.allow(['read', 'update']).when(({ mustBeLoggedIn 
 	}
 });
 
+abilityBuilder.committeeMember.allow('read').when(({ mustBeLoggedIn }) => {
+	mustBeLoggedIn();
+	return 'allow';
+});
+
 schemaBuilder.mutationFields((t) => {
 	return {
 		setPresenceForCommitteeMembers: t.drizzleField({

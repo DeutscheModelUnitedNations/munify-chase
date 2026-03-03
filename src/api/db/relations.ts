@@ -50,10 +50,14 @@ export const relations = defineRelations(schema, (r) => ({
 			to: r.representation.id,
 			optional: false
 		}),
-		user: r.one.conferenceUser({
+		committee: r.one.committee({
+			from: r.committeeMember.committeeId,
+			to: r.committee.id,
+			optional: false
+		}),
+		users: r.many.conferenceUser({
 			from: r.committeeMember.id,
-			to: r.conferenceUser.committeeMemberId,
-			optional: true
+			to: r.conferenceUser.committeeMemberId
 		}),
 		presenceChangedTimestamps: r.many.presenceChangedTimestamp({
 			from: r.committeeMember.id,
@@ -69,6 +73,16 @@ export const relations = defineRelations(schema, (r) => ({
 			from: r.conferenceUser.conferenceId,
 			to: r.conference.id,
 			optional: false
+		}),
+		committeeMember: r.one.committeeMember({
+			from: r.conferenceUser.committeeMemberId,
+			to: r.committeeMember.id,
+			optional: true
+		}),
+		conferenceMember: r.one.conferenceMember({
+			from: r.conferenceUser.conferenceMemberId,
+			to: r.conferenceMember.id,
+			optional: true
 		})
 	},
 	representation: {
@@ -99,10 +113,9 @@ export const relations = defineRelations(schema, (r) => ({
 			from: r.conferenceMember.id,
 			to: r.speakerOnList.conferenceMemberId
 		}),
-		user: r.one.conferenceUser({
+		users: r.many.conferenceUser({
 			from: r.conferenceMember.id,
-			to: r.conferenceUser.conferenceMemberId,
-			optional: true
+			to: r.conferenceUser.conferenceMemberId
 		})
 	},
 	agendaItem: {

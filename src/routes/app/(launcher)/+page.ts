@@ -6,6 +6,10 @@ export const _houdini_load = graphql(`
 		findManyConferenceUser(where: { user: { id: $userId } }) {
 			id
 			conferenceUserType
+			committeeMemberId
+			committeeMember {
+				committeeId
+			}
 			conference {
 				id
 				title

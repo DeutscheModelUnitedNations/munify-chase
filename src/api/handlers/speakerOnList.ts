@@ -22,6 +22,11 @@ abilityBuilder.speakerOnList.allow(['read', 'update', 'delete']).when(({ mustBeL
 	}
 });
 
+abilityBuilder.speakerOnList.allow('read').when(({ mustBeLoggedIn }) => {
+	mustBeLoggedIn();
+	return 'allow';
+});
+
 schemaBuilder.mutationFields((t) => {
 	return {
 		updateSpeakerOnList: t.drizzleField({
@@ -181,6 +186,233 @@ schemaBuilder.mutationFields((t) => {
 
 					return deleted;
 				});
+				pubsub.removed(removed.id);
+
+				return db.query.speakersList
+					.findFirst(
+						query(
+							ctx.abilities.speakersList.filter('read', {
+								inject: { where: { id: removed.speakersListId } }
+							}).query.single
+						)
+					)
+					.then(assertFindFirstExists);
+			}
+		}),
+		selfAddToSpeakersList: t.drizzleField({
+			type: ref,
+			args: {
+				speakersListId: t.arg.id({ required: true })
+			},
+			resolve: async (query, root, args, ctx, info) => {
+				const user = ctx.mustBeLoggedIn();
+				if (!user.email) {
+					throw new GraphQLError('User email is required');
+				}
+
+				const createdId = await db.transaction(async (tx) => {
+					// Find the user's conferenceUser record
+					const conferenceUser = await tx.query.conferenceUser.findFirst({
+						where: { userEmail: user.email! },
+						with: {
+							committeeMember: {
+								with: { committee: true }
+							},
+							conferenceMember: true
+						}
+					});
+
+					if (!conferenceUser) {
+						throw new GraphQLError('Conference user not found');
+					}
+
+					if (
+						conferenceUser.conferenceUserType !== 'DELEGATE' &&
+						conferenceUser.conferenceUserType !== 'NON_STATE_ACTOR'
+					) {
+						throw new GraphQLError(
+							'Only delegates and non-state actors can self-add to speakers lists'
+						);
+					}
+
+					// Get the speakers list and traverse to committee to check the flag
+					const speakersList = await tx.query.speakersList.findFirst({
+						where: { id: args.speakersListId },
+						with: {
+							agendaItem: {
+								with: {
+									committee: true
+								}
+							}
+						}
+					});
+
+					if (!speakersList) {
+						throw new GraphQLError('Speakers list not found');
+					}
+
+					if (speakersList.isClosed) {
+						throw new GraphQLError('Speakers list is closed');
+					}
+
+					const committee = (speakersList as any).agendaItem?.committee;
+					if (!committee) {
+						throw new GraphQLError('Committee not found for this speakers list');
+					}
+					if (!committee.allowDelegationsToAddThemselvesToSpeakersList) {
+						throw new GraphQLError(
+							'Self-adding to speakers list is not enabled for this committee'
+						);
+					}
+
+					let committeeMemberId: string | null = null;
+					let conferenceMemberId: string | null = null;
+
+					const confUser = conferenceUser as any;
+					if (conferenceUser.conferenceUserType === 'DELEGATE') {
+						if (!confUser.committeeMember) {
+							throw new GraphQLError('Delegate is not assigned to a committee');
+						}
+						if (!confUser.committeeMember.present) {
+							throw new GraphQLError('Delegate must be marked as present to add to speakers list');
+						}
+						if (confUser.committeeMember.committeeId !== committee.id) {
+							throw new GraphQLError('Delegate is not a member of this committee');
+						}
+						committeeMemberId = confUser.committeeMember.id;
+					} else {
+						// NON_STATE_ACTOR
+						if (!confUser.conferenceMember) {
+							throw new GraphQLError('Non-state actor is not assigned a conference member');
+						}
+						conferenceMemberId = confUser.conferenceMember.id;
+					}
+
+					// Check not already on list
+					const existing = await tx.query.speakerOnList.findFirst({
+						where: {
+							speakersListId: args.speakersListId,
+							...(committeeMemberId ? { committeeMemberId } : {}),
+							...(conferenceMemberId ? { conferenceMemberId } : {})
+						}
+					});
+
+					if (existing) {
+						throw new GraphQLError('Already on speakers list');
+					}
+
+					// Append at end
+					const position = (
+						await tx
+							.select({ count: count() })
+							.from(table)
+							.where(eq(table.speakersListId, args.speakersListId))
+							.then(assertFirstEntryExists)
+					).count;
+
+					const created = await tx
+						.insert(table)
+						.values({
+							committeeMemberId,
+							conferenceMemberId,
+							speakersListId: args.speakersListId,
+							position
+						})
+						.returning({ id: table.id })
+						.then(assertFirstEntryExists);
+
+					return created.id;
+				});
+
+				pubsub.created();
+
+				return db.query.speakerOnList
+					.findFirst(
+						query(
+							ctx.abilities.speakerOnList.filter('read', {
+								inject: { where: { id: createdId } }
+							}).query.single
+						)
+					)
+					.then(assertFindFirstExists);
+			}
+		}),
+		selfRemoveFromSpeakersList: t.drizzleField({
+			type: SpeakersListRef,
+			args: {
+				speakersListId: t.arg.id({ required: true })
+			},
+			resolve: async (query, root, args, ctx, info) => {
+				const user = ctx.mustBeLoggedIn();
+				if (!user.email) {
+					throw new GraphQLError('User email is required');
+				}
+
+				const removed = await db.transaction(async (tx) => {
+					const conferenceUser = await tx.query.conferenceUser.findFirst({
+						where: { userEmail: user.email! },
+						with: {
+							committeeMember: true,
+							conferenceMember: true
+						}
+					});
+
+					if (!conferenceUser) {
+						throw new GraphQLError('Conference user not found');
+					}
+
+					// Find own speaker entry on this list
+					let speakerOnList;
+					if (conferenceUser.committeeMemberId) {
+						speakerOnList = await tx.query.speakerOnList.findFirst({
+							where: {
+								speakersListId: args.speakersListId,
+								committeeMemberId: conferenceUser.committeeMemberId
+							}
+						});
+					}
+					if (!speakerOnList && conferenceUser.conferenceMemberId) {
+						speakerOnList = await tx.query.speakerOnList.findFirst({
+							where: {
+								speakersListId: args.speakersListId,
+								conferenceMemberId: conferenceUser.conferenceMemberId
+							}
+						});
+					}
+
+					if (!speakerOnList) {
+						throw new GraphQLError('You are not on this speakers list');
+					}
+
+					const deleted = await tx
+						.delete(table)
+						.where(eq(table.id, speakerOnList.id))
+						.returning()
+						.then(assertFirstEntryExists);
+
+					// Shift positions down
+					const aboutToBeShiftedDown = await tx.query.speakerOnList.findMany({
+						where: {
+							speakersListId: deleted.speakersListId,
+							position: {
+								gt: deleted.position
+							}
+						},
+						orderBy: { position: 'asc' }
+					});
+
+					for (const speaker of aboutToBeShiftedDown) {
+						await tx
+							.update(table)
+							.set({
+								position: sql`${table.position} - 1`
+							})
+							.where(eq(table.id, speaker.id));
+					}
+
+					return deleted;
+				});
+
 				pubsub.removed(removed.id);
 
 				return db.query.speakersList

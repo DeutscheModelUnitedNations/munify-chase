@@ -24,6 +24,11 @@ abilityBuilder.committee.allow(['read', 'update']).when(({ mustBeLoggedIn }) => 
 	}
 });
 
+abilityBuilder.committee.allow('read').when(({ mustBeLoggedIn }) => {
+	mustBeLoggedIn();
+	return 'allow';
+});
+
 const getTotalPresentCount = async (
 	parent: InferSelectModel<typeof schema.committee> & {
 		members: (InferSelectModel<typeof schema.committeeMember> & {
@@ -124,7 +129,8 @@ schemaBuilder.mutationFields((t) => {
 				activeAgendaItemId: t.arg.id(),
 				lastResolutionAdoptionDate: t.arg({
 					type: 'DateTime'
-				})
+				}),
+				allowDelegationsToAddThemselvesToSpeakersList: t.arg.boolean()
 			},
 			resolve: async (query, root, args, ctx, info) => {
 				await db
@@ -137,7 +143,9 @@ schemaBuilder.mutationFields((t) => {
 						statusUntil: args.statusUntil ?? undefined,
 						stateOfDebate: args.stateOfDebate ?? undefined,
 						activeAgendaItemId: args.activeAgendaItemId ?? undefined,
-						lastResolutionAdoptionDate: args.lastResolutionAdoptionDate ?? undefined
+						lastResolutionAdoptionDate: args.lastResolutionAdoptionDate ?? undefined,
+						allowDelegationsToAddThemselvesToSpeakersList:
+							args.allowDelegationsToAddThemselvesToSpeakersList ?? undefined
 					})
 					.where(
 						and(

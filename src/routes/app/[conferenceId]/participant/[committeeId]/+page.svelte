@@ -167,12 +167,18 @@
 							{#if canSelfAdd}
 								{#if myPosition !== null}
 									<!-- Already on list -->
-									<div class="flex items-center gap-2">
-										<span class="badge badge-primary">
-											{m.onListPosition({ position: String(myPosition + 1) })}
-										</span>
+									<div class="flex w-full flex-col gap-2">
+										{#if myPosition === 0}
+											<span class="badge badge-success w-full">
+												{m.youreUp()}
+											</span>
+										{:else}
+											<span class="badge badge-primary w-full">
+												{m.onListPosition({ position: String(myPosition) })}
+											</span>
+										{/if}
 										<button
-											class="btn btn-outline btn-error btn-sm"
+											class="btn btn-outline btn-error btn-sm w-full"
 											onclick={() => handleSelfRemove(list.id)}
 										>
 											<i class="fas fa-minus mr-1"></i>

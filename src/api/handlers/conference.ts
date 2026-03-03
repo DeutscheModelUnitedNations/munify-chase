@@ -1,15 +1,19 @@
-import { db } from '$api/db/db';
+import { db, schema } from '$api/db/db';
 import {
 	abilityBuilder,
 	object,
 	query,
+	schemaBuilder,
 	pubsub as rumblePubsub,
 	arg as rumbleArg
 } from '$api/rumble';
 import { isWhitelistedEmail } from '$api/services/isDMUNEmail';
 import { ConferenceMemberRef, ConferenceMemberWhereInput } from './conferenceMember';
+import { assertConferenceAdmin } from './conferenceUser';
+import { eq } from 'drizzle-orm';
+import { assertFindFirstExists } from '@m1212e/rumble';
 
-abilityBuilder.conference.allow('read').when(({ mustBeLoggedIn }) => {
+abilityBuilder.conference.allow(['read', 'update']).when(({ mustBeLoggedIn }) => {
 	const user = mustBeLoggedIn();
 
 	if (user?.email && isWhitelistedEmail(user.email)) {
@@ -62,10 +66,48 @@ const ref = object({
 	})
 });
 
-const pubsub = rumblePubsub({ table: 'committee' });
-const arg = rumbleArg({ table: 'committee' });
+const pubsub = rumblePubsub({ table: 'conference' });
+const arg = rumbleArg({ table: 'conference' });
 query({
 	table: 'conference'
 });
+
+schemaBuilder.mutationFields((t) => ({
+	updateConference: t.drizzleField({
+		type: ref,
+		args: {
+			id: t.arg.id({ required: true }),
+			title: t.arg.string(),
+			pressWebsite: t.arg.string(),
+			hasModeratedCaucus: t.arg.boolean()
+		},
+		resolve: async (query, root, args, ctx, info) => {
+			await assertConferenceAdmin(ctx, args.id);
+
+			await db
+				.update(schema.conference)
+				.set({
+					title: args.title ?? undefined,
+					pressWebsite: args.pressWebsite ?? undefined,
+					hasModeratedCaucus: args.hasModeratedCaucus ?? undefined
+				})
+				.where(eq(schema.conference.id, args.id));
+
+			pubsub.updated(args.id);
+
+			return db.query.conference
+				.findFirst(
+					query(
+						ctx.abilities.conference.filter('read', {
+							inject: {
+								where: { id: args.id }
+							}
+						}).query.single
+					)
+				)
+				.then(assertFindFirstExists);
+		}
+	})
+}));
 
 export const ConferenceRef = ref;

@@ -7,6 +7,8 @@ export const _houdini_load = graphql(`
 		findFirstConference(where: { id: $conferenceId }) {
 			id
 			title
+			pressWebsite
+			hasModeratedCaucus
 			users {
 				id
 				userEmail
@@ -53,6 +55,7 @@ export const _houdini_load = graphql(`
 						alpha2Code
 						alpha3Code
 						faIcon
+						type
 					}
 				}
 			}
@@ -65,6 +68,14 @@ export const _houdini_load = graphql(`
 					type
 					faIcon
 				}
+			}
+			representations {
+				id
+				name
+				alpha2Code
+				alpha3Code
+				type
+				faIcon
 			}
 		}
 		currentUserRole: findManyConferenceUser(

@@ -272,15 +272,24 @@ type Mutation {
   addSpeakerOnList(committeeMemberId: ID, conferenceMemberId: ID, position: Int, speakersListId: ID!): SpeakerOnList
   clearSpeakersList(id: ID!): SpeakersList
   createAgendaItem(committeeId: ID!, title: String!): AgendaItem
+  createCommittee(abbreviation: String!, conferenceId: ID!, name: String!): Committee
+  createCommitteeMember(committeeId: ID!, representationId: ID!): CommitteeMember
+  createConferenceMember(conferenceId: ID!, representationId: ID!): ConferenceMember
   createConferenceUser(conferenceId: ID!, conferenceUserType: ConferenceUserTypeEnum!, userEmail: String!): ConferenceUser
+  createRepresentation(alpha2Code: String, alpha3Code: String, conferenceId: ID!, faIcon: String, name: String, type: RepresentationTypeEnum!): Representation
+  deleteCommittee(id: ID!): Boolean
+  deleteCommitteeMember(id: ID!): Boolean
+  deleteConferenceMember(id: ID!): Boolean
   deleteConferenceUser(id: ID!): Boolean
+  deleteRepresentation(id: ID!): Boolean
   importDelegatorConference(data: ImportData!): Conference
   moveSpeakerToPosition(id: ID!, position: Int!): SpeakerOnList
   removeSpeakerOnList(speakerOnListId: ID!): SpeakersList
   selfAddToSpeakersList(speakersListId: ID!): SpeakerOnList
   selfRemoveFromSpeakersList(speakersListId: ID!): SpeakersList
   setPresenceForCommitteeMembers(ids: [ID!]!, present: Boolean!): [CommitteeMember!]
-  updateCommittee(activeAgendaItemId: ID, allowDelegationsToAddThemselvesToSpeakersList: Boolean, id: ID!, lastResolutionAdoptionDate: DateTime, showWhiteboard: Boolean, stateOfDebate: String, status: CommitteeStatusEnum, statusHeadline: String, statusUntil: DateTime, whiteboardContent: String): Committee
+  updateCommittee(abbreviation: String, activeAgendaItemId: ID, allowDelegationsToAddThemselvesToSpeakersList: Boolean, id: ID!, lastResolutionAdoptionDate: DateTime, name: String, showWhiteboard: Boolean, stateOfDebate: String, status: CommitteeStatusEnum, statusHeadline: String, statusUntil: DateTime, whiteboardContent: String): Committee
+  updateConference(hasModeratedCaucus: Boolean, id: ID!, pressWebsite: String, title: String): Conference
   updateConferenceUser(committeeMemberId: ID, conferenceMemberId: ID, conferenceUserType: ConferenceUserTypeEnum!, id: ID!): ConferenceUser
   updateSpeakerOnList(id: ID!, overwriteName: String): SpeakerOnList
   updateSpeakersList(id: ID!, isClosed: Boolean, speakingTime: Int, startTimestamp: DateTime, stopTimer: Boolean = false, timeLeft: Int): SpeakersList

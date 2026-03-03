@@ -9,9 +9,11 @@ import {
 	arg as rumbleArg
 } from '$api/rumble';
 import { isWhitelistedEmail } from '$api/services/isDMUNEmail';
-import { assertFirstEntryExists } from '@m1212e/rumble';
+import { assertFindFirstExists, assertFirstEntryExists } from '@m1212e/rumble';
 import { and, count, eq, type InferSelectModel } from 'drizzle-orm';
 import { calculateMajority } from '$lib/utils/majorities';
+import { assertConferenceAdmin } from './conferenceUser';
+import { GraphQLError } from 'graphql';
 
 const statusEnum = enum_({
 	tsName: 'committeeStatus'
@@ -109,13 +111,72 @@ query({
 
 schemaBuilder.mutationFields((t) => {
 	return {
+		createCommittee: t.drizzleField({
+			type: ref,
+			args: {
+				conferenceId: t.arg.id({ required: true }),
+				name: t.arg.string({ required: true }),
+				abbreviation: t.arg.string({ required: true })
+			},
+			resolve: async (query, root, args, ctx, info) => {
+				await assertConferenceAdmin(ctx, args.conferenceId);
+
+				const result = await db
+					.insert(schema.committee)
+					.values({
+						conferenceId: args.conferenceId,
+						name: args.name,
+						abbreviation: args.abbreviation
+					})
+					.returning()
+					.then(assertFirstEntryExists);
+
+				pubsub.updated(result.id);
+
+				return db.query.committee
+					.findFirst(
+						query(
+							ctx.abilities.committee.filter('read', {
+								inject: {
+									where: { id: result.id }
+								}
+							}).query.single
+						)
+					)
+					.then(assertFindFirstExists);
+			}
+		}),
+
+		deleteCommittee: t.field({
+			type: 'Boolean',
+			args: {
+				id: t.arg.id({ required: true })
+			},
+			resolve: async (root, args, ctx, info) => {
+				const committee = await db.query.committee.findFirst({
+					where: { id: args.id }
+				});
+
+				if (!committee) {
+					throw new GraphQLError('Committee not found');
+				}
+
+				await assertConferenceAdmin(ctx, committee.conferenceId);
+
+				await db.delete(schema.committee).where(eq(schema.committee.id, args.id));
+
+				pubsub.removed(args.id);
+
+				return true;
+			}
+		}),
+
 		updateCommittee: t.drizzleField({
 			type: ref,
 			args: {
 				id: t.arg.id({ required: true }),
-				//TODO do we want to allow updates to these defaults?
-				// e.g. abbreviation and name probably are pretty static...
-				// name: t.arg.string(),
+				name: t.arg.string(),
+				abbreviation: t.arg.string(),
 				whiteboardContent: t.arg.string(),
 				showWhiteboard: t.arg.boolean(),
 				status: t.arg({
@@ -136,6 +197,8 @@ schemaBuilder.mutationFields((t) => {
 				await db
 					.update(schema.committee)
 					.set({
+						name: args.name ?? undefined,
+						abbreviation: args.abbreviation ?? undefined,
 						whiteboardContent: args.whiteboardContent ?? undefined,
 						showWhiteboard: args.showWhiteboard ?? undefined,
 						status: args.status ?? undefined,

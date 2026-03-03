@@ -26,7 +26,7 @@ abilityBuilder.conferenceUser.allow('read').when(({ mustBeLoggedIn }) => {
  * Helper to check if the current user is an ADMIN for a specific conference
  * (either OIDC admin or conference ADMIN role)
  */
-async function assertConferenceAdmin(
+export async function assertConferenceAdmin(
 	ctx: { hasRole: (role: string) => boolean; mustBeLoggedIn: () => { email?: string | null } },
 	conferenceId: string
 ) {

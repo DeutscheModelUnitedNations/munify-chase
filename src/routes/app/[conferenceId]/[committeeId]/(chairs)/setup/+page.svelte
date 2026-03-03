@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { m } from '$lib/paraglide/messages';
 	import type { PageData } from './$houdini';
+	import Kbd from '$lib/components/Kbd.svelte';
 	import IconInfoBox from '$lib/components/IconInfoBox.svelte';
 	import { getCommitteeStatusIcon, getCommitteeStatusText } from '$lib/utils/committeeStatus';
 	import UndrawError from '$lib/components/UndrawError.svelte';
@@ -72,7 +73,7 @@
 				</BasicCard>
 			</div>
 			<div class="flex h-full w-full flex-3 flex-col gap-4">
-				<BasicCard title={m.setStatus()} kbd="⌥ S">
+				<BasicCard title={m.setStatus()} kbd="alt+S">
 					<StatusChanger
 						committeeId={committee.id}
 						oldStatus={committee.status}
@@ -81,7 +82,7 @@
 						hasModeratedCaucus={committee.conference?.hasModeratedCaucus}
 					/>
 				</BasicCard>
-				<BasicCard title={m.stateOfDebate()} kbd="⌥ D">
+				<BasicCard title={m.stateOfDebate()} kbd="alt+D">
 					<StateOfDebate committeeId={committee.id} oldStateOfDebate={committee.stateOfDebate} />
 				</BasicCard>
 				<BasicCard title={m.agendaItem()}>
@@ -95,7 +96,7 @@
 					<a href="." class="btn btn-primary btn-lg mb-4 flex items-center gap-3" target="_blank">
 						<i class="fas fa-projector"></i>
 						{m.openPresentation()}
-						<span class="kbd text-base-content">⌥ P</span>
+						<Kbd hotkey="alt+P" class="text-base-content" />
 					</a>
 					<PresentationSettings committeeId={data.committeeId} />
 				</BasicCard>

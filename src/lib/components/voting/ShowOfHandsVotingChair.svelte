@@ -1,5 +1,6 @@
 <script lang="ts">
 	import type { CommitteeTeamQuery$result } from '$houdini';
+	import Kbd from '$lib/components/Kbd.svelte';
 	import { m } from '$lib/paraglide/messages';
 	import { onMount } from 'svelte';
 	import Modal from '../Modal.svelte';
@@ -183,7 +184,7 @@
 		<button class="btn btn-lg flex gap-2" onclick={previousState} disabled={currentState === 'PRO'}>
 			<i class="fas fa-arrow-left"></i>
 			{m.back()}
-			<span class="kbd">⌫</span>
+			<Kbd hotkey="backspace" />
 		</button>
 		<button
 			class="btn {currentState === 'EVALUATION' ? 'btn-error' : 'btn-success'} btn-lg flex gap-2"
@@ -201,7 +202,7 @@
 				<i class="fas fa-arrow-right"></i>
 				{m.forward()}
 			{/if}
-			<span class="kbd">↵</span>
+			<Kbd hotkey="enter" />
 		</button>
 
 		<div class="absolute top-3 right-3">

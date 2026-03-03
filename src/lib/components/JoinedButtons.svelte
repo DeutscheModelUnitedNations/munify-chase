@@ -1,4 +1,6 @@
 <script lang="ts">
+	import Kbd from './Kbd.svelte';
+
 	interface Props {
 		buttons: Button[];
 	}
@@ -37,7 +39,7 @@
 	{/if}
 	<div class="hidden md:block">{label}</div>
 	{#if shortcut && shortcut !== ''}
-		<div class="kbd bg-base-100 text-base-content hidden md:block">{shortcut}</div>
+		<Kbd hotkey={shortcut} class="bg-base-100 text-base-content hidden md:block" />
 	{/if}
 {/snippet}
 

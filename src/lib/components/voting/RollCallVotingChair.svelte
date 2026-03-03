@@ -1,5 +1,6 @@
 <script lang="ts">
 	import type { CommitteeTeamQuery$result } from '$houdini';
+	import Kbd from '$lib/components/Kbd.svelte';
 	import { m } from '$lib/paraglide/messages';
 	import Modal from '../Modal.svelte';
 	import hotkeys from 'hotkeys-js';
@@ -238,7 +239,7 @@
 				>
 					<i class="fas fa-circle-minus"></i>
 					{m.con()}
-					<span class="kbd">J</span>
+					<Kbd hotkey="J" />
 				</button>
 				{#if withAbstentions}
 					<button
@@ -249,7 +250,7 @@
 					>
 						<i class="fas fa-circle"></i>
 						{m.abstain()}
-						<span class="kbd">K</span>
+						<Kbd hotkey="K" />
 					</button>
 				{/if}
 				<button
@@ -260,7 +261,7 @@
 				>
 					<i class="fas fa-circle-plus"></i>
 					{m.pro()}
-					<span class="kbd">L</span>
+					<Kbd hotkey="L" />
 				</button>
 			</div>
 		</div>
@@ -274,7 +275,7 @@
 			>
 				<i class="fas fa-xmark"></i>
 				{m.close()}
-				<span class="kbd">esc</span>
+				<Kbd hotkey="esc" />
 			</button>
 		</div>
 	{/if}

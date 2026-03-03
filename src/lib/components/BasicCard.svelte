@@ -1,5 +1,6 @@
 <script lang="ts">
 	import type { Snippet } from 'svelte';
+	import Kbd from './Kbd.svelte';
 
 	interface Props {
 		children: Snippet;
@@ -19,7 +20,7 @@
 					{title}
 
 					{#if kbd}
-						<div class="kbd ml-2">{kbd}</div>
+						<Kbd hotkey={kbd} class="ml-2" />
 					{/if}
 				</h2>
 			</div>

@@ -4,6 +4,7 @@
 		type CommitteeTeamQuery$result,
 		type SpeakersListCategoryEnum$options
 	} from '$houdini';
+	import Kbd from '$lib/components/Kbd.svelte';
 	import { m } from '$lib/paraglide/messages';
 	import { serverTime } from '$lib/state/serverTime.svelte';
 	import dayjs from 'dayjs';
@@ -221,13 +222,11 @@
 			<i class="fas fa-play"></i>
 		{/if}
 		{m.timer()}
-		<span class="kbd text-base-content">
-			{#if type === 'COMMENT_LIST'}
-				⇧ ␣
-			{:else if type === 'SPEAKERS_LIST'}
-				␣
-			{/if}
-		</span>
+		{#if type === 'COMMENT_LIST'}
+			<Kbd hotkey="shift+space" class="text-base-content" />
+		{:else if type === 'SPEAKERS_LIST'}
+			<Kbd hotkey="space" class="text-base-content" />
+		{/if}
 	</button>
 	<div class="join">
 		<button
@@ -244,13 +243,11 @@
 			onclick={resetTimer}
 		>
 			<i class="fas fa-rotate-left"></i>
-			<span class="kbd text-base-content">
-				{#if type === 'COMMENT_LIST'}
-					⌥ ⇧ R
-				{:else if type === 'SPEAKERS_LIST'}
-					⌥ R
-				{/if}
-			</span>
+			{#if type === 'COMMENT_LIST'}
+				<Kbd hotkey="alt+shift+R" class="text-base-content" />
+			{:else if type === 'SPEAKERS_LIST'}
+				<Kbd hotkey="alt+R" class="text-base-content" />
+			{/if}
 		</button>
 		<button
 			class="btn btn-lg join-item flex gap-2

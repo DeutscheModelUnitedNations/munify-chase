@@ -3,6 +3,7 @@
 	import { Combobox } from 'bits-ui';
 	import type { Snippet } from 'svelte';
 	import { crossfade } from 'svelte/transition';
+	import Kbd from './Kbd.svelte';
 
 	interface Props {
 		value: string;
@@ -71,11 +72,9 @@
 						}}
 					/>
 					{#if kbd && !focused}
-						<span class="kbd">
-							{kbd}
-						</span>
+						<Kbd hotkey={kbd} />
 					{:else if kbd}
-						<span class="kbd"> Esc </span>
+						<Kbd hotkey="esc" />
 					{/if}
 				</label>
 			{/snippet}

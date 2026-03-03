@@ -3,6 +3,7 @@
 	import { onMount, type Snippet } from 'svelte';
 	import { alertDialogStore } from './alert';
 	import { browser } from '$app/environment';
+	import Kbd from '$lib/components/Kbd.svelte';
 	import hotkeys from 'hotkeys-js';
 	import { fade, fly, scale } from 'svelte/transition';
 
@@ -68,7 +69,7 @@
 							<AlertDialog.Cancel onclick={$alertDialogStore?.onClose} class="btn btn-lg flex-1">
 								<i class="fas fa-xmark"></i>
 								{$alertDialogStore?.cancelText}
-								<span class="kbd kbd-sm"> esc </span>
+								<Kbd hotkey="esc" size="sm" />
 							</AlertDialog.Cancel>
 							<AlertDialog.Action
 								onclick={$alertDialogStore?.onConfirm}
@@ -76,7 +77,7 @@
 							>
 								<i class="fas fa-check"></i>
 								{$alertDialogStore?.confirmText}
-								<span class="kbd kbd-sm text-base-content"> ↵ </span>
+								<Kbd hotkey="enter" size="sm" class="text-base-content" />
 							</AlertDialog.Action>
 						</div>
 					</div>

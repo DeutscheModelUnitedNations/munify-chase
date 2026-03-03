@@ -1,5 +1,6 @@
 <script lang="ts">
 	import type { CommitteeTeamQuery$result } from '$houdini';
+	import Kbd from '$lib/components/Kbd.svelte';
 	import { m } from '$lib/paraglide/messages';
 	import { onDestroy, onMount } from 'svelte';
 	import Modal from '../Modal.svelte';
@@ -99,7 +100,7 @@
 		>
 			<i class="fas fa-xmark"></i>
 			{m.absent()}
-			<span class="kbd">J</span>
+			<Kbd hotkey="J" />
 		</button>
 		<div class="join">
 			<button
@@ -129,7 +130,7 @@
 		>
 			<i class="fas fa-check"></i>
 			{m.present()}
-			<span class="kbd">L</span>
+			<Kbd hotkey="L" />
 		</button>
 
 		<div class="absolute top-3 right-3">

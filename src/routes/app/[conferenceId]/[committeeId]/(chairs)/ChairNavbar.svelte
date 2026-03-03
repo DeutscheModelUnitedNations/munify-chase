@@ -20,28 +20,28 @@
 			faIcon: 'fa-gears',
 			label: m.setup(),
 			href: './setup',
-			shortcut: '⌥ 1',
+			shortcut: 'alt+1',
 			active: page.route.id?.endsWith('setup')
 		},
 		{
 			faIcon: 'fa-users',
 			label: m.presence(),
 			href: './presence',
-			shortcut: '⌥ 2',
+			shortcut: 'alt+2',
 			active: page.route.id?.endsWith('presence')
 		},
 		{
 			faIcon: 'fa-podium',
 			label: m.speakersList(),
 			href: './speakers-list',
-			shortcut: '⌥ 3',
+			shortcut: 'alt+3',
 			active: page.route.id?.endsWith('speakers-list')
 		},
 		{
 			faIcon: 'fa-box-ballot',
 			label: m.voting(),
 			href: './voting',
-			shortcut: '⌥ 4',
+			shortcut: 'alt+4',
 			active: page.route.id?.endsWith('voting')
 		}
 	]);

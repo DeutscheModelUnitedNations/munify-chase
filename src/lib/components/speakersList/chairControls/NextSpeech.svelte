@@ -5,6 +5,7 @@
 		type SpeakersListCategoryEnum$options
 	} from '$houdini';
 	import { alertDialog } from '$lib/components/Alert/alert';
+	import Kbd from '$lib/components/Kbd.svelte';
 	import { m } from '$lib/paraglide/messages';
 	import { promiseToastStrings } from '$lib/utils/toast';
 	import hotkeys from 'hotkeys-js';
@@ -136,11 +137,9 @@
 >
 	<i class="fas fa-diagram-next"></i>
 	{m.nextSpeaker()}
-	<span class="kbd text-base-content">
-		{#if type === 'COMMENT_LIST'}
-			⌥ ⇧ N
-		{:else if type === 'SPEAKERS_LIST'}
-			⌥ N
-		{/if}
-	</span>
+	{#if type === 'COMMENT_LIST'}
+		<Kbd hotkey="alt+shift+N" class="text-base-content" />
+	{:else if type === 'SPEAKERS_LIST'}
+		<Kbd hotkey="alt+N" class="text-base-content" />
+	{/if}
 </button>

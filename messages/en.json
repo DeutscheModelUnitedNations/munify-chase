@@ -148,6 +148,8 @@
 	"memberAdded": "Member added successfully",
 	"memberRemoved": "Member removed successfully",
 	"memberUpdated": "Member updated successfully",
+	"minuteOfTheHour": "Absolute time: Jump to the corresponding minute of this or the next hour",
+	"minutesFromNow": "Relative time: Jump X minutes into the future",
 	"missionControl": "Mission Control",
 	"moderatedInformalCaucus": "Moderated informal caucus",
 	"nextSpeaker": "Next Speech",

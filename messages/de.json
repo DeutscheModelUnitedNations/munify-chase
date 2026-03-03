@@ -148,6 +148,8 @@
 	"memberAdded": "Mitglied erfolgreich hinzugefügt",
 	"memberRemoved": "Mitglied erfolgreich entfernt",
 	"memberUpdated": "Mitglied erfolgreich aktualisiert",
+	"minuteOfTheHour": "Absolute Zeit: Springe zur entsprechenden Minute dieser oder der nächsten Stunde",
+	"minutesFromNow": "Relative Zeit: Springe X Minuten in die Zukunft",
 	"missionControl": "Mission Control",
 	"moderatedInformalCaucus": "Moderierte informelle Sitzung",
 	"nextSpeaker": "Nächste Rede",

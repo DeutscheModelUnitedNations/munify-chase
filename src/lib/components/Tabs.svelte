@@ -3,6 +3,7 @@
 		id: T;
 		faIcon?: string;
 		label?: string;
+		tooltip?: string;
 	};
 
 	interface Props {
@@ -18,7 +19,10 @@
 	{#each tabs as tab}
 		<button
 			role="tab"
-			class="tab flex-1 {activeTab === tab.id ? 'tab-active' : ''} h-auto items-center py-3"
+			class="tab flex-1 {activeTab === tab.id
+				? 'tab-active'
+				: ''} h-auto items-center py-3 tooltip tooltip-bottom"
+			data-tip={tab.tooltip}
 			aria-selected={activeTab === tab.id}
 			aria-label={tab.label ?? tab.faIcon}
 			tabindex={activeTab === tab.id ? 0 : -1}

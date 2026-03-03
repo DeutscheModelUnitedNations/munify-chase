@@ -27,16 +27,18 @@
 	const categories: {
 		id: CommitteeStatusEnum$options;
 		faIcon: string;
+		tooltip: string;
 	}[] = [
-		{ id: 'FORMAL', faIcon: 'podium' },
-		{ id: 'INFORMAL', faIcon: 'messages' },
-		{ id: 'PAUSE', faIcon: 'mug-saucer' },
-		{ id: 'SUSPENSION', faIcon: 'forward-step' },
+		{ id: 'FORMAL', faIcon: 'podium', tooltip: m.formalDebate() },
+		{ id: 'INFORMAL', faIcon: 'messages', tooltip: m.informalCaucus() },
+		{ id: 'PAUSE', faIcon: 'mug-saucer', tooltip: m.pause() },
+		{ id: 'SUSPENSION', faIcon: 'forward-step', tooltip: m.suspension() },
 		...(hasModeratedCaucus
 			? [
 					{
 						id: 'MODERATED_INFORMAL' as CommitteeStatusEnum$options,
-						faIcon: 'comments-question-check'
+						faIcon: 'comments-question-check',
+						tooltip: m.moderatedInformalCaucus()
 					}
 				]
 			: [])
@@ -108,7 +110,9 @@
 <div class="flex flex-col gap-4">
 	<Tabs tabs={categories} bind:activeTab={activeCategory} />
 	<div class="card bg-base-200 flex flex-row items-center gap-2 p-2">
-		<i class="fa-duotone fa-clock w-8 text-center text-2xl"></i>
+		<div class="tooltip tooltip-right flex items-center" data-tip={m.minuteOfTheHour()}>
+			<i class="fa-duotone fa-clock w-8 text-center text-2xl"></i>
+		</div>
 		<div
 			class="grid flex-1 grid-cols-4 items-center gap-1 md:grid-cols-5 lg:grid-cols-8 xl:grid-cols-12"
 		>
@@ -126,7 +130,9 @@
 		</div>
 	</div>
 	<div class="card bg-base-200 flex flex-row items-center gap-2 p-2">
-		<i class="fa-duotone fa-timer w-8 text-center text-2xl"></i>
+		<div class="tooltip tooltip-right flex items-center" data-tip={m.minutesFromNow()}>
+			<i class="fa-duotone fa-timer w-8 text-center text-2xl"></i>
+		</div>
 		<div class="grid flex-1 grid-cols-4 items-center gap-1 md:grid-cols-5 lg:grid-cols-7">
 			{#each relativeTimes as time}
 				<button

@@ -380,19 +380,20 @@ commentPanel?: Snippet<[{ resolution: Resolution; activeClauseId?: string }]>;
 - ~~Content snapshot on promotion~~
 - ~~Title hidden post-promotion (document number is sole identifier for DRs)~~
 
-### Phase 4: Support Re-evaluation + DR Ordering
+### Phase 4: Support Re-evaluation + DR Ordering ✅
 
-- "Open/Close Re-evaluation" chair controls
-- Delegate UI: add/remove support on DRs (multi-support)
-- Dynamic sponsor count display + DR ranking
-- "Set Active DR" for debate progression
+- ~~"Open/Close Re-evaluation" chair controls~~
+- ~~Delegate UI: add/remove support on DRs (multi-support)~~
+- ~~Dynamic sponsor count display + DR ranking~~
+- ~~"Set Active DR" for debate progression~~
+- ~~Chair sponsor management: add/remove any member as sponsor (bypasses all gates), searchable modal, sorted display~~
 
-### Phase 5: Comment System
+### Phase 5: Comment System ✅
 
-- `resolutionComment` handler
-- `CommentPanel.svelte` (document + clause level, threading, visibility)
-- **Editor library**: preamble extension points
-- Integration in chair + participant DR views
+- ~~`resolutionComment` handler (create, update, delete, threading, PUBLIC/TEAM_ONLY visibility)~~
+- ~~`CommentSection.svelte` (document + clause level, threading, visibility)~~
+- ~~**Editor library**: preamble extension points (preambleAnnotations, preambleClauseToolbar)~~
+- ~~Integration in chair + participant DR views with real-time subscriptions~~
 
 ### Phase 6: Amendment System
 

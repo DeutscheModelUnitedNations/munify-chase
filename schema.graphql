@@ -372,11 +372,15 @@ The `JSON` scalar type represents JSON values as specified by [ECMA-404](http://
 scalar JSON
 
 type Mutation {
+  acceptAmendment(amendmentId: ID!): Amendment
   acquireClauseLock(clauseId: String!, paperId: ID!): PaperClauseLock
+  addAmendmentSponsor(amendmentId: ID!, committeeMemberId: ID!): AmendmentSponsor
   addSpeakerOnList(committeeMemberId: ID, conferenceMemberId: ID, position: Int, speakersListId: ID!): SpeakerOnList
   addSponsor(committeeMemberId: ID!, paperId: ID!): PaperSponsor
+  adoptByConsensus(amendmentId: ID!): Amendment
   clearSpeakersList(id: ID!): SpeakersList
   createAgendaItem(committeeId: ID!, title: String!): AgendaItem
+  createAmendment(newContent: JSON, paperId: ID!, targetClauseId: String, targetOperativeIndex: Int, targetPosition: Int, type: AmendmentTypeEnum!): Amendment
   createComment(clauseId: String, content: String!, paperId: ID!, parentCommentId: ID, visibility: CommentVisibilityEnum): ResolutionComment
   createCommittee(abbreviation: String!, conferenceId: ID!, name: String!): Committee
   createCommitteeMember(committeeId: ID!, representationId: ID!): CommitteeMember
@@ -397,8 +401,10 @@ type Mutation {
   promoteToDraftResolution(paperId: ID!): ResolutionPaper
   recordVoteResult(outcome: VoteOutcomeEnum!, paperId: ID!, votesAbstain: Int, votesAgainst: Int!, votesFor: Int!): ResolutionPaper
   redeemShareCode(code: String!): ShareCodeRedemptionResult
+  rejectAmendment(amendmentId: ID!): Amendment
   releaseAllMyLocks(paperId: ID!): Boolean
   releaseClauseLock(clauseId: String!, paperId: ID!): Boolean
+  removeAmendmentSponsor(amendmentId: ID!, committeeMemberId: ID!): Boolean
   removeEditor(conferenceUserId: ID!, paperId: ID!): Boolean
   removeSpeakerOnList(speakerOnListId: ID!): SpeakersList
   removeSponsor(committeeMemberId: ID!, paperId: ID!): Boolean
@@ -406,6 +412,7 @@ type Mutation {
   selfRemoveFromSpeakersList(speakersListId: ID!): SpeakersList
   setPresenceForCommitteeMembers(ids: [ID!]!, present: Boolean!): [CommitteeMember!]
   softDeletePaper(paperId: ID!): Boolean
+  submitAmendment(amendmentId: ID!): Amendment
   submitPaper(paperId: ID!): ResolutionPaper
   updateComment(commentId: ID!, content: String!): ResolutionComment
   updateCommittee(abbreviation: String, activeAgendaItemId: ID, activeDraftResolutionId: ID, allowDelegationsToAddThemselvesToSpeakersList: Boolean, clearActiveDraftResolution: Boolean, currentOperativeIndex: Int, id: ID!, lastResolutionAdoptionDate: DateTime, maxDraftResolutions: Int, name: String, showWhiteboard: Boolean, stateOfDebate: String, status: CommitteeStatusEnum, statusHeadline: String, statusUntil: DateTime, supportReEvaluationOpen: Boolean, whiteboardContent: String): Committee
@@ -415,6 +422,7 @@ type Mutation {
   updatePaperTitle(paperId: ID!, title: String!): ResolutionPaper
   updateSpeakerOnList(id: ID!, overwriteName: String): SpeakerOnList
   updateSpeakersList(id: ID!, isClosed: Boolean, speakingTime: Int, startTimestamp: DateTime, stopTimer: Boolean = false, timeLeft: Int): SpeakersList
+  withdrawAmendment(amendmentId: ID!): Amendment
 }
 
 type OperativeClauseVote {

@@ -15,6 +15,8 @@ import { calculateMajority } from '$lib/utils/majorities';
 import { assertConferenceAdmin } from './conferenceUser';
 import { GraphQLError } from 'graphql';
 
+const paperPubsub = rumblePubsub({ table: 'resolutionPaper' });
+
 const statusEnum = enum_({
 	tsName: 'committeeStatus'
 });
@@ -249,6 +251,37 @@ schemaBuilder.mutationFields((t) => {
 							ctx.abilities.committee.filter('update').sql.where
 						)
 					);
+
+				// Auto-transition active DR to AMENDMENT_PHASE when currentOperativeIndex is set
+				if (args.currentOperativeIndex !== undefined && args.currentOperativeIndex !== null) {
+					const committee = await db.query.committee.findFirst({
+						where: { id: args.id }
+					});
+
+					const activeDrId = args.activeDraftResolutionId ?? committee?.activeDraftResolutionId;
+
+					if (activeDrId) {
+						const activeDr = await db.query.resolutionPaper.findFirst({
+							where: { id: activeDrId }
+						});
+
+						if (activeDr && activeDr.status === 'DRAFT_RESOLUTION') {
+							await db
+								.update(schema.resolutionPaper)
+								.set({ status: 'AMENDMENT_PHASE' })
+								.where(eq(schema.resolutionPaper.id, activeDrId));
+
+							// Create snapshot
+							await db.insert(schema.paperContentSnapshot).values({
+								paperId: activeDrId,
+								content: activeDr.content,
+								trigger: 'AMENDMENT_PHASE'
+							});
+
+							paperPubsub.updated(activeDrId);
+						}
+					}
+				}
 
 				if (args.activeAgendaItemId) {
 					await db.insert(schema.committeeTopicChangedTimestamp).values({

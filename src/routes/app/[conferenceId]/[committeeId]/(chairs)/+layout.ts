@@ -15,6 +15,10 @@ export const _houdini_load = graphql(`
 			simpleMajority
 			twoThirdsMajority
 			paperSupportThreshold
+			maxDraftResolutions
+			activeDraftResolutionId
+			supportReEvaluationOpen
+			currentOperativeIndex
 			whiteboardContent
 			lastResolutionAdoptionDate
 			allowDelegationsToAddThemselvesToSpeakersList

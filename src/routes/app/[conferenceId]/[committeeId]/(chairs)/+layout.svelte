@@ -94,7 +94,9 @@
 
 <ChairNavbar title={committee?.abbreviation} />
 
-{@render children()}
+<div class="pb-16">
+	{@render children()}
+</div>
 
 <StatusChangerModal
 	committeeId={data.committeeId}

@@ -371,13 +371,14 @@ commentPanel?: Snippet<[{ resolution: Resolution; activeClauseId?: string }]>;
 - ~~Clause-level locking: `paper_clause_lock` table, acquire/release/heartbeat mutations, subscription, lock-aware content merge~~
 - ~~Click-to-lock UX: hover overlay ("Start editing"), inline "Done editing" button, `collaborativeMode` gate~~
 
-### Phase 3: Chair Resolutions Tab + DR Promotion
+### Phase 3: Chair Resolutions Tab + DR Promotion ✅
 
-- New 5th tab in `ChairNavbar` (alt+5, `fa-scroll`)
-- Submitted papers queue (ranked by sponsor count, suggests top N)
-- "Promote to Draft Resolution" with auto-numbering
-- DR editor for chair + Sekretariat (parallel access)
-- Content snapshot on promotion
+- ~~New 5th tab in `ChairNavbar` (alt+5, `fa-scroll`) — converted to bottom dock~~
+- ~~Submitted papers queue (ranked by sponsor count, suggests top N)~~
+- ~~"Promote to Draft Resolution" with auto-numbering~~
+- ~~DR editor for chair + Sekretariat (parallel access, clause locking)~~
+- ~~Content snapshot on promotion~~
+- ~~Title hidden post-promotion (document number is sole identifier for DRs)~~
 
 ### Phase 4: Support Re-evaluation + DR Ordering
 

@@ -424,7 +424,7 @@
 </script>
 
 <svelte:head>
-	<title>{paper?.title || m.untitledPaper()} - MUNify CHASE</title>
+	<title>{paper?.documentNumber ?? paper?.title ?? m.untitledPaper()} - MUNify CHASE</title>
 </svelte:head>
 
 {#if paper}
@@ -466,9 +466,10 @@
 			<div class="collapse-title">
 				<div class="flex items-center gap-2">
 					{#if paper.documentNumber}
-						<span class="font-mono text-sm opacity-60">{paper.documentNumber}</span>
+						<span class="font-bold font-mono">{paper.documentNumber}</span>
+					{:else}
+						<span class="font-bold">{paper.title || m.untitledPaper()}</span>
 					{/if}
-					<span class="font-bold">{paper.title || m.untitledPaper()}</span>
 					<span
 						class="badge badge-soft badge-sm {paper.status === 'WORKING_PAPER'
 							? 'badge-ghost'

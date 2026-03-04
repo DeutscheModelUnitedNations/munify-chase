@@ -220,7 +220,11 @@
 						<div class="card-body gap-2 p-4">
 							<div class="flex items-start justify-between gap-2">
 								<h3 class="card-title text-base">
-									{paper.title || m.untitledPaper()}
+									{#if paper.documentNumber}
+										<span class="font-mono">{paper.documentNumber}</span>
+									{:else}
+										{paper.title || m.untitledPaper()}
+									{/if}
 								</h3>
 								<span
 									class="badge badge-soft {getStatusBadgeClass(paper.status)} badge-sm shrink-0"
@@ -260,14 +264,9 @@
 					>
 						<div class="card-body gap-2 p-4">
 							<div class="flex items-start justify-between gap-2">
-								<div>
-									{#if paper.documentNumber}
-										<span class="text-xs font-mono opacity-60">{paper.documentNumber}</span>
-									{/if}
-									<h3 class="card-title text-base">
-										{paper.title || m.untitledPaper()}
-									</h3>
-								</div>
+								<h3 class="card-title text-base font-mono">
+									{paper.documentNumber ?? m.draftResolution()}
+								</h3>
 								<span
 									class="badge badge-soft {getStatusBadgeClass(paper.status)} badge-sm shrink-0"
 								>

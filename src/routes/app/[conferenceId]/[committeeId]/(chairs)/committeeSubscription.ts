@@ -14,6 +14,10 @@ export const CommitteeSubscription = graphql(`
 			simpleMajority
 			twoThirdsMajority
 			paperSupportThreshold
+			maxDraftResolutions
+			activeDraftResolutionId
+			supportReEvaluationOpen
+			currentOperativeIndex
 			whiteboardContent
 			lastResolutionAdoptionDate
 			allowDelegationsToAddThemselvesToSpeakersList

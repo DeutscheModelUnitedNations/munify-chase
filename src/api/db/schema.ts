@@ -7,6 +7,8 @@ import {
 	pgEnum,
 	boolean,
 	smallint,
+	integer,
+	jsonb,
 	type AnyPgColumn
 } from 'drizzle-orm/pg-core';
 
@@ -72,7 +74,11 @@ export const committee = pgTable(
 		customSimpleMajority: smallint(), // 50% by default
 		customTwoThirdsMajority: smallint(), // 66% by default
 		customPaperSupportThreshold: smallint(), // 10% by default
-		lastResolutionAdoptionDate: timestamp({ mode: 'date' })
+		lastResolutionAdoptionDate: timestamp({ mode: 'date' }),
+		maxDraftResolutions: smallint().notNull().default(3),
+		activeDraftResolutionId: text().references((): AnyPgColumn => resolutionPaper.id),
+		currentOperativeIndex: smallint(),
+		supportReEvaluationOpen: boolean().notNull().default(false)
 	},
 	(t) => [unique().on(t.conferenceId, t.name), unique().on(t.conferenceId, t.abbreviation)]
 );
@@ -223,4 +229,172 @@ export const presenceChangedTimestamp = pgTable('presence_changed_timestamp', {
 		.references(() => committeeMember.id, { onDelete: 'cascade' }),
 	timestamp: timestamp().notNull(),
 	presentSetTo: boolean().notNull()
+});
+
+// Resolution enums
+
+export const paperStatus = pgEnum('paper_status', [
+	'WORKING_PAPER',
+	'SUBMITTED',
+	'DRAFT_RESOLUTION',
+	'AMENDMENT_PHASE',
+	'FINAL'
+]);
+
+export const shareCodePermission = pgEnum('share_code_permission', ['SPONSOR', 'EDIT']);
+
+export const commentVisibility = pgEnum('comment_visibility', ['PUBLIC', 'TEAM_ONLY']);
+
+export const amendmentType = pgEnum('amendment_type', [
+	'DELETE',
+	'ADD',
+	'ALTER_TEXT',
+	'ALTER_POSITION'
+]);
+
+export const amendmentStatus = pgEnum('amendment_status', [
+	'PENDING',
+	'SUBMITTED',
+	'CONSENSUS_ADOPTED',
+	'ACCEPTED',
+	'REJECTED',
+	'WITHDRAWN'
+]);
+
+export const voteOutcome = pgEnum('vote_outcome', ['ADOPTED', 'REJECTED', 'SENT_BACK']);
+
+// Resolution tables
+
+export const resolutionPaper = pgTable('resolution_paper', {
+	...defaultIdAndTimestamps,
+	committeeId: text()
+		.notNull()
+		.references(() => committee.id, { onDelete: 'cascade' }),
+	agendaItemId: text()
+		.notNull()
+		.references(() => agendaItem.id, { onDelete: 'cascade' }),
+	creatorCommitteeMemberId: text()
+		.notNull()
+		.references(() => committeeMember.id, { onDelete: 'cascade' }),
+	status: paperStatus().notNull().default('WORKING_PAPER'),
+	content: jsonb(),
+	title: text(),
+	documentNumber: text(),
+	sequenceNumber: smallint()
+});
+
+export const paperContentSnapshot = pgTable('paper_content_snapshot', {
+	...defaultIdAndTimestamps,
+	paperId: text()
+		.notNull()
+		.references(() => resolutionPaper.id, { onDelete: 'cascade' }),
+	content: jsonb(),
+	trigger: text()
+});
+
+export const paperSponsor = pgTable(
+	'paper_sponsor',
+	{
+		...defaultIdAndTimestamps,
+		paperId: text()
+			.notNull()
+			.references(() => resolutionPaper.id, { onDelete: 'cascade' }),
+		committeeMemberId: text()
+			.notNull()
+			.references(() => committeeMember.id, { onDelete: 'cascade' })
+	},
+	(t) => [unique().on(t.paperId, t.committeeMemberId)]
+);
+
+export const paperShareCode = pgTable('paper_share_code', {
+	...defaultIdAndTimestamps,
+	paperId: text()
+		.notNull()
+		.references(() => resolutionPaper.id, { onDelete: 'cascade' }),
+	code: text().notNull().unique(),
+	permission: shareCodePermission().notNull()
+});
+
+export const paperEditor = pgTable(
+	'paper_editor',
+	{
+		...defaultIdAndTimestamps,
+		paperId: text()
+			.notNull()
+			.references(() => resolutionPaper.id, { onDelete: 'cascade' }),
+		conferenceUserId: text()
+			.notNull()
+			.references(() => conferenceUser.id, { onDelete: 'cascade' })
+	},
+	(t) => [unique().on(t.paperId, t.conferenceUserId)]
+);
+
+export const resolutionComment = pgTable('resolution_comment', {
+	...defaultIdAndTimestamps,
+	paperId: text()
+		.notNull()
+		.references(() => resolutionPaper.id, { onDelete: 'cascade' }),
+	clauseId: text(),
+	authorConferenceUserId: text()
+		.notNull()
+		.references(() => conferenceUser.id, { onDelete: 'cascade' }),
+	content: text().notNull(),
+	visibility: commentVisibility().notNull().default('PUBLIC'),
+	parentCommentId: text().references((): AnyPgColumn => resolutionComment.id, {
+		onDelete: 'cascade'
+	})
+});
+
+export const amendment = pgTable('amendment', {
+	...defaultIdAndTimestamps,
+	paperId: text()
+		.notNull()
+		.references(() => resolutionPaper.id, { onDelete: 'cascade' }),
+	proposerCommitteeMemberId: text()
+		.notNull()
+		.references(() => committeeMember.id, { onDelete: 'cascade' }),
+	type: amendmentType().notNull(),
+	status: amendmentStatus().notNull().default('PENDING'),
+	targetClauseId: text(),
+	targetOperativeIndex: smallint(),
+	newContent: jsonb(),
+	targetPosition: smallint()
+});
+
+export const amendmentSponsor = pgTable(
+	'amendment_sponsor',
+	{
+		...defaultIdAndTimestamps,
+		amendmentId: text()
+			.notNull()
+			.references(() => amendment.id, { onDelete: 'cascade' }),
+		committeeMemberId: text()
+			.notNull()
+			.references(() => committeeMember.id, { onDelete: 'cascade' })
+	},
+	(t) => [unique().on(t.amendmentId, t.committeeMemberId)]
+);
+
+export const operativeClauseVote = pgTable('operative_clause_vote', {
+	...defaultIdAndTimestamps,
+	paperId: text()
+		.notNull()
+		.references(() => resolutionPaper.id, { onDelete: 'cascade' }),
+	clauseId: text().notNull(),
+	outcome: voteOutcome().notNull(),
+	votesFor: integer().notNull(),
+	votesAgainst: integer().notNull(),
+	votesAbstain: integer().notNull().default(0)
+});
+
+export const resolutionVoteResult = pgTable('resolution_vote_result', {
+	...defaultIdAndTimestamps,
+	paperId: text()
+		.notNull()
+		.unique()
+		.references(() => resolutionPaper.id, { onDelete: 'cascade' }),
+	outcome: voteOutcome().notNull(),
+	votesFor: integer().notNull(),
+	votesAgainst: integer().notNull(),
+	votesAbstain: integer().notNull().default(0)
 });

@@ -23,16 +23,19 @@ type Committee {
   abbreviation: String!
   activeAgendaItem(where: AgendaItemWhereInputArgument): AgendaItem
   activeAgendaItemId: ID
+  activeDraftResolutionId: ID
   agendaItems(limit: Int, offset: Int, where: AgendaItemWhereInputArgument): [AgendaItem!]!
   allowDelegationsToAddThemselvesToSpeakersList: Boolean!
   conference(where: ConferenceWhereInputArgument): Conference
   conferenceId: ID!
   createdAt: DateTime!
+  currentOperativeIndex: Int
   customPaperSupportThreshold: Int
   customSimpleMajority: Int
   customTwoThirdsMajority: Int
   id: ID!
   lastResolutionAdoptionDate: DateTime
+  maxDraftResolutions: Int!
   members(limit: Int, offset: Int, where: CommitteeMemberWhereInputArgument): [CommitteeMember!]!
   name: String!
   paperSupportThreshold: Int
@@ -42,6 +45,7 @@ type Committee {
   status: CommitteeStatusEnum!
   statusHeadline: String!
   statusUntil: DateTime!
+  supportReEvaluationOpen: Boolean!
   totalPresent: Int
   twoThirdsMajority: Int
   updatedAt: DateTime
@@ -86,16 +90,19 @@ input CommitteeWhereInputArgument {
   abbreviation: String
   activeAgendaItem: AgendaItemWhereInputArgument
   activeAgendaItemId: ID
+  activeDraftResolutionId: ID
   agendaItems: AgendaItemWhereInputArgument
   allowDelegationsToAddThemselvesToSpeakersList: Boolean
   conference: ConferenceWhereInputArgument
   conferenceId: ID
   createdAt: DateTime
+  currentOperativeIndex: Int
   customPaperSupportThreshold: Int
   customSimpleMajority: Int
   customTwoThirdsMajority: Int
   id: ID
   lastResolutionAdoptionDate: DateTime
+  maxDraftResolutions: Int
   members: CommitteeMemberWhereInputArgument
   name: String
   showWhiteboard: Boolean
@@ -103,6 +110,7 @@ input CommitteeWhereInputArgument {
   status: CommitteeStatusEnum
   statusHeadline: String
   statusUntil: DateTime
+  supportReEvaluationOpen: Boolean
   updatedAt: DateTime
   whiteboardContent: String
 }

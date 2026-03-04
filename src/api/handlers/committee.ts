@@ -191,7 +191,11 @@ schemaBuilder.mutationFields((t) => {
 				lastResolutionAdoptionDate: t.arg({
 					type: 'DateTime'
 				}),
-				allowDelegationsToAddThemselvesToSpeakersList: t.arg.boolean()
+				allowDelegationsToAddThemselvesToSpeakersList: t.arg.boolean(),
+				maxDraftResolutions: t.arg.int(),
+				activeDraftResolutionId: t.arg.id(),
+				currentOperativeIndex: t.arg.int(),
+				supportReEvaluationOpen: t.arg.boolean()
 			},
 			resolve: async (query, root, args, ctx, info) => {
 				await db
@@ -208,7 +212,11 @@ schemaBuilder.mutationFields((t) => {
 						activeAgendaItemId: args.activeAgendaItemId ?? undefined,
 						lastResolutionAdoptionDate: args.lastResolutionAdoptionDate ?? undefined,
 						allowDelegationsToAddThemselvesToSpeakersList:
-							args.allowDelegationsToAddThemselvesToSpeakersList ?? undefined
+							args.allowDelegationsToAddThemselvesToSpeakersList ?? undefined,
+						maxDraftResolutions: args.maxDraftResolutions ?? undefined,
+						activeDraftResolutionId: args.activeDraftResolutionId ?? undefined,
+						currentOperativeIndex: args.currentOperativeIndex ?? undefined,
+						supportReEvaluationOpen: args.supportReEvaluationOpen ?? undefined
 					})
 					.where(
 						and(

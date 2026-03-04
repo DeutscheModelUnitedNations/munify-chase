@@ -1,0 +1,124 @@
+import { db, schema } from '$api/db/db';
+import { abilityBuilder, schemaBuilder } from '$api/rumble';
+import { and, eq } from 'drizzle-orm';
+import { basics } from './basics';
+import { isWhitelistedEmail } from '$api/services/isDMUNEmail';
+import { assertFindFirstExists, assertFirstEntryExists } from '@m1212e/rumble';
+import { GraphQLError } from 'graphql';
+
+const { arg, ref, pubsub, table } = basics('paperSponsor');
+
+abilityBuilder.paperSponsor.allow(['read', 'update']).when(({ mustBeLoggedIn }) => {
+	const user = mustBeLoggedIn();
+	if (user?.email && isWhitelistedEmail(user.email)) {
+		return 'allow';
+	}
+});
+
+abilityBuilder.paperSponsor.allow('read').when(({ mustBeLoggedIn }) => {
+	mustBeLoggedIn();
+	return 'allow';
+});
+
+schemaBuilder.mutationFields((t) => ({
+	addSponsor: t.drizzleField({
+		type: ref,
+		args: {
+			paperId: t.arg.id({ required: true }),
+			committeeMemberId: t.arg.id({ required: true })
+		},
+		resolve: async (query, root, args, ctx, info) => {
+			const user = ctx.mustBeLoggedIn();
+
+			// Must be a DELEGATE
+			await db.query.conferenceUser
+				.findFirst({
+					where: {
+						user: { id: user.sub },
+						conferenceUserType: 'DELEGATE'
+					}
+				})
+				.then(assertFindFirstExists);
+
+			const result = await db
+				.insert(schema.paperSponsor)
+				.values({
+					paperId: args.paperId,
+					committeeMemberId: args.committeeMemberId
+				})
+				.returning()
+				.then(assertFirstEntryExists);
+
+			pubsub.updated(result.id);
+
+			return db.query.paperSponsor
+				.findFirst(
+					query(
+						ctx.abilities.paperSponsor.filter('read', {
+							inject: {
+								where: { id: result.id }
+							}
+						}).query.single
+					)
+				)
+				.then(assertFindFirstExists);
+		}
+	}),
+
+	removeSponsor: t.field({
+		type: 'Boolean',
+		args: {
+			paperId: t.arg.id({ required: true }),
+			committeeMemberId: t.arg.id({ required: true })
+		},
+		resolve: async (root, args, ctx, info) => {
+			const user = ctx.mustBeLoggedIn();
+
+			const sponsor = await db.query.paperSponsor
+				.findFirst({
+					where: {
+						paperId: args.paperId,
+						committeeMemberId: args.committeeMemberId
+					}
+				})
+				.then(assertFindFirstExists);
+
+			// Must be self (removing own sponsorship) or paper creator
+			const conferenceUser = await db.query.conferenceUser.findFirst({
+				where: {
+					user: { id: user.sub }
+				}
+			});
+
+			const isSelf = conferenceUser?.committeeMemberId === args.committeeMemberId;
+
+			if (!isSelf) {
+				const paper = await db.query.resolutionPaper
+					.findFirst({
+						where: { id: args.paperId }
+					})
+					.then(assertFindFirstExists);
+
+				const isCreator = conferenceUser?.committeeMemberId === paper.creatorCommitteeMemberId;
+				if (!isCreator) {
+					throw new GraphQLError(
+						'Only the sponsor themselves or the paper creator can remove a sponsor'
+					);
+				}
+			}
+
+			await db
+				.delete(schema.paperSponsor)
+				.where(
+					and(
+						eq(schema.paperSponsor.paperId, args.paperId),
+						eq(schema.paperSponsor.committeeMemberId, args.committeeMemberId)
+					)
+				);
+
+			pubsub.removed(sponsor.id);
+
+			return true;
+		}
+	})
+}));

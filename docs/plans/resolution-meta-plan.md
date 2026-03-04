@@ -340,14 +340,14 @@ commentPanel?: Snippet<[{ resolution: Resolution; activeClauseId?: string }]>;
 
 ## Implementation Phases
 
-### Phase 1: Database Schema + Basic API
+### Phase 1: Database Schema + Basic API ✅
 
-- Add editor library dependency
-- Add 6 enums, 10 new tables, 4 new committee columns to `schema.ts`
-- Add all relations to `relations.ts`
-- `bun run db:push`
-- Create handlers: `resolutionPaper`, `paperSponsor`, `paperShareCode`, `paperEditor`, `paperContentSnapshot`
-- Register handlers, add i18n messages
+- ~~Add editor library dependency~~
+- ~~Add 6 enums, 10 new tables, 4 new committee columns to `schema.ts`~~
+- ~~Add all relations to `relations.ts`~~
+- ~~`bun run db:push`~~
+- ~~Create handlers: `resolutionPaper`, `paperSponsor`, `paperShareCode`, `paperEditor`, `paperContentSnapshot`~~
+- ~~Register handlers, add i18n messages~~
 
 ### Phase 2: Delegate Working Paper UI
 

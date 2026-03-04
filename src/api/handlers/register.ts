@@ -11,3 +11,8 @@ import './time';
 import './user';
 import './import';
 import './presenceChangedTimestamp';
+import './resolutionPaper';
+import './paperSponsor';
+import './paperShareCode';
+import './paperEditor';
+import './paperContentSnapshot';

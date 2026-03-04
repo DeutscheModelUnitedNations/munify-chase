@@ -15,6 +15,7 @@
 	} from '@deutschemodelunitednations/munify-resolution-editor';
 	import Flag from '$lib/components/Flag.svelte';
 	import Fieldset from '$lib/components/Fieldset.svelte';
+	import Modal from '$lib/components/Modal.svelte';
 	import CommentSection from '$lib/components/CommentSection.svelte';
 	import { getTranslatedCountryNameFromAlpha3Code } from '$lib/utils/nationTranslationHelper.svelte';
 	import toast from 'svelte-french-toast';
@@ -363,6 +364,70 @@
 		toast.success(m.commentDeleted());
 	}
 
+	// =====================================================
+	// Sponsor management
+	// =====================================================
+
+	const AddSponsorMutation = graphql(`
+		mutation ChairAddSponsorMutation($paperId: ID!, $committeeMemberId: ID!) {
+			addSponsor(paperId: $paperId, committeeMemberId: $committeeMemberId) {
+				id
+			}
+		}
+	`);
+
+	const RemoveSponsorMutation = graphql(`
+		mutation ChairRemoveSponsorMutation($paperId: ID!, $committeeMemberId: ID!) {
+			removeSponsor(paperId: $paperId, committeeMemberId: $committeeMemberId)
+		}
+	`);
+
+	let showAddSponsorModal = $state(false);
+	let sponsorSearchQuery = $state('');
+
+	let availableMembers = $derived(
+		(committee?.members ?? []).filter(
+			(member) => !paper?.sponsors.some((s) => s.committeeMemberId === member.id)
+		)
+	);
+
+	function getRepresentationName(
+		rep: { name?: string | null; alpha3Code?: string | null } | null | undefined
+	) {
+		return rep?.name ?? getTranslatedCountryNameFromAlpha3Code(rep?.alpha3Code) ?? '';
+	}
+
+	let sortedSponsors = $derived(
+		[...(paper?.sponsors ?? [])].sort((a, b) =>
+			getRepresentationName(a.committeeMember?.representation).localeCompare(
+				getRepresentationName(b.committeeMember?.representation)
+			)
+		)
+	);
+
+	let filteredAvailableMembers = $derived(
+		(sponsorSearchQuery
+			? availableMembers.filter((member) =>
+					getRepresentationName(member.representation)
+						.toLowerCase()
+						.includes(sponsorSearchQuery.toLowerCase())
+				)
+			: availableMembers
+		).sort((a, b) =>
+			getRepresentationName(a.representation).localeCompare(getRepresentationName(b.representation))
+		)
+	);
+
+	async function handleAddSponsor(committeeMemberId: string) {
+		await AddSponsorMutation.mutate({ paperId: page.params.paperId!, committeeMemberId });
+		toast.success(m.sponsorAdded());
+	}
+
+	async function handleRemoveSponsor(committeeMemberId: string) {
+		await RemoveSponsorMutation.mutate({ paperId: page.params.paperId!, committeeMemberId });
+		toast.success(m.sponsorRemoved());
+	}
+
 	// Collapsible metadata
 	let metadataOpen = $state(false);
 </script>
@@ -421,7 +486,7 @@
 				<!-- Creator -->
 				{#if paper.creator?.representation}
 					<div class="flex items-center gap-2 text-sm">
-						<span class="opacity-60">Creator:</span>
+						<span class="opacity-60">{m.submittingNation()}:</span>
 						<Flag representation={paper.creator.representation} size="xs" />
 						{paper.creator.representation.name ??
 							getTranslatedCountryNameFromAlpha3Code(paper.creator.representation.alpha3Code)}
@@ -431,17 +496,32 @@
 				<!-- Sponsors -->
 				<Fieldset legend={m.sponsors()} faIcon="fas fa-users">
 					<div class="flex flex-wrap gap-2">
-						{#each paper.sponsors as sponsor (sponsor.id)}
+						{#each sortedSponsors as sponsor (sponsor.id)}
 							<div
-								class="tooltip tooltip-bottom"
+								class="group relative tooltip tooltip-bottom"
 								data-tip={sponsor.committeeMember?.representation?.name ??
 									getTranslatedCountryNameFromAlpha3Code(
 										sponsor.committeeMember?.representation?.alpha3Code
 									)}
 							>
 								<Flag representation={sponsor.committeeMember?.representation} size="xs" />
+								<button
+									class="absolute -top-1 -right-1 btn btn-circle btn-xs btn-error opacity-0 group-hover:opacity-100 transition-opacity"
+									onclick={() => handleRemoveSponsor(sponsor.committeeMemberId)}
+								>
+									<i class="fas fa-times text-[0.5rem]"></i>
+								</button>
 							</div>
 						{/each}
+						<button
+							class="btn btn-ghost btn-xs"
+							onclick={() => {
+								sponsorSearchQuery = '';
+								showAddSponsorModal = true;
+							}}
+						>
+							<i class="fas fa-plus"></i>
+						</button>
 					</div>
 					<p class="mt-1 text-xs opacity-60">
 						{m.sponsorCount({ count: String(paper.sponsors.length) })}
@@ -612,4 +692,36 @@
 			/>
 		</Fieldset>
 	</div>
+
+	<!-- Add Sponsor Modal -->
+	<Modal bind:open={showAddSponsorModal}>
+		<div class="flex items-center justify-between mb-4">
+			<h3 class="font-bold text-lg">{m.addSponsor()}</h3>
+			<button class="btn btn-ghost btn-sm" onclick={() => (showAddSponsorModal = false)}>
+				<i class="fas fa-times"></i>
+			</button>
+		</div>
+		<input
+			class="input input-bordered w-full mb-3"
+			placeholder={m.searchMembers()}
+			bind:value={sponsorSearchQuery}
+		/>
+		<div class="max-h-64 overflow-y-auto space-y-1">
+			{#each filteredAvailableMembers as member (member.id)}
+				<button
+					class="btn btn-ghost btn-sm w-full justify-start gap-2"
+					onclick={() => handleAddSponsor(member.id)}
+				>
+					<Flag representation={member.representation} size="xs" />
+					<span>
+						{member.representation?.name ??
+							getTranslatedCountryNameFromAlpha3Code(member.representation?.alpha3Code)}
+					</span>
+				</button>
+			{/each}
+			{#if filteredAvailableMembers.length === 0}
+				<p class="text-center text-sm opacity-60 py-4">{m.noResults()}</p>
+			{/if}
+		</div>
+	</Modal>
 {/if}

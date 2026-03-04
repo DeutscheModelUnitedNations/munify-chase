@@ -5,6 +5,7 @@ import { basics } from './basics';
 import { isWhitelistedEmail } from '$api/services/isDMUNEmail';
 import { assertFindFirstExists, assertFirstEntryExists } from '@m1212e/rumble';
 import { GraphQLError } from 'graphql';
+import { assertCommitteeChairOrAdmin } from './resolutionPaper';
 
 const { arg, ref, pubsub, table } = basics('paperSponsor');
 const paperPubsub = rumblePubsub({ table: 'resolutionPaper' });
@@ -31,32 +32,40 @@ schemaBuilder.mutationFields((t) => ({
 		resolve: async (query, root, args, ctx, info) => {
 			const user = ctx.mustBeLoggedIn();
 
-			// Must be a DELEGATE
-			await db.query.conferenceUser
-				.findFirst({
-					where: {
-						user: { id: user.sub },
-						conferenceUserType: 'DELEGATE'
-					}
-				})
-				.then(assertFindFirstExists);
-
-			// Check re-evaluation gate for DR+ papers
 			const paper = await db.query.resolutionPaper
 				.findFirst({ where: { id: args.paperId } })
 				.then(assertFindFirstExists);
 
-			if (paper.status === 'FINAL') {
-				throw new GraphQLError('Cannot sponsor a finalized paper');
-			}
+			// Try chair/admin path first (bypasses all gates)
+			let isChair = false;
+			try {
+				await assertCommitteeChairOrAdmin(ctx, paper.committeeId);
+				isChair = true;
+			} catch {}
 
-			if (paper.status === 'DRAFT_RESOLUTION' || paper.status === 'AMENDMENT_PHASE') {
-				const committee = await db.query.committee
-					.findFirst({ where: { id: paper.committeeId } })
+			if (!isChair) {
+				// Must be a DELEGATE
+				await db.query.conferenceUser
+					.findFirst({
+						where: {
+							user: { id: user.sub },
+							conferenceUserType: 'DELEGATE'
+						}
+					})
 					.then(assertFindFirstExists);
 
-				if (!committee.supportReEvaluationOpen) {
-					throw new GraphQLError('Support re-evaluation is not currently open');
+				if (paper.status === 'FINAL') {
+					throw new GraphQLError('Cannot sponsor a finalized paper');
+				}
+
+				if (paper.status === 'DRAFT_RESOLUTION' || paper.status === 'AMENDMENT_PHASE') {
+					const committee = await db.query.committee
+						.findFirst({ where: { id: paper.committeeId } })
+						.then(assertFindFirstExists);
+
+					if (!committee.supportReEvaluationOpen) {
+						throw new GraphQLError('Support re-evaluation is not currently open');
+					}
 				}
 			}
 
@@ -104,42 +113,44 @@ schemaBuilder.mutationFields((t) => ({
 				})
 				.then(assertFindFirstExists);
 
-			// Check re-evaluation gate for DR+ papers
 			const paper = await db.query.resolutionPaper
 				.findFirst({ where: { id: args.paperId } })
 				.then(assertFindFirstExists);
 
-			if (paper.status === 'DRAFT_RESOLUTION' || paper.status === 'AMENDMENT_PHASE') {
-				const committee = await db.query.committee
-					.findFirst({ where: { id: paper.committeeId } })
-					.then(assertFindFirstExists);
+			// Try chair/admin path first (bypasses all gates)
+			let isChair = false;
+			try {
+				await assertCommitteeChairOrAdmin(ctx, paper.committeeId);
+				isChair = true;
+			} catch {}
 
-				if (!committee.supportReEvaluationOpen) {
-					throw new GraphQLError('Support re-evaluation is not currently open');
+			if (!isChair) {
+				if (paper.status === 'DRAFT_RESOLUTION' || paper.status === 'AMENDMENT_PHASE') {
+					const committee = await db.query.committee
+						.findFirst({ where: { id: paper.committeeId } })
+						.then(assertFindFirstExists);
+
+					if (!committee.supportReEvaluationOpen) {
+						throw new GraphQLError('Support re-evaluation is not currently open');
+					}
 				}
-			}
 
-			// Must be self (removing own sponsorship) or paper creator
-			const conferenceUser = await db.query.conferenceUser.findFirst({
-				where: {
-					user: { id: user.sub }
-				}
-			});
+				// Must be self (removing own sponsorship) or paper creator
+				const conferenceUser = await db.query.conferenceUser.findFirst({
+					where: {
+						user: { id: user.sub }
+					}
+				});
 
-			const isSelf = conferenceUser?.committeeMemberId === args.committeeMemberId;
+				const isSelf = conferenceUser?.committeeMemberId === args.committeeMemberId;
 
-			if (!isSelf) {
-				const paper = await db.query.resolutionPaper
-					.findFirst({
-						where: { id: args.paperId }
-					})
-					.then(assertFindFirstExists);
-
-				const isCreator = conferenceUser?.committeeMemberId === paper.creatorCommitteeMemberId;
-				if (!isCreator) {
-					throw new GraphQLError(
-						'Only the sponsor themselves or the paper creator can remove a sponsor'
-					);
+				if (!isSelf) {
+					const isCreator = conferenceUser?.committeeMemberId === paper.creatorCommitteeMemberId;
+					if (!isCreator) {
+						throw new GraphQLError(
+							'Only the sponsor themselves or the paper creator can remove a sponsor'
+						);
+					}
 				}
 			}
 

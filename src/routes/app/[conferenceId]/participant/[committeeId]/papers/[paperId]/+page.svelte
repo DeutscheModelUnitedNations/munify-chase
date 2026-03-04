@@ -56,6 +56,19 @@
 	let isSponsor = $derived(
 		paper?.sponsors.some((s) => s.committeeMemberId === myCommitteeMemberId)
 	);
+	let sortedSponsors = $derived(
+		[...(paper?.sponsors ?? [])].sort((a, b) => {
+			const nameA =
+				a.committeeMember?.representation?.name ??
+				getTranslatedCountryNameFromAlpha3Code(a.committeeMember?.representation?.alpha3Code) ??
+				'';
+			const nameB =
+				b.committeeMember?.representation?.name ??
+				getTranslatedCountryNameFromAlpha3Code(b.committeeMember?.representation?.alpha3Code) ??
+				'';
+			return nameA.localeCompare(nameB);
+		})
+	);
 
 	let canDelete = $derived(isCreator && paper?.status === 'WORKING_PAPER');
 
@@ -614,7 +627,7 @@
 				<!-- Sponsors -->
 				<Fieldset legend={m.sponsors()} faIcon="fas fa-users">
 					<div class="flex flex-wrap gap-2">
-						{#each paper.sponsors as sponsor}
+						{#each sortedSponsors as sponsor}
 							<div
 								class="tooltip tooltip-bottom"
 								data-tip={sponsor.committeeMember?.representation?.name ??

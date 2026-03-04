@@ -8,6 +8,7 @@
 	import { ParticipantPaperDetailSubscription } from './paperDetailSubscription';
 	import { PaperClauseLocksSubscription } from './lockSubscription';
 	import { ParticipantCommitteeSubscription } from '../../committeeSubscription';
+	import { ParticipantPaperCommentsSubscription } from './commentsSubscription';
 	import {
 		ResolutionEditor,
 		migrateResolution,
@@ -16,6 +17,7 @@
 	import Modal from '$lib/components/Modal.svelte';
 	import Fieldset from '$lib/components/Fieldset.svelte';
 	import Flag from '$lib/components/Flag.svelte';
+	import CommentSection from '$lib/components/CommentSection.svelte';
 	import { getTranslatedCountryNameFromAlpha3Code } from '$lib/utils/nationTranslationHelper.svelte';
 	import toast from 'svelte-french-toast';
 	import { fly, fade } from 'svelte/transition';
@@ -70,6 +72,9 @@
 		(paper?.editors?.length ?? 0) > 0 || paper?.status !== 'WORKING_PAPER'
 	);
 
+	// Comments: show on SUBMITTED+ papers only (not working papers)
+	let showComments = $derived(paper?.status !== 'WORKING_PAPER');
+
 	// Resolution content — initialize from paper data
 	let resolution = $state<Resolution | null>(null);
 	let hasPendingSave = $state(false);
@@ -92,6 +97,9 @@
 		ParticipantCommitteeSubscription.listen({ id: page.params.committeeId! });
 		if (collaborativeMode) {
 			PaperClauseLocksSubscription.listen({ paperId: page.params.paperId! });
+		}
+		if (showComments) {
+			ParticipantPaperCommentsSubscription.listen({ paperId: page.params.paperId! });
 		}
 
 		// Hybrid heartbeat — only fires when idle with held locks
@@ -128,6 +136,13 @@
 				ReleaseAllMyLocksMutation.mutate({ paperId: page.params.paperId! }).catch(() => {});
 			}
 		};
+	});
+
+	// Start comments subscription when status changes to submitted+
+	$effect(() => {
+		if (showComments) {
+			ParticipantPaperCommentsSubscription.listen({ paperId: page.params.paperId! });
+		}
 	});
 
 	// =====================================================
@@ -432,6 +447,85 @@
 		toast.success(m.codeCopied());
 	}
 
+	// =====================================================
+	// Comments
+	// =====================================================
+
+	let allComments = $derived(
+		$ParticipantPaperCommentsSubscription.data?.findManyResolutionComment ?? []
+	);
+
+	let commentsByClauseId = $derived.by(() => {
+		const map = new Map<string | null, typeof allComments>();
+		for (const comment of allComments) {
+			const key = comment.clauseId;
+			if (!map.has(key)) map.set(key, []);
+			map.get(key)!.push(comment);
+		}
+		return map;
+	});
+
+	// Comment mutations
+	const CreateCommentMutation = graphql(`
+		mutation ParticipantCreateCommentMutation(
+			$paperId: ID!
+			$content: String!
+			$clauseId: String
+			$visibility: CommentVisibilityEnum
+			$parentCommentId: ID
+		) {
+			createComment(
+				paperId: $paperId
+				content: $content
+				clauseId: $clauseId
+				visibility: $visibility
+				parentCommentId: $parentCommentId
+			) {
+				id
+			}
+		}
+	`);
+
+	const UpdateCommentMutation = graphql(`
+		mutation ParticipantUpdateCommentMutation($commentId: ID!, $content: String!) {
+			updateComment(commentId: $commentId, content: $content) {
+				id
+			}
+		}
+	`);
+
+	const DeleteCommentMutation = graphql(`
+		mutation ParticipantDeleteCommentMutation($commentId: ID!) {
+			deleteComment(commentId: $commentId)
+		}
+	`);
+
+	async function onCreateComment(
+		content: string,
+		visibility: string,
+		parentCommentId?: string,
+		clauseId?: string | null
+	) {
+		await CreateCommentMutation.mutate({
+			paperId: page.params.paperId!,
+			content,
+			clauseId: clauseId ?? null,
+			visibility: visibility as 'PUBLIC' | 'TEAM_ONLY',
+			parentCommentId: parentCommentId ?? null
+		});
+		toast.success(m.commentPosted());
+	}
+
+	async function onUpdateComment(commentId: string, content: string) {
+		await UpdateCommentMutation.mutate({ commentId, content });
+		toast.success(m.commentUpdated());
+	}
+
+	async function onDeleteComment(commentId: string) {
+		await DeleteCommentMutation.mutate({ commentId });
+		toast.success(m.commentDeleted());
+	}
+
 	// Collapsible metadata
 	let metadataOpen = $state(true);
 </script>
@@ -696,9 +790,91 @@
 							</div>
 						{/if}
 					{/snippet}
+					{#snippet preambleClauseToolbar({ clause })}
+						{#if showComments}
+							<CommentSection
+								paperId={page.params.paperId!}
+								clauseId={clause.id}
+								comments={commentsByClauseId.get(clause.id) ?? []}
+								{myConferenceUserId}
+								canPostTeamOnly={false}
+								readonly
+								onCreateComment={(content, visibility, parentCommentId) =>
+									onCreateComment(content, visibility, parentCommentId, clause.id)}
+								{onUpdateComment}
+								{onDeleteComment}
+							/>
+						{/if}
+					{/snippet}
+					{#snippet clauseToolbar({ clause })}
+						{#if showComments}
+							<CommentSection
+								paperId={page.params.paperId!}
+								clauseId={clause.id}
+								comments={commentsByClauseId.get(clause.id) ?? []}
+								{myConferenceUserId}
+								canPostTeamOnly={false}
+								readonly
+								onCreateComment={(content, visibility, parentCommentId) =>
+									onCreateComment(content, visibility, parentCommentId, clause.id)}
+								{onUpdateComment}
+								{onDeleteComment}
+							/>
+						{/if}
+					{/snippet}
+					{#snippet afterPreambleClause({ clause })}
+						{#if showComments && !canEdit}
+							<CommentSection
+								paperId={page.params.paperId!}
+								clauseId={clause.id}
+								comments={commentsByClauseId.get(clause.id) ?? []}
+								{myConferenceUserId}
+								canPostTeamOnly={false}
+								readonly
+								onCreateComment={(content, visibility, parentCommentId) =>
+									onCreateComment(content, visibility, parentCommentId, clause.id)}
+								{onUpdateComment}
+								{onDeleteComment}
+							/>
+						{/if}
+					{/snippet}
+					{#snippet afterOperativeClause({ clause, index })}
+						{#if showComments && !canEdit}
+							<CommentSection
+								paperId={page.params.paperId!}
+								clauseId={clause.id}
+								comments={commentsByClauseId.get(clause.id) ?? []}
+								{myConferenceUserId}
+								canPostTeamOnly={false}
+								readonly
+								onCreateComment={(content, visibility, parentCommentId) =>
+									onCreateComment(content, visibility, parentCommentId, clause.id)}
+								{onUpdateComment}
+								{onDeleteComment}
+							/>
+						{/if}
+					{/snippet}
 				</ResolutionEditor>
 			{/if}
 		</div>
+
+		<!-- Document-level comments -->
+		{#if showComments && (commentsByClauseId.get(null)?.length ?? 0) > 0}
+			<Fieldset legend={m.documentLevelComments()} faIcon="fas fa-comments">
+				<CommentSection
+					paperId={page.params.paperId!}
+					clauseId={null}
+					comments={commentsByClauseId.get(null) ?? []}
+					{myConferenceUserId}
+					canPostTeamOnly={false}
+					readonly
+					onCreateComment={(content, visibility, parentCommentId) =>
+						onCreateComment(content, visibility, parentCommentId, null)}
+					{onUpdateComment}
+					{onDeleteComment}
+				/>
+			</Fieldset>
+		{/if}
 
 		<!-- Submit button (creator only, working paper) -->
 		{#if canSubmit}

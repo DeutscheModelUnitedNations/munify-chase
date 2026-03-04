@@ -7,6 +7,7 @@
 	import { CommitteeSubscription } from '../../committeeSubscription';
 	import { ChairPaperDetailSubscription } from './chairPaperDetailSubscription';
 	import { ChairPaperClauseLocksSubscription } from './chairLockSubscription';
+	import { ChairPaperCommentsSubscription } from './chairCommentsSubscription';
 	import {
 		ResolutionEditor,
 		migrateResolution,
@@ -14,6 +15,7 @@
 	} from '@deutschemodelunitednations/munify-resolution-editor';
 	import Flag from '$lib/components/Flag.svelte';
 	import Fieldset from '$lib/components/Fieldset.svelte';
+	import CommentSection from '$lib/components/CommentSection.svelte';
 	import { getTranslatedCountryNameFromAlpha3Code } from '$lib/utils/nationTranslationHelper.svelte';
 	import toast from 'svelte-french-toast';
 	import { fly, fade } from 'svelte/transition';
@@ -58,6 +60,7 @@
 	onMount(() => {
 		ChairPaperDetailSubscription.listen({ paperId: page.params.paperId! });
 		ChairPaperClauseLocksSubscription.listen({ paperId: page.params.paperId! });
+		ChairPaperCommentsSubscription.listen({ paperId: page.params.paperId! });
 
 		// Hybrid heartbeat — only fires when idle with held locks
 		const heartbeatInterval = setInterval(() => {
@@ -267,6 +270,99 @@
 		}
 	}
 
+	// =====================================================
+	// Comments
+	// =====================================================
+
+	let allComments = $derived($ChairPaperCommentsSubscription.data?.findManyResolutionComment ?? []);
+
+	// Group comments by clauseId for inline display
+	let commentsByClauseId = $derived.by(() => {
+		const map = new Map<string | null, typeof allComments>();
+		for (const comment of allComments) {
+			const key = comment.clauseId;
+			if (!map.has(key)) map.set(key, []);
+			map.get(key)!.push(comment);
+		}
+		return map;
+	});
+
+	// Comment counts per clause (for badge annotations)
+	let commentCountByClauseId = $derived.by(() => {
+		const map = new Map<string, number>();
+		for (const comment of allComments) {
+			if (comment.clauseId) {
+				map.set(comment.clauseId, (map.get(comment.clauseId) ?? 0) + 1);
+			}
+		}
+		return map;
+	});
+
+	// Comment statistics
+	let documentCommentCount = $derived(allComments.filter((c) => !c.clauseId).length);
+	let clauseCommentCount = $derived(allComments.filter((c) => c.clauseId).length);
+
+	// Comment mutations
+	const CreateCommentMutation = graphql(`
+		mutation ChairCreateCommentMutation(
+			$paperId: ID!
+			$content: String!
+			$clauseId: String
+			$visibility: CommentVisibilityEnum
+			$parentCommentId: ID
+		) {
+			createComment(
+				paperId: $paperId
+				content: $content
+				clauseId: $clauseId
+				visibility: $visibility
+				parentCommentId: $parentCommentId
+			) {
+				id
+			}
+		}
+	`);
+
+	const UpdateCommentMutation = graphql(`
+		mutation ChairUpdateCommentMutation($commentId: ID!, $content: String!) {
+			updateComment(commentId: $commentId, content: $content) {
+				id
+			}
+		}
+	`);
+
+	const DeleteCommentMutation = graphql(`
+		mutation ChairDeleteCommentMutation($commentId: ID!) {
+			deleteComment(commentId: $commentId)
+		}
+	`);
+
+	async function onCreateComment(
+		content: string,
+		visibility: string,
+		parentCommentId?: string,
+		clauseId?: string | null
+	) {
+		await CreateCommentMutation.mutate({
+			paperId: page.params.paperId!,
+			content,
+			clauseId: clauseId ?? null,
+			visibility: visibility as 'PUBLIC' | 'TEAM_ONLY',
+			parentCommentId: parentCommentId ?? null
+		});
+		toast.success(m.commentPosted());
+	}
+
+	async function onUpdateComment(commentId: string, content: string) {
+		await UpdateCommentMutation.mutate({ commentId, content });
+		toast.success(m.commentUpdated());
+	}
+
+	async function onDeleteComment(commentId: string) {
+		await DeleteCommentMutation.mutate({ commentId });
+		toast.success(m.commentDeleted());
+	}
+
 	// Collapsible metadata
 	let metadataOpen = $state(false);
 </script>
@@ -362,6 +458,27 @@
 			</div>
 		{/if}
 
+		<!-- Comment statistics -->
+		{#if allComments.length > 0}
+			<div class="flex items-center gap-4 text-sm text-base-content/60 mt-2">
+				<div class="flex items-center gap-1">
+					<i class="fas fa-comments"></i>
+					<span class="font-semibold">{allComments.length}</span>
+					{m.comments()}
+				</div>
+				<span class="text-base-content/30">|</span>
+				<div class="flex items-center gap-1">
+					<span>{documentCommentCount}</span>
+					{m.documentWide()}
+				</div>
+				<span class="text-base-content/30">|</span>
+				<div class="flex items-center gap-1">
+					<span>{clauseCommentCount}</span>
+					{m.clauseComments()}
+				</div>
+			</div>
+		{/if}
+
 		<!-- Resolution Editor -->
 		<div class="py-2">
 			{#if resolution}
@@ -378,6 +495,7 @@
 				>
 					{#snippet preambleAnnotations({ clause })}
 						{@const lock = locksByClauseId.get(clause.id)}
+						{@const commentCount = commentCountByClauseId.get(clause.id) ?? 0}
 						{#if lock}
 							<div
 								class="tooltip tooltip-right"
@@ -403,11 +521,18 @@
 									{/if}
 									<i class="fas fa-lock text-warning text-base"></i>
 								</div>
+							</div>
+						{/if}
+						{#if commentCount > 0}
+							<div class="badge badge-sm badge-info">
+								<i class="fas fa-comment text-xs"></i>
+								{commentCount}
 							</div>
 						{/if}
 					{/snippet}
 					{#snippet clauseAnnotations({ clause })}
 						{@const lock = locksByClauseId.get(clause.id)}
+						{@const commentCount = commentCountByClauseId.get(clause.id) ?? 0}
 						{#if lock}
 							<div
 								class="tooltip tooltip-right"
@@ -435,9 +560,56 @@
 								</div>
 							</div>
 						{/if}
+						{#if commentCount > 0}
+							<div class="badge badge-sm badge-info">
+								<i class="fas fa-comment text-xs"></i>
+								{commentCount}
+							</div>
+						{/if}
+					{/snippet}
+					{#snippet preambleClauseToolbar({ clause })}
+						<CommentSection
+							paperId={page.params.paperId!}
+							clauseId={clause.id}
+							comments={commentsByClauseId.get(clause.id) ?? []}
+							{myConferenceUserId}
+							canPostTeamOnly={true}
+							onCreateComment={(content, visibility, parentCommentId) =>
+								onCreateComment(content, visibility, parentCommentId, clause.id)}
+							{onUpdateComment}
+							{onDeleteComment}
+						/>
+					{/snippet}
+					{#snippet clauseToolbar({ clause })}
+						<CommentSection
+							paperId={page.params.paperId!}
+							clauseId={clause.id}
+							comments={commentsByClauseId.get(clause.id) ?? []}
+							{myConferenceUserId}
+							canPostTeamOnly={true}
+							onCreateComment={(content, visibility, parentCommentId) =>
+								onCreateComment(content, visibility, parentCommentId, clause.id)}
+							{onUpdateComment}
+							{onDeleteComment}
+						/>
 					{/snippet}
 				</ResolutionEditor>
 			{/if}
 		</div>
+
+		<!-- Document-level comments -->
+		<Fieldset legend={m.documentLevelComments()} faIcon="fas fa-comments">
+			<CommentSection
+				paperId={page.params.paperId!}
+				clauseId={null}
+				comments={commentsByClauseId.get(null) ?? []}
+				{myConferenceUserId}
+				canPostTeamOnly={true}
+				onCreateComment={(content, visibility, parentCommentId) =>
+					onCreateComment(content, visibility, parentCommentId, null)}
+				{onUpdateComment}
+				{onDeleteComment}
+			/>
+		</Fieldset>
 	</div>
 {/if}

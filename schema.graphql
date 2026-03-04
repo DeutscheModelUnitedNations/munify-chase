@@ -377,6 +377,7 @@ type Mutation {
   addSponsor(committeeMemberId: ID!, paperId: ID!): PaperSponsor
   clearSpeakersList(id: ID!): SpeakersList
   createAgendaItem(committeeId: ID!, title: String!): AgendaItem
+  createComment(clauseId: String, content: String!, paperId: ID!, parentCommentId: ID, visibility: CommentVisibilityEnum): ResolutionComment
   createCommittee(abbreviation: String!, conferenceId: ID!, name: String!): Committee
   createCommitteeMember(committeeId: ID!, representationId: ID!): CommitteeMember
   createConferenceMember(conferenceId: ID!, representationId: ID!): ConferenceMember
@@ -384,6 +385,7 @@ type Mutation {
   createRepresentation(alpha2Code: String, alpha3Code: String, conferenceId: ID!, faIcon: String, name: String, type: RepresentationTypeEnum!): Representation
   createResolutionPaper(agendaItemId: ID!, committeeId: ID!, title: String): ResolutionPaper
   createShareCode(paperId: ID!, permission: ShareCodePermissionEnum!): PaperShareCode
+  deleteComment(commentId: ID!): Boolean
   deleteCommittee(id: ID!): Boolean
   deleteCommitteeMember(id: ID!): Boolean
   deleteConferenceMember(id: ID!): Boolean
@@ -405,6 +407,7 @@ type Mutation {
   setPresenceForCommitteeMembers(ids: [ID!]!, present: Boolean!): [CommitteeMember!]
   softDeletePaper(paperId: ID!): Boolean
   submitPaper(paperId: ID!): ResolutionPaper
+  updateComment(commentId: ID!, content: String!): ResolutionComment
   updateCommittee(abbreviation: String, activeAgendaItemId: ID, activeDraftResolutionId: ID, allowDelegationsToAddThemselvesToSpeakersList: Boolean, clearActiveDraftResolution: Boolean, currentOperativeIndex: Int, id: ID!, lastResolutionAdoptionDate: DateTime, maxDraftResolutions: Int, name: String, showWhiteboard: Boolean, stateOfDebate: String, status: CommitteeStatusEnum, statusHeadline: String, statusUntil: DateTime, supportReEvaluationOpen: Boolean, whiteboardContent: String): Committee
   updateConference(hasModeratedCaucus: Boolean, id: ID!, pressWebsite: String, title: String): Conference
   updateConferenceUser(committeeMemberId: ID, conferenceMemberId: ID, conferenceUserType: ConferenceUserTypeEnum!, id: ID!): ConferenceUser

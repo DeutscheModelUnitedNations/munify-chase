@@ -6,7 +6,9 @@
 	import { graphql } from '$houdini';
 	import { onMount } from 'svelte';
 	import { ParticipantPapersSubscription } from './papersSubscription';
+	import { ParticipantCommitteeSubscription } from '../committeeSubscription';
 	import { generatePaperName } from '$lib/utils/paperNameGenerator';
+	import Flag from '$lib/components/Flag.svelte';
 	import toast from 'svelte-french-toast';
 
 	let { data }: { data: PageData } = $props();
@@ -14,7 +16,10 @@
 	let query = $derived(data?.ParticipantPapersQuery);
 	let identityQuery = $derived(data?.ParticipantIdentityQuery);
 	let layoutQuery = $derived(data?.ParticipantCommitteeLayoutQuery);
-	let committee = $derived($layoutQuery.data?.findFirstCommittee);
+	let committee = $derived(
+		$ParticipantCommitteeSubscription.data?.findFirstCommittee ??
+			$layoutQuery.data?.findFirstCommittee
+	);
 
 	let papers = $derived(
 		$ParticipantPapersSubscription.data?.findManyResolutionPaper ??
@@ -52,6 +57,7 @@
 		ParticipantPapersSubscription.listen({
 			committeeId: page.params.committeeId!
 		});
+		ParticipantCommitteeSubscription.listen({ id: page.params.committeeId! });
 	});
 
 	// Create paper mutation
@@ -91,6 +97,34 @@
 			}
 		}
 	`);
+
+	// Sponsor mutations for re-evaluation support toggle
+	const AddSponsorMutation = graphql(`
+		mutation AddSponsorListMutation($paperId: ID!, $committeeMemberId: ID!) {
+			addSponsor(paperId: $paperId, committeeMemberId: $committeeMemberId) {
+				id
+			}
+		}
+	`);
+
+	const RemoveSponsorMutation = graphql(`
+		mutation RemoveSponsorListMutation($paperId: ID!, $committeeMemberId: ID!) {
+			removeSponsor(paperId: $paperId, committeeMemberId: $committeeMemberId)
+		}
+	`);
+
+	async function toggleSupport(paperId: string, currentlySupporting: boolean) {
+		if (!myCommitteeMemberId) return;
+		try {
+			if (currentlySupporting) {
+				await RemoveSponsorMutation.mutate({ paperId, committeeMemberId: myCommitteeMemberId });
+			} else {
+				await AddSponsorMutation.mutate({ paperId, committeeMemberId: myCommitteeMemberId });
+			}
+		} catch {
+			toast.error(m.saveError());
+		}
+	}
 
 	let shareCodeInput = $state('');
 
@@ -147,9 +181,9 @@
 		}
 	}
 
-	function timeAgo(dateStr: string | null | undefined) {
+	function timeAgo(dateStr: string | Date | null | undefined) {
 		if (!dateStr) return '';
-		const date = new Date(dateStr);
+		const date = dateStr instanceof Date ? dateStr : new Date(dateStr);
 		const now = new Date();
 		const diff = now.getTime() - date.getTime();
 		const minutes = Math.floor(diff / 60000);
@@ -248,7 +282,12 @@
 
 	<!-- Draft Resolutions Section -->
 	<div>
-		<h2 class="mb-3 text-xl font-bold">{m.draftResolutions()}</h2>
+		<div class="mb-3 flex items-center gap-3">
+			<h2 class="text-xl font-bold">{m.draftResolutions()}</h2>
+			{#if committee?.supportReEvaluationOpen}
+				<span class="badge badge-warning animate-pulse">{m.supportReEvaluation()}</span>
+			{/if}
+		</div>
 
 		{#if draftResolutions.length === 0}
 			<div class="text-base-content/50 py-8 text-center text-sm">
@@ -257,16 +296,31 @@
 		{:else}
 			<div class="grid grid-cols-1 gap-3 md:grid-cols-2">
 				{#each draftResolutions as paper}
-					<a
-						href="/app/{page.params.conferenceId}/participant/{page.params
-							.committeeId}/papers/{paper.id}"
-						class="card bg-base-100 shadow-sm transition-shadow hover:shadow-md"
+					{@const isSupportingDr = paper.sponsors.some(
+						(s) => s.committeeMemberId === myCommitteeMemberId
+					)}
+					{@const isActiveDr = paper.id === committee?.activeDraftResolutionId}
+					<div
+						class="card bg-base-100 shadow-sm transition-shadow hover:shadow-md {isActiveDr
+							? 'ring-success ring-2'
+							: ''}"
 					>
-						<div class="card-body gap-2 p-4">
+						<a
+							href="/app/{page.params.conferenceId}/participant/{page.params
+								.committeeId}/papers/{paper.id}"
+							class="card-body gap-2 p-4"
+						>
 							<div class="flex items-start justify-between gap-2">
-								<h3 class="card-title text-base font-mono">
-									{paper.documentNumber ?? m.draftResolution()}
-								</h3>
+								<div class="flex items-center gap-2">
+									<h3 class="card-title text-base font-mono">
+										{paper.documentNumber ?? m.draftResolution()}
+									</h3>
+									{#if isActiveDr}
+										<span class="badge badge-success badge-sm">
+											{m.activeDraftResolution()}
+										</span>
+									{/if}
+								</div>
 								<span
 									class="badge badge-soft {getStatusBadgeClass(paper.status)} badge-sm shrink-0"
 								>
@@ -276,11 +330,38 @@
 							<div class="flex items-center gap-3 text-xs opacity-60">
 								<span>
 									<i class="fas fa-users mr-1"></i>
-									{m.sponsorCount({ count: String(paper.sponsors.length) })}
+									{m.supporterCount({ count: String(paper.sponsors.length) })}
 								</span>
 							</div>
-						</div>
-					</a>
+							<!-- Sponsor flags -->
+							{#if paper.sponsors.length > 0}
+								<div class="flex flex-wrap gap-1">
+									{#each paper.sponsors as sponsor}
+										{#if sponsor.committeeMember?.representation}
+											<Flag representation={sponsor.committeeMember.representation} size="xs" />
+										{/if}
+									{/each}
+								</div>
+							{/if}
+						</a>
+						<!-- Support toggle during re-evaluation -->
+						{#if committee?.supportReEvaluationOpen && isDelegate && paper.status !== 'FINAL'}
+							<div class="border-base-300 border-t px-4 py-2">
+								<button
+									class="btn btn-sm w-full {isSupportingDr ? 'btn-outline' : 'btn-primary'}"
+									onclick={() => toggleSupport(paper.id, isSupportingDr)}
+								>
+									{#if isSupportingDr}
+										<i class="fas fa-minus mr-1"></i>
+										{m.withdrawSupport()}
+									{:else}
+										<i class="fas fa-plus mr-1"></i>
+										{m.supportDraftResolution()}
+									{/if}
+								</button>
+							</div>
+						{/if}
+					</div>
 				{/each}
 			</div>
 		{/if}

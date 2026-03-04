@@ -34,14 +34,20 @@
 			.sort((a, b) => b.sponsors.length - a.sponsors.length)
 	);
 
-	// Draft resolutions (DR, AMENDMENT_PHASE, FINAL), sorted by sequenceNumber
+	// Draft resolutions (DR, AMENDMENT_PHASE, FINAL)
+	// During re-evaluation: sorted by sponsor count (descending) to show ranking
+	// Otherwise: sorted by sequenceNumber
 	let draftResolutions = $derived(
 		papers
 			.filter(
 				(p) =>
 					p.status === 'DRAFT_RESOLUTION' || p.status === 'AMENDMENT_PHASE' || p.status === 'FINAL'
 			)
-			.sort((a, b) => (a.sequenceNumber ?? 0) - (b.sequenceNumber ?? 0))
+			.sort((a, b) =>
+				committee?.supportReEvaluationOpen
+					? b.sponsors.length - a.sponsors.length
+					: (a.sequenceNumber ?? 0) - (b.sequenceNumber ?? 0)
+			)
 	);
 
 	let existingDrCount = $derived(draftResolutions.length);
@@ -65,6 +71,27 @@
 		}
 	`);
 
+	// Update committee mutation (for activeDR + re-evaluation)
+	const UpdateCommitteeMutation = graphql(`
+		mutation UpdateCommitteeResolutionsMutation(
+			$id: ID!
+			$activeDraftResolutionId: ID
+			$clearActiveDraftResolution: Boolean
+			$supportReEvaluationOpen: Boolean
+		) {
+			updateCommittee(
+				id: $id
+				activeDraftResolutionId: $activeDraftResolutionId
+				clearActiveDraftResolution: $clearActiveDraftResolution
+				supportReEvaluationOpen: $supportReEvaluationOpen
+			) {
+				id
+				activeDraftResolutionId
+				supportReEvaluationOpen
+			}
+		}
+	`);
+
 	let showPromoteModal = $state(false);
 	let promotePaperId = $state<string | null>(null);
 	let promotePaperTitle = $state('');
@@ -81,6 +108,39 @@
 			await PromoteMutation.mutate({ paperId: promotePaperId });
 			showPromoteModal = false;
 			toast.success(m.paperPromoted());
+		} catch {
+			toast.error(m.saveError());
+		}
+	}
+
+	async function setActiveDr(paperId: string) {
+		try {
+			await UpdateCommitteeMutation.mutate({
+				id: page.params.committeeId!,
+				activeDraftResolutionId: paperId
+			});
+		} catch {
+			toast.error(m.saveError());
+		}
+	}
+
+	async function clearActiveDr() {
+		try {
+			await UpdateCommitteeMutation.mutate({
+				id: page.params.committeeId!,
+				clearActiveDraftResolution: true
+			});
+		} catch {
+			toast.error(m.saveError());
+		}
+	}
+
+	async function toggleReEvaluation(open: boolean) {
+		try {
+			await UpdateCommitteeMutation.mutate({
+				id: page.params.committeeId!,
+				supportReEvaluationOpen: open
+			});
 		} catch {
 			toast.error(m.saveError());
 		}
@@ -227,12 +287,17 @@
 					{:else}
 						<div class="flex flex-col gap-3">
 							{#each draftResolutions as paper (paper.id)}
-								<a
-									href="./resolutions/{paper.id}"
-									class="card bg-base-200 shadow-sm transition-shadow hover:shadow-md"
+								{@const isActive = paper.id === committee.activeDraftResolutionId}
+								{@const canSetActive =
+									!isActive &&
+									(paper.status === 'DRAFT_RESOLUTION' || paper.status === 'AMENDMENT_PHASE')}
+								<div
+									class="card bg-base-200 shadow-sm transition-shadow {isActive
+										? 'border-l-4 border-success'
+										: ''}"
 								>
 									<div class="card-body flex-row items-center gap-4 p-4">
-										<div class="flex-1">
+										<a href="./resolutions/{paper.id}" class="flex flex-1 flex-col">
 											<div class="flex items-center gap-2">
 												<h3 class="font-bold font-mono">
 													{paper.documentNumber ?? m.draftResolution()}
@@ -240,44 +305,73 @@
 												<span class="badge badge-soft badge-sm {getStatusBadgeClass(paper.status)}">
 													{getStatusText(paper.status)}
 												</span>
+												{#if isActive}
+													<span class="badge badge-success badge-xs">
+														{m.activeDraftResolution()}
+													</span>
+												{/if}
 											</div>
 											<div class="mt-1 flex items-center gap-3 text-xs opacity-60">
-												<span>
+												<span
+													class={committee.supportReEvaluationOpen
+														? 'text-warning font-semibold'
+														: ''}
+												>
 													<i class="fas fa-users mr-1"></i>
-													{m.sponsorCount({
+													{m.supporterCount({
 														count: String(paper.sponsors.length)
 													})}
 												</span>
-												{#if paper.id === committee.activeDraftResolutionId}
-													<span class="badge badge-success badge-xs"
-														>{m.activeDraftResolution()}</span
-													>
-												{/if}
 											</div>
-										</div>
+										</a>
+										{#if paper.status === 'DRAFT_RESOLUTION' || paper.status === 'AMENDMENT_PHASE'}
+											<!-- svelte-ignore a11y_no_static_element_interactions -->
+											<div onclick={(e: MouseEvent) => e.stopPropagation()}>
+												<input
+													type="checkbox"
+													class="toggle toggle-success"
+													checked={isActive}
+													onchange={() => {
+														if (isActive) {
+															clearActiveDr();
+														} else {
+															setActiveDr(paper.id);
+														}
+													}}
+												/>
+											</div>
+										{/if}
 									</div>
-								</a>
+								</div>
 							{/each}
 						</div>
 					{/if}
 				</BasicCard>
 
-				<!-- Section 3: Debate Controls (placeholder) -->
+				<!-- Section 3: Debate Controls -->
 				<BasicCard title={m.debateControls()}>
-					<div class="py-4 text-center">
-						{#if committee.activeDraftResolutionId}
-							{@const activeDr = draftResolutions.find(
-								(p) => p.id === committee.activeDraftResolutionId
-							)}
-							{#if activeDr}
-								<p class="mb-2 font-bold font-mono">
-									{activeDr.documentNumber ?? m.draftResolution()}
-								</p>
-							{/if}
-						{:else}
-							<p class="text-base-content/50 text-sm">{m.noDraftResolution()}</p>
-						{/if}
-						<p class="text-base-content/40 mt-2 text-sm">{m.debateControlsPlaceholder()}</p>
+					<div class="flex flex-col gap-4">
+						<!-- Support Re-evaluation toggle -->
+						<div class="rounded-lg bg-base-200 p-4">
+							<div class="flex items-center justify-between">
+								<div>
+									<p class="font-semibold">{m.supportReEvaluation()}</p>
+									<p class="text-base-content/50 text-sm">
+										{#if committee.supportReEvaluationOpen}
+											{m.supportReEvaluationOpen()}
+										{:else}
+											{m.supportReEvaluationClosed()}
+										{/if}
+									</p>
+								</div>
+								<input
+									type="checkbox"
+									class="toggle toggle-warning"
+									checked={committee.supportReEvaluationOpen}
+									onchange={() => toggleReEvaluation(!committee.supportReEvaluationOpen)}
+								/>
+							</div>
+						</div>
 					</div>
 				</BasicCard>
 

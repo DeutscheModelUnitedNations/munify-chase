@@ -12,6 +12,8 @@ export const ParticipantCommitteeSubscription = graphql(`
 			showWhiteboard
 			whiteboardContent
 			allowDelegationsToAddThemselvesToSpeakersList
+			supportReEvaluationOpen
+			activeDraftResolutionId
 			totalPresent
 			simpleMajority
 			twoThirdsMajority

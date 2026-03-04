@@ -405,7 +405,7 @@ type Mutation {
   setPresenceForCommitteeMembers(ids: [ID!]!, present: Boolean!): [CommitteeMember!]
   softDeletePaper(paperId: ID!): Boolean
   submitPaper(paperId: ID!): ResolutionPaper
-  updateCommittee(abbreviation: String, activeAgendaItemId: ID, activeDraftResolutionId: ID, allowDelegationsToAddThemselvesToSpeakersList: Boolean, currentOperativeIndex: Int, id: ID!, lastResolutionAdoptionDate: DateTime, maxDraftResolutions: Int, name: String, showWhiteboard: Boolean, stateOfDebate: String, status: CommitteeStatusEnum, statusHeadline: String, statusUntil: DateTime, supportReEvaluationOpen: Boolean, whiteboardContent: String): Committee
+  updateCommittee(abbreviation: String, activeAgendaItemId: ID, activeDraftResolutionId: ID, allowDelegationsToAddThemselvesToSpeakersList: Boolean, clearActiveDraftResolution: Boolean, currentOperativeIndex: Int, id: ID!, lastResolutionAdoptionDate: DateTime, maxDraftResolutions: Int, name: String, showWhiteboard: Boolean, stateOfDebate: String, status: CommitteeStatusEnum, statusHeadline: String, statusUntil: DateTime, supportReEvaluationOpen: Boolean, whiteboardContent: String): Committee
   updateConference(hasModeratedCaucus: Boolean, id: ID!, pressWebsite: String, title: String): Conference
   updateConferenceUser(committeeMemberId: ID, conferenceMemberId: ID, conferenceUserType: ConferenceUserTypeEnum!, id: ID!): ConferenceUser
   updatePaperContent(content: JSON!, paperId: ID!): ResolutionPaper

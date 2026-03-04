@@ -7,6 +7,7 @@
 	import { onMount } from 'svelte';
 	import { ParticipantPaperDetailSubscription } from './paperDetailSubscription';
 	import { PaperClauseLocksSubscription } from './lockSubscription';
+	import { ParticipantCommitteeSubscription } from '../../committeeSubscription';
 	import {
 		ResolutionEditor,
 		migrateResolution,
@@ -24,7 +25,10 @@
 	let query = $derived(data?.ParticipantPaperDetailQuery);
 	let identityQuery = $derived(data?.ParticipantIdentityQuery);
 	let layoutQuery = $derived(data?.ParticipantCommitteeLayoutQuery);
-	let committee = $derived($layoutQuery.data?.findFirstCommittee);
+	let committee = $derived(
+		$ParticipantCommitteeSubscription.data?.findFirstCommittee ??
+			$layoutQuery.data?.findFirstCommittee
+	);
 
 	let conferenceUser = $derived($identityQuery.data?.findManyConferenceUser?.[0]);
 	let role = $derived(conferenceUser?.conferenceUserType);
@@ -53,6 +57,14 @@
 
 	let canDelete = $derived(isCreator && paper?.status === 'WORKING_PAPER');
 
+	// DR support: delegate can toggle support during re-evaluation
+	let isDrStatus = $derived(
+		paper?.status === 'DRAFT_RESOLUTION' || paper?.status === 'AMENDMENT_PHASE'
+	);
+	let canToggleDrSupport = $derived(
+		isDelegate && isDrStatus && committee?.supportReEvaluationOpen === true
+	);
+
 	// Collaborative mode: only enable lock UI when paper has other editors or is beyond working paper
 	let collaborativeMode = $derived(
 		(paper?.editors?.length ?? 0) > 0 || paper?.status !== 'WORKING_PAPER'
@@ -77,6 +89,7 @@
 
 	onMount(() => {
 		ParticipantPaperDetailSubscription.listen({ paperId: page.params.paperId! });
+		ParticipantCommitteeSubscription.listen({ id: page.params.committeeId! });
 		if (collaborativeMode) {
 			PaperClauseLocksSubscription.listen({ paperId: page.params.paperId! });
 		}
@@ -519,13 +532,36 @@
 							</div>
 						{/each}
 					</div>
-					{#if canSponsor && myCommitteeMemberId}
+					<p class="text-base-content/50 mt-1 text-xs">
+						{m.supporterCount({ count: String(paper.sponsors.length) })}
+					</p>
+					{#if canSponsor && myCommitteeMemberId && !isDrStatus}
+						<!-- WP/Submitted sponsor toggle -->
 						<button
 							class="btn btn-sm mt-2 {isSponsor ? 'btn-soft btn-error' : 'btn-primary'}"
 							onclick={handleToggleSponsor}
 						>
 							{isSponsor ? m.removeSponsor() : m.sponsorPaper()}
 						</button>
+					{:else if canToggleDrSupport && myCommitteeMemberId}
+						<!-- DR support toggle during re-evaluation -->
+						<div class="mt-2 flex items-center gap-2">
+							<span class="badge badge-warning animate-pulse badge-sm"
+								>{m.supportReEvaluation()}</span
+							>
+							<button
+								class="btn btn-sm {isSponsor ? 'btn-outline' : 'btn-primary'}"
+								onclick={handleToggleSponsor}
+							>
+								{#if isSponsor}
+									<i class="fas fa-minus mr-1"></i>
+									{m.withdrawSupport()}
+								{:else}
+									<i class="fas fa-plus mr-1"></i>
+									{m.supportDraftResolution()}
+								{/if}
+							</button>
+						</div>
 					{/if}
 				</Fieldset>
 

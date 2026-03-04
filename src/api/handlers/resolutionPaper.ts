@@ -1,5 +1,5 @@
 import { db, schema } from '$api/db/db';
-import { abilityBuilder, enum_, schemaBuilder } from '$api/rumble';
+import { abilityBuilder, enum_, schemaBuilder, pubsub as rumblePubsub } from '$api/rumble';
 import { and, eq, isNull, count as drizzleCount } from 'drizzle-orm';
 import { basics } from './basics';
 import { isWhitelistedEmail } from '$api/services/isDMUNEmail';
@@ -12,6 +12,7 @@ import {
 } from '@deutschemodelunitednations/munify-resolution-editor/schema';
 
 const { arg, ref, pubsub, table } = basics('resolutionPaper');
+const committeePubsub = rumblePubsub({ table: 'committee' });
 
 const paperStatusEnum = enum_({ tsName: 'paperStatus' });
 
@@ -547,6 +548,20 @@ schemaBuilder.mutationFields((t) => ({
 					.set({ status: 'FINAL' })
 					.where(eq(schema.resolutionPaper.id, args.paperId));
 			});
+
+			// Clear activeDraftResolutionId if this was the active DR
+			const committee = await db.query.committee
+				.findFirst({ where: { id: paper.committeeId } })
+				.then(assertFindFirstExists);
+
+			if (committee.activeDraftResolutionId === args.paperId) {
+				await db
+					.update(schema.committee)
+					.set({ activeDraftResolutionId: null })
+					.where(eq(schema.committee.id, paper.committeeId));
+
+				committeePubsub.updated(paper.committeeId);
+			}
 
 			pubsub.updated(args.paperId);
 

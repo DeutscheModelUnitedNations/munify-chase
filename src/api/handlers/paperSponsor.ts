@@ -41,6 +41,25 @@ schemaBuilder.mutationFields((t) => ({
 				})
 				.then(assertFindFirstExists);
 
+			// Check re-evaluation gate for DR+ papers
+			const paper = await db.query.resolutionPaper
+				.findFirst({ where: { id: args.paperId } })
+				.then(assertFindFirstExists);
+
+			if (paper.status === 'FINAL') {
+				throw new GraphQLError('Cannot sponsor a finalized paper');
+			}
+
+			if (paper.status === 'DRAFT_RESOLUTION' || paper.status === 'AMENDMENT_PHASE') {
+				const committee = await db.query.committee
+					.findFirst({ where: { id: paper.committeeId } })
+					.then(assertFindFirstExists);
+
+				if (!committee.supportReEvaluationOpen) {
+					throw new GraphQLError('Support re-evaluation is not currently open');
+				}
+			}
+
 			const result = await db
 				.insert(schema.paperSponsor)
 				.values({
@@ -84,6 +103,21 @@ schemaBuilder.mutationFields((t) => ({
 					}
 				})
 				.then(assertFindFirstExists);
+
+			// Check re-evaluation gate for DR+ papers
+			const paper = await db.query.resolutionPaper
+				.findFirst({ where: { id: args.paperId } })
+				.then(assertFindFirstExists);
+
+			if (paper.status === 'DRAFT_RESOLUTION' || paper.status === 'AMENDMENT_PHASE') {
+				const committee = await db.query.committee
+					.findFirst({ where: { id: paper.committeeId } })
+					.then(assertFindFirstExists);
+
+				if (!committee.supportReEvaluationOpen) {
+					throw new GraphQLError('Support re-evaluation is not currently open');
+				}
+			}
 
 			// Must be self (removing own sponsorship) or paper creator
 			const conferenceUser = await db.query.conferenceUser.findFirst({

@@ -194,10 +194,33 @@ schemaBuilder.mutationFields((t) => {
 				allowDelegationsToAddThemselvesToSpeakersList: t.arg.boolean(),
 				maxDraftResolutions: t.arg.int(),
 				activeDraftResolutionId: t.arg.id(),
+				clearActiveDraftResolution: t.arg.boolean(),
 				currentOperativeIndex: t.arg.int(),
 				supportReEvaluationOpen: t.arg.boolean()
 			},
 			resolve: async (query, root, args, ctx, info) => {
+				// Validate activeDraftResolutionId if provided
+				if (args.activeDraftResolutionId) {
+					const paper = await db.query.resolutionPaper.findFirst({
+						where: { id: args.activeDraftResolutionId }
+					});
+
+					if (!paper) {
+						throw new GraphQLError('Paper not found');
+					}
+					if (paper.committeeId !== args.id) {
+						throw new GraphQLError('Paper does not belong to this committee');
+					}
+					if (paper.status !== 'DRAFT_RESOLUTION' && paper.status !== 'AMENDMENT_PHASE') {
+						throw new GraphQLError('Only draft resolutions can be set as active');
+					}
+				}
+
+				// Auto-close re-evaluation when setting an active DR
+				const supportReEvaluationOpen = args.activeDraftResolutionId
+					? false
+					: (args.supportReEvaluationOpen ?? undefined);
+
 				await db
 					.update(schema.committee)
 					.set({
@@ -214,9 +237,11 @@ schemaBuilder.mutationFields((t) => {
 						allowDelegationsToAddThemselvesToSpeakersList:
 							args.allowDelegationsToAddThemselvesToSpeakersList ?? undefined,
 						maxDraftResolutions: args.maxDraftResolutions ?? undefined,
-						activeDraftResolutionId: args.activeDraftResolutionId ?? undefined,
+						activeDraftResolutionId: args.clearActiveDraftResolution
+							? null
+							: (args.activeDraftResolutionId ?? undefined),
 						currentOperativeIndex: args.currentOperativeIndex ?? undefined,
-						supportReEvaluationOpen: args.supportReEvaluationOpen ?? undefined
+						supportReEvaluationOpen
 					})
 					.where(
 						and(

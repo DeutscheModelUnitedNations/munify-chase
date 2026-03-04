@@ -7,6 +7,8 @@ export const _houdini_load = graphql(`
 			id
 			abbreviation
 			name
+			supportReEvaluationOpen
+			activeDraftResolutionId
 			activeAgendaItem {
 				id
 				title

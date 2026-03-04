@@ -4,7 +4,7 @@
 	import type { PageData } from './$houdini';
 	import { onMount } from 'svelte';
 	import { ParticipantCommitteeSubscription } from './committeeSubscription';
-	import ThemeSwitcher from '$lib/components/ThemeSwitcher.svelte';
+	// ThemeSwitcher moved to +layout.svelte
 	import IconInfoBox from '$lib/components/IconInfoBox.svelte';
 	import { getCommitteeStatusIcon, getCommitteeStatusText } from '$lib/utils/committeeStatus';
 	import CurrentSpeaker from '$lib/components/speakersList/CurrentSpeaker.svelte';
@@ -34,9 +34,6 @@
 		conferenceUser?.committeeMember?.representation ??
 			conferenceUser?.conferenceMember?.representation
 	);
-
-	// Whether the "back" button should show (NSA/Visitor can go back to overview)
-	let showBack = $derived(role !== 'DELEGATE');
 
 	onMount(() => {
 		ParticipantCommitteeSubscription.listen({ id: page.params.committeeId! });
@@ -98,25 +95,6 @@
 </svelte:head>
 
 {#if committee}
-	<!-- Navbar -->
-	<div class="navbar bg-base-100 shadow-sm">
-		{#if showBack}
-			<div class="flex-none">
-				<a
-					class="btn btn-ghost btn-sm"
-					href="/app/{page.params.conferenceId}/participant"
-					aria-label={m.back()}
-				>
-					<i class="fa-duotone fa-arrow-left"></i>
-				</a>
-			</div>
-		{/if}
-		<h1 class="ml-2 flex-1 text-lg font-bold">{committee.abbreviation} — {committee.name}</h1>
-		<div class="flex-none">
-			<ThemeSwitcher />
-		</div>
-	</div>
-
 	<!-- Mobile-first vertical card stack -->
 	<div class="grid w-full grid-cols-1 md:grid-cols-2 gap-4 p-4">
 		<!-- Identity Card -->

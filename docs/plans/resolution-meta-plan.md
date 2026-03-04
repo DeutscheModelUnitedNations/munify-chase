@@ -87,7 +87,7 @@ Result:
 | `current_operative_index` | `smallint` nullable | Which operative paragraph is active (0-indexed). Amendments locked for index < this |
 | `support_re_evaluation_open` | `boolean` default false | Whether delegations can currently change DR support |
 
-### New Tables (10)
+### New Tables (11)
 
 **`resolution_paper`** — Single entity for the entire lifecycle
 | Column | Type | Notes |
@@ -138,6 +138,17 @@ Result:
 | `conference_user_id` | `text` FK→conferenceUser | Works for delegates AND NSAs |
 | `created_at`, `updated_at` | `timestamp` | |
 | | | UNIQUE(paper_id, conference_user_id) |
+
+**`paper_clause_lock`** — Pessimistic per-clause editing locks (collaborative mode)
+| Column | Type | Notes |
+|--------|------|-------|
+| `id` | `text` (nanoid) | PK |
+| `paper_id` | `text` FK→resolutionPaper | |
+| `clause_id` | `text` | Clause `id` from JSON |
+| `conference_user_id` | `text` FK→conferenceUser | Lock holder |
+| `expires_at` | `timestamp` | TTL (60s from acquire/refresh) |
+| `created_at`, `updated_at` | `timestamp` | |
+| | | UNIQUE(paper_id, clause_id) |
 
 **`resolution_comment`** — Comments on draft resolutions (paragraph + document level)
 | Column | Type | Notes |
@@ -349,14 +360,16 @@ commentPanel?: Snippet<[{ resolution: Resolution; activeClauseId?: string }]>;
 - ~~Create handlers: `resolutionPaper`, `paperSponsor`, `paperShareCode`, `paperEditor`, `paperContentSnapshot`~~
 - ~~Register handlers, add i18n messages~~
 
-### Phase 2: Delegate Working Paper UI
+### Phase 2: Delegate Working Paper UI ✅
 
-- Papers overview page + paper detail/editor page
-- `ResolutionEditor` integration with `onResolutionChange` (debounced 500ms)
-- Share code creation, copying, redemption
-- Sponsor list + "Sponsor" flow
-- "Submit to Chair" button
-- Navigation from participant committee page
+- ~~Papers overview page + paper detail/editor page~~
+- ~~`ResolutionEditor` integration with `onResolutionChange` (debounced 500ms)~~
+- ~~Share code creation, copying, redemption~~
+- ~~Sponsor list + "Sponsor" flow~~
+- ~~"Submit to Chair" button~~
+- ~~Navigation from participant committee page~~
+- ~~Clause-level locking: `paper_clause_lock` table, acquire/release/heartbeat mutations, subscription, lock-aware content merge~~
+- ~~Click-to-lock UX: hover overlay ("Start editing"), inline "Done editing" button, `collaborativeMode` gate~~
 
 ### Phase 3: Chair Resolutions Tab + DR Promotion
 
@@ -409,6 +422,8 @@ commentPanel?: Snippet<[{ resolution: Resolution; activeClauseId?: string }]>;
 **Storage**: Resolution content as single JSONB column. Amendments + paragraph votes reference clause IDs from the JSON. Snapshots preserve history at key transitions.
 
 **Real-time**: Rumble pubsub → Houdini subscriptions. `onResolutionChange` (debounced 500ms) → mutation → pubsub. Last-writer-wins acceptable for MUN context.
+
+**Clause-level locking**: Explicit click-to-lock UX (not focus/blur). Delegates hover an unlocked clause to see a "Start editing" overlay, click to acquire a server-side lock, and click "Done editing" to release. Locks are per-clause rows in `paper_clause_lock` with a 60s TTL. A hybrid heartbeat (30s interval, only fires when idle >25s) keeps locks alive during active editing — saves already refresh locks implicitly via `updatePaperContent`. Lock state is pushed via GraphQL subscription; optimistic IDs bridge the gap. `collaborativeMode` gates all lock UI: solo editing (no share codes used, working paper status) shows no overlays or lock buttons. The `beforeunload` handler and navigation cleanup release all held locks via `sendBeacon`.
 
 **Amendment application**: When accepted (by consensus or vote), server mutates JSON + creates snapshot. DELETE removes clause, ADD inserts, ALTER_TEXT replaces blocks, ALTER_POSITION moves. Record keeps status for history.
 

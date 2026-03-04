@@ -1,5 +1,5 @@
 import { db, schema } from '$api/db/db';
-import { abilityBuilder, enum_, schemaBuilder } from '$api/rumble';
+import { abilityBuilder, enum_, schemaBuilder, pubsub as rumblePubsub } from '$api/rumble';
 import { eq } from 'drizzle-orm';
 import { basics } from './basics';
 import { isWhitelistedEmail } from '$api/services/isDMUNEmail';
@@ -10,6 +10,7 @@ import { customAlphabet } from 'nanoid';
 const generateShareCode = customAlphabet('ABCDEFGHJKLMNPQRSTUVWXYZ23456789', 6);
 
 const { arg, ref, pubsub, table } = basics('paperShareCode');
+const paperPubsub = rumblePubsub({ table: 'resolutionPaper' });
 
 const shareCodePermissionEnum = enum_({ tsName: 'shareCodePermission' });
 
@@ -71,6 +72,7 @@ schemaBuilder.mutationFields((t) => ({
 				.then(assertFirstEntryExists);
 
 			pubsub.updated(result.id);
+			paperPubsub.updated(args.paperId);
 
 			return db.query.paperShareCode
 				.findFirst(
@@ -114,6 +116,7 @@ schemaBuilder.mutationFields((t) => ({
 			await db.delete(schema.paperShareCode).where(eq(schema.paperShareCode.id, args.shareCodeId));
 
 			pubsub.removed(args.shareCodeId);
+			paperPubsub.updated(shareCode.paperId);
 
 			return true;
 		}

@@ -8,7 +8,7 @@ import {
 	boolean,
 	smallint,
 	integer,
-	jsonb,
+	json,
 	type AnyPgColumn
 } from 'drizzle-orm/pg-core';
 
@@ -277,10 +277,11 @@ export const resolutionPaper = pgTable('resolution_paper', {
 		.notNull()
 		.references(() => committeeMember.id, { onDelete: 'cascade' }),
 	status: paperStatus().notNull().default('WORKING_PAPER'),
-	content: jsonb(),
+	content: json(),
 	title: text(),
 	documentNumber: text(),
-	sequenceNumber: smallint()
+	sequenceNumber: smallint(),
+	deletedAt: timestamp()
 });
 
 export const paperContentSnapshot = pgTable('paper_content_snapshot', {
@@ -288,7 +289,7 @@ export const paperContentSnapshot = pgTable('paper_content_snapshot', {
 	paperId: text()
 		.notNull()
 		.references(() => resolutionPaper.id, { onDelete: 'cascade' }),
-	content: jsonb(),
+	content: json(),
 	trigger: text()
 });
 
@@ -357,7 +358,7 @@ export const amendment = pgTable('amendment', {
 	status: amendmentStatus().notNull().default('PENDING'),
 	targetClauseId: text(),
 	targetOperativeIndex: smallint(),
-	newContent: jsonb(),
+	newContent: json(),
 	targetPosition: smallint()
 });
 
@@ -386,6 +387,22 @@ export const operativeClauseVote = pgTable('operative_clause_vote', {
 	votesAgainst: integer().notNull(),
 	votesAbstain: integer().notNull().default(0)
 });
+
+export const paperClauseLock = pgTable(
+	'paper_clause_lock',
+	{
+		...defaultIdAndTimestamps,
+		paperId: text()
+			.notNull()
+			.references(() => resolutionPaper.id, { onDelete: 'cascade' }),
+		clauseId: text().notNull(),
+		conferenceUserId: text()
+			.notNull()
+			.references(() => conferenceUser.id, { onDelete: 'cascade' }),
+		acquiredAt: timestamp({ mode: 'date' }).defaultNow().notNull()
+	},
+	(t) => [unique().on(t.paperId, t.clauseId)]
+);
 
 export const resolutionVoteResult = pgTable('resolution_vote_result', {
 	...defaultIdAndTimestamps,

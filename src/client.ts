@@ -1,13 +1,26 @@
-import { HoudiniClient } from '$houdini';
+import { HoudiniClient, type ClientPlugin } from '$houdini';
 import toast from 'svelte-french-toast';
 import { error } from '@sveltejs/kit';
 import { subscription } from '$houdini/plugins';
 import { createClient } from 'graphql-sse';
 
+let redirecting = false;
+
+const authRedirect: ClientPlugin = () => ({
+	end(ctx, { resolve, value }) {
+		if (!redirecting && value.errors?.some((e) => e.message === 'Must be logged in')) {
+			console.warn('[auth] Session expired, redirecting to login...');
+			redirecting = true;
+			window.location.reload();
+		}
+		resolve(ctx);
+	}
+});
+
 const url = '/api/graphql';
 export default new HoudiniClient({
 	url,
-	plugins: [subscription(() => createClient({ url }))],
+	plugins: [authRedirect, subscription(() => createClient({ url }))],
 	throwOnError: {
 		operations: ['mutation', 'subscription'],
 		error: (errors, ctx) => {

@@ -71,30 +71,41 @@
 		}
 	`);
 
-	// Update committee mutation (for activeDR + re-evaluation)
+	// Update committee mutation (for activeDR + re-evaluation + amendment phase)
 	const UpdateCommitteeMutation = graphql(`
 		mutation UpdateCommitteeResolutionsMutation(
 			$id: ID!
 			$activeDraftResolutionId: ID
 			$clearActiveDraftResolution: Boolean
 			$supportReEvaluationOpen: Boolean
+			$currentOperativeIndex: Int
 		) {
 			updateCommittee(
 				id: $id
 				activeDraftResolutionId: $activeDraftResolutionId
 				clearActiveDraftResolution: $clearActiveDraftResolution
 				supportReEvaluationOpen: $supportReEvaluationOpen
+				currentOperativeIndex: $currentOperativeIndex
 			) {
 				id
 				activeDraftResolutionId
 				supportReEvaluationOpen
+				currentOperativeIndex
 			}
 		}
 	`);
 
+	// Amendment phase derived state
+	let activeDr = $derived(
+		draftResolutions.find((p) => p.id === committee?.activeDraftResolutionId)
+	);
+	let canStartAmendmentPhase = $derived(activeDr && activeDr.status === 'DRAFT_RESOLUTION');
+	let isInAmendmentPhase = $derived(activeDr && activeDr.status === 'AMENDMENT_PHASE');
+
 	let showPromoteModal = $state(false);
 	let promotePaperId = $state<string | null>(null);
 	let promotePaperTitle = $state('');
+	let showStartAmendmentPhaseModal = $state(false);
 
 	function openPromoteModal(paperId: string, title: string | null) {
 		promotePaperId = paperId;
@@ -141,6 +152,19 @@
 				id: page.params.committeeId!,
 				supportReEvaluationOpen: open
 			});
+		} catch {
+			toast.error(m.saveError());
+		}
+	}
+
+	async function startAmendmentPhase() {
+		try {
+			await UpdateCommitteeMutation.mutate({
+				id: page.params.committeeId!,
+				currentOperativeIndex: 0
+			});
+			showStartAmendmentPhaseModal = false;
+			toast.success(m.amendmentPhaseStarted());
 		} catch {
 			toast.error(m.saveError());
 		}
@@ -372,6 +396,33 @@
 								/>
 							</div>
 						</div>
+
+						{#if canStartAmendmentPhase}
+							<div class="divider my-1"></div>
+							<div class="flex items-center justify-between">
+								<div class="text-sm">
+									<span class="font-medium">{activeDr!.documentNumber}</span> — {m.draftResolution()}
+								</div>
+								<button
+									class="btn btn-primary btn-sm"
+									onclick={() => (showStartAmendmentPhaseModal = true)}
+								>
+									<i class="fas fa-gavel mr-1"></i>
+									{m.startAmendmentPhase()}
+								</button>
+							</div>
+						{:else if isInAmendmentPhase}
+							<div class="divider my-1"></div>
+							<div class="flex items-center justify-between">
+								<div class="flex items-center gap-2 text-sm">
+									<span class="badge badge-secondary badge-sm">{m.amendmentPhaseActive()}</span>
+									<span class="font-mono">OP {(committee.currentOperativeIndex ?? 0) + 1}</span>
+								</div>
+								<a href="./resolutions/{activeDr!.id}" class="btn btn-ghost btn-xs">
+									{m.goToAmendments()} →
+								</a>
+							</div>
+						{/if}
 					</div>
 				</BasicCard>
 
@@ -396,6 +447,22 @@
 					{m.abort()}
 				</button>
 				<button class="btn btn-primary btn-sm" onclick={handlePromote}>
+					{m.yes()}
+				</button>
+			</div>
+		</div>
+	</Modal>
+
+	<!-- Start amendment phase confirmation modal -->
+	<Modal bind:open={showStartAmendmentPhaseModal}>
+		<div class="flex flex-col gap-4 p-4">
+			<h3 class="text-lg font-bold">{m.startAmendmentPhase()}</h3>
+			<p>{m.confirmStartAmendmentPhase()}</p>
+			<div class="flex justify-end gap-2">
+				<button class="btn btn-ghost btn-sm" onclick={() => (showStartAmendmentPhaseModal = false)}>
+					{m.abort()}
+				</button>
+				<button class="btn btn-primary btn-sm" onclick={startAmendmentPhase}>
 					{m.yes()}
 				</button>
 			</div>

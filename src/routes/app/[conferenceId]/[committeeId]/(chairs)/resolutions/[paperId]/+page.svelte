@@ -8,10 +8,14 @@
 	import { ChairPaperDetailSubscription } from './chairPaperDetailSubscription';
 	import { ChairPaperClauseLocksSubscription } from './chairLockSubscription';
 	import { ChairPaperCommentsSubscription } from './chairCommentsSubscription';
+	import { ChairAmendmentsSubscription } from './chairAmendmentsSubscription';
 	import {
 		ResolutionEditor,
 		migrateResolution,
-		type Resolution
+		calculateAmendmentDiffSize,
+		type Resolution,
+		type AmendmentOverlay,
+		type OperativeClause
 	} from '@deutschemodelunitednations/munify-resolution-editor';
 	import Flag from '$lib/components/Flag.svelte';
 	import Fieldset from '$lib/components/Fieldset.svelte';
@@ -62,6 +66,7 @@
 		ChairPaperDetailSubscription.listen({ paperId: page.params.paperId! });
 		ChairPaperClauseLocksSubscription.listen({ paperId: page.params.paperId! });
 		ChairPaperCommentsSubscription.listen({ paperId: page.params.paperId! });
+		ChairAmendmentsSubscription.listen({ paperId: page.params.paperId! });
 
 		// Hybrid heartbeat — only fires when idle with held locks
 		const heartbeatInterval = setInterval(() => {
@@ -430,6 +435,208 @@
 
 	// Collapsible metadata
 	let metadataOpen = $state(false);
+
+	// =====================================================
+	// Amendments (Phase 6c)
+	// =====================================================
+
+	let allAmendments = $derived($ChairAmendmentsSubscription.data?.findManyAmendment ?? []);
+
+	let submittedAmendments = $derived(allAmendments.filter((a) => a.status === 'SUBMITTED'));
+
+	let currentOpIndex = $derived(committee?.currentOperativeIndex ?? 0);
+
+	let operativeClauses = $derived((resolution?.operative ?? []) as OperativeClause[]);
+
+	// GO-ordered: current paragraph first → DELETE > ALTER_TEXT (diff size desc) > ADD > ALTER_POSITION → then by createdAt
+	let sortedSubmittedAmendments = $derived.by(() => {
+		const typeOrder: Record<string, number> = {
+			DELETE: 0,
+			ALTER_TEXT: 1,
+			ADD: 2,
+			ALTER_POSITION: 3
+		};
+		return [...submittedAmendments].sort((a, b) => {
+			// Current paragraph first
+			const aIsCurrent = (a.targetOperativeIndex ?? -1) === currentOpIndex;
+			const bIsCurrent = (b.targetOperativeIndex ?? -1) === currentOpIndex;
+			if (aIsCurrent && !bIsCurrent) return -1;
+			if (!aIsCurrent && bIsCurrent) return 1;
+
+			// Then by type
+			const aType = typeOrder[a.type] ?? 99;
+			const bType = typeOrder[b.type] ?? 99;
+			if (aType !== bType) return aType - bType;
+
+			// For ALTER_TEXT, sort by diff size descending
+			if (a.type === 'ALTER_TEXT' && b.type === 'ALTER_TEXT') {
+				const aClause = operativeClauses[a.targetOperativeIndex ?? 0];
+				const bClause = operativeClauses[b.targetOperativeIndex ?? 0];
+				if (aClause && bClause && a.newContent && b.newContent) {
+					const aDiff = calculateAmendmentDiffSize(aClause, a.newContent as OperativeClause);
+					const bDiff = calculateAmendmentDiffSize(bClause, b.newContent as OperativeClause);
+					if (aDiff !== bDiff) return bDiff - aDiff;
+				}
+			}
+
+			// Then by createdAt
+			return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
+		});
+	});
+
+	// Transform server amendments → AmendmentOverlay[] for editor rendering
+	let amendmentOverlays = $derived.by(() => {
+		const visible = allAmendments.filter(
+			(a) => a.status === 'SUBMITTED' || a.status === 'CONSENSUS_ADOPTED' || a.status === 'ACCEPTED'
+		);
+		return visible.map(
+			(a) =>
+				({
+					id: a.id,
+					type: a.type,
+					status: a.status,
+					targetClauseId: a.targetClauseId ?? undefined,
+					targetOperativeIndex: a.targetOperativeIndex ?? undefined,
+					targetPosition: a.targetPosition ?? undefined,
+					newContent: a.newContent as OperativeClause | undefined,
+					proposerName:
+						a.proposer?.representation?.name ??
+						getTranslatedCountryNameFromAlpha3Code(a.proposer?.representation?.alpha3Code),
+					sponsorCount: a.sponsors?.length ?? 0,
+					isOwnAmendment: false
+				}) satisfies AmendmentOverlay
+		);
+	});
+
+	// Amendment mutations
+	const AdoptByConsensusMutation = graphql(`
+		mutation ChairAdoptByConsensusMutation($amendmentId: ID!) {
+			adoptByConsensus(amendmentId: $amendmentId) {
+				id
+				status
+			}
+		}
+	`);
+
+	const AcceptAmendmentMutation = graphql(`
+		mutation ChairAcceptAmendmentMutation($amendmentId: ID!) {
+			acceptAmendment(amendmentId: $amendmentId) {
+				id
+				status
+			}
+		}
+	`);
+
+	const RejectAmendmentMutation = graphql(`
+		mutation ChairRejectAmendmentMutation($amendmentId: ID!) {
+			rejectAmendment(amendmentId: $amendmentId) {
+				id
+				status
+			}
+		}
+	`);
+
+	const WithdrawAmendmentMutation = graphql(`
+		mutation ChairWithdrawAmendmentMutation($amendmentId: ID!) {
+			withdrawAmendment(amendmentId: $amendmentId) {
+				id
+				status
+			}
+		}
+	`);
+
+	const UpdateCommitteeMutation = graphql(`
+		mutation ChairAdvanceParagraphMutation($id: ID!, $currentOperativeIndex: Int) {
+			updateCommittee(id: $id, currentOperativeIndex: $currentOperativeIndex) {
+				id
+				currentOperativeIndex
+			}
+		}
+	`);
+
+	let showAdoptConfirmModal = $state(false);
+	let showRejectConfirmModal = $state(false);
+	let confirmAmendmentId = $state<string | null>(null);
+
+	async function handleAdoptByConsensus(amendmentId: string) {
+		try {
+			await AdoptByConsensusMutation.mutate({ amendmentId });
+			toast.success(m.amendmentAdopted());
+			showAdoptConfirmModal = false;
+			confirmAmendmentId = null;
+		} catch {
+			toast.error(m.saveError());
+		}
+	}
+
+	async function handleRejectAmendment(amendmentId: string) {
+		try {
+			await RejectAmendmentMutation.mutate({ amendmentId });
+			toast.success(m.amendmentRejectedToast());
+			showRejectConfirmModal = false;
+			confirmAmendmentId = null;
+		} catch {
+			toast.error(m.saveError());
+		}
+	}
+
+	async function handleWithdrawAmendment(amendmentId: string) {
+		try {
+			await WithdrawAmendmentMutation.mutate({ amendmentId });
+			toast.success(m.amendmentWithdrawnToast());
+		} catch {
+			toast.error(m.saveError());
+		}
+	}
+
+	async function handleAdvanceParagraph() {
+		if (!committee) return;
+		try {
+			await UpdateCommitteeMutation.mutate({
+				id: committee.id,
+				currentOperativeIndex: currentOpIndex + 1
+			});
+		} catch {
+			toast.error(m.saveError());
+		}
+	}
+
+	function handleAmendmentClick(amendmentId: string) {
+		const el = document.getElementById(`amendment-${amendmentId}`);
+		el?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+		el?.classList.add('ring-2', 'ring-primary');
+		setTimeout(() => el?.classList.remove('ring-2', 'ring-primary'), 2000);
+	}
+
+	function getAmendmentTypeBadgeClass(type: string) {
+		switch (type) {
+			case 'DELETE':
+				return 'badge-error';
+			case 'ADD':
+				return 'badge-success';
+			case 'ALTER_TEXT':
+				return 'badge-warning';
+			case 'ALTER_POSITION':
+				return 'badge-info';
+			default:
+				return 'badge-ghost';
+		}
+	}
+
+	function getAmendmentTypeLabel(type: string) {
+		switch (type) {
+			case 'DELETE':
+				return m.deleteClause();
+			case 'ADD':
+				return m.addClause();
+			case 'ALTER_TEXT':
+				return m.alterText();
+			case 'ALTER_POSITION':
+				return m.alterPosition();
+			default:
+				return type;
+		}
+	}
 </script>
 
 <svelte:head>
@@ -565,13 +772,15 @@
 				<ResolutionEditor
 					committeeName={committee?.name ?? ''}
 					{resolution}
-					editable={true}
+					editable={paper.status !== 'AMENDMENT_PHASE'}
 					onResolutionChange={handleResolutionChange}
 					onClauseLock={handleClauseLock}
 					onClauseUnlock={handleClauseUnlock}
 					onClauseInteraction={handleClauseInteraction}
 					{lockedClauseIds}
 					{editableClauseIds}
+					amendments={paper.status === 'AMENDMENT_PHASE' ? amendmentOverlays : undefined}
+					onAmendmentClick={paper.status === 'AMENDMENT_PHASE' ? handleAmendmentClick : undefined}
 				>
 					{#snippet preambleAnnotations({ clause })}
 						{@const lock = locksByClauseId.get(clause.id)}
@@ -677,6 +886,98 @@
 			{/if}
 		</div>
 
+		<!-- Amendment phase controls (Phase 6c) -->
+		{#if paper.status === 'AMENDMENT_PHASE'}
+			<Fieldset legend={m.currentParagraph()} faIcon="fas fa-list-ol">
+				<div class="flex items-center justify-between">
+					<span class="font-mono text-lg font-bold">
+						OP {currentOpIndex + 1} / {operativeClauses.length}
+					</span>
+					<button
+						class="btn btn-primary btn-sm"
+						onclick={handleAdvanceParagraph}
+						disabled={currentOpIndex >= operativeClauses.length - 1}
+					>
+						<i class="fas fa-forward mr-1"></i>
+						{m.advanceToNextParagraph()}
+					</button>
+				</div>
+			</Fieldset>
+
+			<Fieldset legend={m.amendmentQueue()} faIcon="fas fa-gavel">
+				{#if sortedSubmittedAmendments.length === 0}
+					<p class="text-base-content/50 text-sm">{m.noAmendments()}</p>
+				{:else}
+					<div class="flex flex-col gap-2">
+						{#each sortedSubmittedAmendments as amendment (amendment.id)}
+							{@const isCurrentParagraph =
+								(amendment.targetOperativeIndex ?? -1) === currentOpIndex}
+							<div
+								id="amendment-{amendment.id}"
+								class="card card-border bg-base-100 p-3 transition-all {isCurrentParagraph
+									? 'border-primary border-2'
+									: ''}"
+							>
+								<div class="flex items-center justify-between gap-2">
+									<div class="flex items-center gap-2 flex-wrap">
+										<span class="badge badge-sm {getAmendmentTypeBadgeClass(amendment.type)}">
+											{getAmendmentTypeLabel(amendment.type)}
+										</span>
+										{#if amendment.targetOperativeIndex != null}
+											<span class="badge badge-ghost badge-sm font-mono">
+												OP {amendment.targetOperativeIndex + 1}
+											</span>
+										{/if}
+										{#if amendment.proposer?.representation}
+											<div class="flex items-center gap-1 text-sm">
+												<Flag representation={amendment.proposer.representation} size="xs" />
+												<span>
+													{amendment.proposer.representation.name ??
+														getTranslatedCountryNameFromAlpha3Code(
+															amendment.proposer.representation.alpha3Code
+														)}
+												</span>
+											</div>
+										{/if}
+										<span class="badge badge-ghost badge-xs">
+											{amendment.sponsors?.length ?? 0}
+											{m.sponsors()}
+										</span>
+									</div>
+									<div class="flex items-center gap-1">
+										<button
+											class="btn btn-success btn-xs"
+											onclick={() => {
+												confirmAmendmentId = amendment.id;
+												showAdoptConfirmModal = true;
+											}}
+										>
+											{m.adoptByConsensus()}
+										</button>
+										<button
+											class="btn btn-error btn-xs"
+											onclick={() => {
+												confirmAmendmentId = amendment.id;
+												showRejectConfirmModal = true;
+											}}
+										>
+											{m.amendmentRejected()}
+										</button>
+										<button
+											class="btn btn-ghost btn-xs"
+											onclick={() => handleWithdrawAmendment(amendment.id)}
+										>
+											{m.withdrawAmendment()}
+										</button>
+									</div>
+								</div>
+							</div>
+						{/each}
+					</div>
+				{/if}
+			</Fieldset>
+		{/if}
+
 		<!-- Document-level comments -->
 		<Fieldset legend={m.documentLevelComments()} faIcon="fas fa-comments">
 			<CommentSection
@@ -722,6 +1023,56 @@
 			{#if filteredAvailableMembers.length === 0}
 				<p class="text-center text-sm opacity-60 py-4">{m.noResults()}</p>
 			{/if}
+		</div>
+	</Modal>
+
+	<!-- Adopt by Consensus confirmation modal -->
+	<Modal bind:open={showAdoptConfirmModal}>
+		<div class="flex flex-col gap-4 p-4">
+			<h3 class="text-lg font-bold">{m.adoptByConsensus()}</h3>
+			<p>{m.confirmAdoptByConsensus()}</p>
+			<div class="flex justify-end gap-2">
+				<button
+					class="btn btn-ghost btn-sm"
+					onclick={() => {
+						showAdoptConfirmModal = false;
+						confirmAmendmentId = null;
+					}}
+				>
+					{m.abort()}
+				</button>
+				<button
+					class="btn btn-success btn-sm"
+					onclick={() => confirmAmendmentId && handleAdoptByConsensus(confirmAmendmentId)}
+				>
+					{m.yes()}
+				</button>
+			</div>
+		</div>
+	</Modal>
+
+	<!-- Reject confirmation modal -->
+	<Modal bind:open={showRejectConfirmModal}>
+		<div class="flex flex-col gap-4 p-4">
+			<h3 class="text-lg font-bold">{m.amendmentRejected()}</h3>
+			<p>{m.confirmRejectAmendment()}</p>
+			<div class="flex justify-end gap-2">
+				<button
+					class="btn btn-ghost btn-sm"
+					onclick={() => {
+						showRejectConfirmModal = false;
+						confirmAmendmentId = null;
+					}}
+				>
+					{m.abort()}
+				</button>
+				<button
+					class="btn btn-error btn-sm"
+					onclick={() => confirmAmendmentId && handleRejectAmendment(confirmAmendmentId)}
+				>
+					{m.yes()}
+				</button>
+			</div>
 		</div>
 	</Modal>
 {/if}

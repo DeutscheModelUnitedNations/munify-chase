@@ -395,11 +395,11 @@ commentPanel?: Snippet<[{ resolution: Resolution; activeClauseId?: string }]>;
 - ~~**Editor library**: preamble extension points (preambleAnnotations, preambleClauseToolbar)~~
 - ~~Integration in chair + participant DR views with real-time subscriptions~~
 
-### Phase 6: Amendment System
+### Phase 6: Amendment System (in progress)
 
-**6a: Editor library** — amendment overlay props, `rejectedClauseIds`, between-clauses snippet, rendering
-**6b: Backend** — amendment + sponsor handlers, threshold enforcement, consensus check flow, paragraph index locking, amendment application to JSON + snapshot
-**6c: Chair UI** — per-paragraph debate controls, amendment queue (GO-ordered), consensus check button, accept/reject actions
+**6a: Editor library** ✅ — amendment overlay props, `rejectedClauseIds`, between-clauses snippet, rendering
+**6b: Backend** ✅ — amendment + sponsor handlers, threshold enforcement, consensus check flow, paragraph index locking, amendment application to JSON + snapshot
+**6c: Chair UI** ✅ (WIP) — per-paragraph debate controls, amendment queue (GO-ordered), consensus check button, accept/reject actions, start amendment phase button
 **6d: Delegate UI** — amendment creation form (4 types), sponsor flow
 
 ### Phase 7: Voting (Paragraphs + Final)

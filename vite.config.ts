@@ -58,5 +58,8 @@ export default defineConfig({
 		}),
 		houdini(),
 		sveltekit()
-	]
+	],
+	server: {
+		allowedHosts: ['happy-star-9669b56f.tunnl.gg']
+	}
 });

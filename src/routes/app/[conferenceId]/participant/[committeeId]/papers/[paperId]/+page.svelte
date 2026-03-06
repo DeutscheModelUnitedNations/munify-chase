@@ -26,6 +26,7 @@
 	import { getTranslatedCountryNameFromAlpha3Code } from '$lib/utils/nationTranslationHelper.svelte';
 	import toast from 'svelte-french-toast';
 	import { fly, fade } from 'svelte/transition';
+	import { getResolutionLabels } from '$lib/utils/resolutionEditorLabels';
 	import { SvelteMap } from 'svelte/reactivity';
 
 	let { data }: { data: PageData } = $props();
@@ -1173,6 +1174,7 @@
 					committeeName={committee?.name ?? ''}
 					{resolution}
 					{headerData}
+					labels={getResolutionLabels()}
 					editable={canEdit && paper.status !== 'VOTING_PHASE' && paper.status !== 'FINAL'}
 					onResolutionChange={handleResolutionChange}
 					onClauseLock={collab ? handleClauseLock : undefined}
@@ -1626,6 +1628,7 @@
 						<ResolutionEditor
 							committeeName=""
 							resolution={miniResolution}
+							labels={getResolutionLabels()}
 							editable={true}
 							onResolutionChange={handleMiniResolutionChange}
 						/>
@@ -1641,6 +1644,7 @@
 						<ResolutionEditor
 							committeeName=""
 							resolution={miniResolution}
+							labels={getResolutionLabels()}
 							editable={true}
 							onResolutionChange={handleMiniResolutionChange}
 						/>

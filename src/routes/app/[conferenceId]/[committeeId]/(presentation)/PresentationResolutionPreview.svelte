@@ -10,6 +10,7 @@
 	} from '@deutschemodelunitednations/munify-resolution-editor';
 	import Flag from '$lib/components/Flag.svelte';
 	import { getTranslatedCountryNameFromAlpha3Code } from '$lib/utils/nationTranslationHelper.svelte';
+	import { getResolutionLabels } from '$lib/utils/resolutionEditorLabels';
 
 	interface Props {
 		committee: {
@@ -212,7 +213,7 @@
 {:else if dr.status === 'DRAFT_RESOLUTION' && resolution}
 	<!-- Full resolution preview -->
 	<div class="h-full overflow-auto">
-		<ResolutionPreview {resolution} {headerData} />
+		<ResolutionPreview {resolution} {headerData} labels={getResolutionLabels()} />
 	</div>
 {:else if (dr.status === 'AMENDMENT_PHASE' || dr.status === 'VOTING_PHASE') && resolution}
 	{#if activeAmendment && dr.status === 'AMENDMENT_PHASE'}

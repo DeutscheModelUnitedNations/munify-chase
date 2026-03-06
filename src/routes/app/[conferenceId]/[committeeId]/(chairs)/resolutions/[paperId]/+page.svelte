@@ -28,6 +28,7 @@
 	import toast from 'svelte-french-toast';
 	import { openVotingModal } from '$lib/components/voting/votingModal';
 	import { fly, fade } from 'svelte/transition';
+	import { getResolutionLabels } from '$lib/utils/resolutionEditorLabels';
 	import { SvelteSet, SvelteMap } from 'svelte/reactivity';
 
 	let { data }: { data: PageData } = $props();
@@ -1145,6 +1146,7 @@
 					committeeName={committee?.name ?? ''}
 					{resolution}
 					{headerData}
+					labels={getResolutionLabels()}
 					editable={paper.status !== 'AMENDMENT_PHASE' &&
 						paper.status !== 'VOTING_PHASE' &&
 						paper.status !== 'FINAL'}

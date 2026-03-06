@@ -1168,14 +1168,33 @@
 					<span class="font-mono text-lg font-bold">
 						OP {currentOpIndex + 1} / {operativeClauses.length}
 					</span>
-					<button
-						class="btn btn-primary btn-sm"
-						onclick={handleAdvanceParagraph}
-						disabled={currentOpIndex >= operativeClauses.length - 1}
-					>
-						<i class="fas fa-forward mr-1"></i>
-						{m.advanceToNextParagraph()}
-					</button>
+					<div class="flex items-center gap-1">
+						<button
+							class="btn btn-ghost btn-sm"
+							disabled={currentOpIndex <= 0}
+							onclick={async () => {
+								if (!committee) return;
+								try {
+									await UpdateCommitteeMutation.mutate({
+										id: committee.id,
+										currentOperativeIndex: currentOpIndex - 1
+									});
+								} catch {
+									toast.error(m.saveError());
+								}
+							}}
+						>
+							<i class="fas fa-backward"></i>
+						</button>
+						<button
+							class="btn btn-primary btn-sm"
+							onclick={handleAdvanceParagraph}
+							disabled={currentOpIndex >= operativeClauses.length - 1}
+						>
+							<i class="fas fa-forward mr-1"></i>
+							{m.advanceToNextParagraph()}
+						</button>
+					</div>
 				</div>
 			</Fieldset>
 

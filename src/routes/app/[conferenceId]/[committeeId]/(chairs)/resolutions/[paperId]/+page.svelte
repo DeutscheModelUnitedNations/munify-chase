@@ -892,85 +892,86 @@
 		</div>
 
 		<!-- Collapsible metadata header -->
-		<div class="collapse collapse-arrow bg-base-100 shadow-sm">
-			<input type="checkbox" bind:checked={metadataOpen} />
-			<div class="collapse-title">
-				<div class="flex items-center gap-2">
-					<span class="font-bold font-mono">
-						{paper.documentNumber ?? m.draftResolution()}
-					</span>
-					<span class="badge badge-soft badge-sm {getStatusBadgeClass(paper.status)}">
-						{getStatusText(paper.status)}
-					</span>
-					{#if paper.status !== 'WORKING_PAPER'}
-						<button
-							class="btn btn-ghost btn-xs opacity-60 hover:opacity-100"
-							title={m.revertStatus()}
-							onclick={(e) => {
-								e.stopPropagation();
-								revertRestoreSnapshot = false;
-								showRevertStatusModal = true;
-							}}
-						>
-							<i class="fas fa-undo text-xs"></i>
-						</button>
+		<div class="flex items-start gap-2">
+			<div class="collapse collapse-arrow bg-base-100 shadow-sm flex-1">
+				<input type="checkbox" bind:checked={metadataOpen} />
+				<div class="collapse-title">
+					<div class="flex items-center gap-2">
+						<span class="font-bold font-mono">
+							{paper.documentNumber ?? m.draftResolution()}
+						</span>
+						<span class="badge badge-soft badge-sm {getStatusBadgeClass(paper.status)}">
+							{getStatusText(paper.status)}
+						</span>
+					</div>
+				</div>
+				<div class="collapse-content flex flex-col gap-4">
+					<!-- Agenda Item -->
+					{#if paper.agendaItem}
+						<div class="text-sm">
+							<span class="opacity-60">{m.agendaItem()}:</span>
+							{paper.agendaItem.title}
+						</div>
 					{/if}
+
+					<!-- Creator -->
+					{#if paper.creator?.representation}
+						<div class="flex items-center gap-2 text-sm">
+							<span class="opacity-60">{m.submittingNation()}:</span>
+							<Flag representation={paper.creator.representation} size="xs" />
+							{paper.creator.representation.name ??
+								getTranslatedCountryNameFromAlpha3Code(paper.creator.representation.alpha3Code)}
+						</div>
+					{/if}
+
+					<!-- Sponsors -->
+					<Fieldset legend={m.sponsors()} faIcon="fas fa-users">
+						<div class="flex flex-wrap gap-2">
+							{#each sortedSponsors as sponsor (sponsor.id)}
+								<div
+									class="group relative tooltip tooltip-bottom"
+									data-tip={sponsor.committeeMember?.representation?.name ??
+										getTranslatedCountryNameFromAlpha3Code(
+											sponsor.committeeMember?.representation?.alpha3Code
+										)}
+								>
+									<Flag representation={sponsor.committeeMember?.representation} size="xs" />
+									<button
+										class="absolute -top-1 -right-1 btn btn-circle btn-xs btn-error opacity-0 group-hover:opacity-100 transition-opacity"
+										onclick={() => handleRemoveSponsor(sponsor.committeeMemberId)}
+									>
+										<i class="fas fa-times text-[0.5rem]"></i>
+									</button>
+								</div>
+							{/each}
+							<button
+								class="btn btn-ghost btn-xs"
+								onclick={() => {
+									sponsorSearchQuery = '';
+									showAddSponsorModal = true;
+								}}
+							>
+								<i class="fas fa-plus"></i>
+							</button>
+						</div>
+						<p class="mt-1 text-xs opacity-60">
+							{m.sponsorCount({ count: String(paper.sponsors.length) })}
+						</p>
+					</Fieldset>
 				</div>
 			</div>
-			<div class="collapse-content flex flex-col gap-4">
-				<!-- Agenda Item -->
-				{#if paper.agendaItem}
-					<div class="text-sm">
-						<span class="opacity-60">{m.agendaItem()}:</span>
-						{paper.agendaItem.title}
-					</div>
-				{/if}
-
-				<!-- Creator -->
-				{#if paper.creator?.representation}
-					<div class="flex items-center gap-2 text-sm">
-						<span class="opacity-60">{m.submittingNation()}:</span>
-						<Flag representation={paper.creator.representation} size="xs" />
-						{paper.creator.representation.name ??
-							getTranslatedCountryNameFromAlpha3Code(paper.creator.representation.alpha3Code)}
-					</div>
-				{/if}
-
-				<!-- Sponsors -->
-				<Fieldset legend={m.sponsors()} faIcon="fas fa-users">
-					<div class="flex flex-wrap gap-2">
-						{#each sortedSponsors as sponsor (sponsor.id)}
-							<div
-								class="group relative tooltip tooltip-bottom"
-								data-tip={sponsor.committeeMember?.representation?.name ??
-									getTranslatedCountryNameFromAlpha3Code(
-										sponsor.committeeMember?.representation?.alpha3Code
-									)}
-							>
-								<Flag representation={sponsor.committeeMember?.representation} size="xs" />
-								<button
-									class="absolute -top-1 -right-1 btn btn-circle btn-xs btn-error opacity-0 group-hover:opacity-100 transition-opacity"
-									onclick={() => handleRemoveSponsor(sponsor.committeeMemberId)}
-								>
-									<i class="fas fa-times text-[0.5rem]"></i>
-								</button>
-							</div>
-						{/each}
-						<button
-							class="btn btn-ghost btn-xs"
-							onclick={() => {
-								sponsorSearchQuery = '';
-								showAddSponsorModal = true;
-							}}
-						>
-							<i class="fas fa-plus"></i>
-						</button>
-					</div>
-					<p class="mt-1 text-xs opacity-60">
-						{m.sponsorCount({ count: String(paper.sponsors.length) })}
-					</p>
-				</Fieldset>
-			</div>
+			{#if paper.status !== 'WORKING_PAPER'}
+				<button
+					class="btn btn-ghost btn-xs opacity-60 hover:opacity-100 mt-3"
+					title={m.revertStatus()}
+					onclick={() => {
+						revertRestoreSnapshot = false;
+						showRevertStatusModal = true;
+					}}
+				>
+					<i class="fas fa-undo text-xs"></i>
+				</button>
+			{/if}
 		</div>
 
 		<!-- Collaborative editing info banner -->

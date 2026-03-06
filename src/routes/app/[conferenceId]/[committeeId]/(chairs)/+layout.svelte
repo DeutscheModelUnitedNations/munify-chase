@@ -12,6 +12,7 @@
 	import { serverTime } from '$lib/state/serverTime.svelte';
 	import hotkeys from 'hotkeys-js';
 	import AdoptionConfetti from '$lib/components/AdoptionConfetti.svelte';
+	import { CommitteeSubscription } from './committeeSubscription';
 
 	interface Props {
 		children: Snippet;
@@ -21,7 +22,9 @@
 	let { data, children }: Props = $props();
 
 	let query = $derived(data?.CommitteeTeamQuery);
-	let committee = $derived($query.data?.findFirstCommittee);
+	let committee = $derived(
+		$CommitteeSubscription.data?.findFirstCommittee ?? $query.data?.findFirstCommittee
+	);
 
 	let committeeStatusExpiredAlerted = $state(false);
 	let speakersListOvertimeAlerted = $state(false);
@@ -77,6 +80,7 @@
 	});
 
 	onMount(() => {
+		CommitteeSubscription.listen({ id: data.committeeId });
 		hotkeys('alt+p', (event) => {
 			event.preventDefault();
 			window.open('.', '_blank');
@@ -92,7 +96,10 @@
 	<title>{committee?.abbreviation ?? 'N/A'} {m.chairControls()} - MUNify CHASE</title>
 </svelte:head>
 
-<ChairNavbar title={committee?.abbreviation} />
+<ChairNavbar
+	title={committee?.abbreviation}
+	activeDraftResolutionId={committee?.activeDraftResolutionId}
+/>
 
 <div class="pb-16">
 	{@render children()}

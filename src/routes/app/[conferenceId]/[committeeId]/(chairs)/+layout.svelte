@@ -12,6 +12,7 @@
 	import { serverTime } from '$lib/state/serverTime.svelte';
 	import hotkeys from 'hotkeys-js';
 	import AdoptionConfetti from '$lib/components/AdoptionConfetti.svelte';
+	import VotingModal from '$lib/components/voting/VotingModal.svelte';
 	import { CommitteeSubscription } from './committeeSubscription';
 
 	interface Props {
@@ -117,6 +118,10 @@
 	committeeId={data.committeeId}
 	oldStateOfDebate={committee?.stateOfDebate}
 />
+
+{#if committee}
+	<VotingModal {committee} />
+{/if}
 
 <AdoptionConfetti
 	lastAdoptionDate={committee?.lastResolutionAdoptionDate}

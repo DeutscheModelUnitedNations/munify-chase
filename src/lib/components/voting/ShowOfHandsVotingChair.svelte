@@ -9,6 +9,7 @@
 	import VoteClicker from './VoteClicker.svelte';
 	import ResultChart from './ResultChart.svelte';
 	import { calculateMajority } from '$lib/utils/majorities';
+	import type { VotingResult } from './votingModal';
 
 	interface Props {
 		active: boolean;
@@ -16,9 +17,17 @@
 		voteName?: string;
 		majority: VotingMajority;
 		withAbstentions: boolean;
+		oncomplete?: (result: VotingResult) => void;
 	}
 
-	let { active = $bindable(), voteName, majority, withAbstentions, committee }: Props = $props();
+	let {
+		active = $bindable(),
+		voteName,
+		majority,
+		withAbstentions,
+		committee,
+		oncomplete
+	}: Props = $props();
 
 	let currentState = $state<VotingStage>('PRO');
 
@@ -48,7 +57,25 @@
 		}
 	});
 
-	const exit = () => {
+	const exit = (completed: boolean = false) => {
+		if (oncomplete) {
+			if (completed) {
+				oncomplete({
+					outcome: votesPro >= majorityAmount ? 'ADOPTED' : 'REJECTED',
+					votesFor: votesPro,
+					votesAgainst: votesCon,
+					votesAbstain: votesAbstain,
+					cancelled: false
+				});
+			} else {
+				oncomplete({
+					votesFor: 0,
+					votesAgainst: 0,
+					votesAbstain: 0,
+					cancelled: true
+				});
+			}
+		}
 		votesPro = 0;
 		votesCon = 0;
 		votesAbstain = 0;
@@ -72,7 +99,7 @@
 				currentState = 'EVALUATION';
 				break;
 			case 'EVALUATION':
-				exit();
+				exit(true);
 				break;
 		}
 	};
@@ -206,7 +233,11 @@
 		</button>
 
 		<div class="absolute top-3 right-3">
-			<button aria-label="Close modal" class="btn btn-ghost btn-circle btn-sm" onclick={exit}>
+			<button
+				aria-label="Close modal"
+				class="btn btn-ghost btn-circle btn-sm"
+				onclick={() => exit()}
+			>
 				<i class="fa-duotone fa-xmark"></i>
 			</button>
 		</div>

@@ -123,6 +123,7 @@ type Committee {
   members(limit: Int, offset: Int, where: CommitteeMemberWhereInputArgument): [CommitteeMember!]!
   name: String!
   paperSupportThreshold: Int
+  resolutionHeadline: String
   resolutionPapers(limit: Int, offset: Int, where: ResolutionPaperWhereInputArgument): [ResolutionPaper!]!
   showWhiteboard: Boolean!
   simpleMajority: Int
@@ -201,6 +202,7 @@ input CommitteeWhereInputArgument {
   maxDraftResolutions: Int
   members: CommitteeMemberWhereInputArgument
   name: String
+  resolutionHeadline: String
   resolutionPapers: ResolutionPaperWhereInputArgument
   showWhiteboard: Boolean
   stateOfDebate: String
@@ -343,6 +345,7 @@ input ImportDataCommittee {
   abbreviation: String!
   id: ID!
   name: String!
+  resolutionHeadline: String
 }
 
 input ImportDataCommitteeMember {

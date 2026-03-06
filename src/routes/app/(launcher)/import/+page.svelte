@@ -328,6 +328,12 @@
 					<input
 						type="text"
 						class="input input-bordered w-full"
+						bind:value={committee.resolutionHeadline}
+						placeholder={m.resolutionHeadline()}
+					/>
+					<input
+						type="text"
+						class="input input-bordered w-full"
 						bind:value={committee.id}
 						placeholder={m.committeeId()}
 					/>

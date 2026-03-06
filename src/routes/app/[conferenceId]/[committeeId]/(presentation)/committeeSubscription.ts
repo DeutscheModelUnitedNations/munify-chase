@@ -6,6 +6,7 @@ export const PresentationSubscription = graphql(`
 			id
 			abbreviation
 			name
+			resolutionHeadline
 			status
 			statusHeadline
 			statusUntil
@@ -94,6 +95,15 @@ export const PresentationSubscription = graphql(`
 						name
 						alpha2Code
 						alpha3Code
+					}
+				}
+				sponsors {
+					id
+					committeeMember {
+						representation {
+							name
+							alpha3Code
+						}
 					}
 				}
 				amendments {

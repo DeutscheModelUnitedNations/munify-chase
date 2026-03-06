@@ -15,6 +15,7 @@
 		committee: {
 			abbreviation: string;
 			name: string;
+			resolutionHeadline?: string | null;
 			currentOperativeIndex?: number | null;
 			activeAmendment?: {
 				id: string;
@@ -53,6 +54,15 @@
 						alpha3Code?: string | null;
 					} | null;
 				} | null;
+				sponsors?: Array<{
+					id: string;
+					committeeMember?: {
+						representation?: {
+							name?: string | null;
+							alpha3Code?: string | null;
+						} | null;
+					} | null;
+				}>;
 				amendments?: Array<{
 					id: string;
 					type: string;
@@ -114,6 +124,7 @@
 			conferenceTitle: committee.conference?.title ?? undefined,
 			committeeAbbreviation: committee.abbreviation,
 			committeeFullName: committee.name,
+			committeeResolutionHeadline: committee.resolutionHeadline ?? undefined,
 			documentNumber: dr.documentNumber ?? undefined,
 			topic: dr.agendaItem?.title ?? undefined,
 			authoringDelegation:
@@ -121,6 +132,15 @@
 				(dr.creator?.representation?.alpha3Code
 					? getTranslatedCountryNameFromAlpha3Code(dr.creator.representation.alpha3Code)
 					: undefined),
+			sponsoringDelegations: dr.sponsors
+				?.map(
+					(s) =>
+						getTranslatedCountryNameFromAlpha3Code(s.committeeMember?.representation?.alpha3Code) ??
+						s.committeeMember?.representation?.name ??
+						''
+				)
+				.filter(Boolean)
+				.sort((a, b) => a.localeCompare(b)),
 			lastEdited: dr.updatedAt ?? undefined
 		};
 	});

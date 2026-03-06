@@ -15,7 +15,8 @@ const Input = schemaBuilder.inputType('ImportData', {
 					fields: (t) => ({
 						id: t.id({ required: true }),
 						name: t.string({ required: true }),
-						abbreviation: t.string({ required: true })
+						abbreviation: t.string({ required: true }),
+						resolutionHeadline: t.string()
 					})
 				})
 			],
@@ -128,6 +129,7 @@ schemaBuilder.mutationFields((t) => ({
 							id: committee.id,
 							name: committee.name,
 							abbreviation: committee.abbreviation,
+							resolutionHeadline: committee.resolutionHeadline,
 							conferenceId: data.id
 						}))
 					);

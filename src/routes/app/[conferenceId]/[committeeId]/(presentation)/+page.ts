@@ -7,6 +7,7 @@ export const _houdini_load = graphql(`
 			id
 			abbreviation
 			name
+			resolutionHeadline
 			status
 			statusHeadline
 			statusUntil
@@ -95,6 +96,15 @@ export const _houdini_load = graphql(`
 						name
 						alpha2Code
 						alpha3Code
+					}
+				}
+				sponsors {
+					id
+					committeeMember {
+						representation {
+							name
+							alpha3Code
+						}
 					}
 				}
 				amendments {

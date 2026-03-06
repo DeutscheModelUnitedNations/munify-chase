@@ -6,6 +6,7 @@ export const ParticipantCommitteeSubscription = graphql(`
 			id
 			abbreviation
 			name
+			resolutionHeadline
 			status
 			statusHeadline
 			statusUntil
@@ -60,6 +61,9 @@ export const ParticipantCommitteeSubscription = graphql(`
 						}
 					}
 				}
+			}
+			conference {
+				title
 			}
 			members {
 				id

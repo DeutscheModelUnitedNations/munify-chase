@@ -6,6 +6,7 @@ export const CommitteeSubscription = graphql(`
 			id
 			abbreviation
 			name
+			resolutionHeadline
 			stateOfDebate
 			status
 			statusHeadline
@@ -81,6 +82,7 @@ export const CommitteeSubscription = graphql(`
 				}
 			}
 			conference {
+				title
 				hasModeratedCaucus
 				uniqueConferenceMembers {
 					id

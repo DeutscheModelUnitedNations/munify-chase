@@ -15,6 +15,7 @@
 		migrateResolution,
 		createEmptyOperativeClause,
 		type Resolution,
+		type ResolutionHeaderData,
 		type AmendmentOverlay,
 		type OperativeClause
 	} from '@deutschemodelunitednations/munify-resolution-editor';
@@ -110,6 +111,30 @@
 		if (remotePaper?.content && !hasPendingSave) {
 			resolution = migrateResolution(remotePaper.content as Resolution);
 		}
+	});
+
+	// Resolution header data for document preview
+	let headerData = $derived<ResolutionHeaderData>({
+		conferenceTitle: committee?.conference?.title ?? undefined,
+		committeeAbbreviation: committee?.abbreviation ?? undefined,
+		committeeFullName: committee?.name ?? undefined,
+		committeeResolutionHeadline: committee?.resolutionHeadline ?? undefined,
+		documentNumber: paper?.documentNumber ?? undefined,
+		topic: committee?.activeAgendaItem?.title ?? undefined,
+		authoringDelegation:
+			getTranslatedCountryNameFromAlpha3Code(paper?.creator?.representation?.alpha3Code) ??
+			paper?.creator?.representation?.name ??
+			undefined,
+		sponsoringDelegations: paper?.sponsors
+			?.map(
+				(s) =>
+					getTranslatedCountryNameFromAlpha3Code(s.committeeMember?.representation?.alpha3Code) ??
+					s.committeeMember?.representation?.name ??
+					''
+			)
+			.filter(Boolean)
+			.sort((a, b) => a.localeCompare(b)),
+		lastEdited: paper?.updatedAt ?? undefined
 	});
 
 	onMount(() => {
@@ -1147,6 +1172,7 @@
 				<ResolutionEditor
 					committeeName={committee?.name ?? ''}
 					{resolution}
+					{headerData}
 					editable={canEdit && paper.status !== 'VOTING_PHASE' && paper.status !== 'FINAL'}
 					onResolutionChange={handleResolutionChange}
 					onClauseLock={collab ? handleClauseLock : undefined}

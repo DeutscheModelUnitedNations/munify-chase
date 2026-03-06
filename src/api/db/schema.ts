@@ -79,7 +79,8 @@ export const committee = pgTable(
 		activeDraftResolutionId: text().references((): AnyPgColumn => resolutionPaper.id),
 		currentOperativeIndex: smallint(),
 		supportReEvaluationOpen: boolean().notNull().default(false),
-		activeAmendmentId: text().references((): AnyPgColumn => amendment.id, { onDelete: 'set null' })
+		activeAmendmentId: text().references((): AnyPgColumn => amendment.id, { onDelete: 'set null' }),
+		resolutionHeadline: text()
 	},
 	(t) => [unique().on(t.conferenceId, t.name), unique().on(t.conferenceId, t.abbreviation)]
 );

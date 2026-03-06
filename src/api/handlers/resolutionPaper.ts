@@ -516,6 +516,60 @@ schemaBuilder.mutationFields((t) => ({
 		}
 	}),
 
+	startVotingPhase: t.drizzleField({
+		type: ref,
+		args: {
+			paperId: t.arg.id({ required: true })
+		},
+		resolve: async (query, root, args, ctx, info) => {
+			const paper = await db.query.resolutionPaper
+				.findFirst({
+					where: { id: args.paperId }
+				})
+				.then(assertFindFirstExists);
+
+			if (paper.status !== 'AMENDMENT_PHASE') {
+				throw new GraphQLError('Paper must be in AMENDMENT_PHASE to start voting');
+			}
+
+			await assertCommitteeChairOrAdmin(ctx, paper.committeeId);
+
+			await db.transaction(async (tx) => {
+				await tx
+					.update(schema.resolutionPaper)
+					.set({ status: 'VOTING_PHASE' })
+					.where(eq(schema.resolutionPaper.id, args.paperId));
+
+				await tx.insert(schema.paperContentSnapshot).values({
+					paperId: args.paperId,
+					content: paper.content,
+					trigger: 'VOTING_PHASE'
+				});
+			});
+
+			// Reset currentOperativeIndex to 0 for voting navigation
+			await db
+				.update(schema.committee)
+				.set({ currentOperativeIndex: 0 })
+				.where(eq(schema.committee.id, paper.committeeId));
+
+			pubsub.updated(args.paperId);
+			committeePubsub.updated(paper.committeeId);
+
+			return db.query.resolutionPaper
+				.findFirst(
+					query(
+						ctx.abilities.resolutionPaper.filter('read', {
+							inject: {
+								where: { id: args.paperId }
+							}
+						}).query.single
+					)
+				)
+				.then(assertFindFirstExists);
+		}
+	}),
+
 	recordVoteResult: t.drizzleField({
 		type: ref,
 		args: {
@@ -531,6 +585,10 @@ schemaBuilder.mutationFields((t) => ({
 					where: { id: args.paperId }
 				})
 				.then(assertFindFirstExists);
+
+			if (paper.status !== 'VOTING_PHASE' && paper.status !== 'AMENDMENT_PHASE') {
+				throw new GraphQLError('Paper must be in VOTING_PHASE to record final vote');
+			}
 
 			await assertCommitteeChairOrAdmin(ctx, paper.committeeId);
 
@@ -549,20 +607,22 @@ schemaBuilder.mutationFields((t) => ({
 					.where(eq(schema.resolutionPaper.id, args.paperId));
 			});
 
-			// Clear activeDraftResolutionId if this was the active DR
-			const committee = await db.query.committee
-				.findFirst({ where: { id: paper.committeeId } })
-				.then(assertFindFirstExists);
+			// Always clear activeDraftResolutionId and currentOperativeIndex
+			const updateSet: Record<string, unknown> = {
+				activeDraftResolutionId: null,
+				currentOperativeIndex: null
+			};
 
-			if (committee.activeDraftResolutionId === args.paperId) {
-				await db
-					.update(schema.committee)
-					.set({ activeDraftResolutionId: null })
-					.where(eq(schema.committee.id, paper.committeeId));
-
-				committeePubsub.updated(paper.committeeId);
+			if (args.outcome === 'ADOPTED') {
+				updateSet.lastResolutionAdoptionDate = new Date();
 			}
 
+			await db
+				.update(schema.committee)
+				.set(updateSet)
+				.where(eq(schema.committee.id, paper.committeeId));
+
+			committeePubsub.updated(paper.committeeId);
 			pubsub.updated(args.paperId);
 
 			return db.query.resolutionPaper

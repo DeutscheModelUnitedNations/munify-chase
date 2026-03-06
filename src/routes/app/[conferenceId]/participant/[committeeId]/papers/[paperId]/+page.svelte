@@ -25,6 +25,7 @@
 	import { getTranslatedCountryNameFromAlpha3Code } from '$lib/utils/nationTranslationHelper.svelte';
 	import toast from 'svelte-french-toast';
 	import { fly, fade } from 'svelte/transition';
+	import { SvelteMap } from 'svelte/reactivity';
 
 	let { data }: { data: PageData } = $props();
 
@@ -78,7 +79,9 @@
 
 	// DR support: delegate can toggle support during re-evaluation
 	let isDrStatus = $derived(
-		paper?.status === 'DRAFT_RESOLUTION' || paper?.status === 'AMENDMENT_PHASE'
+		paper?.status === 'DRAFT_RESOLUTION' ||
+			paper?.status === 'AMENDMENT_PHASE' ||
+			paper?.status === 'VOTING_PHASE'
 	);
 	let canToggleDrSupport = $derived(
 		isDelegate && isDrStatus && committee?.supportReEvaluationOpen === true
@@ -162,9 +165,9 @@
 		}
 	});
 
-	// Start amendments subscription when paper enters amendment phase
+	// Start amendments subscription when paper enters amendment phase or voting phase
 	$effect(() => {
-		if (paper?.status === 'AMENDMENT_PHASE') {
+		if (paper?.status === 'AMENDMENT_PHASE' || paper?.status === 'VOTING_PHASE') {
 			ParticipantAmendmentsSubscription.listen({ paperId: page.params.paperId! });
 		}
 	});
@@ -829,6 +832,62 @@
 		}
 	}
 
+	// =====================================================
+	// Clause Votes (Phase 7 — participant view)
+	// =====================================================
+
+	const ParticipantClauseVotesSubscription = graphql(`
+		subscription ParticipantClauseVotesSubscription($paperId: ID!) {
+			findManyOperativeClauseVote(where: { paperId: $paperId }) {
+				id
+				clauseId
+				outcome
+				votesFor
+				votesAgainst
+				votesAbstain
+			}
+		}
+	`);
+
+	const ParticipantVoteResultSubscription = graphql(`
+		subscription ParticipantVoteResultSubscription($paperId: ID!) {
+			findFirstResolutionVoteResult(where: { paperId: $paperId }) {
+				id
+				outcome
+				votesFor
+				votesAgainst
+				votesAbstain
+			}
+		}
+	`);
+
+	// Start clause votes subscription when paper enters voting or final phase
+	$effect(() => {
+		if (paper?.status === 'VOTING_PHASE' || paper?.status === 'FINAL') {
+			ParticipantClauseVotesSubscription.listen({ paperId: page.params.paperId! });
+			ParticipantVoteResultSubscription.listen({ paperId: page.params.paperId! });
+		}
+	});
+
+	let clauseVotes = $derived(
+		$ParticipantClauseVotesSubscription.data?.findManyOperativeClauseVote ?? []
+	);
+	let voteResult = $derived(
+		$ParticipantVoteResultSubscription.data?.findFirstResolutionVoteResult ?? null
+	);
+
+	let rejectedClauseIds = $derived(
+		clauseVotes.filter((v) => v.outcome === 'REJECTED').map((v) => v.clauseId)
+	);
+
+	let clauseVoteMap = $derived.by(() => {
+		const map = new SvelteMap<string, (typeof clauseVotes)[0]>();
+		for (const v of clauseVotes) {
+			map.set(v.clauseId, v);
+		}
+		return map;
+	});
+
 	// Mini editor resolution for amendment creation modal
 	let miniResolution = $derived.by(() => {
 		if (!amendmentNewContent) return null;
@@ -900,7 +959,11 @@
 								? 'badge-warning'
 								: paper.status === 'DRAFT_RESOLUTION'
 									? 'badge-info'
-									: 'badge-success'}"
+									: paper.status === 'AMENDMENT_PHASE'
+										? 'badge-secondary'
+										: paper.status === 'VOTING_PHASE'
+											? 'badge-accent'
+											: 'badge-success'}"
 					>
 						{paper.status === 'WORKING_PAPER'
 							? m.workingPaper()
@@ -908,7 +971,11 @@
 								? m.submitted()
 								: paper.status === 'DRAFT_RESOLUTION'
 									? m.draftResolution()
-									: m.finalResolution()}
+									: paper.status === 'AMENDMENT_PHASE'
+										? m.amendmentPhase()
+										: paper.status === 'VOTING_PHASE'
+											? m.votingPhase()
+											: m.finalResolution()}
 					</span>
 				</div>
 			</div>
@@ -1031,6 +1098,48 @@
 			</div>
 		{/if}
 
+		<!-- Final vote result alert -->
+		{#if paper.status === 'FINAL' && voteResult}
+			<div
+				class="alert mt-2 {voteResult.outcome === 'ADOPTED'
+					? 'alert-success'
+					: voteResult.outcome === 'REJECTED'
+						? 'alert-error'
+						: 'alert-warning'}"
+			>
+				<i
+					class="fas {voteResult.outcome === 'ADOPTED'
+						? 'fa-check-circle'
+						: voteResult.outcome === 'REJECTED'
+							? 'fa-times-circle'
+							: 'fa-undo'}"
+				></i>
+				<div>
+					<span class="font-bold">
+						{voteResult.outcome === 'ADOPTED'
+							? m.adopted()
+							: voteResult.outcome === 'REJECTED'
+								? m.rejected()
+								: m.sentBack()}
+					</span>
+					<span class="ml-2 text-sm">
+						{m.votesFor()}: {voteResult.votesFor} | {m.votesAgainst()}: {voteResult.votesAgainst}
+						{#if voteResult.votesAbstain > 0}
+							| {m.votesAbstain()}: {voteResult.votesAbstain}
+						{/if}
+					</span>
+				</div>
+			</div>
+		{/if}
+
+		<!-- Voting phase indicator -->
+		{#if paper.status === 'VOTING_PHASE'}
+			<div class="alert alert-info mt-2 text-sm">
+				<i class="fas fa-vote-yea"></i>
+				<span>{m.votingPhaseActive()}</span>
+			</div>
+		{/if}
+
 		<!-- Resolution Editor -->
 		<div class="py-2">
 			{#if resolution}
@@ -1038,7 +1147,7 @@
 				<ResolutionEditor
 					committeeName={committee?.name ?? ''}
 					{resolution}
-					editable={canEdit}
+					editable={canEdit && paper.status !== 'VOTING_PHASE' && paper.status !== 'FINAL'}
 					onResolutionChange={handleResolutionChange}
 					onClauseLock={collab ? handleClauseLock : undefined}
 					onClauseUnlock={collab ? handleClauseUnlock : undefined}
@@ -1046,6 +1155,9 @@
 					lockedClauseIds={collab ? lockedClauseIds : undefined}
 					editableClauseIds={collab ? editableClauseIds : undefined}
 					amendments={showAmendmentUI ? amendmentOverlays : undefined}
+					rejectedClauseIds={paper.status === 'VOTING_PHASE' || paper.status === 'FINAL'
+						? rejectedClauseIds
+						: undefined}
 					onAmendmentClick={showAmendmentUI ? handleAmendmentClick : undefined}
 				>
 					{#snippet betweenOperativeClauses({ index })}
@@ -1373,6 +1485,35 @@
 					</div>
 				</Fieldset>
 			{/if}
+		{/if}
+
+		<!-- Per-paragraph results when FINAL -->
+		{#if paper.status === 'FINAL' && clauseVotes.length > 0}
+			<Fieldset legend={m.clauseVoteSummary()} faIcon="fas fa-clipboard-check">
+				<div class="flex flex-col gap-1">
+					{#each operativeClauses as clause, i (clause.id)}
+						{@const vote = clauseVoteMap.get(clause.id)}
+						<div class="flex items-center gap-2 px-2 py-1 text-sm">
+							<span class="font-mono w-12">OP {i + 1}</span>
+							{#if vote}
+								<span
+									class="badge badge-xs {vote.outcome === 'ADOPTED'
+										? 'badge-success'
+										: 'badge-error'}"
+								>
+									{vote.outcome === 'ADOPTED' ? m.adopted() : m.rejected()}
+								</span>
+								<span class="text-xs opacity-60">
+									{vote.votesFor}/{vote.votesAgainst}
+									{#if vote.votesAbstain > 0}/{vote.votesAbstain}{/if}
+								</span>
+							{:else}
+								<span class="badge badge-xs badge-ghost">—</span>
+							{/if}
+						</div>
+					{/each}
+				</div>
+			</Fieldset>
 		{/if}
 
 		<!-- Document-level comments -->

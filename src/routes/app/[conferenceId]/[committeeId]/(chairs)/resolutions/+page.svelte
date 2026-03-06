@@ -34,14 +34,17 @@
 			.sort((a, b) => b.sponsors.length - a.sponsors.length)
 	);
 
-	// Draft resolutions (DR, AMENDMENT_PHASE, FINAL)
+	// Draft resolutions (DR, AMENDMENT_PHASE, VOTING_PHASE, FINAL)
 	// During re-evaluation: sorted by sponsor count (descending) to show ranking
 	// Otherwise: sorted by sequenceNumber
 	let draftResolutions = $derived(
 		papers
 			.filter(
 				(p) =>
-					p.status === 'DRAFT_RESOLUTION' || p.status === 'AMENDMENT_PHASE' || p.status === 'FINAL'
+					p.status === 'DRAFT_RESOLUTION' ||
+					p.status === 'AMENDMENT_PHASE' ||
+					p.status === 'VOTING_PHASE' ||
+					p.status === 'FINAL'
 			)
 			.sort((a, b) =>
 				committee?.supportReEvaluationOpen
@@ -176,6 +179,8 @@
 				return 'badge-info';
 			case 'AMENDMENT_PHASE':
 				return 'badge-secondary';
+			case 'VOTING_PHASE':
+				return 'badge-accent';
 			case 'FINAL':
 				return 'badge-success';
 			default:
@@ -189,12 +194,16 @@
 				return m.draftResolution();
 			case 'AMENDMENT_PHASE':
 				return m.amendmentPhase();
+			case 'VOTING_PHASE':
+				return m.votingPhase();
 			case 'FINAL':
 				return m.finalResolution();
 			default:
 				return status;
 		}
 	}
+
+	let isInVotingPhase = $derived(activeDr && activeDr.status === 'VOTING_PHASE');
 
 	function timeAgo(dateStr: string | Date | null | undefined) {
 		if (!dateStr) return '';
@@ -314,7 +323,9 @@
 								{@const isActive = paper.id === committee.activeDraftResolutionId}
 								{@const canSetActive =
 									!isActive &&
-									(paper.status === 'DRAFT_RESOLUTION' || paper.status === 'AMENDMENT_PHASE')}
+									(paper.status === 'DRAFT_RESOLUTION' ||
+										paper.status === 'AMENDMENT_PHASE' ||
+										paper.status === 'VOTING_PHASE')}
 								<div
 									class="card bg-base-200 shadow-sm transition-shadow {isActive
 										? 'border-l-4 border-success'
@@ -348,7 +359,7 @@
 												</span>
 											</div>
 										</a>
-										{#if paper.status === 'DRAFT_RESOLUTION' || paper.status === 'AMENDMENT_PHASE'}
+										{#if paper.status === 'DRAFT_RESOLUTION' || paper.status === 'AMENDMENT_PHASE' || paper.status === 'VOTING_PHASE'}
 											<!-- svelte-ignore a11y_no_static_element_interactions -->
 											<div onclick={(e: MouseEvent) => e.stopPropagation()}>
 												<input
@@ -411,6 +422,17 @@
 									{m.startAmendmentPhase()}
 								</button>
 							</div>
+						{:else if isInVotingPhase}
+							<div class="divider my-1"></div>
+							<div class="flex items-center justify-between">
+								<div class="flex items-center gap-2 text-sm">
+									<span class="badge badge-accent badge-sm">{m.votingPhaseActive()}</span>
+									<span class="font-mono">{activeDr!.documentNumber}</span>
+								</div>
+								<a href="./resolutions/{activeDr!.id}" class="btn btn-ghost btn-xs">
+									{m.goToVoting()} →
+								</a>
+							</div>
 						{:else if isInAmendmentPhase}
 							<div class="divider my-1"></div>
 							<div class="flex items-center justify-between">
@@ -426,11 +448,33 @@
 					</div>
 				</BasicCard>
 
-				<!-- Section 4: Voting Controls (placeholder) -->
+				<!-- Section 4: Voting Controls -->
 				<BasicCard title={m.voting()}>
-					<div class="py-4 text-center">
-						<p class="text-base-content/40 text-sm">{m.votingControlsPlaceholder()}</p>
-					</div>
+					{#if isInVotingPhase}
+						<div class="flex items-center justify-between">
+							<div class="flex items-center gap-2 text-sm">
+								<span class="badge badge-accent badge-sm">{m.votingPhaseActive()}</span>
+								<span class="font-mono">{activeDr!.documentNumber}</span>
+							</div>
+							<a href="./resolutions/{activeDr!.id}" class="btn btn-ghost btn-xs">
+								{m.goToVoting()} →
+							</a>
+						</div>
+					{:else if isInAmendmentPhase}
+						<div class="flex items-center gap-2 text-sm">
+							<i class="fas fa-info-circle text-base-content/40"></i>
+							<span class="text-base-content/60">{m.finishAmendmentPhaseFirst()}</span>
+						</div>
+					{:else if activeDr}
+						<div class="flex items-center gap-2 text-sm">
+							<i class="fas fa-info-circle text-base-content/40"></i>
+							<span class="text-base-content/60">{m.finishAmendmentPhaseFirst()}</span>
+						</div>
+					{:else}
+						<div class="py-4 text-center">
+							<p class="text-base-content/40 text-sm">{m.noActiveDrForVoting()}</p>
+						</div>
+					{/if}
 				</BasicCard>
 			</div>
 		</div>

@@ -9,6 +9,8 @@
 	import { ChairPaperClauseLocksSubscription } from './chairLockSubscription';
 	import { ChairPaperCommentsSubscription } from './chairCommentsSubscription';
 	import { ChairAmendmentsSubscription } from './chairAmendmentsSubscription';
+	import { ChairClauseVotesSubscription } from './chairClauseVotesSubscription';
+	import { ChairVoteResultSubscription } from './chairVoteResultSubscription';
 	import {
 		ResolutionEditor,
 		migrateResolution,
@@ -67,6 +69,8 @@
 		ChairPaperClauseLocksSubscription.listen({ paperId: page.params.paperId! });
 		ChairPaperCommentsSubscription.listen({ paperId: page.params.paperId! });
 		ChairAmendmentsSubscription.listen({ paperId: page.params.paperId! });
+		ChairClauseVotesSubscription.listen({ paperId: page.params.paperId! });
+		ChairVoteResultSubscription.listen({ paperId: page.params.paperId! });
 
 		// Hybrid heartbeat — only fires when idle with held locks
 		const heartbeatInterval = setInterval(() => {
@@ -250,6 +254,8 @@
 				return 'badge-info';
 			case 'AMENDMENT_PHASE':
 				return 'badge-secondary';
+			case 'VOTING_PHASE':
+				return 'badge-accent';
 			case 'FINAL':
 				return 'badge-success';
 			case 'SUBMITTED':
@@ -269,6 +275,8 @@
 				return m.draftResolution();
 			case 'AMENDMENT_PHASE':
 				return m.amendmentPhase();
+			case 'VOTING_PHASE':
+				return m.votingPhase();
 			case 'FINAL':
 				return m.finalResolution();
 			default:
@@ -637,6 +645,183 @@
 				return type;
 		}
 	}
+
+	// =====================================================
+	// Voting Phase (Phase 7)
+	// =====================================================
+
+	let clauseVotes = $derived($ChairClauseVotesSubscription.data?.findManyOperativeClauseVote ?? []);
+	let voteResult = $derived(
+		$ChairVoteResultSubscription.data?.findFirstResolutionVoteResult ?? null
+	);
+
+	// Map clauseId → vote for quick lookup
+	let clauseVoteMap = $derived.by(() => {
+		const map = new SvelteMap<string, (typeof clauseVotes)[0]>();
+		for (const v of clauseVotes) {
+			map.set(v.clauseId, v);
+		}
+		return map;
+	});
+
+	// Rejected clause IDs for editor strikethrough
+	let rejectedClauseIds = $derived(
+		clauseVotes.filter((v) => v.outcome === 'REJECTED').map((v) => v.clauseId)
+	);
+
+	let votedClauseCount = $derived(clauseVotes.length);
+	let allClausesVoted = $derived(
+		operativeClauses.length > 0 && votedClauseCount >= operativeClauses.length
+	);
+
+	// Quick vote inputs
+	let quickVotesFor = $state(0);
+	let quickVotesAgainst = $state(0);
+	let quickVotesAbstain = $state(0);
+
+	// Final vote inputs
+	let finalVotesFor = $state(0);
+	let finalVotesAgainst = $state(0);
+	let finalVotesAbstain = $state(0);
+
+	// Modals
+	let showStartVotingPhaseModal = $state(false);
+	let showFinalVoteConfirmModal = $state(false);
+	let finalVoteOutcome = $state<'ADOPTED' | 'REJECTED' | 'SENT_BACK'>('ADOPTED');
+
+	// Voting mutations
+	const StartVotingPhaseMutation = graphql(`
+		mutation ChairStartVotingPhaseMutation($paperId: ID!) {
+			startVotingPhase(paperId: $paperId) {
+				id
+				status
+			}
+		}
+	`);
+
+	const RecordClauseVoteMutation = graphql(`
+		mutation ChairRecordClauseVoteMutation(
+			$paperId: ID!
+			$clauseId: String!
+			$outcome: VoteOutcomeEnum!
+			$votesFor: Int!
+			$votesAgainst: Int!
+			$votesAbstain: Int
+		) {
+			recordClauseVote(
+				paperId: $paperId
+				clauseId: $clauseId
+				outcome: $outcome
+				votesFor: $votesFor
+				votesAgainst: $votesAgainst
+				votesAbstain: $votesAbstain
+			) {
+				id
+				clauseId
+				outcome
+			}
+		}
+	`);
+
+	const DeleteClauseVoteMutation = graphql(`
+		mutation ChairDeleteClauseVoteMutation($paperId: ID!, $clauseId: String!) {
+			deleteClauseVote(paperId: $paperId, clauseId: $clauseId)
+		}
+	`);
+
+	const RecordFinalVoteMutation = graphql(`
+		mutation ChairRecordFinalVoteMutation(
+			$paperId: ID!
+			$outcome: VoteOutcomeEnum!
+			$votesFor: Int!
+			$votesAgainst: Int!
+			$votesAbstain: Int
+		) {
+			recordVoteResult(
+				paperId: $paperId
+				outcome: $outcome
+				votesFor: $votesFor
+				votesAgainst: $votesAgainst
+				votesAbstain: $votesAbstain
+			) {
+				id
+				status
+			}
+		}
+	`);
+
+	async function handleStartVotingPhase() {
+		try {
+			await StartVotingPhaseMutation.mutate({ paperId: page.params.paperId! });
+			showStartVotingPhaseModal = false;
+			toast.success(m.votingPhaseStarted());
+		} catch {
+			toast.error(m.saveError());
+		}
+	}
+
+	async function handleRecordClauseVote(outcome: 'ADOPTED' | 'REJECTED') {
+		const clause = operativeClauses[currentOpIndex];
+		if (!clause) return;
+		try {
+			await RecordClauseVoteMutation.mutate({
+				paperId: page.params.paperId!,
+				clauseId: clause.id,
+				outcome,
+				votesFor: quickVotesFor,
+				votesAgainst: quickVotesAgainst,
+				votesAbstain: quickVotesAbstain
+			});
+			toast.success(m.clauseVoteRecorded());
+			quickVotesFor = 0;
+			quickVotesAgainst = 0;
+			quickVotesAbstain = 0;
+		} catch {
+			toast.error(m.saveError());
+		}
+	}
+
+	async function handleDeleteClauseVote(clauseId: string) {
+		try {
+			await DeleteClauseVoteMutation.mutate({
+				paperId: page.params.paperId!,
+				clauseId
+			});
+			toast.success(m.clauseVoteDeleted());
+		} catch {
+			toast.error(m.saveError());
+		}
+	}
+
+	async function handleRecordFinalVote() {
+		try {
+			await RecordFinalVoteMutation.mutate({
+				paperId: page.params.paperId!,
+				outcome: finalVoteOutcome,
+				votesFor: finalVotesFor,
+				votesAgainst: finalVotesAgainst,
+				votesAbstain: finalVotesAbstain
+			});
+			showFinalVoteConfirmModal = false;
+			if (finalVoteOutcome === 'ADOPTED') {
+				toast.success(m.resolutionAdopted());
+			} else if (finalVoteOutcome === 'REJECTED') {
+				toast.success(m.resolutionRejected());
+			} else {
+				toast.success(m.resolutionSentBack());
+			}
+		} catch {
+			toast.error(m.saveError());
+		}
+	}
+
+	function navigateToVotingClause(index: number) {
+		if (!committee) return;
+		UpdateCommitteeMutation.mutate({
+			id: committee.id,
+			currentOperativeIndex: index
+		}).catch(() => toast.error(m.saveError()));
+	}
 </script>
 
 <svelte:head>
@@ -745,6 +930,40 @@
 			</div>
 		{/if}
 
+		<!-- Final vote result alert -->
+		{#if paper.status === 'FINAL' && voteResult}
+			<div
+				class="alert mt-2 {voteResult.outcome === 'ADOPTED'
+					? 'alert-success'
+					: voteResult.outcome === 'REJECTED'
+						? 'alert-error'
+						: 'alert-warning'}"
+			>
+				<i
+					class="fas {voteResult.outcome === 'ADOPTED'
+						? 'fa-check-circle'
+						: voteResult.outcome === 'REJECTED'
+							? 'fa-times-circle'
+							: 'fa-undo'}"
+				></i>
+				<div>
+					<span class="font-bold">
+						{voteResult.outcome === 'ADOPTED'
+							? m.adopted()
+							: voteResult.outcome === 'REJECTED'
+								? m.rejected()
+								: m.sentBack()}
+					</span>
+					<span class="ml-2 text-sm">
+						{m.votesFor()}: {voteResult.votesFor} | {m.votesAgainst()}: {voteResult.votesAgainst}
+						{#if voteResult.votesAbstain > 0}
+							| {m.votesAbstain()}: {voteResult.votesAbstain}
+						{/if}
+					</span>
+				</div>
+			</div>
+		{/if}
+
 		<!-- Comment statistics -->
 		{#if allComments.length > 0}
 			<div class="flex items-center gap-4 text-sm text-base-content/60 mt-2">
@@ -772,7 +991,9 @@
 				<ResolutionEditor
 					committeeName={committee?.name ?? ''}
 					{resolution}
-					editable={paper.status !== 'AMENDMENT_PHASE'}
+					editable={paper.status !== 'AMENDMENT_PHASE' &&
+						paper.status !== 'VOTING_PHASE' &&
+						paper.status !== 'FINAL'}
 					onResolutionChange={handleResolutionChange}
 					onClauseLock={handleClauseLock}
 					onClauseUnlock={handleClauseUnlock}
@@ -780,6 +1001,9 @@
 					{lockedClauseIds}
 					{editableClauseIds}
 					amendments={paper.status === 'AMENDMENT_PHASE' ? amendmentOverlays : undefined}
+					rejectedClauseIds={paper.status === 'VOTING_PHASE' || paper.status === 'FINAL'
+						? rejectedClauseIds
+						: undefined}
 					onAmendmentClick={paper.status === 'AMENDMENT_PHASE' ? handleAmendmentClick : undefined}
 				>
 					{#snippet preambleAnnotations({ clause })}
@@ -976,6 +1200,302 @@
 					</div>
 				{/if}
 			</Fieldset>
+
+			<!-- Start Voting Phase button -->
+			<div class="flex justify-end mt-2">
+				<button class="btn btn-accent btn-sm" onclick={() => (showStartVotingPhaseModal = true)}>
+					<i class="fas fa-vote-yea mr-1"></i>
+					{m.startVotingPhase()}
+				</button>
+			</div>
+		{/if}
+
+		<!-- Voting Phase controls (Phase 7) -->
+		{#if paper.status === 'VOTING_PHASE'}
+			<!-- Paragraph Voting -->
+			<Fieldset legend={m.paragraphVoting()} faIcon="fas fa-list-ol">
+				<div class="flex items-center justify-between mb-3">
+					<span class="font-mono text-lg font-bold">
+						OP {currentOpIndex + 1} / {operativeClauses.length}
+					</span>
+					<span class="text-sm opacity-60">
+						{m.clausesVoted({
+							voted: String(votedClauseCount),
+							total: String(operativeClauses.length)
+						})}
+					</span>
+				</div>
+
+				<!-- Nav buttons -->
+				<div class="flex items-center gap-2 mb-3">
+					<button
+						class="btn btn-ghost btn-sm"
+						disabled={currentOpIndex <= 0}
+						onclick={() => navigateToVotingClause(currentOpIndex - 1)}
+					>
+						<i class="fas fa-chevron-left mr-1"></i>
+						{m.previousParagraph()}
+					</button>
+					<button
+						class="btn btn-ghost btn-sm"
+						disabled={currentOpIndex >= operativeClauses.length - 1}
+						onclick={() => navigateToVotingClause(currentOpIndex + 1)}
+					>
+						{m.nextParagraph()}
+						<i class="fas fa-chevron-right ml-1"></i>
+					</button>
+				</div>
+
+				<!-- Current clause vote status -->
+				{@const currentClause = operativeClauses[currentOpIndex]}
+				{#if currentClause}
+					{@const existingVote = clauseVoteMap.get(currentClause.id)}
+					{#if existingVote}
+						<!-- Already voted -->
+						<div
+							class="alert {existingVote.outcome === 'ADOPTED'
+								? 'alert-success'
+								: 'alert-error'} mb-2"
+						>
+							<i
+								class="fas {existingVote.outcome === 'ADOPTED'
+									? 'fa-check-circle'
+									: 'fa-times-circle'}"
+							></i>
+							<span>
+								OP {currentOpIndex + 1}:
+								<strong>
+									{existingVote.outcome === 'ADOPTED' ? m.adopted() : m.rejected()}
+								</strong>
+								— {m.votesFor()}: {existingVote.votesFor} | {m.votesAgainst()}: {existingVote.votesAgainst}
+								{#if existingVote.votesAbstain > 0}
+									| {m.votesAbstain()}: {existingVote.votesAbstain}
+								{/if}
+							</span>
+							<button
+								class="btn btn-ghost btn-xs"
+								onclick={() => handleDeleteClauseVote(currentClause.id)}
+							>
+								<i class="fas fa-undo mr-1"></i>
+								{m.undoVote()}
+							</button>
+						</div>
+					{:else}
+						<!-- Quick vote form -->
+						<div class="rounded-lg bg-base-200 p-3">
+							<p class="text-sm font-medium mb-2">
+								{m.voteOnParagraph({ index: String(currentOpIndex + 1) })}
+							</p>
+							<div class="flex items-end gap-3 flex-wrap">
+								<label class="form-control w-24">
+									<div class="label"><span class="label-text text-xs">{m.votesFor()}</span></div>
+									<input
+										type="number"
+										class="input input-bordered input-sm w-full"
+										min="0"
+										bind:value={quickVotesFor}
+									/>
+								</label>
+								<label class="form-control w-24">
+									<div class="label">
+										<span class="label-text text-xs">{m.votesAgainst()}</span>
+									</div>
+									<input
+										type="number"
+										class="input input-bordered input-sm w-full"
+										min="0"
+										bind:value={quickVotesAgainst}
+									/>
+								</label>
+								<label class="form-control w-24">
+									<div class="label">
+										<span class="label-text text-xs">{m.votesAbstain()}</span>
+									</div>
+									<input
+										type="number"
+										class="input input-bordered input-sm w-full"
+										min="0"
+										bind:value={quickVotesAbstain}
+									/>
+								</label>
+								<button
+									class="btn btn-success btn-sm"
+									onclick={() => handleRecordClauseVote('ADOPTED')}
+								>
+									<i class="fas fa-check mr-1"></i>
+									{m.adoptClause()}
+								</button>
+								<button
+									class="btn btn-error btn-sm"
+									onclick={() => handleRecordClauseVote('REJECTED')}
+								>
+									<i class="fas fa-times mr-1"></i>
+									{m.rejectClause()}
+								</button>
+							</div>
+						</div>
+					{/if}
+				{/if}
+			</Fieldset>
+
+			<!-- Clause Vote Summary -->
+			<Fieldset legend={m.clauseVoteSummary()} faIcon="fas fa-clipboard-check">
+				<div class="flex flex-col gap-1">
+					{#each operativeClauses as clause, i (clause.id)}
+						{@const vote = clauseVoteMap.get(clause.id)}
+						<button
+							class="flex items-center gap-2 rounded px-2 py-1 text-sm hover:bg-base-200 transition-colors text-left {i ===
+							currentOpIndex
+								? 'bg-base-200 font-semibold'
+								: ''}"
+							onclick={() => navigateToVotingClause(i)}
+						>
+							<span class="font-mono w-12">OP {i + 1}</span>
+							{#if vote}
+								<span
+									class="badge badge-xs {vote.outcome === 'ADOPTED'
+										? 'badge-success'
+										: 'badge-error'}"
+								>
+									{vote.outcome === 'ADOPTED' ? m.adopted() : m.rejected()}
+								</span>
+							{:else}
+								<span class="badge badge-xs badge-ghost">—</span>
+							{/if}
+						</button>
+					{/each}
+				</div>
+			</Fieldset>
+
+			<!-- Final Vote -->
+			<Fieldset legend={m.finalVote()} faIcon="fas fa-gavel">
+				{#if voteResult}
+					<div
+						class="alert {voteResult.outcome === 'ADOPTED'
+							? 'alert-success'
+							: voteResult.outcome === 'REJECTED'
+								? 'alert-error'
+								: 'alert-warning'}"
+					>
+						<i
+							class="fas {voteResult.outcome === 'ADOPTED'
+								? 'fa-check-circle'
+								: voteResult.outcome === 'REJECTED'
+									? 'fa-times-circle'
+									: 'fa-undo'}"
+						></i>
+						<span>
+							<strong>
+								{voteResult.outcome === 'ADOPTED'
+									? m.adopted()
+									: voteResult.outcome === 'REJECTED'
+										? m.rejected()
+										: m.sentBack()}
+							</strong>
+							— {m.votesFor()}: {voteResult.votesFor} | {m.votesAgainst()}: {voteResult.votesAgainst}
+							{#if voteResult.votesAbstain > 0}
+								| {m.votesAbstain()}: {voteResult.votesAbstain}
+							{/if}
+						</span>
+					</div>
+				{:else}
+					<p class="text-sm opacity-60 mb-3">{m.finalVoteDescription()}</p>
+					<div class="flex items-end gap-3 flex-wrap">
+						<label class="form-control w-24">
+							<div class="label"><span class="label-text text-xs">{m.votesFor()}</span></div>
+							<input
+								type="number"
+								class="input input-bordered input-sm w-full"
+								min="0"
+								bind:value={finalVotesFor}
+							/>
+						</label>
+						<label class="form-control w-24">
+							<div class="label">
+								<span class="label-text text-xs">{m.votesAgainst()}</span>
+							</div>
+							<input
+								type="number"
+								class="input input-bordered input-sm w-full"
+								min="0"
+								bind:value={finalVotesAgainst}
+							/>
+						</label>
+						<label class="form-control w-24">
+							<div class="label">
+								<span class="label-text text-xs">{m.votesAbstain()}</span>
+							</div>
+							<input
+								type="number"
+								class="input input-bordered input-sm w-full"
+								min="0"
+								bind:value={finalVotesAbstain}
+							/>
+						</label>
+					</div>
+					<div class="flex gap-2 mt-3">
+						<button
+							class="btn btn-success btn-sm"
+							onclick={() => {
+								finalVoteOutcome = 'ADOPTED';
+								showFinalVoteConfirmModal = true;
+							}}
+						>
+							<i class="fas fa-check mr-1"></i>
+							{m.adoptResolution()}
+						</button>
+						<button
+							class="btn btn-error btn-sm"
+							onclick={() => {
+								finalVoteOutcome = 'REJECTED';
+								showFinalVoteConfirmModal = true;
+							}}
+						>
+							<i class="fas fa-times mr-1"></i>
+							{m.rejectResolution()}
+						</button>
+						<button
+							class="btn btn-warning btn-sm"
+							onclick={() => {
+								finalVoteOutcome = 'SENT_BACK';
+								showFinalVoteConfirmModal = true;
+							}}
+						>
+							<i class="fas fa-undo mr-1"></i>
+							{m.sendBack()}
+						</button>
+					</div>
+				{/if}
+			</Fieldset>
+		{/if}
+
+		<!-- Per-paragraph results when FINAL -->
+		{#if paper.status === 'FINAL' && clauseVotes.length > 0}
+			<Fieldset legend={m.clauseVoteSummary()} faIcon="fas fa-clipboard-check">
+				<div class="flex flex-col gap-1">
+					{#each operativeClauses as clause, i (clause.id)}
+						{@const vote = clauseVoteMap.get(clause.id)}
+						<div class="flex items-center gap-2 px-2 py-1 text-sm">
+							<span class="font-mono w-12">OP {i + 1}</span>
+							{#if vote}
+								<span
+									class="badge badge-xs {vote.outcome === 'ADOPTED'
+										? 'badge-success'
+										: 'badge-error'}"
+								>
+									{vote.outcome === 'ADOPTED' ? m.adopted() : m.rejected()}
+								</span>
+								<span class="text-xs opacity-60">
+									{vote.votesFor}/{vote.votesAgainst}
+									{#if vote.votesAbstain > 0}/{vote.votesAbstain}{/if}
+								</span>
+							{:else}
+								<span class="badge badge-xs badge-ghost">—</span>
+							{/if}
+						</div>
+					{/each}
+				</div>
+			</Fieldset>
 		{/if}
 
 		<!-- Document-level comments -->
@@ -1069,6 +1589,53 @@
 				<button
 					class="btn btn-error btn-sm"
 					onclick={() => confirmAmendmentId && handleRejectAmendment(confirmAmendmentId)}
+				>
+					{m.yes()}
+				</button>
+			</div>
+		</div>
+	</Modal>
+
+	<!-- Start Voting Phase confirmation modal -->
+	<Modal bind:open={showStartVotingPhaseModal}>
+		<div class="flex flex-col gap-4 p-4">
+			<h3 class="text-lg font-bold">{m.startVotingPhase()}</h3>
+			<p>{m.confirmStartVotingPhase()}</p>
+			<div class="flex justify-end gap-2">
+				<button class="btn btn-ghost btn-sm" onclick={() => (showStartVotingPhaseModal = false)}>
+					{m.abort()}
+				</button>
+				<button class="btn btn-accent btn-sm" onclick={handleStartVotingPhase}>
+					{m.yes()}
+				</button>
+			</div>
+		</div>
+	</Modal>
+
+	<!-- Final Vote confirmation modal -->
+	<Modal bind:open={showFinalVoteConfirmModal}>
+		<div class="flex flex-col gap-4 p-4">
+			<h3 class="text-lg font-bold">{m.finalVote()}</h3>
+			<p>
+				{#if finalVoteOutcome === 'ADOPTED'}
+					{m.confirmAdoptResolution()}
+				{:else if finalVoteOutcome === 'REJECTED'}
+					{m.confirmRejectResolution()}
+				{:else}
+					{m.confirmSendBack()}
+				{/if}
+			</p>
+			<div class="flex justify-end gap-2">
+				<button class="btn btn-ghost btn-sm" onclick={() => (showFinalVoteConfirmModal = false)}>
+					{m.abort()}
+				</button>
+				<button
+					class="btn btn-sm {finalVoteOutcome === 'ADOPTED'
+						? 'btn-success'
+						: finalVoteOutcome === 'REJECTED'
+							? 'btn-error'
+							: 'btn-warning'}"
+					onclick={handleRecordFinalVote}
 				>
 					{m.yes()}
 				</button>

@@ -213,7 +213,11 @@ schemaBuilder.mutationFields((t) => {
 					if (paper.committeeId !== args.id) {
 						throw new GraphQLError('Paper does not belong to this committee');
 					}
-					if (paper.status !== 'DRAFT_RESOLUTION' && paper.status !== 'AMENDMENT_PHASE') {
+					if (
+						paper.status !== 'DRAFT_RESOLUTION' &&
+						paper.status !== 'AMENDMENT_PHASE' &&
+						paper.status !== 'VOTING_PHASE'
+					) {
 						throw new GraphQLError('Only draft resolutions can be set as active');
 					}
 				}

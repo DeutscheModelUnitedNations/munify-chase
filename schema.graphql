@@ -389,6 +389,7 @@ type Mutation {
   createRepresentation(alpha2Code: String, alpha3Code: String, conferenceId: ID!, faIcon: String, name: String, type: RepresentationTypeEnum!): Representation
   createResolutionPaper(agendaItemId: ID!, committeeId: ID!, title: String): ResolutionPaper
   createShareCode(paperId: ID!, permission: ShareCodePermissionEnum!): PaperShareCode
+  deleteClauseVote(clauseId: String!, paperId: ID!): Boolean
   deleteComment(commentId: ID!): Boolean
   deleteCommittee(id: ID!): Boolean
   deleteCommitteeMember(id: ID!): Boolean
@@ -399,6 +400,7 @@ type Mutation {
   importDelegatorConference(data: ImportData!): Conference
   moveSpeakerToPosition(id: ID!, position: Int!): SpeakerOnList
   promoteToDraftResolution(paperId: ID!): ResolutionPaper
+  recordClauseVote(clauseId: String!, outcome: VoteOutcomeEnum!, paperId: ID!, votesAbstain: Int, votesAgainst: Int!, votesFor: Int!): OperativeClauseVote
   recordVoteResult(outcome: VoteOutcomeEnum!, paperId: ID!, votesAbstain: Int, votesAgainst: Int!, votesFor: Int!): ResolutionPaper
   redeemShareCode(code: String!): ShareCodeRedemptionResult
   rejectAmendment(amendmentId: ID!): Amendment
@@ -412,6 +414,7 @@ type Mutation {
   selfRemoveFromSpeakersList(speakersListId: ID!): SpeakersList
   setPresenceForCommitteeMembers(ids: [ID!]!, present: Boolean!): [CommitteeMember!]
   softDeletePaper(paperId: ID!): Boolean
+  startVotingPhase(paperId: ID!): ResolutionPaper
   submitAmendment(amendmentId: ID!): Amendment
   submitPaper(paperId: ID!): ResolutionPaper
   updateComment(commentId: ID!, content: String!): ResolutionComment
@@ -560,6 +563,7 @@ enum PaperStatusEnum {
   DRAFT_RESOLUTION
   FINAL
   SUBMITTED
+  VOTING_PHASE
   WORKING_PAPER
 }
 

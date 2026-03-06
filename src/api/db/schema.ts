@@ -238,6 +238,7 @@ export const paperStatus = pgEnum('paper_status', [
 	'SUBMITTED',
 	'DRAFT_RESOLUTION',
 	'AMENDMENT_PHASE',
+	'VOTING_PHASE',
 	'FINAL'
 ]);
 
@@ -376,17 +377,21 @@ export const amendmentSponsor = pgTable(
 	(t) => [unique().on(t.amendmentId, t.committeeMemberId)]
 );
 
-export const operativeClauseVote = pgTable('operative_clause_vote', {
-	...defaultIdAndTimestamps,
-	paperId: text()
-		.notNull()
-		.references(() => resolutionPaper.id, { onDelete: 'cascade' }),
-	clauseId: text().notNull(),
-	outcome: voteOutcome().notNull(),
-	votesFor: integer().notNull(),
-	votesAgainst: integer().notNull(),
-	votesAbstain: integer().notNull().default(0)
-});
+export const operativeClauseVote = pgTable(
+	'operative_clause_vote',
+	{
+		...defaultIdAndTimestamps,
+		paperId: text()
+			.notNull()
+			.references(() => resolutionPaper.id, { onDelete: 'cascade' }),
+		clauseId: text().notNull(),
+		outcome: voteOutcome().notNull(),
+		votesFor: integer().notNull(),
+		votesAgainst: integer().notNull(),
+		votesAbstain: integer().notNull().default(0)
+	},
+	(t) => [unique().on(t.paperId, t.clauseId)]
+);
 
 export const paperClauseLock = pgTable(
 	'paper_clause_lock',

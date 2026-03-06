@@ -25,6 +25,7 @@
 	import CommentSection from '$lib/components/CommentSection.svelte';
 	import { getTranslatedCountryNameFromAlpha3Code } from '$lib/utils/nationTranslationHelper.svelte';
 	import toast from 'svelte-french-toast';
+	import { openVotingModal } from '$lib/components/voting/votingModal';
 	import { fly, fade } from 'svelte/transition';
 	import { SvelteSet, SvelteMap } from 'svelte/reactivity';
 
@@ -574,6 +575,39 @@
 			confirmAmendmentId = null;
 		} catch {
 			toast.error(m.saveError());
+		}
+	}
+
+	async function handleAmendmentVote(amendment: {
+		id: string;
+		type: string;
+		targetOperativeIndex?: number | null;
+	}) {
+		const typeLabel = getAmendmentTypeLabel(amendment.type);
+		const clauseLabel =
+			amendment.targetOperativeIndex != null ? `OP ${amendment.targetOperativeIndex + 1}` : '';
+		const docNumber = paper?.documentNumber ?? m.draftResolution();
+		const voteName = `${docNumber} – ${typeLabel} ${clauseLabel}`.trim();
+
+		const result = await openVotingModal({
+			voteName,
+			majority: 'SIMPLE',
+			voteType: 'SHOW_OF_HANDS',
+			withAbstentions: true
+		});
+
+		if (!result.cancelled) {
+			try {
+				if (result.outcome === 'ADOPTED') {
+					await AcceptAmendmentMutation.mutate({ amendmentId: amendment.id });
+					toast.success(m.amendmentAdopted());
+				} else {
+					await RejectAmendmentMutation.mutate({ amendmentId: amendment.id });
+					toast.success(m.amendmentRejectedToast());
+				}
+			} catch {
+				toast.error(m.saveError());
+			}
 		}
 	}
 
@@ -1247,6 +1281,13 @@
 											}}
 										>
 											{m.adoptByConsensus()}
+										</button>
+										<button
+											class="btn btn-primary btn-xs"
+											onclick={() => handleAmendmentVote(amendment)}
+										>
+											<i class="fas fa-box-ballot"></i>
+											{m.startVote()}
 										</button>
 										<button
 											class="btn btn-error btn-xs"

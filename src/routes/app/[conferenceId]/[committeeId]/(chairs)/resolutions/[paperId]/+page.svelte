@@ -555,10 +555,21 @@
 	`);
 
 	const UpdateCommitteeMutation = graphql(`
-		mutation ChairAdvanceParagraphMutation($id: ID!, $currentOperativeIndex: Int) {
-			updateCommittee(id: $id, currentOperativeIndex: $currentOperativeIndex) {
+		mutation ChairAdvanceParagraphMutation(
+			$id: ID!
+			$currentOperativeIndex: Int
+			$activeAmendmentId: ID
+			$clearActiveAmendment: Boolean
+		) {
+			updateCommittee(
+				id: $id
+				currentOperativeIndex: $currentOperativeIndex
+				activeAmendmentId: $activeAmendmentId
+				clearActiveAmendment: $clearActiveAmendment
+			) {
 				id
 				currentOperativeIndex
+				activeAmendmentId
 			}
 		}
 	`);
@@ -568,11 +579,20 @@
 	let confirmAmendmentId = $state<string | null>(null);
 
 	async function handleAdoptByConsensus(amendmentId: string) {
+		if (!committee) return;
 		try {
+			await UpdateCommitteeMutation.mutate({
+				id: committee.id,
+				activeAmendmentId: amendmentId
+			});
 			await AdoptByConsensusMutation.mutate({ amendmentId });
 			toast.success(m.amendmentAdopted());
 			showAdoptConfirmModal = false;
 			confirmAmendmentId = null;
+			await UpdateCommitteeMutation.mutate({
+				id: committee.id,
+				clearActiveAmendment: true
+			});
 		} catch {
 			toast.error(m.saveError());
 		}
@@ -583,11 +603,18 @@
 		type: string;
 		targetOperativeIndex?: number | null;
 	}) {
+		if (!committee) return;
 		const typeLabel = getAmendmentTypeLabel(amendment.type);
 		const clauseLabel =
 			amendment.targetOperativeIndex != null ? `OP ${amendment.targetOperativeIndex + 1}` : '';
 		const docNumber = paper?.documentNumber ?? m.draftResolution();
 		const voteName = `${docNumber} – ${typeLabel} ${clauseLabel}`.trim();
+
+		// Set active amendment for presentation
+		await UpdateCommitteeMutation.mutate({
+			id: committee.id,
+			activeAmendmentId: amendment.id
+		});
 
 		const result = await openVotingModal({
 			voteName,
@@ -609,23 +636,39 @@
 				toast.error(m.saveError());
 			}
 		}
+
+		// Clear active amendment after resolution
+		await UpdateCommitteeMutation.mutate({
+			id: committee.id,
+			clearActiveAmendment: true
+		});
 	}
 
 	async function handleRejectAmendment(amendmentId: string) {
+		if (!committee) return;
 		try {
 			await RejectAmendmentMutation.mutate({ amendmentId });
 			toast.success(m.amendmentRejectedToast());
 			showRejectConfirmModal = false;
 			confirmAmendmentId = null;
+			await UpdateCommitteeMutation.mutate({
+				id: committee.id,
+				clearActiveAmendment: true
+			});
 		} catch {
 			toast.error(m.saveError());
 		}
 	}
 
 	async function handleWithdrawAmendment(amendmentId: string) {
+		if (!committee) return;
 		try {
 			await WithdrawAmendmentMutation.mutate({ amendmentId });
 			toast.success(m.amendmentWithdrawnToast());
+			await UpdateCommitteeMutation.mutate({
+				id: committee.id,
+				clearActiveAmendment: true
+			});
 		} catch {
 			toast.error(m.saveError());
 		}
@@ -1249,7 +1292,7 @@
 								<div class="flex items-center justify-between gap-2">
 									<div class="flex items-center gap-2 flex-wrap">
 										<span class="badge badge-sm {getAmendmentTypeBadgeClass(amendment.type)}">
-											{getAmendmentTypeLabel(amendment.type)}
+											{amendment.documentNumber ?? getAmendmentTypeLabel(amendment.type)}
 										</span>
 										{#if amendment.targetOperativeIndex != null}
 											<span class="badge badge-ghost badge-sm font-mono">

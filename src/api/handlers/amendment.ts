@@ -270,6 +270,26 @@ schemaBuilder.mutationFields((t) => ({
 				}
 			}
 
+			// Count existing amendments of same type for this paper to assign sequence number
+			const [{ count: sameTypeCount }] = await db
+				.select({ count: drizzleCount() })
+				.from(schema.amendment)
+				.where(
+					and(eq(schema.amendment.paperId, args.paperId), eq(schema.amendment.type, args.type))
+				);
+
+			const typeSeq = Number(sameTypeCount) + 1;
+
+			const typePrefixMap: Record<string, string> = {
+				DELETE: 'DEL',
+				ALTER_TEXT: 'ALT',
+				ADD: 'ADD',
+				ALTER_POSITION: 'POS'
+			};
+			const typePrefix = typePrefixMap[args.type];
+
+			const documentNumber = `${paper.documentNumber}/${typePrefix}.${typeSeq}`;
+
 			// Create amendment
 			const result = await db
 				.insert(schema.amendment)
@@ -281,7 +301,9 @@ schemaBuilder.mutationFields((t) => ({
 					targetClauseId: args.targetClauseId ?? undefined,
 					targetOperativeIndex: args.targetOperativeIndex ?? undefined,
 					newContent: args.newContent ?? undefined,
-					targetPosition: args.targetPosition ?? undefined
+					targetPosition: args.targetPosition ?? undefined,
+					documentNumber,
+					sequenceNumber: typeSeq
 				})
 				.returning()
 				.then(assertFirstEntryExists);

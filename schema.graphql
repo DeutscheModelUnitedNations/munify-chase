@@ -23,12 +23,14 @@ input AgendaItemWhereInputArgument {
 
 type Amendment {
   createdAt: DateTime!
+  documentNumber: String
   id: ID!
   newContent: JSON
   paper(where: ResolutionPaperWhereInputArgument): ResolutionPaper!
   paperId: ID!
   proposer(where: CommitteeMemberWhereInputArgument): CommitteeMember!
   proposerCommitteeMemberId: ID!
+  sequenceNumber: Int
   sponsors(limit: Int, offset: Int, where: AmendmentSponsorWhereInputArgument): [AmendmentSponsor!]!
   status: AmendmentStatusEnum!
   targetClauseId: ID
@@ -76,12 +78,14 @@ enum AmendmentTypeEnum {
 
 input AmendmentWhereInputArgument {
   createdAt: DateTime
+  documentNumber: String
   id: ID
   newContent: JSON
   paper: ResolutionPaperWhereInputArgument
   paperId: ID
   proposer: CommitteeMemberWhereInputArgument
   proposerCommitteeMemberId: ID
+  sequenceNumber: Int
   sponsors: AmendmentSponsorWhereInputArgument
   status: AmendmentStatusEnum
   targetClauseId: ID
@@ -100,6 +104,8 @@ type Committee {
   abbreviation: String!
   activeAgendaItem(where: AgendaItemWhereInputArgument): AgendaItem
   activeAgendaItemId: ID
+  activeAmendment(where: AmendmentWhereInputArgument): Amendment
+  activeAmendmentId: ID
   activeDraftResolution(where: ResolutionPaperWhereInputArgument): ResolutionPaper
   activeDraftResolutionId: ID
   agendaItems(limit: Int, offset: Int, where: AgendaItemWhereInputArgument): [AgendaItem!]!
@@ -177,6 +183,8 @@ input CommitteeWhereInputArgument {
   abbreviation: String
   activeAgendaItem: AgendaItemWhereInputArgument
   activeAgendaItemId: ID
+  activeAmendment: AmendmentWhereInputArgument
+  activeAmendmentId: ID
   activeDraftResolution: ResolutionPaperWhereInputArgument
   activeDraftResolutionId: ID
   agendaItems: AgendaItemWhereInputArgument
@@ -419,7 +427,7 @@ type Mutation {
   submitAmendment(amendmentId: ID!): Amendment
   submitPaper(paperId: ID!): ResolutionPaper
   updateComment(commentId: ID!, content: String!): ResolutionComment
-  updateCommittee(abbreviation: String, activeAgendaItemId: ID, activeDraftResolutionId: ID, allowDelegationsToAddThemselvesToSpeakersList: Boolean, clearActiveDraftResolution: Boolean, currentOperativeIndex: Int, id: ID!, lastResolutionAdoptionDate: DateTime, maxDraftResolutions: Int, name: String, showWhiteboard: Boolean, stateOfDebate: String, status: CommitteeStatusEnum, statusHeadline: String, statusUntil: DateTime, supportReEvaluationOpen: Boolean, whiteboardContent: String): Committee
+  updateCommittee(abbreviation: String, activeAgendaItemId: ID, activeAmendmentId: ID, activeDraftResolutionId: ID, allowDelegationsToAddThemselvesToSpeakersList: Boolean, clearActiveAmendment: Boolean, clearActiveDraftResolution: Boolean, currentOperativeIndex: Int, id: ID!, lastResolutionAdoptionDate: DateTime, maxDraftResolutions: Int, name: String, showWhiteboard: Boolean, stateOfDebate: String, status: CommitteeStatusEnum, statusHeadline: String, statusUntil: DateTime, supportReEvaluationOpen: Boolean, whiteboardContent: String): Committee
   updateConference(hasModeratedCaucus: Boolean, id: ID!, pressWebsite: String, title: String): Conference
   updateConferenceUser(committeeMemberId: ID, conferenceMemberId: ID, conferenceUserType: ConferenceUserTypeEnum!, id: ID!): ConferenceUser
   updatePaperContent(content: JSON!, paperId: ID!): ResolutionPaper

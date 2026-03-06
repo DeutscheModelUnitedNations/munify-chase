@@ -78,7 +78,8 @@ export const committee = pgTable(
 		maxDraftResolutions: smallint().notNull().default(3),
 		activeDraftResolutionId: text().references((): AnyPgColumn => resolutionPaper.id),
 		currentOperativeIndex: smallint(),
-		supportReEvaluationOpen: boolean().notNull().default(false)
+		supportReEvaluationOpen: boolean().notNull().default(false),
+		activeAmendmentId: text().references((): AnyPgColumn => amendment.id, { onDelete: 'set null' })
 	},
 	(t) => [unique().on(t.conferenceId, t.name), unique().on(t.conferenceId, t.abbreviation)]
 );
@@ -360,7 +361,9 @@ export const amendment = pgTable('amendment', {
 	targetClauseId: text(),
 	targetOperativeIndex: smallint(),
 	newContent: json(),
-	targetPosition: smallint()
+	targetPosition: smallint(),
+	documentNumber: text(),
+	sequenceNumber: smallint()
 });
 
 export const amendmentSponsor = pgTable(

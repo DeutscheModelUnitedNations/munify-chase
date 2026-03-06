@@ -1351,7 +1351,7 @@
 								<div class="flex flex-col gap-2">
 									<div class="flex items-center gap-2 flex-wrap">
 										<span class="badge badge-sm {getAmendmentTypeBadgeClass(amendment.type)}">
-											{getAmendmentTypeLabel(amendment.type)}
+											{amendment.documentNumber ?? getAmendmentTypeLabel(amendment.type)}
 										</span>
 										<span class="badge badge-ghost badge-sm">
 											{getAmendmentStatusLabel(amendment.status)}
@@ -1406,7 +1406,7 @@
 								<div class="flex items-center justify-between gap-2">
 									<div class="flex items-center gap-2 flex-wrap">
 										<span class="badge badge-sm {getAmendmentTypeBadgeClass(amendment.type)}">
-											{getAmendmentTypeLabel(amendment.type)}
+											{amendment.documentNumber ?? getAmendmentTypeLabel(amendment.type)}
 										</span>
 										{#if amendment.targetOperativeIndex != null}
 											<span class="badge badge-ghost badge-sm font-mono">
@@ -1457,7 +1457,7 @@
 								<div class="flex items-center justify-between gap-2">
 									<div class="flex items-center gap-2 flex-wrap">
 										<span class="badge badge-sm {getAmendmentTypeBadgeClass(amendment.type)}">
-											{getAmendmentTypeLabel(amendment.type)}
+											{amendment.documentNumber ?? getAmendmentTypeLabel(amendment.type)}
 										</span>
 										{#if amendment.targetOperativeIndex != null}
 											<span class="badge badge-ghost badge-sm font-mono">

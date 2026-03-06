@@ -6,6 +6,7 @@ export const ParticipantAmendmentsSubscription = graphql(`
 			id
 			type
 			status
+			documentNumber
 			targetClauseId
 			targetOperativeIndex
 			targetPosition

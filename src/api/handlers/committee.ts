@@ -198,7 +198,9 @@ schemaBuilder.mutationFields((t) => {
 				activeDraftResolutionId: t.arg.id(),
 				clearActiveDraftResolution: t.arg.boolean(),
 				currentOperativeIndex: t.arg.int(),
-				supportReEvaluationOpen: t.arg.boolean()
+				supportReEvaluationOpen: t.arg.boolean(),
+				activeAmendmentId: t.arg.id(),
+				clearActiveAmendment: t.arg.boolean()
 			},
 			resolve: async (query, root, args, ctx, info) => {
 				// Validate activeDraftResolutionId if provided
@@ -247,7 +249,10 @@ schemaBuilder.mutationFields((t) => {
 							? null
 							: (args.activeDraftResolutionId ?? undefined),
 						currentOperativeIndex: args.currentOperativeIndex ?? undefined,
-						supportReEvaluationOpen
+						supportReEvaluationOpen,
+						activeAmendmentId: args.clearActiveAmendment
+							? null
+							: (args.activeAmendmentId ?? undefined)
 					})
 					.where(
 						and(

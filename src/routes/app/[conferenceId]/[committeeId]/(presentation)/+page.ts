@@ -57,6 +57,74 @@ export const _houdini_load = graphql(`
 					}
 				}
 			}
+			activeDraftResolutionId
+			currentOperativeIndex
+			activeAmendmentId
+			activeAmendment {
+				id
+				type
+				status
+				documentNumber
+				targetClauseId
+				targetOperativeIndex
+				targetPosition
+				newContent
+				proposer {
+					id
+					representation {
+						name
+						alpha2Code
+						alpha3Code
+					}
+				}
+			}
+			activeDraftResolution {
+				id
+				content
+				documentNumber
+				status
+				title
+				updatedAt
+				agendaItem {
+					id
+					title
+				}
+				creator {
+					id
+					representation {
+						name
+						alpha2Code
+						alpha3Code
+					}
+				}
+				amendments {
+					id
+					type
+					status
+					documentNumber
+					targetClauseId
+					targetOperativeIndex
+					targetPosition
+					newContent
+					proposer {
+						id
+						representation {
+							name
+						}
+					}
+				}
+				operativeClauseVotes {
+					id
+					clauseId
+					outcome
+				}
+				voteResult {
+					outcome
+					votesFor
+					votesAgainst
+					votesAbstain
+				}
+			}
 			whiteboardContent
 			members {
 				id
@@ -72,6 +140,7 @@ export const _houdini_load = graphql(`
 				}
 			}
 			conference {
+				title
 				uniqueConferenceMembers {
 					id
 					representation {

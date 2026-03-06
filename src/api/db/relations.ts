@@ -39,6 +39,10 @@ export const relations = defineRelations(schema, (r) => ({
 			from: r.committee.activeDraftResolutionId,
 			to: r.resolutionPaper.id
 		}),
+		activeAmendment: r.one.amendment({
+			from: r.committee.activeAmendmentId,
+			to: r.amendment.id
+		}),
 		agendaItems: r.many.agendaItem({
 			from: r.committee.id,
 			to: r.agendaItem.committeeId

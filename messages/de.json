@@ -229,18 +229,9 @@
 	"launcherWelcome": "Willkommen zurück, {name}!",
 	"layout": "Layout",
 	"layoutDescription": "Layout-Vorlagen für die Präsentationsansicht. Bitte beachte, dass du manuelle Änderungen am Layout überschreibst, wenn du die Layoutvorlage hier änderst.",
-	"layoutPreset": [
-		{
-			"declarations": ["input preset"],
-			"match": {
-				"preset=*": "Unbekanntes Layout",
-				"preset=default": "Standard Layout",
-				"preset=resolution": "Resolutions-Layout",
-				"preset=smallScreen": "Layout für kleine Bildschirme"
-			},
-			"selectors": ["preset"]
-		}
-	],
+	"layoutPresetDefault": "Standard Layout",
+	"layoutPresetResolution": "Resolutions-Layout",
+	"layoutPresetSmallScreen": "Layout für kleine Bildschirme",
 	"layoutSelect": "Layout auswählen",
 	"link": "Link",
 	"listClosed": "Liste geschlossen",

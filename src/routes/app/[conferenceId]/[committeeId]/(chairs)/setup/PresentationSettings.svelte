@@ -17,6 +17,12 @@
 
 	let { committeeId }: Props = $props();
 
+	const layoutPresetLabels: Record<string, () => string> = {
+		default: m.layoutPresetDefault,
+		smallScreen: m.layoutPresetSmallScreen,
+		resolution: m.layoutPresetResolution
+	};
+
 	let committeeSettings = liveQuery(() => localDB.committeeSettings.get(committeeId));
 
 	const changeLayoutKey = async (e: Event) => {
@@ -86,7 +92,7 @@
 		<option disabled selected>{m.layoutSelect()}</option>
 		{#each getPresentationLayoutPresets() as preset}
 			<option value={preset} selected={$committeeSettings?.layout === preset}>
-				{m.layoutPreset({ preset })}
+				{layoutPresetLabels[preset]?.() ?? preset}
 			</option>
 		{/each}
 	</select>

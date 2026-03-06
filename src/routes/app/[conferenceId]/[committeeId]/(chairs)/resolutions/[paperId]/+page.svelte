@@ -688,6 +688,8 @@
 	let showStartVotingPhaseModal = $state(false);
 	let showFinalVoteConfirmModal = $state(false);
 	let finalVoteOutcome = $state<'ADOPTED' | 'REJECTED' | 'SENT_BACK'>('ADOPTED');
+	let showRevertStatusModal = $state(false);
+	let revertRestoreSnapshot = $state(false);
 
 	// Voting mutations
 	const StartVotingPhaseMutation = graphql(`
@@ -749,6 +751,42 @@
 			}
 		}
 	`);
+
+	const RevertPaperStatusMutation = graphql(`
+		mutation ChairRevertPaperStatusMutation($paperId: ID!, $restoreSnapshot: Boolean) {
+			revertPaperStatus(paperId: $paperId, restoreSnapshot: $restoreSnapshot) {
+				id
+				status
+			}
+		}
+	`);
+
+	async function handleRevertStatus() {
+		try {
+			await RevertPaperStatusMutation.mutate({
+				paperId: page.params.paperId!,
+				restoreSnapshot: revertRestoreSnapshot
+			});
+			showRevertStatusModal = false;
+			revertRestoreSnapshot = false;
+			toast.success(m.statusReverted());
+		} catch {
+			toast.error(m.saveError());
+		}
+	}
+
+	function getPreviousStatus(status: string): string {
+		const order = [
+			'WORKING_PAPER',
+			'SUBMITTED',
+			'DRAFT_RESOLUTION',
+			'AMENDMENT_PHASE',
+			'VOTING_PHASE',
+			'FINAL'
+		];
+		const idx = order.indexOf(status);
+		return idx > 0 ? order[idx - 1] : status;
+	}
 
 	async function handleStartVotingPhase() {
 		try {
@@ -864,6 +902,19 @@
 					<span class="badge badge-soft badge-sm {getStatusBadgeClass(paper.status)}">
 						{getStatusText(paper.status)}
 					</span>
+					{#if paper.status !== 'WORKING_PAPER'}
+						<button
+							class="btn btn-ghost btn-xs opacity-60 hover:opacity-100"
+							title={m.revertStatus()}
+							onclick={(e) => {
+								e.stopPropagation();
+								revertRestoreSnapshot = false;
+								showRevertStatusModal = true;
+							}}
+						>
+							<i class="fas fa-undo text-xs"></i>
+						</button>
+					{/if}
 				</div>
 			</div>
 			<div class="collapse-content flex flex-col gap-4">
@@ -1638,6 +1689,56 @@
 					onclick={handleRecordFinalVote}
 				>
 					{m.yes()}
+				</button>
+			</div>
+		</div>
+	</Modal>
+
+	<!-- Revert Status confirmation modal -->
+	<Modal bind:open={showRevertStatusModal}>
+		<div class="flex flex-col gap-4 p-4">
+			<h3 class="text-lg font-bold">{m.revertStatus()}</h3>
+			<p>
+				{m.confirmRevertStatus({
+					from: getStatusText(paper.status),
+					to: getStatusText(getPreviousStatus(paper.status))
+				})}
+			</p>
+
+			{#if paper.status === 'AMENDMENT_PHASE'}
+				<label class="flex items-start gap-3 cursor-pointer">
+					<input
+						type="checkbox"
+						class="checkbox checkbox-sm mt-0.5"
+						bind:checked={revertRestoreSnapshot}
+					/>
+					<div>
+						<div class="font-medium text-sm">{m.restoreContentFromSnapshot()}</div>
+						<div class="text-xs opacity-60">{m.restoreContentFromSnapshotDescription()}</div>
+					</div>
+				</label>
+			{/if}
+
+			{#if paper.status === 'VOTING_PHASE'}
+				<div class="alert alert-warning text-sm">
+					<i class="fas fa-exclamation-triangle"></i>
+					{m.revertVotingWarning()}
+				</div>
+			{/if}
+
+			{#if paper.status === 'DRAFT_RESOLUTION'}
+				<div class="alert alert-warning text-sm">
+					<i class="fas fa-exclamation-triangle"></i>
+					{m.revertDrWarning()}
+				</div>
+			{/if}
+
+			<div class="flex justify-end gap-2">
+				<button class="btn btn-ghost btn-sm" onclick={() => (showRevertStatusModal = false)}>
+					{m.abort()}
+				</button>
+				<button class="btn btn-warning btn-sm" onclick={handleRevertStatus}>
+					{m.revertStatus()}
 				</button>
 			</div>
 		</div>

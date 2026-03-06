@@ -1,6 +1,6 @@
 import { db, schema } from '$api/db/db';
 import { abilityBuilder, enum_, schemaBuilder, pubsub as rumblePubsub } from '$api/rumble';
-import { and, eq, isNull, count as drizzleCount } from 'drizzle-orm';
+import { and, eq, isNull, count as drizzleCount, desc, inArray } from 'drizzle-orm';
 import { basics } from './basics';
 import { isWhitelistedEmail } from '$api/services/isDMUNEmail';
 import { assertFindFirstExists, assertFirstEntryExists } from '@m1212e/rumble';
@@ -675,6 +675,142 @@ schemaBuilder.mutationFields((t) => ({
 			pubsub.updated(args.paperId);
 
 			return true;
+		}
+	}),
+
+	revertPaperStatus: t.drizzleField({
+		type: ref,
+		args: {
+			paperId: t.arg.id({ required: true }),
+			restoreSnapshot: t.arg.boolean()
+		},
+		resolve: async (query, root, args, ctx, info) => {
+			const paper = await db.query.resolutionPaper
+				.findFirst({
+					where: { id: args.paperId }
+				})
+				.then(assertFindFirstExists);
+
+			await assertCommitteeChairOrAdmin(ctx, paper.committeeId);
+
+			const statusOrder = [
+				'WORKING_PAPER',
+				'SUBMITTED',
+				'DRAFT_RESOLUTION',
+				'AMENDMENT_PHASE',
+				'VOTING_PHASE',
+				'FINAL'
+			] as const;
+			const currentIndex = statusOrder.indexOf(paper.status as (typeof statusOrder)[number]);
+			if (currentIndex <= 0) {
+				throw new GraphQLError('Paper is already at initial status and cannot be reverted');
+			}
+			const targetStatus = statusOrder[currentIndex - 1];
+
+			await db.transaction(async (tx) => {
+				// Status-specific side effects
+				if (paper.status === 'FINAL') {
+					// Delete the resolution vote result
+					await tx
+						.delete(schema.resolutionVoteResult)
+						.where(eq(schema.resolutionVoteResult.paperId, args.paperId));
+					// Restore as active DR if committee has none
+					const committee = await tx.query.committee
+						.findFirst({ where: { id: paper.committeeId } })
+						.then(assertFindFirstExists);
+					if (!committee.activeDraftResolutionId) {
+						await tx
+							.update(schema.committee)
+							.set({
+								activeDraftResolutionId: args.paperId,
+								currentOperativeIndex: 0
+							})
+							.where(eq(schema.committee.id, paper.committeeId));
+					}
+				} else if (paper.status === 'VOTING_PHASE') {
+					// Delete all operative clause votes for this paper
+					await tx
+						.delete(schema.operativeClauseVote)
+						.where(eq(schema.operativeClauseVote.paperId, args.paperId));
+				} else if (paper.status === 'AMENDMENT_PHASE') {
+					// Clear currentOperativeIndex on committee
+					await tx
+						.update(schema.committee)
+						.set({ currentOperativeIndex: null })
+						.where(eq(schema.committee.id, paper.committeeId));
+					if (args.restoreSnapshot) {
+						// Restore content from latest AMENDMENT_PHASE snapshot
+						const snapshot = await tx.query.paperContentSnapshot.findFirst({
+							where: { paperId: args.paperId, trigger: 'AMENDMENT_PHASE' },
+							orderBy: { createdAt: 'desc' }
+						});
+						if (snapshot?.content) {
+							await tx
+								.update(schema.resolutionPaper)
+								.set({ content: snapshot.content })
+								.where(eq(schema.resolutionPaper.id, args.paperId));
+						}
+						// Reset applied amendments back to PENDING
+						await tx
+							.update(schema.amendment)
+							.set({ status: 'PENDING' })
+							.where(
+								and(
+									eq(schema.amendment.paperId, args.paperId),
+									inArray(schema.amendment.status, ['CONSENSUS_ADOPTED', 'ACCEPTED'])
+								)
+							);
+					}
+				} else if (paper.status === 'DRAFT_RESOLUTION') {
+					// Clear document number and sequence
+					await tx
+						.update(schema.resolutionPaper)
+						.set({ documentNumber: null, sequenceNumber: null })
+						.where(eq(schema.resolutionPaper.id, args.paperId));
+					// Clear active DR if this paper was active
+					const committee = await tx.query.committee
+						.findFirst({ where: { id: paper.committeeId } })
+						.then(assertFindFirstExists);
+					if (committee.activeDraftResolutionId === args.paperId) {
+						await tx
+							.update(schema.committee)
+							.set({
+								activeDraftResolutionId: null,
+								currentOperativeIndex: null
+							})
+							.where(eq(schema.committee.id, paper.committeeId));
+					}
+				}
+				// SUBMITTED → WORKING_PAPER: no side effects
+
+				// Update the paper status
+				await tx
+					.update(schema.resolutionPaper)
+					.set({ status: targetStatus })
+					.where(eq(schema.resolutionPaper.id, args.paperId));
+
+				// Create audit snapshot
+				await tx.insert(schema.paperContentSnapshot).values({
+					paperId: args.paperId,
+					content: paper.content,
+					trigger: `REVERT_FROM_${paper.status}`
+				});
+			});
+
+			pubsub.updated(args.paperId);
+			committeePubsub.updated(paper.committeeId);
+
+			return db.query.resolutionPaper
+				.findFirst(
+					query(
+						ctx.abilities.resolutionPaper.filter('read', {
+							inject: {
+								where: { id: args.paperId }
+							}
+						}).query.single
+					)
+				)
+				.then(assertFindFirstExists);
 		}
 	})
 }));

@@ -410,6 +410,7 @@ type Mutation {
   removeEditor(conferenceUserId: ID!, paperId: ID!): Boolean
   removeSpeakerOnList(speakerOnListId: ID!): SpeakersList
   removeSponsor(committeeMemberId: ID!, paperId: ID!): Boolean
+  revertPaperStatus(paperId: ID!, restoreSnapshot: Boolean): ResolutionPaper
   selfAddToSpeakersList(speakersListId: ID!): SpeakerOnList
   selfRemoveFromSpeakersList(speakersListId: ID!): SpeakersList
   setPresenceForCommitteeMembers(ids: [ID!]!, present: Boolean!): [CommitteeMember!]

@@ -2,7 +2,7 @@ import houdini from 'houdini/vite';
 import { paraglideVitePlugin } from '@inlang/paraglide-js';
 import tailwindcss from '@tailwindcss/vite';
 import { sveltekit } from '@sveltejs/kit/vite';
-import { defineConfig } from 'vite';
+import { defineConfig, type ViteDevServer } from 'vite';
 
 function devAutoRestart() {
 	const RACE_CONDITION_PATTERNS = [
@@ -12,20 +12,20 @@ function devAutoRestart() {
 
 	return {
 		name: 'dev-auto-restart',
-		configureServer(server) {
+		configureServer(server: ViteDevServer) {
 			let restarting = false;
 
-			const triggerRestart = (label) => {
+			const triggerRestart = (label: string) => {
 				if (restarting) return;
 				restarting = true;
 				console.warn(`\n⚠️  ${label}, restarting dev server...\n`);
 				server.restart();
 			};
 
-			const isRaceCondition = (message) =>
+			const isRaceCondition = (message: string | undefined) =>
 				RACE_CONDITION_PATTERNS.some((pattern) => message?.includes(pattern));
 
-			const onUnhandledRejection = (reason) => {
+			const onUnhandledRejection = (reason: unknown) => {
 				if (reason instanceof Error && isRaceCondition(reason.message)) {
 					triggerRestart('Race condition detected');
 				}
@@ -37,7 +37,7 @@ function devAutoRestart() {
 			});
 
 			const originalSsrFixStacktrace = server.ssrFixStacktrace;
-			server.ssrFixStacktrace = function (e) {
+			server.ssrFixStacktrace = function (e: Error) {
 				originalSsrFixStacktrace.call(this, e);
 				if (isRaceCondition(e?.message)) {
 					triggerRestart('SSR race condition detected');

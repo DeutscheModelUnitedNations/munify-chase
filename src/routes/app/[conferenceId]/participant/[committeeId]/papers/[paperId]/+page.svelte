@@ -965,6 +965,14 @@
 						<i class="fas fa-trash"></i>
 					</button>
 				{/if}
+				<a
+					href="/app/print/{paper.id}"
+					target="_blank"
+					class="btn btn-ghost btn-sm"
+					title={m.printResolution()}
+				>
+					<i class="fas fa-print"></i>
+				</a>
 			</div>
 		</div>
 

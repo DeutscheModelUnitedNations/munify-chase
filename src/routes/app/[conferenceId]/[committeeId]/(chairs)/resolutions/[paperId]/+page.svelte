@@ -53,6 +53,7 @@
 	// Resolution content
 	let resolution = $state<Resolution | null>(null);
 	let hasPendingSave = $state(false);
+	let editorMode = $state<'edit' | 'preview'>('preview');
 
 	$effect(() => {
 		if (paper?.content && !resolution) {
@@ -757,6 +758,7 @@
 	let voteResult = $derived(
 		$ChairVoteResultSubscription.data?.findFirstResolutionVoteResult ?? null
 	);
+	let canEdit = $derived(paper?.status !== 'FINAL' || !voteResult);
 
 	// Map clauseId → vote for quick lookup
 	let clauseVoteMap = $derived.by(() => {
@@ -991,6 +993,14 @@
 						<i class="fas fa-exclamation-triangle mr-1"></i>{m.saveError()}
 					</span>
 				{/if}
+				<a
+					href="/app/print/{paper.id}"
+					target="_blank"
+					class="btn btn-ghost btn-sm"
+					title={m.printResolution()}
+				>
+					<i class="fas fa-print"></i>
+				</a>
 			</div>
 		</div>
 
@@ -1139,6 +1149,19 @@
 			</div>
 		{/if}
 
+		<!-- Edit/Preview Toggle -->
+		{#if canEdit}
+			<div class="flex justify-end mt-4">
+				<button
+					class="btn btn-sm btn-ghost"
+					onclick={() => (editorMode = editorMode === 'edit' ? 'preview' : 'edit')}
+				>
+					<i class="fas {editorMode === 'edit' ? 'fa-eye' : 'fa-pen'}"></i>
+					{editorMode === 'edit' ? m.preview() : m.edit()}
+				</button>
+			</div>
+		{/if}
+
 		<!-- Resolution Editor -->
 		<div class="py-2">
 			{#if resolution}
@@ -1147,9 +1170,7 @@
 					{resolution}
 					{headerData}
 					labels={getResolutionLabels()}
-					editable={paper.status !== 'AMENDMENT_PHASE' &&
-						paper.status !== 'VOTING_PHASE' &&
-						paper.status !== 'FINAL'}
+					editable={canEdit && editorMode === 'edit'}
 					onResolutionChange={handleResolutionChange}
 					onClauseLock={handleClauseLock}
 					onClauseUnlock={handleClauseUnlock}

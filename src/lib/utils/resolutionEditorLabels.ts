@@ -87,6 +87,7 @@ export function getResolutionLabels(): ResolutionEditorLabels {
 		resolutionImportLLMPromptOperative: m.resolutionImportLLMPromptOperative(),
 
 		// Preview metadata
+		resolutionSponsoringDelegations: m.resolutionSponsoringDelegations(),
 		resolutionAuthoringDelegation: m.resolutionAuthoringDelegation(),
 		resolutionDisclaimer: m.resolutionDisclaimer({ conferenceName: '{conferenceName}' }),
 

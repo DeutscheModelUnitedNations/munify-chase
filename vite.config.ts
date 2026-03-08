@@ -60,6 +60,6 @@ export default defineConfig({
 		sveltekit()
 	],
 	server: {
-		allowedHosts: ['happy-star-9669b56f.tunnl.gg']
+		allowedHosts: ['svelte-dev.munify.cloud']
 	}
 });

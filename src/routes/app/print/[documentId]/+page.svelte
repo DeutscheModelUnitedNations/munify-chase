@@ -10,6 +10,7 @@
 	import { getTranslatedCountryNameFromAlpha3Code } from '$lib/utils/nationTranslationHelper.svelte';
 	import { getResolutionLabels } from '$lib/utils/resolutionEditorLabels';
 	import * as m from '$lib/paraglide/messages';
+	import { SvelteMap } from 'svelte/reactivity';
 
 	let { data }: { data: PageData } = $props();
 
@@ -23,7 +24,7 @@
 
 	// Map clauseId → vote for quick lookup
 	let clauseVoteMap = $derived.by(() => {
-		const map = new Map<string, (typeof clauseVotes)[0]>();
+		const map = new SvelteMap<string, (typeof clauseVotes)[0]>();
 		for (const v of clauseVotes) {
 			map.set(v.clauseId, v);
 		}

@@ -27,7 +27,7 @@
 	import toast from 'svelte-french-toast';
 	import { fly, fade } from 'svelte/transition';
 	import { getResolutionLabels } from '$lib/utils/resolutionEditorLabels';
-	import { SvelteMap } from 'svelte/reactivity';
+	import { SvelteMap, SvelteSet } from 'svelte/reactivity';
 
 	let { data }: { data: PageData } = $props();
 
@@ -232,7 +232,7 @@
 
 	// Clause IDs locked by OTHER users
 	let lockedClauseIds = $derived.by(() => {
-		const set = new Set<string>();
+		const set = new SvelteSet<string>();
 		for (const lock of locks) {
 			if (lock.conferenceUserId !== myConferenceUserId) {
 				set.add(lock.clauseId);
@@ -243,7 +243,7 @@
 
 	// Clause IDs I hold confirmed locks for
 	let myLockedClauseIds = $derived.by(() => {
-		const set = new Set<string>();
+		const set = new SvelteSet<string>();
 		for (const lock of locks) {
 			if (lock.conferenceUserId === myConferenceUserId) {
 				set.add(lock.clauseId);
@@ -254,7 +254,7 @@
 
 	// Map for lock badge rendering: clauseId → lock info
 	let locksByClauseId = $derived.by(() => {
-		const map = new Map<string, (typeof locks)[0]>();
+		const map = new SvelteMap<string, (typeof locks)[0]>();
 		for (const lock of locks) {
 			if (lock.conferenceUserId !== myConferenceUserId) {
 				map.set(lock.clauseId, lock);
@@ -264,11 +264,11 @@
 	});
 
 	// Optimistic lock IDs — added immediately on mutation success, before subscription arrives
-	let optimisticMyLockIds = $state(new Set<string>());
+	let optimisticMyLockIds = new SvelteSet<string>();
 
 	// Effective editable clause IDs = confirmed (subscription) + optimistic
 	let editableClauseIds = $derived.by(() => {
-		const set = new Set(myLockedClauseIds);
+		const set = new SvelteSet(myLockedClauseIds);
 		for (const id of optimisticMyLockIds) set.add(id);
 		return set;
 	});
@@ -509,7 +509,7 @@
 	);
 
 	let commentsByClauseId = $derived.by(() => {
-		const map = new Map<string | null, typeof allComments>();
+		const map = new SvelteMap<string | null, typeof allComments>();
 		for (const comment of allComments) {
 			const key = comment.clauseId;
 			if (!map.has(key)) map.set(key, []);

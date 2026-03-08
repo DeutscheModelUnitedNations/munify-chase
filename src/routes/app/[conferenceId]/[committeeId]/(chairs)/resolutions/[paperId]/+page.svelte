@@ -320,7 +320,7 @@
 
 	// Group comments by clauseId for inline display
 	let commentsByClauseId = $derived.by(() => {
-		const map = new Map<string | null, typeof allComments>();
+		const map = new SvelteMap<string | null, typeof allComments>();
 		for (const comment of allComments) {
 			const key = comment.clauseId;
 			if (!map.has(key)) map.set(key, []);
@@ -331,7 +331,7 @@
 
 	// Comment counts per clause (for badge annotations)
 	let commentCountByClauseId = $derived.by(() => {
-		const map = new Map<string, number>();
+		const map = new SvelteMap<string, number>();
 		for (const comment of allComments) {
 			if (comment.clauseId) {
 				map.set(comment.clauseId, (map.get(comment.clauseId) ?? 0) + 1);

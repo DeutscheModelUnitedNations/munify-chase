@@ -41,7 +41,9 @@ schemaBuilder.mutationFields((t) => ({
 			try {
 				await assertCommitteeChairOrAdmin(ctx, paper.committeeId);
 				isChair = true;
-			} catch {}
+			} catch {
+				// not a chair/admin, will check delegate path below
+			}
 
 			if (!isChair) {
 				// Must be a DELEGATE
@@ -122,7 +124,9 @@ schemaBuilder.mutationFields((t) => ({
 			try {
 				await assertCommitteeChairOrAdmin(ctx, paper.committeeId);
 				isChair = true;
-			} catch {}
+			} catch {
+				// not a chair/admin, will check delegate path below
+			}
 
 			if (!isChair) {
 				if (paper.status === 'DRAFT_RESOLUTION' || paper.status === 'AMENDMENT_PHASE') {

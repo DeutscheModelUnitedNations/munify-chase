@@ -601,9 +601,28 @@ schemaBuilder.mutationFields((t) => ({
 					votesAbstain: args.votesAbstain ?? 0
 				});
 
+				const updateSet: { status: 'FINAL'; content?: unknown } = { status: 'FINAL' };
+
+				if (args.outcome === 'ADOPTED') {
+					const rejectedVotes = await tx.query.operativeClauseVote.findMany({
+						where: { paperId: args.paperId, outcome: 'REJECTED' }
+					});
+					const rejectedIds = new Set(rejectedVotes.map((v) => v.clauseId));
+
+					if (rejectedIds.size > 0) {
+						const parsed = ResolutionSchema.safeParse(paper.content);
+						if (parsed.success) {
+							parsed.data.operative = parsed.data.operative.filter(
+								(clause) => !rejectedIds.has(clause.id)
+							);
+							updateSet.content = parsed.data;
+						}
+					}
+				}
+
 				await tx
 					.update(schema.resolutionPaper)
-					.set({ status: 'FINAL' })
+					.set(updateSet)
 					.where(eq(schema.resolutionPaper.id, args.paperId));
 			});
 

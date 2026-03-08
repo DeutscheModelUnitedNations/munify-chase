@@ -545,13 +545,13 @@ schemaBuilder.mutationFields((t) => ({
 					content: paper.content,
 					trigger: 'VOTING_PHASE'
 				});
-			});
 
-			// Reset currentOperativeIndex to 0 for voting navigation
-			await db
-				.update(schema.committee)
-				.set({ currentOperativeIndex: 0 })
-				.where(eq(schema.committee.id, paper.committeeId));
+				// Reset currentOperativeIndex to 0 for voting navigation
+				await tx
+					.update(schema.committee)
+					.set({ currentOperativeIndex: 0 })
+					.where(eq(schema.committee.id, paper.committeeId));
+			});
 
 			pubsub.updated(args.paperId);
 			committeePubsub.updated(paper.committeeId);

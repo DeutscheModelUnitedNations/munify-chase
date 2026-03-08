@@ -1567,6 +1567,29 @@
 							{/if}
 						</div>
 					{/each}
+					{#if voteResult}
+						<div class="divider my-1"></div>
+						<div class="flex items-center gap-2 px-2 py-1 text-sm font-semibold">
+							<span class="w-12">{m.finalVote()}</span>
+							<span
+								class="badge badge-xs {voteResult.outcome === 'ADOPTED'
+									? 'badge-success'
+									: voteResult.outcome === 'REJECTED'
+										? 'badge-error'
+										: 'badge-warning'}"
+							>
+								{voteResult.outcome === 'ADOPTED'
+									? m.adopted()
+									: voteResult.outcome === 'REJECTED'
+										? m.rejected()
+										: m.sentBack()}
+							</span>
+							<span class="text-xs opacity-60">
+								{voteResult.votesFor}/{voteResult.votesAgainst}
+								{#if voteResult.votesAbstain > 0}/{voteResult.votesAbstain}{/if}
+							</span>
+						</div>
+					{/if}
 				</div>
 			</Fieldset>
 		{/if}

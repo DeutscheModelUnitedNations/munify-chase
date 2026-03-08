@@ -287,12 +287,7 @@
 											</div>
 										</div>
 										<div class="flex gap-2">
-											<a
-												href="/app/{page.params.conferenceId}/participant/{page.params
-													.committeeId}/papers/{paper.id}"
-												class="btn btn-ghost btn-sm"
-												target="_blank"
-											>
+											<a href="./resolutions/{paper.id}" class="btn btn-ghost btn-sm">
 												{m.viewPaper()}
 											</a>
 											<button

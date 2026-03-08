@@ -118,3 +118,7 @@ CVE-2025-64756
 # Check: Update base image when Debian 12.12 is released (fixes libc 2.36-9+deb12u11)
 # Remove this ignore once base image is updated
 CVE-2025-4802
+
+
+CVE-2026-22774
+CVE-2026-22775

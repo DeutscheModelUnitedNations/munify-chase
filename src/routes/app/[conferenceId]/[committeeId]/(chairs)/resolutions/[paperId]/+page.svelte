@@ -74,7 +74,7 @@
 		committeeAbbreviation: committee?.abbreviation ?? undefined,
 		committeeFullName: committee?.name ?? undefined,
 		committeeResolutionHeadline: committee?.resolutionHeadline ?? undefined,
-		documentNumber: paper?.documentNumber ?? undefined,
+		documentNumber: paper?.documentNumber?.replace(`${committee?.abbreviation}/`, '') ?? undefined,
 		topic: paper?.agendaItem?.title ?? committee?.activeAgendaItem?.title ?? undefined,
 		authoringDelegation:
 			getTranslatedCountryNameFromAlpha3Code(paper?.creator?.representation?.alpha3Code) ??

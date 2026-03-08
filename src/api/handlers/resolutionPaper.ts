@@ -601,7 +601,9 @@ schemaBuilder.mutationFields((t) => ({
 					votesAbstain: args.votesAbstain ?? 0
 				});
 
-				const updateSet: { status: 'FINAL'; content?: unknown } = { status: 'FINAL' };
+				const updateSet: { status: 'FINAL'; content?: unknown; documentNumber?: string } = {
+					status: 'FINAL'
+				};
 
 				if (args.outcome === 'ADOPTED') {
 					const rejectedVotes = await tx.query.operativeClauseVote.findMany({
@@ -617,6 +619,11 @@ schemaBuilder.mutationFields((t) => ({
 							);
 							updateSet.content = parsed.data;
 						}
+					}
+
+					// Change DR to RES in document number
+					if (paper.documentNumber) {
+						updateSet.documentNumber = paper.documentNumber.replace('/DR.', '/RES.');
 					}
 				}
 

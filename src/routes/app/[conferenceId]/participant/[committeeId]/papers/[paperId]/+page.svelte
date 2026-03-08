@@ -156,7 +156,7 @@
 						paperId: page.params.paperId!,
 						clauseId
 					}).catch(() => {
-						optimisticMyLockIds = new Set([...optimisticMyLockIds].filter((id) => id !== clauseId));
+						optimisticMyLockIds.delete(clauseId);
 					});
 				}
 			}
@@ -284,7 +284,7 @@
 				paperId: page.params.paperId!,
 				clauseId
 			});
-			optimisticMyLockIds = new Set([...optimisticMyLockIds, clauseId]);
+			optimisticMyLockIds.add(clauseId);
 			lastInteractionTime = Date.now();
 		} catch {
 			const lock = locksByClauseId.get(clauseId);
@@ -301,7 +301,7 @@
 	// Click "Done editing" → release lock
 	async function handleClauseUnlock(clauseId: string) {
 		if (!canEdit) return;
-		optimisticMyLockIds = new Set([...optimisticMyLockIds].filter((id) => id !== clauseId));
+		optimisticMyLockIds.delete(clauseId);
 		await ReleaseLockMutation.mutate({
 			paperId: page.params.paperId!,
 			clauseId

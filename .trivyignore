@@ -94,8 +94,10 @@ CVE-2025-68973
 # libpam: directory traversal - PAM auth not used by Node.js/Bun runtime
 CVE-2025-6020
 
-# minimatch: ReDoS via crafted glob patterns - transitive dep, not exposed to user input
+# minimatch: ReDoS via crafted glob patterns - transitive dev dep (ESLint), not exposed to user input
 CVE-2026-26996
+CVE-2026-27903
+CVE-2026-27904
 
 # node-tar: symlink poisoning, path traversal, race condition, hardlink exploits
 # tar is a transitive build/install dep, not used to extract untrusted archives at runtime

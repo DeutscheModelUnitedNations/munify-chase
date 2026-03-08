@@ -593,6 +593,7 @@
 		$ParticipantCommitteeSubscription.data?.findFirstCommittee
 	);
 	let currentOpIndex = $derived(committeeSubscriptionData?.currentOperativeIndex ?? 0);
+	let activeAmendmentId = $derived(committeeSubscriptionData?.activeAmendmentId ?? null);
 
 	let isActiveDr = $derived(paper?.id === committee?.activeDraftResolutionId);
 
@@ -1383,7 +1384,13 @@
 						{#each myAmendments as amendment (amendment.id)}
 							{@const sponsorCount = amendment.sponsors?.length ?? 0}
 							{@const thresholdMet = sponsorCount >= sponsorThresholdNeeded}
-							<div id="amendment-{amendment.id}" class="card card-border bg-base-100 p-3">
+							{@const isActive = amendment.id === activeAmendmentId}
+							<div
+								id="amendment-{amendment.id}"
+								class="card card-border bg-base-100 p-3 {isActive
+									? 'ring-2 ring-success bg-success/5'
+									: ''}"
+							>
 								<div class="flex flex-col gap-2">
 									<div class="flex items-center gap-2 flex-wrap">
 										<span class="badge badge-sm {getAmendmentTypeBadgeClass(amendment.type)}">
@@ -1396,6 +1403,9 @@
 											<span class="badge badge-ghost badge-sm font-mono">
 												OP {amendment.targetOperativeIndex + 1}
 											</span>
+										{/if}
+										{#if isActive}
+											<span class="badge badge-success badge-sm">{m.activeAmendment()}</span>
 										{/if}
 									</div>
 
@@ -1438,7 +1448,13 @@
 						{/each}
 
 						{#each mySponsoredAmendments as amendment (amendment.id)}
-							<div id="amendment-{amendment.id}" class="card card-border bg-base-100 p-3">
+							{@const isActive = amendment.id === activeAmendmentId}
+							<div
+								id="amendment-{amendment.id}"
+								class="card card-border bg-base-100 p-3 {isActive
+									? 'ring-2 ring-success bg-success/5'
+									: ''}"
+							>
 								<div class="flex items-center justify-between gap-2">
 									<div class="flex items-center gap-2 flex-wrap">
 										<span class="badge badge-sm {getAmendmentTypeBadgeClass(amendment.type)}">
@@ -1448,6 +1464,9 @@
 											<span class="badge badge-ghost badge-sm font-mono">
 												OP {amendment.targetOperativeIndex + 1}
 											</span>
+										{/if}
+										{#if isActive}
+											<span class="badge badge-success badge-sm">{m.activeAmendment()}</span>
 										{/if}
 										{#if amendment.proposer?.representation}
 											<div class="flex items-center gap-1 text-sm">

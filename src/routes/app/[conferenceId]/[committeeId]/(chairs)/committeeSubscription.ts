@@ -19,6 +19,7 @@ export const CommitteeSubscription = graphql(`
 			activeDraftResolutionId
 			supportReEvaluationOpen
 			currentOperativeIndex
+			activeAmendmentId
 			whiteboardContent
 			lastResolutionAdoptionDate
 			allowDelegationsToAddThemselvesToSpeakersList

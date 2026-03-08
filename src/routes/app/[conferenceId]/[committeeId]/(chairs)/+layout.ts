@@ -20,6 +20,7 @@ export const _houdini_load = graphql(`
 			activeDraftResolutionId
 			supportReEvaluationOpen
 			currentOperativeIndex
+			activeAmendmentId
 			whiteboardContent
 			lastResolutionAdoptionDate
 			allowDelegationsToAddThemselvesToSpeakersList

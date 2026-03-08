@@ -20,6 +20,7 @@ export const ParticipantCommitteeSubscription = graphql(`
 			twoThirdsMajority
 			paperSupportThreshold
 			currentOperativeIndex
+			activeAmendmentId
 			activeAgendaItem {
 				id
 				title

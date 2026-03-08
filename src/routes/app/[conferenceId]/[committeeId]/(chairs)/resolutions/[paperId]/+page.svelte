@@ -481,6 +481,7 @@
 	let submittedAmendments = $derived(allAmendments.filter((a) => a.status === 'SUBMITTED'));
 
 	let currentOpIndex = $derived(committee?.currentOperativeIndex ?? 0);
+	let activeAmendmentId = $derived(committee?.activeAmendmentId ?? null);
 
 	let operativeClauses = $derived((resolution?.operative ?? []) as OperativeClause[]);
 
@@ -696,6 +697,25 @@
 				id: committee.id,
 				clearActiveAmendment: true
 			});
+		} catch {
+			toast.error(m.saveError());
+		}
+	}
+
+	async function handleSetActiveAmendment(amendmentId: string | null) {
+		if (!committee) return;
+		try {
+			if (amendmentId) {
+				await UpdateCommitteeMutation.mutate({
+					id: committee.id,
+					activeAmendmentId: amendmentId
+				});
+			} else {
+				await UpdateCommitteeMutation.mutate({
+					id: committee.id,
+					clearActiveAmendment: true
+				});
+			}
 		} catch {
 			toast.error(m.saveError());
 		}
@@ -1332,11 +1352,12 @@
 						{#each sortedSubmittedAmendments as amendment (amendment.id)}
 							{@const isCurrentParagraph =
 								(amendment.targetOperativeIndex ?? -1) === currentOpIndex}
+							{@const isActive = amendment.id === activeAmendmentId}
 							<div
 								id="amendment-{amendment.id}"
 								class="card card-border bg-base-100 p-3 transition-all {isCurrentParagraph
 									? 'border-primary border-2'
-									: ''}"
+									: ''} {isActive ? 'ring-2 ring-success bg-success/5' : ''}"
 							>
 								<div class="flex items-center justify-between gap-2">
 									<div class="flex items-center gap-2 flex-wrap">
@@ -1363,8 +1384,18 @@
 											{amendment.sponsors?.length ?? 0}
 											{m.sponsors()}
 										</span>
+										{#if isActive}
+											<span class="badge badge-success badge-sm">{m.activeAmendment()}</span>
+										{/if}
 									</div>
 									<div class="flex items-center gap-1">
+										<button
+											class="btn btn-xs {isActive ? 'btn-ghost' : 'btn-outline btn-success'}"
+											onclick={() => handleSetActiveAmendment(isActive ? null : amendment.id)}
+										>
+											<i class="fas {isActive ? 'fa-stop' : 'fa-play'}"></i>
+											{#if !isActive}{m.setActiveAmendment()}{/if}
+										</button>
 										<button
 											class="btn btn-success btn-xs"
 											onclick={() => {

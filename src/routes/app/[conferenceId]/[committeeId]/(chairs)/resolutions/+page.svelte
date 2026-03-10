@@ -427,9 +427,9 @@
 													})}
 												</span>
 												<span
-													>{m.submittedBy()}: {paper.creator.represenation?.name ||
+													>{m.submittedBy()}: {paper.creator.representation?.name ||
 														getTranslatedCountryNameFromAlpha3Code(
-															paper.creator.represenation?.alpha3Code
+															paper.creator.representation?.alpha3Code
 														)}</span
 												>
 											</div>

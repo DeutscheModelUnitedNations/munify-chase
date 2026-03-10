@@ -587,5 +587,6 @@
 	"yes": "Ja",
 	"you": "Du",
 	"youCannotEditYourself": "Du kannst deine eigene Rolle nicht bearbeiten",
-	"youreUp": "Du bist dran!"
+	"youreUp": "Du bist dran!",
+	"submittedBy": "Eingereicht durch"
 }

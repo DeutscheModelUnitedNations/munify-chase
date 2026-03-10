@@ -587,5 +587,7 @@
 	"yes": "Yes",
 	"you": "You",
 	"youCannotEditYourself": "You cannot edit your own role",
-	"youreUp": "You're up!"
+	"youreUp": "You're up!",
+	"submittedBy": "Submitted by"
+
 }

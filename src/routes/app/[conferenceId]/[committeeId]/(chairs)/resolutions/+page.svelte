@@ -426,6 +426,8 @@
 														count: String(paper.sponsors.length)
 													})}
 												</span>
+												<span>{m.submittedBy()}: {paper.creator.represenation?.name ||
+													getTranslatedCountryNameFromAlpha3Code(paper.creator.represenation?.alpha3Code)}</span>
 											</div>
 										</a>
 										{#if paper.status === 'DRAFT_RESOLUTION' || paper.status === 'AMENDMENT_PHASE' || paper.status === 'VOTING_PHASE'}

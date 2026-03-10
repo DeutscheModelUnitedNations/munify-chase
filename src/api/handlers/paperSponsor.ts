@@ -80,7 +80,7 @@ schemaBuilder.mutationFields((t) => ({
 				.returning()
 				.then(assertFirstEntryExists);
 
-			pubsub.updated(result.id);
+			pubsub.created();
 			paperPubsub.updated(args.paperId);
 
 			return db.query.paperSponsor

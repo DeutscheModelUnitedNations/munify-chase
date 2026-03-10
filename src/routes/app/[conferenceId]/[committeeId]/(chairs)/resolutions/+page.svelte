@@ -12,6 +12,8 @@
 	import Flag from '$lib/components/Flag.svelte';
 	import Modal from '$lib/components/Modal.svelte';
 	import toast from 'svelte-french-toast';
+	import { generatePaperName } from '$lib/utils/paperNameGenerator';
+	import { getTranslatedCountryNameFromAlpha3Code } from '$lib/utils/nationTranslationHelper.svelte';
 
 	let { data }: { data: PageData } = $props();
 
@@ -173,6 +175,63 @@
 		}
 	}
 
+	// Chair Create Working Paper
+	const ChairCreateResolutionPaperMutation = graphql(`
+		mutation ChairCreateResolutionPaperMutation(
+			$committeeId: ID!
+			$agendaItemId: ID!
+			$committeeMemberId: ID!
+			$title: String
+		) {
+			chairCreateResolutionPaper(
+				committeeId: $committeeId
+				agendaItemId: $agendaItemId
+				committeeMemberId: $committeeMemberId
+				title: $title
+			) {
+				id
+			}
+		}
+	`);
+
+	let showCreatePaperModal = $state(false);
+	let createPaperSearchQuery = $state('');
+
+	function getRepresentationName(
+		rep: { name?: string | null; alpha3Code?: string | null } | null | undefined
+	) {
+		return getTranslatedCountryNameFromAlpha3Code(rep?.alpha3Code) ?? rep?.name ?? '';
+	}
+
+	let filteredCreatePaperMembers = $derived(
+		(createPaperSearchQuery
+			? (committee?.members ?? []).filter((member) =>
+					getRepresentationName(member.representation)
+						.toLowerCase()
+						.includes(createPaperSearchQuery.toLowerCase())
+				)
+			: (committee?.members ?? [])
+		).sort((a, b) =>
+			getRepresentationName(a.representation).localeCompare(getRepresentationName(b.representation))
+		)
+	);
+
+	async function handleChairCreatePaper(committeeMemberId: string) {
+		if (!committee?.activeAgendaItem) return;
+		try {
+			await ChairCreateResolutionPaperMutation.mutate({
+				committeeId: page.params.committeeId!,
+				agendaItemId: committee.activeAgendaItem.id,
+				committeeMemberId,
+				title: generatePaperName()
+			});
+			showCreatePaperModal = false;
+			toast.success(m.paperCreated());
+		} catch {
+			toast.error(m.saveError());
+		}
+	}
+
 	function getStatusBadgeClass(status: string) {
 		switch (status) {
 			case 'DRAFT_RESOLUTION':
@@ -244,6 +303,22 @@
 
 			<!-- Main content -->
 			<div class="flex h-full w-full flex-3 flex-col gap-4">
+				<!-- Create Working Paper -->
+				{#if committee.activeAgendaItem}
+					<div class="flex justify-end">
+						<button
+							class="btn btn-primary btn-sm"
+							onclick={() => {
+								createPaperSearchQuery = '';
+								showCreatePaperModal = true;
+							}}
+						>
+							<i class="fas fa-plus mr-1"></i>
+							{m.chairCreateWorkingPaper()}
+						</button>
+					</div>
+				{/if}
+
 				<!-- Section 1: Submitted Papers Queue -->
 				<BasicCard title={m.submittedPapers()}>
 					<p class="text-base-content/50 mb-3 text-sm">{m.submittedPapersDescription()}</p>
@@ -293,7 +368,6 @@
 											<button
 												class="btn btn-primary btn-sm"
 												onclick={() => openPromoteModal(paper.id, paper.title)}
-												disabled={availableSlots <= 0}
 											>
 												<i class="fas fa-arrow-up mr-1"></i>
 												{m.promote()}
@@ -505,6 +579,39 @@
 					{m.yes()}
 				</button>
 			</div>
+		</div>
+	</Modal>
+
+	<!-- Create Working Paper Modal -->
+	<Modal bind:open={showCreatePaperModal}>
+		<div class="flex items-center justify-between mb-4">
+			<h3 class="font-bold text-lg">{m.chairCreateWorkingPaper()}</h3>
+			<button class="btn btn-ghost btn-sm" onclick={() => (showCreatePaperModal = false)}>
+				<i class="fas fa-times"></i>
+			</button>
+		</div>
+		<p class="text-sm opacity-60 mb-3">{m.selectAuthorDelegation()}</p>
+		<input
+			class="input input-bordered w-full mb-3"
+			placeholder={m.searchMembers()}
+			bind:value={createPaperSearchQuery}
+		/>
+		<div class="max-h-64 overflow-y-auto space-y-1">
+			{#each filteredCreatePaperMembers as member (member.id)}
+				<button
+					class="btn btn-ghost btn-sm w-full justify-start gap-2"
+					onclick={() => handleChairCreatePaper(member.id)}
+				>
+					<Flag representation={member.representation} size="xs" />
+					<span>
+						{getTranslatedCountryNameFromAlpha3Code(member.representation?.alpha3Code) ??
+							member.representation?.name}
+					</span>
+				</button>
+			{/each}
+			{#if filteredCreatePaperMembers.length === 0}
+				<p class="text-center text-sm opacity-60 py-4">{m.noResults()}</p>
+			{/if}
 		</div>
 	</Modal>
 {/if}

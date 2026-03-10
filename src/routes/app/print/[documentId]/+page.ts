@@ -44,7 +44,7 @@ export const _houdini_load = graphql(`
 			votesAgainst
 			votesAbstain
 		}
-		findFirstResolutionVoteResult(where: { paperId: $documentId }) {
+		findManyResolutionVoteResult(where: { paperId: $documentId }, limit: 1) {
 			id
 			outcome
 			votesFor

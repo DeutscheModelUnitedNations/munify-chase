@@ -1,5 +1,5 @@
 import { db, schema } from '$api/db/db';
-import { abilityBuilder, schemaBuilder } from '$api/rumble';
+import { abilityBuilder, schemaBuilder, pubsub as rumblePubsub } from '$api/rumble';
 import { and, eq } from 'drizzle-orm';
 import { basics } from './basics';
 import { isWhitelistedEmail } from '$api/services/isDMUNEmail';
@@ -7,6 +7,7 @@ import { assertFindFirstExists } from '@m1212e/rumble';
 import { GraphQLError } from 'graphql';
 
 const { arg, ref, pubsub, table } = basics('paperEditor');
+const paperPubsub = rumblePubsub({ table: 'resolutionPaper' });
 
 abilityBuilder.paperEditor.allow(['read', 'update']).when(({ mustBeLoggedIn }) => {
 	const user = mustBeLoggedIn();
@@ -65,6 +66,7 @@ schemaBuilder.mutationFields((t) => ({
 				);
 
 			pubsub.removed(editor.id);
+			paperPubsub.updated(args.paperId);
 
 			return true;
 		}

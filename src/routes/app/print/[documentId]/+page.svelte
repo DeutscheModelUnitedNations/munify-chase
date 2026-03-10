@@ -17,7 +17,7 @@
 	let query = $derived(data?.PrintPaperQuery);
 	let paper = $derived($query.data?.findFirstResolutionPaper);
 	let clauseVotes = $derived($query.data?.findManyOperativeClauseVote ?? []);
-	let voteResult = $derived($query.data?.findFirstResolutionVoteResult ?? null);
+	let voteResult = $derived($query.data?.findManyResolutionVoteResult?.[0] ?? null);
 
 	let resolution = $derived(paper?.content ? migrateResolution(paper.content as Resolution) : null);
 	let operativeClauses = $derived((resolution?.operative ?? []) as OperativeClause[]);

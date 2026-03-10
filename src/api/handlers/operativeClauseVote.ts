@@ -68,7 +68,7 @@ schemaBuilder.mutationFields((t) => ({
 					}
 				});
 
-			pubsub.updated(args.paperId);
+			pubsub.created();
 			paperPubsub.updated(args.paperId);
 
 			return db.query.operativeClauseVote
@@ -110,7 +110,7 @@ schemaBuilder.mutationFields((t) => ({
 					)
 				);
 
-			pubsub.updated(args.paperId);
+			pubsub.created();
 			paperPubsub.updated(args.paperId);
 
 			return true;

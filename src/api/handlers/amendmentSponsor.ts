@@ -36,8 +36,8 @@ schemaBuilder.mutationFields((t) => ({
 				.findFirst({ where: { id: args.amendmentId } })
 				.then(assertFindFirstExists);
 
-			if (amendment.status !== 'PENDING') {
-				throw new GraphQLError('Can only add sponsors to PENDING amendments');
+			if (amendment.status !== 'SUBMITTED') {
+				throw new GraphQLError('Can only add sponsors to SUBMITTED amendments');
 			}
 
 			const paper = await db.query.resolutionPaper
@@ -78,7 +78,7 @@ schemaBuilder.mutationFields((t) => ({
 				.returning()
 				.then(assertFirstEntryExists);
 
-			pubsub.updated(result.id);
+			pubsub.created();
 			amendmentPubsub.updated(args.amendmentId);
 
 			return db.query.amendmentSponsor
@@ -100,14 +100,14 @@ schemaBuilder.mutationFields((t) => ({
 			committeeMemberId: t.arg.id({ required: true })
 		},
 		resolve: async (root, args, ctx) => {
-			const user = ctx.mustBeLoggedIn();
+			ctx.mustBeLoggedIn();
 
 			const amendment = await db.query.amendment
 				.findFirst({ where: { id: args.amendmentId } })
 				.then(assertFindFirstExists);
 
-			if (amendment.status !== 'PENDING') {
-				throw new GraphQLError('Can only remove sponsors from PENDING amendments');
+			if (amendment.status !== 'SUBMITTED') {
+				throw new GraphQLError('Can only remove sponsors from SUBMITTED amendments');
 			}
 
 			// Cannot remove the proposer
@@ -119,18 +119,8 @@ schemaBuilder.mutationFields((t) => ({
 				.findFirst({ where: { id: amendment.paperId } })
 				.then(assertFindFirstExists);
 
-			// Either removing own sponsorship, or chair removing anyone
-			const isOwnMembership = await db.query.conferenceUser.findFirst({
-				where: {
-					user: { id: user.sub },
-					committeeMemberId: args.committeeMemberId
-				}
-			});
-
-			if (!isOwnMembership) {
-				// Must be chair/admin
-				await assertCommitteeChairOrAdmin(ctx, paper.committeeId);
-			}
+			// Only chair/admin can remove sponsors
+			await assertCommitteeChairOrAdmin(ctx, paper.committeeId);
 
 			const existing = await db.query.amendmentSponsor.findFirst({
 				where: {
@@ -152,7 +142,7 @@ schemaBuilder.mutationFields((t) => ({
 					)
 				);
 
-			pubsub.updated(existing.id);
+			pubsub.removed(existing.id);
 			amendmentPubsub.updated(args.amendmentId);
 
 			return true;

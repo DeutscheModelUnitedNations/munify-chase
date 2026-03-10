@@ -389,6 +389,8 @@ type Mutation {
   addSpeakerOnList(committeeMemberId: ID, conferenceMemberId: ID, position: Int, speakersListId: ID!): SpeakerOnList
   addSponsor(committeeMemberId: ID!, paperId: ID!): PaperSponsor
   adoptByConsensus(amendmentId: ID!): Amendment
+  chairCreateAmendment(committeeMemberId: ID!, newContent: JSON, paperId: ID!, targetClauseId: String, targetOperativeIndex: Int, targetPosition: Int, type: AmendmentTypeEnum!): Amendment
+  chairCreateResolutionPaper(agendaItemId: ID!, committeeId: ID!, committeeMemberId: ID!, title: String): ResolutionPaper
   clearSpeakersList(id: ID!): SpeakersList
   createAgendaItem(committeeId: ID!, title: String!): AgendaItem
   createAmendment(newContent: JSON, paperId: ID!, targetClauseId: String, targetOperativeIndex: Int, targetPosition: Int, type: AmendmentTypeEnum!): Amendment
@@ -427,7 +429,6 @@ type Mutation {
   setPresenceForCommitteeMembers(ids: [ID!]!, present: Boolean!): [CommitteeMember!]
   softDeletePaper(paperId: ID!): Boolean
   startVotingPhase(paperId: ID!): ResolutionPaper
-  submitAmendment(amendmentId: ID!): Amendment
   submitPaper(paperId: ID!): ResolutionPaper
   updateComment(commentId: ID!, content: String!): ResolutionComment
   updateCommittee(abbreviation: String, activeAgendaItemId: ID, activeAmendmentId: ID, activeDraftResolutionId: ID, allowDelegationsToAddThemselvesToSpeakersList: Boolean, clearActiveAmendment: Boolean, clearActiveDraftResolution: Boolean, currentOperativeIndex: Int, id: ID!, lastResolutionAdoptionDate: DateTime, maxDraftResolutions: Int, name: String, showWhiteboard: Boolean, stateOfDebate: String, status: CommitteeStatusEnum, statusHeadline: String, statusUntil: DateTime, supportReEvaluationOpen: Boolean, whiteboardContent: String): Committee

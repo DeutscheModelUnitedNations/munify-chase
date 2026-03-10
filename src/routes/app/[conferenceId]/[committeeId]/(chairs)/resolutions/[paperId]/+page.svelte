@@ -15,6 +15,7 @@
 		ResolutionEditor,
 		migrateResolution,
 		calculateAmendmentDiffSize,
+		getFirstTextContent,
 		type Resolution,
 		type ResolutionHeaderData,
 		type AmendmentOverlay,
@@ -23,6 +24,7 @@
 	import Flag from '$lib/components/Flag.svelte';
 	import Fieldset from '$lib/components/Fieldset.svelte';
 	import Modal from '$lib/components/Modal.svelte';
+	import CreateAmendmentModal from '$lib/components/CreateAmendmentModal.svelte';
 	import CommentSection from '$lib/components/CommentSection.svelte';
 	import { getTranslatedCountryNameFromAlpha3Code } from '$lib/utils/nationTranslationHelper.svelte';
 	import toast from 'svelte-french-toast';
@@ -521,6 +523,92 @@
 		});
 	});
 
+	// Group amendments by operative clause for display
+	let groupedAmendments = $derived.by(() => {
+		const groups: {
+			label: string;
+			index: number | null;
+			amendments: typeof sortedSubmittedAmendments;
+		}[] = [];
+		const byIndex = new SvelteMap<number | null, typeof sortedSubmittedAmendments>();
+
+		for (const a of sortedSubmittedAmendments) {
+			const key = a.targetOperativeIndex ?? null;
+			if (!byIndex.has(key)) byIndex.set(key, []);
+			byIndex.get(key)!.push(a);
+		}
+
+		// Numbered groups first, sorted by index
+		const numbered = [...byIndex.entries()].filter(([k]) => k !== null).sort(([a], [b]) => a! - b!);
+		for (const [idx, amendments] of numbered) {
+			groups.push({ label: `OP ${idx! + 1}`, index: idx, amendments });
+		}
+
+		// General group (ADD amendments with no target index) at the end
+		const general = byIndex.get(null);
+		if (general && general.length > 0) {
+			groups.push({ label: m.general(), index: null, amendments: general });
+		}
+
+		return groups;
+	});
+
+	// Amendment sponsor management
+	const AddAmendmentSponsorMutation = graphql(`
+		mutation ChairAddAmendmentSponsorMutation($amendmentId: ID!, $committeeMemberId: ID!) {
+			addAmendmentSponsor(amendmentId: $amendmentId, committeeMemberId: $committeeMemberId) {
+				id
+			}
+		}
+	`);
+
+	const RemoveAmendmentSponsorMutation = graphql(`
+		mutation ChairRemoveAmendmentSponsorMutation($amendmentId: ID!, $committeeMemberId: ID!) {
+			removeAmendmentSponsor(amendmentId: $amendmentId, committeeMemberId: $committeeMemberId)
+		}
+	`);
+
+	let showAmendmentSponsorModal = $state(false);
+	let amendmentSponsorSearchQuery = $state('');
+	let amendmentSponsorTargetId = $state<string | null>(null);
+
+	let amendmentSponsorTarget = $derived(
+		allAmendments.find((a) => a.id === amendmentSponsorTargetId)
+	);
+
+	let filteredAvailableAmendmentMembers = $derived.by(() => {
+		const existingSponsorIds = new Set(
+			(amendmentSponsorTarget?.sponsors ?? []).map((s) => s.committeeMemberId)
+		);
+		const available = (committee?.members ?? []).filter((m) => !existingSponsorIds.has(m.id));
+		const filtered = amendmentSponsorSearchQuery
+			? available.filter((member) =>
+					getRepresentationName(member.representation)
+						.toLowerCase()
+						.includes(amendmentSponsorSearchQuery.toLowerCase())
+				)
+			: available;
+		return filtered.sort((a, b) =>
+			getRepresentationName(a.representation).localeCompare(getRepresentationName(b.representation))
+		);
+	});
+
+	let sponsorThresholdNeeded = $derived(Math.ceil((committee?.totalPresent ?? 0) * 0.1));
+
+	async function handleAddAmendmentSponsor(committeeMemberId: string) {
+		if (!amendmentSponsorTargetId) return;
+		await AddAmendmentSponsorMutation.mutate({
+			amendmentId: amendmentSponsorTargetId,
+			committeeMemberId
+		});
+		toast.success(m.sponsorAdded());
+	}
+
+	async function handleRemoveAmendmentSponsor(amendmentId: string, committeeMemberId: string) {
+		await RemoveAmendmentSponsorMutation.mutate({ amendmentId, committeeMemberId });
+		toast.success(m.sponsorRemoved());
+	}
+
 	// Transform server amendments → AmendmentOverlay[] for editor rendering
 	let amendmentOverlays = $derived.by(() => {
 		const visible = allAmendments.filter(
@@ -605,6 +693,8 @@
 	let showAdoptConfirmModal = $state(false);
 	let showRejectConfirmModal = $state(false);
 	let confirmAmendmentId = $state<string | null>(null);
+	let showVoteOutcomeModal = $state(false);
+	let voteOutcomeAmendmentId = $state<string | null>(null);
 
 	async function handleAdoptByConsensus(amendmentId: string) {
 		if (!committee) return;
@@ -652,24 +742,42 @@
 		});
 
 		if (!result.cancelled) {
-			try {
-				if (result.outcome === 'ADOPTED') {
-					await AcceptAmendmentMutation.mutate({ amendmentId: amendment.id });
-					toast.success(m.amendmentAdopted());
-				} else {
-					await RejectAmendmentMutation.mutate({ amendmentId: amendment.id });
-					toast.success(m.amendmentRejectedToast());
-				}
-			} catch {
-				toast.error(m.saveError());
-			}
+			voteOutcomeAmendmentId = amendment.id;
+			showVoteOutcomeModal = true;
+			return; // don't clear active amendment yet — chair must decide outcome
 		}
 
-		// Clear active amendment after resolution
+		// Clear active amendment after cancellation
 		await UpdateCommitteeMutation.mutate({
 			id: committee.id,
 			clearActiveAmendment: true
 		});
+	}
+
+	async function handleVoteOutcomeDecision(outcome: 'ADOPTED' | 'REJECTED') {
+		if (!voteOutcomeAmendmentId || !committee) return;
+		try {
+			if (outcome === 'ADOPTED') {
+				await AcceptAmendmentMutation.mutate({ amendmentId: voteOutcomeAmendmentId });
+				toast.success(m.amendmentAdopted());
+			} else {
+				await RejectAmendmentMutation.mutate({ amendmentId: voteOutcomeAmendmentId });
+				toast.success(m.amendmentRejectedToast());
+			}
+		} catch {
+			toast.error(m.saveError());
+		}
+		showVoteOutcomeModal = false;
+		voteOutcomeAmendmentId = null;
+		await UpdateCommitteeMutation.mutate({ id: committee.id, clearActiveAmendment: true });
+	}
+
+	async function handleCancelVoteOutcome() {
+		showVoteOutcomeModal = false;
+		voteOutcomeAmendmentId = null;
+		if (committee) {
+			await UpdateCommitteeMutation.mutate({ id: committee.id, clearActiveAmendment: true });
+		}
 	}
 
 	async function handleRejectAmendment(amendmentId: string) {
@@ -771,12 +879,67 @@
 	}
 
 	// =====================================================
+	// Chair Create Amendment
+	// =====================================================
+
+	const ChairCreateAmendmentMutation = graphql(`
+		mutation ChairCreateAmendmentMutation(
+			$paperId: ID!
+			$type: AmendmentTypeEnum!
+			$committeeMemberId: ID!
+			$targetClauseId: String
+			$targetOperativeIndex: Int
+			$targetPosition: Int
+			$newContent: JSON
+		) {
+			chairCreateAmendment(
+				paperId: $paperId
+				type: $type
+				committeeMemberId: $committeeMemberId
+				targetClauseId: $targetClauseId
+				targetOperativeIndex: $targetOperativeIndex
+				targetPosition: $targetPosition
+				newContent: $newContent
+			) {
+				id
+			}
+		}
+	`);
+
+	let showChairCreateAmendmentModal = $state(false);
+
+	function openChairCreateAmendment() {
+		showChairCreateAmendmentModal = true;
+	}
+
+	async function handleChairAmendmentSubmit(args: {
+		type: 'DELETE' | 'ADD' | 'ALTER_TEXT' | 'ALTER_POSITION';
+		targetClauseId: string | null;
+		targetOperativeIndex: number | null;
+		targetPosition: number | null;
+		newContent: OperativeClause | null;
+		committeeMemberId?: string;
+	}) {
+		if (!args.committeeMemberId) return;
+		await ChairCreateAmendmentMutation.mutate({
+			paperId: page.params.paperId!,
+			type: args.type,
+			committeeMemberId: args.committeeMemberId,
+			targetClauseId: args.targetClauseId,
+			targetOperativeIndex: args.targetOperativeIndex,
+			targetPosition: args.targetPosition,
+			newContent: args.newContent
+		});
+		toast.success(m.amendmentCreated());
+	}
+
+	// =====================================================
 	// Voting Phase (Phase 7)
 	// =====================================================
 
 	let clauseVotes = $derived($ChairClauseVotesSubscription.data?.findManyOperativeClauseVote ?? []);
 	let voteResult = $derived(
-		$ChairVoteResultSubscription.data?.findFirstResolutionVoteResult ?? null
+		$ChairVoteResultSubscription.data?.findManyResolutionVoteResult?.[0] ?? null
 	);
 	let canEdit = $derived(paper?.status !== 'FINAL' || !voteResult);
 
@@ -799,20 +962,25 @@
 		operativeClauses.length > 0 && votedClauseCount >= operativeClauses.length
 	);
 
-	// Quick vote inputs
-	let quickVotesFor = $state(0);
-	let quickVotesAgainst = $state(0);
-	let quickVotesAbstain = $state(0);
+	// Clause vote modal state
+	let showClauseOutcomeModal = $state(false);
+	let pendingClauseVote = $state<{
+		clauseId: string;
+		votesFor: number;
+		votesAgainst: number;
+		votesAbstain: number;
+	} | null>(null);
 
-	// Final vote inputs
-	let finalVotesFor = $state(0);
-	let finalVotesAgainst = $state(0);
-	let finalVotesAbstain = $state(0);
+	// Final vote modal state
+	let showFinalOutcomeModal = $state(false);
+	let pendingFinalVote = $state<{
+		votesFor: number;
+		votesAgainst: number;
+		votesAbstain: number;
+	} | null>(null);
 
 	// Modals
 	let showStartVotingPhaseModal = $state(false);
-	let showFinalVoteConfirmModal = $state(false);
-	let finalVoteOutcome = $state<'ADOPTED' | 'REJECTED' | 'SENT_BACK'>('ADOPTED');
 	let showRevertStatusModal = $state(false);
 	let revertRestoreSnapshot = $state(false);
 
@@ -923,25 +1091,44 @@
 		}
 	}
 
-	async function handleRecordClauseVote(outcome: 'ADOPTED' | 'REJECTED') {
+	async function handleClauseVote() {
 		const clause = operativeClauses[currentOpIndex];
 		if (!clause) return;
+		const voteName = `OP ${currentOpIndex + 1}`;
+		const result = await openVotingModal({
+			voteName,
+			majority: 'SIMPLE',
+			voteType: 'SHOW_OF_HANDS',
+			withAbstentions: true
+		});
+		if (!result.cancelled) {
+			pendingClauseVote = {
+				clauseId: clause.id,
+				votesFor: result.votesFor,
+				votesAgainst: result.votesAgainst,
+				votesAbstain: result.votesAbstain
+			};
+			showClauseOutcomeModal = true;
+		}
+	}
+
+	async function handleClauseOutcomeDecision(outcome: 'ADOPTED' | 'REJECTED') {
+		if (!pendingClauseVote) return;
 		try {
 			await RecordClauseVoteMutation.mutate({
 				paperId: page.params.paperId!,
-				clauseId: clause.id,
+				clauseId: pendingClauseVote.clauseId,
 				outcome,
-				votesFor: quickVotesFor,
-				votesAgainst: quickVotesAgainst,
-				votesAbstain: quickVotesAbstain
+				votesFor: pendingClauseVote.votesFor,
+				votesAgainst: pendingClauseVote.votesAgainst,
+				votesAbstain: pendingClauseVote.votesAbstain
 			});
 			toast.success(m.clauseVoteRecorded());
-			quickVotesFor = 0;
-			quickVotesAgainst = 0;
-			quickVotesAbstain = 0;
 		} catch {
 			toast.error(m.saveError());
 		}
+		showClauseOutcomeModal = false;
+		pendingClauseVote = null;
 	}
 
 	async function handleDeleteClauseVote(clauseId: string) {
@@ -956,23 +1143,39 @@
 		}
 	}
 
-	async function handleRecordFinalVote() {
+	async function handleFinalVoteCall() {
+		const docNumber = paper?.documentNumber ?? m.draftResolution();
+		const result = await openVotingModal({
+			voteName: docNumber,
+			majority: 'SIMPLE',
+			voteType: 'SHOW_OF_HANDS',
+			withAbstentions: true
+		});
+		if (!result.cancelled) {
+			pendingFinalVote = {
+				votesFor: result.votesFor,
+				votesAgainst: result.votesAgainst,
+				votesAbstain: result.votesAbstain
+			};
+			showFinalOutcomeModal = true;
+		}
+	}
+
+	async function handleFinalOutcomeDecision(outcome: 'ADOPTED' | 'REJECTED' | 'SENT_BACK') {
+		if (!pendingFinalVote) return;
 		try {
 			await RecordFinalVoteMutation.mutate({
 				paperId: page.params.paperId!,
-				outcome: finalVoteOutcome,
-				votesFor: finalVotesFor,
-				votesAgainst: finalVotesAgainst,
-				votesAbstain: finalVotesAbstain
+				outcome,
+				votesFor: pendingFinalVote.votesFor,
+				votesAgainst: pendingFinalVote.votesAgainst,
+				votesAbstain: pendingFinalVote.votesAbstain
 			});
-			showFinalVoteConfirmModal = false;
-			if (finalVoteOutcome === 'ADOPTED') {
-				toast.success(m.resolutionAdopted());
-			} else if (finalVoteOutcome === 'REJECTED') {
-				toast.success(m.resolutionRejected());
-			} else {
-				toast.success(m.resolutionSentBack());
-			}
+			showFinalOutcomeModal = false;
+			pendingFinalVote = null;
+			if (outcome === 'ADOPTED') toast.success(m.resolutionAdopted());
+			else if (outcome === 'REJECTED') toast.success(m.resolutionRejected());
+			else toast.success(m.resolutionSentBack());
 		} catch {
 			toast.error(m.saveError());
 		}
@@ -1344,90 +1547,211 @@
 				</div>
 			</Fieldset>
 
+			<div class="flex justify-end">
+				<button class="btn btn-primary btn-sm" onclick={openChairCreateAmendment}>
+					<i class="fas fa-plus mr-1"></i>
+					{m.chairCreateAmendment()}
+				</button>
+			</div>
+
 			<Fieldset legend={m.amendmentQueue()} faIcon="fas fa-gavel">
 				{#if sortedSubmittedAmendments.length === 0}
 					<p class="text-base-content/50 text-sm">{m.noAmendments()}</p>
 				{:else}
-					<div class="flex flex-col gap-2">
-						{#each sortedSubmittedAmendments as amendment (amendment.id)}
-							{@const isCurrentParagraph =
-								(amendment.targetOperativeIndex ?? -1) === currentOpIndex}
-							{@const isActive = amendment.id === activeAmendmentId}
-							<div
-								id="amendment-{amendment.id}"
-								class="card card-border bg-base-100 p-3 transition-all {isCurrentParagraph
-									? 'border-primary border-2'
-									: ''} {isActive ? 'ring-2 ring-success bg-success/5' : ''}"
-							>
-								<div class="flex items-center justify-between gap-2">
-									<div class="flex items-center gap-2 flex-wrap">
-										<span class="badge badge-sm {getAmendmentTypeBadgeClass(amendment.type)}">
-											{amendment.documentNumber ?? getAmendmentTypeLabel(amendment.type)}
-										</span>
-										{#if amendment.targetOperativeIndex != null}
-											<span class="badge badge-ghost badge-sm font-mono">
-												OP {amendment.targetOperativeIndex + 1}
-											</span>
-										{/if}
-										{#if amendment.proposer?.representation}
-											<div class="flex items-center gap-1 text-sm">
-												<Flag representation={amendment.proposer.representation} size="xs" />
-												<span>
-													{amendment.proposer.representation.name ??
-														getTranslatedCountryNameFromAlpha3Code(
-															amendment.proposer.representation.alpha3Code
-														)}
-												</span>
+					<div class="flex flex-col gap-3">
+						{#each groupedAmendments as group}
+							<div>
+								<h4
+									class="text-sm font-bold mb-1 {group.index === currentOpIndex
+										? 'text-primary'
+										: 'opacity-70'}"
+								>
+									{group.label}
+								</h4>
+								<div class="flex flex-col gap-2">
+									{#each group.amendments as amendment (amendment.id)}
+										{@const isActive = amendment.id === activeAmendmentId}
+										{@const sponsorCount = amendment.sponsors?.length ?? 0}
+										{@const thresholdMet = sponsorCount >= sponsorThresholdNeeded}
+										<div
+											id="amendment-{amendment.id}"
+											class="card card-border bg-base-100 p-3 transition-all {group.index ===
+											currentOpIndex
+												? 'border-primary border-2'
+												: ''} {isActive ? 'ring-2 ring-success bg-success/5' : ''}"
+										>
+											<div class="flex flex-col gap-2">
+												<div class="flex items-center gap-2 flex-wrap">
+													<span class="badge badge-sm {getAmendmentTypeBadgeClass(amendment.type)}">
+														{amendment.documentNumber ?? getAmendmentTypeLabel(amendment.type)}
+													</span>
+													{#if amendment.proposer?.representation}
+														<div class="flex items-center gap-1 text-sm">
+															<Flag representation={amendment.proposer.representation} size="xs" />
+															<span>
+																{amendment.proposer.representation.name ??
+																	getTranslatedCountryNameFromAlpha3Code(
+																		amendment.proposer.representation.alpha3Code
+																	)}
+															</span>
+														</div>
+													{/if}
+													<span
+														class="badge badge-xs {thresholdMet
+															? 'badge-success'
+															: 'badge-warning'}"
+													>
+														{sponsorCount}/{sponsorThresholdNeeded}
+													</span>
+													{#if isActive}
+														<span class="badge badge-success badge-sm">{m.activeAmendment()}</span>
+													{/if}
+												</div>
+
+												<!-- Amendment detail preview -->
+												{#if amendment.type === 'ALTER_TEXT' && amendment.newContent}
+													<div
+														class="text-xs text-base-content/70 bg-base-200/50 rounded px-2 py-1"
+													>
+														<span class="italic">
+															{getFirstTextContent(amendment.newContent as OperativeClause).slice(
+																0,
+																120
+															)}{getFirstTextContent(amendment.newContent as OperativeClause)
+																.length > 120
+																? '…'
+																: ''}
+														</span>
+													</div>
+												{:else if amendment.type === 'ALTER_POSITION' && amendment.targetPosition != null}
+													<div
+														class="text-xs text-base-content/70 bg-base-200/50 rounded px-2 py-1"
+													>
+														<i class="fas fa-arrow-right mr-1"></i>
+														{#if amendment.targetPosition === -1}
+															{m.insertAtBeginning()}
+														{:else}
+															{m.insertAfterPresentation({
+																index: String(amendment.targetPosition + 1)
+															})}
+														{/if}
+													</div>
+												{:else if amendment.type === 'ADD' && amendment.newContent}
+													<div
+														class="text-xs text-base-content/70 bg-base-200/50 rounded px-2 py-1"
+													>
+														<div class="flex flex-col gap-0.5">
+															<span>
+																<i class="fas fa-arrow-right mr-1"></i>
+																{#if amendment.targetPosition === -1}
+																	{m.insertAtBeginning()}
+																{:else if amendment.targetPosition != null}
+																	{m.insertAfterPresentation({
+																		index: String(amendment.targetPosition + 1)
+																	})}
+																{/if}
+															</span>
+															<span class="italic">
+																{getFirstTextContent(amendment.newContent as OperativeClause).slice(
+																	0,
+																	120
+																)}{getFirstTextContent(amendment.newContent as OperativeClause)
+																	.length > 120
+																	? '…'
+																	: ''}
+															</span>
+														</div>
+													</div>
+												{/if}
+
+												<!-- Sponsors -->
+												<div class="flex items-center gap-1 flex-wrap">
+													{#each amendment.sponsors ?? [] as sponsor (sponsor.id)}
+														<div
+															class="group relative tooltip tooltip-bottom"
+															data-tip={getRepresentationName(
+																sponsor.committeeMember?.representation
+															)}
+														>
+															<Flag
+																representation={sponsor.committeeMember?.representation}
+																size="xs"
+															/>
+															<button
+																class="absolute -top-1 -right-1 btn btn-circle btn-xs btn-error opacity-0 group-hover:opacity-100 transition-opacity"
+																onclick={() =>
+																	handleRemoveAmendmentSponsor(
+																		amendment.id,
+																		sponsor.committeeMemberId
+																	)}
+															>
+																<i class="fas fa-times text-[0.5rem]"></i>
+															</button>
+														</div>
+													{/each}
+													<button
+														class="btn btn-ghost btn-xs"
+														onclick={() => {
+															amendmentSponsorTargetId = amendment.id;
+															amendmentSponsorSearchQuery = '';
+															showAmendmentSponsorModal = true;
+														}}
+													>
+														<i class="fas fa-plus"></i>
+													</button>
+												</div>
+
+												<!-- Actions: two rows -->
+												<div class="flex flex-col gap-1">
+													<div class="flex items-center gap-1 justify-end">
+														<button
+															class="btn btn-xs {isActive
+																? 'btn-ghost'
+																: 'btn-outline btn-success'}"
+															onclick={() =>
+																handleSetActiveAmendment(isActive ? null : amendment.id)}
+														>
+															<i class="fas {isActive ? 'fa-stop' : 'fa-play'}"></i>
+															{#if !isActive}{m.setActiveAmendment()}{/if}
+														</button>
+														<button
+															class="btn btn-primary btn-xs"
+															onclick={() => handleAmendmentVote(amendment)}
+														>
+															<i class="fas fa-box-ballot"></i>
+															{m.startVote()}
+														</button>
+													</div>
+													<div class="flex items-center gap-1 justify-end">
+														<button
+															class="btn btn-success btn-xs"
+															onclick={() => {
+																confirmAmendmentId = amendment.id;
+																showAdoptConfirmModal = true;
+															}}
+														>
+															{m.adoptByConsensus()}
+														</button>
+														<button
+															class="btn btn-error btn-xs"
+															onclick={() => {
+																confirmAmendmentId = amendment.id;
+																showRejectConfirmModal = true;
+															}}
+														>
+															{m.amendmentRejected()}
+														</button>
+														<button
+															class="btn btn-ghost btn-xs"
+															onclick={() => handleWithdrawAmendment(amendment.id)}
+														>
+															{m.withdrawAmendment()}
+														</button>
+													</div>
+												</div>
 											</div>
-										{/if}
-										<span class="badge badge-ghost badge-xs">
-											{amendment.sponsors?.length ?? 0}
-											{m.sponsors()}
-										</span>
-										{#if isActive}
-											<span class="badge badge-success badge-sm">{m.activeAmendment()}</span>
-										{/if}
-									</div>
-									<div class="flex items-center gap-1">
-										<button
-											class="btn btn-xs {isActive ? 'btn-ghost' : 'btn-outline btn-success'}"
-											onclick={() => handleSetActiveAmendment(isActive ? null : amendment.id)}
-										>
-											<i class="fas {isActive ? 'fa-stop' : 'fa-play'}"></i>
-											{#if !isActive}{m.setActiveAmendment()}{/if}
-										</button>
-										<button
-											class="btn btn-success btn-xs"
-											onclick={() => {
-												confirmAmendmentId = amendment.id;
-												showAdoptConfirmModal = true;
-											}}
-										>
-											{m.adoptByConsensus()}
-										</button>
-										<button
-											class="btn btn-primary btn-xs"
-											onclick={() => handleAmendmentVote(amendment)}
-										>
-											<i class="fas fa-box-ballot"></i>
-											{m.startVote()}
-										</button>
-										<button
-											class="btn btn-error btn-xs"
-											onclick={() => {
-												confirmAmendmentId = amendment.id;
-												showRejectConfirmModal = true;
-											}}
-										>
-											{m.amendmentRejected()}
-										</button>
-										<button
-											class="btn btn-ghost btn-xs"
-											onclick={() => handleWithdrawAmendment(amendment.id)}
-										>
-											{m.withdrawAmendment()}
-										</button>
-									</div>
+										</div>
+									{/each}
 								</div>
 							</div>
 						{/each}
@@ -1520,53 +1844,10 @@
 							<p class="text-sm font-medium mb-2">
 								{m.voteOnParagraph({ index: String(currentOpIndex + 1) })}
 							</p>
-							<div class="flex items-end gap-3 flex-wrap">
-								<label class="form-control w-24">
-									<div class="label"><span class="label-text text-xs">{m.votesFor()}</span></div>
-									<input
-										type="number"
-										class="input input-bordered input-sm w-full"
-										min="0"
-										bind:value={quickVotesFor}
-									/>
-								</label>
-								<label class="form-control w-24">
-									<div class="label">
-										<span class="label-text text-xs">{m.votesAgainst()}</span>
-									</div>
-									<input
-										type="number"
-										class="input input-bordered input-sm w-full"
-										min="0"
-										bind:value={quickVotesAgainst}
-									/>
-								</label>
-								<label class="form-control w-24">
-									<div class="label">
-										<span class="label-text text-xs">{m.votesAbstain()}</span>
-									</div>
-									<input
-										type="number"
-										class="input input-bordered input-sm w-full"
-										min="0"
-										bind:value={quickVotesAbstain}
-									/>
-								</label>
-								<button
-									class="btn btn-success btn-sm"
-									onclick={() => handleRecordClauseVote('ADOPTED')}
-								>
-									<i class="fas fa-check mr-1"></i>
-									{m.adoptClause()}
-								</button>
-								<button
-									class="btn btn-error btn-sm"
-									onclick={() => handleRecordClauseVote('REJECTED')}
-								>
-									<i class="fas fa-times mr-1"></i>
-									{m.rejectClause()}
-								</button>
-							</div>
+							<button class="btn btn-accent btn-sm" onclick={handleClauseVote}>
+								<i class="fas fa-box-ballot mr-1"></i>
+								{m.startVote()}
+							</button>
 						</div>
 					{/if}
 				{/if}
@@ -1634,71 +1915,10 @@
 					</div>
 				{:else}
 					<p class="text-sm opacity-60 mb-3">{m.finalVoteDescription()}</p>
-					<div class="flex items-end gap-3 flex-wrap">
-						<label class="form-control w-24">
-							<div class="label"><span class="label-text text-xs">{m.votesFor()}</span></div>
-							<input
-								type="number"
-								class="input input-bordered input-sm w-full"
-								min="0"
-								bind:value={finalVotesFor}
-							/>
-						</label>
-						<label class="form-control w-24">
-							<div class="label">
-								<span class="label-text text-xs">{m.votesAgainst()}</span>
-							</div>
-							<input
-								type="number"
-								class="input input-bordered input-sm w-full"
-								min="0"
-								bind:value={finalVotesAgainst}
-							/>
-						</label>
-						<label class="form-control w-24">
-							<div class="label">
-								<span class="label-text text-xs">{m.votesAbstain()}</span>
-							</div>
-							<input
-								type="number"
-								class="input input-bordered input-sm w-full"
-								min="0"
-								bind:value={finalVotesAbstain}
-							/>
-						</label>
-					</div>
-					<div class="flex gap-2 mt-3">
-						<button
-							class="btn btn-success btn-sm"
-							onclick={() => {
-								finalVoteOutcome = 'ADOPTED';
-								showFinalVoteConfirmModal = true;
-							}}
-						>
-							<i class="fas fa-check mr-1"></i>
-							{m.adoptResolution()}
-						</button>
-						<button
-							class="btn btn-error btn-sm"
-							onclick={() => {
-								finalVoteOutcome = 'REJECTED';
-								showFinalVoteConfirmModal = true;
-							}}
-						>
-							<i class="fas fa-times mr-1"></i>
-							{m.rejectResolution()}
-						</button>
-						<button
-							class="btn btn-warning btn-sm"
-							onclick={() => {
-								finalVoteOutcome = 'SENT_BACK';
-								showFinalVoteConfirmModal = true;
-							}}
-						>
-							<i class="fas fa-undo mr-1"></i>
-							{m.sendBack()}
-						</button>
-					</div>
+					<button class="btn btn-accent btn-sm" onclick={handleFinalVoteCall}>
+						<i class="fas fa-box-ballot mr-1"></i>
+						{m.startVote()}
+					</button>
 				{/if}
 			</Fieldset>
 		{/if}
@@ -1803,6 +2023,38 @@
 		</div>
 	</Modal>
 
+	<!-- Add Amendment Sponsor Modal -->
+	<Modal bind:open={showAmendmentSponsorModal}>
+		<div class="flex items-center justify-between mb-4">
+			<h3 class="font-bold text-lg">{m.addSponsor()}</h3>
+			<button class="btn btn-ghost btn-sm" onclick={() => (showAmendmentSponsorModal = false)}>
+				<i class="fas fa-times"></i>
+			</button>
+		</div>
+		<input
+			class="input input-bordered w-full mb-3"
+			placeholder={m.searchMembers()}
+			bind:value={amendmentSponsorSearchQuery}
+		/>
+		<div class="max-h-64 overflow-y-auto space-y-1">
+			{#each filteredAvailableAmendmentMembers as member (member.id)}
+				<button
+					class="btn btn-ghost btn-sm w-full justify-start gap-2"
+					onclick={() => handleAddAmendmentSponsor(member.id)}
+				>
+					<Flag representation={member.representation} size="xs" />
+					<span>
+						{member.representation?.name ??
+							getTranslatedCountryNameFromAlpha3Code(member.representation?.alpha3Code)}
+					</span>
+				</button>
+			{/each}
+			{#if filteredAvailableAmendmentMembers.length === 0}
+				<p class="text-center text-sm opacity-60 py-4">{m.noResults()}</p>
+			{/if}
+		</div>
+	</Modal>
+
 	<!-- Adopt by Consensus confirmation modal -->
 	<Modal bind:open={showAdoptConfirmModal}>
 		<div class="flex flex-col gap-4 p-4">
@@ -1853,6 +2105,24 @@
 		</div>
 	</Modal>
 
+	<!-- Vote outcome decision modal -->
+	<Modal bind:open={showVoteOutcomeModal}>
+		<div class="flex flex-col gap-4 p-4">
+			<h3 class="text-lg font-bold">{m.voteOutcome()}</h3>
+			<div class="flex justify-end gap-2">
+				<button class="btn btn-ghost btn-sm" onclick={handleCancelVoteOutcome}>
+					{m.abort()}
+				</button>
+				<button class="btn btn-error btn-sm" onclick={() => handleVoteOutcomeDecision('REJECTED')}>
+					{m.amendmentRejected()}
+				</button>
+				<button class="btn btn-success btn-sm" onclick={() => handleVoteOutcomeDecision('ADOPTED')}>
+					{m.amendmentAccepted()}
+				</button>
+			</div>
+		</div>
+	</Modal>
+
 	<!-- Start Voting Phase confirmation modal -->
 	<Modal bind:open={showStartVotingPhaseModal}>
 		<div class="flex flex-col gap-4 p-4">
@@ -1869,32 +2139,64 @@
 		</div>
 	</Modal>
 
-	<!-- Final Vote confirmation modal -->
-	<Modal bind:open={showFinalVoteConfirmModal}>
+	<!-- Clause Vote outcome modal -->
+	<Modal bind:open={showClauseOutcomeModal}>
 		<div class="flex flex-col gap-4 p-4">
-			<h3 class="text-lg font-bold">{m.finalVote()}</h3>
-			<p>
-				{#if finalVoteOutcome === 'ADOPTED'}
-					{m.confirmAdoptResolution()}
-				{:else if finalVoteOutcome === 'REJECTED'}
-					{m.confirmRejectResolution()}
-				{:else}
-					{m.confirmSendBack()}
-				{/if}
-			</p>
+			<h3 class="text-lg font-bold">{m.voteOutcome()}</h3>
 			<div class="flex justify-end gap-2">
-				<button class="btn btn-ghost btn-sm" onclick={() => (showFinalVoteConfirmModal = false)}>
+				<button
+					class="btn btn-ghost btn-sm"
+					onclick={() => {
+						showClauseOutcomeModal = false;
+						pendingClauseVote = null;
+					}}
+				>
 					{m.abort()}
 				</button>
 				<button
-					class="btn btn-sm {finalVoteOutcome === 'ADOPTED'
-						? 'btn-success'
-						: finalVoteOutcome === 'REJECTED'
-							? 'btn-error'
-							: 'btn-warning'}"
-					onclick={handleRecordFinalVote}
+					class="btn btn-error btn-sm"
+					onclick={() => handleClauseOutcomeDecision('REJECTED')}
 				>
-					{m.yes()}
+					{m.rejected()}
+				</button>
+				<button
+					class="btn btn-success btn-sm"
+					onclick={() => handleClauseOutcomeDecision('ADOPTED')}
+				>
+					{m.adopted()}
+				</button>
+			</div>
+		</div>
+	</Modal>
+
+	<!-- Final Vote outcome modal -->
+	<Modal bind:open={showFinalOutcomeModal}>
+		<div class="flex flex-col gap-4 p-4">
+			<h3 class="text-lg font-bold">{m.voteOutcome()}</h3>
+			<div class="flex justify-end gap-2">
+				<button
+					class="btn btn-ghost btn-sm"
+					onclick={() => {
+						showFinalOutcomeModal = false;
+						pendingFinalVote = null;
+					}}
+				>
+					{m.abort()}
+				</button>
+				<button
+					class="btn btn-warning btn-sm"
+					onclick={() => handleFinalOutcomeDecision('SENT_BACK')}
+				>
+					{m.sendBack()}
+				</button>
+				<button class="btn btn-error btn-sm" onclick={() => handleFinalOutcomeDecision('REJECTED')}>
+					{m.rejected()}
+				</button>
+				<button
+					class="btn btn-success btn-sm"
+					onclick={() => handleFinalOutcomeDecision('ADOPTED')}
+				>
+					{m.adopted()}
 				</button>
 			</div>
 		</div>
@@ -1949,4 +2251,13 @@
 			</div>
 		</div>
 	</Modal>
+
+	<!-- Chair Create Amendment Modal -->
+	<CreateAmendmentModal
+		bind:open={showChairCreateAmendmentModal}
+		{operativeClauses}
+		committeeName={committee?.name ?? ''}
+		committeeMembers={committee?.members}
+		onSubmit={handleChairAmendmentSubmit}
+	/>
 {/if}

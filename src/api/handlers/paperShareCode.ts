@@ -71,7 +71,7 @@ schemaBuilder.mutationFields((t) => ({
 				.returning()
 				.then(assertFirstEntryExists);
 
-			pubsub.updated(result.id);
+			pubsub.created();
 			paperPubsub.updated(args.paperId);
 
 			return db.query.paperShareCode
@@ -162,6 +162,8 @@ schemaBuilder.mutationFields((t) => ({
 						conferenceUserId: conferenceUser.id
 					})
 					.onConflictDoNothing();
+
+				paperPubsub.updated(shareCode.paperId);
 			}
 
 			return {

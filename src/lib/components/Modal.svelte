@@ -15,14 +15,17 @@
 			hotkeys('esc', () => {
 				open = false;
 			});
-		} else {
-			hotkeys.unbind('esc');
+			return () => {
+				hotkeys.unbind('esc');
+			};
 		}
 	});
 </script>
 
-<dialog class="modal z-30" {open}>
-	<div class="modal-box bg-base-100 relative w-full max-w-2xl">
-		{@render children()}
-	</div>
-</dialog>
+{#if open}
+	<dialog class="modal z-30" open>
+		<div class="modal-box bg-base-100 relative w-full max-w-2xl">
+			{@render children()}
+		</div>
+	</dialog>
+{/if}

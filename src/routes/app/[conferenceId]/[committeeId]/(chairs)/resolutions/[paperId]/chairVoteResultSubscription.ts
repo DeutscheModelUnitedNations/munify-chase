@@ -2,7 +2,7 @@ import { graphql } from '$houdini';
 
 export const ChairVoteResultSubscription = graphql(`
 	subscription ChairVoteResultSubscription($paperId: ID!) {
-		findFirstResolutionVoteResult(where: { paperId: $paperId }) {
+		findManyResolutionVoteResult(where: { paperId: $paperId }, limit: 1) {
 			id
 			outcome
 			votesFor

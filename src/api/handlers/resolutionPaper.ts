@@ -13,6 +13,8 @@ import {
 
 const { arg, ref, pubsub, table } = basics('resolutionPaper');
 const committeePubsub = rumblePubsub({ table: 'committee' });
+const voteResultPubsub = rumblePubsub({ table: 'resolutionVoteResult' });
+const clauseVotePubsub = rumblePubsub({ table: 'operativeClauseVote' });
 
 const paperStatusEnum = enum_({ tsName: 'paperStatus' });
 
@@ -123,7 +125,92 @@ schemaBuilder.mutationFields((t) => ({
 				conferenceUserId: conferenceUser.id
 			});
 
-			pubsub.updated(result.id);
+			pubsub.created();
+
+			return db.query.resolutionPaper
+				.findFirst(
+					query(
+						ctx.abilities.resolutionPaper.filter('read', {
+							inject: {
+								where: { id: result.id }
+							}
+						}).query.single
+					)
+				)
+				.then(assertFindFirstExists);
+		}
+	}),
+
+	chairCreateResolutionPaper: t.drizzleField({
+		type: ref,
+		args: {
+			committeeId: t.arg.id({ required: true }),
+			agendaItemId: t.arg.id({ required: true }),
+			committeeMemberId: t.arg.id({ required: true }),
+			title: t.arg.string()
+		},
+		resolve: async (query, root, args, ctx, info) => {
+			await assertCommitteeChairOrAdmin(ctx, args.committeeId);
+
+			// Validate committeeMemberId belongs to this committee
+			const committeeMember = await db.query.committeeMember
+				.findFirst({
+					where: { id: args.committeeMemberId, committeeId: args.committeeId }
+				})
+				.then(assertFindFirstExists);
+
+			// Get committee name for the empty resolution
+			const committee = await db.query.committee
+				.findFirst({
+					where: { id: args.committeeId }
+				})
+				.then(assertFindFirstExists);
+
+			const content = createEmptyResolution(committee.name);
+
+			const result = await db.transaction(async (tx) => {
+				const paper = await tx
+					.insert(schema.resolutionPaper)
+					.values({
+						committeeId: args.committeeId,
+						agendaItemId: args.agendaItemId,
+						creatorCommitteeMemberId: args.committeeMemberId,
+						title: args.title ?? undefined,
+						content,
+						status: 'SUBMITTED'
+					})
+					.returning()
+					.then(assertFirstEntryExists);
+
+				// Auto-add creator as sponsor
+				await tx.insert(schema.paperSponsor).values({
+					paperId: paper.id,
+					committeeMemberId: args.committeeMemberId
+				});
+
+				// Auto-add creator as editor (find their conferenceUser)
+				const conferenceUser = await tx.query.conferenceUser.findFirst({
+					where: { committeeMemberId: args.committeeMemberId }
+				});
+
+				if (conferenceUser) {
+					await tx.insert(schema.paperEditor).values({
+						paperId: paper.id,
+						conferenceUserId: conferenceUser.id
+					});
+				}
+
+				// Create content snapshot for submission
+				await tx.insert(schema.paperContentSnapshot).values({
+					paperId: paper.id,
+					content,
+					trigger: 'SUBMITTED'
+				});
+
+				return paper;
+			});
+
+			pubsub.created();
 
 			return db.query.resolutionPaper
 				.findFirst(
@@ -440,25 +527,6 @@ schemaBuilder.mutationFields((t) => ({
 				})
 				.then(assertFindFirstExists);
 
-			// Count existing DRs for this committee
-			const existingDRs = await db
-				.select({ count: drizzleCount() })
-				.from(schema.resolutionPaper)
-				.where(
-					and(
-						eq(schema.resolutionPaper.committeeId, paper.committeeId),
-						eq(schema.resolutionPaper.status, 'DRAFT_RESOLUTION'),
-						isNull(schema.resolutionPaper.deletedAt)
-					)
-				)
-				.then(assertFirstEntryExists);
-
-			if (existingDRs.count >= committee.maxDraftResolutions) {
-				throw new GraphQLError(
-					`Maximum number of draft resolutions (${committee.maxDraftResolutions}) reached`
-				);
-			}
-
 			// Get agenda item position for numbering
 			const agendaItems = await db.query.agendaItem.findMany({
 				where: { committeeId: paper.committeeId }
@@ -650,6 +718,7 @@ schemaBuilder.mutationFields((t) => ({
 
 			committeePubsub.updated(paper.committeeId);
 			pubsub.updated(args.paperId);
+			voteResultPubsub.created();
 
 			return db.query.resolutionPaper
 				.findFirst(
@@ -825,6 +894,13 @@ schemaBuilder.mutationFields((t) => ({
 
 			pubsub.updated(args.paperId);
 			committeePubsub.updated(paper.committeeId);
+
+			// Notify vote subscriptions when reverting from statuses that delete votes
+			if (paper.status === 'FINAL') {
+				voteResultPubsub.created();
+			} else if (paper.status === 'VOTING_PHASE') {
+				clauseVotePubsub.created();
+			}
 
 			return db.query.resolutionPaper
 				.findFirst(

@@ -5,12 +5,12 @@
 		migrateResolution,
 		type Resolution,
 		type ResolutionHeaderData,
-		type OperativeClause,
-		getFirstTextContent
+		type OperativeClause
 	} from '@deutschemodelunitednations/munify-resolution-editor';
 	import Flag from '$lib/components/Flag.svelte';
 	import { getTranslatedCountryNameFromAlpha3Code } from '$lib/utils/nationTranslationHelper.svelte';
 	import { getResolutionLabels } from '$lib/utils/resolutionEditorLabels';
+	import { SvelteMap } from 'svelte/reactivity';
 
 	interface Props {
 		committee: {
@@ -176,9 +176,21 @@
 		}
 	}
 
-	function getClausePreviewText(clause: OperativeClause): string {
-		return getFirstTextContent(clause) || '';
+	function singleClauseResolution(clause: OperativeClause): Resolution {
+		return { committeeName: committee.name, preamble: [], operative: [clause] };
 	}
+
+	let pendingAmendmentCounts = $derived.by(() => {
+		if (!dr?.amendments) return new SvelteMap<number, number>();
+		const counts = new SvelteMap<number, number>();
+		for (const a of dr.amendments) {
+			if (a.status !== 'SUBMITTED') continue;
+			if (a.type !== 'ALTER_TEXT' && a.type !== 'DELETE') continue;
+			if (a.targetOperativeIndex == null) continue;
+			counts.set(a.targetOperativeIndex, (counts.get(a.targetOperativeIndex) ?? 0) + 1);
+		}
+		return counts;
+	});
 
 	function getProposerName(
 		proposer:
@@ -241,12 +253,14 @@
 				</div>
 				{#if targetClause}
 					<div
-						class="flex-1 flex items-center justify-center text-2xl leading-relaxed p-8 font-serif"
+						class="flex-1 overflow-auto p-4 rounded-lg bg-error/5 border-2 border-error/30 line-through decoration-error decoration-4 opacity-60"
 					>
-						<div class="line-through decoration-error decoration-4 opacity-60">
-							<span class="font-bold">{activeAmendment.targetOperativeIndex + 1}.</span>
-							{getClausePreviewText(targetClause)}
-						</div>
+						<ResolutionPreview
+							resolution={singleClauseResolution(targetClause)}
+							labels={getResolutionLabels()}
+						>
+							{#snippet previewHeader()}{/snippet}
+						</ResolutionPreview>
 					</div>
 				{/if}
 			{:else if activeAmendment.type === 'ALTER_TEXT' && activeAmendment.targetOperativeIndex != null}
@@ -256,22 +270,30 @@
 					{m.operativeClausePresentation()}
 					{activeAmendment.targetOperativeIndex + 1}
 				</div>
-				<div class="flex-1 grid grid-cols-2 gap-6 p-4">
+				<div class="flex-1 grid grid-cols-2 gap-6 p-4 overflow-auto">
 					<div class="flex flex-col gap-2">
 						<div class="text-sm font-semibold text-error">{m.currentText()}</div>
 						{#if targetClause}
-							<div class="text-xl leading-relaxed font-serif bg-error/5 rounded-lg p-4">
-								<span class="font-bold">{activeAmendment.targetOperativeIndex + 1}.</span>
-								{getClausePreviewText(targetClause)}
+							<div class="rounded-lg bg-error/5 border-2 border-error/30 p-4">
+								<ResolutionPreview
+									resolution={singleClauseResolution(targetClause)}
+									labels={getResolutionLabels()}
+								>
+									{#snippet previewHeader()}{/snippet}
+								</ResolutionPreview>
 							</div>
 						{/if}
 					</div>
 					<div class="flex flex-col gap-2">
 						<div class="text-sm font-semibold text-success">{m.proposedText()}</div>
 						{#if activeAmendment.newContent}
-							<div class="text-xl leading-relaxed font-serif bg-success/5 rounded-lg p-4">
-								<span class="font-bold">{activeAmendment.targetOperativeIndex + 1}.</span>
-								{getClausePreviewText(activeAmendment.newContent as OperativeClause)}
+							<div class="rounded-lg bg-success/5 border-2 border-success/30 p-4">
+								<ResolutionPreview
+									resolution={singleClauseResolution(activeAmendment.newContent as OperativeClause)}
+									labels={getResolutionLabels()}
+								>
+									{#snippet previewHeader()}{/snippet}
+								</ResolutionPreview>
 							</div>
 						{/if}
 					</div>
@@ -281,23 +303,32 @@
 				<div class="text-center text-base-content/60 text-sm mb-2">
 					{m.insertAfterPresentation({ index: (activeAmendment.targetPosition ?? 0) + 1 })}
 				</div>
-				<div
-					class="flex-1 flex items-center justify-center text-2xl leading-relaxed p-8 font-serif"
-				>
+				<div class="flex-1 overflow-auto p-4">
 					{#if activeAmendment.newContent}
-						<div class="bg-success/10 rounded-lg p-6 border-l-4 border-success">
-							{getClausePreviewText(activeAmendment.newContent as OperativeClause)}
+						<div
+							class="rounded-lg bg-success/5 border-2 border-success/30 border-l-4 border-l-success p-4"
+						>
+							<ResolutionPreview
+								resolution={singleClauseResolution(activeAmendment.newContent as OperativeClause)}
+								labels={getResolutionLabels()}
+							>
+								{#snippet previewHeader()}{/snippet}
+							</ResolutionPreview>
 						</div>
 					{/if}
 				</div>
 			{:else if activeAmendment.type === 'ALTER_POSITION' && activeAmendment.targetOperativeIndex != null}
 				<!-- ALTER_POSITION: show move action -->
 				{@const targetClause = resolution.operative[activeAmendment.targetOperativeIndex]}
-				<div class="flex-1 flex flex-col items-center justify-center gap-4 p-8">
+				<div class="flex-1 flex flex-col items-center justify-center gap-4 p-8 overflow-auto">
 					{#if targetClause}
-						<div class="text-xl font-serif leading-relaxed text-center">
-							<span class="font-bold">{activeAmendment.targetOperativeIndex + 1}.</span>
-							{getClausePreviewText(targetClause)}
+						<div class="w-full rounded-lg bg-info/5 border-2 border-info/30 p-4">
+							<ResolutionPreview
+								resolution={singleClauseResolution(targetClause)}
+								labels={getResolutionLabels()}
+							>
+								{#snippet previewHeader()}{/snippet}
+							</ResolutionPreview>
 						</div>
 					{/if}
 					<div class="flex items-center gap-2 text-info">
@@ -323,19 +354,27 @@
 				</div>
 			</div>
 
-			<div class="text-center text-base-content/60 text-sm mb-4">
-				{m.operativeClausePresentation()}
-				{currentOpIndex + 1} / {resolution.operative.length}
+			<div class="flex items-center justify-center gap-2 text-base-content/60 text-sm mb-4">
+				<span>
+					{m.operativeClausePresentation()}
+					{currentOpIndex + 1} / {resolution.operative.length}
+				</span>
+				{#if dr.status === 'AMENDMENT_PHASE' && pendingAmendmentCounts.get(currentOpIndex)}
+					<span class="badge badge-sm badge-warning">
+						{pendingAmendmentCounts.get(currentOpIndex)}
+						{m.amendmentPhase()}
+					</span>
+				{/if}
 			</div>
 
 			{#if currentClause}
-				<div
-					class="flex-1 flex items-center justify-center text-2xl leading-relaxed p-8 font-serif"
-				>
-					<div>
-						<span class="font-bold">{currentOpIndex + 1}.</span>
-						{getClausePreviewText(currentClause)}
-					</div>
+				<div class="flex-1 overflow-auto p-4">
+					<ResolutionPreview
+						resolution={singleClauseResolution(currentClause)}
+						labels={getResolutionLabels()}
+					>
+						{#snippet previewHeader()}{/snippet}
+					</ResolutionPreview>
 				</div>
 			{:else}
 				<div class="flex-1 flex items-center justify-center text-base-content/50">

@@ -13,13 +13,13 @@
 	import {
 		ResolutionEditor,
 		migrateResolution,
-		createEmptyOperativeClause,
 		type Resolution,
 		type ResolutionHeaderData,
 		type AmendmentOverlay,
 		type OperativeClause
 	} from '@deutschemodelunitednations/munify-resolution-editor';
 	import Modal from '$lib/components/Modal.svelte';
+	import CreateAmendmentModal from '$lib/components/CreateAmendmentModal.svelte';
 	import Fieldset from '$lib/components/Fieldset.svelte';
 	import Flag from '$lib/components/Flag.svelte';
 	import CommentSection from '$lib/components/CommentSection.svelte';
@@ -603,9 +603,7 @@
 
 	let myAmendments = $derived(
 		allAmendments.filter(
-			(a) =>
-				a.proposerCommitteeMemberId === myCommitteeMemberId &&
-				(a.status === 'PENDING' || a.status === 'SUBMITTED')
+			(a) => a.proposerCommitteeMemberId === myCommitteeMemberId && a.status === 'SUBMITTED'
 		)
 	);
 
@@ -613,7 +611,7 @@
 		allAmendments.filter(
 			(a) =>
 				a.proposerCommitteeMemberId !== myCommitteeMemberId &&
-				(a.status === 'PENDING' || a.status === 'SUBMITTED') &&
+				a.status === 'SUBMITTED' &&
 				a.sponsors?.some((s) => s.committeeMemberId === myCommitteeMemberId)
 		)
 	);
@@ -622,18 +620,10 @@
 		Math.ceil((committeeSubscriptionData?.totalPresent ?? 0) * 0.1)
 	);
 
-	// Overlays for editor: SUBMITTED/CONSENSUS_ADOPTED/ACCEPTED always visible;
-	// PENDING only if user is proposer or sponsor
 	let amendmentOverlays = $derived.by(() => {
-		const visible = allAmendments.filter((a) => {
-			if (a.status === 'SUBMITTED' || a.status === 'CONSENSUS_ADOPTED' || a.status === 'ACCEPTED')
-				return true;
-			if (a.status === 'PENDING') {
-				if (a.proposerCommitteeMemberId === myCommitteeMemberId) return true;
-				if (a.sponsors?.some((s) => s.committeeMemberId === myCommitteeMemberId)) return true;
-			}
-			return false;
-		});
+		const visible = allAmendments.filter(
+			(a) => a.status === 'SUBMITTED' || a.status === 'CONSENSUS_ADOPTED' || a.status === 'ACCEPTED'
+		);
 		return visible.map(
 			(a) =>
 				({
@@ -676,24 +666,6 @@
 		}
 	`);
 
-	const SubmitAmendmentMutation = graphql(`
-		mutation ParticipantSubmitAmendmentMutation($amendmentId: ID!) {
-			submitAmendment(amendmentId: $amendmentId) {
-				id
-				status
-			}
-		}
-	`);
-
-	const ParticipantWithdrawAmendmentMutation = graphql(`
-		mutation ParticipantWithdrawAmendmentMutation($amendmentId: ID!) {
-			withdrawAmendment(amendmentId: $amendmentId) {
-				id
-				status
-			}
-		}
-	`);
-
 	const AddAmendmentSponsorMutation = graphql(`
 		mutation ParticipantAddAmendmentSponsorMutation($amendmentId: ID!, $committeeMemberId: ID!) {
 			addAmendmentSponsor(amendmentId: $amendmentId, committeeMemberId: $committeeMemberId) {
@@ -702,99 +674,45 @@
 		}
 	`);
 
-	const RemoveAmendmentSponsorMutation = graphql(`
-		mutation ParticipantRemoveAmendmentSponsorMutation($amendmentId: ID!, $committeeMemberId: ID!) {
-			removeAmendmentSponsor(amendmentId: $amendmentId, committeeMemberId: $committeeMemberId)
-		}
-	`);
-
 	// Amendment creation modal state
 	let showCreateAmendmentModal = $state(false);
-	let amendmentType = $state<'DELETE' | 'ADD' | 'ALTER_TEXT' | 'ALTER_POSITION'>('DELETE');
-	let amendmentTargetIndex = $state(0);
-	let amendmentTargetClauseId = $state<string | undefined>(undefined);
-	let amendmentTargetPosition = $state<number | undefined>(undefined);
-	let amendmentNewContent = $state<OperativeClause | null>(null);
+	let initialAmendmentType = $state<'DELETE' | 'ADD' | 'ALTER_TEXT' | 'ALTER_POSITION' | undefined>(
+		undefined
+	);
+	let initialAmendmentTargetIndex = $state<number | undefined>(undefined);
 
 	function openCreateAmendment(
 		index: number,
 		type: 'DELETE' | 'ADD' | 'ALTER_TEXT' | 'ALTER_POSITION'
 	) {
-		amendmentType = type;
-		amendmentTargetIndex = index;
-		const clause = operativeClauses[index];
-		amendmentTargetClauseId = clause?.id;
-
-		if (type === 'ALTER_TEXT' && clause) {
-			// Deep clone the existing clause for editing
-			amendmentNewContent = JSON.parse(JSON.stringify(clause));
-		} else if (type === 'ADD') {
-			amendmentNewContent = createEmptyOperativeClause();
-			amendmentTargetPosition = index + 1;
-		} else if (type === 'ALTER_POSITION') {
-			amendmentTargetPosition = index;
-		} else {
-			amendmentNewContent = null;
-		}
+		initialAmendmentType = type;
+		initialAmendmentTargetIndex = index;
 		showCreateAmendmentModal = true;
 	}
 
-	async function handleCreateAmendment() {
+	async function handleAmendmentSubmit(args: {
+		type: 'DELETE' | 'ADD' | 'ALTER_TEXT' | 'ALTER_POSITION';
+		targetClauseId: string | null;
+		targetOperativeIndex: number | null;
+		targetPosition: number | null;
+		newContent: OperativeClause | null;
+	}) {
 		if (!paper) return;
-		try {
-			await CreateAmendmentMutation.mutate({
-				paperId: paper.id,
-				type: amendmentType,
-				targetClauseId: amendmentType === 'ADD' ? null : (amendmentTargetClauseId ?? null),
-				targetOperativeIndex: amendmentType === 'ADD' ? null : amendmentTargetIndex,
-				targetPosition:
-					amendmentType === 'ADD' || amendmentType === 'ALTER_POSITION'
-						? (amendmentTargetPosition ?? null)
-						: null,
-				newContent:
-					amendmentType === 'ALTER_TEXT' || amendmentType === 'ADD' ? amendmentNewContent : null
-			});
-			showCreateAmendmentModal = false;
-			toast.success(m.amendmentCreated());
-		} catch {
-			toast.error(m.saveError());
-		}
-	}
-
-	async function handleSubmitAmendment(amendmentId: string) {
-		try {
-			await SubmitAmendmentMutation.mutate({ amendmentId });
-			toast.success(m.amendmentSubmittedToast());
-		} catch {
-			toast.error(m.thresholdNotMet());
-		}
-	}
-
-	async function handleParticipantWithdrawAmendment(amendmentId: string) {
-		try {
-			await ParticipantWithdrawAmendmentMutation.mutate({ amendmentId });
-			toast.success(m.amendmentWithdrawnToast());
-		} catch {
-			toast.error(m.saveError());
-		}
+		await CreateAmendmentMutation.mutate({
+			paperId: paper.id,
+			type: args.type,
+			targetClauseId: args.targetClauseId,
+			targetOperativeIndex: args.targetOperativeIndex,
+			targetPosition: args.targetPosition,
+			newContent: args.newContent
+		});
+		toast.success(m.amendmentCreated());
 	}
 
 	async function handleSponsorAmendment(amendmentId: string) {
 		if (!myCommitteeMemberId) return;
 		try {
 			await AddAmendmentSponsorMutation.mutate({
-				amendmentId,
-				committeeMemberId: myCommitteeMemberId
-			});
-		} catch {
-			toast.error(m.saveError());
-		}
-	}
-
-	async function handleWithdrawSponsorship(amendmentId: string) {
-		if (!myCommitteeMemberId) return;
-		try {
-			await RemoveAmendmentSponsorMutation.mutate({
 				amendmentId,
 				committeeMemberId: myCommitteeMemberId
 			});
@@ -878,7 +796,7 @@
 
 	const ParticipantVoteResultSubscription = graphql(`
 		subscription ParticipantVoteResultSubscription($paperId: ID!) {
-			findFirstResolutionVoteResult(where: { paperId: $paperId }) {
+			findManyResolutionVoteResult(where: { paperId: $paperId }, limit: 1) {
 				id
 				outcome
 				votesFor
@@ -900,7 +818,7 @@
 		$ParticipantClauseVotesSubscription.data?.findManyOperativeClauseVote ?? []
 	);
 	let voteResult = $derived(
-		$ParticipantVoteResultSubscription.data?.findFirstResolutionVoteResult ?? null
+		$ParticipantVoteResultSubscription.data?.findManyResolutionVoteResult?.[0] ?? null
 	);
 
 	let rejectedClauseIds = $derived(
@@ -914,22 +832,6 @@
 		}
 		return map;
 	});
-
-	// Mini editor resolution for amendment creation modal
-	let miniResolution = $derived.by(() => {
-		if (!amendmentNewContent) return null;
-		return {
-			committeeName: '',
-			preamble: [],
-			operative: [amendmentNewContent]
-		} as Resolution;
-	});
-
-	function handleMiniResolutionChange(updated: Resolution) {
-		if (updated.operative?.[0]) {
-			amendmentNewContent = updated.operative[0] as OperativeClause;
-		}
-	}
 </script>
 
 <svelte:head>
@@ -1383,7 +1285,6 @@
 					<div class="flex flex-col gap-2">
 						{#each myAmendments as amendment (amendment.id)}
 							{@const sponsorCount = amendment.sponsors?.length ?? 0}
-							{@const thresholdMet = sponsorCount >= sponsorThresholdNeeded}
 							{@const isActive = amendment.id === activeAmendmentId}
 							<div
 								id="amendment-{amendment.id}"
@@ -1423,25 +1324,6 @@
 												percent: '10'
 											})}
 										</span>
-									</div>
-
-									<!-- Actions -->
-									<div class="flex items-center gap-2">
-										{#if amendment.status === 'PENDING'}
-											<button
-												class="btn btn-primary btn-xs"
-												disabled={!thresholdMet}
-												onclick={() => handleSubmitAmendment(amendment.id)}
-											>
-												{m.submitAmendment()}
-											</button>
-										{/if}
-										<button
-											class="btn btn-ghost btn-xs"
-											onclick={() => handleParticipantWithdrawAmendment(amendment.id)}
-										>
-											{m.withdrawAmendment()}
-										</button>
 									</div>
 								</div>
 							</div>
@@ -1484,12 +1366,6 @@
 											</div>
 										{/if}
 									</div>
-									<button
-										class="btn btn-ghost btn-xs"
-										onclick={() => handleWithdrawSponsorship(amendment.id)}
-									>
-										{m.withdrawSponsorship()}
-									</button>
 								</div>
 							</div>
 						{/each}
@@ -1497,10 +1373,10 @@
 				</Fieldset>
 			{/if}
 
-			<!-- Pending amendments from others that I can sponsor -->
+			<!-- Submitted amendments from others that I can sponsor -->
 			{@const otherPendingAmendments = allAmendments.filter(
 				(a) =>
-					a.status === 'PENDING' &&
+					a.status === 'SUBMITTED' &&
 					a.proposerCommitteeMemberId !== myCommitteeMemberId &&
 					!a.sponsors?.some((s) => s.committeeMemberId === myCommitteeMemberId)
 			)}
@@ -1656,78 +1532,12 @@
 	</Modal>
 
 	<!-- Amendment creation modal -->
-	<Modal bind:open={showCreateAmendmentModal}>
-		<div class="flex flex-col gap-4 p-4">
-			<div class="flex items-center gap-2">
-				<h3 class="text-lg font-bold">{m.proposeAmendment()}</h3>
-				<span class="badge {getAmendmentTypeBadgeClass(amendmentType)}">
-					{getAmendmentTypeLabel(amendmentType)}
-				</span>
-			</div>
-
-			{#if amendmentType === 'DELETE'}
-				<p class="text-sm">
-					{m.deleteClause()} — <span class="font-mono">OP {amendmentTargetIndex + 1}</span>
-				</p>
-			{:else if amendmentType === 'ALTER_TEXT'}
-				<p class="text-sm mb-2">
-					{m.alterText()} — <span class="font-mono">OP {amendmentTargetIndex + 1}</span>
-				</p>
-				{#if miniResolution}
-					<div class="border rounded-lg p-2">
-						<ResolutionEditor
-							committeeName=""
-							resolution={miniResolution}
-							labels={getResolutionLabels()}
-							editable={true}
-							onResolutionChange={handleMiniResolutionChange}
-						/>
-					</div>
-				{/if}
-			{:else if amendmentType === 'ADD'}
-				<p class="text-sm mb-2">
-					{m.addClause()} — {m.targetPosition()}:
-					<span class="font-mono">OP {(amendmentTargetPosition ?? 0) + 1}</span>
-				</p>
-				{#if miniResolution}
-					<div class="border rounded-lg p-2">
-						<ResolutionEditor
-							committeeName=""
-							resolution={miniResolution}
-							labels={getResolutionLabels()}
-							editable={true}
-							onResolutionChange={handleMiniResolutionChange}
-						/>
-					</div>
-				{/if}
-			{:else if amendmentType === 'ALTER_POSITION'}
-				<p class="text-sm mb-2">
-					{m.alterPosition()} — <span class="font-mono">OP {amendmentTargetIndex + 1}</span>
-				</p>
-				<label class="label text-sm font-medium" for="amendment-target-position"
-					>{m.targetPosition()}</label
-				>
-				<select
-					id="amendment-target-position"
-					class="select select-bordered w-full"
-					bind:value={amendmentTargetPosition}
-				>
-					{#each Array(operativeClauses.length) as _, i}
-						{#if i !== amendmentTargetIndex}
-							<option value={i}>OP {i + 1}</option>
-						{/if}
-					{/each}
-				</select>
-			{/if}
-
-			<div class="flex justify-end gap-2">
-				<button class="btn btn-ghost btn-sm" onclick={() => (showCreateAmendmentModal = false)}>
-					{m.abort()}
-				</button>
-				<button class="btn btn-primary btn-sm" onclick={handleCreateAmendment}>
-					{m.proposeAmendment()}
-				</button>
-			</div>
-		</div>
-	</Modal>
+	<CreateAmendmentModal
+		bind:open={showCreateAmendmentModal}
+		{operativeClauses}
+		committeeName={committee?.name ?? ''}
+		initialType={initialAmendmentType}
+		initialTargetIndex={initialAmendmentTargetIndex}
+		onSubmit={handleAmendmentSubmit}
+	/>
 {/if}

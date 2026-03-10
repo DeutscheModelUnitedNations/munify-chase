@@ -499,6 +499,7 @@
 	"submitStatus": "Status setzen",
 	"submitToChair": "An Vorsitz einreichen",
 	"submitted": "Eingereicht",
+	"submittedBy": "Eingereicht durch",
 	"submittedPapers": "Eingereichte Papiere",
 	"submittedPapersDescription": "Von Delegierten eingereichte Papiere, sortiert nach Unterstützerzahl",
 	"submittingNation": "Einreichender Staat",
@@ -587,6 +588,5 @@
 	"yes": "Ja",
 	"you": "Du",
 	"youCannotEditYourself": "Du kannst deine eigene Rolle nicht bearbeiten",
-	"youreUp": "Du bist dran!",
-	"submittedBy": "Eingereicht durch"
+	"youreUp": "Du bist dran!"
 }

@@ -499,6 +499,8 @@
 	"submitStatus": "Set status",
 	"submitToChair": "Submit to Chair",
 	"submitted": "Submitted",
+	"submittedBy": "Submitted by",
+
 	"submittedPapers": "Submitted Papers",
 	"submittedPapersDescription": "Papers submitted by delegates, ranked by sponsor count",
 	"submittingNation": "Submitting Nation",
@@ -587,7 +589,5 @@
 	"yes": "Yes",
 	"you": "You",
 	"youCannotEditYourself": "You cannot edit your own role",
-	"youreUp": "You're up!",
-	"submittedBy": "Submitted by"
-
+	"youreUp": "You're up!"
 }

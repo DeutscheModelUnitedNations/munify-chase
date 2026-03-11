@@ -1629,14 +1629,14 @@
 				</div>
 			</Fieldset>
 
-			<div class="flex justify-end">
-				<button class="btn btn-primary btn-sm" onclick={openChairCreateAmendment}>
-					<i class="fas fa-plus mr-1"></i>
-					{m.chairCreateAmendment()}
-				</button>
-			</div>
-
 			<Fieldset legend={m.amendmentQueue()} faIcon="fas fa-gavel">
+				<div class="flex justify-end">
+					<button class="btn btn-primary btn-sm" onclick={openChairCreateAmendment}>
+						<i class="fas fa-plus mr-1"></i>
+						{m.chairCreateAmendment()}
+					</button>
+				</div>
+
 				{#if sortedSubmittedAmendments.length === 0}
 					<p class="text-base-content/50 text-sm">{m.noAmendments()}</p>
 				{:else}
@@ -1787,9 +1787,7 @@
 												<div class="flex flex-col gap-1">
 													<div class="flex items-center gap-1 justify-end">
 														<button
-															class="btn btn-xs {isActive
-																? 'btn-ghost'
-																: 'btn-outline btn-success'}"
+															class="btn btn-xs {isActive ? 'btn-ghost' : 'btn-success'}"
 															onclick={() =>
 																handleSetActiveAmendment(isActive ? null : amendment.id)}
 														>
@@ -1806,7 +1804,7 @@
 													</div>
 													<div class="flex items-center gap-1 justify-end">
 														<button
-															class="btn btn-success btn-xs"
+															class="btn btn-soft btn-success btn-xs"
 															onclick={() => {
 																confirmAmendmentId = amendment.id;
 																showAdoptConfirmModal = true;
@@ -1815,7 +1813,7 @@
 															{m.adoptByConsensus()}
 														</button>
 														<button
-															class="btn btn-error btn-xs"
+															class="btn btn-soft btn-error btn-xs"
 															onclick={() => {
 																confirmAmendmentId = amendment.id;
 																showRejectConfirmModal = true;
@@ -1824,7 +1822,7 @@
 															{m.amendmentRejected()}
 														</button>
 														<button
-															class="btn btn-ghost btn-xs"
+															class="btn btn-soft btn-xs"
 															onclick={() => openEditAmendment(amendment)}
 														>
 															<i class="fas fa-pen"></i>

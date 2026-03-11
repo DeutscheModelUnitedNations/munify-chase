@@ -268,6 +268,7 @@
 	"majoritySettings": "Majority Settings",
 	"majoritySettingsDescriptions": "Majority settings help visualize whether a motion has passed.",
 	"maroon_bland_ray_renew": "Committee abbreviation",
+	"matching": "matching",
 	"maxDraftResolutions": "Max Draft Resolutions",
 	"maxDraftResolutionsReached": "Maximum number of draft resolutions reached",
 	"member": "Member",
@@ -320,6 +321,7 @@
 	"operativeClause": "Operative Clause",
 	"operativeClausePresentation": "Operative Clause",
 	"outcome": "Outcome",
+	"over": "over",
 	"paperCreated": "Paper created",
 	"paperDeleted": "Paper deleted",
 	"paperPromoted": "Paper promoted to Draft Resolution",
@@ -509,7 +511,6 @@
 	"submitToChair": "Submit to Chair",
 	"submitted": "Submitted",
 	"submittedBy": "Submitted by",
-
 	"submittedPapers": "Submitted Papers",
 	"submittedPapersDescription": "Papers submitted by delegates, ranked by sponsor count",
 	"submittingNation": "Submitting Nation",

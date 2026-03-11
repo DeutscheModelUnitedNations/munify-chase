@@ -56,6 +56,12 @@
 				return 0;
 		}
 	});
+	console.log(committee);
+	let presentDelegations = $derived(committee?.totalPresent ?? 0);
+	let votesProgress = $derived(
+		presentDelegations > 0 ? Math.min((votesTotal / presentDelegations) * 100, 100) : 0
+	);
+	let votesOvershot = $derived(presentDelegations > 0 && votesTotal > presentDelegations);
 
 	const exit = (completed: boolean = false) => {
 		if (oncomplete) {
@@ -177,6 +183,37 @@
 	</h3>
 
 	<ResultChart total={votesTotal} {votesPro} {votesCon} {majorityAmount} />
+
+	{#if presentDelegations > 0}
+		<div class="mt-3 flex flex-col gap-1">
+			<progress
+				class="progress w-full {votesOvershot
+					? 'progress-error'
+					: votesTotal === presentDelegations
+						? 'progress-success'
+						: 'progress-warning'}"
+				value={votesProgress}
+				max="100"
+			></progress>
+			<div class="flex justify-between text-sm">
+				<span class={votesOvershot ? 'text-error font-semibold' : 'text-base-content/60'}>
+					{votesTotal} / {presentDelegations}
+				</span>
+				{#if votesOvershot}
+					<span class="text-error font-semibold">
+						<i class="fas fa-triangle-exclamation"></i>
+						+{votesTotal - presentDelegations}
+						{m.over()}
+					</span>
+				{:else if votesTotal === presentDelegations}
+					<span class="text-success font-semibold">
+						<i class="fas fa-circle-check"></i>
+						{m.matching()}
+					</span>
+				{/if}
+			</div>
+		</div>
+	{/if}
 
 	<div class="mt-6 flex gap-4">
 		<div

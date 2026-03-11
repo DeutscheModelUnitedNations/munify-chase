@@ -158,8 +158,15 @@ const presentationLayoutPresets: Record<
 			x: 8,
 			y: 2,
 			w: 4,
-			h: 11,
+			h: 5,
 			...commonSpeakersListProps
+		},
+		commentsList: {
+			x: 8,
+			y: 7,
+			w: 4,
+			h: 6,
+			...commonCommentsListProps
 		}
 	},
 	smallScreen: {

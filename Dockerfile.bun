@@ -1,4 +1,4 @@
-FROM oven/bun:1.2-slim AS base
+FROM oven/bun:1.3-slim AS base
 
 FROM base AS dependencies
 WORKDIR /build/dependencies

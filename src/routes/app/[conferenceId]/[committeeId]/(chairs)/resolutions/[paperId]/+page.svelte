@@ -3,7 +3,7 @@
 	import { page } from '$app/state';
 	import type { PageData } from './$houdini';
 	import { graphql } from '$houdini';
-	import { onMount } from 'svelte';
+	import { onMount, tick } from 'svelte';
 	import { CommitteeSubscription } from '../../committeeSubscription';
 	import { ChairPaperDetailSubscription } from './chairPaperDetailSubscription';
 	import { ChairPaperClauseLocksSubscription } from './chairLockSubscription';
@@ -94,6 +94,8 @@
 		lastEdited: paper?.updatedAt ?? undefined
 	});
 
+	const scrollStorageKey = $derived(`scroll-position:paper:${page.params.paperId}`);
+
 	onMount(() => {
 		ChairPaperDetailSubscription.listen({ paperId: page.params.paperId! });
 		ChairPaperClauseLocksSubscription.listen({ paperId: page.params.paperId! });
@@ -101,6 +103,21 @@
 		ChairAmendmentsSubscription.listen({ paperId: page.params.paperId! });
 		ChairClauseVotesSubscription.listen({ paperId: page.params.paperId! });
 		ChairVoteResultSubscription.listen({ paperId: page.params.paperId! });
+
+		// Restore saved scroll position
+		tick().then(() => {
+			const saved = sessionStorage.getItem(scrollStorageKey);
+			if (saved !== null) {
+				const savedY = parseInt(saved, 10);
+				const maxScroll = document.documentElement.scrollHeight - window.innerHeight;
+				window.scrollTo({ top: Math.min(savedY, Math.max(maxScroll, 0)), behavior: 'instant' });
+			}
+		});
+
+		const handleScroll = () => {
+			sessionStorage.setItem(scrollStorageKey, String(window.scrollY));
+		};
+		window.addEventListener('scroll', handleScroll, { passive: true });
 
 		// Hybrid heartbeat — only fires when idle with held locks
 		const heartbeatInterval = setInterval(() => {
@@ -128,6 +145,7 @@
 		return () => {
 			clearInterval(heartbeatInterval);
 			window.removeEventListener('beforeunload', handleBeforeUnload);
+			window.removeEventListener('scroll', handleScroll);
 
 			// Release locks on navigation
 			ReleaseAllMyLocksMutation.mutate({ paperId: page.params.paperId! }).catch(() => {});

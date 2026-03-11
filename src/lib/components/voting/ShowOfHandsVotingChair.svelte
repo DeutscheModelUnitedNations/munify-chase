@@ -56,7 +56,6 @@
 				return 0;
 		}
 	});
-	console.log(committee);
 	let presentDelegations = $derived(committee?.totalPresent ?? 0);
 	let votesProgress = $derived(
 		presentDelegations > 0 ? Math.min((votesTotal / presentDelegations) * 100, 100) : 0

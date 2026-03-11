@@ -12,6 +12,10 @@ export const ChairPaperCommentsSubscription = graphql(`
 			updatedAt
 			author {
 				id
+				user {
+					givenName
+					familyName
+				}
 				committeeMember {
 					representation {
 						name

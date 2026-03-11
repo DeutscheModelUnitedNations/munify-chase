@@ -209,6 +209,10 @@ schemaBuilder.mutationFields((t) => ({
 				throw new GraphQLError('Paper must be the active draft resolution');
 			}
 
+			if (!committee.amendmentSubmissionOpen) {
+				throw new GraphQLError('Amendment submission is currently closed');
+			}
+
 			// Find the delegate's conference user + committee member
 			const conferenceUser = await db.query.conferenceUser
 				.findFirst({

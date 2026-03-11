@@ -1100,12 +1100,11 @@
 					onAmendmentClick={showAmendmentUI ? handleAmendmentClick : undefined}
 				>
 					{#snippet betweenOperativeClauses({ index })}
-						{#if showAmendmentUI && isDelegate}
+						{#if showAmendmentUI && isDelegate && committeeSubscriptionData?.amendmentSubmissionOpen}
 							<div class="flex justify-center py-1">
 								<div class="dropdown dropdown-bottom">
-									<div tabindex="0" role="button" class="btn btn-ghost btn-xs gap-1">
+									<div tabindex="0" role="button" class="btn btn-ghost btn-xs btn-circle">
 										<i class="fas fa-plus text-xs"></i>
-										{m.proposeAmendment()}
 									</div>
 									<ul
 										role="menu"
@@ -1242,6 +1241,7 @@
 								{myConferenceUserId}
 								canPostTeamOnly={false}
 								readonly
+								marginIcon
 								onCreateComment={(content, visibility, parentCommentId) =>
 									onCreateComment(content, visibility, parentCommentId, clause.id)}
 								{onUpdateComment}
@@ -1258,6 +1258,7 @@
 								{myConferenceUserId}
 								canPostTeamOnly={false}
 								readonly
+								marginIcon
 								onCreateComment={(content, visibility, parentCommentId) =>
 									onCreateComment(content, visibility, parentCommentId, clause.id)}
 								{onUpdateComment}
@@ -1380,7 +1381,7 @@
 					a.proposerCommitteeMemberId !== myCommitteeMemberId &&
 					!a.sponsors?.some((s) => s.committeeMemberId === myCommitteeMemberId)
 			)}
-			{#if otherPendingAmendments.length > 0 && isDelegate}
+			{#if otherPendingAmendments.length > 0 && isDelegate && committeeSubscriptionData?.amendmentSponsoringOpen}
 				<Fieldset legend={m.amendments()} faIcon="fas fa-handshake">
 					<div class="flex flex-col gap-2">
 						{#each otherPendingAmendments as amendment (amendment.id)}

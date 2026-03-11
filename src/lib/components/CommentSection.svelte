@@ -2,6 +2,7 @@
 	import { m } from '$lib/paraglide/messages';
 	import Flag from './Flag.svelte';
 	import { slide } from 'svelte/transition';
+	import { onMount } from 'svelte';
 	import type { ChairPaperCommentsSubscription$result } from '$houdini';
 
 	type Comment = ChairPaperCommentsSubscription$result['findManyResolutionComment'][number];
@@ -13,6 +14,7 @@
 		myConferenceUserId?: string;
 		canPostTeamOnly: boolean;
 		readonly?: boolean;
+		marginIcon?: boolean;
 		onCreateComment: (
 			content: string,
 			visibility: string,
@@ -29,6 +31,7 @@
 		myConferenceUserId,
 		canPostTeamOnly,
 		readonly = false,
+		marginIcon = false,
 		onCreateComment,
 		onUpdateComment,
 		onDeleteComment
@@ -44,6 +47,25 @@
 	}
 
 	let commentCount = $derived(comments.filter((c) => c.clauseId === clauseId).length);
+
+	// Margin icon: measure previous sibling height to position icon at top of clause
+	let wrapperEl = $state<HTMLElement>();
+	let marginIconOffset = $state(0);
+
+	onMount(() => {
+		if (marginIcon && wrapperEl) {
+			// The wrapper's parent is the <div class="font-sans"> from the editor library.
+			// Walk backwards from that parent to find the clause element (<p> or <li>).
+			const fontSansDiv = wrapperEl.parentElement;
+			let el = fontSansDiv?.previousElementSibling;
+			while (el && el.tagName !== 'P' && el.tagName !== 'LI') {
+				el = el.previousElementSibling;
+			}
+			if (el) {
+				marginIconOffset = el.getBoundingClientRect().height;
+			}
+		}
+	});
 
 	// UI state
 	let expanded = $state(clauseId === null);
@@ -125,6 +147,10 @@
 	}
 
 	function getAuthorName(comment: Comment): string {
+		const user = comment.author.user;
+		if (user) {
+			return `${user.givenName} ${user.familyName}`;
+		}
 		const rep = comment.author.committeeMember?.representation;
 		return rep?.name ?? comment.author.conferenceUserType ?? '?';
 	}
@@ -135,24 +161,42 @@
 </script>
 
 {#if !readonly || commentCount > 0}
-	<div class="mt-1">
-		<!-- Collapsed toggle -->
-		<button
-			class="btn btn-ghost btn-xs gap-1 opacity-60 hover:opacity-100"
-			onclick={() => (expanded = !expanded)}
-		>
-			<i class="fas fa-comment text-xs"></i>
-			{#if commentCount > 0}
-				<span class="text-xs">{commentCount}</span>
-			{:else}
-				<span class="text-xs">{m.addComment()}</span>
-			{/if}
-			<i class="fas fa-chevron-{expanded ? 'up' : 'down'} text-xs ml-1"></i>
-		</button>
+	<div bind:this={wrapperEl} class={marginIcon ? '' : 'mt-1'}>
+		{#if marginIcon}
+			<!-- Icon floated into the left margin, pulled up to align with the top of the clause above -->
+			<div class="h-0 overflow-visible">
+				<button
+					class="btn btn-ghost btn-xs btn-circle relative float-left -ml-8 {commentCount > 0
+						? 'text-warning opacity-100'
+						: 'opacity-30'} hover:opacity-100"
+					style="margin-top: -{marginIconOffset + 8}px;"
+					onclick={() => (expanded = !expanded)}
+				>
+					<i class="fas fa-comment text-xs"></i>
+					{#if commentCount > 0}
+						<span class="badge badge-xs badge-warning absolute -top-1 -right-1">{commentCount}</span
+						>
+					{/if}
+				</button>
+			</div>
+		{:else}
+			<!-- Collapsed toggle -->
+			<button
+				class="btn btn-ghost btn-xs btn-circle relative {commentCount > 0
+					? 'text-warning opacity-100'
+					: 'opacity-60'} hover:opacity-100"
+				onclick={() => (expanded = !expanded)}
+			>
+				<i class="fas fa-comment text-xs"></i>
+				{#if commentCount > 0}
+					<span class="badge badge-xs badge-warning absolute -top-1 -right-1">{commentCount}</span>
+				{/if}
+			</button>
+		{/if}
 
 		{#if expanded}
 			<div
-				class="mt-2 space-y-2 pl-2 border-l-2 border-base-300"
+				class="{marginIcon ? '' : 'mt-2 '}space-y-2 pl-2 border-l-2 border-base-300"
 				transition:slide={{ duration: 200 }}
 			>
 				{#if topLevelComments.length === 0}

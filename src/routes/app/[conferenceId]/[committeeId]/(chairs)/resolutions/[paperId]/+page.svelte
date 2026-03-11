@@ -1560,6 +1560,34 @@
 							{onDeleteComment}
 						/>
 					{/snippet}
+					{#snippet afterPreambleClause({ clause })}
+						<CommentSection
+							paperId={page.params.paperId!}
+							clauseId={clause.id}
+							comments={commentsByClauseId.get(clause.id) ?? []}
+							{myConferenceUserId}
+							canPostTeamOnly={true}
+							marginIcon
+							onCreateComment={(content, visibility, parentCommentId) =>
+								onCreateComment(content, visibility, parentCommentId, clause.id)}
+							{onUpdateComment}
+							{onDeleteComment}
+						/>
+					{/snippet}
+					{#snippet afterOperativeClause({ clause })}
+						<CommentSection
+							paperId={page.params.paperId!}
+							clauseId={clause.id}
+							comments={commentsByClauseId.get(clause.id) ?? []}
+							{myConferenceUserId}
+							canPostTeamOnly={true}
+							marginIcon
+							onCreateComment={(content, visibility, parentCommentId) =>
+								onCreateComment(content, visibility, parentCommentId, clause.id)}
+							{onUpdateComment}
+							{onDeleteComment}
+						/>
+					{/snippet}
 				</ResolutionEditor>
 			{/if}
 		</div>

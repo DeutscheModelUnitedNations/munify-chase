@@ -14,6 +14,8 @@ export const ParticipantCommitteeSubscription = graphql(`
 			whiteboardContent
 			allowDelegationsToAddThemselvesToSpeakersList
 			supportReEvaluationOpen
+			amendmentSubmissionOpen
+			amendmentSponsoringOpen
 			activeDraftResolutionId
 			totalPresent
 			simpleMajority

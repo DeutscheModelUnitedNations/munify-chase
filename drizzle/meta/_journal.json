@@ -43,6 +43,13 @@
       "when": 1773013488762,
       "tag": "0005_tan_paibok",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1773189153562,
+      "tag": "0006_cuddly_sersi",
+      "breakpoints": true
     }
   ]
 }

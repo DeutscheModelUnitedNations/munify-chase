@@ -79,6 +79,8 @@ export const committee = pgTable(
 		activeDraftResolutionId: text().references((): AnyPgColumn => resolutionPaper.id),
 		currentOperativeIndex: smallint(),
 		supportReEvaluationOpen: boolean().notNull().default(false),
+		amendmentSubmissionOpen: boolean().notNull().default(true),
+		amendmentSponsoringOpen: boolean().notNull().default(true),
 		activeAmendmentId: text().references((): AnyPgColumn => amendment.id, { onDelete: 'set null' }),
 		resolutionHeadline: text()
 	},

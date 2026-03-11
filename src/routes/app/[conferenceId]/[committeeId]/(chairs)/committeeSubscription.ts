@@ -18,6 +18,8 @@ export const CommitteeSubscription = graphql(`
 			maxDraftResolutions
 			activeDraftResolutionId
 			supportReEvaluationOpen
+			amendmentSubmissionOpen
+			amendmentSponsoringOpen
 			currentOperativeIndex
 			activeAmendmentId
 			whiteboardContent

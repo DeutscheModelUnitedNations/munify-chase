@@ -83,6 +83,8 @@
 			$activeDraftResolutionId: ID
 			$clearActiveDraftResolution: Boolean
 			$supportReEvaluationOpen: Boolean
+			$amendmentSubmissionOpen: Boolean
+			$amendmentSponsoringOpen: Boolean
 			$currentOperativeIndex: Int
 		) {
 			updateCommittee(
@@ -90,11 +92,15 @@
 				activeDraftResolutionId: $activeDraftResolutionId
 				clearActiveDraftResolution: $clearActiveDraftResolution
 				supportReEvaluationOpen: $supportReEvaluationOpen
+				amendmentSubmissionOpen: $amendmentSubmissionOpen
+				amendmentSponsoringOpen: $amendmentSponsoringOpen
 				currentOperativeIndex: $currentOperativeIndex
 			) {
 				id
 				activeDraftResolutionId
 				supportReEvaluationOpen
+				amendmentSubmissionOpen
+				amendmentSponsoringOpen
 				currentOperativeIndex
 			}
 		}
@@ -156,6 +162,28 @@
 			await UpdateCommitteeMutation.mutate({
 				id: page.params.committeeId!,
 				supportReEvaluationOpen: open
+			});
+		} catch {
+			toast.error(m.saveError());
+		}
+	}
+
+	async function toggleAmendmentSubmission(open: boolean) {
+		try {
+			await UpdateCommitteeMutation.mutate({
+				id: page.params.committeeId!,
+				amendmentSubmissionOpen: open
+			});
+		} catch {
+			toast.error(m.saveError());
+		}
+	}
+
+	async function toggleAmendmentSponsoring(open: boolean) {
+		try {
+			await UpdateCommitteeMutation.mutate({
+				id: page.params.committeeId!,
+				amendmentSponsoringOpen: open
 			});
 		} catch {
 			toast.error(m.saveError());
@@ -479,6 +507,50 @@
 									class="toggle toggle-warning"
 									checked={committee.supportReEvaluationOpen}
 									onchange={() => toggleReEvaluation(!committee.supportReEvaluationOpen)}
+								/>
+							</div>
+						</div>
+
+						<!-- Amendment Submission toggle -->
+						<div class="rounded-lg bg-base-200 p-4">
+							<div class="flex items-center justify-between">
+								<div>
+									<p class="font-semibold">{m.amendmentSubmission()}</p>
+									<p class="text-base-content/50 text-sm">
+										{#if committee.amendmentSubmissionOpen}
+											{m.amendmentSubmissionOpen()}
+										{:else}
+											{m.amendmentSubmissionClosed()}
+										{/if}
+									</p>
+								</div>
+								<input
+									type="checkbox"
+									class="toggle toggle-warning"
+									checked={committee.amendmentSubmissionOpen}
+									onchange={() => toggleAmendmentSubmission(!committee.amendmentSubmissionOpen)}
+								/>
+							</div>
+						</div>
+
+						<!-- Amendment Sponsoring toggle -->
+						<div class="rounded-lg bg-base-200 p-4">
+							<div class="flex items-center justify-between">
+								<div>
+									<p class="font-semibold">{m.amendmentSponsoring()}</p>
+									<p class="text-base-content/50 text-sm">
+										{#if committee.amendmentSponsoringOpen}
+											{m.amendmentSponsoringOpen()}
+										{:else}
+											{m.amendmentSponsoringClosed()}
+										{/if}
+									</p>
+								</div>
+								<input
+									type="checkbox"
+									class="toggle toggle-warning"
+									checked={committee.amendmentSponsoringOpen}
+									onchange={() => toggleAmendmentSponsoring(!committee.amendmentSponsoringOpen)}
 								/>
 							</div>
 						</div>

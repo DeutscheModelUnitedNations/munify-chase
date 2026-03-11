@@ -55,6 +55,15 @@ schemaBuilder.mutationFields((t) => ({
 			if (!isOwnMembership) {
 				// Must be chair/admin
 				await assertCommitteeChairOrAdmin(ctx, paper.committeeId);
+			} else {
+				// Delegate adding themselves — check if sponsoring is open
+				const committee = await db.query.committee
+					.findFirst({ where: { id: paper.committeeId } })
+					.then(assertFindFirstExists);
+
+				if (!committee.amendmentSponsoringOpen) {
+					throw new GraphQLError('Amendment sponsoring is currently closed');
+				}
 			}
 
 			// Check not already sponsor

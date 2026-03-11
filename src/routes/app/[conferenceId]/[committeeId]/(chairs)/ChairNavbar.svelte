@@ -106,7 +106,7 @@
 				{
 					faIcon: 'fa-rocket-launch',
 					title: m.missionControl(),
-					href: `/app/${page.params.conferenceId}/${page.params.committeeId}/mission-control`
+					href: `/app/${page.params.conferenceId}/mission-control`
 				}
 			]}
 		/>

@@ -19,6 +19,8 @@ export const _houdini_load = graphql(`
 			maxDraftResolutions
 			activeDraftResolutionId
 			supportReEvaluationOpen
+			amendmentSubmissionOpen
+			amendmentSponsoringOpen
 			currentOperativeIndex
 			activeAmendmentId
 			whiteboardContent

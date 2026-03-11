@@ -96,6 +96,22 @@
 
 	const scrollStorageKey = $derived(`scroll-position:paper:${page.params.paperId}`);
 
+	// Restore scroll position once paper data is actually rendered
+	let scrollRestored = $state(false);
+	$effect(() => {
+		if (paper && !scrollRestored) {
+			scrollRestored = true;
+			tick().then(() => {
+				const saved = sessionStorage.getItem(scrollStorageKey);
+				if (saved !== null) {
+					const savedY = parseInt(saved, 10);
+					const maxScroll = document.documentElement.scrollHeight - window.innerHeight;
+					window.scrollTo({ top: Math.min(savedY, Math.max(maxScroll, 0)), behavior: 'instant' });
+				}
+			});
+		}
+	});
+
 	onMount(() => {
 		ChairPaperDetailSubscription.listen({ paperId: page.params.paperId! });
 		ChairPaperClauseLocksSubscription.listen({ paperId: page.params.paperId! });
@@ -103,16 +119,6 @@
 		ChairAmendmentsSubscription.listen({ paperId: page.params.paperId! });
 		ChairClauseVotesSubscription.listen({ paperId: page.params.paperId! });
 		ChairVoteResultSubscription.listen({ paperId: page.params.paperId! });
-
-		// Restore saved scroll position
-		tick().then(() => {
-			const saved = sessionStorage.getItem(scrollStorageKey);
-			if (saved !== null) {
-				const savedY = parseInt(saved, 10);
-				const maxScroll = document.documentElement.scrollHeight - window.innerHeight;
-				window.scrollTo({ top: Math.min(savedY, Math.max(maxScroll, 0)), behavior: 'instant' });
-			}
-		});
 
 		const handleScroll = () => {
 			sessionStorage.setItem(scrollStorageKey, String(window.scrollY));

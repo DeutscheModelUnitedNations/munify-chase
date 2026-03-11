@@ -4,6 +4,7 @@
 	import type { PageData } from './$houdini';
 	import { graphql } from '$houdini';
 	import { onMount, tick } from 'svelte';
+	import { afterNavigate } from '$app/navigation';
 	import { CommitteeSubscription } from '../../committeeSubscription';
 	import { ChairPaperDetailSubscription } from './chairPaperDetailSubscription';
 	import { ChairPaperClauseLocksSubscription } from './chairLockSubscription';
@@ -96,20 +97,29 @@
 
 	const scrollStorageKey = $derived(`scroll-position:paper:${page.params.paperId}`);
 
-	// Restore scroll position once paper data is actually rendered
-	let scrollRestored = $state(false);
-	$effect(() => {
-		if (paper && !scrollRestored) {
-			scrollRestored = true;
-			tick().then(() => {
-				const saved = sessionStorage.getItem(scrollStorageKey);
-				if (saved !== null) {
-					const savedY = parseInt(saved, 10);
-					const maxScroll = document.documentElement.scrollHeight - window.innerHeight;
-					window.scrollTo({ top: Math.min(savedY, Math.max(maxScroll, 0)), behavior: 'instant' });
-				}
-			});
+	// Restore scroll position after SvelteKit navigation (afterNavigate fires after SvelteKit's
+	// own scroll reset, so our restore wins). We poll with rAF until the content is tall enough
+	// to actually scroll to the saved position, because data arrives asynchronously.
+	afterNavigate(() => {
+		const saved = sessionStorage.getItem(scrollStorageKey);
+		if (saved === null) return;
+		const savedY = parseInt(saved, 10);
+		if (savedY === 0) return;
+
+		let attempts = 0;
+		const maxAttempts = 60; // ~1 second at 60fps
+
+		function tryRestore() {
+			const maxScroll = document.documentElement.scrollHeight - window.innerHeight;
+			if (maxScroll >= savedY || attempts >= maxAttempts) {
+				window.scrollTo({ top: Math.min(savedY, Math.max(maxScroll, 0)), behavior: 'instant' });
+			} else {
+				attempts++;
+				requestAnimationFrame(tryRestore);
+			}
 		}
+
+		requestAnimationFrame(tryRestore);
 	});
 
 	onMount(() => {

@@ -601,5 +601,167 @@ schemaBuilder.mutationFields((t) => ({
 				)
 				.then(assertFindFirstExists);
 		}
+	}),
+
+	editAmendment: t.drizzleField({
+		type: ref,
+		args: {
+			amendmentId: t.arg.id({ required: true }),
+			targetClauseId: t.arg.string(),
+			targetOperativeIndex: t.arg.int(),
+			targetPosition: t.arg.int(),
+			newContent: t.arg({ type: 'JSON' }),
+			proposerCommitteeMemberId: t.arg.id()
+		},
+		resolve: async (query, root, args, ctx, info) => {
+			const amendment = await db.query.amendment
+				.findFirst({ where: { id: args.amendmentId } })
+				.then(assertFindFirstExists);
+
+			if (amendment.status !== 'SUBMITTED') {
+				throw new GraphQLError('Only SUBMITTED amendments can be edited');
+			}
+
+			const paper = await db.query.resolutionPaper
+				.findFirst({ where: { id: amendment.paperId } })
+				.then(assertFindFirstExists);
+
+			await assertCommitteeChairOrAdmin(ctx, paper.committeeId);
+
+			// Merge provided args with existing values
+			const merged = {
+				targetClauseId:
+					args.targetClauseId !== undefined ? args.targetClauseId : amendment.targetClauseId,
+				targetOperativeIndex:
+					args.targetOperativeIndex !== undefined
+						? args.targetOperativeIndex
+						: amendment.targetOperativeIndex,
+				targetPosition:
+					args.targetPosition !== undefined ? args.targetPosition : amendment.targetPosition,
+				newContent: args.newContent !== undefined ? args.newContent : amendment.newContent
+			};
+
+			// Re-validate with merged values
+			validateAmendmentArgs(amendment.type, merged);
+
+			// Validate clauseId matches paper content if provided
+			if (
+				merged.targetClauseId &&
+				merged.targetOperativeIndex !== undefined &&
+				merged.targetOperativeIndex !== null
+			) {
+				const parsed = ResolutionSchema.safeParse(paper.content);
+				if (parsed.success) {
+					const clause = parsed.data.operative[merged.targetOperativeIndex];
+					if (!clause || clause.id !== merged.targetClauseId) {
+						throw new GraphQLError('Clause ID does not match at the given index');
+					}
+				}
+			}
+
+			// Validate newContent if provided
+			if (args.newContent) {
+				const parsedContent = OperativeClauseSchema.safeParse(args.newContent);
+				if (!parsedContent.success) {
+					throw new GraphQLError('Invalid newContent: ' + parsedContent.error.message);
+				}
+			}
+
+			// Check if anything actually changed
+			const updateFields: Record<string, unknown> = {};
+			if (args.targetClauseId !== undefined && args.targetClauseId !== amendment.targetClauseId) {
+				updateFields.targetClauseId = args.targetClauseId;
+			}
+			if (
+				args.targetOperativeIndex !== undefined &&
+				args.targetOperativeIndex !== amendment.targetOperativeIndex
+			) {
+				updateFields.targetOperativeIndex = args.targetOperativeIndex;
+			}
+			if (args.targetPosition !== undefined && args.targetPosition !== amendment.targetPosition) {
+				updateFields.targetPosition = args.targetPosition;
+			}
+			if (args.newContent !== undefined) {
+				updateFields.newContent = args.newContent;
+			}
+
+			const proposerChanged =
+				args.proposerCommitteeMemberId !== undefined &&
+				args.proposerCommitteeMemberId !== null &&
+				args.proposerCommitteeMemberId !== amendment.proposerCommitteeMemberId;
+
+			if (Object.keys(updateFields).length === 0 && !proposerChanged) {
+				// Nothing changed
+				return db.query.amendment
+					.findFirst(
+						query(
+							ctx.abilities.amendment.filter('read', {
+								inject: { where: { id: args.amendmentId } }
+							}).query.single
+						)
+					)
+					.then(assertFindFirstExists);
+			}
+
+			if (proposerChanged) {
+				// Validate new proposer belongs to committee
+				await db.query.committeeMember
+					.findFirst({
+						where: { id: args.proposerCommitteeMemberId!, committeeId: paper.committeeId }
+					})
+					.then(assertFindFirstExists);
+
+				updateFields.proposerCommitteeMemberId = args.proposerCommitteeMemberId;
+			}
+
+			await db.transaction(async (tx) => {
+				if (proposerChanged) {
+					const oldProposerId = amendment.proposerCommitteeMemberId;
+					const newProposerId = args.proposerCommitteeMemberId!;
+
+					// Remove old proposer's sponsor entry
+					await tx
+						.delete(schema.amendmentSponsor)
+						.where(
+							and(
+								eq(schema.amendmentSponsor.amendmentId, args.amendmentId),
+								eq(schema.amendmentSponsor.committeeMemberId, oldProposerId)
+							)
+						);
+
+					// Add new proposer as sponsor if not already one
+					const existingSponsor = await tx.query.amendmentSponsor.findFirst({
+						where: {
+							amendmentId: args.amendmentId,
+							committeeMemberId: newProposerId
+						}
+					});
+					if (!existingSponsor) {
+						await tx.insert(schema.amendmentSponsor).values({
+							amendmentId: args.amendmentId,
+							committeeMemberId: newProposerId
+						});
+					}
+				}
+
+				await tx
+					.update(schema.amendment)
+					.set(updateFields)
+					.where(eq(schema.amendment.id, args.amendmentId));
+			});
+
+			pubsub.updated(args.amendmentId);
+			paperPubsub.updated(amendment.paperId);
+
+			return db.query.amendment
+				.findFirst(
+					query(
+						ctx.abilities.amendment.filter('read', {
+							inject: { where: { id: args.amendmentId } }
+						}).query.single
+					)
+				)
+				.then(assertFindFirstExists);
+		}
 	})
 }));

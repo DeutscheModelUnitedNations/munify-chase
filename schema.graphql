@@ -410,6 +410,7 @@ type Mutation {
   deleteConferenceUser(id: ID!): Boolean
   deleteRepresentation(id: ID!): Boolean
   deleteShareCode(shareCodeId: ID!): Boolean
+  editAmendment(amendmentId: ID!, newContent: JSON, proposerCommitteeMemberId: ID, targetClauseId: String, targetOperativeIndex: Int, targetPosition: Int): Amendment
   importDelegatorConference(data: ImportData!): Conference
   moveSpeakerToPosition(id: ID!, position: Int!): SpeakerOnList
   promoteToDraftResolution(paperId: ID!): ResolutionPaper

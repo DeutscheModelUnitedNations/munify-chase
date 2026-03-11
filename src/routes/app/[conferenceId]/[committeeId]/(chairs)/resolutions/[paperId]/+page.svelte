@@ -934,6 +934,60 @@
 	}
 
 	// =====================================================
+	// Chair Edit Amendment
+	// =====================================================
+
+	const ChairEditAmendmentMutation = graphql(`
+		mutation ChairEditAmendmentMutation(
+			$amendmentId: ID!
+			$targetClauseId: String
+			$targetOperativeIndex: Int
+			$targetPosition: Int
+			$newContent: JSON
+			$proposerCommitteeMemberId: ID
+		) {
+			editAmendment(
+				amendmentId: $amendmentId
+				targetClauseId: $targetClauseId
+				targetOperativeIndex: $targetOperativeIndex
+				targetPosition: $targetPosition
+				newContent: $newContent
+				proposerCommitteeMemberId: $proposerCommitteeMemberId
+			) {
+				id
+			}
+		}
+	`);
+
+	let editingAmendment = $state<(typeof allAmendments)[0] | null>(null);
+	let showEditAmendmentModal = $state(false);
+
+	function openEditAmendment(amendment: (typeof allAmendments)[0]) {
+		editingAmendment = amendment;
+		showEditAmendmentModal = true;
+	}
+
+	async function handleEditAmendmentSubmit(args: {
+		type: 'DELETE' | 'ADD' | 'ALTER_TEXT' | 'ALTER_POSITION';
+		targetClauseId: string | null;
+		targetOperativeIndex: number | null;
+		targetPosition: number | null;
+		newContent: OperativeClause | null;
+		committeeMemberId?: string;
+	}) {
+		if (!editingAmendment) return;
+		await ChairEditAmendmentMutation.mutate({
+			amendmentId: editingAmendment.id,
+			targetClauseId: args.targetClauseId,
+			targetOperativeIndex: args.targetOperativeIndex,
+			targetPosition: args.targetPosition,
+			newContent: args.newContent,
+			proposerCommitteeMemberId: args.committeeMemberId ?? null
+		});
+		toast.success(m.amendmentUpdated());
+	}
+
+	// =====================================================
 	// Voting Phase (Phase 7)
 	// =====================================================
 
@@ -1743,6 +1797,13 @@
 														</button>
 														<button
 															class="btn btn-ghost btn-xs"
+															onclick={() => openEditAmendment(amendment)}
+														>
+															<i class="fas fa-pen"></i>
+															{m.edit()}
+														</button>
+														<button
+															class="btn btn-ghost btn-xs"
 															onclick={() => handleWithdrawAmendment(amendment.id)}
 														>
 															{m.withdrawAmendment()}
@@ -2260,4 +2321,21 @@
 		committeeMembers={committee?.members}
 		onSubmit={handleChairAmendmentSubmit}
 	/>
+
+	<!-- Chair Edit Amendment Modal -->
+	{#if editingAmendment}
+		<CreateAmendmentModal
+			bind:open={showEditAmendmentModal}
+			editMode={true}
+			{operativeClauses}
+			committeeName={committee?.name ?? ''}
+			committeeMembers={committee?.members}
+			initialType={editingAmendment.type}
+			initialTargetIndex={editingAmendment.targetOperativeIndex ?? undefined}
+			initialProposerId={editingAmendment.proposerCommitteeMemberId}
+			initialNewContent={editingAmendment.newContent as OperativeClause | null}
+			initialTargetPosition={editingAmendment.targetPosition ?? null}
+			onSubmit={handleEditAmendmentSubmit}
+		/>
+	{/if}
 {/if}

@@ -29,6 +29,12 @@
 		initialType?: AmendmentType;
 		initialTargetIndex?: number;
 
+		// Edit mode support
+		editMode?: boolean;
+		initialProposerId?: string | null;
+		initialNewContent?: OperativeClause | null;
+		initialTargetPosition?: number | null;
+
 		// Called on submit with all args needed for the mutation
 		onSubmit: (args: {
 			type: AmendmentType;
@@ -47,6 +53,10 @@
 		committeeMembers,
 		initialType,
 		initialTargetIndex,
+		editMode = false,
+		initialProposerId,
+		initialNewContent,
+		initialTargetPosition,
 		onSubmit
 	}: Props = $props();
 
@@ -68,7 +78,32 @@
 	// Reset on open change
 	$effect(() => {
 		if (open) {
-			if (initialType != null && initialTargetIndex != null) {
+			if (editMode && initialType != null) {
+				// Edit mode: pre-fill all fields, type is locked
+				selectedType = initialType;
+				selectedSourceIndex = initialTargetIndex ?? 0;
+				selectedProposer = initialProposerId ?? null;
+				proposerSearchQuery = '';
+				submitting = false;
+
+				if (initialNewContent) {
+					newContent = JSON.parse(JSON.stringify(initialNewContent));
+				} else if (initialType === 'ALTER_TEXT') {
+					const clause = operativeClauses[selectedSourceIndex];
+					if (clause) newContent = JSON.parse(JSON.stringify(clause));
+					else newContent = null;
+				} else {
+					newContent = null;
+				}
+				targetPosition = initialTargetPosition ?? 0;
+
+				if (initialType === 'DELETE') {
+					// For DELETE, go to type step so they can change target
+					step = typeStep;
+				} else {
+					step = contentStep;
+				}
+			} else if (initialType != null && initialTargetIndex != null) {
 				// Pre-filled mode from participant inline buttons
 				selectedType = initialType;
 				selectedSourceIndex = initialTargetIndex;
@@ -209,7 +244,7 @@
 <Modal bind:open>
 	<div class="flex items-center justify-between mb-4">
 		<h3 class="font-bold text-lg">
-			{isChairMode ? m.chairCreateAmendment() : m.proposeAmendment()}
+			{editMode ? m.editAmendment() : isChairMode ? m.chairCreateAmendment() : m.proposeAmendment()}
 		</h3>
 		<button class="btn btn-ghost btn-sm" onclick={() => (open = false)}>
 			<i class="fas fa-times"></i>
@@ -251,36 +286,62 @@
 	{:else if step === typeStep}
 		<!-- Type + target selection -->
 		<div class="flex flex-col gap-3">
-			<div class="grid grid-cols-2 gap-2">
-				<button
-					class="btn btn-sm {selectedType === 'DELETE' ? 'btn-error' : 'btn-outline'}"
-					onclick={() => (selectedType = 'DELETE')}
-				>
-					<i class="fas fa-trash mr-1"></i>
-					{m.amendmentDelete()}
-				</button>
-				<button
-					class="btn btn-sm {selectedType === 'ADD' ? 'btn-success' : 'btn-outline'}"
-					onclick={() => (selectedType = 'ADD')}
-				>
-					<i class="fas fa-plus mr-1"></i>
-					{m.amendmentAdd()}
-				</button>
-				<button
-					class="btn btn-sm {selectedType === 'ALTER_TEXT' ? 'btn-warning' : 'btn-outline'}"
-					onclick={() => (selectedType = 'ALTER_TEXT')}
-				>
-					<i class="fas fa-pen mr-1"></i>
-					{m.amendmentAlterText()}
-				</button>
-				<button
-					class="btn btn-sm {selectedType === 'ALTER_POSITION' ? 'btn-info' : 'btn-outline'}"
-					onclick={() => (selectedType = 'ALTER_POSITION')}
-				>
-					<i class="fas fa-arrows-alt mr-1"></i>
-					{m.amendmentAlterPosition()}
-				</button>
-			</div>
+			{#if editMode && selectedType}
+				<!-- Read-only type badge in edit mode -->
+				{@const typeBadgeClass = {
+					DELETE: 'badge-error',
+					ADD: 'badge-success',
+					ALTER_TEXT: 'badge-warning',
+					ALTER_POSITION: 'badge-info'
+				}[selectedType]}
+				{@const typeIcon = {
+					DELETE: 'fa-trash',
+					ADD: 'fa-plus',
+					ALTER_TEXT: 'fa-pen',
+					ALTER_POSITION: 'fa-arrows-alt'
+				}[selectedType]}
+				{@const typeLabel = {
+					DELETE: m.amendmentDelete(),
+					ADD: m.amendmentAdd(),
+					ALTER_TEXT: m.amendmentAlterText(),
+					ALTER_POSITION: m.amendmentAlterPosition()
+				}[selectedType]}
+				<div class="badge {typeBadgeClass} gap-1">
+					<i class="fas {typeIcon}"></i>
+					{typeLabel}
+				</div>
+			{:else}
+				<div class="grid grid-cols-2 gap-2">
+					<button
+						class="btn btn-sm {selectedType === 'DELETE' ? 'btn-error' : 'btn-outline'}"
+						onclick={() => (selectedType = 'DELETE')}
+					>
+						<i class="fas fa-trash mr-1"></i>
+						{m.amendmentDelete()}
+					</button>
+					<button
+						class="btn btn-sm {selectedType === 'ADD' ? 'btn-success' : 'btn-outline'}"
+						onclick={() => (selectedType = 'ADD')}
+					>
+						<i class="fas fa-plus mr-1"></i>
+						{m.amendmentAdd()}
+					</button>
+					<button
+						class="btn btn-sm {selectedType === 'ALTER_TEXT' ? 'btn-warning' : 'btn-outline'}"
+						onclick={() => (selectedType = 'ALTER_TEXT')}
+					>
+						<i class="fas fa-pen mr-1"></i>
+						{m.amendmentAlterText()}
+					</button>
+					<button
+						class="btn btn-sm {selectedType === 'ALTER_POSITION' ? 'btn-info' : 'btn-outline'}"
+						onclick={() => (selectedType = 'ALTER_POSITION')}
+					>
+						<i class="fas fa-arrows-alt mr-1"></i>
+						{m.amendmentAlterPosition()}
+					</button>
+				</div>
+			{/if}
 
 			{#if selectedType}
 				<div class="form-control">
@@ -322,7 +383,11 @@
 						onclick={handleConfirmType}
 						disabled={selectedType !== 'ADD' && operativeClauses.length === 0}
 					>
-						{selectedType === 'DELETE' ? m.submitAmendment() : m.forward()}
+						{selectedType === 'DELETE'
+							? editMode
+								? m.saveChanges()
+								: m.submitAmendment()
+							: m.forward()}
 					</button>
 				</div>
 			{/if}
@@ -390,7 +455,7 @@
 					{m.back()}
 				</button>
 				<button class="btn btn-primary btn-sm" onclick={doSubmit} disabled={submitting}>
-					{m.submitAmendment()}
+					{editMode ? m.saveChanges() : m.submitAmendment()}
 				</button>
 			</div>
 		</div>

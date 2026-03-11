@@ -3,7 +3,7 @@ import { abilityBuilder, enum_, schemaBuilder, pubsub as rumblePubsub } from '$a
 import { basics } from './basics';
 import { isWhitelistedEmail } from '$api/services/isDMUNEmail';
 import { assertFindFirstExists, assertFirstEntryExists } from '@m1212e/rumble';
-import { and, eq, count as drizzleCount } from 'drizzle-orm';
+import { and, eq, count as drizzleCount, not } from 'drizzle-orm';
 import { GraphQLError } from 'graphql';
 import { assertCommitteeChairOrAdmin } from './resolutionPaper';
 import {
@@ -111,6 +111,18 @@ async function applyAmendmentToResolution(
 				throw new GraphQLError('Clause ID mismatch at target index');
 			}
 			resolution.operative.splice(idx, 1);
+			// Auto-withdraw other SUBMITTED amendments targeting the deleted clause
+			await tx
+				.update(schema.amendment)
+				.set({ status: 'WITHDRAWN' })
+				.where(
+					and(
+						eq(schema.amendment.paperId, paper.id),
+						eq(schema.amendment.targetClauseId, amendment.targetClauseId!),
+						eq(schema.amendment.status, 'SUBMITTED'),
+						not(eq(schema.amendment.id, amendment.id))
+					)
+				);
 			break;
 		}
 		case 'ADD': {

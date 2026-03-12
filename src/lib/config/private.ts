@@ -22,7 +22,8 @@ const schema = z.object({
 	ADMIN_DOMAIN_WHITELIST: z.string().optional().default(''),
 	REDIS_HOST: z.string().optional(),
 	REDIS_PORT: z.number().optional(),
-	REDIS_PASSWORD: z.string().optional()
+	REDIS_PASSWORD: z.string().optional(),
+	REDIS_USER: z.string().optional()
 });
 
 export const configPrivate = getConfig({ schema, envSource: env });

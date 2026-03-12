@@ -11,12 +11,14 @@ if (configPrivate.REDIS_HOST) {
 	const publishClient = new Redis({
 		host: configPrivate.REDIS_HOST,
 		port: configPrivate.REDIS_PORT,
-		password: configPrivate.REDIS_PASSWORD
+		password: configPrivate.REDIS_PASSWORD,
+		username: configPrivate.REDIS_USER
 	});
 	const subscribeClient = new Redis({
 		host: configPrivate.REDIS_HOST,
 		port: configPrivate.REDIS_PORT,
-		password: configPrivate.REDIS_PASSWORD
+		password: configPrivate.REDIS_PASSWORD,
+		username: configPrivate.REDIS_USER
 	});
 
 	eventTarget = createRedisEventTarget({

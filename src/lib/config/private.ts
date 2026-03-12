@@ -20,10 +20,7 @@ const schema = z.object({
 	OTEL_AUTHORIZATION_HEADER: z.optional(z.string()),
 	ADMIN_EMAIL_WHITELIST: z.string().optional().default(''),
 	ADMIN_DOMAIN_WHITELIST: z.string().optional().default(''),
-	REDIS_HOST: z.string().optional(),
-	REDIS_PORT: z.number().optional(),
-	REDIS_PASSWORD: z.string().optional(),
-	REDIS_USER: z.string().optional()
+	REDIS_URL: z.string().optional()
 });
 
 export const configPrivate = getConfig({ schema, envSource: env });

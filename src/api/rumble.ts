@@ -7,19 +7,9 @@ import { createRedisEventTarget } from '@graphql-yoga/redis-event-target';
 import { configPrivate } from '$config/private';
 
 let eventTarget: ReturnType<typeof createRedisEventTarget> | undefined;
-if (configPrivate.REDIS_HOST) {
-	const publishClient = new Redis({
-		host: configPrivate.REDIS_HOST,
-		port: configPrivate.REDIS_PORT,
-		password: configPrivate.REDIS_PASSWORD,
-		username: configPrivate.REDIS_USER
-	});
-	const subscribeClient = new Redis({
-		host: configPrivate.REDIS_HOST,
-		port: configPrivate.REDIS_PORT,
-		password: configPrivate.REDIS_PASSWORD,
-		username: configPrivate.REDIS_USER
-	});
+if (configPrivate.REDIS_URL) {
+	const publishClient = new Redis(configPrivate.REDIS_URL);
+	const subscribeClient = new Redis(configPrivate.REDIS_URL);
 
 	eventTarget = createRedisEventTarget({
 		publishClient,

@@ -1109,7 +1109,7 @@
 									<ul
 										role="menu"
 										tabindex="0"
-										class="dropdown-content menu bg-base-200 rounded-box z-10 w-52 p-2 shadow"
+										class="dropdown-content menu bg-white text-gray-900 rounded-box z-10 w-52 p-2 shadow-lg"
 									>
 										<li>
 											<button onclick={() => openCreateAmendment(index, 'DELETE')}>

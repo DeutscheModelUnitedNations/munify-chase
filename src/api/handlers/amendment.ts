@@ -267,6 +267,33 @@ schemaBuilder.mutationFields((t) => ({
 				}
 			}
 
+			// Check for duplicate amendment (same proposer, type, and target clause)
+			{
+				const duplicateConditions = [
+					eq(schema.amendment.paperId, args.paperId),
+					eq(schema.amendment.proposerCommitteeMemberId, conferenceUser.committeeMemberId),
+					eq(schema.amendment.type, args.type),
+					inArray(schema.amendment.status, ['PENDING', 'SUBMITTED'])
+				];
+
+				if (args.targetOperativeIndex !== undefined && args.targetOperativeIndex !== null) {
+					duplicateConditions.push(
+						eq(schema.amendment.targetOperativeIndex, args.targetOperativeIndex)
+					);
+				}
+
+				const [{ count: duplicateCount }] = await db
+					.select({ count: drizzleCount() })
+					.from(schema.amendment)
+					.where(and(...duplicateConditions));
+
+				if (Number(duplicateCount) > 0) {
+					throw new GraphQLError(
+						'You have already submitted an amendment of this type for this clause'
+					);
+				}
+			}
+
 			// Count existing amendments of same type for this paper to assign sequence number
 			const [{ count: sameTypeCount }] = await db
 				.select({ count: drizzleCount() })
@@ -387,6 +414,33 @@ schemaBuilder.mutationFields((t) => ({
 				const parsedContent = OperativeClauseSchema.safeParse(args.newContent);
 				if (!parsedContent.success) {
 					throw new GraphQLError('Invalid newContent: ' + parsedContent.error.message);
+				}
+			}
+
+			// Check for duplicate amendment (same proposer, type, and target clause)
+			{
+				const duplicateConditions = [
+					eq(schema.amendment.paperId, args.paperId),
+					eq(schema.amendment.proposerCommitteeMemberId, args.committeeMemberId),
+					eq(schema.amendment.type, args.type),
+					inArray(schema.amendment.status, ['PENDING', 'SUBMITTED'])
+				];
+
+				if (args.targetOperativeIndex !== undefined && args.targetOperativeIndex !== null) {
+					duplicateConditions.push(
+						eq(schema.amendment.targetOperativeIndex, args.targetOperativeIndex)
+					);
+				}
+
+				const [{ count: duplicateCount }] = await db
+					.select({ count: drizzleCount() })
+					.from(schema.amendment)
+					.where(and(...duplicateConditions));
+
+				if (Number(duplicateCount) > 0) {
+					throw new GraphQLError(
+						'You have already submitted an amendment of this type for this clause'
+					);
 				}
 			}
 

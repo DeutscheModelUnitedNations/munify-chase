@@ -75,10 +75,12 @@
 	let newContent = $state<OperativeClause | null>(null);
 	let targetPosition = $state<number>(0);
 	let submitting = $state(false);
+	let confirmingDelete = $state(false);
 
 	// Reset on open change
 	$effect(() => {
 		if (open) {
+			confirmingDelete = false;
 			if (editMode && initialType != null) {
 				// Edit mode: pre-fill all fields, type is locked
 				selectedType = initialType;
@@ -112,11 +114,9 @@
 				proposerSearchQuery = '';
 
 				if (initialType === 'DELETE') {
-					// Submit immediately for DELETE.
-					// Use untrack so doSubmit's synchronous reads (e.g. operativeClauses)
-					// don't become effect dependencies — otherwise data refetches after the
-					// mutation re-trigger this effect and spawn infinite submissions.
-					untrack(() => doSubmit());
+					// Show confirmation before submitting DELETE
+					confirmingDelete = true;
+					submitting = false;
 					return;
 				}
 				submitting = false;
@@ -186,7 +186,7 @@
 		if (!selectedType) return;
 
 		if (selectedType === 'DELETE') {
-			doSubmit();
+			confirmingDelete = true;
 			return;
 		}
 
@@ -255,213 +255,235 @@
 		</button>
 	</div>
 
-	<!-- Step indicator -->
-	<ul class="steps steps-horizontal w-full mb-4">
-		{#if isChairMode}
-			<li class="step {step >= 1 ? 'step-primary' : ''}">{m.selectProposerDelegation()}</li>
-		{/if}
-		<li class="step {step >= typeStep ? 'step-primary' : ''}">{m.selectAmendmentType()}</li>
-		{#if totalSteps > (isChairMode ? 2 : 1)}
-			<li class="step {step >= contentStep ? 'step-primary' : ''}">{m.edit()}</li>
-		{/if}
-	</ul>
-
-	{#if isChairMode && step === 1}
-		<!-- Chair Step 1: Select proposer -->
-		<input
-			class="input input-bordered w-full mb-3"
-			placeholder={m.searchMembers()}
-			bind:value={proposerSearchQuery}
-		/>
-		<div class="max-h-64 overflow-y-auto space-y-1">
-			{#each filteredMembers as member (member.id)}
-				<button
-					class="btn btn-ghost btn-sm w-full justify-start gap-2"
-					onclick={() => handleSelectProposer(member.id)}
-				>
-					<Flag representation={member.representation} size="xs" />
-					<span>{getRepName(member.representation)}</span>
+	{#if confirmingDelete}
+		<!-- DELETE confirmation -->
+		<div class="flex flex-col items-center gap-4 py-4">
+			<i class="fas fa-exclamation-triangle text-warning text-4xl"></i>
+			<p class="text-center">{m.confirmDeleteAmendment()}</p>
+			<p class="text-center text-sm opacity-70">
+				{m.amendmentDelete()} — <span class="font-mono">OP {selectedSourceIndex + 1}</span>
+			</p>
+			<div class="flex gap-2 w-full justify-end">
+				<button class="btn btn-ghost btn-sm" onclick={() => (open = false)}>
+					{m.cancel()}
 				</button>
-			{/each}
-			{#if filteredMembers.length === 0}
-				<p class="text-center text-sm opacity-60 py-4">{m.noResults()}</p>
-			{/if}
-		</div>
-	{:else if step === typeStep}
-		<!-- Type + target selection -->
-		<div class="flex flex-col gap-3">
-			{#if editMode && selectedType}
-				<!-- Read-only type badge in edit mode -->
-				{@const typeBadgeClass = {
-					DELETE: 'badge-error',
-					ADD: 'badge-success',
-					ALTER_TEXT: 'badge-warning',
-					ALTER_POSITION: 'badge-info'
-				}[selectedType]}
-				{@const typeIcon = {
-					DELETE: 'fa-trash',
-					ADD: 'fa-plus',
-					ALTER_TEXT: 'fa-pen',
-					ALTER_POSITION: 'fa-arrows-alt'
-				}[selectedType]}
-				{@const typeLabel = {
-					DELETE: m.amendmentDelete(),
-					ADD: m.amendmentAdd(),
-					ALTER_TEXT: m.amendmentAlterText(),
-					ALTER_POSITION: m.amendmentAlterPosition()
-				}[selectedType]}
-				<div class="badge {typeBadgeClass} gap-1">
-					<i class="fas {typeIcon}"></i>
-					{typeLabel}
-				</div>
-			{:else}
-				<div class="grid grid-cols-2 gap-2">
-					<button
-						class="btn btn-sm {selectedType === 'DELETE' ? 'btn-error' : 'btn-outline'}"
-						onclick={() => (selectedType = 'DELETE')}
-					>
-						<i class="fas fa-trash mr-1"></i>
-						{m.amendmentDelete()}
-					</button>
-					<button
-						class="btn btn-sm {selectedType === 'ADD' ? 'btn-success' : 'btn-outline'}"
-						onclick={() => (selectedType = 'ADD')}
-					>
-						<i class="fas fa-plus mr-1"></i>
-						{m.amendmentAdd()}
-					</button>
-					<button
-						class="btn btn-sm {selectedType === 'ALTER_TEXT' ? 'btn-warning' : 'btn-outline'}"
-						onclick={() => (selectedType = 'ALTER_TEXT')}
-					>
-						<i class="fas fa-pen mr-1"></i>
-						{m.amendmentAlterText()}
-					</button>
-					<button
-						class="btn btn-sm {selectedType === 'ALTER_POSITION' ? 'btn-info' : 'btn-outline'}"
-						onclick={() => (selectedType = 'ALTER_POSITION')}
-					>
-						<i class="fas fa-arrows-alt mr-1"></i>
-						{m.amendmentAlterPosition()}
-					</button>
-				</div>
-			{/if}
-
-			{#if selectedType}
-				<div class="form-control">
-					<label class="label">
-						<span class="label-text">{m.selectTargetClause()}</span>
-					</label>
-					{#if selectedType === 'ADD'}
-						<select class="select select-bordered w-full" bind:value={selectedSourceIndex}>
-							{#if operativeClauses.length === 0}
-								<option value={-1}>{m.insertAsFirstClause()}</option>
-							{:else}
-								<option value={-1}>{m.insertAtBeginning()}</option>
-								{#each operativeClauses as _, i}
-									<option value={i}>
-										{m.insertAfterPresentation({ index: String(i + 1) })}
-									</option>
-								{/each}
-							{/if}
-						</select>
-					{:else if operativeClauses.length > 0}
-						<select class="select select-bordered w-full" bind:value={selectedSourceIndex}>
-							{#each operativeClauses as _, i}
-								<option value={i}>OP {i + 1}</option>
-							{/each}
-						</select>
-					{:else}
-						<p class="text-sm opacity-60 py-2">{m.noResults()}</p>
+				<button class="btn btn-error btn-sm" onclick={doSubmit} disabled={submitting}>
+					{#if submitting}
+						<span class="loading loading-spinner loading-sm"></span>
 					{/if}
-				</div>
-
-				<div class="flex justify-end gap-2">
-					{#if isChairMode}
-						<button class="btn btn-ghost btn-sm" onclick={() => (step = 1)}>
-							{m.back()}
-						</button>
-					{/if}
-					<button
-						class="btn btn-primary btn-sm"
-						onclick={handleConfirmType}
-						disabled={selectedType !== 'ADD' && operativeClauses.length === 0}
-					>
-						{selectedType === 'DELETE'
-							? editMode
-								? m.saveChanges()
-								: m.submitAmendment()
-							: m.forward()}
-					</button>
-				</div>
-			{/if}
-		</div>
-	{:else if step === contentStep}
-		<!-- Content editing -->
-		<div class="flex flex-col gap-3">
-			{#if selectedType === 'ALTER_TEXT' || selectedType === 'ADD'}
-				{#if selectedType === 'ALTER_TEXT'}
-					<p class="text-sm">
-						{m.alterText()} — <span class="font-mono">OP {selectedSourceIndex + 1}</span>
-					</p>
-				{:else}
-					<p class="text-sm">
-						{m.addClause()} — {m.targetPosition()}:
-						<span class="font-mono">
-							{#if targetPosition === -1}
-								{m.insertAtBeginning()}
-							{:else}
-								{m.insertAfterPresentation({ index: String(targetPosition + 1) })}
-							{/if}
-						</span>
-					</p>
-				{/if}
-				{#if miniResolution}
-					<div class="border rounded-lg p-2 max-h-64 overflow-y-auto">
-						<ResolutionEditor
-							{committeeName}
-							resolution={miniResolution}
-							labels={getResolutionLabels()}
-							editable={true}
-							onResolutionChange={(updated) => {
-								if (updated.operative[0]) {
-									newContent = updated.operative[0] as OperativeClause;
-								}
-							}}
-						/>
-					</div>
-				{/if}
-			{:else if selectedType === 'ALTER_POSITION'}
-				<p class="text-sm mb-2">
-					{m.alterPosition()} — <span class="font-mono">OP {selectedSourceIndex + 1}</span>
-				</p>
-				<div class="form-control">
-					<label class="label">
-						<span class="label-text">{m.targetPosition()}</span>
-					</label>
-					<select class="select select-bordered w-full" bind:value={targetPosition}>
-						{#if selectedSourceIndex !== 0}
-							<option value={-1}>{m.insertAtBeginning()}</option>
-						{/if}
-						{#each operativeClauses as _, i}
-							{#if i !== selectedSourceIndex}
-								<option value={i}>
-									{m.insertAfterPresentation({ index: String(i + 1) })}
-								</option>
-							{/if}
-						{/each}
-					</select>
-				</div>
-			{/if}
-
-			<div class="flex justify-end gap-2">
-				<button class="btn btn-ghost btn-sm" onclick={() => (step = typeStep)}>
-					{m.back()}
-				</button>
-				<button class="btn btn-primary btn-sm" onclick={doSubmit} disabled={submitting}>
-					{editMode ? m.saveChanges() : m.submitAmendment()}
+					{m.amendmentDelete()}
 				</button>
 			</div>
 		</div>
+	{:else}
+		<!-- Step indicator -->
+		<ul class="steps steps-horizontal w-full mb-4">
+			{#if isChairMode}
+				<li class="step {step >= 1 ? 'step-primary' : ''}">{m.selectProposerDelegation()}</li>
+			{/if}
+			<li class="step {step >= typeStep ? 'step-primary' : ''}">{m.selectAmendmentType()}</li>
+			{#if totalSteps > (isChairMode ? 2 : 1)}
+				<li class="step {step >= contentStep ? 'step-primary' : ''}">{m.edit()}</li>
+			{/if}
+		</ul>
+
+		{#if isChairMode && step === 1}
+			<!-- Chair Step 1: Select proposer -->
+			<input
+				class="input input-bordered w-full mb-3"
+				placeholder={m.searchMembers()}
+				bind:value={proposerSearchQuery}
+			/>
+			<div class="max-h-64 overflow-y-auto space-y-1">
+				{#each filteredMembers as member (member.id)}
+					<button
+						class="btn btn-ghost btn-sm w-full justify-start gap-2"
+						onclick={() => handleSelectProposer(member.id)}
+					>
+						<Flag representation={member.representation} size="xs" />
+						<span>{getRepName(member.representation)}</span>
+					</button>
+				{/each}
+				{#if filteredMembers.length === 0}
+					<p class="text-center text-sm opacity-60 py-4">{m.noResults()}</p>
+				{/if}
+			</div>
+		{:else if step === typeStep}
+			<!-- Type + target selection -->
+			<div class="flex flex-col gap-3">
+				{#if editMode && selectedType}
+					<!-- Read-only type badge in edit mode -->
+					{@const typeBadgeClass = {
+						DELETE: 'badge-error',
+						ADD: 'badge-success',
+						ALTER_TEXT: 'badge-warning',
+						ALTER_POSITION: 'badge-info'
+					}[selectedType]}
+					{@const typeIcon = {
+						DELETE: 'fa-trash',
+						ADD: 'fa-plus',
+						ALTER_TEXT: 'fa-pen',
+						ALTER_POSITION: 'fa-arrows-alt'
+					}[selectedType]}
+					{@const typeLabel = {
+						DELETE: m.amendmentDelete(),
+						ADD: m.amendmentAdd(),
+						ALTER_TEXT: m.amendmentAlterText(),
+						ALTER_POSITION: m.amendmentAlterPosition()
+					}[selectedType]}
+					<div class="badge {typeBadgeClass} gap-1">
+						<i class="fas {typeIcon}"></i>
+						{typeLabel}
+					</div>
+				{:else}
+					<div class="grid grid-cols-2 gap-2">
+						<button
+							class="btn btn-sm {selectedType === 'DELETE' ? 'btn-error' : 'btn-outline'}"
+							onclick={() => (selectedType = 'DELETE')}
+						>
+							<i class="fas fa-trash mr-1"></i>
+							{m.amendmentDelete()}
+						</button>
+						<button
+							class="btn btn-sm {selectedType === 'ADD' ? 'btn-success' : 'btn-outline'}"
+							onclick={() => (selectedType = 'ADD')}
+						>
+							<i class="fas fa-plus mr-1"></i>
+							{m.amendmentAdd()}
+						</button>
+						<button
+							class="btn btn-sm {selectedType === 'ALTER_TEXT' ? 'btn-warning' : 'btn-outline'}"
+							onclick={() => (selectedType = 'ALTER_TEXT')}
+						>
+							<i class="fas fa-pen mr-1"></i>
+							{m.amendmentAlterText()}
+						</button>
+						<button
+							class="btn btn-sm {selectedType === 'ALTER_POSITION' ? 'btn-info' : 'btn-outline'}"
+							onclick={() => (selectedType = 'ALTER_POSITION')}
+						>
+							<i class="fas fa-arrows-alt mr-1"></i>
+							{m.amendmentAlterPosition()}
+						</button>
+					</div>
+				{/if}
+
+				{#if selectedType}
+					<div class="form-control">
+						<label class="label">
+							<span class="label-text">{m.selectTargetClause()}</span>
+						</label>
+						{#if selectedType === 'ADD'}
+							<select class="select select-bordered w-full" bind:value={selectedSourceIndex}>
+								{#if operativeClauses.length === 0}
+									<option value={-1}>{m.insertAsFirstClause()}</option>
+								{:else}
+									<option value={-1}>{m.insertAtBeginning()}</option>
+									{#each operativeClauses as _, i}
+										<option value={i}>
+											{m.insertAfterPresentation({ index: String(i + 1) })}
+										</option>
+									{/each}
+								{/if}
+							</select>
+						{:else if operativeClauses.length > 0}
+							<select class="select select-bordered w-full" bind:value={selectedSourceIndex}>
+								{#each operativeClauses as _, i}
+									<option value={i}>OP {i + 1}</option>
+								{/each}
+							</select>
+						{:else}
+							<p class="text-sm opacity-60 py-2">{m.noResults()}</p>
+						{/if}
+					</div>
+
+					<div class="flex justify-end gap-2">
+						{#if isChairMode}
+							<button class="btn btn-ghost btn-sm" onclick={() => (step = 1)}>
+								{m.back()}
+							</button>
+						{/if}
+						<button
+							class="btn btn-primary btn-sm"
+							onclick={handleConfirmType}
+							disabled={selectedType !== 'ADD' && operativeClauses.length === 0}
+						>
+							{selectedType === 'DELETE'
+								? editMode
+									? m.saveChanges()
+									: m.submitAmendment()
+								: m.forward()}
+						</button>
+					</div>
+				{/if}
+			</div>
+		{:else if step === contentStep}
+			<!-- Content editing -->
+			<div class="flex flex-col gap-3">
+				{#if selectedType === 'ALTER_TEXT' || selectedType === 'ADD'}
+					{#if selectedType === 'ALTER_TEXT'}
+						<p class="text-sm">
+							{m.alterText()} — <span class="font-mono">OP {selectedSourceIndex + 1}</span>
+						</p>
+					{:else}
+						<p class="text-sm">
+							{m.addClause()} — {m.targetPosition()}:
+							<span class="font-mono">
+								{#if targetPosition === -1}
+									{m.insertAtBeginning()}
+								{:else}
+									{m.insertAfterPresentation({ index: String(targetPosition + 1) })}
+								{/if}
+							</span>
+						</p>
+					{/if}
+					{#if miniResolution}
+						<div class="border rounded-lg p-2 max-h-64 overflow-y-auto">
+							<ResolutionEditor
+								{committeeName}
+								resolution={miniResolution}
+								labels={getResolutionLabels()}
+								editable={true}
+								onResolutionChange={(updated) => {
+									if (updated.operative[0]) {
+										newContent = updated.operative[0] as OperativeClause;
+									}
+								}}
+							/>
+						</div>
+					{/if}
+				{:else if selectedType === 'ALTER_POSITION'}
+					<p class="text-sm mb-2">
+						{m.alterPosition()} — <span class="font-mono">OP {selectedSourceIndex + 1}</span>
+					</p>
+					<div class="form-control">
+						<label class="label">
+							<span class="label-text">{m.targetPosition()}</span>
+						</label>
+						<select class="select select-bordered w-full" bind:value={targetPosition}>
+							{#if selectedSourceIndex !== 0}
+								<option value={-1}>{m.insertAtBeginning()}</option>
+							{/if}
+							{#each operativeClauses as _, i}
+								{#if i !== selectedSourceIndex}
+									<option value={i}>
+										{m.insertAfterPresentation({ index: String(i + 1) })}
+									</option>
+								{/if}
+							{/each}
+						</select>
+					</div>
+				{/if}
+
+				<div class="flex justify-end gap-2">
+					<button class="btn btn-ghost btn-sm" onclick={() => (step = typeStep)}>
+						{m.back()}
+					</button>
+					<button class="btn btn-primary btn-sm" onclick={doSubmit} disabled={submitting}>
+						{editMode ? m.saveChanges() : m.submitAmendment()}
+					</button>
+				</div>
+			</div>
+		{/if}
 	{/if}
 </Modal>

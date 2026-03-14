@@ -134,6 +134,7 @@
 	"configuration": "Konfiguration",
 	"confirmAdoptByConsensus": "Diesen Änderungsantrag per Konsens annehmen? Die Änderung wird sofort angewendet.",
 	"confirmAdoptResolution": "Diese Resolution annehmen? Konfetti feiert die Annahme!",
+	"confirmDeleteAmendment": "Möchtest du wirklich die Streichung dieser Klausel beantragen?",
 	"confirmDeleteCommittee": "Möchtest du dieses Gremium wirklich löschen? Alle zugehörigen Daten gehen verloren.",
 	"confirmDeletePaper": "Dieses Arbeitspapier wirklich löschen? Es wird für alle Beteiligten ausgeblendet.",
 	"confirmDeleteRepresentation": "Möchtest du diese Delegation wirklich entfernen? Zugehörige Gremienmitgliedschaften werden entfernt.",

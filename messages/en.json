@@ -134,6 +134,7 @@
 	"configuration": "Configuration",
 	"confirmAdoptByConsensus": "Adopt this amendment by consensus? This will immediately apply the change.",
 	"confirmAdoptResolution": "Adopt this resolution? Confetti will celebrate the adoption!",
+	"confirmDeleteAmendment": "Are you sure you want to propose deleting this clause?",
 	"confirmDeleteCommittee": "Are you sure you want to delete this committee? All associated data will be lost.",
 	"confirmDeletePaper": "Are you sure you want to delete this working paper? It will be hidden for all participants.",
 	"confirmDeleteRepresentation": "Are you sure you want to remove this delegation? Associated committee memberships will be removed.",

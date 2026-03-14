@@ -200,11 +200,11 @@
 				transition:slide={{ duration: 200 }}
 			>
 				{#if topLevelComments.length === 0}
-					<p class="text-xs text-base-content/50">{m.noComments()}</p>
+					<p class="text-xs text-gray-500">{m.noComments()}</p>
 				{/if}
 
 				{#each topLevelComments as comment (comment.id)}
-					<div class="bg-base-100 rounded-lg p-2 text-sm">
+					<div class="bg-base-100 text-base-content rounded-lg p-2 text-sm">
 						<!-- Comment header -->
 						<div class="flex items-center gap-2 mb-1">
 							{#if comment.author.committeeMember?.representation}
@@ -221,7 +221,7 @@
 						{#if editingId === comment.id}
 							<div class="flex gap-2 mt-1">
 								<textarea
-									class="textarea textarea-bordered textarea-xs flex-1 min-h-[2rem]"
+									class="textarea textarea-bordered textarea-xs flex-1 min-h-[2rem] text-base-content"
 									bind:value={editContent}
 									onkeydown={(e) => {
 										if (e.key === 'Enter' && !e.shiftKey) {
@@ -278,7 +278,7 @@
 						{#if getReplies(comment.id).length > 0}
 							<div class="ml-4 mt-2 space-y-2 border-l-2 border-base-300 pl-2">
 								{#each getReplies(comment.id) as reply (reply.id)}
-									<div class="bg-base-200/50 rounded p-2 text-sm">
+									<div class="bg-base-200/50 text-base-content rounded p-2 text-sm">
 										<div class="flex items-center gap-2 mb-1">
 											{#if reply.author.committeeMember?.representation}
 												<Flag
@@ -297,7 +297,7 @@
 										{#if editingId === reply.id}
 											<div class="flex gap-2 mt-1">
 												<textarea
-													class="textarea textarea-bordered textarea-xs flex-1 min-h-[2rem]"
+													class="textarea textarea-bordered textarea-xs flex-1 min-h-[2rem] text-base-content"
 													bind:value={editContent}
 													onkeydown={(e) => {
 														if (e.key === 'Enter' && !e.shiftKey) {
@@ -349,7 +349,7 @@
 						{#if !readonly && replyingTo === comment.id}
 							<div class="ml-4 mt-2 flex gap-2" transition:slide={{ duration: 150 }}>
 								<textarea
-									class="textarea textarea-bordered textarea-xs flex-1 min-h-[2rem]"
+									class="textarea textarea-bordered textarea-xs flex-1 min-h-[2rem] text-base-content"
 									placeholder={m.commentPlaceholder()}
 									bind:value={replyContent}
 									onkeydown={(e) => {
@@ -362,7 +362,10 @@
 								></textarea>
 								<div class="flex flex-col gap-1">
 									{#if canPostTeamOnly}
-										<select class="select select-xs select-bordered" bind:value={replyVisibility}>
+										<select
+											class="select select-xs select-bordered text-base-content"
+											bind:value={replyVisibility}
+										>
 											<option value="TEAM_ONLY">{m.teamOnly()}</option>
 											<option value="PUBLIC">{m.publicComment()}</option>
 										</select>
@@ -384,7 +387,7 @@
 				{#if !readonly}
 					<div class="flex gap-2">
 						<textarea
-							class="textarea textarea-bordered textarea-xs flex-1 min-h-[2rem]"
+							class="textarea textarea-bordered textarea-xs flex-1 min-h-[2rem] text-base-content"
 							placeholder={m.commentPlaceholder()}
 							bind:value={newContent}
 							onkeydown={(e) => {
@@ -396,7 +399,10 @@
 						></textarea>
 						<div class="flex flex-col gap-1">
 							{#if canPostTeamOnly}
-								<select class="select select-xs select-bordered" bind:value={newVisibility}>
+								<select
+									class="select select-xs select-bordered text-base-content"
+									bind:value={newVisibility}
+								>
 									<option value="TEAM_ONLY">{m.teamOnly()}</option>
 									<option value="PUBLIC">{m.publicComment()}</option>
 								</select>

@@ -4,6 +4,7 @@
 	import Flag from '$lib/components/Flag.svelte';
 	import { getTranslatedCountryNameFromAlpha3Code } from '$lib/utils/nationTranslationHelper.svelte';
 	import { getResolutionLabels } from '$lib/utils/resolutionEditorLabels';
+	import { untrack } from 'svelte';
 	import {
 		ResolutionEditor,
 		createEmptyOperativeClause,
@@ -109,13 +110,16 @@
 				selectedSourceIndex = initialTargetIndex;
 				selectedProposer = null;
 				proposerSearchQuery = '';
-				submitting = false;
 
 				if (initialType === 'DELETE') {
-					// Submit immediately for DELETE
-					doSubmit();
+					// Submit immediately for DELETE.
+					// Use untrack so doSubmit's synchronous reads (e.g. operativeClauses)
+					// don't become effect dependencies — otherwise data refetches after the
+					// mutation re-trigger this effect and spawn infinite submissions.
+					untrack(() => doSubmit());
 					return;
 				}
+				submitting = false;
 				if (initialType === 'ALTER_TEXT') {
 					const clause = operativeClauses[initialTargetIndex];
 					if (clause) newContent = JSON.parse(JSON.stringify(clause));

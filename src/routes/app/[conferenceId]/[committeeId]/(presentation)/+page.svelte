@@ -168,7 +168,10 @@
 		{#if layout.resolutionPreview}
 			{@const gridProps = layout.resolutionPreview}
 			<GridItem {...gridProps} class="card bg-base-100 overflow-auto p-4" id="resolution-preview">
-				<PresentationResolutionPreview {committee} />
+				<PresentationResolutionPreview
+					{committee}
+					resolutionFontSize={$committeeSettings?.presentationResolutionFontSize ?? 16}
+				/>
 			</GridItem>
 		{/if}
 	</Grid>

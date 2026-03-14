@@ -390,6 +390,8 @@
 	"resolutionDeleteClause": "Löschen",
 	"resolutionDisclaimer": "Dieses Dokument wurde im Rahmen einer {conferenceName}-Simulation erstellt und besitzt keine rechtliche Gültigkeit.",
 	"resolutionEditor": "Resolutions-Editor",
+	"resolutionFontSize": "Resolutions-Schriftgröße",
+	"resolutionFontSizeDescription": "Hier kann die Schriftgröße für den Resolutionstext in der Präsentationsansicht festgelegt werden.",
 	"resolutionHeadline": "Resolutions-Kopfzeile (z.B. Der Sicherheitsrat)",
 	"resolutionHidePreview": "Vorschau ausblenden",
 	"resolutionImport": "Importieren",

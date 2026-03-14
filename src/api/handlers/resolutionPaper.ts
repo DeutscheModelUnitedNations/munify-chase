@@ -485,6 +485,11 @@ schemaBuilder.mutationFields((t) => ({
 					content: paper.content,
 					trigger: 'SUBMITTED'
 				});
+
+				// Remove all clause locks so the chair can edit freely
+				await tx
+					.delete(schema.paperClauseLock)
+					.where(eq(schema.paperClauseLock.paperId, args.paperId));
 			});
 
 			pubsub.updated(args.paperId);

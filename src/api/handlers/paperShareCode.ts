@@ -9,7 +9,7 @@ import { customAlphabet } from 'nanoid';
 
 const generateShareCode = customAlphabet('ABCDEFGHJKLMNPQRSTUVWXYZ23456789', 6);
 
-const { arg, ref, pubsub, table } = basics('paperShareCode');
+const { ref, pubsub, table } = basics('paperShareCode');
 const paperPubsub = rumblePubsub({ table: 'resolutionPaper' });
 
 const shareCodePermissionEnum = enum_({ tsName: 'shareCodePermission' });
@@ -77,10 +77,8 @@ schemaBuilder.mutationFields((t) => ({
 			return db.query.paperShareCode
 				.findFirst(
 					query(
-						ctx.abilities.paperShareCode.filter('read', {
-							inject: {
-								where: { id: result.id }
-							}
+						ctx.abilities.paperShareCode.filter('read').merge({
+							where: { id: result.id }
 						}).query.single
 					)
 				)
@@ -115,7 +113,7 @@ schemaBuilder.mutationFields((t) => ({
 
 			await db.delete(schema.paperShareCode).where(eq(schema.paperShareCode.id, args.shareCodeId));
 
-			pubsub.removed(args.shareCodeId);
+			pubsub.removed();
 			paperPubsub.updated(shareCode.paperId);
 
 			return true;

@@ -23,7 +23,7 @@ if (dev) {
 	import('$api/handlers/register');
 }
 
-export const { abilityBuilder, schemaBuilder, arg, object, query, pubsub, createYoga, enum_ } =
+export const { abilityBuilder, schemaBuilder, whereArg, object, query, pubsub, createYoga, enum_ } =
 	rumble({
 		db,
 		context,

@@ -6,7 +6,7 @@ import { isWhitelistedEmail } from '$api/services/isDMUNEmail';
 import { assertFindFirstExists, assertFirstEntryExists } from '@m1212e/rumble';
 import { GraphQLError } from 'graphql';
 
-const { arg, ref, pubsub, table } = basics('resolutionComment');
+const { ref, pubsub, table } = basics('resolutionComment');
 const paperPubsub = rumblePubsub({ table: 'resolutionPaper' });
 
 const commentVisibilityEnum = enum_({ tsName: 'commentVisibility' });
@@ -144,10 +144,8 @@ schemaBuilder.mutationFields((t) => ({
 			return db.query.resolutionComment
 				.findFirst(
 					query(
-						ctx.abilities.resolutionComment.filter('read', {
-							inject: {
-								where: { id: result.id }
-							}
+						ctx.abilities.resolutionComment.filter('read').merge({
+							where: { id: result.id }
 						}).query.single
 					)
 				)
@@ -192,10 +190,8 @@ schemaBuilder.mutationFields((t) => ({
 			return db.query.resolutionComment
 				.findFirst(
 					query(
-						ctx.abilities.resolutionComment.filter('read', {
-							inject: {
-								where: { id: args.commentId }
-							}
+						ctx.abilities.resolutionComment.filter('read').merge({
+							where: { id: args.commentId }
 						}).query.single
 					)
 				)
@@ -241,7 +237,7 @@ schemaBuilder.mutationFields((t) => ({
 				.delete(schema.resolutionComment)
 				.where(eq(schema.resolutionComment.id, args.commentId));
 
-			pubsub.removed(args.commentId);
+			pubsub.removed();
 			paperPubsub.updated(comment.paperId);
 
 			return true;

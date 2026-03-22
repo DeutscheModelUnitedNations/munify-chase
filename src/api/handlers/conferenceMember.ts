@@ -7,7 +7,7 @@ import { assertFindFirstExists, assertFirstEntryExists } from '@m1212e/rumble';
 import { eq } from 'drizzle-orm';
 import { GraphQLError } from 'graphql';
 
-const { arg, ref, pubsub, table } = basics('conferenceMember');
+const { ref, pubsub, table } = basics('conferenceMember');
 
 abilityBuilder.conferenceMember.allow('read').when(({ mustBeLoggedIn }) => {
 	const user = mustBeLoggedIn();
@@ -45,10 +45,8 @@ schemaBuilder.mutationFields((t) => ({
 			return db.query.conferenceMember
 				.findFirst(
 					query(
-						ctx.abilities.conferenceMember.filter('read', {
-							inject: {
-								where: { id: result.id }
-							}
+						ctx.abilities.conferenceMember.filter('read').merge({
+							where: { id: result.id }
 						}).query.single
 					)
 				)
@@ -74,12 +72,11 @@ schemaBuilder.mutationFields((t) => ({
 
 			await db.delete(schema.conferenceMember).where(eq(schema.conferenceMember.id, args.id));
 
-			pubsub.removed(args.id);
+			pubsub.removed();
 
 			return true;
 		}
 	})
 }));
 
-export const ConferenceMemberWhereInput = arg;
 export const ConferenceMemberRef = ref;

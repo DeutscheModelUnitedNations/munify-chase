@@ -11,7 +11,7 @@ import {
 	toRoman
 } from '@deutschemodelunitednations/munify-resolution-editor/schema';
 
-const { arg, ref, pubsub, table } = basics('resolutionPaper');
+const { ref, pubsub, table } = basics('resolutionPaper');
 const committeePubsub = rumblePubsub({ table: 'committee' });
 const voteResultPubsub = rumblePubsub({ table: 'resolutionVoteResult' });
 const clauseVotePubsub = rumblePubsub({ table: 'operativeClauseVote' });
@@ -130,10 +130,8 @@ schemaBuilder.mutationFields((t) => ({
 			return db.query.resolutionPaper
 				.findFirst(
 					query(
-						ctx.abilities.resolutionPaper.filter('read', {
-							inject: {
-								where: { id: result.id }
-							}
+						ctx.abilities.resolutionPaper.filter('read').merge({
+							where: { id: result.id }
 						}).query.single
 					)
 				)
@@ -215,10 +213,8 @@ schemaBuilder.mutationFields((t) => ({
 			return db.query.resolutionPaper
 				.findFirst(
 					query(
-						ctx.abilities.resolutionPaper.filter('read', {
-							inject: {
-								where: { id: result.id }
-							}
+						ctx.abilities.resolutionPaper.filter('read').merge({
+							where: { id: result.id }
 						}).query.single
 					)
 				)
@@ -382,10 +378,8 @@ schemaBuilder.mutationFields((t) => ({
 			return db.query.resolutionPaper
 				.findFirst(
 					query(
-						ctx.abilities.resolutionPaper.filter('read', {
-							inject: {
-								where: { id: args.paperId }
-							}
+						ctx.abilities.resolutionPaper.filter('read').merge({
+							where: { id: args.paperId }
 						}).query.single
 					)
 				)
@@ -434,10 +428,8 @@ schemaBuilder.mutationFields((t) => ({
 			return db.query.resolutionPaper
 				.findFirst(
 					query(
-						ctx.abilities.resolutionPaper.filter('read', {
-							inject: {
-								where: { id: args.paperId }
-							}
+						ctx.abilities.resolutionPaper.filter('read').merge({
+							where: { id: args.paperId }
 						}).query.single
 					)
 				)
@@ -497,10 +489,8 @@ schemaBuilder.mutationFields((t) => ({
 			return db.query.resolutionPaper
 				.findFirst(
 					query(
-						ctx.abilities.resolutionPaper.filter('read', {
-							inject: {
-								where: { id: args.paperId }
-							}
+						ctx.abilities.resolutionPaper.filter('read').merge({
+							where: { id: args.paperId }
 						}).query.single
 					)
 				)
@@ -578,10 +568,8 @@ schemaBuilder.mutationFields((t) => ({
 			return db.query.resolutionPaper
 				.findFirst(
 					query(
-						ctx.abilities.resolutionPaper.filter('read', {
-							inject: {
-								where: { id: args.paperId }
-							}
+						ctx.abilities.resolutionPaper.filter('read').merge({
+							where: { id: args.paperId }
 						}).query.single
 					)
 				)
@@ -632,10 +620,8 @@ schemaBuilder.mutationFields((t) => ({
 			return db.query.resolutionPaper
 				.findFirst(
 					query(
-						ctx.abilities.resolutionPaper.filter('read', {
-							inject: {
-								where: { id: args.paperId }
-							}
+						ctx.abilities.resolutionPaper.filter('read').merge({
+							where: { id: args.paperId }
 						}).query.single
 					)
 				)
@@ -728,10 +714,8 @@ schemaBuilder.mutationFields((t) => ({
 			return db.query.resolutionPaper
 				.findFirst(
 					query(
-						ctx.abilities.resolutionPaper.filter('read', {
-							inject: {
-								where: { id: args.paperId }
-							}
+						ctx.abilities.resolutionPaper.filter('read').merge({
+							where: { id: args.paperId }
 						}).query.single
 					)
 				)
@@ -910,10 +894,8 @@ schemaBuilder.mutationFields((t) => ({
 			return db.query.resolutionPaper
 				.findFirst(
 					query(
-						ctx.abilities.resolutionPaper.filter('read', {
-							inject: {
-								where: { id: args.paperId }
-							}
+						ctx.abilities.resolutionPaper.filter('read').merge({
+							where: { id: args.paperId }
 						}).query.single
 					)
 				)

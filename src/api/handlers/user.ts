@@ -4,7 +4,7 @@ import { isWhitelistedEmail } from '$api/services/isDMUNEmail';
 import { basics } from './basics';
 import { and, eq } from 'drizzle-orm';
 
-const { arg, ref, pubsub, table } = basics('user');
+const { ref, pubsub, table } = basics('user');
 
 // abilityBuilder.user.allow('read').when(({ oidc }) => {
 // 	if (oidc?.user) {

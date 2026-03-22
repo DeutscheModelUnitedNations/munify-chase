@@ -7,7 +7,7 @@ import { assertFindFirstExists, assertFirstEntryExists } from '@m1212e/rumble';
 import { GraphQLError } from 'graphql';
 import { assertCommitteeChairOrAdmin } from './resolutionPaper';
 
-const { arg, ref, pubsub, table } = basics('paperSponsor');
+const { ref, pubsub, table } = basics('paperSponsor');
 const paperPubsub = rumblePubsub({ table: 'resolutionPaper' });
 
 abilityBuilder.paperSponsor.allow(['read', 'update']).when(({ mustBeLoggedIn }) => {
@@ -86,10 +86,8 @@ schemaBuilder.mutationFields((t) => ({
 			return db.query.paperSponsor
 				.findFirst(
 					query(
-						ctx.abilities.paperSponsor.filter('read', {
-							inject: {
-								where: { id: result.id }
-							}
+						ctx.abilities.paperSponsor.filter('read').merge({
+							where: { id: result.id }
 						}).query.single
 					)
 				)
@@ -167,7 +165,7 @@ schemaBuilder.mutationFields((t) => ({
 					)
 				);
 
-			pubsub.removed(sponsor.id);
+			pubsub.removed();
 			paperPubsub.updated(args.paperId);
 
 			return true;

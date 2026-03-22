@@ -5,10 +5,10 @@ import {
 	query,
 	schemaBuilder,
 	pubsub as rumblePubsub,
-	arg as rumbleArg
+	whereArg
 } from '$api/rumble';
 import { isWhitelistedEmail } from '$api/services/isDMUNEmail';
-import { ConferenceMemberRef, ConferenceMemberWhereInput } from './conferenceMember';
+import { ConferenceMemberRef } from './conferenceMember';
 import { assertConferenceAdmin } from './conferenceUser';
 import { eq } from 'drizzle-orm';
 import { assertFindFirstExists } from '@m1212e/rumble';
@@ -26,6 +26,8 @@ abilityBuilder.conference.allow('read').when(({ mustBeLoggedIn }) => {
 	return 'allow';
 });
 
+const ConferenceMemberWhereInput = whereArg({ table: 'conferenceMember' });
+
 const ref = object({
 	table: 'conference',
 	adjust: (t) => ({
@@ -41,12 +43,10 @@ const ref = object({
 				return (
 					await db.query.conferenceMember.findMany(
 						query({
-							...ctx.abilities.conferenceMember.filter('read', {
-								inject: {
-									where: {
-										...args.where,
-										conferenceId: parent.id
-									}
+							...ctx.abilities.conferenceMember.filter('read').merge({
+								where: {
+									...args.where,
+									conferenceId: parent.id
 								}
 							}).query.many,
 							with: {
@@ -67,7 +67,6 @@ const ref = object({
 });
 
 const pubsub = rumblePubsub({ table: 'conference' });
-const arg = rumbleArg({ table: 'conference' });
 query({
 	table: 'conference'
 });
@@ -98,10 +97,8 @@ schemaBuilder.mutationFields((t) => ({
 			return db.query.conference
 				.findFirst(
 					query(
-						ctx.abilities.conference.filter('read', {
-							inject: {
-								where: { id: args.id }
-							}
+						ctx.abilities.conference.filter('read').merge({
+							where: { id: args.id }
 						}).query.single
 					)
 				)

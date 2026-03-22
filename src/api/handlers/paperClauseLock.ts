@@ -45,7 +45,7 @@ schemaBuilder.mutationFields((t) => ({
 				.returning();
 
 			for (const expired of expiredLocks) {
-				pubsub.removed(expired.id);
+				pubsub.removed();
 			}
 
 			// Check existing lock for this (paperId, clauseId)
@@ -69,9 +69,9 @@ schemaBuilder.mutationFields((t) => ({
 					return db.query.paperClauseLock
 						.findFirst(
 							query(
-								ctx.abilities.paperClauseLock.filter('read', {
-									inject: { where: { id: existingLock.id } }
-								}).query.single
+								ctx.abilities.paperClauseLock
+									.filter('read')
+									.merge({ where: { id: existingLock.id } }).query.single
 							)
 						)
 						.then(assertFindFirstExists);
@@ -98,8 +98,8 @@ schemaBuilder.mutationFields((t) => ({
 				return db.query.paperClauseLock
 					.findFirst(
 						query(
-							ctx.abilities.paperClauseLock.filter('read', {
-								inject: { where: { id: result.id } }
+							ctx.abilities.paperClauseLock.filter('read').merge({
+								where: { id: result.id }
 							}).query.single
 						)
 					)
@@ -148,7 +148,7 @@ schemaBuilder.mutationFields((t) => ({
 				.returning();
 
 			for (const lock of deleted) {
-				pubsub.removed(lock.id);
+				pubsub.removed();
 			}
 
 			return true;
@@ -182,7 +182,7 @@ schemaBuilder.mutationFields((t) => ({
 				.returning();
 
 			for (const lock of deleted) {
-				pubsub.removed(lock.id);
+				pubsub.removed();
 			}
 
 			return true;

@@ -1,16 +1,8 @@
 import { db, schema } from '$api/db/db';
-import {
-	abilityBuilder,
-	object,
-	query,
-	pubsub as rumblePubsub,
-	schemaBuilder,
-	arg as rumbleArg
-} from '$api/rumble';
+import { abilityBuilder, object, query, pubsub as rumblePubsub, schemaBuilder } from '$api/rumble';
 import { isWhitelistedEmail } from '$api/services/isDMUNEmail';
 import { nanoid } from '$lib/helpers/nanoid';
 import { assertFindFirstExists, assertFirstEntryExists } from '@m1212e/rumble';
-import { GraphQLError } from 'graphql';
 
 const ref = object({
 	table: 'agendaItem',
@@ -31,7 +23,6 @@ const ref = object({
 	})
 });
 const pubsub = rumblePubsub({ table: 'agendaItem' });
-const arg = rumbleArg({ table: 'agendaItem' });
 query({
 	table: 'agendaItem'
 });
@@ -108,10 +99,8 @@ schemaBuilder.mutationFields((t) => {
 					return await tx.query.agendaItem
 						.findFirst(
 							query(
-								ctx.abilities.agendaItem.filter('read', {
-									inject: {
-										where: { id: res.id }
-									}
+								ctx.abilities.agendaItem.filter('read').merge({
+									where: { id: res.id }
 								}).query.single
 							)
 						)

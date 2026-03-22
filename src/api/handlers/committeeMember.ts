@@ -7,7 +7,7 @@ import { assertConferenceAdmin } from './conferenceUser';
 import { assertFindFirstExists, assertFirstEntryExists } from '@m1212e/rumble';
 import { GraphQLError } from 'graphql';
 
-const { arg, ref, pubsub, table } = basics('committeeMember');
+const { ref, pubsub, table } = basics('committeeMember');
 
 abilityBuilder.committeeMember.allow(['read', 'update']).when(({ mustBeLoggedIn }) => {
 	const user = mustBeLoggedIn();
@@ -54,10 +54,8 @@ schemaBuilder.mutationFields((t) => {
 				return db.query.committeeMember
 					.findFirst(
 						query(
-							ctx.abilities.committeeMember.filter('read', {
-								inject: {
-									where: { id: result.id }
-								}
+							ctx.abilities.committeeMember.filter('read').merge({
+								where: { id: result.id }
 							}).query.single
 						)
 					)
@@ -84,7 +82,7 @@ schemaBuilder.mutationFields((t) => {
 
 				await db.delete(schema.committeeMember).where(eq(schema.committeeMember.id, args.id));
 
-				pubsub.removed(args.id);
+				pubsub.removed();
 
 				return true;
 			}
@@ -124,12 +122,10 @@ schemaBuilder.mutationFields((t) => {
 
 				return db.query.committeeMember.findMany(
 					query(
-						ctx.abilities.committeeMember.filter('read', {
-							inject: {
-								where: {
-									id: {
-										in: args.ids
-									}
+						ctx.abilities.committeeMember.filter('read').merge({
+							where: {
+								id: {
+									in: args.ids
 								}
 							}
 						}).query.single

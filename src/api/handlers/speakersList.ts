@@ -1,12 +1,5 @@
 import { db, schema } from '$api/db/db';
-import {
-	schemaBuilder,
-	pubsub as rumblePubsub,
-	arg as rumbleArg,
-	abilityBuilder,
-	object,
-	query
-} from '$api/rumble';
+import { schemaBuilder, pubsub as rumblePubsub, abilityBuilder, object, query } from '$api/rumble';
 import { and, eq } from 'drizzle-orm';
 import { basics } from './basics';
 import { assertFindFirstExists } from '@m1212e/rumble';
@@ -44,7 +37,6 @@ const ref = object({
 
 export const SpeakersListRef = ref;
 const speakersListPubSub = rumblePubsub({ table: 'speakersList' });
-const arg = rumbleArg({ table: 'speakersList' });
 query({
 	table: 'speakersList'
 });
@@ -133,9 +125,8 @@ schemaBuilder.mutationFields((t) => {
 				return db.query.speakersList
 					.findFirst(
 						query(
-							ctx.abilities.speakersList.filter('read', {
-								inject: { where: { id: args.id } }
-							}).query.single
+							ctx.abilities.speakersList.filter('read').merge({ where: { id: args.id } }).query
+								.single
 						)
 					)
 					.then(assertFindFirstExists);
@@ -158,7 +149,7 @@ schemaBuilder.mutationFields((t) => {
 					.returning();
 
 				if (deleted.length > 0) {
-					rumblePubsub({ table: 'speakerOnList' }).removed(deleted.map((d) => d.id));
+					rumblePubsub({ table: 'speakerOnList' }).removed();
 				}
 
 				speakersListPubSub.updated(args.id);
@@ -166,9 +157,8 @@ schemaBuilder.mutationFields((t) => {
 				return db.query.speakersList
 					.findFirst(
 						query(
-							ctx.abilities.speakersList.filter('read', {
-								inject: { where: { id: args.id } }
-							}).query.single
+							ctx.abilities.speakersList.filter('read').merge({ where: { id: args.id } }).query
+								.single
 						)
 					)
 					.then(assertFindFirstExists);

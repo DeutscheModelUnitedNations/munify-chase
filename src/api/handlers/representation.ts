@@ -7,7 +7,7 @@ import { assertFindFirstExists, assertFirstEntryExists } from '@m1212e/rumble';
 import { eq } from 'drizzle-orm';
 import { GraphQLError } from 'graphql';
 
-const { arg, ref, pubsub, table } = basics('representation');
+const { ref, pubsub, table } = basics('representation');
 
 const representationTypeEnum = enum_({
 	tsName: 'representationType'
@@ -73,10 +73,8 @@ schemaBuilder.mutationFields((t) => ({
 			return db.query.representation
 				.findFirst(
 					query(
-						ctx.abilities.representation.filter('read', {
-							inject: {
-								where: { id: result.id }
-							}
+						ctx.abilities.representation.filter('read').merge({
+							where: { id: result.id }
 						}).query.single
 					)
 				)
@@ -112,7 +110,7 @@ schemaBuilder.mutationFields((t) => ({
 
 			await db.delete(schema.representation).where(eq(schema.representation.id, args.id));
 
-			pubsub.removed(args.id);
+			pubsub.removed();
 
 			return true;
 		}

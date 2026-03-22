@@ -222,11 +222,9 @@ schemaBuilder.mutationFields((t) => ({
 
 			return db.query.conference.findFirst(
 				query(
-					ctx.abilities.conference.filter('read', {
-						inject: {
-							where: {
-								id: data.id
-							}
+					ctx.abilities.conference.filter('read').merge({
+						where: {
+							id: data.id
 						}
 					}).query.single
 				)

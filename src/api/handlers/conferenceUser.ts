@@ -6,7 +6,7 @@ import { isWhitelistedEmail } from '$api/services/isDMUNEmail';
 import { GraphQLError } from 'graphql';
 import { assertFindFirstExists, assertFirstEntryExists } from '@m1212e/rumble';
 
-const { arg, ref, pubsub, table } = basics('conferenceUser');
+const { ref, pubsub, table } = basics('conferenceUser');
 
 export { ref as ConferenceUserRef };
 
@@ -93,10 +93,8 @@ schemaBuilder.mutationFields((t) => ({
 			return db.query.conferenceUser
 				.findFirst(
 					query(
-						ctx.abilities.conferenceUser.filter('read', {
-							inject: {
-								where: { id: result.id }
-							}
+						ctx.abilities.conferenceUser.filter('read').merge({
+							where: { id: result.id }
 						}).query.single
 					)
 				)
@@ -147,7 +145,7 @@ schemaBuilder.mutationFields((t) => ({
 
 			await db.delete(schema.conferenceUser).where(eq(schema.conferenceUser.id, args.id));
 
-			pubsub.removed(args.id);
+			pubsub.removed();
 
 			return true;
 		}
@@ -257,10 +255,8 @@ schemaBuilder.mutationFields((t) => ({
 			return db.query.conferenceUser
 				.findFirst(
 					query(
-						ctx.abilities.conferenceUser.filter('read', {
-							inject: {
-								where: { id: args.id }
-							}
+						ctx.abilities.conferenceUser.filter('read').merge({
+							where: { id: args.id }
 						}).query.single
 					)
 				)

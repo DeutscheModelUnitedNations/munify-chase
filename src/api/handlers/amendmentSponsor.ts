@@ -7,7 +7,7 @@ import { and, eq } from 'drizzle-orm';
 import { GraphQLError } from 'graphql';
 import { assertCommitteeChairOrAdmin } from './resolutionPaper';
 
-const { arg, ref, pubsub, table } = basics('amendmentSponsor');
+const { ref, pubsub, table } = basics('amendmentSponsor');
 const amendmentPubsub = rumblePubsub({ table: 'amendment' });
 
 abilityBuilder.amendmentSponsor.allow('read').when(({ mustBeLoggedIn }) => {
@@ -93,9 +93,8 @@ schemaBuilder.mutationFields((t) => ({
 			return db.query.amendmentSponsor
 				.findFirst(
 					query(
-						ctx.abilities.amendmentSponsor.filter('read', {
-							inject: { where: { id: result.id } }
-						}).query.single
+						ctx.abilities.amendmentSponsor.filter('read').merge({ where: { id: result.id } }).query
+							.single
 					)
 				)
 				.then(assertFindFirstExists);
@@ -151,7 +150,7 @@ schemaBuilder.mutationFields((t) => ({
 					)
 				);
 
-			pubsub.removed(existing.id);
+			pubsub.removed();
 			amendmentPubsub.updated(args.amendmentId);
 
 			return true;

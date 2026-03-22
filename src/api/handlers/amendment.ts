@@ -11,7 +11,7 @@ import {
 	OperativeClauseSchema
 } from '@deutschemodelunitednations/munify-resolution-editor/schema';
 
-const { arg, ref, pubsub, table } = basics('amendment');
+const { ref, pubsub, table } = basics('amendment');
 const paperPubsub = rumblePubsub({ table: 'resolutionPaper' });
 
 const amendmentTypeEnum = enum_({ tsName: 'amendmentType' });
@@ -344,8 +344,8 @@ schemaBuilder.mutationFields((t) => ({
 			return db.query.amendment
 				.findFirst(
 					query(
-						ctx.abilities.amendment.filter('read', {
-							inject: { where: { id: result.id } }
+						ctx.abilities.amendment.filter('read').merge({
+							where: { id: result.id }
 						}).query.single
 					)
 				)
@@ -494,9 +494,7 @@ schemaBuilder.mutationFields((t) => ({
 			return db.query.amendment
 				.findFirst(
 					query(
-						ctx.abilities.amendment.filter('read', {
-							inject: { where: { id: result.id } }
-						}).query.single
+						ctx.abilities.amendment.filter('read').merge({ where: { id: result.id } }).query.single
 					)
 				)
 				.then(assertFindFirstExists);
@@ -538,9 +536,8 @@ schemaBuilder.mutationFields((t) => ({
 			return db.query.amendment
 				.findFirst(
 					query(
-						ctx.abilities.amendment.filter('read', {
-							inject: { where: { id: args.amendmentId } }
-						}).query.single
+						ctx.abilities.amendment.filter('read').merge({ where: { id: args.amendmentId } }).query
+							.single
 					)
 				)
 				.then(assertFindFirstExists);
@@ -582,9 +579,8 @@ schemaBuilder.mutationFields((t) => ({
 			return db.query.amendment
 				.findFirst(
 					query(
-						ctx.abilities.amendment.filter('read', {
-							inject: { where: { id: args.amendmentId } }
-						}).query.single
+						ctx.abilities.amendment.filter('read').merge({ where: { id: args.amendmentId } }).query
+							.single
 					)
 				)
 				.then(assertFindFirstExists);
@@ -622,9 +618,8 @@ schemaBuilder.mutationFields((t) => ({
 			return db.query.amendment
 				.findFirst(
 					query(
-						ctx.abilities.amendment.filter('read', {
-							inject: { where: { id: args.amendmentId } }
-						}).query.single
+						ctx.abilities.amendment.filter('read').merge({ where: { id: args.amendmentId } }).query
+							.single
 					)
 				)
 				.then(assertFindFirstExists);
@@ -664,9 +659,8 @@ schemaBuilder.mutationFields((t) => ({
 			return db.query.amendment
 				.findFirst(
 					query(
-						ctx.abilities.amendment.filter('read', {
-							inject: { where: { id: args.amendmentId } }
-						}).query.single
+						ctx.abilities.amendment.filter('read').merge({ where: { id: args.amendmentId } }).query
+							.single
 					)
 				)
 				.then(assertFindFirstExists);
@@ -765,9 +759,8 @@ schemaBuilder.mutationFields((t) => ({
 				return db.query.amendment
 					.findFirst(
 						query(
-							ctx.abilities.amendment.filter('read', {
-								inject: { where: { id: args.amendmentId } }
-							}).query.single
+							ctx.abilities.amendment.filter('read').merge({ where: { id: args.amendmentId } })
+								.query.single
 						)
 					)
 					.then(assertFindFirstExists);
@@ -826,9 +819,8 @@ schemaBuilder.mutationFields((t) => ({
 			return db.query.amendment
 				.findFirst(
 					query(
-						ctx.abilities.amendment.filter('read', {
-							inject: { where: { id: args.amendmentId } }
-						}).query.single
+						ctx.abilities.amendment.filter('read').merge({ where: { id: args.amendmentId } }).query
+							.single
 					)
 				)
 				.then(assertFindFirstExists);

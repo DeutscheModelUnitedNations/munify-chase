@@ -7,10 +7,9 @@ import { assertFindFirstExists, assertFirstEntryExists } from '@m1212e/rumble';
 import { SpeakersListRef } from './speakersList';
 import { isWhitelistedEmail } from '$api/services/isDMUNEmail';
 
-const { arg, ref, pubsub, table } = basics('speakerOnList');
+const { ref, pubsub, table } = basics('speakerOnList');
 
 export const SpeakerOnListRef = ref;
-export const SpeakerOnWhereArgs = arg;
 
 // TODO: These could use some validation for the position values. E.g. only allow positons
 // which are in bounds and so on
@@ -55,9 +54,8 @@ schemaBuilder.mutationFields((t) => {
 				return db.query.speakerOnList
 					.findFirst(
 						query(
-							ctx.abilities.speakerOnList.filter('read', {
-								inject: { where: { id: updated.id } }
-							}).query.single
+							ctx.abilities.speakerOnList.filter('read').merge({ where: { id: updated.id } }).query
+								.single
 						)
 					)
 					.then(assertFindFirstExists);
@@ -113,9 +111,9 @@ schemaBuilder.mutationFields((t) => {
 					// we do query this for checking the required permissions
 					const speakersList = await tx.query.speakersList
 						.findFirst(
-							ctx.abilities.speakersList.filter('update', {
-								inject: { where: { id: args.speakersListId } }
-							}).query.single
+							ctx.abilities.speakersList
+								.filter('update')
+								.merge({ where: { id: args.speakersListId } }).query.single
 						)
 						.then(assertFindFirstExists);
 
@@ -137,9 +135,8 @@ schemaBuilder.mutationFields((t) => {
 				return db.query.speakerOnList
 					.findFirst(
 						query(
-							ctx.abilities.speakerOnList.filter('read', {
-								inject: { where: { id: createdId } }
-							}).query.single
+							ctx.abilities.speakerOnList.filter('read').merge({ where: { id: createdId } }).query
+								.single
 						)
 					)
 					.then(assertFindFirstExists);
@@ -186,14 +183,14 @@ schemaBuilder.mutationFields((t) => {
 
 					return deleted;
 				});
-				pubsub.removed(removed.id);
+				pubsub.removed();
 
 				return db.query.speakersList
 					.findFirst(
 						query(
-							ctx.abilities.speakersList.filter('read', {
-								inject: { where: { id: removed.speakersListId } }
-							}).query.single
+							ctx.abilities.speakersList
+								.filter('read')
+								.merge({ where: { id: removed.speakersListId } }).query.single
 						)
 					)
 					.then(assertFindFirstExists);
@@ -329,9 +326,8 @@ schemaBuilder.mutationFields((t) => {
 				return db.query.speakerOnList
 					.findFirst(
 						query(
-							ctx.abilities.speakerOnList.filter('read', {
-								inject: { where: { id: createdId } }
-							}).query.single
+							ctx.abilities.speakerOnList.filter('read').merge({ where: { id: createdId } }).query
+								.single
 						)
 					)
 					.then(assertFindFirstExists);
@@ -413,14 +409,14 @@ schemaBuilder.mutationFields((t) => {
 					return deleted;
 				});
 
-				pubsub.removed(removed.id);
+				pubsub.removed();
 
 				return db.query.speakersList
 					.findFirst(
 						query(
-							ctx.abilities.speakersList.filter('read', {
-								inject: { where: { id: removed.speakersListId } }
-							}).query.single
+							ctx.abilities.speakersList
+								.filter('read')
+								.merge({ where: { id: removed.speakersListId } }).query.single
 						)
 					)
 					.then(assertFindFirstExists);
@@ -439,8 +435,8 @@ schemaBuilder.mutationFields((t) => {
 				const updatedEntityIds = await db.transaction(async (tx) => {
 					const aboutToMoveSpeakerOnList = await tx.query.speakerOnList
 						.findFirst(
-							ctx.abilities.speakerOnList.filter('update', { inject: { where: { id: args.id } } })
-								.query.single
+							ctx.abilities.speakerOnList.filter('update').merge({ where: { id: args.id } }).query
+								.single
 						)
 						.then(assertFindFirstExists);
 					if (args.position === aboutToMoveSpeakerOnList.position) {
@@ -532,9 +528,8 @@ schemaBuilder.mutationFields((t) => {
 				return db.query.speakerOnList
 					.findFirst(
 						query(
-							ctx.abilities.speakerOnList.filter('read', {
-								inject: { where: { id: args.id } }
-							}).query.single
+							ctx.abilities.speakerOnList.filter('read').merge({ where: { id: args.id } }).query
+								.single
 						)
 					)
 					.then(assertFindFirstExists);

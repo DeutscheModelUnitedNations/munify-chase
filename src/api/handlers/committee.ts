@@ -5,8 +5,7 @@ import {
 	object,
 	query,
 	pubsub as rumblePubsub,
-	schemaBuilder,
-	arg as rumbleArg
+	schemaBuilder
 } from '$api/rumble';
 import { isWhitelistedEmail } from '$api/services/isDMUNEmail';
 import { assertFindFirstExists, assertFirstEntryExists } from '@m1212e/rumble';
@@ -106,7 +105,6 @@ const ref = object({
 	})
 });
 const pubsub = rumblePubsub({ table: 'committee' });
-const arg = rumbleArg({ table: 'committee' });
 query({
 	table: 'committee'
 });
@@ -138,10 +136,8 @@ schemaBuilder.mutationFields((t) => {
 				return db.query.committee
 					.findFirst(
 						query(
-							ctx.abilities.committee.filter('read', {
-								inject: {
-									where: { id: result.id }
-								}
+							ctx.abilities.committee.filter('read').merge({
+								where: { id: result.id }
 							}).query.single
 						)
 					)
@@ -167,7 +163,7 @@ schemaBuilder.mutationFields((t) => {
 
 				await db.delete(schema.committee).where(eq(schema.committee.id, args.id));
 
-				pubsub.removed(args.id);
+				pubsub.removed();
 
 				return true;
 			}
@@ -308,11 +304,9 @@ schemaBuilder.mutationFields((t) => {
 
 				return db.query.committee.findFirst(
 					query(
-						ctx.abilities.committee.filter('read', {
-							inject: {
-								where: {
-									id: args.id
-								}
+						ctx.abilities.committee.filter('read').merge({
+							where: {
+								id: args.id
 							}
 						}).query.single
 					)

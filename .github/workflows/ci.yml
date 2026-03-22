@@ -70,7 +70,7 @@ jobs:
       - uses: ./.github/actions/setup-bun
       - run: bunx svelte-kit sync
       - run: bunx @inlang/paraglide-js compile --project ./project.inlang --outdir ./src/lib/paraglide
-      - run: bunx houdini generate
+      # - run: bunx houdini generate # TODO
       - run: bun run check
 
   build:

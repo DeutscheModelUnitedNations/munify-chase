@@ -1,6 +1,7 @@
 {
 	"devDependencies": {
 		"@deutschemodelunitednations/corporate-identity": "^1.1.10",
+		"@deutschemodelunitednations/munify-resolution-editor": "v0.1.4",
 		"@eslint/compat": "^2.0.3",
 		"@eslint/js": "^10.0.1",
 		"@fontsource/outfit": "^5.2.8",
@@ -18,6 +19,7 @@
 		"@sveltejs/vite-plugin-svelte": "^5.1.1",
 		"@tailwindcss/typography": "^0.5.19",
 		"@tailwindcss/vite": "^4.2.2",
+		"@tanstack/table-core": "^8.21.3",
 		"@tiptap/core": "^2.27.2",
 		"@tiptap/extension-link": "^2.27.2",
 		"@tiptap/extension-underline": "^2.27.2",
@@ -25,6 +27,7 @@
 		"@tiptap/starter-kit": "^2.27.2",
 		"@types/js-yaml": "^4.0.9",
 		"@types/pg": "^8.20.0",
+		"@types/ws": "^8.18.1",
 		"@zerodevx/svelte-toast": "^0.9.6",
 		"bits-ui": "^1.8.0",
 		"concurrently": "^9.2.1",
@@ -40,6 +43,7 @@
 		"globals": "^17.4.0",
 		"graphql": "^16.13.1",
 		"graphql-sse": "^2.6.0",
+		"graphql-ws": "^6.0.7",
 		"gridstack": "^12.4.2",
 		"hotkeys-js": "^3.13.15",
 		"ioredis": "^5.10.1",
@@ -51,8 +55,6 @@
 		"prettier-plugin-sort-json": "^4.2.0",
 		"prettier-plugin-svelte": "^3.5.1",
 		"prettier-plugin-tailwindcss": "^0.7.2",
-		"@deutschemodelunitednations/munify-resolution-editor": "v0.1.4",
-		"@tanstack/table-core": "^8.21.3",
 		"svelte": "^5.54.1",
 		"svelte-check": "^4.4.5",
 		"svelte-confetti": "^2.3.2",
@@ -67,6 +69,7 @@
 		"vite": "^8.0.1",
 		"vitest": "^4.1.0",
 		"world-countries": "^5.1.0",
+		"ws": "^8.20.0",
 		"zod": "^3.25.76"
 	},
 	"name": "munify-chase",

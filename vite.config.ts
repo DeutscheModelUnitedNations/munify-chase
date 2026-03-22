@@ -1,4 +1,3 @@
-import houdini from 'houdini/vite';
 import { paraglideVitePlugin } from '@inlang/paraglide-js';
 import tailwindcss from '@tailwindcss/vite';
 import { sveltekit } from '@sveltejs/kit/vite';
@@ -56,7 +55,6 @@ export default defineConfig({
 			outdir: './src/lib/paraglide',
 			strategy: ['url', 'baseLocale']
 		}),
-		houdini(),
 		sveltekit()
 	],
 	server: {

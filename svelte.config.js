@@ -12,7 +12,6 @@ const config = {
 		alias: {
 			$api: 'src/api',
 			$assets: 'src/assets',
-			$houdini: '.houdini/',
 			$config: 'src/lib/config'
 		}
 	}

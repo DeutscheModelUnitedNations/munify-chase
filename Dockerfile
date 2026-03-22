@@ -38,6 +38,7 @@ COPY ./drizzle ./drizzle/
 COPY ./drizzle.config.ts .
 COPY ./src/api/db/schema.ts ./src/api/db/schema.ts
 COPY --from=runtime-dependencies /build/dependencies .
+COPY ./src/server.js ./server.js
 
 RUN chown -R node:node .
 USER node
@@ -45,4 +46,4 @@ ENV NODE_ENV=production
 EXPOSE 3000/tcp
 # TODO
 # HEALTHCHECK --interval=15s --timeout=10s --retries=3 CMD curl -f http://0.0.0.0:3000/api/health/ready || exit 1
-CMD ["sh", "-c", "./node_modules/.bin/drizzle-kit migrate && node ./index.js"]
+CMD ["sh", "-c", "./node_modules/.bin/drizzle-kit migrate && node ./server.js"]

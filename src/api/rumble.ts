@@ -23,10 +23,19 @@ if (dev) {
 	import('$api/handlers/register');
 }
 
-export const { abilityBuilder, schemaBuilder, whereArg, object, query, pubsub, createYoga, enum_ } =
-	rumble({
-		db,
-		context,
-		defaultLimit: 1000,
-		subscriptions: [{ eventTarget }]
-	});
+export const {
+	abilityBuilder,
+	schemaBuilder,
+	whereArg,
+	object,
+	query,
+	pubsub,
+	createYoga,
+	enum_,
+	clientCreator
+} = rumble({
+	db,
+	context,
+	defaultLimit: 1000,
+	subscriptions: [{ eventTarget }]
+});

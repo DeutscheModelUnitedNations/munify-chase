@@ -4,7 +4,6 @@ import { and, eq } from 'drizzle-orm';
 import { basics } from './basics';
 import { assertFindFirstExists } from '@m1212e/rumble';
 import { GraphQLError } from 'graphql';
-import { SpeakerOnListRef, SpeakerOnWhereArgs } from './speakerOnList';
 import { isWhitelistedEmail } from '$api/services/isDMUNEmail';
 
 // const { arg, ref, pubsub: speakersListPubSub, table } = basics('speakersList');

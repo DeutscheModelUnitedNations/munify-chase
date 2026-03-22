@@ -6,7 +6,7 @@
 		"forceConsistentCasingInFileNames": true,
 		"moduleResolution": "bundler",
 		"resolveJsonModule": true,
-		"rootDirs": [".", "./.svelte-kit/types", "./.houdini/types"],
+		"rootDirs": [".", "./.svelte-kit/types"],
 		"skipLibCheck": true,
 		"sourceMap": true,
 		"strict": true

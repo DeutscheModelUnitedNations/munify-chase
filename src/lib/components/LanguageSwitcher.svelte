@@ -21,7 +21,8 @@
 
 	const localeLookup = {
 		en: 'gb',
-		de: 'de'
+		de: 'de',
+		pt: 'pt'
 	};
 </script>
 

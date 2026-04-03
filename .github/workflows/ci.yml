@@ -51,7 +51,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/setup-bun
-      - uses: aquasecurity/trivy-action@0.34.0
+      - uses: aquasecurity/trivy-action@0.35.0
         with:
           scan-type: 'fs'
           scan-ref: '.'
@@ -148,7 +148,7 @@ jobs:
       - id: split-tags
         run: echo "fragment=$(echo "${DOCKER_METADATA_OUTPUT_TAGS}" | head -n 1)" >> "$GITHUB_OUTPUT"
 
-      - uses: aquasecurity/trivy-action@0.34.0
+      - uses: aquasecurity/trivy-action@0.35.0
         with:
           image-ref: ${{ steps.split-tags.outputs.fragment }}
           format: 'table'

@@ -1,6 +1,2 @@
-import type { Reroute } from '@sveltejs/kit';
-import { deLocalizeUrl } from '$lib/paraglide/runtime';
-
-export const reroute: Reroute = (request) => {
-	return deLocalizeUrl(request.url).pathname;
-};
+// Reroute hook removed — locale is now cookie-based, not URL-based.
+// Locale-prefixed URLs are redirected by the server hook.

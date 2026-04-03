@@ -115,6 +115,7 @@ type Committee {
   conference(where: ConferenceWhereInputArgument): Conference
   conferenceId: ID!
   createdAt: DateTime!
+  currentOperativeClauseId: ID
   currentOperativeIndex: Int
   customPaperSupportThreshold: Int
   customSimpleMajority: Int
@@ -197,6 +198,7 @@ input CommitteeWhereInputArgument {
   conference: ConferenceWhereInputArgument
   conferenceId: ID
   createdAt: DateTime
+  currentOperativeClauseId: ID
   currentOperativeIndex: Int
   customPaperSupportThreshold: Int
   customSimpleMajority: Int
@@ -226,6 +228,7 @@ type Conference {
   members(limit: Int, offset: Int, where: ConferenceMemberWhereInputArgument): [ConferenceMember!]!
   pressWebsite: String
   representations(limit: Int, offset: Int, where: RepresentationWhereInputArgument): [Representation!]!
+  resolutionFeatureEnabled: Boolean!
   title: String!
 
   """
@@ -312,6 +315,7 @@ input ConferenceWhereInputArgument {
   members: ConferenceMemberWhereInputArgument
   pressWebsite: String
   representations: RepresentationWhereInputArgument
+  resolutionFeatureEnabled: Boolean
   title: String
   updatedAt: DateTime
   users: ConferenceUserWhereInputArgument
@@ -436,8 +440,8 @@ type Mutation {
   startVotingPhase(paperId: ID!): ResolutionPaper
   submitPaper(paperId: ID!): ResolutionPaper
   updateComment(commentId: ID!, content: String!): ResolutionComment
-  updateCommittee(abbreviation: String, activeAgendaItemId: ID, activeAmendmentId: ID, activeDraftResolutionId: ID, allowDelegationsToAddThemselvesToSpeakersList: Boolean, amendmentSponsoringOpen: Boolean, amendmentSubmissionOpen: Boolean, clearActiveAmendment: Boolean, clearActiveDraftResolution: Boolean, currentOperativeIndex: Int, id: ID!, lastResolutionAdoptionDate: DateTime, maxDraftResolutions: Int, name: String, showWhiteboard: Boolean, stateOfDebate: String, status: CommitteeStatusEnum, statusHeadline: String, statusUntil: DateTime, supportReEvaluationOpen: Boolean, whiteboardContent: String): Committee
-  updateConference(hasModeratedCaucus: Boolean, id: ID!, pressWebsite: String, title: String): Conference
+  updateCommittee(abbreviation: String, activeAgendaItemId: ID, activeAmendmentId: ID, activeDraftResolutionId: ID, allowDelegationsToAddThemselvesToSpeakersList: Boolean, amendmentSponsoringOpen: Boolean, amendmentSubmissionOpen: Boolean, clearActiveAmendment: Boolean, clearActiveDraftResolution: Boolean, currentOperativeClauseId: String, currentOperativeIndex: Int, id: ID!, lastResolutionAdoptionDate: DateTime, maxDraftResolutions: Int, name: String, showWhiteboard: Boolean, stateOfDebate: String, status: CommitteeStatusEnum, statusHeadline: String, statusUntil: DateTime, supportReEvaluationOpen: Boolean, whiteboardContent: String): Committee
+  updateConference(hasModeratedCaucus: Boolean, id: ID!, pressWebsite: String, resolutionFeatureEnabled: Boolean, title: String): Conference
   updateConferenceUser(committeeMemberId: ID, conferenceMemberId: ID, conferenceUserType: ConferenceUserTypeEnum!, id: ID!): ConferenceUser
   updatePaperContent(content: JSON!, paperId: ID!): ResolutionPaper
   updatePaperTitle(paperId: ID!, title: String!): ResolutionPaper

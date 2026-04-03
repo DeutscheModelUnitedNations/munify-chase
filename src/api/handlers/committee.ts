@@ -198,6 +198,7 @@ schemaBuilder.mutationFields((t) => {
 				activeDraftResolutionId: t.arg.id(),
 				clearActiveDraftResolution: t.arg.boolean(),
 				currentOperativeIndex: t.arg.int(),
+				currentOperativeClauseId: t.arg.string(),
 				supportReEvaluationOpen: t.arg.boolean(),
 				amendmentSubmissionOpen: t.arg.boolean(),
 				amendmentSponsoringOpen: t.arg.boolean(),
@@ -251,6 +252,7 @@ schemaBuilder.mutationFields((t) => {
 							? null
 							: (args.activeDraftResolutionId ?? undefined),
 						currentOperativeIndex: args.currentOperativeIndex ?? undefined,
+						currentOperativeClauseId: args.currentOperativeClauseId ?? undefined,
 						supportReEvaluationOpen,
 						amendmentSubmissionOpen: args.amendmentSubmissionOpen ?? undefined,
 						amendmentSponsoringOpen: args.amendmentSponsoringOpen ?? undefined,

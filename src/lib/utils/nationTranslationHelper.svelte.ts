@@ -251,6 +251,8 @@ function nationCodeToLocalName(code: string, locale = getLocale(), official = fa
 				return 'deu';
 			case 'en':
 				return 'eng';
+			case 'pt':
+				return 'por';
 			default:
 				return 'eng';
 		}

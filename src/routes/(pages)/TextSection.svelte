@@ -11,14 +11,12 @@
 </script>
 
 <h1
-	class="text-center font-serif text-3xl leading-tight font-bold text-slate-900 lg:text-right lg:text-4xl dark:text-white"
+	class="text-center font-serif text-3xl leading-tight font-bold text-base-content lg:text-right lg:text-4xl"
 >
 	{title}
 </h1>
 <div class="pb-10 lg:pb-0 flex flex-col items-center lg:items-start">
-	<p
-		class="text-md text-center leading-normal text-slate-900 lg:text-left lg:text-lg dark:text-white"
-	>
+	<p class="text-md text-center leading-normal text-base-content lg:text-left lg:text-lg">
 		{text}
 	</p>
 	{#if children}

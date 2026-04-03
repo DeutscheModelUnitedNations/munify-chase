@@ -3,7 +3,7 @@ import { abilityBuilder, enum_, schemaBuilder, pubsub as rumblePubsub } from '$a
 import { basics } from './basics';
 import { isWhitelistedEmail } from '$api/services/isDMUNEmail';
 import { assertFindFirstExists, assertFirstEntryExists } from '@m1212e/rumble';
-import { and, eq, count as drizzleCount, not, inArray } from 'drizzle-orm';
+import { and, eq, count as drizzleCount, not, inArray, gt, gte, sql } from 'drizzle-orm';
 import { GraphQLError } from 'graphql';
 import { assertCommitteeChairOrAdmin } from './resolutionPaper';
 import {
@@ -83,6 +83,52 @@ function validateAmendmentArgs(
 
 type Resolution = { committeeName: string; preamble: unknown[]; operative: unknown[] };
 
+/**
+ * Find the current index of a clause by its stable ID.
+ * Throws if the clause is not found (e.g. already deleted by a prior amendment).
+ */
+function findClauseIndex(operative: { id: string }[], clauseId: string): number {
+	const idx = operative.findIndex((c) => c.id === clauseId);
+	if (idx === -1) {
+		throw new GraphQLError(
+			`Clause "${clauseId}" not found in resolution — it may have been deleted by a prior amendment`
+		);
+	}
+	return idx;
+}
+
+/**
+ * Auto-adjust targetPosition on remaining PENDING/SUBMITTED ADD/ALTER_POSITION amendments
+ * after a structural change (deletion or insertion) shifts operative clause indices.
+ */
+async function adjustPendingPositions(
+	tx: Parameters<Parameters<typeof db.transaction>[0]>[0],
+	paperId: string,
+	excludeAmendmentId: string,
+	direction: 'decrement' | 'increment',
+	thresholdIndex: number,
+	comparison: 'gt' | 'gte'
+) {
+	const delta = direction === 'decrement' ? -1 : 1;
+	const cmp =
+		comparison === 'gt'
+			? gt(schema.amendment.targetPosition, thresholdIndex)
+			: gte(schema.amendment.targetPosition, thresholdIndex);
+
+	await tx
+		.update(schema.amendment)
+		.set({ targetPosition: sql`${schema.amendment.targetPosition} + ${delta}` })
+		.where(
+			and(
+				eq(schema.amendment.paperId, paperId),
+				inArray(schema.amendment.status, ['PENDING', 'SUBMITTED']),
+				inArray(schema.amendment.type, ['ADD', 'ALTER_POSITION']),
+				not(eq(schema.amendment.id, excludeAmendmentId)),
+				cmp
+			)
+		);
+}
+
 async function applyAmendmentToResolution(
 	tx: Parameters<Parameters<typeof db.transaction>[0]>[0],
 	amendment: typeof schema.amendment.$inferSelect,
@@ -103,13 +149,8 @@ async function applyAmendmentToResolution(
 
 	switch (amendment.type) {
 		case 'DELETE': {
-			const idx = amendment.targetOperativeIndex!;
-			if (idx < 0 || idx >= resolution.operative.length) {
-				throw new GraphQLError('Target operative index out of range');
-			}
-			if (resolution.operative[idx].id !== amendment.targetClauseId) {
-				throw new GraphQLError('Clause ID mismatch at target index');
-			}
+			// Resolve current index from stable clause ID (not stored index)
+			const idx = findClauseIndex(resolution.operative, amendment.targetClauseId!);
 			resolution.operative.splice(idx, 1);
 			// Auto-withdraw other PENDING/SUBMITTED amendments targeting the deleted clause
 			await tx
@@ -123,6 +164,8 @@ async function applyAmendmentToResolution(
 						not(eq(schema.amendment.id, amendment.id))
 					)
 				);
+			// Adjust targetPosition on remaining ADD/ALTER_POSITION amendments
+			await adjustPendingPositions(tx, paper.id, amendment.id, 'decrement', idx, 'gt');
 			break;
 		}
 		case 'ADD': {
@@ -132,13 +175,13 @@ async function applyAmendmentToResolution(
 			}
 			const insertAfter = amendment.targetPosition!;
 			resolution.operative.splice(insertAfter + 1, 0, parsedClause.data);
+			// Adjust targetPosition on remaining ADD/ALTER_POSITION amendments
+			await adjustPendingPositions(tx, paper.id, amendment.id, 'increment', insertAfter, 'gte');
 			break;
 		}
 		case 'ALTER_TEXT': {
-			const idx = amendment.targetOperativeIndex!;
-			if (idx < 0 || idx >= resolution.operative.length) {
-				throw new GraphQLError('Target operative index out of range');
-			}
+			// Resolve current index from stable clause ID
+			const idx = findClauseIndex(resolution.operative, amendment.targetClauseId!);
 			const parsedClause = OperativeClauseSchema.safeParse(amendment.newContent);
 			if (!parsedClause.success) {
 				throw new GraphQLError('Invalid newContent for ALTER_TEXT amendment');
@@ -151,11 +194,9 @@ async function applyAmendmentToResolution(
 			break;
 		}
 		case 'ALTER_POSITION': {
-			const sourceIdx = amendment.targetOperativeIndex!;
+			// Resolve current index from stable clause ID
+			const sourceIdx = findClauseIndex(resolution.operative, amendment.targetClauseId!);
 			const destIdx = amendment.targetPosition!;
-			if (sourceIdx < 0 || sourceIdx >= resolution.operative.length) {
-				throw new GraphQLError('Source operative index out of range');
-			}
 			if (destIdx < 0 || destIdx > resolution.operative.length) {
 				throw new GraphQLError('Destination index out of range');
 			}
@@ -163,6 +204,11 @@ async function applyAmendmentToResolution(
 			// After removing from source, the target index might shift
 			const adjustedDest = destIdx > sourceIdx ? destIdx - 1 : destIdx;
 			resolution.operative.splice(adjustedDest, 0, clause);
+			// Adjust other pending amendments' targetPosition for the structural shift
+			// First: source removal shifts indices down
+			await adjustPendingPositions(tx, paper.id, amendment.id, 'decrement', sourceIdx, 'gt');
+			// Then: destination insertion shifts indices up
+			await adjustPendingPositions(tx, paper.id, amendment.id, 'increment', adjustedDest, 'gte');
 			break;
 		}
 	}
@@ -233,6 +279,21 @@ schemaBuilder.mutationFields((t) => ({
 			// Validate type-specific args
 			validateAmendmentArgs(args.type, args);
 
+			// If targetClauseId is provided, resolve and auto-correct the operative index
+			if (args.targetClauseId) {
+				const parsed = ResolutionSchema.safeParse(paper.content);
+				if (parsed.success) {
+					const actualIdx = parsed.data.operative.findIndex((c) => c.id === args.targetClauseId);
+					if (actualIdx === -1) {
+						throw new GraphQLError('Target clause no longer exists in the resolution');
+					}
+					// Auto-correct stale index from client
+					if (args.targetOperativeIndex !== actualIdx) {
+						args.targetOperativeIndex = actualIdx;
+					}
+				}
+			}
+
 			// For DELETE and ALTER_TEXT, validate targetOperativeIndex >= currentOperativeIndex
 			if (
 				(args.type === 'DELETE' || args.type === 'ALTER_TEXT') &&
@@ -242,21 +303,6 @@ schemaBuilder.mutationFields((t) => ({
 				args.targetOperativeIndex < committee.currentOperativeIndex
 			) {
 				throw new GraphQLError('Cannot amend a clause that has already been passed');
-			}
-
-			// Validate clauseId exists if provided
-			if (
-				args.targetClauseId &&
-				args.targetOperativeIndex !== undefined &&
-				args.targetOperativeIndex !== null
-			) {
-				const parsed = ResolutionSchema.safeParse(paper.content);
-				if (parsed.success) {
-					const clause = parsed.data.operative[args.targetOperativeIndex];
-					if (!clause || clause.id !== args.targetClauseId) {
-						throw new GraphQLError('Clause ID does not match at the given index');
-					}
-				}
 			}
 
 			// Validate newContent if provided
@@ -276,10 +322,9 @@ schemaBuilder.mutationFields((t) => ({
 					inArray(schema.amendment.status, ['PENDING', 'SUBMITTED'])
 				];
 
-				if (args.targetOperativeIndex !== undefined && args.targetOperativeIndex !== null) {
-					duplicateConditions.push(
-						eq(schema.amendment.targetOperativeIndex, args.targetOperativeIndex)
-					);
+				// Use targetClauseId for duplicate detection (stable, not affected by index drift)
+				if (args.targetClauseId) {
+					duplicateConditions.push(eq(schema.amendment.targetClauseId, args.targetClauseId));
 				}
 
 				const [{ count: duplicateCount }] = await db
@@ -394,17 +439,17 @@ schemaBuilder.mutationFields((t) => ({
 			// Validate type-specific args
 			validateAmendmentArgs(args.type, args);
 
-			// Validate clauseId exists if provided
-			if (
-				args.targetClauseId &&
-				args.targetOperativeIndex !== undefined &&
-				args.targetOperativeIndex !== null
-			) {
+			// If targetClauseId is provided, resolve and auto-correct the operative index
+			if (args.targetClauseId) {
 				const parsed = ResolutionSchema.safeParse(paper.content);
 				if (parsed.success) {
-					const clause = parsed.data.operative[args.targetOperativeIndex];
-					if (!clause || clause.id !== args.targetClauseId) {
-						throw new GraphQLError('Clause ID does not match at the given index');
+					const actualIdx = parsed.data.operative.findIndex((c) => c.id === args.targetClauseId);
+					if (actualIdx === -1) {
+						throw new GraphQLError('Target clause no longer exists in the resolution');
+					}
+					// Auto-correct stale index from client
+					if (args.targetOperativeIndex !== actualIdx) {
+						args.targetOperativeIndex = actualIdx;
 					}
 				}
 			}
@@ -426,10 +471,9 @@ schemaBuilder.mutationFields((t) => ({
 					inArray(schema.amendment.status, ['PENDING', 'SUBMITTED'])
 				];
 
-				if (args.targetOperativeIndex !== undefined && args.targetOperativeIndex !== null) {
-					duplicateConditions.push(
-						eq(schema.amendment.targetOperativeIndex, args.targetOperativeIndex)
-					);
+				// Use targetClauseId for duplicate detection (stable, not affected by index drift)
+				if (args.targetClauseId) {
+					duplicateConditions.push(eq(schema.amendment.targetClauseId, args.targetClauseId));
 				}
 
 				const [{ count: duplicateCount }] = await db
@@ -714,17 +758,18 @@ schemaBuilder.mutationFields((t) => ({
 			// Re-validate with merged values
 			validateAmendmentArgs(amendment.type, merged);
 
-			// Validate clauseId matches paper content if provided
-			if (
-				merged.targetClauseId &&
-				merged.targetOperativeIndex !== undefined &&
-				merged.targetOperativeIndex !== null
-			) {
+			// If targetClauseId is provided, resolve and auto-correct the operative index
+			if (merged.targetClauseId) {
 				const parsed = ResolutionSchema.safeParse(paper.content);
 				if (parsed.success) {
-					const clause = parsed.data.operative[merged.targetOperativeIndex];
-					if (!clause || clause.id !== merged.targetClauseId) {
-						throw new GraphQLError('Clause ID does not match at the given index');
+					const actualIdx = parsed.data.operative.findIndex((c) => c.id === merged.targetClauseId);
+					if (actualIdx === -1) {
+						throw new GraphQLError('Target clause no longer exists in the resolution');
+					}
+					// Auto-correct stale index
+					if (merged.targetOperativeIndex !== actualIdx) {
+						merged.targetOperativeIndex = actualIdx;
+						args.targetOperativeIndex = actualIdx;
 					}
 				}
 			}

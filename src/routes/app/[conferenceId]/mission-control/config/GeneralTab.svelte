@@ -12,6 +12,7 @@
 			title: string;
 			pressWebsite: string | null;
 			hasModeratedCaucus: boolean;
+			resolutionFeatureEnabled: boolean;
 		};
 	}
 
@@ -20,12 +21,14 @@
 	let title = $state('');
 	let pressWebsite = $state('');
 	let hasModeratedCaucus = $state(false);
+	let resolutionFeatureEnabled = $state(true);
 	let isSaving = $state(false);
 
 	$effect(() => {
 		title = conference.title;
 		pressWebsite = conference.pressWebsite ?? '';
 		hasModeratedCaucus = conference.hasModeratedCaucus;
+		resolutionFeatureEnabled = conference.resolutionFeatureEnabled;
 	});
 
 	const UpdateConferenceMutation = graphql(`
@@ -34,17 +37,20 @@
 			$title: String
 			$pressWebsite: String
 			$hasModeratedCaucus: Boolean
+			$resolutionFeatureEnabled: Boolean
 		) {
 			updateConference(
 				id: $id
 				title: $title
 				pressWebsite: $pressWebsite
 				hasModeratedCaucus: $hasModeratedCaucus
+				resolutionFeatureEnabled: $resolutionFeatureEnabled
 			) {
 				id
 				title
 				pressWebsite
 				hasModeratedCaucus
+				resolutionFeatureEnabled
 			}
 		}
 	`);
@@ -57,7 +63,8 @@
 					id: conference.id,
 					title,
 					pressWebsite: pressWebsite || null,
-					hasModeratedCaucus
+					hasModeratedCaucus,
+					resolutionFeatureEnabled
 				}),
 				promiseToastStrings(m.configuration(), 'update')
 			);
@@ -107,6 +114,21 @@
 				<div class="flex flex-col">
 					<span class="label-text font-semibold">{m.hasModeratedCaucus()}</span>
 					<span class="label-text-alt">{m.hasModeratedCaucusDescription()}</span>
+				</div>
+			</label>
+		</div>
+
+		<div class="form-control">
+			<label class="label cursor-pointer justify-start gap-4" for="resolution-feature-enabled">
+				<input
+					id="resolution-feature-enabled"
+					type="checkbox"
+					class="toggle toggle-primary"
+					bind:checked={resolutionFeatureEnabled}
+				/>
+				<div class="flex flex-col">
+					<span class="label-text font-semibold">{m.resolutionFeatureEnabled()}</span>
+					<span class="label-text-alt">{m.resolutionFeatureEnabledDescription()}</span>
 				</div>
 			</label>
 		</div>

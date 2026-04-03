@@ -79,7 +79,8 @@ schemaBuilder.mutationFields((t) => ({
 			id: t.arg.id({ required: true }),
 			title: t.arg.string(),
 			pressWebsite: t.arg.string(),
-			hasModeratedCaucus: t.arg.boolean()
+			hasModeratedCaucus: t.arg.boolean(),
+			resolutionFeatureEnabled: t.arg.boolean()
 		},
 		resolve: async (query, root, args, ctx, info) => {
 			await assertConferenceAdmin(ctx, args.id);
@@ -89,7 +90,8 @@ schemaBuilder.mutationFields((t) => ({
 				.set({
 					title: args.title ?? undefined,
 					pressWebsite: args.pressWebsite ?? undefined,
-					hasModeratedCaucus: args.hasModeratedCaucus ?? undefined
+					hasModeratedCaucus: args.hasModeratedCaucus ?? undefined,
+					resolutionFeatureEnabled: args.resolutionFeatureEnabled ?? undefined
 				})
 				.where(eq(schema.conference.id, args.id));
 

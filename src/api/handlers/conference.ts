@@ -12,6 +12,7 @@ import { ConferenceMemberRef, ConferenceMemberWhereInput } from './conferenceMem
 import { assertConferenceAdmin } from './conferenceUser';
 import { eq } from 'drizzle-orm';
 import { assertFindFirstExists } from '@m1212e/rumble';
+import { GraphQLError } from 'graphql';
 
 abilityBuilder.conference.allow(['read', 'update']).when(({ mustBeLoggedIn }) => {
 	const user = mustBeLoggedIn();
@@ -108,6 +109,32 @@ schemaBuilder.mutationFields((t) => ({
 					)
 				)
 				.then(assertFindFirstExists);
+		}
+	})
+}));
+
+schemaBuilder.mutationFields((t) => ({
+	deleteConference: t.field({
+		type: 'Boolean',
+		args: {
+			id: t.arg.id({ required: true })
+		},
+		resolve: async (root, args, ctx) => {
+			if (!ctx.oidc?.user?.email || !isWhitelistedEmail(ctx.oidc.user.email)) {
+				throw new GraphQLError('Only global admins can delete conferences');
+			}
+
+			const conf = await db.query.conference.findFirst({
+				where: { id: args.id }
+			});
+
+			if (!conf) {
+				throw new GraphQLError('Conference not found');
+			}
+
+			await db.delete(schema.conference).where(eq(schema.conference.id, args.id));
+
+			return true;
 		}
 	})
 }));

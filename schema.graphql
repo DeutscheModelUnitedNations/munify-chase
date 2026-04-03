@@ -414,6 +414,7 @@ type Mutation {
   deleteComment(commentId: ID!): Boolean
   deleteCommittee(id: ID!): Boolean
   deleteCommitteeMember(id: ID!): Boolean
+  deleteConference(id: ID!): Boolean
   deleteConferenceMember(id: ID!): Boolean
   deleteConferenceUser(id: ID!): Boolean
   deleteRepresentation(id: ID!): Boolean
@@ -654,6 +655,7 @@ type Query {
   findManySpeakerOnList(limit: Int, offset: Int, where: SpeakerOnListWhereInputArgument): [SpeakerOnList!]!
   findManySpeakersList(limit: Int, offset: Int, where: SpeakersListWhereInputArgument): [SpeakersList!]!
   findManyUser(limit: Int, offset: Int, where: UserWhereInputArgument): [User!]!
+  isGlobalAdmin: Boolean
   serverTime: DateTime!
 }
 

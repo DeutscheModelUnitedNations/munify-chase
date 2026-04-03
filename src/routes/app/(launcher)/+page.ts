@@ -15,6 +15,11 @@ export const _houdini_load = graphql(`
 				title
 			}
 		}
+		isGlobalAdmin
+		findManyConference {
+			id
+			title
+		}
 	}
 `);
 

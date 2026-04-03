@@ -22,3 +22,11 @@ abilityBuilder.user.allow('read');
 // 		return 'allow';
 // 	}
 // });
+
+schemaBuilder.queryFields((t) => ({
+	isGlobalAdmin: t.boolean({
+		resolve: (root, args, ctx) => {
+			return !!ctx.oidc?.user?.email && isWhitelistedEmail(ctx.oidc.user.email);
+		}
+	})
+}));

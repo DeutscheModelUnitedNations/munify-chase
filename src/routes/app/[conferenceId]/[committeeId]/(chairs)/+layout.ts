@@ -22,6 +22,7 @@ export const _houdini_load = graphql(`
 			amendmentSubmissionOpen
 			amendmentSponsoringOpen
 			currentOperativeIndex
+			currentOperativeClauseId
 			activeAmendmentId
 			whiteboardContent
 			lastResolutionAdoptionDate

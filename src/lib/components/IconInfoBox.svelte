@@ -71,11 +71,11 @@
 </script>
 
 <div
-	class="alert block w-full text-lg shadow-sm {committeeStatus
+	class="alert py-0 block w-full text-lg shadow-sm {committeeStatus
 		? getCommitteeStatusBackground(committeeStatus)
 		: ''} {fullHeight ? 'h-full' : ''}"
 >
-	<div class="flex h-full w-full flex-1 flex-row items-center gap-4 overflow-hidden">
+	<div class="flex h-full w-full flex-1 flex-row items-center gap-4 overflow-hidden py-2">
 		{#if iconText}
 			<div class="flex-none text-center text-4xl font-bold">{iconText}</div>
 		{:else if faIcon}

@@ -19,6 +19,7 @@
 			name: string;
 			resolutionHeadline?: string | null;
 			currentOperativeIndex?: number | null;
+			currentOperativeClauseId?: string | null;
 			activeAmendment?: {
 				id: string;
 				type: string;
@@ -103,7 +104,14 @@
 
 	let dr = $derived(committee.activeDraftResolution);
 	let activeAmendment = $derived(committee.activeAmendment);
-	let currentOpIndex = $derived(committee.currentOperativeIndex ?? 0);
+	let currentOpIndex = $derived.by(() => {
+		const clauseId = committee.currentOperativeClauseId;
+		if (clauseId && resolution) {
+			const idx = resolution.operative.findIndex((c) => c.id === clauseId);
+			if (idx !== -1) return idx;
+		}
+		return committee.currentOperativeIndex ?? 0;
+	});
 
 	let resolution = $derived.by(() => {
 		if (!dr?.content) return null;
@@ -182,15 +190,32 @@
 	}
 
 	let pendingAmendmentCounts = $derived.by(() => {
-		if (!dr?.amendments) return new SvelteMap<number, number>();
+		if (!dr?.amendments || !resolution) return new SvelteMap<number, number>();
 		const counts = new SvelteMap<number, number>();
 		for (const a of dr.amendments) {
 			if (a.status !== 'SUBMITTED') continue;
 			if (a.type !== 'ALTER_TEXT' && a.type !== 'DELETE') continue;
-			if (a.targetOperativeIndex == null) continue;
-			counts.set(a.targetOperativeIndex, (counts.get(a.targetOperativeIndex) ?? 0) + 1);
+			let idx: number | null = null;
+			if (a.targetClauseId) {
+				const found = resolution.operative.findIndex((c) => c.id === a.targetClauseId);
+				if (found !== -1) idx = found;
+			} else if (a.targetOperativeIndex != null) {
+				idx = a.targetOperativeIndex;
+			}
+			if (idx == null) continue;
+			counts.set(idx, (counts.get(idx) ?? 0) + 1);
 		}
 		return counts;
+	});
+
+	// Resolve active amendment's target index from stable clause ID
+	let resolvedActiveAmendIdx = $derived.by(() => {
+		if (!activeAmendment || !resolution) return -1;
+		if (activeAmendment.targetClauseId) {
+			const idx = resolution.operative.findIndex((c) => c.id === activeAmendment.targetClauseId);
+			if (idx !== -1) return idx;
+		}
+		return activeAmendment.targetOperativeIndex ?? -1;
 	});
 
 	function getProposerName(
@@ -246,12 +271,12 @@
 					{/if}
 				</div>
 
-				{#if activeAmendment.type === 'DELETE' && activeAmendment.targetOperativeIndex != null}
+				{#if activeAmendment.type === 'DELETE' && resolvedActiveAmendIdx >= 0}
 					<!-- DELETE: show clause with strikethrough -->
-					{@const targetClause = resolution.operative[activeAmendment.targetOperativeIndex]}
+					{@const targetClause = resolution.operative[resolvedActiveAmendIdx]}
 					<div class="text-center text-base-content/60 text-sm mb-2">
 						{m.operativeClausePresentation()}
-						{activeAmendment.targetOperativeIndex + 1}
+						{resolvedActiveAmendIdx + 1}
 					</div>
 					{#if targetClause}
 						<div
@@ -265,12 +290,12 @@
 							</ResolutionPreview>
 						</div>
 					{/if}
-				{:else if activeAmendment.type === 'ALTER_TEXT' && activeAmendment.targetOperativeIndex != null}
+				{:else if activeAmendment.type === 'ALTER_TEXT' && resolvedActiveAmendIdx >= 0}
 					<!-- ALTER_TEXT: show current and proposed side by side -->
-					{@const targetClause = resolution.operative[activeAmendment.targetOperativeIndex]}
+					{@const targetClause = resolution.operative[resolvedActiveAmendIdx]}
 					<div class="text-center text-base-content/60 text-sm mb-2">
 						{m.operativeClausePresentation()}
-						{activeAmendment.targetOperativeIndex + 1}
+						{resolvedActiveAmendIdx + 1}
 					</div>
 					<div class="flex-1 grid grid-cols-2 gap-6 p-4 overflow-auto">
 						<div class="flex flex-col gap-2">
@@ -321,9 +346,9 @@
 							</div>
 						{/if}
 					</div>
-				{:else if activeAmendment.type === 'ALTER_POSITION' && activeAmendment.targetOperativeIndex != null}
+				{:else if activeAmendment.type === 'ALTER_POSITION' && resolvedActiveAmendIdx >= 0}
 					<!-- ALTER_POSITION: show move action -->
-					{@const targetClause = resolution.operative[activeAmendment.targetOperativeIndex]}
+					{@const targetClause = resolution.operative[resolvedActiveAmendIdx]}
 					<div class="flex-1 flex flex-col items-center justify-center gap-4 p-8 overflow-auto">
 						{#if targetClause}
 							<div class="w-full rounded-lg bg-info/5 border-2 border-info/30 p-4">

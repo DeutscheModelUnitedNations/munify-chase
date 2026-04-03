@@ -1,7 +1,7 @@
 import { db, schema } from '$api/db/db';
 import { abilityBuilder, schemaBuilder, pubsub as rumblePubsub } from '$api/rumble';
 import { basics } from './basics';
-import { isWhitelistedEmail } from '$api/services/isDMUNEmail';
+import { isGlobalAdmin } from '$api/services/isAdminEmail';
 import { assertFindFirstExists, assertFirstEntryExists } from '@m1212e/rumble';
 import { and, eq } from 'drizzle-orm';
 import { GraphQLError } from 'graphql';
@@ -10,11 +10,8 @@ import { assertCommitteeChairOrAdmin } from './resolutionPaper';
 const { arg, ref, pubsub, table } = basics('amendmentSponsor');
 const amendmentPubsub = rumblePubsub({ table: 'amendment' });
 
-abilityBuilder.amendmentSponsor.allow('read').when(({ mustBeLoggedIn }) => {
-	const user = mustBeLoggedIn();
-	if (user?.email && isWhitelistedEmail(user.email)) {
-		return 'allow';
-	}
+abilityBuilder.amendmentSponsor.allow('read').when((ctx) => {
+	if (isGlobalAdmin(ctx)) return 'allow';
 });
 
 abilityBuilder.amendmentSponsor.allow('read').when(({ mustBeLoggedIn }) => {

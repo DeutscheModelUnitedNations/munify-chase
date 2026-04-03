@@ -1,6 +1,6 @@
 import { db, schema } from '$api/db/db';
 import { abilityBuilder, schemaBuilder } from '$api/rumble';
-import { isWhitelistedEmail } from '$api/services/isDMUNEmail';
+import { isGlobalAdmin } from '$api/services/isAdminEmail';
 import { basics } from './basics';
 import { assertConferenceAdmin } from './conferenceUser';
 import { assertFindFirstExists, assertFirstEntryExists } from '@m1212e/rumble';
@@ -9,11 +9,8 @@ import { GraphQLError } from 'graphql';
 
 const { arg, ref, pubsub, table } = basics('conferenceMember');
 
-abilityBuilder.conferenceMember.allow('read').when(({ mustBeLoggedIn }) => {
-	const user = mustBeLoggedIn();
-	if (user?.email && isWhitelistedEmail(user.email)) {
-		return 'allow';
-	}
+abilityBuilder.conferenceMember.allow('read').when((ctx) => {
+	if (isGlobalAdmin(ctx)) return 'allow';
 });
 
 abilityBuilder.conferenceMember.allow('read').when(({ mustBeLoggedIn }) => {

@@ -1,7 +1,7 @@
 import { db, schema } from '$api/db/db';
 import { abilityBuilder, enum_, schemaBuilder, pubsub as rumblePubsub } from '$api/rumble';
 import { basics } from './basics';
-import { isWhitelistedEmail } from '$api/services/isDMUNEmail';
+import { isGlobalAdmin } from '$api/services/isAdminEmail';
 import { assertCommitteeChairOrAdmin } from './resolutionPaper';
 import { assertFindFirstExists } from '@m1212e/rumble';
 import { GraphQLError } from 'graphql';
@@ -10,11 +10,8 @@ import { eq, and } from 'drizzle-orm';
 const { ref, pubsub } = basics('operativeClauseVote');
 const paperPubsub = rumblePubsub({ table: 'resolutionPaper' });
 
-abilityBuilder.operativeClauseVote.allow('read').when(({ mustBeLoggedIn }) => {
-	const user = mustBeLoggedIn();
-	if (user?.email && isWhitelistedEmail(user.email)) {
-		return 'allow';
-	}
+abilityBuilder.operativeClauseVote.allow('read').when((ctx) => {
+	if (isGlobalAdmin(ctx)) return 'allow';
 });
 
 abilityBuilder.operativeClauseVote.allow('read').when(({ mustBeLoggedIn }) => {

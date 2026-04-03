@@ -1,14 +1,11 @@
 import { abilityBuilder } from '$api/rumble';
 import { basics } from './basics';
-import { isWhitelistedEmail } from '$api/services/isDMUNEmail';
+import { isGlobalAdmin } from '$api/services/isAdminEmail';
 
 const { arg, ref, pubsub, table } = basics('paperContentSnapshot');
 
-abilityBuilder.paperContentSnapshot.allow('read').when(({ mustBeLoggedIn }) => {
-	const user = mustBeLoggedIn();
-	if (user?.email && isWhitelistedEmail(user.email)) {
-		return 'allow';
-	}
+abilityBuilder.paperContentSnapshot.allow('read').when((ctx) => {
+	if (isGlobalAdmin(ctx)) return 'allow';
 });
 
 abilityBuilder.paperContentSnapshot.allow('read').when(({ mustBeLoggedIn }) => {

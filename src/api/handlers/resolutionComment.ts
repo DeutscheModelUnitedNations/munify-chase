@@ -2,7 +2,7 @@ import { db, schema } from '$api/db/db';
 import { abilityBuilder, enum_, schemaBuilder, pubsub as rumblePubsub } from '$api/rumble';
 import { eq } from 'drizzle-orm';
 import { basics } from './basics';
-import { isWhitelistedEmail } from '$api/services/isDMUNEmail';
+import { isGlobalAdmin } from '$api/services/isAdminEmail';
 import { assertFindFirstExists, assertFirstEntryExists } from '@m1212e/rumble';
 import { GraphQLError } from 'graphql';
 
@@ -19,11 +19,9 @@ async function isChairOrAdmin(
 	},
 	committeeId: string
 ): Promise<boolean> {
-	if (ctx.hasRole('admin')) return true;
+	if (isGlobalAdmin(ctx)) return true;
 
 	const user = ctx.mustBeLoggedIn();
-	if (user.email && isWhitelistedEmail(user.email)) return true;
-
 	const cuRecord = await db.query.conferenceUser.findFirst({
 		where: {
 			conference: {
@@ -41,17 +39,28 @@ async function isChairOrAdmin(
 // Access control
 // ──────────────────────────────────────────────────
 
-// TEAM / ADMIN / Whitelisted → can see ALL comments (including TEAM_ONLY)
-abilityBuilder.resolutionComment.allow('read').when(({ mustBeLoggedIn }) => {
-	const user = mustBeLoggedIn();
-	if (user?.email && isWhitelistedEmail(user.email)) {
-		return 'allow';
-	}
+// Global admin → can see ALL comments (including TEAM_ONLY)
+abilityBuilder.resolutionComment.allow('read').when((ctx) => {
+	if (isGlobalAdmin(ctx)) return 'allow';
 });
 
+// Conference ADMIN/TEAM → can see ALL comments (including TEAM_ONLY)
+abilityBuilder.resolutionComment.allow('read').when(((ctx: any) => {
+	const user = ctx.mustBeLoggedIn();
+	if (!user.sub) return;
+	return db.query.conferenceUser
+		.findFirst({
+			where: {
+				user: { id: user.sub },
+				conferenceUserType: { in: ['ADMIN', 'TEAM'] }
+			}
+		})
+		.then((cu: any) => (cu ? 'allow' : undefined));
+}) as any);
+
 // Regular logged-in users → only see PUBLIC comments
-abilityBuilder.resolutionComment.allow('read').when(({ mustBeLoggedIn }) => {
-	mustBeLoggedIn();
+abilityBuilder.resolutionComment.allow('read').when((ctx) => {
+	ctx.mustBeLoggedIn();
 	return { where: { visibility: 'PUBLIC' } };
 });
 

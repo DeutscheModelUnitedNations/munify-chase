@@ -7,19 +7,15 @@ import {
 	pubsub as rumblePubsub,
 	arg as rumbleArg
 } from '$api/rumble';
-import { isWhitelistedEmail } from '$api/services/isDMUNEmail';
+import { isGlobalAdmin } from '$api/services/isAdminEmail';
 import { ConferenceMemberRef, ConferenceMemberWhereInput } from './conferenceMember';
 import { assertConferenceAdmin } from './conferenceUser';
 import { eq } from 'drizzle-orm';
 import { assertFindFirstExists } from '@m1212e/rumble';
 import { GraphQLError } from 'graphql';
 
-abilityBuilder.conference.allow(['read', 'update']).when(({ mustBeLoggedIn }) => {
-	const user = mustBeLoggedIn();
-
-	if (user?.email && isWhitelistedEmail(user.email)) {
-		return 'allow';
-	}
+abilityBuilder.conference.allow(['read', 'update']).when((ctx) => {
+	if (isGlobalAdmin(ctx)) return 'allow';
 });
 
 abilityBuilder.conference.allow('read').when(({ mustBeLoggedIn }) => {
@@ -120,7 +116,7 @@ schemaBuilder.mutationFields((t) => ({
 			id: t.arg.id({ required: true })
 		},
 		resolve: async (root, args, ctx) => {
-			if (!ctx.oidc?.user?.email || !isWhitelistedEmail(ctx.oidc.user.email)) {
+			if (!isGlobalAdmin(ctx)) {
 				throw new GraphQLError('Only global admins can delete conferences');
 			}
 

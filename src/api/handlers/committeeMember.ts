@@ -1,19 +1,17 @@
 import { db, schema } from '$api/db/db';
 import { abilityBuilder, schemaBuilder } from '$api/rumble';
-import { and, eq, inArray } from 'drizzle-orm';
+import { eq, inArray } from 'drizzle-orm';
 import { basics } from './basics';
-import { isWhitelistedEmail } from '$api/services/isDMUNEmail';
+import { isGlobalAdmin } from '$api/services/isAdminEmail';
 import { assertConferenceAdmin } from './conferenceUser';
+import { assertCommitteeChairOrAdmin } from './resolutionPaper';
 import { assertFindFirstExists, assertFirstEntryExists } from '@m1212e/rumble';
 import { GraphQLError } from 'graphql';
 
 const { arg, ref, pubsub, table } = basics('committeeMember');
 
-abilityBuilder.committeeMember.allow(['read', 'update']).when(({ mustBeLoggedIn }) => {
-	const user = mustBeLoggedIn();
-	if (user?.email && isWhitelistedEmail(user.email)) {
-		return 'allow';
-	}
+abilityBuilder.committeeMember.allow(['read', 'update']).when((ctx) => {
+	if (isGlobalAdmin(ctx)) return 'allow';
 });
 
 abilityBuilder.committeeMember.allow('read').when(({ mustBeLoggedIn }) => {
@@ -97,28 +95,35 @@ schemaBuilder.mutationFields((t) => {
 				present: t.arg.boolean({ required: true })
 			},
 			resolve: async (query, root, args, ctx, info) => {
+				// Look up committee for the given members and verify chair/admin access
+				const members = await db.query.committeeMember.findMany({
+					where: { id: { in: args.ids } },
+					columns: { committeeId: true }
+				});
+				const committeeIds = [...new Set(members.map((m) => m.committeeId))];
+				for (const committeeId of committeeIds) {
+					await assertCommitteeChairOrAdmin(ctx, committeeId);
+				}
+
 				const res = await db
 					.update(table)
 					.set({
 						present: args.present
 					})
-					.where(
-						and(
-							inArray(table.id, args.ids),
-							ctx.abilities.committeeMember.filter('update').sql.where
-						)
-					)
+					.where(inArray(table.id, args.ids))
 					.returning({
 						id: table.id
 					});
 
-				await db.insert(schema.presenceChangedTimestamp).values(
-					res.map((committeeMember) => ({
-						committeeMemberId: committeeMember.id,
-						presentSetTo: args.present,
-						timestamp: new Date()
-					}))
-				);
+				if (res.length > 0) {
+					await db.insert(schema.presenceChangedTimestamp).values(
+						res.map((committeeMember) => ({
+							committeeMemberId: committeeMember.id,
+							presentSetTo: args.present,
+							timestamp: new Date()
+						}))
+					);
+				}
 
 				pubsub.updated(args.ids);
 

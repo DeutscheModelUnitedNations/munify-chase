@@ -1,7 +1,7 @@
 import { db, schema } from '$api/db/db';
 import { abilityBuilder, enum_, schemaBuilder, pubsub as rumblePubsub } from '$api/rumble';
 import { basics } from './basics';
-import { isWhitelistedEmail } from '$api/services/isDMUNEmail';
+import { isGlobalAdmin } from '$api/services/isAdminEmail';
 import { assertFindFirstExists, assertFirstEntryExists } from '@m1212e/rumble';
 import { and, eq, count as drizzleCount, not, inArray, gt, gte, sql } from 'drizzle-orm';
 import { GraphQLError } from 'graphql';
@@ -17,11 +17,8 @@ const paperPubsub = rumblePubsub({ table: 'resolutionPaper' });
 const amendmentTypeEnum = enum_({ tsName: 'amendmentType' });
 const amendmentStatusEnum = enum_({ tsName: 'amendmentStatus' });
 
-abilityBuilder.amendment.allow('read').when(({ mustBeLoggedIn }) => {
-	const user = mustBeLoggedIn();
-	if (user?.email && isWhitelistedEmail(user.email)) {
-		return 'allow';
-	}
+abilityBuilder.amendment.allow('read').when((ctx) => {
+	if (isGlobalAdmin(ctx)) return 'allow';
 });
 
 abilityBuilder.amendment.allow('read').when(({ mustBeLoggedIn }) => {

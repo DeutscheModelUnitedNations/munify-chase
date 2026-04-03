@@ -5,7 +5,8 @@ import { db, schema } from '$api/db/db';
 import { and, count, eq, gt, gte, sql } from 'drizzle-orm';
 import { assertFindFirstExists, assertFirstEntryExists } from '@m1212e/rumble';
 import { SpeakersListRef } from './speakersList';
-import { isWhitelistedEmail } from '$api/services/isDMUNEmail';
+import { isGlobalAdmin } from '$api/services/isAdminEmail';
+import { assertCommitteeChairOrAdmin } from './resolutionPaper';
 
 const { arg, ref, pubsub, table } = basics('speakerOnList');
 
@@ -15,11 +16,8 @@ export const SpeakerOnWhereArgs = arg;
 // TODO: These could use some validation for the position values. E.g. only allow positons
 // which are in bounds and so on
 
-abilityBuilder.speakerOnList.allow(['read', 'update', 'delete']).when(({ mustBeLoggedIn }) => {
-	const user = mustBeLoggedIn();
-	if (user?.email && isWhitelistedEmail(user.email)) {
-		return 'allow';
-	}
+abilityBuilder.speakerOnList.allow(['read', 'update', 'delete']).when((ctx) => {
+	if (isGlobalAdmin(ctx)) return 'allow';
 });
 
 abilityBuilder.speakerOnList.allow('read').when(({ mustBeLoggedIn }) => {
@@ -36,17 +34,24 @@ schemaBuilder.mutationFields((t) => {
 				overwriteName: t.arg.string()
 			},
 			resolve: async (query, _root, args, ctx, _info) => {
+				// Verify chair/admin access
+				const speaker = await db.query.speakerOnList
+					.findFirst({
+						where: { id: args.id },
+						with: { speakersList: { with: { agendaItem: { columns: { committeeId: true } } } } }
+					})
+					.then(assertFindFirstExists);
+				await assertCommitteeChairOrAdmin(
+					ctx,
+					(speaker as any).speakersList.agendaItem.committeeId
+				);
+
 				const updated = await db
 					.update(table)
 					.set({
 						overwriteName: args.overwriteName ? args.overwriteName : null
 					})
-					.where(
-						and(
-							eq(schema.speakerOnList.id, args.id),
-							ctx.abilities.speakerOnList.filter('update').sql.where
-						)
-					)
+					.where(eq(schema.speakerOnList.id, args.id))
 					.returning()
 					.then(assertFirstEntryExists);
 
@@ -82,6 +87,15 @@ schemaBuilder.mutationFields((t) => {
 					throw new GraphQLError('Must set either committeeMemberId or conferenceMemberId');
 				}
 
+				// Verify chair/admin access
+				const speakersListForAuth = await db.query.speakersList
+					.findFirst({
+						where: { id: args.speakersListId },
+						with: { agendaItem: { columns: { committeeId: true } } }
+					})
+					.then(assertFindFirstExists);
+				await assertCommitteeChairOrAdmin(ctx, (speakersListForAuth as any).agendaItem.committeeId);
+
 				const createdId = await db.transaction(async (tx) => {
 					let position = args.position;
 					if (!position) {
@@ -102,21 +116,12 @@ schemaBuilder.mutationFields((t) => {
 								position: sql`${table.position} + 1`
 							})
 							.where(
-								and(
-									eq(table.speakersListId, args.speakersListId),
-									gte(table.position, position),
-									ctx.abilities.speakerOnList.filter('update').sql.where
-								)
+								and(eq(table.speakersListId, args.speakersListId), gte(table.position, position))
 							);
 					}
 
-					// we do query this for checking the required permissions
 					const speakersList = await tx.query.speakersList
-						.findFirst(
-							ctx.abilities.speakersList.filter('update', {
-								inject: { where: { id: args.speakersListId } }
-							}).query.single
-						)
+						.findFirst({ where: { id: args.speakersListId } })
 						.then(assertFindFirstExists);
 
 					const created = await tx
@@ -153,15 +158,22 @@ schemaBuilder.mutationFields((t) => {
 				speakerOnListId: t.arg.id({ required: true })
 			},
 			resolve: async (query, root, args, ctx, info) => {
+				// Verify chair/admin access
+				const speaker = await db.query.speakerOnList
+					.findFirst({
+						where: { id: args.speakerOnListId },
+						with: { speakersList: { with: { agendaItem: { columns: { committeeId: true } } } } }
+					})
+					.then(assertFindFirstExists);
+				await assertCommitteeChairOrAdmin(
+					ctx,
+					(speaker as any).speakersList.agendaItem.committeeId
+				);
+
 				const removed = await db.transaction(async (tx) => {
 					const deleted = await tx
 						.delete(table)
-						.where(
-							and(
-								eq(table.id, args.speakerOnListId),
-								ctx.abilities.speakerOnList.filter('delete').sql.where
-							)
-						)
+						.where(eq(table.id, args.speakerOnListId))
 						.returning()
 						.then(assertFirstEntryExists);
 
@@ -436,12 +448,22 @@ schemaBuilder.mutationFields((t) => {
 				if (args.position < 0) {
 					throw new GraphQLError('Position must be a non-negative integer');
 				}
+
+				// Verify chair/admin access
+				const speakerForAuth = await db.query.speakerOnList
+					.findFirst({
+						where: { id: args.id },
+						with: { speakersList: { with: { agendaItem: { columns: { committeeId: true } } } } }
+					})
+					.then(assertFindFirstExists);
+				await assertCommitteeChairOrAdmin(
+					ctx,
+					(speakerForAuth as any).speakersList.agendaItem.committeeId
+				);
+
 				const updatedEntityIds = await db.transaction(async (tx) => {
 					const aboutToMoveSpeakerOnList = await tx.query.speakerOnList
-						.findFirst(
-							ctx.abilities.speakerOnList.filter('update', { inject: { where: { id: args.id } } })
-								.query.single
-						)
+						.findFirst({ where: { id: args.id } })
 						.then(assertFindFirstExists);
 					if (args.position === aboutToMoveSpeakerOnList.position) {
 						throw new GraphQLError('Cannot move to the same position');

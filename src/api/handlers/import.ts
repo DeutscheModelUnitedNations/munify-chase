@@ -3,6 +3,7 @@ import { enum_, schemaBuilder } from '$api/rumble';
 import { importDataSchema } from '$lib/utils/import';
 import { ConferenceRef } from './conference';
 import { GraphQLError } from 'graphql';
+import { isGlobalAdmin } from '$api/services/isAdminEmail';
 
 const Input = schemaBuilder.inputType('ImportData', {
 	description: 'Import data. You can find the JSON schema here: /api/schema/import',
@@ -108,8 +109,8 @@ schemaBuilder.mutationFields((t) => ({
 			})
 		},
 		resolve: async (query, root, args, ctx, info) => {
-			if (!ctx.hasRole('admin')) {
-				throw new GraphQLError('You must have the admin role!');
+			if (!isGlobalAdmin(ctx)) {
+				throw new GraphQLError('You must be a global admin to create conferences!');
 			}
 
 			// we want to ensure consistency between frontend and backend

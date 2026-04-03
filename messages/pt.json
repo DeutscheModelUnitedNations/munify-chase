@@ -391,6 +391,8 @@
 	"resolutionDeleteClause": "Excluir",
 	"resolutionDisclaimer": "Este documento foi criado como parte de uma simulação {conferenceName} e não possui validade jurídica.",
 	"resolutionEditor": "Editor de Resolução",
+	"resolutionFeatureEnabled": "Funcionalidades de Resolução",
+	"resolutionFeatureEnabledDescription": "Ativar editor de resoluções, documentos de trabalho e funcionalidades de emendas para esta conferência.",
 	"resolutionFontSize": "Tamanho da Fonte da Resolução",
 	"resolutionFontSizeDescription": "Defina o tamanho da fonte para o texto da resolução na visualização de apresentação.",
 	"resolutionHeadline": "Título da Resolução (ex.: O Conselho de Segurança)",

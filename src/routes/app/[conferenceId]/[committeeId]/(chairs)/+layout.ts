@@ -89,6 +89,7 @@ export const _houdini_load = graphql(`
 			conference {
 				title
 				hasModeratedCaucus
+				resolutionFeatureEnabled
 				uniqueConferenceMembers {
 					id
 					representation {

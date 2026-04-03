@@ -125,3 +125,11 @@ CVE-2026-22775
 CVE-2026-31802
 CVE-2026-25679
 CVE-2026-27142
+
+# kysely: SQL injection via JSON path keys / backslash escaping in sql.lit()
+# Transitive dep of @inlang/sdk (i18n tooling), not used in app code. Uses internal SQLite only.
+CVE-2026-32763
+CVE-2026-33468
+
+# picomatch: ReDoS via crafted extglob patterns - transitive dep of rollup/micromatch, build-time only
+CVE-2026-33671

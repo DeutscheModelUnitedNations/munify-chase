@@ -100,6 +100,7 @@
 <ChairNavbar
 	title={committee?.abbreviation}
 	activeDraftResolutionId={committee?.activeDraftResolutionId}
+	resolutionFeatureEnabled={committee?.conference?.resolutionFeatureEnabled}
 />
 
 <div class="pb-16">

@@ -391,6 +391,8 @@
 	"resolutionDeleteClause": "Delete",
 	"resolutionDisclaimer": "This document was created as part of a {conferenceName} simulation and has no legal validity.",
 	"resolutionEditor": "Resolution Editor",
+	"resolutionFeatureEnabled": "Resolution Features",
+	"resolutionFeatureEnabledDescription": "Enable resolution editor, papers, and amendment features for this conference.",
 	"resolutionFontSize": "Resolution Font Size",
 	"resolutionFontSizeDescription": "Set the font size for the resolution text in the presentation view.",
 	"resolutionHeadline": "Resolution Headline (e.g. The Security Council)",

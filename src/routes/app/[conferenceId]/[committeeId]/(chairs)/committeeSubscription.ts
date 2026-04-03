@@ -21,6 +21,7 @@ export const CommitteeSubscription = graphql(`
 			amendmentSubmissionOpen
 			amendmentSponsoringOpen
 			currentOperativeIndex
+			currentOperativeClauseId
 			activeAmendmentId
 			whiteboardContent
 			lastResolutionAdoptionDate
@@ -87,6 +88,7 @@ export const CommitteeSubscription = graphql(`
 			conference {
 				title
 				hasModeratedCaucus
+				resolutionFeatureEnabled
 				uniqueConferenceMembers {
 					id
 					representation {

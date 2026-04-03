@@ -10,9 +10,10 @@
 	interface Props {
 		title?: string;
 		activeDraftResolutionId?: string | null;
+		resolutionFeatureEnabled?: boolean;
 	}
 
-	let { title, activeDraftResolutionId }: Props = $props();
+	let { title, activeDraftResolutionId, resolutionFeatureEnabled = true }: Props = $props();
 
 	const basePath = $derived(`/app/${page.params.conferenceId}/${page.params.committeeId}`);
 
@@ -31,13 +32,17 @@
 			href: `${basePath}/voting`,
 			key: 'voting'
 		},
-		{
-			icon: 'fa-scroll',
-			label: () => m.resolutions(),
-			href: `${basePath}/resolutions`,
-			key: 'resolutions'
-		},
-		...(activeDraftResolutionId
+		...(resolutionFeatureEnabled
+			? [
+					{
+						icon: 'fa-scroll',
+						label: () => m.resolutions(),
+						href: `${basePath}/resolutions`,
+						key: 'resolutions'
+					}
+				]
+			: []),
+		...(resolutionFeatureEnabled && activeDraftResolutionId
 			? [
 					{
 						icon: 'fa-file-lines',
@@ -94,10 +99,6 @@
 
 	<div class="flex-none">
 		<CurrentTime />
-	</div>
-
-	<div class="flex-none">
-		<ThemeSwitcher />
 	</div>
 
 	<div class="flex-none">

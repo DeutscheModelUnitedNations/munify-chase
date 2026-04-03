@@ -42,7 +42,8 @@ export const conference = pgTable('conference', {
 	...defaultIdAndTimestamps,
 	title: text().notNull(),
 	pressWebsite: text(),
-	hasModeratedCaucus: boolean().notNull().default(false)
+	hasModeratedCaucus: boolean().notNull().default(false),
+	resolutionFeatureEnabled: boolean().notNull().default(true)
 });
 
 export const committeeStatus = pgEnum('committee_status', [
@@ -78,6 +79,7 @@ export const committee = pgTable(
 		maxDraftResolutions: smallint().notNull().default(3),
 		activeDraftResolutionId: text().references((): AnyPgColumn => resolutionPaper.id),
 		currentOperativeIndex: smallint(),
+		currentOperativeClauseId: text(),
 		supportReEvaluationOpen: boolean().notNull().default(false),
 		amendmentSubmissionOpen: boolean().notNull().default(true),
 		amendmentSponsoringOpen: boolean().notNull().default(true),

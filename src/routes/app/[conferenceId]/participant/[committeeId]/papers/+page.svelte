@@ -4,7 +4,7 @@
 	import { goto } from '$app/navigation';
 	import type { PageData } from './$houdini';
 	import { graphql } from '$houdini';
-	import { onMount } from 'svelte';
+	import { onMount, onDestroy } from 'svelte';
 	import { ParticipantPapersSubscription } from './papersSubscription';
 	import { ParticipantCommitteeSubscription } from '../committeeSubscription';
 	import { generatePaperName } from '$lib/utils/paperNameGenerator';
@@ -53,11 +53,21 @@
 		)
 	);
 
+	let paperUnsubscribe: (() => void) | undefined;
+	let committeeUnsubscribe: (() => void) | undefined;
+
 	onMount(() => {
-		ParticipantPapersSubscription.listen({
+		paperUnsubscribe = ParticipantPapersSubscription.listen({
 			committeeId: page.params.committeeId!
 		});
-		ParticipantCommitteeSubscription.listen({ id: page.params.committeeId! });
+		committeeUnsubscribe = ParticipantCommitteeSubscription.listen({
+			id: page.params.committeeId!
+		});
+	});
+
+	onDestroy(() => {
+		paperUnsubscribe?.();
+		committeeUnsubscribe?.();
 	});
 
 	// Create paper mutation

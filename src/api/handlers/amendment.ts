@@ -1,5 +1,5 @@
 import { db, schema } from '$api/db/db';
-import { abilityBuilder, enum_, schemaBuilder, pubsub as rumblePubsub } from '$api/rumble';
+import { abilityBuilder, enum_, query, schemaBuilder, pubsub as rumblePubsub } from '$api/rumble';
 import { basics } from './basics';
 import { isGlobalAdmin } from '$api/services/isAdminEmail';
 import { assertFindFirstExists, assertFirstEntryExists } from '@m1212e/rumble';
@@ -193,19 +193,28 @@ async function applyAmendmentToResolution(
 		case 'ALTER_POSITION': {
 			// Resolve current index from stable clause ID
 			const sourceIdx = findClauseIndex(resolution.operative, amendment.targetClauseId!);
-			const destIdx = amendment.targetPosition!;
-			if (destIdx < 0 || destIdx > resolution.operative.length) {
+			const targetPosition = amendment.targetPosition!;
+			// targetPosition follows the "insert after" convention: -1 means beginning
+			if (targetPosition < -1 || targetPosition >= resolution.operative.length) {
 				throw new GraphQLError('Destination index out of range');
 			}
 			const [clause] = resolution.operative.splice(sourceIdx, 1);
 			// After removing from source, the target index might shift
-			const adjustedDest = destIdx > sourceIdx ? destIdx - 1 : destIdx;
-			resolution.operative.splice(adjustedDest, 0, clause);
+			const adjustedTargetPosition =
+				targetPosition >= sourceIdx ? targetPosition - 1 : targetPosition;
+			resolution.operative.splice(adjustedTargetPosition + 1, 0, clause);
 			// Adjust other pending amendments' targetPosition for the structural shift
 			// First: source removal shifts indices down
 			await adjustPendingPositions(tx, paper.id, amendment.id, 'decrement', sourceIdx, 'gt');
 			// Then: destination insertion shifts indices up
-			await adjustPendingPositions(tx, paper.id, amendment.id, 'increment', adjustedDest, 'gte');
+			await adjustPendingPositions(
+				tx,
+				paper.id,
+				amendment.id,
+				'increment',
+				adjustedTargetPosition + 1,
+				'gte'
+			);
 			break;
 		}
 	}
@@ -562,6 +571,10 @@ schemaBuilder.mutationFields((t) => ({
 				.findFirst({ where: { id: amendment.paperId } })
 				.then(assertFindFirstExists);
 
+			if (paper.status !== 'AMENDMENT_PHASE') {
+				throw new GraphQLError('Paper must be in AMENDMENT_PHASE to adopt amendments');
+			}
+
 			await assertCommitteeChairOrAdmin(ctx, paper.committeeId);
 
 			await db.transaction(async (tx) => {
@@ -605,6 +618,10 @@ schemaBuilder.mutationFields((t) => ({
 			const paper = await db.query.resolutionPaper
 				.findFirst({ where: { id: amendment.paperId } })
 				.then(assertFindFirstExists);
+
+			if (paper.status !== 'AMENDMENT_PHASE') {
+				throw new GraphQLError('Paper must be in AMENDMENT_PHASE to accept amendments');
+			}
 
 			await assertCommitteeChairOrAdmin(ctx, paper.committeeId);
 

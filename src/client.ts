@@ -3,6 +3,7 @@ import toast from 'svelte-french-toast';
 import { error } from '@sveltejs/kit';
 import { subscription } from '$houdini/plugins';
 import { createClient } from 'graphql-sse';
+import { browser } from '$app/environment';
 
 let redirecting = false;
 
@@ -11,7 +12,9 @@ const authRedirect: ClientPlugin = () => ({
 		if (!redirecting && value.errors?.some((e) => e.message === 'Must be logged in')) {
 			console.warn('[auth] Session expired, redirecting to login...');
 			redirecting = true;
-			window.location.reload();
+			if (browser) {
+				window.location.reload();
+			}
 		}
 		resolve(ctx);
 	}

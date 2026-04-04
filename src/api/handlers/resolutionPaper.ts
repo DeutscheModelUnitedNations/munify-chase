@@ -1,5 +1,5 @@
 import { db, schema } from '$api/db/db';
-import { abilityBuilder, enum_, schemaBuilder, pubsub as rumblePubsub } from '$api/rumble';
+import { abilityBuilder, enum_, query, schemaBuilder, pubsub as rumblePubsub } from '$api/rumble';
 import { and, eq, isNull, count as drizzleCount, desc, inArray } from 'drizzle-orm';
 import { basics } from './basics';
 import { isGlobalAdmin } from '$api/services/isAdminEmail';
@@ -660,7 +660,7 @@ schemaBuilder.mutationFields((t) => ({
 				})
 				.then(assertFindFirstExists);
 
-			if (paper.status !== 'VOTING_PHASE' && paper.status !== 'AMENDMENT_PHASE') {
+			if (paper.status !== 'VOTING_PHASE') {
 				throw new GraphQLError('Paper must be in VOTING_PHASE to record final vote');
 			}
 
@@ -855,10 +855,10 @@ schemaBuilder.mutationFields((t) => ({
 								.set({ content: snapshot.content })
 								.where(eq(schema.resolutionPaper.id, args.paperId));
 						}
-						// Reset applied amendments back to PENDING
+						// Reset applied amendments back to SUBMITTED so they are visible and actionable
 						await tx
 							.update(schema.amendment)
-							.set({ status: 'PENDING' })
+							.set({ status: 'SUBMITTED' })
 							.where(
 								and(
 									eq(schema.amendment.paperId, args.paperId),

@@ -1,5 +1,5 @@
 import { db, schema } from '$api/db/db';
-import { abilityBuilder, enum_, schemaBuilder, pubsub as rumblePubsub } from '$api/rumble';
+import { abilityBuilder, enum_, query, schemaBuilder, pubsub as rumblePubsub } from '$api/rumble';
 import { basics } from './basics';
 import { isGlobalAdmin } from '$api/services/isAdminEmail';
 import { assertCommitteeChairOrAdmin } from './resolutionPaper';

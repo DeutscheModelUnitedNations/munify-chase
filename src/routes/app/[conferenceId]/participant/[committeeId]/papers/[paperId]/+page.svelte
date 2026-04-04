@@ -166,7 +166,9 @@
 		const handleBeforeUnload = () => {
 			if (canEdit) {
 				const body = JSON.stringify({
-					query: `mutation { releaseAllMyLocks(paperId: "${page.params.paperId}") }`
+					query:
+						'mutation ReleaseAllMyLocks($paperId: ID!) { releaseAllMyLocks(paperId: $paperId) }',
+					variables: { paperId: page.params.paperId }
 				});
 				navigator.sendBeacon('/api/graphql', new Blob([body], { type: 'application/json' }));
 			}

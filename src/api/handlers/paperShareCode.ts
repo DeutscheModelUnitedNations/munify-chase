@@ -5,9 +5,9 @@ import { basics } from './basics';
 import { isGlobalAdmin } from '$api/services/isAdminEmail';
 import { assertFindFirstExists, assertFirstEntryExists } from '@m1212e/rumble';
 import { GraphQLError } from 'graphql';
-import { customAlphabet } from 'nanoid';
+import { nanoid } from '$lib/helpers/nanoid';
 
-const generateShareCode = customAlphabet('ABCDEFGHJKLMNPQRSTUVWXYZ23456789', 6);
+const generateShareCode = () => nanoid();
 
 const { arg, ref, pubsub, table } = basics('paperShareCode');
 const paperPubsub = rumblePubsub({ table: 'resolutionPaper' });

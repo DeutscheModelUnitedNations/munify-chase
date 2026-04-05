@@ -592,7 +592,14 @@
 	let committeeSubscriptionData = $derived(
 		$ParticipantCommitteeSubscription.data?.findFirstCommittee
 	);
-	let currentOpIndex = $derived(committeeSubscriptionData?.currentOperativeIndex ?? 0);
+	let currentOpIndex = $derived.by(() => {
+		const clauseId = committeeSubscriptionData?.currentOperativeClauseId;
+		if (clauseId && resolution) {
+			const idx = resolution.operative.findIndex((c: { id: string }) => c.id === clauseId);
+			if (idx !== -1) return idx;
+		}
+		return committeeSubscriptionData?.currentOperativeIndex ?? 0;
+	});
 	let activeAmendmentId = $derived(committeeSubscriptionData?.activeAmendmentId ?? null);
 
 	let isActiveDr = $derived(paper?.id === committee?.activeDraftResolutionId);
@@ -1301,10 +1308,15 @@
 										<span class="badge badge-ghost badge-sm">
 											{getAmendmentStatusLabel(amendment.status)}
 										</span>
-										{#if amendment.targetOperativeIndex != null}
-											<span class="badge badge-ghost badge-sm font-mono">
-												OP {amendment.targetOperativeIndex + 1}
-											</span>
+										{#if amendment.targetClauseId || amendment.targetOperativeIndex != null}
+											{@const resolvedOpIdx = amendment.targetClauseId
+												? operativeClauses.findIndex((c) => c.id === amendment.targetClauseId)
+												: (amendment.targetOperativeIndex ?? -1)}
+											{#if resolvedOpIdx >= 0}
+												<span class="badge badge-ghost badge-sm font-mono">
+													OP {resolvedOpIdx + 1}
+												</span>
+											{/if}
 										{/if}
 										{#if isActive}
 											<span class="badge badge-success badge-sm">{m.activeAmendment()}</span>
@@ -1343,10 +1355,15 @@
 										<span class="badge badge-sm {getAmendmentTypeBadgeClass(amendment.type)}">
 											{amendment.documentNumber ?? getAmendmentTypeLabel(amendment.type)}
 										</span>
-										{#if amendment.targetOperativeIndex != null}
-											<span class="badge badge-ghost badge-sm font-mono">
-												OP {amendment.targetOperativeIndex + 1}
-											</span>
+										{#if amendment.targetClauseId || amendment.targetOperativeIndex != null}
+											{@const resolvedOpIdx = amendment.targetClauseId
+												? operativeClauses.findIndex((c) => c.id === amendment.targetClauseId)
+												: (amendment.targetOperativeIndex ?? -1)}
+											{#if resolvedOpIdx >= 0}
+												<span class="badge badge-ghost badge-sm font-mono">
+													OP {resolvedOpIdx + 1}
+												</span>
+											{/if}
 										{/if}
 										{#if isActive}
 											<span class="badge badge-success badge-sm">{m.activeAmendment()}</span>
@@ -1391,10 +1408,15 @@
 										<span class="badge badge-sm {getAmendmentTypeBadgeClass(amendment.type)}">
 											{amendment.documentNumber ?? getAmendmentTypeLabel(amendment.type)}
 										</span>
-										{#if amendment.targetOperativeIndex != null}
-											<span class="badge badge-ghost badge-sm font-mono">
-												OP {amendment.targetOperativeIndex + 1}
-											</span>
+										{#if amendment.targetClauseId || amendment.targetOperativeIndex != null}
+											{@const resolvedOpIdx = amendment.targetClauseId
+												? operativeClauses.findIndex((c) => c.id === amendment.targetClauseId)
+												: (amendment.targetOperativeIndex ?? -1)}
+											{#if resolvedOpIdx >= 0}
+												<span class="badge badge-ghost badge-sm font-mono">
+													OP {resolvedOpIdx + 1}
+												</span>
+											{/if}
 										{/if}
 										{#if amendment.proposer?.representation}
 											<div class="flex items-center gap-1 text-sm">

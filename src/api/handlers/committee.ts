@@ -7,11 +7,12 @@ import {
 	pubsub as rumblePubsub,
 	schemaBuilder
 } from '$api/rumble';
-import { isWhitelistedEmail } from '$api/services/isDMUNEmail';
+import { isGlobalAdmin } from '$api/services/isAdminEmail';
 import { assertFindFirstExists, assertFirstEntryExists } from '@m1212e/rumble';
 import { and, count, eq, type InferSelectModel } from 'drizzle-orm';
 import { calculateMajority } from '$lib/utils/majorities';
 import { assertConferenceAdmin } from './conferenceUser';
+import { assertCommitteeChairOrAdmin } from './resolutionPaper';
 import { GraphQLError } from 'graphql';
 
 const paperPubsub = rumblePubsub({ table: 'resolutionPaper' });
@@ -20,11 +21,8 @@ const statusEnum = enum_({
 	tsName: 'committeeStatus'
 });
 
-abilityBuilder.committee.allow(['read', 'update']).when(({ mustBeLoggedIn }) => {
-	const user = mustBeLoggedIn();
-	if (user?.email && isWhitelistedEmail(user.email)) {
-		return 'allow';
-	}
+abilityBuilder.committee.allow(['read', 'update']).when((ctx) => {
+	if (isGlobalAdmin(ctx)) return 'allow';
 });
 
 abilityBuilder.committee.allow('read').when(({ mustBeLoggedIn }) => {
@@ -194,6 +192,7 @@ schemaBuilder.mutationFields((t) => {
 				activeDraftResolutionId: t.arg.id(),
 				clearActiveDraftResolution: t.arg.boolean(),
 				currentOperativeIndex: t.arg.int(),
+				currentOperativeClauseId: t.arg.string(),
 				supportReEvaluationOpen: t.arg.boolean(),
 				amendmentSubmissionOpen: t.arg.boolean(),
 				amendmentSponsoringOpen: t.arg.boolean(),
@@ -201,6 +200,8 @@ schemaBuilder.mutationFields((t) => {
 				clearActiveAmendment: t.arg.boolean()
 			},
 			resolve: async (query, root, args, ctx, info) => {
+				await assertCommitteeChairOrAdmin(ctx, args.id);
+
 				// Validate activeDraftResolutionId if provided
 				if (args.activeDraftResolutionId) {
 					const paper = await db.query.resolutionPaper.findFirst({
@@ -247,6 +248,7 @@ schemaBuilder.mutationFields((t) => {
 							? null
 							: (args.activeDraftResolutionId ?? undefined),
 						currentOperativeIndex: args.currentOperativeIndex ?? undefined,
+						currentOperativeClauseId: args.currentOperativeClauseId ?? undefined,
 						supportReEvaluationOpen,
 						amendmentSubmissionOpen: args.amendmentSubmissionOpen ?? undefined,
 						amendmentSponsoringOpen: args.amendmentSponsoringOpen ?? undefined,
@@ -254,12 +256,7 @@ schemaBuilder.mutationFields((t) => {
 							? null
 							: (args.activeAmendmentId ?? undefined)
 					})
-					.where(
-						and(
-							eq(schema.committee.id, args.id),
-							ctx.abilities.committee.filter('update').sql.where
-						)
-					);
+					.where(eq(schema.committee.id, args.id));
 
 				// Auto-transition active DR to AMENDMENT_PHASE when currentOperativeIndex is set
 				if (args.currentOperativeIndex !== undefined && args.currentOperativeIndex !== null) {

@@ -51,12 +51,14 @@
 			<i class="fa-duotone fa-users size-[1.2em]"></i>
 			<span class="dock-label">{m.committee()}</span>
 		</a>
-		<a
-			href="/app/{page.params.conferenceId}/participant/{page.params.committeeId}/papers"
-			class={isPapersRoute ? 'dock-active' : ''}
-		>
-			<i class="fa-duotone fa-scroll size-[1.2em]"></i>
-			<span class="dock-label">{m.papers()}</span>
-		</a>
+		{#if committee.conference?.resolutionFeatureEnabled !== false}
+			<a
+				href="/app/{page.params.conferenceId}/participant/{page.params.committeeId}/papers"
+				class={isPapersRoute ? 'dock-active' : ''}
+			>
+				<i class="fa-duotone fa-scroll size-[1.2em]"></i>
+				<span class="dock-label">{m.papers()}</span>
+			</a>
+		{/if}
 	</div>
 {/if}

@@ -59,6 +59,7 @@ export const PresentationSubscription = graphql(`
 			}
 			activeDraftResolutionId
 			currentOperativeIndex
+			currentOperativeClauseId
 			activeAmendmentId
 			activeAmendment {
 				id
@@ -150,6 +151,7 @@ export const PresentationSubscription = graphql(`
 			}
 			conference {
 				title
+				resolutionFeatureEnabled
 				uniqueConferenceMembers {
 					id
 					representation {

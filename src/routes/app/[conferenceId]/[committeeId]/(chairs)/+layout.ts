@@ -22,6 +22,7 @@ export const _houdini_load = graphql(`
 			amendmentSubmissionOpen
 			amendmentSponsoringOpen
 			currentOperativeIndex
+			currentOperativeClauseId
 			activeAmendmentId
 			whiteboardContent
 			lastResolutionAdoptionDate
@@ -88,6 +89,7 @@ export const _houdini_load = graphql(`
 			conference {
 				title
 				hasModeratedCaucus
+				resolutionFeatureEnabled
 				uniqueConferenceMembers {
 					id
 					representation {

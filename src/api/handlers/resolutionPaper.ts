@@ -2,7 +2,7 @@ import { db, schema } from '$api/db/db';
 import { abilityBuilder, enum_, schemaBuilder, pubsub as rumblePubsub } from '$api/rumble';
 import { and, eq, isNull, count as drizzleCount, desc, inArray } from 'drizzle-orm';
 import { basics } from './basics';
-import { isWhitelistedEmail } from '$api/services/isDMUNEmail';
+import { isGlobalAdmin } from '$api/services/isAdminEmail';
 import { assertFindFirstExists, assertFirstEntryExists } from '@m1212e/rumble';
 import { GraphQLError } from 'graphql';
 import {
@@ -18,9 +18,8 @@ const clauseVotePubsub = rumblePubsub({ table: 'operativeClauseVote' });
 
 const paperStatusEnum = enum_({ tsName: 'paperStatus' });
 
-abilityBuilder.resolutionPaper.allow(['read', 'update']).when(({ mustBeLoggedIn }) => {
-	const user = mustBeLoggedIn();
-	if (user?.email && isWhitelistedEmail(user.email)) {
+abilityBuilder.resolutionPaper.allow(['read', 'update']).when((ctx) => {
+	if (isGlobalAdmin(ctx)) {
 		return { where: { deletedAt: { isNull: true } } };
 	}
 });
@@ -41,7 +40,7 @@ export async function assertCommitteeChairOrAdmin(
 	},
 	committeeId: string
 ) {
-	if (ctx.hasRole('admin')) {
+	if (isGlobalAdmin(ctx)) {
 		return;
 	}
 
@@ -608,9 +607,11 @@ schemaBuilder.mutationFields((t) => ({
 				});
 
 				// Reset currentOperativeIndex to 0 for voting navigation
+				const parsed = ResolutionSchema.safeParse(paper.content);
+				const firstClauseId = parsed.success ? (parsed.data.operative[0]?.id ?? null) : null;
 				await tx
 					.update(schema.committee)
-					.set({ currentOperativeIndex: 0 })
+					.set({ currentOperativeIndex: 0, currentOperativeClauseId: firstClauseId })
 					.where(eq(schema.committee.id, paper.committeeId));
 			});
 
@@ -695,7 +696,8 @@ schemaBuilder.mutationFields((t) => ({
 			// Always clear activeDraftResolutionId and currentOperativeIndex
 			const updateSet: Record<string, unknown> = {
 				activeDraftResolutionId: null,
-				currentOperativeIndex: null
+				currentOperativeIndex: null,
+				currentOperativeClauseId: null
 			};
 
 			if (args.outcome === 'ADOPTED') {
@@ -803,11 +805,14 @@ schemaBuilder.mutationFields((t) => ({
 						.findFirst({ where: { id: paper.committeeId } })
 						.then(assertFindFirstExists);
 					if (!committee.activeDraftResolutionId) {
+						const parsed = ResolutionSchema.safeParse(paper.content);
+						const firstClauseId = parsed.success ? (parsed.data.operative[0]?.id ?? null) : null;
 						await tx
 							.update(schema.committee)
 							.set({
 								activeDraftResolutionId: args.paperId,
-								currentOperativeIndex: 0
+								currentOperativeIndex: 0,
+								currentOperativeClauseId: firstClauseId
 							})
 							.where(eq(schema.committee.id, paper.committeeId));
 					}
@@ -820,7 +825,7 @@ schemaBuilder.mutationFields((t) => ({
 					// Clear currentOperativeIndex on committee
 					await tx
 						.update(schema.committee)
-						.set({ currentOperativeIndex: null })
+						.set({ currentOperativeIndex: null, currentOperativeClauseId: null })
 						.where(eq(schema.committee.id, paper.committeeId));
 					if (args.restoreSnapshot) {
 						// Restore content from latest AMENDMENT_PHASE snapshot
@@ -860,7 +865,8 @@ schemaBuilder.mutationFields((t) => ({
 							.update(schema.committee)
 							.set({
 								activeDraftResolutionId: null,
-								currentOperativeIndex: null
+								currentOperativeIndex: null,
+								currentOperativeClauseId: null
 							})
 							.where(eq(schema.committee.id, paper.committeeId));
 					}

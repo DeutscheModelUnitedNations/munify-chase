@@ -516,10 +516,29 @@
 
 	let submittedAmendments = $derived(allAmendments.filter((a) => a.status === 'SUBMITTED'));
 
-	let currentOpIndex = $derived(committee?.currentOperativeIndex ?? 0);
+	let currentOpIndex = $derived.by(() => {
+		const clauseId = committee?.currentOperativeClauseId;
+		if (clauseId && resolution) {
+			const idx = resolution.operative.findIndex((c: { id: string }) => c.id === clauseId);
+			if (idx !== -1) return idx;
+		}
+		return committee?.currentOperativeIndex ?? 0;
+	});
 	let activeAmendmentId = $derived(committee?.activeAmendmentId ?? null);
 
 	let operativeClauses = $derived((resolution?.operative ?? []) as OperativeClause[]);
+
+	// Resolve an amendment's operative index from its targetClauseId (stable) with fallback to stored index
+	function resolveAmendmentIndex(a: {
+		targetClauseId?: string | null;
+		targetOperativeIndex?: number | null;
+	}): number {
+		if (a.targetClauseId) {
+			const idx = operativeClauses.findIndex((c) => c.id === a.targetClauseId);
+			if (idx !== -1) return idx;
+		}
+		return a.targetOperativeIndex ?? -1;
+	}
 
 	// GO-ordered: current paragraph first → DELETE > ALTER_TEXT (diff size desc) > ADD > ALTER_POSITION → then by createdAt
 	let sortedSubmittedAmendments = $derived.by(() => {
@@ -531,8 +550,8 @@
 		};
 		return [...submittedAmendments].sort((a, b) => {
 			// Current paragraph first
-			const aIsCurrent = (a.targetOperativeIndex ?? -1) === currentOpIndex;
-			const bIsCurrent = (b.targetOperativeIndex ?? -1) === currentOpIndex;
+			const aIsCurrent = resolveAmendmentIndex(a) === currentOpIndex;
+			const bIsCurrent = resolveAmendmentIndex(b) === currentOpIndex;
 			if (aIsCurrent && !bIsCurrent) return -1;
 			if (!aIsCurrent && bIsCurrent) return 1;
 
@@ -543,8 +562,8 @@
 
 			// For ALTER_TEXT, sort by diff size descending
 			if (a.type === 'ALTER_TEXT' && b.type === 'ALTER_TEXT') {
-				const aClause = operativeClauses[a.targetOperativeIndex ?? 0];
-				const bClause = operativeClauses[b.targetOperativeIndex ?? 0];
+				const aClause = operativeClauses[resolveAmendmentIndex(a)];
+				const bClause = operativeClauses[resolveAmendmentIndex(b)];
 				if (aClause && bClause && a.newContent && b.newContent) {
 					const aDiff = calculateAmendmentDiffSize(aClause, a.newContent as OperativeClause);
 					const bDiff = calculateAmendmentDiffSize(bClause, b.newContent as OperativeClause);
@@ -567,7 +586,8 @@
 		const byIndex = new SvelteMap<number | null, typeof sortedSubmittedAmendments>();
 
 		for (const a of sortedSubmittedAmendments) {
-			const key = a.targetOperativeIndex ?? null;
+			const resolved = resolveAmendmentIndex(a);
+			const key = resolved >= 0 ? resolved : null;
 			if (!byIndex.has(key)) byIndex.set(key, []);
 			byIndex.get(key)!.push(a);
 		}
@@ -708,17 +728,20 @@
 		mutation ChairAdvanceParagraphMutation(
 			$id: ID!
 			$currentOperativeIndex: Int
+			$currentOperativeClauseId: String
 			$activeAmendmentId: ID
 			$clearActiveAmendment: Boolean
 		) {
 			updateCommittee(
 				id: $id
 				currentOperativeIndex: $currentOperativeIndex
+				currentOperativeClauseId: $currentOperativeClauseId
 				activeAmendmentId: $activeAmendmentId
 				clearActiveAmendment: $clearActiveAmendment
 			) {
 				id
 				currentOperativeIndex
+				currentOperativeClauseId
 				activeAmendmentId
 			}
 		}
@@ -753,12 +776,13 @@
 	async function handleAmendmentVote(amendment: {
 		id: string;
 		type: string;
+		targetClauseId?: string | null;
 		targetOperativeIndex?: number | null;
 	}) {
 		if (!committee) return;
 		const typeLabel = getAmendmentTypeLabel(amendment.type);
-		const clauseLabel =
-			amendment.targetOperativeIndex != null ? `OP ${amendment.targetOperativeIndex + 1}` : '';
+		const resolvedIdx = resolveAmendmentIndex(amendment);
+		const clauseLabel = resolvedIdx >= 0 ? `OP ${resolvedIdx + 1}` : '';
 		const docNumber = paper?.documentNumber ?? m.draftResolution();
 		const voteName = `${docNumber} – ${typeLabel} ${clauseLabel}`.trim();
 
@@ -866,9 +890,11 @@
 	async function handleAdvanceParagraph() {
 		if (!committee) return;
 		try {
+			const newIndex = currentOpIndex + 1;
 			await UpdateCommitteeMutation.mutate({
 				id: committee.id,
-				currentOperativeIndex: currentOpIndex + 1
+				currentOperativeIndex: newIndex,
+				currentOperativeClauseId: operativeClauses[newIndex]?.id ?? null
 			});
 		} catch {
 			toast.error(m.saveError());
@@ -1273,7 +1299,8 @@
 		if (!committee) return;
 		UpdateCommitteeMutation.mutate({
 			id: committee.id,
-			currentOperativeIndex: index
+			currentOperativeIndex: index,
+			currentOperativeClauseId: operativeClauses[index]?.id ?? null
 		}).catch(() => toast.error(m.saveError()));
 	}
 </script>
@@ -1640,9 +1667,11 @@
 							onclick={async () => {
 								if (!committee) return;
 								try {
+									const newIndex = currentOpIndex - 1;
 									await UpdateCommitteeMutation.mutate({
 										id: committee.id,
-										currentOperativeIndex: currentOpIndex - 1
+										currentOperativeIndex: newIndex,
+										currentOperativeClauseId: operativeClauses[newIndex]?.id ?? null
 									});
 								} catch {
 									toast.error(m.saveError());

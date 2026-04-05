@@ -71,7 +71,7 @@ bun run preview          # Preview production build
 
 - **IDs**: nanoid with 30 characters, no lookalike chars (see `src/lib/helpers/nanoid.ts`)
 - **Database columns**: snake_case (configured in Drizzle)
-- **i18n**: Messages in `messages/de.json` and `messages/en.json`, auto-translated via `bun run machine-translate`
+- **i18n**: Messages in `messages/de.json`, `messages/en.json`, and `messages/pt.json`, auto-translated via `bun run machine-translate`
 - **Styling**: Tailwind CSS with DaisyUI components, DMUN corporate identity package
 
 ## Authentication

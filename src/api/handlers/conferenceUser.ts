@@ -2,7 +2,7 @@ import { abilityBuilder, enum_, schemaBuilder } from '$api/rumble';
 import { eq } from 'drizzle-orm';
 import { basics } from './basics';
 import { db, schema } from '$api/db/db';
-import { isWhitelistedEmail } from '$api/services/isDMUNEmail';
+import { isGlobalAdmin } from '$api/services/isAdminEmail';
 import { GraphQLError } from 'graphql';
 import { assertFindFirstExists, assertFirstEntryExists } from '@m1212e/rumble';
 
@@ -10,11 +10,8 @@ const { ref, pubsub, table } = basics('conferenceUser');
 
 export { ref as ConferenceUserRef };
 
-abilityBuilder.conferenceUser.allow('read').when(({ mustBeLoggedIn }) => {
-	const user = mustBeLoggedIn();
-	if (user?.email && isWhitelistedEmail(user.email)) {
-		return 'allow';
-	}
+abilityBuilder.conferenceUser.allow('read').when((ctx) => {
+	if (isGlobalAdmin(ctx)) return 'allow';
 });
 
 abilityBuilder.conferenceUser.allow('read').when(({ mustBeLoggedIn }) => {
@@ -30,8 +27,8 @@ export async function assertConferenceAdmin(
 	ctx: { hasRole: (role: string) => boolean; mustBeLoggedIn: () => { email?: string | null } },
 	conferenceId: string
 ) {
-	if (ctx.hasRole('admin')) {
-		return; // OIDC admin has access
+	if (isGlobalAdmin(ctx)) {
+		return;
 	}
 
 	const user = ctx.mustBeLoggedIn();

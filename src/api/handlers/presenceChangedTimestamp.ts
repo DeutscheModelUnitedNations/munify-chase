@@ -1,11 +1,9 @@
 import { abilityBuilder } from '$api/rumble';
-import { isWhitelistedEmail } from '$api/services/isDMUNEmail';
 import { basics } from './basics';
 
 const { ref, pubsub, table } = basics('presenceChangedTimestamp');
 
-abilityBuilder.presenceChangedTimestamp.allow(['read']).when(({ hasRole }) => {
-	if (hasRole('admin')) {
-		return 'allow';
-	}
+abilityBuilder.presenceChangedTimestamp.allow(['read']).when(({ mustBeLoggedIn }) => {
+	mustBeLoggedIn();
+	return 'allow';
 });

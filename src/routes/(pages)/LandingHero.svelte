@@ -39,7 +39,7 @@
 				class="mb-4 text-center font-serif text-5xl leading-tight font-bold lg:text-right lg:text-6xl"
 			>
 				<span
-					class="from-primary-500 to-primary-800 dark:to-primary-300 bg-gradient-to-r bg-clip-text text-transparent"
+					class="from-primary to-primary-800 dark:to-primary-300 bg-linear-to-r bg-clip-text text-transparent"
 				>
 					MUN
 				</span>
@@ -47,9 +47,7 @@
 			</h1>
 		</div>
 		<div in:fade={{ duration: 1500, delay: 1000 }}>
-			<h2
-				class="dark:text-primary-100 text-center text-xl leading-normal lg:text-right lg:text-2xl"
-			>
+			<h2 class="text-base-content text-center text-xl leading-normal lg:text-right lg:text-2xl">
 				{m.homeHeroText()}
 			</h2>
 		</div>

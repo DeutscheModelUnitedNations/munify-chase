@@ -2,6 +2,7 @@
 @import '@deutschemodelunitednations/corporate-identity/css/shades/dmun';
 
 @import 'tailwindcss';
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
 @import '@deutschemodelunitednations/munify-resolution-editor/tailwind.css';
 @plugin '@tailwindcss/typography';
 @plugin 'daisyui';

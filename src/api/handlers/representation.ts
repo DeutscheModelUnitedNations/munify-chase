@@ -1,6 +1,6 @@
 import { db, schema } from '$api/db/db';
 import { abilityBuilder, enum_, schemaBuilder } from '$api/rumble';
-import { isWhitelistedEmail } from '$api/services/isDMUNEmail';
+import { isGlobalAdmin } from '$api/services/isAdminEmail';
 import { basics } from './basics';
 import { assertConferenceAdmin } from './conferenceUser';
 import { assertFindFirstExists, assertFirstEntryExists } from '@m1212e/rumble';
@@ -13,11 +13,8 @@ const representationTypeEnum = enum_({
 	tsName: 'representationType'
 });
 
-abilityBuilder.representation.allow(['read', 'update']).when(({ mustBeLoggedIn }) => {
-	const user = mustBeLoggedIn();
-	if (user?.email && isWhitelistedEmail(user.email)) {
-		return 'allow';
-	}
+abilityBuilder.representation.allow(['read', 'update']).when((ctx) => {
+	if (isGlobalAdmin(ctx)) return 'allow';
 });
 
 abilityBuilder.representation.allow('read').when(({ mustBeLoggedIn }) => {

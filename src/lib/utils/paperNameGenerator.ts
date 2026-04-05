@@ -34,6 +34,23 @@ const adverbs = {
 		'Enorm',
 		'Riesig',
 		'Fantastisch'
+	],
+	pt: [
+		'Muito',
+		'Super',
+		'Ultra',
+		'Bastante',
+		'Totalmente',
+		'Absolutamente',
+		'Razoavelmente',
+		'Realmente',
+		'Extremamente',
+		'Incrivelmente',
+		'Notavelmente',
+		'Excepcionalmente',
+		'Tremendamente',
+		'Imensamente',
+		'Fantasticamente'
 	]
 };
 
@@ -79,6 +96,27 @@ const adjectives = {
 		'Edler',
 		'Würdevoller',
 		'Optimistischer'
+	],
+	pt: [
+		'Feliz',
+		'Calmo',
+		'Entusiasmado',
+		'Energético',
+		'Esperançoso',
+		'Contente',
+		'Curioso',
+		'Motivado',
+		'Alegre',
+		'Determinado',
+		'Confiante',
+		'Magnífico',
+		'Grandioso',
+		'Majestoso',
+		'Esplêndido',
+		'Glorioso',
+		'Nobre',
+		'Digno',
+		'Otimista'
 	]
 };
 
@@ -99,7 +137,7 @@ function pick<T>(arr: T[]): T {
 }
 
 export function generatePaperName(): string {
-	const locale = getLocale() as 'en' | 'de';
+	const locale = getLocale() as 'en' | 'de' | 'pt';
 	const adverbList = adverbs[locale] ?? adverbs.en;
 	const adjectiveList = adjectives[locale] ?? adjectives.en;
 

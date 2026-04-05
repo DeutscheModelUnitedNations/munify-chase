@@ -2,7 +2,7 @@ import { db, schema } from '$api/db/db';
 import { abilityBuilder, enum_, schemaBuilder, pubsub as rumblePubsub } from '$api/rumble';
 import { eq } from 'drizzle-orm';
 import { basics } from './basics';
-import { isWhitelistedEmail } from '$api/services/isDMUNEmail';
+import { isGlobalAdmin } from '$api/services/isAdminEmail';
 import { assertFindFirstExists, assertFirstEntryExists } from '@m1212e/rumble';
 import { GraphQLError } from 'graphql';
 import { customAlphabet } from 'nanoid';
@@ -14,11 +14,8 @@ const paperPubsub = rumblePubsub({ table: 'resolutionPaper' });
 
 const shareCodePermissionEnum = enum_({ tsName: 'shareCodePermission' });
 
-abilityBuilder.paperShareCode.allow(['read', 'update']).when(({ mustBeLoggedIn }) => {
-	const user = mustBeLoggedIn();
-	if (user?.email && isWhitelistedEmail(user.email)) {
-		return 'allow';
-	}
+abilityBuilder.paperShareCode.allow(['read', 'update']).when((ctx) => {
+	if (isGlobalAdmin(ctx)) return 'allow';
 });
 
 abilityBuilder.paperShareCode.allow('read').when(({ mustBeLoggedIn }) => {

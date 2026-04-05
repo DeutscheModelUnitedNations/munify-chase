@@ -2,17 +2,14 @@ import { db, schema } from '$api/db/db';
 import { abilityBuilder, schemaBuilder, pubsub as rumblePubsub } from '$api/rumble';
 import { and, eq } from 'drizzle-orm';
 import { basics } from './basics';
-import { isWhitelistedEmail } from '$api/services/isDMUNEmail';
+import { isGlobalAdmin } from '$api/services/isAdminEmail';
 import { assertFindFirstExists } from '@m1212e/rumble';
 
 const { ref, pubsub, table } = basics('paperEditor');
 const paperPubsub = rumblePubsub({ table: 'resolutionPaper' });
 
-abilityBuilder.paperEditor.allow(['read', 'update']).when(({ mustBeLoggedIn }) => {
-	const user = mustBeLoggedIn();
-	if (user?.email && isWhitelistedEmail(user.email)) {
-		return 'allow';
-	}
+abilityBuilder.paperEditor.allow(['read', 'update']).when((ctx) => {
+	if (isGlobalAdmin(ctx)) return 'allow';
 });
 
 abilityBuilder.paperEditor.allow('read').when(({ mustBeLoggedIn }) => {

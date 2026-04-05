@@ -12,13 +12,10 @@ import { ConferenceMemberRef } from './conferenceMember';
 import { assertConferenceAdmin } from './conferenceUser';
 import { eq } from 'drizzle-orm';
 import { assertFindFirstExists } from '@m1212e/rumble';
+import { GraphQLError } from 'graphql';
 
-abilityBuilder.conference.allow(['read', 'update']).when(({ mustBeLoggedIn }) => {
-	const user = mustBeLoggedIn();
-
-	if (user?.email && isWhitelistedEmail(user.email)) {
-		return 'allow';
-	}
+abilityBuilder.conference.allow(['read', 'update']).when((ctx) => {
+	if (isGlobalAdmin(ctx)) return 'allow';
 });
 
 abilityBuilder.conference.allow('read').when(({ mustBeLoggedIn }) => {
@@ -78,7 +75,8 @@ schemaBuilder.mutationFields((t) => ({
 			id: t.arg.id({ required: true }),
 			title: t.arg.string(),
 			pressWebsite: t.arg.string(),
-			hasModeratedCaucus: t.arg.boolean()
+			hasModeratedCaucus: t.arg.boolean(),
+			resolutionFeatureEnabled: t.arg.boolean()
 		},
 		resolve: async (query, root, args, ctx, info) => {
 			await assertConferenceAdmin(ctx, args.id);
@@ -88,7 +86,8 @@ schemaBuilder.mutationFields((t) => ({
 				.set({
 					title: args.title ?? undefined,
 					pressWebsite: args.pressWebsite ?? undefined,
-					hasModeratedCaucus: args.hasModeratedCaucus ?? undefined
+					hasModeratedCaucus: args.hasModeratedCaucus ?? undefined,
+					resolutionFeatureEnabled: args.resolutionFeatureEnabled ?? undefined
 				})
 				.where(eq(schema.conference.id, args.id));
 
@@ -103,6 +102,32 @@ schemaBuilder.mutationFields((t) => ({
 					)
 				)
 				.then(assertFindFirstExists);
+		}
+	})
+}));
+
+schemaBuilder.mutationFields((t) => ({
+	deleteConference: t.field({
+		type: 'Boolean',
+		args: {
+			id: t.arg.id({ required: true })
+		},
+		resolve: async (root, args, ctx) => {
+			if (!isGlobalAdmin(ctx)) {
+				throw new GraphQLError('Only global admins can delete conferences');
+			}
+
+			const conf = await db.query.conference.findFirst({
+				where: { id: args.id }
+			});
+
+			if (!conf) {
+				throw new GraphQLError('Conference not found');
+			}
+
+			await db.delete(schema.conference).where(eq(schema.conference.id, args.id));
+
+			return true;
 		}
 	})
 }));

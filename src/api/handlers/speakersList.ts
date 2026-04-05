@@ -1,10 +1,8 @@
 import { db, schema } from '$api/db/db';
 import { schemaBuilder, pubsub as rumblePubsub, abilityBuilder, object, query } from '$api/rumble';
-import { and, eq } from 'drizzle-orm';
-import { basics } from './basics';
+import { eq } from 'drizzle-orm';
 import { assertFindFirstExists } from '@m1212e/rumble';
 import { GraphQLError } from 'graphql';
-import { isWhitelistedEmail } from '$api/services/isDMUNEmail';
 
 // const { arg, ref, pubsub: speakersListPubSub, table } = basics('speakersList');
 
@@ -40,12 +38,9 @@ query({
 	table: 'speakersList'
 });
 
-abilityBuilder.speakersList.allow(['read', 'update', 'delete']).when(({ mustBeLoggedIn }) => {
-	const user = mustBeLoggedIn();
-	if (user?.email && isWhitelistedEmail(user.email)) {
-		return 'allow';
-	}
-});
+// abilityBuilder.speakersList.allow(['read', 'update', 'delete']).when((ctx) => {
+//   if (isGlobalAdmin(ctx)) return 'allow';
+// });
 
 abilityBuilder.speakersList.allow('read').when(({ mustBeLoggedIn }) => {
 	mustBeLoggedIn();
@@ -73,6 +68,15 @@ schemaBuilder.mutationFields((t) => {
 				if (args.startTimestamp && args.stopTimer) {
 					throw new GraphQLError('startTimestamp and stopTimer are mutually exclusive');
 				}
+
+				// Verify chair/admin access via speakersList → agendaItem → committee
+				const sl = await db.query.speakersList
+					.findFirst({
+						where: { id: args.id },
+						with: { agendaItem: { columns: { committeeId: true } } }
+					})
+					.then(assertFindFirstExists);
+				await assertCommitteeChairOrAdmin(ctx, (sl as any).agendaItem.committeeId);
 
 				await db.transaction(async (tx) => {
 					if (args.stopTimer) {
@@ -111,12 +115,7 @@ schemaBuilder.mutationFields((t) => {
 							startTimestamp: args.stopTimer ? null : (args.startTimestamp ?? undefined),
 							isClosed: args.isClosed ?? undefined
 						})
-						.where(
-							and(
-								eq(schema.speakersList.id, args.id),
-								ctx.abilities.speakersList.filter('update').sql.where
-							)
-						);
+						.where(eq(schema.speakersList.id, args.id));
 				});
 
 				speakersListPubSub.updated(args.id);
@@ -137,14 +136,18 @@ schemaBuilder.mutationFields((t) => {
 				id: t.arg.id({ required: true })
 			},
 			resolve: async (query, root, args, ctx, info) => {
+				// Verify chair/admin access
+				const sl = await db.query.speakersList
+					.findFirst({
+						where: { id: args.id },
+						with: { agendaItem: { columns: { committeeId: true } } }
+					})
+					.then(assertFindFirstExists);
+				await assertCommitteeChairOrAdmin(ctx, (sl as any).agendaItem.committeeId);
+
 				const deleted = await db
 					.delete(schema.speakerOnList)
-					.where(
-						and(
-							eq(schema.speakerOnList.speakersListId, args.id),
-							ctx.abilities.speakerOnList.filter('delete').sql.where
-						)
-					)
+					.where(eq(schema.speakerOnList.speakersListId, args.id))
 					.returning();
 
 				if (deleted.length > 0) {

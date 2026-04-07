@@ -1,6 +1,5 @@
 <script lang="ts">
 	import { m } from '$lib/paraglide/messages';
-	import type { PageData } from './$houdini';
 	import LandingHero from './LandingHero.svelte';
 	import CardSection from './CardSection.svelte';
 	import TextSection from './TextSection.svelte';
@@ -8,8 +7,6 @@
 	import { media } from '$lib/utils/media.svelte';
 	import { navigating } from '$app/state';
 	import { onMount } from 'svelte';
-
-	let { data }: { data: PageData } = $props();
 
 	// Modal state
 	let versionModalVisible = false;

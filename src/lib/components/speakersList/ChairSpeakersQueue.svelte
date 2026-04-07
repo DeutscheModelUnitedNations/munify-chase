@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { graphql, type CommitteeTeamQuery$result } from '$houdini';
+	import { client } from '$lib/api/rumbleClient/client';
 	import { getTranslatedCountryNameFromAlpha3Code } from '$lib/utils/nationTranslationHelper.svelte';
 	import { flip } from 'svelte/animate';
 	import Flag from '../Flag.svelte';
@@ -11,9 +11,7 @@
 	import { promiseToastStrings } from '$lib/utils/toast';
 
 	interface Props {
-		rawSpeakers?: NonNullable<
-			CommitteeTeamQuery$result['findFirstCommittee']['activeAgendaItem']
-		>['speakersList'][number]['speakers'];
+		rawSpeakers?: any[];
 		closed?: boolean;
 	}
 
@@ -29,46 +27,20 @@
 				: null;
 	};
 
-	const RemoveSpeakerOnListMutation = graphql(`
-		mutation RemoveSpeakerOnListMutation($speakerOnListId: ID!) {
-			removeSpeakerOnList(speakerOnListId: $speakerOnListId) {
-				id
-				speakers {
-					id
-					position
-				}
-			}
-		}
-	`);
-
 	const removeSpeaker = (speakerOnListId: string) => {
 		if (!speakerOnListId) return;
 
 		toast.promise(
-			RemoveSpeakerOnListMutation.mutate({
-				speakerOnListId
-			}),
+			client.mutate.removeSpeakerOnList({ __args: { speakerOnListId }, id: true }),
 			promiseToastStrings(m.speaker(), 'delete')
 		);
 	};
-
-	const MoveSpeakerMutation = graphql(`
-		mutation MoveSpeakerMutation($speakerOnListId: ID!, $position: Int!) {
-			moveSpeakerToPosition(id: $speakerOnListId, position: $position) {
-				id
-				position
-			}
-		}
-	`);
 
 	const moveSpeaker = (speakerOnListId: string, position: number) => {
 		if (!speakerOnListId || position < 0) return;
 
 		toast.promise(
-			MoveSpeakerMutation.mutate({
-				speakerOnListId,
-				position
-			}),
+			client.mutate.moveSpeakerToPosition({ __args: { id: speakerOnListId, position }, id: true }),
 			promiseToastStrings(m.speaker(), 'update')
 		);
 	};

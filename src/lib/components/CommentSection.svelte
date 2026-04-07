@@ -3,9 +3,28 @@
 	import Flag from './Flag.svelte';
 	import { slide } from 'svelte/transition';
 	import { onMount } from 'svelte';
-	import type { ChairPaperCommentsSubscription$result } from '$houdini';
-
-	type Comment = ChairPaperCommentsSubscription$result['findManyResolutionComment'][number];
+	type Comment = {
+		id: string;
+		content: string;
+		createdAt: Date | string;
+		parentCommentId: string | null;
+		clauseId: string | null;
+		visibility: string;
+		author: {
+			id: string;
+			conferenceUserType?: string | null;
+			user?: { givenName: string; familyName: string } | null;
+			committeeMember?: {
+				representation?: {
+					name?: string | null;
+					alpha2Code?: string | null;
+					alpha3Code?: string | null;
+					faIcon?: string | null;
+					type?: string | null;
+				} | null;
+			} | null;
+		};
+	};
 
 	interface Props {
 		paperId: string;

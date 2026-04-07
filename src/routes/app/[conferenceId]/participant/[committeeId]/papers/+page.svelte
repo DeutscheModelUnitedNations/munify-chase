@@ -2,32 +2,48 @@
 	import { m } from '$lib/paraglide/messages';
 	import { page } from '$app/state';
 	import { goto } from '$app/navigation';
-	import type { PageData } from './$houdini';
-	import { graphql } from '$houdini';
-	import { onMount } from 'svelte';
-	import { ParticipantPapersSubscription } from './papersSubscription';
-	import { ParticipantCommitteeSubscription } from '../committeeSubscription';
+	import { getContext } from 'svelte';
+	import { client } from '$lib/api/rumbleClient/client';
 	import { generatePaperName } from '$lib/utils/paperNameGenerator';
 	import Flag from '$lib/components/Flag.svelte';
 	import toast from 'svelte-french-toast';
 
-	let { data }: { data: PageData } = $props();
+	const participantIdentity = getContext<any>('participantIdentity');
+	const committee = getContext<any>('participantCommittee');
 
-	let query = $derived(data?.ParticipantPapersQuery);
-	let identityQuery = $derived(data?.ParticipantIdentityQuery);
-	let layoutQuery = $derived(data?.ParticipantCommitteeLayoutQuery);
-	let committee = $derived(
-		$ParticipantCommitteeSubscription.data?.findFirstCommittee ??
-			$layoutQuery.data?.findFirstCommittee
-	);
+	const papers = await client.liveQuery.resolutionPapers({
+		__args: {
+			where: {
+				committee: { id: page.params.committeeId }
+			}
+		},
+		id: true,
+		title: true,
+		status: true,
+		documentNumber: true,
+		creatorCommitteeMemberId: true,
+		updatedAt: true,
+		editors: {
+			id: true,
+			conferenceUserId: true
+		},
+		sponsors: {
+			id: true,
+			committeeMemberId: true,
+			committeeMember: {
+				id: true,
+				representation: {
+					id: true,
+					name: true,
+					alpha3Code: true,
+					type: true,
+					faIcon: true
+				}
+			}
+		}
+	});
 
-	let papers = $derived(
-		$ParticipantPapersSubscription.data?.findManyResolutionPaper ??
-			$query.data?.findManyResolutionPaper ??
-			[]
-	);
-
-	let conferenceUser = $derived($identityQuery.data?.findManyConferenceUser?.[0]);
+	let conferenceUser = $derived(participantIdentity?.[0]);
 	let role = $derived(conferenceUser?.conferenceUserType);
 	let myCommitteeMemberId = $derived(conferenceUser?.committeeMemberId);
 	let myConferenceUserId = $derived(conferenceUser?.id);
@@ -37,7 +53,7 @@
 
 	// My papers: created by me, or I'm an editor, or I'm a sponsor
 	let myPapers = $derived(
-		papers.filter(
+		(papers ?? []).filter(
 			(p) =>
 				p.creatorCommitteeMemberId === myCommitteeMemberId ||
 				p.editors.some((e) => e.conferenceUserId === myConferenceUserId) ||
@@ -47,40 +63,27 @@
 
 	// Draft resolutions: status is DRAFT_RESOLUTION or later
 	let draftResolutions = $derived(
-		papers.filter(
+		(papers ?? []).filter(
 			(p) =>
 				p.status === 'DRAFT_RESOLUTION' || p.status === 'AMENDMENT_PHASE' || p.status === 'FINAL'
 		)
 	);
 
-	onMount(() => {
-		ParticipantPapersSubscription.listen({
-			committeeId: page.params.committeeId!
-		});
-		ParticipantCommitteeSubscription.listen({ id: page.params.committeeId! });
-	});
-
-	// Create paper mutation
-	const CreatePaperMutation = graphql(`
-		mutation CreateResolutionPaperMutation($committeeId: ID!, $agendaItemId: ID!, $title: String) {
-			createResolutionPaper(committeeId: $committeeId, agendaItemId: $agendaItemId, title: $title) {
-				id
-			}
-		}
-	`);
-
 	async function handleCreatePaper() {
 		if (!activeAgendaItem) return;
 		try {
-			const result = await CreatePaperMutation.mutate({
-				committeeId: page.params.committeeId!,
-				agendaItemId: activeAgendaItem.id,
-				title: generatePaperName()
+			const result = await client.mutate.createResolutionPaper({
+				__args: {
+					committeeId: page.params.committeeId!,
+					agendaItemId: activeAgendaItem.id,
+					title: generatePaperName()
+				},
+				id: true
 			});
 			toast.success(m.paperCreated());
-			if (result.data?.createResolutionPaper?.id) {
+			if (result?.id) {
 				goto(
-					`/app/${page.params.conferenceId}/participant/${page.params.committeeId}/papers/${result.data.createResolutionPaper.id}`
+					`/app/${page.params.conferenceId}/participant/${page.params.committeeId}/papers/${result.id}`
 				);
 			}
 		} catch {
@@ -88,38 +91,18 @@
 		}
 	}
 
-	// Redeem share code mutation
-	const RedeemShareCodeMutation = graphql(`
-		mutation RedeemShareCodeMutation($code: String!) {
-			redeemShareCode(code: $code) {
-				paperId
-				permission
-			}
-		}
-	`);
-
-	// Sponsor mutations for re-evaluation support toggle
-	const AddSponsorMutation = graphql(`
-		mutation AddSponsorListMutation($paperId: ID!, $committeeMemberId: ID!) {
-			addSponsor(paperId: $paperId, committeeMemberId: $committeeMemberId) {
-				id
-			}
-		}
-	`);
-
-	const RemoveSponsorMutation = graphql(`
-		mutation RemoveSponsorListMutation($paperId: ID!, $committeeMemberId: ID!) {
-			removeSponsor(paperId: $paperId, committeeMemberId: $committeeMemberId)
-		}
-	`);
-
 	async function toggleSupport(paperId: string, currentlySupporting: boolean) {
 		if (!myCommitteeMemberId) return;
 		try {
 			if (currentlySupporting) {
-				await RemoveSponsorMutation.mutate({ paperId, committeeMemberId: myCommitteeMemberId });
+				await client.mutate.removeSponsor({
+					__args: { paperId, committeeMemberId: myCommitteeMemberId }
+				} as any);
 			} else {
-				await AddSponsorMutation.mutate({ paperId, committeeMemberId: myCommitteeMemberId });
+				await client.mutate.addSponsor({
+					__args: { paperId, committeeMemberId: myCommitteeMemberId },
+					id: true
+				});
 			}
 		} catch {
 			toast.error(m.saveError());
@@ -131,10 +114,12 @@
 	async function handleRedeemCode() {
 		if (!shareCodeInput.trim()) return;
 		try {
-			const result = await RedeemShareCodeMutation.mutate({
-				code: shareCodeInput.trim().toUpperCase()
+			const result = await client.mutate.redeemShareCode({
+				__args: { code: shareCodeInput.trim().toUpperCase() },
+				paperId: true,
+				permission: true
 			});
-			const paperId = result.data?.redeemShareCode?.paperId;
+			const paperId = result?.paperId;
 			if (paperId) {
 				toast.success(m.codeRedeemed());
 				shareCodeInput = '';

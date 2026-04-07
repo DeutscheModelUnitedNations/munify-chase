@@ -1,9 +1,6 @@
 <script lang="ts">
-	import {
-		graphql,
-		type CommitteeTeamQuery$result,
-		type SpeakersListCategoryEnum$options
-	} from '$houdini';
+	import type { SpeakerslistcategoryEnum } from '$lib/api/rumbleClient/client';
+	import { client } from '$lib/api/rumbleClient/client';
 	import Popover from '$lib/components/Popover.svelte';
 	import { m } from '$lib/paraglide/messages';
 	import Tabs from '$lib/components/Tabs.svelte';
@@ -14,12 +11,16 @@
 	import dayjs from 'dayjs';
 
 	interface Props {
-		speakersList?:
-			| NonNullable<
-					CommitteeTeamQuery$result['findFirstCommittee']['activeAgendaItem']
-			  >['speakersList'][number]
-			| null;
-		type: SpeakersListCategoryEnum$options;
+		speakersList?: {
+			id: string;
+			type: string;
+			isClosed: boolean;
+			speakingTime: number;
+			startTimestamp?: Date | null;
+			timeLeft: number;
+			speakers: Array<{ id: string; position: number; overwriteName?: string | null }>;
+		} | null;
+		type: SpeakerslistcategoryEnum;
 	}
 
 	let { speakersList, type }: Props = $props();
@@ -45,21 +46,12 @@
 		}
 	];
 
-	const OpenOrCloseListMutation = graphql(`
-		mutation OpenOrCloseList($speakersListId: ID!, $isClosed: Boolean!) {
-			updateSpeakersList(id: $speakersListId, isClosed: $isClosed) {
-				id
-				isClosed
-			}
-		}
-	`);
-
 	const openOrCloseList = async (isClosed: boolean) => {
 		if (!speakersList?.id) return;
 		await toast.promise(
-			OpenOrCloseListMutation.mutate({
-				speakersListId: speakersList.id,
-				isClosed
+			client.mutate.updateSpeakersList({
+				__args: { id: speakersList.id, isClosed },
+				id: true
 			}),
 			promiseToastStrings(
 				speakersList.type === 'COMMENT_LIST' ? m.commentList() : m.speakersList(),
@@ -67,17 +59,6 @@
 			)
 		);
 	};
-
-	const ClearListMutation = graphql(`
-		mutation ClearList($speakersListId: ID!) {
-			clearSpeakersList(id: $speakersListId) {
-				id
-				speakers {
-					id
-				}
-			}
-		}
-	`);
 
 	const clearList = async () => {
 		if (!speakersList?.id) return;
@@ -92,8 +73,9 @@
 			})
 		) {
 			await toast.promise(
-				ClearListMutation.mutate({
-					speakersListId: speakersList.id
+				client.mutate.clearSpeakersList({
+					__args: { id: speakersList.id },
+					id: true
 				}),
 				promiseToastStrings(
 					speakersList.type === 'COMMENT_LIST' ? m.commentList() : m.speakersList(),
@@ -102,15 +84,6 @@
 			);
 		}
 	};
-
-	const updateSpeakerOnListMutation = graphql(`
-		mutation UpdateSpeakerOnList($speakerOnListId: ID!, $overwriteName: String) {
-			updateSpeakerOnList(id: $speakerOnListId, overwriteName: $overwriteName) {
-				id
-				overwriteName
-			}
-		}
-	`);
 
 	const changeSpeakersName = async () => {
 		if (!speakersList?.id || !changeSpeakersNameValue) return;
@@ -124,9 +97,9 @@
 			return;
 		}
 		await toast.promise(
-			updateSpeakerOnListMutation.mutate({
-				speakerOnListId: existingSpeakerId,
-				overwriteName: changeSpeakersNameValue
+			client.mutate.updateSpeakerOnList({
+				__args: { id: existingSpeakerId, overwriteName: changeSpeakersNameValue },
+				id: true
 			}),
 			promiseToastStrings(
 				speakersList.type === 'COMMENT_LIST' ? m.commentList() : m.speakersList(),
@@ -136,26 +109,17 @@
 		changeSpeakersNameModalOpen = false;
 	};
 
-	const updateSpeakersListMutation = graphql(`
-		mutation UpdateSpeakersList($speakersListId: ID!, $speakingTime: Int) {
-			updateSpeakersList(
-				id: $speakersListId
-				speakingTime: $speakingTime
-				timeLeft: $speakingTime
-			) {
-				id
-				speakingTime
-			}
-		}
-	`);
-
 	const changeSpeakersTime = async () => {
 		if (!speakersList?.id || changeSpeakingTimeValue < 0) return;
 
 		await toast.promise(
-			updateSpeakersListMutation.mutate({
-				speakersListId: speakersList.id,
-				speakingTime: changeSpeakingTimeValue
+			client.mutate.updateSpeakersList({
+				__args: {
+					id: speakersList.id,
+					speakingTime: changeSpeakingTimeValue,
+					timeLeft: changeSpeakingTimeValue
+				},
+				id: true
 			}),
 			promiseToastStrings(
 				speakersList.type === 'COMMENT_LIST' ? m.commentList() : m.speakersList(),

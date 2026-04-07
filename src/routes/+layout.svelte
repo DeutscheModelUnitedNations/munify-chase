@@ -9,7 +9,6 @@
 	import { browser, dev } from '$app/environment';
 	import { initialSetTheme } from '$lib/utils/theme.svelte';
 	import { onMount } from 'svelte';
-	import { timeQuery } from '$lib/state/serverTime.svelte';
 	import Alert from '$lib/components/Alert/PromiseAlert.svelte';
 	import Inspect from 'svelte-inspect-value';
 
@@ -57,7 +56,6 @@
 
 	onMount(() => {
 		initialSetTheme();
-		timeQuery.fetch();
 		const matchMedia = window.matchMedia('(prefers-color-scheme: dark)');
 		matchMedia.addEventListener('change', (e) => {
 			initialSetTheme();

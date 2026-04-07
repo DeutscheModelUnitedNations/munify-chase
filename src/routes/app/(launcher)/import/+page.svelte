@@ -1,7 +1,8 @@
 <script lang="ts">
-	import { goto, invalidateAll } from '$app/navigation';
+	import { goto } from '$app/navigation';
 	import { m } from '$lib/paraglide/messages';
-	import { cache, graphql, type RepresentationTypeEnum$options } from '$houdini';
+	import { client } from '$lib/api/rumbleClient/client';
+	import type { RepresentationtypeEnum } from '$lib/api/rumbleClient/client';
 	import toast from 'svelte-french-toast';
 	import { importDataSchema } from '$lib/utils/import';
 	import { z } from 'zod/v4';
@@ -27,14 +28,6 @@
 		const target = event.target as HTMLInputElement;
 		file = target.files && target.files[0] ? target.files[0] : null;
 	}
-
-	const ConferenceCreationMutation = graphql(`
-		mutation ConferenceCreation($data: ImportData!) {
-			importDelegatorConference(data: $data) {
-				id
-			}
-		}
-	`);
 
 	async function parseFile(file: File): Promise<any> {
 		const ext = file.name.split('.').pop()?.toLowerCase();
@@ -139,15 +132,15 @@
 			delete importData.$schema;
 		}
 
-		const res = await ConferenceCreationMutation.mutate({ data: importData }).catch((e) => {
-			toast.error(m.conferenceCreationError());
-			console.error('Error creating conference:', e);
-			loading = false;
-		});
+		const res = await client.mutate
+			.importDelegatorConference({ __args: { data: importData }, id: true })
+			.catch((e) => {
+				toast.error(m.conferenceCreationError());
+				console.error('Error creating conference:', e);
+				loading = false;
+			});
 		if (res) {
 			toast.success(m.conferenceCreated());
-			cache.markStale();
-			await invalidateAll();
 			goto(`/app`);
 		}
 		loading = false;
@@ -166,7 +159,7 @@
 			title: ''
 		});
 
-	const addRepresentationAndConferenceMember = (type: RepresentationTypeEnum$options) => {
+	const addRepresentationAndConferenceMember = (type: RepresentationtypeEnum) => {
 		const repId = nanoid();
 		importData?.representations.push({
 			name: '',

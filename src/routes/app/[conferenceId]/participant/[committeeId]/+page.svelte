@@ -1,27 +1,71 @@
 <script lang="ts">
 	import { m } from '$lib/paraglide/messages';
 	import { page } from '$app/state';
-	import type { PageData } from './$houdini';
-	import { onMount } from 'svelte';
-	import { ParticipantCommitteeSubscription } from './committeeSubscription';
-	// ThemeSwitcher moved to +layout.svelte
+	import { getContext } from 'svelte';
+	import { client } from '$lib/api/rumbleClient/client';
 	import IconInfoBox from '$lib/components/IconInfoBox.svelte';
 	import { getCommitteeStatusIcon, getCommitteeStatusText } from '$lib/utils/committeeStatus';
 	import CurrentSpeaker from '$lib/components/speakersList/CurrentSpeaker.svelte';
 	import PresentationSpeakersQueue from '$lib/components/speakersList/PresentationSpeakersQueue.svelte';
 	import WhiteboardViewer from '$lib/components/whiteboard/WhiteboardViewer.svelte';
-	import { graphql } from '$houdini';
 	import Majorities from '$lib/components/Majorities.svelte';
 	import ParticipantIdentityCard from '../ParticipantIdentityCard.svelte';
 
-	let { data }: { data: PageData } = $props();
+	const participantIdentity = getContext<any>('participantIdentity');
+	let conferenceUser = $derived(participantIdentity?.[0]);
 
-	let query = $derived(data?.ParticipantCommitteeQuery);
-	let identityQuery = $derived(data?.ParticipantIdentityQuery);
-	let committee = $derived(
-		$ParticipantCommitteeSubscription.data?.findFirstCommittee ?? $query.data?.findFirstCommittee
-	);
-	let conferenceUser = $derived($identityQuery.data?.findManyConferenceUser?.[0]);
+	const committee: any = await client.liveQuery.committee({
+		__args: { id: page.params.committeeId! },
+		id: true,
+		name: true,
+		status: true,
+		statusHeadline: true,
+		statusUntil: true,
+		showWhiteboard: true,
+		whiteboardContent: true,
+		allowDelegationsToAddThemselvesToSpeakersList: true,
+		totalPresent: true,
+		simpleMajority: true,
+		twoThirdsMajority: true,
+		paperSupportThreshold: true,
+		activeAgendaItem: {
+			id: true,
+			title: true,
+			speakersList: {
+				id: true,
+				type: true,
+				isClosed: true,
+				speakingTime: true,
+				startTimestamp: true,
+				timeLeft: true,
+				speakers: {
+					id: true,
+					position: true,
+					overwriteName: true,
+					committeeMember: {
+						id: true,
+						representation: {
+							id: true,
+							name: true,
+							alpha3Code: true,
+							type: true,
+							faIcon: true
+						}
+					},
+					conferenceMember: {
+						id: true,
+						representation: {
+							id: true,
+							name: true,
+							alpha3Code: true,
+							type: true,
+							faIcon: true
+						}
+					}
+				}
+			}
+		}
+	});
 
 	let role = $derived(conferenceUser?.conferenceUserType);
 	let isParticipant = $derived(role === 'DELEGATE' || role === 'NON_STATE_ACTOR');
@@ -35,15 +79,11 @@
 			conferenceUser?.conferenceMember?.representation
 	);
 
-	onMount(() => {
-		ParticipantCommitteeSubscription.listen({ id: page.params.committeeId! });
-	});
-
 	const speakersList = $derived(
-		committee?.activeAgendaItem?.speakersList?.find((sl) => sl.type === 'SPEAKERS_LIST')
+		committee?.activeAgendaItem?.speakersList?.find((sl: any) => sl.type === 'SPEAKERS_LIST')
 	);
 	const commentList = $derived(
-		committee?.activeAgendaItem?.speakersList?.find((sl) => sl.type === 'COMMENT_LIST')
+		committee?.activeAgendaItem?.speakersList?.find((sl: any) => sl.type === 'COMMENT_LIST')
 	);
 
 	// Self-add logic
@@ -54,7 +94,7 @@
 	function findMyPositionOnList(list: typeof speakersList): number | null {
 		if (!list?.speakers) return null;
 		const speaker = list.speakers.find(
-			(s) =>
+			(s: any) =>
 				(myCommitteeMemberId && s.committeeMember?.id === myCommitteeMemberId) ||
 				(myConferenceMemberId && s.conferenceMember?.id === myConferenceMemberId)
 		);
@@ -64,29 +104,19 @@
 	let myPositionOnSpeakers = $derived(findMyPositionOnList(speakersList));
 	let myPositionOnComments = $derived(findMyPositionOnList(commentList));
 
-	const SelfAddMutation = graphql(`
-		mutation SelfAddToSpeakersList($speakersListId: ID!) {
-			selfAddToSpeakersList(speakersListId: $speakersListId) {
-				id
-				position
-			}
-		}
-	`);
-
-	const SelfRemoveMutation = graphql(`
-		mutation SelfRemoveFromSpeakersList($speakersListId: ID!) {
-			selfRemoveFromSpeakersList(speakersListId: $speakersListId) {
-				id
-			}
-		}
-	`);
-
-	function handleSelfAdd(listId: string) {
-		SelfAddMutation.mutate({ speakersListId: listId });
+	async function handleSelfAdd(listId: string) {
+		await client.mutate.selfAddToSpeakersList({
+			__args: { speakersListId: listId },
+			id: true,
+			position: true
+		});
 	}
 
-	function handleSelfRemove(listId: string) {
-		SelfRemoveMutation.mutate({ speakersListId: listId });
+	async function handleSelfRemove(listId: string) {
+		await client.mutate.selfRemoveFromSpeakersList({
+			__args: { speakersListId: listId },
+			id: true
+		});
 	}
 </script>
 

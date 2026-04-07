@@ -1,5 +1,5 @@
 <script lang="ts">
-	import type { CommitteeStatusEnum$options } from '$houdini';
+	import type { CommitteestatusEnum } from '$lib/api/rumbleClient/client';
 	import { getCommitteeStatusBackground } from '$lib/utils/committeeStatus';
 	import Marquee from 'svelte-fast-marquee';
 	import { onMount } from 'svelte';
@@ -14,7 +14,7 @@
 		text: string;
 		faIcon?: string;
 		iconText?: string;
-		committeeStatus?: CommitteeStatusEnum$options;
+		committeeStatus?: CommitteestatusEnum;
 		until?: Date;
 		marqueeOnOverflow?: boolean;
 		fullHeight?: boolean;

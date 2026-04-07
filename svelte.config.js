@@ -5,6 +5,12 @@ import adapter from '@sveltejs/adapter-node';
 const config = {
 	preprocess: vitePreprocess(),
 
+	compilerOptions: {
+		experimental: {
+			async: true
+		}
+	},
+
 	kit: {
 		adapter: adapter({
 			precompress: true

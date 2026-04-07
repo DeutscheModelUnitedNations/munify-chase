@@ -1,8 +1,6 @@
 <script lang="ts">
 	import { m } from '$lib/paraglide/messages';
-	import type { PageData } from './$houdini';
-	import { onMount } from 'svelte';
-	import { CommitteeSubscription } from '../committeeSubscription';
+	import { getContext } from 'svelte';
 	import BasicCard from '$lib/components/BasicCard.svelte';
 	import Majorities from '$lib/components/Majorities.svelte';
 	import UndrawError from '$lib/components/UndrawError.svelte';
@@ -10,12 +8,7 @@
 	import StatusWidget from '../StatusWidget.svelte';
 	import VotingSetup from '$lib/components/voting/VotingSetup.svelte';
 
-	let { data }: { data: PageData } = $props();
-
-	let query = $derived(data?.CommitteeTeamQuery);
-	let committee = $derived(
-		$CommitteeSubscription.data?.findFirstCommittee ?? $query.data?.findFirstCommittee
-	);
+	const committee = getContext<any>('committee');
 </script>
 
 {#if committee}

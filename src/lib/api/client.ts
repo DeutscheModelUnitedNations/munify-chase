@@ -6,12 +6,19 @@ import {
 	fetchExchange,
 	subscriptionExchange
 } from '@urql/core';
-import { cacheExchange, offlineExchange } from '@urql/exchange-graphcache';
+import { offlineExchange } from '@urql/exchange-graphcache';
 import { empty, filter, fromPromise, merge, mergeMap, pipe } from 'wonka';
 import { graphqlMutation, graphqlQuery } from '$api/graphql.remote';
 import { browser } from '$app/environment';
 import { schema } from './rumbleClient/schema';
 import { makeDefaultStorage } from '@urql/exchange-graphcache/default-storage';
+import { createClient as createWsClient } from 'graphql-ws';
+
+const wsClient = browser
+	? createWsClient({
+			url: `${location.protocol === 'https:' ? 'wss' : 'ws'}://${location.host}/api/graphql`
+		})
+	: null;
 
 /**
  * Exchange to perform graphql calls via sveltekit remote functions (if possible)
@@ -106,11 +113,12 @@ export const urqlClient = new Client({
 				const input = { ...request, query: request.query || '' };
 				return {
 					subscribe(sink) {
-						const unsubscribe = wsClient.subscribe(input, sink);
+						const unsubscribe = wsClient!.subscribe(input, sink);
 						return { unsubscribe };
 					}
 				};
-			}
+			},
+			isSubscriptionOperation: (op) => op.kind === 'subscription' && browser
 		})
 	],
 	fetchOptions: {

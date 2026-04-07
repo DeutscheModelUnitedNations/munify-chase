@@ -1,7 +1,9 @@
 <script lang="ts">
-	import { onDestroy, onMount, type Snippet } from 'svelte';
+	import { onDestroy, type Snippet } from 'svelte';
+	import { setContext } from 'svelte';
+	import { page } from '$app/state';
+	import { client } from '$lib/api/rumbleClient/client';
 	import ChairNavbar from './ChairNavbar.svelte';
-	import type { LayoutData } from './$houdini';
 	import * as m from '$lib/paraglide/messages';
 	import StatusChangerModal from '$lib/components/committee/StatusChangerModal.svelte';
 	import StateOfDebateChangerModal from '$lib/components/committee/StateOfDebateChangerModal.svelte';
@@ -13,19 +15,118 @@
 	import hotkeys from 'hotkeys-js';
 	import AdoptionConfetti from '$lib/components/AdoptionConfetti.svelte';
 	import VotingModal from '$lib/components/voting/VotingModal.svelte';
-	import { CommitteeSubscription } from './committeeSubscription';
 
 	interface Props {
 		children: Snippet;
-		data: LayoutData;
 	}
 
-	let { data, children }: Props = $props();
+	let { children }: Props = $props();
 
-	let query = $derived(data?.CommitteeTeamQuery);
-	let committee = $derived(
-		$CommitteeSubscription.data?.findFirstCommittee ?? $query.data?.findFirstCommittee
-	);
+	const committeeId = page.params.committeeId!;
+
+	const committee: any = await client.liveQuery.committee({
+		__args: { id: committeeId },
+		id: true,
+		abbreviation: true,
+		name: true,
+		resolutionHeadline: true,
+		stateOfDebate: true,
+		status: true,
+		statusHeadline: true,
+		statusUntil: true,
+		totalPresent: true,
+		simpleMajority: true,
+		twoThirdsMajority: true,
+		paperSupportThreshold: true,
+		maxDraftResolutions: true,
+		activeDraftResolutionId: true,
+		supportReEvaluationOpen: true,
+		amendmentSubmissionOpen: true,
+		amendmentSponsoringOpen: true,
+		currentOperativeIndex: true,
+		currentOperativeClauseId: true,
+		activeAmendmentId: true,
+		whiteboardContent: true,
+		lastResolutionAdoptionDate: true,
+		allowDelegationsToAddThemselvesToSpeakersList: true,
+		activeAgendaItem: {
+			id: true,
+			title: true,
+			speakersList: {
+				id: true,
+				type: true,
+				isClosed: true,
+				speakingTime: true,
+				startTimestamp: true,
+				timeLeft: true,
+				speakers: {
+					id: true,
+					position: true,
+					overwriteName: true,
+					committeeMember: {
+						id: true,
+						representation: {
+							id: true,
+							type: true,
+							name: true,
+							regionalGroup: true,
+							alpha2Code: true,
+							alpha3Code: true,
+							faIcon: true
+						},
+						present: true
+					},
+					conferenceMember: {
+						id: true,
+						representation: {
+							id: true,
+							type: true,
+							name: true,
+							regionalGroup: true,
+							alpha2Code: true,
+							alpha3Code: true,
+							faIcon: true
+						}
+					}
+				}
+			}
+		},
+		agendaItems: {
+			id: true,
+			title: true
+		},
+		members: {
+			id: true,
+			present: true,
+			representation: {
+				id: true,
+				type: true,
+				name: true,
+				regionalGroup: true,
+				alpha2Code: true,
+				alpha3Code: true,
+				faIcon: true
+			}
+		},
+		conference: {
+			title: true,
+			hasModeratedCaucus: true,
+			// TODO: resolutionFeatureEnabled not available in Rumble client yet
+			uniqueConferenceMembers: {
+				id: true,
+				representation: {
+					id: true,
+					type: true,
+					name: true,
+					alpha2Code: true,
+					alpha3Code: true,
+					faIcon: true
+				}
+			}
+		}
+	});
+
+	setContext('committee', committee);
 
 	let committeeStatusExpiredAlerted = $state(false);
 	let speakersListOvertimeAlerted = $state(false);
@@ -80,12 +181,9 @@
 		return () => clearInterval(interval);
 	});
 
-	onMount(() => {
-		CommitteeSubscription.listen({ id: data.committeeId });
-		hotkeys('alt+p', (event) => {
-			event.preventDefault();
-			window.open('.', '_blank');
-		});
+	hotkeys('alt+p', (event) => {
+		event.preventDefault();
+		window.open('.', '_blank');
 	});
 
 	onDestroy(() => {
@@ -100,7 +198,6 @@
 <ChairNavbar
 	title={committee?.abbreviation}
 	activeDraftResolutionId={committee?.activeDraftResolutionId}
-	resolutionFeatureEnabled={committee?.conference?.resolutionFeatureEnabled}
 />
 
 <div class="pb-16">
@@ -108,17 +205,14 @@
 </div>
 
 <StatusChangerModal
-	committeeId={data.committeeId}
+	{committeeId}
 	oldStatus={committee?.status}
 	oldUntil={committee?.statusUntil}
 	oldCustomName={committee?.statusHeadline}
 	hasModeratedCaucus={committee?.conference?.hasModeratedCaucus}
 />
 
-<StateOfDebateChangerModal
-	committeeId={data.committeeId}
-	oldStateOfDebate={committee?.stateOfDebate}
-/>
+<StateOfDebateChangerModal {committeeId} oldStateOfDebate={committee?.stateOfDebate} />
 
 {#if committee}
 	<VotingModal {committee} />

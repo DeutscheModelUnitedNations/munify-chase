@@ -1,49 +1,27 @@
 <script lang="ts">
-	import { invalidateAll } from '$app/navigation';
-	import { cache, graphql, type CommitteeTeamQuery$result } from '$houdini';
+	import { client } from '$lib/api/rumbleClient/client';
 	import { m } from '$lib/paraglide/messages';
 	import { promiseToastStrings } from '$lib/utils/toast';
 	import toast from 'svelte-french-toast';
 
 	interface Props {
 		committeeId: string;
-		activeAgendaItem?: CommitteeTeamQuery$result['findFirstCommittee']['activeAgendaItem'];
-		agendaItems?: CommitteeTeamQuery$result['findFirstCommittee']['agendaItems'];
+		activeAgendaItem?: { id: string; title: string } | null;
+		agendaItems?: { id: string; title: string }[];
 	}
 
 	let { committeeId, activeAgendaItem, agendaItems }: Props = $props();
 
 	let value = $state(activeAgendaItem?.id ?? '');
 
-	const UpdateActiveAgendaItemMutation = graphql(`
-		mutation UpdateActiveAgendaItem($agendaItemId: ID!, $committeeId: ID!) {
-			updateCommittee(id: $committeeId, activeAgendaItemId: $agendaItemId) {
-				id
-				activeAgendaItem {
-					id
-					title
-				}
-			}
-		}
-	`);
-
-	const AddAgendaItemMutation = graphql(`
-		mutation AddAgendaItem($committeeId: ID!, $title: String!) {
-			createAgendaItem(committeeId: $committeeId, title: $title) {
-				id
-				title
-			}
-		}
-	`);
-
 	const update = async () => {
 		if (value === activeAgendaItem?.id) {
 			return;
 		}
 		await toast.promise(
-			UpdateActiveAgendaItemMutation.mutate({
-				agendaItemId: value,
-				committeeId
+			client.mutate.updateCommittee({
+				__args: { id: committeeId, activeAgendaItemId: value },
+				id: true
 			}),
 			promiseToastStrings(m.agendaItem(), 'update')
 		);
@@ -54,15 +32,9 @@
 		if (!title) return;
 
 		await toast.promise(
-			AddAgendaItemMutation.mutate({
-				committeeId,
-				title
-			}),
+			client.mutate.createAgendaItem({ __args: { committeeId, title }, id: true, title: true }),
 			promiseToastStrings(m.agendaItem(), 'create')
 		);
-
-		cache.markStale();
-		invalidateAll();
 	};
 </script>
 

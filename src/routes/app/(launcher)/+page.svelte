@@ -2,21 +2,38 @@
 	import { m } from '$lib/paraglide/messages';
 	import Footer from '$lib/components/Footer.svelte';
 	import DeleteConferenceModal from '$lib/components/DeleteConferenceModal.svelte';
-	import type { PageData } from './$houdini';
-	import type { ConferenceUserTypeEnum$options } from '$houdini';
+	import { client } from '$lib/api/rumbleClient/client';
+	import type { ConferenceusertypeEnum } from '$lib/api/rumbleClient/client';
 
-	let { data }: { data: PageData } = $props();
+	let { data }: { data: { user: { sub: string; given_name?: string } } } = $props();
 
-	let launcherQuery = $derived(data?.LauncherQuery);
-	let conferenceData = $derived($launcherQuery.data?.findManyConferenceUser ?? []);
-	let isGlobalAdmin = $derived($launcherQuery.data?.isGlobalAdmin ?? false);
-	let allConferences = $derived($launcherQuery.data?.findManyConference ?? []);
+	const conferenceUsers = await client.liveQuery.conferenceUsers({
+		__args: { where: { user: { id: data.user.sub } } },
+		id: true,
+		conferenceUserType: true,
+		committeeMemberId: true,
+		committeeMember: {
+			committeeId: true
+		},
+		conference: {
+			id: true,
+			title: true
+		}
+	});
+
+	const conferences = await client.liveQuery.conferences({
+		id: true,
+		title: true
+	});
+
+	// TODO: isGlobalAdmin not available in Rumble client yet
+	let isGlobalAdmin = false;
 
 	let manageMode = $state(false);
 	let deleteModalOpen = $state(false);
 	let deleteTarget = $state<{ id: string; title: string } | null>(null);
 
-	const getType = (type: ConferenceUserTypeEnum$options) => {
+	const getType = (type: ConferenceusertypeEnum) => {
 		switch (type) {
 			case 'ADMIN':
 				return m.admin();
@@ -34,7 +51,7 @@
 	};
 
 	const getUrl = (
-		type: ConferenceUserTypeEnum$options,
+		type: ConferenceusertypeEnum,
 		id: string,
 		committeeMember?: { committeeId: string } | null
 	) => {
@@ -85,13 +102,13 @@
 					{m.launcherDescription()}
 				</p>
 				<div class="mt-6 flex flex-col items-center gap-2">
-					{#if conferenceData.length === 0}
+					{#if conferenceUsers.length === 0}
 						<div class="alert alert-warning shadow-sm">
 							<i class="fas fa-exclamation-triangle"></i>
 							{m.launcherNoConferences()}
 						</div>
 					{:else}
-						{#each conferenceData as c}
+						{#each conferenceUsers as c}
 							{@const conf = c.conference}
 							<a
 								href={getUrl(c.conferenceUserType, c.conference.id, c.committeeMember)}
@@ -125,7 +142,7 @@
 				<div class="card bg-base-100 w-full max-w-2xl shadow-sm">
 					<div class="card-body">
 						<div class="flex flex-col gap-2">
-							{#each allConferences as conf}
+							{#each conferences as conf}
 								<div class="flex items-center justify-between rounded-lg bg-base-200 px-4 py-2">
 									<span class="font-medium">{conf.title}</span>
 									<button

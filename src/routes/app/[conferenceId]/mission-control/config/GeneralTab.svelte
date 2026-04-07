@@ -1,8 +1,7 @@
 <script lang="ts">
 	import { m } from '$lib/paraglide/messages';
 	import BasicCard from '$lib/components/BasicCard.svelte';
-	import { cache, graphql } from '$houdini';
-	import { invalidateAll } from '$app/navigation';
+	import { client } from '$lib/api/rumbleClient/client';
 	import toast from 'svelte-french-toast';
 	import { promiseToastStrings } from '$lib/utils/toast';
 
@@ -31,45 +30,22 @@
 		resolutionFeatureEnabled = conference.resolutionFeatureEnabled;
 	});
 
-	const UpdateConferenceMutation = graphql(`
-		mutation UpdateConferenceFromGeneralTab(
-			$id: ID!
-			$title: String
-			$pressWebsite: String
-			$hasModeratedCaucus: Boolean
-			$resolutionFeatureEnabled: Boolean
-		) {
-			updateConference(
-				id: $id
-				title: $title
-				pressWebsite: $pressWebsite
-				hasModeratedCaucus: $hasModeratedCaucus
-				resolutionFeatureEnabled: $resolutionFeatureEnabled
-			) {
-				id
-				title
-				pressWebsite
-				hasModeratedCaucus
-				resolutionFeatureEnabled
-			}
-		}
-	`);
-
 	async function saveSettings() {
 		isSaving = true;
 		try {
 			await toast.promise(
-				UpdateConferenceMutation.mutate({
-					id: conference.id,
-					title,
-					pressWebsite: pressWebsite || null,
-					hasModeratedCaucus,
-					resolutionFeatureEnabled
+				client.mutate.updateConference({
+					__args: {
+						id: conference.id,
+						title,
+						pressWebsite: pressWebsite || null,
+						hasModeratedCaucus,
+						resolutionFeatureEnabled
+					} as any,
+					id: true
 				}),
 				promiseToastStrings(m.configuration(), 'update')
 			);
-			cache.markStale();
-			await invalidateAll();
 		} finally {
 			isSaving = false;
 		}

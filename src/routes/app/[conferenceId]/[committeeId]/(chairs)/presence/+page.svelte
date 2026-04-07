@@ -1,8 +1,8 @@
 <script lang="ts">
 	import { m } from '$lib/paraglide/messages';
-	import type { PageData } from './$houdini';
-	import { onMount } from 'svelte';
-	import { CommitteeSubscription } from '../committeeSubscription';
+	import { page } from '$app/state';
+	import { getContext } from 'svelte';
+	import { client } from '$lib/api/rumbleClient/client';
 	import BasicCard from '$lib/components/BasicCard.svelte';
 	import Majorities from '$lib/components/Majorities.svelte';
 	import UndrawError from '$lib/components/UndrawError.svelte';
@@ -10,7 +10,6 @@
 	import PresenceActions from './PresenceActions.svelte';
 	import Flag from '$lib/components/Flag.svelte';
 	import Tabs from '$lib/components/Tabs.svelte';
-	import { SetPresenceMutation } from './presenceMutations';
 	import toast from 'svelte-french-toast';
 	import { promiseToastStrings } from '$lib/utils/toast';
 	import {
@@ -26,36 +25,29 @@
 	} from '$lib/helpers/distinguishConferenceMembers';
 	import { translateRegionalGroupEnum } from '$lib/utils/enumTranslationHelper';
 
-	let { data }: { data: PageData } = $props();
-
-	let query = $derived(data?.CommitteeTeamQuery);
-	let committee = $derived(
-		$CommitteeSubscription.data?.findFirstCommittee ?? $query.data?.findFirstCommittee
-	);
+	const committee = getContext<any>('committee');
 
 	let countries = $derived(
 		committee?.members
 			.filter(isDelegationMember)
-			.sort((a, b) => sortTranslatedCountries(a.representation!, b.representation!)) ?? []
+			.sort((a: any, b: any) => sortTranslatedCountries(a.representation!, b.representation!)) ?? []
 	);
 
 	let nsas = $derived(
 		committee?.conference?.uniqueConferenceMembers
 			?.filter(isNSAMember)
-			.sort((a, b) => a.representation!.name!.localeCompare(b.representation!.name!)) ?? []
+			.sort((a: any, b: any) => a.representation!.name!.localeCompare(b.representation!.name!)) ??
+			[]
 	);
 
 	let un = $derived(
 		committee?.conference?.uniqueConferenceMembers
 			?.filter(isUNMember)
-			?.sort((a, b) => a.representation!.name!.localeCompare(b.representation!.name!)) ?? []
+			?.sort((a: any, b: any) => a.representation!.name!.localeCompare(b.representation!.name!)) ??
+			[]
 	);
 
 	let rollCallActive = $state(false);
-
-	onMount(() => {
-		CommitteeSubscription.listen({ id: data.committeeId });
-	});
 
 	const presenceTabs = [
 		{
@@ -72,9 +64,10 @@
 
 	const setPresence = (tab: boolean, id: string) => {
 		toast.promise(
-			SetPresenceMutation.mutate({
-				memberIds: [id],
-				present: tab
+			client.mutate.setPresenceForCommitteeMembers({
+				__args: { ids: [id], present: tab },
+				id: true,
+				present: true
 			}),
 			promiseToastStrings(m.presence(), 'update')
 		);
@@ -103,7 +96,7 @@
 					</button>
 				</BasicCard>
 				<BasicCard>
-					<PresenceActions memberIds={committee.members.map((x) => x.id)} />
+					<PresenceActions memberIds={committee.members.map((x: any) => x.id)} />
 				</BasicCard>
 			</div>
 			<div class="flex h-full w-full flex-3 flex-col gap-4">
@@ -196,4 +189,8 @@
 	/>
 {/if}
 
-<ChairRollCall bind:active={rollCallActive} members={countries} committeeId={data.committeeId} />
+<ChairRollCall
+	bind:active={rollCallActive}
+	members={countries}
+	committeeId={page.params.committeeId!}
+/>

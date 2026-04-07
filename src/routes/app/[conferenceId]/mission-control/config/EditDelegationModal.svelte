@@ -2,8 +2,7 @@
 	import { m } from '$lib/paraglide/messages';
 	import Modal from '$lib/components/Modal.svelte';
 	import Flag from '$lib/components/Flag.svelte';
-	import { cache, graphql } from '$houdini';
-	import { invalidateAll } from '$app/navigation';
+	import { client } from '$lib/api/rumbleClient/client';
 	import toast from 'svelte-french-toast';
 	import { promiseToastStrings } from '$lib/utils/toast';
 	import { getTranslatedCountryNameFromAlpha3Code } from '$lib/utils/nationTranslationHelper.svelte';
@@ -56,20 +55,6 @@
 		}
 	});
 
-	const CreateCommitteeMemberMutation = graphql(`
-		mutation CreateCommitteeMemberFromDelegationEdit($committeeId: ID!, $representationId: ID!) {
-			createCommitteeMember(committeeId: $committeeId, representationId: $representationId) {
-				id
-			}
-		}
-	`);
-
-	const DeleteCommitteeMemberMutation = graphql(`
-		mutation DeleteCommitteeMemberFromDelegationEdit($id: ID!) {
-			deleteCommitteeMember(id: $id)
-		}
-	`);
-
 	function getCommitteeMemberId(committeeId: string): string | undefined {
 		if (!delegation) return undefined;
 		const committee = committees.find((c) => c.id === committeeId);
@@ -97,9 +82,12 @@
 				if (!hasSeat && wantsSeat) {
 					// Add seat
 					await toast.promise(
-						CreateCommitteeMemberMutation.mutate({
-							committeeId: committee.id,
-							representationId: delegation.id
+						client.mutate.createCommitteeMember({
+							__args: {
+								committeeId: committee.id,
+								representationId: delegation.id
+							},
+							id: true
 						}),
 						promiseToastStrings(committee.abbreviation, 'add')
 					);
@@ -108,15 +96,13 @@
 					const memberId = getCommitteeMemberId(committee.id);
 					if (memberId) {
 						await toast.promise(
-							DeleteCommitteeMemberMutation.mutate({ id: memberId }),
+							client.mutate.deleteCommitteeMember({ __args: { id: memberId } } as any),
 							promiseToastStrings(committee.abbreviation, 'delete')
 						);
 					}
 				}
 			}
 
-			cache.markStale();
-			await invalidateAll();
 			open = false;
 		} finally {
 			isSaving = false;

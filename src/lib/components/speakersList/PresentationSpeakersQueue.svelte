@@ -1,5 +1,4 @@
 <script lang="ts">
-	import type { CommitteeTeamQuery$result } from '$houdini';
 	import { getTranslatedCountryNameFromAlpha3Code } from '$lib/utils/nationTranslationHelper.svelte';
 	import { flip } from 'svelte/animate';
 	import Flag from '../Flag.svelte';
@@ -12,9 +11,31 @@
 	import { onMount } from 'svelte';
 
 	interface Props {
-		rawSpeakers?: NonNullable<
-			CommitteeTeamQuery$result['findFirstCommittee']['activeAgendaItem']
-		>['speakersList'][number]['speakers'];
+		rawSpeakers?: Array<{
+			id: string;
+			position: number;
+			overwriteName?: string | null;
+			committeeMember?: {
+				id: string;
+				representation?: {
+					name?: string | null;
+					alpha2Code?: string | null;
+					alpha3Code?: string | null;
+					faIcon?: string | null;
+					type?: string | null;
+				} | null;
+			} | null;
+			conferenceMember?: {
+				id: string;
+				representation?: {
+					name?: string | null;
+					alpha2Code?: string | null;
+					alpha3Code?: string | null;
+					faIcon?: string | null;
+					type?: string | null;
+				} | null;
+			} | null;
+		}>;
 		closed?: boolean;
 		resizeFn?: () => void;
 	}

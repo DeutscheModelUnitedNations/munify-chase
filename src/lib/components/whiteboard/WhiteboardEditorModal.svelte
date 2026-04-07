@@ -1,9 +1,8 @@
 <script lang="ts">
-	import { cache, graphql } from '$houdini';
+	import { client } from '$lib/api/rumbleClient/client';
 	import { m } from '$lib/paraglide/messages';
 	import toast from 'svelte-french-toast';
 	import WhiteboardEditor from './WhiteboardEditor.svelte';
-	import { invalidateAll } from '$app/navigation';
 	import { promiseToastStrings } from '$lib/utils/toast';
 
 	interface Props {
@@ -17,29 +16,19 @@
 
 	let newWhiteboardContent = $state<string | null | undefined>(whiteboardContent);
 
-	const UpdateWhiteboardMutation = graphql(`
-		mutation UpdateWhiteboard($committeeId: ID!, $whiteboardContent: String!) {
-			updateCommittee(id: $committeeId, whiteboardContent: $whiteboardContent) {
-				id
-				whiteboardContent
-			}
-		}
-	`);
-
 	const publishChanges = async () => {
 		if (!committeeId) {
 			return;
 		}
 
 		await toast.promise(
-			UpdateWhiteboardMutation.mutate({
-				committeeId,
-				whiteboardContent: newWhiteboardContent ?? ''
+			client.mutate.updateCommittee({
+				__args: { id: committeeId, whiteboardContent: newWhiteboardContent ?? '' },
+				id: true,
+				whiteboardContent: true
 			}),
 			promiseToastStrings(m.whiteboard(), 'update')
 		);
-		// cache.markStale('Committee');
-		// invalidateAll();
 		close();
 	};
 </script>

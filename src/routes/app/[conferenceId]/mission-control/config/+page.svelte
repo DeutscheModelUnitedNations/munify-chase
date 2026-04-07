@@ -1,5 +1,4 @@
 <script lang="ts">
-	import type { PageData } from './$houdini';
 	import { m } from '$lib/paraglide/messages';
 	import NavbarBurgerMenu from '$lib/components/NavbarBurgerMenu.svelte';
 	import GeneralTab from './GeneralTab.svelte';
@@ -7,12 +6,99 @@
 	import CommitteesTab from './CommitteesTab.svelte';
 	import DelegationsTab from './DelegationsTab.svelte';
 	import NsaTab from './NsaTab.svelte';
+	import { client } from '$lib/api/rumbleClient/client';
+	import { page } from '$app/state';
 
-	let { data }: { data: PageData } = $props();
+	let { data }: { data: { user: { sub: string; email?: string } } } = $props();
 
-	let query = $derived(data?.ConferenceConfigQuery);
-	let conference = $derived(query ? $query.data?.findFirstConference : undefined);
-	let currentUserRole = $derived($query.data?.currentUserRole?.[0]);
+	const conference: any = await client.liveQuery.conference({
+		__args: { id: page.params.conferenceId! },
+		id: true,
+		title: true,
+		pressWebsite: true,
+		hasModeratedCaucus: true,
+		committees: {
+			id: true,
+			name: true,
+			abbreviation: true,
+			members: {
+				id: true,
+				representation: {
+					id: true,
+					name: true,
+					alpha2Code: true,
+					alpha3Code: true,
+					type: true,
+					faIcon: true
+				}
+			}
+		},
+		users: {
+			id: true,
+			userEmail: true,
+			conferenceUserType: true,
+			user: {
+				givenName: true,
+				familyName: true
+			},
+			committeeMember: {
+				id: true,
+				representation: {
+					id: true,
+					name: true,
+					alpha2Code: true,
+					alpha3Code: true,
+					faIcon: true
+				},
+				committee: {
+					id: true,
+					name: true,
+					abbreviation: true
+				}
+			},
+			conferenceMember: {
+				id: true,
+				representation: {
+					id: true,
+					name: true,
+					alpha3Code: true,
+					type: true,
+					faIcon: true
+				}
+			}
+		},
+		representations: {
+			id: true,
+			name: true,
+			alpha2Code: true,
+			alpha3Code: true,
+			type: true,
+			faIcon: true
+		},
+		members: {
+			id: true,
+			representation: {
+				id: true,
+				name: true,
+				alpha3Code: true,
+				type: true,
+				faIcon: true
+			}
+		}
+	});
+
+	const conferenceUsers = await client.liveQuery.conferenceUsers({
+		__args: {
+			where: {
+				conference: { id: page.params.conferenceId },
+				user: { id: data.user.sub }
+			}
+		},
+		id: true,
+		conferenceUserType: true
+	});
+
+	let currentUserRole = $derived(conferenceUsers?.[0]);
 	let isAdmin = $derived(currentUserRole?.conferenceUserType === 'ADMIN');
 	let currentUserEmail = $derived(data.user?.email);
 

@@ -1,9 +1,6 @@
 <script lang="ts">
-	import {
-		graphql,
-		type CommitteeTeamQuery$result,
-		type SpeakersListCategoryEnum$options
-	} from '$houdini';
+	import type { SpeakerslistcategoryEnum } from '$lib/api/rumbleClient/client';
+	import { client } from '$lib/api/rumbleClient/client';
 	import { alertDialog } from '$lib/components/Alert/alert';
 	import Kbd from '$lib/components/Kbd.svelte';
 	import { m } from '$lib/paraglide/messages';
@@ -12,67 +9,20 @@
 	import { onMount } from 'svelte';
 	import toast from 'svelte-french-toast';
 
+	type SpeakersList = {
+		id: string;
+		type: string;
+		speakingTime: number;
+		speakers: Array<{ id: string; position: number }>;
+	} | null;
+
 	interface Props {
-		speakersList?:
-			| NonNullable<
-					CommitteeTeamQuery$result['findFirstCommittee']['activeAgendaItem']
-			  >['speakersList'][number]
-			| null;
-		childList?:
-			| NonNullable<
-					CommitteeTeamQuery$result['findFirstCommittee']['activeAgendaItem']
-			  >['speakersList'][number]
-			| null;
-		type: SpeakersListCategoryEnum$options;
+		speakersList?: SpeakersList;
+		childList?: SpeakersList;
+		type: SpeakerslistcategoryEnum;
 	}
 
 	let { speakersList, type, childList }: Props = $props();
-
-	const NextSpeakerMutation = graphql(`
-		mutation NextSpeaker($speakerOnListId: ID!, $speakersListId: ID!, $speakingTime: Int) {
-			removeSpeakerOnList(speakerOnListId: $speakerOnListId) {
-				id
-			}
-
-			updateSpeakersList(id: $speakersListId, timeLeft: $speakingTime, stopTimer: true) {
-				id
-			}
-		}
-	`);
-
-	const NextSpeakerMutationWithChildListClearance = graphql(`
-		mutation NextSpeakerWithChildListClearance(
-			$speakerOnListId: ID!
-			$speakersListId: ID!
-			$speakingTime: Int!
-			$childSpeakersListId: ID!
-			$childSpeakersListSpeakingTime: Int!
-		) {
-			removeSpeakerOnList(speakerOnListId: $speakerOnListId) {
-				id
-			}
-			updateSpeakersListMain: updateSpeakersList(
-				id: $speakersListId
-				timeLeft: $speakingTime
-				stopTimer: true
-			) {
-				id
-			}
-
-			updateSpeakersListChild: updateSpeakersList(
-				id: $childSpeakersListId
-				timeLeft: $childSpeakersListSpeakingTime
-				stopTimer: true
-				isClosed: false
-			) {
-				id
-			}
-
-			clearSpeakersList(id: $childSpeakersListId) {
-				id
-			}
-		}
-	`);
 
 	const nextSpeaker = async () => {
 		if (speakersList && speakersList?.speakers.length > 0) {
@@ -88,22 +38,47 @@
 					})
 				)
 					toast.promise(
-						NextSpeakerMutationWithChildListClearance.mutate({
-							speakerOnListId: speaker.id,
-							speakersListId: speakersList.id,
-							speakingTime: speakersList.speakingTime,
-							childSpeakersListId: childList.id,
-							childSpeakersListSpeakingTime: childList.speakingTime
-						}),
+						Promise.all([
+							client.mutate.removeSpeakerOnList({
+								__args: { speakerOnListId: speaker.id },
+								id: true
+							}),
+							client.mutate.updateSpeakersList({
+								__args: {
+									id: speakersList.id,
+									timeLeft: speakersList.speakingTime,
+									stopTimer: true
+								},
+								id: true
+							}),
+							client.mutate.updateSpeakersList({
+								__args: {
+									id: childList.id,
+									timeLeft: childList.speakingTime,
+									stopTimer: true,
+									isClosed: false
+								},
+								id: true
+							}),
+							client.mutate.clearSpeakersList({
+								__args: { id: childList.id },
+								id: true
+							})
+						]),
 						promiseToastStrings(m.nextSpeaker(), 'update')
 					);
 			} else {
 				toast.promise(
-					NextSpeakerMutation.mutate({
-						speakerOnListId: speaker.id,
-						speakersListId: speakersList.id,
-						speakingTime: speakersList.speakingTime
-					}),
+					Promise.all([
+						client.mutate.removeSpeakerOnList({
+							__args: { speakerOnListId: speaker.id },
+							id: true
+						}),
+						client.mutate.updateSpeakersList({
+							__args: { id: speakersList.id, timeLeft: speakersList.speakingTime, stopTimer: true },
+							id: true
+						})
+					]),
 					promiseToastStrings(m.nextSpeaker(), 'update')
 				);
 			}

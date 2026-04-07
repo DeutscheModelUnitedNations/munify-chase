@@ -1,29 +1,31 @@
-import { graphql } from '$houdini';
+import { client } from '$lib/api/rumbleClient/client';
 import dayjs from 'dayjs';
 import { SvelteDate } from 'svelte/reactivity';
-import { derived } from 'svelte/store';
+import { readable } from 'svelte/store';
 
-export const timeQuery = graphql(`
-	query ServerTime {
-		serverTime
-	}
-`);
+const timeResult = client.liveQuery.serverTime();
 
-export const serverTime = derived(
-	timeQuery,
-	(time, set) => {
-		if (time.data?.serverTime) {
-			const servertime = dayjs(new SvelteDate(time.data.serverTime));
-			set(servertime);
+export const serverTime = readable(dayjs(), (set) => {
+	let interval: ReturnType<typeof setInterval> | undefined;
 
-			const delta = dayjs().diff(servertime);
+	const subscription = (timeResult as any).subscribe({
+		next: (time: unknown) => {
+			if (time) {
+				const servertime = dayjs(new SvelteDate(time as Date));
+				set(servertime);
 
-			const interval = setInterval(() => {
-				set(dayjs().add(delta, 'millisecond'));
-			}, 1000);
+				const delta = dayjs().diff(servertime);
 
-			return () => clearInterval(interval);
+				clearInterval(interval);
+				interval = setInterval(() => {
+					set(dayjs().add(delta, 'millisecond'));
+				}, 1000);
+			}
 		}
-	},
-	dayjs()
-);
+	});
+
+	return () => {
+		subscription?.unsubscribe?.();
+		clearInterval(interval);
+	};
+});

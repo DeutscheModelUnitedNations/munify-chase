@@ -6,7 +6,7 @@ import { defineConfig, type ViteDevServer } from 'vite';
 function devAutoRestart() {
 	const RACE_CONDITION_PATTERNS = [
 		'has not been implemented', // Pothos ObjectRef race condition
-		'Class extends value undefined is not a constructor or null' // Houdini store race condition
+		'Class extends value undefined is not a constructor or null' // urql/svelte race condition
 	];
 
 	return {

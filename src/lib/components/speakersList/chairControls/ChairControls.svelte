@@ -1,25 +1,49 @@
 <script lang="ts">
-	import type { CommitteeTeamQuery$result, SpeakersListCategoryEnum$options } from '$houdini';
+	import type { SpeakerslistcategoryEnum } from '$lib/api/rumbleClient/client';
 	import SpeechControls from './SpeechControls.svelte';
 	import MoreOptions from './MoreOptions.svelte';
 	import NextSpeech from './NextSpeech.svelte';
 	import AddSpeakers from './AddSpeakers.svelte';
 
-	type List =
-		| NonNullable<
-				CommitteeTeamQuery$result['findFirstCommittee']['activeAgendaItem']
-		  >['speakersList'][number]
-		| null;
+	type List = {
+		id: string;
+		type: string;
+		isClosed: boolean;
+		speakingTime: number;
+		startTimestamp?: Date | null;
+		timeLeft: number;
+		speakers: Array<{
+			id: string;
+			position: number;
+			overwriteName?: string | null;
+			committeeMember?: {
+				id: string;
+				representation?: {
+					name?: string | null;
+					alpha2Code?: string | null;
+					alpha3Code?: string | null;
+					faIcon?: string | null;
+					type?: string | null;
+				} | null;
+			} | null;
+			conferenceMember?: {
+				id: string;
+				representation?: {
+					name?: string | null;
+					alpha2Code?: string | null;
+					alpha3Code?: string | null;
+					faIcon?: string | null;
+					type?: string | null;
+				} | null;
+			} | null;
+		}>;
+	} | null;
 
 	interface Props {
 		committeeId: string;
-		type: SpeakersListCategoryEnum$options;
-		committeeMembers: CommitteeTeamQuery$result['findFirstCommittee']['members'];
-		conferenceMembers: NonNullable<
-			NonNullable<
-				CommitteeTeamQuery$result['findFirstCommittee']['conference']
-			>['uniqueConferenceMembers']
-		>;
+		type: SpeakerslistcategoryEnum;
+		committeeMembers: any[];
+		conferenceMembers: any[];
 		speakersList?: List;
 		childList?: List;
 		otherList?: List;

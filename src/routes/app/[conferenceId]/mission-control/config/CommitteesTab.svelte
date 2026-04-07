@@ -1,8 +1,7 @@
 <script lang="ts">
 	import { m } from '$lib/paraglide/messages';
 	import BasicCard from '$lib/components/BasicCard.svelte';
-	import { cache, graphql } from '$houdini';
-	import { invalidateAll } from '$app/navigation';
+	import { client } from '$lib/api/rumbleClient/client';
 	import toast from 'svelte-french-toast';
 	import { promiseToastStrings } from '$lib/utils/toast';
 
@@ -29,48 +28,23 @@
 	let editName = $state('');
 	let editAbbreviation = $state('');
 
-	const CreateCommitteeMutation = graphql(`
-		mutation CreateCommitteeFromConfig($conferenceId: ID!, $name: String!, $abbreviation: String!) {
-			createCommittee(conferenceId: $conferenceId, name: $name, abbreviation: $abbreviation) {
-				id
-				name
-				abbreviation
-			}
-		}
-	`);
-
-	const DeleteCommitteeMutation = graphql(`
-		mutation DeleteCommitteeFromConfig($id: ID!) {
-			deleteCommittee(id: $id)
-		}
-	`);
-
-	const UpdateCommitteeMutation = graphql(`
-		mutation UpdateCommitteeFromConfig($id: ID!, $name: String, $abbreviation: String) {
-			updateCommittee(id: $id, name: $name, abbreviation: $abbreviation) {
-				id
-				name
-				abbreviation
-			}
-		}
-	`);
-
 	async function createCommittee() {
 		if (!newName.trim() || !newAbbreviation.trim()) return;
 		isCreating = true;
 		try {
 			await toast.promise(
-				CreateCommitteeMutation.mutate({
-					conferenceId,
-					name: newName.trim(),
-					abbreviation: newAbbreviation.trim()
+				client.mutate.createCommittee({
+					__args: {
+						conferenceId,
+						name: newName.trim(),
+						abbreviation: newAbbreviation.trim()
+					},
+					id: true
 				}),
 				promiseToastStrings(m.committee(), 'create')
 			);
 			newName = '';
 			newAbbreviation = '';
-			cache.markStale();
-			await invalidateAll();
 		} finally {
 			isCreating = false;
 		}
@@ -80,11 +54,9 @@
 		if (!confirm(m.confirmDeleteCommittee())) return;
 
 		await toast.promise(
-			DeleteCommitteeMutation.mutate({ id }),
+			client.mutate.deleteCommittee({ __args: { id } } as any),
 			promiseToastStrings(m.committee(), 'delete')
 		);
-		cache.markStale();
-		await invalidateAll();
 	}
 
 	function startEdit(committee: Committee) {
@@ -101,16 +73,17 @@
 		if (!editingId || !editName.trim() || !editAbbreviation.trim()) return;
 
 		await toast.promise(
-			UpdateCommitteeMutation.mutate({
-				id: editingId,
-				name: editName.trim(),
-				abbreviation: editAbbreviation.trim()
+			client.mutate.updateCommittee({
+				__args: {
+					id: editingId,
+					name: editName.trim(),
+					abbreviation: editAbbreviation.trim()
+				},
+				id: true
 			}),
 			promiseToastStrings(m.committee(), 'update')
 		);
 		editingId = null;
-		cache.markStale();
-		await invalidateAll();
 	}
 </script>
 

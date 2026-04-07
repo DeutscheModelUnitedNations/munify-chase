@@ -1,5 +1,5 @@
 <script lang="ts">
-	import type { CommitteePresentationQuery$result, RegionalGroupEnum$options } from '$houdini';
+	import type { RegionalgroupEnum } from '$lib/api/rumbleClient/client';
 	import Flag from '$lib/components/Flag.svelte';
 	import { m } from '$lib/paraglide/messages';
 	import { translateRegionalGroupEnum } from '$lib/utils/enumTranslationHelper';
@@ -10,14 +10,25 @@
 
 	interface Props {
 		open: boolean;
-		committeeMembers: CommitteePresentationQuery$result['findFirstCommittee']['members'];
+		committeeMembers: Array<{
+			id: string;
+			present: boolean;
+			representation?: {
+				name?: string | null;
+				alpha2Code?: string | null;
+				alpha3Code?: string | null;
+				faIcon?: string | null;
+				type?: string | null;
+				regionalGroup?: string | null;
+			} | null;
+		}>;
 	}
 
 	let { open, committeeMembers }: Props = $props();
 
-	let activeGroup: RegionalGroupEnum$options = $state('AFRICA');
+	let activeGroup: RegionalgroupEnum = $state('AFRICA');
 
-	const nextGroup = (group: RegionalGroupEnum$options) => {
+	const nextGroup = (group: RegionalgroupEnum) => {
 		switch (group) {
 			case 'AFRICA':
 				return 'ASIA_PACIFIC';
@@ -32,7 +43,7 @@
 		}
 	};
 
-	const getGroupMembers = (group: RegionalGroupEnum$options) =>
+	const getGroupMembers = (group: RegionalgroupEnum) =>
 		committeeMembers.filter((member) => member.representation?.regionalGroup === group);
 
 	$effect(() => {
@@ -52,7 +63,7 @@
 	});
 </script>
 
-{#snippet Modal(group: RegionalGroupEnum$options)}
+{#snippet Modal(group: RegionalgroupEnum)}
 	<div
 		class="modal-box bg-base-200 max-h-9/12 w-full max-w-9/12"
 		in:fly={{ x: 100, duration: 1000, delay: 700, easing: cubicOut }}

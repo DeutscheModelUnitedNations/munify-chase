@@ -1,8 +1,7 @@
 <script lang="ts">
 	import { m } from '$lib/paraglide/messages';
 	import BasicCard from '$lib/components/BasicCard.svelte';
-	import { cache, graphql } from '$houdini';
-	import { invalidateAll } from '$app/navigation';
+	import { client } from '$lib/api/rumbleClient/client';
 	import toast from 'svelte-french-toast';
 	import { promiseToastStrings } from '$lib/utils/toast';
 	import Flag from '$lib/components/Flag.svelte';
@@ -50,36 +49,6 @@
 		editModalOpen = true;
 	}
 
-	const CreateRepresentationMutation = graphql(`
-		mutation CreateDelegationFromConfig(
-			$conferenceId: ID!
-			$type: RepresentationTypeEnum!
-			$alpha2Code: String
-			$alpha3Code: String
-			$name: String
-		) {
-			createRepresentation(
-				conferenceId: $conferenceId
-				type: $type
-				alpha2Code: $alpha2Code
-				alpha3Code: $alpha3Code
-				name: $name
-			) {
-				id
-				name
-				alpha2Code
-				alpha3Code
-				type
-			}
-		}
-	`);
-
-	const DeleteRepresentationMutation = graphql(`
-		mutation DeleteDelegationFromConfig($id: ID!) {
-			deleteRepresentation(id: $id)
-		}
-	`);
-
 	function getCommitteesForDelegation(representationId: string): string {
 		return committees
 			.filter((c) => c.members.some((cm) => cm.representation.id === representationId))
@@ -92,29 +61,28 @@
 	) {
 		for (const country of countries) {
 			await toast.promise(
-				CreateRepresentationMutation.mutate({
-					conferenceId,
-					type: 'DELEGATION',
-					alpha2Code: country.alpha2Code,
-					alpha3Code: country.alpha3Code,
-					name: country.name
+				client.mutate.createRepresentation({
+					__args: {
+						conferenceId,
+						type: 'DELEGATION',
+						alpha2Code: country.alpha2Code,
+						alpha3Code: country.alpha3Code,
+						name: country.name
+					},
+					id: true
 				}),
 				promiseToastStrings(m.delegations(), 'create')
 			);
 		}
-		cache.markStale();
-		await invalidateAll();
 	}
 
 	async function deleteDelegation(id: string) {
 		if (!confirm(m.confirmDeleteRepresentation())) return;
 
 		await toast.promise(
-			DeleteRepresentationMutation.mutate({ id }),
+			client.mutate.deleteRepresentation({ __args: { id } } as any),
 			promiseToastStrings(m.delegations(), 'delete')
 		);
-		cache.markStale();
-		await invalidateAll();
 	}
 </script>
 

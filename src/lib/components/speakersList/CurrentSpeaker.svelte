@@ -1,5 +1,4 @@
 <script lang="ts">
-	import type { CommitteeTeamQuery$result } from '$houdini';
 	import Flag from '../Flag.svelte';
 	import { getTranslatedCountryNameFromAlpha3Code } from '$lib/utils/nationTranslationHelper.svelte';
 	import { m } from '$lib/paraglide/messages';
@@ -8,9 +7,39 @@
 	import { bounceOut, cubicOut } from 'svelte/easing';
 
 	interface Props {
-		speakersList?: NonNullable<
-			CommitteeTeamQuery$result['findFirstCommittee']['activeAgendaItem']
-		>['speakersList'][number];
+		speakersList?: {
+			id: string;
+			type: string;
+			isClosed: boolean;
+			speakingTime: number;
+			startTimestamp?: Date | null;
+			timeLeft: number;
+			speakers: Array<{
+				id: string;
+				position: number;
+				overwriteName?: string | null;
+				committeeMember?: {
+					id: string;
+					representation?: {
+						name?: string | null;
+						alpha2Code?: string | null;
+						alpha3Code?: string | null;
+						faIcon?: string | null;
+						type?: string | null;
+					} | null;
+				} | null;
+				conferenceMember?: {
+					id: string;
+					representation?: {
+						name?: string | null;
+						alpha2Code?: string | null;
+						alpha3Code?: string | null;
+						faIcon?: string | null;
+						type?: string | null;
+					} | null;
+				} | null;
+			}>;
+		} | null;
 	}
 
 	let { speakersList }: Props = $props();

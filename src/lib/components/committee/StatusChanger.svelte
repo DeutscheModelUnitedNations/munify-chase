@@ -1,5 +1,6 @@
 <script lang="ts">
-	import { graphql, type CommitteeStatusEnum$options } from '$houdini';
+	import { client } from '$lib/api/rumbleClient/client';
+	import type { CommitteestatusEnum } from '$lib/api/rumbleClient/client';
 	import Tabs from '$lib/components/Tabs.svelte';
 	import dayjs from 'dayjs';
 	import { m } from '$lib/paraglide/messages';
@@ -9,7 +10,7 @@
 
 	type Props = {
 		committeeId: string;
-		oldStatus?: CommitteeStatusEnum$options;
+		oldStatus?: CommitteestatusEnum;
 		oldUntil?: Date;
 		oldCustomName?: string;
 		hasModeratedCaucus?: boolean;
@@ -25,7 +26,7 @@
 	}: Props = $props();
 
 	const categories: {
-		id: CommitteeStatusEnum$options;
+		id: CommitteestatusEnum;
 		faIcon: string;
 		tooltip: string;
 	}[] = [
@@ -36,7 +37,7 @@
 		...(hasModeratedCaucus
 			? [
 					{
-						id: 'MODERATED_INFORMAL' as CommitteeStatusEnum$options,
+						id: 'MODERATED_INFORMAL' as CommitteestatusEnum,
 						faIcon: 'comments-question-check',
 						tooltip: m.moderatedInformalCaucus()
 					}
@@ -47,41 +48,26 @@
 	const absoluteTimes = [0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55];
 	const relativeTimes = [3, 5, 10, 15, 20, 25, 30];
 
-	let activeCategory: CommitteeStatusEnum$options = $state('INFORMAL');
+	let activeCategory: CommitteestatusEnum = $state('INFORMAL');
 	let until = $state(dayjs(oldUntil) ?? $serverTime);
 	let untilFormatted = $derived(dayjs(until).format('HH:mm:ss'));
 	let customName = $state(oldCustomName);
 
 	let customNameOpen = $state(false);
 
-	const StatusChangerMutation = graphql(`
-		mutation StatusChanger(
-			$status: CommitteeStatusEnum!
-			$until: DateTime!
-			$customName: String!
-			$committeeId: ID!
-		) {
-			updateCommittee(
-				id: $committeeId
-				status: $status
-				statusUntil: $until
-				statusHeadline: $customName
-			) {
-				id
-			}
-		}
-	`);
-
 	const submitStatus = async () => {
 		if (until.isBefore($serverTime)) {
 			toast.error(m.dateCannotBeInPast());
 		}
 		await toast.promise(
-			StatusChangerMutation.mutate({
-				status: activeCategory,
-				until: until.toDate(),
-				customName: customName,
-				committeeId: committeeId
+			client.mutate.updateCommittee({
+				__args: {
+					id: committeeId,
+					status: activeCategory,
+					statusUntil: until.toDate(),
+					statusHeadline: customName
+				},
+				id: true
 			}),
 			promiseToastStrings(m.committeeStatus(), 'update')
 		);

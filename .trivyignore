@@ -133,3 +133,9 @@ CVE-2026-33468
 
 # picomatch: ReDoS via crafted extglob patterns - transitive dep of rollup/micromatch, build-time only
 CVE-2026-33671
+
+# crypto/x509: excessive work during certificate chain building - esbuild doesn't validate certs
+CVE-2026-32280
+
+# syscall/unix: Root.Chmod follows symlinks outside root - esbuild doesn't use Root.Chmod
+CVE-2026-32282

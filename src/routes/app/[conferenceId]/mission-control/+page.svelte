@@ -8,6 +8,7 @@
 	import { page } from '$app/state';
 
 	let { data }: { data: { user: { sub: string } } } = $props();
+	const userId = data.user.sub;
 
 	const conference = await client.liveQuery.conference({
 		__args: { id: page.params.conferenceId! },
@@ -33,7 +34,7 @@
 		__args: {
 			where: {
 				conference: { id: page.params.conferenceId },
-				user: { id: data.user.sub }
+				user: { id: userId }
 			}
 		},
 		id: true,

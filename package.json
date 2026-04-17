@@ -43,7 +43,6 @@
 		"globals": "^17.4.0",
 		"graphql": "^16.13.1",
 		"graphql-sse": "^2.6.0",
-		"graphql-ws": "^6.0.7",
 		"gridstack": "^12.4.2",
 		"hotkeys-js": "^3.13.15",
 		"ioredis": "^5.10.1",

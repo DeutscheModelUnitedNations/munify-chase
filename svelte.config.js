@@ -12,6 +12,9 @@ const config = {
 	},
 
 	kit: {
+		experimental: {
+			remoteFunctions: true
+		},
 		adapter: adapter({
 			precompress: true
 		}),

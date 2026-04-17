@@ -1,10 +1,10 @@
 import { nativeDateExchange } from '@m1212e/rumble/client';
 import {
-	Client,
-	CombinedError,
-	type Exchange,
-	fetchExchange,
-	subscriptionExchange
+  Client,
+  CombinedError,
+  type Exchange,
+  fetchExchange,
+  subscriptionExchange
 } from '@urql/core';
 import { offlineExchange } from '@urql/exchange-graphcache';
 import { empty, filter, fromPromise, merge, mergeMap, pipe } from 'wonka';
@@ -12,117 +12,98 @@ import { graphqlMutation, graphqlQuery } from '$api/graphql.remote';
 import { browser } from '$app/environment';
 import { schema } from './rumbleClient/schema';
 import { makeDefaultStorage } from '@urql/exchange-graphcache/default-storage';
-import { createClient as createWsClient } from 'graphql-ws';
-
-const wsClient = browser
-	? createWsClient({
-			url: `${location.protocol === 'https:' ? 'wss' : 'ws'}://${location.host}/api/graphql`
-		})
-	: null;
 
 /**
  * Exchange to perform graphql calls via sveltekit remote functions (if possible)
  */
 const remoteFunctionsExchange: Exchange = ({ forward }) => {
-	return (operations) => {
-		const filtered = pipe(
-			operations,
-			// we only wanna use remote functions on the server
-			filter((operation) => operation.kind !== 'teardown' && !browser),
-			mergeMap((operation) => {
-				if (operation.kind === 'subscription') {
-					// we cannot do subscriptions on the server yet https://github.com/sveltejs/kit/pull/12973#issuecomment-2981290155
-					// for SSR we return empty here and let the fetchExchange handle it in the browser
-					return empty;
-				}
+  return (operations) => {
+    const filtered = pipe(
+      operations,
+      // we only wanna use remote functions on the server
+      filter((operation) => operation.kind !== 'teardown' && !browser),
+      mergeMap((operation) => {
+        if (operation.kind === 'subscription') {
+          // we cannot do subscriptions on the server yet https://github.com/sveltejs/kit/pull/12973#issuecomment-2981290155
+          // for SSR we return empty here and let the fetchExchange handle it in the browser
+          return empty;
+        }
 
-				const processResult = (caller: typeof graphqlQuery | typeof graphqlMutation) => {
-					return fromPromise(
-						(async () => {
-							const result = await caller({
-								query: operation.query,
-								variables: operation.variables as Exclude<typeof operation.variables, void>
-							});
+        const processResult = (caller: typeof graphqlQuery | typeof graphqlMutation) => {
+          return fromPromise(
+            (async () => {
+              const result = await caller({
+                query: operation.query,
+                variables: operation.variables as Exclude<typeof operation.variables, void>
+              });
 
-							return {
-								operation,
-								data: result.data,
-								error: Array.isArray(result.errors)
-									? new CombinedError({
-											graphQLErrors: result.errors
-										})
-									: undefined,
-								extensions: result.extensions ? { ...result.extensions } : undefined,
-								stale: false
-							};
-						})()
-					);
-				};
+              return {
+                operation,
+                data: result.data,
+                error: Array.isArray(result.errors)
+                  ? new CombinedError({
+                    graphQLErrors: result.errors
+                  })
+                  : undefined,
+                extensions: result.extensions ? { ...result.extensions } : undefined,
+                stale: false
+              };
+            })()
+          );
+        };
 
-				if (operation.kind === 'query') {
-					return processResult(graphqlQuery);
-				}
+        if (operation.kind === 'query') {
+          return processResult(graphqlQuery);
+        }
 
-				if (operation.kind === 'mutation') {
-					return processResult(graphqlMutation);
-				}
+        if (operation.kind === 'mutation') {
+          return processResult(graphqlMutation);
+        }
 
-				return empty;
-			})
-		);
+        return empty;
+      })
+    );
 
-		const forwarded = pipe(
-			operations,
-			filter((operation) => {
-				return (
-					operation.kind === 'teardown' ||
-					// we want to use the fetch action when we are in the browser
-					browser
-				);
-			}),
-			forward
-		);
+    const forwarded = pipe(
+      operations,
+      filter((operation) => {
+        return (
+          operation.kind === 'teardown' ||
+          // we want to use the fetch action when we are in the browser
+          browser
+        );
+      }),
+      forward
+    );
 
-		return merge([filtered, forwarded]);
-	};
+    return merge([filtered, forwarded]);
+  };
 };
 
 export const urqlClient = new Client({
-	url: '/api/graphql',
-	// fetchSubscriptions: true, // subscriptions via SSE (default yoga implementation)
-	exchanges: [
-		offlineExchange({
-			schema,
-			storage: makeDefaultStorage({
-				idbName: 'chase-graphcache-v1',
-				maxAge: 1
-			}),
-			keys: {
-				AuthenticatedUserData: (data) => (data as any).sub
-			}
-			// TODO: https://nearform.com/open-source/urql/docs/graphcache/cache-updates/#optimistic-updates
-			// optimistic: {
+  url: '/api/graphql',
+  // fetchSubscriptions: true, // subscriptions via SSE (default yoga implementation)
+  exchanges: [
+    browser ? offlineExchange({
+      schema,
+      storage: makeDefaultStorage({
+        idbName: 'chase-graphcache-v1',
+        maxAge: 1
+      }),
+      keys: {
+        AuthenticatedUserData: (data) => (data as any).sub
+      }
+      // TODO: https://nearform.com/open-source/urql/docs/graphcache/cache-updates/#optimistic-updates
+      // optimistic: {
 
-			// }
-		}),
-		nativeDateExchange,
-		remoteFunctionsExchange,
-		fetchExchange,
-		subscriptionExchange({
-			forwardSubscription(request) {
-				const input = { ...request, query: request.query || '' };
-				return {
-					subscribe(sink) {
-						const unsubscribe = wsClient!.subscribe(input, sink);
-						return { unsubscribe };
-					}
-				};
-			},
-			isSubscriptionOperation: (op) => op.kind === 'subscription' && browser
-		})
-	],
-	fetchOptions: {
-		credentials: 'include'
-	},
-	requestPolicy: 'cache-and-network'
+      // }
+    }) : undefined as unknown as Exchange,
+    nativeDateExchange,
+    remoteFunctionsExchange,
+    fetchExchange,
+  ].filter(Boolean),
+  fetchOptions: {
+    credentials: 'include'
+  },
+  requestPolicy: 'cache-and-network'
 });

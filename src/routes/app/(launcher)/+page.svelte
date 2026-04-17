@@ -6,9 +6,10 @@
 	import type { ConferenceusertypeEnum } from '$lib/api/rumbleClient/client';
 
 	let { data }: { data: { user: { sub: string; given_name?: string } } } = $props();
+	const userId = data.user.sub;
 
 	const conferenceUsers = await client.liveQuery.conferenceUsers({
-		__args: { where: { user: { id: data.user.sub } } },
+		__args: { where: { user: { id: userId } } },
 		id: true,
 		conferenceUserType: true,
 		committeeMemberId: true,
@@ -147,6 +148,7 @@
 									<span class="font-medium">{conf.title}</span>
 									<button
 										class="btn btn-error btn-sm btn-ghost"
+										aria-label={m.deleteConference()}
 										onclick={() => {
 											deleteTarget = { id: conf.id, title: conf.title };
 											deleteModalOpen = true;

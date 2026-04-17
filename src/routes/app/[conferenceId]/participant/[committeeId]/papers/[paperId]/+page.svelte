@@ -27,117 +27,103 @@
 	const participantCommittee = getContext<any>('participantCommittee');
 
 	// Live queries
-	const paper: any = await client.liveQuery.resolutionPaper({
-		__args: { id: page.params.paperId! },
-		id: true,
-		title: true,
-		status: true,
-		content: true,
-		documentNumber: true,
-		creatorCommitteeMemberId: true,
-		updatedAt: true,
-		creator: {
+	const [paper, locks, allComments, allAmendments, clauseVotes, voteResults, committeeData]: [any, any, any, any, any, any, any] = await Promise.all([
+		client.liveQuery.resolutionPaper({
+			__args: { id: page.params.paperId! },
 			id: true,
-			representation: {
-				name: true,
-				alpha3Code: true,
-				alpha2Code: true,
-				faIcon: true
-			}
-		},
-		sponsors: {
-			id: true,
-			committeeMemberId: true,
-			committeeMember: {
+			title: true,
+			status: true,
+			content: true,
+			documentNumber: true,
+			creatorCommitteeMemberId: true,
+			updatedAt: true,
+			creator: {
+				id: true,
 				representation: {
 					name: true,
 					alpha3Code: true,
 					alpha2Code: true,
-					faIcon: true
-				}
-			}
-		},
-		shareCodes: {
-			id: true,
-			code: true,
-			permission: true
-		},
-		editors: {
-			id: true,
-			conferenceUserId: true
-		}
-	});
-
-	const locks: any = await client.liveQuery.paperClauseLocks({
-		__args: { where: { paperId: page.params.paperId } },
-		id: true,
-		clauseId: true,
-		conferenceUserId: true,
-		acquiredAt: true,
-		conferenceUser: {
-			committeeMember: {
-				representation: {
-					name: true,
-					alpha3Code: true,
-					alpha2Code: true,
-					faIcon: true
-				}
-			}
-		}
-	});
-
-	const allComments: any = await client.liveQuery.resolutionComments({
-		__args: { where: { paperId: page.params.paperId } },
-		id: true,
-		clauseId: true,
-		content: true,
-		visibility: true,
-		parentCommentId: true,
-		createdAt: true,
-		updatedAt: true,
-		author: {
-			id: true,
-			user: {
-				givenName: true,
-				familyName: true
-			},
-			committeeMember: {
-				representation: {
-					name: true,
-					alpha2Code: true,
-					alpha3Code: true,
 					faIcon: true
 				}
 			},
-			conferenceUserType: true
-		}
-	});
-
-	const allAmendments: any = await client.liveQuery.amendments({
-		__args: { where: { paperId: page.params.paperId } },
-		id: true,
-		type: true,
-		status: true,
-		documentNumber: true,
-		targetClauseId: true,
-		targetOperativeIndex: true,
-		targetPosition: true,
-		newContent: true,
-		proposerCommitteeMemberId: true,
-		createdAt: true,
-		proposer: {
-			id: true,
-			representation: {
-				name: true,
-				alpha2Code: true,
-				alpha3Code: true,
-				faIcon: true
+			sponsors: {
+				id: true,
+				committeeMemberId: true,
+				committeeMember: {
+					representation: {
+						name: true,
+						alpha3Code: true,
+						alpha2Code: true,
+						faIcon: true
+					}
+				}
+			},
+			shareCodes: {
+				id: true,
+				code: true,
+				permission: true
+			},
+			editors: {
+				id: true,
+				conferenceUserId: true
 			}
-		},
-		sponsors: {
+		}),
+		client.liveQuery.paperClauseLocks({
+			__args: { where: { paperId: page.params.paperId } },
 			id: true,
-			committeeMemberId: true,
-			committeeMember: {
+			clauseId: true,
+			conferenceUserId: true,
+			acquiredAt: true,
+			conferenceUser: {
+				committeeMember: {
+					representation: {
+						name: true,
+						alpha3Code: true,
+						alpha2Code: true,
+						faIcon: true
+					}
+				}
+			}
+		}),
+		client.liveQuery.resolutionComments({
+			__args: { where: { paperId: page.params.paperId } },
+			id: true,
+			clauseId: true,
+			content: true,
+			visibility: true,
+			parentCommentId: true,
+			createdAt: true,
+			updatedAt: true,
+			author: {
+				id: true,
+				user: {
+					givenName: true,
+					familyName: true
+				},
+				committeeMember: {
+					representation: {
+						name: true,
+						alpha2Code: true,
+						alpha3Code: true,
+						faIcon: true
+					}
+				},
+				conferenceUserType: true
+			}
+		}),
+		client.liveQuery.amendments({
+			__args: { where: { paperId: page.params.paperId } },
+			id: true,
+			type: true,
+			status: true,
+			documentNumber: true,
+			targetClauseId: true,
+			targetOperativeIndex: true,
+			targetPosition: true,
+			newContent: true,
+			proposerCommitteeMemberId: true,
+			createdAt: true,
+			proposer: {
 				id: true,
 				representation: {
 					name: true,
@@ -145,51 +131,60 @@
 					alpha3Code: true,
 					faIcon: true
 				}
+			},
+			sponsors: {
+				id: true,
+				committeeMemberId: true,
+				committeeMember: {
+					id: true,
+					representation: {
+						name: true,
+						alpha2Code: true,
+						alpha3Code: true,
+						faIcon: true
+					}
+				}
 			}
-		}
-	});
-
-	const clauseVotes: any = await client.liveQuery.operativeClauseVotes({
-		__args: { where: { paperId: page.params.paperId } },
-		id: true,
-		clauseId: true,
-		outcome: true,
-		votesFor: true,
-		votesAgainst: true,
-		votesAbstain: true
-	});
-
-	const voteResults: any = await client.liveQuery.resolutionVoteResults({
-		__args: { where: { paperId: page.params.paperId }, limit: 1 },
-		id: true,
-		outcome: true,
-		votesFor: true,
-		votesAgainst: true,
-		votesAbstain: true
-	});
-
-	// Additional committee data with fields not in the layout context
-	const committeeData: any = await client.liveQuery.committee({
-		__args: { id: page.params.committeeId! },
-		id: true,
-		abbreviation: true,
-		name: true,
-		resolutionHeadline: true,
-		supportReEvaluationOpen: true,
-		activeDraftResolutionId: true,
-		amendmentSubmissionOpen: true,
-		amendmentSponsoringOpen: true,
-		totalPresent: true,
-		currentOperativeIndex: true,
-		activeAmendmentId: true,
-		conference: {
-			title: true
-		},
-		activeAgendaItem: {
+		}),
+		client.liveQuery.operativeClauseVotes({
+			__args: { where: { paperId: page.params.paperId } },
 			id: true,
-			title: true
-		}
-	});
+			clauseId: true,
+			outcome: true,
+			votesFor: true,
+			votesAgainst: true,
+			votesAbstain: true
+		}),
+		client.liveQuery.resolutionVoteResults({
+			__args: { where: { paperId: page.params.paperId }, limit: 1 },
+			id: true,
+			outcome: true,
+			votesFor: true,
+			votesAgainst: true,
+			votesAbstain: true
+		}),
+		client.liveQuery.committee({
+			__args: { id: page.params.committeeId! },
+			id: true,
+			abbreviation: true,
+			name: true,
+			resolutionHeadline: true,
+			supportReEvaluationOpen: true,
+			activeDraftResolutionId: true,
+			amendmentSubmissionOpen: true,
+			amendmentSponsoringOpen: true,
+			totalPresent: true,
+			currentOperativeIndex: true,
+			activeAmendmentId: true,
+			conference: {
+				title: true
+			},
+			activeAgendaItem: {
+				id: true,
+				title: true
+			}
+		})
+	]);
 
 	let committee = $derived(committeeData);
 

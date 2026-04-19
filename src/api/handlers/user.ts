@@ -23,10 +23,46 @@ abilityBuilder.user.allow('read');
 // 	}
 // });
 
+const UserClaims = schemaBuilder
+	.objectRef<{
+		sub: string;
+		givenName: string | null;
+		familyName: string | null;
+		email: string | null;
+		preferredUsername: string | null;
+		locale: string | null;
+	}>('UserClaims')
+	.implement({
+		fields: (t) => ({
+			sub: t.exposeString('sub'),
+			givenName: t.exposeString('givenName', { nullable: true }),
+			familyName: t.exposeString('familyName', { nullable: true }),
+			email: t.exposeString('email', { nullable: true }),
+			preferredUsername: t.exposeString('preferredUsername', { nullable: true }),
+			locale: t.exposeString('locale', { nullable: true })
+		})
+	});
+
 schemaBuilder.queryFields((t) => ({
 	isGlobalAdmin: t.boolean({
 		resolve: (root, args, ctx) => {
 			return isGlobalAdmin(ctx);
+		}
+	}),
+	currentUserClaims: t.field({
+		type: UserClaims,
+		nullable: true,
+		resolve: (_root, _args, ctx) => {
+			const u = ctx.oidc?.user;
+			if (!u) return null;
+			return {
+				sub: u.sub,
+				givenName: u.given_name ?? null,
+				familyName: u.family_name ?? null,
+				email: u.email ?? null,
+				preferredUsername: u.preferred_username ?? null,
+				locale: u.locale ?? null
+			};
 		}
 	})
 }));

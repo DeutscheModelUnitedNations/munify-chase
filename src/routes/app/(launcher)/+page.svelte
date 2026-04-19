@@ -4,16 +4,16 @@
 	import DeleteConferenceModal from '$lib/components/DeleteConferenceModal.svelte';
 	import { client } from '$lib/api/rumbleClient/client';
 	import type { ConferenceusertypeEnum } from '$lib/api/rumbleClient/client';
+	import { getCurrentUser } from '$lib/state/currentUser.svelte';
 
-	let { data }: { data: { user: { sub: string; given_name?: string } } } = $props();
-	const userId = data.user.sub;
-
+	const user = await getCurrentUser();
 	const conferenceUsers = await client.liveQuery.conferenceUsers({
-		__args: { where: { user: { id: userId } } },
+		__args: { where: { user: { id: (user).id } } },
 		id: true,
 		conferenceUserType: true,
 		committeeMemberId: true,
 		committeeMember: {
+			id: true,
 			committeeId: true
 		},
 		conference: {
@@ -27,9 +27,7 @@
 		title: true
 	});
 
-	// TODO: isGlobalAdmin not available in Rumble client yet
-	let isGlobalAdmin = false;
-
+	let isGlobalAdmin = await client.query.isGlobalAdmin();
 	let manageMode = $state(false);
 	let deleteModalOpen = $state(false);
 	let deleteTarget = $state<{ id: string; title: string } | null>(null);
@@ -93,7 +91,7 @@
 			<h3 class="text-center text-2xl">MUNify</h3>
 			<h3 class="text-center text-5xl font-bold">CHASE</h3>
 			<p class="mt-4 text-center text-lg">
-				{m.launcherWelcome({ name: data!.user!.given_name! })}
+				{m.launcherWelcome({ name: user.givenName! })}
 			</p>
 		</div>
 		<div class="card bg-base-100 w-full max-w-2xl shadow-sm">

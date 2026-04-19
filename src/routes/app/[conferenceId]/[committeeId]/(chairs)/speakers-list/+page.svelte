@@ -2,7 +2,7 @@
 	import DevPlaceholder from '$lib/components/DevPlaceholder.svelte';
 	import { m } from '$lib/paraglide/messages';
 	import { page } from '$app/state';
-	import { getContext } from 'svelte';
+	import { client } from '$lib/api/rumbleClient/client';
 	import question from '$assets/undraw/question.svg';
 
 	import UndrawError from '$lib/components/UndrawError.svelte';
@@ -13,7 +13,54 @@
 	import StatusWidget from '../StatusWidget.svelte';
 	import Majorities from '$lib/components/Majorities.svelte';
 
-	const committee = getContext<any>('committee');
+	const committee = await client.liveQuery.committee({
+		__args: { id: page.params.committeeId! },
+		id: true,
+		totalPresent: true,
+		simpleMajority: true,
+		twoThirdsMajority: true,
+		paperSupportThreshold: true,
+		status: true,
+		statusHeadline: true,
+		statusUntil: true,
+		stateOfDebate: true,
+		activeAgendaItem: {
+			id: true,
+			title: true,
+			speakersList: {
+				id: true,
+				type: true,
+				isClosed: true,
+				speakingTime: true,
+				startTimestamp: true,
+				timeLeft: true,
+				speakers: {
+					id: true,
+					position: true,
+					overwriteName: true,
+					committeeMember: {
+						id: true,
+						representation: { id: true, name: true, alpha2Code: true, alpha3Code: true, faIcon: true, type: true }
+					},
+					conferenceMember: {
+						id: true,
+						representation: { id: true, name: true, alpha2Code: true, alpha3Code: true, faIcon: true, type: true }
+					}
+				}
+			}
+		},
+		members: {
+			id: true,
+			representation: { id: true, name: true, alpha2Code: true, alpha3Code: true, faIcon: true, type: true }
+		},
+		conference: {
+			id: true,
+			uniqueConferenceMembers: {
+				id: true,
+				representation: { id: true, name: true, alpha2Code: true, alpha3Code: true, faIcon: true, type: true }
+			}
+		}
+	});
 
 	let speakersList = $derived(
 		committee?.activeAgendaItem?.speakersList.find((item: any) => item.type === 'SPEAKERS_LIST')

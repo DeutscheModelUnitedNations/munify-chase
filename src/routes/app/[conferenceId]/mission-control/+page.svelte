@@ -7,8 +7,9 @@
 	import { client } from '$lib/api/rumbleClient/client';
 	import { page } from '$app/state';
 
-	let { data }: { data: { user: { sub: string } } } = $props();
-	const userId = data.user.sub;
+	import { getCurrentUser } from '$lib/state/currentUser.svelte';
+
+	const userId = (await getCurrentUser()).id ?? '';
 
 	const conference = await client.liveQuery.conference({
 		__args: { id: page.params.conferenceId! },

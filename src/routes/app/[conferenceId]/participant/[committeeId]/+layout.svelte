@@ -1,15 +1,24 @@
 <script lang="ts">
 	import { m } from '$lib/paraglide/messages';
 	import { page } from '$app/state';
-	import { getContext, setContext } from 'svelte';
 	import { client } from '$lib/api/rumbleClient/client';
+	import { getCurrentUser } from '$lib/state/currentUser.svelte';
 	import ThemeSwitcher from '$lib/components/ThemeSwitcher.svelte';
 	import type { Snippet } from 'svelte';
 
 	let { children }: { children: Snippet } = $props();
 
-	const participantIdentity = getContext<any>('participantIdentity');
-	const conferenceUser = $derived(participantIdentity?.[0]);
+	const currentUser = await getCurrentUser();
+	const [conferenceUser] = await client.liveQuery.conferenceUsers({
+		__args: {
+			where: {
+				conference: { id: page.params.conferenceId },
+				user: { id: currentUser?.sub ?? '' }
+			}
+		},
+		id: true,
+		conferenceUserType: true
+	}) ?? [];
 	const role = $derived(conferenceUser?.conferenceUserType);
 	const showBack = $derived(role !== 'DELEGATE');
 
@@ -22,6 +31,7 @@
 		supportReEvaluationOpen: true,
 		activeDraftResolutionId: true,
 		conference: {
+			id: true,
 			title: true
 			// TODO: resolutionFeatureEnabled not available in Rumble client yet
 		},
@@ -30,8 +40,6 @@
 			title: true
 		}
 	});
-
-	setContext('participantCommittee', committee);
 
 	let isPapersRoute = $derived(page.route.id?.includes('/papers') ?? false);
 </script>

@@ -3,7 +3,7 @@
 	import { client } from '$lib/api/rumbleClient/client';
 	import Kbd from '$lib/components/Kbd.svelte';
 	import { m } from '$lib/paraglide/messages';
-	import { serverTime } from '$lib/state/serverTime.svelte';
+	import { getServerTime } from '$lib/state/serverTime.svelte';
 	import dayjs from 'dayjs';
 	import hotkeys from 'hotkeys-js';
 	import { onMount } from 'svelte';
@@ -33,7 +33,8 @@
 
 		if (otherList) {
 			await client.mutate.updateSpeakersList({
-				__args: { id: speakersList.id, startTimestamp: $serverTime.toDate() },
+				__args: { id: speakersList.id, startTimestamp: getServerTime().toDate() },
+				id: true,
 				speakingTime: true,
 				startTimestamp: true
 			});
@@ -44,11 +45,13 @@
 						otherList.type === 'SPEAKERS_LIST' ? speakersList.speakingTime : otherList.speakingTime,
 					stopTimer: true
 				},
+				id: true,
 				speakingTime: true
 			});
 		} else {
 			await client.mutate.updateSpeakersList({
-				__args: { id: speakersList.id, startTimestamp: $serverTime.toDate() },
+				__args: { id: speakersList.id, startTimestamp: getServerTime().toDate() },
+				id: true,
 				speakingTime: true,
 				startTimestamp: true
 			});
@@ -63,7 +66,7 @@
 				__args: {
 					id: speakersList.id,
 					timeLeft:
-						dayjs(speakersList.startTimestamp).diff($serverTime, 'seconds') + speakersList.timeLeft,
+						dayjs(speakersList.startTimestamp).diff(getServerTime(), 'seconds') + speakersList.timeLeft,
 					stopTimer: true
 				},
 				id: true
@@ -83,7 +86,7 @@
 				__args: {
 					id: speakersList.id,
 					timeLeft: speakersList.speakingTime,
-					startTimestamp: speakersList.startTimestamp ? $serverTime.toDate() : undefined,
+					startTimestamp: speakersList.startTimestamp ? getServerTime().toDate() : undefined,
 					stopTimer: !speakersList.startTimestamp
 				},
 				id: true

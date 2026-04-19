@@ -6,7 +6,7 @@
 	import { m } from '$lib/paraglide/messages';
 	import toast from 'svelte-french-toast';
 	import { promiseToastStrings } from '$lib/utils/toast';
-	import { serverTime } from '$lib/state/serverTime.svelte';
+	import { getServerTime } from '$lib/state/serverTime.svelte';
 
 	type Props = {
 		committeeId: string;
@@ -49,14 +49,14 @@
 	const relativeTimes = [3, 5, 10, 15, 20, 25, 30];
 
 	let activeCategory: CommitteestatusEnum = $state('INFORMAL');
-	let until = $state(dayjs(oldUntil) ?? $serverTime);
+	let until = $state(dayjs(oldUntil) ?? getServerTime());
 	let untilFormatted = $derived(dayjs(until).format('HH:mm:ss'));
 	let customName = $state(oldCustomName);
 
 	let customNameOpen = $state(false);
 
 	const submitStatus = async () => {
-		if (until.isBefore($serverTime)) {
+		if (until.isBefore(getServerTime())) {
 			toast.error(m.dateCannotBeInPast());
 		}
 		await toast.promise(
@@ -106,9 +106,9 @@
 				<button
 					class="btn bg-base-100 flex-1"
 					onclick={() =>
-						(until = $serverTime.minute(time).second(0).isBefore($serverTime)
-							? $serverTime.add(1, 'hour').minute(time).second(0)
-							: $serverTime.minute(time).second(0))}
+						(until = getServerTime().minute(time).second(0).isBefore(getServerTime())
+							? getServerTime().add(1, 'hour').minute(time).second(0)
+							: getServerTime().minute(time).second(0))}
 				>
 					{time}
 				</button>
@@ -123,7 +123,7 @@
 			{#each relativeTimes as time}
 				<button
 					class="btn bg-base-100 flex-1"
-					onclick={() => (until = $serverTime.add(time, 'minute'))}
+					onclick={() => (until = getServerTime().add(time, 'minute'))}
 				>
 					{time}
 				</button>
@@ -138,7 +138,7 @@
 			onchange={(e) => {
 				const inputValue = (e.target as HTMLInputElement).value;
 				const parts = inputValue.split(':');
-				until = $serverTime
+				until = serverTime
 					.hour(parseInt(parts[0], 10))
 					.minute(parseInt(parts[1], 10))
 					.second(parseInt(parts[2], 10));
@@ -195,7 +195,7 @@
 			</button>
 		{/if}
 		<button
-			class="btn btn-primary btn-lg w-full flex-1 {until.isBefore($serverTime)
+			class="btn btn-primary btn-lg w-full flex-1 {until.isBefore(getServerTime())
 				? 'btn-disabled'
 				: ''}"
 			onclick={() => {

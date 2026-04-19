@@ -1,31 +1,20 @@
+import { browser } from '$app/environment';
 import { client } from '$lib/api/rumbleClient/client';
-import dayjs from 'dayjs';
-import { SvelteDate } from 'svelte/reactivity';
-import { readable } from 'svelte/store';
+import dayjs, { type Dayjs } from 'dayjs';
 
-const timeResult = client.liveQuery.serverTime();
+let current = $state(dayjs());
+const intervalDuration = 500;
 
-export const serverTime = readable(dayjs(), (set) => {
-	let interval: ReturnType<typeof setInterval> | undefined;
+if (browser) {
+  const servertime = await client.query.serverTime();
+  if (servertime) {
+    current = dayjs(servertime);
+    setInterval(() => {
+      current = current.add(intervalDuration, 'ms');
+    }, intervalDuration);
+  }
+}
 
-	const subscription = (timeResult as any).subscribe({
-		next: (time: unknown) => {
-			if (time) {
-				const servertime = dayjs(new SvelteDate(time as Date));
-				set(servertime);
-
-				const delta = dayjs().diff(servertime);
-
-				clearInterval(interval);
-				interval = setInterval(() => {
-					set(dayjs().add(delta, 'millisecond'));
-				}, 1000);
-			}
-		}
-	});
-
-	return () => {
-		subscription?.unsubscribe?.();
-		clearInterval(interval);
-	};
-});
+export function getServerTime(): Dayjs {
+  return current;
+}

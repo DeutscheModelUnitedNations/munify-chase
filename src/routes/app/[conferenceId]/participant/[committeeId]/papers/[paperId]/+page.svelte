@@ -2,8 +2,9 @@
 	import { m } from '$lib/paraglide/messages';
 	import { page } from '$app/state';
 	import { goto } from '$app/navigation';
-	import { getContext, onMount } from 'svelte';
+	import { onMount } from 'svelte';
 	import { client } from '$lib/api/rumbleClient/client';
+	import { getCurrentUser } from '$lib/state/currentUser.svelte';
 	import {
 		ResolutionEditor,
 		migrateResolution,
@@ -23,8 +24,18 @@
 	import { getResolutionLabels } from '$lib/utils/resolutionEditorLabels';
 	import { SvelteMap, SvelteSet } from 'svelte/reactivity';
 
-	const participantIdentity = getContext<any>('participantIdentity');
-	const participantCommittee = getContext<any>('participantCommittee');
+	const currentUser = await getCurrentUser();
+	const [conferenceUser] = await client.liveQuery.conferenceUsers({
+		__args: {
+			where: {
+				conference: { id: page.params.conferenceId },
+				user: { id: currentUser?.sub ?? '' }
+			}
+		},
+		id: true,
+		conferenceUserType: true,
+		committeeMemberId: true
+	}) ?? [];
 
 	// Live queries
 	const [paper, locks, allComments, allAmendments, clauseVotes, voteResults, committeeData]: [any, any, any, any, any, any, any] = await Promise.all([
@@ -40,6 +51,7 @@
 			creator: {
 				id: true,
 				representation: {
+					id: true,
 					name: true,
 					alpha3Code: true,
 					alpha2Code: true,
@@ -50,7 +62,9 @@
 				id: true,
 				committeeMemberId: true,
 				committeeMember: {
+					id: true,
 					representation: {
+						id: true,
 						name: true,
 						alpha3Code: true,
 						alpha2Code: true,
@@ -75,8 +89,11 @@
 			conferenceUserId: true,
 			acquiredAt: true,
 			conferenceUser: {
+				id: true,
 				committeeMember: {
+					id: true,
 					representation: {
+						id: true,
 						name: true,
 						alpha3Code: true,
 						alpha2Code: true,
@@ -101,7 +118,9 @@
 					familyName: true
 				},
 				committeeMember: {
+					id: true,
 					representation: {
+						id: true,
 						name: true,
 						alpha2Code: true,
 						alpha3Code: true,
@@ -126,6 +145,7 @@
 			proposer: {
 				id: true,
 				representation: {
+					id: true,
 					name: true,
 					alpha2Code: true,
 					alpha3Code: true,
@@ -138,6 +158,7 @@
 				committeeMember: {
 					id: true,
 					representation: {
+						id: true,
 						name: true,
 						alpha2Code: true,
 						alpha3Code: true,
@@ -177,6 +198,7 @@
 			currentOperativeIndex: true,
 			activeAmendmentId: true,
 			conference: {
+				id: true,
 				title: true
 			},
 			activeAgendaItem: {
@@ -188,7 +210,6 @@
 
 	let committee = $derived(committeeData);
 
-	let conferenceUser = $derived(participantIdentity?.[0]);
 	let role = $derived(conferenceUser?.conferenceUserType);
 	let myCommitteeMemberId = $derived(conferenceUser?.committeeMemberId);
 	let myConferenceUserId = $derived(conferenceUser?.id);

@@ -1297,6 +1297,7 @@ export type Query = {
     orderBy?: ConferenceOrderInputArgument | null | undefined,
     where?: ConferenceWhereInputArgument | null | undefined
   }) => Conference[],
+  currentUserClaims: () => UserClaims,
   isGlobalAdmin: Boolean,
   operativeClauseVote: (p: {
     id: ID
@@ -2081,6 +2082,15 @@ export type User = {
   updatedAt: DateTime | null    
 };
 		
+export type UserClaims = {
+  email: String | null,
+  familyName: String | null,
+  givenName: String | null,
+  id: String,
+  locale: String | null,
+  preferredUsername: String | null    
+};
+		
 export type UserOrderInputArgument = {
   conferenceMemberships?: ConferenceuserOrderInputArgument | null | undefined,
   createdAt?: SortingParameter | null | undefined,
@@ -2130,6 +2140,7 @@ export const client = {
 	  urqlClient,
 	  availableSubscriptions: new Set(["agendaItem", "agendaItems", "amendment", "amendmentSponsor", "amendmentSponsors", "amendments", "committee", "committeeMember", "committeeMembers", "committees", "conference", "conferenceMember", "conferenceMembers", "conferenceUser", "conferenceUsers", "conferences", "operativeClauseVote", "operativeClauseVotes", "paperClauseLock", "paperClauseLocks", "paperContentSnapshot", "paperContentSnapshots", "paperEditor", "paperEditors", "paperShareCode", "paperShareCodes", "paperSponsor", "paperSponsors", "presenceChangedTimestamp", "presenceChangedTimestamps", "representation", "representations", "resolutionComment", "resolutionComments", "resolutionPaper", "resolutionPapers", "resolutionVoteResult", "resolutionVoteResults", "speakerOnList", "speakerOnLists", "speakersList", "speakersLists", "user", "users"]),
 		schema,
+    autoIncludeIdField: 'id'
   }),
   /**
    * A mutation that can be used to e.g. create, update or delete data.
@@ -2137,6 +2148,7 @@ export const client = {
   mutate: makeMutation<Mutation>({
 	  urqlClient,
 		schema,
+    autoIncludeIdField: 'id'
   }),
   /**
    * A continuous stream of results that updates when the server sends new data.
@@ -2144,6 +2156,7 @@ export const client = {
   subscribe: makeSubscription<Subscription>({
 	  urqlClient,
 		schema,
+    autoIncludeIdField: 'id'
   }),
   /**
    * A one-time fetch of data.
@@ -2151,5 +2164,6 @@ export const client = {
   query: makeQuery<Query>({
 	  urqlClient,
 		schema,
+    autoIncludeIdField: 'id'
   }),
 }

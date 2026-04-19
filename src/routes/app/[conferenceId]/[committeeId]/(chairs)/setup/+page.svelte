@@ -1,7 +1,6 @@
 <script lang="ts">
 	import { m } from '$lib/paraglide/messages';
 	import { page } from '$app/state';
-	import { getContext } from 'svelte';
 	import { client } from '$lib/api/rumbleClient/client';
 	import Kbd from '$lib/components/Kbd.svelte';
 	import IconInfoBox from '$lib/components/IconInfoBox.svelte';
@@ -21,7 +20,23 @@
 	import StatusWidget from '../StatusWidget.svelte';
 	import dayjs from 'dayjs';
 
-	const committee = getContext<any>('committee');
+	const committee = await client.liveQuery.committee({
+		__args: { id: page.params.committeeId! },
+		id: true,
+		status: true,
+		statusHeadline: true,
+		statusUntil: true,
+		stateOfDebate: true,
+		whiteboardContent: true,
+		allowDelegationsToAddThemselvesToSpeakersList: true,
+		totalPresent: true,
+		simpleMajority: true,
+		twoThirdsMajority: true,
+		paperSupportThreshold: true,
+		activeAgendaItem: { id: true, title: true },
+		agendaItems: { id: true, title: true },
+		conference: { hasModeratedCaucus: true }
+	});
 
 	let editWhiteboardModalOpen = $state(false);
 

@@ -2,14 +2,32 @@
 	import { m } from '$lib/paraglide/messages';
 	import { page } from '$app/state';
 	import { goto } from '$app/navigation';
-	import { getContext } from 'svelte';
 	import { client } from '$lib/api/rumbleClient/client';
+	import { getCurrentUser } from '$lib/state/currentUser.svelte';
 	import { generatePaperName } from '$lib/utils/paperNameGenerator';
 	import Flag from '$lib/components/Flag.svelte';
 	import toast from 'svelte-french-toast';
 
-	const participantIdentity = getContext<any>('participantIdentity');
-	const committee = getContext<any>('participantCommittee');
+	const currentUser = await getCurrentUser();
+	const [conferenceUser] = await client.liveQuery.conferenceUsers({
+		__args: {
+			where: {
+				conference: { id: page.params.conferenceId },
+				user: { id: currentUser?.sub ?? '' }
+			}
+		},
+		id: true,
+		conferenceUserType: true,
+		committeeMemberId: true
+	}) ?? [];
+
+	const committee = await client.liveQuery.committee({
+		__args: { id: page.params.committeeId! },
+		id: true,
+		activeAgendaItem: { id: true },
+		supportReEvaluationOpen: true,
+		activeDraftResolutionId: true
+	});
 
 	const papers = await client.liveQuery.resolutionPapers({
 		__args: {
@@ -43,7 +61,6 @@
 		}
 	});
 
-	let conferenceUser = $derived(participantIdentity?.[0]);
 	let role = $derived(conferenceUser?.conferenceUserType);
 	let myCommitteeMemberId = $derived(conferenceUser?.committeeMemberId);
 	let myConferenceUserId = $derived(conferenceUser?.id);

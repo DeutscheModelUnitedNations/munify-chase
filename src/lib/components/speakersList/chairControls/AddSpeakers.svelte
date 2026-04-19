@@ -79,17 +79,30 @@
 			return;
 		}
 
-		await toast.promise(
-			client.mutate.addSpeakerOnList({
-				__args: {
-					committeeMemberId: committeeMember?.id,
-					conferenceMemberId: conferenceMember?.id,
-					speakersListId: speakersList.id
-				},
-				id: true
-			}),
-			promiseToastStrings(getName(committeeMember ?? (conferenceMember as Member)), 'add')
-		);
+		try {
+		await client.mutate.addSpeakerOnList({
+			__args: {
+				committeeMemberId: committeeMember?.id,
+				conferenceMemberId: conferenceMember?.id,
+				speakersListId: speakersList.id
+			},
+			id: true
+		});
+		
+		} catch {
+		  console.log("caught")
+		}
+		// await toast.promise(
+		// 	client.mutate.addSpeakerOnList({
+		// 		__args: {
+		// 			committeeMemberId: committeeMember?.id,
+		// 			conferenceMemberId: conferenceMember?.id,
+		// 			speakersListId: speakersList.id
+		// 		},
+		// 		id: true
+		// 	}),
+		// 	promiseToastStrings(getName(committeeMember ?? (conferenceMember as Member)), 'add')
+		// );
 
 		value = '';
 	};

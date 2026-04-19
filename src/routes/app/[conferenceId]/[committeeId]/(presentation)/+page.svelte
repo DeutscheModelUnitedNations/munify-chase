@@ -57,6 +57,7 @@
 			proposer: {
 				id: true,
 				representation: {
+					id: true,
 					name: true,
 					alpha2Code: true,
 					alpha3Code: true
@@ -77,6 +78,7 @@
 			creator: {
 				id: true,
 				representation: {
+					id: true,
 					name: true,
 					alpha2Code: true,
 					alpha3Code: true
@@ -85,7 +87,9 @@
 			sponsors: {
 				id: true,
 				committeeMember: {
+					id: true,
 					representation: {
+						id: true,
 						name: true,
 						alpha3Code: true
 					}
@@ -103,6 +107,7 @@
 				proposer: {
 					id: true,
 					representation: {
+						id: true,
 						name: true
 					}
 				}
@@ -113,6 +118,7 @@
 				outcome: true
 			},
 			voteResult: {
+				id: true,
 				outcome: true,
 				votesFor: true,
 				votesAgainst: true,
@@ -176,6 +182,7 @@
 			}
 		},
 		conference: {
+			id: true,
 			title: true,
 			resolutionFeatureEnabled: true,
 			uniqueConferenceMembers: {

@@ -2,7 +2,6 @@
 	import { m } from '$lib/paraglide/messages';
 	import { page } from '$app/state';
 	import { client } from '$lib/api/rumbleClient/client';
-	import { getContext } from 'svelte';
 	import { onMount } from 'svelte';
 	import { afterNavigate } from '$app/navigation';
 	import {
@@ -27,9 +26,25 @@
 	import { getResolutionLabels } from '$lib/utils/resolutionEditorLabels';
 	import { SvelteSet, SvelteMap } from 'svelte/reactivity';
 
-	let { data }: { data: { user: { sub: string } } } = $props();
+	import { getCurrentUser } from '$lib/state/currentUser.svelte';
 
-	const committee = getContext<any>('committee');
+	const committee = await client.liveQuery.committee({
+		__args: { id: page.params.committeeId! },
+		id: true,
+		abbreviation: true,
+		name: true,
+		resolutionHeadline: true,
+		currentOperativeClauseId: true,
+		currentOperativeIndex: true,
+		activeAmendmentId: true,
+		totalPresent: true,
+		activeAgendaItem: { id: true, title: true },
+		conference: { id: true, title: true },
+		members: {
+			id: true,
+			representation: { id: true, name: true, alpha2Code: true, alpha3Code: true, faIcon: true, type: true }
+		}
+	});
 
 	const [paper, locks, allComments, allAmendments, clauseVotes, allVoteResults, currentUserConferenceUsers] = await Promise.all([
 		client.liveQuery.resolutionPaper({
@@ -48,6 +63,7 @@
 			creator: {
 				id: true,
 				representation: {
+					id: true,
 					name: true,
 					alpha2Code: true,
 					alpha3Code: true,
@@ -58,7 +74,9 @@
 				id: true,
 				committeeMemberId: true,
 				committeeMember: {
+					id: true,
 					representation: {
+						id: true,
 						name: true,
 						alpha2Code: true,
 						alpha3Code: true,
@@ -74,8 +92,11 @@
 			conferenceUserId: true,
 			acquiredAt: true,
 			conferenceUser: {
+				id: true,
 				committeeMember: {
+					id: true,
 					representation: {
+						id: true,
 						name: true,
 						alpha3Code: true,
 						alpha2Code: true,
@@ -100,7 +121,9 @@
 					familyName: true
 				},
 				committeeMember: {
+					id: true,
 					representation: {
+						id: true,
 						name: true,
 						alpha2Code: true,
 						alpha3Code: true,
@@ -125,6 +148,7 @@
 			proposer: {
 				id: true,
 				representation: {
+					id: true,
 					name: true,
 					alpha2Code: true,
 					alpha3Code: true,
@@ -137,6 +161,7 @@
 				committeeMember: {
 					id: true,
 					representation: {
+						id: true,
 						name: true,
 						alpha2Code: true,
 						alpha3Code: true,
@@ -166,7 +191,7 @@
 			__args: {
 				where: {
 					conference: { id: page.params.conferenceId },
-					user: { id: data.user.sub }
+					user: { id: (await getCurrentUser()).id ?? '' }
 				}
 			},
 			id: true

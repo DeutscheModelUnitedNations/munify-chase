@@ -1,8 +1,8 @@
 <script lang="ts">
 	import { m } from '$lib/paraglide/messages';
 	import { page } from '$app/state';
-	import { getContext } from 'svelte';
 	import { client } from '$lib/api/rumbleClient/client';
+	import { getCurrentUser } from '$lib/state/currentUser.svelte';
 	import IconInfoBox from '$lib/components/IconInfoBox.svelte';
 	import { getCommitteeStatusIcon, getCommitteeStatusText } from '$lib/utils/committeeStatus';
 	import CurrentSpeaker from '$lib/components/speakersList/CurrentSpeaker.svelte';
@@ -11,8 +11,28 @@
 	import Majorities from '$lib/components/Majorities.svelte';
 	import ParticipantIdentityCard from '../ParticipantIdentityCard.svelte';
 
-	const participantIdentity = getContext<any>('participantIdentity');
-	let conferenceUser = $derived(participantIdentity?.[0]);
+	const currentUser = await getCurrentUser();
+	const [conferenceUser] = await client.liveQuery.conferenceUsers({
+		__args: {
+			where: {
+				conference: { id: page.params.conferenceId },
+				user: { id: currentUser?.sub ?? '' }
+			}
+		},
+		id: true,
+		conferenceUserType: true,
+		committeeMemberId: true,
+		conferenceMemberId: true,
+		committeeMember: {
+			id: true,
+			present: true,
+			representation: { id: true, name: true, alpha2Code: true, alpha3Code: true, type: true, faIcon: true }
+		},
+		conferenceMember: {
+			id: true,
+			representation: { id: true, name: true, alpha2Code: true, alpha3Code: true, type: true, faIcon: true }
+		}
+	}) ?? [];
 
 	const committee: any = await client.liveQuery.committee({
 		__args: { id: page.params.committeeId! },

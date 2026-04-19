@@ -1,6 +1,5 @@
 <script lang="ts">
-	import { onDestroy, type Snippet } from 'svelte';
-	import { setContext } from 'svelte';
+	import { type Snippet } from 'svelte';
 	import { page } from '$app/state';
 	import { client } from '$lib/api/rumbleClient/client';
 	import ChairNavbar from './ChairNavbar.svelte';
@@ -11,7 +10,7 @@
 	import toast from 'svelte-french-toast';
 	import { getCommitteeStatusText } from '$lib/utils/committeeStatus';
 	import BellIcon from '$lib/components/toast/BellIcon.svelte';
-	import { serverTime } from '$lib/state/serverTime.svelte';
+	import { getServerTime } from '$lib/state/serverTime.svelte';
 	import hotkeys from 'hotkeys-js';
 	import AdoptionConfetti from '$lib/components/AdoptionConfetti.svelte';
 	import VotingModal from '$lib/components/voting/VotingModal.svelte';
@@ -24,7 +23,7 @@
 
 	const committeeId = page.params.committeeId!;
 
-	const committee: any = await client.liveQuery.committee({
+	const committee = await client.liveQuery.committee({
 		__args: { id: committeeId },
 		id: true,
 		abbreviation: true,
@@ -109,6 +108,7 @@
 			}
 		},
 		conference: {
+			id: true,
 			title: true,
 			hasModeratedCaucus: true,
 			// TODO: resolutionFeatureEnabled not available in Rumble client yet
@@ -126,8 +126,6 @@
 		}
 	});
 
-	setContext('committee', committee);
-
 	let committeeStatusExpiredAlerted = $state(false);
 	let speakersListOvertimeAlerted = $state(false);
 	let commentListOvertimeAlerted = $state(false);
@@ -137,7 +135,7 @@
 		if (!committee) return;
 
 		const interval = setInterval(() => {
-			if (dayjs(committee.statusUntil).diff($serverTime) < 0) {
+			if (dayjs(committee.statusUntil).diff(getServerTime()) < 0) {
 				if (!committeeStatusExpiredAlerted) {
 					toast.error(
 						m.committeeStatusExpired({
@@ -156,7 +154,8 @@
 
 			for (const speakersList of committee.activeAgendaItem?.speakersList ?? []) {
 				const overtime =
-					dayjs(speakersList.startTimestamp).diff($serverTime, 'seconds') + speakersList.timeLeft <
+					dayjs(speakersList.startTimestamp).diff(getServerTime(), 'seconds') +
+						speakersList.timeLeft <
 					0;
 
 				//	XAND only fire if both are false. Both true can be ignored, case should not happen.
@@ -181,13 +180,12 @@
 		return () => clearInterval(interval);
 	});
 
-	hotkeys('alt+p', (event) => {
-		event.preventDefault();
-		window.open('.', '_blank');
-	});
-
-	onDestroy(() => {
-		hotkeys.unbind('alt+p');
+	$effect(() => {
+		hotkeys('alt+p', (event) => {
+			event.preventDefault();
+			window.open('.', '_blank');
+		});
+		return () => hotkeys.unbind('alt+p');
 	});
 </script>
 

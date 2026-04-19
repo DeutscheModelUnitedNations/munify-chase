@@ -39,7 +39,7 @@ const remoteFunctionsExchange: Exchange = ({ forward }) => {
 
               return {
                 operation,
-                data: result.data,
+                data: structuredClone(result.data),
                 error: Array.isArray(result.errors)
                   ? new CombinedError({
                     graphQLErrors: result.errors
@@ -82,8 +82,9 @@ const remoteFunctionsExchange: Exchange = ({ forward }) => {
 
 export const urqlClient = new Client({
   url: '/api/graphql',
-  // fetchSubscriptions: true, // subscriptions via SSE (default yoga implementation)
+  fetchSubscriptions: true, // subscriptions via SSE (default yoga implementation)
   exchanges: [
+    nativeDateExchange,
     browser ? offlineExchange({
       schema,
       storage: makeDefaultStorage({
@@ -98,7 +99,6 @@ export const urqlClient = new Client({
 
       // }
     }) : undefined as unknown as Exchange,
-    nativeDateExchange,
     remoteFunctionsExchange,
     fetchExchange,
   ].filter(Boolean),

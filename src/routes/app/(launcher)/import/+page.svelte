@@ -45,7 +45,7 @@
 		} catch (e) {
 			if (e instanceof SyntaxError) {
 				toast.error(m.fileParseError());
-				throw new Error('Invalid JSON structure');
+				throw new Error('Invalid JSON structure', { cause: e });
 			} else if (e instanceof z.ZodError) {
 				toast.error(m.fileParseError());
 				console.error('Validation error:', e);

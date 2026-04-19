@@ -9,7 +9,9 @@
 	import { client } from '$lib/api/rumbleClient/client';
 	import { page } from '$app/state';
 
-	let { data }: { data: { user: { sub: string; email?: string } } } = $props();
+	import { getCurrentUser } from '$lib/state/currentUser.svelte';
+
+	const currentUser = getCurrentUser();
 
 	const conference: any = await client.liveQuery.conference({
 		__args: { id: page.params.conferenceId! },
@@ -91,7 +93,7 @@
 		__args: {
 			where: {
 				conference: { id: page.params.conferenceId },
-				user: { id: data.user.sub }
+				user: { id: currentUser?.sub ?? '' }
 			}
 		},
 		id: true,
@@ -100,7 +102,7 @@
 
 	let currentUserRole = $derived(conferenceUsers?.[0]);
 	let isAdmin = $derived(currentUserRole?.conferenceUserType === 'ADMIN');
-	let currentUserEmail = $derived(data.user?.email);
+	let currentUserEmail = currentUser?.email;
 
 	let activeTab = $state<'general' | 'users' | 'committees' | 'delegations' | 'nsa'>('general');
 

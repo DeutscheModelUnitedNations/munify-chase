@@ -1,16 +1,17 @@
 <script lang="ts">
 	import type { Snippet } from 'svelte';
-	import { setContext } from 'svelte';
 	import { page } from '$app/state';
 	import { client } from '$lib/api/rumbleClient/client';
 
-	let { data, children }: { data: { user: { sub: string } }; children: Snippet } = $props();
+	import { getCurrentUser } from '$lib/state/currentUser.svelte';
+
+	let { children }: { children: Snippet } = $props();
 
 	const conferenceUsers = await client.liveQuery.conferenceUsers({
 		__args: {
 			where: {
 				conference: { id: page.params.conferenceId },
-				user: { id: data.user.sub }
+				user: { id: (await getCurrentUser()).id ?? '' }
 			}
 		},
 		id: true,
@@ -42,7 +43,6 @@
 		}
 	});
 
-	setContext('participantIdentity', conferenceUsers);
 </script>
 
 {@render children()}

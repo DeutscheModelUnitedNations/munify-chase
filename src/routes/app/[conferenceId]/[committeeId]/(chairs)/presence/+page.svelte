@@ -1,7 +1,6 @@
 <script lang="ts">
 	import { m } from '$lib/paraglide/messages';
 	import { page } from '$app/state';
-	import { getContext } from 'svelte';
 	import { client } from '$lib/api/rumbleClient/client';
 	import BasicCard from '$lib/components/BasicCard.svelte';
 	import Majorities from '$lib/components/Majorities.svelte';
@@ -25,7 +24,39 @@
 	} from '$lib/helpers/distinguishConferenceMembers';
 	import { translateRegionalGroupEnum } from '$lib/utils/enumTranslationHelper';
 
-	const committee = getContext<any>('committee');
+	const committee = await client.liveQuery.committee({
+		__args: { id: page.params.committeeId! },
+		id: true,
+		totalPresent: true,
+		simpleMajority: true,
+		twoThirdsMajority: true,
+		paperSupportThreshold: true,
+		status: true,
+		statusHeadline: true,
+		statusUntil: true,
+		stateOfDebate: true,
+		activeAgendaItem: { id: true, title: true },
+		members: {
+			id: true,
+			present: true,
+			representation: {
+				id: true,
+				name: true,
+				alpha2Code: true,
+				alpha3Code: true,
+				regionalGroup: true,
+				type: true,
+				faIcon: true
+			}
+		},
+		conference: {
+			id: true,
+			uniqueConferenceMembers: {
+				id: true,
+				representation: { id: true, name: true, alpha2Code: true, alpha3Code: true, type: true, faIcon: true }
+			}
+		}
+	});
 
 	let countries = $derived(
 		committee?.members

@@ -24,6 +24,7 @@
 		creator: {
 			id: true,
 			representation: {
+				id: true,
 				name: true,
 				alpha3Code: true,
 				alpha2Code: true,
@@ -34,7 +35,9 @@
 			id: true,
 			committeeMemberId: true,
 			committeeMember: {
+				id: true,
 				representation: {
+					id: true,
 					name: true,
 					alpha3Code: true,
 					alpha2Code: true,
@@ -43,14 +46,17 @@
 			}
 		},
 		committee: {
+			id: true,
 			abbreviation: true,
 			name: true,
 			resolutionHeadline: true,
 			conference: {
+				id: true,
 				title: true
 			}
 		},
 		agendaItem: {
+			id: true,
 			title: true
 		},
 		operativeClauseVotes: {

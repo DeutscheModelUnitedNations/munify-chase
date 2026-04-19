@@ -2,7 +2,6 @@
 	import { m } from '$lib/paraglide/messages';
 	import { page } from '$app/state';
 	import { client } from '$lib/api/rumbleClient/client';
-	import { getContext } from 'svelte';
 	import BasicCard from '$lib/components/BasicCard.svelte';
 	import Majorities from '$lib/components/Majorities.svelte';
 	import StatusWidget from '../StatusWidget.svelte';
@@ -12,7 +11,29 @@
 	import { generatePaperName } from '$lib/utils/paperNameGenerator';
 	import { getTranslatedCountryNameFromAlpha3Code } from '$lib/utils/nationTranslationHelper.svelte';
 
-	const committee = getContext<any>('committee');
+	const committee = await client.liveQuery.committee({
+		__args: { id: page.params.committeeId! },
+		id: true,
+		totalPresent: true,
+		simpleMajority: true,
+		twoThirdsMajority: true,
+		paperSupportThreshold: true,
+		status: true,
+		statusHeadline: true,
+		statusUntil: true,
+		stateOfDebate: true,
+		supportReEvaluationOpen: true,
+		maxDraftResolutions: true,
+		activeDraftResolutionId: true,
+		amendmentSubmissionOpen: true,
+		amendmentSponsoringOpen: true,
+		currentOperativeIndex: true,
+		activeAgendaItem: { id: true, title: true },
+		members: {
+			id: true,
+			representation: { id: true, name: true, alpha3Code: true }
+		}
+	});
 
 	const papers = await client.liveQuery.resolutionPapers({
 		__args: { where: { committee: { id: page.params.committeeId! } } },
@@ -30,6 +51,7 @@
 		creator: {
 			id: true,
 			representation: {
+				id: true,
 				name: true,
 				alpha2Code: true,
 				alpha3Code: true,
@@ -40,7 +62,9 @@
 			id: true,
 			committeeMemberId: true,
 			committeeMember: {
+				id: true,
 				representation: {
+					id: true,
 					name: true,
 					alpha2Code: true,
 					alpha3Code: true,

@@ -2,14 +2,32 @@
 	import { m } from '$lib/paraglide/messages';
 	import { goto } from '$app/navigation';
 	import { page } from '$app/state';
-	import { getContext } from 'svelte';
 	import { client } from '$lib/api/rumbleClient/client';
+	import { getCurrentUser } from '$lib/state/currentUser.svelte';
 	import CommitteeGrid from '$lib/components/CommitteeGrid.svelte';
 	import ThemeSwitcher from '$lib/components/ThemeSwitcher.svelte';
 	import ParticipantIdentityCard from './ParticipantIdentityCard.svelte';
 
-	const participantIdentity = getContext<any>('participantIdentity');
-	let conferenceUser = $derived(participantIdentity?.[0]);
+	const currentUser = await getCurrentUser();
+	const [conferenceUser] = await client.liveQuery.conferenceUsers({
+		__args: {
+			where: {
+				conference: { id: page.params.conferenceId },
+				user: { id: currentUser?.sub ?? '' }
+			}
+		},
+		id: true,
+		conferenceUserType: true,
+		committeeMember: {
+			id: true,
+			committeeId: true,
+			representation: { id: true, name: true, alpha2Code: true, alpha3Code: true, type: true, faIcon: true }
+		},
+		conferenceMember: {
+			id: true,
+			representation: { id: true, name: true, alpha2Code: true, alpha3Code: true, type: true, faIcon: true }
+		}
+	}) ?? [];
 
 	const conference = await client.liveQuery.conference({
 		__args: { id: page.params.conferenceId! },

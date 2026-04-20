@@ -6,15 +6,15 @@ let current = $state(dayjs());
 const intervalDuration = 500;
 
 if (browser) {
-  const servertime = await client.query.serverTime();
-  if (servertime) {
-    current = dayjs(servertime);
-    setInterval(() => {
-      current = current.add(intervalDuration, 'ms');
-    }, intervalDuration);
-  }
+	const servertime = await client.query.serverTime();
+	if (servertime) {
+		current = dayjs(servertime);
+		setInterval(() => {
+			current = current.add(intervalDuration, 'ms');
+		}, intervalDuration);
+	}
 }
 
 export function getServerTime(): Dayjs {
-  return current;
+	return current;
 }

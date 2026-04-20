@@ -1,7 +1,7 @@
 import { db, schema } from '$api/db/db';
 import { abilityBuilder, enum_, schemaBuilder, pubsub as rumblePubsub } from '$api/rumble';
 import { basics } from './basics';
-import { isGlobalAdmin } from '$api/services/isAdminEmail';
+import { isGlobalAdmin } from '$api/services/authHelper';
 import { assertCommitteeChairOrAdmin } from './resolutionPaper';
 import { assertFindFirstExists } from '@m1212e/rumble';
 import { GraphQLError } from 'graphql';

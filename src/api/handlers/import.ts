@@ -3,7 +3,7 @@ import { enum_, schemaBuilder } from '$api/rumble';
 import { importDataSchema } from '$lib/utils/import';
 import { ConferenceRef } from './conference';
 import { GraphQLError } from 'graphql';
-import { isGlobalAdmin } from '$api/services/isAdminEmail';
+import { isGlobalAdmin } from '$api/services/authHelper';
 
 const Input = schemaBuilder.inputType('ImportData', {
 	description: 'Import data. You can find the JSON schema here: /api/schema/import',

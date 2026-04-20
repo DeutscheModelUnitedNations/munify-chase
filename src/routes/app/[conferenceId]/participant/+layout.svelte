@@ -42,7 +42,6 @@
 			}
 		}
 	});
-
 </script>
 
 {@render children()}

@@ -1,6 +1,6 @@
 import { db, schema } from '$api/db/db';
 import { abilityBuilder, object, query, pubsub as rumblePubsub, schemaBuilder } from '$api/rumble';
-import { isGlobalAdmin } from '$api/services/isAdminEmail';
+import { isGlobalAdmin } from '$api/services/authHelper';
 import { nanoid } from '$lib/helpers/nanoid';
 import { assertFindFirstExists, assertFirstEntryExists } from '@m1212e/rumble';
 

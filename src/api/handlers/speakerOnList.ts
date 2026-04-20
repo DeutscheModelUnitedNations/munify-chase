@@ -5,7 +5,7 @@ import { db, schema } from '$api/db/db';
 import { and, count, eq, gt, gte, sql } from 'drizzle-orm';
 import { assertFindFirstExists, assertFirstEntryExists } from '@m1212e/rumble';
 import { SpeakersListRef } from './speakersList';
-import { isGlobalAdmin } from '$api/services/isAdminEmail';
+import { isGlobalAdmin } from '$api/services/authHelper';
 import { assertCommitteeChairOrAdmin } from './resolutionPaper';
 
 const { ref, pubsub, table } = basics('speakerOnList');

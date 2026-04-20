@@ -2,7 +2,7 @@ import { db, schema } from '$api/db/db';
 import { abilityBuilder, schemaBuilder } from '$api/rumble';
 import { eq, inArray } from 'drizzle-orm';
 import { basics } from './basics';
-import { isGlobalAdmin } from '$api/services/isAdminEmail';
+import { isGlobalAdmin } from '$api/services/authHelper';
 import { assertConferenceAdmin } from './conferenceUser';
 import { assertCommitteeChairOrAdmin } from './resolutionPaper';
 import { assertFindFirstExists, assertFirstEntryExists } from '@m1212e/rumble';

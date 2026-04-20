@@ -1,4021 +1,3710 @@
 {
-  "version": "8",
-  "dialect": "postgres",
-  "id": "00e6b08f-4a21-4c40-a0e8-839837b569b2",
-  "prevIds": [
-    "5426886b-1762-46f4-b65c-dfd455057240"
-  ],
-  "ddl": [
-    {
-      "values": [
-        "PENDING",
-        "SUBMITTED",
-        "CONSENSUS_ADOPTED",
-        "ACCEPTED",
-        "REJECTED",
-        "WITHDRAWN"
-      ],
-      "name": "amendment_status",
-      "entityType": "enums",
-      "schema": "public"
-    },
-    {
-      "values": [
-        "DELETE",
-        "ADD",
-        "ALTER_TEXT",
-        "ALTER_POSITION"
-      ],
-      "name": "amendment_type",
-      "entityType": "enums",
-      "schema": "public"
-    },
-    {
-      "values": [
-        "PUBLIC",
-        "TEAM_ONLY"
-      ],
-      "name": "comment_visibility",
-      "entityType": "enums",
-      "schema": "public"
-    },
-    {
-      "values": [
-        "FORMAL",
-        "INFORMAL",
-        "MODERATED_INFORMAL",
-        "PAUSE",
-        "SUSPENSION"
-      ],
-      "name": "committee_status",
-      "entityType": "enums",
-      "schema": "public"
-    },
-    {
-      "values": [
-        "ADMIN",
-        "TEAM",
-        "SPECTATOR",
-        "DELEGATE",
-        "NON_STATE_ACTOR"
-      ],
-      "name": "conference_user_type",
-      "entityType": "enums",
-      "schema": "public"
-    },
-    {
-      "values": [
-        "WORKING_PAPER",
-        "SUBMITTED",
-        "DRAFT_RESOLUTION",
-        "AMENDMENT_PHASE",
-        "VOTING_PHASE",
-        "FINAL"
-      ],
-      "name": "paper_status",
-      "entityType": "enums",
-      "schema": "public"
-    },
-    {
-      "values": [
-        "AFRICA",
-        "ASIA_PACIFIC",
-        "EASTERN_EUROPE",
-        "LATIN_AMERICA_CARIBBEAN",
-        "WESTERN_EUROPE_OTHERS"
-      ],
-      "name": "regional_group",
-      "entityType": "enums",
-      "schema": "public"
-    },
-    {
-      "values": [
-        "DELEGATION",
-        "NSA",
-        "UN"
-      ],
-      "name": "representation_type",
-      "entityType": "enums",
-      "schema": "public"
-    },
-    {
-      "values": [
-        "SPONSOR",
-        "EDIT"
-      ],
-      "name": "share_code_permission",
-      "entityType": "enums",
-      "schema": "public"
-    },
-    {
-      "values": [
-        "SPEAKERS_LIST",
-        "COMMENT_LIST"
-      ],
-      "name": "speakers_list_category",
-      "entityType": "enums",
-      "schema": "public"
-    },
-    {
-      "values": [
-        "ADOPTED",
-        "REJECTED",
-        "SENT_BACK"
-      ],
-      "name": "vote_outcome",
-      "entityType": "enums",
-      "schema": "public"
-    },
-    {
-      "isRlsEnabled": false,
-      "name": "agenda_item",
-      "entityType": "tables",
-      "schema": "public"
-    },
-    {
-      "isRlsEnabled": false,
-      "name": "amendment",
-      "entityType": "tables",
-      "schema": "public"
-    },
-    {
-      "isRlsEnabled": false,
-      "name": "amendment_sponsor",
-      "entityType": "tables",
-      "schema": "public"
-    },
-    {
-      "isRlsEnabled": false,
-      "name": "committee",
-      "entityType": "tables",
-      "schema": "public"
-    },
-    {
-      "isRlsEnabled": false,
-      "name": "committee_member",
-      "entityType": "tables",
-      "schema": "public"
-    },
-    {
-      "isRlsEnabled": false,
-      "name": "committee_topic_changed_timestamp",
-      "entityType": "tables",
-      "schema": "public"
-    },
-    {
-      "isRlsEnabled": false,
-      "name": "conference",
-      "entityType": "tables",
-      "schema": "public"
-    },
-    {
-      "isRlsEnabled": false,
-      "name": "conference_member",
-      "entityType": "tables",
-      "schema": "public"
-    },
-    {
-      "isRlsEnabled": false,
-      "name": "conference_user",
-      "entityType": "tables",
-      "schema": "public"
-    },
-    {
-      "isRlsEnabled": false,
-      "name": "operative_clause_vote",
-      "entityType": "tables",
-      "schema": "public"
-    },
-    {
-      "isRlsEnabled": false,
-      "name": "paper_clause_lock",
-      "entityType": "tables",
-      "schema": "public"
-    },
-    {
-      "isRlsEnabled": false,
-      "name": "paper_content_snapshot",
-      "entityType": "tables",
-      "schema": "public"
-    },
-    {
-      "isRlsEnabled": false,
-      "name": "paper_editor",
-      "entityType": "tables",
-      "schema": "public"
-    },
-    {
-      "isRlsEnabled": false,
-      "name": "paper_share_code",
-      "entityType": "tables",
-      "schema": "public"
-    },
-    {
-      "isRlsEnabled": false,
-      "name": "paper_sponsor",
-      "entityType": "tables",
-      "schema": "public"
-    },
-    {
-      "isRlsEnabled": false,
-      "name": "presence_changed_timestamp",
-      "entityType": "tables",
-      "schema": "public"
-    },
-    {
-      "isRlsEnabled": false,
-      "name": "representation",
-      "entityType": "tables",
-      "schema": "public"
-    },
-    {
-      "isRlsEnabled": false,
-      "name": "resolution_comment",
-      "entityType": "tables",
-      "schema": "public"
-    },
-    {
-      "isRlsEnabled": false,
-      "name": "resolution_paper",
-      "entityType": "tables",
-      "schema": "public"
-    },
-    {
-      "isRlsEnabled": false,
-      "name": "resolution_vote_result",
-      "entityType": "tables",
-      "schema": "public"
-    },
-    {
-      "isRlsEnabled": false,
-      "name": "speaker_on_list",
-      "entityType": "tables",
-      "schema": "public"
-    },
-    {
-      "isRlsEnabled": false,
-      "name": "speakers_list",
-      "entityType": "tables",
-      "schema": "public"
-    },
-    {
-      "isRlsEnabled": false,
-      "name": "spoken_time_period",
-      "entityType": "tables",
-      "schema": "public"
-    },
-    {
-      "isRlsEnabled": false,
-      "name": "user",
-      "entityType": "tables",
-      "schema": "public"
-    },
-    {
-      "type": "text",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "id",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "agenda_item"
-    },
-    {
-      "type": "timestamp",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": "now()",
-      "generated": null,
-      "identity": null,
-      "name": "created_at",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "agenda_item"
-    },
-    {
-      "type": "timestamp",
-      "typeSchema": null,
-      "notNull": false,
-      "dimensions": 0,
-      "default": "now()",
-      "generated": null,
-      "identity": null,
-      "name": "updated_at",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "agenda_item"
-    },
-    {
-      "type": "text",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "committee_id",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "agenda_item"
-    },
-    {
-      "type": "text",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "title",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "agenda_item"
-    },
-    {
-      "type": "text",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "id",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "amendment"
-    },
-    {
-      "type": "timestamp",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": "now()",
-      "generated": null,
-      "identity": null,
-      "name": "created_at",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "amendment"
-    },
-    {
-      "type": "timestamp",
-      "typeSchema": null,
-      "notNull": false,
-      "dimensions": 0,
-      "default": "now()",
-      "generated": null,
-      "identity": null,
-      "name": "updated_at",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "amendment"
-    },
-    {
-      "type": "text",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "paper_id",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "amendment"
-    },
-    {
-      "type": "text",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "proposer_committee_member_id",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "amendment"
-    },
-    {
-      "type": "amendment_type",
-      "typeSchema": "public",
-      "notNull": true,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "type",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "amendment"
-    },
-    {
-      "type": "amendment_status",
-      "typeSchema": "public",
-      "notNull": true,
-      "dimensions": 0,
-      "default": "'PENDING'",
-      "generated": null,
-      "identity": null,
-      "name": "status",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "amendment"
-    },
-    {
-      "type": "text",
-      "typeSchema": null,
-      "notNull": false,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "target_clause_id",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "amendment"
-    },
-    {
-      "type": "smallint",
-      "typeSchema": null,
-      "notNull": false,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "target_operative_index",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "amendment"
-    },
-    {
-      "type": "json",
-      "typeSchema": null,
-      "notNull": false,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "new_content",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "amendment"
-    },
-    {
-      "type": "smallint",
-      "typeSchema": null,
-      "notNull": false,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "target_position",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "amendment"
-    },
-    {
-      "type": "text",
-      "typeSchema": null,
-      "notNull": false,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "document_number",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "amendment"
-    },
-    {
-      "type": "smallint",
-      "typeSchema": null,
-      "notNull": false,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "sequence_number",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "amendment"
-    },
-    {
-      "type": "text",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "id",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "amendment_sponsor"
-    },
-    {
-      "type": "timestamp",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": "now()",
-      "generated": null,
-      "identity": null,
-      "name": "created_at",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "amendment_sponsor"
-    },
-    {
-      "type": "timestamp",
-      "typeSchema": null,
-      "notNull": false,
-      "dimensions": 0,
-      "default": "now()",
-      "generated": null,
-      "identity": null,
-      "name": "updated_at",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "amendment_sponsor"
-    },
-    {
-      "type": "text",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "amendment_id",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "amendment_sponsor"
-    },
-    {
-      "type": "text",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "committee_member_id",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "amendment_sponsor"
-    },
-    {
-      "type": "text",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "id",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "committee"
-    },
-    {
-      "type": "timestamp",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": "now()",
-      "generated": null,
-      "identity": null,
-      "name": "created_at",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "committee"
-    },
-    {
-      "type": "timestamp",
-      "typeSchema": null,
-      "notNull": false,
-      "dimensions": 0,
-      "default": "now()",
-      "generated": null,
-      "identity": null,
-      "name": "updated_at",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "committee"
-    },
-    {
-      "type": "text",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "name",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "committee"
-    },
-    {
-      "type": "text",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "abbreviation",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "committee"
-    },
-    {
-      "type": "text",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "conference_id",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "committee"
-    },
-    {
-      "type": "text",
-      "typeSchema": null,
-      "notNull": false,
-      "dimensions": 0,
-      "default": "'<p></p>'",
-      "generated": null,
-      "identity": null,
-      "name": "whiteboard_content",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "committee"
-    },
-    {
-      "type": "boolean",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": "true",
-      "generated": null,
-      "identity": null,
-      "name": "show_whiteboard",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "committee"
-    },
-    {
-      "type": "committee_status",
-      "typeSchema": "public",
-      "notNull": true,
-      "dimensions": 0,
-      "default": "'SUSPENSION'",
-      "generated": null,
-      "identity": null,
-      "name": "status",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "committee"
-    },
-    {
-      "type": "text",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": "''",
-      "generated": null,
-      "identity": null,
-      "name": "status_headline",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "committee"
-    },
-    {
-      "type": "timestamp",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": "now()",
-      "generated": null,
-      "identity": null,
-      "name": "status_until",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "committee"
-    },
-    {
-      "type": "text",
-      "typeSchema": null,
-      "notNull": false,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "state_of_debate",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "committee"
-    },
-    {
-      "type": "boolean",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": "false",
-      "generated": null,
-      "identity": null,
-      "name": "allow_delegations_to_add_themselves_to_speakers_list",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "committee"
-    },
-    {
-      "type": "text",
-      "typeSchema": null,
-      "notNull": false,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "active_agenda_item_id",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "committee"
-    },
-    {
-      "type": "smallint",
-      "typeSchema": null,
-      "notNull": false,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "custom_simple_majority",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "committee"
-    },
-    {
-      "type": "smallint",
-      "typeSchema": null,
-      "notNull": false,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "custom_two_thirds_majority",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "committee"
-    },
-    {
-      "type": "smallint",
-      "typeSchema": null,
-      "notNull": false,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "custom_paper_support_threshold",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "committee"
-    },
-    {
-      "type": "timestamp",
-      "typeSchema": null,
-      "notNull": false,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "last_resolution_adoption_date",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "committee"
-    },
-    {
-      "type": "smallint",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": "3",
-      "generated": null,
-      "identity": null,
-      "name": "max_draft_resolutions",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "committee"
-    },
-    {
-      "type": "text",
-      "typeSchema": null,
-      "notNull": false,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "active_draft_resolution_id",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "committee"
-    },
-    {
-      "type": "smallint",
-      "typeSchema": null,
-      "notNull": false,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "current_operative_index",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "committee"
-    },
-    {
-      "type": "text",
-      "typeSchema": null,
-      "notNull": false,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "current_operative_clause_id",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "committee"
-    },
-    {
-      "type": "boolean",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": "false",
-      "generated": null,
-      "identity": null,
-      "name": "support_re_evaluation_open",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "committee"
-    },
-    {
-      "type": "boolean",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": "true",
-      "generated": null,
-      "identity": null,
-      "name": "amendment_submission_open",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "committee"
-    },
-    {
-      "type": "boolean",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": "true",
-      "generated": null,
-      "identity": null,
-      "name": "amendment_sponsoring_open",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "committee"
-    },
-    {
-      "type": "text",
-      "typeSchema": null,
-      "notNull": false,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "active_amendment_id",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "committee"
-    },
-    {
-      "type": "text",
-      "typeSchema": null,
-      "notNull": false,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "resolution_headline",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "committee"
-    },
-    {
-      "type": "text",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "id",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "committee_member"
-    },
-    {
-      "type": "timestamp",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": "now()",
-      "generated": null,
-      "identity": null,
-      "name": "created_at",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "committee_member"
-    },
-    {
-      "type": "timestamp",
-      "typeSchema": null,
-      "notNull": false,
-      "dimensions": 0,
-      "default": "now()",
-      "generated": null,
-      "identity": null,
-      "name": "updated_at",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "committee_member"
-    },
-    {
-      "type": "boolean",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": "false",
-      "generated": null,
-      "identity": null,
-      "name": "present",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "committee_member"
-    },
-    {
-      "type": "text",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "committee_id",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "committee_member"
-    },
-    {
-      "type": "text",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "representation_id",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "committee_member"
-    },
-    {
-      "type": "text",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "id",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "committee_topic_changed_timestamp"
-    },
-    {
-      "type": "timestamp",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": "now()",
-      "generated": null,
-      "identity": null,
-      "name": "created_at",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "committee_topic_changed_timestamp"
-    },
-    {
-      "type": "timestamp",
-      "typeSchema": null,
-      "notNull": false,
-      "dimensions": 0,
-      "default": "now()",
-      "generated": null,
-      "identity": null,
-      "name": "updated_at",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "committee_topic_changed_timestamp"
-    },
-    {
-      "type": "text",
-      "typeSchema": null,
-      "notNull": false,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "committee_id",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "committee_topic_changed_timestamp"
-    },
-    {
-      "type": "text",
-      "typeSchema": null,
-      "notNull": false,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "agenda_item_id",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "committee_topic_changed_timestamp"
-    },
-    {
-      "type": "timestamp",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "timestamp",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "committee_topic_changed_timestamp"
-    },
-    {
-      "type": "text",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "id",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "conference"
-    },
-    {
-      "type": "timestamp",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": "now()",
-      "generated": null,
-      "identity": null,
-      "name": "created_at",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "conference"
-    },
-    {
-      "type": "timestamp",
-      "typeSchema": null,
-      "notNull": false,
-      "dimensions": 0,
-      "default": "now()",
-      "generated": null,
-      "identity": null,
-      "name": "updated_at",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "conference"
-    },
-    {
-      "type": "text",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "title",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "conference"
-    },
-    {
-      "type": "text",
-      "typeSchema": null,
-      "notNull": false,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "press_website",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "conference"
-    },
-    {
-      "type": "boolean",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": "false",
-      "generated": null,
-      "identity": null,
-      "name": "has_moderated_caucus",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "conference"
-    },
-    {
-      "type": "boolean",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": "true",
-      "generated": null,
-      "identity": null,
-      "name": "resolution_feature_enabled",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "conference"
-    },
-    {
-      "type": "text",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "id",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "conference_member"
-    },
-    {
-      "type": "timestamp",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": "now()",
-      "generated": null,
-      "identity": null,
-      "name": "created_at",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "conference_member"
-    },
-    {
-      "type": "timestamp",
-      "typeSchema": null,
-      "notNull": false,
-      "dimensions": 0,
-      "default": "now()",
-      "generated": null,
-      "identity": null,
-      "name": "updated_at",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "conference_member"
-    },
-    {
-      "type": "text",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "conference_id",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "conference_member"
-    },
-    {
-      "type": "text",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "representation_id",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "conference_member"
-    },
-    {
-      "type": "text",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "id",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "conference_user"
-    },
-    {
-      "type": "timestamp",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": "now()",
-      "generated": null,
-      "identity": null,
-      "name": "created_at",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "conference_user"
-    },
-    {
-      "type": "timestamp",
-      "typeSchema": null,
-      "notNull": false,
-      "dimensions": 0,
-      "default": "now()",
-      "generated": null,
-      "identity": null,
-      "name": "updated_at",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "conference_user"
-    },
-    {
-      "type": "conference_user_type",
-      "typeSchema": "public",
-      "notNull": true,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "conference_user_type",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "conference_user"
-    },
-    {
-      "type": "text",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "user_email",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "conference_user"
-    },
-    {
-      "type": "text",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "conference_id",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "conference_user"
-    },
-    {
-      "type": "text",
-      "typeSchema": null,
-      "notNull": false,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "conference_member_id",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "conference_user"
-    },
-    {
-      "type": "text",
-      "typeSchema": null,
-      "notNull": false,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "committee_member_id",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "conference_user"
-    },
-    {
-      "type": "text",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "id",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "operative_clause_vote"
-    },
-    {
-      "type": "timestamp",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": "now()",
-      "generated": null,
-      "identity": null,
-      "name": "created_at",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "operative_clause_vote"
-    },
-    {
-      "type": "timestamp",
-      "typeSchema": null,
-      "notNull": false,
-      "dimensions": 0,
-      "default": "now()",
-      "generated": null,
-      "identity": null,
-      "name": "updated_at",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "operative_clause_vote"
-    },
-    {
-      "type": "text",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "paper_id",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "operative_clause_vote"
-    },
-    {
-      "type": "text",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "clause_id",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "operative_clause_vote"
-    },
-    {
-      "type": "vote_outcome",
-      "typeSchema": "public",
-      "notNull": true,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "outcome",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "operative_clause_vote"
-    },
-    {
-      "type": "integer",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "votes_for",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "operative_clause_vote"
-    },
-    {
-      "type": "integer",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "votes_against",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "operative_clause_vote"
-    },
-    {
-      "type": "integer",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": "0",
-      "generated": null,
-      "identity": null,
-      "name": "votes_abstain",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "operative_clause_vote"
-    },
-    {
-      "type": "text",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "id",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "paper_clause_lock"
-    },
-    {
-      "type": "timestamp",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": "now()",
-      "generated": null,
-      "identity": null,
-      "name": "created_at",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "paper_clause_lock"
-    },
-    {
-      "type": "timestamp",
-      "typeSchema": null,
-      "notNull": false,
-      "dimensions": 0,
-      "default": "now()",
-      "generated": null,
-      "identity": null,
-      "name": "updated_at",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "paper_clause_lock"
-    },
-    {
-      "type": "text",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "paper_id",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "paper_clause_lock"
-    },
-    {
-      "type": "text",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "clause_id",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "paper_clause_lock"
-    },
-    {
-      "type": "text",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "conference_user_id",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "paper_clause_lock"
-    },
-    {
-      "type": "timestamp",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": "now()",
-      "generated": null,
-      "identity": null,
-      "name": "acquired_at",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "paper_clause_lock"
-    },
-    {
-      "type": "text",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "id",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "paper_content_snapshot"
-    },
-    {
-      "type": "timestamp",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": "now()",
-      "generated": null,
-      "identity": null,
-      "name": "created_at",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "paper_content_snapshot"
-    },
-    {
-      "type": "timestamp",
-      "typeSchema": null,
-      "notNull": false,
-      "dimensions": 0,
-      "default": "now()",
-      "generated": null,
-      "identity": null,
-      "name": "updated_at",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "paper_content_snapshot"
-    },
-    {
-      "type": "text",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "paper_id",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "paper_content_snapshot"
-    },
-    {
-      "type": "json",
-      "typeSchema": null,
-      "notNull": false,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "content",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "paper_content_snapshot"
-    },
-    {
-      "type": "text",
-      "typeSchema": null,
-      "notNull": false,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "trigger",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "paper_content_snapshot"
-    },
-    {
-      "type": "text",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "id",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "paper_editor"
-    },
-    {
-      "type": "timestamp",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": "now()",
-      "generated": null,
-      "identity": null,
-      "name": "created_at",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "paper_editor"
-    },
-    {
-      "type": "timestamp",
-      "typeSchema": null,
-      "notNull": false,
-      "dimensions": 0,
-      "default": "now()",
-      "generated": null,
-      "identity": null,
-      "name": "updated_at",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "paper_editor"
-    },
-    {
-      "type": "text",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "paper_id",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "paper_editor"
-    },
-    {
-      "type": "text",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "conference_user_id",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "paper_editor"
-    },
-    {
-      "type": "text",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "id",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "paper_share_code"
-    },
-    {
-      "type": "timestamp",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": "now()",
-      "generated": null,
-      "identity": null,
-      "name": "created_at",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "paper_share_code"
-    },
-    {
-      "type": "timestamp",
-      "typeSchema": null,
-      "notNull": false,
-      "dimensions": 0,
-      "default": "now()",
-      "generated": null,
-      "identity": null,
-      "name": "updated_at",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "paper_share_code"
-    },
-    {
-      "type": "text",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "paper_id",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "paper_share_code"
-    },
-    {
-      "type": "text",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "code",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "paper_share_code"
-    },
-    {
-      "type": "share_code_permission",
-      "typeSchema": "public",
-      "notNull": true,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "permission",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "paper_share_code"
-    },
-    {
-      "type": "text",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "id",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "paper_sponsor"
-    },
-    {
-      "type": "timestamp",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": "now()",
-      "generated": null,
-      "identity": null,
-      "name": "created_at",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "paper_sponsor"
-    },
-    {
-      "type": "timestamp",
-      "typeSchema": null,
-      "notNull": false,
-      "dimensions": 0,
-      "default": "now()",
-      "generated": null,
-      "identity": null,
-      "name": "updated_at",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "paper_sponsor"
-    },
-    {
-      "type": "text",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "paper_id",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "paper_sponsor"
-    },
-    {
-      "type": "text",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "committee_member_id",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "paper_sponsor"
-    },
-    {
-      "type": "text",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "id",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "presence_changed_timestamp"
-    },
-    {
-      "type": "timestamp",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": "now()",
-      "generated": null,
-      "identity": null,
-      "name": "created_at",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "presence_changed_timestamp"
-    },
-    {
-      "type": "timestamp",
-      "typeSchema": null,
-      "notNull": false,
-      "dimensions": 0,
-      "default": "now()",
-      "generated": null,
-      "identity": null,
-      "name": "updated_at",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "presence_changed_timestamp"
-    },
-    {
-      "type": "text",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "committee_member_id",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "presence_changed_timestamp"
-    },
-    {
-      "type": "timestamp",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "timestamp",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "presence_changed_timestamp"
-    },
-    {
-      "type": "boolean",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "present_set_to",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "presence_changed_timestamp"
-    },
-    {
-      "type": "text",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "id",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "representation"
-    },
-    {
-      "type": "timestamp",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": "now()",
-      "generated": null,
-      "identity": null,
-      "name": "created_at",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "representation"
-    },
-    {
-      "type": "timestamp",
-      "typeSchema": null,
-      "notNull": false,
-      "dimensions": 0,
-      "default": "now()",
-      "generated": null,
-      "identity": null,
-      "name": "updated_at",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "representation"
-    },
-    {
-      "type": "text",
-      "typeSchema": null,
-      "notNull": false,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "name",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "representation"
-    },
-    {
-      "type": "text",
-      "typeSchema": null,
-      "notNull": false,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "alpha2_code",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "representation"
-    },
-    {
-      "type": "text",
-      "typeSchema": null,
-      "notNull": false,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "alpha3_code",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "representation"
-    },
-    {
-      "type": "representation_type",
-      "typeSchema": "public",
-      "notNull": true,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "type",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "representation"
-    },
-    {
-      "type": "text",
-      "typeSchema": null,
-      "notNull": false,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "fa_icon",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "representation"
-    },
-    {
-      "type": "regional_group",
-      "typeSchema": "public",
-      "notNull": false,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "regional_group",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "representation"
-    },
-    {
-      "type": "text",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "conference_id",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "representation"
-    },
-    {
-      "type": "text",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "id",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "resolution_comment"
-    },
-    {
-      "type": "timestamp",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": "now()",
-      "generated": null,
-      "identity": null,
-      "name": "created_at",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "resolution_comment"
-    },
-    {
-      "type": "timestamp",
-      "typeSchema": null,
-      "notNull": false,
-      "dimensions": 0,
-      "default": "now()",
-      "generated": null,
-      "identity": null,
-      "name": "updated_at",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "resolution_comment"
-    },
-    {
-      "type": "text",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "paper_id",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "resolution_comment"
-    },
-    {
-      "type": "text",
-      "typeSchema": null,
-      "notNull": false,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "clause_id",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "resolution_comment"
-    },
-    {
-      "type": "text",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "author_conference_user_id",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "resolution_comment"
-    },
-    {
-      "type": "text",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "content",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "resolution_comment"
-    },
-    {
-      "type": "comment_visibility",
-      "typeSchema": "public",
-      "notNull": true,
-      "dimensions": 0,
-      "default": "'PUBLIC'",
-      "generated": null,
-      "identity": null,
-      "name": "visibility",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "resolution_comment"
-    },
-    {
-      "type": "text",
-      "typeSchema": null,
-      "notNull": false,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "parent_comment_id",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "resolution_comment"
-    },
-    {
-      "type": "text",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "id",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "resolution_paper"
-    },
-    {
-      "type": "timestamp",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": "now()",
-      "generated": null,
-      "identity": null,
-      "name": "created_at",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "resolution_paper"
-    },
-    {
-      "type": "timestamp",
-      "typeSchema": null,
-      "notNull": false,
-      "dimensions": 0,
-      "default": "now()",
-      "generated": null,
-      "identity": null,
-      "name": "updated_at",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "resolution_paper"
-    },
-    {
-      "type": "text",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "committee_id",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "resolution_paper"
-    },
-    {
-      "type": "text",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "agenda_item_id",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "resolution_paper"
-    },
-    {
-      "type": "text",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "creator_committee_member_id",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "resolution_paper"
-    },
-    {
-      "type": "paper_status",
-      "typeSchema": "public",
-      "notNull": true,
-      "dimensions": 0,
-      "default": "'WORKING_PAPER'",
-      "generated": null,
-      "identity": null,
-      "name": "status",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "resolution_paper"
-    },
-    {
-      "type": "json",
-      "typeSchema": null,
-      "notNull": false,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "content",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "resolution_paper"
-    },
-    {
-      "type": "text",
-      "typeSchema": null,
-      "notNull": false,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "title",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "resolution_paper"
-    },
-    {
-      "type": "text",
-      "typeSchema": null,
-      "notNull": false,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "document_number",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "resolution_paper"
-    },
-    {
-      "type": "smallint",
-      "typeSchema": null,
-      "notNull": false,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "sequence_number",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "resolution_paper"
-    },
-    {
-      "type": "timestamp",
-      "typeSchema": null,
-      "notNull": false,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "deleted_at",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "resolution_paper"
-    },
-    {
-      "type": "text",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "id",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "resolution_vote_result"
-    },
-    {
-      "type": "timestamp",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": "now()",
-      "generated": null,
-      "identity": null,
-      "name": "created_at",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "resolution_vote_result"
-    },
-    {
-      "type": "timestamp",
-      "typeSchema": null,
-      "notNull": false,
-      "dimensions": 0,
-      "default": "now()",
-      "generated": null,
-      "identity": null,
-      "name": "updated_at",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "resolution_vote_result"
-    },
-    {
-      "type": "text",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "paper_id",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "resolution_vote_result"
-    },
-    {
-      "type": "vote_outcome",
-      "typeSchema": "public",
-      "notNull": true,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "outcome",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "resolution_vote_result"
-    },
-    {
-      "type": "integer",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "votes_for",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "resolution_vote_result"
-    },
-    {
-      "type": "integer",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "votes_against",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "resolution_vote_result"
-    },
-    {
-      "type": "integer",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": "0",
-      "generated": null,
-      "identity": null,
-      "name": "votes_abstain",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "resolution_vote_result"
-    },
-    {
-      "type": "text",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "id",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "speaker_on_list"
-    },
-    {
-      "type": "timestamp",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": "now()",
-      "generated": null,
-      "identity": null,
-      "name": "created_at",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "speaker_on_list"
-    },
-    {
-      "type": "timestamp",
-      "typeSchema": null,
-      "notNull": false,
-      "dimensions": 0,
-      "default": "now()",
-      "generated": null,
-      "identity": null,
-      "name": "updated_at",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "speaker_on_list"
-    },
-    {
-      "type": "text",
-      "typeSchema": null,
-      "notNull": false,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "committee_member_id",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "speaker_on_list"
-    },
-    {
-      "type": "text",
-      "typeSchema": null,
-      "notNull": false,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "conference_member_id",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "speaker_on_list"
-    },
-    {
-      "type": "text",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "speakers_list_id",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "speaker_on_list"
-    },
-    {
-      "type": "smallint",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "position",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "speaker_on_list"
-    },
-    {
-      "type": "text",
-      "typeSchema": null,
-      "notNull": false,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "overwrite_name",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "speaker_on_list"
-    },
-    {
-      "type": "text",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "id",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "speakers_list"
-    },
-    {
-      "type": "timestamp",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": "now()",
-      "generated": null,
-      "identity": null,
-      "name": "created_at",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "speakers_list"
-    },
-    {
-      "type": "timestamp",
-      "typeSchema": null,
-      "notNull": false,
-      "dimensions": 0,
-      "default": "now()",
-      "generated": null,
-      "identity": null,
-      "name": "updated_at",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "speakers_list"
-    },
-    {
-      "type": "text",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "agenda_item_id",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "speakers_list"
-    },
-    {
-      "type": "speakers_list_category",
-      "typeSchema": "public",
-      "notNull": true,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "type",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "speakers_list"
-    },
-    {
-      "type": "smallint",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "speaking_time",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "speakers_list"
-    },
-    {
-      "type": "smallint",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": "0",
-      "generated": null,
-      "identity": null,
-      "name": "time_left",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "speakers_list"
-    },
-    {
-      "type": "timestamp",
-      "typeSchema": null,
-      "notNull": false,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "start_timestamp",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "speakers_list"
-    },
-    {
-      "type": "boolean",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": "false",
-      "generated": null,
-      "identity": null,
-      "name": "is_closed",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "speakers_list"
-    },
-    {
-      "type": "text",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "id",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "spoken_time_period"
-    },
-    {
-      "type": "timestamp",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": "now()",
-      "generated": null,
-      "identity": null,
-      "name": "created_at",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "spoken_time_period"
-    },
-    {
-      "type": "timestamp",
-      "typeSchema": null,
-      "notNull": false,
-      "dimensions": 0,
-      "default": "now()",
-      "generated": null,
-      "identity": null,
-      "name": "updated_at",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "spoken_time_period"
-    },
-    {
-      "type": "text",
-      "typeSchema": null,
-      "notNull": false,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "committee_member_id",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "spoken_time_period"
-    },
-    {
-      "type": "text",
-      "typeSchema": null,
-      "notNull": false,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "conference_member_id",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "spoken_time_period"
-    },
-    {
-      "type": "text",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "speakers_list_id",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "spoken_time_period"
-    },
-    {
-      "type": "timestamp",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "start_timestamp",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "spoken_time_period"
-    },
-    {
-      "type": "timestamp",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "end_timestamp",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "spoken_time_period"
-    },
-    {
-      "type": "text",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "id",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "user"
-    },
-    {
-      "type": "timestamp",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": "now()",
-      "generated": null,
-      "identity": null,
-      "name": "created_at",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "user"
-    },
-    {
-      "type": "timestamp",
-      "typeSchema": null,
-      "notNull": false,
-      "dimensions": 0,
-      "default": "now()",
-      "generated": null,
-      "identity": null,
-      "name": "updated_at",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "user"
-    },
-    {
-      "type": "text",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "email",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "user"
-    },
-    {
-      "type": "text",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "family_name",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "user"
-    },
-    {
-      "type": "text",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "given_name",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "user"
-    },
-    {
-      "type": "text",
-      "typeSchema": null,
-      "notNull": false,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "locale",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "user"
-    },
-    {
-      "type": "text",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "preferred_username",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "user"
-    },
-    {
-      "nameExplicit": false,
-      "columns": [
-        "committee_id"
-      ],
-      "schemaTo": "public",
-      "tableTo": "committee",
-      "columnsTo": [
-        "id"
-      ],
-      "onUpdate": "NO ACTION",
-      "onDelete": "CASCADE",
-      "name": "agenda_item_committee_id_committee_id_fk",
-      "entityType": "fks",
-      "schema": "public",
-      "table": "agenda_item"
-    },
-    {
-      "nameExplicit": false,
-      "columns": [
-        "paper_id"
-      ],
-      "schemaTo": "public",
-      "tableTo": "resolution_paper",
-      "columnsTo": [
-        "id"
-      ],
-      "onUpdate": "NO ACTION",
-      "onDelete": "CASCADE",
-      "name": "amendment_paper_id_resolution_paper_id_fk",
-      "entityType": "fks",
-      "schema": "public",
-      "table": "amendment"
-    },
-    {
-      "nameExplicit": false,
-      "columns": [
-        "proposer_committee_member_id"
-      ],
-      "schemaTo": "public",
-      "tableTo": "committee_member",
-      "columnsTo": [
-        "id"
-      ],
-      "onUpdate": "NO ACTION",
-      "onDelete": "CASCADE",
-      "name": "amendment_proposer_committee_member_id_committee_member_id_fk",
-      "entityType": "fks",
-      "schema": "public",
-      "table": "amendment"
-    },
-    {
-      "nameExplicit": false,
-      "columns": [
-        "amendment_id"
-      ],
-      "schemaTo": "public",
-      "tableTo": "amendment",
-      "columnsTo": [
-        "id"
-      ],
-      "onUpdate": "NO ACTION",
-      "onDelete": "CASCADE",
-      "name": "amendment_sponsor_amendment_id_amendment_id_fk",
-      "entityType": "fks",
-      "schema": "public",
-      "table": "amendment_sponsor"
-    },
-    {
-      "nameExplicit": false,
-      "columns": [
-        "committee_member_id"
-      ],
-      "schemaTo": "public",
-      "tableTo": "committee_member",
-      "columnsTo": [
-        "id"
-      ],
-      "onUpdate": "NO ACTION",
-      "onDelete": "CASCADE",
-      "name": "amendment_sponsor_committee_member_id_committee_member_id_fk",
-      "entityType": "fks",
-      "schema": "public",
-      "table": "amendment_sponsor"
-    },
-    {
-      "nameExplicit": false,
-      "columns": [
-        "conference_id"
-      ],
-      "schemaTo": "public",
-      "tableTo": "conference",
-      "columnsTo": [
-        "id"
-      ],
-      "onUpdate": "NO ACTION",
-      "onDelete": "CASCADE",
-      "name": "committee_conference_id_conference_id_fk",
-      "entityType": "fks",
-      "schema": "public",
-      "table": "committee"
-    },
-    {
-      "nameExplicit": false,
-      "columns": [
-        "active_agenda_item_id"
-      ],
-      "schemaTo": "public",
-      "tableTo": "agenda_item",
-      "columnsTo": [
-        "id"
-      ],
-      "onUpdate": "NO ACTION",
-      "onDelete": "NO ACTION",
-      "name": "committee_active_agenda_item_id_agenda_item_id_fk",
-      "entityType": "fks",
-      "schema": "public",
-      "table": "committee"
-    },
-    {
-      "nameExplicit": false,
-      "columns": [
-        "active_draft_resolution_id"
-      ],
-      "schemaTo": "public",
-      "tableTo": "resolution_paper",
-      "columnsTo": [
-        "id"
-      ],
-      "onUpdate": "NO ACTION",
-      "onDelete": "NO ACTION",
-      "name": "committee_active_draft_resolution_id_resolution_paper_id_fk",
-      "entityType": "fks",
-      "schema": "public",
-      "table": "committee"
-    },
-    {
-      "nameExplicit": false,
-      "columns": [
-        "active_amendment_id"
-      ],
-      "schemaTo": "public",
-      "tableTo": "amendment",
-      "columnsTo": [
-        "id"
-      ],
-      "onUpdate": "NO ACTION",
-      "onDelete": "SET NULL",
-      "name": "committee_active_amendment_id_amendment_id_fk",
-      "entityType": "fks",
-      "schema": "public",
-      "table": "committee"
-    },
-    {
-      "nameExplicit": false,
-      "columns": [
-        "committee_id"
-      ],
-      "schemaTo": "public",
-      "tableTo": "committee",
-      "columnsTo": [
-        "id"
-      ],
-      "onUpdate": "NO ACTION",
-      "onDelete": "CASCADE",
-      "name": "committee_member_committee_id_committee_id_fk",
-      "entityType": "fks",
-      "schema": "public",
-      "table": "committee_member"
-    },
-    {
-      "nameExplicit": false,
-      "columns": [
-        "representation_id"
-      ],
-      "schemaTo": "public",
-      "tableTo": "representation",
-      "columnsTo": [
-        "id"
-      ],
-      "onUpdate": "NO ACTION",
-      "onDelete": "NO ACTION",
-      "name": "committee_member_representation_id_representation_id_fk",
-      "entityType": "fks",
-      "schema": "public",
-      "table": "committee_member"
-    },
-    {
-      "nameExplicit": false,
-      "columns": [
-        "committee_id"
-      ],
-      "schemaTo": "public",
-      "tableTo": "committee",
-      "columnsTo": [
-        "id"
-      ],
-      "onUpdate": "NO ACTION",
-      "onDelete": "CASCADE",
-      "name": "committee_topic_changed_timestamp_committee_id_committee_id_fk",
-      "entityType": "fks",
-      "schema": "public",
-      "table": "committee_topic_changed_timestamp"
-    },
-    {
-      "nameExplicit": false,
-      "columns": [
-        "agenda_item_id"
-      ],
-      "schemaTo": "public",
-      "tableTo": "agenda_item",
-      "columnsTo": [
-        "id"
-      ],
-      "onUpdate": "NO ACTION",
-      "onDelete": "CASCADE",
-      "name": "committee_topic_changed_timestamp_agenda_item_id_agenda_item_id",
-      "entityType": "fks",
-      "schema": "public",
-      "table": "committee_topic_changed_timestamp"
-    },
-    {
-      "nameExplicit": false,
-      "columns": [
-        "conference_id"
-      ],
-      "schemaTo": "public",
-      "tableTo": "conference",
-      "columnsTo": [
-        "id"
-      ],
-      "onUpdate": "NO ACTION",
-      "onDelete": "CASCADE",
-      "name": "conference_member_conference_id_conference_id_fk",
-      "entityType": "fks",
-      "schema": "public",
-      "table": "conference_member"
-    },
-    {
-      "nameExplicit": false,
-      "columns": [
-        "representation_id"
-      ],
-      "schemaTo": "public",
-      "tableTo": "representation",
-      "columnsTo": [
-        "id"
-      ],
-      "onUpdate": "NO ACTION",
-      "onDelete": "NO ACTION",
-      "name": "conference_member_representation_id_representation_id_fk",
-      "entityType": "fks",
-      "schema": "public",
-      "table": "conference_member"
-    },
-    {
-      "nameExplicit": false,
-      "columns": [
-        "conference_id"
-      ],
-      "schemaTo": "public",
-      "tableTo": "conference",
-      "columnsTo": [
-        "id"
-      ],
-      "onUpdate": "NO ACTION",
-      "onDelete": "CASCADE",
-      "name": "conference_user_conference_id_conference_id_fk",
-      "entityType": "fks",
-      "schema": "public",
-      "table": "conference_user"
-    },
-    {
-      "nameExplicit": false,
-      "columns": [
-        "conference_member_id"
-      ],
-      "schemaTo": "public",
-      "tableTo": "conference_member",
-      "columnsTo": [
-        "id"
-      ],
-      "onUpdate": "NO ACTION",
-      "onDelete": "CASCADE",
-      "name": "conference_user_conference_member_id_conference_member_id_fk",
-      "entityType": "fks",
-      "schema": "public",
-      "table": "conference_user"
-    },
-    {
-      "nameExplicit": false,
-      "columns": [
-        "committee_member_id"
-      ],
-      "schemaTo": "public",
-      "tableTo": "committee_member",
-      "columnsTo": [
-        "id"
-      ],
-      "onUpdate": "NO ACTION",
-      "onDelete": "CASCADE",
-      "name": "conference_user_committee_member_id_committee_member_id_fk",
-      "entityType": "fks",
-      "schema": "public",
-      "table": "conference_user"
-    },
-    {
-      "nameExplicit": false,
-      "columns": [
-        "paper_id"
-      ],
-      "schemaTo": "public",
-      "tableTo": "resolution_paper",
-      "columnsTo": [
-        "id"
-      ],
-      "onUpdate": "NO ACTION",
-      "onDelete": "CASCADE",
-      "name": "operative_clause_vote_paper_id_resolution_paper_id_fk",
-      "entityType": "fks",
-      "schema": "public",
-      "table": "operative_clause_vote"
-    },
-    {
-      "nameExplicit": false,
-      "columns": [
-        "paper_id"
-      ],
-      "schemaTo": "public",
-      "tableTo": "resolution_paper",
-      "columnsTo": [
-        "id"
-      ],
-      "onUpdate": "NO ACTION",
-      "onDelete": "CASCADE",
-      "name": "paper_clause_lock_paper_id_resolution_paper_id_fk",
-      "entityType": "fks",
-      "schema": "public",
-      "table": "paper_clause_lock"
-    },
-    {
-      "nameExplicit": false,
-      "columns": [
-        "conference_user_id"
-      ],
-      "schemaTo": "public",
-      "tableTo": "conference_user",
-      "columnsTo": [
-        "id"
-      ],
-      "onUpdate": "NO ACTION",
-      "onDelete": "CASCADE",
-      "name": "paper_clause_lock_conference_user_id_conference_user_id_fk",
-      "entityType": "fks",
-      "schema": "public",
-      "table": "paper_clause_lock"
-    },
-    {
-      "nameExplicit": false,
-      "columns": [
-        "paper_id"
-      ],
-      "schemaTo": "public",
-      "tableTo": "resolution_paper",
-      "columnsTo": [
-        "id"
-      ],
-      "onUpdate": "NO ACTION",
-      "onDelete": "CASCADE",
-      "name": "paper_content_snapshot_paper_id_resolution_paper_id_fk",
-      "entityType": "fks",
-      "schema": "public",
-      "table": "paper_content_snapshot"
-    },
-    {
-      "nameExplicit": false,
-      "columns": [
-        "paper_id"
-      ],
-      "schemaTo": "public",
-      "tableTo": "resolution_paper",
-      "columnsTo": [
-        "id"
-      ],
-      "onUpdate": "NO ACTION",
-      "onDelete": "CASCADE",
-      "name": "paper_editor_paper_id_resolution_paper_id_fk",
-      "entityType": "fks",
-      "schema": "public",
-      "table": "paper_editor"
-    },
-    {
-      "nameExplicit": false,
-      "columns": [
-        "conference_user_id"
-      ],
-      "schemaTo": "public",
-      "tableTo": "conference_user",
-      "columnsTo": [
-        "id"
-      ],
-      "onUpdate": "NO ACTION",
-      "onDelete": "CASCADE",
-      "name": "paper_editor_conference_user_id_conference_user_id_fk",
-      "entityType": "fks",
-      "schema": "public",
-      "table": "paper_editor"
-    },
-    {
-      "nameExplicit": false,
-      "columns": [
-        "paper_id"
-      ],
-      "schemaTo": "public",
-      "tableTo": "resolution_paper",
-      "columnsTo": [
-        "id"
-      ],
-      "onUpdate": "NO ACTION",
-      "onDelete": "CASCADE",
-      "name": "paper_share_code_paper_id_resolution_paper_id_fk",
-      "entityType": "fks",
-      "schema": "public",
-      "table": "paper_share_code"
-    },
-    {
-      "nameExplicit": false,
-      "columns": [
-        "paper_id"
-      ],
-      "schemaTo": "public",
-      "tableTo": "resolution_paper",
-      "columnsTo": [
-        "id"
-      ],
-      "onUpdate": "NO ACTION",
-      "onDelete": "CASCADE",
-      "name": "paper_sponsor_paper_id_resolution_paper_id_fk",
-      "entityType": "fks",
-      "schema": "public",
-      "table": "paper_sponsor"
-    },
-    {
-      "nameExplicit": false,
-      "columns": [
-        "committee_member_id"
-      ],
-      "schemaTo": "public",
-      "tableTo": "committee_member",
-      "columnsTo": [
-        "id"
-      ],
-      "onUpdate": "NO ACTION",
-      "onDelete": "CASCADE",
-      "name": "paper_sponsor_committee_member_id_committee_member_id_fk",
-      "entityType": "fks",
-      "schema": "public",
-      "table": "paper_sponsor"
-    },
-    {
-      "nameExplicit": false,
-      "columns": [
-        "committee_member_id"
-      ],
-      "schemaTo": "public",
-      "tableTo": "committee_member",
-      "columnsTo": [
-        "id"
-      ],
-      "onUpdate": "NO ACTION",
-      "onDelete": "CASCADE",
-      "name": "presence_changed_timestamp_committee_member_id_committee_member",
-      "entityType": "fks",
-      "schema": "public",
-      "table": "presence_changed_timestamp"
-    },
-    {
-      "nameExplicit": false,
-      "columns": [
-        "conference_id"
-      ],
-      "schemaTo": "public",
-      "tableTo": "conference",
-      "columnsTo": [
-        "id"
-      ],
-      "onUpdate": "NO ACTION",
-      "onDelete": "CASCADE",
-      "name": "representation_conference_id_conference_id_fk",
-      "entityType": "fks",
-      "schema": "public",
-      "table": "representation"
-    },
-    {
-      "nameExplicit": false,
-      "columns": [
-        "paper_id"
-      ],
-      "schemaTo": "public",
-      "tableTo": "resolution_paper",
-      "columnsTo": [
-        "id"
-      ],
-      "onUpdate": "NO ACTION",
-      "onDelete": "CASCADE",
-      "name": "resolution_comment_paper_id_resolution_paper_id_fk",
-      "entityType": "fks",
-      "schema": "public",
-      "table": "resolution_comment"
-    },
-    {
-      "nameExplicit": false,
-      "columns": [
-        "author_conference_user_id"
-      ],
-      "schemaTo": "public",
-      "tableTo": "conference_user",
-      "columnsTo": [
-        "id"
-      ],
-      "onUpdate": "NO ACTION",
-      "onDelete": "CASCADE",
-      "name": "resolution_comment_author_conference_user_id_conference_user_id",
-      "entityType": "fks",
-      "schema": "public",
-      "table": "resolution_comment"
-    },
-    {
-      "nameExplicit": false,
-      "columns": [
-        "parent_comment_id"
-      ],
-      "schemaTo": "public",
-      "tableTo": "resolution_comment",
-      "columnsTo": [
-        "id"
-      ],
-      "onUpdate": "NO ACTION",
-      "onDelete": "CASCADE",
-      "name": "resolution_comment_parent_comment_id_resolution_comment_id_fk",
-      "entityType": "fks",
-      "schema": "public",
-      "table": "resolution_comment"
-    },
-    {
-      "nameExplicit": false,
-      "columns": [
-        "committee_id"
-      ],
-      "schemaTo": "public",
-      "tableTo": "committee",
-      "columnsTo": [
-        "id"
-      ],
-      "onUpdate": "NO ACTION",
-      "onDelete": "CASCADE",
-      "name": "resolution_paper_committee_id_committee_id_fk",
-      "entityType": "fks",
-      "schema": "public",
-      "table": "resolution_paper"
-    },
-    {
-      "nameExplicit": false,
-      "columns": [
-        "agenda_item_id"
-      ],
-      "schemaTo": "public",
-      "tableTo": "agenda_item",
-      "columnsTo": [
-        "id"
-      ],
-      "onUpdate": "NO ACTION",
-      "onDelete": "CASCADE",
-      "name": "resolution_paper_agenda_item_id_agenda_item_id_fk",
-      "entityType": "fks",
-      "schema": "public",
-      "table": "resolution_paper"
-    },
-    {
-      "nameExplicit": false,
-      "columns": [
-        "creator_committee_member_id"
-      ],
-      "schemaTo": "public",
-      "tableTo": "committee_member",
-      "columnsTo": [
-        "id"
-      ],
-      "onUpdate": "NO ACTION",
-      "onDelete": "CASCADE",
-      "name": "resolution_paper_creator_committee_member_id_committee_member_i",
-      "entityType": "fks",
-      "schema": "public",
-      "table": "resolution_paper"
-    },
-    {
-      "nameExplicit": false,
-      "columns": [
-        "paper_id"
-      ],
-      "schemaTo": "public",
-      "tableTo": "resolution_paper",
-      "columnsTo": [
-        "id"
-      ],
-      "onUpdate": "NO ACTION",
-      "onDelete": "CASCADE",
-      "name": "resolution_vote_result_paper_id_resolution_paper_id_fk",
-      "entityType": "fks",
-      "schema": "public",
-      "table": "resolution_vote_result"
-    },
-    {
-      "nameExplicit": false,
-      "columns": [
-        "committee_member_id"
-      ],
-      "schemaTo": "public",
-      "tableTo": "committee_member",
-      "columnsTo": [
-        "id"
-      ],
-      "onUpdate": "NO ACTION",
-      "onDelete": "CASCADE",
-      "name": "speaker_on_list_committee_member_id_committee_member_id_fk",
-      "entityType": "fks",
-      "schema": "public",
-      "table": "speaker_on_list"
-    },
-    {
-      "nameExplicit": false,
-      "columns": [
-        "conference_member_id"
-      ],
-      "schemaTo": "public",
-      "tableTo": "conference_member",
-      "columnsTo": [
-        "id"
-      ],
-      "onUpdate": "NO ACTION",
-      "onDelete": "CASCADE",
-      "name": "speaker_on_list_conference_member_id_conference_member_id_fk",
-      "entityType": "fks",
-      "schema": "public",
-      "table": "speaker_on_list"
-    },
-    {
-      "nameExplicit": false,
-      "columns": [
-        "speakers_list_id"
-      ],
-      "schemaTo": "public",
-      "tableTo": "speakers_list",
-      "columnsTo": [
-        "id"
-      ],
-      "onUpdate": "NO ACTION",
-      "onDelete": "CASCADE",
-      "name": "speaker_on_list_speakers_list_id_speakers_list_id_fk",
-      "entityType": "fks",
-      "schema": "public",
-      "table": "speaker_on_list"
-    },
-    {
-      "nameExplicit": false,
-      "columns": [
-        "agenda_item_id"
-      ],
-      "schemaTo": "public",
-      "tableTo": "agenda_item",
-      "columnsTo": [
-        "id"
-      ],
-      "onUpdate": "NO ACTION",
-      "onDelete": "CASCADE",
-      "name": "speakers_list_agenda_item_id_agenda_item_id_fk",
-      "entityType": "fks",
-      "schema": "public",
-      "table": "speakers_list"
-    },
-    {
-      "nameExplicit": false,
-      "columns": [
-        "committee_member_id"
-      ],
-      "schemaTo": "public",
-      "tableTo": "committee_member",
-      "columnsTo": [
-        "id"
-      ],
-      "onUpdate": "NO ACTION",
-      "onDelete": "CASCADE",
-      "name": "spoken_time_period_committee_member_id_committee_member_id_fk",
-      "entityType": "fks",
-      "schema": "public",
-      "table": "spoken_time_period"
-    },
-    {
-      "nameExplicit": false,
-      "columns": [
-        "conference_member_id"
-      ],
-      "schemaTo": "public",
-      "tableTo": "conference_member",
-      "columnsTo": [
-        "id"
-      ],
-      "onUpdate": "NO ACTION",
-      "onDelete": "CASCADE",
-      "name": "spoken_time_period_conference_member_id_conference_member_id_fk",
-      "entityType": "fks",
-      "schema": "public",
-      "table": "spoken_time_period"
-    },
-    {
-      "nameExplicit": false,
-      "columns": [
-        "speakers_list_id"
-      ],
-      "schemaTo": "public",
-      "tableTo": "speakers_list",
-      "columnsTo": [
-        "id"
-      ],
-      "onUpdate": "NO ACTION",
-      "onDelete": "CASCADE",
-      "name": "spoken_time_period_speakers_list_id_speakers_list_id_fk",
-      "entityType": "fks",
-      "schema": "public",
-      "table": "spoken_time_period"
-    },
-    {
-      "columns": [
-        "id"
-      ],
-      "nameExplicit": false,
-      "name": "agenda_item_pkey",
-      "schema": "public",
-      "table": "agenda_item",
-      "entityType": "pks"
-    },
-    {
-      "columns": [
-        "id"
-      ],
-      "nameExplicit": false,
-      "name": "amendment_pkey",
-      "schema": "public",
-      "table": "amendment",
-      "entityType": "pks"
-    },
-    {
-      "columns": [
-        "id"
-      ],
-      "nameExplicit": false,
-      "name": "amendment_sponsor_pkey",
-      "schema": "public",
-      "table": "amendment_sponsor",
-      "entityType": "pks"
-    },
-    {
-      "columns": [
-        "id"
-      ],
-      "nameExplicit": false,
-      "name": "committee_pkey",
-      "schema": "public",
-      "table": "committee",
-      "entityType": "pks"
-    },
-    {
-      "columns": [
-        "id"
-      ],
-      "nameExplicit": false,
-      "name": "committee_member_pkey",
-      "schema": "public",
-      "table": "committee_member",
-      "entityType": "pks"
-    },
-    {
-      "columns": [
-        "id"
-      ],
-      "nameExplicit": false,
-      "name": "committee_topic_changed_timestamp_pkey",
-      "schema": "public",
-      "table": "committee_topic_changed_timestamp",
-      "entityType": "pks"
-    },
-    {
-      "columns": [
-        "id"
-      ],
-      "nameExplicit": false,
-      "name": "conference_pkey",
-      "schema": "public",
-      "table": "conference",
-      "entityType": "pks"
-    },
-    {
-      "columns": [
-        "id"
-      ],
-      "nameExplicit": false,
-      "name": "conference_member_pkey",
-      "schema": "public",
-      "table": "conference_member",
-      "entityType": "pks"
-    },
-    {
-      "columns": [
-        "id"
-      ],
-      "nameExplicit": false,
-      "name": "conference_user_pkey",
-      "schema": "public",
-      "table": "conference_user",
-      "entityType": "pks"
-    },
-    {
-      "columns": [
-        "id"
-      ],
-      "nameExplicit": false,
-      "name": "operative_clause_vote_pkey",
-      "schema": "public",
-      "table": "operative_clause_vote",
-      "entityType": "pks"
-    },
-    {
-      "columns": [
-        "id"
-      ],
-      "nameExplicit": false,
-      "name": "paper_clause_lock_pkey",
-      "schema": "public",
-      "table": "paper_clause_lock",
-      "entityType": "pks"
-    },
-    {
-      "columns": [
-        "id"
-      ],
-      "nameExplicit": false,
-      "name": "paper_content_snapshot_pkey",
-      "schema": "public",
-      "table": "paper_content_snapshot",
-      "entityType": "pks"
-    },
-    {
-      "columns": [
-        "id"
-      ],
-      "nameExplicit": false,
-      "name": "paper_editor_pkey",
-      "schema": "public",
-      "table": "paper_editor",
-      "entityType": "pks"
-    },
-    {
-      "columns": [
-        "id"
-      ],
-      "nameExplicit": false,
-      "name": "paper_share_code_pkey",
-      "schema": "public",
-      "table": "paper_share_code",
-      "entityType": "pks"
-    },
-    {
-      "columns": [
-        "id"
-      ],
-      "nameExplicit": false,
-      "name": "paper_sponsor_pkey",
-      "schema": "public",
-      "table": "paper_sponsor",
-      "entityType": "pks"
-    },
-    {
-      "columns": [
-        "id"
-      ],
-      "nameExplicit": false,
-      "name": "presence_changed_timestamp_pkey",
-      "schema": "public",
-      "table": "presence_changed_timestamp",
-      "entityType": "pks"
-    },
-    {
-      "columns": [
-        "id"
-      ],
-      "nameExplicit": false,
-      "name": "representation_pkey",
-      "schema": "public",
-      "table": "representation",
-      "entityType": "pks"
-    },
-    {
-      "columns": [
-        "id"
-      ],
-      "nameExplicit": false,
-      "name": "resolution_comment_pkey",
-      "schema": "public",
-      "table": "resolution_comment",
-      "entityType": "pks"
-    },
-    {
-      "columns": [
-        "id"
-      ],
-      "nameExplicit": false,
-      "name": "resolution_paper_pkey",
-      "schema": "public",
-      "table": "resolution_paper",
-      "entityType": "pks"
-    },
-    {
-      "columns": [
-        "id"
-      ],
-      "nameExplicit": false,
-      "name": "resolution_vote_result_pkey",
-      "schema": "public",
-      "table": "resolution_vote_result",
-      "entityType": "pks"
-    },
-    {
-      "columns": [
-        "id"
-      ],
-      "nameExplicit": false,
-      "name": "speaker_on_list_pkey",
-      "schema": "public",
-      "table": "speaker_on_list",
-      "entityType": "pks"
-    },
-    {
-      "columns": [
-        "id"
-      ],
-      "nameExplicit": false,
-      "name": "speakers_list_pkey",
-      "schema": "public",
-      "table": "speakers_list",
-      "entityType": "pks"
-    },
-    {
-      "columns": [
-        "id"
-      ],
-      "nameExplicit": false,
-      "name": "spoken_time_period_pkey",
-      "schema": "public",
-      "table": "spoken_time_period",
-      "entityType": "pks"
-    },
-    {
-      "columns": [
-        "id"
-      ],
-      "nameExplicit": false,
-      "name": "user_pkey",
-      "schema": "public",
-      "table": "user",
-      "entityType": "pks"
-    },
-    {
-      "nameExplicit": false,
-      "columns": [
-        "amendment_id",
-        "committee_member_id"
-      ],
-      "nullsNotDistinct": false,
-      "name": "amendment_sponsor_amendment_id_committee_member_id_unique",
-      "entityType": "uniques",
-      "schema": "public",
-      "table": "amendment_sponsor"
-    },
-    {
-      "nameExplicit": false,
-      "columns": [
-        "conference_id",
-        "name"
-      ],
-      "nullsNotDistinct": false,
-      "name": "committee_conference_id_name_unique",
-      "entityType": "uniques",
-      "schema": "public",
-      "table": "committee"
-    },
-    {
-      "nameExplicit": false,
-      "columns": [
-        "conference_id",
-        "abbreviation"
-      ],
-      "nullsNotDistinct": false,
-      "name": "committee_conference_id_abbreviation_unique",
-      "entityType": "uniques",
-      "schema": "public",
-      "table": "committee"
-    },
-    {
-      "nameExplicit": false,
-      "columns": [
-        "paper_id",
-        "clause_id"
-      ],
-      "nullsNotDistinct": false,
-      "name": "operative_clause_vote_paper_id_clause_id_unique",
-      "entityType": "uniques",
-      "schema": "public",
-      "table": "operative_clause_vote"
-    },
-    {
-      "nameExplicit": false,
-      "columns": [
-        "paper_id",
-        "clause_id"
-      ],
-      "nullsNotDistinct": false,
-      "name": "paper_clause_lock_paper_id_clause_id_unique",
-      "entityType": "uniques",
-      "schema": "public",
-      "table": "paper_clause_lock"
-    },
-    {
-      "nameExplicit": false,
-      "columns": [
-        "paper_id",
-        "conference_user_id"
-      ],
-      "nullsNotDistinct": false,
-      "name": "paper_editor_paper_id_conference_user_id_unique",
-      "entityType": "uniques",
-      "schema": "public",
-      "table": "paper_editor"
-    },
-    {
-      "nameExplicit": false,
-      "columns": [
-        "paper_id",
-        "committee_member_id"
-      ],
-      "nullsNotDistinct": false,
-      "name": "paper_sponsor_paper_id_committee_member_id_unique",
-      "entityType": "uniques",
-      "schema": "public",
-      "table": "paper_sponsor"
-    },
-    {
-      "nameExplicit": false,
-      "columns": [
-        "conference_id",
-        "name"
-      ],
-      "nullsNotDistinct": false,
-      "name": "representation_conference_id_name_unique",
-      "entityType": "uniques",
-      "schema": "public",
-      "table": "representation"
-    },
-    {
-      "nameExplicit": false,
-      "columns": [
-        "conference_id",
-        "alpha2_code",
-        "alpha3_code"
-      ],
-      "nullsNotDistinct": false,
-      "name": "representation_conference_id_alpha2_code_alpha3_code_unique",
-      "entityType": "uniques",
-      "schema": "public",
-      "table": "representation"
-    },
-    {
-      "nameExplicit": false,
-      "columns": [
-        "speakers_list_id",
-        "position"
-      ],
-      "nullsNotDistinct": false,
-      "name": "speaker_on_list_speakers_list_id_position_unique",
-      "entityType": "uniques",
-      "schema": "public",
-      "table": "speaker_on_list"
-    },
-    {
-      "nameExplicit": false,
-      "columns": [
-        "speakers_list_id",
-        "committee_member_id"
-      ],
-      "nullsNotDistinct": false,
-      "name": "speaker_on_list_speakers_list_id_committee_member_id_unique",
-      "entityType": "uniques",
-      "schema": "public",
-      "table": "speaker_on_list"
-    },
-    {
-      "nameExplicit": false,
-      "columns": [
-        "speakers_list_id",
-        "conference_member_id"
-      ],
-      "nullsNotDistinct": false,
-      "name": "speaker_on_list_speakers_list_id_conference_member_id_unique",
-      "entityType": "uniques",
-      "schema": "public",
-      "table": "speaker_on_list"
-    },
-    {
-      "nameExplicit": false,
-      "columns": [
-        "agenda_item_id",
-        "type"
-      ],
-      "nullsNotDistinct": false,
-      "name": "speakers_list_agenda_item_id_type_unique",
-      "entityType": "uniques",
-      "schema": "public",
-      "table": "speakers_list"
-    },
-    {
-      "nameExplicit": false,
-      "columns": [
-        "code"
-      ],
-      "nullsNotDistinct": false,
-      "name": "paper_share_code_code_unique",
-      "schema": "public",
-      "table": "paper_share_code",
-      "entityType": "uniques"
-    },
-    {
-      "nameExplicit": false,
-      "columns": [
-        "paper_id"
-      ],
-      "nullsNotDistinct": false,
-      "name": "resolution_vote_result_paper_id_key",
-      "schema": "public",
-      "table": "resolution_vote_result",
-      "entityType": "uniques"
-    },
-    {
-      "nameExplicit": false,
-      "columns": [
-        "id"
-      ],
-      "nullsNotDistinct": false,
-      "name": "user_id_unique",
-      "schema": "public",
-      "table": "user",
-      "entityType": "uniques"
-    },
-    {
-      "nameExplicit": false,
-      "columns": [
-        "email"
-      ],
-      "nullsNotDistinct": false,
-      "name": "user_email_unique",
-      "schema": "public",
-      "table": "user",
-      "entityType": "uniques"
-    }
-  ],
-  "renames": []
+	"ddl": [
+		{
+			"entityType": "enums",
+			"name": "amendment_status",
+			"schema": "public",
+			"values": ["PENDING", "SUBMITTED", "CONSENSUS_ADOPTED", "ACCEPTED", "REJECTED", "WITHDRAWN"]
+		},
+		{
+			"entityType": "enums",
+			"name": "amendment_type",
+			"schema": "public",
+			"values": ["DELETE", "ADD", "ALTER_TEXT", "ALTER_POSITION"]
+		},
+		{
+			"entityType": "enums",
+			"name": "comment_visibility",
+			"schema": "public",
+			"values": ["PUBLIC", "TEAM_ONLY"]
+		},
+		{
+			"entityType": "enums",
+			"name": "committee_status",
+			"schema": "public",
+			"values": ["FORMAL", "INFORMAL", "MODERATED_INFORMAL", "PAUSE", "SUSPENSION"]
+		},
+		{
+			"entityType": "enums",
+			"name": "conference_user_type",
+			"schema": "public",
+			"values": ["ADMIN", "TEAM", "SPECTATOR", "DELEGATE", "NON_STATE_ACTOR"]
+		},
+		{
+			"entityType": "enums",
+			"name": "paper_status",
+			"schema": "public",
+			"values": [
+				"WORKING_PAPER",
+				"SUBMITTED",
+				"DRAFT_RESOLUTION",
+				"AMENDMENT_PHASE",
+				"VOTING_PHASE",
+				"FINAL"
+			]
+		},
+		{
+			"entityType": "enums",
+			"name": "regional_group",
+			"schema": "public",
+			"values": [
+				"AFRICA",
+				"ASIA_PACIFIC",
+				"EASTERN_EUROPE",
+				"LATIN_AMERICA_CARIBBEAN",
+				"WESTERN_EUROPE_OTHERS"
+			]
+		},
+		{
+			"entityType": "enums",
+			"name": "representation_type",
+			"schema": "public",
+			"values": ["DELEGATION", "NSA", "UN"]
+		},
+		{
+			"entityType": "enums",
+			"name": "share_code_permission",
+			"schema": "public",
+			"values": ["SPONSOR", "EDIT"]
+		},
+		{
+			"entityType": "enums",
+			"name": "speakers_list_category",
+			"schema": "public",
+			"values": ["SPEAKERS_LIST", "COMMENT_LIST"]
+		},
+		{
+			"entityType": "enums",
+			"name": "vote_outcome",
+			"schema": "public",
+			"values": ["ADOPTED", "REJECTED", "SENT_BACK"]
+		},
+		{
+			"entityType": "tables",
+			"isRlsEnabled": false,
+			"name": "agenda_item",
+			"schema": "public"
+		},
+		{
+			"entityType": "tables",
+			"isRlsEnabled": false,
+			"name": "amendment",
+			"schema": "public"
+		},
+		{
+			"entityType": "tables",
+			"isRlsEnabled": false,
+			"name": "amendment_sponsor",
+			"schema": "public"
+		},
+		{
+			"entityType": "tables",
+			"isRlsEnabled": false,
+			"name": "committee",
+			"schema": "public"
+		},
+		{
+			"entityType": "tables",
+			"isRlsEnabled": false,
+			"name": "committee_member",
+			"schema": "public"
+		},
+		{
+			"entityType": "tables",
+			"isRlsEnabled": false,
+			"name": "committee_topic_changed_timestamp",
+			"schema": "public"
+		},
+		{
+			"entityType": "tables",
+			"isRlsEnabled": false,
+			"name": "conference",
+			"schema": "public"
+		},
+		{
+			"entityType": "tables",
+			"isRlsEnabled": false,
+			"name": "conference_member",
+			"schema": "public"
+		},
+		{
+			"entityType": "tables",
+			"isRlsEnabled": false,
+			"name": "conference_user",
+			"schema": "public"
+		},
+		{
+			"entityType": "tables",
+			"isRlsEnabled": false,
+			"name": "operative_clause_vote",
+			"schema": "public"
+		},
+		{
+			"entityType": "tables",
+			"isRlsEnabled": false,
+			"name": "paper_clause_lock",
+			"schema": "public"
+		},
+		{
+			"entityType": "tables",
+			"isRlsEnabled": false,
+			"name": "paper_content_snapshot",
+			"schema": "public"
+		},
+		{
+			"entityType": "tables",
+			"isRlsEnabled": false,
+			"name": "paper_editor",
+			"schema": "public"
+		},
+		{
+			"entityType": "tables",
+			"isRlsEnabled": false,
+			"name": "paper_share_code",
+			"schema": "public"
+		},
+		{
+			"entityType": "tables",
+			"isRlsEnabled": false,
+			"name": "paper_sponsor",
+			"schema": "public"
+		},
+		{
+			"entityType": "tables",
+			"isRlsEnabled": false,
+			"name": "presence_changed_timestamp",
+			"schema": "public"
+		},
+		{
+			"entityType": "tables",
+			"isRlsEnabled": false,
+			"name": "representation",
+			"schema": "public"
+		},
+		{
+			"entityType": "tables",
+			"isRlsEnabled": false,
+			"name": "resolution_comment",
+			"schema": "public"
+		},
+		{
+			"entityType": "tables",
+			"isRlsEnabled": false,
+			"name": "resolution_paper",
+			"schema": "public"
+		},
+		{
+			"entityType": "tables",
+			"isRlsEnabled": false,
+			"name": "resolution_vote_result",
+			"schema": "public"
+		},
+		{
+			"entityType": "tables",
+			"isRlsEnabled": false,
+			"name": "speaker_on_list",
+			"schema": "public"
+		},
+		{
+			"entityType": "tables",
+			"isRlsEnabled": false,
+			"name": "speakers_list",
+			"schema": "public"
+		},
+		{
+			"entityType": "tables",
+			"isRlsEnabled": false,
+			"name": "spoken_time_period",
+			"schema": "public"
+		},
+		{
+			"entityType": "tables",
+			"isRlsEnabled": false,
+			"name": "user",
+			"schema": "public"
+		},
+		{
+			"default": null,
+			"dimensions": 0,
+			"entityType": "columns",
+			"generated": null,
+			"identity": null,
+			"name": "id",
+			"notNull": true,
+			"schema": "public",
+			"table": "agenda_item",
+			"type": "text",
+			"typeSchema": null
+		},
+		{
+			"default": "now()",
+			"dimensions": 0,
+			"entityType": "columns",
+			"generated": null,
+			"identity": null,
+			"name": "created_at",
+			"notNull": true,
+			"schema": "public",
+			"table": "agenda_item",
+			"type": "timestamp",
+			"typeSchema": null
+		},
+		{
+			"default": "now()",
+			"dimensions": 0,
+			"entityType": "columns",
+			"generated": null,
+			"identity": null,
+			"name": "updated_at",
+			"notNull": false,
+			"schema": "public",
+			"table": "agenda_item",
+			"type": "timestamp",
+			"typeSchema": null
+		},
+		{
+			"default": null,
+			"dimensions": 0,
+			"entityType": "columns",
+			"generated": null,
+			"identity": null,
+			"name": "committee_id",
+			"notNull": true,
+			"schema": "public",
+			"table": "agenda_item",
+			"type": "text",
+			"typeSchema": null
+		},
+		{
+			"default": null,
+			"dimensions": 0,
+			"entityType": "columns",
+			"generated": null,
+			"identity": null,
+			"name": "title",
+			"notNull": true,
+			"schema": "public",
+			"table": "agenda_item",
+			"type": "text",
+			"typeSchema": null
+		},
+		{
+			"default": null,
+			"dimensions": 0,
+			"entityType": "columns",
+			"generated": null,
+			"identity": null,
+			"name": "id",
+			"notNull": true,
+			"schema": "public",
+			"table": "amendment",
+			"type": "text",
+			"typeSchema": null
+		},
+		{
+			"default": "now()",
+			"dimensions": 0,
+			"entityType": "columns",
+			"generated": null,
+			"identity": null,
+			"name": "created_at",
+			"notNull": true,
+			"schema": "public",
+			"table": "amendment",
+			"type": "timestamp",
+			"typeSchema": null
+		},
+		{
+			"default": "now()",
+			"dimensions": 0,
+			"entityType": "columns",
+			"generated": null,
+			"identity": null,
+			"name": "updated_at",
+			"notNull": false,
+			"schema": "public",
+			"table": "amendment",
+			"type": "timestamp",
+			"typeSchema": null
+		},
+		{
+			"default": null,
+			"dimensions": 0,
+			"entityType": "columns",
+			"generated": null,
+			"identity": null,
+			"name": "paper_id",
+			"notNull": true,
+			"schema": "public",
+			"table": "amendment",
+			"type": "text",
+			"typeSchema": null
+		},
+		{
+			"default": null,
+			"dimensions": 0,
+			"entityType": "columns",
+			"generated": null,
+			"identity": null,
+			"name": "proposer_committee_member_id",
+			"notNull": true,
+			"schema": "public",
+			"table": "amendment",
+			"type": "text",
+			"typeSchema": null
+		},
+		{
+			"default": null,
+			"dimensions": 0,
+			"entityType": "columns",
+			"generated": null,
+			"identity": null,
+			"name": "type",
+			"notNull": true,
+			"schema": "public",
+			"table": "amendment",
+			"type": "amendment_type",
+			"typeSchema": "public"
+		},
+		{
+			"default": "'PENDING'",
+			"dimensions": 0,
+			"entityType": "columns",
+			"generated": null,
+			"identity": null,
+			"name": "status",
+			"notNull": true,
+			"schema": "public",
+			"table": "amendment",
+			"type": "amendment_status",
+			"typeSchema": "public"
+		},
+		{
+			"default": null,
+			"dimensions": 0,
+			"entityType": "columns",
+			"generated": null,
+			"identity": null,
+			"name": "target_clause_id",
+			"notNull": false,
+			"schema": "public",
+			"table": "amendment",
+			"type": "text",
+			"typeSchema": null
+		},
+		{
+			"default": null,
+			"dimensions": 0,
+			"entityType": "columns",
+			"generated": null,
+			"identity": null,
+			"name": "target_operative_index",
+			"notNull": false,
+			"schema": "public",
+			"table": "amendment",
+			"type": "smallint",
+			"typeSchema": null
+		},
+		{
+			"default": null,
+			"dimensions": 0,
+			"entityType": "columns",
+			"generated": null,
+			"identity": null,
+			"name": "new_content",
+			"notNull": false,
+			"schema": "public",
+			"table": "amendment",
+			"type": "json",
+			"typeSchema": null
+		},
+		{
+			"default": null,
+			"dimensions": 0,
+			"entityType": "columns",
+			"generated": null,
+			"identity": null,
+			"name": "target_position",
+			"notNull": false,
+			"schema": "public",
+			"table": "amendment",
+			"type": "smallint",
+			"typeSchema": null
+		},
+		{
+			"default": null,
+			"dimensions": 0,
+			"entityType": "columns",
+			"generated": null,
+			"identity": null,
+			"name": "document_number",
+			"notNull": false,
+			"schema": "public",
+			"table": "amendment",
+			"type": "text",
+			"typeSchema": null
+		},
+		{
+			"default": null,
+			"dimensions": 0,
+			"entityType": "columns",
+			"generated": null,
+			"identity": null,
+			"name": "sequence_number",
+			"notNull": false,
+			"schema": "public",
+			"table": "amendment",
+			"type": "smallint",
+			"typeSchema": null
+		},
+		{
+			"default": null,
+			"dimensions": 0,
+			"entityType": "columns",
+			"generated": null,
+			"identity": null,
+			"name": "id",
+			"notNull": true,
+			"schema": "public",
+			"table": "amendment_sponsor",
+			"type": "text",
+			"typeSchema": null
+		},
+		{
+			"default": "now()",
+			"dimensions": 0,
+			"entityType": "columns",
+			"generated": null,
+			"identity": null,
+			"name": "created_at",
+			"notNull": true,
+			"schema": "public",
+			"table": "amendment_sponsor",
+			"type": "timestamp",
+			"typeSchema": null
+		},
+		{
+			"default": "now()",
+			"dimensions": 0,
+			"entityType": "columns",
+			"generated": null,
+			"identity": null,
+			"name": "updated_at",
+			"notNull": false,
+			"schema": "public",
+			"table": "amendment_sponsor",
+			"type": "timestamp",
+			"typeSchema": null
+		},
+		{
+			"default": null,
+			"dimensions": 0,
+			"entityType": "columns",
+			"generated": null,
+			"identity": null,
+			"name": "amendment_id",
+			"notNull": true,
+			"schema": "public",
+			"table": "amendment_sponsor",
+			"type": "text",
+			"typeSchema": null
+		},
+		{
+			"default": null,
+			"dimensions": 0,
+			"entityType": "columns",
+			"generated": null,
+			"identity": null,
+			"name": "committee_member_id",
+			"notNull": true,
+			"schema": "public",
+			"table": "amendment_sponsor",
+			"type": "text",
+			"typeSchema": null
+		},
+		{
+			"default": null,
+			"dimensions": 0,
+			"entityType": "columns",
+			"generated": null,
+			"identity": null,
+			"name": "id",
+			"notNull": true,
+			"schema": "public",
+			"table": "committee",
+			"type": "text",
+			"typeSchema": null
+		},
+		{
+			"default": "now()",
+			"dimensions": 0,
+			"entityType": "columns",
+			"generated": null,
+			"identity": null,
+			"name": "created_at",
+			"notNull": true,
+			"schema": "public",
+			"table": "committee",
+			"type": "timestamp",
+			"typeSchema": null
+		},
+		{
+			"default": "now()",
+			"dimensions": 0,
+			"entityType": "columns",
+			"generated": null,
+			"identity": null,
+			"name": "updated_at",
+			"notNull": false,
+			"schema": "public",
+			"table": "committee",
+			"type": "timestamp",
+			"typeSchema": null
+		},
+		{
+			"default": null,
+			"dimensions": 0,
+			"entityType": "columns",
+			"generated": null,
+			"identity": null,
+			"name": "name",
+			"notNull": true,
+			"schema": "public",
+			"table": "committee",
+			"type": "text",
+			"typeSchema": null
+		},
+		{
+			"default": null,
+			"dimensions": 0,
+			"entityType": "columns",
+			"generated": null,
+			"identity": null,
+			"name": "abbreviation",
+			"notNull": true,
+			"schema": "public",
+			"table": "committee",
+			"type": "text",
+			"typeSchema": null
+		},
+		{
+			"default": null,
+			"dimensions": 0,
+			"entityType": "columns",
+			"generated": null,
+			"identity": null,
+			"name": "conference_id",
+			"notNull": true,
+			"schema": "public",
+			"table": "committee",
+			"type": "text",
+			"typeSchema": null
+		},
+		{
+			"default": "'<p></p>'",
+			"dimensions": 0,
+			"entityType": "columns",
+			"generated": null,
+			"identity": null,
+			"name": "whiteboard_content",
+			"notNull": false,
+			"schema": "public",
+			"table": "committee",
+			"type": "text",
+			"typeSchema": null
+		},
+		{
+			"default": "true",
+			"dimensions": 0,
+			"entityType": "columns",
+			"generated": null,
+			"identity": null,
+			"name": "show_whiteboard",
+			"notNull": true,
+			"schema": "public",
+			"table": "committee",
+			"type": "boolean",
+			"typeSchema": null
+		},
+		{
+			"default": "'SUSPENSION'",
+			"dimensions": 0,
+			"entityType": "columns",
+			"generated": null,
+			"identity": null,
+			"name": "status",
+			"notNull": true,
+			"schema": "public",
+			"table": "committee",
+			"type": "committee_status",
+			"typeSchema": "public"
+		},
+		{
+			"default": "''",
+			"dimensions": 0,
+			"entityType": "columns",
+			"generated": null,
+			"identity": null,
+			"name": "status_headline",
+			"notNull": true,
+			"schema": "public",
+			"table": "committee",
+			"type": "text",
+			"typeSchema": null
+		},
+		{
+			"default": "now()",
+			"dimensions": 0,
+			"entityType": "columns",
+			"generated": null,
+			"identity": null,
+			"name": "status_until",
+			"notNull": true,
+			"schema": "public",
+			"table": "committee",
+			"type": "timestamp",
+			"typeSchema": null
+		},
+		{
+			"default": null,
+			"dimensions": 0,
+			"entityType": "columns",
+			"generated": null,
+			"identity": null,
+			"name": "state_of_debate",
+			"notNull": false,
+			"schema": "public",
+			"table": "committee",
+			"type": "text",
+			"typeSchema": null
+		},
+		{
+			"default": "false",
+			"dimensions": 0,
+			"entityType": "columns",
+			"generated": null,
+			"identity": null,
+			"name": "allow_delegations_to_add_themselves_to_speakers_list",
+			"notNull": true,
+			"schema": "public",
+			"table": "committee",
+			"type": "boolean",
+			"typeSchema": null
+		},
+		{
+			"default": null,
+			"dimensions": 0,
+			"entityType": "columns",
+			"generated": null,
+			"identity": null,
+			"name": "active_agenda_item_id",
+			"notNull": false,
+			"schema": "public",
+			"table": "committee",
+			"type": "text",
+			"typeSchema": null
+		},
+		{
+			"default": null,
+			"dimensions": 0,
+			"entityType": "columns",
+			"generated": null,
+			"identity": null,
+			"name": "custom_simple_majority",
+			"notNull": false,
+			"schema": "public",
+			"table": "committee",
+			"type": "smallint",
+			"typeSchema": null
+		},
+		{
+			"default": null,
+			"dimensions": 0,
+			"entityType": "columns",
+			"generated": null,
+			"identity": null,
+			"name": "custom_two_thirds_majority",
+			"notNull": false,
+			"schema": "public",
+			"table": "committee",
+			"type": "smallint",
+			"typeSchema": null
+		},
+		{
+			"default": null,
+			"dimensions": 0,
+			"entityType": "columns",
+			"generated": null,
+			"identity": null,
+			"name": "custom_paper_support_threshold",
+			"notNull": false,
+			"schema": "public",
+			"table": "committee",
+			"type": "smallint",
+			"typeSchema": null
+		},
+		{
+			"default": null,
+			"dimensions": 0,
+			"entityType": "columns",
+			"generated": null,
+			"identity": null,
+			"name": "last_resolution_adoption_date",
+			"notNull": false,
+			"schema": "public",
+			"table": "committee",
+			"type": "timestamp",
+			"typeSchema": null
+		},
+		{
+			"default": "3",
+			"dimensions": 0,
+			"entityType": "columns",
+			"generated": null,
+			"identity": null,
+			"name": "max_draft_resolutions",
+			"notNull": true,
+			"schema": "public",
+			"table": "committee",
+			"type": "smallint",
+			"typeSchema": null
+		},
+		{
+			"default": null,
+			"dimensions": 0,
+			"entityType": "columns",
+			"generated": null,
+			"identity": null,
+			"name": "active_draft_resolution_id",
+			"notNull": false,
+			"schema": "public",
+			"table": "committee",
+			"type": "text",
+			"typeSchema": null
+		},
+		{
+			"default": null,
+			"dimensions": 0,
+			"entityType": "columns",
+			"generated": null,
+			"identity": null,
+			"name": "current_operative_index",
+			"notNull": false,
+			"schema": "public",
+			"table": "committee",
+			"type": "smallint",
+			"typeSchema": null
+		},
+		{
+			"default": null,
+			"dimensions": 0,
+			"entityType": "columns",
+			"generated": null,
+			"identity": null,
+			"name": "current_operative_clause_id",
+			"notNull": false,
+			"schema": "public",
+			"table": "committee",
+			"type": "text",
+			"typeSchema": null
+		},
+		{
+			"default": "false",
+			"dimensions": 0,
+			"entityType": "columns",
+			"generated": null,
+			"identity": null,
+			"name": "support_re_evaluation_open",
+			"notNull": true,
+			"schema": "public",
+			"table": "committee",
+			"type": "boolean",
+			"typeSchema": null
+		},
+		{
+			"default": "true",
+			"dimensions": 0,
+			"entityType": "columns",
+			"generated": null,
+			"identity": null,
+			"name": "amendment_submission_open",
+			"notNull": true,
+			"schema": "public",
+			"table": "committee",
+			"type": "boolean",
+			"typeSchema": null
+		},
+		{
+			"default": "true",
+			"dimensions": 0,
+			"entityType": "columns",
+			"generated": null,
+			"identity": null,
+			"name": "amendment_sponsoring_open",
+			"notNull": true,
+			"schema": "public",
+			"table": "committee",
+			"type": "boolean",
+			"typeSchema": null
+		},
+		{
+			"default": null,
+			"dimensions": 0,
+			"entityType": "columns",
+			"generated": null,
+			"identity": null,
+			"name": "active_amendment_id",
+			"notNull": false,
+			"schema": "public",
+			"table": "committee",
+			"type": "text",
+			"typeSchema": null
+		},
+		{
+			"default": null,
+			"dimensions": 0,
+			"entityType": "columns",
+			"generated": null,
+			"identity": null,
+			"name": "resolution_headline",
+			"notNull": false,
+			"schema": "public",
+			"table": "committee",
+			"type": "text",
+			"typeSchema": null
+		},
+		{
+			"default": null,
+			"dimensions": 0,
+			"entityType": "columns",
+			"generated": null,
+			"identity": null,
+			"name": "id",
+			"notNull": true,
+			"schema": "public",
+			"table": "committee_member",
+			"type": "text",
+			"typeSchema": null
+		},
+		{
+			"default": "now()",
+			"dimensions": 0,
+			"entityType": "columns",
+			"generated": null,
+			"identity": null,
+			"name": "created_at",
+			"notNull": true,
+			"schema": "public",
+			"table": "committee_member",
+			"type": "timestamp",
+			"typeSchema": null
+		},
+		{
+			"default": "now()",
+			"dimensions": 0,
+			"entityType": "columns",
+			"generated": null,
+			"identity": null,
+			"name": "updated_at",
+			"notNull": false,
+			"schema": "public",
+			"table": "committee_member",
+			"type": "timestamp",
+			"typeSchema": null
+		},
+		{
+			"default": "false",
+			"dimensions": 0,
+			"entityType": "columns",
+			"generated": null,
+			"identity": null,
+			"name": "present",
+			"notNull": true,
+			"schema": "public",
+			"table": "committee_member",
+			"type": "boolean",
+			"typeSchema": null
+		},
+		{
+			"default": null,
+			"dimensions": 0,
+			"entityType": "columns",
+			"generated": null,
+			"identity": null,
+			"name": "committee_id",
+			"notNull": true,
+			"schema": "public",
+			"table": "committee_member",
+			"type": "text",
+			"typeSchema": null
+		},
+		{
+			"default": null,
+			"dimensions": 0,
+			"entityType": "columns",
+			"generated": null,
+			"identity": null,
+			"name": "representation_id",
+			"notNull": true,
+			"schema": "public",
+			"table": "committee_member",
+			"type": "text",
+			"typeSchema": null
+		},
+		{
+			"default": null,
+			"dimensions": 0,
+			"entityType": "columns",
+			"generated": null,
+			"identity": null,
+			"name": "id",
+			"notNull": true,
+			"schema": "public",
+			"table": "committee_topic_changed_timestamp",
+			"type": "text",
+			"typeSchema": null
+		},
+		{
+			"default": "now()",
+			"dimensions": 0,
+			"entityType": "columns",
+			"generated": null,
+			"identity": null,
+			"name": "created_at",
+			"notNull": true,
+			"schema": "public",
+			"table": "committee_topic_changed_timestamp",
+			"type": "timestamp",
+			"typeSchema": null
+		},
+		{
+			"default": "now()",
+			"dimensions": 0,
+			"entityType": "columns",
+			"generated": null,
+			"identity": null,
+			"name": "updated_at",
+			"notNull": false,
+			"schema": "public",
+			"table": "committee_topic_changed_timestamp",
+			"type": "timestamp",
+			"typeSchema": null
+		},
+		{
+			"default": null,
+			"dimensions": 0,
+			"entityType": "columns",
+			"generated": null,
+			"identity": null,
+			"name": "committee_id",
+			"notNull": false,
+			"schema": "public",
+			"table": "committee_topic_changed_timestamp",
+			"type": "text",
+			"typeSchema": null
+		},
+		{
+			"default": null,
+			"dimensions": 0,
+			"entityType": "columns",
+			"generated": null,
+			"identity": null,
+			"name": "agenda_item_id",
+			"notNull": false,
+			"schema": "public",
+			"table": "committee_topic_changed_timestamp",
+			"type": "text",
+			"typeSchema": null
+		},
+		{
+			"default": null,
+			"dimensions": 0,
+			"entityType": "columns",
+			"generated": null,
+			"identity": null,
+			"name": "timestamp",
+			"notNull": true,
+			"schema": "public",
+			"table": "committee_topic_changed_timestamp",
+			"type": "timestamp",
+			"typeSchema": null
+		},
+		{
+			"default": null,
+			"dimensions": 0,
+			"entityType": "columns",
+			"generated": null,
+			"identity": null,
+			"name": "id",
+			"notNull": true,
+			"schema": "public",
+			"table": "conference",
+			"type": "text",
+			"typeSchema": null
+		},
+		{
+			"default": "now()",
+			"dimensions": 0,
+			"entityType": "columns",
+			"generated": null,
+			"identity": null,
+			"name": "created_at",
+			"notNull": true,
+			"schema": "public",
+			"table": "conference",
+			"type": "timestamp",
+			"typeSchema": null
+		},
+		{
+			"default": "now()",
+			"dimensions": 0,
+			"entityType": "columns",
+			"generated": null,
+			"identity": null,
+			"name": "updated_at",
+			"notNull": false,
+			"schema": "public",
+			"table": "conference",
+			"type": "timestamp",
+			"typeSchema": null
+		},
+		{
+			"default": null,
+			"dimensions": 0,
+			"entityType": "columns",
+			"generated": null,
+			"identity": null,
+			"name": "title",
+			"notNull": true,
+			"schema": "public",
+			"table": "conference",
+			"type": "text",
+			"typeSchema": null
+		},
+		{
+			"default": null,
+			"dimensions": 0,
+			"entityType": "columns",
+			"generated": null,
+			"identity": null,
+			"name": "press_website",
+			"notNull": false,
+			"schema": "public",
+			"table": "conference",
+			"type": "text",
+			"typeSchema": null
+		},
+		{
+			"default": "false",
+			"dimensions": 0,
+			"entityType": "columns",
+			"generated": null,
+			"identity": null,
+			"name": "has_moderated_caucus",
+			"notNull": true,
+			"schema": "public",
+			"table": "conference",
+			"type": "boolean",
+			"typeSchema": null
+		},
+		{
+			"default": "true",
+			"dimensions": 0,
+			"entityType": "columns",
+			"generated": null,
+			"identity": null,
+			"name": "resolution_feature_enabled",
+			"notNull": true,
+			"schema": "public",
+			"table": "conference",
+			"type": "boolean",
+			"typeSchema": null
+		},
+		{
+			"default": null,
+			"dimensions": 0,
+			"entityType": "columns",
+			"generated": null,
+			"identity": null,
+			"name": "id",
+			"notNull": true,
+			"schema": "public",
+			"table": "conference_member",
+			"type": "text",
+			"typeSchema": null
+		},
+		{
+			"default": "now()",
+			"dimensions": 0,
+			"entityType": "columns",
+			"generated": null,
+			"identity": null,
+			"name": "created_at",
+			"notNull": true,
+			"schema": "public",
+			"table": "conference_member",
+			"type": "timestamp",
+			"typeSchema": null
+		},
+		{
+			"default": "now()",
+			"dimensions": 0,
+			"entityType": "columns",
+			"generated": null,
+			"identity": null,
+			"name": "updated_at",
+			"notNull": false,
+			"schema": "public",
+			"table": "conference_member",
+			"type": "timestamp",
+			"typeSchema": null
+		},
+		{
+			"default": null,
+			"dimensions": 0,
+			"entityType": "columns",
+			"generated": null,
+			"identity": null,
+			"name": "conference_id",
+			"notNull": true,
+			"schema": "public",
+			"table": "conference_member",
+			"type": "text",
+			"typeSchema": null
+		},
+		{
+			"default": null,
+			"dimensions": 0,
+			"entityType": "columns",
+			"generated": null,
+			"identity": null,
+			"name": "representation_id",
+			"notNull": true,
+			"schema": "public",
+			"table": "conference_member",
+			"type": "text",
+			"typeSchema": null
+		},
+		{
+			"default": null,
+			"dimensions": 0,
+			"entityType": "columns",
+			"generated": null,
+			"identity": null,
+			"name": "id",
+			"notNull": true,
+			"schema": "public",
+			"table": "conference_user",
+			"type": "text",
+			"typeSchema": null
+		},
+		{
+			"default": "now()",
+			"dimensions": 0,
+			"entityType": "columns",
+			"generated": null,
+			"identity": null,
+			"name": "created_at",
+			"notNull": true,
+			"schema": "public",
+			"table": "conference_user",
+			"type": "timestamp",
+			"typeSchema": null
+		},
+		{
+			"default": "now()",
+			"dimensions": 0,
+			"entityType": "columns",
+			"generated": null,
+			"identity": null,
+			"name": "updated_at",
+			"notNull": false,
+			"schema": "public",
+			"table": "conference_user",
+			"type": "timestamp",
+			"typeSchema": null
+		},
+		{
+			"default": null,
+			"dimensions": 0,
+			"entityType": "columns",
+			"generated": null,
+			"identity": null,
+			"name": "conference_user_type",
+			"notNull": true,
+			"schema": "public",
+			"table": "conference_user",
+			"type": "conference_user_type",
+			"typeSchema": "public"
+		},
+		{
+			"default": null,
+			"dimensions": 0,
+			"entityType": "columns",
+			"generated": null,
+			"identity": null,
+			"name": "user_email",
+			"notNull": true,
+			"schema": "public",
+			"table": "conference_user",
+			"type": "text",
+			"typeSchema": null
+		},
+		{
+			"default": null,
+			"dimensions": 0,
+			"entityType": "columns",
+			"generated": null,
+			"identity": null,
+			"name": "conference_id",
+			"notNull": true,
+			"schema": "public",
+			"table": "conference_user",
+			"type": "text",
+			"typeSchema": null
+		},
+		{
+			"default": null,
+			"dimensions": 0,
+			"entityType": "columns",
+			"generated": null,
+			"identity": null,
+			"name": "conference_member_id",
+			"notNull": false,
+			"schema": "public",
+			"table": "conference_user",
+			"type": "text",
+			"typeSchema": null
+		},
+		{
+			"default": null,
+			"dimensions": 0,
+			"entityType": "columns",
+			"generated": null,
+			"identity": null,
+			"name": "committee_member_id",
+			"notNull": false,
+			"schema": "public",
+			"table": "conference_user",
+			"type": "text",
+			"typeSchema": null
+		},
+		{
+			"default": null,
+			"dimensions": 0,
+			"entityType": "columns",
+			"generated": null,
+			"identity": null,
+			"name": "id",
+			"notNull": true,
+			"schema": "public",
+			"table": "operative_clause_vote",
+			"type": "text",
+			"typeSchema": null
+		},
+		{
+			"default": "now()",
+			"dimensions": 0,
+			"entityType": "columns",
+			"generated": null,
+			"identity": null,
+			"name": "created_at",
+			"notNull": true,
+			"schema": "public",
+			"table": "operative_clause_vote",
+			"type": "timestamp",
+			"typeSchema": null
+		},
+		{
+			"default": "now()",
+			"dimensions": 0,
+			"entityType": "columns",
+			"generated": null,
+			"identity": null,
+			"name": "updated_at",
+			"notNull": false,
+			"schema": "public",
+			"table": "operative_clause_vote",
+			"type": "timestamp",
+			"typeSchema": null
+		},
+		{
+			"default": null,
+			"dimensions": 0,
+			"entityType": "columns",
+			"generated": null,
+			"identity": null,
+			"name": "paper_id",
+			"notNull": true,
+			"schema": "public",
+			"table": "operative_clause_vote",
+			"type": "text",
+			"typeSchema": null
+		},
+		{
+			"default": null,
+			"dimensions": 0,
+			"entityType": "columns",
+			"generated": null,
+			"identity": null,
+			"name": "clause_id",
+			"notNull": true,
+			"schema": "public",
+			"table": "operative_clause_vote",
+			"type": "text",
+			"typeSchema": null
+		},
+		{
+			"default": null,
+			"dimensions": 0,
+			"entityType": "columns",
+			"generated": null,
+			"identity": null,
+			"name": "outcome",
+			"notNull": true,
+			"schema": "public",
+			"table": "operative_clause_vote",
+			"type": "vote_outcome",
+			"typeSchema": "public"
+		},
+		{
+			"default": null,
+			"dimensions": 0,
+			"entityType": "columns",
+			"generated": null,
+			"identity": null,
+			"name": "votes_for",
+			"notNull": true,
+			"schema": "public",
+			"table": "operative_clause_vote",
+			"type": "integer",
+			"typeSchema": null
+		},
+		{
+			"default": null,
+			"dimensions": 0,
+			"entityType": "columns",
+			"generated": null,
+			"identity": null,
+			"name": "votes_against",
+			"notNull": true,
+			"schema": "public",
+			"table": "operative_clause_vote",
+			"type": "integer",
+			"typeSchema": null
+		},
+		{
+			"default": "0",
+			"dimensions": 0,
+			"entityType": "columns",
+			"generated": null,
+			"identity": null,
+			"name": "votes_abstain",
+			"notNull": true,
+			"schema": "public",
+			"table": "operative_clause_vote",
+			"type": "integer",
+			"typeSchema": null
+		},
+		{
+			"default": null,
+			"dimensions": 0,
+			"entityType": "columns",
+			"generated": null,
+			"identity": null,
+			"name": "id",
+			"notNull": true,
+			"schema": "public",
+			"table": "paper_clause_lock",
+			"type": "text",
+			"typeSchema": null
+		},
+		{
+			"default": "now()",
+			"dimensions": 0,
+			"entityType": "columns",
+			"generated": null,
+			"identity": null,
+			"name": "created_at",
+			"notNull": true,
+			"schema": "public",
+			"table": "paper_clause_lock",
+			"type": "timestamp",
+			"typeSchema": null
+		},
+		{
+			"default": "now()",
+			"dimensions": 0,
+			"entityType": "columns",
+			"generated": null,
+			"identity": null,
+			"name": "updated_at",
+			"notNull": false,
+			"schema": "public",
+			"table": "paper_clause_lock",
+			"type": "timestamp",
+			"typeSchema": null
+		},
+		{
+			"default": null,
+			"dimensions": 0,
+			"entityType": "columns",
+			"generated": null,
+			"identity": null,
+			"name": "paper_id",
+			"notNull": true,
+			"schema": "public",
+			"table": "paper_clause_lock",
+			"type": "text",
+			"typeSchema": null
+		},
+		{
+			"default": null,
+			"dimensions": 0,
+			"entityType": "columns",
+			"generated": null,
+			"identity": null,
+			"name": "clause_id",
+			"notNull": true,
+			"schema": "public",
+			"table": "paper_clause_lock",
+			"type": "text",
+			"typeSchema": null
+		},
+		{
+			"default": null,
+			"dimensions": 0,
+			"entityType": "columns",
+			"generated": null,
+			"identity": null,
+			"name": "conference_user_id",
+			"notNull": true,
+			"schema": "public",
+			"table": "paper_clause_lock",
+			"type": "text",
+			"typeSchema": null
+		},
+		{
+			"default": "now()",
+			"dimensions": 0,
+			"entityType": "columns",
+			"generated": null,
+			"identity": null,
+			"name": "acquired_at",
+			"notNull": true,
+			"schema": "public",
+			"table": "paper_clause_lock",
+			"type": "timestamp",
+			"typeSchema": null
+		},
+		{
+			"default": null,
+			"dimensions": 0,
+			"entityType": "columns",
+			"generated": null,
+			"identity": null,
+			"name": "id",
+			"notNull": true,
+			"schema": "public",
+			"table": "paper_content_snapshot",
+			"type": "text",
+			"typeSchema": null
+		},
+		{
+			"default": "now()",
+			"dimensions": 0,
+			"entityType": "columns",
+			"generated": null,
+			"identity": null,
+			"name": "created_at",
+			"notNull": true,
+			"schema": "public",
+			"table": "paper_content_snapshot",
+			"type": "timestamp",
+			"typeSchema": null
+		},
+		{
+			"default": "now()",
+			"dimensions": 0,
+			"entityType": "columns",
+			"generated": null,
+			"identity": null,
+			"name": "updated_at",
+			"notNull": false,
+			"schema": "public",
+			"table": "paper_content_snapshot",
+			"type": "timestamp",
+			"typeSchema": null
+		},
+		{
+			"default": null,
+			"dimensions": 0,
+			"entityType": "columns",
+			"generated": null,
+			"identity": null,
+			"name": "paper_id",
+			"notNull": true,
+			"schema": "public",
+			"table": "paper_content_snapshot",
+			"type": "text",
+			"typeSchema": null
+		},
+		{
+			"default": null,
+			"dimensions": 0,
+			"entityType": "columns",
+			"generated": null,
+			"identity": null,
+			"name": "content",
+			"notNull": false,
+			"schema": "public",
+			"table": "paper_content_snapshot",
+			"type": "json",
+			"typeSchema": null
+		},
+		{
+			"default": null,
+			"dimensions": 0,
+			"entityType": "columns",
+			"generated": null,
+			"identity": null,
+			"name": "trigger",
+			"notNull": false,
+			"schema": "public",
+			"table": "paper_content_snapshot",
+			"type": "text",
+			"typeSchema": null
+		},
+		{
+			"default": null,
+			"dimensions": 0,
+			"entityType": "columns",
+			"generated": null,
+			"identity": null,
+			"name": "id",
+			"notNull": true,
+			"schema": "public",
+			"table": "paper_editor",
+			"type": "text",
+			"typeSchema": null
+		},
+		{
+			"default": "now()",
+			"dimensions": 0,
+			"entityType": "columns",
+			"generated": null,
+			"identity": null,
+			"name": "created_at",
+			"notNull": true,
+			"schema": "public",
+			"table": "paper_editor",
+			"type": "timestamp",
+			"typeSchema": null
+		},
+		{
+			"default": "now()",
+			"dimensions": 0,
+			"entityType": "columns",
+			"generated": null,
+			"identity": null,
+			"name": "updated_at",
+			"notNull": false,
+			"schema": "public",
+			"table": "paper_editor",
+			"type": "timestamp",
+			"typeSchema": null
+		},
+		{
+			"default": null,
+			"dimensions": 0,
+			"entityType": "columns",
+			"generated": null,
+			"identity": null,
+			"name": "paper_id",
+			"notNull": true,
+			"schema": "public",
+			"table": "paper_editor",
+			"type": "text",
+			"typeSchema": null
+		},
+		{
+			"default": null,
+			"dimensions": 0,
+			"entityType": "columns",
+			"generated": null,
+			"identity": null,
+			"name": "conference_user_id",
+			"notNull": true,
+			"schema": "public",
+			"table": "paper_editor",
+			"type": "text",
+			"typeSchema": null
+		},
+		{
+			"default": null,
+			"dimensions": 0,
+			"entityType": "columns",
+			"generated": null,
+			"identity": null,
+			"name": "id",
+			"notNull": true,
+			"schema": "public",
+			"table": "paper_share_code",
+			"type": "text",
+			"typeSchema": null
+		},
+		{
+			"default": "now()",
+			"dimensions": 0,
+			"entityType": "columns",
+			"generated": null,
+			"identity": null,
+			"name": "created_at",
+			"notNull": true,
+			"schema": "public",
+			"table": "paper_share_code",
+			"type": "timestamp",
+			"typeSchema": null
+		},
+		{
+			"default": "now()",
+			"dimensions": 0,
+			"entityType": "columns",
+			"generated": null,
+			"identity": null,
+			"name": "updated_at",
+			"notNull": false,
+			"schema": "public",
+			"table": "paper_share_code",
+			"type": "timestamp",
+			"typeSchema": null
+		},
+		{
+			"default": null,
+			"dimensions": 0,
+			"entityType": "columns",
+			"generated": null,
+			"identity": null,
+			"name": "paper_id",
+			"notNull": true,
+			"schema": "public",
+			"table": "paper_share_code",
+			"type": "text",
+			"typeSchema": null
+		},
+		{
+			"default": null,
+			"dimensions": 0,
+			"entityType": "columns",
+			"generated": null,
+			"identity": null,
+			"name": "code",
+			"notNull": true,
+			"schema": "public",
+			"table": "paper_share_code",
+			"type": "text",
+			"typeSchema": null
+		},
+		{
+			"default": null,
+			"dimensions": 0,
+			"entityType": "columns",
+			"generated": null,
+			"identity": null,
+			"name": "permission",
+			"notNull": true,
+			"schema": "public",
+			"table": "paper_share_code",
+			"type": "share_code_permission",
+			"typeSchema": "public"
+		},
+		{
+			"default": null,
+			"dimensions": 0,
+			"entityType": "columns",
+			"generated": null,
+			"identity": null,
+			"name": "id",
+			"notNull": true,
+			"schema": "public",
+			"table": "paper_sponsor",
+			"type": "text",
+			"typeSchema": null
+		},
+		{
+			"default": "now()",
+			"dimensions": 0,
+			"entityType": "columns",
+			"generated": null,
+			"identity": null,
+			"name": "created_at",
+			"notNull": true,
+			"schema": "public",
+			"table": "paper_sponsor",
+			"type": "timestamp",
+			"typeSchema": null
+		},
+		{
+			"default": "now()",
+			"dimensions": 0,
+			"entityType": "columns",
+			"generated": null,
+			"identity": null,
+			"name": "updated_at",
+			"notNull": false,
+			"schema": "public",
+			"table": "paper_sponsor",
+			"type": "timestamp",
+			"typeSchema": null
+		},
+		{
+			"default": null,
+			"dimensions": 0,
+			"entityType": "columns",
+			"generated": null,
+			"identity": null,
+			"name": "paper_id",
+			"notNull": true,
+			"schema": "public",
+			"table": "paper_sponsor",
+			"type": "text",
+			"typeSchema": null
+		},
+		{
+			"default": null,
+			"dimensions": 0,
+			"entityType": "columns",
+			"generated": null,
+			"identity": null,
+			"name": "committee_member_id",
+			"notNull": true,
+			"schema": "public",
+			"table": "paper_sponsor",
+			"type": "text",
+			"typeSchema": null
+		},
+		{
+			"default": null,
+			"dimensions": 0,
+			"entityType": "columns",
+			"generated": null,
+			"identity": null,
+			"name": "id",
+			"notNull": true,
+			"schema": "public",
+			"table": "presence_changed_timestamp",
+			"type": "text",
+			"typeSchema": null
+		},
+		{
+			"default": "now()",
+			"dimensions": 0,
+			"entityType": "columns",
+			"generated": null,
+			"identity": null,
+			"name": "created_at",
+			"notNull": true,
+			"schema": "public",
+			"table": "presence_changed_timestamp",
+			"type": "timestamp",
+			"typeSchema": null
+		},
+		{
+			"default": "now()",
+			"dimensions": 0,
+			"entityType": "columns",
+			"generated": null,
+			"identity": null,
+			"name": "updated_at",
+			"notNull": false,
+			"schema": "public",
+			"table": "presence_changed_timestamp",
+			"type": "timestamp",
+			"typeSchema": null
+		},
+		{
+			"default": null,
+			"dimensions": 0,
+			"entityType": "columns",
+			"generated": null,
+			"identity": null,
+			"name": "committee_member_id",
+			"notNull": true,
+			"schema": "public",
+			"table": "presence_changed_timestamp",
+			"type": "text",
+			"typeSchema": null
+		},
+		{
+			"default": null,
+			"dimensions": 0,
+			"entityType": "columns",
+			"generated": null,
+			"identity": null,
+			"name": "timestamp",
+			"notNull": true,
+			"schema": "public",
+			"table": "presence_changed_timestamp",
+			"type": "timestamp",
+			"typeSchema": null
+		},
+		{
+			"default": null,
+			"dimensions": 0,
+			"entityType": "columns",
+			"generated": null,
+			"identity": null,
+			"name": "present_set_to",
+			"notNull": true,
+			"schema": "public",
+			"table": "presence_changed_timestamp",
+			"type": "boolean",
+			"typeSchema": null
+		},
+		{
+			"default": null,
+			"dimensions": 0,
+			"entityType": "columns",
+			"generated": null,
+			"identity": null,
+			"name": "id",
+			"notNull": true,
+			"schema": "public",
+			"table": "representation",
+			"type": "text",
+			"typeSchema": null
+		},
+		{
+			"default": "now()",
+			"dimensions": 0,
+			"entityType": "columns",
+			"generated": null,
+			"identity": null,
+			"name": "created_at",
+			"notNull": true,
+			"schema": "public",
+			"table": "representation",
+			"type": "timestamp",
+			"typeSchema": null
+		},
+		{
+			"default": "now()",
+			"dimensions": 0,
+			"entityType": "columns",
+			"generated": null,
+			"identity": null,
+			"name": "updated_at",
+			"notNull": false,
+			"schema": "public",
+			"table": "representation",
+			"type": "timestamp",
+			"typeSchema": null
+		},
+		{
+			"default": null,
+			"dimensions": 0,
+			"entityType": "columns",
+			"generated": null,
+			"identity": null,
+			"name": "name",
+			"notNull": false,
+			"schema": "public",
+			"table": "representation",
+			"type": "text",
+			"typeSchema": null
+		},
+		{
+			"default": null,
+			"dimensions": 0,
+			"entityType": "columns",
+			"generated": null,
+			"identity": null,
+			"name": "alpha2_code",
+			"notNull": false,
+			"schema": "public",
+			"table": "representation",
+			"type": "text",
+			"typeSchema": null
+		},
+		{
+			"default": null,
+			"dimensions": 0,
+			"entityType": "columns",
+			"generated": null,
+			"identity": null,
+			"name": "alpha3_code",
+			"notNull": false,
+			"schema": "public",
+			"table": "representation",
+			"type": "text",
+			"typeSchema": null
+		},
+		{
+			"default": null,
+			"dimensions": 0,
+			"entityType": "columns",
+			"generated": null,
+			"identity": null,
+			"name": "type",
+			"notNull": true,
+			"schema": "public",
+			"table": "representation",
+			"type": "representation_type",
+			"typeSchema": "public"
+		},
+		{
+			"default": null,
+			"dimensions": 0,
+			"entityType": "columns",
+			"generated": null,
+			"identity": null,
+			"name": "fa_icon",
+			"notNull": false,
+			"schema": "public",
+			"table": "representation",
+			"type": "text",
+			"typeSchema": null
+		},
+		{
+			"default": null,
+			"dimensions": 0,
+			"entityType": "columns",
+			"generated": null,
+			"identity": null,
+			"name": "regional_group",
+			"notNull": false,
+			"schema": "public",
+			"table": "representation",
+			"type": "regional_group",
+			"typeSchema": "public"
+		},
+		{
+			"default": null,
+			"dimensions": 0,
+			"entityType": "columns",
+			"generated": null,
+			"identity": null,
+			"name": "conference_id",
+			"notNull": true,
+			"schema": "public",
+			"table": "representation",
+			"type": "text",
+			"typeSchema": null
+		},
+		{
+			"default": null,
+			"dimensions": 0,
+			"entityType": "columns",
+			"generated": null,
+			"identity": null,
+			"name": "id",
+			"notNull": true,
+			"schema": "public",
+			"table": "resolution_comment",
+			"type": "text",
+			"typeSchema": null
+		},
+		{
+			"default": "now()",
+			"dimensions": 0,
+			"entityType": "columns",
+			"generated": null,
+			"identity": null,
+			"name": "created_at",
+			"notNull": true,
+			"schema": "public",
+			"table": "resolution_comment",
+			"type": "timestamp",
+			"typeSchema": null
+		},
+		{
+			"default": "now()",
+			"dimensions": 0,
+			"entityType": "columns",
+			"generated": null,
+			"identity": null,
+			"name": "updated_at",
+			"notNull": false,
+			"schema": "public",
+			"table": "resolution_comment",
+			"type": "timestamp",
+			"typeSchema": null
+		},
+		{
+			"default": null,
+			"dimensions": 0,
+			"entityType": "columns",
+			"generated": null,
+			"identity": null,
+			"name": "paper_id",
+			"notNull": true,
+			"schema": "public",
+			"table": "resolution_comment",
+			"type": "text",
+			"typeSchema": null
+		},
+		{
+			"default": null,
+			"dimensions": 0,
+			"entityType": "columns",
+			"generated": null,
+			"identity": null,
+			"name": "clause_id",
+			"notNull": false,
+			"schema": "public",
+			"table": "resolution_comment",
+			"type": "text",
+			"typeSchema": null
+		},
+		{
+			"default": null,
+			"dimensions": 0,
+			"entityType": "columns",
+			"generated": null,
+			"identity": null,
+			"name": "author_conference_user_id",
+			"notNull": true,
+			"schema": "public",
+			"table": "resolution_comment",
+			"type": "text",
+			"typeSchema": null
+		},
+		{
+			"default": null,
+			"dimensions": 0,
+			"entityType": "columns",
+			"generated": null,
+			"identity": null,
+			"name": "content",
+			"notNull": true,
+			"schema": "public",
+			"table": "resolution_comment",
+			"type": "text",
+			"typeSchema": null
+		},
+		{
+			"default": "'PUBLIC'",
+			"dimensions": 0,
+			"entityType": "columns",
+			"generated": null,
+			"identity": null,
+			"name": "visibility",
+			"notNull": true,
+			"schema": "public",
+			"table": "resolution_comment",
+			"type": "comment_visibility",
+			"typeSchema": "public"
+		},
+		{
+			"default": null,
+			"dimensions": 0,
+			"entityType": "columns",
+			"generated": null,
+			"identity": null,
+			"name": "parent_comment_id",
+			"notNull": false,
+			"schema": "public",
+			"table": "resolution_comment",
+			"type": "text",
+			"typeSchema": null
+		},
+		{
+			"default": null,
+			"dimensions": 0,
+			"entityType": "columns",
+			"generated": null,
+			"identity": null,
+			"name": "id",
+			"notNull": true,
+			"schema": "public",
+			"table": "resolution_paper",
+			"type": "text",
+			"typeSchema": null
+		},
+		{
+			"default": "now()",
+			"dimensions": 0,
+			"entityType": "columns",
+			"generated": null,
+			"identity": null,
+			"name": "created_at",
+			"notNull": true,
+			"schema": "public",
+			"table": "resolution_paper",
+			"type": "timestamp",
+			"typeSchema": null
+		},
+		{
+			"default": "now()",
+			"dimensions": 0,
+			"entityType": "columns",
+			"generated": null,
+			"identity": null,
+			"name": "updated_at",
+			"notNull": false,
+			"schema": "public",
+			"table": "resolution_paper",
+			"type": "timestamp",
+			"typeSchema": null
+		},
+		{
+			"default": null,
+			"dimensions": 0,
+			"entityType": "columns",
+			"generated": null,
+			"identity": null,
+			"name": "committee_id",
+			"notNull": true,
+			"schema": "public",
+			"table": "resolution_paper",
+			"type": "text",
+			"typeSchema": null
+		},
+		{
+			"default": null,
+			"dimensions": 0,
+			"entityType": "columns",
+			"generated": null,
+			"identity": null,
+			"name": "agenda_item_id",
+			"notNull": true,
+			"schema": "public",
+			"table": "resolution_paper",
+			"type": "text",
+			"typeSchema": null
+		},
+		{
+			"default": null,
+			"dimensions": 0,
+			"entityType": "columns",
+			"generated": null,
+			"identity": null,
+			"name": "creator_committee_member_id",
+			"notNull": true,
+			"schema": "public",
+			"table": "resolution_paper",
+			"type": "text",
+			"typeSchema": null
+		},
+		{
+			"default": "'WORKING_PAPER'",
+			"dimensions": 0,
+			"entityType": "columns",
+			"generated": null,
+			"identity": null,
+			"name": "status",
+			"notNull": true,
+			"schema": "public",
+			"table": "resolution_paper",
+			"type": "paper_status",
+			"typeSchema": "public"
+		},
+		{
+			"default": null,
+			"dimensions": 0,
+			"entityType": "columns",
+			"generated": null,
+			"identity": null,
+			"name": "content",
+			"notNull": false,
+			"schema": "public",
+			"table": "resolution_paper",
+			"type": "json",
+			"typeSchema": null
+		},
+		{
+			"default": null,
+			"dimensions": 0,
+			"entityType": "columns",
+			"generated": null,
+			"identity": null,
+			"name": "title",
+			"notNull": false,
+			"schema": "public",
+			"table": "resolution_paper",
+			"type": "text",
+			"typeSchema": null
+		},
+		{
+			"default": null,
+			"dimensions": 0,
+			"entityType": "columns",
+			"generated": null,
+			"identity": null,
+			"name": "document_number",
+			"notNull": false,
+			"schema": "public",
+			"table": "resolution_paper",
+			"type": "text",
+			"typeSchema": null
+		},
+		{
+			"default": null,
+			"dimensions": 0,
+			"entityType": "columns",
+			"generated": null,
+			"identity": null,
+			"name": "sequence_number",
+			"notNull": false,
+			"schema": "public",
+			"table": "resolution_paper",
+			"type": "smallint",
+			"typeSchema": null
+		},
+		{
+			"default": null,
+			"dimensions": 0,
+			"entityType": "columns",
+			"generated": null,
+			"identity": null,
+			"name": "deleted_at",
+			"notNull": false,
+			"schema": "public",
+			"table": "resolution_paper",
+			"type": "timestamp",
+			"typeSchema": null
+		},
+		{
+			"default": null,
+			"dimensions": 0,
+			"entityType": "columns",
+			"generated": null,
+			"identity": null,
+			"name": "id",
+			"notNull": true,
+			"schema": "public",
+			"table": "resolution_vote_result",
+			"type": "text",
+			"typeSchema": null
+		},
+		{
+			"default": "now()",
+			"dimensions": 0,
+			"entityType": "columns",
+			"generated": null,
+			"identity": null,
+			"name": "created_at",
+			"notNull": true,
+			"schema": "public",
+			"table": "resolution_vote_result",
+			"type": "timestamp",
+			"typeSchema": null
+		},
+		{
+			"default": "now()",
+			"dimensions": 0,
+			"entityType": "columns",
+			"generated": null,
+			"identity": null,
+			"name": "updated_at",
+			"notNull": false,
+			"schema": "public",
+			"table": "resolution_vote_result",
+			"type": "timestamp",
+			"typeSchema": null
+		},
+		{
+			"default": null,
+			"dimensions": 0,
+			"entityType": "columns",
+			"generated": null,
+			"identity": null,
+			"name": "paper_id",
+			"notNull": true,
+			"schema": "public",
+			"table": "resolution_vote_result",
+			"type": "text",
+			"typeSchema": null
+		},
+		{
+			"default": null,
+			"dimensions": 0,
+			"entityType": "columns",
+			"generated": null,
+			"identity": null,
+			"name": "outcome",
+			"notNull": true,
+			"schema": "public",
+			"table": "resolution_vote_result",
+			"type": "vote_outcome",
+			"typeSchema": "public"
+		},
+		{
+			"default": null,
+			"dimensions": 0,
+			"entityType": "columns",
+			"generated": null,
+			"identity": null,
+			"name": "votes_for",
+			"notNull": true,
+			"schema": "public",
+			"table": "resolution_vote_result",
+			"type": "integer",
+			"typeSchema": null
+		},
+		{
+			"default": null,
+			"dimensions": 0,
+			"entityType": "columns",
+			"generated": null,
+			"identity": null,
+			"name": "votes_against",
+			"notNull": true,
+			"schema": "public",
+			"table": "resolution_vote_result",
+			"type": "integer",
+			"typeSchema": null
+		},
+		{
+			"default": "0",
+			"dimensions": 0,
+			"entityType": "columns",
+			"generated": null,
+			"identity": null,
+			"name": "votes_abstain",
+			"notNull": true,
+			"schema": "public",
+			"table": "resolution_vote_result",
+			"type": "integer",
+			"typeSchema": null
+		},
+		{
+			"default": null,
+			"dimensions": 0,
+			"entityType": "columns",
+			"generated": null,
+			"identity": null,
+			"name": "id",
+			"notNull": true,
+			"schema": "public",
+			"table": "speaker_on_list",
+			"type": "text",
+			"typeSchema": null
+		},
+		{
+			"default": "now()",
+			"dimensions": 0,
+			"entityType": "columns",
+			"generated": null,
+			"identity": null,
+			"name": "created_at",
+			"notNull": true,
+			"schema": "public",
+			"table": "speaker_on_list",
+			"type": "timestamp",
+			"typeSchema": null
+		},
+		{
+			"default": "now()",
+			"dimensions": 0,
+			"entityType": "columns",
+			"generated": null,
+			"identity": null,
+			"name": "updated_at",
+			"notNull": false,
+			"schema": "public",
+			"table": "speaker_on_list",
+			"type": "timestamp",
+			"typeSchema": null
+		},
+		{
+			"default": null,
+			"dimensions": 0,
+			"entityType": "columns",
+			"generated": null,
+			"identity": null,
+			"name": "committee_member_id",
+			"notNull": false,
+			"schema": "public",
+			"table": "speaker_on_list",
+			"type": "text",
+			"typeSchema": null
+		},
+		{
+			"default": null,
+			"dimensions": 0,
+			"entityType": "columns",
+			"generated": null,
+			"identity": null,
+			"name": "conference_member_id",
+			"notNull": false,
+			"schema": "public",
+			"table": "speaker_on_list",
+			"type": "text",
+			"typeSchema": null
+		},
+		{
+			"default": null,
+			"dimensions": 0,
+			"entityType": "columns",
+			"generated": null,
+			"identity": null,
+			"name": "speakers_list_id",
+			"notNull": true,
+			"schema": "public",
+			"table": "speaker_on_list",
+			"type": "text",
+			"typeSchema": null
+		},
+		{
+			"default": null,
+			"dimensions": 0,
+			"entityType": "columns",
+			"generated": null,
+			"identity": null,
+			"name": "position",
+			"notNull": true,
+			"schema": "public",
+			"table": "speaker_on_list",
+			"type": "smallint",
+			"typeSchema": null
+		},
+		{
+			"default": null,
+			"dimensions": 0,
+			"entityType": "columns",
+			"generated": null,
+			"identity": null,
+			"name": "overwrite_name",
+			"notNull": false,
+			"schema": "public",
+			"table": "speaker_on_list",
+			"type": "text",
+			"typeSchema": null
+		},
+		{
+			"default": null,
+			"dimensions": 0,
+			"entityType": "columns",
+			"generated": null,
+			"identity": null,
+			"name": "id",
+			"notNull": true,
+			"schema": "public",
+			"table": "speakers_list",
+			"type": "text",
+			"typeSchema": null
+		},
+		{
+			"default": "now()",
+			"dimensions": 0,
+			"entityType": "columns",
+			"generated": null,
+			"identity": null,
+			"name": "created_at",
+			"notNull": true,
+			"schema": "public",
+			"table": "speakers_list",
+			"type": "timestamp",
+			"typeSchema": null
+		},
+		{
+			"default": "now()",
+			"dimensions": 0,
+			"entityType": "columns",
+			"generated": null,
+			"identity": null,
+			"name": "updated_at",
+			"notNull": false,
+			"schema": "public",
+			"table": "speakers_list",
+			"type": "timestamp",
+			"typeSchema": null
+		},
+		{
+			"default": null,
+			"dimensions": 0,
+			"entityType": "columns",
+			"generated": null,
+			"identity": null,
+			"name": "agenda_item_id",
+			"notNull": true,
+			"schema": "public",
+			"table": "speakers_list",
+			"type": "text",
+			"typeSchema": null
+		},
+		{
+			"default": null,
+			"dimensions": 0,
+			"entityType": "columns",
+			"generated": null,
+			"identity": null,
+			"name": "type",
+			"notNull": true,
+			"schema": "public",
+			"table": "speakers_list",
+			"type": "speakers_list_category",
+			"typeSchema": "public"
+		},
+		{
+			"default": null,
+			"dimensions": 0,
+			"entityType": "columns",
+			"generated": null,
+			"identity": null,
+			"name": "speaking_time",
+			"notNull": true,
+			"schema": "public",
+			"table": "speakers_list",
+			"type": "smallint",
+			"typeSchema": null
+		},
+		{
+			"default": "0",
+			"dimensions": 0,
+			"entityType": "columns",
+			"generated": null,
+			"identity": null,
+			"name": "time_left",
+			"notNull": true,
+			"schema": "public",
+			"table": "speakers_list",
+			"type": "smallint",
+			"typeSchema": null
+		},
+		{
+			"default": null,
+			"dimensions": 0,
+			"entityType": "columns",
+			"generated": null,
+			"identity": null,
+			"name": "start_timestamp",
+			"notNull": false,
+			"schema": "public",
+			"table": "speakers_list",
+			"type": "timestamp",
+			"typeSchema": null
+		},
+		{
+			"default": "false",
+			"dimensions": 0,
+			"entityType": "columns",
+			"generated": null,
+			"identity": null,
+			"name": "is_closed",
+			"notNull": true,
+			"schema": "public",
+			"table": "speakers_list",
+			"type": "boolean",
+			"typeSchema": null
+		},
+		{
+			"default": null,
+			"dimensions": 0,
+			"entityType": "columns",
+			"generated": null,
+			"identity": null,
+			"name": "id",
+			"notNull": true,
+			"schema": "public",
+			"table": "spoken_time_period",
+			"type": "text",
+			"typeSchema": null
+		},
+		{
+			"default": "now()",
+			"dimensions": 0,
+			"entityType": "columns",
+			"generated": null,
+			"identity": null,
+			"name": "created_at",
+			"notNull": true,
+			"schema": "public",
+			"table": "spoken_time_period",
+			"type": "timestamp",
+			"typeSchema": null
+		},
+		{
+			"default": "now()",
+			"dimensions": 0,
+			"entityType": "columns",
+			"generated": null,
+			"identity": null,
+			"name": "updated_at",
+			"notNull": false,
+			"schema": "public",
+			"table": "spoken_time_period",
+			"type": "timestamp",
+			"typeSchema": null
+		},
+		{
+			"default": null,
+			"dimensions": 0,
+			"entityType": "columns",
+			"generated": null,
+			"identity": null,
+			"name": "committee_member_id",
+			"notNull": false,
+			"schema": "public",
+			"table": "spoken_time_period",
+			"type": "text",
+			"typeSchema": null
+		},
+		{
+			"default": null,
+			"dimensions": 0,
+			"entityType": "columns",
+			"generated": null,
+			"identity": null,
+			"name": "conference_member_id",
+			"notNull": false,
+			"schema": "public",
+			"table": "spoken_time_period",
+			"type": "text",
+			"typeSchema": null
+		},
+		{
+			"default": null,
+			"dimensions": 0,
+			"entityType": "columns",
+			"generated": null,
+			"identity": null,
+			"name": "speakers_list_id",
+			"notNull": true,
+			"schema": "public",
+			"table": "spoken_time_period",
+			"type": "text",
+			"typeSchema": null
+		},
+		{
+			"default": null,
+			"dimensions": 0,
+			"entityType": "columns",
+			"generated": null,
+			"identity": null,
+			"name": "start_timestamp",
+			"notNull": true,
+			"schema": "public",
+			"table": "spoken_time_period",
+			"type": "timestamp",
+			"typeSchema": null
+		},
+		{
+			"default": null,
+			"dimensions": 0,
+			"entityType": "columns",
+			"generated": null,
+			"identity": null,
+			"name": "end_timestamp",
+			"notNull": true,
+			"schema": "public",
+			"table": "spoken_time_period",
+			"type": "timestamp",
+			"typeSchema": null
+		},
+		{
+			"default": null,
+			"dimensions": 0,
+			"entityType": "columns",
+			"generated": null,
+			"identity": null,
+			"name": "id",
+			"notNull": true,
+			"schema": "public",
+			"table": "user",
+			"type": "text",
+			"typeSchema": null
+		},
+		{
+			"default": "now()",
+			"dimensions": 0,
+			"entityType": "columns",
+			"generated": null,
+			"identity": null,
+			"name": "created_at",
+			"notNull": true,
+			"schema": "public",
+			"table": "user",
+			"type": "timestamp",
+			"typeSchema": null
+		},
+		{
+			"default": "now()",
+			"dimensions": 0,
+			"entityType": "columns",
+			"generated": null,
+			"identity": null,
+			"name": "updated_at",
+			"notNull": false,
+			"schema": "public",
+			"table": "user",
+			"type": "timestamp",
+			"typeSchema": null
+		},
+		{
+			"default": null,
+			"dimensions": 0,
+			"entityType": "columns",
+			"generated": null,
+			"identity": null,
+			"name": "email",
+			"notNull": true,
+			"schema": "public",
+			"table": "user",
+			"type": "text",
+			"typeSchema": null
+		},
+		{
+			"default": null,
+			"dimensions": 0,
+			"entityType": "columns",
+			"generated": null,
+			"identity": null,
+			"name": "family_name",
+			"notNull": true,
+			"schema": "public",
+			"table": "user",
+			"type": "text",
+			"typeSchema": null
+		},
+		{
+			"default": null,
+			"dimensions": 0,
+			"entityType": "columns",
+			"generated": null,
+			"identity": null,
+			"name": "given_name",
+			"notNull": true,
+			"schema": "public",
+			"table": "user",
+			"type": "text",
+			"typeSchema": null
+		},
+		{
+			"default": null,
+			"dimensions": 0,
+			"entityType": "columns",
+			"generated": null,
+			"identity": null,
+			"name": "locale",
+			"notNull": false,
+			"schema": "public",
+			"table": "user",
+			"type": "text",
+			"typeSchema": null
+		},
+		{
+			"default": null,
+			"dimensions": 0,
+			"entityType": "columns",
+			"generated": null,
+			"identity": null,
+			"name": "preferred_username",
+			"notNull": true,
+			"schema": "public",
+			"table": "user",
+			"type": "text",
+			"typeSchema": null
+		},
+		{
+			"columns": ["committee_id"],
+			"columnsTo": ["id"],
+			"entityType": "fks",
+			"name": "agenda_item_committee_id_committee_id_fk",
+			"nameExplicit": false,
+			"onDelete": "CASCADE",
+			"onUpdate": "NO ACTION",
+			"schema": "public",
+			"schemaTo": "public",
+			"table": "agenda_item",
+			"tableTo": "committee"
+		},
+		{
+			"columns": ["paper_id"],
+			"columnsTo": ["id"],
+			"entityType": "fks",
+			"name": "amendment_paper_id_resolution_paper_id_fk",
+			"nameExplicit": false,
+			"onDelete": "CASCADE",
+			"onUpdate": "NO ACTION",
+			"schema": "public",
+			"schemaTo": "public",
+			"table": "amendment",
+			"tableTo": "resolution_paper"
+		},
+		{
+			"columns": ["proposer_committee_member_id"],
+			"columnsTo": ["id"],
+			"entityType": "fks",
+			"name": "amendment_proposer_committee_member_id_committee_member_id_fk",
+			"nameExplicit": false,
+			"onDelete": "CASCADE",
+			"onUpdate": "NO ACTION",
+			"schema": "public",
+			"schemaTo": "public",
+			"table": "amendment",
+			"tableTo": "committee_member"
+		},
+		{
+			"columns": ["amendment_id"],
+			"columnsTo": ["id"],
+			"entityType": "fks",
+			"name": "amendment_sponsor_amendment_id_amendment_id_fk",
+			"nameExplicit": false,
+			"onDelete": "CASCADE",
+			"onUpdate": "NO ACTION",
+			"schema": "public",
+			"schemaTo": "public",
+			"table": "amendment_sponsor",
+			"tableTo": "amendment"
+		},
+		{
+			"columns": ["committee_member_id"],
+			"columnsTo": ["id"],
+			"entityType": "fks",
+			"name": "amendment_sponsor_committee_member_id_committee_member_id_fk",
+			"nameExplicit": false,
+			"onDelete": "CASCADE",
+			"onUpdate": "NO ACTION",
+			"schema": "public",
+			"schemaTo": "public",
+			"table": "amendment_sponsor",
+			"tableTo": "committee_member"
+		},
+		{
+			"columns": ["conference_id"],
+			"columnsTo": ["id"],
+			"entityType": "fks",
+			"name": "committee_conference_id_conference_id_fk",
+			"nameExplicit": false,
+			"onDelete": "CASCADE",
+			"onUpdate": "NO ACTION",
+			"schema": "public",
+			"schemaTo": "public",
+			"table": "committee",
+			"tableTo": "conference"
+		},
+		{
+			"columns": ["active_agenda_item_id"],
+			"columnsTo": ["id"],
+			"entityType": "fks",
+			"name": "committee_active_agenda_item_id_agenda_item_id_fk",
+			"nameExplicit": false,
+			"onDelete": "NO ACTION",
+			"onUpdate": "NO ACTION",
+			"schema": "public",
+			"schemaTo": "public",
+			"table": "committee",
+			"tableTo": "agenda_item"
+		},
+		{
+			"columns": ["active_draft_resolution_id"],
+			"columnsTo": ["id"],
+			"entityType": "fks",
+			"name": "committee_active_draft_resolution_id_resolution_paper_id_fk",
+			"nameExplicit": false,
+			"onDelete": "NO ACTION",
+			"onUpdate": "NO ACTION",
+			"schema": "public",
+			"schemaTo": "public",
+			"table": "committee",
+			"tableTo": "resolution_paper"
+		},
+		{
+			"columns": ["active_amendment_id"],
+			"columnsTo": ["id"],
+			"entityType": "fks",
+			"name": "committee_active_amendment_id_amendment_id_fk",
+			"nameExplicit": false,
+			"onDelete": "SET NULL",
+			"onUpdate": "NO ACTION",
+			"schema": "public",
+			"schemaTo": "public",
+			"table": "committee",
+			"tableTo": "amendment"
+		},
+		{
+			"columns": ["committee_id"],
+			"columnsTo": ["id"],
+			"entityType": "fks",
+			"name": "committee_member_committee_id_committee_id_fk",
+			"nameExplicit": false,
+			"onDelete": "CASCADE",
+			"onUpdate": "NO ACTION",
+			"schema": "public",
+			"schemaTo": "public",
+			"table": "committee_member",
+			"tableTo": "committee"
+		},
+		{
+			"columns": ["representation_id"],
+			"columnsTo": ["id"],
+			"entityType": "fks",
+			"name": "committee_member_representation_id_representation_id_fk",
+			"nameExplicit": false,
+			"onDelete": "NO ACTION",
+			"onUpdate": "NO ACTION",
+			"schema": "public",
+			"schemaTo": "public",
+			"table": "committee_member",
+			"tableTo": "representation"
+		},
+		{
+			"columns": ["committee_id"],
+			"columnsTo": ["id"],
+			"entityType": "fks",
+			"name": "committee_topic_changed_timestamp_committee_id_committee_id_fk",
+			"nameExplicit": false,
+			"onDelete": "CASCADE",
+			"onUpdate": "NO ACTION",
+			"schema": "public",
+			"schemaTo": "public",
+			"table": "committee_topic_changed_timestamp",
+			"tableTo": "committee"
+		},
+		{
+			"columns": ["agenda_item_id"],
+			"columnsTo": ["id"],
+			"entityType": "fks",
+			"name": "committee_topic_changed_timestamp_agenda_item_id_agenda_item_id",
+			"nameExplicit": false,
+			"onDelete": "CASCADE",
+			"onUpdate": "NO ACTION",
+			"schema": "public",
+			"schemaTo": "public",
+			"table": "committee_topic_changed_timestamp",
+			"tableTo": "agenda_item"
+		},
+		{
+			"columns": ["conference_id"],
+			"columnsTo": ["id"],
+			"entityType": "fks",
+			"name": "conference_member_conference_id_conference_id_fk",
+			"nameExplicit": false,
+			"onDelete": "CASCADE",
+			"onUpdate": "NO ACTION",
+			"schema": "public",
+			"schemaTo": "public",
+			"table": "conference_member",
+			"tableTo": "conference"
+		},
+		{
+			"columns": ["representation_id"],
+			"columnsTo": ["id"],
+			"entityType": "fks",
+			"name": "conference_member_representation_id_representation_id_fk",
+			"nameExplicit": false,
+			"onDelete": "NO ACTION",
+			"onUpdate": "NO ACTION",
+			"schema": "public",
+			"schemaTo": "public",
+			"table": "conference_member",
+			"tableTo": "representation"
+		},
+		{
+			"columns": ["conference_id"],
+			"columnsTo": ["id"],
+			"entityType": "fks",
+			"name": "conference_user_conference_id_conference_id_fk",
+			"nameExplicit": false,
+			"onDelete": "CASCADE",
+			"onUpdate": "NO ACTION",
+			"schema": "public",
+			"schemaTo": "public",
+			"table": "conference_user",
+			"tableTo": "conference"
+		},
+		{
+			"columns": ["conference_member_id"],
+			"columnsTo": ["id"],
+			"entityType": "fks",
+			"name": "conference_user_conference_member_id_conference_member_id_fk",
+			"nameExplicit": false,
+			"onDelete": "CASCADE",
+			"onUpdate": "NO ACTION",
+			"schema": "public",
+			"schemaTo": "public",
+			"table": "conference_user",
+			"tableTo": "conference_member"
+		},
+		{
+			"columns": ["committee_member_id"],
+			"columnsTo": ["id"],
+			"entityType": "fks",
+			"name": "conference_user_committee_member_id_committee_member_id_fk",
+			"nameExplicit": false,
+			"onDelete": "CASCADE",
+			"onUpdate": "NO ACTION",
+			"schema": "public",
+			"schemaTo": "public",
+			"table": "conference_user",
+			"tableTo": "committee_member"
+		},
+		{
+			"columns": ["paper_id"],
+			"columnsTo": ["id"],
+			"entityType": "fks",
+			"name": "operative_clause_vote_paper_id_resolution_paper_id_fk",
+			"nameExplicit": false,
+			"onDelete": "CASCADE",
+			"onUpdate": "NO ACTION",
+			"schema": "public",
+			"schemaTo": "public",
+			"table": "operative_clause_vote",
+			"tableTo": "resolution_paper"
+		},
+		{
+			"columns": ["paper_id"],
+			"columnsTo": ["id"],
+			"entityType": "fks",
+			"name": "paper_clause_lock_paper_id_resolution_paper_id_fk",
+			"nameExplicit": false,
+			"onDelete": "CASCADE",
+			"onUpdate": "NO ACTION",
+			"schema": "public",
+			"schemaTo": "public",
+			"table": "paper_clause_lock",
+			"tableTo": "resolution_paper"
+		},
+		{
+			"columns": ["conference_user_id"],
+			"columnsTo": ["id"],
+			"entityType": "fks",
+			"name": "paper_clause_lock_conference_user_id_conference_user_id_fk",
+			"nameExplicit": false,
+			"onDelete": "CASCADE",
+			"onUpdate": "NO ACTION",
+			"schema": "public",
+			"schemaTo": "public",
+			"table": "paper_clause_lock",
+			"tableTo": "conference_user"
+		},
+		{
+			"columns": ["paper_id"],
+			"columnsTo": ["id"],
+			"entityType": "fks",
+			"name": "paper_content_snapshot_paper_id_resolution_paper_id_fk",
+			"nameExplicit": false,
+			"onDelete": "CASCADE",
+			"onUpdate": "NO ACTION",
+			"schema": "public",
+			"schemaTo": "public",
+			"table": "paper_content_snapshot",
+			"tableTo": "resolution_paper"
+		},
+		{
+			"columns": ["paper_id"],
+			"columnsTo": ["id"],
+			"entityType": "fks",
+			"name": "paper_editor_paper_id_resolution_paper_id_fk",
+			"nameExplicit": false,
+			"onDelete": "CASCADE",
+			"onUpdate": "NO ACTION",
+			"schema": "public",
+			"schemaTo": "public",
+			"table": "paper_editor",
+			"tableTo": "resolution_paper"
+		},
+		{
+			"columns": ["conference_user_id"],
+			"columnsTo": ["id"],
+			"entityType": "fks",
+			"name": "paper_editor_conference_user_id_conference_user_id_fk",
+			"nameExplicit": false,
+			"onDelete": "CASCADE",
+			"onUpdate": "NO ACTION",
+			"schema": "public",
+			"schemaTo": "public",
+			"table": "paper_editor",
+			"tableTo": "conference_user"
+		},
+		{
+			"columns": ["paper_id"],
+			"columnsTo": ["id"],
+			"entityType": "fks",
+			"name": "paper_share_code_paper_id_resolution_paper_id_fk",
+			"nameExplicit": false,
+			"onDelete": "CASCADE",
+			"onUpdate": "NO ACTION",
+			"schema": "public",
+			"schemaTo": "public",
+			"table": "paper_share_code",
+			"tableTo": "resolution_paper"
+		},
+		{
+			"columns": ["paper_id"],
+			"columnsTo": ["id"],
+			"entityType": "fks",
+			"name": "paper_sponsor_paper_id_resolution_paper_id_fk",
+			"nameExplicit": false,
+			"onDelete": "CASCADE",
+			"onUpdate": "NO ACTION",
+			"schema": "public",
+			"schemaTo": "public",
+			"table": "paper_sponsor",
+			"tableTo": "resolution_paper"
+		},
+		{
+			"columns": ["committee_member_id"],
+			"columnsTo": ["id"],
+			"entityType": "fks",
+			"name": "paper_sponsor_committee_member_id_committee_member_id_fk",
+			"nameExplicit": false,
+			"onDelete": "CASCADE",
+			"onUpdate": "NO ACTION",
+			"schema": "public",
+			"schemaTo": "public",
+			"table": "paper_sponsor",
+			"tableTo": "committee_member"
+		},
+		{
+			"columns": ["committee_member_id"],
+			"columnsTo": ["id"],
+			"entityType": "fks",
+			"name": "presence_changed_timestamp_committee_member_id_committee_member",
+			"nameExplicit": false,
+			"onDelete": "CASCADE",
+			"onUpdate": "NO ACTION",
+			"schema": "public",
+			"schemaTo": "public",
+			"table": "presence_changed_timestamp",
+			"tableTo": "committee_member"
+		},
+		{
+			"columns": ["conference_id"],
+			"columnsTo": ["id"],
+			"entityType": "fks",
+			"name": "representation_conference_id_conference_id_fk",
+			"nameExplicit": false,
+			"onDelete": "CASCADE",
+			"onUpdate": "NO ACTION",
+			"schema": "public",
+			"schemaTo": "public",
+			"table": "representation",
+			"tableTo": "conference"
+		},
+		{
+			"columns": ["paper_id"],
+			"columnsTo": ["id"],
+			"entityType": "fks",
+			"name": "resolution_comment_paper_id_resolution_paper_id_fk",
+			"nameExplicit": false,
+			"onDelete": "CASCADE",
+			"onUpdate": "NO ACTION",
+			"schema": "public",
+			"schemaTo": "public",
+			"table": "resolution_comment",
+			"tableTo": "resolution_paper"
+		},
+		{
+			"columns": ["author_conference_user_id"],
+			"columnsTo": ["id"],
+			"entityType": "fks",
+			"name": "resolution_comment_author_conference_user_id_conference_user_id",
+			"nameExplicit": false,
+			"onDelete": "CASCADE",
+			"onUpdate": "NO ACTION",
+			"schema": "public",
+			"schemaTo": "public",
+			"table": "resolution_comment",
+			"tableTo": "conference_user"
+		},
+		{
+			"columns": ["parent_comment_id"],
+			"columnsTo": ["id"],
+			"entityType": "fks",
+			"name": "resolution_comment_parent_comment_id_resolution_comment_id_fk",
+			"nameExplicit": false,
+			"onDelete": "CASCADE",
+			"onUpdate": "NO ACTION",
+			"schema": "public",
+			"schemaTo": "public",
+			"table": "resolution_comment",
+			"tableTo": "resolution_comment"
+		},
+		{
+			"columns": ["committee_id"],
+			"columnsTo": ["id"],
+			"entityType": "fks",
+			"name": "resolution_paper_committee_id_committee_id_fk",
+			"nameExplicit": false,
+			"onDelete": "CASCADE",
+			"onUpdate": "NO ACTION",
+			"schema": "public",
+			"schemaTo": "public",
+			"table": "resolution_paper",
+			"tableTo": "committee"
+		},
+		{
+			"columns": ["agenda_item_id"],
+			"columnsTo": ["id"],
+			"entityType": "fks",
+			"name": "resolution_paper_agenda_item_id_agenda_item_id_fk",
+			"nameExplicit": false,
+			"onDelete": "CASCADE",
+			"onUpdate": "NO ACTION",
+			"schema": "public",
+			"schemaTo": "public",
+			"table": "resolution_paper",
+			"tableTo": "agenda_item"
+		},
+		{
+			"columns": ["creator_committee_member_id"],
+			"columnsTo": ["id"],
+			"entityType": "fks",
+			"name": "resolution_paper_creator_committee_member_id_committee_member_i",
+			"nameExplicit": false,
+			"onDelete": "CASCADE",
+			"onUpdate": "NO ACTION",
+			"schema": "public",
+			"schemaTo": "public",
+			"table": "resolution_paper",
+			"tableTo": "committee_member"
+		},
+		{
+			"columns": ["paper_id"],
+			"columnsTo": ["id"],
+			"entityType": "fks",
+			"name": "resolution_vote_result_paper_id_resolution_paper_id_fk",
+			"nameExplicit": false,
+			"onDelete": "CASCADE",
+			"onUpdate": "NO ACTION",
+			"schema": "public",
+			"schemaTo": "public",
+			"table": "resolution_vote_result",
+			"tableTo": "resolution_paper"
+		},
+		{
+			"columns": ["committee_member_id"],
+			"columnsTo": ["id"],
+			"entityType": "fks",
+			"name": "speaker_on_list_committee_member_id_committee_member_id_fk",
+			"nameExplicit": false,
+			"onDelete": "CASCADE",
+			"onUpdate": "NO ACTION",
+			"schema": "public",
+			"schemaTo": "public",
+			"table": "speaker_on_list",
+			"tableTo": "committee_member"
+		},
+		{
+			"columns": ["conference_member_id"],
+			"columnsTo": ["id"],
+			"entityType": "fks",
+			"name": "speaker_on_list_conference_member_id_conference_member_id_fk",
+			"nameExplicit": false,
+			"onDelete": "CASCADE",
+			"onUpdate": "NO ACTION",
+			"schema": "public",
+			"schemaTo": "public",
+			"table": "speaker_on_list",
+			"tableTo": "conference_member"
+		},
+		{
+			"columns": ["speakers_list_id"],
+			"columnsTo": ["id"],
+			"entityType": "fks",
+			"name": "speaker_on_list_speakers_list_id_speakers_list_id_fk",
+			"nameExplicit": false,
+			"onDelete": "CASCADE",
+			"onUpdate": "NO ACTION",
+			"schema": "public",
+			"schemaTo": "public",
+			"table": "speaker_on_list",
+			"tableTo": "speakers_list"
+		},
+		{
+			"columns": ["agenda_item_id"],
+			"columnsTo": ["id"],
+			"entityType": "fks",
+			"name": "speakers_list_agenda_item_id_agenda_item_id_fk",
+			"nameExplicit": false,
+			"onDelete": "CASCADE",
+			"onUpdate": "NO ACTION",
+			"schema": "public",
+			"schemaTo": "public",
+			"table": "speakers_list",
+			"tableTo": "agenda_item"
+		},
+		{
+			"columns": ["committee_member_id"],
+			"columnsTo": ["id"],
+			"entityType": "fks",
+			"name": "spoken_time_period_committee_member_id_committee_member_id_fk",
+			"nameExplicit": false,
+			"onDelete": "CASCADE",
+			"onUpdate": "NO ACTION",
+			"schema": "public",
+			"schemaTo": "public",
+			"table": "spoken_time_period",
+			"tableTo": "committee_member"
+		},
+		{
+			"columns": ["conference_member_id"],
+			"columnsTo": ["id"],
+			"entityType": "fks",
+			"name": "spoken_time_period_conference_member_id_conference_member_id_fk",
+			"nameExplicit": false,
+			"onDelete": "CASCADE",
+			"onUpdate": "NO ACTION",
+			"schema": "public",
+			"schemaTo": "public",
+			"table": "spoken_time_period",
+			"tableTo": "conference_member"
+		},
+		{
+			"columns": ["speakers_list_id"],
+			"columnsTo": ["id"],
+			"entityType": "fks",
+			"name": "spoken_time_period_speakers_list_id_speakers_list_id_fk",
+			"nameExplicit": false,
+			"onDelete": "CASCADE",
+			"onUpdate": "NO ACTION",
+			"schema": "public",
+			"schemaTo": "public",
+			"table": "spoken_time_period",
+			"tableTo": "speakers_list"
+		},
+		{
+			"columns": ["id"],
+			"entityType": "pks",
+			"name": "agenda_item_pkey",
+			"nameExplicit": false,
+			"schema": "public",
+			"table": "agenda_item"
+		},
+		{
+			"columns": ["id"],
+			"entityType": "pks",
+			"name": "amendment_pkey",
+			"nameExplicit": false,
+			"schema": "public",
+			"table": "amendment"
+		},
+		{
+			"columns": ["id"],
+			"entityType": "pks",
+			"name": "amendment_sponsor_pkey",
+			"nameExplicit": false,
+			"schema": "public",
+			"table": "amendment_sponsor"
+		},
+		{
+			"columns": ["id"],
+			"entityType": "pks",
+			"name": "committee_pkey",
+			"nameExplicit": false,
+			"schema": "public",
+			"table": "committee"
+		},
+		{
+			"columns": ["id"],
+			"entityType": "pks",
+			"name": "committee_member_pkey",
+			"nameExplicit": false,
+			"schema": "public",
+			"table": "committee_member"
+		},
+		{
+			"columns": ["id"],
+			"entityType": "pks",
+			"name": "committee_topic_changed_timestamp_pkey",
+			"nameExplicit": false,
+			"schema": "public",
+			"table": "committee_topic_changed_timestamp"
+		},
+		{
+			"columns": ["id"],
+			"entityType": "pks",
+			"name": "conference_pkey",
+			"nameExplicit": false,
+			"schema": "public",
+			"table": "conference"
+		},
+		{
+			"columns": ["id"],
+			"entityType": "pks",
+			"name": "conference_member_pkey",
+			"nameExplicit": false,
+			"schema": "public",
+			"table": "conference_member"
+		},
+		{
+			"columns": ["id"],
+			"entityType": "pks",
+			"name": "conference_user_pkey",
+			"nameExplicit": false,
+			"schema": "public",
+			"table": "conference_user"
+		},
+		{
+			"columns": ["id"],
+			"entityType": "pks",
+			"name": "operative_clause_vote_pkey",
+			"nameExplicit": false,
+			"schema": "public",
+			"table": "operative_clause_vote"
+		},
+		{
+			"columns": ["id"],
+			"entityType": "pks",
+			"name": "paper_clause_lock_pkey",
+			"nameExplicit": false,
+			"schema": "public",
+			"table": "paper_clause_lock"
+		},
+		{
+			"columns": ["id"],
+			"entityType": "pks",
+			"name": "paper_content_snapshot_pkey",
+			"nameExplicit": false,
+			"schema": "public",
+			"table": "paper_content_snapshot"
+		},
+		{
+			"columns": ["id"],
+			"entityType": "pks",
+			"name": "paper_editor_pkey",
+			"nameExplicit": false,
+			"schema": "public",
+			"table": "paper_editor"
+		},
+		{
+			"columns": ["id"],
+			"entityType": "pks",
+			"name": "paper_share_code_pkey",
+			"nameExplicit": false,
+			"schema": "public",
+			"table": "paper_share_code"
+		},
+		{
+			"columns": ["id"],
+			"entityType": "pks",
+			"name": "paper_sponsor_pkey",
+			"nameExplicit": false,
+			"schema": "public",
+			"table": "paper_sponsor"
+		},
+		{
+			"columns": ["id"],
+			"entityType": "pks",
+			"name": "presence_changed_timestamp_pkey",
+			"nameExplicit": false,
+			"schema": "public",
+			"table": "presence_changed_timestamp"
+		},
+		{
+			"columns": ["id"],
+			"entityType": "pks",
+			"name": "representation_pkey",
+			"nameExplicit": false,
+			"schema": "public",
+			"table": "representation"
+		},
+		{
+			"columns": ["id"],
+			"entityType": "pks",
+			"name": "resolution_comment_pkey",
+			"nameExplicit": false,
+			"schema": "public",
+			"table": "resolution_comment"
+		},
+		{
+			"columns": ["id"],
+			"entityType": "pks",
+			"name": "resolution_paper_pkey",
+			"nameExplicit": false,
+			"schema": "public",
+			"table": "resolution_paper"
+		},
+		{
+			"columns": ["id"],
+			"entityType": "pks",
+			"name": "resolution_vote_result_pkey",
+			"nameExplicit": false,
+			"schema": "public",
+			"table": "resolution_vote_result"
+		},
+		{
+			"columns": ["id"],
+			"entityType": "pks",
+			"name": "speaker_on_list_pkey",
+			"nameExplicit": false,
+			"schema": "public",
+			"table": "speaker_on_list"
+		},
+		{
+			"columns": ["id"],
+			"entityType": "pks",
+			"name": "speakers_list_pkey",
+			"nameExplicit": false,
+			"schema": "public",
+			"table": "speakers_list"
+		},
+		{
+			"columns": ["id"],
+			"entityType": "pks",
+			"name": "spoken_time_period_pkey",
+			"nameExplicit": false,
+			"schema": "public",
+			"table": "spoken_time_period"
+		},
+		{
+			"columns": ["id"],
+			"entityType": "pks",
+			"name": "user_pkey",
+			"nameExplicit": false,
+			"schema": "public",
+			"table": "user"
+		},
+		{
+			"columns": ["amendment_id", "committee_member_id"],
+			"entityType": "uniques",
+			"name": "amendment_sponsor_amendment_id_committee_member_id_unique",
+			"nameExplicit": false,
+			"nullsNotDistinct": false,
+			"schema": "public",
+			"table": "amendment_sponsor"
+		},
+		{
+			"columns": ["conference_id", "name"],
+			"entityType": "uniques",
+			"name": "committee_conference_id_name_unique",
+			"nameExplicit": false,
+			"nullsNotDistinct": false,
+			"schema": "public",
+			"table": "committee"
+		},
+		{
+			"columns": ["conference_id", "abbreviation"],
+			"entityType": "uniques",
+			"name": "committee_conference_id_abbreviation_unique",
+			"nameExplicit": false,
+			"nullsNotDistinct": false,
+			"schema": "public",
+			"table": "committee"
+		},
+		{
+			"columns": ["paper_id", "clause_id"],
+			"entityType": "uniques",
+			"name": "operative_clause_vote_paper_id_clause_id_unique",
+			"nameExplicit": false,
+			"nullsNotDistinct": false,
+			"schema": "public",
+			"table": "operative_clause_vote"
+		},
+		{
+			"columns": ["paper_id", "clause_id"],
+			"entityType": "uniques",
+			"name": "paper_clause_lock_paper_id_clause_id_unique",
+			"nameExplicit": false,
+			"nullsNotDistinct": false,
+			"schema": "public",
+			"table": "paper_clause_lock"
+		},
+		{
+			"columns": ["paper_id", "conference_user_id"],
+			"entityType": "uniques",
+			"name": "paper_editor_paper_id_conference_user_id_unique",
+			"nameExplicit": false,
+			"nullsNotDistinct": false,
+			"schema": "public",
+			"table": "paper_editor"
+		},
+		{
+			"columns": ["paper_id", "committee_member_id"],
+			"entityType": "uniques",
+			"name": "paper_sponsor_paper_id_committee_member_id_unique",
+			"nameExplicit": false,
+			"nullsNotDistinct": false,
+			"schema": "public",
+			"table": "paper_sponsor"
+		},
+		{
+			"columns": ["conference_id", "name"],
+			"entityType": "uniques",
+			"name": "representation_conference_id_name_unique",
+			"nameExplicit": false,
+			"nullsNotDistinct": false,
+			"schema": "public",
+			"table": "representation"
+		},
+		{
+			"columns": ["conference_id", "alpha2_code", "alpha3_code"],
+			"entityType": "uniques",
+			"name": "representation_conference_id_alpha2_code_alpha3_code_unique",
+			"nameExplicit": false,
+			"nullsNotDistinct": false,
+			"schema": "public",
+			"table": "representation"
+		},
+		{
+			"columns": ["speakers_list_id", "position"],
+			"entityType": "uniques",
+			"name": "speaker_on_list_speakers_list_id_position_unique",
+			"nameExplicit": false,
+			"nullsNotDistinct": false,
+			"schema": "public",
+			"table": "speaker_on_list"
+		},
+		{
+			"columns": ["speakers_list_id", "committee_member_id"],
+			"entityType": "uniques",
+			"name": "speaker_on_list_speakers_list_id_committee_member_id_unique",
+			"nameExplicit": false,
+			"nullsNotDistinct": false,
+			"schema": "public",
+			"table": "speaker_on_list"
+		},
+		{
+			"columns": ["speakers_list_id", "conference_member_id"],
+			"entityType": "uniques",
+			"name": "speaker_on_list_speakers_list_id_conference_member_id_unique",
+			"nameExplicit": false,
+			"nullsNotDistinct": false,
+			"schema": "public",
+			"table": "speaker_on_list"
+		},
+		{
+			"columns": ["agenda_item_id", "type"],
+			"entityType": "uniques",
+			"name": "speakers_list_agenda_item_id_type_unique",
+			"nameExplicit": false,
+			"nullsNotDistinct": false,
+			"schema": "public",
+			"table": "speakers_list"
+		},
+		{
+			"columns": ["code"],
+			"entityType": "uniques",
+			"name": "paper_share_code_code_unique",
+			"nameExplicit": false,
+			"nullsNotDistinct": false,
+			"schema": "public",
+			"table": "paper_share_code"
+		},
+		{
+			"columns": ["paper_id"],
+			"entityType": "uniques",
+			"name": "resolution_vote_result_paper_id_key",
+			"nameExplicit": false,
+			"nullsNotDistinct": false,
+			"schema": "public",
+			"table": "resolution_vote_result"
+		},
+		{
+			"columns": ["id"],
+			"entityType": "uniques",
+			"name": "user_id_unique",
+			"nameExplicit": false,
+			"nullsNotDistinct": false,
+			"schema": "public",
+			"table": "user"
+		},
+		{
+			"columns": ["email"],
+			"entityType": "uniques",
+			"name": "user_email_unique",
+			"nameExplicit": false,
+			"nullsNotDistinct": false,
+			"schema": "public",
+			"table": "user"
+		}
+	],
+	"dialect": "postgres",
+	"id": "00e6b08f-4a21-4c40-a0e8-839837b569b2",
+	"prevIds": ["5426886b-1762-46f4-b65c-dfd455057240"],
+	"renames": [],
+	"version": "8"
 }

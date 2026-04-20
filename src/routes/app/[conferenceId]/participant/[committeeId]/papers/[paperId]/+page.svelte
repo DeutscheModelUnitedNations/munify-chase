@@ -25,20 +25,29 @@
 	import { SvelteMap, SvelteSet } from 'svelte/reactivity';
 
 	const currentUser = await getCurrentUser();
-	const [conferenceUser] = await client.liveQuery.conferenceUsers({
-		__args: {
-			where: {
-				conference: { id: page.params.conferenceId },
-				user: { id: currentUser?.sub ?? '' }
-			}
-		},
-		id: true,
-		conferenceUserType: true,
-		committeeMemberId: true
-	}) ?? [];
+	const [conferenceUser] =
+		(await client.liveQuery.conferenceUsers({
+			__args: {
+				where: {
+					conference: { id: page.params.conferenceId },
+					user: { id: currentUser?.sub ?? '' }
+				}
+			},
+			id: true,
+			conferenceUserType: true,
+			committeeMemberId: true
+		})) ?? [];
 
 	// Live queries
-	const [paper, locks, allComments, allAmendments, clauseVotes, voteResults, committeeData]: [any, any, any, any, any, any, any] = await Promise.all([
+	const [paper, locks, allComments, allAmendments, clauseVotes, voteResults, committeeData]: [
+		any,
+		any,
+		any,
+		any,
+		any,
+		any,
+		any
+	] = await Promise.all([
 		client.liveQuery.resolutionPaper({
 			__args: { id: page.params.paperId! },
 			id: true,

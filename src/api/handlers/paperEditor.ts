@@ -2,7 +2,7 @@ import { db, schema } from '$api/db/db';
 import { abilityBuilder, schemaBuilder, pubsub as rumblePubsub } from '$api/rumble';
 import { and, eq } from 'drizzle-orm';
 import { basics } from './basics';
-import { isGlobalAdmin } from '$api/services/isAdminEmail';
+import { isGlobalAdmin } from '$api/services/authHelper';
 import { assertFindFirstExists } from '@m1212e/rumble';
 
 const { ref, pubsub, table } = basics('paperEditor');

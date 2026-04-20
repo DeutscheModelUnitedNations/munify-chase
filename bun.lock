@@ -22,7 +22,7 @@
         "@inlang/cli": "^3.1.9",
         "@inlang/paraglide-js": "^2.15.1",
         "@lingual/i18n-check": "^0.9.3",
-        "@m1212e/rumble": "^0.16.38",
+        "@m1212e/rumble": "^0.16.39",
         "@m1212e/sveltekit-oidc": "^0.0.33",
         "@sveltejs/adapter-node": "^5.5.4",
         "@sveltejs/kit": "^2.55.0",
@@ -330,7 +330,7 @@
 
     "@lix-js/server-protocol-schema": ["@lix-js/server-protocol-schema@0.1.1", "", {}, "sha512-jBeALB6prAbtr5q4vTuxnRZZv1M2rKe8iNqRQhFJ4Tv7150unEa0vKyz0hs8Gl3fUGsWaNJBh3J8++fpbrpRBQ=="],
 
-    "@m1212e/rumble": ["@m1212e/rumble@0.16.38", "", { "dependencies": { "@escape.tech/graphql-armor": "^3.2.0", "@graphql-yoga/plugin-disable-introspection": "^2.22.0", "@opentelemetry/api": "^1.9.1", "@opentelemetry/semantic-conventions": "^1.40.0", "@pothos/core": "^4.12.0", "@pothos/plugin-drizzle": "^0.17.1", "@pothos/plugin-smart-subscriptions": "^4.1.4", "@pothos/plugin-tracing": "^1.1.2", "@pothos/tracing-opentelemetry": "^1.1.3", "@urql/core": "^6.0.1", "@urql/exchange-graphcache": "^9.0.0", "@urql/introspection": "^1.2.1", "devalue": "^5.7.1", "es-toolkit": "^1.45.1", "graphql-scalars": "^1.25.0", "graphql-yoga": "^5.21.0", "pluralize": "^8.0.0", "sofa-api": "^0.18.10", "svelte": "^5.55.4", "wonka": "^6.3.2" }, "peerDependencies": { "drizzle-orm": "^1", "graphql": "^16.13.2", "typescript": "^6.0.2" } }, "sha512-c/JTVRzQrvaQERHtI3RkdRn/BSb/J9erl5S5YZFaLp5aoTRi+MCNjeSrkrxLdCalG4XioEnLGsd5xjIOPqhJlQ=="],
+    "@m1212e/rumble": ["@m1212e/rumble@0.16.39", "", { "dependencies": { "@escape.tech/graphql-armor": "^3.2.0", "@graphql-yoga/plugin-disable-introspection": "^2.22.0", "@opentelemetry/api": "^1.9.1", "@opentelemetry/semantic-conventions": "^1.40.0", "@pothos/core": "^4.12.0", "@pothos/plugin-drizzle": "^0.17.1", "@pothos/plugin-smart-subscriptions": "^4.1.4", "@pothos/plugin-tracing": "^1.1.2", "@pothos/tracing-opentelemetry": "^1.1.3", "@urql/core": "^6.0.1", "@urql/exchange-graphcache": "^9.0.0", "@urql/introspection": "^1.2.1", "devalue": "^5.7.1", "es-toolkit": "^1.45.1", "graphql-scalars": "^1.25.0", "graphql-yoga": "^5.21.0", "pluralize": "^8.0.0", "sofa-api": "^0.18.10", "svelte": "^5.55.4", "wonka": "^6.3.2" }, "peerDependencies": { "drizzle-orm": "^1", "graphql": "^16.13.2", "typescript": "^6.0.2" } }, "sha512-FBQ4qSLhXI9HHCYLto5pJoTzpsxtmFb8ecQ283C0KVXmeGn9raHhyEn8SvuXH7zn8mucBeleFHYV8ehpB8F5oA=="],
 
     "@m1212e/sveltekit-oidc": ["@m1212e/sveltekit-oidc@0.0.33", "", { "dependencies": { "@sinclair/typebox": "^0.34.37", "cryptr": "^6.3.0", "jose": "^6.0.11", "openid-client": "^6.6.1" }, "peerDependencies": { "svelte": "^5.0.0" } }, "sha512-T/M/GErz8/X6F2vVGuOEOw/OZV9ktP2Yo/D/NInNseO2j9RY1Lp36QSQOGtMlL1LF/kBKOyKbxpbpH0KESKCvw=="],
 

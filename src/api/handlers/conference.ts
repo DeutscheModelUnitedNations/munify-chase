@@ -1,11 +1,11 @@
 import { db, schema } from '$api/db/db';
 import {
-  abilityBuilder,
-  object,
-  query,
-  schemaBuilder,
-  pubsub as rumblePubsub,
-  whereArg
+	abilityBuilder,
+	object,
+	query,
+	schemaBuilder,
+	pubsub as rumblePubsub,
+	whereArg
 } from '$api/rumble';
 import { ConferenceMemberRef } from './conferenceMember';
 import { assertConferenceAdmin } from './conferenceUser';
@@ -19,117 +19,117 @@ import { GraphQLError } from 'graphql';
 // });
 
 abilityBuilder.conference.allow('read').when(({ mustBeLoggedIn }) => {
-  mustBeLoggedIn();
-  return 'allow';
+	mustBeLoggedIn();
+	return 'allow';
 });
 
 const ConferenceMemberWhereInput = whereArg({ table: 'conferenceMember' });
 
 const ref = object({
-  table: 'conference',
-  adjust: (t) => ({
-    uniqueConferenceMembers: t.drizzleField({
-      type: [ConferenceMemberRef],
-      description:
-        'Returns a conference member for each existent representation. Useful to display a non duplicated list of non state actors.',
-      args: {
-        where: t.arg({ type: ConferenceMemberWhereInput })
-      },
-      resolve: async (query, parent, args, ctx, _info) => {
-        const touchedRepresentation = new Set<string>();
-        return (
-          await db.query.conferenceMember.findMany(
-            query({
-              ...ctx.abilities.conferenceMember.filter('read').merge({
-                where: {
-                  ...args.where,
-                  conferenceId: parent.id
-                }
-              }).query.many,
-              with: {
-                representation: true
-              }
-            })
-          )
-        ).filter((member) => {
-          if (touchedRepresentation.has(member.representation!.id!)) {
-            return false;
-          }
-          touchedRepresentation.add(member.representation!.id!);
-          return true;
-        });
-      }
-    })
-  })
+	table: 'conference',
+	adjust: (t) => ({
+		uniqueConferenceMembers: t.drizzleField({
+			type: [ConferenceMemberRef],
+			description:
+				'Returns a conference member for each existent representation. Useful to display a non duplicated list of non state actors.',
+			args: {
+				where: t.arg({ type: ConferenceMemberWhereInput })
+			},
+			resolve: async (query, parent, args, ctx, _info) => {
+				const touchedRepresentation = new Set<string>();
+				return (
+					await db.query.conferenceMember.findMany(
+						query({
+							...ctx.abilities.conferenceMember.filter('read').merge({
+								where: {
+									...args.where,
+									conferenceId: parent.id
+								}
+							}).query.many,
+							with: {
+								representation: true
+							}
+						})
+					)
+				).filter((member) => {
+					if (touchedRepresentation.has(member.representation!.id!)) {
+						return false;
+					}
+					touchedRepresentation.add(member.representation!.id!);
+					return true;
+				});
+			}
+		})
+	})
 });
 
 const pubsub = rumblePubsub({ table: 'conference' });
 query({
-  table: 'conference'
+	table: 'conference'
 });
 
 schemaBuilder.mutationFields((t) => ({
-  updateConference: t.drizzleField({
-    type: ref,
-    args: {
-      id: t.arg.id({ required: true }),
-      title: t.arg.string(),
-      pressWebsite: t.arg.string(),
-      hasModeratedCaucus: t.arg.boolean(),
-      resolutionFeatureEnabled: t.arg.boolean()
-    },
-    resolve: async (query, root, args, ctx, info) => {
-      await assertConferenceAdmin(ctx, args.id);
+	updateConference: t.drizzleField({
+		type: ref,
+		args: {
+			id: t.arg.id({ required: true }),
+			title: t.arg.string(),
+			pressWebsite: t.arg.string(),
+			hasModeratedCaucus: t.arg.boolean(),
+			resolutionFeatureEnabled: t.arg.boolean()
+		},
+		resolve: async (query, root, args, ctx, info) => {
+			await assertConferenceAdmin(ctx, args.id);
 
-      await db
-        .update(schema.conference)
-        .set({
-          title: args.title ?? undefined,
-          pressWebsite: args.pressWebsite ?? undefined,
-          hasModeratedCaucus: args.hasModeratedCaucus ?? undefined,
-          resolutionFeatureEnabled: args.resolutionFeatureEnabled ?? undefined
-        })
-        .where(eq(schema.conference.id, args.id));
+			await db
+				.update(schema.conference)
+				.set({
+					title: args.title ?? undefined,
+					pressWebsite: args.pressWebsite ?? undefined,
+					hasModeratedCaucus: args.hasModeratedCaucus ?? undefined,
+					resolutionFeatureEnabled: args.resolutionFeatureEnabled ?? undefined
+				})
+				.where(eq(schema.conference.id, args.id));
 
-      pubsub.updated(args.id);
+			pubsub.updated(args.id);
 
-      return db.query.conference
-        .findFirst(
-          query(
-            ctx.abilities.conference.filter('read').merge({
-              where: { id: args.id }
-            }).query.single
-          )
-        )
-        .then(assertFindFirstExists);
-    }
-  })
+			return db.query.conference
+				.findFirst(
+					query(
+						ctx.abilities.conference.filter('read').merge({
+							where: { id: args.id }
+						}).query.single
+					)
+				)
+				.then(assertFindFirstExists);
+		}
+	})
 }));
 
 schemaBuilder.mutationFields((t) => ({
-  deleteConference: t.field({
-    type: 'Boolean',
-    args: {
-      id: t.arg.id({ required: true })
-    },
-    resolve: async (root, args, ctx) => {
-      if (!isGlobalAdmin(ctx)) {
-        throw new GraphQLError('Only global admins can delete conferences');
-      }
+	deleteConference: t.field({
+		type: 'Boolean',
+		args: {
+			id: t.arg.id({ required: true })
+		},
+		resolve: async (root, args, ctx) => {
+			if (!isGlobalAdmin(ctx)) {
+				throw new GraphQLError('Only global admins can delete conferences');
+			}
 
-      const conf = await db.query.conference.findFirst({
-        where: { id: args.id }
-      });
+			const conf = await db.query.conference.findFirst({
+				where: { id: args.id }
+			});
 
-      if (!conf) {
-        throw new GraphQLError('Conference not found');
-      }
+			if (!conf) {
+				throw new GraphQLError('Conference not found');
+			}
 
-      await db.delete(schema.conference).where(eq(schema.conference.id, args.id));
+			await db.delete(schema.conference).where(eq(schema.conference.id, args.id));
 
-      return true;
-    }
-  })
+			return true;
+		}
+	})
 }));
 
 export const ConferenceRef = ref;

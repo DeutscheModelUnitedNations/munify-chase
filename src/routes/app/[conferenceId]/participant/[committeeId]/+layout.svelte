@@ -9,16 +9,17 @@
 	let { children }: { children: Snippet } = $props();
 
 	const currentUser = await getCurrentUser();
-	const [conferenceUser] = await client.liveQuery.conferenceUsers({
-		__args: {
-			where: {
-				conference: { id: page.params.conferenceId },
-				user: { id: currentUser?.sub ?? '' }
-			}
-		},
-		id: true,
-		conferenceUserType: true
-	}) ?? [];
+	const [conferenceUser] =
+		(await client.liveQuery.conferenceUsers({
+			__args: {
+				where: {
+					conference: { id: page.params.conferenceId },
+					user: { id: currentUser?.sub ?? '' }
+				}
+			},
+			id: true,
+			conferenceUserType: true
+		})) ?? [];
 	const role = $derived(conferenceUser?.conferenceUserType);
 	const showBack = $derived(role !== 'DELEGATE');
 

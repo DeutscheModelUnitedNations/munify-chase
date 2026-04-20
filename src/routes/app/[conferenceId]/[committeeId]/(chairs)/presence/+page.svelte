@@ -53,7 +53,14 @@
 			id: true,
 			uniqueConferenceMembers: {
 				id: true,
-				representation: { id: true, name: true, alpha2Code: true, alpha3Code: true, type: true, faIcon: true }
+				representation: {
+					id: true,
+					name: true,
+					alpha2Code: true,
+					alpha3Code: true,
+					type: true,
+					faIcon: true
+				}
 			}
 		}
 	});

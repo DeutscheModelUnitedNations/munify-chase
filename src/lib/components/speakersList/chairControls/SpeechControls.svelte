@@ -66,7 +66,8 @@
 				__args: {
 					id: speakersList.id,
 					timeLeft:
-						dayjs(speakersList.startTimestamp).diff(getServerTime(), 'seconds') + speakersList.timeLeft,
+						dayjs(speakersList.startTimestamp).diff(getServerTime(), 'seconds') +
+						speakersList.timeLeft,
 					stopTimer: true
 				},
 				id: true

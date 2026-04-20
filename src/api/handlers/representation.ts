@@ -1,6 +1,6 @@
 import { db, schema } from '$api/db/db';
 import { abilityBuilder, enum_, schemaBuilder } from '$api/rumble';
-import { isGlobalAdmin } from '$api/services/isAdminEmail';
+import { isGlobalAdmin } from '$api/services/authHelper';
 import { basics } from './basics';
 import { assertConferenceAdmin } from './conferenceUser';
 import { assertFindFirstExists, assertFirstEntryExists } from '@m1212e/rumble';

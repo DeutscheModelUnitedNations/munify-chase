@@ -8,7 +8,7 @@
 
 	const user = await getCurrentUser();
 	const conferenceUsers = await client.liveQuery.conferenceUsers({
-		__args: { where: { user: { id: (user).id } } },
+		__args: { where: { user: { id: user.id } } },
 		id: true,
 		conferenceUserType: true,
 		committeeMemberId: true,

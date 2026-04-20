@@ -1,6 +1,6 @@
 import { abilityBuilder } from '$api/rumble';
 import { basics } from './basics';
-import { isGlobalAdmin } from '$api/services/isAdminEmail';
+import { isGlobalAdmin } from '$api/services/authHelper';
 
 const { ref, pubsub, table } = basics('resolutionVoteResult');
 

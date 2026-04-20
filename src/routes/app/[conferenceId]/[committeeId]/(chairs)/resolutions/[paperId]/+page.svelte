@@ -42,11 +42,26 @@
 		conference: { id: true, title: true },
 		members: {
 			id: true,
-			representation: { id: true, name: true, alpha2Code: true, alpha3Code: true, faIcon: true, type: true }
+			representation: {
+				id: true,
+				name: true,
+				alpha2Code: true,
+				alpha3Code: true,
+				faIcon: true,
+				type: true
+			}
 		}
 	});
 
-	const [paper, locks, allComments, allAmendments, clauseVotes, allVoteResults, currentUserConferenceUsers] = await Promise.all([
+	const [
+		paper,
+		locks,
+		allComments,
+		allAmendments,
+		clauseVotes,
+		allVoteResults,
+		currentUserConferenceUsers
+	] = await Promise.all([
 		client.liveQuery.resolutionPaper({
 			__args: { id: page.params.paperId! },
 			id: true,

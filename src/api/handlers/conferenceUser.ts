@@ -2,7 +2,7 @@ import { abilityBuilder, enum_, schemaBuilder } from '$api/rumble';
 import { eq } from 'drizzle-orm';
 import { basics } from './basics';
 import { db, schema } from '$api/db/db';
-import { isGlobalAdmin } from '$api/services/isAdminEmail';
+import { isGlobalAdmin } from '$api/services/authHelper';
 import { GraphQLError } from 'graphql';
 import { assertFindFirstExists, assertFirstEntryExists } from '@m1212e/rumble';
 

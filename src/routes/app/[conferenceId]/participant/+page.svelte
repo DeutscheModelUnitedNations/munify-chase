@@ -9,25 +9,40 @@
 	import ParticipantIdentityCard from './ParticipantIdentityCard.svelte';
 
 	const currentUser = await getCurrentUser();
-	const [conferenceUser] = await client.liveQuery.conferenceUsers({
-		__args: {
-			where: {
-				conference: { id: page.params.conferenceId },
-				user: { id: currentUser?.sub ?? '' }
+	const [conferenceUser] =
+		(await client.liveQuery.conferenceUsers({
+			__args: {
+				where: {
+					conference: { id: page.params.conferenceId },
+					user: { id: currentUser?.sub ?? '' }
+				}
+			},
+			id: true,
+			conferenceUserType: true,
+			committeeMember: {
+				id: true,
+				committeeId: true,
+				representation: {
+					id: true,
+					name: true,
+					alpha2Code: true,
+					alpha3Code: true,
+					type: true,
+					faIcon: true
+				}
+			},
+			conferenceMember: {
+				id: true,
+				representation: {
+					id: true,
+					name: true,
+					alpha2Code: true,
+					alpha3Code: true,
+					type: true,
+					faIcon: true
+				}
 			}
-		},
-		id: true,
-		conferenceUserType: true,
-		committeeMember: {
-			id: true,
-			committeeId: true,
-			representation: { id: true, name: true, alpha2Code: true, alpha3Code: true, type: true, faIcon: true }
-		},
-		conferenceMember: {
-			id: true,
-			representation: { id: true, name: true, alpha2Code: true, alpha3Code: true, type: true, faIcon: true }
-		}
-	}) ?? [];
+		})) ?? [];
 
 	const conference = await client.liveQuery.conference({
 		__args: { id: page.params.conferenceId! },

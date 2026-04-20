@@ -9,17 +9,18 @@
 	import toast from 'svelte-french-toast';
 
 	const currentUser = await getCurrentUser();
-	const [conferenceUser] = await client.liveQuery.conferenceUsers({
-		__args: {
-			where: {
-				conference: { id: page.params.conferenceId },
-				user: { id: currentUser?.sub ?? '' }
-			}
-		},
-		id: true,
-		conferenceUserType: true,
-		committeeMemberId: true
-	}) ?? [];
+	const [conferenceUser] =
+		(await client.liveQuery.conferenceUsers({
+			__args: {
+				where: {
+					conference: { id: page.params.conferenceId },
+					user: { id: currentUser?.sub ?? '' }
+				}
+			},
+			id: true,
+			conferenceUserType: true,
+			committeeMemberId: true
+		})) ?? [];
 
 	const committee = await client.liveQuery.committee({
 		__args: { id: page.params.committeeId! },

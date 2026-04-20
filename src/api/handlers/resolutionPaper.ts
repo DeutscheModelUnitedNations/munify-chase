@@ -2,7 +2,7 @@ import { db, schema } from '$api/db/db';
 import { abilityBuilder, enum_, schemaBuilder, pubsub as rumblePubsub } from '$api/rumble';
 import { and, eq, isNull, count as drizzleCount, desc, inArray } from 'drizzle-orm';
 import { basics } from './basics';
-import { isGlobalAdmin } from '$api/services/isAdminEmail';
+import { isGlobalAdmin } from '$api/services/authHelper';
 import { assertFindFirstExists, assertFirstEntryExists } from '@m1212e/rumble';
 import { GraphQLError } from 'graphql';
 import {
@@ -10,6 +10,7 @@ import {
 	createEmptyResolution,
 	toRoman
 } from '@deutschemodelunitednations/munify-resolution-editor/schema';
+import type { Context } from '$api/context';
 
 const { ref, pubsub, table } = basics('resolutionPaper');
 const committeePubsub = rumblePubsub({ table: 'committee' });
@@ -29,41 +30,7 @@ abilityBuilder.resolutionPaper.allow('read').when(({ mustBeLoggedIn }) => {
 	return { where: { deletedAt: { isNull: true } } };
 });
 
-/**
- * Helper to check if the current user is a chair (ADMIN/TEAM) for a committee's conference,
- * or a global admin.
- */
-export async function assertCommitteeChairOrAdmin(
-	ctx: {
-		hasRole: (role: string) => boolean;
-		mustBeLoggedIn: () => { sub?: string; email?: string | null };
-	},
-	committeeId: string
-) {
-	if (isGlobalAdmin(ctx)) {
-		return;
-	}
-
-	const user = ctx.mustBeLoggedIn();
-
-	await db.query.conferenceUser
-		.findFirst({
-			where: {
-				conference: {
-					committees: {
-						id: committeeId
-					}
-				},
-				user: {
-					id: user.sub
-				},
-				conferenceUserType: {
-					in: ['ADMIN', 'TEAM']
-				}
-			}
-		})
-		.then(assertFindFirstExists);
-}
+//TOOD: rework this to be some kind of rumble ability injector
 
 schemaBuilder.mutationFields((t) => ({
 	createResolutionPaper: t.drizzleField({

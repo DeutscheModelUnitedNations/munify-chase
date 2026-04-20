@@ -40,24 +40,52 @@
 					overwriteName: true,
 					committeeMember: {
 						id: true,
-						representation: { id: true, name: true, alpha2Code: true, alpha3Code: true, faIcon: true, type: true }
+						representation: {
+							id: true,
+							name: true,
+							alpha2Code: true,
+							alpha3Code: true,
+							faIcon: true,
+							type: true
+						}
 					},
 					conferenceMember: {
 						id: true,
-						representation: { id: true, name: true, alpha2Code: true, alpha3Code: true, faIcon: true, type: true }
+						representation: {
+							id: true,
+							name: true,
+							alpha2Code: true,
+							alpha3Code: true,
+							faIcon: true,
+							type: true
+						}
 					}
 				}
 			}
 		},
 		members: {
 			id: true,
-			representation: { id: true, name: true, alpha2Code: true, alpha3Code: true, faIcon: true, type: true }
+			representation: {
+				id: true,
+				name: true,
+				alpha2Code: true,
+				alpha3Code: true,
+				faIcon: true,
+				type: true
+			}
 		},
 		conference: {
 			id: true,
 			uniqueConferenceMembers: {
 				id: true,
-				representation: { id: true, name: true, alpha2Code: true, alpha3Code: true, faIcon: true, type: true }
+				representation: {
+					id: true,
+					name: true,
+					alpha2Code: true,
+					alpha3Code: true,
+					faIcon: true,
+					type: true
+				}
 			}
 		}
 	});

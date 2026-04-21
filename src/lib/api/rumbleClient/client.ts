@@ -809,15 +809,15 @@ export type Mutation = {
 		title?: String | null | undefined;
 	}) => Resolutionpaper;
 	createShareCode: (p: { paperId: ID; permission: unknown }) => Papersharecode;
-	deleteClauseVote: Boolean;
-	deleteComment: Boolean;
-	deleteCommittee: Boolean;
-	deleteCommitteeMember: Boolean;
-	deleteConference: Boolean;
-	deleteConferenceMember: Boolean;
-	deleteConferenceUser: Boolean;
-	deleteRepresentation: Boolean;
-	deleteShareCode: Boolean;
+	deleteClauseVote: (p: { clauseId: String; paperId: ID }) => Boolean;
+	deleteComment: (p: { commentId: ID }) => Boolean;
+	deleteCommittee: (p: { id: ID }) => Boolean;
+	deleteCommitteeMember: (p: { id: ID }) => Boolean;
+	deleteConference: (p: { id: ID }) => Boolean;
+	deleteConferenceMember: (p: { id: ID }) => Boolean;
+	deleteConferenceUser: (p: { id: ID }) => Boolean;
+	deleteRepresentation: (p: { id: ID }) => Boolean;
+	deleteShareCode: (p: { shareCodeId: ID }) => Boolean;
 	editAmendment: (p: {
 		amendmentId: ID;
 		newContent?: JSON | null | undefined;
@@ -846,12 +846,12 @@ export type Mutation = {
 	}) => Resolutionpaper;
 	redeemShareCode: (p: { code: String }) => ShareCodeRedemptionResult;
 	rejectAmendment: (p: { amendmentId: ID }) => Amendment;
-	releaseAllMyLocks: Boolean;
-	releaseClauseLock: Boolean;
-	removeAmendmentSponsor: Boolean;
-	removeEditor: Boolean;
+	releaseAllMyLocks: (p: { paperId: ID }) => Boolean;
+	releaseClauseLock: (p: { clauseId: String; paperId: ID }) => Boolean;
+	removeAmendmentSponsor: (p: { amendmentId: ID; committeeMemberId: ID }) => Boolean;
+	removeEditor: (p: { conferenceUserId: ID; paperId: ID }) => Boolean;
 	removeSpeakerOnList: (p: { speakerOnListId: ID }) => Speakerslist;
-	removeSponsor: Boolean;
+	removeSponsor: (p: { committeeMemberId: ID; paperId: ID }) => Boolean;
 	revertPaperStatus: (p: {
 		paperId: ID;
 		restoreSnapshot?: Boolean | null | undefined;
@@ -859,7 +859,7 @@ export type Mutation = {
 	selfAddToSpeakersList: (p: { speakersListId: ID }) => Speakeronlist;
 	selfRemoveFromSpeakersList: (p: { speakersListId: ID }) => Speakerslist;
 	setPresenceForCommitteeMembers: (p: { ids: unknown; present: Boolean }) => Committeemember[];
-	softDeletePaper: Boolean;
+	softDeletePaper: (p: { paperId: ID }) => Boolean;
 	startVotingPhase: (p: { paperId: ID }) => Resolutionpaper;
 	submitPaper: (p: { paperId: ID }) => Resolutionpaper;
 	updateComment: (p: { commentId: ID; content: String }) => Resolutioncomment;

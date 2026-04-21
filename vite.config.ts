@@ -59,8 +59,5 @@ export default defineConfig({
 	],
 	server: {
 		allowedHosts: ['svelte-dev.munify.cloud']
-	},
-	optimizeDeps: {
-		exclude: ['@m1212e/rumble']
 	}
 });

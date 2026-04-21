@@ -93,7 +93,7 @@ export const urqlClient = new Client({
 						maxAge: 1
 					}),
 					keys: {
-						AuthenticatedUserData: (data) => (data as any).sub
+						AuthenticatedUserData: (data) => (typeof data.sub === 'string' ? data.sub : null)
 					}
 					// TODO: https://nearform.com/open-source/urql/docs/graphcache/cache-updates/#optimistic-updates
 					// optimistic: {

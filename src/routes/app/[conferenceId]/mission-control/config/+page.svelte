@@ -11,7 +11,7 @@
 
 	import { getCurrentUser } from '$lib/state/currentUser.svelte';
 
-	const currentUser = getCurrentUser();
+	const currentUser = await getCurrentUser();
 
 	const conference: any = await client.liveQuery.conference({
 		__args: { id: page.params.conferenceId! },
@@ -93,7 +93,7 @@
 		__args: {
 			where: {
 				conference: { id: page.params.conferenceId },
-				user: { id: currentUser?.sub ?? '' }
+				user: { id: currentUser?.id ?? '' }
 			}
 		},
 		id: true,
@@ -102,7 +102,7 @@
 
 	let currentUserRole = $derived(conferenceUsers?.[0]);
 	let isAdmin = $derived(currentUserRole?.conferenceUserType === 'ADMIN');
-	let currentUserEmail = currentUser?.email;
+	let currentUserEmail = currentUser?.email ?? undefined;
 
 	let activeTab = $state<'general' | 'users' | 'committees' | 'delegations' | 'nsa'>('general');
 

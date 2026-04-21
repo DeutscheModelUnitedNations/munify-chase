@@ -12,7 +12,6 @@ export const OIDC = !building
 			oidcClientSecret: configPrivate.OIDC_CLIENT_SECRET,
 			loginCallbackRoute: configPublic.PUBLIC_OIDC_LOGIN_CALLBACK_ROUTE,
 			logoutCallbackRoute: configPublic.PUBLIC_OIDC_LOGOUT_CALLBACK_ROUTE,
-			secret: configPrivate.SECRET,
 			authenticatedRoutes: ['/app'],
 			logoutPath: '',
 			async userLoggedInSuccessfully({ user }) {

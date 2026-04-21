@@ -17,7 +17,7 @@
 			__args: {
 				where: {
 					conference: { id: page.params.conferenceId },
-					user: { id: currentUser?.sub ?? '' }
+					user: { id: currentUser?.id ?? '' }
 				}
 			},
 			id: true,

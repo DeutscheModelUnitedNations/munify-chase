@@ -41,7 +41,7 @@
 						pressWebsite: pressWebsite || null,
 						hasModeratedCaucus,
 						resolutionFeatureEnabled
-					} as any,
+					},
 					id: true
 				}),
 				promiseToastStrings(m.configuration(), 'update')

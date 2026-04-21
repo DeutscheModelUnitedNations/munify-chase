@@ -11,6 +11,7 @@ import { eq } from 'drizzle-orm';
 import { isGlobalAdmin } from '$api/services/authHelper';
 import { assertFindFirstExists, assertFirstEntryExists } from '@m1212e/rumble';
 import { GraphQLError } from 'graphql';
+import type { Context } from '$api/context';
 
 // ──────────────────────────────────────────────────
 // Access control
@@ -24,15 +25,21 @@ abilityBuilder.resolutionComment.allow('read').when((ctx) => {
 // Conference ADMIN/TEAM → can see ALL comments (including TEAM_ONLY)
 abilityBuilder.resolutionComment.allow('read').when((ctx) => {
 	const user = ctx.mustBeLoggedIn();
-	if (!user.sub) return;
-	return db.query.conferenceUser
-		.findFirst({
-			where: {
-				user: { id: user.sub },
-				conferenceUserType: { in: ['ADMIN', 'TEAM'] }
+	if (!user.email) return;
+	return {
+		where: {
+			paper: {
+				committee: {
+					conference: {
+						users: {
+							user: { email: user.email },
+							conferenceUserType: { in: ['ADMIN', 'TEAM'] }
+						}
+					}
+				}
 			}
-		})
-		.then((cu: any) => (cu ? 'allow' : undefined));
+		}
+	};
 });
 
 // Regular logged-in users → only see PUBLIC comments
@@ -46,13 +53,7 @@ const ref = object({ table: 'resolutionComment' });
 const commentVisibilityEnum = enum_({ tsName: 'commentVisibility' });
 
 // Helper: check if user is TEAM/ADMIN for the conference owning a given paper
-async function isChairOrAdmin(
-	ctx: {
-		hasRole: (role: string) => boolean;
-		mustBeLoggedIn: () => { sub?: string; email?: string | null };
-	},
-	committeeId: string
-): Promise<boolean> {
+async function isChairOrAdmin(ctx: Context, committeeId: string): Promise<boolean> {
 	if (isGlobalAdmin(ctx)) return true;
 
 	const user = ctx.mustBeLoggedIn();

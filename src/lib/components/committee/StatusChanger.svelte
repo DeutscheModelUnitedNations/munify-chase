@@ -138,7 +138,7 @@
 			onchange={(e) => {
 				const inputValue = (e.target as HTMLInputElement).value;
 				const parts = inputValue.split(':');
-				until = serverTime
+				until = getServerTime()
 					.hour(parseInt(parts[0], 10))
 					.minute(parseInt(parts[1], 10))
 					.second(parseInt(parts[2], 10));

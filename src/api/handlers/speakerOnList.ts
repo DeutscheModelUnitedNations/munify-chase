@@ -4,8 +4,7 @@ import { db, schema } from '$api/db/db';
 import { and, count, eq, gt, gte, sql } from 'drizzle-orm';
 import { assertFindFirstExists, assertFirstEntryExists } from '@m1212e/rumble';
 import { SpeakersListRef } from './speakersList';
-import { isGlobalAdmin } from '$api/services/authHelper';
-import { assertCommitteeChairOrAdmin } from './resolutionPaper';
+import { assertCommitteeChairOrAdmin, isGlobalAdmin } from '$api/services/authHelper';
 
 abilityBuilder.speakerOnList.allow(['read', 'update', 'delete']).when((ctx) => {
 	if (isGlobalAdmin(ctx)) return 'allow';
@@ -14,6 +13,20 @@ abilityBuilder.speakerOnList.allow(['read', 'update', 'delete']).when((ctx) => {
 abilityBuilder.speakerOnList.allow('read').when(({ mustBeLoggedIn }) => {
 	mustBeLoggedIn();
 	return 'allow';
+});
+
+abilityBuilder.speakerOnList.allow(['update', 'delete']).when((ctx) => {
+	return {
+		where: {
+			speakersList: {
+				agendaItem: {
+					committee: {
+						...assertCommitteeChairOrAdmin(ctx)
+					}
+				}
+			}
+		}
+	};
 });
 
 const ref = object({ table: 'speakerOnList' });
@@ -34,24 +47,14 @@ schemaBuilder.mutationFields((t) => {
 				overwriteName: t.arg.string()
 			},
 			resolve: async (query, _root, args, ctx, _info) => {
-				// Verify chair/admin access
-				const speaker = await db.query.speakerOnList
-					.findFirst({
-						where: { id: args.id },
-						with: { speakersList: { with: { agendaItem: { columns: { committeeId: true } } } } }
-					})
-					.then(assertFindFirstExists);
-				await assertCommitteeChairOrAdmin(
-					ctx,
-					(speaker as any).speakersList.agendaItem.committeeId
-				);
-
 				const updated = await db
 					.update(schema.speakerOnList)
 					.set({
 						overwriteName: args.overwriteName ? args.overwriteName : null
 					})
-					.where(eq(schema.speakerOnList.id, args.id))
+					.where(
+						ctx.abilities.speakerOnList.filter('update').merge({ where: { id: args.id } }).sql.where
+					)
 					.returning()
 					.then(assertFirstEntryExists);
 
@@ -85,15 +88,6 @@ schemaBuilder.mutationFields((t) => {
 				if (!args.committeeMemberId && !args.conferenceMemberId) {
 					throw new GraphQLError('Must set either committeeMemberId or conferenceMemberId');
 				}
-
-				// Verify chair/admin access
-				const speakersListForAuth = await db.query.speakersList
-					.findFirst({
-						where: { id: args.speakersListId },
-						with: { agendaItem: { columns: { committeeId: true } } }
-					})
-					.then(assertFindFirstExists);
-				await assertCommitteeChairOrAdmin(ctx, (speakersListForAuth as any).agendaItem.committeeId);
 
 				const createdId = await db.transaction(async (tx) => {
 					let position = args.position;
@@ -163,22 +157,14 @@ schemaBuilder.mutationFields((t) => {
 				speakerOnListId: t.arg.id({ required: true })
 			},
 			resolve: async (query, root, args, ctx, info) => {
-				// Verify chair/admin access
-				const speaker = await db.query.speakerOnList
-					.findFirst({
-						where: { id: args.speakerOnListId },
-						with: { speakersList: { with: { agendaItem: { columns: { committeeId: true } } } } }
-					})
-					.then(assertFindFirstExists);
-				await assertCommitteeChairOrAdmin(
-					ctx,
-					(speaker as any).speakersList.agendaItem.committeeId
-				);
-
 				const removed = await db.transaction(async (tx) => {
 					const deleted = await tx
 						.delete(schema.speakerOnList)
-						.where(eq(schema.speakerOnList.id, args.speakerOnListId))
+						.where(
+							ctx.abilities.speakerOnList
+								.filter('delete')
+								.merge({ where: { id: args.speakerOnListId } }).sql.where
+						)
 						.returning()
 						.then(assertFirstEntryExists);
 
@@ -452,18 +438,6 @@ schemaBuilder.mutationFields((t) => {
 				if (args.position < 0) {
 					throw new GraphQLError('Position must be a non-negative integer');
 				}
-
-				// Verify chair/admin access
-				const speakerForAuth = await db.query.speakerOnList
-					.findFirst({
-						where: { id: args.id },
-						with: { speakersList: { with: { agendaItem: { columns: { committeeId: true } } } } }
-					})
-					.then(assertFindFirstExists);
-				await assertCommitteeChairOrAdmin(
-					ctx,
-					(speakerForAuth as any).speakersList.agendaItem.committeeId
-				);
 
 				const updatedEntityIds = await db.transaction(async (tx) => {
 					const aboutToMoveSpeakerOnList = await tx.query.speakerOnList

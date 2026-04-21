@@ -4,7 +4,6 @@ import { isGlobalAdmin } from '$api/services/authHelper';
 import { assertFindFirstExists, assertFirstEntryExists } from '@m1212e/rumble';
 import { and, eq } from 'drizzle-orm';
 import { GraphQLError } from 'graphql';
-import { assertCommitteeChairOrAdmin } from './resolutionPaper';
 
 abilityBuilder.amendmentSponsor.allow('read').when((ctx) => {
 	if (isGlobalAdmin(ctx)) return 'allow';
@@ -52,7 +51,13 @@ schemaBuilder.mutationFields((t) => ({
 
 			if (!isOwnMembership) {
 				// Must be chair/admin
-				await assertCommitteeChairOrAdmin(ctx, paper.committeeId);
+				await db.query.resolutionPaper
+					.findFirst(
+						ctx.abilities.resolutionPaper
+							.filter('update')
+							.merge({ where: { id: amendment.paperId } }).query.single
+					)
+					.then(assertFindFirstExists);
 			} else {
 				// Delegate adding themselves — check if sponsoring is open
 				const committee = await db.query.committee
@@ -121,12 +126,14 @@ schemaBuilder.mutationFields((t) => ({
 				throw new GraphQLError('Cannot remove the proposer from sponsors');
 			}
 
-			const paper = await db.query.resolutionPaper
-				.findFirst({ where: { id: amendment.paperId } })
+			// Only chair/admin can remove sponsors — verified via ability filter
+			await db.query.resolutionPaper
+				.findFirst(
+					ctx.abilities.resolutionPaper
+						.filter('update')
+						.merge({ where: { id: amendment.paperId } }).query.single
+				)
 				.then(assertFindFirstExists);
-
-			// Only chair/admin can remove sponsors
-			await assertCommitteeChairOrAdmin(ctx, paper.committeeId);
 
 			const existing = await db.query.amendmentSponsor.findFirst({
 				where: {

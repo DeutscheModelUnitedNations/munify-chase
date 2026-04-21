@@ -1,10 +1,7 @@
 import { db, schema } from '$api/db/db';
 import { abilityBuilder, schemaBuilder, object, pubsub as rumblePubsub, query } from '$api/rumble';
-import { isGlobalAdmin } from '$api/services/authHelper';
-import { assertConferenceAdmin } from './conferenceUser';
+import { assertConferenceAdmin, isGlobalAdmin } from '$api/services/authHelper';
 import { assertFindFirstExists, assertFirstEntryExists } from '@m1212e/rumble';
-import { eq } from 'drizzle-orm';
-import { GraphQLError } from 'graphql';
 
 abilityBuilder.conferenceMember.allow('read').when((ctx) => {
 	if (isGlobalAdmin(ctx)) return 'allow';
@@ -14,6 +11,10 @@ abilityBuilder.conferenceMember.allow('read').when(({ mustBeLoggedIn }) => {
 	mustBeLoggedIn();
 	return 'allow';
 });
+
+abilityBuilder.conferenceMember.allow(['delete']).when((async (ctx: any) => {
+	return { where: { conference: { ...await assertConferenceAdmin(ctx) } } };
+}) as any);
 
 const ref = object({ table: 'conferenceMember' });
 export const ConferenceMemberRef = ref;
@@ -29,7 +30,13 @@ schemaBuilder.mutationFields((t) => ({
 			representationId: t.arg.id({ required: true })
 		},
 		resolve: async (query, root, args, ctx, info) => {
-			await assertConferenceAdmin(ctx, args.conferenceId);
+			await db.query.conference
+				.findFirst(
+					ctx.abilities.conference
+						.filter('update')
+						.merge({ where: { id: args.conferenceId } }).query.single
+				)
+				.then(assertFindFirstExists);
 
 			const result = await db
 				.insert(schema.conferenceMember)
@@ -59,18 +66,10 @@ schemaBuilder.mutationFields((t) => ({
 		args: {
 			id: t.arg.id({ required: true })
 		},
-		resolve: async (root, args, ctx, info) => {
-			const conferenceMember = await db.query.conferenceMember.findFirst({
-				where: { id: args.id }
-			});
-
-			if (!conferenceMember) {
-				throw new GraphQLError('Conference member not found');
-			}
-
-			await assertConferenceAdmin(ctx, conferenceMember.conferenceId);
-
-			await db.delete(schema.conferenceMember).where(eq(schema.conferenceMember.id, args.id));
+		resolve: async (root, args, ctx) => {
+			await db.delete(schema.conferenceMember).where(
+				ctx.abilities.conferenceMember.filter('delete').merge({ where: { id: args.id } }).sql.where
+			);
 
 			pubsub.removed();
 

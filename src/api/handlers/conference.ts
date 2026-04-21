@@ -8,20 +8,19 @@ import {
 	whereArg
 } from '$api/rumble';
 import { ConferenceMemberRef } from './conferenceMember';
-import { assertConferenceAdmin } from './conferenceUser';
+import { assertConferenceAdmin, isGlobalAdmin } from '$api/services/authHelper';
 import { eq } from 'drizzle-orm';
 import { assertFindFirstExists } from '@m1212e/rumble';
 import { GraphQLError } from 'graphql';
-
-//TODO
-// abilityBuilder.conference.allow(['read', 'update']).when((ctx) => {
-// 	if (isGlobalAdmin(ctx)) return 'allow';
-// });
 
 abilityBuilder.conference.allow('read').when(({ mustBeLoggedIn }) => {
 	mustBeLoggedIn();
 	return 'allow';
 });
+
+abilityBuilder.conference.allow(['update']).when((async (ctx: any) => {
+	return { where: { ...await assertConferenceAdmin(ctx) } };
+}) as any);
 
 const ConferenceMemberWhereInput = whereArg({ table: 'conferenceMember' });
 
@@ -81,8 +80,6 @@ schemaBuilder.mutationFields((t) => ({
 			resolutionFeatureEnabled: t.arg.boolean()
 		},
 		resolve: async (query, root, args, ctx, info) => {
-			await assertConferenceAdmin(ctx, args.id);
-
 			await db
 				.update(schema.conference)
 				.set({
@@ -91,7 +88,9 @@ schemaBuilder.mutationFields((t) => ({
 					hasModeratedCaucus: args.hasModeratedCaucus ?? undefined,
 					resolutionFeatureEnabled: args.resolutionFeatureEnabled ?? undefined
 				})
-				.where(eq(schema.conference.id, args.id));
+				.where(
+					ctx.abilities.conference.filter('update').merge({ where: { id: args.id } }).sql.where
+				);
 
 			pubsub.updated(args.id);
 

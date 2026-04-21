@@ -1,7 +1,5 @@
 import type { Context } from '$api/context';
-import { db } from '$api/db/db';
 import { configPrivate } from '$config/private';
-import { assertFindFirstExists } from '@m1212e/rumble';
 
 export function isAdminEmail(email: string) {
 	const whitelistEmails = configPrivate.ADMIN_EMAIL_WHITELIST.split(',').filter(Boolean);
@@ -37,13 +35,18 @@ export function assertCommitteeChairOrAdmin(ctx: Context) {
 		return {};
 	}
 
+	const userEmail = user.email;
+	if (!userEmail) {
+		throw new Error('User email is required to check committee chair or admin status');
+	}
+
 	return {
 		conference: {
 			OR: [
 				{
 					users: {
 						user: {
-							id: user.sub
+							email: userEmail
 						},
 						conferenceUserType: 'ADMIN' as const
 					}
@@ -51,12 +54,39 @@ export function assertCommitteeChairOrAdmin(ctx: Context) {
 				{
 					users: {
 						user: {
-							id: user.sub
+							email: userEmail
 						},
 						conferenceUserType: 'TEAM' as const
 					}
 				}
 			]
+		}
+	};
+}
+
+/**
+ * Helper to check if the current user is an ADMIN for a specific conference
+ * (either OIDC admin or conference ADMIN role)
+ *
+ * @returns A filter object for the conference query. Injectable at conference level.
+ */
+export async function assertConferenceAdmin(ctx: Context) {
+	if (isGlobalAdmin(ctx)) {
+		return {};
+	}
+
+	const user = ctx.mustBeLoggedIn();
+	const userEmail = user.email;
+	if (!userEmail) {
+		throw new Error('User email is required to check committee chair or admin status');
+	}
+
+	return {
+		users: {
+			user: {
+				email: userEmail
+			},
+			conferenceUserType: 'ADMIN' as const
 		}
 	};
 }

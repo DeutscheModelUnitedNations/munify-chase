@@ -1,7 +1,6 @@
 import { db, schema } from '$api/db/db';
 import { abilityBuilder, enum_, schemaBuilder, object, pubsub as rumblePubsub, query } from '$api/rumble';
-import { isGlobalAdmin } from '$api/services/authHelper';
-import { assertConferenceAdmin } from './conferenceUser';
+import { assertConferenceAdmin, isGlobalAdmin } from '$api/services/authHelper';
 import { assertFindFirstExists, assertFirstEntryExists } from '@m1212e/rumble';
 import { eq } from 'drizzle-orm';
 import { GraphQLError } from 'graphql';
@@ -14,6 +13,10 @@ abilityBuilder.representation.allow('read').when(({ mustBeLoggedIn }) => {
 	mustBeLoggedIn();
 	return 'allow';
 });
+
+abilityBuilder.representation.allow(['delete']).when((async (ctx: any) => {
+	return { where: { conference: { ...await assertConferenceAdmin(ctx) } } };
+}) as any);
 
 const ref = object({ table: 'representation' });
 
@@ -36,7 +39,13 @@ schemaBuilder.mutationFields((t) => ({
 			faIcon: t.arg.string()
 		},
 		resolve: async (query, root, args, ctx, info) => {
-			await assertConferenceAdmin(ctx, args.conferenceId);
+			await db.query.conference
+				.findFirst(
+					ctx.abilities.conference
+						.filter('update')
+						.merge({ where: { id: args.conferenceId } }).query.single
+				)
+				.then(assertFindFirstExists);
 
 			const result = await db
 				.insert(schema.representation)
@@ -87,15 +96,13 @@ schemaBuilder.mutationFields((t) => ({
 			id: t.arg.id({ required: true })
 		},
 		resolve: async (root, args, ctx, info) => {
-			const representation = await db.query.representation.findFirst({
-				where: { id: args.id }
-			});
-
-			if (!representation) {
-				throw new GraphQLError('Representation not found');
-			}
-
-			await assertConferenceAdmin(ctx, representation.conferenceId);
+			const representation = await db.query.representation
+				.findFirst(
+					ctx.abilities.representation
+						.filter('delete')
+						.merge({ where: { id: args.id } }).query.single
+				)
+				.then(assertFindFirstExists);
 
 			// Delete associated committee members first (FK may not cascade)
 			await db

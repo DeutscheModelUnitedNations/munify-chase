@@ -1,7 +1,7 @@
 import { abilityBuilder, enum_, schemaBuilder, object, pubsub as rumblePubsub, query } from '$api/rumble';
 import { eq } from 'drizzle-orm';
 import { db, schema } from '$api/db/db';
-import { isGlobalAdmin } from '$api/services/authHelper';
+import { assertConferenceAdmin, isGlobalAdmin } from '$api/services/authHelper';
 import { GraphQLError } from 'graphql';
 import { assertFindFirstExists, assertFirstEntryExists } from '@m1212e/rumble';
 
@@ -14,38 +14,14 @@ abilityBuilder.conferenceUser.allow('read').when(({ mustBeLoggedIn }) => {
 	return 'allow';
 });
 
+abilityBuilder.conferenceUser.allow(['update', 'delete']).when((async (ctx: any) => {
+	return { where: { conference: { ...await assertConferenceAdmin(ctx) } } };
+}) as any);
+
 const ref = object({ table: 'conferenceUser' });
 export { ref as ConferenceUserRef };
 
-/**
- * Helper to check if the current user is an ADMIN for a specific conference
- * (either OIDC admin or conference ADMIN role)
- */
-export async function assertConferenceAdmin(
-	ctx: { hasRole: (role: string) => boolean; mustBeLoggedIn: () => { email?: string | null } },
-	conferenceId: string
-) {
-	if (isGlobalAdmin(ctx)) {
-		return;
-	}
 
-	const user = ctx.mustBeLoggedIn();
-	if (!user.email) {
-		throw new GraphQLError('User email is required');
-	}
-
-	const conferenceUser = await db.query.conferenceUser.findFirst({
-		where: {
-			conferenceId,
-			userEmail: user.email,
-			conferenceUserType: 'ADMIN'
-		}
-	});
-
-	if (!conferenceUser) {
-		throw new GraphQLError('You must be an ADMIN of this conference to perform this action');
-	}
-}
 
 const pubsub = rumblePubsub({ table: 'conferenceUser' });
 query({ table: 'conferenceUser' });
@@ -62,7 +38,13 @@ schemaBuilder.mutationFields((t) => ({
 			})
 		},
 		resolve: async (query, root, args, ctx, info) => {
-			await assertConferenceAdmin(ctx, args.conferenceId);
+			await db.query.conference
+				.findFirst(
+					ctx.abilities.conference
+						.filter('update')
+						.merge({ where: { id: args.conferenceId } }).query.single
+				)
+				.then(assertFindFirstExists);
 
 			// Check if user already exists in this conference
 			const existing = await db.query.conferenceUser.findFirst({
@@ -106,16 +88,11 @@ schemaBuilder.mutationFields((t) => ({
 			id: t.arg({ type: 'ID', required: true })
 		},
 		resolve: async (root, args, ctx, info) => {
-			// First get the conference user to find the conferenceId
-			const conferenceUser = await db.query.conferenceUser.findFirst({
-				where: { id: args.id }
-			});
-
-			if (!conferenceUser) {
-				throw new GraphQLError('Conference user not found');
-			}
-
-			await assertConferenceAdmin(ctx, conferenceUser.conferenceId);
+			const conferenceUser = await db.query.conferenceUser
+				.findFirst(
+					ctx.abilities.conferenceUser.filter('delete').merge({ where: { id: args.id } }).query.single
+				)
+				.then(assertFindFirstExists);
 
 			const currentUser = ctx.mustBeLoggedIn();
 
@@ -161,16 +138,11 @@ schemaBuilder.mutationFields((t) => ({
 			conferenceMemberId: t.arg({ type: 'ID' })
 		},
 		resolve: async (query, root, args, ctx, info) => {
-			// First get the conference user to find the conferenceId
-			const conferenceUser = await db.query.conferenceUser.findFirst({
-				where: { id: args.id }
-			});
-
-			if (!conferenceUser) {
-				throw new GraphQLError('Conference user not found');
-			}
-
-			await assertConferenceAdmin(ctx, conferenceUser.conferenceId);
+			const conferenceUser = await db.query.conferenceUser
+				.findFirst(
+					ctx.abilities.conferenceUser.filter('update').merge({ where: { id: args.id } }).query.single
+				)
+				.then(assertFindFirstExists);
 
 			const currentUser = ctx.mustBeLoggedIn();
 

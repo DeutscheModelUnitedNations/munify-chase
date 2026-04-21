@@ -1,7 +1,6 @@
 import { db, schema } from '$api/db/db';
 import { abilityBuilder, enum_, schemaBuilder, object, pubsub as rumblePubsub, query } from '$api/rumble';
 import { isGlobalAdmin } from '$api/services/authHelper';
-import { assertCommitteeChairOrAdmin } from './resolutionPaper';
 import { assertFindFirstExists } from '@m1212e/rumble';
 import { GraphQLError } from 'graphql';
 import { eq, and } from 'drizzle-orm';
@@ -33,7 +32,11 @@ schemaBuilder.mutationFields((t) => ({
 		},
 		resolve: async (query, root, args, ctx, info) => {
 			const paper = await db.query.resolutionPaper
-				.findFirst({ where: { id: args.paperId } })
+				.findFirst(
+					ctx.abilities.resolutionPaper
+						.filter('update')
+						.merge({ where: { id: args.paperId } }).query.single
+				)
 				.then(assertFindFirstExists);
 
 			if (paper.status !== 'VOTING_PHASE') {
@@ -43,8 +46,6 @@ schemaBuilder.mutationFields((t) => ({
 			if (args.outcome === 'SENT_BACK') {
 				throw new GraphQLError('Clause votes can only be ADOPTED or REJECTED');
 			}
-
-			await assertCommitteeChairOrAdmin(ctx, paper.committeeId);
 
 			await db
 				.insert(schema.operativeClauseVote)
@@ -90,14 +91,16 @@ schemaBuilder.mutationFields((t) => ({
 		},
 		resolve: async (root, args, ctx) => {
 			const paper = await db.query.resolutionPaper
-				.findFirst({ where: { id: args.paperId } })
+				.findFirst(
+					ctx.abilities.resolutionPaper
+						.filter('update')
+						.merge({ where: { id: args.paperId } }).query.single
+				)
 				.then(assertFindFirstExists);
 
 			if (paper.status !== 'VOTING_PHASE') {
 				throw new GraphQLError('Paper must be in VOTING_PHASE to delete clause votes');
 			}
-
-			await assertCommitteeChairOrAdmin(ctx, paper.committeeId);
 
 			await db
 				.delete(schema.operativeClauseVote)

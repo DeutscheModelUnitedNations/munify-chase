@@ -14,7 +14,7 @@ abilityBuilder.speakersList.allow('read').when(({ mustBeLoggedIn }) => {
 	return 'allow';
 });
 
-abilityBuilder.speakersList.allow(['update']).when((ctx) => {
+abilityBuilder.speakersList.allow(['update', 'delete']).when((ctx) => {
 	return {
 		where: {
 			agendaItem: {
@@ -59,15 +59,6 @@ schemaBuilder.mutationFields((t) => {
 					throw new GraphQLError('startTimestamp and stopTimer are mutually exclusive');
 				}
 
-				// Verify chair/admin access via speakersList → agendaItem → committee
-				const sl = await db.query.speakersList
-					.findFirst({
-						where: { id: args.id },
-						with: { agendaItem: { columns: { committeeId: true } } }
-					})
-					.then(assertFindFirstExists);
-				await assertCommitteeChairOrAdmin(ctx, (sl as any).agendaItem.committeeId);
-
 				await db.transaction(async (tx) => {
 					if (args.stopTimer) {
 						const speakersList = await tx.query.speakersList
@@ -105,7 +96,10 @@ schemaBuilder.mutationFields((t) => {
 							startTimestamp: args.stopTimer ? null : (args.startTimestamp ?? undefined),
 							isClosed: args.isClosed ?? undefined
 						})
-						.where(eq(schema.speakersList.id, args.id));
+						.where(
+							ctx.abilities.speakersList.filter('update').merge({ where: { id: args.id } }).sql
+								.where
+						);
 				});
 
 				pubsub.updated(args.id);
@@ -126,14 +120,11 @@ schemaBuilder.mutationFields((t) => {
 				id: t.arg.id({ required: true })
 			},
 			resolve: async (query, root, args, ctx, info) => {
-				// Verify chair/admin access
-				const sl = await db.query.speakersList
-					.findFirst({
-						where: { id: args.id },
-						with: { agendaItem: { columns: { committeeId: true } } }
-					})
+				await db.query.speakersList
+					.findFirst(
+						ctx.abilities.speakersList.filter('delete').merge({ where: { id: args.id } }).query.single
+					)
 					.then(assertFindFirstExists);
-				await assertCommitteeChairOrAdmin(ctx, (sl as any).agendaItem.committeeId);
 
 				const deleted = await db
 					.delete(schema.speakerOnList)

@@ -1,7 +1,7 @@
 import { db, schema } from '$api/db/db';
 import { abilityBuilder, enum_, schemaBuilder, object, pubsub as rumblePubsub, query } from '$api/rumble';
 import { and, eq, isNull, count as drizzleCount, desc, inArray } from 'drizzle-orm';
-import { isGlobalAdmin } from '$api/services/authHelper';
+import { assertCommitteeChairOrAdmin, isGlobalAdmin } from '$api/services/authHelper';
 import { assertFindFirstExists, assertFirstEntryExists } from '@m1212e/rumble';
 import { GraphQLError } from 'graphql';
 import {
@@ -22,6 +22,17 @@ abilityBuilder.resolutionPaper.allow('read').when(({ mustBeLoggedIn }) => {
 	return { where: { deletedAt: { isNull: true } } };
 });
 
+abilityBuilder.resolutionPaper.allow(['update']).when((ctx) => {
+	return {
+		where: {
+			deletedAt: { isNull: true },
+			committee: {
+				...assertCommitteeChairOrAdmin(ctx)
+			}
+		}
+	};
+});
+
 const ref = object({ table: 'resolutionPaper' });
 
 const paperStatusEnum = enum_({ tsName: 'paperStatus' });
@@ -31,8 +42,6 @@ const committeePubsub = rumblePubsub({ table: 'committee' });
 const voteResultPubsub = rumblePubsub({ table: 'resolutionVoteResult' });
 const clauseVotePubsub = rumblePubsub({ table: 'operativeClauseVote' });
 query({ table: 'resolutionPaper' });
-
-//TOOD: rework this to be some kind of rumble ability injector
 
 schemaBuilder.mutationFields((t) => ({
 	createResolutionPaper: t.drizzleField({
@@ -116,8 +125,6 @@ schemaBuilder.mutationFields((t) => ({
 			title: t.arg.string()
 		},
 		resolve: async (query, root, args, ctx, info) => {
-			await assertCommitteeChairOrAdmin(ctx, args.committeeId);
-
 			// Validate committeeMemberId belongs to this committee
 			const committeeMember = await db.query.committeeMember
 				.findFirst({
@@ -125,11 +132,12 @@ schemaBuilder.mutationFields((t) => ({
 				})
 				.then(assertFindFirstExists);
 
-			// Get committee name for the empty resolution
+			// Fetch committee and verify chair/admin access in one query
 			const committee = await db.query.committee
-				.findFirst({
-					where: { id: args.committeeId }
-				})
+				.findFirst(
+					ctx.abilities.committee.filter('update').merge({ where: { id: args.committeeId } }).query
+						.single
+				)
 				.then(assertFindFirstExists);
 
 			const content = createEmptyResolution(committee.name);
@@ -214,7 +222,13 @@ schemaBuilder.mutationFields((t) => ({
 			// Status-dependent auth
 			if (paper.status === 'DRAFT_RESOLUTION' || paper.status === 'AMENDMENT_PHASE') {
 				// Only chair/admin can edit DRs
-				await assertCommitteeChairOrAdmin(ctx, paper.committeeId);
+				await db.query.resolutionPaper
+					.findFirst(
+						ctx.abilities.resolutionPaper
+							.filter('update')
+							.merge({ where: { id: args.paperId } }).query.single
+					)
+					.then(assertFindFirstExists);
 			} else if (paper.status === 'SUBMITTED') {
 				// Chair/admin OR creator + editors
 				const isChair = await db.query.conferenceUser.findFirst({
@@ -473,16 +487,16 @@ schemaBuilder.mutationFields((t) => ({
 		},
 		resolve: async (query, root, args, ctx, info) => {
 			const paper = await db.query.resolutionPaper
-				.findFirst({
-					where: { id: args.paperId }
-				})
+				.findFirst(
+					ctx.abilities.resolutionPaper
+						.filter('update')
+						.merge({ where: { id: args.paperId } }).query.single
+				)
 				.then(assertFindFirstExists);
 
 			if (paper.status !== 'SUBMITTED') {
 				throw new GraphQLError('Only submitted papers can be promoted to draft resolutions');
 			}
-
-			await assertCommitteeChairOrAdmin(ctx, paper.committeeId);
 
 			const committee = await db.query.committee
 				.findFirst({
@@ -552,16 +566,16 @@ schemaBuilder.mutationFields((t) => ({
 		},
 		resolve: async (query, root, args, ctx, info) => {
 			const paper = await db.query.resolutionPaper
-				.findFirst({
-					where: { id: args.paperId }
-				})
+				.findFirst(
+					ctx.abilities.resolutionPaper
+						.filter('update')
+						.merge({ where: { id: args.paperId } }).query.single
+				)
 				.then(assertFindFirstExists);
 
 			if (paper.status !== 'AMENDMENT_PHASE') {
 				throw new GraphQLError('Paper must be in AMENDMENT_PHASE to start voting');
 			}
-
-			await assertCommitteeChairOrAdmin(ctx, paper.committeeId);
 
 			await db.transaction(async (tx) => {
 				await tx
@@ -610,16 +624,16 @@ schemaBuilder.mutationFields((t) => ({
 		},
 		resolve: async (query, root, args, ctx, info) => {
 			const paper = await db.query.resolutionPaper
-				.findFirst({
-					where: { id: args.paperId }
-				})
+				.findFirst(
+					ctx.abilities.resolutionPaper
+						.filter('update')
+						.merge({ where: { id: args.paperId } }).query.single
+				)
 				.then(assertFindFirstExists);
 
 			if (paper.status !== 'VOTING_PHASE' && paper.status !== 'AMENDMENT_PHASE') {
 				throw new GraphQLError('Paper must be in VOTING_PHASE to record final vote');
 			}
-
-			await assertCommitteeChairOrAdmin(ctx, paper.committeeId);
 
 			await db.transaction(async (tx) => {
 				await tx.insert(schema.resolutionVoteResult).values({
@@ -741,12 +755,12 @@ schemaBuilder.mutationFields((t) => ({
 		},
 		resolve: async (query, root, args, ctx, info) => {
 			const paper = await db.query.resolutionPaper
-				.findFirst({
-					where: { id: args.paperId }
-				})
+				.findFirst(
+					ctx.abilities.resolutionPaper
+						.filter('update')
+						.merge({ where: { id: args.paperId } }).query.single
+				)
 				.then(assertFindFirstExists);
-
-			await assertCommitteeChairOrAdmin(ctx, paper.committeeId);
 
 			const statusOrder = [
 				'WORKING_PAPER',

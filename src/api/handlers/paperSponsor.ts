@@ -4,7 +4,6 @@ import { and, eq } from 'drizzle-orm';
 import { isGlobalAdmin } from '$api/services/authHelper';
 import { assertFindFirstExists, assertFirstEntryExists } from '@m1212e/rumble';
 import { GraphQLError } from 'graphql';
-import { assertCommitteeChairOrAdmin } from './resolutionPaper';
 
 abilityBuilder.paperSponsor.allow(['read', 'update']).when((ctx) => {
 	if (isGlobalAdmin(ctx)) return 'allow';
@@ -34,14 +33,10 @@ schemaBuilder.mutationFields((t) => ({
 				.findFirst({ where: { id: args.paperId } })
 				.then(assertFindFirstExists);
 
-			// Try chair/admin path first (bypasses all gates)
-			let isChair = false;
-			try {
-				await assertCommitteeChairOrAdmin(ctx, paper.committeeId);
-				isChair = true;
-			} catch {
-				// not a chair/admin, will check delegate path below
-			}
+			const isChair = !!(await db.query.resolutionPaper.findFirst(
+				ctx.abilities.resolutionPaper.filter('update').merge({ where: { id: args.paperId } }).query
+					.single
+			));
 
 			if (!isChair) {
 				// Must be a DELEGATE
@@ -102,7 +97,7 @@ schemaBuilder.mutationFields((t) => ({
 		resolve: async (root, args, ctx, info) => {
 			const user = ctx.mustBeLoggedIn();
 
-			const sponsor = await db.query.paperSponsor
+			await db.query.paperSponsor
 				.findFirst({
 					where: {
 						paperId: args.paperId,
@@ -111,20 +106,16 @@ schemaBuilder.mutationFields((t) => ({
 				})
 				.then(assertFindFirstExists);
 
-			const paper = await db.query.resolutionPaper
-				.findFirst({ where: { id: args.paperId } })
-				.then(assertFindFirstExists);
-
-			// Try chair/admin path first (bypasses all gates)
-			let isChair = false;
-			try {
-				await assertCommitteeChairOrAdmin(ctx, paper.committeeId);
-				isChair = true;
-			} catch {
-				// not a chair/admin, will check delegate path below
-			}
+			const isChair = !!(await db.query.resolutionPaper.findFirst(
+				ctx.abilities.resolutionPaper.filter('update').merge({ where: { id: args.paperId } }).query
+					.single
+			));
 
 			if (!isChair) {
+				const paper = await db.query.resolutionPaper
+					.findFirst({ where: { id: args.paperId } })
+					.then(assertFindFirstExists);
+
 				if (paper.status === 'DRAFT_RESOLUTION' || paper.status === 'AMENDMENT_PHASE') {
 					const committee = await db.query.committee
 						.findFirst({ where: { id: paper.committeeId } })

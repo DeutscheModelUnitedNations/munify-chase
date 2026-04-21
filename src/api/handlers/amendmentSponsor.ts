@@ -129,9 +129,8 @@ schemaBuilder.mutationFields((t) => ({
 			// Only chair/admin can remove sponsors — verified via ability filter
 			await db.query.resolutionPaper
 				.findFirst(
-					ctx.abilities.resolutionPaper
-						.filter('update')
-						.merge({ where: { id: amendment.paperId } }).query.single
+					ctx.abilities.resolutionPaper.filter('update').merge({ where: { id: amendment.paperId } })
+						.query.single
 				)
 				.then(assertFindFirstExists);
 

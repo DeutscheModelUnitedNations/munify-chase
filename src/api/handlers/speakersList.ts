@@ -1,26 +1,25 @@
 import { db, schema } from '$api/db/db';
 import { schemaBuilder, pubsub as rumblePubsub, abilityBuilder, object, query } from '$api/rumble';
 import { eq } from 'drizzle-orm';
-import { assertFindFirstExists } from '@m1212e/rumble';
+import { assertFindFirstExists, mapNullFieldsToUndefined } from '@m1212e/rumble';
 import { GraphQLError } from 'graphql';
-import { assertCommitteeChairOrAdmin, isGlobalAdmin } from '$api/services/authHelper';
+import { isChairInConference, isParticipantInConference } from '$api/services/authHelper';
 
-abilityBuilder.speakersList.allow(['read', 'update', 'delete']).when((ctx) => {
-	if (isGlobalAdmin(ctx)) return 'allow';
-});
-
-abilityBuilder.speakersList.allow('read').when(({ mustBeLoggedIn }) => {
-	mustBeLoggedIn();
-	return 'allow';
+abilityBuilder.speakersList.allow('read').when((ctx) => {
+	return {
+		where: {
+			agendaItem: {
+				committee: isParticipantInConference(ctx)
+			}
+		}
+	};
 });
 
 abilityBuilder.speakersList.allow(['update', 'delete']).when((ctx) => {
 	return {
 		where: {
 			agendaItem: {
-				committee: {
-					...assertCommitteeChairOrAdmin(ctx)
-				}
+				committee: isChairInConference(ctx)
 			}
 		}
 	};
@@ -63,9 +62,11 @@ schemaBuilder.mutationFields((t) => {
 					if (args.stopTimer) {
 						const speakersList = await tx.query.speakersList
 							.findFirst({
-								where: {
-									id: args.id
-								},
+								...ctx.abilities.speakersList.filter('update').merge({
+									where: {
+										id: args.id
+									}
+								}).query.single,
 								with: {
 									speakers: {
 										orderBy: {
@@ -88,13 +89,14 @@ schemaBuilder.mutationFields((t) => {
 						}
 					}
 
+					const mappedArgs = mapNullFieldsToUndefined(args);
 					await tx
 						.update(schema.speakersList)
 						.set({
-							speakingTime: args.speakingTime ?? undefined,
-							timeLeft: args.timeLeft ?? undefined,
-							startTimestamp: args.stopTimer ? null : (args.startTimestamp ?? undefined),
-							isClosed: args.isClosed ?? undefined
+							speakingTime: mappedArgs.speakingTime,
+							timeLeft: mappedArgs.timeLeft,
+							startTimestamp: args.stopTimer ? null : mappedArgs.startTimestamp,
+							isClosed: mappedArgs.isClosed
 						})
 						.where(
 							ctx.abilities.speakersList.filter('update').merge({ where: { id: args.id } }).sql
@@ -122,7 +124,8 @@ schemaBuilder.mutationFields((t) => {
 			resolve: async (query, root, args, ctx, info) => {
 				await db.query.speakersList
 					.findFirst(
-						ctx.abilities.speakersList.filter('delete').merge({ where: { id: args.id } }).query.single
+						ctx.abilities.speakersList.filter('delete').merge({ where: { id: args.id } }).query
+							.single
 					)
 					.then(assertFindFirstExists);
 

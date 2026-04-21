@@ -4,15 +4,26 @@ import { db, schema } from '$api/db/db';
 import { and, count, eq, gt, gte, sql } from 'drizzle-orm';
 import { assertFindFirstExists, assertFirstEntryExists } from '@m1212e/rumble';
 import { SpeakersListRef } from './speakersList';
-import { assertCommitteeChairOrAdmin, isGlobalAdmin } from '$api/services/authHelper';
+import {
+	isChairInConference,
+	isGlobalAdmin,
+	isParticipantInConference
+} from '$api/services/authHelper';
 
 abilityBuilder.speakerOnList.allow(['read', 'update', 'delete']).when((ctx) => {
 	if (isGlobalAdmin(ctx)) return 'allow';
 });
 
-abilityBuilder.speakerOnList.allow('read').when(({ mustBeLoggedIn }) => {
-	mustBeLoggedIn();
-	return 'allow';
+abilityBuilder.speakerOnList.allow('read').when((ctx) => {
+	return {
+		where: {
+			speakersList: {
+				agendaItem: {
+					committee: isParticipantInConference(ctx)
+				}
+			}
+		}
+	};
 });
 
 abilityBuilder.speakerOnList.allow(['update', 'delete']).when((ctx) => {
@@ -20,9 +31,7 @@ abilityBuilder.speakerOnList.allow(['update', 'delete']).when((ctx) => {
 		where: {
 			speakersList: {
 				agendaItem: {
-					committee: {
-						...assertCommitteeChairOrAdmin(ctx)
-					}
+					committee: isChairInConference(ctx)
 				}
 			}
 		}
@@ -35,7 +44,7 @@ export const SpeakerOnListRef = ref;
 const pubsub = rumblePubsub({ table: 'speakerOnList' });
 query({ table: 'speakerOnList' });
 
-// TODO: These could use some validation for the position values. E.g. only allow positons
+// TODO: These could use some validation for the position values. E.g. only allow positions
 // which are in bounds and so on
 
 schemaBuilder.mutationFields((t) => {
@@ -89,54 +98,62 @@ schemaBuilder.mutationFields((t) => {
 					throw new GraphQLError('Must set either committeeMemberId or conferenceMemberId');
 				}
 
-				const createdId = await db.transaction(async (tx) => {
-					let position = args.position;
-					if (!position) {
-						// in case the caller did not provide a position, just append as last entry
-						position = (
+				const createdId = await db.transaction(
+					async (tx) => {
+						const speakersList = await tx.query.speakersList
+							.findFirst(
+								ctx.abilities.speakersList
+									.filter('update')
+									.merge({ where: { id: args.speakersListId } }).query.single
+							)
+							.then(assertFindFirstExists);
+
+						let position = args.position;
+						if (!position) {
+							// in case the caller did not provide a position, just append as last entry
+							position = (
+								await tx
+									.select({ count: count() })
+									.from(schema.speakerOnList)
+									.where(eq(schema.speakerOnList.speakersListId, args.speakersListId))
+									.then(assertFirstEntryExists)
+							).count; // since the position is 0 based, we can just use the count as new position
+						} else {
+							// if they did provide a position, we want to shift all the entries up which are
+							// equal or higher in position
 							await tx
-								.select({ count: count() })
-								.from(schema.speakerOnList)
-								.where(eq(schema.speakerOnList.speakersListId, args.speakersListId))
-								.then(assertFirstEntryExists)
-						).count; // since the position is 0 based, we can just use the count as new position
-					} else {
-						// if they did provide a position, we want to shift all the entries up which are
-						// equal or higher in position
-						await tx
-							.update(schema.speakerOnList)
-							.set({
-								position: sql`${schema.speakerOnList.position} + 1`
+								.update(schema.speakerOnList)
+								.set({
+									position: sql`${schema.speakerOnList.position} + 1`
+								})
+								.where(
+									and(
+										eq(schema.speakerOnList.speakersListId, args.speakersListId),
+										gte(schema.speakerOnList.position, position)
+									)
+								);
+						}
+
+						const created = await tx
+							.insert(schema.speakerOnList)
+							.values({
+								committeeMemberId: args.committeeMemberId,
+								conferenceMemberId: args.conferenceMemberId,
+								speakersListId: speakersList.id,
+								position
 							})
-							.where(
-								and(
-									eq(schema.speakerOnList.speakersListId, args.speakersListId),
-									gte(schema.speakerOnList.position, position)
-								)
-							);
+							.returning({ id: schema.speakerOnList.id })
+							.then(assertFirstEntryExists);
+
+						return created.id;
+					},
+					{
+						// since we do calculations on the positions we want full isolation
+						isolationLevel: 'serializable',
+						deferrable: true
 					}
+				);
 
-					const speakersList = await tx.query.speakersList
-						.findFirst(
-							ctx.abilities.speakersList
-								.filter('update')
-								.merge({ where: { id: args.speakersListId } }).query.single
-						)
-						.then(assertFindFirstExists);
-
-					const created = await tx
-						.insert(schema.speakerOnList)
-						.values({
-							committeeMemberId: args.committeeMemberId,
-							conferenceMemberId: args.conferenceMemberId,
-							speakersListId: speakersList.id,
-							position
-						})
-						.returning({ id: schema.speakerOnList.id })
-						.then(assertFirstEntryExists);
-
-					return created.id;
-				});
 				pubsub.created();
 
 				return db.query.speakerOnList
@@ -157,38 +174,46 @@ schemaBuilder.mutationFields((t) => {
 				speakerOnListId: t.arg.id({ required: true })
 			},
 			resolve: async (query, root, args, ctx, info) => {
-				const removed = await db.transaction(async (tx) => {
-					const deleted = await tx
-						.delete(schema.speakerOnList)
-						.where(
-							ctx.abilities.speakerOnList
-								.filter('delete')
-								.merge({ where: { id: args.speakerOnListId } }).sql.where
-						)
-						.returning()
-						.then(assertFirstEntryExists);
+				const removed = await db.transaction(
+					async (tx) => {
+						const deleted = await tx
+							.delete(schema.speakerOnList)
+							.where(
+								ctx.abilities.speakerOnList
+									.filter('delete')
+									.merge({ where: { id: args.speakerOnListId } }).sql.where
+							)
+							.returning()
+							.then(assertFirstEntryExists);
 
-					const aboutToBeShiftedDown = await tx.query.speakerOnList.findMany({
-						where: {
-							speakersListId: deleted.speakersListId,
-							position: {
-								gt: deleted.position
-							}
-						},
-						orderBy: { position: 'asc' }
-					});
+						const aboutToBeShiftedDown = await tx.query.speakerOnList.findMany({
+							where: {
+								speakersListId: deleted.speakersListId,
+								position: {
+									gt: deleted.position
+								}
+							},
+							orderBy: { position: 'asc' }
+						});
 
-					for (const speaker of aboutToBeShiftedDown) {
-						await tx
-							.update(schema.speakerOnList)
-							.set({
-								position: sql`${schema.speakerOnList.position} - 1`
-							})
-							.where(eq(schema.speakerOnList.id, speaker.id));
+						for (const speaker of aboutToBeShiftedDown) {
+							// this needs to be done in sequence to prevent unique constraint violations on the position column
+							await tx
+								.update(schema.speakerOnList)
+								.set({
+									position: sql`${schema.speakerOnList.position} - 1`
+								})
+								.where(eq(schema.speakerOnList.id, speaker.id));
+						}
+
+						return deleted;
+					},
+					{
+						// since we do calculations on the positions we want full isolation
+						isolationLevel: 'serializable',
+						deferrable: true
 					}
-
-					return deleted;
-				});
+				);
 				pubsub.removed();
 
 				return db.query.speakersList
@@ -213,119 +238,136 @@ schemaBuilder.mutationFields((t) => {
 					throw new GraphQLError('User email is required');
 				}
 
-				const createdId = await db.transaction(async (tx) => {
-					// Find the user's conferenceUser record
-					const conferenceUser = await tx.query.conferenceUser.findFirst({
-						where: { userEmail: user.email! },
-						with: {
-							committeeMember: {
-								with: { committee: true }
-							},
-							conferenceMember: true
-						}
-					});
-
-					if (!conferenceUser) {
-						throw new GraphQLError('Conference user not found');
-					}
-
-					if (
-						conferenceUser.conferenceUserType !== 'DELEGATE' &&
-						conferenceUser.conferenceUserType !== 'NON_STATE_ACTOR'
-					) {
-						throw new GraphQLError(
-							'Only delegates and non-state actors can self-add to speakers lists'
-						);
-					}
-
-					// Get the speakers list and traverse to committee to check the flag
-					const speakersList = await tx.query.speakersList.findFirst({
-						where: { id: args.speakersListId },
-						with: {
-							agendaItem: {
+				const createdId = await db.transaction(
+					async (tx) => {
+						// Find the user's conferenceUser record
+						const conferenceUser = await tx.query.conferenceUser
+							.findFirst({
+								where: {
+									userEmail: user.email!,
+									conference: {
+										committees: {
+											agendaItems: {
+												speakersList: {
+													id: args.speakersListId
+												}
+											}
+										}
+									}
+								},
 								with: {
-									committee: true
+									committeeMember: {
+										with: { committee: true }
+									},
+									conferenceMember: true
+								}
+							})
+							.then(assertFindFirstExists);
+
+						if (
+							conferenceUser.conferenceUserType !== 'DELEGATE' &&
+							conferenceUser.conferenceUserType !== 'NON_STATE_ACTOR'
+						) {
+							throw new GraphQLError(
+								'Only delegates and non-state actors can self-add to speakers lists'
+							);
+						}
+
+						// Get the speakers list and traverse to committee to check the flag
+						const speakersList = await tx.query.speakersList.findFirst({
+							where: { id: args.speakersListId },
+							with: {
+								agendaItem: {
+									with: {
+										committee: true
+									}
 								}
 							}
+						});
+
+						if (!speakersList) {
+							throw new GraphQLError('Speakers list not found');
 						}
-					});
 
-					if (!speakersList) {
-						throw new GraphQLError('Speakers list not found');
-					}
-
-					if (speakersList.isClosed) {
-						throw new GraphQLError('Speakers list is closed');
-					}
-
-					const committee = (speakersList as any).agendaItem?.committee;
-					if (!committee) {
-						throw new GraphQLError('Committee not found for this speakers list');
-					}
-					if (!committee.allowDelegationsToAddThemselvesToSpeakersList) {
-						throw new GraphQLError(
-							'Self-adding to speakers list is not enabled for this committee'
-						);
-					}
-
-					let committeeMemberId: string | null = null;
-					let conferenceMemberId: string | null = null;
-
-					const confUser = conferenceUser as any;
-					if (conferenceUser.conferenceUserType === 'DELEGATE') {
-						if (!confUser.committeeMember) {
-							throw new GraphQLError('Delegate is not assigned to a committee');
+						if (speakersList.isClosed) {
+							throw new GraphQLError('Speakers list is closed');
 						}
-						if (!confUser.committeeMember.present) {
-							throw new GraphQLError('Delegate must be marked as present to add to speakers list');
+
+						const committee = speakersList.agendaItem?.committee;
+						if (!committee) {
+							throw new GraphQLError('Committee not found for this speakers list');
 						}
-						if (confUser.committeeMember.committeeId !== committee.id) {
-							throw new GraphQLError('Delegate is not a member of this committee');
+						if (!committee.allowDelegationsToAddThemselvesToSpeakersList) {
+							throw new GraphQLError(
+								'Self-adding to speakers list is not enabled for this committee'
+							);
 						}
-						committeeMemberId = confUser.committeeMember.id;
-					} else {
-						// NON_STATE_ACTOR
-						if (!confUser.conferenceMember) {
-							throw new GraphQLError('Non-state actor is not assigned a conference member');
+
+						let committeeMemberId: string | null = null;
+						let conferenceMemberId: string | null = null;
+
+						if (conferenceUser.conferenceUserType === 'DELEGATE') {
+							if (!conferenceUser.committeeMember) {
+								throw new GraphQLError('Delegate is not assigned to a committee');
+							}
+							if (!conferenceUser.committeeMember.present) {
+								throw new GraphQLError(
+									'Delegate must be marked as present to add to speakers list'
+								);
+							}
+							if (conferenceUser.committeeMember.committeeId !== committee.id) {
+								throw new GraphQLError('Delegate is not a member of this committee');
+							}
+							committeeMemberId = conferenceUser.committeeMember.id;
+						} else {
+							// NON_STATE_ACTOR
+							if (!conferenceUser.conferenceMember) {
+								throw new GraphQLError('Non-state actor is not assigned a conference member');
+							}
+							conferenceMemberId = conferenceUser.conferenceMember.id;
 						}
-						conferenceMemberId = confUser.conferenceMember.id;
+
+						// Check not already on list
+						const existing = await tx.query.speakerOnList.findFirst({
+							where: {
+								speakersListId: args.speakersListId,
+								...(committeeMemberId ? { committeeMemberId } : {}),
+								...(conferenceMemberId ? { conferenceMemberId } : {})
+							}
+						});
+
+						if (existing) {
+							throw new GraphQLError('Already on speakers list');
+						}
+
+						// Append at end
+						const position = (
+							await tx
+								.select({ count: count() })
+								.from(schema.speakerOnList)
+								.where(eq(schema.speakerOnList.speakersListId, args.speakersListId))
+								.then(assertFirstEntryExists)
+						).count;
+
+						const created = await tx
+							.insert(schema.speakerOnList)
+							.values({
+								committeeMemberId,
+								conferenceMemberId,
+								speakersListId: args.speakersListId,
+								position
+							})
+							.returning({ id: schema.speakerOnList.id })
+							.then(assertFirstEntryExists);
+
+						return created.id;
+					},
+					{
+						// since we do calculations on the positions we want full isolation
+						isolationLevel: 'serializable',
+						deferrable: true
 					}
-
-					// Check not already on list
-					const existing = await tx.query.speakerOnList.findFirst({
-						where: {
-							speakersListId: args.speakersListId,
-							...(committeeMemberId ? { committeeMemberId } : {}),
-							...(conferenceMemberId ? { conferenceMemberId } : {})
-						}
-					});
-
-					if (existing) {
-						throw new GraphQLError('Already on speakers list');
-					}
-
-					// Append at end
-					const position = (
-						await tx
-							.select({ count: count() })
-							.from(schema.speakerOnList)
-							.where(eq(schema.speakerOnList.speakersListId, args.speakersListId))
-							.then(assertFirstEntryExists)
-					).count;
-
-					const created = await tx
-						.insert(schema.speakerOnList)
-						.values({
-							committeeMemberId,
-							conferenceMemberId,
-							speakersListId: args.speakersListId,
-							position
-						})
-						.returning({ id: schema.speakerOnList.id })
-						.then(assertFirstEntryExists);
-
-					return created.id;
-				});
+				);
 
 				pubsub.created();
 
@@ -350,70 +392,77 @@ schemaBuilder.mutationFields((t) => {
 					throw new GraphQLError('User email is required');
 				}
 
-				const removed = await db.transaction(async (tx) => {
-					const conferenceUser = await tx.query.conferenceUser.findFirst({
-						where: { userEmail: user.email! },
-						with: {
-							committeeMember: true,
-							conferenceMember: true
+				const removed = await db.transaction(
+					async (tx) => {
+						const conferenceUser = await tx.query.conferenceUser.findFirst({
+							where: { userEmail: user.email! },
+							with: {
+								committeeMember: true,
+								conferenceMember: true
+							}
+						});
+
+						if (!conferenceUser) {
+							throw new GraphQLError('Conference user not found');
 						}
-					});
 
-					if (!conferenceUser) {
-						throw new GraphQLError('Conference user not found');
-					}
+						// Find own speaker entry on this list
+						let speakerOnList;
+						if (conferenceUser.committeeMemberId) {
+							speakerOnList = await tx.query.speakerOnList.findFirst({
+								where: {
+									speakersListId: args.speakersListId,
+									committeeMemberId: conferenceUser.committeeMemberId
+								}
+							});
+						}
+						if (!speakerOnList && conferenceUser.conferenceMemberId) {
+							speakerOnList = await tx.query.speakerOnList.findFirst({
+								where: {
+									speakersListId: args.speakersListId,
+									conferenceMemberId: conferenceUser.conferenceMemberId
+								}
+							});
+						}
 
-					// Find own speaker entry on this list
-					let speakerOnList;
-					if (conferenceUser.committeeMemberId) {
-						speakerOnList = await tx.query.speakerOnList.findFirst({
+						if (!speakerOnList) {
+							throw new GraphQLError('You are not on this speakers list');
+						}
+
+						const deleted = await tx
+							.delete(schema.speakerOnList)
+							.where(eq(schema.speakerOnList.id, speakerOnList.id))
+							.returning()
+							.then(assertFirstEntryExists);
+
+						// Shift positions down
+						const aboutToBeShiftedDown = await tx.query.speakerOnList.findMany({
 							where: {
-								speakersListId: args.speakersListId,
-								committeeMemberId: conferenceUser.committeeMemberId
-							}
+								speakersListId: deleted.speakersListId,
+								position: {
+									gt: deleted.position
+								}
+							},
+							orderBy: { position: 'asc' }
 						});
+
+						for (const speaker of aboutToBeShiftedDown) {
+							await tx
+								.update(schema.speakerOnList)
+								.set({
+									position: sql`${schema.speakerOnList.position} - 1`
+								})
+								.where(eq(schema.speakerOnList.id, speaker.id));
+						}
+
+						return deleted;
+					},
+					{
+						// since we do calculations on the positions we want full isolation
+						isolationLevel: 'serializable',
+						deferrable: true
 					}
-					if (!speakerOnList && conferenceUser.conferenceMemberId) {
-						speakerOnList = await tx.query.speakerOnList.findFirst({
-							where: {
-								speakersListId: args.speakersListId,
-								conferenceMemberId: conferenceUser.conferenceMemberId
-							}
-						});
-					}
-
-					if (!speakerOnList) {
-						throw new GraphQLError('You are not on this speakers list');
-					}
-
-					const deleted = await tx
-						.delete(schema.speakerOnList)
-						.where(eq(schema.speakerOnList.id, speakerOnList.id))
-						.returning()
-						.then(assertFirstEntryExists);
-
-					// Shift positions down
-					const aboutToBeShiftedDown = await tx.query.speakerOnList.findMany({
-						where: {
-							speakersListId: deleted.speakersListId,
-							position: {
-								gt: deleted.position
-							}
-						},
-						orderBy: { position: 'asc' }
-					});
-
-					for (const speaker of aboutToBeShiftedDown) {
-						await tx
-							.update(schema.speakerOnList)
-							.set({
-								position: sql`${schema.speakerOnList.position} - 1`
-							})
-							.where(eq(schema.speakerOnList.id, speaker.id));
-					}
-
-					return deleted;
-				});
+				);
 
 				pubsub.removed();
 
@@ -439,97 +488,105 @@ schemaBuilder.mutationFields((t) => {
 					throw new GraphQLError('Position must be a non-negative integer');
 				}
 
-				const updatedEntityIds = await db.transaction(async (tx) => {
-					const aboutToMoveSpeakerOnList = await tx.query.speakerOnList
-						.findFirst(
-							ctx.abilities.speakerOnList.filter('update').merge({ where: { id: args.id } }).query
-								.single
-						)
-						.then(assertFindFirstExists);
-					if (args.position === aboutToMoveSpeakerOnList.position) {
-						throw new GraphQLError('Cannot move to the same position');
-					}
+				const updatedEntityIds = await db.transaction(
+					async (tx) => {
+						const aboutToMoveSpeakerOnList = await tx.query.speakerOnList
+							.findFirst(
+								ctx.abilities.speakerOnList.filter('update').merge({ where: { id: args.id } }).query
+									.single
+							)
+							.then(assertFindFirstExists);
 
-					await tx
-						.update(schema.speakerOnList)
-						.set({
-							position: -1
-						})
-						.where(eq(schema.speakerOnList.id, aboutToMoveSpeakerOnList.id));
-
-					const updatedEntityIds = [aboutToMoveSpeakerOnList.id];
-
-					if (args.position > aboutToMoveSpeakerOnList.position) {
-						const toUpdate = await tx.query.speakerOnList.findMany({
-							where: {
-								AND: [
-									{
-										position: {
-											gt: aboutToMoveSpeakerOnList.position,
-											lte: args.position
-										}
-									},
-									{
-										speakersListId: aboutToMoveSpeakerOnList.speakersListId
-									}
-								]
-							},
-							orderBy: {
-								position: 'asc'
-							}
-						});
-
-						for (const entry of toUpdate) {
-							await tx
-								.update(schema.speakerOnList)
-								.set({
-									position: sql`${schema.speakerOnList.position} - 1`
-								})
-								.where(eq(schema.speakerOnList.id, entry.id));
-
-							updatedEntityIds.push(entry.id);
+						if (args.position === aboutToMoveSpeakerOnList.position) {
+							throw new GraphQLError('Cannot move to the same position');
 						}
-					} else if (args.position < aboutToMoveSpeakerOnList.position) {
-						const toUpdate = await tx.query.speakerOnList.findMany({
-							where: {
-								AND: [
-									{
-										position: {
-											lt: aboutToMoveSpeakerOnList.position,
-											gte: args.position
+
+						await tx
+							.update(schema.speakerOnList)
+							.set({
+								position: -1
+							})
+							.where(eq(schema.speakerOnList.id, aboutToMoveSpeakerOnList.id));
+
+						const updatedEntityIds = [aboutToMoveSpeakerOnList.id];
+
+						if (args.position > aboutToMoveSpeakerOnList.position) {
+							const toUpdate = await tx.query.speakerOnList.findMany({
+								where: {
+									AND: [
+										{
+											position: {
+												gt: aboutToMoveSpeakerOnList.position,
+												lte: args.position
+											}
+										},
+										{
+											speakersListId: aboutToMoveSpeakerOnList.speakersListId
 										}
-									},
-									{
-										speakersListId: aboutToMoveSpeakerOnList.speakersListId
-									}
-								]
-							},
-							orderBy: {
-								position: 'desc'
+									]
+								},
+								orderBy: {
+									position: 'asc'
+								}
+							});
+
+							for (const entry of toUpdate) {
+								await tx
+									.update(schema.speakerOnList)
+									.set({
+										position: sql`${schema.speakerOnList.position} - 1`
+									})
+									.where(eq(schema.speakerOnList.id, entry.id));
+
+								updatedEntityIds.push(entry.id);
 							}
-						});
+						} else if (args.position < aboutToMoveSpeakerOnList.position) {
+							const toUpdate = await tx.query.speakerOnList.findMany({
+								where: {
+									AND: [
+										{
+											position: {
+												lt: aboutToMoveSpeakerOnList.position,
+												gte: args.position
+											}
+										},
+										{
+											speakersListId: aboutToMoveSpeakerOnList.speakersListId
+										}
+									]
+								},
+								orderBy: {
+									position: 'desc'
+								}
+							});
 
-						for (const entry of toUpdate) {
-							await tx
-								.update(schema.speakerOnList)
-								.set({
-									position: sql`${schema.speakerOnList.position} + 1`
-								})
-								.where(eq(schema.speakerOnList.id, entry.id));
+							for (const entry of toUpdate) {
+								await tx
+									.update(schema.speakerOnList)
+									.set({
+										position: sql`${schema.speakerOnList.position} + 1`
+									})
+									.where(eq(schema.speakerOnList.id, entry.id));
 
-							updatedEntityIds.push(entry.id);
+								updatedEntityIds.push(entry.id);
+							}
 						}
+
+						await tx
+							.update(schema.speakerOnList)
+							.set({
+								position: args.position
+							})
+							.where(eq(schema.speakerOnList.id, aboutToMoveSpeakerOnList.id));
+
+						return updatedEntityIds;
+					},
+					{
+						// since we do calculations on the positions we want full isolation
+						isolationLevel: 'serializable',
+						deferrable: true
 					}
-
-					await tx
-						.update(schema.speakerOnList)
-						.set({
-							position: args.position
-						})
-						.where(eq(schema.speakerOnList.id, aboutToMoveSpeakerOnList.id));
-
-					return updatedEntityIds;
-				});
+				);
 				pubsub.updated(updatedEntityIds);
 
 				return db.query.speakerOnList

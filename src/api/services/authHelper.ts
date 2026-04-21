@@ -24,12 +24,11 @@ export function isGlobalAdmin(ctx: Context) {
 }
 
 /**
- * Helper to check if the current user is a chair (ADMIN/TEAM) for a committee's conference,
- * or a global admin.
+ * Helper to check if the current user is a chair (ADMIN/TEAM) for a conference, or a global admin.
  *
- * @returns A filter object for the conference query. Injectable at committee level.
+ * @returns A filter object for the conference query. Injectable at e.g. committee level.
  */
-export function assertCommitteeChairOrAdmin(ctx: Context) {
+export function isChairInConference(ctx: Context) {
 	const user = ctx.mustBeLoggedIn();
 	if (isGlobalAdmin(ctx)) {
 		return {};
@@ -65,12 +64,35 @@ export function assertCommitteeChairOrAdmin(ctx: Context) {
 }
 
 /**
+ * Helper to check if the current user is a participant (any role) for a conference, or a global admin.
+ *
+ * @returns A filter object for the conference query. Injectable at e.g. committee level.
+ */
+export function isParticipantInConference(ctx: Context) {
+	return {
+		conference: isParticipant(ctx)
+	};
+}
+
+/**
  * Helper to check if the current user is an ADMIN for a specific conference
  * (either OIDC admin or conference ADMIN role)
  *
  * @returns A filter object for the conference query. Injectable at conference level.
  */
-export async function assertConferenceAdmin(ctx: Context) {
+export function isAdminInConference(ctx: Context) {
+	return {
+		conference: isAdmin(ctx)
+	};
+}
+
+/**
+ * Helper to check if the current user is an ADMIN
+ * (either OIDC admin or conference ADMIN role)
+ *
+ * @returns A filter object for the conference query. Injectable at conference level.
+ */
+export function isAdmin(ctx: Context) {
 	if (isGlobalAdmin(ctx)) {
 		return {};
 	}
@@ -87,6 +109,27 @@ export async function assertConferenceAdmin(ctx: Context) {
 				email: userEmail
 			},
 			conferenceUserType: 'ADMIN' as const
+		}
+	};
+}
+
+/**
+ * Helper to check if the current user is a participant (any role) for a conference, or a global admin.
+ *
+ * @returns A filter object for the conference query. Injectable at conference level.
+ */
+export function isParticipant(ctx: Context) {
+	const user = ctx.mustBeLoggedIn();
+	const userEmail = user.email;
+	if (!userEmail) {
+		throw new Error('User email is required to check participant status');
+	}
+
+	return {
+		users: {
+			user: {
+				email: userEmail
+			}
 		}
 	};
 }

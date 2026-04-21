@@ -1,37 +1,54 @@
-import { abilityBuilder, enum_, schemaBuilder, object, pubsub as rumblePubsub, query } from '$api/rumble';
+import {
+	abilityBuilder,
+	enum_,
+	schemaBuilder,
+	object,
+	pubsub as rumblePubsub,
+	query
+} from '$api/rumble';
 import { eq } from 'drizzle-orm';
 import { db, schema } from '$api/db/db';
-import { assertConferenceAdmin, isGlobalAdmin } from '$api/services/authHelper';
+import {
+	isAdminInConference,
+	isGlobalAdmin,
+	isParticipantInConference
+} from '$api/services/authHelper';
 import { GraphQLError } from 'graphql';
 import { assertFindFirstExists, assertFirstEntryExists } from '@m1212e/rumble';
+import { z } from 'zod';
+import { emailValidation } from '$api/services/emailValidation';
 
 abilityBuilder.conferenceUser.allow('read').when((ctx) => {
-	if (isGlobalAdmin(ctx)) return 'allow';
+	return {
+		where: isParticipantInConference(ctx),
+		columns: {
+			id: true,
+			conferenceId: true,
+			userEmail: false,
+			committeeMemberId: true,
+			conferenceMemberId: true,
+			conferenceUserType: true,
+			createdAt: true,
+			updatedAt: true
+		}
+	};
 });
 
-abilityBuilder.conferenceUser.allow('read').when(({ mustBeLoggedIn }) => {
-	mustBeLoggedIn();
-	return 'allow';
+abilityBuilder.conferenceUser.allow(['read', 'update', 'delete']).when((ctx) => {
+	return { where: isAdminInConference(ctx) };
 });
 
-abilityBuilder.conferenceUser.allow(['update', 'delete']).when((async (ctx: any) => {
-	return { where: { conference: { ...await assertConferenceAdmin(ctx) } } };
-}) as any);
-
-const ref = object({ table: 'conferenceUser' });
-export { ref as ConferenceUserRef };
-
-
+export const ConferenceUserRef = object({ table: 'conferenceUser' });
 
 const pubsub = rumblePubsub({ table: 'conferenceUser' });
 query({ table: 'conferenceUser' });
 
 schemaBuilder.mutationFields((t) => ({
 	createConferenceUser: t.drizzleField({
-		type: ref,
+		type: ConferenceUserRef,
 		args: {
-			conferenceId: t.arg({ type: 'ID', required: true }),
-			userEmail: t.arg({ type: 'String', required: true }),
+			conferenceId: t.arg.id({ required: true }),
+			userEmail: t.arg.string({ required: true }).validate(emailValidation),
 			conferenceUserType: t.arg({
 				type: enum_({ tsName: 'conferenceUserType' }),
 				required: true
@@ -40,9 +57,8 @@ schemaBuilder.mutationFields((t) => ({
 		resolve: async (query, root, args, ctx, info) => {
 			await db.query.conference
 				.findFirst(
-					ctx.abilities.conference
-						.filter('update')
-						.merge({ where: { id: args.conferenceId } }).query.single
+					ctx.abilities.conference.filter('update').merge({ where: { id: args.conferenceId } })
+						.query.single
 				)
 				.then(assertFindFirstExists);
 
@@ -90,7 +106,8 @@ schemaBuilder.mutationFields((t) => ({
 		resolve: async (root, args, ctx, info) => {
 			const conferenceUser = await db.query.conferenceUser
 				.findFirst(
-					ctx.abilities.conferenceUser.filter('delete').merge({ where: { id: args.id } }).query.single
+					ctx.abilities.conferenceUser.filter('delete').merge({ where: { id: args.id } }).query
+						.single
 				)
 				.then(assertFindFirstExists);
 
@@ -127,7 +144,7 @@ schemaBuilder.mutationFields((t) => ({
 	}),
 
 	updateConferenceUser: t.drizzleField({
-		type: ref,
+		type: ConferenceUserRef,
 		args: {
 			id: t.arg({ type: 'ID', required: true }),
 			conferenceUserType: t.arg({
@@ -140,7 +157,8 @@ schemaBuilder.mutationFields((t) => ({
 		resolve: async (query, root, args, ctx, info) => {
 			const conferenceUser = await db.query.conferenceUser
 				.findFirst(
-					ctx.abilities.conferenceUser.filter('update').merge({ where: { id: args.id } }).query.single
+					ctx.abilities.conferenceUser.filter('update').merge({ where: { id: args.id } }).query
+						.single
 				)
 				.then(assertFindFirstExists);
 

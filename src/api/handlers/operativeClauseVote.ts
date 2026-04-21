@@ -1,5 +1,12 @@
 import { db, schema } from '$api/db/db';
-import { abilityBuilder, enum_, schemaBuilder, object, pubsub as rumblePubsub, query } from '$api/rumble';
+import {
+	abilityBuilder,
+	enum_,
+	schemaBuilder,
+	object,
+	pubsub as rumblePubsub,
+	query
+} from '$api/rumble';
 import { isGlobalAdmin } from '$api/services/authHelper';
 import { assertFindFirstExists } from '@m1212e/rumble';
 import { GraphQLError } from 'graphql';
@@ -33,9 +40,8 @@ schemaBuilder.mutationFields((t) => ({
 		resolve: async (query, root, args, ctx, info) => {
 			const paper = await db.query.resolutionPaper
 				.findFirst(
-					ctx.abilities.resolutionPaper
-						.filter('update')
-						.merge({ where: { id: args.paperId } }).query.single
+					ctx.abilities.resolutionPaper.filter('update').merge({ where: { id: args.paperId } })
+						.query.single
 				)
 				.then(assertFindFirstExists);
 
@@ -92,9 +98,8 @@ schemaBuilder.mutationFields((t) => ({
 		resolve: async (root, args, ctx) => {
 			const paper = await db.query.resolutionPaper
 				.findFirst(
-					ctx.abilities.resolutionPaper
-						.filter('update')
-						.merge({ where: { id: args.paperId } }).query.single
+					ctx.abilities.resolutionPaper.filter('update').merge({ where: { id: args.paperId } })
+						.query.single
 				)
 				.then(assertFindFirstExists);
 

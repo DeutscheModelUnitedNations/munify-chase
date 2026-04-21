@@ -1,7 +1,14 @@
 import { db, schema } from '$api/db/db';
-import { abilityBuilder, enum_, schemaBuilder, object, pubsub as rumblePubsub, query } from '$api/rumble';
+import {
+	abilityBuilder,
+	enum_,
+	schemaBuilder,
+	object,
+	pubsub as rumblePubsub,
+	query
+} from '$api/rumble';
 import { and, eq, isNull, count as drizzleCount, desc, inArray } from 'drizzle-orm';
-import { assertCommitteeChairOrAdmin, isGlobalAdmin } from '$api/services/authHelper';
+import { isChairInConference, isGlobalAdmin } from '$api/services/authHelper';
 import { assertFindFirstExists, assertFirstEntryExists } from '@m1212e/rumble';
 import { GraphQLError } from 'graphql';
 import {
@@ -27,7 +34,7 @@ abilityBuilder.resolutionPaper.allow(['update']).when((ctx) => {
 		where: {
 			deletedAt: { isNull: true },
 			committee: {
-				...assertCommitteeChairOrAdmin(ctx)
+				...isChairInConference(ctx)
 			}
 		}
 	};
@@ -224,9 +231,8 @@ schemaBuilder.mutationFields((t) => ({
 				// Only chair/admin can edit DRs
 				await db.query.resolutionPaper
 					.findFirst(
-						ctx.abilities.resolutionPaper
-							.filter('update')
-							.merge({ where: { id: args.paperId } }).query.single
+						ctx.abilities.resolutionPaper.filter('update').merge({ where: { id: args.paperId } })
+							.query.single
 					)
 					.then(assertFindFirstExists);
 			} else if (paper.status === 'SUBMITTED') {
@@ -488,9 +494,8 @@ schemaBuilder.mutationFields((t) => ({
 		resolve: async (query, root, args, ctx, info) => {
 			const paper = await db.query.resolutionPaper
 				.findFirst(
-					ctx.abilities.resolutionPaper
-						.filter('update')
-						.merge({ where: { id: args.paperId } }).query.single
+					ctx.abilities.resolutionPaper.filter('update').merge({ where: { id: args.paperId } })
+						.query.single
 				)
 				.then(assertFindFirstExists);
 
@@ -567,9 +572,8 @@ schemaBuilder.mutationFields((t) => ({
 		resolve: async (query, root, args, ctx, info) => {
 			const paper = await db.query.resolutionPaper
 				.findFirst(
-					ctx.abilities.resolutionPaper
-						.filter('update')
-						.merge({ where: { id: args.paperId } }).query.single
+					ctx.abilities.resolutionPaper.filter('update').merge({ where: { id: args.paperId } })
+						.query.single
 				)
 				.then(assertFindFirstExists);
 
@@ -625,9 +629,8 @@ schemaBuilder.mutationFields((t) => ({
 		resolve: async (query, root, args, ctx, info) => {
 			const paper = await db.query.resolutionPaper
 				.findFirst(
-					ctx.abilities.resolutionPaper
-						.filter('update')
-						.merge({ where: { id: args.paperId } }).query.single
+					ctx.abilities.resolutionPaper.filter('update').merge({ where: { id: args.paperId } })
+						.query.single
 				)
 				.then(assertFindFirstExists);
 
@@ -756,9 +759,8 @@ schemaBuilder.mutationFields((t) => ({
 		resolve: async (query, root, args, ctx, info) => {
 			const paper = await db.query.resolutionPaper
 				.findFirst(
-					ctx.abilities.resolutionPaper
-						.filter('update')
-						.merge({ where: { id: args.paperId } }).query.single
+					ctx.abilities.resolutionPaper.filter('update').merge({ where: { id: args.paperId } })
+						.query.single
 				)
 				.then(assertFindFirstExists);
 

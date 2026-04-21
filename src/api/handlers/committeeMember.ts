@@ -1,31 +1,32 @@
 import { db, schema } from '$api/db/db';
 import { abilityBuilder, schemaBuilder, object, pubsub as rumblePubsub, query } from '$api/rumble';
-import { assertCommitteeChairOrAdmin, assertConferenceAdmin, isGlobalAdmin } from '$api/services/authHelper';
+import {
+	isChairInConference,
+	isAdminInConference,
+	isParticipantInConference
+} from '$api/services/authHelper';
 import { assertFindFirstExists, assertFirstEntryExists } from '@m1212e/rumble';
 import { GraphQLError } from 'graphql';
 
-abilityBuilder.committeeMember.allow(['read', 'update']).when((ctx) => {
-	if (isGlobalAdmin(ctx)) return 'allow';
-});
-
-abilityBuilder.committeeMember.allow('read').when(({ mustBeLoggedIn }) => {
-	mustBeLoggedIn();
-	return 'allow';
-});
-
-abilityBuilder.committeeMember.allow(['update']).when((ctx) => {
+abilityBuilder.committeeMember.allow('read').when((ctx) => {
 	return {
 		where: {
-			committee: {
-				...assertCommitteeChairOrAdmin(ctx)
-			}
+			committee: isParticipantInConference(ctx)
 		}
 	};
 });
 
-abilityBuilder.committeeMember.allow(['delete']).when((async (ctx: any) => {
-	return { where: { committee: { conference: { ...await assertConferenceAdmin(ctx) } } } };
-}) as any);
+abilityBuilder.committeeMember.allow('update').when((ctx) => {
+	return {
+		where: {
+			committee: isChairInConference(ctx)
+		}
+	};
+});
+
+abilityBuilder.committeeMember.allow('delete').when((ctx) => {
+	return { where: { committee: isAdminInConference(ctx) } };
+});
 
 const ref = object({ table: 'committeeMember' });
 const pubsub = rumblePubsub({ table: 'committeeMember' });
@@ -75,23 +76,24 @@ schemaBuilder.mutationFields((t) => {
 					.then(assertFindFirstExists);
 			}
 		}),
-
 		deleteCommitteeMember: t.field({
 			type: 'Boolean',
 			args: {
 				id: t.arg.id({ required: true })
 			},
 			resolve: async (root, args, ctx) => {
-				await db.delete(schema.committeeMember).where(
-					ctx.abilities.committeeMember.filter('delete').merge({ where: { id: args.id } }).sql.where
-				);
+				await db
+					.delete(schema.committeeMember)
+					.where(
+						ctx.abilities.committeeMember.filter('delete').merge({ where: { id: args.id } }).sql
+							.where
+					);
 
 				pubsub.removed();
 
 				return true;
 			}
 		}),
-
 		setPresenceForCommitteeMembers: t.drizzleField({
 			type: [ref],
 			args: {
@@ -114,7 +116,7 @@ schemaBuilder.mutationFields((t) => {
 					});
 
 				if (res.length > 0) {
-					await db.insert(schema.presenceChangedTimestamp).values(
+					db.insert(schema.presenceChangedTimestamp).values(
 						res.map((committeeMember) => ({
 							committeeMemberId: committeeMember.id,
 							presentSetTo: args.present,

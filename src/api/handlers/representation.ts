@@ -1,22 +1,29 @@
 import { db, schema } from '$api/db/db';
-import { abilityBuilder, enum_, schemaBuilder, object, pubsub as rumblePubsub, query } from '$api/rumble';
-import { assertConferenceAdmin, isGlobalAdmin } from '$api/services/authHelper';
+import {
+	abilityBuilder,
+	enum_,
+	schemaBuilder,
+	object,
+	pubsub as rumblePubsub,
+	query
+} from '$api/rumble';
+import {
+	isAdminInConference,
+	isGlobalAdmin,
+	isParticipantInConference
+} from '$api/services/authHelper';
 import { assertFindFirstExists, assertFirstEntryExists } from '@m1212e/rumble';
 import { eq } from 'drizzle-orm';
-import { GraphQLError } from 'graphql';
 
-abilityBuilder.representation.allow(['read', 'update']).when((ctx) => {
-	if (isGlobalAdmin(ctx)) return 'allow';
+abilityBuilder.representation.allow('read').when((ctx) => {
+	return {
+		where: isParticipantInConference(ctx)
+	};
 });
 
-abilityBuilder.representation.allow('read').when(({ mustBeLoggedIn }) => {
-	mustBeLoggedIn();
-	return 'allow';
+abilityBuilder.representation.allow(['update', 'delete']).when((ctx) => {
+	return { where: isAdminInConference(ctx) };
 });
-
-abilityBuilder.representation.allow(['delete']).when((async (ctx: any) => {
-	return { where: { conference: { ...await assertConferenceAdmin(ctx) } } };
-}) as any);
 
 const ref = object({ table: 'representation' });
 
@@ -41,9 +48,8 @@ schemaBuilder.mutationFields((t) => ({
 		resolve: async (query, root, args, ctx, info) => {
 			await db.query.conference
 				.findFirst(
-					ctx.abilities.conference
-						.filter('update')
-						.merge({ where: { id: args.conferenceId } }).query.single
+					ctx.abilities.conference.filter('update').merge({ where: { id: args.conferenceId } })
+						.query.single
 				)
 				.then(assertFindFirstExists);
 
@@ -89,18 +95,16 @@ schemaBuilder.mutationFields((t) => ({
 				.then(assertFindFirstExists);
 		}
 	}),
-
 	deleteRepresentation: t.field({
 		type: 'Boolean',
 		args: {
 			id: t.arg.id({ required: true })
 		},
 		resolve: async (root, args, ctx, info) => {
-			const representation = await db.query.representation
+			await db.query.representation
 				.findFirst(
-					ctx.abilities.representation
-						.filter('delete')
-						.merge({ where: { id: args.id } }).query.single
+					ctx.abilities.representation.filter('delete').merge({ where: { id: args.id } }).query
+						.single
 				)
 				.then(assertFindFirstExists);
 

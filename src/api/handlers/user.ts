@@ -1,22 +1,23 @@
 import { abilityBuilder, schemaBuilder, object, pubsub as rumblePubsub, query } from '$api/rumble';
-import { isGlobalAdmin } from '$api/services/authHelper';
+import { isAdmin, isGlobalAdmin } from '$api/services/authHelper';
 
-// abilityBuilder.user.allow('read').when(({ oidc }) => {
-// 	if (oidc?.user) {
-// 		return {
-// 			where: { id: oidc.user.sub }
-// 		};
-// 	}
-// });
+abilityBuilder.user.allow('read').when(({ oidc }) => {
+	if (oidc?.user) {
+		return {
+			where: { id: oidc.user.sub }
+		};
+	}
+});
 
-abilityBuilder.user.allow('read');
-// .when(({ mustBeLoggedIn }) => {
-// 	const user = mustBeLoggedIn();
-// 	if (user?.email && isDMUNEmail(user.email)) {
-// 		console.log("allowed");
-// 		return 'allow';
-// 	}
-// });
+abilityBuilder.user.allow('read').when((ctx) => {
+	return {
+		where: {
+			conferenceMemberships: {
+				conference: isAdmin(ctx)
+			}
+		}
+	};
+});
 
 object({ table: 'user' });
 

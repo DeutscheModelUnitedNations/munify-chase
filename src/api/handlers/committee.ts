@@ -7,28 +7,31 @@ import {
 	pubsub as rumblePubsub,
 	schemaBuilder
 } from '$api/rumble';
-import { assertCommitteeChairOrAdmin, assertConferenceAdmin } from '$api/services/authHelper';
+import {
+	isChairInConference,
+	isAdminInConference,
+	isParticipantInConference
+} from '$api/services/authHelper';
 import { assertFindFirstExists, assertFirstEntryExists } from '@m1212e/rumble';
 import { and, count, eq, type InferSelectModel } from 'drizzle-orm';
 import { calculateMajority } from '$lib/utils/majorities';
 import { GraphQLError } from 'graphql';
 
-abilityBuilder.committee.allow('read').when(({ mustBeLoggedIn }) => {
-	mustBeLoggedIn();
-	return 'allow';
-});
-
-abilityBuilder.committee.allow(['update']).when((ctx) => {
+abilityBuilder.committee.allow('read').when((ctx) => {
 	return {
-		where: {
-			...assertCommitteeChairOrAdmin(ctx)
-		}
+		where: isParticipantInConference(ctx)
 	};
 });
 
-abilityBuilder.committee.allow(['delete']).when((async (ctx: any) => {
-	return { where: { conference: { ...await assertConferenceAdmin(ctx) } } };
-}) as any);
+abilityBuilder.committee.allow('update').when((ctx) => {
+	return {
+		where: isChairInConference(ctx)
+	};
+});
+
+abilityBuilder.committee.allow('delete').when((ctx) => {
+	return { where: isAdminInConference(ctx) };
+});
 
 const getTotalPresentCount = async (
 	parent: InferSelectModel<typeof schema.committee> & {
@@ -122,9 +125,8 @@ schemaBuilder.mutationFields((t) => {
 			resolve: async (query, root, args, ctx, info) => {
 				await db.query.conference
 					.findFirst(
-						ctx.abilities.conference
-							.filter('update')
-							.merge({ where: { id: args.conferenceId } }).query.single
+						ctx.abilities.conference.filter('update').merge({ where: { id: args.conferenceId } })
+							.query.single
 					)
 					.then(assertFindFirstExists);
 
@@ -151,23 +153,23 @@ schemaBuilder.mutationFields((t) => {
 					.then(assertFindFirstExists);
 			}
 		}),
-
 		deleteCommittee: t.field({
 			type: 'Boolean',
 			args: {
 				id: t.arg.id({ required: true })
 			},
 			resolve: async (root, args, ctx, info) => {
-				await db.delete(schema.committee).where(
-					ctx.abilities.committee.filter('delete').merge({ where: { id: args.id } }).sql.where
-				);
+				await db
+					.delete(schema.committee)
+					.where(
+						ctx.abilities.committee.filter('delete').merge({ where: { id: args.id } }).sql.where
+					);
 
 				pubsub.removed();
 
 				return true;
 			}
 		}),
-
 		updateCommittee: t.drizzleField({
 			type: ref,
 			args: {
@@ -300,15 +302,17 @@ schemaBuilder.mutationFields((t) => {
 
 				pubsub.updated(args.id);
 
-				return db.query.committee.findFirst(
-					query(
-						ctx.abilities.committee.filter('read').merge({
-							where: {
-								id: args.id
-							}
-						}).query.single
+				return db.query.committee
+					.findFirst(
+						query(
+							ctx.abilities.committee.filter('read').merge({
+								where: {
+									id: args.id
+								}
+							}).query.single
+						)
 					)
-				);
+					.then(assertFindFirstExists);
 			}
 		})
 	};

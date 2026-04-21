@@ -1,30 +1,38 @@
 import { db, schema } from '$api/db/db';
-import { abilityBuilder, schemaBuilder, object, pubsub as rumblePubsub, query } from '$api/rumble';
-import { assertConferenceAdmin, isGlobalAdmin } from '$api/services/authHelper';
+import {
+	abilityBuilder,
+	schemaBuilder,
+	object,
+	pubsub as rumblePubsub,
+	query,
+	whereArg
+} from '$api/rumble';
+import {
+	isAdminInConference,
+	isGlobalAdmin,
+	isParticipantInConference
+} from '$api/services/authHelper';
 import { assertFindFirstExists, assertFirstEntryExists } from '@m1212e/rumble';
 
 abilityBuilder.conferenceMember.allow('read').when((ctx) => {
-	if (isGlobalAdmin(ctx)) return 'allow';
+	return {
+		where: isParticipantInConference(ctx)
+	};
 });
 
-abilityBuilder.conferenceMember.allow('read').when(({ mustBeLoggedIn }) => {
-	mustBeLoggedIn();
-	return 'allow';
+abilityBuilder.conferenceMember.allow('delete').when((ctx) => {
+	return { where: isAdminInConference(ctx) };
 });
 
-abilityBuilder.conferenceMember.allow(['delete']).when((async (ctx: any) => {
-	return { where: { conference: { ...await assertConferenceAdmin(ctx) } } };
-}) as any);
-
-const ref = object({ table: 'conferenceMember' });
-export const ConferenceMemberRef = ref;
+export const ConferenceMemberRef = object({ table: 'conferenceMember' });
+export const ConferenceMemberWhereInput = whereArg({ table: 'conferenceMember' });
 
 const pubsub = rumblePubsub({ table: 'conferenceMember' });
 query({ table: 'conferenceMember' });
 
 schemaBuilder.mutationFields((t) => ({
 	createConferenceMember: t.drizzleField({
-		type: ref,
+		type: ConferenceMemberRef,
 		args: {
 			conferenceId: t.arg.id({ required: true }),
 			representationId: t.arg.id({ required: true })
@@ -32,9 +40,8 @@ schemaBuilder.mutationFields((t) => ({
 		resolve: async (query, root, args, ctx, info) => {
 			await db.query.conference
 				.findFirst(
-					ctx.abilities.conference
-						.filter('update')
-						.merge({ where: { id: args.conferenceId } }).query.single
+					ctx.abilities.conference.filter('update').merge({ where: { id: args.conferenceId } })
+						.query.single
 				)
 				.then(assertFindFirstExists);
 
@@ -60,16 +67,18 @@ schemaBuilder.mutationFields((t) => ({
 				.then(assertFindFirstExists);
 		}
 	}),
-
 	deleteConferenceMember: t.field({
 		type: 'Boolean',
 		args: {
 			id: t.arg.id({ required: true })
 		},
 		resolve: async (root, args, ctx) => {
-			await db.delete(schema.conferenceMember).where(
-				ctx.abilities.conferenceMember.filter('delete').merge({ where: { id: args.id } }).sql.where
-			);
+			await db
+				.delete(schema.conferenceMember)
+				.where(
+					ctx.abilities.conferenceMember.filter('delete').merge({ where: { id: args.id } }).sql
+						.where
+				);
 
 			pubsub.removed();
 

@@ -5,6 +5,7 @@ import { dev } from '$app/environment';
 import { Redis } from 'ioredis';
 import { createRedisEventTarget } from '@graphql-yoga/redis-event-target';
 import { configPrivate } from '$config/private';
+import ValidationPlugin from '@pothos/plugin-validation';
 
 let eventTarget: ReturnType<typeof createRedisEventTarget> | undefined;
 if (configPrivate.REDIS_URL) {
@@ -37,5 +38,8 @@ export const {
 	db,
 	context,
 	defaultLimit: 1000,
-	subscriptions: [{ eventTarget }]
+	subscriptions: [{ eventTarget }],
+	pothosConfig: {
+		plugins: [ValidationPlugin]
+	}
 });

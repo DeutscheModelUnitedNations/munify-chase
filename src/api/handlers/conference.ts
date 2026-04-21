@@ -1,30 +1,27 @@
 import { db, schema } from '$api/db/db';
-import {
-	abilityBuilder,
-	object,
-	query,
-	schemaBuilder,
-	pubsub as rumblePubsub,
-	whereArg
-} from '$api/rumble';
-import { ConferenceMemberRef } from './conferenceMember';
-import { assertConferenceAdmin, isGlobalAdmin } from '$api/services/authHelper';
+import { abilityBuilder, object, query, schemaBuilder, pubsub as rumblePubsub } from '$api/rumble';
+import { ConferenceMemberRef, ConferenceMemberWhereInput } from './conferenceMember';
+import { isAdmin, isGlobalAdmin, isParticipant } from '$api/services/authHelper';
 import { eq } from 'drizzle-orm';
-import { assertFindFirstExists } from '@m1212e/rumble';
+import { assertFindFirstExists, mapNullFieldsToUndefined } from '@m1212e/rumble';
 import { GraphQLError } from 'graphql';
 
-abilityBuilder.conference.allow('read').when(({ mustBeLoggedIn }) => {
-	mustBeLoggedIn();
+abilityBuilder.conference.allow('read').when((ctx) => {
+	return { where: isParticipant(ctx) };
+});
+
+abilityBuilder.conference.allow('update').when((ctx) => {
+	return { where: isAdmin(ctx) };
+});
+
+abilityBuilder.conference.allow('delete').when((ctx) => {
+	if (!isGlobalAdmin(ctx)) {
+		throw new GraphQLError('Only global admins can delete conferences');
+	}
 	return 'allow';
 });
 
-abilityBuilder.conference.allow(['update']).when((async (ctx: any) => {
-	return { where: { ...await assertConferenceAdmin(ctx) } };
-}) as any);
-
-const ConferenceMemberWhereInput = whereArg({ table: 'conferenceMember' });
-
-const ref = object({
+export const ConferenceRef = object({
 	table: 'conference',
 	adjust: (t) => ({
 		uniqueConferenceMembers: t.drizzleField({
@@ -62,8 +59,6 @@ const ref = object({
 	})
 });
 
-export const ConferenceRef = ref;
-
 const pubsub = rumblePubsub({ table: 'conference' });
 query({
 	table: 'conference'
@@ -71,7 +66,7 @@ query({
 
 schemaBuilder.mutationFields((t) => ({
 	updateConference: t.drizzleField({
-		type: ref,
+		type: ConferenceRef,
 		args: {
 			id: t.arg.id({ required: true }),
 			title: t.arg.string(),
@@ -80,13 +75,14 @@ schemaBuilder.mutationFields((t) => ({
 			resolutionFeatureEnabled: t.arg.boolean()
 		},
 		resolve: async (query, root, args, ctx, info) => {
+			const mappedArgs = mapNullFieldsToUndefined(args);
 			await db
 				.update(schema.conference)
 				.set({
-					title: args.title ?? undefined,
-					pressWebsite: args.pressWebsite ?? undefined,
-					hasModeratedCaucus: args.hasModeratedCaucus ?? undefined,
-					resolutionFeatureEnabled: args.resolutionFeatureEnabled ?? undefined
+					title: mappedArgs.title,
+					pressWebsite: mappedArgs.pressWebsite,
+					hasModeratedCaucus: mappedArgs.hasModeratedCaucus,
+					resolutionFeatureEnabled: mappedArgs.resolutionFeatureEnabled
 				})
 				.where(
 					ctx.abilities.conference.filter('update').merge({ where: { id: args.id } }).sql.where
@@ -105,26 +101,17 @@ schemaBuilder.mutationFields((t) => ({
 				.then(assertFindFirstExists);
 		}
 	}),
-
 	deleteConference: t.field({
 		type: 'Boolean',
 		args: {
 			id: t.arg.id({ required: true })
 		},
 		resolve: async (root, args, ctx) => {
-			if (!isGlobalAdmin(ctx)) {
-				throw new GraphQLError('Only global admins can delete conferences');
-			}
-
-			const conf = await db.query.conference.findFirst({
-				where: { id: args.id }
-			});
-
-			if (!conf) {
-				throw new GraphQLError('Conference not found');
-			}
-
-			await db.delete(schema.conference).where(eq(schema.conference.id, args.id));
+			await db
+				.delete(schema.conference)
+				.where(
+					ctx.abilities.conference.filter('delete').merge({ where: { id: args.id } }).sql.where
+				);
 
 			return true;
 		}

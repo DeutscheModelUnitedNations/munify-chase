@@ -9,6 +9,7 @@ import {
 	smallint,
 	integer,
 	json,
+	index,
 	type AnyPgColumn
 } from 'drizzle-orm/pg-core';
 

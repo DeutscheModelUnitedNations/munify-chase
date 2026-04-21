@@ -1,5 +1,12 @@
 import { db, schema } from '$api/db/db';
-import { abilityBuilder, enum_, schemaBuilder, object, pubsub as rumblePubsub, query } from '$api/rumble';
+import {
+	abilityBuilder,
+	enum_,
+	schemaBuilder,
+	object,
+	pubsub as rumblePubsub,
+	query
+} from '$api/rumble';
 import { eq } from 'drizzle-orm';
 import { isGlobalAdmin } from '$api/services/authHelper';
 import { assertFindFirstExists, assertFirstEntryExists } from '@m1212e/rumble';
@@ -15,7 +22,7 @@ abilityBuilder.resolutionComment.allow('read').when((ctx) => {
 });
 
 // Conference ADMIN/TEAM → can see ALL comments (including TEAM_ONLY)
-abilityBuilder.resolutionComment.allow('read').when(((ctx: any) => {
+abilityBuilder.resolutionComment.allow('read').when((ctx) => {
 	const user = ctx.mustBeLoggedIn();
 	if (!user.sub) return;
 	return db.query.conferenceUser
@@ -26,7 +33,7 @@ abilityBuilder.resolutionComment.allow('read').when(((ctx: any) => {
 			}
 		})
 		.then((cu: any) => (cu ? 'allow' : undefined));
-}) as any);
+});
 
 // Regular logged-in users → only see PUBLIC comments
 abilityBuilder.resolutionComment.allow('read').when((ctx) => {

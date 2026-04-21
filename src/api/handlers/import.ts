@@ -4,6 +4,8 @@ import { importDataSchema } from '$lib/utils/import';
 import { ConferenceRef } from './conference';
 import { GraphQLError } from 'graphql';
 import { isGlobalAdmin } from '$api/services/authHelper';
+import { emailValidation } from '$api/services/emailValidation';
+import { assertFindFirstExists } from '@m1212e/rumble';
 
 const Input = schemaBuilder.inputType('ImportData', {
 	description: 'Import data. You can find the JSON schema here: /api/schema/import',
@@ -76,7 +78,7 @@ const Input = schemaBuilder.inputType('ImportData', {
 							type: enum_({ tsName: 'conferenceUserType' }),
 							required: true
 						}),
-						userEmail: t.string({ required: true }),
+						userEmail: t.string({ required: true }).validate(emailValidation),
 						conferenceMemberId: t.id(),
 						committeeMemberId: t.id()
 					})
@@ -221,15 +223,17 @@ schemaBuilder.mutationFields((t) => ({
 				}
 			});
 
-			return db.query.conference.findFirst(
-				query(
-					ctx.abilities.conference.filter('read').merge({
-						where: {
-							id: data.id
-						}
-					}).query.single
+			return db.query.conference
+				.findFirst(
+					query(
+						ctx.abilities.conference.filter('read').merge({
+							where: {
+								id: data.id
+							}
+						}).query.single
+					)
 				)
-			);
+				.then(assertFindFirstExists);
 		}
 	})
 }));

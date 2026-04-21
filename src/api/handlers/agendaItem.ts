@@ -1,16 +1,15 @@
 import { db, schema } from '$api/db/db';
 import { abilityBuilder, object, query, pubsub as rumblePubsub, schemaBuilder } from '$api/rumble';
-import { isGlobalAdmin } from '$api/services/authHelper';
 import { nanoid } from '$lib/helpers/nanoid';
 import { assertFindFirstExists, assertFirstEntryExists } from '@m1212e/rumble';
+import { isParticipantInConference } from '$api/services/authHelper';
 
-abilityBuilder.agendaItem.allow(['read']).when((ctx) => {
-	if (isGlobalAdmin(ctx)) return 'allow';
-});
-
-abilityBuilder.agendaItem.allow('read').when(({ mustBeLoggedIn }) => {
-	mustBeLoggedIn();
-	return 'allow';
+abilityBuilder.agendaItem.allow('read').when((ctx) => {
+	return {
+		where: {
+			committee: isParticipantInConference(ctx)
+		}
+	};
 });
 
 const ref = object({
@@ -45,26 +44,13 @@ schemaBuilder.mutationFields((t) => {
 				committeeId: t.arg({ type: 'ID', required: true })
 			},
 			resolve: async (query, root, args, ctx, info) => {
-				if (!isGlobalAdmin(ctx)) {
-					// TODO: rumble should support something like this
-					await db.query.conferenceUser
-						.findFirst({
-							where: {
-								conference: {
-									committees: {
-										id: args.committeeId
-									}
-								},
-								user: {
-									id: ctx.mustBeLoggedIn().sub
-								},
-								conferenceUserType: {
-									in: ['ADMIN', 'TEAM']
-								}
-							}
-						})
-						.then(assertFindFirstExists);
-				}
+				await db.query.committee
+					.findFirst(
+						ctx.abilities.committee.filter('update').merge({
+							where: { id: args.committeeId }
+						}).query.single
+					)
+					.then(assertFindFirstExists);
 
 				return await db.transaction(async (tx) => {
 					const res = await tx

@@ -1,14 +1,11 @@
 import { db, schema } from '$api/db/db';
-import { abilityBuilder, schemaBuilder } from '$api/rumble';
+import { abilityBuilder, schemaBuilder, object, pubsub as rumblePubsub, query } from '$api/rumble';
 import { eq, inArray } from 'drizzle-orm';
-import { basics } from './basics';
 import { isGlobalAdmin } from '$api/services/authHelper';
 import { assertConferenceAdmin } from './conferenceUser';
 import { assertCommitteeChairOrAdmin } from './resolutionPaper';
 import { assertFindFirstExists, assertFirstEntryExists } from '@m1212e/rumble';
 import { GraphQLError } from 'graphql';
-
-const { ref, pubsub, table } = basics('committeeMember');
 
 abilityBuilder.committeeMember.allow(['read', 'update']).when((ctx) => {
 	if (isGlobalAdmin(ctx)) return 'allow';
@@ -18,6 +15,10 @@ abilityBuilder.committeeMember.allow('read').when(({ mustBeLoggedIn }) => {
 	mustBeLoggedIn();
 	return 'allow';
 });
+
+const ref = object({ table: 'committeeMember' });
+const pubsub = rumblePubsub({ table: 'committeeMember' });
+query({ table: 'committeeMember' });
 
 schemaBuilder.mutationFields((t) => {
 	return {
@@ -104,13 +105,13 @@ schemaBuilder.mutationFields((t) => {
 				}
 
 				const res = await db
-					.update(table)
+					.update(schema.committeeMember)
 					.set({
 						present: args.present
 					})
-					.where(inArray(table.id, args.ids))
+					.where(inArray(schema.committeeMember.id, args.ids))
 					.returning({
-						id: table.id
+						id: schema.committeeMember.id
 					});
 
 				if (res.length > 0) {

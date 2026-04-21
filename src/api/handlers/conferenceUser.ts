@@ -1,14 +1,9 @@
-import { abilityBuilder, enum_, schemaBuilder } from '$api/rumble';
+import { abilityBuilder, enum_, schemaBuilder, object, pubsub as rumblePubsub, query } from '$api/rumble';
 import { eq } from 'drizzle-orm';
-import { basics } from './basics';
 import { db, schema } from '$api/db/db';
 import { isGlobalAdmin } from '$api/services/authHelper';
 import { GraphQLError } from 'graphql';
 import { assertFindFirstExists, assertFirstEntryExists } from '@m1212e/rumble';
-
-const { ref, pubsub, table } = basics('conferenceUser');
-
-export { ref as ConferenceUserRef };
 
 abilityBuilder.conferenceUser.allow('read').when((ctx) => {
 	if (isGlobalAdmin(ctx)) return 'allow';
@@ -18,6 +13,9 @@ abilityBuilder.conferenceUser.allow('read').when(({ mustBeLoggedIn }) => {
 	mustBeLoggedIn();
 	return 'allow';
 });
+
+const ref = object({ table: 'conferenceUser' });
+export { ref as ConferenceUserRef };
 
 /**
  * Helper to check if the current user is an ADMIN for a specific conference
@@ -48,6 +46,9 @@ export async function assertConferenceAdmin(
 		throw new GraphQLError('You must be an ADMIN of this conference to perform this action');
 	}
 }
+
+const pubsub = rumblePubsub({ table: 'conferenceUser' });
+query({ table: 'conferenceUser' });
 
 schemaBuilder.mutationFields((t) => ({
 	createConferenceUser: t.drizzleField({

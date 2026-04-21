@@ -63,6 +63,8 @@ const ref = object({
 	})
 });
 
+export const ConferenceRef = ref;
+
 const pubsub = rumblePubsub({ table: 'conference' });
 query({
 	table: 'conference'
@@ -103,10 +105,8 @@ schemaBuilder.mutationFields((t) => ({
 				)
 				.then(assertFindFirstExists);
 		}
-	})
-}));
+	}),
 
-schemaBuilder.mutationFields((t) => ({
 	deleteConference: t.field({
 		type: 'Boolean',
 		args: {
@@ -131,5 +131,3 @@ schemaBuilder.mutationFields((t) => ({
 		}
 	})
 }));
-
-export const ConferenceRef = ref;

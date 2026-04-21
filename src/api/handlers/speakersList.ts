@@ -5,16 +5,6 @@ import { assertFindFirstExists } from '@m1212e/rumble';
 import { GraphQLError } from 'graphql';
 import { assertCommitteeChairOrAdmin, isGlobalAdmin } from '$api/services/authHelper';
 
-const ref = object({
-	table: 'speakersList'
-});
-
-export const SpeakersListRef = ref;
-const speakersListPubSub = rumblePubsub({ table: 'speakersList' });
-query({
-	table: 'speakersList'
-});
-
 abilityBuilder.speakersList.allow(['read', 'update', 'delete']).when((ctx) => {
 	if (isGlobalAdmin(ctx)) return 'allow';
 });
@@ -34,6 +24,17 @@ abilityBuilder.speakersList.allow(['update']).when((ctx) => {
 			}
 		}
 	};
+});
+
+const ref = object({
+	table: 'speakersList'
+});
+
+export const SpeakersListRef = ref;
+
+const pubsub = rumblePubsub({ table: 'speakersList' });
+query({
+	table: 'speakersList'
 });
 
 schemaBuilder.mutationFields((t) => {
@@ -107,7 +108,7 @@ schemaBuilder.mutationFields((t) => {
 						.where(eq(schema.speakersList.id, args.id));
 				});
 
-				speakersListPubSub.updated(args.id);
+				pubsub.updated(args.id);
 
 				return db.query.speakersList
 					.findFirst(
@@ -143,7 +144,7 @@ schemaBuilder.mutationFields((t) => {
 					rumblePubsub({ table: 'speakerOnList' }).removed();
 				}
 
-				speakersListPubSub.updated(args.id);
+				pubsub.updated(args.id);
 
 				return db.query.speakersList
 					.findFirst(

@@ -1,39 +1,9 @@
 import { db, schema } from '$api/db/db';
-import { abilityBuilder, enum_, schemaBuilder, pubsub as rumblePubsub } from '$api/rumble';
+import { abilityBuilder, enum_, schemaBuilder, object, pubsub as rumblePubsub, query } from '$api/rumble';
 import { eq } from 'drizzle-orm';
-import { basics } from './basics';
 import { isGlobalAdmin } from '$api/services/authHelper';
 import { assertFindFirstExists, assertFirstEntryExists } from '@m1212e/rumble';
 import { GraphQLError } from 'graphql';
-
-const { ref, pubsub, table } = basics('resolutionComment');
-const paperPubsub = rumblePubsub({ table: 'resolutionPaper' });
-
-const commentVisibilityEnum = enum_({ tsName: 'commentVisibility' });
-
-// Helper: check if user is TEAM/ADMIN for the conference owning a given paper
-async function isChairOrAdmin(
-	ctx: {
-		hasRole: (role: string) => boolean;
-		mustBeLoggedIn: () => { sub?: string; email?: string | null };
-	},
-	committeeId: string
-): Promise<boolean> {
-	if (isGlobalAdmin(ctx)) return true;
-
-	const user = ctx.mustBeLoggedIn();
-	const cuRecord = await db.query.conferenceUser.findFirst({
-		where: {
-			conference: {
-				committees: { id: committeeId }
-			},
-			user: { id: user.sub },
-			conferenceUserType: { in: ['ADMIN', 'TEAM'] }
-		}
-	});
-
-	return !!cuRecord;
-}
 
 // ──────────────────────────────────────────────────
 // Access control
@@ -63,6 +33,38 @@ abilityBuilder.resolutionComment.allow('read').when((ctx) => {
 	ctx.mustBeLoggedIn();
 	return { where: { visibility: 'PUBLIC' } };
 });
+
+const ref = object({ table: 'resolutionComment' });
+
+const commentVisibilityEnum = enum_({ tsName: 'commentVisibility' });
+
+// Helper: check if user is TEAM/ADMIN for the conference owning a given paper
+async function isChairOrAdmin(
+	ctx: {
+		hasRole: (role: string) => boolean;
+		mustBeLoggedIn: () => { sub?: string; email?: string | null };
+	},
+	committeeId: string
+): Promise<boolean> {
+	if (isGlobalAdmin(ctx)) return true;
+
+	const user = ctx.mustBeLoggedIn();
+	const cuRecord = await db.query.conferenceUser.findFirst({
+		where: {
+			conference: {
+				committees: { id: committeeId }
+			},
+			user: { id: user.sub },
+			conferenceUserType: { in: ['ADMIN', 'TEAM'] }
+		}
+	});
+
+	return !!cuRecord;
+}
+
+const pubsub = rumblePubsub({ table: 'resolutionComment' });
+const paperPubsub = rumblePubsub({ table: 'resolutionPaper' });
+query({ table: 'resolutionComment' });
 
 // ──────────────────────────────────────────────────
 // Mutations

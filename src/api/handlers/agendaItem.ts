@@ -4,6 +4,15 @@ import { isGlobalAdmin } from '$api/services/authHelper';
 import { nanoid } from '$lib/helpers/nanoid';
 import { assertFindFirstExists, assertFirstEntryExists } from '@m1212e/rumble';
 
+abilityBuilder.agendaItem.allow(['read']).when((ctx) => {
+	if (isGlobalAdmin(ctx)) return 'allow';
+});
+
+abilityBuilder.agendaItem.allow('read').when(({ mustBeLoggedIn }) => {
+	mustBeLoggedIn();
+	return 'allow';
+});
+
 const ref = object({
 	table: 'agendaItem',
 	adjust: (t) => ({
@@ -25,15 +34,6 @@ const ref = object({
 const pubsub = rumblePubsub({ table: 'agendaItem' });
 query({
 	table: 'agendaItem'
-});
-
-abilityBuilder.agendaItem.allow(['read']).when((ctx) => {
-	if (isGlobalAdmin(ctx)) return 'allow';
-});
-
-abilityBuilder.agendaItem.allow('read').when(({ mustBeLoggedIn }) => {
-	mustBeLoggedIn();
-	return 'allow';
 });
 
 schemaBuilder.mutationFields((t) => {

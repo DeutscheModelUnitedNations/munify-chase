@@ -1,12 +1,8 @@
 import { db, schema } from '$api/db/db';
-import { abilityBuilder, schemaBuilder, pubsub as rumblePubsub } from '$api/rumble';
+import { abilityBuilder, schemaBuilder, object, pubsub as rumblePubsub, query } from '$api/rumble';
 import { and, eq } from 'drizzle-orm';
-import { basics } from './basics';
 import { isGlobalAdmin } from '$api/services/authHelper';
 import { assertFindFirstExists } from '@m1212e/rumble';
-
-const { ref, pubsub, table } = basics('paperEditor');
-const paperPubsub = rumblePubsub({ table: 'resolutionPaper' });
 
 abilityBuilder.paperEditor.allow(['read', 'update']).when((ctx) => {
 	if (isGlobalAdmin(ctx)) return 'allow';
@@ -16,6 +12,11 @@ abilityBuilder.paperEditor.allow('read').when(({ mustBeLoggedIn }) => {
 	mustBeLoggedIn();
 	return 'allow';
 });
+
+const ref = object({ table: 'paperEditor' });
+const pubsub = rumblePubsub({ table: 'paperEditor' });
+const paperPubsub = rumblePubsub({ table: 'resolutionPaper' });
+query({ table: 'paperEditor' });
 
 schemaBuilder.mutationFields((t) => ({
 	removeEditor: t.field({

@@ -1,14 +1,10 @@
 import { db, schema } from '$api/db/db';
-import { abilityBuilder, enum_, schemaBuilder, pubsub as rumblePubsub } from '$api/rumble';
-import { basics } from './basics';
+import { abilityBuilder, enum_, schemaBuilder, object, pubsub as rumblePubsub, query } from '$api/rumble';
 import { isGlobalAdmin } from '$api/services/authHelper';
 import { assertCommitteeChairOrAdmin } from './resolutionPaper';
 import { assertFindFirstExists } from '@m1212e/rumble';
 import { GraphQLError } from 'graphql';
 import { eq, and } from 'drizzle-orm';
-
-const { ref, pubsub } = basics('operativeClauseVote');
-const paperPubsub = rumblePubsub({ table: 'resolutionPaper' });
 
 abilityBuilder.operativeClauseVote.allow('read').when((ctx) => {
 	if (isGlobalAdmin(ctx)) return 'allow';
@@ -18,6 +14,11 @@ abilityBuilder.operativeClauseVote.allow('read').when(({ mustBeLoggedIn }) => {
 	mustBeLoggedIn();
 	return 'allow';
 });
+
+const ref = object({ table: 'operativeClauseVote' });
+const pubsub = rumblePubsub({ table: 'operativeClauseVote' });
+const paperPubsub = rumblePubsub({ table: 'resolutionPaper' });
+query({ table: 'operativeClauseVote' });
 
 schemaBuilder.mutationFields((t) => ({
 	recordClauseVote: t.drizzleField({

@@ -1,17 +1,10 @@
 import { db, schema } from '$api/db/db';
-import { abilityBuilder, enum_, schemaBuilder } from '$api/rumble';
+import { abilityBuilder, enum_, schemaBuilder, object, pubsub as rumblePubsub, query } from '$api/rumble';
 import { isGlobalAdmin } from '$api/services/authHelper';
-import { basics } from './basics';
 import { assertConferenceAdmin } from './conferenceUser';
 import { assertFindFirstExists, assertFirstEntryExists } from '@m1212e/rumble';
 import { eq } from 'drizzle-orm';
 import { GraphQLError } from 'graphql';
-
-const { ref, pubsub, table } = basics('representation');
-
-const representationTypeEnum = enum_({
-	tsName: 'representationType'
-});
 
 abilityBuilder.representation.allow(['read', 'update']).when((ctx) => {
 	if (isGlobalAdmin(ctx)) return 'allow';
@@ -21,6 +14,15 @@ abilityBuilder.representation.allow('read').when(({ mustBeLoggedIn }) => {
 	mustBeLoggedIn();
 	return 'allow';
 });
+
+const ref = object({ table: 'representation' });
+
+const representationTypeEnum = enum_({
+	tsName: 'representationType'
+});
+
+const pubsub = rumblePubsub({ table: 'representation' });
+query({ table: 'representation' });
 
 schemaBuilder.mutationFields((t) => ({
 	createRepresentation: t.drizzleField({

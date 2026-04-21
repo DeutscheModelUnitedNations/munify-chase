@@ -1,10 +1,5 @@
-import { schema } from '$api/db/db';
-import { abilityBuilder, schemaBuilder } from '$api/rumble';
+import { abilityBuilder, schemaBuilder, object, pubsub as rumblePubsub, query } from '$api/rumble';
 import { isGlobalAdmin } from '$api/services/authHelper';
-import { basics } from './basics';
-import { and, eq } from 'drizzle-orm';
-
-const { ref, pubsub, table } = basics('user');
 
 // abilityBuilder.user.allow('read').when(({ oidc }) => {
 // 	if (oidc?.user) {
@@ -22,6 +17,8 @@ abilityBuilder.user.allow('read');
 // 		return 'allow';
 // 	}
 // });
+
+object({ table: 'user' });
 
 const UserClaims = schemaBuilder
 	.objectRef<{
@@ -42,6 +39,9 @@ const UserClaims = schemaBuilder
 			locale: t.exposeString('locale', { nullable: true })
 		})
 	});
+
+const pubsub = rumblePubsub({ table: 'user' });
+query({ table: 'user' });
 
 schemaBuilder.queryFields((t) => ({
 	isGlobalAdmin: t.boolean({

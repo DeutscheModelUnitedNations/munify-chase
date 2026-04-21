@@ -1,7 +1,6 @@
 import { db, schema } from '$api/db/db';
-import { abilityBuilder, enum_, schemaBuilder, pubsub as rumblePubsub } from '$api/rumble';
+import { abilityBuilder, enum_, schemaBuilder, object, pubsub as rumblePubsub, query } from '$api/rumble';
 import { and, eq, isNull, count as drizzleCount, desc, inArray } from 'drizzle-orm';
-import { basics } from './basics';
 import { isGlobalAdmin } from '$api/services/authHelper';
 import { assertFindFirstExists, assertFirstEntryExists } from '@m1212e/rumble';
 import { GraphQLError } from 'graphql';
@@ -11,13 +10,6 @@ import {
 	toRoman
 } from '@deutschemodelunitednations/munify-resolution-editor/schema';
 import type { Context } from '$api/context';
-
-const { ref, pubsub, table } = basics('resolutionPaper');
-const committeePubsub = rumblePubsub({ table: 'committee' });
-const voteResultPubsub = rumblePubsub({ table: 'resolutionVoteResult' });
-const clauseVotePubsub = rumblePubsub({ table: 'operativeClauseVote' });
-
-const paperStatusEnum = enum_({ tsName: 'paperStatus' });
 
 abilityBuilder.resolutionPaper.allow(['read', 'update']).when((ctx) => {
 	if (isGlobalAdmin(ctx)) {
@@ -29,6 +21,16 @@ abilityBuilder.resolutionPaper.allow('read').when(({ mustBeLoggedIn }) => {
 	mustBeLoggedIn();
 	return { where: { deletedAt: { isNull: true } } };
 });
+
+const ref = object({ table: 'resolutionPaper' });
+
+const paperStatusEnum = enum_({ tsName: 'paperStatus' });
+
+const pubsub = rumblePubsub({ table: 'resolutionPaper' });
+const committeePubsub = rumblePubsub({ table: 'committee' });
+const voteResultPubsub = rumblePubsub({ table: 'resolutionVoteResult' });
+const clauseVotePubsub = rumblePubsub({ table: 'operativeClauseVote' });
+query({ table: 'resolutionPaper' });
 
 //TOOD: rework this to be some kind of rumble ability injector
 

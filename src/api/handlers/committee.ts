@@ -15,12 +15,6 @@ import { assertConferenceAdmin } from './conferenceUser';
 import { assertCommitteeChairOrAdmin } from './resolutionPaper';
 import { GraphQLError } from 'graphql';
 
-const paperPubsub = rumblePubsub({ table: 'resolutionPaper' });
-
-const statusEnum = enum_({
-	tsName: 'committeeStatus'
-});
-
 abilityBuilder.committee.allow(['read', 'update']).when((ctx) => {
 	if (isGlobalAdmin(ctx)) return 'allow';
 });
@@ -102,7 +96,13 @@ const ref = object({
 		})
 	})
 });
+
+const statusEnum = enum_({
+	tsName: 'committeeStatus'
+});
+
 const pubsub = rumblePubsub({ table: 'committee' });
+const paperPubsub = rumblePubsub({ table: 'resolutionPaper' });
 query({
 	table: 'committee'
 });

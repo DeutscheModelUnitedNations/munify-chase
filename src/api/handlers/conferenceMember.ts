@@ -1,13 +1,10 @@
 import { db, schema } from '$api/db/db';
-import { abilityBuilder, schemaBuilder } from '$api/rumble';
+import { abilityBuilder, schemaBuilder, object, pubsub as rumblePubsub, query } from '$api/rumble';
 import { isGlobalAdmin } from '$api/services/authHelper';
-import { basics } from './basics';
 import { assertConferenceAdmin } from './conferenceUser';
 import { assertFindFirstExists, assertFirstEntryExists } from '@m1212e/rumble';
 import { eq } from 'drizzle-orm';
 import { GraphQLError } from 'graphql';
-
-const { ref, pubsub, table } = basics('conferenceMember');
 
 abilityBuilder.conferenceMember.allow('read').when((ctx) => {
 	if (isGlobalAdmin(ctx)) return 'allow';
@@ -17,6 +14,12 @@ abilityBuilder.conferenceMember.allow('read').when(({ mustBeLoggedIn }) => {
 	mustBeLoggedIn();
 	return 'allow';
 });
+
+const ref = object({ table: 'conferenceMember' });
+export const ConferenceMemberRef = ref;
+
+const pubsub = rumblePubsub({ table: 'conferenceMember' });
+query({ table: 'conferenceMember' });
 
 schemaBuilder.mutationFields((t) => ({
 	createConferenceMember: t.drizzleField({
@@ -75,5 +78,3 @@ schemaBuilder.mutationFields((t) => ({
 		}
 	})
 }));
-
-export const ConferenceMemberRef = ref;

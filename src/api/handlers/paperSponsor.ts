@@ -1,14 +1,10 @@
 import { db, schema } from '$api/db/db';
-import { abilityBuilder, schemaBuilder, pubsub as rumblePubsub } from '$api/rumble';
+import { abilityBuilder, schemaBuilder, object, pubsub as rumblePubsub, query } from '$api/rumble';
 import { and, eq } from 'drizzle-orm';
-import { basics } from './basics';
 import { isGlobalAdmin } from '$api/services/authHelper';
 import { assertFindFirstExists, assertFirstEntryExists } from '@m1212e/rumble';
 import { GraphQLError } from 'graphql';
 import { assertCommitteeChairOrAdmin } from './resolutionPaper';
-
-const { ref, pubsub, table } = basics('paperSponsor');
-const paperPubsub = rumblePubsub({ table: 'resolutionPaper' });
 
 abilityBuilder.paperSponsor.allow(['read', 'update']).when((ctx) => {
 	if (isGlobalAdmin(ctx)) return 'allow';
@@ -18,6 +14,11 @@ abilityBuilder.paperSponsor.allow('read').when(({ mustBeLoggedIn }) => {
 	mustBeLoggedIn();
 	return 'allow';
 });
+
+const ref = object({ table: 'paperSponsor' });
+const pubsub = rumblePubsub({ table: 'paperSponsor' });
+const paperPubsub = rumblePubsub({ table: 'resolutionPaper' });
+query({ table: 'paperSponsor' });
 
 schemaBuilder.mutationFields((t) => ({
 	addSponsor: t.drizzleField({

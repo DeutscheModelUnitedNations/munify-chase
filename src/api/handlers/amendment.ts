@@ -1,6 +1,5 @@
 import { db, schema } from '$api/db/db';
-import { abilityBuilder, enum_, schemaBuilder, pubsub as rumblePubsub } from '$api/rumble';
-import { basics } from './basics';
+import { abilityBuilder, enum_, schemaBuilder, object, pubsub as rumblePubsub, query } from '$api/rumble';
 import { isGlobalAdmin } from '$api/services/authHelper';
 import { assertFindFirstExists, assertFirstEntryExists } from '@m1212e/rumble';
 import { and, eq, count as drizzleCount, not, inArray, gt, gte, sql } from 'drizzle-orm';
@@ -11,12 +10,6 @@ import {
 	OperativeClauseSchema
 } from '@deutschemodelunitednations/munify-resolution-editor/schema';
 
-const { ref, pubsub, table } = basics('amendment');
-const paperPubsub = rumblePubsub({ table: 'resolutionPaper' });
-
-const amendmentTypeEnum = enum_({ tsName: 'amendmentType' });
-const amendmentStatusEnum = enum_({ tsName: 'amendmentStatus' });
-
 abilityBuilder.amendment.allow('read').when((ctx) => {
 	if (isGlobalAdmin(ctx)) return 'allow';
 });
@@ -25,6 +18,11 @@ abilityBuilder.amendment.allow('read').when(({ mustBeLoggedIn }) => {
 	mustBeLoggedIn();
 	return 'allow';
 });
+
+const ref = object({ table: 'amendment' });
+
+const amendmentTypeEnum = enum_({ tsName: 'amendmentType' });
+const amendmentStatusEnum = enum_({ tsName: 'amendmentStatus' });
 
 // =============================================================================
 // HELPERS
@@ -215,6 +213,10 @@ async function applyAmendmentToResolution(
 		.set({ content: resolution })
 		.where(eq(schema.resolutionPaper.id, paper.id));
 }
+
+const pubsub = rumblePubsub({ table: 'amendment' });
+const paperPubsub = rumblePubsub({ table: 'resolutionPaper' });
+query({ table: 'amendment' });
 
 // =============================================================================
 // MUTATIONS

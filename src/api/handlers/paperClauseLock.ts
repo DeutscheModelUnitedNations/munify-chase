@@ -1,18 +1,20 @@
 import { db, schema } from '$api/db/db';
-import { abilityBuilder, schemaBuilder } from '$api/rumble';
+import { abilityBuilder, schemaBuilder, object, pubsub as rumblePubsub, query } from '$api/rumble';
 import { and, eq, lt } from 'drizzle-orm';
-import { basics } from './basics';
 import { assertFindFirstExists, assertFirstEntryExists } from '@m1212e/rumble';
 import { GraphQLError } from 'graphql';
-
-const { ref, pubsub } = basics('paperClauseLock');
-
-const LOCK_EXPIRY_MS = 60_000; // 60 seconds
 
 abilityBuilder.paperClauseLock.allow('read').when(({ mustBeLoggedIn }) => {
 	mustBeLoggedIn();
 	return 'allow';
 });
+
+const ref = object({ table: 'paperClauseLock' });
+
+const LOCK_EXPIRY_MS = 60_000; // 60 seconds
+
+const pubsub = rumblePubsub({ table: 'paperClauseLock' });
+query({ table: 'paperClauseLock' });
 
 schemaBuilder.mutationFields((t) => ({
 	acquireClauseLock: t.drizzleField({

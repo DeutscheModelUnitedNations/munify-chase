@@ -1,14 +1,10 @@
 import { db, schema } from '$api/db/db';
-import { abilityBuilder, schemaBuilder, pubsub as rumblePubsub } from '$api/rumble';
-import { basics } from './basics';
+import { abilityBuilder, schemaBuilder, object, pubsub as rumblePubsub, query } from '$api/rumble';
 import { isGlobalAdmin } from '$api/services/authHelper';
 import { assertFindFirstExists, assertFirstEntryExists } from '@m1212e/rumble';
 import { and, eq } from 'drizzle-orm';
 import { GraphQLError } from 'graphql';
 import { assertCommitteeChairOrAdmin } from './resolutionPaper';
-
-const { ref, pubsub, table } = basics('amendmentSponsor');
-const amendmentPubsub = rumblePubsub({ table: 'amendment' });
 
 abilityBuilder.amendmentSponsor.allow('read').when((ctx) => {
 	if (isGlobalAdmin(ctx)) return 'allow';
@@ -18,6 +14,11 @@ abilityBuilder.amendmentSponsor.allow('read').when(({ mustBeLoggedIn }) => {
 	mustBeLoggedIn();
 	return 'allow';
 });
+
+const ref = object({ table: 'amendmentSponsor' });
+const pubsub = rumblePubsub({ table: 'amendmentSponsor' });
+const amendmentPubsub = rumblePubsub({ table: 'amendment' });
+query({ table: 'amendmentSponsor' });
 
 schemaBuilder.mutationFields((t) => ({
 	addAmendmentSponsor: t.drizzleField({

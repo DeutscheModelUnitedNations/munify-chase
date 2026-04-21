@@ -1,19 +1,11 @@
-import { abilityBuilder, schemaBuilder } from '$api/rumble';
+import { abilityBuilder, schemaBuilder, object, pubsub as rumblePubsub, query } from '$api/rumble';
 import { GraphQLError } from 'graphql';
-import { basics } from './basics';
 import { db, schema } from '$api/db/db';
 import { and, count, eq, gt, gte, sql } from 'drizzle-orm';
 import { assertFindFirstExists, assertFirstEntryExists } from '@m1212e/rumble';
 import { SpeakersListRef } from './speakersList';
 import { isGlobalAdmin } from '$api/services/authHelper';
 import { assertCommitteeChairOrAdmin } from './resolutionPaper';
-
-const { ref, pubsub, table } = basics('speakerOnList');
-
-export const SpeakerOnListRef = ref;
-
-// TODO: These could use some validation for the position values. E.g. only allow positons
-// which are in bounds and so on
 
 abilityBuilder.speakerOnList.allow(['read', 'update', 'delete']).when((ctx) => {
 	if (isGlobalAdmin(ctx)) return 'allow';
@@ -23,6 +15,15 @@ abilityBuilder.speakerOnList.allow('read').when(({ mustBeLoggedIn }) => {
 	mustBeLoggedIn();
 	return 'allow';
 });
+
+const ref = object({ table: 'speakerOnList' });
+export const SpeakerOnListRef = ref;
+
+const pubsub = rumblePubsub({ table: 'speakerOnList' });
+query({ table: 'speakerOnList' });
+
+// TODO: These could use some validation for the position values. E.g. only allow positons
+// which are in bounds and so on
 
 schemaBuilder.mutationFields((t) => {
 	return {
@@ -46,7 +47,7 @@ schemaBuilder.mutationFields((t) => {
 				);
 
 				const updated = await db
-					.update(table)
+					.update(schema.speakerOnList)
 					.set({
 						overwriteName: args.overwriteName ? args.overwriteName : null
 					})
@@ -101,20 +102,23 @@ schemaBuilder.mutationFields((t) => {
 						position = (
 							await tx
 								.select({ count: count() })
-								.from(table)
-								.where(eq(table.speakersListId, args.speakersListId))
+								.from(schema.speakerOnList)
+								.where(eq(schema.speakerOnList.speakersListId, args.speakersListId))
 								.then(assertFirstEntryExists)
 						).count; // since the position is 0 based, we can just use the count as new position
 					} else {
 						// if they did provide a position, we want to shift all the entries up which are
 						// equal or higher in position
 						await tx
-							.update(table)
+							.update(schema.speakerOnList)
 							.set({
-								position: sql`${table.position} + 1`
+								position: sql`${schema.speakerOnList.position} + 1`
 							})
 							.where(
-								and(eq(table.speakersListId, args.speakersListId), gte(table.position, position))
+								and(
+									eq(schema.speakerOnList.speakersListId, args.speakersListId),
+									gte(schema.speakerOnList.position, position)
+								)
 							);
 					}
 
@@ -127,14 +131,14 @@ schemaBuilder.mutationFields((t) => {
 						.then(assertFindFirstExists);
 
 					const created = await tx
-						.insert(table)
+						.insert(schema.speakerOnList)
 						.values({
 							committeeMemberId: args.committeeMemberId,
 							conferenceMemberId: args.conferenceMemberId,
 							speakersListId: speakersList.id,
 							position
 						})
-						.returning({ id: table.id })
+						.returning({ id: schema.speakerOnList.id })
 						.then(assertFirstEntryExists);
 
 					return created.id;
@@ -173,8 +177,8 @@ schemaBuilder.mutationFields((t) => {
 
 				const removed = await db.transaction(async (tx) => {
 					const deleted = await tx
-						.delete(table)
-						.where(eq(table.id, args.speakerOnListId))
+						.delete(schema.speakerOnList)
+						.where(eq(schema.speakerOnList.id, args.speakerOnListId))
 						.returning()
 						.then(assertFirstEntryExists);
 
@@ -190,11 +194,11 @@ schemaBuilder.mutationFields((t) => {
 
 					for (const speaker of aboutToBeShiftedDown) {
 						await tx
-							.update(table)
+							.update(schema.speakerOnList)
 							.set({
-								position: sql`${table.position} - 1`
+								position: sql`${schema.speakerOnList.position} - 1`
 							})
-							.where(eq(table.id, speaker.id));
+							.where(eq(schema.speakerOnList.id, speaker.id));
 					}
 
 					return deleted;
@@ -318,20 +322,20 @@ schemaBuilder.mutationFields((t) => {
 					const position = (
 						await tx
 							.select({ count: count() })
-							.from(table)
-							.where(eq(table.speakersListId, args.speakersListId))
+							.from(schema.speakerOnList)
+							.where(eq(schema.speakerOnList.speakersListId, args.speakersListId))
 							.then(assertFirstEntryExists)
 					).count;
 
 					const created = await tx
-						.insert(table)
+						.insert(schema.speakerOnList)
 						.values({
 							committeeMemberId,
 							conferenceMemberId,
 							speakersListId: args.speakersListId,
 							position
 						})
-						.returning({ id: table.id })
+						.returning({ id: schema.speakerOnList.id })
 						.then(assertFirstEntryExists);
 
 					return created.id;
@@ -397,8 +401,8 @@ schemaBuilder.mutationFields((t) => {
 					}
 
 					const deleted = await tx
-						.delete(table)
-						.where(eq(table.id, speakerOnList.id))
+						.delete(schema.speakerOnList)
+						.where(eq(schema.speakerOnList.id, speakerOnList.id))
 						.returning()
 						.then(assertFirstEntryExists);
 
@@ -415,11 +419,11 @@ schemaBuilder.mutationFields((t) => {
 
 					for (const speaker of aboutToBeShiftedDown) {
 						await tx
-							.update(table)
+							.update(schema.speakerOnList)
 							.set({
-								position: sql`${table.position} - 1`
+								position: sql`${schema.speakerOnList.position} - 1`
 							})
-							.where(eq(table.id, speaker.id));
+							.where(eq(schema.speakerOnList.id, speaker.id));
 					}
 
 					return deleted;
@@ -473,11 +477,11 @@ schemaBuilder.mutationFields((t) => {
 					}
 
 					await tx
-						.update(table)
+						.update(schema.speakerOnList)
 						.set({
 							position: -1
 						})
-						.where(eq(table.id, aboutToMoveSpeakerOnList.id));
+						.where(eq(schema.speakerOnList.id, aboutToMoveSpeakerOnList.id));
 
 					const updatedEntityIds = [aboutToMoveSpeakerOnList.id];
 
@@ -503,11 +507,11 @@ schemaBuilder.mutationFields((t) => {
 
 						for (const entry of toUpdate) {
 							await tx
-								.update(table)
+								.update(schema.speakerOnList)
 								.set({
-									position: sql`${table.position} - 1`
+									position: sql`${schema.speakerOnList.position} - 1`
 								})
-								.where(eq(table.id, entry.id));
+								.where(eq(schema.speakerOnList.id, entry.id));
 
 							updatedEntityIds.push(entry.id);
 						}
@@ -533,22 +537,22 @@ schemaBuilder.mutationFields((t) => {
 
 						for (const entry of toUpdate) {
 							await tx
-								.update(table)
+								.update(schema.speakerOnList)
 								.set({
-									position: sql`${table.position} + 1`
+									position: sql`${schema.speakerOnList.position} + 1`
 								})
-								.where(eq(table.id, entry.id));
+								.where(eq(schema.speakerOnList.id, entry.id));
 
 							updatedEntityIds.push(entry.id);
 						}
 					}
 
 					await tx
-						.update(table)
+						.update(schema.speakerOnList)
 						.set({
 							position: args.position
 						})
-						.where(eq(table.id, aboutToMoveSpeakerOnList.id));
+						.where(eq(schema.speakerOnList.id, aboutToMoveSpeakerOnList.id));
 
 					return updatedEntityIds;
 				});

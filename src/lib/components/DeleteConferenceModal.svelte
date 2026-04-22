@@ -23,7 +23,7 @@
 		isDeleting = true;
 		try {
 			// TODO: deleteConference not available in Rumble client yet
-			toast.error('deleteConference is not yet available in the Rumble client');
+			toast.error('deleteConference is not yet available');
 			open = false;
 		} finally {
 			isDeleting = false;

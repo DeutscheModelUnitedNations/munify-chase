@@ -12,6 +12,7 @@ import { graphqlMutation, graphqlQuery } from '$api/graphql.remote';
 import { browser } from '$app/environment';
 import { schema } from './rumbleClient/schema';
 import { makeDefaultStorage } from '@urql/exchange-graphcache/default-storage';
+import { optimistic } from './optimisticUpdateHandlers';
 
 /**
  * Exchange to perform graphql calls via sveltekit remote functions (if possible)
@@ -92,13 +93,7 @@ export const urqlClient = new Client({
 						idbName: 'chase-graphcache-v1',
 						maxAge: 1
 					}),
-					keys: {
-						AuthenticatedUserData: (data) => (typeof data.sub === 'string' ? data.sub : null)
-					}
-					// TODO: https://nearform.com/open-source/urql/docs/graphcache/cache-updates/#optimistic-updates
-					// optimistic: {
-
-					// }
+					optimistic
 				})
 			: (undefined as unknown as Exchange),
 		remoteFunctionsExchange,

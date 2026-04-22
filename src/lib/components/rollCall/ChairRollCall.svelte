@@ -36,7 +36,8 @@
 			await toast.promise(
 				client.mutate.setPresenceForCommitteeMembers({
 					__args: { ids: [member.id], present },
-					id: true
+					id: true,
+					present: true
 				}),
 				promiseToastStrings(m.presence(), 'update'),
 				{

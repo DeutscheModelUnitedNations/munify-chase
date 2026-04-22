@@ -107,7 +107,7 @@
 							{m.launcherNoConferences()}
 						</div>
 					{:else}
-						{#each conferenceUsers as c}
+						{#each conferenceUsers as c (c.id)}
 							{@const conf = c.conference}
 							<a
 								href={getUrl(c.conferenceUserType, c.conference.id, c.committeeMember)}

@@ -41,7 +41,8 @@
 						Promise.all([
 							client.mutate.removeSpeakerOnList({
 								__args: { speakerOnListId: speaker.id },
-								id: true
+								id: true,
+								speakers: { id: true }
 							}),
 							client.mutate.updateSpeakersList({
 								__args: {

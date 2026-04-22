@@ -31,7 +31,7 @@
 		if (!speakerOnListId) return;
 
 		toast.promise(
-			client.mutate.removeSpeakerOnList({ __args: { speakerOnListId }, id: true }),
+			client.mutate.removeSpeakerOnList({ __args: { speakerOnListId }, id: true, speakers: { id: true } }),
 			promiseToastStrings(m.speaker(), 'delete')
 		);
 	};
@@ -40,7 +40,19 @@
 		if (!speakerOnListId || position < 0) return;
 
 		toast.promise(
-			client.mutate.moveSpeakerToPosition({ __args: { id: speakerOnListId, position }, id: true }),
+			client.mutate.moveSpeakerToPosition({
+				__args: { id: speakerOnListId, position },
+				id: true,
+				position: true,
+				speakersListId: true,
+				speakersList: {
+					id: true,
+					speakers: {
+						id: true,
+						position: true
+					}
+				}
+			}),
 			promiseToastStrings(m.speaker(), 'update')
 		);
 	};

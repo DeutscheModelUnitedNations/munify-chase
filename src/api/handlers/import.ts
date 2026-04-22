@@ -78,7 +78,7 @@ const Input = schemaBuilder.inputType('ImportData', {
 							type: enum_({ tsName: 'conferenceUserType' }),
 							required: true
 						}),
-						userEmail: t.string({ required: true }).validate(emailValidation),
+						userEmail: t.string({ required: true }),
 						conferenceMemberId: t.id(),
 						committeeMemberId: t.id()
 					})

@@ -1,12 +1,20 @@
 import { browser } from '$app/environment';
-import { client } from '$lib/api/rumbleClient/client';
+import { urqlClient } from '$lib/api/client';
 import dayjs, { type Dayjs } from 'dayjs';
 
 let current = $state(dayjs());
 const intervalDuration = 500;
 
 if (browser) {
-	const servertime = await client.query.serverTime();
+	const result = await urqlClient
+		.query(
+			'{ serverTime }',
+			{},
+			// use the raw urql client here since we need to skip all cache here
+			{ requestPolicy: 'network-only' }
+		)
+		.toPromise();
+	const servertime: Date | undefined = result.data?.serverTime;
 	if (servertime) {
 		current = dayjs(servertime);
 		setInterval(() => {

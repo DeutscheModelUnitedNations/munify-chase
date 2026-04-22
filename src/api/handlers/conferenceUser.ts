@@ -15,7 +15,6 @@ import {
 } from '$api/services/authHelper';
 import { GraphQLError } from 'graphql';
 import { assertFindFirstExists, assertFirstEntryExists } from '@m1212e/rumble';
-import { z } from 'zod';
 import { emailValidation } from '$api/services/emailValidation';
 
 abilityBuilder.conferenceUser.allow('read').when((ctx) => {

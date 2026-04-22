@@ -99,7 +99,8 @@
 		await toast.promise(
 			client.mutate.updateSpeakerOnList({
 				__args: { id: existingSpeakerId, overwriteName: changeSpeakersNameValue },
-				id: true
+				id: true,
+				overwriteName: true
 			}),
 			promiseToastStrings(
 				speakersList.type === 'COMMENT_LIST' ? m.commentList() : m.speakersList(),

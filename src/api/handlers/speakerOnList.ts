@@ -429,6 +429,31 @@ schemaBuilder.mutationFields((t) => {
 							throw new GraphQLError('You are not on this speakers list');
 						}
 
+						const speakersList = await tx.query.speakersList.findFirst({
+							where: { id: args.speakersListId },
+							with: {
+								agendaItem: {
+									with: {
+										committee: true
+									}
+								}
+							}
+						});
+
+						if (!speakersList) {
+							throw new GraphQLError('Speakers list not found');
+						}
+
+						const committee = speakersList.agendaItem?.committee;
+						if (!committee) {
+							throw new GraphQLError('Committee not found for this speakers list');
+						}
+						if (!committee.allowDelegationsToAddThemselvesToSpeakersList) {
+							throw new GraphQLError(
+								'Self-removing from speakers list is not enabled for this committee'
+							);
+						}
+
 						const deleted = await tx
 							.delete(schema.speakerOnList)
 							.where(eq(schema.speakerOnList.id, speakerOnList.id))

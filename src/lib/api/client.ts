@@ -6,13 +6,14 @@ import {
 	fetchExchange,
 	subscriptionExchange
 } from '@urql/core';
-import { offlineExchange } from '@urql/exchange-graphcache';
+import { cacheExchange } from '@urql/exchange-graphcache';
 import { empty, filter, fromPromise, merge, mergeMap, pipe } from 'wonka';
 import { graphqlMutation, graphqlQuery } from '$api/graphql.remote';
 import { browser } from '$app/environment';
 import { schema } from './rumbleClient/schema';
 import { makeDefaultStorage } from '@urql/exchange-graphcache/default-storage';
 import { optimistic } from './optimisticUpdateHandlers';
+import { retryExchange } from '@urql/exchange-retry';
 
 /**
  * Exchange to perform graphql calls via sveltekit remote functions (if possible)
@@ -81,26 +82,38 @@ const remoteFunctionsExchange: Exchange = ({ forward }) => {
 	};
 };
 
+const exchanges: Exchange[] = [nativeDateExchange];
+
+if (browser) {
+	exchanges.push(
+		cacheExchange({
+			schema,
+			optimistic
+		})
+	);
+
+	exchanges.push(
+		retryExchange({
+			initialDelayMs: 1000,
+			maxDelayMs: 15000,
+			randomDelay: true,
+			maxNumberAttempts: 3,
+			// Only retry on network errors/when offline
+			retryIf: (err) => err && err.networkError != null
+		})
+	);
+}
+if (!browser) {
+	// TODO maybe remove when remote functions can handle subscriptions
+	exchanges.push(remoteFunctionsExchange);
+}
+exchanges.push(fetchExchange);
+
 export const urqlClient = new Client({
 	url: '/api/graphql',
 	fetchSubscriptions: true, // subscriptions via SSE (default yoga implementation)
-	exchanges: [
-		nativeDateExchange,
-		browser
-			? offlineExchange({
-					schema,
-					storage: makeDefaultStorage({
-						idbName: 'chase-graphcache-v1',
-						maxAge: 1
-					}),
-					optimistic
-				})
-			: (undefined as unknown as Exchange),
-		remoteFunctionsExchange,
-		fetchExchange
-	].filter(Boolean),
+	exchanges,
 	fetchOptions: {
 		credentials: 'include'
-	},
-	requestPolicy: 'cache-and-network'
+	}
 });

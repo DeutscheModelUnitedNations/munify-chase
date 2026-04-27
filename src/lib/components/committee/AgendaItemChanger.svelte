@@ -21,7 +21,12 @@
 		await toast.promise(
 			client.mutate.updateCommittee({
 				__args: { id: committeeId, activeAgendaItemId: value },
-				id: true
+				id: true,
+				activeAgendaItemId: true,
+				activeAgendaItem: {
+					title: true,
+					id: true
+				}
 			}),
 			promiseToastStrings(m.agendaItem(), 'update')
 		);

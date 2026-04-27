@@ -31,7 +31,11 @@
 		if (!speakerOnListId) return;
 
 		toast.promise(
-			client.mutate.removeSpeakerOnList({ __args: { speakerOnListId }, id: true, speakers: { id: true } }),
+			client.mutate.removeSpeakerOnList({
+				__args: { speakerOnListId },
+				id: true,
+				speakers: { id: true }
+			}),
 			promiseToastStrings(m.speaker(), 'delete')
 		);
 	};

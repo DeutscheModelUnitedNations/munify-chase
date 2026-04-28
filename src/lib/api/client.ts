@@ -11,9 +11,9 @@ import { empty, filter, fromPromise, merge, mergeMap, pipe } from 'wonka';
 import { graphqlMutation, graphqlQuery } from '$api/graphql.remote';
 import { browser } from '$app/environment';
 import { schema } from './rumbleClient/schema';
-import { makeDefaultStorage } from '@urql/exchange-graphcache/default-storage';
 import { optimistic } from './optimisticUpdateHandlers';
 import { retryExchange } from '@urql/exchange-retry';
+import { createClient as createWSClient } from 'graphql-ws';
 
 /**
  * Exchange to perform graphql calls via sveltekit remote functions (if possible)
@@ -109,9 +109,29 @@ if (!browser) {
 }
 exchanges.push(fetchExchange);
 
+if (browser) {
+	const wsClient = createWSClient({
+		url: '/api/graphql'
+	});
+
+	exchanges.push(
+		subscriptionExchange({
+			forwardSubscription(request) {
+				const input = { ...request, query: request.query || '' };
+				return {
+					subscribe(sink) {
+						const unsubscribe = wsClient.subscribe(input, sink);
+						return { unsubscribe };
+					}
+				};
+			}
+		})
+	);
+}
+
 export const urqlClient = new Client({
 	url: '/api/graphql',
-	fetchSubscriptions: true, // subscriptions via SSE (default yoga implementation)
+	// fetchSubscriptions: true, // subscriptions via SSE (default yoga implementation)
 	exchanges,
 	fetchOptions: {
 		credentials: 'include'

@@ -3,6 +3,19 @@ import tailwindcss from '@tailwindcss/vite';
 import { sveltekit } from '@sveltejs/kit/vite';
 import { defineConfig, type ViteDevServer } from 'vite';
 
+function wsPlugin() {
+	return {
+		name: 'ws-dev',
+		configureServer(server: ViteDevServer) {
+			server.httpServer?.on('upgrade', (req, socket, head) => {
+				if ((globalThis as any).__wssUpgrade) {
+					(globalThis as any).__wssUpgrade(req, socket, head);
+				}
+			});
+		}
+	};
+}
+
 function devAutoRestart() {
 	const RACE_CONDITION_PATTERNS = [
 		'has not been implemented', // Pothos ObjectRef race condition
@@ -55,7 +68,8 @@ export default defineConfig({
 			outdir: './src/lib/paraglide',
 			strategy: ['cookie', 'preferredLanguage', 'baseLocale']
 		}),
-		sveltekit()
+		sveltekit(),
+		wsPlugin()
 	],
 	server: {
 		allowedHosts: ['svelte-dev.munify.cloud']

@@ -1,4 +1,4 @@
-FROM oven/bun:1.2-slim AS base
+FROM oven/bun:1.3-slim AS base
 
 FROM base AS dependencies
 WORKDIR /build/dependencies
@@ -26,7 +26,7 @@ COPY . .
 RUN bun run build
 RUN bun run check
 
-FROM node:24-slim AS release
+FROM node:lts-slim AS release
 WORKDIR /app/release
 
 ARG VERSION

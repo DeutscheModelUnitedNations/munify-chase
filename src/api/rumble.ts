@@ -32,7 +32,7 @@ export const {
 	query,
 	pubsub,
 	createYoga,
-	buildSchema,
+	createWs,
 	enum_,
 	clientCreator
 } = rumble({

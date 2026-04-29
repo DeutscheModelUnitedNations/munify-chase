@@ -131,6 +131,7 @@ if (browser) {
 
 export const urqlClient = new Client({
 	url: '/api/graphql',
+	// TODO: when enabling, check for session timeouts?
 	// fetchSubscriptions: true, // subscriptions via SSE (default yoga implementation)
 	exchanges,
 	fetchOptions: {

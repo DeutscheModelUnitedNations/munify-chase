@@ -107,15 +107,25 @@ if (!browser) {
 	// TODO maybe remove when remote functions can handle subscriptions
 	exchanges.push(remoteFunctionsExchange);
 }
-exchanges.push(fetchExchange);
-
 if (browser) {
+	let wsConnected = false;
+
 	const wsClient = createWSClient({
-		url: '/api/graphql'
+		url: '/api/graphql',
+		shouldRetry: () => true,
+		on: {
+			connected: () => {
+				wsConnected = true;
+			},
+			closed: () => {
+				wsConnected = false;
+			}
+		}
 	});
 
 	exchanges.push(
 		subscriptionExchange({
+			isSubscriptionOperation: (op) => op.kind === 'subscription' || wsConnected,
 			forwardSubscription(request) {
 				const input = { ...request, query: request.query || '' };
 				return {
@@ -129,9 +139,11 @@ if (browser) {
 	);
 }
 
+exchanges.push(fetchExchange);
+
 export const urqlClient = new Client({
 	url: '/api/graphql',
-	// TODO: when enabling, check for session timeouts?
+	// check for session timeouts?
 	// fetchSubscriptions: true, // subscriptions via SSE (default yoga implementation)
 	exchanges,
 	fetchOptions: {

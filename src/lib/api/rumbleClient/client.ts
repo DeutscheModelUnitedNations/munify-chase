@@ -1,3 +1,9 @@
+// This file is auto-generated. Do not edit manually.
+// @generated
+/* eslint-disable */
+// biome-ignore-all lint: This file is auto-generated
+// biome-ignore-all assist: This file is auto-generated
+// biome-ignore-all syntax: This file is auto-generated
 import { urqlClient } from '../client';
 import { Client, fetchExchange } from '@urql/core';
 import { cacheExchange } from '@urql/exchange-graphcache';
@@ -1986,12 +1992,7 @@ export type UserWhereInputArgument = {
 };
 
 export type VoteoutcomeEnum = 'ADOPTED' | 'REJECTED' | 'SENT_BACK';
-// This file is auto-generated. Do not edit manually.
-// @generated
-/* eslint-disable */
-// biome-ignore-all lint: This file is auto-generated
-// biome-ignore-all assist: This file is auto-generated
-// biome-ignore-all syntax: This file is auto-generated
+
 export const defaultOptions: ConstructorParameters<Client>[0] = {
 	url: '/api/graphql',
 	fetchSubscriptions: true,

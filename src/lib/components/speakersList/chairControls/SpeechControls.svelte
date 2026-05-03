@@ -46,7 +46,9 @@
 					stopTimer: true
 				},
 				id: true,
-				speakingTime: true
+				speakingTime: true,
+				timeLeft: true,
+				startTimestamp: true
 			});
 		} else {
 			await client.mutate.updateSpeakersList({
@@ -70,7 +72,9 @@
 						speakersList.timeLeft,
 					stopTimer: true
 				},
-				id: true
+				id: true,
+				timeLeft: true,
+				startTimestamp: true
 			})
 			.then((r) => {
 				if (!r) {
@@ -90,7 +94,9 @@
 					startTimestamp: speakersList.startTimestamp ? getServerTime().toDate() : undefined,
 					stopTimer: !speakersList.startTimestamp
 				},
-				id: true
+				id: true,
+				timeLeft: true,
+				startTimestamp: true
 			})
 			.then((r) => {
 				if (!r) {
@@ -105,7 +111,8 @@
 		await client.mutate
 			.updateSpeakersList({
 				__args: { id: speakersList.id, timeLeft: speakersList.timeLeft + delta },
-				id: true
+				id: true,
+				timeLeft: true
 			})
 			.then((r) => {
 				if (!r) {

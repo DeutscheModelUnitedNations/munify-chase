@@ -51,7 +51,8 @@
 		await toast.promise(
 			client.mutate.updateSpeakersList({
 				__args: { id: speakersList.id, isClosed },
-				id: true
+				id: true,
+				isClosed: true
 			}),
 			promiseToastStrings(
 				speakersList.type === 'COMMENT_LIST' ? m.commentList() : m.speakersList(),
@@ -75,7 +76,8 @@
 			await toast.promise(
 				client.mutate.clearSpeakersList({
 					__args: { id: speakersList.id },
-					id: true
+					id: true,
+					speakers: { id: true }
 				}),
 				promiseToastStrings(
 					speakersList.type === 'COMMENT_LIST' ? m.commentList() : m.speakersList(),
@@ -120,7 +122,9 @@
 					speakingTime: changeSpeakingTimeValue,
 					timeLeft: changeSpeakingTimeValue
 				},
-				id: true
+				id: true,
+				speakingTime: true,
+				timeLeft: true
 			}),
 			promiseToastStrings(
 				speakersList.type === 'COMMENT_LIST' ? m.commentList() : m.speakersList(),

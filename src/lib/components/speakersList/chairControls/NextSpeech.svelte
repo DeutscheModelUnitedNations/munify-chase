@@ -50,7 +50,9 @@
 									timeLeft: speakersList.speakingTime,
 									stopTimer: true
 								},
-								id: true
+								id: true,
+								timeLeft: true,
+								startTimestamp: true
 							}),
 							client.mutate.updateSpeakersList({
 								__args: {
@@ -59,11 +61,15 @@
 									stopTimer: true,
 									isClosed: false
 								},
-								id: true
+								id: true,
+								timeLeft: true,
+								startTimestamp: true,
+								isClosed: true
 							}),
 							client.mutate.clearSpeakersList({
 								__args: { id: childList.id },
-								id: true
+								id: true,
+								speakers: { id: true }
 							})
 						]),
 						promiseToastStrings(m.nextSpeaker(), 'update')
@@ -73,11 +79,14 @@
 					Promise.all([
 						client.mutate.removeSpeakerOnList({
 							__args: { speakerOnListId: speaker.id },
-							id: true
+							id: true,
+							speakers: { id: true }
 						}),
 						client.mutate.updateSpeakersList({
 							__args: { id: speakersList.id, timeLeft: speakersList.speakingTime, stopTimer: true },
-							id: true
+							id: true,
+							timeLeft: true,
+							startTimestamp: true
 						})
 					]),
 					promiseToastStrings(m.nextSpeaker(), 'update')

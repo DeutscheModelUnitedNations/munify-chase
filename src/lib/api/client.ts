@@ -6,7 +6,8 @@ import {
 	fetchExchange,
 	subscriptionExchange
 } from '@urql/core';
-import { cacheExchange } from '@urql/exchange-graphcache';
+import { offlineExchange } from '@urql/exchange-graphcache';
+import { makeDefaultStorage } from '@urql/exchange-graphcache/default-storage';
 import { empty, filter, fromPromise, merge, mergeMap, pipe } from 'wonka';
 import { graphqlMutation, graphqlQuery } from '$api/graphql.remote';
 import { browser } from '$app/environment';
@@ -86,9 +87,14 @@ const exchanges: Exchange[] = [nativeDateExchange];
 
 if (browser) {
 	exchanges.push(
-		cacheExchange({
+		offlineExchange({
 			schema,
-			optimistic
+			optimistic,
+			broadcastChannel: 'chase-broadcast-channel',
+			storage: makeDefaultStorage({
+				idbName: 'chase-offline-cache',
+				maxAge: 1
+			})
 		})
 	);
 
@@ -148,5 +154,6 @@ export const urqlClient = new Client({
 	exchanges,
 	fetchOptions: {
 		credentials: 'include'
-	}
+	},
+	requestPolicy: 'cache-and-network'
 });

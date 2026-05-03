@@ -1,5 +1,5 @@
 import { vitePreprocess } from '@sveltejs/vite-plugin-svelte';
-import adapter from '@sveltejs/adapter-node';
+import adapter from '@sveltejs/adapter-static';
 
 /** @type {import('@sveltejs/kit').Config} */
 const config = {
@@ -10,11 +10,11 @@ const config = {
 		}
 	},
 	kit: {
-		experimental: {
-			remoteFunctions: true
-		},
+		// experimental: {
+		// 	remoteFunctions: true
+		// },
 		adapter: adapter({
-			precompress: true
+			fallback: 'index.html'
 		}),
 		alias: {
 			$api: 'src/api',

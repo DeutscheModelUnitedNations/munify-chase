@@ -9,11 +9,12 @@
 	interface Props {
 		open: boolean;
 		committeeId?: string | null;
+		conferenceId?: string | null;
 		whiteboardContent?: string | null;
 		close: () => void;
 	}
 
-	let { open = $bindable(), committeeId, whiteboardContent, close }: Props = $props();
+	let { open = $bindable(), committeeId, conferenceId, whiteboardContent, close }: Props = $props();
 
 	let newWhiteboardContent = $state<string | null | undefined>(whiteboardContent);
 

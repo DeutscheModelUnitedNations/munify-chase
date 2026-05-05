@@ -4,12 +4,15 @@
 	import type { Editor } from 'svelte-tiptap';
 	import type { Readable } from 'svelte/store';
 	import UploadImage from './UploadImage.svelte';
+	import GenQRCode from './GenQRCode.svelte';
 
 	interface Props {
 		editor: Editor;
+		committeeID?: string | null;
+		conferenceID?: string | null;
 	}
 
-	let { editor }: Props = $props();
+	let { editor, committeeID, conferenceID }: Props = $props();
 	let showImageModal = $state(false);
 	let imageModalResolve: ((value: string | null) => void) | undefined;
 
@@ -17,6 +20,18 @@
 		showImageModal = true;
 		return new Promise<string | null>((resolve) => {
 			imageModalResolve = resolve;
+		});
+	}
+
+	let showQRCodeModal = $state(false);
+	let qrCodeImageResolve: ((value: string | null) => void) | undefined;
+
+	function openQRCodeModal(): Promise<string | null> {
+		showQRCodeModal = true;
+		return new Promise<string | null>((resolve) => {
+			qrCodeImageResolve = resolve;
+			committeeID;
+			conferenceID;
 		});
 	}
 
@@ -83,6 +98,16 @@
 						editor.chain().focus().setImage({ src: imageUrl }).run();
 					}
 				}
+			},
+			{
+				label: m.genQRCode(),
+				icon: 'fa-genQRCode',
+				command: async () => {
+					const qrCodeURL = await openQRCodeModal();
+					if (qrCodeURL) {
+						editor.chain().focus().setImage({ src: qrCodeURL }).run();
+					}
+				}
 			}
 		],
 		[
@@ -125,6 +150,19 @@
 			imageModalResolve(value);
 			imageModalResolve = undefined;
 			showImageModal = false;
+		}
+	}}
+/>
+
+<GenQRCode
+	{committeeID}
+	{conferenceID}
+	showModal={showQRCodeModal}
+	resolve={(value) => {
+		if (qrCodeImageResolve) {
+			qrCodeImageResolve(value);
+			qrCodeImageResolve = undefined;
+			showQRCodeModal = false;
 		}
 	}}
 />

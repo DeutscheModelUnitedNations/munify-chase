@@ -164,7 +164,7 @@
 	<WhiteboardEditorModal
 		bind:open={editWhiteboardModalOpen}
 		committeeId={committee?.id}
-		conferenceID={committee?.conference?.id}
+		conferenceId={committee?.conference?.id}
 		whiteboardContent={committee?.whiteboardContent}
 		close={() => {
 			editWhiteboardModalOpen = false;

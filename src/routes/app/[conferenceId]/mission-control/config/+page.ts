@@ -8,6 +8,9 @@ export const _houdini_load = graphql(`
 			id
 			title
 			pressWebsite
+			location
+			startDate
+			endDate
 			hasModeratedCaucus
 			resolutionFeatureEnabled
 			users {

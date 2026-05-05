@@ -42,6 +42,9 @@ export const conference = pgTable('conference', {
 	...defaultIdAndTimestamps,
 	title: text().notNull(),
 	pressWebsite: text(),
+	location: text(),
+	startDate: timestamp({ mode: 'date' }),
+	endDate: timestamp({ mode: 'date' }),
 	hasModeratedCaucus: boolean().notNull().default(false),
 	resolutionFeatureEnabled: boolean().notNull().default(true)
 });

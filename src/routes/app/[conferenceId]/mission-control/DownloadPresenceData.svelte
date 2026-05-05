@@ -15,7 +15,7 @@
 		query PresenceDataQuery($conferenceId: ID!) {
 			findManyCommitteeMember(where: { representation: { conferenceId: $conferenceId } }) {
 				id
-				user {
+				users {
 					id
 					userEmail
 				}

@@ -7,10 +7,76 @@ export const _houdini_load = graphql(`
 		findFirstConference(where: { id: $conferenceId }) {
 			id
 			title
+			pressWebsite
+			hasModeratedCaucus
+			resolutionFeatureEnabled
 			users {
 				id
 				userEmail
 				conferenceUserType
+				user {
+					givenName
+					familyName
+				}
+				committeeMember {
+					id
+					representation {
+						id
+						name
+						alpha2Code
+						alpha3Code
+						faIcon
+					}
+					committee {
+						id
+						name
+						abbreviation
+					}
+				}
+				conferenceMember {
+					id
+					representation {
+						id
+						name
+						alpha3Code
+						type
+						faIcon
+					}
+				}
+			}
+			committees {
+				id
+				name
+				abbreviation
+				members {
+					id
+					representation {
+						id
+						name
+						alpha2Code
+						alpha3Code
+						faIcon
+						type
+					}
+				}
+			}
+			members {
+				id
+				representation {
+					id
+					name
+					alpha3Code
+					type
+					faIcon
+				}
+			}
+			representations {
+				id
+				name
+				alpha2Code
+				alpha3Code
+				type
+				faIcon
 			}
 		}
 		currentUserRole: findManyConferenceUser(

@@ -7,6 +7,7 @@ export const _houdini_load = graphql(`
 			id
 			abbreviation
 			name
+			resolutionHeadline
 			stateOfDebate
 			status
 			statusHeadline
@@ -15,8 +16,17 @@ export const _houdini_load = graphql(`
 			simpleMajority
 			twoThirdsMajority
 			paperSupportThreshold
+			maxDraftResolutions
+			activeDraftResolutionId
+			supportReEvaluationOpen
+			amendmentSubmissionOpen
+			amendmentSponsoringOpen
+			currentOperativeIndex
+			currentOperativeClauseId
+			activeAmendmentId
 			whiteboardContent
 			lastResolutionAdoptionDate
+			allowDelegationsToAddThemselvesToSpeakersList
 			activeAgendaItem {
 				id
 				title
@@ -77,7 +87,9 @@ export const _houdini_load = graphql(`
 				}
 			}
 			conference {
+				title
 				hasModeratedCaucus
+				resolutionFeatureEnabled
 				uniqueConferenceMembers {
 					id
 					representation {

@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { m } from '$lib/paraglide/messages';
 	import Footer from '$lib/components/Footer.svelte';
+	import DeleteConferenceModal from '$lib/components/DeleteConferenceModal.svelte';
 	import type { PageData } from './$houdini';
 	import type { ConferenceUserTypeEnum$options } from '$houdini';
 
@@ -8,6 +9,12 @@
 
 	let launcherQuery = $derived(data?.LauncherQuery);
 	let conferenceData = $derived($launcherQuery.data?.findManyConferenceUser ?? []);
+	let isGlobalAdmin = $derived($launcherQuery.data?.isGlobalAdmin ?? false);
+	let allConferences = $derived($launcherQuery.data?.findManyConference ?? []);
+
+	let manageMode = $state(false);
+	let deleteModalOpen = $state(false);
+	let deleteTarget = $state<{ id: string; title: string } | null>(null);
 
 	const getType = (type: ConferenceUserTypeEnum$options) => {
 		switch (type) {
@@ -26,11 +33,17 @@
 		}
 	};
 
-	const getUrl = (type: ConferenceUserTypeEnum$options, id: string) => {
+	const getUrl = (
+		type: ConferenceUserTypeEnum$options,
+		id: string,
+		committeeMember?: { committeeId: string } | null
+	) => {
 		if (['ADMIN', 'TEAM'].includes(type)) {
 			return `/app/${id}/mission-control`;
+		} else if (type === 'DELEGATE' && committeeMember?.committeeId) {
+			return `/app/${id}/participant/${committeeMember.committeeId}`;
 		} else {
-			return `/app/${id}`;
+			return `/app/${id}/participant`;
 		}
 	};
 </script>
@@ -81,7 +94,7 @@
 						{#each conferenceData as c}
 							{@const conf = c.conference}
 							<a
-								href={getUrl(c.conferenceUserType, c.conference.id)}
+								href={getUrl(c.conferenceUserType, c.conference.id, c.committeeMember)}
 								class="btn btn-lg w-full max-w-xs shadow-xs"
 							>
 								<i class="fa-duotone fa-rocket-launch mr-2"></i>
@@ -97,5 +110,49 @@
 		</div>
 	</div>
 
+	{#if isGlobalAdmin}
+		<div class="flex flex-col items-center gap-4 pb-10">
+			<button
+				class="btn btn-ghost btn-sm gap-2"
+				class:btn-active={manageMode}
+				onclick={() => (manageMode = !manageMode)}
+			>
+				<i class="fa-duotone fa-trash-can"></i>
+				{m.manageConferences()}
+			</button>
+
+			{#if manageMode}
+				<div class="card bg-base-100 w-full max-w-2xl shadow-sm">
+					<div class="card-body">
+						<div class="flex flex-col gap-2">
+							{#each allConferences as conf}
+								<div class="flex items-center justify-between rounded-lg bg-base-200 px-4 py-2">
+									<span class="font-medium">{conf.title}</span>
+									<button
+										class="btn btn-error btn-sm btn-ghost"
+										onclick={() => {
+											deleteTarget = { id: conf.id, title: conf.title };
+											deleteModalOpen = true;
+										}}
+									>
+										<i class="fa-duotone fa-trash-can"></i>
+									</button>
+								</div>
+							{/each}
+						</div>
+					</div>
+				</div>
+			{/if}
+		</div>
+	{/if}
+
 	<Footer />
 </div>
+
+{#if deleteTarget}
+	<DeleteConferenceModal
+		bind:open={deleteModalOpen}
+		conferenceId={deleteTarget.id}
+		conferenceName={deleteTarget.title}
+	/>
+{/if}

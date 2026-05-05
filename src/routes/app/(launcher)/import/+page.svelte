@@ -1,7 +1,7 @@
 <script lang="ts">
-	import { goto } from '$app/navigation';
+	import { goto, invalidateAll } from '$app/navigation';
 	import { m } from '$lib/paraglide/messages';
-	import { graphql, type RepresentationTypeEnum$options } from '$houdini';
+	import { cache, graphql, type RepresentationTypeEnum$options } from '$houdini';
 	import toast from 'svelte-french-toast';
 	import { importDataSchema } from '$lib/utils/import';
 	import { z } from 'zod/v4';
@@ -146,6 +146,8 @@
 		});
 		if (res) {
 			toast.success(m.conferenceCreated());
+			cache.markStale();
+			await invalidateAll();
 			goto(`/app`);
 		}
 		loading = false;
@@ -324,6 +326,12 @@
 						class="input input-bordered w-full"
 						bind:value={committee.name}
 						placeholder={m.committeeName()}
+					/>
+					<input
+						type="text"
+						class="input input-bordered w-full"
+						bind:value={committee.resolutionHeadline}
+						placeholder={m.resolutionHeadline()}
 					/>
 					<input
 						type="text"

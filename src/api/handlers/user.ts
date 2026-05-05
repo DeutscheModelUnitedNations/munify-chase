@@ -1,6 +1,6 @@
 import { schema } from '$api/db/db';
 import { abilityBuilder, schemaBuilder } from '$api/rumble';
-import { isWhitelistedEmail } from '$api/services/isDMUNEmail';
+import { isGlobalAdmin } from '$api/services/isAdminEmail';
 import { basics } from './basics';
 import { and, eq } from 'drizzle-orm';
 
@@ -22,3 +22,11 @@ abilityBuilder.user.allow('read');
 // 		return 'allow';
 // 	}
 // });
+
+schemaBuilder.queryFields((t) => ({
+	isGlobalAdmin: t.boolean({
+		resolve: (root, args, ctx) => {
+			return isGlobalAdmin(ctx);
+		}
+	})
+}));

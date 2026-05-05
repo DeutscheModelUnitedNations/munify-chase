@@ -1,0 +1,188 @@
+<script lang="ts">
+	import { m } from '$lib/paraglide/messages';
+	import BasicCard from '$lib/components/BasicCard.svelte';
+	import { cache, graphql } from '$houdini';
+	import { invalidateAll } from '$app/navigation';
+	import toast from 'svelte-french-toast';
+	import { promiseToastStrings } from '$lib/utils/toast';
+	import Flag from '$lib/components/Flag.svelte';
+	import { getTranslatedCountryNameFromAlpha3Code } from '$lib/utils/nationTranslationHelper.svelte';
+	import AddCountriesModal from '$lib/components/AddCountriesModal.svelte';
+	import EditDelegationModal from './EditDelegationModal.svelte';
+
+	interface Representation {
+		id: string;
+		name: string | null;
+		alpha2Code: string | null;
+		alpha3Code: string | null;
+		type: string;
+		faIcon: string | null;
+	}
+
+	interface Committee {
+		id: string;
+		name: string;
+		abbreviation: string;
+		members: {
+			id: string;
+			representation: {
+				id: string;
+				type: string;
+			};
+		}[];
+	}
+
+	interface Props {
+		conferenceId: string;
+		representations: Representation[];
+		committees: Committee[];
+	}
+
+	let { conferenceId, representations, committees }: Props = $props();
+
+	let delegations = $derived(representations.filter((r) => r.type === 'DELEGATION'));
+	let addCountriesModalOpen = $state(false);
+	let editModalOpen = $state(false);
+	let editingDelegation = $state<Representation | null>(null);
+
+	function openEditModal(delegation: Representation) {
+		editingDelegation = delegation;
+		editModalOpen = true;
+	}
+
+	const CreateRepresentationMutation = graphql(`
+		mutation CreateDelegationFromConfig(
+			$conferenceId: ID!
+			$type: RepresentationTypeEnum!
+			$alpha2Code: String
+			$alpha3Code: String
+			$name: String
+		) {
+			createRepresentation(
+				conferenceId: $conferenceId
+				type: $type
+				alpha2Code: $alpha2Code
+				alpha3Code: $alpha3Code
+				name: $name
+			) {
+				id
+				name
+				alpha2Code
+				alpha3Code
+				type
+			}
+		}
+	`);
+
+	const DeleteRepresentationMutation = graphql(`
+		mutation DeleteDelegationFromConfig($id: ID!) {
+			deleteRepresentation(id: $id)
+		}
+	`);
+
+	function getCommitteesForDelegation(representationId: string): string {
+		return committees
+			.filter((c) => c.members.some((cm) => cm.representation.id === representationId))
+			.map((c) => c.abbreviation)
+			.join(', ');
+	}
+
+	async function handleAddCountries(
+		countries: { alpha2Code: string; alpha3Code: string; name: string }[]
+	) {
+		for (const country of countries) {
+			await toast.promise(
+				CreateRepresentationMutation.mutate({
+					conferenceId,
+					type: 'DELEGATION',
+					alpha2Code: country.alpha2Code,
+					alpha3Code: country.alpha3Code,
+					name: country.name
+				}),
+				promiseToastStrings(m.delegations(), 'create')
+			);
+		}
+		cache.markStale();
+		await invalidateAll();
+	}
+
+	async function deleteDelegation(id: string) {
+		if (!confirm(m.confirmDeleteRepresentation())) return;
+
+		await toast.promise(
+			DeleteRepresentationMutation.mutate({ id }),
+			promiseToastStrings(m.delegations(), 'delete')
+		);
+		cache.markStale();
+		await invalidateAll();
+	}
+</script>
+
+<BasicCard title={m.delegations()}>
+	<div class="overflow-x-auto">
+		<table class="table w-full">
+			<thead>
+				<tr>
+					<th></th>
+					<th>{m.name()}</th>
+					<th>Alpha-3</th>
+					<th>{m.committees()}</th>
+					<th></th>
+				</tr>
+			</thead>
+			<tbody>
+				{#if delegations.length === 0}
+					<tr>
+						<td colspan="5" class="text-base-content/60 text-center">{m.noData()}</td>
+					</tr>
+				{:else}
+					{#each delegations as delegation (delegation.id)}
+						<tr>
+							<td class="w-8">
+								<Flag representation={delegation as any} size="xs" />
+							</td>
+							<td>
+								{delegation.name || getTranslatedCountryNameFromAlpha3Code(delegation.alpha3Code)}
+							</td>
+							<td class="font-mono">
+								{delegation.alpha3Code?.toUpperCase() ?? '—'}
+							</td>
+							<td>
+								{getCommitteesForDelegation(delegation.id) || '—'}
+							</td>
+							<td>
+								<div class="flex gap-1">
+									<button
+										class="btn btn-ghost btn-sm"
+										onclick={() => openEditModal(delegation)}
+										aria-label={m.edit()}
+									>
+										<i class="fas fa-pen text-sm"></i>
+									</button>
+									<button
+										class="btn btn-ghost btn-sm text-error"
+										onclick={() => deleteDelegation(delegation.id)}
+										aria-label={m.deleteRepresentation()}
+									>
+										<i class="fas fa-trash text-sm"></i>
+									</button>
+								</div>
+							</td>
+						</tr>
+					{/each}
+				{/if}
+			</tbody>
+		</table>
+	</div>
+
+	<div class="mt-6">
+		<button class="btn btn-primary" onclick={() => (addCountriesModalOpen = true)}>
+			<i class="fas fa-plus"></i>
+			{m.addRepresentation()}
+		</button>
+	</div>
+</BasicCard>
+
+<AddCountriesModal bind:open={addCountriesModalOpen} onSubmit={handleAddCountries} />
+
+<EditDelegationModal bind:open={editModalOpen} delegation={editingDelegation} {committees} />

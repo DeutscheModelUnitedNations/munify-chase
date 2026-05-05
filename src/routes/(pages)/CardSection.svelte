@@ -31,7 +31,6 @@
 			alt="Resolution Editor"
 			header={m.homeHeroCardResolutionEditorTitle()}
 			text={m.homeHeroCardResolutionEditorText()}
-			comingSoonRibbon
 		/>
 	</div>
 </div>

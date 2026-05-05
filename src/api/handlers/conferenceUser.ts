@@ -2,7 +2,7 @@ import { abilityBuilder, enum_, schemaBuilder } from '$api/rumble';
 import { eq } from 'drizzle-orm';
 import { basics } from './basics';
 import { db, schema } from '$api/db/db';
-import { isWhitelistedEmail } from '$api/services/isDMUNEmail';
+import { isGlobalAdmin } from '$api/services/isAdminEmail';
 import { GraphQLError } from 'graphql';
 import { assertFindFirstExists, assertFirstEntryExists } from '@m1212e/rumble';
 
@@ -10,38 +10,25 @@ const { arg, ref, pubsub, table } = basics('conferenceUser');
 
 export { ref as ConferenceUserRef };
 
-abilityBuilder.conferenceUser.allow('read').when(({ mustBeLoggedIn }) => {
-	const user = mustBeLoggedIn();
-	if (user?.email && isWhitelistedEmail(user.email)) {
-		return 'allow';
-	}
+abilityBuilder.conferenceUser.allow('read').when((ctx) => {
+	if (isGlobalAdmin(ctx)) return 'allow';
 });
 
-// abilityBuilder.conferenceUser.allow('read').when(({ user }) => {
-// 	if (user) {
-// 		return {
-// 			where: eq(schema.conferenceUser.id, user.sub)
-// 		};
-// 	}
-// });
-
-// abilityBuilder.conferenceUser.allow('read').when(({ user }) => {
-// 	// TODO
-// 	if (user) {
-// 		return {};
-// 	}
-// });
+abilityBuilder.conferenceUser.allow('read').when(({ mustBeLoggedIn }) => {
+	mustBeLoggedIn();
+	return 'allow';
+});
 
 /**
  * Helper to check if the current user is an ADMIN for a specific conference
  * (either OIDC admin or conference ADMIN role)
  */
-async function assertConferenceAdmin(
+export async function assertConferenceAdmin(
 	ctx: { hasRole: (role: string) => boolean; mustBeLoggedIn: () => { email?: string | null } },
 	conferenceId: string
 ) {
-	if (ctx.hasRole('admin')) {
-		return; // OIDC admin has access
+	if (isGlobalAdmin(ctx)) {
+		return;
 	}
 
 	const user = ctx.mustBeLoggedIn();
@@ -170,7 +157,9 @@ schemaBuilder.mutationFields((t) => ({
 			conferenceUserType: t.arg({
 				type: enum_({ tsName: 'conferenceUserType' }),
 				required: true
-			})
+			}),
+			committeeMemberId: t.arg({ type: 'ID' }),
+			conferenceMemberId: t.arg({ type: 'ID' })
 		},
 		resolve: async (query, root, args, ctx, info) => {
 			// First get the conference user to find the conferenceId
@@ -212,9 +201,52 @@ schemaBuilder.mutationFields((t) => ({
 				}
 			}
 
+			// Validate committeeMemberId belongs to a committee in the same conference
+			if (args.committeeMemberId) {
+				const committeeMember = await db.query.committeeMember.findFirst({
+					where: { id: args.committeeMemberId },
+					with: { committee: true }
+				});
+				if (
+					!committeeMember ||
+					committeeMember.committee.conferenceId !== conferenceUser.conferenceId
+				) {
+					throw new GraphQLError('Committee member does not belong to this conference');
+				}
+			}
+
+			// Validate conferenceMemberId belongs to the same conference
+			if (args.conferenceMemberId) {
+				const conferenceMember = await db.query.conferenceMember.findFirst({
+					where: { id: args.conferenceMemberId }
+				});
+				if (!conferenceMember || conferenceMember.conferenceId !== conferenceUser.conferenceId) {
+					throw new GraphQLError('Conference member does not belong to this conference');
+				}
+			}
+
+			// Build the update set
+			const updateSet: Record<string, unknown> = {
+				conferenceUserType: args.conferenceUserType
+			};
+
+			// Auto-clear: when role changes away from DELEGATE, clear committeeMemberId
+			if (args.conferenceUserType !== 'DELEGATE') {
+				updateSet.committeeMemberId = null;
+			} else if (args.committeeMemberId !== undefined) {
+				updateSet.committeeMemberId = args.committeeMemberId;
+			}
+
+			// Auto-clear: when role changes away from NON_STATE_ACTOR, clear conferenceMemberId
+			if (args.conferenceUserType !== 'NON_STATE_ACTOR') {
+				updateSet.conferenceMemberId = null;
+			} else if (args.conferenceMemberId !== undefined) {
+				updateSet.conferenceMemberId = args.conferenceMemberId;
+			}
+
 			await db
 				.update(schema.conferenceUser)
-				.set({ conferenceUserType: args.conferenceUserType })
+				.set(updateSet)
 				.where(eq(schema.conferenceUser.id, args.id));
 
 			pubsub.updated(args.id);

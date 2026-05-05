@@ -6,6 +6,7 @@ export const CommitteeSubscription = graphql(`
 			id
 			abbreviation
 			name
+			resolutionHeadline
 			stateOfDebate
 			status
 			statusHeadline
@@ -14,8 +15,17 @@ export const CommitteeSubscription = graphql(`
 			simpleMajority
 			twoThirdsMajority
 			paperSupportThreshold
+			maxDraftResolutions
+			activeDraftResolutionId
+			supportReEvaluationOpen
+			amendmentSubmissionOpen
+			amendmentSponsoringOpen
+			currentOperativeIndex
+			currentOperativeClauseId
+			activeAmendmentId
 			whiteboardContent
 			lastResolutionAdoptionDate
+			allowDelegationsToAddThemselvesToSpeakersList
 			activeAgendaItem {
 				id
 				title
@@ -76,7 +86,9 @@ export const CommitteeSubscription = graphql(`
 				}
 			}
 			conference {
+				title
 				hasModeratedCaucus
+				resolutionFeatureEnabled
 				uniqueConferenceMembers {
 					id
 					representation {

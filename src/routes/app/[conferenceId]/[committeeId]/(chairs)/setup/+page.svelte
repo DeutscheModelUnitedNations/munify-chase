@@ -15,6 +15,7 @@
 	import StateOfDebate from '$lib/components/committee/StateOfDebateChanger.svelte';
 	import AgendaItemChanger from '$lib/components/committee/AgendaItemChanger.svelte';
 	import PresentationSettings from './PresentationSettings.svelte';
+	import Tabs from '$lib/components/Tabs.svelte';
 	import { CommitteeSubscription } from '../committeeSubscription';
 	import { ScrollArea } from 'bits-ui';
 	import StatusWidget from '../StatusWidget.svelte';
@@ -42,6 +43,26 @@
 			}
 		}
 	`);
+
+	const UpdateSelfAddMutation = graphql(`
+		mutation UpdateSelfAdd(
+			$committeeId: ID!
+			$allowDelegationsToAddThemselvesToSpeakersList: Boolean!
+		) {
+			updateCommittee(
+				id: $committeeId
+				allowDelegationsToAddThemselvesToSpeakersList: $allowDelegationsToAddThemselvesToSpeakersList
+			) {
+				id
+				allowDelegationsToAddThemselvesToSpeakersList
+			}
+		}
+	`);
+
+	const selfAddTabs = [
+		{ id: true, label: m.on(), faIcon: 'fa-check' },
+		{ id: false, label: m.off(), faIcon: 'fa-xmark' }
+	];
 </script>
 
 {#if committee}
@@ -99,6 +120,19 @@
 						<Kbd hotkey="alt+P" class="text-base-content" />
 					</a>
 					<PresentationSettings committeeId={data.committeeId} />
+				</BasicCard>
+				<BasicCard title={m.allowSelfAddToSpeakersList()}>
+					<p class="mb-4 text-sm opacity-70">{m.allowSelfAddToSpeakersListDescription()}</p>
+					<Tabs
+						activeTab={committee.allowDelegationsToAddThemselvesToSpeakersList}
+						tabs={selfAddTabs}
+						onTabChange={(tab) => {
+							UpdateSelfAddMutation.mutate({
+								committeeId: committee.id,
+								allowDelegationsToAddThemselvesToSpeakersList: tab
+							});
+						}}
+					/>
 				</BasicCard>
 				<BasicCard title={m.announceAdoption()}>
 					<button

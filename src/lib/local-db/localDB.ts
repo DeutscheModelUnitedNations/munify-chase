@@ -8,6 +8,7 @@ interface CommitteeSettings {
 	committeeId: string;
 	layout: PresentationLayoutPresetOptions;
 	presentationRootFontSize: number;
+	presentationResolutionFontSize: number;
 	displayRegionalGroups: boolean;
 	rollCall: number | null;
 
@@ -38,6 +39,7 @@ localDB.version(1).stores({
 	++committeeId,
 	layout,
 	presentationRootFontSize,
+	presentationResolutionFontSize,
 	displayRegionalGroups,
 	rollCall,
 	currentVoting,

@@ -1,41 +1,62 @@
 {
-	"version": "7",
-	"dialect": "postgresql",
-	"entries": [
-		{
-			"idx": 0,
-			"version": "7",
-			"when": 1747766528550,
-			"tag": "0000_chemical_network",
-			"breakpoints": true
-		},
-		{
-			"idx": 1,
-			"version": "7",
-			"when": 1747942198735,
-			"tag": "0001_romantic_shape",
-			"breakpoints": true
-		},
-		{
-			"idx": 2,
-			"version": "7",
-			"when": 1748455384043,
-			"tag": "0002_panoramic_agent_brand",
-			"breakpoints": true
-		},
-		{
-			"idx": 3,
-			"version": "7",
-			"when": 1750785323213,
-			"tag": "0003_mighty_maestro",
-			"breakpoints": true
-		},
-		{
-			"idx": 4,
-			"version": "7",
-			"when": 1750964889620,
-			"tag": "0004_orange_vengeance",
-			"breakpoints": true
-		}
-	]
+  "version": "7",
+  "dialect": "postgresql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "7",
+      "when": 1747766528550,
+      "tag": "0000_chemical_network",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1747942198735,
+      "tag": "0001_romantic_shape",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1748455384043,
+      "tag": "0002_panoramic_agent_brand",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1750785323213,
+      "tag": "0003_mighty_maestro",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1750964889620,
+      "tag": "0004_orange_vengeance",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1773013488762,
+      "tag": "0005_tan_paibok",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1773189153562,
+      "tag": "0006_cuddly_sersi",
+      "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1775228132434,
+      "tag": "0007_typical_the_renegades",
+      "breakpoints": true
+    }
+  ]
 }

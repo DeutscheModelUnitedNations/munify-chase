@@ -24,8 +24,10 @@
 	});
 </script>
 
-<div class="alert block h-full w-full justify-center text-lg shadow-sm">
-	<div class="flex h-full w-full flex-1 flex-row items-center justify-center gap-4 overflow-hidden">
+<div class="alert py-0 block h-full w-full justify-center text-lg shadow-sm">
+	<div
+		class="flex h-full w-full flex-1 flex-row items-center justify-center gap-4 overflow-hidden py-2"
+	>
 		{#if abbreviation}
 			<div class="flex-none text-center text-4xl font-bold">{abbreviation}</div>
 		{/if}

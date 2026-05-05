@@ -7,7 +7,7 @@ import {
 	schemaBuilder,
 	arg as rumbleArg
 } from '$api/rumble';
-import { isWhitelistedEmail } from '$api/services/isDMUNEmail';
+import { isGlobalAdmin } from '$api/services/isAdminEmail';
 import { nanoid } from '$lib/helpers/nanoid';
 import { assertFindFirstExists, assertFirstEntryExists } from '@m1212e/rumble';
 import { GraphQLError } from 'graphql';
@@ -36,11 +36,13 @@ query({
 	table: 'agendaItem'
 });
 
-abilityBuilder.agendaItem.allow(['read']).when(({ mustBeLoggedIn }) => {
-	const user = mustBeLoggedIn();
-	if (user?.email && isWhitelistedEmail(user.email)) {
-		return 'allow';
-	}
+abilityBuilder.agendaItem.allow(['read']).when((ctx) => {
+	if (isGlobalAdmin(ctx)) return 'allow';
+});
+
+abilityBuilder.agendaItem.allow('read').when(({ mustBeLoggedIn }) => {
+	mustBeLoggedIn();
+	return 'allow';
 });
 
 schemaBuilder.mutationFields((t) => {
@@ -52,7 +54,7 @@ schemaBuilder.mutationFields((t) => {
 				committeeId: t.arg({ type: 'ID', required: true })
 			},
 			resolve: async (query, root, args, ctx, info) => {
-				if (!ctx.hasRole('admin')) {
+				if (!isGlobalAdmin(ctx)) {
 					// TODO: rumble should support something like this
 					await db.query.conferenceUser
 						.findFirst({

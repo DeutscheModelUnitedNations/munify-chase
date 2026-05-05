@@ -36,15 +36,19 @@
 		committeeMembers.filter((member) => member.representation?.regionalGroup === group);
 
 	$effect(() => {
+		let timeout: ReturnType<typeof setTimeout> | undefined;
 		if (activeGroup) {
-			setTimeout(
+			timeout = setTimeout(
 				() => {
 					activeGroup = nextGroup(activeGroup);
 				},
 				Math.max(getGroupMembers(activeGroup).length * 500, 5000)
 			);
-			console.log(Math.max(getGroupMembers(activeGroup).length * 500, 5000));
 		}
+
+		return () => {
+			if (timeout) clearTimeout(timeout);
+		};
 	});
 </script>
 

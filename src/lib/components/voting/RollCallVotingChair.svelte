@@ -14,6 +14,7 @@
 		sortTranslatedCountries
 	} from '$lib/utils/nationTranslationHelper.svelte';
 	import { calculateMajority } from '$lib/utils/majorities';
+	import type { VotingResult } from './votingModal';
 
 	interface Props {
 		active: boolean;
@@ -21,12 +22,45 @@
 		voteName?: string;
 		majority?: VotingMajority;
 		withAbstentions?: boolean;
+		oncomplete?: (result: VotingResult) => void;
 	}
 
-	let { active = $bindable(), committee, voteName, majority, withAbstentions }: Props = $props();
+	let {
+		active = $bindable(),
+		committee,
+		voteName,
+		majority,
+		withAbstentions,
+		oncomplete
+	}: Props = $props();
 
 	let currentIndex = $state(0);
 	let stage = $state<'ROLL_CALL' | 'EVALUATION'>('ROLL_CALL');
+
+	const exitVote = (completed: boolean = false) => {
+		if (oncomplete) {
+			if (completed) {
+				const votesFor = rollCallVotingPro?.length ?? 0;
+				const votesAgainst = rollCallVotingCon?.length ?? 0;
+				const votesAbstain = rollCallVotingAbstain?.length ?? 0;
+				oncomplete({
+					outcome: votesFor >= majorityAmount ? 'ADOPTED' : 'REJECTED',
+					votesFor,
+					votesAgainst,
+					votesAbstain,
+					cancelled: false
+				});
+			} else {
+				oncomplete({
+					votesFor: 0,
+					votesAgainst: 0,
+					votesAbstain: 0,
+					cancelled: true
+				});
+			}
+		}
+		active = false;
+	};
 
 	let members = committee?.members
 		.filter((member) => member.present && member.representation?.type === 'DELEGATION')
@@ -162,7 +196,7 @@
 						}
 						break;
 					case 'esc':
-						active = false;
+						exitVote(stage === 'EVALUATION');
 						break;
 				}
 			});
@@ -270,7 +304,7 @@
 			<button
 				class="btn btn-lg flex gap-2"
 				onclick={() => {
-					active = false;
+					exitVote(true);
 				}}
 			>
 				<i class="fas fa-xmark"></i>
@@ -285,7 +319,7 @@
 			aria-label="Close modal"
 			class="btn btn-ghost btn-circle btn-sm"
 			onclick={() => {
-				active = false;
+				exitVote(stage === 'EVALUATION');
 			}}
 		>
 			<i class="fa-duotone fa-xmark"></i>

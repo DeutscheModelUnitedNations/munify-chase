@@ -24,6 +24,7 @@
 	import RollCallVotingPresentation from '$lib/components/voting/RollCallVotingPresentation.svelte';
 	import { browser } from '$app/environment';
 	import AdoptionConfetti from '$lib/components/AdoptionConfetti.svelte';
+	import PresentationResolutionPreview from './PresentationResolutionPreview.svelte';
 
 	let { data }: { data: PageData } = $props();
 
@@ -160,6 +161,16 @@
 					rawSpeakers={commentsList?.speakers}
 					closed={commentsList?.isClosed}
 					bind:resizeFn={commentsQueueResizeFn}
+				/>
+			</GridItem>
+		{/if}
+
+		{#if layout.resolutionPreview}
+			{@const gridProps = layout.resolutionPreview}
+			<GridItem {...gridProps} class="card bg-base-100 overflow-auto p-4" id="resolution-preview">
+				<PresentationResolutionPreview
+					{committee}
+					resolutionFontSize={$committeeSettings?.presentationResolutionFontSize ?? 16}
 				/>
 			</GridItem>
 		{/if}

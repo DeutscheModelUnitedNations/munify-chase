@@ -94,8 +94,10 @@ CVE-2025-68973
 # libpam: directory traversal - PAM auth not used by Node.js/Bun runtime
 CVE-2025-6020
 
-# minimatch: ReDoS via crafted glob patterns - transitive dep, not exposed to user input
+# minimatch: ReDoS via crafted glob patterns - transitive dev dep (ESLint), not exposed to user input
 CVE-2026-26996
+CVE-2026-27903
+CVE-2026-27904
 
 # node-tar: symlink poisoning, path traversal, race condition, hardlink exploits
 # tar is a transitive build/install dep, not used to extract untrusted archives at runtime
@@ -103,6 +105,7 @@ CVE-2026-23745
 CVE-2026-23950
 CVE-2026-24842
 CVE-2026-26960
+CVE-2026-29786
 
 # TODO: Remove these ignores once fixed
 
@@ -115,3 +118,24 @@ CVE-2025-64756
 # Check: Update base image when Debian 12.12 is released (fixes libc 2.36-9+deb12u11)
 # Remove this ignore once base image is updated
 CVE-2025-4802
+
+
+CVE-2026-22774
+CVE-2026-22775
+CVE-2026-31802
+CVE-2026-25679
+CVE-2026-27142
+
+# kysely: SQL injection via JSON path keys / backslash escaping in sql.lit()
+# Transitive dep of @inlang/sdk (i18n tooling), not used in app code. Uses internal SQLite only.
+CVE-2026-32763
+CVE-2026-33468
+
+# picomatch: ReDoS via crafted extglob patterns - transitive dep of rollup/micromatch, build-time only
+CVE-2026-33671
+
+# crypto/x509: excessive work during certificate chain building - esbuild doesn't validate certs
+CVE-2026-32280
+
+# syscall/unix: Root.Chmod follows symlinks outside root - esbuild doesn't use Root.Chmod
+CVE-2026-32282

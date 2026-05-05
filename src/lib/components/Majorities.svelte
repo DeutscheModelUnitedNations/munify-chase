@@ -1,4 +1,6 @@
 <script lang="ts">
+	import { m } from '$lib/paraglide/messages';
+
 	interface Props {
 		totalPresent: number | null;
 		simpleMajority: number | null;
@@ -14,9 +16,13 @@
 	text?: string;
 	faIcon?: string;
 	showZero?: boolean;
+	tooltip?: string;
 })}
-	{@const { number, text, faIcon, showZero = false } = cardData}
-	<div class="card bg-base-200 h-full flex-1 flex-col items-center justify-center p-4 shadow-sm">
+	{@const { number, text, faIcon, showZero = false, tooltip } = cardData}
+	<div
+		class="card bg-base-200 h-full flex-1 flex-col items-center justify-center p-4 shadow-sm tooltip tooltip-bottom"
+		data-tip={tooltip}
+	>
 		<div class="h-7 text-lg">
 			{#if text}
 				<p class="whitespace-nowrap">{@html text}</p>
@@ -31,17 +37,25 @@
 {/snippet}
 
 <div class="flex h-full gap-2">
-	{@render Card({ number: totalPresent ?? 0, faIcon: 'fa-users', showZero: true })}
+	{@render Card({
+		number: totalPresent ?? 0,
+		faIcon: 'fa-flag',
+		showZero: true,
+		tooltip: m.totalCountriesPresent()
+	})}
 	{@render Card({
 		number: simpleMajority ?? 0,
-		text: '50%&thinsp;+&thinsp;1'
+		faIcon: 'fa-circle-half-stroke',
+		tooltip: m.simpleMajorityTooltip()
 	})}
 	{@render Card({
 		number: twoThirdsMajority ?? 0,
-		text: '2/3'
+		faIcon: 'fa-circle-chevron-up',
+		tooltip: m.twoThirdsMajorityTooltip()
 	})}
 	{@render Card({
 		number: paperSupportThreshold ?? 0,
-		faIcon: 'fa-file-lines'
+		faIcon: 'fa-file-plus',
+		tooltip: m.paperSupportThresholdTooltip()
 	})}
 </div>

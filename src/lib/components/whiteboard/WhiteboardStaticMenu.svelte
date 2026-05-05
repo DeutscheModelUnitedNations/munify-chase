@@ -101,7 +101,7 @@
 			},
 			{
 				label: m.genQRCode(),
-				icon: 'fa-genQRCode',
+				icon: 'fa-qrcode',
 				command: async () => {
 					const qrCodeURL = await openQRCodeModal();
 					if (qrCodeURL) {

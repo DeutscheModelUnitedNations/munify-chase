@@ -30,8 +30,8 @@
 		showQRCodeModal = true;
 		return new Promise<string | null>((resolve) => {
 			qrCodeImageResolve = resolve;
-			committeeID;
-			conferenceID;
+			committeeID = committeeID;
+			conferenceID = conferenceID;
 		});
 	}
 

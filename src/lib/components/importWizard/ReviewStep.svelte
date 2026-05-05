@@ -2,6 +2,7 @@
 	import { m } from '$lib/paraglide/messages';
 	import type { z } from 'zod/v4';
 	import type { importDataSchema } from '$lib/utils/import';
+	import { SvelteSet } from 'svelte/reactivity';
 	import StepHeader from './StepHeader.svelte';
 
 	type ImportData = z.infer<typeof importDataSchema>;
@@ -19,7 +20,7 @@
 	let { data, isAdmin, loading = false, onApply, onDownload, onJump }: Props = $props();
 
 	const totalDelegations = $derived(
-		new Set(
+		new SvelteSet(
 			(data.committeeMembers ?? [])
 				.map((cm) => data.representations.find((r) => r.id === cm.representationId)?.alpha2Code)
 				.filter(Boolean)
@@ -63,7 +64,7 @@
 	});
 
 	function membersOfCommittee(committeeId: string) {
-		const seen = new Set<string>();
+		const seen = new SvelteSet<string>();
 		return (data.committeeMembers ?? [])
 			.filter((cm) => cm.committeeId === committeeId)
 			.map((cm) => data.representations.find((r) => r.id === cm.representationId))

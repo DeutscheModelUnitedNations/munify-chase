@@ -3,6 +3,7 @@
 	import type { z } from 'zod/v4';
 	import type { importDataSchema } from '$lib/utils/import';
 	import CountryBadge from '$lib/components/CountryBadge.svelte';
+	import { SvelteSet } from 'svelte/reactivity';
 	import StepHeader from './StepHeader.svelte';
 
 	type ImportData = z.infer<typeof importDataSchema>;
@@ -27,7 +28,7 @@
 	}
 
 	const totalDelegations = $derived(
-		new Set(
+		new SvelteSet(
 			(data.committeeMembers ?? [])
 				.map((cm) => repFor(cm.representationId)?.alpha2Code)
 				.filter(Boolean)

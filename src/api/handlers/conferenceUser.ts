@@ -15,7 +15,7 @@ abilityBuilder.conferenceUser.allow('read').when((ctx) => {
 });
 
 abilityBuilder.conferenceUser.allow('read').when(({ mustBeLoggedIn }) => {
-	// mustBeLoggedIn();
+	mustBeLoggedIn();
 	return 'allow';
 });
 

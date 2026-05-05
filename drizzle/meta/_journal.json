@@ -57,6 +57,13 @@
       "when": 1775228132434,
       "tag": "0007_typical_the_renegades",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1777985988338,
+      "tag": "0008_giant_living_mummy",
+      "breakpoints": true
     }
   ]
 }

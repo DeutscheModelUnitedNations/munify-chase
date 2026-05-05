@@ -137,7 +137,7 @@
 				<strong>{m.validationsHeading({ count: validations.length })}</strong>
 			</div>
 			<ul class="m-0 flex list-disc flex-col gap-1.5 pl-5">
-				{#each validations as v, i (i)}
+				{#each validations as v (v.severity + v.step + v.msg)}
 					<li class="text-sm {v.severity === 'error' ? 'text-error' : 'text-warning'}">
 						{v.msg}
 						<button
@@ -166,7 +166,7 @@
 						class="border-base-content/10 flex items-start gap-4 border-b pb-3 last:border-b-0 last:pb-0"
 					>
 						<div
-							class="bg-primary/15 text-primary grid h-14 w-14 flex-shrink-0 place-items-center rounded-lg font-mono text-sm font-bold"
+							class="bg-primary/15 text-primary grid h-14 w-14 shrink-0 place-items-center rounded-lg font-mono text-sm font-bold"
 						>
 							{c.abbreviation}
 						</div>

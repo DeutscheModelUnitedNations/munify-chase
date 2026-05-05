@@ -83,11 +83,14 @@
 
 	async function handlePickFile(file: File) {
 		loading = true;
-		const parsed = await parseFile(file);
-		loading = false;
-		if (parsed) {
-			importData = parsed;
-			step = 1;
+		try {
+			const parsed = await parseFile(file);
+			if (parsed) {
+				importData = parsed;
+				step = 1;
+			}
+		} finally {
+			loading = false;
 		}
 	}
 
@@ -132,18 +135,20 @@
 		loading = true;
 		if (importData.$schema) delete importData.$schema;
 
-		const res = await ConferenceCreationMutation.mutate({ data: importData }).catch((e) => {
-			toast.error(m.conferenceCreationError());
-			console.error('Error creating conference:', e);
+		try {
+			const res = await ConferenceCreationMutation.mutate({ data: importData }).catch((e) => {
+				toast.error(m.conferenceCreationError());
+				console.error('Error creating conference:', e);
+			});
+			if (res) {
+				toast.success(m.conferenceCreated());
+				cache.markStale();
+				await invalidateAll();
+				goto('/app');
+			}
+		} finally {
 			loading = false;
-		});
-		if (res) {
-			toast.success(m.conferenceCreated());
-			cache.markStale();
-			await invalidateAll();
-			goto('/app');
 		}
-		loading = false;
 	}
 
 	function openAddCountries(committeeId: string) {

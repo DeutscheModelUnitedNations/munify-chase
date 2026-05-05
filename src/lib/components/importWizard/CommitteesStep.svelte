@@ -32,13 +32,14 @@
 		data.agendaItems.push({ id: nanoid(), committeeId, title: '' });
 	}
 
-	function removeAgenda(committeeId: string, idx: number) {
-		const itemsForCommittee = data.agendaItems
-			.map((item, originalIdx) => ({ item, originalIdx }))
-			.filter(({ item }) => item.committeeId === committeeId);
-		const target = itemsForCommittee[idx];
-		if (!target) return;
-		data.agendaItems = data.agendaItems.filter((_, i) => i !== target.originalIdx);
+	function removeAgenda(itemId: string | undefined) {
+		if (!itemId) return;
+		data.agendaItems = data.agendaItems.filter((a) => a.id !== itemId);
+	}
+
+	function ensureAgendaId(item: { id?: string }): string {
+		if (!item.id) item.id = nanoid();
+		return item.id;
 	}
 </script>
 
@@ -72,7 +73,7 @@
 				<div class="card bg-base-100 border-base-content/10 relative gap-4 border p-6 shadow-sm">
 					<div class="flex items-start gap-3">
 						<div
-							class="bg-primary/15 text-primary grid h-14 w-14 flex-shrink-0 place-items-center rounded-xl font-mono text-lg font-bold"
+							class="bg-primary/15 text-primary grid h-14 w-14 shrink-0 place-items-center rounded-xl font-mono text-lg font-bold"
 						>
 							{committee.abbreviation || '–'}
 						</div>
@@ -113,10 +114,10 @@
 						{#if agendaItemsForCommittee.length === 0}
 							<p class="text-base-content/55 m-0 text-sm">{m.noAgendaItems()}</p>
 						{/if}
-						{#each agendaItemsForCommittee as item, i (i)}
+						{#each agendaItemsForCommittee as item, i (ensureAgendaId(item))}
 							<div class="flex items-center gap-2">
 								<div
-									class="bg-base-100 text-primary grid h-7 w-7 flex-shrink-0 place-items-center rounded-md font-mono text-xs font-bold"
+									class="bg-base-100 text-primary grid h-7 w-7 shrink-0 place-items-center rounded-md font-mono text-xs font-bold"
 								>
 									{i + 1}
 								</div>
@@ -130,7 +131,7 @@
 									type="button"
 									class="btn btn-ghost btn-sm text-error"
 									aria-label="Remove agenda item"
-									onclick={() => removeAgenda(committee.id, i)}
+									onclick={() => removeAgenda(item.id)}
 								>
 									<i class="fa-solid fa-trash"></i>
 								</button>

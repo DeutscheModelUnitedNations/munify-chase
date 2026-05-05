@@ -77,8 +77,8 @@ schemaBuilder.mutationFields((t) => ({
 			title: t.arg.string(),
 			pressWebsite: t.arg.string(),
 			location: t.arg.string(),
-			startDate: t.arg({ type: 'DateTime' }),
-			endDate: t.arg({ type: 'DateTime' }),
+			startDate: t.arg({ type: 'Date' }),
+			endDate: t.arg({ type: 'Date' }),
 			hasModeratedCaucus: t.arg.boolean(),
 			resolutionFeatureEnabled: t.arg.boolean()
 		},

@@ -1,32 +1,35 @@
 <script lang="ts">
 	import { goto, invalidateAll } from '$app/navigation';
+	import { page } from '$app/state';
 	import { m } from '$lib/paraglide/messages';
 	import { cache, graphql, type RepresentationTypeEnum$options } from '$houdini';
 	import toast from 'svelte-french-toast';
 	import { importDataSchema } from '$lib/utils/import';
 	import { z } from 'zod/v4';
 	import Footer from '$lib/components/Footer.svelte';
-	import { onMount } from 'svelte';
-	import CountryBadge from '$lib/components/CountryBadge.svelte';
 	import AddCountriesModal from '$lib/components/AddCountriesModal.svelte';
 	import WorldCountries from 'world-countries';
-	import { page } from '$app/state';
 	import { nanoid } from '$lib/helpers/nanoid';
+	import StartStep from '$lib/components/importWizard/StartStep.svelte';
+	import BasicsStep from '$lib/components/importWizard/BasicsStep.svelte';
+	import CommitteesStep from '$lib/components/importWizard/CommitteesStep.svelte';
+	import DelegationsStep from '$lib/components/importWizard/DelegationsStep.svelte';
+	import ActorsStep from '$lib/components/importWizard/ActorsStep.svelte';
+	import ReviewStep from '$lib/components/importWizard/ReviewStep.svelte';
+	import type { PageData } from './$houdini';
 
-	// State for the add countries modal
+	type ImportData = z.infer<typeof importDataSchema>;
+
+	let { data }: { data: PageData } = $props();
+	let importPageQuery = $derived(data.ImportPageQuery);
+	let isAdmin = $derived($importPageQuery.data?.isGlobalAdmin ?? false);
+
+	let step = $state(0);
+	let loading = $state(false);
+	let importData = $state<ImportData | undefined>();
 	let addCountriesModalOpen = $state(false);
 	let activeCommitteeId = $state<string | null>(null);
-
-	// let { data }: PageData = $props();
-
-	let file: File | null = $state(null);
-	let loading = $state(false);
-	let importData = $state<z.infer<typeof importDataSchema>>();
-
-	function handleFileChange(event: Event) {
-		const target = event.target as HTMLInputElement;
-		file = target.files && target.files[0] ? target.files[0] : null;
-	}
+	let showJsonPanel = $state(false);
 
 	const ConferenceCreationMutation = graphql(`
 		mutation ConferenceCreation($data: ImportData!) {
@@ -36,49 +39,15 @@
 		}
 	`);
 
-	async function parseFile(file: File): Promise<any> {
-		const ext = file.name.split('.').pop()?.toLowerCase();
-		const text = await file.text();
-		if (ext !== 'json') throw new Error('Unsupported file type');
+	const STEP_LABELS = $derived([
+		m.basicsTitle(),
+		m.committees(),
+		m.delegations(),
+		m.actorsTitle(),
+		m.editStep()
+	]);
 
-		// validate JSON structure
-		try {
-			const data = importDataSchema.parse(JSON.parse(text));
-			// Strip out the $schema property
-			if (data.$schema) {
-				delete data.$schema;
-			}
-			return data;
-		} catch (e) {
-			if (e instanceof SyntaxError) {
-				toast.error(m.fileParseError());
-				throw new Error('Invalid JSON structure');
-			} else if (e instanceof z.ZodError) {
-				toast.error(m.fileParseError());
-				console.error('Validation error:', e);
-			}
-		}
-	}
-
-	async function importDataUpload(): Promise<void> {
-		if (!file) return;
-		loading = true;
-		let parsedData: any;
-		try {
-			parsedData = await parseFile(file);
-			if (parsedData.$schema) {
-				delete parsedData.$schema;
-			}
-			importData = parsedData;
-			loading = false;
-		} catch (e) {
-			toast.error(m.fileParseError());
-			loading = false;
-			return;
-		}
-	}
-
-	const transformRegionalGroup = (regionalGroup: string | undefined) => {
+	function transformRegionalGroup(regionalGroup: string | undefined) {
 		switch (regionalGroup) {
 			case 'African Group':
 				return 'AFRICA';
@@ -93,9 +62,36 @@
 			default:
 				return undefined;
 		}
-	};
+	}
 
-	async function createFreshData(): Promise<void> {
+	async function parseFile(file: File): Promise<ImportData | undefined> {
+		const ext = file.name.split('.').pop()?.toLowerCase();
+		if (ext !== 'json') {
+			toast.error(m.fileParseError());
+			return;
+		}
+		const text = await file.text();
+		try {
+			const parsed = importDataSchema.parse(JSON.parse(text));
+			if (parsed.$schema) delete parsed.$schema;
+			return parsed;
+		} catch (e) {
+			console.error('Validation error:', e);
+			toast.error(m.fileParseError());
+		}
+	}
+
+	async function handlePickFile(file: File) {
+		loading = true;
+		const parsed = await parseFile(file);
+		loading = false;
+		if (parsed) {
+			importData = parsed;
+			step = 1;
+		}
+	}
+
+	function handleCreateFresh() {
 		importData = {
 			$schema: `${page.url.origin}/api/schemas/import`,
 			title: '',
@@ -111,7 +107,8 @@
 			})),
 			conferenceMembers: [],
 			committeeMembers: []
-		} as unknown as z.infer<typeof importDataSchema>;
+		} as unknown as ImportData;
+		step = 1;
 	}
 
 	async function downloadFile(): Promise<void> {
@@ -131,13 +128,9 @@
 	}
 
 	async function createConference() {
-		if (loading) return;
+		if (loading || !importData) return;
 		loading = true;
-
-		if (!importData) return;
-		if (importData.$schema) {
-			delete importData.$schema;
-		}
+		if (importData.$schema) delete importData.$schema;
 
 		const res = await ConferenceCreationMutation.mutate({ data: importData }).catch((e) => {
 			toast.error(m.conferenceCreationError());
@@ -148,55 +141,22 @@
 			toast.success(m.conferenceCreated());
 			cache.markStale();
 			await invalidateAll();
-			goto(`/app`);
+			goto('/app');
 		}
 		loading = false;
 	}
 
-	const addCommittee = () =>
-		importData?.committees.push({
-			id: nanoid(),
-			name: '',
-			abbreviation: ''
-		});
-
-	const addAgendaItem = (committeeId: string) =>
-		importData?.agendaItems.push({
-			committeeId,
-			title: ''
-		});
-
-	const addRepresentationAndConferenceMember = (type: RepresentationTypeEnum$options) => {
-		const repId = nanoid();
-		importData?.representations.push({
-			name: '',
-			faIcon: type === 'NSA' ? 'megaphone' : undefined,
-			// alpha2Code: type === 'UN' ? 'un' : undefined,
-			// alpha3Code: type === 'UN' ? 'uno' : undefined,
-			representationType: type,
-			id: repId
-		});
-		if (importData?.conferenceMembers === undefined) {
-			importData!.conferenceMembers = [];
-		}
-		importData?.conferenceMembers.push({
-			id: nanoid(),
-			representationId: repId
-		});
-	};
-
-	const openAddCountriesModal = (committeeId: string) => {
+	function openAddCountries(committeeId: string) {
 		activeCommitteeId = committeeId;
 		addCountriesModalOpen = true;
-	};
+	}
 
-	const handleAddCountries = (
+	function handleAddCountries(
 		countries: Array<{ alpha2Code: string; alpha3Code: string; name: string }>
-	) => {
+	) {
 		if (!activeCommitteeId || !importData) return;
 
 		for (const country of countries) {
-			// Check if this country is already a member of this committee
 			const existingRep = importData.representations.find(
 				(x) => x.alpha2Code?.toLowerCase() === country.alpha2Code.toLowerCase()
 			);
@@ -205,15 +165,11 @@
 
 			if (existingRep) {
 				repId = existingRep.id;
-				// Check if already a member of this committee
 				const alreadyMember = importData.committeeMembers?.some(
-					(m) => m.committeeId === activeCommitteeId && m.representationId === repId
+					(cm) => cm.committeeId === activeCommitteeId && cm.representationId === repId
 				);
-				if (alreadyMember) {
-					continue; // Skip this country, already a member
-				}
+				if (alreadyMember) continue;
 			} else {
-				// Create a new representation
 				repId = nanoid();
 				const worldCountry = WorldCountries.find(
 					(x) => x.cca2.toLowerCase() === country.alpha2Code.toLowerCase()
@@ -221,7 +177,7 @@
 				importData.representations.push({
 					alpha2Code: country.alpha2Code,
 					alpha3Code: country.alpha3Code,
-					representationType: 'DELEGATION',
+					representationType: 'DELEGATION' as RepresentationTypeEnum$options,
 					id: repId,
 					regionalGroup: worldCountry
 						? transformRegionalGroup(worldCountry.unRegionalGroup)
@@ -229,10 +185,7 @@
 				});
 			}
 
-			if (importData.committeeMembers === undefined) {
-				importData.committeeMembers = [];
-			}
-
+			if (!importData.committeeMembers) importData.committeeMembers = [];
 			importData.committeeMembers.push({
 				id: nanoid(),
 				committeeId: activeCommitteeId,
@@ -241,309 +194,136 @@
 		}
 
 		activeCommitteeId = null;
-	};
+	}
 </script>
 
-<div class="navbar bg-base-100 relative shadow-sm">
-	<div class="flex-none">
-		<a class="btn btn-ghost" href=".">
-			<i class="fa-duotone fa-arrow-left mr-2"></i>
-			{m.back()}
-		</a>
-		<button
-			class="btn btn-ghost"
-			aria-label="Download import data"
-			onclick={downloadFile}
-			disabled={!importData}
-		>
-			<i class="fa-solid fa-download"></i>
-			{m.download()}
-		</button>
-	</div>
-</div>
-
-<div class="bg-base-200 flex min-h-screen flex-col items-center justify-center">
-	{#if !importData}
-		<div class="bg-base-100 card flex w-full max-w-md flex-col items-center p-8 shadow-sm">
-			<h1 class="mb-8 text-3xl font-bold">{m.importFromDelegator()}</h1>
-			<input
-				type="file"
-				class="file-input file-input-bordered mb-6 w-full"
-				onchange={handleFileChange}
-				accept=".json"
-			/>
-			<button class="btn btn-primary w-full" onclick={importDataUpload} disabled={loading || !file}>
-				{#if loading}
-					<span class="loading loading-spinner"></span>
-				{:else}
-					<i class="fas fa-paper-plane"></i>
-					<span>{m.upload()}</span>
-				{/if}
-			</button>
-			<button class="btn w-full" onclick={createFreshData} disabled={loading}>
-				{#if loading}
-					<span class="loading loading-spinner"></span>
-				{:else}
-					<i class="fas fa-plus"></i>
-					<span>{m.create()}</span>
-				{/if}
-			</button>
+<div class="flex min-h-screen flex-col">
+	<!-- Top bar -->
+	<header class="navbar bg-base-100 sticky top-0 z-20 shadow-sm">
+		<div class="flex flex-1 items-center gap-2">
+			<a
+				class="btn btn-ghost"
+				href={step === 0 ? '/app' : undefined}
+				onclick={(e) => {
+					if (step > 0) {
+						e.preventDefault();
+						step = step - 1;
+					}
+				}}
+			>
+				<i class="fa-solid fa-arrow-left"></i>
+				{step === 0 ? m.launcher() : m.back()}
+			</a>
 		</div>
-	{:else}
-		<div class="m-10 flex w-full max-w-3xl flex-col gap-4">
-			<input
-				type="text"
-				class="input input-bordered input-xl w-full"
-				bind:value={importData.title}
-				placeholder={m.conferenceTitle()}
-			/>
-			<input
-				type="text"
-				class="input input-bordered w-full"
-				bind:value={importData.id}
-				placeholder={m.conferenceId()}
-			/>
-
-			{#each importData.committees as committee}
-				{@const agendaItems = importData.agendaItems.filter(
-					(item) => item.committeeId === committee.id
-				)}
-				{@const committeeMembers = importData.committeeMembers?.filter(
-					(member) => member.committeeId === committee.id
-				)}
-
-				<fieldset class="fieldset bg-base-100 border-base-300 rounded-box relative border p-4">
-					<legend class="fieldset-legend">{m.committee()}</legend>
-
-					<input
-						type="text"
-						class="input input-bordered input-lg w-full"
-						bind:value={committee.abbreviation}
-						placeholder={m.committeeAbbreviation()}
-					/>
-					<input
-						type="text"
-						class="input input-bordered w-full"
-						bind:value={committee.name}
-						placeholder={m.committeeName()}
-					/>
-					<input
-						type="text"
-						class="input input-bordered w-full"
-						bind:value={committee.resolutionHeadline}
-						placeholder={m.resolutionHeadline()}
-					/>
-					<input
-						type="text"
-						class="input input-bordered w-full"
-						bind:value={committee.id}
-						placeholder={m.committeeId()}
-					/>
-					<fieldset class="fieldset bg-base-200 border-base-300 rounded-box border p-4">
-						<legend class="fieldset-legend">{m.agendaItems()}</legend>
-						{#each agendaItems as item}
-							<div class="join">
-								<input
-									type="text"
-									class="input input-bordered join-item w-full"
-									bind:value={item.title}
-									placeholder={m.agendaItem()}
-								/>
-								<button
-									class="btn join-item"
-									aria-label="Remove agenda item"
-									onclick={() => {
-										importData!.agendaItems = importData!.agendaItems.filter(
-											(i) => i.title !== item.title
-										);
-									}}
-								>
-									<i class="fa-solid fa-trash"></i>
-								</button>
-							</div>
-						{/each}
-						<button
-							class="btn"
-							aria-label="Add agenda item"
-							onclick={() => addAgendaItem(committee.id)}
-						>
-							<i class="fa-solid fa-plus"></i>
-							{m.addAgendaItem()}
-						</button>
-					</fieldset>
-					<fieldset class="fieldset bg-base-200 border-base-300 rounded-box border p-4">
-						<legend class="fieldset-legend">{m.committeeMember()}</legend>
-						<div class="flex flex-wrap gap-1">
-							<div class="badge badge-primary badge-outline">
-								<i class="fa-duotone fa-sigma"></i>
-								<span class="ml-2">{committeeMembers.length}</span>
-							</div>
-							{#each committeeMembers.toSorted((a, b) => importData!.representations
-										.find((rep) => rep.id === a.representationId)
-										?.alpha2Code?.localeCompare(importData!.representations.find((rep) => rep.id === b.representationId)?.alpha2Code ?? '') ?? 0) as member}
-								{@const rep = importData.representations.find(
-									(rep) => rep.id === member.representationId
-								)}
-								{#if rep?.alpha2Code}
-									<CountryBadge
-										alpha2Code={rep.alpha2Code}
-										alpha3Code={rep.alpha3Code}
-										onRemove={() => {
-											importData!.committeeMembers = importData!.committeeMembers?.filter(
-												(i) => i.id !== member.id
-											);
-										}}
-									/>
-								{/if}
-							{/each}
-						</div>
-						<button
-							class="btn btn-primary btn-sm mt-2"
-							aria-label="Add committee member"
-							onclick={() => {
-								openAddCountriesModal(committee.id);
-							}}
-						>
-							<i class="fa-solid fa-plus"></i>
-							{m.addCountry()}
-						</button>
-					</fieldset>
-
-					<button
-						class="btn btn-error btn-circle absolute top-0 right-0 translate-x-1/2 -translate-y-3/4 transition-all duration-300"
-						aria-label="Remove committee"
-						onclick={() => {
-							importData!.committees = importData!.committees.filter((i) => i.id !== committee.id);
-							importData!.agendaItems = importData!.agendaItems.filter(
-								(i) => i.committeeId !== committee.id
-							);
-							importData!.committeeMembers = importData!.committeeMembers?.filter(
-								(i) => i.committeeId !== committee.id
-							);
-						}}
-					>
-						<i class="fa-solid fa-trash"></i>
-					</button>
-				</fieldset>
-			{/each}
-
-			<button class="btn" aria-label="Add agenda item" onclick={() => addCommittee()}>
-				<i class="fa-solid fa-plus"></i>
-				{m.addCommittee()}
-			</button>
-
-			<div class="divider"></div>
-
-			<fieldset class="fieldset bg-base-100 border-base-300 rounded-box border p-4">
-				<legend class="fieldset-legend">{m.nonStateActors()}</legend>
-				{#each importData.representations.filter((x) => x.representationType === 'NSA') as rep}
-					{@const conferenceMembers = importData.conferenceMembers?.filter(
-						(member) => member.representationId === rep.id
-					)}
-					<div class="join">
-						<div class="btn join-item w-14">
-							<i class="fa-solid fa-{rep.faIcon?.replace('fa-', '')}"></i>
-						</div>
-						<input
-							type="text"
-							class="input input-bordered join-item w-full flex-1"
-							bind:value={rep.faIcon}
-							placeholder={m.icon()}
-						/>
-						<input
-							type="text"
-							class="input input-bordered join-item w-sm"
-							bind:value={rep.name}
-							placeholder={m.nonStateActor()}
-						/>
-						<div class="btn join-item {conferenceMembers?.length === 0 ? 'btn-error' : ''}">
-							<i class="fas fa-users"></i>
-							<span class="ml-2">{conferenceMembers?.length}</span>
-						</div>
-						<button
-							class="btn join-item"
-							aria-label="Remove agenda item"
-							onclick={() => {
-								importData!.representations = importData!.representations.filter(
-									(i) => i.id !== rep.id
-								);
-								importData!.conferenceMembers = importData!.conferenceMembers?.filter(
-									(i) => i.representationId !== rep.id
-								);
-							}}
-						>
-							<i class="fa-solid fa-trash"></i>
-						</button>
-					</div>
-				{/each}
+		<div class="flex items-center gap-1">
+			{#if importData}
 				<button
-					class="btn"
-					aria-label="Add agenda item"
-					onclick={() => addRepresentationAndConferenceMember('NSA')}
+					type="button"
+					class="btn btn-ghost btn-sm"
+					onclick={() => (showJsonPanel = !showJsonPanel)}
 				>
-					<i class="fa-solid fa-plus"></i>
-					{m.addNonStateActor()}
+					<i class="fa-solid fa-code"></i>
+					{showJsonPanel ? m.hideJson() : m.viewJson()}
 				</button>
-			</fieldset>
+				<button type="button" class="btn btn-ghost btn-sm" onclick={downloadFile}>
+					<i class="fa-solid fa-download"></i>
+					{m.save()}
+				</button>
+			{/if}
+		</div>
+	</header>
 
-			<fieldset class="fieldset bg-base-100 border-base-300 rounded-box border p-4">
-				<legend class="fieldset-legend">{m.unActors()}</legend>
-				{#each importData.representations.filter((x) => x.representationType === 'UN') as rep}
-					{@const conferenceMembers = importData.conferenceMembers?.filter(
-						(member) => member.representationId === rep.id
-					)}
-					<div class="join">
-						<input
-							type="text"
-							class="input input-bordered join-item w-full"
-							bind:value={rep.name}
-							placeholder={m.unActor()}
-						/>
-						<div class="btn join-item {conferenceMembers.length === 0 ? 'btn-error' : ''}">
-							<i class="fas fa-users"></i>
-							<span class="ml-2">{conferenceMembers.length}</span>
-						</div>
+	<!-- Stepper -->
+	{#if step > 0}
+		<div class="bg-base-100 border-base-content/10 border-b px-6 py-5">
+			<ul class="steps mx-auto w-full max-w-4xl">
+				{#each STEP_LABELS as label, i (i)}
+					{@const idx = i + 1}
+					<li class="step {idx <= step ? 'step-primary' : ''}">
 						<button
-							class="btn join-item"
-							aria-label="Remove agenda item"
-							onclick={() => {
-								importData!.representations = importData!.representations.filter(
-									(i) => i.id !== rep.id
-								);
-								importData!.conferenceMembers = importData!.conferenceMembers?.filter(
-									(i) => i.representationId !== rep.id
-								);
-							}}
+							type="button"
+							class="btn btn-ghost btn-sm h-auto whitespace-normal"
+							onclick={() => importData && (step = idx)}
+							disabled={!importData}
 						>
-							<i class="fa-solid fa-trash"></i>
+							{label}
 						</button>
-					</div>
+					</li>
 				{/each}
-				<button
-					class="btn"
-					aria-label="Add agenda item"
-					onclick={() => addRepresentationAndConferenceMember('UN')}
-				>
-					<i class="fa-solid fa-plus"></i>
-					{m.addUnActor()}
-				</button>
-			</fieldset>
+			</ul>
 		</div>
 	{/if}
 
-	<button
-		class="btn btn-primary fixed right-0 bottom-0 left-0 z-50 m-4"
-		aria-label="Create conference"
-		onclick={createConference}
-		disabled={!importData || loading}
+	<!-- Body -->
+	<main
+		class="mx-auto flex w-full flex-1 flex-col gap-4 px-6 {step === 0
+			? 'max-w-full py-16'
+			: 'max-w-3xl py-10'}"
 	>
-		{#if loading}
-			<span class="loading loading-spinner"></span>
-		{:else}
-			<i class="fa-solid fa-paper-plane"></i>
-			<span>{m.createConference()}</span>
+		{#if step === 0}
+			<StartStep onPickFile={handlePickFile} onCreateFresh={handleCreateFresh} {loading} />
+		{:else if step === 1 && importData}
+			<BasicsStep bind:data={importData} />
+		{:else if step === 2 && importData}
+			<CommitteesStep bind:data={importData} />
+		{:else if step === 3 && importData}
+			<DelegationsStep bind:data={importData} onOpenAddCountries={openAddCountries} />
+		{:else if step === 4 && importData}
+			<ActorsStep bind:data={importData} />
+		{:else if step === 5 && importData}
+			<ReviewStep
+				data={importData}
+				{isAdmin}
+				{loading}
+				onApply={createConference}
+				onDownload={downloadFile}
+				onJump={(s) => (step = s)}
+			/>
 		{/if}
-	</button>
+	</main>
+
+	<!-- Footer nav -->
+	{#if step > 0 && step < 5}
+		<footer
+			class="bg-base-100/90 border-base-content/10 sticky bottom-0 flex items-center justify-between gap-4 border-t px-6 py-3 backdrop-blur"
+		>
+			<button class="btn" onclick={() => (step = step - 1)}>
+				<i class="fa-solid fa-arrow-left"></i>
+				{m.back()}
+			</button>
+			<div class="text-base-content/55 text-sm">
+				{m.stepXofY({ current: step, total: 5 })}
+			</div>
+			<button class="btn btn-primary" onclick={() => (step = step + 1)}>
+				{step === 4 ? m.goToReview() : m.forward()}
+				<i class="fa-solid fa-arrow-right"></i>
+			</button>
+		</footer>
+	{/if}
+
+	<!-- JSON drawer -->
+	{#if showJsonPanel && importData}
+		<aside
+			class="bg-primary text-primary-content fixed inset-y-0 right-0 z-40 w-96 overflow-auto p-5 shadow-2xl"
+		>
+			<div class="mb-4 flex items-center justify-between">
+				<strong>{m.viewJson()}</strong>
+				<button
+					class="btn btn-ghost btn-sm text-primary-content"
+					onclick={() => (showJsonPanel = false)}
+					aria-label="Close"
+				>
+					<i class="fa-solid fa-xmark"></i>
+				</button>
+			</div>
+			<pre
+				class="m-0 font-mono text-xs leading-relaxed break-words whitespace-pre-wrap">{JSON.stringify(
+					importData,
+					null,
+					2
+				)}</pre>
+		</aside>
+	{/if}
 </div>
 
 <AddCountriesModal bind:open={addCountriesModalOpen} onSubmit={handleAddCountries} />

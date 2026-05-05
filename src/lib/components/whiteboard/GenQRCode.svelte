@@ -10,16 +10,39 @@
 	}
 
 	let { showModal = $bindable(), committeeID, conferenceID, resolve }: Props = $props();
-	let activeTab = $state<'CUSTOM' | 'COMMITTEE'>('COMMITTEE');
+	let activeTab = $state<'COMMITTEE' | 'CUSTOM'>('COMMITTEE');
 	let qrUrl = $state('');
 	let isGenerating = $state(false);
 	let qrError = $state('');
 	let qrImageUrl = $state<string | null>(null);
 
-	// Generate committee URL based on current committee
+	// State for path option
+	let includePapers = $state<boolean>(true);
+
+	// Generate committee URL based on current committee and option
 	function getCommitteeUrl(): string {
 		const baseUrl = window.location.origin;
-		return `${baseUrl}/app/${encodeURIComponent(conferenceID)}/${encodeURIComponent(committeeID)}`;
+
+		if (includePapers) {
+			console.log(
+				`${baseUrl}/app/${encodeURIComponent(conferenceID)}/participant/${encodeURIComponent(committeeID)}/papers`
+			);
+			return `${baseUrl}/app/${encodeURIComponent(conferenceID)}/participant/${encodeURIComponent(committeeID)}/papers`;
+		} else {
+			console.log(
+				`${baseUrl}/app/${encodeURIComponent(conferenceID)}/participant/${encodeURIComponent(committeeID)}`
+			);
+			return `${baseUrl}/app/${encodeURIComponent(conferenceID)}/participant/${encodeURIComponent(committeeID)}`;
+		}
+	}
+
+	// Get preview text for the selected option
+	function getPreviewText(): string {
+		if (includePapers) {
+			return `/app/${conferenceID}/${committeeID}/papers`;
+		} else {
+			return `/app/${conferenceID}/${committeeID}`;
+		}
 	}
 
 	async function generateQRCode() {
@@ -77,7 +100,8 @@
 		qrError = '';
 		qrImageUrl = null;
 		isGenerating = false;
-		activeTab = 'CUSTOM';
+		activeTab = 'COMMITTEE';
+		includePapers = false;
 	}
 
 	// Reset when modal closes
@@ -100,10 +124,6 @@
 					activeTab = 'COMMITTEE';
 					qrImageUrl = null;
 					qrError = '';
-					// Auto-fill committee URL when switching to committee tab
-					if (!qrUrl && conferenceID && committeeID) {
-						qrUrl = getCommitteeUrl();
-					}
 				}}
 			>
 				<i class="fa-duotone fa-users mr-2"></i>
@@ -135,12 +155,6 @@
 						<i class="fa-regular fa-circle-check text-success mr-1"></i>
 						{m.qrCodeSuccess()}
 					</p>
-					<!-- DEBUG
-                    {#if activeTab === 'COMMITTEE'}
-                        <p class="text-xs text-base-content/50 mt-2">
-                            Link: {getCommitteeUrl()}
-                        </p>
-                    {/if}-->
 				{:else if isGenerating}
 					<div class="text-center">
 						<i class="fa-solid fa-spinner fa-spin text-4xl text-primary mb-3"></i>
@@ -166,7 +180,94 @@
 
 		<!-- URL Input Area -->
 		<div class="bg-base-100 card p-4 shadow-sm">
-			{#if activeTab === 'CUSTOM'}
+			{#if activeTab === 'COMMITTEE'}
+				<div class="flex flex-col gap-4">
+					<!-- Path Option Buttons -->
+					<div class="form-control">
+						<label class="label">
+							<span class="label-text font-semibold">
+								<i class="fa-solid fa-folder-tree mr-2"></i>
+								{m.whereQRCodeLead()}
+							</span>
+						</label>
+						<div class="flex gap-2 mt-1">
+							<button
+								class="btn flex-1 {!includePapers ? 'btn-primary' : 'btn-outline'}"
+								onclick={() => {
+									includePapers = false;
+									qrImageUrl = null;
+									qrError = '';
+								}}
+							>
+								<i class="fa-solid fa-folder-open mr-2"></i>
+								{m.toPresentation()}
+							</button>
+							<button
+								class="btn flex-1 {includePapers ? 'btn-primary' : 'btn-outline'}"
+								onclick={() => {
+									includePapers = true;
+									qrImageUrl = null;
+									qrError = '';
+								}}
+							>
+								<i class="fa-solid fa-file-alt mr-2"></i>
+								{m.toPapers()}
+							</button>
+						</div>
+					</div>
+
+					<!-- URL Preview -->
+					<!--<div class="form-control">
+						<label class="label">
+							<span class="label-text">
+								<i class="fa-regular fa-eye mr-1"></i>
+								{m.preview()}
+							</span>
+						</label>
+						<div class="relative">
+							<input
+								type="text"
+								value={getCommitteeUrl()}
+								readonly
+								class="input input-bordered w-full bg-base-200 cursor-pointer font-mono text-sm"
+								onclick={(e) => {
+									const target = e.target as HTMLInputElement;
+									target.select();
+									navigator.clipboard.writeText(target.value);
+								}}
+							/>
+							<div class="absolute right-2 top-1/2 transform -translate-y-1/2">
+								<span class="tooltip" data-tip={m.copyToClipboard()}>
+									<i class="fa-regular fa-copy text-base-content/50 cursor-pointer hover:text-primary"
+										onclick={() => {
+											const input = document.querySelector('.form-control input') as HTMLInputElement;
+											if (input) {
+												input.select();
+												navigator.clipboard.writeText(input.value);
+											}
+										}}
+									></i>
+								</span>
+							</div>
+						</div>
+					</div>-->
+
+					<!-- Generate Button -->
+					<button
+						class="btn btn-primary"
+						onclick={generateQRCode}
+						disabled={isGenerating || !committeeID || !conferenceID}
+					>
+						{#if isGenerating}
+							<i class="fa-solid fa-spinner fa-spin"></i>
+							{m.generating()}
+						{:else}
+							<i class="fa-solid fa-qrcode mr-2"></i>
+							{m.genQRCode()}
+						{/if}
+					</button>
+				</div>
+			{:else}
 				<div class="flex flex-col gap-4">
 					<div class="form-control">
 						<label class="label">
@@ -195,50 +296,6 @@
 							<i class="fa-solid fa-qrcode mr-2"></i>
 						{/if}
 						{m.genQRCode()}
-					</button>
-				</div>
-			{:else}
-				<div class="flex flex-col gap-4">
-					<!-- DEBUG
-                    <div class="alert alert-info">
-                        <i class="fa-solid fa-info-circle"></i>
-                        <span>Committee URL INFO: <strong>{committeeID}</strong></span>
-                    </div>
-                    <div class="alert alert-info">
-                        <i class="fa-solid fa-info-circle"></i>
-                        <span>Conference URL INFO: <strong>{conferenceID}</strong></span>
-                    </div>-->
-
-					<div class="form-control">
-						<label class="label">
-							<span class="label-text">{m.preview()}</span>
-						</label>
-						<input
-							type="text"
-							value={getCommitteeUrl()}
-							readonly
-							class="input input-bordered w-full bg-base-200 cursor-pointer"
-							onclick={(e) => {
-								const target = e.target as HTMLInputElement;
-								target.select();
-								navigator.clipboard.writeText(target.value);
-							}}
-						/>
-						<label class="label">
-							<span class="label-text-alt">{m.copy()}</span>
-						</label>
-					</div>
-
-					<button
-						class="btn btn-primary"
-						onclick={generateQRCode}
-						disabled={isGenerating || !committeeID || !conferenceID}
-					>
-						{#if isGenerating}
-							<i class="fa-solid fa-spinner fa-spin"></i>
-						{:else}
-							<i class="fa-solid fa-qrcode mr-2"></i>
-						{/if}
 					</button>
 				</div>
 			{/if}

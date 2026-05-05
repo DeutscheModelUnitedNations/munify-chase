@@ -5,9 +5,10 @@
 		onPickFile: (file: File) => void;
 		onCreateFresh: () => void;
 		loading?: boolean;
+		isAdmin?: boolean;
 	}
 
-	let { onPickFile, onCreateFresh, loading = false }: Props = $props();
+	let { onPickFile, onCreateFresh, loading = false, isAdmin = false }: Props = $props();
 
 	let fileInput: HTMLInputElement;
 	let dragActive = $state(false);
@@ -112,4 +113,14 @@
 		<i class="fa-solid fa-cloud-arrow-up"></i>
 		<span>{m.dropJsonHint()}</span>
 	</div>
+
+	{#if !isAdmin}
+		<div role="alert" class="alert alert-warning w-full max-w-4xl">
+			<i class="fa-solid fa-triangle-exclamation"></i>
+			<div>
+				<h3 class="font-semibold">{m.nonAdminImportWarningTitle()}</h3>
+				<div class="text-sm">{m.nonAdminImportWarning()}</div>
+			</div>
+		</div>
+	{/if}
 </div>

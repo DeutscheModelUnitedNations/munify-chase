@@ -364,6 +364,8 @@
 	"noPapersYet": "Noch keine Papiere. Erstelle eines oder gib einen Freigabecode ein.",
 	"noResults": "Keine Ergebnisse",
 	"noSubmittedPapers": "Noch keine eingereichten Papiere.",
+	"nonAdminImportWarning": "Nur globale Admins können die Konferenz direkt erstellen. Du kannst hier alles ausfüllen und am Ende die JSON-Datei herunterladen — gib sie deinem Konferenz-Admin zum Anwenden.",
+	"nonAdminImportWarningTitle": "Du kannst die Datei vorbereiten, aber nicht anwenden",
 	"nonStateActor": "Nichtstaatlicher Akteur",
 	"nonStateActors": "Nichtstaatliche Akteure",
 	"notAuthorized": "Du bist nicht berechtigt, auf diese Seite zuzugreifen",

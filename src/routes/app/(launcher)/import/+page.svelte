@@ -261,7 +261,12 @@
 			: 'max-w-3xl py-10'}"
 	>
 		{#if step === 0}
-			<StartStep onPickFile={handlePickFile} onCreateFresh={handleCreateFresh} {loading} />
+			<StartStep
+				onPickFile={handlePickFile}
+				onCreateFresh={handleCreateFresh}
+				{loading}
+				{isAdmin}
+			/>
 		{:else if step === 1 && importData}
 			<BasicsStep bind:data={importData} />
 		{:else if step === 2 && importData}

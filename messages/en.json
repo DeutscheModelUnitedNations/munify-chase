@@ -364,6 +364,8 @@
 	"noPapersYet": "No papers yet. Create one or enter a share code.",
 	"noResults": "No results",
 	"noSubmittedPapers": "No submitted papers yet.",
+	"nonAdminImportWarning": "Only global admins can create the conference directly. You can fill out everything here and download the JSON file at the end — pass it to your conference admin to apply.",
+	"nonAdminImportWarningTitle": "You can prepare the file, but not apply it",
 	"nonStateActor": "Non-state Actor",
 	"nonStateActors": "Non-state Actors",
 	"notAuthorized": "You are not authorized to access this page",

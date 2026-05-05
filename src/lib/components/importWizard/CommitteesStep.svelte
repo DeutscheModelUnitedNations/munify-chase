@@ -73,14 +73,14 @@
 				<div class="card bg-base-100 border-base-content/10 relative gap-4 border p-6 shadow-sm">
 					<div class="flex items-start gap-3">
 						<div
-							class="bg-primary/15 text-primary grid h-14 w-14 shrink-0 place-items-center rounded-xl font-mono text-lg font-bold"
+							class="bg-primary/15 text-primary p-2 grid h-12 min-w-12 shrink-0 place-items-center rounded-xl font-mono text-lg font-bold"
 						>
 							{committee.abbreviation || '–'}
 						</div>
 						<div class="grid flex-1 grid-cols-1 gap-3 md:grid-cols-[180px_1fr]">
 							<input
 								type="text"
-								class="input input-bordered font-mono font-semibold"
+								class="input input-bordered font-mono input-lg font-semibold"
 								placeholder={m.committeeAbbreviationPlaceholder()}
 								bind:value={committee.abbreviation}
 							/>

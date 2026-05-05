@@ -56,7 +56,7 @@
 					<span class="text-base-content/70 text-xs font-semibold">{m.conferenceStartDate()}</span>
 					<input
 						type="date"
-						class="input input-bordered input-xl w-full"
+						class="input input-bordered w-full"
 						value={toDateInputValue(data.startDate)}
 						oninput={(e) => (data.startDate = fromDateInputValue(e.currentTarget.value))}
 					/>
@@ -65,7 +65,7 @@
 					<span class="text-base-content/70 text-xs font-semibold">{m.conferenceEndDate()}</span>
 					<input
 						type="date"
-						class="input input-bordered input-xl w-full"
+						class="input input-bordered w-full"
 						value={toDateInputValue(data.endDate)}
 						oninput={(e) => (data.endDate = fromDateInputValue(e.currentTarget.value))}
 					/>
@@ -76,7 +76,7 @@
 				<span class="text-base-content/70 text-xs font-semibold">{m.conferenceLocation()}</span>
 				<input
 					type="text"
-					class="input input-bordered input-xl w-full"
+					class="input input-bordered w-full"
 					bind:value={data.location}
 					placeholder={m.conferenceLocationPlaceholder()}
 				/>

@@ -8,7 +8,6 @@
 	let { data }: { data: PageData } = $props();
 
 	let launcherQuery = $derived(data?.LauncherQuery);
-	$inspect($launcherQuery);
 	let conferenceData = $derived($launcherQuery.data?.findManyConferenceUser ?? []);
 	let isGlobalAdmin = $derived($launcherQuery.data?.isGlobalAdmin ?? false);
 	let allConferences = $derived($launcherQuery.data?.findManyConference ?? []);

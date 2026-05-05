@@ -223,12 +223,15 @@ input CommitteeWhereInputArgument {
 type Conference {
   committees(limit: Int, offset: Int, where: CommitteeWhereInputArgument): [Committee!]!
   createdAt: DateTime!
+  endDate: Date
   hasModeratedCaucus: Boolean!
   id: ID!
+  location: String
   members(limit: Int, offset: Int, where: ConferenceMemberWhereInputArgument): [ConferenceMember!]!
   pressWebsite: String
   representations(limit: Int, offset: Int, where: RepresentationWhereInputArgument): [Representation!]!
   resolutionFeatureEnabled: Boolean!
+  startDate: Date
   title: String!
 
   """
@@ -310,12 +313,15 @@ input ConferenceUserWhereInputArgument {
 input ConferenceWhereInputArgument {
   committees: CommitteeWhereInputArgument
   createdAt: DateTime
+  endDate: Date
   hasModeratedCaucus: Boolean
   id: ID
+  location: String
   members: ConferenceMemberWhereInputArgument
   pressWebsite: String
   representations: RepresentationWhereInputArgument
   resolutionFeatureEnabled: Boolean
+  startDate: Date
   title: String
   updatedAt: DateTime
   users: ConferenceUserWhereInputArgument
@@ -338,8 +344,11 @@ input ImportData {
   committees: [ImportDataCommittee!]!
   conferenceMembers: [ImportDataConferenceMember!]!
   conferenceUsers: [ImportDataConferenceUser!]
+  endDate: Date
   id: ID!
+  location: String
   representations: [ImportDataRepresentation!]!
+  startDate: Date
   title: String!
 }
 
@@ -442,7 +451,7 @@ type Mutation {
   submitPaper(paperId: ID!): ResolutionPaper
   updateComment(commentId: ID!, content: String!): ResolutionComment
   updateCommittee(abbreviation: String, activeAgendaItemId: ID, activeAmendmentId: ID, activeDraftResolutionId: ID, allowDelegationsToAddThemselvesToSpeakersList: Boolean, amendmentSponsoringOpen: Boolean, amendmentSubmissionOpen: Boolean, clearActiveAmendment: Boolean, clearActiveDraftResolution: Boolean, currentOperativeClauseId: String, currentOperativeIndex: Int, id: ID!, lastResolutionAdoptionDate: DateTime, maxDraftResolutions: Int, name: String, showWhiteboard: Boolean, stateOfDebate: String, status: CommitteeStatusEnum, statusHeadline: String, statusUntil: DateTime, supportReEvaluationOpen: Boolean, whiteboardContent: String): Committee
-  updateConference(hasModeratedCaucus: Boolean, id: ID!, pressWebsite: String, resolutionFeatureEnabled: Boolean, title: String): Conference
+  updateConference(endDate: Date, hasModeratedCaucus: Boolean, id: ID!, location: String, pressWebsite: String, resolutionFeatureEnabled: Boolean, startDate: Date, title: String): Conference
   updateConferenceUser(committeeMemberId: ID, conferenceMemberId: ID, conferenceUserType: ConferenceUserTypeEnum!, id: ID!): ConferenceUser
   updatePaperContent(content: JSON!, paperId: ID!): ResolutionPaper
   updatePaperTitle(paperId: ID!, title: String!): ResolutionPaper

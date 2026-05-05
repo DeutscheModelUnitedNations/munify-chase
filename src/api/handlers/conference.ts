@@ -76,6 +76,9 @@ schemaBuilder.mutationFields((t) => ({
 			id: t.arg.id({ required: true }),
 			title: t.arg.string(),
 			pressWebsite: t.arg.string(),
+			location: t.arg.string(),
+			startDate: t.arg({ type: 'Date' }),
+			endDate: t.arg({ type: 'Date' }),
 			hasModeratedCaucus: t.arg.boolean(),
 			resolutionFeatureEnabled: t.arg.boolean()
 		},
@@ -87,6 +90,9 @@ schemaBuilder.mutationFields((t) => ({
 				.set({
 					title: args.title ?? undefined,
 					pressWebsite: args.pressWebsite ?? undefined,
+					location: args.location === undefined ? undefined : args.location,
+					startDate: args.startDate === undefined ? undefined : args.startDate,
+					endDate: args.endDate === undefined ? undefined : args.endDate,
 					hasModeratedCaucus: args.hasModeratedCaucus ?? undefined,
 					resolutionFeatureEnabled: args.resolutionFeatureEnabled ?? undefined
 				})

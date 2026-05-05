@@ -130,13 +130,28 @@
 		URL.revokeObjectURL(url);
 	}
 
+	function toDateOnly(d: Date | string | undefined | null): string | undefined {
+		if (!d) return undefined;
+		const date = d instanceof Date ? d : new Date(d);
+		if (Number.isNaN(date.getTime())) return undefined;
+		const year = date.getUTCFullYear();
+		const month = String(date.getUTCMonth() + 1).padStart(2, '0');
+		const day = String(date.getUTCDate()).padStart(2, '0');
+		return `${year}-${month}-${day}`;
+	}
+
 	async function createConference() {
 		if (loading || !importData) return;
 		loading = true;
 		if (importData.$schema) delete importData.$schema;
 
 		try {
-			const res = await ConferenceCreationMutation.mutate({ data: importData }).catch((e) => {
+			const payload = {
+				...importData,
+				startDate: toDateOnly(importData.startDate),
+				endDate: toDateOnly(importData.endDate)
+			} as typeof importData;
+			const res = await ConferenceCreationMutation.mutate({ data: payload }).catch((e) => {
 				toast.error(m.conferenceCreationError());
 				console.error('Error creating conference:', e);
 			});

@@ -56,8 +56,8 @@
 			$title: String
 			$pressWebsite: String
 			$location: String
-			$startDate: DateTime
-			$endDate: DateTime
+			$startDate: Date
+			$endDate: Date
 			$hasModeratedCaucus: Boolean
 			$resolutionFeatureEnabled: Boolean
 		) {

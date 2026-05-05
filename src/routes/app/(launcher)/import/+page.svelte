@@ -240,8 +240,8 @@
 
 	<!-- Stepper -->
 	{#if step > 0}
-		<div class="bg-base-100 border-base-content/10 border-b px-6 py-5">
-			<ul class="steps mx-auto w-full max-w-4xl">
+		<div class="bg-base-100 border-base-content/10 flex justify-center border-b px-6 py-5">
+			<ul class="steps">
 				{#each STEP_LABELS as label, i (i)}
 					{@const idx = i + 1}
 					<li class="step {idx <= step ? 'step-primary' : ''}">

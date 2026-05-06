@@ -94,11 +94,13 @@ async function resolveNsaTarget(args: {
 		throw new GraphQLError('Provide exactly one of conferenceUserId or attendanceCode');
 	}
 
+	const normalizedCode = args.attendanceCode?.trim().toUpperCase();
+
 	const target = await db.query.conferenceUser.findFirst({
 		where: {
 			conferenceId: args.committee.conferenceId,
 			conferenceUserType: 'NON_STATE_ACTOR',
-			...(hasUserId ? { id: args.conferenceUserId! } : { attendanceCode: args.attendanceCode! })
+			...(hasUserId ? { id: args.conferenceUserId! } : { attendanceCode: normalizedCode! })
 		}
 	});
 	if (!target) throw new GraphQLError('NSA user not found for this conference');

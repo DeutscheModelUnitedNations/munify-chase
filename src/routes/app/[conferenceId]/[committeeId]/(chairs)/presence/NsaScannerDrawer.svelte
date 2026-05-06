@@ -198,7 +198,7 @@
 
 				<div class="divider text-base-content/50 my-1 text-xs">{m.recentScans()}</div>
 
-				<ul class="flex max-h-72 flex-col gap-1 overflow-y-auto">
+				<ul class="flex max-h-56 flex-col gap-1 overflow-y-auto">
 					{#each scanLog as entry (entry.id)}
 						<li class="alert {entry.ok ? 'alert-success' : 'alert-error'} py-2" role="status">
 							<i

@@ -2,14 +2,13 @@
 	import { client } from '$lib/api/rumbleClient/client';
 	import { m } from '$lib/paraglide/messages';
 	import BasicCard from '$lib/components/BasicCard.svelte';
+	import NsaQrCardModal from './NsaQrCardModal.svelte';
 
 	interface Props {
 		conferenceId: string;
 	}
 	let { conferenceId }: Props = $props();
 
-	// All NSA users in the conference (independent of whether they ever checked
-	// in). Each NSA org may have multiple representatives.
 	const nsaUsers = await client.liveQuery.conferenceUsers({
 		__args: {
 			where: {
@@ -26,7 +25,6 @@
 		}
 	});
 
-	// Latest event per user → drives "currently in committee X" labels.
 	const latestEvents = await client.liveQuery.latestNsaPresenceEvents({
 		__args: { conferenceId },
 		id: true,
@@ -38,6 +36,7 @@
 
 	const conference = await client.liveQuery.conference({
 		__args: { id: conferenceId },
+		title: true,
 		committees: { id: true, name: true, abbreviation: true }
 	});
 
@@ -66,13 +65,75 @@
 		}
 		return [...map.values()].sort((a, b) => a.name.localeCompare(b.name));
 	});
+
+	let qrModalOpen = $state(false);
+	let qrTarget = $state<{
+		id: string;
+		userEmail: string;
+		attendanceCode: string | null;
+		orgName: string | null;
+	} | null>(null);
+
+	function openQrFor(user: any, orgName: string) {
+		qrTarget = {
+			id: user.id,
+			userEmail: user.userEmail,
+			attendanceCode: user.attendanceCode,
+			orgName
+		};
+		qrModalOpen = true;
+	}
+
+	// CSV export — semicolon-separated for Excel-DE default; \r\n for Windows.
+	function exportCsv() {
+		const header = ['id', 'attendance_code', 'email', 'organization', 'currently_in_committee'];
+		const rows: string[][] = [];
+		for (const org of groupedByOrg) {
+			for (const user of org.users) {
+				const latest = latestByUser.get(user.id);
+				const inCommittee =
+					latest?.type === 'CHECK_IN' ? (committeesById.get(latest.committeeId)?.name ?? '') : '';
+				rows.push([user.id, user.attendanceCode ?? '', user.userEmail, org.name, inCommittee]);
+			}
+		}
+		const escape = (v: string) => {
+			if (/[";\r\n]/.test(v)) return `"${v.replace(/"/g, '""')}"`;
+			return v;
+		};
+		const csv = [header, ...rows].map((row) => row.map(escape).join(';')).join('\r\n') + '\r\n';
+		const blob = new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8' });
+		const url = URL.createObjectURL(blob);
+		const a = document.createElement('a');
+		a.href = url;
+		const date = new Date().toISOString().slice(0, 10);
+		const slug = (conference?.title ?? 'conference').toLowerCase().replace(/[^a-z0-9]+/g, '-');
+		a.download = `nsa-laufzettel-${slug}-${date}.csv`;
+		a.click();
+		URL.revokeObjectURL(url);
+	}
 </script>
 
 <div class="flex flex-col gap-4">
-	{#each groupedByOrg as org}
+	<div class="flex flex-wrap items-center justify-end gap-2">
+		<a
+			href="/app/{conferenceId}/nsa-attendance/print"
+			class="btn btn-secondary btn-sm"
+			target="_blank"
+			rel="noopener"
+		>
+			<i class="fas fa-print mr-1"></i>
+			{m.printAllCards()}
+		</a>
+		<button class="btn btn-ghost btn-sm" onclick={exportCsv}>
+			<i class="fas fa-file-csv mr-1"></i>
+			{m.exportCsv()}
+		</button>
+	</div>
+
+	{#each groupedByOrg as org (org.orgId)}
 		<BasicCard title={org.name}>
 			<ul class="flex flex-col gap-1">
-				{#each org.users as user}
+				{#each org.users as user (user.id)}
 					{@const latest = latestByUser.get(user.id)}
 					{@const checkedIn = latest?.type === 'CHECK_IN'}
 					{@const committee = checkedIn ? committeesById.get(latest.committeeId) : null}
@@ -96,9 +157,23 @@
 						{:else}
 							<span class="badge badge-ghost">{m.notCheckedIn()}</span>
 						{/if}
+						<button
+							class="btn btn-ghost btn-sm"
+							onclick={() => openQrFor(user, org.name)}
+							aria-label={m.qrCard()}
+							title={m.qrCard()}
+						>
+							<i class="fas fa-qrcode"></i>
+						</button>
 					</li>
 				{/each}
 			</ul>
 		</BasicCard>
 	{/each}
 </div>
+
+<NsaQrCardModal
+	bind:open={qrModalOpen}
+	nsaUser={qrTarget}
+	conferenceTitle={conference?.title ?? ''}
+/>

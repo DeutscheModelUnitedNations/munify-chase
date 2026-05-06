@@ -294,9 +294,25 @@
 				wsSynced = false;
 			}
 		};
+		// Fallback path: any update applied by the provider proves sync is
+		// flowing, even if the provider's fire-once 'synced' event never
+		// re-fires after a background-tab WS reset.
+		const onDocUpdate = (_update: Uint8Array, origin: unknown) => {
+			if (origin === prov) wsSynced = true;
+		};
+		// Force a reconnect attempt when the tab returns to foreground —
+		// y-websocket's exponential backoff can leave us idle for minutes
+		// if the previous reconnect failed while the tab was hidden.
+		const onVisibilityChange = () => {
+			if (!document.hidden && prov.shouldConnect && !prov.wsconnected) {
+				prov.connect();
+			}
+		};
 		prov.on('synced', onSynced);
 		prov.on('status', onStatus);
 		prov.on('connection-close', onClose);
+		doc.on('update', onDocUpdate);
+		document.addEventListener('visibilitychange', onVisibilityChange);
 		// Catch up with any state already established by the time we got here
 		// (BroadcastChannel between tabs can sync the provider before our
 		// listener is attached, and that fire-once 'synced' event is missed).
@@ -310,6 +326,8 @@
 			prov.off('synced', onSynced);
 			prov.off('status', onStatus);
 			prov.off('connection-close', onClose);
+			doc.off('update', onDocUpdate);
+			document.removeEventListener('visibilitychange', onVisibilityChange);
 			s.destroy();
 			prov.destroy();
 			doc.destroy();

@@ -5644,7 +5644,7 @@ export const schema = {
 						name: 'deleteNsaPresenceEvent',
 						type: {
 							kind: 'NON_NULL',
-							ofType: { kind: 'SCALAR', name: 'Boolean', ofType: null, __proto__: null }
+							ofType: { kind: 'OBJECT', name: 'Nsapresenceevent', ofType: null, __proto__: null }
 						},
 						args: [
 							{
@@ -5992,7 +5992,7 @@ export const schema = {
 						name: 'regenerateNsaAttendanceCode',
 						type: {
 							kind: 'NON_NULL',
-							ofType: { kind: 'SCALAR', name: 'String', ofType: null, __proto__: null }
+							ofType: { kind: 'OBJECT', name: 'Conferenceuser', ofType: null, __proto__: null }
 						},
 						args: [
 							{

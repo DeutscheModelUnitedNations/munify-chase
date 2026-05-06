@@ -857,7 +857,7 @@ export type Mutation = {
 	deleteConference: Boolean;
 	deleteConferenceMember: Boolean;
 	deleteConferenceUser: Boolean;
-	deleteNsaPresenceEvent: Boolean;
+	deleteNsaPresenceEvent: (p: { id: ID }) => Nsapresenceevent;
 	deleteRepresentation: Boolean;
 	deleteShareCode: Boolean;
 	editAmendment: (p: {
@@ -904,7 +904,7 @@ export type Mutation = {
 		votesFor: Int;
 	}) => Resolutionpaper;
 	redeemShareCode: (p: { code: String }) => ShareCodeRedemptionResult;
-	regenerateNsaAttendanceCode: String;
+	regenerateNsaAttendanceCode: (p: { conferenceUserId: ID }) => Conferenceuser;
 	rejectAmendment: (p: { amendmentId: ID }) => Amendment;
 	releaseAllMyLocks: Boolean;
 	releaseClauseLock: Boolean;

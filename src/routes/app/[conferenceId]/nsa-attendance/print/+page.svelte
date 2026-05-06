@@ -6,6 +6,7 @@
 	import { onMount } from 'svelte';
 
 	const conferenceId = page.params.conferenceId!;
+	const filterId = page.url.searchParams.get('id');
 
 	const conference = await client.liveQuery.conference({
 		__args: { id: conferenceId },
@@ -26,12 +27,14 @@
 	});
 
 	let cards = $derived(
-		(nsaUsers ?? []).map((u: any) => ({
-			id: u.id,
-			userEmail: u.userEmail,
-			attendanceCode: u.attendanceCode,
-			orgName: u.conferenceMember?.representation?.name ?? null
-		}))
+		(nsaUsers ?? [])
+			.filter((u: any) => !filterId || u.id === filterId)
+			.map((u: any) => ({
+				id: u.id,
+				userEmail: u.userEmail,
+				attendanceCode: u.attendanceCode,
+				orgName: u.conferenceMember?.representation?.name ?? null
+			}))
 	);
 
 	onMount(() => {

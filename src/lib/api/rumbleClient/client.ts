@@ -223,6 +223,12 @@ export type Committee = {
 		where?: CommitteememberWhereInputArgument | null | undefined;
 	}) => Committeemember[];
 	name: String;
+	nsaPresenceEvents: (p?: {
+		limit?: Int | null | undefined;
+		offset?: Int | null | undefined;
+		orderBy?: NsapresenceeventOrderInputArgument | null | undefined;
+		where?: NsapresenceeventWhereInputArgument | null | undefined;
+	}) => Nsapresenceevent[];
 	paperSupportThreshold: Int;
 	resolutionHeadline: String | null;
 	resolutionPapers: (p?: {
@@ -269,6 +275,7 @@ export type CommitteeOrderInputArgument = {
 	maxDraftResolutions?: SortingParameter | null | undefined;
 	members?: CommitteememberOrderInputArgument | null | undefined;
 	name?: SortingParameter | null | undefined;
+	nsaPresenceEvents?: NsapresenceeventOrderInputArgument | null | undefined;
 	resolutionHeadline?: SortingParameter | null | undefined;
 	resolutionPapers?: ResolutionpaperOrderInputArgument | null | undefined;
 	showWhiteboard?: SortingParameter | null | undefined;
@@ -306,6 +313,7 @@ export type CommitteeWhereInputArgument = {
 	maxDraftResolutions?: IntWhereInputArgument | null | undefined;
 	members?: CommitteememberWhereInputArgument | null | undefined;
 	name?: StringWhereInputArgument | null | undefined;
+	nsaPresenceEvents?: NsapresenceeventWhereInputArgument | null | undefined;
 	resolutionHeadline?: StringWhereInputArgument | null | undefined;
 	resolutionPapers?: ResolutionpaperWhereInputArgument | null | undefined;
 	showWhiteboard?: Boolean | null | undefined;
@@ -428,6 +436,12 @@ export type Conference = {
 		orderBy?: ConferencememberOrderInputArgument | null | undefined;
 		where?: ConferencememberWhereInputArgument | null | undefined;
 	}) => Conferencemember[];
+	nsaPresenceEvents: (p?: {
+		limit?: Int | null | undefined;
+		offset?: Int | null | undefined;
+		orderBy?: NsapresenceeventOrderInputArgument | null | undefined;
+		where?: NsapresenceeventWhereInputArgument | null | undefined;
+	}) => Nsapresenceevent[];
 	pressWebsite: String | null;
 	representations: (p?: {
 		limit?: Int | null | undefined;
@@ -455,6 +469,7 @@ export type ConferenceOrderInputArgument = {
 	hasModeratedCaucus?: SortingParameter | null | undefined;
 	id?: SortingParameter | null | undefined;
 	members?: ConferencememberOrderInputArgument | null | undefined;
+	nsaPresenceEvents?: NsapresenceeventOrderInputArgument | null | undefined;
 	pressWebsite?: SortingParameter | null | undefined;
 	representations?: RepresentationOrderInputArgument | null | undefined;
 	resolutionFeatureEnabled?: SortingParameter | null | undefined;
@@ -469,6 +484,7 @@ export type ConferenceWhereInputArgument = {
 	hasModeratedCaucus?: Boolean | null | undefined;
 	id?: ID | null | undefined;
 	members?: ConferencememberWhereInputArgument | null | undefined;
+	nsaPresenceEvents?: NsapresenceeventWhereInputArgument | null | undefined;
 	pressWebsite?: StringWhereInputArgument | null | undefined;
 	representations?: RepresentationWhereInputArgument | null | undefined;
 	resolutionFeatureEnabled?: Boolean | null | undefined;
@@ -530,6 +546,7 @@ export type ConferencememberWhereInputArgument = {
 };
 
 export type Conferenceuser = {
+	attendanceCode: String | null;
 	clauseLocks: (p?: {
 		limit?: Int | null | undefined;
 		offset?: Int | null | undefined;
@@ -559,22 +576,35 @@ export type Conferenceuser = {
 	conferenceMemberId: ID | null;
 	conferenceUserType: ConferenceusertypeEnum;
 	createdAt: DateTime;
+	currentCheckedInSince: DateTime | null;
+	currentCommitteeId: String | null;
 	id: ID;
+	isCheckedIn: Boolean;
+	nsaPresenceEvents: (p?: {
+		limit?: Int | null | undefined;
+		offset?: Int | null | undefined;
+		orderBy?: NsapresenceeventOrderInputArgument | null | undefined;
+		where?: NsapresenceeventWhereInputArgument | null | undefined;
+	}) => Nsapresenceevent[];
 	paperEditors: (p?: {
 		limit?: Int | null | undefined;
 		offset?: Int | null | undefined;
 		orderBy?: PapereditorOrderInputArgument | null | undefined;
 		where?: PapereditorWhereInputArgument | null | undefined;
 	}) => Papereditor[];
+	triggeredNsaPresenceEvents: (p?: {
+		limit?: Int | null | undefined;
+		offset?: Int | null | undefined;
+		orderBy?: NsapresenceeventOrderInputArgument | null | undefined;
+		where?: NsapresenceeventWhereInputArgument | null | undefined;
+	}) => Nsapresenceevent[];
 	updatedAt: DateTime | null;
-	user: (p?: {
-		orderBy?: UserOrderInputArgument | null | undefined;
-		where?: UserWhereInputArgument | null | undefined;
-	}) => User;
+	user: () => User | null;
 	userEmail: String;
 };
 
 export type ConferenceuserOrderInputArgument = {
+	attendanceCode?: SortingParameter | null | undefined;
 	clauseLocks?: PaperclauselockOrderInputArgument | null | undefined;
 	comments?: ResolutioncommentOrderInputArgument | null | undefined;
 	committeeMember?: CommitteememberOrderInputArgument | null | undefined;
@@ -586,13 +616,16 @@ export type ConferenceuserOrderInputArgument = {
 	conferenceUserType?: SortingParameter | null | undefined;
 	createdAt?: SortingParameter | null | undefined;
 	id?: SortingParameter | null | undefined;
+	nsaPresenceEvents?: NsapresenceeventOrderInputArgument | null | undefined;
 	paperEditors?: PapereditorOrderInputArgument | null | undefined;
+	triggeredNsaPresenceEvents?: NsapresenceeventOrderInputArgument | null | undefined;
 	updatedAt?: SortingParameter | null | undefined;
 	user?: UserOrderInputArgument | null | undefined;
 	userEmail?: SortingParameter | null | undefined;
 };
 
 export type ConferenceuserWhereInputArgument = {
+	attendanceCode?: StringWhereInputArgument | null | undefined;
 	clauseLocks?: PaperclauselockWhereInputArgument | null | undefined;
 	comments?: ResolutioncommentWhereInputArgument | null | undefined;
 	committeeMember?: CommitteememberWhereInputArgument | null | undefined;
@@ -604,7 +637,9 @@ export type ConferenceuserWhereInputArgument = {
 	conferenceUserType?: ConferenceusertypeEnum | null | undefined;
 	createdAt?: DateWhereInputArgument | null | undefined;
 	id?: ID | null | undefined;
+	nsaPresenceEvents?: NsapresenceeventWhereInputArgument | null | undefined;
 	paperEditors?: PapereditorWhereInputArgument | null | undefined;
+	triggeredNsaPresenceEvents?: NsapresenceeventWhereInputArgument | null | undefined;
 	updatedAt?: DateWhereInputArgument | null | undefined;
 	user?: UserWhereInputArgument | null | undefined;
 	userEmail?: StringWhereInputArgument | null | undefined;
@@ -822,6 +857,7 @@ export type Mutation = {
 	deleteConference: Boolean;
 	deleteConferenceMember: Boolean;
 	deleteConferenceUser: Boolean;
+	deleteNsaPresenceEvent: Boolean;
 	deleteRepresentation: Boolean;
 	deleteShareCode: Boolean;
 	editAmendment: (p: {
@@ -833,6 +869,13 @@ export type Mutation = {
 		targetPosition?: Int | null | undefined;
 	}) => Amendment;
 	importDelegatorConference: (p: { data: ImportData }) => Conference;
+	insertNsaPresenceEvent: (p: {
+		committeeId: ID;
+		conferenceUserId: ID;
+		note?: String | null | undefined;
+		timestamp: DateTime;
+		type: unknown;
+	}) => Nsapresenceevent;
 	moveSpeakerToPosition: (p: { id: ID; position: Int }) => Speakeronlist;
 	promoteToDraftResolution: (p: { paperId: ID }) => Resolutionpaper;
 	recordClauseVote: (p: {
@@ -843,6 +886,16 @@ export type Mutation = {
 		votesAgainst: Int;
 		votesFor: Int;
 	}) => Operativeclausevote;
+	recordNsaCheckIn: (p: {
+		attendanceCode?: String | null | undefined;
+		committeeId: ID;
+		conferenceUserId?: ID | null | undefined;
+	}) => Nsapresenceevent;
+	recordNsaCheckOut: (p: {
+		attendanceCode?: String | null | undefined;
+		committeeId: ID;
+		conferenceUserId?: ID | null | undefined;
+	}) => Nsapresenceevent;
 	recordVoteResult: (p: {
 		outcome: unknown;
 		paperId: ID;
@@ -851,6 +904,7 @@ export type Mutation = {
 		votesFor: Int;
 	}) => Resolutionpaper;
 	redeemShareCode: (p: { code: String }) => ShareCodeRedemptionResult;
+	regenerateNsaAttendanceCode: String;
 	rejectAmendment: (p: { amendmentId: ID }) => Amendment;
 	releaseAllMyLocks: Boolean;
 	releaseClauseLock: Boolean;
@@ -906,6 +960,13 @@ export type Mutation = {
 		conferenceUserType: unknown;
 		id: ID;
 	}) => Conferenceuser;
+	updateNsaPresenceEvent: (p: {
+		committeeId?: ID | null | undefined;
+		id: ID;
+		note?: String | null | undefined;
+		timestamp?: DateTime | null | undefined;
+		type?: unknown | null | undefined;
+	}) => Nsapresenceevent;
 	updatePaperContent: (p: { content: JSON; paperId: ID }) => Resolutionpaper;
 	updatePaperTitle: (p: { paperId: ID; title: String }) => Resolutionpaper;
 	updateSpeakerOnList: (p: { id: ID; overwriteName?: String | null | undefined }) => Speakeronlist;
@@ -919,6 +980,71 @@ export type Mutation = {
 	}) => Speakerslist;
 	withdrawAmendment: (p: { amendmentId: ID }) => Amendment;
 };
+
+export type Nsapresenceevent = {
+	committee: (p?: {
+		orderBy?: CommitteeOrderInputArgument | null | undefined;
+		where?: CommitteeWhereInputArgument | null | undefined;
+	}) => Committee;
+	committeeId: ID;
+	conference: (p?: {
+		orderBy?: ConferenceOrderInputArgument | null | undefined;
+		where?: ConferenceWhereInputArgument | null | undefined;
+	}) => Conference;
+	conferenceId: ID;
+	conferenceUser: (p?: {
+		orderBy?: ConferenceuserOrderInputArgument | null | undefined;
+		where?: ConferenceuserWhereInputArgument | null | undefined;
+	}) => Conferenceuser;
+	conferenceUserId: ID;
+	createdAt: DateTime;
+	id: ID;
+	note: String | null;
+	timestamp: DateTime;
+	triggeredBy: (p?: {
+		orderBy?: ConferenceuserOrderInputArgument | null | undefined;
+		where?: ConferenceuserWhereInputArgument | null | undefined;
+	}) => Conferenceuser | null;
+	triggeredByConferenceUserId: ID | null;
+	type: NsapresenceeventtypeEnum;
+	updatedAt: DateTime | null;
+};
+
+export type NsapresenceeventOrderInputArgument = {
+	committee?: CommitteeOrderInputArgument | null | undefined;
+	committeeId?: SortingParameter | null | undefined;
+	conference?: ConferenceOrderInputArgument | null | undefined;
+	conferenceId?: SortingParameter | null | undefined;
+	conferenceUser?: ConferenceuserOrderInputArgument | null | undefined;
+	conferenceUserId?: SortingParameter | null | undefined;
+	createdAt?: SortingParameter | null | undefined;
+	id?: SortingParameter | null | undefined;
+	note?: SortingParameter | null | undefined;
+	timestamp?: SortingParameter | null | undefined;
+	triggeredBy?: ConferenceuserOrderInputArgument | null | undefined;
+	triggeredByConferenceUserId?: SortingParameter | null | undefined;
+	type?: SortingParameter | null | undefined;
+	updatedAt?: SortingParameter | null | undefined;
+};
+
+export type NsapresenceeventWhereInputArgument = {
+	committee?: CommitteeWhereInputArgument | null | undefined;
+	committeeId?: ID | null | undefined;
+	conference?: ConferenceWhereInputArgument | null | undefined;
+	conferenceId?: ID | null | undefined;
+	conferenceUser?: ConferenceuserWhereInputArgument | null | undefined;
+	conferenceUserId?: ID | null | undefined;
+	createdAt?: DateWhereInputArgument | null | undefined;
+	id?: ID | null | undefined;
+	note?: StringWhereInputArgument | null | undefined;
+	timestamp?: DateWhereInputArgument | null | undefined;
+	triggeredBy?: ConferenceuserWhereInputArgument | null | undefined;
+	triggeredByConferenceUserId?: ID | null | undefined;
+	type?: NsapresenceeventtypeEnum | null | undefined;
+	updatedAt?: DateWhereInputArgument | null | undefined;
+};
+
+export type NsapresenceeventtypeEnum = 'CHECK_IN' | 'CHECK_OUT';
 
 export type Operativeclausevote = {
 	clauseId: ID;
@@ -1242,6 +1368,14 @@ export type Query = {
 	}) => Conference[];
 	currentUserClaims: () => UserClaims;
 	isGlobalAdmin: Boolean;
+	latestNsaPresenceEvents: (p: { conferenceId: ID }) => Nsapresenceevent[];
+	nsaPresenceEvent: (p: { id: ID }) => Nsapresenceevent;
+	nsaPresenceEvents: (p?: {
+		limit?: Int | null | undefined;
+		offset?: Int | null | undefined;
+		orderBy?: NsapresenceeventOrderInputArgument | null | undefined;
+		where?: NsapresenceeventWhereInputArgument | null | undefined;
+	}) => Nsapresenceevent[];
 	operativeClauseVote: (p: { id: ID }) => Operativeclausevote;
 	operativeClauseVotes: (p?: {
 		limit?: Int | null | undefined;
@@ -1841,6 +1975,13 @@ export type Subscription = {
 		orderBy?: ConferenceOrderInputArgument | null | undefined;
 		where?: ConferenceWhereInputArgument | null | undefined;
 	}) => Conference[];
+	nsaPresenceEvent: (p: { id: ID }) => Nsapresenceevent;
+	nsaPresenceEvents: (p?: {
+		limit?: Int | null | undefined;
+		offset?: Int | null | undefined;
+		orderBy?: NsapresenceeventOrderInputArgument | null | undefined;
+		where?: NsapresenceeventWhereInputArgument | null | undefined;
+	}) => Nsapresenceevent[];
 	operativeClauseVote: (p: { id: ID }) => Operativeclausevote;
 	operativeClauseVotes: (p?: {
 		limit?: Int | null | undefined;
@@ -2031,6 +2172,8 @@ export const client = {
 			'conferenceUser',
 			'conferenceUsers',
 			'conferences',
+			'nsaPresenceEvent',
+			'nsaPresenceEvents',
 			'operativeClauseVote',
 			'operativeClauseVotes',
 			'paperClauseLock',

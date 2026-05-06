@@ -24,6 +24,10 @@ export const relations = defineRelations(schema, (r) => ({
 		representations: r.many.representation({
 			from: r.conference.id,
 			to: r.representation.conferenceId
+		}),
+		nsaPresenceEvents: r.many.nsaPresenceEvent({
+			from: r.conference.id,
+			to: r.nsaPresenceEvent.conferenceId
 		})
 	},
 	committee: {
@@ -54,6 +58,10 @@ export const relations = defineRelations(schema, (r) => ({
 		resolutionPapers: r.many.resolutionPaper({
 			from: r.committee.id,
 			to: r.resolutionPaper.committeeId
+		}),
+		nsaPresenceEvents: r.many.nsaPresenceEvent({
+			from: r.committee.id,
+			to: r.nsaPresenceEvent.committeeId
 		})
 	},
 	committeeMember: {
@@ -93,9 +101,14 @@ export const relations = defineRelations(schema, (r) => ({
 		})
 	},
 	conferenceUser: {
+		// Optional: a conferenceUser row is created on import / by admin entry
+		// before the person ever logs in. The `user` row is only inserted on
+		// successful OIDC login (see services/OIDC.ts), so for unredeemed accounts
+		// this relation legitimately resolves to null.
 		user: r.one.user({
 			from: r.conferenceUser.userEmail,
-			to: r.user.email
+			to: r.user.email,
+			optional: true
 		}),
 		conference: r.one.conference({
 			from: r.conferenceUser.conferenceId,
@@ -123,6 +136,14 @@ export const relations = defineRelations(schema, (r) => ({
 		clauseLocks: r.many.paperClauseLock({
 			from: r.conferenceUser.id,
 			to: r.paperClauseLock.conferenceUserId
+		}),
+		nsaPresenceEvents: r.many.nsaPresenceEvent({
+			from: r.conferenceUser.id,
+			to: r.nsaPresenceEvent.conferenceUserId
+		}),
+		triggeredNsaPresenceEvents: r.many.nsaPresenceEvent({
+			from: r.conferenceUser.id,
+			to: r.nsaPresenceEvent.triggeredByConferenceUserId
 		})
 	},
 	representation: {
@@ -224,6 +245,27 @@ export const relations = defineRelations(schema, (r) => ({
 		committeeMember: r.one.committeeMember({
 			from: r.presenceChangedTimestamp.committeeMemberId,
 			to: r.committeeMember.id
+		})
+	},
+	nsaPresenceEvent: {
+		conferenceUser: r.one.conferenceUser({
+			from: r.nsaPresenceEvent.conferenceUserId,
+			to: r.conferenceUser.id,
+			optional: false
+		}),
+		committee: r.one.committee({
+			from: r.nsaPresenceEvent.committeeId,
+			to: r.committee.id,
+			optional: false
+		}),
+		conference: r.one.conference({
+			from: r.nsaPresenceEvent.conferenceId,
+			to: r.conference.id,
+			optional: false
+		}),
+		triggeredBy: r.one.conferenceUser({
+			from: r.nsaPresenceEvent.triggeredByConferenceUserId,
+			to: r.conferenceUser.id
 		})
 	},
 	resolutionPaper: {

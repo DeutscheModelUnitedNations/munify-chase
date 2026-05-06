@@ -44,6 +44,10 @@
 
 	let currentUserRole = $derived(conferenceUsers?.[0]);
 	let isAdmin = $derived(currentUserRole?.conferenceUserType === 'ADMIN');
+	let isTeamOrAdmin = $derived(
+		currentUserRole?.conferenceUserType === 'ADMIN' ||
+			currentUserRole?.conferenceUserType === 'TEAM'
+	);
 
 	const baseMenuItems = [
 		{
@@ -53,18 +57,27 @@
 		}
 	];
 
-	let menubarItems = $derived(
-		isAdmin
+	let menubarItems = $derived([
+		...baseMenuItems,
+		...(isTeamOrAdmin
 			? [
-					...baseMenuItems,
+					{
+						faIcon: 'fa-user-tag',
+						title: m.nsaAttendance(),
+						href: 'nsa-attendance'
+					}
+				]
+			: []),
+		...(isAdmin
+			? [
 					{
 						faIcon: 'fa-gear',
 						title: m.configuration(),
 						href: 'mission-control/config'
 					}
 				]
-			: baseMenuItems
-	);
+			: [])
+	]);
 </script>
 
 <svelte:head>

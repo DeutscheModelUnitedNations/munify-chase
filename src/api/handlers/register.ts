@@ -11,6 +11,7 @@ import './time';
 import './user';
 import './import';
 import './presenceChangedTimestamp';
+import './nsaPresenceEvent';
 import './resolutionPaper';
 import './paperSponsor';
 import './paperShareCode';

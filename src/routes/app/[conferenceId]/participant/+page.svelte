@@ -7,6 +7,7 @@
 	import CommitteeGrid from '$lib/components/CommitteeGrid.svelte';
 	import ThemeSwitcher from '$lib/components/ThemeSwitcher.svelte';
 	import ParticipantIdentityCard from './ParticipantIdentityCard.svelte';
+	import MyAttendanceTab from './MyAttendanceTab.svelte';
 
 	const currentUser = await getCurrentUser();
 	const [conferenceUser] =
@@ -113,6 +114,12 @@
 	<div class="p-4">
 		<ParticipantIdentityCard {representation} />
 	</div>
+
+	{#if role === 'NON_STATE_ACTOR' && conferenceUser}
+		<div class="p-4">
+			<MyAttendanceTab conferenceUserId={conferenceUser.id} />
+		</div>
+	{/if}
 
 	<CommitteeGrid conference={conference as any} environment="PARTICIPANT" />
 {/if}

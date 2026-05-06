@@ -1278,6 +1278,52 @@ export const schema = {
 						args: []
 					},
 					{
+						name: 'nsaPresenceEvents',
+						type: {
+							kind: 'NON_NULL',
+							ofType: {
+								kind: 'LIST',
+								ofType: {
+									kind: 'NON_NULL',
+									ofType: {
+										kind: 'OBJECT',
+										name: 'Nsapresenceevent',
+										ofType: null,
+										__proto__: null
+									}
+								}
+							}
+						},
+						args: [
+							{
+								name: 'limit',
+								type: { kind: 'SCALAR', name: 'Int', ofType: null, __proto__: null }
+							},
+							{
+								name: 'offset',
+								type: { kind: 'SCALAR', name: 'Int', ofType: null, __proto__: null }
+							},
+							{
+								name: 'orderBy',
+								type: {
+									kind: 'INPUT_OBJECT',
+									name: 'NsapresenceeventOrderInputArgument',
+									ofType: null,
+									__proto__: null
+								}
+							},
+							{
+								name: 'where',
+								type: {
+									kind: 'INPUT_OBJECT',
+									name: 'NsapresenceeventWhereInputArgument',
+									ofType: null,
+									__proto__: null
+								}
+							}
+						]
+					},
+					{
 						name: 'paperSupportThreshold',
 						type: {
 							kind: 'NON_NULL',
@@ -1569,6 +1615,16 @@ export const schema = {
 						defaultValue: void 0
 					},
 					{
+						name: 'nsaPresenceEvents',
+						type: {
+							kind: 'INPUT_OBJECT',
+							name: 'NsapresenceeventOrderInputArgument',
+							ofType: null,
+							__proto__: null
+						},
+						defaultValue: void 0
+					},
+					{
 						name: 'resolutionHeadline',
 						type: { kind: 'ENUM', name: 'SortingParameter', ofType: null, __proto__: null },
 						defaultValue: void 0
@@ -1820,6 +1876,16 @@ export const schema = {
 						type: {
 							kind: 'INPUT_OBJECT',
 							name: 'StringWhereInputArgument',
+							ofType: null,
+							__proto__: null
+						},
+						defaultValue: void 0
+					},
+					{
+						name: 'nsaPresenceEvents',
+						type: {
+							kind: 'INPUT_OBJECT',
+							name: 'NsapresenceeventWhereInputArgument',
 							ofType: null,
 							__proto__: null
 						},
@@ -2645,6 +2711,52 @@ export const schema = {
 						]
 					},
 					{
+						name: 'nsaPresenceEvents',
+						type: {
+							kind: 'NON_NULL',
+							ofType: {
+								kind: 'LIST',
+								ofType: {
+									kind: 'NON_NULL',
+									ofType: {
+										kind: 'OBJECT',
+										name: 'Nsapresenceevent',
+										ofType: null,
+										__proto__: null
+									}
+								}
+							}
+						},
+						args: [
+							{
+								name: 'limit',
+								type: { kind: 'SCALAR', name: 'Int', ofType: null, __proto__: null }
+							},
+							{
+								name: 'offset',
+								type: { kind: 'SCALAR', name: 'Int', ofType: null, __proto__: null }
+							},
+							{
+								name: 'orderBy',
+								type: {
+									kind: 'INPUT_OBJECT',
+									name: 'NsapresenceeventOrderInputArgument',
+									ofType: null,
+									__proto__: null
+								}
+							},
+							{
+								name: 'where',
+								type: {
+									kind: 'INPUT_OBJECT',
+									name: 'NsapresenceeventWhereInputArgument',
+									ofType: null,
+									__proto__: null
+								}
+							}
+						]
+					},
+					{
 						name: 'pressWebsite',
 						type: { kind: 'SCALAR', name: 'String', ofType: null, __proto__: null },
 						args: []
@@ -2825,6 +2937,16 @@ export const schema = {
 						defaultValue: void 0
 					},
 					{
+						name: 'nsaPresenceEvents',
+						type: {
+							kind: 'INPUT_OBJECT',
+							name: 'NsapresenceeventOrderInputArgument',
+							ofType: null,
+							__proto__: null
+						},
+						defaultValue: void 0
+					},
+					{
 						name: 'pressWebsite',
 						type: { kind: 'ENUM', name: 'SortingParameter', ofType: null, __proto__: null },
 						defaultValue: void 0
@@ -2906,6 +3028,16 @@ export const schema = {
 						type: {
 							kind: 'INPUT_OBJECT',
 							name: 'ConferencememberWhereInputArgument',
+							ofType: null,
+							__proto__: null
+						},
+						defaultValue: void 0
+					},
+					{
+						name: 'nsaPresenceEvents',
+						type: {
+							kind: 'INPUT_OBJECT',
+							name: 'NsapresenceeventWhereInputArgument',
 							ofType: null,
 							__proto__: null
 						},
@@ -3307,6 +3439,11 @@ export const schema = {
 				name: 'Conferenceuser',
 				fields: [
 					{
+						name: 'attendanceCode',
+						type: { kind: 'SCALAR', name: 'String', ofType: null, __proto__: null },
+						args: []
+					},
+					{
 						name: 'clauseLocks',
 						type: {
 							kind: 'NON_NULL',
@@ -3508,12 +3645,76 @@ export const schema = {
 						args: []
 					},
 					{
+						name: 'currentCheckedInSince',
+						type: { kind: 'SCALAR', name: 'DateTime', ofType: null, __proto__: null },
+						args: []
+					},
+					{
+						name: 'currentCommitteeId',
+						type: { kind: 'SCALAR', name: 'String', ofType: null, __proto__: null },
+						args: []
+					},
+					{
 						name: 'id',
 						type: {
 							kind: 'NON_NULL',
 							ofType: { kind: 'SCALAR', name: 'ID', ofType: null, __proto__: null }
 						},
 						args: []
+					},
+					{
+						name: 'isCheckedIn',
+						type: {
+							kind: 'NON_NULL',
+							ofType: { kind: 'SCALAR', name: 'Boolean', ofType: null, __proto__: null }
+						},
+						args: []
+					},
+					{
+						name: 'nsaPresenceEvents',
+						type: {
+							kind: 'NON_NULL',
+							ofType: {
+								kind: 'LIST',
+								ofType: {
+									kind: 'NON_NULL',
+									ofType: {
+										kind: 'OBJECT',
+										name: 'Nsapresenceevent',
+										ofType: null,
+										__proto__: null
+									}
+								}
+							}
+						},
+						args: [
+							{
+								name: 'limit',
+								type: { kind: 'SCALAR', name: 'Int', ofType: null, __proto__: null }
+							},
+							{
+								name: 'offset',
+								type: { kind: 'SCALAR', name: 'Int', ofType: null, __proto__: null }
+							},
+							{
+								name: 'orderBy',
+								type: {
+									kind: 'INPUT_OBJECT',
+									name: 'NsapresenceeventOrderInputArgument',
+									ofType: null,
+									__proto__: null
+								}
+							},
+							{
+								name: 'where',
+								type: {
+									kind: 'INPUT_OBJECT',
+									name: 'NsapresenceeventWhereInputArgument',
+									ofType: null,
+									__proto__: null
+								}
+							}
+						]
 					},
 					{
 						name: 'paperEditors',
@@ -3557,22 +3758,36 @@ export const schema = {
 						]
 					},
 					{
-						name: 'updatedAt',
-						type: { kind: 'SCALAR', name: 'DateTime', ofType: null, __proto__: null },
-						args: []
-					},
-					{
-						name: 'user',
+						name: 'triggeredNsaPresenceEvents',
 						type: {
 							kind: 'NON_NULL',
-							ofType: { kind: 'OBJECT', name: 'User', ofType: null, __proto__: null }
+							ofType: {
+								kind: 'LIST',
+								ofType: {
+									kind: 'NON_NULL',
+									ofType: {
+										kind: 'OBJECT',
+										name: 'Nsapresenceevent',
+										ofType: null,
+										__proto__: null
+									}
+								}
+							}
 						},
 						args: [
+							{
+								name: 'limit',
+								type: { kind: 'SCALAR', name: 'Int', ofType: null, __proto__: null }
+							},
+							{
+								name: 'offset',
+								type: { kind: 'SCALAR', name: 'Int', ofType: null, __proto__: null }
+							},
 							{
 								name: 'orderBy',
 								type: {
 									kind: 'INPUT_OBJECT',
-									name: 'UserOrderInputArgument',
+									name: 'NsapresenceeventOrderInputArgument',
 									ofType: null,
 									__proto__: null
 								}
@@ -3581,12 +3796,22 @@ export const schema = {
 								name: 'where',
 								type: {
 									kind: 'INPUT_OBJECT',
-									name: 'UserWhereInputArgument',
+									name: 'NsapresenceeventWhereInputArgument',
 									ofType: null,
 									__proto__: null
 								}
 							}
 						]
+					},
+					{
+						name: 'updatedAt',
+						type: { kind: 'SCALAR', name: 'DateTime', ofType: null, __proto__: null },
+						args: []
+					},
+					{
+						name: 'user',
+						type: { kind: 'OBJECT', name: 'User', ofType: null, __proto__: null },
+						args: []
 					},
 					{
 						name: 'userEmail',
@@ -3604,6 +3829,11 @@ export const schema = {
 				name: 'ConferenceuserOrderInputArgument',
 				isOneOf: void 0,
 				inputFields: [
+					{
+						name: 'attendanceCode',
+						type: { kind: 'ENUM', name: 'SortingParameter', ofType: null, __proto__: null },
+						defaultValue: void 0
+					},
 					{
 						name: 'clauseLocks',
 						type: {
@@ -3685,10 +3915,30 @@ export const schema = {
 						defaultValue: void 0
 					},
 					{
+						name: 'nsaPresenceEvents',
+						type: {
+							kind: 'INPUT_OBJECT',
+							name: 'NsapresenceeventOrderInputArgument',
+							ofType: null,
+							__proto__: null
+						},
+						defaultValue: void 0
+					},
+					{
 						name: 'paperEditors',
 						type: {
 							kind: 'INPUT_OBJECT',
 							name: 'PapereditorOrderInputArgument',
+							ofType: null,
+							__proto__: null
+						},
+						defaultValue: void 0
+					},
+					{
+						name: 'triggeredNsaPresenceEvents',
+						type: {
+							kind: 'INPUT_OBJECT',
+							name: 'NsapresenceeventOrderInputArgument',
 							ofType: null,
 							__proto__: null
 						},
@@ -3721,6 +3971,16 @@ export const schema = {
 				name: 'ConferenceuserWhereInputArgument',
 				isOneOf: void 0,
 				inputFields: [
+					{
+						name: 'attendanceCode',
+						type: {
+							kind: 'INPUT_OBJECT',
+							name: 'StringWhereInputArgument',
+							ofType: null,
+							__proto__: null
+						},
+						defaultValue: void 0
+					},
 					{
 						name: 'clauseLocks',
 						type: {
@@ -3807,10 +4067,30 @@ export const schema = {
 						defaultValue: void 0
 					},
 					{
+						name: 'nsaPresenceEvents',
+						type: {
+							kind: 'INPUT_OBJECT',
+							name: 'NsapresenceeventWhereInputArgument',
+							ofType: null,
+							__proto__: null
+						},
+						defaultValue: void 0
+					},
+					{
 						name: 'paperEditors',
 						type: {
 							kind: 'INPUT_OBJECT',
 							name: 'PapereditorWhereInputArgument',
+							ofType: null,
+							__proto__: null
+						},
+						defaultValue: void 0
+					},
+					{
+						name: 'triggeredNsaPresenceEvents',
+						type: {
+							kind: 'INPUT_OBJECT',
+							name: 'NsapresenceeventWhereInputArgument',
 							ofType: null,
 							__proto__: null
 						},
@@ -5361,6 +5641,22 @@ export const schema = {
 						]
 					},
 					{
+						name: 'deleteNsaPresenceEvent',
+						type: {
+							kind: 'NON_NULL',
+							ofType: { kind: 'SCALAR', name: 'Boolean', ofType: null, __proto__: null }
+						},
+						args: [
+							{
+								name: 'id',
+								type: {
+									kind: 'NON_NULL',
+									ofType: { kind: 'SCALAR', name: 'ID', ofType: null, __proto__: null }
+								}
+							}
+						]
+					},
+					{
 						name: 'deleteRepresentation',
 						type: {
 							kind: 'NON_NULL',
@@ -5442,6 +5738,52 @@ export const schema = {
 									ofType: {
 										kind: 'INPUT_OBJECT',
 										name: 'ImportData',
+										ofType: null,
+										__proto__: null
+									}
+								}
+							}
+						]
+					},
+					{
+						name: 'insertNsaPresenceEvent',
+						type: {
+							kind: 'NON_NULL',
+							ofType: { kind: 'OBJECT', name: 'Nsapresenceevent', ofType: null, __proto__: null }
+						},
+						args: [
+							{
+								name: 'committeeId',
+								type: {
+									kind: 'NON_NULL',
+									ofType: { kind: 'SCALAR', name: 'ID', ofType: null, __proto__: null }
+								}
+							},
+							{
+								name: 'conferenceUserId',
+								type: {
+									kind: 'NON_NULL',
+									ofType: { kind: 'SCALAR', name: 'ID', ofType: null, __proto__: null }
+								}
+							},
+							{
+								name: 'note',
+								type: { kind: 'SCALAR', name: 'String', ofType: null, __proto__: null }
+							},
+							{
+								name: 'timestamp',
+								type: {
+									kind: 'NON_NULL',
+									ofType: { kind: 'SCALAR', name: 'DateTime', ofType: null, __proto__: null }
+								}
+							},
+							{
+								name: 'type',
+								type: {
+									kind: 'NON_NULL',
+									ofType: {
+										kind: 'ENUM',
+										name: 'NsapresenceeventtypeEnum',
 										ofType: null,
 										__proto__: null
 									}
@@ -5537,6 +5879,54 @@ export const schema = {
 						]
 					},
 					{
+						name: 'recordNsaCheckIn',
+						type: {
+							kind: 'NON_NULL',
+							ofType: { kind: 'OBJECT', name: 'Nsapresenceevent', ofType: null, __proto__: null }
+						},
+						args: [
+							{
+								name: 'attendanceCode',
+								type: { kind: 'SCALAR', name: 'String', ofType: null, __proto__: null }
+							},
+							{
+								name: 'committeeId',
+								type: {
+									kind: 'NON_NULL',
+									ofType: { kind: 'SCALAR', name: 'ID', ofType: null, __proto__: null }
+								}
+							},
+							{
+								name: 'conferenceUserId',
+								type: { kind: 'SCALAR', name: 'ID', ofType: null, __proto__: null }
+							}
+						]
+					},
+					{
+						name: 'recordNsaCheckOut',
+						type: {
+							kind: 'NON_NULL',
+							ofType: { kind: 'OBJECT', name: 'Nsapresenceevent', ofType: null, __proto__: null }
+						},
+						args: [
+							{
+								name: 'attendanceCode',
+								type: { kind: 'SCALAR', name: 'String', ofType: null, __proto__: null }
+							},
+							{
+								name: 'committeeId',
+								type: {
+									kind: 'NON_NULL',
+									ofType: { kind: 'SCALAR', name: 'ID', ofType: null, __proto__: null }
+								}
+							},
+							{
+								name: 'conferenceUserId',
+								type: { kind: 'SCALAR', name: 'ID', ofType: null, __proto__: null }
+							}
+						]
+					},
+					{
 						name: 'recordVoteResult',
 						type: {
 							kind: 'NON_NULL',
@@ -5594,6 +5984,22 @@ export const schema = {
 								type: {
 									kind: 'NON_NULL',
 									ofType: { kind: 'SCALAR', name: 'String', ofType: null, __proto__: null }
+								}
+							}
+						]
+					},
+					{
+						name: 'regenerateNsaAttendanceCode',
+						type: {
+							kind: 'NON_NULL',
+							ofType: { kind: 'SCALAR', name: 'String', ofType: null, __proto__: null }
+						},
+						args: [
+							{
+								name: 'conferenceUserId',
+								type: {
+									kind: 'NON_NULL',
+									ofType: { kind: 'SCALAR', name: 'ID', ofType: null, __proto__: null }
 								}
 							}
 						]
@@ -6065,6 +6471,43 @@ export const schema = {
 						]
 					},
 					{
+						name: 'updateNsaPresenceEvent',
+						type: {
+							kind: 'NON_NULL',
+							ofType: { kind: 'OBJECT', name: 'Nsapresenceevent', ofType: null, __proto__: null }
+						},
+						args: [
+							{
+								name: 'committeeId',
+								type: { kind: 'SCALAR', name: 'ID', ofType: null, __proto__: null }
+							},
+							{
+								name: 'id',
+								type: {
+									kind: 'NON_NULL',
+									ofType: { kind: 'SCALAR', name: 'ID', ofType: null, __proto__: null }
+								}
+							},
+							{
+								name: 'note',
+								type: { kind: 'SCALAR', name: 'String', ofType: null, __proto__: null }
+							},
+							{
+								name: 'timestamp',
+								type: { kind: 'SCALAR', name: 'DateTime', ofType: null, __proto__: null }
+							},
+							{
+								name: 'type',
+								type: {
+									kind: 'ENUM',
+									name: 'NsapresenceeventtypeEnum',
+									ofType: null,
+									__proto__: null
+								}
+							}
+						]
+					},
+					{
 						name: 'updatePaperContent',
 						type: {
 							kind: 'NON_NULL',
@@ -6184,6 +6627,413 @@ export const schema = {
 					}
 				],
 				interfaces: []
+			},
+			{
+				kind: 'OBJECT',
+				name: 'Nsapresenceevent',
+				fields: [
+					{
+						name: 'committee',
+						type: {
+							kind: 'NON_NULL',
+							ofType: { kind: 'OBJECT', name: 'Committee', ofType: null, __proto__: null }
+						},
+						args: [
+							{
+								name: 'orderBy',
+								type: {
+									kind: 'INPUT_OBJECT',
+									name: 'CommitteeOrderInputArgument',
+									ofType: null,
+									__proto__: null
+								}
+							},
+							{
+								name: 'where',
+								type: {
+									kind: 'INPUT_OBJECT',
+									name: 'CommitteeWhereInputArgument',
+									ofType: null,
+									__proto__: null
+								}
+							}
+						]
+					},
+					{
+						name: 'committeeId',
+						type: {
+							kind: 'NON_NULL',
+							ofType: { kind: 'SCALAR', name: 'ID', ofType: null, __proto__: null }
+						},
+						args: []
+					},
+					{
+						name: 'conference',
+						type: {
+							kind: 'NON_NULL',
+							ofType: { kind: 'OBJECT', name: 'Conference', ofType: null, __proto__: null }
+						},
+						args: [
+							{
+								name: 'orderBy',
+								type: {
+									kind: 'INPUT_OBJECT',
+									name: 'ConferenceOrderInputArgument',
+									ofType: null,
+									__proto__: null
+								}
+							},
+							{
+								name: 'where',
+								type: {
+									kind: 'INPUT_OBJECT',
+									name: 'ConferenceWhereInputArgument',
+									ofType: null,
+									__proto__: null
+								}
+							}
+						]
+					},
+					{
+						name: 'conferenceId',
+						type: {
+							kind: 'NON_NULL',
+							ofType: { kind: 'SCALAR', name: 'ID', ofType: null, __proto__: null }
+						},
+						args: []
+					},
+					{
+						name: 'conferenceUser',
+						type: {
+							kind: 'NON_NULL',
+							ofType: { kind: 'OBJECT', name: 'Conferenceuser', ofType: null, __proto__: null }
+						},
+						args: [
+							{
+								name: 'orderBy',
+								type: {
+									kind: 'INPUT_OBJECT',
+									name: 'ConferenceuserOrderInputArgument',
+									ofType: null,
+									__proto__: null
+								}
+							},
+							{
+								name: 'where',
+								type: {
+									kind: 'INPUT_OBJECT',
+									name: 'ConferenceuserWhereInputArgument',
+									ofType: null,
+									__proto__: null
+								}
+							}
+						]
+					},
+					{
+						name: 'conferenceUserId',
+						type: {
+							kind: 'NON_NULL',
+							ofType: { kind: 'SCALAR', name: 'ID', ofType: null, __proto__: null }
+						},
+						args: []
+					},
+					{
+						name: 'createdAt',
+						type: {
+							kind: 'NON_NULL',
+							ofType: { kind: 'SCALAR', name: 'DateTime', ofType: null, __proto__: null }
+						},
+						args: []
+					},
+					{
+						name: 'id',
+						type: {
+							kind: 'NON_NULL',
+							ofType: { kind: 'SCALAR', name: 'ID', ofType: null, __proto__: null }
+						},
+						args: []
+					},
+					{
+						name: 'note',
+						type: { kind: 'SCALAR', name: 'String', ofType: null, __proto__: null },
+						args: []
+					},
+					{
+						name: 'timestamp',
+						type: {
+							kind: 'NON_NULL',
+							ofType: { kind: 'SCALAR', name: 'DateTime', ofType: null, __proto__: null }
+						},
+						args: []
+					},
+					{
+						name: 'triggeredBy',
+						type: { kind: 'OBJECT', name: 'Conferenceuser', ofType: null, __proto__: null },
+						args: [
+							{
+								name: 'orderBy',
+								type: {
+									kind: 'INPUT_OBJECT',
+									name: 'ConferenceuserOrderInputArgument',
+									ofType: null,
+									__proto__: null
+								}
+							},
+							{
+								name: 'where',
+								type: {
+									kind: 'INPUT_OBJECT',
+									name: 'ConferenceuserWhereInputArgument',
+									ofType: null,
+									__proto__: null
+								}
+							}
+						]
+					},
+					{
+						name: 'triggeredByConferenceUserId',
+						type: { kind: 'SCALAR', name: 'ID', ofType: null, __proto__: null },
+						args: []
+					},
+					{
+						name: 'type',
+						type: {
+							kind: 'NON_NULL',
+							ofType: {
+								kind: 'ENUM',
+								name: 'NsapresenceeventtypeEnum',
+								ofType: null,
+								__proto__: null
+							}
+						},
+						args: []
+					},
+					{
+						name: 'updatedAt',
+						type: { kind: 'SCALAR', name: 'DateTime', ofType: null, __proto__: null },
+						args: []
+					}
+				],
+				interfaces: []
+			},
+			{
+				kind: 'INPUT_OBJECT',
+				name: 'NsapresenceeventOrderInputArgument',
+				isOneOf: void 0,
+				inputFields: [
+					{
+						name: 'committee',
+						type: {
+							kind: 'INPUT_OBJECT',
+							name: 'CommitteeOrderInputArgument',
+							ofType: null,
+							__proto__: null
+						},
+						defaultValue: void 0
+					},
+					{
+						name: 'committeeId',
+						type: { kind: 'ENUM', name: 'SortingParameter', ofType: null, __proto__: null },
+						defaultValue: void 0
+					},
+					{
+						name: 'conference',
+						type: {
+							kind: 'INPUT_OBJECT',
+							name: 'ConferenceOrderInputArgument',
+							ofType: null,
+							__proto__: null
+						},
+						defaultValue: void 0
+					},
+					{
+						name: 'conferenceId',
+						type: { kind: 'ENUM', name: 'SortingParameter', ofType: null, __proto__: null },
+						defaultValue: void 0
+					},
+					{
+						name: 'conferenceUser',
+						type: {
+							kind: 'INPUT_OBJECT',
+							name: 'ConferenceuserOrderInputArgument',
+							ofType: null,
+							__proto__: null
+						},
+						defaultValue: void 0
+					},
+					{
+						name: 'conferenceUserId',
+						type: { kind: 'ENUM', name: 'SortingParameter', ofType: null, __proto__: null },
+						defaultValue: void 0
+					},
+					{
+						name: 'createdAt',
+						type: { kind: 'ENUM', name: 'SortingParameter', ofType: null, __proto__: null },
+						defaultValue: void 0
+					},
+					{
+						name: 'id',
+						type: { kind: 'ENUM', name: 'SortingParameter', ofType: null, __proto__: null },
+						defaultValue: void 0
+					},
+					{
+						name: 'note',
+						type: { kind: 'ENUM', name: 'SortingParameter', ofType: null, __proto__: null },
+						defaultValue: void 0
+					},
+					{
+						name: 'timestamp',
+						type: { kind: 'ENUM', name: 'SortingParameter', ofType: null, __proto__: null },
+						defaultValue: void 0
+					},
+					{
+						name: 'triggeredBy',
+						type: {
+							kind: 'INPUT_OBJECT',
+							name: 'ConferenceuserOrderInputArgument',
+							ofType: null,
+							__proto__: null
+						},
+						defaultValue: void 0
+					},
+					{
+						name: 'triggeredByConferenceUserId',
+						type: { kind: 'ENUM', name: 'SortingParameter', ofType: null, __proto__: null },
+						defaultValue: void 0
+					},
+					{
+						name: 'type',
+						type: { kind: 'ENUM', name: 'SortingParameter', ofType: null, __proto__: null },
+						defaultValue: void 0
+					},
+					{
+						name: 'updatedAt',
+						type: { kind: 'ENUM', name: 'SortingParameter', ofType: null, __proto__: null },
+						defaultValue: void 0
+					}
+				]
+			},
+			{
+				kind: 'INPUT_OBJECT',
+				name: 'NsapresenceeventWhereInputArgument',
+				isOneOf: void 0,
+				inputFields: [
+					{
+						name: 'committee',
+						type: {
+							kind: 'INPUT_OBJECT',
+							name: 'CommitteeWhereInputArgument',
+							ofType: null,
+							__proto__: null
+						},
+						defaultValue: void 0
+					},
+					{
+						name: 'committeeId',
+						type: { kind: 'SCALAR', name: 'ID', ofType: null, __proto__: null },
+						defaultValue: void 0
+					},
+					{
+						name: 'conference',
+						type: {
+							kind: 'INPUT_OBJECT',
+							name: 'ConferenceWhereInputArgument',
+							ofType: null,
+							__proto__: null
+						},
+						defaultValue: void 0
+					},
+					{
+						name: 'conferenceId',
+						type: { kind: 'SCALAR', name: 'ID', ofType: null, __proto__: null },
+						defaultValue: void 0
+					},
+					{
+						name: 'conferenceUser',
+						type: {
+							kind: 'INPUT_OBJECT',
+							name: 'ConferenceuserWhereInputArgument',
+							ofType: null,
+							__proto__: null
+						},
+						defaultValue: void 0
+					},
+					{
+						name: 'conferenceUserId',
+						type: { kind: 'SCALAR', name: 'ID', ofType: null, __proto__: null },
+						defaultValue: void 0
+					},
+					{
+						name: 'createdAt',
+						type: {
+							kind: 'INPUT_OBJECT',
+							name: 'DateWhereInputArgument',
+							ofType: null,
+							__proto__: null
+						},
+						defaultValue: void 0
+					},
+					{
+						name: 'id',
+						type: { kind: 'SCALAR', name: 'ID', ofType: null, __proto__: null },
+						defaultValue: void 0
+					},
+					{
+						name: 'note',
+						type: {
+							kind: 'INPUT_OBJECT',
+							name: 'StringWhereInputArgument',
+							ofType: null,
+							__proto__: null
+						},
+						defaultValue: void 0
+					},
+					{
+						name: 'timestamp',
+						type: {
+							kind: 'INPUT_OBJECT',
+							name: 'DateWhereInputArgument',
+							ofType: null,
+							__proto__: null
+						},
+						defaultValue: void 0
+					},
+					{
+						name: 'triggeredBy',
+						type: {
+							kind: 'INPUT_OBJECT',
+							name: 'ConferenceuserWhereInputArgument',
+							ofType: null,
+							__proto__: null
+						},
+						defaultValue: void 0
+					},
+					{
+						name: 'triggeredByConferenceUserId',
+						type: { kind: 'SCALAR', name: 'ID', ofType: null, __proto__: null },
+						defaultValue: void 0
+					},
+					{
+						name: 'type',
+						type: { kind: 'ENUM', name: 'NsapresenceeventtypeEnum', ofType: null, __proto__: null },
+						defaultValue: void 0
+					},
+					{
+						name: 'updatedAt',
+						type: {
+							kind: 'INPUT_OBJECT',
+							name: 'DateWhereInputArgument',
+							ofType: null,
+							__proto__: null
+						},
+						defaultValue: void 0
+					}
+				]
+			},
+			{
+				kind: 'ENUM',
+				name: 'NsapresenceeventtypeEnum',
+				enumValues: [{ name: 'CHECK_IN' }, { name: 'CHECK_OUT' }]
 			},
 			{
 				kind: 'OBJECT',
@@ -8174,6 +9024,95 @@ export const schema = {
 							ofType: { kind: 'SCALAR', name: 'Boolean', ofType: null, __proto__: null }
 						},
 						args: []
+					},
+					{
+						name: 'latestNsaPresenceEvents',
+						type: {
+							kind: 'NON_NULL',
+							ofType: {
+								kind: 'LIST',
+								ofType: {
+									kind: 'NON_NULL',
+									ofType: {
+										kind: 'OBJECT',
+										name: 'Nsapresenceevent',
+										ofType: null,
+										__proto__: null
+									}
+								}
+							}
+						},
+						args: [
+							{
+								name: 'conferenceId',
+								type: {
+									kind: 'NON_NULL',
+									ofType: { kind: 'SCALAR', name: 'ID', ofType: null, __proto__: null }
+								}
+							}
+						]
+					},
+					{
+						name: 'nsaPresenceEvent',
+						type: {
+							kind: 'NON_NULL',
+							ofType: { kind: 'OBJECT', name: 'Nsapresenceevent', ofType: null, __proto__: null }
+						},
+						args: [
+							{
+								name: 'id',
+								type: {
+									kind: 'NON_NULL',
+									ofType: { kind: 'SCALAR', name: 'ID', ofType: null, __proto__: null }
+								}
+							}
+						]
+					},
+					{
+						name: 'nsaPresenceEvents',
+						type: {
+							kind: 'NON_NULL',
+							ofType: {
+								kind: 'LIST',
+								ofType: {
+									kind: 'NON_NULL',
+									ofType: {
+										kind: 'OBJECT',
+										name: 'Nsapresenceevent',
+										ofType: null,
+										__proto__: null
+									}
+								}
+							}
+						},
+						args: [
+							{
+								name: 'limit',
+								type: { kind: 'SCALAR', name: 'Int', ofType: null, __proto__: null }
+							},
+							{
+								name: 'offset',
+								type: { kind: 'SCALAR', name: 'Int', ofType: null, __proto__: null }
+							},
+							{
+								name: 'orderBy',
+								type: {
+									kind: 'INPUT_OBJECT',
+									name: 'NsapresenceeventOrderInputArgument',
+									ofType: null,
+									__proto__: null
+								}
+							},
+							{
+								name: 'where',
+								type: {
+									kind: 'INPUT_OBJECT',
+									name: 'NsapresenceeventWhereInputArgument',
+									ofType: null,
+									__proto__: null
+								}
+							}
+						]
 					},
 					{
 						name: 'operativeClauseVote',
@@ -12290,6 +13229,68 @@ export const schema = {
 								type: {
 									kind: 'INPUT_OBJECT',
 									name: 'ConferenceWhereInputArgument',
+									ofType: null,
+									__proto__: null
+								}
+							}
+						]
+					},
+					{
+						name: 'nsaPresenceEvent',
+						type: {
+							kind: 'NON_NULL',
+							ofType: { kind: 'OBJECT', name: 'Nsapresenceevent', ofType: null, __proto__: null }
+						},
+						args: [
+							{
+								name: 'id',
+								type: {
+									kind: 'NON_NULL',
+									ofType: { kind: 'SCALAR', name: 'ID', ofType: null, __proto__: null }
+								}
+							}
+						]
+					},
+					{
+						name: 'nsaPresenceEvents',
+						type: {
+							kind: 'NON_NULL',
+							ofType: {
+								kind: 'LIST',
+								ofType: {
+									kind: 'NON_NULL',
+									ofType: {
+										kind: 'OBJECT',
+										name: 'Nsapresenceevent',
+										ofType: null,
+										__proto__: null
+									}
+								}
+							}
+						},
+						args: [
+							{
+								name: 'limit',
+								type: { kind: 'SCALAR', name: 'Int', ofType: null, __proto__: null }
+							},
+							{
+								name: 'offset',
+								type: { kind: 'SCALAR', name: 'Int', ofType: null, __proto__: null }
+							},
+							{
+								name: 'orderBy',
+								type: {
+									kind: 'INPUT_OBJECT',
+									name: 'NsapresenceeventOrderInputArgument',
+									ofType: null,
+									__proto__: null
+								}
+							},
+							{
+								name: 'where',
+								type: {
+									kind: 'INPUT_OBJECT',
+									name: 'NsapresenceeventWhereInputArgument',
 									ofType: null,
 									__proto__: null
 								}

@@ -1,7 +1,7 @@
 CREATE TABLE "paper_yjs_doc" (
 	"id" text PRIMARY KEY NOT NULL,
 	"created_at" timestamp DEFAULT now() NOT NULL,
-	"updated_at" timestamp,
+	"updated_at" timestamp DEFAULT now(),
 	"paper_id" text NOT NULL,
 	"state" "bytea" NOT NULL,
 	CONSTRAINT "paper_yjs_doc_paper_id_unique" UNIQUE("paper_id")

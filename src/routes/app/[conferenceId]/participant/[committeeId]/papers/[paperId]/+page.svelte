@@ -284,6 +284,11 @@
 		};
 		prov.on('synced', onSynced);
 		prov.on('status', onStatus);
+		// Catch up with any state already established by the time we got here
+		// (BroadcastChannel between tabs can sync the provider before our
+		// listener is attached, and that fire-once 'synced' event is missed).
+		if (prov.synced) wsSynced = true;
+		if (prov.wsconnected) wsConnected = true;
 		yDoc = doc;
 		provider = prov;
 		store = s;

@@ -189,14 +189,24 @@
 			{#if isGlobalAdmin}
 				<label class="input w-full">
 					<i class="fa-duotone fa-magnifying-glass opacity-60"></i>
-					<input type="text" placeholder={m.launcherSearchPlaceholder()} bind:value={searchQuery} />
+					<input
+						type="search"
+						aria-label={m.launcherSearchPlaceholder()}
+						placeholder={m.launcherSearchPlaceholder()}
+						bind:value={searchQuery}
+					/>
 				</label>
 			{/if}
 		</header>
 
 		{#if isGlobalAdmin}
-			{#if filteredAdminConferences.length === 0}
+			{#if adminConferences.length === 0}
 				<EmptyLauncher />
+			{:else if filteredAdminConferences.length === 0}
+				<div class="flex flex-col items-center gap-2 px-4 py-12 text-center">
+					<h2 class="m-0 text-xl font-bold">{m.launcherNoSearchResultsHeadline()}</h2>
+					<p class="text-base-content/70 m-0 text-sm">{m.launcherNoSearchResultsBody()}</p>
+				</div>
 			{:else}
 				<div class="flex flex-col gap-6">
 					{#each sections as section (section.key)}

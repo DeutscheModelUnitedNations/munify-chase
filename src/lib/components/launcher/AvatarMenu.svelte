@@ -26,8 +26,8 @@
 	<button
 		tabindex="0"
 		class="from-primary to-primary/70 grid size-8 cursor-pointer place-items-center rounded-full bg-gradient-to-br text-xs font-bold tracking-wide text-white"
-		aria-label={fullName}
-		title={fullName}
+		aria-label={fullName || undefined}
+		title={fullName || undefined}
 		type="button"
 	>
 		{initials}

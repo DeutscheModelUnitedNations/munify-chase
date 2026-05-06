@@ -310,6 +310,8 @@
 	"launcherImportDelegator": "Aus DELEGATOR-Datei importieren",
 	"launcherMore": "Mehr",
 	"launcherNoConferences": "Du bist für keine Konferenz angemeldet.",
+	"launcherNoSearchResultsBody": "Probier einen anderen Namen oder Ort.",
+	"launcherNoSearchResultsHeadline": "Keine Konferenzen entsprechen deiner Suche",
 	"launcherOpen": "Konferenz öffnen",
 	"launcherRoleAdmin": "Admin",
 	"launcherRoleChair": "Vorsitz",

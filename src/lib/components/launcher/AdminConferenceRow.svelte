@@ -40,6 +40,7 @@
 	tabindex="0"
 	onclick={handleRowClick}
 	onkeydown={(e) => {
+		if (e.target !== e.currentTarget) return;
 		if (e.key === 'Enter' || e.key === ' ') {
 			e.preventDefault();
 			handleRowClick();

@@ -119,10 +119,6 @@ export const relations = defineRelations(schema, (r) => ({
 		comments: r.many.resolutionComment({
 			from: r.conferenceUser.id,
 			to: r.resolutionComment.authorConferenceUserId
-		}),
-		clauseLocks: r.many.paperClauseLock({
-			from: r.conferenceUser.id,
-			to: r.paperClauseLock.conferenceUserId
 		})
 	},
 	representation: {
@@ -273,10 +269,6 @@ export const relations = defineRelations(schema, (r) => ({
 		voteResult: r.one.resolutionVoteResult({
 			from: r.resolutionPaper.id,
 			to: r.resolutionVoteResult.paperId
-		}),
-		clauseLocks: r.many.paperClauseLock({
-			from: r.resolutionPaper.id,
-			to: r.paperClauseLock.paperId
 		})
 	},
 	paperContentSnapshot: {
@@ -379,15 +371,10 @@ export const relations = defineRelations(schema, (r) => ({
 			optional: false
 		})
 	},
-	paperClauseLock: {
+	paperYjsDoc: {
 		paper: r.one.resolutionPaper({
-			from: r.paperClauseLock.paperId,
+			from: r.paperYjsDoc.paperId,
 			to: r.resolutionPaper.id,
-			optional: false
-		}),
-		conferenceUser: r.one.conferenceUser({
-			from: r.paperClauseLock.conferenceUserId,
-			to: r.conferenceUser.id,
 			optional: false
 		})
 	}

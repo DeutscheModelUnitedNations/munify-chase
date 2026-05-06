@@ -16,7 +16,12 @@ import {
 	createEmptyResolution,
 	toRoman
 } from '@deutschemodelunitednations/munify-resolution-editor/schema';
+import {
+	replaceResolution,
+	yDocToJson
+} from '@deutschemodelunitednations/munify-resolution-editor/yjs';
 import type { Context } from '$api/context';
+import { applyServerMutation, readPaperJson } from '$api/yjs/server';
 
 abilityBuilder.resolutionPaper.allow(['read', 'update']).when((ctx) => {
 	if (isGlobalAdmin(ctx)) {
@@ -205,176 +210,6 @@ schemaBuilder.mutationFields((t) => ({
 		}
 	}),
 
-	updatePaperContent: t.drizzleField({
-		type: ref,
-		args: {
-			paperId: t.arg.id({ required: true }),
-			content: t.arg({ type: 'JSON', required: true })
-		},
-		resolve: async (query, root, args, ctx, info) => {
-			const user = ctx.mustBeLoggedIn();
-
-			// Validate content against schema
-			const parsed = ResolutionSchema.safeParse(args.content);
-			if (!parsed.success) {
-				throw new GraphQLError('Invalid resolution content: ' + parsed.error.message);
-			}
-
-			const paper = await db.query.resolutionPaper
-				.findFirst({
-					where: { id: args.paperId }
-				})
-				.then(assertFindFirstExists);
-
-			// Status-dependent auth
-			if (paper.status === 'DRAFT_RESOLUTION' || paper.status === 'AMENDMENT_PHASE') {
-				// Only chair/admin can edit DRs
-				await db.query.resolutionPaper
-					.findFirst(
-						ctx.abilities.resolutionPaper.filter('update').merge({ where: { id: args.paperId } })
-							.query.single
-					)
-					.then(assertFindFirstExists);
-			} else if (paper.status === 'SUBMITTED') {
-				// Chair/admin OR creator + editors
-				const isChair = await db.query.conferenceUser.findFirst({
-					where: {
-						conference: {
-							committees: { id: paper.committeeId }
-						},
-						user: { id: user.sub },
-						conferenceUserType: { in: ['ADMIN', 'TEAM'] }
-					}
-				});
-
-				if (!isChair && !ctx.hasRole('admin')) {
-					// Must be creator or editor
-					const isEditor = await db.query.paperEditor.findFirst({
-						where: {
-							paperId: args.paperId,
-							conferenceUser: { user: { id: user.sub } }
-						}
-					});
-
-					if (!isEditor) {
-						throw new GraphQLError('You do not have permission to edit this paper');
-					}
-				}
-			} else if (paper.status === 'WORKING_PAPER') {
-				// Creator + editors
-				const isEditor = await db.query.paperEditor.findFirst({
-					where: {
-						paperId: args.paperId,
-						conferenceUser: { user: { id: user.sub } }
-					}
-				});
-
-				if (!isEditor && !ctx.hasRole('admin')) {
-					throw new GraphQLError('You do not have permission to edit this paper');
-				}
-			} else {
-				throw new GraphQLError('Paper cannot be edited in its current status');
-			}
-
-			// Resolve sender's conferenceUserId for lock-aware merge
-			const senderConferenceUser = await db.query.conferenceUser.findFirst({
-				where: { user: { id: user.sub } }
-			});
-
-			let contentToWrite = parsed.data;
-
-			if (senderConferenceUser) {
-				// Fetch active (non-expired) locks held by OTHER users
-				const expiryThreshold = new Date(Date.now() - 60_000);
-				const otherLocks = await db.query.paperClauseLock.findMany({
-					where: {
-						paperId: args.paperId,
-						conferenceUserId: { ne: senderConferenceUser.id },
-						acquiredAt: { gte: expiryThreshold }
-					}
-				});
-
-				if (otherLocks.length > 0 && paper.content) {
-					const othersLockedClauseIds = new Set(otherLocks.map((l) => l.clauseId));
-					const currentContent = ResolutionSchema.safeParse(paper.content);
-
-					if (currentContent.success) {
-						const dbContent = currentContent.data;
-						const incoming = parsed.data;
-
-						// Build map of DB clauses by ID
-						const dbPreambleMap = new Map(dbContent.preamble.map((c) => [c.id, c]));
-						const dbOperativeMap = new Map(dbContent.operative.map((c) => [c.id, c]));
-
-						// Merge preamble: for locked clauses, keep DB version
-						const mergedPreamble = incoming.preamble.map((clause) => {
-							if (othersLockedClauseIds.has(clause.id) && dbPreambleMap.has(clause.id)) {
-								return dbPreambleMap.get(clause.id)!;
-							}
-							return clause;
-						});
-
-						// Append preamble clauses locked by others that sender deleted
-						for (const [id, clause] of dbPreambleMap) {
-							if (othersLockedClauseIds.has(id) && !incoming.preamble.some((c) => c.id === id)) {
-								mergedPreamble.push(clause);
-							}
-						}
-
-						// Merge operative: for locked clauses, keep DB version
-						const mergedOperative = incoming.operative.map((clause) => {
-							if (othersLockedClauseIds.has(clause.id) && dbOperativeMap.has(clause.id)) {
-								return dbOperativeMap.get(clause.id)!;
-							}
-							return clause;
-						});
-
-						// Append operative clauses locked by others that sender deleted
-						for (const [id, clause] of dbOperativeMap) {
-							if (othersLockedClauseIds.has(id) && !incoming.operative.some((c) => c.id === id)) {
-								mergedOperative.push(clause);
-							}
-						}
-
-						contentToWrite = {
-							committeeName: incoming.committeeName,
-							preamble: mergedPreamble,
-							operative: mergedOperative
-						};
-					}
-				}
-
-				// Refresh sender's locks (keep alive during active editing)
-				await db
-					.update(schema.paperClauseLock)
-					.set({ acquiredAt: new Date() })
-					.where(
-						and(
-							eq(schema.paperClauseLock.paperId, args.paperId),
-							eq(schema.paperClauseLock.conferenceUserId, senderConferenceUser.id)
-						)
-					);
-			}
-
-			await db
-				.update(schema.resolutionPaper)
-				.set({ content: contentToWrite })
-				.where(eq(schema.resolutionPaper.id, args.paperId));
-
-			pubsub.updated(args.paperId);
-
-			return db.query.resolutionPaper
-				.findFirst(
-					query(
-						ctx.abilities.resolutionPaper.filter('read').merge({
-							where: { id: args.paperId }
-						}).query.single
-					)
-				)
-				.then(assertFindFirstExists);
-		}
-	}),
-
 	updatePaperTitle: t.drizzleField({
 		type: ref,
 		args: {
@@ -453,23 +288,20 @@ schemaBuilder.mutationFields((t) => ({
 				})
 				.then(assertFindFirstExists);
 
+			// Materialise the latest Y.Doc state so the snapshot is current.
+			const freshContent = await readPaperJson(args.paperId);
+
 			await db.transaction(async (tx) => {
 				await tx
 					.update(schema.resolutionPaper)
 					.set({ status: 'SUBMITTED' })
 					.where(eq(schema.resolutionPaper.id, args.paperId));
 
-				// Create content snapshot
 				await tx.insert(schema.paperContentSnapshot).values({
 					paperId: args.paperId,
-					content: paper.content,
+					content: freshContent ?? paper.content,
 					trigger: 'SUBMITTED'
 				});
-
-				// Remove all clause locks so the chair can edit freely
-				await tx
-					.delete(schema.paperClauseLock)
-					.where(eq(schema.paperClauseLock.paperId, args.paperId));
 			});
 
 			pubsub.updated(args.paperId);
@@ -532,6 +364,8 @@ schemaBuilder.mutationFields((t) => ({
 			const sequenceNumber = existingDRsForItem.count + 1;
 			const documentNumber = `${committee.abbreviation}/${toRoman(agendaPosition)}/DR.${sequenceNumber}`;
 
+			const freshContent = await readPaperJson(args.paperId);
+
 			await db.transaction(async (tx) => {
 				await tx
 					.update(schema.resolutionPaper)
@@ -542,10 +376,9 @@ schemaBuilder.mutationFields((t) => ({
 					})
 					.where(eq(schema.resolutionPaper.id, args.paperId));
 
-				// Create content snapshot
 				await tx.insert(schema.paperContentSnapshot).values({
 					paperId: args.paperId,
-					content: paper.content,
+					content: freshContent ?? paper.content,
 					trigger: 'DRAFT_RESOLUTION'
 				});
 			});
@@ -581,6 +414,9 @@ schemaBuilder.mutationFields((t) => ({
 				throw new GraphQLError('Paper must be in AMENDMENT_PHASE to start voting');
 			}
 
+			const freshContent = await readPaperJson(args.paperId);
+			const contentForSnapshot = freshContent ?? paper.content;
+
 			await db.transaction(async (tx) => {
 				await tx
 					.update(schema.resolutionPaper)
@@ -589,13 +425,11 @@ schemaBuilder.mutationFields((t) => ({
 
 				await tx.insert(schema.paperContentSnapshot).values({
 					paperId: args.paperId,
-					content: paper.content,
+					content: contentForSnapshot,
 					trigger: 'VOTING_PHASE'
 				});
 
-				// Reset currentOperativeIndex to 0 for voting navigation
-				const parsed = ResolutionSchema.safeParse(paper.content);
-				const firstClauseId = parsed.success ? (parsed.data.operative[0]?.id ?? null) : null;
+				const firstClauseId = freshContent?.operative[0]?.id ?? null;
 				await tx
 					.update(schema.committee)
 					.set({ currentOperativeIndex: 0, currentOperativeClauseId: firstClauseId })
@@ -638,6 +472,22 @@ schemaBuilder.mutationFields((t) => ({
 				throw new GraphQLError('Paper must be in VOTING_PHASE to record final vote');
 			}
 
+			// If ADOPTED with rejected clauses, drop them from the Y.Doc so
+			// connected peers see the trimmed content immediately.
+			if (args.outcome === 'ADOPTED') {
+				const rejectedVotes = await db.query.operativeClauseVote.findMany({
+					where: { paperId: args.paperId, outcome: 'REJECTED' }
+				});
+				const rejectedIds = new Set(rejectedVotes.map((v) => v.clauseId));
+				if (rejectedIds.size > 0) {
+					await applyServerMutation(args.paperId, (doc) => {
+						const fresh = yDocToJson(doc);
+						fresh.operative = fresh.operative.filter((c) => !rejectedIds.has(c.id));
+						replaceResolution(doc, fresh);
+					});
+				}
+			}
+
 			await db.transaction(async (tx) => {
 				await tx.insert(schema.resolutionVoteResult).values({
 					paperId: args.paperId,
@@ -647,30 +497,12 @@ schemaBuilder.mutationFields((t) => ({
 					votesAbstain: args.votesAbstain ?? 0
 				});
 
-				const updateSet: { status: 'FINAL'; content?: unknown; documentNumber?: string } = {
+				const updateSet: { status: 'FINAL'; documentNumber?: string } = {
 					status: 'FINAL'
 				};
 
-				if (args.outcome === 'ADOPTED') {
-					const rejectedVotes = await tx.query.operativeClauseVote.findMany({
-						where: { paperId: args.paperId, outcome: 'REJECTED' }
-					});
-					const rejectedIds = new Set(rejectedVotes.map((v) => v.clauseId));
-
-					if (rejectedIds.size > 0) {
-						const parsed = ResolutionSchema.safeParse(paper.content);
-						if (parsed.success) {
-							parsed.data.operative = parsed.data.operative.filter(
-								(clause) => !rejectedIds.has(clause.id)
-							);
-							updateSet.content = parsed.data;
-						}
-					}
-
-					// Change DR to RES in document number
-					if (paper.documentNumber) {
-						updateSet.documentNumber = paper.documentNumber.replace('/DR.', '/RES.');
-					}
+				if (args.outcome === 'ADOPTED' && paper.documentNumber) {
+					updateSet.documentNumber = paper.documentNumber.replace('/DR.', '/RES.');
 				}
 
 				await tx
@@ -778,6 +610,25 @@ schemaBuilder.mutationFields((t) => ({
 			}
 			const targetStatus = statusOrder[currentIndex - 1];
 
+			// Snapshot restoration (AMENDMENT_PHASE → DRAFT_RESOLUTION) happens
+			// against the Y.Doc so connected peers see the rollback.
+			if (paper.status === 'AMENDMENT_PHASE' && args.restoreSnapshot) {
+				const snapshot = await db.query.paperContentSnapshot.findFirst({
+					where: { paperId: args.paperId, trigger: 'AMENDMENT_PHASE' },
+					orderBy: { createdAt: 'desc' }
+				});
+				const snapshotContent = snapshot?.content
+					? ResolutionSchema.safeParse(snapshot.content)
+					: undefined;
+				if (snapshotContent?.success) {
+					await applyServerMutation(args.paperId, (doc) => {
+						replaceResolution(doc, snapshotContent.data);
+					});
+				}
+			}
+
+			const freshContent = await readPaperJson(args.paperId);
+
 			await db.transaction(async (tx) => {
 				// Status-specific side effects
 				if (paper.status === 'FINAL') {
@@ -790,8 +641,7 @@ schemaBuilder.mutationFields((t) => ({
 						.findFirst({ where: { id: paper.committeeId } })
 						.then(assertFindFirstExists);
 					if (!committee.activeDraftResolutionId) {
-						const parsed = ResolutionSchema.safeParse(paper.content);
-						const firstClauseId = parsed.success ? (parsed.data.operative[0]?.id ?? null) : null;
+						const firstClauseId = freshContent?.operative[0]?.id ?? null;
 						await tx
 							.update(schema.committee)
 							.set({
@@ -813,17 +663,6 @@ schemaBuilder.mutationFields((t) => ({
 						.set({ currentOperativeIndex: null, currentOperativeClauseId: null })
 						.where(eq(schema.committee.id, paper.committeeId));
 					if (args.restoreSnapshot) {
-						// Restore content from latest AMENDMENT_PHASE snapshot
-						const snapshot = await tx.query.paperContentSnapshot.findFirst({
-							where: { paperId: args.paperId, trigger: 'AMENDMENT_PHASE' },
-							orderBy: { createdAt: 'desc' }
-						});
-						if (snapshot?.content) {
-							await tx
-								.update(schema.resolutionPaper)
-								.set({ content: snapshot.content })
-								.where(eq(schema.resolutionPaper.id, args.paperId));
-						}
 						// Reset applied amendments back to PENDING
 						await tx
 							.update(schema.amendment)
@@ -864,10 +703,9 @@ schemaBuilder.mutationFields((t) => ({
 					.set({ status: targetStatus })
 					.where(eq(schema.resolutionPaper.id, args.paperId));
 
-				// Create audit snapshot
 				await tx.insert(schema.paperContentSnapshot).values({
 					paperId: args.paperId,
-					content: paper.content,
+					content: freshContent ?? paper.content,
 					trigger: `REVERT_FROM_${paper.status}`
 				});
 			});

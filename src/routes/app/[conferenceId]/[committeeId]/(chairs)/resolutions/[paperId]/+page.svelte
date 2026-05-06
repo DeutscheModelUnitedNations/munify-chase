@@ -6,14 +6,21 @@
 	import { afterNavigate } from '$app/navigation';
 	import {
 		ResolutionEditor,
-		migrateResolution,
 		calculateAmendmentDiffSize,
 		getFirstTextContent,
+		type ResolutionStore,
+		type PresenceAdapter,
 		type Resolution,
 		type ResolutionHeaderData,
 		type AmendmentOverlay,
 		type OperativeClause
 	} from '@deutschemodelunitednations/munify-resolution-editor';
+	import {
+		createYjsStore,
+		createAwarenessPresence
+	} from '@deutschemodelunitednations/munify-resolution-editor/yjs';
+	import * as Y from 'yjs';
+	import { WebsocketProvider } from 'y-websocket';
 	import Flag from '$lib/components/Flag.svelte';
 	import Fieldset from '$lib/components/Fieldset.svelte';
 	import Modal from '$lib/components/Modal.svelte';
@@ -22,9 +29,8 @@
 	import { getTranslatedCountryNameFromAlpha3Code } from '$lib/utils/nationTranslationHelper.svelte';
 	import toast from 'svelte-french-toast';
 	import { openVotingModal } from '$lib/components/voting/votingModal';
-	import { fly, fade } from 'svelte/transition';
 	import { getResolutionLabels } from '$lib/utils/resolutionEditorLabels';
-	import { SvelteSet, SvelteMap } from 'svelte/reactivity';
+	import { SvelteMap } from 'svelte/reactivity';
 
 	import { getCurrentUser } from '$lib/state/currentUser.svelte';
 
@@ -53,9 +59,10 @@
 		}
 	});
 
+	const currentUser = await getCurrentUser();
+
 	const [
 		paper,
-		locks,
 		allComments,
 		allAmendments,
 		clauseVotes,
@@ -67,7 +74,6 @@
 			id: true,
 			title: true,
 			status: true,
-			content: true,
 			documentNumber: true,
 			sequenceNumber: true,
 			updatedAt: true,
@@ -95,26 +101,6 @@
 						name: true,
 						alpha2Code: true,
 						alpha3Code: true,
-						faIcon: true
-					}
-				}
-			}
-		}),
-		client.liveQuery.paperClauseLocks({
-			__args: { where: { paper: { id: page.params.paperId } } },
-			id: true,
-			clauseId: true,
-			conferenceUserId: true,
-			acquiredAt: true,
-			conferenceUser: {
-				id: true,
-				committeeMember: {
-					id: true,
-					representation: {
-						id: true,
-						name: true,
-						alpha3Code: true,
-						alpha2Code: true,
 						faIcon: true
 					}
 				}
@@ -206,7 +192,7 @@
 			__args: {
 				where: {
 					conference: { id: page.params.conferenceId },
-					user: { id: (await getCurrentUser()).id ?? '' }
+					user: { id: currentUser?.id ?? '' }
 				}
 			},
 			id: true
@@ -217,23 +203,72 @@
 
 	let voteResult = $derived(allVoteResults?.[0] ?? null);
 
-	// Resolution content
-	let resolution = $state<Resolution | null>(null);
-	let hasPendingSave = $state(false);
 	let editorMode = $state<'edit' | 'preview'>('preview');
 
+	// Y.js-backed collaborative store
+	let yDoc = $state<Y.Doc | null>(null);
+	let provider = $state<WebsocketProvider | null>(null);
+	let store = $state<ResolutionStore | null>(null);
+	let presence = $state<PresenceAdapter | null>(null);
+	let wsSynced = $state(false);
+	let wsConnected = $state(false);
+
 	$effect(() => {
-		if (paper?.content && !resolution) {
-			resolution = migrateResolution(paper.content as Resolution);
-		}
+		const paperId = page.params.paperId;
+		if (!paperId) return;
+		const doc = new Y.Doc();
+		const wsProto = location.protocol === 'https:' ? 'wss:' : 'ws:';
+		const wsUrl = `${wsProto}//${location.host}/api/ws/yjs`;
+		const prov = new WebsocketProvider(wsUrl, paperId, doc);
+		const s = createYjsStore(doc);
+		const p = createAwarenessPresence({
+			awareness: prov.awareness,
+			user: {
+				id: currentUser?.id ?? 'anon',
+				name:
+					[currentUser?.givenName, currentUser?.familyName].filter(Boolean).join(' ') ||
+					currentUser?.preferredUsername ||
+					'Anonymous',
+				color: stringToColor(currentUser?.id ?? 'anon')
+			}
+		});
+		const onSynced = (synced: boolean) => {
+			wsSynced = synced;
+		};
+		const onStatus = ({ status }: { status: string }) => {
+			wsConnected = status === 'connected';
+			if (status !== 'connected') wsSynced = false;
+		};
+		prov.on('synced', onSynced);
+		prov.on('status', onStatus);
+		yDoc = doc;
+		provider = prov;
+		store = s;
+		presence = p;
+		return () => {
+			prov.off('synced', onSynced);
+			prov.off('status', onStatus);
+			s.destroy();
+			prov.destroy();
+			doc.destroy();
+			yDoc = null;
+			provider = null;
+			store = null;
+			presence = null;
+			wsSynced = false;
+			wsConnected = false;
+		};
 	});
 
-	// Accept remote updates when no local save is in-flight
-	$effect(() => {
-		if (paper?.content && !hasPendingSave) {
-			resolution = migrateResolution(paper.content as Resolution);
-		}
-	});
+	function stringToColor(s: string) {
+		let h = 0;
+		for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) | 0;
+		const hue = ((h % 360) + 360) % 360;
+		return `hsl(${hue}, 70%, 50%)`;
+	}
+
+	// Reactive resolution snapshot (read from store; null until connected)
+	let resolution = $derived<Resolution | null>(store?.snapshot ?? null);
 
 	// Resolution header data for document preview
 	let headerData = $derived<ResolutionHeaderData>({
@@ -292,152 +327,13 @@
 		};
 		window.addEventListener('scroll', handleScroll, { passive: true });
 
-		// Hybrid heartbeat — only fires when idle with held locks
-		const heartbeatInterval = setInterval(() => {
-			if (editableClauseIds.size > 0 && Date.now() - lastInteractionTime > 25_000) {
-				for (const clauseId of editableClauseIds) {
-					client.mutate
-						.acquireClauseLock({
-							__args: { paperId: page.params.paperId!, clauseId },
-							id: true
-						})
-						.catch(() => {
-							optimisticMyLockIds.delete(clauseId);
-						});
-				}
-			}
-		}, 30_000);
-
-		// Best-effort lock release on tab close
-		const handleBeforeUnload = () => {
-			const body = JSON.stringify({
-				query: `mutation { releaseAllMyLocks(paperId: "${page.params.paperId}") }`
-			});
-			navigator.sendBeacon('/api/graphql', new Blob([body], { type: 'application/json' }));
-		};
-		window.addEventListener('beforeunload', handleBeforeUnload);
-
 		return () => {
-			clearInterval(heartbeatInterval);
-			window.removeEventListener('beforeunload', handleBeforeUnload);
 			window.removeEventListener('scroll', handleScroll);
-
-			// Release locks on navigation
-			client.mutate
-				.releaseAllMyLocks({ __args: { paperId: page.params.paperId! } } as any)
-				.catch(() => {});
 		};
 	});
 
-	// =====================================================
-	// Clause-level locking
-	// =====================================================
-
-	let lastInteractionTime = $state(Date.now());
-
-	// Clause IDs locked by OTHER users
-	let lockedClauseIds = $derived.by(() => {
-		const set = new SvelteSet<string>();
-		for (const lock of locks ?? []) {
-			if (lock.conferenceUserId !== myConferenceUserId) {
-				set.add(lock.clauseId);
-			}
-		}
-		return set;
-	});
-
-	// Clause IDs I hold confirmed locks for
-	let myLockedClauseIds = $derived.by(() => {
-		const set = new SvelteSet<string>();
-		for (const lock of locks ?? []) {
-			if (lock.conferenceUserId === myConferenceUserId) {
-				set.add(lock.clauseId);
-			}
-		}
-		return set;
-	});
-
-	// Map for lock badge rendering: clauseId → lock info
-	let locksByClauseId = $derived.by(() => {
-		const map = new SvelteMap<string, (typeof locks)[0]>();
-		for (const lock of locks ?? []) {
-			if (lock.conferenceUserId !== myConferenceUserId) {
-				map.set(lock.clauseId, lock);
-			}
-		}
-		return map;
-	});
-
-	// Optimistic lock IDs — added immediately on mutation success, before subscription arrives
-	let optimisticMyLockIds = new SvelteSet<string>();
-
-	// Effective editable clause IDs = confirmed (subscription) + optimistic
-	let editableClauseIds = $derived.by(() => {
-		const set = new SvelteSet(myLockedClauseIds);
-		for (const id of optimisticMyLockIds) set.add(id);
-		return set;
-	});
-
-	// Are there any locks held by other users?
-	let hasOtherLocks = $derived(lockedClauseIds.size > 0);
-
-	// Click "Start editing" → acquire lock
-	async function handleClauseLock(clauseId: string) {
-		if (lockedClauseIds.has(clauseId)) return;
-		try {
-			await client.mutate.acquireClauseLock({
-				__args: { paperId: page.params.paperId!, clauseId },
-				id: true
-			});
-			optimisticMyLockIds.add(clauseId);
-			lastInteractionTime = Date.now();
-		} catch {
-			const lock = locksByClauseId.get(clauseId);
-			const country =
-				lock?.conferenceUser?.committeeMember?.representation?.name ??
-				getTranslatedCountryNameFromAlpha3Code(
-					lock?.conferenceUser?.committeeMember?.representation?.alpha3Code
-				) ??
-				'?';
-			toast.error(m.lockAcquireFailed({ country }));
-		}
-	}
-
-	// Click "Done editing" → release lock
-	async function handleClauseUnlock(clauseId: string) {
-		optimisticMyLockIds.delete(clauseId);
-		await client.mutate
-			.releaseClauseLock({ __args: { paperId: page.params.paperId!, clauseId } } as any)
-			.catch(() => {});
-	}
-
-	// Any interaction (typing, clicking) → refresh idle timer
-	function handleClauseInteraction(_clauseId: string) {
-		lastInteractionTime = Date.now();
-	}
-
-	// Auto-save
+	// Save status — kept for future use (e.g. title or metadata mutations); content auto-syncs via Y.js
 	let saveStatus = $state<'idle' | 'saving' | 'saved' | 'error'>('idle');
-	let saveTimeout: ReturnType<typeof setTimeout>;
-
-	function handleResolutionChange(updated: Resolution) {
-		resolution = updated;
-		hasPendingSave = true;
-		clearTimeout(saveTimeout);
-		saveStatus = 'saving';
-		saveTimeout = setTimeout(async () => {
-			try {
-				await client.mutate.updatePaperContent({
-					__args: { paperId: page.params.paperId!, content: updated },
-					id: true
-				});
-				saveStatus = 'saved';
-				hasPendingSave = false;
-			} catch {
-				saveStatus = 'error';
-			}
-		}, 500);
-	}
 
 	function getStatusBadgeClass(status: string) {
 		switch (status) {
@@ -1352,14 +1248,6 @@
 			</div>
 		</div>
 
-		<!-- Collaborative editing info banner -->
-		{#if hasOtherLocks}
-			<div class="alert alert-info mt-2 text-sm">
-				<i class="fas fa-lock"></i>
-				<span>{m.collaborativeEditingInfo()}</span>
-			</div>
-		{/if}
-
 		<!-- Final vote result alert -->
 		{#if paper.status === 'FINAL' && voteResult}
 			<div
@@ -1430,19 +1318,20 @@
 
 		<!-- Resolution Editor -->
 		<div class="py-2">
-			{#if resolution}
+			{#if !wsSynced}
+				<div class="flex items-center justify-center gap-2 py-12 text-base-content/60">
+					<span class="loading loading-spinner loading-sm"></span>
+					<span class="text-sm">
+						{wsConnected ? m.synchronizing() : m.connecting()}
+					</span>
+				</div>
+			{:else if store && resolution}
 				<ResolutionEditor
-					committeeName={committee?.name ?? ''}
-					{resolution}
+					{store}
+					presence={presence ?? undefined}
 					{headerData}
 					labels={getResolutionLabels()}
 					editable={canEdit && editorMode === 'edit'}
-					onResolutionChange={handleResolutionChange}
-					onClauseLock={handleClauseLock}
-					onClauseUnlock={handleClauseUnlock}
-					onClauseInteraction={handleClauseInteraction}
-					{lockedClauseIds}
-					{editableClauseIds}
 					amendments={paper.status === 'AMENDMENT_PHASE' ? amendmentOverlays : undefined}
 					rejectedClauseIds={paper.status === 'VOTING_PHASE' || paper.status === 'FINAL'
 						? rejectedClauseIds
@@ -1450,35 +1339,15 @@
 					onAmendmentClick={paper.status === 'AMENDMENT_PHASE' ? handleAmendmentClick : undefined}
 				>
 					{#snippet preambleAnnotations({ clause })}
-						{@const lock = locksByClauseId.get(clause.id)}
 						{@const commentCount = commentCountByClauseId.get(clause.id) ?? 0}
-						{#if lock}
-							<div
-								class="tooltip tooltip-right"
-								data-tip={m.clauseLockedBy({
-									country:
-										lock.conferenceUser?.committeeMember?.representation?.name ??
-										getTranslatedCountryNameFromAlpha3Code(
-											lock.conferenceUser?.committeeMember?.representation?.alpha3Code
-										) ??
-										'?'
-								})}
-								in:fly={{ y: -6, duration: 200 }}
-								out:fade={{ duration: 150 }}
+						{#each presence?.editorsFor(clause.id) ?? [] as editor (editor.user.id)}
+							<span
+								class="badge badge-sm text-white"
+								style="background-color: {editor.user.color ?? '#888'}"
 							>
-								<div
-									class="flex items-center gap-2 rounded-md bg-warning/40 px-2 py-1 text-sm shadow-sm"
-								>
-									{#if lock.conferenceUser?.committeeMember?.representation}
-										<Flag
-											representation={lock.conferenceUser.committeeMember.representation}
-											size="xs"
-										/>
-									{/if}
-									<i class="fas fa-lock text-warning text-base"></i>
-								</div>
-							</div>
-						{/if}
+								{editor.user.name}
+							</span>
+						{/each}
 						{#if commentCount > 0}
 							<div class="badge badge-sm badge-info">
 								<i class="fas fa-comment text-xs"></i>
@@ -1487,35 +1356,15 @@
 						{/if}
 					{/snippet}
 					{#snippet clauseAnnotations({ clause })}
-						{@const lock = locksByClauseId.get(clause.id)}
 						{@const commentCount = commentCountByClauseId.get(clause.id) ?? 0}
-						{#if lock}
-							<div
-								class="tooltip tooltip-right"
-								data-tip={m.clauseLockedBy({
-									country:
-										lock.conferenceUser?.committeeMember?.representation?.name ??
-										getTranslatedCountryNameFromAlpha3Code(
-											lock.conferenceUser?.committeeMember?.representation?.alpha3Code
-										) ??
-										'?'
-								})}
-								in:fly={{ y: -6, duration: 200 }}
-								out:fade={{ duration: 150 }}
+						{#each presence?.editorsFor(clause.id) ?? [] as editor (editor.user.id)}
+							<span
+								class="badge badge-sm text-white"
+								style="background-color: {editor.user.color ?? '#888'}"
 							>
-								<div
-									class="flex items-center gap-2 rounded-md bg-warning/40 px-2 py-1 text-sm shadow-sm"
-								>
-									{#if lock.conferenceUser?.committeeMember?.representation}
-										<Flag
-											representation={lock.conferenceUser.committeeMember.representation}
-											size="xs"
-										/>
-									{/if}
-									<i class="fas fa-lock text-warning text-base"></i>
-								</div>
-							</div>
-						{/if}
+								{editor.user.name}
+							</span>
+						{/each}
 						{#if commentCount > 0}
 							<div class="badge badge-sm badge-info">
 								<i class="fas fa-comment text-xs"></i>

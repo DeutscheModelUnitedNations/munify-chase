@@ -2,17 +2,23 @@
 	import { m } from '$lib/paraglide/messages';
 	import { page } from '$app/state';
 	import { goto } from '$app/navigation';
-	import { onMount } from 'svelte';
 	import { client } from '$lib/api/rumbleClient/client';
 	import { getCurrentUser } from '$lib/state/currentUser.svelte';
 	import {
 		ResolutionEditor,
-		migrateResolution,
+		type ResolutionStore,
+		type PresenceAdapter,
 		type Resolution,
 		type ResolutionHeaderData,
 		type AmendmentOverlay,
 		type OperativeClause
 	} from '@deutschemodelunitednations/munify-resolution-editor';
+	import {
+		createYjsStore,
+		createAwarenessPresence
+	} from '@deutschemodelunitednations/munify-resolution-editor/yjs';
+	import * as Y from 'yjs';
+	import { WebsocketProvider } from 'y-websocket';
 	import Modal from '$lib/components/Modal.svelte';
 	import CreateAmendmentModal from '$lib/components/CreateAmendmentModal.svelte';
 	import Fieldset from '$lib/components/Fieldset.svelte';
@@ -20,9 +26,8 @@
 	import CommentSection from '$lib/components/CommentSection.svelte';
 	import { getTranslatedCountryNameFromAlpha3Code } from '$lib/utils/nationTranslationHelper.svelte';
 	import toast from 'svelte-french-toast';
-	import { fly, fade } from 'svelte/transition';
 	import { getResolutionLabels } from '$lib/utils/resolutionEditorLabels';
-	import { SvelteMap, SvelteSet } from 'svelte/reactivity';
+	import { SvelteMap } from 'svelte/reactivity';
 
 	const currentUser = await getCurrentUser();
 	const [conferenceUser] =
@@ -39,8 +44,7 @@
 		})) ?? [];
 
 	// Live queries
-	const [paper, locks, allComments, allAmendments, clauseVotes, voteResults, committeeData]: [
-		any,
+	const [paper, allComments, allAmendments, clauseVotes, voteResults, committeeData]: [
 		any,
 		any,
 		any,
@@ -53,7 +57,6 @@
 			id: true,
 			title: true,
 			status: true,
-			content: true,
 			documentNumber: true,
 			creatorCommitteeMemberId: true,
 			updatedAt: true,
@@ -89,26 +92,6 @@
 			editors: {
 				id: true,
 				conferenceUserId: true
-			}
-		}),
-		client.liveQuery.paperClauseLocks({
-			__args: { where: { paperId: page.params.paperId } },
-			id: true,
-			clauseId: true,
-			conferenceUserId: true,
-			acquiredAt: true,
-			conferenceUser: {
-				id: true,
-				committeeMember: {
-					id: true,
-					representation: {
-						id: true,
-						name: true,
-						alpha3Code: true,
-						alpha2Code: true,
-						faIcon: true
-					}
-				}
 			}
 		}),
 		client.liveQuery.resolutionComments({
@@ -262,30 +245,73 @@
 		isDelegate && isDrStatus && committee?.supportReEvaluationOpen === true
 	);
 
-	// Collaborative mode: only enable lock UI when paper has other editors or is beyond working paper
-	let collaborativeMode = $derived(
-		(paper?.editors?.length ?? 0) > 0 || paper?.status !== 'WORKING_PAPER'
-	);
-
 	// Comments: show on SUBMITTED+ papers only (not working papers)
 	let showComments = $derived(paper?.status !== 'WORKING_PAPER');
 
-	// Resolution content — initialize from paper data
-	let resolution = $state<Resolution | null>(null);
-	let hasPendingSave = $state(false);
+	// Y.js-backed collaborative store
+	let yDoc = $state<Y.Doc | null>(null);
+	let provider = $state<WebsocketProvider | null>(null);
+	let store = $state<ResolutionStore | null>(null);
+	let presence = $state<PresenceAdapter | null>(null);
+	let wsSynced = $state(false);
+	let wsConnected = $state(false);
 
 	$effect(() => {
-		if (paper?.content && !resolution) {
-			resolution = migrateResolution(paper.content as Resolution);
-		}
+		const paperId = page.params.paperId;
+		if (!paperId) return;
+		const doc = new Y.Doc();
+		const wsProto = location.protocol === 'https:' ? 'wss:' : 'ws:';
+		const wsUrl = `${wsProto}//${location.host}/api/ws/yjs`;
+		const prov = new WebsocketProvider(wsUrl, paperId, doc);
+		const s = createYjsStore(doc);
+		const p = createAwarenessPresence({
+			awareness: prov.awareness,
+			user: {
+				id: currentUser?.id ?? 'anon',
+				name:
+					[currentUser?.givenName, currentUser?.familyName].filter(Boolean).join(' ') ||
+					currentUser?.preferredUsername ||
+					'Anonymous',
+				color: stringToColor(currentUser?.id ?? 'anon')
+			}
+		});
+		const onSynced = (synced: boolean) => {
+			wsSynced = synced;
+		};
+		const onStatus = ({ status }: { status: string }) => {
+			wsConnected = status === 'connected';
+			if (status !== 'connected') wsSynced = false;
+		};
+		prov.on('synced', onSynced);
+		prov.on('status', onStatus);
+		yDoc = doc;
+		provider = prov;
+		store = s;
+		presence = p;
+		return () => {
+			prov.off('synced', onSynced);
+			prov.off('status', onStatus);
+			s.destroy();
+			prov.destroy();
+			doc.destroy();
+			yDoc = null;
+			provider = null;
+			store = null;
+			presence = null;
+			wsSynced = false;
+			wsConnected = false;
+		};
 	});
 
-	// Accept remote updates when no local save is in-flight
-	$effect(() => {
-		if (paper?.content && !hasPendingSave) {
-			resolution = migrateResolution(paper.content as Resolution);
-		}
-	});
+	function stringToColor(s: string) {
+		let h = 0;
+		for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) | 0;
+		const hue = ((h % 360) + 360) % 360;
+		return `hsl(${hue}, 70%, 50%)`;
+	}
+
+	// Reactive resolution snapshot (read from store; null until connected)
+	let resolution = $derived<Resolution | null>(store?.snapshot ?? null);
 
 	// Resolution header data for document preview
 	let headerData = $derived<ResolutionHeaderData>({
@@ -311,157 +337,8 @@
 		lastEdited: paper?.updatedAt ?? undefined
 	});
 
-	onMount(() => {
-		// Hybrid heartbeat — only fires when idle with held locks
-		const heartbeatInterval = setInterval(() => {
-			if (editableClauseIds.size > 0 && canEdit && Date.now() - lastInteractionTime > 25_000) {
-				for (const clauseId of editableClauseIds) {
-					client.mutate
-						.acquireClauseLock({
-							__args: { paperId: page.params.paperId!, clauseId },
-							id: true
-						})
-						.catch(() => {
-							optimisticMyLockIds.delete(clauseId);
-						});
-				}
-			}
-		}, 30_000);
-
-		// Best-effort lock release on tab close
-		const handleBeforeUnload = () => {
-			if (canEdit) {
-				const body = JSON.stringify({
-					query: `mutation { releaseAllMyLocks(paperId: "${page.params.paperId}") }`
-				});
-				navigator.sendBeacon('/api/graphql', new Blob([body], { type: 'application/json' }));
-			}
-		};
-		window.addEventListener('beforeunload', handleBeforeUnload);
-
-		return () => {
-			clearInterval(heartbeatInterval);
-			window.removeEventListener('beforeunload', handleBeforeUnload);
-
-			// Release locks on navigation
-			if (canEdit) {
-				client.mutate
-					.releaseAllMyLocks({ __args: { paperId: page.params.paperId! } } as any)
-					.catch(() => {});
-			}
-		};
-	});
-
-	// =====================================================
-	// Clause-level locking
-	// =====================================================
-
-	let lastInteractionTime = $state(Date.now());
-
-	// Clause IDs locked by OTHER users
-	let lockedClauseIds = $derived.by(() => {
-		const set = new SvelteSet<string>();
-		for (const lock of locks ?? []) {
-			if (lock.conferenceUserId !== myConferenceUserId) {
-				set.add(lock.clauseId);
-			}
-		}
-		return set;
-	});
-
-	// Clause IDs I hold confirmed locks for
-	let myLockedClauseIds = $derived.by(() => {
-		const set = new SvelteSet<string>();
-		for (const lock of locks ?? []) {
-			if (lock.conferenceUserId === myConferenceUserId) {
-				set.add(lock.clauseId);
-			}
-		}
-		return set;
-	});
-
-	// Map for lock badge rendering: clauseId → lock info
-	let locksByClauseId = $derived.by(() => {
-		const map = new SvelteMap<string, any>();
-		for (const lock of locks ?? []) {
-			if (lock.conferenceUserId !== myConferenceUserId) {
-				map.set(lock.clauseId, lock);
-			}
-		}
-		return map;
-	});
-
-	// Optimistic lock IDs — added immediately on mutation success, before subscription arrives
-	let optimisticMyLockIds = new SvelteSet<string>();
-
-	// Effective editable clause IDs = confirmed (subscription) + optimistic
-	let editableClauseIds = $derived.by(() => {
-		const set = new SvelteSet(myLockedClauseIds);
-		for (const id of optimisticMyLockIds) set.add(id);
-		return set;
-	});
-
-	// Are there any locks held by other users?
-	let hasOtherLocks = $derived(lockedClauseIds.size > 0);
-
-	// Click "Start editing" → acquire lock
-	async function handleClauseLock(clauseId: string) {
-		if (!canEdit || lockedClauseIds.has(clauseId)) return;
-		try {
-			await client.mutate.acquireClauseLock({
-				__args: { paperId: page.params.paperId!, clauseId },
-				id: true
-			});
-			optimisticMyLockIds.add(clauseId);
-			lastInteractionTime = Date.now();
-		} catch {
-			const lock = locksByClauseId.get(clauseId);
-			const country =
-				lock?.conferenceUser?.committeeMember?.representation?.name ??
-				getTranslatedCountryNameFromAlpha3Code(
-					lock?.conferenceUser?.committeeMember?.representation?.alpha3Code
-				) ??
-				'?';
-			toast.error(m.lockAcquireFailed({ country }));
-		}
-	}
-
-	// Click "Done editing" → release lock
-	async function handleClauseUnlock(clauseId: string) {
-		if (!canEdit) return;
-		optimisticMyLockIds.delete(clauseId);
-		await client.mutate
-			.releaseClauseLock({ __args: { paperId: page.params.paperId!, clauseId } } as any)
-			.catch(() => {});
-	}
-
-	// Any interaction (typing, clicking) → refresh idle timer
-	function handleClauseInteraction(_clauseId: string) {
-		lastInteractionTime = Date.now();
-	}
-
-	// Auto-save
+	// Title save status (resolution content is auto-synced via Y.js, no save status needed for it)
 	let saveStatus = $state<'idle' | 'saving' | 'saved' | 'error'>('idle');
-	let saveTimeout: ReturnType<typeof setTimeout>;
-
-	function handleResolutionChange(updated: Resolution) {
-		resolution = updated;
-		hasPendingSave = true;
-		clearTimeout(saveTimeout);
-		saveStatus = 'saving';
-		saveTimeout = setTimeout(async () => {
-			try {
-				await client.mutate.updatePaperContent({
-					__args: { paperId: page.params.paperId!, content: updated },
-					id: true
-				});
-				saveStatus = 'saved';
-				hasPendingSave = false;
-			} catch {
-				saveStatus = 'error';
-			}
-		}, 500);
-	}
 
 	let titleInput = $state('');
 	let titleInitialized = $state(false);
@@ -984,14 +861,6 @@
 			</div>
 		</div>
 
-		<!-- Collaborative editing info banner -->
-		{#if canEdit && collaborativeMode && hasOtherLocks}
-			<div class="alert alert-info mt-2 text-sm">
-				<i class="fas fa-lock"></i>
-				<span>{m.collaborativeEditingInfo()}</span>
-			</div>
-		{/if}
-
 		<!-- Final vote result alert -->
 		{#if paper.status === 'FINAL' && voteResult}
 			<div
@@ -1036,20 +905,20 @@
 
 		<!-- Resolution Editor -->
 		<div class="py-2">
-			{#if resolution}
-				{@const collab = canEdit && collaborativeMode}
+			{#if !wsSynced}
+				<div class="flex items-center justify-center gap-2 py-12 text-base-content/60">
+					<span class="loading loading-spinner loading-sm"></span>
+					<span class="text-sm">
+						{wsConnected ? m.synchronizing() : m.connecting()}
+					</span>
+				</div>
+			{:else if store && resolution}
 				<ResolutionEditor
-					committeeName={committee?.name ?? ''}
-					{resolution}
+					{store}
+					presence={presence ?? undefined}
 					{headerData}
 					labels={getResolutionLabels()}
 					editable={canEdit && paper.status !== 'VOTING_PHASE' && paper.status !== 'FINAL'}
-					onResolutionChange={handleResolutionChange}
-					onClauseLock={collab ? handleClauseLock : undefined}
-					onClauseUnlock={collab ? handleClauseUnlock : undefined}
-					onClauseInteraction={collab ? handleClauseInteraction : undefined}
-					lockedClauseIds={collab ? lockedClauseIds : undefined}
-					editableClauseIds={collab ? editableClauseIds : undefined}
 					amendments={showAmendmentUI ? amendmentOverlays : undefined}
 					rejectedClauseIds={paper.status === 'VOTING_PHASE' || paper.status === 'FINAL'
 						? rejectedClauseIds
@@ -1098,64 +967,24 @@
 						{/if}
 					{/snippet}
 					{#snippet preambleAnnotations({ clause })}
-						{@const lock = locksByClauseId.get(clause.id)}
-						{#if lock}
-							<div
-								class="tooltip tooltip-right"
-								data-tip={m.clauseLockedBy({
-									country:
-										lock.conferenceUser?.committeeMember?.representation?.name ??
-										getTranslatedCountryNameFromAlpha3Code(
-											lock.conferenceUser?.committeeMember?.representation?.alpha3Code
-										) ??
-										'?'
-								})}
-								in:fly={{ y: -6, duration: 200 }}
-								out:fade={{ duration: 150 }}
+						{#each presence?.editorsFor(clause.id) ?? [] as editor (editor.user.id)}
+							<span
+								class="badge badge-sm text-white"
+								style="background-color: {editor.user.color ?? '#888'}"
 							>
-								<div
-									class="flex items-center gap-2 rounded-md bg-warning/40 px-2 py-1 text-sm shadow-sm"
-								>
-									{#if lock.conferenceUser?.committeeMember?.representation}
-										<Flag
-											representation={lock.conferenceUser.committeeMember.representation}
-											size="xs"
-										/>
-									{/if}
-									<i class="fas fa-lock text-warning text-base"></i>
-								</div>
-							</div>
-						{/if}
+								{editor.user.name}
+							</span>
+						{/each}
 					{/snippet}
 					{#snippet clauseAnnotations({ clause })}
-						{@const lock = locksByClauseId.get(clause.id)}
-						{#if lock}
-							<div
-								class="tooltip tooltip-right"
-								data-tip={m.clauseLockedBy({
-									country:
-										lock.conferenceUser?.committeeMember?.representation?.name ??
-										getTranslatedCountryNameFromAlpha3Code(
-											lock.conferenceUser?.committeeMember?.representation?.alpha3Code
-										) ??
-										'?'
-								})}
-								in:fly={{ y: -6, duration: 200 }}
-								out:fade={{ duration: 150 }}
+						{#each presence?.editorsFor(clause.id) ?? [] as editor (editor.user.id)}
+							<span
+								class="badge badge-sm text-white"
+								style="background-color: {editor.user.color ?? '#888'}"
 							>
-								<div
-									class="flex items-center gap-2 rounded-md bg-warning/40 px-2 py-1 text-sm shadow-sm"
-								>
-									{#if lock.conferenceUser?.committeeMember?.representation}
-										<Flag
-											representation={lock.conferenceUser.committeeMember.representation}
-											size="xs"
-										/>
-									{/if}
-									<i class="fas fa-lock text-warning text-base"></i>
-								</div>
-							</div>
-						{/if}
+								{editor.user.name}
+							</span>
+						{/each}
 					{/snippet}
 					{#snippet preambleClauseToolbar({ clause })}
 						{#if showComments}

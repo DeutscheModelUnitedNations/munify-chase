@@ -8,8 +8,10 @@
 	import {
 		ResolutionEditor,
 		createEmptyOperativeClause,
+		createNativeStore,
 		type Resolution,
-		type OperativeClause
+		type OperativeClause,
+		type ResolutionStore
 	} from '@deutschemodelunitednations/munify-resolution-editor';
 
 	type AmendmentType = 'DELETE' | 'ADD' | 'ALTER_TEXT' | 'ALTER_POSITION';
@@ -167,14 +169,35 @@
 		return getTranslatedCountryNameFromAlpha3Code(rep?.alpha3Code) ?? rep?.name ?? '';
 	}
 
-	// Mini resolution for content editing
-	let miniResolution = $derived.by(() => {
-		if (!newContent) return null;
-		return {
+	// Mini resolution for content editing — wrapped in a native store so the
+	// editor's new store-based API can be used without bringing in Y.js.
+	let miniStore = $state<ResolutionStore | null>(null);
+
+	$effect(() => {
+		// Reset the store whenever the user enters the content step with a new
+		// `newContent`. We avoid recreating it on every keystroke (which would
+		// reset the textarea value) by keying on `newContent.id`.
+		if (!newContent) {
+			miniStore?.destroy();
+			miniStore = null;
+			return;
+		}
+		const initial: Resolution = {
 			committeeName,
 			preamble: [],
 			operative: [newContent]
-		} as Resolution;
+		};
+		const store = createNativeStore(initial, {
+			onChange: (snap) => {
+				if (snap.operative[0]) {
+					newContent = snap.operative[0] as OperativeClause;
+				}
+			}
+		});
+		miniStore = store;
+		return () => {
+			store.destroy();
+		};
 	});
 
 	function handleSelectProposer(memberId: string) {
@@ -437,19 +460,9 @@
 							</span>
 						</p>
 					{/if}
-					{#if miniResolution}
+					{#if miniStore}
 						<div class="border rounded-lg p-2 max-h-64 overflow-y-auto">
-							<ResolutionEditor
-								{committeeName}
-								resolution={miniResolution}
-								labels={getResolutionLabels()}
-								editable={true}
-								onResolutionChange={(updated) => {
-									if (updated.operative[0]) {
-										newContent = updated.operative[0] as OperativeClause;
-									}
-								}}
-							/>
+							<ResolutionEditor store={miniStore} labels={getResolutionLabels()} editable={true} />
 						</div>
 					{/if}
 				{:else if selectedType === 'ALTER_POSITION'}

@@ -3307,47 +3307,6 @@ export const schema = {
 				name: 'Conferenceuser',
 				fields: [
 					{
-						name: 'clauseLocks',
-						type: {
-							kind: 'NON_NULL',
-							ofType: {
-								kind: 'LIST',
-								ofType: {
-									kind: 'NON_NULL',
-									ofType: { kind: 'OBJECT', name: 'Paperclauselock', ofType: null, __proto__: null }
-								}
-							}
-						},
-						args: [
-							{
-								name: 'limit',
-								type: { kind: 'SCALAR', name: 'Int', ofType: null, __proto__: null }
-							},
-							{
-								name: 'offset',
-								type: { kind: 'SCALAR', name: 'Int', ofType: null, __proto__: null }
-							},
-							{
-								name: 'orderBy',
-								type: {
-									kind: 'INPUT_OBJECT',
-									name: 'PaperclauselockOrderInputArgument',
-									ofType: null,
-									__proto__: null
-								}
-							},
-							{
-								name: 'where',
-								type: {
-									kind: 'INPUT_OBJECT',
-									name: 'PaperclauselockWhereInputArgument',
-									ofType: null,
-									__proto__: null
-								}
-							}
-						]
-					},
-					{
 						name: 'comments',
 						type: {
 							kind: 'NON_NULL',
@@ -3605,16 +3564,6 @@ export const schema = {
 				isOneOf: void 0,
 				inputFields: [
 					{
-						name: 'clauseLocks',
-						type: {
-							kind: 'INPUT_OBJECT',
-							name: 'PaperclauselockOrderInputArgument',
-							ofType: null,
-							__proto__: null
-						},
-						defaultValue: void 0
-					},
-					{
 						name: 'comments',
 						type: {
 							kind: 'INPUT_OBJECT',
@@ -3721,16 +3670,6 @@ export const schema = {
 				name: 'ConferenceuserWhereInputArgument',
 				isOneOf: void 0,
 				inputFields: [
-					{
-						name: 'clauseLocks',
-						type: {
-							kind: 'INPUT_OBJECT',
-							name: 'PaperclauselockWhereInputArgument',
-							ofType: null,
-							__proto__: null
-						},
-						defaultValue: void 0
-					},
 					{
 						name: 'comments',
 						type: {
@@ -4726,29 +4665,6 @@ export const schema = {
 						]
 					},
 					{
-						name: 'acquireClauseLock',
-						type: {
-							kind: 'NON_NULL',
-							ofType: { kind: 'OBJECT', name: 'Paperclauselock', ofType: null, __proto__: null }
-						},
-						args: [
-							{
-								name: 'clauseId',
-								type: {
-									kind: 'NON_NULL',
-									ofType: { kind: 'SCALAR', name: 'String', ofType: null, __proto__: null }
-								}
-							},
-							{
-								name: 'paperId',
-								type: {
-									kind: 'NON_NULL',
-									ofType: { kind: 'SCALAR', name: 'ID', ofType: null, __proto__: null }
-								}
-							}
-						]
-					},
-					{
 						name: 'addAmendmentSponsor',
 						type: {
 							kind: 'NON_NULL',
@@ -5615,45 +5531,6 @@ export const schema = {
 						]
 					},
 					{
-						name: 'releaseAllMyLocks',
-						type: {
-							kind: 'NON_NULL',
-							ofType: { kind: 'SCALAR', name: 'Boolean', ofType: null, __proto__: null }
-						},
-						args: [
-							{
-								name: 'paperId',
-								type: {
-									kind: 'NON_NULL',
-									ofType: { kind: 'SCALAR', name: 'ID', ofType: null, __proto__: null }
-								}
-							}
-						]
-					},
-					{
-						name: 'releaseClauseLock',
-						type: {
-							kind: 'NON_NULL',
-							ofType: { kind: 'SCALAR', name: 'Boolean', ofType: null, __proto__: null }
-						},
-						args: [
-							{
-								name: 'clauseId',
-								type: {
-									kind: 'NON_NULL',
-									ofType: { kind: 'SCALAR', name: 'String', ofType: null, __proto__: null }
-								}
-							},
-							{
-								name: 'paperId',
-								type: {
-									kind: 'NON_NULL',
-									ofType: { kind: 'SCALAR', name: 'ID', ofType: null, __proto__: null }
-								}
-							}
-						]
-					},
-					{
 						name: 'removeAmendmentSponsor',
 						type: {
 							kind: 'NON_NULL',
@@ -6065,29 +5942,6 @@ export const schema = {
 						]
 					},
 					{
-						name: 'updatePaperContent',
-						type: {
-							kind: 'NON_NULL',
-							ofType: { kind: 'OBJECT', name: 'Resolutionpaper', ofType: null, __proto__: null }
-						},
-						args: [
-							{
-								name: 'content',
-								type: {
-									kind: 'NON_NULL',
-									ofType: { kind: 'SCALAR', name: 'JSON', ofType: null, __proto__: null }
-								}
-							},
-							{
-								name: 'paperId',
-								type: {
-									kind: 'NON_NULL',
-									ofType: { kind: 'SCALAR', name: 'ID', ofType: null, __proto__: null }
-								}
-							}
-						]
-					},
-					{
 						name: 'updatePaperTitle',
 						type: {
 							kind: 'NON_NULL',
@@ -6430,259 +6284,6 @@ export const schema = {
 						type: {
 							kind: 'INPUT_OBJECT',
 							name: 'IntWhereInputArgument',
-							ofType: null,
-							__proto__: null
-						},
-						defaultValue: void 0
-					}
-				]
-			},
-			{
-				kind: 'OBJECT',
-				name: 'Paperclauselock',
-				fields: [
-					{
-						name: 'acquiredAt',
-						type: {
-							kind: 'NON_NULL',
-							ofType: { kind: 'SCALAR', name: 'DateTime', ofType: null, __proto__: null }
-						},
-						args: []
-					},
-					{
-						name: 'clauseId',
-						type: {
-							kind: 'NON_NULL',
-							ofType: { kind: 'SCALAR', name: 'ID', ofType: null, __proto__: null }
-						},
-						args: []
-					},
-					{
-						name: 'conferenceUser',
-						type: {
-							kind: 'NON_NULL',
-							ofType: { kind: 'OBJECT', name: 'Conferenceuser', ofType: null, __proto__: null }
-						},
-						args: [
-							{
-								name: 'orderBy',
-								type: {
-									kind: 'INPUT_OBJECT',
-									name: 'ConferenceuserOrderInputArgument',
-									ofType: null,
-									__proto__: null
-								}
-							},
-							{
-								name: 'where',
-								type: {
-									kind: 'INPUT_OBJECT',
-									name: 'ConferenceuserWhereInputArgument',
-									ofType: null,
-									__proto__: null
-								}
-							}
-						]
-					},
-					{
-						name: 'conferenceUserId',
-						type: {
-							kind: 'NON_NULL',
-							ofType: { kind: 'SCALAR', name: 'ID', ofType: null, __proto__: null }
-						},
-						args: []
-					},
-					{
-						name: 'createdAt',
-						type: {
-							kind: 'NON_NULL',
-							ofType: { kind: 'SCALAR', name: 'DateTime', ofType: null, __proto__: null }
-						},
-						args: []
-					},
-					{
-						name: 'id',
-						type: {
-							kind: 'NON_NULL',
-							ofType: { kind: 'SCALAR', name: 'ID', ofType: null, __proto__: null }
-						},
-						args: []
-					},
-					{
-						name: 'paper',
-						type: {
-							kind: 'NON_NULL',
-							ofType: { kind: 'OBJECT', name: 'Resolutionpaper', ofType: null, __proto__: null }
-						},
-						args: [
-							{
-								name: 'orderBy',
-								type: {
-									kind: 'INPUT_OBJECT',
-									name: 'ResolutionpaperOrderInputArgument',
-									ofType: null,
-									__proto__: null
-								}
-							},
-							{
-								name: 'where',
-								type: {
-									kind: 'INPUT_OBJECT',
-									name: 'ResolutionpaperWhereInputArgument',
-									ofType: null,
-									__proto__: null
-								}
-							}
-						]
-					},
-					{
-						name: 'paperId',
-						type: {
-							kind: 'NON_NULL',
-							ofType: { kind: 'SCALAR', name: 'ID', ofType: null, __proto__: null }
-						},
-						args: []
-					},
-					{
-						name: 'updatedAt',
-						type: { kind: 'SCALAR', name: 'DateTime', ofType: null, __proto__: null },
-						args: []
-					}
-				],
-				interfaces: []
-			},
-			{
-				kind: 'INPUT_OBJECT',
-				name: 'PaperclauselockOrderInputArgument',
-				isOneOf: void 0,
-				inputFields: [
-					{
-						name: 'acquiredAt',
-						type: { kind: 'ENUM', name: 'SortingParameter', ofType: null, __proto__: null },
-						defaultValue: void 0
-					},
-					{
-						name: 'clauseId',
-						type: { kind: 'ENUM', name: 'SortingParameter', ofType: null, __proto__: null },
-						defaultValue: void 0
-					},
-					{
-						name: 'conferenceUser',
-						type: {
-							kind: 'INPUT_OBJECT',
-							name: 'ConferenceuserOrderInputArgument',
-							ofType: null,
-							__proto__: null
-						},
-						defaultValue: void 0
-					},
-					{
-						name: 'conferenceUserId',
-						type: { kind: 'ENUM', name: 'SortingParameter', ofType: null, __proto__: null },
-						defaultValue: void 0
-					},
-					{
-						name: 'createdAt',
-						type: { kind: 'ENUM', name: 'SortingParameter', ofType: null, __proto__: null },
-						defaultValue: void 0
-					},
-					{
-						name: 'id',
-						type: { kind: 'ENUM', name: 'SortingParameter', ofType: null, __proto__: null },
-						defaultValue: void 0
-					},
-					{
-						name: 'paper',
-						type: {
-							kind: 'INPUT_OBJECT',
-							name: 'ResolutionpaperOrderInputArgument',
-							ofType: null,
-							__proto__: null
-						},
-						defaultValue: void 0
-					},
-					{
-						name: 'paperId',
-						type: { kind: 'ENUM', name: 'SortingParameter', ofType: null, __proto__: null },
-						defaultValue: void 0
-					},
-					{
-						name: 'updatedAt',
-						type: { kind: 'ENUM', name: 'SortingParameter', ofType: null, __proto__: null },
-						defaultValue: void 0
-					}
-				]
-			},
-			{
-				kind: 'INPUT_OBJECT',
-				name: 'PaperclauselockWhereInputArgument',
-				isOneOf: void 0,
-				inputFields: [
-					{
-						name: 'acquiredAt',
-						type: {
-							kind: 'INPUT_OBJECT',
-							name: 'DateWhereInputArgument',
-							ofType: null,
-							__proto__: null
-						},
-						defaultValue: void 0
-					},
-					{
-						name: 'clauseId',
-						type: { kind: 'SCALAR', name: 'ID', ofType: null, __proto__: null },
-						defaultValue: void 0
-					},
-					{
-						name: 'conferenceUser',
-						type: {
-							kind: 'INPUT_OBJECT',
-							name: 'ConferenceuserWhereInputArgument',
-							ofType: null,
-							__proto__: null
-						},
-						defaultValue: void 0
-					},
-					{
-						name: 'conferenceUserId',
-						type: { kind: 'SCALAR', name: 'ID', ofType: null, __proto__: null },
-						defaultValue: void 0
-					},
-					{
-						name: 'createdAt',
-						type: {
-							kind: 'INPUT_OBJECT',
-							name: 'DateWhereInputArgument',
-							ofType: null,
-							__proto__: null
-						},
-						defaultValue: void 0
-					},
-					{
-						name: 'id',
-						type: { kind: 'SCALAR', name: 'ID', ofType: null, __proto__: null },
-						defaultValue: void 0
-					},
-					{
-						name: 'paper',
-						type: {
-							kind: 'INPUT_OBJECT',
-							name: 'ResolutionpaperWhereInputArgument',
-							ofType: null,
-							__proto__: null
-						},
-						defaultValue: void 0
-					},
-					{
-						name: 'paperId',
-						type: { kind: 'SCALAR', name: 'ID', ofType: null, __proto__: null },
-						defaultValue: void 0
-					},
-					{
-						name: 'updatedAt',
-						type: {
-							kind: 'INPUT_OBJECT',
-							name: 'DateWhereInputArgument',
 							ofType: null,
 							__proto__: null
 						},
@@ -8231,63 +7832,6 @@ export const schema = {
 								type: {
 									kind: 'INPUT_OBJECT',
 									name: 'OperativeclausevoteWhereInputArgument',
-									ofType: null,
-									__proto__: null
-								}
-							}
-						]
-					},
-					{
-						name: 'paperClauseLock',
-						type: {
-							kind: 'NON_NULL',
-							ofType: { kind: 'OBJECT', name: 'Paperclauselock', ofType: null, __proto__: null }
-						},
-						args: [
-							{
-								name: 'id',
-								type: {
-									kind: 'NON_NULL',
-									ofType: { kind: 'SCALAR', name: 'ID', ofType: null, __proto__: null }
-								}
-							}
-						]
-					},
-					{
-						name: 'paperClauseLocks',
-						type: {
-							kind: 'NON_NULL',
-							ofType: {
-								kind: 'LIST',
-								ofType: {
-									kind: 'NON_NULL',
-									ofType: { kind: 'OBJECT', name: 'Paperclauselock', ofType: null, __proto__: null }
-								}
-							}
-						},
-						args: [
-							{
-								name: 'limit',
-								type: { kind: 'SCALAR', name: 'Int', ofType: null, __proto__: null }
-							},
-							{
-								name: 'offset',
-								type: { kind: 'SCALAR', name: 'Int', ofType: null, __proto__: null }
-							},
-							{
-								name: 'orderBy',
-								type: {
-									kind: 'INPUT_OBJECT',
-									name: 'PaperclauselockOrderInputArgument',
-									ofType: null,
-									__proto__: null
-								}
-							},
-							{
-								name: 'where',
-								type: {
-									kind: 'INPUT_OBJECT',
-									name: 'PaperclauselockWhereInputArgument',
 									ofType: null,
 									__proto__: null
 								}
@@ -9906,47 +9450,6 @@ export const schema = {
 						]
 					},
 					{
-						name: 'clauseLocks',
-						type: {
-							kind: 'NON_NULL',
-							ofType: {
-								kind: 'LIST',
-								ofType: {
-									kind: 'NON_NULL',
-									ofType: { kind: 'OBJECT', name: 'Paperclauselock', ofType: null, __proto__: null }
-								}
-							}
-						},
-						args: [
-							{
-								name: 'limit',
-								type: { kind: 'SCALAR', name: 'Int', ofType: null, __proto__: null }
-							},
-							{
-								name: 'offset',
-								type: { kind: 'SCALAR', name: 'Int', ofType: null, __proto__: null }
-							},
-							{
-								name: 'orderBy',
-								type: {
-									kind: 'INPUT_OBJECT',
-									name: 'PaperclauselockOrderInputArgument',
-									ofType: null,
-									__proto__: null
-								}
-							},
-							{
-								name: 'where',
-								type: {
-									kind: 'INPUT_OBJECT',
-									name: 'PaperclauselockWhereInputArgument',
-									ofType: null,
-									__proto__: null
-								}
-							}
-						]
-					},
-					{
 						name: 'comments',
 						type: {
 							kind: 'NON_NULL',
@@ -10397,16 +9900,6 @@ export const schema = {
 						defaultValue: void 0
 					},
 					{
-						name: 'clauseLocks',
-						type: {
-							kind: 'INPUT_OBJECT',
-							name: 'PaperclauselockOrderInputArgument',
-							ofType: null,
-							__proto__: null
-						},
-						defaultValue: void 0
-					},
-					{
 						name: 'comments',
 						type: {
 							kind: 'INPUT_OBJECT',
@@ -10578,16 +10071,6 @@ export const schema = {
 						type: {
 							kind: 'INPUT_OBJECT',
 							name: 'AmendmentWhereInputArgument',
-							ofType: null,
-							__proto__: null
-						},
-						defaultValue: void 0
-					},
-					{
-						name: 'clauseLocks',
-						type: {
-							kind: 'INPUT_OBJECT',
-							name: 'PaperclauselockWhereInputArgument',
 							ofType: null,
 							__proto__: null
 						},
@@ -12352,63 +11835,6 @@ export const schema = {
 								type: {
 									kind: 'INPUT_OBJECT',
 									name: 'OperativeclausevoteWhereInputArgument',
-									ofType: null,
-									__proto__: null
-								}
-							}
-						]
-					},
-					{
-						name: 'paperClauseLock',
-						type: {
-							kind: 'NON_NULL',
-							ofType: { kind: 'OBJECT', name: 'Paperclauselock', ofType: null, __proto__: null }
-						},
-						args: [
-							{
-								name: 'id',
-								type: {
-									kind: 'NON_NULL',
-									ofType: { kind: 'SCALAR', name: 'ID', ofType: null, __proto__: null }
-								}
-							}
-						]
-					},
-					{
-						name: 'paperClauseLocks',
-						type: {
-							kind: 'NON_NULL',
-							ofType: {
-								kind: 'LIST',
-								ofType: {
-									kind: 'NON_NULL',
-									ofType: { kind: 'OBJECT', name: 'Paperclauselock', ofType: null, __proto__: null }
-								}
-							}
-						},
-						args: [
-							{
-								name: 'limit',
-								type: { kind: 'SCALAR', name: 'Int', ofType: null, __proto__: null }
-							},
-							{
-								name: 'offset',
-								type: { kind: 'SCALAR', name: 'Int', ofType: null, __proto__: null }
-							},
-							{
-								name: 'orderBy',
-								type: {
-									kind: 'INPUT_OBJECT',
-									name: 'PaperclauselockOrderInputArgument',
-									ofType: null,
-									__proto__: null
-								}
-							},
-							{
-								name: 'where',
-								type: {
-									kind: 'INPUT_OBJECT',
-									name: 'PaperclauselockWhereInputArgument',
 									ofType: null,
 									__proto__: null
 								}

@@ -2,6 +2,11 @@ import { paraglideVitePlugin } from '@inlang/paraglide-js';
 import tailwindcss from '@tailwindcss/vite';
 import { sveltekit } from '@sveltejs/kit/vite';
 import { defineConfig, type ViteDevServer } from 'vite';
+import mkcert from 'vite-plugin-mkcert';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 function wsPlugin() {
 	return {
@@ -19,7 +24,8 @@ function wsPlugin() {
 function devAutoRestart() {
 	const RACE_CONDITION_PATTERNS = [
 		'has not been implemented', // Pothos ObjectRef race condition
-		'Class extends value undefined is not a constructor or null' // urql/svelte race condition
+		'Class extends value undefined is not a constructor or null', // urql/svelte race condition
+		'Received multiple implementations for plugin' // Pothos plugin re-registration after Vite reload
 	];
 
 	return {
@@ -61,6 +67,7 @@ function devAutoRestart() {
 
 export default defineConfig({
 	plugins: [
+		mkcert(),
 		devAutoRestart(),
 		tailwindcss(),
 		paraglideVitePlugin({
@@ -71,7 +78,26 @@ export default defineConfig({
 		sveltekit(),
 		wsPlugin()
 	],
+	// Yjs throws "Yjs was already imported" if two copies are loaded — happens
+	// easily when a peer-dep library (the resolution editor) ships its own
+	// copy. Force a single shared instance via an explicit alias because
+	// `dedupe` alone isn't enough when bun has materialised the library's
+	// own `node_modules/yjs` from a `file:` link.
+	resolve: {
+		dedupe: ['yjs', 'y-protocols'],
+		alias: {
+			yjs: path.resolve(__dirname, 'node_modules/yjs/dist/yjs.mjs')
+		}
+	},
+	optimizeDeps: {
+		include: ['yjs', 'y-protocols/sync', 'y-protocols/awareness', 'y-websocket']
+	},
 	server: {
-		allowedHosts: ['svelte-dev.munify.cloud']
+		allowedHosts: ['svelte-dev.munify.cloud'],
+		watch: {
+			// Ignore Claude Code worktrees and other internal directories so
+			// changes there don't force-reload the dev server.
+			ignored: ['**/.claude/**', '**/node_modules/**', '**/.svelte-kit/**']
+		}
 	}
 });

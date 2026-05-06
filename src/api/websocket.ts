@@ -10,9 +10,13 @@ import type { RequestEvent } from '@sveltejs/kit';
 import { OIDC } from './services/OIDC';
 import { parse as parseCookies } from 'cookie';
 import dayjs from 'dayjs';
+import { openYjsRoom } from './yjs/wss';
 
 const gqlWSS = new WebSocketServer({ noServer: true });
 const otherWSS = new WebSocketServer({ noServer: true });
+const yjsWSS = new WebSocketServer({ noServer: true });
+
+const YJS_PATH_PREFIX = '/api/ws/yjs/';
 
 /**
  * This is a bit hacky, but we need to create a synthetic RequestEvent to pass to the OIDC handler
@@ -85,6 +89,16 @@ async function attachLocals(req: IncomingMessage, ws: WebSocket) {
 }
 
 (globalThis as any).__wssUpgrade = (req: IncomingMessage, socket: Socket, head: Buffer) => {
+	if (req.url?.startsWith(YJS_PATH_PREFIX)) {
+		const paperId = req.url.slice(YJS_PATH_PREFIX.length).split('?')[0];
+		yjsWSS.handleUpgrade(req, socket, head, (ws) => {
+			attachLocals(req, ws as unknown as WebSocket).then(() => {
+				const userSub = (req as any).locals?.oidc?.user?.sub as string | undefined;
+				void openYjsRoom(ws, paperId, userSub);
+			});
+		});
+		return;
+	}
 	switch (req.url) {
 		case '/api/ws':
 			otherWSS.handleUpgrade(req, socket, head, (ws) => {

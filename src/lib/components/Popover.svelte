@@ -5,7 +5,7 @@
 
 	interface Props {
 		open?: boolean;
-		Trigger: Snippet;
+		Trigger: Snippet<[{ props: Record<string, unknown> }]>;
 		Content: Snippet;
 	}
 
@@ -14,7 +14,9 @@
 
 <Popover.Root bind:open>
 	<Popover.Trigger>
-		{@render Trigger()}
+		{#snippet child({ props })}
+			{@render Trigger({ props })}
+		{/snippet}
 	</Popover.Trigger>
 	<Popover.Portal>
 		<Popover.Content forceMount sideOffset={8}>

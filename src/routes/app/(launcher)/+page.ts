@@ -9,16 +9,49 @@ export const _houdini_load = graphql(`
 			committeeMemberId
 			committeeMember {
 				committeeId
+				committee {
+					abbreviation
+				}
+				representation {
+					alpha2Code
+					alpha3Code
+					type
+					name
+					faIcon
+				}
+			}
+			conferenceMember {
+				representation {
+					alpha2Code
+					alpha3Code
+					type
+					name
+					faIcon
+				}
 			}
 			conference {
 				id
 				title
+				location
+				startDate
+				endDate
+				committees {
+					id
+					abbreviation
+				}
 			}
 		}
 		isGlobalAdmin
 		findManyConference {
 			id
 			title
+			location
+			startDate
+			endDate
+			committees {
+				id
+				abbreviation
+			}
 		}
 	}
 `);

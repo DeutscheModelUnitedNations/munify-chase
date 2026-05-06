@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { untrack } from 'svelte';
 	import { m } from '$lib/paraglide/messages';
 	import { page } from '$app/state';
 	import { goto } from '$app/navigation';
@@ -260,6 +261,13 @@
 	$effect(() => {
 		const paperId = page.params.paperId;
 		if (!paperId) return;
+		// Run the rest untracked: only paperId should re-trigger this effect.
+		// Without this, reactive reads inside (currentUser fields, anything
+		// else from $state) would cause re-mount loops.
+		return untrack(() => establishYjsSession(paperId));
+	});
+
+	function establishYjsSession(paperId: string) {
 		const doc = new Y.Doc();
 		const wsProto = location.protocol === 'https:' ? 'wss:' : 'ws:';
 		const wsUrl = `${wsProto}//${location.host}/api/ws/yjs`;
@@ -287,32 +295,23 @@
 			// 4403 = our server's "Forbidden" close code. Stop the reconnect
 			// loop so we don't hammer the server; surface state so the UI can
 			// tell the user to re-auth.
-			if (event.code === 4403) {
+			if (event?.code === 4403) {
 				prov.shouldConnect = false;
 				wsForbidden = true;
 				wsConnected = false;
 				wsSynced = false;
 			}
 		};
-		// Fallback path: any update applied by the provider proves sync is
-		// flowing, even if the provider's fire-once 'synced' event never
+		// Fallback path: any provider-originated doc update proves sync is
+		// flowing, even if y-websocket's fire-once 'synced' event never
 		// re-fires after a background-tab WS reset.
 		const onDocUpdate = (_update: Uint8Array, origin: unknown) => {
 			if (origin === prov) wsSynced = true;
-		};
-		// Force a reconnect attempt when the tab returns to foreground —
-		// y-websocket's exponential backoff can leave us idle for minutes
-		// if the previous reconnect failed while the tab was hidden.
-		const onVisibilityChange = () => {
-			if (!document.hidden && prov.shouldConnect && !prov.wsconnected) {
-				prov.connect();
-			}
 		};
 		prov.on('synced', onSynced);
 		prov.on('status', onStatus);
 		prov.on('connection-close', onClose);
 		doc.on('update', onDocUpdate);
-		document.addEventListener('visibilitychange', onVisibilityChange);
 		// Catch up with any state already established by the time we got here
 		// (BroadcastChannel between tabs can sync the provider before our
 		// listener is attached, and that fire-once 'synced' event is missed).
@@ -337,7 +336,6 @@
 			prov.off('status', onStatus);
 			prov.off('connection-close', onClose);
 			doc.off('update', onDocUpdate);
-			document.removeEventListener('visibilitychange', onVisibilityChange);
 			s.destroy();
 			prov.destroy();
 			doc.destroy();
@@ -349,7 +347,7 @@
 			wsConnected = false;
 			wsForbidden = false;
 		};
-	});
+	}
 
 	function stringToColor(s: string) {
 		let h = 0;

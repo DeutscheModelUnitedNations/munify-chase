@@ -302,16 +302,9 @@
 				wsSynced = false;
 			}
 		};
-		// Fallback path: any provider-originated doc update proves sync is
-		// flowing, even if y-websocket's fire-once 'synced' event never
-		// re-fires after a background-tab WS reset.
-		const onDocUpdate = (_update: Uint8Array, origin: unknown) => {
-			if (origin === prov) wsSynced = true;
-		};
 		prov.on('synced', onSynced);
 		prov.on('status', onStatus);
 		prov.on('connection-close', onClose);
-		doc.on('update', onDocUpdate);
 		// Catch up with any state already established by the time we got here
 		// (BroadcastChannel between tabs can sync the provider before our
 		// listener is attached, and that fire-once 'synced' event is missed).
@@ -321,10 +314,13 @@
 		// no-op assignments; if the disconnect path didn't reset _synced
 		// (e.g., browser closed the WS before wsconnected was true), the
 		// next sync step 2 won't refire. Poll to self-heal within a second.
+		// IMPORTANT: only flip in the recovery direction (false→true). Going
+		// back (true→false) on a transient dip would mask the editor and
+		// race with sync messages already in flight.
 		const reconcileInterval = setInterval(() => {
 			if (wsForbidden) return;
-			if (prov.wsconnected !== wsConnected) wsConnected = prov.wsconnected;
-			if (prov.synced !== wsSynced) wsSynced = prov.synced;
+			if (prov.wsconnected && !wsConnected) wsConnected = true;
+			if (prov.synced && !wsSynced) wsSynced = true;
 		}, 1000);
 		yDoc = doc;
 		provider = prov;
@@ -335,7 +331,6 @@
 			prov.off('synced', onSynced);
 			prov.off('status', onStatus);
 			prov.off('connection-close', onClose);
-			doc.off('update', onDocUpdate);
 			s.destroy();
 			prov.destroy();
 			doc.destroy();

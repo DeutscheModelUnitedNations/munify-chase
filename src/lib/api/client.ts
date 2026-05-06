@@ -89,7 +89,8 @@ if (browser) {
 		cacheExchange({
 			schema,
 			optimistic,
-			updates
+			updates,
+			broadcastChannel: 'chase-cross-tab-sync'
 		})
 	);
 
@@ -149,5 +150,5 @@ export const urqlClient = new Client({
 	exchanges,
 	fetchOptions: {
 		credentials: 'include'
-  },
+	}
 });

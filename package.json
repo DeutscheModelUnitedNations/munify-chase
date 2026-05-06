@@ -110,6 +110,8 @@
 	},
 	"type": "module",
 	"dependencies": {
+		"@zxing/browser": "^0.2.0",
+		"@zxing/library": "^0.23.0",
 		"drizzle-kit": "^1.0.0-beta.9-e89174b",
 		"drizzle-orm": "^1.0.0-beta.9-e89174b",
 		"pg": "^8.20.0",

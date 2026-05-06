@@ -5,6 +5,7 @@ import { ConferenceRef } from './conference';
 import { GraphQLError } from 'graphql';
 import { isGlobalAdmin } from '$api/services/authHelper';
 import { assertFindFirstExists } from '@m1212e/rumble';
+import { attendanceCode as generateAttendanceCode } from '$lib/helpers/attendanceCode';
 
 const Input = schemaBuilder.inputType('ImportData', {
 	description: 'Import data. You can find the JSON schema here: /api/schema/import',
@@ -179,15 +180,26 @@ schemaBuilder.mutationFields((t) => ({
 				}
 
 				if ((data.conferenceUsers?.length ?? 0) > 0) {
+					const usedCodes = new Set<string>();
 					await tx.insert(schema.conferenceUser).values(
-						data.conferenceUsers!.map((user) => ({
-							id: user.id ?? undefined,
-							conferenceUserType: user.conferenceUserType,
-							userEmail: user.userEmail,
-							conferenceMemberId: user.conferenceMemberId,
-							committeeMemberId: user.committeeMemberId,
-							conferenceId: data.id
-						}))
+						data.conferenceUsers!.map((user) => {
+							let code: string | null = null;
+							if (user.conferenceUserType === 'NON_STATE_ACTOR') {
+								do {
+									code = generateAttendanceCode();
+								} while (usedCodes.has(code));
+								usedCodes.add(code);
+							}
+							return {
+								id: user.id ?? undefined,
+								conferenceUserType: user.conferenceUserType,
+								userEmail: user.userEmail,
+								conferenceMemberId: user.conferenceMemberId,
+								committeeMemberId: user.committeeMemberId,
+								conferenceId: data.id,
+								attendanceCode: code
+							};
+						})
 					);
 				}
 

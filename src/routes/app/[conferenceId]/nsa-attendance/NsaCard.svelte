@@ -31,6 +31,11 @@
 			<span class="code-label">{m.attendanceCode()}</span>
 			<span class="code-value">{nsaUser.attendanceCode}</span>
 		</div>
+	{:else}
+		<div class="code-row">
+			<span class="code-label">{m.attendanceCode()}</span>
+			<span class="code-missing">—</span>
+		</div>
 	{/if}
 </div>
 
@@ -110,5 +115,12 @@
 		font-size: 16pt;
 		font-weight: 600;
 		letter-spacing: 0.15em;
+	}
+
+	.code-missing {
+		font-family: 'Roboto Mono', ui-monospace, monospace;
+		font-size: 16pt;
+		font-weight: 600;
+		opacity: 0.4;
 	}
 </style>

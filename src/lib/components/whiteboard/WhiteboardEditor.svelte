@@ -10,11 +10,9 @@
 
 	interface Props {
 		whiteboardContent?: string | null;
-		committeeID?: string | null;
-		conferenceID?: string | null;
 	}
 
-	let { whiteboardContent = $bindable(), committeeID, conferenceID }: Props = $props();
+	let { whiteboardContent = $bindable() }: Props = $props();
 
 	onMount(() => {
 		editor = createEditor({
@@ -36,7 +34,7 @@
 </script>
 
 {#if editor && $editor}
-	<WhiteboardStaticMenu editor={$editor} {committeeID} {conferenceID} />
+	<WhiteboardStaticMenu editor={$editor} />
 	<EditorContent editor={$editor} class="prose leading-7" />
 	<BubbleMenu editor={$editor}>
 		<WhiteboardBubbleMenu editor={$editor} />

@@ -8,11 +8,9 @@
 
 	interface Props {
 		editor: Editor;
-		committeeID?: string | null;
-		conferenceID?: string | null;
 	}
 
-	let { editor, committeeID, conferenceID }: Props = $props();
+	let { editor }: Props = $props();
 	let showImageModal = $state(false);
 	let imageModalResolve: ((value: string | null) => void) | undefined;
 
@@ -30,8 +28,6 @@
 		showQRCodeModal = true;
 		return new Promise<string | null>((resolve) => {
 			qrCodeImageResolve = resolve;
-			committeeID = committeeID;
-			conferenceID = conferenceID;
 		});
 	}
 
@@ -155,8 +151,6 @@
 />
 
 <GenQRCode
-	{committeeID}
-	{conferenceID}
 	showModal={showQRCodeModal}
 	resolve={(value) => {
 		if (qrCodeImageResolve) {

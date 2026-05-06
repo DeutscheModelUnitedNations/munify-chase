@@ -87,7 +87,6 @@ export const _houdini_load = graphql(`
 				}
 			}
 			conference {
-				id
 				title
 				hasModeratedCaucus
 				resolutionFeatureEnabled

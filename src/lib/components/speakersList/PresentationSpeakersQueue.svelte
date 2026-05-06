@@ -40,6 +40,7 @@
 		resizeFn?: () => void;
 	}
 
+	// eslint-disable-next-line no-useless-assignment -- $bindable() initializer is read by parent
 	let { rawSpeakers, closed = false, resizeFn = $bindable() }: Props = $props();
 
 	let speakers = $derived(rawSpeakers?.toSorted((a, b) => a.position - b.position).toSpliced(0, 1));

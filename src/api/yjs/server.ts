@@ -39,12 +39,26 @@ async function loadEntry(paperId: string): Promise<CacheEntry> {
 	const existing = await db.query.paperYjsDoc.findFirst({
 		where: { paperId }
 	});
-	if (existing?.state) {
-		Y.applyUpdate(doc, existing.state);
-	} else {
-		// First-time access: seed from `resolution_paper.content`, migrating
-		// legacy format if needed. Falls back to an empty resolution if the
-		// content is missing or unparseable.
+
+	// Try to apply the persisted state. If the row is missing, empty, or
+	// corrupt (truncated bytea / aborted persist / customType mismatch),
+	// fall through to reseeding from the JSON projection — losing local
+	// CRDT history for this paper, but restoring access.
+	let loadedFromState = false;
+	if (existing?.state && existing.state.byteLength > 0) {
+		try {
+			Y.applyUpdate(doc, existing.state);
+			loadedFromState = true;
+		} catch (err) {
+			console.warn('[yjs] paper_yjs_doc.state failed to decode, reseeding from JSON', {
+				paperId,
+				byteLength: existing.state.byteLength,
+				err
+			});
+		}
+	}
+
+	if (!loadedFromState) {
 		const paper = await db.query.resolutionPaper.findFirst({
 			where: { id: paperId }
 		});

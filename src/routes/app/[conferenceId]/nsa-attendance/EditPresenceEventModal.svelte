@@ -36,6 +36,7 @@
 		},
 		id: true,
 		userEmail: true,
+		name: true,
 		conferenceMember: { representation: { name: true } }
 	});
 
@@ -129,7 +130,9 @@
 				<option value="" disabled>{m.selectNsaPerson()}</option>
 				{#each nsaUsers ?? [] as u (u.id)}
 					<option value={u.id}>
-						{u.conferenceMember?.representation?.name ?? u.userEmail} — {u.userEmail}
+						{u.name ?? u.userEmail}{u.conferenceMember?.representation?.name
+							? ` — ${u.conferenceMember.representation.name}`
+							: ''}
 					</option>
 				{/each}
 			</select>

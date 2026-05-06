@@ -9,6 +9,7 @@
 		nsaUser: {
 			id: string;
 			userEmail: string;
+			name: string | null;
 			attendanceCode: string | null;
 			orgName: string | null;
 		} | null;

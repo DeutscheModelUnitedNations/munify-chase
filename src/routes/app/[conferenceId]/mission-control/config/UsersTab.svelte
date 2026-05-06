@@ -56,6 +56,7 @@
 	interface ConferenceUserRow {
 		id: string;
 		userEmail: string;
+		name: string | null;
 		conferenceUserType: string;
 		user: { givenName: string; familyName: string } | null;
 		committeeMember: {
@@ -162,6 +163,8 @@
 	}
 
 	function getUserDisplayName(user: ConferenceUserRow): string {
+		// conferenceUser.name (admin-edited) wins over the OIDC-derived display name
+		if (user.name) return user.name;
 		const given = user.user?.givenName ?? '';
 		const family = user.user?.familyName ?? '';
 		const full = `${given} ${family}`.trim();
@@ -309,6 +312,7 @@
 		conferenceUserType: 'ADMIN' | 'TEAM' | 'DELEGATE' | 'NON_STATE_ACTOR' | 'SPECTATOR';
 		committeeMemberId: string | null;
 		conferenceMemberId: string | null;
+		name: string | null;
 	}) {
 		if (!editingUser) return;
 
@@ -318,7 +322,8 @@
 					id: editingUser.id,
 					conferenceUserType: saveData.conferenceUserType,
 					committeeMemberId: saveData.committeeMemberId,
-					conferenceMemberId: saveData.conferenceMemberId
+					conferenceMemberId: saveData.conferenceMemberId,
+					name: saveData.name ?? ''
 				},
 				id: true
 			}),

@@ -3671,6 +3671,11 @@ export const schema = {
 						args: []
 					},
 					{
+						name: 'name',
+						type: { kind: 'SCALAR', name: 'String', ofType: null, __proto__: null },
+						args: []
+					},
+					{
 						name: 'nsaPresenceEvents',
 						type: {
 							kind: 'NON_NULL',
@@ -3915,6 +3920,11 @@ export const schema = {
 						defaultValue: void 0
 					},
 					{
+						name: 'name',
+						type: { kind: 'ENUM', name: 'SortingParameter', ofType: null, __proto__: null },
+						defaultValue: void 0
+					},
+					{
 						name: 'nsaPresenceEvents',
 						type: {
 							kind: 'INPUT_OBJECT',
@@ -4064,6 +4074,16 @@ export const schema = {
 					{
 						name: 'id',
 						type: { kind: 'SCALAR', name: 'ID', ofType: null, __proto__: null },
+						defaultValue: void 0
+					},
+					{
+						name: 'name',
+						type: {
+							kind: 'INPUT_OBJECT',
+							name: 'StringWhereInputArgument',
+							ofType: null,
+							__proto__: null
+						},
 						defaultValue: void 0
 					},
 					{
@@ -4757,6 +4777,11 @@ export const schema = {
 						defaultValue: void 0
 					},
 					{
+						name: 'name',
+						type: { kind: 'SCALAR', name: 'String', ofType: null, __proto__: null },
+						defaultValue: void 0
+					},
+					{
 						name: 'userEmail',
 						type: {
 							kind: 'NON_NULL',
@@ -5412,6 +5437,10 @@ export const schema = {
 										__proto__: null
 									}
 								}
+							},
+							{
+								name: 'name',
+								type: { kind: 'SCALAR', name: 'String', ofType: null, __proto__: null }
 							},
 							{
 								name: 'userEmail',
@@ -6467,6 +6496,10 @@ export const schema = {
 									kind: 'NON_NULL',
 									ofType: { kind: 'SCALAR', name: 'ID', ofType: null, __proto__: null }
 								}
+							},
+							{
+								name: 'name',
+								type: { kind: 'SCALAR', name: 'String', ofType: null, __proto__: null }
 							}
 						]
 					},

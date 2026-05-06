@@ -33,6 +33,7 @@ abilityBuilder.conferenceUser.allow('read').when((ctx) => {
 			id: true,
 			conferenceId: true,
 			userEmail: false,
+			name: false,
 			committeeMemberId: true,
 			conferenceMemberId: true,
 			conferenceUserType: true,
@@ -41,6 +42,23 @@ abilityBuilder.conferenceUser.allow('read').when((ctx) => {
 			updatedAt: true
 		}
 	};
+});
+
+// Self-read: a logged-in participant can always read their own name + email
+// (needed for participant pages like MyAttendanceTab). Rumble merges column
+// sets across allow('read') rules additively, so this opens up just these
+// columns for the matching row without disturbing the participant rule.
+abilityBuilder.conferenceUser.allow('read').when((ctx) => {
+	try {
+		const user = ctx.mustBeLoggedIn();
+		if (!user.email) return undefined;
+		return {
+			where: { user: { email: user.email } },
+			columns: { name: true, userEmail: true }
+		};
+	} catch {
+		return undefined;
+	}
 });
 
 abilityBuilder.conferenceUser.allow(['read', 'update', 'delete']).when((ctx) => {
@@ -52,6 +70,7 @@ abilityBuilder.conferenceUser.allow(['read', 'update', 'delete']).when((ctx) => 
 			id: true,
 			conferenceId: true,
 			userEmail: true,
+			name: true,
 			committeeMemberId: true,
 			conferenceMemberId: true,
 			conferenceUserType: true,
@@ -130,6 +149,7 @@ schemaBuilder.mutationFields((t) => ({
 		args: {
 			conferenceId: t.arg.id({ required: true }),
 			userEmail: t.arg.string({ required: true }).validate(emailValidation),
+			name: t.arg.string(),
 			conferenceUserType: t.arg({
 				type: enum_({ tsName: 'conferenceUserType' }),
 				required: true
@@ -166,6 +186,7 @@ schemaBuilder.mutationFields((t) => ({
 				.values({
 					conferenceId: args.conferenceId,
 					userEmail: args.userEmail,
+					name: args.name?.trim() || null,
 					conferenceUserType: args.conferenceUserType,
 					attendanceCode: initialAttendanceCode
 				})
@@ -240,7 +261,8 @@ schemaBuilder.mutationFields((t) => ({
 				required: true
 			}),
 			committeeMemberId: t.arg({ type: 'ID' }),
-			conferenceMemberId: t.arg({ type: 'ID' })
+			conferenceMemberId: t.arg({ type: 'ID' }),
+			name: t.arg.string()
 		},
 		resolve: async (query, root, args, ctx, info) => {
 			const conferenceUser = await db.query.conferenceUser
@@ -306,6 +328,12 @@ schemaBuilder.mutationFields((t) => ({
 			const updateSet: Record<string, unknown> = {
 				conferenceUserType: args.conferenceUserType
 			};
+
+			// Empty string clears the name (back to email fallback in UI). undefined
+			// means "don't touch".
+			if (args.name !== undefined && args.name !== null) {
+				updateSet.name = args.name.trim() || null;
+			}
 
 			// Auto-clear: when role changes away from DELEGATE, clear committeeMemberId
 			if (args.conferenceUserType !== 'DELEGATE') {

@@ -24,6 +24,7 @@
 		conferenceUser: {
 			id: true,
 			userEmail: true,
+			name: true,
 			conferenceMember: { representation: { name: true } }
 		},
 		committee: { id: true, name: true, abbreviation: true }
@@ -60,6 +61,7 @@
 		for (const [userId, userEvents] of grouped) {
 			const sample = userEvents[0];
 			const label =
+				sample.conferenceUser?.name ??
 				sample.conferenceUser?.conferenceMember?.representation?.name ??
 				sample.conferenceUser?.userEmail ??
 				userId;

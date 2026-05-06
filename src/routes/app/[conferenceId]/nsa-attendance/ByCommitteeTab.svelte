@@ -28,6 +28,7 @@
 		conferenceUser: {
 			id: true,
 			userEmail: true,
+			name: true,
 			conferenceMember: {
 				representation: { name: true, faIcon: true }
 			}
@@ -82,9 +83,12 @@
 							{:else}
 								<i class="fas fa-user-tag text-lg"></i>
 							{/if}
-							<span class="flex-1"
-								>{rep?.name ?? event.conferenceUser?.userEmail ?? m.unknown()}</span
-							>
+							<span class="flex-1">
+								{event.conferenceUser?.name ?? event.conferenceUser?.userEmail ?? m.unknown()}
+							</span>
+							{#if rep?.name}
+								<span class="text-base-content/60 text-sm">{rep.name}</span>
+							{/if}
 							<span class="text-base-content/60 text-sm">
 								{durationLabel(event.timestamp)}
 							</span>

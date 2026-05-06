@@ -23,6 +23,7 @@
 		conferenceUser: {
 			id: true,
 			userEmail: true,
+			name: true,
 			conferenceMember: { representation: { name: true } }
 		},
 		committee: { id: true, name: true, abbreviation: true }
@@ -79,8 +80,12 @@
 							? 'fa-arrow-right-to-bracket text-success'
 							: 'fa-arrow-right-from-bracket text-warning'} text-lg"
 					></i>
-					<span class="font-medium">{rep?.name ?? ev.conferenceUser?.userEmail ?? m.unknown()}</span
-					>
+					<span class="font-medium">
+						{ev.conferenceUser?.name ?? ev.conferenceUser?.userEmail ?? m.unknown()}
+					</span>
+					{#if rep?.name}
+						<span class="text-base-content/60 text-sm">{rep.name}</span>
+					{/if}
 					<span class="text-base-content/70">
 						{ev.committee?.abbreviation ?? ev.committee?.name ?? '?'}
 					</span>

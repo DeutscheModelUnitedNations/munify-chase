@@ -18,6 +18,7 @@
 		},
 		id: true,
 		userEmail: true,
+		name: true,
 		attendanceCode: true,
 		conferenceMember: {
 			id: true,
@@ -70,6 +71,7 @@
 	let qrTarget = $state<{
 		id: string;
 		userEmail: string;
+		name: string | null;
 		attendanceCode: string | null;
 		orgName: string | null;
 	} | null>(null);
@@ -78,6 +80,7 @@
 		qrTarget = {
 			id: user.id,
 			userEmail: user.userEmail,
+			name: user.name ?? null,
 			attendanceCode: user.attendanceCode,
 			orgName
 		};
@@ -86,14 +89,28 @@
 
 	// CSV export — semicolon-separated for Excel-DE default; \r\n for Windows.
 	function exportCsv() {
-		const header = ['id', 'attendance_code', 'email', 'organization', 'currently_in_committee'];
+		const header = [
+			'id',
+			'name',
+			'attendance_code',
+			'email',
+			'organization',
+			'currently_in_committee'
+		];
 		const rows: string[][] = [];
 		for (const org of groupedByOrg) {
 			for (const user of org.users) {
 				const latest = latestByUser.get(user.id);
 				const inCommittee =
 					latest?.type === 'CHECK_IN' ? (committeesById.get(latest.committeeId)?.name ?? '') : '';
-				rows.push([user.id, user.attendanceCode ?? '', user.userEmail, org.name, inCommittee]);
+				rows.push([
+					user.id,
+					user.name ?? '',
+					user.attendanceCode ?? '',
+					user.userEmail,
+					org.name,
+					inCommittee
+				]);
 			}
 		}
 		const escape = (v: string) => {
@@ -143,7 +160,7 @@
 						{:else}
 							<i class="fas fa-user-tag text-lg"></i>
 						{/if}
-						<span class="flex-1">{user.userEmail}</span>
+						<span class="flex-1">{user.name ?? user.userEmail}</span>
 						{#if user.attendanceCode}
 							<code class="bg-base-200 rounded px-2 py-1 font-mono text-sm">
 								{user.attendanceCode}

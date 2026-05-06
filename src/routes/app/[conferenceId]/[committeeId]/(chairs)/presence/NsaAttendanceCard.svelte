@@ -25,6 +25,7 @@
 		conferenceUser: {
 			id: true,
 			userEmail: true,
+			name: true,
 			conferenceMember: {
 				representation: { name: true, faIcon: true }
 			}
@@ -35,8 +36,10 @@
 		(latestEvents ?? [])
 			.filter((e: any) => e.type === 'CHECK_IN' && e.committeeId === committeeId)
 			.sort((a: any, b: any) => {
-				const aName = a.conferenceUser?.conferenceMember?.representation?.name ?? '';
-				const bName = b.conferenceUser?.conferenceMember?.representation?.name ?? '';
+				const aName =
+					a.conferenceUser?.name ?? a.conferenceUser?.conferenceMember?.representation?.name ?? '';
+				const bName =
+					b.conferenceUser?.name ?? b.conferenceUser?.conferenceMember?.representation?.name ?? '';
 				return aName.localeCompare(bName);
 			})
 	);
@@ -67,7 +70,10 @@
 							<i class="fas fa-user-tag text-xl"></i>
 						{/if}
 						<h3 class="flex-1 text-lg">
-							{rep?.name ?? event.conferenceUser?.userEmail ?? m.unknown()}
+							{event.conferenceUser?.name ??
+								rep?.name ??
+								event.conferenceUser?.userEmail ??
+								m.unknown()}
 						</h3>
 						<span class="text-base-content/60 text-sm">
 							{m.checkedInSince({ time: formatSince(event.timestamp) })}

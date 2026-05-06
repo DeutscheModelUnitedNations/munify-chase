@@ -43,7 +43,7 @@
 		{
 			faIcon: 'fa-rocket-launch',
 			title: m.missionControl(),
-			href: '../mission-control'
+			href: `/app/${conferenceId}/mission-control`
 		}
 	];
 </script>

@@ -580,6 +580,7 @@ export type Conferenceuser = {
 	currentCommitteeId: String | null;
 	id: ID;
 	isCheckedIn: Boolean;
+	name: String | null;
 	nsaPresenceEvents: (p?: {
 		limit?: Int | null | undefined;
 		offset?: Int | null | undefined;
@@ -616,6 +617,7 @@ export type ConferenceuserOrderInputArgument = {
 	conferenceUserType?: SortingParameter | null | undefined;
 	createdAt?: SortingParameter | null | undefined;
 	id?: SortingParameter | null | undefined;
+	name?: SortingParameter | null | undefined;
 	nsaPresenceEvents?: NsapresenceeventOrderInputArgument | null | undefined;
 	paperEditors?: PapereditorOrderInputArgument | null | undefined;
 	triggeredNsaPresenceEvents?: NsapresenceeventOrderInputArgument | null | undefined;
@@ -637,6 +639,7 @@ export type ConferenceuserWhereInputArgument = {
 	conferenceUserType?: ConferenceusertypeEnum | null | undefined;
 	createdAt?: DateWhereInputArgument | null | undefined;
 	id?: ID | null | undefined;
+	name?: StringWhereInputArgument | null | undefined;
 	nsaPresenceEvents?: NsapresenceeventWhereInputArgument | null | undefined;
 	paperEditors?: PapereditorWhereInputArgument | null | undefined;
 	triggeredNsaPresenceEvents?: NsapresenceeventWhereInputArgument | null | undefined;
@@ -744,6 +747,7 @@ export type ImportDataConferenceUser = {
 	conferenceMemberId?: ID | null | undefined;
 	conferenceUserType: ConferenceusertypeEnum;
 	id?: ID | null | undefined;
+	name?: String | null | undefined;
 	userEmail: String;
 };
 
@@ -834,6 +838,7 @@ export type Mutation = {
 	createConferenceUser: (p: {
 		conferenceId: ID;
 		conferenceUserType: unknown;
+		name?: String | null | undefined;
 		userEmail: String;
 	}) => Conferenceuser;
 	createRepresentation: (p: {
@@ -959,6 +964,7 @@ export type Mutation = {
 		conferenceMemberId?: ID | null | undefined;
 		conferenceUserType: unknown;
 		id: ID;
+		name?: String | null | undefined;
 	}) => Conferenceuser;
 	updateNsaPresenceEvent: (p: {
 		committeeId?: ID | null | undefined;

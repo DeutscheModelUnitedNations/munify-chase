@@ -6,6 +6,7 @@
 		nsaUser: {
 			id: string;
 			userEmail: string;
+			name: string | null;
 			attendanceCode: string | null;
 			orgName: string | null;
 		};
@@ -19,7 +20,7 @@
 	<div class="nsa-card-header">
 		<div class="conference-title">{conferenceTitle}</div>
 		<div class="org-name">{nsaUser.orgName ?? m.unknown()}</div>
-		<div class="user-email">{nsaUser.userEmail}</div>
+		<div class="user-email">{nsaUser.name ?? nsaUser.userEmail}</div>
 	</div>
 
 	<div class="qr-wrapper">

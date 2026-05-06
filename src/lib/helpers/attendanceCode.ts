@@ -1,6 +1,6 @@
 import { customAlphabet } from 'nanoid';
 
-// Same no-lookalike alphabet as nanoid.ts but at length 6 — short enough to be
-// dictated/typed when the QR scanner can't be used, while still leaving ~2.2B
-// possible codes (collision-retry on regenerate is built into the handler).
-export const attendanceCode = customAlphabet('6789BCDFGHJKLMNPQRTWbcdfghjkmnpqrtwz', 6);
+// Uppercase-only no-lookalike alphabet (excludes 0, 1, I, O). Codes are
+// dictated/typed by chairs when the QR scanner can't be used; case-insensitive
+// matching is enforced server-side.
+export const attendanceCode = customAlphabet('23456789ABCDEFGHJKLMNPQRSTUVWXYZ', 6);

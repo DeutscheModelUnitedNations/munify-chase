@@ -1,0 +1,1 @@
+ALTER TABLE "conference_user" ADD COLUMN IF NOT EXISTS "name" text;

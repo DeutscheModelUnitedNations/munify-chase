@@ -35,6 +35,7 @@
 	interface ConferenceUser {
 		id: string;
 		userEmail: string;
+		name: string | null;
 		conferenceUserType: string;
 		committeeMember: { id: string } | null;
 		conferenceMember: { id: string } | null;
@@ -53,6 +54,7 @@
 			conferenceUserType: RoleType;
 			committeeMemberId: string | null;
 			conferenceMemberId: string | null;
+			name: string | null;
 		}) => void;
 	}
 
@@ -69,12 +71,14 @@
 	let selectedRole = $state<RoleType>('TEAM');
 	let selectedCommitteeMemberId = $state<string | null>(null);
 	let selectedConferenceMemberId = $state<string | null>(null);
+	let editedName = $state('');
 
 	$effect(() => {
 		if (user) {
 			selectedRole = user.conferenceUserType as RoleType;
 			selectedCommitteeMemberId = user.committeeMember?.id ?? null;
 			selectedConferenceMemberId = user.conferenceMember?.id ?? null;
+			editedName = user.name ?? '';
 		}
 	});
 
@@ -91,7 +95,8 @@
 		onsave({
 			conferenceUserType: selectedRole,
 			committeeMemberId: selectedRole === 'DELEGATE' ? selectedCommitteeMemberId : null,
-			conferenceMemberId: selectedRole === 'NON_STATE_ACTOR' ? selectedConferenceMemberId : null
+			conferenceMemberId: selectedRole === 'NON_STATE_ACTOR' ? selectedConferenceMemberId : null,
+			name: editedName.trim() || null
 		});
 		open = false;
 	}
@@ -101,6 +106,19 @@
 	{#if user}
 		<h3 class="mb-4 text-lg font-bold">{m.editUser()}</h3>
 		<p class="text-base-content/70 mb-4 text-sm">{user.userEmail}</p>
+
+		<div class="form-control mb-4">
+			<label class="label" for="edit-name-input">
+				<span class="label-text">{m.name()}</span>
+			</label>
+			<input
+				id="edit-name-input"
+				type="text"
+				class="input input-bordered w-full"
+				bind:value={editedName}
+				placeholder={user.userEmail}
+			/>
+		</div>
 
 		<div class="form-control mb-4">
 			<label class="label" for="edit-role-select">

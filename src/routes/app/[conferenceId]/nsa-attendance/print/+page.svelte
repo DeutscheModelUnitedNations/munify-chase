@@ -22,6 +22,7 @@
 		},
 		id: true,
 		userEmail: true,
+		name: true,
 		attendanceCode: true,
 		conferenceMember: { representation: { id: true, name: true } }
 	});
@@ -32,6 +33,7 @@
 			.map((u: any) => ({
 				id: u.id,
 				userEmail: u.userEmail,
+				name: u.name ?? null,
 				attendanceCode: u.attendanceCode,
 				orgName: u.conferenceMember?.representation?.name ?? null
 			}))

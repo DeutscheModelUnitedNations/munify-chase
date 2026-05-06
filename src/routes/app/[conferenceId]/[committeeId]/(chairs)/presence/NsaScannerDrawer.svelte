@@ -99,6 +99,7 @@
 							conferenceUser: {
 								id: true,
 								userEmail: true,
+								name: true,
 								conferenceMember: {
 									representation: { name: true, faIcon: true }
 								}
@@ -113,6 +114,7 @@
 							conferenceUser: {
 								id: true,
 								userEmail: true,
+								name: true,
 								conferenceMember: {
 									representation: { name: true, faIcon: true }
 								}
@@ -120,6 +122,7 @@
 						});
 
 			const personLabel =
+				event.conferenceUser?.name ??
 				event.conferenceUser?.conferenceMember?.representation?.name ??
 				event.conferenceUser?.userEmail ??
 				fallbackLabel;

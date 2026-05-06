@@ -19,6 +19,7 @@
 		},
 		id: true,
 		userEmail: true,
+		name: true,
 		attendanceCode: true,
 		conferenceMember: {
 			representation: { name: true, faIcon: true }
@@ -46,8 +47,8 @@
 			out.push(u);
 		}
 		return out.sort((a, b) => {
-			const aName = a.conferenceMember?.representation?.name ?? a.userEmail;
-			const bName = b.conferenceMember?.representation?.name ?? b.userEmail;
+			const aName = a.name ?? a.conferenceMember?.representation?.name ?? a.userEmail;
+			const bName = b.name ?? b.conferenceMember?.representation?.name ?? b.userEmail;
 			return aName.localeCompare(bName);
 		});
 	});
@@ -74,9 +75,10 @@
 					{:else}
 						<i class="fas fa-user-tag text-lg"></i>
 					{/if}
-					<span class="flex-1">
-						{rep?.name ?? user.userEmail}
-					</span>
+					<span class="flex-1">{user.name ?? user.userEmail}</span>
+					{#if rep?.name}
+						<span class="text-base-content/60 text-sm">{rep.name}</span>
+					{/if}
 					{#if user.attendanceCode}
 						<code class="bg-base-200 rounded px-2 py-1 font-mono text-sm">
 							{user.attendanceCode}

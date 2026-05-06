@@ -318,11 +318,21 @@
 		// listener is attached, and that fire-once 'synced' event is missed).
 		if (prov.synced) wsSynced = true;
 		if (prov.wsconnected) wsConnected = true;
+		// Last-resort reconciliation. y-websocket's `synced` setter dedupes
+		// no-op assignments; if the disconnect path didn't reset _synced
+		// (e.g., browser closed the WS before wsconnected was true), the
+		// next sync step 2 won't refire. Poll to self-heal within a second.
+		const reconcileInterval = setInterval(() => {
+			if (wsForbidden) return;
+			if (prov.wsconnected !== wsConnected) wsConnected = prov.wsconnected;
+			if (prov.synced !== wsSynced) wsSynced = prov.synced;
+		}, 1000);
 		yDoc = doc;
 		provider = prov;
 		store = s;
 		presence = p;
 		return () => {
+			clearInterval(reconcileInterval);
 			prov.off('synced', onSynced);
 			prov.off('status', onStatus);
 			prov.off('connection-close', onClose);

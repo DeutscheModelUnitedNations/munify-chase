@@ -93,7 +93,19 @@ async function attachLocals(req: IncomingMessage, ws: WebSocket) {
 		const paperId = req.url.slice(YJS_PATH_PREFIX.length).split('?')[0];
 		yjsWSS.handleUpgrade(req, socket, head, (ws) => {
 			attachLocals(req, ws as unknown as WebSocket).then(() => {
-				const userSub = (req as any).locals?.oidc?.user?.sub as string | undefined;
+				const oidc = (req as any).locals?.oidc;
+				const userSub = oidc?.user?.sub as string | undefined;
+				if (!userSub) {
+					const cookieHeader = req.headers.cookie ?? '';
+					console.warn('[yjs] WS upgrade has no user subject after OIDC handle', {
+						paperId,
+						hasCookieHeader: cookieHeader.length > 0,
+						cookieNames: Object.keys(parseCookies(cookieHeader)),
+						oidcKeys: oidc ? Object.keys(oidc) : null,
+						hasAccessToken: !!oidc?.accessToken,
+						accessTokenExp: oidc?.accessToken?.exp ?? null
+					});
+				}
 				void openYjsRoom(ws, paperId, userSub);
 			});
 		});

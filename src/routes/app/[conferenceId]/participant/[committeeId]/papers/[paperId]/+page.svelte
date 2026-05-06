@@ -255,6 +255,7 @@
 	let presence = $state<PresenceAdapter | null>(null);
 	let wsSynced = $state(false);
 	let wsConnected = $state(false);
+	let wsForbidden = $state(false);
 
 	$effect(() => {
 		const paperId = page.params.paperId;
@@ -282,8 +283,20 @@
 			wsConnected = status === 'connected';
 			if (status !== 'connected') wsSynced = false;
 		};
+		const onClose = (event: CloseEvent) => {
+			// 4403 = our server's "Forbidden" close code. Stop the reconnect
+			// loop so we don't hammer the server; surface state so the UI can
+			// tell the user to re-auth.
+			if (event.code === 4403) {
+				prov.shouldConnect = false;
+				wsForbidden = true;
+				wsConnected = false;
+				wsSynced = false;
+			}
+		};
 		prov.on('synced', onSynced);
 		prov.on('status', onStatus);
+		prov.on('connection-close', onClose);
 		// Catch up with any state already established by the time we got here
 		// (BroadcastChannel between tabs can sync the provider before our
 		// listener is attached, and that fire-once 'synced' event is missed).
@@ -296,6 +309,7 @@
 		return () => {
 			prov.off('synced', onSynced);
 			prov.off('status', onStatus);
+			prov.off('connection-close', onClose);
 			s.destroy();
 			prov.destroy();
 			doc.destroy();
@@ -305,6 +319,7 @@
 			presence = null;
 			wsSynced = false;
 			wsConnected = false;
+			wsForbidden = false;
 		};
 	});
 
@@ -910,7 +925,15 @@
 
 		<!-- Resolution Editor -->
 		<div class="py-2">
-			{#if !wsSynced}
+			{#if wsForbidden}
+				<div class="alert alert-warning my-4">
+					<i class="fa-solid fa-triangle-exclamation"></i>
+					<span>{m.collabSessionExpired()}</span>
+					<button class="btn btn-sm" onclick={() => location.reload()}>
+						{m.reload()}
+					</button>
+				</div>
+			{:else if !wsSynced}
 				<div class="flex items-center justify-center gap-2 py-12 text-base-content/60">
 					<span class="loading loading-spinner loading-sm"></span>
 					<span class="text-sm">

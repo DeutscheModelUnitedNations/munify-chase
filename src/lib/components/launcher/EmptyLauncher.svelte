@@ -53,7 +53,6 @@
 	</div>
 
 	<div
-		role="alert"
 		class="alert alert-info alert-soft border-primary/30 max-w-md flex-col items-center border border-dashed text-center"
 	>
 		<div class="text-primary inline-flex items-center gap-2 text-sm font-semibold">

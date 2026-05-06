@@ -18,35 +18,24 @@
 	const status = $derived(deriveStatus(conference));
 	const dateRange = $derived(formatDateRange(conference, getLocale()));
 
-	function handleRowClick() {
-		goto(conference.href);
-	}
-
-	function handleConfigure(e: MouseEvent) {
-		e.stopPropagation();
+	function handleConfigure() {
 		goto(`/app/${conference.id}/mission-control/config`);
 	}
 
-	function handleDelete(e: MouseEvent) {
-		e.stopPropagation();
+	function handleDelete() {
 		onDelete({ id: conference.id, title: conference.title });
 		(document.activeElement as HTMLElement | null)?.blur();
 	}
 </script>
 
 <div
-	class="border-base-content/10 hover:bg-primary/5 grid cursor-pointer grid-cols-[auto_minmax(0,1fr)_auto_auto] items-center gap-3 border-b px-4 py-3 transition-colors"
-	role="button"
-	tabindex="0"
-	onclick={handleRowClick}
-	onkeydown={(e) => {
-		if (e.target !== e.currentTarget) return;
-		if (e.key === 'Enter' || e.key === ' ') {
-			e.preventDefault();
-			handleRowClick();
-		}
-	}}
+	class="border-base-content/10 hover:bg-primary/5 relative grid grid-cols-[auto_minmax(0,1fr)_auto_auto] items-center gap-3 border-b px-4 py-3 transition-colors"
 >
+	<a
+		href={conference.href}
+		aria-label={conference.title}
+		class="focus-visible:ring-primary absolute inset-0 rounded-[inherit] focus:outline-none focus-visible:ring-2"
+	></a>
 	<LauncherFlag role={conference.role} representation={conference.representation} size={32} />
 
 	<div class="flex min-w-0 flex-col gap-1">
@@ -67,7 +56,7 @@
 
 	<StatusDot {status} />
 
-	<div class="flex gap-1" onclick={(e) => e.stopPropagation()} role="presentation">
+	<div class="relative z-10 flex gap-1">
 		<button
 			type="button"
 			class="btn btn-ghost btn-sm btn-circle"

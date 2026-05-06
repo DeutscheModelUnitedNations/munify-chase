@@ -1,4 +1,5 @@
 import { db, schema } from '$api/db/db';
+import { ConferenceUserRef } from './conferenceUser';
 import {
 	abilityBuilder,
 	enum_,
@@ -416,35 +417,44 @@ schemaBuilder.mutationFields((t) => ({
 		}
 	}),
 
-	/** Admin-only correction: delete an event. */
-	deleteNsaPresenceEvent: t.field({
-		type: 'Boolean',
+	/**
+	 * Admin-only correction: delete an event. Returns the deleted row so the
+	 * rumble client (which auto-selects `{ id }` on every mutation) has a valid
+	 * subfield to read; a `Boolean!` return would crash the client codegen.
+	 */
+	deleteNsaPresenceEvent: t.drizzleField({
+		type: NsaPresenceEventRef,
 		args: {
 			id: t.arg.id({ required: true })
 		},
-		resolve: async (_root, args, ctx) => {
-			await db
-				.delete(schema.nsaPresenceEvent)
-				.where(
-					ctx.abilities.nsaPresenceEvent.filter('delete').merge({ where: { id: args.id } }).sql
-						.where
-				);
+		resolve: async (q, _root, args, ctx) => {
+			const event = await db.query.nsaPresenceEvent
+				.findFirst(
+					ctx.abilities.nsaPresenceEvent.filter('delete').merge({ where: { id: args.id } }).query
+						.single
+				)
+				.then(assertFindFirstExists);
+
+			await db.delete(schema.nsaPresenceEvent).where(eq(schema.nsaPresenceEvent.id, event.id));
 
 			pubsub.removed();
-			return true;
+			return event;
 		}
 	}),
 
 	/**
 	 * Admin-only: regenerate the manual fallback code for an NSA user. Useful when
-	 * a printed badge is lost or compromised mid-conference.
+	 * a printed badge is lost or compromised mid-conference. Returns the updated
+	 * conferenceUser so the rumble client (which auto-selects `{ id }`) has a
+	 * valid subfield — a `String!` return would trigger the same client-side
+	 * codegen bug as Boolean returns.
 	 */
-	regenerateNsaAttendanceCode: t.field({
-		type: 'String',
+	regenerateNsaAttendanceCode: t.drizzleField({
+		type: ConferenceUserRef,
 		args: {
 			conferenceUserId: t.arg.id({ required: true })
 		},
-		resolve: async (_root, args, ctx) => {
+		resolve: async (q, _root, args, ctx) => {
 			const target = await db.query.conferenceUser
 				.findFirst(
 					ctx.abilities.conferenceUser
@@ -457,7 +467,16 @@ schemaBuilder.mutationFields((t) => ({
 				throw new GraphQLError('Attendance code is only meaningful for NSA users');
 			}
 
-			return assignAttendanceCode(target.id, target.conferenceId);
+			await assignAttendanceCode(target.id, target.conferenceId);
+
+			return db.query.conferenceUser
+				.findFirst(
+					q(
+						ctx.abilities.conferenceUser.filter('read').merge({ where: { id: target.id } }).query
+							.single
+					)
+				)
+				.then(assertFindFirstExists);
 		}
 	})
 }));

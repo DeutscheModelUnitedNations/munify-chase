@@ -108,7 +108,7 @@
 		if (!event) return;
 		if (!confirm(m.confirmDeletePresenceEvent())) return;
 		await toast.promise(
-			client.mutate.deleteNsaPresenceEvent({ __args: { id: event.id } } as any),
+			client.mutate.deleteNsaPresenceEvent({ __args: { id: event.id }, id: true }),
 			promiseToastStrings(m.nsaAttendance(), 'delete')
 		);
 		onClose();
@@ -123,65 +123,45 @@
 			</h2>
 		</header>
 
-		<div class="form-control">
-			<label class="label" for="evt-user">
-				<span class="label-text">{m.nsaPerson()}</span>
-			</label>
-			<select
-				id="evt-user"
-				class="select select-bordered"
-				bind:value={conferenceUserId}
-				disabled={!!event}
-			>
+		<fieldset class="fieldset">
+			<legend class="fieldset-legend">{m.nsaPerson()}</legend>
+			<select class="select w-full" bind:value={conferenceUserId} disabled={!!event}>
 				<option value="" disabled>{m.selectNsaPerson()}</option>
-				{#each nsaUsers ?? [] as u}
+				{#each nsaUsers ?? [] as u (u.id)}
 					<option value={u.id}>
 						{u.conferenceMember?.representation?.name ?? u.userEmail} — {u.userEmail}
 					</option>
 				{/each}
 			</select>
-		</div>
+		</fieldset>
 
-		<div class="form-control">
-			<label class="label" for="evt-committee">
-				<span class="label-text">{m.committee()}</span>
-			</label>
-			<select id="evt-committee" class="select select-bordered" bind:value={committeeId}>
+		<fieldset class="fieldset">
+			<legend class="fieldset-legend">{m.committee()}</legend>
+			<select class="select w-full" bind:value={committeeId}>
 				<option value="" disabled>{m.selectCommittee()}</option>
-				{#each conference?.committees ?? [] as c}
+				{#each conference?.committees ?? [] as c (c.id)}
 					<option value={c.id}>{c.name} ({c.abbreviation})</option>
 				{/each}
 			</select>
-		</div>
+		</fieldset>
 
-		<div class="form-control">
-			<label class="label" for="evt-type">
-				<span class="label-text">{m.eventType()}</span>
-			</label>
-			<select id="evt-type" class="select select-bordered" bind:value={type}>
+		<fieldset class="fieldset">
+			<legend class="fieldset-legend">{m.eventType()}</legend>
+			<select class="select w-full" bind:value={type}>
 				<option value="CHECK_IN">{m.checkIn()}</option>
 				<option value="CHECK_OUT">{m.checkOut()}</option>
 			</select>
-		</div>
+		</fieldset>
 
-		<div class="form-control">
-			<label class="label" for="evt-timestamp">
-				<span class="label-text">{m.timestamp()}</span>
-			</label>
-			<input
-				id="evt-timestamp"
-				type="datetime-local"
-				class="input input-bordered"
-				bind:value={timestampLocal}
-			/>
-		</div>
+		<fieldset class="fieldset">
+			<legend class="fieldset-legend">{m.timestamp()}</legend>
+			<input type="datetime-local" class="input w-full" bind:value={timestampLocal} />
+		</fieldset>
 
-		<div class="form-control">
-			<label class="label" for="evt-note">
-				<span class="label-text">{m.note()}</span>
-			</label>
-			<input id="evt-note" class="input input-bordered" bind:value={note} />
-		</div>
+		<fieldset class="fieldset">
+			<legend class="fieldset-legend">{m.note()}</legend>
+			<input class="input w-full" bind:value={note} />
+		</fieldset>
 
 		<div class="flex justify-end gap-2 pt-2">
 			{#if event}

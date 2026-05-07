@@ -3,10 +3,6 @@ import tailwindcss from '@tailwindcss/vite';
 import { sveltekit } from '@sveltejs/kit/vite';
 import { defineConfig, type ViteDevServer } from 'vite';
 import mkcert from 'vite-plugin-mkcert';
-import path from 'node:path';
-import { fileURLToPath } from 'node:url';
-
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 function wsPlugin() {
 	return {
@@ -78,19 +74,26 @@ export default defineConfig({
 		sveltekit(),
 		wsPlugin()
 	],
-	// Yjs throws "Yjs was already imported" if two copies are loaded — happens
-	// easily when a peer-dep library (the resolution editor) ships its own
-	// copy. Force a single shared instance via an explicit alias because
-	// `dedupe` alone isn't enough when bun has materialised the library's
-	// own `node_modules/yjs` from a `file:` link.
+	// Yjs throws "Yjs was already imported" if two copies are loaded.
+	// Vite prebundles `y-websocket` + `y-protocols/*` and chunks the shared
+	// `yjs` they pull in. If we ALSO alias chase's direct `yjs` imports to
+	// `node_modules/yjs/dist/yjs.mjs` directly, that bypasses the chunk and
+	// loads a SECOND yjs module at runtime. Use `dedupe` (which makes
+	// resolution always walk up to the project's yjs) without the alias —
+	// then chase's import and the prebundled chunk converge on the same
+	// module instance.
 	resolve: {
-		dedupe: ['yjs', 'y-protocols'],
-		alias: {
-			yjs: path.resolve(__dirname, 'node_modules/yjs/dist/yjs.mjs')
-		}
+		dedupe: ['yjs', 'y-protocols']
 	},
 	optimizeDeps: {
-		include: ['yjs', 'y-protocols/sync', 'y-protocols/awareness', 'y-websocket']
+		include: ['y-protocols/sync', 'y-protocols/awareness', 'y-websocket'],
+		// EXCLUDE yjs from prebundling entirely. When yjs is prebundled,
+		// vite ends up with two yjs entries (one for chase's direct import,
+		// one as the chunk shared by y-protocols/y-websocket), each with
+		// its own module-init scope → "Yjs was already imported" warning.
+		// Excluded, every `import 'yjs'` resolves to the single source file
+		// at chase/node_modules/yjs/dist/yjs.mjs, ESM-cached once.
+		exclude: ['yjs']
 	},
 	server: {
 		allowedHosts: ['svelte-dev.munify.cloud'],

@@ -41,7 +41,15 @@
 			},
 			id: true,
 			conferenceUserType: true,
-			committeeMemberId: true
+			committeeMemberId: true,
+			committeeMember: {
+				id: true,
+				representation: {
+					id: true,
+					name: true,
+					alpha3Code: true
+				}
+			}
 		})) ?? [];
 
 	// Live queries
@@ -273,14 +281,16 @@
 		const wsUrl = `${wsProto}//${location.host}/api/ws/yjs`;
 		const prov = new WebsocketProvider(wsUrl, paperId, doc);
 		const s = createYjsStore(doc);
+		const rep = conferenceUser?.committeeMember?.representation;
+		const roleLabel =
+			conferenceUser?.conferenceUserType === 'TEAM'
+				? 'Team'
+				: rep?.name || getTranslatedCountryNameFromAlpha3Code(rep?.alpha3Code) || 'Anonymous';
 		const p = createAwarenessPresence({
 			awareness: prov.awareness,
 			user: {
 				id: currentUser?.id ?? 'anon',
-				name:
-					[currentUser?.givenName, currentUser?.familyName].filter(Boolean).join(' ') ||
-					currentUser?.preferredUsername ||
-					'Anonymous',
+				name: roleLabel,
 				color: stringToColor(currentUser?.id ?? 'anon')
 			}
 		});

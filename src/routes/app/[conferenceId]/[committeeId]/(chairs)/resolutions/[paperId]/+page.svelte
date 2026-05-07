@@ -231,10 +231,7 @@
 			awareness: prov.awareness,
 			user: {
 				id: currentUser?.id ?? 'anon',
-				name:
-					[currentUser?.givenName, currentUser?.familyName].filter(Boolean).join(' ') ||
-					currentUser?.preferredUsername ||
-					'Anonymous',
+				name: 'Team',
 				color: stringToColor(currentUser?.id ?? 'anon')
 			}
 		});

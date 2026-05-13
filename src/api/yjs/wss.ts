@@ -116,6 +116,26 @@ export async function openYjsRoom(
 	paperId: string,
 	userSub: string | undefined
 ): Promise<void> {
+	// CRITICAL: attach buffering listeners synchronously, before any awaits.
+	// `ws` (the library) does not queue 'message' events received before a
+	// listener exists — they emit on an EventEmitter that has no handlers,
+	// and are dropped. The client's `onopen` fires the moment the WS
+	// handshake completes and immediately sends `SyncStep1`. On a returning
+	// navigation the doc is cached, so the client's SyncStep1 can race
+	// past our setup awaits and reach the socket before we'd be ready,
+	// leaving the client hanging on "synchronizing" forever.
+	// Buffer until setup is done, then drain in order.
+	const earlyMessages: Buffer[] = [];
+	const earlyMessageHandler = (data: Buffer) => earlyMessages.push(data);
+	ws.on('message', earlyMessageHandler);
+
+	let earlyClosed = false;
+	const earlyCloseHandler = () => {
+		earlyClosed = true;
+	};
+	ws.on('close', earlyCloseHandler);
+	ws.on('error', earlyCloseHandler);
+
 	let auth: AuthResult;
 	try {
 		auth = await authorize(paperId, userSub);
@@ -133,6 +153,7 @@ export async function openYjsRoom(
 		ws.close(4403, 'Forbidden');
 		return;
 	}
+	if (earlyClosed) return;
 
 	let docHandle: { doc: Y.Doc; release: () => void };
 	try {
@@ -144,6 +165,10 @@ export async function openYjsRoom(
 		} catch {
 			/* noop */
 		}
+		return;
+	}
+	if (earlyClosed) {
+		docHandle.release();
 		return;
 	}
 	const { doc, release } = docHandle;
@@ -196,7 +221,7 @@ export async function openYjsRoom(
 	};
 	awareness.on('update', onAwarenessUpdate);
 
-	ws.on('message', (data: Buffer) => {
+	const handleMessage = (data: Buffer) => {
 		try {
 			const decoder = decoding.createDecoder(new Uint8Array(data));
 			const messageType = decoding.readVarUint(decoder);
@@ -253,7 +278,15 @@ export async function openYjsRoom(
 		} catch (err) {
 			console.error('[yjs] message handling error', err);
 		}
-	});
+	};
+
+	// Swap in the real handler and drain anything that arrived during async init.
+	ws.off('message', earlyMessageHandler);
+	ws.on('message', handleMessage);
+	for (const buffered of earlyMessages) {
+		handleMessage(buffered);
+	}
+	earlyMessages.length = 0;
 
 	const onClose = () => {
 		doc.off('update', onDocUpdate);
@@ -262,6 +295,8 @@ export async function openYjsRoom(
 		release();
 		releaseAwareness(paperId);
 	};
+	ws.off('close', earlyCloseHandler);
+	ws.off('error', earlyCloseHandler);
 	ws.on('close', onClose);
 	ws.on('error', onClose);
 }

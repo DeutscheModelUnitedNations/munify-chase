@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { untrack } from 'svelte';
+	import { onMount, untrack } from 'svelte';
 	import { m } from '$lib/paraglide/messages';
 	import { page } from '$app/state';
 	import { goto } from '$app/navigation';
@@ -29,6 +29,7 @@
 	import { getTranslatedCountryNameFromAlpha3Code } from '$lib/utils/nationTranslationHelper.svelte';
 	import toast from 'svelte-french-toast';
 	import { getResolutionLabels } from '$lib/utils/resolutionEditorLabels';
+	import { loadResolutionPhrases } from '$lib/utils/resolutionPhrases';
 	import { SvelteMap } from 'svelte/reactivity';
 
 	const currentUser = await getCurrentUser();
@@ -267,6 +268,14 @@
 	let wsSynced = $state(false);
 	let wsConnected = $state(false);
 	let wsForbidden = $state(false);
+
+	let preamblePhrases = $state<string[]>([]);
+	let operativePhrases = $state<string[]>([]);
+	onMount(async () => {
+		const phrases = await loadResolutionPhrases();
+		preamblePhrases = phrases.preamble;
+		operativePhrases = phrases.operative;
+	});
 
 	$effect(() => {
 		const paperId = page.params.paperId;
@@ -1009,6 +1018,8 @@
 					presence={presence ?? undefined}
 					{headerData}
 					labels={getResolutionLabels()}
+					{preamblePhrases}
+					{operativePhrases}
 					editable={canEdit && paper.status !== 'VOTING_PHASE' && paper.status !== 'FINAL'}
 					amendments={showAmendmentUI ? amendmentOverlays : undefined}
 					rejectedClauseIds={paper.status === 'VOTING_PHASE' || paper.status === 'FINAL'

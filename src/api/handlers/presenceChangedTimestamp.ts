@@ -12,5 +12,4 @@ abilityBuilder.presenceChangedTimestamp.allow('read').when((ctx) => {
 });
 
 object({ table: 'presenceChangedTimestamp' });
-// const pubsub = rumblePubsub({ table: 'presenceChangedTimestamp' });
 query({ table: 'presenceChangedTimestamp' });

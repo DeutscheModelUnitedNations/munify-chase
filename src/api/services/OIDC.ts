@@ -22,8 +22,12 @@ function asString(value: unknown): string | undefined {
  * Logto uses `username` instead of `preferred_username` and `name` instead of `family_name`/`given_name`.
  */
 function normalizeOIDCClaims(claims: Record<string, unknown>): NormalizedOIDCClaims {
+	const sub = asString(claims.sub);
+	if (!sub) {
+		throw new Error('OIDC claim "sub" is missing or invalid');
+	}
 	const normalized: NormalizedOIDCClaims = {
-		sub: asString(claims.sub) ?? '',
+		sub,
 		email: asString(claims.email),
 		locale: asString(claims.locale),
 		preferred_username: asString(claims.preferred_username),
@@ -66,13 +70,17 @@ export const OIDC = !building
 			logoutPath: '',
 			async userLoggedInSuccessfully({ user }) {
 				const normalized = normalizeOIDCClaims(user);
+				if (!normalized.email) {
+					throw new Error('OIDC claim "email" is missing');
+				}
+				const preferredUsername = normalized.preferred_username ?? normalized.email;
 				await db
 					.insert(schema.user)
 					.values({
 						id: normalized.sub,
 						locale: normalized.locale ?? configPublic.PUBLIC_DEFAULT_LOCALE,
-						preferredUsername: normalized.preferred_username ?? normalized.email!,
-						email: normalized.email!,
+						preferredUsername,
+						email: normalized.email,
 						familyName: normalized.family_name ?? '',
 						givenName: normalized.given_name ?? ''
 					})
@@ -80,8 +88,8 @@ export const OIDC = !building
 						target: schema.user.id,
 						set: {
 							locale: normalized.locale ?? configPublic.PUBLIC_DEFAULT_LOCALE,
-							preferredUsername: normalized.preferred_username ?? normalized.email!,
-							email: normalized.email!,
+							preferredUsername,
+							email: normalized.email,
 							familyName: normalized.family_name ?? '',
 							givenName: normalized.given_name ?? ''
 						}

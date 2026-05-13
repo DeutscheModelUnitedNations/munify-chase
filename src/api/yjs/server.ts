@@ -106,11 +106,14 @@ async function getOrLoad(paperId: string): Promise<CacheEntry> {
 	if (existing) return existing;
 	let pending = loadingPromises.get(paperId);
 	if (pending) return pending;
-	pending = loadEntry(paperId).then((entry) => {
-		cache.set(paperId, entry);
-		loadingPromises.delete(paperId);
-		return entry;
-	});
+	pending = loadEntry(paperId)
+		.then((entry) => {
+			cache.set(paperId, entry);
+			return entry;
+		})
+		.finally(() => {
+			loadingPromises.delete(paperId);
+		});
 	loadingPromises.set(paperId, pending);
 	return pending;
 }
@@ -154,6 +157,14 @@ function scheduleIdleEvict(paperId: string, entry: CacheEntry) {
 	entry.idleTimer = setTimeout(async () => {
 		if (entry.refCount > 0) return;
 		await persist(paperId, entry);
+		// If persist() failed it set entry.dirty back to true. Keep the doc
+		// in memory so the next persist tick (or a subsequent flushAll) can
+		// retry, rather than dropping unsaved edits.
+		if (entry.dirty) {
+			entry.idleTimer = null;
+			scheduleIdleEvict(paperId, entry);
+			return;
+		}
 		const onUpdate = (entry as CacheEntry & { _onUpdate?: (u: Uint8Array, o: unknown) => void })
 			._onUpdate;
 		if (onUpdate) entry.doc.off('update', onUpdate);

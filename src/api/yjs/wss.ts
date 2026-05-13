@@ -67,27 +67,22 @@ async function authorize(paperId: string, userSub: string | undefined): Promise<
 	const paper = await db.query.resolutionPaper.findFirst({ where: { id: paperId } });
 	if (!paper) return { allowed: false, canWrite: false };
 
-	if (paper.status === 'DRAFT_RESOLUTION' || paper.status === 'AMENDMENT_PHASE') {
-		const chair = await db.query.conferenceUser.findFirst({
-			where: {
-				conference: { committees: { id: paper.committeeId } },
-				user: { id: userSub },
-				conferenceUserType: { in: ['ADMIN', 'TEAM'] }
-			}
-		});
-		return { allowed: true, canWrite: !!chair };
-	}
+	// Team (chair/admin) can always write, regardless of paper status —
+	// including VOTING_PHASE and FINAL, so they can make redactional changes
+	// after the vote.
+	const chair = await db.query.conferenceUser.findFirst({
+		where: {
+			conference: { committees: { id: paper.committeeId } },
+			user: { id: userSub },
+			conferenceUserType: { in: ['ADMIN', 'TEAM'] }
+		}
+	});
+	if (chair) return { allowed: true, canWrite: true };
 
-	if (paper.status === 'SUBMITTED' || paper.status === 'WORKING_PAPER') {
-		const chair = await db.query.conferenceUser.findFirst({
-			where: {
-				conference: { committees: { id: paper.committeeId } },
-				user: { id: userSub },
-				conferenceUserType: { in: ['ADMIN', 'TEAM'] }
-			}
-		});
-		if (chair && paper.status === 'SUBMITTED') return { allowed: true, canWrite: true };
-
+	// Non-team writers (paperEditor) can write while the paper is still
+	// being drafted (WORKING_PAPER) or pending review (SUBMITTED). All later
+	// statuses are read-only for non-team.
+	if (paper.status === 'WORKING_PAPER' || paper.status === 'SUBMITTED') {
 		const editor = await db.query.paperEditor.findFirst({
 			where: {
 				paperId,
@@ -205,11 +200,22 @@ export async function openYjsRoom(
 	};
 	doc.on('update', onDocUpdate);
 
+	// Track which awareness clientIDs this socket has announced so we can
+	// clean them up on disconnect. The Awareness instance is shared per
+	// paper, so `awareness.clientID` belongs to the server, not to this
+	// client.
+	const controlledClientIds = new Set<number>();
+
 	const onAwarenessUpdate = (
 		{ added, updated, removed }: { added: number[]; updated: number[]; removed: number[] },
 		origin: unknown
 	) => {
-		if (origin === ws) return;
+		if (origin === ws) {
+			for (const id of added) controlledClientIds.add(id);
+			for (const id of updated) controlledClientIds.add(id);
+			for (const id of removed) controlledClientIds.delete(id);
+			return;
+		}
 		const changedClients = added.concat(updated).concat(removed);
 		const encoder = encoding.createEncoder();
 		encoding.writeVarUint(encoder, MESSAGE_AWARENESS);
@@ -288,10 +294,16 @@ export async function openYjsRoom(
 	}
 	earlyMessages.length = 0;
 
+	let closed = false;
 	const onClose = () => {
+		if (closed) return;
+		closed = true;
 		doc.off('update', onDocUpdate);
 		awareness.off('update', onAwarenessUpdate);
-		awarenessProtocol.removeAwarenessStates(awareness, [awareness.clientID], ws);
+		if (controlledClientIds.size > 0) {
+			awarenessProtocol.removeAwarenessStates(awareness, Array.from(controlledClientIds), ws);
+			controlledClientIds.clear();
+		}
 		release();
 		releaseAwareness(paperId);
 	};

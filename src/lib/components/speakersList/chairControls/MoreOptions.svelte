@@ -144,7 +144,7 @@
 
 <Popover bind:open={isOpen}>
 	{#snippet Trigger({ props })}
-		<button {...props} class="btn btn-lg" aria-label="More options" tabindex={-1}>
+		<button {...props} class="btn btn-lg" aria-label="More options">
 			<i class="fas fa-gears"> </i>
 		</button>
 	{/snippet}

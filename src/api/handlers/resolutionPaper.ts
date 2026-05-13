@@ -469,20 +469,16 @@ schemaBuilder.mutationFields((t) => ({
 				throw new GraphQLError('Paper must be in VOTING_PHASE to record final vote');
 			}
 
-			// If ADOPTED with rejected clauses, drop them from the Y.Doc so
-			// connected peers see the trimmed content immediately.
+			// Look up rejected clauses up-front, but defer the Y.Doc trim until
+			// after the SQL tx commits — otherwise a tx failure would leave the
+			// live doc (and mirrored JSON) with clauses already removed while
+			// the paper status stays in VOTING_PHASE/AMENDMENT_PHASE.
+			let rejectedIds: Set<string> = new Set();
 			if (args.outcome === 'ADOPTED') {
 				const rejectedVotes = await db.query.operativeClauseVote.findMany({
 					where: { paperId: args.paperId, outcome: 'REJECTED' }
 				});
-				const rejectedIds = new Set(rejectedVotes.map((v) => v.clauseId));
-				if (rejectedIds.size > 0) {
-					await applyServerMutation(args.paperId, (doc) => {
-						const fresh = yDocToJson(doc);
-						fresh.operative = fresh.operative.filter((c) => !rejectedIds.has(c.id));
-						replaceResolution(doc, fresh);
-					});
-				}
+				rejectedIds = new Set(rejectedVotes.map((v) => v.clauseId));
 			}
 
 			await db.transaction(async (tx) => {
@@ -507,6 +503,16 @@ schemaBuilder.mutationFields((t) => ({
 					.set(updateSet)
 					.where(eq(schema.resolutionPaper.id, args.paperId));
 			});
+
+			// Tx committed — now trim the Y.Doc so connected peers see the
+			// final adopted content.
+			if (args.outcome === 'ADOPTED' && rejectedIds.size > 0) {
+				await applyServerMutation(args.paperId, (doc) => {
+					const fresh = yDocToJson(doc);
+					fresh.operative = fresh.operative.filter((c) => !rejectedIds.has(c.id));
+					replaceResolution(doc, fresh);
+				});
+			}
 
 			// Always clear activeDraftResolutionId and currentOperativeIndex
 			const updateSet: Record<string, unknown> = {
@@ -607,8 +613,13 @@ schemaBuilder.mutationFields((t) => ({
 			}
 			const targetStatus = statusOrder[currentIndex - 1];
 
-			// Snapshot restoration (AMENDMENT_PHASE → DRAFT_RESOLUTION) happens
-			// against the Y.Doc so connected peers see the rollback.
+			// Snapshot restoration (AMENDMENT_PHASE → DRAFT_RESOLUTION) is
+			// deferred until after the revert tx commits — otherwise a tx
+			// failure leaves clients on restored content while the paper is
+			// still in AMENDMENT_PHASE with adopted amendments still applied.
+			let restoredContent:
+				| import('@deutschemodelunitednations/munify-resolution-editor/schema').Resolution
+				| null = null;
 			if (paper.status === 'AMENDMENT_PHASE' && args.restoreSnapshot) {
 				const snapshot = await db.query.paperContentSnapshot.findFirst({
 					where: { paperId: args.paperId, trigger: 'AMENDMENT_PHASE' },
@@ -618,13 +629,14 @@ schemaBuilder.mutationFields((t) => ({
 					? ResolutionSchema.safeParse(snapshot.content)
 					: undefined;
 				if (snapshotContent?.success) {
-					await applyServerMutation(args.paperId, (doc) => {
-						replaceResolution(doc, snapshotContent.data);
-					});
+					restoredContent = snapshotContent.data;
 				}
 			}
 
-			const freshContent = await readPaperJson(args.paperId);
+			const currentContent = await readPaperJson(args.paperId);
+			// What the doc will look like *after* this revert — restored from
+			// snapshot if applicable, otherwise unchanged.
+			const freshContent = restoredContent ?? currentContent;
 
 			await db.transaction(async (tx) => {
 				// Status-specific side effects
@@ -706,6 +718,14 @@ schemaBuilder.mutationFields((t) => ({
 					trigger: `REVERT_FROM_${paper.status}`
 				});
 			});
+
+			// Tx committed — only now push the restored snapshot to the live
+			// Y.Doc so peers see the rollback after the DB state agrees.
+			if (restoredContent) {
+				await applyServerMutation(args.paperId, (doc) => {
+					replaceResolution(doc, restoredContent);
+				});
+			}
 
 			pubsub.updated(args.paperId);
 			committeePubsub.updated(paper.committeeId);

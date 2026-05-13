@@ -12,11 +12,13 @@ import { assertFindFirstExists, assertFirstEntryExists } from '@m1212e/rumble';
 import { and, eq, count as drizzleCount, not, inArray, gt, gte, sql } from 'drizzle-orm';
 import { GraphQLError } from 'graphql';
 import {
-	ResolutionSchema,
 	OperativeClauseSchema,
 	type OperativeClause
 } from '@deutschemodelunitednations/munify-resolution-editor/schema';
-import { replaceResolution } from '@deutschemodelunitednations/munify-resolution-editor/yjs';
+import {
+	replaceResolution,
+	yDocToJson
+} from '@deutschemodelunitednations/munify-resolution-editor/yjs';
 import { applyServerMutation, readPaperJson } from '$api/yjs/server';
 
 abilityBuilder.amendment.allow('read').when((ctx) => {
@@ -86,6 +88,9 @@ function validateAmendmentArgs(
 			}
 			break;
 		case 'ALTER_POSITION':
+			if (args.targetClauseId === undefined || args.targetClauseId === null) {
+				throw new GraphQLError('ALTER_POSITION amendments require targetClauseId');
+			}
 			if (args.targetOperativeIndex === undefined || args.targetOperativeIndex === null) {
 				throw new GraphQLError('ALTER_POSITION amendments require targetOperativeIndex (source)');
 			}
@@ -258,22 +263,24 @@ async function applyAmendmentEverywhere(
 	paperId: string,
 	statusUpdate: { status: 'CONSENSUS_ADOPTED' | 'ACCEPTED' }
 ) {
-	const fresh = await readPaperJson(paperId);
-	if (!fresh) {
-		throw new GraphQLError('Paper content is unavailable');
-	}
-	const next = computeAmendedResolution(fresh, amendment);
+	// Apply against the canonical live Y.Doc first so concurrent peer edits
+	// are preserved by the CRDT merge, then commit the DB state. Doing the
+	// SQL tx first would risk advancing amendment status without the doc
+	// actually reflecting it; doing the snapshot-then-replace pattern would
+	// clobber any edits that landed between the read and the write.
+	const freshBefore = await applyServerMutation(paperId, (doc) => {
+		const before = yDocToJson(doc);
+		const next = computeAmendedResolution(before, amendment);
+		replaceResolution(doc, next);
+		return before;
+	});
 
 	await db.transaction(async (tx) => {
 		await tx
 			.update(schema.amendment)
 			.set(statusUpdate)
 			.where(eq(schema.amendment.id, amendment.id));
-		await applyAmendmentSideEffects(tx, amendment, paperId, fresh);
-	});
-
-	await applyServerMutation(paperId, (doc) => {
-		replaceResolution(doc, next);
+		await applyAmendmentSideEffects(tx, amendment, paperId, freshBefore);
 	});
 }
 
@@ -341,11 +348,14 @@ schemaBuilder.mutationFields((t) => ({
 			// Validate type-specific args
 			validateAmendmentArgs(args.type, args);
 
-			// If targetClauseId is provided, resolve and auto-correct the operative index
+			// If targetClauseId is provided, resolve and auto-correct the operative index.
+			// Read from the canonical Y.Doc (readPaperJson) rather than paper.content,
+			// since the latter is only a projection of the live doc and can lag during
+			// active collaboration.
 			if (args.targetClauseId) {
-				const parsed = ResolutionSchema.safeParse(paper.content);
-				if (parsed.success) {
-					const actualIdx = parsed.data.operative.findIndex(
+				const canonical = await readPaperJson(args.paperId);
+				if (canonical) {
+					const actualIdx = canonical.operative.findIndex(
 						(c: OperativeClause) => c.id === args.targetClauseId
 					);
 					if (actualIdx === -1) {
@@ -503,11 +513,12 @@ schemaBuilder.mutationFields((t) => ({
 			// Validate type-specific args
 			validateAmendmentArgs(args.type, args);
 
-			// If targetClauseId is provided, resolve and auto-correct the operative index
+			// If targetClauseId is provided, resolve and auto-correct the operative index.
+			// Read from the canonical Y.Doc rather than the paper.content projection.
 			if (args.targetClauseId) {
-				const parsed = ResolutionSchema.safeParse(paper.content);
-				if (parsed.success) {
-					const actualIdx = parsed.data.operative.findIndex(
+				const canonical = await readPaperJson(args.paperId);
+				if (canonical) {
+					const actualIdx = canonical.operative.findIndex(
 						(c: OperativeClause) => c.id === args.targetClauseId
 					);
 					if (actualIdx === -1) {
@@ -805,11 +816,12 @@ schemaBuilder.mutationFields((t) => ({
 			// Re-validate with merged values
 			validateAmendmentArgs(amendment.type, merged);
 
-			// If targetClauseId is provided, resolve and auto-correct the operative index
+			// If targetClauseId is provided, resolve and auto-correct the operative index.
+			// Read from the canonical Y.Doc rather than the paper.content projection.
 			if (merged.targetClauseId) {
-				const parsed = ResolutionSchema.safeParse(paper.content);
-				if (parsed.success) {
-					const actualIdx = parsed.data.operative.findIndex(
+				const canonical = await readPaperJson(amendment.paperId);
+				if (canonical) {
+					const actualIdx = canonical.operative.findIndex(
 						(c: OperativeClause) => c.id === merged.targetClauseId
 					);
 					if (actualIdx === -1) {

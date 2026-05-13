@@ -710,8 +710,8 @@
 		);
 	});
 
-	// Amendment mutations
-	let canEdit = $derived(paper?.status !== 'FINAL' || !voteResult);
+	// Chair can always edit, including redactional changes after FINAL.
+	let canEdit = true;
 
 	let showAdoptConfirmModal = $state(false);
 	let showRejectConfirmModal = $state(false);

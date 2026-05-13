@@ -68,19 +68,21 @@
 	let countries = $derived(
 		committee?.members
 			.filter(isDelegationMember)
-			.sort((a, b) => sortTranslatedCountries(a.representation!, b.representation!)) ?? []
+			.sort((a, b) => sortTranslatedCountries(a.representation, b.representation)) ?? []
 	);
 
 	let nsas = $derived(
 		committee?.conference?.uniqueConferenceMembers
 			?.filter(isNSAMember)
-			.sort((a, b) => a.representation!.name!.localeCompare(b.representation!.name!)) ?? []
+			.sort((a, b) => (a.representation.name ?? '').localeCompare(b.representation.name ?? '')) ??
+			[]
 	);
 
 	let un = $derived(
 		committee?.conference?.uniqueConferenceMembers
 			?.filter(isUNMember)
-			?.sort((a, b) => a.representation!.name!.localeCompare(b.representation!.name!)) ?? []
+			?.sort((a, b) => (a.representation.name ?? '').localeCompare(b.representation.name ?? '')) ??
+			[]
 	);
 
 	let rollCallActive = $state(false);

@@ -171,16 +171,25 @@
 	// Mini resolution for content editing — wrapped in a native store so the
 	// editor's new store-based API can be used without bringing in Y.js.
 	let miniStore = $state<ResolutionStore | null>(null);
+	let miniStoreClauseId = $state<string | null>(null);
 
 	$effect(() => {
-		// Reset the store whenever the user enters the content step with a new
-		// `newContent`. We avoid recreating it on every keystroke (which would
-		// reset the textarea value) by keying on `newContent.id`.
+		// The `onChange` callback assigns `snap.operative[0]` back to
+		// `newContent`, which would re-run this effect on every keystroke if
+		// it read the whole object. Track the clause id and only recreate
+		// when the user switches to a different clause.
+		const clauseId = newContent?.id ?? null;
 		if (!newContent) {
 			miniStore?.destroy();
 			miniStore = null;
+			miniStoreClauseId = null;
 			return;
 		}
+		if (miniStore && miniStoreClauseId === clauseId) return;
+
+		miniStore?.destroy();
+		miniStoreClauseId = clauseId;
+
 		const initial: Resolution = {
 			committeeName,
 			preamble: [],

@@ -42,16 +42,16 @@
 		committees: { id: true, name: true, abbreviation: true }
 	});
 
-	let committeesById = $derived(new Map((conference?.committees ?? []).map((c: any) => [c.id, c])));
+	type NsaUser = NonNullable<typeof nsaUsers>[number];
 
-	let latestByUser = $derived(
-		new Map((latestEvents ?? []).map((e: any) => [e.conferenceUser?.id, e]))
-	);
+	let committeesById = $derived(new Map((conference?.committees ?? []).map((c) => [c.id, c])));
+
+	let latestByUser = $derived(new Map((latestEvents ?? []).map((e) => [e.conferenceUser?.id, e])));
 
 	let groupedByOrg = $derived.by(() => {
 		const map = new SvelteMap<
 			string,
-			{ orgId: string; name: string; faIcon: string | null; users: any[] }
+			{ orgId: string; name: string; faIcon: string | null; users: NsaUser[] }
 		>();
 		for (const u of nsaUsers ?? []) {
 			const rep = u.conferenceMember?.representation;
@@ -77,7 +77,7 @@
 		orgName: string | null;
 	} | null>(null);
 
-	function openQrFor(user: any, orgName: string) {
+	function openQrFor(user: NsaUser, orgName: string) {
 		qrTarget = {
 			id: user.id,
 			userEmail: user.userEmail,

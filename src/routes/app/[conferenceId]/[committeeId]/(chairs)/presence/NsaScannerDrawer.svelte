@@ -40,7 +40,9 @@
 		// Tiny sine ping; ok = higher pitch, error = lower. Skipped if AudioContext
 		// is unavailable (older Safari etc.) — visual feedback is the source of truth.
 		try {
-			const Ctx = window.AudioContext ?? (window as any).webkitAudioContext;
+			const Ctx =
+				window.AudioContext ??
+				(window as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
 			if (!Ctx) return;
 			const ctx: AudioContext = new Ctx();
 			const osc = ctx.createOscillator();

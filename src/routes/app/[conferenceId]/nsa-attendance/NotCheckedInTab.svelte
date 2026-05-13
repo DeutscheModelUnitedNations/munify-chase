@@ -33,12 +33,12 @@
 		conferenceUser: { id: true }
 	});
 
-	let latestByUser = $derived(
-		new Map((latestEvents ?? []).map((e: any) => [e.conferenceUser?.id, e]))
-	);
+	type NsaUser = NonNullable<typeof nsaUsers>[number];
+
+	let latestByUser = $derived(new Map((latestEvents ?? []).map((e) => [e.conferenceUser?.id, e])));
 
 	let visible = $derived.by(() => {
-		const out: any[] = [];
+		const out: NsaUser[] = [];
 		for (const u of nsaUsers ?? []) {
 			const latest = latestByUser.get(u.id);
 			const isOut = !latest || latest.type === 'CHECK_OUT';

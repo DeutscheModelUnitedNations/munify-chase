@@ -34,8 +34,8 @@
 
 	let presentHere = $derived(
 		(latestEvents ?? [])
-			.filter((e: any) => e.type === 'CHECK_IN' && e.committeeId === committeeId)
-			.sort((a: any, b: any) => {
+			.filter((e) => e.type === 'CHECK_IN' && e.committeeId === committeeId)
+			.sort((a, b) => {
 				const aName =
 					a.conferenceUser?.name ?? a.conferenceUser?.conferenceMember?.representation?.name ?? '';
 				const bName =

@@ -29,15 +29,25 @@
 		committee: { id: true, name: true, abbreviation: true }
 	});
 
+	type PresenceEvent = NonNullable<typeof events>[number];
+	type EditTarget = {
+		id: string;
+		type: 'CHECK_IN' | 'CHECK_OUT';
+		committeeId: string;
+		conferenceUserId: string;
+		timestamp: string | Date;
+		note?: string | null;
+	};
+
 	let editorOpen = $state(false);
-	let editTarget = $state<any | null>(null);
+	let editTarget = $state<EditTarget | null>(null);
 
 	function openInsert() {
 		editTarget = null;
 		editorOpen = true;
 	}
 
-	function openEdit(ev: any) {
+	function openEdit(ev: PresenceEvent) {
 		editTarget = {
 			id: ev.id,
 			type: ev.type,

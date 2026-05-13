@@ -42,8 +42,10 @@
 		return () => clearInterval(t);
 	});
 
+	type LatestEvent = NonNullable<typeof latestEvents>[number];
+
 	let byCommittee = $derived.by(() => {
-		const map = new SvelteMap<string, any[]>();
+		const map = new SvelteMap<string, LatestEvent[]>();
 		for (const event of latestEvents ?? []) {
 			if (event.type !== 'CHECK_IN') continue;
 			const list = map.get(event.committeeId) ?? [];

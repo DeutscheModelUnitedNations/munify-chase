@@ -37,6 +37,7 @@
 		return () => clearInterval(t);
 	});
 
+	type PresenceEvent = NonNullable<typeof events>[number];
 	type PerUser = {
 		userId: string;
 		label: string;
@@ -52,7 +53,7 @@
 		// Group events by user, then walk in chronological order. CHECK_IN starts
 		// an interval; CHECK_OUT (or end-of-data → now) closes it. Auto-switch
 		// already inserts both events, so each pair lines up cleanly.
-		const grouped = new SvelteMap<string, any[]>();
+		const grouped = new SvelteMap<string, PresenceEvent[]>();
 		for (const e of events ?? []) {
 			const list = grouped.get(e.conferenceUserId) ?? [];
 			list.push(e);
@@ -74,7 +75,7 @@
 				perCommitteeSeconds: new Map()
 			};
 
-			let openCheckIn: any | null = null;
+			let openCheckIn: PresenceEvent | null = null;
 			for (const e of userEvents) {
 				if (e.type === 'CHECK_IN') {
 					entry.switches += 1;
@@ -121,7 +122,7 @@
 	});
 
 	let committeeNamesById = $derived(
-		new Map((events ?? []).map((e: any) => [e.committee?.id, e.committee]))
+		new Map((events ?? []).map((e) => [e.committee?.id, e.committee]))
 	);
 
 	function fmt(seconds: number) {

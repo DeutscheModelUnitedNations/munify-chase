@@ -29,8 +29,8 @@
 
 	let cards = $derived(
 		(nsaUsers ?? [])
-			.filter((u: any) => !filterId || u.id === filterId)
-			.map((u: any) => ({
+			.filter((u) => !filterId || u.id === filterId)
+			.map((u) => ({
 				id: u.id,
 				userEmail: u.userEmail,
 				name: u.name ?? null,

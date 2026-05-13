@@ -20,9 +20,18 @@ export async function context(req: RequestEvent) {
 			(req.locals.oidc?.idToken as Record<string, unknown> | undefined)?.[
 				configPrivate.OIDC_ROLE_CLAIM
 			];
-		if (rolesRaw && typeof rolesRaw === 'object') {
-			const roleNames = Object.keys(rolesRaw);
-			const validRoles = roleNames.filter((r): r is (typeof oidcRoles)[number] =>
+		if (rolesRaw) {
+			// Support both Logto format (array of role objects/strings) and Zitadel format (object with role keys)
+			const collected: string[] = [];
+			if (Array.isArray(rolesRaw)) {
+				for (const role of rolesRaw) {
+					const name = typeof role === 'string' ? role : (role as { name?: string })?.name;
+					if (name) collected.push(name);
+				}
+			} else if (typeof rolesRaw === 'object') {
+				collected.push(...Object.keys(rolesRaw));
+			}
+			const validRoles = collected.filter((r): r is (typeof oidcRoles)[number] =>
 				(oidcRoles as readonly string[]).includes(r)
 			);
 			OIDCRoleNames.push(...validRoles);

@@ -2583,6 +2583,11 @@ export const schema = {
 						args: []
 					},
 					{
+						name: 'endDate',
+						type: { kind: 'SCALAR', name: 'Date', ofType: null, __proto__: null },
+						args: []
+					},
+					{
 						name: 'hasModeratedCaucus',
 						type: {
 							kind: 'NON_NULL',
@@ -2596,6 +2601,11 @@ export const schema = {
 							kind: 'NON_NULL',
 							ofType: { kind: 'SCALAR', name: 'ID', ofType: null, __proto__: null }
 						},
+						args: []
+					},
+					{
+						name: 'location',
+						type: { kind: 'SCALAR', name: 'String', ofType: null, __proto__: null },
 						args: []
 					},
 					{
@@ -2696,6 +2706,11 @@ export const schema = {
 							kind: 'NON_NULL',
 							ofType: { kind: 'SCALAR', name: 'Boolean', ofType: null, __proto__: null }
 						},
+						args: []
+					},
+					{
+						name: 'startDate',
+						type: { kind: 'SCALAR', name: 'Date', ofType: null, __proto__: null },
 						args: []
 					},
 					{
@@ -2805,12 +2820,22 @@ export const schema = {
 						defaultValue: void 0
 					},
 					{
+						name: 'endDate',
+						type: { kind: 'ENUM', name: 'SortingParameter', ofType: null, __proto__: null },
+						defaultValue: void 0
+					},
+					{
 						name: 'hasModeratedCaucus',
 						type: { kind: 'ENUM', name: 'SortingParameter', ofType: null, __proto__: null },
 						defaultValue: void 0
 					},
 					{
 						name: 'id',
+						type: { kind: 'ENUM', name: 'SortingParameter', ofType: null, __proto__: null },
+						defaultValue: void 0
+					},
+					{
+						name: 'location',
 						type: { kind: 'ENUM', name: 'SortingParameter', ofType: null, __proto__: null },
 						defaultValue: void 0
 					},
@@ -2841,6 +2866,11 @@ export const schema = {
 					},
 					{
 						name: 'resolutionFeatureEnabled',
+						type: { kind: 'ENUM', name: 'SortingParameter', ofType: null, __proto__: null },
+						defaultValue: void 0
+					},
+					{
+						name: 'startDate',
 						type: { kind: 'ENUM', name: 'SortingParameter', ofType: null, __proto__: null },
 						defaultValue: void 0
 					},
@@ -2892,6 +2922,16 @@ export const schema = {
 						defaultValue: void 0
 					},
 					{
+						name: 'endDate',
+						type: {
+							kind: 'INPUT_OBJECT',
+							name: 'DateWhereInputArgument',
+							ofType: null,
+							__proto__: null
+						},
+						defaultValue: void 0
+					},
+					{
 						name: 'hasModeratedCaucus',
 						type: { kind: 'SCALAR', name: 'Boolean', ofType: null, __proto__: null },
 						defaultValue: void 0
@@ -2899,6 +2939,16 @@ export const schema = {
 					{
 						name: 'id',
 						type: { kind: 'SCALAR', name: 'ID', ofType: null, __proto__: null },
+						defaultValue: void 0
+					},
+					{
+						name: 'location',
+						type: {
+							kind: 'INPUT_OBJECT',
+							name: 'StringWhereInputArgument',
+							ofType: null,
+							__proto__: null
+						},
 						defaultValue: void 0
 					},
 					{
@@ -2934,6 +2984,16 @@ export const schema = {
 					{
 						name: 'resolutionFeatureEnabled',
 						type: { kind: 'SCALAR', name: 'Boolean', ofType: null, __proto__: null },
+						defaultValue: void 0
+					},
+					{
+						name: 'startDate',
+						type: {
+							kind: 'INPUT_OBJECT',
+							name: 'DateWhereInputArgument',
+							ofType: null,
+							__proto__: null
+						},
 						defaultValue: void 0
 					},
 					{
@@ -4289,11 +4349,21 @@ export const schema = {
 						defaultValue: void 0
 					},
 					{
+						name: 'endDate',
+						type: { kind: 'SCALAR', name: 'Date', ofType: null, __proto__: null },
+						defaultValue: void 0
+					},
+					{
 						name: 'id',
 						type: {
 							kind: 'NON_NULL',
 							ofType: { kind: 'SCALAR', name: 'ID', ofType: null, __proto__: null }
 						},
+						defaultValue: void 0
+					},
+					{
+						name: 'location',
+						type: { kind: 'SCALAR', name: 'String', ofType: null, __proto__: null },
 						defaultValue: void 0
 					},
 					{
@@ -4313,6 +4383,11 @@ export const schema = {
 								}
 							}
 						},
+						defaultValue: void 0
+					},
+					{
+						name: 'startDate',
+						type: { kind: 'SCALAR', name: 'Date', ofType: null, __proto__: null },
 						defaultValue: void 0
 					},
 					{
@@ -6004,6 +6079,10 @@ export const schema = {
 						},
 						args: [
 							{
+								name: 'endDate',
+								type: { kind: 'SCALAR', name: 'Date', ofType: null, __proto__: null }
+							},
+							{
 								name: 'hasModeratedCaucus',
 								type: { kind: 'SCALAR', name: 'Boolean', ofType: null, __proto__: null }
 							},
@@ -6015,12 +6094,20 @@ export const schema = {
 								}
 							},
 							{
+								name: 'location',
+								type: { kind: 'SCALAR', name: 'String', ofType: null, __proto__: null }
+							},
+							{
 								name: 'pressWebsite',
 								type: { kind: 'SCALAR', name: 'String', ofType: null, __proto__: null }
 							},
 							{
 								name: 'resolutionFeatureEnabled',
 								type: { kind: 'SCALAR', name: 'Boolean', ofType: null, __proto__: null }
+							},
+							{
+								name: 'startDate',
+								type: { kind: 'SCALAR', name: 'Date', ofType: null, __proto__: null }
 							},
 							{
 								name: 'title',

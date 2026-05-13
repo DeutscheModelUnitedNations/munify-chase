@@ -420,8 +420,10 @@ export type Conference = {
 		where?: CommitteeWhereInputArgument | null | undefined;
 	}) => Committee[];
 	createdAt: DateTime;
+	endDate: Date | null;
 	hasModeratedCaucus: Boolean;
 	id: ID;
+	location: String | null;
 	members: (p?: {
 		limit?: Int | null | undefined;
 		offset?: Int | null | undefined;
@@ -436,6 +438,7 @@ export type Conference = {
 		where?: RepresentationWhereInputArgument | null | undefined;
 	}) => Representation[];
 	resolutionFeatureEnabled: Boolean;
+	startDate: Date | null;
 	title: String;
 	uniqueConferenceMembers: (p?: {
 		where?: ConferencememberWhereInputArgument | null | undefined;
@@ -452,12 +455,15 @@ export type Conference = {
 export type ConferenceOrderInputArgument = {
 	committees?: CommitteeOrderInputArgument | null | undefined;
 	createdAt?: SortingParameter | null | undefined;
+	endDate?: SortingParameter | null | undefined;
 	hasModeratedCaucus?: SortingParameter | null | undefined;
 	id?: SortingParameter | null | undefined;
+	location?: SortingParameter | null | undefined;
 	members?: ConferencememberOrderInputArgument | null | undefined;
 	pressWebsite?: SortingParameter | null | undefined;
 	representations?: RepresentationOrderInputArgument | null | undefined;
 	resolutionFeatureEnabled?: SortingParameter | null | undefined;
+	startDate?: SortingParameter | null | undefined;
 	title?: SortingParameter | null | undefined;
 	updatedAt?: SortingParameter | null | undefined;
 	users?: ConferenceuserOrderInputArgument | null | undefined;
@@ -466,12 +472,15 @@ export type ConferenceOrderInputArgument = {
 export type ConferenceWhereInputArgument = {
 	committees?: CommitteeWhereInputArgument | null | undefined;
 	createdAt?: DateWhereInputArgument | null | undefined;
+	endDate?: DateWhereInputArgument | null | undefined;
 	hasModeratedCaucus?: Boolean | null | undefined;
 	id?: ID | null | undefined;
+	location?: StringWhereInputArgument | null | undefined;
 	members?: ConferencememberWhereInputArgument | null | undefined;
 	pressWebsite?: StringWhereInputArgument | null | undefined;
 	representations?: RepresentationWhereInputArgument | null | undefined;
 	resolutionFeatureEnabled?: Boolean | null | undefined;
+	startDate?: DateWhereInputArgument | null | undefined;
 	title?: StringWhereInputArgument | null | undefined;
 	updatedAt?: DateWhereInputArgument | null | undefined;
 	users?: ConferenceuserWhereInputArgument | null | undefined;
@@ -675,8 +684,11 @@ export type ImportData = {
 	committees?: ImportDataCommittee[] | undefined;
 	conferenceMembers?: ImportDataConferenceMember[] | undefined;
 	conferenceUsers?: ImportDataConferenceUser[] | undefined;
+	endDate?: Date | null | undefined;
 	id: ID;
+	location?: String | null | undefined;
 	representations?: ImportDataRepresentation[] | undefined;
+	startDate?: Date | null | undefined;
 	title: String;
 };
 
@@ -894,10 +906,13 @@ export type Mutation = {
 		whiteboardContent?: String | null | undefined;
 	}) => Committee;
 	updateConference: (p: {
+		endDate?: Date | null | undefined;
 		hasModeratedCaucus?: Boolean | null | undefined;
 		id: ID;
+		location?: String | null | undefined;
 		pressWebsite?: String | null | undefined;
 		resolutionFeatureEnabled?: Boolean | null | undefined;
+		startDate?: Date | null | undefined;
 		title?: String | null | undefined;
 	}) => Conference;
 	updateConferenceUser: (p: {

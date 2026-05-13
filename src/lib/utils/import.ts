@@ -4,6 +4,9 @@ export const importDataSchema = z.object({
 	$schema: z.string().optional(),
 	id: z.string(),
 	title: z.string(),
+	location: z.string().optional(),
+	startDate: z.coerce.date().optional(),
+	endDate: z.coerce.date().optional(),
 	committees: z.array(
 		z.object({
 			id: z.string(),

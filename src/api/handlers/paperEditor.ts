@@ -13,7 +13,7 @@ abilityBuilder.paperEditor.allow('read').when(({ mustBeLoggedIn }) => {
 	return 'allow';
 });
 
-const ref = object({ table: 'paperEditor' });
+object({ table: 'paperEditor' });
 const pubsub = rumblePubsub({ table: 'paperEditor' });
 const paperPubsub = rumblePubsub({ table: 'resolutionPaper' });
 query({ table: 'paperEditor' });
@@ -62,7 +62,7 @@ schemaBuilder.mutationFields((t) => ({
 					)
 				);
 
-			pubsub.removed();
+			pubsub.removed(editor.id);
 			paperPubsub.updated(args.paperId);
 
 			return true;

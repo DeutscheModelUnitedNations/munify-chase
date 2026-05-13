@@ -25,7 +25,7 @@ schemaBuilder.mutationFields((t) => ({
 			paperId: t.arg.id({ required: true }),
 			conferenceUserId: t.arg.id({ required: true })
 		},
-		resolve: async (root, args, ctx, info) => {
+		resolve: async (root, args, ctx) => {
 			const user = ctx.mustBeLoggedIn();
 
 			// Must be paper creator

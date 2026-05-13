@@ -26,7 +26,7 @@ schemaBuilder.mutationFields((t) => ({
 			paperId: t.arg.id({ required: true }),
 			committeeMemberId: t.arg.id({ required: true })
 		},
-		resolve: async (query, root, args, ctx, info) => {
+		resolve: async (query, root, args, ctx) => {
 			const user = ctx.mustBeLoggedIn();
 
 			const paper = await db.query.resolutionPaper
@@ -94,7 +94,7 @@ schemaBuilder.mutationFields((t) => ({
 			paperId: t.arg.id({ required: true }),
 			committeeMemberId: t.arg.id({ required: true })
 		},
-		resolve: async (root, args, ctx, info) => {
+		resolve: async (root, args, ctx) => {
 			const user = ctx.mustBeLoggedIn();
 
 			await db.query.paperSponsor

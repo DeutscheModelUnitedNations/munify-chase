@@ -1,7 +1,6 @@
 <script lang="ts">
 	import { m } from '$lib/paraglide/messages';
 	import type { Editor } from 'svelte-tiptap';
-	import type { Readable } from 'svelte/store';
 
 	interface Props {
 		editor: Editor;
@@ -78,9 +77,9 @@
 </script>
 
 <div class="card bg-base-300 flex flex-row flex-nowrap gap-2 p-2 shadow-sm">
-	{#each buttonGroups as group}
+	{#each buttonGroups as group, groupIdx (groupIdx)}
 		<div class="join">
-			{#each group as button}
+			{#each group as button (button.label)}
 				<div class="tooltip" data-tip={button.label}>
 					<button
 						class="btn btn-sm join-item {button.active && button.active() ? 'btn-active' : ''}"

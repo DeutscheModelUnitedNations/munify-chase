@@ -289,7 +289,7 @@ type TranslationObject = { [key in (typeof locales)[number]]: string };
 export const NationIso3ToLocalNamesMap = new SvelteMap<string, TranslationObject>();
 
 for (const nation of allNations) {
-	const translationObject: TranslationObject = {} as any;
+	const translationObject: TranslationObject = {} as TranslationObject;
 	for (const locale of locales) {
 		translationObject[locale] = nationCodeToLocalName(nation.cca3, locale);
 	}
@@ -319,8 +319,8 @@ export const getTranslatedCountryNameFromAlpha3Code = (alpha3Code?: string | nul
 };
 
 export const sortTranslatedCountries = (
-	a: { alpha3Code?: string | null; name?: string | null; [key: string]: any },
-	b: { alpha3Code?: string | null; name?: string | null; [key: string]: any }
+	a: { alpha3Code?: string | null; name?: string | null; [key: string]: unknown },
+	b: { alpha3Code?: string | null; name?: string | null; [key: string]: unknown }
 ) => {
 	if ((!a.alpha3Code && !a.name) || (!b.alpha3Code && !b.name)) return 0;
 	return (a.name ?? getTranslatedCountryNameFromAlpha3Code(a.alpha3Code)).localeCompare(

@@ -1,6 +1,5 @@
 <script lang="ts">
 	import Modal from '../Modal.svelte';
-	import { m } from '$lib/paraglide/messages';
 	import hotkeys from 'hotkeys-js';
 	import StateOfDebateChanger from './StateOfDebateChanger.svelte';
 

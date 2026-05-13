@@ -10,7 +10,6 @@ import {
 import { eq } from 'drizzle-orm';
 import { isGlobalAdmin } from '$api/services/authHelper';
 import { assertFindFirstExists, assertFirstEntryExists } from '@m1212e/rumble';
-import { GraphQLError } from 'graphql';
 import { customAlphabet } from 'nanoid';
 
 abilityBuilder.paperShareCode.allow(['read', 'update']).when((ctx) => {
@@ -47,7 +46,7 @@ schemaBuilder.mutationFields((t) => ({
 			paperId: t.arg.id({ required: true }),
 			permission: t.arg({ type: shareCodePermissionEnum, required: true })
 		},
-		resolve: async (query, root, args, ctx, info) => {
+		resolve: async (query, root, args, ctx) => {
 			const user = ctx.mustBeLoggedIn();
 
 			// Must be paper creator
@@ -57,7 +56,7 @@ schemaBuilder.mutationFields((t) => ({
 				})
 				.then(assertFindFirstExists);
 
-			const conferenceUser = await db.query.conferenceUser
+			await db.query.conferenceUser
 				.findFirst({
 					where: {
 						user: { id: user.sub },
@@ -96,7 +95,7 @@ schemaBuilder.mutationFields((t) => ({
 		args: {
 			shareCodeId: t.arg.id({ required: true })
 		},
-		resolve: async (root, args, ctx, info) => {
+		resolve: async (root, args, ctx) => {
 			const user = ctx.mustBeLoggedIn();
 
 			const shareCode = await db.query.paperShareCode
@@ -130,7 +129,7 @@ schemaBuilder.mutationFields((t) => ({
 		args: {
 			code: t.arg.string({ required: true })
 		},
-		resolve: async (root, args, ctx, info) => {
+		resolve: async (root, args, ctx) => {
 			const user = ctx.mustBeLoggedIn();
 
 			const shareCode = await db.query.paperShareCode

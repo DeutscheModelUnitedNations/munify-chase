@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
+	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
 	import { m } from '$lib/paraglide/messages';
 	import { client } from '$lib/api/rumbleClient/client';
@@ -148,7 +149,7 @@
 				});
 			if (res) {
 				toast.success(m.conferenceCreated());
-				goto('/app');
+				goto(resolve('/app/(launcher)'));
 			}
 		} finally {
 			loading = false;
@@ -212,7 +213,7 @@
 		<div class="flex flex-1 items-center gap-2">
 			<a
 				class="btn btn-ghost"
-				href={step === 0 ? '/app' : undefined}
+				href={step === 0 ? resolve('/app/(launcher)') : undefined}
 				onclick={(e) => {
 					if (step > 0) {
 						e.preventDefault();

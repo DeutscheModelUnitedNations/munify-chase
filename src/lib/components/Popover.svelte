@@ -1,11 +1,11 @@
 <script lang="ts">
-	import { Popover, Separator, Toggle } from 'bits-ui';
+	import { Popover } from 'bits-ui';
 	import type { Snippet } from 'svelte';
 	import { fly } from 'svelte/transition';
 
 	interface Props {
 		open?: boolean;
-		Trigger: Snippet;
+		Trigger: Snippet<[{ props: Record<string, unknown> }]>;
 		Content: Snippet;
 	}
 
@@ -14,7 +14,9 @@
 
 <Popover.Root bind:open>
 	<Popover.Trigger>
-		{@render Trigger()}
+		{#snippet child({ props })}
+			{@render Trigger({ props })}
+		{/snippet}
 	</Popover.Trigger>
 	<Popover.Portal>
 		<Popover.Content forceMount sideOffset={8}>

@@ -55,7 +55,7 @@
 			const base64String = await fileToBase64(uploadedFile);
 			resolve(base64String);
 			showModal = false;
-		} catch (error) {
+		} catch {
 			uploadError = 'Upload failed';
 		} finally {
 			isUploading = false;

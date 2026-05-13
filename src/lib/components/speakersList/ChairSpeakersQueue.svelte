@@ -4,14 +4,40 @@
 	import { flip } from 'svelte/animate';
 	import Flag from '../Flag.svelte';
 	import { cubicInOut, cubicOut } from 'svelte/easing';
-	import { blur, fly } from 'svelte/transition';
+	import { fly } from 'svelte/transition';
 	import StripesAlert from './StripesAlert.svelte';
 	import { m } from '$lib/paraglide/messages';
 	import toast from 'svelte-french-toast';
 	import { promiseToastStrings } from '$lib/utils/toast';
 
+	type Speaker = {
+		id: string;
+		position: number;
+		overwriteName?: string | null;
+		committeeMember?: {
+			id: string;
+			representation?: {
+				name?: string | null;
+				alpha2Code?: string | null;
+				alpha3Code?: string | null;
+				faIcon?: string | null;
+				type?: string | null;
+			} | null;
+		} | null;
+		conferenceMember?: {
+			id: string;
+			representation?: {
+				name?: string | null;
+				alpha2Code?: string | null;
+				alpha3Code?: string | null;
+				faIcon?: string | null;
+				type?: string | null;
+			} | null;
+		} | null;
+	};
+
 	interface Props {
-		rawSpeakers?: any[];
+		rawSpeakers?: Speaker[];
 		closed?: boolean;
 	}
 

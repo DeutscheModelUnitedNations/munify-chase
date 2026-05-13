@@ -13,7 +13,7 @@
 
 	const currentUser = await getCurrentUser();
 
-	const conference: any = await client.liveQuery.conference({
+	const conference = await client.liveQuery.conference({
 		__args: { id: page.params.conferenceId! },
 		id: true,
 		title: true,

@@ -112,7 +112,7 @@ schemaBuilder.mutationFields((t) => ({
 				required: true
 			})
 		},
-		resolve: async (query, root, args, ctx, info) => {
+		resolve: async (query, root, args, ctx) => {
 			if (!isGlobalAdmin(ctx)) {
 				throw new GraphQLError('You must be a global admin to create conferences!');
 			}

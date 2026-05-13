@@ -68,20 +68,20 @@
 	let countries = $derived(
 		committee?.members
 			.filter(isDelegationMember)
-			.sort((a: any, b: any) => sortTranslatedCountries(a.representation!, b.representation!)) ?? []
+			.sort((a, b) => sortTranslatedCountries(a.representation, b.representation)) ?? []
 	);
 
 	let nsas = $derived(
 		committee?.conference?.uniqueConferenceMembers
 			?.filter(isNSAMember)
-			.sort((a: any, b: any) => a.representation!.name!.localeCompare(b.representation!.name!)) ??
+			.sort((a, b) => (a.representation.name ?? '').localeCompare(b.representation.name ?? '')) ??
 			[]
 	);
 
 	let un = $derived(
 		committee?.conference?.uniqueConferenceMembers
 			?.filter(isUNMember)
-			?.sort((a: any, b: any) => a.representation!.name!.localeCompare(b.representation!.name!)) ??
+			?.sort((a, b) => (a.representation.name ?? '').localeCompare(b.representation.name ?? '')) ??
 			[]
 	);
 
@@ -134,12 +134,12 @@
 					</button>
 				</BasicCard>
 				<BasicCard>
-					<PresenceActions memberIds={committee.members.map((x: any) => x.id)} />
+					<PresenceActions memberIds={committee.members.map((x) => x.id)} />
 				</BasicCard>
 			</div>
 			<div class="flex h-full w-full flex-3 flex-col gap-4">
 				<BasicCard title={m.delegations()}>
-					{#each countries as member}
+					{#each countries as member (member.id)}
 						{@const rep = member.representation}
 						<div
 							class="hover:bg-base-200 card flex w-full flex-row items-center gap-4 p-2 transition-all duration-300"
@@ -182,7 +182,7 @@
 					{/each}
 				</BasicCard>
 				<BasicCard title={m.nonStateActors()}>
-					{#each nsas as member}
+					{#each nsas as member (member.id)}
 						{@const rep = member.representation}
 						<div
 							class="hover:bg-base-200 card flex w-full flex-row items-center gap-4 p-2 transition-all duration-300"
@@ -199,7 +199,7 @@
 					{/each}
 				</BasicCard>
 				<BasicCard title={m.unActors()}>
-					{#each un as member}
+					{#each un as member (member.id)}
 						{@const rep = member.representation}
 						<div
 							class="hover:bg-base-200 card flex w-full flex-row items-center gap-4 p-2 transition-all duration-300"

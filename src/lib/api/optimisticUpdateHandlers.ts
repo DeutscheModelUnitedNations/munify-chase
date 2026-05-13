@@ -2,7 +2,7 @@ import { gql } from '@urql/core';
 import type { OptimisticMutationConfig, UpdatesConfig } from '@urql/exchange-graphcache';
 
 export const optimistic: OptimisticMutationConfig = {
-	updateSpeakersList: (args, cache, info) => {
+	updateSpeakersList: (args) => {
 		const result: Record<string, unknown> = {
 			__typename: 'Speakerslist',
 			id: args.id
@@ -14,7 +14,7 @@ export const optimistic: OptimisticMutationConfig = {
 		else if (args.startTimestamp !== undefined) result.startTimestamp = args.startTimestamp;
 		return result;
 	},
-	updateCommittee: (args, cache, info) => {
+	updateCommittee: (args) => {
 		const result: Record<string, unknown> = {
 			__typename: 'Committee',
 			id: args.id

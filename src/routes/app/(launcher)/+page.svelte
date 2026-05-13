@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { m } from '$lib/paraglide/messages';
+	import { resolve } from '$app/paths';
 	import Footer from '$lib/components/Footer.svelte';
 	import DeleteConferenceModal from '$lib/components/DeleteConferenceModal.svelte';
 	import AvatarMenu from '$lib/components/launcher/AvatarMenu.svelte';
@@ -128,7 +129,8 @@
 					cu.committeeMember?.committee?.abbreviation
 				),
 				representation: rep,
-				href: getUrl(cu.conferenceUserType, cu.conference.id, cu.committeeMember)
+				href: getUrl(cu.conferenceUserType, cu.conference.id, cu.committeeMember),
+				committeeId: cu.committeeMember?.committeeId ?? null
 			};
 		})
 	);
@@ -297,18 +299,18 @@
 				class="from-base-200 sticky bottom-0 mt-8 flex flex-col gap-2 bg-gradient-to-b from-35% to-transparent py-4 [&>.btn]:w-full"
 				style="background: linear-gradient(180deg, transparent 0%, var(--color-base-200) 35%);"
 			>
-				<a class="btn btn-primary btn-lg" href="/app/import">
+				<a class="btn btn-primary btn-lg" href={resolve('/app/(launcher)/import')}>
 					<i class="fa-solid fa-plus"></i>
 					{m.createConference()}
 				</a>
-				<a class="btn btn-ghost btn-sm" href="/app/import">
+				<a class="btn btn-ghost btn-sm" href={resolve('/app/(launcher)/import')}>
 					<i class="fa-duotone fa-file-arrow-up"></i>
 					{m.launcherImportDelegator()}
 				</a>
 			</footer>
 		{:else}
 			<footer class="mt-8 flex justify-center pt-6">
-				<a class="btn btn-ghost btn-sm" href="/app/import">
+				<a class="btn btn-ghost btn-sm" href={resolve('/app/(launcher)/import')}>
 					<i class="fa-solid fa-plus"></i>
 					{m.createConference()}
 				</a>

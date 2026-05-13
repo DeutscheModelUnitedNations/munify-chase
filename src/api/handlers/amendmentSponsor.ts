@@ -26,7 +26,7 @@ schemaBuilder.mutationFields((t) => ({
 			amendmentId: t.arg.id({ required: true }),
 			committeeMemberId: t.arg.id({ required: true })
 		},
-		resolve: async (query, root, args, ctx, info) => {
+		resolve: async (query, root, args, ctx) => {
 			const user = ctx.mustBeLoggedIn();
 
 			const amendment = await db.query.amendment

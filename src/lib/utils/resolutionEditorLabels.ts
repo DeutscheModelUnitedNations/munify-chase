@@ -91,10 +91,6 @@ export function getResolutionLabels(): ResolutionEditorLabels {
 		resolutionAuthoringDelegation: m.resolutionAuthoringDelegation(),
 		resolutionDisclaimer: m.resolutionDisclaimer({ conferenceName: '{conferenceName}' }),
 
-		// Locking
-		startEditing: m.startEditing(),
-		doneEditing: m.doneEditing(),
-
 		// Amendments
 		amendmentProposed: m.amendmentProposed(),
 		amendmentAdd: m.amendmentAdd(),

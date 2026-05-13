@@ -2,7 +2,6 @@
 	import { m } from '$lib/paraglide/messages';
 	import { Combobox } from 'bits-ui';
 	import type { Snippet } from 'svelte';
-	import { crossfade } from 'svelte/transition';
 	import Kbd from './Kbd.svelte';
 
 	interface Props {

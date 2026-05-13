@@ -1,5 +1,4 @@
 <script lang="ts">
-	import DevPlaceholder from '$lib/components/DevPlaceholder.svelte';
 	import { m } from '$lib/paraglide/messages';
 	import { page } from '$app/state';
 	import { client } from '$lib/api/rumbleClient/client';
@@ -91,10 +90,10 @@
 	});
 
 	let speakersList = $derived(
-		committee?.activeAgendaItem?.speakersList.find((item: any) => item.type === 'SPEAKERS_LIST')
+		committee?.activeAgendaItem?.speakersList.find((item) => item.type === 'SPEAKERS_LIST')
 	);
 	let commentList = $derived(
-		committee?.activeAgendaItem?.speakersList.find((item: any) => item.type === 'COMMENT_LIST')
+		committee?.activeAgendaItem?.speakersList.find((item) => item.type === 'COMMENT_LIST')
 	);
 </script>
 
@@ -127,7 +126,6 @@
 			<div class="flex flex-col gap-8">
 				<CurrentSpeaker {speakersList} />
 				<ChairControls
-					committeeId={page.params.committeeId!}
 					{speakersList}
 					committeeMembers={committee.members}
 					conferenceMembers={committee.conference?.uniqueConferenceMembers ?? []}
@@ -144,7 +142,6 @@
 			<div class="flex flex-col gap-8">
 				<CurrentSpeaker speakersList={commentList} />
 				<ChairControls
-					committeeId={page.params.committeeId!}
 					committeeMembers={committee.members}
 					conferenceMembers={committee.conference?.uniqueConferenceMembers ?? []}
 					speakersList={commentList}

@@ -10,8 +10,15 @@ import {
 	smallint,
 	integer,
 	json,
+	customType,
 	type AnyPgColumn
 } from 'drizzle-orm/pg-core';
+
+const bytea = customType<{ data: Uint8Array; driverData: Buffer }>({
+	dataType: () => 'bytea',
+	toDriver: (v) => Buffer.from(v),
+	fromDriver: (v) => new Uint8Array(v as Buffer)
+});
 
 const defaultTimestamps = {
 	createdAt: timestamp().defaultNow().notNull(),
@@ -405,21 +412,23 @@ export const operativeClauseVote = pgTable(
 	(t) => [unique().on(t.paperId, t.clauseId)]
 );
 
-export const paperClauseLock = pgTable(
-	'paper_clause_lock',
-	{
-		...defaultIdAndTimestamps,
-		paperId: text()
-			.notNull()
-			.references(() => resolutionPaper.id, { onDelete: 'cascade' }),
-		clauseId: text().notNull(),
-		conferenceUserId: text()
-			.notNull()
-			.references(() => conferenceUser.id, { onDelete: 'cascade' }),
-		acquiredAt: timestamp({ mode: 'date' }).defaultNow().notNull()
-	},
-	(t) => [unique().on(t.paperId, t.clauseId)]
-);
+/**
+ * Y.js document state for a resolution paper.
+ *
+ * The `state` column holds the full Y.Doc encoded via `Y.encodeStateAsUpdate`
+ * and is the canonical source of truth for paper content.
+ * `resolution_paper.content` is a materialized JSON projection refreshed on
+ * every persist so amendment-apply, print, and snapshots can read JSON
+ * without instantiating a Y.Doc.
+ */
+export const paperYjsDoc = pgTable('paper_yjs_doc', {
+	...defaultIdAndTimestamps,
+	paperId: text()
+		.notNull()
+		.unique()
+		.references(() => resolutionPaper.id, { onDelete: 'cascade' }),
+	state: bytea('state').notNull()
+});
 
 export const resolutionVoteResult = pgTable('resolution_vote_result', {
 	...defaultIdAndTimestamps,

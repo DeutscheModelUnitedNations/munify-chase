@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { m } from '$lib/paraglide/messages';
 	import { page } from '$app/state';
+	import { resolve } from '$app/paths';
 	import { client } from '$lib/api/rumbleClient/client';
 	import BasicCard from '$lib/components/BasicCard.svelte';
 	import Majorities from '$lib/components/Majorities.svelte';
@@ -10,6 +11,9 @@
 	import toast from 'svelte-french-toast';
 	import { generatePaperName } from '$lib/utils/paperNameGenerator';
 	import { getTranslatedCountryNameFromAlpha3Code } from '$lib/utils/nationTranslationHelper.svelte';
+
+	const conferenceId = $derived(page.params.conferenceId!);
+	const committeeId = $derived(page.params.committeeId!);
 
 	const committee = await client.liveQuery.committee({
 		__args: { id: page.params.committeeId! },
@@ -241,13 +245,13 @@
 
 	let filteredCreatePaperMembers = $derived(
 		(createPaperSearchQuery
-			? (committee?.members ?? []).filter((member: any) =>
+			? (committee?.members ?? []).filter((member) =>
 					getRepresentationName(member.representation)
 						.toLowerCase()
 						.includes(createPaperSearchQuery.toLowerCase())
 				)
 			: (committee?.members ?? [])
-		).sort((a: any, b: any) =>
+		).sort((a, b) =>
 			getRepresentationName(a.representation).localeCompare(getRepresentationName(b.representation))
 		)
 	);
@@ -401,7 +405,13 @@
 											</div>
 										</div>
 										<div class="flex gap-2">
-											<a href="./resolutions/{paper.id}" class="btn btn-ghost btn-sm">
+											<a
+												href={resolve(
+													'/app/[conferenceId]/[committeeId]/(chairs)/resolutions/[paperId]',
+													{ conferenceId, committeeId, paperId: paper.id }
+												)}
+												class="btn btn-ghost btn-sm"
+											>
 												{m.viewPaper()}
 											</a>
 											<button
@@ -429,18 +439,19 @@
 						<div class="flex flex-col gap-3">
 							{#each draftResolutions as paper (paper.id)}
 								{@const isActive = paper.id === committee.activeDraftResolutionId}
-								{@const canSetActive =
-									!isActive &&
-									(paper.status === 'DRAFT_RESOLUTION' ||
-										paper.status === 'AMENDMENT_PHASE' ||
-										paper.status === 'VOTING_PHASE')}
 								<div
 									class="card bg-base-200 shadow-sm transition-shadow {isActive
 										? 'border-l-4 border-success'
 										: ''}"
 								>
 									<div class="card-body flex-row items-center gap-4 p-4">
-										<a href="./resolutions/{paper.id}" class="flex flex-1 flex-col">
+										<a
+											href={resolve(
+												'/app/[conferenceId]/[committeeId]/(chairs)/resolutions/[paperId]',
+												{ conferenceId, committeeId, paperId: paper.id }
+											)}
+											class="flex flex-1 flex-col"
+										>
 											<div class="flex items-center gap-2">
 												<h3 class="font-bold font-mono">
 													{paper.documentNumber ?? m.draftResolution()}
@@ -474,8 +485,11 @@
 											</div>
 										</a>
 										{#if paper.status === 'DRAFT_RESOLUTION' || paper.status === 'AMENDMENT_PHASE' || paper.status === 'VOTING_PHASE'}
-											<!-- svelte-ignore a11y_no_static_element_interactions -->
-											<div onclick={(e: MouseEvent) => e.stopPropagation()}>
+											<div
+												onclick={(e: MouseEvent) => e.stopPropagation()}
+												onkeydown={(e: KeyboardEvent) => e.stopPropagation()}
+												role="presentation"
+											>
 												<input
 													type="checkbox"
 													class="toggle toggle-success"
@@ -587,7 +601,13 @@
 									<span class="badge badge-accent badge-sm">{m.votingPhaseActive()}</span>
 									<span class="font-mono">{activeDr!.documentNumber}</span>
 								</div>
-								<a href="./resolutions/{activeDr!.id}" class="btn btn-ghost btn-xs">
+								<a
+									href={resolve(
+										'/app/[conferenceId]/[committeeId]/(chairs)/resolutions/[paperId]',
+										{ conferenceId, committeeId, paperId: activeDr!.id }
+									)}
+									class="btn btn-ghost btn-xs"
+								>
 									{m.goToVoting()} →
 								</a>
 							</div>
@@ -598,7 +618,13 @@
 									<span class="badge badge-secondary badge-sm">{m.amendmentPhaseActive()}</span>
 									<span class="font-mono">OP {(committee.currentOperativeIndex ?? 0) + 1}</span>
 								</div>
-								<a href="./resolutions/{activeDr!.id}" class="btn btn-ghost btn-xs">
+								<a
+									href={resolve(
+										'/app/[conferenceId]/[committeeId]/(chairs)/resolutions/[paperId]',
+										{ conferenceId, committeeId, paperId: activeDr!.id }
+									)}
+									class="btn btn-ghost btn-xs"
+								>
 									{m.goToAmendments()} →
 								</a>
 							</div>
@@ -614,7 +640,14 @@
 								<span class="badge badge-accent badge-sm">{m.votingPhaseActive()}</span>
 								<span class="font-mono">{activeDr!.documentNumber}</span>
 							</div>
-							<a href="./resolutions/{activeDr!.id}" class="btn btn-ghost btn-xs">
+							<a
+								href={resolve('/app/[conferenceId]/[committeeId]/(chairs)/resolutions/[paperId]', {
+									conferenceId,
+									committeeId,
+									paperId: activeDr!.id
+								})}
+								class="btn btn-ghost btn-xs"
+							>
 								{m.goToVoting()} →
 							</a>
 						</div>
@@ -675,7 +708,11 @@
 	<Modal bind:open={showCreatePaperModal}>
 		<div class="flex items-center justify-between mb-4">
 			<h3 class="font-bold text-lg">{m.chairCreateWorkingPaper()}</h3>
-			<button class="btn btn-ghost btn-sm" onclick={() => (showCreatePaperModal = false)}>
+			<button
+				class="btn btn-ghost btn-sm"
+				onclick={() => (showCreatePaperModal = false)}
+				aria-label={m.close()}
+			>
 				<i class="fas fa-times"></i>
 			</button>
 		</div>

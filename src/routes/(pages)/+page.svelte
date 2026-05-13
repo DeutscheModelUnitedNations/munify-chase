@@ -4,12 +4,7 @@
 	import CardSection from './CardSection.svelte';
 	import TextSection from './TextSection.svelte';
 	import ContactSection from './ContactSection.svelte';
-	import { media } from '$lib/utils/media.svelte';
-	import { navigating } from '$app/state';
 	import { onMount } from 'svelte';
-
-	// Modal state
-	let versionModalVisible = false;
 
 	let loading = $state(true);
 

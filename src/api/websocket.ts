@@ -10,9 +10,13 @@ import type { RequestEvent } from '@sveltejs/kit';
 import { OIDC } from './services/OIDC';
 import { parse as parseCookies } from 'cookie';
 import dayjs from 'dayjs';
+import { openYjsRoom } from './yjs/wss';
 
 const gqlWSS = new WebSocketServer({ noServer: true });
 const otherWSS = new WebSocketServer({ noServer: true });
+const yjsWSS = new WebSocketServer({ noServer: true });
+
+const YJS_PATH_PREFIX = '/api/ws/yjs/';
 
 /**
  * This is a bit hacky, but we need to create a synthetic RequestEvent to pass to the OIDC handler
@@ -27,7 +31,7 @@ function buildSyntheticEvent(req: IncomingMessage): RequestEvent {
 	const proto = 'https';
 	const url = new URL(req.url ?? '/', `${proto}://${host}`);
 	const cookies = parseCookies(req.headers.cookie ?? '');
-	const locals = {} as App.Locals;
+	const locals = {} as RequestEvent['locals'];
 
 	return {
 		url,
@@ -65,9 +69,12 @@ async function authenticateWebSocketRequest(req: IncomingMessage) {
 
 createWs(useServer, {}, gqlWSS);
 
+type LocalsBag = RequestEvent['locals'];
+type RequestWithLocals = IncomingMessage & { locals?: LocalsBag };
+
 async function attachLocals(req: IncomingMessage, ws: WSWebSocket) {
 	const locals = await authenticateWebSocketRequest(req);
-	(req as any).locals = locals;
+	(req as RequestWithLocals).locals = locals;
 
 	const exp = locals.oidc?.accessToken?.exp;
 	const expirationTimestamp = exp ? dayjs.unix(exp) : dayjs().add(300, 'seconds');
@@ -84,7 +91,42 @@ async function attachLocals(req: IncomingMessage, ws: WSWebSocket) {
 	});
 }
 
-(globalThis as any).__wssUpgrade = (req: IncomingMessage, socket: Socket, head: Buffer) => {
+(globalThis as Record<string, unknown>).__wssUpgrade = (
+	req: IncomingMessage,
+	socket: Socket,
+	head: Buffer
+) => {
+	if (req.url?.startsWith(YJS_PATH_PREFIX)) {
+		const paperId = req.url.slice(YJS_PATH_PREFIX.length).split('?')[0];
+		yjsWSS.handleUpgrade(req, socket, head, (ws) => {
+			attachLocals(req, ws)
+				.then(() => {
+					const oidc = (req as RequestWithLocals).locals?.oidc;
+					const userSub = oidc?.user?.sub as string | undefined;
+					if (!userSub) {
+						const cookieHeader = req.headers.cookie ?? '';
+						console.warn('[yjs] WS upgrade has no user subject after OIDC handle', {
+							paperId,
+							hasCookieHeader: cookieHeader.length > 0,
+							cookieNames: Object.keys(parseCookies(cookieHeader)),
+							oidcKeys: oidc ? Object.keys(oidc) : null,
+							hasAccessToken: !!oidc?.accessToken,
+							accessTokenExp: oidc?.accessToken?.exp ?? null
+						});
+					}
+					void openYjsRoom(ws, paperId, userSub);
+				})
+				.catch((err) => {
+					console.error('[yjs] auth bootstrap failed; closing socket', { paperId, err });
+					try {
+						ws.close(1011, 'Authentication failed');
+					} catch {
+						/* noop */
+					}
+				});
+		});
+		return;
+	}
 	switch (req.url) {
 		case '/api/ws':
 			otherWSS.handleUpgrade(req, socket, head, (ws) => {

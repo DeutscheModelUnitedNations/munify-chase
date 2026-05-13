@@ -7,7 +7,7 @@
 
 	let { children }: { children: Snippet } = $props();
 
-	const conferenceUsers = await client.liveQuery.conferenceUsers({
+	await client.liveQuery.conferenceUsers({
 		__args: {
 			where: {
 				conference: { id: page.params.conferenceId },

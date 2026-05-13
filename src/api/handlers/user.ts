@@ -1,4 +1,4 @@
-import { abilityBuilder, schemaBuilder, object, pubsub as rumblePubsub, query } from '$api/rumble';
+import { abilityBuilder, schemaBuilder, object, query } from '$api/rumble';
 import { isAdmin, isGlobalAdmin } from '$api/services/authHelper';
 
 abilityBuilder.user.allow('read').when(({ oidc }) => {
@@ -41,7 +41,6 @@ const UserClaims = schemaBuilder
 		})
 	});
 
-const pubsub = rumblePubsub({ table: 'user' });
 query({ table: 'user' });
 
 schemaBuilder.queryFields((t) => ({

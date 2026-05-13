@@ -1,5 +1,4 @@
 <script lang="ts">
-	import DevPlaceholder from '$lib/components/DevPlaceholder.svelte';
 	import { m } from '$lib/paraglide/messages';
 	import Grid, { GridItem } from 'svelte-grid-extended';
 	import IconInfoBox from '$lib/components/IconInfoBox.svelte';
@@ -27,7 +26,7 @@
 
 	const committeeId = page.params.committeeId!;
 
-	const committee: any = await client.liveQuery.committee({
+	const committee = await client.liveQuery.committee({
 		__args: { id: committeeId },
 		id: true,
 		abbreviation: true,
@@ -207,14 +206,14 @@
 	);
 
 	let speakersList = $derived(
-		committee?.activeAgendaItem?.speakersList.find((x: any) => x.type === 'SPEAKERS_LIST')
+		committee?.activeAgendaItem?.speakersList.find((x) => x.type === 'SPEAKERS_LIST')
 	);
 
 	let commentsList = $derived(
-		committee?.activeAgendaItem?.speakersList.find((x: any) => x.type === 'COMMENT_LIST')
+		committee?.activeAgendaItem?.speakersList.find((x) => x.type === 'COMMENT_LIST')
 	);
-	let speakersQueueResizeFn: () => void;
-	let commentsQueueResizeFn: () => void;
+	let speakersQueueResizeFn = $state<(() => void) | undefined>(undefined);
+	let commentsQueueResizeFn = $state<(() => void) | undefined>(undefined);
 
 	$effect(() => {
 		if (!layout || !committee) {
@@ -348,8 +347,8 @@
 	<PresentationRollCall
 		{committeeId}
 		members={committee.members
-			.filter((x: any) => x.representation?.type === 'DELEGATION')
-			.sort((a: any, b: any) => sortTranslatedCountries(a.representation!, b.representation!))}
+			.filter((x) => x.representation?.type === 'DELEGATION')
+			.sort((a, b) => sortTranslatedCountries(a.representation!, b.representation!))}
 	/>
 
 	<ShowOfHandsVotingPresentation committeeSettings={$committeeSettings} />

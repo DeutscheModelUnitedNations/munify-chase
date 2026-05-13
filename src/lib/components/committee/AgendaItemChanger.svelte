@@ -48,7 +48,7 @@
 		<option disabled selected={!activeAgendaItem}>
 			{m.selectAgendaItem()}
 		</option>
-		{#each agendaItems ?? [] as item}
+		{#each agendaItems ?? [] as item (item.id)}
 			<option value={item.id} selected={value === item.id}>
 				{item.title}
 			</option>

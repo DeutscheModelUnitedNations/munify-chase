@@ -102,7 +102,7 @@
 		<div
 			class="grid flex-1 grid-cols-4 items-center gap-1 md:grid-cols-5 lg:grid-cols-8 xl:grid-cols-12"
 		>
-			{#each absoluteTimes as time}
+			{#each absoluteTimes as time (time)}
 				<button
 					class="btn bg-base-100 flex-1"
 					onclick={() =>
@@ -120,7 +120,7 @@
 			<i class="fa-duotone fa-timer w-8 text-center text-2xl"></i>
 		</div>
 		<div class="grid flex-1 grid-cols-4 items-center gap-1 md:grid-cols-5 lg:grid-cols-7">
-			{#each relativeTimes as time}
+			{#each relativeTimes as time (time)}
 				<button
 					class="btn bg-base-100 flex-1"
 					onclick={() => (until = getServerTime().add(time, 'minute'))}

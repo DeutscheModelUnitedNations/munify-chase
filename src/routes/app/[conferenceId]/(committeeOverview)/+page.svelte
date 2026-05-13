@@ -1,7 +1,8 @@
 <script lang="ts">
 	import { page } from '$app/state';
+	import { resolve } from '$app/paths';
 	import { client } from '$lib/api/rumbleClient/client';
-	import CommitteeGrid from '$lib/components/CommitteeGrid.svelte';
+	import CommitteeGrid, { type ConferenceData } from '$lib/components/CommitteeGrid.svelte';
 	import ThemeSwitcher from '$lib/components/ThemeSwitcher.svelte';
 	import CurrentTime from '$lib/components/CurrentTime.svelte';
 	import * as m from '$lib/paraglide/messages.js';
@@ -32,12 +33,16 @@
 	</div>
 	<div class="flex-none">
 		<ThemeSwitcher />
-		<a class="btn btn-ghost btn-square" href="/app" aria-label="Go back to app">
+		<a
+			class="btn btn-ghost btn-square"
+			href={resolve('/app/(launcher)')}
+			aria-label="Go back to app"
+		>
 			<i class="fa-duotone fa-home"></i>
 		</a>
 	</div>
 </div>
 
 {#if conference}
-	<CommitteeGrid conference={conference as any} />
+	<CommitteeGrid conference={conference as unknown as ConferenceData} />
 {/if}

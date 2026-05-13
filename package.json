@@ -1,7 +1,7 @@
 {
 	"devDependencies": {
 		"@deutschemodelunitednations/corporate-identity": "^1.1.10",
-		"@deutschemodelunitednations/munify-resolution-editor": "v0.1.4",
+		"@deutschemodelunitednations/munify-resolution-editor": "^0.2.1",
 		"@eslint/compat": "^2.0.5",
 		"@eslint/js": "^10.0.1",
 		"@fontsource/outfit": "^5.2.8",
@@ -61,7 +61,7 @@
 		"prettier-plugin-sort-json": "^4.2.0",
 		"prettier-plugin-svelte": "^3.5.1",
 		"prettier-plugin-tailwindcss": "^0.8.0",
-		"sofa-api": "^0.18.0",
+		"sofa-api": "^0.18.10",
 		"svelte": "^5.55.5",
 		"svelte-check": "^4.4.6",
 		"svelte-confetti": "^2.3.2",
@@ -74,6 +74,7 @@
 		"typescript": "^6.0.3",
 		"typescript-eslint": "^8.59.1",
 		"vite": "^8.0.10",
+		"vite-plugin-mkcert": "^2.0.0",
 		"vitest": "^4.1.5",
 		"world-countries": "^5.1.0",
 		"ws": "^8.20.0",
@@ -87,6 +88,7 @@
 		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
 		"compile-seed-schema": "bunx json-schema-to-typescript ./src/api/db/seed-data/schema.json > ./src/api/db/seed-data/schema.d.ts",
 		"db:migrate": "drizzle-kit migrate",
+		"db:nuke": "docker compose -f ./dev.docker-compose.yml down -v && docker compose -f ./dev.docker-compose.yml up -d --wait && bun run db:migrate",
 		"db:push": "drizzle-kit push",
 		"db:reset": "bun ./src/api/db/reset.ts",
 		"db:seed:dev": "bun ./src/api/db/seedConference.ts dev.yaml",
@@ -111,6 +113,9 @@
 		"drizzle-kit": "^1.0.0-beta.9-e89174b",
 		"drizzle-orm": "^1.0.0-beta.9-e89174b",
 		"pg": "^8.20.0",
-		"polka": "^0.5.2"
+		"polka": "^0.5.2",
+		"y-protocols": "^1.0.7",
+		"y-websocket": "^3.0.0",
+		"yjs": "^13.6.30"
 	}
 }

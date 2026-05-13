@@ -1,9 +1,7 @@
 <script lang="ts">
 	import { m } from '$lib/paraglide/messages';
 	import Modal from './Modal.svelte';
-	import { client } from '$lib/api/rumbleClient/client';
 	import toast from 'svelte-french-toast';
-	import { promiseToastStrings } from '$lib/utils/toast';
 
 	interface Props {
 		open: boolean;
@@ -11,6 +9,7 @@
 		conferenceName: string;
 	}
 
+	// eslint-disable-next-line @typescript-eslint/no-unused-vars
 	let { open = $bindable(), conferenceId, conferenceName }: Props = $props();
 
 	let confirmInput = $state('');

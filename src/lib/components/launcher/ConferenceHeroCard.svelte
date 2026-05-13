@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { m } from '$lib/paraglide/messages';
+	import { resolve } from '$app/paths';
 	import { getLocale } from '$lib/paraglide/runtime';
 	import { deriveStatus, formatDateRange } from '$lib/helpers/launcher';
 	import LauncherFlag from './LauncherFlag.svelte';
@@ -16,6 +17,18 @@
 
 	const status = $derived(deriveStatus(conference));
 	const dateRange = $derived(formatDateRange(conference, getLocale()));
+	const href = $derived.by(() => {
+		if (conference.role === 'ADMIN' || conference.role === 'CHAIR') {
+			return resolve('/app/[conferenceId]/mission-control', { conferenceId: conference.id });
+		}
+		if (conference.role === 'DELEGATE' && conference.committeeId) {
+			return resolve('/app/[conferenceId]/participant/[committeeId]', {
+				conferenceId: conference.id,
+				committeeId: conference.committeeId
+			});
+		}
+		return resolve('/app/[conferenceId]/participant', { conferenceId: conference.id });
+	});
 </script>
 
 <article
@@ -28,7 +41,7 @@
 
 	<header class="flex flex-wrap items-start justify-between gap-3">
 		<div class="flex items-center gap-3">
-			<LauncherFlag role={conference.role} representation={conference.representation} size={44} />
+			<LauncherFlag representation={conference.representation} size={44} />
 			<StatusDot {status} />
 		</div>
 		<RoleBadge role={conference.role} detail={conference.roleDetail} />
@@ -64,7 +77,7 @@
 		</div>
 	{/if}
 
-	<a class="btn btn-primary btn-lg mt-1 w-full" href={conference.href}>
+	<a class="btn btn-primary btn-lg mt-1 w-full" {href}>
 		<i class="fa-duotone fa-arrow-right-to-bracket"></i>
 		{m.launcherOpen()}
 	</a>

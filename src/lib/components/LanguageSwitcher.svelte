@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { locales, getLocale, setLocale, cookieName, cookieMaxAge } from '$lib/paraglide/runtime';
+	import { locales, getLocale, cookieName, cookieMaxAge } from '$lib/paraglide/runtime';
 	import Modal from './Modal.svelte';
 	import Flag from './Flag.svelte';
 	import { m } from '$lib/paraglide/messages';
@@ -27,7 +27,7 @@
 		<i class="fa-solid fa-earth-europe mr-2"></i>{m.language()}
 	</h3>
 	<div class="flex flex-col gap-2">
-		{#each locales as l}
+		{#each locales as l (l)}
 			<button
 				class="btn btn-lg justify-start gap-4 text-lg {getLocale() === l ? 'btn-active' : ''}"
 				onclick={() => switchLocale(l)}

@@ -139,7 +139,7 @@
 			<div class="mb-4">
 				<h4 class="mb-2 text-sm font-semibold">{m.parsedCountries()}</h4>
 				<div class="flex max-h-48 flex-wrap gap-1 overflow-y-auto">
-					{#each parsedCountries as country}
+					{#each parsedCountries as country (country.alpha3Code ?? country.alpha2Code ?? country.name)}
 						<CountryBadge
 							alpha2Code={country.alpha2Code}
 							alpha3Code={country.alpha3Code}
@@ -155,7 +155,7 @@
 			<div class="mb-4">
 				<h4 class="text-warning mb-2 text-sm font-semibold">{m.unrecognizedCodes()}</h4>
 				<div class="flex flex-wrap gap-1">
-					{#each unrecognizedStrings as code}
+					{#each unrecognizedStrings as code (code)}
 						<div class="badge badge-outline badge-warning font-mono">{code}</div>
 					{/each}
 				</div>

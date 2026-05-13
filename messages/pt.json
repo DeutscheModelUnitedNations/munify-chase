@@ -208,6 +208,7 @@
 	"deleteConferenceWarning": "Esta ação é irreversível. Todos os dados associados a esta conferência serão excluídos permanentemente.",
 	"deletePaper": "Excluir Documento",
 	"deleteRepresentation": "Remover Delegação",
+	"deleteShareCode": "Excluir código de partilha",
 	"displayRegionalGroups": "Mostrar Grupos Regionais",
 	"documentLevelComments": "Comentários do Documento",
 	"documentNumber": "Número do Documento",

@@ -33,13 +33,13 @@ abilityBuilder.committee.allow('delete').when((ctx) => {
 	return { where: isAdminInConference(ctx) };
 });
 
-const getTotalPresentCount = async (
-	parent: InferSelectModel<typeof schema.committee> & {
-		members: (InferSelectModel<typeof schema.committeeMember> & {
-			representation: InferSelectModel<typeof schema.representation>;
-		})[];
-	}
-) => {
+type CommitteeParentWithOptionalMembers = InferSelectModel<typeof schema.committee> & {
+	members?: (InferSelectModel<typeof schema.committeeMember> & {
+		representation: InferSelectModel<typeof schema.representation>;
+	})[];
+};
+
+const getTotalPresentCount = async (parent: CommitteeParentWithOptionalMembers) => {
 	if (
 		typeof parent.members?.at(0)?.present === 'boolean' &&
 		parent.members?.at(0)?.representation.type
@@ -71,14 +71,15 @@ const ref = object({
 		totalPresent: t.field({
 			type: 'Int',
 			//TODO remove as any when rumble fixed it's types
-			resolve: (parent, args, context, info) => getTotalPresentCount(parent as any)
+			resolve: (parent, args, context, info) =>
+				getTotalPresentCount(parent as CommitteeParentWithOptionalMembers)
 		}),
 		simpleMajority: t.field({
 			type: 'Int',
 			resolve: async (parent, args, context, info) => {
 				const custom = parent.customSimpleMajority;
 				if (custom) return custom;
-				const total = await getTotalPresentCount(parent as any);
+				const total = await getTotalPresentCount(parent as CommitteeParentWithOptionalMembers);
 				return calculateMajority(total, 'simple');
 			}
 		}),
@@ -87,7 +88,7 @@ const ref = object({
 			resolve: async (parent, args, context, info) => {
 				const custom = parent.customTwoThirdsMajority;
 				if (custom) return custom;
-				const total = await getTotalPresentCount(parent as any);
+				const total = await getTotalPresentCount(parent as CommitteeParentWithOptionalMembers);
 				return calculateMajority(total, 'twoThirds');
 			}
 		}),
@@ -96,7 +97,7 @@ const ref = object({
 			resolve: async (parent, args, context, info) => {
 				const custom = parent.customPaperSupportThreshold;
 				if (custom) return custom;
-				const total = await getTotalPresentCount(parent as any);
+				const total = await getTotalPresentCount(parent as CommitteeParentWithOptionalMembers);
 				return Math.ceil(total * 0.1);
 			}
 		})

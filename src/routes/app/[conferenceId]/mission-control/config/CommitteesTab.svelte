@@ -54,6 +54,7 @@
 		if (!confirm(m.confirmDeleteCommittee())) return;
 
 		await toast.promise(
+			// eslint-disable-next-line @typescript-eslint/no-explicit-any -- rumble generator types delete mutations as plain `Boolean` instead of callable functions
 			(client.mutate.deleteCommittee as any)({ __args: { id } } as any),
 			promiseToastStrings(m.committee(), 'delete')
 		);

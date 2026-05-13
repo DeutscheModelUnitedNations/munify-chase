@@ -241,13 +241,13 @@
 
 	let filteredCreatePaperMembers = $derived(
 		(createPaperSearchQuery
-			? (committee?.members ?? []).filter((member: any) =>
+			? (committee?.members ?? []).filter((member) =>
 					getRepresentationName(member.representation)
 						.toLowerCase()
 						.includes(createPaperSearchQuery.toLowerCase())
 				)
 			: (committee?.members ?? [])
-		).sort((a: any, b: any) =>
+		).sort((a, b) =>
 			getRepresentationName(a.representation).localeCompare(getRepresentationName(b.representation))
 		)
 	);

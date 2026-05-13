@@ -2,6 +2,8 @@ import { paraglideVitePlugin } from '@inlang/paraglide-js';
 import tailwindcss from '@tailwindcss/vite';
 import { sveltekit } from '@sveltejs/kit/vite';
 import { defineConfig, type ViteDevServer } from 'vite';
+import type { IncomingMessage } from 'node:http';
+import type { Duplex } from 'node:stream';
 import mkcert from 'vite-plugin-mkcert';
 
 function wsPlugin() {
@@ -9,8 +11,11 @@ function wsPlugin() {
 		name: 'ws-dev',
 		configureServer(server: ViteDevServer) {
 			server.httpServer?.on('upgrade', (req, socket, head) => {
-				if ((globalThis as any).__wssUpgrade) {
-					(globalThis as any).__wssUpgrade(req, socket, head);
+				const g = globalThis as typeof globalThis & {
+					__wssUpgrade?: (req: IncomingMessage, socket: Duplex, head: Buffer) => void;
+				};
+				if (g.__wssUpgrade) {
+					g.__wssUpgrade(req, socket, head);
 				}
 			});
 		}

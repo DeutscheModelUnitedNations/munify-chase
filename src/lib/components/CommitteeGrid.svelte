@@ -1,11 +1,7 @@
-<script lang="ts">
-	import * as m from '$lib/paraglide/messages.js';
-	import IconInfoBox from './IconInfoBox.svelte';
-	import { getCommitteeStatusIcon, getCommitteeStatusText } from '$lib/utils/committeeStatus';
-	import AdoptionConfetti from './AdoptionConfetti.svelte';
+<script module lang="ts">
 	import type { CommitteestatusEnum } from '$lib/api/rumbleClient/client';
 
-	interface ConferenceData {
+	export interface ConferenceData {
 		id: string;
 		committees: Array<{
 			id: string;
@@ -18,6 +14,13 @@
 			lastResolutionAdoptionDate?: Date | null;
 		}>;
 	}
+</script>
+
+<script lang="ts">
+	import * as m from '$lib/paraglide/messages.js';
+	import IconInfoBox from './IconInfoBox.svelte';
+	import { getCommitteeStatusIcon, getCommitteeStatusText } from '$lib/utils/committeeStatus';
+	import AdoptionConfetti from './AdoptionConfetti.svelte';
 
 	interface Props {
 		conference: ConferenceData;

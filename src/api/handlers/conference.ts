@@ -2,7 +2,6 @@ import { db, schema } from '$api/db/db';
 import { abilityBuilder, object, query, schemaBuilder, pubsub as rumblePubsub } from '$api/rumble';
 import { ConferenceMemberRef, ConferenceMemberWhereInput } from './conferenceMember';
 import { isAdmin, isGlobalAdmin, isParticipant } from '$api/services/authHelper';
-import { eq } from 'drizzle-orm';
 import { assertFindFirstExists, mapNullFieldsToUndefined } from '@m1212e/rumble';
 import { GraphQLError } from 'graphql';
 
@@ -31,7 +30,7 @@ export const ConferenceRef = object({
 			args: {
 				where: t.arg({ type: ConferenceMemberWhereInput })
 			},
-			resolve: async (query, parent, args, ctx, _info) => {
+			resolve: async (query, parent, args, ctx) => {
 				const touchedRepresentation = new Set<string>();
 				return (
 					await db.query.conferenceMember.findMany(
@@ -77,7 +76,7 @@ schemaBuilder.mutationFields((t) => ({
 			hasModeratedCaucus: t.arg.boolean(),
 			resolutionFeatureEnabled: t.arg.boolean()
 		},
-		resolve: async (query, root, args, ctx, info) => {
+		resolve: async (query, root, args, ctx) => {
 			const mappedArgs = mapNullFieldsToUndefined(args);
 			await db
 				.update(schema.conference)

@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { page } from '$app/state';
 	import { client } from '$lib/api/rumbleClient/client';
-	import CommitteeGrid from '$lib/components/CommitteeGrid.svelte';
+	import CommitteeGrid, { type ConferenceData } from '$lib/components/CommitteeGrid.svelte';
 	import ThemeSwitcher from '$lib/components/ThemeSwitcher.svelte';
 	import CurrentTime from '$lib/components/CurrentTime.svelte';
 	import * as m from '$lib/paraglide/messages.js';
@@ -39,5 +39,5 @@
 </div>
 
 {#if conference}
-	<CommitteeGrid conference={conference as any} />
+	<CommitteeGrid conference={conference as unknown as ConferenceData} />
 {/if}

@@ -13,7 +13,7 @@
 	import * as m from '$lib/paraglide/messages';
 	import { SvelteMap } from 'svelte/reactivity';
 
-	const paper: any = await client.liveQuery.resolutionPaper({
+	const paper = await client.liveQuery.resolutionPaper({
 		__args: { id: page.params.documentId! },
 		id: true,
 		title: true,
@@ -77,6 +77,7 @@
 	});
 
 	let clauseVotes = $derived(paper?.operativeClauseVotes ?? []);
+	type ClauseVote = (typeof clauseVotes)[number];
 	let voteResult = $derived(paper?.voteResult ?? null);
 
 	let resolution = $derived(paper?.content ? migrateResolution(paper.content as Resolution) : null);
@@ -84,7 +85,7 @@
 
 	// Map clauseId → vote for quick lookup
 	let clauseVoteMap = $derived.by(() => {
-		const map = new SvelteMap<string, any>();
+		const map = new SvelteMap<string, ClauseVote>();
 		for (const v of clauseVotes) {
 			map.set(v.clauseId, v);
 		}
@@ -105,7 +106,7 @@
 			undefined,
 		sponsoringDelegations: paper?.sponsors
 			?.map(
-				(s: any) =>
+				(s) =>
 					getTranslatedCountryNameFromAlpha3Code(s.committeeMember?.representation?.alpha3Code) ??
 					s.committeeMember?.representation?.name ??
 					''

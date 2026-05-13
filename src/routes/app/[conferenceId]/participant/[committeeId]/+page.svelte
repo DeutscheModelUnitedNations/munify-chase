@@ -49,7 +49,7 @@
 			}
 		})) ?? [];
 
-	const committee: any = await client.liveQuery.committee({
+	const committee = await client.liveQuery.committee({
 		__args: { id: page.params.committeeId! },
 		id: true,
 		name: true,
@@ -115,10 +115,10 @@
 	);
 
 	const speakersList = $derived(
-		committee?.activeAgendaItem?.speakersList?.find((sl: any) => sl.type === 'SPEAKERS_LIST')
+		committee?.activeAgendaItem?.speakersList?.find((sl) => sl.type === 'SPEAKERS_LIST')
 	);
 	const commentList = $derived(
-		committee?.activeAgendaItem?.speakersList?.find((sl: any) => sl.type === 'COMMENT_LIST')
+		committee?.activeAgendaItem?.speakersList?.find((sl) => sl.type === 'COMMENT_LIST')
 	);
 
 	// Self-add logic
@@ -129,7 +129,7 @@
 	function findMyPositionOnList(list: typeof speakersList): number | null {
 		if (!list?.speakers) return null;
 		const speaker = list.speakers.find(
-			(s: any) =>
+			(s) =>
 				(myCommitteeMemberId && s.committeeMember?.id === myCommitteeMemberId) ||
 				(myConferenceMemberId && s.conferenceMember?.id === myConferenceMemberId)
 		);

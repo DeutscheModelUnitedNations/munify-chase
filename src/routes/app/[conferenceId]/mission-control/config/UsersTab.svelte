@@ -295,6 +295,7 @@
 		if (!confirm(m.confirmRemoveMember())) return;
 
 		await toast.promise(
+			// eslint-disable-next-line @typescript-eslint/no-explicit-any -- rumble generator types delete mutations as plain `Boolean` instead of callable functions
 			(client.mutate.deleteConferenceUser as any)({ __args: { id } } as any),
 			promiseToastStrings(m.member(), 'delete')
 		);
@@ -417,7 +418,7 @@
 							<td>
 								{#if getAssignmentRepresentation(user)}
 									<div class="flex items-center gap-2">
-										<Flag representation={getAssignmentRepresentation(user) as any} size="xs" />
+										<Flag representation={getAssignmentRepresentation(user)} size="xs" />
 										<span>{getAssignmentText(user)}</span>
 									</div>
 								{:else if isAssignableRole(user.conferenceUserType)}

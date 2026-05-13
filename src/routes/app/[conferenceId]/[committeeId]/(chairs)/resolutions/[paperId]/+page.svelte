@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { m } from '$lib/paraglide/messages';
 	import { page } from '$app/state';
+	import { resolve } from '$app/paths';
 	import { client } from '$lib/api/rumbleClient/client';
 	import { onMount, untrack } from 'svelte';
 	import { afterNavigate } from '$app/navigation';
@@ -199,6 +200,15 @@
 		})
 	]);
 
+	// Element types inferred from the selected live query result shapes
+	type PaperData = NonNullable<typeof paper>;
+	type SponsorEntry = PaperData['sponsors'][number];
+	type CommitteeData = NonNullable<typeof committee>;
+	type CommitteeMemberEntry = CommitteeData['members'][number];
+	type CommentEntry = NonNullable<typeof allComments>[number];
+	type AmendmentEntry = NonNullable<typeof allAmendments>[number];
+	type AmendmentSponsorEntry = AmendmentEntry['sponsors'][number];
+
 	let myConferenceUserId = $derived(currentUserConferenceUsers?.[0]?.id);
 
 	let voteResult = $derived(allVoteResults?.[0] ?? null);
@@ -206,8 +216,6 @@
 	let editorMode = $state<'edit' | 'preview'>('preview');
 
 	// Y.js-backed collaborative store
-	let yDoc = $state<Y.Doc | null>(null);
-	let provider = $state<WebsocketProvider | null>(null);
 	let store = $state<ResolutionStore | null>(null);
 	let presence = $state<PresenceAdapter | null>(null);
 	let wsSynced = $state(false);
@@ -273,8 +281,6 @@
 			if (prov.wsconnected && !wsConnected) wsConnected = true;
 			if (prov.synced && !wsSynced) wsSynced = true;
 		}, 1000);
-		yDoc = doc;
-		provider = prov;
 		store = s;
 		presence = p;
 		return () => {
@@ -285,8 +291,6 @@
 			s.destroy();
 			prov.destroy();
 			doc.destroy();
-			yDoc = null;
-			provider = null;
 			store = null;
 			presence = null;
 			wsSynced = false;
@@ -412,7 +416,7 @@
 
 	// Group comments by clauseId for inline display
 	let commentsByClauseId = $derived.by(() => {
-		const map = new SvelteMap<string | null, any[]>();
+		const map = new SvelteMap<string | null, CommentEntry[]>();
 		for (const comment of allComments ?? []) {
 			const key = comment.clauseId;
 			if (!map.has(key)) map.set(key, []);
@@ -461,7 +465,12 @@
 	}
 
 	async function onDeleteComment(commentId: string) {
-		await (client.mutate.deleteComment as any)({ __args: { commentId } });
+		// Cast required: rumble generator types scalar-returning mutations as plain types instead of fns
+		await (
+			client.mutate.deleteComment as unknown as (p: {
+				__args: { commentId: string };
+			}) => Promise<unknown>
+		)({ __args: { commentId } });
 		toast.success(m.commentDeleted());
 	}
 
@@ -474,7 +483,8 @@
 
 	let availableMembers = $derived(
 		(committee?.members ?? []).filter(
-			(member: any) => !paper?.sponsors.some((s: any) => s.committeeMemberId === member.id)
+			(member: CommitteeMemberEntry) =>
+				!paper?.sponsors.some((s: SponsorEntry) => s.committeeMemberId === member.id)
 		)
 	);
 
@@ -494,13 +504,13 @@
 
 	let filteredAvailableMembers = $derived(
 		(sponsorSearchQuery
-			? availableMembers.filter((member: any) =>
+			? availableMembers.filter((member: CommitteeMemberEntry) =>
 					getRepresentationName(member.representation)
 						.toLowerCase()
 						.includes(sponsorSearchQuery.toLowerCase())
 				)
 			: availableMembers
-		).sort((a: any, b: any) =>
+		).sort((a: CommitteeMemberEntry, b: CommitteeMemberEntry) =>
 			getRepresentationName(a.representation).localeCompare(getRepresentationName(b.representation))
 		)
 	);
@@ -514,7 +524,11 @@
 	}
 
 	async function handleRemoveSponsor(committeeMemberId: string) {
-		await (client.mutate.removeSponsor as any)({
+		await (
+			client.mutate.removeSponsor as unknown as (p: {
+				__args: { paperId: string; committeeMemberId: string };
+			}) => Promise<unknown>
+		)({
 			__args: { paperId: page.params.paperId!, committeeMemberId }
 		});
 		toast.success(m.sponsorRemoved());
@@ -631,17 +645,21 @@
 
 	let filteredAvailableAmendmentMembers = $derived.by(() => {
 		const existingSponsorIds = new Set(
-			(amendmentSponsorTarget?.sponsors ?? []).map((s: any) => s.committeeMemberId)
+			(amendmentSponsorTarget?.sponsors ?? []).map(
+				(s: AmendmentSponsorEntry) => s.committeeMemberId
+			)
 		);
-		const available = (committee?.members ?? []).filter((m: any) => !existingSponsorIds.has(m.id));
+		const available = (committee?.members ?? []).filter(
+			(member: CommitteeMemberEntry) => !existingSponsorIds.has(member.id)
+		);
 		const filtered = amendmentSponsorSearchQuery
-			? available.filter((member: any) =>
+			? available.filter((member: CommitteeMemberEntry) =>
 					getRepresentationName(member.representation)
 						.toLowerCase()
 						.includes(amendmentSponsorSearchQuery.toLowerCase())
 				)
 			: available;
-		return filtered.sort((a: any, b: any) =>
+		return filtered.sort((a: CommitteeMemberEntry, b: CommitteeMemberEntry) =>
 			getRepresentationName(a.representation).localeCompare(getRepresentationName(b.representation))
 		);
 	});
@@ -658,7 +676,11 @@
 	}
 
 	async function handleRemoveAmendmentSponsor(amendmentId: string, committeeMemberId: string) {
-		await (client.mutate.removeAmendmentSponsor as any)({
+		await (
+			client.mutate.removeAmendmentSponsor as unknown as (p: {
+				__args: { amendmentId: string; committeeMemberId: string };
+			}) => Promise<unknown>
+		)({
 			__args: { amendmentId, committeeMemberId }
 		});
 		toast.success(m.sponsorRemoved());
@@ -985,9 +1007,6 @@
 	);
 
 	let votedClauseCount = $derived((clauseVotes ?? []).length);
-	let allClausesVoted = $derived(
-		operativeClauses.length > 0 && votedClauseCount >= operativeClauses.length
-	);
 
 	// Clause vote modal state
 	let showClauseOutcomeModal = $state(false);
@@ -1099,7 +1118,11 @@
 
 	async function handleDeleteClauseVote(clauseId: string) {
 		try {
-			await (client.mutate.deleteClauseVote as any)({
+			await (
+				client.mutate.deleteClauseVote as unknown as (p: {
+					__args: { paperId: string; clauseId: string };
+				}) => Promise<unknown>
+			)({
 				__args: { paperId: page.params.paperId!, clauseId }
 			});
 			toast.success(m.clauseVoteDeleted());
@@ -1172,7 +1195,13 @@
 	<div class="mx-auto flex max-w-4xl flex-col px-4">
 		<!-- Back button + save status -->
 		<div class="flex items-center justify-between py-2">
-			<a href="./." class="btn btn-ghost btn-sm">
+			<a
+				href={resolve('/app/[conferenceId]/[committeeId]/(chairs)/resolutions', {
+					conferenceId: page.params.conferenceId!,
+					committeeId: page.params.committeeId!
+				})}
+				class="btn btn-ghost btn-sm"
+			>
 				<i class="fa-duotone fa-arrow-left mr-1"></i>
 				{m.backToResolutions()}
 			</a>
@@ -1191,7 +1220,7 @@
 					</span>
 				{/if}
 				<a
-					href="/app/print/{paper.id}"
+					href={resolve('/app/print/[documentId]', { documentId: paper.id })}
 					target="_blank"
 					class="btn btn-ghost btn-sm"
 					title={m.printResolution()}
@@ -1247,6 +1276,7 @@
 								<Flag representation={sponsor.committeeMember?.representation} size="xs" />
 								<button
 									class="absolute -top-1 -right-1 btn btn-circle btn-xs btn-error opacity-0 group-hover:opacity-100 transition-opacity"
+									aria-label={m.removeSponsor()}
 									onclick={() => handleRemoveSponsor(sponsor.committeeMemberId)}
 								>
 									<i class="fas fa-times text-[0.5rem]"></i>
@@ -1255,6 +1285,7 @@
 						{/each}
 						<button
 							class="btn btn-ghost btn-xs"
+							aria-label={m.addSponsor()}
 							onclick={() => {
 								sponsorSearchQuery = '';
 								showAddSponsorModal = true;
@@ -1483,6 +1514,7 @@
 					<div class="flex items-center gap-1">
 						<button
 							class="btn btn-ghost btn-sm"
+							aria-label={m.previousParagraph()}
 							disabled={currentOpIndex <= 0}
 							onclick={async () => {
 								if (!committee) return;
@@ -1527,7 +1559,7 @@
 					<p class="text-base-content/50 text-sm">{m.noAmendments()}</p>
 				{:else}
 					<div class="flex flex-col gap-3">
-						{#each groupedAmendments as group}
+						{#each groupedAmendments as group (group.label)}
 							<div>
 								<h4
 									class="text-sm font-bold mb-1 {group.index === currentOpIndex
@@ -1647,6 +1679,7 @@
 															/>
 															<button
 																class="absolute -top-1 -right-1 btn btn-circle btn-xs btn-error opacity-0 group-hover:opacity-100 transition-opacity"
+																aria-label={m.removeSponsor()}
 																onclick={() =>
 																	handleRemoveAmendmentSponsor(
 																		amendment.id,
@@ -1659,6 +1692,7 @@
 													{/each}
 													<button
 														class="btn btn-ghost btn-xs"
+														aria-label={m.addSponsor()}
 														onclick={() => {
 															amendmentSponsorTargetId = amendment.id;
 															amendmentSponsorSearchQuery = '';
@@ -1968,7 +2002,11 @@
 	<Modal bind:open={showAddSponsorModal}>
 		<div class="flex items-center justify-between mb-4">
 			<h3 class="font-bold text-lg">{m.addSponsor()}</h3>
-			<button class="btn btn-ghost btn-sm" onclick={() => (showAddSponsorModal = false)}>
+			<button
+				class="btn btn-ghost btn-sm"
+				aria-label={m.close()}
+				onclick={() => (showAddSponsorModal = false)}
+			>
 				<i class="fas fa-times"></i>
 			</button>
 		</div>
@@ -2000,7 +2038,11 @@
 	<Modal bind:open={showAmendmentSponsorModal}>
 		<div class="flex items-center justify-between mb-4">
 			<h3 class="font-bold text-lg">{m.addSponsor()}</h3>
-			<button class="btn btn-ghost btn-sm" onclick={() => (showAmendmentSponsorModal = false)}>
+			<button
+				class="btn btn-ghost btn-sm"
+				aria-label={m.close()}
+				onclick={() => (showAmendmentSponsorModal = false)}
+			>
 				<i class="fas fa-times"></i>
 			</button>
 		</div>

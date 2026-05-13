@@ -1,5 +1,5 @@
 <script lang="ts">
-	import CommitteeGrid from '$lib/components/CommitteeGrid.svelte';
+	import CommitteeGrid, { type ConferenceData } from '$lib/components/CommitteeGrid.svelte';
 	import CurrentTime from '$lib/components/CurrentTime.svelte';
 	import * as m from '$lib/paraglide/messages.js';
 	import NavbarBurgerMenu from '$lib/components/NavbarBurgerMenu.svelte';
@@ -86,5 +86,5 @@
 </div>
 
 {#if conference}
-	<CommitteeGrid conference={conference as any} environment="TEAM" />
+	<CommitteeGrid conference={conference as unknown as ConferenceData} environment="TEAM" />
 {/if}

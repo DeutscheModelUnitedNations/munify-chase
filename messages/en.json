@@ -208,6 +208,7 @@
 	"deleteConferenceWarning": "This action is irreversible. All data associated with this conference will be permanently deleted.",
 	"deletePaper": "Delete Paper",
 	"deleteRepresentation": "Remove Delegation",
+	"deleteShareCode": "Delete share code",
 	"displayRegionalGroups": "Display Regional Blocs",
 	"documentLevelComments": "Document Comments",
 	"documentNumber": "Document Number",

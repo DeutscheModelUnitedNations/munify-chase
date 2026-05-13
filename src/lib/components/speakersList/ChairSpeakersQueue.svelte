@@ -10,8 +10,34 @@
 	import toast from 'svelte-french-toast';
 	import { promiseToastStrings } from '$lib/utils/toast';
 
+	type Speaker = {
+		id: string;
+		position: number;
+		overwriteName?: string | null;
+		committeeMember?: {
+			id: string;
+			representation?: {
+				name?: string | null;
+				alpha2Code?: string | null;
+				alpha3Code?: string | null;
+				faIcon?: string | null;
+				type?: string | null;
+			} | null;
+		} | null;
+		conferenceMember?: {
+			id: string;
+			representation?: {
+				name?: string | null;
+				alpha2Code?: string | null;
+				alpha3Code?: string | null;
+				faIcon?: string | null;
+				type?: string | null;
+			} | null;
+		} | null;
+	};
+
 	interface Props {
-		rawSpeakers?: any[];
+		rawSpeakers?: Speaker[];
 		closed?: boolean;
 	}
 

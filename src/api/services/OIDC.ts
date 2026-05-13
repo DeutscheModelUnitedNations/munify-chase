@@ -4,27 +4,49 @@ import { configPrivate } from '$config/private';
 import { configPublic } from '$config/public';
 import { makeOIDC } from '@m1212e/sveltekit-oidc';
 
+type NormalizedOIDCClaims = {
+	sub: string;
+	email?: string;
+	locale?: string;
+	preferred_username?: string;
+	given_name?: string;
+	family_name?: string;
+};
+
+function asString(value: unknown): string | undefined {
+	return typeof value === 'string' ? value : undefined;
+}
+
 /**
  * Normalize OIDC claims from different providers into a consistent shape.
  * Logto uses `username` instead of `preferred_username` and `name` instead of `family_name`/`given_name`.
  */
-function normalizeOIDCClaims(claims: Record<string, any>): Record<string, any> {
-	const normalized = { ...claims };
+function normalizeOIDCClaims(claims: Record<string, unknown>): NormalizedOIDCClaims {
+	const normalized: NormalizedOIDCClaims = {
+		sub: asString(claims.sub) ?? '',
+		email: asString(claims.email),
+		locale: asString(claims.locale),
+		preferred_username: asString(claims.preferred_username),
+		given_name: asString(claims.given_name),
+		family_name: asString(claims.family_name)
+	};
 
 	// Logto: username → preferred_username
-	if (!normalized.preferred_username && normalized.username) {
-		normalized.preferred_username = normalized.username;
+	if (!normalized.preferred_username) {
+		const username = asString(claims.username);
+		if (username) normalized.preferred_username = username;
 	}
 
 	// Logto: name → family_name + given_name (split on last space)
-	if ((!normalized.family_name || !normalized.given_name) && normalized.name) {
-		const parts = normalized.name.trim().split(/\s+/);
+	const name = asString(claims.name);
+	if ((!normalized.family_name || !normalized.given_name) && name) {
+		const parts = name.trim().split(/\s+/);
 		if (parts.length >= 2) {
 			normalized.given_name = parts.slice(0, -1).join(' ');
 			normalized.family_name = parts[parts.length - 1];
 		} else {
-			normalized.given_name = normalized.name;
-			normalized.family_name = normalized.name;
+			normalized.given_name = name;
+			normalized.family_name = name;
 		}
 	}
 
@@ -49,7 +71,7 @@ export const OIDC = !building
 					.values({
 						id: normalized.sub,
 						locale: normalized.locale ?? configPublic.PUBLIC_DEFAULT_LOCALE,
-						preferredUsername: normalized.preferred_username ?? normalized.email,
+						preferredUsername: normalized.preferred_username ?? normalized.email!,
 						email: normalized.email!,
 						familyName: normalized.family_name ?? '',
 						givenName: normalized.given_name ?? ''
@@ -58,7 +80,7 @@ export const OIDC = !building
 						target: schema.user.id,
 						set: {
 							locale: normalized.locale ?? configPublic.PUBLIC_DEFAULT_LOCALE,
-							preferredUsername: normalized.preferred_username ?? normalized.email,
+							preferredUsername: normalized.preferred_username ?? normalized.email!,
 							email: normalized.email!,
 							familyName: normalized.family_name ?? '',
 							givenName: normalized.given_name ?? ''

@@ -3,6 +3,7 @@
 	import { m } from '$lib/paraglide/messages';
 	import { page } from '$app/state';
 	import { goto } from '$app/navigation';
+	import { resolve } from '$app/paths';
 	import { client } from '$lib/api/rumbleClient/client';
 	import { getCurrentUser } from '$lib/state/currentUser.svelte';
 	import {
@@ -53,110 +54,91 @@
 		})) ?? [];
 
 	// Live queries
-	const [paper, allComments, allAmendments, clauseVotes, voteResults, committeeData]: [
-		any,
-		any,
-		any,
-		any,
-		any,
-		any
-	] = await Promise.all([
-		client.liveQuery.resolutionPaper({
-			__args: { id: page.params.paperId! },
-			id: true,
-			title: true,
-			status: true,
-			documentNumber: true,
-			creatorCommitteeMemberId: true,
-			updatedAt: true,
-			creator: {
+	const [paper, allComments, allAmendments, clauseVotes, voteResults, committeeData] =
+		await Promise.all([
+			client.liveQuery.resolutionPaper({
+				__args: { id: page.params.paperId! },
 				id: true,
-				representation: {
-					id: true,
-					name: true,
-					alpha3Code: true,
-					alpha2Code: true,
-					faIcon: true
-				}
-			},
-			sponsors: {
-				id: true,
-				committeeMemberId: true,
-				committeeMember: {
+				title: true,
+				status: true,
+				documentNumber: true,
+				creatorCommitteeMemberId: true,
+				updatedAt: true,
+				creator: {
 					id: true,
 					representation: {
 						id: true,
 						name: true,
 						alpha3Code: true,
 						alpha2Code: true,
-						faIcon: true
-					}
-				}
-			},
-			shareCodes: {
-				id: true,
-				code: true,
-				permission: true
-			},
-			editors: {
-				id: true,
-				conferenceUserId: true
-			}
-		}),
-		client.liveQuery.resolutionComments({
-			__args: { where: { paperId: page.params.paperId } },
-			id: true,
-			clauseId: true,
-			content: true,
-			visibility: true,
-			parentCommentId: true,
-			createdAt: true,
-			updatedAt: true,
-			author: {
-				id: true,
-				user: {
-					givenName: true,
-					familyName: true
-				},
-				committeeMember: {
-					id: true,
-					representation: {
-						id: true,
-						name: true,
-						alpha2Code: true,
-						alpha3Code: true,
 						faIcon: true
 					}
 				},
-				conferenceUserType: true
-			}
-		}),
-		client.liveQuery.amendments({
-			__args: { where: { paperId: page.params.paperId } },
-			id: true,
-			type: true,
-			status: true,
-			documentNumber: true,
-			targetClauseId: true,
-			targetOperativeIndex: true,
-			targetPosition: true,
-			newContent: true,
-			proposerCommitteeMemberId: true,
-			createdAt: true,
-			proposer: {
-				id: true,
-				representation: {
+				sponsors: {
 					id: true,
-					name: true,
-					alpha2Code: true,
-					alpha3Code: true,
-					faIcon: true
+					committeeMemberId: true,
+					committeeMember: {
+						id: true,
+						representation: {
+							id: true,
+							name: true,
+							alpha3Code: true,
+							alpha2Code: true,
+							faIcon: true
+						}
+					}
+				},
+				shareCodes: {
+					id: true,
+					code: true,
+					permission: true
+				},
+				editors: {
+					id: true,
+					conferenceUserId: true
 				}
-			},
-			sponsors: {
+			}),
+			client.liveQuery.resolutionComments({
+				__args: { where: { paperId: page.params.paperId } },
 				id: true,
-				committeeMemberId: true,
-				committeeMember: {
+				clauseId: true,
+				content: true,
+				visibility: true,
+				parentCommentId: true,
+				createdAt: true,
+				updatedAt: true,
+				author: {
+					id: true,
+					user: {
+						givenName: true,
+						familyName: true
+					},
+					committeeMember: {
+						id: true,
+						representation: {
+							id: true,
+							name: true,
+							alpha2Code: true,
+							alpha3Code: true,
+							faIcon: true
+						}
+					},
+					conferenceUserType: true
+				}
+			}),
+			client.liveQuery.amendments({
+				__args: { where: { paperId: page.params.paperId } },
+				id: true,
+				type: true,
+				status: true,
+				documentNumber: true,
+				targetClauseId: true,
+				targetOperativeIndex: true,
+				targetPosition: true,
+				newContent: true,
+				proposerCommitteeMemberId: true,
+				createdAt: true,
+				proposer: {
 					id: true,
 					representation: {
 						id: true,
@@ -165,49 +147,71 @@
 						alpha3Code: true,
 						faIcon: true
 					}
+				},
+				sponsors: {
+					id: true,
+					committeeMemberId: true,
+					committeeMember: {
+						id: true,
+						representation: {
+							id: true,
+							name: true,
+							alpha2Code: true,
+							alpha3Code: true,
+							faIcon: true
+						}
+					}
 				}
-			}
-		}),
-		client.liveQuery.operativeClauseVotes({
-			__args: { where: { paperId: page.params.paperId } },
-			id: true,
-			clauseId: true,
-			outcome: true,
-			votesFor: true,
-			votesAgainst: true,
-			votesAbstain: true
-		}),
-		client.liveQuery.resolutionVoteResults({
-			__args: { where: { paperId: page.params.paperId }, limit: 1 },
-			id: true,
-			outcome: true,
-			votesFor: true,
-			votesAgainst: true,
-			votesAbstain: true
-		}),
-		client.liveQuery.committee({
-			__args: { id: page.params.committeeId! },
-			id: true,
-			abbreviation: true,
-			name: true,
-			resolutionHeadline: true,
-			supportReEvaluationOpen: true,
-			activeDraftResolutionId: true,
-			amendmentSubmissionOpen: true,
-			amendmentSponsoringOpen: true,
-			totalPresent: true,
-			currentOperativeIndex: true,
-			activeAmendmentId: true,
-			conference: {
+			}),
+			client.liveQuery.operativeClauseVotes({
+				__args: { where: { paperId: page.params.paperId } },
 				id: true,
-				title: true
-			},
-			activeAgendaItem: {
+				clauseId: true,
+				outcome: true,
+				votesFor: true,
+				votesAgainst: true,
+				votesAbstain: true
+			}),
+			client.liveQuery.resolutionVoteResults({
+				__args: { where: { paperId: page.params.paperId }, limit: 1 },
 				id: true,
-				title: true
-			}
-		})
-	]);
+				outcome: true,
+				votesFor: true,
+				votesAgainst: true,
+				votesAbstain: true
+			}),
+			client.liveQuery.committee({
+				__args: { id: page.params.committeeId! },
+				id: true,
+				abbreviation: true,
+				name: true,
+				resolutionHeadline: true,
+				supportReEvaluationOpen: true,
+				activeDraftResolutionId: true,
+				amendmentSubmissionOpen: true,
+				amendmentSponsoringOpen: true,
+				totalPresent: true,
+				currentOperativeIndex: true,
+				activeAmendmentId: true,
+				conference: {
+					id: true,
+					title: true
+				},
+				activeAgendaItem: {
+					id: true,
+					title: true
+				}
+			})
+		]);
+
+	// Element types inferred from the selected live query result shapes
+	type PaperData = NonNullable<typeof paper>;
+	type SponsorEntry = PaperData['sponsors'][number];
+	type EditorEntry = PaperData['editors'][number];
+	type AmendmentEntry = NonNullable<typeof allAmendments>[number];
+	type AmendmentSponsorEntry = AmendmentEntry['sponsors'][number];
+	type ClauseVoteEntry = NonNullable<typeof clauseVotes>[number];
+	type CommentEntry = NonNullable<typeof allComments>[number];
 
 	let committee = $derived(committeeData);
 
@@ -219,17 +223,17 @@
 	// Access control
 	let isCreator = $derived(paper?.creatorCommitteeMemberId === myCommitteeMemberId);
 	let isEditor = $derived(
-		paper?.editors.some((e: any) => e.conferenceUserId === myConferenceUserId)
+		paper?.editors.some((e: EditorEntry) => e.conferenceUserId === myConferenceUserId)
 	);
 	let canEdit = $derived((isCreator || isEditor) && paper?.status === 'WORKING_PAPER');
 	let canSubmit = $derived(isCreator && paper?.status === 'WORKING_PAPER');
 	let canManageShareCodes = $derived(isCreator);
 	let canSponsor = $derived(isDelegate);
 	let isSponsor = $derived(
-		paper?.sponsors.some((s: any) => s.committeeMemberId === myCommitteeMemberId)
+		paper?.sponsors.some((s: SponsorEntry) => s.committeeMemberId === myCommitteeMemberId)
 	);
 	let sortedSponsors = $derived(
-		[...(paper?.sponsors ?? [])].sort((a: any, b: any) => {
+		[...(paper?.sponsors ?? [])].sort((a: SponsorEntry, b: SponsorEntry) => {
 			const nameA =
 				a.committeeMember?.representation?.name ??
 				getTranslatedCountryNameFromAlpha3Code(a.committeeMember?.representation?.alpha3Code) ??
@@ -258,8 +262,6 @@
 	let showComments = $derived(paper?.status !== 'WORKING_PAPER');
 
 	// Y.js-backed collaborative store
-	let yDoc = $state<Y.Doc | null>(null);
-	let provider = $state<WebsocketProvider | null>(null);
 	let store = $state<ResolutionStore | null>(null);
 	let presence = $state<PresenceAdapter | null>(null);
 	let wsSynced = $state(false);
@@ -332,8 +334,6 @@
 			if (prov.wsconnected && !wsConnected) wsConnected = true;
 			if (prov.synced && !wsSynced) wsSynced = true;
 		}, 1000);
-		yDoc = doc;
-		provider = prov;
 		store = s;
 		presence = p;
 		return () => {
@@ -344,8 +344,6 @@
 			s.destroy();
 			prov.destroy();
 			doc.destroy();
-			yDoc = null;
-			provider = null;
 			store = null;
 			presence = null;
 			wsSynced = false;
@@ -378,7 +376,7 @@
 			undefined,
 		sponsoringDelegations: paper?.sponsors
 			?.map(
-				(s: any) =>
+				(s: SponsorEntry) =>
 					getTranslatedCountryNameFromAlpha3Code(s.committeeMember?.representation?.alpha3Code) ??
 					s.committeeMember?.representation?.name ??
 					''
@@ -439,10 +437,20 @@
 
 	async function handleDelete() {
 		try {
-			await (client.mutate.softDeletePaper as any)({ __args: { paperId: page.params.paperId! } });
+			// Cast required: rumble generator types scalar-returning mutations as plain types instead of fns
+			await (
+				client.mutate.softDeletePaper as unknown as (p: {
+					__args: { paperId: string };
+				}) => Promise<unknown>
+			)({ __args: { paperId: page.params.paperId! } });
 			showDeleteModal = false;
 			toast.success(m.paperDeleted());
-			goto(`/app/${page.params.conferenceId}/participant/${page.params.committeeId}/papers`);
+			goto(
+				resolve('/app/[conferenceId]/participant/[committeeId]/papers', {
+					conferenceId: page.params.conferenceId!,
+					committeeId: page.params.committeeId!
+				})
+			);
 		} catch {
 			toast.error(m.saveError());
 		}
@@ -453,7 +461,11 @@
 		if (!myCommitteeMemberId) return;
 		try {
 			if (isSponsor) {
-				await (client.mutate.removeSponsor as any)({
+				await (
+					client.mutate.removeSponsor as unknown as (p: {
+						__args: { paperId: string; committeeMemberId: string };
+					}) => Promise<unknown>
+				)({
 					__args: { paperId: page.params.paperId!, committeeMemberId: myCommitteeMemberId }
 				});
 			} else {
@@ -482,7 +494,11 @@
 
 	async function handleDeleteShareCode(shareCodeId: string) {
 		try {
-			await (client.mutate.deleteShareCode as any)({ __args: { shareCodeId } });
+			await (
+				client.mutate.deleteShareCode as unknown as (p: {
+					__args: { shareCodeId: string };
+				}) => Promise<unknown>
+			)({ __args: { shareCodeId } });
 		} catch {
 			toast.error(m.saveError());
 		}
@@ -498,7 +514,7 @@
 	// =====================================================
 
 	let commentsByClauseId = $derived.by(() => {
-		const map = new SvelteMap<string | null, any[]>();
+		const map = new SvelteMap<string | null, CommentEntry[]>();
 		for (const comment of allComments ?? []) {
 			const key = comment.clauseId;
 			if (!map.has(key)) map.set(key, []);
@@ -533,7 +549,11 @@
 	}
 
 	async function onDeleteComment(commentId: string) {
-		await (client.mutate.deleteComment as any)({ __args: { commentId } });
+		await (
+			client.mutate.deleteComment as unknown as (p: {
+				__args: { commentId: string };
+			}) => Promise<unknown>
+		)({ __args: { commentId } });
 		toast.success(m.commentDeleted());
 	}
 
@@ -555,16 +575,17 @@
 
 	let myAmendments = $derived(
 		(allAmendments ?? []).filter(
-			(a: any) => a.proposerCommitteeMemberId === myCommitteeMemberId && a.status === 'SUBMITTED'
+			(a: AmendmentEntry) =>
+				a.proposerCommitteeMemberId === myCommitteeMemberId && a.status === 'SUBMITTED'
 		)
 	);
 
 	let mySponsoredAmendments = $derived(
 		(allAmendments ?? []).filter(
-			(a: any) =>
+			(a: AmendmentEntry) =>
 				a.proposerCommitteeMemberId !== myCommitteeMemberId &&
 				a.status === 'SUBMITTED' &&
-				a.sponsors?.some((s: any) => s.committeeMemberId === myCommitteeMemberId)
+				a.sponsors?.some((s: AmendmentSponsorEntry) => s.committeeMemberId === myCommitteeMemberId)
 		)
 	);
 
@@ -572,11 +593,11 @@
 
 	let amendmentOverlays = $derived.by(() => {
 		const visible = (allAmendments ?? []).filter(
-			(a: any) =>
+			(a: AmendmentEntry) =>
 				a.status === 'SUBMITTED' || a.status === 'CONSENSUS_ADOPTED' || a.status === 'ACCEPTED'
 		);
 		return visible.map(
-			(a: any) =>
+			(a: AmendmentEntry) =>
 				({
 					id: a.id,
 					type: a.type,
@@ -707,11 +728,13 @@
 	let voteResult = $derived((voteResults ?? [])[0] ?? null);
 
 	let rejectedClauseIds = $derived(
-		(clauseVotes ?? []).filter((v: any) => v.outcome === 'REJECTED').map((v: any) => v.clauseId)
+		(clauseVotes ?? [])
+			.filter((v: ClauseVoteEntry) => v.outcome === 'REJECTED')
+			.map((v: ClauseVoteEntry) => v.clauseId)
 	);
 
 	let clauseVoteMap = $derived.by(() => {
-		const map = new SvelteMap<string, any>();
+		const map = new SvelteMap<string, ClauseVoteEntry>();
 		for (const v of clauseVotes ?? []) {
 			map.set(v.clauseId, v);
 		}
@@ -728,7 +751,10 @@
 		<!-- Back button + save status -->
 		<div class="flex items-center justify-between py-2">
 			<a
-				href="/app/{page.params.conferenceId}/participant/{page.params.committeeId}/papers"
+				href={resolve('/app/[conferenceId]/participant/[committeeId]/papers', {
+					conferenceId: page.params.conferenceId!,
+					committeeId: page.params.committeeId!
+				})}
 				class="btn btn-ghost btn-sm"
 			>
 				<i class="fa-duotone fa-arrow-left mr-1"></i>
@@ -749,12 +775,16 @@
 					</span>
 				{/if}
 				{#if canDelete}
-					<button class="btn btn-ghost btn-sm text-error" onclick={() => (showDeleteModal = true)}>
+					<button
+						class="btn btn-ghost btn-sm text-error"
+						aria-label={m.deletePaper()}
+						onclick={() => (showDeleteModal = true)}
+					>
 						<i class="fas fa-trash"></i>
 					</button>
 				{/if}
 				<a
-					href="/app/print/{paper.id}"
+					href={resolve('/app/print/[documentId]', { documentId: paper.id })}
 					target="_blank"
 					class="btn btn-ghost btn-sm"
 					title={m.printResolution()}
@@ -819,7 +849,7 @@
 				<!-- Sponsors -->
 				<Fieldset legend={m.sponsors()} faIcon="fas fa-users">
 					<div class="flex flex-wrap gap-2">
-						{#each sortedSponsors as sponsor}
+						{#each sortedSponsors as sponsor (sponsor.id)}
 							<div
 								class="tooltip tooltip-bottom"
 								data-tip={sponsor.committeeMember?.representation?.name ??
@@ -869,7 +899,7 @@
 					<Fieldset legend={m.shareCodes()} faIcon="fas fa-share-nodes">
 						{#if paper.shareCodes.length > 0}
 							<div class="flex flex-col gap-2">
-								{#each paper.shareCodes as shareCode}
+								{#each paper.shareCodes as shareCode (shareCode.id)}
 									<div class="flex items-center gap-2">
 										<code class="bg-base-300 rounded px-2 py-1 text-sm font-mono"
 											>{shareCode.code}</code
@@ -883,12 +913,14 @@
 										</span>
 										<button
 											class="btn btn-ghost btn-xs"
+											aria-label={m.copyCode()}
 											onclick={() => copyToClipboard(shareCode.code)}
 										>
 											<i class="fas fa-copy"></i>
 										</button>
 										<button
 											class="btn btn-ghost btn-xs text-error"
+											aria-label={m.deleteShareCode()}
 											onclick={() => handleDeleteShareCode(shareCode.id)}
 										>
 											<i class="fas fa-trash"></i>
@@ -1094,7 +1126,7 @@
 							/>
 						{/if}
 					{/snippet}
-					{#snippet afterOperativeClause({ clause, index })}
+					{#snippet afterOperativeClause({ clause })}
 						{#if showComments && !canEdit}
 							<CommentSection
 								paperId={page.params.paperId!}
@@ -1231,10 +1263,12 @@
 
 			<!-- Submitted amendments from others that I can sponsor -->
 			{@const otherPendingAmendments = (allAmendments ?? []).filter(
-				(a: any) =>
+				(a: AmendmentEntry) =>
 					a.status === 'SUBMITTED' &&
 					a.proposerCommitteeMemberId !== myCommitteeMemberId &&
-					!a.sponsors?.some((s: any) => s.committeeMemberId === myCommitteeMemberId)
+					!a.sponsors?.some(
+						(s: AmendmentSponsorEntry) => s.committeeMemberId === myCommitteeMemberId
+					)
 			)}
 			{#if otherPendingAmendments.length > 0 && isDelegate && committee?.amendmentSponsoringOpen}
 				<Fieldset legend={m.amendments()} faIcon="fas fa-handshake">

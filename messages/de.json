@@ -208,6 +208,7 @@
 	"deleteConferenceWarning": "Diese Aktion ist unwiderruflich. Alle Daten dieser Konferenz werden dauerhaft gelöscht.",
 	"deletePaper": "Papier löschen",
 	"deleteRepresentation": "Delegation entfernen",
+	"deleteShareCode": "Freigabecode löschen",
 	"displayRegionalGroups": "Regionalgruppenanzeige",
 	"documentLevelComments": "Dokumentkommentare",
 	"documentNumber": "Dokumentennummer",

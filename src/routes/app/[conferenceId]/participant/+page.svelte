@@ -4,7 +4,7 @@
 	import { page } from '$app/state';
 	import { client } from '$lib/api/rumbleClient/client';
 	import { getCurrentUser } from '$lib/state/currentUser.svelte';
-	import CommitteeGrid from '$lib/components/CommitteeGrid.svelte';
+	import CommitteeGrid, { type ConferenceData } from '$lib/components/CommitteeGrid.svelte';
 	import ThemeSwitcher from '$lib/components/ThemeSwitcher.svelte';
 	import ParticipantIdentityCard from './ParticipantIdentityCard.svelte';
 
@@ -114,5 +114,5 @@
 		<ParticipantIdentityCard {representation} />
 	</div>
 
-	<CommitteeGrid conference={conference as any} environment="PARTICIPANT" />
+	<CommitteeGrid conference={conference as unknown as ConferenceData} environment="PARTICIPANT" />
 {/if}

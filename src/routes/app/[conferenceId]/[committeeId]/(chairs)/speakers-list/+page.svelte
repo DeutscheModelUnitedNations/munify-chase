@@ -91,10 +91,10 @@
 	});
 
 	let speakersList = $derived(
-		committee?.activeAgendaItem?.speakersList.find((item: any) => item.type === 'SPEAKERS_LIST')
+		committee?.activeAgendaItem?.speakersList.find((item) => item.type === 'SPEAKERS_LIST')
 	);
 	let commentList = $derived(
-		committee?.activeAgendaItem?.speakersList.find((item: any) => item.type === 'COMMENT_LIST')
+		committee?.activeAgendaItem?.speakersList.find((item) => item.type === 'COMMENT_LIST')
 	);
 </script>
 

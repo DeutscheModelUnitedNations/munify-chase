@@ -6,7 +6,7 @@ import yaml from 'js-yaml';
 import type { SeedData } from './seed-data/schema';
 import * as fs from 'fs';
 import { getCountryData } from './seedUtils';
-import { eq } from 'drizzle-orm';
+import { eq, type InferSelectModel } from 'drizzle-orm';
 
 const db = drizzle(process.env.DATABASE_URL!, {
 	schema: schema,
@@ -57,7 +57,7 @@ try {
 			console.info(`    - ${user.preferredUsername} (${user.conferenceUserType})`);
 		}
 
-		const delegations: Record<string, any> = {};
+		const delegations: Record<string, InferSelectModel<typeof schema.representation>> = {};
 		for (const alpha2Code of conference.committees.flatMap((committee) =>
 			committee.countries.map((country) => country.toLowerCase())
 		)) {

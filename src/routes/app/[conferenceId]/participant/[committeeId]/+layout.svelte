@@ -23,7 +23,7 @@
 	const role = $derived(conferenceUser?.conferenceUserType);
 	const showBack = $derived(role !== 'DELEGATE');
 
-	const committee: any = await client.liveQuery.committee({
+	const committee = await client.liveQuery.committee({
 		__args: { id: page.params.committeeId! },
 		id: true,
 		abbreviation: true,

@@ -301,7 +301,7 @@
 			wsConnected = status === 'connected';
 			if (status !== 'connected') wsSynced = false;
 		};
-		const onClose = (event: CloseEvent) => {
+		const onClose = (event: CloseEvent | null) => {
 			// 4403 = our server's "Forbidden" close code. Stop the reconnect
 			// loop so we don't hammer the server; surface state so the UI can
 			// tell the user to re-auth.
@@ -312,7 +312,7 @@
 				wsSynced = false;
 			}
 		};
-		prov.on('synced', onSynced);
+		prov.on('sync', onSynced);
 		prov.on('status', onStatus);
 		prov.on('connection-close', onClose);
 		// Catch up with any state already established by the time we got here
@@ -338,7 +338,7 @@
 		presence = p;
 		return () => {
 			clearInterval(reconcileInterval);
-			prov.off('synced', onSynced);
+			prov.off('sync', onSynced);
 			prov.off('status', onStatus);
 			prov.off('connection-close', onClose);
 			s.destroy();
@@ -439,7 +439,7 @@
 
 	async function handleDelete() {
 		try {
-			await client.mutate.softDeletePaper({ __args: { paperId: page.params.paperId! } } as any);
+			await (client.mutate.softDeletePaper as any)({ __args: { paperId: page.params.paperId! } });
 			showDeleteModal = false;
 			toast.success(m.paperDeleted());
 			goto(`/app/${page.params.conferenceId}/participant/${page.params.committeeId}/papers`);
@@ -453,9 +453,9 @@
 		if (!myCommitteeMemberId) return;
 		try {
 			if (isSponsor) {
-				await client.mutate.removeSponsor({
+				await (client.mutate.removeSponsor as any)({
 					__args: { paperId: page.params.paperId!, committeeMemberId: myCommitteeMemberId }
-				} as any);
+				});
 			} else {
 				await client.mutate.addSponsor({
 					__args: { paperId: page.params.paperId!, committeeMemberId: myCommitteeMemberId },
@@ -482,7 +482,7 @@
 
 	async function handleDeleteShareCode(shareCodeId: string) {
 		try {
-			await client.mutate.deleteShareCode({ __args: { shareCodeId } } as any);
+			await (client.mutate.deleteShareCode as any)({ __args: { shareCodeId } });
 		} catch {
 			toast.error(m.saveError());
 		}
@@ -533,7 +533,7 @@
 	}
 
 	async function onDeleteComment(commentId: string) {
-		await client.mutate.deleteComment({ __args: { commentId } } as any);
+		await (client.mutate.deleteComment as any)({ __args: { commentId } });
 		toast.success(m.commentDeleted());
 	}
 

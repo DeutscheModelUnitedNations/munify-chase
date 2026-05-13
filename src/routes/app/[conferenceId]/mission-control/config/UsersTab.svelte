@@ -295,7 +295,7 @@
 		if (!confirm(m.confirmRemoveMember())) return;
 
 		await toast.promise(
-			client.mutate.deleteConferenceUser({ __args: { id } } as any),
+			(client.mutate.deleteConferenceUser as any)({ __args: { id } } as any),
 			promiseToastStrings(m.member(), 'delete')
 		);
 	}

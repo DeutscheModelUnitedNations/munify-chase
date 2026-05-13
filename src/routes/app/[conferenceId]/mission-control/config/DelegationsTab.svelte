@@ -80,7 +80,7 @@
 		if (!confirm(m.confirmDeleteRepresentation())) return;
 
 		await toast.promise(
-			client.mutate.deleteRepresentation({ __args: { id } } as any),
+			(client.mutate.deleteRepresentation as any)({ __args: { id } } as any),
 			promiseToastStrings(m.delegations(), 'delete')
 		);
 	}

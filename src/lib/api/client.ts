@@ -11,7 +11,7 @@ import { empty, filter, fromPromise, merge, mergeMap, pipe } from 'wonka';
 import { graphqlMutation, graphqlQuery } from '$api/graphql.remote';
 import { browser } from '$app/environment';
 import { schema } from './rumbleClient/schema';
-import { optimistic } from './optimisticUpdateHandlers';
+import { optimistic, updates } from './optimisticUpdateHandlers';
 import { retryExchange } from '@urql/exchange-retry';
 import { createClient as createWSClient } from 'graphql-ws';
 
@@ -88,7 +88,9 @@ if (browser) {
 	exchanges.push(
 		cacheExchange({
 			schema,
-			optimistic
+			optimistic,
+			updates,
+			broadcastChannel: 'chase-cross-tab-sync'
 		})
 	);
 

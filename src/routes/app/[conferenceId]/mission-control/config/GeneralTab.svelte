@@ -10,6 +10,9 @@
 			id: string;
 			title: string;
 			pressWebsite: string | null;
+			location: string | null;
+			startDate: Date | null;
+			endDate: Date | null;
 			hasModeratedCaucus: boolean;
 			resolutionFeatureEnabled: boolean;
 		};
@@ -19,13 +22,29 @@
 
 	let title = $state('');
 	let pressWebsite = $state('');
+	let location = $state('');
+	let startDate = $state('');
+	let endDate = $state('');
 	let hasModeratedCaucus = $state(false);
 	let resolutionFeatureEnabled = $state(true);
 	let isSaving = $state(false);
 
+	function toDateInputValue(d: Date | string | null | undefined): string {
+		if (!d) return '';
+		const date = d instanceof Date ? d : new Date(d);
+		if (Number.isNaN(date.getTime())) return '';
+		const year = date.getUTCFullYear();
+		const month = String(date.getUTCMonth() + 1).padStart(2, '0');
+		const day = String(date.getUTCDate()).padStart(2, '0');
+		return `${year}-${month}-${day}`;
+	}
+
 	$effect(() => {
 		title = conference.title;
 		pressWebsite = conference.pressWebsite ?? '';
+		location = conference.location ?? '';
+		startDate = toDateInputValue(conference.startDate);
+		endDate = toDateInputValue(conference.endDate);
 		hasModeratedCaucus = conference.hasModeratedCaucus;
 		resolutionFeatureEnabled = conference.resolutionFeatureEnabled;
 	});
@@ -39,6 +58,9 @@
 						id: conference.id,
 						title,
 						pressWebsite: pressWebsite || null,
+						location: location || null,
+						startDate: startDate ? new Date(startDate) : null,
+						endDate: endDate ? new Date(endDate) : null,
 						hasModeratedCaucus,
 						resolutionFeatureEnabled
 					},
@@ -77,6 +99,44 @@
 				placeholder="https://..."
 				bind:value={pressWebsite}
 			/>
+		</div>
+
+		<div class="form-control">
+			<label class="label" for="conference-location">
+				<span class="label-text">{m.conferenceLocation()}</span>
+			</label>
+			<input
+				id="conference-location"
+				type="text"
+				class="input input-bordered w-full"
+				placeholder={m.conferenceLocationPlaceholder()}
+				bind:value={location}
+			/>
+		</div>
+
+		<div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+			<div class="form-control">
+				<label class="label" for="conference-start-date">
+					<span class="label-text">{m.conferenceStartDate()}</span>
+				</label>
+				<input
+					id="conference-start-date"
+					type="date"
+					class="input input-bordered w-full"
+					bind:value={startDate}
+				/>
+			</div>
+			<div class="form-control">
+				<label class="label" for="conference-end-date">
+					<span class="label-text">{m.conferenceEndDate()}</span>
+				</label>
+				<input
+					id="conference-end-date"
+					type="date"
+					class="input input-bordered w-full"
+					bind:value={endDate}
+				/>
+			</div>
 		</div>
 
 		<div class="form-control">

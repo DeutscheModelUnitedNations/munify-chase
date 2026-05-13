@@ -4,7 +4,6 @@ import { importDataSchema } from '$lib/utils/import';
 import { ConferenceRef } from './conference';
 import { GraphQLError } from 'graphql';
 import { isGlobalAdmin } from '$api/services/authHelper';
-import { emailValidation } from '$api/services/emailValidation';
 import { assertFindFirstExists } from '@m1212e/rumble';
 
 const Input = schemaBuilder.inputType('ImportData', {
@@ -12,6 +11,9 @@ const Input = schemaBuilder.inputType('ImportData', {
 	fields: (t) => ({
 		id: t.id({ required: true }),
 		title: t.string({ required: true }),
+		location: t.string(),
+		startDate: t.field({ type: 'Date' }),
+		endDate: t.field({ type: 'Date' }),
 		committees: t.field({
 			type: [
 				schemaBuilder.inputType('ImportDataCommittee', {
@@ -123,7 +125,10 @@ schemaBuilder.mutationFields((t) => ({
 			await db.transaction(async (tx) => {
 				await tx.insert(schema.conference).values({
 					id: data.id,
-					title: data.title
+					title: data.title,
+					location: data.location,
+					startDate: data.startDate,
+					endDate: data.endDate
 				});
 
 				if (data.committees.length > 0) {

@@ -3,6 +3,7 @@ import {
 	pgTable,
 	text,
 	timestamp,
+	date,
 	unique,
 	pgEnum,
 	boolean,
@@ -50,6 +51,9 @@ export const conference = pgTable('conference', {
 	...defaultIdAndTimestamps,
 	title: text().notNull(),
 	pressWebsite: text(),
+	location: text(),
+	startDate: date({ mode: 'date' }),
+	endDate: date({ mode: 'date' }),
 	hasModeratedCaucus: boolean().notNull().default(false),
 	resolutionFeatureEnabled: boolean().notNull().default(true)
 });

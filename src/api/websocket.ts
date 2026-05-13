@@ -1,7 +1,7 @@
 // make sure we register all handlers before generating the schema later
 import '$api/handlers/register';
 
-import { WebSocketServer } from 'ws';
+import { WebSocketServer, type WebSocket as WSWebSocket } from 'ws';
 import type { Socket } from 'node:net';
 import { useServer } from 'graphql-ws/use/ws';
 import { createWs } from './rumble';
@@ -69,7 +69,7 @@ async function authenticateWebSocketRequest(req: IncomingMessage) {
 
 createWs(useServer, {}, gqlWSS);
 
-async function attachLocals(req: IncomingMessage, ws: WebSocket) {
+async function attachLocals(req: IncomingMessage, ws: WSWebSocket) {
 	const locals = await authenticateWebSocketRequest(req);
 	(req as any).locals = locals;
 
@@ -92,7 +92,7 @@ async function attachLocals(req: IncomingMessage, ws: WebSocket) {
 	if (req.url?.startsWith(YJS_PATH_PREFIX)) {
 		const paperId = req.url.slice(YJS_PATH_PREFIX.length).split('?')[0];
 		yjsWSS.handleUpgrade(req, socket, head, (ws) => {
-			attachLocals(req, ws as unknown as WebSocket).then(() => {
+			attachLocals(req, ws).then(() => {
 				const oidc = (req as any).locals?.oidc;
 				const userSub = oidc?.user?.sub as string | undefined;
 				if (!userSub) {

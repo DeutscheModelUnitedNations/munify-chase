@@ -18,7 +18,11 @@
 		id: true,
 		title: true,
 		pressWebsite: true,
+		location: true,
+		startDate: true,
+		endDate: true,
 		hasModeratedCaucus: true,
+		resolutionFeatureEnabled: true,
 		committees: {
 			id: true,
 			name: true,

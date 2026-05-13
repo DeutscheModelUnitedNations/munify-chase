@@ -113,7 +113,7 @@
 		if (!myCommitteeMemberId) return;
 		try {
 			if (currentlySupporting) {
-				await client.mutate.removeSponsor({
+				await (client.mutate.removeSponsor as any)({
 					__args: { paperId, committeeMemberId: myCommitteeMemberId }
 				} as any);
 			} else {

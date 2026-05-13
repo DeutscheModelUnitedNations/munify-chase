@@ -242,7 +242,7 @@
 			wsConnected = status === 'connected';
 			if (status !== 'connected') wsSynced = false;
 		};
-		const onClose = (event: CloseEvent) => {
+		const onClose = (event: CloseEvent | null) => {
 			// 4403 = our server's "Forbidden" close code. Stop the reconnect
 			// loop so we don't hammer the server; surface state so the UI can
 			// tell the user to re-auth.
@@ -253,7 +253,7 @@
 				wsSynced = false;
 			}
 		};
-		prov.on('synced', onSynced);
+		prov.on('sync', onSynced);
 		prov.on('status', onStatus);
 		prov.on('connection-close', onClose);
 		// Catch up with any state already established by the time we got here
@@ -279,7 +279,7 @@
 		presence = p;
 		return () => {
 			clearInterval(reconcileInterval);
-			prov.off('synced', onSynced);
+			prov.off('sync', onSynced);
 			prov.off('status', onStatus);
 			prov.off('connection-close', onClose);
 			s.destroy();
@@ -461,7 +461,7 @@
 	}
 
 	async function onDeleteComment(commentId: string) {
-		await client.mutate.deleteComment({ __args: { commentId } } as any);
+		await (client.mutate.deleteComment as any)({ __args: { commentId } });
 		toast.success(m.commentDeleted());
 	}
 
@@ -514,9 +514,9 @@
 	}
 
 	async function handleRemoveSponsor(committeeMemberId: string) {
-		await client.mutate.removeSponsor({
+		await (client.mutate.removeSponsor as any)({
 			__args: { paperId: page.params.paperId!, committeeMemberId }
-		} as any);
+		});
 		toast.success(m.sponsorRemoved());
 	}
 
@@ -658,9 +658,9 @@
 	}
 
 	async function handleRemoveAmendmentSponsor(amendmentId: string, committeeMemberId: string) {
-		await client.mutate.removeAmendmentSponsor({
+		await (client.mutate.removeAmendmentSponsor as any)({
 			__args: { amendmentId, committeeMemberId }
-		} as any);
+		});
 		toast.success(m.sponsorRemoved());
 	}
 
@@ -1099,9 +1099,9 @@
 
 	async function handleDeleteClauseVote(clauseId: string) {
 		try {
-			await client.mutate.deleteClauseVote({
+			await (client.mutate.deleteClauseVote as any)({
 				__args: { paperId: page.params.paperId!, clauseId }
-			} as any);
+			});
 			toast.success(m.clauseVoteDeleted());
 		} catch {
 			toast.error(m.saveError());

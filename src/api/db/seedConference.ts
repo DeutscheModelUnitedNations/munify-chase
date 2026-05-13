@@ -7,6 +7,7 @@ import type { SeedData } from './seed-data/schema';
 import * as fs from 'fs';
 import { getCountryData } from './seedUtils';
 import { eq, type InferSelectModel } from 'drizzle-orm';
+import { attendanceCode as generateAttendanceCode } from '../../lib/helpers/attendanceCode';
 
 const db = drizzle(process.env.DATABASE_URL!, {
 	schema: schema,
@@ -52,7 +53,9 @@ try {
 			await db.insert(schema.conferenceUser).values({
 				userEmail: user.email,
 				conferenceId: conferenceEntry.id,
-				conferenceUserType: user.conferenceUserType
+				conferenceUserType: user.conferenceUserType,
+				attendanceCode:
+					user.conferenceUserType === 'NON_STATE_ACTOR' ? generateAttendanceCode() : null
 			});
 			console.info(`    - ${user.preferredUsername} (${user.conferenceUserType})`);
 		}

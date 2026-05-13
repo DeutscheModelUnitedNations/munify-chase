@@ -8,10 +8,23 @@ import {
 } from '$api/rumble';
 import { eq } from 'drizzle-orm';
 import { db, schema } from '$api/db/db';
-import { isAdminInConference, isParticipantInConference } from '$api/services/authHelper';
+import {
+	isAdminInConference,
+	isGlobalAdmin,
+	isParticipantInConference
+} from '$api/services/authHelper';
 import { GraphQLError } from 'graphql';
 import { assertFindFirstExists, assertFirstEntryExists } from '@m1212e/rumble';
 import { emailValidation } from '$api/services/emailValidation';
+import { attendanceCode as generateAttendanceCode } from '$lib/helpers/attendanceCode';
+
+// Global admins bypass column restrictions entirely. Without this short-circuit,
+// rumble's mergeFilters intersects the explicit-true sets across rules — the
+// participant rule below hides userEmail/attendanceCode, and that decision wins
+// over the admin rule because the admin rule has no `columns` key to contribute.
+abilityBuilder.conferenceUser.allow('read').when((ctx) => {
+	if (isGlobalAdmin(ctx)) return 'allow';
+});
 
 abilityBuilder.conferenceUser.allow('read').when((ctx) => {
 	return {
@@ -20,20 +33,112 @@ abilityBuilder.conferenceUser.allow('read').when((ctx) => {
 			id: true,
 			conferenceId: true,
 			userEmail: false,
+			name: false,
 			committeeMemberId: true,
 			conferenceMemberId: true,
 			conferenceUserType: true,
+			attendanceCode: false,
 			createdAt: true,
 			updatedAt: true
 		}
 	};
 });
 
-abilityBuilder.conferenceUser.allow(['read', 'update', 'delete']).when((ctx) => {
-	return { where: isAdminInConference(ctx) };
+// Self-read: a logged-in participant can always read their own name + email
+// (needed for participant pages like MyAttendanceTab). Rumble merges column
+// sets across allow('read') rules additively, so this opens up just these
+// columns for the matching row without disturbing the participant rule.
+abilityBuilder.conferenceUser.allow('read').when((ctx) => {
+	try {
+		const user = ctx.mustBeLoggedIn();
+		if (!user.email) return undefined;
+		return {
+			where: { user: { email: user.email } },
+			columns: { name: true, userEmail: true }
+		};
+	} catch {
+		return undefined;
+	}
 });
 
-export const ConferenceUserRef = object({ table: 'conferenceUser' });
+abilityBuilder.conferenceUser.allow(['read', 'update', 'delete']).when((ctx) => {
+	return {
+		where: isAdminInConference(ctx),
+		// Explicit all-columns include so the merge with the participant rule's
+		// hide-list doesn't drop userEmail/attendanceCode for non-global admins.
+		columns: {
+			id: true,
+			conferenceId: true,
+			userEmail: true,
+			name: true,
+			committeeMemberId: true,
+			conferenceMemberId: true,
+			conferenceUserType: true,
+			attendanceCode: true,
+			createdAt: true,
+			updatedAt: true
+		}
+	};
+});
+
+/**
+ * Generate a fresh 6-char attendance code unique within the conference.
+ * Retries on the rare unique collision; throws after 5 attempts.
+ */
+async function pickUniqueAttendanceCode(conferenceId: string) {
+	for (let attempt = 0; attempt < 5; attempt++) {
+		const code = generateAttendanceCode();
+		const existing = await db.query.conferenceUser.findFirst({
+			where: { conferenceId, attendanceCode: code }
+		});
+		if (!existing) return code;
+	}
+	throw new GraphQLError('Could not generate a unique attendance code, please retry');
+}
+
+export const ConferenceUserRef = object({
+	table: 'conferenceUser',
+	adjust: (t) => ({
+		// Override the auto-generated `user` relation to be nullable: rumble
+		// derives non-null from `userEmail.notNull`, but the User row is created
+		// lazily on first OIDC login (services/OIDC.ts), so an imported but
+		// not-yet-redeemed conferenceUser legitimately has no user.
+		user: t.relation('user', { nullable: true }),
+		// Live attendance state derived from the latest nsaPresenceEvent.
+		// Per-row queries here can N+1 on large NSA dashboards; a bulk top-level
+		// query in nsaPresenceEvent.ts is provided for live overview tabs.
+		isCheckedIn: t.boolean({
+			resolve: async (parent) => {
+				const latest = await db.query.nsaPresenceEvent.findFirst({
+					where: { conferenceUserId: parent.id },
+					orderBy: { timestamp: 'desc' }
+				});
+				return latest?.type === 'CHECK_IN';
+			}
+		}),
+		currentCommitteeId: t.string({
+			nullable: true,
+			resolve: async (parent) => {
+				const latest = await db.query.nsaPresenceEvent.findFirst({
+					where: { conferenceUserId: parent.id },
+					orderBy: { timestamp: 'desc' }
+				});
+				return latest?.type === 'CHECK_IN' ? latest.committeeId : null;
+			}
+		}),
+		currentCheckedInSince: t.field({
+			type: 'DateTime',
+			nullable: true,
+			resolve: async (parent) => {
+				const latest = await db.query.nsaPresenceEvent.findFirst({
+					where: { conferenceUserId: parent.id },
+					orderBy: { timestamp: 'desc' }
+				});
+				return latest?.type === 'CHECK_IN' ? latest.timestamp : null;
+			}
+		})
+	})
+});
 
 const pubsub = rumblePubsub({ table: 'conferenceUser' });
 query({ table: 'conferenceUser' });
@@ -44,6 +149,7 @@ schemaBuilder.mutationFields((t) => ({
 		args: {
 			conferenceId: t.arg.id({ required: true }),
 			userEmail: t.arg.string({ required: true }).validate(emailValidation),
+			name: t.arg.string(),
 			conferenceUserType: t.arg({
 				type: enum_({ tsName: 'conferenceUserType' }),
 				required: true
@@ -69,12 +175,20 @@ schemaBuilder.mutationFields((t) => ({
 				throw new GraphQLError(`User already exists in this conference: ${args.userEmail}`);
 			}
 
+			// NSA users get an auto-generated 6-char fallback code printed on their badge.
+			const initialAttendanceCode =
+				args.conferenceUserType === 'NON_STATE_ACTOR'
+					? await pickUniqueAttendanceCode(args.conferenceId)
+					: null;
+
 			const result = await db
 				.insert(schema.conferenceUser)
 				.values({
 					conferenceId: args.conferenceId,
 					userEmail: args.userEmail,
-					conferenceUserType: args.conferenceUserType
+					name: args.name?.trim() || null,
+					conferenceUserType: args.conferenceUserType,
+					attendanceCode: initialAttendanceCode
 				})
 				.returning()
 				.then(assertFirstEntryExists);
@@ -147,7 +261,8 @@ schemaBuilder.mutationFields((t) => ({
 				required: true
 			}),
 			committeeMemberId: t.arg({ type: 'ID' }),
-			conferenceMemberId: t.arg({ type: 'ID' })
+			conferenceMemberId: t.arg({ type: 'ID' }),
+			name: t.arg.string()
 		},
 		resolve: async (query, root, args, ctx) => {
 			const conferenceUser = await db.query.conferenceUser
@@ -214,6 +329,12 @@ schemaBuilder.mutationFields((t) => ({
 				conferenceUserType: args.conferenceUserType
 			};
 
+			// Empty string clears the name (back to email fallback in UI). undefined
+			// means "don't touch".
+			if (args.name !== undefined && args.name !== null) {
+				updateSet.name = args.name.trim() || null;
+			}
+
 			// Auto-clear: when role changes away from DELEGATE, clear committeeMemberId
 			if (args.conferenceUserType !== 'DELEGATE') {
 				updateSet.committeeMemberId = null;
@@ -222,10 +343,20 @@ schemaBuilder.mutationFields((t) => ({
 			}
 
 			// Auto-clear: when role changes away from NON_STATE_ACTOR, clear conferenceMemberId
+			// and the attendanceCode (no longer meaningful for non-NSAs).
 			if (args.conferenceUserType !== 'NON_STATE_ACTOR') {
 				updateSet.conferenceMemberId = null;
-			} else if (args.conferenceMemberId !== undefined) {
-				updateSet.conferenceMemberId = args.conferenceMemberId;
+				if (conferenceUser.attendanceCode) {
+					updateSet.attendanceCode = null;
+				}
+			} else {
+				if (args.conferenceMemberId !== undefined) {
+					updateSet.conferenceMemberId = args.conferenceMemberId;
+				}
+				// Promotion to NSA: ensure the user has an attendance code.
+				if (!conferenceUser.attendanceCode) {
+					updateSet.attendanceCode = await pickUniqueAttendanceCode(conferenceUser.conferenceId);
+				}
 			}
 
 			await db

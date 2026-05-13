@@ -42,6 +42,7 @@
 		users: {
 			id: true,
 			userEmail: true,
+			name: true,
 			conferenceUserType: true,
 			user: {
 				givenName: true,

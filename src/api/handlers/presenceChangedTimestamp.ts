@@ -1,9 +1,15 @@
-import { abilityBuilder } from '$api/rumble';
-import { basics } from './basics';
+import { abilityBuilder, object, query } from '$api/rumble';
+import { isAdminInConference } from '$api/services/authHelper';
 
-const { arg, ref, pubsub, table } = basics('presenceChangedTimestamp');
-
-abilityBuilder.presenceChangedTimestamp.allow(['read']).when(({ mustBeLoggedIn }) => {
-	mustBeLoggedIn();
-	return 'allow';
+abilityBuilder.presenceChangedTimestamp.allow('read').when((ctx) => {
+	return {
+		where: {
+			committeeMember: {
+				committee: isAdminInConference(ctx)
+			}
+		}
+	};
 });
+
+object({ table: 'presenceChangedTimestamp' });
+query({ table: 'presenceChangedTimestamp' });

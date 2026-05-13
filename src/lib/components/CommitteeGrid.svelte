@@ -1,19 +1,29 @@
+<script module lang="ts">
+	import type { CommitteestatusEnum } from '$lib/api/rumbleClient/client';
+
+	export interface ConferenceData {
+		id: string;
+		committees: Array<{
+			id: string;
+			abbreviation: string;
+			name: string;
+			status: CommitteestatusEnum;
+			statusUntil: Date;
+			stateOfDebate?: string | null;
+			activeAgendaItem?: { title?: string | null } | null;
+			lastResolutionAdoptionDate?: Date | null;
+		}>;
+	}
+</script>
+
 <script lang="ts">
-	import * as m from '$lib/paraglide/messages.js';
+	import { resolve } from '$app/paths';
 	import IconInfoBox from './IconInfoBox.svelte';
 	import { getCommitteeStatusIcon, getCommitteeStatusText } from '$lib/utils/committeeStatus';
-	import {
-		type CommitteeOverviewQuery$result,
-		type MissionControlQuery$result,
-		type ParticipantConferenceQuery$result
-	} from '$houdini';
 	import AdoptionConfetti from './AdoptionConfetti.svelte';
 
 	interface Props {
-		conference:
-			| MissionControlQuery$result['findFirstConference']
-			| CommitteeOverviewQuery$result['findFirstConference']
-			| ParticipantConferenceQuery$result['findFirstConference'];
+		conference: ConferenceData;
 		environment?: 'SPECTATOR' | 'TEAM' | 'PARTICIPANT';
 	}
 
@@ -21,17 +31,26 @@
 
 	const getHref = (committeeId: string) => {
 		if (environment === 'TEAM') {
-			return `/app/${conference.id}/${committeeId}/setup`;
+			return resolve('/app/[conferenceId]/[committeeId]/(chairs)/setup', {
+				conferenceId: conference.id,
+				committeeId
+			});
 		} else if (environment === 'PARTICIPANT') {
-			return `/app/${conference.id}/participant/${committeeId}`;
+			return resolve('/app/[conferenceId]/participant/[committeeId]', {
+				conferenceId: conference.id,
+				committeeId
+			});
 		} else {
-			return `/app/${conference.id}/${committeeId}`;
+			return resolve('/app/[conferenceId]/[committeeId]', {
+				conferenceId: conference.id,
+				committeeId
+			});
 		}
 	};
 </script>
 
 <div class="flex h-full w-full flex-wrap gap-4 p-4">
-	{#each conference.committees.sort( (a, b) => a.abbreviation.localeCompare(b.abbreviation) ) as committee}
+	{#each conference.committees.toSorted( (a, b) => a.abbreviation.localeCompare(b.abbreviation) ) as committee (committee.id)}
 		<a
 			class="card bg-base-100 relative min-w-md flex-1 shadow-sm transition-all duration-300 ease-in-out hover:-translate-y-1 hover:shadow-md"
 			href={getHref(committee.id)}
@@ -47,7 +66,7 @@
 				</div>
 				<IconInfoBox text={committee.activeAgendaItem?.title ?? '—'} faIcon="podium" />
 				{#if environment === 'TEAM'}
-					<IconInfoBox text={(committee as any).stateOfDebate ?? '—'} faIcon="diagram-next" />
+					<IconInfoBox text={committee.stateOfDebate ?? '—'} faIcon="diagram-next" />
 				{/if}
 				<IconInfoBox
 					text={getCommitteeStatusText(committee.status)}

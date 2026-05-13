@@ -1,8 +1,7 @@
 <script lang="ts">
 	import { m } from '$lib/paraglide/messages';
-	import type { PageData } from './$houdini';
-	import { onMount } from 'svelte';
-	import { CommitteeSubscription } from '../committeeSubscription';
+	import { page } from '$app/state';
+	import { client } from '$lib/api/rumbleClient/client';
 	import BasicCard from '$lib/components/BasicCard.svelte';
 	import Majorities from '$lib/components/Majorities.svelte';
 	import UndrawError from '$lib/components/UndrawError.svelte';
@@ -10,12 +9,31 @@
 	import StatusWidget from '../StatusWidget.svelte';
 	import VotingSetup from '$lib/components/voting/VotingSetup.svelte';
 
-	let { data }: { data: PageData } = $props();
-
-	let query = $derived(data?.CommitteeTeamQuery);
-	let committee = $derived(
-		$CommitteeSubscription.data?.findFirstCommittee ?? $query.data?.findFirstCommittee
-	);
+	const committee = await client.liveQuery.committee({
+		__args: { id: page.params.committeeId! },
+		id: true,
+		totalPresent: true,
+		simpleMajority: true,
+		twoThirdsMajority: true,
+		paperSupportThreshold: true,
+		status: true,
+		statusHeadline: true,
+		statusUntil: true,
+		stateOfDebate: true,
+		activeAgendaItem: { id: true, title: true },
+		members: {
+			id: true,
+			present: true,
+			representation: {
+				id: true,
+				name: true,
+				alpha2Code: true,
+				alpha3Code: true,
+				faIcon: true,
+				type: true
+			}
+		}
+	});
 </script>
 
 {#if committee}

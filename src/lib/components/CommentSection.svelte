@@ -3,12 +3,30 @@
 	import Flag from './Flag.svelte';
 	import { slide } from 'svelte/transition';
 	import { onMount } from 'svelte';
-	import type { ChairPaperCommentsSubscription$result } from '$houdini';
-
-	type Comment = ChairPaperCommentsSubscription$result['findManyResolutionComment'][number];
+	type Comment = {
+		id: string;
+		content: string;
+		createdAt: Date | string;
+		parentCommentId: string | null;
+		clauseId: string | null;
+		visibility: string;
+		author: {
+			id: string;
+			conferenceUserType?: string | null;
+			user?: { givenName: string; familyName: string } | null;
+			committeeMember?: {
+				representation?: {
+					name?: string | null;
+					alpha2Code?: string | null;
+					alpha3Code?: string | null;
+					faIcon?: string | null;
+					type?: string | null;
+				} | null;
+			} | null;
+		};
+	};
 
 	interface Props {
-		paperId: string;
 		clauseId?: string | null;
 		comments: Comment[];
 		myConferenceUserId?: string;
@@ -25,7 +43,6 @@
 	}
 
 	let {
-		paperId,
 		clauseId = null,
 		comments,
 		myConferenceUserId,
@@ -236,10 +253,15 @@
 										class="btn btn-xs btn-primary"
 										disabled={submitting}
 										onclick={() => handleEdit(comment.id)}
+										aria-label={m.save()}
 									>
 										<i class="fas fa-check"></i>
 									</button>
-									<button class="btn btn-xs btn-ghost" onclick={() => (editingId = null)}>
+									<button
+										class="btn btn-xs btn-ghost"
+										onclick={() => (editingId = null)}
+										aria-label={m.cancel()}
+									>
 										<i class="fas fa-times"></i>
 									</button>
 								</div>
@@ -312,10 +334,15 @@
 														class="btn btn-xs btn-primary"
 														disabled={submitting}
 														onclick={() => handleEdit(reply.id)}
+														aria-label={m.save()}
 													>
 														<i class="fas fa-check"></i>
 													</button>
-													<button class="btn btn-xs btn-ghost" onclick={() => (editingId = null)}>
+													<button
+														class="btn btn-xs btn-ghost"
+														onclick={() => (editingId = null)}
+														aria-label={m.cancel()}
+													>
 														<i class="fas fa-times"></i>
 													</button>
 												</div>
@@ -374,6 +401,7 @@
 										class="btn btn-xs btn-primary"
 										disabled={submitting || !replyContent.trim()}
 										onclick={() => handleReply(comment.id)}
+										aria-label={m.replyToComment()}
 									>
 										<i class="fas fa-reply"></i>
 									</button>
@@ -411,6 +439,7 @@
 								class="btn btn-xs btn-primary"
 								disabled={submitting || !newContent.trim()}
 								onclick={handleSubmit}
+								aria-label={m.submit()}
 							>
 								<i class="fas fa-paper-plane"></i>
 							</button>

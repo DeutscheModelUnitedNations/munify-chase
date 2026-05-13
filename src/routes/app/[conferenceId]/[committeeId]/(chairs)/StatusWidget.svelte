@@ -1,11 +1,16 @@
 <script lang="ts">
 	import IconInfoBox from '$lib/components/IconInfoBox.svelte';
 	import { getCommitteeStatusIcon, getCommitteeStatusText } from '$lib/utils/committeeStatus';
-	import type { CommitteeTeamQuery$result } from '$houdini';
-	import { m } from '$lib/paraglide/messages';
+	import type { CommitteestatusEnum } from '$lib/api/rumbleClient/client';
 
 	interface Props {
-		committee?: CommitteeTeamQuery$result['findFirstCommittee'] | null;
+		committee?: {
+			activeAgendaItem?: { title?: string | null } | null;
+			stateOfDebate?: string | null;
+			statusHeadline: string;
+			status: CommitteestatusEnum;
+			statusUntil: Date;
+		} | null;
 	}
 
 	let { committee }: Props = $props();

@@ -1,14 +1,29 @@
 <script lang="ts">
-	import type { PageData } from './$houdini';
-	import CommitteeGrid from '$lib/components/CommitteeGrid.svelte';
+	import { page } from '$app/state';
+	import { resolve } from '$app/paths';
+	import { client } from '$lib/api/rumbleClient/client';
+	import CommitteeGrid, { type ConferenceData } from '$lib/components/CommitteeGrid.svelte';
 	import ThemeSwitcher from '$lib/components/ThemeSwitcher.svelte';
 	import CurrentTime from '$lib/components/CurrentTime.svelte';
 	import * as m from '$lib/paraglide/messages.js';
 
-	let { data }: { data: PageData } = $props();
-
-	let query = $derived(data?.CommitteeOverviewQuery);
-	let conference = $derived($query.data?.findFirstConference);
+	const conference = await client.liveQuery.conference({
+		__args: { id: page.params.conferenceId! },
+		id: true,
+		committees: {
+			id: true,
+			name: true,
+			abbreviation: true,
+			lastResolutionAdoptionDate: true,
+			activeAgendaItem: {
+				id: true,
+				title: true
+			},
+			status: true,
+			statusHeadline: true,
+			statusUntil: true
+		}
+	});
 </script>
 
 <div class="navbar bg-base-100 shadow-sm">
@@ -18,12 +33,16 @@
 	</div>
 	<div class="flex-none">
 		<ThemeSwitcher />
-		<a class="btn btn-ghost btn-square" href="/app" aria-label="Go back to app">
+		<a
+			class="btn btn-ghost btn-square"
+			href={resolve('/app/(launcher)')}
+			aria-label="Go back to app"
+		>
 			<i class="fa-duotone fa-home"></i>
 		</a>
 	</div>
 </div>
 
 {#if conference}
-	<CommitteeGrid {conference} />
+	<CommitteeGrid conference={conference as unknown as ConferenceData} />
 {/if}

@@ -1,8 +1,7 @@
 <script lang="ts">
 	import { m } from '$lib/paraglide/messages';
-	import type { PageData } from './$houdini';
-	import { onMount } from 'svelte';
-	import { CommitteeSubscription } from '../committeeSubscription';
+	import { page } from '$app/state';
+	import { client } from '$lib/api/rumbleClient/client';
 	import BasicCard from '$lib/components/BasicCard.svelte';
 	import Majorities from '$lib/components/Majorities.svelte';
 	import UndrawError from '$lib/components/UndrawError.svelte';
@@ -10,7 +9,6 @@
 	import PresenceActions from './PresenceActions.svelte';
 	import Flag from '$lib/components/Flag.svelte';
 	import Tabs from '$lib/components/Tabs.svelte';
-	import { SetPresenceMutation } from './presenceMutations';
 	import toast from 'svelte-french-toast';
 	import { promiseToastStrings } from '$lib/utils/toast';
 	import {
@@ -19,43 +17,65 @@
 	} from '$lib/utils/nationTranslationHelper.svelte';
 	import ChairRollCall from '$lib/components/rollCall/ChairRollCall.svelte';
 	import StatusWidget from '../StatusWidget.svelte';
-	import {
-		isDelegationMember,
-		isNSAMember,
-		isUNMember
-	} from '$lib/helpers/distinguishConferenceMembers';
+	import { isDelegationMember, isUNMember } from '$lib/helpers/distinguishConferenceMembers';
 	import { translateRegionalGroupEnum } from '$lib/utils/enumTranslationHelper';
+	import NsaAttendanceCard from './NsaAttendanceCard.svelte';
 
-	let { data }: { data: PageData } = $props();
-
-	let query = $derived(data?.CommitteeTeamQuery);
-	let committee = $derived(
-		$CommitteeSubscription.data?.findFirstCommittee ?? $query.data?.findFirstCommittee
-	);
+	const committee = await client.liveQuery.committee({
+		__args: { id: page.params.committeeId! },
+		id: true,
+		totalPresent: true,
+		simpleMajority: true,
+		twoThirdsMajority: true,
+		paperSupportThreshold: true,
+		status: true,
+		statusHeadline: true,
+		statusUntil: true,
+		stateOfDebate: true,
+		activeAgendaItem: { id: true, title: true },
+		members: {
+			id: true,
+			present: true,
+			representation: {
+				id: true,
+				name: true,
+				alpha2Code: true,
+				alpha3Code: true,
+				regionalGroup: true,
+				type: true,
+				faIcon: true
+			}
+		},
+		conference: {
+			id: true,
+			uniqueConferenceMembers: {
+				id: true,
+				representation: {
+					id: true,
+					name: true,
+					alpha2Code: true,
+					alpha3Code: true,
+					type: true,
+					faIcon: true
+				}
+			}
+		}
+	});
 
 	let countries = $derived(
 		committee?.members
 			.filter(isDelegationMember)
-			.sort((a, b) => sortTranslatedCountries(a.representation!, b.representation!)) ?? []
-	);
-
-	let nsas = $derived(
-		committee?.conference?.uniqueConferenceMembers
-			?.filter(isNSAMember)
-			.sort((a, b) => a.representation!.name!.localeCompare(b.representation!.name!)) ?? []
+			.sort((a, b) => sortTranslatedCountries(a.representation, b.representation)) ?? []
 	);
 
 	let un = $derived(
 		committee?.conference?.uniqueConferenceMembers
 			?.filter(isUNMember)
-			?.sort((a, b) => a.representation!.name!.localeCompare(b.representation!.name!)) ?? []
+			?.sort((a, b) => (a.representation.name ?? '').localeCompare(b.representation.name ?? '')) ??
+			[]
 	);
 
 	let rollCallActive = $state(false);
-
-	onMount(() => {
-		CommitteeSubscription.listen({ id: data.committeeId });
-	});
 
 	const presenceTabs = [
 		{
@@ -72,9 +92,10 @@
 
 	const setPresence = (tab: boolean, id: string) => {
 		toast.promise(
-			SetPresenceMutation.mutate({
-				memberIds: [id],
-				present: tab
+			client.mutate.setPresenceForCommitteeMembers({
+				__args: { ids: [id], present: tab },
+				id: true,
+				present: true
 			}),
 			promiseToastStrings(m.presence(), 'update')
 		);
@@ -107,8 +128,9 @@
 				</BasicCard>
 			</div>
 			<div class="flex h-full w-full flex-3 flex-col gap-4">
+				<NsaAttendanceCard conferenceId={committee.conference.id} committeeId={committee.id} />
 				<BasicCard title={m.delegations()}>
-					{#each countries as member}
+					{#each countries as member (member.id)}
 						{@const rep = member.representation}
 						<div
 							class="hover:bg-base-200 card flex w-full flex-row items-center gap-4 p-2 transition-all duration-300"
@@ -150,25 +172,8 @@
 						</div>
 					{/each}
 				</BasicCard>
-				<BasicCard title={m.nonStateActors()}>
-					{#each nsas as member}
-						{@const rep = member.representation}
-						<div
-							class="hover:bg-base-200 card flex w-full flex-row items-center gap-4 p-2 transition-all duration-300"
-						>
-							<Flag representation={rep} size="sm" />
-							<h3 class="flex-1 text-lg">
-								{#if rep && rep.name}
-									{rep.name}
-								{:else}
-									{m.unknown()}
-								{/if}
-							</h3>
-						</div>
-					{/each}
-				</BasicCard>
 				<BasicCard title={m.unActors()}>
-					{#each un as member}
+					{#each un as member (member.id)}
 						{@const rep = member.representation}
 						<div
 							class="hover:bg-base-200 card flex w-full flex-row items-center gap-4 p-2 transition-all duration-300"
@@ -196,4 +201,8 @@
 	/>
 {/if}
 
-<ChairRollCall bind:active={rollCallActive} members={countries} committeeId={data.committeeId} />
+<ChairRollCall
+	bind:active={rollCallActive}
+	members={countries}
+	committeeId={page.params.committeeId!}
+/>

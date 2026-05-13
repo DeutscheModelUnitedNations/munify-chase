@@ -2,8 +2,7 @@
 	import { m } from '$lib/paraglide/messages';
 	import BasicCard from '$lib/components/BasicCard.svelte';
 	import Flag from '$lib/components/Flag.svelte';
-	import { cache, graphql } from '$houdini';
-	import { invalidateAll } from '$app/navigation';
+	import { client } from '$lib/api/rumbleClient/client';
 	import toast from 'svelte-french-toast';
 	import { promiseToastStrings } from '$lib/utils/toast';
 
@@ -30,45 +29,24 @@
 	let newFaIcon = $state('');
 	let isCreating = $state(false);
 
-	const CreateRepresentationMutation = graphql(`
-		mutation CreateNsaFromConfig(
-			$conferenceId: ID!
-			$type: RepresentationTypeEnum!
-			$name: String
-			$faIcon: String
-		) {
-			createRepresentation(conferenceId: $conferenceId, type: $type, name: $name, faIcon: $faIcon) {
-				id
-				name
-				type
-				faIcon
-			}
-		}
-	`);
-
-	const DeleteRepresentationMutation = graphql(`
-		mutation DeleteNsaFromConfig($id: ID!) {
-			deleteRepresentation(id: $id)
-		}
-	`);
-
 	async function createActor() {
 		if (!newName.trim()) return;
 		isCreating = true;
 		try {
 			await toast.promise(
-				CreateRepresentationMutation.mutate({
-					conferenceId,
-					type: newType,
-					name: newName.trim(),
-					faIcon: newFaIcon.trim() || null
+				client.mutate.createRepresentation({
+					__args: {
+						conferenceId,
+						type: newType,
+						name: newName.trim(),
+						faIcon: newFaIcon.trim() || null
+					},
+					id: true
 				}),
 				promiseToastStrings(newType === 'NSA' ? m.nonStateActor() : m.unActor(), 'create')
 			);
 			newName = '';
 			newFaIcon = '';
-			cache.markStale();
-			await invalidateAll();
 		} finally {
 			isCreating = false;
 		}
@@ -78,11 +56,10 @@
 		if (!confirm(m.confirmDeleteRepresentation())) return;
 
 		await toast.promise(
-			DeleteRepresentationMutation.mutate({ id }),
+			// eslint-disable-next-line @typescript-eslint/no-explicit-any -- rumble generator types delete mutations as plain `Boolean` instead of callable functions
+			(client.mutate.deleteRepresentation as any)({ __args: { id } } as any),
 			promiseToastStrings(m.nonStateActor(), 'delete')
 		);
-		cache.markStale();
-		await invalidateAll();
 	}
 
 	const typeLabel: Record<string, () => string> = {
@@ -111,7 +88,7 @@
 					{#each nsaActors as actor (actor.id)}
 						<tr>
 							<td class="w-8">
-								<Flag representation={actor as any} size="xs" />
+								<Flag representation={actor} size="xs" />
 							</td>
 							<td>{actor.name ?? '—'}</td>
 							<td>

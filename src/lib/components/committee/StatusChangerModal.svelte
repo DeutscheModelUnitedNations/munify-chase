@@ -1,19 +1,17 @@
 <script lang="ts">
 	import Modal from '../Modal.svelte';
-	import { m } from '$lib/paraglide/messages';
 	import StatusChanger from './StatusChanger.svelte';
 	import hotkeys from 'hotkeys-js';
-	import type { CommitteeStatusEnum$options } from '$houdini';
+	import type { CommitteestatusEnum } from '$lib/api/rumbleClient/client';
 
 	interface Props {
 		committeeId: string;
-		oldStatus?: CommitteeStatusEnum$options;
+		oldStatus?: CommitteestatusEnum;
 		oldUntil?: Date;
 		oldCustomName?: string;
-		hasModeratedCaucus?: boolean;
 	}
 
-	let { committeeId, oldStatus, oldUntil, oldCustomName, hasModeratedCaucus }: Props = $props();
+	let { committeeId, oldStatus, oldUntil, oldCustomName }: Props = $props();
 
 	let open = $state(false);
 

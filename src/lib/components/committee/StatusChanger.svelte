@@ -1,15 +1,16 @@
 <script lang="ts">
-	import { graphql, type CommitteeStatusEnum$options } from '$houdini';
+	import { client } from '$lib/api/rumbleClient/client';
+	import type { CommitteestatusEnum } from '$lib/api/rumbleClient/client';
 	import Tabs from '$lib/components/Tabs.svelte';
 	import dayjs from 'dayjs';
 	import { m } from '$lib/paraglide/messages';
 	import toast from 'svelte-french-toast';
 	import { promiseToastStrings } from '$lib/utils/toast';
-	import { serverTime } from '$lib/state/serverTime.svelte';
+	import { getServerTime } from '$lib/state/serverTime.svelte';
 
 	type Props = {
 		committeeId: string;
-		oldStatus?: CommitteeStatusEnum$options;
+		oldStatus?: CommitteestatusEnum;
 		oldUntil?: Date;
 		oldCustomName?: string;
 		hasModeratedCaucus?: boolean;
@@ -25,7 +26,7 @@
 	}: Props = $props();
 
 	const categories: {
-		id: CommitteeStatusEnum$options;
+		id: CommitteestatusEnum;
 		faIcon: string;
 		tooltip: string;
 	}[] = [
@@ -36,7 +37,7 @@
 		...(hasModeratedCaucus
 			? [
 					{
-						id: 'MODERATED_INFORMAL' as CommitteeStatusEnum$options,
+						id: 'MODERATED_INFORMAL' as CommitteestatusEnum,
 						faIcon: 'comments-question-check',
 						tooltip: m.moderatedInformalCaucus()
 					}
@@ -47,41 +48,26 @@
 	const absoluteTimes = [0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55];
 	const relativeTimes = [3, 5, 10, 15, 20, 25, 30];
 
-	let activeCategory: CommitteeStatusEnum$options = $state('INFORMAL');
-	let until = $state(dayjs(oldUntil) ?? $serverTime);
+	let activeCategory: CommitteestatusEnum = $state('INFORMAL');
+	let until = $state(dayjs(oldUntil) ?? getServerTime());
 	let untilFormatted = $derived(dayjs(until).format('HH:mm:ss'));
 	let customName = $state(oldCustomName);
 
 	let customNameOpen = $state(false);
 
-	const StatusChangerMutation = graphql(`
-		mutation StatusChanger(
-			$status: CommitteeStatusEnum!
-			$until: DateTime!
-			$customName: String!
-			$committeeId: ID!
-		) {
-			updateCommittee(
-				id: $committeeId
-				status: $status
-				statusUntil: $until
-				statusHeadline: $customName
-			) {
-				id
-			}
-		}
-	`);
-
 	const submitStatus = async () => {
-		if (until.isBefore($serverTime)) {
+		if (until.isBefore(getServerTime())) {
 			toast.error(m.dateCannotBeInPast());
 		}
 		await toast.promise(
-			StatusChangerMutation.mutate({
-				status: activeCategory,
-				until: until.toDate(),
-				customName: customName,
-				committeeId: committeeId
+			client.mutate.updateCommittee({
+				__args: {
+					id: committeeId,
+					status: activeCategory,
+					statusUntil: until.toDate(),
+					statusHeadline: customName
+				},
+				id: true
 			}),
 			promiseToastStrings(m.committeeStatus(), 'update')
 		);
@@ -116,13 +102,13 @@
 		<div
 			class="grid flex-1 grid-cols-4 items-center gap-1 md:grid-cols-5 lg:grid-cols-8 xl:grid-cols-12"
 		>
-			{#each absoluteTimes as time}
+			{#each absoluteTimes as time (time)}
 				<button
 					class="btn bg-base-100 flex-1"
 					onclick={() =>
-						(until = $serverTime.minute(time).second(0).isBefore($serverTime)
-							? $serverTime.add(1, 'hour').minute(time).second(0)
-							: $serverTime.minute(time).second(0))}
+						(until = getServerTime().minute(time).second(0).isBefore(getServerTime())
+							? getServerTime().add(1, 'hour').minute(time).second(0)
+							: getServerTime().minute(time).second(0))}
 				>
 					{time}
 				</button>
@@ -134,10 +120,10 @@
 			<i class="fa-duotone fa-timer w-8 text-center text-2xl"></i>
 		</div>
 		<div class="grid flex-1 grid-cols-4 items-center gap-1 md:grid-cols-5 lg:grid-cols-7">
-			{#each relativeTimes as time}
+			{#each relativeTimes as time (time)}
 				<button
 					class="btn bg-base-100 flex-1"
-					onclick={() => (until = $serverTime.add(time, 'minute'))}
+					onclick={() => (until = getServerTime().add(time, 'minute'))}
 				>
 					{time}
 				</button>
@@ -152,7 +138,7 @@
 			onchange={(e) => {
 				const inputValue = (e.target as HTMLInputElement).value;
 				const parts = inputValue.split(':');
-				until = $serverTime
+				until = getServerTime()
 					.hour(parseInt(parts[0], 10))
 					.minute(parseInt(parts[1], 10))
 					.second(parseInt(parts[2], 10));
@@ -209,7 +195,7 @@
 			</button>
 		{/if}
 		<button
-			class="btn btn-primary btn-lg w-full flex-1 {until.isBefore($serverTime)
+			class="btn btn-primary btn-lg w-full flex-1 {until.isBefore(getServerTime())
 				? 'btn-disabled'
 				: ''}"
 			onclick={() => {

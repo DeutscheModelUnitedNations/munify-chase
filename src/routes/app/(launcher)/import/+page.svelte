@@ -1,12 +1,13 @@
 <script lang="ts">
-	import { goto, invalidateAll } from '$app/navigation';
+	import { goto } from '$app/navigation';
+	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
 	import { m } from '$lib/paraglide/messages';
-	import { cache, graphql, type RepresentationTypeEnum$options } from '$houdini';
+	import { client } from '$lib/api/rumbleClient/client';
+	import type { RepresentationtypeEnum } from '$lib/api/rumbleClient/client';
 	import toast from 'svelte-french-toast';
 	import { importDataSchema } from '$lib/utils/import';
 	import { z } from 'zod/v4';
-	import Footer from '$lib/components/Footer.svelte';
 	import AddCountriesModal from '$lib/components/AddCountriesModal.svelte';
 	import WorldCountries from 'world-countries';
 	import { nanoid } from '$lib/helpers/nanoid';
@@ -16,13 +17,10 @@
 	import DelegationsStep from '$lib/components/importWizard/DelegationsStep.svelte';
 	import ActorsStep from '$lib/components/importWizard/ActorsStep.svelte';
 	import ReviewStep from '$lib/components/importWizard/ReviewStep.svelte';
-	import type { PageData } from './$houdini';
 
 	type ImportData = z.infer<typeof importDataSchema>;
 
-	let { data }: { data: PageData } = $props();
-	let importPageQuery = $derived(data.ImportPageQuery);
-	let isAdmin = $derived($importPageQuery.data?.isGlobalAdmin ?? false);
+	const isAdmin = (await client.query.isGlobalAdmin()) as unknown as boolean;
 
 	let step = $state(0);
 	let loading = $state(false);
@@ -30,14 +28,6 @@
 	let addCountriesModalOpen = $state(false);
 	let activeCommitteeId = $state<string | null>(null);
 	let showJsonPanel = $state(false);
-
-	const ConferenceCreationMutation = graphql(`
-		mutation ConferenceCreation($data: ImportData!) {
-			importDelegatorConference(data: $data) {
-				id
-			}
-		}
-	`);
 
 	const STEP_LABELS = $derived([
 		m.basicsTitle(),
@@ -151,15 +141,15 @@
 				startDate: toDateOnly(importData.startDate),
 				endDate: toDateOnly(importData.endDate)
 			} as typeof importData;
-			const res = await ConferenceCreationMutation.mutate({ data: payload }).catch((e) => {
-				toast.error(m.conferenceCreationError());
-				console.error('Error creating conference:', e);
-			});
+			const res = await client.mutate
+				.importDelegatorConference({ __args: { data: payload }, id: true })
+				.catch((e) => {
+					toast.error(m.conferenceCreationError());
+					console.error('Error creating conference:', e);
+				});
 			if (res) {
 				toast.success(m.conferenceCreated());
-				cache.markStale();
-				await invalidateAll();
-				goto('/app');
+				goto(resolve('/app/(launcher)'));
 			}
 		} finally {
 			loading = false;
@@ -197,7 +187,7 @@
 				importData.representations.push({
 					alpha2Code: country.alpha2Code,
 					alpha3Code: country.alpha3Code,
-					representationType: 'DELEGATION' as RepresentationTypeEnum$options,
+					representationType: 'DELEGATION' as RepresentationtypeEnum,
 					id: repId,
 					regionalGroup: worldCountry
 						? transformRegionalGroup(worldCountry.unRegionalGroup)
@@ -223,7 +213,7 @@
 		<div class="flex flex-1 items-center gap-2">
 			<a
 				class="btn btn-ghost"
-				href={step === 0 ? '/app' : undefined}
+				href={step === 0 ? resolve('/app/(launcher)') : undefined}
 				onclick={(e) => {
 					if (step > 0) {
 						e.preventDefault();
@@ -352,5 +342,3 @@
 </div>
 
 <AddCountriesModal bind:open={addCountriesModalOpen} onSubmit={handleAddCountries} />
-
-<Footer />

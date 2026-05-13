@@ -1,8 +1,8 @@
-import type { CommitteeStatusEnum$options } from '$houdini';
+import type { CommitteestatusEnum } from '$lib/api/rumbleClient/client';
 import * as m from '$lib/paraglide/messages.js';
 
 export function getCommitteeStatusText(
-	category: CommitteeStatusEnum$options,
+	category: CommitteestatusEnum,
 	overwriteText?: string
 ): string {
 	if (overwriteText) return overwriteText;
@@ -22,7 +22,7 @@ export function getCommitteeStatusText(
 	}
 }
 
-export function getCommitteeStatusIcon(category: CommitteeStatusEnum$options) {
+export function getCommitteeStatusIcon(category: CommitteestatusEnum) {
 	switch (category) {
 		case 'FORMAL':
 			return 'podium';
@@ -39,7 +39,7 @@ export function getCommitteeStatusIcon(category: CommitteeStatusEnum$options) {
 	}
 }
 
-export function getCommitteeStatusBackground(category: CommitteeStatusEnum$options) {
+export function getCommitteeStatusBackground(category: CommitteestatusEnum) {
 	switch (category) {
 		case 'FORMAL':
 			return 'bg-base-200';

@@ -1,5 +1,5 @@
 <script lang="ts">
-	import type { CommitteeStatusEnum$options } from '$houdini';
+	import type { CommitteestatusEnum } from '$lib/api/rumbleClient/client';
 	import { getCommitteeStatusBackground } from '$lib/utils/committeeStatus';
 	import Marquee from 'svelte-fast-marquee';
 	import { onMount } from 'svelte';
@@ -7,14 +7,13 @@
 	import { getLocale } from '$lib/paraglide/runtime';
 	import dayjs from 'dayjs';
 	import duration from 'dayjs/plugin/duration';
-	import { check } from 'drizzle-orm/gel-core';
-	import { serverTime } from '$lib/state/serverTime.svelte';
+	import { getServerTime } from '$lib/state/serverTime.svelte';
 
 	interface Props {
 		text: string;
 		faIcon?: string;
 		iconText?: string;
-		committeeStatus?: CommitteeStatusEnum$options;
+		committeeStatus?: CommitteestatusEnum;
 		until?: Date;
 		marqueeOnOverflow?: boolean;
 		fullHeight?: boolean;
@@ -52,7 +51,7 @@
 	let countdownDeltaInFuture = $derived(() => {
 		if (until) {
 			const untilDate = dayjs(until);
-			return $serverTime.isBefore(untilDate);
+			return getServerTime().isBefore(untilDate);
 		}
 		return false;
 	});
@@ -60,7 +59,7 @@
 	$effect(() => {
 		const calculateCountdown = () => {
 			const untilDate = dayjs(until);
-			countdownDelta = dayjs.duration(untilDate.diff($serverTime));
+			countdownDelta = dayjs.duration(untilDate.diff(getServerTime()));
 		};
 		if (until) {
 			calculateCountdown();

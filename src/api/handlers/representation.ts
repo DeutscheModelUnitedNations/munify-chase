@@ -1,26 +1,34 @@
 import { db, schema } from '$api/db/db';
-import { abilityBuilder, enum_, schemaBuilder } from '$api/rumble';
-import { isGlobalAdmin } from '$api/services/isAdminEmail';
-import { basics } from './basics';
-import { assertConferenceAdmin } from './conferenceUser';
+import {
+	abilityBuilder,
+	enum_,
+	schemaBuilder,
+	object,
+	pubsub as rumblePubsub,
+	query
+} from '$api/rumble';
+import { isAdminInConference, isParticipantInConference } from '$api/services/authHelper';
 import { assertFindFirstExists, assertFirstEntryExists } from '@m1212e/rumble';
 import { eq } from 'drizzle-orm';
-import { GraphQLError } from 'graphql';
 
-const { arg, ref, pubsub, table } = basics('representation');
+abilityBuilder.representation.allow('read').when((ctx) => {
+	return {
+		where: isParticipantInConference(ctx)
+	};
+});
+
+abilityBuilder.representation.allow(['update', 'delete']).when((ctx) => {
+	return { where: isAdminInConference(ctx) };
+});
+
+const ref = object({ table: 'representation' });
 
 const representationTypeEnum = enum_({
 	tsName: 'representationType'
 });
 
-abilityBuilder.representation.allow(['read', 'update']).when((ctx) => {
-	if (isGlobalAdmin(ctx)) return 'allow';
-});
-
-abilityBuilder.representation.allow('read').when(({ mustBeLoggedIn }) => {
-	mustBeLoggedIn();
-	return 'allow';
-});
+const pubsub = rumblePubsub({ table: 'representation' });
+query({ table: 'representation' });
 
 schemaBuilder.mutationFields((t) => ({
 	createRepresentation: t.drizzleField({
@@ -33,8 +41,13 @@ schemaBuilder.mutationFields((t) => ({
 			alpha3Code: t.arg.string(),
 			faIcon: t.arg.string()
 		},
-		resolve: async (query, root, args, ctx, info) => {
-			await assertConferenceAdmin(ctx, args.conferenceId);
+		resolve: async (query, root, args, ctx) => {
+			await db.query.conference
+				.findFirst(
+					ctx.abilities.conference.filter('update').merge({ where: { id: args.conferenceId } })
+						.query.single
+				)
+				.then(assertFindFirstExists);
 
 			const result = await db
 				.insert(schema.representation)
@@ -70,32 +83,26 @@ schemaBuilder.mutationFields((t) => ({
 			return db.query.representation
 				.findFirst(
 					query(
-						ctx.abilities.representation.filter('read', {
-							inject: {
-								where: { id: result.id }
-							}
+						ctx.abilities.representation.filter('read').merge({
+							where: { id: result.id }
 						}).query.single
 					)
 				)
 				.then(assertFindFirstExists);
 		}
 	}),
-
 	deleteRepresentation: t.field({
 		type: 'Boolean',
 		args: {
 			id: t.arg.id({ required: true })
 		},
-		resolve: async (root, args, ctx, info) => {
-			const representation = await db.query.representation.findFirst({
-				where: { id: args.id }
-			});
-
-			if (!representation) {
-				throw new GraphQLError('Representation not found');
-			}
-
-			await assertConferenceAdmin(ctx, representation.conferenceId);
+		resolve: async (root, args, ctx) => {
+			await db.query.representation
+				.findFirst(
+					ctx.abilities.representation.filter('delete').merge({ where: { id: args.id } }).query
+						.single
+				)
+				.then(assertFindFirstExists);
 
 			// Delete associated committee members first (FK may not cascade)
 			await db
@@ -109,7 +116,7 @@ schemaBuilder.mutationFields((t) => ({
 
 			await db.delete(schema.representation).where(eq(schema.representation.id, args.id));
 
-			pubsub.removed(args.id);
+			pubsub.removed();
 
 			return true;
 		}

@@ -1,39 +1,67 @@
 <script lang="ts">
-	import type { CommitteeTeamQuery$result, SpeakersListCategoryEnum$options } from '$houdini';
+	import type { SpeakerslistcategoryEnum } from '$lib/api/rumbleClient/client';
 	import SpeechControls from './SpeechControls.svelte';
 	import MoreOptions from './MoreOptions.svelte';
 	import NextSpeech from './NextSpeech.svelte';
 	import AddSpeakers from './AddSpeakers.svelte';
 
-	type List =
-		| NonNullable<
-				CommitteeTeamQuery$result['findFirstCommittee']['activeAgendaItem']
-		  >['speakersList'][number]
-		| null;
+	type List = {
+		id: string;
+		type: string;
+		isClosed: boolean;
+		speakingTime: number;
+		startTimestamp?: Date | null;
+		timeLeft: number;
+		speakers: Array<{
+			id: string;
+			position: number;
+			overwriteName?: string | null;
+			committeeMember?: {
+				id: string;
+				representation?: {
+					name?: string | null;
+					alpha2Code?: string | null;
+					alpha3Code?: string | null;
+					faIcon?: string | null;
+					type?: string | null;
+				} | null;
+			} | null;
+			conferenceMember?: {
+				id: string;
+				representation?: {
+					name?: string | null;
+					alpha2Code?: string | null;
+					alpha3Code?: string | null;
+					faIcon?: string | null;
+					type?: string | null;
+				} | null;
+			} | null;
+		}>;
+	} | null;
+
+	type MemberLike = {
+		id: string;
+		present?: boolean;
+		representation?: {
+			name?: string | null;
+			alpha2Code?: string | null;
+			alpha3Code?: string | null;
+			faIcon?: string | null;
+			type?: string | null;
+		} | null;
+	};
 
 	interface Props {
-		committeeId: string;
-		type: SpeakersListCategoryEnum$options;
-		committeeMembers: CommitteeTeamQuery$result['findFirstCommittee']['members'];
-		conferenceMembers: NonNullable<
-			NonNullable<
-				CommitteeTeamQuery$result['findFirstCommittee']['conference']
-			>['uniqueConferenceMembers']
-		>;
+		type: SpeakerslistcategoryEnum;
+		committeeMembers: MemberLike[];
+		conferenceMembers: MemberLike[];
 		speakersList?: List;
 		childList?: List;
 		otherList?: List;
 	}
 
-	let {
-		committeeId,
-		committeeMembers,
-		conferenceMembers,
-		type,
-		speakersList,
-		childList,
-		otherList
-	}: Props = $props();
+	let { committeeMembers, conferenceMembers, type, speakersList, childList, otherList }: Props =
+		$props();
 </script>
 
 <div class="flex flex-col gap-4">
@@ -41,7 +69,7 @@
 
 	<div class="flex gap-2">
 		<NextSpeech {speakersList} {childList} {type} />
-		<MoreOptions {type} {speakersList} />
+		<MoreOptions {speakersList} />
 	</div>
 
 	<AddSpeakers {committeeMembers} {conferenceMembers} {speakersList} />

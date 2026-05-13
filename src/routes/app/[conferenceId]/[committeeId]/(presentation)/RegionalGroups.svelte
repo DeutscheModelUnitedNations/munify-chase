@@ -1,23 +1,31 @@
 <script lang="ts">
-	import type { CommitteePresentationQuery$result, RegionalGroupEnum$options } from '$houdini';
+	import type { RegionalgroupEnum } from '$lib/api/rumbleClient/client';
 	import Flag from '$lib/components/Flag.svelte';
-	import { m } from '$lib/paraglide/messages';
 	import { translateRegionalGroupEnum } from '$lib/utils/enumTranslationHelper';
-	import hotkeys from 'hotkeys-js';
-	import { onMount } from 'svelte';
 	import { cubicIn, cubicOut } from 'svelte/easing';
 	import { fly } from 'svelte/transition';
 
 	interface Props {
 		open: boolean;
-		committeeMembers: CommitteePresentationQuery$result['findFirstCommittee']['members'];
+		committeeMembers: Array<{
+			id: string;
+			present: boolean;
+			representation?: {
+				name?: string | null;
+				alpha2Code?: string | null;
+				alpha3Code?: string | null;
+				faIcon?: string | null;
+				type?: string | null;
+				regionalGroup?: string | null;
+			} | null;
+		}>;
 	}
 
 	let { open, committeeMembers }: Props = $props();
 
-	let activeGroup: RegionalGroupEnum$options = $state('AFRICA');
+	let activeGroup: RegionalgroupEnum = $state('AFRICA');
 
-	const nextGroup = (group: RegionalGroupEnum$options) => {
+	const nextGroup = (group: RegionalgroupEnum) => {
 		switch (group) {
 			case 'AFRICA':
 				return 'ASIA_PACIFIC';
@@ -32,7 +40,7 @@
 		}
 	};
 
-	const getGroupMembers = (group: RegionalGroupEnum$options) =>
+	const getGroupMembers = (group: RegionalgroupEnum) =>
 		committeeMembers.filter((member) => member.representation?.regionalGroup === group);
 
 	$effect(() => {
@@ -52,7 +60,7 @@
 	});
 </script>
 
-{#snippet Modal(group: RegionalGroupEnum$options)}
+{#snippet Modal(group: RegionalgroupEnum)}
 	<div
 		class="modal-box bg-base-200 max-h-9/12 w-full max-w-9/12"
 		in:fly={{ x: 100, duration: 1000, delay: 700, easing: cubicOut }}
@@ -62,7 +70,7 @@
 			{translateRegionalGroupEnum(group)}
 		</h2>
 		<div class="flex h-full w-full flex-wrap items-center justify-center gap-4">
-			{#each getGroupMembers(group) as member}
+			{#each getGroupMembers(group) as member (member.id)}
 				<div class="flex w-22 flex-col items-center justify-start gap-1">
 					<Flag representation={member.representation} size="full" />
 					<div class="text-center font-mono font-bold">

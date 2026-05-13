@@ -11,7 +11,10 @@ type NSARepresentation = Pick<Representation, 'faIcon' | 'name' | 'conferenceId'
 type DelegationRepresentation = Pick<Representation, 'faIcon' | 'name' | 'conferenceId'> & {
 	type: (typeof schema.representationType.enumValues)[2];
 } & DefaultRepresentation;
-type UNRepresentation = Pick<Representation, 'alpha2Code' | 'alpha3Code' | 'regionalGroup'> & {
+type UNRepresentation = Pick<
+	Representation,
+	'alpha2Code' | 'alpha3Code' | 'regionalGroup' | 'name'
+> & {
 	type: (typeof schema.representationType.enumValues)[0];
 } & DefaultRepresentation;
 

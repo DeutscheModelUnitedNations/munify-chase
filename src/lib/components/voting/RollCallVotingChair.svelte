@@ -1,5 +1,4 @@
 <script lang="ts">
-	import type { CommitteeTeamQuery$result } from '$houdini';
 	import Kbd from '$lib/components/Kbd.svelte';
 	import { m } from '$lib/paraglide/messages';
 	import Modal from '../Modal.svelte';
@@ -9,16 +8,29 @@
 	import ScrollingCountryList from '../rollCall/ScrollingCountryList.svelte';
 	import { liveQuery } from 'dexie';
 	import ResultChart from './ResultChart.svelte';
-	import {
-		getTranslatedCountryNameFromAlpha3Code,
-		sortTranslatedCountries
-	} from '$lib/utils/nationTranslationHelper.svelte';
+	import { sortTranslatedCountries } from '$lib/utils/nationTranslationHelper.svelte';
 	import { calculateMajority } from '$lib/utils/majorities';
 	import type { VotingResult } from './votingModal';
 
 	interface Props {
 		active: boolean;
-		committee: CommitteeTeamQuery$result['findFirstCommittee'];
+		committee: {
+			id: string;
+			totalPresent: number;
+			simpleMajority: number;
+			twoThirdsMajority: number;
+			members: Array<{
+				id: string;
+				present: boolean;
+				representation?: {
+					name?: string | null;
+					alpha2Code?: string | null;
+					alpha3Code?: string | null;
+					faIcon?: string | null;
+					type?: string | null;
+				} | null;
+			}>;
+		};
 		voteName?: string;
 		majority?: VotingMajority;
 		withAbstentions?: boolean;
@@ -89,8 +101,8 @@
 
 	let scrollingListIcons = $derived.by(() => {
 		return members.map((member) => {
-			let icon: string = '';
-			let color: 'info' | 'success' | 'error' = 'info';
+			let icon: string;
+			let color: 'info' | 'success' | 'error';
 			if (rollCallVotingAbstain?.includes(member.id)) {
 				icon = 'fa-circle';
 				color = 'info';
@@ -101,7 +113,8 @@
 				icon = 'fa-circle-minus';
 				color = 'error';
 			} else {
-				icon = 'fa-question'; // Default icon if no vote is set
+				icon = 'fa-question';
+				color = 'info';
 			}
 			return {
 				id: member.id,

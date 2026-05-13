@@ -5,7 +5,7 @@
 @custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
 @import '@deutschemodelunitednations/munify-resolution-editor/tailwind.css';
 @plugin '@tailwindcss/typography';
-@plugin "daisyui";
+@plugin 'daisyui/index.js';
 
 @import '@deutschemodelunitednations/corporate-identity/css/theme/dmun-light';
 @import '@deutschemodelunitednations/corporate-identity/css/theme/dmun-dark';

@@ -1,23 +1,23 @@
 import { db, schema } from '$api/db/db';
-import {
-	abilityBuilder,
-	object,
-	query,
-	pubsub as rumblePubsub,
-	schemaBuilder,
-	arg as rumbleArg
-} from '$api/rumble';
-import { isGlobalAdmin } from '$api/services/isAdminEmail';
+import { abilityBuilder, object, query, pubsub as rumblePubsub, schemaBuilder } from '$api/rumble';
 import { nanoid } from '$lib/helpers/nanoid';
 import { assertFindFirstExists, assertFirstEntryExists } from '@m1212e/rumble';
-import { GraphQLError } from 'graphql';
+import { isParticipantInConference } from '$api/services/authHelper';
+
+abilityBuilder.agendaItem.allow('read').when((ctx) => {
+	return {
+		where: {
+			committee: isParticipantInConference(ctx)
+		}
+	};
+});
 
 const ref = object({
 	table: 'agendaItem',
 	adjust: (t) => ({
 		isActive: t.field({
 			type: 'Boolean',
-			resolve: async (parent, args, context, info) => {
+			resolve: async (parent) => {
 				const res = await db.query.committee
 					.findFirst({
 						where: { activeAgendaItemId: parent.id }
@@ -31,18 +31,8 @@ const ref = object({
 	})
 });
 const pubsub = rumblePubsub({ table: 'agendaItem' });
-const arg = rumbleArg({ table: 'agendaItem' });
 query({
 	table: 'agendaItem'
-});
-
-abilityBuilder.agendaItem.allow(['read']).when((ctx) => {
-	if (isGlobalAdmin(ctx)) return 'allow';
-});
-
-abilityBuilder.agendaItem.allow('read').when(({ mustBeLoggedIn }) => {
-	mustBeLoggedIn();
-	return 'allow';
 });
 
 schemaBuilder.mutationFields((t) => {
@@ -53,27 +43,14 @@ schemaBuilder.mutationFields((t) => {
 				title: t.arg({ type: 'String', required: true }),
 				committeeId: t.arg({ type: 'ID', required: true })
 			},
-			resolve: async (query, root, args, ctx, info) => {
-				if (!isGlobalAdmin(ctx)) {
-					// TODO: rumble should support something like this
-					await db.query.conferenceUser
-						.findFirst({
-							where: {
-								conference: {
-									committees: {
-										id: args.committeeId
-									}
-								},
-								user: {
-									id: ctx.mustBeLoggedIn().sub
-								},
-								conferenceUserType: {
-									in: ['ADMIN', 'TEAM']
-								}
-							}
-						})
-						.then(assertFindFirstExists);
-				}
+			resolve: async (query, root, args, ctx) => {
+				await db.query.committee
+					.findFirst(
+						ctx.abilities.committee.filter('update').merge({
+							where: { id: args.committeeId }
+						}).query.single
+					)
+					.then(assertFindFirstExists);
 
 				return await db.transaction(async (tx) => {
 					const res = await tx
@@ -105,10 +82,8 @@ schemaBuilder.mutationFields((t) => {
 					return await tx.query.agendaItem
 						.findFirst(
 							query(
-								ctx.abilities.agendaItem.filter('read', {
-									inject: {
-										where: { id: res.id }
-									}
+								ctx.abilities.agendaItem.filter('read').merge({
+									where: { id: res.id }
 								}).query.single
 							)
 						)

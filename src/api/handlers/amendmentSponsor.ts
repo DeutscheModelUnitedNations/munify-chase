@@ -1,14 +1,9 @@
 import { db, schema } from '$api/db/db';
-import { abilityBuilder, schemaBuilder, pubsub as rumblePubsub } from '$api/rumble';
-import { basics } from './basics';
-import { isGlobalAdmin } from '$api/services/isAdminEmail';
+import { abilityBuilder, schemaBuilder, object, pubsub as rumblePubsub, query } from '$api/rumble';
+import { isGlobalAdmin } from '$api/services/authHelper';
 import { assertFindFirstExists, assertFirstEntryExists } from '@m1212e/rumble';
 import { and, eq } from 'drizzle-orm';
 import { GraphQLError } from 'graphql';
-import { assertCommitteeChairOrAdmin } from './resolutionPaper';
-
-const { arg, ref, pubsub, table } = basics('amendmentSponsor');
-const amendmentPubsub = rumblePubsub({ table: 'amendment' });
 
 abilityBuilder.amendmentSponsor.allow('read').when((ctx) => {
 	if (isGlobalAdmin(ctx)) return 'allow';
@@ -19,6 +14,11 @@ abilityBuilder.amendmentSponsor.allow('read').when(({ mustBeLoggedIn }) => {
 	return 'allow';
 });
 
+const ref = object({ table: 'amendmentSponsor' });
+const pubsub = rumblePubsub({ table: 'amendmentSponsor' });
+const amendmentPubsub = rumblePubsub({ table: 'amendment' });
+query({ table: 'amendmentSponsor' });
+
 schemaBuilder.mutationFields((t) => ({
 	addAmendmentSponsor: t.drizzleField({
 		type: ref,
@@ -26,7 +26,7 @@ schemaBuilder.mutationFields((t) => ({
 			amendmentId: t.arg.id({ required: true }),
 			committeeMemberId: t.arg.id({ required: true })
 		},
-		resolve: async (query, root, args, ctx, info) => {
+		resolve: async (query, root, args, ctx) => {
 			const user = ctx.mustBeLoggedIn();
 
 			const amendment = await db.query.amendment
@@ -51,7 +51,13 @@ schemaBuilder.mutationFields((t) => ({
 
 			if (!isOwnMembership) {
 				// Must be chair/admin
-				await assertCommitteeChairOrAdmin(ctx, paper.committeeId);
+				await db.query.resolutionPaper
+					.findFirst(
+						ctx.abilities.resolutionPaper
+							.filter('update')
+							.merge({ where: { id: amendment.paperId } }).query.single
+					)
+					.then(assertFindFirstExists);
 			} else {
 				// Delegate adding themselves — check if sponsoring is open
 				const committee = await db.query.committee
@@ -90,9 +96,8 @@ schemaBuilder.mutationFields((t) => ({
 			return db.query.amendmentSponsor
 				.findFirst(
 					query(
-						ctx.abilities.amendmentSponsor.filter('read', {
-							inject: { where: { id: result.id } }
-						}).query.single
+						ctx.abilities.amendmentSponsor.filter('read').merge({ where: { id: result.id } }).query
+							.single
 					)
 				)
 				.then(assertFindFirstExists);
@@ -121,12 +126,13 @@ schemaBuilder.mutationFields((t) => ({
 				throw new GraphQLError('Cannot remove the proposer from sponsors');
 			}
 
-			const paper = await db.query.resolutionPaper
-				.findFirst({ where: { id: amendment.paperId } })
+			// Only chair/admin can remove sponsors — verified via ability filter
+			await db.query.resolutionPaper
+				.findFirst(
+					ctx.abilities.resolutionPaper.filter('update').merge({ where: { id: amendment.paperId } })
+						.query.single
+				)
 				.then(assertFindFirstExists);
-
-			// Only chair/admin can remove sponsors
-			await assertCommitteeChairOrAdmin(ctx, paper.committeeId);
 
 			const existing = await db.query.amendmentSponsor.findFirst({
 				where: {
@@ -148,7 +154,7 @@ schemaBuilder.mutationFields((t) => ({
 					)
 				);
 
-			pubsub.removed(existing.id);
+			pubsub.removed();
 			amendmentPubsub.updated(args.amendmentId);
 
 			return true;

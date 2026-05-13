@@ -1,5 +1,6 @@
 <script lang="ts">
-	import type { PageData } from './$houdini';
+	import { page } from '$app/state';
+	import { client } from '$lib/api/rumbleClient/client';
 	import {
 		ResolutionPrintPreview,
 		migrateResolution,
@@ -12,19 +13,79 @@
 	import * as m from '$lib/paraglide/messages';
 	import { SvelteMap } from 'svelte/reactivity';
 
-	let { data }: { data: PageData } = $props();
+	const paper = await client.liveQuery.resolutionPaper({
+		__args: { id: page.params.documentId! },
+		id: true,
+		title: true,
+		status: true,
+		content: true,
+		documentNumber: true,
+		updatedAt: true,
+		creator: {
+			id: true,
+			representation: {
+				id: true,
+				name: true,
+				alpha3Code: true,
+				alpha2Code: true,
+				faIcon: true
+			}
+		},
+		sponsors: {
+			id: true,
+			committeeMemberId: true,
+			committeeMember: {
+				id: true,
+				representation: {
+					id: true,
+					name: true,
+					alpha3Code: true,
+					alpha2Code: true,
+					faIcon: true
+				}
+			}
+		},
+		committee: {
+			id: true,
+			abbreviation: true,
+			name: true,
+			resolutionHeadline: true,
+			conference: {
+				id: true,
+				title: true
+			}
+		},
+		agendaItem: {
+			id: true,
+			title: true
+		},
+		operativeClauseVotes: {
+			id: true,
+			clauseId: true,
+			outcome: true,
+			votesFor: true,
+			votesAgainst: true,
+			votesAbstain: true
+		},
+		voteResult: {
+			id: true,
+			outcome: true,
+			votesFor: true,
+			votesAgainst: true,
+			votesAbstain: true
+		}
+	});
 
-	let query = $derived(data?.PrintPaperQuery);
-	let paper = $derived($query.data?.findFirstResolutionPaper);
-	let clauseVotes = $derived($query.data?.findManyOperativeClauseVote ?? []);
-	let voteResult = $derived($query.data?.findManyResolutionVoteResult?.[0] ?? null);
+	let clauseVotes = $derived(paper?.operativeClauseVotes ?? []);
+	type ClauseVote = (typeof clauseVotes)[number];
+	let voteResult = $derived(paper?.voteResult ?? null);
 
 	let resolution = $derived(paper?.content ? migrateResolution(paper.content as Resolution) : null);
 	let operativeClauses = $derived((resolution?.operative ?? []) as OperativeClause[]);
 
 	// Map clauseId → vote for quick lookup
 	let clauseVoteMap = $derived.by(() => {
-		const map = new SvelteMap<string, (typeof clauseVotes)[0]>();
+		const map = new SvelteMap<string, ClauseVote>();
 		for (const v of clauseVotes) {
 			map.set(v.clauseId, v);
 		}
@@ -45,7 +106,7 @@
 			undefined,
 		sponsoringDelegations: paper?.sponsors
 			?.map(
-				(s: (typeof paper.sponsors)[number]) =>
+				(s) =>
 					getTranslatedCountryNameFromAlpha3Code(s.committeeMember?.representation?.alpha3Code) ??
 					s.committeeMember?.representation?.name ??
 					''

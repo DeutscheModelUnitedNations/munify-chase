@@ -1,3 +1,5 @@
+// import sockets here to ensure they are bundles with the rest of the application
+import '$api/websocket';
 import { type Handle, redirect } from '@sveltejs/kit';
 import { paraglideMiddleware } from '$lib/paraglide/server';
 import { sequence } from '@sveltejs/kit/hooks';

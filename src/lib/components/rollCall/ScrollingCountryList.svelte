@@ -1,5 +1,4 @@
 <script lang="ts">
-	import type { CommitteeTeamQuery$result } from '$houdini';
 	import { m } from '$lib/paraglide/messages';
 	import { getTranslatedCountryNameFromAlpha3Code } from '$lib/utils/nationTranslationHelper.svelte';
 	import Flag from '../Flag.svelte';
@@ -8,7 +7,17 @@
 
 	interface Props {
 		currentIndex: number;
-		members: CommitteeTeamQuery$result['findFirstCommittee']['members'];
+		members: Array<{
+			id: string;
+			present: boolean;
+			representation?: {
+				name?: string | null;
+				alpha2Code?: string | null;
+				alpha3Code?: string | null;
+				faIcon?: string | null;
+				type?: string | null;
+			} | null;
+		}>;
 		height?: string;
 		icons?: {
 			id: string;
@@ -65,7 +74,7 @@
 			style="transform: translateY({offset}px);"
 			bind:this={containerRef}
 		>
-			{#each members as member, index}
+			{#each members as member, index (member.id)}
 				{@const rep = member.representation}
 				{@const icon = icons?.find((x) => x.id === member.id)}
 				{@const present = member.present && index < currentIndex}

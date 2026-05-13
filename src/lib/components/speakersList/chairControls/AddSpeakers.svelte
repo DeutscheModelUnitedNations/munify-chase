@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { graphql, type CommitteeTeamQuery$result } from '$houdini';
+	import { client } from '$lib/api/rumbleClient/client';
 	import Combobox from '$lib/components/Combobox.svelte';
 	import Flag from '$lib/components/Flag.svelte';
 	import type { MergeWithUndefined } from '$lib/helpers/utilityTypes';
@@ -10,18 +10,31 @@
 	import hotkeys from 'hotkeys-js';
 	import toast from 'svelte-french-toast';
 
+	type MemberLike = {
+		id: string;
+		present?: boolean;
+		representation?: {
+			name?: string | null;
+			alpha2Code?: string | null;
+			alpha3Code?: string | null;
+			faIcon?: string | null;
+			type?: string | null;
+		} | null;
+	};
+
+	type SpeakersListLike = {
+		id: string;
+		type?: string;
+		speakers: Array<{
+			committeeMember?: { id: string } | null;
+			conferenceMember?: { id: string } | null;
+		}>;
+	};
+
 	interface Props {
-		speakersList?:
-			| NonNullable<
-					CommitteeTeamQuery$result['findFirstCommittee']['activeAgendaItem']
-			  >['speakersList'][number]
-			| null;
-		committeeMembers: CommitteeTeamQuery$result['findFirstCommittee']['members'];
-		conferenceMembers: NonNullable<
-			NonNullable<
-				CommitteeTeamQuery$result['findFirstCommittee']['conference']
-			>['uniqueConferenceMembers']
-		>;
+		speakersList?: SpeakersListLike | null;
+		committeeMembers: MemberLike[];
+		conferenceMembers: MemberLike[];
 	}
 
 	let { speakersList, committeeMembers, conferenceMembers }: Props = $props();
@@ -41,7 +54,9 @@
 			? member?.representation.name
 			: getTranslatedCountryNameFromAlpha3Code(member?.representation?.alpha3Code);
 
-	const fuseOptions: IFuseOptions<any> = {
+	type FuseItem = Member & { label: string | undefined };
+
+	const fuseOptions: IFuseOptions<FuseItem> = {
 		keys: ['label'],
 		// threshold: 0.3, // Adjust the threshold for fuzzy matching
 		ignoreFieldNorm: true,
@@ -49,7 +64,7 @@
 		shouldSort: true
 	};
 
-	let fuse = $state(new Fuse(committeeMembers ?? [], fuseOptions));
+	const fuse = new Fuse<FuseItem>([], fuseOptions);
 
 	const filter = (members: Member[], value: string) => {
 		const excludeMembersAlreadyOnList = (member: Member) => {
@@ -73,25 +88,6 @@
 		}
 	};
 
-	const AddSpeakerToListMutation = graphql(`
-		mutation AddSpeakerToList(
-			$committeeMemberId: ID
-			$conferenceMemberId: ID
-			$speakersListId: ID!
-		) {
-			addSpeakerOnList(
-				committeeMemberId: $committeeMemberId
-				conferenceMemberId: $conferenceMemberId
-				speakersListId: $speakersListId
-			) {
-				id
-				speakersList {
-					id
-				}
-			}
-		}
-	`);
-
 	const addSpeakerToList = async () => {
 		if (!speakersList?.id) {
 			toast.error(m.speakersListNotFound());
@@ -99,7 +95,7 @@
 		}
 		if (!value) return;
 
-		const committeeMember = committeeMembers.find((x) => getName(x) === value);
+		const committeeMember = committeeMembers.find((x) => getName(x as Member) === value);
 		const conferenceMember = conferenceMembers.find((x) => getName(x as Member) === value);
 
 		if (!committeeMember && !conferenceMember) {
@@ -107,12 +103,16 @@
 		}
 
 		await toast.promise(
-			AddSpeakerToListMutation.mutate({
-				committeeMemberId: committeeMember?.id,
-				conferenceMemberId: conferenceMember?.id,
-				speakersListId: speakersList.id
+			client.mutate.addSpeakerOnList({
+				__args: {
+					committeeMemberId: committeeMember?.id,
+					conferenceMemberId: conferenceMember?.id,
+					speakersListId: speakersList.id
+				},
+				id: true,
+				position: true
 			}),
-			promiseToastStrings(getName(committeeMember ?? (conferenceMember as Member)), 'add')
+			promiseToastStrings(getName((committeeMember ?? conferenceMember) as Member), 'add')
 		);
 
 		value = '';

@@ -19,6 +19,7 @@
 				<p class="text-center text-lg">{description}</p>
 			{/if}
 			{#if buttonText && buttonLink}
+				<!-- eslint-disable-next-line svelte/no-navigation-without-resolve -- buttonLink is resolved by caller -->
 				<a href={buttonLink} class="btn btn-primary mt-4 w-full max-w-sm">{buttonText}</a>
 			{/if}
 		</div>

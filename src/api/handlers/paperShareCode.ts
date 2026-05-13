@@ -1,18 +1,16 @@
 import { db, schema } from '$api/db/db';
-import { abilityBuilder, enum_, schemaBuilder, pubsub as rumblePubsub } from '$api/rumble';
+import {
+	abilityBuilder,
+	enum_,
+	schemaBuilder,
+	object,
+	pubsub as rumblePubsub,
+	query
+} from '$api/rumble';
 import { eq } from 'drizzle-orm';
-import { basics } from './basics';
-import { isGlobalAdmin } from '$api/services/isAdminEmail';
+import { isGlobalAdmin } from '$api/services/authHelper';
 import { assertFindFirstExists, assertFirstEntryExists } from '@m1212e/rumble';
-import { GraphQLError } from 'graphql';
 import { customAlphabet } from 'nanoid';
-
-const generateShareCode = customAlphabet('ABCDEFGHJKLMNPQRSTUVWXYZ23456789', 6);
-
-const { arg, ref, pubsub, table } = basics('paperShareCode');
-const paperPubsub = rumblePubsub({ table: 'resolutionPaper' });
-
-const shareCodePermissionEnum = enum_({ tsName: 'shareCodePermission' });
 
 abilityBuilder.paperShareCode.allow(['read', 'update']).when((ctx) => {
 	if (isGlobalAdmin(ctx)) return 'allow';
@@ -23,6 +21,11 @@ abilityBuilder.paperShareCode.allow('read').when(({ mustBeLoggedIn }) => {
 	return 'allow';
 });
 
+const ref = object({ table: 'paperShareCode' });
+
+const generateShareCode = customAlphabet('ABCDEFGHJKLMNPQRSTUVWXYZ23456789', 6);
+const shareCodePermissionEnum = enum_({ tsName: 'shareCodePermission' });
+
 const ShareCodeRedemptionResult = schemaBuilder
 	.objectRef<{ paperId: string; permission: string }>('ShareCodeRedemptionResult')
 	.implement({
@@ -32,6 +35,10 @@ const ShareCodeRedemptionResult = schemaBuilder
 		})
 	});
 
+const pubsub = rumblePubsub({ table: 'paperShareCode' });
+const paperPubsub = rumblePubsub({ table: 'resolutionPaper' });
+query({ table: 'paperShareCode' });
+
 schemaBuilder.mutationFields((t) => ({
 	createShareCode: t.drizzleField({
 		type: ref,
@@ -39,7 +46,7 @@ schemaBuilder.mutationFields((t) => ({
 			paperId: t.arg.id({ required: true }),
 			permission: t.arg({ type: shareCodePermissionEnum, required: true })
 		},
-		resolve: async (query, root, args, ctx, info) => {
+		resolve: async (query, root, args, ctx) => {
 			const user = ctx.mustBeLoggedIn();
 
 			// Must be paper creator
@@ -49,7 +56,7 @@ schemaBuilder.mutationFields((t) => ({
 				})
 				.then(assertFindFirstExists);
 
-			const conferenceUser = await db.query.conferenceUser
+			await db.query.conferenceUser
 				.findFirst({
 					where: {
 						user: { id: user.sub },
@@ -74,10 +81,8 @@ schemaBuilder.mutationFields((t) => ({
 			return db.query.paperShareCode
 				.findFirst(
 					query(
-						ctx.abilities.paperShareCode.filter('read', {
-							inject: {
-								where: { id: result.id }
-							}
+						ctx.abilities.paperShareCode.filter('read').merge({
+							where: { id: result.id }
 						}).query.single
 					)
 				)
@@ -90,7 +95,7 @@ schemaBuilder.mutationFields((t) => ({
 		args: {
 			shareCodeId: t.arg.id({ required: true })
 		},
-		resolve: async (root, args, ctx, info) => {
+		resolve: async (root, args, ctx) => {
 			const user = ctx.mustBeLoggedIn();
 
 			const shareCode = await db.query.paperShareCode
@@ -112,7 +117,7 @@ schemaBuilder.mutationFields((t) => ({
 
 			await db.delete(schema.paperShareCode).where(eq(schema.paperShareCode.id, args.shareCodeId));
 
-			pubsub.removed(args.shareCodeId);
+			pubsub.removed();
 			paperPubsub.updated(shareCode.paperId);
 
 			return true;
@@ -124,7 +129,7 @@ schemaBuilder.mutationFields((t) => ({
 		args: {
 			code: t.arg.string({ required: true })
 		},
-		resolve: async (root, args, ctx, info) => {
+		resolve: async (root, args, ctx) => {
 			const user = ctx.mustBeLoggedIn();
 
 			const shareCode = await db.query.paperShareCode

@@ -1,11 +1,8 @@
 <script lang="ts">
 	import { m } from '$lib/paraglide/messages';
 	import { page } from '$app/state';
-	import type { PageData } from './$houdini';
-	import { graphql } from '$houdini';
-	import { onMount } from 'svelte';
-	import { CommitteeSubscription } from '../committeeSubscription';
-	import { ChairResolutionPapersSubscription } from './chairResolutionPapersSubscription';
+	import { resolve } from '$app/paths';
+	import { client } from '$lib/api/rumbleClient/client';
 	import BasicCard from '$lib/components/BasicCard.svelte';
 	import Majorities from '$lib/components/Majorities.svelte';
 	import StatusWidget from '../StatusWidget.svelte';
@@ -15,23 +12,75 @@
 	import { generatePaperName } from '$lib/utils/paperNameGenerator';
 	import { getTranslatedCountryNameFromAlpha3Code } from '$lib/utils/nationTranslationHelper.svelte';
 
-	let { data }: { data: PageData } = $props();
+	const conferenceId = $derived(page.params.conferenceId!);
+	const committeeId = $derived(page.params.committeeId!);
 
-	let committeeQuery = $derived(data?.CommitteeTeamQuery);
-	let committee = $derived(
-		$CommitteeSubscription.data?.findFirstCommittee ?? $committeeQuery.data?.findFirstCommittee
-	);
+	const committee = await client.liveQuery.committee({
+		__args: { id: page.params.committeeId! },
+		id: true,
+		totalPresent: true,
+		simpleMajority: true,
+		twoThirdsMajority: true,
+		paperSupportThreshold: true,
+		status: true,
+		statusHeadline: true,
+		statusUntil: true,
+		stateOfDebate: true,
+		supportReEvaluationOpen: true,
+		maxDraftResolutions: true,
+		activeDraftResolutionId: true,
+		amendmentSubmissionOpen: true,
+		amendmentSponsoringOpen: true,
+		currentOperativeIndex: true,
+		activeAgendaItem: { id: true, title: true },
+		members: {
+			id: true,
+			representation: { id: true, name: true, alpha3Code: true }
+		}
+	});
 
-	let papersQuery = $derived(data?.ChairResolutionPapersQuery);
-	let papers = $derived(
-		$ChairResolutionPapersSubscription.data?.findManyResolutionPaper ??
-			$papersQuery.data?.findManyResolutionPaper ??
-			[]
-	);
+	const papers = await client.liveQuery.resolutionPapers({
+		__args: { where: { committee: { id: page.params.committeeId! } } },
+		id: true,
+		title: true,
+		status: true,
+		documentNumber: true,
+		sequenceNumber: true,
+		updatedAt: true,
+		creatorCommitteeMemberId: true,
+		agendaItem: {
+			id: true,
+			title: true
+		},
+		creator: {
+			id: true,
+			representation: {
+				id: true,
+				name: true,
+				alpha2Code: true,
+				alpha3Code: true,
+				faIcon: true
+			}
+		},
+		sponsors: {
+			id: true,
+			committeeMemberId: true,
+			committeeMember: {
+				id: true,
+				representation: {
+					id: true,
+					name: true,
+					alpha2Code: true,
+					alpha3Code: true,
+					faIcon: true
+				}
+			}
+		}
+	});
 
 	// Submitted papers, sorted by sponsor count descending
 	let submittedPapers = $derived(
-		papers
+		(papers ?? [])
 			.filter((p) => p.status === 'SUBMITTED')
 			.sort((a, b) => b.sponsors.length - a.sponsors.length)
 	);
@@ -40,7 +89,7 @@
 	// During re-evaluation: sorted by sponsor count (descending) to show ranking
 	// Otherwise: sorted by sequenceNumber
 	let draftResolutions = $derived(
-		papers
+		(papers ?? [])
 			.filter(
 				(p) =>
 					p.status === 'DRAFT_RESOLUTION' ||
@@ -58,53 +107,6 @@
 	let existingDrCount = $derived(draftResolutions.length);
 	let maxDr = $derived(committee?.maxDraftResolutions ?? 3);
 	let availableSlots = $derived(Math.max(0, maxDr - existingDrCount));
-
-	onMount(() => {
-		ChairResolutionPapersSubscription.listen({
-			committeeId: page.params.committeeId!
-		});
-	});
-
-	// Promote mutation
-	const PromoteMutation = graphql(`
-		mutation PromoteToDraftResolutionMutation($paperId: ID!) {
-			promoteToDraftResolution(paperId: $paperId) {
-				id
-				documentNumber
-				status
-			}
-		}
-	`);
-
-	// Update committee mutation (for activeDR + re-evaluation + amendment phase)
-	const UpdateCommitteeMutation = graphql(`
-		mutation UpdateCommitteeResolutionsMutation(
-			$id: ID!
-			$activeDraftResolutionId: ID
-			$clearActiveDraftResolution: Boolean
-			$supportReEvaluationOpen: Boolean
-			$amendmentSubmissionOpen: Boolean
-			$amendmentSponsoringOpen: Boolean
-			$currentOperativeIndex: Int
-		) {
-			updateCommittee(
-				id: $id
-				activeDraftResolutionId: $activeDraftResolutionId
-				clearActiveDraftResolution: $clearActiveDraftResolution
-				supportReEvaluationOpen: $supportReEvaluationOpen
-				amendmentSubmissionOpen: $amendmentSubmissionOpen
-				amendmentSponsoringOpen: $amendmentSponsoringOpen
-				currentOperativeIndex: $currentOperativeIndex
-			) {
-				id
-				activeDraftResolutionId
-				supportReEvaluationOpen
-				amendmentSubmissionOpen
-				amendmentSponsoringOpen
-				currentOperativeIndex
-			}
-		}
-	`);
 
 	// Amendment phase derived state
 	let activeDr = $derived(
@@ -127,7 +129,12 @@
 	async function handlePromote() {
 		if (!promotePaperId) return;
 		try {
-			await PromoteMutation.mutate({ paperId: promotePaperId });
+			await client.mutate.promoteToDraftResolution({
+				__args: { paperId: promotePaperId },
+				id: true,
+				status: true,
+				documentNumber: true
+			});
 			showPromoteModal = false;
 			toast.success(m.paperPromoted());
 		} catch {
@@ -137,9 +144,13 @@
 
 	async function setActiveDr(paperId: string) {
 		try {
-			await UpdateCommitteeMutation.mutate({
-				id: page.params.committeeId!,
-				activeDraftResolutionId: paperId
+			await client.mutate.updateCommittee({
+				__args: {
+					id: page.params.committeeId!,
+					activeDraftResolutionId: paperId
+				},
+				id: true,
+				activeDraftResolutionId: true
 			});
 		} catch {
 			toast.error(m.saveError());
@@ -148,9 +159,13 @@
 
 	async function clearActiveDr() {
 		try {
-			await UpdateCommitteeMutation.mutate({
-				id: page.params.committeeId!,
-				clearActiveDraftResolution: true
+			await client.mutate.updateCommittee({
+				__args: {
+					id: page.params.committeeId!,
+					clearActiveDraftResolution: true
+				},
+				id: true,
+				activeDraftResolutionId: true
 			});
 		} catch {
 			toast.error(m.saveError());
@@ -159,9 +174,13 @@
 
 	async function toggleReEvaluation(open: boolean) {
 		try {
-			await UpdateCommitteeMutation.mutate({
-				id: page.params.committeeId!,
-				supportReEvaluationOpen: open
+			await client.mutate.updateCommittee({
+				__args: {
+					id: page.params.committeeId!,
+					supportReEvaluationOpen: open
+				},
+				id: true,
+				supportReEvaluationOpen: true
 			});
 		} catch {
 			toast.error(m.saveError());
@@ -170,9 +189,13 @@
 
 	async function toggleAmendmentSubmission(open: boolean) {
 		try {
-			await UpdateCommitteeMutation.mutate({
-				id: page.params.committeeId!,
-				amendmentSubmissionOpen: open
+			await client.mutate.updateCommittee({
+				__args: {
+					id: page.params.committeeId!,
+					amendmentSubmissionOpen: open
+				},
+				id: true,
+				amendmentSubmissionOpen: true
 			});
 		} catch {
 			toast.error(m.saveError());
@@ -181,9 +204,13 @@
 
 	async function toggleAmendmentSponsoring(open: boolean) {
 		try {
-			await UpdateCommitteeMutation.mutate({
-				id: page.params.committeeId!,
-				amendmentSponsoringOpen: open
+			await client.mutate.updateCommittee({
+				__args: {
+					id: page.params.committeeId!,
+					amendmentSponsoringOpen: open
+				},
+				id: true,
+				amendmentSponsoringOpen: true
 			});
 		} catch {
 			toast.error(m.saveError());
@@ -192,9 +219,13 @@
 
 	async function startAmendmentPhase() {
 		try {
-			await UpdateCommitteeMutation.mutate({
-				id: page.params.committeeId!,
-				currentOperativeIndex: 0
+			await client.mutate.updateCommittee({
+				__args: {
+					id: page.params.committeeId!,
+					currentOperativeIndex: 0
+				},
+				id: true,
+				currentOperativeIndex: true
 			});
 			showStartAmendmentPhaseModal = false;
 			toast.success(m.amendmentPhaseStarted());
@@ -202,25 +233,6 @@
 			toast.error(m.saveError());
 		}
 	}
-
-	// Chair Create Working Paper
-	const ChairCreateResolutionPaperMutation = graphql(`
-		mutation ChairCreateResolutionPaperMutation(
-			$committeeId: ID!
-			$agendaItemId: ID!
-			$committeeMemberId: ID!
-			$title: String
-		) {
-			chairCreateResolutionPaper(
-				committeeId: $committeeId
-				agendaItemId: $agendaItemId
-				committeeMemberId: $committeeMemberId
-				title: $title
-			) {
-				id
-			}
-		}
-	`);
 
 	let showCreatePaperModal = $state(false);
 	let createPaperSearchQuery = $state('');
@@ -247,11 +259,14 @@
 	async function handleChairCreatePaper(committeeMemberId: string) {
 		if (!committee?.activeAgendaItem) return;
 		try {
-			await ChairCreateResolutionPaperMutation.mutate({
-				committeeId: page.params.committeeId!,
-				agendaItemId: committee.activeAgendaItem.id,
-				committeeMemberId,
-				title: generatePaperName()
+			await client.mutate.chairCreateResolutionPaper({
+				__args: {
+					committeeId: page.params.committeeId!,
+					agendaItemId: committee.activeAgendaItem.id,
+					committeeMemberId,
+					title: generatePaperName()
+				},
+				id: true
 			});
 			showCreatePaperModal = false;
 			toast.success(m.paperCreated());
@@ -390,7 +405,13 @@
 											</div>
 										</div>
 										<div class="flex gap-2">
-											<a href="./resolutions/{paper.id}" class="btn btn-ghost btn-sm">
+											<a
+												href={resolve(
+													'/app/[conferenceId]/[committeeId]/(chairs)/resolutions/[paperId]',
+													{ conferenceId, committeeId, paperId: paper.id }
+												)}
+												class="btn btn-ghost btn-sm"
+											>
 												{m.viewPaper()}
 											</a>
 											<button
@@ -418,18 +439,19 @@
 						<div class="flex flex-col gap-3">
 							{#each draftResolutions as paper (paper.id)}
 								{@const isActive = paper.id === committee.activeDraftResolutionId}
-								{@const canSetActive =
-									!isActive &&
-									(paper.status === 'DRAFT_RESOLUTION' ||
-										paper.status === 'AMENDMENT_PHASE' ||
-										paper.status === 'VOTING_PHASE')}
 								<div
 									class="card bg-base-200 shadow-sm transition-shadow {isActive
 										? 'border-l-4 border-success'
 										: ''}"
 								>
 									<div class="card-body flex-row items-center gap-4 p-4">
-										<a href="./resolutions/{paper.id}" class="flex flex-1 flex-col">
+										<a
+											href={resolve(
+												'/app/[conferenceId]/[committeeId]/(chairs)/resolutions/[paperId]',
+												{ conferenceId, committeeId, paperId: paper.id }
+											)}
+											class="flex flex-1 flex-col"
+										>
 											<div class="flex items-center gap-2">
 												<h3 class="font-bold font-mono">
 													{paper.documentNumber ?? m.draftResolution()}
@@ -463,8 +485,11 @@
 											</div>
 										</a>
 										{#if paper.status === 'DRAFT_RESOLUTION' || paper.status === 'AMENDMENT_PHASE' || paper.status === 'VOTING_PHASE'}
-											<!-- svelte-ignore a11y_no_static_element_interactions -->
-											<div onclick={(e: MouseEvent) => e.stopPropagation()}>
+											<div
+												onclick={(e: MouseEvent) => e.stopPropagation()}
+												onkeydown={(e: KeyboardEvent) => e.stopPropagation()}
+												role="presentation"
+											>
 												<input
 													type="checkbox"
 													class="toggle toggle-success"
@@ -576,7 +601,13 @@
 									<span class="badge badge-accent badge-sm">{m.votingPhaseActive()}</span>
 									<span class="font-mono">{activeDr!.documentNumber}</span>
 								</div>
-								<a href="./resolutions/{activeDr!.id}" class="btn btn-ghost btn-xs">
+								<a
+									href={resolve(
+										'/app/[conferenceId]/[committeeId]/(chairs)/resolutions/[paperId]',
+										{ conferenceId, committeeId, paperId: activeDr!.id }
+									)}
+									class="btn btn-ghost btn-xs"
+								>
 									{m.goToVoting()} →
 								</a>
 							</div>
@@ -587,7 +618,13 @@
 									<span class="badge badge-secondary badge-sm">{m.amendmentPhaseActive()}</span>
 									<span class="font-mono">OP {(committee.currentOperativeIndex ?? 0) + 1}</span>
 								</div>
-								<a href="./resolutions/{activeDr!.id}" class="btn btn-ghost btn-xs">
+								<a
+									href={resolve(
+										'/app/[conferenceId]/[committeeId]/(chairs)/resolutions/[paperId]',
+										{ conferenceId, committeeId, paperId: activeDr!.id }
+									)}
+									class="btn btn-ghost btn-xs"
+								>
 									{m.goToAmendments()} →
 								</a>
 							</div>
@@ -603,7 +640,14 @@
 								<span class="badge badge-accent badge-sm">{m.votingPhaseActive()}</span>
 								<span class="font-mono">{activeDr!.documentNumber}</span>
 							</div>
-							<a href="./resolutions/{activeDr!.id}" class="btn btn-ghost btn-xs">
+							<a
+								href={resolve('/app/[conferenceId]/[committeeId]/(chairs)/resolutions/[paperId]', {
+									conferenceId,
+									committeeId,
+									paperId: activeDr!.id
+								})}
+								class="btn btn-ghost btn-xs"
+							>
 								{m.goToVoting()} →
 							</a>
 						</div>
@@ -664,7 +708,11 @@
 	<Modal bind:open={showCreatePaperModal}>
 		<div class="flex items-center justify-between mb-4">
 			<h3 class="font-bold text-lg">{m.chairCreateWorkingPaper()}</h3>
-			<button class="btn btn-ghost btn-sm" onclick={() => (showCreatePaperModal = false)}>
+			<button
+				class="btn btn-ghost btn-sm"
+				onclick={() => (showCreatePaperModal = false)}
+				aria-label={m.close()}
+			>
 				<i class="fas fa-times"></i>
 			</button>
 		</div>

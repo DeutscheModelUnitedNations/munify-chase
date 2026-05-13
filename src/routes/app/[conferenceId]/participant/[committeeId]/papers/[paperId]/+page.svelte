@@ -1,23 +1,26 @@
 <script lang="ts">
+	import { untrack } from 'svelte';
 	import { m } from '$lib/paraglide/messages';
 	import { page } from '$app/state';
 	import { goto } from '$app/navigation';
-	import type { PageData } from './$houdini';
-	import { graphql } from '$houdini';
-	import { onMount } from 'svelte';
-	import { ParticipantPaperDetailSubscription } from './paperDetailSubscription';
-	import { PaperClauseLocksSubscription } from './lockSubscription';
-	import { ParticipantCommitteeSubscription } from '../../committeeSubscription';
-	import { ParticipantPaperCommentsSubscription } from './commentsSubscription';
-	import { ParticipantAmendmentsSubscription } from './amendmentsSubscription';
+	import { resolve } from '$app/paths';
+	import { client } from '$lib/api/rumbleClient/client';
+	import { getCurrentUser } from '$lib/state/currentUser.svelte';
 	import {
 		ResolutionEditor,
-		migrateResolution,
+		type ResolutionStore,
+		type PresenceAdapter,
 		type Resolution,
 		type ResolutionHeaderData,
 		type AmendmentOverlay,
 		type OperativeClause
 	} from '@deutschemodelunitednations/munify-resolution-editor';
+	import {
+		createYjsStore,
+		createAwarenessPresence
+	} from '@deutschemodelunitednations/munify-resolution-editor/yjs';
+	import * as Y from 'yjs';
+	import { WebsocketProvider } from 'y-websocket';
 	import Modal from '$lib/components/Modal.svelte';
 	import CreateAmendmentModal from '$lib/components/CreateAmendmentModal.svelte';
 	import Fieldset from '$lib/components/Fieldset.svelte';
@@ -25,46 +28,212 @@
 	import CommentSection from '$lib/components/CommentSection.svelte';
 	import { getTranslatedCountryNameFromAlpha3Code } from '$lib/utils/nationTranslationHelper.svelte';
 	import toast from 'svelte-french-toast';
-	import { fly, fade } from 'svelte/transition';
 	import { getResolutionLabels } from '$lib/utils/resolutionEditorLabels';
-	import { SvelteMap, SvelteSet } from 'svelte/reactivity';
+	import { SvelteMap } from 'svelte/reactivity';
 
-	let { data }: { data: PageData } = $props();
+	const currentUser = await getCurrentUser();
+	const [conferenceUser] =
+		(await client.liveQuery.conferenceUsers({
+			__args: {
+				where: {
+					conference: { id: page.params.conferenceId },
+					user: { id: currentUser?.id ?? '' }
+				}
+			},
+			id: true,
+			conferenceUserType: true,
+			committeeMemberId: true,
+			committeeMember: {
+				id: true,
+				representation: {
+					id: true,
+					name: true,
+					alpha3Code: true
+				}
+			}
+		})) ?? [];
 
-	let query = $derived(data?.ParticipantPaperDetailQuery);
-	let identityQuery = $derived(data?.ParticipantIdentityQuery);
-	let layoutQuery = $derived(data?.ParticipantCommitteeLayoutQuery);
-	let committee = $derived(
-		$ParticipantCommitteeSubscription.data?.findFirstCommittee ??
-			$layoutQuery.data?.findFirstCommittee
-	);
+	// Live queries
+	const [paper, allComments, allAmendments, clauseVotes, voteResults, committeeData] =
+		await Promise.all([
+			client.liveQuery.resolutionPaper({
+				__args: { id: page.params.paperId! },
+				id: true,
+				title: true,
+				status: true,
+				documentNumber: true,
+				creatorCommitteeMemberId: true,
+				updatedAt: true,
+				creator: {
+					id: true,
+					representation: {
+						id: true,
+						name: true,
+						alpha3Code: true,
+						alpha2Code: true,
+						faIcon: true
+					}
+				},
+				sponsors: {
+					id: true,
+					committeeMemberId: true,
+					committeeMember: {
+						id: true,
+						representation: {
+							id: true,
+							name: true,
+							alpha3Code: true,
+							alpha2Code: true,
+							faIcon: true
+						}
+					}
+				},
+				shareCodes: {
+					id: true,
+					code: true,
+					permission: true
+				},
+				editors: {
+					id: true,
+					conferenceUserId: true
+				}
+			}),
+			client.liveQuery.resolutionComments({
+				__args: { where: { paperId: page.params.paperId } },
+				id: true,
+				clauseId: true,
+				content: true,
+				visibility: true,
+				parentCommentId: true,
+				createdAt: true,
+				updatedAt: true,
+				author: {
+					id: true,
+					user: {
+						givenName: true,
+						familyName: true
+					},
+					committeeMember: {
+						id: true,
+						representation: {
+							id: true,
+							name: true,
+							alpha2Code: true,
+							alpha3Code: true,
+							faIcon: true
+						}
+					},
+					conferenceUserType: true
+				}
+			}),
+			client.liveQuery.amendments({
+				__args: { where: { paperId: page.params.paperId } },
+				id: true,
+				type: true,
+				status: true,
+				documentNumber: true,
+				targetClauseId: true,
+				targetOperativeIndex: true,
+				targetPosition: true,
+				newContent: true,
+				proposerCommitteeMemberId: true,
+				createdAt: true,
+				proposer: {
+					id: true,
+					representation: {
+						id: true,
+						name: true,
+						alpha2Code: true,
+						alpha3Code: true,
+						faIcon: true
+					}
+				},
+				sponsors: {
+					id: true,
+					committeeMemberId: true,
+					committeeMember: {
+						id: true,
+						representation: {
+							id: true,
+							name: true,
+							alpha2Code: true,
+							alpha3Code: true,
+							faIcon: true
+						}
+					}
+				}
+			}),
+			client.liveQuery.operativeClauseVotes({
+				__args: { where: { paperId: page.params.paperId } },
+				id: true,
+				clauseId: true,
+				outcome: true,
+				votesFor: true,
+				votesAgainst: true,
+				votesAbstain: true
+			}),
+			client.liveQuery.resolutionVoteResults({
+				__args: { where: { paperId: page.params.paperId }, limit: 1 },
+				id: true,
+				outcome: true,
+				votesFor: true,
+				votesAgainst: true,
+				votesAbstain: true
+			}),
+			client.liveQuery.committee({
+				__args: { id: page.params.committeeId! },
+				id: true,
+				abbreviation: true,
+				name: true,
+				resolutionHeadline: true,
+				supportReEvaluationOpen: true,
+				activeDraftResolutionId: true,
+				amendmentSubmissionOpen: true,
+				amendmentSponsoringOpen: true,
+				totalPresent: true,
+				currentOperativeIndex: true,
+				activeAmendmentId: true,
+				conference: {
+					id: true,
+					title: true
+				},
+				activeAgendaItem: {
+					id: true,
+					title: true
+				}
+			})
+		]);
 
-	let conferenceUser = $derived($identityQuery.data?.findManyConferenceUser?.[0]);
+	// Element types inferred from the selected live query result shapes
+	type PaperData = NonNullable<typeof paper>;
+	type SponsorEntry = PaperData['sponsors'][number];
+	type EditorEntry = PaperData['editors'][number];
+	type AmendmentEntry = NonNullable<typeof allAmendments>[number];
+	type AmendmentSponsorEntry = AmendmentEntry['sponsors'][number];
+	type ClauseVoteEntry = NonNullable<typeof clauseVotes>[number];
+	type CommentEntry = NonNullable<typeof allComments>[number];
+
+	let committee = $derived(committeeData);
+
 	let role = $derived(conferenceUser?.conferenceUserType);
 	let myCommitteeMemberId = $derived(conferenceUser?.committeeMemberId);
 	let myConferenceUserId = $derived(conferenceUser?.id);
 	let isDelegate = $derived(role === 'DELEGATE');
 
-	// Use subscription data with query fallback, but don't overwrite local edits
-	let remotePaper = $derived(
-		$ParticipantPaperDetailSubscription.data?.findFirstResolutionPaper ??
-			$query.data?.findFirstResolutionPaper
-	);
-
-	let paper = $derived(remotePaper);
-
 	// Access control
 	let isCreator = $derived(paper?.creatorCommitteeMemberId === myCommitteeMemberId);
-	let isEditor = $derived(paper?.editors.some((e) => e.conferenceUserId === myConferenceUserId));
+	let isEditor = $derived(
+		paper?.editors.some((e: EditorEntry) => e.conferenceUserId === myConferenceUserId)
+	);
 	let canEdit = $derived((isCreator || isEditor) && paper?.status === 'WORKING_PAPER');
 	let canSubmit = $derived(isCreator && paper?.status === 'WORKING_PAPER');
 	let canManageShareCodes = $derived(isCreator);
 	let canSponsor = $derived(isDelegate);
 	let isSponsor = $derived(
-		paper?.sponsors.some((s) => s.committeeMemberId === myCommitteeMemberId)
+		paper?.sponsors.some((s: SponsorEntry) => s.committeeMemberId === myCommitteeMemberId)
 	);
 	let sortedSponsors = $derived(
-		[...(paper?.sponsors ?? [])].sort((a, b) => {
+		[...(paper?.sponsors ?? [])].sort((a: SponsorEntry, b: SponsorEntry) => {
 			const nameA =
 				a.committeeMember?.representation?.name ??
 				getTranslatedCountryNameFromAlpha3Code(a.committeeMember?.representation?.alpha3Code) ??
@@ -89,30 +258,109 @@
 		isDelegate && isDrStatus && committee?.supportReEvaluationOpen === true
 	);
 
-	// Collaborative mode: only enable lock UI when paper has other editors or is beyond working paper
-	let collaborativeMode = $derived(
-		(paper?.editors?.length ?? 0) > 0 || paper?.status !== 'WORKING_PAPER'
-	);
-
 	// Comments: show on SUBMITTED+ papers only (not working papers)
 	let showComments = $derived(paper?.status !== 'WORKING_PAPER');
 
-	// Resolution content — initialize from paper data
-	let resolution = $state<Resolution | null>(null);
-	let hasPendingSave = $state(false);
+	// Y.js-backed collaborative store
+	let store = $state<ResolutionStore | null>(null);
+	let presence = $state<PresenceAdapter | null>(null);
+	let wsSynced = $state(false);
+	let wsConnected = $state(false);
+	let wsForbidden = $state(false);
 
 	$effect(() => {
-		if (paper?.content && !resolution) {
-			resolution = migrateResolution(paper.content as Resolution);
-		}
+		const paperId = page.params.paperId;
+		if (!paperId) return;
+		// Run the rest untracked: only paperId should re-trigger this effect.
+		// Without this, reactive reads inside (currentUser fields, anything
+		// else from $state) would cause re-mount loops.
+		return untrack(() => establishYjsSession(paperId));
 	});
 
-	// Accept remote updates when no local save is in-flight
-	$effect(() => {
-		if (remotePaper?.content && !hasPendingSave) {
-			resolution = migrateResolution(remotePaper.content as Resolution);
-		}
-	});
+	function establishYjsSession(paperId: string) {
+		const doc = new Y.Doc();
+		const wsProto = location.protocol === 'https:' ? 'wss:' : 'ws:';
+		const wsUrl = `${wsProto}//${location.host}/api/ws/yjs`;
+		const prov = new WebsocketProvider(wsUrl, paperId, doc);
+		const s = createYjsStore(doc);
+		const rep = conferenceUser?.committeeMember?.representation;
+		const roleLabel =
+			conferenceUser?.conferenceUserType === 'TEAM'
+				? 'Team'
+				: rep?.name || getTranslatedCountryNameFromAlpha3Code(rep?.alpha3Code) || 'Anonymous';
+		const p = createAwarenessPresence({
+			awareness: prov.awareness,
+			user: {
+				id: currentUser?.id ?? 'anon',
+				name: roleLabel,
+				color: stringToColor(currentUser?.id ?? 'anon')
+			}
+		});
+		const onSynced = (synced: boolean) => {
+			wsSynced = synced;
+		};
+		const onStatus = ({ status }: { status: string }) => {
+			wsConnected = status === 'connected';
+			if (status !== 'connected') wsSynced = false;
+		};
+		const onClose = (event: CloseEvent | null) => {
+			// 4403 = our server's "Forbidden" close code. Stop the reconnect
+			// loop so we don't hammer the server; surface state so the UI can
+			// tell the user to re-auth.
+			if (event?.code === 4403) {
+				prov.shouldConnect = false;
+				wsForbidden = true;
+				wsConnected = false;
+				wsSynced = false;
+			}
+		};
+		prov.on('sync', onSynced);
+		prov.on('status', onStatus);
+		prov.on('connection-close', onClose);
+		// Catch up with any state already established by the time we got here
+		// (BroadcastChannel between tabs can sync the provider before our
+		// listener is attached, and that fire-once 'synced' event is missed).
+		if (prov.synced) wsSynced = true;
+		if (prov.wsconnected) wsConnected = true;
+		// Last-resort reconciliation. y-websocket's `synced` setter dedupes
+		// no-op assignments; if the disconnect path didn't reset _synced
+		// (e.g., browser closed the WS before wsconnected was true), the
+		// next sync step 2 won't refire. Poll to self-heal within a second.
+		// IMPORTANT: only flip in the recovery direction (false→true). Going
+		// back (true→false) on a transient dip would mask the editor and
+		// race with sync messages already in flight.
+		const reconcileInterval = setInterval(() => {
+			if (wsForbidden) return;
+			if (prov.wsconnected && !wsConnected) wsConnected = true;
+			if (prov.synced && !wsSynced) wsSynced = true;
+		}, 1000);
+		store = s;
+		presence = p;
+		return () => {
+			clearInterval(reconcileInterval);
+			prov.off('sync', onSynced);
+			prov.off('status', onStatus);
+			prov.off('connection-close', onClose);
+			s.destroy();
+			prov.destroy();
+			doc.destroy();
+			store = null;
+			presence = null;
+			wsSynced = false;
+			wsConnected = false;
+			wsForbidden = false;
+		};
+	}
+
+	function stringToColor(s: string) {
+		let h = 0;
+		for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) | 0;
+		const hue = ((h % 360) + 360) % 360;
+		return `hsl(${hue}, 70%, 50%)`;
+	}
+
+	// Reactive resolution snapshot (read from store; null until connected)
+	let resolution = $derived<Resolution | null>(store?.snapshot ?? null);
 
 	// Resolution header data for document preview
 	let headerData = $derived<ResolutionHeaderData>({
@@ -128,221 +376,18 @@
 			undefined,
 		sponsoringDelegations: paper?.sponsors
 			?.map(
-				(s) =>
+				(s: SponsorEntry) =>
 					getTranslatedCountryNameFromAlpha3Code(s.committeeMember?.representation?.alpha3Code) ??
 					s.committeeMember?.representation?.name ??
 					''
 			)
 			.filter(Boolean)
-			.sort((a, b) => a.localeCompare(b)),
+			.sort((a: string, b: string) => a.localeCompare(b)),
 		lastEdited: paper?.updatedAt ?? undefined
 	});
 
-	onMount(() => {
-		ParticipantPaperDetailSubscription.listen({ paperId: page.params.paperId! });
-		ParticipantCommitteeSubscription.listen({ id: page.params.committeeId! });
-		if (collaborativeMode) {
-			PaperClauseLocksSubscription.listen({ paperId: page.params.paperId! });
-		}
-		if (showComments) {
-			ParticipantPaperCommentsSubscription.listen({ paperId: page.params.paperId! });
-		}
-
-		// Hybrid heartbeat — only fires when idle with held locks
-		const heartbeatInterval = setInterval(() => {
-			if (editableClauseIds.size > 0 && canEdit && Date.now() - lastInteractionTime > 25_000) {
-				for (const clauseId of editableClauseIds) {
-					AcquireLockMutation.mutate({
-						paperId: page.params.paperId!,
-						clauseId
-					}).catch(() => {
-						optimisticMyLockIds.delete(clauseId);
-					});
-				}
-			}
-		}, 30_000);
-
-		// Best-effort lock release on tab close
-		const handleBeforeUnload = () => {
-			if (canEdit) {
-				const body = JSON.stringify({
-					query: `mutation { releaseAllMyLocks(paperId: "${page.params.paperId}") }`
-				});
-				navigator.sendBeacon('/api/graphql', new Blob([body], { type: 'application/json' }));
-			}
-		};
-		window.addEventListener('beforeunload', handleBeforeUnload);
-
-		return () => {
-			clearInterval(heartbeatInterval);
-			window.removeEventListener('beforeunload', handleBeforeUnload);
-
-			// Release locks on navigation
-			if (canEdit) {
-				ReleaseAllMyLocksMutation.mutate({ paperId: page.params.paperId! }).catch(() => {});
-			}
-		};
-	});
-
-	// Start comments subscription when status changes to submitted+
-	$effect(() => {
-		if (showComments) {
-			ParticipantPaperCommentsSubscription.listen({ paperId: page.params.paperId! });
-		}
-	});
-
-	// Start amendments subscription when paper enters amendment phase or voting phase
-	$effect(() => {
-		if (paper?.status === 'AMENDMENT_PHASE' || paper?.status === 'VOTING_PHASE') {
-			ParticipantAmendmentsSubscription.listen({ paperId: page.params.paperId! });
-		}
-	});
-
-	// =====================================================
-	// Clause-level locking
-	// =====================================================
-
-	let lastInteractionTime = $state(Date.now());
-
-	// Lock mutations
-	const AcquireLockMutation = graphql(`
-		mutation AcquireClauseLockMutation($paperId: ID!, $clauseId: String!) {
-			acquireClauseLock(paperId: $paperId, clauseId: $clauseId) {
-				id
-				clauseId
-				conferenceUserId
-			}
-		}
-	`);
-
-	const ReleaseLockMutation = graphql(`
-		mutation ReleaseClauseLockMutation($paperId: ID!, $clauseId: String!) {
-			releaseClauseLock(paperId: $paperId, clauseId: $clauseId)
-		}
-	`);
-
-	const ReleaseAllMyLocksMutation = graphql(`
-		mutation ReleaseAllMyLocksMutation($paperId: ID!) {
-			releaseAllMyLocks(paperId: $paperId)
-		}
-	`);
-
-	// Derive lock state from subscription
-	let locks = $derived($PaperClauseLocksSubscription.data?.findManyPaperClauseLock ?? []);
-
-	// Clause IDs locked by OTHER users
-	let lockedClauseIds = $derived.by(() => {
-		const set = new SvelteSet<string>();
-		for (const lock of locks) {
-			if (lock.conferenceUserId !== myConferenceUserId) {
-				set.add(lock.clauseId);
-			}
-		}
-		return set;
-	});
-
-	// Clause IDs I hold confirmed locks for
-	let myLockedClauseIds = $derived.by(() => {
-		const set = new SvelteSet<string>();
-		for (const lock of locks) {
-			if (lock.conferenceUserId === myConferenceUserId) {
-				set.add(lock.clauseId);
-			}
-		}
-		return set;
-	});
-
-	// Map for lock badge rendering: clauseId → lock info
-	let locksByClauseId = $derived.by(() => {
-		const map = new SvelteMap<string, (typeof locks)[0]>();
-		for (const lock of locks) {
-			if (lock.conferenceUserId !== myConferenceUserId) {
-				map.set(lock.clauseId, lock);
-			}
-		}
-		return map;
-	});
-
-	// Optimistic lock IDs — added immediately on mutation success, before subscription arrives
-	let optimisticMyLockIds = new SvelteSet<string>();
-
-	// Effective editable clause IDs = confirmed (subscription) + optimistic
-	let editableClauseIds = $derived.by(() => {
-		const set = new SvelteSet(myLockedClauseIds);
-		for (const id of optimisticMyLockIds) set.add(id);
-		return set;
-	});
-
-	// Are there any locks held by other users?
-	let hasOtherLocks = $derived(lockedClauseIds.size > 0);
-
-	// Click "Start editing" → acquire lock
-	async function handleClauseLock(clauseId: string) {
-		if (!canEdit || lockedClauseIds.has(clauseId)) return;
-		try {
-			await AcquireLockMutation.mutate({
-				paperId: page.params.paperId!,
-				clauseId
-			});
-			optimisticMyLockIds.add(clauseId);
-			lastInteractionTime = Date.now();
-		} catch {
-			const lock = locksByClauseId.get(clauseId);
-			const country =
-				lock?.conferenceUser?.committeeMember?.representation?.name ??
-				getTranslatedCountryNameFromAlpha3Code(
-					lock?.conferenceUser?.committeeMember?.representation?.alpha3Code
-				) ??
-				'?';
-			toast.error(m.lockAcquireFailed({ country }));
-		}
-	}
-
-	// Click "Done editing" → release lock
-	async function handleClauseUnlock(clauseId: string) {
-		if (!canEdit) return;
-		optimisticMyLockIds.delete(clauseId);
-		await ReleaseLockMutation.mutate({
-			paperId: page.params.paperId!,
-			clauseId
-		}).catch(() => {});
-	}
-
-	// Any interaction (typing, clicking) → refresh idle timer
-	function handleClauseInteraction(_clauseId: string) {
-		lastInteractionTime = Date.now();
-	}
-
-	// Auto-save
+	// Title save status (resolution content is auto-synced via Y.js, no save status needed for it)
 	let saveStatus = $state<'idle' | 'saving' | 'saved' | 'error'>('idle');
-	let saveTimeout: ReturnType<typeof setTimeout>;
-
-	const UpdateContentMutation = graphql(`
-		mutation UpdatePaperContentMutation($paperId: ID!, $content: JSON!) {
-			updatePaperContent(paperId: $paperId, content: $content) {
-				id
-			}
-		}
-	`);
-
-	function handleResolutionChange(updated: Resolution) {
-		resolution = updated;
-		hasPendingSave = true;
-		clearTimeout(saveTimeout);
-		saveStatus = 'saving';
-		saveTimeout = setTimeout(async () => {
-			try {
-				await UpdateContentMutation.mutate({
-					paperId: page.params.paperId!,
-					content: updated
-				});
-				saveStatus = 'saved';
-				hasPendingSave = false;
-			} catch {
-				saveStatus = 'error';
-			}
-		}, 500);
-	}
 
 	let titleInput = $state('');
 	let titleInitialized = $state(false);
@@ -355,15 +400,6 @@
 	});
 
 	// Title save
-	const UpdateTitleMutation = graphql(`
-		mutation UpdatePaperTitleMutation($paperId: ID!, $title: String!) {
-			updatePaperTitle(paperId: $paperId, title: $title) {
-				id
-				title
-			}
-		}
-	`);
-
 	let titleSaveTimeout: ReturnType<typeof setTimeout>;
 
 	function handleTitleChange() {
@@ -372,9 +408,9 @@
 		saveStatus = 'saving';
 		titleSaveTimeout = setTimeout(async () => {
 			try {
-				await UpdateTitleMutation.mutate({
-					paperId: page.params.paperId!,
-					title: titleInput
+				await client.mutate.updatePaperTitle({
+					__args: { paperId: page.params.paperId!, title: titleInput },
+					id: true
 				});
 				saveStatus = 'saved';
 			} catch {
@@ -384,20 +420,11 @@
 	}
 
 	// Submit paper
-	const SubmitPaperMutation = graphql(`
-		mutation SubmitPaperMutation($paperId: ID!) {
-			submitPaper(paperId: $paperId) {
-				id
-				status
-			}
-		}
-	`);
-
 	let showSubmitModal = $state(false);
 
 	async function handleSubmit() {
 		try {
-			await SubmitPaperMutation.mutate({ paperId: page.params.paperId! });
+			await client.mutate.submitPaper({ __args: { paperId: page.params.paperId! }, id: true });
 			showSubmitModal = false;
 			toast.success(m.paperSubmitted());
 		} catch {
@@ -406,52 +433,45 @@
 	}
 
 	// Delete paper
-	const SoftDeletePaperMutation = graphql(`
-		mutation SoftDeletePaperMutation($paperId: ID!) {
-			softDeletePaper(paperId: $paperId)
-		}
-	`);
-
 	let showDeleteModal = $state(false);
 
 	async function handleDelete() {
 		try {
-			await SoftDeletePaperMutation.mutate({ paperId: page.params.paperId! });
+			// Cast required: rumble generator types scalar-returning mutations as plain types instead of fns
+			await (
+				client.mutate.softDeletePaper as unknown as (p: {
+					__args: { paperId: string };
+				}) => Promise<unknown>
+			)({ __args: { paperId: page.params.paperId! } });
 			showDeleteModal = false;
 			toast.success(m.paperDeleted());
-			goto(`/app/${page.params.conferenceId}/participant/${page.params.committeeId}/papers`);
+			goto(
+				resolve('/app/[conferenceId]/participant/[committeeId]/papers', {
+					conferenceId: page.params.conferenceId!,
+					committeeId: page.params.committeeId!
+				})
+			);
 		} catch {
 			toast.error(m.saveError());
 		}
 	}
 
 	// Sponsor mutations
-	const AddSponsorMutation = graphql(`
-		mutation AddSponsorMutation($paperId: ID!, $committeeMemberId: ID!) {
-			addSponsor(paperId: $paperId, committeeMemberId: $committeeMemberId) {
-				id
-			}
-		}
-	`);
-
-	const RemoveSponsorMutation = graphql(`
-		mutation RemoveSponsorMutation($paperId: ID!, $committeeMemberId: ID!) {
-			removeSponsor(paperId: $paperId, committeeMemberId: $committeeMemberId)
-		}
-	`);
-
 	async function handleToggleSponsor() {
 		if (!myCommitteeMemberId) return;
 		try {
 			if (isSponsor) {
-				await RemoveSponsorMutation.mutate({
-					paperId: page.params.paperId!,
-					committeeMemberId: myCommitteeMemberId
+				await (
+					client.mutate.removeSponsor as unknown as (p: {
+						__args: { paperId: string; committeeMemberId: string };
+					}) => Promise<unknown>
+				)({
+					__args: { paperId: page.params.paperId!, committeeMemberId: myCommitteeMemberId }
 				});
 			} else {
-				await AddSponsorMutation.mutate({
-					paperId: page.params.paperId!,
-					committeeMemberId: myCommitteeMemberId
+				await client.mutate.addSponsor({
+					__args: { paperId: page.params.paperId!, committeeMemberId: myCommitteeMemberId },
+					id: true
 				});
 			}
 		} catch {
@@ -460,27 +480,12 @@
 	}
 
 	// Share code mutations
-	const CreateShareCodeMutation = graphql(`
-		mutation CreateShareCodeMutation($paperId: ID!, $permission: ShareCodePermissionEnum!) {
-			createShareCode(paperId: $paperId, permission: $permission) {
-				id
-				code
-				permission
-			}
-		}
-	`);
-
-	const DeleteShareCodeMutation = graphql(`
-		mutation DeleteShareCodeMutation($shareCodeId: ID!) {
-			deleteShareCode(shareCodeId: $shareCodeId)
-		}
-	`);
-
 	async function handleCreateShareCode(permission: 'SPONSOR' | 'EDIT') {
 		try {
-			await CreateShareCodeMutation.mutate({
-				paperId: page.params.paperId!,
-				permission
+			await client.mutate.createShareCode({
+				__args: { paperId: page.params.paperId!, permission },
+				id: true,
+				code: true
 			});
 		} catch {
 			toast.error(m.saveError());
@@ -489,7 +494,11 @@
 
 	async function handleDeleteShareCode(shareCodeId: string) {
 		try {
-			await DeleteShareCodeMutation.mutate({ shareCodeId });
+			await (
+				client.mutate.deleteShareCode as unknown as (p: {
+					__args: { shareCodeId: string };
+				}) => Promise<unknown>
+			)({ __args: { shareCodeId } });
 		} catch {
 			toast.error(m.saveError());
 		}
@@ -504,13 +513,9 @@
 	// Comments
 	// =====================================================
 
-	let allComments = $derived(
-		$ParticipantPaperCommentsSubscription.data?.findManyResolutionComment ?? []
-	);
-
 	let commentsByClauseId = $derived.by(() => {
-		const map = new SvelteMap<string | null, typeof allComments>();
-		for (const comment of allComments) {
+		const map = new SvelteMap<string | null, CommentEntry[]>();
+		for (const comment of allComments ?? []) {
 			const key = comment.clauseId;
 			if (!map.has(key)) map.set(key, []);
 			map.get(key)!.push(comment);
@@ -519,63 +524,36 @@
 	});
 
 	// Comment mutations
-	const CreateCommentMutation = graphql(`
-		mutation ParticipantCreateCommentMutation(
-			$paperId: ID!
-			$content: String!
-			$clauseId: String
-			$visibility: CommentVisibilityEnum
-			$parentCommentId: ID
-		) {
-			createComment(
-				paperId: $paperId
-				content: $content
-				clauseId: $clauseId
-				visibility: $visibility
-				parentCommentId: $parentCommentId
-			) {
-				id
-			}
-		}
-	`);
-
-	const UpdateCommentMutation = graphql(`
-		mutation ParticipantUpdateCommentMutation($commentId: ID!, $content: String!) {
-			updateComment(commentId: $commentId, content: $content) {
-				id
-			}
-		}
-	`);
-
-	const DeleteCommentMutation = graphql(`
-		mutation ParticipantDeleteCommentMutation($commentId: ID!) {
-			deleteComment(commentId: $commentId)
-		}
-	`);
-
 	async function onCreateComment(
 		content: string,
 		visibility: string,
 		parentCommentId?: string,
 		clauseId?: string | null
 	) {
-		await CreateCommentMutation.mutate({
-			paperId: page.params.paperId!,
-			content,
-			clauseId: clauseId ?? null,
-			visibility: visibility as 'PUBLIC' | 'TEAM_ONLY',
-			parentCommentId: parentCommentId ?? null
+		await client.mutate.createComment({
+			__args: {
+				paperId: page.params.paperId!,
+				content,
+				clauseId: clauseId ?? undefined,
+				visibility: visibility as 'PUBLIC' | 'TEAM_ONLY',
+				parentCommentId: parentCommentId ?? undefined
+			},
+			id: true
 		});
 		toast.success(m.commentPosted());
 	}
 
 	async function onUpdateComment(commentId: string, content: string) {
-		await UpdateCommentMutation.mutate({ commentId, content });
+		await client.mutate.updateComment({ __args: { commentId, content }, id: true });
 		toast.success(m.commentUpdated());
 	}
 
 	async function onDeleteComment(commentId: string) {
-		await DeleteCommentMutation.mutate({ commentId });
+		await (
+			client.mutate.deleteComment as unknown as (p: {
+				__args: { commentId: string };
+			}) => Promise<unknown>
+		)({ __args: { commentId } });
 		toast.success(m.commentDeleted());
 	}
 
@@ -586,21 +564,8 @@
 	// Amendments (Phase 6d)
 	// =====================================================
 
-	let allAmendments = $derived($ParticipantAmendmentsSubscription.data?.findManyAmendment ?? []);
-
-	// Use subscription data directly for fields not in layout query
-	let committeeSubscriptionData = $derived(
-		$ParticipantCommitteeSubscription.data?.findFirstCommittee
-	);
-	let currentOpIndex = $derived.by(() => {
-		const clauseId = committeeSubscriptionData?.currentOperativeClauseId;
-		if (clauseId && resolution) {
-			const idx = resolution.operative.findIndex((c: { id: string }) => c.id === clauseId);
-			if (idx !== -1) return idx;
-		}
-		return committeeSubscriptionData?.currentOperativeIndex ?? 0;
-	});
-	let activeAmendmentId = $derived(committeeSubscriptionData?.activeAmendmentId ?? null);
+	let currentOpIndex = $derived(committee?.currentOperativeIndex ?? 0);
+	let activeAmendmentId = $derived(committee?.activeAmendmentId ?? null);
 
 	let isActiveDr = $derived(paper?.id === committee?.activeDraftResolutionId);
 
@@ -609,30 +574,30 @@
 	let operativeClauses = $derived((resolution?.operative ?? []) as OperativeClause[]);
 
 	let myAmendments = $derived(
-		allAmendments.filter(
-			(a) => a.proposerCommitteeMemberId === myCommitteeMemberId && a.status === 'SUBMITTED'
+		(allAmendments ?? []).filter(
+			(a: AmendmentEntry) =>
+				a.proposerCommitteeMemberId === myCommitteeMemberId && a.status === 'SUBMITTED'
 		)
 	);
 
 	let mySponsoredAmendments = $derived(
-		allAmendments.filter(
-			(a) =>
+		(allAmendments ?? []).filter(
+			(a: AmendmentEntry) =>
 				a.proposerCommitteeMemberId !== myCommitteeMemberId &&
 				a.status === 'SUBMITTED' &&
-				a.sponsors?.some((s) => s.committeeMemberId === myCommitteeMemberId)
+				a.sponsors?.some((s: AmendmentSponsorEntry) => s.committeeMemberId === myCommitteeMemberId)
 		)
 	);
 
-	let sponsorThresholdNeeded = $derived(
-		Math.ceil((committeeSubscriptionData?.totalPresent ?? 0) * 0.1)
-	);
+	let sponsorThresholdNeeded = $derived(Math.ceil((committee?.totalPresent ?? 0) * 0.1));
 
 	let amendmentOverlays = $derived.by(() => {
-		const visible = allAmendments.filter(
-			(a) => a.status === 'SUBMITTED' || a.status === 'CONSENSUS_ADOPTED' || a.status === 'ACCEPTED'
+		const visible = (allAmendments ?? []).filter(
+			(a: AmendmentEntry) =>
+				a.status === 'SUBMITTED' || a.status === 'CONSENSUS_ADOPTED' || a.status === 'ACCEPTED'
 		);
 		return visible.map(
-			(a) =>
+			(a: AmendmentEntry) =>
 				({
 					id: a.id,
 					type: a.type,
@@ -649,37 +614,6 @@
 				}) satisfies AmendmentOverlay
 		);
 	});
-
-	// Amendment mutations
-	const CreateAmendmentMutation = graphql(`
-		mutation ParticipantCreateAmendmentMutation(
-			$paperId: ID!
-			$type: AmendmentTypeEnum!
-			$targetClauseId: String
-			$targetOperativeIndex: Int
-			$targetPosition: Int
-			$newContent: JSON
-		) {
-			createAmendment(
-				paperId: $paperId
-				type: $type
-				targetClauseId: $targetClauseId
-				targetOperativeIndex: $targetOperativeIndex
-				targetPosition: $targetPosition
-				newContent: $newContent
-			) {
-				id
-			}
-		}
-	`);
-
-	const AddAmendmentSponsorMutation = graphql(`
-		mutation ParticipantAddAmendmentSponsorMutation($amendmentId: ID!, $committeeMemberId: ID!) {
-			addAmendmentSponsor(amendmentId: $amendmentId, committeeMemberId: $committeeMemberId) {
-				id
-			}
-		}
-	`);
 
 	// Amendment creation modal state
 	let showCreateAmendmentModal = $state(false);
@@ -705,13 +639,16 @@
 		newContent: OperativeClause | null;
 	}) {
 		if (!paper) return;
-		await CreateAmendmentMutation.mutate({
-			paperId: paper.id,
-			type: args.type,
-			targetClauseId: args.targetClauseId,
-			targetOperativeIndex: args.targetOperativeIndex,
-			targetPosition: args.targetPosition,
-			newContent: args.newContent
+		await client.mutate.createAmendment({
+			__args: {
+				paperId: paper.id,
+				type: args.type,
+				targetClauseId: args.targetClauseId ?? undefined,
+				targetOperativeIndex: args.targetOperativeIndex ?? undefined,
+				targetPosition: args.targetPosition ?? undefined,
+				newContent: args.newContent ?? undefined
+			},
+			id: true
 		});
 		toast.success(m.amendmentCreated());
 	}
@@ -719,9 +656,9 @@
 	async function handleSponsorAmendment(amendmentId: string) {
 		if (!myCommitteeMemberId) return;
 		try {
-			await AddAmendmentSponsorMutation.mutate({
-				amendmentId,
-				committeeMemberId: myCommitteeMemberId
+			await client.mutate.addAmendmentSponsor({
+				__args: { amendmentId, committeeMemberId: myCommitteeMemberId },
+				id: true
 			});
 		} catch {
 			toast.error(m.saveError());
@@ -788,53 +725,17 @@
 	// Clause Votes (Phase 7 — participant view)
 	// =====================================================
 
-	const ParticipantClauseVotesSubscription = graphql(`
-		subscription ParticipantClauseVotesSubscription($paperId: ID!) {
-			findManyOperativeClauseVote(where: { paperId: $paperId }) {
-				id
-				clauseId
-				outcome
-				votesFor
-				votesAgainst
-				votesAbstain
-			}
-		}
-	`);
-
-	const ParticipantVoteResultSubscription = graphql(`
-		subscription ParticipantVoteResultSubscription($paperId: ID!) {
-			findManyResolutionVoteResult(where: { paperId: $paperId }, limit: 1) {
-				id
-				outcome
-				votesFor
-				votesAgainst
-				votesAbstain
-			}
-		}
-	`);
-
-	// Start clause votes subscription when paper enters voting or final phase
-	$effect(() => {
-		if (paper?.status === 'VOTING_PHASE' || paper?.status === 'FINAL') {
-			ParticipantClauseVotesSubscription.listen({ paperId: page.params.paperId! });
-			ParticipantVoteResultSubscription.listen({ paperId: page.params.paperId! });
-		}
-	});
-
-	let clauseVotes = $derived(
-		$ParticipantClauseVotesSubscription.data?.findManyOperativeClauseVote ?? []
-	);
-	let voteResult = $derived(
-		$ParticipantVoteResultSubscription.data?.findManyResolutionVoteResult?.[0] ?? null
-	);
+	let voteResult = $derived((voteResults ?? [])[0] ?? null);
 
 	let rejectedClauseIds = $derived(
-		clauseVotes.filter((v) => v.outcome === 'REJECTED').map((v) => v.clauseId)
+		(clauseVotes ?? [])
+			.filter((v: ClauseVoteEntry) => v.outcome === 'REJECTED')
+			.map((v: ClauseVoteEntry) => v.clauseId)
 	);
 
 	let clauseVoteMap = $derived.by(() => {
-		const map = new SvelteMap<string, (typeof clauseVotes)[0]>();
-		for (const v of clauseVotes) {
+		const map = new SvelteMap<string, ClauseVoteEntry>();
+		for (const v of clauseVotes ?? []) {
 			map.set(v.clauseId, v);
 		}
 		return map;
@@ -850,7 +751,10 @@
 		<!-- Back button + save status -->
 		<div class="flex items-center justify-between py-2">
 			<a
-				href="/app/{page.params.conferenceId}/participant/{page.params.committeeId}/papers"
+				href={resolve('/app/[conferenceId]/participant/[committeeId]/papers', {
+					conferenceId: page.params.conferenceId!,
+					committeeId: page.params.committeeId!
+				})}
 				class="btn btn-ghost btn-sm"
 			>
 				<i class="fa-duotone fa-arrow-left mr-1"></i>
@@ -871,12 +775,16 @@
 					</span>
 				{/if}
 				{#if canDelete}
-					<button class="btn btn-ghost btn-sm text-error" onclick={() => (showDeleteModal = true)}>
+					<button
+						class="btn btn-ghost btn-sm text-error"
+						aria-label={m.deletePaper()}
+						onclick={() => (showDeleteModal = true)}
+					>
 						<i class="fas fa-trash"></i>
 					</button>
 				{/if}
 				<a
-					href="/app/print/{paper.id}"
+					href={resolve('/app/print/[documentId]', { documentId: paper.id })}
 					target="_blank"
 					class="btn btn-ghost btn-sm"
 					title={m.printResolution()}
@@ -941,7 +849,7 @@
 				<!-- Sponsors -->
 				<Fieldset legend={m.sponsors()} faIcon="fas fa-users">
 					<div class="flex flex-wrap gap-2">
-						{#each sortedSponsors as sponsor}
+						{#each sortedSponsors as sponsor (sponsor.id)}
 							<div
 								class="tooltip tooltip-bottom"
 								data-tip={sponsor.committeeMember?.representation?.name ??
@@ -991,7 +899,7 @@
 					<Fieldset legend={m.shareCodes()} faIcon="fas fa-share-nodes">
 						{#if paper.shareCodes.length > 0}
 							<div class="flex flex-col gap-2">
-								{#each paper.shareCodes as shareCode}
+								{#each paper.shareCodes as shareCode (shareCode.id)}
 									<div class="flex items-center gap-2">
 										<code class="bg-base-300 rounded px-2 py-1 text-sm font-mono"
 											>{shareCode.code}</code
@@ -1005,12 +913,14 @@
 										</span>
 										<button
 											class="btn btn-ghost btn-xs"
+											aria-label={m.copyCode()}
 											onclick={() => copyToClipboard(shareCode.code)}
 										>
 											<i class="fas fa-copy"></i>
 										</button>
 										<button
 											class="btn btn-ghost btn-xs text-error"
+											aria-label={m.deleteShareCode()}
 											onclick={() => handleDeleteShareCode(shareCode.id)}
 										>
 											<i class="fas fa-trash"></i>
@@ -1033,14 +943,6 @@
 				{/if}
 			</div>
 		</div>
-
-		<!-- Collaborative editing info banner -->
-		{#if canEdit && collaborativeMode && hasOtherLocks}
-			<div class="alert alert-info mt-2 text-sm">
-				<i class="fas fa-lock"></i>
-				<span>{m.collaborativeEditingInfo()}</span>
-			</div>
-		{/if}
 
 		<!-- Final vote result alert -->
 		{#if paper.status === 'FINAL' && voteResult}
@@ -1086,20 +988,28 @@
 
 		<!-- Resolution Editor -->
 		<div class="py-2">
-			{#if resolution}
-				{@const collab = canEdit && collaborativeMode}
+			{#if wsForbidden}
+				<div class="alert alert-warning my-4">
+					<i class="fa-solid fa-triangle-exclamation"></i>
+					<span>{m.collabSessionExpired()}</span>
+					<button class="btn btn-sm" onclick={() => location.reload()}>
+						{m.reload()}
+					</button>
+				</div>
+			{:else if !wsSynced}
+				<div class="flex items-center justify-center gap-2 py-12 text-base-content/60">
+					<span class="loading loading-spinner loading-sm"></span>
+					<span class="text-sm">
+						{wsConnected ? m.synchronizing() : m.connecting()}
+					</span>
+				</div>
+			{:else if store && resolution}
 				<ResolutionEditor
-					committeeName={committee?.name ?? ''}
-					{resolution}
+					{store}
+					presence={presence ?? undefined}
 					{headerData}
 					labels={getResolutionLabels()}
 					editable={canEdit && paper.status !== 'VOTING_PHASE' && paper.status !== 'FINAL'}
-					onResolutionChange={handleResolutionChange}
-					onClauseLock={collab ? handleClauseLock : undefined}
-					onClauseUnlock={collab ? handleClauseUnlock : undefined}
-					onClauseInteraction={collab ? handleClauseInteraction : undefined}
-					lockedClauseIds={collab ? lockedClauseIds : undefined}
-					editableClauseIds={collab ? editableClauseIds : undefined}
 					amendments={showAmendmentUI ? amendmentOverlays : undefined}
 					rejectedClauseIds={paper.status === 'VOTING_PHASE' || paper.status === 'FINAL'
 						? rejectedClauseIds
@@ -1107,7 +1017,7 @@
 					onAmendmentClick={showAmendmentUI ? handleAmendmentClick : undefined}
 				>
 					{#snippet betweenOperativeClauses({ index })}
-						{#if showAmendmentUI && isDelegate && committeeSubscriptionData?.amendmentSubmissionOpen}
+						{#if showAmendmentUI && isDelegate && committee?.amendmentSubmissionOpen}
 							<div class="flex justify-center py-1">
 								<div class="dropdown dropdown-bottom">
 									<div tabindex="0" role="button" class="btn btn-ghost btn-xs btn-circle">
@@ -1148,69 +1058,28 @@
 						{/if}
 					{/snippet}
 					{#snippet preambleAnnotations({ clause })}
-						{@const lock = locksByClauseId.get(clause.id)}
-						{#if lock}
-							<div
-								class="tooltip tooltip-right"
-								data-tip={m.clauseLockedBy({
-									country:
-										lock.conferenceUser?.committeeMember?.representation?.name ??
-										getTranslatedCountryNameFromAlpha3Code(
-											lock.conferenceUser?.committeeMember?.representation?.alpha3Code
-										) ??
-										'?'
-								})}
-								in:fly={{ y: -6, duration: 200 }}
-								out:fade={{ duration: 150 }}
+						{#each presence?.editorsFor(clause.id) ?? [] as editor (editor.user.id)}
+							<span
+								class="badge badge-sm text-white"
+								style="background-color: {editor.user.color ?? '#888'}"
 							>
-								<div
-									class="flex items-center gap-2 rounded-md bg-warning/40 px-2 py-1 text-sm shadow-sm"
-								>
-									{#if lock.conferenceUser?.committeeMember?.representation}
-										<Flag
-											representation={lock.conferenceUser.committeeMember.representation}
-											size="xs"
-										/>
-									{/if}
-									<i class="fas fa-lock text-warning text-base"></i>
-								</div>
-							</div>
-						{/if}
+								{editor.user.name}
+							</span>
+						{/each}
 					{/snippet}
 					{#snippet clauseAnnotations({ clause })}
-						{@const lock = locksByClauseId.get(clause.id)}
-						{#if lock}
-							<div
-								class="tooltip tooltip-right"
-								data-tip={m.clauseLockedBy({
-									country:
-										lock.conferenceUser?.committeeMember?.representation?.name ??
-										getTranslatedCountryNameFromAlpha3Code(
-											lock.conferenceUser?.committeeMember?.representation?.alpha3Code
-										) ??
-										'?'
-								})}
-								in:fly={{ y: -6, duration: 200 }}
-								out:fade={{ duration: 150 }}
+						{#each presence?.editorsFor(clause.id) ?? [] as editor (editor.user.id)}
+							<span
+								class="badge badge-sm text-white"
+								style="background-color: {editor.user.color ?? '#888'}"
 							>
-								<div
-									class="flex items-center gap-2 rounded-md bg-warning/40 px-2 py-1 text-sm shadow-sm"
-								>
-									{#if lock.conferenceUser?.committeeMember?.representation}
-										<Flag
-											representation={lock.conferenceUser.committeeMember.representation}
-											size="xs"
-										/>
-									{/if}
-									<i class="fas fa-lock text-warning text-base"></i>
-								</div>
-							</div>
-						{/if}
+								{editor.user.name}
+							</span>
+						{/each}
 					{/snippet}
 					{#snippet preambleClauseToolbar({ clause })}
 						{#if showComments}
 							<CommentSection
-								paperId={page.params.paperId!}
 								clauseId={clause.id}
 								comments={commentsByClauseId.get(clause.id) ?? []}
 								{myConferenceUserId}
@@ -1226,7 +1095,6 @@
 					{#snippet clauseToolbar({ clause })}
 						{#if showComments}
 							<CommentSection
-								paperId={page.params.paperId!}
 								clauseId={clause.id}
 								comments={commentsByClauseId.get(clause.id) ?? []}
 								{myConferenceUserId}
@@ -1242,7 +1110,6 @@
 					{#snippet afterPreambleClause({ clause })}
 						{#if showComments && !canEdit}
 							<CommentSection
-								paperId={page.params.paperId!}
 								clauseId={clause.id}
 								comments={commentsByClauseId.get(clause.id) ?? []}
 								{myConferenceUserId}
@@ -1256,10 +1123,9 @@
 							/>
 						{/if}
 					{/snippet}
-					{#snippet afterOperativeClause({ clause, index })}
+					{#snippet afterOperativeClause({ clause })}
 						{#if showComments && !canEdit}
 							<CommentSection
-								paperId={page.params.paperId!}
 								clauseId={clause.id}
 								comments={commentsByClauseId.get(clause.id) ?? []}
 								{myConferenceUserId}
@@ -1392,13 +1258,15 @@
 			{/if}
 
 			<!-- Submitted amendments from others that I can sponsor -->
-			{@const otherPendingAmendments = allAmendments.filter(
-				(a) =>
+			{@const otherPendingAmendments = (allAmendments ?? []).filter(
+				(a: AmendmentEntry) =>
 					a.status === 'SUBMITTED' &&
 					a.proposerCommitteeMemberId !== myCommitteeMemberId &&
-					!a.sponsors?.some((s) => s.committeeMemberId === myCommitteeMemberId)
+					!a.sponsors?.some(
+						(s: AmendmentSponsorEntry) => s.committeeMemberId === myCommitteeMemberId
+					)
 			)}
-			{#if otherPendingAmendments.length > 0 && isDelegate && committeeSubscriptionData?.amendmentSponsoringOpen}
+			{#if otherPendingAmendments.length > 0 && isDelegate && committee?.amendmentSponsoringOpen}
 				<Fieldset legend={m.amendments()} faIcon="fas fa-handshake">
 					<div class="flex flex-col gap-2">
 						{#each otherPendingAmendments as amendment (amendment.id)}
@@ -1442,7 +1310,7 @@
 		{/if}
 
 		<!-- Per-paragraph results when FINAL -->
-		{#if paper.status === 'FINAL' && clauseVotes.length > 0}
+		{#if paper.status === 'FINAL' && (clauseVotes ?? []).length > 0}
 			<Fieldset legend={m.clauseVoteSummary()} faIcon="fas fa-clipboard-check">
 				<div class="flex flex-col gap-1">
 					{#each operativeClauses as clause, i (clause.id)}
@@ -1497,7 +1365,6 @@
 		{#if showComments && (commentsByClauseId.get(null)?.length ?? 0) > 0}
 			<Fieldset legend={m.documentLevelComments()} faIcon="fas fa-comments">
 				<CommentSection
-					paperId={page.params.paperId!}
 					clauseId={null}
 					comments={commentsByClauseId.get(null) ?? []}
 					{myConferenceUserId}

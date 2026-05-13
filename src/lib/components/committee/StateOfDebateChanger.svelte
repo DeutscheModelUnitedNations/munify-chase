@@ -1,8 +1,8 @@
 <script lang="ts">
-	import { m, stateOfDebate } from '$lib/paraglide/messages';
+	import { m } from '$lib/paraglide/messages';
 	import toast from 'svelte-french-toast';
 	import Combobox from '../Combobox.svelte';
-	import { graphql } from '$houdini';
+	import { client } from '$lib/api/rumbleClient/client';
 	import stateOfDebateTemplates from '$lib/data/stateOfDebateTemplates';
 	import { promiseToastStrings } from '$lib/utils/toast';
 
@@ -20,20 +20,12 @@
 		label: preset
 	}));
 
-	const UpdateStateOfDebateMutation = graphql(`
-		mutation UpdateStateOfDebate($stateOfDebate: String!, $committeeId: ID!) {
-			updateCommittee(id: $committeeId, stateOfDebate: $stateOfDebate) {
-				id
-				stateOfDebate
-			}
-		}
-	`);
-
 	const submitState = async () => {
 		await toast.promise(
-			UpdateStateOfDebateMutation.mutate({
-				stateOfDebate: value,
-				committeeId
+			client.mutate.updateCommittee({
+				__args: { id: committeeId, stateOfDebate: value },
+				id: true,
+				stateOfDebate: true
 			}),
 			promiseToastStrings(m.stateOfDebate(), 'update')
 		);

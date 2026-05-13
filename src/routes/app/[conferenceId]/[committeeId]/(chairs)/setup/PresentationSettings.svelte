@@ -91,7 +91,7 @@
 	<legend class="fieldset-legend">{m.layout()}</legend>
 	<select class="select w-full" onchange={changeLayoutKey}>
 		<option disabled selected>{m.layoutSelect()}</option>
-		{#each getPresentationLayoutPresets() as preset}
+		{#each getPresentationLayoutPresets() as preset (preset)}
 			<option value={preset} selected={$committeeSettings?.layout === preset}>
 				{layoutPresetLabels[preset]?.() ?? preset}
 			</option>

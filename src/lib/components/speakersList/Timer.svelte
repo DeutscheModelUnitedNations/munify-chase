@@ -1,11 +1,7 @@
 <script lang="ts">
-	import dayjs, { type Dayjs } from 'dayjs';
+	import dayjs from 'dayjs';
 	import Hourglass, { type HourglassStatus } from './Hourglass.svelte';
-	import { serverTime } from '$lib/state/serverTime.svelte';
-	import { scale } from 'svelte/transition';
-	import toast from 'svelte-french-toast';
-	import { m } from '$lib/paraglide/messages';
-	import BellIcon from '../toast/BellIcon.svelte';
+	import { getServerTime } from '$lib/state/serverTime.svelte';
 	import type { Duration } from 'dayjs/plugin/duration';
 
 	interface Props {
@@ -19,7 +15,7 @@
 
 	let calculatedTimeLeft = $derived.by(() => {
 		if (startTimestamp && timeLeft !== null && timeLeft !== undefined) {
-			return dayjs(startTimestamp).diff($serverTime, 'seconds') + timeLeft;
+			return dayjs(startTimestamp).diff(getServerTime(), 'seconds') + timeLeft;
 		}
 		if (timeLeft !== null && timeLeft !== undefined) {
 			return timeLeft;

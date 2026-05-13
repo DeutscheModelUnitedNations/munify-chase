@@ -66,6 +66,7 @@ export const importDataSchema = z.object({
 				id: z.string(),
 				conferenceUserType: z.enum(['ADMIN', 'DELEGATE', 'NON_STATE_ACTOR', 'SPECTATOR', 'TEAM']),
 				userEmail: z.string(),
+				name: z.string().optional(),
 				//TODO enforce that one has to be set?
 				conferenceMemberId: z.string().optional(),
 				committeeMemberId: z.string().optional()

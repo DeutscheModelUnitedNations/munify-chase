@@ -1,62 +1,39 @@
 import { db, schema } from '$api/db/db';
-import {
-	schemaBuilder,
-	pubsub as rumblePubsub,
-	arg as rumbleArg,
-	abilityBuilder,
-	object,
-	query
-} from '$api/rumble';
+import { schemaBuilder, pubsub as rumblePubsub, abilityBuilder, object, query } from '$api/rumble';
 import { eq } from 'drizzle-orm';
-import { basics } from './basics';
-import { assertFindFirstExists } from '@m1212e/rumble';
+import { assertFindFirstExists, mapNullFieldsToUndefined } from '@m1212e/rumble';
 import { GraphQLError } from 'graphql';
-import { SpeakerOnListRef, SpeakerOnWhereArgs } from './speakerOnList';
-import { isGlobalAdmin } from '$api/services/isAdminEmail';
-import { assertCommitteeChairOrAdmin } from './resolutionPaper';
+import { isChairInConference, isParticipantInConference } from '$api/services/authHelper';
 
-// const { arg, ref, pubsub: speakersListPubSub, table } = basics('speakersList');
+abilityBuilder.speakersList.allow('read').when((ctx) => {
+	return {
+		where: {
+			agendaItem: {
+				committee: isParticipantInConference(ctx)
+			}
+		}
+	};
+});
+
+abilityBuilder.speakersList.allow(['update', 'delete']).when((ctx) => {
+	return {
+		where: {
+			agendaItem: {
+				committee: isChairInConference(ctx)
+			}
+		}
+	};
+});
 
 const ref = object({
 	table: 'speakersList'
-	// adjust(t) {
-	// 	return {
-	// 		speakers: t.relation('speakers', {
-	// 			args: {
-	// 				where: t.arg({ type: SpeakerOnWhereArgs, required: false })
-	// 			},
-	// 			nullable: false,
-	// 			query: (args: any, ctx: any) => {
-	// 				const queryFilter = ctx.abilities.speakerOnList.filter('read', {
-	// 					inject: { where: args.where }
-	// 				}).query.many;
-
-	// 				return {
-	// 					...queryFilter,
-	// 					orderBy: {
-	// 						position: 'asc'
-	// 					}
-	// 				};
-	// 			}
-	// 		})
-	// 	};
-	// }
 });
 
 export const SpeakersListRef = ref;
-const speakersListPubSub = rumblePubsub({ table: 'speakersList' });
-const arg = rumbleArg({ table: 'speakersList' });
+
+const pubsub = rumblePubsub({ table: 'speakersList' });
 query({
 	table: 'speakersList'
-});
-
-abilityBuilder.speakersList.allow(['read', 'update', 'delete']).when((ctx) => {
-	if (isGlobalAdmin(ctx)) return 'allow';
-});
-
-abilityBuilder.speakersList.allow('read').when(({ mustBeLoggedIn }) => {
-	mustBeLoggedIn();
-	return 'allow';
 });
 
 schemaBuilder.mutationFields((t) => {
@@ -76,27 +53,20 @@ schemaBuilder.mutationFields((t) => {
 				}),
 				isClosed: t.arg.boolean()
 			},
-			resolve: async (query, root, args, ctx, info) => {
+			resolve: async (query, root, args, ctx) => {
 				if (args.startTimestamp && args.stopTimer) {
 					throw new GraphQLError('startTimestamp and stopTimer are mutually exclusive');
 				}
-
-				// Verify chair/admin access via speakersList → agendaItem → committee
-				const sl = await db.query.speakersList
-					.findFirst({
-						where: { id: args.id },
-						with: { agendaItem: { columns: { committeeId: true } } }
-					})
-					.then(assertFindFirstExists);
-				await assertCommitteeChairOrAdmin(ctx, (sl as any).agendaItem.committeeId);
 
 				await db.transaction(async (tx) => {
 					if (args.stopTimer) {
 						const speakersList = await tx.query.speakersList
 							.findFirst({
-								where: {
-									id: args.id
-								},
+								...ctx.abilities.speakersList.filter('update').merge({
+									where: {
+										id: args.id
+									}
+								}).query.single,
 								with: {
 									speakers: {
 										orderBy: {
@@ -119,25 +89,28 @@ schemaBuilder.mutationFields((t) => {
 						}
 					}
 
+					const mappedArgs = mapNullFieldsToUndefined(args);
 					await tx
 						.update(schema.speakersList)
 						.set({
-							speakingTime: args.speakingTime ?? undefined,
-							timeLeft: args.timeLeft ?? undefined,
-							startTimestamp: args.stopTimer ? null : (args.startTimestamp ?? undefined),
-							isClosed: args.isClosed ?? undefined
+							speakingTime: mappedArgs.speakingTime,
+							timeLeft: mappedArgs.timeLeft,
+							startTimestamp: args.stopTimer ? null : mappedArgs.startTimestamp,
+							isClosed: mappedArgs.isClosed
 						})
-						.where(eq(schema.speakersList.id, args.id));
+						.where(
+							ctx.abilities.speakersList.filter('update').merge({ where: { id: args.id } }).sql
+								.where
+						);
 				});
 
-				speakersListPubSub.updated(args.id);
+				pubsub.updated(args.id);
 
 				return db.query.speakersList
 					.findFirst(
 						query(
-							ctx.abilities.speakersList.filter('read', {
-								inject: { where: { id: args.id } }
-							}).query.single
+							ctx.abilities.speakersList.filter('read').merge({ where: { id: args.id } }).query
+								.single
 						)
 					)
 					.then(assertFindFirstExists);
@@ -148,15 +121,13 @@ schemaBuilder.mutationFields((t) => {
 			args: {
 				id: t.arg.id({ required: true })
 			},
-			resolve: async (query, root, args, ctx, info) => {
-				// Verify chair/admin access
-				const sl = await db.query.speakersList
-					.findFirst({
-						where: { id: args.id },
-						with: { agendaItem: { columns: { committeeId: true } } }
-					})
+			resolve: async (query, root, args, ctx) => {
+				await db.query.speakersList
+					.findFirst(
+						ctx.abilities.speakersList.filter('delete').merge({ where: { id: args.id } }).query
+							.single
+					)
 					.then(assertFindFirstExists);
-				await assertCommitteeChairOrAdmin(ctx, (sl as any).agendaItem.committeeId);
 
 				const deleted = await db
 					.delete(schema.speakerOnList)
@@ -164,17 +135,16 @@ schemaBuilder.mutationFields((t) => {
 					.returning();
 
 				if (deleted.length > 0) {
-					rumblePubsub({ table: 'speakerOnList' }).removed(deleted.map((d) => d.id));
+					rumblePubsub({ table: 'speakerOnList' }).removed();
 				}
 
-				speakersListPubSub.updated(args.id);
+				pubsub.updated(args.id);
 
 				return db.query.speakersList
 					.findFirst(
 						query(
-							ctx.abilities.speakersList.filter('read', {
-								inject: { where: { id: args.id } }
-							}).query.single
+							ctx.abilities.speakersList.filter('read').merge({ where: { id: args.id } }).query
+								.single
 						)
 					)
 					.then(assertFindFirstExists);

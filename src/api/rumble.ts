@@ -5,6 +5,7 @@ import { dev } from '$app/environment';
 import { Redis } from 'ioredis';
 import { createRedisEventTarget } from '@graphql-yoga/redis-event-target';
 import { configPrivate } from '$config/private';
+import ValidationPlugin from '@pothos/plugin-validation';
 
 let eventTarget: ReturnType<typeof createRedisEventTarget> | undefined;
 if (configPrivate.REDIS_URL) {
@@ -23,10 +24,23 @@ if (dev) {
 	import('$api/handlers/register');
 }
 
-export const { abilityBuilder, schemaBuilder, arg, object, query, pubsub, createYoga, enum_ } =
-	rumble({
-		db,
-		context,
-		defaultLimit: 1000,
-		subscriptions: [{ eventTarget }]
-	});
+export const {
+	abilityBuilder,
+	schemaBuilder,
+	whereArg,
+	object,
+	query,
+	pubsub,
+	createYoga,
+	createWs,
+	enum_,
+	clientCreator
+} = rumble({
+	db,
+	context,
+	defaultLimit: 1000,
+	subscriptions: [{ eventTarget }],
+	pothosConfig: {
+		plugins: [ValidationPlugin]
+	}
+});

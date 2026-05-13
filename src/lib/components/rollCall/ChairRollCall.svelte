@@ -1,19 +1,27 @@
 <script lang="ts">
-	import type { CommitteeTeamQuery$result } from '$houdini';
 	import Kbd from '$lib/components/Kbd.svelte';
 	import { m } from '$lib/paraglide/messages';
-	import { onDestroy, onMount } from 'svelte';
 	import Modal from '../Modal.svelte';
 	import ScrollingCountryList from './ScrollingCountryList.svelte';
 	import hotkeys from 'hotkeys-js';
 	import toast from 'svelte-french-toast';
-	import { SetPresenceMutation } from '../../../routes/app/[conferenceId]/[committeeId]/(chairs)/presence/presenceMutations';
+	import { client } from '$lib/api/rumbleClient/client';
 	import { promiseToastStrings } from '$lib/utils/toast';
 	import { localDB } from '$lib/local-db/localDB';
 
 	interface Props {
 		active: boolean;
-		members: CommitteeTeamQuery$result['findFirstCommittee']['members'];
+		members: Array<{
+			id: string;
+			present: boolean;
+			representation?: {
+				name?: string | null;
+				alpha2Code?: string | null;
+				alpha3Code?: string | null;
+				faIcon?: string | null;
+				type?: string | null;
+			} | null;
+		}>;
 		committeeId: string;
 	}
 
@@ -25,9 +33,10 @@
 		const member = members[currentIndex];
 		if (member) {
 			await toast.promise(
-				SetPresenceMutation.mutate({
-					memberIds: [member.id],
-					present
+				client.mutate.setPresenceForCommitteeMembers({
+					__args: { ids: [member.id], present },
+					id: true,
+					present: true
 				}),
 				promiseToastStrings(m.presence(), 'update'),
 				{

@@ -1,12 +1,8 @@
 <script lang="ts">
-	import type { CommitteePresentationQuery$result, RegionalGroupEnum$options } from '$houdini';
-	import Flag from '$lib/components/Flag.svelte';
 	import type { CommitteeSettings, VotingStage } from '$lib/local-db/localDB';
 	import { m } from '$lib/paraglide/messages';
-	import hotkeys from 'hotkeys-js';
-	import { onMount } from 'svelte';
 	import { cubicIn, cubicOut } from 'svelte/easing';
-	import { blur, fly } from 'svelte/transition';
+	import { fly } from 'svelte/transition';
 	import ResultChart from './ResultChart.svelte';
 
 	interface Props {
@@ -125,7 +121,7 @@
 					/>
 
 					<div class="flex items-center justify-center gap-6">
-						{#each resultBoxes as box, i (box.faIcon)}
+						{#each resultBoxes as box (box.faIcon)}
 							{#if committeeSettings.showOfHandsVotingStage === 'EVALUATION'}
 								<div
 									class="card {box.classes} min-w-26 items-center justify-center gap-4 px-10 py-4 shadow-sm"

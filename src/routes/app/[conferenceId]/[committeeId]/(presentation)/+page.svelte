@@ -1,13 +1,10 @@
 <script lang="ts">
-	import DevPlaceholder from '$lib/components/DevPlaceholder.svelte';
 	import { m } from '$lib/paraglide/messages';
-	import type { PageData } from './$houdini';
 	import Grid, { GridItem } from 'svelte-grid-extended';
 	import IconInfoBox from '$lib/components/IconInfoBox.svelte';
 	import { getCommitteeStatusIcon, getCommitteeStatusText } from '$lib/utils/committeeStatus';
 	import WhiteboardViewer from '$lib/components/whiteboard/WhiteboardViewer.svelte';
 	import Majorities from '$lib/components/Majorities.svelte';
-	import { onMount, type Component } from 'svelte';
 	import { liveQuery } from 'dexie';
 	import { localDB } from '$lib/local-db/localDB';
 	import { getPresentationLayoutPreset } from '$lib/data/presentationLayoutPresets';
@@ -18,20 +15,190 @@
 	import PresentationRollCall from '$lib/components/rollCall/PresentationRollCall.svelte';
 	import { sortTranslatedCountries } from '$lib/utils/nationTranslationHelper.svelte';
 	import CurrentSpeaker from '$lib/components/speakersList/CurrentSpeaker.svelte';
-	import { PresentationSubscription } from './committeeSubscription';
 	import SpeakersQueue from '$lib/components/speakersList/PresentationSpeakersQueue.svelte';
 	import ShowOfHandsVotingPresentation from '$lib/components/voting/ShowOfHandsVotingPresentation.svelte';
 	import RollCallVotingPresentation from '$lib/components/voting/RollCallVotingPresentation.svelte';
 	import { browser } from '$app/environment';
 	import AdoptionConfetti from '$lib/components/AdoptionConfetti.svelte';
 	import PresentationResolutionPreview from './PresentationResolutionPreview.svelte';
+	import { client } from '$lib/api/rumbleClient/client';
+	import { page } from '$app/state';
 
-	let { data }: { data: PageData } = $props();
+	const committeeId = page.params.committeeId!;
 
-	let committeeQuery = $derived(data?.CommitteePresentationQuery);
-	let committee = $derived($committeeQuery.data?.findFirstCommittee);
+	const committee = await client.liveQuery.committee({
+		__args: { id: committeeId },
+		id: true,
+		abbreviation: true,
+		name: true,
+		resolutionHeadline: true,
+		status: true,
+		statusHeadline: true,
+		statusUntil: true,
+		totalPresent: true,
+		simpleMajority: true,
+		twoThirdsMajority: true,
+		paperSupportThreshold: true,
+		lastResolutionAdoptionDate: true,
+		activeDraftResolutionId: true,
+		currentOperativeIndex: true,
+		currentOperativeClauseId: true,
+		activeAmendmentId: true,
+		activeAmendment: {
+			id: true,
+			type: true,
+			status: true,
+			documentNumber: true,
+			targetClauseId: true,
+			targetOperativeIndex: true,
+			targetPosition: true,
+			newContent: true,
+			proposer: {
+				id: true,
+				representation: {
+					id: true,
+					name: true,
+					alpha2Code: true,
+					alpha3Code: true
+				}
+			}
+		},
+		activeDraftResolution: {
+			id: true,
+			content: true,
+			documentNumber: true,
+			status: true,
+			title: true,
+			updatedAt: true,
+			agendaItem: {
+				id: true,
+				title: true
+			},
+			creator: {
+				id: true,
+				representation: {
+					id: true,
+					name: true,
+					alpha2Code: true,
+					alpha3Code: true
+				}
+			},
+			sponsors: {
+				id: true,
+				committeeMember: {
+					id: true,
+					representation: {
+						id: true,
+						name: true,
+						alpha3Code: true
+					}
+				}
+			},
+			amendments: {
+				id: true,
+				type: true,
+				status: true,
+				documentNumber: true,
+				targetClauseId: true,
+				targetOperativeIndex: true,
+				targetPosition: true,
+				newContent: true,
+				proposer: {
+					id: true,
+					representation: {
+						id: true,
+						name: true
+					}
+				}
+			},
+			operativeClauseVotes: {
+				id: true,
+				clauseId: true,
+				outcome: true
+			},
+			voteResult: {
+				id: true,
+				outcome: true,
+				votesFor: true,
+				votesAgainst: true,
+				votesAbstain: true
+			}
+		},
+		whiteboardContent: true,
+		activeAgendaItem: {
+			id: true,
+			title: true,
+			speakersList: {
+				id: true,
+				type: true,
+				isClosed: true,
+				speakingTime: true,
+				startTimestamp: true,
+				timeLeft: true,
+				speakers: {
+					id: true,
+					position: true,
+					overwriteName: true,
+					committeeMember: {
+						id: true,
+						representation: {
+							id: true,
+							type: true,
+							name: true,
+							regionalGroup: true,
+							alpha2Code: true,
+							alpha3Code: true,
+							faIcon: true
+						},
+						present: true
+					},
+					conferenceMember: {
+						id: true,
+						representation: {
+							id: true,
+							type: true,
+							name: true,
+							regionalGroup: true,
+							alpha2Code: true,
+							alpha3Code: true,
+							faIcon: true
+						}
+					}
+				}
+			}
+		},
+		members: {
+			id: true,
+			present: true,
+			representation: {
+				id: true,
+				type: true,
+				name: true,
+				alpha2Code: true,
+				alpha3Code: true,
+				regionalGroup: true,
+				faIcon: true
+			}
+		},
+		conference: {
+			id: true,
+			title: true,
+			resolutionFeatureEnabled: true,
+			uniqueConferenceMembers: {
+				id: true,
+				representation: {
+					id: true,
+					type: true,
+					name: true,
+					alpha2Code: true,
+					alpha3Code: true,
+					faIcon: true
+				}
+			}
+		}
+	});
 
-	let committeeSettings = liveQuery(() => localDB.committeeSettings.get(data.committeeId));
+	let committeeSettings = liveQuery(() => localDB.committeeSettings.get(committeeId));
 
 	let layout = $derived(
 		($committeeSettings && getPresentationLayoutPreset($committeeSettings.layout)) ??
@@ -45,8 +212,8 @@
 	let commentsList = $derived(
 		committee?.activeAgendaItem?.speakersList.find((x) => x.type === 'COMMENT_LIST')
 	);
-	let speakersQueueResizeFn: () => void;
-	let commentsQueueResizeFn: () => void;
+	let speakersQueueResizeFn = $state<(() => void) | undefined>(undefined);
+	let commentsQueueResizeFn = $state<(() => void) | undefined>(undefined);
 
 	$effect(() => {
 		if (!layout || !committee) {
@@ -59,10 +226,6 @@
 		speakersQueueResizeFn?.();
 		commentsQueueResizeFn?.();
 	};
-
-	onMount(() => {
-		PresentationSubscription.listen({ id: data.committeeId });
-	});
 
 	$effect(() => {
 		if ($committeeSettings?.presentationRootFontSize) {
@@ -182,7 +345,7 @@
 	/>
 
 	<PresentationRollCall
-		committeeId={data.committeeId}
+		{committeeId}
 		members={committee.members
 			.filter((x) => x.representation?.type === 'DELEGATION')
 			.sort((a, b) => sortTranslatedCountries(a.representation!, b.representation!))}

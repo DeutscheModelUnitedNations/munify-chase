@@ -1,0 +1,439 @@
+import { db, schema } from '$api/db/db';
+import { ConferenceUserRef } from './conferenceUser';
+import {
+	abilityBuilder,
+	enum_,
+	schemaBuilder,
+	object,
+	pubsub as rumblePubsub,
+	query
+} from '$api/rumble';
+import {
+	isAdminInConference,
+	isChairInConference,
+	isParticipantInConference
+} from '$api/services/authHelper';
+import { attendanceCode as generateAttendanceCode } from '$lib/helpers/attendanceCode';
+import { assertFindFirstExists, assertFirstEntryExists } from '@m1212e/rumble';
+import { eq } from 'drizzle-orm';
+import { GraphQLError } from 'graphql';
+
+abilityBuilder.nsaPresenceEvent.allow('read').when((ctx) => ({
+	where: {
+		conference: isParticipantInConference(ctx).conference
+	}
+}));
+
+abilityBuilder.nsaPresenceEvent.allow(['update', 'delete']).when((ctx) => ({
+	where: isAdminInConference(ctx)
+}));
+
+export const NsaPresenceEventRef = object({ table: 'nsaPresenceEvent' });
+
+const pubsub = rumblePubsub({ table: 'nsaPresenceEvent' });
+query({ table: 'nsaPresenceEvent' });
+
+/**
+ * Resolves the target NSA `conferenceUser` for a scan, given exactly one of
+ * `conferenceUserId` (from QR) or `attendanceCode` (from manual fallback).
+ * Scoped to the conference owning the target committee.
+ */
+async function resolveNsaTarget(args: {
+	committee: typeof schema.committee.$inferSelect;
+	conferenceUserId?: string | null;
+	attendanceCode?: string | null;
+}) {
+	const hasUserId = !!args.conferenceUserId;
+	const hasCode = !!args.attendanceCode;
+	if (hasUserId === hasCode) {
+		throw new GraphQLError('Provide exactly one of conferenceUserId or attendanceCode');
+	}
+
+	const normalizedCode = args.attendanceCode?.trim().toUpperCase();
+
+	const target = await db.query.conferenceUser.findFirst({
+		where: {
+			conferenceId: args.committee.conferenceId,
+			conferenceUserType: 'NON_STATE_ACTOR',
+			...(hasUserId ? { id: args.conferenceUserId! } : { attendanceCode: normalizedCode! })
+		}
+	});
+	if (!target) throw new GraphQLError('NSA user not found for this conference');
+	return target;
+}
+
+/**
+ * Inserts a fresh attendance code for an NSA user, retrying on the rare unique
+ * collision (~1 in 2.2B per attempt at 6 chars over a 36-char alphabet).
+ */
+async function assignAttendanceCode(conferenceUserId: string, conferenceId: string) {
+	for (let attempt = 0; attempt < 5; attempt++) {
+		const code = generateAttendanceCode();
+		const existing = await db.query.conferenceUser.findFirst({
+			where: { conferenceId, attendanceCode: code }
+		});
+		if (existing) continue;
+		await db
+			.update(schema.conferenceUser)
+			.set({ attendanceCode: code })
+			.where(eq(schema.conferenceUser.id, conferenceUserId));
+		return code;
+	}
+	throw new GraphQLError('Could not generate a unique attendance code, please retry');
+}
+
+schemaBuilder.mutationFields((t) => ({
+	/**
+	 * Chair-facing: scan or manual-code → check the NSA into the given committee.
+	 * If the NSA is currently checked into a different committee, automatically
+	 * inserts a CHECK_OUT for that committee 1ms before the new CHECK_IN so the
+	 * timeline stays strictly ordered. Idempotent if already in the same committee.
+	 */
+	recordNsaCheckIn: t.drizzleField({
+		type: NsaPresenceEventRef,
+		args: {
+			committeeId: t.arg.id({ required: true }),
+			conferenceUserId: t.arg.id(),
+			attendanceCode: t.arg.string()
+		},
+		resolve: async (q, _root, args, ctx) => {
+			const committee = await db.query.committee
+				.findFirst({
+					where: {
+						id: args.committeeId,
+						...isChairInConference(ctx)
+					}
+				})
+				.then(assertFindFirstExists);
+
+			const target = await resolveNsaTarget({
+				committee,
+				conferenceUserId: args.conferenceUserId,
+				attendanceCode: args.attendanceCode
+			});
+
+			const triggeredBy = await db.query.conferenceUser.findFirst({
+				where: {
+					userEmail: ctx.mustBeLoggedIn().email!,
+					conferenceId: committee.conferenceId
+				}
+			});
+
+			const newId = await db.transaction(
+				async (tx) => {
+					const latest = await tx.query.nsaPresenceEvent.findFirst({
+						where: { conferenceUserId: target.id },
+						orderBy: { timestamp: 'desc' }
+					});
+
+					const now = new Date();
+
+					// Already checked into this committee — no-op, return existing event id.
+					if (latest && latest.type === 'CHECK_IN' && latest.committeeId === args.committeeId) {
+						return latest.id;
+					}
+
+					// Auto-checkout from the previous committee, 1 ms before the new IN.
+					if (latest && latest.type === 'CHECK_IN' && latest.committeeId !== args.committeeId) {
+						await tx.insert(schema.nsaPresenceEvent).values({
+							conferenceUserId: target.id,
+							committeeId: latest.committeeId,
+							conferenceId: committee.conferenceId,
+							type: 'CHECK_OUT',
+							timestamp: new Date(now.getTime() - 1),
+							triggeredByConferenceUserId: triggeredBy?.id ?? null,
+							note: 'AUTO_SWITCH'
+						});
+					}
+
+					const inserted = await tx
+						.insert(schema.nsaPresenceEvent)
+						.values({
+							conferenceUserId: target.id,
+							committeeId: args.committeeId,
+							conferenceId: committee.conferenceId,
+							type: 'CHECK_IN',
+							timestamp: now,
+							triggeredByConferenceUserId: triggeredBy?.id ?? null
+						})
+						.returning({ id: schema.nsaPresenceEvent.id })
+						.then(assertFirstEntryExists);
+
+					return inserted.id;
+				},
+				{ isolationLevel: 'serializable' }
+			);
+
+			pubsub.created();
+			pubsub.updated(newId);
+
+			return db.query.nsaPresenceEvent
+				.findFirst(
+					q(
+						ctx.abilities.nsaPresenceEvent.filter('read').merge({ where: { id: newId } }).query
+							.single
+					)
+				)
+				.then(assertFindFirstExists);
+		}
+	}),
+
+	/**
+	 * Chair-facing: scan or manual-code → check the NSA out of whichever committee
+	 * they are currently in. Idempotent: if the NSA is already checked out (or has
+	 * no events yet), returns the latest event without inserting a new one.
+	 */
+	recordNsaCheckOut: t.drizzleField({
+		type: NsaPresenceEventRef,
+		args: {
+			committeeId: t.arg.id({ required: true }),
+			conferenceUserId: t.arg.id(),
+			attendanceCode: t.arg.string()
+		},
+		resolve: async (q, _root, args, ctx) => {
+			const committee = await db.query.committee
+				.findFirst({
+					where: {
+						id: args.committeeId,
+						...isChairInConference(ctx)
+					}
+				})
+				.then(assertFindFirstExists);
+
+			const target = await resolveNsaTarget({
+				committee,
+				conferenceUserId: args.conferenceUserId,
+				attendanceCode: args.attendanceCode
+			});
+
+			const triggeredBy = await db.query.conferenceUser.findFirst({
+				where: {
+					userEmail: ctx.mustBeLoggedIn().email!,
+					conferenceId: committee.conferenceId
+				}
+			});
+
+			const eventId = await db.transaction(
+				async (tx) => {
+					const latest = await tx.query.nsaPresenceEvent.findFirst({
+						where: { conferenceUserId: target.id },
+						orderBy: { timestamp: 'desc' }
+					});
+
+					if (!latest || latest.type === 'CHECK_OUT') {
+						if (!latest) {
+							throw new GraphQLError('NSA has no recorded check-in to check out from');
+						}
+						return latest.id;
+					}
+
+					// Always check the NSA out of the committee they are currently in,
+					// even if the chair scans from a different committee. The frontend
+					// surfaces a mismatch toast based on `committeeId` in the response.
+					const inserted = await tx
+						.insert(schema.nsaPresenceEvent)
+						.values({
+							conferenceUserId: target.id,
+							committeeId: latest.committeeId,
+							conferenceId: committee.conferenceId,
+							type: 'CHECK_OUT',
+							timestamp: new Date(),
+							triggeredByConferenceUserId: triggeredBy?.id ?? null
+						})
+						.returning({ id: schema.nsaPresenceEvent.id })
+						.then(assertFirstEntryExists);
+
+					return inserted.id;
+				},
+				{ isolationLevel: 'serializable' }
+			);
+
+			pubsub.created();
+			pubsub.updated(eventId);
+
+			return db.query.nsaPresenceEvent
+				.findFirst(
+					q(
+						ctx.abilities.nsaPresenceEvent.filter('read').merge({ where: { id: eventId } }).query
+							.single
+					)
+				)
+				.then(assertFindFirstExists);
+		}
+	}),
+
+	/** Admin-only correction: insert an arbitrary historical event. */
+	insertNsaPresenceEvent: t.drizzleField({
+		type: NsaPresenceEventRef,
+		args: {
+			conferenceUserId: t.arg.id({ required: true }),
+			committeeId: t.arg.id({ required: true }),
+			type: t.arg({ type: enum_({ tsName: 'nsaPresenceEventType' }), required: true }),
+			timestamp: t.arg({ type: 'DateTime', required: true }),
+			note: t.arg.string()
+		},
+		resolve: async (q, _root, args, ctx) => {
+			const committee = await db.query.committee
+				.findFirst(
+					ctx.abilities.committee.filter('update').merge({ where: { id: args.committeeId } }).query
+						.single
+				)
+				.then(assertFindFirstExists);
+
+			const target = await db.query.conferenceUser
+				.findFirst({
+					where: {
+						id: args.conferenceUserId,
+						conferenceId: committee.conferenceId,
+						conferenceUserType: 'NON_STATE_ACTOR'
+					}
+				})
+				.then(assertFindFirstExists);
+
+			const inserted = await db
+				.insert(schema.nsaPresenceEvent)
+				.values({
+					conferenceUserId: target.id,
+					committeeId: committee.id,
+					conferenceId: committee.conferenceId,
+					type: args.type,
+					timestamp: args.timestamp,
+					note: args.note ?? null
+				})
+				.returning({ id: schema.nsaPresenceEvent.id })
+				.then(assertFirstEntryExists);
+
+			pubsub.created();
+			pubsub.updated(inserted.id);
+
+			return db.query.nsaPresenceEvent
+				.findFirst(
+					q(
+						ctx.abilities.nsaPresenceEvent.filter('read').merge({ where: { id: inserted.id } })
+							.query.single
+					)
+				)
+				.then(assertFindFirstExists);
+		}
+	}),
+
+	/** Admin-only correction: edit timestamp / type / committee / note of an event. */
+	updateNsaPresenceEvent: t.drizzleField({
+		type: NsaPresenceEventRef,
+		args: {
+			id: t.arg.id({ required: true }),
+			timestamp: t.arg({ type: 'DateTime' }),
+			type: t.arg({ type: enum_({ tsName: 'nsaPresenceEventType' }) }),
+			committeeId: t.arg.id(),
+			note: t.arg.string()
+		},
+		resolve: async (q, _root, args, ctx) => {
+			const event = await db.query.nsaPresenceEvent
+				.findFirst(
+					ctx.abilities.nsaPresenceEvent.filter('update').merge({ where: { id: args.id } }).query
+						.single
+				)
+				.then(assertFindFirstExists);
+
+			if (args.committeeId && args.committeeId !== event.committeeId) {
+				const newCommittee = await db.query.committee
+					.findFirst({
+						where: { id: args.committeeId, conferenceId: event.conferenceId }
+					})
+					.then(assertFindFirstExists);
+				if (newCommittee.conferenceId !== event.conferenceId) {
+					throw new GraphQLError('Cannot move an event to a committee in a different conference');
+				}
+			}
+
+			const updateSet: Record<string, unknown> = {};
+			if (args.timestamp !== undefined && args.timestamp !== null)
+				updateSet.timestamp = args.timestamp;
+			if (args.type !== undefined && args.type !== null) updateSet.type = args.type;
+			if (args.committeeId !== undefined && args.committeeId !== null)
+				updateSet.committeeId = args.committeeId;
+			if (args.note !== undefined) updateSet.note = args.note;
+
+			if (Object.keys(updateSet).length > 0) {
+				await db
+					.update(schema.nsaPresenceEvent)
+					.set(updateSet)
+					.where(eq(schema.nsaPresenceEvent.id, args.id));
+			}
+
+			pubsub.updated(args.id);
+
+			return db.query.nsaPresenceEvent
+				.findFirst(
+					q(
+						ctx.abilities.nsaPresenceEvent.filter('read').merge({ where: { id: args.id } }).query
+							.single
+					)
+				)
+				.then(assertFindFirstExists);
+		}
+	}),
+
+	/**
+	 * Admin-only correction: delete an event. Returns the deleted row so the
+	 * rumble client (which auto-selects `{ id }` on every mutation) has a valid
+	 * subfield to read; a `Boolean!` return would crash the client codegen.
+	 */
+	deleteNsaPresenceEvent: t.drizzleField({
+		type: NsaPresenceEventRef,
+		args: {
+			id: t.arg.id({ required: true })
+		},
+		resolve: async (q, _root, args, ctx) => {
+			const event = await db.query.nsaPresenceEvent
+				.findFirst(
+					ctx.abilities.nsaPresenceEvent.filter('delete').merge({ where: { id: args.id } }).query
+						.single
+				)
+				.then(assertFindFirstExists);
+
+			await db.delete(schema.nsaPresenceEvent).where(eq(schema.nsaPresenceEvent.id, event.id));
+
+			pubsub.removed();
+			return event;
+		}
+	}),
+
+	/**
+	 * Admin-only: regenerate the manual fallback code for an NSA user. Useful when
+	 * a printed badge is lost or compromised mid-conference. Returns the updated
+	 * conferenceUser so the rumble client (which auto-selects `{ id }`) has a
+	 * valid subfield — a `String!` return would trigger the same client-side
+	 * codegen bug as Boolean returns.
+	 */
+	regenerateNsaAttendanceCode: t.drizzleField({
+		type: ConferenceUserRef,
+		args: {
+			conferenceUserId: t.arg.id({ required: true })
+		},
+		resolve: async (q, _root, args, ctx) => {
+			const target = await db.query.conferenceUser
+				.findFirst(
+					ctx.abilities.conferenceUser
+						.filter('update')
+						.merge({ where: { id: args.conferenceUserId } }).query.single
+				)
+				.then(assertFindFirstExists);
+
+			if (target.conferenceUserType !== 'NON_STATE_ACTOR') {
+				throw new GraphQLError('Attendance code is only meaningful for NSA users');
+			}
+
+			await assignAttendanceCode(target.id, target.conferenceId);
+
+			return db.query.conferenceUser
+				.findFirst(
+					q(
+						ctx.abilities.conferenceUser.filter('read').merge({ where: { id: target.id } }).query
+							.single
+					)
+				)
+				.then(assertFindFirstExists);
+		}
+	})
+}));

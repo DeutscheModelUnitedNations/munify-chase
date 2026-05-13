@@ -1,8 +1,7 @@
 <script lang="ts">
 	import { m } from '$lib/paraglide/messages';
 	import BasicCard from '$lib/components/BasicCard.svelte';
-	import { cache, graphql } from '$houdini';
-	import { invalidateAll } from '$app/navigation';
+	import { client } from '$lib/api/rumbleClient/client';
 	import toast from 'svelte-french-toast';
 	import { promiseToastStrings } from '$lib/utils/toast';
 	import EditConferenceUserModal from './EditConferenceUserModal.svelte';
@@ -57,6 +56,7 @@
 	interface ConferenceUserRow {
 		id: string;
 		userEmail: string;
+		name: string | null;
 		conferenceUserType: string;
 		user: { givenName: string; familyName: string } | null;
 		committeeMember: {
@@ -163,6 +163,8 @@
 	}
 
 	function getUserDisplayName(user: ConferenceUserRow): string {
+		// conferenceUser.name (admin-edited) wins over the OIDC-derived display name
+		if (user.name) return user.name;
 		const given = user.user?.givenName ?? '';
 		const family = user.user?.familyName ?? '';
 		const full = `${given} ${family}`.trim();
@@ -249,73 +251,6 @@
 		})
 	);
 
-	const CreateConferenceUserMutation = graphql(`
-		mutation CreateConferenceUserFromUsersTab(
-			$conferenceId: ID!
-			$userEmail: String!
-			$conferenceUserType: ConferenceUserTypeEnum!
-		) {
-			createConferenceUser(
-				conferenceId: $conferenceId
-				userEmail: $userEmail
-				conferenceUserType: $conferenceUserType
-			) {
-				id
-				userEmail
-				conferenceUserType
-			}
-		}
-	`);
-
-	const DeleteConferenceUserMutation = graphql(`
-		mutation DeleteConferenceUserFromUsersTab($id: ID!) {
-			deleteConferenceUser(id: $id)
-		}
-	`);
-
-	const UpdateConferenceUserMutation = graphql(`
-		mutation UpdateConferenceUserFromUsersTab(
-			$id: ID!
-			$conferenceUserType: ConferenceUserTypeEnum!
-			$committeeMemberId: ID
-			$conferenceMemberId: ID
-		) {
-			updateConferenceUser(
-				id: $id
-				conferenceUserType: $conferenceUserType
-				committeeMemberId: $committeeMemberId
-				conferenceMemberId: $conferenceMemberId
-			) {
-				id
-				userEmail
-				conferenceUserType
-				committeeMember {
-					id
-					representation {
-						id
-						name
-						alpha2Code
-						faIcon
-					}
-					committee {
-						id
-						name
-						abbreviation
-					}
-				}
-				conferenceMember {
-					id
-					representation {
-						id
-						name
-						type
-						faIcon
-					}
-				}
-			}
-		}
-	`);
-
 	function isCurrentUser(email: string): boolean {
 		return currentUserEmail === email;
 	}
@@ -342,10 +277,13 @@
 		try {
 			for (const email of emails) {
 				await toast.promise(
-					CreateConferenceUserMutation.mutate({
-						conferenceId: conference.id,
-						userEmail: email,
-						conferenceUserType: newRole
+					client.mutate.createConferenceUser({
+						__args: {
+							conferenceId: conference.id,
+							userEmail: email,
+							conferenceUserType: newRole
+						},
+						id: true
 					}),
 					promiseToastStrings(m.member(), 'add')
 				);
@@ -353,8 +291,6 @@
 			bulkEmails = '';
 		} finally {
 			isBulkSubmitting = false;
-			cache.markStale();
-			await invalidateAll();
 		}
 	}
 
@@ -362,11 +298,10 @@
 		if (!confirm(m.confirmRemoveMember())) return;
 
 		await toast.promise(
-			DeleteConferenceUserMutation.mutate({ id }),
+			// eslint-disable-next-line @typescript-eslint/no-explicit-any -- rumble generator types delete mutations as plain `Boolean` instead of callable functions
+			(client.mutate.deleteConferenceUser as any)({ __args: { id } } as any),
 			promiseToastStrings(m.member(), 'delete')
 		);
-		cache.markStale();
-		await invalidateAll();
 	}
 
 	function openEditModal(user: ConferenceUserRow) {
@@ -378,20 +313,23 @@
 		conferenceUserType: 'ADMIN' | 'TEAM' | 'DELEGATE' | 'NON_STATE_ACTOR' | 'SPECTATOR';
 		committeeMemberId: string | null;
 		conferenceMemberId: string | null;
+		name: string | null;
 	}) {
 		if (!editingUser) return;
 
 		await toast.promise(
-			UpdateConferenceUserMutation.mutate({
-				id: editingUser.id,
-				conferenceUserType: saveData.conferenceUserType,
-				committeeMemberId: saveData.committeeMemberId,
-				conferenceMemberId: saveData.conferenceMemberId
+			client.mutate.updateConferenceUser({
+				__args: {
+					id: editingUser.id,
+					conferenceUserType: saveData.conferenceUserType,
+					committeeMemberId: saveData.committeeMemberId,
+					conferenceMemberId: saveData.conferenceMemberId,
+					name: saveData.name ?? ''
+				},
+				id: true
 			}),
 			promiseToastStrings(m.member(), 'update')
 		);
-		cache.markStale();
-		await invalidateAll();
 	}
 </script>
 
@@ -485,7 +423,7 @@
 							<td>
 								{#if getAssignmentRepresentation(user)}
 									<div class="flex items-center gap-2">
-										<Flag representation={getAssignmentRepresentation(user) as any} size="xs" />
+										<Flag representation={getAssignmentRepresentation(user)} size="xs" />
 										<span>{getAssignmentText(user)}</span>
 									</div>
 								{:else if isAssignableRole(user.conferenceUserType)}

@@ -1,27 +1,27 @@
 <script lang="ts">
 	import { m } from '$lib/paraglide/messages';
 	import { page } from '$app/state';
-	import type { PageData } from './$houdini';
-	import { graphql } from '$houdini';
-	import { onMount, tick } from 'svelte';
+	import { resolve } from '$app/paths';
+	import { client } from '$lib/api/rumbleClient/client';
+	import { onMount, untrack } from 'svelte';
 	import { afterNavigate } from '$app/navigation';
-	import { CommitteeSubscription } from '../../committeeSubscription';
-	import { ChairPaperDetailSubscription } from './chairPaperDetailSubscription';
-	import { ChairPaperClauseLocksSubscription } from './chairLockSubscription';
-	import { ChairPaperCommentsSubscription } from './chairCommentsSubscription';
-	import { ChairAmendmentsSubscription } from './chairAmendmentsSubscription';
-	import { ChairClauseVotesSubscription } from './chairClauseVotesSubscription';
-	import { ChairVoteResultSubscription } from './chairVoteResultSubscription';
 	import {
 		ResolutionEditor,
-		migrateResolution,
 		calculateAmendmentDiffSize,
 		getFirstTextContent,
+		type ResolutionStore,
+		type PresenceAdapter,
 		type Resolution,
 		type ResolutionHeaderData,
 		type AmendmentOverlay,
 		type OperativeClause
 	} from '@deutschemodelunitednations/munify-resolution-editor';
+	import {
+		createYjsStore,
+		createAwarenessPresence
+	} from '@deutschemodelunitednations/munify-resolution-editor/yjs';
+	import * as Y from 'yjs';
+	import { WebsocketProvider } from 'y-websocket';
 	import Flag from '$lib/components/Flag.svelte';
 	import Fieldset from '$lib/components/Fieldset.svelte';
 	import Modal from '$lib/components/Modal.svelte';
@@ -30,46 +30,284 @@
 	import { getTranslatedCountryNameFromAlpha3Code } from '$lib/utils/nationTranslationHelper.svelte';
 	import toast from 'svelte-french-toast';
 	import { openVotingModal } from '$lib/components/voting/votingModal';
-	import { fly, fade } from 'svelte/transition';
 	import { getResolutionLabels } from '$lib/utils/resolutionEditorLabels';
-	import { SvelteSet, SvelteMap } from 'svelte/reactivity';
+	import { SvelteMap } from 'svelte/reactivity';
 
-	let { data }: { data: PageData } = $props();
+	import { getCurrentUser } from '$lib/state/currentUser.svelte';
 
-	let committeeQuery = $derived(data?.CommitteeTeamQuery);
-	let committee = $derived(
-		$CommitteeSubscription.data?.findFirstCommittee ?? $committeeQuery.data?.findFirstCommittee
-	);
+	const committee = await client.liveQuery.committee({
+		__args: { id: page.params.committeeId! },
+		id: true,
+		abbreviation: true,
+		name: true,
+		resolutionHeadline: true,
+		currentOperativeClauseId: true,
+		currentOperativeIndex: true,
+		activeAmendmentId: true,
+		totalPresent: true,
+		activeAgendaItem: { id: true, title: true },
+		conference: { id: true, title: true },
+		members: {
+			id: true,
+			representation: {
+				id: true,
+				name: true,
+				alpha2Code: true,
+				alpha3Code: true,
+				faIcon: true,
+				type: true
+			}
+		}
+	});
 
-	let query = $derived(data?.ChairPaperDetailQuery);
+	const currentUser = await getCurrentUser();
 
-	let remotePaper = $derived(
-		$ChairPaperDetailSubscription.data?.findFirstResolutionPaper ??
-			$query.data?.findFirstResolutionPaper
-	);
+	const [
+		paper,
+		allComments,
+		allAmendments,
+		clauseVotes,
+		allVoteResults,
+		currentUserConferenceUsers
+	] = await Promise.all([
+		client.liveQuery.resolutionPaper({
+			__args: { id: page.params.paperId! },
+			id: true,
+			title: true,
+			status: true,
+			documentNumber: true,
+			sequenceNumber: true,
+			updatedAt: true,
+			agendaItem: {
+				id: true,
+				title: true
+			},
+			creator: {
+				id: true,
+				representation: {
+					id: true,
+					name: true,
+					alpha2Code: true,
+					alpha3Code: true,
+					faIcon: true
+				}
+			},
+			sponsors: {
+				id: true,
+				committeeMemberId: true,
+				committeeMember: {
+					id: true,
+					representation: {
+						id: true,
+						name: true,
+						alpha2Code: true,
+						alpha3Code: true,
+						faIcon: true
+					}
+				}
+			}
+		}),
+		client.liveQuery.resolutionComments({
+			__args: { where: { paper: { id: page.params.paperId } } },
+			id: true,
+			clauseId: true,
+			content: true,
+			visibility: true,
+			parentCommentId: true,
+			createdAt: true,
+			updatedAt: true,
+			author: {
+				id: true,
+				user: {
+					givenName: true,
+					familyName: true
+				},
+				committeeMember: {
+					id: true,
+					representation: {
+						id: true,
+						name: true,
+						alpha2Code: true,
+						alpha3Code: true,
+						faIcon: true
+					}
+				},
+				conferenceUserType: true
+			}
+		}),
+		client.liveQuery.amendments({
+			__args: { where: { paper: { id: page.params.paperId } } },
+			id: true,
+			type: true,
+			status: true,
+			documentNumber: true,
+			targetClauseId: true,
+			targetOperativeIndex: true,
+			targetPosition: true,
+			newContent: true,
+			proposerCommitteeMemberId: true,
+			createdAt: true,
+			proposer: {
+				id: true,
+				representation: {
+					id: true,
+					name: true,
+					alpha2Code: true,
+					alpha3Code: true,
+					faIcon: true
+				}
+			},
+			sponsors: {
+				id: true,
+				committeeMemberId: true,
+				committeeMember: {
+					id: true,
+					representation: {
+						id: true,
+						name: true,
+						alpha2Code: true,
+						alpha3Code: true,
+						faIcon: true
+					}
+				}
+			}
+		}),
+		client.liveQuery.operativeClauseVotes({
+			__args: { where: { paper: { id: page.params.paperId } } },
+			id: true,
+			clauseId: true,
+			outcome: true,
+			votesFor: true,
+			votesAgainst: true,
+			votesAbstain: true
+		}),
+		client.liveQuery.resolutionVoteResults({
+			__args: { where: { paper: { id: page.params.paperId } }, limit: 1 },
+			id: true,
+			outcome: true,
+			votesFor: true,
+			votesAgainst: true,
+			votesAbstain: true
+		}),
+		client.liveQuery.conferenceUsers({
+			__args: {
+				where: {
+					conference: { id: page.params.conferenceId },
+					user: { id: currentUser?.id ?? '' }
+				}
+			},
+			id: true
+		})
+	]);
 
-	let paper = $derived(remotePaper);
+	// Element types inferred from the selected live query result shapes
+	type PaperData = NonNullable<typeof paper>;
+	type SponsorEntry = PaperData['sponsors'][number];
+	type CommitteeData = NonNullable<typeof committee>;
+	type CommitteeMemberEntry = CommitteeData['members'][number];
+	type CommentEntry = NonNullable<typeof allComments>[number];
+	type AmendmentEntry = NonNullable<typeof allAmendments>[number];
+	type AmendmentSponsorEntry = AmendmentEntry['sponsors'][number];
 
-	// Current user identity (for lock ownership)
-	let myConferenceUserId = $derived($query.data?.currentUser?.[0]?.id);
+	let myConferenceUserId = $derived(currentUserConferenceUsers?.[0]?.id);
 
-	// Resolution content
-	let resolution = $state<Resolution | null>(null);
-	let hasPendingSave = $state(false);
+	let voteResult = $derived(allVoteResults?.[0] ?? null);
+
 	let editorMode = $state<'edit' | 'preview'>('preview');
 
+	// Y.js-backed collaborative store
+	let store = $state<ResolutionStore | null>(null);
+	let presence = $state<PresenceAdapter | null>(null);
+	let wsSynced = $state(false);
+	let wsConnected = $state(false);
+	let wsForbidden = $state(false);
+
 	$effect(() => {
-		if (paper?.content && !resolution) {
-			resolution = migrateResolution(paper.content as Resolution);
-		}
+		const paperId = page.params.paperId;
+		if (!paperId) return;
+		// Only paperId should re-trigger this effect.
+		return untrack(() => establishYjsSession(paperId));
 	});
 
-	// Accept remote updates when no local save is in-flight
-	$effect(() => {
-		if (remotePaper?.content && !hasPendingSave) {
-			resolution = migrateResolution(remotePaper.content as Resolution);
-		}
-	});
+	function establishYjsSession(paperId: string) {
+		const doc = new Y.Doc();
+		const wsProto = location.protocol === 'https:' ? 'wss:' : 'ws:';
+		const wsUrl = `${wsProto}//${location.host}/api/ws/yjs`;
+		const prov = new WebsocketProvider(wsUrl, paperId, doc);
+		const s = createYjsStore(doc);
+		const p = createAwarenessPresence({
+			awareness: prov.awareness,
+			user: {
+				id: currentUser?.id ?? 'anon',
+				name: 'Team',
+				color: stringToColor(currentUser?.id ?? 'anon')
+			}
+		});
+		const onSynced = (synced: boolean) => {
+			wsSynced = synced;
+		};
+		const onStatus = ({ status }: { status: string }) => {
+			wsConnected = status === 'connected';
+			if (status !== 'connected') wsSynced = false;
+		};
+		const onClose = (event: CloseEvent | null) => {
+			// 4403 = our server's "Forbidden" close code. Stop the reconnect
+			// loop so we don't hammer the server; surface state so the UI can
+			// tell the user to re-auth.
+			if (event?.code === 4403) {
+				prov.shouldConnect = false;
+				wsForbidden = true;
+				wsConnected = false;
+				wsSynced = false;
+			}
+		};
+		prov.on('sync', onSynced);
+		prov.on('status', onStatus);
+		prov.on('connection-close', onClose);
+		// Catch up with any state already established by the time we got here
+		// (BroadcastChannel between tabs can sync the provider before our
+		// listener is attached, and that fire-once 'synced' event is missed).
+		if (prov.synced) wsSynced = true;
+		if (prov.wsconnected) wsConnected = true;
+		// Last-resort reconciliation. y-websocket's `synced` setter dedupes
+		// no-op assignments; if the disconnect path didn't reset _synced
+		// (e.g., browser closed the WS before wsconnected was true), the
+		// next sync step 2 won't refire. Poll to self-heal within a second.
+		// IMPORTANT: only flip in the recovery direction (false→true). Going
+		// back (true→false) on a transient dip would mask the editor and
+		// race with sync messages already in flight.
+		const reconcileInterval = setInterval(() => {
+			if (wsForbidden) return;
+			if (prov.wsconnected && !wsConnected) wsConnected = true;
+			if (prov.synced && !wsSynced) wsSynced = true;
+		}, 1000);
+		store = s;
+		presence = p;
+		return () => {
+			clearInterval(reconcileInterval);
+			prov.off('sync', onSynced);
+			prov.off('status', onStatus);
+			prov.off('connection-close', onClose);
+			s.destroy();
+			prov.destroy();
+			doc.destroy();
+			store = null;
+			presence = null;
+			wsSynced = false;
+			wsConnected = false;
+			wsForbidden = false;
+		};
+	}
+
+	function stringToColor(s: string) {
+		let h = 0;
+		for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) | 0;
+		const hue = ((h % 360) + 360) % 360;
+		return `hsl(${hue}, 70%, 50%)`;
+	}
+
+	// Reactive resolution snapshot (read from store; null until connected)
+	let resolution = $derived<Resolution | null>(store?.snapshot ?? null);
 
 	// Resolution header data for document preview
 	let headerData = $derived<ResolutionHeaderData>({
@@ -123,194 +361,18 @@
 	});
 
 	onMount(() => {
-		ChairPaperDetailSubscription.listen({ paperId: page.params.paperId! });
-		ChairPaperClauseLocksSubscription.listen({ paperId: page.params.paperId! });
-		ChairPaperCommentsSubscription.listen({ paperId: page.params.paperId! });
-		ChairAmendmentsSubscription.listen({ paperId: page.params.paperId! });
-		ChairClauseVotesSubscription.listen({ paperId: page.params.paperId! });
-		ChairVoteResultSubscription.listen({ paperId: page.params.paperId! });
-
 		const handleScroll = () => {
 			sessionStorage.setItem(scrollStorageKey, String(window.scrollY));
 		};
 		window.addEventListener('scroll', handleScroll, { passive: true });
 
-		// Hybrid heartbeat — only fires when idle with held locks
-		const heartbeatInterval = setInterval(() => {
-			if (editableClauseIds.size > 0 && Date.now() - lastInteractionTime > 25_000) {
-				for (const clauseId of editableClauseIds) {
-					AcquireLockMutation.mutate({
-						paperId: page.params.paperId!,
-						clauseId
-					}).catch(() => {
-						optimisticMyLockIds.delete(clauseId);
-					});
-				}
-			}
-		}, 30_000);
-
-		// Best-effort lock release on tab close
-		const handleBeforeUnload = () => {
-			const body = JSON.stringify({
-				query: `mutation { releaseAllMyLocks(paperId: "${page.params.paperId}") }`
-			});
-			navigator.sendBeacon('/api/graphql', new Blob([body], { type: 'application/json' }));
-		};
-		window.addEventListener('beforeunload', handleBeforeUnload);
-
 		return () => {
-			clearInterval(heartbeatInterval);
-			window.removeEventListener('beforeunload', handleBeforeUnload);
 			window.removeEventListener('scroll', handleScroll);
-
-			// Release locks on navigation
-			ReleaseAllMyLocksMutation.mutate({ paperId: page.params.paperId! }).catch(() => {});
 		};
 	});
 
-	// =====================================================
-	// Clause-level locking
-	// =====================================================
-
-	let lastInteractionTime = $state(Date.now());
-
-	const AcquireLockMutation = graphql(`
-		mutation ChairAcquireClauseLockMutation($paperId: ID!, $clauseId: String!) {
-			acquireClauseLock(paperId: $paperId, clauseId: $clauseId) {
-				id
-				clauseId
-				conferenceUserId
-			}
-		}
-	`);
-
-	const ReleaseLockMutation = graphql(`
-		mutation ChairReleaseClauseLockMutation($paperId: ID!, $clauseId: String!) {
-			releaseClauseLock(paperId: $paperId, clauseId: $clauseId)
-		}
-	`);
-
-	const ReleaseAllMyLocksMutation = graphql(`
-		mutation ChairReleaseAllMyLocksMutation($paperId: ID!) {
-			releaseAllMyLocks(paperId: $paperId)
-		}
-	`);
-
-	// Derive lock state from subscription
-	let locks = $derived($ChairPaperClauseLocksSubscription.data?.findManyPaperClauseLock ?? []);
-
-	// Clause IDs locked by OTHER users
-	let lockedClauseIds = $derived.by(() => {
-		const set = new SvelteSet<string>();
-		for (const lock of locks) {
-			if (lock.conferenceUserId !== myConferenceUserId) {
-				set.add(lock.clauseId);
-			}
-		}
-		return set;
-	});
-
-	// Clause IDs I hold confirmed locks for
-	let myLockedClauseIds = $derived.by(() => {
-		const set = new SvelteSet<string>();
-		for (const lock of locks) {
-			if (lock.conferenceUserId === myConferenceUserId) {
-				set.add(lock.clauseId);
-			}
-		}
-		return set;
-	});
-
-	// Map for lock badge rendering: clauseId → lock info
-	let locksByClauseId = $derived.by(() => {
-		const map = new SvelteMap<string, (typeof locks)[0]>();
-		for (const lock of locks) {
-			if (lock.conferenceUserId !== myConferenceUserId) {
-				map.set(lock.clauseId, lock);
-			}
-		}
-		return map;
-	});
-
-	// Optimistic lock IDs — added immediately on mutation success, before subscription arrives
-	let optimisticMyLockIds = new SvelteSet<string>();
-
-	// Effective editable clause IDs = confirmed (subscription) + optimistic
-	let editableClauseIds = $derived.by(() => {
-		const set = new SvelteSet(myLockedClauseIds);
-		for (const id of optimisticMyLockIds) set.add(id);
-		return set;
-	});
-
-	// Are there any locks held by other users?
-	let hasOtherLocks = $derived(lockedClauseIds.size > 0);
-
-	// Click "Start editing" → acquire lock
-	async function handleClauseLock(clauseId: string) {
-		if (lockedClauseIds.has(clauseId)) return;
-		try {
-			await AcquireLockMutation.mutate({
-				paperId: page.params.paperId!,
-				clauseId
-			});
-			optimisticMyLockIds.add(clauseId);
-			lastInteractionTime = Date.now();
-		} catch {
-			const lock = locksByClauseId.get(clauseId);
-			const country =
-				lock?.conferenceUser?.committeeMember?.representation?.name ??
-				getTranslatedCountryNameFromAlpha3Code(
-					lock?.conferenceUser?.committeeMember?.representation?.alpha3Code
-				) ??
-				'?';
-			toast.error(m.lockAcquireFailed({ country }));
-		}
-	}
-
-	// Click "Done editing" → release lock
-	async function handleClauseUnlock(clauseId: string) {
-		optimisticMyLockIds.delete(clauseId);
-		await ReleaseLockMutation.mutate({
-			paperId: page.params.paperId!,
-			clauseId
-		}).catch(() => {});
-	}
-
-	// Any interaction (typing, clicking) → refresh idle timer
-	function handleClauseInteraction(_clauseId: string) {
-		lastInteractionTime = Date.now();
-	}
-
-	// Auto-save
+	// Save status — kept for future use (e.g. title or metadata mutations); content auto-syncs via Y.js
 	let saveStatus = $state<'idle' | 'saving' | 'saved' | 'error'>('idle');
-	let saveTimeout: ReturnType<typeof setTimeout>;
-
-	const UpdateContentMutation = graphql(`
-		mutation ChairUpdatePaperContentMutation($paperId: ID!, $content: JSON!) {
-			updatePaperContent(paperId: $paperId, content: $content) {
-				id
-			}
-		}
-	`);
-
-	function handleResolutionChange(updated: Resolution) {
-		resolution = updated;
-		hasPendingSave = true;
-		clearTimeout(saveTimeout);
-		saveStatus = 'saving';
-		saveTimeout = setTimeout(async () => {
-			try {
-				await UpdateContentMutation.mutate({
-					paperId: page.params.paperId!,
-					content: updated
-				});
-				saveStatus = 'saved';
-				hasPendingSave = false;
-			} catch {
-				saveStatus = 'error';
-			}
-		}, 500);
-	}
 
 	function getStatusBadgeClass(status: string) {
 		switch (status) {
@@ -352,12 +414,10 @@
 	// Comments
 	// =====================================================
 
-	let allComments = $derived($ChairPaperCommentsSubscription.data?.findManyResolutionComment ?? []);
-
 	// Group comments by clauseId for inline display
 	let commentsByClauseId = $derived.by(() => {
-		const map = new SvelteMap<string | null, typeof allComments>();
-		for (const comment of allComments) {
+		const map = new SvelteMap<string | null, CommentEntry[]>();
+		for (const comment of allComments ?? []) {
 			const key = comment.clauseId;
 			if (!map.has(key)) map.set(key, []);
 			map.get(key)!.push(comment);
@@ -368,7 +428,7 @@
 	// Comment counts per clause (for badge annotations)
 	let commentCountByClauseId = $derived.by(() => {
 		const map = new SvelteMap<string, number>();
-		for (const comment of allComments) {
+		for (const comment of allComments ?? []) {
 			if (comment.clauseId) {
 				map.set(comment.clauseId, (map.get(comment.clauseId) ?? 0) + 1);
 			}
@@ -377,43 +437,8 @@
 	});
 
 	// Comment statistics
-	let documentCommentCount = $derived(allComments.filter((c) => !c.clauseId).length);
-	let clauseCommentCount = $derived(allComments.filter((c) => c.clauseId).length);
-
-	// Comment mutations
-	const CreateCommentMutation = graphql(`
-		mutation ChairCreateCommentMutation(
-			$paperId: ID!
-			$content: String!
-			$clauseId: String
-			$visibility: CommentVisibilityEnum
-			$parentCommentId: ID
-		) {
-			createComment(
-				paperId: $paperId
-				content: $content
-				clauseId: $clauseId
-				visibility: $visibility
-				parentCommentId: $parentCommentId
-			) {
-				id
-			}
-		}
-	`);
-
-	const UpdateCommentMutation = graphql(`
-		mutation ChairUpdateCommentMutation($commentId: ID!, $content: String!) {
-			updateComment(commentId: $commentId, content: $content) {
-				id
-			}
-		}
-	`);
-
-	const DeleteCommentMutation = graphql(`
-		mutation ChairDeleteCommentMutation($commentId: ID!) {
-			deleteComment(commentId: $commentId)
-		}
-	`);
+	let documentCommentCount = $derived((allComments ?? []).filter((c) => !c.clauseId).length);
+	let clauseCommentCount = $derived((allComments ?? []).filter((c) => c.clauseId).length);
 
 	async function onCreateComment(
 		content: string,
@@ -421,23 +446,31 @@
 		parentCommentId?: string,
 		clauseId?: string | null
 	) {
-		await CreateCommentMutation.mutate({
-			paperId: page.params.paperId!,
-			content,
-			clauseId: clauseId ?? null,
-			visibility: visibility as 'PUBLIC' | 'TEAM_ONLY',
-			parentCommentId: parentCommentId ?? null
+		await client.mutate.createComment({
+			__args: {
+				paperId: page.params.paperId!,
+				content,
+				clauseId: clauseId ?? null,
+				visibility: visibility as 'PUBLIC' | 'TEAM_ONLY',
+				parentCommentId: parentCommentId ?? null
+			},
+			id: true
 		});
 		toast.success(m.commentPosted());
 	}
 
 	async function onUpdateComment(commentId: string, content: string) {
-		await UpdateCommentMutation.mutate({ commentId, content });
+		await client.mutate.updateComment({ __args: { commentId, content }, id: true });
 		toast.success(m.commentUpdated());
 	}
 
 	async function onDeleteComment(commentId: string) {
-		await DeleteCommentMutation.mutate({ commentId });
+		// Cast required: rumble generator types scalar-returning mutations as plain types instead of fns
+		await (
+			client.mutate.deleteComment as unknown as (p: {
+				__args: { commentId: string };
+			}) => Promise<unknown>
+		)({ __args: { commentId } });
 		toast.success(m.commentDeleted());
 	}
 
@@ -445,26 +478,13 @@
 	// Sponsor management
 	// =====================================================
 
-	const AddSponsorMutation = graphql(`
-		mutation ChairAddSponsorMutation($paperId: ID!, $committeeMemberId: ID!) {
-			addSponsor(paperId: $paperId, committeeMemberId: $committeeMemberId) {
-				id
-			}
-		}
-	`);
-
-	const RemoveSponsorMutation = graphql(`
-		mutation ChairRemoveSponsorMutation($paperId: ID!, $committeeMemberId: ID!) {
-			removeSponsor(paperId: $paperId, committeeMemberId: $committeeMemberId)
-		}
-	`);
-
 	let showAddSponsorModal = $state(false);
 	let sponsorSearchQuery = $state('');
 
 	let availableMembers = $derived(
 		(committee?.members ?? []).filter(
-			(member) => !paper?.sponsors.some((s) => s.committeeMemberId === member.id)
+			(member: CommitteeMemberEntry) =>
+				!paper?.sponsors.some((s: SponsorEntry) => s.committeeMemberId === member.id)
 		)
 	);
 
@@ -484,24 +504,33 @@
 
 	let filteredAvailableMembers = $derived(
 		(sponsorSearchQuery
-			? availableMembers.filter((member) =>
+			? availableMembers.filter((member: CommitteeMemberEntry) =>
 					getRepresentationName(member.representation)
 						.toLowerCase()
 						.includes(sponsorSearchQuery.toLowerCase())
 				)
 			: availableMembers
-		).sort((a, b) =>
+		).sort((a: CommitteeMemberEntry, b: CommitteeMemberEntry) =>
 			getRepresentationName(a.representation).localeCompare(getRepresentationName(b.representation))
 		)
 	);
 
 	async function handleAddSponsor(committeeMemberId: string) {
-		await AddSponsorMutation.mutate({ paperId: page.params.paperId!, committeeMemberId });
+		await client.mutate.addSponsor({
+			__args: { paperId: page.params.paperId!, committeeMemberId },
+			id: true
+		});
 		toast.success(m.sponsorAdded());
 	}
 
 	async function handleRemoveSponsor(committeeMemberId: string) {
-		await RemoveSponsorMutation.mutate({ paperId: page.params.paperId!, committeeMemberId });
+		await (
+			client.mutate.removeSponsor as unknown as (p: {
+				__args: { paperId: string; committeeMemberId: string };
+			}) => Promise<unknown>
+		)({
+			__args: { paperId: page.params.paperId!, committeeMemberId }
+		});
 		toast.success(m.sponsorRemoved());
 	}
 
@@ -512,9 +541,7 @@
 	// Amendments (Phase 6c)
 	// =====================================================
 
-	let allAmendments = $derived($ChairAmendmentsSubscription.data?.findManyAmendment ?? []);
-
-	let submittedAmendments = $derived(allAmendments.filter((a) => a.status === 'SUBMITTED'));
+	let submittedAmendments = $derived((allAmendments ?? []).filter((a) => a.status === 'SUBMITTED'));
 
 	let currentOpIndex = $derived.by(() => {
 		const clauseId = committee?.currentOperativeClauseId;
@@ -608,41 +635,31 @@
 	});
 
 	// Amendment sponsor management
-	const AddAmendmentSponsorMutation = graphql(`
-		mutation ChairAddAmendmentSponsorMutation($amendmentId: ID!, $committeeMemberId: ID!) {
-			addAmendmentSponsor(amendmentId: $amendmentId, committeeMemberId: $committeeMemberId) {
-				id
-			}
-		}
-	`);
-
-	const RemoveAmendmentSponsorMutation = graphql(`
-		mutation ChairRemoveAmendmentSponsorMutation($amendmentId: ID!, $committeeMemberId: ID!) {
-			removeAmendmentSponsor(amendmentId: $amendmentId, committeeMemberId: $committeeMemberId)
-		}
-	`);
-
 	let showAmendmentSponsorModal = $state(false);
 	let amendmentSponsorSearchQuery = $state('');
 	let amendmentSponsorTargetId = $state<string | null>(null);
 
 	let amendmentSponsorTarget = $derived(
-		allAmendments.find((a) => a.id === amendmentSponsorTargetId)
+		(allAmendments ?? []).find((a) => a.id === amendmentSponsorTargetId)
 	);
 
 	let filteredAvailableAmendmentMembers = $derived.by(() => {
 		const existingSponsorIds = new Set(
-			(amendmentSponsorTarget?.sponsors ?? []).map((s) => s.committeeMemberId)
+			(amendmentSponsorTarget?.sponsors ?? []).map(
+				(s: AmendmentSponsorEntry) => s.committeeMemberId
+			)
 		);
-		const available = (committee?.members ?? []).filter((m) => !existingSponsorIds.has(m.id));
+		const available = (committee?.members ?? []).filter(
+			(member: CommitteeMemberEntry) => !existingSponsorIds.has(member.id)
+		);
 		const filtered = amendmentSponsorSearchQuery
-			? available.filter((member) =>
+			? available.filter((member: CommitteeMemberEntry) =>
 					getRepresentationName(member.representation)
 						.toLowerCase()
 						.includes(amendmentSponsorSearchQuery.toLowerCase())
 				)
 			: available;
-		return filtered.sort((a, b) =>
+		return filtered.sort((a: CommitteeMemberEntry, b: CommitteeMemberEntry) =>
 			getRepresentationName(a.representation).localeCompare(getRepresentationName(b.representation))
 		);
 	});
@@ -651,21 +668,27 @@
 
 	async function handleAddAmendmentSponsor(committeeMemberId: string) {
 		if (!amendmentSponsorTargetId) return;
-		await AddAmendmentSponsorMutation.mutate({
-			amendmentId: amendmentSponsorTargetId,
-			committeeMemberId
+		await client.mutate.addAmendmentSponsor({
+			__args: { amendmentId: amendmentSponsorTargetId, committeeMemberId },
+			id: true
 		});
 		toast.success(m.sponsorAdded());
 	}
 
 	async function handleRemoveAmendmentSponsor(amendmentId: string, committeeMemberId: string) {
-		await RemoveAmendmentSponsorMutation.mutate({ amendmentId, committeeMemberId });
+		await (
+			client.mutate.removeAmendmentSponsor as unknown as (p: {
+				__args: { amendmentId: string; committeeMemberId: string };
+			}) => Promise<unknown>
+		)({
+			__args: { amendmentId, committeeMemberId }
+		});
 		toast.success(m.sponsorRemoved());
 	}
 
 	// Transform server amendments → AmendmentOverlay[] for editor rendering
 	let amendmentOverlays = $derived.by(() => {
-		const visible = allAmendments.filter(
+		const visible = (allAmendments ?? []).filter(
 			(a) => a.status === 'SUBMITTED' || a.status === 'CONSENSUS_ADOPTED' || a.status === 'ACCEPTED'
 		);
 		return visible.map(
@@ -687,65 +710,8 @@
 		);
 	});
 
-	// Amendment mutations
-	const AdoptByConsensusMutation = graphql(`
-		mutation ChairAdoptByConsensusMutation($amendmentId: ID!) {
-			adoptByConsensus(amendmentId: $amendmentId) {
-				id
-				status
-			}
-		}
-	`);
-
-	const AcceptAmendmentMutation = graphql(`
-		mutation ChairAcceptAmendmentMutation($amendmentId: ID!) {
-			acceptAmendment(amendmentId: $amendmentId) {
-				id
-				status
-			}
-		}
-	`);
-
-	const RejectAmendmentMutation = graphql(`
-		mutation ChairRejectAmendmentMutation($amendmentId: ID!) {
-			rejectAmendment(amendmentId: $amendmentId) {
-				id
-				status
-			}
-		}
-	`);
-
-	const WithdrawAmendmentMutation = graphql(`
-		mutation ChairWithdrawAmendmentMutation($amendmentId: ID!) {
-			withdrawAmendment(amendmentId: $amendmentId) {
-				id
-				status
-			}
-		}
-	`);
-
-	const UpdateCommitteeMutation = graphql(`
-		mutation ChairAdvanceParagraphMutation(
-			$id: ID!
-			$currentOperativeIndex: Int
-			$currentOperativeClauseId: String
-			$activeAmendmentId: ID
-			$clearActiveAmendment: Boolean
-		) {
-			updateCommittee(
-				id: $id
-				currentOperativeIndex: $currentOperativeIndex
-				currentOperativeClauseId: $currentOperativeClauseId
-				activeAmendmentId: $activeAmendmentId
-				clearActiveAmendment: $clearActiveAmendment
-			) {
-				id
-				currentOperativeIndex
-				currentOperativeClauseId
-				activeAmendmentId
-			}
-		}
-	`);
+	// Chair can always edit, including redactional changes after FINAL.
+	let canEdit = true;
 
 	let showAdoptConfirmModal = $state(false);
 	let showRejectConfirmModal = $state(false);
@@ -756,17 +722,17 @@
 	async function handleAdoptByConsensus(amendmentId: string) {
 		if (!committee) return;
 		try {
-			await UpdateCommitteeMutation.mutate({
-				id: committee.id,
-				activeAmendmentId: amendmentId
+			await client.mutate.updateCommittee({
+				__args: { id: committee.id, activeAmendmentId: amendmentId },
+				id: true
 			});
-			await AdoptByConsensusMutation.mutate({ amendmentId });
+			await client.mutate.adoptByConsensus({ __args: { amendmentId }, id: true });
 			toast.success(m.amendmentAdopted());
 			showAdoptConfirmModal = false;
 			confirmAmendmentId = null;
-			await UpdateCommitteeMutation.mutate({
-				id: committee.id,
-				clearActiveAmendment: true
+			await client.mutate.updateCommittee({
+				__args: { id: committee.id, clearActiveAmendment: true },
+				id: true
 			});
 		} catch {
 			toast.error(m.saveError());
@@ -787,9 +753,9 @@
 		const voteName = `${docNumber} – ${typeLabel} ${clauseLabel}`.trim();
 
 		// Set active amendment for presentation
-		await UpdateCommitteeMutation.mutate({
-			id: committee.id,
-			activeAmendmentId: amendment.id
+		await client.mutate.updateCommittee({
+			__args: { id: committee.id, activeAmendmentId: amendment.id },
+			id: true
 		});
 
 		const result = await openVotingModal({
@@ -806,9 +772,9 @@
 		}
 
 		// Clear active amendment after cancellation
-		await UpdateCommitteeMutation.mutate({
-			id: committee.id,
-			clearActiveAmendment: true
+		await client.mutate.updateCommittee({
+			__args: { id: committee.id, clearActiveAmendment: true },
+			id: true
 		});
 	}
 
@@ -816,10 +782,16 @@
 		if (!voteOutcomeAmendmentId || !committee) return;
 		try {
 			if (outcome === 'ADOPTED') {
-				await AcceptAmendmentMutation.mutate({ amendmentId: voteOutcomeAmendmentId });
+				await client.mutate.acceptAmendment({
+					__args: { amendmentId: voteOutcomeAmendmentId },
+					id: true
+				});
 				toast.success(m.amendmentAdopted());
 			} else {
-				await RejectAmendmentMutation.mutate({ amendmentId: voteOutcomeAmendmentId });
+				await client.mutate.rejectAmendment({
+					__args: { amendmentId: voteOutcomeAmendmentId },
+					id: true
+				});
 				toast.success(m.amendmentRejectedToast());
 			}
 		} catch {
@@ -827,27 +799,33 @@
 		}
 		showVoteOutcomeModal = false;
 		voteOutcomeAmendmentId = null;
-		await UpdateCommitteeMutation.mutate({ id: committee.id, clearActiveAmendment: true });
+		await client.mutate.updateCommittee({
+			__args: { id: committee.id, clearActiveAmendment: true },
+			id: true
+		});
 	}
 
 	async function handleCancelVoteOutcome() {
 		showVoteOutcomeModal = false;
 		voteOutcomeAmendmentId = null;
 		if (committee) {
-			await UpdateCommitteeMutation.mutate({ id: committee.id, clearActiveAmendment: true });
+			await client.mutate.updateCommittee({
+				__args: { id: committee.id, clearActiveAmendment: true },
+				id: true
+			});
 		}
 	}
 
 	async function handleRejectAmendment(amendmentId: string) {
 		if (!committee) return;
 		try {
-			await RejectAmendmentMutation.mutate({ amendmentId });
+			await client.mutate.rejectAmendment({ __args: { amendmentId }, id: true });
 			toast.success(m.amendmentRejectedToast());
 			showRejectConfirmModal = false;
 			confirmAmendmentId = null;
-			await UpdateCommitteeMutation.mutate({
-				id: committee.id,
-				clearActiveAmendment: true
+			await client.mutate.updateCommittee({
+				__args: { id: committee.id, clearActiveAmendment: true },
+				id: true
 			});
 		} catch {
 			toast.error(m.saveError());
@@ -857,11 +835,11 @@
 	async function handleWithdrawAmendment(amendmentId: string) {
 		if (!committee) return;
 		try {
-			await WithdrawAmendmentMutation.mutate({ amendmentId });
+			await client.mutate.withdrawAmendment({ __args: { amendmentId }, id: true });
 			toast.success(m.amendmentWithdrawnToast());
-			await UpdateCommitteeMutation.mutate({
-				id: committee.id,
-				clearActiveAmendment: true
+			await client.mutate.updateCommittee({
+				__args: { id: committee.id, clearActiveAmendment: true },
+				id: true
 			});
 		} catch {
 			toast.error(m.saveError());
@@ -872,14 +850,14 @@
 		if (!committee) return;
 		try {
 			if (amendmentId) {
-				await UpdateCommitteeMutation.mutate({
-					id: committee.id,
-					activeAmendmentId: amendmentId
+				await client.mutate.updateCommittee({
+					__args: { id: committee.id, activeAmendmentId: amendmentId },
+					id: true
 				});
 			} else {
-				await UpdateCommitteeMutation.mutate({
-					id: committee.id,
-					clearActiveAmendment: true
+				await client.mutate.updateCommittee({
+					__args: { id: committee.id, clearActiveAmendment: true },
+					id: true
 				});
 			}
 		} catch {
@@ -891,10 +869,13 @@
 		if (!committee) return;
 		try {
 			const newIndex = currentOpIndex + 1;
-			await UpdateCommitteeMutation.mutate({
-				id: committee.id,
-				currentOperativeIndex: newIndex,
-				currentOperativeClauseId: operativeClauses[newIndex]?.id ?? null
+			await client.mutate.updateCommittee({
+				__args: {
+					id: committee.id,
+					currentOperativeIndex: newIndex,
+					currentOperativeClauseId: operativeClauses[newIndex]?.id ?? null
+				},
+				id: true
 			});
 		} catch {
 			toast.error(m.saveError());
@@ -942,30 +923,6 @@
 	// Chair Create Amendment
 	// =====================================================
 
-	const ChairCreateAmendmentMutation = graphql(`
-		mutation ChairCreateAmendmentMutation(
-			$paperId: ID!
-			$type: AmendmentTypeEnum!
-			$committeeMemberId: ID!
-			$targetClauseId: String
-			$targetOperativeIndex: Int
-			$targetPosition: Int
-			$newContent: JSON
-		) {
-			chairCreateAmendment(
-				paperId: $paperId
-				type: $type
-				committeeMemberId: $committeeMemberId
-				targetClauseId: $targetClauseId
-				targetOperativeIndex: $targetOperativeIndex
-				targetPosition: $targetPosition
-				newContent: $newContent
-			) {
-				id
-			}
-		}
-	`);
-
 	let showChairCreateAmendmentModal = $state(false);
 
 	function openChairCreateAmendment() {
@@ -981,14 +938,17 @@
 		committeeMemberId?: string;
 	}) {
 		if (!args.committeeMemberId) return;
-		await ChairCreateAmendmentMutation.mutate({
-			paperId: page.params.paperId!,
-			type: args.type,
-			committeeMemberId: args.committeeMemberId,
-			targetClauseId: args.targetClauseId,
-			targetOperativeIndex: args.targetOperativeIndex,
-			targetPosition: args.targetPosition,
-			newContent: args.newContent
+		await client.mutate.chairCreateAmendment({
+			__args: {
+				paperId: page.params.paperId!,
+				type: args.type,
+				committeeMemberId: args.committeeMemberId,
+				targetClauseId: args.targetClauseId,
+				targetOperativeIndex: args.targetOperativeIndex,
+				targetPosition: args.targetPosition,
+				newContent: args.newContent
+			},
+			id: true
 		});
 		toast.success(m.amendmentCreated());
 	}
@@ -996,28 +956,6 @@
 	// =====================================================
 	// Chair Edit Amendment
 	// =====================================================
-
-	const ChairEditAmendmentMutation = graphql(`
-		mutation ChairEditAmendmentMutation(
-			$amendmentId: ID!
-			$targetClauseId: String
-			$targetOperativeIndex: Int
-			$targetPosition: Int
-			$newContent: JSON
-			$proposerCommitteeMemberId: ID
-		) {
-			editAmendment(
-				amendmentId: $amendmentId
-				targetClauseId: $targetClauseId
-				targetOperativeIndex: $targetOperativeIndex
-				targetPosition: $targetPosition
-				newContent: $newContent
-				proposerCommitteeMemberId: $proposerCommitteeMemberId
-			) {
-				id
-			}
-		}
-	`);
 
 	let editingAmendment = $state<(typeof allAmendments)[0] | null>(null);
 	let showEditAmendmentModal = $state(false);
@@ -1036,13 +974,16 @@
 		committeeMemberId?: string;
 	}) {
 		if (!editingAmendment) return;
-		await ChairEditAmendmentMutation.mutate({
-			amendmentId: editingAmendment.id,
-			targetClauseId: args.targetClauseId,
-			targetOperativeIndex: args.targetOperativeIndex,
-			targetPosition: args.targetPosition,
-			newContent: args.newContent,
-			proposerCommitteeMemberId: args.committeeMemberId ?? null
+		await client.mutate.editAmendment({
+			__args: {
+				amendmentId: editingAmendment.id,
+				targetClauseId: args.targetClauseId,
+				targetOperativeIndex: args.targetOperativeIndex,
+				targetPosition: args.targetPosition,
+				newContent: args.newContent,
+				proposerCommitteeMemberId: args.committeeMemberId ?? null
+			},
+			id: true
 		});
 		toast.success(m.amendmentUpdated());
 	}
@@ -1051,16 +992,10 @@
 	// Voting Phase (Phase 7)
 	// =====================================================
 
-	let clauseVotes = $derived($ChairClauseVotesSubscription.data?.findManyOperativeClauseVote ?? []);
-	let voteResult = $derived(
-		$ChairVoteResultSubscription.data?.findManyResolutionVoteResult?.[0] ?? null
-	);
-	let canEdit = $derived(paper?.status !== 'FINAL' || !voteResult);
-
 	// Map clauseId → vote for quick lookup
 	let clauseVoteMap = $derived.by(() => {
 		const map = new SvelteMap<string, (typeof clauseVotes)[0]>();
-		for (const v of clauseVotes) {
+		for (const v of clauseVotes ?? []) {
 			map.set(v.clauseId, v);
 		}
 		return map;
@@ -1068,13 +1003,10 @@
 
 	// Rejected clause IDs for editor strikethrough
 	let rejectedClauseIds = $derived(
-		clauseVotes.filter((v) => v.outcome === 'REJECTED').map((v) => v.clauseId)
+		(clauseVotes ?? []).filter((v) => v.outcome === 'REJECTED').map((v) => v.clauseId)
 	);
 
-	let votedClauseCount = $derived(clauseVotes.length);
-	let allClausesVoted = $derived(
-		operativeClauses.length > 0 && votedClauseCount >= operativeClauses.length
-	);
+	let votedClauseCount = $derived((clauseVotes ?? []).length);
 
 	// Clause vote modal state
 	let showClauseOutcomeModal = $state(false);
@@ -1098,81 +1030,14 @@
 	let showRevertStatusModal = $state(false);
 	let revertRestoreSnapshot = $state(false);
 
-	// Voting mutations
-	const StartVotingPhaseMutation = graphql(`
-		mutation ChairStartVotingPhaseMutation($paperId: ID!) {
-			startVotingPhase(paperId: $paperId) {
-				id
-				status
-			}
-		}
-	`);
-
-	const RecordClauseVoteMutation = graphql(`
-		mutation ChairRecordClauseVoteMutation(
-			$paperId: ID!
-			$clauseId: String!
-			$outcome: VoteOutcomeEnum!
-			$votesFor: Int!
-			$votesAgainst: Int!
-			$votesAbstain: Int
-		) {
-			recordClauseVote(
-				paperId: $paperId
-				clauseId: $clauseId
-				outcome: $outcome
-				votesFor: $votesFor
-				votesAgainst: $votesAgainst
-				votesAbstain: $votesAbstain
-			) {
-				id
-				clauseId
-				outcome
-			}
-		}
-	`);
-
-	const DeleteClauseVoteMutation = graphql(`
-		mutation ChairDeleteClauseVoteMutation($paperId: ID!, $clauseId: String!) {
-			deleteClauseVote(paperId: $paperId, clauseId: $clauseId)
-		}
-	`);
-
-	const RecordFinalVoteMutation = graphql(`
-		mutation ChairRecordFinalVoteMutation(
-			$paperId: ID!
-			$outcome: VoteOutcomeEnum!
-			$votesFor: Int!
-			$votesAgainst: Int!
-			$votesAbstain: Int
-		) {
-			recordVoteResult(
-				paperId: $paperId
-				outcome: $outcome
-				votesFor: $votesFor
-				votesAgainst: $votesAgainst
-				votesAbstain: $votesAbstain
-			) {
-				id
-				status
-			}
-		}
-	`);
-
-	const RevertPaperStatusMutation = graphql(`
-		mutation ChairRevertPaperStatusMutation($paperId: ID!, $restoreSnapshot: Boolean) {
-			revertPaperStatus(paperId: $paperId, restoreSnapshot: $restoreSnapshot) {
-				id
-				status
-			}
-		}
-	`);
-
 	async function handleRevertStatus() {
 		try {
-			await RevertPaperStatusMutation.mutate({
-				paperId: page.params.paperId!,
-				restoreSnapshot: revertRestoreSnapshot
+			await client.mutate.revertPaperStatus({
+				__args: {
+					paperId: page.params.paperId!,
+					restoreSnapshot: revertRestoreSnapshot
+				},
+				id: true
 			});
 			showRevertStatusModal = false;
 			revertRestoreSnapshot = false;
@@ -1197,7 +1062,10 @@
 
 	async function handleStartVotingPhase() {
 		try {
-			await StartVotingPhaseMutation.mutate({ paperId: page.params.paperId! });
+			await client.mutate.startVotingPhase({
+				__args: { paperId: page.params.paperId! },
+				id: true
+			});
 			showStartVotingPhaseModal = false;
 			toast.success(m.votingPhaseStarted());
 		} catch {
@@ -1229,13 +1097,16 @@
 	async function handleClauseOutcomeDecision(outcome: 'ADOPTED' | 'REJECTED') {
 		if (!pendingClauseVote) return;
 		try {
-			await RecordClauseVoteMutation.mutate({
-				paperId: page.params.paperId!,
-				clauseId: pendingClauseVote.clauseId,
-				outcome,
-				votesFor: pendingClauseVote.votesFor,
-				votesAgainst: pendingClauseVote.votesAgainst,
-				votesAbstain: pendingClauseVote.votesAbstain
+			await client.mutate.recordClauseVote({
+				__args: {
+					paperId: page.params.paperId!,
+					clauseId: pendingClauseVote.clauseId,
+					outcome,
+					votesFor: pendingClauseVote.votesFor,
+					votesAgainst: pendingClauseVote.votesAgainst,
+					votesAbstain: pendingClauseVote.votesAbstain
+				},
+				id: true
 			});
 			toast.success(m.clauseVoteRecorded());
 		} catch {
@@ -1247,9 +1118,12 @@
 
 	async function handleDeleteClauseVote(clauseId: string) {
 		try {
-			await DeleteClauseVoteMutation.mutate({
-				paperId: page.params.paperId!,
-				clauseId
+			await (
+				client.mutate.deleteClauseVote as unknown as (p: {
+					__args: { paperId: string; clauseId: string };
+				}) => Promise<unknown>
+			)({
+				__args: { paperId: page.params.paperId!, clauseId }
 			});
 			toast.success(m.clauseVoteDeleted());
 		} catch {
@@ -1278,12 +1152,15 @@
 	async function handleFinalOutcomeDecision(outcome: 'ADOPTED' | 'REJECTED' | 'SENT_BACK') {
 		if (!pendingFinalVote) return;
 		try {
-			await RecordFinalVoteMutation.mutate({
-				paperId: page.params.paperId!,
-				outcome,
-				votesFor: pendingFinalVote.votesFor,
-				votesAgainst: pendingFinalVote.votesAgainst,
-				votesAbstain: pendingFinalVote.votesAbstain
+			await client.mutate.recordVoteResult({
+				__args: {
+					paperId: page.params.paperId!,
+					outcome,
+					votesFor: pendingFinalVote.votesFor,
+					votesAgainst: pendingFinalVote.votesAgainst,
+					votesAbstain: pendingFinalVote.votesAbstain
+				},
+				id: true
 			});
 			showFinalOutcomeModal = false;
 			pendingFinalVote = null;
@@ -1297,11 +1174,16 @@
 
 	function navigateToVotingClause(index: number) {
 		if (!committee) return;
-		UpdateCommitteeMutation.mutate({
-			id: committee.id,
-			currentOperativeIndex: index,
-			currentOperativeClauseId: operativeClauses[index]?.id ?? null
-		}).catch(() => toast.error(m.saveError()));
+		client.mutate
+			.updateCommittee({
+				__args: {
+					id: committee.id,
+					currentOperativeIndex: index,
+					currentOperativeClauseId: operativeClauses[index]?.id ?? null
+				},
+				id: true
+			})
+			.catch(() => toast.error(m.saveError()));
 	}
 </script>
 
@@ -1313,7 +1195,13 @@
 	<div class="mx-auto flex max-w-4xl flex-col px-4">
 		<!-- Back button + save status -->
 		<div class="flex items-center justify-between py-2">
-			<a href="./." class="btn btn-ghost btn-sm">
+			<a
+				href={resolve('/app/[conferenceId]/[committeeId]/(chairs)/resolutions', {
+					conferenceId: page.params.conferenceId!,
+					committeeId: page.params.committeeId!
+				})}
+				class="btn btn-ghost btn-sm"
+			>
 				<i class="fa-duotone fa-arrow-left mr-1"></i>
 				{m.backToResolutions()}
 			</a>
@@ -1332,7 +1220,7 @@
 					</span>
 				{/if}
 				<a
-					href="/app/print/{paper.id}"
+					href={resolve('/app/print/[documentId]', { documentId: paper.id })}
 					target="_blank"
 					class="btn btn-ghost btn-sm"
 					title={m.printResolution()}
@@ -1388,6 +1276,7 @@
 								<Flag representation={sponsor.committeeMember?.representation} size="xs" />
 								<button
 									class="absolute -top-1 -right-1 btn btn-circle btn-xs btn-error opacity-0 group-hover:opacity-100 transition-opacity"
+									aria-label={m.removeSponsor()}
 									onclick={() => handleRemoveSponsor(sponsor.committeeMemberId)}
 								>
 									<i class="fas fa-times text-[0.5rem]"></i>
@@ -1396,6 +1285,7 @@
 						{/each}
 						<button
 							class="btn btn-ghost btn-xs"
+							aria-label={m.addSponsor()}
 							onclick={() => {
 								sponsorSearchQuery = '';
 								showAddSponsorModal = true;
@@ -1423,14 +1313,6 @@
 				{/if}
 			</div>
 		</div>
-
-		<!-- Collaborative editing info banner -->
-		{#if hasOtherLocks}
-			<div class="alert alert-info mt-2 text-sm">
-				<i class="fas fa-lock"></i>
-				<span>{m.collaborativeEditingInfo()}</span>
-			</div>
-		{/if}
 
 		<!-- Final vote result alert -->
 		{#if paper.status === 'FINAL' && voteResult}
@@ -1467,11 +1349,11 @@
 		{/if}
 
 		<!-- Comment statistics -->
-		{#if allComments.length > 0}
+		{#if (allComments ?? []).length > 0}
 			<div class="flex items-center gap-4 text-sm text-base-content/60 mt-2">
 				<div class="flex items-center gap-1">
 					<i class="fas fa-comments"></i>
-					<span class="font-semibold">{allComments.length}</span>
+					<span class="font-semibold">{(allComments ?? []).length}</span>
 					{m.comments()}
 				</div>
 				<span class="text-base-content/30">|</span>
@@ -1502,19 +1384,28 @@
 
 		<!-- Resolution Editor -->
 		<div class="py-2">
-			{#if resolution}
+			{#if wsForbidden}
+				<div class="alert alert-warning my-4">
+					<i class="fa-solid fa-triangle-exclamation"></i>
+					<span>{m.collabSessionExpired()}</span>
+					<button class="btn btn-sm" onclick={() => location.reload()}>
+						{m.reload()}
+					</button>
+				</div>
+			{:else if !wsSynced}
+				<div class="flex items-center justify-center gap-2 py-12 text-base-content/60">
+					<span class="loading loading-spinner loading-sm"></span>
+					<span class="text-sm">
+						{wsConnected ? m.synchronizing() : m.connecting()}
+					</span>
+				</div>
+			{:else if store && resolution}
 				<ResolutionEditor
-					committeeName={committee?.name ?? ''}
-					{resolution}
+					{store}
+					presence={presence ?? undefined}
 					{headerData}
 					labels={getResolutionLabels()}
 					editable={canEdit && editorMode === 'edit'}
-					onResolutionChange={handleResolutionChange}
-					onClauseLock={handleClauseLock}
-					onClauseUnlock={handleClauseUnlock}
-					onClauseInteraction={handleClauseInteraction}
-					{lockedClauseIds}
-					{editableClauseIds}
 					amendments={paper.status === 'AMENDMENT_PHASE' ? amendmentOverlays : undefined}
 					rejectedClauseIds={paper.status === 'VOTING_PHASE' || paper.status === 'FINAL'
 						? rejectedClauseIds
@@ -1522,35 +1413,15 @@
 					onAmendmentClick={paper.status === 'AMENDMENT_PHASE' ? handleAmendmentClick : undefined}
 				>
 					{#snippet preambleAnnotations({ clause })}
-						{@const lock = locksByClauseId.get(clause.id)}
 						{@const commentCount = commentCountByClauseId.get(clause.id) ?? 0}
-						{#if lock}
-							<div
-								class="tooltip tooltip-right"
-								data-tip={m.clauseLockedBy({
-									country:
-										lock.conferenceUser?.committeeMember?.representation?.name ??
-										getTranslatedCountryNameFromAlpha3Code(
-											lock.conferenceUser?.committeeMember?.representation?.alpha3Code
-										) ??
-										'?'
-								})}
-								in:fly={{ y: -6, duration: 200 }}
-								out:fade={{ duration: 150 }}
+						{#each presence?.editorsFor(clause.id) ?? [] as editor (editor.user.id)}
+							<span
+								class="badge badge-sm text-white"
+								style="background-color: {editor.user.color ?? '#888'}"
 							>
-								<div
-									class="flex items-center gap-2 rounded-md bg-warning/40 px-2 py-1 text-sm shadow-sm"
-								>
-									{#if lock.conferenceUser?.committeeMember?.representation}
-										<Flag
-											representation={lock.conferenceUser.committeeMember.representation}
-											size="xs"
-										/>
-									{/if}
-									<i class="fas fa-lock text-warning text-base"></i>
-								</div>
-							</div>
-						{/if}
+								{editor.user.name}
+							</span>
+						{/each}
 						{#if commentCount > 0}
 							<div class="badge badge-sm badge-info">
 								<i class="fas fa-comment text-xs"></i>
@@ -1559,35 +1430,15 @@
 						{/if}
 					{/snippet}
 					{#snippet clauseAnnotations({ clause })}
-						{@const lock = locksByClauseId.get(clause.id)}
 						{@const commentCount = commentCountByClauseId.get(clause.id) ?? 0}
-						{#if lock}
-							<div
-								class="tooltip tooltip-right"
-								data-tip={m.clauseLockedBy({
-									country:
-										lock.conferenceUser?.committeeMember?.representation?.name ??
-										getTranslatedCountryNameFromAlpha3Code(
-											lock.conferenceUser?.committeeMember?.representation?.alpha3Code
-										) ??
-										'?'
-								})}
-								in:fly={{ y: -6, duration: 200 }}
-								out:fade={{ duration: 150 }}
+						{#each presence?.editorsFor(clause.id) ?? [] as editor (editor.user.id)}
+							<span
+								class="badge badge-sm text-white"
+								style="background-color: {editor.user.color ?? '#888'}"
 							>
-								<div
-									class="flex items-center gap-2 rounded-md bg-warning/40 px-2 py-1 text-sm shadow-sm"
-								>
-									{#if lock.conferenceUser?.committeeMember?.representation}
-										<Flag
-											representation={lock.conferenceUser.committeeMember.representation}
-											size="xs"
-										/>
-									{/if}
-									<i class="fas fa-lock text-warning text-base"></i>
-								</div>
-							</div>
-						{/if}
+								{editor.user.name}
+							</span>
+						{/each}
 						{#if commentCount > 0}
 							<div class="badge badge-sm badge-info">
 								<i class="fas fa-comment text-xs"></i>
@@ -1597,7 +1448,6 @@
 					{/snippet}
 					{#snippet preambleClauseToolbar({ clause })}
 						<CommentSection
-							paperId={page.params.paperId!}
 							clauseId={clause.id}
 							comments={commentsByClauseId.get(clause.id) ?? []}
 							{myConferenceUserId}
@@ -1610,7 +1460,6 @@
 					{/snippet}
 					{#snippet clauseToolbar({ clause })}
 						<CommentSection
-							paperId={page.params.paperId!}
 							clauseId={clause.id}
 							comments={commentsByClauseId.get(clause.id) ?? []}
 							{myConferenceUserId}
@@ -1623,7 +1472,6 @@
 					{/snippet}
 					{#snippet afterPreambleClause({ clause })}
 						<CommentSection
-							paperId={page.params.paperId!}
 							clauseId={clause.id}
 							comments={commentsByClauseId.get(clause.id) ?? []}
 							{myConferenceUserId}
@@ -1637,7 +1485,6 @@
 					{/snippet}
 					{#snippet afterOperativeClause({ clause })}
 						<CommentSection
-							paperId={page.params.paperId!}
 							clauseId={clause.id}
 							comments={commentsByClauseId.get(clause.id) ?? []}
 							{myConferenceUserId}
@@ -1663,15 +1510,19 @@
 					<div class="flex items-center gap-1">
 						<button
 							class="btn btn-ghost btn-sm"
+							aria-label={m.previousParagraph()}
 							disabled={currentOpIndex <= 0}
 							onclick={async () => {
 								if (!committee) return;
 								try {
 									const newIndex = currentOpIndex - 1;
-									await UpdateCommitteeMutation.mutate({
-										id: committee.id,
-										currentOperativeIndex: newIndex,
-										currentOperativeClauseId: operativeClauses[newIndex]?.id ?? null
+									await client.mutate.updateCommittee({
+										__args: {
+											id: committee.id,
+											currentOperativeIndex: newIndex,
+											currentOperativeClauseId: operativeClauses[newIndex]?.id ?? null
+										},
+										id: true
 									});
 								} catch {
 									toast.error(m.saveError());
@@ -1704,7 +1555,7 @@
 					<p class="text-base-content/50 text-sm">{m.noAmendments()}</p>
 				{:else}
 					<div class="flex flex-col gap-3">
-						{#each groupedAmendments as group}
+						{#each groupedAmendments as group (group.label)}
 							<div>
 								<h4
 									class="text-sm font-bold mb-1 {group.index === currentOpIndex
@@ -1824,6 +1675,7 @@
 															/>
 															<button
 																class="absolute -top-1 -right-1 btn btn-circle btn-xs btn-error opacity-0 group-hover:opacity-100 transition-opacity"
+																aria-label={m.removeSponsor()}
 																onclick={() =>
 																	handleRemoveAmendmentSponsor(
 																		amendment.id,
@@ -1836,6 +1688,7 @@
 													{/each}
 													<button
 														class="btn btn-ghost btn-xs"
+														aria-label={m.addSponsor()}
 														onclick={() => {
 															amendmentSponsorTargetId = amendment.id;
 															amendmentSponsorSearchQuery = '';
@@ -2074,7 +1927,7 @@
 		{/if}
 
 		<!-- Per-paragraph results when FINAL -->
-		{#if paper.status === 'FINAL' && clauseVotes.length > 0}
+		{#if paper.status === 'FINAL' && (clauseVotes ?? []).length > 0}
 			<Fieldset legend={m.clauseVoteSummary()} faIcon="fas fa-clipboard-check">
 				<div class="flex flex-col gap-1">
 					{#each operativeClauses as clause, i (clause.id)}
@@ -2128,7 +1981,6 @@
 		<!-- Document-level comments -->
 		<Fieldset legend={m.documentLevelComments()} faIcon="fas fa-comments">
 			<CommentSection
-				paperId={page.params.paperId!}
 				clauseId={null}
 				comments={commentsByClauseId.get(null) ?? []}
 				{myConferenceUserId}
@@ -2145,7 +1997,11 @@
 	<Modal bind:open={showAddSponsorModal}>
 		<div class="flex items-center justify-between mb-4">
 			<h3 class="font-bold text-lg">{m.addSponsor()}</h3>
-			<button class="btn btn-ghost btn-sm" onclick={() => (showAddSponsorModal = false)}>
+			<button
+				class="btn btn-ghost btn-sm"
+				aria-label={m.close()}
+				onclick={() => (showAddSponsorModal = false)}
+			>
 				<i class="fas fa-times"></i>
 			</button>
 		</div>
@@ -2177,7 +2033,11 @@
 	<Modal bind:open={showAmendmentSponsorModal}>
 		<div class="flex items-center justify-between mb-4">
 			<h3 class="font-bold text-lg">{m.addSponsor()}</h3>
-			<button class="btn btn-ghost btn-sm" onclick={() => (showAmendmentSponsorModal = false)}>
+			<button
+				class="btn btn-ghost btn-sm"
+				aria-label={m.close()}
+				onclick={() => (showAmendmentSponsorModal = false)}
+			>
 				<i class="fas fa-times"></i>
 			</button>
 		</div>

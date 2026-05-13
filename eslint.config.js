@@ -39,7 +39,7 @@ export default ts.config(
 	{
 		rules: {
 			'@typescript-eslint/no-unused-vars': 'warn',
-			'@typescript-eslint/no-explicit-any': 'warn',
+			'@typescript-eslint/no-explicit-any': 'error',
 			'svelte/no-at-html-tags': 'warn',
 			'svelte/valid-compile': 'warn',
 			'no-undef': 'warn',

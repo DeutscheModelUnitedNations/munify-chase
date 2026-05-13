@@ -1,29 +1,28 @@
-import { graphql } from '$houdini';
-import dayjs from 'dayjs';
-import { SvelteDate } from 'svelte/reactivity';
-import { derived } from 'svelte/store';
+import { browser } from '$app/environment';
+import { urqlClient } from '$lib/api/client';
+import dayjs, { type Dayjs } from 'dayjs';
 
-export const timeQuery = graphql(`
-	query ServerTime {
-		serverTime
+let current = $state(dayjs());
+const intervalDuration = 500;
+
+if (browser) {
+	const result = await urqlClient
+		.query(
+			'{ serverTime }',
+			{},
+			// use the raw urql client here since we need to skip all cache here
+			{ requestPolicy: 'network-only' }
+		)
+		.toPromise();
+	const servertime: Date | undefined = result.data?.serverTime;
+	if (servertime) {
+		current = dayjs(servertime);
+		setInterval(() => {
+			current = current.add(intervalDuration, 'ms');
+		}, intervalDuration);
 	}
-`);
+}
 
-export const serverTime = derived(
-	timeQuery,
-	(time, set) => {
-		if (time.data?.serverTime) {
-			const servertime = dayjs(new SvelteDate(time.data.serverTime));
-			set(servertime);
-
-			const delta = dayjs().diff(servertime);
-
-			const interval = setInterval(() => {
-				set(dayjs().add(delta, 'millisecond'));
-			}, 1000);
-
-			return () => clearInterval(interval);
-		}
-	},
-	dayjs()
-);
+export function getServerTime(): Dayjs {
+	return current;
+}

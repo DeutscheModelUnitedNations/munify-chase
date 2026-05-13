@@ -1,9 +1,9 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
+	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
 	import CurrentTime from '$lib/components/CurrentTime.svelte';
 	import NavbarBurgerMenu from '$lib/components/NavbarBurgerMenu.svelte';
-	import ThemeSwitcher from '$lib/components/ThemeSwitcher.svelte';
 	import * as m from '$lib/paraglide/messages.js';
 	import hotkeys from 'hotkeys-js';
 
@@ -15,21 +15,44 @@
 
 	let { title, activeDraftResolutionId, resolutionFeatureEnabled = true }: Props = $props();
 
-	const basePath = $derived(`/app/${page.params.conferenceId}/${page.params.committeeId}`);
+	const conferenceId = $derived(page.params.conferenceId!);
+	const committeeId = $derived(page.params.committeeId!);
 
 	const dockItems = $derived([
-		{ icon: 'fa-gears', label: () => m.setup(), href: `${basePath}/setup`, key: 'setup' },
-		{ icon: 'fa-users', label: () => m.presence(), href: `${basePath}/presence`, key: 'presence' },
+		{
+			icon: 'fa-gears',
+			label: () => m.setup(),
+			href: resolve('/app/[conferenceId]/[committeeId]/(chairs)/setup', {
+				conferenceId,
+				committeeId
+			}),
+			key: 'setup'
+		},
+		{
+			icon: 'fa-users',
+			label: () => m.presence(),
+			href: resolve('/app/[conferenceId]/[committeeId]/(chairs)/presence', {
+				conferenceId,
+				committeeId
+			}),
+			key: 'presence'
+		},
 		{
 			icon: 'fa-podium',
 			label: () => m.speakersList(),
-			href: `${basePath}/speakers-list`,
+			href: resolve('/app/[conferenceId]/[committeeId]/(chairs)/speakers-list', {
+				conferenceId,
+				committeeId
+			}),
 			key: 'speakers-list'
 		},
 		{
 			icon: 'fa-box-ballot',
 			label: () => m.voting(),
-			href: `${basePath}/voting`,
+			href: resolve('/app/[conferenceId]/[committeeId]/(chairs)/voting', {
+				conferenceId,
+				committeeId
+			}),
 			key: 'voting'
 		},
 		...(resolutionFeatureEnabled
@@ -37,7 +60,10 @@
 					{
 						icon: 'fa-scroll',
 						label: () => m.resolutions(),
-						href: `${basePath}/resolutions`,
+						href: resolve('/app/[conferenceId]/[committeeId]/(chairs)/resolutions', {
+							conferenceId,
+							committeeId
+						}),
 						key: 'resolutions'
 					}
 				]
@@ -47,7 +73,11 @@
 					{
 						icon: 'fa-file-lines',
 						label: () => m.activeDraftResolution(),
-						href: `${basePath}/resolutions/${activeDraftResolutionId}`,
+						href: resolve('/app/[conferenceId]/[committeeId]/(chairs)/resolutions/[paperId]', {
+							conferenceId,
+							committeeId,
+							paperId: activeDraftResolutionId
+						}),
 						key: activeDraftResolutionId
 					}
 				]
@@ -67,23 +97,54 @@
 			event.preventDefault();
 			switch (handler.key) {
 				case 'alt+1':
-					goto(`${basePath}/setup`);
+					goto(
+						resolve('/app/[conferenceId]/[committeeId]/(chairs)/setup', {
+							conferenceId,
+							committeeId
+						})
+					);
 					break;
 				case 'alt+2':
-					goto(`${basePath}/presence`);
+					goto(
+						resolve('/app/[conferenceId]/[committeeId]/(chairs)/presence', {
+							conferenceId,
+							committeeId
+						})
+					);
 					break;
 				case 'alt+3':
-					goto(`${basePath}/speakers-list`);
+					goto(
+						resolve('/app/[conferenceId]/[committeeId]/(chairs)/speakers-list', {
+							conferenceId,
+							committeeId
+						})
+					);
 					break;
 				case 'alt+4':
-					goto(`${basePath}/voting`);
+					goto(
+						resolve('/app/[conferenceId]/[committeeId]/(chairs)/voting', {
+							conferenceId,
+							committeeId
+						})
+					);
 					break;
 				case 'alt+5':
-					goto(`${basePath}/resolutions`);
+					goto(
+						resolve('/app/[conferenceId]/[committeeId]/(chairs)/resolutions', {
+							conferenceId,
+							committeeId
+						})
+					);
 					break;
 				case 'alt+6':
 					if (activeDraftResolutionId) {
-						goto(`${basePath}/resolutions/${activeDraftResolutionId}`);
+						goto(
+							resolve('/app/[conferenceId]/[committeeId]/(chairs)/resolutions/[paperId]', {
+								conferenceId,
+								committeeId,
+								paperId: activeDraftResolutionId
+							})
+						);
 					}
 					break;
 			}
@@ -107,7 +168,7 @@
 				{
 					faIcon: 'fa-rocket-launch',
 					title: m.missionControl(),
-					href: `/app/${page.params.conferenceId}/mission-control`
+					href: resolve('/app/[conferenceId]/mission-control', { conferenceId })
 				}
 			]}
 		/>

@@ -1,21 +1,25 @@
 import { db, schema } from '$api/db/db';
-import { abilityBuilder, enum_, schemaBuilder, pubsub as rumblePubsub } from '$api/rumble';
-import { basics } from './basics';
-import { isGlobalAdmin } from '$api/services/isAdminEmail';
+import {
+	abilityBuilder,
+	enum_,
+	schemaBuilder,
+	object,
+	pubsub as rumblePubsub,
+	query
+} from '$api/rumble';
+import { isChairInConference, isGlobalAdmin } from '$api/services/authHelper';
 import { assertFindFirstExists, assertFirstEntryExists } from '@m1212e/rumble';
 import { and, eq, count as drizzleCount, not, inArray, gt, gte, sql } from 'drizzle-orm';
 import { GraphQLError } from 'graphql';
-import { assertCommitteeChairOrAdmin } from './resolutionPaper';
 import {
-	ResolutionSchema,
-	OperativeClauseSchema
+	OperativeClauseSchema,
+	type OperativeClause
 } from '@deutschemodelunitednations/munify-resolution-editor/schema';
-
-const { arg, ref, pubsub, table } = basics('amendment');
-const paperPubsub = rumblePubsub({ table: 'resolutionPaper' });
-
-const amendmentTypeEnum = enum_({ tsName: 'amendmentType' });
-const amendmentStatusEnum = enum_({ tsName: 'amendmentStatus' });
+import {
+	replaceResolution,
+	yDocToJson
+} from '@deutschemodelunitednations/munify-resolution-editor/yjs';
+import { applyServerMutation, readPaperJson } from '$api/yjs/server';
 
 abilityBuilder.amendment.allow('read').when((ctx) => {
 	if (isGlobalAdmin(ctx)) return 'allow';
@@ -25,6 +29,22 @@ abilityBuilder.amendment.allow('read').when(({ mustBeLoggedIn }) => {
 	mustBeLoggedIn();
 	return 'allow';
 });
+
+abilityBuilder.amendment.allow(['update']).when((ctx) => {
+	return {
+		where: {
+			paper: {
+				committee: {
+					...isChairInConference(ctx)
+				}
+			}
+		}
+	};
+});
+
+const ref = object({ table: 'amendment' });
+
+const amendmentTypeEnum = enum_({ tsName: 'amendmentType' });
 
 // =============================================================================
 // HELPERS
@@ -68,6 +88,9 @@ function validateAmendmentArgs(
 			}
 			break;
 		case 'ALTER_POSITION':
+			if (args.targetClauseId === undefined || args.targetClauseId === null) {
+				throw new GraphQLError('ALTER_POSITION amendments require targetClauseId');
+			}
 			if (args.targetOperativeIndex === undefined || args.targetOperativeIndex === null) {
 				throw new GraphQLError('ALTER_POSITION amendments require targetOperativeIndex (source)');
 			}
@@ -77,8 +100,6 @@ function validateAmendmentArgs(
 			break;
 	}
 }
-
-type Resolution = { committeeName: string; preamble: unknown[]; operative: unknown[] };
 
 /**
  * Find the current index of a clause by its stable ID.
@@ -126,43 +147,19 @@ async function adjustPendingPositions(
 		);
 }
 
-async function applyAmendmentToResolution(
-	tx: Parameters<Parameters<typeof db.transaction>[0]>[0],
-	amendment: typeof schema.amendment.$inferSelect,
-	paper: typeof schema.resolutionPaper.$inferSelect
-) {
-	const parsed = ResolutionSchema.safeParse(paper.content);
-	if (!parsed.success) {
-		throw new GraphQLError('Paper content is invalid');
-	}
-	const resolution = parsed.data;
-
-	// Snapshot before applying
-	await tx.insert(schema.paperContentSnapshot).values({
-		paperId: paper.id,
-		content: paper.content,
-		trigger: `AMENDMENT_${amendment.type}`
-	});
-
+/**
+ * Compute the post-amendment resolution as a pure function. Used both
+ * server-side (to drive the Y.Doc) and indirectly by tests.
+ */
+function computeAmendedResolution(
+	resolution: import('@deutschemodelunitednations/munify-resolution-editor/schema').Resolution,
+	amendment: typeof schema.amendment.$inferSelect
+): import('@deutschemodelunitednations/munify-resolution-editor/schema').Resolution {
+	const next = structuredClone(resolution);
 	switch (amendment.type) {
 		case 'DELETE': {
-			// Resolve current index from stable clause ID (not stored index)
-			const idx = findClauseIndex(resolution.operative, amendment.targetClauseId!);
-			resolution.operative.splice(idx, 1);
-			// Auto-withdraw other PENDING/SUBMITTED amendments targeting the deleted clause
-			await tx
-				.update(schema.amendment)
-				.set({ status: 'WITHDRAWN' })
-				.where(
-					and(
-						eq(schema.amendment.paperId, paper.id),
-						eq(schema.amendment.targetClauseId, amendment.targetClauseId!),
-						inArray(schema.amendment.status, ['PENDING', 'SUBMITTED']),
-						not(eq(schema.amendment.id, amendment.id))
-					)
-				);
-			// Adjust targetPosition on remaining ADD/ALTER_POSITION amendments
-			await adjustPendingPositions(tx, paper.id, amendment.id, 'decrement', idx, 'gt');
+			const idx = findClauseIndex(next.operative, amendment.targetClauseId!);
+			next.operative.splice(idx, 1);
 			break;
 		}
 		case 'ADD': {
@@ -171,50 +168,125 @@ async function applyAmendmentToResolution(
 				throw new GraphQLError('Invalid newContent for ADD amendment');
 			}
 			const insertAfter = amendment.targetPosition!;
-			resolution.operative.splice(insertAfter + 1, 0, parsedClause.data);
-			// Adjust targetPosition on remaining ADD/ALTER_POSITION amendments
-			await adjustPendingPositions(tx, paper.id, amendment.id, 'increment', insertAfter, 'gte');
+			next.operative.splice(insertAfter + 1, 0, parsedClause.data);
 			break;
 		}
 		case 'ALTER_TEXT': {
-			// Resolve current index from stable clause ID
-			const idx = findClauseIndex(resolution.operative, amendment.targetClauseId!);
+			const idx = findClauseIndex(next.operative, amendment.targetClauseId!);
 			const parsedClause = OperativeClauseSchema.safeParse(amendment.newContent);
 			if (!parsedClause.success) {
 				throw new GraphQLError('Invalid newContent for ALTER_TEXT amendment');
 			}
-			// Keep original clause ID, replace blocks
-			resolution.operative[idx] = {
+			next.operative[idx] = {
 				...parsedClause.data,
-				id: resolution.operative[idx].id
+				id: next.operative[idx].id
 			};
 			break;
 		}
 		case 'ALTER_POSITION': {
-			// Resolve current index from stable clause ID
-			const sourceIdx = findClauseIndex(resolution.operative, amendment.targetClauseId!);
+			const sourceIdx = findClauseIndex(next.operative, amendment.targetClauseId!);
 			const destIdx = amendment.targetPosition!;
-			if (destIdx < 0 || destIdx > resolution.operative.length) {
+			if (destIdx < 0 || destIdx > next.operative.length) {
 				throw new GraphQLError('Destination index out of range');
 			}
-			const [clause] = resolution.operative.splice(sourceIdx, 1);
-			// After removing from source, the target index might shift
+			const [clause] = next.operative.splice(sourceIdx, 1);
 			const adjustedDest = destIdx > sourceIdx ? destIdx - 1 : destIdx;
-			resolution.operative.splice(adjustedDest, 0, clause);
-			// Adjust other pending amendments' targetPosition for the structural shift
-			// First: source removal shifts indices down
-			await adjustPendingPositions(tx, paper.id, amendment.id, 'decrement', sourceIdx, 'gt');
-			// Then: destination insertion shifts indices up
-			await adjustPendingPositions(tx, paper.id, amendment.id, 'increment', adjustedDest, 'gte');
+			next.operative.splice(adjustedDest, 0, clause);
 			break;
 		}
 	}
-
-	await tx
-		.update(schema.resolutionPaper)
-		.set({ content: resolution })
-		.where(eq(schema.resolutionPaper.id, paper.id));
+	return next;
 }
+
+/**
+ * Side-effects of applying an amendment: snapshot, withdraw conflicts,
+ * adjust pending positions. Runs inside the supplied transaction.
+ *
+ * Caller is responsible for routing the resulting content through
+ * `applyServerMutation` outside the transaction.
+ */
+async function applyAmendmentSideEffects(
+	tx: Parameters<Parameters<typeof db.transaction>[0]>[0],
+	amendment: typeof schema.amendment.$inferSelect,
+	paperId: string,
+	freshContent: import('@deutschemodelunitednations/munify-resolution-editor/schema').Resolution
+) {
+	await tx.insert(schema.paperContentSnapshot).values({
+		paperId,
+		content: freshContent,
+		trigger: `AMENDMENT_${amendment.type}`
+	});
+
+	switch (amendment.type) {
+		case 'DELETE': {
+			const idx = findClauseIndex(freshContent.operative, amendment.targetClauseId!);
+			await tx
+				.update(schema.amendment)
+				.set({ status: 'WITHDRAWN' })
+				.where(
+					and(
+						eq(schema.amendment.paperId, paperId),
+						eq(schema.amendment.targetClauseId, amendment.targetClauseId!),
+						inArray(schema.amendment.status, ['PENDING', 'SUBMITTED']),
+						not(eq(schema.amendment.id, amendment.id))
+					)
+				);
+			await adjustPendingPositions(tx, paperId, amendment.id, 'decrement', idx, 'gt');
+			break;
+		}
+		case 'ADD': {
+			const insertAfter = amendment.targetPosition!;
+			await adjustPendingPositions(tx, paperId, amendment.id, 'increment', insertAfter, 'gte');
+			break;
+		}
+		case 'ALTER_TEXT':
+			break;
+		case 'ALTER_POSITION': {
+			const sourceIdx = findClauseIndex(freshContent.operative, amendment.targetClauseId!);
+			const destIdx = amendment.targetPosition!;
+			const adjustedDest = destIdx > sourceIdx ? destIdx - 1 : destIdx;
+			await adjustPendingPositions(tx, paperId, amendment.id, 'decrement', sourceIdx, 'gt');
+			await adjustPendingPositions(tx, paperId, amendment.id, 'increment', adjustedDest, 'gte');
+			break;
+		}
+	}
+}
+
+/**
+ * Orchestrate an amendment apply: resolve the latest paper content from
+ * the in-memory Y.Doc, run the tx-side effects, and replace the Y.Doc
+ * (so connected peers see the change). Replaces the previous
+ * `applyAmendmentToResolution` signature.
+ */
+async function applyAmendmentEverywhere(
+	amendment: typeof schema.amendment.$inferSelect,
+	paperId: string,
+	statusUpdate: { status: 'CONSENSUS_ADOPTED' | 'ACCEPTED' }
+) {
+	// Apply against the canonical live Y.Doc first so concurrent peer edits
+	// are preserved by the CRDT merge, then commit the DB state. Doing the
+	// SQL tx first would risk advancing amendment status without the doc
+	// actually reflecting it; doing the snapshot-then-replace pattern would
+	// clobber any edits that landed between the read and the write.
+	const freshBefore = await applyServerMutation(paperId, (doc) => {
+		const before = yDocToJson(doc);
+		const next = computeAmendedResolution(before, amendment);
+		replaceResolution(doc, next);
+		return before;
+	});
+
+	await db.transaction(async (tx) => {
+		await tx
+			.update(schema.amendment)
+			.set(statusUpdate)
+			.where(eq(schema.amendment.id, amendment.id));
+		await applyAmendmentSideEffects(tx, amendment, paperId, freshBefore);
+	});
+}
+
+const pubsub = rumblePubsub({ table: 'amendment' });
+const paperPubsub = rumblePubsub({ table: 'resolutionPaper' });
+query({ table: 'amendment' });
 
 // =============================================================================
 // MUTATIONS
@@ -231,7 +303,7 @@ schemaBuilder.mutationFields((t) => ({
 			targetPosition: t.arg.int(),
 			newContent: t.arg({ type: 'JSON' })
 		},
-		resolve: async (query, root, args, ctx, info) => {
+		resolve: async (query, root, args, ctx) => {
 			const user = ctx.mustBeLoggedIn();
 
 			// Find delegate's committee member
@@ -276,11 +348,16 @@ schemaBuilder.mutationFields((t) => ({
 			// Validate type-specific args
 			validateAmendmentArgs(args.type, args);
 
-			// If targetClauseId is provided, resolve and auto-correct the operative index
+			// If targetClauseId is provided, resolve and auto-correct the operative index.
+			// Read from the canonical Y.Doc (readPaperJson) rather than paper.content,
+			// since the latter is only a projection of the live doc and can lag during
+			// active collaboration.
 			if (args.targetClauseId) {
-				const parsed = ResolutionSchema.safeParse(paper.content);
-				if (parsed.success) {
-					const actualIdx = parsed.data.operative.findIndex((c) => c.id === args.targetClauseId);
+				const canonical = await readPaperJson(args.paperId);
+				if (canonical) {
+					const actualIdx = canonical.operative.findIndex(
+						(c: OperativeClause) => c.id === args.targetClauseId
+					);
 					if (actualIdx === -1) {
 						throw new GraphQLError('Target clause no longer exists in the resolution');
 					}
@@ -386,15 +463,14 @@ schemaBuilder.mutationFields((t) => ({
 			return db.query.amendment
 				.findFirst(
 					query(
-						ctx.abilities.amendment.filter('read', {
-							inject: { where: { id: result.id } }
+						ctx.abilities.amendment.filter('read').merge({
+							where: { id: result.id }
 						}).query.single
 					)
 				)
 				.then(assertFindFirstExists);
 		}
 	}),
-
 	chairCreateAmendment: t.drizzleField({
 		type: ref,
 		args: {
@@ -406,16 +482,17 @@ schemaBuilder.mutationFields((t) => ({
 			targetPosition: t.arg.int(),
 			newContent: t.arg({ type: 'JSON' })
 		},
-		resolve: async (query, root, args, ctx, info) => {
+		resolve: async (query, root, args, ctx) => {
 			const paper = await db.query.resolutionPaper
-				.findFirst({ where: { id: args.paperId } })
+				.findFirst(
+					ctx.abilities.resolutionPaper.filter('update').merge({ where: { id: args.paperId } })
+						.query.single
+				)
 				.then(assertFindFirstExists);
 
 			if (paper.status !== 'AMENDMENT_PHASE') {
 				throw new GraphQLError('Paper must be in AMENDMENT_PHASE');
 			}
-
-			await assertCommitteeChairOrAdmin(ctx, paper.committeeId);
 
 			// Verify this is the active DR
 			const committee = await db.query.committee
@@ -436,11 +513,14 @@ schemaBuilder.mutationFields((t) => ({
 			// Validate type-specific args
 			validateAmendmentArgs(args.type, args);
 
-			// If targetClauseId is provided, resolve and auto-correct the operative index
+			// If targetClauseId is provided, resolve and auto-correct the operative index.
+			// Read from the canonical Y.Doc rather than the paper.content projection.
 			if (args.targetClauseId) {
-				const parsed = ResolutionSchema.safeParse(paper.content);
-				if (parsed.success) {
-					const actualIdx = parsed.data.operative.findIndex((c) => c.id === args.targetClauseId);
+				const canonical = await readPaperJson(args.paperId);
+				if (canonical) {
+					const actualIdx = canonical.operative.findIndex(
+						(c: OperativeClause) => c.id === args.targetClauseId
+					);
 					if (actualIdx === -1) {
 						throw new GraphQLError('Target clause no longer exists in the resolution');
 					}
@@ -535,9 +615,7 @@ schemaBuilder.mutationFields((t) => ({
 			return db.query.amendment
 				.findFirst(
 					query(
-						ctx.abilities.amendment.filter('read', {
-							inject: { where: { id: result.id } }
-						}).query.single
+						ctx.abilities.amendment.filter('read').merge({ where: { id: result.id } }).query.single
 					)
 				)
 				.then(assertFindFirstExists);
@@ -549,7 +627,7 @@ schemaBuilder.mutationFields((t) => ({
 		args: {
 			amendmentId: t.arg.id({ required: true })
 		},
-		resolve: async (query, root, args, ctx, info) => {
+		resolve: async (query, root, args, ctx) => {
 			const amendment = await db.query.amendment
 				.findFirst({ where: { id: args.amendmentId } })
 				.then(assertFindFirstExists);
@@ -558,19 +636,15 @@ schemaBuilder.mutationFields((t) => ({
 				throw new GraphQLError('Only SUBMITTED amendments can be adopted by consensus');
 			}
 
-			const paper = await db.query.resolutionPaper
-				.findFirst({ where: { id: amendment.paperId } })
+			await db.query.resolutionPaper
+				.findFirst(
+					ctx.abilities.resolutionPaper.filter('update').merge({ where: { id: amendment.paperId } })
+						.query.single
+				)
 				.then(assertFindFirstExists);
 
-			await assertCommitteeChairOrAdmin(ctx, paper.committeeId);
-
-			await db.transaction(async (tx) => {
-				await tx
-					.update(schema.amendment)
-					.set({ status: 'CONSENSUS_ADOPTED' })
-					.where(eq(schema.amendment.id, args.amendmentId));
-
-				await applyAmendmentToResolution(tx, amendment, paper);
+			await applyAmendmentEverywhere(amendment, amendment.paperId, {
+				status: 'CONSENSUS_ADOPTED'
 			});
 
 			pubsub.updated(args.amendmentId);
@@ -579,9 +653,8 @@ schemaBuilder.mutationFields((t) => ({
 			return db.query.amendment
 				.findFirst(
 					query(
-						ctx.abilities.amendment.filter('read', {
-							inject: { where: { id: args.amendmentId } }
-						}).query.single
+						ctx.abilities.amendment.filter('read').merge({ where: { id: args.amendmentId } }).query
+							.single
 					)
 				)
 				.then(assertFindFirstExists);
@@ -593,7 +666,7 @@ schemaBuilder.mutationFields((t) => ({
 		args: {
 			amendmentId: t.arg.id({ required: true })
 		},
-		resolve: async (query, root, args, ctx, info) => {
+		resolve: async (query, root, args, ctx) => {
 			const amendment = await db.query.amendment
 				.findFirst({ where: { id: args.amendmentId } })
 				.then(assertFindFirstExists);
@@ -602,19 +675,15 @@ schemaBuilder.mutationFields((t) => ({
 				throw new GraphQLError('Only SUBMITTED amendments can be accepted');
 			}
 
-			const paper = await db.query.resolutionPaper
-				.findFirst({ where: { id: amendment.paperId } })
+			await db.query.resolutionPaper
+				.findFirst(
+					ctx.abilities.resolutionPaper.filter('update').merge({ where: { id: amendment.paperId } })
+						.query.single
+				)
 				.then(assertFindFirstExists);
 
-			await assertCommitteeChairOrAdmin(ctx, paper.committeeId);
-
-			await db.transaction(async (tx) => {
-				await tx
-					.update(schema.amendment)
-					.set({ status: 'ACCEPTED' })
-					.where(eq(schema.amendment.id, args.amendmentId));
-
-				await applyAmendmentToResolution(tx, amendment, paper);
+			await applyAmendmentEverywhere(amendment, amendment.paperId, {
+				status: 'ACCEPTED'
 			});
 
 			pubsub.updated(args.amendmentId);
@@ -623,9 +692,8 @@ schemaBuilder.mutationFields((t) => ({
 			return db.query.amendment
 				.findFirst(
 					query(
-						ctx.abilities.amendment.filter('read', {
-							inject: { where: { id: args.amendmentId } }
-						}).query.single
+						ctx.abilities.amendment.filter('read').merge({ where: { id: args.amendmentId } }).query
+							.single
 					)
 				)
 				.then(assertFindFirstExists);
@@ -637,7 +705,7 @@ schemaBuilder.mutationFields((t) => ({
 		args: {
 			amendmentId: t.arg.id({ required: true })
 		},
-		resolve: async (query, root, args, ctx, info) => {
+		resolve: async (query, root, args, ctx) => {
 			const amendment = await db.query.amendment
 				.findFirst({ where: { id: args.amendmentId } })
 				.then(assertFindFirstExists);
@@ -646,16 +714,13 @@ schemaBuilder.mutationFields((t) => ({
 				throw new GraphQLError('Only SUBMITTED amendments can be rejected');
 			}
 
-			const paper = await db.query.resolutionPaper
-				.findFirst({ where: { id: amendment.paperId } })
-				.then(assertFindFirstExists);
-
-			await assertCommitteeChairOrAdmin(ctx, paper.committeeId);
-
 			await db
 				.update(schema.amendment)
 				.set({ status: 'REJECTED' })
-				.where(eq(schema.amendment.id, args.amendmentId));
+				.where(
+					ctx.abilities.amendment.filter('update').merge({ where: { id: args.amendmentId } }).sql
+						.where
+				);
 
 			pubsub.updated(args.amendmentId);
 			paperPubsub.updated(amendment.paperId);
@@ -663,9 +728,8 @@ schemaBuilder.mutationFields((t) => ({
 			return db.query.amendment
 				.findFirst(
 					query(
-						ctx.abilities.amendment.filter('read', {
-							inject: { where: { id: args.amendmentId } }
-						}).query.single
+						ctx.abilities.amendment.filter('read').merge({ where: { id: args.amendmentId } }).query
+							.single
 					)
 				)
 				.then(assertFindFirstExists);
@@ -677,7 +741,7 @@ schemaBuilder.mutationFields((t) => ({
 		args: {
 			amendmentId: t.arg.id({ required: true })
 		},
-		resolve: async (query, root, args, ctx, info) => {
+		resolve: async (query, root, args, ctx) => {
 			ctx.mustBeLoggedIn();
 
 			const amendment = await db.query.amendment
@@ -688,16 +752,13 @@ schemaBuilder.mutationFields((t) => ({
 				throw new GraphQLError('Only SUBMITTED amendments can be withdrawn');
 			}
 
-			const paper = await db.query.resolutionPaper
-				.findFirst({ where: { id: amendment.paperId } })
-				.then(assertFindFirstExists);
-
-			await assertCommitteeChairOrAdmin(ctx, paper.committeeId);
-
 			await db
 				.update(schema.amendment)
 				.set({ status: 'WITHDRAWN' })
-				.where(eq(schema.amendment.id, args.amendmentId));
+				.where(
+					ctx.abilities.amendment.filter('update').merge({ where: { id: args.amendmentId } }).sql
+						.where
+				);
 
 			pubsub.updated(args.amendmentId);
 			paperPubsub.updated(amendment.paperId);
@@ -705,9 +766,8 @@ schemaBuilder.mutationFields((t) => ({
 			return db.query.amendment
 				.findFirst(
 					query(
-						ctx.abilities.amendment.filter('read', {
-							inject: { where: { id: args.amendmentId } }
-						}).query.single
+						ctx.abilities.amendment.filter('read').merge({ where: { id: args.amendmentId } }).query
+							.single
 					)
 				)
 				.then(assertFindFirstExists);
@@ -724,7 +784,7 @@ schemaBuilder.mutationFields((t) => ({
 			newContent: t.arg({ type: 'JSON' }),
 			proposerCommitteeMemberId: t.arg.id()
 		},
-		resolve: async (query, root, args, ctx, info) => {
+		resolve: async (query, root, args, ctx) => {
 			const amendment = await db.query.amendment
 				.findFirst({ where: { id: args.amendmentId } })
 				.then(assertFindFirstExists);
@@ -734,10 +794,11 @@ schemaBuilder.mutationFields((t) => ({
 			}
 
 			const paper = await db.query.resolutionPaper
-				.findFirst({ where: { id: amendment.paperId } })
+				.findFirst(
+					ctx.abilities.resolutionPaper.filter('update').merge({ where: { id: amendment.paperId } })
+						.query.single
+				)
 				.then(assertFindFirstExists);
-
-			await assertCommitteeChairOrAdmin(ctx, paper.committeeId);
 
 			// Merge provided args with existing values
 			const merged = {
@@ -755,11 +816,14 @@ schemaBuilder.mutationFields((t) => ({
 			// Re-validate with merged values
 			validateAmendmentArgs(amendment.type, merged);
 
-			// If targetClauseId is provided, resolve and auto-correct the operative index
+			// If targetClauseId is provided, resolve and auto-correct the operative index.
+			// Read from the canonical Y.Doc rather than the paper.content projection.
 			if (merged.targetClauseId) {
-				const parsed = ResolutionSchema.safeParse(paper.content);
-				if (parsed.success) {
-					const actualIdx = parsed.data.operative.findIndex((c) => c.id === merged.targetClauseId);
+				const canonical = await readPaperJson(amendment.paperId);
+				if (canonical) {
+					const actualIdx = canonical.operative.findIndex(
+						(c: OperativeClause) => c.id === merged.targetClauseId
+					);
 					if (actualIdx === -1) {
 						throw new GraphQLError('Target clause no longer exists in the resolution');
 					}
@@ -807,9 +871,8 @@ schemaBuilder.mutationFields((t) => ({
 				return db.query.amendment
 					.findFirst(
 						query(
-							ctx.abilities.amendment.filter('read', {
-								inject: { where: { id: args.amendmentId } }
-							}).query.single
+							ctx.abilities.amendment.filter('read').merge({ where: { id: args.amendmentId } })
+								.query.single
 						)
 					)
 					.then(assertFindFirstExists);
@@ -868,9 +931,8 @@ schemaBuilder.mutationFields((t) => ({
 			return db.query.amendment
 				.findFirst(
 					query(
-						ctx.abilities.amendment.filter('read', {
-							inject: { where: { id: args.amendmentId } }
-						}).query.single
+						ctx.abilities.amendment.filter('read').merge({ where: { id: args.amendmentId } }).query
+							.single
 					)
 				)
 				.then(assertFindFirstExists);

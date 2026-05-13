@@ -18,6 +18,7 @@
 
 <script lang="ts">
 	import * as m from '$lib/paraglide/messages.js';
+	import { resolve } from '$app/paths';
 	import IconInfoBox from './IconInfoBox.svelte';
 	import { getCommitteeStatusIcon, getCommitteeStatusText } from '$lib/utils/committeeStatus';
 	import AdoptionConfetti from './AdoptionConfetti.svelte';
@@ -31,11 +32,20 @@
 
 	const getHref = (committeeId: string) => {
 		if (environment === 'TEAM') {
-			return `/app/${conference.id}/${committeeId}/setup`;
+			return resolve('/app/[conferenceId]/[committeeId]/(chairs)/setup', {
+				conferenceId: conference.id,
+				committeeId
+			});
 		} else if (environment === 'PARTICIPANT') {
-			return `/app/${conference.id}/participant/${committeeId}`;
+			return resolve('/app/[conferenceId]/participant/[committeeId]', {
+				conferenceId: conference.id,
+				committeeId
+			});
 		} else {
-			return `/app/${conference.id}/${committeeId}`;
+			return resolve('/app/[conferenceId]/[committeeId]', {
+				conferenceId: conference.id,
+				committeeId
+			});
 		}
 	};
 </script>

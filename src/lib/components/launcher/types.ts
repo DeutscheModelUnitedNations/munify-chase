@@ -19,4 +19,5 @@ export type LauncherConference = {
 	roleDetail?: string | null;
 	representation?: LauncherRepresentation | null;
 	href: string;
+	committeeId?: string | null;
 };

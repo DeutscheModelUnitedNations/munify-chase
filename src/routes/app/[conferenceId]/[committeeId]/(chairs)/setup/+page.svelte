@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { m } from '$lib/paraglide/messages';
 	import { page } from '$app/state';
+	import { resolve } from '$app/paths';
 	import { client } from '$lib/api/rumbleClient/client';
 	import Kbd from '$lib/components/Kbd.svelte';
 	import IconInfoBox from '$lib/components/IconInfoBox.svelte';
@@ -95,7 +96,14 @@
 					/>
 				</BasicCard>
 				<BasicCard title={m.presentationMode()}>
-					<a href="." class="btn btn-primary btn-lg mb-4 flex items-center gap-3" target="_blank">
+					<a
+						href={resolve('/app/[conferenceId]/[committeeId]/(presentation)', {
+							conferenceId: page.params.conferenceId!,
+							committeeId: page.params.committeeId!
+						})}
+						class="btn btn-primary btn-lg mb-4 flex items-center gap-3"
+						target="_blank"
+					>
 						<i class="fas fa-projector"></i>
 						{m.openPresentation()}
 						<Kbd hotkey="alt+P" class="text-base-content" />

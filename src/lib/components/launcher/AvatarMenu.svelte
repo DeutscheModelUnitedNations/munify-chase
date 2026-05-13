@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { resolve } from '$app/paths';
 	import { m } from '$lib/paraglide/messages';
 
 	interface Props {
@@ -47,7 +48,7 @@
 			</div>
 		</li>
 		<li>
-			<a href="/logout">
+			<a href={resolve('/logout')}>
 				<i class="fa-duotone fa-arrow-right-from-bracket"></i>
 				{m.launcherSignOut()}
 			</a>

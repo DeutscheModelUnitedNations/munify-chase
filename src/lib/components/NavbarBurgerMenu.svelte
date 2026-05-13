@@ -31,6 +31,7 @@
 	>
 		{#each items as { href, title, faIcon }}
 			<li>
+				<!-- eslint-disable-next-line svelte/no-navigation-without-resolve -- href is resolved by caller -->
 				<a {href}>
 					<i class="fa-duotone w-6 text-center fa-{faIcon.replace('fa-', '')}"></i>
 					{title}

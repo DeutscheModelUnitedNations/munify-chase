@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { resolve } from '$app/paths';
 	import dmunLogo from '$assets/dmunlogo/logo.png';
 	import { configPublic } from '$config/public';
 	import LanguageSwitcher from '$lib/components/LanguageSwitcher.svelte';
@@ -11,7 +12,7 @@
 		class="footer footer-center bg-base-100 text-base-content mt-3 flex flex-col rounded-xl p-10"
 	>
 		<nav class="flex flex-col flex-wrap justify-center gap-4 md:flex-row">
-			<a class="link-hover link" href="/">{m.home()}</a>
+			<a class="link-hover link" href={resolve('/(pages)')}>{m.home()}</a>
 			<a class="link-hover link" href="https://dmun.de/impressum" target="_blank"
 				>{@html m.imprintAndPrivacy()}</a
 			>

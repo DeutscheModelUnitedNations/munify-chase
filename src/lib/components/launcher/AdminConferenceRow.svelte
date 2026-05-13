@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
+	import { resolve } from '$app/paths';
 	import { m } from '$lib/paraglide/messages';
 	import { getLocale } from '$lib/paraglide/runtime';
 	import { deriveStatus, formatDateRange } from '$lib/helpers/launcher';
@@ -19,7 +20,7 @@
 	const dateRange = $derived(formatDateRange(conference, getLocale()));
 
 	function handleConfigure() {
-		goto(`/app/${conference.id}/mission-control/config`);
+		goto(resolve('/app/[conferenceId]/mission-control/config', { conferenceId: conference.id }));
 	}
 
 	function handleDelete() {
@@ -32,7 +33,7 @@
 	class="border-base-content/10 hover:bg-primary/5 relative grid grid-cols-[auto_minmax(0,1fr)_auto_auto] items-center gap-3 border-b px-4 py-3 transition-colors"
 >
 	<a
-		href={conference.href}
+		href={resolve('/app/[conferenceId]/mission-control', { conferenceId: conference.id })}
 		aria-label={conference.title}
 		class="focus-visible:ring-primary absolute inset-0 rounded-[inherit] focus:outline-none focus-visible:ring-2"
 	></a>

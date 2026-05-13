@@ -50,6 +50,7 @@
 	{#each buttons as button}
 		{@const { label, action, href, active } = button}
 		{#if button.href}
+			<!-- eslint-disable-next-line svelte/no-navigation-without-resolve -- href is resolved by caller -->
 			<a class="btn join-item {active ? 'btn-primary' : ''}" {href} aria-label={label}>
 				{@render ButtonContent({
 					...button,

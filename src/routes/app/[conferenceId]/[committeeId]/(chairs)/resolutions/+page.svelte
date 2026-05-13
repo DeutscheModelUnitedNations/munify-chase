@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { m } from '$lib/paraglide/messages';
 	import { page } from '$app/state';
+	import { resolve } from '$app/paths';
 	import { client } from '$lib/api/rumbleClient/client';
 	import BasicCard from '$lib/components/BasicCard.svelte';
 	import Majorities from '$lib/components/Majorities.svelte';
@@ -10,6 +11,9 @@
 	import toast from 'svelte-french-toast';
 	import { generatePaperName } from '$lib/utils/paperNameGenerator';
 	import { getTranslatedCountryNameFromAlpha3Code } from '$lib/utils/nationTranslationHelper.svelte';
+
+	const conferenceId = $derived(page.params.conferenceId!);
+	const committeeId = $derived(page.params.committeeId!);
 
 	const committee = await client.liveQuery.committee({
 		__args: { id: page.params.committeeId! },
@@ -401,7 +405,13 @@
 											</div>
 										</div>
 										<div class="flex gap-2">
-											<a href="./resolutions/{paper.id}" class="btn btn-ghost btn-sm">
+											<a
+												href={resolve(
+													'/app/[conferenceId]/[committeeId]/(chairs)/resolutions/[paperId]',
+													{ conferenceId, committeeId, paperId: paper.id }
+												)}
+												class="btn btn-ghost btn-sm"
+											>
 												{m.viewPaper()}
 											</a>
 											<button
@@ -440,7 +450,13 @@
 										: ''}"
 								>
 									<div class="card-body flex-row items-center gap-4 p-4">
-										<a href="./resolutions/{paper.id}" class="flex flex-1 flex-col">
+										<a
+											href={resolve(
+												'/app/[conferenceId]/[committeeId]/(chairs)/resolutions/[paperId]',
+												{ conferenceId, committeeId, paperId: paper.id }
+											)}
+											class="flex flex-1 flex-col"
+										>
 											<div class="flex items-center gap-2">
 												<h3 class="font-bold font-mono">
 													{paper.documentNumber ?? m.draftResolution()}
@@ -587,7 +603,13 @@
 									<span class="badge badge-accent badge-sm">{m.votingPhaseActive()}</span>
 									<span class="font-mono">{activeDr!.documentNumber}</span>
 								</div>
-								<a href="./resolutions/{activeDr!.id}" class="btn btn-ghost btn-xs">
+								<a
+									href={resolve(
+										'/app/[conferenceId]/[committeeId]/(chairs)/resolutions/[paperId]',
+										{ conferenceId, committeeId, paperId: activeDr!.id }
+									)}
+									class="btn btn-ghost btn-xs"
+								>
 									{m.goToVoting()} →
 								</a>
 							</div>
@@ -598,7 +620,13 @@
 									<span class="badge badge-secondary badge-sm">{m.amendmentPhaseActive()}</span>
 									<span class="font-mono">OP {(committee.currentOperativeIndex ?? 0) + 1}</span>
 								</div>
-								<a href="./resolutions/{activeDr!.id}" class="btn btn-ghost btn-xs">
+								<a
+									href={resolve(
+										'/app/[conferenceId]/[committeeId]/(chairs)/resolutions/[paperId]',
+										{ conferenceId, committeeId, paperId: activeDr!.id }
+									)}
+									class="btn btn-ghost btn-xs"
+								>
 									{m.goToAmendments()} →
 								</a>
 							</div>
@@ -614,7 +642,14 @@
 								<span class="badge badge-accent badge-sm">{m.votingPhaseActive()}</span>
 								<span class="font-mono">{activeDr!.documentNumber}</span>
 							</div>
-							<a href="./resolutions/{activeDr!.id}" class="btn btn-ghost btn-xs">
+							<a
+								href={resolve('/app/[conferenceId]/[committeeId]/(chairs)/resolutions/[paperId]', {
+									conferenceId,
+									committeeId,
+									paperId: activeDr!.id
+								})}
+								class="btn btn-ghost btn-xs"
+							>
 								{m.goToVoting()} →
 							</a>
 						</div>

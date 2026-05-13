@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { m } from '$lib/paraglide/messages';
+	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
 	import { client } from '$lib/api/rumbleClient/client';
 	import { getCurrentUser } from '$lib/state/currentUser.svelte';
@@ -52,7 +53,9 @@
 			<div class="flex-none">
 				<a
 					class="btn btn-ghost btn-sm"
-					href="/app/{page.params.conferenceId}/participant"
+					href={resolve('/app/[conferenceId]/participant', {
+						conferenceId: page.params.conferenceId!
+					})}
 					aria-label={m.back()}
 				>
 					<i class="fa-duotone fa-arrow-left"></i>
@@ -73,7 +76,10 @@
 	<!-- Bottom dock navigation -->
 	<div class="dock dock-md lg:dock-lg md:justify-center md:gap-4">
 		<a
-			href="/app/{page.params.conferenceId}/participant/{page.params.committeeId}"
+			href={resolve('/app/[conferenceId]/participant/[committeeId]', {
+				conferenceId: page.params.conferenceId!,
+				committeeId: page.params.committeeId!
+			})}
 			class={!isPapersRoute ? 'dock-active' : ''}
 		>
 			<i class="fa-duotone fa-users size-[1.2em]"></i>
@@ -81,7 +87,10 @@
 		</a>
 		<!-- TODO: resolutionFeatureEnabled check removed - not available in Rumble client yet -->
 		<a
-			href="/app/{page.params.conferenceId}/participant/{page.params.committeeId}/papers"
+			href={resolve('/app/[conferenceId]/participant/[committeeId]/papers', {
+				conferenceId: page.params.conferenceId!,
+				committeeId: page.params.committeeId!
+			})}
 			class={isPapersRoute ? 'dock-active' : ''}
 		>
 			<i class="fa-duotone fa-scroll size-[1.2em]"></i>

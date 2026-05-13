@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { page } from '$app/state';
+	import { resolve } from '$app/paths';
 	import { client } from '$lib/api/rumbleClient/client';
 	import CommitteeGrid, { type ConferenceData } from '$lib/components/CommitteeGrid.svelte';
 	import ThemeSwitcher from '$lib/components/ThemeSwitcher.svelte';
@@ -32,7 +33,11 @@
 	</div>
 	<div class="flex-none">
 		<ThemeSwitcher />
-		<a class="btn btn-ghost btn-square" href="/app" aria-label="Go back to app">
+		<a
+			class="btn btn-ghost btn-square"
+			href={resolve('/app/(launcher)')}
+			aria-label="Go back to app"
+		>
 			<i class="fa-duotone fa-home"></i>
 		</a>
 	</div>

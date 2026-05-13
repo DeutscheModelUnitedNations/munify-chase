@@ -18,14 +18,14 @@ jobs:
   format:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - uses: ./.github/actions/setup-bun
       - run: bun run format:check
 
   lint:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - uses: ./.github/actions/setup-bun
       - run: bunx svelte-kit sync
       - run: bun run lint
@@ -33,7 +33,7 @@ jobs:
   test:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - uses: ./.github/actions/setup-bun
       - run: bunx svelte-kit sync
       - run: bun run test
@@ -41,7 +41,7 @@ jobs:
   i18n:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - uses: ./.github/actions/setup-bun
       - run: bun run i18n:check
       - run: bun run i18n:validate
@@ -49,7 +49,7 @@ jobs:
   security:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - uses: ./.github/actions/setup-bun
       - uses: aquasecurity/trivy-action@0.35.0
         with:
@@ -66,11 +66,11 @@ jobs:
   typecheck:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - uses: ./.github/actions/setup-bun
       - run: bunx svelte-kit sync
       - run: bunx @inlang/paraglide-js compile --project ./project.inlang --outdir ./src/lib/paraglide
-      - run: bunx houdini generate
+      # - run: bunx houdini generate # TODO
       - run: bun run check
 
   build:
@@ -79,11 +79,11 @@ jobs:
     env:
       NODE_OPTIONS: '--max-old-space-size=8192'
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - uses: ./.github/actions/setup-bun
       - run: bunx svelte-kit sync
       - run: bunx @inlang/paraglide-js compile --project ./project.inlang --outdir ./src/lib/paraglide
-      - run: bunx houdini generate
+      # - run: bunx houdini generate # TODO
       - run: bun run build
 
   # ============================================
@@ -101,23 +101,23 @@ jobs:
       SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
       SENTRY_URL: ${{ secrets.SENTRY_URL }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
-      - uses: docker/setup-buildx-action@v3
+      - uses: docker/setup-buildx-action@v4
 
-      - uses: docker/login-action@v3
+      - uses: docker/login-action@v4
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - uses: docker/login-action@v3
+      - uses: docker/login-action@v4
         with:
           registry: ghcr.io
           username: ${{ github.repository_owner }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - id: meta
-        uses: docker/metadata-action@v5
+        uses: docker/metadata-action@v6
         with:
           flavor: |
             latest=false
@@ -132,9 +132,10 @@ jobs:
             type=raw,value=latest,enable=${{ github.ref_type == 'tag' }},suffix=${{ matrix.runtime != 'bun' && format('-{0}', matrix.runtime) || '' }}
 
       - id: build
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v7
         with:
           context: .
+          # TODO we should consider not pushing when any vulnerabilities are found in the next step
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
@@ -208,7 +209,7 @@ jobs:
     permissions:
       contents: write
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Extract version
         id: version

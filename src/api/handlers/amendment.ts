@@ -1,21 +1,20 @@
 import { db, schema } from '$api/db/db';
-import { abilityBuilder, enum_, schemaBuilder, pubsub as rumblePubsub } from '$api/rumble';
-import { basics } from './basics';
-import { isGlobalAdmin } from '$api/services/isAdminEmail';
+import {
+	abilityBuilder,
+	enum_,
+	schemaBuilder,
+	object,
+	pubsub as rumblePubsub,
+	query
+} from '$api/rumble';
+import { isChairInConference, isGlobalAdmin } from '$api/services/authHelper';
 import { assertFindFirstExists, assertFirstEntryExists } from '@m1212e/rumble';
 import { and, eq, count as drizzleCount, not, inArray, gt, gte, sql } from 'drizzle-orm';
 import { GraphQLError } from 'graphql';
-import { assertCommitteeChairOrAdmin } from './resolutionPaper';
 import {
 	ResolutionSchema,
 	OperativeClauseSchema
 } from '@deutschemodelunitednations/munify-resolution-editor/schema';
-
-const { arg, ref, pubsub, table } = basics('amendment');
-const paperPubsub = rumblePubsub({ table: 'resolutionPaper' });
-
-const amendmentTypeEnum = enum_({ tsName: 'amendmentType' });
-const amendmentStatusEnum = enum_({ tsName: 'amendmentStatus' });
 
 abilityBuilder.amendment.allow('read').when((ctx) => {
 	if (isGlobalAdmin(ctx)) return 'allow';
@@ -25,6 +24,23 @@ abilityBuilder.amendment.allow('read').when(({ mustBeLoggedIn }) => {
 	mustBeLoggedIn();
 	return 'allow';
 });
+
+abilityBuilder.amendment.allow(['update']).when((ctx) => {
+	return {
+		where: {
+			paper: {
+				committee: {
+					...isChairInConference(ctx)
+				}
+			}
+		}
+	};
+});
+
+const ref = object({ table: 'amendment' });
+
+const amendmentTypeEnum = enum_({ tsName: 'amendmentType' });
+const amendmentStatusEnum = enum_({ tsName: 'amendmentStatus' });
 
 // =============================================================================
 // HELPERS
@@ -216,6 +232,10 @@ async function applyAmendmentToResolution(
 		.where(eq(schema.resolutionPaper.id, paper.id));
 }
 
+const pubsub = rumblePubsub({ table: 'amendment' });
+const paperPubsub = rumblePubsub({ table: 'resolutionPaper' });
+query({ table: 'amendment' });
+
 // =============================================================================
 // MUTATIONS
 // =============================================================================
@@ -386,15 +406,14 @@ schemaBuilder.mutationFields((t) => ({
 			return db.query.amendment
 				.findFirst(
 					query(
-						ctx.abilities.amendment.filter('read', {
-							inject: { where: { id: result.id } }
+						ctx.abilities.amendment.filter('read').merge({
+							where: { id: result.id }
 						}).query.single
 					)
 				)
 				.then(assertFindFirstExists);
 		}
 	}),
-
 	chairCreateAmendment: t.drizzleField({
 		type: ref,
 		args: {
@@ -408,14 +427,15 @@ schemaBuilder.mutationFields((t) => ({
 		},
 		resolve: async (query, root, args, ctx, info) => {
 			const paper = await db.query.resolutionPaper
-				.findFirst({ where: { id: args.paperId } })
+				.findFirst(
+					ctx.abilities.resolutionPaper.filter('update').merge({ where: { id: args.paperId } })
+						.query.single
+				)
 				.then(assertFindFirstExists);
 
 			if (paper.status !== 'AMENDMENT_PHASE') {
 				throw new GraphQLError('Paper must be in AMENDMENT_PHASE');
 			}
-
-			await assertCommitteeChairOrAdmin(ctx, paper.committeeId);
 
 			// Verify this is the active DR
 			const committee = await db.query.committee
@@ -535,9 +555,7 @@ schemaBuilder.mutationFields((t) => ({
 			return db.query.amendment
 				.findFirst(
 					query(
-						ctx.abilities.amendment.filter('read', {
-							inject: { where: { id: result.id } }
-						}).query.single
+						ctx.abilities.amendment.filter('read').merge({ where: { id: result.id } }).query.single
 					)
 				)
 				.then(assertFindFirstExists);
@@ -559,10 +577,11 @@ schemaBuilder.mutationFields((t) => ({
 			}
 
 			const paper = await db.query.resolutionPaper
-				.findFirst({ where: { id: amendment.paperId } })
+				.findFirst(
+					ctx.abilities.resolutionPaper.filter('update').merge({ where: { id: amendment.paperId } })
+						.query.single
+				)
 				.then(assertFindFirstExists);
-
-			await assertCommitteeChairOrAdmin(ctx, paper.committeeId);
 
 			await db.transaction(async (tx) => {
 				await tx
@@ -579,9 +598,8 @@ schemaBuilder.mutationFields((t) => ({
 			return db.query.amendment
 				.findFirst(
 					query(
-						ctx.abilities.amendment.filter('read', {
-							inject: { where: { id: args.amendmentId } }
-						}).query.single
+						ctx.abilities.amendment.filter('read').merge({ where: { id: args.amendmentId } }).query
+							.single
 					)
 				)
 				.then(assertFindFirstExists);
@@ -603,10 +621,11 @@ schemaBuilder.mutationFields((t) => ({
 			}
 
 			const paper = await db.query.resolutionPaper
-				.findFirst({ where: { id: amendment.paperId } })
+				.findFirst(
+					ctx.abilities.resolutionPaper.filter('update').merge({ where: { id: amendment.paperId } })
+						.query.single
+				)
 				.then(assertFindFirstExists);
-
-			await assertCommitteeChairOrAdmin(ctx, paper.committeeId);
 
 			await db.transaction(async (tx) => {
 				await tx
@@ -623,9 +642,8 @@ schemaBuilder.mutationFields((t) => ({
 			return db.query.amendment
 				.findFirst(
 					query(
-						ctx.abilities.amendment.filter('read', {
-							inject: { where: { id: args.amendmentId } }
-						}).query.single
+						ctx.abilities.amendment.filter('read').merge({ where: { id: args.amendmentId } }).query
+							.single
 					)
 				)
 				.then(assertFindFirstExists);
@@ -646,16 +664,13 @@ schemaBuilder.mutationFields((t) => ({
 				throw new GraphQLError('Only SUBMITTED amendments can be rejected');
 			}
 
-			const paper = await db.query.resolutionPaper
-				.findFirst({ where: { id: amendment.paperId } })
-				.then(assertFindFirstExists);
-
-			await assertCommitteeChairOrAdmin(ctx, paper.committeeId);
-
 			await db
 				.update(schema.amendment)
 				.set({ status: 'REJECTED' })
-				.where(eq(schema.amendment.id, args.amendmentId));
+				.where(
+					ctx.abilities.amendment.filter('update').merge({ where: { id: args.amendmentId } }).sql
+						.where
+				);
 
 			pubsub.updated(args.amendmentId);
 			paperPubsub.updated(amendment.paperId);
@@ -663,9 +678,8 @@ schemaBuilder.mutationFields((t) => ({
 			return db.query.amendment
 				.findFirst(
 					query(
-						ctx.abilities.amendment.filter('read', {
-							inject: { where: { id: args.amendmentId } }
-						}).query.single
+						ctx.abilities.amendment.filter('read').merge({ where: { id: args.amendmentId } }).query
+							.single
 					)
 				)
 				.then(assertFindFirstExists);
@@ -688,16 +702,13 @@ schemaBuilder.mutationFields((t) => ({
 				throw new GraphQLError('Only SUBMITTED amendments can be withdrawn');
 			}
 
-			const paper = await db.query.resolutionPaper
-				.findFirst({ where: { id: amendment.paperId } })
-				.then(assertFindFirstExists);
-
-			await assertCommitteeChairOrAdmin(ctx, paper.committeeId);
-
 			await db
 				.update(schema.amendment)
 				.set({ status: 'WITHDRAWN' })
-				.where(eq(schema.amendment.id, args.amendmentId));
+				.where(
+					ctx.abilities.amendment.filter('update').merge({ where: { id: args.amendmentId } }).sql
+						.where
+				);
 
 			pubsub.updated(args.amendmentId);
 			paperPubsub.updated(amendment.paperId);
@@ -705,9 +716,8 @@ schemaBuilder.mutationFields((t) => ({
 			return db.query.amendment
 				.findFirst(
 					query(
-						ctx.abilities.amendment.filter('read', {
-							inject: { where: { id: args.amendmentId } }
-						}).query.single
+						ctx.abilities.amendment.filter('read').merge({ where: { id: args.amendmentId } }).query
+							.single
 					)
 				)
 				.then(assertFindFirstExists);
@@ -734,10 +744,11 @@ schemaBuilder.mutationFields((t) => ({
 			}
 
 			const paper = await db.query.resolutionPaper
-				.findFirst({ where: { id: amendment.paperId } })
+				.findFirst(
+					ctx.abilities.resolutionPaper.filter('update').merge({ where: { id: amendment.paperId } })
+						.query.single
+				)
 				.then(assertFindFirstExists);
-
-			await assertCommitteeChairOrAdmin(ctx, paper.committeeId);
 
 			// Merge provided args with existing values
 			const merged = {
@@ -807,9 +818,8 @@ schemaBuilder.mutationFields((t) => ({
 				return db.query.amendment
 					.findFirst(
 						query(
-							ctx.abilities.amendment.filter('read', {
-								inject: { where: { id: args.amendmentId } }
-							}).query.single
+							ctx.abilities.amendment.filter('read').merge({ where: { id: args.amendmentId } })
+								.query.single
 						)
 					)
 					.then(assertFindFirstExists);
@@ -868,9 +878,8 @@ schemaBuilder.mutationFields((t) => ({
 			return db.query.amendment
 				.findFirst(
 					query(
-						ctx.abilities.amendment.filter('read', {
-							inject: { where: { id: args.amendmentId } }
-						}).query.single
+						ctx.abilities.amendment.filter('read').merge({ where: { id: args.amendmentId } }).query
+							.single
 					)
 				)
 				.then(assertFindFirstExists);

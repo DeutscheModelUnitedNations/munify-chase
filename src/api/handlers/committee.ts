@@ -5,30 +5,32 @@ import {
 	object,
 	query,
 	pubsub as rumblePubsub,
-	schemaBuilder,
-	arg as rumbleArg
+	schemaBuilder
 } from '$api/rumble';
-import { isGlobalAdmin } from '$api/services/isAdminEmail';
+import {
+	isChairInConference,
+	isAdminInConference,
+	isParticipantInConference
+} from '$api/services/authHelper';
 import { assertFindFirstExists, assertFirstEntryExists } from '@m1212e/rumble';
 import { and, count, eq, type InferSelectModel } from 'drizzle-orm';
 import { calculateMajority } from '$lib/utils/majorities';
-import { assertConferenceAdmin } from './conferenceUser';
-import { assertCommitteeChairOrAdmin } from './resolutionPaper';
 import { GraphQLError } from 'graphql';
 
-const paperPubsub = rumblePubsub({ table: 'resolutionPaper' });
-
-const statusEnum = enum_({
-	tsName: 'committeeStatus'
+abilityBuilder.committee.allow('read').when((ctx) => {
+	return {
+		where: isParticipantInConference(ctx)
+	};
 });
 
-abilityBuilder.committee.allow(['read', 'update']).when((ctx) => {
-	if (isGlobalAdmin(ctx)) return 'allow';
+abilityBuilder.committee.allow('update').when((ctx) => {
+	return {
+		where: isChairInConference(ctx)
+	};
 });
 
-abilityBuilder.committee.allow('read').when(({ mustBeLoggedIn }) => {
-	mustBeLoggedIn();
-	return 'allow';
+abilityBuilder.committee.allow('delete').when((ctx) => {
+	return { where: isAdminInConference(ctx) };
 });
 
 const getTotalPresentCount = async (
@@ -74,9 +76,8 @@ const ref = object({
 		simpleMajority: t.field({
 			type: 'Int',
 			resolve: async (parent, args, context, info) => {
-				if (parent.customSimpleMajority) {
-					return parent.customSimpleMajority;
-				}
+				const custom = parent.customSimpleMajority;
+				if (custom) return custom;
 				const total = await getTotalPresentCount(parent as any);
 				return calculateMajority(total, 'simple');
 			}
@@ -84,9 +85,8 @@ const ref = object({
 		twoThirdsMajority: t.field({
 			type: 'Int',
 			resolve: async (parent, args, context, info) => {
-				if (parent.customTwoThirdsMajority) {
-					return parent.customSimpleMajority;
-				}
+				const custom = parent.customTwoThirdsMajority;
+				if (custom) return custom;
 				const total = await getTotalPresentCount(parent as any);
 				return calculateMajority(total, 'twoThirds');
 			}
@@ -94,17 +94,21 @@ const ref = object({
 		paperSupportThreshold: t.field({
 			type: 'Int',
 			resolve: async (parent, args, context, info) => {
-				if (parent.customPaperSupportThreshold) {
-					return parent.customPaperSupportThreshold;
-				}
+				const custom = parent.customPaperSupportThreshold;
+				if (custom) return custom;
 				const total = await getTotalPresentCount(parent as any);
 				return Math.ceil(total * 0.1);
 			}
 		})
 	})
 });
+
+const statusEnum = enum_({
+	tsName: 'committeeStatus'
+});
+
 const pubsub = rumblePubsub({ table: 'committee' });
-const arg = rumbleArg({ table: 'committee' });
+const paperPubsub = rumblePubsub({ table: 'resolutionPaper' });
 query({
 	table: 'committee'
 });
@@ -119,7 +123,12 @@ schemaBuilder.mutationFields((t) => {
 				abbreviation: t.arg.string({ required: true })
 			},
 			resolve: async (query, root, args, ctx, info) => {
-				await assertConferenceAdmin(ctx, args.conferenceId);
+				await db.query.conference
+					.findFirst(
+						ctx.abilities.conference.filter('update').merge({ where: { id: args.conferenceId } })
+							.query.single
+					)
+					.then(assertFindFirstExists);
 
 				const result = await db
 					.insert(schema.committee)
@@ -136,41 +145,31 @@ schemaBuilder.mutationFields((t) => {
 				return db.query.committee
 					.findFirst(
 						query(
-							ctx.abilities.committee.filter('read', {
-								inject: {
-									where: { id: result.id }
-								}
+							ctx.abilities.committee.filter('read').merge({
+								where: { id: result.id }
 							}).query.single
 						)
 					)
 					.then(assertFindFirstExists);
 			}
 		}),
-
 		deleteCommittee: t.field({
 			type: 'Boolean',
 			args: {
 				id: t.arg.id({ required: true })
 			},
 			resolve: async (root, args, ctx, info) => {
-				const committee = await db.query.committee.findFirst({
-					where: { id: args.id }
-				});
+				await db
+					.delete(schema.committee)
+					.where(
+						ctx.abilities.committee.filter('delete').merge({ where: { id: args.id } }).sql.where
+					);
 
-				if (!committee) {
-					throw new GraphQLError('Committee not found');
-				}
-
-				await assertConferenceAdmin(ctx, committee.conferenceId);
-
-				await db.delete(schema.committee).where(eq(schema.committee.id, args.id));
-
-				pubsub.removed(args.id);
+				pubsub.removed();
 
 				return true;
 			}
 		}),
-
 		updateCommittee: t.drizzleField({
 			type: ref,
 			args: {
@@ -204,8 +203,6 @@ schemaBuilder.mutationFields((t) => {
 				clearActiveAmendment: t.arg.boolean()
 			},
 			resolve: async (query, root, args, ctx, info) => {
-				await assertCommitteeChairOrAdmin(ctx, args.id);
-
 				// Validate activeDraftResolutionId if provided
 				if (args.activeDraftResolutionId) {
 					const paper = await db.query.resolutionPaper.findFirst({
@@ -260,7 +257,9 @@ schemaBuilder.mutationFields((t) => {
 							? null
 							: (args.activeAmendmentId ?? undefined)
 					})
-					.where(eq(schema.committee.id, args.id));
+					.where(
+						ctx.abilities.committee.filter('update').merge({ where: { id: args.id } }).sql.where
+					);
 
 				// Auto-transition active DR to AMENDMENT_PHASE when currentOperativeIndex is set
 				if (args.currentOperativeIndex !== undefined && args.currentOperativeIndex !== null) {
@@ -303,17 +302,17 @@ schemaBuilder.mutationFields((t) => {
 
 				pubsub.updated(args.id);
 
-				return db.query.committee.findFirst(
-					query(
-						ctx.abilities.committee.filter('read', {
-							inject: {
+				return db.query.committee
+					.findFirst(
+						query(
+							ctx.abilities.committee.filter('read').merge({
 								where: {
 									id: args.id
 								}
-							}
-						}).query.single
+							}).query.single
+						)
 					)
-				);
+					.then(assertFindFirstExists);
 			}
 		})
 	};

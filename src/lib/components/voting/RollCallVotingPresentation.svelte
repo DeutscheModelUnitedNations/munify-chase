@@ -1,5 +1,4 @@
 <script lang="ts">
-	import type { CommitteePresentationQuery$result, RegionalGroupEnum$options } from '$houdini';
 	import Flag from '$lib/components/Flag.svelte';
 	import type { CommitteeSettings, VotingStage } from '$lib/local-db/localDB';
 	import { m } from '$lib/paraglide/messages';
@@ -15,7 +14,24 @@
 
 	interface Props {
 		committeeSettings?: CommitteeSettings;
-		committee?: CommitteePresentationQuery$result['findFirstCommittee'];
+		committee?: {
+			id: string;
+			totalPresent: number;
+			simpleMajority: number;
+			twoThirdsMajority: number;
+			members: Array<{
+				id: string;
+				present: boolean;
+				representation?: {
+					name?: string | null;
+					alpha2Code?: string | null;
+					alpha3Code?: string | null;
+					faIcon?: string | null;
+					type?: string | null;
+					regionalGroup?: string | null;
+				} | null;
+			}>;
+		} | null;
 	}
 	let { committeeSettings, committee }: Props = $props();
 

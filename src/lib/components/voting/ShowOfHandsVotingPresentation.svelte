@@ -1,5 +1,4 @@
 <script lang="ts">
-	import type { CommitteePresentationQuery$result, RegionalGroupEnum$options } from '$houdini';
 	import Flag from '$lib/components/Flag.svelte';
 	import type { CommitteeSettings, VotingStage } from '$lib/local-db/localDB';
 	import { m } from '$lib/paraglide/messages';

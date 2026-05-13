@@ -2,17 +2,66 @@
 	import { m } from '$lib/paraglide/messages';
 	import { goto } from '$app/navigation';
 	import { page } from '$app/state';
-	import type { PageData } from './$houdini';
+	import { client } from '$lib/api/rumbleClient/client';
+	import { getCurrentUser } from '$lib/state/currentUser.svelte';
 	import CommitteeGrid from '$lib/components/CommitteeGrid.svelte';
 	import ThemeSwitcher from '$lib/components/ThemeSwitcher.svelte';
 	import ParticipantIdentityCard from './ParticipantIdentityCard.svelte';
 
-	let { data }: { data: PageData } = $props();
+	const currentUser = await getCurrentUser();
+	const [conferenceUser] =
+		(await client.liveQuery.conferenceUsers({
+			__args: {
+				where: {
+					conference: { id: page.params.conferenceId },
+					user: { id: currentUser?.id ?? '' }
+				}
+			},
+			id: true,
+			conferenceUserType: true,
+			committeeMember: {
+				id: true,
+				committeeId: true,
+				representation: {
+					id: true,
+					name: true,
+					alpha2Code: true,
+					alpha3Code: true,
+					type: true,
+					faIcon: true
+				}
+			},
+			conferenceMember: {
+				id: true,
+				representation: {
+					id: true,
+					name: true,
+					alpha2Code: true,
+					alpha3Code: true,
+					type: true,
+					faIcon: true
+				}
+			}
+		})) ?? [];
 
-	let identityQuery = $derived(data?.ParticipantIdentityQuery);
-	let conferenceQuery = $derived(data?.ParticipantConferenceQuery);
-	let conferenceUser = $derived($identityQuery.data?.findManyConferenceUser?.[0]);
-	let conference = $derived($conferenceQuery.data?.findFirstConference);
+	const conference = await client.liveQuery.conference({
+		__args: { id: page.params.conferenceId! },
+		id: true,
+		title: true,
+		committees: {
+			id: true,
+			name: true,
+			abbreviation: true,
+			lastResolutionAdoptionDate: true,
+			activeAgendaItem: {
+				id: true,
+				title: true
+			},
+			status: true,
+			statusHeadline: true,
+			statusUntil: true
+		}
+	});
 
 	let role = $derived(conferenceUser?.conferenceUserType);
 	let myCommitteeId = $derived(conferenceUser?.committeeMember?.committeeId);
@@ -65,5 +114,5 @@
 		<ParticipantIdentityCard {representation} />
 	</div>
 
-	<CommitteeGrid {conference} environment="PARTICIPANT" />
+	<CommitteeGrid conference={conference as any} environment="PARTICIPANT" />
 {/if}

@@ -1,8 +1,7 @@
 <script lang="ts">
 	import { m } from '$lib/paraglide/messages';
 	import BasicCard from '$lib/components/BasicCard.svelte';
-	import { cache, graphql } from '$houdini';
-	import { invalidateAll } from '$app/navigation';
+	import { client } from '$lib/api/rumbleClient/client';
 	import toast from 'svelte-french-toast';
 	import { promiseToastStrings } from '$lib/utils/toast';
 
@@ -50,57 +49,25 @@
 		resolutionFeatureEnabled = conference.resolutionFeatureEnabled;
 	});
 
-	const UpdateConferenceMutation = graphql(`
-		mutation UpdateConferenceFromGeneralTab(
-			$id: ID!
-			$title: String
-			$pressWebsite: String
-			$location: String
-			$startDate: Date
-			$endDate: Date
-			$hasModeratedCaucus: Boolean
-			$resolutionFeatureEnabled: Boolean
-		) {
-			updateConference(
-				id: $id
-				title: $title
-				pressWebsite: $pressWebsite
-				location: $location
-				startDate: $startDate
-				endDate: $endDate
-				hasModeratedCaucus: $hasModeratedCaucus
-				resolutionFeatureEnabled: $resolutionFeatureEnabled
-			) {
-				id
-				title
-				pressWebsite
-				location
-				startDate
-				endDate
-				hasModeratedCaucus
-				resolutionFeatureEnabled
-			}
-		}
-	`);
-
 	async function saveSettings() {
 		isSaving = true;
 		try {
 			await toast.promise(
-				UpdateConferenceMutation.mutate({
-					id: conference.id,
-					title,
-					pressWebsite: pressWebsite || null,
-					location: location || null,
-					startDate: startDate ? new Date(startDate) : null,
-					endDate: endDate ? new Date(endDate) : null,
-					hasModeratedCaucus,
-					resolutionFeatureEnabled
+				client.mutate.updateConference({
+					__args: {
+						id: conference.id,
+						title,
+						pressWebsite: pressWebsite || null,
+						location: location || null,
+						startDate: startDate ? new Date(startDate) : null,
+						endDate: endDate ? new Date(endDate) : null,
+						hasModeratedCaucus,
+						resolutionFeatureEnabled
+					},
+					id: true
 				}),
 				promiseToastStrings(m.configuration(), 'update')
 			);
-			cache.markStale();
-			await invalidateAll();
 		} finally {
 			isSaving = false;
 		}

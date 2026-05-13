@@ -3,7 +3,8 @@ import { enum_, schemaBuilder } from '$api/rumble';
 import { importDataSchema } from '$lib/utils/import';
 import { ConferenceRef } from './conference';
 import { GraphQLError } from 'graphql';
-import { isGlobalAdmin } from '$api/services/isAdminEmail';
+import { isGlobalAdmin } from '$api/services/authHelper';
+import { assertFindFirstExists } from '@m1212e/rumble';
 
 const Input = schemaBuilder.inputType('ImportData', {
 	description: 'Import data. You can find the JSON schema here: /api/schema/import',
@@ -227,17 +228,17 @@ schemaBuilder.mutationFields((t) => ({
 				}
 			});
 
-			return db.query.conference.findFirst(
-				query(
-					ctx.abilities.conference.filter('read', {
-						inject: {
+			return db.query.conference
+				.findFirst(
+					query(
+						ctx.abilities.conference.filter('read').merge({
 							where: {
 								id: data.id
 							}
-						}
-					}).query.single
+						}).query.single
+					)
 				)
-			);
+				.then(assertFindFirstExists);
 		}
 	})
 }));

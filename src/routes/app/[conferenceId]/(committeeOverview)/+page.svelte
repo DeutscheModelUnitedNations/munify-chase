@@ -1,14 +1,28 @@
 <script lang="ts">
-	import type { PageData } from './$houdini';
+	import { page } from '$app/state';
+	import { client } from '$lib/api/rumbleClient/client';
 	import CommitteeGrid from '$lib/components/CommitteeGrid.svelte';
 	import ThemeSwitcher from '$lib/components/ThemeSwitcher.svelte';
 	import CurrentTime from '$lib/components/CurrentTime.svelte';
 	import * as m from '$lib/paraglide/messages.js';
 
-	let { data }: { data: PageData } = $props();
-
-	let query = $derived(data?.CommitteeOverviewQuery);
-	let conference = $derived($query.data?.findFirstConference);
+	const conference = await client.liveQuery.conference({
+		__args: { id: page.params.conferenceId! },
+		id: true,
+		committees: {
+			id: true,
+			name: true,
+			abbreviation: true,
+			lastResolutionAdoptionDate: true,
+			activeAgendaItem: {
+				id: true,
+				title: true
+			},
+			status: true,
+			statusHeadline: true,
+			statusUntil: true
+		}
+	});
 </script>
 
 <div class="navbar bg-base-100 shadow-sm">
@@ -25,5 +39,5 @@
 </div>
 
 {#if conference}
-	<CommitteeGrid {conference} />
+	<CommitteeGrid conference={conference as any} />
 {/if}

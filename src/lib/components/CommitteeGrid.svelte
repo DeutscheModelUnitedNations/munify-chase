@@ -2,18 +2,25 @@
 	import * as m from '$lib/paraglide/messages.js';
 	import IconInfoBox from './IconInfoBox.svelte';
 	import { getCommitteeStatusIcon, getCommitteeStatusText } from '$lib/utils/committeeStatus';
-	import {
-		type CommitteeOverviewQuery$result,
-		type MissionControlQuery$result,
-		type ParticipantConferenceQuery$result
-	} from '$houdini';
 	import AdoptionConfetti from './AdoptionConfetti.svelte';
+	import type { CommitteestatusEnum } from '$lib/api/rumbleClient/client';
+
+	interface ConferenceData {
+		id: string;
+		committees: Array<{
+			id: string;
+			abbreviation: string;
+			name: string;
+			status: CommitteestatusEnum;
+			statusUntil: Date;
+			stateOfDebate?: string | null;
+			activeAgendaItem?: { title?: string | null } | null;
+			lastResolutionAdoptionDate?: Date | null;
+		}>;
+	}
 
 	interface Props {
-		conference:
-			| MissionControlQuery$result['findFirstConference']
-			| CommitteeOverviewQuery$result['findFirstConference']
-			| ParticipantConferenceQuery$result['findFirstConference'];
+		conference: ConferenceData;
 		environment?: 'SPECTATOR' | 'TEAM' | 'PARTICIPANT';
 	}
 
@@ -47,7 +54,7 @@
 				</div>
 				<IconInfoBox text={committee.activeAgendaItem?.title ?? '—'} faIcon="podium" />
 				{#if environment === 'TEAM'}
-					<IconInfoBox text={(committee as any).stateOfDebate ?? '—'} faIcon="diagram-next" />
+					<IconInfoBox text={committee.stateOfDebate ?? '—'} faIcon="diagram-next" />
 				{/if}
 				<IconInfoBox
 					text={getCommitteeStatusText(committee.status)}

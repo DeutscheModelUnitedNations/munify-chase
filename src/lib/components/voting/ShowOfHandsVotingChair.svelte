@@ -1,5 +1,4 @@
 <script lang="ts">
-	import type { CommitteeTeamQuery$result } from '$houdini';
 	import Kbd from '$lib/components/Kbd.svelte';
 	import { m } from '$lib/paraglide/messages';
 	import { onMount } from 'svelte';
@@ -13,7 +12,12 @@
 
 	interface Props {
 		active: boolean;
-		committee?: CommitteeTeamQuery$result['findFirstCommittee'] | null;
+		committee?: {
+			id: string;
+			totalPresent: number;
+			simpleMajority: number;
+			twoThirdsMajority: number;
+		} | null;
 		voteName?: string;
 		majority: VotingMajority;
 		withAbstentions: boolean;

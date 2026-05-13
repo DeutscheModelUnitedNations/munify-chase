@@ -1,14 +1,9 @@
 import { db, schema } from '$api/db/db';
-import { abilityBuilder, schemaBuilder, pubsub as rumblePubsub } from '$api/rumble';
+import { abilityBuilder, schemaBuilder, object, pubsub as rumblePubsub, query } from '$api/rumble';
 import { and, eq } from 'drizzle-orm';
-import { basics } from './basics';
-import { isGlobalAdmin } from '$api/services/isAdminEmail';
+import { isGlobalAdmin } from '$api/services/authHelper';
 import { assertFindFirstExists, assertFirstEntryExists } from '@m1212e/rumble';
 import { GraphQLError } from 'graphql';
-import { assertCommitteeChairOrAdmin } from './resolutionPaper';
-
-const { arg, ref, pubsub, table } = basics('paperSponsor');
-const paperPubsub = rumblePubsub({ table: 'resolutionPaper' });
 
 abilityBuilder.paperSponsor.allow(['read', 'update']).when((ctx) => {
 	if (isGlobalAdmin(ctx)) return 'allow';
@@ -18,6 +13,11 @@ abilityBuilder.paperSponsor.allow('read').when(({ mustBeLoggedIn }) => {
 	mustBeLoggedIn();
 	return 'allow';
 });
+
+const ref = object({ table: 'paperSponsor' });
+const pubsub = rumblePubsub({ table: 'paperSponsor' });
+const paperPubsub = rumblePubsub({ table: 'resolutionPaper' });
+query({ table: 'paperSponsor' });
 
 schemaBuilder.mutationFields((t) => ({
 	addSponsor: t.drizzleField({
@@ -33,14 +33,10 @@ schemaBuilder.mutationFields((t) => ({
 				.findFirst({ where: { id: args.paperId } })
 				.then(assertFindFirstExists);
 
-			// Try chair/admin path first (bypasses all gates)
-			let isChair = false;
-			try {
-				await assertCommitteeChairOrAdmin(ctx, paper.committeeId);
-				isChair = true;
-			} catch {
-				// not a chair/admin, will check delegate path below
-			}
+			const isChair = !!(await db.query.resolutionPaper.findFirst(
+				ctx.abilities.resolutionPaper.filter('update').merge({ where: { id: args.paperId } }).query
+					.single
+			));
 
 			if (!isChair) {
 				// Must be a DELEGATE
@@ -83,10 +79,8 @@ schemaBuilder.mutationFields((t) => ({
 			return db.query.paperSponsor
 				.findFirst(
 					query(
-						ctx.abilities.paperSponsor.filter('read', {
-							inject: {
-								where: { id: result.id }
-							}
+						ctx.abilities.paperSponsor.filter('read').merge({
+							where: { id: result.id }
 						}).query.single
 					)
 				)
@@ -103,7 +97,7 @@ schemaBuilder.mutationFields((t) => ({
 		resolve: async (root, args, ctx, info) => {
 			const user = ctx.mustBeLoggedIn();
 
-			const sponsor = await db.query.paperSponsor
+			await db.query.paperSponsor
 				.findFirst({
 					where: {
 						paperId: args.paperId,
@@ -112,20 +106,16 @@ schemaBuilder.mutationFields((t) => ({
 				})
 				.then(assertFindFirstExists);
 
-			const paper = await db.query.resolutionPaper
-				.findFirst({ where: { id: args.paperId } })
-				.then(assertFindFirstExists);
-
-			// Try chair/admin path first (bypasses all gates)
-			let isChair = false;
-			try {
-				await assertCommitteeChairOrAdmin(ctx, paper.committeeId);
-				isChair = true;
-			} catch {
-				// not a chair/admin, will check delegate path below
-			}
+			const isChair = !!(await db.query.resolutionPaper.findFirst(
+				ctx.abilities.resolutionPaper.filter('update').merge({ where: { id: args.paperId } }).query
+					.single
+			));
 
 			if (!isChair) {
+				const paper = await db.query.resolutionPaper
+					.findFirst({ where: { id: args.paperId } })
+					.then(assertFindFirstExists);
+
 				if (paper.status === 'DRAFT_RESOLUTION' || paper.status === 'AMENDMENT_PHASE') {
 					const committee = await db.query.committee
 						.findFirst({ where: { id: paper.committeeId } })
@@ -164,7 +154,7 @@ schemaBuilder.mutationFields((t) => ({
 					)
 				);
 
-			pubsub.removed(sponsor.id);
+			pubsub.removed();
 			paperPubsub.updated(args.paperId);
 
 			return true;

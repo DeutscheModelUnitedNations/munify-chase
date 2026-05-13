@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { graphql, type CommitteeTeamQuery$result } from '$houdini';
+	import { client } from '$lib/api/rumbleClient/client';
 	import Combobox from '$lib/components/Combobox.svelte';
 	import Flag from '$lib/components/Flag.svelte';
 	import type { MergeWithUndefined } from '$lib/helpers/utilityTypes';
@@ -11,17 +11,9 @@
 	import toast from 'svelte-french-toast';
 
 	interface Props {
-		speakersList?:
-			| NonNullable<
-					CommitteeTeamQuery$result['findFirstCommittee']['activeAgendaItem']
-			  >['speakersList'][number]
-			| null;
-		committeeMembers: CommitteeTeamQuery$result['findFirstCommittee']['members'];
-		conferenceMembers: NonNullable<
-			NonNullable<
-				CommitteeTeamQuery$result['findFirstCommittee']['conference']
-			>['uniqueConferenceMembers']
-		>;
+		speakersList?: any;
+		committeeMembers: any[];
+		conferenceMembers: any[];
 	}
 
 	let { speakersList, committeeMembers, conferenceMembers }: Props = $props();
@@ -55,7 +47,7 @@
 		const excludeMembersAlreadyOnList = (member: Member) => {
 			if (!speakersList?.id) return true;
 			return !speakersList.speakers.some(
-				(speaker) =>
+				(speaker: any) =>
 					speaker.committeeMember?.id === member.id || speaker.conferenceMember?.id === member.id
 			);
 		};
@@ -73,25 +65,6 @@
 		}
 	};
 
-	const AddSpeakerToListMutation = graphql(`
-		mutation AddSpeakerToList(
-			$committeeMemberId: ID
-			$conferenceMemberId: ID
-			$speakersListId: ID!
-		) {
-			addSpeakerOnList(
-				committeeMemberId: $committeeMemberId
-				conferenceMemberId: $conferenceMemberId
-				speakersListId: $speakersListId
-			) {
-				id
-				speakersList {
-					id
-				}
-			}
-		}
-	`);
-
 	const addSpeakerToList = async () => {
 		if (!speakersList?.id) {
 			toast.error(m.speakersListNotFound());
@@ -107,10 +80,14 @@
 		}
 
 		await toast.promise(
-			AddSpeakerToListMutation.mutate({
-				committeeMemberId: committeeMember?.id,
-				conferenceMemberId: conferenceMember?.id,
-				speakersListId: speakersList.id
+			client.mutate.addSpeakerOnList({
+				__args: {
+					committeeMemberId: committeeMember?.id,
+					conferenceMemberId: conferenceMember?.id,
+					speakersListId: speakersList.id
+				},
+				id: true,
+				position: true
 			}),
 			promiseToastStrings(getName(committeeMember ?? (conferenceMember as Member)), 'add')
 		);

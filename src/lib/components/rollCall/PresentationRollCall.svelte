@@ -1,5 +1,4 @@
 <script lang="ts">
-	import type { CommitteeTeamQuery$result } from '$houdini';
 	import { m } from '$lib/paraglide/messages';
 	import Modal from '../Modal.svelte';
 	import ScrollingCountryList from './ScrollingCountryList.svelte';
@@ -7,7 +6,17 @@
 	import { liveQuery } from 'dexie';
 
 	interface Props {
-		members: CommitteeTeamQuery$result['findFirstCommittee']['members'];
+		members: Array<{
+			id: string;
+			present: boolean;
+			representation?: {
+				name?: string | null;
+				alpha2Code?: string | null;
+				alpha3Code?: string | null;
+				faIcon?: string | null;
+				type?: string | null;
+			} | null;
+		}>;
 		committeeId: string;
 	}
 

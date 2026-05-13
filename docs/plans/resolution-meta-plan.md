@@ -423,7 +423,7 @@ commentPanel?: Snippet<[{ resolution: Resolution; activeClauseId?: string }]>;
 
 **Storage**: Resolution content as single JSONB column. Amendments + paragraph votes reference clause IDs from the JSON. Snapshots preserve history at key transitions.
 
-**Real-time**: Rumble pubsub → Houdini subscriptions. `onResolutionChange` (debounced 500ms) → mutation → pubsub. Last-writer-wins acceptable for MUN context.
+**Real-time**: Rumble pubsub → Graphql subscriptions. `onResolutionChange` (debounced 500ms) → mutation → pubsub. Last-writer-wins acceptable for MUN context.
 
 **Clause-level locking**: Explicit click-to-lock UX (not focus/blur). Delegates hover an unlocked clause to see a "Start editing" overlay, click to acquire a server-side lock, and click "Done editing" to release. Locks are per-clause rows in `paper_clause_lock` with a 60s TTL. A hybrid heartbeat (30s interval, only fires when idle >25s) keeps locks alive during active editing — saves already refresh locks implicitly via `updatePaperContent`. Lock state is pushed via GraphQL subscription; optimistic IDs bridge the gap. `collaborativeMode` gates all lock UI: solo editing (no share codes used, working paper status) shows no overlays or lock buttons. The `beforeunload` handler and navigation cleanup release all held locks via `sendBeacon`.
 

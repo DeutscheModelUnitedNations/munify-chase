@@ -1,9 +1,9 @@
 <script lang="ts">
-	import { graphql } from '$houdini';
+	import { client } from '$lib/api/rumbleClient/client';
 	import { m } from '$lib/paraglide/messages';
 	import { promiseToastStrings } from '$lib/utils/toast';
 	import toast from 'svelte-french-toast';
-	import { SetPresenceMutation } from './presenceMutations';
+
 	interface Props {
 		memberIds: string[];
 	}
@@ -12,9 +12,10 @@
 
 	const setAllPresence = (present: boolean) => {
 		toast.promise(
-			SetPresenceMutation.mutate({
-				memberIds,
-				present
+			client.mutate.setPresenceForCommitteeMembers({
+				__args: { ids: memberIds, present },
+				id: true,
+				present: true
 			}),
 			promiseToastStrings(m.presence(), 'update')
 		);

@@ -8,25 +8,77 @@
 	import EmptyLauncher from '$lib/components/launcher/EmptyLauncher.svelte';
 	import { badgeFor, deriveStatus } from '$lib/helpers/launcher';
 	import type { LauncherConference } from '$lib/components/launcher/types';
-	import type { PageData } from './$houdini';
-	import type { ConferenceUserTypeEnum$options, LauncherQuery$result } from '$houdini';
+	import { client } from '$lib/api/rumbleClient/client';
+	import type { ConferenceusertypeEnum } from '$lib/api/rumbleClient/client';
+	import { getCurrentUser } from '$lib/state/currentUser.svelte';
 
-	type ConferenceUserItem = LauncherQuery$result['findManyConferenceUser'][number];
-	type AdminConferenceItem = LauncherQuery$result['findManyConference'][number];
+	const user = await getCurrentUser();
 
-	let { data }: { data: PageData } = $props();
+	const conferenceUserData = await client.liveQuery.conferenceUsers({
+		__args: { where: { user: { id: user.id } } },
+		id: true,
+		conferenceUserType: true,
+		committeeMemberId: true,
+		committeeMember: {
+			id: true,
+			committeeId: true,
+			committee: {
+				id: true,
+				abbreviation: true
+			},
+			representation: {
+				id: true,
+				type: true,
+				name: true,
+				alpha2Code: true,
+				alpha3Code: true,
+				faIcon: true
+			}
+		},
+		conferenceMember: {
+			id: true,
+			representation: {
+				id: true,
+				type: true,
+				name: true,
+				alpha2Code: true,
+				alpha3Code: true,
+				faIcon: true
+			}
+		},
+		conference: {
+			id: true,
+			title: true,
+			location: true,
+			startDate: true,
+			endDate: true,
+			committees: {
+				id: true,
+				abbreviation: true
+			}
+		}
+	});
 
-	let launcherQuery = $derived(data?.LauncherQuery);
-	let conferenceUserData = $derived($launcherQuery.data?.findManyConferenceUser ?? []);
-	let isGlobalAdmin = $derived($launcherQuery.data?.isGlobalAdmin ?? false);
-	let allConferences = $derived($launcherQuery.data?.findManyConference ?? []);
+	const isGlobalAdmin = await client.query.isGlobalAdmin();
+
+	const allConferences = await client.liveQuery.conferences({
+		id: true,
+		title: true,
+		location: true,
+		startDate: true,
+		endDate: true,
+		committees: {
+			id: true,
+			abbreviation: true
+		}
+	});
 
 	let searchQuery = $state('');
 	let deleteModalOpen = $state(false);
 	let deleteTarget = $state<{ id: string; title: string } | null>(null);
 
 	function getUrl(
-		type: ConferenceUserTypeEnum$options,
+		type: ConferenceusertypeEnum,
 		id: string,
 		committeeMember?: { committeeId: string } | null
 	): string {
@@ -40,7 +92,7 @@
 	}
 
 	function buildRoleDetail(
-		type: ConferenceUserTypeEnum$options,
+		type: ConferenceusertypeEnum,
 		representationName: string | null | undefined,
 		committeeAbbreviation: string | null | undefined
 	): string | null {
@@ -60,7 +112,7 @@
 	}
 
 	let userConferences = $derived<LauncherConference[]>(
-		conferenceUserData.map((cu: ConferenceUserItem): LauncherConference => {
+		(conferenceUserData ?? []).map((cu): LauncherConference => {
 			const rep = cu.conferenceMember?.representation ?? cu.committeeMember?.representation;
 			return {
 				id: cu.conference.id,
@@ -82,8 +134,8 @@
 	);
 
 	let adminConferences = $derived<LauncherConference[]>(
-		allConferences.map(
-			(c: AdminConferenceItem): LauncherConference => ({
+		(allConferences ?? []).map(
+			(c): LauncherConference => ({
 				id: c.id,
 				title: c.title,
 				location: c.location,
@@ -138,7 +190,7 @@
 		return m.launcherTitleMany();
 	});
 
-	let firstName = $derived(data?.user?.given_name ?? '');
+	let firstName = $derived(user.givenName ?? '');
 
 	function openDelete(target: { id: string; title: string }) {
 		deleteTarget = target;
@@ -168,11 +220,7 @@
 					</span>
 					<span>MUNify <span class="text-primary">CHASE</span></span>
 				</div>
-				<AvatarMenu
-					givenName={data?.user?.given_name}
-					familyName={data?.user?.family_name}
-					email={data?.user?.email}
-				/>
+				<AvatarMenu givenName={user.givenName} familyName={user.familyName} email={user.email} />
 			</div>
 
 			<div>

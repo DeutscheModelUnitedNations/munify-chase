@@ -1,5 +1,4 @@
 <script lang="ts">
-	import type { CommitteeTeamQuery$result } from '$houdini';
 	import Kbd from '$lib/components/Kbd.svelte';
 	import { m } from '$lib/paraglide/messages';
 	import Modal from '../Modal.svelte';
@@ -18,7 +17,23 @@
 
 	interface Props {
 		active: boolean;
-		committee: CommitteeTeamQuery$result['findFirstCommittee'];
+		committee: {
+			id: string;
+			totalPresent: number;
+			simpleMajority: number;
+			twoThirdsMajority: number;
+			members: Array<{
+				id: string;
+				present: boolean;
+				representation?: {
+					name?: string | null;
+					alpha2Code?: string | null;
+					alpha3Code?: string | null;
+					faIcon?: string | null;
+					type?: string | null;
+				} | null;
+			}>;
+		};
 		voteName?: string;
 		majority?: VotingMajority;
 		withAbstentions?: boolean;
@@ -89,7 +104,7 @@
 
 	let scrollingListIcons = $derived.by(() => {
 		return members.map((member) => {
-			let icon: string = '';
+			let icon: string;
 			let color: 'info' | 'success' | 'error' = 'info';
 			if (rollCallVotingAbstain?.includes(member.id)) {
 				icon = 'fa-circle';

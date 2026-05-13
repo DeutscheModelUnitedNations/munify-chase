@@ -1,19 +1,48 @@
 <script lang="ts">
-	import type { PageData } from './$houdini';
 	import CommitteeGrid from '$lib/components/CommitteeGrid.svelte';
-	import ThemeSwitcher from '$lib/components/ThemeSwitcher.svelte';
 	import CurrentTime from '$lib/components/CurrentTime.svelte';
 	import * as m from '$lib/paraglide/messages.js';
 	import NavbarBurgerMenu from '$lib/components/NavbarBurgerMenu.svelte';
-	import { onMount } from 'svelte';
-	import { MissionControlSubscription } from './missionControlSubscription';
 	import DownloadPresenceData from './DownloadPresenceData.svelte';
+	import { client } from '$lib/api/rumbleClient/client';
+	import { page } from '$app/state';
 
-	let { data }: { data: PageData } = $props();
+	import { getCurrentUser } from '$lib/state/currentUser.svelte';
 
-	let query = $derived(data?.MissionControlQuery);
-	let conference = $derived($query.data?.findFirstConference);
-	let currentUserRole = $derived($query.data?.currentUserRole?.[0]);
+	const userId = (await getCurrentUser()).id ?? '';
+
+	const conference = await client.liveQuery.conference({
+		__args: { id: page.params.conferenceId! },
+		id: true,
+		title: true,
+		committees: {
+			id: true,
+			name: true,
+			abbreviation: true,
+			activeAgendaItem: {
+				id: true,
+				title: true
+			},
+			status: true,
+			statusHeadline: true,
+			statusUntil: true,
+			stateOfDebate: true,
+			lastResolutionAdoptionDate: true
+		}
+	});
+
+	const conferenceUsers = await client.liveQuery.conferenceUsers({
+		__args: {
+			where: {
+				conference: { id: page.params.conferenceId },
+				user: { id: userId }
+			}
+		},
+		id: true,
+		conferenceUserType: true
+	});
+
+	let currentUserRole = $derived(conferenceUsers?.[0]);
 	let isAdmin = $derived(currentUserRole?.conferenceUserType === 'ADMIN');
 
 	const baseMenuItems = [
@@ -36,10 +65,6 @@
 				]
 			: baseMenuItems
 	);
-
-	onMount(() => {
-		MissionControlSubscription.listen({ conferenceId: data.conferenceId });
-	});
 </script>
 
 <svelte:head>
@@ -61,5 +86,5 @@
 </div>
 
 {#if conference}
-	<CommitteeGrid {conference} environment="TEAM" />
+	<CommitteeGrid conference={conference as any} environment="TEAM" />
 {/if}

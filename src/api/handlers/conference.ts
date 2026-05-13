@@ -1,29 +1,27 @@
 import { db, schema } from '$api/db/db';
-import {
-	abilityBuilder,
-	object,
-	query,
-	schemaBuilder,
-	pubsub as rumblePubsub,
-	arg as rumbleArg
-} from '$api/rumble';
-import { isGlobalAdmin } from '$api/services/isAdminEmail';
+import { abilityBuilder, object, query, schemaBuilder, pubsub as rumblePubsub } from '$api/rumble';
 import { ConferenceMemberRef, ConferenceMemberWhereInput } from './conferenceMember';
-import { assertConferenceAdmin } from './conferenceUser';
+import { isAdmin, isGlobalAdmin, isParticipant } from '$api/services/authHelper';
 import { eq } from 'drizzle-orm';
-import { assertFindFirstExists } from '@m1212e/rumble';
+import { assertFindFirstExists, mapNullFieldsToUndefined } from '@m1212e/rumble';
 import { GraphQLError } from 'graphql';
 
-abilityBuilder.conference.allow(['read', 'update']).when((ctx) => {
-	if (isGlobalAdmin(ctx)) return 'allow';
+abilityBuilder.conference.allow('read').when((ctx) => {
+	return { where: isParticipant(ctx) };
 });
 
-abilityBuilder.conference.allow('read').when(({ mustBeLoggedIn }) => {
-	mustBeLoggedIn();
+abilityBuilder.conference.allow('update').when((ctx) => {
+	return { where: isAdmin(ctx) };
+});
+
+abilityBuilder.conference.allow('delete').when((ctx) => {
+	if (!isGlobalAdmin(ctx)) {
+		throw new GraphQLError('Only global admins can delete conferences');
+	}
 	return 'allow';
 });
 
-const ref = object({
+export const ConferenceRef = object({
 	table: 'conference',
 	adjust: (t) => ({
 		uniqueConferenceMembers: t.drizzleField({
@@ -38,12 +36,10 @@ const ref = object({
 				return (
 					await db.query.conferenceMember.findMany(
 						query({
-							...ctx.abilities.conferenceMember.filter('read', {
-								inject: {
-									where: {
-										...args.where,
-										conferenceId: parent.id
-									}
+							...ctx.abilities.conferenceMember.filter('read').merge({
+								where: {
+									...args.where,
+									conferenceId: parent.id
 								}
 							}).query.many,
 							with: {
@@ -64,14 +60,13 @@ const ref = object({
 });
 
 const pubsub = rumblePubsub({ table: 'conference' });
-const arg = rumbleArg({ table: 'conference' });
 query({
 	table: 'conference'
 });
 
 schemaBuilder.mutationFields((t) => ({
 	updateConference: t.drizzleField({
-		type: ref,
+		type: ConferenceRef,
 		args: {
 			id: t.arg.id({ required: true }),
 			title: t.arg.string(),
@@ -83,62 +78,48 @@ schemaBuilder.mutationFields((t) => ({
 			resolutionFeatureEnabled: t.arg.boolean()
 		},
 		resolve: async (query, root, args, ctx, info) => {
-			await assertConferenceAdmin(ctx, args.id);
-
+			const mappedArgs = mapNullFieldsToUndefined(args);
 			await db
 				.update(schema.conference)
 				.set({
-					title: args.title ?? undefined,
-					pressWebsite: args.pressWebsite ?? undefined,
-					location: args.location === undefined ? undefined : args.location,
-					startDate: args.startDate === undefined ? undefined : args.startDate,
-					endDate: args.endDate === undefined ? undefined : args.endDate,
-					hasModeratedCaucus: args.hasModeratedCaucus ?? undefined,
-					resolutionFeatureEnabled: args.resolutionFeatureEnabled ?? undefined
+					title: mappedArgs.title,
+					pressWebsite: mappedArgs.pressWebsite,
+					location: mappedArgs.location,
+					startDate: mappedArgs.startDate,
+					endDate: mappedArgs.endDate,
+					hasModeratedCaucus: mappedArgs.hasModeratedCaucus,
+					resolutionFeatureEnabled: mappedArgs.resolutionFeatureEnabled
 				})
-				.where(eq(schema.conference.id, args.id));
+				.where(
+					ctx.abilities.conference.filter('update').merge({ where: { id: args.id } }).sql.where
+				);
 
 			pubsub.updated(args.id);
 
 			return db.query.conference
 				.findFirst(
 					query(
-						ctx.abilities.conference.filter('read', {
-							inject: {
-								where: { id: args.id }
-							}
+						ctx.abilities.conference.filter('read').merge({
+							where: { id: args.id }
 						}).query.single
 					)
 				)
 				.then(assertFindFirstExists);
 		}
-	})
-}));
-
-schemaBuilder.mutationFields((t) => ({
+	}),
 	deleteConference: t.field({
 		type: 'Boolean',
 		args: {
 			id: t.arg.id({ required: true })
 		},
 		resolve: async (root, args, ctx) => {
-			if (!isGlobalAdmin(ctx)) {
-				throw new GraphQLError('Only global admins can delete conferences');
-			}
-
-			const conf = await db.query.conference.findFirst({
-				where: { id: args.id }
-			});
-
-			if (!conf) {
-				throw new GraphQLError('Conference not found');
-			}
-
-			await db.delete(schema.conference).where(eq(schema.conference.id, args.id));
+			await db
+				.delete(schema.conference)
+				.where(
+					ctx.abilities.conference.filter('delete').merge({ where: { id: args.id } }).sql.where
+				);
 
 			return true;
 		}
 	})
 }));
-
-export const ConferenceRef = ref;

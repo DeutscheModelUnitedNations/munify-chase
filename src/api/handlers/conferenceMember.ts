@@ -1,32 +1,49 @@
 import { db, schema } from '$api/db/db';
-import { abilityBuilder, schemaBuilder } from '$api/rumble';
-import { isGlobalAdmin } from '$api/services/isAdminEmail';
-import { basics } from './basics';
-import { assertConferenceAdmin } from './conferenceUser';
+import {
+	abilityBuilder,
+	schemaBuilder,
+	object,
+	pubsub as rumblePubsub,
+	query,
+	whereArg
+} from '$api/rumble';
+import {
+	isAdminInConference,
+	isGlobalAdmin,
+	isParticipantInConference
+} from '$api/services/authHelper';
 import { assertFindFirstExists, assertFirstEntryExists } from '@m1212e/rumble';
-import { eq } from 'drizzle-orm';
-import { GraphQLError } from 'graphql';
-
-const { arg, ref, pubsub, table } = basics('conferenceMember');
 
 abilityBuilder.conferenceMember.allow('read').when((ctx) => {
-	if (isGlobalAdmin(ctx)) return 'allow';
+	return {
+		where: isParticipantInConference(ctx)
+	};
 });
 
-abilityBuilder.conferenceMember.allow('read').when(({ mustBeLoggedIn }) => {
-	mustBeLoggedIn();
-	return 'allow';
+abilityBuilder.conferenceMember.allow('delete').when((ctx) => {
+	return { where: isAdminInConference(ctx) };
 });
+
+export const ConferenceMemberRef = object({ table: 'conferenceMember' });
+export const ConferenceMemberWhereInput = whereArg({ table: 'conferenceMember' });
+
+const pubsub = rumblePubsub({ table: 'conferenceMember' });
+query({ table: 'conferenceMember' });
 
 schemaBuilder.mutationFields((t) => ({
 	createConferenceMember: t.drizzleField({
-		type: ref,
+		type: ConferenceMemberRef,
 		args: {
 			conferenceId: t.arg.id({ required: true }),
 			representationId: t.arg.id({ required: true })
 		},
 		resolve: async (query, root, args, ctx, info) => {
-			await assertConferenceAdmin(ctx, args.conferenceId);
+			await db.query.conference
+				.findFirst(
+					ctx.abilities.conference.filter('update').merge({ where: { id: args.conferenceId } })
+						.query.single
+				)
+				.then(assertFindFirstExists);
 
 			const result = await db
 				.insert(schema.conferenceMember)
@@ -42,41 +59,30 @@ schemaBuilder.mutationFields((t) => ({
 			return db.query.conferenceMember
 				.findFirst(
 					query(
-						ctx.abilities.conferenceMember.filter('read', {
-							inject: {
-								where: { id: result.id }
-							}
+						ctx.abilities.conferenceMember.filter('read').merge({
+							where: { id: result.id }
 						}).query.single
 					)
 				)
 				.then(assertFindFirstExists);
 		}
 	}),
-
 	deleteConferenceMember: t.field({
 		type: 'Boolean',
 		args: {
 			id: t.arg.id({ required: true })
 		},
-		resolve: async (root, args, ctx, info) => {
-			const conferenceMember = await db.query.conferenceMember.findFirst({
-				where: { id: args.id }
-			});
+		resolve: async (root, args, ctx) => {
+			await db
+				.delete(schema.conferenceMember)
+				.where(
+					ctx.abilities.conferenceMember.filter('delete').merge({ where: { id: args.id } }).sql
+						.where
+				);
 
-			if (!conferenceMember) {
-				throw new GraphQLError('Conference member not found');
-			}
-
-			await assertConferenceAdmin(ctx, conferenceMember.conferenceId);
-
-			await db.delete(schema.conferenceMember).where(eq(schema.conferenceMember.id, args.id));
-
-			pubsub.removed(args.id);
+			pubsub.removed();
 
 			return true;
 		}
 	})
 }));
-
-export const ConferenceMemberWhereInput = arg;
-export const ConferenceMemberRef = ref;

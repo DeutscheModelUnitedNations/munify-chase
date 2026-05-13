@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { m } from '$lib/paraglide/messages';
-	import type { PageData } from './$houdini';
+	import { page } from '$app/state';
+	import { client } from '$lib/api/rumbleClient/client';
 	import Kbd from '$lib/components/Kbd.svelte';
 	import IconInfoBox from '$lib/components/IconInfoBox.svelte';
 	import { getCommitteeStatusIcon, getCommitteeStatusText } from '$lib/utils/committeeStatus';
@@ -11,53 +12,33 @@
 	import WhiteboardViewer from '$lib/components/whiteboard/WhiteboardViewer.svelte';
 	import WhiteboardEditorModal from '$lib/components/whiteboard/WhiteboardEditorModal.svelte';
 	import StatusChanger from '../../../../../../lib/components/committee/StatusChanger.svelte';
-	import { onMount } from 'svelte';
 	import StateOfDebate from '$lib/components/committee/StateOfDebateChanger.svelte';
 	import AgendaItemChanger from '$lib/components/committee/AgendaItemChanger.svelte';
 	import PresentationSettings from './PresentationSettings.svelte';
 	import Tabs from '$lib/components/Tabs.svelte';
-	import { CommitteeSubscription } from '../committeeSubscription';
 	import { ScrollArea } from 'bits-ui';
 	import StatusWidget from '../StatusWidget.svelte';
-	import { graphql } from '$houdini';
 	import dayjs from 'dayjs';
 
-	let { data }: { data: PageData } = $props();
-
-	let query = $derived(data?.CommitteeTeamQuery);
-	let committee = $derived(
-		$CommitteeSubscription.data?.findFirstCommittee ?? $query.data?.findFirstCommittee
-	);
-
-	onMount(() => {
-		CommitteeSubscription.listen({ id: data.committeeId });
+	const committee = await client.liveQuery.committee({
+		__args: { id: page.params.committeeId! },
+		id: true,
+		status: true,
+		statusHeadline: true,
+		statusUntil: true,
+		stateOfDebate: true,
+		whiteboardContent: true,
+		allowDelegationsToAddThemselvesToSpeakersList: true,
+		totalPresent: true,
+		simpleMajority: true,
+		twoThirdsMajority: true,
+		paperSupportThreshold: true,
+		activeAgendaItem: { id: true, title: true },
+		agendaItems: { id: true, title: true },
+		conference: { hasModeratedCaucus: true }
 	});
 
 	let editWhiteboardModalOpen = $state(false);
-
-	const AnnounceAdoptionMutation = graphql(`
-		mutation AnnounceAdoption($committeeId: ID!, $lastResolutionAdoptionDate: DateTime!) {
-			updateCommittee(id: $committeeId, lastResolutionAdoptionDate: $lastResolutionAdoptionDate) {
-				id
-				lastResolutionAdoptionDate
-			}
-		}
-	`);
-
-	const UpdateSelfAddMutation = graphql(`
-		mutation UpdateSelfAdd(
-			$committeeId: ID!
-			$allowDelegationsToAddThemselvesToSpeakersList: Boolean!
-		) {
-			updateCommittee(
-				id: $committeeId
-				allowDelegationsToAddThemselvesToSpeakersList: $allowDelegationsToAddThemselvesToSpeakersList
-			) {
-				id
-				allowDelegationsToAddThemselvesToSpeakersList
-			}
-		}
-	`);
 
 	const selfAddTabs = [
 		{ id: true, label: m.on(), faIcon: 'fa-check' },
@@ -119,7 +100,7 @@
 						{m.openPresentation()}
 						<Kbd hotkey="alt+P" class="text-base-content" />
 					</a>
-					<PresentationSettings committeeId={data.committeeId} />
+					<PresentationSettings committeeId={page.params.committeeId!} />
 				</BasicCard>
 				<BasicCard title={m.allowSelfAddToSpeakersList()}>
 					<p class="mb-4 text-sm opacity-70">{m.allowSelfAddToSpeakersListDescription()}</p>
@@ -127,9 +108,9 @@
 						activeTab={committee.allowDelegationsToAddThemselvesToSpeakersList}
 						tabs={selfAddTabs}
 						onTabChange={(tab) => {
-							UpdateSelfAddMutation.mutate({
-								committeeId: committee.id,
-								allowDelegationsToAddThemselvesToSpeakersList: tab
+							client.mutate.updateCommittee({
+								__args: { id: committee.id, allowDelegationsToAddThemselvesToSpeakersList: tab },
+								id: true
 							});
 						}}
 					/>
@@ -138,9 +119,9 @@
 					<button
 						class="btn btn-primary btn-lg mb-4 flex items-center gap-3"
 						onclick={() => {
-							AnnounceAdoptionMutation.mutate({
-								committeeId: committee.id,
-								lastResolutionAdoptionDate: dayjs().toDate()
+							client.mutate.updateCommittee({
+								__args: { id: committee.id, lastResolutionAdoptionDate: dayjs().toDate() },
+								id: true
 							});
 						}}
 					>

@@ -1,18 +1,20 @@
 import { db, schema } from '$api/db/db';
-import { abilityBuilder, schemaBuilder } from '$api/rumble';
+import { abilityBuilder, schemaBuilder, object, pubsub as rumblePubsub, query } from '$api/rumble';
 import { and, eq, lt } from 'drizzle-orm';
-import { basics } from './basics';
 import { assertFindFirstExists, assertFirstEntryExists } from '@m1212e/rumble';
 import { GraphQLError } from 'graphql';
-
-const { ref, pubsub } = basics('paperClauseLock');
-
-const LOCK_EXPIRY_MS = 60_000; // 60 seconds
 
 abilityBuilder.paperClauseLock.allow('read').when(({ mustBeLoggedIn }) => {
 	mustBeLoggedIn();
 	return 'allow';
 });
+
+const ref = object({ table: 'paperClauseLock' });
+
+const LOCK_EXPIRY_MS = 60_000; // 60 seconds
+
+const pubsub = rumblePubsub({ table: 'paperClauseLock' });
+query({ table: 'paperClauseLock' });
 
 schemaBuilder.mutationFields((t) => ({
 	acquireClauseLock: t.drizzleField({
@@ -45,7 +47,7 @@ schemaBuilder.mutationFields((t) => ({
 				.returning();
 
 			for (const expired of expiredLocks) {
-				pubsub.removed(expired.id);
+				pubsub.removed();
 			}
 
 			// Check existing lock for this (paperId, clauseId)
@@ -69,9 +71,9 @@ schemaBuilder.mutationFields((t) => ({
 					return db.query.paperClauseLock
 						.findFirst(
 							query(
-								ctx.abilities.paperClauseLock.filter('read', {
-									inject: { where: { id: existingLock.id } }
-								}).query.single
+								ctx.abilities.paperClauseLock
+									.filter('read')
+									.merge({ where: { id: existingLock.id } }).query.single
 							)
 						)
 						.then(assertFindFirstExists);
@@ -98,8 +100,8 @@ schemaBuilder.mutationFields((t) => ({
 				return db.query.paperClauseLock
 					.findFirst(
 						query(
-							ctx.abilities.paperClauseLock.filter('read', {
-								inject: { where: { id: result.id } }
+							ctx.abilities.paperClauseLock.filter('read').merge({
+								where: { id: result.id }
 							}).query.single
 						)
 					)
@@ -148,7 +150,7 @@ schemaBuilder.mutationFields((t) => ({
 				.returning();
 
 			for (const lock of deleted) {
-				pubsub.removed(lock.id);
+				pubsub.removed();
 			}
 
 			return true;
@@ -182,7 +184,7 @@ schemaBuilder.mutationFields((t) => ({
 				.returning();
 
 			for (const lock of deleted) {
-				pubsub.removed(lock.id);
+				pubsub.removed();
 			}
 
 			return true;

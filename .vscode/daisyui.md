@@ -26,7 +26,7 @@ daisyUI 5 provides class names for common UI components
 
 ```css
 @import 'tailwindcss';
-@plugin "daisyui";
+@plugin 'daisyui';
 ```
 
 ## daisyUI 5 usage rules
@@ -61,13 +61,13 @@ daisyUI 5 config docs: https://daisyui.com/docs/config/
 daisyUI without config:
 
 ```css
-@plugin "daisyui";
+@plugin 'daisyui';
 ```
 
 daisyUI config with `light` theme only:
 
 ```css
-@plugin "daisyui" {
+@plugin 'daisyui' {
 	themes: light --default;
 }
 ```
@@ -75,7 +75,7 @@ daisyUI config with `light` theme only:
 daisyUI with all the default configs:
 
 ```css
-@plugin "daisyui" {
+@plugin 'daisyui' {
 	themes:
 		light --default,
 		dark --prefersdark;
@@ -93,7 +93,7 @@ All the other themes are enabled and can be used by adding `data-theme="THEME_NA
 root scrollbar gutter is excluded. `daisy-` prefix is used for all daisyUI classes and console.log is disabled
 
 ```css
-@plugin "daisyui" {
+@plugin 'daisyui' {
 	themes:
 		light,
 		dark,
@@ -182,8 +182,8 @@ A CSS file with Tailwind CSS, daisyUI and a custom daisyUI theme looks like this
 
 ```css
 @import 'tailwindcss';
-@plugin "daisyui";
-@plugin "daisyui/theme" {
+@plugin 'daisyui';
+@plugin 'daisyui/theme' {
 	name: 'mytheme';
 	default: true; /* set as default */
 	prefersdark: false; /* set as default dark mode (prefers-color-scheme:dark) */

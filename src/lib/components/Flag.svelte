@@ -1,13 +1,16 @@
 <script lang="ts">
-	import { type CommitteePresentationQuery$result } from '$houdini';
+	interface Representation {
+		type?: string | null;
+		name?: string | null;
+		alpha2Code?: string | null;
+		alpha3Code?: string | null;
+		faIcon?: string | null;
+		regionalGroup?: string | null;
+	}
 
 	interface Props {
 		size?: 'xs' | 'sm' | 'md' | 'lg' | 'full';
-		representation?: Partial<
-			NonNullable<
-				CommitteePresentationQuery$result['findFirstCommittee']['members']
-			>[number]['representation']
-		>;
+		representation?: Representation | null;
 		placeholder?: boolean;
 	}
 

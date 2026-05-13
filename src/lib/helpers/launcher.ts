@@ -1,4 +1,4 @@
-import type { ConferenceUserTypeEnum$options } from '$houdini';
+import type { ConferenceusertypeEnum } from '$lib/api/rumbleClient/client';
 
 export type LauncherStatus = 'upcoming' | 'active' | 'past';
 export type LauncherBadge = 'ADMIN' | 'CHAIR' | 'DELEGATE' | 'SPECTATOR';
@@ -16,7 +16,7 @@ export function deriveStatus(
 	return 'active';
 }
 
-export function badgeFor(type: ConferenceUserTypeEnum$options): LauncherBadge {
+export function badgeFor(type: ConferenceusertypeEnum): LauncherBadge {
 	switch (type) {
 		case 'ADMIN':
 			return 'ADMIN';

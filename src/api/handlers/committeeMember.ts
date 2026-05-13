@@ -1,23 +1,36 @@
 import { db, schema } from '$api/db/db';
-import { abilityBuilder, schemaBuilder } from '$api/rumble';
-import { eq, inArray } from 'drizzle-orm';
-import { basics } from './basics';
-import { isGlobalAdmin } from '$api/services/isAdminEmail';
-import { assertConferenceAdmin } from './conferenceUser';
-import { assertCommitteeChairOrAdmin } from './resolutionPaper';
+import { abilityBuilder, schemaBuilder, object, pubsub as rumblePubsub, query } from '$api/rumble';
+import {
+	isChairInConference,
+	isAdminInConference,
+	isParticipantInConference
+} from '$api/services/authHelper';
 import { assertFindFirstExists, assertFirstEntryExists } from '@m1212e/rumble';
 import { GraphQLError } from 'graphql';
 
-const { arg, ref, pubsub, table } = basics('committeeMember');
-
-abilityBuilder.committeeMember.allow(['read', 'update']).when((ctx) => {
-	if (isGlobalAdmin(ctx)) return 'allow';
+abilityBuilder.committeeMember.allow('read').when((ctx) => {
+	return {
+		where: {
+			committee: isParticipantInConference(ctx)
+		}
+	};
 });
 
-abilityBuilder.committeeMember.allow('read').when(({ mustBeLoggedIn }) => {
-	mustBeLoggedIn();
-	return 'allow';
+abilityBuilder.committeeMember.allow('update').when((ctx) => {
+	return {
+		where: {
+			committee: isChairInConference(ctx)
+		}
+	};
 });
+
+abilityBuilder.committeeMember.allow('delete').when((ctx) => {
+	return { where: { committee: isAdminInConference(ctx) } };
+});
+
+const ref = object({ table: 'committeeMember' });
+const pubsub = rumblePubsub({ table: 'committeeMember' });
+query({ table: 'committeeMember' });
 
 schemaBuilder.mutationFields((t) => {
 	return {
@@ -31,12 +44,15 @@ schemaBuilder.mutationFields((t) => {
 				const committee = await db.query.committee.findFirst({
 					where: { id: args.committeeId }
 				});
+				if (!committee) throw new GraphQLError('Committee not found');
 
-				if (!committee) {
-					throw new GraphQLError('Committee not found');
-				}
-
-				await assertConferenceAdmin(ctx, committee.conferenceId);
+				await db.query.conference
+					.findFirst(
+						ctx.abilities.conference
+							.filter('update')
+							.merge({ where: { id: committee.conferenceId } }).query.single
+					)
+					.then(assertFindFirstExists);
 
 				const result = await db
 					.insert(schema.committeeMember)
@@ -52,42 +68,32 @@ schemaBuilder.mutationFields((t) => {
 				return db.query.committeeMember
 					.findFirst(
 						query(
-							ctx.abilities.committeeMember.filter('read', {
-								inject: {
-									where: { id: result.id }
-								}
+							ctx.abilities.committeeMember.filter('read').merge({
+								where: { id: result.id }
 							}).query.single
 						)
 					)
 					.then(assertFindFirstExists);
 			}
 		}),
-
 		deleteCommitteeMember: t.field({
 			type: 'Boolean',
 			args: {
 				id: t.arg.id({ required: true })
 			},
-			resolve: async (root, args, ctx, info) => {
-				const committeeMember = await db.query.committeeMember.findFirst({
-					where: { id: args.id },
-					with: { committee: true }
-				});
+			resolve: async (root, args, ctx) => {
+				await db
+					.delete(schema.committeeMember)
+					.where(
+						ctx.abilities.committeeMember.filter('delete').merge({ where: { id: args.id } }).sql
+							.where
+					);
 
-				if (!committeeMember) {
-					throw new GraphQLError('Committee member not found');
-				}
-
-				await assertConferenceAdmin(ctx, committeeMember.committee.conferenceId);
-
-				await db.delete(schema.committeeMember).where(eq(schema.committeeMember.id, args.id));
-
-				pubsub.removed(args.id);
+				pubsub.removed();
 
 				return true;
 			}
 		}),
-
 		setPresenceForCommitteeMembers: t.drizzleField({
 			type: [ref],
 			args: {
@@ -95,28 +101,22 @@ schemaBuilder.mutationFields((t) => {
 				present: t.arg.boolean({ required: true })
 			},
 			resolve: async (query, root, args, ctx, info) => {
-				// Look up committee for the given members and verify chair/admin access
-				const members = await db.query.committeeMember.findMany({
-					where: { id: { in: args.ids } },
-					columns: { committeeId: true }
-				});
-				const committeeIds = [...new Set(members.map((m) => m.committeeId))];
-				for (const committeeId of committeeIds) {
-					await assertCommitteeChairOrAdmin(ctx, committeeId);
-				}
-
 				const res = await db
-					.update(table)
+					.update(schema.committeeMember)
 					.set({
 						present: args.present
 					})
-					.where(inArray(table.id, args.ids))
+					.where(
+						ctx.abilities.committeeMember
+							.filter('update')
+							.merge({ where: { id: { in: args.ids } } }).sql.where
+					)
 					.returning({
-						id: table.id
+						id: schema.committeeMember.id
 					});
 
 				if (res.length > 0) {
-					await db.insert(schema.presenceChangedTimestamp).values(
+					db.insert(schema.presenceChangedTimestamp).values(
 						res.map((committeeMember) => ({
 							committeeMemberId: committeeMember.id,
 							presentSetTo: args.present,
@@ -129,12 +129,10 @@ schemaBuilder.mutationFields((t) => {
 
 				return db.query.committeeMember.findMany(
 					query(
-						ctx.abilities.committeeMember.filter('read', {
-							inject: {
-								where: {
-									id: {
-										in: args.ids
-									}
+						ctx.abilities.committeeMember.filter('read').merge({
+							where: {
+								id: {
+									in: args.ids
 								}
 							}
 						}).query.single

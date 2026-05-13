@@ -1,18 +1,46 @@
 <script lang="ts">
 	import { m } from '$lib/paraglide/messages';
 	import { page } from '$app/state';
-	import type { LayoutData } from './$houdini';
+	import { client } from '$lib/api/rumbleClient/client';
+	import { getCurrentUser } from '$lib/state/currentUser.svelte';
 	import ThemeSwitcher from '$lib/components/ThemeSwitcher.svelte';
 	import type { Snippet } from 'svelte';
 
-	let { data, children }: { data: LayoutData; children: Snippet } = $props();
+	let { children }: { children: Snippet } = $props();
 
-	let layoutQuery = $derived(data?.ParticipantCommitteeLayoutQuery);
-	let identityQuery = $derived(data?.ParticipantIdentityQuery);
-	let committee = $derived($layoutQuery.data?.findFirstCommittee);
-	let conferenceUser = $derived($identityQuery.data?.findManyConferenceUser?.[0]);
-	let role = $derived(conferenceUser?.conferenceUserType);
-	let showBack = $derived(role !== 'DELEGATE');
+	const currentUser = await getCurrentUser();
+	const [conferenceUser] =
+		(await client.liveQuery.conferenceUsers({
+			__args: {
+				where: {
+					conference: { id: page.params.conferenceId },
+					user: { id: currentUser?.id ?? '' }
+				}
+			},
+			id: true,
+			conferenceUserType: true
+		})) ?? [];
+	const role = $derived(conferenceUser?.conferenceUserType);
+	const showBack = $derived(role !== 'DELEGATE');
+
+	const committee: any = await client.liveQuery.committee({
+		__args: { id: page.params.committeeId! },
+		id: true,
+		abbreviation: true,
+		name: true,
+		resolutionHeadline: true,
+		supportReEvaluationOpen: true,
+		activeDraftResolutionId: true,
+		conference: {
+			id: true,
+			title: true
+			// TODO: resolutionFeatureEnabled not available in Rumble client yet
+		},
+		activeAgendaItem: {
+			id: true,
+			title: true
+		}
+	});
 
 	let isPapersRoute = $derived(page.route.id?.includes('/papers') ?? false);
 </script>
@@ -51,14 +79,13 @@
 			<i class="fa-duotone fa-users size-[1.2em]"></i>
 			<span class="dock-label">{m.committee()}</span>
 		</a>
-		{#if committee.conference?.resolutionFeatureEnabled !== false}
-			<a
-				href="/app/{page.params.conferenceId}/participant/{page.params.committeeId}/papers"
-				class={isPapersRoute ? 'dock-active' : ''}
-			>
-				<i class="fa-duotone fa-scroll size-[1.2em]"></i>
-				<span class="dock-label">{m.papers()}</span>
-			</a>
-		{/if}
+		<!-- TODO: resolutionFeatureEnabled check removed - not available in Rumble client yet -->
+		<a
+			href="/app/{page.params.conferenceId}/participant/{page.params.committeeId}/papers"
+			class={isPapersRoute ? 'dock-active' : ''}
+		>
+			<i class="fa-duotone fa-scroll size-[1.2em]"></i>
+			<span class="dock-label">{m.papers()}</span>
+		</a>
 	</div>
 {/if}

@@ -1,7 +1,8 @@
 <script lang="ts">
-	import { onDestroy, onMount, type Snippet } from 'svelte';
+	import { type Snippet } from 'svelte';
+	import { page } from '$app/state';
+	import { client } from '$lib/api/rumbleClient/client';
 	import ChairNavbar from './ChairNavbar.svelte';
-	import type { LayoutData } from './$houdini';
 	import * as m from '$lib/paraglide/messages';
 	import StatusChangerModal from '$lib/components/committee/StatusChangerModal.svelte';
 	import StateOfDebateChangerModal from '$lib/components/committee/StateOfDebateChangerModal.svelte';
@@ -9,23 +10,121 @@
 	import toast from 'svelte-french-toast';
 	import { getCommitteeStatusText } from '$lib/utils/committeeStatus';
 	import BellIcon from '$lib/components/toast/BellIcon.svelte';
-	import { serverTime } from '$lib/state/serverTime.svelte';
+	import { getServerTime } from '$lib/state/serverTime.svelte';
 	import hotkeys from 'hotkeys-js';
 	import AdoptionConfetti from '$lib/components/AdoptionConfetti.svelte';
 	import VotingModal from '$lib/components/voting/VotingModal.svelte';
-	import { CommitteeSubscription } from './committeeSubscription';
 
 	interface Props {
 		children: Snippet;
-		data: LayoutData;
 	}
 
-	let { data, children }: Props = $props();
+	let { children }: Props = $props();
 
-	let query = $derived(data?.CommitteeTeamQuery);
-	let committee = $derived(
-		$CommitteeSubscription.data?.findFirstCommittee ?? $query.data?.findFirstCommittee
-	);
+	const committeeId = page.params.committeeId!;
+
+	const committee = await client.liveQuery.committee({
+		__args: { id: committeeId },
+		id: true,
+		abbreviation: true,
+		name: true,
+		resolutionHeadline: true,
+		stateOfDebate: true,
+		status: true,
+		statusHeadline: true,
+		statusUntil: true,
+		totalPresent: true,
+		simpleMajority: true,
+		twoThirdsMajority: true,
+		paperSupportThreshold: true,
+		maxDraftResolutions: true,
+		activeDraftResolutionId: true,
+		supportReEvaluationOpen: true,
+		amendmentSubmissionOpen: true,
+		amendmentSponsoringOpen: true,
+		currentOperativeIndex: true,
+		currentOperativeClauseId: true,
+		activeAmendmentId: true,
+		whiteboardContent: true,
+		lastResolutionAdoptionDate: true,
+		allowDelegationsToAddThemselvesToSpeakersList: true,
+		activeAgendaItem: {
+			id: true,
+			title: true,
+			speakersList: {
+				id: true,
+				type: true,
+				isClosed: true,
+				speakingTime: true,
+				startTimestamp: true,
+				timeLeft: true,
+				speakers: {
+					id: true,
+					position: true,
+					overwriteName: true,
+					committeeMember: {
+						id: true,
+						representation: {
+							id: true,
+							type: true,
+							name: true,
+							regionalGroup: true,
+							alpha2Code: true,
+							alpha3Code: true,
+							faIcon: true
+						},
+						present: true
+					},
+					conferenceMember: {
+						id: true,
+						representation: {
+							id: true,
+							type: true,
+							name: true,
+							regionalGroup: true,
+							alpha2Code: true,
+							alpha3Code: true,
+							faIcon: true
+						}
+					}
+				}
+			}
+		},
+		agendaItems: {
+			id: true,
+			title: true
+		},
+		members: {
+			id: true,
+			present: true,
+			representation: {
+				id: true,
+				type: true,
+				name: true,
+				regionalGroup: true,
+				alpha2Code: true,
+				alpha3Code: true,
+				faIcon: true
+			}
+		},
+		conference: {
+			id: true,
+			title: true,
+			hasModeratedCaucus: true,
+			// TODO: resolutionFeatureEnabled not available in Rumble client yet
+			uniqueConferenceMembers: {
+				id: true,
+				representation: {
+					id: true,
+					type: true,
+					name: true,
+					alpha2Code: true,
+					alpha3Code: true,
+					faIcon: true
+				}
+			}
+		}
+	});
 
 	let committeeStatusExpiredAlerted = $state(false);
 	let speakersListOvertimeAlerted = $state(false);
@@ -36,7 +135,7 @@
 		if (!committee) return;
 
 		const interval = setInterval(() => {
-			if (dayjs(committee.statusUntil).diff($serverTime) < 0) {
+			if (dayjs(committee.statusUntil).diff(getServerTime()) < 0) {
 				if (!committeeStatusExpiredAlerted) {
 					toast.error(
 						m.committeeStatusExpired({
@@ -55,7 +154,8 @@
 
 			for (const speakersList of committee.activeAgendaItem?.speakersList ?? []) {
 				const overtime =
-					dayjs(speakersList.startTimestamp).diff($serverTime, 'seconds') + speakersList.timeLeft <
+					dayjs(speakersList.startTimestamp).diff(getServerTime(), 'seconds') +
+						speakersList.timeLeft <
 					0;
 
 				//	XAND only fire if both are false. Both true can be ignored, case should not happen.
@@ -80,16 +180,12 @@
 		return () => clearInterval(interval);
 	});
 
-	onMount(() => {
-		CommitteeSubscription.listen({ id: data.committeeId });
+	$effect(() => {
 		hotkeys('alt+p', (event) => {
 			event.preventDefault();
 			window.open('.', '_blank');
 		});
-	});
-
-	onDestroy(() => {
-		hotkeys.unbind('alt+p');
+		return () => hotkeys.unbind('alt+p');
 	});
 </script>
 
@@ -100,7 +196,6 @@
 <ChairNavbar
 	title={committee?.abbreviation}
 	activeDraftResolutionId={committee?.activeDraftResolutionId}
-	resolutionFeatureEnabled={committee?.conference?.resolutionFeatureEnabled}
 />
 
 <div class="pb-16">
@@ -108,17 +203,14 @@
 </div>
 
 <StatusChangerModal
-	committeeId={data.committeeId}
+	{committeeId}
 	oldStatus={committee?.status}
 	oldUntil={committee?.statusUntil}
 	oldCustomName={committee?.statusHeadline}
 	hasModeratedCaucus={committee?.conference?.hasModeratedCaucus}
 />
 
-<StateOfDebateChangerModal
-	committeeId={data.committeeId}
-	oldStateOfDebate={committee?.stateOfDebate}
-/>
+<StateOfDebateChangerModal {committeeId} oldStateOfDebate={committee?.stateOfDebate} />
 
 {#if committee}
 	<VotingModal {committee} />

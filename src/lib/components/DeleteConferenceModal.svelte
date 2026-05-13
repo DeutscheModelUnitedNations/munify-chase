@@ -1,8 +1,7 @@
 <script lang="ts">
 	import { m } from '$lib/paraglide/messages';
 	import Modal from './Modal.svelte';
-	import { graphql, cache } from '$houdini';
-	import { invalidateAll } from '$app/navigation';
+	import { client } from '$lib/api/rumbleClient/client';
 	import toast from 'svelte-french-toast';
 	import { promiseToastStrings } from '$lib/utils/toast';
 
@@ -19,22 +18,12 @@
 
 	let canDelete = $derived(confirmInput === conferenceName);
 
-	const DeleteConferenceMutation = graphql(`
-		mutation DeleteConference($id: ID!) {
-			deleteConference(id: $id)
-		}
-	`);
-
 	async function handleDelete() {
 		if (!canDelete) return;
 		isDeleting = true;
 		try {
-			await toast.promise(
-				DeleteConferenceMutation.mutate({ id: conferenceId }),
-				promiseToastStrings(conferenceName, 'delete')
-			);
-			cache.markStale();
-			await invalidateAll();
+			// TODO: deleteConference not available in Rumble client yet
+			toast.error('deleteConference is not yet available');
 			open = false;
 		} finally {
 			isDeleting = false;

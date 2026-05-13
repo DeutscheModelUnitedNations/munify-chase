@@ -1,13 +1,8 @@
 import { db, schema } from '$api/db/db';
-import { abilityBuilder, schemaBuilder, pubsub as rumblePubsub } from '$api/rumble';
+import { abilityBuilder, schemaBuilder, object, pubsub as rumblePubsub, query } from '$api/rumble';
 import { and, eq } from 'drizzle-orm';
-import { basics } from './basics';
-import { isGlobalAdmin } from '$api/services/isAdminEmail';
+import { isGlobalAdmin } from '$api/services/authHelper';
 import { assertFindFirstExists } from '@m1212e/rumble';
-import { GraphQLError } from 'graphql';
-
-const { arg, ref, pubsub, table } = basics('paperEditor');
-const paperPubsub = rumblePubsub({ table: 'resolutionPaper' });
 
 abilityBuilder.paperEditor.allow(['read', 'update']).when((ctx) => {
 	if (isGlobalAdmin(ctx)) return 'allow';
@@ -17,6 +12,11 @@ abilityBuilder.paperEditor.allow('read').when(({ mustBeLoggedIn }) => {
 	mustBeLoggedIn();
 	return 'allow';
 });
+
+object({ table: 'paperEditor' });
+const pubsub = rumblePubsub({ table: 'paperEditor' });
+const paperPubsub = rumblePubsub({ table: 'resolutionPaper' });
+query({ table: 'paperEditor' });
 
 schemaBuilder.mutationFields((t) => ({
 	removeEditor: t.field({
@@ -44,15 +44,6 @@ schemaBuilder.mutationFields((t) => ({
 				})
 				.then(assertFindFirstExists);
 
-			const editor = await db.query.paperEditor
-				.findFirst({
-					where: {
-						paperId: args.paperId,
-						conferenceUserId: args.conferenceUserId
-					}
-				})
-				.then(assertFindFirstExists);
-
 			await db
 				.delete(schema.paperEditor)
 				.where(
@@ -62,7 +53,7 @@ schemaBuilder.mutationFields((t) => ({
 					)
 				);
 
-			pubsub.removed(editor.id);
+			pubsub.removed();
 			paperPubsub.updated(args.paperId);
 
 			return true;

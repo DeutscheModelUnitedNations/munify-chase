@@ -2,6 +2,7 @@
 	import { client } from '$lib/api/rumbleClient/client';
 	import { m } from '$lib/paraglide/messages';
 	import BasicCard from '$lib/components/BasicCard.svelte';
+	import { SvelteMap } from 'svelte/reactivity';
 
 	interface Props {
 		conferenceId: string;
@@ -26,8 +27,11 @@
 		}
 	});
 
-	const latestEvents = await client.liveQuery.latestNsaPresenceEvents({
-		__args: { conferenceId },
+	const allEvents = await client.liveQuery.nsaPresenceEvents({
+		__args: {
+			where: { conference: { id: conferenceId } },
+			orderBy: { timestamp: 'desc' }
+		},
 		id: true,
 		type: true,
 		conferenceUser: { id: true }
@@ -35,7 +39,15 @@
 
 	type NsaUser = NonNullable<typeof nsaUsers>[number];
 
-	let latestByUser = $derived(new Map((latestEvents ?? []).map((e) => [e.conferenceUser?.id, e])));
+	// allEvents is ordered timestamp DESC, so the first event per user is the latest.
+	let latestByUser = $derived.by(() => {
+		const map = new SvelteMap<string, NonNullable<typeof allEvents>[number]>();
+		for (const e of allEvents ?? []) {
+			const uid = e.conferenceUser?.id;
+			if (uid && !map.has(uid)) map.set(uid, e);
+		}
+		return map;
+	});
 
 	let visible = $derived.by(() => {
 		const out: NsaUser[] = [];

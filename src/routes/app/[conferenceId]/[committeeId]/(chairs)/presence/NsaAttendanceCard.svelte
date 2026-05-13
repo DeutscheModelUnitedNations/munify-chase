@@ -3,6 +3,7 @@
 	import { m } from '$lib/paraglide/messages';
 	import BasicCard from '$lib/components/BasicCard.svelte';
 	import NsaScannerDrawer from './NsaScannerDrawer.svelte';
+	import { SvelteSet } from 'svelte/reactivity';
 
 	interface Props {
 		conferenceId: string;
@@ -13,11 +14,15 @@
 
 	let drawerOpen = $state(false);
 
-	// Live: every NSA's most recent presence event in this conference. The list
-	// of "currently in this committee" filters down to type=CHECK_IN and
-	// committeeId match.
-	const latestEvents = await client.liveQuery.latestNsaPresenceEvents({
-		__args: { conferenceId },
+	// All presence events in the conference, newest first. We subscribe to the
+	// auto-generated query (which supports live updates) and derive the latest
+	// event per user client-side. The custom latestNsaPresenceEvents query
+	// would be more efficient but is not subscribable.
+	const allEvents = await client.liveQuery.nsaPresenceEvents({
+		__args: {
+			where: { conference: { id: conferenceId } },
+			orderBy: { timestamp: 'desc' }
+		},
 		id: true,
 		type: true,
 		committeeId: true,
@@ -32,17 +37,25 @@
 		}
 	});
 
-	let presentHere = $derived(
-		(latestEvents ?? [])
-			.filter((e) => e.type === 'CHECK_IN' && e.committeeId === committeeId)
-			.sort((a, b) => {
-				const aName =
-					a.conferenceUser?.name ?? a.conferenceUser?.conferenceMember?.representation?.name ?? '';
-				const bName =
-					b.conferenceUser?.name ?? b.conferenceUser?.conferenceMember?.representation?.name ?? '';
-				return aName.localeCompare(bName);
-			})
-	);
+	type PresenceEvent = NonNullable<typeof allEvents>[number];
+
+	let presentHere = $derived.by(() => {
+		const seen = new SvelteSet<string>();
+		const out: PresenceEvent[] = [];
+		for (const e of allEvents ?? []) {
+			const uid = e.conferenceUser?.id;
+			if (!uid || seen.has(uid)) continue;
+			seen.add(uid);
+			if (e.type === 'CHECK_IN' && e.committeeId === committeeId) out.push(e);
+		}
+		return out.sort((a, b) => {
+			const aName =
+				a.conferenceUser?.name ?? a.conferenceUser?.conferenceMember?.representation?.name ?? '';
+			const bName =
+				b.conferenceUser?.name ?? b.conferenceUser?.conferenceMember?.representation?.name ?? '';
+			return aName.localeCompare(bName);
+		});
+	});
 
 	function formatSince(ts: string | Date) {
 		const d = ts instanceof Date ? ts : new Date(ts);

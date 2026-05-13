@@ -15,7 +15,7 @@ import {
 } from '$api/services/authHelper';
 import { attendanceCode as generateAttendanceCode } from '$lib/helpers/attendanceCode';
 import { assertFindFirstExists, assertFirstEntryExists } from '@m1212e/rumble';
-import { eq, sql } from 'drizzle-orm';
+import { eq } from 'drizzle-orm';
 import { GraphQLError } from 'graphql';
 
 abilityBuilder.nsaPresenceEvent.allow('read').when((ctx) => ({
@@ -32,51 +32,6 @@ export const NsaPresenceEventRef = object({ table: 'nsaPresenceEvent' });
 
 const pubsub = rumblePubsub({ table: 'nsaPresenceEvent' });
 query({ table: 'nsaPresenceEvent' });
-
-/**
- * Bulk query: returns the most recent nsaPresenceEvent per NSA user for a
- * conference. Lets the live-overview tabs render in one query instead of
- * N+1 over the per-user computed fields on conferenceUser.
- *
- * Uses Postgres DISTINCT ON, which exploits the
- * (conference_user_id, timestamp DESC) index.
- */
-schemaBuilder.queryFields((t) => ({
-	latestNsaPresenceEvents: t.drizzleField({
-		type: [NsaPresenceEventRef],
-		args: {
-			conferenceId: t.arg.id({ required: true })
-		},
-		resolve: async (q, _root, args, ctx) => {
-			// Auth: only conference participants get to query at all; admins/team
-			// already inherit access through the abilities.
-			await db.query.conference
-				.findFirst(
-					ctx.abilities.conference.filter('read').merge({ where: { id: args.conferenceId } }).query
-						.single
-				)
-				.then(assertFindFirstExists);
-
-			const latestIdsRows = await db.execute(sql`
-				SELECT DISTINCT ON (conference_user_id) id
-				FROM nsa_presence_event
-				WHERE conference_id = ${args.conferenceId}
-				ORDER BY conference_user_id, timestamp DESC
-			`);
-
-			const ids = latestIdsRows.rows.map((r) => r.id as string);
-			if (ids.length === 0) return [];
-
-			return db.query.nsaPresenceEvent.findMany(
-				q(
-					ctx.abilities.nsaPresenceEvent.filter('read').merge({
-						where: { id: { in: ids } }
-					}).query.many
-				)
-			);
-		}
-	})
-}));
 
 /**
  * Resolves the target NSA `conferenceUser` for a scan, given exactly one of

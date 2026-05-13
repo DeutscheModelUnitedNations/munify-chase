@@ -27,8 +27,11 @@
 		}
 	});
 
-	const latestEvents = await client.liveQuery.latestNsaPresenceEvents({
-		__args: { conferenceId },
+	const allEvents = await client.liveQuery.nsaPresenceEvents({
+		__args: {
+			where: { conference: { id: conferenceId } },
+			orderBy: { timestamp: 'desc' }
+		},
 		id: true,
 		type: true,
 		committeeId: true,
@@ -46,7 +49,15 @@
 
 	let committeesById = $derived(new Map((conference?.committees ?? []).map((c) => [c.id, c])));
 
-	let latestByUser = $derived(new Map((latestEvents ?? []).map((e) => [e.conferenceUser?.id, e])));
+	// allEvents is ordered timestamp DESC, so the first event per user is the latest.
+	let latestByUser = $derived.by(() => {
+		const map = new SvelteMap<string, NonNullable<typeof allEvents>[number]>();
+		for (const e of allEvents ?? []) {
+			const uid = e.conferenceUser?.id;
+			if (uid && !map.has(uid)) map.set(uid, e);
+		}
+		return map;
+	});
 
 	let groupedByOrg = $derived.by(() => {
 		const map = new SvelteMap<

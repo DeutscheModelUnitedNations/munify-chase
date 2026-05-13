@@ -1396,9 +1396,6 @@ export type Query = {
   }) => Conference[],
   currentUserClaims: () => UserClaims,
   isGlobalAdmin: Boolean,
-  latestNsaPresenceEvents: (p: {
-    conferenceId: ID
-  }) => Nsapresenceevent[],
   nsaPresenceEvent: (p: {
     id: ID
   }) => Nsapresenceevent,

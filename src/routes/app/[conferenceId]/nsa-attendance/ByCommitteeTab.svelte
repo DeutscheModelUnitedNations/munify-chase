@@ -2,7 +2,7 @@
 	import { client } from '$lib/api/rumbleClient/client';
 	import { m } from '$lib/paraglide/messages';
 	import BasicCard from '$lib/components/BasicCard.svelte';
-	import { SvelteMap } from 'svelte/reactivity';
+	import { SvelteMap, SvelteSet } from 'svelte/reactivity';
 
 	interface Props {
 		conferenceId: string;
@@ -20,8 +20,11 @@
 		committees: { id: true, name: true, abbreviation: true }
 	});
 
-	const latestEvents = await client.liveQuery.latestNsaPresenceEvents({
-		__args: { conferenceId },
+	const allEvents = await client.liveQuery.nsaPresenceEvents({
+		__args: {
+			where: { conference: { id: conferenceId } },
+			orderBy: { timestamp: 'desc' }
+		},
 		id: true,
 		type: true,
 		committeeId: true,
@@ -42,11 +45,16 @@
 		return () => clearInterval(t);
 	});
 
-	type LatestEvent = NonNullable<typeof latestEvents>[number];
+	type LatestEvent = NonNullable<typeof allEvents>[number];
 
 	let byCommittee = $derived.by(() => {
 		const map = new SvelteMap<string, LatestEvent[]>();
-		for (const event of latestEvents ?? []) {
+		const seen = new SvelteSet<string>();
+		// allEvents is ordered timestamp DESC, so the first event per user is the latest.
+		for (const event of allEvents ?? []) {
+			const uid = event.conferenceUser?.id;
+			if (!uid || seen.has(uid)) continue;
+			seen.add(uid);
 			if (event.type !== 'CHECK_IN') continue;
 			const list = map.get(event.committeeId) ?? [];
 			list.push(event);

@@ -13,7 +13,8 @@ import { and, eq, count as drizzleCount, not, inArray, gt, gte, sql } from 'driz
 import { GraphQLError } from 'graphql';
 import {
 	ResolutionSchema,
-	OperativeClauseSchema
+	OperativeClauseSchema,
+	type OperativeClause
 } from '@deutschemodelunitednations/munify-resolution-editor/schema';
 import { replaceResolution } from '@deutschemodelunitednations/munify-resolution-editor/yjs';
 import { applyServerMutation, readPaperJson } from '$api/yjs/server';
@@ -344,7 +345,9 @@ schemaBuilder.mutationFields((t) => ({
 			if (args.targetClauseId) {
 				const parsed = ResolutionSchema.safeParse(paper.content);
 				if (parsed.success) {
-					const actualIdx = parsed.data.operative.findIndex((c) => c.id === args.targetClauseId);
+					const actualIdx = parsed.data.operative.findIndex(
+						(c: OperativeClause) => c.id === args.targetClauseId
+					);
 					if (actualIdx === -1) {
 						throw new GraphQLError('Target clause no longer exists in the resolution');
 					}
@@ -504,7 +507,9 @@ schemaBuilder.mutationFields((t) => ({
 			if (args.targetClauseId) {
 				const parsed = ResolutionSchema.safeParse(paper.content);
 				if (parsed.success) {
-					const actualIdx = parsed.data.operative.findIndex((c) => c.id === args.targetClauseId);
+					const actualIdx = parsed.data.operative.findIndex(
+						(c: OperativeClause) => c.id === args.targetClauseId
+					);
 					if (actualIdx === -1) {
 						throw new GraphQLError('Target clause no longer exists in the resolution');
 					}
@@ -804,7 +809,9 @@ schemaBuilder.mutationFields((t) => ({
 			if (merged.targetClauseId) {
 				const parsed = ResolutionSchema.safeParse(paper.content);
 				if (parsed.success) {
-					const actualIdx = parsed.data.operative.findIndex((c) => c.id === merged.targetClauseId);
+					const actualIdx = parsed.data.operative.findIndex(
+						(c: OperativeClause) => c.id === merged.targetClauseId
+					);
 					if (actualIdx === -1) {
 						throw new GraphQLError('Target clause no longer exists in the resolution');
 					}

@@ -3,6 +3,7 @@
 	import { m } from '$lib/paraglide/messages';
 	import BasicCard from '$lib/components/BasicCard.svelte';
 	import NsaQrCardModal from './NsaQrCardModal.svelte';
+	import { SvelteMap } from 'svelte/reactivity';
 
 	interface Props {
 		conferenceId: string;
@@ -48,7 +49,7 @@
 	);
 
 	let groupedByOrg = $derived.by(() => {
-		const map = new Map<
+		const map = new SvelteMap<
 			string,
 			{ orgId: string; name: string; faIcon: string | null; users: any[] }
 		>();

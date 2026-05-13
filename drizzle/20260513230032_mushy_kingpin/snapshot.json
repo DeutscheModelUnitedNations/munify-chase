@@ -154,12 +154,6 @@
 		{
 			"entityType": "tables",
 			"isRlsEnabled": false,
-			"name": "paper_clause_lock",
-			"schema": "public"
-		},
-		{
-			"entityType": "tables",
-			"isRlsEnabled": false,
 			"name": "paper_content_snapshot",
 			"schema": "public"
 		},
@@ -179,6 +173,12 @@
 			"entityType": "tables",
 			"isRlsEnabled": false,
 			"name": "paper_sponsor",
+			"schema": "public"
+		},
+		{
+			"entityType": "tables",
+			"isRlsEnabled": false,
+			"name": "paper_yjs_doc",
 			"schema": "public"
 		},
 		{
@@ -1107,6 +1107,45 @@
 			"typeSchema": null
 		},
 		{
+			"default": null,
+			"dimensions": 0,
+			"entityType": "columns",
+			"generated": null,
+			"identity": null,
+			"name": "location",
+			"notNull": false,
+			"schema": "public",
+			"table": "conference",
+			"type": "text",
+			"typeSchema": null
+		},
+		{
+			"default": null,
+			"dimensions": 0,
+			"entityType": "columns",
+			"generated": null,
+			"identity": null,
+			"name": "start_date",
+			"notNull": false,
+			"schema": "public",
+			"table": "conference",
+			"type": "date",
+			"typeSchema": null
+		},
+		{
+			"default": null,
+			"dimensions": 0,
+			"entityType": "columns",
+			"generated": null,
+			"identity": null,
+			"name": "end_date",
+			"notNull": false,
+			"schema": "public",
+			"table": "conference",
+			"type": "date",
+			"typeSchema": null
+		},
+		{
 			"default": "false",
 			"dimensions": 0,
 			"entityType": "columns",
@@ -1583,97 +1622,6 @@
 			"name": "id",
 			"notNull": true,
 			"schema": "public",
-			"table": "paper_clause_lock",
-			"type": "text",
-			"typeSchema": null
-		},
-		{
-			"default": "now()",
-			"dimensions": 0,
-			"entityType": "columns",
-			"generated": null,
-			"identity": null,
-			"name": "created_at",
-			"notNull": true,
-			"schema": "public",
-			"table": "paper_clause_lock",
-			"type": "timestamp",
-			"typeSchema": null
-		},
-		{
-			"default": "now()",
-			"dimensions": 0,
-			"entityType": "columns",
-			"generated": null,
-			"identity": null,
-			"name": "updated_at",
-			"notNull": false,
-			"schema": "public",
-			"table": "paper_clause_lock",
-			"type": "timestamp",
-			"typeSchema": null
-		},
-		{
-			"default": null,
-			"dimensions": 0,
-			"entityType": "columns",
-			"generated": null,
-			"identity": null,
-			"name": "paper_id",
-			"notNull": true,
-			"schema": "public",
-			"table": "paper_clause_lock",
-			"type": "text",
-			"typeSchema": null
-		},
-		{
-			"default": null,
-			"dimensions": 0,
-			"entityType": "columns",
-			"generated": null,
-			"identity": null,
-			"name": "clause_id",
-			"notNull": true,
-			"schema": "public",
-			"table": "paper_clause_lock",
-			"type": "text",
-			"typeSchema": null
-		},
-		{
-			"default": null,
-			"dimensions": 0,
-			"entityType": "columns",
-			"generated": null,
-			"identity": null,
-			"name": "conference_user_id",
-			"notNull": true,
-			"schema": "public",
-			"table": "paper_clause_lock",
-			"type": "text",
-			"typeSchema": null
-		},
-		{
-			"default": "now()",
-			"dimensions": 0,
-			"entityType": "columns",
-			"generated": null,
-			"identity": null,
-			"name": "acquired_at",
-			"notNull": true,
-			"schema": "public",
-			"table": "paper_clause_lock",
-			"type": "timestamp",
-			"typeSchema": null
-		},
-		{
-			"default": null,
-			"dimensions": 0,
-			"entityType": "columns",
-			"generated": null,
-			"identity": null,
-			"name": "id",
-			"notNull": true,
-			"schema": "public",
 			"table": "paper_content_snapshot",
 			"type": "text",
 			"typeSchema": null
@@ -1949,6 +1897,71 @@
 			"schema": "public",
 			"table": "paper_sponsor",
 			"type": "text",
+			"typeSchema": null
+		},
+		{
+			"default": null,
+			"dimensions": 0,
+			"entityType": "columns",
+			"generated": null,
+			"identity": null,
+			"name": "id",
+			"notNull": true,
+			"schema": "public",
+			"table": "paper_yjs_doc",
+			"type": "text",
+			"typeSchema": null
+		},
+		{
+			"default": "now()",
+			"dimensions": 0,
+			"entityType": "columns",
+			"generated": null,
+			"identity": null,
+			"name": "created_at",
+			"notNull": true,
+			"schema": "public",
+			"table": "paper_yjs_doc",
+			"type": "timestamp",
+			"typeSchema": null
+		},
+		{
+			"default": "now()",
+			"dimensions": 0,
+			"entityType": "columns",
+			"generated": null,
+			"identity": null,
+			"name": "updated_at",
+			"notNull": false,
+			"schema": "public",
+			"table": "paper_yjs_doc",
+			"type": "timestamp",
+			"typeSchema": null
+		},
+		{
+			"default": null,
+			"dimensions": 0,
+			"entityType": "columns",
+			"generated": null,
+			"identity": null,
+			"name": "paper_id",
+			"notNull": true,
+			"schema": "public",
+			"table": "paper_yjs_doc",
+			"type": "text",
+			"typeSchema": null
+		},
+		{
+			"default": null,
+			"dimensions": 0,
+			"entityType": "columns",
+			"generated": null,
+			"identity": null,
+			"name": "state",
+			"notNull": true,
+			"schema": "public",
+			"table": "paper_yjs_doc",
+			"type": "bytea",
 			"typeSchema": null
 		},
 		{
@@ -3352,32 +3365,6 @@
 			"columns": ["paper_id"],
 			"columnsTo": ["id"],
 			"entityType": "fks",
-			"name": "paper_clause_lock_paper_id_resolution_paper_id_fk",
-			"nameExplicit": false,
-			"onDelete": "CASCADE",
-			"onUpdate": "NO ACTION",
-			"schema": "public",
-			"schemaTo": "public",
-			"table": "paper_clause_lock",
-			"tableTo": "resolution_paper"
-		},
-		{
-			"columns": ["conference_user_id"],
-			"columnsTo": ["id"],
-			"entityType": "fks",
-			"name": "paper_clause_lock_conference_user_id_conference_user_id_fk",
-			"nameExplicit": false,
-			"onDelete": "CASCADE",
-			"onUpdate": "NO ACTION",
-			"schema": "public",
-			"schemaTo": "public",
-			"table": "paper_clause_lock",
-			"tableTo": "conference_user"
-		},
-		{
-			"columns": ["paper_id"],
-			"columnsTo": ["id"],
-			"entityType": "fks",
 			"name": "paper_content_snapshot_paper_id_resolution_paper_id_fk",
 			"nameExplicit": false,
 			"onDelete": "CASCADE",
@@ -3451,6 +3438,19 @@
 			"schemaTo": "public",
 			"table": "paper_sponsor",
 			"tableTo": "committee_member"
+		},
+		{
+			"columns": ["paper_id"],
+			"columnsTo": ["id"],
+			"entityType": "fks",
+			"name": "paper_yjs_doc_paper_id_resolution_paper_id_fkey",
+			"nameExplicit": false,
+			"onDelete": "CASCADE",
+			"onUpdate": "NO ACTION",
+			"schema": "public",
+			"schemaTo": "public",
+			"table": "paper_yjs_doc",
+			"tableTo": "resolution_paper"
 		},
 		{
 			"columns": ["committee_member_id"],
@@ -3751,14 +3751,6 @@
 		{
 			"columns": ["id"],
 			"entityType": "pks",
-			"name": "paper_clause_lock_pkey",
-			"nameExplicit": false,
-			"schema": "public",
-			"table": "paper_clause_lock"
-		},
-		{
-			"columns": ["id"],
-			"entityType": "pks",
 			"name": "paper_content_snapshot_pkey",
 			"nameExplicit": false,
 			"schema": "public",
@@ -3787,6 +3779,14 @@
 			"nameExplicit": false,
 			"schema": "public",
 			"table": "paper_sponsor"
+		},
+		{
+			"columns": ["id"],
+			"entityType": "pks",
+			"name": "paper_yjs_doc_pkey",
+			"nameExplicit": false,
+			"schema": "public",
+			"table": "paper_yjs_doc"
 		},
 		{
 			"columns": ["id"],
@@ -3906,15 +3906,6 @@
 			"table": "operative_clause_vote"
 		},
 		{
-			"columns": ["paper_id", "clause_id"],
-			"entityType": "uniques",
-			"name": "paper_clause_lock_paper_id_clause_id_unique",
-			"nameExplicit": false,
-			"nullsNotDistinct": false,
-			"schema": "public",
-			"table": "paper_clause_lock"
-		},
-		{
 			"columns": ["paper_id", "conference_user_id"],
 			"entityType": "uniques",
 			"name": "paper_editor_paper_id_conference_user_id_unique",
@@ -3998,6 +3989,15 @@
 		{
 			"columns": ["paper_id"],
 			"entityType": "uniques",
+			"name": "paper_yjs_doc_paper_id_key",
+			"nameExplicit": false,
+			"nullsNotDistinct": false,
+			"schema": "public",
+			"table": "paper_yjs_doc"
+		},
+		{
+			"columns": ["paper_id"],
+			"entityType": "uniques",
 			"name": "resolution_vote_result_paper_id_key",
 			"nameExplicit": false,
 			"nullsNotDistinct": false,
@@ -4024,8 +4024,8 @@
 		}
 	],
 	"dialect": "postgres",
-	"id": "f3a4dad3-72fd-4d6f-8060-a322e0c04bb9",
-	"prevIds": ["8c3d99e8-3a85-4e13-8546-53b4169840ce"],
+	"id": "f161b25c-d09d-4487-80a8-f33974708c23",
+	"prevIds": ["746862ed-d2d0-4c84-8999-d1f1bcdaad50"],
 	"renames": [],
 	"version": "8"
 }

@@ -2,6 +2,7 @@
 	import { client } from '$lib/api/rumbleClient/client';
 	import { m } from '$lib/paraglide/messages';
 	import BasicCard from '$lib/components/BasicCard.svelte';
+	import { SvelteMap, SvelteSet } from 'svelte/reactivity';
 
 	interface Props {
 		conferenceId: string;
@@ -45,13 +46,13 @@
 	};
 
 	let stats = $derived.by(() => {
-		const perUser = new Map<string, PerUser>();
-		const perCommitteeUserSet = new Map<string, Set<string>>();
+		const perUser = new SvelteMap<string, PerUser>();
+		const perCommitteeUserSet = new SvelteMap<string, SvelteSet<string>>();
 
 		// Group events by user, then walk in chronological order. CHECK_IN starts
 		// an interval; CHECK_OUT (or end-of-data → now) closes it. Auto-switch
 		// already inserts both events, so each pair lines up cleanly.
-		const grouped = new Map<string, any[]>();
+		const grouped = new SvelteMap<string, any[]>();
 		for (const e of events ?? []) {
 			const list = grouped.get(e.conferenceUserId) ?? [];
 			list.push(e);
@@ -78,7 +79,7 @@
 				if (e.type === 'CHECK_IN') {
 					entry.switches += 1;
 					openCheckIn = e;
-					const set = perCommitteeUserSet.get(e.committeeId) ?? new Set<string>();
+					const set = perCommitteeUserSet.get(e.committeeId) ?? new SvelteSet<string>();
 					set.add(userId);
 					perCommitteeUserSet.set(e.committeeId, set);
 				} else if (e.type === 'CHECK_OUT' && openCheckIn) {

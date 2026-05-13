@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { m } from '$lib/paraglide/messages';
 	import { onMount } from 'svelte';
+	import { SvelteMap } from 'svelte/reactivity';
 
 	interface Props {
 		// Called every time a code is detected. Caller is responsible for
@@ -19,7 +20,7 @@
 	let errorMessage = $state<string | null>(null);
 	let starting = $state(true);
 
-	const recentDetections = new Map<string, number>();
+	const recentDetections = new SvelteMap<string, number>();
 
 	onMount(() => {
 		let controls: { stop: () => void } | undefined;
@@ -66,7 +67,6 @@
 </script>
 
 <div class="relative aspect-square w-full overflow-hidden rounded-lg bg-black">
-	<!-- svelte-ignore a11y_media_has_caption -->
 	<video bind:this={video} class="h-full w-full object-cover" muted playsinline></video>
 
 	{#if starting && !errorMessage}

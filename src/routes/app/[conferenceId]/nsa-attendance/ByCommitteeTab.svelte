@@ -2,6 +2,7 @@
 	import { client } from '$lib/api/rumbleClient/client';
 	import { m } from '$lib/paraglide/messages';
 	import BasicCard from '$lib/components/BasicCard.svelte';
+	import { SvelteMap } from 'svelte/reactivity';
 
 	interface Props {
 		conferenceId: string;
@@ -42,7 +43,7 @@
 	});
 
 	let byCommittee = $derived.by(() => {
-		const map = new Map<string, any[]>();
+		const map = new SvelteMap<string, any[]>();
 		for (const event of latestEvents ?? []) {
 			if (event.type !== 'CHECK_IN') continue;
 			const list = map.get(event.committeeId) ?? [];

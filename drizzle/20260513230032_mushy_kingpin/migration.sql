@@ -12,6 +12,7 @@ CREATE TABLE "nsa_presence_event" (
 	"note" text
 );
 --> statement-breakpoint
+ALTER TABLE "conference_user" ADD COLUMN "name" text;--> statement-breakpoint
 ALTER TABLE "conference_user" ADD COLUMN "attendance_code" text;--> statement-breakpoint
 ALTER TABLE "conference_user" ADD CONSTRAINT "conference_user_conference_id_attendance_code_unique" UNIQUE("conference_id","attendance_code");--> statement-breakpoint
 CREATE INDEX "nsa_presence_event_user_ts_idx" ON "nsa_presence_event" ("conference_user_id","timestamp" DESC NULLS LAST);--> statement-breakpoint

@@ -41,7 +41,7 @@
 
 	<header class="flex flex-wrap items-start justify-between gap-3">
 		<div class="flex items-center gap-3">
-			<LauncherFlag role={conference.role} representation={conference.representation} size={44} />
+			<LauncherFlag representation={conference.representation} size={44} />
 			<StatusDot {status} />
 		</div>
 		<RoleBadge role={conference.role} detail={conference.roleDetail} />

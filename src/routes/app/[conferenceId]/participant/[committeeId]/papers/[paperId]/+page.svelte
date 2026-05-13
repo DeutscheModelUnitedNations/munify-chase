@@ -1080,7 +1080,6 @@
 					{#snippet preambleClauseToolbar({ clause })}
 						{#if showComments}
 							<CommentSection
-								paperId={page.params.paperId!}
 								clauseId={clause.id}
 								comments={commentsByClauseId.get(clause.id) ?? []}
 								{myConferenceUserId}
@@ -1096,7 +1095,6 @@
 					{#snippet clauseToolbar({ clause })}
 						{#if showComments}
 							<CommentSection
-								paperId={page.params.paperId!}
 								clauseId={clause.id}
 								comments={commentsByClauseId.get(clause.id) ?? []}
 								{myConferenceUserId}
@@ -1112,7 +1110,6 @@
 					{#snippet afterPreambleClause({ clause })}
 						{#if showComments && !canEdit}
 							<CommentSection
-								paperId={page.params.paperId!}
 								clauseId={clause.id}
 								comments={commentsByClauseId.get(clause.id) ?? []}
 								{myConferenceUserId}
@@ -1129,7 +1126,6 @@
 					{#snippet afterOperativeClause({ clause })}
 						{#if showComments && !canEdit}
 							<CommentSection
-								paperId={page.params.paperId!}
 								clauseId={clause.id}
 								comments={commentsByClauseId.get(clause.id) ?? []}
 								{myConferenceUserId}
@@ -1369,7 +1365,6 @@
 		{#if showComments && (commentsByClauseId.get(null)?.length ?? 0) > 0}
 			<Fieldset legend={m.documentLevelComments()} faIcon="fas fa-comments">
 				<CommentSection
-					paperId={page.params.paperId!}
 					clauseId={null}
 					comments={commentsByClauseId.get(null) ?? []}
 					{myConferenceUserId}

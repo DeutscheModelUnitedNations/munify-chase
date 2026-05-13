@@ -4,8 +4,6 @@
 	import { resolve } from '$app/paths';
 	import { client } from '$lib/api/rumbleClient/client';
 	import Kbd from '$lib/components/Kbd.svelte';
-	import IconInfoBox from '$lib/components/IconInfoBox.svelte';
-	import { getCommitteeStatusIcon, getCommitteeStatusText } from '$lib/utils/committeeStatus';
 	import UndrawError from '$lib/components/UndrawError.svelte';
 	import emptyStreet from '$assets/undraw/empty_street.svg';
 	import BasicCard from '$lib/components/BasicCard.svelte';
@@ -17,7 +15,6 @@
 	import AgendaItemChanger from '$lib/components/committee/AgendaItemChanger.svelte';
 	import PresentationSettings from './PresentationSettings.svelte';
 	import Tabs from '$lib/components/Tabs.svelte';
-	import { ScrollArea } from 'bits-ui';
 	import StatusWidget from '../StatusWidget.svelte';
 	import dayjs from 'dayjs';
 

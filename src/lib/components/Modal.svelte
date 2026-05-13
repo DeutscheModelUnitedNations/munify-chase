@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { m } from '$lib/paraglide/messages';
 	import hotkeys from 'hotkeys-js';
 	import type { Snippet } from 'svelte';
 

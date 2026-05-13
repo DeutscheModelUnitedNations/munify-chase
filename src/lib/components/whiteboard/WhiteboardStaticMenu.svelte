@@ -1,8 +1,6 @@
 <script lang="ts">
 	import { m } from '$lib/paraglide/messages';
-	import type { Snippet } from 'svelte';
 	import type { Editor } from 'svelte-tiptap';
-	import type { Readable } from 'svelte/store';
 	import UploadImage from './UploadImage.svelte';
 
 	interface Props {
@@ -101,9 +99,9 @@
 </script>
 
 <div class="card bg-base-300 sticky top-0 z-10 flex flex-row flex-nowrap gap-2 p-2 shadow-sm">
-	{#each buttonGroups as group}
+	{#each buttonGroups as group, groupIdx (groupIdx)}
 		<div class="join">
-			{#each group as button}
+			{#each group as button (button.label)}
 				<div class="tooltip tooltip-bottom" data-tip={button.label}>
 					<button
 						class="btn btn-sm join-item {button.active && button.active() ? 'btn-active' : ''}"

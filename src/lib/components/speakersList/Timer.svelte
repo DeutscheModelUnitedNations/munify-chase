@@ -1,11 +1,7 @@
 <script lang="ts">
-	import dayjs, { type Dayjs } from 'dayjs';
+	import dayjs from 'dayjs';
 	import Hourglass, { type HourglassStatus } from './Hourglass.svelte';
 	import { getServerTime } from '$lib/state/serverTime.svelte';
-	import { scale } from 'svelte/transition';
-	import toast from 'svelte-french-toast';
-	import { m } from '$lib/paraglide/messages';
-	import BellIcon from '../toast/BellIcon.svelte';
 	import type { Duration } from 'dayjs/plugin/duration';
 
 	interface Props {

@@ -17,7 +17,7 @@ const ref = object({
 	adjust: (t) => ({
 		isActive: t.field({
 			type: 'Boolean',
-			resolve: async (parent, args, context, info) => {
+			resolve: async (parent) => {
 				const res = await db.query.committee
 					.findFirst({
 						where: { activeAgendaItemId: parent.id }
@@ -43,7 +43,7 @@ schemaBuilder.mutationFields((t) => {
 				title: t.arg({ type: 'String', required: true }),
 				committeeId: t.arg({ type: 'ID', required: true })
 			},
-			resolve: async (query, root, args, ctx, info) => {
+			resolve: async (query, root, args, ctx) => {
 				await db.query.committee
 					.findFirst(
 						ctx.abilities.committee.filter('update').merge({

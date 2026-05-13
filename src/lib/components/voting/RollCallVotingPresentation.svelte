@@ -1,11 +1,9 @@
 <script lang="ts">
 	import Flag from '$lib/components/Flag.svelte';
-	import type { CommitteeSettings, VotingStage } from '$lib/local-db/localDB';
+	import type { CommitteeSettings } from '$lib/local-db/localDB';
 	import { m } from '$lib/paraglide/messages';
-	import hotkeys from 'hotkeys-js';
-	import { onMount } from 'svelte';
 	import { cubicIn, cubicInOut, cubicOut } from 'svelte/easing';
-	import { blur, fly } from 'svelte/transition';
+	import { fly } from 'svelte/transition';
 	import ResultChart from './ResultChart.svelte';
 	import { flip } from 'svelte/animate';
 	import FlagRow from './FlagRow.svelte';

@@ -7,7 +7,7 @@ import {
 	pubsub as rumblePubsub,
 	query
 } from '$api/rumble';
-import { and, eq, isNull, count as drizzleCount, desc, inArray } from 'drizzle-orm';
+import { and, eq, isNull, count as drizzleCount, inArray } from 'drizzle-orm';
 import { isChairInConference, isGlobalAdmin } from '$api/services/authHelper';
 import { assertFindFirstExists, assertFirstEntryExists } from '@m1212e/rumble';
 import { GraphQLError } from 'graphql';
@@ -20,7 +20,6 @@ import {
 	replaceResolution,
 	yDocToJson
 } from '@deutschemodelunitednations/munify-resolution-editor/yjs';
-import type { Context } from '$api/context';
 import { applyServerMutation, readPaperJson } from '$api/yjs/server';
 
 abilityBuilder.resolutionPaper.allow(['read', 'update']).when((ctx) => {
@@ -47,8 +46,6 @@ abilityBuilder.resolutionPaper.allow(['update']).when((ctx) => {
 
 const ref = object({ table: 'resolutionPaper' });
 
-const paperStatusEnum = enum_({ tsName: 'paperStatus' });
-
 const pubsub = rumblePubsub({ table: 'resolutionPaper' });
 const committeePubsub = rumblePubsub({ table: 'committee' });
 const voteResultPubsub = rumblePubsub({ table: 'resolutionVoteResult' });
@@ -63,7 +60,7 @@ schemaBuilder.mutationFields((t) => ({
 			agendaItemId: t.arg.id({ required: true }),
 			title: t.arg.string()
 		},
-		resolve: async (query, root, args, ctx, info) => {
+		resolve: async (query, root, args, ctx) => {
 			const user = ctx.mustBeLoggedIn();
 
 			// Must be a DELEGATE with a committeeMember in this committee
@@ -136,9 +133,9 @@ schemaBuilder.mutationFields((t) => ({
 			committeeMemberId: t.arg.id({ required: true }),
 			title: t.arg.string()
 		},
-		resolve: async (query, root, args, ctx, info) => {
+		resolve: async (query, root, args, ctx) => {
 			// Validate committeeMemberId belongs to this committee
-			const committeeMember = await db.query.committeeMember
+			await db.query.committeeMember
 				.findFirst({
 					where: { id: args.committeeMemberId, committeeId: args.committeeId }
 				})
@@ -216,7 +213,7 @@ schemaBuilder.mutationFields((t) => ({
 			paperId: t.arg.id({ required: true }),
 			title: t.arg.string({ required: true })
 		},
-		resolve: async (query, root, args, ctx, info) => {
+		resolve: async (query, root, args, ctx) => {
 			const user = ctx.mustBeLoggedIn();
 
 			const paper = await db.query.resolutionPaper
@@ -265,7 +262,7 @@ schemaBuilder.mutationFields((t) => ({
 		args: {
 			paperId: t.arg.id({ required: true })
 		},
-		resolve: async (query, root, args, ctx, info) => {
+		resolve: async (query, root, args, ctx) => {
 			const user = ctx.mustBeLoggedIn();
 
 			const paper = await db.query.resolutionPaper
@@ -279,7 +276,7 @@ schemaBuilder.mutationFields((t) => ({
 			}
 
 			// Only creator can submit
-			const conferenceUser = await db.query.conferenceUser
+			await db.query.conferenceUser
 				.findFirst({
 					where: {
 						user: { id: user.sub },
@@ -323,7 +320,7 @@ schemaBuilder.mutationFields((t) => ({
 		args: {
 			paperId: t.arg.id({ required: true })
 		},
-		resolve: async (query, root, args, ctx, info) => {
+		resolve: async (query, root, args, ctx) => {
 			const paper = await db.query.resolutionPaper
 				.findFirst(
 					ctx.abilities.resolutionPaper.filter('update').merge({ where: { id: args.paperId } })
@@ -402,7 +399,7 @@ schemaBuilder.mutationFields((t) => ({
 		args: {
 			paperId: t.arg.id({ required: true })
 		},
-		resolve: async (query, root, args, ctx, info) => {
+		resolve: async (query, root, args, ctx) => {
 			const paper = await db.query.resolutionPaper
 				.findFirst(
 					ctx.abilities.resolutionPaper.filter('update').merge({ where: { id: args.paperId } })
@@ -460,7 +457,7 @@ schemaBuilder.mutationFields((t) => ({
 			votesAgainst: t.arg.int({ required: true }),
 			votesAbstain: t.arg.int()
 		},
-		resolve: async (query, root, args, ctx, info) => {
+		resolve: async (query, root, args, ctx) => {
 			const paper = await db.query.resolutionPaper
 				.findFirst(
 					ctx.abilities.resolutionPaper.filter('update').merge({ where: { id: args.paperId } })
@@ -588,7 +585,7 @@ schemaBuilder.mutationFields((t) => ({
 			paperId: t.arg.id({ required: true }),
 			restoreSnapshot: t.arg.boolean()
 		},
-		resolve: async (query, root, args, ctx, info) => {
+		resolve: async (query, root, args, ctx) => {
 			const paper = await db.query.resolutionPaper
 				.findFirst(
 					ctx.abilities.resolutionPaper.filter('update').merge({ where: { id: args.paperId } })

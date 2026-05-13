@@ -1,11 +1,10 @@
 <script lang="ts">
 	import { AlertDialog } from 'bits-ui';
-	import { onMount, type Snippet } from 'svelte';
 	import { alertDialogStore } from './alert';
 	import { browser } from '$app/environment';
 	import Kbd from '$lib/components/Kbd.svelte';
 	import hotkeys from 'hotkeys-js';
-	import { fade, fly, scale } from 'svelte/transition';
+	import { fade, fly } from 'svelte/transition';
 
 	$effect(() => {
 		if (browser && $alertDialogStore) {

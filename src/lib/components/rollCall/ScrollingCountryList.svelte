@@ -74,7 +74,7 @@
 			style="transform: translateY({offset}px);"
 			bind:this={containerRef}
 		>
-			{#each members as member, index}
+			{#each members as member, index (member.id)}
 				{@const rep = member.representation}
 				{@const icon = icons?.find((x) => x.id === member.id)}
 				{@const present = member.present && index < currentIndex}

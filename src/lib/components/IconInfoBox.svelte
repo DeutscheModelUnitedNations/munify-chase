@@ -7,7 +7,6 @@
 	import { getLocale } from '$lib/paraglide/runtime';
 	import dayjs from 'dayjs';
 	import duration from 'dayjs/plugin/duration';
-	import { check } from 'drizzle-orm/gel-core';
 	import { getServerTime } from '$lib/state/serverTime.svelte';
 
 	interface Props {

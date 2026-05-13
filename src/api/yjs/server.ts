@@ -91,7 +91,7 @@ async function loadEntry(paperId: string): Promise<CacheEntry> {
 		idleTimer: null
 	};
 
-	const onUpdate = (_update: Uint8Array, _origin: unknown) => {
+	const onUpdate = () => {
 		entry.dirty = true;
 		schedulePersist(paperId, entry);
 	};

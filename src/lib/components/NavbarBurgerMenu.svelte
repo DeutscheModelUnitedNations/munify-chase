@@ -1,7 +1,6 @@
 <script lang="ts">
 	import { fade, fly } from 'svelte/transition';
 	import ThemeSwitcher from './ThemeSwitcher.svelte';
-	import { m } from '$lib/paraglide/messages';
 	import LanguageSwitcher from './LanguageSwitcher.svelte';
 	import type { Snippet } from 'svelte';
 
@@ -29,7 +28,7 @@
 		in:fly={{ y: -10 }}
 		out:fly={{ y: -10 }}
 	>
-		{#each items as { href, title, faIcon }}
+		{#each items as { href, title, faIcon } (href)}
 			<li>
 				<!-- eslint-disable-next-line svelte/no-navigation-without-resolve -- href is resolved by caller -->
 				<a {href}>

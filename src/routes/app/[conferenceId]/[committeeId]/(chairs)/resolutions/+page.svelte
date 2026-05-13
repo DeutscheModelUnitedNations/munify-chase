@@ -439,11 +439,6 @@
 						<div class="flex flex-col gap-3">
 							{#each draftResolutions as paper (paper.id)}
 								{@const isActive = paper.id === committee.activeDraftResolutionId}
-								{@const canSetActive =
-									!isActive &&
-									(paper.status === 'DRAFT_RESOLUTION' ||
-										paper.status === 'AMENDMENT_PHASE' ||
-										paper.status === 'VOTING_PHASE')}
 								<div
 									class="card bg-base-200 shadow-sm transition-shadow {isActive
 										? 'border-l-4 border-success'
@@ -490,8 +485,11 @@
 											</div>
 										</a>
 										{#if paper.status === 'DRAFT_RESOLUTION' || paper.status === 'AMENDMENT_PHASE' || paper.status === 'VOTING_PHASE'}
-											<!-- svelte-ignore a11y_no_static_element_interactions -->
-											<div onclick={(e: MouseEvent) => e.stopPropagation()}>
+											<div
+												onclick={(e: MouseEvent) => e.stopPropagation()}
+												onkeydown={(e: KeyboardEvent) => e.stopPropagation()}
+												role="presentation"
+											>
 												<input
 													type="checkbox"
 													class="toggle toggle-success"
@@ -710,7 +708,11 @@
 	<Modal bind:open={showCreatePaperModal}>
 		<div class="flex items-center justify-between mb-4">
 			<h3 class="font-bold text-lg">{m.chairCreateWorkingPaper()}</h3>
-			<button class="btn btn-ghost btn-sm" onclick={() => (showCreatePaperModal = false)}>
+			<button
+				class="btn btn-ghost btn-sm"
+				onclick={() => (showCreatePaperModal = false)}
+				aria-label={m.close()}
+			>
 				<i class="fas fa-times"></i>
 			</button>
 		</div>

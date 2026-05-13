@@ -37,7 +37,7 @@
 		aria-label={conference.title}
 		class="focus-visible:ring-primary absolute inset-0 rounded-[inherit] focus:outline-none focus-visible:ring-2"
 	></a>
-	<LauncherFlag role={conference.role} representation={conference.representation} size={32} />
+	<LauncherFlag representation={conference.representation} size={32} />
 
 	<div class="flex min-w-0 flex-col gap-1">
 		<div class="flex min-w-0 flex-wrap items-baseline gap-x-2">

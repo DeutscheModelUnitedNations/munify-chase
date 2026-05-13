@@ -8,11 +8,7 @@ import {
 } from '$api/rumble';
 import { eq } from 'drizzle-orm';
 import { db, schema } from '$api/db/db';
-import {
-	isAdminInConference,
-	isGlobalAdmin,
-	isParticipantInConference
-} from '$api/services/authHelper';
+import { isAdminInConference, isParticipantInConference } from '$api/services/authHelper';
 import { GraphQLError } from 'graphql';
 import { assertFindFirstExists, assertFirstEntryExists } from '@m1212e/rumble';
 import { emailValidation } from '$api/services/emailValidation';
@@ -53,7 +49,7 @@ schemaBuilder.mutationFields((t) => ({
 				required: true
 			})
 		},
-		resolve: async (query, root, args, ctx, info) => {
+		resolve: async (query, root, args, ctx) => {
 			await db.query.conference
 				.findFirst(
 					ctx.abilities.conference.filter('update').merge({ where: { id: args.conferenceId } })
@@ -102,7 +98,7 @@ schemaBuilder.mutationFields((t) => ({
 		args: {
 			id: t.arg({ type: 'ID', required: true })
 		},
-		resolve: async (root, args, ctx, info) => {
+		resolve: async (root, args, ctx) => {
 			const conferenceUser = await db.query.conferenceUser
 				.findFirst(
 					ctx.abilities.conferenceUser.filter('delete').merge({ where: { id: args.id } }).query
@@ -153,7 +149,7 @@ schemaBuilder.mutationFields((t) => ({
 			committeeMemberId: t.arg({ type: 'ID' }),
 			conferenceMemberId: t.arg({ type: 'ID' })
 		},
-		resolve: async (query, root, args, ctx, info) => {
+		resolve: async (query, root, args, ctx) => {
 			const conferenceUser = await db.query.conferenceUser
 				.findFirst(
 					ctx.abilities.conferenceUser.filter('update').merge({ where: { id: args.id } }).query

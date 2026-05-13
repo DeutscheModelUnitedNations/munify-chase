@@ -1,7 +1,7 @@
 import { abilityBuilder, schemaBuilder, object, pubsub as rumblePubsub, query } from '$api/rumble';
 import { GraphQLError } from 'graphql';
 import { db, schema } from '$api/db/db';
-import { and, count, eq, gt, gte, sql } from 'drizzle-orm';
+import { and, count, eq, gte, sql } from 'drizzle-orm';
 import { assertFindFirstExists, assertFirstEntryExists } from '@m1212e/rumble';
 import { SpeakersListRef } from './speakersList';
 import {
@@ -55,7 +55,7 @@ schemaBuilder.mutationFields((t) => {
 				id: t.arg.id({ required: true }),
 				overwriteName: t.arg.string()
 			},
-			resolve: async (query, _root, args, ctx, _info) => {
+			resolve: async (query, _root, args, ctx) => {
 				const updated = await db
 					.update(schema.speakerOnList)
 					.set({
@@ -89,7 +89,7 @@ schemaBuilder.mutationFields((t) => {
 				speakersListId: t.arg.id({ required: true }),
 				position: t.arg.int()
 			},
-			resolve: async (query, root, args, ctx, info) => {
+			resolve: async (query, root, args, ctx) => {
 				if (args.committeeMemberId && args.conferenceMemberId) {
 					throw new GraphQLError('Cannot set both committeeMemberId and conferenceMemberId');
 				}
@@ -173,7 +173,7 @@ schemaBuilder.mutationFields((t) => {
 				//TOOD do we need the reference by nation here?
 				speakerOnListId: t.arg.id({ required: true })
 			},
-			resolve: async (query, root, args, ctx, info) => {
+			resolve: async (query, root, args, ctx) => {
 				const removed = await db.transaction(
 					async (tx) => {
 						const deleted = await tx
@@ -232,7 +232,7 @@ schemaBuilder.mutationFields((t) => {
 			args: {
 				speakersListId: t.arg.id({ required: true })
 			},
-			resolve: async (query, root, args, ctx, info) => {
+			resolve: async (query, root, args, ctx) => {
 				const user = ctx.mustBeLoggedIn();
 				if (!user.email) {
 					throw new GraphQLError('User email is required');
@@ -386,7 +386,7 @@ schemaBuilder.mutationFields((t) => {
 			args: {
 				speakersListId: t.arg.id({ required: true })
 			},
-			resolve: async (query, root, args, ctx, info) => {
+			resolve: async (query, root, args, ctx) => {
 				const user = ctx.mustBeLoggedIn();
 				if (!user.email) {
 					throw new GraphQLError('User email is required');
@@ -508,7 +508,7 @@ schemaBuilder.mutationFields((t) => {
 				id: t.arg.id({ required: true }),
 				position: t.arg.int({ required: true })
 			},
-			resolve: async (query, root, args, ctx, info) => {
+			resolve: async (query, root, args, ctx) => {
 				if (args.position < 0) {
 					throw new GraphQLError('Position must be a non-negative integer');
 				}

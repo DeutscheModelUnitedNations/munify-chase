@@ -1,5 +1,4 @@
 <script lang="ts">
-	import DevPlaceholder from '$lib/components/DevPlaceholder.svelte';
 	import { m } from '$lib/paraglide/messages';
 	import Grid, { GridItem } from 'svelte-grid-extended';
 	import IconInfoBox from '$lib/components/IconInfoBox.svelte';

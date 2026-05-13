@@ -52,7 +52,6 @@
 	};
 
 	interface Props {
-		committeeId: string;
 		type: SpeakerslistcategoryEnum;
 		committeeMembers: MemberLike[];
 		conferenceMembers: MemberLike[];
@@ -61,15 +60,8 @@
 		otherList?: List;
 	}
 
-	let {
-		committeeId,
-		committeeMembers,
-		conferenceMembers,
-		type,
-		speakersList,
-		childList,
-		otherList
-	}: Props = $props();
+	let { committeeMembers, conferenceMembers, type, speakersList, childList, otherList }: Props =
+		$props();
 </script>
 
 <div class="flex flex-col gap-4">
@@ -77,7 +69,7 @@
 
 	<div class="flex gap-2">
 		<NextSpeech {speakersList} {childList} {type} />
-		<MoreOptions {type} {speakersList} />
+		<MoreOptions {speakersList} />
 	</div>
 
 	<AddSpeakers {committeeMembers} {conferenceMembers} {speakersList} />

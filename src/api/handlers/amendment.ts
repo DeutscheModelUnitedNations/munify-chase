@@ -42,7 +42,6 @@ abilityBuilder.amendment.allow(['update']).when((ctx) => {
 const ref = object({ table: 'amendment' });
 
 const amendmentTypeEnum = enum_({ tsName: 'amendmentType' });
-const amendmentStatusEnum = enum_({ tsName: 'amendmentStatus' });
 
 // =============================================================================
 // HELPERS
@@ -95,8 +94,6 @@ function validateAmendmentArgs(
 			break;
 	}
 }
-
-type Resolution = { committeeName: string; preamble: unknown[]; operative: unknown[] };
 
 /**
  * Find the current index of a clause by its stable ID.
@@ -298,7 +295,7 @@ schemaBuilder.mutationFields((t) => ({
 			targetPosition: t.arg.int(),
 			newContent: t.arg({ type: 'JSON' })
 		},
-		resolve: async (query, root, args, ctx, info) => {
+		resolve: async (query, root, args, ctx) => {
 			const user = ctx.mustBeLoggedIn();
 
 			// Find delegate's committee member
@@ -472,7 +469,7 @@ schemaBuilder.mutationFields((t) => ({
 			targetPosition: t.arg.int(),
 			newContent: t.arg({ type: 'JSON' })
 		},
-		resolve: async (query, root, args, ctx, info) => {
+		resolve: async (query, root, args, ctx) => {
 			const paper = await db.query.resolutionPaper
 				.findFirst(
 					ctx.abilities.resolutionPaper.filter('update').merge({ where: { id: args.paperId } })
@@ -614,7 +611,7 @@ schemaBuilder.mutationFields((t) => ({
 		args: {
 			amendmentId: t.arg.id({ required: true })
 		},
-		resolve: async (query, root, args, ctx, info) => {
+		resolve: async (query, root, args, ctx) => {
 			const amendment = await db.query.amendment
 				.findFirst({ where: { id: args.amendmentId } })
 				.then(assertFindFirstExists);
@@ -653,7 +650,7 @@ schemaBuilder.mutationFields((t) => ({
 		args: {
 			amendmentId: t.arg.id({ required: true })
 		},
-		resolve: async (query, root, args, ctx, info) => {
+		resolve: async (query, root, args, ctx) => {
 			const amendment = await db.query.amendment
 				.findFirst({ where: { id: args.amendmentId } })
 				.then(assertFindFirstExists);
@@ -692,7 +689,7 @@ schemaBuilder.mutationFields((t) => ({
 		args: {
 			amendmentId: t.arg.id({ required: true })
 		},
-		resolve: async (query, root, args, ctx, info) => {
+		resolve: async (query, root, args, ctx) => {
 			const amendment = await db.query.amendment
 				.findFirst({ where: { id: args.amendmentId } })
 				.then(assertFindFirstExists);
@@ -728,7 +725,7 @@ schemaBuilder.mutationFields((t) => ({
 		args: {
 			amendmentId: t.arg.id({ required: true })
 		},
-		resolve: async (query, root, args, ctx, info) => {
+		resolve: async (query, root, args, ctx) => {
 			ctx.mustBeLoggedIn();
 
 			const amendment = await db.query.amendment
@@ -771,7 +768,7 @@ schemaBuilder.mutationFields((t) => ({
 			newContent: t.arg({ type: 'JSON' }),
 			proposerCommitteeMemberId: t.arg.id()
 		},
-		resolve: async (query, root, args, ctx, info) => {
+		resolve: async (query, root, args, ctx) => {
 			const amendment = await db.query.amendment
 				.findFirst({ where: { id: args.amendmentId } })
 				.then(assertFindFirstExists);

@@ -1,11 +1,9 @@
 <script lang="ts">
 	import Flag from '$lib/components/Flag.svelte';
-	import type { LauncherBadge } from '$lib/helpers/launcher';
 
 	type RepresentationType = 'DELEGATION' | 'NSA' | 'UN';
 
 	interface Props {
-		role: LauncherBadge;
 		representation?: {
 			type?: RepresentationType | null;
 			alpha2Code?: string | null;
@@ -15,7 +13,7 @@
 		size?: 32 | 36 | 44;
 	}
 
-	let { role, representation = null, size = 36 }: Props = $props();
+	let { representation = null, size = 36 }: Props = $props();
 
 	// Show the user's own delegation flag whenever a representation with a real
 	// country code is present (regardless of role); fall back to UN otherwise.

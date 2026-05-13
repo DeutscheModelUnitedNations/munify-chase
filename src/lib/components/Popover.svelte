@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { Popover, Separator, Toggle } from 'bits-ui';
+	import { Popover } from 'bits-ui';
 	import type { Snippet } from 'svelte';
 	import { fly } from 'svelte/transition';
 

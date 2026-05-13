@@ -4,7 +4,6 @@
 	import { page } from '$app/state';
 	import CurrentTime from '$lib/components/CurrentTime.svelte';
 	import NavbarBurgerMenu from '$lib/components/NavbarBurgerMenu.svelte';
-	import ThemeSwitcher from '$lib/components/ThemeSwitcher.svelte';
 	import * as m from '$lib/paraglide/messages.js';
 	import hotkeys from 'hotkeys-js';
 

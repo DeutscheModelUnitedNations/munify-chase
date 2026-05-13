@@ -5,7 +5,7 @@ schemaBuilder.queryFields((t) => {
 		serverTime: t.field({
 			type: 'DateTime',
 			nullable: false,
-			resolve: (root, args, ctx) => new Date()
+			resolve: () => new Date()
 		})
 	};
 });

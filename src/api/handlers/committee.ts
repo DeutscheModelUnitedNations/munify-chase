@@ -71,12 +71,11 @@ const ref = object({
 		totalPresent: t.field({
 			type: 'Int',
 			//TODO remove as any when rumble fixed it's types
-			resolve: (parent, args, context, info) =>
-				getTotalPresentCount(parent as CommitteeParentWithOptionalMembers)
+			resolve: (parent) => getTotalPresentCount(parent as CommitteeParentWithOptionalMembers)
 		}),
 		simpleMajority: t.field({
 			type: 'Int',
-			resolve: async (parent, args, context, info) => {
+			resolve: async (parent) => {
 				const custom = parent.customSimpleMajority;
 				if (custom) return custom;
 				const total = await getTotalPresentCount(parent as CommitteeParentWithOptionalMembers);
@@ -85,7 +84,7 @@ const ref = object({
 		}),
 		twoThirdsMajority: t.field({
 			type: 'Int',
-			resolve: async (parent, args, context, info) => {
+			resolve: async (parent) => {
 				const custom = parent.customTwoThirdsMajority;
 				if (custom) return custom;
 				const total = await getTotalPresentCount(parent as CommitteeParentWithOptionalMembers);
@@ -94,7 +93,7 @@ const ref = object({
 		}),
 		paperSupportThreshold: t.field({
 			type: 'Int',
-			resolve: async (parent, args, context, info) => {
+			resolve: async (parent) => {
 				const custom = parent.customPaperSupportThreshold;
 				if (custom) return custom;
 				const total = await getTotalPresentCount(parent as CommitteeParentWithOptionalMembers);
@@ -123,7 +122,7 @@ schemaBuilder.mutationFields((t) => {
 				name: t.arg.string({ required: true }),
 				abbreviation: t.arg.string({ required: true })
 			},
-			resolve: async (query, root, args, ctx, info) => {
+			resolve: async (query, root, args, ctx) => {
 				await db.query.conference
 					.findFirst(
 						ctx.abilities.conference.filter('update').merge({ where: { id: args.conferenceId } })
@@ -159,7 +158,7 @@ schemaBuilder.mutationFields((t) => {
 			args: {
 				id: t.arg.id({ required: true })
 			},
-			resolve: async (root, args, ctx, info) => {
+			resolve: async (root, args, ctx) => {
 				await db
 					.delete(schema.committee)
 					.where(
@@ -203,7 +202,7 @@ schemaBuilder.mutationFields((t) => {
 				activeAmendmentId: t.arg.id(),
 				clearActiveAmendment: t.arg.boolean()
 			},
-			resolve: async (query, root, args, ctx, info) => {
+			resolve: async (query, root, args, ctx) => {
 				// Validate activeDraftResolutionId if provided
 				if (args.activeDraftResolutionId) {
 					const paper = await db.query.resolutionPaper.findFirst({

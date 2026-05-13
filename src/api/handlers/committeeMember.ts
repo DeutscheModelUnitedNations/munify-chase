@@ -40,7 +40,7 @@ schemaBuilder.mutationFields((t) => {
 				committeeId: t.arg.id({ required: true }),
 				representationId: t.arg.id({ required: true })
 			},
-			resolve: async (query, root, args, ctx, info) => {
+			resolve: async (query, root, args, ctx) => {
 				const committee = await db.query.committee.findFirst({
 					where: { id: args.committeeId }
 				});
@@ -100,7 +100,7 @@ schemaBuilder.mutationFields((t) => {
 				ids: t.arg.idList({ required: true }),
 				present: t.arg.boolean({ required: true })
 			},
-			resolve: async (query, root, args, ctx, info) => {
+			resolve: async (query, root, args, ctx) => {
 				const res = await db
 					.update(schema.committeeMember)
 					.set({

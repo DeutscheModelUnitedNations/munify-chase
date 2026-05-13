@@ -88,7 +88,7 @@ schemaBuilder.mutationFields((t) => ({
 			visibility: t.arg({ type: commentVisibilityEnum }),
 			parentCommentId: t.arg.id()
 		},
-		resolve: async (query, root, args, ctx, info) => {
+		resolve: async (query, root, args, ctx) => {
 			const user = ctx.mustBeLoggedIn();
 
 			// Resolve conference user
@@ -178,7 +178,7 @@ schemaBuilder.mutationFields((t) => ({
 			commentId: t.arg.id({ required: true }),
 			content: t.arg.string({ required: true })
 		},
-		resolve: async (query, root, args, ctx, info) => {
+		resolve: async (query, root, args, ctx) => {
 			const user = ctx.mustBeLoggedIn();
 
 			const comment = await db.query.resolutionComment

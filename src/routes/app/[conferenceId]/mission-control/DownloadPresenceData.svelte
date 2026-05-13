@@ -9,12 +9,8 @@
 
 	let { conferenceTitle, conferenceId }: Props = $props();
 
-	let loading = $state(false);
-
 	async function download() {
-		loading = true;
 		if (!conferenceId) {
-			loading = false;
 			throw new Error('No conference ID provided');
 		}
 
@@ -54,8 +50,6 @@
 		a.click();
 		document.body.removeChild(a);
 		URL.revokeObjectURL(url);
-
-		loading = false;
 	}
 </script>
 

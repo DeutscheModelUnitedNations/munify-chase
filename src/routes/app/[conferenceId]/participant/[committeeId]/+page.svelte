@@ -196,7 +196,7 @@
 
 		<!-- Speakers List Card -->
 		{#if isParticipant || role === 'SPECTATOR'}
-			{#each [{ list: speakersList, label: m.speakersList(), myPosition: myPositionOnSpeakers }, { list: commentList, label: m.commentList(), myPosition: myPositionOnComments }] as { list, label, myPosition }}
+			{#each [{ list: speakersList, label: m.speakersList(), myPosition: myPositionOnSpeakers }, { list: commentList, label: m.commentList(), myPosition: myPositionOnComments }] as { list, label, myPosition } (label)}
 				{#if list}
 					<div class="card bg-base-100 shadow-sm">
 						<div class="card-body gap-3 p-4">

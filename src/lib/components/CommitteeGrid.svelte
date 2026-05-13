@@ -17,7 +17,6 @@
 </script>
 
 <script lang="ts">
-	import * as m from '$lib/paraglide/messages.js';
 	import { resolve } from '$app/paths';
 	import IconInfoBox from './IconInfoBox.svelte';
 	import { getCommitteeStatusIcon, getCommitteeStatusText } from '$lib/utils/committeeStatus';
@@ -51,7 +50,7 @@
 </script>
 
 <div class="flex h-full w-full flex-wrap gap-4 p-4">
-	{#each conference.committees.sort( (a, b) => a.abbreviation.localeCompare(b.abbreviation) ) as committee}
+	{#each conference.committees.sort( (a, b) => a.abbreviation.localeCompare(b.abbreviation) ) as committee (committee.id)}
 		<a
 			class="card bg-base-100 relative min-w-md flex-1 shadow-sm transition-all duration-300 ease-in-out hover:-translate-y-1 hover:shadow-md"
 			href={getHref(committee.id)}

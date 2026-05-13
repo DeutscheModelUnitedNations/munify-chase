@@ -8,10 +8,7 @@
 	import ScrollingCountryList from '../rollCall/ScrollingCountryList.svelte';
 	import { liveQuery } from 'dexie';
 	import ResultChart from './ResultChart.svelte';
-	import {
-		getTranslatedCountryNameFromAlpha3Code,
-		sortTranslatedCountries
-	} from '$lib/utils/nationTranslationHelper.svelte';
+	import { sortTranslatedCountries } from '$lib/utils/nationTranslationHelper.svelte';
 	import { calculateMajority } from '$lib/utils/majorities';
 	import type { VotingResult } from './votingModal';
 

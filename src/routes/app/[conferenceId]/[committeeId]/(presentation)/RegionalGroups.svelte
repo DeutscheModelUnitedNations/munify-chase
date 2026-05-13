@@ -1,10 +1,7 @@
 <script lang="ts">
 	import type { RegionalgroupEnum } from '$lib/api/rumbleClient/client';
 	import Flag from '$lib/components/Flag.svelte';
-	import { m } from '$lib/paraglide/messages';
 	import { translateRegionalGroupEnum } from '$lib/utils/enumTranslationHelper';
-	import hotkeys from 'hotkeys-js';
-	import { onMount } from 'svelte';
 	import { cubicIn, cubicOut } from 'svelte/easing';
 	import { fly } from 'svelte/transition';
 
@@ -73,7 +70,7 @@
 			{translateRegionalGroupEnum(group)}
 		</h2>
 		<div class="flex h-full w-full flex-wrap items-center justify-center gap-4">
-			{#each getGroupMembers(group) as member}
+			{#each getGroupMembers(group) as member (member.id)}
 				<div class="flex w-22 flex-col items-center justify-start gap-1">
 					<Flag representation={member.representation} size="full" />
 					<div class="text-center font-mono font-bold">

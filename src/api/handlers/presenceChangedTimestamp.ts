@@ -1,4 +1,4 @@
-import { abilityBuilder, object, pubsub as rumblePubsub, query } from '$api/rumble';
+import { abilityBuilder, object, query } from '$api/rumble';
 import { isAdminInConference } from '$api/services/authHelper';
 
 abilityBuilder.presenceChangedTimestamp.allow('read').when((ctx) => {

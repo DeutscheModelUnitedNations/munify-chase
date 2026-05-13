@@ -11,5 +11,5 @@ abilityBuilder.resolutionVoteResult.allow('read').when(({ mustBeLoggedIn }) => {
 });
 
 object({ table: 'resolutionVoteResult' });
-const pubsub = rumblePubsub({ table: 'resolutionVoteResult' });
+rumblePubsub({ table: 'resolutionVoteResult' });
 query({ table: 'resolutionVoteResult' });

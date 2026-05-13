@@ -47,7 +47,7 @@
 	bind:this={container}
 	class="join flex w-full flex-1 items-center justify-center overflow-hidden"
 >
-	{#each buttons as button}
+	{#each buttons as button (button.label)}
 		{@const { label, action, href, active } = button}
 		{#if button.href}
 			<!-- eslint-disable-next-line svelte/no-navigation-without-resolve -- href is resolved by caller -->

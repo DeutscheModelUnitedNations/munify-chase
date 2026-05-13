@@ -4,7 +4,6 @@
 	import Flag from '$lib/components/Flag.svelte';
 	import { getTranslatedCountryNameFromAlpha3Code } from '$lib/utils/nationTranslationHelper.svelte';
 	import { getResolutionLabels } from '$lib/utils/resolutionEditorLabels';
-	import { untrack } from 'svelte';
 	import {
 		ResolutionEditor,
 		createEmptyOperativeClause,
@@ -273,7 +272,7 @@
 		<h3 class="font-bold text-lg">
 			{editMode ? m.editAmendment() : isChairMode ? m.chairCreateAmendment() : m.proposeAmendment()}
 		</h3>
-		<button class="btn btn-ghost btn-sm" onclick={() => (open = false)}>
+		<button class="btn btn-ghost btn-sm" onclick={() => (open = false)} aria-label={m.close()}>
 			<i class="fas fa-times"></i>
 		</button>
 	</div>
@@ -393,16 +392,16 @@
 
 				{#if selectedType}
 					<div class="form-control">
-						<label class="label">
+						<div class="label">
 							<span class="label-text">{m.selectTargetClause()}</span>
-						</label>
+						</div>
 						{#if selectedType === 'ADD'}
 							<select class="select select-bordered w-full" bind:value={selectedSourceIndex}>
 								{#if operativeClauses.length === 0}
 									<option value={-1}>{m.insertAsFirstClause()}</option>
 								{:else}
 									<option value={-1}>{m.insertAtBeginning()}</option>
-									{#each operativeClauses as _, i}
+									{#each operativeClauses as clause, i (clause.id)}
 										<option value={i}>
 											{m.insertAfterPresentation({ index: String(i + 1) })}
 										</option>
@@ -411,7 +410,7 @@
 							</select>
 						{:else if operativeClauses.length > 0}
 							<select class="select select-bordered w-full" bind:value={selectedSourceIndex}>
-								{#each operativeClauses as _, i}
+								{#each operativeClauses as clause, i (clause.id)}
 									<option value={i}>OP {i + 1}</option>
 								{/each}
 							</select>
@@ -470,14 +469,14 @@
 						{m.alterPosition()} — <span class="font-mono">OP {selectedSourceIndex + 1}</span>
 					</p>
 					<div class="form-control">
-						<label class="label">
+						<div class="label">
 							<span class="label-text">{m.targetPosition()}</span>
-						</label>
+						</div>
 						<select class="select select-bordered w-full" bind:value={targetPosition}>
 							{#if selectedSourceIndex !== 0}
 								<option value={-1}>{m.insertAtBeginning()}</option>
 							{/if}
-							{#each operativeClauses as _, i}
+							{#each operativeClauses as clause, i (clause.id)}
 								{#if i !== selectedSourceIndex}
 									<option value={i}>
 										{m.insertAfterPresentation({ index: String(i + 1) })}

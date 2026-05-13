@@ -57,7 +57,7 @@
 	onMount(() => {
 		initialSetTheme();
 		const matchMedia = window.matchMedia('(prefers-color-scheme: dark)');
-		matchMedia.addEventListener('change', (e) => {
+		matchMedia.addEventListener('change', () => {
 			initialSetTheme();
 		});
 	});

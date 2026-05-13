@@ -61,6 +61,7 @@
 		"prettier-plugin-sort-json": "^4.2.0",
 		"prettier-plugin-svelte": "^3.5.1",
 		"prettier-plugin-tailwindcss": "^0.8.0",
+		"sofa-api": "^0.18.0",
 		"svelte": "^5.55.5",
 		"svelte-check": "^4.4.6",
 		"svelte-confetti": "^2.3.2",

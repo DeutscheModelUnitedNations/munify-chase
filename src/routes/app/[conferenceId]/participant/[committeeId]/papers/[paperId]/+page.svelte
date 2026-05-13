@@ -345,9 +345,9 @@
 
 			// Release locks on navigation
 			if (canEdit) {
-				client.mutate
-					.releaseAllMyLocks({ __args: { paperId: page.params.paperId! } } as any)
-					.catch(() => {});
+				(client.mutate.releaseAllMyLocks as any)({
+					__args: { paperId: page.params.paperId! }
+				} as any).catch(() => {});
 			}
 		};
 	});
@@ -430,9 +430,9 @@
 	async function handleClauseUnlock(clauseId: string) {
 		if (!canEdit) return;
 		optimisticMyLockIds.delete(clauseId);
-		await client.mutate
-			.releaseClauseLock({ __args: { paperId: page.params.paperId!, clauseId } } as any)
-			.catch(() => {});
+		await (client.mutate.releaseClauseLock as any)({
+			__args: { paperId: page.params.paperId!, clauseId }
+		} as any).catch(() => {});
 	}
 
 	// Any interaction (typing, clicking) → refresh idle timer
@@ -511,7 +511,9 @@
 
 	async function handleDelete() {
 		try {
-			await client.mutate.softDeletePaper({ __args: { paperId: page.params.paperId! } } as any);
+			await (client.mutate.softDeletePaper as any)({
+				__args: { paperId: page.params.paperId! }
+			} as any);
 			showDeleteModal = false;
 			toast.success(m.paperDeleted());
 			goto(`/app/${page.params.conferenceId}/participant/${page.params.committeeId}/papers`);
@@ -525,7 +527,7 @@
 		if (!myCommitteeMemberId) return;
 		try {
 			if (isSponsor) {
-				await client.mutate.removeSponsor({
+				await (client.mutate.removeSponsor as any)({
 					__args: { paperId: page.params.paperId!, committeeMemberId: myCommitteeMemberId }
 				} as any);
 			} else {
@@ -554,7 +556,7 @@
 
 	async function handleDeleteShareCode(shareCodeId: string) {
 		try {
-			await client.mutate.deleteShareCode({ __args: { shareCodeId } } as any);
+			await (client.mutate.deleteShareCode as any)({ __args: { shareCodeId } } as any);
 		} catch {
 			toast.error(m.saveError());
 		}
@@ -605,7 +607,7 @@
 	}
 
 	async function onDeleteComment(commentId: string) {
-		await client.mutate.deleteComment({ __args: { commentId } } as any);
+		await (client.mutate.deleteComment as any)({ __args: { commentId } } as any);
 		toast.success(m.commentDeleted());
 	}
 

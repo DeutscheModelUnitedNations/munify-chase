@@ -44,15 +44,6 @@ schemaBuilder.mutationFields((t) => ({
 				})
 				.then(assertFindFirstExists);
 
-			const editor = await db.query.paperEditor
-				.findFirst({
-					where: {
-						paperId: args.paperId,
-						conferenceUserId: args.conferenceUserId
-					}
-				})
-				.then(assertFindFirstExists);
-
 			await db
 				.delete(schema.paperEditor)
 				.where(
@@ -62,7 +53,7 @@ schemaBuilder.mutationFields((t) => ({
 					)
 				);
 
-			pubsub.removed(editor.id);
+			pubsub.removed();
 			paperPubsub.updated(args.paperId);
 
 			return true;

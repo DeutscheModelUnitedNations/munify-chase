@@ -19,7 +19,7 @@
 
 	type ImportData = z.infer<typeof importDataSchema>;
 
-	const isAdmin = await client.query.isGlobalAdmin();
+	const isAdmin = (await client.query.isGlobalAdmin()) as unknown as boolean;
 
 	let step = $state(0);
 	let loading = $state(false);
@@ -340,10 +340,4 @@
 	{/if}
 </div>
 
-<AddCountriesModal
-	bind:open={addCountriesModalOpen}
-	onConfirm={handleAddCountries}
-	onCancel={() => {
-		activeCommitteeId = null;
-	}}
-/>
+<AddCountriesModal bind:open={addCountriesModalOpen} onSubmit={handleAddCountries} />

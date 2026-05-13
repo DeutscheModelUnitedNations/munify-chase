@@ -54,7 +54,7 @@
 		if (!confirm(m.confirmDeleteCommittee())) return;
 
 		await toast.promise(
-			client.mutate.deleteCommittee({ __args: { id } } as any),
+			(client.mutate.deleteCommittee as any)({ __args: { id } } as any),
 			promiseToastStrings(m.committee(), 'delete')
 		);
 	}

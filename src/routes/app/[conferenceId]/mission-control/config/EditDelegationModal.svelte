@@ -96,7 +96,7 @@
 					const memberId = getCommitteeMemberId(committee.id);
 					if (memberId) {
 						await toast.promise(
-							client.mutate.deleteCommitteeMember({ __args: { id: memberId } } as any),
+							(client.mutate.deleteCommitteeMember as any)({ __args: { id: memberId } } as any),
 							promiseToastStrings(committee.abbreviation, 'delete')
 						);
 					}

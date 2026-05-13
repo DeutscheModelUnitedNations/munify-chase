@@ -323,9 +323,9 @@
 			window.removeEventListener('scroll', handleScroll);
 
 			// Release locks on navigation
-			client.mutate
-				.releaseAllMyLocks({ __args: { paperId: page.params.paperId! } } as any)
-				.catch(() => {});
+			(client.mutate.releaseAllMyLocks as any)({
+				__args: { paperId: page.params.paperId! }
+			} as any).catch(() => {});
 		};
 	});
 
@@ -406,9 +406,9 @@
 	// Click "Done editing" → release lock
 	async function handleClauseUnlock(clauseId: string) {
 		optimisticMyLockIds.delete(clauseId);
-		await client.mutate
-			.releaseClauseLock({ __args: { paperId: page.params.paperId!, clauseId } } as any)
-			.catch(() => {});
+		await (client.mutate.releaseClauseLock as any)({
+			__args: { paperId: page.params.paperId!, clauseId }
+		} as any).catch(() => {});
 	}
 
 	// Any interaction (typing, clicking) → refresh idle timer
@@ -530,7 +530,7 @@
 	}
 
 	async function onDeleteComment(commentId: string) {
-		await client.mutate.deleteComment({ __args: { commentId } } as any);
+		await (client.mutate.deleteComment as any)({ __args: { commentId } } as any);
 		toast.success(m.commentDeleted());
 	}
 
@@ -583,7 +583,7 @@
 	}
 
 	async function handleRemoveSponsor(committeeMemberId: string) {
-		await client.mutate.removeSponsor({
+		await (client.mutate.removeSponsor as any)({
 			__args: { paperId: page.params.paperId!, committeeMemberId }
 		} as any);
 		toast.success(m.sponsorRemoved());
@@ -727,7 +727,7 @@
 	}
 
 	async function handleRemoveAmendmentSponsor(amendmentId: string, committeeMemberId: string) {
-		await client.mutate.removeAmendmentSponsor({
+		await (client.mutate.removeAmendmentSponsor as any)({
 			__args: { amendmentId, committeeMemberId }
 		} as any);
 		toast.success(m.sponsorRemoved());
@@ -1168,7 +1168,7 @@
 
 	async function handleDeleteClauseVote(clauseId: string) {
 		try {
-			await client.mutate.deleteClauseVote({
+			await (client.mutate.deleteClauseVote as any)({
 				__args: { paperId: page.params.paperId!, clauseId }
 			} as any);
 			toast.success(m.clauseVoteDeleted());

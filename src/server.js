@@ -1,4 +1,4 @@
-// @eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck — imports ./env.js and ./handler.js which are adapter-node build outputs
 import { createServer } from 'node:http';
 import polka from 'polka';

@@ -258,10 +258,7 @@ export const updates: UpdatesConfig = {
 			cache.writeFragment(addSpeakerListFragment, {
 				__typename: 'Speakerslist',
 				id: args.speakersListId,
-				speakers: [
-					...list.speakers,
-					{ __typename: 'Speakeronlist', id: newSpeaker.id, position }
-				]
+				speakers: [...list.speakers, { __typename: 'Speakeronlist', id: newSpeaker.id, position }]
 			});
 		}
 	}

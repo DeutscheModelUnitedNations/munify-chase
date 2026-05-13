@@ -104,7 +104,7 @@
 
 	let scrollingListIcons = $derived.by(() => {
 		return members.map((member) => {
-			let icon: string = '';
+			let icon: string;
 			let color: 'info' | 'success' | 'error' = 'info';
 			if (rollCallVotingAbstain?.includes(member.id)) {
 				icon = 'fa-circle';

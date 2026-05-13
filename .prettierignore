@@ -5,3 +5,4 @@ yarn.lock
 schema.graphql
 .claude/**
 drizzle/meta/**
+src/lib/api/rumbleClient/**

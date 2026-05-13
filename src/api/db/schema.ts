@@ -11,6 +11,7 @@ import {
 	integer,
 	json,
 	customType,
+	index,
 	type AnyPgColumn
 } from 'drizzle-orm/pg-core';
 

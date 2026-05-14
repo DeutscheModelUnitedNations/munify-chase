@@ -2,6 +2,7 @@
 	import { m } from '$lib/paraglide/messages';
 	import type { Editor } from 'svelte-tiptap';
 	import UploadImage from './UploadImage.svelte';
+	import GenQRCode from './GenQRCode.svelte';
 
 	interface Props {
 		editor: Editor;
@@ -15,6 +16,16 @@
 		showImageModal = true;
 		return new Promise<string | null>((resolve) => {
 			imageModalResolve = resolve;
+		});
+	}
+
+	let showQRCodeModal = $state(false);
+	let qrCodeImageResolve: ((value: string | null) => void) | undefined;
+
+	function openQRCodeModal(): Promise<string | null> {
+		showQRCodeModal = true;
+		return new Promise<string | null>((resolve) => {
+			qrCodeImageResolve = resolve;
 		});
 	}
 
@@ -81,6 +92,16 @@
 						editor.chain().focus().setImage({ src: imageUrl }).run();
 					}
 				}
+			},
+			{
+				label: m.genQRCode(),
+				icon: 'fa-qrcode',
+				command: async () => {
+					const qrCodeURL = await openQRCodeModal();
+					if (qrCodeURL) {
+						editor.chain().focus().setImage({ src: qrCodeURL }).run();
+					}
+				}
 			}
 		],
 		[
@@ -123,6 +144,17 @@
 			imageModalResolve(value);
 			imageModalResolve = undefined;
 			showImageModal = false;
+		}
+	}}
+/>
+
+<GenQRCode
+	showModal={showQRCodeModal}
+	resolve={(value) => {
+		if (qrCodeImageResolve) {
+			qrCodeImageResolve(value);
+			qrCodeImageResolve = undefined;
+			showQRCodeModal = false;
 		}
 	}}
 />

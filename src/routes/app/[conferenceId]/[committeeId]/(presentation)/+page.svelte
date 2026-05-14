@@ -247,6 +247,7 @@
 		const handler = () => {
 			isFullscreen = !!document.fullscreenElement;
 		};
+		handler();
 		document.addEventListener('fullscreenchange', handler);
 		return () => document.removeEventListener('fullscreenchange', handler);
 	});

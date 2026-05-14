@@ -31,6 +31,7 @@
 	import toast from 'svelte-french-toast';
 	import { openVotingModal } from '$lib/components/voting/votingModal';
 	import { getResolutionLabels } from '$lib/utils/resolutionEditorLabels';
+	import { loadResolutionPhrases } from '$lib/utils/resolutionPhrases';
 	import { SvelteMap } from 'svelte/reactivity';
 
 	import { getCurrentUser } from '$lib/state/currentUser.svelte';
@@ -369,6 +370,14 @@
 		return () => {
 			window.removeEventListener('scroll', handleScroll);
 		};
+	});
+
+	let preamblePhrases = $state<string[]>([]);
+	let operativePhrases = $state<string[]>([]);
+	onMount(async () => {
+		const phrases = await loadResolutionPhrases();
+		preamblePhrases = phrases.preamble;
+		operativePhrases = phrases.operative;
 	});
 
 	// Save status — kept for future use (e.g. title or metadata mutations); content auto-syncs via Y.js
@@ -1405,6 +1414,8 @@
 					presence={presence ?? undefined}
 					{headerData}
 					labels={getResolutionLabels()}
+					{preamblePhrases}
+					{operativePhrases}
 					editable={canEdit && editorMode === 'edit'}
 					amendments={paper.status === 'AMENDMENT_PHASE' ? amendmentOverlays : undefined}
 					rejectedClauseIds={paper.status === 'VOTING_PHASE' || paper.status === 'FINAL'

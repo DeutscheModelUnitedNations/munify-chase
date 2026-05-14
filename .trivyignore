@@ -139,3 +139,24 @@ CVE-2026-32280
 
 # syscall/unix: Root.Chmod follows symlinks outside root - esbuild doesn't use Root.Chmod
 CVE-2026-32282
+
+# crypto/x509: DoS via inefficient certificate chain validation - esbuild doesn't validate certs
+CVE-2026-32281
+
+# crypto/tls: DoS via multiple TLS 1.3 key update messages - esbuild doesn't do TLS
+CVE-2026-32283
+
+# net: LookupCNAME DoS via very long CNAME chain - esbuild doesn't do DNS
+CVE-2026-33811
+
+# net/http: HTTP/2 SETTINGS frame infinite loop - esbuild doesn't serve HTTP/2
+CVE-2026-33814
+
+# net/mail: ParseAddress/ParseAddressList DoS on crafted input - esbuild doesn't parse email
+CVE-2026-39820
+
+# net: Dial/LookupPort NUL byte panic on Windows - Linux containers only
+CVE-2026-39836
+
+# net/mail: DoS via consumePhrase - esbuild doesn't parse email
+CVE-2026-42499

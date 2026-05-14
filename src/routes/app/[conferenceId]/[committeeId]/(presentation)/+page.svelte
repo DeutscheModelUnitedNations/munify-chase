@@ -215,6 +215,8 @@
 	let speakersQueueResizeFn = $state<(() => void) | undefined>(undefined);
 	let commentsQueueResizeFn = $state<(() => void) | undefined>(undefined);
 
+	let isFullscreen = $state(false);
+
 	$effect(() => {
 		if (!layout || !committee) {
 			return;
@@ -231,6 +233,23 @@
 		if ($committeeSettings?.presentationRootFontSize) {
 			document.documentElement.style.fontSize = `${$committeeSettings.presentationRootFontSize}px`;
 		}
+	});
+
+	const toggleFullscreen = () => {
+		if (!document.fullscreenElement) {
+			document.documentElement.requestFullscreen();
+		} else {
+			document.exitFullscreen();
+		}
+	};
+
+	$effect(() => {
+		const handler = () => {
+			isFullscreen = !!document.fullscreenElement;
+		};
+		handler();
+		document.addEventListener('fullscreenchange', handler);
+		return () => document.removeEventListener('fullscreenchange', handler);
 	});
 </script>
 
@@ -360,6 +379,14 @@
 		committeeName={committee?.name ?? m.unknown()}
 		confettiDurationSec={90}
 	/>
+	<button
+		class="btn btn-ghost fixed bottom-3 left-3 z-50 h-12 w-12 min-h-0 p-0 opacity-15 hover:opacity-60 transition-opacity"
+		onclick={toggleFullscreen}
+		aria-label={isFullscreen ? m.exitFullscreen() : m.enterFullscreen()}
+		title={isFullscreen ? m.exitFullscreen() : m.enterFullscreen()}
+	>
+		<i class="fas {isFullscreen ? 'fa-compress' : 'fa-expand'} text-sm"></i>
+	</button>
 {:else}
 	<UndrawError
 		undrawImage={emptyStreet}

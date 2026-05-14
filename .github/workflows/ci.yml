@@ -94,9 +94,6 @@ jobs:
     if: github.event_name == 'push'
     needs: [format, lint, test, i18n, security, typecheck]
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        runtime: [node, bun]
     env:
       SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
       SENTRY_URL: ${{ secrets.SENTRY_URL }}
@@ -125,11 +122,11 @@ jobs:
             ghcr.io/${{ github.repository }}
             deutschemodelunitednations/chase
           tags: |
-            type=ref,event=branch,suffix=${{ matrix.runtime != 'bun' && format('-{0}', matrix.runtime) || '' }}
-            type=semver,pattern={{version}},suffix=${{ matrix.runtime != 'bun' && format('-{0}', matrix.runtime) || '' }}
-            type=semver,pattern={{major}}.{{minor}},suffix=${{ matrix.runtime != 'bun' && format('-{0}', matrix.runtime) || '' }}
-            type=semver,pattern={{major}},suffix=${{ matrix.runtime != 'bun' && format('-{0}', matrix.runtime) || '' }}
-            type=raw,value=latest,enable=${{ github.ref_type == 'tag' }},suffix=${{ matrix.runtime != 'bun' && format('-{0}', matrix.runtime) || '' }}
+            type=ref,event=branch
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=semver,pattern={{major}}
+            type=raw,value=latest,enable=${{ github.ref_type == 'tag' }}
 
       - id: build
         uses: docker/build-push-action@v7
@@ -139,9 +136,9 @@ jobs:
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-          file: ./Dockerfile.${{ matrix.runtime }}
-          cache-from: type=gha,scope=${{ matrix.runtime }}
-          cache-to: type=gha,mode=max,scope=${{ matrix.runtime }}
+          file: ./Dockerfile
+          cache-from: type=gha,scope=docker
+          cache-to: type=gha,mode=max,scope=docker
           build-args: |
             VERSION=${{ github.ref_name }}
             SHA=${{ github.sha }}
@@ -161,7 +158,7 @@ jobs:
           scanners: 'vuln,secret,misconfig'
 
       - name: Upload sourcemaps to Bugsink
-        if: github.ref_type == 'tag' && matrix.runtime == 'bun' && env.SENTRY_AUTH_TOKEN != '' && env.SENTRY_URL != ''
+        if: github.ref_type == 'tag' && env.SENTRY_AUTH_TOKEN != '' && env.SENTRY_URL != ''
         env:
           SENTRY_PROJECT: ${{ vars.SENTRY_PROJECT || 'chase' }}
         run: |
@@ -191,7 +188,7 @@ jobs:
           echo "::endgroup::"
 
       - name: Sourcemap upload skipped
-        if: github.ref_type == 'tag' && matrix.runtime == 'bun' && (env.SENTRY_AUTH_TOKEN == '' || env.SENTRY_URL == '')
+        if: github.ref_type == 'tag' && (env.SENTRY_AUTH_TOKEN == '' || env.SENTRY_URL == '')
         run: |
           echo "::warning::Sourcemap upload skipped - SENTRY_AUTH_TOKEN or SENTRY_URL not configured"
           echo "To enable sourcemap uploads, add the following secrets to your repository:"

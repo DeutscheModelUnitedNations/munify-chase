@@ -27,6 +27,7 @@
 	import Flag from '$lib/components/Flag.svelte';
 	import CommentSection from '$lib/components/CommentSection.svelte';
 	import ResolutionSyncGate from '$lib/components/ResolutionSyncGate.svelte';
+	import ConnectionIndicator from '$lib/components/ConnectionIndicator.svelte';
 	import { getTranslatedCountryNameFromAlpha3Code } from '$lib/utils/nationTranslationHelper.svelte';
 	import toast from 'svelte-french-toast';
 	import { getResolutionLabels } from '$lib/utils/resolutionEditorLabels';
@@ -998,6 +999,12 @@
 			<div class="alert alert-info mt-2 text-sm">
 				<i class="fas fa-vote-yea"></i>
 				<span>{m.votingPhaseActive()}</span>
+			</div>
+		{/if}
+
+		{#if wsConnected && wsSynced}
+			<div class="flex justify-end mt-4">
+				<ConnectionIndicator live={true} />
 			</div>
 		{/if}
 

@@ -28,6 +28,7 @@
 	import CreateAmendmentModal from '$lib/components/CreateAmendmentModal.svelte';
 	import CommentSection from '$lib/components/CommentSection.svelte';
 	import ResolutionSyncGate from '$lib/components/ResolutionSyncGate.svelte';
+	import ConnectionIndicator from '$lib/components/ConnectionIndicator.svelte';
 	import { getTranslatedCountryNameFromAlpha3Code } from '$lib/utils/nationTranslationHelper.svelte';
 	import toast from 'svelte-french-toast';
 	import { openVotingModal } from '$lib/components/voting/votingModal';
@@ -1384,16 +1385,19 @@
 			</div>
 		{/if}
 
-		<!-- Edit/Preview Toggle -->
-		{#if canEdit}
-			<div class="flex justify-end mt-4">
-				<button
-					class="btn btn-sm btn-ghost"
-					onclick={() => (editorMode = editorMode === 'edit' ? 'preview' : 'edit')}
-				>
-					<i class="fas {editorMode === 'edit' ? 'fa-eye' : 'fa-pen'}"></i>
-					{editorMode === 'edit' ? m.preview() : m.edit()}
-				</button>
+		<!-- Editor toolbar: live status + edit/preview toggle -->
+		{#if canEdit || (wsConnected && wsSynced)}
+			<div class="flex justify-end items-center gap-3 mt-4">
+				<ConnectionIndicator live={wsConnected && wsSynced} />
+				{#if canEdit}
+					<button
+						class="btn btn-sm btn-ghost"
+						onclick={() => (editorMode = editorMode === 'edit' ? 'preview' : 'edit')}
+					>
+						<i class="fas {editorMode === 'edit' ? 'fa-eye' : 'fa-pen'}"></i>
+						{editorMode === 'edit' ? m.preview() : m.edit()}
+					</button>
+				{/if}
 			</div>
 		{/if}
 

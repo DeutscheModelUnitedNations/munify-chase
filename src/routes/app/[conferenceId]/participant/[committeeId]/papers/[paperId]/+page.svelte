@@ -26,6 +26,7 @@
 	import Fieldset from '$lib/components/Fieldset.svelte';
 	import Flag from '$lib/components/Flag.svelte';
 	import CommentSection from '$lib/components/CommentSection.svelte';
+	import ResolutionSyncGate from '$lib/components/ResolutionSyncGate.svelte';
 	import { getTranslatedCountryNameFromAlpha3Code } from '$lib/utils/nationTranslationHelper.svelte';
 	import toast from 'svelte-french-toast';
 	import { getResolutionLabels } from '$lib/utils/resolutionEditorLabels';
@@ -268,6 +269,8 @@
 	let wsSynced = $state(false);
 	let wsConnected = $state(false);
 	let wsForbidden = $state(false);
+	// Bumped to force a soft re-establish of the Yjs session (no page reload).
+	let retryNonce = $state(0);
 
 	let preamblePhrases = $state<string[]>([]);
 	let operativePhrases = $state<string[]>([]);
@@ -279,10 +282,13 @@
 
 	$effect(() => {
 		const paperId = page.params.paperId;
-		if (!paperId) return;
-		// Run the rest untracked: only paperId should re-trigger this effect.
-		// Without this, reactive reads inside (currentUser fields, anything
-		// else from $state) would cause re-mount loops.
+		// `retryNonce < 0` is always false; it exists only to register retryNonce
+		// as a reactive dependency so bumping it re-runs this effect, tearing
+		// down the old provider via the cleanup return and re-establishing.
+		if (!paperId || retryNonce < 0) return;
+		// Run the rest untracked: only paperId / retryNonce should re-trigger
+		// this effect. Without this, reactive reads inside (currentUser fields,
+		// anything else from $state) would cause re-mount loops.
 		return untrack(() => establishYjsSession(paperId));
 	});
 
@@ -997,21 +1003,13 @@
 
 		<!-- Resolution Editor -->
 		<div class="py-2">
-			{#if wsForbidden}
-				<div class="alert alert-warning my-4">
-					<i class="fa-solid fa-triangle-exclamation"></i>
-					<span>{m.collabSessionExpired()}</span>
-					<button class="btn btn-sm" onclick={() => location.reload()}>
-						{m.reload()}
-					</button>
-				</div>
-			{:else if !wsSynced}
-				<div class="flex items-center justify-center gap-2 py-12 text-base-content/60">
-					<span class="loading loading-spinner loading-sm"></span>
-					<span class="text-sm">
-						{wsConnected ? m.synchronizing() : m.connecting()}
-					</span>
-				</div>
+			{#if !(wsSynced && store && resolution) || wsForbidden}
+				<ResolutionSyncGate
+					connected={wsConnected}
+					synced={wsSynced}
+					forbidden={wsForbidden}
+					onRetry={() => retryNonce++}
+				/>
 			{:else if store && resolution}
 				<ResolutionEditor
 					{store}

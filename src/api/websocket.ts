@@ -67,7 +67,10 @@ async function authenticateWebSocketRequest(req: IncomingMessage) {
 	return syntheticEvent.locals;
 }
 
-createWs(useServer, {}, gqlWSS);
+// rumble 0.18.1's createWs over-constrains the `implementation` generic so that
+// graphql-ws's `useServer` (which keeps its own generic parameters) no longer
+// satisfies it. Runtime is unaffected — strip the generics at the call boundary.
+createWs(useServer as unknown as (options: unknown, ws: typeof gqlWSS) => void, {}, gqlWSS);
 
 type LocalsBag = RequestEvent['locals'];
 type RequestWithLocals = IncomingMessage & { locals?: LocalsBag };

@@ -147,42 +147,72 @@
 		NonNullable<typeof delegateConference>['committees']
 	>[number];
 
-	function delegateCounts(c: DelegateCommittee) {
-		const total = (c.members ?? []).filter(
+	type CommitteeAttendanceCounts = {
+		present: number;
+		total: number;
+	};
+
+	type CommitteeAttendanceRow = CommitteeAttendanceCounts & {
+		id: DelegateCommittee['id'];
+		name: DelegateCommittee['name'];
+		abbreviation: string;
+		absent: number;
+	};
+
+	function getCommitteeAttendanceCounts(
+		committee: DelegateCommittee
+	): CommitteeAttendanceCounts {
+		const total = (committee.members ?? []).filter(
 			(mem) => mem.representation?.type === 'DELEGATION'
 		).length;
-		const present = c.totalPresent ?? 0;
+		const present = committee.totalPresent ?? 0;
 		return { present, total };
 	}
 
-	let delegateRows = $derived.by(() => {
-		const rows = (delegateConference?.committees ?? []).map((c) => {
-			const { present, total } = delegateCounts(c);
+	function buildCommitteeAttendanceRows(
+		committees: DelegateCommittee[] | null | undefined
+	): CommitteeAttendanceRow[] {
+		const rows = (committees ?? []).map((committee) => {
+			const { present, total } = getCommitteeAttendanceCounts(committee);
 			return {
-				id: c.id,
-				name: c.name,
-				abbreviation: c.abbreviation ?? '',
+				id: committee.id,
+				name: committee.name,
+				abbreviation: committee.abbreviation ?? '',
 				present,
 				total,
 				absent: Math.max(0, total - present)
 			};
 		});
+
 		rows.sort((a, b) => {
 			if (b.absent !== a.absent) return b.absent - a.absent;
 			return (a.name ?? '').localeCompare(b.name ?? '');
 		});
-		return rows;
-	});
 
-	let delegateTotals = $derived.by(() => {
+		return rows;
+	}
+
+	function sumCommitteeAttendanceRows(
+		rows: CommitteeAttendanceCounts[]
+	): CommitteeAttendanceCounts {
 		let present = 0;
 		let total = 0;
-		for (const r of delegateRows) {
-			present += r.present;
-			total += r.total;
+
+		for (const row of rows) {
+			present += row.present;
+			total += row.total;
 		}
+
 		return { present, total };
-	});
+	}
+
+	let delegateRows = $derived.by(() =>
+		buildCommitteeAttendanceRows(delegateConference?.committees)
+	);
+
+	let delegateTotals = $derived.by(() =>
+		sumCommitteeAttendanceRows(delegateRows)
+	);
 
 	function fmt(seconds: number) {
 		const h = Math.floor(seconds / 3600);

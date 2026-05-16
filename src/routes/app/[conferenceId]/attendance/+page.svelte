@@ -4,6 +4,11 @@
 	import { page } from '$app/state';
 	import Tabs from '$lib/components/Tabs.svelte';
 	import NavbarBurgerMenu from '$lib/components/NavbarBurgerMenu.svelte';
+	import {
+		buildConferenceNavItems,
+		roleBadgeClassFor,
+		roleLabelFor
+	} from '$lib/components/navbar/conferenceNavItems';
 	import { getCurrentUser } from '$lib/state/currentUser.svelte';
 	import ByCommitteeTab from './ByCommitteeTab.svelte';
 	import ByNsaTab from './ByNsaTab.svelte';
@@ -12,7 +17,18 @@
 	import StatsTab from './StatsTab.svelte';
 
 	const conferenceId = page.params.conferenceId!;
-	const userId = (await getCurrentUser()).id ?? '';
+	const currentUser = await getCurrentUser();
+	const userId = currentUser.id ?? '';
+	const userDisplayName =
+		[currentUser.givenName, currentUser.familyName].filter(Boolean).join(' ').trim() ||
+		currentUser.preferredUsername ||
+		currentUser.email ||
+		'';
+
+	const conferenceMeta = await client.query.conference({
+		__args: { id: conferenceId },
+		title: true
+	});
 
 	const conferenceUsers = await client.liveQuery.conferenceUsers({
 		__args: {
@@ -29,35 +45,49 @@
 	let allowed = $derived(role === 'ADMIN' || role === 'TEAM');
 
 	type TabId = 'BY_COMMITTEE' | 'BY_NSA' | 'NOT_CHECKED_IN' | 'HISTORY' | 'STATS';
-	let activeTab = $state<TabId>('BY_COMMITTEE');
+	let activeTab = $state<TabId>('NOT_CHECKED_IN');
 
 	const tabs: { id: TabId; label: string; faIcon: string }[] = [
+		{ id: 'NOT_CHECKED_IN', label: m.nsaAttendanceTabNotCheckedIn(), faIcon: 'fa-user-clock' },
 		{ id: 'BY_COMMITTEE', label: m.nsaAttendanceTabByCommittee(), faIcon: 'fa-building-columns' },
 		{ id: 'BY_NSA', label: m.nsaAttendanceTabByNsa(), faIcon: 'fa-people-group' },
-		{ id: 'NOT_CHECKED_IN', label: m.nsaAttendanceTabNotCheckedIn(), faIcon: 'fa-user-clock' },
 		{ id: 'HISTORY', label: m.nsaAttendanceTabHistory(), faIcon: 'fa-clock-rotate-left' },
 		{ id: 'STATS', label: m.nsaAttendanceTabStats(), faIcon: 'fa-chart-column' }
 	];
 
-	const menubarItems = [
-		{
-			faIcon: 'fa-rocket-launch',
-			title: m.missionControl(),
-			href: `/app/${conferenceId}/mission-control`
-		}
-	];
+	let menubarItems = $derived(
+		buildConferenceNavItems({
+			role,
+			conferenceId,
+			activeRouteId: page.route.id,
+			activePathname: page.url.pathname
+		})
+	);
 </script>
 
 <svelte:head>
-	<title>{m.nsaAttendance()} - MUNify CHASE</title>
+	<title>{m.attendance()} - MUNify CHASE</title>
 </svelte:head>
 
 {#if allowed}
 	<div class="flex h-full w-full flex-col">
 		<div class="navbar bg-base-100 shadow-sm">
-			<h1 class="ml-4 flex-1 text-3xl font-bold">{m.nsaAttendance()}</h1>
+			<h1 class="ml-4 flex-1 text-3xl font-bold">{m.attendance()}</h1>
 			<div class="flex-none">
-				<NavbarBurgerMenu items={menubarItems} />
+				<NavbarBurgerMenu
+					items={menubarItems}
+					user={{
+						name: userDisplayName,
+						email: currentUser.email ?? undefined,
+						givenName: currentUser.givenName ?? undefined,
+						familyName: currentUser.familyName ?? undefined
+					}}
+					roleLabel={roleLabelFor(role)}
+					roleBadgeClass={roleBadgeClassFor(role)}
+					conferenceTitle={conferenceMeta?.title}
+					dashboardHref="/app"
+					signOutHref="/logout"
+				/>
 			</div>
 		</div>
 
@@ -73,7 +103,7 @@
 			{:else if activeTab === 'HISTORY'}
 				<HistoryTab {conferenceId} />
 			{:else if activeTab === 'STATS'}
-				<StatsTab {conferenceId} />
+				<StatsTab {conferenceId} conferenceTitle={conferenceMeta?.title ?? undefined} />
 			{/if}
 		</div>
 	</div>

@@ -1,6 +1,11 @@
 <script lang="ts">
 	import { m } from '$lib/paraglide/messages';
 	import NavbarBurgerMenu from '$lib/components/NavbarBurgerMenu.svelte';
+	import {
+		buildConferenceNavItems,
+		roleBadgeClassFor,
+		roleLabelFor
+	} from '$lib/components/navbar/conferenceNavItems';
 	import GeneralTab from './GeneralTab.svelte';
 	import UsersTab from './UsersTab.svelte';
 	import CommitteesTab from './CommitteesTab.svelte';
@@ -106,18 +111,25 @@
 	});
 
 	let currentUserRole = $derived(conferenceUsers?.[0]);
-	let isAdmin = $derived(currentUserRole?.conferenceUserType === 'ADMIN');
+	let role = $derived(currentUserRole?.conferenceUserType);
+	let isAdmin = $derived(role === 'ADMIN');
 	let currentUserEmail = currentUser?.email ?? undefined;
+	const userDisplayName =
+		[currentUser?.givenName, currentUser?.familyName].filter(Boolean).join(' ').trim() ||
+		currentUser?.preferredUsername ||
+		currentUser?.email ||
+		'';
 
 	let activeTab = $state<'general' | 'users' | 'committees' | 'delegations' | 'nsa'>('general');
 
-	const menubarItems = [
-		{
-			faIcon: 'fa-rocket-launch',
-			title: m.missionControl(),
-			href: '.'
-		}
-	];
+	let menubarItems = $derived(
+		buildConferenceNavItems({
+			role,
+			conferenceId: page.params.conferenceId!,
+			activeRouteId: page.route.id,
+			activePathname: page.url.pathname
+		})
+	);
 </script>
 
 <svelte:head>
@@ -127,7 +139,20 @@
 <div class="navbar bg-base-100 shadow-sm">
 	<h1 class="ml-4 flex-1 text-3xl font-bold">{m.configuration()}</h1>
 	<div class="flex-none">
-		<NavbarBurgerMenu items={menubarItems} />
+		<NavbarBurgerMenu
+			items={menubarItems}
+			user={{
+				name: userDisplayName,
+				email: currentUserEmail,
+				givenName: currentUser?.givenName ?? undefined,
+				familyName: currentUser?.familyName ?? undefined
+			}}
+			roleLabel={roleLabelFor(role)}
+			roleBadgeClass={roleBadgeClassFor(role)}
+			conferenceTitle={conference?.title}
+			dashboardHref="/app"
+			signOutHref="/logout"
+		/>
 	</div>
 </div>
 

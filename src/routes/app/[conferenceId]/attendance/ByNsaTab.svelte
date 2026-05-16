@@ -145,7 +145,7 @@
 <div class="flex flex-col gap-4">
 	<div class="flex flex-wrap items-center justify-end gap-2">
 		<a
-			href="/app/{conferenceId}/nsa-attendance/print"
+			href="/app/{conferenceId}/attendance/print"
 			class="btn btn-secondary btn-sm"
 			target="_blank"
 			rel="noopener"

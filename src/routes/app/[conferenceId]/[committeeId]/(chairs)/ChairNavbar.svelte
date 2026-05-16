@@ -2,21 +2,64 @@
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
+	import { client } from '$lib/api/rumbleClient/client';
 	import CurrentTime from '$lib/components/CurrentTime.svelte';
 	import NavbarBurgerMenu from '$lib/components/NavbarBurgerMenu.svelte';
+	import {
+		buildConferenceNavItems,
+		roleBadgeClassFor,
+		roleLabelFor
+	} from '$lib/components/navbar/conferenceNavItems';
 	import * as m from '$lib/paraglide/messages.js';
+	import { getCurrentUser } from '$lib/state/currentUser.svelte';
 	import hotkeys from 'hotkeys-js';
 
 	interface Props {
 		title?: string;
+		conferenceTitle?: string | null;
 		activeDraftResolutionId?: string | null;
 		resolutionFeatureEnabled?: boolean;
 	}
 
-	let { title, activeDraftResolutionId, resolutionFeatureEnabled = true }: Props = $props();
+	let {
+		title,
+		conferenceTitle,
+		activeDraftResolutionId,
+		resolutionFeatureEnabled = true
+	}: Props = $props();
 
 	const conferenceId = $derived(page.params.conferenceId!);
 	const committeeId = $derived(page.params.committeeId!);
+
+	const currentUser = await getCurrentUser();
+	const userId = currentUser.id ?? '';
+	const userDisplayName =
+		[currentUser.givenName, currentUser.familyName].filter(Boolean).join(' ').trim() ||
+		currentUser.preferredUsername ||
+		currentUser.email ||
+		'';
+
+	const conferenceUsers = await client.liveQuery.conferenceUsers({
+		__args: {
+			where: {
+				conference: { id: page.params.conferenceId },
+				user: { id: userId }
+			}
+		},
+		id: true,
+		conferenceUserType: true
+	});
+
+	let role = $derived(conferenceUsers?.[0]?.conferenceUserType);
+
+	let menubarItems = $derived(
+		buildConferenceNavItems({
+			role,
+			conferenceId,
+			activeRouteId: page.route.id,
+			activePathname: page.url.pathname
+		})
+	);
 
 	const dockItems = $derived([
 		{
@@ -164,13 +207,18 @@
 
 	<div class="flex-none">
 		<NavbarBurgerMenu
-			items={[
-				{
-					faIcon: 'fa-rocket-launch',
-					title: m.missionControl(),
-					href: resolve('/app/[conferenceId]/mission-control', { conferenceId })
-				}
-			]}
+			items={menubarItems}
+			user={{
+				name: userDisplayName,
+				email: currentUser.email ?? undefined,
+				givenName: currentUser.givenName ?? undefined,
+				familyName: currentUser.familyName ?? undefined
+			}}
+			roleLabel={roleLabelFor(role)}
+			roleBadgeClass={roleBadgeClassFor(role)}
+			{conferenceTitle}
+			dashboardHref="/app"
+			signOutHref="/logout"
 		/>
 	</div>
 </div>

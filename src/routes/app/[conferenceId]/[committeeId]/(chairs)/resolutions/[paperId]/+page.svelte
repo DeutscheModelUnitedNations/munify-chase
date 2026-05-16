@@ -27,6 +27,8 @@
 	import Modal from '$lib/components/Modal.svelte';
 	import CreateAmendmentModal from '$lib/components/CreateAmendmentModal.svelte';
 	import CommentSection from '$lib/components/CommentSection.svelte';
+	import ResolutionSyncGate from '$lib/components/ResolutionSyncGate.svelte';
+	import ConnectionIndicator from '$lib/components/ConnectionIndicator.svelte';
 	import { getTranslatedCountryNameFromAlpha3Code } from '$lib/utils/nationTranslationHelper.svelte';
 	import toast from 'svelte-french-toast';
 	import { openVotingModal } from '$lib/components/voting/votingModal';
@@ -222,11 +224,16 @@
 	let wsSynced = $state(false);
 	let wsConnected = $state(false);
 	let wsForbidden = $state(false);
+	// Bumped to force a soft re-establish of the Yjs session (no page reload).
+	let retryNonce = $state(0);
 
 	$effect(() => {
 		const paperId = page.params.paperId;
-		if (!paperId) return;
-		// Only paperId should re-trigger this effect.
+		// `retryNonce < 0` is always false; it exists only to register retryNonce
+		// as a reactive dependency so bumping it re-runs this effect, tearing
+		// down the old provider via the cleanup return and re-establishing.
+		if (!paperId || retryNonce < 0) return;
+		// Only paperId / retryNonce should re-trigger this effect.
 		return untrack(() => establishYjsSession(paperId));
 	});
 
@@ -1378,36 +1385,31 @@
 			</div>
 		{/if}
 
-		<!-- Edit/Preview Toggle -->
-		{#if canEdit}
-			<div class="flex justify-end mt-4">
-				<button
-					class="btn btn-sm btn-ghost"
-					onclick={() => (editorMode = editorMode === 'edit' ? 'preview' : 'edit')}
-				>
-					<i class="fas {editorMode === 'edit' ? 'fa-eye' : 'fa-pen'}"></i>
-					{editorMode === 'edit' ? m.preview() : m.edit()}
-				</button>
+		<!-- Editor toolbar: live status + edit/preview toggle -->
+		{#if canEdit || (wsConnected && wsSynced)}
+			<div class="flex justify-end items-center gap-3 mt-4">
+				<ConnectionIndicator live={wsConnected && wsSynced} />
+				{#if canEdit}
+					<button
+						class="btn btn-sm btn-ghost"
+						onclick={() => (editorMode = editorMode === 'edit' ? 'preview' : 'edit')}
+					>
+						<i class="fas {editorMode === 'edit' ? 'fa-eye' : 'fa-pen'}"></i>
+						{editorMode === 'edit' ? m.preview() : m.edit()}
+					</button>
+				{/if}
 			</div>
 		{/if}
 
 		<!-- Resolution Editor -->
 		<div class="py-2">
-			{#if wsForbidden}
-				<div class="alert alert-warning my-4">
-					<i class="fa-solid fa-triangle-exclamation"></i>
-					<span>{m.collabSessionExpired()}</span>
-					<button class="btn btn-sm" onclick={() => location.reload()}>
-						{m.reload()}
-					</button>
-				</div>
-			{:else if !wsSynced}
-				<div class="flex items-center justify-center gap-2 py-12 text-base-content/60">
-					<span class="loading loading-spinner loading-sm"></span>
-					<span class="text-sm">
-						{wsConnected ? m.synchronizing() : m.connecting()}
-					</span>
-				</div>
+			{#if !(wsSynced && store && resolution) || wsForbidden}
+				<ResolutionSyncGate
+					connected={wsConnected}
+					synced={wsSynced}
+					forbidden={wsForbidden}
+					onRetry={() => retryNonce++}
+				/>
 			{:else if store && resolution}
 				<ResolutionEditor
 					{store}

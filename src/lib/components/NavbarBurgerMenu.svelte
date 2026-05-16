@@ -111,7 +111,12 @@
 							class={item.active ? 'menu-active font-semibold' : ''}
 							aria-current={item.active ? 'page' : undefined}
 						>
-							<i class="fa-duotone w-6 text-center fa-{item.faIcon.replace('fa-', '')}"></i>
+							<i
+								class="{item.active ? 'fas' : 'fa-duotone'} w-6 text-center fa-{item.faIcon.replace(
+									'fa-',
+									''
+								)}"
+							></i>
 							<span class="flex-1">{item.title}</span>
 							{#if item.active}
 								<i class="fa-solid fa-circle text-primary text-[0.5rem]" aria-hidden="true"></i>
@@ -155,8 +160,8 @@
 			<ul class="menu w-full p-2">
 				<li>
 					<!-- eslint-disable-next-line svelte/no-navigation-without-resolve -- fixed app-level route -->
-					<a href={signOutHref} class="text-error">
-						<i class="fa-duotone fa-arrow-right-from-bracket w-6 text-center"></i>
+					<a href={signOutHref} class="btn btn-sm btn-soft btn-error justify-start">
+						<i class="fas fa-arrow-right-from-bracket w-6 text-center"></i>
 						{m.launcherSignOut()}
 					</a>
 				</li>

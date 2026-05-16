@@ -3,6 +3,7 @@
 	import { m } from '$lib/paraglide/messages';
 	import BasicCard from '$lib/components/BasicCard.svelte';
 	import { SvelteMap } from 'svelte/reactivity';
+	import Flag from '$lib/components/Flag.svelte';
 
 	interface Props {
 		conferenceId: string;
@@ -51,6 +52,7 @@
 					id: true,
 					name: true,
 					faIcon: true,
+					alpha3Code: true,
 					type: true
 				}
 			}
@@ -65,6 +67,7 @@
 			absent: {
 				id: string;
 				name: string;
+				alpha3Code?: string | null;
 				faIcon?: string | null;
 			}[];
 		}[] = [];
@@ -74,6 +77,7 @@
 				.map((mem) => ({
 					id: mem.id,
 					name: mem.representation?.name ?? '',
+					alpha3Code: mem.representation?.alpha3Code ?? null,
 					faIcon: mem.representation?.faIcon ?? null
 				}))
 				.sort((a, b) => a.name.localeCompare(b.name));
@@ -174,7 +178,12 @@
 							{#each group.absent as member (member.id)}
 								<li class="card hover:bg-base-200 flex flex-row items-center gap-3 p-2">
 									{#if member.faIcon}
-										<i class="fas {member.faIcon} text-lg"></i>
+										<Flag size="xs" representation={{ type: 'NSA', faIcon: member.faIcon }} />
+									{:else if member?.alpha3Code}
+										<Flag
+											size="xs"
+											representation={{ type: 'DELEGATION', alpha3Code: member.alpha3Code }}
+										/>
 									{:else}
 										<i class="fas fa-user text-lg"></i>
 									{/if}

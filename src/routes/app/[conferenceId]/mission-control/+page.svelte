@@ -3,13 +3,23 @@
 	import CurrentTime from '$lib/components/CurrentTime.svelte';
 	import * as m from '$lib/paraglide/messages.js';
 	import NavbarBurgerMenu from '$lib/components/NavbarBurgerMenu.svelte';
-	import DownloadPresenceData from './DownloadPresenceData.svelte';
+	import {
+		buildConferenceNavItems,
+		roleBadgeClassFor,
+		roleLabelFor
+	} from '$lib/components/navbar/conferenceNavItems';
 	import { client } from '$lib/api/rumbleClient/client';
 	import { page } from '$app/state';
 
 	import { getCurrentUser } from '$lib/state/currentUser.svelte';
 
-	const userId = (await getCurrentUser()).id ?? '';
+	const currentUser = await getCurrentUser();
+	const userId = currentUser.id ?? '';
+	const userDisplayName =
+		[currentUser.givenName, currentUser.familyName].filter(Boolean).join(' ').trim() ||
+		currentUser.preferredUsername ||
+		currentUser.email ||
+		'';
 
 	const conference = await client.liveQuery.conference({
 		__args: { id: page.params.conferenceId! },
@@ -43,41 +53,16 @@
 	});
 
 	let currentUserRole = $derived(conferenceUsers?.[0]);
-	let isAdmin = $derived(currentUserRole?.conferenceUserType === 'ADMIN');
-	let isTeamOrAdmin = $derived(
-		currentUserRole?.conferenceUserType === 'ADMIN' ||
-			currentUserRole?.conferenceUserType === 'TEAM'
+	let role = $derived(currentUserRole?.conferenceUserType);
+
+	let menubarItems = $derived(
+		buildConferenceNavItems({
+			role,
+			conferenceId: page.params.conferenceId!,
+			activeRouteId: page.route.id,
+			activePathname: page.url.pathname
+		})
 	);
-
-	const baseMenuItems = [
-		{
-			faIcon: 'fa-home',
-			title: m.home(),
-			href: '..'
-		}
-	];
-
-	let menubarItems = $derived([
-		...baseMenuItems,
-		...(isTeamOrAdmin
-			? [
-					{
-						faIcon: 'fa-user-tag',
-						title: m.nsaAttendance(),
-						href: 'nsa-attendance'
-					}
-				]
-			: []),
-		...(isAdmin
-			? [
-					{
-						faIcon: 'fa-gear',
-						title: m.configuration(),
-						href: 'mission-control/config'
-					}
-				]
-			: [])
-	]);
 </script>
 
 <svelte:head>
@@ -90,11 +75,20 @@
 		<CurrentTime />
 	</div>
 	<div class="flex-none">
-		<NavbarBurgerMenu items={menubarItems}>
-			{#snippet CustomListItems()}
-				<DownloadPresenceData conferenceTitle={conference?.title} conferenceId={conference?.id} />
-			{/snippet}
-		</NavbarBurgerMenu>
+		<NavbarBurgerMenu
+			items={menubarItems}
+			user={{
+				name: userDisplayName,
+				email: currentUser.email ?? undefined,
+				givenName: currentUser.givenName ?? undefined,
+				familyName: currentUser.familyName ?? undefined
+			}}
+			roleLabel={roleLabelFor(role)}
+			roleBadgeClass={roleBadgeClassFor(role)}
+			conferenceTitle={conference?.title}
+			dashboardHref="/app"
+			signOutHref="/logout"
+		/>
 	</div>
 </div>
 

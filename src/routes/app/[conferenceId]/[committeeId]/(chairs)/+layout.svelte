@@ -195,6 +195,7 @@
 
 <ChairNavbar
 	title={committee?.abbreviation}
+	conferenceTitle={committee?.conference?.title}
 	activeDraftResolutionId={committee?.activeDraftResolutionId}
 />
 

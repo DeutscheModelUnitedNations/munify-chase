@@ -101,29 +101,31 @@ schemaBuilder.mutationFields((t) => {
 				present: t.arg.boolean({ required: true })
 			},
 			resolve: async (query, root, args, ctx) => {
-				const res = await db
-					.update(schema.committeeMember)
-					.set({
-						present: args.present
-					})
-					.where(
-						ctx.abilities.committeeMember
-							.filter('update')
-							.merge({ where: { id: { in: args.ids } } }).sql.where
-					)
-					.returning({
-						id: schema.committeeMember.id
-					});
+				await db.transaction(async (tx) => {
+					const res = await tx
+						.update(schema.committeeMember)
+						.set({
+							present: args.present
+						})
+						.where(
+							ctx.abilities.committeeMember
+								.filter('update')
+								.merge({ where: { id: { in: args.ids } } }).sql.where
+						)
+						.returning({
+							id: schema.committeeMember.id
+						});
 
-				if (res.length > 0) {
-					db.insert(schema.presenceChangedTimestamp).values(
-						res.map((committeeMember) => ({
-							committeeMemberId: committeeMember.id,
-							presentSetTo: args.present,
-							timestamp: new Date()
-						}))
-					);
-				}
+					if (res.length > 0) {
+						await tx.insert(schema.presenceChangedTimestamp).values(
+							res.map((committeeMember) => ({
+								committeeMemberId: committeeMember.id,
+								presentSetTo: args.present,
+								timestamp: new Date()
+							}))
+						);
+					}
+				});
 
 				pubsub.updated(args.ids);
 

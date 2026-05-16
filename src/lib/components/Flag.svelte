@@ -1,4 +1,6 @@
 <script lang="ts">
+	import { Alpha3 } from 'convert-iso-codes';
+
 	interface Representation {
 		type?: string | null;
 		name?: string | null;
@@ -55,6 +57,14 @@
 		const randomIndex = Math.floor(Math.random() * worldIcons.length);
 		return worldIcons[randomIndex];
 	};
+
+	let countryCode = $derived.by(() => {
+		if (representation?.type === 'UN') return 'un';
+		if (representation?.alpha2Code) return representation.alpha2Code.toLowerCase();
+		if (representation?.alpha3Code)
+			return Alpha3.toAlpha2(representation.alpha3Code)?.toLowerCase();
+		return null;
+	});
 </script>
 
 <div
@@ -69,7 +79,7 @@
 	{:else if representation?.faIcon}
 		<i class="fa-solid fa-{representation.faIcon?.replace('fa-', '')} {iconClassNames()}"></i>
 	{:else}
-		<span class="fi fi-{representation?.type === 'UN' ? 'un' : representation?.alpha2Code}"></span>
+		<span class="fi fi-{countryCode}"></span>
 	{/if}
 </div>
 

@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { client } from '$lib/api/rumbleClient/client';
 	import { m } from '$lib/paraglide/messages';
+	import toast from 'svelte-french-toast';
 
 	interface Props {
 		conferenceTitle?: string;
@@ -13,7 +14,8 @@
 
 	async function download() {
 		if (!conferenceId) {
-			throw new Error('No conference ID provided');
+			toast.error(m.saveError());
+			return;
 		}
 
 		isDownloading = true;
@@ -52,6 +54,8 @@
 			a.click();
 			document.body.removeChild(a);
 			URL.revokeObjectURL(url);
+		} catch {
+			toast.error(m.saveError());
 		} finally {
 			isDownloading = false;
 		}

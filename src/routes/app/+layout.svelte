@@ -8,13 +8,11 @@
 	// runs, so an unauthenticated visitor would just see a broken page. Probe the
 	// session by requesting the current user, on failure, force a full document
 	// navigation to the same URL so the server hook can start the OIDC flow
-	if (browser) {
-		try {
-			await getCurrentUser();
-		} catch {
+	await getCurrentUser().catch(() => {
+		if (browser) {
 			window.location.assign(window.location.pathname + window.location.search);
 		}
-	}
+	});
 </script>
 
 {@render children()}

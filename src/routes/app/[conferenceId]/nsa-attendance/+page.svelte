@@ -25,8 +25,10 @@
 		conferenceUserType: true
 	});
 
+	const isGlobalAdmin = await client.query.isGlobalAdmin();
+
 	let role = $derived(conferenceUsers?.[0]?.conferenceUserType);
-	let allowed = $derived(role === 'ADMIN' || role === 'TEAM');
+	let allowed = $derived(isGlobalAdmin || role === 'ADMIN' || role === 'TEAM');
 
 	type TabId = 'BY_COMMITTEE' | 'BY_NSA' | 'NOT_CHECKED_IN' | 'HISTORY' | 'STATS';
 	let activeTab = $state<TabId>('BY_COMMITTEE');

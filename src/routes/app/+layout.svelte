@@ -9,11 +9,13 @@
 	// session by requesting the current user, on failure, force a full document
 	// navigation to the same URL so the server hook can start the OIDC flow
 	if (browser) {
-		try {
-			await getCurrentUser();
-		} catch {
-			window.location.assign(window.location.pathname + window.location.search);
-		}
+		(async () => {
+			try {
+				await getCurrentUser();
+			} catch {
+				window.location.assign(window.location.pathname + window.location.search);
+			}
+		})();
 	}
 </script>
 

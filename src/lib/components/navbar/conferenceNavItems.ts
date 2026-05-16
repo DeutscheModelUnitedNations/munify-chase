@@ -24,9 +24,22 @@ interface BuildArgs {
 	activePathname?: string | null;
 }
 
-function matches(activeRouteId: string | null | undefined, marker: string): boolean {
-	if (!activeRouteId) return false;
-	return activeRouteId.includes(marker);
+function hasRouteSegment(value: string | null | undefined, segmentPath: string): boolean {
+	if (!value) return false;
+	const normalizedSegmentPath = segmentPath.replace(/^\/+|\/+$/g, '');
+	if (!normalizedSegmentPath) return false;
+
+	const marker = `/${normalizedSegmentPath}`;
+	let markerStartIndex = value.indexOf(marker);
+
+	while (markerStartIndex !== -1) {
+		const markerEndIndex = markerStartIndex + marker.length;
+		const nextChar = value.at(markerEndIndex);
+		if (nextChar === undefined || nextChar === '/') return true;
+		markerStartIndex = value.indexOf(marker, markerStartIndex + 1);
+	}
+
+	return false;
 }
 
 export function buildConferenceNavItems({
@@ -42,12 +55,12 @@ export function buildConferenceNavItems({
 
 	if (isTeamOrAdmin) {
 		const onConfig =
-			matches(activeRouteId, 'mission-control/config') ||
-			(activePathname?.endsWith('/mission-control/config') ?? false);
+			hasRouteSegment(activeRouteId, 'mission-control/config') ||
+			hasRouteSegment(activePathname, 'mission-control/config');
 		const onMissionControl =
 			!onConfig &&
-			(matches(activeRouteId, 'mission-control') ||
-				(activePathname?.endsWith('/mission-control') ?? false));
+			(hasRouteSegment(activeRouteId, 'mission-control') ||
+				hasRouteSegment(activePathname, 'mission-control'));
 
 		items.push({
 			key: 'mission-control',
@@ -63,7 +76,8 @@ export function buildConferenceNavItems({
 			title: m.attendance(),
 			href: `/app/${conferenceId}/attendance`,
 			active:
-				matches(activeRouteId, 'attendance') || (activePathname?.includes('/attendance') ?? false)
+				hasRouteSegment(activeRouteId, 'attendance') ||
+				hasRouteSegment(activePathname, 'attendance')
 		});
 	}
 
@@ -74,8 +88,8 @@ export function buildConferenceNavItems({
 			title: m.configuration(),
 			href: `/app/${conferenceId}/mission-control/config`,
 			active:
-				matches(activeRouteId, 'mission-control/config') ||
-				(activePathname?.endsWith('/mission-control/config') ?? false)
+				hasRouteSegment(activeRouteId, 'mission-control/config') ||
+				hasRouteSegment(activePathname, 'mission-control/config')
 		});
 	}
 

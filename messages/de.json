@@ -605,7 +605,7 @@
 	"role": "Rolle",
 	"roleAdmin": "Admin",
 	"roleDelegate": "Delegierte:r",
-	"roleNonStateActor": "Nichtstaatliche:r Akteur:in",
+	"roleNonStateActor": "Nichtstaatliche*r Akteur*in",
 	"roleSpectator": "Beobachter:in",
 	"roleTeam": "Team",
 	"rollCall": "Anwesenheitsfeststellung",

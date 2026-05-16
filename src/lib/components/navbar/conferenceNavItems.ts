@@ -61,10 +61,9 @@ export function buildConferenceNavItems({
 			key: 'attendance',
 			faIcon: 'fa-user-tag',
 			title: m.attendance(),
-			href: `/app/${conferenceId}/nsa-attendance`,
+			href: `/app/${conferenceId}/attendance`,
 			active:
-				matches(activeRouteId, 'nsa-attendance') ||
-				(activePathname?.includes('/nsa-attendance') ?? false)
+				matches(activeRouteId, 'attendance') || (activePathname?.includes('/attendance') ?? false)
 		});
 	}
 

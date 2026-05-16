@@ -159,9 +159,7 @@
 		absent: number;
 	};
 
-	function getCommitteeAttendanceCounts(
-		committee: DelegateCommittee
-	): CommitteeAttendanceCounts {
+	function getCommitteeAttendanceCounts(committee: DelegateCommittee): CommitteeAttendanceCounts {
 		const total = (committee.members ?? []).filter(
 			(mem) => mem.representation?.type === 'DELEGATION'
 		).length;
@@ -210,9 +208,7 @@
 		buildCommitteeAttendanceRows(delegateConference?.committees)
 	);
 
-	let delegateTotals = $derived.by(() =>
-		sumCommitteeAttendanceRows(delegateRows)
-	);
+	let delegateTotals = $derived.by(() => sumCommitteeAttendanceRows(delegateRows));
 
 	function fmt(seconds: number) {
 		const h = Math.floor(seconds / 3600);

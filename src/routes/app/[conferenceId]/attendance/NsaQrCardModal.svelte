@@ -20,7 +20,7 @@
 
 	function openPrint() {
 		if (!nsaUser) return;
-		const url = `/app/${page.params.conferenceId}/nsa-attendance/print?id=${encodeURIComponent(nsaUser.id)}&autoprint=1`;
+		const url = `/app/${page.params.conferenceId}/attendance/print?id=${encodeURIComponent(nsaUser.id)}&autoprint=1`;
 		window.open(url, '_blank', 'noopener');
 	}
 </script>

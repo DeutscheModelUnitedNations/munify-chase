@@ -105,8 +105,10 @@
 		conferenceUserType: true
 	});
 
+	const isGlobalAdmin = await client.query.isGlobalAdmin();
+
 	let currentUserRole = $derived(conferenceUsers?.[0]);
-	let isAdmin = $derived(currentUserRole?.conferenceUserType === 'ADMIN');
+	let isAdmin = $derived(isGlobalAdmin || currentUserRole?.conferenceUserType === 'ADMIN');
 	let currentUserEmail = currentUser?.email ?? undefined;
 
 	let activeTab = $state<'general' | 'users' | 'committees' | 'delegations' | 'nsa'>('general');

@@ -37,6 +37,57 @@
 		conferenceUser: { id: true }
 	});
 
+	const conference = await client.liveQuery.conference({
+		__args: { id: conferenceId },
+		id: true,
+		committees: {
+			id: true,
+			name: true,
+			abbreviation: true,
+			members: {
+				id: true,
+				present: true,
+				representation: {
+					id: true,
+					name: true,
+					faIcon: true,
+					type: true
+				}
+			}
+		}
+	});
+
+	let absentByCommittee = $derived.by(() => {
+		const groups: {
+			committeeId: string;
+			name: string;
+			abbreviation: string | null;
+			absent: {
+				id: string;
+				name: string;
+				faIcon?: string | null;
+			}[];
+		}[] = [];
+		for (const c of conference?.committees ?? []) {
+			const absent = (c.members ?? [])
+				.filter((mem) => mem.representation?.type === 'DELEGATION' && mem.present === false)
+				.map((mem) => ({
+					id: mem.id,
+					name: mem.representation?.name ?? '',
+					faIcon: mem.representation?.faIcon ?? null
+				}))
+				.sort((a, b) => a.name.localeCompare(b.name));
+			if (absent.length === 0) continue;
+			groups.push({
+				committeeId: c.id,
+				name: c.name,
+				abbreviation: c.abbreviation ?? null,
+				absent
+			});
+		}
+		return groups;
+	});
+
 	type NsaUser = NonNullable<typeof nsaUsers>[number];
 
 	// allEvents is ordered timestamp DESC, so the first event per user is the latest.
@@ -66,38 +117,74 @@
 	});
 </script>
 
-<BasicCard>
-	<div class="mb-3 flex items-center justify-between">
-		<h2 class="text-xl font-bold">{m.notCheckedIn()}</h2>
-		<label class="label cursor-pointer gap-2">
-			<span class="label-text text-sm">{m.showOnlyWithHistory()}</span>
-			<input type="checkbox" class="toggle toggle-sm" bind:checked={onlyWithHistory} />
-		</label>
-	</div>
+<div class="flex flex-col gap-4">
+	<BasicCard>
+		<div class="mb-3 flex items-center justify-between">
+			<h2 class="text-xl font-bold">{m.notCheckedIn()}</h2>
+			<label class="label cursor-pointer gap-2">
+				<span class="label-text text-sm">{m.showOnlyWithHistory()}</span>
+				<input type="checkbox" class="toggle toggle-sm" bind:checked={onlyWithHistory} />
+			</label>
+		</div>
 
-	{#if visible.length === 0}
-		<p class="text-base-content/60 py-4 text-center text-sm">{m.allNsasCheckedIn()}</p>
-	{:else}
-		<ul class="flex flex-col gap-1">
-			{#each visible as user (user.id)}
-				{@const rep = user.conferenceMember?.representation}
-				<li class="card hover:bg-base-200 flex flex-row items-center gap-3 p-2">
-					{#if rep?.faIcon}
-						<i class="fas {rep.faIcon} text-lg"></i>
-					{:else}
-						<i class="fas fa-user-tag text-lg"></i>
-					{/if}
-					<span class="flex-1">{user.name ?? user.userEmail}</span>
-					{#if rep?.name}
-						<span class="text-base-content/60 text-sm">{rep.name}</span>
-					{/if}
-					{#if user.attendanceCode}
-						<code class="bg-base-200 rounded px-2 py-1 font-mono text-sm">
-							{user.attendanceCode}
-						</code>
-					{/if}
-				</li>
-			{/each}
-		</ul>
-	{/if}
-</BasicCard>
+		{#if visible.length === 0}
+			<p class="text-base-content/60 py-4 text-center text-sm">{m.allNsasCheckedIn()}</p>
+		{:else}
+			<ul class="flex flex-col gap-1">
+				{#each visible as user (user.id)}
+					{@const rep = user.conferenceMember?.representation}
+					<li class="card hover:bg-base-200 flex flex-row items-center gap-3 p-2">
+						{#if rep?.faIcon}
+							<i class="fas {rep.faIcon} text-lg"></i>
+						{:else}
+							<i class="fas fa-user-tag text-lg"></i>
+						{/if}
+						<span class="flex-1">{user.name ?? user.userEmail}</span>
+						{#if rep?.name}
+							<span class="text-base-content/60 text-sm">{rep.name}</span>
+						{/if}
+						{#if user.attendanceCode}
+							<code class="bg-base-200 rounded px-2 py-1 font-mono text-sm">
+								{user.attendanceCode}
+							</code>
+						{/if}
+					</li>
+				{/each}
+			</ul>
+		{/if}
+	</BasicCard>
+
+	<BasicCard title={m.absentDelegates()}>
+		{#if absentByCommittee.length === 0}
+			<p class="text-base-content/60 py-4 text-center text-sm">{m.allDelegatesPresent()}</p>
+		{:else}
+			<div class="flex flex-col gap-4">
+				{#each absentByCommittee as group (group.committeeId)}
+					<div>
+						<div class="mb-2 flex items-baseline gap-2">
+							<h3 class="font-semibold">{group.name}</h3>
+							{#if group.abbreviation}
+								<span class="text-base-content/60 text-sm">({group.abbreviation})</span>
+							{/if}
+							<span class="badge badge-sm badge-ghost ml-auto tabular-nums"
+								>{group.absent.length}</span
+							>
+						</div>
+						<ul class="flex flex-col gap-1">
+							{#each group.absent as member (member.id)}
+								<li class="card hover:bg-base-200 flex flex-row items-center gap-3 p-2">
+									{#if member.faIcon}
+										<i class="fas {member.faIcon} text-lg"></i>
+									{:else}
+										<i class="fas fa-user text-lg"></i>
+									{/if}
+									<span class="flex-1">{member.name}</span>
+								</li>
+							{/each}
+						</ul>
+					</div>
+				{/each}
+			</div>
+		{/if}
+	</BasicCard>
+</div>

@@ -3,11 +3,13 @@
 	import { m } from '$lib/paraglide/messages';
 	import BasicCard from '$lib/components/BasicCard.svelte';
 	import { SvelteMap, SvelteSet } from 'svelte/reactivity';
+	import DownloadPresenceData from './DownloadPresenceData.svelte';
 
 	interface Props {
 		conferenceId: string;
+		conferenceTitle?: string;
 	}
-	let { conferenceId }: Props = $props();
+	let { conferenceId, conferenceTitle }: Props = $props();
 
 	// Compute stats client-side: fine for typical conference sizes (a few thousand
 	// events). If the event log grows past ~10k, move this into a server-side
@@ -125,6 +127,63 @@
 		new Map((events ?? []).map((e) => [e.committee?.id, e.committee]))
 	);
 
+	const delegateConference = await client.liveQuery.conference({
+		__args: { id: conferenceId },
+		id: true,
+		committees: {
+			id: true,
+			name: true,
+			abbreviation: true,
+			totalPresent: true,
+			members: {
+				id: true,
+				present: true,
+				representation: { type: true }
+			}
+		}
+	});
+
+	type DelegateCommittee = NonNullable<
+		NonNullable<typeof delegateConference>['committees']
+	>[number];
+
+	function delegateCounts(c: DelegateCommittee) {
+		const total = (c.members ?? []).filter(
+			(mem) => mem.representation?.type === 'DELEGATION'
+		).length;
+		const present = c.totalPresent ?? 0;
+		return { present, total };
+	}
+
+	let delegateRows = $derived.by(() => {
+		const rows = (delegateConference?.committees ?? []).map((c) => {
+			const { present, total } = delegateCounts(c);
+			return {
+				id: c.id,
+				name: c.name,
+				abbreviation: c.abbreviation ?? '',
+				present,
+				total,
+				absent: Math.max(0, total - present)
+			};
+		});
+		rows.sort((a, b) => {
+			if (b.absent !== a.absent) return b.absent - a.absent;
+			return (a.name ?? '').localeCompare(b.name ?? '');
+		});
+		return rows;
+	});
+
+	let delegateTotals = $derived.by(() => {
+		let present = 0;
+		let total = 0;
+		for (const r of delegateRows) {
+			present += r.present;
+			total += r.total;
+		}
+		return { present, total };
+	});
+
 	function fmt(seconds: number) {
 		const h = Math.floor(seconds / 3600);
 		const m = Math.floor((seconds % 3600) / 60);
@@ -134,6 +193,20 @@
 </script>
 
 <div class="grid gap-4 lg:grid-cols-2">
+	<div class="lg:col-span-2">
+		<BasicCard title={m.downloadPresenceData()}>
+			<p class="text-base-content/70 mb-3 text-sm">
+				{m.downloadPresenceDataDescription()}
+			</p>
+			<DownloadPresenceData {conferenceId} {conferenceTitle} />
+		</BasicCard>
+	</div>
+
+	<div class="text-base-content/70 mt-2 flex items-center gap-2 lg:col-span-2">
+		<i class="fa-duotone fa-user-tag"></i>
+		<h3 class="text-sm font-semibold tracking-wide uppercase">{m.nsaStatistics()}</h3>
+	</div>
+
 	<BasicCard title={m.totalAttendanceDuration()}>
 		{#if stats.users.length === 0}
 			<p class="text-base-content/50 text-sm">{m.noEventsYet()}</p>
@@ -174,6 +247,67 @@
 					<li class="card hover:bg-base-200 flex flex-row items-center gap-3 p-2">
 						<span class="flex-1">{u.label}</span>
 						<span class="font-mono text-sm">{u.switches}</span>
+					</li>
+				{/each}
+			</ul>
+		{/if}
+	</BasicCard>
+
+	<div class="text-base-content/70 mt-4 flex items-center gap-2 lg:col-span-2">
+		<i class="fa-duotone fa-users"></i>
+		<h3 class="text-sm font-semibold tracking-wide uppercase">{m.delegateStatistics()}</h3>
+	</div>
+
+	<BasicCard title={m.delegatePresenceOverview()}>
+		{#if delegateTotals.total === 0}
+			<p class="text-base-content/50 text-sm">{m.noEventsYet()}</p>
+		{:else}
+			{@const pct = Math.round((delegateTotals.present / delegateTotals.total) * 100)}
+			<div class="flex flex-col gap-3">
+				<div class="flex items-baseline gap-3">
+					<span class="font-mono text-4xl font-bold tabular-nums">
+						{delegateTotals.present}<span class="text-base-content/40">
+							/ {delegateTotals.total}</span
+						>
+					</span>
+					<span class="text-base-content/60 text-sm">{pct}%</span>
+				</div>
+				<progress
+					class="progress {pct === 100 ? 'progress-success' : 'progress-primary'} w-full"
+					value={delegateTotals.present}
+					max={delegateTotals.total}
+				></progress>
+				<p class="text-base-content/60 text-sm">{m.delegatesPresentRightNow()}</p>
+			</div>
+		{/if}
+	</BasicCard>
+
+	<BasicCard title={m.perCommitteeDelegatePresence()}>
+		{#if delegateRows.length === 0}
+			<p class="text-base-content/50 text-sm">{m.noEventsYet()}</p>
+		{:else}
+			<ul class="flex flex-col gap-1">
+				{#each delegateRows as row (row.id)}
+					<li
+						class="hover:bg-base-200 grid grid-cols-[1fr_auto_6rem] items-center gap-3 rounded p-2"
+					>
+						<span class="truncate">
+							{row.name}{#if row.abbreviation}
+								<span class="text-base-content/50 text-sm"> ({row.abbreviation})</span>
+							{/if}
+						</span>
+						<span class="font-mono text-sm tabular-nums">
+							{row.present} / {row.total}
+						</span>
+						<progress
+							class="progress {row.total > 0 && row.present === row.total
+								? 'progress-success'
+								: row.present === 0
+									? 'progress-error'
+									: 'progress-warning'} h-2 w-full"
+							value={row.present}
+							max={Math.max(1, row.total)}
+						></progress>
 					</li>
 				{/each}
 			</ul>

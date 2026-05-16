@@ -17,7 +17,44 @@
 	const conference = await client.liveQuery.conference({
 		__args: { id: conferenceId },
 		id: true,
-		committees: { id: true, name: true, abbreviation: true }
+		committees: {
+			id: true,
+			name: true,
+			abbreviation: true,
+			totalPresent: true,
+			members: {
+				id: true,
+				present: true,
+				representation: { type: true }
+			}
+		}
+	});
+
+	type CommitteeForStat = NonNullable<NonNullable<typeof conference>['committees']>[number];
+
+	function delegateStat(c: CommitteeForStat) {
+		const total = (c.members ?? []).filter(
+			(mem) => mem.representation?.type === 'DELEGATION'
+		).length;
+		const present = c.totalPresent ?? 0;
+		return { present, total };
+	}
+
+	function badgeClass(present: number, total: number) {
+		if (total === 0 || present === 0) return 'badge-ghost';
+		if (present === total) return 'badge-success';
+		return 'badge-warning';
+	}
+
+	let conferenceTotals = $derived.by(() => {
+		let present = 0;
+		let total = 0;
+		for (const c of conference?.committees ?? []) {
+			const s = delegateStat(c);
+			present += s.present;
+			total += s.total;
+		}
+		return { present, total };
 	});
 
 	const allEvents = await client.liveQuery.nsaPresenceEvents({
@@ -79,9 +116,30 @@
 </script>
 
 <div class="flex flex-col gap-4">
+	{#if conferenceTotals.total > 0}
+		<div class="text-base-content/70 flex items-center gap-2 px-1 text-sm">
+			<i class="fa-duotone fa-users-line"></i>
+			<span>{m.delegatePresence()}:</span>
+			<span class="font-semibold tabular-nums"
+				>{m.delegatesPresentOfTotal({
+					present: conferenceTotals.present,
+					total: conferenceTotals.total
+				})}</span
+			>
+		</div>
+	{/if}
 	{#each conference?.committees ?? [] as committee}
 		{@const list = byCommittee.get(committee.id) ?? []}
+		{@const stat = delegateStat(committee)}
 		<BasicCard title={`${committee.name} (${committee.abbreviation ?? ''})`}>
+			<div class="-mt-3 mb-3 flex flex-wrap items-center gap-2">
+				<span
+					class="badge badge-sm {badgeClass(stat.present, stat.total)} tabular-nums"
+					title={m.delegatePresence()}
+				>
+					{m.delegatesPresentOfTotal({ present: stat.present, total: stat.total })}
+				</span>
+			</div>
 			{#if list.length === 0}
 				<p class="text-base-content/50 py-2 text-sm">{m.noNsasInCommittee()}</p>
 			{:else}

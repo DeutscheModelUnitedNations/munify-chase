@@ -14,7 +14,7 @@
 
 	async function download() {
 		if (!conferenceId) {
-			toast.error(m.saveError());
+			console.warn('Cannot export presence data without conferenceId');
 			return;
 		}
 
@@ -54,7 +54,8 @@
 			a.click();
 			document.body.removeChild(a);
 			URL.revokeObjectURL(url);
-		} catch {
+		} catch (error) {
+			console.error('Failed to export presence data', error);
 			toast.error(m.saveError());
 		} finally {
 			isDownloading = false;

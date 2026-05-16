@@ -128,7 +128,9 @@
 
 			{#if dashboardHref}
 				{#if items.length > 0 || toolsSnippet}
-					<div class="divider my-1"></div>
+					<li>
+						<div class="divider my-1"></div>
+					</li>
 				{/if}
 				<li>
 					<!-- eslint-disable-next-line svelte/no-navigation-without-resolve -- fixed app-level route -->

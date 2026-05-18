@@ -62,7 +62,8 @@
 			role,
 			conferenceId,
 			activeRouteId: page.route.id,
-			activePathname: page.url.pathname
+			activePathname: page.url.pathname,
+			isGlobalAdmin: !!isGlobalAdmin
 		})
 	);
 </script>

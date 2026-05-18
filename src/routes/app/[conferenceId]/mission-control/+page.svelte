@@ -55,12 +55,15 @@
 	let currentUserRole = $derived(conferenceUsers?.[0]);
 	let role = $derived(currentUserRole?.conferenceUserType);
 
+	const isGlobalAdmin = await client.query.isGlobalAdmin();
+
 	let menubarItems = $derived(
 		buildConferenceNavItems({
 			role,
 			conferenceId: page.params.conferenceId!,
 			activeRouteId: page.route.id,
-			activePathname: page.url.pathname
+			activePathname: page.url.pathname,
+			isGlobalAdmin: !!isGlobalAdmin
 		})
 	);
 </script>

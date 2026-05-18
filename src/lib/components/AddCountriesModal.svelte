@@ -44,13 +44,13 @@
 
 		const countries: ParsedCountry[] = [];
 		const unrecognized: string[] = [];
-		const addedCodes = new Set<string>();
+		const addedCodes: string[] = [];
 
 		for (const token of tokens) {
 			const normalized = token.toLowerCase();
 
 			// Skip if we've already added this country
-			if (addedCodes.has(normalized)) {
+			if (addedCodes.includes(normalized)) {
 				continue;
 			}
 
@@ -71,8 +71,8 @@
 					alpha3Code: country.cca3.toLowerCase(),
 					name: country.name.common
 				});
-				addedCodes.add(country.cca2.toLowerCase());
-				addedCodes.add(country.cca3.toLowerCase());
+				addedCodes.push(country.cca2.toLowerCase());
+				addedCodes.push(country.cca3.toLowerCase());
 			} else if (token.length >= 2 && token.length <= 3) {
 				// Only mark as unrecognized if it looks like a country code (2-3 chars)
 				unrecognized.push(token.toUpperCase());

@@ -5,11 +5,14 @@ import {
 } from '@deutschemodelunitednations/munify-resolution-editor/schema';
 import { unEmblemSvg } from '@deutschemodelunitednations/munify-resolution-editor';
 import { error } from '@sveltejs/kit';
-import { execFileSync } from 'node:child_process';
-import { mkdtempSync, rmSync, writeFileSync, readFileSync, existsSync } from 'node:fs';
+import { execFile } from 'node:child_process';
+import { mkdtemp, rm, writeFile, readFile, access } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
+import { promisify } from 'node:util';
 import type { RequestHandler } from './$types';
+
+const execFileAsync = promisify(execFile);
 
 const TYPST_BIN = join(process.cwd(), 'node_modules/.bin/typst');
 
@@ -44,11 +47,13 @@ export const POST: RequestHandler = async ({ request }) => {
 
 	const header: ResolutionHeaderData = (body as { header?: ResolutionHeaderData })?.header ?? {};
 
-	if (!existsSync(TYPST_BIN)) {
+	try {
+		await access(TYPST_BIN);
+	} catch {
 		throw error(500, 'Typst binary not available on the server');
 	}
 
-	const dir = mkdtempSync(join(tmpdir(), 'mun-'));
+	const dir = await mkdtemp(join(tmpdir(), 'mun-'));
 	try {
 		// Resolve the emblem actually rendered into the PDF: the conference logo
 		// when configured, otherwise the bundled UN emblem fallback. The file is
@@ -57,17 +62,17 @@ export const POST: RequestHandler = async ({ request }) => {
 			? (decodeEmblemDataUrl(header.conferenceEmblem) ?? unEmblemSvg)
 			: unEmblemSvg;
 		const emblemPath = 'emblem.svg';
-		writeFileSync(join(dir, emblemPath), emblemSvg);
+		await writeFile(join(dir, emblemPath), emblemSvg);
 
 		const source = resolutionToTypst(parsed.data, header, { emblemPath });
-		writeFileSync(join(dir, 'resolution.typ'), source);
+		await writeFile(join(dir, 'resolution.typ'), source);
 
-		execFileSync(TYPST_BIN, ['compile', 'resolution.typ', 'resolution.pdf'], {
+		await execFileAsync(TYPST_BIN, ['compile', 'resolution.typ', 'resolution.pdf'], {
 			cwd: dir,
 			timeout: 30_000
 		});
 
-		const pdf = readFileSync(join(dir, 'resolution.pdf'));
+		const pdf = await readFile(join(dir, 'resolution.pdf'));
 		return new Response(new Uint8Array(pdf), {
 			headers: {
 				'Content-Type': 'application/pdf',
@@ -75,9 +80,10 @@ export const POST: RequestHandler = async ({ request }) => {
 			}
 		});
 	} catch (e) {
-		const msg = e instanceof Error ? e.message : String(e);
-		throw error(500, `Typst compilation failed: ${msg}`);
+		const stderr = (e as { stderr?: string | Buffer })?.stderr;
+		const detail = stderr ? String(stderr) : e instanceof Error ? e.message : String(e);
+		throw error(500, `Typst compilation failed: ${detail}`);
 	} finally {
-		rmSync(dir, { recursive: true, force: true });
+		await rm(dir, { recursive: true, force: true });
 	}
 };

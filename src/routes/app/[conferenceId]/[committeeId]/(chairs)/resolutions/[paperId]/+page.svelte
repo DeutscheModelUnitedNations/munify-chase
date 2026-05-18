@@ -1257,6 +1257,7 @@
 					type="button"
 					class="btn btn-ghost btn-sm"
 					title={m.downloadTypst()}
+					aria-label={m.downloadTypst()}
 					disabled={!resolution}
 					onclick={() =>
 						resolution && downloadResolutionTypst(resolution, headerData, paper.documentNumber)}
@@ -1267,6 +1268,7 @@
 					type="button"
 					class="btn btn-ghost btn-sm"
 					title={m.downloadPdf()}
+					aria-label={m.downloadPdf()}
 					disabled={!resolution || isExportingPdf}
 					onclick={exportPdf}
 				>

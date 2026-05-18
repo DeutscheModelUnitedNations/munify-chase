@@ -38,8 +38,20 @@
 		const input = event.target as HTMLInputElement;
 		const file = input.files?.[0];
 		if (!file) return;
-		const text = await file.text();
-		if (file.size > 512 * 1024 || !text.includes('<svg')) {
+		if (file.size > 512 * 1024) {
+			toast.error(m.invalidSvgLogo());
+			input.value = '';
+			return;
+		}
+		let text: string;
+		try {
+			text = await file.text();
+		} catch {
+			toast.error(m.invalidSvgLogo());
+			input.value = '';
+			return;
+		}
+		if (!text.includes('<svg')) {
 			toast.error(m.invalidSvgLogo());
 			input.value = '';
 			return;

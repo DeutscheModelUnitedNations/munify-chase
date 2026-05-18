@@ -6,6 +6,9 @@ import { assertFindFirstExists, mapNullFieldsToUndefined } from '@m1212e/rumble'
 import { GraphQLError } from 'graphql';
 
 abilityBuilder.conference.allow('read').when((ctx) => {
+	if (ctx.displayTokenConferenceId) {
+		return { where: { id: ctx.displayTokenConferenceId } };
+	}
 	return { where: isParticipant(ctx) };
 });
 

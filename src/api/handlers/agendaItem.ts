@@ -5,6 +5,9 @@ import { assertFindFirstExists, assertFirstEntryExists } from '@m1212e/rumble';
 import { isParticipantInConference } from '$api/services/authHelper';
 
 abilityBuilder.agendaItem.allow('read').when((ctx) => {
+	if (ctx.displayTokenConferenceId) {
+		return { where: { committee: { conferenceId: ctx.displayTokenConferenceId } } };
+	}
 	return {
 		where: {
 			committee: isParticipantInConference(ctx)

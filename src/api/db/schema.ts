@@ -59,6 +59,18 @@ export const conference = pgTable('conference', {
 	logoSvg: text()
 });
 
+export const displayToken = pgTable('display_token', {
+	...defaultIdAndTimestamps,
+	conferenceId: text()
+		.notNull()
+		.references(() => conference.id, { onDelete: 'cascade' }),
+	code: text().notNull().unique(),
+	label: text().notNull().default(''),
+	showStateOfDebate: boolean().notNull().default(false),
+	createdById: text().references(() => user.id, { onDelete: 'set null' }),
+	revokedAt: timestamp({ mode: 'date' })
+});
+
 export const committeeStatus = pgEnum('committee_status', [
 	'FORMAL',
 	'INFORMAL',

@@ -5,9 +5,9 @@
 declare global {
 	namespace App {
 		// interface Error {}
-		// interface Locals {
-		// 	user?: Awaited<ReturnType<typeof applyAuth>>;
-		// }
+		interface Locals {
+			displayToken?: string;
+		}
 		// interface PageData {}
 		// interface PageState {}
 		// interface Platform {}

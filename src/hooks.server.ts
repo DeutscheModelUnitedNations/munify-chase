@@ -5,8 +5,18 @@ import { paraglideMiddleware } from '$lib/paraglide/server';
 import { sequence } from '@sveltejs/kit/hooks';
 import { OIDC } from '$api/services/OIDC';
 import { locales, baseLocale, cookieName, cookieMaxAge } from '$lib/paraglide/runtime';
+import { DISPLAY_TOKEN_COOKIE } from '$api/displayTokenCookie';
 
 const nonBaseLocales = locales.filter((l) => l !== baseLocale);
+
+/** Surface the public-display bearer token (set by the /display route) into locals. */
+const displayTokenHandle: Handle = ({ event, resolve }) => {
+	const code = event.cookies.get(DISPLAY_TOKEN_COOKIE);
+	if (code) {
+		event.locals.displayToken = code;
+	}
+	return resolve(event);
+};
 
 /** Redirect locale-prefixed URLs to bare paths, setting the cookie instead. */
 const localeRedirect: Handle = ({ event, resolve }) => {
@@ -28,14 +38,18 @@ const localeRedirect: Handle = ({ event, resolve }) => {
 	return resolve(event);
 };
 
-export const handle: Handle = sequence(OIDC.handle, localeRedirect, ({ event, resolve }) =>
-	paraglideMiddleware(event.request, ({ request: localizedRequest, locale }) => {
-		event.request = localizedRequest;
+export const handle: Handle = sequence(
+	OIDC.handle,
+	displayTokenHandle,
+	localeRedirect,
+	({ event, resolve }) =>
+		paraglideMiddleware(event.request, ({ request: localizedRequest, locale }) => {
+			event.request = localizedRequest;
 
-		return resolve(event, {
-			transformPageChunk: ({ html }) => {
-				return html.replace('%lang%', locale);
-			}
-		});
-	})
+			return resolve(event, {
+				transformPageChunk: ({ html }) => {
+					return html.replace('%lang%', locale);
+				}
+			});
+		})
 );

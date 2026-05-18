@@ -11,6 +11,7 @@ import { OIDC } from './services/OIDC';
 import { parse as parseCookies } from 'cookie';
 import dayjs from 'dayjs';
 import { openYjsRoom } from './yjs/wss';
+import { DISPLAY_TOKEN_COOKIE } from './displayTokenCookie';
 
 const gqlWSS = new WebSocketServer({ noServer: true });
 const otherWSS = new WebSocketServer({ noServer: true });
@@ -77,6 +78,10 @@ type RequestWithLocals = IncomingMessage & { locals?: LocalsBag };
 
 async function attachLocals(req: IncomingMessage, ws: WSWebSocket) {
 	const locals = await authenticateWebSocketRequest(req);
+	const displayToken = parseCookies(req.headers.cookie ?? '')[DISPLAY_TOKEN_COOKIE];
+	if (displayToken) {
+		locals.displayToken = displayToken;
+	}
 	(req as RequestWithLocals).locals = locals;
 
 	const exp = locals.oidc?.accessToken?.exp;

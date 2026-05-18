@@ -1,6 +1,7 @@
 import { configPrivate } from '$config/private';
 import type { RequestEvent } from '@sveltejs/kit';
 import { GraphQLError } from 'graphql';
+import { db } from '$api/db/db';
 
 export const oidcRoles = ['admin', 'member', 'service_user'] as const;
 
@@ -39,8 +40,24 @@ export async function context(req: RequestEvent) {
 		}
 	}
 
+	// A display token grants an unauthenticated, read-only, single-conference
+	// view (the public committee display). It is intentionally mutually
+	// exclusive with an OIDC session so that a stray display cookie can never
+	// widen the access of a logged-in user.
+	let displayTokenConferenceId: string | undefined;
+	const rawDisplayToken = req.locals.displayToken;
+	if (rawDisplayToken && !req.locals.oidc?.user) {
+		const token = await db.query.displayToken.findFirst({
+			where: { code: rawDisplayToken }
+		});
+		if (token && !token.revokedAt) {
+			displayTokenConferenceId = token.conferenceId;
+		}
+	}
+
 	return {
 		...req.locals,
+		displayTokenConferenceId,
 		mustBeLoggedIn: () => {
 			if (!req.locals.oidc?.user) {
 				throw new GraphQLError('Must be logged in');

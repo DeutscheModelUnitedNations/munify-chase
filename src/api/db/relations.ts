@@ -28,6 +28,16 @@ export const relations = defineRelations(schema, (r) => ({
 		nsaPresenceEvents: r.many.nsaPresenceEvent({
 			from: r.conference.id,
 			to: r.nsaPresenceEvent.conferenceId
+		}),
+		displayTokens: r.many.displayToken({
+			from: r.conference.id,
+			to: r.displayToken.conferenceId
+		})
+	},
+	displayToken: {
+		conference: r.one.conference({
+			from: r.displayToken.conferenceId,
+			to: r.conference.id
 		})
 	},
 	committee: {

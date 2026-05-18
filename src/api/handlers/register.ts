@@ -15,6 +15,7 @@ import './nsaPresenceEvent';
 import './resolutionPaper';
 import './paperSponsor';
 import './paperShareCode';
+import './displayToken';
 import './paperEditor';
 import './paperContentSnapshot';
 import './resolutionComment';

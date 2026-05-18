@@ -18,6 +18,9 @@ import { calculateMajority } from '$lib/utils/majorities';
 import { GraphQLError } from 'graphql';
 
 abilityBuilder.committee.allow('read').when((ctx) => {
+	if (ctx.displayTokenConferenceId) {
+		return { where: { conferenceId: ctx.displayTokenConferenceId } };
+	}
 	return {
 		where: isParticipantInConference(ctx)
 	};

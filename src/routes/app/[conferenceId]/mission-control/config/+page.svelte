@@ -11,6 +11,7 @@
 	import CommitteesTab from './CommitteesTab.svelte';
 	import DelegationsTab from './DelegationsTab.svelte';
 	import NsaTab from './NsaTab.svelte';
+	import DisplayTab from './DisplayTab.svelte';
 	import { client } from '$lib/api/rumbleClient/client';
 	import { page } from '$app/state';
 
@@ -123,7 +124,9 @@
 		currentUser?.email ||
 		'';
 
-	let activeTab = $state<'general' | 'users' | 'committees' | 'delegations' | 'nsa'>('general');
+	let activeTab = $state<'general' | 'users' | 'committees' | 'delegations' | 'nsa' | 'display'>(
+		'general'
+	);
 
 	let menubarItems = $derived(
 		buildConferenceNavItems({
@@ -210,6 +213,14 @@
 				>
 					{m.nonStateActors()}
 				</button>
+				<button
+					role="tab"
+					class="tab"
+					class:tab-active={activeTab === 'display'}
+					onclick={() => (activeTab = 'display')}
+				>
+					{m.displayLinks()}
+				</button>
 			</div>
 
 			{#if activeTab === 'general'}
@@ -226,6 +237,8 @@
 				/>
 			{:else if activeTab === 'nsa'}
 				<NsaTab conferenceId={conference.id} representations={conference.representations ?? []} />
+			{:else if activeTab === 'display'}
+				<DisplayTab conferenceId={conference.id} />
 			{/if}
 		{:else}
 			<div class="flex items-center justify-center">

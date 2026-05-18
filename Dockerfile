@@ -28,6 +28,13 @@ RUN bun run check
 FROM node:lts-slim AS release
 WORKDIR /app/release
 
+# Patch OS packages in the base image to pick up security fixes
+# (e.g. glibc, libcap2, systemd CVEs flagged by Trivy)
+RUN apt-get update \
+	&& apt-get upgrade -y --no-install-recommends \
+	&& apt-get clean \
+	&& rm -rf /var/lib/apt/lists/*
+
 ARG VERSION
 ENV PUBLIC_VERSION=$VERSION
 ARG SHA

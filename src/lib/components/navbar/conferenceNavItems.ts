@@ -22,6 +22,7 @@ interface BuildArgs {
 	conferenceId: string;
 	activeRouteId?: string | null;
 	activePathname?: string | null;
+	isGlobalAdmin?: boolean;
 }
 
 function hasRouteSegment(value: string | null | undefined, segmentPath: string): boolean {
@@ -46,10 +47,11 @@ export function buildConferenceNavItems({
 	role,
 	conferenceId,
 	activeRouteId,
-	activePathname
+	activePathname,
+	isGlobalAdmin
 }: BuildArgs): NavItem[] {
-	const isAdmin = role === 'ADMIN';
-	const isTeamOrAdmin = role === 'ADMIN' || role === 'TEAM';
+	const isAdmin = role === 'ADMIN' || !!isGlobalAdmin;
+	const isTeamOrAdmin = isAdmin || role === 'TEAM';
 
 	const items: NavItem[] = [];
 

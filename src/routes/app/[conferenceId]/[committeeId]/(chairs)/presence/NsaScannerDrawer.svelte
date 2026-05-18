@@ -66,10 +66,7 @@
 	async function handleScan(rawText: string) {
 		const text = rawText.trim();
 		if (!text) return;
-		// Heuristic: short codes (≤8 chars, alphanumeric) are treated as the manual
-		// fallback `attendanceCode`; longer values as the full conferenceUser.id (nanoid 30).
-		const isShortCode = text.length <= 8;
-		await runMutation(isShortCode ? { attendanceCode: text } : { conferenceUserId: text }, text);
+		await runMutation(text);
 	}
 
 	async function handleManualSubmit(e: Event) {
@@ -77,17 +74,14 @@
 		const code = manualCode.trim();
 		if (!code) return;
 		manualCode = '';
-		await runMutation({ attendanceCode: code }, code);
+		await runMutation(code);
 	}
 
-	async function runMutation(
-		ident: { conferenceUserId?: string; attendanceCode?: string },
-		fallbackLabel: string
-	) {
+	async function runMutation(code: string) {
 		if (busy) return;
 		busy = true;
 
-		const args = { committeeId, ...ident };
+		const args = { committeeId, code };
 		try {
 			const event =
 				mode === 'IN'
@@ -127,7 +121,7 @@
 				event.conferenceUser?.name ??
 				event.conferenceUser?.conferenceMember?.representation?.name ??
 				event.conferenceUser?.userEmail ??
-				fallbackLabel;
+				code;
 
 			let message: string;
 			if (mode === 'IN') {
@@ -142,7 +136,7 @@
 			beep(true);
 		} catch (err) {
 			const msg = err instanceof Error ? err.message : String(err);
-			pushLog({ ok: false, mode, label: fallbackLabel, message: msg });
+			pushLog({ ok: false, mode, label: code, message: msg });
 			beep(false);
 		} finally {
 			busy = false;

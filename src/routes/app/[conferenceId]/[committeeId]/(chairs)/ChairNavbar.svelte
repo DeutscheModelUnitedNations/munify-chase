@@ -62,12 +62,15 @@
 		}
 	});
 
+	const isGlobalAdmin = await client.query.isGlobalAdmin();
+
 	let menubarItems = $derived(
 		buildConferenceNavItems({
 			role,
 			conferenceId,
 			activeRouteId: page.route.id,
-			activePathname: page.url.pathname
+			activePathname: page.url.pathname,
+			isGlobalAdmin: !!isGlobalAdmin
 		})
 	);
 

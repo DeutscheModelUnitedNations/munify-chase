@@ -3,7 +3,6 @@
 	import Modal from './Modal.svelte';
 	import CountryBadge from './CountryBadge.svelte';
 	import WorldCountries from 'world-countries';
-	import { SvelteSet } from 'svelte/reactivity';
 
 	interface ParsedCountry {
 		alpha2Code: string;
@@ -45,7 +44,7 @@
 
 		const countries: ParsedCountry[] = [];
 		const unrecognized: string[] = [];
-		const addedCodes = new SvelteSet<string>();
+		const addedCodes = new Set<string>();
 
 		for (const token of tokens) {
 			const normalized = token.toLowerCase();

@@ -417,6 +417,12 @@ export type Conference = {
     where?: CommitteeWhereInputArgument | null | undefined
   }) => Committee[],
   createdAt: DateTime,
+  displayTokens: (p?: {
+    limit?: Int | null | undefined,
+    offset?: Int | null | undefined,
+    orderBy?: DisplaytokenOrderInputArgument | null | undefined,
+    where?: DisplaytokenWhereInputArgument | null | undefined
+  }) => Displaytoken[],
   endDate: Date | null,
   hasModeratedCaucus: Boolean,
   id: ID,
@@ -459,6 +465,7 @@ export type Conference = {
 export type ConferenceOrderInputArgument = {
   committees?: CommitteeOrderInputArgument | null | undefined,
   createdAt?: SortingParameter | null | undefined,
+  displayTokens?: DisplaytokenOrderInputArgument | null | undefined,
   endDate?: SortingParameter | null | undefined,
   hasModeratedCaucus?: SortingParameter | null | undefined,
   id?: SortingParameter | null | undefined,
@@ -478,6 +485,7 @@ export type ConferenceOrderInputArgument = {
 export type ConferenceWhereInputArgument = {
   committees?: CommitteeWhereInputArgument | null | undefined,
   createdAt?: DateWhereInputArgument | null | undefined,
+  displayTokens?: DisplaytokenWhereInputArgument | null | undefined,
   endDate?: DateWhereInputArgument | null | undefined,
   hasModeratedCaucus?: Boolean | null | undefined,
   id?: ID | null | undefined,
@@ -668,6 +676,48 @@ export type DateWhereInputArgument = {
   notLike?: String | null | undefined    
 };
 		
+export type Displaytoken = {
+  code: String,
+  conference: (p?: {
+    orderBy?: ConferenceOrderInputArgument | null | undefined,
+    where?: ConferenceWhereInputArgument | null | undefined
+  }) => Conference,
+  conferenceId: ID,
+  createdAt: DateTime,
+  createdById: ID | null,
+  id: ID,
+  label: String,
+  revokedAt: DateTime | null,
+  showStateOfDebate: Boolean,
+  updatedAt: DateTime | null    
+};
+		
+export type DisplaytokenOrderInputArgument = {
+  code?: SortingParameter | null | undefined,
+  conference?: ConferenceOrderInputArgument | null | undefined,
+  conferenceId?: SortingParameter | null | undefined,
+  createdAt?: SortingParameter | null | undefined,
+  createdById?: SortingParameter | null | undefined,
+  id?: SortingParameter | null | undefined,
+  label?: SortingParameter | null | undefined,
+  revokedAt?: SortingParameter | null | undefined,
+  showStateOfDebate?: SortingParameter | null | undefined,
+  updatedAt?: SortingParameter | null | undefined    
+};
+		
+export type DisplaytokenWhereInputArgument = {
+  code?: StringWhereInputArgument | null | undefined,
+  conference?: ConferenceWhereInputArgument | null | undefined,
+  conferenceId?: ID | null | undefined,
+  createdAt?: DateWhereInputArgument | null | undefined,
+  createdById?: ID | null | undefined,
+  id?: ID | null | undefined,
+  label?: StringWhereInputArgument | null | undefined,
+  revokedAt?: DateWhereInputArgument | null | undefined,
+  showStateOfDebate?: Boolean | null | undefined,
+  updatedAt?: DateWhereInputArgument | null | undefined    
+};
+		
 export type Float = number;
 		
 export type FloatWhereInputArgument = {
@@ -856,6 +906,11 @@ export type Mutation = {
     name?: String | null | undefined,
     userEmail: String
   }) => Conferenceuser,
+  createDisplayToken: (p: {
+    conferenceId: ID,
+    label?: String | null | undefined,
+    showStateOfDebate?: Boolean | null | undefined
+  }) => Displaytoken,
   createRepresentation: (p: {
     alpha2Code?: String | null | undefined,
     alpha3Code?: String | null | undefined,
@@ -880,6 +935,7 @@ export type Mutation = {
   deleteConference: Boolean,
   deleteConferenceMember: Boolean,
   deleteConferenceUser: Boolean,
+  deleteDisplayToken: Boolean,
   deleteNsaPresenceEvent: (p: {
     id: ID
   }) => Nsapresenceevent,
@@ -954,6 +1010,7 @@ export type Mutation = {
     paperId: ID,
     restoreSnapshot?: Boolean | null | undefined
   }) => Resolutionpaper,
+  revokeDisplayToken: Boolean,
   selfAddToSpeakersList: (p: {
     speakersListId: ID
   }) => Speakeronlist,
@@ -1399,6 +1456,15 @@ export type Query = {
     where?: ConferenceWhereInputArgument | null | undefined
   }) => Conference[],
   currentUserClaims: () => UserClaims,
+  displayToken: (p: {
+    id: ID
+  }) => Displaytoken,
+  displayTokens: (p?: {
+    limit?: Int | null | undefined,
+    offset?: Int | null | undefined,
+    orderBy?: DisplaytokenOrderInputArgument | null | undefined,
+    where?: DisplaytokenWhereInputArgument | null | undefined
+  }) => Displaytoken[],
   isGlobalAdmin: Boolean,
   nsaPresenceEvent: (p: {
     id: ID
@@ -2030,6 +2096,15 @@ export type Subscription = {
     orderBy?: ConferenceOrderInputArgument | null | undefined,
     where?: ConferenceWhereInputArgument | null | undefined
   }) => Conference[],
+  displayToken: (p: {
+    id: ID
+  }) => Displaytoken,
+  displayTokens: (p?: {
+    limit?: Int | null | undefined,
+    offset?: Int | null | undefined,
+    orderBy?: DisplaytokenOrderInputArgument | null | undefined,
+    where?: DisplaytokenWhereInputArgument | null | undefined
+  }) => Displaytoken[],
   nsaPresenceEvent: (p: {
     id: ID
   }) => Nsapresenceevent,
@@ -2231,7 +2306,7 @@ export const client = {
    */
   liveQuery: makeLiveQuery<Query>({
 	  urqlClient,
-	  availableSubscriptions: new Set(["agendaItem", "agendaItems", "amendment", "amendmentSponsor", "amendmentSponsors", "amendments", "committee", "committeeMember", "committeeMembers", "committees", "conference", "conferenceMember", "conferenceMembers", "conferenceUser", "conferenceUsers", "conferences", "nsaPresenceEvent", "nsaPresenceEvents", "operativeClauseVote", "operativeClauseVotes", "paperContentSnapshot", "paperContentSnapshots", "paperEditor", "paperEditors", "paperShareCode", "paperShareCodes", "paperSponsor", "paperSponsors", "presenceChangedTimestamp", "presenceChangedTimestamps", "representation", "representations", "resolutionComment", "resolutionComments", "resolutionPaper", "resolutionPapers", "resolutionVoteResult", "resolutionVoteResults", "speakerOnList", "speakerOnLists", "speakersList", "speakersLists", "user", "users"]),
+	  availableSubscriptions: new Set(["agendaItem", "agendaItems", "amendment", "amendmentSponsor", "amendmentSponsors", "amendments", "committee", "committeeMember", "committeeMembers", "committees", "conference", "conferenceMember", "conferenceMembers", "conferenceUser", "conferenceUsers", "conferences", "displayToken", "displayTokens", "nsaPresenceEvent", "nsaPresenceEvents", "operativeClauseVote", "operativeClauseVotes", "paperContentSnapshot", "paperContentSnapshots", "paperEditor", "paperEditors", "paperShareCode", "paperShareCodes", "paperSponsor", "paperSponsors", "presenceChangedTimestamp", "presenceChangedTimestamps", "representation", "representations", "resolutionComment", "resolutionComments", "resolutionPaper", "resolutionPapers", "resolutionVoteResult", "resolutionVoteResults", "speakerOnList", "speakerOnLists", "speakersList", "speakersLists", "user", "users"]),
 		schema,
     autoIncludeIdField: 'id'
   }),

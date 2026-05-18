@@ -153,6 +153,8 @@
 			roleLabel={roleLabelFor(role)}
 			roleBadgeClass={roleBadgeClassFor(role)}
 			conferenceTitle={conference?.title}
+			conferenceId={page.params.conferenceId}
+			committees={role === 'ADMIN' || role === 'TEAM' ? (conference?.committees ?? []) : []}
 			dashboardHref="/app"
 			signOutHref="/logout"
 		/>

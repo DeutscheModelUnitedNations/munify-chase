@@ -1,9 +1,16 @@
 <script lang="ts">
 	import { fade, fly } from 'svelte/transition';
+	import { resolve } from '$app/paths';
 	import ThemeSwitcher from './ThemeSwitcher.svelte';
 	import LanguageSwitcher from './LanguageSwitcher.svelte';
 	import { m } from '$lib/paraglide/messages';
 	import type { Snippet } from 'svelte';
+
+	interface CommitteeLink {
+		id: string;
+		abbreviation: string;
+		name: string;
+	}
 
 	interface Item {
 		key?: string;
@@ -23,6 +30,8 @@
 		conferenceTitle?: string | null;
 		signOutHref?: string;
 		dashboardHref?: string;
+		conferenceId?: string;
+		committees?: CommitteeLink[];
 	}
 
 	let {
@@ -34,8 +43,14 @@
 		roleBadgeClass = 'badge-ghost',
 		conferenceTitle,
 		signOutHref,
-		dashboardHref
+		dashboardHref,
+		conferenceId,
+		committees = []
 	}: Props = $props();
+
+	const sortedCommittees = $derived(
+		[...committees].sort((a, b) => a.abbreviation.localeCompare(b.abbreviation))
+	);
 
 	let menuVisible = $state(false);
 
@@ -124,6 +139,26 @@
 						</a>
 					</li>
 				{/each}
+			{/if}
+
+			{#if conferenceId && sortedCommittees.length > 0}
+				<li class="menu-title mt-2">{m.committees()}</li>
+				<li>
+					<div class="grid grid-cols-3 gap-1 p-0 hover:bg-transparent">
+						{#each sortedCommittees as committee (committee.id)}
+							<a
+								href={resolve('/app/[conferenceId]/[committeeId]/(chairs)/setup', {
+									conferenceId,
+									committeeId: committee.id
+								})}
+								class="btn btn-sm btn-soft truncate"
+								title={committee.name}
+							>
+								{committee.abbreviation}
+							</a>
+						{/each}
+					</div>
+				</li>
 			{/if}
 
 			{#if toolsSnippet}

@@ -2,8 +2,14 @@
 	import { m } from '$lib/paraglide/messages';
 	import Modal from './Modal.svelte';
 	import toast from 'svelte-french-toast';
-	import { client } from '$lib/api/rumbleClient/client';
+	import { urqlClient } from '$lib/api/client';
 	import { promiseToastStrings } from '$lib/utils/toast';
+
+	const DELETE_CONFERENCE_MUTATION = /* GraphQL */ `
+		mutation DeleteConference($id: ID!) {
+			deleteConference(id: $id)
+		}
+	`;
 
 	interface Props {
 		open: boolean;
@@ -23,8 +29,16 @@
 		isDeleting = true;
 		try {
 			await toast.promise(
-				// eslint-disable-next-line @typescript-eslint/no-explicit-any -- rumble generator types delete mutations as plain `Boolean` instead of callable functions
-				(client.mutate.deleteConference as any)({ __args: { id: conferenceId } } as any),
+				// The rumble client cannot call scalar-returning mutations: it always
+				// emits a selection set with an auto-included `id`, which is invalid
+				// GraphQL for a `Boolean!` field. Call the urql client directly.
+				urqlClient
+					.mutation(DELETE_CONFERENCE_MUTATION, { id: conferenceId })
+					.toPromise()
+					.then((result) => {
+						if (result.error) throw result.error;
+						return result;
+					}),
 				promiseToastStrings(conferenceName, 'delete')
 			);
 			open = false;

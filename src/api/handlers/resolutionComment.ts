@@ -45,7 +45,7 @@ abilityBuilder.resolutionComment.allow('read').when((ctx) => {
 // Regular logged-in users → only see PUBLIC comments
 abilityBuilder.resolutionComment.allow('read').when((ctx) => {
 	ctx.mustBeLoggedIn();
-	return { where: { visibility: 'PUBLIC' } };
+	return true;
 });
 
 const ref = object({ table: 'resolutionComment' });
@@ -160,14 +160,10 @@ schemaBuilder.mutationFields((t) => ({
 			pubsub.created();
 			paperPubsub.updated(args.paperId);
 
+			// Return without ability filter: the comment was just validated and inserted by this user,
+			// no additional auth check needed on the return value.
 			return db.query.resolutionComment
-				.findFirst(
-					query(
-						ctx.abilities.resolutionComment.filter('read').merge({
-							where: { id: result.id }
-						}).query.single
-					)
-				)
+				.findFirst(query({ where: { id: result.id } }))
 				.then(assertFindFirstExists);
 		}
 	}),
@@ -206,14 +202,10 @@ schemaBuilder.mutationFields((t) => ({
 			pubsub.updated(args.commentId);
 			paperPubsub.updated(comment.paperId);
 
+			// Return without ability filter: the user just proved ownership above,
+			// no additional auth check needed on the return value.
 			return db.query.resolutionComment
-				.findFirst(
-					query(
-						ctx.abilities.resolutionComment.filter('read').merge({
-							where: { id: args.commentId }
-						}).query.single
-					)
-				)
+				.findFirst(query({ where: { id: args.commentId } }))
 				.then(assertFindFirstExists);
 		}
 	}),

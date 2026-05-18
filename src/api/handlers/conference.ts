@@ -136,6 +136,8 @@ schemaBuilder.mutationFields((t) => ({
 					ctx.abilities.conference.filter('delete').merge({ where: { id: args.id } }).sql.where
 				);
 
+			pubsub.removed();
+
 			return true;
 		}
 	})

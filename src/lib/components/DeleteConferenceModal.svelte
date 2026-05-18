@@ -2,6 +2,8 @@
 	import { m } from '$lib/paraglide/messages';
 	import Modal from './Modal.svelte';
 	import toast from 'svelte-french-toast';
+	import { client } from '$lib/api/rumbleClient/client';
+	import { promiseToastStrings } from '$lib/utils/toast';
 
 	interface Props {
 		open: boolean;
@@ -9,7 +11,6 @@
 		conferenceName: string;
 	}
 
-	// eslint-disable-next-line @typescript-eslint/no-unused-vars
 	let { open = $bindable(), conferenceId, conferenceName }: Props = $props();
 
 	let confirmInput = $state('');
@@ -21,8 +22,11 @@
 		if (!canDelete) return;
 		isDeleting = true;
 		try {
-			// TODO: deleteConference not available in Rumble client yet
-			toast.error('deleteConference is not yet available');
+			await toast.promise(
+				// eslint-disable-next-line @typescript-eslint/no-explicit-any -- rumble generator types delete mutations as plain `Boolean` instead of callable functions
+				(client.mutate.deleteConference as any)({ __args: { id: conferenceId } } as any),
+				promiseToastStrings(conferenceName, 'delete')
+			);
 			open = false;
 		} finally {
 			isDeleting = false;

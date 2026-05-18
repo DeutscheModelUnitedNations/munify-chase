@@ -25,9 +25,14 @@
 		currentUser.email ||
 		'';
 
-	const conferenceMeta = await client.query.conference({
+	const conferenceMeta = await client.liveQuery.conference({
 		__args: { id: conferenceId },
-		title: true
+		title: true,
+		committees: {
+			id: true,
+			name: true,
+			abbreviation: true
+		}
 	});
 
 	const conferenceUsers = await client.liveQuery.conferenceUsers({
@@ -88,6 +93,8 @@
 					roleLabel={roleLabelFor(role)}
 					roleBadgeClass={roleBadgeClassFor(role)}
 					conferenceTitle={conferenceMeta?.title}
+					{conferenceId}
+					committees={role === 'ADMIN' || role === 'TEAM' ? (conferenceMeta?.committees ?? []) : []}
 					dashboardHref="/app"
 					signOutHref="/logout"
 				/>

@@ -52,6 +52,16 @@
 
 	let role = $derived(conferenceUsers?.[0]?.conferenceUserType);
 
+	const conference = await client.liveQuery.conference({
+		__args: { id: page.params.conferenceId! },
+		id: true,
+		committees: {
+			id: true,
+			name: true,
+			abbreviation: true
+		}
+	});
+
 	const isGlobalAdmin = await client.query.isGlobalAdmin();
 
 	let menubarItems = $derived(
@@ -220,6 +230,8 @@
 			roleLabel={roleLabelFor(role)}
 			roleBadgeClass={roleBadgeClassFor(role)}
 			{conferenceTitle}
+			{conferenceId}
+			committees={role === 'ADMIN' || role === 'TEAM' ? (conference?.committees ?? []) : []}
 			dashboardHref="/app"
 			signOutHref="/logout"
 		/>

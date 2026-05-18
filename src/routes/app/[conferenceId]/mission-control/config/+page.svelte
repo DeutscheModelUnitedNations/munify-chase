@@ -110,9 +110,11 @@
 		conferenceUserType: true
 	});
 
+	const isGlobalAdmin = await client.query.isGlobalAdmin();
+
 	let currentUserRole = $derived(conferenceUsers?.[0]);
+	let isAdmin = $derived(isGlobalAdmin || currentUserRole?.conferenceUserType === 'ADMIN');
 	let role = $derived(currentUserRole?.conferenceUserType);
-	let isAdmin = $derived(role === 'ADMIN');
 	let currentUserEmail = currentUser?.email ?? undefined;
 	const userDisplayName =
 		[currentUser?.givenName, currentUser?.familyName].filter(Boolean).join(' ').trim() ||

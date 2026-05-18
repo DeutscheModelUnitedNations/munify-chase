@@ -144,14 +144,14 @@
 			{#if conferenceId && sortedCommittees.length > 0}
 				<li class="menu-title mt-2">{m.committees()}</li>
 				<li>
-					<div class="grid grid-cols-3 gap-1 p-0 hover:bg-transparent">
+					<div class="flex flex-wrap gap-1 p-0 hover:bg-transparent justify-center">
 						{#each sortedCommittees as committee (committee.id)}
 							<a
 								href={resolve('/app/[conferenceId]/[committeeId]/(chairs)/setup', {
 									conferenceId,
 									committeeId: committee.id
 								})}
-								class="btn btn-sm btn-soft truncate"
+								class="btn btn-sm btn-soft"
 								title={committee.name}
 							>
 								{committee.abbreviation}
@@ -168,9 +168,7 @@
 
 			{#if dashboardHref}
 				{#if items.length > 0 || toolsSnippet}
-					<li>
-						<div class="divider my-1"></div>
-					</li>
+					<div class="divider my-2"></div>
 				{/if}
 				<li>
 					<!-- eslint-disable-next-line svelte/no-navigation-without-resolve -- fixed app-level route -->

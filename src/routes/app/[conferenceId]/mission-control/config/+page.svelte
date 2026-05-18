@@ -28,6 +28,7 @@
 		endDate: true,
 		hasModeratedCaucus: true,
 		resolutionFeatureEnabled: true,
+		logoSvg: true,
 		committees: {
 			id: true,
 			name: true,

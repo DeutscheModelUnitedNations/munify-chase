@@ -74,10 +74,27 @@ schemaBuilder.mutationFields((t) => ({
 			startDate: t.arg({ type: 'Date' }),
 			endDate: t.arg({ type: 'Date' }),
 			hasModeratedCaucus: t.arg.boolean(),
-			resolutionFeatureEnabled: t.arg.boolean()
+			resolutionFeatureEnabled: t.arg.boolean(),
+			logoSvg: t.arg.string()
 		},
 		resolve: async (query, root, args, ctx) => {
 			const mappedArgs = mapNullFieldsToUndefined(args);
+
+			// Explicitly resolve the logo so it can be cleared: an empty string
+			// removes the logo (stored as null), anything else is validated and
+			// stored verbatim. `undefined` leaves the existing logo untouched.
+			let logoSvgUpdate: { logoSvg?: string | null } = {};
+			if (args.logoSvg !== undefined && args.logoSvg !== null) {
+				const trimmed = args.logoSvg.trim();
+				if (trimmed === '') {
+					logoSvgUpdate = { logoSvg: null };
+				} else if (!trimmed.includes('<svg') || args.logoSvg.length > 512 * 1024) {
+					throw new GraphQLError('Invalid SVG logo');
+				} else {
+					logoSvgUpdate = { logoSvg: args.logoSvg };
+				}
+			}
+
 			await db
 				.update(schema.conference)
 				.set({
@@ -87,7 +104,8 @@ schemaBuilder.mutationFields((t) => ({
 					startDate: mappedArgs.startDate,
 					endDate: mappedArgs.endDate,
 					hasModeratedCaucus: mappedArgs.hasModeratedCaucus,
-					resolutionFeatureEnabled: mappedArgs.resolutionFeatureEnabled
+					resolutionFeatureEnabled: mappedArgs.resolutionFeatureEnabled,
+					...logoSvgUpdate
 				})
 				.where(
 					ctx.abilities.conference.filter('update').merge({ where: { id: args.id } }).sql.where

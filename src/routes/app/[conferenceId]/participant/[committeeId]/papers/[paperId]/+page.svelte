@@ -31,6 +31,8 @@
 	import { getTranslatedCountryNameFromAlpha3Code } from '$lib/utils/nationTranslationHelper.svelte';
 	import toast from 'svelte-french-toast';
 	import { getResolutionLabels } from '$lib/utils/resolutionEditorLabels';
+	import { svgToDataUrl } from '$lib/utils/svgToDataUrl';
+	import { downloadResolutionTypst, downloadResolutionPdf } from '$lib/utils/resolutionExport';
 	import { loadResolutionPhrases } from '$lib/utils/resolutionPhrases';
 	import { SvelteMap } from 'svelte/reactivity';
 
@@ -198,7 +200,8 @@
 				activeAmendmentId: true,
 				conference: {
 					id: true,
-					title: true
+					title: true,
+					logoSvg: true
 				},
 				activeAgendaItem: {
 					id: true,
@@ -381,6 +384,7 @@
 	// Resolution header data for document preview
 	let headerData = $derived<ResolutionHeaderData>({
 		conferenceTitle: committee?.conference?.title ?? undefined,
+		conferenceEmblem: svgToDataUrl(committee?.conference?.logoSvg),
 		committeeAbbreviation: committee?.abbreviation ?? undefined,
 		committeeFullName: committee?.name ?? undefined,
 		committeeResolutionHeadline: committee?.resolutionHeadline ?? undefined,
@@ -404,6 +408,21 @@
 
 	// Title save status (resolution content is auto-synced via Y.js, no save status needed for it)
 	let saveStatus = $state<'idle' | 'saving' | 'saved' | 'error'>('idle');
+
+	let isExportingPdf = $state(false);
+	async function exportPdf() {
+		if (!resolution || isExportingPdf) return;
+		isExportingPdf = true;
+		try {
+			await toast.promise(downloadResolutionPdf(resolution, headerData, paper.documentNumber), {
+				loading: m.exportPdfLoading(),
+				success: m.exportPdfSuccess(),
+				error: m.exportPdfError()
+			});
+		} finally {
+			isExportingPdf = false;
+		}
+	}
 
 	let titleInput = $state('');
 	let titleInitialized = $state(false);
@@ -799,14 +818,31 @@
 						<i class="fas fa-trash"></i>
 					</button>
 				{/if}
-				<a
-					href={resolve('/app/print/[documentId]', { documentId: paper.id })}
-					target="_blank"
+				<button
+					type="button"
 					class="btn btn-ghost btn-sm"
-					title={m.printResolution()}
+					title={m.downloadTypst()}
+					aria-label={m.downloadTypst()}
+					disabled={!resolution}
+					onclick={() =>
+						resolution && downloadResolutionTypst(resolution, headerData, paper.documentNumber)}
 				>
-					<i class="fas fa-print"></i>
-				</a>
+					<i class="fas fa-file-code"></i>
+				</button>
+				<button
+					type="button"
+					class="btn btn-ghost btn-sm"
+					title={m.downloadPdf()}
+					aria-label={m.downloadPdf()}
+					disabled={!resolution || isExportingPdf}
+					onclick={exportPdf}
+				>
+					{#if isExportingPdf}
+						<span class="loading loading-spinner loading-xs"></span>
+					{:else}
+						<i class="fas fa-file-pdf"></i>
+					{/if}
+				</button>
 			</div>
 		</div>
 

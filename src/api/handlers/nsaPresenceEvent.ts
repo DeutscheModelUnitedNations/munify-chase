@@ -34,32 +34,28 @@ const pubsub = rumblePubsub({ table: 'nsaPresenceEvent' });
 query({ table: 'nsaPresenceEvent' });
 
 /**
- * Resolves the target NSA `conferenceUser` for a scan, given exactly one of
- * `conferenceUserId` (from QR) or `attendanceCode` (from manual fallback).
- * Scoped to the conference owning the target committee.
+ * Resolves the target NSA `conferenceUser` for a scan given a code
+ * that may be a conferenceUser.id (30-char nanoid), an attendanceCode (6-char),
+ * or a global user.id (OIDC subject). Scoped to the conference owning the target committee.
  */
 async function resolveNsaTarget(args: {
 	committee: typeof schema.committee.$inferSelect;
-	conferenceUserId?: string | null;
-	attendanceCode?: string | null;
+	code: string;
 }) {
-	const hasUserId = !!args.conferenceUserId;
-	const hasCode = !!args.attendanceCode;
-	if (hasUserId === hasCode) {
-		throw new GraphQLError('Provide exactly one of conferenceUserId or attendanceCode');
-	}
+	const code = args.code.trim();
+	if (!code) throw new GraphQLError('Missing code');
+	const normalizedCode = code.toUpperCase();
 
-	const normalizedCode = args.attendanceCode?.trim().toUpperCase();
-
-	const target = await db.query.conferenceUser.findFirst({
+	const matches = await db.query.conferenceUser.findMany({
 		where: {
 			conferenceId: args.committee.conferenceId,
 			conferenceUserType: 'NON_STATE_ACTOR',
-			...(hasUserId ? { id: args.conferenceUserId! } : { attendanceCode: normalizedCode! })
+			OR: [{ id: code }, { attendanceCode: normalizedCode }, { user: { id: code } }]
 		}
 	});
-	if (!target) throw new GraphQLError('NSA user not found for this conference');
-	return target;
+	if (matches.length === 0) throw new GraphQLError('NSA user not found for this conference');
+	if (matches.length > 1) throw new GraphQLError('Ambiguous code: matches multiple NSA users');
+	return matches[0];
 }
 
 /**
@@ -93,8 +89,7 @@ schemaBuilder.mutationFields((t) => ({
 		type: NsaPresenceEventRef,
 		args: {
 			committeeId: t.arg.id({ required: true }),
-			conferenceUserId: t.arg.id(),
-			attendanceCode: t.arg.string()
+			code: t.arg.string({ required: true })
 		},
 		resolve: async (q, _root, args, ctx) => {
 			const committee = await db.query.committee
@@ -108,8 +103,7 @@ schemaBuilder.mutationFields((t) => ({
 
 			const target = await resolveNsaTarget({
 				committee,
-				conferenceUserId: args.conferenceUserId,
-				attendanceCode: args.attendanceCode
+				code: args.code
 			});
 
 			const triggeredBy = await db.query.conferenceUser.findFirst({
@@ -187,8 +181,7 @@ schemaBuilder.mutationFields((t) => ({
 		type: NsaPresenceEventRef,
 		args: {
 			committeeId: t.arg.id({ required: true }),
-			conferenceUserId: t.arg.id(),
-			attendanceCode: t.arg.string()
+			code: t.arg.string({ required: true })
 		},
 		resolve: async (q, _root, args, ctx) => {
 			const committee = await db.query.committee
@@ -202,8 +195,7 @@ schemaBuilder.mutationFields((t) => ({
 
 			const target = await resolveNsaTarget({
 				committee,
-				conferenceUserId: args.conferenceUserId,
-				attendanceCode: args.attendanceCode
+				code: args.code
 			});
 
 			const triggeredBy = await db.query.conferenceUser.findFirst({

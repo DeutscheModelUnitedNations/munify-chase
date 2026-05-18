@@ -7,7 +7,9 @@
 
 @custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
 @plugin '@tailwindcss/typography';
-@plugin 'daisyui/index.js';
+@plugin 'daisyui' {
+	themes: false;
+}
 
 /* TipTap */
 .ProseMirror:focus {

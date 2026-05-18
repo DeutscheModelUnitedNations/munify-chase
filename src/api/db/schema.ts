@@ -55,7 +55,8 @@ export const conference = pgTable('conference', {
 	startDate: date({ mode: 'date' }),
 	endDate: date({ mode: 'date' }),
 	hasModeratedCaucus: boolean().notNull().default(false),
-	resolutionFeatureEnabled: boolean().notNull().default(true)
+	resolutionFeatureEnabled: boolean().notNull().default(true),
+	logoSvg: text()
 });
 
 export const committeeStatus = pgEnum('committee_status', [

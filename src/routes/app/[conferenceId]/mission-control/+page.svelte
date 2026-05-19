@@ -1,15 +1,25 @@
 <script lang="ts">
-	import CommitteeGrid from '$lib/components/CommitteeGrid.svelte';
+	import CommitteeGrid, { type ConferenceData } from '$lib/components/CommitteeGrid.svelte';
 	import CurrentTime from '$lib/components/CurrentTime.svelte';
 	import * as m from '$lib/paraglide/messages.js';
 	import NavbarBurgerMenu from '$lib/components/NavbarBurgerMenu.svelte';
-	import DownloadPresenceData from './DownloadPresenceData.svelte';
+	import {
+		buildConferenceNavItems,
+		roleBadgeClassFor,
+		roleLabelFor
+	} from '$lib/components/navbar/conferenceNavItems';
 	import { client } from '$lib/api/rumbleClient/client';
 	import { page } from '$app/state';
 
 	import { getCurrentUser } from '$lib/state/currentUser.svelte';
 
-	const userId = (await getCurrentUser()).id ?? '';
+	const currentUser = await getCurrentUser();
+	const userId = currentUser.id ?? '';
+	const userDisplayName =
+		[currentUser.givenName, currentUser.familyName].filter(Boolean).join(' ').trim() ||
+		currentUser.preferredUsername ||
+		currentUser.email ||
+		'';
 
 	const conference = await client.liveQuery.conference({
 		__args: { id: page.params.conferenceId! },
@@ -43,27 +53,18 @@
 	});
 
 	let currentUserRole = $derived(conferenceUsers?.[0]);
-	let isAdmin = $derived(currentUserRole?.conferenceUserType === 'ADMIN');
+	let role = $derived(currentUserRole?.conferenceUserType);
 
-	const baseMenuItems = [
-		{
-			faIcon: 'fa-home',
-			title: m.home(),
-			href: '..'
-		}
-	];
+	const isGlobalAdmin = await client.query.isGlobalAdmin();
 
 	let menubarItems = $derived(
-		isAdmin
-			? [
-					...baseMenuItems,
-					{
-						faIcon: 'fa-gear',
-						title: m.configuration(),
-						href: 'mission-control/config'
-					}
-				]
-			: baseMenuItems
+		buildConferenceNavItems({
+			role,
+			conferenceId: page.params.conferenceId!,
+			activeRouteId: page.route.id,
+			activePathname: page.url.pathname,
+			isGlobalAdmin: !!isGlobalAdmin
+		})
 	);
 </script>
 
@@ -77,14 +78,25 @@
 		<CurrentTime />
 	</div>
 	<div class="flex-none">
-		<NavbarBurgerMenu items={menubarItems}>
-			{#snippet CustomListItems()}
-				<DownloadPresenceData conferenceTitle={conference?.title} conferenceId={conference?.id} />
-			{/snippet}
-		</NavbarBurgerMenu>
+		<NavbarBurgerMenu
+			items={menubarItems}
+			user={{
+				name: userDisplayName,
+				email: currentUser.email ?? undefined,
+				givenName: currentUser.givenName ?? undefined,
+				familyName: currentUser.familyName ?? undefined
+			}}
+			roleLabel={roleLabelFor(role)}
+			roleBadgeClass={roleBadgeClassFor(role)}
+			conferenceTitle={conference?.title}
+			conferenceId={page.params.conferenceId}
+			committees={role === 'ADMIN' || role === 'TEAM' ? (conference?.committees ?? []) : []}
+			dashboardHref="/app"
+			signOutHref="/logout"
+		/>
 	</div>
 </div>
 
 {#if conference}
-	<CommitteeGrid conference={conference as any} environment="TEAM" />
+	<CommitteeGrid conference={conference as unknown as ConferenceData} environment="TEAM" />
 {/if}

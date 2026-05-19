@@ -22,6 +22,24 @@
 			href="https://cdn.dmun.de/cdn/fontawesome-pro-6.7.2/css/brands.min.css"
 		/>
 		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<script>
+			// Set data-theme before first paint to avoid a flash of the wrong theme.
+			// Mirrors the logic in src/lib/utils/theme.svelte.ts.
+			(function () {
+				try {
+					var stored = localStorage.getItem('theme');
+					var theme =
+						!stored || stored === 'system' || stored === 'undefined'
+							? window.matchMedia('(prefers-color-scheme: dark)').matches
+								? 'dark'
+								: 'light'
+							: stored;
+					document.documentElement.setAttribute('data-theme', theme);
+				} catch (e) {
+					document.documentElement.setAttribute('data-theme', 'light');
+				}
+			})();
+		</script>
 		<style>
 			body {
 				margin: 0;

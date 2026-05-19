@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { m, stateOfDebate } from '$lib/paraglide/messages';
+	import { m } from '$lib/paraglide/messages';
 	import toast from 'svelte-french-toast';
 	import Combobox from '../Combobox.svelte';
 	import { client } from '$lib/api/rumbleClient/client';

@@ -1,8 +1,8 @@
 import { gql } from '@urql/core';
-import type { OptimisticMutationConfig } from '@urql/exchange-graphcache';
+import type { OptimisticMutationConfig, UpdatesConfig } from '@urql/exchange-graphcache';
 
 export const optimistic: OptimisticMutationConfig = {
-	updateSpeakersList: (args, cache, info) => {
+	updateSpeakersList: (args) => {
 		const result: Record<string, unknown> = {
 			__typename: 'Speakerslist',
 			id: args.id
@@ -14,7 +14,7 @@ export const optimistic: OptimisticMutationConfig = {
 		else if (args.startTimestamp !== undefined) result.startTimestamp = args.startTimestamp;
 		return result;
 	},
-	updateCommittee: (args, cache, info) => {
+	updateCommittee: (args) => {
 		const result: Record<string, unknown> = {
 			__typename: 'Committee',
 			id: args.id
@@ -155,5 +155,111 @@ export const optimistic: OptimisticMutationConfig = {
 			__typename: 'Committeemember',
 			id,
 			present: args.present
-		}))
+		})),
+	addSpeakerOnList: (args, cache) => {
+		const list = cache.readFragment(
+			gql`
+				fragment AddSpeakerOptimisticList on Speakerslist {
+					id
+					speakers {
+						id
+						position
+					}
+				}
+			`,
+			{ __typename: 'Speakerslist', id: args.speakersListId } as Record<string, unknown>
+		);
+		if (!list) return null;
+
+		const speakers = list.speakers as Array<{ id: string; position: number }>;
+		const position = typeof args.position === 'number' ? args.position : speakers.length;
+
+		let committeeMember = null;
+		if (args.committeeMemberId) {
+			committeeMember = cache.readFragment(
+				gql`
+					fragment AddSpeakerOptimisticCM on Committeemember {
+						id
+						representation {
+							id
+							name
+							alpha2Code
+							alpha3Code
+							faIcon
+							type
+						}
+					}
+				`,
+				{ __typename: 'Committeemember', id: args.committeeMemberId } as Record<string, unknown>
+			);
+		}
+
+		let conferenceMember = null;
+		if (args.conferenceMemberId) {
+			conferenceMember = cache.readFragment(
+				gql`
+					fragment AddSpeakerOptimisticConM on Conferencemember {
+						id
+						representation {
+							id
+							name
+							alpha2Code
+							alpha3Code
+							faIcon
+							type
+						}
+					}
+				`,
+				{ __typename: 'Conferencemember', id: args.conferenceMemberId } as Record<string, unknown>
+			);
+		}
+
+		return {
+			__typename: 'Speakeronlist',
+			id: `__optimistic__${Date.now()}`,
+			position,
+			speakersListId: args.speakersListId,
+			overwriteName: null,
+			committeeMember: committeeMember ?? null,
+			conferenceMember: conferenceMember ?? null
+		};
+	}
+};
+
+const addSpeakerListFragment = gql`
+	fragment AddSpeakerUpdateList on Speakerslist {
+		id
+		speakers {
+			id
+			position
+		}
+	}
+`;
+
+export const updates: UpdatesConfig = {
+	Mutation: {
+		addSpeakerOnList: (result, args, cache) => {
+			const newSpeaker = (result as Record<string, Record<string, unknown>>).addSpeakerOnList;
+			if (!newSpeaker?.id) return;
+
+			const list = cache.readFragment(addSpeakerListFragment, {
+				__typename: 'Speakerslist',
+				id: args.speakersListId
+			} as Record<string, unknown>) as {
+				speakers: Array<{ id: string; position: number }>;
+			} | null;
+			if (!list) return;
+
+			if (list.speakers.some((s) => s.id === newSpeaker.id)) return;
+
+			const position =
+				typeof newSpeaker.position === 'number' ? newSpeaker.position : list.speakers.length;
+
+			cache.writeFragment(addSpeakerListFragment, {
+				__typename: 'Speakerslist',
+				id: args.speakersListId,
+				speakers: [...list.speakers, { __typename: 'Speakeronlist', id: newSpeaker.id, position }]
+			});
+		}
+	}
 };

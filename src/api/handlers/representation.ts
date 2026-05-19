@@ -7,11 +7,7 @@ import {
 	pubsub as rumblePubsub,
 	query
 } from '$api/rumble';
-import {
-	isAdminInConference,
-	isGlobalAdmin,
-	isParticipantInConference
-} from '$api/services/authHelper';
+import { isAdminInConference, isParticipantInConference } from '$api/services/authHelper';
 import { assertFindFirstExists, assertFirstEntryExists } from '@m1212e/rumble';
 import { eq } from 'drizzle-orm';
 
@@ -45,7 +41,7 @@ schemaBuilder.mutationFields((t) => ({
 			alpha3Code: t.arg.string(),
 			faIcon: t.arg.string()
 		},
-		resolve: async (query, root, args, ctx, info) => {
+		resolve: async (query, root, args, ctx) => {
 			await db.query.conference
 				.findFirst(
 					ctx.abilities.conference.filter('update').merge({ where: { id: args.conferenceId } })
@@ -100,7 +96,7 @@ schemaBuilder.mutationFields((t) => ({
 		args: {
 			id: t.arg.id({ required: true })
 		},
-		resolve: async (root, args, ctx, info) => {
+		resolve: async (root, args, ctx) => {
 			await db.query.representation
 				.findFirst(
 					ctx.abilities.representation.filter('delete').merge({ where: { id: args.id } }).query

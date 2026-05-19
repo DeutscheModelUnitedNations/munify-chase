@@ -1,9 +1,13 @@
+import { emailValidation } from '$api/services/emailValidation';
 import { z } from 'zod/v4';
 
 export const importDataSchema = z.object({
 	$schema: z.string().optional(),
 	id: z.string(),
 	title: z.string(),
+	location: z.string().optional(),
+	startDate: z.coerce.date().optional(),
+	endDate: z.coerce.date().optional(),
 	committees: z.array(
 		z.object({
 			id: z.string(),
@@ -62,7 +66,8 @@ export const importDataSchema = z.object({
 			z.object({
 				id: z.string(),
 				conferenceUserType: z.enum(['ADMIN', 'DELEGATE', 'NON_STATE_ACTOR', 'SPECTATOR', 'TEAM']),
-				userEmail: z.string(),
+				userEmail: emailValidation,
+				name: z.string().optional(),
 				//TODO enforce that one has to be set?
 				conferenceMemberId: z.string().optional(),
 				committeeMemberId: z.string().optional()

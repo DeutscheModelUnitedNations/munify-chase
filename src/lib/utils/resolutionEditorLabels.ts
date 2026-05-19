@@ -86,14 +86,20 @@ export function getResolutionLabels(): ResolutionEditorLabels {
 		resolutionImportLLMPromptPreamble: m.resolutionImportLLMPromptPreamble(),
 		resolutionImportLLMPromptOperative: m.resolutionImportLLMPromptOperative(),
 
+		// Import full resolution / export
+		resolutionExport: m.resolutionExport(),
+		resolutionImportResolution: m.resolutionImportResolution(),
+		resolutionImportResolutionHint: m.resolutionImportResolutionHint(),
+		resolutionImportResolutionFile: m.resolutionImportResolutionFile(),
+		resolutionImportResolutionButton: m.resolutionImportResolutionButton(),
+		resolutionImportResolutionInvalid: m.resolutionImportResolutionInvalid(),
+		resolutionImportResolutionWarnings: m.resolutionImportResolutionWarnings(),
+		resolutionImportResolutionEmpty: m.resolutionImportResolutionEmpty(),
+
 		// Preview metadata
 		resolutionSponsoringDelegations: m.resolutionSponsoringDelegations(),
 		resolutionAuthoringDelegation: m.resolutionAuthoringDelegation(),
 		resolutionDisclaimer: m.resolutionDisclaimer({ conferenceName: '{conferenceName}' }),
-
-		// Locking
-		startEditing: m.startEditing(),
-		doneEditing: m.doneEditing(),
 
 		// Amendments
 		amendmentProposed: m.amendmentProposed(),

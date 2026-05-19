@@ -3,15 +3,23 @@ import {
 	pgTable,
 	text,
 	timestamp,
+	date,
 	unique,
 	pgEnum,
 	boolean,
 	smallint,
 	integer,
 	json,
+	customType,
 	index,
 	type AnyPgColumn
 } from 'drizzle-orm/pg-core';
+
+const bytea = customType<{ data: Uint8Array; driverData: Buffer }>({
+	dataType: () => 'bytea',
+	toDriver: (v) => Buffer.from(v),
+	fromDriver: (v) => new Uint8Array(v as Buffer)
+});
 
 const defaultTimestamps = {
 	createdAt: timestamp().defaultNow().notNull(),
@@ -43,8 +51,12 @@ export const conference = pgTable('conference', {
 	...defaultIdAndTimestamps,
 	title: text().notNull(),
 	pressWebsite: text(),
+	location: text(),
+	startDate: date({ mode: 'date' }),
+	endDate: date({ mode: 'date' }),
 	hasModeratedCaucus: boolean().notNull().default(false),
-	resolutionFeatureEnabled: boolean().notNull().default(true)
+	resolutionFeatureEnabled: boolean().notNull().default(true),
+	logoSvg: text()
 });
 
 export const committeeStatus = pgEnum('committee_status', [
@@ -148,16 +160,29 @@ export const committeeMember = pgTable('committee_member', {
 		.references(() => representation.id)
 });
 
-export const conferenceUser = pgTable('conference_user', {
-	...defaultIdAndTimestamps,
-	conferenceUserType: conferenceUserType().notNull(),
-	userEmail: text().notNull(), // using email instead of uuid to allow creating OIDC users by email adress without having to wait for the user to create an account
-	conferenceId: text()
-		.notNull()
-		.references(() => conference.id, { onDelete: 'cascade' }),
-	conferenceMemberId: text().references(() => conferenceMember.id, { onDelete: 'cascade' }),
-	committeeMemberId: text().references(() => committeeMember.id, { onDelete: 'cascade' })
-});
+export const conferenceUser = pgTable(
+	'conference_user',
+	{
+		...defaultIdAndTimestamps,
+		conferenceUserType: conferenceUserType().notNull(),
+		userEmail: text().notNull(), // using email instead of uuid to allow creating OIDC users by email adress without having to wait for the user to create an account
+		// optional display name; the user table is created lazily on first OIDC
+		// login, so we keep names on the conferenceUser instead. UI falls back to
+		// userEmail when null.
+		name: text(),
+		conferenceId: text()
+			.notNull()
+			.references(() => conference.id, { onDelete: 'cascade' }),
+		conferenceMemberId: text().references(() => conferenceMember.id, { onDelete: 'cascade' }),
+		committeeMemberId: text().references(() => committeeMember.id, { onDelete: 'cascade' }),
+		// short alphanumeric fallback code printed on NSA badges for manual check-in/out
+		// when the QR scanner can't be used. Only set for NON_STATE_ACTOR users.
+		attendanceCode: text()
+	},
+	// Postgres default NULLS DISTINCT keeps the constraint compatible with the many
+	// non-NSA users that have attendanceCode = NULL.
+	(t) => [unique().on(t.conferenceId, t.attendanceCode)]
+);
 
 export const agendaItem = pgTable('agenda_item', {
 	...defaultIdAndTimestamps,
@@ -237,6 +262,38 @@ export const presenceChangedTimestamp = pgTable('presence_changed_timestamp', {
 	timestamp: timestamp().notNull(),
 	presentSetTo: boolean().notNull()
 });
+
+export const nsaPresenceEventType = pgEnum('nsa_presence_event_type', ['CHECK_IN', 'CHECK_OUT']);
+
+export const nsaPresenceEvent = pgTable(
+	'nsa_presence_event',
+	{
+		...defaultIdAndTimestamps,
+		conferenceUserId: text()
+			.notNull()
+			.references(() => conferenceUser.id, { onDelete: 'cascade' }),
+		committeeId: text()
+			.notNull()
+			.references(() => committee.id, { onDelete: 'cascade' }),
+		// denormalized for conference-scoped subscriptions and the latest-event window query
+		conferenceId: text()
+			.notNull()
+			.references(() => conference.id, { onDelete: 'cascade' }),
+		type: nsaPresenceEventType().notNull(),
+		timestamp: timestamp().notNull(),
+		// chair/admin who triggered the event; null for system-generated auto-checkouts on switch
+		triggeredByConferenceUserId: text().references((): AnyPgColumn => conferenceUser.id, {
+			onDelete: 'set null'
+		}),
+		// stable marker like 'AUTO_SWITCH' or free-text correction note
+		note: text()
+	},
+	(t) => [
+		index('nsa_presence_event_user_ts_idx').on(t.conferenceUserId, t.timestamp.desc()),
+		index('nsa_presence_event_committee_ts_idx').on(t.committeeId, t.timestamp.desc()),
+		index('nsa_presence_event_conference_ts_idx').on(t.conferenceId, t.timestamp.desc())
+	]
+);
 
 // Resolution enums
 
@@ -402,21 +459,23 @@ export const operativeClauseVote = pgTable(
 	(t) => [unique().on(t.paperId, t.clauseId)]
 );
 
-export const paperClauseLock = pgTable(
-	'paper_clause_lock',
-	{
-		...defaultIdAndTimestamps,
-		paperId: text()
-			.notNull()
-			.references(() => resolutionPaper.id, { onDelete: 'cascade' }),
-		clauseId: text().notNull(),
-		conferenceUserId: text()
-			.notNull()
-			.references(() => conferenceUser.id, { onDelete: 'cascade' }),
-		acquiredAt: timestamp({ mode: 'date' }).defaultNow().notNull()
-	},
-	(t) => [unique().on(t.paperId, t.clauseId)]
-);
+/**
+ * Y.js document state for a resolution paper.
+ *
+ * The `state` column holds the full Y.Doc encoded via `Y.encodeStateAsUpdate`
+ * and is the canonical source of truth for paper content.
+ * `resolution_paper.content` is a materialized JSON projection refreshed on
+ * every persist so amendment-apply, print, and snapshots can read JSON
+ * without instantiating a Y.Doc.
+ */
+export const paperYjsDoc = pgTable('paper_yjs_doc', {
+	...defaultIdAndTimestamps,
+	paperId: text()
+		.notNull()
+		.unique()
+		.references(() => resolutionPaper.id, { onDelete: 'cascade' }),
+	state: bytea('state').notNull()
+});
 
 export const resolutionVoteResult = pgTable('resolution_vote_result', {
 	...defaultIdAndTimestamps,

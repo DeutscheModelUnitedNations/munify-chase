@@ -10,6 +10,7 @@ const config = {
 		}
 	},
 	kit: {
+		// remoteFunctions requires a server runtime — not available in Tauri/static mode
 		// experimental: {
 		// 	remoteFunctions: true
 		// },

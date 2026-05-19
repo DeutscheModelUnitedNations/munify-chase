@@ -1,5 +1,4 @@
 <script lang="ts">
-	import type { SpeakerslistcategoryEnum } from '$lib/api/rumbleClient/client';
 	import { client } from '$lib/api/rumbleClient/client';
 	import Popover from '$lib/components/Popover.svelte';
 	import { m } from '$lib/paraglide/messages';
@@ -20,10 +19,9 @@
 			timeLeft: number;
 			speakers: Array<{ id: string; position: number; overwriteName?: string | null }>;
 		} | null;
-		type: SpeakerslistcategoryEnum;
 	}
 
-	let { speakersList, type }: Props = $props();
+	let { speakersList }: Props = $props();
 
 	let isOpen = $state(false);
 
@@ -145,8 +143,8 @@
 </script>
 
 <Popover bind:open={isOpen}>
-	{#snippet Trigger()}
-		<button class="btn btn-lg" aria-label="More options" tabindex="-1">
+	{#snippet Trigger({ props })}
+		<button {...props} class="btn btn-lg" aria-label="More options">
 			<i class="fas fa-gears"> </i>
 		</button>
 	{/snippet}

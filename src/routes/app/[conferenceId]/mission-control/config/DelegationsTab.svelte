@@ -80,7 +80,8 @@
 		if (!confirm(m.confirmDeleteRepresentation())) return;
 
 		await toast.promise(
-			client.mutate.deleteRepresentation({ __args: { id } } as any),
+			// eslint-disable-next-line @typescript-eslint/no-explicit-any -- rumble generator types delete mutations as plain `Boolean` instead of callable functions
+			(client.mutate.deleteRepresentation as any)({ __args: { id } } as any),
 			promiseToastStrings(m.delegations(), 'delete')
 		);
 	}
@@ -107,7 +108,7 @@
 					{#each delegations as delegation (delegation.id)}
 						<tr>
 							<td class="w-8">
-								<Flag representation={delegation as any} size="xs" />
+								<Flag representation={delegation} size="xs" />
 							</td>
 							<td>
 								{delegation.name || getTranslatedCountryNameFromAlpha3Code(delegation.alpha3Code)}

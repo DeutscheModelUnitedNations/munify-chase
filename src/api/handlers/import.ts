@@ -4,14 +4,17 @@ import { importDataSchema } from '$lib/utils/import';
 import { ConferenceRef } from './conference';
 import { GraphQLError } from 'graphql';
 import { isGlobalAdmin } from '$api/services/authHelper';
-import { emailValidation } from '$api/services/emailValidation';
 import { assertFindFirstExists } from '@m1212e/rumble';
+import { attendanceCode as generateAttendanceCode } from '$lib/helpers/attendanceCode';
 
 const Input = schemaBuilder.inputType('ImportData', {
 	description: 'Import data. You can find the JSON schema here: /api/schema/import',
 	fields: (t) => ({
 		id: t.id({ required: true }),
 		title: t.string({ required: true }),
+		location: t.string(),
+		startDate: t.field({ type: 'Date' }),
+		endDate: t.field({ type: 'Date' }),
 		committees: t.field({
 			type: [
 				schemaBuilder.inputType('ImportDataCommittee', {
@@ -79,6 +82,7 @@ const Input = schemaBuilder.inputType('ImportData', {
 							required: true
 						}),
 						userEmail: t.string({ required: true }),
+						name: t.string(),
 						conferenceMemberId: t.id(),
 						committeeMemberId: t.id()
 					})
@@ -110,7 +114,7 @@ schemaBuilder.mutationFields((t) => ({
 				required: true
 			})
 		},
-		resolve: async (query, root, args, ctx, info) => {
+		resolve: async (query, root, args, ctx) => {
 			if (!isGlobalAdmin(ctx)) {
 				throw new GraphQLError('You must be a global admin to create conferences!');
 			}
@@ -123,7 +127,10 @@ schemaBuilder.mutationFields((t) => ({
 			await db.transaction(async (tx) => {
 				await tx.insert(schema.conference).values({
 					id: data.id,
-					title: data.title
+					title: data.title,
+					location: data.location,
+					startDate: data.startDate,
+					endDate: data.endDate
 				});
 
 				if (data.committees.length > 0) {
@@ -174,15 +181,27 @@ schemaBuilder.mutationFields((t) => ({
 				}
 
 				if ((data.conferenceUsers?.length ?? 0) > 0) {
+					const usedCodes = new Set<string>();
 					await tx.insert(schema.conferenceUser).values(
-						data.conferenceUsers!.map((user) => ({
-							id: user.id ?? undefined,
-							conferenceUserType: user.conferenceUserType,
-							userEmail: user.userEmail,
-							conferenceMemberId: user.conferenceMemberId,
-							committeeMemberId: user.committeeMemberId,
-							conferenceId: data.id
-						}))
+						data.conferenceUsers!.map((user) => {
+							let code: string | null = null;
+							if (user.conferenceUserType === 'NON_STATE_ACTOR') {
+								do {
+									code = generateAttendanceCode();
+								} while (usedCodes.has(code));
+								usedCodes.add(code);
+							}
+							return {
+								id: user.id ?? undefined,
+								conferenceUserType: user.conferenceUserType,
+								userEmail: user.userEmail,
+								name: user.name?.trim() || null,
+								conferenceMemberId: user.conferenceMemberId,
+								committeeMemberId: user.committeeMemberId,
+								conferenceId: data.id,
+								attendanceCode: code
+							};
+						})
 					);
 				}
 

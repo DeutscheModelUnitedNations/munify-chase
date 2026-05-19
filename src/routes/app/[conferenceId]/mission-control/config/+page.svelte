@@ -1,6 +1,11 @@
 <script lang="ts">
 	import { m } from '$lib/paraglide/messages';
 	import NavbarBurgerMenu from '$lib/components/NavbarBurgerMenu.svelte';
+	import {
+		buildConferenceNavItems,
+		roleBadgeClassFor,
+		roleLabelFor
+	} from '$lib/components/navbar/conferenceNavItems';
 	import GeneralTab from './GeneralTab.svelte';
 	import UsersTab from './UsersTab.svelte';
 	import CommitteesTab from './CommitteesTab.svelte';
@@ -13,12 +18,17 @@
 
 	const currentUser = await getCurrentUser();
 
-	const conference: any = await client.liveQuery.conference({
+	const conference = await client.liveQuery.conference({
 		__args: { id: page.params.conferenceId! },
 		id: true,
 		title: true,
 		pressWebsite: true,
+		location: true,
+		startDate: true,
+		endDate: true,
 		hasModeratedCaucus: true,
+		resolutionFeatureEnabled: true,
+		logoSvg: true,
 		committees: {
 			id: true,
 			name: true,
@@ -38,6 +48,7 @@
 		users: {
 			id: true,
 			userEmail: true,
+			name: true,
 			conferenceUserType: true,
 			user: {
 				givenName: true,
@@ -100,19 +111,29 @@
 		conferenceUserType: true
 	});
 
+	const isGlobalAdmin = await client.query.isGlobalAdmin();
+
 	let currentUserRole = $derived(conferenceUsers?.[0]);
-	let isAdmin = $derived(currentUserRole?.conferenceUserType === 'ADMIN');
+	let isAdmin = $derived(isGlobalAdmin || currentUserRole?.conferenceUserType === 'ADMIN');
+	let role = $derived(currentUserRole?.conferenceUserType);
 	let currentUserEmail = currentUser?.email ?? undefined;
+	const userDisplayName =
+		[currentUser?.givenName, currentUser?.familyName].filter(Boolean).join(' ').trim() ||
+		currentUser?.preferredUsername ||
+		currentUser?.email ||
+		'';
 
 	let activeTab = $state<'general' | 'users' | 'committees' | 'delegations' | 'nsa'>('general');
 
-	const menubarItems = [
-		{
-			faIcon: 'fa-rocket-launch',
-			title: m.missionControl(),
-			href: '.'
-		}
-	];
+	let menubarItems = $derived(
+		buildConferenceNavItems({
+			role,
+			conferenceId: page.params.conferenceId!,
+			activeRouteId: page.route.id,
+			activePathname: page.url.pathname,
+			isGlobalAdmin: !!isGlobalAdmin
+		})
+	);
 </script>
 
 <svelte:head>
@@ -122,7 +143,22 @@
 <div class="navbar bg-base-100 shadow-sm">
 	<h1 class="ml-4 flex-1 text-3xl font-bold">{m.configuration()}</h1>
 	<div class="flex-none">
-		<NavbarBurgerMenu items={menubarItems} />
+		<NavbarBurgerMenu
+			items={menubarItems}
+			user={{
+				name: userDisplayName,
+				email: currentUserEmail,
+				givenName: currentUser?.givenName ?? undefined,
+				familyName: currentUser?.familyName ?? undefined
+			}}
+			roleLabel={roleLabelFor(role)}
+			roleBadgeClass={roleBadgeClassFor(role)}
+			conferenceTitle={conference?.title}
+			conferenceId={page.params.conferenceId}
+			committees={role === 'ADMIN' || role === 'TEAM' ? (conference?.committees ?? []) : []}
+			dashboardHref="/app"
+			signOutHref="/logout"
+		/>
 	</div>
 </div>
 

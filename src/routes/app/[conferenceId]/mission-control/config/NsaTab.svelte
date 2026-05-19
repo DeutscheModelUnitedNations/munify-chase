@@ -56,7 +56,8 @@
 		if (!confirm(m.confirmDeleteRepresentation())) return;
 
 		await toast.promise(
-			client.mutate.deleteRepresentation({ __args: { id } } as any),
+			// eslint-disable-next-line @typescript-eslint/no-explicit-any -- rumble generator types delete mutations as plain `Boolean` instead of callable functions
+			(client.mutate.deleteRepresentation as any)({ __args: { id } } as any),
 			promiseToastStrings(m.nonStateActor(), 'delete')
 		);
 	}
@@ -87,7 +88,7 @@
 					{#each nsaActors as actor (actor.id)}
 						<tr>
 							<td class="w-8">
-								<Flag representation={actor as any} size="xs" />
+								<Flag representation={actor} size="xs" />
 							</td>
 							<td>{actor.name ?? '—'}</td>
 							<td>

@@ -3,8 +3,8 @@
 	import { getTranslatedCountryNameFromAlpha3Code } from '$lib/utils/nationTranslationHelper.svelte';
 	import { m } from '$lib/paraglide/messages';
 	import Timer from './Timer.svelte';
-	import { blur, scale } from 'svelte/transition';
-	import { bounceOut, cubicOut } from 'svelte/easing';
+	import { scale } from 'svelte/transition';
+	import { bounceOut } from 'svelte/easing';
 
 	interface Props {
 		speakersList?: {

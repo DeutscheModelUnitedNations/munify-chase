@@ -1,6 +1,6 @@
 <script lang="ts">
 	import hotkeys from 'hotkeys-js';
-	import { onDestroy, onMount } from 'svelte';
+	import { onDestroy } from 'svelte';
 
 	interface Props {
 		active: boolean;

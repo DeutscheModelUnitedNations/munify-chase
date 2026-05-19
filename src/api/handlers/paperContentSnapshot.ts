@@ -11,5 +11,5 @@ abilityBuilder.paperContentSnapshot.allow('read').when(({ mustBeLoggedIn }) => {
 });
 
 object({ table: 'paperContentSnapshot' });
-const pubsub = rumblePubsub({ table: 'paperContentSnapshot' });
+rumblePubsub({ table: 'paperContentSnapshot' });
 query({ table: 'paperContentSnapshot' });

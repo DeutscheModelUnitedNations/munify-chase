@@ -39,25 +39,29 @@
 		}>;
 	} | null;
 
+	type MemberLike = {
+		id: string;
+		present?: boolean;
+		representation?: {
+			name?: string | null;
+			alpha2Code?: string | null;
+			alpha3Code?: string | null;
+			faIcon?: string | null;
+			type?: string | null;
+		} | null;
+	};
+
 	interface Props {
-		committeeId: string;
 		type: SpeakerslistcategoryEnum;
-		committeeMembers: any[];
-		conferenceMembers: any[];
+		committeeMembers: MemberLike[];
+		conferenceMembers: MemberLike[];
 		speakersList?: List;
 		childList?: List;
 		otherList?: List;
 	}
 
-	let {
-		committeeId,
-		committeeMembers,
-		conferenceMembers,
-		type,
-		speakersList,
-		childList,
-		otherList
-	}: Props = $props();
+	let { committeeMembers, conferenceMembers, type, speakersList, childList, otherList }: Props =
+		$props();
 </script>
 
 <div class="flex flex-col gap-4">
@@ -65,7 +69,7 @@
 
 	<div class="flex gap-2">
 		<NextSpeech {speakersList} {childList} {type} />
-		<MoreOptions {type} {speakersList} />
+		<MoreOptions {speakersList} />
 	</div>
 
 	<AddSpeakers {committeeMembers} {conferenceMembers} {speakersList} />

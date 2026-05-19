@@ -1,6 +1,5 @@
 <script lang="ts">
 	import { m } from '$lib/paraglide/messages';
-	import type { Dayjs } from 'dayjs';
 	import dayjs from 'dayjs';
 	import { onMount } from 'svelte';
 	import { Confetti } from 'svelte-confetti';
@@ -64,7 +63,7 @@
 		/>
 	</div>
 	<div class="pointer-events-none fixed inset-0 z-50" out:fade={{ duration: 3000 }}>
-		{#each Array(confettiExplosionCount) as _, i}
+		{#each Array(confettiExplosionCount), idx (idx)}
 			{@const delay = randomDelay()}
 			<div style="position: absolute; top: {randomPercentage()}%; left: {randomPercentage()}%;">
 				<Confetti delay={[delay, delay]} duration={1000} x={[-0.5, 0.5]} y={[-0.5, 0.5]} />

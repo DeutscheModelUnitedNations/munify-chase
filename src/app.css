@@ -1,14 +1,15 @@
+@import 'tailwindcss';
 @import '@deutschemodelunitednations/corporate-identity/css/fonts';
 @import '@deutschemodelunitednations/corporate-identity/css/shades/dmun';
-
-@import 'tailwindcss';
-@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
 @import '@deutschemodelunitednations/munify-resolution-editor/tailwind.css';
-@plugin '@tailwindcss/typography';
-@plugin 'daisyui/index.js';
-
 @import '@deutschemodelunitednations/corporate-identity/css/theme/dmun-light';
 @import '@deutschemodelunitednations/corporate-identity/css/theme/dmun-dark';
+
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
+@plugin '@tailwindcss/typography';
+@plugin 'daisyui/index.js' {
+	themes: false;
+}
 
 /* TipTap */
 .ProseMirror:focus {

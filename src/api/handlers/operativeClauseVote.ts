@@ -37,7 +37,7 @@ schemaBuilder.mutationFields((t) => ({
 			votesAgainst: t.arg.int({ required: true }),
 			votesAbstain: t.arg.int()
 		},
-		resolve: async (query, root, args, ctx, info) => {
+		resolve: async (query, root, args, ctx) => {
 			const paper = await db.query.resolutionPaper
 				.findFirst(
 					ctx.abilities.resolutionPaper.filter('update').merge({ where: { id: args.paperId } })

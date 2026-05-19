@@ -53,7 +53,7 @@ schemaBuilder.mutationFields((t) => {
 				}),
 				isClosed: t.arg.boolean()
 			},
-			resolve: async (query, root, args, ctx, info) => {
+			resolve: async (query, root, args, ctx) => {
 				if (args.startTimestamp && args.stopTimer) {
 					throw new GraphQLError('startTimestamp and stopTimer are mutually exclusive');
 				}
@@ -121,7 +121,7 @@ schemaBuilder.mutationFields((t) => {
 			args: {
 				id: t.arg.id({ required: true })
 			},
-			resolve: async (query, root, args, ctx, info) => {
+			resolve: async (query, root, args, ctx) => {
 				await db.query.speakersList
 					.findFirst(
 						ctx.abilities.speakersList.filter('delete').merge({ where: { id: args.id } }).query

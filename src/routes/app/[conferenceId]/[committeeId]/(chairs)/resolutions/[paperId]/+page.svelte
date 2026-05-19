@@ -1,30 +1,42 @@
 <script lang="ts">
 	import { m } from '$lib/paraglide/messages';
 	import { page } from '$app/state';
+	import { resolve } from '$app/paths';
 	import { client } from '$lib/api/rumbleClient/client';
-	import { onMount } from 'svelte';
+	import { onMount, untrack } from 'svelte';
 	import { afterNavigate } from '$app/navigation';
 	import {
 		ResolutionEditor,
-		migrateResolution,
 		calculateAmendmentDiffSize,
 		getFirstTextContent,
+		type ResolutionStore,
+		type PresenceAdapter,
 		type Resolution,
 		type ResolutionHeaderData,
 		type AmendmentOverlay,
 		type OperativeClause
 	} from '@deutschemodelunitednations/munify-resolution-editor';
+	import {
+		createYjsStore,
+		createAwarenessPresence
+	} from '@deutschemodelunitednations/munify-resolution-editor/yjs';
+	import * as Y from 'yjs';
+	import { WebsocketProvider } from 'y-websocket';
 	import Flag from '$lib/components/Flag.svelte';
 	import Fieldset from '$lib/components/Fieldset.svelte';
 	import Modal from '$lib/components/Modal.svelte';
 	import CreateAmendmentModal from '$lib/components/CreateAmendmentModal.svelte';
 	import CommentSection from '$lib/components/CommentSection.svelte';
+	import ResolutionSyncGate from '$lib/components/ResolutionSyncGate.svelte';
+	import ConnectionIndicator from '$lib/components/ConnectionIndicator.svelte';
 	import { getTranslatedCountryNameFromAlpha3Code } from '$lib/utils/nationTranslationHelper.svelte';
 	import toast from 'svelte-french-toast';
 	import { openVotingModal } from '$lib/components/voting/votingModal';
-	import { fly, fade } from 'svelte/transition';
 	import { getResolutionLabels } from '$lib/utils/resolutionEditorLabels';
-	import { SvelteSet, SvelteMap } from 'svelte/reactivity';
+	import { svgToDataUrl } from '$lib/utils/svgToDataUrl';
+	import { downloadResolutionTypst, downloadResolutionPdf } from '$lib/utils/resolutionExport';
+	import { loadResolutionPhrases } from '$lib/utils/resolutionPhrases';
+	import { SvelteMap } from 'svelte/reactivity';
 
 	import { getCurrentUser } from '$lib/state/currentUser.svelte';
 
@@ -39,7 +51,7 @@
 		activeAmendmentId: true,
 		totalPresent: true,
 		activeAgendaItem: { id: true, title: true },
-		conference: { id: true, title: true },
+		conference: { id: true, title: true, logoSvg: true },
 		members: {
 			id: true,
 			representation: {
@@ -53,9 +65,10 @@
 		}
 	});
 
+	const currentUser = await getCurrentUser();
+
 	const [
 		paper,
-		locks,
 		allComments,
 		allAmendments,
 		clauseVotes,
@@ -67,7 +80,6 @@
 			id: true,
 			title: true,
 			status: true,
-			content: true,
 			documentNumber: true,
 			sequenceNumber: true,
 			updatedAt: true,
@@ -95,26 +107,6 @@
 						name: true,
 						alpha2Code: true,
 						alpha3Code: true,
-						faIcon: true
-					}
-				}
-			}
-		}),
-		client.liveQuery.paperClauseLocks({
-			__args: { where: { paper: { id: page.params.paperId } } },
-			id: true,
-			clauseId: true,
-			conferenceUserId: true,
-			acquiredAt: true,
-			conferenceUser: {
-				id: true,
-				committeeMember: {
-					id: true,
-					representation: {
-						id: true,
-						name: true,
-						alpha3Code: true,
-						alpha2Code: true,
 						faIcon: true
 					}
 				}
@@ -206,38 +198,146 @@
 			__args: {
 				where: {
 					conference: { id: page.params.conferenceId },
-					user: { id: (await getCurrentUser()).id ?? '' }
+					user: { id: currentUser?.id ?? '' }
 				}
 			},
 			id: true
 		})
 	]);
 
+	// Element types inferred from the selected live query result shapes
+	type PaperData = NonNullable<typeof paper>;
+	type SponsorEntry = PaperData['sponsors'][number];
+	type CommitteeData = NonNullable<typeof committee>;
+	type CommitteeMemberEntry = CommitteeData['members'][number];
+	type CommentEntry = NonNullable<typeof allComments>[number];
+	type AmendmentEntry = NonNullable<typeof allAmendments>[number];
+	type AmendmentSponsorEntry = AmendmentEntry['sponsors'][number];
+
 	let myConferenceUserId = $derived(currentUserConferenceUsers?.[0]?.id);
 
 	let voteResult = $derived(allVoteResults?.[0] ?? null);
 
-	// Resolution content
-	let resolution = $state<Resolution | null>(null);
-	let hasPendingSave = $state(false);
 	let editorMode = $state<'edit' | 'preview'>('preview');
 
+	// Y.js-backed collaborative store
+	let store = $state<ResolutionStore | null>(null);
+	let presence = $state<PresenceAdapter | null>(null);
+	let wsSynced = $state(false);
+	let wsConnected = $state(false);
+	let wsForbidden = $state(false);
+	// Bumped to force a soft re-establish of the Yjs session (no page reload).
+	let retryNonce = $state(0);
+
 	$effect(() => {
-		if (paper?.content && !resolution) {
-			resolution = migrateResolution(paper.content as Resolution);
-		}
+		const paperId = page.params.paperId;
+		// `retryNonce < 0` is always false; it exists only to register retryNonce
+		// as a reactive dependency so bumping it re-runs this effect, tearing
+		// down the old provider via the cleanup return and re-establishing.
+		if (!paperId || retryNonce < 0) return;
+		// Only paperId / retryNonce should re-trigger this effect.
+		return untrack(() => establishYjsSession(paperId));
 	});
 
-	// Accept remote updates when no local save is in-flight
-	$effect(() => {
-		if (paper?.content && !hasPendingSave) {
-			resolution = migrateResolution(paper.content as Resolution);
+	function establishYjsSession(paperId: string) {
+		const doc = new Y.Doc();
+		const wsProto = location.protocol === 'https:' ? 'wss:' : 'ws:';
+		const wsUrl = `${wsProto}//${location.host}/api/ws/yjs`;
+		const prov = new WebsocketProvider(wsUrl, paperId, doc);
+		const s = createYjsStore(doc);
+		const p = createAwarenessPresence({
+			awareness: prov.awareness,
+			user: {
+				id: currentUser?.id ?? 'anon',
+				name: 'Team',
+				color: stringToColor(currentUser?.id ?? 'anon')
+			}
+		});
+		const onSynced = (synced: boolean) => {
+			wsSynced = synced;
+		};
+		const onStatus = ({ status }: { status: string }) => {
+			wsConnected = status === 'connected';
+			if (status !== 'connected') wsSynced = false;
+		};
+		const onClose = (event: CloseEvent | null) => {
+			// 4403 = our server's "Forbidden" close code. Stop the reconnect
+			// loop so we don't hammer the server; surface state so the UI can
+			// tell the user to re-auth.
+			if (event?.code === 4403) {
+				prov.shouldConnect = false;
+				wsForbidden = true;
+				wsConnected = false;
+				wsSynced = false;
+			}
+		};
+		prov.on('sync', onSynced);
+		prov.on('status', onStatus);
+		prov.on('connection-close', onClose);
+		// Catch up with any state already established by the time we got here
+		// (BroadcastChannel between tabs can sync the provider before our
+		// listener is attached, and that fire-once 'synced' event is missed).
+		if (prov.synced) wsSynced = true;
+		if (prov.wsconnected) wsConnected = true;
+		// Last-resort reconciliation. y-websocket's `synced` setter dedupes
+		// no-op assignments; if the disconnect path didn't reset _synced
+		// (e.g., browser closed the WS before wsconnected was true), the
+		// next sync step 2 won't refire. Poll to self-heal within a second.
+		// IMPORTANT: only flip in the recovery direction (false→true). Going
+		// back (true→false) on a transient dip would mask the editor and
+		// race with sync messages already in flight.
+		const reconcileInterval = setInterval(() => {
+			if (wsForbidden) return;
+			if (prov.wsconnected && !wsConnected) wsConnected = true;
+			if (prov.synced && !wsSynced) wsSynced = true;
+		}, 1000);
+		store = s;
+		presence = p;
+		return () => {
+			clearInterval(reconcileInterval);
+			prov.off('sync', onSynced);
+			prov.off('status', onStatus);
+			prov.off('connection-close', onClose);
+			s.destroy();
+			prov.destroy();
+			doc.destroy();
+			store = null;
+			presence = null;
+			wsSynced = false;
+			wsConnected = false;
+			wsForbidden = false;
+		};
+	}
+
+	function stringToColor(s: string) {
+		let h = 0;
+		for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) | 0;
+		const hue = ((h % 360) + 360) % 360;
+		return `hsl(${hue}, 70%, 50%)`;
+	}
+
+	// Reactive resolution snapshot (read from store; null until connected)
+	let resolution = $derived<Resolution | null>(store?.snapshot ?? null);
+
+	let isExportingPdf = $state(false);
+	async function exportPdf() {
+		if (!resolution || isExportingPdf) return;
+		isExportingPdf = true;
+		try {
+			await toast.promise(downloadResolutionPdf(resolution, headerData, paper.documentNumber), {
+				loading: m.exportPdfLoading(),
+				success: m.exportPdfSuccess(),
+				error: m.exportPdfError()
+			});
+		} finally {
+			isExportingPdf = false;
 		}
-	});
+	}
 
 	// Resolution header data for document preview
 	let headerData = $derived<ResolutionHeaderData>({
 		conferenceTitle: committee?.conference?.title ?? undefined,
+		conferenceEmblem: svgToDataUrl(committee?.conference?.logoSvg),
 		committeeAbbreviation: committee?.abbreviation ?? undefined,
 		committeeFullName: committee?.name ?? undefined,
 		committeeResolutionHeadline: committee?.resolutionHeadline ?? undefined,
@@ -292,152 +392,21 @@
 		};
 		window.addEventListener('scroll', handleScroll, { passive: true });
 
-		// Hybrid heartbeat — only fires when idle with held locks
-		const heartbeatInterval = setInterval(() => {
-			if (editableClauseIds.size > 0 && Date.now() - lastInteractionTime > 25_000) {
-				for (const clauseId of editableClauseIds) {
-					client.mutate
-						.acquireClauseLock({
-							__args: { paperId: page.params.paperId!, clauseId },
-							id: true
-						})
-						.catch(() => {
-							optimisticMyLockIds.delete(clauseId);
-						});
-				}
-			}
-		}, 30_000);
-
-		// Best-effort lock release on tab close
-		const handleBeforeUnload = () => {
-			const body = JSON.stringify({
-				query: `mutation { releaseAllMyLocks(paperId: "${page.params.paperId}") }`
-			});
-			navigator.sendBeacon('/api/graphql', new Blob([body], { type: 'application/json' }));
-		};
-		window.addEventListener('beforeunload', handleBeforeUnload);
-
 		return () => {
-			clearInterval(heartbeatInterval);
-			window.removeEventListener('beforeunload', handleBeforeUnload);
 			window.removeEventListener('scroll', handleScroll);
-
-			// Release locks on navigation
-			client.mutate
-				.releaseAllMyLocks({ __args: { paperId: page.params.paperId! } } as any)
-				.catch(() => {});
 		};
 	});
 
-	// =====================================================
-	// Clause-level locking
-	// =====================================================
-
-	let lastInteractionTime = $state(Date.now());
-
-	// Clause IDs locked by OTHER users
-	let lockedClauseIds = $derived.by(() => {
-		const set = new SvelteSet<string>();
-		for (const lock of locks ?? []) {
-			if (lock.conferenceUserId !== myConferenceUserId) {
-				set.add(lock.clauseId);
-			}
-		}
-		return set;
+	let preamblePhrases = $state<string[]>([]);
+	let operativePhrases = $state<string[]>([]);
+	onMount(async () => {
+		const phrases = await loadResolutionPhrases();
+		preamblePhrases = phrases.preamble;
+		operativePhrases = phrases.operative;
 	});
 
-	// Clause IDs I hold confirmed locks for
-	let myLockedClauseIds = $derived.by(() => {
-		const set = new SvelteSet<string>();
-		for (const lock of locks ?? []) {
-			if (lock.conferenceUserId === myConferenceUserId) {
-				set.add(lock.clauseId);
-			}
-		}
-		return set;
-	});
-
-	// Map for lock badge rendering: clauseId → lock info
-	let locksByClauseId = $derived.by(() => {
-		const map = new SvelteMap<string, (typeof locks)[0]>();
-		for (const lock of locks ?? []) {
-			if (lock.conferenceUserId !== myConferenceUserId) {
-				map.set(lock.clauseId, lock);
-			}
-		}
-		return map;
-	});
-
-	// Optimistic lock IDs — added immediately on mutation success, before subscription arrives
-	let optimisticMyLockIds = new SvelteSet<string>();
-
-	// Effective editable clause IDs = confirmed (subscription) + optimistic
-	let editableClauseIds = $derived.by(() => {
-		const set = new SvelteSet(myLockedClauseIds);
-		for (const id of optimisticMyLockIds) set.add(id);
-		return set;
-	});
-
-	// Are there any locks held by other users?
-	let hasOtherLocks = $derived(lockedClauseIds.size > 0);
-
-	// Click "Start editing" → acquire lock
-	async function handleClauseLock(clauseId: string) {
-		if (lockedClauseIds.has(clauseId)) return;
-		try {
-			await client.mutate.acquireClauseLock({
-				__args: { paperId: page.params.paperId!, clauseId },
-				id: true
-			});
-			optimisticMyLockIds.add(clauseId);
-			lastInteractionTime = Date.now();
-		} catch {
-			const lock = locksByClauseId.get(clauseId);
-			const country =
-				lock?.conferenceUser?.committeeMember?.representation?.name ??
-				getTranslatedCountryNameFromAlpha3Code(
-					lock?.conferenceUser?.committeeMember?.representation?.alpha3Code
-				) ??
-				'?';
-			toast.error(m.lockAcquireFailed({ country }));
-		}
-	}
-
-	// Click "Done editing" → release lock
-	async function handleClauseUnlock(clauseId: string) {
-		optimisticMyLockIds.delete(clauseId);
-		await client.mutate
-			.releaseClauseLock({ __args: { paperId: page.params.paperId!, clauseId } } as any)
-			.catch(() => {});
-	}
-
-	// Any interaction (typing, clicking) → refresh idle timer
-	function handleClauseInteraction(_clauseId: string) {
-		lastInteractionTime = Date.now();
-	}
-
-	// Auto-save
+	// Save status — kept for future use (e.g. title or metadata mutations); content auto-syncs via Y.js
 	let saveStatus = $state<'idle' | 'saving' | 'saved' | 'error'>('idle');
-	let saveTimeout: ReturnType<typeof setTimeout>;
-
-	function handleResolutionChange(updated: Resolution) {
-		resolution = updated;
-		hasPendingSave = true;
-		clearTimeout(saveTimeout);
-		saveStatus = 'saving';
-		saveTimeout = setTimeout(async () => {
-			try {
-				await client.mutate.updatePaperContent({
-					__args: { paperId: page.params.paperId!, content: updated },
-					id: true
-				});
-				saveStatus = 'saved';
-				hasPendingSave = false;
-			} catch {
-				saveStatus = 'error';
-			}
-		}, 500);
-	}
 
 	function getStatusBadgeClass(status: string) {
 		switch (status) {
@@ -481,7 +450,7 @@
 
 	// Group comments by clauseId for inline display
 	let commentsByClauseId = $derived.by(() => {
-		const map = new SvelteMap<string | null, any[]>();
+		const map = new SvelteMap<string | null, CommentEntry[]>();
 		for (const comment of allComments ?? []) {
 			const key = comment.clauseId;
 			if (!map.has(key)) map.set(key, []);
@@ -530,7 +499,12 @@
 	}
 
 	async function onDeleteComment(commentId: string) {
-		await client.mutate.deleteComment({ __args: { commentId } } as any);
+		// Cast required: rumble generator types scalar-returning mutations as plain types instead of fns
+		await (
+			client.mutate.deleteComment as unknown as (p: {
+				__args: { commentId: string };
+			}) => Promise<unknown>
+		)({ __args: { commentId } });
 		toast.success(m.commentDeleted());
 	}
 
@@ -543,7 +517,8 @@
 
 	let availableMembers = $derived(
 		(committee?.members ?? []).filter(
-			(member: any) => !paper?.sponsors.some((s: any) => s.committeeMemberId === member.id)
+			(member: CommitteeMemberEntry) =>
+				!paper?.sponsors.some((s: SponsorEntry) => s.committeeMemberId === member.id)
 		)
 	);
 
@@ -563,13 +538,13 @@
 
 	let filteredAvailableMembers = $derived(
 		(sponsorSearchQuery
-			? availableMembers.filter((member: any) =>
+			? availableMembers.filter((member: CommitteeMemberEntry) =>
 					getRepresentationName(member.representation)
 						.toLowerCase()
 						.includes(sponsorSearchQuery.toLowerCase())
 				)
 			: availableMembers
-		).sort((a: any, b: any) =>
+		).sort((a: CommitteeMemberEntry, b: CommitteeMemberEntry) =>
 			getRepresentationName(a.representation).localeCompare(getRepresentationName(b.representation))
 		)
 	);
@@ -583,9 +558,13 @@
 	}
 
 	async function handleRemoveSponsor(committeeMemberId: string) {
-		await client.mutate.removeSponsor({
+		await (
+			client.mutate.removeSponsor as unknown as (p: {
+				__args: { paperId: string; committeeMemberId: string };
+			}) => Promise<unknown>
+		)({
 			__args: { paperId: page.params.paperId!, committeeMemberId }
-		} as any);
+		});
 		toast.success(m.sponsorRemoved());
 	}
 
@@ -700,17 +679,21 @@
 
 	let filteredAvailableAmendmentMembers = $derived.by(() => {
 		const existingSponsorIds = new Set(
-			(amendmentSponsorTarget?.sponsors ?? []).map((s: any) => s.committeeMemberId)
+			(amendmentSponsorTarget?.sponsors ?? []).map(
+				(s: AmendmentSponsorEntry) => s.committeeMemberId
+			)
 		);
-		const available = (committee?.members ?? []).filter((m: any) => !existingSponsorIds.has(m.id));
+		const available = (committee?.members ?? []).filter(
+			(member: CommitteeMemberEntry) => !existingSponsorIds.has(member.id)
+		);
 		const filtered = amendmentSponsorSearchQuery
-			? available.filter((member: any) =>
+			? available.filter((member: CommitteeMemberEntry) =>
 					getRepresentationName(member.representation)
 						.toLowerCase()
 						.includes(amendmentSponsorSearchQuery.toLowerCase())
 				)
 			: available;
-		return filtered.sort((a: any, b: any) =>
+		return filtered.sort((a: CommitteeMemberEntry, b: CommitteeMemberEntry) =>
 			getRepresentationName(a.representation).localeCompare(getRepresentationName(b.representation))
 		);
 	});
@@ -727,9 +710,13 @@
 	}
 
 	async function handleRemoveAmendmentSponsor(amendmentId: string, committeeMemberId: string) {
-		await client.mutate.removeAmendmentSponsor({
+		await (
+			client.mutate.removeAmendmentSponsor as unknown as (p: {
+				__args: { amendmentId: string; committeeMemberId: string };
+			}) => Promise<unknown>
+		)({
 			__args: { amendmentId, committeeMemberId }
-		} as any);
+		});
 		toast.success(m.sponsorRemoved());
 	}
 
@@ -757,8 +744,8 @@
 		);
 	});
 
-	// Amendment mutations
-	let canEdit = $derived(paper?.status !== 'FINAL' || !voteResult);
+	// Chair can always edit, including redactional changes after FINAL.
+	let canEdit = true;
 
 	let showAdoptConfirmModal = $state(false);
 	let showRejectConfirmModal = $state(false);
@@ -1054,9 +1041,6 @@
 	);
 
 	let votedClauseCount = $derived((clauseVotes ?? []).length);
-	let allClausesVoted = $derived(
-		operativeClauses.length > 0 && votedClauseCount >= operativeClauses.length
-	);
 
 	// Clause vote modal state
 	let showClauseOutcomeModal = $state(false);
@@ -1168,9 +1152,13 @@
 
 	async function handleDeleteClauseVote(clauseId: string) {
 		try {
-			await client.mutate.deleteClauseVote({
+			await (
+				client.mutate.deleteClauseVote as unknown as (p: {
+					__args: { paperId: string; clauseId: string };
+				}) => Promise<unknown>
+			)({
 				__args: { paperId: page.params.paperId!, clauseId }
-			} as any);
+			});
 			toast.success(m.clauseVoteDeleted());
 		} catch {
 			toast.error(m.saveError());
@@ -1241,7 +1229,13 @@
 	<div class="mx-auto flex max-w-4xl flex-col px-4">
 		<!-- Back button + save status -->
 		<div class="flex items-center justify-between py-2">
-			<a href="./." class="btn btn-ghost btn-sm">
+			<a
+				href={resolve('/app/[conferenceId]/[committeeId]/(chairs)/resolutions', {
+					conferenceId: page.params.conferenceId!,
+					committeeId: page.params.committeeId!
+				})}
+				class="btn btn-ghost btn-sm"
+			>
 				<i class="fa-duotone fa-arrow-left mr-1"></i>
 				{m.backToResolutions()}
 			</a>
@@ -1259,14 +1253,31 @@
 						<i class="fas fa-exclamation-triangle mr-1"></i>{m.saveError()}
 					</span>
 				{/if}
-				<a
-					href="/app/print/{paper.id}"
-					target="_blank"
+				<button
+					type="button"
 					class="btn btn-ghost btn-sm"
-					title={m.printResolution()}
+					title={m.downloadTypst()}
+					aria-label={m.downloadTypst()}
+					disabled={!resolution}
+					onclick={() =>
+						resolution && downloadResolutionTypst(resolution, headerData, paper.documentNumber)}
 				>
-					<i class="fas fa-print"></i>
-				</a>
+					<i class="fas fa-file-code"></i>
+				</button>
+				<button
+					type="button"
+					class="btn btn-ghost btn-sm"
+					title={m.downloadPdf()}
+					aria-label={m.downloadPdf()}
+					disabled={!resolution || isExportingPdf}
+					onclick={exportPdf}
+				>
+					{#if isExportingPdf}
+						<span class="loading loading-spinner loading-xs"></span>
+					{:else}
+						<i class="fas fa-file-pdf"></i>
+					{/if}
+				</button>
 			</div>
 		</div>
 
@@ -1316,6 +1327,7 @@
 								<Flag representation={sponsor.committeeMember?.representation} size="xs" />
 								<button
 									class="absolute -top-1 -right-1 btn btn-circle btn-xs btn-error opacity-0 group-hover:opacity-100 transition-opacity"
+									aria-label={m.removeSponsor()}
 									onclick={() => handleRemoveSponsor(sponsor.committeeMemberId)}
 								>
 									<i class="fas fa-times text-[0.5rem]"></i>
@@ -1324,6 +1336,7 @@
 						{/each}
 						<button
 							class="btn btn-ghost btn-xs"
+							aria-label={m.addSponsor()}
 							onclick={() => {
 								sponsorSearchQuery = '';
 								showAddSponsorModal = true;
@@ -1351,14 +1364,6 @@
 				{/if}
 			</div>
 		</div>
-
-		<!-- Collaborative editing info banner -->
-		{#if hasOtherLocks}
-			<div class="alert alert-info mt-2 text-sm">
-				<i class="fas fa-lock"></i>
-				<span>{m.collaborativeEditingInfo()}</span>
-			</div>
-		{/if}
 
 		<!-- Final vote result alert -->
 		{#if paper.status === 'FINAL' && voteResult}
@@ -1415,34 +1420,40 @@
 			</div>
 		{/if}
 
-		<!-- Edit/Preview Toggle -->
-		{#if canEdit}
-			<div class="flex justify-end mt-4">
-				<button
-					class="btn btn-sm btn-ghost"
-					onclick={() => (editorMode = editorMode === 'edit' ? 'preview' : 'edit')}
-				>
-					<i class="fas {editorMode === 'edit' ? 'fa-eye' : 'fa-pen'}"></i>
-					{editorMode === 'edit' ? m.preview() : m.edit()}
-				</button>
+		<!-- Editor toolbar: live status + edit/preview toggle -->
+		{#if canEdit || (wsConnected && wsSynced)}
+			<div class="flex justify-end items-center gap-3 mt-4">
+				<ConnectionIndicator live={wsConnected && wsSynced} />
+				{#if canEdit}
+					<button
+						class="btn btn-sm btn-ghost"
+						onclick={() => (editorMode = editorMode === 'edit' ? 'preview' : 'edit')}
+					>
+						<i class="fas {editorMode === 'edit' ? 'fa-eye' : 'fa-pen'}"></i>
+						{editorMode === 'edit' ? m.preview() : m.edit()}
+					</button>
+				{/if}
 			</div>
 		{/if}
 
 		<!-- Resolution Editor -->
 		<div class="py-2">
-			{#if resolution}
+			{#if !(wsSynced && store && resolution) || wsForbidden}
+				<ResolutionSyncGate
+					connected={wsConnected}
+					synced={wsSynced}
+					forbidden={wsForbidden}
+					onRetry={() => retryNonce++}
+				/>
+			{:else if store && resolution}
 				<ResolutionEditor
-					committeeName={committee?.name ?? ''}
-					{resolution}
+					{store}
+					presence={presence ?? undefined}
 					{headerData}
 					labels={getResolutionLabels()}
+					{preamblePhrases}
+					{operativePhrases}
 					editable={canEdit && editorMode === 'edit'}
-					onResolutionChange={handleResolutionChange}
-					onClauseLock={handleClauseLock}
-					onClauseUnlock={handleClauseUnlock}
-					onClauseInteraction={handleClauseInteraction}
-					{lockedClauseIds}
-					{editableClauseIds}
 					amendments={paper.status === 'AMENDMENT_PHASE' ? amendmentOverlays : undefined}
 					rejectedClauseIds={paper.status === 'VOTING_PHASE' || paper.status === 'FINAL'
 						? rejectedClauseIds
@@ -1450,35 +1461,15 @@
 					onAmendmentClick={paper.status === 'AMENDMENT_PHASE' ? handleAmendmentClick : undefined}
 				>
 					{#snippet preambleAnnotations({ clause })}
-						{@const lock = locksByClauseId.get(clause.id)}
 						{@const commentCount = commentCountByClauseId.get(clause.id) ?? 0}
-						{#if lock}
-							<div
-								class="tooltip tooltip-right"
-								data-tip={m.clauseLockedBy({
-									country:
-										lock.conferenceUser?.committeeMember?.representation?.name ??
-										getTranslatedCountryNameFromAlpha3Code(
-											lock.conferenceUser?.committeeMember?.representation?.alpha3Code
-										) ??
-										'?'
-								})}
-								in:fly={{ y: -6, duration: 200 }}
-								out:fade={{ duration: 150 }}
+						{#each presence?.editorsFor(clause.id) ?? [] as editor (editor.user.id)}
+							<span
+								class="badge badge-sm text-white"
+								style="background-color: {editor.user.color ?? '#888'}"
 							>
-								<div
-									class="flex items-center gap-2 rounded-md bg-warning/40 px-2 py-1 text-sm shadow-sm"
-								>
-									{#if lock.conferenceUser?.committeeMember?.representation}
-										<Flag
-											representation={lock.conferenceUser.committeeMember.representation}
-											size="xs"
-										/>
-									{/if}
-									<i class="fas fa-lock text-warning text-base"></i>
-								</div>
-							</div>
-						{/if}
+								{editor.user.name}
+							</span>
+						{/each}
 						{#if commentCount > 0}
 							<div class="badge badge-sm badge-info">
 								<i class="fas fa-comment text-xs"></i>
@@ -1487,35 +1478,15 @@
 						{/if}
 					{/snippet}
 					{#snippet clauseAnnotations({ clause })}
-						{@const lock = locksByClauseId.get(clause.id)}
 						{@const commentCount = commentCountByClauseId.get(clause.id) ?? 0}
-						{#if lock}
-							<div
-								class="tooltip tooltip-right"
-								data-tip={m.clauseLockedBy({
-									country:
-										lock.conferenceUser?.committeeMember?.representation?.name ??
-										getTranslatedCountryNameFromAlpha3Code(
-											lock.conferenceUser?.committeeMember?.representation?.alpha3Code
-										) ??
-										'?'
-								})}
-								in:fly={{ y: -6, duration: 200 }}
-								out:fade={{ duration: 150 }}
+						{#each presence?.editorsFor(clause.id) ?? [] as editor (editor.user.id)}
+							<span
+								class="badge badge-sm text-white"
+								style="background-color: {editor.user.color ?? '#888'}"
 							>
-								<div
-									class="flex items-center gap-2 rounded-md bg-warning/40 px-2 py-1 text-sm shadow-sm"
-								>
-									{#if lock.conferenceUser?.committeeMember?.representation}
-										<Flag
-											representation={lock.conferenceUser.committeeMember.representation}
-											size="xs"
-										/>
-									{/if}
-									<i class="fas fa-lock text-warning text-base"></i>
-								</div>
-							</div>
-						{/if}
+								{editor.user.name}
+							</span>
+						{/each}
 						{#if commentCount > 0}
 							<div class="badge badge-sm badge-info">
 								<i class="fas fa-comment text-xs"></i>
@@ -1525,7 +1496,6 @@
 					{/snippet}
 					{#snippet preambleClauseToolbar({ clause })}
 						<CommentSection
-							paperId={page.params.paperId!}
 							clauseId={clause.id}
 							comments={commentsByClauseId.get(clause.id) ?? []}
 							{myConferenceUserId}
@@ -1538,7 +1508,6 @@
 					{/snippet}
 					{#snippet clauseToolbar({ clause })}
 						<CommentSection
-							paperId={page.params.paperId!}
 							clauseId={clause.id}
 							comments={commentsByClauseId.get(clause.id) ?? []}
 							{myConferenceUserId}
@@ -1551,7 +1520,6 @@
 					{/snippet}
 					{#snippet afterPreambleClause({ clause })}
 						<CommentSection
-							paperId={page.params.paperId!}
 							clauseId={clause.id}
 							comments={commentsByClauseId.get(clause.id) ?? []}
 							{myConferenceUserId}
@@ -1565,7 +1533,6 @@
 					{/snippet}
 					{#snippet afterOperativeClause({ clause })}
 						<CommentSection
-							paperId={page.params.paperId!}
 							clauseId={clause.id}
 							comments={commentsByClauseId.get(clause.id) ?? []}
 							{myConferenceUserId}
@@ -1591,6 +1558,7 @@
 					<div class="flex items-center gap-1">
 						<button
 							class="btn btn-ghost btn-sm"
+							aria-label={m.previousParagraph()}
 							disabled={currentOpIndex <= 0}
 							onclick={async () => {
 								if (!committee) return;
@@ -1635,7 +1603,7 @@
 					<p class="text-base-content/50 text-sm">{m.noAmendments()}</p>
 				{:else}
 					<div class="flex flex-col gap-3">
-						{#each groupedAmendments as group}
+						{#each groupedAmendments as group (group.label)}
 							<div>
 								<h4
 									class="text-sm font-bold mb-1 {group.index === currentOpIndex
@@ -1755,6 +1723,7 @@
 															/>
 															<button
 																class="absolute -top-1 -right-1 btn btn-circle btn-xs btn-error opacity-0 group-hover:opacity-100 transition-opacity"
+																aria-label={m.removeSponsor()}
 																onclick={() =>
 																	handleRemoveAmendmentSponsor(
 																		amendment.id,
@@ -1767,6 +1736,7 @@
 													{/each}
 													<button
 														class="btn btn-ghost btn-xs"
+														aria-label={m.addSponsor()}
 														onclick={() => {
 															amendmentSponsorTargetId = amendment.id;
 															amendmentSponsorSearchQuery = '';
@@ -2059,7 +2029,6 @@
 		<!-- Document-level comments -->
 		<Fieldset legend={m.documentLevelComments()} faIcon="fas fa-comments">
 			<CommentSection
-				paperId={page.params.paperId!}
 				clauseId={null}
 				comments={commentsByClauseId.get(null) ?? []}
 				{myConferenceUserId}
@@ -2076,7 +2045,11 @@
 	<Modal bind:open={showAddSponsorModal}>
 		<div class="flex items-center justify-between mb-4">
 			<h3 class="font-bold text-lg">{m.addSponsor()}</h3>
-			<button class="btn btn-ghost btn-sm" onclick={() => (showAddSponsorModal = false)}>
+			<button
+				class="btn btn-ghost btn-sm"
+				aria-label={m.close()}
+				onclick={() => (showAddSponsorModal = false)}
+			>
 				<i class="fas fa-times"></i>
 			</button>
 		</div>
@@ -2108,7 +2081,11 @@
 	<Modal bind:open={showAmendmentSponsorModal}>
 		<div class="flex items-center justify-between mb-4">
 			<h3 class="font-bold text-lg">{m.addSponsor()}</h3>
-			<button class="btn btn-ghost btn-sm" onclick={() => (showAmendmentSponsorModal = false)}>
+			<button
+				class="btn btn-ghost btn-sm"
+				aria-label={m.close()}
+				onclick={() => (showAmendmentSponsorModal = false)}
+			>
 				<i class="fas fa-times"></i>
 			</button>
 		</div>

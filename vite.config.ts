@@ -2,6 +2,9 @@ import { paraglideVitePlugin } from '@inlang/paraglide-js';
 import tailwindcss from '@tailwindcss/vite';
 import { sveltekit } from '@sveltejs/kit/vite';
 import { defineConfig, type ViteDevServer } from 'vite';
+import type { IncomingMessage } from 'node:http';
+import type { Duplex } from 'node:stream';
+import mkcert from 'vite-plugin-mkcert';
 
 // @ts-expect-error process is a nodejs global
 const host = process.env.TAURI_DEV_HOST;
@@ -11,8 +14,11 @@ function wsPlugin() {
 		name: 'ws-dev',
 		configureServer(server: ViteDevServer) {
 			server.httpServer?.on('upgrade', (req, socket, head) => {
-				if ((globalThis as any).__wssUpgrade) {
-					(globalThis as any).__wssUpgrade(req, socket, head);
+				const g = globalThis as typeof globalThis & {
+					__wssUpgrade?: (req: IncomingMessage, socket: Duplex, head: Buffer) => void;
+				};
+				if (g.__wssUpgrade) {
+					g.__wssUpgrade(req, socket, head);
 				}
 			});
 		}
@@ -22,7 +28,8 @@ function wsPlugin() {
 function devAutoRestart() {
 	const RACE_CONDITION_PATTERNS = [
 		'has not been implemented', // Pothos ObjectRef race condition
-		'Class extends value undefined is not a constructor or null' // urql/svelte race condition
+		'Class extends value undefined is not a constructor or null', // urql/svelte race condition
+		'Received multiple implementations for plugin' // Pothos plugin re-registration after Vite reload
 	];
 
 	return {
@@ -63,11 +70,9 @@ function devAutoRestart() {
 }
 
 export default defineConfig({
-	// Vite options tailored for Tauri development and only applied in `tauri dev` or `tauri build`
-	//
-	// 1. prevent Vite from obscuring rust errors
+	// prevent Vite from obscuring rust errors
 	clearScreen: false,
-	// 2. tauri expects a fixed port, fail if that port is not available
+	// Tauri expects a fixed port, fail if that port is not available
 	server: {
 		port: 1420,
 		strictPort: true,
@@ -79,12 +84,14 @@ export default defineConfig({
 					port: 1421
 				}
 			: undefined,
+		allowedHosts: ['svelte-dev.munify.cloud'],
 		watch: {
-			// 3. tell Vite to ignore watching `src-tauri`
-			ignored: ['**/src-tauri/**']
+			// ignore src-tauri and internal directories
+			ignored: ['**/src-tauri/**', '**/.claude/**', '**/node_modules/**', '**/.svelte-kit/**']
 		}
 	},
 	plugins: [
+		mkcert(),
 		devAutoRestart(),
 		tailwindcss(),
 		paraglideVitePlugin({
@@ -95,4 +102,12 @@ export default defineConfig({
 		sveltekit(),
 		wsPlugin()
 	],
+	// Yjs throws "Yjs was already imported" if two copies are loaded.
+	resolve: {
+		dedupe: ['yjs', 'y-protocols']
+	},
+	optimizeDeps: {
+		include: ['y-protocols/sync', 'y-protocols/awareness', 'y-websocket'],
+		exclude: ['yjs']
+	}
 });

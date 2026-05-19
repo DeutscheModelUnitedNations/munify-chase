@@ -13,7 +13,7 @@ abilityBuilder.paperEditor.allow('read').when(({ mustBeLoggedIn }) => {
 	return 'allow';
 });
 
-const ref = object({ table: 'paperEditor' });
+object({ table: 'paperEditor' });
 const pubsub = rumblePubsub({ table: 'paperEditor' });
 const paperPubsub = rumblePubsub({ table: 'resolutionPaper' });
 query({ table: 'paperEditor' });
@@ -25,7 +25,7 @@ schemaBuilder.mutationFields((t) => ({
 			paperId: t.arg.id({ required: true }),
 			conferenceUserId: t.arg.id({ required: true })
 		},
-		resolve: async (root, args, ctx, info) => {
+		resolve: async (root, args, ctx) => {
 			const user = ctx.mustBeLoggedIn();
 
 			// Must be paper creator
@@ -40,15 +40,6 @@ schemaBuilder.mutationFields((t) => ({
 					where: {
 						user: { id: user.sub },
 						committeeMemberId: paper.creatorCommitteeMemberId
-					}
-				})
-				.then(assertFindFirstExists);
-
-			const editor = await db.query.paperEditor
-				.findFirst({
-					where: {
-						paperId: args.paperId,
-						conferenceUserId: args.conferenceUserId
 					}
 				})
 				.then(assertFindFirstExists);

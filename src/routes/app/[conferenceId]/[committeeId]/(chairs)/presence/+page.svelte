@@ -17,12 +17,9 @@
 	} from '$lib/utils/nationTranslationHelper.svelte';
 	import ChairRollCall from '$lib/components/rollCall/ChairRollCall.svelte';
 	import StatusWidget from '../StatusWidget.svelte';
-	import {
-		isDelegationMember,
-		isNSAMember,
-		isUNMember
-	} from '$lib/helpers/distinguishConferenceMembers';
+	import { isDelegationMember, isUNMember } from '$lib/helpers/distinguishConferenceMembers';
 	import { translateRegionalGroupEnum } from '$lib/utils/enumTranslationHelper';
+	import NsaAttendanceCard from './NsaAttendanceCard.svelte';
 
 	const committee = await client.liveQuery.committee({
 		__args: { id: page.params.committeeId! },
@@ -68,20 +65,13 @@
 	let countries = $derived(
 		committee?.members
 			.filter(isDelegationMember)
-			.sort((a: any, b: any) => sortTranslatedCountries(a.representation!, b.representation!)) ?? []
-	);
-
-	let nsas = $derived(
-		committee?.conference?.uniqueConferenceMembers
-			?.filter(isNSAMember)
-			.sort((a: any, b: any) => a.representation!.name!.localeCompare(b.representation!.name!)) ??
-			[]
+			.sort((a, b) => sortTranslatedCountries(a.representation, b.representation)) ?? []
 	);
 
 	let un = $derived(
 		committee?.conference?.uniqueConferenceMembers
 			?.filter(isUNMember)
-			?.sort((a: any, b: any) => a.representation!.name!.localeCompare(b.representation!.name!)) ??
+			?.sort((a, b) => (a.representation.name ?? '').localeCompare(b.representation.name ?? '')) ??
 			[]
 	);
 
@@ -134,12 +124,13 @@
 					</button>
 				</BasicCard>
 				<BasicCard>
-					<PresenceActions memberIds={committee.members.map((x: any) => x.id)} />
+					<PresenceActions memberIds={committee.members.map((x) => x.id)} />
 				</BasicCard>
 			</div>
 			<div class="flex h-full w-full flex-3 flex-col gap-4">
+				<NsaAttendanceCard conferenceId={committee.conference.id} committeeId={committee.id} />
 				<BasicCard title={m.delegations()}>
-					{#each countries as member}
+					{#each countries as member (member.id)}
 						{@const rep = member.representation}
 						<div
 							class="hover:bg-base-200 card flex w-full flex-row items-center gap-4 p-2 transition-all duration-300"
@@ -181,25 +172,8 @@
 						</div>
 					{/each}
 				</BasicCard>
-				<BasicCard title={m.nonStateActors()}>
-					{#each nsas as member}
-						{@const rep = member.representation}
-						<div
-							class="hover:bg-base-200 card flex w-full flex-row items-center gap-4 p-2 transition-all duration-300"
-						>
-							<Flag representation={rep} size="sm" />
-							<h3 class="flex-1 text-lg">
-								{#if rep && rep.name}
-									{rep.name}
-								{:else}
-									{m.unknown()}
-								{/if}
-							</h3>
-						</div>
-					{/each}
-				</BasicCard>
 				<BasicCard title={m.unActors()}>
-					{#each un as member}
+					{#each un as member (member.id)}
 						{@const rep = member.representation}
 						<div
 							class="hover:bg-base-200 card flex w-full flex-row items-center gap-4 p-2 transition-all duration-300"

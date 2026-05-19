@@ -1,5 +1,4 @@
 <script lang="ts">
-	import DevPlaceholder from '$lib/components/DevPlaceholder.svelte';
 	import { m } from '$lib/paraglide/messages';
 	import Grid, { GridItem } from 'svelte-grid-extended';
 	import IconInfoBox from '$lib/components/IconInfoBox.svelte';
@@ -21,13 +20,19 @@
 	import RollCallVotingPresentation from '$lib/components/voting/RollCallVotingPresentation.svelte';
 	import { browser } from '$app/environment';
 	import AdoptionConfetti from '$lib/components/AdoptionConfetti.svelte';
+	import {
+		toggleFullscreen as platformToggleFullscreen,
+		isFullscreen as platformIsFullscreen,
+		isTauri
+	} from '$lib/platform';
+	import hotkeys from 'hotkeys-js';
 	import PresentationResolutionPreview from './PresentationResolutionPreview.svelte';
 	import { client } from '$lib/api/rumbleClient/client';
 	import { page } from '$app/state';
 
 	const committeeId = page.params.committeeId!;
 
-	const committee: any = await client.liveQuery.committee({
+	const committee = await client.liveQuery.committee({
 		__args: { id: committeeId },
 		id: true,
 		abbreviation: true,
@@ -207,14 +212,16 @@
 	);
 
 	let speakersList = $derived(
-		committee?.activeAgendaItem?.speakersList.find((x: any) => x.type === 'SPEAKERS_LIST')
+		committee?.activeAgendaItem?.speakersList.find((x) => x.type === 'SPEAKERS_LIST')
 	);
 
 	let commentsList = $derived(
-		committee?.activeAgendaItem?.speakersList.find((x: any) => x.type === 'COMMENT_LIST')
+		committee?.activeAgendaItem?.speakersList.find((x) => x.type === 'COMMENT_LIST')
 	);
-	let speakersQueueResizeFn: () => void;
-	let commentsQueueResizeFn: () => void;
+	let speakersQueueResizeFn = $state<(() => void) | undefined>(undefined);
+	let commentsQueueResizeFn = $state<(() => void) | undefined>(undefined);
+
+	let isFullscreen = $state(false);
 
 	$effect(() => {
 		if (!layout || !committee) {
@@ -232,6 +239,42 @@
 		if ($committeeSettings?.presentationRootFontSize) {
 			document.documentElement.style.fontSize = `${$committeeSettings.presentationRootFontSize}px`;
 		}
+	});
+
+	const toggleFullscreen = async () => {
+		await platformToggleFullscreen();
+		isFullscreen = await platformIsFullscreen();
+	};
+
+	$effect(() => {
+		if (isTauri()) {
+			// Poll Tauri window fullscreen state
+			let cancelled = false;
+			(async () => {
+				while (!cancelled) {
+					isFullscreen = await platformIsFullscreen();
+					await new Promise((r) => setTimeout(r, 500));
+				}
+			})();
+			return () => {
+				cancelled = true;
+			};
+		} else {
+			const handler = () => {
+				isFullscreen = !!document.fullscreenElement;
+			};
+			handler();
+			document.addEventListener('fullscreenchange', handler);
+			return () => document.removeEventListener('fullscreenchange', handler);
+		}
+	});
+
+	$effect(() => {
+		hotkeys('f11', (event) => {
+			event.preventDefault();
+			toggleFullscreen();
+		});
+		return () => hotkeys.unbind('f11');
 	});
 </script>
 
@@ -348,8 +391,8 @@
 	<PresentationRollCall
 		{committeeId}
 		members={committee.members
-			.filter((x: any) => x.representation?.type === 'DELEGATION')
-			.sort((a: any, b: any) => sortTranslatedCountries(a.representation!, b.representation!))}
+			.filter((x) => x.representation?.type === 'DELEGATION')
+			.sort((a, b) => sortTranslatedCountries(a.representation!, b.representation!))}
 	/>
 
 	<ShowOfHandsVotingPresentation committeeSettings={$committeeSettings} />
@@ -361,6 +404,14 @@
 		committeeName={committee?.name ?? m.unknown()}
 		confettiDurationSec={90}
 	/>
+	<button
+		class="btn btn-ghost fixed bottom-3 left-3 z-50 h-12 w-12 min-h-0 p-0 opacity-15 hover:opacity-60 transition-opacity"
+		onclick={toggleFullscreen}
+		aria-label={isFullscreen ? m.exitFullscreen() : m.enterFullscreen()}
+		title={isFullscreen ? m.exitFullscreen() : m.enterFullscreen()}
+	>
+		<i class="fas {isFullscreen ? 'fa-compress' : 'fa-expand'} text-sm"></i>
+	</button>
 {:else}
 	<UndrawError
 		undrawImage={emptyStreet}

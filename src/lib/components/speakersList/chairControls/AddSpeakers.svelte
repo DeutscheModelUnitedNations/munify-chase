@@ -10,10 +10,31 @@
 	import hotkeys from 'hotkeys-js';
 	import toast from 'svelte-french-toast';
 
+	type MemberLike = {
+		id: string;
+		present?: boolean;
+		representation?: {
+			name?: string | null;
+			alpha2Code?: string | null;
+			alpha3Code?: string | null;
+			faIcon?: string | null;
+			type?: string | null;
+		} | null;
+	};
+
+	type SpeakersListLike = {
+		id: string;
+		type?: string;
+		speakers: Array<{
+			committeeMember?: { id: string } | null;
+			conferenceMember?: { id: string } | null;
+		}>;
+	};
+
 	interface Props {
-		speakersList?: any;
-		committeeMembers: any[];
-		conferenceMembers: any[];
+		speakersList?: SpeakersListLike | null;
+		committeeMembers: MemberLike[];
+		conferenceMembers: MemberLike[];
 	}
 
 	let { speakersList, committeeMembers, conferenceMembers }: Props = $props();
@@ -33,7 +54,9 @@
 			? member?.representation.name
 			: getTranslatedCountryNameFromAlpha3Code(member?.representation?.alpha3Code);
 
-	const fuseOptions: IFuseOptions<any> = {
+	type FuseItem = Member & { label: string | undefined };
+
+	const fuseOptions: IFuseOptions<FuseItem> = {
 		keys: ['label'],
 		// threshold: 0.3, // Adjust the threshold for fuzzy matching
 		ignoreFieldNorm: true,
@@ -41,13 +64,13 @@
 		shouldSort: true
 	};
 
-	let fuse = $state(new Fuse(committeeMembers ?? [], fuseOptions));
+	const fuse = new Fuse<FuseItem>([], fuseOptions);
 
 	const filter = (members: Member[], value: string) => {
 		const excludeMembersAlreadyOnList = (member: Member) => {
 			if (!speakersList?.id) return true;
 			return !speakersList.speakers.some(
-				(speaker: any) =>
+				(speaker) =>
 					speaker.committeeMember?.id === member.id || speaker.conferenceMember?.id === member.id
 			);
 		};
@@ -72,7 +95,7 @@
 		}
 		if (!value) return;
 
-		const committeeMember = committeeMembers.find((x) => getName(x) === value);
+		const committeeMember = committeeMembers.find((x) => getName(x as Member) === value);
 		const conferenceMember = conferenceMembers.find((x) => getName(x as Member) === value);
 
 		if (!committeeMember && !conferenceMember) {
@@ -86,9 +109,10 @@
 					conferenceMemberId: conferenceMember?.id,
 					speakersListId: speakersList.id
 				},
-				id: true
+				id: true,
+				position: true
 			}),
-			promiseToastStrings(getName(committeeMember ?? (conferenceMember as Member)), 'add')
+			promiseToastStrings(getName((committeeMember ?? conferenceMember) as Member), 'add')
 		);
 
 		value = '';

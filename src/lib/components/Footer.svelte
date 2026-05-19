@@ -1,9 +1,11 @@
 <script lang="ts">
+	import { resolve } from '$app/paths';
 	import dmunLogo from '$assets/dmunlogo/logo.png';
 	import { configPublic } from '$config/public';
 	import LanguageSwitcher from '$lib/components/LanguageSwitcher.svelte';
 	import * as m from '$lib/paraglide/messages.js';
 	import ThemeSwitcher from './ThemeSwitcher.svelte';
+	import ExternalLink from './ExternalLink.svelte';
 </script>
 
 <div class="w-full p-4">
@@ -11,9 +13,9 @@
 		class="footer footer-center bg-base-100 text-base-content mt-3 flex flex-col rounded-xl p-10"
 	>
 		<nav class="flex flex-col flex-wrap justify-center gap-4 md:flex-row">
-			<a class="link-hover link" href="/">{m.home()}</a>
-			<a class="link-hover link" href="https://dmun.de/impressum" target="_blank"
-				>{@html m.imprintAndPrivacy()}</a
+			<a class="link-hover link" href={resolve('/(pages)')}>{m.home()}</a>
+			<ExternalLink class="link-hover link" href="https://dmun.de/impressum"
+				>{@html m.imprintAndPrivacy()}</ExternalLink
 			>
 		</nav>
 		<div class="flex">
@@ -22,28 +24,31 @@
 		</div>
 		<nav>
 			<div class="grid grid-flow-col gap-4" id="socials">
-				<a href="https://www.instagram.com/dmun_ev/" aria-label="Instagram">
+				<ExternalLink href="https://www.instagram.com/dmun_ev/" aria-label="Instagram">
 					<i class="fa-brands fa-instagram text-3xl"></i>
-				</a>
-				<a href="https://x.com/DMUN_eV" aria-label="X / Twitter">
+				</ExternalLink>
+				<ExternalLink href="https://x.com/DMUN_eV" aria-label="X / Twitter">
 					<i class="fa-brands fa-x-twitter text-3xl"></i>
-				</a>
-				<a href="https://www.facebook.com/deutschemodelunitednations/" aria-label="Facebook">
+				</ExternalLink>
+				<ExternalLink
+					href="https://www.facebook.com/deutschemodelunitednations/"
+					aria-label="Facebook"
+				>
 					<i class="fa-brands fa-facebook text-3xl"></i>
-				</a>
-				<a href="https://www.youtube.com/user/DeutscheMUNeV" aria-label="YouTube">
+				</ExternalLink>
+				<ExternalLink href="https://www.youtube.com/user/DeutscheMUNeV" aria-label="YouTube">
 					<i class="fa-brands fa-youtube text-3xl"></i>
-				</a>
-				<a href="https://github.com/deutschemodelunitednations" aria-label="GitHub">
+				</ExternalLink>
+				<ExternalLink href="https://github.com/deutschemodelunitednations" aria-label="GitHub">
 					<i class="fa-brands fa-github text-3xl"></i>
-				</a>
+				</ExternalLink>
 			</div>
 		</nav>
 		<aside>
 			<p>{m.aServiceBy()}</p>
-			<a href="https://dmun.de" target="_blank" class="transition-all duration-300 hover:scale-105">
+			<ExternalLink href="https://dmun.de" class="transition-all duration-300 hover:scale-105">
 				<img src={dmunLogo} alt="DMUN Logo" class="w-40 dark:hue-rotate-180 dark:invert" />
-			</a>
+			</ExternalLink>
 			<p>
 				Copyright © {new Date().getFullYear() !== 2024 ? '2024-' : ''}{new Date().getFullYear()} - {m.allRightsReservedby()}
 				Deutsche Model United Nations e.V.

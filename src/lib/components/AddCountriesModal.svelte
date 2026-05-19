@@ -3,7 +3,6 @@
 	import Modal from './Modal.svelte';
 	import CountryBadge from './CountryBadge.svelte';
 	import WorldCountries from 'world-countries';
-	import { SvelteSet } from 'svelte/reactivity';
 
 	interface ParsedCountry {
 		alpha2Code: string;
@@ -45,13 +44,13 @@
 
 		const countries: ParsedCountry[] = [];
 		const unrecognized: string[] = [];
-		const addedCodes = new SvelteSet<string>();
+		const addedCodes: string[] = [];
 
 		for (const token of tokens) {
 			const normalized = token.toLowerCase();
 
 			// Skip if we've already added this country
-			if (addedCodes.has(normalized)) {
+			if (addedCodes.includes(normalized)) {
 				continue;
 			}
 
@@ -72,8 +71,8 @@
 					alpha3Code: country.cca3.toLowerCase(),
 					name: country.name.common
 				});
-				addedCodes.add(country.cca2.toLowerCase());
-				addedCodes.add(country.cca3.toLowerCase());
+				addedCodes.push(country.cca2.toLowerCase());
+				addedCodes.push(country.cca3.toLowerCase());
 			} else if (token.length >= 2 && token.length <= 3) {
 				// Only mark as unrecognized if it looks like a country code (2-3 chars)
 				unrecognized.push(token.toUpperCase());
@@ -139,7 +138,7 @@
 			<div class="mb-4">
 				<h4 class="mb-2 text-sm font-semibold">{m.parsedCountries()}</h4>
 				<div class="flex max-h-48 flex-wrap gap-1 overflow-y-auto">
-					{#each parsedCountries as country}
+					{#each parsedCountries as country (country.alpha3Code ?? country.alpha2Code ?? country.name)}
 						<CountryBadge
 							alpha2Code={country.alpha2Code}
 							alpha3Code={country.alpha3Code}
@@ -155,7 +154,7 @@
 			<div class="mb-4">
 				<h4 class="text-warning mb-2 text-sm font-semibold">{m.unrecognizedCodes()}</h4>
 				<div class="flex flex-wrap gap-1">
-					{#each unrecognizedStrings as code}
+					{#each unrecognizedStrings as code (code)}
 						<div class="badge badge-outline badge-warning font-mono">{code}</div>
 					{/each}
 				</div>

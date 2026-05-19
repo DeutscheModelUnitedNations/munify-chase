@@ -7,11 +7,7 @@ import {
 	query,
 	whereArg
 } from '$api/rumble';
-import {
-	isAdminInConference,
-	isGlobalAdmin,
-	isParticipantInConference
-} from '$api/services/authHelper';
+import { isAdminInConference, isParticipantInConference } from '$api/services/authHelper';
 import { assertFindFirstExists, assertFirstEntryExists } from '@m1212e/rumble';
 
 abilityBuilder.conferenceMember.allow('read').when((ctx) => {
@@ -37,7 +33,7 @@ schemaBuilder.mutationFields((t) => ({
 			conferenceId: t.arg.id({ required: true }),
 			representationId: t.arg.id({ required: true })
 		},
-		resolve: async (query, root, args, ctx, info) => {
+		resolve: async (query, root, args, ctx) => {
 			await db.query.conference
 				.findFirst(
 					ctx.abilities.conference.filter('update').merge({ where: { id: args.conferenceId } })

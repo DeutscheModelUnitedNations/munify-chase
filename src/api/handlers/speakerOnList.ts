@@ -1,7 +1,7 @@
 import { abilityBuilder, schemaBuilder, object, pubsub as rumblePubsub, query } from '$api/rumble';
 import { GraphQLError } from 'graphql';
 import { db, schema } from '$api/db/db';
-import { and, count, eq, gt, gte, sql } from 'drizzle-orm';
+import { and, count, eq, gte, sql } from 'drizzle-orm';
 import { assertFindFirstExists, assertFirstEntryExists } from '@m1212e/rumble';
 import { SpeakersListRef } from './speakersList';
 import {
@@ -9,6 +9,7 @@ import {
 	isGlobalAdmin,
 	isParticipantInConference
 } from '$api/services/authHelper';
+import { resolveId } from '$lib/helpers/idValidation';
 
 abilityBuilder.speakerOnList.allow(['read', 'update', 'delete']).when((ctx) => {
 	if (isGlobalAdmin(ctx)) return 'allow';
@@ -55,7 +56,7 @@ schemaBuilder.mutationFields((t) => {
 				id: t.arg.id({ required: true }),
 				overwriteName: t.arg.string()
 			},
-			resolve: async (query, _root, args, ctx, _info) => {
+			resolve: async (query, _root, args, ctx) => {
 				const updated = await db
 					.update(schema.speakerOnList)
 					.set({
@@ -82,14 +83,13 @@ schemaBuilder.mutationFields((t) => {
 		addSpeakerOnList: t.drizzleField({
 			type: ref,
 			args: {
-				//TOOD do we need the userId here?
-				//TOOD do we need the reference by nation here?
+				id: t.arg.id(),
 				committeeMemberId: t.arg.id(),
 				conferenceMemberId: t.arg.id(),
 				speakersListId: t.arg.id({ required: true }),
 				position: t.arg.int()
 			},
-			resolve: async (query, root, args, ctx, info) => {
+			resolve: async (query, root, args, ctx) => {
 				if (args.committeeMemberId && args.conferenceMemberId) {
 					throw new GraphQLError('Cannot set both committeeMemberId and conferenceMemberId');
 				}
@@ -137,6 +137,7 @@ schemaBuilder.mutationFields((t) => {
 						const created = await tx
 							.insert(schema.speakerOnList)
 							.values({
+								id: resolveId(args.id),
 								committeeMemberId: args.committeeMemberId,
 								conferenceMemberId: args.conferenceMemberId,
 								speakersListId: speakersList.id,
@@ -173,7 +174,7 @@ schemaBuilder.mutationFields((t) => {
 				//TOOD do we need the reference by nation here?
 				speakerOnListId: t.arg.id({ required: true })
 			},
-			resolve: async (query, root, args, ctx, info) => {
+			resolve: async (query, root, args, ctx) => {
 				const removed = await db.transaction(
 					async (tx) => {
 						const deleted = await tx
@@ -230,9 +231,10 @@ schemaBuilder.mutationFields((t) => {
 		selfAddToSpeakersList: t.drizzleField({
 			type: ref,
 			args: {
+				id: t.arg.id(),
 				speakersListId: t.arg.id({ required: true })
 			},
-			resolve: async (query, root, args, ctx, info) => {
+			resolve: async (query, root, args, ctx) => {
 				const user = ctx.mustBeLoggedIn();
 				if (!user.email) {
 					throw new GraphQLError('User email is required');
@@ -352,6 +354,7 @@ schemaBuilder.mutationFields((t) => {
 						const created = await tx
 							.insert(schema.speakerOnList)
 							.values({
+								id: resolveId(args.id),
 								committeeMemberId,
 								conferenceMemberId,
 								speakersListId: args.speakersListId,
@@ -386,7 +389,7 @@ schemaBuilder.mutationFields((t) => {
 			args: {
 				speakersListId: t.arg.id({ required: true })
 			},
-			resolve: async (query, root, args, ctx, info) => {
+			resolve: async (query, root, args, ctx) => {
 				const user = ctx.mustBeLoggedIn();
 				if (!user.email) {
 					throw new GraphQLError('User email is required');
@@ -508,7 +511,7 @@ schemaBuilder.mutationFields((t) => {
 				id: t.arg.id({ required: true }),
 				position: t.arg.int({ required: true })
 			},
-			resolve: async (query, root, args, ctx, info) => {
+			resolve: async (query, root, args, ctx) => {
 				if (args.position < 0) {
 					throw new GraphQLError('Position must be a non-negative integer');
 				}

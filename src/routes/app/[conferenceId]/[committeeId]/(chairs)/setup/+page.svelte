@@ -1,10 +1,10 @@
 <script lang="ts">
 	import { m } from '$lib/paraglide/messages';
 	import { page } from '$app/state';
+	import { resolve } from '$app/paths';
 	import { client } from '$lib/api/rumbleClient/client';
+	import { openPresentation } from '$lib/platform';
 	import Kbd from '$lib/components/Kbd.svelte';
-	import IconInfoBox from '$lib/components/IconInfoBox.svelte';
-	import { getCommitteeStatusIcon, getCommitteeStatusText } from '$lib/utils/committeeStatus';
 	import UndrawError from '$lib/components/UndrawError.svelte';
 	import emptyStreet from '$assets/undraw/empty_street.svg';
 	import BasicCard from '$lib/components/BasicCard.svelte';
@@ -16,7 +16,6 @@
 	import AgendaItemChanger from '$lib/components/committee/AgendaItemChanger.svelte';
 	import PresentationSettings from './PresentationSettings.svelte';
 	import Tabs from '$lib/components/Tabs.svelte';
-	import { ScrollArea } from 'bits-ui';
 	import StatusWidget from '../StatusWidget.svelte';
 	import dayjs from 'dayjs';
 
@@ -95,11 +94,14 @@
 					/>
 				</BasicCard>
 				<BasicCard title={m.presentationMode()}>
-					<a href="." class="btn btn-primary btn-lg mb-4 flex items-center gap-3" target="_blank">
+					<button
+						class="btn btn-primary btn-lg mb-4 flex items-center gap-3"
+						onclick={() => openPresentation(page.params.conferenceId!, page.params.committeeId!)}
+					>
 						<i class="fas fa-projector"></i>
 						{m.openPresentation()}
 						<Kbd hotkey="alt+P" class="text-base-content" />
-					</a>
+					</button>
 					<PresentationSettings committeeId={page.params.committeeId!} />
 				</BasicCard>
 				<BasicCard title={m.allowSelfAddToSpeakersList()}>

@@ -1,6 +1,7 @@
 import { db, schema } from '$api/db/db';
 import { abilityBuilder, object, query, pubsub as rumblePubsub, schemaBuilder } from '$api/rumble';
 import { nanoid } from '$lib/helpers/nanoid';
+import { resolveId } from '$lib/helpers/idValidation';
 import { assertFindFirstExists, assertFirstEntryExists } from '@m1212e/rumble';
 import { isParticipantInConference } from '$api/services/authHelper';
 
@@ -17,7 +18,7 @@ const ref = object({
 	adjust: (t) => ({
 		isActive: t.field({
 			type: 'Boolean',
-			resolve: async (parent, args, context, info) => {
+			resolve: async (parent) => {
 				const res = await db.query.committee
 					.findFirst({
 						where: { activeAgendaItemId: parent.id }
@@ -40,10 +41,11 @@ schemaBuilder.mutationFields((t) => {
 		createAgendaItem: t.drizzleField({
 			type: ref,
 			args: {
+				id: t.arg({ type: 'ID' }),
 				title: t.arg({ type: 'String', required: true }),
 				committeeId: t.arg({ type: 'ID', required: true })
 			},
-			resolve: async (query, root, args, ctx, info) => {
+			resolve: async (query, root, args, ctx) => {
 				await db.query.committee
 					.findFirst(
 						ctx.abilities.committee.filter('update').merge({
@@ -58,7 +60,7 @@ schemaBuilder.mutationFields((t) => {
 						.values({
 							title: args.title,
 							committeeId: args.committeeId,
-							id: nanoid()
+							id: resolveId(args.id)
 						})
 						.returning()
 						.then(assertFirstEntryExists);

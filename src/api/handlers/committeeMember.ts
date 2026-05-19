@@ -40,7 +40,7 @@ schemaBuilder.mutationFields((t) => {
 				committeeId: t.arg.id({ required: true }),
 				representationId: t.arg.id({ required: true })
 			},
-			resolve: async (query, root, args, ctx, info) => {
+			resolve: async (query, root, args, ctx) => {
 				const committee = await db.query.committee.findFirst({
 					where: { id: args.committeeId }
 				});
@@ -100,30 +100,32 @@ schemaBuilder.mutationFields((t) => {
 				ids: t.arg.idList({ required: true }),
 				present: t.arg.boolean({ required: true })
 			},
-			resolve: async (query, root, args, ctx, info) => {
-				const res = await db
-					.update(schema.committeeMember)
-					.set({
-						present: args.present
-					})
-					.where(
-						ctx.abilities.committeeMember
-							.filter('update')
-							.merge({ where: { id: { in: args.ids } } }).sql.where
-					)
-					.returning({
-						id: schema.committeeMember.id
-					});
+			resolve: async (query, root, args, ctx) => {
+				await db.transaction(async (tx) => {
+					const res = await tx
+						.update(schema.committeeMember)
+						.set({
+							present: args.present
+						})
+						.where(
+							ctx.abilities.committeeMember
+								.filter('update')
+								.merge({ where: { id: { in: args.ids } } }).sql.where
+						)
+						.returning({
+							id: schema.committeeMember.id
+						});
 
-				if (res.length > 0) {
-					db.insert(schema.presenceChangedTimestamp).values(
-						res.map((committeeMember) => ({
-							committeeMemberId: committeeMember.id,
-							presentSetTo: args.present,
-							timestamp: new Date()
-						}))
-					);
-				}
+					if (res.length > 0) {
+						await tx.insert(schema.presenceChangedTimestamp).values(
+							res.map((committeeMember) => ({
+								committeeMemberId: committeeMember.id,
+								presentSetTo: args.present,
+								timestamp: new Date()
+							}))
+						);
+					}
+				});
 
 				pubsub.updated(args.ids);
 

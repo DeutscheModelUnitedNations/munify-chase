@@ -16,7 +16,7 @@
 </script>
 
 <div class="tabs tabs-box h-auto" role="tablist">
-	{#each tabs as tab}
+	{#each tabs as tab (tab.id)}
 		<button
 			role="tab"
 			class="tab flex-1 {activeTab === tab.id

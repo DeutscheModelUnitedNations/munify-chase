@@ -1,35 +1,114 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
+	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
+	import { client } from '$lib/api/rumbleClient/client';
 	import CurrentTime from '$lib/components/CurrentTime.svelte';
 	import NavbarBurgerMenu from '$lib/components/NavbarBurgerMenu.svelte';
-	import ThemeSwitcher from '$lib/components/ThemeSwitcher.svelte';
+	import {
+		buildConferenceNavItems,
+		roleBadgeClassFor,
+		roleLabelFor
+	} from '$lib/components/navbar/conferenceNavItems';
 	import * as m from '$lib/paraglide/messages.js';
+	import { getCurrentUser } from '$lib/state/currentUser.svelte';
 	import hotkeys from 'hotkeys-js';
 
 	interface Props {
 		title?: string;
+		conferenceTitle?: string | null;
 		activeDraftResolutionId?: string | null;
 		resolutionFeatureEnabled?: boolean;
 	}
 
-	let { title, activeDraftResolutionId, resolutionFeatureEnabled = true }: Props = $props();
+	let {
+		title,
+		conferenceTitle,
+		activeDraftResolutionId,
+		resolutionFeatureEnabled = true
+	}: Props = $props();
 
-	const basePath = $derived(`/app/${page.params.conferenceId}/${page.params.committeeId}`);
+	const conferenceId = $derived(page.params.conferenceId!);
+	const committeeId = $derived(page.params.committeeId!);
+
+	const currentUser = await getCurrentUser();
+	const userId = currentUser.id ?? '';
+	const userDisplayName =
+		[currentUser.givenName, currentUser.familyName].filter(Boolean).join(' ').trim() ||
+		currentUser.preferredUsername ||
+		currentUser.email ||
+		'';
+
+	const conferenceUsers = await client.liveQuery.conferenceUsers({
+		__args: {
+			where: {
+				conference: { id: page.params.conferenceId },
+				user: { id: userId }
+			}
+		},
+		id: true,
+		conferenceUserType: true
+	});
+
+	let role = $derived(conferenceUsers?.[0]?.conferenceUserType);
+
+	const conference = await client.liveQuery.conference({
+		__args: { id: page.params.conferenceId! },
+		id: true,
+		committees: {
+			id: true,
+			name: true,
+			abbreviation: true
+		}
+	});
+
+	const isGlobalAdmin = await client.query.isGlobalAdmin();
+
+	let menubarItems = $derived(
+		buildConferenceNavItems({
+			role,
+			conferenceId,
+			activeRouteId: page.route.id,
+			activePathname: page.url.pathname,
+			isGlobalAdmin: !!isGlobalAdmin
+		})
+	);
 
 	const dockItems = $derived([
-		{ icon: 'fa-gears', label: () => m.setup(), href: `${basePath}/setup`, key: 'setup' },
-		{ icon: 'fa-users', label: () => m.presence(), href: `${basePath}/presence`, key: 'presence' },
+		{
+			icon: 'fa-gears',
+			label: () => m.setup(),
+			href: resolve('/app/[conferenceId]/[committeeId]/(chairs)/setup', {
+				conferenceId,
+				committeeId
+			}),
+			key: 'setup'
+		},
+		{
+			icon: 'fa-users',
+			label: () => m.presence(),
+			href: resolve('/app/[conferenceId]/[committeeId]/(chairs)/presence', {
+				conferenceId,
+				committeeId
+			}),
+			key: 'presence'
+		},
 		{
 			icon: 'fa-podium',
 			label: () => m.speakersList(),
-			href: `${basePath}/speakers-list`,
+			href: resolve('/app/[conferenceId]/[committeeId]/(chairs)/speakers-list', {
+				conferenceId,
+				committeeId
+			}),
 			key: 'speakers-list'
 		},
 		{
 			icon: 'fa-box-ballot',
 			label: () => m.voting(),
-			href: `${basePath}/voting`,
+			href: resolve('/app/[conferenceId]/[committeeId]/(chairs)/voting', {
+				conferenceId,
+				committeeId
+			}),
 			key: 'voting'
 		},
 		...(resolutionFeatureEnabled
@@ -37,7 +116,10 @@
 					{
 						icon: 'fa-scroll',
 						label: () => m.resolutions(),
-						href: `${basePath}/resolutions`,
+						href: resolve('/app/[conferenceId]/[committeeId]/(chairs)/resolutions', {
+							conferenceId,
+							committeeId
+						}),
 						key: 'resolutions'
 					}
 				]
@@ -47,7 +129,11 @@
 					{
 						icon: 'fa-file-lines',
 						label: () => m.activeDraftResolution(),
-						href: `${basePath}/resolutions/${activeDraftResolutionId}`,
+						href: resolve('/app/[conferenceId]/[committeeId]/(chairs)/resolutions/[paperId]', {
+							conferenceId,
+							committeeId,
+							paperId: activeDraftResolutionId
+						}),
 						key: activeDraftResolutionId
 					}
 				]
@@ -67,23 +153,54 @@
 			event.preventDefault();
 			switch (handler.key) {
 				case 'alt+1':
-					goto(`${basePath}/setup`);
+					goto(
+						resolve('/app/[conferenceId]/[committeeId]/(chairs)/setup', {
+							conferenceId,
+							committeeId
+						})
+					);
 					break;
 				case 'alt+2':
-					goto(`${basePath}/presence`);
+					goto(
+						resolve('/app/[conferenceId]/[committeeId]/(chairs)/presence', {
+							conferenceId,
+							committeeId
+						})
+					);
 					break;
 				case 'alt+3':
-					goto(`${basePath}/speakers-list`);
+					goto(
+						resolve('/app/[conferenceId]/[committeeId]/(chairs)/speakers-list', {
+							conferenceId,
+							committeeId
+						})
+					);
 					break;
 				case 'alt+4':
-					goto(`${basePath}/voting`);
+					goto(
+						resolve('/app/[conferenceId]/[committeeId]/(chairs)/voting', {
+							conferenceId,
+							committeeId
+						})
+					);
 					break;
 				case 'alt+5':
-					goto(`${basePath}/resolutions`);
+					goto(
+						resolve('/app/[conferenceId]/[committeeId]/(chairs)/resolutions', {
+							conferenceId,
+							committeeId
+						})
+					);
 					break;
 				case 'alt+6':
 					if (activeDraftResolutionId) {
-						goto(`${basePath}/resolutions/${activeDraftResolutionId}`);
+						goto(
+							resolve('/app/[conferenceId]/[committeeId]/(chairs)/resolutions/[paperId]', {
+								conferenceId,
+								committeeId,
+								paperId: activeDraftResolutionId
+							})
+						);
 					}
 					break;
 			}
@@ -103,13 +220,20 @@
 
 	<div class="flex-none">
 		<NavbarBurgerMenu
-			items={[
-				{
-					faIcon: 'fa-rocket-launch',
-					title: m.missionControl(),
-					href: `/app/${page.params.conferenceId}/mission-control`
-				}
-			]}
+			items={menubarItems}
+			user={{
+				name: userDisplayName,
+				email: currentUser.email ?? undefined,
+				givenName: currentUser.givenName ?? undefined,
+				familyName: currentUser.familyName ?? undefined
+			}}
+			roleLabel={roleLabelFor(role)}
+			roleBadgeClass={roleBadgeClassFor(role)}
+			{conferenceTitle}
+			{conferenceId}
+			committees={role === 'ADMIN' || role === 'TEAM' ? (conference?.committees ?? []) : []}
+			dashboardHref="/app"
+			signOutHref="/logout"
 		/>
 	</div>
 </div>

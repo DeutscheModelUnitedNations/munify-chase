@@ -1,4 +1,5 @@
 import { db, schema } from '$api/db/db';
+import { resolveId } from '$lib/helpers/idValidation';
 import {
 	abilityBuilder,
 	enum_,
@@ -82,13 +83,14 @@ schemaBuilder.mutationFields((t) => ({
 	createComment: t.drizzleField({
 		type: ref,
 		args: {
+			id: t.arg.id(),
 			paperId: t.arg.id({ required: true }),
 			content: t.arg.string({ required: true }),
 			clauseId: t.arg.string(),
 			visibility: t.arg({ type: commentVisibilityEnum }),
 			parentCommentId: t.arg.id()
 		},
-		resolve: async (query, root, args, ctx, info) => {
+		resolve: async (query, root, args, ctx) => {
 			const user = ctx.mustBeLoggedIn();
 
 			// Resolve conference user
@@ -147,6 +149,7 @@ schemaBuilder.mutationFields((t) => ({
 			const result = await db
 				.insert(schema.resolutionComment)
 				.values({
+					id: resolveId(args.id),
 					paperId: args.paperId,
 					clauseId: args.clauseId ?? null,
 					authorConferenceUserId: conferenceUser.id,
@@ -178,7 +181,7 @@ schemaBuilder.mutationFields((t) => ({
 			commentId: t.arg.id({ required: true }),
 			content: t.arg.string({ required: true })
 		},
-		resolve: async (query, root, args, ctx, info) => {
+		resolve: async (query, root, args, ctx) => {
 			const user = ctx.mustBeLoggedIn();
 
 			const comment = await db.query.resolutionComment

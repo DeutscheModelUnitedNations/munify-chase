@@ -1,10 +1,16 @@
 {
-  "$schema": "../gen/schemas/desktop-schema.json",
-  "identifier": "default",
-  "description": "Capability for the main window",
-  "windows": ["main"],
-  "permissions": [
-    "core:default",
-    "opener:default"
-  ]
+	"$schema": "../gen/schemas/desktop-schema.json",
+	"description": "Capability for the main window",
+	"identifier": "default",
+	"permissions": [
+		"core:default",
+		"opener:default",
+		"opener:allow-open",
+		"deep-link:default",
+		"deep-link:allow-get-current",
+		"deep-link:allow-is-registered",
+		"deep-link:allow-register",
+		"deep-link:allow-on-open-url"
+	],
+	"windows": ["main", "presentation"]
 }

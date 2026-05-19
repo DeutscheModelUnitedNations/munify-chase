@@ -4,12 +4,8 @@
 	import CardSection from './CardSection.svelte';
 	import TextSection from './TextSection.svelte';
 	import ContactSection from './ContactSection.svelte';
-	import { media } from '$lib/utils/media.svelte';
-	import { navigating } from '$app/state';
 	import { onMount } from 'svelte';
-
-	// Modal state
-	let versionModalVisible = false;
+	import ExternalLink from '$lib/components/ExternalLink.svelte';
 
 	let loading = $state(true);
 
@@ -88,20 +84,19 @@
 			>
 				<TextSection title={m.homeAboutTitle()} text={m.homeAboutText()} />
 				<TextSection title={m.homeMissionTitle()} text={m.homeMissionText()}>
-					<a class="btn btn-primary mt-3" href="https://dmun.de" target="_blank">
+					<ExternalLink class="btn btn-primary mt-3" href="https://dmun.de">
 						<i class="fas fa-external-link mr-2"></i>
 						{m.homeMissionButtonLabel()}
-					</a>
+					</ExternalLink>
 				</TextSection>
 				<TextSection title={m.homeContributeTitle()} text={m.homeContributeText()}>
-					<a
+					<ExternalLink
 						class="btn btn-primary mt-3"
 						href="https://github.com/DeutscheModelUnitedNations/munify-chase"
-						target="_blank"
 					>
 						<i class="fas fa-code-branch mr-2"></i>
 						{m.homeContributeButtonLabel()}
-					</a>
+					</ExternalLink>
 				</TextSection>
 			</div>
 

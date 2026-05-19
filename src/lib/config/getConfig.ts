@@ -30,7 +30,7 @@ export function getConfig<
 
 	try {
 		return schema.parse(process.env);
-	} catch (error) {
+	} catch {
 		// we want to throw the original error
 		throw err;
 	}

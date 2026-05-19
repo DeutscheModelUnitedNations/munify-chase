@@ -13,6 +13,7 @@
 	import { getServerTime } from '$lib/state/serverTime.svelte';
 	import hotkeys from 'hotkeys-js';
 	import AdoptionConfetti from '$lib/components/AdoptionConfetti.svelte';
+	import { openPresentation } from '$lib/platform';
 	import VotingModal from '$lib/components/voting/VotingModal.svelte';
 
 	interface Props {
@@ -183,7 +184,7 @@
 	$effect(() => {
 		hotkeys('alt+p', (event) => {
 			event.preventDefault();
-			window.open('.', '_blank');
+			openPresentation(page.params.conferenceId!, page.params.committeeId!);
 		});
 		return () => hotkeys.unbind('alt+p');
 	});
@@ -195,6 +196,7 @@
 
 <ChairNavbar
 	title={committee?.abbreviation}
+	conferenceTitle={committee?.conference?.title}
 	activeDraftResolutionId={committee?.activeDraftResolutionId}
 />
 
@@ -207,7 +209,6 @@
 	oldStatus={committee?.status}
 	oldUntil={committee?.statusUntil}
 	oldCustomName={committee?.statusHeadline}
-	hasModeratedCaucus={committee?.conference?.hasModeratedCaucus}
 />
 
 <StateOfDebateChangerModal {committeeId} oldStateOfDebate={committee?.stateOfDebate} />

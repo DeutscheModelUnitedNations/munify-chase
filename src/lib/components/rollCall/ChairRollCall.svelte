@@ -1,7 +1,6 @@
 <script lang="ts">
 	import Kbd from '$lib/components/Kbd.svelte';
 	import { m } from '$lib/paraglide/messages';
-	import { onDestroy, onMount } from 'svelte';
 	import Modal from '../Modal.svelte';
 	import ScrollingCountryList from './ScrollingCountryList.svelte';
 	import hotkeys from 'hotkeys-js';

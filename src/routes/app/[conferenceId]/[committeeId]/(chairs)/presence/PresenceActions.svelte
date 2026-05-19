@@ -22,11 +22,11 @@
 	};
 </script>
 
-<button class="btn btn-success btn-outline" onclick={() => setAllPresence(true)}>
+<button class="btn btn-success btn-soft" onclick={() => setAllPresence(true)}>
 	<i class="fas fa-person-to-portal mr-2"></i>
 	{m.setAllPresent()}
 </button>
-<button class="btn btn-error btn-outline" onclick={() => setAllPresence(false)}>
+<button class="btn btn-error btn-soft" onclick={() => setAllPresence(false)}>
 	<i class="fas fa-person-from-portal mr-2"></i>
 	{m.setAllAbsent()}
 </button>

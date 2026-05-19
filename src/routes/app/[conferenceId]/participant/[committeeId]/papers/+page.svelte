@@ -2,6 +2,7 @@
 	import { m } from '$lib/paraglide/messages';
 	import { page } from '$app/state';
 	import { goto } from '$app/navigation';
+	import { resolve } from '$app/paths';
 	import { client } from '$lib/api/rumbleClient/client';
 	import { getCurrentUser } from '$lib/state/currentUser.svelte';
 	import { generatePaperName } from '$lib/utils/paperNameGenerator';
@@ -101,7 +102,11 @@
 			toast.success(m.paperCreated());
 			if (result?.id) {
 				goto(
-					`/app/${page.params.conferenceId}/participant/${page.params.committeeId}/papers/${result.id}`
+					resolve('/app/[conferenceId]/participant/[committeeId]/papers/[paperId]', {
+						conferenceId: page.params.conferenceId!,
+						committeeId: page.params.committeeId!,
+						paperId: result.id
+					})
 				);
 			}
 		} catch {
@@ -113,9 +118,14 @@
 		if (!myCommitteeMemberId) return;
 		try {
 			if (currentlySupporting) {
-				await client.mutate.removeSponsor({
+				// Cast required: rumble generator types scalar-returning mutations as plain types instead of fns
+				await (
+					client.mutate.removeSponsor as unknown as (p: {
+						__args: { paperId: string; committeeMemberId: string };
+					}) => Promise<unknown>
+				)({
 					__args: { paperId, committeeMemberId: myCommitteeMemberId }
-				} as any);
+				});
 			} else {
 				await client.mutate.addSponsor({
 					__args: { paperId, committeeMemberId: myCommitteeMemberId },
@@ -142,7 +152,11 @@
 				toast.success(m.codeRedeemed());
 				shareCodeInput = '';
 				goto(
-					`/app/${page.params.conferenceId}/participant/${page.params.committeeId}/papers/${paperId}`
+					resolve('/app/[conferenceId]/participant/[committeeId]/papers/[paperId]', {
+						conferenceId: page.params.conferenceId!,
+						committeeId: page.params.committeeId!,
+						paperId
+					})
 				);
 			}
 		} catch {
@@ -248,10 +262,13 @@
 			</div>
 		{:else}
 			<div class="grid grid-cols-1 gap-3 md:grid-cols-2">
-				{#each myPapers as paper}
+				{#each myPapers as paper (paper.id)}
 					<a
-						href="/app/{page.params.conferenceId}/participant/{page.params
-							.committeeId}/papers/{paper.id}"
+						href={resolve('/app/[conferenceId]/participant/[committeeId]/papers/[paperId]', {
+							conferenceId: page.params.conferenceId!,
+							committeeId: page.params.committeeId!,
+							paperId: paper.id
+						})}
 						class="card bg-base-100 shadow-sm transition-shadow hover:shadow-md"
 					>
 						<div class="card-body gap-2 p-4">
@@ -298,7 +315,7 @@
 			</div>
 		{:else}
 			<div class="grid grid-cols-1 gap-3 md:grid-cols-2">
-				{#each draftResolutions as paper}
+				{#each draftResolutions as paper (paper.id)}
 					{@const isSupportingDr = paper.sponsors.some(
 						(s) => s.committeeMemberId === myCommitteeMemberId
 					)}
@@ -309,8 +326,11 @@
 							: ''}"
 					>
 						<a
-							href="/app/{page.params.conferenceId}/participant/{page.params
-								.committeeId}/papers/{paper.id}"
+							href={resolve('/app/[conferenceId]/participant/[committeeId]/papers/[paperId]', {
+								conferenceId: page.params.conferenceId!,
+								committeeId: page.params.committeeId!,
+								paperId: paper.id
+							})}
 							class="card-body gap-2 p-4"
 						>
 							<div class="flex items-start justify-between gap-2">
@@ -339,7 +359,7 @@
 							<!-- Sponsor flags -->
 							{#if paper.sponsors.length > 0}
 								<div class="flex flex-wrap gap-1">
-									{#each paper.sponsors as sponsor}
+									{#each paper.sponsors as sponsor (sponsor.id)}
 										{#if sponsor.committeeMember?.representation}
 											<Flag representation={sponsor.committeeMember.representation} size="xs" />
 										{/if}

@@ -96,7 +96,8 @@
 					const memberId = getCommitteeMemberId(committee.id);
 					if (memberId) {
 						await toast.promise(
-							client.mutate.deleteCommitteeMember({ __args: { id: memberId } } as any),
+							// eslint-disable-next-line @typescript-eslint/no-explicit-any -- rumble generator types delete mutations as plain `Boolean` instead of callable functions
+							(client.mutate.deleteCommitteeMember as any)({ __args: { id: memberId } } as any),
 							promiseToastStrings(committee.abbreviation, 'delete')
 						);
 					}
@@ -115,16 +116,16 @@
 		<h3 class="mb-4 text-lg font-bold">{m.edit()}</h3>
 
 		<div class="mb-4 flex items-center gap-3">
-			<Flag representation={delegation as any} size="xs" />
+			<Flag representation={delegation} size="xs" />
 			<span class="text-lg font-semibold">
 				{delegation.name || getTranslatedCountryNameFromAlpha3Code(delegation.alpha3Code)}
 			</span>
 		</div>
 
 		<div class="form-control mb-4">
-			<label class="label">
+			<div class="label">
 				<span class="label-text font-semibold">{m.committees()}</span>
-			</label>
+			</div>
 			{#if committees.length === 0}
 				<p class="text-base-content/60 text-sm italic">{m.noData()}</p>
 			{:else}

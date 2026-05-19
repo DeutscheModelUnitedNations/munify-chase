@@ -44,6 +44,14 @@ All scripts can be found in the [package.json](./package.json) file. Most import
 - `bun run dev:server`: Starts the development server with hot reloading.
 - `bun run dev:docker`: Starts the docker containers (database, mockOIDC server, etc.). Add `-d` to run it in detached mode (i.e. in the background).
 
+## Pi display appliance
+
+Headless Raspberry Pi screens can show a live, read-only committee grid for
+a conference. A Pi self-registers, shows a pairing QR until an organizer
+assigns it under `/app/displays`, then renders live data. See
+[`pi-display/README.md`](./pi-display/README.md) for building, pairing, and
+operating the appliance.
+
 ## FAQ
 
 #### Can I use this for my conference outside of DMUN?

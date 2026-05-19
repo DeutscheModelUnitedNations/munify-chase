@@ -130,8 +130,8 @@
 					targetPosition = initialTargetIndex; // insert after this index
 				} else if (initialType === 'ALTER_POSITION') {
 					newContent = null;
-					// Default destination: before first clause (if source isn't first), else after second
-					targetPosition = initialTargetIndex === 0 ? 0 : -1;
+					// Default to "after OP 2" when source is first; "at beginning" otherwise
+					targetPosition = initialTargetIndex === 0 ? 1 : -1;
 				}
 				step = contentStep;
 			} else {
@@ -233,8 +233,8 @@
 				targetPosition = selectedSourceIndex;
 			}
 		} else if (selectedType === 'ALTER_POSITION') {
-			// Default destination: before first clause (if source isn't first), else after second
-			targetPosition = selectedSourceIndex === 0 ? 0 : -1;
+			// Default to "after OP 2" when source is first; "at beginning" otherwise
+			targetPosition = selectedSourceIndex === 0 ? 1 : -1;
 		}
 
 		step = contentStep;
@@ -255,7 +255,7 @@
 		try {
 			await onSubmit({
 				type: selectedType,
-				targetClauseId: isDelete || isAlterText ? (targetClause?.id ?? null) : null,
+				targetClauseId: isDelete || isAlterText || isAlterPos ? (targetClause?.id ?? null) : null,
 				targetOperativeIndex: !isAdd ? selectedSourceIndex : null,
 				targetPosition: isAdd ? targetPosition : isAlterPos ? targetPosition : null,
 				newContent: isAlterText || isAdd ? newContent : null,
@@ -469,7 +469,7 @@
 						</p>
 					{/if}
 					{#if miniStore}
-						<div class="border rounded-lg p-2 max-h-64 overflow-y-auto">
+						<div class="border rounded-lg p-2">
 							<ResolutionEditor store={miniStore} labels={getResolutionLabels()} editable={true} />
 						</div>
 					{/if}

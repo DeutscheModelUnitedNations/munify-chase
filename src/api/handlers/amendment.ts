@@ -185,13 +185,15 @@ function computeAmendedResolution(
 		}
 		case 'ALTER_POSITION': {
 			const sourceIdx = findClauseIndex(next.operative, amendment.targetClauseId!);
-			const destIdx = amendment.targetPosition!;
-			if (destIdx < 0 || destIdx > next.operative.length) {
+			// insertAfter=-1 means insert at beginning; insertAfter=i means insert after clause i
+			const insertAfter = amendment.targetPosition!;
+			if (insertAfter < -1 || insertAfter >= next.operative.length) {
 				throw new GraphQLError('Destination index out of range');
 			}
 			const [clause] = next.operative.splice(sourceIdx, 1);
-			const adjustedDest = destIdx > sourceIdx ? destIdx - 1 : destIdx;
-			next.operative.splice(adjustedDest, 0, clause);
+			// Adjust destination for the removal of source (same "insert after" semantics as ADD)
+			const effectiveInsertAfter = insertAfter >= sourceIdx ? insertAfter - 1 : insertAfter;
+			next.operative.splice(effectiveInsertAfter + 1, 0, clause);
 			break;
 		}
 	}

@@ -29,15 +29,11 @@ export function isGlobalAdmin(ctx: Context) {
  * @returns A filter object for the conference query. Injectable at e.g. committee level.
  */
 export function isChairInConference(ctx: Context) {
-	const user = ctx.mustBeLoggedIn();
 	if (isGlobalAdmin(ctx)) {
 		return {};
 	}
 
-	const userEmail = user.email;
-	if (!userEmail) {
-		throw new Error('User email is required to check committee chair or admin status');
-	}
+	const userId = ctx.mustBeLoggedIn().sub;
 
 	return {
 		conference: {
@@ -45,7 +41,7 @@ export function isChairInConference(ctx: Context) {
 				{
 					users: {
 						user: {
-							email: userEmail
+							id: userId
 						},
 						conferenceUserType: 'ADMIN' as const
 					}
@@ -53,7 +49,7 @@ export function isChairInConference(ctx: Context) {
 				{
 					users: {
 						user: {
-							email: userEmail
+							id: userId
 						},
 						conferenceUserType: 'TEAM' as const
 					}
@@ -97,16 +93,12 @@ export function isAdmin(ctx: Context) {
 		return {};
 	}
 
-	const user = ctx.mustBeLoggedIn();
-	const userEmail = user.email;
-	if (!userEmail) {
-		throw new Error('User email is required to check committee chair or admin status');
-	}
+	const userId = ctx.mustBeLoggedIn().sub;
 
 	return {
 		users: {
 			user: {
-				email: userEmail
+				id: userId
 			},
 			conferenceUserType: 'ADMIN' as const
 		}
@@ -119,16 +111,16 @@ export function isAdmin(ctx: Context) {
  * @returns A filter object for the conference query. Injectable at conference level.
  */
 export function isParticipant(ctx: Context) {
-	const user = ctx.mustBeLoggedIn();
-	const userEmail = user.email;
-	if (!userEmail) {
-		throw new Error('User email is required to check participant status');
+	if (isGlobalAdmin(ctx)) {
+		return {};
 	}
+
+	const userId = ctx.mustBeLoggedIn().sub;
 
 	return {
 		users: {
 			user: {
-				email: userEmail
+				id: userId
 			}
 		}
 	};

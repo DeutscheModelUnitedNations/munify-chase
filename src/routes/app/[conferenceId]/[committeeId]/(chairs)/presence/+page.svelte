@@ -128,7 +128,7 @@
 				</BasicCard>
 			</div>
 			<div class="flex h-full w-full flex-3 flex-col gap-4">
-				<NsaAttendanceCard conferenceId={committee.conference.id} committeeId={committee.id} />
+				<NsaAttendanceCard conferenceId={committee.conference?.id} committeeId={committee.id} />
 				<BasicCard title={m.delegations()}>
 					{#each countries as member (member.id)}
 						{@const rep = member.representation}

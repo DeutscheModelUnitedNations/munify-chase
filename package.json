@@ -122,7 +122,7 @@
 	"type": "module",
 	"dependencies": {
 		"drizzle-kit": "^1.0.0-beta.22",
-		"drizzle-orm": "^1.0.0-beta.22",
+		"drizzle-orm": "1.0.0-beta.22",
 		"pg": "^8.21.0",
 		"polka": "^0.5.2",
 		"ws": "^8.20.1"

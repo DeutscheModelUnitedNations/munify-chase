@@ -15,7 +15,7 @@ export type Agendaitem = {
   committee: (p?: {
     orderBy?: CommitteeOrderInputArgument | null | undefined,
     where?: CommitteeWhereInputArgument | null | undefined
-  }) => Committee,
+  }) => Committee | null,
   committeeId: ID,
   createdAt: DateTime,
   id: ID,
@@ -199,7 +199,7 @@ export type Committee = {
   conference: (p?: {
     orderBy?: ConferenceOrderInputArgument | null | undefined,
     where?: ConferenceWhereInputArgument | null | undefined
-  }) => Conference,
+  }) => Conference | null,
   conferenceId: ID,
   createdAt: DateTime,
   currentOperativeClauseId: ID | null,
@@ -498,7 +498,7 @@ export type Conferencemember = {
   conference: (p?: {
     orderBy?: ConferenceOrderInputArgument | null | undefined,
     where?: ConferenceWhereInputArgument | null | undefined
-  }) => Conference,
+  }) => Conference | null,
   conferenceId: ID,
   createdAt: DateTime,
   id: ID,
@@ -790,6 +790,7 @@ export type Mutation = {
   addSpeakerOnList: (p: {
     committeeMemberId?: ID | null | undefined,
     conferenceMemberId?: ID | null | undefined,
+    id?: ID | null | undefined,
     position?: Int | null | undefined,
     speakersListId: ID
   }) => Speakeronlist,
@@ -820,6 +821,7 @@ export type Mutation = {
   }) => Speakerslist,
   createAgendaItem: (p: {
     committeeId: ID,
+    id?: ID | null | undefined,
     title: String
   }) => Agendaitem,
   createAmendment: (p: {
@@ -833,6 +835,7 @@ export type Mutation = {
   createComment: (p: {
     clauseId?: String | null | undefined,
     content: String,
+    id?: ID | null | undefined,
     paperId: ID,
     parentCommentId?: ID | null | undefined,
     visibility?: unknown | null | undefined
@@ -919,14 +922,12 @@ export type Mutation = {
     votesFor: Int
   }) => Operativeclausevote,
   recordNsaCheckIn: (p: {
-    attendanceCode?: String | null | undefined,
-    committeeId: ID,
-    conferenceUserId?: ID | null | undefined
+    code: String,
+    committeeId: ID
   }) => Nsapresenceevent,
   recordNsaCheckOut: (p: {
-    attendanceCode?: String | null | undefined,
-    committeeId: ID,
-    conferenceUserId?: ID | null | undefined
+    code: String,
+    committeeId: ID
   }) => Nsapresenceevent,
   recordVoteResult: (p: {
     outcome: unknown,
@@ -955,6 +956,7 @@ export type Mutation = {
     restoreSnapshot?: Boolean | null | undefined
   }) => Resolutionpaper,
   selfAddToSpeakersList: (p: {
+    id?: ID | null | undefined,
     speakersListId: ID
   }) => Speakeronlist,
   selfRemoveFromSpeakersList: (p: {
@@ -1296,7 +1298,7 @@ export type Presencechangedtimestamp = {
   committeeMember: (p?: {
     orderBy?: CommitteememberOrderInputArgument | null | undefined,
     where?: CommitteememberWhereInputArgument | null | undefined
-  }) => Committeemember,
+  }) => Committeemember | null,
   committeeMemberId: ID,
   createdAt: DateTime,
   id: ID,
@@ -1543,7 +1545,7 @@ export type Representation = {
   conference: (p?: {
     orderBy?: ConferenceOrderInputArgument | null | undefined,
     where?: ConferenceWhereInputArgument | null | undefined
-  }) => Conference,
+  }) => Conference | null,
   conferenceId: ID,
   conferenceMembers: (p?: {
     limit?: Int | null | undefined,
@@ -1726,7 +1728,7 @@ export type Resolutionpaper = {
   voteResult: (p?: {
     orderBy?: ResolutionvoteresultOrderInputArgument | null | undefined,
     where?: ResolutionvoteresultWhereInputArgument | null | undefined
-  }) => Resolutionvoteresult | null
+  }) => Resolutionvoteresult | null    
 };
 		
 export type ResolutionpaperOrderInputArgument = {
@@ -1847,7 +1849,7 @@ export type Speakeronlist = {
   speakersList: (p?: {
     orderBy?: SpeakerslistOrderInputArgument | null | undefined,
     where?: SpeakerslistWhereInputArgument | null | undefined
-  }) => Speakerslist,
+  }) => Speakerslist | null,
   speakersListId: ID,
   updatedAt: DateTime | null    
 };
@@ -1884,7 +1886,7 @@ export type Speakerslist = {
   agendaItem: (p?: {
     orderBy?: AgendaitemOrderInputArgument | null | undefined,
     where?: AgendaitemWhereInputArgument | null | undefined
-  }) => Agendaitem,
+  }) => Agendaitem | null,
   agendaItemId: ID,
   createdAt: DateTime,
   id: ID,

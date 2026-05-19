@@ -4,6 +4,7 @@ import { type Handle, redirect } from '@sveltejs/kit';
 import { paraglideMiddleware } from '$lib/paraglide/server';
 import { sequence } from '@sveltejs/kit/hooks';
 import { OIDC } from '$api/services/OIDC';
+import { bearerAuthHandle } from '$api/services/bearerAuth';
 import { locales, baseLocale, cookieName, cookieMaxAge } from '$lib/paraglide/runtime';
 
 const nonBaseLocales = locales.filter((l) => l !== baseLocale);
@@ -28,14 +29,20 @@ const localeRedirect: Handle = ({ event, resolve }) => {
 	return resolve(event);
 };
 
-export const handle: Handle = sequence(OIDC.handle, localeRedirect, ({ event, resolve }) =>
-	paraglideMiddleware(event.request, ({ request: localizedRequest, locale }) => {
-		event.request = localizedRequest;
+const noopHandle: Handle = ({ event, resolve }) => resolve(event);
 
-		return resolve(event, {
-			transformPageChunk: ({ html }) => {
-				return html.replace('%lang%', locale);
-			}
-		});
-	})
+export const handle: Handle = sequence(
+	OIDC.handle ?? noopHandle,
+	bearerAuthHandle,
+	localeRedirect,
+	({ event, resolve }) =>
+		paraglideMiddleware(event.request, ({ request: localizedRequest, locale }) => {
+			event.request = localizedRequest;
+
+			return resolve(event, {
+				transformPageChunk: ({ html }) => {
+					return html.replace('%lang%', locale);
+				}
+			});
+		})
 );

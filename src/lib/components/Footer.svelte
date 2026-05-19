@@ -1,7 +1,6 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
 	import dmunLogo from '$assets/dmunlogo/logo.png';
-	import { configPublic } from '$config/public';
 	import LanguageSwitcher from '$lib/components/LanguageSwitcher.svelte';
 	import * as m from '$lib/paraglide/messages.js';
 	import ThemeSwitcher from './ThemeSwitcher.svelte';
@@ -53,28 +52,6 @@
 				Copyright © {new Date().getFullYear() !== 2024 ? '2024-' : ''}{new Date().getFullYear()} - {m.allRightsReservedby()}
 				Deutsche Model United Nations e.V.
 			</p>
-			<div class="flex flex-col gap-4 sm:flex-row sm:gap-8">
-				<div class="flex flex-col sm:flex-row sm:gap-2">
-					<div>{m.version()}:</div>
-					<div class="font-mono">
-						{#if !configPublic.PUBLIC_VERSION || configPublic.PUBLIC_VERSION.length === 0}
-							nightly
-						{:else}
-							{configPublic.PUBLIC_VERSION}
-						{/if}
-					</div>
-				</div>
-				<div class="flex max-w-[15ch] flex-col sm:flex-row sm:gap-2 md:max-w-max">
-					<div>{m.sha()}:</div>
-					<div class="overflow-hidden font-mono overflow-ellipsis">
-						{#if !configPublic.PUBLIC_SHA || configPublic.PUBLIC_SHA.length === 0}
-							unknown
-						{:else}
-							{configPublic.PUBLIC_SHA}
-						{/if}
-					</div>
-				</div>
-			</div>
 		</aside>
 	</footer>
 </div>

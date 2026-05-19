@@ -5,12 +5,12 @@
 	"permissions": [
 		"core:default",
 		"opener:default",
-		"opener:allow-open",
+		"opener:allow-open-url",
 		"deep-link:default",
 		"deep-link:allow-get-current",
 		"deep-link:allow-is-registered",
 		"deep-link:allow-register",
-		"deep-link:allow-on-open-url"
+		"deep-link:allow-unregister"
 	],
 	"windows": ["main", "presentation"]
 }

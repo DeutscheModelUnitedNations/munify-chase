@@ -7,29 +7,26 @@ import { optimistic, updates } from './optimisticUpdateHandlers';
 import { retryExchange } from '@urql/exchange-retry';
 import { createClient as createWSClient } from 'graphql-ws';
 import { dev } from '$app/environment';
-import { setWsConnected, isOnline } from '$lib/state/connection.svelte';
+import { setWsConnected } from '$lib/state/connection.svelte';
 import { getCachedAccessToken } from '$lib/platform/oidc';
 import { isTauri } from '$lib/platform';
 
-let wsConnected = false;
+// In Tauri mode the static build has no backend server, so use the production
+// deployment. In web mode, use relative paths so the same origin serves both.
+const graphqlUrl = isTauri() ? 'https://chase.munify.cloud/api/graphql' : '/api/graphql';
+const wsUrl = graphqlUrl.replace(/^http/, 'ws');
 
 const wsClient = createWSClient({
-	url: '/api/graphql',
+	url: wsUrl,
 	shouldRetry: () => true,
 	on: {
-		connected: () => {
-			wsConnected = true;
-			setWsConnected(true);
-		},
-		closed: () => {
-			wsConnected = false;
-			setWsConnected(false);
-		}
+		connected: () => setWsConnected(true),
+		closed: () => setWsConnected(false)
 	}
 });
 
 export const urqlClient = new Client({
-	url: '/api/graphql',
+	url: graphqlUrl,
 	// subscriptions via ws not supported in tauri fork, fallback to SSE in dev mode
 	fetchSubscriptions: dev,
 	exchanges: [
@@ -44,7 +41,7 @@ export const urqlClient = new Client({
 				maxAge: 7
 			}),
 			isOfflineError(error) {
-				return !isOnline() || (error != null && error.networkError != null);
+				return error != null && error.networkError != null;
 			}
 		}),
 		retryExchange({
@@ -56,7 +53,7 @@ export const urqlClient = new Client({
 			retryIf: (err) => err && err.networkError != null
 		}),
 		subscriptionExchange({
-			isSubscriptionOperation: (op) => op.kind === 'subscription' || wsConnected,
+			isSubscriptionOperation: (op) => op.kind === 'subscription',
 			forwardSubscription(request) {
 				const input = { ...request, query: request.query || '' };
 				return {

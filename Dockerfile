@@ -7,7 +7,7 @@ RUN bun install --frozen-lockfile
 
 FROM base AS runtime-dependencies
 WORKDIR /build/dependencies
-COPY package.json bun.lock tsconfig.json ./
+COPY package.json bun.lock ./
 RUN bun install --frozen-lockfile --production
 
 FROM base AS builder

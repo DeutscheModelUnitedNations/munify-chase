@@ -248,7 +248,7 @@
 	});
 </script>
 
-<Modal bind:open={active}>
+<Modal bind:open={active} closeOnEsc={false}>
 	<h1 class="mb-4 text-2xl font-bold">{voteName || m.rollCallVoting()}</h1>
 
 	<ResultChart

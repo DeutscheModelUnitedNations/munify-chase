@@ -5,12 +5,13 @@
 	interface Props {
 		open: boolean;
 		children: Snippet;
+		closeOnEsc?: boolean;
 	}
 
-	let { open = $bindable(), children }: Props = $props();
+	let { open = $bindable(), children, closeOnEsc = true }: Props = $props();
 
 	$effect(() => {
-		if (open) {
+		if (open && closeOnEsc) {
 			hotkeys('esc', () => {
 				open = false;
 			});

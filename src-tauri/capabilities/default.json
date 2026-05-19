@@ -10,8 +10,7 @@
 		"deep-link:allow-get-current",
 		"deep-link:allow-is-registered",
 		"deep-link:allow-register",
-		"deep-link:allow-unregister",
-		"http:default"
+		"deep-link:allow-unregister"
 	],
 	"windows": ["main", "presentation"]
 }

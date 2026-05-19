@@ -10,7 +10,6 @@ pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_deep_link::init())
-        .plugin(tauri_plugin_http::init())
         .setup(|app| {
             let win = app.get_webview_window("main").unwrap();
             // Open DevTools immediately so JS errors are visible.

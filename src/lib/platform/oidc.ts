@@ -7,13 +7,6 @@
 
 import { isTauri } from './index';
 
-// Use Tauri's Rust-backed HTTP client for OIDC requests so they bypass
-// WebKitGTK's CORS restrictions (the OIDC server may not allow our origin).
-async function oidcFetch(url: string, options?: RequestInit): Promise<Response> {
-	const { fetch: tauriFetch } = await import('@tauri-apps/plugin-http');
-	return tauriFetch(url, options) as Promise<Response>;
-}
-
 const STORAGE_KEY = 'chase_oidc_tokens';
 
 type TokenSet = {
@@ -90,6 +83,25 @@ async function generateCodeChallenge(verifier: string): Promise<string> {
 		.replace(/=/g, '');
 }
 
+// ── Endpoint derivation ──────────────────────────────────────────────────────
+
+/**
+ * Derives OIDC endpoints from the discovery URL without fetching it.
+ * Avoids cross-origin fetch from the Tauri WebView (WebKitGTK enforces CORS
+ * and the OIDC server may not allow the tauri:// origin).
+ *
+ * Assumes standard path layout: the discovery URL ends with
+ * /.well-known/openid-configuration and the auth/token endpoints are
+ * siblings at /auth and /token respectively (Logto, Keycloak, Auth0, etc.).
+ */
+function deriveOidcEndpoints(discoveryUrl: string) {
+	const base = discoveryUrl.replace(/\/\.well-known\/openid-configuration$/, '');
+	return {
+		authorizationEndpoint: `${base}/auth`,
+		tokenEndpoint: `${base}/token`
+	};
+}
+
 // ── Authorization flow ───────────────────────────────────────────────────────
 
 const PENDING_PKCE_KEY = 'chase_pkce_pending';
@@ -115,8 +127,7 @@ export async function startTauriOidcFlow(authorityUrl: string, clientId: string)
 	const codeChallenge = await generateCodeChallenge(codeVerifier);
 	const state = crypto.randomUUID();
 
-	// authorityUrl is already the full discovery URL (e.g. .well-known/openid-configuration)
-	const discovery = await oidcFetch(authorityUrl).then((r) => r.json());
+	const { authorizationEndpoint } = deriveOidcEndpoints(authorityUrl);
 
 	const params = new URLSearchParams({
 		response_type: 'code',
@@ -131,7 +142,7 @@ export async function startTauriOidcFlow(authorityUrl: string, clientId: string)
 	const pending: PendingPKCE = { codeVerifier, state, authorityUrl, clientId };
 	sessionStorage.setItem(PENDING_PKCE_KEY, JSON.stringify(pending));
 
-	await openUrl(`${discovery.authorization_endpoint}?${params.toString()}`);
+	await openUrl(`${authorizationEndpoint}?${params.toString()}`);
 }
 
 /**
@@ -151,7 +162,7 @@ export async function completeTauriOidcFlow(callbackUrl: string): Promise<boolea
 
 	if (!code || returnedState !== pending.state) return false;
 
-	const discovery = await fetch(pending.authorityUrl).then((r) => r.json());
+	const { tokenEndpoint } = deriveOidcEndpoints(pending.authorityUrl);
 
 	const body = new URLSearchParams({
 		grant_type: 'authorization_code',
@@ -161,7 +172,7 @@ export async function completeTauriOidcFlow(callbackUrl: string): Promise<boolea
 		code_verifier: pending.codeVerifier
 	});
 
-	const response = await oidcFetch(discovery.token_endpoint, {
+	const response = await fetch(tokenEndpoint, {
 		method: 'POST',
 		headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
 		body: body.toString()

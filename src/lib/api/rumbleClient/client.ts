@@ -1726,7 +1726,7 @@ export type Resolutionpaper = {
   voteResult: (p?: {
     orderBy?: ResolutionvoteresultOrderInputArgument | null | undefined,
     where?: ResolutionvoteresultWhereInputArgument | null | undefined
-  }) => Resolutionvoteresult    
+  }) => Resolutionvoteresult | null
 };
 		
 export type ResolutionpaperOrderInputArgument = {

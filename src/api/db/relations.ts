@@ -308,9 +308,13 @@ export const relations = defineRelations(schema, (r) => ({
 			from: r.resolutionPaper.id,
 			to: r.operativeClauseVote.paperId
 		}),
+		// Optional: a resolutionVoteResult row only exists once a paper has
+		// been voted on. Papers that are still in progress (not FINAL) have
+		// no result, so this relation legitimately resolves to null.
 		voteResult: r.one.resolutionVoteResult({
 			from: r.resolutionPaper.id,
-			to: r.resolutionVoteResult.paperId
+			to: r.resolutionVoteResult.paperId,
+			optional: true
 		})
 	},
 	paperContentSnapshot: {

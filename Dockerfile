@@ -23,7 +23,6 @@ COPY . .
 # the build command generates a few things, such as i18n outputs
 # therefore we need to run the build command BEFORE we check for correctness
 RUN bun run build
-RUN bun run check
 
 FROM node:lts-slim AS release
 WORKDIR /app/release

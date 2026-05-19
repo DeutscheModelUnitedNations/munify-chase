@@ -52,7 +52,7 @@ jobs:
       - name: Build
         env:
           PUBLIC_OIDC_AUTHORITY: ${{ vars.NATIVE_OIDC_AUTHORITY }}
-          PUBLIC_OIDC_CLIENT_ID: ${{ vars.PUBLIC_OIDC_CLIENT_ID }}
+          PUBLIC_OIDC_CLIENT_ID: ${{ vars.NATIVE_OIDC_CLIENT_ID }}
         run: bun run tauri:build -- --bundles ${{ matrix.bundles }}
 
       - name: Upload artifacts (non-tag)

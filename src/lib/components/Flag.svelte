@@ -62,7 +62,7 @@
 		if (representation?.type === 'UN') return 'un';
 		if (representation?.alpha2Code) return representation.alpha2Code.toLowerCase();
 		if (representation?.alpha3Code)
-			return Alpha3.toAlpha2(representation.alpha3Code)?.toLowerCase();
+			return Alpha3.toAlpha2(representation.alpha3Code, true)?.toLowerCase();
 		return null;
 	});
 </script>

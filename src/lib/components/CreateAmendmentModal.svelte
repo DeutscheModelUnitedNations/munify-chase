@@ -91,10 +91,10 @@
 				submitting = false;
 
 				if (initialNewContent) {
-					newContent = JSON.parse(JSON.stringify(initialNewContent));
+					newContent = $state.snapshot(initialNewContent) as OperativeClause;
 				} else if (initialType === 'ALTER_TEXT') {
 					const clause = operativeClauses[selectedSourceIndex];
-					if (clause) newContent = JSON.parse(JSON.stringify(clause));
+					if (clause) newContent = $state.snapshot(clause) as OperativeClause;
 					else newContent = null;
 				} else {
 					newContent = null;
@@ -123,7 +123,7 @@
 				submitting = false;
 				if (initialType === 'ALTER_TEXT') {
 					const clause = operativeClauses[initialTargetIndex];
-					if (clause) newContent = JSON.parse(JSON.stringify(clause));
+					if (clause) newContent = $state.snapshot(clause) as OperativeClause;
 					else newContent = null;
 				} else if (initialType === 'ADD') {
 					newContent = createEmptyOperativeClause();
@@ -173,16 +173,20 @@
 	let miniStore = $state<ResolutionStore | null>(null);
 	let miniStoreClauseId = $state<string | null>(null);
 
+	// Plain (non-reactive) ref that the store's onChange writes into.
+	// Keeping it outside $state prevents Svelte from re-proxying the value,
+	// which would cause createNativeStore to throw "Proxy object could not be cloned".
+	let plainNewContent: OperativeClause | null = null;
+
 	$effect(() => {
-		// The `onChange` callback assigns `snap.operative[0]` back to
-		// `newContent`, which would re-run this effect on every keystroke if
-		// it read the whole object. Track the clause id and only recreate
-		// when the user switches to a different clause.
+		// Only track the clause id — not the whole object — so the effect
+		// doesn't re-run on every keystroke from onChange.
 		const clauseId = newContent?.id ?? null;
 		if (!newContent) {
 			miniStore?.destroy();
 			miniStore = null;
 			miniStoreClauseId = null;
+			plainNewContent = null;
 			return;
 		}
 		if (miniStore && miniStoreClauseId === clauseId) return;
@@ -190,21 +194,26 @@
 		miniStore?.destroy();
 		miniStoreClauseId = clauseId;
 
+		// Snapshot once to get a plain, structuredClone-safe object.
+		plainNewContent = $state.snapshot(newContent) as OperativeClause;
+
 		const initial: Resolution = {
 			committeeName,
 			preamble: [],
-			operative: [newContent]
+			operative: [plainNewContent]
 		};
 		const store = createNativeStore(initial, {
 			onChange: (snap) => {
 				if (snap.operative[0]) {
-					newContent = snap.operative[0] as OperativeClause;
+					// Write into the plain ref — NOT into $state — to avoid re-proxying.
+					plainNewContent = snap.operative[0] as OperativeClause;
 				}
 			}
 		});
 		miniStore = store;
 		return () => {
 			store.destroy();
+			plainNewContent = null;
 		};
 	});
 
@@ -223,7 +232,7 @@
 
 		if (selectedType === 'ALTER_TEXT') {
 			const clause = operativeClauses[selectedSourceIndex];
-			if (clause) newContent = JSON.parse(JSON.stringify(clause));
+			if (clause) newContent = $state.snapshot(clause) as OperativeClause;
 		} else if (selectedType === 'ADD') {
 			newContent = createEmptyOperativeClause();
 			// Default: insert after the selected position
@@ -258,7 +267,7 @@
 				targetClauseId: isDelete || isAlterText || isAlterPos ? (targetClause?.id ?? null) : null,
 				targetOperativeIndex: !isAdd ? selectedSourceIndex : null,
 				targetPosition: isAdd ? targetPosition : isAlterPos ? targetPosition : null,
-				newContent: isAlterText || isAdd ? $state.snapshot(newContent) : null,
+				newContent: isAlterText || isAdd ? plainNewContent : null,
 				...(isChairMode && selectedProposer ? { committeeMemberId: selectedProposer } : {})
 			});
 			open = false;

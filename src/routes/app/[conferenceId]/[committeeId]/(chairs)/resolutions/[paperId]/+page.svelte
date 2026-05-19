@@ -7,6 +7,7 @@
 	import { afterNavigate } from '$app/navigation';
 	import {
 		ResolutionEditor,
+		OperativeParagraphPreview,
 		calculateAmendmentDiffSize,
 		getFirstTextContent,
 		type ResolutionStore,
@@ -16,6 +17,7 @@
 		type AmendmentOverlay,
 		type OperativeClause
 	} from '@deutschemodelunitednations/munify-resolution-editor';
+	import { markupToClause, serializeClause } from '$lib/utils/amendmentMarkup';
 	import {
 		createYjsStore,
 		createAwarenessPresence
@@ -625,9 +627,11 @@
 			if (a.type === 'ALTER_TEXT' && b.type === 'ALTER_TEXT') {
 				const aClause = operativeClauses[resolveAmendmentIndex(a)];
 				const bClause = operativeClauses[resolveAmendmentIndex(b)];
-				if (aClause && bClause && a.newContent && b.newContent) {
-					const aDiff = calculateAmendmentDiffSize(aClause, a.newContent as OperativeClause);
-					const bDiff = calculateAmendmentDiffSize(bClause, b.newContent as OperativeClause);
+				const aNew = markupToClause(a.newContent);
+				const bNew = markupToClause(b.newContent);
+				if (aClause && bClause && aNew && bNew) {
+					const aDiff = calculateAmendmentDiffSize(aClause, aNew);
+					const bDiff = calculateAmendmentDiffSize(bClause, bNew);
 					if (aDiff !== bDiff) return bDiff - aDiff;
 				}
 			}
@@ -734,7 +738,7 @@
 					targetClauseId: a.targetClauseId ?? undefined,
 					targetOperativeIndex: a.targetOperativeIndex ?? undefined,
 					targetPosition: a.targetPosition ?? undefined,
-					newContent: a.newContent as OperativeClause | undefined,
+					newContent: markupToClause(a.newContent) ?? undefined,
 					proposerName:
 						a.proposer?.representation?.name ??
 						getTranslatedCountryNameFromAlpha3Code(a.proposer?.representation?.alpha3Code),
@@ -968,7 +972,7 @@
 		targetClauseId: string | null;
 		targetOperativeIndex: number | null;
 		targetPosition: number | null;
-		newContent: OperativeClause | null;
+		newContent: string | null;
 		committeeMemberId?: string;
 	}) {
 		if (!args.committeeMemberId) return;
@@ -1004,7 +1008,7 @@
 		targetClauseId: string | null;
 		targetOperativeIndex: number | null;
 		targetPosition: number | null;
-		newContent: OperativeClause | null;
+		newContent: string | null;
 		committeeMemberId?: string;
 	}) {
 		if (!editingAmendment) return;
@@ -1653,19 +1657,16 @@
 												</div>
 
 												<!-- Amendment detail preview -->
-												{#if amendment.type === 'ALTER_TEXT' && amendment.newContent}
-													<div
-														class="text-xs text-base-content/70 bg-base-200/50 rounded px-2 py-1"
-													>
-														<span class="italic">
-															{getFirstTextContent(amendment.newContent as OperativeClause).slice(
-																0,
-																120
-															)}{getFirstTextContent(amendment.newContent as OperativeClause)
-																.length > 120
-																? '…'
-																: ''}
-														</span>
+												{#if amendment.type === 'ALTER_TEXT' && typeof amendment.newContent === 'string'}
+													{@const origClause = operativeClauses[resolveAmendmentIndex(amendment)]}
+													<div class="bg-base-200/50 rounded px-2 py-1">
+														<OperativeParagraphPreview
+															markup={amendment.newContent}
+															oldMarkup={origClause ? serializeClause(origClause) : undefined}
+															showDiffToggle
+															operativeNumber={resolveAmendmentIndex(amendment) + 1}
+															labels={getResolutionLabels()}
+														/>
 													</div>
 												{:else if amendment.type === 'ALTER_POSITION' && amendment.targetPosition != null}
 													<div
@@ -1681,6 +1682,7 @@
 														{/if}
 													</div>
 												{:else if amendment.type === 'ADD' && amendment.newContent}
+													{@const addClause = markupToClause(amendment.newContent)}
 													<div
 														class="text-xs text-base-content/70 bg-base-200/50 rounded px-2 py-1"
 													>
@@ -1695,15 +1697,14 @@
 																	})}
 																{/if}
 															</span>
-															<span class="italic">
-																{getFirstTextContent(amendment.newContent as OperativeClause).slice(
-																	0,
-																	120
-																)}{getFirstTextContent(amendment.newContent as OperativeClause)
-																	.length > 120
-																	? '…'
-																	: ''}
-															</span>
+															{#if addClause}
+																<span class="italic">
+																	{getFirstTextContent(addClause).slice(
+																		0,
+																		120
+																	)}{getFirstTextContent(addClause).length > 120 ? '…' : ''}
+																</span>
+															{/if}
 														</div>
 													</div>
 												{/if}
@@ -2314,7 +2315,6 @@
 	<CreateAmendmentModal
 		bind:open={showChairCreateAmendmentModal}
 		{operativeClauses}
-		committeeName={committee?.name ?? ''}
 		committeeMembers={committee?.members}
 		onSubmit={handleChairAmendmentSubmit}
 	/>
@@ -2325,12 +2325,11 @@
 			bind:open={showEditAmendmentModal}
 			editMode={true}
 			{operativeClauses}
-			committeeName={committee?.name ?? ''}
 			committeeMembers={committee?.members}
 			initialType={editingAmendment.type}
 			initialTargetIndex={editingAmendment.targetOperativeIndex ?? undefined}
 			initialProposerId={editingAmendment.proposerCommitteeMemberId}
-			initialNewContent={editingAmendment.newContent as OperativeClause | null}
+			initialNewContent={editingAmendment.newContent as string | null}
 			initialTargetPosition={editingAmendment.targetPosition ?? null}
 			onSubmit={handleEditAmendmentSubmit}
 		/>

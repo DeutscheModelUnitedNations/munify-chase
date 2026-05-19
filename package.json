@@ -98,6 +98,7 @@
 		"db:migrate": "drizzle-kit migrate",
 		"db:nuke": "docker compose -f ./dev.docker-compose.yml down -v && docker compose -f ./dev.docker-compose.yml up -d --wait && bun run db:migrate",
 		"db:push": "drizzle-kit push",
+		"db:backfill:amendment-markup": "bun ./src/api/db/backfillAmendmentMarkup.ts",
 		"db:reset": "bun ./src/api/db/reset.ts",
 		"db:seed:dev": "bun ./src/api/db/seedConference.ts dev.yaml",
 		"db:studio": "drizzle-kit studio",

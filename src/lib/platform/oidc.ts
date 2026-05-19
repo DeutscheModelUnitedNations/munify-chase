@@ -7,6 +7,13 @@
 
 import { isTauri } from './index';
 
+// Use Tauri's Rust-backed HTTP client for OIDC requests so they bypass
+// WebKitGTK's CORS restrictions (the OIDC server may not allow our origin).
+async function oidcFetch(url: string, options?: RequestInit): Promise<Response> {
+	const { fetch: tauriFetch } = await import('@tauri-apps/plugin-http');
+	return tauriFetch(url, options) as Promise<Response>;
+}
+
 const STORAGE_KEY = 'chase_oidc_tokens';
 
 type TokenSet = {
@@ -109,7 +116,7 @@ export async function startTauriOidcFlow(authorityUrl: string, clientId: string)
 	const state = crypto.randomUUID();
 
 	// authorityUrl is already the full discovery URL (e.g. .well-known/openid-configuration)
-	const discovery = await fetch(authorityUrl).then((r) => r.json());
+	const discovery = await oidcFetch(authorityUrl).then((r) => r.json());
 
 	const params = new URLSearchParams({
 		response_type: 'code',
@@ -154,7 +161,7 @@ export async function completeTauriOidcFlow(callbackUrl: string): Promise<boolea
 		code_verifier: pending.codeVerifier
 	});
 
-	const response = await fetch(discovery.token_endpoint, {
+	const response = await oidcFetch(discovery.token_endpoint, {
 		method: 'POST',
 		headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
 		body: body.toString()

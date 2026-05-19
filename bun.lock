@@ -7,6 +7,7 @@
       "dependencies": {
         "@tauri-apps/api": "^2.11.0",
         "@tauri-apps/plugin-deep-link": "^2.4.9",
+        "@tauri-apps/plugin-http": "^2.5.9",
         "@tauri-apps/plugin-opener": "^2.5.4",
         "drizzle-kit": "^1.0.0-beta.22",
         "drizzle-orm": "1.0.0-beta.22",
@@ -476,6 +477,8 @@
     "@tauri-apps/cli-win32-x64-msvc": ["@tauri-apps/cli-win32-x64-msvc@2.11.2", "", { "os": "win32", "cpu": "x64" }, "sha512-d2JchlFIpZevZVReyqhQOekJmb1UH3rhZ5VX6sH3ty9ETE0TKQavpihvoScUXfKKpW6HZC0MrFGRU0ZtD+w3gA=="],
 
     "@tauri-apps/plugin-deep-link": ["@tauri-apps/plugin-deep-link@2.4.9", "", { "dependencies": { "@tauri-apps/api": "^2.11.0" } }, "sha512-u0SKOUHnJ1wqeqXsDFq2+kASCBj9xxbG0g9XZWPy9SOmU4wXtp6b/wiYpm6oH6/5fBTQsLqnLhIvqLBRpgHJlA=="],
+
+    "@tauri-apps/plugin-http": ["@tauri-apps/plugin-http@2.5.9", "", { "dependencies": { "@tauri-apps/api": "^2.11.0" } }, "sha512-lCiY0+vs4HvIUSvZrBs8TC3TiCB0MOPRmiUjTq4prW7SlcJE2jdLeT6KBsJrT9Tlplufl7W1pY6SFAO3gCWxDA=="],
 
     "@tauri-apps/plugin-opener": ["@tauri-apps/plugin-opener@2.5.4", "", { "dependencies": { "@tauri-apps/api": "^2.11.0" } }, "sha512-1HnPkb+AmgO29HBazm4uPLKB+r7zzcTBW1d0fyYp1uP+jwtpoiNDGKMMzz58SFp49nOIrxdE3aUJtT57lfO9CQ=="],
 

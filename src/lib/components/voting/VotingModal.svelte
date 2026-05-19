@@ -129,6 +129,13 @@
 
 {#if setupOpen}
 	<Modal bind:open={setupOpen}>
+		<button
+			class="btn btn-sm btn-circle btn-ghost absolute top-2 right-2"
+			onclick={() => {
+				clearDexieVotingState();
+				closeVotingModal();
+			}}>✕</button
+		>
 		<h1 class="mb-4 text-2xl font-bold">{m.voting()}</h1>
 		<VotingSetupForm
 			bind:voteType

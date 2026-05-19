@@ -109,6 +109,15 @@ export function getResolutionLabels(): ResolutionEditorLabels {
 		amendmentAlterPosition: m.amendmentAlterPosition(),
 		amendmentRejectedClause: m.amendmentRejectedClause(),
 
+		// Operative paragraph diff view
+		operativeParagraph: m.operativeParagraph(),
+		operativeParagraphShowDiff: m.operativeParagraphShowDiff(),
+		operativeParagraphHideDiff: m.operativeParagraphHideDiff(),
+		operativeParagraphInvalidMarkup: m.operativeParagraphInvalidMarkup(),
+		operativeParagraphEmpty: m.operativeParagraphEmpty(),
+		operativeParagraphOldVersion: m.operativeParagraphOldVersion(),
+		operativeParagraphNewVersion: m.operativeParagraphNewVersion(),
+
 		// Common
 		close: m.close(),
 		cancel: m.cancel(),

@@ -25,14 +25,24 @@
 	const getMajorityPercent = () => {
 		return `${((majorityAmount ?? 0) / (total || 1)) * 100}%`;
 	};
+
+	const proLandsOnMajority = $derived(
+		votesPro != null &&
+			majorityAmount != null &&
+			(total ?? 0) > 0 &&
+			majorityAmount > 0 &&
+			votesPro === majorityAmount
+	);
 </script>
 
-<div class="bg-base-300 card relative h-26 w-full flex-row overflow-hidden shadow-sm">
+<div class="bg-base-300 card relative flex h-26 w-full flex-row overflow-hidden shadow-sm">
 	<div
-		class="bg-success h-full transition-all duration-300 w-[{getPercentage(
-			votesPro
-		)}] flex items-start justify-start"
-		style="width: {getPercentage(votesPro)}"
+		class="bg-success flex h-full items-start justify-start transition-all duration-300"
+		class:relative={proLandsOnMajority}
+		class:z-10={proLandsOnMajority}
+		style={proLandsOnMajority
+			? `width: calc(${getPercentage(votesPro)} + 0.5rem)`
+			: `width: ${getPercentage(votesPro)}`}
 	>
 		{#if showNumbers && votesPro !== 0 && votesPro != null}
 			<span class="badge badge-success border-base-100 translate-2 border-1 shadow-sm"

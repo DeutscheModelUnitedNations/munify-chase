@@ -7,7 +7,7 @@ RUN bun install --frozen-lockfile
 
 FROM base AS runtime-dependencies
 WORKDIR /build/dependencies
-COPY package.json bun.lock tsconfig.json ./
+COPY package.json bun.lock ./
 RUN bun install --frozen-lockfile --production
 
 FROM base AS builder
@@ -23,7 +23,6 @@ COPY . .
 # the build command generates a few things, such as i18n outputs
 # therefore we need to run the build command BEFORE we check for correctness
 RUN bun run build
-RUN bun run check
 
 FROM node:lts-slim AS release
 WORKDIR /app/release

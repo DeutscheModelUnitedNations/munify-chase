@@ -258,7 +258,7 @@
 				targetClauseId: isDelete || isAlterText || isAlterPos ? (targetClause?.id ?? null) : null,
 				targetOperativeIndex: !isAdd ? selectedSourceIndex : null,
 				targetPosition: isAdd ? targetPosition : isAlterPos ? targetPosition : null,
-				newContent: isAlterText || isAdd ? newContent : null,
+				newContent: isAlterText || isAdd ? $state.snapshot(newContent) : null,
 				...(isChairMode && selectedProposer ? { committeeMemberId: selectedProposer } : {})
 			});
 			open = false;

@@ -10,6 +10,7 @@ import {
 import {
 	isChairInConference,
 	isAdminInConference,
+	isDisplayKiosk,
 	isParticipantInConference
 } from '$api/services/authHelper';
 import { assertFindFirstExists, assertFirstEntryExists } from '@m1212e/rumble';
@@ -18,6 +19,9 @@ import { calculateMajority } from '$lib/utils/majorities';
 import { GraphQLError } from 'graphql';
 
 abilityBuilder.committee.allow('read').when((ctx) => {
+	if (isDisplayKiosk(ctx)) {
+		return { where: { conference: { displayDevices: { revoked: false } } } };
+	}
 	return {
 		where: isParticipantInConference(ctx)
 	};

@@ -24,6 +24,16 @@ export function isGlobalAdmin(ctx: Context) {
 }
 
 /**
+ * Shared display-kiosk account (OIDC `service_user` role). All Pi displays
+ * authenticate as this one account; per-device scoping is enforced by the
+ * deviceId the kiosk queries against a non-revoked `displayDevice` row, not
+ * by this shared identity. So read access only checks the role here.
+ */
+export function isDisplayKiosk(ctx: Context) {
+	return ctx.hasRole('service_user');
+}
+
+/**
  * Helper to check if the current user is a chair (ADMIN/TEAM) for a conference, or a global admin.
  *
  * @returns A filter object for the conference query. Injectable at e.g. committee level.

@@ -102,6 +102,17 @@ export const committee = pgTable(
 	(t) => [unique().on(t.conferenceId, t.name), unique().on(t.conferenceId, t.abbreviation)]
 );
 
+export const displayDevice = pgTable('display_device', {
+	// Pi-generated nanoid (the device owns its id); not server-defaulted.
+	id: text().primaryKey().notNull(),
+	...defaultTimestamps,
+	name: text(),
+	revoked: boolean().notNull().default(false),
+	conferenceId: text().references(() => conference.id, { onDelete: 'set null' }),
+	committeeId: text().references((): AnyPgColumn => committee.id, { onDelete: 'set null' }),
+	lastSeenAt: timestamp({ mode: 'date' })
+});
+
 export const conferenceUserType = pgEnum('conference_user_type', [
 	'ADMIN',
 	'TEAM',

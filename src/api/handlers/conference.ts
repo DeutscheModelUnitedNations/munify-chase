@@ -1,11 +1,17 @@
 import { db, schema } from '$api/db/db';
 import { abilityBuilder, object, query, schemaBuilder, pubsub as rumblePubsub } from '$api/rumble';
 import { ConferenceMemberRef, ConferenceMemberWhereInput } from './conferenceMember';
-import { isAdmin, isGlobalAdmin, isParticipant } from '$api/services/authHelper';
+import { isAdmin, isDisplayKiosk, isGlobalAdmin, isParticipant } from '$api/services/authHelper';
 import { assertFindFirstExists, mapNullFieldsToUndefined } from '@m1212e/rumble';
 import { GraphQLError } from 'graphql';
 
 abilityBuilder.conference.allow('read').when((ctx) => {
+	// A display kiosk may read any conference that has a non-revoked device
+	// assigned; the kiosk only ever queries the single conferenceId from its
+	// own device row.
+	if (isDisplayKiosk(ctx)) {
+		return { where: { displayDevices: { revoked: false } } };
+	}
 	return { where: isParticipant(ctx) };
 });
 

@@ -118,6 +118,9 @@
 		"vite-dev": "vite dev"
 	},
 	"type": "module",
+	"overrides": {
+		"wonka": "6.3.6"
+	},
 	"dependencies": {
 		"drizzle-kit": "^1.0.0-beta.22",
 		"drizzle-orm": "^1.0.0-beta.22",

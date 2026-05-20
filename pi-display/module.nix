@@ -39,14 +39,30 @@ in
       description = "Scopes requested in the device grant. Must yield a refresh token and the roles claim.";
     };
 
-    wifiSsid = lib.mkOption {
+    wlanInterface = lib.mkOption {
       type = lib.types.str;
-      description = "WiFi SSID.";
+      default = "wlan0";
+      description = "WiFi interface used both for the upstream connection and the provisioning AP.";
     };
 
-    wifiPsk = lib.mkOption {
-      type = lib.types.str;
-      description = "WiFi pre-shared key. Baked into the image (no secret store on Pi 4).";
+    provisionProbeUrl = lib.mkOption {
+      type = lib.types.nullOr lib.types.str;
+      default = null;
+      description = ''
+        URL the helper HEAD-probes to decide whether the upstream network
+        works. Defaults to the OIDC authority (the most relevant target).
+      '';
+    };
+
+    provisionFailureThreshold = lib.mkOption {
+      type = lib.types.int;
+      default = 6;
+      description = "Consecutive probe failures before falling back to the AP/portal.";
+    };
+
+    provisionProbeIntervalSeconds = lib.mkOption {
+      type = lib.types.int;
+      default = 30;
     };
 
     # Seconds before access-token expiry at which we refresh + re-seed the
@@ -59,11 +75,11 @@ in
   };
 
   config = lib.mkIf cfg.enable {
-    # --- Network (baked WiFi; no input devices on the appliance) ----------
-    networking.wireless = {
-      enable = true;
-      networks.${cfg.wifiSsid}.psk = cfg.wifiPsk;
-    };
+    # --- Network: NetworkManager owns the WiFi stack so the helper can
+    # toggle between client mode and hotspot mode via `nmcli` (no D-Bus).
+    # No SSID is baked into the image; provisioning happens at first boot.
+    networking.networkmanager.enable = true;
+    networking.wireless.enable = false;
 
     # --- Auto-login + Wayland kiosk (cage runs a single Chromium) ---------
     services.cage = {
@@ -88,21 +104,23 @@ in
     # Never blank the screen.
     services.cage.extraArguments = [ "-d" ];
 
-    # --- Auth + token refresh helper -------------------------------------
+    # --- Auth + provisioning + token refresh helper ----------------------
+    # The helper drives WiFi (via nmcli), runs the captive portal on :80
+    # when no network is reachable, then handles the OIDC device grant +
+    # refresh loop. It owns network bring-up; no network-online ordering.
     systemd.services.chase-kiosk-auth = {
-      description = "CHASE kiosk: OIDC device grant + token refresh";
+      description = "CHASE kiosk: WiFi provisioning, OIDC device grant + token refresh";
       wantedBy = [ "multi-user.target" ];
-      after = [ "network-online.target" ];
-      wants = [ "network-online.target" ];
+      after = [ "NetworkManager.service" ];
+      wants = [ "NetworkManager.service" ];
       serviceConfig = {
         Type = "simple";
         ExecStart = "${helper}/bin/chase-kiosk-helper";
         Restart = "always";
         RestartSec = 5;
-        # Pi-generated device id + refresh token live here, root-only.
+        # Pi-generated device id + refresh token + hotspot PSK live here.
         StateDirectory = "chase-kiosk";
         StateDirectoryMode = "0700";
-        # Helper restarts the kiosk to re-seed the session before expiry.
         AmbientCapabilities = [ ];
       };
       environment = {
@@ -114,7 +132,13 @@ in
         BOOTSTRAP_DIR = "/run/chase-kiosk";
         BOOTSTRAP_PORT = "8081";
         REFRESH_MARGIN = toString cfg.refreshMarginSeconds;
+        WLAN_IFACE = cfg.wlanInterface;
+        PROVISION_HTTP_PORT = "80";
+        PROVISION_PROBE_URL = if cfg.provisionProbeUrl != null then cfg.provisionProbeUrl else cfg.oidcAuthority;
+        PROVISION_FAILURE_THRESHOLD = toString cfg.provisionFailureThreshold;
+        PROVISION_PROBE_INTERVAL = toString cfg.provisionProbeIntervalSeconds;
         QRENCODE = "${pkgs.qrencode}/bin/qrencode";
+        NMCLI = "${pkgs.networkmanager}/bin/nmcli";
         SYSTEMCTL = "${pkgs.systemd}/bin/systemctl";
       };
     };
@@ -122,7 +146,15 @@ in
     # The helper needs to restart the kiosk unit to re-seed cookies.
     security.polkit.enable = true;
 
-    environment.systemPackages = [ pkgs.chromium pkgs.qrencode ];
+    # `iw` for AP capability probes; `iptables` is pulled in by NM's hotspot
+    # NAT path; `qrencode` for the WIFI: and portal-URL QRs.
+    environment.systemPackages = [
+      pkgs.chromium
+      pkgs.qrencode
+      pkgs.networkmanager
+      pkgs.iw
+      pkgs.iptables
+    ];
 
     # Headless appliance conveniences.
     services.openssh.enable = lib.mkDefault true;

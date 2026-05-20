@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 # Guided builder for the MUNify CHASE Pi display image.
-# Prompts for WiFi + base URL only; writes the gitignored local.nix and
-# builds an aarch64 SD image. No secrets are committed to the repo.
+# Prompts for CHASE base URL + OIDC details only; WiFi is provisioned at
+# first boot via the kiosk's own AP + captive portal, so the SSID does
+# not need to be known at flash time. No secrets are committed to the repo.
 set -euo pipefail
 cd "$(dirname "$0")"
 
@@ -11,9 +12,6 @@ echo
 read -rp "CHASE base URL (e.g. https://chase.example.org): " BASE_URL
 read -rp "OIDC discovery URL (…/.well-known/openid-configuration): " OIDC_AUTHORITY
 read -rp "OIDC client id (shared display app): " OIDC_CLIENT_ID
-read -rp "WiFi SSID: " WIFI_SSID
-read -rsp "WiFi password: " WIFI_PSK
-echo
 
 # Escape a value for safe embedding in a Nix "..." string literal.
 # Order matters: backslash first, then quote, then dollar (neutralises ${...}).
@@ -34,8 +32,6 @@ cat > local.nix <<EOF
     baseUrl = "$(escape_nix_string "$BASE_URL")";
     oidcAuthority = "$(escape_nix_string "$OIDC_AUTHORITY")";
     oidcClientId = "$(escape_nix_string "$OIDC_CLIENT_ID")";
-    wifiSsid = "$(escape_nix_string "$WIFI_SSID")";
-    wifiPsk = "$(escape_nix_string "$WIFI_PSK")";
   };
 }
 EOF

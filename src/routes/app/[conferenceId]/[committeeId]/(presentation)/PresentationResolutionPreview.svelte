@@ -2,11 +2,13 @@
 	import { m } from '$lib/paraglide/messages';
 	import {
 		ResolutionPreview,
+		OperativeParagraphPreview,
 		migrateResolution,
 		type Resolution,
 		type ResolutionHeaderData,
 		type OperativeClause
 	} from '@deutschemodelunitednations/munify-resolution-editor';
+	import { serializeClause } from '$lib/utils/amendmentMarkup';
 	import Flag from '$lib/components/Flag.svelte';
 	import { getTranslatedCountryNameFromAlpha3Code } from '$lib/utils/nationTranslationHelper.svelte';
 	import { getResolutionLabels } from '$lib/utils/resolutionEditorLabels';
@@ -291,41 +293,25 @@
 						</div>
 					{/if}
 				{:else if activeAmendment.type === 'ALTER_TEXT' && resolvedActiveAmendIdx >= 0}
-					<!-- ALTER_TEXT: show current and proposed side by side -->
+					<!-- ALTER_TEXT: word-level diff against the current clause -->
 					{@const targetClause = resolution.operative[resolvedActiveAmendIdx]}
 					<div class="text-center text-base-content/60 text-sm mb-2">
 						{m.operativeClausePresentation()}
 						{resolvedActiveAmendIdx + 1}
 					</div>
-					<div class="flex-1 grid grid-cols-2 gap-6 p-4 overflow-auto">
-						<div class="flex flex-col gap-2">
-							<div class="text-sm font-semibold text-error">{m.currentText()}</div>
-							{#if targetClause}
-								<div class="rounded-lg bg-error/5 border-2 border-error/30 p-4">
-									<ResolutionPreview
-										resolution={singleClauseResolution(targetClause)}
-										labels={getResolutionLabels()}
-									>
-										{#snippet previewHeader()}{/snippet}
-									</ResolutionPreview>
-								</div>
-							{/if}
-						</div>
-						<div class="flex flex-col gap-2">
-							<div class="text-sm font-semibold text-success">{m.proposedText()}</div>
-							{#if activeAmendment.newContent}
-								<div class="rounded-lg bg-success/5 border-2 border-success/30 p-4">
-									<ResolutionPreview
-										resolution={singleClauseResolution(
-											activeAmendment.newContent as OperativeClause
-										)}
-										labels={getResolutionLabels()}
-									>
-										{#snippet previewHeader()}{/snippet}
-									</ResolutionPreview>
-								</div>
-							{/if}
-						</div>
+					<div class="flex-1 overflow-auto p-4">
+						{#if typeof activeAmendment.newContent === 'string'}
+							<div class="rounded-lg border-2 border-base-300 p-4">
+								<OperativeParagraphPreview
+									markup={activeAmendment.newContent}
+									oldMarkup={targetClause ? serializeClause(targetClause) : undefined}
+									showDiff
+									showDiffToggle
+									operativeNumber={resolvedActiveAmendIdx + 1}
+									labels={getResolutionLabels()}
+								/>
+							</div>
+						{/if}
 					</div>
 				{:else if activeAmendment.type === 'ADD'}
 					<!-- ADD: show the new clause content -->
@@ -333,16 +319,15 @@
 						{m.insertAfterPresentation({ index: (activeAmendment.targetPosition ?? 0) + 1 })}
 					</div>
 					<div class="flex-1 overflow-auto p-4">
-						{#if activeAmendment.newContent}
+						{#if typeof activeAmendment.newContent === 'string'}
 							<div
 								class="rounded-lg bg-success/5 border-2 border-success/30 border-l-4 border-l-success p-4"
 							>
-								<ResolutionPreview
-									resolution={singleClauseResolution(activeAmendment.newContent as OperativeClause)}
+								<OperativeParagraphPreview
+									markup={activeAmendment.newContent}
+									operativeNumber={(activeAmendment.targetPosition ?? 0) + 2}
 									labels={getResolutionLabels()}
-								>
-									{#snippet previewHeader()}{/snippet}
-								</ResolutionPreview>
+								/>
 							</div>
 						{/if}
 					</div>

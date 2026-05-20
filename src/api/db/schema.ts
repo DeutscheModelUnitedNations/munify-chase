@@ -434,7 +434,7 @@ export const amendment = pgTable('amendment', {
 	status: amendmentStatus().notNull().default('PENDING'),
 	targetClauseId: text(),
 	targetOperativeIndex: smallint(),
-	newContent: json(),
+	newContent: text(),
 	targetPosition: smallint(),
 	documentNumber: text(),
 	sequenceNumber: smallint()

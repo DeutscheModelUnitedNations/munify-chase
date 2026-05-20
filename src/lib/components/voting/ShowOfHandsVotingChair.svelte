@@ -1,7 +1,6 @@
 <script lang="ts">
 	import Kbd from '$lib/components/Kbd.svelte';
 	import { m } from '$lib/paraglide/messages';
-	import { onMount } from 'svelte';
 	import Modal from '../Modal.svelte';
 	import hotkeys from 'hotkeys-js';
 	import { localDB, type VotingMajority, type VotingStage } from '$lib/local-db/localDB';
@@ -131,21 +130,27 @@
 		}
 	};
 
-	onMount(() => {
-		hotkeys('enter, esc, backspace', (event, handler) => {
-			event.preventDefault();
-			switch (handler.key) {
-				case 'enter':
-					nextState();
-					break;
-				case 'esc':
-					exit();
-					break;
-				case 'backspace':
-					previousState();
-					break;
-			}
-		});
+	$effect(() => {
+		if (active) {
+			hotkeys('enter, esc, backspace', 'showOfHandsVote', (event, handler) => {
+				event.preventDefault();
+				switch (handler.key) {
+					case 'enter':
+						nextState();
+						break;
+					case 'esc':
+						exit();
+						break;
+					case 'backspace':
+						previousState();
+						break;
+				}
+			});
+			hotkeys.setScope('showOfHandsVote');
+			return () => {
+				hotkeys.deleteScope('showOfHandsVote');
+			};
+		}
 	});
 
 	$effect(() => {
@@ -179,7 +184,7 @@
 	});
 </script>
 
-<Modal bind:open={active}>
+<Modal bind:open={active} closeOnEsc={false}>
 	<h1 class="mb-2 text-2xl font-bold">{voteName || m.voting()}</h1>
 	<h3 class="mb-4 text-lg font-semibold">
 		{m.showOfHandsVoting()}

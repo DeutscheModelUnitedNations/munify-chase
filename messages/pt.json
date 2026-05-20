@@ -269,6 +269,8 @@
 	"draftResolution": "Projeto de Resolução",
 	"draftResolutions": "Projetos de Resolução",
 	"dropJsonHint": "Você também pode arrastar e soltar um arquivo .json aqui.",
+	"duplicateCommitteeAbbreviation": "Abreviação de comitê duplicada: \"{abbreviation}\"",
+	"duplicateCommitteeName": "Nome de comitê duplicado: \"{name}\"",
 	"edit": "Editar",
 	"editAccess": "Editar Acesso",
 	"editAmendment": "Editar Emenda",

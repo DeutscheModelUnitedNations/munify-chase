@@ -13,20 +13,22 @@ abilityBuilder.displayDevice.allow('read').when((ctx) => {
 	if (isDisplayKiosk(ctx)) {
 		return { where: { revoked: false } };
 	}
-	// Conference organizers see devices assigned to their conference plus any
-	// unassigned device (so they can claim a freshly-paired Pi at the venue).
-	return {
-		where: { OR: [{ conference: isAdmin(ctx) }, { conferenceId: { isNull: true } }] }
-	};
+	// Conference organizers see devices assigned to their conference only.
+	// Unassigned devices are NOT included here: this `.when()` callback is
+	// sync and can't await a "user-is-admin-somewhere" DB check, so without
+	// a gate the `conferenceId IS NULL` arm would leak unassigned devices
+	// (and via `update`, let any logged-in user claim them) to non-admins.
+	// Claiming a freshly-paired Pi is therefore a global-admin action.
+	return { where: { conference: isAdmin(ctx) } };
 });
 
 abilityBuilder.displayDevice.allow('update').when((ctx) => {
 	if (isGlobalAdmin(ctx)) {
 		return { where: {} };
 	}
-	return {
-		where: { OR: [{ conference: isAdmin(ctx) }, { conferenceId: { isNull: true } }] }
-	};
+	// See note on `read` above — conference admins can only mutate devices
+	// already assigned to their conference, not unassigned ones.
+	return { where: { conference: isAdmin(ctx) } };
 });
 
 export const DisplayDeviceRef = object({

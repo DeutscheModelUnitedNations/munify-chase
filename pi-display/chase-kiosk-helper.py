@@ -180,10 +180,15 @@ def scan_networks() -> list[dict]:
 
 
 def hotspot_up(ssid: str, psk: str) -> None:
-    """Bring up the per-device AP. Tears down any client connection first."""
+    """Bring up the per-device AP. Tears down any client connection first.
+
+    Raises RuntimeError if nmcli could not create the hotspot — callers
+    must NOT continue (the portal would bind on an interface that has no
+    AP and no clients could ever reach it).
+    """
     # Drop any active connection on the WLAN so the radio is free for AP mode.
     _nmcli("device", "disconnect", WLAN_IFACE, timeout=15)
-    _nmcli(
+    res = _nmcli(
         "device", "wifi", "hotspot",
         "ifname", WLAN_IFACE,
         "con-name", HOTSPOT_CONNECTION,
@@ -191,6 +196,11 @@ def hotspot_up(ssid: str, psk: str) -> None:
         "password", psk,
         timeout=30,
     )
+    if res.returncode != 0:
+        raise RuntimeError(
+            f"nmcli hotspot failed (exit {res.returncode}): "
+            f"{(res.stderr or res.stdout or '').strip()}"
+        )
 
 
 def hotspot_down() -> None:
@@ -236,9 +246,10 @@ def write_page(html: str) -> None:
 
 
 def reload_kiosk() -> None:
-    # cage/Chromium points at the bootstrap page; restarting reloads it.
+    # services.cage in NixOS exposes its compositor as `cage-tty1.service`,
+    # not `chase-kiosk.service` — restarting reloads Chromium's URL.
     try:
-        subprocess.run([SYSTEMCTL, "restart", "chase-kiosk"], check=False, timeout=30)
+        subprocess.run([SYSTEMCTL, "restart", "cage-tty1.service"], check=False, timeout=30)
     except Exception:
         pass
 
@@ -485,10 +496,15 @@ class PortalHandler(http.server.BaseHTTPRequestHandler):
         self._html(200, portal_connecting_page(ssid))
 
 
-def serve_portal() -> "socketserver.ThreadingTCPServer":
-    server = socketserver.ThreadingTCPServer(("0.0.0.0", PROVISION_HTTP_PORT), PortalHandler)
-    server.allow_reuse_address = True
-    server.daemon_threads = True
+class _ReusableThreadingTCPServer(socketserver.ThreadingTCPServer):
+    # Setting allow_reuse_address on the instance after __init__ is a no-op
+    # because server_bind has already run. The flag must be on the class.
+    allow_reuse_address = True
+    daemon_threads = True
+
+
+def serve_portal() -> _ReusableThreadingTCPServer:
+    server = _ReusableThreadingTCPServer(("0.0.0.0", PROVISION_HTTP_PORT), PortalHandler)
     threading.Thread(target=server.serve_forever, daemon=True).start()
     return server
 
@@ -571,6 +587,13 @@ def run_provisioning(state: dict, device_id: str) -> None:
             portal_server.shutdown()
         except Exception:
             pass
+        # shutdown() stops serve_forever but leaves the listening socket
+        # bound; server_close() releases it so the next provisioning round
+        # can rebind on :80 without a TIME_WAIT collision.
+        try:
+            portal_server.server_close()
+        except Exception:
+            pass
 
 
 def wait_for_connectivity(max_wait_seconds: int) -> bool:
@@ -629,6 +652,20 @@ def refresh(meta: dict, refresh_token: str) -> dict:
             "client_id": CLIENT_ID,
         },
     )
+
+
+def _is_invalid_grant(exc: BaseException) -> bool:
+    """True iff `exc` is an OAuth error body with error=invalid_grant."""
+    if not isinstance(exc, urllib.error.HTTPError):
+        return False
+    try:
+        body = exc.read().decode()
+    except Exception:
+        return False
+    try:
+        return json.loads(body).get("error") == "invalid_grant"
+    except Exception:
+        return False
 
 
 # --- Main loop --------------------------------------------------------------
@@ -694,9 +731,13 @@ def main() -> None:
                 else:
                     consecutive_failures = 0
         except Exception as e:
-            # A failed refresh (revoked/expired) drops back to device grant.
-            state.pop("refresh_token", None)
-            save_state(state)
+            # Only `invalid_grant` from Logto means the refresh token is
+            # actually dead (revoked / expired / rotated-and-leaked).
+            # Transient failures (network blip, Logto 5xx, timeout) must
+            # NOT wipe the token, or every hiccup forces a QR #1 re-auth.
+            if _is_invalid_grant(e):
+                state.pop("refresh_token", None)
+                save_state(state)
             write_page(loading_page("Reconnecting…"))
             print("chase-kiosk-helper:", repr(e), flush=True)
             time.sleep(10)

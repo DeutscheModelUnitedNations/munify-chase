@@ -55,21 +55,22 @@ in
     };
 
     provisionFailureThreshold = lib.mkOption {
-      type = lib.types.int;
+      type = lib.types.ints.positive;
       default = 6;
-      description = "Consecutive probe failures before falling back to the AP/portal.";
+      description = "Consecutive probe failures (>0) before falling back to the AP/portal.";
     };
 
     provisionProbeIntervalSeconds = lib.mkOption {
-      type = lib.types.int;
+      type = lib.types.ints.positive;
       default = 30;
+      description = "Seconds between connectivity probes (>0).";
     };
 
     # Seconds before access-token expiry at which we refresh + re-seed the
     # browser session. Keep the Logto access-token TTL long (hours) so the
     # brief kiosk reload is rare.
     refreshMarginSeconds = lib.mkOption {
-      type = lib.types.int;
+      type = lib.types.ints.positive;
       default = 120;
     };
   };

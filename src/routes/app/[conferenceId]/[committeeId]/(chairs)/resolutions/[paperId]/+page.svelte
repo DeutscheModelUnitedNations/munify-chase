@@ -768,6 +768,7 @@
 
 	let showAdoptConfirmModal = $state(false);
 	let showRejectConfirmModal = $state(false);
+	let showWithdrawConfirmModal = $state(false);
 	let confirmAmendmentId = $state<string | null>(null);
 	let showVoteOutcomeModal = $state(false);
 	let voteOutcomeAmendmentId = $state<string | null>(null);
@@ -890,6 +891,8 @@
 		try {
 			await client.mutate.withdrawAmendment({ __args: { amendmentId }, id: true });
 			toast.success(m.amendmentWithdrawnToast());
+			showWithdrawConfirmModal = false;
+			confirmAmendmentId = null;
 			await client.mutate.updateCommittee({
 				__args: { id: committee.id, clearActiveAmendment: true },
 				id: true
@@ -945,15 +948,15 @@
 	function getAmendmentTypeBadgeClass(type: string) {
 		switch (type) {
 			case 'DELETE':
-				return 'badge-error';
+				return 'status-error';
 			case 'ADD':
-				return 'badge-success';
+				return 'status-success';
 			case 'ALTER_TEXT':
-				return 'badge-warning';
+				return 'status-warning';
 			case 'ALTER_POSITION':
-				return 'badge-info';
+				return 'status-info';
 			default:
-				return 'badge-ghost';
+				return 'status-primary';
 		}
 	}
 
@@ -1649,10 +1652,14 @@
 										>
 											<div class="flex flex-col gap-1.5">
 												<!-- Header row: identity + sponsor count + actions -->
+												<div class="font-mono text-lg font-bold flex items-center gap-2">
+													<span
+														class="status status-lg {getAmendmentTypeBadgeClass(amendment.type)}"
+													></span>
+													{amendment.documentNumber ?? getAmendmentTypeLabel(amendment.type)}
+												</div>
+
 												<div class="flex items-center gap-1.5 flex-wrap">
-													<span class="badge badge-xs {getAmendmentTypeBadgeClass(amendment.type)}">
-														{amendment.documentNumber ?? getAmendmentTypeLabel(amendment.type)}
-													</span>
 													{#if amendment.proposer?.representation}
 														<div class="flex items-center gap-1 text-xs">
 															<Flag representation={amendment.proposer.representation} size="xs" />
@@ -1696,9 +1703,7 @@
 													{#if !isDecided}
 														<div class="join">
 															<button
-																class="btn btn-xs join-item {isActive
-																	? 'btn-ghost'
-																	: 'btn-success'}"
+																class="btn btn-sm join-item {isActive ? 'btn-soft' : 'btn-success'}"
 																title={m.setActiveAmendment()}
 																aria-label={m.setActiveAmendment()}
 																onclick={() =>
@@ -1707,7 +1712,7 @@
 																<i class="fas {isActive ? 'fa-stop' : 'fa-play'}"></i>
 															</button>
 															<button
-																class="btn btn-xs btn-primary join-item"
+																class="btn btn-sm btn-primary join-item"
 																title={m.startVote()}
 																aria-label={m.startVote()}
 																onclick={() => handleAmendmentVote(amendment)}
@@ -1715,7 +1720,7 @@
 																<i class="fas fa-box-ballot"></i>
 															</button>
 															<button
-																class="btn btn-xs btn-soft btn-success join-item"
+																class="btn btn-sm btn-soft btn-success join-item"
 																title={m.adoptByConsensus()}
 																aria-label={m.adoptByConsensus()}
 																onclick={() => {
@@ -1726,7 +1731,7 @@
 																<i class="fas fa-check"></i>
 															</button>
 															<button
-																class="btn btn-xs btn-soft btn-error join-item"
+																class="btn btn-sm btn-soft btn-error join-item"
 																title={m.amendmentRejected()}
 																aria-label={m.amendmentRejected()}
 																onclick={() => {
@@ -1737,7 +1742,7 @@
 																<i class="fas fa-times"></i>
 															</button>
 															<button
-																class="btn btn-xs btn-soft join-item"
+																class="btn btn-sm btn-soft join-item"
 																title={m.edit()}
 																aria-label={m.edit()}
 																onclick={() => openEditAmendment(amendment)}
@@ -1745,10 +1750,13 @@
 																<i class="fas fa-pen"></i>
 															</button>
 															<button
-																class="btn btn-xs btn-ghost join-item"
+																class="btn btn-sm btn-soft join-item"
 																title={m.withdrawAmendment()}
 																aria-label={m.withdrawAmendment()}
-																onclick={() => handleWithdrawAmendment(amendment.id)}
+																onclick={() => {
+																	confirmAmendmentId = amendment.id;
+																	showWithdrawConfirmModal = true;
+																}}
 															>
 																<i class="fas fa-trash"></i>
 															</button>
@@ -1759,7 +1767,7 @@
 												<!-- Amendment detail preview -->
 												{#if amendment.type === 'ALTER_TEXT' && typeof amendment.newContent === 'string'}
 													{@const origClause = operativeClauses[resolveAmendmentIndex(amendment)]}
-													<div class="bg-base-200/50 rounded px-2 py-1 text-sm">
+													<div class="bg-white rounded px-2 py-1 text-sm">
 														<OperativeParagraphPreview
 															markup={amendment.newContent}
 															oldMarkup={origClause ? serializeClause(origClause) : undefined}
@@ -2211,6 +2219,31 @@
 				<button
 					class="btn btn-error btn-sm"
 					onclick={() => confirmAmendmentId && handleRejectAmendment(confirmAmendmentId)}
+				>
+					{m.yes()}
+				</button>
+			</div>
+		</div>
+	</Modal>
+
+	<!-- Withdraw confirmation modal -->
+	<Modal bind:open={showWithdrawConfirmModal}>
+		<div class="flex flex-col gap-4 p-4">
+			<h3 class="text-lg font-bold">{m.withdrawAmendment()}</h3>
+			<p>{m.confirmWithdrawAmendment()}</p>
+			<div class="flex justify-end gap-2">
+				<button
+					class="btn btn-ghost btn-sm"
+					onclick={() => {
+						showWithdrawConfirmModal = false;
+						confirmAmendmentId = null;
+					}}
+				>
+					{m.abort()}
+				</button>
+				<button
+					class="btn btn-error btn-sm"
+					onclick={() => confirmAmendmentId && handleWithdrawAmendment(confirmAmendmentId)}
 				>
 					{m.yes()}
 				</button>

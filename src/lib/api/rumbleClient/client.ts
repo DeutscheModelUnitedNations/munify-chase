@@ -15,7 +15,7 @@ export type Agendaitem = {
   committee: (p?: {
     orderBy?: CommitteeOrderInputArgument | null | undefined,
     where?: CommitteeWhereInputArgument | null | undefined
-  }) => Committee,
+  }) => Committee | null,
   committeeId: ID,
   createdAt: DateTime,
   id: ID,
@@ -62,7 +62,7 @@ export type Amendment = {
   createdAt: DateTime,
   documentNumber: String | null,
   id: ID,
-  newContent: JSON | null,
+  newContent: String | null,
   paper: (p?: {
     orderBy?: ResolutionpaperOrderInputArgument | null | undefined,
     where?: ResolutionpaperWhereInputArgument | null | undefined
@@ -111,7 +111,7 @@ export type AmendmentWhereInputArgument = {
   createdAt?: DateWhereInputArgument | null | undefined,
   documentNumber?: StringWhereInputArgument | null | undefined,
   id?: ID | null | undefined,
-  newContent?: JSON | null | undefined,
+  newContent?: StringWhereInputArgument | null | undefined,
   paper?: ResolutionpaperWhereInputArgument | null | undefined,
   paperId?: ID | null | undefined,
   proposer?: CommitteememberWhereInputArgument | null | undefined,
@@ -199,7 +199,7 @@ export type Committee = {
   conference: (p?: {
     orderBy?: ConferenceOrderInputArgument | null | undefined,
     where?: ConferenceWhereInputArgument | null | undefined
-  }) => Conference,
+  }) => Conference | null,
   conferenceId: ID,
   createdAt: DateTime,
   currentOperativeClauseId: ID | null,
@@ -498,7 +498,7 @@ export type Conferencemember = {
   conference: (p?: {
     orderBy?: ConferenceOrderInputArgument | null | undefined,
     where?: ConferenceWhereInputArgument | null | undefined
-  }) => Conference,
+  }) => Conference | null,
   conferenceId: ID,
   createdAt: DateTime,
   id: ID,
@@ -802,7 +802,7 @@ export type Mutation = {
   }) => Amendment,
   chairCreateAmendment: (p: {
     committeeMemberId: ID,
-    newContent?: JSON | null | undefined,
+    newContent?: String | null | undefined,
     paperId: ID,
     targetClauseId?: String | null | undefined,
     targetOperativeIndex?: Int | null | undefined,
@@ -823,7 +823,7 @@ export type Mutation = {
     title: String
   }) => Agendaitem,
   createAmendment: (p: {
-    newContent?: JSON | null | undefined,
+    newContent?: String | null | undefined,
     paperId: ID,
     targetClauseId?: String | null | undefined,
     targetOperativeIndex?: Int | null | undefined,
@@ -887,7 +887,7 @@ export type Mutation = {
   deleteShareCode: Boolean,
   editAmendment: (p: {
     amendmentId: ID,
-    newContent?: JSON | null | undefined,
+    newContent?: String | null | undefined,
     proposerCommitteeMemberId?: ID | null | undefined,
     targetClauseId?: String | null | undefined,
     targetOperativeIndex?: Int | null | undefined,
@@ -919,14 +919,12 @@ export type Mutation = {
     votesFor: Int
   }) => Operativeclausevote,
   recordNsaCheckIn: (p: {
-    attendanceCode?: String | null | undefined,
-    committeeId: ID,
-    conferenceUserId?: ID | null | undefined
+    code: String,
+    committeeId: ID
   }) => Nsapresenceevent,
   recordNsaCheckOut: (p: {
-    attendanceCode?: String | null | undefined,
-    committeeId: ID,
-    conferenceUserId?: ID | null | undefined
+    code: String,
+    committeeId: ID
   }) => Nsapresenceevent,
   recordVoteResult: (p: {
     outcome: unknown,
@@ -1296,7 +1294,7 @@ export type Presencechangedtimestamp = {
   committeeMember: (p?: {
     orderBy?: CommitteememberOrderInputArgument | null | undefined,
     where?: CommitteememberWhereInputArgument | null | undefined
-  }) => Committeemember,
+  }) => Committeemember | null,
   committeeMemberId: ID,
   createdAt: DateTime,
   id: ID,
@@ -1543,7 +1541,7 @@ export type Representation = {
   conference: (p?: {
     orderBy?: ConferenceOrderInputArgument | null | undefined,
     where?: ConferenceWhereInputArgument | null | undefined
-  }) => Conference,
+  }) => Conference | null,
   conferenceId: ID,
   conferenceMembers: (p?: {
     limit?: Int | null | undefined,
@@ -1726,7 +1724,7 @@ export type Resolutionpaper = {
   voteResult: (p?: {
     orderBy?: ResolutionvoteresultOrderInputArgument | null | undefined,
     where?: ResolutionvoteresultWhereInputArgument | null | undefined
-  }) => Resolutionvoteresult | null
+  }) => Resolutionvoteresult | null    
 };
 		
 export type ResolutionpaperOrderInputArgument = {
@@ -1847,7 +1845,7 @@ export type Speakeronlist = {
   speakersList: (p?: {
     orderBy?: SpeakerslistOrderInputArgument | null | undefined,
     where?: SpeakerslistWhereInputArgument | null | undefined
-  }) => Speakerslist,
+  }) => Speakerslist | null,
   speakersListId: ID,
   updatedAt: DateTime | null    
 };
@@ -1884,7 +1882,7 @@ export type Speakerslist = {
   agendaItem: (p?: {
     orderBy?: AgendaitemOrderInputArgument | null | undefined,
     where?: AgendaitemWhereInputArgument | null | undefined
-  }) => Agendaitem,
+  }) => Agendaitem | null,
   agendaItemId: ID,
   createdAt: DateTime,
   id: ID,

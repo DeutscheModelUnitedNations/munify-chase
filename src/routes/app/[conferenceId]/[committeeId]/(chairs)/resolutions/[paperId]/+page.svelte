@@ -9,7 +9,6 @@
 		ResolutionEditor,
 		OperativeParagraphPreview,
 		calculateAmendmentDiffSize,
-		getFirstTextContent,
 		type ResolutionStore,
 		type PresenceAdapter,
 		type Resolution,
@@ -1790,31 +1789,25 @@
 															})}
 														{/if}
 													</div>
-												{:else if amendment.type === 'ADD' && amendment.newContent}
-													{@const addClause = markupToClause(amendment.newContent)}
+												{:else if amendment.type === 'ADD' && typeof amendment.newContent === 'string'}
 													<div
 														class="text-xs text-base-content/70 bg-base-200/50 rounded px-2 py-0.5"
 													>
-														<div class="flex items-baseline gap-1.5">
-															<span class="whitespace-nowrap">
-																<i class="fas fa-plus mr-1"></i>
-																{#if amendment.targetPosition === -1}
-																	{m.insertAtBeginning()}
-																{:else if amendment.targetPosition != null}
-																	{m.insertAfterPresentation({
-																		index: String(amendment.targetPosition + 1)
-																	})}
-																{/if}
-															</span>
-															{#if addClause}
-																<span class="italic truncate">
-																	{getFirstTextContent(addClause).slice(
-																		0,
-																		120
-																	)}{getFirstTextContent(addClause).length > 120 ? '…' : ''}
-																</span>
-															{/if}
-														</div>
+														<i class="fas fa-plus mr-1"></i>
+														{#if amendment.targetPosition === -1}
+															{m.insertAtBeginning()}
+														{:else if amendment.targetPosition != null}
+															{m.insertAfterPresentation({
+																index: String(amendment.targetPosition + 1)
+															})}
+														{/if}
+													</div>
+													<div class="bg-white rounded px-2 pt-2 text-sm">
+														<OperativeParagraphPreview
+															markup={amendment.newContent}
+															operativeNumber={(amendment.targetPosition ?? -1) + 2}
+															labels={getResolutionLabels()}
+														/>
 													</div>
 												{/if}
 

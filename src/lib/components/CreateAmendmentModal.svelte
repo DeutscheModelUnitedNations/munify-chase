@@ -5,20 +5,19 @@
 	import { getTranslatedCountryNameFromAlpha3Code } from '$lib/utils/nationTranslationHelper.svelte';
 	import { getResolutionLabels } from '$lib/utils/resolutionEditorLabels';
 	import {
-		ResolutionEditor,
-		createEmptyOperativeClause,
-		createNativeStore,
-		type Resolution,
-		type OperativeClause,
-		type ResolutionStore
+		OperativeParagraphEditor,
+		type OperativeClause
 	} from '@deutschemodelunitednations/munify-resolution-editor';
+	import {
+		serializeClause,
+		parseClauseFragment
+	} from '@deutschemodelunitednations/munify-resolution-editor/res-markup';
 
 	type AmendmentType = 'DELETE' | 'ADD' | 'ALTER_TEXT' | 'ALTER_POSITION';
 
 	interface Props {
 		open: boolean;
 		operativeClauses: OperativeClause[];
-		committeeName: string;
 
 		// Chair mode: if provided, shows proposer selection step first
 		committeeMembers?: Array<{
@@ -34,7 +33,7 @@
 		// Edit mode support
 		editMode?: boolean;
 		initialProposerId?: string | null;
-		initialNewContent?: OperativeClause | null;
+		initialNewContent?: string | null;
 		initialTargetPosition?: number | null;
 
 		// Called on submit with all args needed for the mutation
@@ -43,7 +42,7 @@
 			targetClauseId: string | null;
 			targetOperativeIndex: number | null;
 			targetPosition: number | null;
-			newContent: OperativeClause | null;
+			newContent: string | null;
 			committeeMemberId?: string;
 		}) => Promise<void>;
 	}
@@ -51,7 +50,6 @@
 	let {
 		open = $bindable(),
 		operativeClauses,
-		committeeName,
 		committeeMembers,
 		initialType,
 		initialTargetIndex,
@@ -73,10 +71,43 @@
 	let proposerSearchQuery = $state('');
 	let selectedType = $state<AmendmentType | null>(null);
 	let selectedSourceIndex = $state<number>(0);
-	let newContent = $state<OperativeClause | null>(null);
+	// RES-Markup fragment of the new/edited clause (ALTER_TEXT + ADD).
+	let markup = $state('');
+	// RES-Markup of the original clause, used as the diff base (ALTER_TEXT).
+	let oldMarkup = $state('');
+	let showDiff = $state(true);
 	let targetPosition = $state<number>(0);
 	let submitting = $state(false);
 	let confirmingDelete = $state(false);
+
+	let markupParse = $derived(parseClauseFragment(markup));
+	let markupValid = $derived(markup.trim().length > 0 && markupParse.valid);
+
+	// Serialize an operative clause to a RES-Markup fragment (diff base /
+	// editing seed). Empty string if the clause is missing.
+	function clauseMarkup(index: number): string {
+		const clause = operativeClauses[index];
+		return clause ? serializeClause(clause) : '';
+	}
+
+	// Set up the markup editor state for a given amendment type. For
+	// ALTER_TEXT the original clause is the diff base and the editing seed;
+	// for ADD the editor starts blank with no diff base.
+	function initMarkup(type: AmendmentType, sourceIndex: number) {
+		if (type === 'ALTER_TEXT') {
+			oldMarkup = clauseMarkup(sourceIndex);
+			markup = initialNewContent ?? oldMarkup;
+			showDiff = true;
+		} else if (type === 'ADD') {
+			oldMarkup = '';
+			markup = initialNewContent ?? '';
+			showDiff = false;
+		} else {
+			oldMarkup = '';
+			markup = '';
+			showDiff = false;
+		}
+	}
 
 	// Reset on open change
 	$effect(() => {
@@ -90,15 +121,7 @@
 				proposerSearchQuery = '';
 				submitting = false;
 
-				if (initialNewContent) {
-					newContent = JSON.parse(JSON.stringify(initialNewContent));
-				} else if (initialType === 'ALTER_TEXT') {
-					const clause = operativeClauses[selectedSourceIndex];
-					if (clause) newContent = JSON.parse(JSON.stringify(clause));
-					else newContent = null;
-				} else {
-					newContent = null;
-				}
+				initMarkup(initialType, selectedSourceIndex);
 				targetPosition = initialTargetPosition ?? 0;
 
 				if (initialType === 'DELETE') {
@@ -121,15 +144,10 @@
 					return;
 				}
 				submitting = false;
-				if (initialType === 'ALTER_TEXT') {
-					const clause = operativeClauses[initialTargetIndex];
-					if (clause) newContent = JSON.parse(JSON.stringify(clause));
-					else newContent = null;
-				} else if (initialType === 'ADD') {
-					newContent = createEmptyOperativeClause();
+				initMarkup(initialType, initialTargetIndex);
+				if (initialType === 'ADD') {
 					targetPosition = initialTargetIndex; // insert after this index
 				} else if (initialType === 'ALTER_POSITION') {
-					newContent = null;
 					// Default to "after OP 2" when source is first; "at beginning" otherwise
 					targetPosition = initialTargetIndex === 0 ? 1 : -1;
 				}
@@ -141,7 +159,9 @@
 				proposerSearchQuery = '';
 				selectedType = null;
 				selectedSourceIndex = 0;
-				newContent = null;
+				markup = '';
+				oldMarkup = '';
+				showDiff = true;
 				targetPosition = 0;
 				submitting = false;
 			}
@@ -168,46 +188,6 @@
 		return getTranslatedCountryNameFromAlpha3Code(rep?.alpha3Code) ?? rep?.name ?? '';
 	}
 
-	// Mini resolution for content editing — wrapped in a native store so the
-	// editor's new store-based API can be used without bringing in Y.js.
-	let miniStore = $state<ResolutionStore | null>(null);
-	let miniStoreClauseId = $state<string | null>(null);
-
-	$effect(() => {
-		// The `onChange` callback assigns `snap.operative[0]` back to
-		// `newContent`, which would re-run this effect on every keystroke if
-		// it read the whole object. Track the clause id and only recreate
-		// when the user switches to a different clause.
-		const clauseId = newContent?.id ?? null;
-		if (!newContent) {
-			miniStore?.destroy();
-			miniStore = null;
-			miniStoreClauseId = null;
-			return;
-		}
-		if (miniStore && miniStoreClauseId === clauseId) return;
-
-		miniStore?.destroy();
-		miniStoreClauseId = clauseId;
-
-		const initial: Resolution = {
-			committeeName,
-			preamble: [],
-			operative: [newContent]
-		};
-		const store = createNativeStore(initial, {
-			onChange: (snap) => {
-				if (snap.operative[0]) {
-					newContent = snap.operative[0] as OperativeClause;
-				}
-			}
-		});
-		miniStore = store;
-		return () => {
-			store.destroy();
-		};
-	});
-
 	function handleSelectProposer(memberId: string) {
 		selectedProposer = memberId;
 		step = typeStep;
@@ -222,10 +202,9 @@
 		}
 
 		if (selectedType === 'ALTER_TEXT') {
-			const clause = operativeClauses[selectedSourceIndex];
-			if (clause) newContent = JSON.parse(JSON.stringify(clause));
+			initMarkup('ALTER_TEXT', selectedSourceIndex);
 		} else if (selectedType === 'ADD') {
-			newContent = createEmptyOperativeClause();
+			initMarkup('ADD', selectedSourceIndex);
 			// Default: insert after the selected position
 			if (operativeClauses.length === 0) {
 				targetPosition = -1; // insert as first
@@ -243,12 +222,14 @@
 	async function doSubmit() {
 		if (submitting) return;
 		if (!selectedType) return;
-		submitting = true;
 
 		const isAdd = selectedType === 'ADD';
 		const isAlterPos = selectedType === 'ALTER_POSITION';
 		const isDelete = selectedType === 'DELETE';
 		const isAlterText = selectedType === 'ALTER_TEXT';
+
+		if ((isAlterText || isAdd) && !markupValid) return;
+		submitting = true;
 
 		const targetClause = operativeClauses[selectedSourceIndex];
 
@@ -258,7 +239,7 @@
 				targetClauseId: isDelete || isAlterText || isAlterPos ? (targetClause?.id ?? null) : null,
 				targetOperativeIndex: !isAdd ? selectedSourceIndex : null,
 				targetPosition: isAdd ? targetPosition : isAlterPos ? targetPosition : null,
-				newContent: isAlterText || isAdd ? $state.snapshot(newContent) : null,
+				newContent: isAlterText || isAdd ? markup : null,
 				...(isChairMode && selectedProposer ? { committeeMemberId: selectedProposer } : {})
 			});
 			open = false;
@@ -468,10 +449,25 @@
 							</span>
 						</p>
 					{/if}
-					{#if miniStore}
-						<div class="border rounded-lg p-2">
-							<ResolutionEditor store={miniStore} labels={getResolutionLabels()} editable={true} />
-						</div>
+					<div class="border rounded-lg p-2">
+						{#if selectedType === 'ALTER_TEXT'}
+							<OperativeParagraphEditor
+								bind:markup
+								bind:oldMarkup
+								bind:showDiff
+								operativeNumber={selectedSourceIndex + 1}
+								labels={getResolutionLabels()}
+							/>
+						{:else}
+							<OperativeParagraphEditor
+								bind:markup
+								operativeNumber={targetPosition === -1 ? 1 : targetPosition + 2}
+								labels={getResolutionLabels()}
+							/>
+						{/if}
+					</div>
+					{#if markup.trim().length > 0 && !markupParse.valid}
+						<p class="text-error text-sm">{m.operativeParagraphInvalidMarkup()}</p>
 					{/if}
 				{:else if selectedType === 'ALTER_POSITION'}
 					<p class="text-sm mb-2">
@@ -500,7 +496,12 @@
 					<button class="btn btn-ghost btn-sm" onclick={() => (step = typeStep)}>
 						{m.back()}
 					</button>
-					<button class="btn btn-primary btn-sm" onclick={doSubmit} disabled={submitting}>
+					<button
+						class="btn btn-primary btn-sm"
+						onclick={doSubmit}
+						disabled={submitting ||
+							((selectedType === 'ALTER_TEXT' || selectedType === 'ADD') && !markupValid)}
+					>
 						{editMode ? m.saveChanges() : m.submitAmendment()}
 					</button>
 				</div>

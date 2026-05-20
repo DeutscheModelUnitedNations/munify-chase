@@ -11,10 +11,8 @@ import { isChairInConference, isGlobalAdmin } from '$api/services/authHelper';
 import { assertFindFirstExists, assertFirstEntryExists } from '@m1212e/rumble';
 import { and, eq, count as drizzleCount, not, inArray, gt, gte, sql } from 'drizzle-orm';
 import { GraphQLError } from 'graphql';
-import {
-	OperativeClauseSchema,
-	type OperativeClause
-} from '@deutschemodelunitednations/munify-resolution-editor/schema';
+import { type OperativeClause } from '@deutschemodelunitednations/munify-resolution-editor/schema';
+import { parseClauseFragment } from '@deutschemodelunitednations/munify-resolution-editor/res-markup';
 import {
 	replaceResolution,
 	yDocToJson
@@ -163,22 +161,22 @@ function computeAmendedResolution(
 			break;
 		}
 		case 'ADD': {
-			const parsedClause = OperativeClauseSchema.safeParse(amendment.newContent);
-			if (!parsedClause.success) {
+			const parsedClause = parseClauseFragment(amendment.newContent as string);
+			if (!parsedClause.valid) {
 				throw new GraphQLError('Invalid newContent for ADD amendment');
 			}
 			const insertAfter = amendment.targetPosition!;
-			next.operative.splice(insertAfter + 1, 0, parsedClause.data);
+			next.operative.splice(insertAfter + 1, 0, parsedClause.clause);
 			break;
 		}
 		case 'ALTER_TEXT': {
 			const idx = findClauseIndex(next.operative, amendment.targetClauseId!);
-			const parsedClause = OperativeClauseSchema.safeParse(amendment.newContent);
-			if (!parsedClause.success) {
+			const parsedClause = parseClauseFragment(amendment.newContent as string);
+			if (!parsedClause.valid) {
 				throw new GraphQLError('Invalid newContent for ALTER_TEXT amendment');
 			}
 			next.operative[idx] = {
-				...parsedClause.data,
+				...parsedClause.clause,
 				id: next.operative[idx].id
 			};
 			break;
@@ -303,7 +301,7 @@ schemaBuilder.mutationFields((t) => ({
 			targetClauseId: t.arg.string(),
 			targetOperativeIndex: t.arg.int(),
 			targetPosition: t.arg.int(),
-			newContent: t.arg({ type: 'JSON' })
+			newContent: t.arg.string()
 		},
 		resolve: async (query, root, args, ctx) => {
 			const user = ctx.mustBeLoggedIn();
@@ -383,9 +381,12 @@ schemaBuilder.mutationFields((t) => ({
 
 			// Validate newContent if provided
 			if (args.newContent) {
-				const parsedContent = OperativeClauseSchema.safeParse(args.newContent);
-				if (!parsedContent.success) {
-					throw new GraphQLError('Invalid newContent: ' + parsedContent.error.message);
+				const parsedContent = parseClauseFragment(args.newContent);
+				if (!parsedContent.valid) {
+					throw new GraphQLError(
+						'Invalid newContent (RES-Markup): ' +
+							parsedContent.errors.map((e) => e.message).join('; ')
+					);
 				}
 			}
 
@@ -482,7 +483,7 @@ schemaBuilder.mutationFields((t) => ({
 			targetClauseId: t.arg.string(),
 			targetOperativeIndex: t.arg.int(),
 			targetPosition: t.arg.int(),
-			newContent: t.arg({ type: 'JSON' })
+			newContent: t.arg.string()
 		},
 		resolve: async (query, root, args, ctx) => {
 			const paper = await db.query.resolutionPaper
@@ -535,9 +536,12 @@ schemaBuilder.mutationFields((t) => ({
 
 			// Validate newContent if provided
 			if (args.newContent) {
-				const parsedContent = OperativeClauseSchema.safeParse(args.newContent);
-				if (!parsedContent.success) {
-					throw new GraphQLError('Invalid newContent: ' + parsedContent.error.message);
+				const parsedContent = parseClauseFragment(args.newContent);
+				if (!parsedContent.valid) {
+					throw new GraphQLError(
+						'Invalid newContent (RES-Markup): ' +
+							parsedContent.errors.map((e) => e.message).join('; ')
+					);
 				}
 			}
 
@@ -783,7 +787,7 @@ schemaBuilder.mutationFields((t) => ({
 			targetClauseId: t.arg.string(),
 			targetOperativeIndex: t.arg.int(),
 			targetPosition: t.arg.int(),
-			newContent: t.arg({ type: 'JSON' }),
+			newContent: t.arg.string(),
 			proposerCommitteeMemberId: t.arg.id()
 		},
 		resolve: async (query, root, args, ctx) => {
@@ -839,9 +843,12 @@ schemaBuilder.mutationFields((t) => ({
 
 			// Validate newContent if provided
 			if (args.newContent) {
-				const parsedContent = OperativeClauseSchema.safeParse(args.newContent);
-				if (!parsedContent.success) {
-					throw new GraphQLError('Invalid newContent: ' + parsedContent.error.message);
+				const parsedContent = parseClauseFragment(args.newContent);
+				if (!parsedContent.valid) {
+					throw new GraphQLError(
+						'Invalid newContent (RES-Markup): ' +
+							parsedContent.errors.map((e) => e.message).join('; ')
+					);
 				}
 			}
 

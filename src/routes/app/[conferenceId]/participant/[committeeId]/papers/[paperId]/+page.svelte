@@ -19,6 +19,7 @@
 		createYjsStore,
 		createAwarenessPresence
 	} from '@deutschemodelunitednations/munify-resolution-editor/yjs';
+	import { markupToClause } from '$lib/utils/amendmentMarkup';
 	import * as Y from 'yjs';
 	import { WebsocketProvider } from 'y-websocket';
 	import Modal from '$lib/components/Modal.svelte';
@@ -640,7 +641,7 @@
 					targetClauseId: a.targetClauseId ?? undefined,
 					targetOperativeIndex: a.targetOperativeIndex ?? undefined,
 					targetPosition: a.targetPosition ?? undefined,
-					newContent: a.newContent as OperativeClause | undefined,
+					newContent: markupToClause(a.newContent) ?? undefined,
 					proposerName:
 						a.proposer?.representation?.name ??
 						getTranslatedCountryNameFromAlpha3Code(a.proposer?.representation?.alpha3Code),
@@ -671,7 +672,7 @@
 		targetClauseId: string | null;
 		targetOperativeIndex: number | null;
 		targetPosition: number | null;
-		newContent: OperativeClause | null;
+		newContent: string | null;
 	}) {
 		if (!paper) return;
 		await client.mutate.createAmendment({
@@ -1477,7 +1478,6 @@
 	<CreateAmendmentModal
 		bind:open={showCreateAmendmentModal}
 		{operativeClauses}
-		committeeName={committee?.name ?? ''}
 		initialType={initialAmendmentType}
 		initialTargetIndex={initialAmendmentTargetIndex}
 		onSubmit={handleAmendmentSubmit}

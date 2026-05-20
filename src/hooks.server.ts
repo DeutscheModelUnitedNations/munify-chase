@@ -28,6 +28,7 @@ const tauriCors: Handle = async ({ event, resolve }) => {
 
 	const response = await resolve(event);
 	response.headers.set('Access-Control-Allow-Origin', TAURI_ORIGIN);
+	response.headers.set('Access-Control-Allow-Credentials', 'true');
 	return response;
 };
 
@@ -54,8 +55,8 @@ const localeRedirect: Handle = ({ event, resolve }) => {
 };
 
 export const handle: Handle = sequence(
-	OIDC.handle,
 	tauriCors,
+	OIDC.handle,
 	localeRedirect,
 	({ event, resolve }) =>
 		paraglideMiddleware(event.request, ({ request: localizedRequest, locale }) => {

@@ -262,18 +262,22 @@
 			<div class="flex flex-col gap-5 h-full">
 				<div class="flex flex-col gap-3 pb-3 border-b-2 border-base-300">
 					<div class="flex items-center gap-3 flex-wrap">
-						<span class="badge badge-lg {getAmendmentTypeBadge(activeAmendment.type)} font-bold">
-							{getAmendmentTypeLabel(activeAmendment.type)}
-						</span>
-						{#if activeAmendment.documentNumber}
-							<span class="font-mono text-base-content/60 text-lg"
-								>{activeAmendment.documentNumber}</span
-							>
-						{/if}
-						<span class="text-2xl font-semibold">{m.proposedAmendmentPresentation()}</span>
+						<div class="flex flex-col">
+							<span class="badge badge-lg {getAmendmentTypeBadge(activeAmendment.type)} font-bold">
+								{getAmendmentTypeLabel(activeAmendment.type)}
+							</span>
+							{#if activeAmendment.documentNumber}
+								<span class="font-mono text-base-content/60 text-lg">
+									{activeAmendment.documentNumber}
+								</span>
+							{/if}
+						</div>
+						<span class="text-2xl font-semibold flex-1 text-center"
+							>{m.proposedAmendmentPresentation()}</span
+						>
 						{#if activeAmendment.proposer?.representation}
 							<div
-								class="flex items-center gap-2 ml-auto bg-base-200 rounded-full pl-1 pr-3 py-1 text-base"
+								class="flex items-center gap-2 ml-auto bg-base-200 rounded-box pl-1 pr-3 py-1 text-base"
 							>
 								<Flag representation={activeAmendment.proposer.representation} size="sm" />
 								<span class="font-medium">{getProposerName(activeAmendment.proposer)}</span>
@@ -294,7 +298,7 @@
 					</div>
 					{#if targetClause}
 						<div
-							class="flex-1 overflow-auto p-4 rounded-lg bg-error/5 border-2 border-error/30 border-l-4 border-l-error line-through decoration-error decoration-4 opacity-70"
+							class="flex-1 overflow-auto p-4 rounded-lg bg-white border-2 border-error/30 border-l-4 border-l-error line-through decoration-error decoration-4 opacity-70"
 						>
 							<ResolutionPreview
 								resolution={singleClauseResolution(targetClause)}
@@ -317,13 +321,12 @@
 					<div class="flex-1 overflow-auto p-4">
 						{#if typeof activeAmendment.newContent === 'string'}
 							<div
-								class="rounded-lg border-2 border-warning/30 border-l-4 border-l-warning bg-warning/5 p-4"
+								class="rounded-lg border-2 border-warning/30 border-l-4 border-l-warning bg-white p-4 pt-6"
 							>
 								<OperativeParagraphPreview
 									markup={activeAmendment.newContent}
 									oldMarkup={targetClause ? serializeClause(targetClause) : undefined}
 									showDiff
-									showDiffToggle
 									operativeNumber={resolvedActiveAmendIdx + 1}
 									labels={getResolutionLabels()}
 								/>
@@ -341,7 +344,7 @@
 					<div class="flex-1 overflow-auto p-4">
 						{#if typeof activeAmendment.newContent === 'string'}
 							<div
-								class="rounded-lg bg-success/5 border-2 border-success/30 border-l-4 border-l-success p-4"
+								class="rounded-lg bg-white border-2 border-success/30 border-l-4 border-l-success p-4 pt-6"
 							>
 								<OperativeParagraphPreview
 									markup={activeAmendment.newContent}
@@ -364,7 +367,7 @@
 						</div>
 						{#if targetClause}
 							<div
-								class="w-full rounded-lg bg-info/5 border-2 border-info/30 border-l-4 border-l-info p-4"
+								class="w-full rounded-lg bg-white border-2 border-info/30 border-l-4 border-l-info p-4"
 							>
 								<ResolutionPreview
 									resolution={singleClauseResolution(targetClause)}
@@ -388,36 +391,26 @@
 		{:else}
 			<!-- Single operative clause view (amendment phase without active amendment, or voting phase) -->
 			<div class="flex flex-col h-full">
-				<div class="flex items-center justify-between mb-4">
-					<div class="text-lg font-semibold">
-						{dr.documentNumber ?? m.draftResolution()}
-					</div>
-					<div class="badge badge-lg badge-primary">
-						{dr.status === 'VOTING_PHASE' ? m.votingPhase() : m.amendmentPhase()}
-					</div>
-				</div>
-
-				<div class="flex items-center justify-center gap-2 text-base-content/60 text-sm mb-4">
+				<div class="flex items-center justify-center gap-2 text-base-content/60 text-lg mb-4">
 					<span>
 						{m.operativeClausePresentation()}
 						{currentOpIndex + 1} / {resolution.operative.length}
 					</span>
 					{#if dr.status === 'AMENDMENT_PHASE' && pendingAmendmentCounts.get(currentOpIndex)}
-						<span class="badge badge-sm badge-warning">
+						<span class="badge badge-lg badge-warning">
 							{pendingAmendmentCounts.get(currentOpIndex)}
-							{m.amendmentPhase()}
+							{m.amendments()}
 						</span>
 					{/if}
 				</div>
 
 				{#if currentClause}
-					<div class="flex-1 overflow-auto p-4">
-						<ResolutionPreview
-							resolution={singleClauseResolution(currentClause)}
+					<div class="flex-1 overflow-auto p-4 pt-6 bg-white rounded-box">
+						<OperativeParagraphPreview
+							markup={serializeClause(currentClause)}
+							operativeNumber={currentOpIndex + 1}
 							labels={getResolutionLabels()}
-						>
-							{#snippet previewHeader()}{/snippet}
-						</ResolutionPreview>
+						/>
 					</div>
 				{:else}
 					<div class="flex-1 flex items-center justify-center text-base-content/50">

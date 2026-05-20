@@ -119,7 +119,10 @@
 	},
 	"type": "module",
 	"overrides": {
-		"wonka": "6.3.6"
+		"wonka": "6.3.6",
+		"drizzle-orm": "1.0.0-beta.9-e89174b",
+		"drizzle-kit": "1.0.0-beta.9-e89174b",
+		"drizzle-seed": "1.0.0-beta.9-e89174b"
 	},
 	"dependencies": {
 		"drizzle-kit": "^1.0.0-beta.22",

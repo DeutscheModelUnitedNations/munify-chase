@@ -62,7 +62,7 @@ export type Amendment = {
   createdAt: DateTime,
   documentNumber: String | null,
   id: ID,
-  newContent: JSON | null,
+  newContent: String | null,
   paper: (p?: {
     orderBy?: ResolutionpaperOrderInputArgument | null | undefined,
     where?: ResolutionpaperWhereInputArgument | null | undefined
@@ -111,7 +111,7 @@ export type AmendmentWhereInputArgument = {
   createdAt?: DateWhereInputArgument | null | undefined,
   documentNumber?: StringWhereInputArgument | null | undefined,
   id?: ID | null | undefined,
-  newContent?: JSON | null | undefined,
+  newContent?: StringWhereInputArgument | null | undefined,
   paper?: ResolutionpaperWhereInputArgument | null | undefined,
   paperId?: ID | null | undefined,
   proposer?: CommitteememberWhereInputArgument | null | undefined,
@@ -207,6 +207,12 @@ export type Committee = {
   customPaperSupportThreshold: Int | null,
   customSimpleMajority: Int | null,
   customTwoThirdsMajority: Int | null,
+  displayDevices: (p?: {
+    limit?: Int | null | undefined,
+    offset?: Int | null | undefined,
+    orderBy?: DisplaydeviceOrderInputArgument | null | undefined,
+    where?: DisplaydeviceWhereInputArgument | null | undefined
+  }) => Displaydevice[],
   id: ID,
   lastResolutionAdoptionDate: DateTime | null,
   maxDraftResolutions: Int,
@@ -264,6 +270,7 @@ export type CommitteeOrderInputArgument = {
   customPaperSupportThreshold?: SortingParameter | null | undefined,
   customSimpleMajority?: SortingParameter | null | undefined,
   customTwoThirdsMajority?: SortingParameter | null | undefined,
+  displayDevices?: DisplaydeviceOrderInputArgument | null | undefined,
   id?: SortingParameter | null | undefined,
   lastResolutionAdoptionDate?: SortingParameter | null | undefined,
   maxDraftResolutions?: SortingParameter | null | undefined,
@@ -302,6 +309,7 @@ export type CommitteeWhereInputArgument = {
   customPaperSupportThreshold?: IntWhereInputArgument | null | undefined,
   customSimpleMajority?: IntWhereInputArgument | null | undefined,
   customTwoThirdsMajority?: IntWhereInputArgument | null | undefined,
+  displayDevices?: DisplaydeviceWhereInputArgument | null | undefined,
   id?: ID | null | undefined,
   lastResolutionAdoptionDate?: DateWhereInputArgument | null | undefined,
   maxDraftResolutions?: IntWhereInputArgument | null | undefined,
@@ -417,6 +425,12 @@ export type Conference = {
     where?: CommitteeWhereInputArgument | null | undefined
   }) => Committee[],
   createdAt: DateTime,
+  displayDevices: (p?: {
+    limit?: Int | null | undefined,
+    offset?: Int | null | undefined,
+    orderBy?: DisplaydeviceOrderInputArgument | null | undefined,
+    where?: DisplaydeviceWhereInputArgument | null | undefined
+  }) => Displaydevice[],
   endDate: Date | null,
   hasModeratedCaucus: Boolean,
   id: ID,
@@ -459,6 +473,7 @@ export type Conference = {
 export type ConferenceOrderInputArgument = {
   committees?: CommitteeOrderInputArgument | null | undefined,
   createdAt?: SortingParameter | null | undefined,
+  displayDevices?: DisplaydeviceOrderInputArgument | null | undefined,
   endDate?: SortingParameter | null | undefined,
   hasModeratedCaucus?: SortingParameter | null | undefined,
   id?: SortingParameter | null | undefined,
@@ -478,6 +493,7 @@ export type ConferenceOrderInputArgument = {
 export type ConferenceWhereInputArgument = {
   committees?: CommitteeWhereInputArgument | null | undefined,
   createdAt?: DateWhereInputArgument | null | undefined,
+  displayDevices?: DisplaydeviceWhereInputArgument | null | undefined,
   endDate?: DateWhereInputArgument | null | undefined,
   hasModeratedCaucus?: Boolean | null | undefined,
   id?: ID | null | undefined,
@@ -668,6 +684,51 @@ export type DateWhereInputArgument = {
   notLike?: String | null | undefined    
 };
 		
+export type Displaydevice = {
+  committee: (p?: {
+    orderBy?: CommitteeOrderInputArgument | null | undefined,
+    where?: CommitteeWhereInputArgument | null | undefined
+  }) => Committee | null,
+  committeeId: ID | null,
+  conference: (p?: {
+    orderBy?: ConferenceOrderInputArgument | null | undefined,
+    where?: ConferenceWhereInputArgument | null | undefined
+  }) => Conference | null,
+  conferenceId: ID | null,
+  createdAt: DateTime,
+  id: ID,
+  lastSeenAt: DateTime | null,
+  name: String | null,
+  revoked: Boolean,
+  updatedAt: DateTime | null    
+};
+		
+export type DisplaydeviceOrderInputArgument = {
+  committee?: CommitteeOrderInputArgument | null | undefined,
+  committeeId?: SortingParameter | null | undefined,
+  conference?: ConferenceOrderInputArgument | null | undefined,
+  conferenceId?: SortingParameter | null | undefined,
+  createdAt?: SortingParameter | null | undefined,
+  id?: SortingParameter | null | undefined,
+  lastSeenAt?: SortingParameter | null | undefined,
+  name?: SortingParameter | null | undefined,
+  revoked?: SortingParameter | null | undefined,
+  updatedAt?: SortingParameter | null | undefined    
+};
+		
+export type DisplaydeviceWhereInputArgument = {
+  committee?: CommitteeWhereInputArgument | null | undefined,
+  committeeId?: ID | null | undefined,
+  conference?: ConferenceWhereInputArgument | null | undefined,
+  conferenceId?: ID | null | undefined,
+  createdAt?: DateWhereInputArgument | null | undefined,
+  id?: ID | null | undefined,
+  lastSeenAt?: DateWhereInputArgument | null | undefined,
+  name?: StringWhereInputArgument | null | undefined,
+  revoked?: Boolean | null | undefined,
+  updatedAt?: DateWhereInputArgument | null | undefined    
+};
+		
 export type Float = number;
 		
 export type FloatWhereInputArgument = {
@@ -800,9 +861,15 @@ export type Mutation = {
   adoptByConsensus: (p: {
     amendmentId: ID
   }) => Amendment,
+  assignDisplayDevice: (p: {
+    committeeId?: ID | null | undefined,
+    conferenceId?: ID | null | undefined,
+    id: ID,
+    name?: String | null | undefined
+  }) => Displaydevice,
   chairCreateAmendment: (p: {
     committeeMemberId: ID,
-    newContent?: JSON | null | undefined,
+    newContent?: String | null | undefined,
     paperId: ID,
     targetClauseId?: String | null | undefined,
     targetOperativeIndex?: Int | null | undefined,
@@ -823,7 +890,7 @@ export type Mutation = {
     title: String
   }) => Agendaitem,
   createAmendment: (p: {
-    newContent?: JSON | null | undefined,
+    newContent?: String | null | undefined,
     paperId: ID,
     targetClauseId?: String | null | undefined,
     targetOperativeIndex?: Int | null | undefined,
@@ -887,7 +954,7 @@ export type Mutation = {
   deleteShareCode: Boolean,
   editAmendment: (p: {
     amendmentId: ID,
-    newContent?: JSON | null | undefined,
+    newContent?: String | null | undefined,
     proposerCommitteeMemberId?: ID | null | undefined,
     targetClauseId?: String | null | undefined,
     targetOperativeIndex?: Int | null | undefined,
@@ -919,14 +986,12 @@ export type Mutation = {
     votesFor: Int
   }) => Operativeclausevote,
   recordNsaCheckIn: (p: {
-    attendanceCode?: String | null | undefined,
-    committeeId: ID,
-    conferenceUserId?: ID | null | undefined
+    code: String,
+    committeeId: ID
   }) => Nsapresenceevent,
   recordNsaCheckOut: (p: {
-    attendanceCode?: String | null | undefined,
-    committeeId: ID,
-    conferenceUserId?: ID | null | undefined
+    code: String,
+    committeeId: ID
   }) => Nsapresenceevent,
   recordVoteResult: (p: {
     outcome: unknown,
@@ -941,6 +1006,9 @@ export type Mutation = {
   regenerateNsaAttendanceCode: (p: {
     conferenceUserId: ID
   }) => Conferenceuser,
+  registerDisplayDevice: (p: {
+    id: ID
+  }) => Displaydevice,
   rejectAmendment: (p: {
     amendmentId: ID
   }) => Amendment,
@@ -960,6 +1028,10 @@ export type Mutation = {
   selfRemoveFromSpeakersList: (p: {
     speakersListId: ID
   }) => Speakerslist,
+  setDisplayDeviceRevoked: (p: {
+    id: ID,
+    revoked: Boolean
+  }) => Displaydevice,
   setPresenceForCommitteeMembers: (p: {
     ids: unknown,
     present: Boolean
@@ -1399,6 +1471,15 @@ export type Query = {
     where?: ConferenceWhereInputArgument | null | undefined
   }) => Conference[],
   currentUserClaims: () => UserClaims,
+  displayDevice: (p: {
+    id: ID
+  }) => Displaydevice,
+  displayDevices: (p?: {
+    limit?: Int | null | undefined,
+    offset?: Int | null | undefined,
+    orderBy?: DisplaydeviceOrderInputArgument | null | undefined,
+    where?: DisplaydeviceWhereInputArgument | null | undefined
+  }) => Displaydevice[],
   isGlobalAdmin: Boolean,
   nsaPresenceEvent: (p: {
     id: ID
@@ -1726,7 +1807,7 @@ export type Resolutionpaper = {
   voteResult: (p?: {
     orderBy?: ResolutionvoteresultOrderInputArgument | null | undefined,
     where?: ResolutionvoteresultWhereInputArgument | null | undefined
-  }) => Resolutionvoteresult | null
+  }) => Resolutionvoteresult    
 };
 		
 export type ResolutionpaperOrderInputArgument = {
@@ -2030,6 +2111,15 @@ export type Subscription = {
     orderBy?: ConferenceOrderInputArgument | null | undefined,
     where?: ConferenceWhereInputArgument | null | undefined
   }) => Conference[],
+  displayDevice: (p: {
+    id: ID
+  }) => Displaydevice,
+  displayDevices: (p?: {
+    limit?: Int | null | undefined,
+    offset?: Int | null | undefined,
+    orderBy?: DisplaydeviceOrderInputArgument | null | undefined,
+    where?: DisplaydeviceWhereInputArgument | null | undefined
+  }) => Displaydevice[],
   nsaPresenceEvent: (p: {
     id: ID
   }) => Nsapresenceevent,
@@ -2231,7 +2321,7 @@ export const client = {
    */
   liveQuery: makeLiveQuery<Query>({
 	  urqlClient,
-	  availableSubscriptions: new Set(["agendaItem", "agendaItems", "amendment", "amendmentSponsor", "amendmentSponsors", "amendments", "committee", "committeeMember", "committeeMembers", "committees", "conference", "conferenceMember", "conferenceMembers", "conferenceUser", "conferenceUsers", "conferences", "nsaPresenceEvent", "nsaPresenceEvents", "operativeClauseVote", "operativeClauseVotes", "paperContentSnapshot", "paperContentSnapshots", "paperEditor", "paperEditors", "paperShareCode", "paperShareCodes", "paperSponsor", "paperSponsors", "presenceChangedTimestamp", "presenceChangedTimestamps", "representation", "representations", "resolutionComment", "resolutionComments", "resolutionPaper", "resolutionPapers", "resolutionVoteResult", "resolutionVoteResults", "speakerOnList", "speakerOnLists", "speakersList", "speakersLists", "user", "users"]),
+	  availableSubscriptions: new Set(["agendaItem", "agendaItems", "amendment", "amendmentSponsor", "amendmentSponsors", "amendments", "committee", "committeeMember", "committeeMembers", "committees", "conference", "conferenceMember", "conferenceMembers", "conferenceUser", "conferenceUsers", "conferences", "displayDevice", "displayDevices", "nsaPresenceEvent", "nsaPresenceEvents", "operativeClauseVote", "operativeClauseVotes", "paperContentSnapshot", "paperContentSnapshots", "paperEditor", "paperEditors", "paperShareCode", "paperShareCodes", "paperSponsor", "paperSponsors", "presenceChangedTimestamp", "presenceChangedTimestamps", "representation", "representations", "resolutionComment", "resolutionComments", "resolutionPaper", "resolutionPapers", "resolutionVoteResult", "resolutionVoteResults", "speakerOnList", "speakerOnLists", "speakersList", "speakersLists", "user", "users"]),
 		schema,
     autoIncludeIdField: 'id'
   }),

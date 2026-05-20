@@ -13,15 +13,20 @@ abilityBuilder.displayDevice.allow('read').when((ctx) => {
 	if (isDisplayKiosk(ctx)) {
 		return { where: { revoked: false } };
 	}
-	// Conference organizers manage the devices assigned to their conference.
-	return { where: { conference: isAdmin(ctx) } };
+	// Conference organizers see devices assigned to their conference plus any
+	// unassigned device (so they can claim a freshly-paired Pi at the venue).
+	return {
+		where: { OR: [{ conference: isAdmin(ctx) }, { conferenceId: { isNull: true } }] }
+	};
 });
 
 abilityBuilder.displayDevice.allow('update').when((ctx) => {
 	if (isGlobalAdmin(ctx)) {
 		return { where: {} };
 	}
-	return { where: { conference: isAdmin(ctx) } };
+	return {
+		where: { OR: [{ conference: isAdmin(ctx) }, { conferenceId: { isNull: true } }] }
+	};
 });
 
 export const DisplayDeviceRef = object({
@@ -88,6 +93,10 @@ schemaBuilder.mutationFields((t) => ({
 			if (args.conferenceId !== undefined) set.conferenceId = args.conferenceId;
 			if (args.committeeId !== undefined) set.committeeId = args.committeeId;
 			if (args.name !== undefined) set.name = args.name;
+			// Clearing the conference also clears the committee — a committee
+			// always belongs to a conference, so leaving committeeId set with a
+			// null conferenceId would orphan the FK.
+			if (args.conferenceId === null) set.committeeId = null;
 
 			if (args.committeeId) {
 				const committee = await db.query.committee.findFirst({

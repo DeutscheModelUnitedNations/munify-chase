@@ -48,7 +48,8 @@ cd pi-display
 ## Operating
 
 - **Assign / rename / revoke**: CHASE → `/app/displays` (global admins see
-  all devices incl. unassigned; conference admins see their conference's).
+  all devices; conference admins see their conference's plus any
+  unassigned device, so a freshly-paired Pi can be claimed at the venue).
 - **Revoke a lost/stolen Pi**: toggle _Revoke_ on its row. The device
   immediately falls back to the pairing screen and can read nothing.
 - **Rotate the shared account**: if the display account is compromised,

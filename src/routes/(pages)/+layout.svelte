@@ -5,7 +5,9 @@
 	let { children } = $props();
 </script>
 
-<Navbar />
+{#if !isTauri()}
+	<Navbar />
+{/if}
 
 {@render children()}
 

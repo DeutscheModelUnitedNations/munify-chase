@@ -6,6 +6,8 @@
 	import ContactSection from './ContactSection.svelte';
 	import { onMount } from 'svelte';
 	import ExternalLink from '$lib/components/ExternalLink.svelte';
+	import NativeLoginPage from './NativeLoginPage.svelte';
+	import { isTauri } from '$lib/platform';
 
 	let loading = $state(true);
 
@@ -55,16 +57,19 @@
 	{@html `<${'script'} type="application/ld+json">${jsonLd}</${'script'}>`}
 </svelte:head>
 
-<div class="flex min-h-screen flex-col items-center">
-	{#if loading}
-		<div class="absolute top-0 right-0 bottom-0 left-0 z-50 flex items-center justify-center">
-			<div class="loading loading-dots"></div>
-		</div>
-	{:else}
-		<div class="max-w-7xl">
-			<LandingHero />
+{#if isTauri()}
+	<NativeLoginPage />
+{:else}
+	<div class="flex min-h-screen flex-col items-center">
+		{#if loading}
+			<div class="absolute top-0 right-0 bottom-0 left-0 z-50 flex items-center justify-center">
+				<div class="loading loading-dots"></div>
+			</div>
+		{:else}
+			<div class="max-w-7xl">
+				<LandingHero />
 
-			<!-- {#if $media.isTabletOrMobile}
+				<!-- {#if $media.isTabletOrMobile}
 				<div class="flex h-40 w-full items-center justify-center bg-base-100">
 					<img
 						src="/logo/svg/chase_logo_blue_text.svg"
@@ -76,31 +81,32 @@
 				</div>
 			{/if} -->
 
-			<CardSection />
+				<CardSection />
 
-			<div
-				class="align-items-start flex flex-col gap-2 p-4 lg:grid lg:flex-none lg:gap-10 lg:p-20"
-				style="grid-template-columns: auto 1fr;"
-			>
-				<TextSection title={m.homeAboutTitle()} text={m.homeAboutText()} />
-				<TextSection title={m.homeMissionTitle()} text={m.homeMissionText()}>
-					<ExternalLink class="btn btn-primary mt-3" href="https://dmun.de">
-						<i class="fas fa-external-link mr-2"></i>
-						{m.homeMissionButtonLabel()}
-					</ExternalLink>
-				</TextSection>
-				<TextSection title={m.homeContributeTitle()} text={m.homeContributeText()}>
-					<ExternalLink
-						class="btn btn-primary mt-3"
-						href="https://github.com/DeutscheModelUnitedNations/munify-chase"
-					>
-						<i class="fas fa-code-branch mr-2"></i>
-						{m.homeContributeButtonLabel()}
-					</ExternalLink>
-				</TextSection>
+				<div
+					class="align-items-start flex flex-col gap-2 p-4 lg:grid lg:flex-none lg:gap-10 lg:p-20"
+					style="grid-template-columns: auto 1fr;"
+				>
+					<TextSection title={m.homeAboutTitle()} text={m.homeAboutText()} />
+					<TextSection title={m.homeMissionTitle()} text={m.homeMissionText()}>
+						<ExternalLink class="btn btn-primary mt-3" href="https://dmun.de">
+							<i class="fas fa-external-link mr-2"></i>
+							{m.homeMissionButtonLabel()}
+						</ExternalLink>
+					</TextSection>
+					<TextSection title={m.homeContributeTitle()} text={m.homeContributeText()}>
+						<ExternalLink
+							class="btn btn-primary mt-3"
+							href="https://github.com/DeutscheModelUnitedNations/munify-chase"
+						>
+							<i class="fas fa-code-branch mr-2"></i>
+							{m.homeContributeButtonLabel()}
+						</ExternalLink>
+					</TextSection>
+				</div>
+
+				<ContactSection />
 			</div>
-
-			<ContactSection />
-		</div>
-	{/if}
-</div>
+		{/if}
+	</div>
+{/if}

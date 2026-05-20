@@ -33,12 +33,12 @@
 					if (!getCachedAccessToken()) {
 						await startTauriOidcFlow(PUBLIC_OIDC_AUTHORITY, PUBLIC_OIDC_CLIENT_ID);
 					} else {
-						try {
-							await getCurrentUser();
-						} catch {
-							// Token expired — re-authenticate.
-							await startTauriOidcFlow(PUBLIC_OIDC_AUTHORITY, PUBLIC_OIDC_CLIENT_ID);
-						}
+						// Token exists — hydrate user state but never re-trigger the OIDC
+						// flow here. A failure means a transient server error or a bearer
+						// auth misconfiguration, not an expired token (getCachedAccessToken
+						// already checks expiry). Re-authing on every failure causes a login
+						// loop; the token expiry path is handled above on the next app start.
+						getCurrentUser().catch((e) => console.error('Failed to load user:', e));
 					}
 				} catch (e) {
 					console.error('Tauri OIDC init failed:', e);

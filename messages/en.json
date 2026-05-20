@@ -246,6 +246,8 @@
 	"draftResolution": "Draft Resolution",
 	"draftResolutions": "Draft Resolutions",
 	"dropJsonHint": "You can also drop a .json file here.",
+	"duplicateCommitteeAbbreviation": "Duplicate committee abbreviation: \"{abbreviation}\"",
+	"duplicateCommitteeName": "Duplicate committee name: \"{name}\"",
 	"edit": "Edit",
 	"editAccess": "Edit Access",
 	"editAmendment": "Edit Amendment",

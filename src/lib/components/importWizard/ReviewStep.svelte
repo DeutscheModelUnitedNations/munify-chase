@@ -2,7 +2,7 @@
 	import { m } from '$lib/paraglide/messages';
 	import type { z } from 'zod/v4';
 	import type { importDataSchema } from '$lib/utils/import';
-	import { SvelteSet } from 'svelte/reactivity';
+	import { SvelteMap, SvelteSet } from 'svelte/reactivity';
 	import StepHeader from './StepHeader.svelte';
 
 	type ImportData = z.infer<typeof importDataSchema>;
@@ -39,6 +39,8 @@
 		if (!data.title) v.push({ severity: 'error', step: 1, msg: m.missingConferenceTitle() });
 		if (data.committees.length === 0)
 			v.push({ severity: 'error', step: 2, msg: m.noCommitteesCreated() });
+		const nameCounts = new SvelteMap<string, number>();
+		const abbrCounts = new SvelteMap<string, number>();
 		for (const c of data.committees) {
 			if (!c.abbreviation || !c.name) {
 				v.push({
@@ -47,6 +49,8 @@
 					msg: m.committeeIncomplete({ name: c.abbreviation || c.name || m.unbenamedCommittee() })
 				});
 			}
+			if (c.name) nameCounts.set(c.name, (nameCounts.get(c.name) ?? 0) + 1);
+			if (c.abbreviation) abbrCounts.set(c.abbreviation, (abbrCounts.get(c.abbreviation) ?? 0) + 1);
 			const memberCount = (data.committeeMembers ?? []).filter(
 				(cm) => cm.committeeId === c.id
 			).length;
@@ -60,8 +64,24 @@
 				});
 			}
 		}
+		for (const [name, count] of nameCounts) {
+			if (count > 1) {
+				v.push({ severity: 'error', step: 2, msg: m.duplicateCommitteeName({ name }) });
+			}
+		}
+		for (const [abbreviation, count] of abbrCounts) {
+			if (count > 1) {
+				v.push({
+					severity: 'error',
+					step: 2,
+					msg: m.duplicateCommitteeAbbreviation({ abbreviation })
+				});
+			}
+		}
 		return v;
 	});
+
+	const hasErrors = $derived(validations.some((x) => x.severity === 'error'));
 
 	function membersOfCommittee(committeeId: string) {
 		const seen = new SvelteSet<string>();
@@ -212,7 +232,7 @@
 		</div>
 		<div class="flex flex-wrap items-center gap-3">
 			{#if isAdmin}
-				<button class="btn btn-primary btn-lg" onclick={onApply} disabled={loading}>
+				<button class="btn btn-primary btn-lg" onclick={onApply} disabled={loading || hasErrors}>
 					{#if loading}
 						<span class="loading loading-spinner"></span>
 					{:else}

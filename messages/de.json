@@ -246,6 +246,8 @@
 	"draftResolution": "Resolutionsentwurf",
 	"draftResolutions": "Resolutionsentwürfe",
 	"dropJsonHint": "Du kannst eine .json-Datei auch hier hinein ziehen.",
+	"duplicateCommitteeAbbreviation": "Doppelte Gremien-Abkürzung: „{abbreviation}\"",
+	"duplicateCommitteeName": "Doppelter Gremienname: „{name}\"",
 	"edit": "Bearbeiten",
 	"editAccess": "Bearbeitungszugriff",
 	"editAmendment": "Antrag bearbeiten",

@@ -7,6 +7,7 @@
 	type LoginState = 'idle' | 'loading' | 'error';
 	let loginState = $state<LoginState>('idle');
 	let errorMessage = $state('');
+	let abortController: AbortController | undefined;
 
 	onMount(() => {
 		if (getCachedAccessToken()) {
@@ -15,15 +16,26 @@
 	});
 
 	async function handleSignIn() {
+		abortController = new AbortController();
 		loginState = 'loading';
 		errorMessage = '';
 		try {
-			await tauriLogin();
+			await tauriLogin(abortController.signal);
 			goto('/app');
 		} catch (e) {
-			errorMessage = e instanceof Error ? e.message : String(e);
-			loginState = 'error';
+			if (e instanceof DOMException && e.name === 'AbortError') {
+				loginState = 'idle';
+			} else {
+				errorMessage = e instanceof Error ? e.message : String(e);
+				loginState = 'error';
+			}
+		} finally {
+			abortController = undefined;
 		}
+	}
+
+	function handleCancel() {
+		abortController?.abort();
 	}
 </script>
 
@@ -46,6 +58,7 @@
 			<p class="text-base-content/40 text-sm">
 				Complete sign-in in the browser window that opened.
 			</p>
+			<button class="btn btn-ghost btn-sm mt-2" onclick={handleCancel}>Cancel</button>
 		</div>
 	{:else if loginState === 'error'}
 		<div class="flex flex-col items-center gap-4">

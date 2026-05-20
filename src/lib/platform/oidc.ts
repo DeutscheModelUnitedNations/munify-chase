@@ -74,7 +74,8 @@ function buildOidcClient(): OidcClient {
 			issuer: base,
 			authorization_endpoint: `${base}/auth`,
 			token_endpoint: `${base}/token`,
-			end_session_endpoint: `${base}/session/end`
+			end_session_endpoint: `${base}/session/end`,
+			jwks_uri: `${base}/jwks`
 		}
 	});
 }
@@ -88,9 +89,9 @@ function buildOidcClient(): OidcClient {
  * 3. Wait for the deep-link callback (routed to this instance by tauri-plugin-single-instance)
  * 4. Exchange the code for tokens via oidc-client-ts
  */
-export async function tauriLogin(): Promise<void> {
+export async function tauriLogin(signal?: AbortSignal): Promise<void> {
 	const { openUrl } = await import('@tauri-apps/plugin-opener');
-	const { onOpenUrl } = await import('@tauri-apps/plugin-deep-link');
+	const { listen } = await import('@tauri-apps/api/event');
 
 	const client = buildOidcClient();
 	const req = await client.createSigninRequest({});
@@ -98,8 +99,15 @@ export async function tauriLogin(): Promise<void> {
 	return new Promise<void>((resolve, reject) => {
 		let unlisten: (() => void) | undefined;
 
-		onOpenUrl(async (urls) => {
-			const callbackUrl = urls.find((u) => u.startsWith('munify-chase://oidc-callback'));
+		signal?.addEventListener('abort', () => {
+			unlisten?.();
+			reject(new DOMException('Login cancelled', 'AbortError'));
+		});
+
+		// The Rust single-instance callback emits 'deep-link-callback' with argv
+		// when it intercepts a second instance launched by the OS for the deep link.
+		listen<string[]>('deep-link-callback', async (event) => {
+			const callbackUrl = event.payload.find((u) => u.startsWith('munify-chase://oidc-callback'));
 			if (!callbackUrl) return;
 			unlisten?.();
 			try {
@@ -116,9 +124,9 @@ export async function tauriLogin(): Promise<void> {
 		})
 			.then((fn) => {
 				unlisten = fn;
+				// Open browser only after the listener is confirmed registered.
+				return openUrl(req.url);
 			})
 			.catch(reject);
-
-		openUrl(req.url).catch(reject);
 	});
 }

@@ -8,6 +8,8 @@
 	import { getCurrentUser } from '$lib/state/currentUser.svelte';
 	import {
 		ResolutionEditor,
+		OperativeParagraphPreview,
+		getFirstTextContent,
 		type ResolutionStore,
 		type PresenceAdapter,
 		type Resolution,
@@ -19,7 +21,7 @@
 		createYjsStore,
 		createAwarenessPresence
 	} from '@deutschemodelunitednations/munify-resolution-editor/yjs';
-	import { markupToClause } from '$lib/utils/amendmentMarkup';
+	import { markupToClause, serializeClause } from '$lib/utils/amendmentMarkup';
 	import * as Y from 'yjs';
 	import { WebsocketProvider } from 'y-websocket';
 	import Modal from '$lib/components/Modal.svelte';
@@ -628,10 +630,7 @@
 	let sponsorThresholdNeeded = $derived(Math.ceil((committee?.totalPresent ?? 0) * 0.1));
 
 	let amendmentOverlays = $derived.by(() => {
-		const visible = (allAmendments ?? []).filter(
-			(a: AmendmentEntry) =>
-				a.status === 'SUBMITTED' || a.status === 'CONSENSUS_ADOPTED' || a.status === 'ACCEPTED'
-		);
+		const visible = (allAmendments ?? []).filter((a: AmendmentEntry) => a.status === 'SUBMITTED');
 		return visible.map(
 			(a: AmendmentEntry) =>
 				({
@@ -757,6 +756,17 @@
 		}
 	}
 
+	function resolveOpIdx(a: {
+		targetClauseId?: string | null;
+		targetOperativeIndex?: number | null;
+	}): number {
+		if (a.targetClauseId) {
+			const idx = operativeClauses.findIndex((c) => c.id === a.targetClauseId);
+			if (idx !== -1) return idx;
+		}
+		return a.targetOperativeIndex ?? -1;
+	}
+
 	// =====================================================
 	// Clause Votes (Phase 7 — participant view)
 	// =====================================================
@@ -781,6 +791,68 @@
 <svelte:head>
 	<title>{paper?.documentNumber ?? paper?.title ?? m.untitledPaper()} - MUNify CHASE</title>
 </svelte:head>
+
+{#snippet amendmentDetail(
+	amendment: {
+		type: string;
+		newContent?: unknown;
+		targetPosition?: number | null;
+	},
+	resolvedOpIdx: number
+)}
+	{#if amendment.type === 'ALTER_TEXT' && typeof amendment.newContent === 'string'}
+		{@const origClause = operativeClauses[resolvedOpIdx]}
+		<div class="bg-base-200/50 rounded px-2 py-1 text-sm">
+			<OperativeParagraphPreview
+				markup={amendment.newContent}
+				oldMarkup={origClause ? serializeClause(origClause) : undefined}
+				showDiff
+				showDiffToggle
+				operativeNumber={resolvedOpIdx + 1}
+				labels={getResolutionLabels()}
+			/>
+		</div>
+	{:else if amendment.type === 'DELETE'}
+		<div class="text-xs text-base-content/70 bg-base-200/50 rounded px-2 py-0.5">
+			<i class="fas fa-trash mr-1"></i>
+			{m.amendmentDelete()}
+			{#if resolvedOpIdx >= 0}
+				— <span class="font-mono">OP {resolvedOpIdx + 1}</span>
+			{/if}
+		</div>
+	{:else if amendment.type === 'ALTER_POSITION' && amendment.targetPosition != null}
+		<div class="text-xs text-base-content/70 bg-base-200/50 rounded px-2 py-0.5">
+			<i class="fas fa-arrows-up-down mr-1"></i>
+			{#if amendment.targetPosition === -1}
+				{m.insertAtBeginning()}
+			{:else}
+				{m.insertAfterPresentation({ index: String(amendment.targetPosition + 1) })}
+			{/if}
+		</div>
+	{:else if amendment.type === 'ADD' && amendment.newContent}
+		{@const addClause = markupToClause(amendment.newContent)}
+		<div class="text-xs text-base-content/70 bg-base-200/50 rounded px-2 py-0.5">
+			<div class="flex items-baseline gap-1.5">
+				<span class="whitespace-nowrap">
+					<i class="fas fa-plus mr-1"></i>
+					{#if amendment.targetPosition === -1}
+						{m.insertAtBeginning()}
+					{:else if amendment.targetPosition != null}
+						{m.insertAfterPresentation({ index: String(amendment.targetPosition + 1) })}
+					{/if}
+				</span>
+				{#if addClause}
+					<span class="italic truncate">
+						{getFirstTextContent(addClause).slice(0, 120)}{getFirstTextContent(addClause).length >
+						120
+							? '…'
+							: ''}
+					</span>
+				{/if}
+			</div>
+		</div>
+	{/if}
+{/snippet}
 
 {#if paper}
 	<div class="mx-auto flex max-w-4xl flex-col px-4">
@@ -1209,47 +1281,38 @@
 			<!-- My Amendments -->
 			{#if myAmendments.length > 0 || mySponsoredAmendments.length > 0}
 				<Fieldset legend={m.myAmendments()} faIcon="fas fa-file-pen">
-					<div class="flex flex-col gap-2">
+					<div class="flex flex-col gap-1.5">
 						{#each myAmendments as amendment (amendment.id)}
 							{@const sponsorCount = amendment.sponsors?.length ?? 0}
 							{@const isActive = amendment.id === activeAmendmentId}
+							{@const resolvedOpIdx = resolveOpIdx(amendment)}
 							<div
 								id="amendment-{amendment.id}"
-								class="card card-border bg-base-100 p-3 {isActive
-									? 'ring-2 ring-success bg-success/5'
+								class="card card-border bg-base-100 px-2 py-1.5 {isActive
+									? 'ring-1 ring-success bg-success/5'
 									: ''}"
 							>
-								<div class="flex flex-col gap-2">
-									<div class="flex items-center gap-2 flex-wrap">
-										<span class="badge badge-sm {getAmendmentTypeBadgeClass(amendment.type)}">
+								<div class="flex flex-col gap-1.5">
+									<div class="flex items-center gap-1.5 flex-wrap">
+										<span class="badge badge-xs {getAmendmentTypeBadgeClass(amendment.type)}">
 											{amendment.documentNumber ?? getAmendmentTypeLabel(amendment.type)}
 										</span>
-										<span class="badge badge-ghost badge-sm">
+										<span class="badge badge-ghost badge-xs">
 											{getAmendmentStatusLabel(amendment.status)}
 										</span>
-										{#if amendment.targetClauseId || amendment.targetOperativeIndex != null}
-											{@const resolvedOpIdx = amendment.targetClauseId
-												? operativeClauses.findIndex((c) => c.id === amendment.targetClauseId)
-												: (amendment.targetOperativeIndex ?? -1)}
-											{#if resolvedOpIdx >= 0}
-												<span class="badge badge-ghost badge-sm font-mono">
-													OP {resolvedOpIdx + 1}
-												</span>
-											{/if}
+										{#if resolvedOpIdx >= 0}
+											<span class="badge badge-ghost badge-xs font-mono">
+												OP {resolvedOpIdx + 1}
+											</span>
 										{/if}
 										{#if isActive}
-											<span class="badge badge-success badge-sm">{m.activeAmendment()}</span>
+											<span class="badge badge-xs badge-success">
+												<i class="fas fa-circle text-[0.5rem] animate-pulse"></i>
+												{m.activeAmendment()}
+											</span>
 										{/if}
-									</div>
-
-									<!-- Sponsor progress -->
-									<div class="flex items-center gap-2">
-										<progress
-											class="progress progress-primary w-full"
-											value={sponsorCount}
-											max={sponsorThresholdNeeded}
-										></progress>
-										<span class="text-xs whitespace-nowrap">
+										<span class="flex-1"></span>
+										<span class="text-xs whitespace-nowrap opacity-70">
 											{m.sponsorThreshold({
 												current: String(sponsorCount),
 												needed: String(sponsorThresholdNeeded),
@@ -1257,40 +1320,47 @@
 											})}
 										</span>
 									</div>
+
+									{@render amendmentDetail(amendment, resolvedOpIdx)}
+
+									<progress
+										class="progress progress-primary w-full h-1.5"
+										value={sponsorCount}
+										max={sponsorThresholdNeeded}
+									></progress>
 								</div>
 							</div>
 						{/each}
 
 						{#each mySponsoredAmendments as amendment (amendment.id)}
 							{@const isActive = amendment.id === activeAmendmentId}
+							{@const resolvedOpIdx = resolveOpIdx(amendment)}
 							<div
 								id="amendment-{amendment.id}"
-								class="card card-border bg-base-100 p-3 {isActive
-									? 'ring-2 ring-success bg-success/5'
+								class="card card-border bg-base-100 px-2 py-1.5 {isActive
+									? 'ring-1 ring-success bg-success/5'
 									: ''}"
 							>
-								<div class="flex items-center justify-between gap-2">
-									<div class="flex items-center gap-2 flex-wrap">
-										<span class="badge badge-sm {getAmendmentTypeBadgeClass(amendment.type)}">
+								<div class="flex flex-col gap-1.5">
+									<div class="flex items-center gap-1.5 flex-wrap">
+										<span class="badge badge-xs {getAmendmentTypeBadgeClass(amendment.type)}">
 											{amendment.documentNumber ?? getAmendmentTypeLabel(amendment.type)}
 										</span>
-										{#if amendment.targetClauseId || amendment.targetOperativeIndex != null}
-											{@const resolvedOpIdx = amendment.targetClauseId
-												? operativeClauses.findIndex((c) => c.id === amendment.targetClauseId)
-												: (amendment.targetOperativeIndex ?? -1)}
-											{#if resolvedOpIdx >= 0}
-												<span class="badge badge-ghost badge-sm font-mono">
-													OP {resolvedOpIdx + 1}
-												</span>
-											{/if}
+										{#if resolvedOpIdx >= 0}
+											<span class="badge badge-ghost badge-xs font-mono">
+												OP {resolvedOpIdx + 1}
+											</span>
 										{/if}
 										{#if isActive}
-											<span class="badge badge-success badge-sm">{m.activeAmendment()}</span>
+											<span class="badge badge-xs badge-success">
+												<i class="fas fa-circle text-[0.5rem] animate-pulse"></i>
+												{m.activeAmendment()}
+											</span>
 										{/if}
 										{#if amendment.proposer?.representation}
-											<div class="flex items-center gap-1 text-sm">
+											<div class="flex items-center gap-1 text-xs">
 												<Flag representation={amendment.proposer.representation} size="xs" />
-												<span class="text-xs">
+												<span>
 													{m.proposedBy({
 														name:
 															amendment.proposer.representation.name ??
@@ -1303,6 +1373,8 @@
 											</div>
 										{/if}
 									</div>
+
+									{@render amendmentDetail(amendment, resolvedOpIdx)}
 								</div>
 							</div>
 						{/each}
@@ -1321,39 +1393,45 @@
 			)}
 			{#if otherPendingAmendments.length > 0 && isDelegate && committee?.amendmentSponsoringOpen}
 				<Fieldset legend={m.amendments()} faIcon="fas fa-handshake">
-					<div class="flex flex-col gap-2">
+					<div class="flex flex-col gap-1.5">
 						{#each otherPendingAmendments as amendment (amendment.id)}
-							<div class="card card-border bg-base-100 p-3">
-								<div class="flex items-center justify-between gap-2">
-									<div class="flex items-center gap-2 flex-wrap">
-										<span class="badge badge-sm {getAmendmentTypeBadgeClass(amendment.type)}">
+							{@const resolvedOpIdx = resolveOpIdx(amendment)}
+							<div class="card card-border bg-base-100 px-2 py-1.5">
+								<div class="flex flex-col gap-1.5">
+									<div class="flex items-center gap-1.5 flex-wrap">
+										<span class="badge badge-xs {getAmendmentTypeBadgeClass(amendment.type)}">
 											{amendment.documentNumber ?? getAmendmentTypeLabel(amendment.type)}
 										</span>
-										{#if amendment.targetClauseId || amendment.targetOperativeIndex != null}
-											{@const resolvedOpIdx = amendment.targetClauseId
-												? operativeClauses.findIndex((c) => c.id === amendment.targetClauseId)
-												: (amendment.targetOperativeIndex ?? -1)}
-											{#if resolvedOpIdx >= 0}
-												<span class="badge badge-ghost badge-sm font-mono">
-													OP {resolvedOpIdx + 1}
-												</span>
-											{/if}
+										{#if resolvedOpIdx >= 0}
+											<span class="badge badge-ghost badge-xs font-mono">
+												OP {resolvedOpIdx + 1}
+											</span>
 										{/if}
 										{#if amendment.proposer?.representation}
-											<div class="flex items-center gap-1 text-sm">
+											<div class="flex items-center gap-1 text-xs">
 												<Flag representation={amendment.proposer.representation} size="xs" />
+												<span class="truncate max-w-[10rem]">
+													{amendment.proposer.representation.name ??
+														getTranslatedCountryNameFromAlpha3Code(
+															amendment.proposer.representation.alpha3Code
+														)}
+												</span>
 											</div>
 										{/if}
-										<span class="text-xs">
+										<span class="badge badge-xs badge-ghost">
+											<i class="fas fa-handshake text-[0.6rem]"></i>
 											{amendment.sponsors?.length ?? 0}/{sponsorThresholdNeeded}
 										</span>
+										<span class="flex-1"></span>
+										<button
+											class="btn btn-primary btn-xs"
+											onclick={() => handleSponsorAmendment(amendment.id)}
+										>
+											{m.sponsorAmendment()}
+										</button>
 									</div>
-									<button
-										class="btn btn-primary btn-xs"
-										onclick={() => handleSponsorAmendment(amendment.id)}
-									>
-										{m.sponsorAmendment()}
-									</button>
+
+									{@render amendmentDetail(amendment, resolvedOpIdx)}
 								</div>
 							</div>
 						{/each}

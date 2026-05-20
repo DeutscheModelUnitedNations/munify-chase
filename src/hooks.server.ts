@@ -6,6 +6,30 @@ import { sequence } from '@sveltejs/kit/hooks';
 import { OIDC } from '$api/services/OIDC';
 import { locales, baseLocale, cookieName, cookieMaxAge } from '$lib/paraglide/runtime';
 
+const TAURI_ORIGIN = 'tauri://localhost';
+
+/** Allow the Tauri desktop shell (origin tauri://localhost) to reach the API. */
+const tauriCors: Handle = async ({ event, resolve }) => {
+	const origin = event.request.headers.get('origin');
+	if (origin !== TAURI_ORIGIN) return resolve(event);
+
+	if (event.request.method === 'OPTIONS') {
+		return new Response(null, {
+			status: 204,
+			headers: {
+				'Access-Control-Allow-Origin': TAURI_ORIGIN,
+				'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+				'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+				'Access-Control-Max-Age': '86400'
+			}
+		});
+	}
+
+	const response = await resolve(event);
+	response.headers.set('Access-Control-Allow-Origin', TAURI_ORIGIN);
+	return response;
+};
+
 const nonBaseLocales = locales.filter((l) => l !== baseLocale);
 
 /** Redirect locale-prefixed URLs to bare paths, setting the cookie instead. */
@@ -28,14 +52,18 @@ const localeRedirect: Handle = ({ event, resolve }) => {
 	return resolve(event);
 };
 
-export const handle: Handle = sequence(OIDC.handle, localeRedirect, ({ event, resolve }) =>
-	paraglideMiddleware(event.request, ({ request: localizedRequest, locale }) => {
-		event.request = localizedRequest;
+export const handle: Handle = sequence(
+	OIDC.handle,
+	tauriCors,
+	localeRedirect,
+	({ event, resolve }) =>
+		paraglideMiddleware(event.request, ({ request: localizedRequest, locale }) => {
+			event.request = localizedRequest;
 
-		return resolve(event, {
-			transformPageChunk: ({ html }) => {
-				return html.replace('%lang%', locale);
-			}
-		});
-	})
+			return resolve(event, {
+				transformPageChunk: ({ html }) => {
+					return html.replace('%lang%', locale);
+				}
+			});
+		})
 );

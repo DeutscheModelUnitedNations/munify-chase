@@ -26,6 +26,7 @@ jobs:
           - os: macos-13
             bundles: dmg
 
+    environment: production
     runs-on: ${{ matrix.os }}
 
     steps:

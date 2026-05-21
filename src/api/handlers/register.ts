@@ -32,6 +32,6 @@ if (dev || building) {
 		apiUrl: '/api/graphql',
 		useExternalUrqlClient: '../client',
 		removeExisting: false,
-		autoIncludeIdField: true
+		autoIncludeIdField: false
 	});
 }

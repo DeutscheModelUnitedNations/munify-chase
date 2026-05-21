@@ -42,15 +42,15 @@
 
 <style>
 	.nsa-card {
-		width: 85mm;
-		height: 110mm;
-		padding: 4mm;
+		width: 55mm;
+		height: 85mm;
+		padding: 3mm;
 		border: 1px dashed #999;
-		border-radius: 2mm;
+		border-radius: 1.5mm;
 		display: flex;
 		flex-direction: column;
 		align-items: center;
-		gap: 2mm;
+		gap: 1.5mm;
 		background: white;
 		color: black;
 		font-family: 'Outfit', system-ui, sans-serif;
@@ -63,20 +63,20 @@
 	}
 
 	.conference-title {
-		font-size: 9pt;
+		font-size: 7pt;
 		opacity: 0.65;
 		line-height: 1.2;
 	}
 
 	.org-name {
-		font-size: 14pt;
+		font-size: 11pt;
 		font-weight: 700;
-		margin-top: 1mm;
+		margin-top: 0.5mm;
 		line-height: 1.15;
 	}
 
 	.user-email {
-		font-size: 9pt;
+		font-size: 7pt;
 		opacity: 0.85;
 		margin-top: 0.5mm;
 		word-break: break-all;
@@ -89,11 +89,11 @@
 		justify-content: center;
 		width: 100%;
 		min-height: 0;
-		padding: 2mm 0;
+		padding: 1.5mm 0;
 	}
 
 	.qr-wrapper :global(.qr-code) {
-		width: min(60mm, 100%);
+		width: min(40mm, 100%);
 		aspect-ratio: 1 / 1;
 	}
 
@@ -113,14 +113,14 @@
 
 	.code-value {
 		font-family: 'Roboto Mono', ui-monospace, monospace;
-		font-size: 16pt;
+		font-size: 13pt;
 		font-weight: 600;
 		letter-spacing: 0.15em;
 	}
 
 	.code-missing {
 		font-family: 'Roboto Mono', ui-monospace, monospace;
-		font-size: 16pt;
+		font-size: 13pt;
 		font-weight: 600;
 		opacity: 0.4;
 	}

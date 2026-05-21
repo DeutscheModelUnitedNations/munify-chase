@@ -28,7 +28,18 @@ abilityBuilder.nsaPresenceEvent.allow(['update', 'delete']).when((ctx) => ({
 	where: isAdminInConference(ctx)
 }));
 
-export const NsaPresenceEventRef = object({ table: 'nsaPresenceEvent' });
+export const NsaPresenceEventRef = object({
+	table: 'nsaPresenceEvent',
+	adjust: (t) => ({
+		// Override the auto-generated `conferenceUser` relation to be nullable:
+		// rumble derives non-null from `conferenceUserId.notNull`, but the relation
+		// is resolved through the conferenceUser read ability, which legitimately
+		// returns no row for non-admin chairs (e.g. a TEAM member running the
+		// scanner). Without this the read-back after recordNsaCheckIn/Out throws
+		// "Cannot return null for non-nullable field NsaPresenceEvent.conferenceUser".
+		conferenceUser: t.relation('conferenceUser', { nullable: true })
+	})
+});
 
 const pubsub = rumblePubsub({ table: 'nsaPresenceEvent' });
 query({ table: 'nsaPresenceEvent' });

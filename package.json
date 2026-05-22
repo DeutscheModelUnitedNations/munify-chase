@@ -82,7 +82,6 @@
 		"yjs": "^13.6.30",
 		"typescript-eslint": "^8.59.4",
 		"vite": "^8.0.13",
-		"typst": "^0.10.0-8",
 		"vite-plugin-mkcert": "^2.0.0",
 		"vitest": "^4.1.6",
 		"world-countries": "^5.1.0",
@@ -129,6 +128,7 @@
 		"drizzle-orm": "^1.0.0-beta.22",
 		"pg": "^8.21.0",
 		"polka": "^0.5.2",
+		"typst": "^0.10.0-8",
 		"ws": "^8.20.1"
 	}
 }

@@ -9,6 +9,7 @@
         "drizzle-orm": "^1.0.0-beta.22",
         "pg": "^8.21.0",
         "polka": "^0.5.2",
+        "typst": "^0.10.0-8",
         "ws": "^8.20.1",
       },
       "devDependencies": {
@@ -90,7 +91,6 @@
         "tailwindcss": "^4.3.0",
         "typescript": "^6.0.3",
         "typescript-eslint": "^8.59.4",
-        "typst": "^0.10.0-8",
         "vite": "^8.0.13",
         "vite-plugin-mkcert": "^2.0.0",
         "vitest": "^4.1.6",

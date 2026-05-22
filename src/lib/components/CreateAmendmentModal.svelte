@@ -453,8 +453,9 @@
 						{#if selectedType === 'ALTER_TEXT'}
 							<OperativeParagraphEditor
 								bind:markup
-								bind:oldMarkup
+								{oldMarkup}
 								bind:showDiff
+								editableOldMarkup={false}
 								operativeNumber={selectedSourceIndex + 1}
 								labels={getResolutionLabels()}
 							/>

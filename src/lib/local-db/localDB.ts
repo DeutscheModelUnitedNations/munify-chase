@@ -11,6 +11,14 @@ interface CommitteeSettings {
 	presentationResolutionFontSize: number;
 	displayRegionalGroups: boolean;
 	rollCall: number | null;
+	/**
+	 * Committee member IDs whose roll-call presence change is currently being
+	 * saved (mutation in flight, not yet confirmed by the server). Shared across
+	 * tabs so the presentation view can show a spinner instead of a misleading
+	 * absent/present icon while a delegation is still syncing. Not indexed, so no
+	 * Dexie schema/version change is required.
+	 */
+	rollCallPending: string[] | null;
 
 	showOfHandsVotingActive: boolean;
 	showOfHandsVotingStage: VotingStage | null;

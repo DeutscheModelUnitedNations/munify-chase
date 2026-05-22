@@ -24,9 +24,11 @@
 			icon: string;
 			color?: 'info' | 'success' | 'error';
 		}[];
+		/** Member IDs whose presence change is still saving — shown as a spinner. */
+		pendingIds?: string[];
 	}
 
-	let { currentIndex, members, height = '70vh', icons }: Props = $props();
+	let { currentIndex, members, height = '70vh', icons, pendingIds = [] }: Props = $props();
 
 	let containerRef: HTMLElement;
 	let listContainerRef: HTMLElement;
@@ -77,8 +79,9 @@
 			{#each members as member, index (member.id)}
 				{@const rep = member.representation}
 				{@const icon = icons?.find((x) => x.id === member.id)}
-				{@const present = member.present && index < currentIndex}
-				{@const notPresent = !member.present && index < currentIndex}
+				{@const pending = pendingIds.includes(member.id)}
+				{@const present = member.present && index < currentIndex && !pending}
+				{@const notPresent = !member.present && index < currentIndex && !pending}
 				<div
 					class="flex w-full flex-shrink-0 flex-row items-center gap-4 p-2 {currentIndex === index
 						? 'card-active'
@@ -93,14 +96,23 @@
 						{/if}
 					</h3>
 					<div class="relative w-12">
-						{#if icon && index < currentIndex}
+						{#if pending}
+							<span
+								class="loading loading-spinner loading-md text-info absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2"
+								transition:scale={{
+									duration: 500,
+									easing: cubicOut,
+									opacity: 0
+								}}
+							></span>
+						{:else if icon && index < currentIndex}
 							<i
 								class="fas fa-{icon.icon.replace(
 									'fa-',
 									''
 								)} absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-center text-2xl text-{icon.color}"
 								transition:scale={{
-									delay: 600,
+									delay: 200,
 									duration: 500,
 									easing: cubicOut,
 									opacity: 0
@@ -110,7 +122,7 @@
 							<i
 								class="fas fa-circle-xmark text-error absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-center text-3xl"
 								transition:scale={{
-									delay: 600,
+									delay: 200,
 									duration: 500,
 									easing: cubicOut,
 									opacity: 0
@@ -120,7 +132,7 @@
 							<i
 								class="fas fa-check fa-beatfade text-success absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-center text-3xl"
 								in:scale={{
-									delay: 600,
+									delay: 200,
 									duration: 500,
 									easing: cubicOut,
 									opacity: 0

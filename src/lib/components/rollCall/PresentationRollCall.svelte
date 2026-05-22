@@ -24,11 +24,12 @@
 
 	let committeeSettingsQuery = liveQuery(() => localDB.committeeSettings.get(committeeId));
 	let currentIndex = $derived($committeeSettingsQuery?.rollCall);
+	let pendingIds = $derived($committeeSettingsQuery?.rollCallPending ?? []);
 </script>
 
 <Modal open={!!currentIndex || currentIndex === 0}>
 	<h1 class="text-2xl font-bold">{m.rollCall()}</h1>
 	{#if currentIndex || currentIndex === 0}
-		<ScrollingCountryList {members} {currentIndex} />
+		<ScrollingCountryList {members} {currentIndex} {pendingIds} />
 	{/if}
 </Modal>

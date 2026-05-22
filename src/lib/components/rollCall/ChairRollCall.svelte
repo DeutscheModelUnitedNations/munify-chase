@@ -29,12 +29,35 @@
 
 	let currentIndex = $state(0);
 
-	const setPresence = async (present: boolean) => {
+	// IDs of members whose presence change is still saving. Mirrored into
+	// localDB so the presentation view shows a spinner instead of a misleading
+	// absent/present icon while the change is in flight.
+	let pendingIds = $state<string[]>([]);
+
+	const syncPending = () => {
+		localDB.committeeSettings.update(committeeId, {
+			rollCallPending: $state.snapshot(pendingIds)
+		});
+	};
+
+	const setPresence = (present: boolean) => {
 		const member = members[currentIndex];
-		if (member) {
-			await toast.promise(
+		if (!member) {
+			toast.error(m.rollCallError());
+			return;
+		}
+
+		const id = member.id;
+		pendingIds = [...pendingIds, id];
+		syncPending();
+
+		// Fire the mutation without blocking: advance immediately so the chair is
+		// not stuck on a slow connection. The member shows a spinner until the
+		// server confirms; on failure the toast reports it and the spinner clears.
+		toast
+			.promise(
 				client.mutate.setPresenceForCommitteeMembers({
-					__args: { ids: [member.id], present },
+					__args: { ids: [id], present },
 					id: true,
 					present: true
 				}),
@@ -43,16 +66,18 @@
 					duration: 1000,
 					position: 'top-right'
 				}
-			);
+			)
+			.finally(() => {
+				pendingIds = pendingIds.filter((x) => x !== id);
+				syncPending();
+			})
+			.catch(() => {});
 
-			if (currentIndex === members.length - 1) {
-				toast.success(m.rollCallSuccess());
-				active = false;
-			}
-			currentIndex = (currentIndex + 1) % members.length;
-		} else {
-			toast.error(m.rollCallError());
+		if (currentIndex === members.length - 1) {
+			toast.success(m.rollCallSuccess());
+			active = false;
 		}
+		currentIndex = (currentIndex + 1) % members.length;
 	};
 
 	$effect(() => {
@@ -89,8 +114,10 @@
 			});
 		} else if (!active) {
 			currentIndex = 0;
+			pendingIds = [];
 			localDB.committeeSettings.update(committeeId, {
-				rollCall: null
+				rollCall: null,
+				rollCallPending: []
 			});
 		}
 	});
@@ -98,7 +125,7 @@
 
 <Modal bind:open={active}>
 	<h1 class="mb-4 text-2xl font-bold">{m.rollCall()}</h1>
-	<ScrollingCountryList {members} {currentIndex} />
+	<ScrollingCountryList {members} {currentIndex} {pendingIds} />
 
 	<div class="modal-action justify-around">
 		<button

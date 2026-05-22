@@ -4,7 +4,6 @@
 	import Kbd from '$lib/components/Kbd.svelte';
 	import { m } from '$lib/paraglide/messages';
 	import { getServerTime } from '$lib/state/serverTime.svelte';
-	import dayjs from 'dayjs';
 	import hotkeys from 'hotkeys-js';
 	import { onMount } from 'svelte';
 	import toast from 'svelte-french-toast';
@@ -67,9 +66,6 @@
 			.updateSpeakersList({
 				__args: {
 					id: speakersList.id,
-					timeLeft:
-						dayjs(speakersList.startTimestamp).diff(getServerTime(), 'seconds') +
-						speakersList.timeLeft,
 					stopTimer: true
 				},
 				id: true,

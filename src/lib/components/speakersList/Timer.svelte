@@ -15,7 +15,7 @@
 
 	let calculatedTimeLeft = $derived.by(() => {
 		if (startTimestamp && timeLeft !== null && timeLeft !== undefined) {
-			return dayjs(startTimestamp).diff(getServerTime(), 'seconds') + timeLeft;
+			return Math.round(dayjs(startTimestamp).diff(getServerTime()) / 1000) + timeLeft;
 		}
 		if (timeLeft !== null && timeLeft !== undefined) {
 			return timeLeft;

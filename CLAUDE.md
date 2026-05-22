@@ -82,6 +82,15 @@ OIDC-only authentication (no built-in auth). Local development uses mock OIDC se
 - `PUBLIC_OIDC_CLIENT_ID`: Application client ID
 - `ADMIN_EMAIL_WHITELIST` / `ADMIN_DOMAIN_WHITELIST`: Admin access control
 
+## Pull Requests
+
+The `PR Lint` workflow (`.github/workflows/pr-lint.yml`) fails any PR that doesn't meet both rules below, so apply them when opening a PR:
+
+- **Label**: the PR must carry at least one `PR:` tag label — one of `PR: Feature`, `PR: Enhancement`, `PR: Bug`, `PR: Performance`, `PR: Refactor`, `PR: Infrastructure`, `PR: Tests`, `documentation`, or `dependencies`.
+- **Title**: conventional commit format `type: description` or `type (scope): description`. Allowed types: `feat`, `fix`, `style`, `refactor`, `perf`, `docs`, `test`, `chore`, `build`, `ci`, `deps` (e.g. `feat (Frontend): add login modal`).
+
+When opening a PR with `gh`, set the label via `gh pr create --label "PR: Feature"` (or add it afterward with `gh pr edit --add-label`).
+
 ## Development Setup
 
 Requirements: Docker, Bun, Node.js

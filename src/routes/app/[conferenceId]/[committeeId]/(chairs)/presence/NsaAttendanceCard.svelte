@@ -82,12 +82,17 @@
 						{:else}
 							<i class="fas fa-user-tag text-xl"></i>
 						{/if}
-						<h3 class="flex-1 text-lg">
-							{event.conferenceUser?.name ??
-								rep?.name ??
-								event.conferenceUser?.userEmail ??
-								m.unknown()}
-						</h3>
+						<div class="flex flex-1 flex-col">
+							<h3 class="text-lg">
+								{event.conferenceUser?.name ??
+									rep?.name ??
+									event.conferenceUser?.userEmail ??
+									m.unknown()}
+							</h3>
+							{#if rep?.name && event.conferenceUser?.name}
+								<span class="text-base-content/60 text-sm">{rep.name}</span>
+							{/if}
+						</div>
 						<span class="text-base-content/60 text-sm">
 							{m.checkedInSince({ time: formatSince(event.timestamp) })}
 						</span>

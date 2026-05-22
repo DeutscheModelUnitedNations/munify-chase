@@ -9,7 +9,6 @@
 		ResolutionEditor,
 		OperativeParagraphPreview,
 		calculateAmendmentDiffSize,
-		getFirstTextContent,
 		type ResolutionStore,
 		type PresenceAdapter,
 		type Resolution,
@@ -577,7 +576,14 @@
 	// Amendments (Phase 6c)
 	// =====================================================
 
-	let submittedAmendments = $derived((allAmendments ?? []).filter((a) => a.status === 'SUBMITTED'));
+	// Decided amendments still appear in the chair queue (as history) but are
+	// rendered without action buttons. REJECTED / WITHDRAWN amendments are not
+	// shown at all.
+	let queueAmendments = $derived(
+		(allAmendments ?? []).filter(
+			(a) => a.status === 'SUBMITTED' || a.status === 'ACCEPTED' || a.status === 'CONSENSUS_ADOPTED'
+		)
+	);
 
 	let currentOpIndex = $derived.by(() => {
 		const clauseId = committee?.currentOperativeClauseId;
@@ -603,7 +609,9 @@
 		return a.targetOperativeIndex ?? -1;
 	}
 
-	// GO-ordered: current paragraph first → DELETE > ALTER_TEXT (diff size desc) > ADD > ALTER_POSITION → then by createdAt
+	// GO-ordered: SUBMITTED first; among SUBMITTED current paragraph first →
+	// DELETE > ALTER_TEXT (diff size desc) > ADD > ALTER_POSITION → then by createdAt.
+	// Decided amendments (ACCEPTED / CONSENSUS_ADOPTED) sink to the bottom.
 	let sortedSubmittedAmendments = $derived.by(() => {
 		const typeOrder: Record<string, number> = {
 			DELETE: 0,
@@ -611,7 +619,13 @@
 			ADD: 2,
 			ALTER_POSITION: 3
 		};
-		return [...submittedAmendments].sort((a, b) => {
+		return [...queueAmendments].sort((a, b) => {
+			// Decided amendments at the bottom
+			const aDecided = a.status !== 'SUBMITTED';
+			const bDecided = b.status !== 'SUBMITTED';
+			if (aDecided && !bDecided) return 1;
+			if (!aDecided && bDecided) return -1;
+
 			// Current paragraph first
 			const aIsCurrent = resolveAmendmentIndex(a) === currentOpIndex;
 			const bIsCurrent = resolveAmendmentIndex(b) === currentOpIndex;
@@ -724,11 +738,11 @@
 		toast.success(m.sponsorRemoved());
 	}
 
-	// Transform server amendments → AmendmentOverlay[] for editor rendering
+	// Transform server amendments → AmendmentOverlay[] for editor rendering.
+	// Only SUBMITTED amendments render inline; ACCEPTED/CONSENSUS_ADOPTED are
+	// applied to the document itself, REJECTED/WITHDRAWN are gone.
 	let amendmentOverlays = $derived.by(() => {
-		const visible = (allAmendments ?? []).filter(
-			(a) => a.status === 'SUBMITTED' || a.status === 'CONSENSUS_ADOPTED' || a.status === 'ACCEPTED'
-		);
+		const visible = (allAmendments ?? []).filter((a) => a.status === 'SUBMITTED');
 		return visible.map(
 			(a) =>
 				({
@@ -753,6 +767,7 @@
 
 	let showAdoptConfirmModal = $state(false);
 	let showRejectConfirmModal = $state(false);
+	let showWithdrawConfirmModal = $state(false);
 	let confirmAmendmentId = $state<string | null>(null);
 	let showVoteOutcomeModal = $state(false);
 	let voteOutcomeAmendmentId = $state<string | null>(null);
@@ -875,6 +890,8 @@
 		try {
 			await client.mutate.withdrawAmendment({ __args: { amendmentId }, id: true });
 			toast.success(m.amendmentWithdrawnToast());
+			showWithdrawConfirmModal = false;
+			confirmAmendmentId = null;
 			await client.mutate.updateCommittee({
 				__args: { id: committee.id, clearActiveAmendment: true },
 				id: true
@@ -930,15 +947,15 @@
 	function getAmendmentTypeBadgeClass(type: string) {
 		switch (type) {
 			case 'DELETE':
-				return 'badge-error';
+				return 'status-error';
 			case 'ADD':
-				return 'badge-success';
+				return 'status-success';
 			case 'ALTER_TEXT':
-				return 'badge-warning';
+				return 'status-warning';
 			case 'ALTER_POSITION':
-				return 'badge-info';
+				return 'status-info';
 			default:
-				return 'badge-ghost';
+				return 'status-primary';
 		}
 	}
 
@@ -1606,37 +1623,46 @@
 				{#if sortedSubmittedAmendments.length === 0}
 					<p class="text-base-content/50 text-sm">{m.noAmendments()}</p>
 				{:else}
-					<div class="flex flex-col gap-3">
+					<div class="flex flex-col gap-2">
 						{#each groupedAmendments as group (group.label)}
 							<div>
 								<h4
-									class="text-sm font-bold mb-1 {group.index === currentOpIndex
+									class="text-xs font-bold uppercase tracking-wide mb-1 {group.index ===
+									currentOpIndex
 										? 'text-primary'
-										: 'opacity-70'}"
+										: 'opacity-60'}"
 								>
 									{group.label}
 								</h4>
-								<div class="flex flex-col gap-2">
+								<div class="flex flex-col gap-1.5">
 									{#each group.amendments as amendment (amendment.id)}
 										{@const isActive = amendment.id === activeAmendmentId}
 										{@const sponsorCount = amendment.sponsors?.length ?? 0}
 										{@const thresholdMet = sponsorCount >= sponsorThresholdNeeded}
+										{@const isDecided = amendment.status !== 'SUBMITTED'}
 										<div
 											id="amendment-{amendment.id}"
-											class="card card-border bg-base-100 p-3 transition-all {group.index ===
-											currentOpIndex
-												? 'border-primary border-2'
-												: ''} {isActive ? 'ring-2 ring-success bg-success/5' : ''}"
+											class="card card-border bg-base-100 px-2 py-1.5 transition-all {group.index ===
+												currentOpIndex && !isDecided
+												? 'border-primary'
+												: ''} {isActive ? 'ring-1 ring-success bg-success/5' : ''} {isDecided
+												? 'opacity-60'
+												: ''}"
 										>
-											<div class="flex flex-col gap-2">
-												<div class="flex items-center gap-2 flex-wrap">
-													<span class="badge badge-sm {getAmendmentTypeBadgeClass(amendment.type)}">
-														{amendment.documentNumber ?? getAmendmentTypeLabel(amendment.type)}
-													</span>
+											<div class="flex flex-col gap-1.5">
+												<!-- Header row: identity + sponsor count + actions -->
+												<div class="font-mono text-lg font-bold flex items-center gap-2">
+													<span
+														class="status status-lg {getAmendmentTypeBadgeClass(amendment.type)}"
+													></span>
+													{amendment.documentNumber ?? getAmendmentTypeLabel(amendment.type)}
+												</div>
+
+												<div class="flex items-center gap-1.5 flex-wrap">
 													{#if amendment.proposer?.representation}
-														<div class="flex items-center gap-1 text-sm">
+														<div class="flex items-center gap-1 text-xs">
 															<Flag representation={amendment.proposer.representation} size="xs" />
-															<span>
+															<span class="truncate max-w-[10rem]">
 																{amendment.proposer.representation.name ??
 																	getTranslatedCountryNameFromAlpha3Code(
 																		amendment.proposer.representation.alpha3Code
@@ -1644,25 +1670,107 @@
 															</span>
 														</div>
 													{/if}
-													<span
-														class="badge badge-xs {thresholdMet
-															? 'badge-success'
-															: 'badge-warning'}"
-													>
-														{sponsorCount}/{sponsorThresholdNeeded}
-													</span>
+													{#if isDecided}
+														<span class="badge badge-xs badge-success">
+															<i class="fas fa-check text-[0.6rem]"></i>
+															{amendment.status === 'CONSENSUS_ADOPTED'
+																? m.amendmentConsensusAdopted()
+																: m.amendmentAccepted()}
+														</span>
+													{:else}
+														<span
+															class="badge badge-xs {thresholdMet
+																? 'badge-success'
+																: 'badge-warning'}"
+															title={m.sponsorThreshold({
+																current: String(sponsorCount),
+																needed: String(sponsorThresholdNeeded),
+																percent: '10'
+															})}
+														>
+															<i class="fas fa-handshake text-[0.6rem]"></i>
+															{sponsorCount}/{sponsorThresholdNeeded}
+														</span>
+													{/if}
 													{#if isActive}
-														<span class="badge badge-success badge-sm">{m.activeAmendment()}</span>
+														<span class="badge badge-xs badge-success">
+															<i class="fas fa-circle text-[0.5rem] animate-pulse"></i>
+															{m.activeAmendment()}
+														</span>
+													{/if}
+													<span class="flex-1"></span>
+													{#if !isDecided}
+														<div class="join">
+															<button
+																class="btn btn-sm join-item {isActive ? 'btn-soft' : 'btn-success'}"
+																title={m.setActiveAmendment()}
+																aria-label={m.setActiveAmendment()}
+																onclick={() =>
+																	handleSetActiveAmendment(isActive ? null : amendment.id)}
+															>
+																<i class="fas {isActive ? 'fa-stop' : 'fa-play'}"></i>
+															</button>
+															<button
+																class="btn btn-sm btn-primary join-item"
+																title={m.startVote()}
+																aria-label={m.startVote()}
+																onclick={() => handleAmendmentVote(amendment)}
+															>
+																<i class="fas fa-box-ballot"></i>
+															</button>
+															<button
+																class="btn btn-sm btn-soft btn-success join-item"
+																title={m.adoptByConsensus()}
+																aria-label={m.adoptByConsensus()}
+																onclick={() => {
+																	confirmAmendmentId = amendment.id;
+																	showAdoptConfirmModal = true;
+																}}
+															>
+																<i class="fas fa-check"></i>
+															</button>
+															<button
+																class="btn btn-sm btn-soft btn-error join-item"
+																title={m.amendmentRejected()}
+																aria-label={m.amendmentRejected()}
+																onclick={() => {
+																	confirmAmendmentId = amendment.id;
+																	showRejectConfirmModal = true;
+																}}
+															>
+																<i class="fas fa-times"></i>
+															</button>
+															<button
+																class="btn btn-sm btn-soft join-item"
+																title={m.edit()}
+																aria-label={m.edit()}
+																onclick={() => openEditAmendment(amendment)}
+															>
+																<i class="fas fa-pen"></i>
+															</button>
+															<button
+																class="btn btn-sm btn-soft join-item"
+																title={m.withdrawAmendment()}
+																aria-label={m.withdrawAmendment()}
+																onclick={() => {
+																	confirmAmendmentId = amendment.id;
+																	showWithdrawConfirmModal = true;
+																}}
+															>
+																<i class="fas fa-trash"></i>
+															</button>
+														</div>
 													{/if}
 												</div>
 
 												<!-- Amendment detail preview -->
 												{#if amendment.type === 'ALTER_TEXT' && typeof amendment.newContent === 'string'}
 													{@const origClause = operativeClauses[resolveAmendmentIndex(amendment)]}
-													<div class="bg-base-200/50 rounded px-2 py-1">
+													<div class="bg-white rounded px-2 py-1 text-sm">
 														<OperativeParagraphPreview
 															markup={amendment.newContent}
 															oldMarkup={origClause ? serializeClause(origClause) : undefined}
+															showDiff
 															showDiffToggle
 															operativeNumber={resolveAmendmentIndex(amendment) + 1}
 															labels={getResolutionLabels()}
@@ -1670,9 +1778,9 @@
 													</div>
 												{:else if amendment.type === 'ALTER_POSITION' && amendment.targetPosition != null}
 													<div
-														class="text-xs text-base-content/70 bg-base-200/50 rounded px-2 py-1"
+														class="text-xs text-base-content/70 bg-base-200/50 rounded px-2 py-0.5"
 													>
-														<i class="fas fa-arrow-right mr-1"></i>
+														<i class="fas fa-arrows-up-down mr-1"></i>
 														{#if amendment.targetPosition === -1}
 															{m.insertAtBeginning()}
 														{:else}
@@ -1681,126 +1789,73 @@
 															})}
 														{/if}
 													</div>
-												{:else if amendment.type === 'ADD' && amendment.newContent}
-													{@const addClause = markupToClause(amendment.newContent)}
+												{:else if amendment.type === 'ADD' && typeof amendment.newContent === 'string'}
 													<div
-														class="text-xs text-base-content/70 bg-base-200/50 rounded px-2 py-1"
+														class="text-xs text-base-content/70 bg-base-200/50 rounded px-2 py-0.5"
 													>
-														<div class="flex flex-col gap-0.5">
-															<span>
-																<i class="fas fa-arrow-right mr-1"></i>
-																{#if amendment.targetPosition === -1}
-																	{m.insertAtBeginning()}
-																{:else if amendment.targetPosition != null}
-																	{m.insertAfterPresentation({
-																		index: String(amendment.targetPosition + 1)
-																	})}
-																{/if}
-															</span>
-															{#if addClause}
-																<span class="italic">
-																	{getFirstTextContent(addClause).slice(
-																		0,
-																		120
-																	)}{getFirstTextContent(addClause).length > 120 ? '…' : ''}
-																</span>
-															{/if}
-														</div>
+														<i class="fas fa-plus mr-1"></i>
+														{#if amendment.targetPosition === -1}
+															{m.insertAtBeginning()}
+														{:else if amendment.targetPosition != null}
+															{m.insertAfterPresentation({
+																index: String(amendment.targetPosition + 1)
+															})}
+														{/if}
+													</div>
+													<div class="bg-white rounded px-2 pt-2 text-sm">
+														<OperativeParagraphPreview
+															markup={amendment.newContent}
+															operativeNumber={(amendment.targetPosition ?? -1) + 2}
+															labels={getResolutionLabels()}
+														/>
 													</div>
 												{/if}
 
-												<!-- Sponsors -->
-												<div class="flex items-center gap-1 flex-wrap">
-													{#each amendment.sponsors ?? [] as sponsor (sponsor.id)}
-														<div
-															class="group relative tooltip tooltip-bottom"
-															data-tip={getRepresentationName(
-																sponsor.committeeMember?.representation
-															)}
-														>
-															<Flag
-																representation={sponsor.committeeMember?.representation}
-																size="xs"
-															/>
-															<button
-																class="absolute -top-1 -right-1 btn btn-circle btn-xs btn-error opacity-0 group-hover:opacity-100 transition-opacity"
-																aria-label={m.removeSponsor()}
-																onclick={() =>
-																	handleRemoveAmendmentSponsor(
-																		amendment.id,
-																		sponsor.committeeMemberId
-																	)}
+												<!-- Sponsors row (compact, inline flags) -->
+												{#if (amendment.sponsors?.length ?? 0) > 0 || !isDecided}
+													<div class="flex items-center gap-1 flex-wrap">
+														{#each amendment.sponsors ?? [] as sponsor (sponsor.id)}
+															<div
+																class="group relative tooltip tooltip-bottom"
+																data-tip={getRepresentationName(
+																	sponsor.committeeMember?.representation
+																)}
 															>
-																<i class="fas fa-times text-[0.5rem]"></i>
+																<Flag
+																	representation={sponsor.committeeMember?.representation}
+																	size="xs"
+																/>
+																{#if !isDecided}
+																	<button
+																		class="absolute -top-1 -right-1 btn btn-circle btn-xs btn-error opacity-0 group-hover:opacity-100 transition-opacity"
+																		aria-label={m.removeSponsor()}
+																		onclick={() =>
+																			handleRemoveAmendmentSponsor(
+																				amendment.id,
+																				sponsor.committeeMemberId
+																			)}
+																	>
+																		<i class="fas fa-times text-[0.5rem]"></i>
+																	</button>
+																{/if}
+															</div>
+														{/each}
+														{#if !isDecided}
+															<button
+																class="btn btn-ghost btn-xs"
+																aria-label={m.addSponsor()}
+																title={m.addSponsor()}
+																onclick={() => {
+																	amendmentSponsorTargetId = amendment.id;
+																	amendmentSponsorSearchQuery = '';
+																	showAmendmentSponsorModal = true;
+																}}
+															>
+																<i class="fas fa-plus"></i>
 															</button>
-														</div>
-													{/each}
-													<button
-														class="btn btn-ghost btn-xs"
-														aria-label={m.addSponsor()}
-														onclick={() => {
-															amendmentSponsorTargetId = amendment.id;
-															amendmentSponsorSearchQuery = '';
-															showAmendmentSponsorModal = true;
-														}}
-													>
-														<i class="fas fa-plus"></i>
-													</button>
-												</div>
-
-												<!-- Actions: two rows -->
-												<div class="flex flex-col gap-1">
-													<div class="flex items-center gap-1 justify-end">
-														<button
-															class="btn btn-xs {isActive ? 'btn-ghost' : 'btn-success'}"
-															onclick={() =>
-																handleSetActiveAmendment(isActive ? null : amendment.id)}
-														>
-															<i class="fas {isActive ? 'fa-stop' : 'fa-play'}"></i>
-															{#if !isActive}{m.setActiveAmendment()}{/if}
-														</button>
-														<button
-															class="btn btn-primary btn-xs"
-															onclick={() => handleAmendmentVote(amendment)}
-														>
-															<i class="fas fa-box-ballot"></i>
-															{m.startVote()}
-														</button>
+														{/if}
 													</div>
-													<div class="flex items-center gap-1 justify-end">
-														<button
-															class="btn btn-soft btn-success btn-xs"
-															onclick={() => {
-																confirmAmendmentId = amendment.id;
-																showAdoptConfirmModal = true;
-															}}
-														>
-															{m.adoptByConsensus()}
-														</button>
-														<button
-															class="btn btn-soft btn-error btn-xs"
-															onclick={() => {
-																confirmAmendmentId = amendment.id;
-																showRejectConfirmModal = true;
-															}}
-														>
-															{m.amendmentRejected()}
-														</button>
-														<button
-															class="btn btn-soft btn-xs"
-															onclick={() => openEditAmendment(amendment)}
-														>
-															<i class="fas fa-pen"></i>
-															{m.edit()}
-														</button>
-														<button
-															class="btn btn-ghost btn-xs"
-															onclick={() => handleWithdrawAmendment(amendment.id)}
-														>
-															{m.withdrawAmendment()}
-														</button>
-													</div>
-												</div>
+												{/if}
 											</div>
 										</div>
 									{/each}
@@ -2157,6 +2212,31 @@
 				<button
 					class="btn btn-error btn-sm"
 					onclick={() => confirmAmendmentId && handleRejectAmendment(confirmAmendmentId)}
+				>
+					{m.yes()}
+				</button>
+			</div>
+		</div>
+	</Modal>
+
+	<!-- Withdraw confirmation modal -->
+	<Modal bind:open={showWithdrawConfirmModal}>
+		<div class="flex flex-col gap-4 p-4">
+			<h3 class="text-lg font-bold">{m.withdrawAmendment()}</h3>
+			<p>{m.confirmWithdrawAmendment()}</p>
+			<div class="flex justify-end gap-2">
+				<button
+					class="btn btn-ghost btn-sm"
+					onclick={() => {
+						showWithdrawConfirmModal = false;
+						confirmAmendmentId = null;
+					}}
+				>
+					{m.abort()}
+				</button>
+				<button
+					class="btn btn-error btn-sm"
+					onclick={() => confirmAmendmentId && handleWithdrawAmendment(confirmAmendmentId)}
 				>
 					{m.yes()}
 				</button>

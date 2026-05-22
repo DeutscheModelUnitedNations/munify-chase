@@ -188,6 +188,7 @@
 	"confirmStartAmendmentPhase": "Änderungsantragsphase für diesen Resolutionsentwurf starten? Delegierte können dann absatzweise Änderungsanträge stellen.",
 	"confirmStartVotingPhase": "Die Abstimmungsphase für diese Beschlussvorlage starten? Jeder operative Absatz wird einzeln abgestimmt.",
 	"confirmSubmitPaper": "Möchtest du dieses Papier wirklich an den Vorsitz einreichen? Du kannst es danach nicht mehr bearbeiten.",
+	"confirmWithdrawAmendment": "Diesen Änderungsantrag zurückziehen? Dies kann nicht rückgängig gemacht werden.",
 	"connecting": "Verbindung wird hergestellt…",
 	"copy": "Kopieren",
 	"copyCode": "Kopieren",

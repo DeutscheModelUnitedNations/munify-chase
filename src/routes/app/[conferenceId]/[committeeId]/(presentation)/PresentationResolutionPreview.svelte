@@ -259,30 +259,46 @@
 	{:else if (dr.status === 'AMENDMENT_PHASE' || dr.status === 'VOTING_PHASE') && resolution}
 		{#if activeAmendment && dr.status === 'AMENDMENT_PHASE'}
 			<!-- Active amendment display -->
-			<div class="flex flex-col gap-4 h-full">
-				<div class="flex items-center gap-3">
-					<span class="badge badge-lg {getAmendmentTypeBadge(activeAmendment.type)}">
-						{activeAmendment.documentNumber ?? getAmendmentTypeLabel(activeAmendment.type)}
-					</span>
-					<span class="text-lg font-semibold">{m.proposedAmendmentPresentation()}</span>
-					{#if activeAmendment.proposer?.representation}
-						<div class="flex items-center gap-1 ml-auto">
-							<Flag representation={activeAmendment.proposer.representation} size="sm" />
-							<span>{getProposerName(activeAmendment.proposer)}</span>
+			<div class="flex flex-col gap-5 h-full">
+				<div class="flex flex-col gap-3 pb-3 border-b-2 border-base-300">
+					<div class="flex items-center gap-3 flex-wrap">
+						<div class="flex flex-col">
+							<span class="badge badge-lg {getAmendmentTypeBadge(activeAmendment.type)} font-bold">
+								{getAmendmentTypeLabel(activeAmendment.type)}
+							</span>
+							{#if activeAmendment.documentNumber}
+								<span class="font-mono text-base-content/60 text-lg">
+									{activeAmendment.documentNumber}
+								</span>
+							{/if}
 						</div>
-					{/if}
+						<span class="text-2xl font-semibold flex-1 text-center"
+							>{m.proposedAmendmentPresentation()}</span
+						>
+						{#if activeAmendment.proposer?.representation}
+							<div
+								class="flex items-center gap-2 ml-auto bg-base-200 rounded-box pl-1 pr-3 py-1 text-base"
+							>
+								<Flag representation={activeAmendment.proposer.representation} size="sm" />
+								<span class="font-medium">{getProposerName(activeAmendment.proposer)}</span>
+							</div>
+						{/if}
+					</div>
 				</div>
 
 				{#if activeAmendment.type === 'DELETE' && resolvedActiveAmendIdx >= 0}
 					<!-- DELETE: show clause with strikethrough -->
 					{@const targetClause = resolution.operative[resolvedActiveAmendIdx]}
-					<div class="text-center text-base-content/60 text-sm mb-2">
-						{m.operativeClausePresentation()}
-						{resolvedActiveAmendIdx + 1}
+					<div class="flex items-center justify-center gap-2 text-error">
+						<i class="fas fa-trash-can text-lg"></i>
+						<span class="text-lg font-semibold">
+							{m.operativeClausePresentation()}
+							{resolvedActiveAmendIdx + 1}
+						</span>
 					</div>
 					{#if targetClause}
 						<div
-							class="flex-1 overflow-auto p-4 rounded-lg bg-error/5 border-2 border-error/30 line-through decoration-error decoration-4 opacity-60"
+							class="flex-1 overflow-auto p-4 rounded-lg bg-white border-2 border-error/30 border-l-4 border-l-error line-through decoration-error decoration-4 opacity-70"
 						>
 							<ResolutionPreview
 								resolution={singleClauseResolution(targetClause)}
@@ -295,18 +311,22 @@
 				{:else if activeAmendment.type === 'ALTER_TEXT' && resolvedActiveAmendIdx >= 0}
 					<!-- ALTER_TEXT: word-level diff against the current clause -->
 					{@const targetClause = resolution.operative[resolvedActiveAmendIdx]}
-					<div class="text-center text-base-content/60 text-sm mb-2">
-						{m.operativeClausePresentation()}
-						{resolvedActiveAmendIdx + 1}
+					<div class="flex items-center justify-center gap-2 text-warning">
+						<i class="fas fa-pen-to-square text-lg"></i>
+						<span class="text-lg font-semibold">
+							{m.operativeClausePresentation()}
+							{resolvedActiveAmendIdx + 1}
+						</span>
 					</div>
 					<div class="flex-1 overflow-auto p-4">
 						{#if typeof activeAmendment.newContent === 'string'}
-							<div class="rounded-lg border-2 border-base-300 p-4">
+							<div
+								class="rounded-lg border-2 border-warning/30 border-l-4 border-l-warning bg-white p-4 pt-6"
+							>
 								<OperativeParagraphPreview
 									markup={activeAmendment.newContent}
 									oldMarkup={targetClause ? serializeClause(targetClause) : undefined}
 									showDiff
-									showDiffToggle
 									operativeNumber={resolvedActiveAmendIdx + 1}
 									labels={getResolutionLabels()}
 								/>
@@ -315,13 +335,16 @@
 					</div>
 				{:else if activeAmendment.type === 'ADD'}
 					<!-- ADD: show the new clause content -->
-					<div class="text-center text-base-content/60 text-sm mb-2">
-						{m.insertAfterPresentation({ index: (activeAmendment.targetPosition ?? 0) + 1 })}
+					<div class="flex items-center justify-center gap-2 text-success">
+						<i class="fas fa-plus text-lg"></i>
+						<span class="text-lg font-semibold">
+							{m.insertAfterPresentation({ index: (activeAmendment.targetPosition ?? 0) + 1 })}
+						</span>
 					</div>
 					<div class="flex-1 overflow-auto p-4">
 						{#if typeof activeAmendment.newContent === 'string'}
 							<div
-								class="rounded-lg bg-success/5 border-2 border-success/30 border-l-4 border-l-success p-4"
+								class="rounded-lg bg-white border-2 border-success/30 border-l-4 border-l-success p-4 pt-6"
 							>
 								<OperativeParagraphPreview
 									markup={activeAmendment.newContent}
@@ -334,9 +357,18 @@
 				{:else if activeAmendment.type === 'ALTER_POSITION' && resolvedActiveAmendIdx >= 0}
 					<!-- ALTER_POSITION: show move action -->
 					{@const targetClause = resolution.operative[resolvedActiveAmendIdx]}
-					<div class="flex-1 flex flex-col items-center justify-center gap-4 p-8 overflow-auto">
+					<div class="flex-1 flex flex-col items-center justify-center gap-6 p-4 overflow-auto">
+						<div class="flex items-center gap-2 text-info">
+							<i class="fas fa-arrows-up-down text-lg"></i>
+							<span class="text-lg font-semibold">
+								{m.operativeClausePresentation()}
+								{resolvedActiveAmendIdx + 1}
+							</span>
+						</div>
 						{#if targetClause}
-							<div class="w-full rounded-lg bg-info/5 border-2 border-info/30 p-4">
+							<div
+								class="w-full rounded-lg bg-white border-2 border-info/30 border-l-4 border-l-info p-4"
+							>
 								<ResolutionPreview
 									resolution={singleClauseResolution(targetClause)}
 									labels={getResolutionLabels()}
@@ -345,9 +377,9 @@
 								</ResolutionPreview>
 							</div>
 						{/if}
-						<div class="flex items-center gap-2 text-info">
-							<i class="fas fa-arrow-right text-2xl"></i>
-							<span class="text-lg font-semibold">
+						<div class="flex items-center gap-3 text-info bg-info/10 rounded-full px-5 py-2">
+							<i class="fas fa-arrow-down text-2xl"></i>
+							<span class="text-xl font-semibold">
 								{m.moveToPositionPresentation({
 									position: (activeAmendment.targetPosition ?? 0) + 1
 								})}
@@ -359,36 +391,26 @@
 		{:else}
 			<!-- Single operative clause view (amendment phase without active amendment, or voting phase) -->
 			<div class="flex flex-col h-full">
-				<div class="flex items-center justify-between mb-4">
-					<div class="text-lg font-semibold">
-						{dr.documentNumber ?? m.draftResolution()}
-					</div>
-					<div class="badge badge-lg badge-primary">
-						{dr.status === 'VOTING_PHASE' ? m.votingPhase() : m.amendmentPhase()}
-					</div>
-				</div>
-
-				<div class="flex items-center justify-center gap-2 text-base-content/60 text-sm mb-4">
+				<div class="flex items-center justify-center gap-2 text-base-content/60 text-lg mb-4">
 					<span>
 						{m.operativeClausePresentation()}
 						{currentOpIndex + 1} / {resolution.operative.length}
 					</span>
 					{#if dr.status === 'AMENDMENT_PHASE' && pendingAmendmentCounts.get(currentOpIndex)}
-						<span class="badge badge-sm badge-warning">
+						<span class="badge badge-lg badge-warning">
 							{pendingAmendmentCounts.get(currentOpIndex)}
-							{m.amendmentPhase()}
+							{m.amendments()}
 						</span>
 					{/if}
 				</div>
 
 				{#if currentClause}
-					<div class="flex-1 overflow-auto p-4">
-						<ResolutionPreview
-							resolution={singleClauseResolution(currentClause)}
+					<div class="flex-1 overflow-auto p-4 pt-6 bg-white rounded-box">
+						<OperativeParagraphPreview
+							markup={serializeClause(currentClause)}
+							operativeNumber={currentOpIndex + 1}
 							labels={getResolutionLabels()}
-						>
-							{#snippet previewHeader()}{/snippet}
-						</ResolutionPreview>
+						/>
 					</div>
 				{:else}
 					<div class="flex-1 flex items-center justify-center text-base-content/50">

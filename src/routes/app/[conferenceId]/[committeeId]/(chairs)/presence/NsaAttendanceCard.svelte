@@ -59,7 +59,7 @@
 
 	function formatSince(ts: string | Date) {
 		const d = ts instanceof Date ? ts : new Date(ts);
-		return d.toLocaleTimeString();
+		return d.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' });
 	}
 </script>
 

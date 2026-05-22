@@ -2,6 +2,8 @@
 	import type { VotingMajority } from '$lib/local-db/localDB';
 	import { m } from '$lib/paraglide/messages';
 	import Tabs from '../Tabs.svelte';
+	import Combobox from '../Combobox.svelte';
+	import votingNameTemplates from '$lib/data/votingNameTemplates';
 
 	interface Props {
 		voteType: 'SHOW_OF_HANDS' | 'ROLL_CALL';
@@ -41,6 +43,10 @@
 		{ id: false, label: m.withoutAbstentions() },
 		{ id: true, label: m.withAbstentions() }
 	];
+
+	const voteNamePresets = votingNameTemplates.map((preset) => ({
+		label: preset
+	}));
 </script>
 
 <div class="flex flex-col gap-2">
@@ -60,7 +66,32 @@
 	</fieldset>
 	<fieldset class="fieldset bg-base-200 border-base-300 rounded-box w-full border p-4">
 		<legend class="fieldset-legend">{m.voteTitel()}</legend>
-		<input type="text" class="input w-full" placeholder={m.voting()} bind:value={voteName} />
+		<Combobox
+			bind:value={voteName}
+			options={voteNamePresets}
+			side="top"
+			placeholder={m.voting()}
+			getStringValue={({ label }) => label}
+			filter={(options, v) =>
+				options.filter(({ label }) => label.toLowerCase().includes(v.toLowerCase()))}
+		>
+			{#snippet ListItem(option)}
+				<div class="flex items-center gap-2">
+					<i class="fas fa-box-ballot"></i>
+					<span>{option.label}</span>
+				</div>
+			{/snippet}
+
+			{#snippet AdditionalButtons()}
+				<button
+					class="btn btn-square input-lg join-item"
+					aria-label="Clear selection"
+					onclick={() => (voteName = '')}
+				>
+					<i class="fas fa-trash"></i>
+				</button>
+			{/snippet}
+		</Combobox>
 		<p class="label whitespace-normal">{m.voteTitleDescription()}</p>
 	</fieldset>
 

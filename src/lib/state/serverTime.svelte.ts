@@ -4,8 +4,9 @@ import dayjs, { type Dayjs } from 'dayjs';
 
 let current = $state(dayjs());
 const intervalDuration = 500;
+const resyncInterval = 5 * 60 * 1000;
 
-if (browser) {
+async function syncWithServer() {
 	const result = await urqlClient
 		.query(
 			'{ serverTime }',
@@ -17,10 +18,15 @@ if (browser) {
 	const servertime: Date | undefined = result.data?.serverTime;
 	if (servertime) {
 		current = dayjs(servertime);
-		setInterval(() => {
-			current = current.add(intervalDuration, 'ms');
-		}, intervalDuration);
 	}
+}
+
+if (browser) {
+	await syncWithServer();
+	setInterval(() => {
+		current = current.add(intervalDuration, 'ms');
+	}, intervalDuration);
+	setInterval(syncWithServer, resyncInterval);
 }
 
 export function getServerTime(): Dayjs {

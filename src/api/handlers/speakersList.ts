@@ -58,6 +58,12 @@ schemaBuilder.mutationFields((t) => {
 					throw new GraphQLError('startTimestamp and stopTimer are mutually exclusive');
 				}
 
+				// Single authoritative server timestamp for the whole mutation.
+				const now = new Date();
+				// Set when pausing a running timer: the remaining time is computed from the server
+				// clock here instead of trusting the client, so every client converges on the same value.
+				let computedTimeLeft: number | undefined;
+
 				await db.transaction(async (tx) => {
 					if (args.stopTimer) {
 						const speakersList = await tx.query.speakersList
@@ -79,9 +85,12 @@ schemaBuilder.mutationFields((t) => {
 							.then(assertFindFirstExists);
 
 						if (speakersList.startTimestamp) {
+							const elapsedSeconds = (now.getTime() - speakersList.startTimestamp.getTime()) / 1000;
+							computedTimeLeft = Math.round(speakersList.timeLeft - elapsedSeconds);
+
 							await tx.insert(schema.spokenTimePeriod).values({
-								endTimestamp: new Date(),
-								startTimestamp: speakersList.startTimestamp!,
+								endTimestamp: now,
+								startTimestamp: speakersList.startTimestamp,
 								speakersListId: speakersList.id,
 								committeeMemberId: speakersList.speakers[0].committeeMemberId,
 								conferenceMemberId: speakersList.speakers[0].conferenceMemberId
@@ -94,8 +103,10 @@ schemaBuilder.mutationFields((t) => {
 						.update(schema.speakersList)
 						.set({
 							speakingTime: mappedArgs.speakingTime,
-							timeLeft: mappedArgs.timeLeft,
-							startTimestamp: args.stopTimer ? null : mappedArgs.startTimestamp,
+							// server-computed remaining time wins when pausing a running timer
+							timeLeft: computedTimeLeft ?? mappedArgs.timeLeft,
+							// server stamps the authoritative start time so all clients share one anchor
+							startTimestamp: args.stopTimer ? null : mappedArgs.startTimestamp ? now : undefined,
 							isClosed: mappedArgs.isClosed
 						})
 						.where(

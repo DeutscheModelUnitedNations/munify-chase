@@ -92,7 +92,7 @@
 				<i class="fas fa-caret-up"></i>
 			</Combobox.ScrollUpButton>
 			<Combobox.Viewport class="p-1">
-				{#each filteredOptions as option, i (i)}
+				{#each filteredOptions as option (getStringValue(option))}
 					<Combobox.Item
 						class="hover:bg-base-200 active:bg-base-300 data-highlighted:bg-base-300 flex w-full cursor-pointer items-center rounded-md py-3 pl-5 text-sm outline-hidden transition-all duration-200 select-none"
 						value={getStringValue(option)}

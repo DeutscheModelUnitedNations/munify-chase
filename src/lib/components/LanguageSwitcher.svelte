@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { locales, getLocale, cookieName, cookieMaxAge } from '$lib/paraglide/runtime';
+	import { locales, getLocale, setLocale } from '$lib/paraglide/runtime';
 	import Modal from './Modal.svelte';
 	import Flag from './Flag.svelte';
 	import { m } from '$lib/paraglide/messages';
@@ -12,9 +12,10 @@
 
 	let modalOpen = $state(false);
 
-	function switchLocale(locale: string) {
-		document.cookie = `${cookieName}=${locale}; path=/; max-age=${cookieMaxAge}; domain=${window.location.hostname}; SameSite=Lax`;
-		window.location.reload();
+	function switchLocale(locale: (typeof locales)[number]) {
+		// setLocale writes the cookie via the configured strategy and reloads.
+		// (Manually setting `domain=localhost` would be rejected by browsers.)
+		setLocale(locale);
 	}
 </script>
 

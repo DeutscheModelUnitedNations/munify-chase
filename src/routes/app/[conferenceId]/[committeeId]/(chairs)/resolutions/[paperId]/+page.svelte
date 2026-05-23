@@ -129,16 +129,6 @@
 					givenName: true,
 					familyName: true
 				},
-				committeeMember: {
-					id: true,
-					representation: {
-						id: true,
-						name: true,
-						alpha2Code: true,
-						alpha3Code: true,
-						faIcon: true
-					}
-				},
 				conferenceUserType: true
 			}
 		}),

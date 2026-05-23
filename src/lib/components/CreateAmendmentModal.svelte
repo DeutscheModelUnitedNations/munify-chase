@@ -437,7 +437,7 @@
 						<p class="text-sm">
 							{m.alterText()} — <span class="font-mono">OP {selectedSourceIndex + 1}</span>
 						</p>
-					{:else}
+					{:else if isChairMode}
 						<div class="form-control">
 							<div class="label">
 								<span class="label-text">{m.targetPosition()}</span>
@@ -451,6 +451,17 @@
 								{/each}
 							</select>
 						</div>
+					{:else}
+						<p class="text-sm">
+							{m.addClause()} — {m.targetPosition()}:
+							<span class="font-mono">
+								{#if targetPosition === -1}
+									{m.insertAtBeginning()}
+								{:else}
+									{m.insertAfterPresentation({ index: String(targetPosition + 1) })}
+								{/if}
+							</span>
+						</p>
 					{/if}
 					<div class="border rounded-lg p-2">
 						{#if selectedType === 'ALTER_TEXT'}

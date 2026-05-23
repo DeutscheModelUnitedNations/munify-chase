@@ -182,7 +182,7 @@
 			case 'ALTER_TEXT':
 				return 'badge-warning';
 			case 'ADD':
-				return 'badge-success';
+				return 'bg-green-700 text-white border-0';
 			case 'ALTER_POSITION':
 				return 'badge-info';
 			default:
@@ -338,7 +338,7 @@
 					</div>
 				{:else if activeAmendment.type === 'ADD'}
 					<!-- ADD: show the new clause content -->
-					<div class="flex items-center justify-center gap-2 text-success">
+					<div class="flex items-center justify-center gap-2 text-green-700">
 						<i class="fas fa-plus text-lg"></i>
 						<span class="text-lg font-semibold">
 							{m.insertAfterPresentation({ index: (activeAmendment.targetPosition ?? 0) + 1 })}
@@ -347,7 +347,7 @@
 					<div class="flex-1 overflow-auto p-4">
 						{#if typeof activeAmendment.newContent === 'string'}
 							<div
-								class="rounded-lg bg-white border-2 border-success/30 border-l-4 border-l-success p-4 pt-6"
+								class="rounded-lg bg-white border-2 border-green-700/40 border-l-4 border-l-green-700 p-4 pt-6"
 							>
 								<OperativeParagraphPreview
 									markup={activeAmendment.newContent}

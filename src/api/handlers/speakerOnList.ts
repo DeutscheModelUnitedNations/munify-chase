@@ -394,8 +394,38 @@ schemaBuilder.mutationFields((t) => {
 
 				const removed = await db.transaction(
 					async (tx) => {
+						// Fetch the speakers list first so we can scope the conferenceUser
+						// lookup to the right conference (fixes multi-conference users).
+						const speakersList = await tx.query.speakersList.findFirst({
+							where: { id: args.speakersListId },
+							with: {
+								agendaItem: {
+									with: {
+										committee: true
+									}
+								}
+							}
+						});
+
+						if (!speakersList) {
+							throw new GraphQLError('Speakers list not found');
+						}
+
+						const committee = speakersList.agendaItem?.committee;
+						if (!committee) {
+							throw new GraphQLError('Committee not found for this speakers list');
+						}
+						if (!committee.allowDelegationsToAddThemselvesToSpeakersList) {
+							throw new GraphQLError(
+								'Self-removing from speakers list is not enabled for this committee'
+							);
+						}
+
 						const conferenceUser = await tx.query.conferenceUser.findFirst({
-							where: { userEmail: user.email! },
+							where: {
+								userEmail: user.email!,
+								conferenceId: committee.conferenceId
+							},
 							with: {
 								committeeMember: true,
 								conferenceMember: true
@@ -427,31 +457,6 @@ schemaBuilder.mutationFields((t) => {
 
 						if (!speakerOnList) {
 							throw new GraphQLError('You are not on this speakers list');
-						}
-
-						const speakersList = await tx.query.speakersList.findFirst({
-							where: { id: args.speakersListId },
-							with: {
-								agendaItem: {
-									with: {
-										committee: true
-									}
-								}
-							}
-						});
-
-						if (!speakersList) {
-							throw new GraphQLError('Speakers list not found');
-						}
-
-						const committee = speakersList.agendaItem?.committee;
-						if (!committee) {
-							throw new GraphQLError('Committee not found for this speakers list');
-						}
-						if (!committee.allowDelegationsToAddThemselvesToSpeakersList) {
-							throw new GraphQLError(
-								'Self-removing from speakers list is not enabled for this committee'
-							);
 						}
 
 						const deleted = await tx

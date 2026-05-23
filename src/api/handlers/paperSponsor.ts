@@ -126,10 +126,12 @@ schemaBuilder.mutationFields((t) => ({
 					}
 				}
 
-				// Must be self (removing own sponsorship) or paper creator
+				// Must be self (removing own sponsorship) or paper creator.
+				// Scope to the paper's conference so multi-conference users get the right record.
 				const conferenceUser = await db.query.conferenceUser.findFirst({
 					where: {
-						user: { id: user.sub }
+						user: { id: user.sub },
+						conference: { committees: { id: paper.committeeId } }
 					}
 				});
 

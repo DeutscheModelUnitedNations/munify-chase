@@ -91,17 +91,21 @@ schemaBuilder.mutationFields((t) => ({
 		resolve: async (query, root, args, ctx) => {
 			const user = ctx.mustBeLoggedIn();
 
-			// Resolve conference user
-			const conferenceUser = await db.query.conferenceUser
-				.findFirst({
-					where: { user: { id: user.sub } }
-				})
-				.then(assertFindFirstExists);
-
 			// Fetch paper and validate status
 			const paper = await db.query.resolutionPaper
 				.findFirst({
 					where: { id: args.paperId }
+				})
+				.then(assertFindFirstExists);
+
+			// Resolve conference user scoped to the paper's conference so that
+			// users registered in multiple conferences get the right record.
+			const conferenceUser = await db.query.conferenceUser
+				.findFirst({
+					where: {
+						user: { id: user.sub },
+						conference: { committees: { id: paper.committeeId } }
+					}
 				})
 				.then(assertFindFirstExists);
 
@@ -187,10 +191,18 @@ schemaBuilder.mutationFields((t) => ({
 				})
 				.then(assertFindFirstExists);
 
-			// Must be the author
+			// Must be the author — look up conferenceUser scoped to the paper's
+			// conference to handle users registered in multiple conferences.
+			const paper = await db.query.resolutionPaper
+				.findFirst({ where: { id: comment.paperId } })
+				.then(assertFindFirstExists);
+
 			const conferenceUser = await db.query.conferenceUser
 				.findFirst({
-					where: { user: { id: user.sub } }
+					where: {
+						user: { id: user.sub },
+						conference: { committees: { id: paper.committeeId } }
+					}
 				})
 				.then(assertFindFirstExists);
 
@@ -232,20 +244,23 @@ schemaBuilder.mutationFields((t) => ({
 				})
 				.then(assertFindFirstExists);
 
+			const deletePaper = await db.query.resolutionPaper
+				.findFirst({ where: { id: comment.paperId } })
+				.then(assertFindFirstExists);
+
 			const conferenceUser = await db.query.conferenceUser
 				.findFirst({
-					where: { user: { id: user.sub } }
+					where: {
+						user: { id: user.sub },
+						conference: { committees: { id: deletePaper.committeeId } }
+					}
 				})
 				.then(assertFindFirstExists);
 
 			// Author can delete own, or chairs/admins can delete any
 			const isAuthor = comment.authorConferenceUserId === conferenceUser.id;
 			if (!isAuthor) {
-				const paper = await db.query.resolutionPaper
-					.findFirst({ where: { id: comment.paperId } })
-					.then(assertFindFirstExists);
-
-				const isChair = await isChairOrAdmin(ctx, paper.committeeId);
+				const isChair = await isChairOrAdmin(ctx, deletePaper.committeeId);
 				if (!isChair) {
 					throw new GraphQLError('Only the author or chairs can delete comments');
 				}

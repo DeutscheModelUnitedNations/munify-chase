@@ -777,6 +777,7 @@
 	"undoVote": "Stimmung rückgängig",
 	"uniqueDelegationsAcross": "{delegations} einzigartige Delegationen über {committees} Gremien verteilt. Eine Delegation kann in mehreren Gremien sitzen.",
 	"unknown": "unbekannt",
+	"unknownCommentAuthor": "Unbekannt",
 	"unnamedConference": "Unbenannte Konferenz",
 	"unrecognizedCodes": "Nicht erkannte Codes:",
 	"until": "bis {time} Uhr",

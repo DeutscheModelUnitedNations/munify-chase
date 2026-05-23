@@ -23,7 +23,7 @@
 					type?: string | null;
 				} | null;
 			} | null;
-		};
+		} | null;
 	};
 
 	interface Props {
@@ -164,16 +164,18 @@
 	}
 
 	function getAuthorName(comment: Comment): string {
-		const user = comment.author.user;
+		const author = comment.author;
+		if (!author) return m.unknownCommentAuthor();
+		const user = author.user;
 		if (user) {
 			return `${user.givenName} ${user.familyName}`;
 		}
-		const rep = comment.author.committeeMember?.representation;
-		return rep?.name ?? comment.author.conferenceUserType ?? '?';
+		const rep = author.committeeMember?.representation;
+		return rep?.name ?? author.conferenceUserType ?? '?';
 	}
 
 	function isAuthor(comment: Comment): boolean {
-		return comment.author.id === myConferenceUserId;
+		return comment.author?.id === myConferenceUserId;
 	}
 </script>
 
@@ -224,7 +226,7 @@
 					<div class="bg-base-100 text-base-content rounded-lg p-2 text-sm">
 						<!-- Comment header -->
 						<div class="flex items-center gap-2 mb-1">
-							{#if comment.author.committeeMember?.representation}
+							{#if comment.author?.committeeMember?.representation}
 								<Flag representation={comment.author.committeeMember.representation} size="xs" />
 							{/if}
 							<span class="font-semibold text-xs">{getAuthorName(comment)}</span>
@@ -302,7 +304,7 @@
 								{#each getReplies(comment.id) as reply (reply.id)}
 									<div class="bg-base-200/50 text-base-content rounded p-2 text-sm">
 										<div class="flex items-center gap-2 mb-1">
-											{#if reply.author.committeeMember?.representation}
+											{#if reply.author?.committeeMember?.representation}
 												<Flag
 													representation={reply.author.committeeMember.representation}
 													size="xs"

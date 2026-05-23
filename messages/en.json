@@ -777,6 +777,7 @@
 	"undoVote": "Undo Vote",
 	"uniqueDelegationsAcross": "{delegations} unique delegations spread across {committees} committees. A delegation can sit on more than one committee.",
 	"unknown": "unknown",
+	"unknownCommentAuthor": "Unknown",
 	"unnamedConference": "Unnamed conference",
 	"unrecognizedCodes": "Unrecognized codes:",
 	"until": "until {time}",

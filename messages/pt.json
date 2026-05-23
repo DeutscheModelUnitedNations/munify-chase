@@ -777,6 +777,7 @@
 	"undoVote": "Desfazer Voto",
 	"uniqueDelegationsAcross": "{delegations} delegações únicas distribuídas por {committees} comitês. Uma delegação pode participar de mais de um comitê.",
 	"unknown": "desconhecido",
+	"unknownCommentAuthor": "Desconhecido",
 	"unnamedConference": "Conferência sem nome",
 	"unrecognizedCodes": "Códigos não reconhecidos:",
 	"until": "até {time}",

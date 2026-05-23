@@ -1593,10 +1593,7 @@ export type RepresentationWhereInputArgument = {
 export type RepresentationtypeEnum = "DELEGATION" | "NSA" | "UN";
 		
 export type Resolutioncomment = {
-  author: (p?: {
-    orderBy?: ConferenceuserOrderInputArgument | null | undefined,
-    where?: ConferenceuserWhereInputArgument | null | undefined
-  }) => Conferenceuser,
+  author: () => Conferenceuser | null,
   authorConferenceUserId: ID,
   clauseId: ID | null,
   content: String,

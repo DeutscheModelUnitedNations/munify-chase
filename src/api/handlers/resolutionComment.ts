@@ -39,7 +39,19 @@ abilityBuilder.resolutionComment.allow('read').when((ctx) => {
 	return { where: { visibility: 'PUBLIC' } };
 });
 
-const ref = object({ table: 'resolutionComment' });
+const ref = object({
+	table: 'resolutionComment',
+	adjust: (t) => ({
+		// The `author` relation is resolved through the conferenceUser read
+		// ability. A viewer allowed to see a comment can still be unable to read
+		// its author row — most notably a chair viewing a TEAM_ONLY comment whose
+		// author conferenceUser is orphaned or belongs to another conference. The
+		// FK is NOT NULL so rumble derives a non-null relation, and the excluded
+		// author would resolve to null and 500 the entire page. Make it nullable
+		// so an unreadable/missing author degrades gracefully instead.
+		author: t.relation('author', { nullable: true })
+	})
+});
 
 const commentVisibilityEnum = enum_({ tsName: 'commentVisibility' });
 

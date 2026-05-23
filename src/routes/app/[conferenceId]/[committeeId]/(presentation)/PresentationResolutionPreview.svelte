@@ -12,6 +12,7 @@
 	import Flag from '$lib/components/Flag.svelte';
 	import { getTranslatedCountryNameFromAlpha3Code } from '$lib/utils/nationTranslationHelper.svelte';
 	import { getResolutionLabels } from '$lib/utils/resolutionEditorLabels';
+	import { svgToDataUrl } from '$lib/utils/svgToDataUrl';
 	import { SvelteMap } from 'svelte/reactivity';
 
 	interface Props {
@@ -98,6 +99,7 @@
 			} | null;
 			conference?: {
 				title?: string | null;
+				logoSvg?: string | null;
 			} | null;
 		};
 	}
@@ -134,6 +136,7 @@
 		return {
 			conferenceName: committee.conference?.title ?? undefined,
 			conferenceTitle: committee.conference?.title ?? undefined,
+			conferenceEmblem: svgToDataUrl(committee.conference?.logoSvg),
 			committeeAbbreviation: committee.abbreviation,
 			committeeFullName: committee.name,
 			committeeResolutionHeadline: committee.resolutionHeadline ?? undefined,

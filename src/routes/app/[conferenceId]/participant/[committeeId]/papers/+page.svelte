@@ -8,6 +8,7 @@
 	import { generatePaperName } from '$lib/utils/paperNameGenerator';
 	import Flag from '$lib/components/Flag.svelte';
 	import toast from 'svelte-french-toast';
+	import { withBackendMessage } from '$lib/utils/toast';
 
 	const currentUser = await getCurrentUser();
 	const [conferenceUser] =
@@ -109,8 +110,8 @@
 					})
 				);
 			}
-		} catch {
-			toast.error(m.toastCreateError({ targetName: m.workingPaper() }));
+		} catch (err) {
+			toast.error(withBackendMessage(m.toastCreateError({ targetName: m.workingPaper() }), err));
 		}
 	}
 
@@ -132,8 +133,8 @@
 					id: true
 				});
 			}
-		} catch {
-			toast.error(m.saveError());
+		} catch (err) {
+			toast.error(withBackendMessage(m.saveError(), err));
 		}
 	}
 
@@ -159,7 +160,7 @@
 					})
 				);
 			}
-		} catch {
+		} catch (err) {
 			toast.error(m.invalidShareCode());
 		}
 	}

@@ -32,6 +32,7 @@
 	import ConnectionIndicator from '$lib/components/ConnectionIndicator.svelte';
 	import { getTranslatedCountryNameFromAlpha3Code } from '$lib/utils/nationTranslationHelper.svelte';
 	import toast from 'svelte-french-toast';
+	import { withBackendMessage } from '$lib/utils/toast';
 	import { openVotingModal } from '$lib/components/voting/votingModal';
 	import { getResolutionLabels } from '$lib/utils/resolutionEditorLabels';
 	import { svgToDataUrl } from '$lib/utils/svgToDataUrl';
@@ -718,6 +719,15 @@
 
 	let sponsorThresholdNeeded = $derived(Math.ceil((committee?.totalPresent ?? 0) * 0.1));
 
+	let submittedAmendmentsCount = $derived(
+		queueAmendments.filter((a) => a.status === 'SUBMITTED').length
+	);
+	let amendmentsAboveThresholdCount = $derived(
+		queueAmendments.filter(
+			(a) => a.status === 'SUBMITTED' && (a.sponsors?.length ?? 0) >= sponsorThresholdNeeded
+		).length
+	);
+
 	async function handleAddAmendmentSponsor(committeeMemberId: string) {
 		if (!amendmentSponsorTargetId) return;
 		try {
@@ -726,8 +736,8 @@
 				id: true
 			});
 			toast.success(m.sponsorAdded());
-		} catch {
-			toast.error(m.saveError());
+		} catch (err) {
+			toast.error(withBackendMessage(m.saveError(), err));
 		}
 	}
 
@@ -741,8 +751,8 @@
 				__args: { amendmentId, committeeMemberId }
 			});
 			toast.success(m.sponsorRemoved());
-		} catch {
-			toast.error(m.saveError());
+		} catch (err) {
+			toast.error(withBackendMessage(m.saveError(), err));
 		}
 	}
 
@@ -795,8 +805,8 @@
 				__args: { id: committee.id, clearActiveAmendment: true },
 				id: true
 			});
-		} catch {
-			toast.error(m.saveError());
+		} catch (err) {
+			toast.error(withBackendMessage(m.saveError(), err));
 		}
 	}
 
@@ -855,8 +865,8 @@
 				});
 				toast.success(m.amendmentRejectedToast());
 			}
-		} catch {
-			toast.error(m.saveError());
+		} catch (err) {
+			toast.error(withBackendMessage(m.saveError(), err));
 		}
 		showVoteOutcomeModal = false;
 		voteOutcomeAmendmentId = null;
@@ -888,8 +898,8 @@
 				__args: { id: committee.id, clearActiveAmendment: true },
 				id: true
 			});
-		} catch {
-			toast.error(m.saveError());
+		} catch (err) {
+			toast.error(withBackendMessage(m.saveError(), err));
 		}
 	}
 
@@ -904,8 +914,8 @@
 				__args: { id: committee.id, clearActiveAmendment: true },
 				id: true
 			});
-		} catch {
-			toast.error(m.saveError());
+		} catch (err) {
+			toast.error(withBackendMessage(m.saveError(), err));
 		}
 	}
 
@@ -923,8 +933,8 @@
 					id: true
 				});
 			}
-		} catch {
-			toast.error(m.saveError());
+		} catch (err) {
+			toast.error(withBackendMessage(m.saveError(), err));
 		}
 	}
 
@@ -940,8 +950,8 @@
 				},
 				id: true
 			});
-		} catch {
-			toast.error(m.saveError());
+		} catch (err) {
+			toast.error(withBackendMessage(m.saveError(), err));
 		}
 	}
 
@@ -1015,8 +1025,8 @@
 				id: true
 			});
 			toast.success(m.amendmentCreated());
-		} catch {
-			toast.error(m.saveError());
+		} catch (err) {
+			toast.error(withBackendMessage(m.saveError(), err));
 		}
 	}
 
@@ -1054,8 +1064,8 @@
 				id: true
 			});
 			toast.success(m.amendmentUpdated());
-		} catch {
-			toast.error(m.saveError());
+		} catch (err) {
+			toast.error(withBackendMessage(m.saveError(), err));
 		}
 	}
 
@@ -1113,8 +1123,8 @@
 			showRevertStatusModal = false;
 			revertRestoreSnapshot = false;
 			toast.success(m.statusReverted());
-		} catch {
-			toast.error(m.saveError());
+		} catch (err) {
+			toast.error(withBackendMessage(m.saveError(), err));
 		}
 	}
 
@@ -1139,8 +1149,8 @@
 			});
 			showStartVotingPhaseModal = false;
 			toast.success(m.votingPhaseStarted());
-		} catch {
-			toast.error(m.saveError());
+		} catch (err) {
+			toast.error(withBackendMessage(m.saveError(), err));
 		}
 	}
 
@@ -1180,8 +1190,8 @@
 				id: true
 			});
 			toast.success(m.clauseVoteRecorded());
-		} catch {
-			toast.error(m.saveError());
+		} catch (err) {
+			toast.error(withBackendMessage(m.saveError(), err));
 		}
 		showClauseOutcomeModal = false;
 		pendingClauseVote = null;
@@ -1197,8 +1207,8 @@
 				__args: { paperId: page.params.paperId!, clauseId }
 			});
 			toast.success(m.clauseVoteDeleted());
-		} catch {
-			toast.error(m.saveError());
+		} catch (err) {
+			toast.error(withBackendMessage(m.saveError(), err));
 		}
 	}
 
@@ -1238,8 +1248,8 @@
 			if (outcome === 'ADOPTED') toast.success(m.resolutionAdopted());
 			else if (outcome === 'REJECTED') toast.success(m.resolutionRejected());
 			else toast.success(m.resolutionSentBack());
-		} catch {
-			toast.error(m.saveError());
+		} catch (err) {
+			toast.error(withBackendMessage(m.saveError(), err));
 		}
 	}
 
@@ -1254,7 +1264,7 @@
 				},
 				id: true
 			})
-			.catch(() => toast.error(m.saveError()));
+			.catch((err) => toast.error(withBackendMessage(m.saveError(), err)));
 	}
 </script>
 
@@ -1609,8 +1619,8 @@
 										},
 										id: true
 									});
-								} catch {
-									toast.error(m.saveError());
+								} catch (err) {
+									toast.error(withBackendMessage(m.saveError(), err));
 								}
 							}}
 						>
@@ -1629,7 +1639,23 @@
 			</Fieldset>
 
 			<Fieldset legend={m.amendmentQueue()} faIcon="fas fa-gavel">
-				<div class="flex justify-end">
+				<div class="flex items-center justify-between gap-2">
+					{#if submittedAmendmentsCount > 0}
+						<span
+							class="badge badge-sm {amendmentsAboveThresholdCount > 0
+								? 'badge-success'
+								: 'badge-warning'}"
+							title={m.amendmentQueueThresholdSummary({
+								ready: String(amendmentsAboveThresholdCount),
+								total: String(submittedAmendmentsCount)
+							})}
+						>
+							<i class="fas fa-handshake mr-1 text-[0.6rem]"></i>
+							{amendmentsAboveThresholdCount}/{submittedAmendmentsCount}
+						</span>
+					{:else}
+						<span></span>
+					{/if}
 					<button class="btn btn-primary btn-sm" onclick={openChairCreateAmendment}>
 						<i class="fas fa-plus mr-1"></i>
 						{m.chairCreateAmendment()}

@@ -33,6 +33,7 @@
 	import ConnectionIndicator from '$lib/components/ConnectionIndicator.svelte';
 	import { getTranslatedCountryNameFromAlpha3Code } from '$lib/utils/nationTranslationHelper.svelte';
 	import toast from 'svelte-french-toast';
+	import { withBackendMessage } from '$lib/utils/toast';
 	import { getResolutionLabels } from '$lib/utils/resolutionEditorLabels';
 	import { svgToDataUrl } from '$lib/utils/svgToDataUrl';
 	import { downloadResolutionTypst, downloadResolutionPdf } from '$lib/utils/resolutionExport';
@@ -465,8 +466,8 @@
 			await client.mutate.submitPaper({ __args: { paperId: page.params.paperId! }, id: true });
 			showSubmitModal = false;
 			toast.success(m.paperSubmitted());
-		} catch {
-			toast.error(m.saveError());
+		} catch (err) {
+			toast.error(withBackendMessage(m.saveError(), err));
 		}
 	}
 
@@ -489,8 +490,8 @@
 					committeeId: page.params.committeeId!
 				})
 			);
-		} catch {
-			toast.error(m.saveError());
+		} catch (err) {
+			toast.error(withBackendMessage(m.saveError(), err));
 		}
 	}
 
@@ -512,8 +513,8 @@
 					id: true
 				});
 			}
-		} catch {
-			toast.error(m.saveError());
+		} catch (err) {
+			toast.error(withBackendMessage(m.saveError(), err));
 		}
 	}
 
@@ -525,8 +526,8 @@
 				id: true,
 				code: true
 			});
-		} catch {
-			toast.error(m.saveError());
+		} catch (err) {
+			toast.error(withBackendMessage(m.saveError(), err));
 		}
 	}
 
@@ -537,8 +538,8 @@
 					__args: { shareCodeId: string };
 				}) => Promise<unknown>
 			)({ __args: { shareCodeId } });
-		} catch {
-			toast.error(m.saveError());
+		} catch (err) {
+			toast.error(withBackendMessage(m.saveError(), err));
 		}
 	}
 
@@ -687,8 +688,8 @@
 				id: true
 			});
 			toast.success(m.amendmentCreated());
-		} catch {
-			toast.error(m.saveError());
+		} catch (err) {
+			toast.error(withBackendMessage(m.saveError(), err));
 		}
 	}
 
@@ -699,8 +700,8 @@
 				__args: { amendmentId, committeeMemberId: myCommitteeMemberId },
 				id: true
 			});
-		} catch {
-			toast.error(m.saveError());
+		} catch (err) {
+			toast.error(withBackendMessage(m.saveError(), err));
 		}
 	}
 

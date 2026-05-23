@@ -63,6 +63,7 @@
 	"amendmentPhaseStarted": "Änderungsantragsphase gestartet",
 	"amendmentProposed": "Änderungsantrag vorgeschlagen",
 	"amendmentQueue": "Änderungsanträge",
+	"amendmentQueueThresholdSummary": "{ready} von {total} Änderungsanträgen haben ausreichend Unterstützung",
 	"amendmentRejected": "Abgelehnt",
 	"amendmentRejectedClause": "Abgelehnt",
 	"amendmentRejectedToast": "Änderungsantrag abgelehnt",

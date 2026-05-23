@@ -63,6 +63,7 @@
 	"amendmentPhaseStarted": "Fase de emendas iniciada",
 	"amendmentProposed": "Emenda proposta",
 	"amendmentQueue": "Fila de Emendas",
+	"amendmentQueueThresholdSummary": "{ready} de {total} emendas têm apoio suficiente",
 	"amendmentRejected": "Rejeitada",
 	"amendmentRejectedClause": "Rejeitada",
 	"amendmentRejectedToast": "Emenda rejeitada",

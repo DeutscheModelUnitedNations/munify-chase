@@ -63,6 +63,7 @@
 	"amendmentPhaseStarted": "Amendment phase started",
 	"amendmentProposed": "Amendment proposed",
 	"amendmentQueue": "Amendment Queue",
+	"amendmentQueueThresholdSummary": "{ready} of {total} amendments have sufficient support",
 	"amendmentRejected": "Rejected",
 	"amendmentRejectedClause": "Rejected",
 	"amendmentRejectedToast": "Amendment rejected",

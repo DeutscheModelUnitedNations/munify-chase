@@ -183,6 +183,7 @@
 		conference: {
 			id: true,
 			title: true,
+			logoSvg: true,
 			resolutionFeatureEnabled: true,
 			uniqueConferenceMembers: {
 				id: true,

@@ -720,22 +720,30 @@
 
 	async function handleAddAmendmentSponsor(committeeMemberId: string) {
 		if (!amendmentSponsorTargetId) return;
-		await client.mutate.addAmendmentSponsor({
-			__args: { amendmentId: amendmentSponsorTargetId, committeeMemberId },
-			id: true
-		});
-		toast.success(m.sponsorAdded());
+		try {
+			await client.mutate.addAmendmentSponsor({
+				__args: { amendmentId: amendmentSponsorTargetId, committeeMemberId },
+				id: true
+			});
+			toast.success(m.sponsorAdded());
+		} catch {
+			toast.error(m.saveError());
+		}
 	}
 
 	async function handleRemoveAmendmentSponsor(amendmentId: string, committeeMemberId: string) {
-		await (
-			client.mutate.removeAmendmentSponsor as unknown as (p: {
-				__args: { amendmentId: string; committeeMemberId: string };
-			}) => Promise<unknown>
-		)({
-			__args: { amendmentId, committeeMemberId }
-		});
-		toast.success(m.sponsorRemoved());
+		try {
+			await (
+				client.mutate.removeAmendmentSponsor as unknown as (p: {
+					__args: { amendmentId: string; committeeMemberId: string };
+				}) => Promise<unknown>
+			)({
+				__args: { amendmentId, committeeMemberId }
+			});
+			toast.success(m.sponsorRemoved());
+		} catch {
+			toast.error(m.saveError());
+		}
 	}
 
 	// Transform server amendments → AmendmentOverlay[] for editor rendering.
@@ -993,19 +1001,23 @@
 		committeeMemberId?: string;
 	}) {
 		if (!args.committeeMemberId) return;
-		await client.mutate.chairCreateAmendment({
-			__args: {
-				paperId: page.params.paperId!,
-				type: args.type,
-				committeeMemberId: args.committeeMemberId,
-				targetClauseId: args.targetClauseId,
-				targetOperativeIndex: args.targetOperativeIndex,
-				targetPosition: args.targetPosition,
-				newContent: args.newContent
-			},
-			id: true
-		});
-		toast.success(m.amendmentCreated());
+		try {
+			await client.mutate.chairCreateAmendment({
+				__args: {
+					paperId: page.params.paperId!,
+					type: args.type,
+					committeeMemberId: args.committeeMemberId,
+					targetClauseId: args.targetClauseId,
+					targetOperativeIndex: args.targetOperativeIndex,
+					targetPosition: args.targetPosition,
+					newContent: args.newContent
+				},
+				id: true
+			});
+			toast.success(m.amendmentCreated());
+		} catch {
+			toast.error(m.saveError());
+		}
 	}
 
 	// =====================================================
@@ -1029,18 +1041,22 @@
 		committeeMemberId?: string;
 	}) {
 		if (!editingAmendment) return;
-		await client.mutate.editAmendment({
-			__args: {
-				amendmentId: editingAmendment.id,
-				targetClauseId: args.targetClauseId,
-				targetOperativeIndex: args.targetOperativeIndex,
-				targetPosition: args.targetPosition,
-				newContent: args.newContent,
-				proposerCommitteeMemberId: args.committeeMemberId ?? null
-			},
-			id: true
-		});
-		toast.success(m.amendmentUpdated());
+		try {
+			await client.mutate.editAmendment({
+				__args: {
+					amendmentId: editingAmendment.id,
+					targetClauseId: args.targetClauseId,
+					targetOperativeIndex: args.targetOperativeIndex,
+					targetPosition: args.targetPosition,
+					newContent: args.newContent,
+					proposerCommitteeMemberId: args.committeeMemberId ?? null
+				},
+				id: true
+			});
+			toast.success(m.amendmentUpdated());
+		} catch {
+			toast.error(m.saveError());
+		}
 	}
 
 	// =====================================================

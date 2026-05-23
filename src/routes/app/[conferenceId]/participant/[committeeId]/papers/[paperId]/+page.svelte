@@ -674,18 +674,22 @@
 		newContent: string | null;
 	}) {
 		if (!paper) return;
-		await client.mutate.createAmendment({
-			__args: {
-				paperId: paper.id,
-				type: args.type,
-				targetClauseId: args.targetClauseId ?? undefined,
-				targetOperativeIndex: args.targetOperativeIndex ?? undefined,
-				targetPosition: args.targetPosition ?? undefined,
-				newContent: args.newContent ?? undefined
-			},
-			id: true
-		});
-		toast.success(m.amendmentCreated());
+		try {
+			await client.mutate.createAmendment({
+				__args: {
+					paperId: paper.id,
+					type: args.type,
+					targetClauseId: args.targetClauseId ?? undefined,
+					targetOperativeIndex: args.targetOperativeIndex ?? undefined,
+					targetPosition: args.targetPosition ?? undefined,
+					newContent: args.newContent ?? undefined
+				},
+				id: true
+			});
+			toast.success(m.amendmentCreated());
+		} catch {
+			toast.error(m.saveError());
+		}
 	}
 
 	async function handleSponsorAmendment(amendmentId: string) {

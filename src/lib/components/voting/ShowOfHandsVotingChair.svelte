@@ -112,6 +112,20 @@
 		}
 	};
 
+	const adjustCurrentVote = (delta: number) => {
+		switch (currentState) {
+			case 'PRO':
+				votesPro = Math.max(0, votesPro + delta);
+				break;
+			case 'CON':
+				votesCon = Math.max(0, votesCon + delta);
+				break;
+			case 'ABSTAIN':
+				votesAbstain = Math.max(0, votesAbstain + delta);
+				break;
+		}
+	};
+
 	const previousState = () => {
 		switch (currentState) {
 			case 'CON':
@@ -132,7 +146,7 @@
 
 	$effect(() => {
 		if (active) {
-			hotkeys('enter, esc, backspace', 'showOfHandsVote', (event, handler) => {
+			hotkeys('enter, esc, backspace, up, down, space', 'showOfHandsVote', (event, handler) => {
 				event.preventDefault();
 				switch (handler.key) {
 					case 'enter':
@@ -143,6 +157,13 @@
 						break;
 					case 'backspace':
 						previousState();
+						break;
+					case 'up':
+					case 'space':
+						adjustCurrentVote(1);
+						break;
+					case 'down':
+						adjustCurrentVote(-1);
 						break;
 				}
 			});

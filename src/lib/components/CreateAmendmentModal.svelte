@@ -438,16 +438,19 @@
 							{m.alterText()} — <span class="font-mono">OP {selectedSourceIndex + 1}</span>
 						</p>
 					{:else}
-						<p class="text-sm">
-							{m.addClause()} — {m.targetPosition()}:
-							<span class="font-mono">
-								{#if targetPosition === -1}
-									{m.insertAtBeginning()}
-								{:else}
-									{m.insertAfterPresentation({ index: String(targetPosition + 1) })}
-								{/if}
-							</span>
-						</p>
+						<div class="form-control">
+							<div class="label">
+								<span class="label-text">{m.targetPosition()}</span>
+							</div>
+							<select class="select select-bordered w-full" bind:value={targetPosition}>
+								<option value={-1}>{m.insertAtBeginning()}</option>
+								{#each operativeClauses as clause, i (clause.id)}
+									<option value={i}>
+										{m.insertAfterPresentation({ index: String(i + 1) })}
+									</option>
+								{/each}
+							</select>
+						</div>
 					{/if}
 					<div class="border rounded-lg p-2">
 						{#if selectedType === 'ALTER_TEXT'}

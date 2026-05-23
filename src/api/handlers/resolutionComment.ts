@@ -8,7 +8,7 @@ import {
 	query
 } from '$api/rumble';
 import { eq } from 'drizzle-orm';
-import { isGlobalAdmin } from '$api/services/authHelper';
+import { isChairInConference, isGlobalAdmin } from '$api/services/authHelper';
 import { assertFindFirstExists, assertFirstEntryExists } from '@m1212e/rumble';
 import { GraphQLError } from 'graphql';
 import type { Context } from '$api/context';
@@ -24,19 +24,10 @@ abilityBuilder.resolutionComment.allow('read').when((ctx) => {
 
 // Conference ADMIN/TEAM → can see ALL comments (including TEAM_ONLY)
 abilityBuilder.resolutionComment.allow('read').when((ctx) => {
-	const user = ctx.mustBeLoggedIn();
-	if (!user.email) return;
 	return {
 		where: {
 			paper: {
-				committee: {
-					conference: {
-						users: {
-							user: { email: user.email },
-							conferenceUserType: { in: ['ADMIN', 'TEAM'] }
-						}
-					}
-				}
+				committee: isChairInConference(ctx)
 			}
 		}
 	};

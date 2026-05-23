@@ -48,12 +48,19 @@ abilityBuilder.conferenceUser.allow('read').when((ctx) => {
 // (needed for participant pages like MyAttendanceTab). Rumble merges column
 // sets across allow('read') rules additively, so this opens up just these
 // columns for the matching row without disturbing the participant rule.
+//
+// IMPORTANT: use the direct `userEmail` column filter instead of the relation
+// traversal `{ user: { email } }`. When `author` is loaded as a nested relation
+// on ResolutionComment and includes `with: { user: { where: ... } }`, using
+// the relation traversal in the WHERE clause creates a double-reference to the
+// same `user` join, causing Drizzle to generate conflicting SQL for self-written
+// comments (the only case where this rule fires together with the participant rule).
 abilityBuilder.conferenceUser.allow('read').when((ctx) => {
 	try {
 		const user = ctx.mustBeLoggedIn();
 		if (!user.email) return undefined;
 		return {
-			where: { user: { email: user.email } },
+			where: { userEmail: user.email },
 			columns: { name: true, userEmail: true }
 		};
 	} catch {

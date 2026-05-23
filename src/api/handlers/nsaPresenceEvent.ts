@@ -19,9 +19,7 @@ import { eq } from 'drizzle-orm';
 import { GraphQLError } from 'graphql';
 
 abilityBuilder.nsaPresenceEvent.allow('read').when((ctx) => ({
-	where: {
-		conference: isParticipantInConference(ctx).conference
-	}
+	where: isParticipantInConference(ctx)
 }));
 
 abilityBuilder.nsaPresenceEvent.allow(['update', 'delete']).when((ctx) => ({

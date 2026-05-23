@@ -60,10 +60,11 @@
 		}
 	});
 	let presentDelegations = $derived(committee?.totalPresent ?? 0);
+	let votesCast = $derived(votesPro + votesCon + votesAbstain);
 	let votesProgress = $derived(
-		presentDelegations > 0 ? Math.min((votesTotal / presentDelegations) * 100, 100) : 0
+		presentDelegations > 0 ? Math.min((votesCast / presentDelegations) * 100, 100) : 0
 	);
-	let votesOvershot = $derived(presentDelegations > 0 && votesTotal > presentDelegations);
+	let votesOvershot = $derived(presentDelegations > 0 && votesCast > presentDelegations);
 
 	const exit = (completed: boolean = false) => {
 		if (oncomplete) {
@@ -226,12 +227,12 @@
 			></progress>
 			<div class="flex justify-between text-sm">
 				<span class={votesOvershot ? 'text-error font-semibold' : 'text-base-content/60'}>
-					{votesTotal} / {presentDelegations}
+					{votesCast} / {presentDelegations}
 				</span>
 				{#if votesOvershot}
 					<span class="text-error font-semibold">
 						<i class="fas fa-triangle-exclamation"></i>
-						+{votesTotal - presentDelegations}
+						+{votesCast - presentDelegations}
 						{m.over()}
 					</span>
 				{:else if votesTotal === presentDelegations}

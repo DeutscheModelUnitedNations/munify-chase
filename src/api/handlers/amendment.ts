@@ -391,7 +391,8 @@ schemaBuilder.mutationFields((t) => ({
 			}
 
 			// Check for duplicate amendment (same proposer, type, and target clause)
-			{
+			// ADD amendments have no target clause concept, so no duplicate check applies
+			if (args.type !== 'ADD') {
 				const duplicateConditions = [
 					eq(schema.amendment.paperId, args.paperId),
 					eq(schema.amendment.proposerCommitteeMemberId, conferenceUser.committeeMemberId),
@@ -400,11 +401,8 @@ schemaBuilder.mutationFields((t) => ({
 				];
 
 				// Use targetClauseId for duplicate detection (stable, not affected by index drift)
-				// For ADD amendments, targetClauseId is always null, so use targetPosition instead
 				if (args.targetClauseId) {
 					duplicateConditions.push(eq(schema.amendment.targetClauseId, args.targetClauseId));
-				} else if (args.targetPosition !== null && args.targetPosition !== undefined) {
-					duplicateConditions.push(eq(schema.amendment.targetPosition, args.targetPosition));
 				}
 
 				const [{ count: duplicateCount }] = await db
@@ -549,7 +547,8 @@ schemaBuilder.mutationFields((t) => ({
 			}
 
 			// Check for duplicate amendment (same proposer, type, and target clause)
-			{
+			// ADD amendments have no target clause concept, so no duplicate check applies
+			if (args.type !== 'ADD') {
 				const duplicateConditions = [
 					eq(schema.amendment.paperId, args.paperId),
 					eq(schema.amendment.proposerCommitteeMemberId, args.committeeMemberId),
@@ -558,11 +557,8 @@ schemaBuilder.mutationFields((t) => ({
 				];
 
 				// Use targetClauseId for duplicate detection (stable, not affected by index drift)
-				// For ADD amendments, targetClauseId is always null, so use targetPosition instead
 				if (args.targetClauseId) {
 					duplicateConditions.push(eq(schema.amendment.targetClauseId, args.targetClauseId));
-				} else if (args.targetPosition !== null && args.targetPosition !== undefined) {
-					duplicateConditions.push(eq(schema.amendment.targetPosition, args.targetPosition));
 				}
 
 				const [{ count: duplicateCount }] = await db

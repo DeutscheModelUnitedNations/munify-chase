@@ -400,8 +400,11 @@ schemaBuilder.mutationFields((t) => ({
 				];
 
 				// Use targetClauseId for duplicate detection (stable, not affected by index drift)
+				// For ADD amendments, targetClauseId is always null, so use targetPosition instead
 				if (args.targetClauseId) {
 					duplicateConditions.push(eq(schema.amendment.targetClauseId, args.targetClauseId));
+				} else if (args.targetPosition !== null && args.targetPosition !== undefined) {
+					duplicateConditions.push(eq(schema.amendment.targetPosition, args.targetPosition));
 				}
 
 				const [{ count: duplicateCount }] = await db
@@ -555,8 +558,11 @@ schemaBuilder.mutationFields((t) => ({
 				];
 
 				// Use targetClauseId for duplicate detection (stable, not affected by index drift)
+				// For ADD amendments, targetClauseId is always null, so use targetPosition instead
 				if (args.targetClauseId) {
 					duplicateConditions.push(eq(schema.amendment.targetClauseId, args.targetClauseId));
+				} else if (args.targetPosition !== null && args.targetPosition !== undefined) {
+					duplicateConditions.push(eq(schema.amendment.targetPosition, args.targetPosition));
 				}
 
 				const [{ count: duplicateCount }] = await db

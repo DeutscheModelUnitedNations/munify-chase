@@ -432,7 +432,8 @@
 </div>
 
 <style>
-	.resolution-font-size-wrapper :global(.resolution-preview) {
+	.resolution-font-size-wrapper :global(.resolution-preview),
+	.resolution-font-size-wrapper :global(.operative-paragraph-preview) {
 		font-size: var(--resolution-font-size) !important;
 	}
 </style>

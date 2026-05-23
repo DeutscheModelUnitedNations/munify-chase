@@ -16,65 +16,68 @@ import { attendanceCode as generateAttendanceCode } from '$lib/helpers/attendanc
 
 abilityBuilder.conferenceUser.allow('read').when((ctx) => {
 	return {
-		where: isParticipantInConference(ctx),
-		columns: {
-			id: true,
-			conferenceId: true,
-			userEmail: false,
-			name: false,
-			committeeMemberId: true,
-			conferenceMemberId: true,
-			conferenceUserType: true,
-			attendanceCode: false,
-			createdAt: true,
-			updatedAt: true
-		}
+		where: isParticipantInConference(ctx)
+		// columns: {
+		// 	id: true,
+		// 	conferenceId: true,
+		// 	userEmail: false,
+		// 	name: false,
+		// 	committeeMemberId: true,
+		// 	conferenceMemberId: true,
+		// 	conferenceUserType: true,
+		// 	attendanceCode: false,
+		// 	createdAt: true,
+		// 	updatedAt: true
+		// }
 	};
 });
 
 // Self read
 abilityBuilder.conferenceUser.allow('read').when((ctx) => {
 	const sub = ctx.oidc?.user.sub;
+	console.log({ sub });
 	if (sub) {
 		return {
 			where: {
 				user: {
 					id: sub
 				}
-			},
-			columns: {
-				id: true,
-				conferenceId: true,
-				userEmail: true,
-				name: true,
-				committeeMemberId: true,
-				conferenceMemberId: true,
-				conferenceUserType: true,
-				attendanceCode: true,
-				createdAt: true,
-				updatedAt: true
 			}
+			// columns: {
+			// 	id: true,
+			// 	conferenceId: true,
+			// 	userEmail: true,
+			// 	name: true,
+			// 	committeeMemberId: true,
+			// 	conferenceMemberId: true,
+			// 	conferenceUserType: true,
+			// 	attendanceCode: true,
+			// 	createdAt: true,
+			// 	updatedAt: true
+			// }
 		};
 	}
+
+	console.log('No sub');
 });
 
 abilityBuilder.conferenceUser.allow(['read', 'update', 'delete']).when((ctx) => {
 	return {
-		where: isAdminInConference(ctx),
+		where: isAdminInConference(ctx)
 		// Explicit all-columns include so the merge with the participant rule's
 		// hide-list doesn't drop userEmail/attendanceCode for non-global admins.
-		columns: {
-			id: true,
-			conferenceId: true,
-			userEmail: true,
-			name: true,
-			committeeMemberId: true,
-			conferenceMemberId: true,
-			conferenceUserType: true,
-			attendanceCode: true,
-			createdAt: true,
-			updatedAt: true
-		}
+		// columns: {
+		// 	id: true,
+		// 	conferenceId: true,
+		// 	userEmail: true,
+		// 	name: true,
+		// 	committeeMemberId: true,
+		// 	conferenceMemberId: true,
+		// 	conferenceUserType: true,
+		// 	attendanceCode: true,
+		// 	createdAt: true,
+		// 	updatedAt: true
+		// }
 	};
 });
 

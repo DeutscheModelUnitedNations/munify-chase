@@ -39,7 +39,12 @@ abilityBuilder.resolutionComment.allow('read').when((ctx) => {
 	return { where: { visibility: 'PUBLIC' } };
 });
 
-const ref = object({ table: 'resolutionComment' });
+const ref = object({
+	table: 'resolutionComment',
+	adjust: (t) => ({
+		author: t.relation('author', { nullable: true })
+	})
+});
 
 const commentVisibilityEnum = enum_({ tsName: 'commentVisibility' });
 

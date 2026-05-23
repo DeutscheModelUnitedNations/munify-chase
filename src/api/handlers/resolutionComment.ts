@@ -42,6 +42,7 @@ abilityBuilder.resolutionComment.allow('read').when((ctx) => {
 const ref = object({
 	table: 'resolutionComment',
 	adjust: (t) => ({
+		// TODO: this should be a temporary fix
 		author: t.relation('author', { nullable: true })
 	})
 });

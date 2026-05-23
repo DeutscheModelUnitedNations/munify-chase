@@ -8,23 +8,11 @@ import {
 } from '$api/rumble';
 import { eq } from 'drizzle-orm';
 import { db, schema } from '$api/db/db';
-import {
-	isAdminInConference,
-	isGlobalAdmin,
-	isParticipantInConference
-} from '$api/services/authHelper';
+import { isAdminInConference, isParticipantInConference } from '$api/services/authHelper';
 import { GraphQLError } from 'graphql';
 import { assertFindFirstExists, assertFirstEntryExists } from '@m1212e/rumble';
 import { emailValidation } from '$api/services/emailValidation';
 import { attendanceCode as generateAttendanceCode } from '$lib/helpers/attendanceCode';
-
-// Global admins bypass column restrictions entirely. Without this short-circuit,
-// rumble's mergeFilters intersects the explicit-true sets across rules — the
-// participant rule below hides userEmail/attendanceCode, and that decision wins
-// over the admin rule because the admin rule has no `columns` key to contribute.
-abilityBuilder.conferenceUser.allow('read').when((ctx) => {
-	if (isGlobalAdmin(ctx)) return 'allow';
-});
 
 abilityBuilder.conferenceUser.allow('read').when((ctx) => {
 	return {
@@ -44,27 +32,29 @@ abilityBuilder.conferenceUser.allow('read').when((ctx) => {
 	};
 });
 
-// Self-read: a logged-in participant can always read their own name + email
-// (needed for participant pages like MyAttendanceTab). Rumble merges column
-// sets across allow('read') rules additively, so this opens up just these
-// columns for the matching row without disturbing the participant rule.
-//
-// IMPORTANT: use the direct `userEmail` column filter instead of the relation
-// traversal `{ user: { email } }`. When `author` is loaded as a nested relation
-// on ResolutionComment and includes `with: { user: { where: ... } }`, using
-// the relation traversal in the WHERE clause creates a double-reference to the
-// same `user` join, causing Drizzle to generate conflicting SQL for self-written
-// comments (the only case where this rule fires together with the participant rule).
+// Self read
 abilityBuilder.conferenceUser.allow('read').when((ctx) => {
-	try {
-		const user = ctx.mustBeLoggedIn();
-		if (!user.email) return undefined;
+	const sub = ctx.oidc?.user.sub;
+	if (sub) {
 		return {
-			where: { userEmail: user.email },
-			columns: { name: true, userEmail: true }
+			where: {
+				user: {
+					id: sub
+				}
+			},
+			columns: {
+				id: true,
+				conferenceId: true,
+				userEmail: true,
+				name: true,
+				committeeMemberId: true,
+				conferenceMemberId: true,
+				conferenceUserType: true,
+				attendanceCode: true,
+				createdAt: true,
+				updatedAt: true
+			}
 		};
-	} catch {
-		return undefined;
 	}
 });
 

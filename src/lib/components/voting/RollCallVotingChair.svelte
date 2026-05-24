@@ -1,5 +1,6 @@
 <script lang="ts">
 	import Kbd from '$lib/components/Kbd.svelte';
+	import { untrack } from 'svelte';
 	import { m } from '$lib/paraglide/messages';
 	import Modal from '../Modal.svelte';
 	import hotkeys from 'hotkeys-js';
@@ -190,6 +191,12 @@
 
 	$effect(() => {
 		if (active) {
+			// hotkeys-js's default filter suppresses every shortcut while a text
+			// input/textarea/select is focused. If a vote is started while focus is
+			// still in an input (e.g. the vote-name field, or any field behind the
+			// modal), the first J/K/L/esc presses get swallowed. Blur so the keys
+			// register immediately.
+			(document.activeElement as HTMLElement | null)?.blur();
 			hotkeys('j, k, l, esc', 'rollCallVote', (event, handler) => {
 				event.preventDefault();
 				switch (handler.key) {
@@ -219,30 +226,40 @@
 		}
 	});
 
+	// Only the `active` transition (vote start / end) should reset this state.
+	// Everything else is read inside `untrack` so reading `committee.id` does not
+	// subscribe this effect to the committee liveQuery proxy — otherwise any
+	// unrelated committee update (timers, presence, speakers list, other tabs)
+	// re-runs the effect mid-call and wipes the in-progress tally back to empty.
 	$effect(() => {
-		if (!committee) return;
 		if (active) {
-			stage = 'ROLL_CALL';
-			currentIndex = 0;
-			localDB.committeeSettings.update(committee.id, {
-				rollCallVotingActive: true,
-				votingVoteName: voteName,
-				votingMajority: majority,
-				rollCallVotingPro: [],
-				rollCallVotingCon: [],
-				rollCallVotingAbstain: [],
-				votingWithAbstentions: withAbstentions
+			untrack(() => {
+				if (!committee) return;
+				stage = 'ROLL_CALL';
+				currentIndex = 0;
+				localDB.committeeSettings.update(committee.id, {
+					rollCallVotingActive: true,
+					votingVoteName: voteName,
+					votingMajority: majority,
+					rollCallVotingPro: [],
+					rollCallVotingCon: [],
+					rollCallVotingAbstain: [],
+					votingWithAbstentions: withAbstentions
+				});
 			});
 		} else {
-			localDB.committeeSettings.update(committee.id, {
-				rollCallVotingActive: false,
-				rollCallVotingPro: [],
-				rollCallVotingCon: [],
-				rollCallVotingAbstain: [],
-				votingVoteName: null,
-				votingMajority: null,
-				votingWithAbstentions: false,
-				votingMajorityAmount: null
+			untrack(() => {
+				if (!committee) return;
+				localDB.committeeSettings.update(committee.id, {
+					rollCallVotingActive: false,
+					rollCallVotingPro: [],
+					rollCallVotingCon: [],
+					rollCallVotingAbstain: [],
+					votingVoteName: null,
+					votingMajority: null,
+					votingWithAbstentions: false,
+					votingMajorityAmount: null
+				});
 			});
 		}
 	});

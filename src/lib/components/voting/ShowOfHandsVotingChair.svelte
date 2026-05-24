@@ -147,6 +147,11 @@
 
 	$effect(() => {
 		if (active) {
+			// hotkeys-js's default filter suppresses every shortcut while a text
+			// input/textarea/select is focused. If a vote is started while focus is
+			// still in an input (e.g. the vote-name field, or any field behind the
+			// modal), the first key presses get swallowed. Blur so they register.
+			(document.activeElement as HTMLElement | null)?.blur();
 			hotkeys('enter, esc, backspace, up, down, space', 'showOfHandsVote', (event, handler) => {
 				event.preventDefault();
 				switch (handler.key) {

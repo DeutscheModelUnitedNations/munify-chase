@@ -191,6 +191,12 @@
 
 	$effect(() => {
 		if (active) {
+			// hotkeys-js's default filter suppresses every shortcut while a text
+			// input/textarea/select is focused. If a vote is started while focus is
+			// still in an input (e.g. the vote-name field, or any field behind the
+			// modal), the first J/K/L/esc presses get swallowed. Blur so the keys
+			// register immediately.
+			(document.activeElement as HTMLElement | null)?.blur();
 			hotkeys('j, k, l, esc', 'rollCallVote', (event, handler) => {
 				event.preventDefault();
 				switch (handler.key) {

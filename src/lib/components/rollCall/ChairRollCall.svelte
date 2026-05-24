@@ -82,6 +82,11 @@
 
 	$effect(() => {
 		if (active) {
+			// hotkeys-js's default filter suppresses every shortcut while a text
+			// input/textarea/select is focused. If the roll call is started while
+			// focus is still in an input, the first key presses get swallowed.
+			// Blur so they register.
+			(document.activeElement as HTMLElement | null)?.blur();
 			hotkeys('up, down, j, l, esc', 'rollCall', (event, handler) => {
 				event.preventDefault();
 				switch (handler.key) {

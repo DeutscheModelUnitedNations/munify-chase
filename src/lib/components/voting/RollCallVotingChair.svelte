@@ -1,5 +1,6 @@
 <script lang="ts">
 	import Kbd from '$lib/components/Kbd.svelte';
+	import { untrack } from 'svelte';
 	import { m } from '$lib/paraglide/messages';
 	import Modal from '../Modal.svelte';
 	import hotkeys from 'hotkeys-js';
@@ -219,30 +220,40 @@
 		}
 	});
 
+	// Only the `active` transition (vote start / end) should reset this state.
+	// Everything else is read inside `untrack` so reading `committee.id` does not
+	// subscribe this effect to the committee liveQuery proxy — otherwise any
+	// unrelated committee update (timers, presence, speakers list, other tabs)
+	// re-runs the effect mid-call and wipes the in-progress tally back to empty.
 	$effect(() => {
-		if (!committee) return;
 		if (active) {
-			stage = 'ROLL_CALL';
-			currentIndex = 0;
-			localDB.committeeSettings.update(committee.id, {
-				rollCallVotingActive: true,
-				votingVoteName: voteName,
-				votingMajority: majority,
-				rollCallVotingPro: [],
-				rollCallVotingCon: [],
-				rollCallVotingAbstain: [],
-				votingWithAbstentions: withAbstentions
+			untrack(() => {
+				if (!committee) return;
+				stage = 'ROLL_CALL';
+				currentIndex = 0;
+				localDB.committeeSettings.update(committee.id, {
+					rollCallVotingActive: true,
+					votingVoteName: voteName,
+					votingMajority: majority,
+					rollCallVotingPro: [],
+					rollCallVotingCon: [],
+					rollCallVotingAbstain: [],
+					votingWithAbstentions: withAbstentions
+				});
 			});
 		} else {
-			localDB.committeeSettings.update(committee.id, {
-				rollCallVotingActive: false,
-				rollCallVotingPro: [],
-				rollCallVotingCon: [],
-				rollCallVotingAbstain: [],
-				votingVoteName: null,
-				votingMajority: null,
-				votingWithAbstentions: false,
-				votingMajorityAmount: null
+			untrack(() => {
+				if (!committee) return;
+				localDB.committeeSettings.update(committee.id, {
+					rollCallVotingActive: false,
+					rollCallVotingPro: [],
+					rollCallVotingCon: [],
+					rollCallVotingAbstain: [],
+					votingVoteName: null,
+					votingMajority: null,
+					votingWithAbstentions: false,
+					votingMajorityAmount: null
+				});
 			});
 		}
 	});

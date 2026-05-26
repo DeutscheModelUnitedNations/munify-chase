@@ -8,7 +8,7 @@ ALTER TABLE "paper_content_snapshot" DROP CONSTRAINT "paper_content_snapshot_pap
 ALTER TABLE "paper_editor" DROP CONSTRAINT "paper_editor_paper_id_resolution_paper_id_fk";--> statement-breakpoint
 ALTER TABLE "paper_share_code" DROP CONSTRAINT "paper_share_code_paper_id_resolution_paper_id_fk";--> statement-breakpoint
 ALTER TABLE "paper_sponsor" DROP CONSTRAINT "paper_sponsor_paper_id_resolution_paper_id_fk";--> statement-breakpoint
-ALTER TABLE "paper_yjs_doc" DROP CONSTRAINT "paper_yjs_doc_paper_id_resolution_paper_id_fkey";--> statement-breakpoint
+ALTER TABLE "paper_yjs_doc" DROP CONSTRAINT IF EXISTS "paper_yjs_doc_paper_id_resolution_paper_id_fkey";--> statement-breakpoint
 ALTER TABLE "resolution_comment" DROP CONSTRAINT "resolution_comment_paper_id_resolution_paper_id_fk";--> statement-breakpoint
 ALTER TABLE "resolution_vote_result" DROP CONSTRAINT "resolution_vote_result_paper_id_resolution_paper_id_fk";--> statement-breakpoint
 DROP TABLE "amendment";--> statement-breakpoint

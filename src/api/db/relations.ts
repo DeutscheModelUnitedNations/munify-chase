@@ -39,14 +39,6 @@ export const relations = defineRelations(schema, (r) => ({
 			from: r.committee.activeAgendaItemId,
 			to: r.agendaItem.id
 		}),
-		activeDraftResolution: r.one.resolutionPaper({
-			from: r.committee.activeDraftResolutionId,
-			to: r.resolutionPaper.id
-		}),
-		activeAmendment: r.one.amendment({
-			from: r.committee.activeAmendmentId,
-			to: r.amendment.id
-		}),
 		agendaItems: r.many.agendaItem({
 			from: r.committee.id,
 			to: r.agendaItem.committeeId
@@ -54,10 +46,6 @@ export const relations = defineRelations(schema, (r) => ({
 		members: r.many.committeeMember({
 			from: r.committee.id,
 			to: r.committeeMember.committeeId
-		}),
-		resolutionPapers: r.many.resolutionPaper({
-			from: r.committee.id,
-			to: r.resolutionPaper.committeeId
 		}),
 		nsaPresenceEvents: r.many.nsaPresenceEvent({
 			from: r.committee.id,
@@ -82,22 +70,6 @@ export const relations = defineRelations(schema, (r) => ({
 		presenceChangedTimestamps: r.many.presenceChangedTimestamp({
 			from: r.committeeMember.id,
 			to: r.presenceChangedTimestamp.committeeMemberId
-		}),
-		createdPapers: r.many.resolutionPaper({
-			from: r.committeeMember.id,
-			to: r.resolutionPaper.creatorCommitteeMemberId
-		}),
-		paperSponsors: r.many.paperSponsor({
-			from: r.committeeMember.id,
-			to: r.paperSponsor.committeeMemberId
-		}),
-		amendmentSponsors: r.many.amendmentSponsor({
-			from: r.committeeMember.id,
-			to: r.amendmentSponsor.committeeMemberId
-		}),
-		proposedAmendments: r.many.amendment({
-			from: r.committeeMember.id,
-			to: r.amendment.proposerCommitteeMemberId
 		})
 	},
 	conferenceUser: {
@@ -124,14 +96,6 @@ export const relations = defineRelations(schema, (r) => ({
 			from: r.conferenceUser.conferenceMemberId,
 			to: r.conferenceMember.id,
 			optional: true
-		}),
-		paperEditors: r.many.paperEditor({
-			from: r.conferenceUser.id,
-			to: r.paperEditor.conferenceUserId
-		}),
-		comments: r.many.resolutionComment({
-			from: r.conferenceUser.id,
-			to: r.resolutionComment.authorConferenceUserId
 		}),
 		nsaPresenceEvents: r.many.nsaPresenceEvent({
 			from: r.conferenceUser.id,
@@ -183,10 +147,6 @@ export const relations = defineRelations(schema, (r) => ({
 		speakersList: r.many.speakersList({
 			from: r.agendaItem.id,
 			to: r.speakersList.agendaItemId
-		}),
-		resolutionPapers: r.many.resolutionPaper({
-			from: r.agendaItem.id,
-			to: r.resolutionPaper.agendaItemId
 		})
 	},
 	speakersList: {
@@ -262,166 +222,6 @@ export const relations = defineRelations(schema, (r) => ({
 		triggeredBy: r.one.conferenceUser({
 			from: r.nsaPresenceEvent.triggeredByConferenceUserId,
 			to: r.conferenceUser.id
-		})
-	},
-	resolutionPaper: {
-		committee: r.one.committee({
-			from: r.resolutionPaper.committeeId,
-			to: r.committee.id,
-			optional: false
-		}),
-		agendaItem: r.one.agendaItem({
-			from: r.resolutionPaper.agendaItemId,
-			to: r.agendaItem.id,
-			optional: false
-		}),
-		creator: r.one.committeeMember({
-			from: r.resolutionPaper.creatorCommitteeMemberId,
-			to: r.committeeMember.id,
-			optional: false
-		}),
-		sponsors: r.many.paperSponsor({
-			from: r.resolutionPaper.id,
-			to: r.paperSponsor.paperId
-		}),
-		shareCodes: r.many.paperShareCode({
-			from: r.resolutionPaper.id,
-			to: r.paperShareCode.paperId
-		}),
-		editors: r.many.paperEditor({
-			from: r.resolutionPaper.id,
-			to: r.paperEditor.paperId
-		}),
-		comments: r.many.resolutionComment({
-			from: r.resolutionPaper.id,
-			to: r.resolutionComment.paperId
-		}),
-		amendments: r.many.amendment({
-			from: r.resolutionPaper.id,
-			to: r.amendment.paperId
-		}),
-		snapshots: r.many.paperContentSnapshot({
-			from: r.resolutionPaper.id,
-			to: r.paperContentSnapshot.paperId
-		}),
-		operativeClauseVotes: r.many.operativeClauseVote({
-			from: r.resolutionPaper.id,
-			to: r.operativeClauseVote.paperId
-		}),
-		// Optional: a resolutionVoteResult row only exists once a paper has
-		// been voted on. Papers that are still in progress (not FINAL) have
-		// no result, so this relation legitimately resolves to null.
-		voteResult: r.one.resolutionVoteResult({
-			from: r.resolutionPaper.id,
-			to: r.resolutionVoteResult.paperId,
-			optional: true
-		})
-	},
-	paperContentSnapshot: {
-		paper: r.one.resolutionPaper({
-			from: r.paperContentSnapshot.paperId,
-			to: r.resolutionPaper.id,
-			optional: false
-		})
-	},
-	paperSponsor: {
-		paper: r.one.resolutionPaper({
-			from: r.paperSponsor.paperId,
-			to: r.resolutionPaper.id,
-			optional: false
-		}),
-		committeeMember: r.one.committeeMember({
-			from: r.paperSponsor.committeeMemberId,
-			to: r.committeeMember.id,
-			optional: false
-		})
-	},
-	paperShareCode: {
-		paper: r.one.resolutionPaper({
-			from: r.paperShareCode.paperId,
-			to: r.resolutionPaper.id,
-			optional: false
-		})
-	},
-	paperEditor: {
-		paper: r.one.resolutionPaper({
-			from: r.paperEditor.paperId,
-			to: r.resolutionPaper.id,
-			optional: false
-		}),
-		conferenceUser: r.one.conferenceUser({
-			from: r.paperEditor.conferenceUserId,
-			to: r.conferenceUser.id,
-			optional: false
-		})
-	},
-	resolutionComment: {
-		paper: r.one.resolutionPaper({
-			from: r.resolutionComment.paperId,
-			to: r.resolutionPaper.id,
-			optional: false
-		}),
-		author: r.one.conferenceUser({
-			from: r.resolutionComment.authorConferenceUserId,
-			to: r.conferenceUser.id,
-			optional: false
-		}),
-		parentComment: r.one.resolutionComment({
-			from: r.resolutionComment.parentCommentId,
-			to: r.resolutionComment.id
-		}),
-		replies: r.many.resolutionComment({
-			from: r.resolutionComment.id,
-			to: r.resolutionComment.parentCommentId
-		})
-	},
-	amendment: {
-		paper: r.one.resolutionPaper({
-			from: r.amendment.paperId,
-			to: r.resolutionPaper.id,
-			optional: false
-		}),
-		proposer: r.one.committeeMember({
-			from: r.amendment.proposerCommitteeMemberId,
-			to: r.committeeMember.id,
-			optional: false
-		}),
-		sponsors: r.many.amendmentSponsor({
-			from: r.amendment.id,
-			to: r.amendmentSponsor.amendmentId
-		})
-	},
-	amendmentSponsor: {
-		amendment: r.one.amendment({
-			from: r.amendmentSponsor.amendmentId,
-			to: r.amendment.id,
-			optional: false
-		}),
-		committeeMember: r.one.committeeMember({
-			from: r.amendmentSponsor.committeeMemberId,
-			to: r.committeeMember.id,
-			optional: false
-		})
-	},
-	operativeClauseVote: {
-		paper: r.one.resolutionPaper({
-			from: r.operativeClauseVote.paperId,
-			to: r.resolutionPaper.id,
-			optional: false
-		})
-	},
-	resolutionVoteResult: {
-		paper: r.one.resolutionPaper({
-			from: r.resolutionVoteResult.paperId,
-			to: r.resolutionPaper.id,
-			optional: false
-		})
-	},
-	paperYjsDoc: {
-		paper: r.one.resolutionPaper({
-			from: r.paperYjsDoc.paperId,
-			to: r.resolutionPaper.id,
-			optional: false
 		})
 	}
 }));

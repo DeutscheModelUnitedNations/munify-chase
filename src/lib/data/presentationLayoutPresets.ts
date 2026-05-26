@@ -9,7 +9,6 @@ type PresentationLayoutPresets = {
 	whiteboard?: ComponentProps<GridItem>;
 	speakersList?: ComponentProps<GridItem>;
 	commentsList?: ComponentProps<GridItem>;
-	resolutionPreview?: ComponentProps<GridItem>;
 };
 
 const commonCommitteeTitleProps: Partial<ComponentProps<GridItem>> = {
@@ -61,14 +60,7 @@ const commonCommentsListProps: Partial<ComponentProps<GridItem>> = {
 	}
 };
 
-const commonResolutionPreviewProps: Partial<ComponentProps<GridItem>> = {
-	min: {
-		w: 4,
-		h: 4
-	}
-};
-
-export type PresentationLayoutPresetOptions = 'default' | 'smallScreen' | 'resolution';
+export type PresentationLayoutPresetOptions = 'default' | 'smallScreen';
 
 const presentationLayoutPresets: Record<
 	PresentationLayoutPresetOptions,
@@ -122,50 +114,6 @@ const presentationLayoutPresets: Record<
 			y: 2,
 			w: 4,
 			h: 11,
-			...commonCommentsListProps
-		}
-	},
-	resolution: {
-		committeeStatus: {
-			x: 0,
-			y: 0,
-			w: 4,
-			h: 2,
-			...commonCommitteeStatusProps
-		},
-		agendaItem: {
-			x: 4,
-			y: 0,
-			w: 4,
-			h: 2,
-			...commonCommitteeAgendaItemProps
-		},
-		majorities: {
-			x: 8,
-			y: 0,
-			w: 4,
-			h: 2,
-			...commonMajoritiesProps
-		},
-		resolutionPreview: {
-			x: 0,
-			y: 2,
-			w: 8,
-			h: 11,
-			...commonResolutionPreviewProps
-		},
-		speakersList: {
-			x: 8,
-			y: 2,
-			w: 4,
-			h: 5,
-			...commonSpeakersListProps
-		},
-		commentsList: {
-			x: 8,
-			y: 7,
-			w: 4,
-			h: 6,
 			...commonCommentsListProps
 		}
 	},

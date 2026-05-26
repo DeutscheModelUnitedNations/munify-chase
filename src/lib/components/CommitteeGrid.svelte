@@ -11,7 +11,6 @@
 			statusUntil: Date;
 			stateOfDebate?: string | null;
 			activeAgendaItem?: { title?: string | null } | null;
-			lastResolutionAdoptionDate?: Date | null;
 		}>;
 	}
 </script>
@@ -20,7 +19,6 @@
 	import { resolve } from '$app/paths';
 	import IconInfoBox from './IconInfoBox.svelte';
 	import { getCommitteeStatusIcon, getCommitteeStatusText } from '$lib/utils/committeeStatus';
-	import AdoptionConfetti from './AdoptionConfetti.svelte';
 
 	interface Props {
 		conference: ConferenceData;
@@ -77,13 +75,5 @@
 				/>
 			</div>
 		</a>
-
-		<AdoptionConfetti
-			agendaItem={committee.activeAgendaItem?.title ?? '—'}
-			committeeName={committee.name}
-			lastAdoptionDate={committee.lastResolutionAdoptionDate}
-			confettiDurationSec={90}
-			showBanner
-		/>
 	{/each}
 </div>

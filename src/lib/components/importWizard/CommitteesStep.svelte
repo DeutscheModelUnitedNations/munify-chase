@@ -101,14 +101,6 @@
 						</button>
 					</div>
 
-					<input
-						type="text"
-						class="input input-bordered w-full italic"
-						placeholder={m.resolutionHeadlinePlaceholder()}
-						bind:value={committee.resolutionHeadline}
-						style="font-family: 'Vollkorn', serif;"
-					/>
-
 					<fieldset class="fieldset bg-base-200 rounded-box p-4">
 						<legend class="fieldset-legend">{m.agendaTitle()}</legend>
 						{#if agendaItemsForCommittee.length === 0}

@@ -19,8 +19,7 @@
 
 	const layoutPresetLabels: Record<string, () => string> = {
 		default: m.layoutPresetDefault,
-		smallScreen: m.layoutPresetSmallScreen,
-		resolution: m.layoutPresetResolution
+		smallScreen: m.layoutPresetSmallScreen
 	};
 
 	let committeeSettings = liveQuery(() => localDB.committeeSettings.get(committeeId));
@@ -52,24 +51,7 @@
 				presentationRootFontSize: 16,
 				presentationResolutionFontSize: 16,
 				rollCall: null,
-				rollCallPending: [],
-
-				showOfHandsVotingActive: false,
-				showOfHandsVotingStage: null,
-				showOfHandsVotingVotesPro: 0,
-				showOfHandsVotingVotesCon: 0,
-				showOfHandsVotingVotesAbstain: 0,
-				showOfHandsVotingVotesTotal: 0,
-
-				rollCallVotingActive: false,
-				rollCallVotingPro: [],
-				rollCallVotingCon: [],
-				rollCallVotingAbstain: [],
-
-				votingVoteName: '',
-				votingMajority: null,
-				votingWithAbstentions: null,
-				votingMajorityAmount: null
+				rollCallPending: []
 			});
 		}
 	});

@@ -62,7 +62,6 @@
 		totalPresent: true,
 		simpleMajority: true,
 		twoThirdsMajority: true,
-		paperSupportThreshold: true,
 		activeAgendaItem: {
 			id: true,
 			title: true,
@@ -189,7 +188,6 @@
 					totalPresent={committee.totalPresent}
 					simpleMajority={committee.simpleMajority}
 					twoThirdsMajority={committee.twoThirdsMajority}
-					paperSupportThreshold={committee.paperSupportThreshold}
 				/>
 			</div>
 		</div>

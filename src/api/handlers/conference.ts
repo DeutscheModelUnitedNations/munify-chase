@@ -74,7 +74,6 @@ schemaBuilder.mutationFields((t) => ({
 			startDate: t.arg({ type: 'Date' }),
 			endDate: t.arg({ type: 'Date' }),
 			hasModeratedCaucus: t.arg.boolean(),
-			resolutionFeatureEnabled: t.arg.boolean(),
 			logoSvg: t.arg.string()
 		},
 		resolve: async (query, root, args, ctx) => {
@@ -104,7 +103,6 @@ schemaBuilder.mutationFields((t) => ({
 					startDate: mappedArgs.startDate,
 					endDate: mappedArgs.endDate,
 					hasModeratedCaucus: mappedArgs.hasModeratedCaucus,
-					resolutionFeatureEnabled: mappedArgs.resolutionFeatureEnabled,
 					...logoSvgUpdate
 				})
 				.where(

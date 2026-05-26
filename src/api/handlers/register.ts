@@ -12,17 +12,6 @@ import './user';
 import './import';
 import './presenceChangedTimestamp';
 import './nsaPresenceEvent';
-import './resolutionPaper';
-import './paperSponsor';
-import './paperShareCode';
-import './paperEditor';
-import './paperContentSnapshot';
-import './resolutionComment';
-import './amendment';
-import './amendmentSponsor';
-import './operativeClauseVote';
-import './resolutionVoteResult';
-
 import { building, dev } from '$app/environment';
 import { clientCreator } from '$api/rumble';
 

@@ -23,31 +23,18 @@ export const optimistic: OptimisticMutationConfig = {
 			'abbreviation',
 			'activeAgendaItemId',
 			'allowDelegationsToAddThemselvesToSpeakersList',
-			'amendmentSponsoringOpen',
-			'amendmentSubmissionOpen',
-			'currentOperativeClauseId',
-			'currentOperativeIndex',
-			'lastResolutionAdoptionDate',
-			'maxDraftResolutions',
 			'name',
 			'showWhiteboard',
 			'stateOfDebate',
 			'status',
 			'statusHeadline',
 			'statusUntil',
-			'supportReEvaluationOpen',
 			'whiteboardContent'
 		]) {
 			if ((args as Record<string, unknown>)[field] !== undefined) {
 				result[field] = (args as Record<string, unknown>)[field];
 			}
 		}
-		if (args.clearActiveAmendment) result.activeAmendmentId = null;
-		else if (args.activeAmendmentId !== undefined)
-			result.activeAmendmentId = args.activeAmendmentId;
-		if (args.clearActiveDraftResolution) result.activeDraftResolutionId = null;
-		else if (args.activeDraftResolutionId !== undefined)
-			result.activeDraftResolutionId = args.activeDraftResolutionId;
 		return result;
 	},
 	clearSpeakersList: (args) => ({

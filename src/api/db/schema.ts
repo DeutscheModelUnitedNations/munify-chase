@@ -8,9 +8,6 @@ import {
 	pgEnum,
 	boolean,
 	smallint,
-	integer,
-	json,
-	bytea,
 	index,
 	type AnyPgColumn
 } from 'drizzle-orm/pg-core';
@@ -49,7 +46,6 @@ export const conference = pgTable('conference', {
 	startDate: date({ mode: 'date' }),
 	endDate: date({ mode: 'date' }),
 	hasModeratedCaucus: boolean().notNull().default(false),
-	resolutionFeatureEnabled: boolean().notNull().default(true),
 	logoSvg: text()
 });
 
@@ -80,18 +76,7 @@ export const committee = pgTable(
 		activeAgendaItemId: text().references((): AnyPgColumn => agendaItem.id),
 		//TODO should these defaults be set at DB level?
 		customSimpleMajority: smallint(), // 50% by default
-		customTwoThirdsMajority: smallint(), // 66% by default
-		customPaperSupportThreshold: smallint(), // 10% by default
-		lastResolutionAdoptionDate: timestamp({ mode: 'date' }),
-		maxDraftResolutions: smallint().notNull().default(3),
-		activeDraftResolutionId: text().references((): AnyPgColumn => resolutionPaper.id),
-		currentOperativeIndex: smallint(),
-		currentOperativeClauseId: text(),
-		supportReEvaluationOpen: boolean().notNull().default(false),
-		amendmentSubmissionOpen: boolean().notNull().default(true),
-		amendmentSponsoringOpen: boolean().notNull().default(true),
-		activeAmendmentId: text().references((): AnyPgColumn => amendment.id, { onDelete: 'set null' }),
-		resolutionHeadline: text()
+		customTwoThirdsMajority: smallint() // 66% by default
 	},
 	(t) => [unique().on(t.conferenceId, t.name), unique().on(t.conferenceId, t.abbreviation)]
 );
@@ -283,199 +268,3 @@ export const nsaPresenceEvent = pgTable(
 		index('nsa_presence_event_committee_ts_idx').on(t.committeeId, t.timestamp.desc())
 	]
 );
-
-// ============ PAPER BEGIN ============
-
-// Resolution enums
-
-export const paperStatus = pgEnum('paper_status', [
-	'WORKING_PAPER',
-	'SUBMITTED',
-	'DRAFT_RESOLUTION',
-	'AMENDMENT_PHASE',
-	'VOTING_PHASE',
-	'FINAL'
-]);
-
-export const shareCodePermission = pgEnum('share_code_permission', ['SPONSOR', 'EDIT']);
-
-export const commentVisibility = pgEnum('comment_visibility', ['PUBLIC', 'TEAM_ONLY']);
-
-export const amendmentType = pgEnum('amendment_type', [
-	'DELETE',
-	'ADD',
-	'ALTER_TEXT',
-	'ALTER_POSITION'
-]);
-
-export const amendmentStatus = pgEnum('amendment_status', [
-	'PENDING',
-	'SUBMITTED',
-	'CONSENSUS_ADOPTED',
-	'ACCEPTED',
-	'REJECTED',
-	'WITHDRAWN'
-]);
-
-export const paperVoteOutcome = pgEnum('paper_vote_outcome', ['ADOPTED', 'REJECTED', 'SENT_BACK']);
-
-// Resolution tables
-
-export const resolutionPaper = pgTable('resolution_paper', {
-	...defaultIdAndTimestamps,
-	committeeId: text()
-		.notNull()
-		.references(() => committee.id, { onDelete: 'cascade' }),
-	agendaItemId: text()
-		.notNull()
-		.references(() => agendaItem.id, { onDelete: 'cascade' }),
-	creatorCommitteeMemberId: text()
-		.notNull()
-		.references(() => committeeMember.id, { onDelete: 'cascade' }),
-	status: paperStatus().notNull().default('WORKING_PAPER'),
-	content: json(),
-	title: text(),
-	documentNumber: text(),
-	sequenceNumber: smallint(),
-	deletedAt: timestamp()
-});
-
-export const paperContentSnapshot = pgTable('paper_content_snapshot', {
-	...defaultIdAndTimestamps,
-	paperId: text()
-		.notNull()
-		.references(() => resolutionPaper.id, { onDelete: 'cascade' }),
-	content: json(),
-	trigger: text()
-});
-
-export const paperSponsor = pgTable(
-	'paper_sponsor',
-	{
-		...defaultIdAndTimestamps,
-		paperId: text()
-			.notNull()
-			.references(() => resolutionPaper.id, { onDelete: 'cascade' }),
-		committeeMemberId: text()
-			.notNull()
-			.references(() => committeeMember.id, { onDelete: 'cascade' })
-	},
-	(t) => [unique().on(t.paperId, t.committeeMemberId)]
-);
-
-export const paperShareCode = pgTable('paper_share_code', {
-	...defaultIdAndTimestamps,
-	paperId: text()
-		.notNull()
-		.references(() => resolutionPaper.id, { onDelete: 'cascade' }),
-	code: text().notNull().unique(),
-	permission: shareCodePermission().notNull()
-});
-
-export const paperEditor = pgTable(
-	'paper_editor',
-	{
-		...defaultIdAndTimestamps,
-		paperId: text()
-			.notNull()
-			.references(() => resolutionPaper.id, { onDelete: 'cascade' }),
-		conferenceUserId: text()
-			.notNull()
-			.references(() => conferenceUser.id, { onDelete: 'cascade' })
-	},
-	(t) => [unique().on(t.paperId, t.conferenceUserId)]
-);
-
-export const resolutionComment = pgTable('resolution_comment', {
-	...defaultIdAndTimestamps,
-	paperId: text()
-		.notNull()
-		.references(() => resolutionPaper.id, { onDelete: 'cascade' }),
-	clauseId: text(),
-	authorConferenceUserId: text()
-		.notNull()
-		.references(() => conferenceUser.id, { onDelete: 'cascade' }),
-	content: text().notNull(),
-	visibility: commentVisibility().notNull().default('PUBLIC'),
-	parentCommentId: text().references((): AnyPgColumn => resolutionComment.id, {
-		onDelete: 'cascade'
-	})
-});
-
-export const amendment = pgTable('amendment', {
-	...defaultIdAndTimestamps,
-	paperId: text()
-		.notNull()
-		.references(() => resolutionPaper.id, { onDelete: 'cascade' }),
-	proposerCommitteeMemberId: text()
-		.notNull()
-		.references(() => committeeMember.id, { onDelete: 'cascade' }),
-	type: amendmentType().notNull(),
-	status: amendmentStatus().notNull().default('PENDING'),
-	targetClauseId: text(),
-	targetOperativeIndex: smallint(),
-	newContent: text(),
-	targetPosition: smallint(),
-	documentNumber: text(),
-	sequenceNumber: smallint()
-});
-
-export const amendmentSponsor = pgTable(
-	'amendment_sponsor',
-	{
-		...defaultIdAndTimestamps,
-		amendmentId: text()
-			.notNull()
-			.references(() => amendment.id, { onDelete: 'cascade' }),
-		committeeMemberId: text()
-			.notNull()
-			.references(() => committeeMember.id, { onDelete: 'cascade' })
-	},
-	(t) => [unique().on(t.amendmentId, t.committeeMemberId)]
-);
-
-export const operativeClauseVote = pgTable(
-	'operative_clause_vote',
-	{
-		...defaultIdAndTimestamps,
-		paperId: text()
-			.notNull()
-			.references(() => resolutionPaper.id, { onDelete: 'cascade' }),
-		clauseId: text().notNull(),
-		outcome: paperVoteOutcome().notNull(),
-		votesFor: integer().notNull(),
-		votesAgainst: integer().notNull(),
-		votesAbstain: integer().notNull().default(0)
-	},
-	(t) => [unique().on(t.paperId, t.clauseId)]
-);
-
-/**
- * Y.js document state for a resolution paper.
- *
- * The `state` column holds the full Y.Doc encoded via `Y.encodeStateAsUpdate`
- * and is the canonical source of truth for paper content.
- * `resolution_paper.content` is a materialized JSON projection refreshed on
- * every persist so amendment-apply, print, and snapshots can read JSON
- * without instantiating a Y.Doc.
- */
-export const paperYjsDoc = pgTable('paper_yjs_doc', {
-	...defaultIdAndTimestamps,
-	paperId: text()
-		.notNull()
-		.unique()
-		.references(() => resolutionPaper.id, { onDelete: 'cascade' }),
-	state: bytea('state').notNull()
-});
-
-export const resolutionVoteResult = pgTable('resolution_vote_result', {
-	...defaultIdAndTimestamps,
-	paperId: text()
-		.notNull()
-		.unique()
-		.references(() => resolutionPaper.id, { onDelete: 'cascade' }),
-	outcome: paperVoteOutcome().notNull(),
-	votesFor: integer().notNull(),
-	votesAgainst: integer().notNull(),
-	votesAbstain: integer().notNull().default(0)
-});

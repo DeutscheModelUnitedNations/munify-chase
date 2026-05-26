@@ -12,8 +12,6 @@
 	import BellIcon from '$lib/components/toast/BellIcon.svelte';
 	import { getServerTime } from '$lib/state/serverTime.svelte';
 	import hotkeys from 'hotkeys-js';
-	import AdoptionConfetti from '$lib/components/AdoptionConfetti.svelte';
-	import VotingModal from '$lib/components/voting/VotingModal.svelte';
 
 	interface Props {
 		children: Snippet;
@@ -28,7 +26,6 @@
 		id: true,
 		abbreviation: true,
 		name: true,
-		resolutionHeadline: true,
 		stateOfDebate: true,
 		status: true,
 		statusHeadline: true,
@@ -36,17 +33,7 @@
 		totalPresent: true,
 		simpleMajority: true,
 		twoThirdsMajority: true,
-		paperSupportThreshold: true,
-		maxDraftResolutions: true,
-		activeDraftResolutionId: true,
-		supportReEvaluationOpen: true,
-		amendmentSubmissionOpen: true,
-		amendmentSponsoringOpen: true,
-		currentOperativeIndex: true,
-		currentOperativeClauseId: true,
-		activeAmendmentId: true,
 		whiteboardContent: true,
-		lastResolutionAdoptionDate: true,
 		allowDelegationsToAddThemselvesToSpeakersList: true,
 		activeAgendaItem: {
 			id: true,
@@ -111,7 +98,6 @@
 			id: true,
 			title: true,
 			hasModeratedCaucus: true,
-			// TODO: resolutionFeatureEnabled not available in Rumble client yet
 			uniqueConferenceMembers: {
 				id: true,
 				representation: {
@@ -193,11 +179,7 @@
 	<title>{committee?.abbreviation ?? 'N/A'} {m.chairControls()} - MUNify CHASE</title>
 </svelte:head>
 
-<ChairNavbar
-	title={committee?.abbreviation}
-	conferenceTitle={committee?.conference?.title}
-	activeDraftResolutionId={committee?.activeDraftResolutionId}
-/>
+<ChairNavbar title={committee?.abbreviation} conferenceTitle={committee?.conference?.title} />
 
 <div class="pb-16">
 	{@render children()}
@@ -211,14 +193,3 @@
 />
 
 <StateOfDebateChangerModal {committeeId} oldStateOfDebate={committee?.stateOfDebate} />
-
-{#if committee}
-	<VotingModal {committee} />
-{/if}
-
-<AdoptionConfetti
-	lastAdoptionDate={committee?.lastResolutionAdoptionDate}
-	agendaItem={committee?.activeAgendaItem?.title ?? m.unknown()}
-	committeeName={committee?.name ?? m.unknown()}
-	confettiDurationSec={20}
-/>

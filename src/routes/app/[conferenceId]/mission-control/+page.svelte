@@ -36,8 +36,7 @@
 			status: true,
 			statusHeadline: true,
 			statusUntil: true,
-			stateOfDebate: true,
-			lastResolutionAdoptionDate: true
+			stateOfDebate: true
 		}
 	});
 

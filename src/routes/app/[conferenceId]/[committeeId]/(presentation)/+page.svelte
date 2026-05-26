@@ -16,11 +16,7 @@
 	import { sortTranslatedCountries } from '$lib/utils/nationTranslationHelper.svelte';
 	import CurrentSpeaker from '$lib/components/speakersList/CurrentSpeaker.svelte';
 	import SpeakersQueue from '$lib/components/speakersList/PresentationSpeakersQueue.svelte';
-	import ShowOfHandsVotingPresentation from '$lib/components/voting/ShowOfHandsVotingPresentation.svelte';
-	import RollCallVotingPresentation from '$lib/components/voting/RollCallVotingPresentation.svelte';
 	import { browser } from '$app/environment';
-	import AdoptionConfetti from '$lib/components/AdoptionConfetti.svelte';
-	import PresentationResolutionPreview from './PresentationResolutionPreview.svelte';
 	import { client } from '$lib/api/rumbleClient/client';
 	import { page } from '$app/state';
 
@@ -31,99 +27,12 @@
 		id: true,
 		abbreviation: true,
 		name: true,
-		resolutionHeadline: true,
 		status: true,
 		statusHeadline: true,
 		statusUntil: true,
 		totalPresent: true,
 		simpleMajority: true,
 		twoThirdsMajority: true,
-		paperSupportThreshold: true,
-		lastResolutionAdoptionDate: true,
-		activeDraftResolutionId: true,
-		currentOperativeIndex: true,
-		currentOperativeClauseId: true,
-		activeAmendmentId: true,
-		activeAmendment: {
-			id: true,
-			type: true,
-			status: true,
-			documentNumber: true,
-			targetClauseId: true,
-			targetOperativeIndex: true,
-			targetPosition: true,
-			newContent: true,
-			proposer: {
-				id: true,
-				representation: {
-					id: true,
-					name: true,
-					alpha2Code: true,
-					alpha3Code: true
-				}
-			}
-		},
-		activeDraftResolution: {
-			id: true,
-			content: true,
-			documentNumber: true,
-			status: true,
-			title: true,
-			updatedAt: true,
-			agendaItem: {
-				id: true,
-				title: true
-			},
-			creator: {
-				id: true,
-				representation: {
-					id: true,
-					name: true,
-					alpha2Code: true,
-					alpha3Code: true
-				}
-			},
-			sponsors: {
-				id: true,
-				committeeMember: {
-					id: true,
-					representation: {
-						id: true,
-						name: true,
-						alpha3Code: true
-					}
-				}
-			},
-			amendments: {
-				id: true,
-				type: true,
-				status: true,
-				documentNumber: true,
-				targetClauseId: true,
-				targetOperativeIndex: true,
-				targetPosition: true,
-				newContent: true,
-				proposer: {
-					id: true,
-					representation: {
-						id: true,
-						name: true
-					}
-				}
-			},
-			operativeClauseVotes: {
-				id: true,
-				clauseId: true,
-				outcome: true
-			},
-			voteResult: {
-				id: true,
-				outcome: true,
-				votesFor: true,
-				votesAgainst: true,
-				votesAbstain: true
-			}
-		},
 		whiteboardContent: true,
 		activeAgendaItem: {
 			id: true,
@@ -184,7 +93,6 @@
 			id: true,
 			title: true,
 			logoSvg: true,
-			resolutionFeatureEnabled: true,
 			uniqueConferenceMembers: {
 				id: true,
 				representation: {
@@ -308,7 +216,6 @@
 					totalPresent={committee.totalPresent}
 					simpleMajority={committee.simpleMajority}
 					twoThirdsMajority={committee.twoThirdsMajority}
-					paperSupportThreshold={committee.paperSupportThreshold}
 				/>
 			</GridItem>
 		{/if}
@@ -347,16 +254,6 @@
 				/>
 			</GridItem>
 		{/if}
-
-		{#if layout.resolutionPreview}
-			{@const gridProps = layout.resolutionPreview}
-			<GridItem {...gridProps} class="card bg-base-100 overflow-auto p-4" id="resolution-preview">
-				<PresentationResolutionPreview
-					{committee}
-					resolutionFontSize={$committeeSettings?.presentationResolutionFontSize ?? 16}
-				/>
-			</GridItem>
-		{/if}
 	</Grid>
 
 	<RegionalGroups
@@ -371,15 +268,6 @@
 			.sort((a, b) => sortTranslatedCountries(a.representation!, b.representation!))}
 	/>
 
-	<ShowOfHandsVotingPresentation committeeSettings={$committeeSettings} />
-	<RollCallVotingPresentation committeeSettings={$committeeSettings} {committee} />
-
-	<AdoptionConfetti
-		lastAdoptionDate={committee?.lastResolutionAdoptionDate}
-		agendaItem={committee?.activeAgendaItem?.title ?? m.unknown()}
-		committeeName={committee?.name ?? m.unknown()}
-		confettiDurationSec={90}
-	/>
 	<button
 		class="btn btn-ghost fixed bottom-3 left-3 z-50 h-12 w-12 min-h-0 p-0 opacity-15 hover:opacity-60 transition-opacity"
 		onclick={toggleFullscreen}

@@ -5,10 +5,9 @@
 		totalPresent: number | null;
 		simpleMajority: number | null;
 		twoThirdsMajority: number | null;
-		paperSupportThreshold: number | null;
 	}
 
-	let { totalPresent, simpleMajority, twoThirdsMajority, paperSupportThreshold }: Props = $props();
+	let { totalPresent, simpleMajority, twoThirdsMajority }: Props = $props();
 </script>
 
 {#snippet Card(cardData: {
@@ -52,10 +51,5 @@
 		number: twoThirdsMajority ?? 0,
 		faIcon: 'fa-circle-chevron-up',
 		tooltip: m.twoThirdsMajorityTooltip()
-	})}
-	{@render Card({
-		number: paperSupportThreshold ?? 0,
-		faIcon: 'fa-file-plus',
-		tooltip: m.paperSupportThresholdTooltip()
 	})}
 </div>

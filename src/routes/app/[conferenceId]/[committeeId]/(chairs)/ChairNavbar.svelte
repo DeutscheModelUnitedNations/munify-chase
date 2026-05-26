@@ -17,16 +17,9 @@
 	interface Props {
 		title?: string;
 		conferenceTitle?: string | null;
-		activeDraftResolutionId?: string | null;
-		resolutionFeatureEnabled?: boolean;
 	}
 
-	let {
-		title,
-		conferenceTitle,
-		activeDraftResolutionId,
-		resolutionFeatureEnabled = true
-	}: Props = $props();
+	let { title, conferenceTitle }: Props = $props();
 
 	const conferenceId = $derived(page.params.conferenceId!);
 	const committeeId = $derived(page.params.committeeId!);
@@ -101,55 +94,15 @@
 				committeeId
 			}),
 			key: 'speakers-list'
-		},
-		{
-			icon: 'fa-box-ballot',
-			label: () => m.voting(),
-			href: resolve('/app/[conferenceId]/[committeeId]/(chairs)/voting', {
-				conferenceId,
-				committeeId
-			}),
-			key: 'voting'
-		},
-		...(resolutionFeatureEnabled
-			? [
-					{
-						icon: 'fa-scroll',
-						label: () => m.resolutions(),
-						href: resolve('/app/[conferenceId]/[committeeId]/(chairs)/resolutions', {
-							conferenceId,
-							committeeId
-						}),
-						key: 'resolutions'
-					}
-				]
-			: []),
-		...(resolutionFeatureEnabled && activeDraftResolutionId
-			? [
-					{
-						icon: 'fa-file-lines',
-						label: () => m.activeDraftResolution(),
-						href: resolve('/app/[conferenceId]/[committeeId]/(chairs)/resolutions/[paperId]', {
-							conferenceId,
-							committeeId,
-							paperId: activeDraftResolutionId
-						}),
-						key: activeDraftResolutionId
-					}
-				]
-			: [])
+		}
 	]);
 
 	function isActive(key: string) {
-		// If we're on the active DR's paper page, highlight the active DR tab, not the resolutions tab
-		if (activeDraftResolutionId && page.params.paperId === activeDraftResolutionId) {
-			return key === activeDraftResolutionId;
-		}
 		return page.route.id?.includes(key) ?? false;
 	}
 
 	$effect(() => {
-		hotkeys('alt+1, alt+2, alt+3, alt+4, alt+5, alt+6', (event, handler) => {
+		hotkeys('alt+1, alt+2, alt+3', (event, handler) => {
 			event.preventDefault();
 			switch (handler.key) {
 				case 'alt+1':
@@ -175,33 +128,6 @@
 							committeeId
 						})
 					);
-					break;
-				case 'alt+4':
-					goto(
-						resolve('/app/[conferenceId]/[committeeId]/(chairs)/voting', {
-							conferenceId,
-							committeeId
-						})
-					);
-					break;
-				case 'alt+5':
-					goto(
-						resolve('/app/[conferenceId]/[committeeId]/(chairs)/resolutions', {
-							conferenceId,
-							committeeId
-						})
-					);
-					break;
-				case 'alt+6':
-					if (activeDraftResolutionId) {
-						goto(
-							resolve('/app/[conferenceId]/[committeeId]/(chairs)/resolutions/[paperId]', {
-								conferenceId,
-								committeeId,
-								paperId: activeDraftResolutionId
-							})
-						);
-					}
 					break;
 			}
 		});

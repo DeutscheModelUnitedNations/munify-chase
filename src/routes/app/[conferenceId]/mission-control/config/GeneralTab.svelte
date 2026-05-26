@@ -15,7 +15,6 @@
 			startDate: Date | null;
 			endDate: Date | null;
 			hasModeratedCaucus: boolean;
-			resolutionFeatureEnabled: boolean;
 			logoSvg: string | null;
 		};
 	}
@@ -28,7 +27,6 @@
 	let startDate = $state('');
 	let endDate = $state('');
 	let hasModeratedCaucus = $state(false);
-	let resolutionFeatureEnabled = $state(true);
 	let logoSvg = $state('');
 	let isSaving = $state(false);
 
@@ -88,7 +86,6 @@
 		startDate = toDateInputValue(conference.startDate);
 		endDate = toDateInputValue(conference.endDate);
 		hasModeratedCaucus = conference.hasModeratedCaucus;
-		resolutionFeatureEnabled = conference.resolutionFeatureEnabled;
 		logoSvg = conference.logoSvg ?? '';
 	});
 
@@ -105,7 +102,6 @@
 						startDate: startDate ? new Date(startDate) : null,
 						endDate: endDate ? new Date(endDate) : null,
 						hasModeratedCaucus,
-						resolutionFeatureEnabled,
 						logoSvg
 					},
 					id: true
@@ -194,21 +190,6 @@
 				<div class="flex flex-col">
 					<span class="label-text font-semibold">{m.hasModeratedCaucus()}</span>
 					<span class="label-text-alt">{m.hasModeratedCaucusDescription()}</span>
-				</div>
-			</label>
-		</div>
-
-		<div class="form-control">
-			<label class="label cursor-pointer justify-start gap-4" for="resolution-feature-enabled">
-				<input
-					id="resolution-feature-enabled"
-					type="checkbox"
-					class="toggle toggle-primary"
-					bind:checked={resolutionFeatureEnabled}
-				/>
-				<div class="flex flex-col">
-					<span class="label-text font-semibold">{m.resolutionFeatureEnabled()}</span>
-					<span class="label-text-alt">{m.resolutionFeatureEnabledDescription()}</span>
 				</div>
 			</label>
 		</div>

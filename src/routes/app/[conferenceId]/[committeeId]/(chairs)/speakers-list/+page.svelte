@@ -18,7 +18,6 @@
 		totalPresent: true,
 		simpleMajority: true,
 		twoThirdsMajority: true,
-		paperSupportThreshold: true,
 		status: true,
 		statusHeadline: true,
 		statusUntil: true,
@@ -118,7 +117,6 @@
 					totalPresent={committee.totalPresent}
 					simpleMajority={committee.simpleMajority}
 					twoThirdsMajority={committee.twoThirdsMajority}
-					paperSupportThreshold={committee.paperSupportThreshold}
 				/>
 			</BasicCard>
 		</div>

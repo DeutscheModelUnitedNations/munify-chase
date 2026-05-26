@@ -16,7 +16,6 @@
 	import PresentationSettings from './PresentationSettings.svelte';
 	import Tabs from '$lib/components/Tabs.svelte';
 	import StatusWidget from '../StatusWidget.svelte';
-	import dayjs from 'dayjs';
 
 	const committee = await client.liveQuery.committee({
 		__args: { id: page.params.committeeId! },
@@ -30,7 +29,6 @@
 		totalPresent: true,
 		simpleMajority: true,
 		twoThirdsMajority: true,
-		paperSupportThreshold: true,
 		activeAgendaItem: { id: true, title: true },
 		agendaItems: { id: true, title: true },
 		conference: { hasModeratedCaucus: true }
@@ -56,7 +54,6 @@
 						totalPresent={committee.totalPresent}
 						simpleMajority={committee.simpleMajority}
 						twoThirdsMajority={committee.twoThirdsMajority}
-						paperSupportThreshold={committee.paperSupportThreshold}
 					/>
 				</BasicCard>
 				<BasicCard className="relative group">
@@ -119,20 +116,6 @@
 							});
 						}}
 					/>
-				</BasicCard>
-				<BasicCard title={m.announceAdoption()}>
-					<button
-						class="btn btn-primary btn-lg mb-4 flex items-center gap-3"
-						onclick={() => {
-							client.mutate.updateCommittee({
-								__args: { id: committee.id, lastResolutionAdoptionDate: dayjs().toDate() },
-								id: true
-							});
-						}}
-					>
-						<i class="fas fa-party-horn"></i>
-						{m.announceAdoption()}
-					</button>
 				</BasicCard>
 			</div>
 		</div>

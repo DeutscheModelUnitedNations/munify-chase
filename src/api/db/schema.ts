@@ -10,16 +10,10 @@ import {
 	smallint,
 	integer,
 	json,
-	customType,
+	bytea,
 	index,
 	type AnyPgColumn
 } from 'drizzle-orm/pg-core';
-
-const bytea = customType<{ data: Uint8Array; driverData: Buffer }>({
-	dataType: () => 'bytea',
-	toDriver: (v) => Buffer.from(v),
-	fromDriver: (v) => new Uint8Array(v as Buffer)
-});
 
 const defaultTimestamps = {
 	createdAt: timestamp().defaultNow().notNull(),
@@ -165,7 +159,7 @@ export const conferenceUser = pgTable(
 	{
 		...defaultIdAndTimestamps,
 		conferenceUserType: conferenceUserType().notNull(),
-		userEmail: text().notNull(), // using email instead of uuid to allow creating OIDC users by email adress without having to wait for the user to create an account
+		userEmail: text().notNull().unique(), // using email instead of uuid to allow creating OIDC users by email adress without having to wait for the user to create an account
 		// optional display name; the user table is created lazily on first OIDC
 		// login, so we keep names on the conferenceUser instead. UI falls back to
 		// userEmail when null.
@@ -181,7 +175,7 @@ export const conferenceUser = pgTable(
 	},
 	// Postgres default NULLS DISTINCT keeps the constraint compatible with the many
 	// non-NSA users that have attendanceCode = NULL.
-	(t) => [unique().on(t.conferenceId, t.attendanceCode)]
+	(t) => [unique().on(t.conferenceId, t.attendanceCode), unique().on(t.conferenceId, t.userEmail)]
 );
 
 export const agendaItem = pgTable('agenda_item', {
@@ -275,10 +269,6 @@ export const nsaPresenceEvent = pgTable(
 		committeeId: text()
 			.notNull()
 			.references(() => committee.id, { onDelete: 'cascade' }),
-		// denormalized for conference-scoped subscriptions and the latest-event window query
-		conferenceId: text()
-			.notNull()
-			.references(() => conference.id, { onDelete: 'cascade' }),
 		type: nsaPresenceEventType().notNull(),
 		timestamp: timestamp().notNull(),
 		// chair/admin who triggered the event; null for system-generated auto-checkouts on switch
@@ -290,10 +280,11 @@ export const nsaPresenceEvent = pgTable(
 	},
 	(t) => [
 		index('nsa_presence_event_user_ts_idx').on(t.conferenceUserId, t.timestamp.desc()),
-		index('nsa_presence_event_committee_ts_idx').on(t.committeeId, t.timestamp.desc()),
-		index('nsa_presence_event_conference_ts_idx').on(t.conferenceId, t.timestamp.desc())
+		index('nsa_presence_event_committee_ts_idx').on(t.committeeId, t.timestamp.desc())
 	]
 );
+
+// ============ PAPER BEGIN ============
 
 // Resolution enums
 
@@ -326,7 +317,7 @@ export const amendmentStatus = pgEnum('amendment_status', [
 	'WITHDRAWN'
 ]);
 
-export const voteOutcome = pgEnum('vote_outcome', ['ADOPTED', 'REJECTED', 'SENT_BACK']);
+export const paperVoteOutcome = pgEnum('paper_vote_outcome', ['ADOPTED', 'REJECTED', 'SENT_BACK']);
 
 // Resolution tables
 
@@ -451,7 +442,7 @@ export const operativeClauseVote = pgTable(
 			.notNull()
 			.references(() => resolutionPaper.id, { onDelete: 'cascade' }),
 		clauseId: text().notNull(),
-		outcome: voteOutcome().notNull(),
+		outcome: paperVoteOutcome().notNull(),
 		votesFor: integer().notNull(),
 		votesAgainst: integer().notNull(),
 		votesAbstain: integer().notNull().default(0)
@@ -483,7 +474,7 @@ export const resolutionVoteResult = pgTable('resolution_vote_result', {
 		.notNull()
 		.unique()
 		.references(() => resolutionPaper.id, { onDelete: 'cascade' }),
-	outcome: voteOutcome().notNull(),
+	outcome: paperVoteOutcome().notNull(),
 	votesFor: integer().notNull(),
 	votesAgainst: integer().notNull(),
 	votesAbstain: integer().notNull().default(0)

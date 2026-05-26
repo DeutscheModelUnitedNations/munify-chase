@@ -5,9 +5,10 @@
 	import { getCommitteeStatusIcon, getCommitteeStatusText } from '$lib/utils/committeeStatus';
 	import WhiteboardViewer from '$lib/components/whiteboard/WhiteboardViewer.svelte';
 	import Majorities from '$lib/components/Majorities.svelte';
-	import { liveQuery } from 'dexie';
-	import { localDB } from '$lib/local-db/localDB';
-	import { getPresentationLayoutPreset } from '$lib/data/presentationLayoutPresets';
+	import {
+		getPresentationLayoutPreset,
+		type PresentationLayoutPresetOptions
+	} from '$lib/data/presentationLayoutPresets';
 	import AbbreviationInfoBox from '$lib/components/AbbreviationInfoBox.svelte';
 	import UndrawError from '$lib/components/UndrawError.svelte';
 	import emptyStreet from '$assets/undraw/empty_street.svg';
@@ -36,6 +37,9 @@
 		simpleMajority: true,
 		twoThirdsMajority: true,
 		whiteboardContent: true,
+		presentationLayout: true,
+		presentationRootFontSize: true,
+		displayRegionalGroups: true,
 		activeAgendaItem: {
 			id: true,
 			title: true,
@@ -109,11 +113,10 @@
 		}
 	});
 
-	let committeeSettings = liveQuery(() => localDB.committeeSettings.get(committeeId));
-
 	let layout = $derived(
-		($committeeSettings && getPresentationLayoutPreset($committeeSettings.layout)) ??
-			getPresentationLayoutPreset()
+		getPresentationLayoutPreset(
+			(committee?.presentationLayout as PresentationLayoutPresetOptions) ?? undefined
+		)
 	);
 
 	let speakersList = $derived(
@@ -141,8 +144,8 @@
 	};
 
 	$effect(() => {
-		if ($committeeSettings?.presentationRootFontSize) {
-			document.documentElement.style.fontSize = `${$committeeSettings.presentationRootFontSize}px`;
+		if (committee?.presentationRootFontSize) {
+			document.documentElement.style.fontSize = `${committee.presentationRootFontSize}px`;
 		}
 	});
 
@@ -259,7 +262,7 @@
 	</Grid>
 
 	<RegionalGroups
-		open={$committeeSettings?.displayRegionalGroups ?? false}
+		open={committee.displayRegionalGroups ?? false}
 		committeeMembers={committee.members}
 	/>
 

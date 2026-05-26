@@ -5,7 +5,7 @@
 	import hotkeys from 'hotkeys-js';
 	import { untrack } from 'svelte';
 	import { client } from '$lib/api/rumbleClient/client';
-	import { type VotingMajority, type VotingStage } from '$lib/local-db/localDB';
+	import { type VotingMajority, type VotingStage } from './votingModal';
 	import VoteClicker from './VoteClicker.svelte';
 	import ResultChart from './ResultChart.svelte';
 	import { calculateMajority } from '$lib/utils/majorities';

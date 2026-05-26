@@ -78,7 +78,11 @@ export const committee = pgTable(
 		activeAgendaItemId: text().references((): AnyPgColumn => agendaItem.id),
 		//TODO should these defaults be set at DB level?
 		customSimpleMajority: smallint(), // 50% by default
-		customTwoThirdsMajority: smallint() // 66% by default
+		customTwoThirdsMajority: smallint(), // 66% by default
+		presentationLayout: text().notNull().default('default'),
+		presentationRootFontSize: smallint().notNull().default(16),
+		presentationResolutionFontSize: smallint().notNull().default(16),
+		displayRegionalGroups: boolean().notNull().default(false)
 	},
 	(t) => [unique().on(t.conferenceId, t.name), unique().on(t.conferenceId, t.abbreviation)]
 );

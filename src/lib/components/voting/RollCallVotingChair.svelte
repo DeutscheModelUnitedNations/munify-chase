@@ -6,7 +6,7 @@
 	import hotkeys from 'hotkeys-js';
 	import toast from 'svelte-french-toast';
 	import { client } from '$lib/api/rumbleClient/client';
-	import { type VotingMajority, type VotingOptions } from '$lib/local-db/localDB';
+	import { type VotingMajority, type VotingOptions } from './votingModal';
 	import ScrollingCountryList from '../rollCall/ScrollingCountryList.svelte';
 	import ResultChart from './ResultChart.svelte';
 	import { sortTranslatedCountries } from '$lib/utils/nationTranslationHelper.svelte';

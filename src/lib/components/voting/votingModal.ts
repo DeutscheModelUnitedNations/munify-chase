@@ -1,5 +1,8 @@
 import { writable } from 'svelte/store';
-import type { VotingMajority } from '$lib/local-db/localDB';
+
+export type VotingStage = 'PRO' | 'CON' | 'ABSTAIN' | 'EVALUATION';
+export type VotingOptions = 'PRO' | 'CON' | 'ABSTAIN';
+export type VotingMajority = 'SIMPLE' | 'ABSOLUTE' | 'TWO_THIRDS';
 
 export interface VotingConfig {
 	voteName?: string;

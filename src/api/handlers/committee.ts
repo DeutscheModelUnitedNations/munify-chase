@@ -176,7 +176,11 @@ schemaBuilder.mutationFields((t) => {
 				}),
 				stateOfDebate: t.arg.string(),
 				activeAgendaItemId: t.arg.id(),
-				allowDelegationsToAddThemselvesToSpeakersList: t.arg.boolean()
+				allowDelegationsToAddThemselvesToSpeakersList: t.arg.boolean(),
+				presentationLayout: t.arg.string(),
+				presentationRootFontSize: t.arg.int(),
+				presentationResolutionFontSize: t.arg.int(),
+				displayRegionalGroups: t.arg.boolean()
 			},
 			resolve: async (query, _root, args, ctx) => {
 				await db.transaction(async (tx) => {
@@ -193,7 +197,11 @@ schemaBuilder.mutationFields((t) => {
 							stateOfDebate: args.stateOfDebate ?? undefined,
 							activeAgendaItemId: args.activeAgendaItemId ?? undefined,
 							allowDelegationsToAddThemselvesToSpeakersList:
-								args.allowDelegationsToAddThemselvesToSpeakersList ?? undefined
+								args.allowDelegationsToAddThemselvesToSpeakersList ?? undefined,
+							presentationLayout: args.presentationLayout ?? undefined,
+							presentationRootFontSize: args.presentationRootFontSize ?? undefined,
+							presentationResolutionFontSize: args.presentationResolutionFontSize ?? undefined,
+							displayRegionalGroups: args.displayRegionalGroups ?? undefined
 						})
 						.where(
 							ctx.abilities.committee.filter('update').merge({ where: { id: args.id } }).sql.where

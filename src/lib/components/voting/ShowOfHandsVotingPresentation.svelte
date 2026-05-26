@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { client } from '$lib/api/rumbleClient/client';
-	import { type VotingStage } from '$lib/local-db/localDB';
+	import { type VotingStage } from './votingModal';
 	import { m } from '$lib/paraglide/messages';
 	import { cubicIn, cubicOut } from 'svelte/easing';
 	import { fly } from 'svelte/transition';

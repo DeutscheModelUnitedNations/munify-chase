@@ -1,5 +1,5 @@
 <script lang="ts">
-	import type { VotingMajority } from '$lib/local-db/localDB';
+	import type { VotingMajority } from './votingModal';
 	import { m } from '$lib/paraglide/messages';
 	import Tabs from '../Tabs.svelte';
 	import Combobox from '../Combobox.svelte';

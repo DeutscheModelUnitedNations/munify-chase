@@ -1,5 +1,5 @@
 <script lang="ts">
-	import type { VotingMajority } from '$lib/local-db/localDB';
+	import type { VotingMajority } from './votingModal';
 	import RollCallVotingChair from './RollCallVotingChair.svelte';
 	import ShowOfHandsVotingChair from './ShowOfHandsVotingChair.svelte';
 	import VotingSetupForm from './VotingSetupForm.svelte';

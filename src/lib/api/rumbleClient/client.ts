@@ -549,6 +549,7 @@ export type Mutation = {
   clearSpeakersList: (p: {
     id: ID
   }) => Speakerslist,
+  completeRollCallSession: Boolean,
   createAgendaItem: (p: {
     committeeId: ID,
     title: String
@@ -595,9 +596,10 @@ export type Mutation = {
   insertPresenceEvent: (p: {
     committeeId: ID,
     conferenceUserId: ID,
-    eventType: unknown,
+    markerType?: unknown | null | undefined,
     note?: String | null | undefined,
-    timestamp: DateTime
+    present: Boolean,
+    timestamp?: DateTime | null | undefined
   }) => Presenceevent,
   moveSpeakerToPosition: (p: {
     id: ID,
@@ -625,8 +627,16 @@ export type Mutation = {
   }) => Speakerslist,
   setPresenceForCommitteeMembers: (p: {
     ids: unknown,
-    present: Boolean
+    present: Boolean,
+    rollCallSessionId?: ID | null | undefined
   }) => Committeemember[],
+  setRollCallSessionIndex: (p: {
+    currentMemberIndex: Int,
+    id: ID
+  }) => Rollcallsession,
+  startRollCallSession: (p: {
+    committeeId: ID
+  }) => Rollcallsession,
   updateCommittee: (p: {
     abbreviation?: String | null | undefined,
     activeAgendaItemId?: ID | null | undefined,
@@ -659,9 +669,9 @@ export type Mutation = {
   }) => Conferenceuser,
   updatePresenceEvent: (p: {
     committeeId?: ID | null | undefined,
-    eventType?: unknown | null | undefined,
     id: ID,
     note?: String | null | undefined,
+    present?: Boolean | null | undefined,
     timestamp?: DateTime | null | undefined
   }) => Presenceevent,
   updateSpeakerOnList: (p: {
@@ -689,16 +699,21 @@ export type Presenceevent = {
     where?: ConferenceuserWhereInputArgument | null | undefined
   }) => Conferenceuser,
   conferenceUserId: ID,
-  eventType: PresenceeventtypeEnum,
   id: ID,
-  marker: PresenceeventmarkerEnum | null,
   note: String | null,
+  present: Boolean,
+  rollCallSession: (p?: {
+    orderBy?: RollcallsessionOrderInputArgument | null | undefined,
+    where?: RollcallsessionWhereInputArgument | null | undefined
+  }) => Rollcallsession | null,
+  rollCallSessionId: ID | null,
   timestamp: DateTime,
   triggeredBy: (p?: {
     orderBy?: ConferenceuserOrderInputArgument | null | undefined,
     where?: ConferenceuserWhereInputArgument | null | undefined
   }) => Conferenceuser | null,
-  triggeredByConferenceUserId: ID | null    
+  triggeredByConferenceUserId: ID | null,
+  type: PresenceeventmarkerEnum    
 };
 		
 export type PresenceeventOrderInputArgument = {
@@ -706,13 +721,15 @@ export type PresenceeventOrderInputArgument = {
   committeeId?: SortingParameter | null | undefined,
   conferenceUser?: ConferenceuserOrderInputArgument | null | undefined,
   conferenceUserId?: SortingParameter | null | undefined,
-  eventType?: SortingParameter | null | undefined,
   id?: SortingParameter | null | undefined,
-  marker?: SortingParameter | null | undefined,
   note?: SortingParameter | null | undefined,
+  present?: SortingParameter | null | undefined,
+  rollCallSession?: RollcallsessionOrderInputArgument | null | undefined,
+  rollCallSessionId?: SortingParameter | null | undefined,
   timestamp?: SortingParameter | null | undefined,
   triggeredBy?: ConferenceuserOrderInputArgument | null | undefined,
-  triggeredByConferenceUserId?: SortingParameter | null | undefined    
+  triggeredByConferenceUserId?: SortingParameter | null | undefined,
+  type?: SortingParameter | null | undefined    
 };
 		
 export type PresenceeventWhereInputArgument = {
@@ -720,18 +737,18 @@ export type PresenceeventWhereInputArgument = {
   committeeId?: ID | null | undefined,
   conferenceUser?: ConferenceuserWhereInputArgument | null | undefined,
   conferenceUserId?: ID | null | undefined,
-  eventType?: PresenceeventtypeEnum | null | undefined,
   id?: ID | null | undefined,
-  marker?: PresenceeventmarkerEnum | null | undefined,
   note?: StringWhereInputArgument | null | undefined,
+  present?: Boolean | null | undefined,
+  rollCallSession?: RollcallsessionWhereInputArgument | null | undefined,
+  rollCallSessionId?: ID | null | undefined,
   timestamp?: DateWhereInputArgument | null | undefined,
   triggeredBy?: ConferenceuserWhereInputArgument | null | undefined,
-  triggeredByConferenceUserId?: ID | null | undefined    
+  triggeredByConferenceUserId?: ID | null | undefined,
+  type?: PresenceeventmarkerEnum | null | undefined    
 };
 		
-export type PresenceeventmarkerEnum = "AUTO_SWITCH";
-		
-export type PresenceeventtypeEnum = "CHECK_IN" | "CHECK_OUT";
+export type PresenceeventmarkerEnum = "AUTO_SWITCH" | "MANUAL" | "NSA_SCAN" | "ROLL_CALL";
 		
 export type Query = {
   agendaItem: (p: {
@@ -808,6 +825,15 @@ export type Query = {
     orderBy?: RepresentationOrderInputArgument | null | undefined,
     where?: RepresentationWhereInputArgument | null | undefined
   }) => Representation[],
+  rollCallSession: (p: {
+    id: ID
+  }) => Rollcallsession,
+  rollCallSessions: (p?: {
+    limit?: Int | null | undefined,
+    offset?: Int | null | undefined,
+    orderBy?: RollcallsessionOrderInputArgument | null | undefined,
+    where?: RollcallsessionWhereInputArgument | null | undefined
+  }) => Rollcallsession[],
   serverTime: DateTime,
   speakerOnList: (p: {
     id: ID
@@ -902,6 +928,56 @@ export type RepresentationWhereInputArgument = {
 };
 		
 export type RepresentationtypeEnum = "DELEGATION" | "NSA" | "UN";
+		
+export type Rollcallsession = {
+  committee: (p?: {
+    orderBy?: CommitteeOrderInputArgument | null | undefined,
+    where?: CommitteeWhereInputArgument | null | undefined
+  }) => Committee,
+  committeeId: ID,
+  completedAt: DateTime | null,
+  createdAt: DateTime,
+  currentMemberIndex: Int,
+  id: ID,
+  presenceEvents: (p?: {
+    limit?: Int | null | undefined,
+    offset?: Int | null | undefined,
+    orderBy?: PresenceeventOrderInputArgument | null | undefined,
+    where?: PresenceeventWhereInputArgument | null | undefined
+  }) => Presenceevent[],
+  startedBy: (p?: {
+    orderBy?: ConferenceuserOrderInputArgument | null | undefined,
+    where?: ConferenceuserWhereInputArgument | null | undefined
+  }) => Conferenceuser | null,
+  startedByConferenceUserId: ID | null,
+  updatedAt: DateTime | null    
+};
+		
+export type RollcallsessionOrderInputArgument = {
+  committee?: CommitteeOrderInputArgument | null | undefined,
+  committeeId?: SortingParameter | null | undefined,
+  completedAt?: SortingParameter | null | undefined,
+  createdAt?: SortingParameter | null | undefined,
+  currentMemberIndex?: SortingParameter | null | undefined,
+  id?: SortingParameter | null | undefined,
+  presenceEvents?: PresenceeventOrderInputArgument | null | undefined,
+  startedBy?: ConferenceuserOrderInputArgument | null | undefined,
+  startedByConferenceUserId?: SortingParameter | null | undefined,
+  updatedAt?: SortingParameter | null | undefined    
+};
+		
+export type RollcallsessionWhereInputArgument = {
+  committee?: CommitteeWhereInputArgument | null | undefined,
+  committeeId?: ID | null | undefined,
+  completedAt?: DateWhereInputArgument | null | undefined,
+  createdAt?: DateWhereInputArgument | null | undefined,
+  currentMemberIndex?: IntWhereInputArgument | null | undefined,
+  id?: ID | null | undefined,
+  presenceEvents?: PresenceeventWhereInputArgument | null | undefined,
+  startedBy?: ConferenceuserWhereInputArgument | null | undefined,
+  startedByConferenceUserId?: ID | null | undefined,
+  updatedAt?: DateWhereInputArgument | null | undefined    
+};
 		
 export type SortingParameter = "asc" | "desc";
 		
@@ -1106,6 +1182,15 @@ export type Subscription = {
     orderBy?: RepresentationOrderInputArgument | null | undefined,
     where?: RepresentationWhereInputArgument | null | undefined
   }) => Representation[],
+  rollCallSession: (p: {
+    id: ID
+  }) => Rollcallsession,
+  rollCallSessions: (p?: {
+    limit?: Int | null | undefined,
+    offset?: Int | null | undefined,
+    orderBy?: RollcallsessionOrderInputArgument | null | undefined,
+    where?: RollcallsessionWhereInputArgument | null | undefined
+  }) => Rollcallsession[],
   speakerOnList: (p: {
     id: ID
   }) => Speakeronlist,
@@ -1206,7 +1291,7 @@ export const client = {
    */
   liveQuery: makeLiveQuery<Query>({
 	  urqlClient,
-	  availableSubscriptions: new Set(["agendaItem", "agendaItems", "committee", "committeeMember", "committeeMembers", "committees", "conference", "conferenceMember", "conferenceMembers", "conferenceUser", "conferenceUsers", "conferences", "presenceEvent", "presenceEvents", "representation", "representations", "speakerOnList", "speakerOnLists", "speakersList", "speakersLists", "user", "users"]),
+	  availableSubscriptions: new Set(["agendaItem", "agendaItems", "committee", "committeeMember", "committeeMembers", "committees", "conference", "conferenceMember", "conferenceMembers", "conferenceUser", "conferenceUsers", "conferences", "presenceEvent", "presenceEvents", "representation", "representations", "rollCallSession", "rollCallSessions", "speakerOnList", "speakerOnLists", "speakersList", "speakersLists", "user", "users"]),
 		schema,
   }),
   /**

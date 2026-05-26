@@ -3,7 +3,7 @@ import { schemaBuilder, pubsub as rumblePubsub, abilityBuilder, object, query } 
 import { eq } from 'drizzle-orm';
 import { assertFindFirstExists, mapNullFieldsToUndefined } from '@m1212e/rumble';
 import { GraphQLError } from 'graphql';
-import { isChairInConference, isParticipantInConference } from '$api/services/authHelper';
+import { isTeamInConference, isParticipantInConference } from '$api/services/authHelper';
 
 abilityBuilder.speakersList.allow('read').when((ctx) => {
 	return {
@@ -19,7 +19,7 @@ abilityBuilder.speakersList.allow(['update', 'delete']).when((ctx) => {
 	return {
 		where: {
 			agendaItem: {
-				committee: isChairInConference(ctx)
+				committee: isTeamInConference(ctx)
 			}
 		}
 	};

@@ -28,7 +28,7 @@ export function isGlobalAdmin(ctx: Context) {
  *
  * @returns A filter object for the conference query. Injectable at e.g. committee level.
  */
-export function isChairInConference(ctx: Context) {
+export function isTeamInConference(ctx: Context) {
 	if (isGlobalAdmin(ctx)) {
 		return {};
 	}

@@ -7,7 +7,6 @@
 	import toast from 'svelte-french-toast';
 	import { client } from '$lib/api/rumbleClient/client';
 	import { promiseToastStrings } from '$lib/utils/toast';
-	import { localDB } from '$lib/local-db/localDB';
 
 	interface Props {
 		active: boolean;
@@ -23,22 +22,26 @@
 			} | null;
 		}>;
 		committeeId: string;
+		/** ID of the server-side active session, if any. When this becomes null while
+		 * the modal is open and a session was established, we know the session was
+		 * completed externally (another device/tab) and should close the modal. */
+		externalActiveSessionId?: string | null;
 	}
 
-	let { active = $bindable(), members, committeeId }: Props = $props();
+	let {
+		active = $bindable(),
+		members,
+		committeeId,
+		externalActiveSessionId = null
+	}: Props = $props();
 
 	let currentIndex = $state(0);
+	let sessionId = $state<string | null>(null);
 
-	// IDs of members whose presence change is still saving. Mirrored into
-	// localDB so the presentation view shows a spinner instead of a misleading
-	// absent/present icon while the change is in flight.
+	// IDs of members whose presence change is still saving. Shown as a spinner in
+	// the chair view only; the presentation view derives presence state from the
+	// server via GraphQL subscription.
 	let pendingIds = $state<string[]>([]);
-
-	const syncPending = () => {
-		localDB.committeeSettings.update(committeeId, {
-			rollCallPending: $state.snapshot(pendingIds)
-		});
-	};
 
 	const setPresence = (present: boolean) => {
 		const member = members[currentIndex];
@@ -49,15 +52,11 @@
 
 		const id = member.id;
 		pendingIds = [...pendingIds, id];
-		syncPending();
 
-		// Fire the mutation without blocking: advance immediately so the chair is
-		// not stuck on a slow connection. The member shows a spinner until the
-		// server confirms; on failure the toast reports it and the spinner clears.
 		toast
 			.promise(
 				client.mutate.setPresenceForCommitteeMembers({
-					__args: { ids: [id], present },
+					__args: { ids: [id], present, rollCallSessionId: sessionId },
 					id: true,
 					present: true
 				}),
@@ -69,33 +68,50 @@
 			)
 			.finally(() => {
 				pendingIds = pendingIds.filter((x) => x !== id);
-				syncPending();
 			})
 			.catch(() => {});
 
 		if (currentIndex === members.length - 1) {
 			toast.success(m.rollCallSuccess());
 			active = false;
+			return;
 		}
-		currentIndex = (currentIndex + 1) % members.length;
+
+		const nextIndex = currentIndex + 1;
+		currentIndex = nextIndex;
+		syncIndex(nextIndex);
+	};
+
+	const syncIndex = (index: number) => {
+		if (!sessionId) return;
+		// Fire-and-forget: navigation should feel instant for the chair
+		client.mutate
+			.setRollCallSessionIndex({
+				__args: { id: sessionId, currentMemberIndex: index },
+				id: true,
+				currentMemberIndex: true
+			})
+			.catch(() => {});
 	};
 
 	$effect(() => {
 		if (active) {
-			// hotkeys-js's default filter suppresses every shortcut while a text
-			// input/textarea/select is focused. If the roll call is started while
-			// focus is still in an input, the first key presses get swallowed.
-			// Blur so they register.
 			(document.activeElement as HTMLElement | null)?.blur();
 			hotkeys('up, down, j, l, esc', 'rollCall', (event, handler) => {
 				event.preventDefault();
 				switch (handler.key) {
-					case 'up':
-						currentIndex = (currentIndex - 1 + members.length) % members.length;
+					case 'up': {
+						const newIndex = (currentIndex - 1 + members.length) % members.length;
+						currentIndex = newIndex;
+						syncIndex(newIndex);
 						break;
-					case 'down':
-						currentIndex = (currentIndex + 1) % members.length;
+					}
+					case 'down': {
+						const newIndex = (currentIndex + 1) % members.length;
+						currentIndex = newIndex;
+						syncIndex(newIndex);
 						break;
+					}
 					case 'j':
 						setPresence(false);
 						break;
@@ -107,23 +123,59 @@
 				}
 			});
 			hotkeys.setScope('rollCall');
+
+			// Start a server-side session so the presentation view can mirror progress
+			client.mutate
+				.startRollCallSession({
+					__args: { committeeId },
+					id: true,
+					currentMemberIndex: true
+				})
+				.then((result) => {
+					sessionId = result.id;
+					currentIndex = result.currentMemberIndex;
+				})
+				.catch(() => {
+					toast.error(m.rollCallError());
+					active = false;
+				});
 		} else {
 			hotkeys.deleteScope('rollCall');
+
+			if (sessionId) {
+				(client.mutate.completeRollCallSession as any)({ __args: { id: sessionId } } as any).catch(
+					() => {}
+				);
+				sessionId = null;
+			}
+
+			currentIndex = 0;
+			pendingIds = [];
 		}
 	});
 
+	// Track whether the server subscription has confirmed our session at least once.
+	// This prevents a false-positive close during the gap between the mutation
+	// returning (sessionId is set) and the subscription delivering the new session
+	// to externalActiveSessionId.
+	let sessionServerConfirmed = $state(false);
+
 	$effect(() => {
-		if (active && currentIndex !== undefined) {
-			localDB.committeeSettings.update(committeeId, {
-				rollCall: currentIndex
-			});
-		} else if (!active) {
-			currentIndex = 0;
-			pendingIds = [];
-			localDB.committeeSettings.update(committeeId, {
-				rollCall: null,
-				rollCallPending: []
-			});
+		if (sessionId !== null && externalActiveSessionId === sessionId) {
+			sessionServerConfirmed = true;
+		}
+		if (!active) {
+			sessionServerConfirmed = false;
+		}
+	});
+
+	// Close the modal only once the server had confirmed our session AND it is
+	// now gone (completed externally from another device or tab).
+	$effect(() => {
+		if (active && sessionServerConfirmed && externalActiveSessionId === null) {
+			sessionId = null; // cleared so the cleanup branch above skips completeRollCallSession
+			sessionServerConfirmed = false;
+			active = false;
 		}
 	});
 </script>
@@ -148,7 +200,9 @@
 				class="btn btn-outline btn-lg join-item"
 				aria-label="Move up"
 				onclick={() => {
-					currentIndex = (currentIndex - 1 + members.length) % members.length;
+					const newIndex = (currentIndex - 1 + members.length) % members.length;
+					currentIndex = newIndex;
+					syncIndex(newIndex);
 				}}
 			>
 				<i class="fas fa-chevron-up"></i>
@@ -157,7 +211,9 @@
 				class="btn btn-outline btn-lg join-item"
 				aria-label="Move down"
 				onclick={() => {
-					currentIndex = (currentIndex + 1) % members.length;
+					const newIndex = (currentIndex + 1) % members.length;
+					currentIndex = newIndex;
+					syncIndex(newIndex);
 				}}
 			>
 				<i class="fas fa-chevron-down"></i>

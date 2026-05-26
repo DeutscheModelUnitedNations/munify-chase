@@ -75,11 +75,11 @@
 
 		if (event) {
 			await toast.promise(
-				client.mutate.updateNsaPresenceEvent({
+				client.mutate.updatePresenceEvent({
 					__args: {
 						id: event.id,
 						timestamp,
-						type,
+						eventType: type,
 						committeeId,
 						note: note || null
 					},
@@ -89,11 +89,12 @@
 			);
 		} else {
 			await toast.promise(
-				client.mutate.insertNsaPresenceEvent({
+				client.mutate.insertPresenceEvent({
 					__args: {
 						conferenceUserId,
 						committeeId,
-						type,
+						eventType: type,
+						markerType: 'NSA_SCAN',
 						timestamp,
 						note: note || null
 					},
@@ -109,7 +110,7 @@
 		if (!event) return;
 		if (!confirm(m.confirmDeletePresenceEvent())) return;
 		await toast.promise(
-			client.mutate.deleteNsaPresenceEvent({ __args: { id: event.id }, id: true }),
+			client.mutate.deletePresenceEvent({ __args: { id: event.id }, id: true }),
 			promiseToastStrings(m.nsaAttendance(), 'delete')
 		);
 		onClose();

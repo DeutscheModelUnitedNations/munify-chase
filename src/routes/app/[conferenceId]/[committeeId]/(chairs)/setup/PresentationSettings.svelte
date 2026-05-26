@@ -50,8 +50,6 @@
 				displayRegionalGroups: false,
 				presentationRootFontSize: 16,
 				presentationResolutionFontSize: 16,
-				rollCall: null,
-				rollCallPending: [],
 				showOfHandsVotingActive: false,
 				showOfHandsVotingStage: null,
 				showOfHandsVotingVotesPro: null,

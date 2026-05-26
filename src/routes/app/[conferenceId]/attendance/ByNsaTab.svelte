@@ -27,13 +27,13 @@
 		}
 	});
 
-	const allEvents = await client.liveQuery.nsaPresenceEvents({
+	const allEvents = await client.liveQuery.presenceEvents({
 		__args: {
-			where: { conference: { id: conferenceId } },
+			where: { committee: { conference: { id: conferenceId } } },
 			orderBy: { timestamp: 'desc' }
 		},
 		id: true,
-		type: true,
+		present: true,
 		committeeId: true,
 		timestamp: true,
 		conferenceUser: { id: true }
@@ -113,8 +113,9 @@
 		for (const org of groupedByOrg) {
 			for (const user of org.users) {
 				const latest = latestByUser.get(user.id);
-				const inCommittee =
-					latest?.type === 'CHECK_IN' ? (committeesById.get(latest.committeeId)?.name ?? '') : '';
+				const inCommittee = latest?.present
+					? (committeesById.get(latest.committeeId)?.name ?? '')
+					: '';
 				rows.push([
 					user.id,
 					user.name ?? '',
@@ -164,7 +165,7 @@
 			<ul class="flex flex-col gap-1">
 				{#each org.users as user (user.id)}
 					{@const latest = latestByUser.get(user.id)}
-					{@const checkedIn = latest?.type === 'CHECK_IN'}
+					{@const checkedIn = latest?.present}
 					{@const committee = checkedIn ? committeesById.get(latest.committeeId) : null}
 					<li class="card hover:bg-base-200 flex flex-row items-center gap-3 p-2">
 						{#if org.faIcon}

@@ -8,7 +8,7 @@ import {
 	schemaBuilder
 } from '$api/rumble';
 import {
-	isChairInConference,
+	isTeamInConference,
 	isAdminInConference,
 	isParticipantInConference
 } from '$api/services/authHelper';
@@ -24,7 +24,7 @@ abilityBuilder.committee.allow('read').when((ctx) => {
 
 abilityBuilder.committee.allow('update').when((ctx) => {
 	return {
-		where: isChairInConference(ctx)
+		where: isTeamInConference(ctx)
 	};
 });
 
@@ -111,7 +111,7 @@ schemaBuilder.mutationFields((t) => {
 				name: t.arg.string({ required: true }),
 				abbreviation: t.arg.string({ required: true })
 			},
-			resolve: async (query, root, args, ctx) => {
+			resolve: async (query, _root, args, ctx) => {
 				await db.query.conference
 					.findFirst(
 						ctx.abilities.conference.filter('update').merge({ where: { id: args.conferenceId } })
@@ -147,7 +147,7 @@ schemaBuilder.mutationFields((t) => {
 			args: {
 				id: t.arg.id({ required: true })
 			},
-			resolve: async (root, args, ctx) => {
+			resolve: async (_root, args, ctx) => {
 				await db
 					.delete(schema.committee)
 					.where(
@@ -178,33 +178,35 @@ schemaBuilder.mutationFields((t) => {
 				activeAgendaItemId: t.arg.id(),
 				allowDelegationsToAddThemselvesToSpeakersList: t.arg.boolean()
 			},
-			resolve: async (query, root, args, ctx) => {
-				await db
-					.update(schema.committee)
-					.set({
-						name: args.name ?? undefined,
-						abbreviation: args.abbreviation ?? undefined,
-						whiteboardContent: args.whiteboardContent ?? undefined,
-						showWhiteboard: args.showWhiteboard ?? undefined,
-						status: args.status ?? undefined,
-						statusHeadline: args.statusHeadline ?? undefined,
-						statusUntil: args.statusUntil ?? undefined,
-						stateOfDebate: args.stateOfDebate ?? undefined,
-						activeAgendaItemId: args.activeAgendaItemId ?? undefined,
-						allowDelegationsToAddThemselvesToSpeakersList:
-							args.allowDelegationsToAddThemselvesToSpeakersList ?? undefined
-					})
-					.where(
-						ctx.abilities.committee.filter('update').merge({ where: { id: args.id } }).sql.where
-					);
+			resolve: async (query, _root, args, ctx) => {
+				await db.transaction(async (tx) => {
+					await tx
+						.update(schema.committee)
+						.set({
+							name: args.name ?? undefined,
+							abbreviation: args.abbreviation ?? undefined,
+							whiteboardContent: args.whiteboardContent ?? undefined,
+							showWhiteboard: args.showWhiteboard ?? undefined,
+							status: args.status ?? undefined,
+							statusHeadline: args.statusHeadline ?? undefined,
+							statusUntil: args.statusUntil ?? undefined,
+							stateOfDebate: args.stateOfDebate ?? undefined,
+							activeAgendaItemId: args.activeAgendaItemId ?? undefined,
+							allowDelegationsToAddThemselvesToSpeakersList:
+								args.allowDelegationsToAddThemselvesToSpeakersList ?? undefined
+						})
+						.where(
+							ctx.abilities.committee.filter('update').merge({ where: { id: args.id } }).sql.where
+						);
 
-				if (args.activeAgendaItemId) {
-					await db.insert(schema.committeeTopicChangedTimestamp).values({
-						committeeId: args.id,
-						agendaItemId: args.activeAgendaItemId,
-						timestamp: new Date()
-					});
-				}
+					if (args.activeAgendaItemId) {
+						await tx.insert(schema.committeeTopicChangedTimestamp).values({
+							committeeId: args.id,
+							agendaItemId: args.activeAgendaItemId,
+							timestamp: new Date()
+						});
+					}
+				});
 
 				pubsub.updated(args.id);
 

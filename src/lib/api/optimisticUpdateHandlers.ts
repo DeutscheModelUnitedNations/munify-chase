@@ -143,6 +143,11 @@ export const optimistic: OptimisticMutationConfig = {
 			id,
 			present: args.present
 		})),
+	setRollCallSessionIndex: (args) => ({
+		__typename: 'Rollcallsession',
+		id: args.id,
+		currentMemberIndex: args.currentMemberIndex
+	}),
 	addSpeakerOnList: (args, cache) => {
 		const list = cache.readFragment(
 			gql`

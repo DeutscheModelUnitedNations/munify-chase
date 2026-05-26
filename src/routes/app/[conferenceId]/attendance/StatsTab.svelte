@@ -14,13 +14,13 @@
 	// Compute stats client-side: fine for typical conference sizes (a few thousand
 	// events). If the event log grows past ~10k, move this into a server-side
 	// window-function query (see plan §6).
-	const events = await client.liveQuery.nsaPresenceEvents({
+	const events = await client.liveQuery.presenceEvents({
 		__args: {
-			where: { conference: { id: conferenceId } },
+			where: { committee: { conference: { id: conferenceId } } },
 			orderBy: { timestamp: 'asc' }
 		},
 		id: true,
-		type: true,
+		present: true,
 		timestamp: true,
 		committeeId: true,
 		conferenceUserId: true,
@@ -79,13 +79,13 @@
 
 			let openCheckIn: PresenceEvent | null = null;
 			for (const e of userEvents) {
-				if (e.type === 'CHECK_IN') {
+				if (e.present) {
 					entry.switches += 1;
 					openCheckIn = e;
 					const set = perCommitteeUserSet.get(e.committeeId) ?? new SvelteSet<string>();
 					set.add(userId);
 					perCommitteeUserSet.set(e.committeeId, set);
-				} else if (e.type === 'CHECK_OUT' && openCheckIn) {
+				} else if (!e.present && openCheckIn) {
 					const start = new Date(openCheckIn.timestamp).getTime();
 					const end = new Date(e.timestamp).getTime();
 					const seconds = Math.max(0, Math.floor((end - start) / 1000));

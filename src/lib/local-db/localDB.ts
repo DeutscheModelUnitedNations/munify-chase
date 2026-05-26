@@ -11,15 +11,6 @@ interface CommitteeSettings {
 	presentationRootFontSize: number;
 	presentationResolutionFontSize: number;
 	displayRegionalGroups: boolean;
-	rollCall: number | null;
-	/**
-	 * Committee member IDs whose roll-call presence change is currently being
-	 * saved (mutation in flight, not yet confirmed by the server). Shared across
-	 * tabs so the presentation view can show a spinner instead of a misleading
-	 * absent/present icon while a delegation is still syncing. Not indexed, so no
-	 * Dexie schema/version change is required.
-	 */
-	rollCallPending: string[] | null;
 
 	showOfHandsVotingActive: boolean;
 	showOfHandsVotingStage: VotingStage | null;
@@ -62,6 +53,34 @@ localDB.version(2).stores({
 	presentationResolutionFontSize,
 	displayRegionalGroups,
 	rollCall,
+
+	showOfHandsVotingActive,
+	showOfHandsVotingStage,
+	showOfHandsVotingVotesPro,
+	showOfHandsVotingVotesCon,
+	showOfHandsVotingVotesAbstain,
+	showOfHandsVotingVotesTotal,
+
+	rollCallVotingActive,
+	rollCallVotingPro,
+	rollCallVotingCon,
+	rollCallVotingAbstain,
+
+	votingVoteName,
+	votingMajority,
+	votingWithAbstentions,
+	votingMajorityAmount
+	`
+});
+
+// Version 3: roll call state moved to server-side (rollCallSession table)
+localDB.version(3).stores({
+	committeeSettings: `
+	++committeeId,
+	layout,
+	presentationRootFontSize,
+	presentationResolutionFontSize,
+	displayRegionalGroups,
 
 	showOfHandsVotingActive,
 	showOfHandsVotingStage,

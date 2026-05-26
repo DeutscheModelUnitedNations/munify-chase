@@ -156,9 +156,20 @@ try {
 					throw new Error(`Delegation ${country.toLowerCase()} not found`);
 				}
 
-				await db.insert(schema.committeeMember).values({
-					committeeId: committeeEntry.id,
-					representationId: delegation.id
+				const cm = await db
+					.insert(schema.committeeMember)
+					.values({
+						committeeId: committeeEntry.id,
+						representationId: delegation.id
+					})
+					.returning()
+					.then(assertFirstEntryExists);
+
+				await db.insert(schema.conferenceUser).values({
+					userEmail: `${committee.abbreviation.toLowerCase()}.${country.toLowerCase()}@delegate.dev`,
+					conferenceId: conferenceEntry.id,
+					conferenceUserType: 'DELEGATE',
+					committeeMemberId: cm.id
 				});
 			}
 			console.info(`      Countries: ${committee.countries.length}`);

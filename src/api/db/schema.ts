@@ -5,12 +5,14 @@ import {
 	timestamp,
 	date,
 	unique,
+	uniqueIndex,
 	pgEnum,
 	boolean,
 	smallint,
-	index,
+	integer,
 	type AnyPgColumn
 } from 'drizzle-orm/pg-core';
+import { sql } from 'drizzle-orm';
 
 const defaultTimestamps = {
 	createdAt: timestamp().defaultNow().notNull(),
@@ -233,8 +235,32 @@ export const committeeTopicChangedTimestamp = pgTable('committee_topic_changed_t
 	timestamp: timestamp().notNull()
 });
 
-export const presenceEventType = pgEnum('presence_event_type', ['CHECK_IN', 'CHECK_OUT']);
-export const presenceEventMarker = pgEnum('presence_event_marker', ['AUTO_SWITCH']);
+export const rollCallSession = pgTable(
+	'roll_call_session',
+	{
+		...defaultIdAndTimestamps,
+		committeeId: text()
+			.notNull()
+			.references(() => committee.id, { onDelete: 'cascade' }),
+		startedByConferenceUserId: text().references((): AnyPgColumn => conferenceUser.id, {
+			onDelete: 'set null'
+		}),
+		currentMemberIndex: integer().notNull().default(0),
+		completedAt: timestamp()
+	},
+	(t) => [
+		uniqueIndex('roll_call_session_active_unique')
+			.on(t.committeeId)
+			.where(sql`${t.completedAt} IS NULL`)
+	]
+);
+
+export const presenceEventMarker = pgEnum('presence_event_marker', [
+	'AUTO_SWITCH',
+	'ROLL_CALL',
+	'NSA_SCAN',
+	'MANUAL'
+]);
 export const presenceEvent = pgTable('presence_event', {
 	id: text()
 		.$defaultFn(() => nanoid())
@@ -251,8 +277,12 @@ export const presenceEvent = pgTable('presence_event', {
 		onDelete: 'set null'
 	}),
 
+	rollCallSessionId: text().references((): AnyPgColumn => rollCallSession.id, {
+		onDelete: 'set null'
+	}),
+
 	timestamp: timestamp().defaultNow().notNull(),
-	eventType: presenceEventType().notNull(),
-	marker: presenceEventMarker(),
+	present: boolean().notNull(),
+	type: presenceEventMarker().notNull(),
 	note: text()
 });

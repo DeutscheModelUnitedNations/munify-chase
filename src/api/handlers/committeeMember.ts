@@ -1,7 +1,7 @@
 import { db, schema } from '$api/db/db';
 import { abilityBuilder, schemaBuilder, object, pubsub as rumblePubsub, query } from '$api/rumble';
 import {
-	isChairInConference,
+	isTeamInConference,
 	isAdminInConference,
 	isParticipantInConference
 } from '$api/services/authHelper';
@@ -19,7 +19,7 @@ abilityBuilder.committeeMember.allow('read').when((ctx) => {
 abilityBuilder.committeeMember.allow('update').when((ctx) => {
 	return {
 		where: {
-			committee: isChairInConference(ctx)
+			committee: isTeamInConference(ctx)
 		}
 	};
 });
@@ -40,7 +40,7 @@ schemaBuilder.mutationFields((t) => {
 				committeeId: t.arg.id({ required: true }),
 				representationId: t.arg.id({ required: true })
 			},
-			resolve: async (query, root, args, ctx) => {
+			resolve: async (query, _root, args, ctx) => {
 				const committee = await db.query.committee.findFirst({
 					where: { id: args.committeeId }
 				});
@@ -81,7 +81,7 @@ schemaBuilder.mutationFields((t) => {
 			args: {
 				id: t.arg.id({ required: true })
 			},
-			resolve: async (root, args, ctx) => {
+			resolve: async (_root, args, ctx) => {
 				await db
 					.delete(schema.committeeMember)
 					.where(
@@ -98,10 +98,19 @@ schemaBuilder.mutationFields((t) => {
 			type: [ref],
 			args: {
 				ids: t.arg.idList({ required: true }),
-				present: t.arg.boolean({ required: true })
+				present: t.arg.boolean({ required: true }),
+				rollCallSessionId: t.arg.id({ required: false })
 			},
-			resolve: async (query, root, args, ctx) => {
+			resolve: async (query, _root, args, ctx) => {
 				await db.transaction(async (tx) => {
+					if (args.rollCallSessionId) {
+						const session = await tx.query.rollCallSession.findFirst({
+							where: { id: args.rollCallSessionId, completedAt: { isNull: true } }
+						});
+						if (!session)
+							throw new GraphQLError('Roll call session not found or already completed');
+					}
+
 					const res = await tx
 						.update(schema.committeeMember)
 						.set({
@@ -130,7 +139,9 @@ schemaBuilder.mutationFields((t) => {
 							.map((cm) => ({
 								conferenceUserId: cuByMemberId.get(cm.id)!,
 								committeeId: cm.committeeId,
-								eventType: (args.present ? 'CHECK_IN' : 'CHECK_OUT') as 'CHECK_IN' | 'CHECK_OUT',
+								rollCallSessionId: args.rollCallSessionId ?? null,
+								type: (args.rollCallSessionId ? 'ROLL_CALL' : 'MANUAL') as 'ROLL_CALL' | 'MANUAL',
+								present: args.present,
 								timestamp: new Date()
 							}));
 

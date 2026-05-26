@@ -204,6 +204,27 @@ export const relations = defineRelations(schema, (r) => ({
 			from: r.presenceEvent.triggeredByConferenceUserId,
 			to: r.conferenceUser.id,
 			optional: true
+		}),
+		rollCallSession: r.one.rollCallSession({
+			from: r.presenceEvent.rollCallSessionId,
+			to: r.rollCallSession.id,
+			optional: true
+		})
+	},
+	rollCallSession: {
+		committee: r.one.committee({
+			from: r.rollCallSession.committeeId,
+			to: r.committee.id,
+			optional: false
+		}),
+		startedBy: r.one.conferenceUser({
+			from: r.rollCallSession.startedByConferenceUserId,
+			to: r.conferenceUser.id,
+			optional: true
+		}),
+		presenceEvents: r.many.presenceEvent({
+			from: r.rollCallSession.id,
+			to: r.presenceEvent.rollCallSessionId
 		})
 	}
 }));

@@ -1,0 +1,1 @@
+ALTER TYPE "presence_event_marker" ADD VALUE 'NSA_SCAN';

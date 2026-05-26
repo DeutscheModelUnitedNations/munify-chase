@@ -102,7 +102,7 @@ export const ConferenceUserRef = object({
 		// not-yet-redeemed conferenceUser legitimately has no user.
 		user: t.relation('user', { nullable: true }),
 		// Live attendance state derived from the latest presenceEvent.
-		// Per-row queries here can N+1 on large NSA dashboards; a bulk top-level
+		// Per-row queries here can N+1 on large dashboards; a bulk top-level
 		// query in presenceEvent.ts is provided for live overview tabs.
 		isCheckedIn: t.boolean({
 			resolve: async (parent) => {
@@ -110,7 +110,7 @@ export const ConferenceUserRef = object({
 					where: { conferenceUserId: parent.id },
 					orderBy: { timestamp: 'desc' }
 				});
-				return latest?.eventType === 'CHECK_IN';
+				return latest?.present ?? false;
 			}
 		}),
 		currentCommitteeId: t.string({
@@ -120,7 +120,7 @@ export const ConferenceUserRef = object({
 					where: { conferenceUserId: parent.id },
 					orderBy: { timestamp: 'desc' }
 				});
-				return latest?.eventType === 'CHECK_IN' ? latest.committeeId : null;
+				return latest?.present ? latest.committeeId : null;
 			}
 		}),
 		currentCheckedInSince: t.field({
@@ -131,7 +131,7 @@ export const ConferenceUserRef = object({
 					where: { conferenceUserId: parent.id },
 					orderBy: { timestamp: 'desc' }
 				});
-				return latest?.eventType === 'CHECK_IN' ? latest.timestamp : null;
+				return latest?.present ? latest.timestamp : null;
 			}
 		})
 	})
@@ -152,7 +152,7 @@ schemaBuilder.mutationFields((t) => ({
 				required: true
 			})
 		},
-		resolve: async (query, root, args, ctx) => {
+		resolve: async (query, _root, args, ctx) => {
 			await db.query.conference
 				.findFirst(
 					ctx.abilities.conference.filter('update').merge({ where: { id: args.conferenceId } })
@@ -209,7 +209,7 @@ schemaBuilder.mutationFields((t) => ({
 		args: {
 			id: t.arg({ type: 'ID', required: true })
 		},
-		resolve: async (root, args, ctx) => {
+		resolve: async (_root, args, ctx) => {
 			const conferenceUser = await db.query.conferenceUser
 				.findFirst(
 					ctx.abilities.conferenceUser.filter('delete').merge({ where: { id: args.id } }).query
@@ -224,24 +224,27 @@ schemaBuilder.mutationFields((t) => ({
 				throw new GraphQLError('You cannot delete yourself from the conference');
 			}
 
-			// Prevent deleting the last ADMIN
-			if (conferenceUser.conferenceUserType === 'ADMIN') {
-				const remainingAdmins = await db.query.conferenceUser.findMany({
-					where: {
-						conferenceId: conferenceUser.conferenceId,
-						conferenceUserType: 'ADMIN',
-						id: { ne: args.id }
+			await db.transaction(async (tx) => {
+				// Prevent deleting the last ADMIN — re-checked inside the transaction to
+				// avoid a race where two concurrent deletes both pass the count check.
+				if (conferenceUser.conferenceUserType === 'ADMIN') {
+					const remainingAdmins = await tx.query.conferenceUser.findMany({
+						where: {
+							conferenceId: conferenceUser.conferenceId,
+							conferenceUserType: 'ADMIN',
+							id: { ne: args.id }
+						}
+					});
+
+					if (remainingAdmins.length === 0) {
+						throw new GraphQLError(
+							'Cannot delete the last ADMIN. Promote another user to ADMIN first.'
+						);
 					}
-				});
-
-				if (remainingAdmins.length === 0) {
-					throw new GraphQLError(
-						'Cannot delete the last ADMIN. Promote another user to ADMIN first.'
-					);
 				}
-			}
 
-			await db.delete(schema.conferenceUser).where(eq(schema.conferenceUser.id, args.id));
+				await tx.delete(schema.conferenceUser).where(eq(schema.conferenceUser.id, args.id));
+			});
 
 			pubsub.removed();
 
@@ -261,7 +264,7 @@ schemaBuilder.mutationFields((t) => ({
 			conferenceMemberId: t.arg({ type: 'ID' }),
 			name: t.arg.string()
 		},
-		resolve: async (query, root, args, ctx) => {
+		resolve: async (query, _root, args, ctx) => {
 			const conferenceUser = await db.query.conferenceUser
 				.findFirst(
 					ctx.abilities.conferenceUser.filter('update').merge({ where: { id: args.id } }).query
@@ -278,23 +281,6 @@ schemaBuilder.mutationFields((t) => ({
 				args.conferenceUserType !== 'ADMIN'
 			) {
 				throw new GraphQLError('You cannot demote yourself from ADMIN');
-			}
-
-			// Prevent orphaning the conference (removing the last ADMIN)
-			if (conferenceUser.conferenceUserType === 'ADMIN' && args.conferenceUserType !== 'ADMIN') {
-				const remainingAdmins = await db.query.conferenceUser.findMany({
-					where: {
-						conferenceId: conferenceUser.conferenceId,
-						conferenceUserType: 'ADMIN',
-						id: { ne: args.id }
-					}
-				});
-
-				if (remainingAdmins.length === 0) {
-					throw new GraphQLError(
-						'Cannot demote the last ADMIN. Promote another user to ADMIN first.'
-					);
-				}
 			}
 
 			// Validate committeeMemberId belongs to a committee in the same conference
@@ -351,15 +337,36 @@ schemaBuilder.mutationFields((t) => ({
 					updateSet.conferenceMemberId = args.conferenceMemberId;
 				}
 				// Promotion to NSA: ensure the user has an attendance code.
+				// Done outside the transaction since it does its own retried reads.
 				if (!conferenceUser.attendanceCode) {
 					updateSet.attendanceCode = await pickUniqueAttendanceCode(conferenceUser.conferenceId);
 				}
 			}
 
-			await db
-				.update(schema.conferenceUser)
-				.set(updateSet)
-				.where(eq(schema.conferenceUser.id, args.id));
+			await db.transaction(async (tx) => {
+				// Prevent orphaning the conference — re-checked inside the transaction to
+				// avoid a race where two concurrent demotions both pass the count check.
+				if (conferenceUser.conferenceUserType === 'ADMIN' && args.conferenceUserType !== 'ADMIN') {
+					const remainingAdmins = await tx.query.conferenceUser.findMany({
+						where: {
+							conferenceId: conferenceUser.conferenceId,
+							conferenceUserType: 'ADMIN',
+							id: { ne: args.id }
+						}
+					});
+
+					if (remainingAdmins.length === 0) {
+						throw new GraphQLError(
+							'Cannot demote the last ADMIN. Promote another user to ADMIN first.'
+						);
+					}
+				}
+
+				await tx
+					.update(schema.conferenceUser)
+					.set(updateSet)
+					.where(eq(schema.conferenceUser.id, args.id));
+			});
 
 			pubsub.updated(args.id);
 

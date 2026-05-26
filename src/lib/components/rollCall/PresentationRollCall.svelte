@@ -2,8 +2,7 @@
 	import { m } from '$lib/paraglide/messages';
 	import Modal from '../Modal.svelte';
 	import ScrollingCountryList from './ScrollingCountryList.svelte';
-	import { localDB } from '$lib/local-db/localDB';
-	import { liveQuery } from 'dexie';
+	import { client } from '$lib/api/rumbleClient/client';
 
 	interface Props {
 		members: Array<{
@@ -22,14 +21,21 @@
 
 	let { members, committeeId }: Props = $props();
 
-	let committeeSettingsQuery = liveQuery(() => localDB.committeeSettings.get(committeeId));
-	let currentIndex = $derived($committeeSettingsQuery?.rollCall);
-	let pendingIds = $derived($committeeSettingsQuery?.rollCallPending ?? []);
+	const activeSessions = await client.liveQuery.rollCallSessions({
+		__args: {
+			where: { committeeId, completedAt: { isNull: true } },
+			orderBy: { createdAt: 'desc' }
+		},
+		id: true,
+		currentMemberIndex: true
+	});
+
+	let currentIndex = $derived(activeSessions?.at(0)?.currentMemberIndex ?? null);
 </script>
 
-<Modal open={!!currentIndex || currentIndex === 0}>
+<Modal open={currentIndex !== null}>
 	<h1 class="text-2xl font-bold">{m.rollCall()}</h1>
-	{#if currentIndex || currentIndex === 0}
-		<ScrollingCountryList {members} {currentIndex} {pendingIds} />
+	{#if currentIndex !== null}
+		<ScrollingCountryList {members} {currentIndex} />
 	{/if}
 </Modal>

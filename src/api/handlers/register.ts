@@ -11,6 +11,7 @@ import './time';
 import './user';
 import './import';
 import './presenceEvent';
+import './rollCallSession';
 import { building, dev } from '$app/environment';
 import { clientCreator } from '$api/rumble';
 

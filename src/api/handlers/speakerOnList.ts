@@ -5,7 +5,7 @@ import { and, count, eq, gte, sql } from 'drizzle-orm';
 import { assertFindFirstExists, assertFirstEntryExists } from '@m1212e/rumble';
 import { SpeakersListRef } from './speakersList';
 import {
-	isChairInConference,
+	isTeamInConference,
 	isGlobalAdmin,
 	isParticipantInConference
 } from '$api/services/authHelper';
@@ -31,7 +31,7 @@ abilityBuilder.speakerOnList.allow(['update', 'delete']).when((ctx) => {
 		where: {
 			speakersList: {
 				agendaItem: {
-					committee: isChairInConference(ctx)
+					committee: isTeamInConference(ctx)
 				}
 			}
 		}

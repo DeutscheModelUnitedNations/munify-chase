@@ -57,13 +57,13 @@
 		return { present, total };
 	});
 
-	const allEvents = await client.liveQuery.nsaPresenceEvents({
+	const allEvents = await client.liveQuery.presenceEvents({
 		__args: {
-			where: { conference: { id: conferenceId } },
+			where: { committee: { conference: { id: conferenceId } } },
 			orderBy: { timestamp: 'desc' }
 		},
 		id: true,
-		type: true,
+		present: true,
 		committeeId: true,
 		timestamp: true,
 		conferenceUser: {
@@ -92,7 +92,7 @@
 			const uid = event.conferenceUser?.id;
 			if (!uid || seen.has(uid)) continue;
 			seen.add(uid);
-			if (event.type !== 'CHECK_IN') continue;
+			if (!event.present) continue;
 			const list = map.get(event.committeeId) ?? [];
 			list.push(event);
 			map.set(event.committeeId, list);

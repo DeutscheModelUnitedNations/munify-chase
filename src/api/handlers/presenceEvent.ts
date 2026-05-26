@@ -8,18 +8,14 @@ import {
 	pubsub as rumblePubsub,
 	query
 } from '$api/rumble';
-import {
-	isAdminInConference,
-	isChairInConference,
-	isParticipantInConference
-} from '$api/services/authHelper';
+import { isAdminInConference, isTeamInConference } from '$api/services/authHelper';
 import { attendanceCode as generateAttendanceCode } from '$lib/helpers/attendanceCode';
 import { assertFindFirstExists, assertFirstEntryExists } from '@m1212e/rumble';
 import { eq } from 'drizzle-orm';
 import { GraphQLError } from 'graphql';
 
 abilityBuilder.presenceEvent.allow('read').when((ctx) => ({
-	where: { committee: isParticipantInConference(ctx) }
+	where: { committee: isTeamInConference(ctx) }
 }));
 
 abilityBuilder.presenceEvent.allow(['update', 'delete']).when((ctx) => ({
@@ -89,14 +85,12 @@ schemaBuilder.mutationFields((t) => ({
 			committeeId: t.arg.id({ required: true }),
 			code: t.arg.string({ required: true })
 		},
-		resolve: async (q, _root, args, ctx) => {
+		resolve: async (query, _root, args, ctx) => {
 			const committee = await db.query.committee
-				.findFirst({
-					where: {
-						id: args.committeeId,
-						...isChairInConference(ctx)
-					}
-				})
+				.findFirst(
+					ctx.abilities.committee.filter('update').merge({ where: { id: args.committeeId } }).query
+						.single
+				)
 				.then(assertFindFirstExists);
 
 			const target = await resolveNsaTarget({ committee, code: args.code });
@@ -117,26 +111,18 @@ schemaBuilder.mutationFields((t) => ({
 
 					const now = new Date();
 
-					if (
-						latest &&
-						latest.eventType === 'CHECK_IN' &&
-						latest.committeeId === args.committeeId
-					) {
+					if (latest && latest.present && latest.committeeId === args.committeeId) {
 						return latest.id;
 					}
 
-					if (
-						latest &&
-						latest.eventType === 'CHECK_IN' &&
-						latest.committeeId !== args.committeeId
-					) {
+					if (latest && latest.present && latest.committeeId !== args.committeeId) {
 						await tx.insert(schema.presenceEvent).values({
 							conferenceUserId: target.id,
 							committeeId: latest.committeeId,
-							eventType: 'CHECK_OUT',
+							present: false,
 							timestamp: new Date(now.getTime() - 1),
 							triggeredByConferenceUserId: triggeredBy?.id ?? null,
-							marker: 'AUTO_SWITCH'
+							type: 'AUTO_SWITCH'
 						});
 					}
 
@@ -145,7 +131,8 @@ schemaBuilder.mutationFields((t) => ({
 						.values({
 							conferenceUserId: target.id,
 							committeeId: args.committeeId,
-							eventType: 'CHECK_IN',
+							present: true,
+							type: 'NSA_SCAN',
 							timestamp: now,
 							triggeredByConferenceUserId: triggeredBy?.id ?? null
 						})
@@ -162,7 +149,9 @@ schemaBuilder.mutationFields((t) => ({
 
 			return db.query.presenceEvent
 				.findFirst(
-					q(ctx.abilities.presenceEvent.filter('read').merge({ where: { id: newId } }).query.single)
+					query(
+						ctx.abilities.presenceEvent.filter('read').merge({ where: { id: newId } }).query.single
+					)
 				)
 				.then(assertFindFirstExists);
 		}
@@ -179,14 +168,12 @@ schemaBuilder.mutationFields((t) => ({
 			committeeId: t.arg.id({ required: true }),
 			code: t.arg.string({ required: true })
 		},
-		resolve: async (q, _root, args, ctx) => {
+		resolve: async (query, _root, args, ctx) => {
 			const committee = await db.query.committee
-				.findFirst({
-					where: {
-						id: args.committeeId,
-						...isChairInConference(ctx)
-					}
-				})
+				.findFirst(
+					ctx.abilities.committee.filter('update').merge({ where: { id: args.committeeId } }).query
+						.single
+				)
 				.then(assertFindFirstExists);
 
 			const target = await resolveNsaTarget({ committee, code: args.code });
@@ -205,7 +192,7 @@ schemaBuilder.mutationFields((t) => ({
 						orderBy: { timestamp: 'desc' }
 					});
 
-					if (!latest || latest.eventType === 'CHECK_OUT') {
+					if (!latest || !latest.present) {
 						if (!latest) {
 							throw new GraphQLError('NSA has no recorded check-in to check out from');
 						}
@@ -217,7 +204,8 @@ schemaBuilder.mutationFields((t) => ({
 						.values({
 							conferenceUserId: target.id,
 							committeeId: latest.committeeId,
-							eventType: 'CHECK_OUT',
+							present: false,
+							type: 'NSA_SCAN',
 							timestamp: new Date(),
 							triggeredByConferenceUserId: triggeredBy?.id ?? null
 						})
@@ -234,7 +222,7 @@ schemaBuilder.mutationFields((t) => ({
 
 			return db.query.presenceEvent
 				.findFirst(
-					q(
+					query(
 						ctx.abilities.presenceEvent.filter('read').merge({ where: { id: eventId } }).query
 							.single
 					)
@@ -249,11 +237,12 @@ schemaBuilder.mutationFields((t) => ({
 		args: {
 			conferenceUserId: t.arg.id({ required: true }),
 			committeeId: t.arg.id({ required: true }),
-			eventType: t.arg({ type: enum_({ tsName: 'presenceEventType' }), required: true }),
-			timestamp: t.arg({ type: 'DateTime', required: true }),
+			present: t.arg.boolean({ required: true }),
+			markerType: t.arg({ type: enum_({ tsName: 'presenceEventMarker' }) }),
+			timestamp: t.arg({ type: 'DateTime' }),
 			note: t.arg.string()
 		},
-		resolve: async (q, _root, args, ctx) => {
+		resolve: async (query, _root, args, ctx) => {
 			const committee = await db.query.committee
 				.findFirst(
 					ctx.abilities.committee.filter('update').merge({ where: { id: args.committeeId } }).query
@@ -275,8 +264,9 @@ schemaBuilder.mutationFields((t) => ({
 				.values({
 					conferenceUserId: target.id,
 					committeeId: committee.id,
-					eventType: args.eventType,
-					timestamp: args.timestamp,
+					present: args.present,
+					type: args.markerType ?? 'MANUAL',
+					timestamp: args.timestamp ?? new Date(),
 					note: args.note ?? null
 				})
 				.returning({ id: schema.presenceEvent.id })
@@ -287,7 +277,7 @@ schemaBuilder.mutationFields((t) => ({
 
 			return db.query.presenceEvent
 				.findFirst(
-					q(
+					query(
 						ctx.abilities.presenceEvent.filter('read').merge({ where: { id: inserted.id } }).query
 							.single
 					)
@@ -302,7 +292,7 @@ schemaBuilder.mutationFields((t) => ({
 		args: {
 			id: t.arg.id({ required: true }),
 			timestamp: t.arg({ type: 'DateTime' }),
-			eventType: t.arg({ type: enum_({ tsName: 'presenceEventType' }) }),
+			present: t.arg.boolean(),
 			committeeId: t.arg.id(),
 			note: t.arg.string()
 		},
@@ -333,8 +323,7 @@ schemaBuilder.mutationFields((t) => ({
 			const updateSet: Record<string, unknown> = {};
 			if (args.timestamp !== undefined && args.timestamp !== null)
 				updateSet.timestamp = args.timestamp;
-			if (args.eventType !== undefined && args.eventType !== null)
-				updateSet.eventType = args.eventType;
+			if (args.present !== undefined && args.present !== null) updateSet.present = args.present;
 			if (args.committeeId !== undefined && args.committeeId !== null)
 				updateSet.committeeId = args.committeeId;
 			if (args.note !== undefined) updateSet.note = args.note;
@@ -369,7 +358,7 @@ schemaBuilder.mutationFields((t) => ({
 		args: {
 			id: t.arg.id({ required: true })
 		},
-		resolve: async (_q, _root, args, ctx) => {
+		resolve: async (_query, _root, args, ctx) => {
 			const event = await db.query.presenceEvent
 				.findFirst(
 					ctx.abilities.presenceEvent.filter('delete').merge({ where: { id: args.id } }).query
@@ -392,7 +381,7 @@ schemaBuilder.mutationFields((t) => ({
 		args: {
 			conferenceUserId: t.arg.id({ required: true })
 		},
-		resolve: async (q, _root, args, ctx) => {
+		resolve: async (query, _root, args, ctx) => {
 			const target = await db.query.conferenceUser
 				.findFirst(
 					ctx.abilities.conferenceUser
@@ -409,7 +398,7 @@ schemaBuilder.mutationFields((t) => ({
 
 			return db.query.conferenceUser
 				.findFirst(
-					q(
+					query(
 						ctx.abilities.conferenceUser.filter('read').merge({ where: { id: target.id } }).query
 							.single
 					)

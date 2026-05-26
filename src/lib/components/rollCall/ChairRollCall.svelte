@@ -143,9 +143,7 @@
 			hotkeys.deleteScope('rollCall');
 
 			if (sessionId) {
-				(client.mutate.completeRollCallSession as any)({ __args: { id: sessionId } } as any).catch(
-					() => {}
-				);
+				client.mutate.completeRollCallSession({ __args: { id: sessionId } }).catch(() => {});
 				sessionId = null;
 			}
 

@@ -11,7 +11,7 @@
 		// When set, edit-mode; when null, insert-mode.
 		event: {
 			id: string;
-			type: 'CHECK_IN' | 'CHECK_OUT';
+			present: boolean;
 			committeeId: string;
 			conferenceUserId: string;
 			timestamp: string | Date;
@@ -42,7 +42,7 @@
 
 	let conferenceUserId = $state('');
 	let committeeId = $state('');
-	let type = $state<'CHECK_IN' | 'CHECK_OUT'>('CHECK_IN');
+	let present = $state(true);
 	let timestampLocal = $state(''); // value for <input type="datetime-local">
 	let note = $state('');
 
@@ -56,14 +56,14 @@
 		if (event) {
 			conferenceUserId = event.conferenceUserId;
 			committeeId = event.committeeId;
-			type = event.type;
+			present = event.present;
 			const d = event.timestamp instanceof Date ? event.timestamp : new Date(event.timestamp);
 			timestampLocal = toLocalInput(d);
 			note = event.note ?? '';
 		} else {
 			conferenceUserId = '';
 			committeeId = '';
-			type = 'CHECK_IN';
+			present = true;
 			timestampLocal = toLocalInput(new Date());
 			note = '';
 		}
@@ -79,7 +79,7 @@
 					__args: {
 						id: event.id,
 						timestamp,
-						eventType: type,
+						present,
 						committeeId,
 						note: note || null
 					},
@@ -93,7 +93,7 @@
 					__args: {
 						conferenceUserId,
 						committeeId,
-						eventType: type,
+						present,
 						markerType: 'NSA_SCAN',
 						timestamp,
 						note: note || null
@@ -151,9 +151,9 @@
 
 		<fieldset class="fieldset">
 			<legend class="fieldset-legend">{m.eventType()}</legend>
-			<select class="select w-full" bind:value={type}>
-				<option value="CHECK_IN">{m.checkIn()}</option>
-				<option value="CHECK_OUT">{m.checkOut()}</option>
+			<select class="select w-full" bind:value={present}>
+				<option value={true}>{m.checkIn()}</option>
+				<option value={false}>{m.checkOut()}</option>
 			</select>
 		</fieldset>
 

@@ -41,7 +41,7 @@
 	type PresenceEvent = NonNullable<typeof events>[number];
 	type EditTarget = {
 		id: string;
-		type: 'CHECK_IN' | 'CHECK_OUT';
+		present: boolean;
 		committeeId: string;
 		conferenceUserId: string;
 		timestamp: string | Date;
@@ -59,7 +59,7 @@
 	function openEdit(ev: PresenceEvent) {
 		editTarget = {
 			id: ev.id,
-			type: ev.eventType,
+			present: ev.present,
 			committeeId: ev.committeeId,
 			conferenceUserId: ev.conferenceUserId,
 			timestamp: ev.timestamp,

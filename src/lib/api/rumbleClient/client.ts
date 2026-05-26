@@ -549,7 +549,9 @@ export type Mutation = {
   clearSpeakersList: (p: {
     id: ID
   }) => Speakerslist,
-  completeRollCallSession: Boolean,
+  completeRollCallSession: (p: {
+    id: ID
+  }) => Boolean,
   createAgendaItem: (p: {
     committeeId: ID,
     title: String
@@ -581,15 +583,27 @@ export type Mutation = {
     name?: String | null | undefined,
     type: unknown
   }) => Representation,
-  deleteCommittee: Boolean,
-  deleteCommitteeMember: Boolean,
-  deleteConference: Boolean,
-  deleteConferenceMember: Boolean,
-  deleteConferenceUser: Boolean,
+  deleteCommittee: (p: {
+    id: ID
+  }) => Boolean,
+  deleteCommitteeMember: (p: {
+    id: ID
+  }) => Boolean,
+  deleteConference: (p: {
+    id: ID
+  }) => Boolean,
+  deleteConferenceMember: (p: {
+    id: ID
+  }) => Boolean,
+  deleteConferenceUser: (p: {
+    id: ID
+  }) => Boolean,
   deletePresenceEvent: (p: {
     id: ID
   }) => Presenceevent,
-  deleteRepresentation: Boolean,
+  deleteRepresentation: (p: {
+    id: ID
+  }) => Boolean,
   importDelegatorConference: (p: {
     data: ImportData
   }) => Conference,

@@ -1,37 +1,84 @@
 <script lang="ts">
-	import type { CommitteeSettings, VotingStage } from '$lib/local-db/localDB';
+	import { client } from '$lib/api/rumbleClient/client';
+	import { type VotingStage } from '$lib/local-db/localDB';
 	import { m } from '$lib/paraglide/messages';
 	import { cubicIn, cubicOut } from 'svelte/easing';
 	import { fly } from 'svelte/transition';
 	import ResultChart from './ResultChart.svelte';
+	import { calculateMajority } from '$lib/utils/majorities';
 
 	interface Props {
-		committeeSettings?: CommitteeSettings;
+		committeeId: string;
 	}
-	let { committeeSettings }: Props = $props();
+	let { committeeId }: Props = $props();
+
+	const activeSessions = await client.liveQuery.votingSessions({
+		__args: {
+			where: { committeeId, completedAt: { isNull: true } },
+			limit: 1
+		},
+		id: true,
+		mode: true,
+		currentStage: true,
+		votesPro: true,
+		votesCon: true,
+		votesAbstain: true,
+		voteName: true,
+		majority: true,
+		withAbstentions: true,
+		committee: { simpleMajority: true, twoThirdsMajority: true }
+	});
+
+	let session = $derived((activeSessions ?? [])[0] ?? null);
+
+	let majorityAmount = $derived.by(() => {
+		if (!session) return 0;
+		switch (session.majority) {
+			case 'SIMPLE':
+				return calculateMajority((session.votesPro ?? 0) + (session.votesCon ?? 0), 'simple');
+			case 'ABSOLUTE':
+				return session.committee?.simpleMajority ?? 0;
+			case 'TWO_THIRDS':
+				return session.committee?.twoThirdsMajority ?? 0;
+			default:
+				return 0;
+		}
+	});
+
+	let votesTotal = $derived.by(() => {
+		if (!session) return 0;
+		switch (session.majority) {
+			case 'SIMPLE':
+			case 'TWO_THIRDS':
+				return (session.votesPro ?? 0) + (session.votesCon ?? 0);
+			case 'ABSOLUTE':
+				return (session.votesPro ?? 0) + (session.votesCon ?? 0) + (session.votesAbstain ?? 0);
+			default:
+				return 0;
+		}
+	});
 
 	let resultBoxes = $derived.by(() => {
-		const boxes = [
+		if (!session) return [];
+		const boxes: { faIcon: string; value: number; classes: string }[] = [
 			{
 				faIcon: 'fa-circle-plus',
-				value: committeeSettings?.showOfHandsVotingVotesPro || 0,
+				value: session.votesPro ?? 0,
 				classes: 'bg-success text-success-content'
 			}
 		];
-		if (committeeSettings?.votingWithAbstentions) {
+		if (session.withAbstentions) {
 			boxes.push({
 				faIcon: 'fa-circle',
-				value: committeeSettings?.showOfHandsVotingVotesAbstain || 0,
+				value: session.votesAbstain ?? 0,
 				classes: 'bg-info text-info-content'
 			});
 		}
-
 		boxes.push({
 			faIcon: 'fa-circle-minus',
-			value: committeeSettings?.showOfHandsVotingVotesCon || 0,
+			value: session.votesCon ?? 0,
 			classes: 'bg-error text-error-content'
 		});
-
 		return boxes;
 	});
 
@@ -91,7 +138,7 @@
 	</div>
 {/snippet}
 
-{#if committeeSettings && committeeSettings.showOfHandsVotingActive}
+{#if session?.mode === 'SHOW_OF_HANDS'}
 	<div class="modal modal-open">
 		<div
 			class="modal-box bg-base-200 relative h-full max-h-9/12 w-full max-w-9/12"
@@ -99,37 +146,35 @@
 			out:fly={{ y: 100, duration: 1000, easing: cubicIn }}
 		>
 			<h2 class="mb-8 w-full text-center text-4xl font-bold">
-				{committeeSettings.votingVoteName || m.showOfHandsVoting()}
+				{session.voteName || m.showOfHandsVoting()}
 			</h2>
 
-			{#if committeeSettings.showOfHandsVotingStage === 'PRO'}
+			{#if session.currentStage === 'PRO'}
 				{@render VoteNowBox('PRO')}
-			{:else if committeeSettings.showOfHandsVotingStage === 'CON'}
+			{:else if session.currentStage === 'CON'}
 				{@render VoteNowBox('CON')}
-			{:else if committeeSettings.showOfHandsVotingStage === 'ABSTAIN'}
+			{:else if session.currentStage === 'ABSTAIN'}
 				{@render VoteNowBox('ABSTAIN')}
-			{:else if committeeSettings.showOfHandsVotingStage === 'EVALUATION'}
+			{:else if session.currentStage === 'EVALUATION'}
 				<div
 					class="absolute inset-10 top-30 mb-4 flex flex-col items-stretch justify-center gap-4 p-10"
 					in:fly={{ duration: 500, delay: 500, easing: cubicOut, y: 40 }}
 				>
 					<ResultChart
-						votesPro={committeeSettings.showOfHandsVotingVotesPro}
-						votesCon={committeeSettings.showOfHandsVotingVotesCon}
-						total={committeeSettings.showOfHandsVotingVotesTotal}
-						majorityAmount={committeeSettings.votingMajorityAmount}
+						votesPro={session.votesPro}
+						votesCon={session.votesCon}
+						total={votesTotal}
+						{majorityAmount}
 					/>
 
 					<div class="flex items-center justify-center gap-6">
 						{#each resultBoxes as box (box.faIcon)}
-							{#if committeeSettings.showOfHandsVotingStage === 'EVALUATION'}
-								<div
-									class="card {box.classes} min-w-26 items-center justify-center gap-4 px-10 py-4 shadow-sm"
-								>
-									<i class="fas {box.faIcon} text-3xl"></i>
-									<h3 class="text-4xl font-bold">{box.value}</h3>
-								</div>
-							{/if}
+							<div
+								class="card {box.classes} min-w-26 items-center justify-center gap-4 px-10 py-4 shadow-sm"
+							>
+								<i class="fas {box.faIcon} text-3xl"></i>
+								<h3 class="text-4xl font-bold">{box.value}</h3>
+							</div>
 						{/each}
 					</div>
 				</div>

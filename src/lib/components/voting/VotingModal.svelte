@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { localDB, type VotingMajority } from '$lib/local-db/localDB';
+	import { type VotingMajority } from '$lib/local-db/localDB';
 	import { m } from '$lib/paraglide/messages';
 	import { onDestroy, onMount } from 'svelte';
 	import hotkeys from 'hotkeys-js';
@@ -62,28 +62,8 @@
 		}
 	});
 
-	const clearDexieVotingState = () => {
-		if (!committee) return;
-		localDB.committeeSettings.update(committee.id, {
-			showOfHandsVotingActive: false,
-			showOfHandsVotingVotesPro: 0,
-			showOfHandsVotingVotesCon: 0,
-			showOfHandsVotingVotesAbstain: 0,
-			showOfHandsVotingVotesTotal: 0,
-			rollCallVotingActive: false,
-			rollCallVotingPro: [],
-			rollCallVotingCon: [],
-			rollCallVotingAbstain: [],
-			votingVoteName: null,
-			votingMajority: null,
-			votingWithAbstentions: false,
-			votingMajorityAmount: null
-		});
-	};
-
 	const handleComplete = (result: VotingResult) => {
 		executingOpen = false;
-		clearDexieVotingState();
 		if (currentOnComplete) {
 			const cb = currentOnComplete;
 			currentOnComplete = undefined;
@@ -96,7 +76,6 @@
 
 	const toggleModal = () => {
 		if (setupOpen || executingOpen) {
-			clearDexieVotingState();
 			closeVotingModal();
 		} else {
 			phase = 'SETUP';
@@ -132,7 +111,6 @@
 		<button
 			class="btn btn-sm btn-circle btn-ghost absolute top-2 right-2"
 			onclick={() => {
-				clearDexieVotingState();
 				closeVotingModal();
 			}}>✕</button
 		>

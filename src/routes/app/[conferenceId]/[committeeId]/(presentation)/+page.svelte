@@ -270,8 +270,8 @@
 			.sort((a, b) => sortTranslatedCountries(a.representation!, b.representation!))}
 	/>
 
-	<ShowOfHandsVotingPresentation committeeSettings={$committeeSettings} />
-	<RollCallVotingPresentation committeeSettings={$committeeSettings} {committee} />
+	<ShowOfHandsVotingPresentation {committeeId} />
+	<RollCallVotingPresentation {committeeId} {committee} />
 
 	<button
 		class="btn btn-ghost fixed bottom-3 left-3 z-50 h-12 w-12 min-h-0 p-0 opacity-15 hover:opacity-60 transition-opacity"

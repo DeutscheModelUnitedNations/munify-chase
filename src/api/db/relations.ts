@@ -46,6 +46,10 @@ export const relations = defineRelations(schema, (r) => ({
 		presenceEvents: r.many.presenceEvent({
 			from: r.committee.id,
 			to: r.presenceEvent.committeeId
+		}),
+		votingSessions: r.many.votingSession({
+			from: r.committee.id,
+			to: r.votingSession.committeeId
 		})
 	},
 	committeeMember: {
@@ -62,6 +66,10 @@ export const relations = defineRelations(schema, (r) => ({
 		users: r.many.conferenceUser({
 			from: r.committeeMember.id,
 			to: r.conferenceUser.committeeMemberId
+		}),
+		votingVotes: r.many.votingVote({
+			from: r.committeeMember.id,
+			to: r.votingVote.committeeMemberId
 		})
 	},
 	conferenceUser: {
@@ -225,6 +233,34 @@ export const relations = defineRelations(schema, (r) => ({
 		presenceEvents: r.many.presenceEvent({
 			from: r.rollCallSession.id,
 			to: r.presenceEvent.rollCallSessionId
+		})
+	},
+	votingSession: {
+		committee: r.one.committee({
+			from: r.votingSession.committeeId,
+			to: r.committee.id,
+			optional: false
+		}),
+		startedBy: r.one.conferenceUser({
+			from: r.votingSession.startedByConferenceUserId,
+			to: r.conferenceUser.id,
+			optional: true
+		}),
+		votes: r.many.votingVote({
+			from: r.votingSession.id,
+			to: r.votingVote.votingSessionId
+		})
+	},
+	votingVote: {
+		votingSession: r.one.votingSession({
+			from: r.votingVote.votingSessionId,
+			to: r.votingSession.id,
+			optional: false
+		}),
+		committeeMember: r.one.committeeMember({
+			from: r.votingVote.committeeMemberId,
+			to: r.committeeMember.id,
+			optional: false
 		})
 	}
 }));

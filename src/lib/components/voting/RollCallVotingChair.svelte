@@ -5,9 +5,9 @@
 	import Modal from '../Modal.svelte';
 	import hotkeys from 'hotkeys-js';
 	import toast from 'svelte-french-toast';
-	import { localDB, type VotingMajority, type VotingOptions } from '$lib/local-db/localDB';
+	import { client } from '$lib/api/rumbleClient/client';
+	import { type VotingMajority, type VotingOptions } from '$lib/local-db/localDB';
 	import ScrollingCountryList from '../rollCall/ScrollingCountryList.svelte';
-	import { liveQuery } from 'dexie';
 	import ResultChart from './ResultChart.svelte';
 	import { sortTranslatedCountries } from '$lib/utils/nationTranslationHelper.svelte';
 	import { calculateMajority } from '$lib/utils/majorities';
@@ -49,40 +49,14 @@
 
 	let currentIndex = $state(0);
 	let stage = $state<'ROLL_CALL' | 'EVALUATION'>('ROLL_CALL');
-
-	const exitVote = (completed: boolean = false) => {
-		if (oncomplete) {
-			if (completed) {
-				const votesFor = rollCallVotingPro?.length ?? 0;
-				const votesAgainst = rollCallVotingCon?.length ?? 0;
-				const votesAbstain = rollCallVotingAbstain?.length ?? 0;
-				oncomplete({
-					outcome: votesFor >= majorityAmount ? 'ADOPTED' : 'REJECTED',
-					votesFor,
-					votesAgainst,
-					votesAbstain,
-					cancelled: false
-				});
-			} else {
-				oncomplete({
-					votesFor: 0,
-					votesAgainst: 0,
-					votesAbstain: 0,
-					cancelled: true
-				});
-			}
-		}
-		active = false;
-	};
+	let sessionId = $state<string | null>(null);
+	let rollCallVotingPro = $state<string[]>([]);
+	let rollCallVotingCon = $state<string[]>([]);
+	let rollCallVotingAbstain = $state<string[]>([]);
 
 	let members = committee?.members
 		.filter((member) => member.present && member.representation?.type === 'DELEGATION')
 		.sort((a, b) => sortTranslatedCountries(a.representation!, b.representation!));
-
-	let chairSettings = liveQuery(() => localDB.committeeSettings.get(committee.id));
-	let rollCallVotingAbstain = $derived($chairSettings?.rollCallVotingAbstain ?? []);
-	let rollCallVotingPro = $derived($chairSettings?.rollCallVotingPro ?? []);
-	let rollCallVotingCon = $derived($chairSettings?.rollCallVotingCon ?? []);
 
 	let majorityAmount = $derived.by(() => {
 		switch (majority) {
@@ -117,85 +91,95 @@
 				icon = 'fa-question';
 				color = 'info';
 			}
-			return {
-				id: member.id,
-				icon,
-				color
-			};
+			return { id: member.id, icon, color };
 		});
 	});
 
-	const changeVote = async (member: (typeof members)[number], vote: VotingOptions) => {
-		if (!committee) return;
-		if (
-			[...rollCallVotingPro, ...rollCallVotingCon, ...rollCallVotingAbstain].includes(member.id)
-		) {
-			await localDB.committeeSettings.update(committee.id, {
-				rollCallVotingPro: rollCallVotingPro?.filter((id) => id !== member.id),
-				rollCallVotingCon: rollCallVotingCon?.filter((id) => id !== member.id),
-				rollCallVotingAbstain: rollCallVotingAbstain?.filter((id) => id !== member.id)
-			});
-		}
+	const changeVote = (member: (typeof members)[number], vote: VotingOptions) => {
+		if (!sessionId) return;
+		rollCallVotingPro = rollCallVotingPro.filter((id) => id !== member.id);
+		rollCallVotingCon = rollCallVotingCon.filter((id) => id !== member.id);
+		rollCallVotingAbstain = rollCallVotingAbstain.filter((id) => id !== member.id);
 		switch (vote) {
-			case 'PRO': {
-				const updatedPro = rollCallVotingPro?.includes(member.id)
-					? rollCallVotingPro
-					: [...(rollCallVotingPro ?? []), member.id];
-				await localDB.committeeSettings.update(committee.id, {
-					rollCallVotingPro: updatedPro
-				});
+			case 'PRO':
+				rollCallVotingPro = [...rollCallVotingPro, member.id];
 				break;
-			}
-			case 'CON': {
-				const updatedCon = rollCallVotingCon?.includes(member.id)
-					? rollCallVotingCon
-					: [...(rollCallVotingCon ?? []), member.id];
-				await localDB.committeeSettings.update(committee.id, {
-					rollCallVotingCon: updatedCon
-				});
+			case 'CON':
+				rollCallVotingCon = [...rollCallVotingCon, member.id];
 				break;
-			}
-			case 'ABSTAIN': {
-				const updatedAbstain = rollCallVotingAbstain?.includes(member.id)
-					? rollCallVotingAbstain
-					: [...(rollCallVotingAbstain ?? []), member.id];
-				await localDB.committeeSettings.update(committee.id, {
-					rollCallVotingAbstain: updatedAbstain
-				});
+			case 'ABSTAIN':
+				rollCallVotingAbstain = [...rollCallVotingAbstain, member.id];
 				break;
-			}
 		}
+		client.mutate
+			.setVoteForMember({
+				__args: { sessionId, committeeMemberId: member.id, vote },
+				id: true
+			})
+			.catch(() => toast.error(m.rollCallError()));
 	};
 
-	const setVote = async (vote: VotingOptions) => {
+	const syncIndex = (index: number) => {
+		if (!sessionId) return;
+		client.mutate
+			.updateVotingSession({
+				__args: { id: sessionId, currentMemberIndex: index },
+				id: true
+			})
+			.catch(() => {});
+	};
+
+	const setVote = (vote: VotingOptions) => {
 		const member = members[currentIndex];
-		if (member) {
-			await changeVote(member, vote);
-
-			if (currentIndex === members.length - 1) {
-				stage = 'EVALUATION';
-			}
-			currentIndex = (currentIndex + 1) % members.length;
-		} else {
+		if (!member) {
 			toast.error(m.rollCallError());
+			return;
 		}
+		changeVote(member, vote);
+		if (currentIndex === members.length - 1) {
+			stage = 'EVALUATION';
+		}
+		const nextIdx = (currentIndex + 1) % members.length;
+		currentIndex = nextIdx;
+		syncIndex(nextIdx);
+	};
+
+	const exit = (completed: boolean = false) => {
+		const proCount = rollCallVotingPro.length;
+		const outcome: 'ADOPTED' | 'REJECTED' | null = completed
+			? proCount >= majorityAmount
+				? 'ADOPTED'
+				: 'REJECTED'
+			: null;
+
+		if (sessionId) {
+			const id = sessionId;
+			sessionId = null;
+			client.mutate.completeVotingSession({ __args: { id, outcome } }).catch(() => {});
+		}
+
+		if (oncomplete) {
+			if (completed) {
+				oncomplete({
+					outcome: outcome!,
+					votesFor: rollCallVotingPro.length,
+					votesAgainst: rollCallVotingCon.length,
+					votesAbstain: rollCallVotingAbstain.length,
+					cancelled: false
+				});
+			} else {
+				oncomplete({ votesFor: 0, votesAgainst: 0, votesAbstain: 0, cancelled: true });
+			}
+		}
+
+		rollCallVotingPro = [];
+		rollCallVotingCon = [];
+		rollCallVotingAbstain = [];
+		active = false;
 	};
 
 	$effect(() => {
 		if (active) {
-			localDB.committeeSettings.update(committee.id, {
-				votingMajorityAmount: majorityAmount
-			});
-		}
-	});
-
-	$effect(() => {
-		if (active) {
-			// hotkeys-js's default filter suppresses every shortcut while a text
-			// input/textarea/select is focused. If a vote is started while focus is
-			// still in an input (e.g. the vote-name field, or any field behind the
-			// modal), the first J/K/L/esc presses get swallowed. Blur so the keys
-			// register immediately.
 			(document.activeElement as HTMLElement | null)?.blur();
 			hotkeys('j, k, l, esc', 'rollCallVote', (event, handler) => {
 				event.preventDefault();
@@ -216,50 +200,74 @@
 						}
 						break;
 					case 'esc':
-						exitVote(stage === 'EVALUATION');
+						exit(stage === 'EVALUATION');
 						break;
 				}
 			});
 			hotkeys.setScope('rollCallVote');
-		} else {
-			hotkeys.deleteScope('rollCallVote');
-		}
-	});
 
-	// Only the `active` transition (vote start / end) should reset this state.
-	// Everything else is read inside `untrack` so reading `committee.id` does not
-	// subscribe this effect to the committee liveQuery proxy — otherwise any
-	// unrelated committee update (timers, presence, speakers list, other tabs)
-	// re-runs the effect mid-call and wipes the in-progress tally back to empty.
-	$effect(() => {
-		if (active) {
 			untrack(() => {
 				if (!committee) return;
 				stage = 'ROLL_CALL';
 				currentIndex = 0;
-				localDB.committeeSettings.update(committee.id, {
-					rollCallVotingActive: true,
-					votingVoteName: voteName,
-					votingMajority: majority,
-					rollCallVotingPro: [],
-					rollCallVotingCon: [],
-					rollCallVotingAbstain: [],
-					votingWithAbstentions: withAbstentions
-				});
+				rollCallVotingPro = [];
+				rollCallVotingCon = [];
+				rollCallVotingAbstain = [];
+
+				client.mutate
+					.startVotingSession({
+						__args: {
+							committeeId: committee.id,
+							mode: 'ROLL_CALL',
+							majority: majority ?? 'SIMPLE',
+							majorityAmount: 0,
+							withAbstentions: withAbstentions ?? false,
+							voteName: voteName ?? null
+						},
+						id: true,
+						currentMemberIndex: true,
+						votes: { committeeMemberId: true, vote: true }
+					})
+					.then((result) => {
+						if (!active) {
+							client.mutate
+								.completeVotingSession({ __args: { id: result.id, outcome: null } })
+								.catch(() => {});
+							return;
+						}
+						sessionId = result.id;
+						currentIndex = result.currentMemberIndex;
+						rollCallVotingPro = result.votes
+							.filter((v: { vote: string }) => v.vote === 'PRO')
+							.map((v: { committeeMemberId: string }) => v.committeeMemberId);
+						rollCallVotingCon = result.votes
+							.filter((v: { vote: string }) => v.vote === 'CON')
+							.map((v: { committeeMemberId: string }) => v.committeeMemberId);
+						rollCallVotingAbstain = result.votes
+							.filter((v: { vote: string }) => v.vote === 'ABSTAIN')
+							.map((v: { committeeMemberId: string }) => v.committeeMemberId);
+					})
+					.catch(() => {
+						toast.error(m.rollCallError());
+						active = false;
+					});
 			});
+
+			return () => {
+				hotkeys.deleteScope('rollCallVote');
+			};
 		} else {
 			untrack(() => {
-				if (!committee) return;
-				localDB.committeeSettings.update(committee.id, {
-					rollCallVotingActive: false,
-					rollCallVotingPro: [],
-					rollCallVotingCon: [],
-					rollCallVotingAbstain: [],
-					votingVoteName: null,
-					votingMajority: null,
-					votingWithAbstentions: false,
-					votingMajorityAmount: null
-				});
+				if (sessionId) {
+					const id = sessionId;
+					sessionId = null;
+					client.mutate.completeVotingSession({ __args: { id, outcome: null } }).catch(() => {});
+				}
+				rollCallVotingPro = [];
+				rollCallVotingCon = [];
+				rollCallVotingAbstain = [];
+				currentIndex = 0;
+				stage = 'ROLL_CALL';
 			});
 		}
 	});
@@ -288,7 +296,9 @@
 					class="btn btn-outline btn-lg join-item"
 					aria-label="Move up"
 					onclick={() => {
-						currentIndex = (currentIndex - 1 + members.length) % members.length;
+						const newIdx = (currentIndex - 1 + members.length) % members.length;
+						currentIndex = newIdx;
+						syncIndex(newIdx);
 					}}
 				>
 					<i class="fas fa-chevron-up"></i>
@@ -334,7 +344,7 @@
 			<button
 				class="btn btn-lg flex gap-2"
 				onclick={() => {
-					exitVote(true);
+					exit(true);
 				}}
 			>
 				<i class="fas fa-xmark"></i>
@@ -349,7 +359,7 @@
 			aria-label="Close modal"
 			class="btn btn-ghost btn-circle btn-sm"
 			onclick={() => {
-				exitVote(stage === 'EVALUATION');
+				exit(stage === 'EVALUATION');
 			}}
 		>
 			<i class="fa-duotone fa-xmark"></i>

@@ -97,6 +97,12 @@ export type Committee = {
   totalPresent: Int,
   twoThirdsMajority: Int,
   updatedAt: DateTime | null,
+  votingSessions: (p?: {
+    limit?: Int | null | undefined,
+    offset?: Int | null | undefined,
+    orderBy?: VotingsessionOrderInputArgument | null | undefined,
+    where?: VotingsessionWhereInputArgument | null | undefined
+  }) => Votingsession[],
   whiteboardContent: String | null    
 };
 		
@@ -121,6 +127,7 @@ export type CommitteeOrderInputArgument = {
   statusHeadline?: SortingParameter | null | undefined,
   statusUntil?: SortingParameter | null | undefined,
   updatedAt?: SortingParameter | null | undefined,
+  votingSessions?: VotingsessionOrderInputArgument | null | undefined,
   whiteboardContent?: SortingParameter | null | undefined    
 };
 		
@@ -145,6 +152,7 @@ export type CommitteeWhereInputArgument = {
   statusHeadline?: StringWhereInputArgument | null | undefined,
   statusUntil?: DateWhereInputArgument | null | undefined,
   updatedAt?: DateWhereInputArgument | null | undefined,
+  votingSessions?: VotingsessionWhereInputArgument | null | undefined,
   whiteboardContent?: StringWhereInputArgument | null | undefined    
 };
 		
@@ -168,7 +176,13 @@ export type Committeemember = {
     offset?: Int | null | undefined,
     orderBy?: ConferenceuserOrderInputArgument | null | undefined,
     where?: ConferenceuserWhereInputArgument | null | undefined
-  }) => Conferenceuser[]    
+  }) => Conferenceuser[],
+  votingVotes: (p?: {
+    limit?: Int | null | undefined,
+    offset?: Int | null | undefined,
+    orderBy?: VotingvoteOrderInputArgument | null | undefined,
+    where?: VotingvoteWhereInputArgument | null | undefined
+  }) => Votingvote[]    
 };
 		
 export type CommitteememberOrderInputArgument = {
@@ -180,7 +194,8 @@ export type CommitteememberOrderInputArgument = {
   representation?: RepresentationOrderInputArgument | null | undefined,
   representationId?: SortingParameter | null | undefined,
   updatedAt?: SortingParameter | null | undefined,
-  users?: ConferenceuserOrderInputArgument | null | undefined    
+  users?: ConferenceuserOrderInputArgument | null | undefined,
+  votingVotes?: VotingvoteOrderInputArgument | null | undefined    
 };
 		
 export type CommitteememberWhereInputArgument = {
@@ -192,7 +207,8 @@ export type CommitteememberWhereInputArgument = {
   representation?: RepresentationWhereInputArgument | null | undefined,
   representationId?: ID | null | undefined,
   updatedAt?: DateWhereInputArgument | null | undefined,
-  users?: ConferenceuserWhereInputArgument | null | undefined    
+  users?: ConferenceuserWhereInputArgument | null | undefined,
+  votingVotes?: VotingvoteWhereInputArgument | null | undefined    
 };
 		
 export type CommitteestatusEnum = "FORMAL" | "INFORMAL" | "MODERATED_INFORMAL" | "PAUSE" | "SUSPENSION";
@@ -552,6 +568,10 @@ export type Mutation = {
   completeRollCallSession: (p: {
     id: ID
   }) => Boolean,
+  completeVotingSession: (p: {
+    id: ID,
+    outcome?: unknown | null | undefined
+  }) => Boolean,
   createAgendaItem: (p: {
     committeeId: ID,
     title: String
@@ -648,9 +668,23 @@ export type Mutation = {
     currentMemberIndex: Int,
     id: ID
   }) => Rollcallsession,
+  setVoteForMember: (p: {
+    committeeMemberId: ID,
+    sessionId: ID,
+    vote: unknown
+  }) => Votingvote,
   startRollCallSession: (p: {
     committeeId: ID
   }) => Rollcallsession,
+  startVotingSession: (p: {
+    committeeId: ID,
+    currentStage?: unknown | null | undefined,
+    majority: unknown,
+    majorityAmount: Int,
+    mode: unknown,
+    voteName?: String | null | undefined,
+    withAbstentions: Boolean
+  }) => Votingsession,
   updateCommittee: (p: {
     abbreviation?: String | null | undefined,
     activeAgendaItemId?: ID | null | undefined,
@@ -699,7 +733,15 @@ export type Mutation = {
     startTimestamp?: DateTime | null | undefined,
     stopTimer?: Boolean | null | undefined,
     timeLeft?: Int | null | undefined
-  }) => Speakerslist    
+  }) => Speakerslist,
+  updateVotingSession: (p: {
+    currentMemberIndex?: Int | null | undefined,
+    currentStage?: unknown | null | undefined,
+    id: ID,
+    votesAbstain?: Int | null | undefined,
+    votesCon?: Int | null | undefined,
+    votesPro?: Int | null | undefined
+  }) => Votingsession    
 };
 		
 export type Presenceevent = {
@@ -875,7 +917,25 @@ export type Query = {
     offset?: Int | null | undefined,
     orderBy?: UserOrderInputArgument | null | undefined,
     where?: UserWhereInputArgument | null | undefined
-  }) => User[]    
+  }) => User[],
+  votingSession: (p: {
+    id: ID
+  }) => Votingsession,
+  votingSessions: (p?: {
+    limit?: Int | null | undefined,
+    offset?: Int | null | undefined,
+    orderBy?: VotingsessionOrderInputArgument | null | undefined,
+    where?: VotingsessionWhereInputArgument | null | undefined
+  }) => Votingsession[],
+  votingVote: (p: {
+    id: ID
+  }) => Votingvote,
+  votingVotes: (p?: {
+    limit?: Int | null | undefined,
+    offset?: Int | null | undefined,
+    orderBy?: VotingvoteOrderInputArgument | null | undefined,
+    where?: VotingvoteWhereInputArgument | null | undefined
+  }) => Votingvote[]    
 };
 		
 export type RegionalgroupEnum = "AFRICA" | "ASIA_PACIFIC" | "EASTERN_EUROPE" | "LATIN_AMERICA_CARIBBEAN" | "WESTERN_EUROPE_OTHERS";
@@ -1231,7 +1291,25 @@ export type Subscription = {
     offset?: Int | null | undefined,
     orderBy?: UserOrderInputArgument | null | undefined,
     where?: UserWhereInputArgument | null | undefined
-  }) => User[]    
+  }) => User[],
+  votingSession: (p: {
+    id: ID
+  }) => Votingsession,
+  votingSessions: (p?: {
+    limit?: Int | null | undefined,
+    offset?: Int | null | undefined,
+    orderBy?: VotingsessionOrderInputArgument | null | undefined,
+    where?: VotingsessionWhereInputArgument | null | undefined
+  }) => Votingsession[],
+  votingVote: (p: {
+    id: ID
+  }) => Votingvote,
+  votingVotes: (p?: {
+    limit?: Int | null | undefined,
+    offset?: Int | null | undefined,
+    orderBy?: VotingvoteOrderInputArgument | null | undefined,
+    where?: VotingvoteWhereInputArgument | null | undefined
+  }) => Votingvote[]    
 };
 		
 export type User = {
@@ -1284,6 +1362,135 @@ export type UserWhereInputArgument = {
   updatedAt?: DateWhereInputArgument | null | undefined    
 };
 		
+export type VotechoiceEnum = "ABSTAIN" | "CON" | "PRO";
+		
+export type VotingmajoritytypeEnum = "ABSOLUTE" | "SIMPLE" | "TWO_THIRDS";
+		
+export type VotingmodeEnum = "ROLL_CALL" | "SHOW_OF_HANDS";
+		
+export type VotingoutcomeEnum = "ADOPTED" | "REJECTED";
+		
+export type Votingsession = {
+  committee: (p?: {
+    orderBy?: CommitteeOrderInputArgument | null | undefined,
+    where?: CommitteeWhereInputArgument | null | undefined
+  }) => Committee,
+  committeeId: ID,
+  completedAt: DateTime | null,
+  createdAt: DateTime,
+  currentMemberIndex: Int,
+  currentStage: VotingstageEnum | null,
+  id: ID,
+  majority: VotingmajoritytypeEnum,
+  majorityAmount: Int,
+  mode: VotingmodeEnum,
+  outcome: VotingoutcomeEnum | null,
+  startedBy: (p?: {
+    orderBy?: ConferenceuserOrderInputArgument | null | undefined,
+    where?: ConferenceuserWhereInputArgument | null | undefined
+  }) => Conferenceuser | null,
+  startedByConferenceUserId: ID | null,
+  updatedAt: DateTime | null,
+  voteName: String | null,
+  votes: (p?: {
+    limit?: Int | null | undefined,
+    offset?: Int | null | undefined,
+    orderBy?: VotingvoteOrderInputArgument | null | undefined,
+    where?: VotingvoteWhereInputArgument | null | undefined
+  }) => Votingvote[],
+  votesAbstain: Int,
+  votesCon: Int,
+  votesPro: Int,
+  withAbstentions: Boolean    
+};
+		
+export type VotingsessionOrderInputArgument = {
+  committee?: CommitteeOrderInputArgument | null | undefined,
+  committeeId?: SortingParameter | null | undefined,
+  completedAt?: SortingParameter | null | undefined,
+  createdAt?: SortingParameter | null | undefined,
+  currentMemberIndex?: SortingParameter | null | undefined,
+  currentStage?: SortingParameter | null | undefined,
+  id?: SortingParameter | null | undefined,
+  majority?: SortingParameter | null | undefined,
+  majorityAmount?: SortingParameter | null | undefined,
+  mode?: SortingParameter | null | undefined,
+  outcome?: SortingParameter | null | undefined,
+  startedBy?: ConferenceuserOrderInputArgument | null | undefined,
+  startedByConferenceUserId?: SortingParameter | null | undefined,
+  updatedAt?: SortingParameter | null | undefined,
+  voteName?: SortingParameter | null | undefined,
+  votes?: VotingvoteOrderInputArgument | null | undefined,
+  votesAbstain?: SortingParameter | null | undefined,
+  votesCon?: SortingParameter | null | undefined,
+  votesPro?: SortingParameter | null | undefined,
+  withAbstentions?: SortingParameter | null | undefined    
+};
+		
+export type VotingsessionWhereInputArgument = {
+  committee?: CommitteeWhereInputArgument | null | undefined,
+  committeeId?: ID | null | undefined,
+  completedAt?: DateWhereInputArgument | null | undefined,
+  createdAt?: DateWhereInputArgument | null | undefined,
+  currentMemberIndex?: IntWhereInputArgument | null | undefined,
+  currentStage?: VotingstageEnum | null | undefined,
+  id?: ID | null | undefined,
+  majority?: VotingmajoritytypeEnum | null | undefined,
+  majorityAmount?: IntWhereInputArgument | null | undefined,
+  mode?: VotingmodeEnum | null | undefined,
+  outcome?: VotingoutcomeEnum | null | undefined,
+  startedBy?: ConferenceuserWhereInputArgument | null | undefined,
+  startedByConferenceUserId?: ID | null | undefined,
+  updatedAt?: DateWhereInputArgument | null | undefined,
+  voteName?: StringWhereInputArgument | null | undefined,
+  votes?: VotingvoteWhereInputArgument | null | undefined,
+  votesAbstain?: IntWhereInputArgument | null | undefined,
+  votesCon?: IntWhereInputArgument | null | undefined,
+  votesPro?: IntWhereInputArgument | null | undefined,
+  withAbstentions?: Boolean | null | undefined    
+};
+		
+export type VotingstageEnum = "ABSTAIN" | "CON" | "EVALUATION" | "PRO";
+		
+export type Votingvote = {
+  committeeMember: (p?: {
+    orderBy?: CommitteememberOrderInputArgument | null | undefined,
+    where?: CommitteememberWhereInputArgument | null | undefined
+  }) => Committeemember,
+  committeeMemberId: ID,
+  createdAt: DateTime,
+  id: ID,
+  updatedAt: DateTime | null,
+  vote: VotechoiceEnum,
+  votingSession: (p?: {
+    orderBy?: VotingsessionOrderInputArgument | null | undefined,
+    where?: VotingsessionWhereInputArgument | null | undefined
+  }) => Votingsession,
+  votingSessionId: ID    
+};
+		
+export type VotingvoteOrderInputArgument = {
+  committeeMember?: CommitteememberOrderInputArgument | null | undefined,
+  committeeMemberId?: SortingParameter | null | undefined,
+  createdAt?: SortingParameter | null | undefined,
+  id?: SortingParameter | null | undefined,
+  updatedAt?: SortingParameter | null | undefined,
+  vote?: SortingParameter | null | undefined,
+  votingSession?: VotingsessionOrderInputArgument | null | undefined,
+  votingSessionId?: SortingParameter | null | undefined    
+};
+		
+export type VotingvoteWhereInputArgument = {
+  committeeMember?: CommitteememberWhereInputArgument | null | undefined,
+  committeeMemberId?: ID | null | undefined,
+  createdAt?: DateWhereInputArgument | null | undefined,
+  id?: ID | null | undefined,
+  updatedAt?: DateWhereInputArgument | null | undefined,
+  vote?: VotechoiceEnum | null | undefined,
+  votingSession?: VotingsessionWhereInputArgument | null | undefined,
+  votingSessionId?: ID | null | undefined    
+};
+		
 export const defaultOptions: ConstructorParameters<Client>[0] = {
   url: "/api/graphql",
   fetchSubscriptions: true,
@@ -1305,7 +1512,7 @@ export const client = {
    */
   liveQuery: makeLiveQuery<Query>({
 	  urqlClient,
-	  availableSubscriptions: new Set(["agendaItem", "agendaItems", "committee", "committeeMember", "committeeMembers", "committees", "conference", "conferenceMember", "conferenceMembers", "conferenceUser", "conferenceUsers", "conferences", "presenceEvent", "presenceEvents", "representation", "representations", "rollCallSession", "rollCallSessions", "speakerOnList", "speakerOnLists", "speakersList", "speakersLists", "user", "users"]),
+	  availableSubscriptions: new Set(["agendaItem", "agendaItems", "committee", "committeeMember", "committeeMembers", "committees", "conference", "conferenceMember", "conferenceMembers", "conferenceUser", "conferenceUsers", "conferences", "presenceEvent", "presenceEvents", "representation", "representations", "rollCallSession", "rollCallSessions", "speakerOnList", "speakerOnLists", "speakersList", "speakersLists", "user", "users", "votingSession", "votingSessions", "votingVote", "votingVotes"]),
 		schema,
   }),
   /**

@@ -286,3 +286,58 @@ export const presenceEvent = pgTable('presence_event', {
 	type: presenceEventMarker().notNull(),
 	note: text()
 });
+
+export const votingMode = pgEnum('voting_mode', ['SHOW_OF_HANDS', 'ROLL_CALL']);
+export const votingMajorityType = pgEnum('voting_majority_type', [
+	'SIMPLE',
+	'ABSOLUTE',
+	'TWO_THIRDS'
+]);
+export const votingStage = pgEnum('voting_stage', ['PRO', 'CON', 'ABSTAIN', 'EVALUATION']);
+export const votingOutcome = pgEnum('voting_outcome', ['ADOPTED', 'REJECTED']);
+export const voteChoice = pgEnum('vote_choice', ['PRO', 'CON', 'ABSTAIN']);
+
+export const votingSession = pgTable(
+	'voting_session',
+	{
+		...defaultIdAndTimestamps,
+		committeeId: text()
+			.notNull()
+			.references(() => committee.id, { onDelete: 'cascade' }),
+		startedByConferenceUserId: text().references((): AnyPgColumn => conferenceUser.id, {
+			onDelete: 'set null'
+		}),
+		mode: votingMode().notNull(),
+		voteName: text(),
+		majority: votingMajorityType().notNull(),
+		withAbstentions: boolean().notNull().default(false),
+		majorityAmount: integer().notNull(),
+		currentStage: votingStage(),
+		votesPro: integer().notNull().default(0),
+		votesCon: integer().notNull().default(0),
+		votesAbstain: integer().notNull().default(0),
+		currentMemberIndex: integer().notNull().default(0),
+		completedAt: timestamp(),
+		outcome: votingOutcome()
+	},
+	(t) => [
+		uniqueIndex('voting_session_active_unique')
+			.on(t.committeeId)
+			.where(sql`${t.completedAt} IS NULL`)
+	]
+);
+
+export const votingVote = pgTable(
+	'voting_vote',
+	{
+		...defaultIdAndTimestamps,
+		votingSessionId: text()
+			.notNull()
+			.references((): AnyPgColumn => votingSession.id, { onDelete: 'cascade' }),
+		committeeMemberId: text()
+			.notNull()
+			.references(() => committeeMember.id, { onDelete: 'cascade' }),
+		vote: voteChoice().notNull()
+	},
+	(t) => [unique().on(t.votingSessionId, t.committeeMemberId)]
+);

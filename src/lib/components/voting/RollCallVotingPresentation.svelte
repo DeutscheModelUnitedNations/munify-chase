@@ -1,6 +1,6 @@
 <script lang="ts">
 	import Flag from '$lib/components/Flag.svelte';
-	import type { CommitteeSettings } from '$lib/local-db/localDB';
+	import { client } from '$lib/api/rumbleClient/client';
 	import { m } from '$lib/paraglide/messages';
 	import { cubicIn, cubicInOut, cubicOut } from 'svelte/easing';
 	import { fly } from 'svelte/transition';
@@ -9,9 +9,10 @@
 	import FlagRow from './FlagRow.svelte';
 	import { crossfade } from 'svelte/transition';
 	import { sortTranslatedCountries } from '$lib/utils/nationTranslationHelper.svelte';
+	import { calculateMajority } from '$lib/utils/majorities';
 
 	interface Props {
-		committeeSettings?: CommitteeSettings;
+		committeeId: string;
 		committee?: {
 			id: string;
 			totalPresent: number;
@@ -31,7 +32,22 @@
 			}>;
 		} | null;
 	}
-	let { committeeSettings, committee }: Props = $props();
+	let { committeeId, committee }: Props = $props();
+
+	const activeSessions = await client.liveQuery.votingSessions({
+		__args: {
+			where: { committeeId, completedAt: { isNull: true } },
+			limit: 1
+		},
+		id: true,
+		mode: true,
+		voteName: true,
+		majority: true,
+		withAbstentions: true,
+		votes: { id: true, committeeMemberId: true, vote: true }
+	});
+
+	let session = $derived((activeSessions ?? [])[0] ?? null);
 
 	const [send, receive] = crossfade({
 		duration: 1000,
@@ -50,25 +66,34 @@
 			.sort((a, b) => sortTranslatedCountries(a.representation!, b.representation!))
 	);
 
-	let remainingMembers = $derived(
-		members?.filter(
-			(member) =>
-				[
-					...(committeeSettings?.rollCallVotingPro ?? []),
-					...(committeeSettings?.rollCallVotingCon ?? []),
-					...(committeeSettings?.rollCallVotingAbstain ?? [])
-				].includes(member.id) === false
-		)
-	);
+	let votedIds = $derived(session?.votes.map((v) => v.committeeMemberId) ?? []);
+	let remainingMembers = $derived(members?.filter((m) => !votedIds.includes(m.id)));
 	let proMembers = $derived(
-		members?.filter((member) => committeeSettings?.rollCallVotingPro?.includes(member.id))
+		members?.filter((m) => session?.votes.find((v) => v.committeeMemberId === m.id)?.vote === 'PRO')
 	);
 	let conMembers = $derived(
-		members?.filter((member) => committeeSettings?.rollCallVotingCon?.includes(member.id))
+		members?.filter((m) => session?.votes.find((v) => v.committeeMemberId === m.id)?.vote === 'CON')
 	);
 	let abstainMembers = $derived(
-		members?.filter((member) => committeeSettings?.rollCallVotingAbstain?.includes(member.id))
+		members?.filter(
+			(m) => session?.votes.find((v) => v.committeeMemberId === m.id)?.vote === 'ABSTAIN'
+		)
 	);
+
+	let majorityAmount = $derived.by(() => {
+		if (!session || !committee) return 0;
+		const abstainCount = session.votes.filter((v) => v.vote === 'ABSTAIN').length;
+		switch (session.majority) {
+			case 'SIMPLE':
+				return calculateMajority((committee.totalPresent ?? 0) - abstainCount, 'simple');
+			case 'ABSOLUTE':
+				return committee.simpleMajority ?? 0;
+			case 'TWO_THIRDS':
+				return committee.twoThirdsMajority ?? 0;
+			default:
+				return 0;
+		}
+	});
 </script>
 
 {#snippet FlagCard(member: NonNullable<typeof members>[number])}
@@ -80,7 +105,7 @@
 	</div>
 {/snippet}
 
-{#if committeeSettings && committeeSettings.rollCallVotingActive}
+{#if session?.mode === 'ROLL_CALL'}
 	<div class="modal modal-open">
 		<div
 			class="modal-box bg-base-200 relative flex h-full max-h-11/12 w-full max-w-11/12 flex-col gap-4"
@@ -88,14 +113,14 @@
 			out:fly={{ y: 100, duration: 1000, easing: cubicIn }}
 		>
 			<h2 class="w-full text-center text-4xl font-bold">
-				{committeeSettings.votingVoteName || m.rollCallVoting()}
+				{session.voteName || m.rollCallVoting()}
 			</h2>
 
 			<ResultChart
-				majorityAmount={committeeSettings.votingMajorityAmount}
-				votesAbstain={committeeSettings.rollCallVotingAbstain?.length}
-				votesCon={committeeSettings.rollCallVotingCon?.length}
-				votesPro={committeeSettings.rollCallVotingPro?.length}
+				{majorityAmount}
+				votesAbstain={abstainMembers?.length}
+				votesCon={conMembers?.length}
+				votesPro={proMembers?.length}
 				total={members?.length}
 			/>
 
@@ -122,7 +147,8 @@
 					</div>
 				{/each}
 			</FlagRow>
-			{#if committeeSettings.votingWithAbstentions}
+
+			{#if session.withAbstentions}
 				<FlagRow color="info" faIcon="circle" countValue={abstainMembers?.length}>
 					{#each abstainMembers?.toReversed() ?? [] as member (member.id)}
 						<div
@@ -135,6 +161,7 @@
 					{/each}
 				</FlagRow>
 			{/if}
+
 			<FlagRow color="error" faIcon="circle-minus" countValue={conMembers?.length}>
 				{#each conMembers?.toReversed() ?? [] as member (member.id)}
 					<div

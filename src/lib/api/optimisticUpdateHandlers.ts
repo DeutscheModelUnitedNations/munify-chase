@@ -148,6 +148,22 @@ export const optimistic: OptimisticMutationConfig = {
 		id: args.id,
 		currentMemberIndex: args.currentMemberIndex
 	}),
+	updateVotingSession: (args) => {
+		const result: Record<string, unknown> = { __typename: 'Votingsession', id: args.id };
+		if (args.currentStage !== undefined) result.currentStage = args.currentStage;
+		if (args.votesPro !== undefined) result.votesPro = args.votesPro;
+		if (args.votesCon !== undefined) result.votesCon = args.votesCon;
+		if (args.votesAbstain !== undefined) result.votesAbstain = args.votesAbstain;
+		if (args.currentMemberIndex !== undefined) result.currentMemberIndex = args.currentMemberIndex;
+		return result;
+	},
+	setVoteForMember: (args) => ({
+		__typename: 'Votingvote',
+		id: `__optimistic__${args.sessionId}__${args.committeeMemberId}`,
+		votingSessionId: args.sessionId,
+		committeeMemberId: args.committeeMemberId,
+		vote: args.vote
+	}),
 	addSpeakerOnList: (args, cache) => {
 		const list = cache.readFragment(
 			gql`

@@ -3,7 +3,9 @@
 	import { m } from '$lib/paraglide/messages';
 	import Modal from '../Modal.svelte';
 	import hotkeys from 'hotkeys-js';
-	import { localDB, type VotingMajority, type VotingStage } from '$lib/local-db/localDB';
+	import { untrack } from 'svelte';
+	import { client } from '$lib/api/rumbleClient/client';
+	import { type VotingMajority, type VotingStage } from '$lib/local-db/localDB';
 	import VoteClicker from './VoteClicker.svelte';
 	import ResultChart from './ResultChart.svelte';
 	import { calculateMajority } from '$lib/utils/majorities';
@@ -33,10 +35,11 @@
 	}: Props = $props();
 
 	let currentState = $state<VotingStage>('PRO');
-
 	let votesPro = $state(0);
 	let votesCon = $state(0);
 	let votesAbstain = $state(0);
+	let sessionId = $state<string | null>(null);
+
 	let votesTotal = $derived.by(() => {
 		switch (majority) {
 			case 'SIMPLE':
@@ -66,23 +69,40 @@
 	);
 	let votesOvershot = $derived(presentDelegations > 0 && votesCast > presentDelegations);
 
+	const syncToServer = () => {
+		if (!sessionId) return;
+		client.mutate
+			.updateVotingSession({
+				__args: { id: sessionId, currentStage: currentState, votesPro, votesCon, votesAbstain },
+				id: true
+			})
+			.catch(() => {});
+	};
+
 	const exit = (completed: boolean = false) => {
+		const outcome: 'ADOPTED' | 'REJECTED' | null = completed
+			? votesPro >= majorityAmount
+				? 'ADOPTED'
+				: 'REJECTED'
+			: null;
+
+		if (sessionId) {
+			const id = sessionId;
+			sessionId = null;
+			client.mutate.completeVotingSession({ __args: { id, outcome } }).catch(() => {});
+		}
+
 		if (oncomplete) {
 			if (completed) {
 				oncomplete({
-					outcome: votesPro >= majorityAmount ? 'ADOPTED' : 'REJECTED',
+					outcome: outcome!,
 					votesFor: votesPro,
 					votesAgainst: votesCon,
 					votesAbstain: votesAbstain,
 					cancelled: false
 				});
 			} else {
-				oncomplete({
-					votesFor: 0,
-					votesAgainst: 0,
-					votesAbstain: 0,
-					cancelled: true
-				});
+				oncomplete({ votesFor: 0, votesAgainst: 0, votesAbstain: 0, cancelled: true });
 			}
 		}
 		votesPro = 0;
@@ -109,8 +129,9 @@
 				break;
 			case 'EVALUATION':
 				exit(true);
-				break;
+				return;
 		}
+		syncToServer();
 	};
 
 	const adjustCurrentVote = (delta: number) => {
@@ -143,14 +164,11 @@
 				}
 				break;
 		}
+		syncToServer();
 	};
 
 	$effect(() => {
 		if (active) {
-			// hotkeys-js's default filter suppresses every shortcut while a text
-			// input/textarea/select is focused. If a vote is started while focus is
-			// still in an input (e.g. the vote-name field, or any field behind the
-			// modal), the first key presses get swallowed. Blur so they register.
 			(document.activeElement as HTMLElement | null)?.blur();
 			hotkeys('enter, esc, backspace, up, down, space', 'showOfHandsVote', (event, handler) => {
 				event.preventDefault();
@@ -174,38 +192,56 @@
 				}
 			});
 			hotkeys.setScope('showOfHandsVote');
+
+			untrack(() => {
+				if (!committee) return;
+				client.mutate
+					.startVotingSession({
+						__args: {
+							committeeId: committee.id,
+							mode: 'SHOW_OF_HANDS',
+							majority,
+							majorityAmount: 0,
+							withAbstentions,
+							voteName: voteName ?? null,
+							currentStage: 'PRO'
+						},
+						id: true,
+						currentStage: true,
+						votesPro: true,
+						votesCon: true,
+						votesAbstain: true
+					})
+					.then((result) => {
+						if (!active) {
+							client.mutate
+								.completeVotingSession({ __args: { id: result.id, outcome: null } })
+								.catch(() => {});
+							return;
+						}
+						sessionId = result.id;
+						if (result.currentStage) currentState = result.currentStage as VotingStage;
+						votesPro = result.votesPro ?? 0;
+						votesCon = result.votesCon ?? 0;
+						votesAbstain = result.votesAbstain ?? 0;
+					})
+					.catch(() => {});
+			});
+
 			return () => {
 				hotkeys.deleteScope('showOfHandsVote');
 			};
-		}
-	});
-
-	$effect(() => {
-		if (!committee) return;
-		if (active) {
-			localDB.committeeSettings.update(committee.id, {
-				showOfHandsVotingActive: true,
-				showOfHandsVotingStage: currentState,
-				showOfHandsVotingVotesPro: votesPro,
-				showOfHandsVotingVotesCon: votesCon,
-				showOfHandsVotingVotesAbstain: votesAbstain,
-				showOfHandsVotingVotesTotal: votesTotal,
-				votingVoteName: voteName,
-				votingMajority: majority,
-				votingWithAbstentions: withAbstentions,
-				votingMajorityAmount: majorityAmount
-			});
 		} else {
-			localDB.committeeSettings.update(committee.id, {
-				showOfHandsVotingActive: false,
-				showOfHandsVotingVotesPro: 0,
-				showOfHandsVotingVotesCon: 0,
-				showOfHandsVotingVotesAbstain: 0,
-				showOfHandsVotingVotesTotal: 0,
-				votingVoteName: null,
-				votingMajority: null,
-				votingWithAbstentions: false,
-				votingMajorityAmount: null
+			untrack(() => {
+				if (sessionId) {
+					const id = sessionId;
+					sessionId = null;
+					client.mutate.completeVotingSession({ __args: { id, outcome: null } }).catch(() => {});
+				}
+				votesPro = 0;
+				votesCon = 0;
+				votesAbstain = 0;
+				currentState = 'PRO';
 			});
 		}
 	});

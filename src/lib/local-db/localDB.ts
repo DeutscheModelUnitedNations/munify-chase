@@ -11,23 +11,6 @@ interface CommitteeSettings {
 	presentationRootFontSize: number;
 	presentationResolutionFontSize: number;
 	displayRegionalGroups: boolean;
-
-	showOfHandsVotingActive: boolean;
-	showOfHandsVotingStage: VotingStage | null;
-	showOfHandsVotingVotesPro: number | null;
-	showOfHandsVotingVotesCon: number | null;
-	showOfHandsVotingVotesAbstain: number | null;
-	showOfHandsVotingVotesTotal: number | null;
-
-	rollCallVotingActive: boolean;
-	rollCallVotingPro: string[] | null;
-	rollCallVotingCon: string[] | null;
-	rollCallVotingAbstain: string[] | null;
-
-	votingVoteName: string | null;
-	votingMajority: VotingMajority | null;
-	votingWithAbstentions: boolean | null;
-	votingMajorityAmount: number | null;
 }
 
 const localDB = new Dexie('local-db') as Dexie & {
@@ -98,6 +81,17 @@ localDB.version(3).stores({
 	votingMajority,
 	votingWithAbstentions,
 	votingMajorityAmount
+	`
+});
+
+// Version 4: voting state moved to server-side (votingSession/votingVote tables)
+localDB.version(4).stores({
+	committeeSettings: `
+	++committeeId,
+	layout,
+	presentationRootFontSize,
+	presentationResolutionFontSize,
+	displayRegionalGroups
 	`
 });
 

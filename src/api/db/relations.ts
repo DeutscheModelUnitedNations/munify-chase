@@ -24,10 +24,6 @@ export const relations = defineRelations(schema, (r) => ({
 		representations: r.many.representation({
 			from: r.conference.id,
 			to: r.representation.conferenceId
-		}),
-		nsaPresenceEvents: r.many.nsaPresenceEvent({
-			from: r.conference.id,
-			to: r.nsaPresenceEvent.conferenceId
 		})
 	},
 	committee: {
@@ -212,11 +208,6 @@ export const relations = defineRelations(schema, (r) => ({
 		committee: r.one.committee({
 			from: r.nsaPresenceEvent.committeeId,
 			to: r.committee.id,
-			optional: false
-		}),
-		conference: r.one.conference({
-			from: r.nsaPresenceEvent.conferenceId,
-			to: r.conference.id,
 			optional: false
 		}),
 		triggeredBy: r.one.conferenceUser({

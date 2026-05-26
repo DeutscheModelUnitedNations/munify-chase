@@ -20,12 +20,6 @@ export type Agendaitem = {
   createdAt: DateTime,
   id: ID,
   isActive: Boolean,
-  resolutionPapers: (p?: {
-    limit?: Int | null | undefined,
-    offset?: Int | null | undefined,
-    orderBy?: ResolutionpaperOrderInputArgument | null | undefined,
-    where?: ResolutionpaperWhereInputArgument | null | undefined
-  }) => Resolutionpaper[],
   speakersList: (p?: {
     limit?: Int | null | undefined,
     offset?: Int | null | undefined,
@@ -41,7 +35,6 @@ export type AgendaitemOrderInputArgument = {
   committeeId?: SortingParameter | null | undefined,
   createdAt?: SortingParameter | null | undefined,
   id?: SortingParameter | null | undefined,
-  resolutionPapers?: ResolutionpaperOrderInputArgument | null | undefined,
   speakersList?: SpeakerslistOrderInputArgument | null | undefined,
   title?: SortingParameter | null | undefined,
   updatedAt?: SortingParameter | null | undefined    
@@ -52,123 +45,12 @@ export type AgendaitemWhereInputArgument = {
   committeeId?: ID | null | undefined,
   createdAt?: DateWhereInputArgument | null | undefined,
   id?: ID | null | undefined,
-  resolutionPapers?: ResolutionpaperWhereInputArgument | null | undefined,
   speakersList?: SpeakerslistWhereInputArgument | null | undefined,
   title?: StringWhereInputArgument | null | undefined,
   updatedAt?: DateWhereInputArgument | null | undefined    
 };
 		
-export type Amendment = {
-  createdAt: DateTime,
-  documentNumber: String | null,
-  id: ID,
-  newContent: String | null,
-  paper: (p?: {
-    orderBy?: ResolutionpaperOrderInputArgument | null | undefined,
-    where?: ResolutionpaperWhereInputArgument | null | undefined
-  }) => Resolutionpaper,
-  paperId: ID,
-  proposer: (p?: {
-    orderBy?: CommitteememberOrderInputArgument | null | undefined,
-    where?: CommitteememberWhereInputArgument | null | undefined
-  }) => Committeemember,
-  proposerCommitteeMemberId: ID,
-  sequenceNumber: Int | null,
-  sponsors: (p?: {
-    limit?: Int | null | undefined,
-    offset?: Int | null | undefined,
-    orderBy?: AmendmentsponsorOrderInputArgument | null | undefined,
-    where?: AmendmentsponsorWhereInputArgument | null | undefined
-  }) => Amendmentsponsor[],
-  status: AmendmentstatusEnum,
-  targetClauseId: ID | null,
-  targetOperativeIndex: Int | null,
-  targetPosition: Int | null,
-  type: AmendmenttypeEnum,
-  updatedAt: DateTime | null    
-};
-		
-export type AmendmentOrderInputArgument = {
-  createdAt?: SortingParameter | null | undefined,
-  documentNumber?: SortingParameter | null | undefined,
-  id?: SortingParameter | null | undefined,
-  newContent?: SortingParameter | null | undefined,
-  paper?: ResolutionpaperOrderInputArgument | null | undefined,
-  paperId?: SortingParameter | null | undefined,
-  proposer?: CommitteememberOrderInputArgument | null | undefined,
-  proposerCommitteeMemberId?: SortingParameter | null | undefined,
-  sequenceNumber?: SortingParameter | null | undefined,
-  sponsors?: AmendmentsponsorOrderInputArgument | null | undefined,
-  status?: SortingParameter | null | undefined,
-  targetClauseId?: SortingParameter | null | undefined,
-  targetOperativeIndex?: SortingParameter | null | undefined,
-  targetPosition?: SortingParameter | null | undefined,
-  type?: SortingParameter | null | undefined,
-  updatedAt?: SortingParameter | null | undefined    
-};
-		
-export type AmendmentWhereInputArgument = {
-  createdAt?: DateWhereInputArgument | null | undefined,
-  documentNumber?: StringWhereInputArgument | null | undefined,
-  id?: ID | null | undefined,
-  newContent?: StringWhereInputArgument | null | undefined,
-  paper?: ResolutionpaperWhereInputArgument | null | undefined,
-  paperId?: ID | null | undefined,
-  proposer?: CommitteememberWhereInputArgument | null | undefined,
-  proposerCommitteeMemberId?: ID | null | undefined,
-  sequenceNumber?: IntWhereInputArgument | null | undefined,
-  sponsors?: AmendmentsponsorWhereInputArgument | null | undefined,
-  status?: AmendmentstatusEnum | null | undefined,
-  targetClauseId?: ID | null | undefined,
-  targetOperativeIndex?: IntWhereInputArgument | null | undefined,
-  targetPosition?: IntWhereInputArgument | null | undefined,
-  type?: AmendmenttypeEnum | null | undefined,
-  updatedAt?: DateWhereInputArgument | null | undefined    
-};
-		
-export type Amendmentsponsor = {
-  amendment: (p?: {
-    orderBy?: AmendmentOrderInputArgument | null | undefined,
-    where?: AmendmentWhereInputArgument | null | undefined
-  }) => Amendment,
-  amendmentId: ID,
-  committeeMember: (p?: {
-    orderBy?: CommitteememberOrderInputArgument | null | undefined,
-    where?: CommitteememberWhereInputArgument | null | undefined
-  }) => Committeemember,
-  committeeMemberId: ID,
-  createdAt: DateTime,
-  id: ID,
-  updatedAt: DateTime | null    
-};
-		
-export type AmendmentsponsorOrderInputArgument = {
-  amendment?: AmendmentOrderInputArgument | null | undefined,
-  amendmentId?: SortingParameter | null | undefined,
-  committeeMember?: CommitteememberOrderInputArgument | null | undefined,
-  committeeMemberId?: SortingParameter | null | undefined,
-  createdAt?: SortingParameter | null | undefined,
-  id?: SortingParameter | null | undefined,
-  updatedAt?: SortingParameter | null | undefined    
-};
-		
-export type AmendmentsponsorWhereInputArgument = {
-  amendment?: AmendmentWhereInputArgument | null | undefined,
-  amendmentId?: ID | null | undefined,
-  committeeMember?: CommitteememberWhereInputArgument | null | undefined,
-  committeeMemberId?: ID | null | undefined,
-  createdAt?: DateWhereInputArgument | null | undefined,
-  id?: ID | null | undefined,
-  updatedAt?: DateWhereInputArgument | null | undefined    
-};
-		
-export type AmendmentstatusEnum = "ACCEPTED" | "CONSENSUS_ADOPTED" | "PENDING" | "REJECTED" | "SUBMITTED" | "WITHDRAWN";
-		
-export type AmendmenttypeEnum = "ADD" | "ALTER_POSITION" | "ALTER_TEXT" | "DELETE";
-		
 export type Boolean = boolean;
-		
-export type CommentvisibilityEnum = "PUBLIC" | "TEAM_ONLY";
 		
 export type Committee = {
   abbreviation: String,
@@ -177,16 +59,6 @@ export type Committee = {
     where?: AgendaitemWhereInputArgument | null | undefined
   }) => Agendaitem | null,
   activeAgendaItemId: ID | null,
-  activeAmendment: (p?: {
-    orderBy?: AmendmentOrderInputArgument | null | undefined,
-    where?: AmendmentWhereInputArgument | null | undefined
-  }) => Amendment | null,
-  activeAmendmentId: ID | null,
-  activeDraftResolution: (p?: {
-    orderBy?: ResolutionpaperOrderInputArgument | null | undefined,
-    where?: ResolutionpaperWhereInputArgument | null | undefined
-  }) => Resolutionpaper | null,
-  activeDraftResolutionId: ID | null,
   agendaItems: (p?: {
     limit?: Int | null | undefined,
     offset?: Int | null | undefined,
@@ -194,22 +66,15 @@ export type Committee = {
     where?: AgendaitemWhereInputArgument | null | undefined
   }) => Agendaitem[],
   allowDelegationsToAddThemselvesToSpeakersList: Boolean,
-  amendmentSponsoringOpen: Boolean,
-  amendmentSubmissionOpen: Boolean,
   conference: (p?: {
     orderBy?: ConferenceOrderInputArgument | null | undefined,
     where?: ConferenceWhereInputArgument | null | undefined
   }) => Conference | null,
   conferenceId: ID,
   createdAt: DateTime,
-  currentOperativeClauseId: ID | null,
-  currentOperativeIndex: Int | null,
-  customPaperSupportThreshold: Int | null,
   customSimpleMajority: Int | null,
   customTwoThirdsMajority: Int | null,
   id: ID,
-  lastResolutionAdoptionDate: DateTime | null,
-  maxDraftResolutions: Int,
   members: (p?: {
     limit?: Int | null | undefined,
     offset?: Int | null | undefined,
@@ -223,21 +88,12 @@ export type Committee = {
     orderBy?: NsapresenceeventOrderInputArgument | null | undefined,
     where?: NsapresenceeventWhereInputArgument | null | undefined
   }) => Nsapresenceevent[],
-  paperSupportThreshold: Int,
-  resolutionHeadline: String | null,
-  resolutionPapers: (p?: {
-    limit?: Int | null | undefined,
-    offset?: Int | null | undefined,
-    orderBy?: ResolutionpaperOrderInputArgument | null | undefined,
-    where?: ResolutionpaperWhereInputArgument | null | undefined
-  }) => Resolutionpaper[],
   showWhiteboard: Boolean,
   simpleMajority: Int,
   stateOfDebate: String | null,
   status: CommitteestatusEnum,
   statusHeadline: String,
   statusUntil: DateTime,
-  supportReEvaluationOpen: Boolean,
   totalPresent: Int,
   twoThirdsMajority: Int,
   updatedAt: DateTime | null,
@@ -248,36 +104,22 @@ export type CommitteeOrderInputArgument = {
   abbreviation?: SortingParameter | null | undefined,
   activeAgendaItem?: AgendaitemOrderInputArgument | null | undefined,
   activeAgendaItemId?: SortingParameter | null | undefined,
-  activeAmendment?: AmendmentOrderInputArgument | null | undefined,
-  activeAmendmentId?: SortingParameter | null | undefined,
-  activeDraftResolution?: ResolutionpaperOrderInputArgument | null | undefined,
-  activeDraftResolutionId?: SortingParameter | null | undefined,
   agendaItems?: AgendaitemOrderInputArgument | null | undefined,
   allowDelegationsToAddThemselvesToSpeakersList?: SortingParameter | null | undefined,
-  amendmentSponsoringOpen?: SortingParameter | null | undefined,
-  amendmentSubmissionOpen?: SortingParameter | null | undefined,
   conference?: ConferenceOrderInputArgument | null | undefined,
   conferenceId?: SortingParameter | null | undefined,
   createdAt?: SortingParameter | null | undefined,
-  currentOperativeClauseId?: SortingParameter | null | undefined,
-  currentOperativeIndex?: SortingParameter | null | undefined,
-  customPaperSupportThreshold?: SortingParameter | null | undefined,
   customSimpleMajority?: SortingParameter | null | undefined,
   customTwoThirdsMajority?: SortingParameter | null | undefined,
   id?: SortingParameter | null | undefined,
-  lastResolutionAdoptionDate?: SortingParameter | null | undefined,
-  maxDraftResolutions?: SortingParameter | null | undefined,
   members?: CommitteememberOrderInputArgument | null | undefined,
   name?: SortingParameter | null | undefined,
   nsaPresenceEvents?: NsapresenceeventOrderInputArgument | null | undefined,
-  resolutionHeadline?: SortingParameter | null | undefined,
-  resolutionPapers?: ResolutionpaperOrderInputArgument | null | undefined,
   showWhiteboard?: SortingParameter | null | undefined,
   stateOfDebate?: SortingParameter | null | undefined,
   status?: SortingParameter | null | undefined,
   statusHeadline?: SortingParameter | null | undefined,
   statusUntil?: SortingParameter | null | undefined,
-  supportReEvaluationOpen?: SortingParameter | null | undefined,
   updatedAt?: SortingParameter | null | undefined,
   whiteboardContent?: SortingParameter | null | undefined    
 };
@@ -286,66 +128,34 @@ export type CommitteeWhereInputArgument = {
   abbreviation?: StringWhereInputArgument | null | undefined,
   activeAgendaItem?: AgendaitemWhereInputArgument | null | undefined,
   activeAgendaItemId?: ID | null | undefined,
-  activeAmendment?: AmendmentWhereInputArgument | null | undefined,
-  activeAmendmentId?: ID | null | undefined,
-  activeDraftResolution?: ResolutionpaperWhereInputArgument | null | undefined,
-  activeDraftResolutionId?: ID | null | undefined,
   agendaItems?: AgendaitemWhereInputArgument | null | undefined,
   allowDelegationsToAddThemselvesToSpeakersList?: Boolean | null | undefined,
-  amendmentSponsoringOpen?: Boolean | null | undefined,
-  amendmentSubmissionOpen?: Boolean | null | undefined,
   conference?: ConferenceWhereInputArgument | null | undefined,
   conferenceId?: ID | null | undefined,
   createdAt?: DateWhereInputArgument | null | undefined,
-  currentOperativeClauseId?: ID | null | undefined,
-  currentOperativeIndex?: IntWhereInputArgument | null | undefined,
-  customPaperSupportThreshold?: IntWhereInputArgument | null | undefined,
   customSimpleMajority?: IntWhereInputArgument | null | undefined,
   customTwoThirdsMajority?: IntWhereInputArgument | null | undefined,
   id?: ID | null | undefined,
-  lastResolutionAdoptionDate?: DateWhereInputArgument | null | undefined,
-  maxDraftResolutions?: IntWhereInputArgument | null | undefined,
   members?: CommitteememberWhereInputArgument | null | undefined,
   name?: StringWhereInputArgument | null | undefined,
   nsaPresenceEvents?: NsapresenceeventWhereInputArgument | null | undefined,
-  resolutionHeadline?: StringWhereInputArgument | null | undefined,
-  resolutionPapers?: ResolutionpaperWhereInputArgument | null | undefined,
   showWhiteboard?: Boolean | null | undefined,
   stateOfDebate?: StringWhereInputArgument | null | undefined,
   status?: CommitteestatusEnum | null | undefined,
   statusHeadline?: StringWhereInputArgument | null | undefined,
   statusUntil?: DateWhereInputArgument | null | undefined,
-  supportReEvaluationOpen?: Boolean | null | undefined,
   updatedAt?: DateWhereInputArgument | null | undefined,
   whiteboardContent?: StringWhereInputArgument | null | undefined    
 };
 		
 export type Committeemember = {
-  amendmentSponsors: (p?: {
-    limit?: Int | null | undefined,
-    offset?: Int | null | undefined,
-    orderBy?: AmendmentsponsorOrderInputArgument | null | undefined,
-    where?: AmendmentsponsorWhereInputArgument | null | undefined
-  }) => Amendmentsponsor[],
   committee: (p?: {
     orderBy?: CommitteeOrderInputArgument | null | undefined,
     where?: CommitteeWhereInputArgument | null | undefined
   }) => Committee,
   committeeId: ID,
   createdAt: DateTime,
-  createdPapers: (p?: {
-    limit?: Int | null | undefined,
-    offset?: Int | null | undefined,
-    orderBy?: ResolutionpaperOrderInputArgument | null | undefined,
-    where?: ResolutionpaperWhereInputArgument | null | undefined
-  }) => Resolutionpaper[],
   id: ID,
-  paperSponsors: (p?: {
-    limit?: Int | null | undefined,
-    offset?: Int | null | undefined,
-    orderBy?: PapersponsorOrderInputArgument | null | undefined,
-    where?: PapersponsorWhereInputArgument | null | undefined
-  }) => Papersponsor[],
   presenceChangedTimestamps: (p?: {
     limit?: Int | null | undefined,
     offset?: Int | null | undefined,
@@ -353,12 +163,6 @@ export type Committeemember = {
     where?: PresencechangedtimestampWhereInputArgument | null | undefined
   }) => Presencechangedtimestamp[],
   present: Boolean,
-  proposedAmendments: (p?: {
-    limit?: Int | null | undefined,
-    offset?: Int | null | undefined,
-    orderBy?: AmendmentOrderInputArgument | null | undefined,
-    where?: AmendmentWhereInputArgument | null | undefined
-  }) => Amendment[],
   representation: (p?: {
     orderBy?: RepresentationOrderInputArgument | null | undefined,
     where?: RepresentationWhereInputArgument | null | undefined
@@ -374,16 +178,12 @@ export type Committeemember = {
 };
 		
 export type CommitteememberOrderInputArgument = {
-  amendmentSponsors?: AmendmentsponsorOrderInputArgument | null | undefined,
   committee?: CommitteeOrderInputArgument | null | undefined,
   committeeId?: SortingParameter | null | undefined,
   createdAt?: SortingParameter | null | undefined,
-  createdPapers?: ResolutionpaperOrderInputArgument | null | undefined,
   id?: SortingParameter | null | undefined,
-  paperSponsors?: PapersponsorOrderInputArgument | null | undefined,
   presenceChangedTimestamps?: PresencechangedtimestampOrderInputArgument | null | undefined,
   present?: SortingParameter | null | undefined,
-  proposedAmendments?: AmendmentOrderInputArgument | null | undefined,
   representation?: RepresentationOrderInputArgument | null | undefined,
   representationId?: SortingParameter | null | undefined,
   updatedAt?: SortingParameter | null | undefined,
@@ -391,16 +191,12 @@ export type CommitteememberOrderInputArgument = {
 };
 		
 export type CommitteememberWhereInputArgument = {
-  amendmentSponsors?: AmendmentsponsorWhereInputArgument | null | undefined,
   committee?: CommitteeWhereInputArgument | null | undefined,
   committeeId?: ID | null | undefined,
   createdAt?: DateWhereInputArgument | null | undefined,
-  createdPapers?: ResolutionpaperWhereInputArgument | null | undefined,
   id?: ID | null | undefined,
-  paperSponsors?: PapersponsorWhereInputArgument | null | undefined,
   presenceChangedTimestamps?: PresencechangedtimestampWhereInputArgument | null | undefined,
   present?: Boolean | null | undefined,
-  proposedAmendments?: AmendmentWhereInputArgument | null | undefined,
   representation?: RepresentationWhereInputArgument | null | undefined,
   representationId?: ID | null | undefined,
   updatedAt?: DateWhereInputArgument | null | undefined,
@@ -428,12 +224,6 @@ export type Conference = {
     orderBy?: ConferencememberOrderInputArgument | null | undefined,
     where?: ConferencememberWhereInputArgument | null | undefined
   }) => Conferencemember[],
-  nsaPresenceEvents: (p?: {
-    limit?: Int | null | undefined,
-    offset?: Int | null | undefined,
-    orderBy?: NsapresenceeventOrderInputArgument | null | undefined,
-    where?: NsapresenceeventWhereInputArgument | null | undefined
-  }) => Nsapresenceevent[],
   pressWebsite: String | null,
   representations: (p?: {
     limit?: Int | null | undefined,
@@ -441,7 +231,6 @@ export type Conference = {
     orderBy?: RepresentationOrderInputArgument | null | undefined,
     where?: RepresentationWhereInputArgument | null | undefined
   }) => Representation[],
-  resolutionFeatureEnabled: Boolean,
   startDate: Date | null,
   title: String,
   uniqueConferenceMembers: (p?: {
@@ -465,10 +254,8 @@ export type ConferenceOrderInputArgument = {
   location?: SortingParameter | null | undefined,
   logoSvg?: SortingParameter | null | undefined,
   members?: ConferencememberOrderInputArgument | null | undefined,
-  nsaPresenceEvents?: NsapresenceeventOrderInputArgument | null | undefined,
   pressWebsite?: SortingParameter | null | undefined,
   representations?: RepresentationOrderInputArgument | null | undefined,
-  resolutionFeatureEnabled?: SortingParameter | null | undefined,
   startDate?: SortingParameter | null | undefined,
   title?: SortingParameter | null | undefined,
   updatedAt?: SortingParameter | null | undefined,
@@ -484,10 +271,8 @@ export type ConferenceWhereInputArgument = {
   location?: StringWhereInputArgument | null | undefined,
   logoSvg?: StringWhereInputArgument | null | undefined,
   members?: ConferencememberWhereInputArgument | null | undefined,
-  nsaPresenceEvents?: NsapresenceeventWhereInputArgument | null | undefined,
   pressWebsite?: StringWhereInputArgument | null | undefined,
   representations?: RepresentationWhereInputArgument | null | undefined,
-  resolutionFeatureEnabled?: Boolean | null | undefined,
   startDate?: DateWhereInputArgument | null | undefined,
   title?: StringWhereInputArgument | null | undefined,
   updatedAt?: DateWhereInputArgument | null | undefined,
@@ -548,12 +333,6 @@ export type ConferencememberWhereInputArgument = {
 		
 export type Conferenceuser = {
   attendanceCode: String | null,
-  comments: (p?: {
-    limit?: Int | null | undefined,
-    offset?: Int | null | undefined,
-    orderBy?: ResolutioncommentOrderInputArgument | null | undefined,
-    where?: ResolutioncommentWhereInputArgument | null | undefined
-  }) => Resolutioncomment[],
   committeeMember: (p?: {
     orderBy?: CommitteememberOrderInputArgument | null | undefined,
     where?: CommitteememberWhereInputArgument | null | undefined
@@ -582,12 +361,6 @@ export type Conferenceuser = {
     orderBy?: NsapresenceeventOrderInputArgument | null | undefined,
     where?: NsapresenceeventWhereInputArgument | null | undefined
   }) => Nsapresenceevent[],
-  paperEditors: (p?: {
-    limit?: Int | null | undefined,
-    offset?: Int | null | undefined,
-    orderBy?: PapereditorOrderInputArgument | null | undefined,
-    where?: PapereditorWhereInputArgument | null | undefined
-  }) => Papereditor[],
   triggeredNsaPresenceEvents: (p?: {
     limit?: Int | null | undefined,
     offset?: Int | null | undefined,
@@ -601,7 +374,6 @@ export type Conferenceuser = {
 		
 export type ConferenceuserOrderInputArgument = {
   attendanceCode?: SortingParameter | null | undefined,
-  comments?: ResolutioncommentOrderInputArgument | null | undefined,
   committeeMember?: CommitteememberOrderInputArgument | null | undefined,
   committeeMemberId?: SortingParameter | null | undefined,
   conference?: ConferenceOrderInputArgument | null | undefined,
@@ -613,7 +385,6 @@ export type ConferenceuserOrderInputArgument = {
   id?: SortingParameter | null | undefined,
   name?: SortingParameter | null | undefined,
   nsaPresenceEvents?: NsapresenceeventOrderInputArgument | null | undefined,
-  paperEditors?: PapereditorOrderInputArgument | null | undefined,
   triggeredNsaPresenceEvents?: NsapresenceeventOrderInputArgument | null | undefined,
   updatedAt?: SortingParameter | null | undefined,
   user?: UserOrderInputArgument | null | undefined,
@@ -622,7 +393,6 @@ export type ConferenceuserOrderInputArgument = {
 		
 export type ConferenceuserWhereInputArgument = {
   attendanceCode?: StringWhereInputArgument | null | undefined,
-  comments?: ResolutioncommentWhereInputArgument | null | undefined,
   committeeMember?: CommitteememberWhereInputArgument | null | undefined,
   committeeMemberId?: ID | null | undefined,
   conference?: ConferenceWhereInputArgument | null | undefined,
@@ -634,7 +404,6 @@ export type ConferenceuserWhereInputArgument = {
   id?: ID | null | undefined,
   name?: StringWhereInputArgument | null | undefined,
   nsaPresenceEvents?: NsapresenceeventWhereInputArgument | null | undefined,
-  paperEditors?: PapereditorWhereInputArgument | null | undefined,
   triggeredNsaPresenceEvents?: NsapresenceeventWhereInputArgument | null | undefined,
   updatedAt?: DateWhereInputArgument | null | undefined,
   user?: UserWhereInputArgument | null | undefined,
@@ -718,8 +487,7 @@ export type ImportDataAgendaItem = {
 export type ImportDataCommittee = {
   abbreviation: String,
   id: ID,
-  name: String,
-  resolutionHeadline?: String | null | undefined    
+  name: String    
 };
 		
 export type ImportDataCommitteeMember = {
@@ -780,41 +548,12 @@ export type IntWhereInputArgument = {
 export type JSON = any;
 		
 export type Mutation = {
-  acceptAmendment: (p: {
-    amendmentId: ID
-  }) => Amendment,
-  addAmendmentSponsor: (p: {
-    amendmentId: ID,
-    committeeMemberId: ID
-  }) => Amendmentsponsor,
   addSpeakerOnList: (p: {
     committeeMemberId?: ID | null | undefined,
     conferenceMemberId?: ID | null | undefined,
     position?: Int | null | undefined,
     speakersListId: ID
   }) => Speakeronlist,
-  addSponsor: (p: {
-    committeeMemberId: ID,
-    paperId: ID
-  }) => Papersponsor,
-  adoptByConsensus: (p: {
-    amendmentId: ID
-  }) => Amendment,
-  chairCreateAmendment: (p: {
-    committeeMemberId: ID,
-    newContent?: String | null | undefined,
-    paperId: ID,
-    targetClauseId?: String | null | undefined,
-    targetOperativeIndex?: Int | null | undefined,
-    targetPosition?: Int | null | undefined,
-    type: unknown
-  }) => Amendment,
-  chairCreateResolutionPaper: (p: {
-    agendaItemId: ID,
-    committeeId: ID,
-    committeeMemberId: ID,
-    title?: String | null | undefined
-  }) => Resolutionpaper,
   clearSpeakersList: (p: {
     id: ID
   }) => Speakerslist,
@@ -822,21 +561,6 @@ export type Mutation = {
     committeeId: ID,
     title: String
   }) => Agendaitem,
-  createAmendment: (p: {
-    newContent?: String | null | undefined,
-    paperId: ID,
-    targetClauseId?: String | null | undefined,
-    targetOperativeIndex?: Int | null | undefined,
-    targetPosition?: Int | null | undefined,
-    type: unknown
-  }) => Amendment,
-  createComment: (p: {
-    clauseId?: String | null | undefined,
-    content: String,
-    paperId: ID,
-    parentCommentId?: ID | null | undefined,
-    visibility?: unknown | null | undefined
-  }) => Resolutioncomment,
   createCommittee: (p: {
     abbreviation: String,
     conferenceId: ID,
@@ -864,17 +588,6 @@ export type Mutation = {
     name?: String | null | undefined,
     type: unknown
   }) => Representation,
-  createResolutionPaper: (p: {
-    agendaItemId: ID,
-    committeeId: ID,
-    title?: String | null | undefined
-  }) => Resolutionpaper,
-  createShareCode: (p: {
-    paperId: ID,
-    permission: unknown
-  }) => Papersharecode,
-  deleteClauseVote: Boolean,
-  deleteComment: Boolean,
   deleteCommittee: Boolean,
   deleteCommitteeMember: Boolean,
   deleteConference: Boolean,
@@ -884,15 +597,6 @@ export type Mutation = {
     id: ID
   }) => Nsapresenceevent,
   deleteRepresentation: Boolean,
-  deleteShareCode: Boolean,
-  editAmendment: (p: {
-    amendmentId: ID,
-    newContent?: String | null | undefined,
-    proposerCommitteeMemberId?: ID | null | undefined,
-    targetClauseId?: String | null | undefined,
-    targetOperativeIndex?: Int | null | undefined,
-    targetPosition?: Int | null | undefined
-  }) => Amendment,
   importDelegatorConference: (p: {
     data: ImportData
   }) => Conference,
@@ -907,17 +611,6 @@ export type Mutation = {
     id: ID,
     position: Int
   }) => Speakeronlist,
-  promoteToDraftResolution: (p: {
-    paperId: ID
-  }) => Resolutionpaper,
-  recordClauseVote: (p: {
-    clauseId: String,
-    outcome: unknown,
-    paperId: ID,
-    votesAbstain?: Int | null | undefined,
-    votesAgainst: Int,
-    votesFor: Int
-  }) => Operativeclausevote,
   recordNsaCheckIn: (p: {
     code: String,
     committeeId: ID
@@ -926,32 +619,12 @@ export type Mutation = {
     code: String,
     committeeId: ID
   }) => Nsapresenceevent,
-  recordVoteResult: (p: {
-    outcome: unknown,
-    paperId: ID,
-    votesAbstain?: Int | null | undefined,
-    votesAgainst: Int,
-    votesFor: Int
-  }) => Resolutionpaper,
-  redeemShareCode: (p: {
-    code: String
-  }) => ShareCodeRedemptionResult,
   regenerateNsaAttendanceCode: (p: {
     conferenceUserId: ID
   }) => Conferenceuser,
-  rejectAmendment: (p: {
-    amendmentId: ID
-  }) => Amendment,
-  removeAmendmentSponsor: Boolean,
-  removeEditor: Boolean,
   removeSpeakerOnList: (p: {
     speakerOnListId: ID
   }) => Speakerslist,
-  removeSponsor: Boolean,
-  revertPaperStatus: (p: {
-    paperId: ID,
-    restoreSnapshot?: Boolean | null | undefined
-  }) => Resolutionpaper,
   selfAddToSpeakersList: (p: {
     speakersListId: ID
   }) => Speakeronlist,
@@ -962,39 +635,17 @@ export type Mutation = {
     ids: unknown,
     present: Boolean
   }) => Committeemember[],
-  softDeletePaper: Boolean,
-  startVotingPhase: (p: {
-    paperId: ID
-  }) => Resolutionpaper,
-  submitPaper: (p: {
-    paperId: ID
-  }) => Resolutionpaper,
-  updateComment: (p: {
-    commentId: ID,
-    content: String
-  }) => Resolutioncomment,
   updateCommittee: (p: {
     abbreviation?: String | null | undefined,
     activeAgendaItemId?: ID | null | undefined,
-    activeAmendmentId?: ID | null | undefined,
-    activeDraftResolutionId?: ID | null | undefined,
     allowDelegationsToAddThemselvesToSpeakersList?: Boolean | null | undefined,
-    amendmentSponsoringOpen?: Boolean | null | undefined,
-    amendmentSubmissionOpen?: Boolean | null | undefined,
-    clearActiveAmendment?: Boolean | null | undefined,
-    clearActiveDraftResolution?: Boolean | null | undefined,
-    currentOperativeClauseId?: String | null | undefined,
-    currentOperativeIndex?: Int | null | undefined,
     id: ID,
-    lastResolutionAdoptionDate?: DateTime | null | undefined,
-    maxDraftResolutions?: Int | null | undefined,
     name?: String | null | undefined,
     showWhiteboard?: Boolean | null | undefined,
     stateOfDebate?: String | null | undefined,
     status?: unknown | null | undefined,
     statusHeadline?: String | null | undefined,
     statusUntil?: DateTime | null | undefined,
-    supportReEvaluationOpen?: Boolean | null | undefined,
     whiteboardContent?: String | null | undefined
   }) => Committee,
   updateConference: (p: {
@@ -1004,7 +655,6 @@ export type Mutation = {
     location?: String | null | undefined,
     logoSvg?: String | null | undefined,
     pressWebsite?: String | null | undefined,
-    resolutionFeatureEnabled?: Boolean | null | undefined,
     startDate?: Date | null | undefined,
     title?: String | null | undefined
   }) => Conference,
@@ -1022,10 +672,6 @@ export type Mutation = {
     timestamp?: DateTime | null | undefined,
     type?: unknown | null | undefined
   }) => Nsapresenceevent,
-  updatePaperTitle: (p: {
-    paperId: ID,
-    title: String
-  }) => Resolutionpaper,
   updateSpeakerOnList: (p: {
     id: ID,
     overwriteName?: String | null | undefined
@@ -1037,10 +683,7 @@ export type Mutation = {
     startTimestamp?: DateTime | null | undefined,
     stopTimer?: Boolean | null | undefined,
     timeLeft?: Int | null | undefined
-  }) => Speakerslist,
-  withdrawAmendment: (p: {
-    amendmentId: ID
-  }) => Amendment    
+  }) => Speakerslist    
 };
 		
 export type Nsapresenceevent = {
@@ -1049,11 +692,6 @@ export type Nsapresenceevent = {
     where?: CommitteeWhereInputArgument | null | undefined
   }) => Committee,
   committeeId: ID,
-  conference: (p?: {
-    orderBy?: ConferenceOrderInputArgument | null | undefined,
-    where?: ConferenceWhereInputArgument | null | undefined
-  }) => Conference,
-  conferenceId: ID,
   conferenceUser: (p?: {
     orderBy?: ConferenceuserOrderInputArgument | null | undefined,
     where?: ConferenceuserWhereInputArgument | null | undefined
@@ -1075,8 +713,6 @@ export type Nsapresenceevent = {
 export type NsapresenceeventOrderInputArgument = {
   committee?: CommitteeOrderInputArgument | null | undefined,
   committeeId?: SortingParameter | null | undefined,
-  conference?: ConferenceOrderInputArgument | null | undefined,
-  conferenceId?: SortingParameter | null | undefined,
   conferenceUser?: ConferenceuserOrderInputArgument | null | undefined,
   conferenceUserId?: SortingParameter | null | undefined,
   createdAt?: SortingParameter | null | undefined,
@@ -1092,8 +728,6 @@ export type NsapresenceeventOrderInputArgument = {
 export type NsapresenceeventWhereInputArgument = {
   committee?: CommitteeWhereInputArgument | null | undefined,
   committeeId?: ID | null | undefined,
-  conference?: ConferenceWhereInputArgument | null | undefined,
-  conferenceId?: ID | null | undefined,
   conferenceUser?: ConferenceuserWhereInputArgument | null | undefined,
   conferenceUserId?: ID | null | undefined,
   createdAt?: DateWhereInputArgument | null | undefined,
@@ -1107,188 +741,6 @@ export type NsapresenceeventWhereInputArgument = {
 };
 		
 export type NsapresenceeventtypeEnum = "CHECK_IN" | "CHECK_OUT";
-		
-export type Operativeclausevote = {
-  clauseId: ID,
-  createdAt: DateTime,
-  id: ID,
-  outcome: VoteoutcomeEnum,
-  paper: (p?: {
-    orderBy?: ResolutionpaperOrderInputArgument | null | undefined,
-    where?: ResolutionpaperWhereInputArgument | null | undefined
-  }) => Resolutionpaper,
-  paperId: ID,
-  updatedAt: DateTime | null,
-  votesAbstain: Int,
-  votesAgainst: Int,
-  votesFor: Int    
-};
-		
-export type OperativeclausevoteOrderInputArgument = {
-  clauseId?: SortingParameter | null | undefined,
-  createdAt?: SortingParameter | null | undefined,
-  id?: SortingParameter | null | undefined,
-  outcome?: SortingParameter | null | undefined,
-  paper?: ResolutionpaperOrderInputArgument | null | undefined,
-  paperId?: SortingParameter | null | undefined,
-  updatedAt?: SortingParameter | null | undefined,
-  votesAbstain?: SortingParameter | null | undefined,
-  votesAgainst?: SortingParameter | null | undefined,
-  votesFor?: SortingParameter | null | undefined    
-};
-		
-export type OperativeclausevoteWhereInputArgument = {
-  clauseId?: ID | null | undefined,
-  createdAt?: DateWhereInputArgument | null | undefined,
-  id?: ID | null | undefined,
-  outcome?: VoteoutcomeEnum | null | undefined,
-  paper?: ResolutionpaperWhereInputArgument | null | undefined,
-  paperId?: ID | null | undefined,
-  updatedAt?: DateWhereInputArgument | null | undefined,
-  votesAbstain?: IntWhereInputArgument | null | undefined,
-  votesAgainst?: IntWhereInputArgument | null | undefined,
-  votesFor?: IntWhereInputArgument | null | undefined    
-};
-		
-export type Papercontentsnapshot = {
-  content: JSON | null,
-  createdAt: DateTime,
-  id: ID,
-  paper: (p?: {
-    orderBy?: ResolutionpaperOrderInputArgument | null | undefined,
-    where?: ResolutionpaperWhereInputArgument | null | undefined
-  }) => Resolutionpaper,
-  paperId: ID,
-  trigger: String | null,
-  updatedAt: DateTime | null    
-};
-		
-export type PapercontentsnapshotOrderInputArgument = {
-  content?: SortingParameter | null | undefined,
-  createdAt?: SortingParameter | null | undefined,
-  id?: SortingParameter | null | undefined,
-  paper?: ResolutionpaperOrderInputArgument | null | undefined,
-  paperId?: SortingParameter | null | undefined,
-  trigger?: SortingParameter | null | undefined,
-  updatedAt?: SortingParameter | null | undefined    
-};
-		
-export type PapercontentsnapshotWhereInputArgument = {
-  content?: JSON | null | undefined,
-  createdAt?: DateWhereInputArgument | null | undefined,
-  id?: ID | null | undefined,
-  paper?: ResolutionpaperWhereInputArgument | null | undefined,
-  paperId?: ID | null | undefined,
-  trigger?: StringWhereInputArgument | null | undefined,
-  updatedAt?: DateWhereInputArgument | null | undefined    
-};
-		
-export type Papereditor = {
-  conferenceUser: (p?: {
-    orderBy?: ConferenceuserOrderInputArgument | null | undefined,
-    where?: ConferenceuserWhereInputArgument | null | undefined
-  }) => Conferenceuser,
-  conferenceUserId: ID,
-  createdAt: DateTime,
-  id: ID,
-  paper: (p?: {
-    orderBy?: ResolutionpaperOrderInputArgument | null | undefined,
-    where?: ResolutionpaperWhereInputArgument | null | undefined
-  }) => Resolutionpaper,
-  paperId: ID,
-  updatedAt: DateTime | null    
-};
-		
-export type PapereditorOrderInputArgument = {
-  conferenceUser?: ConferenceuserOrderInputArgument | null | undefined,
-  conferenceUserId?: SortingParameter | null | undefined,
-  createdAt?: SortingParameter | null | undefined,
-  id?: SortingParameter | null | undefined,
-  paper?: ResolutionpaperOrderInputArgument | null | undefined,
-  paperId?: SortingParameter | null | undefined,
-  updatedAt?: SortingParameter | null | undefined    
-};
-		
-export type PapereditorWhereInputArgument = {
-  conferenceUser?: ConferenceuserWhereInputArgument | null | undefined,
-  conferenceUserId?: ID | null | undefined,
-  createdAt?: DateWhereInputArgument | null | undefined,
-  id?: ID | null | undefined,
-  paper?: ResolutionpaperWhereInputArgument | null | undefined,
-  paperId?: ID | null | undefined,
-  updatedAt?: DateWhereInputArgument | null | undefined    
-};
-		
-export type Papersharecode = {
-  code: String,
-  createdAt: DateTime,
-  id: ID,
-  paper: (p?: {
-    orderBy?: ResolutionpaperOrderInputArgument | null | undefined,
-    where?: ResolutionpaperWhereInputArgument | null | undefined
-  }) => Resolutionpaper,
-  paperId: ID,
-  permission: SharecodepermissionEnum,
-  updatedAt: DateTime | null    
-};
-		
-export type PapersharecodeOrderInputArgument = {
-  code?: SortingParameter | null | undefined,
-  createdAt?: SortingParameter | null | undefined,
-  id?: SortingParameter | null | undefined,
-  paper?: ResolutionpaperOrderInputArgument | null | undefined,
-  paperId?: SortingParameter | null | undefined,
-  permission?: SortingParameter | null | undefined,
-  updatedAt?: SortingParameter | null | undefined    
-};
-		
-export type PapersharecodeWhereInputArgument = {
-  code?: StringWhereInputArgument | null | undefined,
-  createdAt?: DateWhereInputArgument | null | undefined,
-  id?: ID | null | undefined,
-  paper?: ResolutionpaperWhereInputArgument | null | undefined,
-  paperId?: ID | null | undefined,
-  permission?: SharecodepermissionEnum | null | undefined,
-  updatedAt?: DateWhereInputArgument | null | undefined    
-};
-		
-export type Papersponsor = {
-  committeeMember: (p?: {
-    orderBy?: CommitteememberOrderInputArgument | null | undefined,
-    where?: CommitteememberWhereInputArgument | null | undefined
-  }) => Committeemember,
-  committeeMemberId: ID,
-  createdAt: DateTime,
-  id: ID,
-  paper: (p?: {
-    orderBy?: ResolutionpaperOrderInputArgument | null | undefined,
-    where?: ResolutionpaperWhereInputArgument | null | undefined
-  }) => Resolutionpaper,
-  paperId: ID,
-  updatedAt: DateTime | null    
-};
-		
-export type PapersponsorOrderInputArgument = {
-  committeeMember?: CommitteememberOrderInputArgument | null | undefined,
-  committeeMemberId?: SortingParameter | null | undefined,
-  createdAt?: SortingParameter | null | undefined,
-  id?: SortingParameter | null | undefined,
-  paper?: ResolutionpaperOrderInputArgument | null | undefined,
-  paperId?: SortingParameter | null | undefined,
-  updatedAt?: SortingParameter | null | undefined    
-};
-		
-export type PapersponsorWhereInputArgument = {
-  committeeMember?: CommitteememberWhereInputArgument | null | undefined,
-  committeeMemberId?: ID | null | undefined,
-  createdAt?: DateWhereInputArgument | null | undefined,
-  id?: ID | null | undefined,
-  paper?: ResolutionpaperWhereInputArgument | null | undefined,
-  paperId?: ID | null | undefined,
-  updatedAt?: DateWhereInputArgument | null | undefined    
-};
-		
-export type PaperstatusEnum = "AMENDMENT_PHASE" | "DRAFT_RESOLUTION" | "FINAL" | "SUBMITTED" | "VOTING_PHASE" | "WORKING_PAPER";
 		
 export type Presencechangedtimestamp = {
   committeeMember: (p?: {
@@ -1333,24 +785,6 @@ export type Query = {
     orderBy?: AgendaitemOrderInputArgument | null | undefined,
     where?: AgendaitemWhereInputArgument | null | undefined
   }) => Agendaitem[],
-  amendment: (p: {
-    id: ID
-  }) => Amendment,
-  amendmentSponsor: (p: {
-    id: ID
-  }) => Amendmentsponsor,
-  amendmentSponsors: (p?: {
-    limit?: Int | null | undefined,
-    offset?: Int | null | undefined,
-    orderBy?: AmendmentsponsorOrderInputArgument | null | undefined,
-    where?: AmendmentsponsorWhereInputArgument | null | undefined
-  }) => Amendmentsponsor[],
-  amendments: (p?: {
-    limit?: Int | null | undefined,
-    offset?: Int | null | undefined,
-    orderBy?: AmendmentOrderInputArgument | null | undefined,
-    where?: AmendmentWhereInputArgument | null | undefined
-  }) => Amendment[],
   committee: (p: {
     id: ID
   }) => Committee,
@@ -1407,51 +841,6 @@ export type Query = {
     orderBy?: NsapresenceeventOrderInputArgument | null | undefined,
     where?: NsapresenceeventWhereInputArgument | null | undefined
   }) => Nsapresenceevent[],
-  operativeClauseVote: (p: {
-    id: ID
-  }) => Operativeclausevote,
-  operativeClauseVotes: (p?: {
-    limit?: Int | null | undefined,
-    offset?: Int | null | undefined,
-    orderBy?: OperativeclausevoteOrderInputArgument | null | undefined,
-    where?: OperativeclausevoteWhereInputArgument | null | undefined
-  }) => Operativeclausevote[],
-  paperContentSnapshot: (p: {
-    id: ID
-  }) => Papercontentsnapshot,
-  paperContentSnapshots: (p?: {
-    limit?: Int | null | undefined,
-    offset?: Int | null | undefined,
-    orderBy?: PapercontentsnapshotOrderInputArgument | null | undefined,
-    where?: PapercontentsnapshotWhereInputArgument | null | undefined
-  }) => Papercontentsnapshot[],
-  paperEditor: (p: {
-    id: ID
-  }) => Papereditor,
-  paperEditors: (p?: {
-    limit?: Int | null | undefined,
-    offset?: Int | null | undefined,
-    orderBy?: PapereditorOrderInputArgument | null | undefined,
-    where?: PapereditorWhereInputArgument | null | undefined
-  }) => Papereditor[],
-  paperShareCode: (p: {
-    id: ID
-  }) => Papersharecode,
-  paperShareCodes: (p?: {
-    limit?: Int | null | undefined,
-    offset?: Int | null | undefined,
-    orderBy?: PapersharecodeOrderInputArgument | null | undefined,
-    where?: PapersharecodeWhereInputArgument | null | undefined
-  }) => Papersharecode[],
-  paperSponsor: (p: {
-    id: ID
-  }) => Papersponsor,
-  paperSponsors: (p?: {
-    limit?: Int | null | undefined,
-    offset?: Int | null | undefined,
-    orderBy?: PapersponsorOrderInputArgument | null | undefined,
-    where?: PapersponsorWhereInputArgument | null | undefined
-  }) => Papersponsor[],
   presenceChangedTimestamp: (p: {
     id: ID
   }) => Presencechangedtimestamp,
@@ -1470,33 +859,6 @@ export type Query = {
     orderBy?: RepresentationOrderInputArgument | null | undefined,
     where?: RepresentationWhereInputArgument | null | undefined
   }) => Representation[],
-  resolutionComment: (p: {
-    id: ID
-  }) => Resolutioncomment,
-  resolutionComments: (p?: {
-    limit?: Int | null | undefined,
-    offset?: Int | null | undefined,
-    orderBy?: ResolutioncommentOrderInputArgument | null | undefined,
-    where?: ResolutioncommentWhereInputArgument | null | undefined
-  }) => Resolutioncomment[],
-  resolutionPaper: (p: {
-    id: ID
-  }) => Resolutionpaper,
-  resolutionPapers: (p?: {
-    limit?: Int | null | undefined,
-    offset?: Int | null | undefined,
-    orderBy?: ResolutionpaperOrderInputArgument | null | undefined,
-    where?: ResolutionpaperWhereInputArgument | null | undefined
-  }) => Resolutionpaper[],
-  resolutionVoteResult: (p: {
-    id: ID
-  }) => Resolutionvoteresult,
-  resolutionVoteResults: (p?: {
-    limit?: Int | null | undefined,
-    offset?: Int | null | undefined,
-    orderBy?: ResolutionvoteresultOrderInputArgument | null | undefined,
-    where?: ResolutionvoteresultWhereInputArgument | null | undefined
-  }) => Resolutionvoteresult[],
   serverTime: DateTime,
   speakerOnList: (p: {
     id: ID
@@ -1591,239 +953,6 @@ export type RepresentationWhereInputArgument = {
 };
 		
 export type RepresentationtypeEnum = "DELEGATION" | "NSA" | "UN";
-		
-export type Resolutioncomment = {
-  author: (p?: {
-    orderBy?: ConferenceuserOrderInputArgument | null | undefined,
-    where?: ConferenceuserWhereInputArgument | null | undefined
-  }) => Conferenceuser,
-  authorConferenceUserId: ID,
-  clauseId: ID | null,
-  content: String,
-  createdAt: DateTime,
-  id: ID,
-  paper: (p?: {
-    orderBy?: ResolutionpaperOrderInputArgument | null | undefined,
-    where?: ResolutionpaperWhereInputArgument | null | undefined
-  }) => Resolutionpaper,
-  paperId: ID,
-  parentComment: (p?: {
-    orderBy?: ResolutioncommentOrderInputArgument | null | undefined,
-    where?: ResolutioncommentWhereInputArgument | null | undefined
-  }) => Resolutioncomment | null,
-  parentCommentId: ID | null,
-  replies: (p?: {
-    limit?: Int | null | undefined,
-    offset?: Int | null | undefined,
-    orderBy?: ResolutioncommentOrderInputArgument | null | undefined,
-    where?: ResolutioncommentWhereInputArgument | null | undefined
-  }) => Resolutioncomment[],
-  updatedAt: DateTime | null,
-  visibility: CommentvisibilityEnum    
-};
-		
-export type ResolutioncommentOrderInputArgument = {
-  author?: ConferenceuserOrderInputArgument | null | undefined,
-  authorConferenceUserId?: SortingParameter | null | undefined,
-  clauseId?: SortingParameter | null | undefined,
-  content?: SortingParameter | null | undefined,
-  createdAt?: SortingParameter | null | undefined,
-  id?: SortingParameter | null | undefined,
-  paper?: ResolutionpaperOrderInputArgument | null | undefined,
-  paperId?: SortingParameter | null | undefined,
-  parentComment?: ResolutioncommentOrderInputArgument | null | undefined,
-  parentCommentId?: SortingParameter | null | undefined,
-  replies?: ResolutioncommentOrderInputArgument | null | undefined,
-  updatedAt?: SortingParameter | null | undefined,
-  visibility?: SortingParameter | null | undefined    
-};
-		
-export type ResolutioncommentWhereInputArgument = {
-  author?: ConferenceuserWhereInputArgument | null | undefined,
-  authorConferenceUserId?: ID | null | undefined,
-  clauseId?: ID | null | undefined,
-  content?: StringWhereInputArgument | null | undefined,
-  createdAt?: DateWhereInputArgument | null | undefined,
-  id?: ID | null | undefined,
-  paper?: ResolutionpaperWhereInputArgument | null | undefined,
-  paperId?: ID | null | undefined,
-  parentComment?: ResolutioncommentWhereInputArgument | null | undefined,
-  parentCommentId?: ID | null | undefined,
-  replies?: ResolutioncommentWhereInputArgument | null | undefined,
-  updatedAt?: DateWhereInputArgument | null | undefined,
-  visibility?: CommentvisibilityEnum | null | undefined    
-};
-		
-export type Resolutionpaper = {
-  agendaItem: (p?: {
-    orderBy?: AgendaitemOrderInputArgument | null | undefined,
-    where?: AgendaitemWhereInputArgument | null | undefined
-  }) => Agendaitem,
-  agendaItemId: ID,
-  amendments: (p?: {
-    limit?: Int | null | undefined,
-    offset?: Int | null | undefined,
-    orderBy?: AmendmentOrderInputArgument | null | undefined,
-    where?: AmendmentWhereInputArgument | null | undefined
-  }) => Amendment[],
-  comments: (p?: {
-    limit?: Int | null | undefined,
-    offset?: Int | null | undefined,
-    orderBy?: ResolutioncommentOrderInputArgument | null | undefined,
-    where?: ResolutioncommentWhereInputArgument | null | undefined
-  }) => Resolutioncomment[],
-  committee: (p?: {
-    orderBy?: CommitteeOrderInputArgument | null | undefined,
-    where?: CommitteeWhereInputArgument | null | undefined
-  }) => Committee,
-  committeeId: ID,
-  content: JSON | null,
-  createdAt: DateTime,
-  creator: (p?: {
-    orderBy?: CommitteememberOrderInputArgument | null | undefined,
-    where?: CommitteememberWhereInputArgument | null | undefined
-  }) => Committeemember,
-  creatorCommitteeMemberId: ID,
-  deletedAt: DateTime | null,
-  documentNumber: String | null,
-  editors: (p?: {
-    limit?: Int | null | undefined,
-    offset?: Int | null | undefined,
-    orderBy?: PapereditorOrderInputArgument | null | undefined,
-    where?: PapereditorWhereInputArgument | null | undefined
-  }) => Papereditor[],
-  id: ID,
-  operativeClauseVotes: (p?: {
-    limit?: Int | null | undefined,
-    offset?: Int | null | undefined,
-    orderBy?: OperativeclausevoteOrderInputArgument | null | undefined,
-    where?: OperativeclausevoteWhereInputArgument | null | undefined
-  }) => Operativeclausevote[],
-  sequenceNumber: Int | null,
-  shareCodes: (p?: {
-    limit?: Int | null | undefined,
-    offset?: Int | null | undefined,
-    orderBy?: PapersharecodeOrderInputArgument | null | undefined,
-    where?: PapersharecodeWhereInputArgument | null | undefined
-  }) => Papersharecode[],
-  snapshots: (p?: {
-    limit?: Int | null | undefined,
-    offset?: Int | null | undefined,
-    orderBy?: PapercontentsnapshotOrderInputArgument | null | undefined,
-    where?: PapercontentsnapshotWhereInputArgument | null | undefined
-  }) => Papercontentsnapshot[],
-  sponsors: (p?: {
-    limit?: Int | null | undefined,
-    offset?: Int | null | undefined,
-    orderBy?: PapersponsorOrderInputArgument | null | undefined,
-    where?: PapersponsorWhereInputArgument | null | undefined
-  }) => Papersponsor[],
-  status: PaperstatusEnum,
-  title: String | null,
-  updatedAt: DateTime | null,
-  voteResult: (p?: {
-    orderBy?: ResolutionvoteresultOrderInputArgument | null | undefined,
-    where?: ResolutionvoteresultWhereInputArgument | null | undefined
-  }) => Resolutionvoteresult | null    
-};
-		
-export type ResolutionpaperOrderInputArgument = {
-  agendaItem?: AgendaitemOrderInputArgument | null | undefined,
-  agendaItemId?: SortingParameter | null | undefined,
-  amendments?: AmendmentOrderInputArgument | null | undefined,
-  comments?: ResolutioncommentOrderInputArgument | null | undefined,
-  committee?: CommitteeOrderInputArgument | null | undefined,
-  committeeId?: SortingParameter | null | undefined,
-  content?: SortingParameter | null | undefined,
-  createdAt?: SortingParameter | null | undefined,
-  creator?: CommitteememberOrderInputArgument | null | undefined,
-  creatorCommitteeMemberId?: SortingParameter | null | undefined,
-  deletedAt?: SortingParameter | null | undefined,
-  documentNumber?: SortingParameter | null | undefined,
-  editors?: PapereditorOrderInputArgument | null | undefined,
-  id?: SortingParameter | null | undefined,
-  operativeClauseVotes?: OperativeclausevoteOrderInputArgument | null | undefined,
-  sequenceNumber?: SortingParameter | null | undefined,
-  shareCodes?: PapersharecodeOrderInputArgument | null | undefined,
-  snapshots?: PapercontentsnapshotOrderInputArgument | null | undefined,
-  sponsors?: PapersponsorOrderInputArgument | null | undefined,
-  status?: SortingParameter | null | undefined,
-  title?: SortingParameter | null | undefined,
-  updatedAt?: SortingParameter | null | undefined,
-  voteResult?: ResolutionvoteresultOrderInputArgument | null | undefined    
-};
-		
-export type ResolutionpaperWhereInputArgument = {
-  agendaItem?: AgendaitemWhereInputArgument | null | undefined,
-  agendaItemId?: ID | null | undefined,
-  amendments?: AmendmentWhereInputArgument | null | undefined,
-  comments?: ResolutioncommentWhereInputArgument | null | undefined,
-  committee?: CommitteeWhereInputArgument | null | undefined,
-  committeeId?: ID | null | undefined,
-  content?: JSON | null | undefined,
-  createdAt?: DateWhereInputArgument | null | undefined,
-  creator?: CommitteememberWhereInputArgument | null | undefined,
-  creatorCommitteeMemberId?: ID | null | undefined,
-  deletedAt?: DateWhereInputArgument | null | undefined,
-  documentNumber?: StringWhereInputArgument | null | undefined,
-  editors?: PapereditorWhereInputArgument | null | undefined,
-  id?: ID | null | undefined,
-  operativeClauseVotes?: OperativeclausevoteWhereInputArgument | null | undefined,
-  sequenceNumber?: IntWhereInputArgument | null | undefined,
-  shareCodes?: PapersharecodeWhereInputArgument | null | undefined,
-  snapshots?: PapercontentsnapshotWhereInputArgument | null | undefined,
-  sponsors?: PapersponsorWhereInputArgument | null | undefined,
-  status?: PaperstatusEnum | null | undefined,
-  title?: StringWhereInputArgument | null | undefined,
-  updatedAt?: DateWhereInputArgument | null | undefined,
-  voteResult?: ResolutionvoteresultWhereInputArgument | null | undefined    
-};
-		
-export type Resolutionvoteresult = {
-  createdAt: DateTime,
-  id: ID,
-  outcome: VoteoutcomeEnum,
-  paper: (p?: {
-    orderBy?: ResolutionpaperOrderInputArgument | null | undefined,
-    where?: ResolutionpaperWhereInputArgument | null | undefined
-  }) => Resolutionpaper,
-  paperId: ID,
-  updatedAt: DateTime | null,
-  votesAbstain: Int,
-  votesAgainst: Int,
-  votesFor: Int    
-};
-		
-export type ResolutionvoteresultOrderInputArgument = {
-  createdAt?: SortingParameter | null | undefined,
-  id?: SortingParameter | null | undefined,
-  outcome?: SortingParameter | null | undefined,
-  paper?: ResolutionpaperOrderInputArgument | null | undefined,
-  paperId?: SortingParameter | null | undefined,
-  updatedAt?: SortingParameter | null | undefined,
-  votesAbstain?: SortingParameter | null | undefined,
-  votesAgainst?: SortingParameter | null | undefined,
-  votesFor?: SortingParameter | null | undefined    
-};
-		
-export type ResolutionvoteresultWhereInputArgument = {
-  createdAt?: DateWhereInputArgument | null | undefined,
-  id?: ID | null | undefined,
-  outcome?: VoteoutcomeEnum | null | undefined,
-  paper?: ResolutionpaperWhereInputArgument | null | undefined,
-  paperId?: ID | null | undefined,
-  updatedAt?: DateWhereInputArgument | null | undefined,
-  votesAbstain?: IntWhereInputArgument | null | undefined,
-  votesAgainst?: IntWhereInputArgument | null | undefined,
-  votesFor?: IntWhereInputArgument | null | undefined    
-};
-		
-export type ShareCodeRedemptionResult = {
-  paperId: ID,
-  permission: String    
-};
-		
-export type SharecodepermissionEnum = "EDIT" | "SPONSOR";
 		
 export type SortingParameter = "asc" | "desc";
 		
@@ -1965,24 +1094,6 @@ export type Subscription = {
     orderBy?: AgendaitemOrderInputArgument | null | undefined,
     where?: AgendaitemWhereInputArgument | null | undefined
   }) => Agendaitem[],
-  amendment: (p: {
-    id: ID
-  }) => Amendment,
-  amendmentSponsor: (p: {
-    id: ID
-  }) => Amendmentsponsor,
-  amendmentSponsors: (p?: {
-    limit?: Int | null | undefined,
-    offset?: Int | null | undefined,
-    orderBy?: AmendmentsponsorOrderInputArgument | null | undefined,
-    where?: AmendmentsponsorWhereInputArgument | null | undefined
-  }) => Amendmentsponsor[],
-  amendments: (p?: {
-    limit?: Int | null | undefined,
-    offset?: Int | null | undefined,
-    orderBy?: AmendmentOrderInputArgument | null | undefined,
-    where?: AmendmentWhereInputArgument | null | undefined
-  }) => Amendment[],
   committee: (p: {
     id: ID
   }) => Committee,
@@ -2037,51 +1148,6 @@ export type Subscription = {
     orderBy?: NsapresenceeventOrderInputArgument | null | undefined,
     where?: NsapresenceeventWhereInputArgument | null | undefined
   }) => Nsapresenceevent[],
-  operativeClauseVote: (p: {
-    id: ID
-  }) => Operativeclausevote,
-  operativeClauseVotes: (p?: {
-    limit?: Int | null | undefined,
-    offset?: Int | null | undefined,
-    orderBy?: OperativeclausevoteOrderInputArgument | null | undefined,
-    where?: OperativeclausevoteWhereInputArgument | null | undefined
-  }) => Operativeclausevote[],
-  paperContentSnapshot: (p: {
-    id: ID
-  }) => Papercontentsnapshot,
-  paperContentSnapshots: (p?: {
-    limit?: Int | null | undefined,
-    offset?: Int | null | undefined,
-    orderBy?: PapercontentsnapshotOrderInputArgument | null | undefined,
-    where?: PapercontentsnapshotWhereInputArgument | null | undefined
-  }) => Papercontentsnapshot[],
-  paperEditor: (p: {
-    id: ID
-  }) => Papereditor,
-  paperEditors: (p?: {
-    limit?: Int | null | undefined,
-    offset?: Int | null | undefined,
-    orderBy?: PapereditorOrderInputArgument | null | undefined,
-    where?: PapereditorWhereInputArgument | null | undefined
-  }) => Papereditor[],
-  paperShareCode: (p: {
-    id: ID
-  }) => Papersharecode,
-  paperShareCodes: (p?: {
-    limit?: Int | null | undefined,
-    offset?: Int | null | undefined,
-    orderBy?: PapersharecodeOrderInputArgument | null | undefined,
-    where?: PapersharecodeWhereInputArgument | null | undefined
-  }) => Papersharecode[],
-  paperSponsor: (p: {
-    id: ID
-  }) => Papersponsor,
-  paperSponsors: (p?: {
-    limit?: Int | null | undefined,
-    offset?: Int | null | undefined,
-    orderBy?: PapersponsorOrderInputArgument | null | undefined,
-    where?: PapersponsorWhereInputArgument | null | undefined
-  }) => Papersponsor[],
   presenceChangedTimestamp: (p: {
     id: ID
   }) => Presencechangedtimestamp,
@@ -2100,33 +1166,6 @@ export type Subscription = {
     orderBy?: RepresentationOrderInputArgument | null | undefined,
     where?: RepresentationWhereInputArgument | null | undefined
   }) => Representation[],
-  resolutionComment: (p: {
-    id: ID
-  }) => Resolutioncomment,
-  resolutionComments: (p?: {
-    limit?: Int | null | undefined,
-    offset?: Int | null | undefined,
-    orderBy?: ResolutioncommentOrderInputArgument | null | undefined,
-    where?: ResolutioncommentWhereInputArgument | null | undefined
-  }) => Resolutioncomment[],
-  resolutionPaper: (p: {
-    id: ID
-  }) => Resolutionpaper,
-  resolutionPapers: (p?: {
-    limit?: Int | null | undefined,
-    offset?: Int | null | undefined,
-    orderBy?: ResolutionpaperOrderInputArgument | null | undefined,
-    where?: ResolutionpaperWhereInputArgument | null | undefined
-  }) => Resolutionpaper[],
-  resolutionVoteResult: (p: {
-    id: ID
-  }) => Resolutionvoteresult,
-  resolutionVoteResults: (p?: {
-    limit?: Int | null | undefined,
-    offset?: Int | null | undefined,
-    orderBy?: ResolutionvoteresultOrderInputArgument | null | undefined,
-    where?: ResolutionvoteresultWhereInputArgument | null | undefined
-  }) => Resolutionvoteresult[],
   speakerOnList: (p: {
     id: ID
   }) => Speakeronlist,
@@ -2206,8 +1245,6 @@ export type UserWhereInputArgument = {
   updatedAt?: DateWhereInputArgument | null | undefined    
 };
 		
-export type VoteoutcomeEnum = "ADOPTED" | "REJECTED" | "SENT_BACK";
-		
 export const defaultOptions: ConstructorParameters<Client>[0] = {
   url: "/api/graphql",
   fetchSubscriptions: true,
@@ -2229,7 +1266,7 @@ export const client = {
    */
   liveQuery: makeLiveQuery<Query>({
 	  urqlClient,
-	  availableSubscriptions: new Set(["agendaItem", "agendaItems", "amendment", "amendmentSponsor", "amendmentSponsors", "amendments", "committee", "committeeMember", "committeeMembers", "committees", "conference", "conferenceMember", "conferenceMembers", "conferenceUser", "conferenceUsers", "conferences", "nsaPresenceEvent", "nsaPresenceEvents", "operativeClauseVote", "operativeClauseVotes", "paperContentSnapshot", "paperContentSnapshots", "paperEditor", "paperEditors", "paperShareCode", "paperShareCodes", "paperSponsor", "paperSponsors", "presenceChangedTimestamp", "presenceChangedTimestamps", "representation", "representations", "resolutionComment", "resolutionComments", "resolutionPaper", "resolutionPapers", "resolutionVoteResult", "resolutionVoteResults", "speakerOnList", "speakerOnLists", "speakersList", "speakersLists", "user", "users"]),
+	  availableSubscriptions: new Set(["agendaItem", "agendaItems", "committee", "committeeMember", "committeeMembers", "committees", "conference", "conferenceMember", "conferenceMembers", "conferenceUser", "conferenceUsers", "conferences", "nsaPresenceEvent", "nsaPresenceEvents", "presenceChangedTimestamp", "presenceChangedTimestamps", "representation", "representations", "speakerOnList", "speakerOnLists", "speakersList", "speakersLists", "user", "users"]),
 		schema,
   }),
   /**

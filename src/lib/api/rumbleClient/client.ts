@@ -82,12 +82,12 @@ export type Committee = {
     where?: CommitteememberWhereInputArgument | null | undefined
   }) => Committeemember[],
   name: String,
-  nsaPresenceEvents: (p?: {
+  presenceEvents: (p?: {
     limit?: Int | null | undefined,
     offset?: Int | null | undefined,
-    orderBy?: NsapresenceeventOrderInputArgument | null | undefined,
-    where?: NsapresenceeventWhereInputArgument | null | undefined
-  }) => Nsapresenceevent[],
+    orderBy?: PresenceeventOrderInputArgument | null | undefined,
+    where?: PresenceeventWhereInputArgument | null | undefined
+  }) => Presenceevent[],
   showWhiteboard: Boolean,
   simpleMajority: Int,
   stateOfDebate: String | null,
@@ -114,7 +114,7 @@ export type CommitteeOrderInputArgument = {
   id?: SortingParameter | null | undefined,
   members?: CommitteememberOrderInputArgument | null | undefined,
   name?: SortingParameter | null | undefined,
-  nsaPresenceEvents?: NsapresenceeventOrderInputArgument | null | undefined,
+  presenceEvents?: PresenceeventOrderInputArgument | null | undefined,
   showWhiteboard?: SortingParameter | null | undefined,
   stateOfDebate?: SortingParameter | null | undefined,
   status?: SortingParameter | null | undefined,
@@ -138,7 +138,7 @@ export type CommitteeWhereInputArgument = {
   id?: ID | null | undefined,
   members?: CommitteememberWhereInputArgument | null | undefined,
   name?: StringWhereInputArgument | null | undefined,
-  nsaPresenceEvents?: NsapresenceeventWhereInputArgument | null | undefined,
+  presenceEvents?: PresenceeventWhereInputArgument | null | undefined,
   showWhiteboard?: Boolean | null | undefined,
   stateOfDebate?: StringWhereInputArgument | null | undefined,
   status?: CommitteestatusEnum | null | undefined,
@@ -156,12 +156,6 @@ export type Committeemember = {
   committeeId: ID,
   createdAt: DateTime,
   id: ID,
-  presenceChangedTimestamps: (p?: {
-    limit?: Int | null | undefined,
-    offset?: Int | null | undefined,
-    orderBy?: PresencechangedtimestampOrderInputArgument | null | undefined,
-    where?: PresencechangedtimestampWhereInputArgument | null | undefined
-  }) => Presencechangedtimestamp[],
   present: Boolean,
   representation: (p?: {
     orderBy?: RepresentationOrderInputArgument | null | undefined,
@@ -182,7 +176,6 @@ export type CommitteememberOrderInputArgument = {
   committeeId?: SortingParameter | null | undefined,
   createdAt?: SortingParameter | null | undefined,
   id?: SortingParameter | null | undefined,
-  presenceChangedTimestamps?: PresencechangedtimestampOrderInputArgument | null | undefined,
   present?: SortingParameter | null | undefined,
   representation?: RepresentationOrderInputArgument | null | undefined,
   representationId?: SortingParameter | null | undefined,
@@ -195,7 +188,6 @@ export type CommitteememberWhereInputArgument = {
   committeeId?: ID | null | undefined,
   createdAt?: DateWhereInputArgument | null | undefined,
   id?: ID | null | undefined,
-  presenceChangedTimestamps?: PresencechangedtimestampWhereInputArgument | null | undefined,
   present?: Boolean | null | undefined,
   representation?: RepresentationWhereInputArgument | null | undefined,
   representationId?: ID | null | undefined,
@@ -355,18 +347,18 @@ export type Conferenceuser = {
   id: ID,
   isCheckedIn: Boolean,
   name: String | null,
-  nsaPresenceEvents: (p?: {
+  presenceEvents: (p?: {
     limit?: Int | null | undefined,
     offset?: Int | null | undefined,
-    orderBy?: NsapresenceeventOrderInputArgument | null | undefined,
-    where?: NsapresenceeventWhereInputArgument | null | undefined
-  }) => Nsapresenceevent[],
-  triggeredNsaPresenceEvents: (p?: {
+    orderBy?: PresenceeventOrderInputArgument | null | undefined,
+    where?: PresenceeventWhereInputArgument | null | undefined
+  }) => Presenceevent[],
+  triggeredPresenceEvents: (p?: {
     limit?: Int | null | undefined,
     offset?: Int | null | undefined,
-    orderBy?: NsapresenceeventOrderInputArgument | null | undefined,
-    where?: NsapresenceeventWhereInputArgument | null | undefined
-  }) => Nsapresenceevent[],
+    orderBy?: PresenceeventOrderInputArgument | null | undefined,
+    where?: PresenceeventWhereInputArgument | null | undefined
+  }) => Presenceevent[],
   updatedAt: DateTime | null,
   user: () => User | null,
   userEmail: String    
@@ -384,8 +376,8 @@ export type ConferenceuserOrderInputArgument = {
   createdAt?: SortingParameter | null | undefined,
   id?: SortingParameter | null | undefined,
   name?: SortingParameter | null | undefined,
-  nsaPresenceEvents?: NsapresenceeventOrderInputArgument | null | undefined,
-  triggeredNsaPresenceEvents?: NsapresenceeventOrderInputArgument | null | undefined,
+  presenceEvents?: PresenceeventOrderInputArgument | null | undefined,
+  triggeredPresenceEvents?: PresenceeventOrderInputArgument | null | undefined,
   updatedAt?: SortingParameter | null | undefined,
   user?: UserOrderInputArgument | null | undefined,
   userEmail?: SortingParameter | null | undefined    
@@ -403,8 +395,8 @@ export type ConferenceuserWhereInputArgument = {
   createdAt?: DateWhereInputArgument | null | undefined,
   id?: ID | null | undefined,
   name?: StringWhereInputArgument | null | undefined,
-  nsaPresenceEvents?: NsapresenceeventWhereInputArgument | null | undefined,
-  triggeredNsaPresenceEvents?: NsapresenceeventWhereInputArgument | null | undefined,
+  presenceEvents?: PresenceeventWhereInputArgument | null | undefined,
+  triggeredPresenceEvents?: PresenceeventWhereInputArgument | null | undefined,
   updatedAt?: DateWhereInputArgument | null | undefined,
   user?: UserWhereInputArgument | null | undefined,
   userEmail?: StringWhereInputArgument | null | undefined    
@@ -593,20 +585,20 @@ export type Mutation = {
   deleteConference: Boolean,
   deleteConferenceMember: Boolean,
   deleteConferenceUser: Boolean,
-  deleteNsaPresenceEvent: (p: {
+  deletePresenceEvent: (p: {
     id: ID
-  }) => Nsapresenceevent,
+  }) => Presenceevent,
   deleteRepresentation: Boolean,
   importDelegatorConference: (p: {
     data: ImportData
   }) => Conference,
-  insertNsaPresenceEvent: (p: {
+  insertPresenceEvent: (p: {
     committeeId: ID,
     conferenceUserId: ID,
+    eventType: unknown,
     note?: String | null | undefined,
-    timestamp: DateTime,
-    type: unknown
-  }) => Nsapresenceevent,
+    timestamp: DateTime
+  }) => Presenceevent,
   moveSpeakerToPosition: (p: {
     id: ID,
     position: Int
@@ -614,11 +606,11 @@ export type Mutation = {
   recordNsaCheckIn: (p: {
     code: String,
     committeeId: ID
-  }) => Nsapresenceevent,
+  }) => Presenceevent,
   recordNsaCheckOut: (p: {
     code: String,
     committeeId: ID
-  }) => Nsapresenceevent,
+  }) => Presenceevent,
   regenerateNsaAttendanceCode: (p: {
     conferenceUserId: ID
   }) => Conferenceuser,
@@ -665,13 +657,13 @@ export type Mutation = {
     id: ID,
     name?: String | null | undefined
   }) => Conferenceuser,
-  updateNsaPresenceEvent: (p: {
+  updatePresenceEvent: (p: {
     committeeId?: ID | null | undefined,
+    eventType?: unknown | null | undefined,
     id: ID,
     note?: String | null | undefined,
-    timestamp?: DateTime | null | undefined,
-    type?: unknown | null | undefined
-  }) => Nsapresenceevent,
+    timestamp?: DateTime | null | undefined
+  }) => Presenceevent,
   updateSpeakerOnList: (p: {
     id: ID,
     overwriteName?: String | null | undefined
@@ -686,7 +678,7 @@ export type Mutation = {
   }) => Speakerslist    
 };
 		
-export type Nsapresenceevent = {
+export type Presenceevent = {
   committee: (p?: {
     orderBy?: CommitteeOrderInputArgument | null | undefined,
     where?: CommitteeWhereInputArgument | null | undefined
@@ -697,83 +689,49 @@ export type Nsapresenceevent = {
     where?: ConferenceuserWhereInputArgument | null | undefined
   }) => Conferenceuser,
   conferenceUserId: ID,
-  createdAt: DateTime,
+  eventType: PresenceeventtypeEnum,
   id: ID,
+  marker: PresenceeventmarkerEnum | null,
   note: String | null,
   timestamp: DateTime,
   triggeredBy: (p?: {
     orderBy?: ConferenceuserOrderInputArgument | null | undefined,
     where?: ConferenceuserWhereInputArgument | null | undefined
   }) => Conferenceuser | null,
-  triggeredByConferenceUserId: ID | null,
-  type: NsapresenceeventtypeEnum,
-  updatedAt: DateTime | null    
+  triggeredByConferenceUserId: ID | null    
 };
 		
-export type NsapresenceeventOrderInputArgument = {
+export type PresenceeventOrderInputArgument = {
   committee?: CommitteeOrderInputArgument | null | undefined,
   committeeId?: SortingParameter | null | undefined,
   conferenceUser?: ConferenceuserOrderInputArgument | null | undefined,
   conferenceUserId?: SortingParameter | null | undefined,
-  createdAt?: SortingParameter | null | undefined,
+  eventType?: SortingParameter | null | undefined,
   id?: SortingParameter | null | undefined,
+  marker?: SortingParameter | null | undefined,
   note?: SortingParameter | null | undefined,
   timestamp?: SortingParameter | null | undefined,
   triggeredBy?: ConferenceuserOrderInputArgument | null | undefined,
-  triggeredByConferenceUserId?: SortingParameter | null | undefined,
-  type?: SortingParameter | null | undefined,
-  updatedAt?: SortingParameter | null | undefined    
+  triggeredByConferenceUserId?: SortingParameter | null | undefined    
 };
 		
-export type NsapresenceeventWhereInputArgument = {
+export type PresenceeventWhereInputArgument = {
   committee?: CommitteeWhereInputArgument | null | undefined,
   committeeId?: ID | null | undefined,
   conferenceUser?: ConferenceuserWhereInputArgument | null | undefined,
   conferenceUserId?: ID | null | undefined,
-  createdAt?: DateWhereInputArgument | null | undefined,
+  eventType?: PresenceeventtypeEnum | null | undefined,
   id?: ID | null | undefined,
+  marker?: PresenceeventmarkerEnum | null | undefined,
   note?: StringWhereInputArgument | null | undefined,
   timestamp?: DateWhereInputArgument | null | undefined,
   triggeredBy?: ConferenceuserWhereInputArgument | null | undefined,
-  triggeredByConferenceUserId?: ID | null | undefined,
-  type?: NsapresenceeventtypeEnum | null | undefined,
-  updatedAt?: DateWhereInputArgument | null | undefined    
+  triggeredByConferenceUserId?: ID | null | undefined    
 };
 		
-export type NsapresenceeventtypeEnum = "CHECK_IN" | "CHECK_OUT";
+export type PresenceeventmarkerEnum = "AUTO_SWITCH";
 		
-export type Presencechangedtimestamp = {
-  committeeMember: (p?: {
-    orderBy?: CommitteememberOrderInputArgument | null | undefined,
-    where?: CommitteememberWhereInputArgument | null | undefined
-  }) => Committeemember | null,
-  committeeMemberId: ID,
-  createdAt: DateTime,
-  id: ID,
-  presentSetTo: Boolean,
-  timestamp: DateTime,
-  updatedAt: DateTime | null    
-};
-		
-export type PresencechangedtimestampOrderInputArgument = {
-  committeeMember?: CommitteememberOrderInputArgument | null | undefined,
-  committeeMemberId?: SortingParameter | null | undefined,
-  createdAt?: SortingParameter | null | undefined,
-  id?: SortingParameter | null | undefined,
-  presentSetTo?: SortingParameter | null | undefined,
-  timestamp?: SortingParameter | null | undefined,
-  updatedAt?: SortingParameter | null | undefined    
-};
-		
-export type PresencechangedtimestampWhereInputArgument = {
-  committeeMember?: CommitteememberWhereInputArgument | null | undefined,
-  committeeMemberId?: ID | null | undefined,
-  createdAt?: DateWhereInputArgument | null | undefined,
-  id?: ID | null | undefined,
-  presentSetTo?: Boolean | null | undefined,
-  timestamp?: DateWhereInputArgument | null | undefined,
-  updatedAt?: DateWhereInputArgument | null | undefined    
-};
+export type PresenceeventtypeEnum = "CHECK_IN" | "CHECK_OUT";
 		
 export type Query = {
   agendaItem: (p: {
@@ -832,24 +790,15 @@ export type Query = {
   }) => Conference[],
   currentUserClaims: () => UserClaims,
   isGlobalAdmin: Boolean,
-  nsaPresenceEvent: (p: {
+  presenceEvent: (p: {
     id: ID
-  }) => Nsapresenceevent,
-  nsaPresenceEvents: (p?: {
+  }) => Presenceevent,
+  presenceEvents: (p?: {
     limit?: Int | null | undefined,
     offset?: Int | null | undefined,
-    orderBy?: NsapresenceeventOrderInputArgument | null | undefined,
-    where?: NsapresenceeventWhereInputArgument | null | undefined
-  }) => Nsapresenceevent[],
-  presenceChangedTimestamp: (p: {
-    id: ID
-  }) => Presencechangedtimestamp,
-  presenceChangedTimestamps: (p?: {
-    limit?: Int | null | undefined,
-    offset?: Int | null | undefined,
-    orderBy?: PresencechangedtimestampOrderInputArgument | null | undefined,
-    where?: PresencechangedtimestampWhereInputArgument | null | undefined
-  }) => Presencechangedtimestamp[],
+    orderBy?: PresenceeventOrderInputArgument | null | undefined,
+    where?: PresenceeventWhereInputArgument | null | undefined
+  }) => Presenceevent[],
   representation: (p: {
     id: ID
   }) => Representation,
@@ -1139,24 +1088,15 @@ export type Subscription = {
     orderBy?: ConferenceOrderInputArgument | null | undefined,
     where?: ConferenceWhereInputArgument | null | undefined
   }) => Conference[],
-  nsaPresenceEvent: (p: {
+  presenceEvent: (p: {
     id: ID
-  }) => Nsapresenceevent,
-  nsaPresenceEvents: (p?: {
+  }) => Presenceevent,
+  presenceEvents: (p?: {
     limit?: Int | null | undefined,
     offset?: Int | null | undefined,
-    orderBy?: NsapresenceeventOrderInputArgument | null | undefined,
-    where?: NsapresenceeventWhereInputArgument | null | undefined
-  }) => Nsapresenceevent[],
-  presenceChangedTimestamp: (p: {
-    id: ID
-  }) => Presencechangedtimestamp,
-  presenceChangedTimestamps: (p?: {
-    limit?: Int | null | undefined,
-    offset?: Int | null | undefined,
-    orderBy?: PresencechangedtimestampOrderInputArgument | null | undefined,
-    where?: PresencechangedtimestampWhereInputArgument | null | undefined
-  }) => Presencechangedtimestamp[],
+    orderBy?: PresenceeventOrderInputArgument | null | undefined,
+    where?: PresenceeventWhereInputArgument | null | undefined
+  }) => Presenceevent[],
   representation: (p: {
     id: ID
   }) => Representation,
@@ -1266,7 +1206,7 @@ export const client = {
    */
   liveQuery: makeLiveQuery<Query>({
 	  urqlClient,
-	  availableSubscriptions: new Set(["agendaItem", "agendaItems", "committee", "committeeMember", "committeeMembers", "committees", "conference", "conferenceMember", "conferenceMembers", "conferenceUser", "conferenceUsers", "conferences", "nsaPresenceEvent", "nsaPresenceEvents", "presenceChangedTimestamp", "presenceChangedTimestamps", "representation", "representations", "speakerOnList", "speakerOnLists", "speakersList", "speakersLists", "user", "users"]),
+	  availableSubscriptions: new Set(["agendaItem", "agendaItems", "committee", "committeeMember", "committeeMembers", "committees", "conference", "conferenceMember", "conferenceMembers", "conferenceUser", "conferenceUsers", "conferences", "presenceEvent", "presenceEvents", "representation", "representations", "speakerOnList", "speakerOnLists", "speakersList", "speakersLists", "user", "users"]),
 		schema,
   }),
   /**

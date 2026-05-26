@@ -6,7 +6,7 @@ import {
 	fetchExchange,
 	subscriptionExchange
 } from '@urql/core';
-import { cacheExchange } from '@urql/exchange-graphcache';
+import { cacheExchange } from '@m1212e/urql-exchange-graphcache';
 import { empty, filter, fromPromise, merge, mergeMap, pipe } from 'wonka';
 import { graphqlMutation, graphqlQuery } from '$api/graphql.remote';
 import { browser } from '$app/environment';

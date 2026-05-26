@@ -51,7 +51,21 @@
 				presentationRootFontSize: 16,
 				presentationResolutionFontSize: 16,
 				rollCall: null,
-				rollCallPending: []
+				rollCallPending: [],
+				showOfHandsVotingActive: false,
+				showOfHandsVotingStage: null,
+				showOfHandsVotingVotesPro: null,
+				showOfHandsVotingVotesCon: null,
+				showOfHandsVotingVotesAbstain: null,
+				showOfHandsVotingVotesTotal: null,
+				rollCallVotingActive: false,
+				rollCallVotingPro: null,
+				rollCallVotingCon: null,
+				rollCallVotingAbstain: null,
+				votingVoteName: null,
+				votingMajority: null,
+				votingWithAbstentions: null,
+				votingMajorityAmount: null
 			});
 		}
 	});

@@ -13,6 +13,8 @@
 	import emptyStreet from '$assets/undraw/empty_street.svg';
 	import RegionalGroups from './RegionalGroups.svelte';
 	import PresentationRollCall from '$lib/components/rollCall/PresentationRollCall.svelte';
+	import ShowOfHandsVotingPresentation from '$lib/components/voting/ShowOfHandsVotingPresentation.svelte';
+	import RollCallVotingPresentation from '$lib/components/voting/RollCallVotingPresentation.svelte';
 	import { sortTranslatedCountries } from '$lib/utils/nationTranslationHelper.svelte';
 	import CurrentSpeaker from '$lib/components/speakersList/CurrentSpeaker.svelte';
 	import SpeakersQueue from '$lib/components/speakersList/PresentationSpeakersQueue.svelte';
@@ -267,6 +269,9 @@
 			.filter((x) => x.representation?.type === 'DELEGATION')
 			.sort((a, b) => sortTranslatedCountries(a.representation!, b.representation!))}
 	/>
+
+	<ShowOfHandsVotingPresentation committeeSettings={$committeeSettings} />
+	<RollCallVotingPresentation committeeSettings={$committeeSettings} {committee} />
 
 	<button
 		class="btn btn-ghost fixed bottom-3 left-3 z-50 h-12 w-12 min-h-0 p-0 opacity-15 hover:opacity-60 transition-opacity"

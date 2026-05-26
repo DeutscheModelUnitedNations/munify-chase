@@ -94,6 +94,15 @@
 				committeeId
 			}),
 			key: 'speakers-list'
+		},
+		{
+			icon: 'fa-person-booth',
+			label: () => m.voting(),
+			href: resolve('/app/[conferenceId]/[committeeId]/(chairs)/voting', {
+				conferenceId,
+				committeeId
+			}),
+			key: 'voting'
 		}
 	]);
 
@@ -102,7 +111,7 @@
 	}
 
 	$effect(() => {
-		hotkeys('alt+1, alt+2, alt+3', (event, handler) => {
+		hotkeys('alt+1, alt+2, alt+3, alt+4', (event, handler) => {
 			event.preventDefault();
 			switch (handler.key) {
 				case 'alt+1':
@@ -124,6 +133,14 @@
 				case 'alt+3':
 					goto(
 						resolve('/app/[conferenceId]/[committeeId]/(chairs)/speakers-list', {
+							conferenceId,
+							committeeId
+						})
+					);
+					break;
+				case 'alt+4':
+					goto(
+						resolve('/app/[conferenceId]/[committeeId]/(chairs)/voting', {
 							conferenceId,
 							committeeId
 						})

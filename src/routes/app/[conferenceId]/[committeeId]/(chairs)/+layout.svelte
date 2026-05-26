@@ -12,6 +12,7 @@
 	import BellIcon from '$lib/components/toast/BellIcon.svelte';
 	import { getServerTime } from '$lib/state/serverTime.svelte';
 	import hotkeys from 'hotkeys-js';
+	import VotingModal from '$lib/components/voting/VotingModal.svelte';
 
 	interface Props {
 		children: Snippet;
@@ -193,3 +194,7 @@
 />
 
 <StateOfDebateChangerModal {committeeId} oldStateOfDebate={committee?.stateOfDebate} />
+
+{#if committee}
+	<VotingModal {committee} />
+{/if}

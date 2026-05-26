@@ -233,38 +233,26 @@ export const committeeTopicChangedTimestamp = pgTable('committee_topic_changed_t
 	timestamp: timestamp().notNull()
 });
 
-export const presenceChangedTimestamp = pgTable('presence_changed_timestamp', {
-	...defaultIdAndTimestamps,
-	committeeMemberId: text()
+export const presenceEventType = pgEnum('presence_event_type', ['CHECK_IN', 'CHECK_OUT']);
+export const presenceEventMarker = pgEnum('presence_event_marker', ['AUTO_SWITCH']);
+export const presenceEvent = pgTable('presence_event', {
+	id: text()
+		.$defaultFn(() => nanoid())
+		.primaryKey(),
+
+	conferenceUserId: text()
 		.notNull()
-		.references(() => committeeMember.id, { onDelete: 'cascade' }),
-	timestamp: timestamp().notNull(),
-	presentSetTo: boolean().notNull()
+		.references(() => conferenceUser.id, { onDelete: 'cascade' }),
+	committeeId: text()
+		.notNull()
+		.references(() => committee.id, { onDelete: 'cascade' }),
+	// chair/admin who triggered the event; null for system-generated auto-checkouts on switch
+	triggeredByConferenceUserId: text().references((): AnyPgColumn => conferenceUser.id, {
+		onDelete: 'set null'
+	}),
+
+	timestamp: timestamp().defaultNow().notNull(),
+	eventType: presenceEventType().notNull(),
+	marker: presenceEventMarker(),
+	note: text()
 });
-
-export const nsaPresenceEventType = pgEnum('nsa_presence_event_type', ['CHECK_IN', 'CHECK_OUT']);
-
-export const nsaPresenceEvent = pgTable(
-	'nsa_presence_event',
-	{
-		...defaultIdAndTimestamps,
-		conferenceUserId: text()
-			.notNull()
-			.references(() => conferenceUser.id, { onDelete: 'cascade' }),
-		committeeId: text()
-			.notNull()
-			.references(() => committee.id, { onDelete: 'cascade' }),
-		type: nsaPresenceEventType().notNull(),
-		timestamp: timestamp().notNull(),
-		// chair/admin who triggered the event; null for system-generated auto-checkouts on switch
-		triggeredByConferenceUserId: text().references((): AnyPgColumn => conferenceUser.id, {
-			onDelete: 'set null'
-		}),
-		// stable marker like 'AUTO_SWITCH' or free-text correction note
-		note: text()
-	},
-	(t) => [
-		index('nsa_presence_event_user_ts_idx').on(t.conferenceUserId, t.timestamp.desc()),
-		index('nsa_presence_event_committee_ts_idx').on(t.committeeId, t.timestamp.desc())
-	]
-);

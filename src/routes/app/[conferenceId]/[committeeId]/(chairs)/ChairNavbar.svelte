@@ -5,6 +5,7 @@
 	import { client } from '$lib/api/rumbleClient/client';
 	import CurrentTime from '$lib/components/CurrentTime.svelte';
 	import NavbarBurgerMenu from '$lib/components/NavbarBurgerMenu.svelte';
+	import NavbarSpeakersWidget from '$lib/components/speakersList/NavbarSpeakersWidget.svelte';
 	import {
 		buildConferenceNavItems,
 		roleBadgeClassFor,
@@ -14,12 +15,51 @@
 	import { getCurrentUser } from '$lib/state/currentUser.svelte';
 	import hotkeys from 'hotkeys-js';
 
+	type SpeakersList =
+		| {
+				id: string;
+				type: string;
+				speakingTime: number;
+				startTimestamp?: Date | null;
+				timeLeft: number;
+				phase?: string | null;
+				speakers: Array<{
+					id: string;
+					position: number;
+					overwriteName?: string | null;
+					committeeMember?: {
+						id: string;
+						representation?: {
+							name?: string | null;
+							alpha2Code?: string | null;
+							alpha3Code?: string | null;
+							faIcon?: string | null;
+							type?: string | null;
+						} | null;
+					} | null;
+					conferenceMember?: {
+						id: string;
+						representation?: {
+							name?: string | null;
+							alpha2Code?: string | null;
+							alpha3Code?: string | null;
+							faIcon?: string | null;
+							type?: string | null;
+						} | null;
+					} | null;
+				}>;
+		  }
+		| null
+		| undefined;
+
 	interface Props {
 		title?: string;
 		conferenceTitle?: string | null;
+		speakersList?: SpeakersList;
+		commentList?: SpeakersList;
 	}
 
-	let { title, conferenceTitle }: Props = $props();
+	let { title, conferenceTitle, speakersList, commentList }: Props = $props();
 
 	const conferenceId = $derived(page.params.conferenceId!);
 	const committeeId = $derived(page.params.committeeId!);
@@ -156,6 +196,12 @@
 	<h1 class="ml-4 text-3xl font-bold">{title ?? ''}</h1>
 
 	<div class="flex-1"></div>
+
+	{#if !page.route.id?.includes('speakers-list') && speakersList}
+		<div class="absolute left-1/2 -translate-x-1/2">
+			<NavbarSpeakersWidget {speakersList} {commentList} />
+		</div>
+	{/if}
 
 	<div class="flex-none">
 		<CurrentTime />

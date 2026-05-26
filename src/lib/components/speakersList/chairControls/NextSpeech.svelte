@@ -19,10 +19,11 @@
 	interface Props {
 		speakersList?: SpeakersList;
 		childList?: SpeakersList;
+		parentList?: SpeakersList;
 		type: SpeakerslistcategoryEnum;
 	}
 
-	let { speakersList, type, childList }: Props = $props();
+	let { speakersList, type, childList, parentList }: Props = $props();
 
 	const nextSpeaker = async () => {
 		if (speakersList && speakersList?.speakers.length > 0) {
@@ -75,22 +76,30 @@
 						promiseToastStrings(m.nextSpeaker(), 'update')
 					);
 			} else {
-				toast.promise(
-					Promise.all([
-						client.mutate.removeSpeakerOnList({
-							__args: { speakerOnListId: speaker.id },
-							id: true,
-							speakers: { id: true }
-						}),
+				const ops: Promise<unknown>[] = [
+					client.mutate.removeSpeakerOnList({
+						__args: { speakerOnListId: speaker.id },
+						id: true,
+						speakers: { id: true }
+					}),
+					client.mutate.updateSpeakersList({
+						__args: { id: speakersList.id, timeLeft: speakersList.speakingTime, stopTimer: true },
+						id: true,
+						timeLeft: true,
+						startTimestamp: true
+					})
+				];
+				// When advancing a questioner, put the speakers list back into question phase
+				if (type === 'COMMENT_LIST' && parentList) {
+					ops.push(
 						client.mutate.updateSpeakersList({
-							__args: { id: speakersList.id, timeLeft: speakersList.speakingTime, stopTimer: true },
+							__args: { id: parentList.id, phase: 'QUESTION' },
 							id: true,
-							timeLeft: true,
-							startTimestamp: true
+							phase: true
 						})
-					]),
-					promiseToastStrings(m.nextSpeaker(), 'update')
-				);
+					);
+				}
+				toast.promise(Promise.all(ops), promiseToastStrings(m.nextSpeaker(), 'update'));
 			}
 		}
 	};

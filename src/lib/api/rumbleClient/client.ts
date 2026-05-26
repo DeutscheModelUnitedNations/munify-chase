@@ -745,6 +745,7 @@ export type Mutation = {
   updateSpeakersList: (p: {
     id: ID,
     isClosed?: Boolean | null | undefined,
+    phase?: unknown | null | undefined,
     speakingTime?: Int | null | undefined,
     startTimestamp?: DateTime | null | undefined,
     stopTimer?: Boolean | null | undefined,
@@ -1131,6 +1132,7 @@ export type Speakerslist = {
   createdAt: DateTime,
   id: ID,
   isClosed: Boolean,
+  phase: SpeakerslistphaseEnum,
   speakers: (p?: {
     limit?: Int | null | undefined,
     offset?: Int | null | undefined,
@@ -1150,6 +1152,7 @@ export type SpeakerslistOrderInputArgument = {
   createdAt?: SortingParameter | null | undefined,
   id?: SortingParameter | null | undefined,
   isClosed?: SortingParameter | null | undefined,
+  phase?: SortingParameter | null | undefined,
   speakers?: SpeakeronlistOrderInputArgument | null | undefined,
   speakingTime?: SortingParameter | null | undefined,
   startTimestamp?: SortingParameter | null | undefined,
@@ -1164,6 +1167,7 @@ export type SpeakerslistWhereInputArgument = {
   createdAt?: DateWhereInputArgument | null | undefined,
   id?: ID | null | undefined,
   isClosed?: Boolean | null | undefined,
+  phase?: SpeakerslistphaseEnum | null | undefined,
   speakers?: SpeakeronlistWhereInputArgument | null | undefined,
   speakingTime?: IntWhereInputArgument | null | undefined,
   startTimestamp?: DateWhereInputArgument | null | undefined,
@@ -1173,6 +1177,8 @@ export type SpeakerslistWhereInputArgument = {
 };
 		
 export type SpeakerslistcategoryEnum = "COMMENT_LIST" | "SPEAKERS_LIST";
+		
+export type SpeakerslistphaseEnum = "ANSWER" | "ANSWER_DONE" | "QUESTION" | "SPEECH" | "SPEECH_DONE";
 		
 export type String = string;
 		

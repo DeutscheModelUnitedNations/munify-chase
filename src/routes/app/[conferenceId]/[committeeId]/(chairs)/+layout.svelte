@@ -46,6 +46,7 @@
 				speakingTime: true,
 				startTimestamp: true,
 				timeLeft: true,
+				phase: true,
 				speakers: {
 					id: true,
 					position: true,
@@ -180,7 +181,12 @@
 	<title>{committee?.abbreviation ?? 'N/A'} {m.chairControls()} - MUNify CHASE</title>
 </svelte:head>
 
-<ChairNavbar title={committee?.abbreviation} conferenceTitle={committee?.conference?.title} />
+<ChairNavbar
+	title={committee?.abbreviation}
+	conferenceTitle={committee?.conference?.title}
+	speakersList={committee?.activeAgendaItem?.speakersList.find((l) => l.type === 'SPEAKERS_LIST')}
+	commentList={committee?.activeAgendaItem?.speakersList.find((l) => l.type === 'COMMENT_LIST')}
+/>
 
 <div class="pb-16">
 	{@render children()}

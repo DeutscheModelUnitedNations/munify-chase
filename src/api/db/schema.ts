@@ -182,6 +182,14 @@ export const speakersListCategory = pgEnum('speakers_list_category', [
 	'COMMENT_LIST'
 ]);
 
+export const speakersListPhase = pgEnum('speakers_list_phase', [
+	'SPEECH',
+	'SPEECH_DONE',
+	'QUESTION',
+	'ANSWER',
+	'ANSWER_DONE'
+]);
+
 export const speakersList = pgTable(
 	'speakers_list',
 	{
@@ -193,7 +201,8 @@ export const speakersList = pgTable(
 		speakingTime: smallint().notNull(),
 		timeLeft: smallint().notNull().default(0),
 		startTimestamp: timestamp(),
-		isClosed: boolean().default(false).notNull()
+		isClosed: boolean().default(false).notNull(),
+		phase: speakersListPhase().default('SPEECH').notNull()
 	},
 	(t) => [unique().on(t.agendaItemId, t.type)]
 );

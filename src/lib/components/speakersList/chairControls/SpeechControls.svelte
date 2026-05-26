@@ -42,12 +42,15 @@
 					id: otherList.id,
 					timeLeft:
 						otherList.type === 'SPEAKERS_LIST' ? speakersList.speakingTime : otherList.speakingTime,
-					stopTimer: true
+					stopTimer: true,
+					// When starting the comment list timer, mark the speakers list as entering question phase
+					...(type === 'COMMENT_LIST' ? { phase: 'QUESTION' } : {})
 				},
 				id: true,
 				speakingTime: true,
 				timeLeft: true,
-				startTimestamp: true
+				startTimestamp: true,
+				phase: true
 			});
 		} else {
 			await client.mutate.updateSpeakersList({
@@ -62,21 +65,34 @@
 	const stopTimer = async () => {
 		if (!speakersList) return;
 
-		await client.mutate
-			.updateSpeakersList({
-				__args: {
-					id: speakersList.id,
-					stopTimer: true
-				},
-				id: true,
-				timeLeft: true,
-				startTimestamp: true
-			})
-			.then((r) => {
-				if (!r) {
-					toast.error(m.errorUpdatingTimer());
-				}
-			});
+		const promises: Promise<unknown>[] = [
+			client.mutate
+				.updateSpeakersList({
+					__args: {
+						id: speakersList.id,
+						stopTimer: true
+					},
+					id: true,
+					timeLeft: true,
+					startTimestamp: true
+				})
+				.then((r) => {
+					if (!r) toast.error(m.errorUpdatingTimer());
+				})
+		];
+
+		// When stopping the comment list timer, transition the speakers list to answer phase
+		if (type === 'COMMENT_LIST' && otherList) {
+			promises.push(
+				client.mutate.updateSpeakersList({
+					__args: { id: otherList.id, phase: 'ANSWER' },
+					id: true,
+					phase: true
+				})
+			);
+		}
+
+		await Promise.all(promises);
 	};
 
 	const resetTimer = async () => {

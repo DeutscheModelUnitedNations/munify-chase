@@ -147,6 +147,7 @@
 	filter={(member, value) => filter(member, value)}
 	placeholder="Search for a country"
 	getStringValue={(member) => getName(member)}
+	getKey={(member) => member.id}
 	kbd={speakersList?.type === 'COMMENT_LIST' ? 'alt+shift+A' : 'alt+A'}
 	submit={() => addSpeakerToList()}
 >

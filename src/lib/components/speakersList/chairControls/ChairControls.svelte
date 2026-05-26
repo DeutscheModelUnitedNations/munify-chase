@@ -68,7 +68,7 @@
 	<SpeechControls {type} {speakersList} otherList={childList ?? otherList} />
 
 	<div class="flex gap-2">
-		<NextSpeech {speakersList} {childList} {type} />
+		<NextSpeech {speakersList} {childList} parentList={otherList} {type} />
 		<MoreOptions {speakersList} />
 	</div>
 

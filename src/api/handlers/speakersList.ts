@@ -1,5 +1,12 @@
 import { db, schema } from '$api/db/db';
-import { schemaBuilder, pubsub as rumblePubsub, abilityBuilder, object, query } from '$api/rumble';
+import {
+	schemaBuilder,
+	pubsub as rumblePubsub,
+	abilityBuilder,
+	object,
+	query,
+	enum_
+} from '$api/rumble';
 import { eq } from 'drizzle-orm';
 import { assertFindFirstExists, mapNullFieldsToUndefined } from '@m1212e/rumble';
 import { GraphQLError } from 'graphql';
@@ -51,7 +58,8 @@ schemaBuilder.mutationFields((t) => {
 					type: 'Boolean',
 					defaultValue: false
 				}),
-				isClosed: t.arg.boolean()
+				isClosed: t.arg.boolean(),
+				phase: t.arg({ type: enum_({ tsName: 'speakersListPhase' }) })
 			},
 			resolve: async (query, root, args, ctx) => {
 				if (args.startTimestamp && args.stopTimer) {
@@ -64,7 +72,11 @@ schemaBuilder.mutationFields((t) => {
 				// clock here instead of trusting the client, so every client converges on the same value.
 				let computedTimeLeft: number | undefined;
 
+				const mappedArgs = mapNullFieldsToUndefined(args);
+
 				await db.transaction(async (tx) => {
+					let currentPhase: string | undefined;
+
 					if (args.stopTimer) {
 						const speakersList = await tx.query.speakersList
 							.findFirst({
@@ -84,6 +96,8 @@ schemaBuilder.mutationFields((t) => {
 							})
 							.then(assertFindFirstExists);
 
+						currentPhase = speakersList.phase ?? undefined;
+
 						if (speakersList.startTimestamp) {
 							const elapsedSeconds = (now.getTime() - speakersList.startTimestamp.getTime()) / 1000;
 							computedTimeLeft = Math.round(speakersList.timeLeft - elapsedSeconds);
@@ -96,9 +110,40 @@ schemaBuilder.mutationFields((t) => {
 								conferenceMemberId: speakersList.speakers[0].conferenceMemberId
 							});
 						}
+					} else if (mappedArgs.phase === undefined && mappedArgs.startTimestamp) {
+						// Need current phase to auto-derive next phase on timer start
+						const record = await tx.query.speakersList
+							.findFirst(
+								ctx.abilities.speakersList.filter('update').merge({ where: { id: args.id } }).query
+									.single
+							)
+							.then(assertFindFirstExists);
+						currentPhase = record.phase ?? undefined;
 					}
 
-					const mappedArgs = mapNullFieldsToUndefined(args);
+					// Auto-derive phase when caller didn't provide one explicitly.
+					// Explicit phase from the client always wins (widget direct transitions).
+					let effectivePhase = mappedArgs.phase as
+						| 'SPEECH'
+						| 'SPEECH_DONE'
+						| 'QUESTION'
+						| 'ANSWER'
+						| 'ANSWER_DONE'
+						| undefined;
+
+					if (effectivePhase === undefined && currentPhase !== undefined) {
+						if (args.stopTimer && mappedArgs.timeLeft !== undefined) {
+							// stopTimer + explicit timeLeft = next-speaker / reset pattern → fresh SPEECH
+							effectivePhase = 'SPEECH';
+						} else if (args.stopTimer) {
+							if (currentPhase === 'SPEECH') effectivePhase = 'SPEECH_DONE';
+							else if (currentPhase === 'ANSWER') effectivePhase = 'ANSWER_DONE';
+						} else if (mappedArgs.startTimestamp) {
+							if (currentPhase === 'SPEECH_DONE') effectivePhase = 'SPEECH';
+							else if (currentPhase === 'ANSWER_DONE') effectivePhase = 'ANSWER';
+						}
+					}
+
 					await tx
 						.update(schema.speakersList)
 						.set({
@@ -107,7 +152,8 @@ schemaBuilder.mutationFields((t) => {
 							timeLeft: computedTimeLeft ?? mappedArgs.timeLeft,
 							// server stamps the authoritative start time so all clients share one anchor
 							startTimestamp: args.stopTimer ? null : mappedArgs.startTimestamp ? now : undefined,
-							isClosed: mappedArgs.isClosed
+							isClosed: mappedArgs.isClosed,
+							phase: effectivePhase
 						})
 						.where(
 							ctx.abilities.speakersList.filter('update').merge({ where: { id: args.id } }).sql

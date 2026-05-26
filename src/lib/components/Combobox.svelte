@@ -13,6 +13,8 @@
 		kbd?: string;
 		filter: (option: T[], value: string) => T[];
 		getStringValue: (value: T) => string;
+		/** Unique key per option for the {#each} block. Defaults to getStringValue but must be overridden when multiple options can share the same display name. */
+		getKey?: (option: T) => string | number;
 		ListItem: Snippet<[T]>;
 		AdditionalButtons?: Snippet;
 		submit?: (value?: string) => void;
@@ -27,6 +29,7 @@
 		kbd,
 		filter,
 		getStringValue,
+		getKey,
 		ListItem,
 		AdditionalButtons,
 		submit
@@ -35,6 +38,8 @@
 	let filteredOptions: T[] = $derived(filter(options, value));
 
 	let input: HTMLInputElement | undefined;
+	// open is tracked separately so we can open the dropdown when the user focuses the text input
+	let open = $state(false);
 
 	$effect(() => {
 		if (focused && input) {
@@ -43,7 +48,7 @@
 	});
 </script>
 
-<Combobox.Root type="single" bind:value>
+<Combobox.Root type="single" bind:value bind:open>
 	<div class="join">
 		<Combobox.Trigger class="btn btn-square input-lg join-item">
 			<i class="fas fa-magnifying-glass"></i>
@@ -56,6 +61,9 @@
 						bind:this={input}
 						{placeholder}
 						aria-label={placeholder}
+						onfocus={() => {
+							open = true;
+						}}
 						oninput={(e) => {
 							value = (e.target as HTMLInputElement).value;
 						}}
@@ -64,6 +72,7 @@
 							if (e.key === 'Escape') {
 								focused = false;
 								value = '';
+								open = false;
 								(e.target as HTMLInputElement).blur();
 							} else if (e.key === 'Enter' && submit) {
 								submit(value);
@@ -92,7 +101,7 @@
 				<i class="fas fa-caret-up"></i>
 			</Combobox.ScrollUpButton>
 			<Combobox.Viewport class="p-1">
-				{#each filteredOptions as option (getStringValue(option))}
+				{#each filteredOptions as option (getKey ? getKey(option) : getStringValue(option))}
 					<Combobox.Item
 						class="hover:bg-base-200 active:bg-base-300 data-highlighted:bg-base-300 flex w-full cursor-pointer items-center rounded-md py-3 pl-5 text-sm outline-hidden transition-all duration-200 select-none"
 						value={getStringValue(option)}

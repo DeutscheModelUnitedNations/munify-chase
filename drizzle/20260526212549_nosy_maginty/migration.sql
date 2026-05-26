@@ -1,0 +1,2 @@
+CREATE TYPE "speakers_list_phase" AS ENUM('SPEECH', 'SPEECH_DONE', 'QUESTION', 'ANSWER', 'ANSWER_DONE');--> statement-breakpoint
+ALTER TABLE "speakers_list" ADD COLUMN "phase" "speakers_list_phase" DEFAULT 'SPEECH'::"speakers_list_phase" NOT NULL;

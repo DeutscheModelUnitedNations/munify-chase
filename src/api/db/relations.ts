@@ -43,9 +43,9 @@ export const relations = defineRelations(schema, (r) => ({
 			from: r.committee.id,
 			to: r.committeeMember.committeeId
 		}),
-		nsaPresenceEvents: r.many.nsaPresenceEvent({
+		presenceEvents: r.many.presenceEvent({
 			from: r.committee.id,
-			to: r.nsaPresenceEvent.committeeId
+			to: r.presenceEvent.committeeId
 		})
 	},
 	committeeMember: {
@@ -62,10 +62,6 @@ export const relations = defineRelations(schema, (r) => ({
 		users: r.many.conferenceUser({
 			from: r.committeeMember.id,
 			to: r.conferenceUser.committeeMemberId
-		}),
-		presenceChangedTimestamps: r.many.presenceChangedTimestamp({
-			from: r.committeeMember.id,
-			to: r.presenceChangedTimestamp.committeeMemberId
 		})
 	},
 	conferenceUser: {
@@ -93,13 +89,13 @@ export const relations = defineRelations(schema, (r) => ({
 			to: r.conferenceMember.id,
 			optional: true
 		}),
-		nsaPresenceEvents: r.many.nsaPresenceEvent({
+		presenceEvents: r.many.presenceEvent({
 			from: r.conferenceUser.id,
-			to: r.nsaPresenceEvent.conferenceUserId
+			to: r.presenceEvent.conferenceUserId
 		}),
-		triggeredNsaPresenceEvents: r.many.nsaPresenceEvent({
+		triggeredPresenceEvents: r.many.presenceEvent({
 			from: r.conferenceUser.id,
-			to: r.nsaPresenceEvent.triggeredByConferenceUserId
+			to: r.presenceEvent.triggeredByConferenceUserId
 		})
 	},
 	representation: {
@@ -193,26 +189,21 @@ export const relations = defineRelations(schema, (r) => ({
 			to: r.committee.id
 		})
 	},
-	presenceChangedTimestamp: {
-		committeeMember: r.one.committeeMember({
-			from: r.presenceChangedTimestamp.committeeMemberId,
-			to: r.committeeMember.id
-		})
-	},
-	nsaPresenceEvent: {
+	presenceEvent: {
 		conferenceUser: r.one.conferenceUser({
-			from: r.nsaPresenceEvent.conferenceUserId,
+			from: r.presenceEvent.conferenceUserId,
 			to: r.conferenceUser.id,
 			optional: false
 		}),
 		committee: r.one.committee({
-			from: r.nsaPresenceEvent.committeeId,
+			from: r.presenceEvent.committeeId,
 			to: r.committee.id,
 			optional: false
 		}),
 		triggeredBy: r.one.conferenceUser({
-			from: r.nsaPresenceEvent.triggeredByConferenceUserId,
-			to: r.conferenceUser.id
+			from: r.presenceEvent.triggeredByConferenceUserId,
+			to: r.conferenceUser.id,
+			optional: true
 		})
 	}
 }));

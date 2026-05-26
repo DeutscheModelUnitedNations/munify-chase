@@ -113,17 +113,30 @@ schemaBuilder.mutationFields((t) => {
 								.merge({ where: { id: { in: args.ids } } }).sql.where
 						)
 						.returning({
-							id: schema.committeeMember.id
+							id: schema.committeeMember.id,
+							committeeId: schema.committeeMember.committeeId
 						});
 
 					if (res.length > 0) {
-						await tx.insert(schema.presenceChangedTimestamp).values(
-							res.map((committeeMember) => ({
-								committeeMemberId: committeeMember.id,
-								presentSetTo: args.present,
-								timestamp: new Date()
-							}))
+						const conferenceUsers = await tx.query.conferenceUser.findMany({
+							where: { committeeMemberId: { in: res.map((cm) => cm.id) } }
+						});
+						const cuByMemberId = new Map(
+							conferenceUsers.map((cu) => [cu.committeeMemberId, cu.id])
 						);
+
+						const events = res
+							.filter((cm) => cuByMemberId.has(cm.id))
+							.map((cm) => ({
+								conferenceUserId: cuByMemberId.get(cm.id)!,
+								committeeId: cm.committeeId,
+								eventType: (args.present ? 'CHECK_IN' : 'CHECK_OUT') as 'CHECK_IN' | 'CHECK_OUT',
+								timestamp: new Date()
+							}));
+
+						if (events.length > 0) {
+							await tx.insert(schema.presenceEvent).values(events);
+						}
 					}
 				});
 

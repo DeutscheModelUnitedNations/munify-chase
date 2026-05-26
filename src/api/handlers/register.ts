@@ -10,8 +10,7 @@ import './speakersList';
 import './time';
 import './user';
 import './import';
-import './presenceChangedTimestamp';
-import './nsaPresenceEvent';
+import './presenceEvent';
 import { building, dev } from '$app/environment';
 import { clientCreator } from '$api/rumble';
 

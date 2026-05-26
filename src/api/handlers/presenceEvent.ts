@@ -18,18 +18,18 @@ import { assertFindFirstExists, assertFirstEntryExists } from '@m1212e/rumble';
 import { eq } from 'drizzle-orm';
 import { GraphQLError } from 'graphql';
 
-abilityBuilder.nsaPresenceEvent.allow('read').when((ctx) => ({
-	where: isParticipantInConference(ctx)
+abilityBuilder.presenceEvent.allow('read').when((ctx) => ({
+	where: { committee: isParticipantInConference(ctx) }
 }));
 
-abilityBuilder.nsaPresenceEvent.allow(['update', 'delete']).when((ctx) => ({
-	where: isAdminInConference(ctx)
+abilityBuilder.presenceEvent.allow(['update', 'delete']).when((ctx) => ({
+	where: { committee: isAdminInConference(ctx) }
 }));
 
-export const NsaPresenceEventRef = object({ table: 'nsaPresenceEvent' });
+export const PresenceEventRef = object({ table: 'presenceEvent' });
 
-const pubsub = rumblePubsub({ table: 'nsaPresenceEvent' });
-query({ table: 'nsaPresenceEvent' });
+const pubsub = rumblePubsub({ table: 'presenceEvent' });
+query({ table: 'presenceEvent' });
 
 /**
  * Resolves the target NSA `conferenceUser` for a scan given a code
@@ -84,7 +84,7 @@ schemaBuilder.mutationFields((t) => ({
 	 * timeline stays strictly ordered. Idempotent if already in the same committee.
 	 */
 	recordNsaCheckIn: t.drizzleField({
-		type: NsaPresenceEventRef,
+		type: PresenceEventRef,
 		args: {
 			committeeId: t.arg.id({ required: true }),
 			code: t.arg.string({ required: true })
@@ -99,10 +99,7 @@ schemaBuilder.mutationFields((t) => ({
 				})
 				.then(assertFindFirstExists);
 
-			const target = await resolveNsaTarget({
-				committee,
-				code: args.code
-			});
+			const target = await resolveNsaTarget({ committee, code: args.code });
 
 			const triggeredBy = await db.query.conferenceUser.findFirst({
 				where: {
@@ -113,42 +110,46 @@ schemaBuilder.mutationFields((t) => ({
 
 			const newId = await db.transaction(
 				async (tx) => {
-					const latest = await tx.query.nsaPresenceEvent.findFirst({
+					const latest = await tx.query.presenceEvent.findFirst({
 						where: { conferenceUserId: target.id },
 						orderBy: { timestamp: 'desc' }
 					});
 
 					const now = new Date();
 
-					// Already checked into this committee — no-op, return existing event id.
-					if (latest && latest.type === 'CHECK_IN' && latest.committeeId === args.committeeId) {
+					if (
+						latest &&
+						latest.eventType === 'CHECK_IN' &&
+						latest.committeeId === args.committeeId
+					) {
 						return latest.id;
 					}
 
-					// Auto-checkout from the previous committee, 1 ms before the new IN.
-					if (latest && latest.type === 'CHECK_IN' && latest.committeeId !== args.committeeId) {
-						await tx.insert(schema.nsaPresenceEvent).values({
+					if (
+						latest &&
+						latest.eventType === 'CHECK_IN' &&
+						latest.committeeId !== args.committeeId
+					) {
+						await tx.insert(schema.presenceEvent).values({
 							conferenceUserId: target.id,
 							committeeId: latest.committeeId,
-							conferenceId: committee.conferenceId,
-							type: 'CHECK_OUT',
+							eventType: 'CHECK_OUT',
 							timestamp: new Date(now.getTime() - 1),
 							triggeredByConferenceUserId: triggeredBy?.id ?? null,
-							note: 'AUTO_SWITCH'
+							marker: 'AUTO_SWITCH'
 						});
 					}
 
 					const inserted = await tx
-						.insert(schema.nsaPresenceEvent)
+						.insert(schema.presenceEvent)
 						.values({
 							conferenceUserId: target.id,
 							committeeId: args.committeeId,
-							conferenceId: committee.conferenceId,
-							type: 'CHECK_IN',
+							eventType: 'CHECK_IN',
 							timestamp: now,
 							triggeredByConferenceUserId: triggeredBy?.id ?? null
 						})
-						.returning({ id: schema.nsaPresenceEvent.id })
+						.returning({ id: schema.presenceEvent.id })
 						.then(assertFirstEntryExists);
 
 					return inserted.id;
@@ -159,12 +160,9 @@ schemaBuilder.mutationFields((t) => ({
 			pubsub.created();
 			pubsub.updated(newId);
 
-			return db.query.nsaPresenceEvent
+			return db.query.presenceEvent
 				.findFirst(
-					q(
-						ctx.abilities.nsaPresenceEvent.filter('read').merge({ where: { id: newId } }).query
-							.single
-					)
+					q(ctx.abilities.presenceEvent.filter('read').merge({ where: { id: newId } }).query.single)
 				)
 				.then(assertFindFirstExists);
 		}
@@ -176,7 +174,7 @@ schemaBuilder.mutationFields((t) => ({
 	 * no events yet), returns the latest event without inserting a new one.
 	 */
 	recordNsaCheckOut: t.drizzleField({
-		type: NsaPresenceEventRef,
+		type: PresenceEventRef,
 		args: {
 			committeeId: t.arg.id({ required: true }),
 			code: t.arg.string({ required: true })
@@ -191,10 +189,7 @@ schemaBuilder.mutationFields((t) => ({
 				})
 				.then(assertFindFirstExists);
 
-			const target = await resolveNsaTarget({
-				committee,
-				code: args.code
-			});
+			const target = await resolveNsaTarget({ committee, code: args.code });
 
 			const triggeredBy = await db.query.conferenceUser.findFirst({
 				where: {
@@ -205,32 +200,28 @@ schemaBuilder.mutationFields((t) => ({
 
 			const eventId = await db.transaction(
 				async (tx) => {
-					const latest = await tx.query.nsaPresenceEvent.findFirst({
+					const latest = await tx.query.presenceEvent.findFirst({
 						where: { conferenceUserId: target.id },
 						orderBy: { timestamp: 'desc' }
 					});
 
-					if (!latest || latest.type === 'CHECK_OUT') {
+					if (!latest || latest.eventType === 'CHECK_OUT') {
 						if (!latest) {
 							throw new GraphQLError('NSA has no recorded check-in to check out from');
 						}
 						return latest.id;
 					}
 
-					// Always check the NSA out of the committee they are currently in,
-					// even if the chair scans from a different committee. The frontend
-					// surfaces a mismatch toast based on `committeeId` in the response.
 					const inserted = await tx
-						.insert(schema.nsaPresenceEvent)
+						.insert(schema.presenceEvent)
 						.values({
 							conferenceUserId: target.id,
 							committeeId: latest.committeeId,
-							conferenceId: committee.conferenceId,
-							type: 'CHECK_OUT',
+							eventType: 'CHECK_OUT',
 							timestamp: new Date(),
 							triggeredByConferenceUserId: triggeredBy?.id ?? null
 						})
-						.returning({ id: schema.nsaPresenceEvent.id })
+						.returning({ id: schema.presenceEvent.id })
 						.then(assertFirstEntryExists);
 
 					return inserted.id;
@@ -241,10 +232,10 @@ schemaBuilder.mutationFields((t) => ({
 			pubsub.created();
 			pubsub.updated(eventId);
 
-			return db.query.nsaPresenceEvent
+			return db.query.presenceEvent
 				.findFirst(
 					q(
-						ctx.abilities.nsaPresenceEvent.filter('read').merge({ where: { id: eventId } }).query
+						ctx.abilities.presenceEvent.filter('read').merge({ where: { id: eventId } }).query
 							.single
 					)
 				)
@@ -253,12 +244,12 @@ schemaBuilder.mutationFields((t) => ({
 	}),
 
 	/** Admin-only correction: insert an arbitrary historical event. */
-	insertNsaPresenceEvent: t.drizzleField({
-		type: NsaPresenceEventRef,
+	insertPresenceEvent: t.drizzleField({
+		type: PresenceEventRef,
 		args: {
 			conferenceUserId: t.arg.id({ required: true }),
 			committeeId: t.arg.id({ required: true }),
-			type: t.arg({ type: enum_({ tsName: 'nsaPresenceEventType' }), required: true }),
+			eventType: t.arg({ type: enum_({ tsName: 'presenceEventType' }), required: true }),
 			timestamp: t.arg({ type: 'DateTime', required: true }),
 			note: t.arg.string()
 		},
@@ -274,53 +265,51 @@ schemaBuilder.mutationFields((t) => ({
 				.findFirst({
 					where: {
 						id: args.conferenceUserId,
-						conferenceId: committee.conferenceId,
-						conferenceUserType: 'NON_STATE_ACTOR'
+						conferenceId: committee.conferenceId
 					}
 				})
 				.then(assertFindFirstExists);
 
 			const inserted = await db
-				.insert(schema.nsaPresenceEvent)
+				.insert(schema.presenceEvent)
 				.values({
 					conferenceUserId: target.id,
 					committeeId: committee.id,
-					conferenceId: committee.conferenceId,
-					type: args.type,
+					eventType: args.eventType,
 					timestamp: args.timestamp,
 					note: args.note ?? null
 				})
-				.returning({ id: schema.nsaPresenceEvent.id })
+				.returning({ id: schema.presenceEvent.id })
 				.then(assertFirstEntryExists);
 
 			pubsub.created();
 			pubsub.updated(inserted.id);
 
-			return db.query.nsaPresenceEvent
+			return db.query.presenceEvent
 				.findFirst(
 					q(
-						ctx.abilities.nsaPresenceEvent.filter('read').merge({ where: { id: inserted.id } })
-							.query.single
+						ctx.abilities.presenceEvent.filter('read').merge({ where: { id: inserted.id } }).query
+							.single
 					)
 				)
 				.then(assertFindFirstExists);
 		}
 	}),
 
-	/** Admin-only correction: edit timestamp / type / committee / note of an event. */
-	updateNsaPresenceEvent: t.drizzleField({
-		type: NsaPresenceEventRef,
+	/** Admin-only correction: edit timestamp / eventType / committee / note of an event. */
+	updatePresenceEvent: t.drizzleField({
+		type: PresenceEventRef,
 		args: {
 			id: t.arg.id({ required: true }),
 			timestamp: t.arg({ type: 'DateTime' }),
-			type: t.arg({ type: enum_({ tsName: 'nsaPresenceEventType' }) }),
+			eventType: t.arg({ type: enum_({ tsName: 'presenceEventType' }) }),
 			committeeId: t.arg.id(),
 			note: t.arg.string()
 		},
 		resolve: async (q, _root, args, ctx) => {
-			const event = await db.query.nsaPresenceEvent
+			const event = await db.query.presenceEvent
 				.findFirst(
-					ctx.abilities.nsaPresenceEvent.filter('update').merge({ where: { id: args.id } }).query
+					ctx.abilities.presenceEvent.filter('update').merge({ where: { id: args.id } }).query
 						.single
 				)
 				.then(assertFindFirstExists);
@@ -328,10 +317,15 @@ schemaBuilder.mutationFields((t) => ({
 			if (args.committeeId && args.committeeId !== event.committeeId) {
 				const newCommittee = await db.query.committee
 					.findFirst({
-						where: { id: args.committeeId, conferenceId: event.conferenceId }
+						where: { id: args.committeeId }
 					})
 					.then(assertFindFirstExists);
-				if (newCommittee.conferenceId !== event.conferenceId) {
+
+				const currentCommittee = await db.query.committee
+					.findFirst({ where: { id: event.committeeId } })
+					.then(assertFindFirstExists);
+
+				if (newCommittee.conferenceId !== currentCommittee.conferenceId) {
 					throw new GraphQLError('Cannot move an event to a committee in a different conference');
 				}
 			}
@@ -339,24 +333,25 @@ schemaBuilder.mutationFields((t) => ({
 			const updateSet: Record<string, unknown> = {};
 			if (args.timestamp !== undefined && args.timestamp !== null)
 				updateSet.timestamp = args.timestamp;
-			if (args.type !== undefined && args.type !== null) updateSet.type = args.type;
+			if (args.eventType !== undefined && args.eventType !== null)
+				updateSet.eventType = args.eventType;
 			if (args.committeeId !== undefined && args.committeeId !== null)
 				updateSet.committeeId = args.committeeId;
 			if (args.note !== undefined) updateSet.note = args.note;
 
 			if (Object.keys(updateSet).length > 0) {
 				await db
-					.update(schema.nsaPresenceEvent)
+					.update(schema.presenceEvent)
 					.set(updateSet)
-					.where(eq(schema.nsaPresenceEvent.id, args.id));
+					.where(eq(schema.presenceEvent.id, args.id));
 			}
 
 			pubsub.updated(args.id);
 
-			return db.query.nsaPresenceEvent
+			return db.query.presenceEvent
 				.findFirst(
 					q(
-						ctx.abilities.nsaPresenceEvent.filter('read').merge({ where: { id: args.id } }).query
+						ctx.abilities.presenceEvent.filter('read').merge({ where: { id: args.id } }).query
 							.single
 					)
 				)
@@ -367,22 +362,22 @@ schemaBuilder.mutationFields((t) => ({
 	/**
 	 * Admin-only correction: delete an event. Returns the deleted row so the
 	 * rumble client (which auto-selects `{ id }` on every mutation) has a valid
-	 * subfield to read; a `Boolean!` return would crash the client codegen.
+	 * subfield to read.
 	 */
-	deleteNsaPresenceEvent: t.drizzleField({
-		type: NsaPresenceEventRef,
+	deletePresenceEvent: t.drizzleField({
+		type: PresenceEventRef,
 		args: {
 			id: t.arg.id({ required: true })
 		},
-		resolve: async (q, _root, args, ctx) => {
-			const event = await db.query.nsaPresenceEvent
+		resolve: async (_q, _root, args, ctx) => {
+			const event = await db.query.presenceEvent
 				.findFirst(
-					ctx.abilities.nsaPresenceEvent.filter('delete').merge({ where: { id: args.id } }).query
+					ctx.abilities.presenceEvent.filter('delete').merge({ where: { id: args.id } }).query
 						.single
 				)
 				.then(assertFindFirstExists);
 
-			await db.delete(schema.nsaPresenceEvent).where(eq(schema.nsaPresenceEvent.id, event.id));
+			await db.delete(schema.presenceEvent).where(eq(schema.presenceEvent.id, event.id));
 
 			pubsub.removed();
 			return event;
@@ -390,11 +385,7 @@ schemaBuilder.mutationFields((t) => ({
 	}),
 
 	/**
-	 * Admin-only: regenerate the manual fallback code for an NSA user. Useful when
-	 * a printed badge is lost or compromised mid-conference. Returns the updated
-	 * conferenceUser so the rumble client (which auto-selects `{ id }`) has a
-	 * valid subfield — a `String!` return would trigger the same client-side
-	 * codegen bug as Boolean returns.
+	 * Admin-only: regenerate the manual fallback code for an NSA user.
 	 */
 	regenerateNsaAttendanceCode: t.drizzleField({
 		type: ConferenceUserRef,

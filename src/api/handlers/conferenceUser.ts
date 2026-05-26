@@ -101,37 +101,37 @@ export const ConferenceUserRef = object({
 		// lazily on first OIDC login (services/OIDC.ts), so an imported but
 		// not-yet-redeemed conferenceUser legitimately has no user.
 		user: t.relation('user', { nullable: true }),
-		// Live attendance state derived from the latest nsaPresenceEvent.
+		// Live attendance state derived from the latest presenceEvent.
 		// Per-row queries here can N+1 on large NSA dashboards; a bulk top-level
-		// query in nsaPresenceEvent.ts is provided for live overview tabs.
+		// query in presenceEvent.ts is provided for live overview tabs.
 		isCheckedIn: t.boolean({
 			resolve: async (parent) => {
-				const latest = await db.query.nsaPresenceEvent.findFirst({
+				const latest = await db.query.presenceEvent.findFirst({
 					where: { conferenceUserId: parent.id },
 					orderBy: { timestamp: 'desc' }
 				});
-				return latest?.type === 'CHECK_IN';
+				return latest?.eventType === 'CHECK_IN';
 			}
 		}),
 		currentCommitteeId: t.string({
 			nullable: true,
 			resolve: async (parent) => {
-				const latest = await db.query.nsaPresenceEvent.findFirst({
+				const latest = await db.query.presenceEvent.findFirst({
 					where: { conferenceUserId: parent.id },
 					orderBy: { timestamp: 'desc' }
 				});
-				return latest?.type === 'CHECK_IN' ? latest.committeeId : null;
+				return latest?.eventType === 'CHECK_IN' ? latest.committeeId : null;
 			}
 		}),
 		currentCheckedInSince: t.field({
 			type: 'DateTime',
 			nullable: true,
 			resolve: async (parent) => {
-				const latest = await db.query.nsaPresenceEvent.findFirst({
+				const latest = await db.query.presenceEvent.findFirst({
 					where: { conferenceUserId: parent.id },
 					orderBy: { timestamp: 'desc' }
 				});
-				return latest?.type === 'CHECK_IN' ? latest.timestamp : null;
+				return latest?.eventType === 'CHECK_IN' ? latest.timestamp : null;
 			}
 		})
 	})

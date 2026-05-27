@@ -1,9 +1,11 @@
 import { createYoga } from '$api/rumble';
+import { dev } from '$app/environment';
 
 import '$api/handlers/register';
 
 const yogaInstance = createYoga({
 	graphqlEndpoint: '/api/graphql',
+	maskedErrors: !dev,
 	// The deepest query in this app reaches depth 7
 	// (committee → activeAgendaItem → speakersList → speakers → committeeMember → representation → name).
 	// Raise armor's default of 6 to 10 so legitimate queries pass while still rejecting absurd ones.

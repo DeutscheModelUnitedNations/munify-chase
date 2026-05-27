@@ -58,6 +58,19 @@ function buildSyntheticEvent(req: IncomingMessage, authorizationHeader?: string)
 type LocalsBag = RequestEvent['locals'];
 type RequestWithLocals = IncomingMessage & { locals?: LocalsBag };
 
+function scheduleExpiration(ws: WSWebSocket, exp: number | undefined) {
+	const expirationTimestamp = exp ? dayjs.unix(exp) : dayjs().add(300, 'seconds');
+	const timeout = setTimeout(
+		() => {
+			ws.close();
+		},
+		expirationTimestamp.diff(dayjs(), 'milliseconds')
+	);
+	ws.addEventListener('close', () => {
+		clearTimeout(timeout);
+	});
+}
+
 // rumble 0.18.1's createWs over-constrains the `implementation` generic so that
 // graphql-ws's `useServer` (which keeps its own generic parameters) no longer
 // satisfies it. Runtime is unaffected — strip the generics at the call boundary.
@@ -66,12 +79,15 @@ createWs(
 	{
 		onConnect: async (ctx: Context<Record<string, string>, Extra>) => {
 			const req = ctx.extra.request as RequestWithLocals;
+			const ws = ctx.extra.socket as unknown as WSWebSocket;
 
-			// Already authenticated via cookie (browser clients).
-			if ((req.locals as App.Locals)?.oidc) return true;
+			// Already authenticated at upgrade time (e.g. second connection_init on same socket).
+			if ((req.locals as App.Locals)?.oidc) {
+				scheduleExpiration(ws, (req.locals as App.Locals).oidc?.accessToken?.exp);
+				return true;
+			}
 
-			// Tauri clients can't set HTTP headers on the upgrade request, so they
-			// pass the Bearer token in connectionParams (graphql-ws connection_init).
+			// Tauri clients pass the Bearer token in header
 			const params = ctx.connectionParams as Record<string, string> | null;
 			const auth = params?.Authorization ?? params?.authorization;
 			if (auth?.startsWith('Bearer ')) {
@@ -82,50 +98,35 @@ createWs(
 						resolve: async () => new Response()
 					});
 					req.locals = syntheticEvent.locals;
-					return !!(req.locals as App.Locals)?.oidc;
+					const oidc = (req.locals as App.Locals)?.oidc;
+					if (oidc) {
+						scheduleExpiration(ws, oidc.accessToken?.exp);
+						return true;
+					}
+					return false;
 				} catch {
 					return false;
 				}
 			}
 
-			return false;
+			// Browser clients
+			const syntheticEvent = buildSyntheticEvent(req);
+			try {
+				await OIDC.handle({
+					event: syntheticEvent,
+					resolve: async () => new Response()
+				});
+			} catch {
+				console.error('Error during OIDC authentication for websocket connection');
+				return false;
+			}
+			req.locals = syntheticEvent.locals;
+			scheduleExpiration(ws, (syntheticEvent.locals as App.Locals).oidc?.accessToken?.exp);
+			return true;
 		}
-
-		// Browser clients with no Bearer token — allow through, auth enforced per-operation.
-		return true;
 	},
 	gqlWSS
 );
-
-async function attachLocals(req: IncomingMessage, ws: WSWebSocket) {
-	// Try cookie-based auth at upgrade time. For Tauri clients this will fail
-	// (no cookies on a cross-origin upgrade), but that's fine — they authenticate
-	// later via the Bearer token in connectionParams inside onConnect above.
-	const syntheticEvent = buildSyntheticEvent(req);
-	try {
-		await OIDC.handle({
-			event: syntheticEvent,
-			resolve: async () => new Response()
-		});
-	} catch {
-		// No cookie auth — Tauri clients will authenticate in onConnect.
-	}
-	(req as RequestWithLocals).locals = syntheticEvent.locals;
-
-	const exp = (syntheticEvent.locals as App.Locals).oidc?.accessToken?.exp;
-	const expirationTimestamp = exp ? dayjs.unix(exp) : dayjs().add(300, 'seconds');
-
-	const timeout = setTimeout(
-		() => {
-			ws.close();
-		},
-		expirationTimestamp.diff(dayjs(), 'milliseconds')
-	);
-
-	ws.addEventListener('close', () => {
-		clearTimeout(timeout);
-	});
-}
 
 (globalThis as Record<string, unknown>).__wssUpgrade = (
 	req: IncomingMessage,
@@ -135,18 +136,14 @@ async function attachLocals(req: IncomingMessage, ws: WSWebSocket) {
 	switch (req.url) {
 		case '/api/ws':
 			otherWSS.handleUpgrade(req, socket, head, (ws) => {
-				attachLocals(req, ws).then(() => {
-					ws.emit('connection', ws, req);
-					ws.send('unimplemented');
-					ws.close();
-				});
+				ws.emit('connection', ws, req);
+				ws.send('unimplemented');
+				ws.close();
 			});
 			break;
 		case '/api/graphql':
 			gqlWSS.handleUpgrade(req, socket, head, (ws) => {
-				attachLocals(req, ws).then(() => {
-					gqlWSS.emit('connection', ws, req);
-				});
+				gqlWSS.emit('connection', ws, req);
 			});
 			break;
 		default:

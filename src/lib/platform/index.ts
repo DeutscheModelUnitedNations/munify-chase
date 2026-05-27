@@ -22,14 +22,14 @@ export async function openPresentation(conferenceId: string, committeeId: string
 			await existing.setFocus();
 			return;
 		}
-		new WebviewWindow('presentation', {
+		const win = new WebviewWindow('presentation', {
 			url: presentationUrl,
 			title: 'CHASE – Presentation',
-			fullscreen: false,
 			width: 1280,
 			height: 800,
 			resizable: true
 		});
+		win.once('tauri://error', (e) => console.error('Failed to open presentation window:', e));
 	} else {
 		window.open(presentationUrl, '_blank');
 	}

@@ -17,8 +17,9 @@ export async function openPresentation(conferenceId: string, committeeId: string
 
 	if (isTauri()) {
 		const { invoke } = await import('@tauri-apps/api/core');
-		const fullUrl = window.location.origin + presentationUrl;
-		await invoke('open_presentation_window', { url: fullUrl }).catch((e) => {
+		// Strip leading slash — WebviewUrl::App expects a relative path
+		const path = presentationUrl.replace(/^\//, '');
+		await invoke('open_presentation_window', { path }).catch((e) => {
 			console.error('open_presentation_window failed:', e);
 		});
 	} else {

@@ -2,6 +2,7 @@
 	import { m } from '$lib/paraglide/messages';
 	import { page } from '$app/state';
 	import { client } from '$lib/api/rumbleClient/client';
+	import { nanoid } from '$lib/helpers/nanoid';
 	import { getCurrentUser } from '$lib/state/currentUser.svelte';
 	import IconInfoBox from '$lib/components/IconInfoBox.svelte';
 	import { getCommitteeStatusIcon, getCommitteeStatusText } from '$lib/utils/committeeStatus';
@@ -140,7 +141,7 @@
 
 	async function handleSelfAdd(listId: string) {
 		await client.mutate.selfAddToSpeakersList({
-			__args: { speakersListId: listId },
+			__args: { id: nanoid(), speakersListId: listId },
 			id: true,
 			position: true
 		});

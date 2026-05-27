@@ -6,6 +6,7 @@
 	import hotkeys from 'hotkeys-js';
 	import toast from 'svelte-french-toast';
 	import { client } from '$lib/api/rumbleClient/client';
+	import { nanoid } from '$lib/helpers/nanoid';
 	import { type VotingMajority, type VotingOptions } from './votingModal';
 	import ScrollingCountryList from '../rollCall/ScrollingCountryList.svelte';
 	import ResultChart from './ResultChart.svelte';
@@ -113,7 +114,7 @@
 		}
 		client.mutate
 			.setVoteForMember({
-				__args: { sessionId, committeeMemberId: member.id, vote },
+				__args: { id: nanoid(), sessionId, committeeMemberId: member.id, vote },
 				id: true
 			})
 			.catch(() => toast.error(m.rollCallError()));

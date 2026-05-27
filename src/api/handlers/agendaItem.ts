@@ -1,6 +1,7 @@
 import { db, schema } from '$api/db/db';
 import { abilityBuilder, object, query, pubsub as rumblePubsub, schemaBuilder } from '$api/rumble';
-import { nanoid } from '$lib/helpers/nanoid';
+import { nanoid, isValidNanoid } from '$lib/helpers/nanoid';
+import { GraphQLError } from 'graphql';
 import { assertFindFirstExists, assertFirstEntryExists } from '@m1212e/rumble';
 import { isParticipantInConference } from '$api/services/authHelper';
 
@@ -40,10 +41,16 @@ schemaBuilder.mutationFields((t) => {
 		createAgendaItem: t.drizzleField({
 			type: ref,
 			args: {
+				id: t.arg.id(),
 				title: t.arg({ type: 'String', required: true }),
 				committeeId: t.arg({ type: 'ID', required: true })
 			},
 			resolve: async (query, root, args, ctx) => {
+				if (args.id != null && !isValidNanoid(args.id)) {
+					throw new GraphQLError('Invalid ID format');
+				}
+				const entityId = args.id ?? nanoid();
+
 				await db.query.committee
 					.findFirst(
 						ctx.abilities.committee.filter('update').merge({
@@ -58,7 +65,7 @@ schemaBuilder.mutationFields((t) => {
 						.values({
 							title: args.title,
 							committeeId: args.committeeId,
-							id: nanoid()
+							id: entityId
 						})
 						.returning()
 						.then(assertFirstEntryExists);

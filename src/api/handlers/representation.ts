@@ -10,6 +10,8 @@ import {
 import { isAdminInConference, isParticipantInConference } from '$api/services/authHelper';
 import { assertFindFirstExists, assertFirstEntryExists } from '@m1212e/rumble';
 import { eq } from 'drizzle-orm';
+import { nanoid, isValidNanoid } from '$lib/helpers/nanoid';
+import { GraphQLError } from 'graphql';
 
 abilityBuilder.representation.allow('read').when((ctx) => {
 	return {
@@ -34,6 +36,7 @@ schemaBuilder.mutationFields((t) => ({
 	createRepresentation: t.drizzleField({
 		type: ref,
 		args: {
+			id: t.arg.id(),
 			conferenceId: t.arg.id({ required: true }),
 			type: t.arg({ type: representationTypeEnum, required: true }),
 			name: t.arg.string(),
@@ -42,6 +45,11 @@ schemaBuilder.mutationFields((t) => ({
 			faIcon: t.arg.string()
 		},
 		resolve: async (query, _root, args, ctx) => {
+			if (args.id != null && !isValidNanoid(args.id)) {
+				throw new GraphQLError('Invalid ID format');
+			}
+			const entityId = args.id ?? nanoid();
+
 			await db.query.conference
 				.findFirst(
 					ctx.abilities.conference.filter('update').merge({ where: { id: args.conferenceId } })
@@ -53,6 +61,7 @@ schemaBuilder.mutationFields((t) => ({
 				const rep = await tx
 					.insert(schema.representation)
 					.values({
+						id: entityId,
 						conferenceId: args.conferenceId,
 						type: args.type,
 						name: args.name ?? undefined,

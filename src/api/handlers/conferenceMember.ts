@@ -9,6 +9,8 @@ import {
 } from '$api/rumble';
 import { isAdminInConference, isParticipantInConference } from '$api/services/authHelper';
 import { assertFindFirstExists, assertFirstEntryExists } from '@m1212e/rumble';
+import { nanoid, isValidNanoid } from '$lib/helpers/nanoid';
+import { GraphQLError } from 'graphql';
 
 abilityBuilder.conferenceMember.allow('read').when((ctx) => {
 	return {
@@ -30,10 +32,16 @@ schemaBuilder.mutationFields((t) => ({
 	createConferenceMember: t.drizzleField({
 		type: ConferenceMemberRef,
 		args: {
+			id: t.arg.id(),
 			conferenceId: t.arg.id({ required: true }),
 			representationId: t.arg.id({ required: true })
 		},
 		resolve: async (query, root, args, ctx) => {
+			if (args.id != null && !isValidNanoid(args.id)) {
+				throw new GraphQLError('Invalid ID format');
+			}
+			const entityId = args.id ?? nanoid();
+
 			await db.query.conference
 				.findFirst(
 					ctx.abilities.conference.filter('update').merge({ where: { id: args.conferenceId } })
@@ -44,6 +52,7 @@ schemaBuilder.mutationFields((t) => ({
 			const result = await db
 				.insert(schema.conferenceMember)
 				.values({
+					id: entityId,
 					conferenceId: args.conferenceId,
 					representationId: args.representationId
 				})

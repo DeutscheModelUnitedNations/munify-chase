@@ -13,6 +13,7 @@ import { attendanceCode as generateAttendanceCode } from '$lib/helpers/attendanc
 import { assertFindFirstExists, assertFirstEntryExists } from '@m1212e/rumble';
 import { eq } from 'drizzle-orm';
 import { GraphQLError } from 'graphql';
+import { nanoid, isValidNanoid } from '$lib/helpers/nanoid';
 
 abilityBuilder.presenceEvent.allow('read').when((ctx) => ({
 	where: { committee: isTeamInConference(ctx) }
@@ -82,10 +83,16 @@ schemaBuilder.mutationFields((t) => ({
 	recordNsaCheckIn: t.drizzleField({
 		type: PresenceEventRef,
 		args: {
+			id: t.arg.id(),
 			committeeId: t.arg.id({ required: true }),
 			code: t.arg.string({ required: true })
 		},
 		resolve: async (query, _root, args, ctx) => {
+			if (args.id != null && !isValidNanoid(args.id)) {
+				throw new GraphQLError('Invalid ID format');
+			}
+			const entityId = args.id ?? nanoid();
+
 			const committee = await db.query.committee
 				.findFirst(
 					ctx.abilities.committee.filter('update').merge({ where: { id: args.committeeId } }).query
@@ -129,6 +136,7 @@ schemaBuilder.mutationFields((t) => ({
 					const inserted = await tx
 						.insert(schema.presenceEvent)
 						.values({
+							id: entityId,
 							conferenceUserId: target.id,
 							committeeId: args.committeeId,
 							present: true,
@@ -165,10 +173,16 @@ schemaBuilder.mutationFields((t) => ({
 	recordNsaCheckOut: t.drizzleField({
 		type: PresenceEventRef,
 		args: {
+			id: t.arg.id(),
 			committeeId: t.arg.id({ required: true }),
 			code: t.arg.string({ required: true })
 		},
 		resolve: async (query, _root, args, ctx) => {
+			if (args.id != null && !isValidNanoid(args.id)) {
+				throw new GraphQLError('Invalid ID format');
+			}
+			const entityId = args.id ?? nanoid();
+
 			const committee = await db.query.committee
 				.findFirst(
 					ctx.abilities.committee.filter('update').merge({ where: { id: args.committeeId } }).query
@@ -202,6 +216,7 @@ schemaBuilder.mutationFields((t) => ({
 					const inserted = await tx
 						.insert(schema.presenceEvent)
 						.values({
+							id: entityId,
 							conferenceUserId: target.id,
 							committeeId: latest.committeeId,
 							present: false,
@@ -235,6 +250,7 @@ schemaBuilder.mutationFields((t) => ({
 	insertPresenceEvent: t.drizzleField({
 		type: PresenceEventRef,
 		args: {
+			id: t.arg.id(),
 			conferenceUserId: t.arg.id({ required: true }),
 			committeeId: t.arg.id({ required: true }),
 			present: t.arg.boolean({ required: true }),
@@ -243,6 +259,11 @@ schemaBuilder.mutationFields((t) => ({
 			note: t.arg.string()
 		},
 		resolve: async (query, _root, args, ctx) => {
+			if (args.id != null && !isValidNanoid(args.id)) {
+				throw new GraphQLError('Invalid ID format');
+			}
+			const entityId = args.id ?? nanoid();
+
 			const committee = await db.query.committee
 				.findFirst(
 					ctx.abilities.committee.filter('update').merge({ where: { id: args.committeeId } }).query
@@ -262,6 +283,7 @@ schemaBuilder.mutationFields((t) => ({
 			const inserted = await db
 				.insert(schema.presenceEvent)
 				.values({
+					id: entityId,
 					conferenceUserId: target.id,
 					committeeId: committee.id,
 					present: args.present,

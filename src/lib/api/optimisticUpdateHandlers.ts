@@ -163,7 +163,7 @@ export const optimistic: OptimisticMutationConfig = {
 	},
 	setVoteForMember: (args) => ({
 		__typename: 'Votingvote',
-		id: `__optimistic__${args.sessionId}__${args.committeeMemberId}`,
+		id: args.id,
 		votingSessionId: args.sessionId,
 		committeeMemberId: args.committeeMemberId,
 		vote: args.vote
@@ -228,7 +228,7 @@ export const optimistic: OptimisticMutationConfig = {
 
 		return {
 			__typename: 'Speakeronlist',
-			id: `__optimistic__${Date.now()}`,
+			id: args.id,
 			position,
 			speakersListId: args.speakersListId,
 			overwriteName: null,

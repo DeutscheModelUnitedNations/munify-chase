@@ -1,5 +1,7 @@
 <script lang="ts">
 	import { type Snippet } from 'svelte';
+	import { goto } from '$app/navigation';
+	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
 	import { client } from '$lib/api/rumbleClient/client';
 	import ChairNavbar from './ChairNavbar.svelte';
@@ -21,6 +23,7 @@
 	let { children }: Props = $props();
 
 	const committeeId = page.params.committeeId!;
+	const conferenceId = page.params.conferenceId!;
 
 	const committee = await client.liveQuery.committee({
 		__args: { id: committeeId },
@@ -114,6 +117,90 @@
 		}
 	});
 
+	const dockItems = [
+		{
+			icon: 'fa-gears',
+			label: () => m.setup(),
+			href: resolve('/app/[conferenceId]/[committeeId]/(chairs)/setup', {
+				conferenceId,
+				committeeId
+			}),
+			key: 'setup'
+		},
+		{
+			icon: 'fa-users',
+			label: () => m.presence(),
+			href: resolve('/app/[conferenceId]/[committeeId]/(chairs)/presence', {
+				conferenceId,
+				committeeId
+			}),
+			key: 'presence'
+		},
+		{
+			icon: 'fa-podium',
+			label: () => m.speakersList(),
+			href: resolve('/app/[conferenceId]/[committeeId]/(chairs)/speakers-list', {
+				conferenceId,
+				committeeId
+			}),
+			key: 'speakers-list'
+		},
+		{
+			icon: 'fa-box-ballot',
+			label: () => m.voting(),
+			href: resolve('/app/[conferenceId]/[committeeId]/(chairs)/voting', {
+				conferenceId,
+				committeeId
+			}),
+			key: 'voting'
+		}
+	];
+
+	function isActive(key: string) {
+		return page.route.id?.includes(key) ?? false;
+	}
+
+	$effect(() => {
+		hotkeys('alt+1, alt+2, alt+3, alt+4', (event, handler) => {
+			event.preventDefault();
+			switch (handler.key) {
+				case 'alt+1':
+					goto(
+						resolve('/app/[conferenceId]/[committeeId]/(chairs)/setup', {
+							conferenceId,
+							committeeId
+						})
+					);
+					break;
+				case 'alt+2':
+					goto(
+						resolve('/app/[conferenceId]/[committeeId]/(chairs)/presence', {
+							conferenceId,
+							committeeId
+						})
+					);
+					break;
+				case 'alt+3':
+					goto(
+						resolve('/app/[conferenceId]/[committeeId]/(chairs)/speakers-list', {
+							conferenceId,
+							committeeId
+						})
+					);
+					break;
+				case 'alt+4':
+					goto(
+						resolve('/app/[conferenceId]/[committeeId]/(chairs)/voting', {
+							conferenceId,
+							committeeId
+						})
+					);
+					break;
+			}
+		});
+		return () => hotkeys.unbind('alt+1, alt+2, alt+3, alt+4');
+	});
+
 	let committeeStatusExpiredAlerted = $state(false);
 	let speakersListOvertimeAlerted = $state(false);
 	let commentListOvertimeAlerted = $state(false);
@@ -204,3 +291,17 @@
 {#if committee}
 	<VotingModal {committee} />
 {/if}
+
+<!-- Bottom dock -->
+<div class="dock dock-md lg:dock-lg md:justify-center md:gap-4">
+	{#each dockItems as item, i (item.key)}
+		<a href={item.href} class="group relative {isActive(item.key) ? 'dock-active' : ''}">
+			<i class="fa-duotone {item.icon} size-[1.2em]"></i>
+			<span class="dock-label">{item.label()}</span>
+			<kbd
+				class="kbd kbd-sm absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity backdrop-blur-sm bg-base-100/80 px-2 py-1 z-10"
+				>⌥{i + 1}</kbd
+			>
+		</a>
+	{/each}
+</div>

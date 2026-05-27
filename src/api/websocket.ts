@@ -3,7 +3,8 @@ import '$api/handlers/register';
 
 import { WebSocketServer, type WebSocket as WSWebSocket } from 'ws';
 import type { Socket } from 'node:net';
-import { useServer } from 'graphql-ws/use/ws';
+import { useServer, type Extra } from 'graphql-ws/use/ws';
+import type { Context } from 'graphql-ws';
 import { createWs } from './rumble';
 import type { IncomingMessage } from 'node:http';
 import type { RequestEvent } from '@sveltejs/kit';
@@ -63,11 +64,11 @@ type RequestWithLocals = IncomingMessage & { locals?: LocalsBag };
 createWs(
 	useServer as unknown as (options: unknown, ws: typeof gqlWSS) => void,
 	{
-		onConnect: async (ctx) => {
-			const req = (ctx.extra as { request: RequestWithLocals }).request;
+		onConnect: async (ctx: Context<Record<string, string>, Extra>) => {
+			const req = ctx.extra.request as RequestWithLocals;
 
 			// Already authenticated via cookie (browser clients).
-			if (req.locals?.oidc) return true;
+			if ((req.locals as App.Locals)?.oidc) return true;
 
 			// Tauri clients can't set HTTP headers on the upgrade request, so they
 			// pass the Bearer token in connectionParams (graphql-ws connection_init).
@@ -81,7 +82,7 @@ createWs(
 						resolve: async () => new Response()
 					});
 					req.locals = syntheticEvent.locals;
-					return !!req.locals?.oidc;
+					return !!(req.locals as App.Locals)?.oidc;
 				} catch {
 					return false;
 				}
@@ -108,7 +109,7 @@ async function attachLocals(req: IncomingMessage, ws: WSWebSocket) {
 	}
 	(req as RequestWithLocals).locals = syntheticEvent.locals;
 
-	const exp = syntheticEvent.locals.oidc?.accessToken?.exp;
+	const exp = (syntheticEvent.locals as App.Locals).oidc?.accessToken?.exp;
 	const expirationTimestamp = exp ? dayjs.unix(exp) : dayjs().add(300, 'seconds');
 
 	const timeout = setTimeout(

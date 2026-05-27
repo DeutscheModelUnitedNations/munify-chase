@@ -68,7 +68,7 @@ function devAutoRestart() {
 
 export default defineConfig({
 	plugins: [
-		mkcert(),
+		// mkcert(),
 		devAutoRestart(),
 		tailwindcss(),
 		paraglideVitePlugin({

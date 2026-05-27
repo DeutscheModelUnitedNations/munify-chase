@@ -32,4 +32,4 @@ const yogaInstance = createYoga({
 	}
 });
 
-export { yogaInstance as GET, yogaInstance as POST };
+export { yogaInstance as GET, yogaInstance as POST, yogaInstance as OPTIONS };

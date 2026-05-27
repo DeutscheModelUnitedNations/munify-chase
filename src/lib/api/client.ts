@@ -10,10 +10,9 @@ import { dev } from '$app/environment';
 import { setWsConnected } from '$lib/state/connection.svelte';
 import { getCachedAccessToken } from '$lib/platform/oidc';
 import { isTauri } from '$lib/platform';
-import { env } from '$env/dynamic/public';
+import { configPublic } from '$lib/config/public';
 
-const defaultUrl = isTauri() ? 'https://chase.munify.cloud/api/graphql' : '/api/graphql';
-const graphqlUrl = env.PUBLIC_API_URL || defaultUrl;
+const graphqlUrl = configPublic.PUBLIC_API_URL;
 const wsUrl = graphqlUrl.replace(/^https/, 'wss').replace(/^http/, 'ws');
 
 const wsClient = createWSClient({

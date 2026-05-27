@@ -571,39 +571,40 @@ export type Mutation = {
   addSpeakerOnList: (p: {
     committeeMemberId?: ID | null | undefined,
     conferenceMemberId?: ID | null | undefined,
+    id?: ID | null | undefined,
     position?: Int | null | undefined,
     speakersListId: ID
   }) => Speakeronlist,
   clearSpeakersList: (p: {
     id: ID
   }) => Speakerslist,
-  completeRollCallSession: (p: {
-    id: ID
-  }) => Boolean,
-  completeVotingSession: (p: {
-    id: ID,
-    outcome?: unknown | null | undefined
-  }) => Boolean,
+  completeRollCallSession: Boolean,
+  completeVotingSession: Boolean,
   createAgendaItem: (p: {
     committeeId: ID,
+    id?: ID | null | undefined,
     title: String
   }) => Agendaitem,
   createCommittee: (p: {
     abbreviation: String,
     conferenceId: ID,
+    id?: ID | null | undefined,
     name: String
   }) => Committee,
   createCommitteeMember: (p: {
     committeeId: ID,
+    id?: ID | null | undefined,
     representationId: ID
   }) => Committeemember,
   createConferenceMember: (p: {
     conferenceId: ID,
+    id?: ID | null | undefined,
     representationId: ID
   }) => Conferencemember,
   createConferenceUser: (p: {
     conferenceId: ID,
     conferenceUserType: unknown,
+    id?: ID | null | undefined,
     name?: String | null | undefined,
     userEmail: String
   }) => Conferenceuser,
@@ -612,36 +613,26 @@ export type Mutation = {
     alpha3Code?: String | null | undefined,
     conferenceId: ID,
     faIcon?: String | null | undefined,
+    id?: ID | null | undefined,
     name?: String | null | undefined,
     type: unknown
   }) => Representation,
-  deleteCommittee: (p: {
-    id: ID
-  }) => Boolean,
-  deleteCommitteeMember: (p: {
-    id: ID
-  }) => Boolean,
-  deleteConference: (p: {
-    id: ID
-  }) => Boolean,
-  deleteConferenceMember: (p: {
-    id: ID
-  }) => Boolean,
-  deleteConferenceUser: (p: {
-    id: ID
-  }) => Boolean,
+  deleteCommittee: Boolean,
+  deleteCommitteeMember: Boolean,
+  deleteConference: Boolean,
+  deleteConferenceMember: Boolean,
+  deleteConferenceUser: Boolean,
   deletePresenceEvent: (p: {
     id: ID
   }) => Presenceevent,
-  deleteRepresentation: (p: {
-    id: ID
-  }) => Boolean,
+  deleteRepresentation: Boolean,
   importDelegatorConference: (p: {
     data: ImportData
   }) => Conference,
   insertPresenceEvent: (p: {
     committeeId: ID,
     conferenceUserId: ID,
+    id?: ID | null | undefined,
     markerType?: unknown | null | undefined,
     note?: String | null | undefined,
     present: Boolean,
@@ -653,11 +644,13 @@ export type Mutation = {
   }) => Speakeronlist,
   recordNsaCheckIn: (p: {
     code: String,
-    committeeId: ID
+    committeeId: ID,
+    id?: ID | null | undefined
   }) => Presenceevent,
   recordNsaCheckOut: (p: {
     code: String,
-    committeeId: ID
+    committeeId: ID,
+    id?: ID | null | undefined
   }) => Presenceevent,
   regenerateNsaAttendanceCode: (p: {
     conferenceUserId: ID
@@ -666,6 +659,7 @@ export type Mutation = {
     speakerOnListId: ID
   }) => Speakerslist,
   selfAddToSpeakersList: (p: {
+    id?: ID | null | undefined,
     speakersListId: ID
   }) => Speakeronlist,
   selfRemoveFromSpeakersList: (p: {
@@ -682,15 +676,18 @@ export type Mutation = {
   }) => Rollcallsession,
   setVoteForMember: (p: {
     committeeMemberId: ID,
+    id?: ID | null | undefined,
     sessionId: ID,
     vote: unknown
   }) => Votingvote,
   startRollCallSession: (p: {
-    committeeId: ID
+    committeeId: ID,
+    id?: ID | null | undefined
   }) => Rollcallsession,
   startVotingSession: (p: {
     committeeId: ID,
     currentStage?: unknown | null | undefined,
+    id?: ID | null | undefined,
     majority: unknown,
     majorityAmount: Int,
     mode: unknown,

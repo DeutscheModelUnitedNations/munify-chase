@@ -8,7 +8,7 @@
  */
 
 import { OidcClient, WebStorageStateStore } from 'oidc-client-ts';
-import { PUBLIC_OIDC_AUTHORITY, PUBLIC_OIDC_CLIENT_ID } from '$env/static/public';
+import { configPublic } from '$lib/config/public';
 
 const STORAGE_KEY = 'chase_oidc_tokens';
 const REDIRECT_URI = 'munify-chase://oidc-callback';
@@ -58,10 +58,13 @@ function storeTokens(tokens: { access_token: string; refresh_token?: string; exp
 }
 
 function buildOidcClient(): OidcClient {
-	const base = PUBLIC_OIDC_AUTHORITY.replace(/\/\.well-known\/openid-configuration$/, '');
+	const base = configPublic.PUBLIC_OIDC_AUTHORITY.replace(
+		/\/\.well-known\/openid-configuration$/,
+		''
+	);
 	return new OidcClient({
 		authority: base,
-		client_id: PUBLIC_OIDC_CLIENT_ID,
+		client_id: configPublic.PUBLIC_OIDC_CLIENT_ID,
 		redirect_uri: REDIRECT_URI,
 		scope: 'openid email profile offline_access',
 		// Store PKCE state in localStorage so it survives across the single-instance

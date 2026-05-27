@@ -18,7 +18,7 @@ const otherWSS = new WebSocketServer({ noServer: true });
  * so that it can populate the locals with the authenticated user.
  * Since this only ever runs on upgrade requests, we can get away with a lot of the properties being empty or no-ops.
  */
-function buildSyntheticEvent(req: IncomingMessage): RequestEvent {
+function buildSyntheticEvent(req: IncomingMessage, authorizationHeader?: string): RequestEvent {
 	// const host = req.headers.host ?? 'localhost';
 	// const proto = req.headers['x-forwarded-proto'] ?? 'https';
 	// TODO: align these with node adapter behavior
@@ -28,9 +28,12 @@ function buildSyntheticEvent(req: IncomingMessage): RequestEvent {
 	const cookies = parseCookies(req.headers.cookie ?? '');
 	const locals = {} as RequestEvent['locals'];
 
+	const requestHeaders = new Headers();
+	if (authorizationHeader) requestHeaders.set('authorization', authorizationHeader);
+
 	return {
 		url,
-		request: new Request(url.toString()),
+		request: new Request(url.toString(), { headers: requestHeaders }),
 		locals,
 		cookies: {
 			get: (name: string) => cookies[name],
@@ -51,30 +54,61 @@ function buildSyntheticEvent(req: IncomingMessage): RequestEvent {
 	} as unknown as RequestEvent;
 }
 
-async function authenticateWebSocketRequest(req: IncomingMessage) {
-	const syntheticEvent = buildSyntheticEvent(req);
-
-	await OIDC.handle({
-		event: syntheticEvent,
-		resolve: async () => new Response()
-	});
-
-	return syntheticEvent.locals;
-}
+type LocalsBag = RequestEvent['locals'];
+type RequestWithLocals = IncomingMessage & { locals?: LocalsBag };
 
 // rumble 0.18.1's createWs over-constrains the `implementation` generic so that
 // graphql-ws's `useServer` (which keeps its own generic parameters) no longer
 // satisfies it. Runtime is unaffected — strip the generics at the call boundary.
-createWs(useServer as unknown as (options: unknown, ws: typeof gqlWSS) => void, {}, gqlWSS);
+createWs(
+	useServer as unknown as (options: unknown, ws: typeof gqlWSS) => void,
+	{
+		onConnect: async (ctx) => {
+			const req = (ctx.extra as { request: RequestWithLocals }).request;
 
-type LocalsBag = RequestEvent['locals'];
-type RequestWithLocals = IncomingMessage & { locals?: LocalsBag };
+			// Already authenticated via cookie (browser clients).
+			if (req.locals?.oidc) return true;
+
+			// Tauri clients can't set HTTP headers on the upgrade request, so they
+			// pass the Bearer token in connectionParams (graphql-ws connection_init).
+			const params = ctx.connectionParams as Record<string, string> | null;
+			const auth = params?.Authorization ?? params?.authorization;
+			if (auth?.startsWith('Bearer ')) {
+				const syntheticEvent = buildSyntheticEvent(req, auth);
+				try {
+					await OIDC.handle({
+						event: syntheticEvent,
+						resolve: async () => new Response()
+					});
+					req.locals = syntheticEvent.locals;
+					return !!req.locals?.oidc;
+				} catch {
+					return false;
+				}
+			}
+
+			return false;
+		}
+	},
+	gqlWSS
+);
 
 async function attachLocals(req: IncomingMessage, ws: WSWebSocket) {
-	const locals = await authenticateWebSocketRequest(req);
-	(req as RequestWithLocals).locals = locals;
+	// Try cookie-based auth at upgrade time. For Tauri clients this will fail
+	// (no cookies on a cross-origin upgrade), but that's fine — they authenticate
+	// later via the Bearer token in connectionParams inside onConnect above.
+	const syntheticEvent = buildSyntheticEvent(req);
+	try {
+		await OIDC.handle({
+			event: syntheticEvent,
+			resolve: async () => new Response()
+		});
+	} catch {
+		// No cookie auth — Tauri clients will authenticate in onConnect.
+	}
+	(req as RequestWithLocals).locals = syntheticEvent.locals;
 
-	const exp = locals.oidc?.accessToken?.exp;
+	const exp = syntheticEvent.locals.oidc?.accessToken?.exp;
 	const expirationTimestamp = exp ? dayjs.unix(exp) : dayjs().add(300, 'seconds');
 
 	const timeout = setTimeout(

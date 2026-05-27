@@ -16,20 +16,8 @@ export async function openPresentation(conferenceId: string, committeeId: string
 	const presentationUrl = `/app/${conferenceId}/${committeeId}`;
 
 	if (isTauri()) {
-		const { WebviewWindow } = await import('@tauri-apps/api/webviewWindow');
-		const existing = await WebviewWindow.getByLabel('presentation');
-		if (existing) {
-			await existing.setFocus();
-			return;
-		}
-		const win = new WebviewWindow('presentation', {
-			url: presentationUrl,
-			title: 'CHASE – Presentation',
-			width: 1280,
-			height: 800,
-			resizable: true
-		});
-		win.once('tauri://error', (e) => console.error('Failed to open presentation window:', e));
+		const { invoke } = await import('@tauri-apps/api/core');
+		await invoke('open_presentation_window', { url: presentationUrl });
 	} else {
 		window.open(presentationUrl, '_blank');
 	}

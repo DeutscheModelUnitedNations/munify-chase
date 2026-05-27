@@ -6,7 +6,10 @@ fn open_presentation_window(app: tauri::AppHandle, url: String) -> Result<(), St
         existing.set_focus().map_err(|e| e.to_string())?;
         return Ok(());
     }
-    WebviewWindowBuilder::new(&app, "presentation", WebviewUrl::App(url.into()))
+    let webview_url = url.parse::<tauri::Url>()
+        .map(WebviewUrl::External)
+        .unwrap_or_else(|_| WebviewUrl::App(url.into()));
+    WebviewWindowBuilder::new(&app, "presentation", webview_url)
         .title("CHASE – Presentation")
         .inner_size(1280.0, 800.0)
         .resizable(true)

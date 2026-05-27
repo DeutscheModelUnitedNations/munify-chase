@@ -17,7 +17,10 @@ export async function openPresentation(conferenceId: string, committeeId: string
 
 	if (isTauri()) {
 		const { invoke } = await import('@tauri-apps/api/core');
-		await invoke('open_presentation_window', { url: presentationUrl });
+		const fullUrl = window.location.origin + presentationUrl;
+		await invoke('open_presentation_window', { url: fullUrl }).catch((e) => {
+			console.error('open_presentation_window failed:', e);
+		});
 	} else {
 		window.open(presentationUrl, '_blank');
 	}

@@ -29,7 +29,7 @@
 			"icons/icon.icns",
 			"icons/icon.ico"
 		],
-		"targets": ["deb", "rpm", "nsis", "dmg"]
+		"targets": ["deb", "rpm", "appimage", "nsis", "dmg"]
 	},
 	"identifier": "cloud.munify.chase",
 	"plugins": {

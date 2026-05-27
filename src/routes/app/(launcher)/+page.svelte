@@ -1,7 +1,6 @@
 <script lang="ts">
 	import { m } from '$lib/paraglide/messages';
 	import { resolve } from '$app/paths';
-	import Footer from '$lib/components/Footer.svelte';
 	import DeleteConferenceModal from '$lib/components/DeleteConferenceModal.svelte';
 	import AvatarMenu from '$lib/components/launcher/AvatarMenu.svelte';
 	import ConferenceHeroCard from '$lib/components/launcher/ConferenceHeroCard.svelte';
@@ -315,13 +314,8 @@
 					{m.createConference()}
 				</a>
 			</footer>
-			<Footer />
 		{/if}
 	</div>
-
-	{#if isGlobalAdmin}
-		<Footer />
-	{/if}
 </div>
 
 {#if deleteTarget}

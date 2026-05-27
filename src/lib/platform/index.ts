@@ -13,7 +13,7 @@ export async function openExternal(url: string): Promise<void> {
 
 /** Open the presentation view for the given conference + committee. */
 export async function openPresentation(conferenceId: string, committeeId: string): Promise<void> {
-	const presentationUrl = `/app/${conferenceId}/${committeeId}/(presentation)`;
+	const presentationUrl = `/app/${conferenceId}/${committeeId}`;
 
 	if (isTauri()) {
 		const { WebviewWindow } = await import('@tauri-apps/api/webviewWindow');

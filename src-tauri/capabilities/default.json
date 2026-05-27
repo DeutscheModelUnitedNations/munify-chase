@@ -4,6 +4,7 @@
 	"identifier": "default",
 	"permissions": [
 		"core:default",
+		"core:webview:allow-create-webview-window",
 		"opener:default",
 		"opener:allow-open-url",
 		"deep-link:default",

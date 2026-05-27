@@ -6,7 +6,6 @@ import { schema } from './rumbleClient/schema';
 import { optimistic, updates } from './optimisticUpdateHandlers';
 import { retryExchange } from '@urql/exchange-retry';
 import { createClient as createWSClient } from 'graphql-ws';
-import { dev } from '$app/environment';
 import { setWsConnected } from '$lib/state/connection.svelte';
 import { getCachedAccessToken } from '$lib/platform/oidc';
 import { isTauri } from '$lib/platform';
@@ -15,19 +14,29 @@ import { configPublic } from '$lib/config/public';
 const graphqlUrl = configPublic.PUBLIC_API_URL;
 const wsUrl = graphqlUrl.replace(/^https/, 'wss').replace(/^http/, 'ws');
 
+let wsConnected = false;
+
 const wsClient = createWSClient({
 	url: wsUrl,
 	shouldRetry: () => true,
+	connectionParams: () => {
+		const token = getCachedAccessToken();
+		return token ? { Authorization: `Bearer ${token}` } : {};
+	},
 	on: {
-		connected: () => setWsConnected(true),
-		closed: () => setWsConnected(false)
+		connected: () => {
+			wsConnected = true;
+			setWsConnected(true);
+		},
+		closed: () => {
+			wsConnected = false;
+			setWsConnected(false);
+		}
 	}
 });
 
 export const urqlClient = new Client({
 	url: graphqlUrl,
-	// subscriptions via ws not supported in tauri fork, fallback to SSE in dev mode
-	fetchSubscriptions: dev,
 	exchanges: [
 		nativeDateExchange,
 		offlineExchange({
@@ -51,7 +60,7 @@ export const urqlClient = new Client({
 			retryIf: (err) => err && err.networkError != null
 		}),
 		subscriptionExchange({
-			isSubscriptionOperation: (op) => op.kind === 'subscription',
+			isSubscriptionOperation: (op) => op.kind === 'subscription' || wsConnected,
 			forwardSubscription(request) {
 				const input = { ...request, query: request.query || '' };
 				return {

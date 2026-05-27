@@ -90,6 +90,9 @@ createWs(
 
 			return false;
 		}
+
+		// Browser clients with no Bearer token — allow through, auth enforced per-operation.
+		return true;
 	},
 	gqlWSS
 );

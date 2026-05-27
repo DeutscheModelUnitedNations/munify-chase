@@ -1,1 +1,0 @@
-ALTER TABLE "presence_event" RENAME COLUMN "marker" TO "type";

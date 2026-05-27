@@ -1,6 +1,7 @@
 <script lang="ts">
-	import { resolve } from '$app/paths';
+	import { goto } from '$app/navigation';
 	import { m } from '$lib/paraglide/messages';
+	import { clearTokens } from '$lib/platform/oidc';
 
 	interface Props {
 		givenName?: string | null;
@@ -48,10 +49,15 @@
 			</div>
 		</li>
 		<li>
-			<a href={resolve('/logout')}>
+			<button
+				onclick={() => {
+					clearTokens();
+					goto('/');
+				}}
+			>
 				<i class="fa-duotone fa-arrow-right-from-bracket"></i>
 				{m.launcherSignOut()}
-			</a>
+			</button>
 		</li>
 	</ul>
 </div>

@@ -1,1 +1,0 @@
-CREATE UNIQUE INDEX "roll_call_session_active_unique" ON "roll_call_session" ("committee_id") WHERE "completed_at" IS NULL;

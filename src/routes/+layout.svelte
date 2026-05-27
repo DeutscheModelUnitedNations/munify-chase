@@ -54,12 +54,19 @@
 		});
 	}
 
-	onMount(() => {
+	onMount(async () => {
 		initialSetTheme();
 		const matchMedia = window.matchMedia('(prefers-color-scheme: dark)');
 		matchMedia.addEventListener('change', () => {
 			initialSetTheme();
 		});
+
+		if ('__TAURI_INTERNALS__' in window) {
+			// Activate the deep-link plugin's D-Bus listener so the OS can deliver
+			// munify-chase:// URIs to this already-running instance at any time.
+			const { register } = await import('@tauri-apps/plugin-deep-link');
+			await register('munify-chase').catch((e) => console.error('[deep-link] register failed:', e));
+		}
 	});
 </script>
 

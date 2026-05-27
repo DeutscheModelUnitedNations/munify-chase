@@ -1,0 +1,44 @@
+{
+	"$schema": "https://schema.tauri.app/config/2",
+	"app": {
+		"security": {
+			"csp": null
+		},
+		"windows": [
+			{
+				"height": 800,
+				"label": "main",
+				"title": "MUNify CHASE",
+				"url": "/",
+				"width": 1280
+			}
+		]
+	},
+	"build": {
+		"beforeBuildCommand": "bun run build",
+		"beforeDevCommand": "bun run dev",
+		"devUrl": "http://localhost:1420",
+		"frontendDist": "../build"
+	},
+	"bundle": {
+		"active": true,
+		"icon": [
+			"icons/32x32.png",
+			"icons/128x128.png",
+			"icons/128x128@2x.png",
+			"icons/icon.icns",
+			"icons/icon.ico"
+		],
+		"targets": ["deb", "rpm", "nsis", "dmg"]
+	},
+	"identifier": "cloud.munify.chase",
+	"plugins": {
+		"deep-link": {
+			"desktop": {
+				"schemes": ["munify-chase"]
+			}
+		}
+	},
+	"productName": "munify-chase",
+	"version": "0.1.0"
+}

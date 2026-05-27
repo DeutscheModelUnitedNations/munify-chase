@@ -1,1 +1,0 @@
-ALTER TABLE "conference" ADD COLUMN "logo_svg" text;

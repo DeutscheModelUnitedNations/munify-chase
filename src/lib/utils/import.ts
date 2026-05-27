@@ -1,5 +1,6 @@
-import { emailValidation } from '$api/services/emailValidation';
 import { z } from 'zod/v4';
+
+const emailValidation = z.email().transform((email) => email.toLowerCase());
 
 export const importDataSchema = z.object({
 	$schema: z.string().optional(),

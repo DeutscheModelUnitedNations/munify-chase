@@ -1,133 +1,58 @@
 import { nativeDateExchange } from '@m1212e/rumble/client';
-import {
-	Client,
-	CombinedError,
-	type Exchange,
-	fetchExchange,
-	subscriptionExchange
-} from '@urql/core';
-import { cacheExchange } from '@m1212e/urql-exchange-graphcache';
-import { empty, filter, fromPromise, merge, mergeMap, pipe } from 'wonka';
-import { graphqlMutation, graphqlQuery } from '$api/graphql.remote';
-import { browser } from '$app/environment';
+import { Client, fetchExchange, subscriptionExchange } from '@urql/core';
+import { offlineExchange } from '@m1212e/urql-exchange-graphcache';
+import { makeDefaultStorage } from '@m1212e/urql-exchange-graphcache/default-storage';
 import { schema } from './rumbleClient/schema';
 import { optimistic, updates } from './optimisticUpdateHandlers';
 import { retryExchange } from '@urql/exchange-retry';
 import { createClient as createWSClient } from 'graphql-ws';
+import { dev } from '$app/environment';
+import { setWsConnected } from '$lib/state/connection.svelte';
+import { getCachedAccessToken } from '$lib/platform/oidc';
+import { isTauri } from '$lib/platform';
+import { env } from '$env/dynamic/public';
 
-/**
- * Exchange to perform graphql calls via sveltekit remote functions (if possible)
- */
-const remoteFunctionsExchange: Exchange = ({ forward }) => {
-	return (operations) => {
-		const filtered = pipe(
-			operations,
-			// we only wanna use remote functions on the server
-			filter((operation) => operation.kind !== 'teardown' && !browser),
-			mergeMap((operation) => {
-				if (operation.kind === 'subscription') {
-					// we cannot do subscriptions on the server yet https://github.com/sveltejs/kit/pull/12973#issuecomment-2981290155
-					// for SSR we return empty here and let the fetchExchange handle it in the browser
-					return empty;
-				}
+const defaultUrl = isTauri() ? 'https://chase.munify.cloud/api/graphql' : '/api/graphql';
+const graphqlUrl = env.PUBLIC_API_URL || defaultUrl;
+const wsUrl = graphqlUrl.replace(/^https/, 'wss').replace(/^http/, 'ws');
 
-				const processResult = (caller: typeof graphqlQuery | typeof graphqlMutation) => {
-					return fromPromise(
-						(async () => {
-							const result = await caller({
-								query: operation.query,
-								variables: operation.variables as Exclude<typeof operation.variables, void>
-							});
+const wsClient = createWSClient({
+	url: wsUrl,
+	shouldRetry: () => true,
+	on: {
+		connected: () => setWsConnected(true),
+		closed: () => setWsConnected(false)
+	}
+});
 
-							return {
-								operation,
-								data: structuredClone(result.data),
-								error: Array.isArray(result.errors)
-									? new CombinedError({
-											graphQLErrors: result.errors
-										})
-									: undefined,
-								extensions: result.extensions ? { ...result.extensions } : undefined,
-								stale: false
-							};
-						})()
-					);
-				};
-
-				if (operation.kind === 'query') {
-					return processResult(graphqlQuery);
-				}
-
-				if (operation.kind === 'mutation') {
-					return processResult(graphqlMutation);
-				}
-
-				return empty;
-			})
-		);
-
-		const forwarded = pipe(
-			operations,
-			filter((operation) => {
-				return (
-					operation.kind === 'teardown' ||
-					// we want to use the fetch action when we are in the browser
-					browser
-				);
-			}),
-			forward
-		);
-
-		return merge([filtered, forwarded]);
-	};
-};
-
-const exchanges: Exchange[] = [nativeDateExchange];
-
-if (browser) {
-	exchanges.push(
-		cacheExchange({
+export const urqlClient = new Client({
+	url: graphqlUrl,
+	// subscriptions via ws not supported in tauri fork, fallback to SSE in dev mode
+	fetchSubscriptions: dev,
+	exchanges: [
+		nativeDateExchange,
+		offlineExchange({
 			schema,
 			optimistic,
 			updates,
-			broadcastChannel: 'chase-cross-tab-sync'
-		})
-	);
-
-	exchanges.push(
+			broadcastChannel: 'chase-broadcast-channel',
+			storage: makeDefaultStorage({
+				idbName: 'chase-offline-cache',
+				maxAge: 7
+			}),
+			isOfflineError(error) {
+				return error != null && error.networkError != null;
+			}
+		}),
 		retryExchange({
 			initialDelayMs: 1000,
 			maxDelayMs: 15000,
 			randomDelay: true,
 			maxNumberAttempts: 3,
-			// Only retry on network errors/when offline
 			retryIf: (err) => err && err.networkError != null
-		})
-	);
-}
-if (!browser) {
-	// TODO maybe remove when remote functions can handle subscriptions
-	exchanges.push(remoteFunctionsExchange);
-}
-if (browser) {
-	let wsConnected = false;
-
-	const wsClient = createWSClient({
-		url: '/api/graphql',
-		shouldRetry: () => true,
-		on: {
-			connected: () => {
-				wsConnected = true;
-			},
-			closed: () => {
-				wsConnected = false;
-			}
-		}
-	});
-
-	exchanges.push(
+		}),
 		subscriptionExchange({
-			isSubscriptionOperation: (op) => op.kind === 'subscription' || wsConnected,
+			isSubscriptionOperation: (op) => op.kind === 'subscription',
 			forwardSubscription(request) {
 				const input = { ...request, query: request.query || '' };
 				return {
@@ -137,18 +62,16 @@ if (browser) {
 					}
 				};
 			}
-		})
-	);
-}
-
-exchanges.push(fetchExchange);
-
-export const urqlClient = new Client({
-	url: '/api/graphql',
-	// check for session timeouts?
-	// fetchSubscriptions: true, // subscriptions via SSE (default yoga implementation)
-	exchanges,
-	fetchOptions: {
-		credentials: 'include'
-	}
+		}),
+		fetchExchange
+	],
+	fetchOptions: () => {
+		const headers: Record<string, string> = {};
+		if (isTauri()) {
+			const token = getCachedAccessToken();
+			if (token) headers['Authorization'] = `Bearer ${token}`;
+		}
+		return { credentials: 'include', headers };
+	},
+	requestPolicy: 'cache-and-network'
 });

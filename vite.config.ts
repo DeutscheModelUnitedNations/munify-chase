@@ -6,6 +6,8 @@ import type { IncomingMessage } from 'node:http';
 import type { Duplex } from 'node:stream';
 import mkcert from 'vite-plugin-mkcert';
 
+const host = process.env.TAURI_DEV_HOST;
+
 function wsPlugin() {
 	return {
 		name: 'ws-dev',
@@ -67,6 +69,8 @@ function devAutoRestart() {
 }
 
 export default defineConfig({
+	// prevent Vite from obscuring rust errors
+	clearScreen: false,
 	plugins: [
 		mkcert(),
 		devAutoRestart(),
@@ -80,32 +84,28 @@ export default defineConfig({
 		wsPlugin()
 	],
 	// Yjs throws "Yjs was already imported" if two copies are loaded.
-	// Vite prebundles `y-websocket` + `y-protocols/*` and chunks the shared
-	// `yjs` they pull in. If we ALSO alias chase's direct `yjs` imports to
-	// `node_modules/yjs/dist/yjs.mjs` directly, that bypasses the chunk and
-	// loads a SECOND yjs module at runtime. Use `dedupe` (which makes
-	// resolution always walk up to the project's yjs) without the alias —
-	// then chase's import and the prebundled chunk converge on the same
-	// module instance.
 	resolve: {
 		dedupe: ['yjs', 'y-protocols']
 	},
 	optimizeDeps: {
 		include: ['y-protocols/sync', 'y-protocols/awareness', 'y-websocket'],
-		// EXCLUDE yjs from prebundling entirely. When yjs is prebundled,
-		// vite ends up with two yjs entries (one for chase's direct import,
-		// one as the chunk shared by y-protocols/y-websocket), each with
-		// its own module-init scope → "Yjs was already imported" warning.
-		// Excluded, every `import 'yjs'` resolves to the single source file
-		// at chase/node_modules/yjs/dist/yjs.mjs, ESM-cached once.
 		exclude: ['yjs']
 	},
+	// Tauri expects a fixed port, fail if that port is not available
 	server: {
+		port: 1420,
+		strictPort: true,
+		host: host || false,
+		hmr: host
+			? {
+					protocol: 'ws',
+					host,
+					port: 1421
+				}
+			: undefined,
 		allowedHosts: ['svelte-dev.munify.cloud'],
 		watch: {
-			// Ignore Claude Code worktrees and other internal directories so
-			// changes there don't force-reload the dev server.
-			ignored: ['**/.claude/**', '**/node_modules/**', '**/.svelte-kit/**']
+			ignored: ['**/src-tauri/**', '**/.claude/**', '**/node_modules/**', '**/.svelte-kit/**']
 		}
 	}
 });

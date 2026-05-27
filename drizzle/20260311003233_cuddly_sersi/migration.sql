@@ -1,2 +1,0 @@
-ALTER TABLE "committee" ADD COLUMN "amendment_submission_open" boolean DEFAULT true NOT NULL;--> statement-breakpoint
-ALTER TABLE "committee" ADD COLUMN "amendment_sponsoring_open" boolean DEFAULT true NOT NULL;

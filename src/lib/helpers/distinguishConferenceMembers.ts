@@ -1,21 +1,35 @@
-import type { schema } from '$api/db/db';
+type RepresentationType = 'NSA' | 'DELEGATION' | 'UN';
 
-type Member =
-	| typeof schema.conferenceMember.$inferSelect
-	| typeof schema.committeeMember.$inferSelect;
-type Representation = typeof schema.representation.$inferSelect;
+type Representation = {
+	id: string;
+	createdAt?: Date;
+	updatedAt?: Date;
+	type: RepresentationType;
+	faIcon?: string | null;
+	name?: string | null;
+	conferenceId?: string;
+	alpha2Code?: string | null;
+	alpha3Code?: string | null;
+	regionalGroup?: string | null;
+};
+
+type Member = {
+	id: string;
+	[key: string]: unknown;
+};
+
 type DefaultRepresentation = Pick<Representation, 'id' | 'createdAt' | 'updatedAt' | 'type'>;
 type NSARepresentation = Pick<Representation, 'faIcon' | 'name' | 'conferenceId'> & {
-	type: (typeof schema.representationType.enumValues)[1];
+	type: 'NSA';
 } & DefaultRepresentation;
 type DelegationRepresentation = Pick<Representation, 'faIcon' | 'name' | 'conferenceId'> & {
-	type: (typeof schema.representationType.enumValues)[2];
+	type: 'DELEGATION';
 } & DefaultRepresentation;
 type UNRepresentation = Pick<
 	Representation,
 	'alpha2Code' | 'alpha3Code' | 'regionalGroup' | 'name'
 > & {
-	type: (typeof schema.representationType.enumValues)[0];
+	type: 'UN';
 } & DefaultRepresentation;
 
 export function isNSAMember<

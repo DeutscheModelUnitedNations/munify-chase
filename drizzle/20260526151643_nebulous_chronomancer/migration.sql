@@ -1,2 +1,0 @@
-ALTER TABLE "presence_event" ADD COLUMN "roll_call_session_id" text;--> statement-breakpoint
-ALTER TABLE "presence_event" ADD CONSTRAINT "presence_event_roll_call_session_id_roll_call_session_id_fkey" FOREIGN KEY ("roll_call_session_id") REFERENCES "roll_call_session"("id") ON DELETE SET NULL;

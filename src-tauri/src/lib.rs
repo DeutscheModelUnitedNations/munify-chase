@@ -22,11 +22,6 @@ pub fn run() {
     // WebKit2GTK on Linux fails to create an EGL display on systems without
     // proper GPU drivers, causing a segfault. Disabling the DMA-BUF renderer
     // forces software fallback and avoids the crash.
-    #[cfg(target_os = "linux")]
-    unsafe {
-        std::env::set_var("WEBKIT_DISABLE_DMABUF_RENDERER", "1");
-    }
-
     tauri::Builder::default()
         .plugin(tauri_plugin_single_instance::init(|app, argv, _cwd| {
             // Forward any deep-link URI to the frontend so the OIDC callback

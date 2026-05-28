@@ -1,6 +1,7 @@
 {
 	"devDependencies": {
 		"@deutschemodelunitednations/corporate-identity": "^1.1.10",
+		"@deutschemodelunitednations/munify-resolution-editor": "^0.6.0",
 		"@tauri-apps/cli": "^2.11.2",
 		"@eslint/compat": "^2.1.0",
 		"@eslint/js": "^10.0.1",

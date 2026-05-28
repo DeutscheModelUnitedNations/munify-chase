@@ -231,9 +231,7 @@
 					})
 					.then((result) => {
 						if (!active) {
-							client.mutate
-								.completeVotingSession()
-								.catch(() => {});
+							client.mutate.completeVotingSession().catch(() => {});
 							return;
 						}
 						sessionId = result.id;

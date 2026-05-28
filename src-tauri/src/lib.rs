@@ -19,6 +19,14 @@ fn open_presentation_window(app: tauri::AppHandle, path: String) -> tauri::Resul
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
+    // WebKit2GTK on Linux fails to create an EGL display on systems without
+    // proper GPU drivers, causing a segfault. Disabling the DMA-BUF renderer
+    // forces software fallback and avoids the crash.
+    #[cfg(target_os = "linux")]
+    unsafe {
+        std::env::set_var("WEBKIT_DISABLE_DMABUF_RENDERER", "1");
+    }
+
     tauri::Builder::default()
         .plugin(tauri_plugin_single_instance::init(|app, argv, _cwd| {
             // Forward any deep-link URI to the frontend so the OIDC callback
@@ -29,8 +37,8 @@ pub fn run() {
         .plugin(tauri_plugin_deep_link::init())
         .invoke_handler(tauri::generate_handler![open_presentation_window])
         .setup(|app| {
-            let win = app.get_webview_window("main").unwrap();
-            win.open_devtools();
+            #[cfg(debug_assertions)]
+            app.get_webview_window("main").unwrap().open_devtools();
             Ok(())
         })
         .run(tauri::generate_context!())

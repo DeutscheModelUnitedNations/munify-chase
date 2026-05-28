@@ -71,6 +71,9 @@ function devAutoRestart() {
 export default defineConfig({
 	// prevent Vite from obscuring rust errors
 	clearScreen: false,
+	build: {
+		sourcemap: true
+	},
 	plugins: [
 		mkcert(),
 		devAutoRestart(),

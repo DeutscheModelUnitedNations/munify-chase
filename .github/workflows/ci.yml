@@ -93,6 +93,7 @@ jobs:
   tauri-build:
     if: github.event_name == 'push'
     needs: [format, lint, test, i18n, security, typecheck]
+    environment: production
     permissions:
       contents: write
     strategy:

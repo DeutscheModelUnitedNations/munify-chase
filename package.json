@@ -81,6 +81,7 @@
 		"format": "prettier --write .",
 		"format:check": "prettier --check .",
 		"i18n:check": "i18n-check --source \"de\" --locales ./messages --format \"i18next\"",
+		"i18n:validate": "inlang validate --project project.inlang",
 		"lint": "eslint .",
 		"prepare": "svelte-kit sync || echo ''",
 		"preview": "vite preview",

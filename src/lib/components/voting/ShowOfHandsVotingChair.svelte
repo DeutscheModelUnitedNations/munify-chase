@@ -89,7 +89,7 @@
 		if (sessionId) {
 			const id = sessionId;
 			sessionId = null;
-			client.mutate.completeVotingSession({ __args: { id, outcome } }).catch(() => {});
+			client.mutate.completeVotingSession().catch(() => {});
 		}
 
 		if (oncomplete) {
@@ -215,7 +215,7 @@
 					.then((result) => {
 						if (!active) {
 							client.mutate
-								.completeVotingSession({ __args: { id: result.id, outcome: null } })
+								.completeVotingSession()
 								.catch(() => {});
 							return;
 						}
@@ -236,7 +236,7 @@
 				if (sessionId) {
 					const id = sessionId;
 					sessionId = null;
-					client.mutate.completeVotingSession({ __args: { id, outcome: null } }).catch(() => {});
+					client.mutate.completeVotingSession().catch(() => {});
 				}
 				votesPro = 0;
 				votesCon = 0;

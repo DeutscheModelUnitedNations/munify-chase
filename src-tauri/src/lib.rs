@@ -1,5 +1,27 @@
 use tauri::{Emitter, Manager, WebviewUrl, WebviewWindowBuilder};
 
+/// Opens a URL in the system browser, explicitly stripping LD_PRELOAD from the
+/// subprocess environment so the preloaded libwayland (needed for EGL in the app
+/// itself) doesn't get passed to xdg-open or the browser and break them.
+#[tauri::command]
+fn open_url_external(url: String) -> Result<(), String> {
+    #[cfg(target_os = "linux")]
+    {
+        std::process::Command::new("xdg-open")
+            .arg(&url)
+            .env_remove("LD_PRELOAD")
+            .spawn()
+            .map(|_| ())
+            .map_err(|e| format!("xdg-open failed: {e}"))
+    }
+    #[cfg(not(target_os = "linux"))]
+    {
+        // On macOS/Windows LD_PRELOAD isn't set, so the opener plugin is fine.
+        // This path is unused in practice (tauriLogin only calls this on Linux).
+        Err("open_url_external is Linux-only; use the opener plugin on other platforms".into())
+    }
+}
+
 #[tauri::command]
 fn open_presentation_window(app: tauri::AppHandle, path: String) -> tauri::Result<()> {
     match app.webview_windows().get("presentation") {
@@ -30,7 +52,7 @@ pub fn run() {
         }))
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_deep_link::init())
-        .invoke_handler(tauri::generate_handler![open_presentation_window])
+        .invoke_handler(tauri::generate_handler![open_presentation_window, open_url_external])
         .setup(|_app| Ok(()))
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

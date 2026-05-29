@@ -140,7 +140,17 @@ export async function tauriLogin(signal?: AbortSignal): Promise<void> {
 
 		// Open the browser as soon as the reliable fallback listener is registered.
 		// onOpenUrl can hang on some Linux setups so we don't gate the browser open on it.
-		p2.then(() => openUrl(req.url).catch(reject));
+		// On Linux the opener plugin inherits LD_PRELOAD (needed for EGL in the app)
+		// which breaks xdg-open/browsers. Use a custom command that strips it first.
+		p2.then(async () => {
+			const isLinux = navigator.userAgent.includes('Linux');
+			if (isLinux) {
+				const { invoke } = await import('@tauri-apps/api/core');
+				await invoke('open_url_external', { url: req.url }).catch(reject);
+			} else {
+				await openUrl(req.url).catch(reject);
+			}
+		});
 
 		// Primary path: deep-link plugin's onOpenUrl — register concurrently but don't block.
 		onOpenUrl((urls) => {

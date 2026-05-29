@@ -21,10 +21,6 @@ fn main() {
 fn linux_preflight() {
     const SENTINEL: &str = "CHASE_LINUX_PREFLIGHT_DONE";
     if std::env::var(SENTINEL).is_ok() {
-        // We're in the re-execed process. LD_PRELOAD has already been applied by the
-        // dynamic linker at startup. Unset it now so that child processes (browsers
-        // opened via xdg-open) don't inherit a library that can break them.
-        unsafe { std::env::remove_var("LD_PRELOAD"); }
         return;
     }
 

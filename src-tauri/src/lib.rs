@@ -2,18 +2,20 @@ use tauri::{Emitter, Manager, WebviewUrl, WebviewWindowBuilder};
 
 /// Opens a URL in the system browser with a clean environment.
 ///
-/// The AppImage startup script (linuxdeploy-plugin-gtk.sh) injects GTK/GIO env vars
-/// that point to Ubuntu-compiled modules inside the AppImage. These are needed for the
-/// app itself but break system programs like xdg-open: flatpak loads GIO_EXTRA_MODULES
-/// from the AppImage and ends up with a GLib version mismatch (e.g. missing
-/// g_once_init_leave_pointer on Arch Linux). Stripping those vars gives xdg-open a
-/// clean system environment.
+/// The AppImage launcher (linuxdeploy's AppRun) sets LD_LIBRARY_PATH and LD_PRELOAD to
+/// point at the bundled Ubuntu libraries so the app runs. But when those leak into a
+/// spawned system process — e.g. xdg-open -> flatpak (a Flatpak browser) — flatpak loads
+/// the AppImage's old GLib instead of the host's and dies with a symbol lookup error
+/// (e.g. missing g_once_init_leave_pointer on Arch). The GTK/GIO_* vars point at bundled
+/// modules and cause similar mismatches. Stripping all of them gives the subprocess a
+/// pristine host environment.
 #[tauri::command]
 fn open_url_external(url: String) -> Result<(), String> {
     #[cfg(target_os = "linux")]
     {
         std::process::Command::new("xdg-open")
             .arg(&url)
+            .env_remove("LD_LIBRARY_PATH")
             .env_remove("LD_PRELOAD")
             .env_remove("GIO_EXTRA_MODULES")
             .env_remove("GTK_PATH")

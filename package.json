@@ -102,5 +102,5 @@
 		"@tauri-apps/plugin-opener": "^2.5.4",
 		"oidc-client-ts": "^3.5.0"
 	},
-	"version": "0.0.2-beta.20"
+	"version": "0.0.2-beta.21"
 }

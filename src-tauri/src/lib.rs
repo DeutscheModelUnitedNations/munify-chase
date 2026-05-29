@@ -1,8 +1,13 @@
 use tauri::{Emitter, Manager, WebviewUrl, WebviewWindowBuilder};
 
-/// Opens a URL in the system browser, explicitly stripping LD_PRELOAD from the
-/// subprocess environment so the preloaded libwayland (needed for EGL in the app
-/// itself) doesn't get passed to xdg-open or the browser and break them.
+/// Opens a URL in the system browser with a clean environment.
+///
+/// The AppImage startup script (linuxdeploy-plugin-gtk.sh) injects GTK/GIO env vars
+/// that point to Ubuntu-compiled modules inside the AppImage. These are needed for the
+/// app itself but break system programs like xdg-open: flatpak loads GIO_EXTRA_MODULES
+/// from the AppImage and ends up with a GLib version mismatch (e.g. missing
+/// g_once_init_leave_pointer on Arch Linux). Stripping those vars gives xdg-open a
+/// clean system environment.
 #[tauri::command]
 fn open_url_external(url: String) -> Result<(), String> {
     #[cfg(target_os = "linux")]
@@ -10,14 +15,19 @@ fn open_url_external(url: String) -> Result<(), String> {
         std::process::Command::new("xdg-open")
             .arg(&url)
             .env_remove("LD_PRELOAD")
+            .env_remove("GIO_EXTRA_MODULES")
+            .env_remove("GTK_PATH")
+            .env_remove("GTK_DATA_PREFIX")
+            .env_remove("GTK_EXE_PREFIX")
+            .env_remove("GTK_IM_MODULE_FILE")
+            .env_remove("GDK_PIXBUF_MODULE_FILE")
+            .env_remove("GSETTINGS_SCHEMA_DIR")
             .spawn()
             .map(|_| ())
             .map_err(|e| format!("xdg-open failed: {e}"))
     }
     #[cfg(not(target_os = "linux"))]
     {
-        // On macOS/Windows LD_PRELOAD isn't set, so the opener plugin is fine.
-        // This path is unused in practice (tauriLogin only calls this on Linux).
         Err("open_url_external is Linux-only; use the opener plugin on other platforms".into())
     }
 }

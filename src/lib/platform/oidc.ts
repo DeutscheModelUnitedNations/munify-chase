@@ -127,21 +127,8 @@ export async function tauriLogin(signal?: AbortSignal): Promise<void> {
 			}
 		}
 
-		// Primary path: tauri-plugin-single-instance with the deep-link feature
-		// forwards the callback URI via onOpenUrl in the already-running instance.
-		const p1 = onOpenUrl((urls) => {
-			const url = urls.find((u) => u.startsWith('munify-chase://oidc-callback'));
-			if (url) handleCallbackUrl(url);
-		})
-			.then((fn) => {
-				unlisteners.push(fn);
-			})
-			.catch((e) => {
-				throw e;
-			});
-
-		// Fallback path: our Rust single-instance callback emits 'deep-link-callback'
-		// with the raw argv in case the deep-link plugin path is not triggered.
+		// Fallback path: Rust single-instance callback emits 'deep-link-callback'.
+		// Register this first since it's a plain Tauri event and resolves immediately.
 		const p2 = listen<string[]>('deep-link-callback', (event) => {
 			const url = event.payload.find((u) => u.startsWith('munify-chase://oidc-callback'));
 			if (url) handleCallbackUrl(url);
@@ -149,13 +136,22 @@ export async function tauriLogin(signal?: AbortSignal): Promise<void> {
 			.then((fn) => {
 				unlisteners.push(fn);
 			})
-			.catch((e) => {
-				throw e;
-			});
-
-		// Open the browser only after both listeners are confirmed registered.
-		Promise.all([p1, p2])
-			.then(() => openUrl(req.url))
 			.catch(reject);
+
+		// Open the browser as soon as the reliable fallback listener is registered.
+		// onOpenUrl can hang on some Linux setups so we don't gate the browser open on it.
+		p2.then(() => openUrl(req.url).catch(reject));
+
+		// Primary path: deep-link plugin's onOpenUrl — register concurrently but don't block.
+		onOpenUrl((urls) => {
+			const url = urls.find((u) => u.startsWith('munify-chase://oidc-callback'));
+			if (url) handleCallbackUrl(url);
+		})
+			.then((fn) => {
+				unlisteners.push(fn);
+			})
+			.catch(() => {
+				// onOpenUrl failing is non-fatal; the 'deep-link-callback' path covers it.
+			});
 	});
 }

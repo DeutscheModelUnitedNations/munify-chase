@@ -11,6 +11,15 @@
 	themes: false;
 }
 
+/* Base page reset (previously an inline <style> in app.html; moved here so the
+   document contains no inline <style>, keeping `style-src 'unsafe-inline'`
+   effective under the CSP for runtime-injected styles). */
+body {
+	margin: 0;
+	padding: 0;
+	min-height: 100vh;
+}
+
 /* TipTap */
 .ProseMirror:focus {
 	outline: none;

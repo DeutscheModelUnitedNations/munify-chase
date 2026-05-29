@@ -2,69 +2,16 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 fn main() {
+    // WebKitGTK's DMA-BUF renderer is unreliable on some Linux GPU/driver
+    // combinations (notably NVIDIA and many Wayland setups), causing blank
+    // windows. Disabling it forces a stable rendering path. This is the
+    // workaround recommended by Tauri (tauri-apps/tauri#9394). Set before the
+    // webview is created; harmless on systems that don't need it.
     #[cfg(target_os = "linux")]
-    linux_preflight();
+    // SAFETY: called at the very start of main, before any threads are spawned.
+    unsafe {
+        std::env::set_var("WEBKIT_DISABLE_DMABUF_RENDERER", "1");
+    }
 
     munify_chase_lib::run()
-}
-
-/// Re-exec the binary with the env vars required to prevent GTK/WebKit EGL crashes on Linux.
-///
-/// The crash (`Could not create default EGL display: EGL_BAD_PARAMETER`) is caused by the
-/// AppImage's bundled libwayland-client conflicting with the system EGL stack. It must be fixed
-/// via LD_PRELOAD before the dynamic linker loads the bundled copy.  Setting env vars in lib.rs
-/// is too late for that — it only affects child processes spawned after init.  Re-execing here
-/// (before Tauri/GTK touches anything) is the correct fix.
-///
-/// See: https://github.com/tauri-apps/tauri/issues/9394
-#[cfg(target_os = "linux")]
-fn linux_preflight() {
-    const SENTINEL: &str = "CHASE_LINUX_PREFLIGHT_DONE";
-    if std::env::var(SENTINEL).is_ok() {
-        return;
-    }
-
-    use std::os::unix::process::CommandExt;
-
-    let exe = match std::env::current_exe() {
-        Ok(p) => p,
-        Err(_) => return, // can't re-exec, proceed and hope for the best
-    };
-
-    let mut cmd = std::process::Command::new(&exe);
-    cmd.args(std::env::args_os().skip(1));
-    cmd.env(SENTINEL, "1");
-    cmd.env("WEBKIT_DISABLE_DMABUF_RENDERER", "1");
-    cmd.env("WEBKIT_DISABLE_COMPOSITING_MODE", "1");
-    // WebKitGTK isolates its network/web subprocesses in a bubblewrap sandbox that needs
-    // unprivileged user namespaces. In an Ubuntu-built AppImage running on other distros
-    // the sandbox helper fails to clone() the namespace (EPERM) and the process segfaults
-    // — typically on the first real network request (the OIDC token exchange). Disabling
-    // the sandbox avoids the crash; acceptable here since the webview only loads our own
-    // bundled frontend, not arbitrary untrusted pages.
-    cmd.env("WEBKIT_DISABLE_SANDBOX_THIS_IS_DANGEROUS", "1");
-
-    // Preload the system libwayland-client to override the AppImage's bundled copy,
-    // which conflicts with the system EGL stack on Wayland compositors.
-    let wayland_lib_candidates = [
-        "/usr/lib/x86_64-linux-gnu/libwayland-client.so.0", // Debian/Ubuntu
-        "/usr/lib64/libwayland-client.so.0",                // Fedora/Arch (64-bit)
-        "/usr/lib/libwayland-client.so.0",                  // fallback
-    ];
-    if let Some(path) = wayland_lib_candidates
-        .iter()
-        .find(|p| std::path::Path::new(p).exists())
-    {
-        let existing = std::env::var("LD_PRELOAD").unwrap_or_default();
-        let preload = if existing.is_empty() {
-            path.to_string()
-        } else {
-            format!("{path}:{existing}")
-        };
-        cmd.env("LD_PRELOAD", preload);
-    }
-
-    // exec() replaces the current process — only returns on error
-    let err = cmd.exec();
-    eprintln!("linux preflight re-exec failed: {err}");
 }

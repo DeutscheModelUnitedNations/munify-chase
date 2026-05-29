@@ -137,10 +137,17 @@ jobs:
           PUBLIC_OIDC_AUTHORITY: ${{ vars.PUBLIC_OIDC_AUTHORITY }}
           PUBLIC_OIDC_CLIENT_ID: ${{ vars.PUBLIC_OIDC_CLIENT_ID }}
           PUBLIC_API_URL: ${{ vars.PUBLIC_API_URL }}
+          # Updater package signing (minisign). Generated via `tauri signer generate`.
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
         with:
           tagName: ${{ github.ref_type == 'tag' && github.ref_name || '' }}
           releaseName: ${{ github.ref_type == 'tag' && github.ref_name || '' }}
           releaseDraft: ${{ github.ref_type == 'tag' }}
+          # NOTE: prereleases are excluded by GitHub's /releases/latest, which the
+          # updater endpoint in tauri.conf.json points at. Auto-update therefore only
+          # activates once a NON-prerelease (stable) version is published; alpha/beta/rc
+          # builds are manual-download only. This is intentional.
           prerelease: ${{ contains(github.ref_name, 'alpha') || contains(github.ref_name, 'beta') || contains(github.ref_name, 'rc') }}
           args: ${{ matrix.args }}
 
@@ -187,6 +194,8 @@ jobs:
             | Linux (portable) | `.AppImage` |
 
             See the **Assets** section below for all downloadable files.
+
+            > ℹ️ The app is distributed unsigned, so your OS may show a security warning on first launch. See the [installation guide](https://github.com/DeutscheModelUnitedNations/munify-chase/blob/main/docs/INSTALL.md) for how to get past it on each platform. Updates afterwards are automatic.
 
             ---
 

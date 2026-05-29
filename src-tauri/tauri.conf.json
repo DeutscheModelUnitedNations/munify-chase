@@ -22,6 +22,7 @@
 	},
 	"bundle": {
 		"active": true,
+		"createUpdaterArtifacts": true,
 		"icon": [
 			"icons/32x32.png",
 			"icons/128x128.png",
@@ -29,7 +30,18 @@
 			"icons/icon.icns",
 			"icons/icon.ico"
 		],
-		"targets": ["deb", "rpm", "appimage", "nsis", "dmg"]
+		"targets": ["deb", "rpm", "appimage", "nsis", "dmg"],
+		"macOS": {
+			"minimumSystemVersion": "10.15"
+		},
+		"windows": {
+			"webviewInstallMode": {
+				"type": "downloadBootstrapper"
+			},
+			"nsis": {
+				"installMode": "currentUser"
+			}
+		}
 	},
 	"identifier": "cloud.munify.chase",
 	"plugins": {
@@ -37,6 +49,12 @@
 			"desktop": {
 				"schemes": ["munify-chase"]
 			}
+		},
+		"updater": {
+			"pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IEIyMjY4OTA2NERBNUQ0MEMKUldRTTFLVk5Cb2ttc3RLOUY2YUdZVUwvMEdFL1V3V2UzdndvMm45dHYzVXJ1cGxaZ3RrUkJnRnIK",
+			"endpoints": [
+				"https://github.com/DeutscheModelUnitedNations/munify-chase/releases/latest/download/latest.json"
+			]
 		}
 	},
 	"productName": "munify-chase",

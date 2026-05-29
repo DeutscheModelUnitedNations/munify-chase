@@ -36,6 +36,13 @@ fn linux_preflight() {
     cmd.env(SENTINEL, "1");
     cmd.env("WEBKIT_DISABLE_DMABUF_RENDERER", "1");
     cmd.env("WEBKIT_DISABLE_COMPOSITING_MODE", "1");
+    // WebKitGTK isolates its network/web subprocesses in a bubblewrap sandbox that needs
+    // unprivileged user namespaces. In an Ubuntu-built AppImage running on other distros
+    // the sandbox helper fails to clone() the namespace (EPERM) and the process segfaults
+    // — typically on the first real network request (the OIDC token exchange). Disabling
+    // the sandbox avoids the crash; acceptable here since the webview only loads our own
+    // bundled frontend, not arbitrary untrusted pages.
+    cmd.env("WEBKIT_DISABLE_SANDBOX_THIS_IS_DANGEROUS", "1");
 
     // Preload the system libwayland-client to override the AppImage's bundled copy,
     // which conflicts with the system EGL stack on Wayland compositors.

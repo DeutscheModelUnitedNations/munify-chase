@@ -66,6 +66,10 @@
 			// munify-chase:// URIs to this already-running instance at any time.
 			const { register } = await import('@tauri-apps/plugin-deep-link');
 			await register('munify-chase').catch((e) => console.error('[deep-link] register failed:', e));
+
+			// Check for an app update in the background (non-blocking, failure-tolerant).
+			const { checkForUpdates } = await import('$lib/platform/updater');
+			void checkForUpdates();
 		}
 	});
 </script>

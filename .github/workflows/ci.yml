@@ -134,6 +134,9 @@ jobs:
       - uses: tauri-apps/tauri-action@v0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PUBLIC_OIDC_AUTHORITY: ${{ vars.PUBLIC_OIDC_AUTHORITY }}
+          PUBLIC_OIDC_CLIENT_ID: ${{ vars.PUBLIC_OIDC_CLIENT_ID }}
+          PUBLIC_API_URL: ${{ vars.PUBLIC_API_URL }}
         with:
           tagName: ${{ github.ref_type == 'tag' && github.ref_name || '' }}
           releaseName: ${{ github.ref_type == 'tag' && github.ref_name || '' }}

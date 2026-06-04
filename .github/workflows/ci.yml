@@ -151,10 +151,10 @@ jobs:
           prerelease: ${{ contains(github.ref_name, 'alpha') || contains(github.ref_name, 'beta') || contains(github.ref_name, 'rc') }}
           args: ${{ matrix.args }}
 
-      # The linuxdeploy GTK plugin sets GDK_BACKEND=x11 but omits
-      # WEBKIT_DISABLE_DMABUF_RENDERER, causing EGL_BAD_PARAMETER crashes on
-      # many Wayland/NVIDIA setups. Patch it in after the AppImage is built.
-      - name: Patch AppImage – inject WEBKIT_DISABLE_DMABUF_RENDERER
+      # The linuxdeploy GTK plugin sets GDK_BACKEND=x11 but EGL still picks up
+      # WAYLAND_DISPLAY and fails with EGL_BAD_PARAMETER. Unset it so EGL uses
+      # X11/XWayland throughout, and disable DMABuf as belt-and-suspenders.
+      - name: Patch AppImage – fix EGL on Wayland
         if: matrix.platform == 'ubuntu-latest'
         run: |
           set -e
@@ -164,8 +164,9 @@ jobs:
           # Extract without FUSE
           "$APPIMAGE" --appimage-extract
 
-          # Append env var after the GDK_BACKEND line
-          sed -i '/^export GDK_BACKEND=x11/a export WEBKIT_DISABLE_DMABUF_RENDERER=1' \
+          # After GDK_BACKEND=x11: unset WAYLAND_DISPLAY so EGL doesn't try
+          # the Wayland platform, and disable the DMABuf renderer.
+          sed -i '/^export GDK_BACKEND=x11/a unset WAYLAND_DISPLAY\nexport WEBKIT_DISABLE_DMABUF_RENDERER=1' \
             squashfs-root/apprun-hooks/linuxdeploy-plugin-gtk.sh
 
           # Download and run appimagetool without FUSE

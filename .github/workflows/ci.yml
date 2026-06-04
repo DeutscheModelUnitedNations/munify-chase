@@ -129,7 +129,7 @@ jobs:
         if: matrix.platform == 'ubuntu-22.04'
         run: |
           sudo apt-get update
-          sudo apt-get install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf
+          sudo apt-get install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf squashfs-tools
 
       - uses: tauri-apps/tauri-action@v0
         env:
@@ -150,6 +150,38 @@ jobs:
           # builds are manual-download only. This is intentional.
           prerelease: ${{ contains(github.ref_name, 'alpha') || contains(github.ref_name, 'beta') || contains(github.ref_name, 'rc') }}
           args: ${{ matrix.args }}
+
+      # The linuxdeploy GTK plugin sets GDK_BACKEND=x11 but omits
+      # WEBKIT_DISABLE_DMABUF_RENDERER, causing EGL_BAD_PARAMETER crashes on
+      # many Wayland/NVIDIA setups. Patch it in after the AppImage is built.
+      - name: Patch AppImage – inject WEBKIT_DISABLE_DMABUF_RENDERER
+        if: matrix.platform == 'ubuntu-22.04'
+        run: |
+          set -e
+          APPIMAGE=$(find src-tauri/target/release/bundle/appimage -name "*.AppImage" ! -name "*.AppImage.sig" | head -1)
+          echo "Patching: $APPIMAGE"
+
+          # Extract without FUSE
+          "$APPIMAGE" --appimage-extract
+
+          # Append env var after the GDK_BACKEND line
+          sed -i '/^export GDK_BACKEND=x11/a export WEBKIT_DISABLE_DMABUF_RENDERER=1' \
+            squashfs-root/apprun-hooks/linuxdeploy-plugin-gtk.sh
+
+          # Download and run appimagetool without FUSE
+          wget -q "https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage" \
+            -O /tmp/appimagetool && chmod +x /tmp/appimagetool
+          ARCH=x86_64 /tmp/appimagetool --appimage-extract-and-run squashfs-root "$APPIMAGE"
+
+          rm -rf squashfs-root
+
+      - name: Re-upload patched AppImage to release
+        if: matrix.platform == 'ubuntu-22.04' && github.ref_type == 'tag'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          APPIMAGE=$(find src-tauri/target/release/bundle/appimage -name "*.AppImage" ! -name "*.AppImage.sig" | head -1)
+          gh release upload "${{ github.ref_name }}" "$APPIMAGE" --clobber
 
   # ============================================
   # LAYER 3: RELEASE (tag push only)

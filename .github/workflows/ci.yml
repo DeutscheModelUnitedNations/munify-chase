@@ -100,7 +100,7 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - platform: ubuntu-26.04
+          - platform: ubuntu-latest
             rust_targets: ''
             args: ''
           - platform: windows-latest
@@ -126,7 +126,7 @@ jobs:
           workspaces: ./src-tauri -> target
 
       - name: Install Linux system dependencies
-        if: matrix.platform == 'ubuntu-26.04'
+        if: matrix.platform == 'ubuntu-latest'
         run: |
           sudo apt-get update
           sudo apt-get install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf squashfs-tools
@@ -155,7 +155,7 @@ jobs:
       # WEBKIT_DISABLE_DMABUF_RENDERER, causing EGL_BAD_PARAMETER crashes on
       # many Wayland/NVIDIA setups. Patch it in after the AppImage is built.
       - name: Patch AppImage – inject WEBKIT_DISABLE_DMABUF_RENDERER
-        if: matrix.platform == 'ubuntu-26.04'
+        if: matrix.platform == 'ubuntu-latest'
         run: |
           set -e
           APPIMAGE=$(find src-tauri/target/release/bundle/appimage -name "*.AppImage" ! -name "*.AppImage.sig" | head -1)
@@ -176,7 +176,7 @@ jobs:
           rm -rf squashfs-root
 
       - name: Re-upload patched AppImage to release
-        if: matrix.platform == 'ubuntu-26.04' && github.ref_type == 'tag'
+        if: matrix.platform == 'ubuntu-latest' && github.ref_type == 'tag'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |

@@ -1,6 +1,7 @@
 import { isTauri } from './index';
 import { alertDialog } from '$lib/components/Alert/alert';
 import toast from 'svelte-french-toast';
+import { m } from '$lib/paraglide/messages';
 
 /**
  * Checks for an application update (Tauri native client only) and, if one is
@@ -20,17 +21,20 @@ export async function checkForUpdates(): Promise<void> {
 		if (!update) return;
 
 		const accepted = await alertDialog({
-			title: 'Update available',
-			description: `Version ${update.version} is available (you have ${update.currentVersion}). Install it now? The app will restart.`,
-			cancelText: 'Later',
-			confirmText: 'Update now'
+			title: m.appUpdateTitle(),
+			description: m.appUpdateDescription({
+				version: update.version,
+				currentVersion: update.currentVersion
+			}),
+			cancelText: m.appUpdateLater(),
+			confirmText: m.appUpdateNow()
 		});
 		if (!accepted) return;
 
 		await toast.promise(update.downloadAndInstall(), {
-			loading: 'Downloading update…',
-			success: 'Update installed — restarting…',
-			error: 'Update failed'
+			loading: m.appUpdateDownloading(),
+			success: m.appUpdateInstalled(),
+			error: m.appUpdateFailed()
 		});
 
 		const { relaunch } = await import('@tauri-apps/plugin-process');

@@ -6,13 +6,13 @@ import {
 	fetchExchange,
 	subscriptionExchange
 } from '@urql/core';
-import { cacheExchange } from '@m1212e/urql-exchange-graphcache';
+import { offlineExchange } from '@m1212e/urql-exchange-graphcache';
+import { makeDefaultStorage } from '@m1212e/urql-exchange-graphcache/default-storage';
 import { empty, filter, fromPromise, merge, mergeMap, pipe } from 'wonka';
 import { graphqlMutation, graphqlQuery } from '$api/graphql.remote';
 import { browser } from '$app/environment';
 import { schema } from './rumbleClient/schema';
 import { optimistic, updates } from './optimisticUpdateHandlers';
-import { retryExchange } from '@urql/exchange-retry';
 import { createClient as createWSClient } from 'graphql-ws';
 
 /**
@@ -85,23 +85,22 @@ const remoteFunctionsExchange: Exchange = ({ forward }) => {
 const exchanges: Exchange[] = [nativeDateExchange];
 
 if (browser) {
+	// IndexedDB-backed storage so the normalized cache and the offline mutation
+	// queue survive page reloads. The offlineExchange replays queued mutations in
+	// order once the network returns, keeping our optimistic layers applied in the
+	// meantime.
+	const storage = makeDefaultStorage({
+		idbName: 'chase-cache',
+		maxAge: 7
+	});
+
 	exchanges.push(
-		cacheExchange({
+		offlineExchange({
 			schema,
+			storage,
 			optimistic,
 			updates,
 			broadcastChannel: 'chase-cross-tab-sync'
-		})
-	);
-
-	exchanges.push(
-		retryExchange({
-			initialDelayMs: 1000,
-			maxDelayMs: 15000,
-			randomDelay: true,
-			maxNumberAttempts: 3,
-			// Only retry on network errors/when offline
-			retryIf: (err) => err && err.networkError != null
 		})
 	);
 }

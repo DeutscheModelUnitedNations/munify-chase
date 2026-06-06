@@ -44,7 +44,6 @@
         "@types/polka": "^0.5.8",
         "@types/qrcode": "^1.5.6",
         "@types/ws": "^8.18.1",
-        "@urql/exchange-retry": "^2.0.0",
         "@zerodevx/svelte-toast": "^0.9.6",
         "@zxing/browser": "^0.2.0",
         "@zxing/library": "^0.23.0",
@@ -689,8 +688,6 @@
     "@urql/core": ["@urql/core@6.0.1", "", { "dependencies": { "@0no-co/graphql.web": "^1.0.13", "wonka": "^6.3.2" } }, "sha512-FZDiQk6jxbj5hixf2rEPv0jI+IZz0EqqGW8mJBEug68/zHTtT+f34guZDmyjJZyiWbj0vL165LoMr/TkeDHaug=="],
 
     "@urql/exchange-graphcache": ["@urql/exchange-graphcache@9.0.0", "", { "dependencies": { "@0no-co/graphql.web": "^1.0.13", "@urql/core": "^6.0.1", "wonka": "^6.3.2" } }, "sha512-5ACktvMFdnD5JC6DaSUrlj345c1JIUi7PwgvmnkwVOWsCRt/Vo9946UaG+sg69ku8seESMBK4xkeI41M39Dd5A=="],
-
-    "@urql/exchange-retry": ["@urql/exchange-retry@2.0.0", "", { "dependencies": { "@urql/core": "^6.0.0", "wonka": "^6.3.2" } }, "sha512-VdSMCiOptd6Ah6g5Bo+MzrNMAGzgRMC775W86strLRQN7lvvNlhx1LwU0gzb2h/z0atcJFAmDJEbMyvupkT+7A=="],
 
     "@urql/introspection": ["@urql/introspection@1.2.1", "", { "peerDependencies": { "graphql": "^14.0.0 || ^15.0.0 || ^16.0.0 || ^17.0.0" } }, "sha512-U9FTSISz69EEK3bHWDsqux9JqOeiLzr3eDFBQ5DmHuTLaBsd5mjPdtLRzzzmb9nW1Ygd6IR8YcuM7zeNqQ5lCQ=="],
 

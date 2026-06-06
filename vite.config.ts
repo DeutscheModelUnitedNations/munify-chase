@@ -72,7 +72,7 @@ export default defineConfig({
 	// prevent Vite from obscuring rust errors
 	clearScreen: false,
 	plugins: [
-		mkcert(),
+		// mkcert(),
 		devAutoRestart(),
 		tailwindcss(),
 		paraglideVitePlugin({

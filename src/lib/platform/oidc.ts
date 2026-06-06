@@ -120,6 +120,11 @@ export async function tauriLogin(signal?: AbortSignal): Promise<void> {
 			unlistener?.();
 			try {
 				await manager.signinRedirectCallback(url);
+				// Bring the app window back to front after the browser redirect.
+				const { getCurrentWebviewWindow } = await import('@tauri-apps/api/webviewWindow');
+				const win = getCurrentWebviewWindow();
+				await win.show();
+				await win.setFocus();
 				resolve();
 			} catch (e) {
 				reject(e);
@@ -132,6 +137,11 @@ export async function tauriLogin(signal?: AbortSignal): Promise<void> {
 		})
 			.then((fn) => {
 				unlistener = fn;
+				// If the signal was aborted while onOpenUrl was in-flight, clean up and stop.
+				if (signal?.aborted) {
+					unlistener();
+					return;
+				}
 				return openUrl(authUrl!);
 			})
 			.catch(reject);

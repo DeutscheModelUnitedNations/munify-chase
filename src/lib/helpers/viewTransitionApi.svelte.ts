@@ -14,9 +14,12 @@ export function enableViewTransitionApi() {
 	onNavigate((navigation) => {
 		if (!document.startViewTransition) return;
 
-		// Return a promise SvelteKit can await that only resolves after navigation completes
 		return new Promise<void>((resolve) => {
-			document.startViewTransition(() => navigation.complete.then(resolve));
+			const transition = document.startViewTransition(async () => {
+				resolve(); // let SvelteKit update the DOM now
+				await navigation.complete;
+			});
+			transition.finished.catch(() => {}); // suppress AbortError / TimeoutError
 		});
 	});
 }

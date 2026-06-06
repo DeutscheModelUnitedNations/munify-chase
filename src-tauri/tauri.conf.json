@@ -2,7 +2,7 @@
 	"$schema": "https://schema.tauri.app/config/2",
 	"app": {
 		"security": {
-			"csp": "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://cdn.dmun.de; font-src 'self' https://cdn.dmun.de; img-src 'self' data: blob: https:; connect-src 'self' https: wss:; object-src 'none'; base-uri 'self'; frame-ancestors 'none'"
+			"csp": "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://cdn.dmun.de; font-src 'self' https://cdn.dmun.de; img-src 'self' data: blob: https:; connect-src 'self' ipc: https: wss:; object-src 'none'; base-uri 'self'; frame-ancestors 'none'"
 		},
 		"windows": [
 			{
@@ -23,7 +23,6 @@
 	"bundle": {
 		"active": true,
 		"category": "Education",
-		"createUpdaterArtifacts": true,
 		"icon": [
 			"icons/32x32.png",
 			"icons/128x128.png",
@@ -50,12 +49,6 @@
 			"desktop": {
 				"schemes": ["munify-chase"]
 			}
-		},
-		"updater": {
-			"pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IEIyMjY4OTA2NERBNUQ0MEMKUldRTTFLVk5Cb2ttc3RLOUY2YUdZVUwvMEdFL1V3V2UzdndvMm45dHYzVXJ1cGxaZ3RrUkJnRnIK",
-			"endpoints": [
-				"https://github.com/DeutscheModelUnitedNations/munify-chase/releases/latest/download/latest.json"
-			]
 		}
 	},
 	"productName": "munify-chase",

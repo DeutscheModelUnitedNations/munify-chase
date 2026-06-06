@@ -4,6 +4,8 @@
 	"identifier": "default",
 	"permissions": [
 		"core:default",
+		"core:window:allow-show",
+		"core:window:allow-set-focus",
 		"core:webview:allow-create-webview-window",
 		"opener:default",
 		"opener:allow-open-url",
@@ -12,7 +14,7 @@
 		"deep-link:allow-is-registered",
 		"deep-link:allow-register",
 		"deep-link:allow-unregister",
-"process:default"
+		"process:default"
 	],
 	"windows": ["main", "presentation"]
 }

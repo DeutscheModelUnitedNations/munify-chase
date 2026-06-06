@@ -16,6 +16,27 @@
 	import PresentationSettings from './PresentationSettings.svelte';
 	import Tabs from '$lib/components/Tabs.svelte';
 	import StatusWidget from '../StatusWidget.svelte';
+	import { isTauri } from '$lib/platform';
+
+	async function openPresentationWindow() {
+		const url = `/app/${page.params.conferenceId}/${page.params.committeeId}`;
+		if (isTauri()) {
+			const { WebviewWindow } = await import('@tauri-apps/api/webviewWindow');
+			const existing = await WebviewWindow.getByLabel('presentation');
+			if (existing) {
+				await existing.setFocus();
+			} else {
+				new WebviewWindow('presentation', {
+					url,
+					title: 'MUNify CHASE – Presentation',
+					width: 1280,
+					height: 720
+				});
+			}
+		} else {
+			window.open(url, '_blank');
+		}
+	}
 
 	const committee = await client.liveQuery.committee({
 		__args: { id: page.params.committeeId! },
@@ -90,18 +111,14 @@
 					/>
 				</BasicCard>
 				<BasicCard title={m.presentationMode()}>
-					<a
-						href={resolve('/app/[conferenceId]/[committeeId]/(presentation)', {
-							conferenceId: page.params.conferenceId!,
-							committeeId: page.params.committeeId!
-						})}
+					<button
 						class="btn btn-primary btn-lg mb-4 flex items-center gap-3"
-						target="_blank"
+						onclick={openPresentationWindow}
 					>
 						<i class="fas fa-projector"></i>
 						{m.openPresentation()}
 						<Kbd hotkey="alt+P" class="text-base-content" />
-					</a>
+					</button>
 					<PresentationSettings committeeId={page.params.committeeId!} />
 				</BasicCard>
 				<BasicCard title={m.allowSelfAddToSpeakersList()}>

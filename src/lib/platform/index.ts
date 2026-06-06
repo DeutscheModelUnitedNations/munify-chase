@@ -11,22 +11,6 @@ export async function openExternal(url: string): Promise<void> {
 	}
 }
 
-/** Open the presentation view for the given conference + committee. */
-export async function openPresentation(conferenceId: string, committeeId: string): Promise<void> {
-	const presentationUrl = `/app/${conferenceId}/${committeeId}`;
-
-	if (isTauri()) {
-		const { invoke } = await import('@tauri-apps/api/core');
-		// Strip leading slash — WebviewUrl::App expects a relative path
-		const path = presentationUrl.replace(/^\//, '');
-		await invoke('open_presentation_window', { path }).catch((e) => {
-			console.error('open_presentation_window failed:', e);
-		});
-	} else {
-		window.open(presentationUrl, '_blank');
-	}
-}
-
 /** Toggle fullscreen for the current window. */
 export async function toggleFullscreen(): Promise<void> {
 	if (isTauri()) {

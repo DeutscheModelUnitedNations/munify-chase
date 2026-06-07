@@ -1,5 +1,5 @@
 import { rumble } from '@m1212e/rumble';
-import { db } from './db/db';
+import { db, schema } from './db/db';
 import { context } from './context';
 import { dev } from '$app/environment';
 import { Redis } from 'ioredis';
@@ -42,5 +42,6 @@ export const {
 	subscriptions: [{ eventTarget }],
 	pothosConfig: {
 		plugins: [ValidationPlugin]
-	}
+	},
+	schema
 });

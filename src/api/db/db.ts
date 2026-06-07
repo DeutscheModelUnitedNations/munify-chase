@@ -7,7 +7,8 @@ import { building } from '$app/environment';
 const conf = {
 	relations: relationsInternal,
 	casing: 'snake_case',
-	schema: schemaInternal
+	schema: schemaInternal,
+	jit: true
 } as const;
 
 export const db = building ? drizzle.mock(conf) : drizzle(configPrivate.DATABASE_URL, conf);

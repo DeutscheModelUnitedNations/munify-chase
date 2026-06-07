@@ -1,6 +1,6 @@
 import { nanoid } from '../../lib/helpers/nanoid';
 import {
-	pgTable,
+	snakeCase,
 	text,
 	timestamp,
 	date,
@@ -28,7 +28,7 @@ const defaultIdAndTimestamps = {
 	...defaultTimestamps
 };
 
-export const user = pgTable('user', {
+export const user = snakeCase.table('user', {
 	id: text().primaryKey().unique().notNull(),
 	...defaultTimestamps,
 
@@ -40,7 +40,7 @@ export const user = pgTable('user', {
 	preferredUsername: text().notNull()
 });
 
-export const conference = pgTable('conference', {
+export const conference = snakeCase.table('conference', {
 	...defaultIdAndTimestamps,
 	title: text().notNull(),
 	pressWebsite: text(),
@@ -59,7 +59,7 @@ export const committeeStatus = pgEnum('committee_status', [
 	'SUSPENSION'
 ]);
 
-export const committee = pgTable(
+export const committee = snakeCase.table(
 	'committee',
 	{
 		...defaultIdAndTimestamps,
@@ -104,7 +104,7 @@ export const regionalGroup = pgEnum('regional_group', [
 	'WESTERN_EUROPE_OTHERS'
 ]);
 
-export const representation = pgTable(
+export const representation = snakeCase.table(
 	'representation',
 	{
 		...defaultIdAndTimestamps,
@@ -124,7 +124,7 @@ export const representation = pgTable(
 	]
 );
 
-export const conferenceMember = pgTable('conference_member', {
+export const conferenceMember = snakeCase.table('conference_member', {
 	...defaultIdAndTimestamps,
 	conferenceId: text()
 		.notNull()
@@ -134,7 +134,7 @@ export const conferenceMember = pgTable('conference_member', {
 		.references(() => representation.id)
 });
 
-export const committeeMember = pgTable('committee_member', {
+export const committeeMember = snakeCase.table('committee_member', {
 	...defaultIdAndTimestamps,
 	present: boolean().notNull().default(false),
 	committeeId: text()
@@ -145,7 +145,7 @@ export const committeeMember = pgTable('committee_member', {
 		.references(() => representation.id)
 });
 
-export const conferenceUser = pgTable(
+export const conferenceUser = snakeCase.table(
 	'conference_user',
 	{
 		...defaultIdAndTimestamps,
@@ -169,7 +169,7 @@ export const conferenceUser = pgTable(
 	(t) => [unique().on(t.conferenceId, t.attendanceCode), unique().on(t.conferenceId, t.userEmail)]
 );
 
-export const agendaItem = pgTable('agenda_item', {
+export const agendaItem = snakeCase.table('agenda_item', {
 	...defaultIdAndTimestamps,
 	committeeId: text()
 		.references(() => committee.id, { onDelete: 'cascade' })
@@ -190,7 +190,7 @@ export const speakersListPhase = pgEnum('speakers_list_phase', [
 	'ANSWER_DONE'
 ]);
 
-export const speakersList = pgTable(
+export const speakersList = snakeCase.table(
 	'speakers_list',
 	{
 		...defaultIdAndTimestamps,
@@ -207,7 +207,7 @@ export const speakersList = pgTable(
 	(t) => [unique().on(t.agendaItemId, t.type)]
 );
 
-export const speakerOnList = pgTable(
+export const speakerOnList = snakeCase.table(
 	'speaker_on_list',
 	{
 		...defaultIdAndTimestamps,
@@ -228,7 +228,7 @@ export const speakerOnList = pgTable(
 	]
 );
 
-export const spokenTimePeriod = pgTable('spoken_time_period', {
+export const spokenTimePeriod = snakeCase.table('spoken_time_period', {
 	...defaultIdAndTimestamps,
 	committeeMemberId: text().references(() => committeeMember.id, { onDelete: 'cascade' }),
 	conferenceMemberId: text().references((): AnyPgColumn => conferenceMember.id, {
@@ -241,14 +241,14 @@ export const spokenTimePeriod = pgTable('spoken_time_period', {
 	endTimestamp: timestamp().notNull()
 });
 
-export const committeeTopicChangedTimestamp = pgTable('committee_topic_changed_timestamp', {
+export const committeeTopicChangedTimestamp = snakeCase.table('committee_topic_changed_timestamp', {
 	...defaultIdAndTimestamps,
 	committeeId: text().references(() => committee.id, { onDelete: 'cascade' }),
 	agendaItemId: text().references(() => agendaItem.id, { onDelete: 'cascade' }),
 	timestamp: timestamp().notNull()
 });
 
-export const rollCallSession = pgTable(
+export const rollCallSession = snakeCase.table(
 	'roll_call_session',
 	{
 		...defaultIdAndTimestamps,
@@ -274,7 +274,7 @@ export const presenceEventMarker = pgEnum('presence_event_marker', [
 	'NSA_SCAN',
 	'MANUAL'
 ]);
-export const presenceEvent = pgTable('presence_event', {
+export const presenceEvent = snakeCase.table('presence_event', {
 	id: text()
 		.$defaultFn(() => nanoid())
 		.primaryKey(),
@@ -310,7 +310,7 @@ export const votingStage = pgEnum('voting_stage', ['PRO', 'CON', 'ABSTAIN', 'EVA
 export const votingOutcome = pgEnum('voting_outcome', ['ADOPTED', 'REJECTED']);
 export const voteChoice = pgEnum('vote_choice', ['PRO', 'CON', 'ABSTAIN']);
 
-export const votingSession = pgTable(
+export const votingSession = snakeCase.table(
 	'voting_session',
 	{
 		...defaultIdAndTimestamps,
@@ -340,7 +340,7 @@ export const votingSession = pgTable(
 	]
 );
 
-export const votingVote = pgTable(
+export const votingVote = snakeCase.table(
 	'voting_vote',
 	{
 		...defaultIdAndTimestamps,

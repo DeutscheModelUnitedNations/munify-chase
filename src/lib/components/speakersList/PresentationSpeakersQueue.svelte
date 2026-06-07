@@ -11,6 +11,7 @@
 	import { onMount } from 'svelte';
 
 	interface Props {
+		// speaker on list
 		rawSpeakers?: Array<{
 			id: string;
 			position: number;

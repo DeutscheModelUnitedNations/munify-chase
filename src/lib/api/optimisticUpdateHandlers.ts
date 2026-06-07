@@ -688,16 +688,15 @@ export const optimistic: OptimisticMutationConfig = {
 			return s;
 		});
 
-		const updatedSpeakers = [
-			...shifted,
-			{
-				__typename: 'Speakeronlist',
-				id: newId,
-				position,
-				committeeMemberId: (args.committeeMemberId as string | undefined) ?? null,
-				conferenceMemberId: (args.conferenceMemberId as string | undefined) ?? null
-			}
-		];
+		const added = {
+			__typename: 'Speakeronlist',
+			id: newId,
+			position,
+			committeeMemberId: (args.committeeMemberId as string | undefined) ?? null,
+			conferenceMemberId: (args.conferenceMemberId as string | undefined) ?? null
+		};
+
+		const updatedSpeakers = [...shifted, added];
 
 		// Write the parent list with the recomputed speaker positions so the cache sees
 		// the new ordering immediately without waiting for `updates` to fire.

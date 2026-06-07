@@ -156,7 +156,7 @@
 		if (sessionId) {
 			const id = sessionId;
 			sessionId = null;
-			client.mutate.completeVotingSession().catch(() => {});
+			client.mutate.completeVotingSession({__args: { id }}).catch(() => {});
 		}
 
 		if (oncomplete) {
@@ -231,7 +231,7 @@
 					})
 					.then((result) => {
 						if (!active) {
-							client.mutate.completeVotingSession().catch(() => {});
+							client.mutate.completeVotingSession({ __args: { id: sessionId! } }).catch(() => {});
 							return;
 						}
 						sessionId = result.id;
@@ -260,7 +260,7 @@
 				if (sessionId) {
 					const id = sessionId;
 					sessionId = null;
-					client.mutate.completeVotingSession().catch(() => {});
+					client.mutate.completeVotingSession({ __args: { id } }).catch(() => {});
 				}
 				rollCallVotingPro = [];
 				rollCallVotingCon = [];

@@ -124,7 +124,7 @@ exchanges.push(
 exchanges.push(fetchExchange);
 
 export const urqlClient = new Client({
-	url: '/api/graphql',
+	url: graphqlUrl,
 	// check for session timeouts?
 	// fetchSubscriptions: true, // subscriptions via SSE (default yoga implementation)
 	exchanges,

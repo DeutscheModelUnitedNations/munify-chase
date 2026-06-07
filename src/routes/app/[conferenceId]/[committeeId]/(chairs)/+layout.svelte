@@ -117,7 +117,11 @@
 		}
 	});
 
-	const dockItems = [
+	// TODO: enable once resolution feature is implemented in schema/API
+	// const activeDraftResolutionId = $derived(committee?.activeDraftResolutionId ?? null);
+	const activeDraftResolutionId: string | null = null;
+
+	const dockItems = $derived([
 		{
 			icon: 'fa-gears',
 			label: () => m.setup(),
@@ -153,8 +157,10 @@
 				committeeId
 			}),
 			key: 'voting'
-		}
-	];
+		},
+		// TODO: add resolutions dock item once route exists
+		...(activeDraftResolutionId ? [] : [])
+	]);
 
 	function isActive(key: string) {
 		return page.route.id?.includes(key) ?? false;
@@ -292,12 +298,13 @@
 	<VotingModal {committee} />
 {/if}
 
-<AdoptionConfetti
+<!-- TODO: enable AdoptionConfetti once resolution adoption feature is implemented -->
+<!-- <AdoptionConfetti
 	lastAdoptionDate={committee?.lastResolutionAdoptionDate}
 	agendaItem={committee?.activeAgendaItem?.title ?? m.unknown()}
 	committeeName={committee?.name ?? m.unknown()}
 	confettiDurationSec={20}
-/>
+/> -->
 
 <!-- Bottom dock -->
 <div class="dock dock-md lg:dock-lg md:justify-center md:gap-4">

@@ -1,4 +1,6 @@
 <script lang="ts">
+	import { goto } from '$app/navigation';
+	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
 	import { client } from '$lib/api/rumbleClient/client';
 	import CurrentTime from '$lib/components/CurrentTime.svelte';

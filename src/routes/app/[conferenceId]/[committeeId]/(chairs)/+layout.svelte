@@ -117,7 +117,9 @@
 		}
 	});
 
-	const activeDraftResolutionId = $derived(committee?.activeDraftResolutionId ?? null);
+	// TODO: enable once resolution feature is implemented in schema/API
+	// const activeDraftResolutionId = $derived(committee?.activeDraftResolutionId ?? null);
+	const activeDraftResolutionId: string | null = null;
 
 	const dockItems = $derived([
 		{
@@ -156,40 +158,16 @@
 			}),
 			key: 'voting'
 		},
-		{
-			icon: 'fa-scroll',
-			label: () => m.resolutions(),
-			href: resolve('/app/[conferenceId]/[committeeId]/(chairs)/resolutions', {
-				conferenceId,
-				committeeId
-			}),
-			key: 'resolutions'
-		},
-		...(activeDraftResolutionId
-			? [
-					{
-						icon: 'fa-file-lines',
-						label: () => m.activeDraftResolution(),
-						href: resolve('/app/[conferenceId]/[committeeId]/(chairs)/resolutions/[paperId]', {
-							conferenceId,
-							committeeId,
-							paperId: activeDraftResolutionId
-						}),
-						key: activeDraftResolutionId
-					}
-				]
-			: [])
+		// TODO: add resolutions dock item once route exists
+		...(activeDraftResolutionId ? [] : [])
 	]);
 
 	function isActive(key: string) {
-		if (activeDraftResolutionId && page.params.paperId === activeDraftResolutionId) {
-			return key === activeDraftResolutionId;
-		}
 		return page.route.id?.includes(key) ?? false;
 	}
 
 	$effect(() => {
-		hotkeys('alt+1, alt+2, alt+3, alt+4, alt+5, alt+6', (event, handler) => {
+		hotkeys('alt+1, alt+2, alt+3, alt+4', (event, handler) => {
 			event.preventDefault();
 			switch (handler.key) {
 				case 'alt+1':
@@ -224,28 +202,9 @@
 						})
 					);
 					break;
-				case 'alt+5':
-					goto(
-						resolve('/app/[conferenceId]/[committeeId]/(chairs)/resolutions', {
-							conferenceId,
-							committeeId
-						})
-					);
-					break;
-				case 'alt+6':
-					if (activeDraftResolutionId) {
-						goto(
-							resolve('/app/[conferenceId]/[committeeId]/(chairs)/resolutions/[paperId]', {
-								conferenceId,
-								committeeId,
-								paperId: activeDraftResolutionId
-							})
-						);
-					}
-					break;
 			}
 		});
-		return () => hotkeys.unbind('alt+1, alt+2, alt+3, alt+4, alt+5, alt+6');
+		return () => hotkeys.unbind('alt+1, alt+2, alt+3, alt+4');
 	});
 
 	let committeeStatusExpiredAlerted = $state(false);
@@ -334,12 +293,13 @@
 	<VotingModal {committee} />
 {/if}
 
-<AdoptionConfetti
+<!-- TODO: enable AdoptionConfetti once resolution adoption feature is implemented -->
+<!-- <AdoptionConfetti
 	lastAdoptionDate={committee?.lastResolutionAdoptionDate}
 	agendaItem={committee?.activeAgendaItem?.title ?? m.unknown()}
 	committeeName={committee?.name ?? m.unknown()}
 	confettiDurationSec={20}
-/>
+/> -->
 
 <!-- Bottom dock -->
 <div class="dock dock-md lg:dock-lg md:justify-center md:gap-4">

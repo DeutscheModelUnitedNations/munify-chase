@@ -30,36 +30,39 @@
 	const startTimer = async () => {
 		if (!speakersList) return;
 
+		const ops: Promise<unknown>[] = [
+			client.mutate.updateSpeakersList({
+				__args: { id: speakersList.id, startTimestamp: getServerTime().toDate() },
+				id: true,
+				speakingTime: true,
+				startTimestamp: true
+			})
+		];
+
 		if (otherList) {
-			await client.mutate.updateSpeakersList({
-				__args: { id: speakersList.id, startTimestamp: getServerTime().toDate() },
-				id: true,
-				speakingTime: true,
-				startTimestamp: true
-			});
-			await client.mutate.updateSpeakersList({
-				__args: {
-					id: otherList.id,
-					timeLeft:
-						otherList.type === 'SPEAKERS_LIST' ? speakersList.speakingTime : otherList.speakingTime,
-					stopTimer: true,
-					// When starting the comment list timer, mark the speakers list as entering question phase
-					...(type === 'COMMENT_LIST' ? { phase: 'QUESTION' } : {})
-				},
-				id: true,
-				speakingTime: true,
-				timeLeft: true,
-				startTimestamp: true,
-				phase: true
-			});
-		} else {
-			await client.mutate.updateSpeakersList({
-				__args: { id: speakersList.id, startTimestamp: getServerTime().toDate() },
-				id: true,
-				speakingTime: true,
-				startTimestamp: true
-			});
+			ops.push(
+				client.mutate.updateSpeakersList({
+					__args: {
+						id: otherList.id,
+						timeLeft:
+							otherList.type === 'SPEAKERS_LIST'
+								? speakersList.speakingTime
+								: otherList.speakingTime,
+						stopTimer: true,
+						// When starting the comment list timer, mark the speakers list as entering question phase
+						...(type === 'COMMENT_LIST' ? { phase: 'QUESTION' } : {})
+					},
+					id: true,
+					speakingTime: true,
+					timeLeft: true,
+					startTimestamp: true,
+					phase: true
+				})
+			);
 		}
+
+		const results = await Promise.all(ops);
+		if (results.some((r) => !r)) toast.error(m.errorUpdatingTimer());
 	};
 
 	const stopTimer = async () => {

@@ -9,10 +9,9 @@ import { getCountryData } from './seedUtils';
 import { eq, type InferSelectModel } from 'drizzle-orm';
 import { attendanceCode as generateAttendanceCode } from '../../lib/helpers/attendanceCode';
 
-const db = drizzle(process.env.DATABASE_URL!, {
-	schema: schema,
-	casing: 'snake_case'
-});
+// casing is a valid runtime option but missing from DrizzlePgConfig types in this RC
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const db = drizzle(process.env.DATABASE_URL!);
 
 console.info('Resetting database...\n');
 await reset(db, schema);

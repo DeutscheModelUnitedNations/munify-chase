@@ -3,6 +3,8 @@
 	import { page } from '$app/state';
 	import { resolve } from '$app/paths';
 	import { client } from '$lib/api/rumbleClient/client';
+	import toast from 'svelte-french-toast';
+	import { promiseToastStrings } from '$lib/utils/toast';
 	import Kbd from '$lib/components/Kbd.svelte';
 	import UndrawError from '$lib/components/UndrawError.svelte';
 	import emptyStreet from '$assets/undraw/empty_street.svg';
@@ -110,10 +112,13 @@
 						activeTab={committee.allowDelegationsToAddThemselvesToSpeakersList}
 						tabs={selfAddTabs}
 						onTabChange={(tab) => {
-							client.mutate.updateCommittee({
-								__args: { id: committee.id, allowDelegationsToAddThemselvesToSpeakersList: tab },
-								id: true
-							});
+							toast.promise(
+								client.mutate.updateCommittee({
+									__args: { id: committee.id, allowDelegationsToAddThemselvesToSpeakersList: tab },
+									id: true
+								}),
+								promiseToastStrings(m.allowSelfAddToSpeakersList(), 'update')
+							);
 						}}
 					/>
 				</BasicCard>

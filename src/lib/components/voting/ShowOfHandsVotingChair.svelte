@@ -89,7 +89,7 @@
 		if (sessionId) {
 			const id = sessionId;
 			sessionId = null;
-			client.mutate.completeVotingSession().catch(() => {});
+			client.mutate.completeVotingSession({ __args: { id } }).catch(() => {});
 		}
 
 		if (oncomplete) {

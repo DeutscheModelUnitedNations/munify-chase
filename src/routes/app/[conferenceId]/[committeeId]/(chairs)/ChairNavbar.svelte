@@ -12,6 +12,8 @@
 	import * as m from '$lib/paraglide/messages.js';
 	import { getCurrentUser } from '$lib/state/currentUser.svelte';
 	import hotkeys from 'hotkeys-js';
+	import { goto } from '$app/navigation';
+	import { resolve } from '$app/paths';
 
 	type SpeakersList =
 		| {

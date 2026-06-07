@@ -292,6 +292,13 @@
 	<VotingModal {committee} />
 {/if}
 
+<AdoptionConfetti
+	lastAdoptionDate={committee?.lastResolutionAdoptionDate}
+	agendaItem={committee?.activeAgendaItem?.title ?? m.unknown()}
+	committeeName={committee?.name ?? m.unknown()}
+	confettiDurationSec={20}
+/>
+
 <!-- Bottom dock -->
 <div class="dock dock-md lg:dock-lg md:justify-center md:gap-4">
 	{#each dockItems as item, i (item.key)}

@@ -11,6 +11,7 @@
 	} from '$lib/components/navbar/conferenceNavItems';
 	import * as m from '$lib/paraglide/messages.js';
 	import { getCurrentUser } from '$lib/state/currentUser.svelte';
+	import hotkeys from 'hotkeys-js';
 
 	type SpeakersList =
 		| {
@@ -103,6 +104,89 @@
 			isGlobalAdmin: !!isGlobalAdmin
 		})
 	);
+
+	const dockItems = $derived([
+		{
+			icon: 'fa-gears',
+			label: () => m.setup(),
+			href: resolve('/app/[conferenceId]/[committeeId]/(chairs)/setup', {
+				conferenceId,
+				committeeId
+			}),
+			key: 'setup'
+		},
+		{
+			icon: 'fa-users',
+			label: () => m.presence(),
+			href: resolve('/app/[conferenceId]/[committeeId]/(chairs)/presence', {
+				conferenceId,
+				committeeId
+			}),
+			key: 'presence'
+		},
+		{
+			icon: 'fa-podium',
+			label: () => m.speakersList(),
+			href: resolve('/app/[conferenceId]/[committeeId]/(chairs)/speakers-list', {
+				conferenceId,
+				committeeId
+			}),
+			key: 'speakers-list'
+		},
+		{
+			icon: 'fa-person-booth',
+			label: () => m.voting(),
+			href: resolve('/app/[conferenceId]/[committeeId]/(chairs)/voting', {
+				conferenceId,
+				committeeId
+			}),
+			key: 'voting'
+		}
+	]);
+
+	function isActive(key: string) {
+		return page.route.id?.includes(key) ?? false;
+	}
+
+	$effect(() => {
+		hotkeys('alt+1, alt+2, alt+3, alt+4', (event, handler) => {
+			event.preventDefault();
+			switch (handler.key) {
+				case 'alt+1':
+					goto(
+						resolve('/app/[conferenceId]/[committeeId]/(chairs)/setup', {
+							conferenceId,
+							committeeId
+						})
+					);
+					break;
+				case 'alt+2':
+					goto(
+						resolve('/app/[conferenceId]/[committeeId]/(chairs)/presence', {
+							conferenceId,
+							committeeId
+						})
+					);
+					break;
+				case 'alt+3':
+					goto(
+						resolve('/app/[conferenceId]/[committeeId]/(chairs)/speakers-list', {
+							conferenceId,
+							committeeId
+						})
+					);
+					break;
+				case 'alt+4':
+					goto(
+						resolve('/app/[conferenceId]/[committeeId]/(chairs)/voting', {
+							conferenceId,
+							committeeId
+						})
+					);
+					break;
+			}
+		});
+	});
 </script>
 
 <!-- Slim top bar -->

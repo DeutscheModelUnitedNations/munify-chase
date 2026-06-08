@@ -204,7 +204,8 @@
 			client.mutate.updateSpeakersList({
 				__args: { id: commentList.id, startTimestamp: getServerTime().toDate() },
 				id: true,
-				startTimestamp: true
+				startTimestamp: true,
+				phase: true
 			}),
 			client.mutate.updateSpeakersList({
 				__args: { id: speakersList.id, phase: 'QUESTION' },
@@ -221,7 +222,8 @@
 				__args: { id: commentList.id, stopTimer: true },
 				id: true,
 				timeLeft: true,
-				startTimestamp: true
+				startTimestamp: true,
+				phase: true
 			}),
 			client.mutate.updateSpeakersList({
 				__args: { id: speakersList.id, phase: 'ANSWER' },
@@ -250,7 +252,8 @@
 				__args: { id: commentList.id, stopTimer: true },
 				id: true,
 				timeLeft: true,
-				startTimestamp: true
+				startTimestamp: true,
+				phase: true
 			})
 		]);
 	};
@@ -261,7 +264,7 @@
 			client.mutate.removeSpeakerOnList({
 				__args: { speakerOnListId: currentSpeaker.id },
 				id: true,
-				speakers: { id: true }
+				speakers: { id: true, position: true }
 			}),
 			client.mutate.updateSpeakersList({
 				__args: {
@@ -288,12 +291,13 @@
 					id: true,
 					timeLeft: true,
 					startTimestamp: true,
-					isClosed: true
+					isClosed: true,
+					phase: true
 				}),
 				client.mutate.clearSpeakersList({
 					__args: { id: commentList.id },
 					id: true,
-					speakers: { id: true }
+					speakers: { id: true, position: true }
 				})
 			);
 		}
@@ -306,13 +310,14 @@
 			client.mutate.removeSpeakerOnList({
 				__args: { speakerOnListId: currentQuestioner.id },
 				id: true,
-				speakers: { id: true }
+				speakers: { id: true, position: true }
 			}),
 			client.mutate.updateSpeakersList({
 				__args: { id: commentList.id, timeLeft: commentList.speakingTime, stopTimer: true },
 				id: true,
 				timeLeft: true,
-				startTimestamp: true
+				startTimestamp: true,
+				phase: true
 			}),
 			client.mutate.updateSpeakersList({
 				__args: { id: speakersList.id, phase: 'QUESTION' },

@@ -85,8 +85,10 @@ const remoteFunctionsExchange: Exchange = ({ forward }) => {
 const exchanges: Exchange[] = [nativeDateExchange];
 
 if (browser) {
-	// Captured by the storage wrapper below so the WS connected handler can also
-	// flush the offline mutation queue without relying on navigator.onLine.
+	// Receives the flushQueue callback from offlineExchange once the cache is
+	// hydrated. Also called from the WS connected handler so queued mutations
+	// are replayed when the server restarts (navigator.onLine stays true in that
+	// case, so the browser online event never fires on its own).
 	let triggerFlush: (() => void) | undefined;
 
 	const storage = makeDefaultStorage({
@@ -94,21 +96,10 @@ if (browser) {
 		maxAge: 7
 	});
 
-	// Wrap the storage to intercept onOnline so we can trigger a flush from two
-	// sources: the browser online event (original behaviour) and the WS reconnect
-	// event (needed when only the server goes down while the browser stays online).
-	const wrappedStorage = {
-		...storage,
-		onOnline(cb: () => void) {
-			triggerFlush = cb;
-			storage.onOnline!(cb);
-		}
-	};
-
 	exchanges.push(
 		offlineExchange({
 			schema,
-			storage: wrappedStorage,
+			storage,
 			optimistic,
 			updates,
 			broadcastChannel: 'chase-cross-tab-sync',
@@ -117,7 +108,11 @@ if (browser) {
 			// error message strings (which don't match on Safari or when only the
 			// server is down). This broader check works across all browsers and in
 			// server-down scenarios where the browser network remains up.
-			isOfflineError: (error) => !!error?.networkError && !error?.response
+			isOfflineError: (error) => !!error?.networkError && !error?.response,
+			// Capture the flush function so WS reconnects can drain the queue too.
+			onFlushReady: (flush) => {
+				triggerFlush = flush;
+			}
 		})
 	);
 

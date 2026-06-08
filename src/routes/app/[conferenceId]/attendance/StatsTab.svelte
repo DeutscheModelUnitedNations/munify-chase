@@ -4,6 +4,7 @@
 	import BasicCard from '$lib/components/BasicCard.svelte';
 	import { SvelteMap, SvelteSet } from 'svelte/reactivity';
 	import DownloadPresenceData from './DownloadPresenceData.svelte';
+	import { getServerTime } from '$lib/state/serverTime.svelte';
 
 	interface Props {
 		conferenceId: string;
@@ -33,11 +34,7 @@
 		committee: { id: true, name: true, abbreviation: true }
 	});
 
-	let now = $state(Date.now());
-	$effect(() => {
-		const t = setInterval(() => (now = Date.now()), 60_000);
-		return () => clearInterval(t);
-	});
+	let now = $derived(getServerTime().valueOf());
 
 	type PresenceEvent = NonNullable<typeof events>[number];
 	type PerUser = {

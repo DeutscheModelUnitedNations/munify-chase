@@ -35,7 +35,8 @@
 				__args: { id: speakersList.id, startTimestamp: getServerTime().toDate() },
 				id: true,
 				speakingTime: true,
-				startTimestamp: true
+				startTimestamp: true,
+				phase: true
 			})
 		];
 
@@ -77,7 +78,8 @@
 					},
 					id: true,
 					timeLeft: true,
-					startTimestamp: true
+					startTimestamp: true,
+					phase: true
 				})
 				.then((r) => {
 					if (!r) toast.error(m.errorUpdatingTimer());
@@ -111,7 +113,8 @@
 				},
 				id: true,
 				timeLeft: true,
-				startTimestamp: true
+				startTimestamp: true,
+				phase: true
 			})
 			.then((r) => {
 				if (!r) {

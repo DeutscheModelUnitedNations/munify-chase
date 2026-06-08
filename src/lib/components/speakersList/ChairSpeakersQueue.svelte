@@ -60,7 +60,7 @@
 			client.mutate.removeSpeakerOnList({
 				__args: { speakerOnListId },
 				id: true,
-				speakers: { id: true }
+				speakers: { id: true, position: true }
 			}),
 			promiseToastStrings(m.speaker(), 'delete')
 		);
@@ -94,9 +94,9 @@
 			{@const representation = getRepresentation(speaker)}
 			<div
 				class="hover:border-primary/30 border-base-100 card group relative flex flex-row items-center gap-4 border-1 p-4 transition-colors duration-300"
-				animate:flip={{ duration: 500, easing: cubicInOut }}
-				in:fly={{ duration: 500, y: 20, easing: cubicOut }}
-				out:fly={{ duration: 500, y: -20, easing: cubicOut }}
+				animate:flip={{ duration: 200, easing: cubicInOut }}
+				in:fly={{ duration: 300, y: 20, easing: cubicOut }}
+				out:fly={{ duration: 200, y: -20, easing: cubicOut }}
 			>
 				<div class="w-4 text-sm opacity-50">{i + 1}.</div>
 				<Flag representation={representation ?? undefined} size="sm" />

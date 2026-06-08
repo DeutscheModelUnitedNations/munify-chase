@@ -43,7 +43,7 @@
 							client.mutate.removeSpeakerOnList({
 								__args: { speakerOnListId: speaker.id },
 								id: true,
-								speakers: { id: true }
+								speakers: { id: true, position: true }
 							}),
 							client.mutate.updateSpeakersList({
 								__args: {
@@ -53,7 +53,8 @@
 								},
 								id: true,
 								timeLeft: true,
-								startTimestamp: true
+								startTimestamp: true,
+								phase: true
 							}),
 							client.mutate.updateSpeakersList({
 								__args: {
@@ -65,12 +66,13 @@
 								id: true,
 								timeLeft: true,
 								startTimestamp: true,
-								isClosed: true
+								isClosed: true,
+								phase: true
 							}),
 							client.mutate.clearSpeakersList({
 								__args: { id: childList.id },
 								id: true,
-								speakers: { id: true }
+								speakers: { id: true, position: true }
 							})
 						]),
 						promiseToastStrings(m.nextSpeaker(), 'update')
@@ -80,13 +82,14 @@
 					client.mutate.removeSpeakerOnList({
 						__args: { speakerOnListId: speaker.id },
 						id: true,
-						speakers: { id: true }
+						speakers: { id: true, position: true }
 					}),
 					client.mutate.updateSpeakersList({
 						__args: { id: speakersList.id, timeLeft: speakersList.speakingTime, stopTimer: true },
 						id: true,
 						timeLeft: true,
-						startTimestamp: true
+						startTimestamp: true,
+						phase: true
 					})
 				];
 				// When advancing a questioner, put the speakers list back into question phase

@@ -150,7 +150,8 @@
 	async function handleSelfRemove(listId: string) {
 		await client.mutate.selfRemoveFromSpeakersList({
 			__args: { speakersListId: listId },
-			id: true
+			id: true,
+			speakers: { id: true, position: true }
 		});
 	}
 </script>

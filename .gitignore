@@ -26,4 +26,3 @@ vite.config.ts.timestamp-*
 .claude
 
 .lazyi18n
-src-tauri

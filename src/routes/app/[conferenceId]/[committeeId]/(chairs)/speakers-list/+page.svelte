@@ -32,9 +32,19 @@
 				speakingTime: true,
 				startTimestamp: true,
 				timeLeft: true,
+				phase: true,
+				agendaItem: {
+					id: true,
+					committee: {
+						id: true,
+						allowDelegationsToAddThemselvesToSpeakersList: true,
+						conferenceId: true
+					}
+				},
 				speakers: {
 					id: true,
 					position: true,
+					speakersListId: true,
 					overwriteName: true,
 					committeeMember: {
 						id: true,

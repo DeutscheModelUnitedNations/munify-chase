@@ -674,7 +674,12 @@ export const optimistic: OptimisticMutationConfig = {
 		if (args.committeeMemberId && args.conferenceMemberId) return null;
 		if (!args.committeeMemberId && !args.conferenceMemberId) return null;
 
-		const list = readSpeakersList(cache, args.speakersListId as string);
+		// Use the minimal fragment — we only need id+position for ordering.
+		const list = readEntity<{ id: string; speakers: SpeakerEntry[] }>(
+			cache,
+			ADD_SPEAKER_LIST_FRAGMENT,
+			{ __typename: 'Speakerslist', id: args.speakersListId as string }
+		);
 		const speakers: SpeakerEntry[] = list?.speakers ?? [];
 
 		// Mirror server position semantics: when caller passes a position, every entry
@@ -788,7 +793,12 @@ export const optimistic: OptimisticMutationConfig = {
 		);
 		if (!target?.speakersListId) return null;
 
-		const list = readSpeakersList(cache, target.speakersListId);
+		// Use the minimal fragment — we only need id+position for re-sequencing.
+		const list = readEntity<{ id: string; speakers: SpeakerEntry[] }>(
+			cache,
+			ADD_SPEAKER_LIST_FRAGMENT,
+			{ __typename: 'Speakerslist', id: target.speakersListId }
+		);
 		if (!list?.speakers) return null;
 
 		const remaining = list.speakers
@@ -906,11 +916,19 @@ export const optimistic: OptimisticMutationConfig = {
 		);
 		if (!target?.speakersListId) return null;
 
-		const list = readSpeakersList(cache, target.speakersListId);
+		// Only need id and position for the reordering calculation — use a minimal
+		// fragment so this works even if phase/agendaItem haven't been cached yet.
+		const list = readEntity<{ id: string; speakers: SpeakerEntry[] }>(
+			cache,
+			ADD_SPEAKER_LIST_FRAGMENT,
+			{ __typename: 'Speakerslist', id: target.speakersListId }
+		);
 		if (!list?.speakers) return null;
 
 		const currentPos = target.position;
-		const targetPos = args.position as number;
+		// Clamp to the occupied range — never allow sparse gaps beyond the last entry.
+		const maxPos = Math.max(...list.speakers.map((s) => s.position));
+		const targetPos = Math.max(0, Math.min(maxPos, args.position as number));
 		if (currentPos === targetPos) return null;
 
 		const updatedSpeakers = list.speakers.map((s) => {
@@ -925,20 +943,24 @@ export const optimistic: OptimisticMutationConfig = {
 			return s;
 		});
 
+		// Write the reordered list directly — this ensures graphcache tracks the
+		// dependency and re-runs the committee query immediately (the same pattern
+		// used by addSpeakerOnList / removeSpeakerOnList).
+		cache.writeFragment(ADD_SPEAKER_LIST_FRAGMENT, {
+			__typename: 'Speakerslist',
+			id: target.speakersListId,
+			speakers: updatedSpeakers.map((s) => ({
+				__typename: 'Speakeronlist',
+				id: s.id,
+				position: s.position
+			}))
+		} as unknown as Record<string, unknown>);
+
 		return {
 			__typename: 'Speakeronlist',
 			id: args.id,
 			position: targetPos,
-			speakersListId: target.speakersListId,
-			speakersList: {
-				__typename: 'Speakerslist',
-				id: target.speakersListId,
-				speakers: updatedSpeakers.map((s) => ({
-					__typename: 'Speakeronlist',
-					id: s.id,
-					position: s.position
-				}))
-			}
+			speakersListId: target.speakersListId
 		};
 	},
 

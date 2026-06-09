@@ -44,6 +44,7 @@
 	let { rawSpeakers, closed = false }: Props = $props();
 
 	let speakers = $derived(rawSpeakers?.toSorted((a, b) => a.position - b.position).toSpliced(0, 1));
+	let bottomPosition = $derived(speakers?.at(-1)?.position ?? 0);
 
 	const getRepresentation = (speaker: NonNullable<Props['rawSpeakers']>[number]) => {
 		return speaker.committeeMember
@@ -66,22 +67,20 @@
 		);
 	};
 
-	const moveSpeaker = (speakerOnListId: string, position: number) => {
-		if (!speakerOnListId || position < 0) return;
+	// Resolve the speaker's CURRENT position at call-time from rawSpeakers to avoid
+	// stale-closure bugs when the user clicks rapidly before Svelte re-renders.
+	const currentPosition = (id: string) =>
+		rawSpeakers?.find((s) => s.id === id)?.position ?? -1;
+
+	const moveSpeaker = (speakerOnListId: string, target: number) => {
+		if (!speakerOnListId || target < 0 || target > bottomPosition) return;
 
 		toast.promise(
 			client.mutate.moveSpeakerToPosition({
-				__args: { id: speakerOnListId, position },
+				__args: { id: speakerOnListId, position: target },
 				id: true,
 				position: true,
-				speakersListId: true,
-				speakersList: {
-					id: true,
-					speakers: {
-						id: true,
-						position: true
-					}
-				}
+				speakersListId: true
 			}),
 			promiseToastStrings(m.speaker(), 'update')
 		);
@@ -117,17 +116,19 @@
 					<button
 						class="btn btn-sm join-item btn-square btn-soft btn-primary"
 						aria-label="Move Speaker Up"
-						onclick={() => moveSpeaker(speaker.id, speaker.position - 1)}
+						onclick={() => moveSpeaker(speaker.id, currentPosition(speaker.id) - 1)}
 					>
 						<i class="fa-solid fa-chevron-up"></i>
 					</button>
-					<button
-						class="btn btn-sm join-item btn-square btn-soft btn-primary"
-						aria-label="Move Speaker Down"
-						onclick={() => moveSpeaker(speaker.id, speaker.position + 1)}
-					>
-						<i class="fa-solid fa-chevron-down"></i>
-					</button>
+					{#if i < speakers.length - 1}
+						<button
+							class="btn btn-sm join-item btn-square btn-soft btn-primary"
+							aria-label="Move Speaker Down"
+							onclick={() => moveSpeaker(speaker.id, currentPosition(speaker.id) + 1)}
+						>
+							<i class="fa-solid fa-chevron-down"></i>
+						</button>
+					{/if}
 					<button
 						class="btn btn-sm join-item btn-square btn-primary btn-soft"
 						aria-label="Move Speaker to Top"
@@ -135,6 +136,15 @@
 					>
 						<i class="fa-solid fa-chevrons-up"></i>
 					</button>
+					{#if i < speakers.length - 1}
+						<button
+							class="btn btn-sm join-item btn-square btn-primary btn-soft"
+							aria-label="Move Speaker to Bottom"
+							onclick={() => moveSpeaker(speaker.id, bottomPosition)}
+						>
+							<i class="fa-solid fa-chevrons-down"></i>
+						</button>
+					{/if}
 				</div>
 			</div>
 		{/each}

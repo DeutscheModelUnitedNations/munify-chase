@@ -112,7 +112,8 @@
 					speakersListId: speakersList.id
 				},
 				id: true,
-				position: true
+				position: true,
+				speakersListId: true
 			}),
 			promiseToastStrings(getName((committeeMember ?? conferenceMember) as Member), 'add')
 		);

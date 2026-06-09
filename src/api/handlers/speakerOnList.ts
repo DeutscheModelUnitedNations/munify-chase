@@ -542,8 +542,22 @@ schemaBuilder.mutationFields((t) => {
 							)
 							.then(assertFindFirstExists);
 
-						if (args.position === aboutToMoveSpeakerOnList.position) {
-							throw new GraphQLError('Cannot move to the same position');
+						// Clamp target to the occupied range so moving a speaker beyond the
+						// last position never creates sparse gaps in the list.
+						const maxPositionRow = await tx.query.speakerOnList.findFirst({
+							where: {
+								speakersListId: aboutToMoveSpeakerOnList.speakersListId
+							},
+							orderBy: (t, { desc }) => desc(t.position),
+							columns: { position: true }
+						});
+						const maxPosition = maxPositionRow?.position ?? aboutToMoveSpeakerOnList.position;
+						const targetPosition = Math.max(0, Math.min(maxPosition, args.position));
+
+						if (targetPosition === aboutToMoveSpeakerOnList.position) {
+							// Already at the boundary — no-op. Return the correct type so
+							// pubsub.updated receives a valid ID array.
+							return [aboutToMoveSpeakerOnList.id];
 						}
 
 						await tx
@@ -555,14 +569,14 @@ schemaBuilder.mutationFields((t) => {
 
 						const updatedEntityIds = [aboutToMoveSpeakerOnList.id];
 
-						if (args.position > aboutToMoveSpeakerOnList.position) {
+						if (targetPosition > aboutToMoveSpeakerOnList.position) {
 							const toUpdate = await tx.query.speakerOnList.findMany({
 								where: {
 									AND: [
 										{
 											position: {
 												gt: aboutToMoveSpeakerOnList.position,
-												lte: args.position
+												lte: targetPosition
 											}
 										},
 										{
@@ -585,14 +599,14 @@ schemaBuilder.mutationFields((t) => {
 
 								updatedEntityIds.push(entry.id);
 							}
-						} else if (args.position < aboutToMoveSpeakerOnList.position) {
+						} else if (targetPosition < aboutToMoveSpeakerOnList.position) {
 							const toUpdate = await tx.query.speakerOnList.findMany({
 								where: {
 									AND: [
 										{
 											position: {
 												lt: aboutToMoveSpeakerOnList.position,
-												gte: args.position
+												gte: targetPosition
 											}
 										},
 										{
@@ -620,7 +634,7 @@ schemaBuilder.mutationFields((t) => {
 						await tx
 							.update(schema.speakerOnList)
 							.set({
-								position: args.position
+								position: targetPosition
 							})
 							.where(eq(schema.speakerOnList.id, aboutToMoveSpeakerOnList.id));
 

@@ -13,6 +13,7 @@ import { graphqlMutation, graphqlQuery } from '$api/graphql.remote';
 import { browser } from '$app/environment';
 import { schema } from './rumbleClient/schema';
 import { optimistic, updates } from './optimisticUpdateHandlers';
+import { setWsConnected } from '$lib/state/connection.svelte';
 import { createClient as createWSClient } from 'graphql-ws';
 
 /**
@@ -103,12 +104,19 @@ if (browser) {
 			optimistic,
 			updates,
 			broadcastChannel: 'chase-cross-tab-sync',
-			// Treat any network-level failure with no response as an offline error.
-			// The default predicate requires navigator.onLine === false or specific
-			// error message strings (which don't match on Safari or when only the
-			// server is down). This broader check works across all browsers and in
-			// server-down scenarios where the browser network remains up.
-			isOfflineError: (error) => !!error?.networkError && !error?.response,
+			// Treat network-level failures as offline errors so mutations are queued
+			// rather than rolled back.  Two cases need covering:
+			//   1. Pure TCP failures (ECONNREFUSED, network down, timeout): the fetch
+			//      never gets an HTTP response, so error.response is undefined.
+			//   2. Reverse-proxy "gateway" errors (502/503/504): the proxy is up but
+			//      the backend is down; these DO have an HTTP response object, so the
+			//      first check alone misses them and the optimistic update would be
+			//      incorrectly rolled back.
+			isOfflineError: (error) => {
+				if (error?.networkError && !error?.response) return true;
+				const status = (error?.response as Response | undefined)?.status;
+				return status === 502 || status === 503 || status === 504;
+			},
 			// Capture the flush function so WS reconnects can drain the queue too.
 			onFlushReady: (flush) => {
 				triggerFlush = flush;
@@ -132,6 +140,7 @@ if (browser) {
 		on: {
 			connected: () => {
 				wsConnected = true;
+				setWsConnected(true);
 				// Flush the offline mutation queue when the WS reconnects. This covers
 				// the case where the server restarts but navigator.onLine never toggled
 				// (so the browser online event never fired).
@@ -139,6 +148,7 @@ if (browser) {
 			},
 			closed: () => {
 				wsConnected = false;
+				setWsConnected(false);
 				// Fail all in-flight non-subscription operations immediately.
 				// Calling unsubscribe() first marks the operation as done in graphql-ws
 				// so it won't retry it after reconnecting — the offlineExchange owns

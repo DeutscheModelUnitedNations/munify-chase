@@ -3,6 +3,7 @@
 	import { m } from '$lib/paraglide/messages';
 	import BasicCard from '$lib/components/BasicCard.svelte';
 	import { SvelteMap, SvelteSet } from 'svelte/reactivity';
+	import { getServerTime } from '$lib/state/serverTime.svelte';
 
 	interface Props {
 		conferenceId: string;
@@ -76,11 +77,7 @@
 		}
 	});
 
-	let now = $state(Date.now());
-	$effect(() => {
-		const t = setInterval(() => (now = Date.now()), 60_000);
-		return () => clearInterval(t);
-	});
+	let now = $derived(getServerTime().valueOf());
 
 	type LatestEvent = NonNullable<typeof allEvents>[number];
 

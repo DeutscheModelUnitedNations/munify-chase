@@ -73,9 +73,19 @@
 				speakingTime: true,
 				startTimestamp: true,
 				timeLeft: true,
+				phase: true,
+				agendaItem: {
+					id: true,
+					committee: {
+						id: true,
+						allowDelegationsToAddThemselvesToSpeakersList: true,
+						conferenceId: true
+					}
+				},
 				speakers: {
 					id: true,
 					position: true,
+					speakersListId: true,
 					overwriteName: true,
 					committeeMember: {
 						id: true,
@@ -143,14 +153,16 @@
 		await client.mutate.selfAddToSpeakersList({
 			__args: { id: nanoid(), speakersListId: listId },
 			id: true,
-			position: true
+			position: true,
+			speakersListId: true
 		});
 	}
 
 	async function handleSelfRemove(listId: string) {
 		await client.mutate.selfRemoveFromSpeakersList({
 			__args: { speakersListId: listId },
-			id: true
+			id: true,
+			speakers: { id: true, position: true }
 		});
 	}
 </script>

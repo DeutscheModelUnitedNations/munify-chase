@@ -5,6 +5,7 @@ import { makeDefaultStorage } from '@m1212e/urql-exchange-graphcache/default-sto
 import { browser } from '$app/environment';
 import { schema } from './rumbleClient/schema';
 import { optimistic, updates } from './optimisticUpdateHandlers';
+import { setWsConnected } from '$lib/state/connection.svelte';
 import { createClient as createWSClient } from 'graphql-ws';
 import { configPublic } from '$config/public';
 import { getCachedAccessToken } from '$lib/platform/oidc';
@@ -46,7 +47,15 @@ exchanges.push(
 		// error message strings (which don't match on Safari or when only the
 		// server is down). This broader check works across all browsers and in
 		// server-down scenarios where the browser network remains up.
-		isOfflineError: (error) => !!error?.networkError && !error?.response
+		isOfflineError: (error) => {
+			if (error?.networkError && !error?.response) return true;
+			const status = (error?.response as Response | undefined)?.status;
+			return status === 502 || status === 503 || status === 504;
+		},
+		// Capture the flush function so WS reconnects can drain the queue too.
+		onFlushReady: (flush) => {
+			triggerFlush = flush;
+		}
 	})
 );
 

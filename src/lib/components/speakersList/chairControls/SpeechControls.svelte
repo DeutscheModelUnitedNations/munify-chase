@@ -26,8 +26,32 @@
 	let { speakersList, type, otherList }: Props = $props();
 
 	let timerRunning = $derived(!!speakersList?.startTimestamp);
+	// Prevents accidental double-clicks from undoing an optimistic stop/start.
+	// When offline the mutation promise never resolves, so we bound the lock to
+	// a short timeout instead of awaiting the result.
+	let timerActionPending = $state(false);
 
-	const startTimer = async () => {
+	const withTimerLock = (fn: () => Promise<void>) => async () => {
+		if (timerActionPending) return;
+		timerActionPending = true;
+		// The optimistic update fires synchronously on dispatch, so the UI already
+		// reflects the new state before the network round-trip.  When offline the
+		// mutation is queued and its promise never resolves; the lock would be held
+		// forever without this timeout.
+		const lockTimeout = setTimeout(() => {
+			timerActionPending = false;
+		}, 5000);
+		try {
+			await fn();
+		} catch {
+			// Network errors are handled individually inside each handler.
+		} finally {
+			clearTimeout(lockTimeout);
+			timerActionPending = false;
+		}
+	};
+
+	const startTimer = withTimerLock(async () => {
 		if (!speakersList) return;
 
 		const ops: Promise<unknown>[] = [
@@ -35,7 +59,8 @@
 				__args: { id: speakersList.id, startTimestamp: getServerTime().toDate() },
 				id: true,
 				speakingTime: true,
-				startTimestamp: true
+				startTimestamp: true,
+				phase: true
 			})
 		];
 
@@ -61,14 +86,15 @@
 			);
 		}
 
-		const results = await Promise.all(ops);
-		if (results.some((r) => !r)) toast.error(m.errorUpdatingTimer());
-	};
+		const results = await Promise.allSettled(ops);
+		if (results.some((r) => r.status === 'fulfilled' && !r.value))
+			toast.error(m.errorUpdatingTimer());
+	});
 
-	const stopTimer = async () => {
+	const stopTimer = withTimerLock(async () => {
 		if (!speakersList) return;
 
-		const promises: Promise<unknown>[] = [
+		const mutations: Promise<unknown>[] = [
 			client.mutate
 				.updateSpeakersList({
 					__args: {
@@ -77,26 +103,33 @@
 					},
 					id: true,
 					timeLeft: true,
-					startTimestamp: true
+					startTimestamp: true,
+					phase: true
 				})
 				.then((r) => {
 					if (!r) toast.error(m.errorUpdatingTimer());
+				})
+				.catch(() => {
+					// Network error — mutation was queued by the offline exchange;
+					// the optimistic update keeps the timer frozen until reconnect.
 				})
 		];
 
 		// When stopping the comment list timer, transition the speakers list to answer phase
 		if (type === 'COMMENT_LIST' && otherList) {
-			promises.push(
-				client.mutate.updateSpeakersList({
-					__args: { id: otherList.id, phase: 'ANSWER' },
-					id: true,
-					phase: true
-				})
+			mutations.push(
+				client.mutate
+					.updateSpeakersList({
+						__args: { id: otherList.id, phase: 'ANSWER' },
+						id: true,
+						phase: true
+					})
+					.catch(() => {})
 			);
 		}
 
-		await Promise.all(promises);
-	};
+		await Promise.all(mutations);
+	});
 
 	const resetTimer = async () => {
 		if (!speakersList) return;
@@ -111,13 +144,15 @@
 				},
 				id: true,
 				timeLeft: true,
-				startTimestamp: true
+				startTimestamp: true,
+				phase: true
 			})
 			.then((r) => {
 				if (!r) {
 					toast.error(m.errorUpdatingTimer());
 				}
-			});
+			})
+			.catch(() => {});
 	};
 
 	const changeTimer = async (delta: number) => {
@@ -133,7 +168,8 @@
 				if (!r) {
 					toast.error(m.errorUpdatingTimer());
 				}
-			});
+			})
+			.catch(() => {});
 	};
 
 	onMount(() => {
@@ -152,7 +188,6 @@
 					break;
 				case 'shift+space':
 					if (type === 'COMMENT_LIST') {
-						console.log('Start /Stop Timer Comment List');
 						if (timerRunning) {
 							stopTimer();
 						} else {
@@ -162,13 +197,11 @@
 					break;
 				case 'alt+r':
 					if (type === 'SPEAKERS_LIST') {
-						console.log('Reset Timer Speakers List');
 						resetTimer();
 					}
 					break;
 				case 'alt+shift+r':
 					if (type === 'COMMENT_LIST') {
-						console.log('Reset Timer Comment List');
 						resetTimer();
 					}
 					break;
@@ -180,10 +213,12 @@
 <div class="flex gap-2">
 	<button
 		class="btn btn-lg join-item flex flex-1 gap-2
-			{(!speakersList?.speakers?.length && 'btn-disabled') || (timerRunning ? 'bg-error' : 'bg-success')}"
+			{(!speakersList?.speakers?.length || timerActionPending) ? 'btn-disabled' : (timerRunning ? 'bg-error' : 'bg-success')}"
 		onclick={timerRunning ? stopTimer : startTimer}
 	>
-		{#if timerRunning}
+		{#if timerActionPending}
+			<span class="loading loading-spinner loading-sm"></span>
+		{:else if timerRunning}
 			<i class="fas fa-pause"></i>
 		{:else}
 			<i class="fas fa-play"></i>

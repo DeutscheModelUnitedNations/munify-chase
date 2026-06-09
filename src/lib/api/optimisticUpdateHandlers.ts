@@ -6,6 +6,7 @@ import type {
 } from '@m1212e/urql-exchange-graphcache';
 import { nanoid } from '$lib/helpers/nanoid';
 import { attendanceCode as generateAttendanceCode } from '$lib/helpers/attendanceCode';
+import { getServerTime } from '$lib/state/serverClock.svelte';
 
 // Optimistic / updates handlers that mirror the server resolvers in src/api/handlers.
 // The goal is to keep the cache aligned with what the server will eventually return so
@@ -383,7 +384,7 @@ export const optimistic: OptimisticMutationConfig = {
 	// -------------------------------------------------------------------------
 	recordNsaCheckIn: (args, cache) => {
 		const id = ensureId(args.id);
-		const now = new Date();
+		const now = getServerTime().toDate();
 		// Best-effort: try to resolve the NSA conferenceUser from the cache by scanning
 		// known Conferenceuser entries. If we can't find them we still return a phantom
 		// event — the conferenceUserId will be reconciled when the real response arrives.
@@ -452,7 +453,7 @@ export const optimistic: OptimisticMutationConfig = {
 	},
 	recordNsaCheckOut: (args, cache) => {
 		const id = ensureId(args.id);
-		const now = new Date();
+		const now = getServerTime().toDate();
 		const target = resolveNsaTargetInCache(cache, args.committeeId as string, args.code as string);
 		const conferenceUserId = target?.id ?? `pending-${id}`;
 
@@ -494,7 +495,7 @@ export const optimistic: OptimisticMutationConfig = {
 	},
 	insertPresenceEvent: (args, cache) => {
 		const id = ensureId(args.id);
-		const timestamp = (args.timestamp as Date | string | undefined) ?? new Date();
+		const timestamp = (args.timestamp as Date | string | undefined) ?? getServerTime().toDate();
 		const targetId = args.conferenceUserId as string;
 
 		// Mirror derived fields when this becomes the user's latest event.
@@ -593,7 +594,7 @@ export const optimistic: OptimisticMutationConfig = {
 			committeeId: existing?.committeeId ?? 'unknown',
 			present: existing?.present ?? false,
 			type: existing?.type ?? 'MANUAL',
-			timestamp: existing?.timestamp ? new Date(existing.timestamp) : new Date(),
+			timestamp: existing?.timestamp ? new Date(existing.timestamp) : getServerTime().toDate(),
 			note: existing?.note ?? null,
 			rollCallSessionId: null,
 			rollCallSession: null,
@@ -673,7 +674,12 @@ export const optimistic: OptimisticMutationConfig = {
 		if (args.committeeMemberId && args.conferenceMemberId) return null;
 		if (!args.committeeMemberId && !args.conferenceMemberId) return null;
 
-		const list = readSpeakersList(cache, args.speakersListId as string);
+		// Use the minimal fragment — we only need id+position for ordering.
+		const list = readEntity<{ id: string; speakers: SpeakerEntry[] }>(
+			cache,
+			ADD_SPEAKER_LIST_FRAGMENT,
+			{ __typename: 'Speakerslist', id: args.speakersListId as string }
+		);
 		const speakers: SpeakerEntry[] = list?.speakers ?? [];
 
 		// Mirror server position semantics: when caller passes a position, every entry
@@ -688,16 +694,15 @@ export const optimistic: OptimisticMutationConfig = {
 			return s;
 		});
 
-		const updatedSpeakers = [
-			...shifted,
-			{
-				__typename: 'Speakeronlist',
-				id: newId,
-				position,
-				committeeMemberId: (args.committeeMemberId as string | undefined) ?? null,
-				conferenceMemberId: (args.conferenceMemberId as string | undefined) ?? null
-			}
-		];
+		const added = {
+			__typename: 'Speakeronlist',
+			id: newId,
+			position,
+			committeeMemberId: (args.committeeMemberId as string | undefined) ?? null,
+			conferenceMemberId: (args.conferenceMemberId as string | undefined) ?? null
+		};
+
+		const updatedSpeakers = [...shifted, added];
 
 		// Write the parent list with the recomputed speaker positions so the cache sees
 		// the new ordering immediately without waiting for `updates` to fire.
@@ -788,7 +793,12 @@ export const optimistic: OptimisticMutationConfig = {
 		);
 		if (!target?.speakersListId) return null;
 
-		const list = readSpeakersList(cache, target.speakersListId);
+		// Use the minimal fragment — we only need id+position for re-sequencing.
+		const list = readEntity<{ id: string; speakers: SpeakerEntry[] }>(
+			cache,
+			ADD_SPEAKER_LIST_FRAGMENT,
+			{ __typename: 'Speakerslist', id: target.speakersListId }
+		);
 		if (!list?.speakers) return null;
 
 		const remaining = list.speakers
@@ -906,11 +916,19 @@ export const optimistic: OptimisticMutationConfig = {
 		);
 		if (!target?.speakersListId) return null;
 
-		const list = readSpeakersList(cache, target.speakersListId);
+		// Only need id and position for the reordering calculation — use a minimal
+		// fragment so this works even if phase/agendaItem haven't been cached yet.
+		const list = readEntity<{ id: string; speakers: SpeakerEntry[] }>(
+			cache,
+			ADD_SPEAKER_LIST_FRAGMENT,
+			{ __typename: 'Speakerslist', id: target.speakersListId }
+		);
 		if (!list?.speakers) return null;
 
 		const currentPos = target.position;
-		const targetPos = args.position as number;
+		// Clamp to the occupied range — never allow sparse gaps beyond the last entry.
+		const maxPos = Math.max(...list.speakers.map((s) => s.position));
+		const targetPos = Math.max(0, Math.min(maxPos, args.position as number));
 		if (currentPos === targetPos) return null;
 
 		const updatedSpeakers = list.speakers.map((s) => {
@@ -925,20 +943,24 @@ export const optimistic: OptimisticMutationConfig = {
 			return s;
 		});
 
+		// Write the reordered list directly — this ensures graphcache tracks the
+		// dependency and re-runs the committee query immediately (the same pattern
+		// used by addSpeakerOnList / removeSpeakerOnList).
+		cache.writeFragment(ADD_SPEAKER_LIST_FRAGMENT, {
+			__typename: 'Speakerslist',
+			id: target.speakersListId,
+			speakers: updatedSpeakers.map((s) => ({
+				__typename: 'Speakeronlist',
+				id: s.id,
+				position: s.position
+			}))
+		} as unknown as Record<string, unknown>);
+
 		return {
 			__typename: 'Speakeronlist',
 			id: args.id,
 			position: targetPos,
-			speakersListId: target.speakersListId,
-			speakersList: {
-				__typename: 'Speakerslist',
-				id: target.speakersListId,
-				speakers: updatedSpeakers.map((s) => ({
-					__typename: 'Speakeronlist',
-					id: s.id,
-					position: s.position
-				}))
-			}
+			speakersListId: target.speakersListId
 		};
 	},
 
@@ -981,7 +1003,9 @@ export const optimistic: OptimisticMutationConfig = {
 				args.timeLeft == null
 			) {
 				const startMs = new Date(current.startTimestamp).getTime();
-				const elapsedSec = (Date.now() - startMs) / 1000;
+				// Use server time so the elapsed calculation is consistent with the
+				// startTimestamp anchor (which is server-time-based after confirmation).
+				const elapsedSec = (getServerTime().valueOf() - startMs) / 1000;
 				result.timeLeft = Math.round(current.timeLeft - elapsedSec);
 			} else if (args.timeLeft != null) {
 				result.timeLeft = args.timeLeft;
@@ -989,9 +1013,10 @@ export const optimistic: OptimisticMutationConfig = {
 		} else {
 			if (args.timeLeft != null) result.timeLeft = args.timeLeft;
 			if (args.startTimestamp !== undefined && args.startTimestamp !== null) {
-				// The server overwrites startTimestamp with its `now` so all clients
-				// share a single anchor — mirror that here.
-				result.startTimestamp = new Date();
+				// Use the timestamp from args (already getServerTime().toDate() at call site)
+				// rather than new Date(), so the optimistic anchor matches the server anchor
+				// and the timer display is accurate before the server confirms.
+				result.startTimestamp = new Date(args.startTimestamp as string | Date);
 			}
 		}
 
@@ -1534,7 +1559,7 @@ export const updates: UpdatesConfig = {
 				{
 					__typename: 'Rollcallsession',
 					id: args.id as string,
-					completedAt: new Date()
+					completedAt: getServerTime().toDate()
 				} as Record<string, unknown>
 			);
 		},
@@ -1605,15 +1630,18 @@ export const updates: UpdatesConfig = {
 				]
 			} as Record<string, unknown>);
 		},
-		removeSpeakerOnList: (_result, args, cache) => {
-			// The mutation returns the updated parent list (with positions already
-			// renumbered) so the parent link is fixed by the merge — we only need to
-			// drop the deleted child from the normalized store.
-			cache.invalidate({
-				__typename: 'Speakeronlist',
-				id: args.speakerOnListId as string
-			});
-		},
+		// removeSpeakerOnList: no updates handler needed.
+		// The mutation returns the updated parent Speakerslist (speakers array already
+		// renumbered), so the link from Speakerslist.speakers is corrected by the
+		// mutation result write. cache.invalidate was previously called here to clean up
+		// the deleted Speakeronlist entity, but it caused a double RC decrement bug:
+		//   1. invalidate() writes undefined to xxx.committeeMember (in the write layer)
+		//      → decrements Committeemember:cm1's RC by 1
+		//   2. gc() later reads from the BASE layer (unsquashed) where xxx.committeeMember
+		//      is still cm1 → decrements cm1's RC a second time → cm1 hits RC=0 → GC'd
+		// This briefly removed cm1 from the store, causing committee.members to return
+		// null data for that delegate on the next render, producing the visible page flicker.
+		// The deleted entity is naturally GC'd by the normal RC=0 path without invalidate.
 
 		// ---------------------------------------------------------------
 		// votingSession
@@ -1630,7 +1658,7 @@ export const updates: UpdatesConfig = {
 				{
 					__typename: 'Votingsession',
 					id: args.id as string,
-					completedAt: new Date(),
+					completedAt: getServerTime().toDate(),
 					outcome: (args.outcome as string | null | undefined) ?? null
 				} as Record<string, unknown>
 			);

@@ -100,6 +100,7 @@
 			userEmail: true
 		},
 		presenceEvents: {
+			id: true,
 			present: true
 		}
 	});

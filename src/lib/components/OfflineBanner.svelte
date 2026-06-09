@@ -16,11 +16,10 @@
 </script>
 
 {#if showBanner}
-	<div
-		class="fixed right-4 bottom-2 z-50"
-		transition:fly={{ y: 16, duration: 200 }}
-	>
-		<div class="bg-warning text-warning-content flex items-center gap-2 rounded-2xl px-3 py-1.5 text-sm shadow-lg">
+	<div class="fixed right-4 bottom-2 z-50" transition:fly={{ y: 16, duration: 200 }}>
+		<div
+			class="bg-warning text-warning-content flex items-center gap-2 rounded-2xl px-3 py-1.5 text-sm shadow-lg"
+		>
 			<i class="fas fa-wifi-slash"></i>
 			<div class="flex flex-col leading-tight">
 				<span class="font-medium">{m.offlineBannerTitle()}</span>

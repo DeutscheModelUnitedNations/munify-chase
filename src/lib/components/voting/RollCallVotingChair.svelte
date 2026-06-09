@@ -156,7 +156,7 @@
 		if (sessionId) {
 			const id = sessionId;
 			sessionId = null;
-			client.mutate.completeVotingSession({__args: { id }}).catch(() => {});
+			client.mutate.completeVotingSession({ __args: { id } }).catch(() => {});
 		}
 
 		if (oncomplete) {

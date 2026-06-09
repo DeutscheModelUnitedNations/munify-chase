@@ -38,6 +38,7 @@ export default ts.config(
 	},
 	{
 		rules: {
+			'require-await': 'error',
 			'@typescript-eslint/no-unused-vars': 'warn',
 			'@typescript-eslint/no-explicit-any': 'error',
 			'svelte/no-at-html-tags': 'warn',

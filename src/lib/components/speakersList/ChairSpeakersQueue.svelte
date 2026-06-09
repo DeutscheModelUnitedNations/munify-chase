@@ -69,8 +69,7 @@
 
 	// Resolve the speaker's CURRENT position at call-time from rawSpeakers to avoid
 	// stale-closure bugs when the user clicks rapidly before Svelte re-renders.
-	const currentPosition = (id: string) =>
-		rawSpeakers?.find((s) => s.id === id)?.position ?? -1;
+	const currentPosition = (id: string) => rawSpeakers?.find((s) => s.id === id)?.position ?? -1;
 
 	const moveSpeaker = (speakerOnListId: string, target: number) => {
 		if (!speakerOnListId || target < 0 || target > bottomPosition) return;

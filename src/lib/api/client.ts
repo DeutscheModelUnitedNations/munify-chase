@@ -6,8 +6,8 @@ import {
 	fetchExchange,
 	subscriptionExchange
 } from '@urql/core';
-import { offlineExchange } from '@m1212e/urql-exchange-graphcache';
-import { makeDefaultStorage } from '@m1212e/urql-exchange-graphcache/default-storage';
+import { offlineExchange } from '@urql/exchange-graphcache';
+import { makeDefaultStorage } from '@urql/exchange-graphcache/default-storage';
 import { empty, filter, fromPromise, merge, mergeMap, pipe } from 'wonka';
 import { graphqlMutation, graphqlQuery } from '$api/graphql.remote';
 import { browser } from '$app/environment';
@@ -86,12 +86,6 @@ const remoteFunctionsExchange: Exchange = ({ forward }) => {
 const exchanges: Exchange[] = [nativeDateExchange];
 
 if (browser) {
-	// Receives the flushQueue callback from offlineExchange once the cache is
-	// hydrated. Also called from the WS connected handler so queued mutations
-	// are replayed when the server restarts (navigator.onLine stays true in that
-	// case, so the browser online event never fires on its own).
-	let triggerFlush: (() => void) | undefined;
-
 	const storage = makeDefaultStorage({
 		idbName: 'chase-cache',
 		maxAge: 7
@@ -102,31 +96,10 @@ if (browser) {
 			schema,
 			storage,
 			optimistic,
-			updates,
-			broadcastChannel: 'chase-cross-tab-sync',
-			// Treat network-level failures as offline errors so mutations are queued
-			// rather than rolled back.  Two cases need covering:
-			//   1. Pure TCP failures (ECONNREFUSED, network down, timeout): the fetch
-			//      never gets an HTTP response, so error.response is undefined.
-			//   2. Reverse-proxy "gateway" errors (502/503/504): the proxy is up but
-			//      the backend is down; these DO have an HTTP response object, so the
-			//      first check alone misses them and the optimistic update would be
-			//      incorrectly rolled back.
-			isOfflineError: (error) => {
-				if (error?.networkError && !error?.response) return true;
-				const status = (error?.response as Response | undefined)?.status;
-				return status === 502 || status === 503 || status === 504;
-			},
-			// Capture the flush function so WS reconnects can drain the queue too.
-			onFlushReady: (flush) => {
-				triggerFlush = flush;
-			}
+			updates
 		})
 	);
 
-	// Tracks in-flight queries and mutations sent via WS so we can fail them
-	// immediately when the connection drops instead of waiting for graphql-ws to
-	// retry — the offlineExchange then queues and replays them on reconnect.
 	const pendingNonSubscriptions = new Map<
 		number,
 		{ sink: { error?: (err: unknown) => void }; unsubscribe: () => void }
@@ -141,19 +114,10 @@ if (browser) {
 			connected: () => {
 				wsConnected = true;
 				setWsConnected(true);
-				// Flush the offline mutation queue when the WS reconnects. This covers
-				// the case where the server restarts but navigator.onLine never toggled
-				// (so the browser online event never fired).
-				triggerFlush?.();
 			},
 			closed: () => {
 				wsConnected = false;
 				setWsConnected(false);
-				// Fail all in-flight non-subscription operations immediately.
-				// Calling unsubscribe() first marks the operation as done in graphql-ws
-				// so it won't retry it after reconnecting — the offlineExchange owns
-				// the retry instead. isOfflineError catches the resulting networkError
-				// (no response) and queues the operation in failedQueue.
 				for (const [, { sink, unsubscribe }] of pendingNonSubscriptions) {
 					unsubscribe();
 					sink.error?.(new Error('WebSocket connection lost'));

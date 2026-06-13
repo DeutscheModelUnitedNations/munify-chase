@@ -3,7 +3,7 @@ import type {
 	Cache,
 	OptimisticMutationConfig,
 	UpdatesConfig
-} from '@m1212e/urql-exchange-graphcache';
+} from '@urql/exchange-graphcache';
 import { nanoid } from '$lib/helpers/nanoid';
 import { attendanceCode as generateAttendanceCode } from '$lib/helpers/attendanceCode';
 import { getServerTime } from '$lib/state/serverClock.svelte';

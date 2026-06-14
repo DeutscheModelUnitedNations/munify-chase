@@ -8,6 +8,7 @@
 	import { alertDialog } from '$lib/components/Alert/alert';
 	import Modal from '$lib/components/Modal.svelte';
 	import dayjs from 'dayjs';
+	import { compareSpeakers } from '$lib/helpers/speakerSort';
 
 	interface Props {
 		speakersList?: {
@@ -88,9 +89,7 @@
 	const changeSpeakersName = async () => {
 		if (!speakersList?.id || !changeSpeakersNameValue) return;
 
-		const existingSpeakerId = speakersList.speakers
-			.sort((a, b) => a.position - b.position)
-			.at(0)?.id;
+		const existingSpeakerId = speakersList.speakers.toSorted(compareSpeakers).at(0)?.id;
 
 		if (!existingSpeakerId) {
 			toast.error(m.noCurrentSpeaker());
@@ -134,9 +133,7 @@
 
 	$effect(() => {
 		if (speakersList && speakersList?.speakers.length > 0) {
-			const overwriteName = speakersList.speakers
-				.toSorted((a, b) => a.position - b.position)
-				.at(0)?.overwriteName;
+			const overwriteName = speakersList.speakers.toSorted(compareSpeakers).at(0)?.overwriteName;
 			changeSpeakersNameValue = overwriteName || '';
 		}
 	});

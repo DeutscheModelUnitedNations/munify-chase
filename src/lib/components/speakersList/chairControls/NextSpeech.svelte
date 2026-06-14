@@ -8,6 +8,7 @@
 	import hotkeys from 'hotkeys-js';
 	import { onMount } from 'svelte';
 	import toast from 'svelte-french-toast';
+	import { compareSpeakers } from '$lib/helpers/speakerSort';
 
 	type SpeakersList = {
 		id: string;
@@ -27,7 +28,7 @@
 
 	const nextSpeaker = async () => {
 		if (speakersList && speakersList?.speakers.length > 0) {
-			const speaker = speakersList.speakers.sort((a, b) => a.position - b.position)[0];
+			const speaker = speakersList.speakers.toSorted(compareSpeakers)[0];
 			if (childList) {
 				if (
 					await alertDialog({

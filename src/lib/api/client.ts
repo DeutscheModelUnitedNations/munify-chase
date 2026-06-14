@@ -3,6 +3,7 @@ import {
 	Client,
 	CombinedError,
 	type Exchange,
+	type Operation,
 	fetchExchange,
 	makeOperation,
 	subscriptionExchange
@@ -10,7 +11,7 @@ import {
 import { offlineExchange } from '@urql/exchange-graphcache';
 import { makeDefaultStorage } from '@urql/exchange-graphcache/default-storage';
 import { crossTabSyncExchange } from '@m1212e/urql-crosstab-sync';
-import { empty, filter, fromPromise, map, merge, mergeMap, pipe } from 'wonka';
+import { empty, filter, fromPromise, map, merge, mergeMap, onPush, pipe } from 'wonka';
 import { graphqlMutation, graphqlQuery } from '$api/graphql.remote';
 import { browser } from '$app/environment';
 import { schema } from './rumbleClient/schema';
@@ -93,6 +94,47 @@ if (browser) {
 		maxAge: 7
 	});
 
+	// graphcache wires its offline-mutation-queue flush to `storage.onOnline`, which
+	// only fires on the browser 'online' event (navigator.onLine). A server/WS-only
+	// outage never toggles navigator.onLine, so the queue would otherwise stall until
+	// the next real network blip. Capture the flush callback(s) graphcache registers
+	// so we can also trigger them on WebSocket reconnect (see wsClient.on.connected).
+	const onlineCallbacks = new Set<() => void>();
+	const baseOnOnline = storage.onOnline?.bind(storage);
+	storage.onOnline = (cb: () => void) => {
+		onlineCallbacks.add(cb);
+		baseOnOnline?.(cb);
+	};
+	const flushOfflineQueue = () => {
+		for (const cb of onlineCallbacks) cb();
+	};
+
+	// Track active queries so we can refetch them (network-only) on WS reconnect.
+	// Subscriptions resubscribe themselves via graphql-ws retry, but plain query data
+	// can be stale after an outage. `reexecuteActiveQueries` is assigned once the
+	// exchange runs.
+	const activeQueries = new Map<number, Operation>();
+	let reexecuteActiveQueries = () => {};
+	const trackQueriesExchange: Exchange =
+		({ client, forward }) =>
+		(ops$) => {
+			reexecuteActiveQueries = () => {
+				for (const op of activeQueries.values()) {
+					client.reexecuteOperation(
+						makeOperation('query', op, { ...op.context, requestPolicy: 'network-only' })
+					);
+				}
+			};
+			return pipe(
+				ops$,
+				onPush((op) => {
+					if (op.kind === 'query') activeQueries.set(op.key, op);
+					else if (op.kind === 'teardown') activeQueries.delete(op.key);
+				}),
+				forward
+			);
+		};
+
 	// Cross-tab synthetic mutations have two failure modes that wipe their
 	// optimistic layer in the popup tab when the chair's underlying mutation
 	// fails (always, while offline):
@@ -145,6 +187,7 @@ if (browser) {
 		};
 
 	exchanges.push(
+		trackQueriesExchange,
 		keepSyntheticOptimisticExchange,
 		offlineExchange({
 			schema,
@@ -161,21 +204,40 @@ if (browser) {
 	>();
 
 	let wsConnected = false;
+	let everConnected = false;
 
 	const wsClient = createWSClient({
 		url: '/api/graphql',
 		shouldRetry: () => true,
 		on: {
 			connected: () => {
+				const isReconnect = everConnected;
+				everConnected = true;
 				wsConnected = true;
 				setWsConnected(true);
+				if (isReconnect) {
+					// The WS came back. navigator.onLine may never have toggled (a
+					// server/WS-only outage), so explicitly flush the offline mutation
+					// queue and refetch active queries to reconcile any state the
+					// subscriptions missed while we were disconnected.
+					flushOfflineQueue();
+					reexecuteActiveQueries();
+				}
 			},
 			closed: () => {
 				wsConnected = false;
 				setWsConnected(false);
 				for (const [, { sink, unsubscribe }] of pendingNonSubscriptions) {
 					unsubscribe();
-					sink.error?.(new Error('WebSocket connection lost'));
+					// Surface as an offline-style network error (a CombinedError carrying a
+					// networkError whose message matches graphcache's isOfflineError check)
+					// so an in-flight optimistic mutation is queued for retry on reconnect
+					// instead of being dropped. A plain Error fails that check and is lost.
+					sink.error?.(
+						new CombinedError({
+							networkError: new Error('network error: WebSocket connection lost')
+						})
+					);
 				}
 				pendingNonSubscriptions.clear();
 			}

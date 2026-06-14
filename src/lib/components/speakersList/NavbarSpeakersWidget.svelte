@@ -8,6 +8,7 @@
 	import { getTranslatedCountryNameFromAlpha3Code } from '$lib/utils/nationTranslationHelper.svelte';
 	import hotkeys from 'hotkeys-js';
 	import Kbd from '$lib/components/Kbd.svelte';
+	import { compareSpeakers } from '$lib/helpers/speakerSort';
 
 	type SpeakersList =
 		| {
@@ -53,12 +54,8 @@
 
 	let { speakersList, commentList }: Props = $props();
 
-	let currentSpeaker = $derived(
-		speakersList?.speakers.toSorted((a, b) => a.position - b.position).at(0)
-	);
-	let currentQuestioner = $derived(
-		commentList?.speakers.toSorted((a, b) => a.position - b.position).at(0)
-	);
+	let currentSpeaker = $derived(speakersList?.speakers.toSorted(compareSpeakers).at(0));
+	let currentQuestioner = $derived(commentList?.speakers.toSorted(compareSpeakers).at(0));
 
 	let speakerRepresentation = $derived(
 		currentSpeaker?.committeeMember?.representation ??

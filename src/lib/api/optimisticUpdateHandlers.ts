@@ -1,13 +1,10 @@
 import { gql } from '@urql/core';
-import type {
-	Cache,
-	OptimisticMutationConfig,
-	UpdatesConfig
-} from '@urql/exchange-graphcache';
+import type { Cache, OptimisticMutationConfig, UpdatesConfig } from '@urql/exchange-graphcache';
 import { nanoid } from '$lib/helpers/nanoid';
 import { attendanceCode as generateAttendanceCode } from '$lib/helpers/attendanceCode';
 import { getServerTime } from '$lib/state/serverClock.svelte';
 import { calculateMajority } from '$lib/utils/majorities';
+import { compareSpeakers } from '$lib/helpers/speakerSort';
 
 // Optimistic / updates handlers that mirror the server resolvers in src/api/handlers.
 // The goal is to keep the cache aligned with what the server will eventually return so
@@ -149,6 +146,25 @@ function readSpeakersList(cache: Cache, id: string): SpeakersListSnapshot | null
 		__typename: 'Speakerslist',
 		id
 	});
+}
+
+/**
+ * Re-sequence a speakers array to a dense, collision-free 0..n-1 ordering,
+ * sorting by current position then id (see compareSpeakers) and preserving every
+ * other field on each entry.
+ *
+ * Every optimistic speaker write runs through this so the offline cache is
+ * self-correcting: without a speakers-list subscription to repair drift, a
+ * single position collision or gap (e.g. an append computed from list length
+ * while the cached list is non-dense) would otherwise corrupt the sequence and
+ * break every subsequent shift/move/remove calculation, which is exactly how the
+ * offline ordering "stops reacting". Densifying mirrors the server's 0-based
+ * dense scheme, so for an already-dense list it is a no-op (no cache churn).
+ */
+function densifySpeakers<T extends { id: string; position: number }>(speakers: T[]): T[] {
+	return [...speakers]
+		.sort(compareSpeakers)
+		.map((s, i) => (s.position === i ? s : { ...s, position: i }));
 }
 
 // ---------------------------------------------------------------------------
@@ -738,7 +754,10 @@ export const optimistic: OptimisticMutationConfig = {
 			conferenceMemberId: (args.conferenceMemberId as string | undefined) ?? null
 		};
 
-		const updatedSpeakers = [...shifted, added];
+		// Densify so the cache stays a dense 0..n-1 sequence even when a prior offline
+		// edit left it drifted; this also settles the new entry's final position.
+		const updatedSpeakers = densifySpeakers([...shifted, added]);
+		const finalPosition = updatedSpeakers.find((s) => s.id === newId)?.position ?? position;
 
 		// Write the parent list with the recomputed speaker positions so the cache sees
 		// the new ordering immediately without waiting for `updates` to fire.
@@ -842,7 +861,7 @@ export const optimistic: OptimisticMutationConfig = {
 		return {
 			__typename: 'Speakeronlist',
 			id: newId,
-			position,
+			position: finalPosition,
 			speakersListId: args.speakersListId,
 			speakersList: { __typename: 'Speakerslist', id: args.speakersListId as string },
 			overwriteName: null,
@@ -885,7 +904,7 @@ export const optimistic: OptimisticMutationConfig = {
 		return {
 			__typename: 'Speakerslist',
 			id: target.speakersListId,
-			speakers: remaining.map((s) => ({
+			speakers: densifySpeakers(remaining).map((s) => ({
 				__typename: 'Speakeronlist',
 				id: s.id,
 				position: s.position
@@ -1043,7 +1062,7 @@ export const optimistic: OptimisticMutationConfig = {
 		return {
 			__typename: 'Speakerslist',
 			id: args.speakersListId,
-			speakers: remaining.map((s) => ({
+			speakers: densifySpeakers(remaining).map((s) => ({
 				__typename: 'Speakeronlist',
 				id: s.id,
 				position: s.position
@@ -1098,10 +1117,11 @@ export const optimistic: OptimisticMutationConfig = {
 		// Write the reordered list directly — this ensures graphcache tracks the
 		// dependency and re-runs the committee query immediately (the same pattern
 		// used by addSpeakerOnList / removeSpeakerOnList).
+		const densified = densifySpeakers(updatedSpeakers);
 		cache.writeFragment(ADD_SPEAKER_LIST_FRAGMENT, {
 			__typename: 'Speakerslist',
 			id: target.speakersListId,
-			speakers: updatedSpeakers.map((s) => ({
+			speakers: densified.map((s) => ({
 				__typename: 'Speakeronlist',
 				id: s.id,
 				position: s.position
@@ -1111,7 +1131,7 @@ export const optimistic: OptimisticMutationConfig = {
 		return {
 			__typename: 'Speakeronlist',
 			id: args.id,
-			position: targetPos,
+			position: densified.find((s) => s.id === args.id)?.position ?? targetPos,
 			speakersListId: target.speakersListId
 		};
 	},
@@ -1419,7 +1439,10 @@ function recomputeCommitteeMajoritiesForMembers(
 			if (!key.startsWith('Committeemember:')) continue;
 			const id = key.slice('Committeemember:'.length);
 			const member = { __typename: 'Committeemember', id };
-			const representationKey = cache.resolve(member, 'representation') as string | null | undefined;
+			const representationKey = cache.resolve(member, 'representation') as
+				| string
+				| null
+				| undefined;
 			let type: string | null | undefined = null;
 			if (typeof representationKey === 'string') {
 				const repId = representationKey.startsWith('Representation:')
@@ -1459,7 +1482,9 @@ function recomputeCommitteeMajoritiesForMembers(
 				id: committeeId,
 				totalPresent,
 				simpleMajority:
-					typeof customSimple === 'number' ? customSimple : calculateMajority(totalPresent, 'simple'),
+					typeof customSimple === 'number'
+						? customSimple
+						: calculateMajority(totalPresent, 'simple'),
 				twoThirdsMajority:
 					typeof customTwoThirds === 'number'
 						? customTwoThirds
@@ -1657,11 +1682,7 @@ export const updates: UpdatesConfig = {
 			// snap back to their stale values once the optimistic layer is removed. Re-run
 			// the same recompute against the now-updated base layer to keep them stable
 			// until the subscription confirms (or replaces) the value.
-			recomputeCommitteeMajoritiesForMembers(
-				cache,
-				args.ids as string[],
-				args.present as boolean
-			);
+			recomputeCommitteeMajoritiesForMembers(cache, args.ids as string[], args.present as boolean);
 		},
 
 		// ---------------------------------------------------------------
@@ -1796,6 +1817,25 @@ export const updates: UpdatesConfig = {
 				activeRollCallSessionId: created.id as string,
 				activeRollCallSession: { __typename: 'Rollcallsession', id: created.id as string }
 			} as Record<string, unknown>);
+			// Record committeeId on the session itself so completeRollCallSession can
+			// resolve which committee to clear without the close mutation needing to carry
+			// it. The committee subscription covers the online single-device case; this
+			// covers the cross-tab / offline path, where the close replays through `updates`
+			// and no query ever selected rollCallSession.committeeId. Mirrors how `open`
+			// already propagates via args.committeeId.
+			cache.writeFragment(
+				gql`
+					fragment StartRollCallSessionCommittee on Rollcallsession {
+						id
+						committeeId
+					}
+				`,
+				{
+					__typename: 'Rollcallsession',
+					id: created.id as string,
+					committeeId: args.committeeId as string
+				} as Record<string, unknown>
+			);
 		},
 		completeRollCallSession: (_result, args, cache) => {
 			// Stamp completion on the session row for history queries…
@@ -1864,10 +1904,10 @@ export const updates: UpdatesConfig = {
 			cache.writeFragment(ADD_SPEAKER_LIST_FRAGMENT, {
 				__typename: 'Speakerslist',
 				id: args.speakersListId,
-				speakers: [
+				speakers: densifySpeakers([
 					...shifted,
 					{ __typename: 'Speakeronlist', id: newSpeaker.id as string, position }
-				]
+				])
 			} as Record<string, unknown>);
 		},
 		selfAddToSpeakersList: (result, args, cache) => {
@@ -1888,10 +1928,10 @@ export const updates: UpdatesConfig = {
 			cache.writeFragment(ADD_SPEAKER_LIST_FRAGMENT, {
 				__typename: 'Speakerslist',
 				id: args.speakersListId,
-				speakers: [
+				speakers: densifySpeakers([
 					...list.speakers,
 					{ __typename: 'Speakeronlist', id: newSpeaker.id as string, position }
-				]
+				])
 			} as Record<string, unknown>);
 		},
 		// removeSpeakerOnList: no updates handler needed.

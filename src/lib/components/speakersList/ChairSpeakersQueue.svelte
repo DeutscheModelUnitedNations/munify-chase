@@ -9,6 +9,7 @@
 	import { m } from '$lib/paraglide/messages';
 	import toast from 'svelte-french-toast';
 	import { promiseToastStrings } from '$lib/utils/toast';
+	import { compareSpeakers } from '$lib/helpers/speakerSort';
 
 	type Speaker = {
 		id: string;
@@ -43,7 +44,7 @@
 
 	let { rawSpeakers, closed = false }: Props = $props();
 
-	let speakers = $derived(rawSpeakers?.toSorted((a, b) => a.position - b.position).toSpliced(0, 1));
+	let speakers = $derived(rawSpeakers?.toSorted(compareSpeakers).toSpliced(0, 1));
 	let bottomPosition = $derived(speakers?.at(-1)?.position ?? 0);
 
 	const getRepresentation = (speaker: NonNullable<Props['rawSpeakers']>[number]) => {
@@ -69,8 +70,7 @@
 
 	// Resolve the speaker's CURRENT position at call-time from rawSpeakers to avoid
 	// stale-closure bugs when the user clicks rapidly before Svelte re-renders.
-	const currentPosition = (id: string) =>
-		rawSpeakers?.find((s) => s.id === id)?.position ?? -1;
+	const currentPosition = (id: string) => rawSpeakers?.find((s) => s.id === id)?.position ?? -1;
 
 	const moveSpeaker = (speakerOnListId: string, target: number) => {
 		if (!speakerOnListId || target < 0 || target > bottomPosition) return;

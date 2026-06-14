@@ -38,7 +38,10 @@
 		// button and the modal's `externalActiveSessionId` prop.
 		activeRollCallSession: {
 			id: true,
-			currentMemberIndex: true
+			currentMemberIndex: true,
+			// Needed so updates.completeRollCallSession can resolve which committee to
+			// clear when the close replays cross-tab / offline (no subscription).
+			committeeId: true
 		},
 		members: {
 			id: true,

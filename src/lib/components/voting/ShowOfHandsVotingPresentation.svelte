@@ -12,24 +12,29 @@
 	}
 	let { committeeId }: Props = $props();
 
-	const activeSessions = await client.liveQuery.votingSessions({
-		__args: {
-			where: { committeeId, completedAt: { isNull: true } },
-			limit: 1
-		},
+	// `committee.activeVotingSession` is the single source of truth for "is a vote
+	// happening?" — driving the modal from this FK keeps every tab consistent
+	// (including offline popups whose cross-tab synthetic mutations would otherwise
+	// roll back a list-based `where: completedAt isNull` query result).
+	const committeeWithVote = await client.liveQuery.committee({
+		__args: { id: committeeId },
 		id: true,
-		mode: true,
-		currentStage: true,
-		votesPro: true,
-		votesCon: true,
-		votesAbstain: true,
-		voteName: true,
-		majority: true,
-		withAbstentions: true,
-		committee: { simpleMajority: true, twoThirdsMajority: true }
+		simpleMajority: true,
+		twoThirdsMajority: true,
+		activeVotingSession: {
+			id: true,
+			mode: true,
+			currentStage: true,
+			votesPro: true,
+			votesCon: true,
+			votesAbstain: true,
+			voteName: true,
+			majority: true,
+			withAbstentions: true
+		}
 	});
 
-	let session = $derived((activeSessions ?? [])[0] ?? null);
+	let session = $derived(committeeWithVote?.activeVotingSession ?? null);
 
 	let majorityAmount = $derived.by(() => {
 		if (!session) return 0;
@@ -37,9 +42,9 @@
 			case 'SIMPLE':
 				return calculateMajority((session.votesPro ?? 0) + (session.votesCon ?? 0), 'simple');
 			case 'ABSOLUTE':
-				return session.committee?.simpleMajority ?? 0;
+				return committeeWithVote?.simpleMajority ?? 0;
 			case 'TWO_THIRDS':
-				return session.committee?.twoThirdsMajority ?? 0;
+				return committeeWithVote?.twoThirdsMajority ?? 0;
 			default:
 				return 0;
 		}

@@ -4,11 +4,13 @@ import {
 	CombinedError,
 	type Exchange,
 	fetchExchange,
+	makeOperation,
 	subscriptionExchange
 } from '@urql/core';
 import { offlineExchange } from '@urql/exchange-graphcache';
 import { makeDefaultStorage } from '@urql/exchange-graphcache/default-storage';
-import { empty, filter, fromPromise, merge, mergeMap, pipe } from 'wonka';
+import { crossTabSyncExchange } from '@m1212e/urql-crosstab-sync';
+import { empty, filter, fromPromise, map, merge, mergeMap, pipe } from 'wonka';
 import { graphqlMutation, graphqlQuery } from '$api/graphql.remote';
 import { browser } from '$app/environment';
 import { schema } from './rumbleClient/schema';
@@ -91,13 +93,66 @@ if (browser) {
 		maxAge: 7
 	});
 
+	// Cross-tab synthetic mutations have two failure modes that wipe their
+	// optimistic layer in the popup tab when the chair's underlying mutation
+	// fails (always, while offline):
+	//
+	//   1. The error result emitted by `crossTabSyncExchange.receiver.results$`
+	//      reaches `offlineExchange`'s offline-error filter. That filter only
+	//      protects the layer when `context.optimistic` is true, and the
+	//      synthetic op `crossTabSyncExchange` creates doesn't set it. The
+	//      result therefore reaches `cacheExchange.updateCacheWithResult`,
+	//      which rolls the layer back.
+	//
+	//   2. Right after delivering the result, `crossTabSyncExchange` also
+	//      unsubscribes the synthetic op's subscription. urql dispatches a
+	//      `teardown` op for it, which `cacheExchange.prepareForwardedOperation`
+	//      handles by calling `noopDataState → reserveLayer → clearLayer` —
+	//      wiping the optimistic layer regardless of the filter.
+	//
+	// Sitting outermost (above `offlineExchange`), this exchange:
+	//   - stamps synthetic remote mutations with `optimistic: true` so the
+	//     offline-error filter catches their error result, and
+	//   - swallows `teardown` ops for those mutations so they never reach
+	//     `cacheExchange` and the layer survives for the lifetime of the
+	//     offline session.
+	//
+	// The popup's modal is therefore driven by the same cache state the chair
+	// writes optimistically, via the normal cross-tab mutation sync.
+	const keepSyntheticOptimisticExchange: Exchange =
+		({ forward }) =>
+		(ops$) => {
+			const syntheticKeys = new Set<number>();
+			return pipe(
+				ops$,
+				filter((op) => {
+					if (op.kind === 'teardown' && syntheticKeys.has(op.key)) {
+						syntheticKeys.delete(op.key);
+						return false;
+					}
+					return true;
+				}),
+				map((op) => {
+					if (op.kind !== 'mutation') return op;
+					const meta = (op.context as { crossTabSync?: { remote?: boolean } }).crossTabSync;
+					if (!meta?.remote) return op;
+					syntheticKeys.add(op.key);
+					if (op.context.optimistic) return op;
+					return makeOperation(op.kind, op, { ...op.context, optimistic: true });
+				}),
+				forward
+			);
+		};
+
 	exchanges.push(
+		keepSyntheticOptimisticExchange,
 		offlineExchange({
 			schema,
 			storage,
 			optimistic,
 			updates
-		})
+		}),
+		crossTabSyncExchange({ channelName: 'chase-cross-tab-sync' })
 	);
 
 	const pendingNonSubscriptions = new Map<

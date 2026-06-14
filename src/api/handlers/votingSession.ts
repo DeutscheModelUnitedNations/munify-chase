@@ -9,7 +9,7 @@ import {
 } from '$api/rumble';
 import { isTeamInConference, isParticipantInConference } from '$api/services/authHelper';
 import { assertFindFirstExists, assertFirstEntryExists } from '@m1212e/rumble';
-import { and, eq, isNull } from 'drizzle-orm';
+import { eq } from 'drizzle-orm';
 import { GraphQLError } from 'graphql';
 import { nanoid, isValidNanoid } from '$lib/helpers/nanoid';
 
@@ -34,6 +34,9 @@ const voteRef = object({ table: 'votingVote' });
 
 const sessionPubsub = rumblePubsub({ table: 'votingSession' });
 const votePubsub = rumblePubsub({ table: 'votingVote' });
+// committee.activeVotingSessionId is now the source of truth for "is a vote running?"
+// so start/complete must republish the committee record too.
+const committeePubsub = rumblePubsub({ table: 'committee' });
 
 query({ table: 'votingSession' });
 query({ table: 'votingVote' });
@@ -70,24 +73,15 @@ schemaBuilder.mutationFields((t) => ({
 				)
 				.then(assertFindFirstExists);
 
-			// Resume existing active session if one is already running.
-			const [existing] = await db
-				.select({ id: schema.votingSession.id })
-				.from(schema.votingSession)
-				.where(
-					and(
-						eq(schema.votingSession.committeeId, args.committeeId),
-						isNull(schema.votingSession.completedAt)
-					)
-				)
-				.limit(1);
-
-			if (existing) {
+			// Resume existing active session if one is already running, identified by
+			// the committee's `activeVotingSessionId` (the single source of truth).
+			if (committee.activeVotingSessionId) {
 				return db.query.votingSession
 					.findFirst(
 						q(
-							ctx.abilities.votingSession.filter('read').merge({ where: { id: existing.id } }).query
-								.single
+							ctx.abilities.votingSession
+								.filter('read')
+								.merge({ where: { id: committee.activeVotingSessionId } }).query.single
 						)
 					)
 					.then(assertFindFirstExists);
@@ -100,24 +94,32 @@ schemaBuilder.mutationFields((t) => ({
 				}
 			});
 
-			const result = await db
-				.insert(schema.votingSession)
-				.values({
-					id: entityId,
-					committeeId: args.committeeId,
-					startedByConferenceUserId: startedBy?.id ?? null,
-					mode: args.mode,
-					majority: args.majority,
-					majorityAmount: args.majorityAmount,
-					withAbstentions: args.withAbstentions,
-					voteName: args.voteName ?? null,
-					currentStage: args.currentStage ?? (args.mode === 'SHOW_OF_HANDS' ? 'PRO' : null)
-				})
-				.returning()
-				.then(assertFirstEntryExists);
+			const result = await db.transaction(async (tx) => {
+				const inserted = await tx
+					.insert(schema.votingSession)
+					.values({
+						id: entityId,
+						committeeId: args.committeeId,
+						startedByConferenceUserId: startedBy?.id ?? null,
+						mode: args.mode,
+						majority: args.majority,
+						majorityAmount: args.majorityAmount,
+						withAbstentions: args.withAbstentions,
+						voteName: args.voteName ?? null,
+						currentStage: args.currentStage ?? (args.mode === 'SHOW_OF_HANDS' ? 'PRO' : null)
+					})
+					.returning()
+					.then(assertFirstEntryExists);
+				await tx
+					.update(schema.committee)
+					.set({ activeVotingSessionId: inserted.id })
+					.where(eq(schema.committee.id, args.committeeId));
+				return inserted;
+			});
 
 			sessionPubsub.created();
 			sessionPubsub.updated(result.id);
+			committeePubsub.updated(args.committeeId);
 
 			return db.query.votingSession
 				.findFirst(
@@ -189,6 +191,15 @@ schemaBuilder.mutationFields((t) => ({
 					where: { id: args.sessionId, completedAt: { isNull: true } }
 				});
 				if (!session) throw new GraphQLError('Voting session not found or already completed');
+				// Defense in depth: only accept votes for the session the committee is
+				// currently actively running. Prevents stale clients from writing votes
+				// against a session that's been superseded.
+				const committee = await tx.query.committee.findFirst({
+					where: { id: session.committeeId }
+				});
+				if (committee?.activeVotingSessionId !== args.sessionId) {
+					throw new GraphQLError('Voting session is not the active session for this committee');
+				}
 
 				// Upsert: update if exists, insert if not
 				const existing = await tx.query.votingVote.findFirst({
@@ -238,15 +249,32 @@ schemaBuilder.mutationFields((t) => ({
 			outcome: t.arg({ type: outcomeEnum })
 		},
 		resolve: async (_root, args, ctx) => {
-			await db
-				.update(schema.votingSession)
-				.set({ completedAt: new Date(), outcome: args.outcome ?? null })
-				.where(
-					ctx.abilities.votingSession.filter('update').merge({ where: { id: args.id } }).sql.where
-				);
+			// Locate the committee so we can clear its `activeVotingSessionId` in
+			// the same transaction. Reading through the session row preserves the
+			// ability scope check.
+			const session = await db.query.votingSession
+				.findFirst(
+					ctx.abilities.votingSession.filter('update').merge({ where: { id: args.id } }).query
+						.single
+				)
+				.then(assertFindFirstExists);
+
+			await db.transaction(async (tx) => {
+				await tx
+					.update(schema.votingSession)
+					.set({ completedAt: new Date(), outcome: args.outcome ?? null })
+					.where(
+						ctx.abilities.votingSession.filter('update').merge({ where: { id: args.id } }).sql.where
+					);
+				await tx
+					.update(schema.committee)
+					.set({ activeVotingSessionId: null })
+					.where(eq(schema.committee.id, session.committeeId));
+			});
 
 			sessionPubsub.updated(args.id);
 			sessionPubsub.removed();
+			committeePubsub.updated(session.committeeId);
 
 			return true;
 		}

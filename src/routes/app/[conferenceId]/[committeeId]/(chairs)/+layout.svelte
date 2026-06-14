@@ -15,6 +15,7 @@
 	import { getServerTime } from '$lib/state/serverTime.svelte';
 	import hotkeys from 'hotkeys-js';
 	import VotingModal from '$lib/components/voting/VotingModal.svelte';
+	import { openPresentationWindow } from '$lib/state/presentationWindow.svelte';
 
 	interface Props {
 		children: Snippet;
@@ -264,7 +265,13 @@
 	$effect(() => {
 		hotkeys('alt+p', (event) => {
 			event.preventDefault();
-			window.open('.', '_blank');
+			openPresentationWindow(
+				resolve('/app/[conferenceId]/[committeeId]/(presentation)', {
+					conferenceId,
+					committeeId
+				}),
+				committeeId
+			);
 		});
 		return () => hotkeys.unbind('alt+p');
 	});

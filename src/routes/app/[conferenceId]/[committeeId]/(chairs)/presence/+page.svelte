@@ -33,6 +33,13 @@
 		statusUntil: true,
 		stateOfDebate: true,
 		activeAgendaItem: { id: true, title: true },
+		// Active-roll-call status now lives on the committee as a single FK; pull
+		// it alongside the rest so a single liveQuery powers the Start/Resume
+		// button and the modal's `externalActiveSessionId` prop.
+		activeRollCallSession: {
+			id: true,
+			currentMemberIndex: true
+		},
 		members: {
 			id: true,
 			present: true,
@@ -75,16 +82,7 @@
 			[]
 	);
 
-	const activeSessions = await client.liveQuery.rollCallSessions({
-		__args: {
-			where: { committeeId: page.params.committeeId!, completedAt: { isNull: true } },
-			orderBy: { createdAt: 'desc' }
-		},
-		id: true,
-		currentMemberIndex: true
-	});
-
-	let activeSession = $derived(activeSessions?.at(0) ?? null);
+	let activeSession = $derived(committee?.activeRollCallSession ?? null);
 
 	const pastSessions = await client.liveQuery.rollCallSessions({
 		__args: {

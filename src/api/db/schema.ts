@@ -5,14 +5,12 @@ import {
 	timestamp,
 	date,
 	unique,
-	uniqueIndex,
 	pgEnum,
 	boolean,
 	smallint,
 	integer,
 	type AnyPgColumn
 } from 'drizzle-orm/pg-core';
-import { sql } from 'drizzle-orm';
 
 const defaultTimestamps = {
 	createdAt: timestamp().defaultNow().notNull(),
@@ -75,7 +73,13 @@ export const committee = snakeCase.table(
 		statusUntil: timestamp({ mode: 'date' }).defaultNow().notNull(),
 		stateOfDebate: text(),
 		allowDelegationsToAddThemselvesToSpeakersList: boolean().notNull().default(false),
-		activeAgendaItemId: text().references((): AnyPgColumn => agendaItem.id),
+		activeAgendaItemId: text().references(() => agendaItem.id),
+		activeRollCallSessionId: text().references((): AnyPgColumn => rollCallSession.id, {
+			onDelete: 'set null'
+		}),
+		activeVotingSessionId: text().references((): AnyPgColumn => votingSession.id, {
+			onDelete: 'set null'
+		}),
 		//TODO should these defaults be set at DB level?
 		customSimpleMajority: smallint(), // 50% by default
 		customTwoThirdsMajority: smallint(), // 66% by default
@@ -172,7 +176,7 @@ export const conferenceUser = snakeCase.table(
 export const agendaItem = snakeCase.table('agenda_item', {
 	...defaultIdAndTimestamps,
 	committeeId: text()
-		.references(() => committee.id, { onDelete: 'cascade' })
+		.references((): AnyPgColumn => committee.id, { onDelete: 'cascade' })
 		.notNull(),
 	title: text().notNull()
 });
@@ -212,7 +216,7 @@ export const speakerOnList = snakeCase.table(
 	{
 		...defaultIdAndTimestamps,
 		committeeMemberId: text().references(() => committeeMember.id, { onDelete: 'cascade' }),
-		conferenceMemberId: text().references((): AnyPgColumn => conferenceMember.id, {
+		conferenceMemberId: text().references(() => conferenceMember.id, {
 			onDelete: 'cascade'
 		}),
 		speakersListId: text()
@@ -231,7 +235,7 @@ export const speakerOnList = snakeCase.table(
 export const spokenTimePeriod = snakeCase.table('spoken_time_period', {
 	...defaultIdAndTimestamps,
 	committeeMemberId: text().references(() => committeeMember.id, { onDelete: 'cascade' }),
-	conferenceMemberId: text().references((): AnyPgColumn => conferenceMember.id, {
+	conferenceMemberId: text().references(() => conferenceMember.id, {
 		onDelete: 'cascade'
 	}),
 	speakersListId: text()
@@ -248,25 +252,17 @@ export const committeeTopicChangedTimestamp = snakeCase.table('committee_topic_c
 	timestamp: timestamp().notNull()
 });
 
-export const rollCallSession = snakeCase.table(
-	'roll_call_session',
-	{
-		...defaultIdAndTimestamps,
-		committeeId: text()
-			.notNull()
-			.references(() => committee.id, { onDelete: 'cascade' }),
-		startedByConferenceUserId: text().references((): AnyPgColumn => conferenceUser.id, {
-			onDelete: 'set null'
-		}),
-		currentMemberIndex: integer().notNull().default(0),
-		completedAt: timestamp()
-	},
-	(t) => [
-		uniqueIndex('roll_call_session_active_unique')
-			.on(t.committeeId)
-			.where(sql`${t.completedAt} IS NULL`)
-	]
-);
+export const rollCallSession = snakeCase.table('roll_call_session', {
+	...defaultIdAndTimestamps,
+	committeeId: text()
+		.notNull()
+		.references(() => committee.id, { onDelete: 'cascade' }),
+	startedByConferenceUserId: text().references(() => conferenceUser.id, {
+		onDelete: 'set null'
+	}),
+	currentMemberIndex: integer().notNull().default(0),
+	completedAt: timestamp()
+});
 
 export const presenceEventMarker = pgEnum('presence_event_marker', [
 	'AUTO_SWITCH',
@@ -286,11 +282,11 @@ export const presenceEvent = snakeCase.table('presence_event', {
 		.notNull()
 		.references(() => committee.id, { onDelete: 'cascade' }),
 	// chair/admin who triggered the event; null for system-generated auto-checkouts on switch
-	triggeredByConferenceUserId: text().references((): AnyPgColumn => conferenceUser.id, {
+	triggeredByConferenceUserId: text().references(() => conferenceUser.id, {
 		onDelete: 'set null'
 	}),
 
-	rollCallSessionId: text().references((): AnyPgColumn => rollCallSession.id, {
+	rollCallSessionId: text().references(() => rollCallSession.id, {
 		onDelete: 'set null'
 	}),
 
@@ -310,35 +306,27 @@ export const votingStage = pgEnum('voting_stage', ['PRO', 'CON', 'ABSTAIN', 'EVA
 export const votingOutcome = pgEnum('voting_outcome', ['ADOPTED', 'REJECTED']);
 export const voteChoice = pgEnum('vote_choice', ['PRO', 'CON', 'ABSTAIN']);
 
-export const votingSession = snakeCase.table(
-	'voting_session',
-	{
-		...defaultIdAndTimestamps,
-		committeeId: text()
-			.notNull()
-			.references(() => committee.id, { onDelete: 'cascade' }),
-		startedByConferenceUserId: text().references((): AnyPgColumn => conferenceUser.id, {
-			onDelete: 'set null'
-		}),
-		mode: votingMode().notNull(),
-		voteName: text(),
-		majority: votingMajorityType().notNull(),
-		withAbstentions: boolean().notNull().default(false),
-		majorityAmount: integer().notNull(),
-		currentStage: votingStage(),
-		votesPro: integer().notNull().default(0),
-		votesCon: integer().notNull().default(0),
-		votesAbstain: integer().notNull().default(0),
-		currentMemberIndex: integer().notNull().default(0),
-		completedAt: timestamp(),
-		outcome: votingOutcome()
-	},
-	(t) => [
-		uniqueIndex('voting_session_active_unique')
-			.on(t.committeeId)
-			.where(sql`${t.completedAt} IS NULL`)
-	]
-);
+export const votingSession = snakeCase.table('voting_session', {
+	...defaultIdAndTimestamps,
+	committeeId: text()
+		.notNull()
+		.references(() => committee.id, { onDelete: 'cascade' }),
+	startedByConferenceUserId: text().references(() => conferenceUser.id, {
+		onDelete: 'set null'
+	}),
+	mode: votingMode().notNull(),
+	voteName: text(),
+	majority: votingMajorityType().notNull(),
+	withAbstentions: boolean().notNull().default(false),
+	majorityAmount: integer().notNull(),
+	currentStage: votingStage(),
+	votesPro: integer().notNull().default(0),
+	votesCon: integer().notNull().default(0),
+	votesAbstain: integer().notNull().default(0),
+	currentMemberIndex: integer().notNull().default(0),
+	completedAt: timestamp(),
+	outcome: votingOutcome()
+});
 
 export const votingVote = snakeCase.table(
 	'voting_vote',
@@ -346,7 +334,7 @@ export const votingVote = snakeCase.table(
 		...defaultIdAndTimestamps,
 		votingSessionId: text()
 			.notNull()
-			.references((): AnyPgColumn => votingSession.id, { onDelete: 'cascade' }),
+			.references(() => votingSession.id, { onDelete: 'cascade' }),
 		committeeMemberId: text()
 			.notNull()
 			.references(() => committeeMember.id, { onDelete: 'cascade' }),

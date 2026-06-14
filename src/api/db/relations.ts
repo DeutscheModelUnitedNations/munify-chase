@@ -35,6 +35,16 @@ export const relations = defineRelations(schema, (r) => ({
 			from: r.committee.activeAgendaItemId,
 			to: r.agendaItem.id
 		}),
+		activeRollCallSession: r.one.rollCallSession({
+			from: r.committee.activeRollCallSessionId,
+			to: r.rollCallSession.id,
+			optional: true
+		}),
+		activeVotingSession: r.one.votingSession({
+			from: r.committee.activeVotingSessionId,
+			to: r.votingSession.id,
+			optional: true
+		}),
 		agendaItems: r.many.agendaItem({
 			from: r.committee.id,
 			to: r.agendaItem.committeeId
@@ -46,6 +56,10 @@ export const relations = defineRelations(schema, (r) => ({
 		presenceEvents: r.many.presenceEvent({
 			from: r.committee.id,
 			to: r.presenceEvent.committeeId
+		}),
+		rollCallSessions: r.many.rollCallSession({
+			from: r.committee.id,
+			to: r.rollCallSession.committeeId
 		}),
 		votingSessions: r.many.votingSession({
 			from: r.committee.id,

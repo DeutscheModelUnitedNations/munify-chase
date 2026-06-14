@@ -18,6 +18,12 @@
 	import PresentationSettings from './PresentationSettings.svelte';
 	import Tabs from '$lib/components/Tabs.svelte';
 	import StatusWidget from '../StatusWidget.svelte';
+	import {
+		fullscreenDelegationSupported,
+		openPresentationWindow,
+		postToPresentation,
+		presentationOpen
+	} from '$lib/state/presentationWindow.svelte';
 
 	const committee = await client.liveQuery.committee({
 		__args: { id: page.params.committeeId! },
@@ -42,6 +48,25 @@
 		{ id: true, label: m.on(), faIcon: 'fa-check' },
 		{ id: false, label: m.off(), faIcon: 'fa-xmark' }
 	];
+
+	const presentationUrl = $derived(
+		resolve('/app/[conferenceId]/[committeeId]/(presentation)', {
+			conferenceId: page.params.conferenceId!,
+			committeeId: page.params.committeeId!
+		})
+	);
+
+	const openPresentation = () => {
+		openPresentationWindow(presentationUrl, page.params.committeeId!);
+	};
+
+	const toggleFullscreen = () => {
+		if (!postToPresentation('toggle-fullscreen')) {
+			openPresentation();
+		}
+	};
+
+	const canToggleFullscreen = fullscreenDelegationSupported();
 </script>
 
 {#if committee}
@@ -92,18 +117,30 @@
 					/>
 				</BasicCard>
 				<BasicCard title={m.presentationMode()}>
-					<a
-						href={resolve('/app/[conferenceId]/[committeeId]/(presentation)', {
-							conferenceId: page.params.conferenceId!,
-							committeeId: page.params.committeeId!
-						})}
-						class="btn btn-primary btn-lg mb-4 flex items-center gap-3"
-						target="_blank"
-					>
-						<i class="fas fa-projector"></i>
-						{m.openPresentation()}
-						<Kbd hotkey="alt+P" class="text-base-content" />
-					</a>
+					<div class="mb-4 flex flex-wrap items-center gap-3">
+						<button
+							type="button"
+							class="btn btn-primary btn-lg flex items-center gap-3"
+							onclick={openPresentation}
+						>
+							<i class="fas fa-projector"></i>
+							{m.openPresentation()}
+							<Kbd hotkey="alt+P" class="text-base-content" />
+						</button>
+						{#if canToggleFullscreen}
+							<button
+								type="button"
+								class="btn btn-lg flex items-center gap-3"
+								onclick={toggleFullscreen}
+								disabled={!presentationOpen()}
+								title={presentationOpen() ? m.enterFullscreen() : m.openPresentation()}
+								aria-label={m.enterFullscreen()}
+							>
+								<i class="fas fa-expand"></i>
+								{m.enterFullscreen()}
+							</button>
+						{/if}
+					</div>
 					<PresentationSettings committeeId={page.params.committeeId!} />
 				</BasicCard>
 				<BasicCard title={m.allowSelfAddToSpeakersList()}>

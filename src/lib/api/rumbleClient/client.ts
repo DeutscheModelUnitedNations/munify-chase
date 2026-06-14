@@ -59,6 +59,16 @@ export type Committee = {
     where?: AgendaitemWhereInputArgument | null | undefined
   }) => Agendaitem | null,
   activeAgendaItemId: ID | null,
+  activeRollCallSession: (p?: {
+    orderBy?: RollcallsessionOrderInputArgument | null | undefined,
+    where?: RollcallsessionWhereInputArgument | null | undefined
+  }) => Rollcallsession | null,
+  activeRollCallSessionId: ID | null,
+  activeVotingSession: (p?: {
+    orderBy?: VotingsessionOrderInputArgument | null | undefined,
+    where?: VotingsessionWhereInputArgument | null | undefined
+  }) => Votingsession | null,
+  activeVotingSessionId: ID | null,
   agendaItems: (p?: {
     limit?: Int | null | undefined,
     offset?: Int | null | undefined,
@@ -92,6 +102,12 @@ export type Committee = {
   presentationLayout: String,
   presentationResolutionFontSize: Int,
   presentationRootFontSize: Int,
+  rollCallSessions: (p?: {
+    limit?: Int | null | undefined,
+    offset?: Int | null | undefined,
+    orderBy?: RollcallsessionOrderInputArgument | null | undefined,
+    where?: RollcallsessionWhereInputArgument | null | undefined
+  }) => Rollcallsession[],
   showWhiteboard: Boolean,
   simpleMajority: Int,
   stateOfDebate: String | null,
@@ -114,6 +130,10 @@ export type CommitteeOrderInputArgument = {
   abbreviation?: SortingParameter | null | undefined,
   activeAgendaItem?: AgendaitemOrderInputArgument | null | undefined,
   activeAgendaItemId?: SortingParameter | null | undefined,
+  activeRollCallSession?: RollcallsessionOrderInputArgument | null | undefined,
+  activeRollCallSessionId?: SortingParameter | null | undefined,
+  activeVotingSession?: VotingsessionOrderInputArgument | null | undefined,
+  activeVotingSessionId?: SortingParameter | null | undefined,
   agendaItems?: AgendaitemOrderInputArgument | null | undefined,
   allowDelegationsToAddThemselvesToSpeakersList?: SortingParameter | null | undefined,
   conference?: ConferenceOrderInputArgument | null | undefined,
@@ -129,6 +149,7 @@ export type CommitteeOrderInputArgument = {
   presentationLayout?: SortingParameter | null | undefined,
   presentationResolutionFontSize?: SortingParameter | null | undefined,
   presentationRootFontSize?: SortingParameter | null | undefined,
+  rollCallSessions?: RollcallsessionOrderInputArgument | null | undefined,
   showWhiteboard?: SortingParameter | null | undefined,
   stateOfDebate?: SortingParameter | null | undefined,
   status?: SortingParameter | null | undefined,
@@ -143,6 +164,10 @@ export type CommitteeWhereInputArgument = {
   abbreviation?: StringWhereInputArgument | null | undefined,
   activeAgendaItem?: AgendaitemWhereInputArgument | null | undefined,
   activeAgendaItemId?: ID | null | undefined,
+  activeRollCallSession?: RollcallsessionWhereInputArgument | null | undefined,
+  activeRollCallSessionId?: ID | null | undefined,
+  activeVotingSession?: VotingsessionWhereInputArgument | null | undefined,
+  activeVotingSessionId?: ID | null | undefined,
   agendaItems?: AgendaitemWhereInputArgument | null | undefined,
   allowDelegationsToAddThemselvesToSpeakersList?: Boolean | null | undefined,
   conference?: ConferenceWhereInputArgument | null | undefined,
@@ -158,6 +183,7 @@ export type CommitteeWhereInputArgument = {
   presentationLayout?: StringWhereInputArgument | null | undefined,
   presentationResolutionFontSize?: IntWhereInputArgument | null | undefined,
   presentationRootFontSize?: IntWhereInputArgument | null | undefined,
+  rollCallSessions?: RollcallsessionWhereInputArgument | null | undefined,
   showWhiteboard?: Boolean | null | undefined,
   stateOfDebate?: StringWhereInputArgument | null | undefined,
   status?: CommitteestatusEnum | null | undefined,

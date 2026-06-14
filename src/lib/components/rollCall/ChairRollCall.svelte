@@ -3,10 +3,11 @@
 	import { m } from '$lib/paraglide/messages';
 	import Modal from '../Modal.svelte';
 	import ScrollingCountryList from './ScrollingCountryList.svelte';
+	import { untrack } from 'svelte';
 	import hotkeys from 'hotkeys-js';
 	import toast from 'svelte-french-toast';
 	import { client } from '$lib/api/rumbleClient/client';
-	import { promiseToastStrings } from '$lib/utils/toast';
+	import { nanoid } from '$lib/helpers/nanoid';
 
 	interface Props {
 		active: boolean;
@@ -38,10 +39,13 @@
 	let currentIndex = $state(0);
 	let sessionId = $state<string | null>(null);
 
-	// IDs of members whose presence change is still saving. Shown as a spinner in
-	// the chair view only; the presentation view derives presence state from the
-	// server via GraphQL subscription.
-	let pendingIds = $state<string[]>([]);
+	// Dedupe key for in-flight setPresence calls. We do NOT show a spinner — the
+	// optimistic cache write makes the check/X icon visible immediately, and offline
+	// the mutation promise never resolves, so any spinner would stick forever. This
+	// set only exists to guard against double-fire on the same row (key repeat /
+	// accidental double-click) which would otherwise re-run the +1 advance below
+	// and visually skip an entry.
+	const inFlight = new Set<string>();
 
 	const setPresence = (present: boolean) => {
 		const member = members[currentIndex];
@@ -51,23 +55,15 @@
 		}
 
 		const id = member.id;
-		pendingIds = [...pendingIds, id];
+		if (inFlight.has(id)) return;
+		inFlight.add(id);
+		setTimeout(() => inFlight.delete(id), 600);
 
-		toast
-			.promise(
-				client.mutate.setPresenceForCommitteeMembers({
-					__args: { ids: [id], present, rollCallSessionId: sessionId },
-					id: true,
-					present: true
-				}),
-				promiseToastStrings(m.presence(), 'update'),
-				{
-					duration: 1000,
-					position: 'top-right'
-				}
-			)
-			.finally(() => {
-				pendingIds = pendingIds.filter((x) => x !== id);
+		client.mutate
+			.setPresenceForCommitteeMembers({
+				__args: { ids: [id], present, rollCallSessionId: sessionId },
+				id: true,
+				present: true
 			})
 			.catch(() => {});
 
@@ -97,48 +93,77 @@
 	$effect(() => {
 		if (active) {
 			(document.activeElement as HTMLElement | null)?.blur();
-			hotkeys('up, down, j, l, esc', 'rollCall', (event, handler) => {
-				event.preventDefault();
-				switch (handler.key) {
-					case 'up': {
-						const newIndex = (currentIndex - 1 + members.length) % members.length;
-						currentIndex = newIndex;
-						syncIndex(newIndex);
-						break;
+			// `single: true` unbinds any prior handler in the rollCall scope before
+			// registering a fresh one. Without it, if this effect re-runs while
+			// `active` stays true, hotkeys-js stacks duplicate handlers in the
+			// scope and every keypress fires setPresence twice — visibly skipping
+			// a row per press because currentIndex has already advanced by the
+			// time the second handler reads `members[currentIndex]`.
+			hotkeys(
+				'up, down, j, l, esc',
+				{ scope: 'rollCall', single: true },
+				(event, handler) => {
+					event.preventDefault();
+					// Also ignore key-repeat events from a held key — same skip
+					// symptom from a different cause, same dedupe blind spot.
+					if (event.repeat) return;
+					switch (handler.key) {
+						case 'up': {
+							const newIndex = (currentIndex - 1 + members.length) % members.length;
+							currentIndex = newIndex;
+							syncIndex(newIndex);
+							break;
+						}
+						case 'down': {
+							const newIndex = (currentIndex + 1) % members.length;
+							currentIndex = newIndex;
+							syncIndex(newIndex);
+							break;
+						}
+						case 'j':
+							setPresence(false);
+							break;
+						case 'l':
+							setPresence(true);
+							break;
+						case 'esc':
+							active = false;
 					}
-					case 'down': {
-						const newIndex = (currentIndex + 1) % members.length;
-						currentIndex = newIndex;
-						syncIndex(newIndex);
-						break;
-					}
-					case 'j':
-						setPresence(false);
-						break;
-					case 'l':
-						setPresence(true);
-						break;
-					case 'esc':
-						active = false;
 				}
-			});
+			);
 			hotkeys.setScope('rollCall');
 
-			// Start a server-side session so the presentation view can mirror progress
+			// Set the session id synchronously so the chair can act before — and even
+			// without — a server confirmation: subsequent setPresenceForCommitteeMembers
+			// / setRollCallSessionIndex calls need a `rollCallSessionId` that the queued
+			// startRollCallSession mutation will create on the server. Resume an existing
+			// session if the parent already sees one in the cache, otherwise mint a
+			// client-side id and pass it through so the optimistic write and the eventual
+			// server insert land on the same row. Read externalActiveSessionId untracked
+			// so a subscription update later doesn't restart the session.
+			const id = untrack(() => externalActiveSessionId) ?? nanoid();
+			sessionId = id;
+
 			client.mutate
 				.startRollCallSession({
-					__args: { committeeId },
+					__args: { committeeId, id },
 					id: true,
 					currentMemberIndex: true
 				})
 				.then((result) => {
+					// Server may return an existing session with a different id if one was
+					// already running and the parent query hadn't surfaced it yet. Adopt
+					// whatever the server returned so subsequent mutations target the right
+					// row. For the index, only jump forward (resume case) — if the user has
+					// already advanced locally while the round trip was in flight, snapping
+					// back to the server-stored value would reset their progress and feel
+					// like the modal lost their input.
 					sessionId = result.id;
-					currentIndex = result.currentMemberIndex;
+					if (result.currentMemberIndex > currentIndex) {
+						currentIndex = result.currentMemberIndex;
+					}
 				})
-				.catch(() => {
-					toast.error(m.rollCallError());
-					active = false;
-				});
+				.catch(() => {});
 		} else {
 			hotkeys.deleteScope('rollCall');
 
@@ -148,7 +173,7 @@
 			}
 
 			currentIndex = 0;
-			pendingIds = [];
+			inFlight.clear();
 		}
 	});
 
@@ -180,7 +205,7 @@
 
 <Modal bind:open={active}>
 	<h1 class="mb-4 text-2xl font-bold">{m.rollCall()}</h1>
-	<ScrollingCountryList {members} {currentIndex} {pendingIds} />
+	<ScrollingCountryList {members} {currentIndex} />
 
 	<div class="modal-action justify-around">
 		<button

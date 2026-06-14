@@ -129,8 +129,6 @@
 	let speakersQueueResizeFn = $state<(() => void) | undefined>(undefined);
 	let commentsQueueResizeFn = $state<(() => void) | undefined>(undefined);
 
-	let isFullscreen = $state(false);
-
 	$effect(() => {
 		if (!layout || !committee) {
 			return;
@@ -149,21 +147,18 @@
 		}
 	});
 
-	const toggleFullscreen = () => {
-		if (!document.fullscreenElement) {
-			document.documentElement.requestFullscreen();
-		} else {
-			document.exitFullscreen();
-		}
-	};
-
 	$effect(() => {
-		const handler = () => {
-			isFullscreen = !!document.fullscreenElement;
+		const handler = (event: MessageEvent) => {
+			if (event.source !== window.opener) return;
+			if (event.data !== 'toggle-fullscreen') return;
+			if (!document.fullscreenElement) {
+				document.documentElement.requestFullscreen().catch(() => {});
+			} else {
+				document.exitFullscreen().catch(() => {});
+			}
 		};
-		handler();
-		document.addEventListener('fullscreenchange', handler);
-		return () => document.removeEventListener('fullscreenchange', handler);
+		window.addEventListener('message', handler);
+		return () => window.removeEventListener('message', handler);
 	});
 </script>
 
@@ -275,15 +270,6 @@
 
 	<ShowOfHandsVotingPresentation {committeeId} />
 	<RollCallVotingPresentation {committeeId} {committee} />
-
-	<button
-		class="btn btn-ghost fixed bottom-3 left-3 z-50 h-12 w-12 min-h-0 p-0 opacity-15 hover:opacity-60 transition-opacity"
-		onclick={toggleFullscreen}
-		aria-label={isFullscreen ? m.exitFullscreen() : m.enterFullscreen()}
-		title={isFullscreen ? m.exitFullscreen() : m.enterFullscreen()}
-	>
-		<i class="fas {isFullscreen ? 'fa-compress' : 'fa-expand'} text-sm"></i>
-	</button>
 {:else}
 	<UndrawError
 		undrawImage={emptyStreet}

@@ -7,6 +7,7 @@ import type {
 import { nanoid } from '$lib/helpers/nanoid';
 import { attendanceCode as generateAttendanceCode } from '$lib/helpers/attendanceCode';
 import { getServerTime } from '$lib/state/serverClock.svelte';
+import { calculateMajority } from '$lib/utils/majorities';
 
 // Optimistic / updates handlers that mirror the server resolvers in src/api/handlers.
 // The goal is to keep the cache aligned with what the server will eventually return so
@@ -63,6 +64,33 @@ function ensureId(id: unknown): string {
 	if (typeof id === 'string' && id.length > 0) return id;
 	return nanoid();
 }
+
+// ---------------------------------------------------------------------------
+// Committee "currently active session" fragments. Both modals (chair + popup)
+// open iff the corresponding FK on the committee is non-null, so every start /
+// complete optimistic update writes through these fragments to set/clear the
+// reference.
+// ---------------------------------------------------------------------------
+
+const COMMITTEE_ACTIVE_ROLL_CALL_FRAGMENT = gql`
+	fragment CommitteeActiveRollCall on Committee {
+		id
+		activeRollCallSessionId
+		activeRollCallSession {
+			id
+		}
+	}
+`;
+
+const COMMITTEE_ACTIVE_VOTING_FRAGMENT = gql`
+	fragment CommitteeActiveVoting on Committee {
+		id
+		activeVotingSessionId
+		activeVotingSession {
+			id
+		}
+	}
+`;
 
 // ---------------------------------------------------------------------------
 // Speakers list helpers
@@ -237,12 +265,16 @@ export const optimistic: OptimisticMutationConfig = {
 		};
 	},
 	deleteCommitteeMember: () => true,
-	setPresenceForCommitteeMembers: (args) =>
-		(args.ids as string[]).map((id) => ({
+	setPresenceForCommitteeMembers: (args, cache) => {
+		const ids = args.ids as string[];
+		const present = args.present as boolean;
+		recomputeCommitteeMajoritiesForMembers(cache, ids, present);
+		return ids.map((id) => ({
 			__typename: 'Committeemember',
 			id,
-			present: args.present
-		})),
+			present
+		}));
+	},
 
 	// -------------------------------------------------------------------------
 	// conference.ts
@@ -636,11 +668,15 @@ export const optimistic: OptimisticMutationConfig = {
 	// -------------------------------------------------------------------------
 	// rollCallSession.ts
 	// -------------------------------------------------------------------------
-	startRollCallSession: (args, cache) => {
-		// Resume the active session for this committee if one is already cached — the
-		// server does the same lookup and returns the existing record on a duplicate start.
-		const existing = findActiveSessionId(cache, 'Rollcallsession', args.committeeId as string);
-		const id = existing ?? ensureId(args.id);
+	startRollCallSession: (args) => {
+		// `committee.activeRollCallSessionId` is the single source of truth for "is a
+		// roll call open?" (see schema.ts) — the chair-side `id` arg lets the optimistic
+		// entity key match the eventual server insert, and the matching cache write
+		// of `committee.activeRollCallSession` happens in `updates` below so the
+		// presentation popup's modal opens immediately. We don't fall back to a
+		// findActive lookup any more; the chair passes its current FK as `id` when
+		// resuming, and a fresh start always supplies a fresh nanoid.
+		const id = ensureId(args.id);
 		return {
 			__typename: 'Rollcallsession',
 			id,
@@ -762,6 +798,47 @@ export const optimistic: OptimisticMutationConfig = {
 			);
 		}
 
+		// Write the new Speakeronlist's member link explicitly. Callers typically request a
+		// minimal mutation selection (id, position, speakersListId) — the embedded member
+		// data we return below would be dropped by graphcache's selection-set-aware write.
+		// Online, the speakers list subscription quickly fills the gap; offline, no
+		// subscription arrives so the entry would otherwise render as "N/A" without a flag.
+		cache.writeFragment(
+			gql`
+				fragment AddedSpeakerLink on Speakeronlist {
+					id
+					committeeMember {
+						id
+						representation {
+							id
+							name
+							alpha2Code
+							alpha3Code
+							faIcon
+							type
+						}
+					}
+					conferenceMember {
+						id
+						representation {
+							id
+							name
+							alpha2Code
+							alpha3Code
+							faIcon
+							type
+						}
+					}
+				}
+			`,
+			{
+				__typename: 'Speakeronlist',
+				id: newId,
+				committeeMember,
+				conferenceMember
+			} as unknown as Record<string, unknown>
+		);
+
 		return {
 			__typename: 'Speakeronlist',
 			id: newId,
@@ -853,6 +930,85 @@ export const optimistic: OptimisticMutationConfig = {
 		const newId = ensureId(args.id);
 		const position = speakers.length;
 
+		// Mirror addSpeakerOnList: ensure the new Speakeronlist's member link is in the
+		// cache even when the mutation selection set omits it, so offline self-adds don't
+		// render as "N/A" without a flag.
+		let committeeMember = null;
+		if (committeeMemberId) {
+			committeeMember = readEntity(
+				cache,
+				gql`
+					fragment SelfAddSpeakerOptimisticCM on Committeemember {
+						id
+						representation {
+							id
+							name
+							alpha2Code
+							alpha3Code
+							faIcon
+							type
+						}
+					}
+				`,
+				{ __typename: 'Committeemember', id: committeeMemberId }
+			);
+		}
+		let conferenceMember = null;
+		if (conferenceMemberId) {
+			conferenceMember = readEntity(
+				cache,
+				gql`
+					fragment SelfAddSpeakerOptimisticConM on Conferencemember {
+						id
+						representation {
+							id
+							name
+							alpha2Code
+							alpha3Code
+							faIcon
+							type
+						}
+					}
+				`,
+				{ __typename: 'Conferencemember', id: conferenceMemberId }
+			);
+		}
+		cache.writeFragment(
+			gql`
+				fragment SelfAddedSpeakerLink on Speakeronlist {
+					id
+					committeeMember {
+						id
+						representation {
+							id
+							name
+							alpha2Code
+							alpha3Code
+							faIcon
+							type
+						}
+					}
+					conferenceMember {
+						id
+						representation {
+							id
+							name
+							alpha2Code
+							alpha3Code
+							faIcon
+							type
+						}
+					}
+				}
+			`,
+			{
+				__typename: 'Speakeronlist',
+				id: newId,
+				committeeMember,
+				conferenceMember
+			} as unknown as Record<string, unknown>
+		);
+
 		return {
 			__typename: 'Speakeronlist',
 			id: newId,
@@ -862,12 +1018,8 @@ export const optimistic: OptimisticMutationConfig = {
 			overwriteName: null,
 			committeeMemberId,
 			conferenceMemberId,
-			committeeMember: committeeMemberId
-				? { __typename: 'Committeemember', id: committeeMemberId }
-				: null,
-			conferenceMember: conferenceMemberId
-				? { __typename: 'Conferencemember', id: conferenceMemberId }
-				: null
+			committeeMember: committeeMember ?? null,
+			conferenceMember: conferenceMember ?? null
 		};
 	},
 	selfRemoveFromSpeakersList: (args, cache) => {
@@ -1045,9 +1197,13 @@ export const optimistic: OptimisticMutationConfig = {
 	// -------------------------------------------------------------------------
 	// votingSession.ts
 	// -------------------------------------------------------------------------
-	startVotingSession: (args, cache) => {
-		const existing = findActiveSessionId(cache, 'Votingsession', args.committeeId as string);
-		const id = existing ?? ensureId(args.id);
+	startVotingSession: (args) => {
+		// Same reasoning as startRollCallSession: `committee.activeVotingSessionId`
+		// is the source of truth, so anchor the optimistic entity key to the
+		// caller-supplied id and let the `updates` handler write the FK on the
+		// committee. The chair passes the current FK as `id` when resuming and a
+		// fresh nanoid when starting; no need to scan the cache for an existing.
+		const id = ensureId(args.id);
 		const mode = args.mode as string;
 		return {
 			__typename: 'Votingsession',
@@ -1191,53 +1347,126 @@ function resolveNsaTargetInCache(
 	return null;
 }
 
-function findActiveSessionId(
+/**
+ * Optimistic recompute of Committee.totalPresent / simpleMajority / twoThirdsMajority
+ * after a setPresenceForCommitteeMembers mutation. The server derives these from
+ * `members.filter(m => m.present && m.representation.type === 'DELEGATION').length`,
+ * so we mirror that here using the cached members list. Without this, the majority
+ * cards show stale values while the mutation is in flight or queued offline.
+ */
+function recomputeCommitteeMajoritiesForMembers(
 	cache: Cache,
-	typename: 'Rollcallsession' | 'Votingsession',
-	committeeId: string
-): string | null {
+	memberIds: string[],
+	present: boolean
+) {
+	const affected = new Set(memberIds);
+	const affectedMemberKeys = new Set(memberIds.map((id) => `Committeemember:${id}`));
+
+	// `committeeId` is not in every page's selection set, so cache.resolve(member, 'committeeId')
+	// may return undefined. Instead, walk known Committee entities (discovered via root Query
+	// fields) and pick those whose `members` link contains any of the affected member keys.
+	const committeeIds = new Set<string>();
 	const queryFields = cache.inspectFields('Query');
-	const keys = new Set<string>();
-	const prefix = `${typename}:`;
+	const committeeKeys = new Set<string>();
 	for (const f of queryFields) {
 		const value = cache.resolve('Query', f.fieldName, f.arguments);
 		if (Array.isArray(value)) {
-			for (const v of value) if (typeof v === 'string' && v.startsWith(prefix)) keys.add(v);
-		} else if (typeof value === 'string' && value.startsWith(prefix)) {
-			keys.add(value);
+			for (const v of value)
+				if (typeof v === 'string' && v.startsWith('Committee:')) committeeKeys.add(v);
+		} else if (typeof value === 'string' && value.startsWith('Committee:')) {
+			committeeKeys.add(value);
 		}
 	}
-	for (const key of keys) {
-		const id = key.slice(prefix.length);
-		const data = readEntity<{
-			id: string;
-			committeeId?: string;
-			completedAt?: string | Date | null;
-		}>(
-			cache,
-			typename === 'Rollcallsession'
-				? gql`
-						fragment ActiveRollCallSnapshot on Rollcallsession {
-							id
-							committeeId
-							completedAt
-						}
-					`
-				: gql`
-						fragment ActiveVotingSnapshot on Votingsession {
-							id
-							committeeId
-							completedAt
-						}
-					`,
-			{ __typename: typename, id }
-		);
-		if (!data) continue;
-		if (data.committeeId !== committeeId) continue;
-		if (data.completedAt) continue;
-		return data.id;
+	for (const key of committeeKeys) {
+		const id = key.slice('Committee:'.length);
+		const memberFields = cache
+			.inspectFields({ __typename: 'Committee', id })
+			.filter((f) => f.fieldName === 'members');
+		for (const f of memberFields) {
+			const members = cache.resolve({ __typename: 'Committee', id }, 'members', f.arguments) as
+				| string[]
+				| null
+				| undefined;
+			if (!Array.isArray(members)) continue;
+			if (members.some((m) => typeof m === 'string' && affectedMemberKeys.has(m))) {
+				committeeIds.add(id);
+				break;
+			}
+		}
 	}
-	return null;
+
+	for (const committeeId of committeeIds) {
+		// Read members + representation type. We have to walk the link manually because
+		// readFragment returns null entirely if any requested field is missing from the
+		// cache, and we want this to work even on pages that select a slim member shape.
+		const memberFields = cache
+			.inspectFields({ __typename: 'Committee', id: committeeId })
+			.filter((f) => f.fieldName === 'members');
+		const memberKeys = new Set<string>();
+		for (const f of memberFields) {
+			const arr = cache.resolve(
+				{ __typename: 'Committee', id: committeeId },
+				'members',
+				f.arguments
+			) as string[] | null | undefined;
+			if (!Array.isArray(arr)) continue;
+			for (const k of arr) if (typeof k === 'string') memberKeys.add(k);
+		}
+		if (memberKeys.size === 0) continue;
+
+		let totalPresent = 0;
+		for (const key of memberKeys) {
+			if (!key.startsWith('Committeemember:')) continue;
+			const id = key.slice('Committeemember:'.length);
+			const member = { __typename: 'Committeemember', id };
+			const representationKey = cache.resolve(member, 'representation') as string | null | undefined;
+			let type: string | null | undefined = null;
+			if (typeof representationKey === 'string') {
+				const repId = representationKey.startsWith('Representation:')
+					? representationKey.slice('Representation:'.length)
+					: representationKey;
+				type = cache.resolve({ __typename: 'Representation', id: repId }, 'type') as
+					| string
+					| null
+					| undefined;
+			}
+			if (type !== 'DELEGATION') continue;
+			const cachedPresent = cache.resolve(member, 'present') as boolean | null | undefined;
+			const effectivePresent = affected.has(id) ? present : !!cachedPresent;
+			if (effectivePresent) totalPresent += 1;
+		}
+
+		const customSimple = cache.resolve(
+			{ __typename: 'Committee', id: committeeId },
+			'customSimpleMajority'
+		) as number | null | undefined;
+		const customTwoThirds = cache.resolve(
+			{ __typename: 'Committee', id: committeeId },
+			'customTwoThirdsMajority'
+		) as number | null | undefined;
+
+		cache.writeFragment(
+			gql`
+				fragment CommitteeMajorityWrite on Committee {
+					id
+					totalPresent
+					simpleMajority
+					twoThirdsMajority
+				}
+			`,
+			{
+				__typename: 'Committee',
+				id: committeeId,
+				totalPresent,
+				simpleMajority:
+					typeof customSimple === 'number' ? customSimple : calculateMajority(totalPresent, 'simple'),
+				twoThirdsMajority:
+					typeof customTwoThirds === 'number'
+						? customTwoThirds
+						: calculateMajority(totalPresent, 'twoThirds')
+			} as Record<string, unknown>
+		);
+	}
 }
 
 function findExistingVoteId(
@@ -1421,6 +1650,19 @@ export const updates: UpdatesConfig = {
 			}
 			cache.invalidate(member);
 		},
+		setPresenceForCommitteeMembers: (_result, args, cache) => {
+			// Closes the flicker window between optimistic rollback and the committee
+			// subscription arrival: the mutation result only carries members, so the base
+			// layer's Committee.totalPresent / simpleMajority / twoThirdsMajority briefly
+			// snap back to their stale values once the optimistic layer is removed. Re-run
+			// the same recompute against the now-updated base layer to keep them stable
+			// until the subscription confirms (or replaces) the value.
+			recomputeCommitteeMajoritiesForMembers(
+				cache,
+				args.ids as string[],
+				args.present as boolean
+			);
+		},
 
 		// ---------------------------------------------------------------
 		// conferenceMember
@@ -1545,10 +1787,18 @@ export const updates: UpdatesConfig = {
 		startRollCallSession: (result, args, cache) => {
 			const created = (result as Record<string, Record<string, unknown>>).startRollCallSession;
 			if (!created?.id) return;
-			void args;
-			void cache;
+			// Single source of truth for "modal open?" — write the FK on the committee.
+			// Every consumer (chair, presentation popup, presence page) reads this and
+			// reacts; the previous list-based dance is no longer needed.
+			cache.writeFragment(COMMITTEE_ACTIVE_ROLL_CALL_FRAGMENT, {
+				__typename: 'Committee',
+				id: args.committeeId as string,
+				activeRollCallSessionId: created.id as string,
+				activeRollCallSession: { __typename: 'Rollcallsession', id: created.id as string }
+			} as Record<string, unknown>);
 		},
 		completeRollCallSession: (_result, args, cache) => {
+			// Stamp completion on the session row for history queries…
 			cache.writeFragment(
 				gql`
 					fragment CompleteRollCallSession on Rollcallsession {
@@ -1562,6 +1812,20 @@ export const updates: UpdatesConfig = {
 					completedAt: getServerTime().toDate()
 				} as Record<string, unknown>
 			);
+			// …and clear the committee's FK so every modal closes. Resolve the
+			// committee id from the cached session so we don't need it in the args.
+			const committeeId = cache.resolve(
+				{ __typename: 'Rollcallsession', id: args.id as string },
+				'committeeId'
+			) as string | undefined | null;
+			if (committeeId) {
+				cache.writeFragment(COMMITTEE_ACTIVE_ROLL_CALL_FRAGMENT, {
+					__typename: 'Committee',
+					id: committeeId,
+					activeRollCallSessionId: null,
+					activeRollCallSession: null
+				} as Record<string, unknown>);
+			}
 		},
 
 		// ---------------------------------------------------------------
@@ -1646,6 +1910,16 @@ export const updates: UpdatesConfig = {
 		// ---------------------------------------------------------------
 		// votingSession
 		// ---------------------------------------------------------------
+		startVotingSession: (result, args, cache) => {
+			const created = (result as Record<string, Record<string, unknown>>).startVotingSession;
+			if (!created?.id) return;
+			cache.writeFragment(COMMITTEE_ACTIVE_VOTING_FRAGMENT, {
+				__typename: 'Committee',
+				id: args.committeeId as string,
+				activeVotingSessionId: created.id as string,
+				activeVotingSession: { __typename: 'Votingsession', id: created.id as string }
+			} as Record<string, unknown>);
+		},
 		completeVotingSession: (_result, args, cache) => {
 			cache.writeFragment(
 				gql`
@@ -1662,6 +1936,18 @@ export const updates: UpdatesConfig = {
 					outcome: (args.outcome as string | null | undefined) ?? null
 				} as Record<string, unknown>
 			);
+			const committeeId = cache.resolve(
+				{ __typename: 'Votingsession', id: args.id as string },
+				'committeeId'
+			) as string | undefined | null;
+			if (committeeId) {
+				cache.writeFragment(COMMITTEE_ACTIVE_VOTING_FRAGMENT, {
+					__typename: 'Committee',
+					id: committeeId,
+					activeVotingSessionId: null,
+					activeVotingSession: null
+				} as Record<string, unknown>);
+			}
 		},
 		setVoteForMember: (result, args, cache) => {
 			const vote = (result as Record<string, Record<string, unknown>>).setVoteForMember;

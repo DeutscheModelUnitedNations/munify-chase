@@ -89,6 +89,21 @@ const COMMITTEE_ACTIVE_VOTING_FRAGMENT = gql`
 	}
 `;
 
+// Descriptive voting-session fields the chair's `startVotingSession` selection
+// omits (it only carries the vote-tally fields it needs for its own UI) but the
+// presentation popup reads. Written from the mutation args in `updates` so the
+// offline / cross-tab cache has them — see updates.startVotingSession.
+const VOTING_SESSION_DETAILS_FRAGMENT = gql`
+	fragment StartVotingSessionDetails on Votingsession {
+		id
+		committeeId
+		mode
+		voteName
+		majority
+		withAbstentions
+	}
+`;
+
 // ---------------------------------------------------------------------------
 // Speakers list helpers
 // ---------------------------------------------------------------------------
@@ -1958,6 +1973,23 @@ export const updates: UpdatesConfig = {
 				id: args.committeeId as string,
 				activeVotingSessionId: created.id as string,
 				activeVotingSession: { __typename: 'Votingsession', id: created.id as string }
+			} as Record<string, unknown>);
+			// The chair's startVotingSession selection only carries the vote-tally fields
+			// it needs for its own UI, so the presentation popup — which gates its modal on
+			// `activeVotingSession.mode` and also reads majority / withAbstentions / voteName
+			// — would find those non-null fields missing from the cache offline (no network
+			// round-trip to fill them) and never open. Backfill them from the mutation args,
+			// which mirror the row the server inserts. `committeeId` is written here too so
+			// completeVotingSession can resolve which committee FK to clear on the offline /
+			// cross-tab close replay (mirrors startRollCallSession).
+			cache.writeFragment(VOTING_SESSION_DETAILS_FRAGMENT, {
+				__typename: 'Votingsession',
+				id: created.id as string,
+				committeeId: args.committeeId as string,
+				mode: args.mode,
+				voteName: (args.voteName as string | null | undefined) ?? null,
+				majority: args.majority,
+				withAbstentions: args.withAbstentions
 			} as Record<string, unknown>);
 		},
 		completeVotingSession: (_result, args, cache) => {

@@ -143,6 +143,15 @@
 				committeeId
 			}),
 			key: 'voting'
+		},
+		{
+			icon: 'fa-file-lines',
+			label: () => m.resolutions(),
+			href: resolve('/app/[conferenceId]/[committeeId]/(chairs)/resolutions', {
+				conferenceId,
+				committeeId
+			}),
+			key: 'resolutions'
 		}
 	]);
 

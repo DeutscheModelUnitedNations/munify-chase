@@ -6,8 +6,15 @@ import yaml from 'js-yaml';
 import type { SeedData } from './seed-data/schema';
 import * as fs from 'fs';
 import { getCountryData } from './seedUtils';
-import { eq, type InferSelectModel } from 'drizzle-orm';
+import { and, eq, type InferSelectModel } from 'drizzle-orm';
 import { attendanceCode as generateAttendanceCode } from '../../lib/helpers/attendanceCode';
+import { nanoid } from '../../lib/helpers/nanoid';
+import * as Y from 'yjs';
+import { jsonToYDoc } from '@deutschemodelunitednations/munify-resolution-editor/yjs';
+import {
+	createEmptyResolution,
+	type Resolution
+} from '@deutschemodelunitednations/munify-resolution-editor/schema';
 
 // casing is a valid runtime option but missing from DrizzlePgConfig types in this RC
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -185,9 +192,245 @@ try {
 		}
 	}
 
+	console.info('\n### Seeding resolution papers ###');
+	await seedResolutionPapers();
+
 	console.info('\n####################');
 	console.info('### Seeding done ###');
 	console.info('####################\n');
 } catch (e) {
 	console.error(e);
+}
+
+function encodeYjsState(seed: Resolution): Buffer {
+	const doc = new Y.Doc();
+	jsonToYDoc(doc, seed);
+	return Buffer.from(Y.encodeStateAsUpdate(doc));
+}
+
+async function seedResolutionPapers() {
+	// For each committee with an active agenda item, create 2 papers in
+	// different statuses. Uses plain SELECTs because the seed db has no
+	// relations registered.
+	const committees = await db.select().from(schema.committee);
+
+	for (const committee of committees) {
+		if (!committee.activeAgendaItemId) continue;
+
+		const allMembers = await db
+			.select({
+				id: schema.committeeMember.id,
+				representationType: schema.representation.type
+			})
+			.from(schema.committeeMember)
+			.innerJoin(
+				schema.representation,
+				eq(schema.committeeMember.representationId, schema.representation.id)
+			)
+			.where(eq(schema.committeeMember.committeeId, committee.id));
+
+		const delegateMembers = allMembers.filter((m) => m.representationType === 'DELEGATION');
+		if (delegateMembers.length < 3) continue;
+
+		console.info(`  ${committee.name}:`);
+
+		// === WORKING_PAPER ===
+		{
+			const creator = delegateMembers[0];
+			const sponsors = delegateMembers.slice(0, 3);
+			const paperId = nanoid();
+			const title = `Working draft on agenda item`;
+			const seed = createEmptyResolution(committee.name);
+			seed.committeeName = committee.name;
+
+			await db.insert(schema.resolutionPaper).values({
+				id: paperId,
+				committeeId: committee.id,
+				agendaItemId: committee.activeAgendaItemId,
+				creatorCommitteeMemberId: creator.id,
+				status: 'WORKING_PAPER',
+				title,
+				documentNumber: `WP/${committee.abbreviation}/1`
+			});
+			await db.insert(schema.paperYjsDoc).values({
+				id: nanoid(),
+				paperId,
+				state: encodeYjsState(seed)
+			});
+			for (const s of sponsors) {
+				await db.insert(schema.paperSponsor).values({
+					id: nanoid(),
+					paperId,
+					committeeMemberId: s.id
+				});
+			}
+			console.info(
+				`    - ${title} [WORKING_PAPER, ${sponsors.length} sponsors] (${paperId})`
+			);
+		}
+
+		// === DRAFT_RESOLUTION (active) ===
+		{
+			const creator = delegateMembers[1];
+			const sponsors = delegateMembers.slice(0, 5);
+			const paperId = nanoid();
+			const title = `Draft resolution`;
+
+			// Pre-seed with a realistic resolution body so the editor isn't empty.
+			const seed: Resolution = createEmptyResolution(committee.name);
+			seed.committeeName = committee.name;
+			seed.preamble = [
+				{
+					id: nanoid(),
+					content:
+						'Reaffirming the principles of the Charter of the United Nations and the Universal Declaration of Human Rights,'
+				},
+				{
+					id: nanoid(),
+					content:
+						'Recognizing the urgency of coordinated international action on the matter at hand,'
+				},
+				{
+					id: nanoid(),
+					content: 'Deeply concerned by the lack of sustained financing for capacity building,'
+				}
+			];
+			seed.operative = [
+				{
+					id: nanoid(),
+					blocks: [
+						{
+							type: 'text',
+							id: nanoid(),
+							content:
+								'Calls upon all Member States to support the establishment of a coordinated reporting mechanism;'
+						}
+					]
+				},
+				{
+					id: nanoid(),
+					blocks: [
+						{
+							type: 'text',
+							id: nanoid(),
+							content:
+								'Requests the Secretary-General to submit, within twelve months, a detailed implementation roadmap;'
+						}
+					]
+				},
+				{
+					id: nanoid(),
+					blocks: [
+						{
+							type: 'text',
+							id: nanoid(),
+							content:
+								'Decides to remain actively seized of the matter and to review progress at its next session.'
+						}
+					]
+				}
+			];
+
+			await db.insert(schema.resolutionPaper).values({
+				id: paperId,
+				committeeId: committee.id,
+				agendaItemId: committee.activeAgendaItemId,
+				creatorCommitteeMemberId: creator.id,
+				status: 'DRAFT_RESOLUTION',
+				title,
+				documentNumber: `DR/${committee.abbreviation}/1`,
+				sequenceNumber: 1
+			});
+			await db.insert(schema.paperYjsDoc).values({
+				id: nanoid(),
+				paperId,
+				state: encodeYjsState(seed)
+			});
+			for (const s of sponsors) {
+				await db.insert(schema.paperSponsor).values({
+					id: nanoid(),
+					paperId,
+					committeeMemberId: s.id
+				});
+			}
+
+			// Pin as the committee's active DR.
+			await db
+				.update(schema.committee)
+				.set({ activeDraftResolutionId: paperId })
+				.where(eq(schema.committee.id, committee.id));
+
+			// One pending amendment from a non-sponsor.
+			if (delegateMembers.length > 5) {
+				const proposer = delegateMembers[5];
+				const amendmentId = nanoid();
+				await db.insert(schema.amendment).values({
+					id: amendmentId,
+					paperId,
+					proposerCommitteeMemberId: proposer.id,
+					type: 'ALTER_TEXT',
+					status: 'SUBMITTED',
+					targetClauseId: seed.operative[0].id,
+					targetOperativeIndex: 0,
+					newContent:
+						'Calls upon all Member States to support the establishment of a transparent and coordinated reporting mechanism, with annual public review;',
+					documentNumber: `${committee.abbreviation}/1/ALT.1`,
+					sequenceNumber: 1
+				});
+				await db.insert(schema.amendmentSponsor).values({
+					id: nanoid(),
+					amendmentId,
+					committeeMemberId: proposer.id
+				});
+			}
+
+			// One PUBLIC and one TEAM_ONLY comment.
+			const adminCU = (
+				await db
+					.select()
+					.from(schema.conferenceUser)
+					.where(
+						and(
+							eq(schema.conferenceUser.conferenceId, committee.conferenceId),
+							eq(schema.conferenceUser.conferenceUserType, 'ADMIN')
+						)
+					)
+					.limit(1)
+			)[0];
+			if (adminCU) {
+				await db.insert(schema.resolutionComment).values({
+					id: nanoid(),
+					paperId,
+					authorConferenceUserId: adminCU.id,
+					content: 'Please refine the language in OP3 — chairs',
+					visibility: 'TEAM_ONLY'
+				});
+			}
+			const delegateCU = (
+				await db
+					.select({ id: schema.conferenceUser.id })
+					.from(schema.conferenceUser)
+					.innerJoin(
+						schema.committeeMember,
+						eq(schema.conferenceUser.committeeMemberId, schema.committeeMember.id)
+					)
+					.where(eq(schema.committeeMember.committeeId, committee.id))
+					.limit(1)
+			)[0];
+			if (delegateCU) {
+				await db.insert(schema.resolutionComment).values({
+					id: nanoid(),
+					paperId,
+					authorConferenceUserId: delegateCU.id,
+					content: 'Strong support from our delegation on PP2.',
+					clauseId: seed.preamble[1].id,
+					visibility: 'PUBLIC'
+				});
+			}
+
+			console.info(
+				`    - ${title} [DRAFT_RESOLUTION active, ${sponsors.length} sponsors] (${paperId})`
+			);
+		}
+	}
 }

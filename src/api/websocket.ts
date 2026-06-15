@@ -11,7 +11,9 @@ import type { RequestEvent } from '@sveltejs/kit';
 import { OIDC } from './services/OIDC';
 import { parse as parseCookies } from 'cookie';
 import dayjs from 'dayjs';
+import { openYjsRoom } from './yjs/wss';
 const gqlWSS = new WebSocketServer({ noServer: true });
+const yjsWSS = new WebSocketServer({ noServer: true });
 const otherWSS = new WebSocketServer({ noServer: true });
 
 /**
@@ -128,12 +130,31 @@ createWs(
 	gqlWSS
 );
 
+async function authenticateUpgrade(req: IncomingMessage): Promise<string | undefined> {
+	const reqWithLocals = req as RequestWithLocals;
+	if ((reqWithLocals.locals as App.Locals)?.oidc?.user) {
+		return (reqWithLocals.locals as App.Locals).oidc?.user?.sub;
+	}
+	const syntheticEvent = buildSyntheticEvent(req);
+	try {
+		await OIDC.handle({
+			event: syntheticEvent,
+			resolve: async () => new Response()
+		});
+	} catch {
+		return undefined;
+	}
+	reqWithLocals.locals = syntheticEvent.locals;
+	return (reqWithLocals.locals as App.Locals)?.oidc?.user?.sub;
+}
+
 (globalThis as Record<string, unknown>).__wssUpgrade = (
 	req: IncomingMessage,
 	socket: Socket,
 	head: Buffer
 ) => {
-	switch (req.url) {
+	const url = new URL(req.url ?? '/', 'http://localhost');
+	switch (url.pathname) {
 		case '/api/ws':
 			otherWSS.handleUpgrade(req, socket, head, (ws) => {
 				ws.emit('connection', ws, req);
@@ -146,6 +167,23 @@ createWs(
 				gqlWSS.emit('connection', ws, req);
 			});
 			break;
+		case '/api/yjs': {
+			const paperId = url.searchParams.get('room');
+			if (!paperId) {
+				socket.write('HTTP/1.1 400 Bad Request\r\n\r\n');
+				socket.destroy();
+				return;
+			}
+			yjsWSS.handleUpgrade(req, socket, head, async (ws) => {
+				const userSub = await authenticateUpgrade(req);
+				if (!userSub) {
+					ws.close(4401, 'Unauthorized');
+					return;
+				}
+				void openYjsRoom(ws, paperId, userSub);
+			});
+			break;
+		}
 		default:
 			return;
 	}

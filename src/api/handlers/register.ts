@@ -13,6 +13,16 @@ import './import';
 import './presenceEvent';
 import './rollCallSession';
 import './votingSession';
+import './resolutionPaper';
+import './paperEditor';
+import './paperSponsor';
+import './paperShareCode';
+import './paperContentSnapshot';
+import './resolutionComment';
+import './amendment';
+import './amendmentSponsor';
+import './operativeClauseVote';
+import './resolutionVoteResult';
 import { building, dev } from '$app/environment';
 import { clientCreator } from '$api/rumble';
 

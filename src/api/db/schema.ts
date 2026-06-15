@@ -9,6 +9,7 @@ import {
 	boolean,
 	smallint,
 	integer,
+	bytea,
 	type AnyPgColumn
 } from 'drizzle-orm/pg-core';
 
@@ -80,6 +81,16 @@ export const committee = snakeCase.table(
 		activeVotingSessionId: text().references((): AnyPgColumn => votingSession.id, {
 			onDelete: 'set null'
 		}),
+		activeDraftResolutionId: text().references((): AnyPgColumn => resolutionPaper.id, {
+			onDelete: 'set null'
+		}),
+		activeAmendmentId: text().references((): AnyPgColumn => amendment.id, {
+			onDelete: 'set null'
+		}),
+		supportReevaluationOpen: boolean().notNull().default(false),
+		amendmentSubmissionOpen: boolean().notNull().default(true),
+		amendmentSponsoringOpen: boolean().notNull().default(true),
+		currentOperativeIndex: smallint().notNull().default(0),
 		//TODO should these defaults be set at DB level?
 		customSimpleMajority: smallint(), // 50% by default
 		customTwoThirdsMajority: smallint(), // 66% by default
@@ -342,3 +353,204 @@ export const votingVote = snakeCase.table(
 	},
 	(t) => [unique().on(t.votingSessionId, t.committeeMemberId)]
 );
+
+// ----------------------------------------------------------------------------
+// Resolution feature
+// ----------------------------------------------------------------------------
+
+export const paperStatus = pgEnum('paper_status', [
+	'WORKING_PAPER',
+	'SUBMITTED',
+	'DRAFT_RESOLUTION',
+	'AMENDMENT_PHASE',
+	'VOTING_PHASE',
+	'FINAL'
+]);
+
+export const amendmentType = pgEnum('amendment_type', [
+	'DELETE',
+	'ADD',
+	'ALTER_TEXT',
+	'ALTER_POSITION'
+]);
+
+export const amendmentStatus = pgEnum('amendment_status', [
+	'PENDING',
+	'SUBMITTED',
+	'CONSENSUS_ADOPTED',
+	'ACCEPTED',
+	'REJECTED',
+	'WITHDRAWN'
+]);
+
+export const shareCodePermission = pgEnum('share_code_permission', ['SPONSOR', 'EDIT']);
+
+export const commentVisibility = pgEnum('comment_visibility', ['PUBLIC', 'TEAM_ONLY']);
+
+export const resolutionVoteOutcome = pgEnum('resolution_vote_outcome', [
+	'ADOPTED',
+	'REJECTED',
+	'SENT_BACK'
+]);
+
+export const snapshotTrigger = pgEnum('snapshot_trigger', [
+	'SUBMITTED',
+	'AMENDMENT_APPLIED',
+	'VOTE_CONCLUDED',
+	'MANUAL'
+]);
+
+export const resolutionPaper = snakeCase.table('resolution_paper', {
+	...defaultIdAndTimestamps,
+	committeeId: text()
+		.notNull()
+		.references(() => committee.id, { onDelete: 'cascade' }),
+	agendaItemId: text()
+		.notNull()
+		.references(() => agendaItem.id, { onDelete: 'cascade' }),
+	creatorCommitteeMemberId: text()
+		.notNull()
+		.references(() => committeeMember.id, { onDelete: 'cascade' }),
+	status: paperStatus().notNull().default('WORKING_PAPER'),
+	title: text(),
+	documentNumber: text(),
+	sequenceNumber: smallint(),
+	deletedAt: timestamp({ mode: 'date' })
+});
+
+export const paperYjsDoc = snakeCase.table('paper_yjs_doc', {
+	...defaultIdAndTimestamps,
+	paperId: text()
+		.notNull()
+		.unique()
+		.references(() => resolutionPaper.id, { onDelete: 'cascade' }),
+	state: bytea().notNull()
+});
+
+export const paperContentSnapshot = snakeCase.table('paper_content_snapshot', {
+	...defaultIdAndTimestamps,
+	paperId: text()
+		.notNull()
+		.references(() => resolutionPaper.id, { onDelete: 'cascade' }),
+	content: text().notNull(), // JSON serialized Resolution
+	trigger: snapshotTrigger().notNull()
+});
+
+export const paperSponsor = snakeCase.table(
+	'paper_sponsor',
+	{
+		...defaultIdAndTimestamps,
+		paperId: text()
+			.notNull()
+			.references(() => resolutionPaper.id, { onDelete: 'cascade' }),
+		committeeMemberId: text()
+			.notNull()
+			.references(() => committeeMember.id, { onDelete: 'cascade' })
+	},
+	(t) => [unique().on(t.paperId, t.committeeMemberId)]
+);
+
+export const paperEditor = snakeCase.table(
+	'paper_editor',
+	{
+		...defaultIdAndTimestamps,
+		paperId: text()
+			.notNull()
+			.references(() => resolutionPaper.id, { onDelete: 'cascade' }),
+		conferenceUserId: text()
+			.notNull()
+			.references(() => conferenceUser.id, { onDelete: 'cascade' })
+	},
+	(t) => [unique().on(t.paperId, t.conferenceUserId)]
+);
+
+export const paperShareCode = snakeCase.table('paper_share_code', {
+	...defaultIdAndTimestamps,
+	paperId: text()
+		.notNull()
+		.references(() => resolutionPaper.id, { onDelete: 'cascade' }),
+	code: text().notNull().unique(),
+	permission: shareCodePermission().notNull()
+});
+
+export const resolutionComment = snakeCase.table('resolution_comment', {
+	...defaultIdAndTimestamps,
+	paperId: text()
+		.notNull()
+		.references(() => resolutionPaper.id, { onDelete: 'cascade' }),
+	// References a Y.Doc clause id (string from the library's generateClauseId).
+	// Intentionally not a FK — clauses live in the Y.Doc, not the DB.
+	clauseId: text(),
+	authorConferenceUserId: text()
+		.notNull()
+		.references(() => conferenceUser.id, { onDelete: 'cascade' }),
+	content: text().notNull(),
+	visibility: commentVisibility().notNull().default('PUBLIC'),
+	parentCommentId: text().references((): AnyPgColumn => resolutionComment.id, {
+		onDelete: 'cascade'
+	})
+});
+
+export const amendment = snakeCase.table('amendment', {
+	...defaultIdAndTimestamps,
+	paperId: text()
+		.notNull()
+		.references(() => resolutionPaper.id, { onDelete: 'cascade' }),
+	proposerCommitteeMemberId: text()
+		.notNull()
+		.references(() => committeeMember.id, { onDelete: 'cascade' }),
+	type: amendmentType().notNull(),
+	status: amendmentStatus().notNull().default('PENDING'),
+	// Y.Doc clause id this amendment targets. Stored as plain text — not a FK.
+	targetClauseId: text(),
+	// Snapshot of the operative index at proposal time (used to detect stale targets).
+	targetOperativeIndex: smallint(),
+	// RES-Markup fragment for ADD / ALTER_TEXT.
+	newContent: text(),
+	// Destination index for ADD / ALTER_POSITION.
+	targetPosition: smallint(),
+	documentNumber: text(),
+	sequenceNumber: smallint()
+});
+
+export const amendmentSponsor = snakeCase.table(
+	'amendment_sponsor',
+	{
+		...defaultIdAndTimestamps,
+		amendmentId: text()
+			.notNull()
+			.references(() => amendment.id, { onDelete: 'cascade' }),
+		committeeMemberId: text()
+			.notNull()
+			.references(() => committeeMember.id, { onDelete: 'cascade' })
+	},
+	(t) => [unique().on(t.amendmentId, t.committeeMemberId)]
+);
+
+export const operativeClauseVote = snakeCase.table(
+	'operative_clause_vote',
+	{
+		...defaultIdAndTimestamps,
+		paperId: text()
+			.notNull()
+			.references(() => resolutionPaper.id, { onDelete: 'cascade' }),
+		clauseId: text().notNull(),
+		outcome: resolutionVoteOutcome().notNull(),
+		votesFor: integer().notNull().default(0),
+		votesAgainst: integer().notNull().default(0),
+		votesAbstain: integer().notNull().default(0)
+	},
+	(t) => [unique().on(t.paperId, t.clauseId)]
+);
+
+export const resolutionVoteResult = snakeCase.table('resolution_vote_result', {
+	...defaultIdAndTimestamps,
+	paperId: text()
+		.notNull()
+		.unique()
+		.references(() => resolutionPaper.id, { onDelete: 'cascade' }),
+	outcome: resolutionVoteOutcome().notNull(),
+	votesFor: integer().notNull().default(0),
+	votesAgainst: integer().notNull().default(0),
+	votesAbstain: integer().notNull().default(0)
+});

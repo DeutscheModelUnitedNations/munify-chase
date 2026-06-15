@@ -1,7 +1,7 @@
 {
   "version": "8",
   "dialect": "postgres",
-  "id": "42ee82b5-3e24-436a-b57b-6939504abf65",
+  "id": "65af992e-1939-4c10-9237-4e4ce3397286",
   "prevIds": [
     "ba994702-3d80-4d0e-9b9e-5a037f5b534b"
   ],
@@ -106,16 +106,6 @@
         "UN"
       ],
       "name": "representation_type",
-      "entityType": "enums",
-      "schema": "public"
-    },
-    {
-      "values": [
-        "ADOPTED",
-        "REJECTED",
-        "SENT_BACK"
-      ],
-      "name": "resolution_vote_outcome",
       "entityType": "enums",
       "schema": "public"
     },
@@ -320,12 +310,6 @@
     {
       "isRlsEnabled": false,
       "name": "resolution_paper",
-      "entityType": "tables",
-      "schema": "public"
-    },
-    {
-      "isRlsEnabled": false,
-      "name": "resolution_vote_result",
       "entityType": "tables",
       "schema": "public"
     },
@@ -1581,53 +1565,14 @@
       "table": "operative_clause_vote"
     },
     {
-      "type": "resolution_vote_outcome",
-      "typeSchema": "public",
+      "type": "text",
+      "typeSchema": null,
       "notNull": true,
       "dimensions": 0,
       "default": null,
       "generated": null,
       "identity": null,
-      "name": "outcome",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "operative_clause_vote"
-    },
-    {
-      "type": "integer",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": "0",
-      "generated": null,
-      "identity": null,
-      "name": "votes_for",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "operative_clause_vote"
-    },
-    {
-      "type": "integer",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": "0",
-      "generated": null,
-      "identity": null,
-      "name": "votes_against",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "operative_clause_vote"
-    },
-    {
-      "type": "integer",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": "0",
-      "generated": null,
-      "identity": null,
-      "name": "votes_abstain",
+      "name": "voting_session_id",
       "entityType": "columns",
       "schema": "public",
       "table": "operative_clause_vote"
@@ -2493,106 +2438,15 @@
     {
       "type": "text",
       "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "id",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "resolution_vote_result"
-    },
-    {
-      "type": "timestamp",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": "now()",
-      "generated": null,
-      "identity": null,
-      "name": "created_at",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "resolution_vote_result"
-    },
-    {
-      "type": "timestamp",
-      "typeSchema": null,
       "notNull": false,
       "dimensions": 0,
-      "default": "now()",
-      "generated": null,
-      "identity": null,
-      "name": "updated_at",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "resolution_vote_result"
-    },
-    {
-      "type": "text",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
       "default": null,
       "generated": null,
       "identity": null,
-      "name": "paper_id",
+      "name": "vote_voting_session_id",
       "entityType": "columns",
       "schema": "public",
-      "table": "resolution_vote_result"
-    },
-    {
-      "type": "resolution_vote_outcome",
-      "typeSchema": "public",
-      "notNull": true,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "outcome",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "resolution_vote_result"
-    },
-    {
-      "type": "integer",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": "0",
-      "generated": null,
-      "identity": null,
-      "name": "votes_for",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "resolution_vote_result"
-    },
-    {
-      "type": "integer",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": "0",
-      "generated": null,
-      "identity": null,
-      "name": "votes_against",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "resolution_vote_result"
-    },
-    {
-      "type": "integer",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": "0",
-      "generated": null,
-      "identity": null,
-      "name": "votes_abstain",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "resolution_vote_result"
+      "table": "resolution_paper"
     },
     {
       "type": "text",
@@ -3786,6 +3640,23 @@
     {
       "nameExplicit": false,
       "columns": [
+        "voting_session_id"
+      ],
+      "schemaTo": "public",
+      "tableTo": "voting_session",
+      "columnsTo": [
+        "id"
+      ],
+      "onUpdate": "NO ACTION",
+      "onDelete": "CASCADE",
+      "name": "operative_clause_vote_voting_session_id_voting_session_id_fkey",
+      "entityType": "fks",
+      "schema": "public",
+      "table": "operative_clause_vote"
+    },
+    {
+      "nameExplicit": false,
+      "columns": [
         "paper_id"
       ],
       "schemaTo": "public",
@@ -4092,19 +3963,19 @@
     {
       "nameExplicit": false,
       "columns": [
-        "paper_id"
+        "vote_voting_session_id"
       ],
       "schemaTo": "public",
-      "tableTo": "resolution_paper",
+      "tableTo": "voting_session",
       "columnsTo": [
         "id"
       ],
       "onUpdate": "NO ACTION",
-      "onDelete": "CASCADE",
-      "name": "resolution_vote_result_paper_id_resolution_paper_id_fkey",
+      "onDelete": "SET NULL",
+      "name": "resolution_paper_vote_voting_session_id_voting_session_id_fkey",
       "entityType": "fks",
       "schema": "public",
-      "table": "resolution_vote_result"
+      "table": "resolution_paper"
     },
     {
       "nameExplicit": false,
@@ -4522,16 +4393,6 @@
         "id"
       ],
       "nameExplicit": false,
-      "name": "resolution_vote_result_pkey",
-      "schema": "public",
-      "table": "resolution_vote_result",
-      "entityType": "pks"
-    },
-    {
-      "columns": [
-        "id"
-      ],
-      "nameExplicit": false,
       "name": "roll_call_session_pkey",
       "schema": "public",
       "table": "roll_call_session",
@@ -4809,17 +4670,6 @@
       "name": "paper_yjs_doc_paper_id_key",
       "schema": "public",
       "table": "paper_yjs_doc",
-      "entityType": "uniques"
-    },
-    {
-      "nameExplicit": false,
-      "columns": [
-        "paper_id"
-      ],
-      "nullsNotDistinct": false,
-      "name": "resolution_vote_result_paper_id_key",
-      "schema": "public",
-      "table": "resolution_vote_result",
       "entityType": "uniques"
     },
     {

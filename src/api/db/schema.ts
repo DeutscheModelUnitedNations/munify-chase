@@ -387,12 +387,6 @@ export const shareCodePermission = pgEnum('share_code_permission', ['SPONSOR', '
 
 export const commentVisibility = pgEnum('comment_visibility', ['PUBLIC', 'TEAM_ONLY']);
 
-export const resolutionVoteOutcome = pgEnum('resolution_vote_outcome', [
-	'ADOPTED',
-	'REJECTED',
-	'SENT_BACK'
-]);
-
 export const snapshotTrigger = pgEnum('snapshot_trigger', [
 	'SUBMITTED',
 	'AMENDMENT_APPLIED',
@@ -415,7 +409,12 @@ export const resolutionPaper = snakeCase.table('resolution_paper', {
 	title: text(),
 	documentNumber: text(),
 	sequenceNumber: smallint(),
-	deletedAt: timestamp({ mode: 'date' })
+	deletedAt: timestamp({ mode: 'date' }),
+	// Final resolution-level vote. Tallies and outcome live on the linked
+	// votingSession row.
+	voteVotingSessionId: text().references((): AnyPgColumn => votingSession.id, {
+		onDelete: 'set null'
+	})
 });
 
 export const paperYjsDoc = snakeCase.table('paper_yjs_doc', {
@@ -535,22 +534,11 @@ export const operativeClauseVote = snakeCase.table(
 			.notNull()
 			.references(() => resolutionPaper.id, { onDelete: 'cascade' }),
 		clauseId: text().notNull(),
-		outcome: resolutionVoteOutcome().notNull(),
-		votesFor: integer().notNull().default(0),
-		votesAgainst: integer().notNull().default(0),
-		votesAbstain: integer().notNull().default(0)
+		// Reference row only — the actual vote tally + outcome live on the
+		// linked votingSession.
+		votingSessionId: text()
+			.notNull()
+			.references(() => votingSession.id, { onDelete: 'cascade' })
 	},
 	(t) => [unique().on(t.paperId, t.clauseId)]
 );
-
-export const resolutionVoteResult = snakeCase.table('resolution_vote_result', {
-	...defaultIdAndTimestamps,
-	paperId: text()
-		.notNull()
-		.unique()
-		.references(() => resolutionPaper.id, { onDelete: 'cascade' }),
-	outcome: resolutionVoteOutcome().notNull(),
-	votesFor: integer().notNull().default(0),
-	votesAgainst: integer().notNull().default(0),
-	votesAbstain: integer().notNull().default(0)
-});

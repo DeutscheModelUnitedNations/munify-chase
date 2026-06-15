@@ -363,9 +363,9 @@ export const relations = defineRelations(schema, (r) => ({
 			from: r.resolutionPaper.id,
 			to: r.operativeClauseVote.paperId
 		}),
-		voteResult: r.one.resolutionVoteResult({
-			from: r.resolutionPaper.id,
-			to: r.resolutionVoteResult.paperId,
+		vote: r.one.votingSession({
+			from: r.resolutionPaper.voteVotingSessionId,
+			to: r.votingSession.id,
 			optional: true
 		})
 	},
@@ -461,12 +461,10 @@ export const relations = defineRelations(schema, (r) => ({
 			from: r.operativeClauseVote.paperId,
 			to: r.resolutionPaper.id,
 			optional: false
-		})
-	},
-	resolutionVoteResult: {
-		paper: r.one.resolutionPaper({
-			from: r.resolutionVoteResult.paperId,
-			to: r.resolutionPaper.id,
+		}),
+		vote: r.one.votingSession({
+			from: r.operativeClauseVote.votingSessionId,
+			to: r.votingSession.id,
 			optional: false
 		})
 	}

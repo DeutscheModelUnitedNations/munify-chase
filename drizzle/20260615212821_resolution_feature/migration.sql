@@ -2,7 +2,6 @@ CREATE TYPE "amendment_status" AS ENUM('PENDING', 'SUBMITTED', 'CONSENSUS_ADOPTE
 CREATE TYPE "amendment_type" AS ENUM('DELETE', 'ADD', 'ALTER_TEXT', 'ALTER_POSITION');--> statement-breakpoint
 CREATE TYPE "comment_visibility" AS ENUM('PUBLIC', 'TEAM_ONLY');--> statement-breakpoint
 CREATE TYPE "paper_status" AS ENUM('WORKING_PAPER', 'SUBMITTED', 'DRAFT_RESOLUTION', 'AMENDMENT_PHASE', 'VOTING_PHASE', 'FINAL');--> statement-breakpoint
-CREATE TYPE "resolution_vote_outcome" AS ENUM('ADOPTED', 'REJECTED', 'SENT_BACK');--> statement-breakpoint
 CREATE TYPE "share_code_permission" AS ENUM('SPONSOR', 'EDIT');--> statement-breakpoint
 CREATE TYPE "snapshot_trigger" AS ENUM('SUBMITTED', 'AMENDMENT_APPLIED', 'VOTE_CONCLUDED', 'MANUAL');--> statement-breakpoint
 CREATE TABLE "amendment" (
@@ -36,10 +35,7 @@ CREATE TABLE "operative_clause_vote" (
 	"updated_at" timestamp DEFAULT now(),
 	"paper_id" text NOT NULL,
 	"clause_id" text NOT NULL,
-	"outcome" "resolution_vote_outcome" NOT NULL,
-	"votes_for" integer DEFAULT 0 NOT NULL,
-	"votes_against" integer DEFAULT 0 NOT NULL,
-	"votes_abstain" integer DEFAULT 0 NOT NULL,
+	"voting_session_id" text NOT NULL,
 	CONSTRAINT "operative_clause_vote_paper_id_clause_id_unique" UNIQUE("paper_id","clause_id")
 );
 --> statement-breakpoint
@@ -110,18 +106,8 @@ CREATE TABLE "resolution_paper" (
 	"title" text,
 	"document_number" text,
 	"sequence_number" smallint,
-	"deleted_at" timestamp
-);
---> statement-breakpoint
-CREATE TABLE "resolution_vote_result" (
-	"id" text PRIMARY KEY,
-	"created_at" timestamp DEFAULT now() NOT NULL,
-	"updated_at" timestamp DEFAULT now(),
-	"paper_id" text NOT NULL UNIQUE,
-	"outcome" "resolution_vote_outcome" NOT NULL,
-	"votes_for" integer DEFAULT 0 NOT NULL,
-	"votes_against" integer DEFAULT 0 NOT NULL,
-	"votes_abstain" integer DEFAULT 0 NOT NULL
+	"deleted_at" timestamp,
+	"vote_voting_session_id" text
 );
 --> statement-breakpoint
 ALTER TABLE "committee" ADD COLUMN "active_draft_resolution_id" text;--> statement-breakpoint
@@ -137,6 +123,7 @@ ALTER TABLE "amendment_sponsor" ADD CONSTRAINT "amendment_sponsor_committee_memb
 ALTER TABLE "committee" ADD CONSTRAINT "committee_active_draft_resolution_id_resolution_paper_id_fkey" FOREIGN KEY ("active_draft_resolution_id") REFERENCES "resolution_paper"("id") ON DELETE SET NULL;--> statement-breakpoint
 ALTER TABLE "committee" ADD CONSTRAINT "committee_active_amendment_id_amendment_id_fkey" FOREIGN KEY ("active_amendment_id") REFERENCES "amendment"("id") ON DELETE SET NULL;--> statement-breakpoint
 ALTER TABLE "operative_clause_vote" ADD CONSTRAINT "operative_clause_vote_paper_id_resolution_paper_id_fkey" FOREIGN KEY ("paper_id") REFERENCES "resolution_paper"("id") ON DELETE CASCADE;--> statement-breakpoint
+ALTER TABLE "operative_clause_vote" ADD CONSTRAINT "operative_clause_vote_voting_session_id_voting_session_id_fkey" FOREIGN KEY ("voting_session_id") REFERENCES "voting_session"("id") ON DELETE CASCADE;--> statement-breakpoint
 ALTER TABLE "paper_content_snapshot" ADD CONSTRAINT "paper_content_snapshot_paper_id_resolution_paper_id_fkey" FOREIGN KEY ("paper_id") REFERENCES "resolution_paper"("id") ON DELETE CASCADE;--> statement-breakpoint
 ALTER TABLE "paper_editor" ADD CONSTRAINT "paper_editor_paper_id_resolution_paper_id_fkey" FOREIGN KEY ("paper_id") REFERENCES "resolution_paper"("id") ON DELETE CASCADE;--> statement-breakpoint
 ALTER TABLE "paper_editor" ADD CONSTRAINT "paper_editor_conference_user_id_conference_user_id_fkey" FOREIGN KEY ("conference_user_id") REFERENCES "conference_user"("id") ON DELETE CASCADE;--> statement-breakpoint
@@ -150,4 +137,4 @@ ALTER TABLE "resolution_comment" ADD CONSTRAINT "resolution_comment_parent_comme
 ALTER TABLE "resolution_paper" ADD CONSTRAINT "resolution_paper_committee_id_committee_id_fkey" FOREIGN KEY ("committee_id") REFERENCES "committee"("id") ON DELETE CASCADE;--> statement-breakpoint
 ALTER TABLE "resolution_paper" ADD CONSTRAINT "resolution_paper_agenda_item_id_agenda_item_id_fkey" FOREIGN KEY ("agenda_item_id") REFERENCES "agenda_item"("id") ON DELETE CASCADE;--> statement-breakpoint
 ALTER TABLE "resolution_paper" ADD CONSTRAINT "resolution_paper_Am25SQ0EdOJE_fkey" FOREIGN KEY ("creator_committee_member_id") REFERENCES "committee_member"("id") ON DELETE CASCADE;--> statement-breakpoint
-ALTER TABLE "resolution_vote_result" ADD CONSTRAINT "resolution_vote_result_paper_id_resolution_paper_id_fkey" FOREIGN KEY ("paper_id") REFERENCES "resolution_paper"("id") ON DELETE CASCADE;
+ALTER TABLE "resolution_paper" ADD CONSTRAINT "resolution_paper_vote_voting_session_id_voting_session_id_fkey" FOREIGN KEY ("vote_voting_session_id") REFERENCES "voting_session"("id") ON DELETE SET NULL;

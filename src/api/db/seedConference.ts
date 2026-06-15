@@ -434,3 +434,5 @@ async function seedResolutionPapers() {
 		}
 	}
 }
+
+process.exit(0);

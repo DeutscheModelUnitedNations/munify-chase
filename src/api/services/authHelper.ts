@@ -1,5 +1,6 @@
 import type { Context } from '$api/context';
 import { configPrivate } from '$config/private';
+import { GraphQLError } from 'graphql';
 
 export function isAdminEmail(email: string) {
 	const whitelistEmails = configPrivate.ADMIN_EMAIL_WHITELIST.split(',').filter(Boolean);
@@ -124,4 +125,47 @@ export function isParticipant(ctx: Context) {
 			}
 		}
 	};
+}
+
+/**
+ * Where-filter fragment for the caller's `conferenceUser`, scoped to the
+ * committee that owns the given paper. Pass additional committee predicates
+ * (e.g. `{ amendmentSubmissionOpen: true }`) to gate on committee state in
+ * the same query.
+ *
+ * Used with `db.query.conferenceUser.findFirst({ where: ..., with: { committeeMember: true } })
+ * .then(assertFindFirstExists)` to fail closed when the user is not a member
+ * or the committee state does not match.
+ */
+export function committeeMemberForPaper(
+	ctx: Context,
+	paperId: string,
+	committeePredicates: Record<string, unknown> = {}
+) {
+	const user = ctx.mustBeLoggedIn();
+	if (!user.email) throw new GraphQLError('User email required');
+	return {
+		userEmail: user.email,
+		committeeMember: {
+			committee: {
+				resolutionPapers: { id: paperId },
+				...committeePredicates
+			}
+		}
+	} as const;
+}
+
+/**
+ * Where-filter fragment for an `amendment` row whose proposer is the calling
+ * user. Combine with other predicates via `OR` to authorize self-service
+ * actions (e.g. proposer withdrawing their own amendment).
+ */
+export function isAmendmentProposer(ctx: Context) {
+	const user = ctx.mustBeLoggedIn();
+	if (!user.email) throw new GraphQLError('User email required');
+	return {
+		proposer: {
+			users: { userEmail: user.email }
+		}
+	} as const;
 }

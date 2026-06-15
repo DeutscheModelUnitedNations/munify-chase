@@ -5,7 +5,7 @@ import { WebSocketServer, type WebSocket as WSWebSocket } from 'ws';
 import type { Socket } from 'node:net';
 import { useServer, type Extra } from 'graphql-ws/use/ws';
 import type { Context } from 'graphql-ws';
-import { createWs } from './rumble';
+import { createWs } from '$api/rumble';
 import type { IncomingMessage } from 'node:http';
 import type { RequestEvent } from '@sveltejs/kit';
 import { OIDC } from './services/OIDC';

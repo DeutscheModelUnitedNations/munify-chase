@@ -85,7 +85,6 @@ schemaBuilder.mutationFields((t) => ({
 			targetPosition: t.arg.int()
 		},
 		resolve: async (query, _root, args, ctx) => {
-			const entityId = args.id ?? nanoid();
 
 			const isChair = await db.query.resolutionPaper.findFirst({
 				where: {
@@ -118,7 +117,7 @@ schemaBuilder.mutationFields((t) => ({
 
 			await db.transaction(async (tx) => {
 				await tx.insert(schema.amendment).values({
-					id: entityId,
+					id: args.id,
 					paperId: args.paperId,
 					proposerCommitteeMemberId,
 					type: args.type,
@@ -130,7 +129,7 @@ schemaBuilder.mutationFields((t) => ({
 				});
 				await tx.insert(schema.amendmentSponsor).values({
 					id: nanoid(),
-					amendmentId: entityId,
+					amendmentId: args.id,
 					committeeMemberId: proposerCommitteeMemberId
 				});
 			});
@@ -140,7 +139,7 @@ schemaBuilder.mutationFields((t) => ({
 			return db.query.amendment
 				.findFirst(
 					query(
-						ctx.abilities.amendment.filter('read').merge({ where: { id: entityId } }).query.single
+						ctx.abilities.amendment.filter('read').merge({ where: { id: args.id } }).query.single
 					)
 				)
 				.then(assertFindFirstExists);

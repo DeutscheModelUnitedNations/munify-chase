@@ -11,7 +11,7 @@ import { isTeamInConference, isParticipantInConference } from '$api/services/aut
 import { assertFindFirstExists, assertFirstEntryExists } from '@m1212e/rumble';
 import { eq } from 'drizzle-orm';
 import { GraphQLError } from 'graphql';
-import { nanoid, isValidNanoid } from '$lib/helpers/nanoid';
+import { nanoidValidation } from '$lib/helpers/nanoid';
 
 abilityBuilder.votingSession.allow('read').when((ctx) => ({
 	where: { committee: isParticipantInConference(ctx) }
@@ -51,7 +51,7 @@ schemaBuilder.mutationFields((t) => ({
 	startVotingSession: t.drizzleField({
 		type: sessionRef,
 		args: {
-			id: t.arg.id(),
+			id: t.arg.id().validate(nanoidValidation),
 			committeeId: t.arg.id({ required: true }),
 			mode: t.arg({ type: modeEnum, required: true }),
 			majority: t.arg({ type: majorityEnum, required: true }),
@@ -61,10 +61,6 @@ schemaBuilder.mutationFields((t) => ({
 			currentStage: t.arg({ type: stageEnum })
 		},
 		resolve: async (q, _root, args, ctx) => {
-			if (args.id != null && !isValidNanoid(args.id)) {
-				throw new GraphQLError('Invalid ID format');
-			}
-			const entityId = args.id ?? nanoid();
 
 			const committee = await db.query.committee
 				.findFirst(
@@ -98,7 +94,7 @@ schemaBuilder.mutationFields((t) => ({
 				const inserted = await tx
 					.insert(schema.votingSession)
 					.values({
-						id: entityId,
+						id: args.id,
 						committeeId: args.committeeId,
 						startedByConferenceUserId: startedBy?.id ?? null,
 						mode: args.mode,
@@ -175,16 +171,12 @@ schemaBuilder.mutationFields((t) => ({
 	setVoteForMember: t.drizzleField({
 		type: voteRef,
 		args: {
-			id: t.arg.id(),
+			id: t.arg.id().validate(nanoidValidation),
 			sessionId: t.arg.id({ required: true }),
 			committeeMemberId: t.arg.id({ required: true }),
 			vote: t.arg({ type: voteChoiceEnum, required: true })
 		},
 		resolve: async (q, _root, args, ctx) => {
-			if (args.id != null && !isValidNanoid(args.id)) {
-				throw new GraphQLError('Invalid ID format');
-			}
-			const entityId = args.id ?? nanoid();
 
 			const resultId = await db.transaction(async (tx) => {
 				const session = await tx.query.votingSession.findFirst({
@@ -220,7 +212,7 @@ schemaBuilder.mutationFields((t) => ({
 				const inserted = await tx
 					.insert(schema.votingVote)
 					.values({
-						id: entityId,
+						id: args.id,
 						votingSessionId: args.sessionId,
 						committeeMemberId: args.committeeMemberId,
 						vote: args.vote

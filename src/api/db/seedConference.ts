@@ -264,9 +264,7 @@ async function seedResolutionPapers() {
 					committeeMemberId: s.id
 				});
 			}
-			console.info(
-				`    - ${title} [WORKING_PAPER, ${sponsors.length} sponsors] (${paperId})`
-			);
+			console.info(`    - ${title} [WORKING_PAPER, ${sponsors.length} sponsors] (${paperId})`);
 		}
 
 		// === DRAFT_RESOLUTION (active) ===

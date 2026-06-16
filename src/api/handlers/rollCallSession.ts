@@ -3,8 +3,7 @@ import { abilityBuilder, schemaBuilder, object, pubsub as rumblePubsub, query } 
 import { isTeamInConference, isParticipantInConference } from '$api/services/authHelper';
 import { assertFindFirstExists, assertFirstEntryExists } from '@m1212e/rumble';
 import { eq } from 'drizzle-orm';
-import { nanoid, isValidNanoid } from '$lib/helpers/nanoid';
-import { GraphQLError } from 'graphql';
+import { nanoidValidation } from '$lib/helpers/nanoid';
 
 abilityBuilder.rollCallSession.allow('read').when((ctx) => ({
 	where: { committee: isParticipantInConference(ctx) }
@@ -26,14 +25,10 @@ schemaBuilder.mutationFields((t) => {
 		startRollCallSession: t.drizzleField({
 			type: ref,
 			args: {
-				id: t.arg.id(),
+				id: t.arg.id().validate(nanoidValidation),
 				committeeId: t.arg.id({ required: true })
 			},
 			resolve: async (q, _root, args, ctx) => {
-				if (args.id != null && !isValidNanoid(args.id)) {
-					throw new GraphQLError('Invalid ID format');
-				}
-				const entityId = args.id ?? nanoid();
 
 				const committee = await db.query.committee
 					.findFirst(
@@ -68,7 +63,7 @@ schemaBuilder.mutationFields((t) => {
 					const inserted = await tx
 						.insert(schema.rollCallSession)
 						.values({
-							id: entityId,
+							id: args.id,
 							committeeId: args.committeeId,
 							startedByConferenceUserId: startedBy?.id ?? null,
 							currentMemberIndex: 0

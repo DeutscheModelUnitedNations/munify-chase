@@ -99,38 +99,34 @@
 			// scope and every keypress fires setPresence twice — visibly skipping
 			// a row per press because currentIndex has already advanced by the
 			// time the second handler reads `members[currentIndex]`.
-			hotkeys(
-				'up, down, j, l, esc',
-				{ scope: 'rollCall', single: true },
-				(event, handler) => {
-					event.preventDefault();
-					// Also ignore key-repeat events from a held key — same skip
-					// symptom from a different cause, same dedupe blind spot.
-					if (event.repeat) return;
-					switch (handler.key) {
-						case 'up': {
-							const newIndex = (currentIndex - 1 + members.length) % members.length;
-							currentIndex = newIndex;
-							syncIndex(newIndex);
-							break;
-						}
-						case 'down': {
-							const newIndex = (currentIndex + 1) % members.length;
-							currentIndex = newIndex;
-							syncIndex(newIndex);
-							break;
-						}
-						case 'j':
-							setPresence(false);
-							break;
-						case 'l':
-							setPresence(true);
-							break;
-						case 'esc':
-							active = false;
+			hotkeys('up, down, j, l, esc', { scope: 'rollCall', single: true }, (event, handler) => {
+				event.preventDefault();
+				// Also ignore key-repeat events from a held key — same skip
+				// symptom from a different cause, same dedupe blind spot.
+				if (event.repeat) return;
+				switch (handler.key) {
+					case 'up': {
+						const newIndex = (currentIndex - 1 + members.length) % members.length;
+						currentIndex = newIndex;
+						syncIndex(newIndex);
+						break;
 					}
+					case 'down': {
+						const newIndex = (currentIndex + 1) % members.length;
+						currentIndex = newIndex;
+						syncIndex(newIndex);
+						break;
+					}
+					case 'j':
+						setPresence(false);
+						break;
+					case 'l':
+						setPresence(true);
+						break;
+					case 'esc':
+						active = false;
 				}
-			);
+			});
 			hotkeys.setScope('rollCall');
 
 			// Set the session id synchronously so the chair can act before — and even

@@ -45,7 +45,6 @@ schemaBuilder.mutationFields((t) => {
 				committeeId: t.arg({ type: 'ID', required: true })
 			},
 			resolve: async (query, root, args, ctx) => {
-				const entityId = args.id ?? nanoid();
 
 				await db.query.committee
 					.findFirst(
@@ -61,7 +60,7 @@ schemaBuilder.mutationFields((t) => {
 						.values({
 							title: args.title,
 							committeeId: args.committeeId,
-							id: entityId
+							id: args.id
 						})
 						.returning()
 						.then(assertFirstEntryExists);

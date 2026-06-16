@@ -15,8 +15,7 @@ import {
 import { assertFindFirstExists, assertFirstEntryExists } from '@m1212e/rumble';
 import { and, count, eq, type InferSelectModel } from 'drizzle-orm';
 import { calculateMajority } from '$lib/utils/majorities';
-import { nanoid, isValidNanoid } from '$lib/helpers/nanoid';
-import { GraphQLError } from 'graphql';
+import { nanoidValidation } from '$lib/helpers/nanoid';
 
 abilityBuilder.committee.allow('read').when((ctx) => {
 	return {
@@ -109,16 +108,12 @@ schemaBuilder.mutationFields((t) => {
 		createCommittee: t.drizzleField({
 			type: ref,
 			args: {
-				id: t.arg.id(),
+				id: t.arg.id().validate(nanoidValidation),
 				conferenceId: t.arg.id({ required: true }),
 				name: t.arg.string({ required: true }),
 				abbreviation: t.arg.string({ required: true })
 			},
 			resolve: async (query, _root, args, ctx) => {
-				if (args.id != null && !isValidNanoid(args.id)) {
-					throw new GraphQLError('Invalid ID format');
-				}
-				const entityId = args.id ?? nanoid();
 
 				await db.query.conference
 					.findFirst(
@@ -130,7 +125,7 @@ schemaBuilder.mutationFields((t) => {
 				const result = await db
 					.insert(schema.committee)
 					.values({
-						id: entityId,
+						id: args.id,
 						conferenceId: args.conferenceId,
 						name: args.name,
 						abbreviation: args.abbreviation

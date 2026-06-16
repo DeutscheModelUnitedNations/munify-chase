@@ -7,7 +7,7 @@ import {
 } from '$api/services/authHelper';
 import { assertFindFirstExists, assertFirstEntryExists } from '@m1212e/rumble';
 import { GraphQLError } from 'graphql';
-import { nanoid, isValidNanoid } from '$lib/helpers/nanoid';
+import { nanoidValidation } from '$lib/helpers/nanoid';
 
 abilityBuilder.committeeMember.allow('read').when((ctx) => {
 	return {
@@ -38,15 +38,11 @@ schemaBuilder.mutationFields((t) => {
 		createCommitteeMember: t.drizzleField({
 			type: ref,
 			args: {
-				id: t.arg.id(),
+				id: t.arg.id().validate(nanoidValidation),
 				committeeId: t.arg.id({ required: true }),
 				representationId: t.arg.id({ required: true })
 			},
 			resolve: async (query, _root, args, ctx) => {
-				if (args.id != null && !isValidNanoid(args.id)) {
-					throw new GraphQLError('Invalid ID format');
-				}
-				const entityId = args.id ?? nanoid();
 
 				const committee = await db.query.committee.findFirst({
 					where: { id: args.committeeId }
@@ -64,7 +60,7 @@ schemaBuilder.mutationFields((t) => {
 				const result = await db
 					.insert(schema.committeeMember)
 					.values({
-						id: entityId,
+						id: args.id,
 						committeeId: args.committeeId,
 						representationId: args.representationId
 					})

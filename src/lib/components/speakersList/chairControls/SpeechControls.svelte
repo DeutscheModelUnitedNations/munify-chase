@@ -205,7 +205,7 @@
 <div class="flex gap-2">
 	<button
 		class="btn btn-lg join-item flex flex-1 gap-2
-			{!speakersList?.speakers?.length ? 'btn-disabled' : (timerRunning ? 'bg-error' : 'bg-success')}"
+			{!speakersList?.speakers?.length ? 'btn-disabled' : timerRunning ? 'bg-error' : 'bg-success'}"
 		onclick={timerRunning ? stopTimer : startTimer}
 	>
 		{#if timerRunning}

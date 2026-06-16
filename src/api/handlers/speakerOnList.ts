@@ -9,7 +9,7 @@ import {
 	isGlobalAdmin,
 	isParticipantInConference
 } from '$api/services/authHelper';
-import { nanoid, isValidNanoid } from '$lib/helpers/nanoid';
+import { nanoidValidation } from '$lib/helpers/nanoid';
 
 abilityBuilder.speakerOnList.allow(['read', 'update', 'delete']).when((ctx) => {
 	if (isGlobalAdmin(ctx)) return 'allow';
@@ -83,7 +83,7 @@ schemaBuilder.mutationFields((t) => {
 		addSpeakerOnList: t.drizzleField({
 			type: ref,
 			args: {
-				id: t.arg.id(),
+				id: t.arg.id().validate(nanoidValidation),
 				//TOOD do we need the userId here?
 				//TOOD do we need the reference by nation here?
 				committeeMemberId: t.arg.id(),
@@ -92,10 +92,6 @@ schemaBuilder.mutationFields((t) => {
 				position: t.arg.int()
 			},
 			resolve: async (query, root, args, ctx) => {
-				if (args.id != null && !isValidNanoid(args.id)) {
-					throw new GraphQLError('Invalid ID format');
-				}
-				const entityId = args.id ?? nanoid();
 
 				if (args.committeeMemberId && args.conferenceMemberId) {
 					throw new GraphQLError('Cannot set both committeeMemberId and conferenceMemberId');
@@ -144,7 +140,7 @@ schemaBuilder.mutationFields((t) => {
 						const created = await tx
 							.insert(schema.speakerOnList)
 							.values({
-								id: entityId,
+								id: args.id,
 								committeeMemberId: args.committeeMemberId,
 								conferenceMemberId: args.conferenceMemberId,
 								speakersListId: speakersList.id,
@@ -238,14 +234,10 @@ schemaBuilder.mutationFields((t) => {
 		selfAddToSpeakersList: t.drizzleField({
 			type: ref,
 			args: {
-				id: t.arg.id(),
+				id: t.arg.id().validate(nanoidValidation),
 				speakersListId: t.arg.id({ required: true })
 			},
 			resolve: async (query, root, args, ctx) => {
-				if (args.id != null && !isValidNanoid(args.id)) {
-					throw new GraphQLError('Invalid ID format');
-				}
-				const entityId = args.id ?? nanoid();
 
 				const user = ctx.mustBeLoggedIn();
 				if (!user.email) {
@@ -366,7 +358,7 @@ schemaBuilder.mutationFields((t) => {
 						const created = await tx
 							.insert(schema.speakerOnList)
 							.values({
-								id: entityId,
+								id: args.id,
 								committeeMemberId,
 								conferenceMemberId,
 								speakersListId: args.speakersListId,

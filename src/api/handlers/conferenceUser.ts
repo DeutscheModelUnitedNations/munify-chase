@@ -13,7 +13,7 @@ import { GraphQLError } from 'graphql';
 import { assertFindFirstExists, assertFirstEntryExists } from '@m1212e/rumble';
 import { emailValidation } from '$api/services/emailValidation';
 import { attendanceCode as generateAttendanceCode } from '$lib/helpers/attendanceCode';
-import { nanoid, isValidNanoid } from '$lib/helpers/nanoid';
+import { nanoidValidation } from '$lib/helpers/nanoid';
 
 abilityBuilder.conferenceUser.allow('read').when((ctx) => {
 	return {
@@ -145,7 +145,7 @@ schemaBuilder.mutationFields((t) => ({
 	createConferenceUser: t.drizzleField({
 		type: ConferenceUserRef,
 		args: {
-			id: t.arg.id(),
+			id: t.arg.id().validate(nanoidValidation),
 			conferenceId: t.arg.id({ required: true }),
 			userEmail: t.arg.string({ required: true }).validate(emailValidation),
 			name: t.arg.string(),
@@ -155,10 +155,6 @@ schemaBuilder.mutationFields((t) => ({
 			})
 		},
 		resolve: async (query, _root, args, ctx) => {
-			if (args.id != null && !isValidNanoid(args.id)) {
-				throw new GraphQLError('Invalid ID format');
-			}
-			const entityId = args.id ?? nanoid();
 
 			await db.query.conference
 				.findFirst(
@@ -188,7 +184,7 @@ schemaBuilder.mutationFields((t) => ({
 			const result = await db
 				.insert(schema.conferenceUser)
 				.values({
-					id: entityId,
+					id: args.id,
 					conferenceId: args.conferenceId,
 					userEmail: args.userEmail,
 					name: args.name?.trim() || null,

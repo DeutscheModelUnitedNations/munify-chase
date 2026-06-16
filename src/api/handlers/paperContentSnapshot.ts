@@ -1,21 +1,19 @@
 import { db, schema } from '$api/db/db';
 import { abilityBuilder, object, query, pubsub as rumblePubsub, schemaBuilder } from '$api/rumble';
-import { isParticipantInConference, isGlobalAdmin } from '$api/services/authHelper';
+import { isTeamInConference } from '$api/services/authHelper';
 import { assertFindFirstExists } from '@m1212e/rumble';
-import { nanoid, isValidNanoid } from '$lib/helpers/nanoid';
+import { nanoid, nanoidValidation } from '$lib/helpers/nanoid';
 import { GraphQLError } from 'graphql';
 import { applyServerMutation, readPaperJson } from '$api/yjs/server';
 import { replaceResolution } from '@deutschemodelunitednations/munify-resolution-editor/yjs';
 import type { Resolution } from '@deutschemodelunitednations/munify-resolution-editor/schema';
 
-abilityBuilder.paperContentSnapshot.allow(['read', 'update', 'delete']).when((ctx) => {
-	if (isGlobalAdmin(ctx)) return 'allow';
-});
-
+// Snapshots are immutable: read-only at the ability level. The create/
+// restore mutations gate authorization on `resolutionPaper.update` (chair).
 abilityBuilder.paperContentSnapshot.allow('read').when((ctx) => {
 	return {
 		where: {
-			paper: { committee: isParticipantInConference(ctx) }
+			paper: { committee: isTeamInConference(ctx) }
 		}
 	};
 });
@@ -24,45 +22,24 @@ const ref = object({ table: 'paperContentSnapshot' });
 query({ table: 'paperContentSnapshot' });
 const pubsub = rumblePubsub({ table: 'paperContentSnapshot' });
 
-async function ensureChairOfPaper(
-	ctx: {
-		mustBeLoggedIn: () => { sub: string };
-		hasRole: (r: string) => boolean;
-	},
-	paperId: string
-) {
-	if (isGlobalAdmin(ctx)) return;
-	const user = ctx.mustBeLoggedIn();
-	const paper = await db.query.resolutionPaper
-		.findFirst({ where: { id: paperId } })
-		.then(assertFindFirstExists);
-	const chair = await db.query.conferenceUser.findFirst({
-		where: {
-			user: { id: user.sub },
-			conference: { committees: { id: paper.committeeId } },
-			conferenceUserType: { in: ['ADMIN', 'TEAM'] }
-		}
-	});
-	if (!chair) throw new GraphQLError('Chair access required');
-}
-
 schemaBuilder.mutationFields((t) => ({
 	createManualSnapshot: t.drizzleField({
 		type: ref,
 		args: {
-			id: t.arg.id(),
+			id: t.arg.id().validate(nanoidValidation),
 			paperId: t.arg.id({ required: true })
 		},
 		resolve: async (query, _root, args, ctx) => {
-			if (args.id != null && !isValidNanoid(args.id)) {
-				throw new GraphQLError('Invalid ID format');
-			}
-			const entityId = args.id ?? nanoid();
-			await ensureChairOfPaper(ctx, args.paperId);
+			await db.query.resolutionPaper
+				.findFirst(
+					ctx.abilities.resolutionPaper.filter('update').merge({ where: { id: args.paperId } })
+						.query.single
+				)
+				.then(assertFindFirstExists);
 
 			const content = await readPaperJson(args.paperId);
 			await db.insert(schema.paperContentSnapshot).values({
-				id: entityId,
+				id: args.id,
 				paperId: args.paperId,
 				content,
 				trigger: 'MANUAL'
@@ -73,7 +50,7 @@ schemaBuilder.mutationFields((t) => ({
 			return db.query.paperContentSnapshot
 				.findFirst(
 					query(
-						ctx.abilities.paperContentSnapshot.filter('read').merge({ where: { id: entityId } })
+						ctx.abilities.paperContentSnapshot.filter('read').merge({ where: { id: args.id } })
 							.query.single
 					)
 				)
@@ -88,11 +65,21 @@ schemaBuilder.mutationFields((t) => ({
 		},
 		resolve: async (query, _root, args, ctx) => {
 			const snapshot = await db.query.paperContentSnapshot
-				.findFirst({ where: { id: args.snapshotId } })
+				.findFirst(
+					ctx.abilities.paperContentSnapshot.filter('read').merge({
+						where: { id: args.snapshotId }
+					}).query.single
+				)
 				.then(assertFindFirstExists);
-			await ensureChairOfPaper(ctx, snapshot.paperId);
 
-			// 1. Snapshot the current state first so the restore can be undone.
+			await db.query.resolutionPaper
+				.findFirst(
+					ctx.abilities.resolutionPaper.filter('update').merge({
+						where: { id: snapshot.paperId }
+					}).query.single
+				)
+				.then(assertFindFirstExists);
+
 			const currentContent = await readPaperJson(snapshot.paperId);
 			await db.insert(schema.paperContentSnapshot).values({
 				id: nanoid(),
@@ -101,12 +88,11 @@ schemaBuilder.mutationFields((t) => ({
 				trigger: 'MANUAL'
 			});
 
-			// 2. Apply the chosen snapshot to the Y.Doc.
 			let parsed: Resolution;
 			try {
 				parsed = JSON.parse(snapshot.content) as Resolution;
 			} catch {
-				throw new GraphQLError('Snapshot content is invalid JSON — cannot restore');
+				throw new GraphQLError('Snapshot content is invalid JSON, cannot restore');
 			}
 			await applyServerMutation(snapshot.paperId, (doc) => {
 				replaceResolution(doc, parsed);

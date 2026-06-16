@@ -1,17 +1,8 @@
 import { db, schema } from '$api/db/db';
 import { abilityBuilder, object, query, pubsub as rumblePubsub, schemaBuilder } from '$api/rumble';
-import {
-	isParticipantInConference,
-	isTeamInConference,
-	isGlobalAdmin
-} from '$api/services/authHelper';
-import { assertFindFirstExists, assertFirstEntryExists } from '@m1212e/rumble';
-import { nanoid, isValidNanoid } from '$lib/helpers/nanoid';
-import { GraphQLError } from 'graphql';
-
-abilityBuilder.paperEditor.allow(['read', 'update', 'delete']).when((ctx) => {
-	if (isGlobalAdmin(ctx)) return 'allow';
-});
+import { isParticipantInConference, isTeamInConference } from '$api/services/authHelper';
+import { assertFindFirstExists } from '@m1212e/rumble';
+import { nanoidValidation } from '$lib/helpers/nanoid';
 
 abilityBuilder.paperEditor.allow('read').when((ctx) => {
 	return {
@@ -21,10 +12,15 @@ abilityBuilder.paperEditor.allow('read').when((ctx) => {
 	};
 });
 
-abilityBuilder.paperEditor.allow(['update', 'delete']).when((ctx) => {
+abilityBuilder.paperEditor.allow('delete').when((ctx) => {
+	const user = ctx.mustBeLoggedIn();
 	return {
 		where: {
-			paper: { committee: isTeamInConference(ctx) }
+			OR: [
+				{ paper: { committee: isTeamInConference(ctx) } }, // team members can delete
+				{ paper: { creatorCommitteeMember: { users: { user: { id: user.sub } } } } }, // owner of the paper can delete
+				{ conferenceUser: { user: { id: user.sub } } } // self delete
+			]
 		}
 	};
 });
@@ -34,74 +30,26 @@ query({ table: 'paperEditor' });
 const pubsub = rumblePubsub({ table: 'paperEditor' });
 
 schemaBuilder.mutationFields((t) => ({
-	removePaperEditor: t.field({
-		type: 'Boolean',
-		args: { id: t.arg.id({ required: true }) },
-		resolve: async (_root, args, ctx) => {
-			const editor = await db.query.paperEditor
-				.findFirst({
-					where: { id: args.id },
-					with: { paper: true, conferenceUser: true }
-				})
-				.then(assertFindFirstExists);
-
-			const user = ctx.mustBeLoggedIn();
-			const isSelf = editor.conferenceUser.userEmail === user.email;
-			const isChair = !!(await db.query.conferenceUser.findFirst({
-				where: {
-					user: { id: user.sub },
-					conference: { committees: { id: editor.paper.committeeId } },
-					conferenceUserType: { in: ['ADMIN', 'TEAM'] }
-				}
-			}));
-
-			if (!isSelf && !isChair && !isGlobalAdmin(ctx)) {
-				throw new GraphQLError('Only the editor themselves or a chair can remove an editor');
-			}
-
-			await db
-				.delete(schema.paperEditor)
-				.where(
-					ctx.abilities.paperEditor.filter('delete').merge({ where: { id: args.id } }).sql.where
-				);
-			pubsub.removed();
-			return true;
-		}
-	}),
-
 	addPaperEditor: t.drizzleField({
 		type: ref,
 		args: {
-			id: t.arg.id(),
+			id: t.arg.id().validate(nanoidValidation),
 			paperId: t.arg.id({ required: true }),
 			conferenceUserId: t.arg.id({ required: true })
 		},
 		resolve: async (query, _root, args, ctx) => {
-			if (args.id != null && !isValidNanoid(args.id)) {
-				throw new GraphQLError('Invalid ID format');
-			}
-			const entityId = args.id ?? nanoid();
-
-			// Only chairs can directly add editors. Self-add happens via share code.
-			const paper = await db.query.resolutionPaper
-				.findFirst({ where: { id: args.paperId } })
+			await db.query.resolutionPaper
+				.findFirst(
+					ctx.abilities.resolutionPaper.filter('update').merge({
+						where: { id: args.paperId }
+					}).query.single
+				)
 				.then(assertFindFirstExists);
-			if (!isGlobalAdmin(ctx)) {
-				const user = ctx.mustBeLoggedIn();
-				const chair = await db.query.conferenceUser.findFirst({
-					where: {
-						user: { id: user.sub },
-						conference: { committees: { id: paper.committeeId } },
-						conferenceUserType: { in: ['ADMIN', 'TEAM'] }
-					}
-				});
-				if (!chair) throw new GraphQLError('Chair access required');
-			}
 
 			await db
 				.insert(schema.paperEditor)
 				.values({
-					id: entityId,
+					id: args.id,
 					paperId: args.paperId,
 					conferenceUserId: args.conferenceUserId
 				})
@@ -119,7 +67,19 @@ schemaBuilder.mutationFields((t) => ({
 				)
 				.then(assertFindFirstExists);
 		}
+	}),
+
+	removePaperEditor: t.field({
+		type: 'Boolean',
+		args: { id: t.arg.id({ required: true }) },
+		resolve: async (_root, args, ctx) => {
+			await db
+				.delete(schema.paperEditor)
+				.where(
+					ctx.abilities.paperEditor.filter('delete').merge({ where: { id: args.id } }).sql.where
+				);
+			pubsub.removed();
+			return true;
+		}
 	})
 }));
-
-void assertFirstEntryExists;

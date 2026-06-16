@@ -68,6 +68,7 @@ export const OIDC = !building
 			logoutCallbackRoute: configPublic.PUBLIC_OIDC_LOGOUT_CALLBACK_ROUTE,
 			authenticatedRoutes: ['/app'],
 			logoutPath: '',
+			allowBearerToken: true,
 			async userLoggedInSuccessfully({ user }) {
 				const normalized = normalizeOIDCClaims(user);
 				if (!normalized.email) {

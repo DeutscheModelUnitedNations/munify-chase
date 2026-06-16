@@ -12,16 +12,17 @@ import { OIDC } from './services/OIDC';
 import { parse as parseCookies } from 'cookie';
 import dayjs from 'dayjs';
 import { openYjsRoom } from './yjs/wss';
+import { context } from './context';
+
 const gqlWSS = new WebSocketServer({ noServer: true });
 const yjsWSS = new WebSocketServer({ noServer: true });
-const otherWSS = new WebSocketServer({ noServer: true });
 
 /**
  * This is a bit hacky, but we need to create a synthetic RequestEvent to pass to the OIDC handler
  * so that it can populate the locals with the authenticated user.
  * Since this only ever runs on upgrade requests, we can get away with a lot of the properties being empty or no-ops.
  */
-function buildSyntheticEvent(req: IncomingMessage, authorizationHeader?: string): RequestEvent {
+function buildSyntheticEvent(req: IncomingMessage): RequestEvent {
 	// const host = req.headers.host ?? 'localhost';
 	// const proto = req.headers['x-forwarded-proto'] ?? 'https';
 	// TODO: align these with node adapter behavior
@@ -32,7 +33,13 @@ function buildSyntheticEvent(req: IncomingMessage, authorizationHeader?: string)
 	const locals = {} as RequestEvent['locals'];
 
 	const requestHeaders = new Headers();
-	if (authorizationHeader) requestHeaders.set('authorization', authorizationHeader);
+	for (const [key, value] of Object.entries(req.headers)) {
+		if (typeof value === 'string') {
+			requestHeaders.set(key, value);
+		} else if (Array.isArray(value)) {
+			requestHeaders.set(key, value.join(', '));
+		}
+	}
 
 	return {
 		url,
@@ -73,80 +80,37 @@ function scheduleExpiration(ws: WSWebSocket, exp: number | undefined) {
 	});
 }
 
-// rumble 0.18.1's createWs over-constrains the `implementation` generic so that
-// graphql-ws's `useServer` (which keeps its own generic parameters) no longer
-// satisfies it. Runtime is unaffected — strip the generics at the call boundary.
+async function authenticateWsRequest(req: RequestWithLocals) {
+	// has this req already been authenticated by a previous handler in the upgrade chain? If so, skip redundant work.
+	if ((req.locals as App.Locals)?.oidc) return req.locals as App.Locals;
+
+	const syntheticEvent = buildSyntheticEvent(req);
+	try {
+		await OIDC.handle({
+			event: syntheticEvent,
+			// eslint-disable-next-line require-await
+			resolve: async () => new Response()
+		});
+	} catch {
+		return undefined;
+	}
+	req.locals = syntheticEvent.locals;
+	return syntheticEvent as RequestEvent;
+}
+
 createWs(
 	useServer as unknown as (options: unknown, ws: typeof gqlWSS) => void,
 	{
 		onConnect: async (ctx: Context<Record<string, string>, Extra>) => {
 			const req = ctx.extra.request as RequestWithLocals;
 			const ws = ctx.extra.socket as unknown as WSWebSocket;
-
-			// Already authenticated at upgrade time (e.g. second connection_init on same socket).
-			if ((req.locals as App.Locals)?.oidc) {
-				scheduleExpiration(ws, (req.locals as App.Locals).oidc?.accessToken?.exp);
-				return true;
-			}
-
-			// Tauri clients pass the Bearer token in header
-			const params = ctx.connectionParams as Record<string, string> | null;
-			const auth = params?.Authorization ?? params?.authorization;
-			if (auth?.startsWith('Bearer ')) {
-				const syntheticEvent = buildSyntheticEvent(req, auth);
-				try {
-					await OIDC.handle({
-						event: syntheticEvent,
-						resolve: async () => new Response()
-					});
-					req.locals = syntheticEvent.locals;
-					const oidc = (req.locals as App.Locals)?.oidc;
-					if (oidc) {
-						scheduleExpiration(ws, oidc.accessToken?.exp);
-						return true;
-					}
-					return false;
-				} catch {
-					return false;
-				}
-			}
-
-			// Browser clients
-			const syntheticEvent = buildSyntheticEvent(req);
-			try {
-				await OIDC.handle({
-					event: syntheticEvent,
-					resolve: async () => new Response()
-				});
-			} catch {
-				console.error('Error during OIDC authentication for websocket connection');
-				return false;
-			}
-			req.locals = syntheticEvent.locals;
-			scheduleExpiration(ws, (syntheticEvent.locals as App.Locals).oidc?.accessToken?.exp);
+			const event = await authenticateWsRequest(req);
+			scheduleExpiration(ws, (event as any)?.locals?.oidc?.accessToken?.exp);
 			return true;
 		}
 	},
 	gqlWSS
 );
-
-async function authenticateUpgrade(req: IncomingMessage): Promise<string | undefined> {
-	const reqWithLocals = req as RequestWithLocals;
-	if ((reqWithLocals.locals as App.Locals)?.oidc?.user) {
-		return (reqWithLocals.locals as App.Locals).oidc?.user?.sub;
-	}
-	const syntheticEvent = buildSyntheticEvent(req);
-	try {
-		await OIDC.handle({
-			event: syntheticEvent,
-			resolve: async () => new Response()
-		});
-	} catch {
-		return undefined;
-	}
-	reqWithLocals.locals = syntheticEvent.locals;
-	return (reqWithLocals.locals as App.Locals)?.oidc?.user?.sub;
-}
 
 (globalThis as Record<string, unknown>).__wssUpgrade = (
 	req: IncomingMessage,
@@ -155,13 +119,6 @@ async function authenticateUpgrade(req: IncomingMessage): Promise<string | undef
 ) => {
 	const url = new URL(req.url ?? '/', 'http://localhost');
 	switch (url.pathname) {
-		case '/api/ws':
-			otherWSS.handleUpgrade(req, socket, head, (ws) => {
-				ws.emit('connection', ws, req);
-				ws.send('unimplemented');
-				ws.close();
-			});
-			break;
 		case '/api/graphql':
 			gqlWSS.handleUpgrade(req, socket, head, (ws) => {
 				gqlWSS.emit('connection', ws, req);
@@ -175,12 +132,13 @@ async function authenticateUpgrade(req: IncomingMessage): Promise<string | undef
 				return;
 			}
 			yjsWSS.handleUpgrade(req, socket, head, async (ws) => {
-				const userSub = await authenticateUpgrade(req);
-				if (!userSub) {
+				const event = await authenticateWsRequest(req);
+				const ctx = await context(event as any);
+				if (!ctx) {
 					ws.close(4401, 'Unauthorized');
 					return;
 				}
-				void openYjsRoom(ws, paperId, userSub);
+				void openYjsRoom(ws, paperId, ctx);
 			});
 			break;
 		}
@@ -188,5 +146,3 @@ async function authenticateUpgrade(req: IncomingMessage): Promise<string | undef
 			return;
 	}
 };
-
-export const wss = otherWSS;

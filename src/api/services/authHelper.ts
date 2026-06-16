@@ -169,3 +169,17 @@ export function isAmendmentProposer(ctx: Context) {
 		}
 	} as const;
 }
+
+/**
+ * Where-filter fragment for a `paperEditor` row whose `conferenceUser` belongs
+ * to the calling user, scoped to the given paper. Used to authorize paper-
+ * editor self-service actions (e.g. Y.js write access while the paper is
+ * still in WORKING_PAPER / SUBMITTED status).
+ */
+export function isPaperEditor(ctx: Context, paperId: string) {
+	const user = ctx.mustBeLoggedIn();
+	return {
+		paperId,
+		conferenceUser: { user: { id: user.sub } }
+	} as const;
+}

@@ -85,7 +85,7 @@
 				toast.error('No committee members found');
 				return;
 			}
-			const created = await client.mutate.chairCreateResolutionPaper({
+			const created = await client.mutate.createResolutionPaper({
 				__args: {
 					id: newId,
 					committeeId,

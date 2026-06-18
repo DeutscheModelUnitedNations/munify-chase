@@ -49,8 +49,8 @@
 		if (!confirm(m.submitPaperConfirmTitle() + '\n\n' + m.submitPaperConfirmWarning())) return;
 		submitting = true;
 		try {
-			await client.mutate.submitPaper({
-				__args: { id: currentPaper.id },
+			await client.mutate.updateResolutionPaper({
+				__args: { id: currentPaper.id, status: 'SUBMITTED' },
 				id: true
 			});
 			toast.success('Submitted');
@@ -64,7 +64,7 @@
 	async function setStatus(status: 'DRAFT_RESOLUTION' | 'AMENDMENT_PHASE' | 'VOTING_PHASE') {
 		if (!currentPaper) return;
 		try {
-			await client.mutate.setPaperStatus({
+			await client.mutate.updateResolutionPaper({
 				__args: { id: currentPaper.id, status },
 				id: true
 			});

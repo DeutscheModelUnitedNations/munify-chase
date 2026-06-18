@@ -1,0 +1,1 @@
+ALTER TABLE "resolution_paper" DROP COLUMN "deleted_at";

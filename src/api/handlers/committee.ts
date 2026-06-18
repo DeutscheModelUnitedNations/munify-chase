@@ -16,6 +16,7 @@ import { assertFindFirstExists, assertFirstEntryExists } from '@m1212e/rumble';
 import { and, count, eq, type InferSelectModel } from 'drizzle-orm';
 import { calculateMajority } from '$lib/utils/majorities';
 import { nanoidValidation } from '$lib/helpers/nanoid';
+import { GraphQLError } from 'graphql';
 
 abilityBuilder.committee.allow('read').when((ctx) => {
 	return {
@@ -230,6 +231,112 @@ schemaBuilder.mutationFields((t) => {
 									id: args.id
 								}
 							}).query.single
+						)
+					)
+					.then(assertFindFirstExists);
+			}
+		}),
+		setActiveDraftResolution: t.drizzleField({
+			type: ref,
+			args: {
+				committeeId: t.arg.id({ required: true }),
+				paperId: t.arg.id()
+			},
+			resolve: async (query, _root, args, ctx) => {
+				if (args.paperId) {
+				// does it exist?
+					await db.query.resolutionPaper
+						.findFirst({ where: { id: args.paperId, committeeId: args.committeeId } })
+						.then(assertFindFirstExists);
+				}
+				await db
+					.update(schema.committee)
+					.set({
+						activeDraftResolutionId: args.paperId ?? null,
+						activeAmendmentId: null
+					})
+					.where(
+						ctx.abilities.committee.filter('update').merge({ where: { id: args.committeeId } }).sql
+							.where
+					);
+				pubsub.updated(args.committeeId);
+				return db.query.committee
+					.findFirst(
+						query(
+							ctx.abilities.committee.filter('read').merge({ where: { id: args.committeeId } }).query
+								.single
+						)
+					)
+					.then(assertFindFirstExists);
+			}
+		}),
+		setActiveAmendment: t.drizzleField({
+			type: ref,
+			args: {
+				committeeId: t.arg.id({ required: true }),
+				amendmentId: t.arg.id()
+			},
+			resolve: async (query, _root, args, ctx) => {
+				if (args.amendmentId) {
+					// the amendment must belong to the committee's currently selected draft resolution
+					const committee = await db.query.committee
+						.findFirst({ where: { id: args.committeeId } })
+						.then(assertFindFirstExists);
+					if (!committee.activeDraftResolutionId) {
+						throw new GraphQLError('No active draft resolution selected');
+					}
+					await db.query.amendment
+						.findFirst({
+							where: { id: args.amendmentId, paperId: committee.activeDraftResolutionId }
+						})
+						.then(assertFindFirstExists);
+				}
+				await db
+					.update(schema.committee)
+					.set({ activeAmendmentId: args.amendmentId ?? null })
+					.where(
+						ctx.abilities.committee.filter('update').merge({ where: { id: args.committeeId } }).sql
+							.where
+					);
+				pubsub.updated(args.committeeId);
+				return db.query.committee
+					.findFirst(
+						query(
+							ctx.abilities.committee.filter('read').merge({ where: { id: args.committeeId } }).query
+								.single
+						)
+					)
+					.then(assertFindFirstExists);
+			}
+		}),
+		setCommitteeResolutionToggles: t.drizzleField({
+			type: ref,
+			args: {
+				committeeId: t.arg.id({ required: true }),
+				supportReevaluationOpen: t.arg.boolean(),
+				amendmentSubmissionOpen: t.arg.boolean(),
+				amendmentSponsoringOpen: t.arg.boolean(),
+				currentOperativeIndex: t.arg.int()
+			},
+			resolve: async (query, _root, args, ctx) => {
+				await db
+					.update(schema.committee)
+					.set({
+						supportReevaluationOpen: args.supportReevaluationOpen ?? undefined,
+						amendmentSubmissionOpen: args.amendmentSubmissionOpen ?? undefined,
+						amendmentSponsoringOpen: args.amendmentSponsoringOpen ?? undefined,
+						currentOperativeIndex: args.currentOperativeIndex ?? undefined
+					})
+					.where(
+						ctx.abilities.committee.filter('update').merge({ where: { id: args.committeeId } }).sql
+							.where
+					);
+				pubsub.updated(args.committeeId);
+				return db.query.committee
+					.findFirst(
+						query(
+							ctx.abilities.committee.filter('read').merge({ where: { id: args.committeeId } }).query
+								.single
 						)
 					)
 					.then(assertFindFirstExists);

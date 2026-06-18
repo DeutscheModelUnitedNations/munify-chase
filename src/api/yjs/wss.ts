@@ -65,7 +65,6 @@ async function authorize(paperId: string, ctx: Context): Promise<AuthResult> {
 	const paper = await db.query.resolutionPaper.findFirst({
 		where: {
 			id: paperId,
-			deletedAt: { isNull: true },
 			committee: isParticipantInConference(ctx)
 		}
 	});

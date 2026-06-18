@@ -183,3 +183,18 @@ export function isPaperEditor(ctx: Context, paperId: string) {
 		conferenceUser: { user: { id: user.sub } }
 	} as const;
 }
+
+/**
+ * Where-filter fragment for a `resolutionPaper` row that the calling user
+ * authors, i.e. is registered as a `paperEditor` for. Combine with other
+ * predicates via `OR` to authorize author self-service actions (e.g. editing
+ * the title while the paper is still a draft).
+ */
+export function isPaperAuthor(ctx: Context) {
+	const user = ctx.mustBeLoggedIn();
+	return {
+		editors: {
+			conferenceUser: { user: { id: user.sub } }
+		}
+	} as const;
+}

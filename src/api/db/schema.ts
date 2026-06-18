@@ -409,7 +409,6 @@ export const resolutionPaper = snakeCase.table('resolution_paper', {
 	title: text(),
 	documentNumber: text(),
 	sequenceNumber: smallint(),
-	deletedAt: timestamp({ mode: 'date' }),
 	// Final resolution-level vote. Tallies and outcome live on the linked
 	// votingSession row.
 	voteVotingSessionId: text().references((): AnyPgColumn => votingSession.id, {

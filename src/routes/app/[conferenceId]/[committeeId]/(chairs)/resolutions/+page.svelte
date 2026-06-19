@@ -63,11 +63,9 @@
 		agendaItem: { id: true, title: true }
 	});
 
-	// Submitted tab removed — submitted papers appear inside the Draft Resolutions tab.
-	const STATUS_FILTERS_KEYS = PAPER_STATUS_ORDER.filter((s) => s !== 'SUBMITTED');
 	const statusFilters: { key: PaperStatus | 'ALL'; label: () => string }[] = [
 		{ key: 'ALL', label: () => m.all() },
-		...STATUS_FILTERS_KEYS.map((s) => ({ key: s, label: () => statusLabel(s) }))
+		...PAPER_STATUS_ORDER.map((s) => ({ key: s, label: () => statusLabel(s) }))
 	];
 	let activeFilter = $state<PaperStatus | 'ALL'>('ALL');
 
@@ -77,11 +75,7 @@
 			(p) => !activeAgendaItemId || p.agendaItem?.id === activeAgendaItemId
 		);
 		const filtered =
-			activeFilter === 'ALL'
-				? list
-				: activeFilter === 'DRAFT_RESOLUTION'
-					? list.filter((p) => p.status === 'DRAFT_RESOLUTION' || p.status === 'SUBMITTED')
-					: list.filter((p) => p.status === activeFilter);
+			activeFilter === 'ALL' ? list : list.filter((p) => p.status === activeFilter);
 		return [...filtered].sort((a, b) => (b.sponsors?.length ?? 0) - (a.sponsors?.length ?? 0));
 	});
 
@@ -128,7 +122,6 @@
 		}
 	}
 
-	// Promote submitted papers to draft resolution (used in DR tab)
 	let promotingId = $state<string | null>(null);
 	async function promote(paperId: string) {
 		promotingId = paperId;
@@ -174,7 +167,6 @@
 			</div>
 		{/if}
 
-		<!-- One tab per paper state (submitted papers fold into Draft Resolutions) -->
 		<div role="tablist" class="tabs tabs-boxed w-fit">
 			{#each statusFilters as filter (filter.key)}
 				<button

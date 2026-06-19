@@ -6,12 +6,18 @@
 	import { onDestroy } from 'svelte';
 	import toast from 'svelte-french-toast';
 
-	import { ResolutionEditor } from '@deutschemodelunitednations/munify-resolution-editor';
+	import {
+		ResolutionEditor,
+		ResolutionPreview,
+		type ResolutionHeaderData
+	} from '@deutschemodelunitednations/munify-resolution-editor';
 	import { englishLabels } from '@deutschemodelunitednations/munify-resolution-editor/i18n';
 	import {
 		englishPreamblePhrases,
 		englishOperativePhrases
 	} from '@deutschemodelunitednations/munify-resolution-editor/phrases';
+	import { svgToDataUrl } from '$lib/utils/svgToDataUrl';
+	import { getTranslatedCountryNameFromAlpha3Code } from '$lib/utils/nationTranslationHelper.svelte';
 	import { createPaperYjsClient, type PaperYjsClient } from '$lib/api/yjs/createPaperYjs.svelte';
 
 	import SyncBadge from './SyncBadge.svelte';
@@ -68,9 +74,19 @@
 		title: true,
 		status: true,
 		documentNumber: true,
+		updatedAt: true,
 		committee: { id: true },
 		agendaItem: { title: true },
-		creatorCommitteeMember: { id: true },
+		creatorCommitteeMember: {
+			id: true,
+			representation: { name: true, alpha3Code: true }
+		},
+		sponsors: {
+			id: true,
+			committeeMember: {
+				representation: { name: true, alpha3Code: true }
+			}
+		},
 		editors: { id: true, conferenceUser: { id: true } }
 	});
 	const paper = $derived(papers?.[0]);
@@ -78,6 +94,8 @@
 	const committees = await client.liveQuery.committees({
 		__args: { where: { resolutionPapers: { id: paperId } } },
 		id: true,
+		name: true,
+		abbreviation: true,
 		simpleMajority: true,
 		activeDraftResolutionId: true,
 		activeAmendmentId: true,
@@ -85,6 +103,7 @@
 		amendmentSubmissionOpen: true,
 		amendmentSponsoringOpen: true,
 		supportReevaluationOpen: true,
+		conference: { title: true, logoSvg: true },
 		activeVotingSession: {
 			id: true,
 			mode: true,
@@ -138,6 +157,29 @@
 		return (comments ?? []).filter((c) => c.clauseId === clauseId).length;
 	}
 
+	// ---- header data (for paper preview / export) ---------------------------
+	const headerData = $derived<ResolutionHeaderData>({
+		conferenceTitle: committee?.conference?.title ?? undefined,
+		conferenceEmblem: svgToDataUrl(committee?.conference?.logoSvg),
+		committeeAbbreviation: committee?.abbreviation ?? undefined,
+		committeeFullName: committee?.name ?? undefined,
+		documentNumber: paper?.documentNumber ?? undefined,
+		topic: paper?.agendaItem?.title ?? undefined,
+		authoringDelegation:
+			getTranslatedCountryNameFromAlpha3Code(
+				paper?.creatorCommitteeMember?.representation?.alpha3Code
+			) ??
+			paper?.creatorCommitteeMember?.representation?.name ??
+			undefined,
+		sponsoringDelegations: (paper?.sponsors ?? []).map(
+			(s) =>
+				getTranslatedCountryNameFromAlpha3Code(s.committeeMember?.representation?.alpha3Code) ??
+				s.committeeMember?.representation?.name ??
+				''
+		),
+		lastEdited: paper?.updatedAt ?? undefined
+	});
+
 	// ---- access -------------------------------------------------------------
 	const isCreatorOrEditor = $derived(
 		(paper?.creatorCommitteeMember?.id != null &&
@@ -167,6 +209,14 @@
 	const operative = $derived(yClient?.store.snapshot.operative ?? []);
 	const operativeCount = $derived(operative.length);
 
+	// Seed committeeName in the Y.js doc once IDB has loaded and the field is blank.
+	$effect(() => {
+		if (!yClient?.persistenceLoaded) return;
+		if (yClient.store.snapshot.committeeName) return;
+		const name = committee?.name ?? committee?.abbreviation;
+		if (name) yClient.store.setCommitteeName(name);
+	});
+
 	// ---- selection ----------------------------------------------------------
 	let selectedClauseId = $state<string | null>(null);
 	const selectedClauseIndex = $derived(
@@ -177,8 +227,50 @@
 	}
 
 	// ---- actions ------------------------------------------------------------
+	function stored<T>(key: string, fallback: T): T {
+		if (!browser) return fallback;
+		try {
+			const v = localStorage.getItem(key);
+			return v !== null ? (JSON.parse(v) as T) : fallback;
+		} catch {
+			return fallback;
+		}
+	}
+
 	let historyOpen = $state(false);
 	let detailsOpen = $state(false);
+	let previewOpen = $state(stored('chase:paper:previewOpen', true));
+
+	// ---- panel resize -------------------------------------------------------
+
+	let previewWidth = $state(stored('chase:paper:previewWidth', 608));
+	let contextWidth = $state(stored('chase:paper:contextWidth', 384));
+	let dragging = $state<'preview' | 'context' | null>(null);
+
+	$effect(() => { localStorage.setItem('chase:paper:previewOpen', JSON.stringify(previewOpen)); });
+	$effect(() => { localStorage.setItem('chase:paper:previewWidth', JSON.stringify(previewWidth)); });
+	$effect(() => { localStorage.setItem('chase:paper:contextWidth', JSON.stringify(contextWidth)); });
+
+	function startDrag(handle: 'preview' | 'context') {
+		dragging = handle;
+	}
+
+	function onDragMove(e: PointerEvent) {
+		if (!dragging) return;
+		const body = (e.currentTarget as HTMLElement).closest('.panel-body') as HTMLElement;
+		if (!body) return;
+		const rect = body.getBoundingClientRect();
+		const MIN = 200;
+		if (dragging === 'preview') {
+			previewWidth = Math.max(MIN, Math.min(e.clientX - rect.left, rect.width - contextWidth - MIN * 2));
+		} else {
+			contextWidth = Math.max(MIN, Math.min(rect.right - e.clientX, rect.width - previewWidth - MIN * 2));
+		}
+	}
+
+	function stopDrag() {
+		dragging = null;
+	}
 	let editingDocNum = $state(false);
 	let docNumDraft = $state('');
 
@@ -237,6 +329,8 @@
 		}
 	}
 </script>
+
+{#snippet noHeader()}{/snippet}
 
 {#if paper && committee}
 	<div class="flex h-[calc(100vh-4rem)] w-full flex-col">
@@ -313,6 +407,13 @@
 			{/if}
 
 			<div class="ml-auto flex items-center gap-2">
+				{#if yClient}
+					<SyncBadge
+						connectionState={yClient.connectionState}
+						persistenceLoaded={yClient.persistenceLoaded}
+						wsSynced={yClient.wsSynced}
+					/>
+				{/if}
 				<button
 					class="btn btn-ghost btn-sm"
 					onclick={() => (detailsOpen = !detailsOpen)}
@@ -370,20 +471,71 @@
 			</div>
 		</header>
 
-		<!-- Body: editor + context panel -->
-		<div class="flex min-h-0 flex-1">
+		<!-- Body: preview panel + editor + context panel -->
+		<!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
+		<div
+			role="region"
+			class="panel-body flex min-h-0 flex-1"
+			class:cursor-col-resize={dragging !== null}
+			class:select-none={dragging !== null}
+			onpointermove={onDragMove}
+			onpointerup={stopDrag}
+			onpointerleave={stopDrag}
+		>
+			<!-- Left: collapsible document preview -->
+			{#if previewOpen}
+				<aside
+					class="hidden shrink-0 flex-col overflow-hidden lg:flex"
+					style="width: {previewWidth}px;"
+				>
+					<div class="border-base-300 flex items-center justify-between border-b px-3 py-2">
+						<span class="text-sm font-semibold">
+							<i class="fa-solid fa-eye mr-1.5"></i>{m.resolutionPreview()}
+						</span>
+						<button
+							class="btn btn-ghost btn-xs"
+							title={m.resolutionHidePreview()}
+							onclick={() => (previewOpen = false)}
+						>
+							<i class="fas fa-chevron-left"></i>
+						</button>
+					</div>
+					{#if browser && yClient}
+						<div class="overflow-auto p-4">
+							<ResolutionPreview
+								resolution={yClient.store.snapshot}
+								{headerData}
+								labels={englishLabels}
+								amendments={amendmentOverlays}
+								{rejectedClauseIds}
+							/>
+						</div>
+					{/if}
+				</aside>
+				<!-- Drag handle: preview / editor -->
+				<div
+					role="separator"
+					aria-label="Resize preview panel"
+					aria-orientation="vertical"
+					class="drag-handle group hidden w-3 shrink-0 cursor-col-resize items-stretch justify-center lg:flex"
+					onpointerdown={(e) => { e.preventDefault(); e.currentTarget.setPointerCapture(e.pointerId); startDrag('preview'); }}
+				><div class="bg-base-300 w-px group-hover:w-1 group-hover:bg-primary/40 group-active:bg-primary/60 transition-all"></div></div>
+			{:else}
+				<div class="hidden shrink-0 flex-col items-center pt-2 lg:flex">
+					<button
+						class="btn btn-ghost btn-xs"
+						title={m.resolutionShowPreview()}
+						onclick={() => (previewOpen = true)}
+					>
+						<i class="fas fa-chevron-right"></i>
+					</button>
+				</div>
+			{/if}
+
+			<!-- Center: editor -->
 			<div class="min-h-0 flex-1 overflow-auto">
 				{#if browser && yClient}
-					<div class="relative flex h-full w-full flex-col">
-						<div class="pointer-events-none absolute top-2 right-2 z-10">
-							<div class="pointer-events-auto">
-								<SyncBadge
-									connectionState={yClient.connectionState}
-									persistenceLoaded={yClient.persistenceLoaded}
-									wsSynced={yClient.wsSynced}
-								/>
-							</div>
-						</div>
+					<div class="editor-no-internal-preview flex h-full w-full flex-col">
 						<ResolutionEditor
 							store={yClient.store}
 							presence={yClient.presence}
@@ -393,6 +545,8 @@
 							editable={canEdit}
 							amendments={amendmentOverlays}
 							{rejectedClauseIds}
+							{headerData}
+							previewHeader={noHeader}
 							clauseToolbar={clauseToolbarSnippet}
 							clauseAnnotations={clauseAnnotationsSnippet}
 						/>
@@ -400,7 +554,20 @@
 				{/if}
 			</div>
 
-			<aside class="hidden w-96 shrink-0 lg:block">
+			<!-- Drag handle: editor / context -->
+			<div
+				role="separator"
+				aria-label="Resize context panel"
+				aria-orientation="vertical"
+				class="drag-handle group hidden w-3 shrink-0 cursor-col-resize items-stretch justify-center lg:flex"
+				onpointerdown={(e) => { e.preventDefault(); e.currentTarget.setPointerCapture(e.pointerId); startDrag('context'); }}
+			><div class="bg-base-300 w-px group-hover:w-1 group-hover:bg-primary/40 group-active:bg-primary/60 transition-all"></div></div>
+
+			<!-- Right: clause context (comments, amendments, votes) -->
+			<aside
+				class="hidden shrink-0 lg:block"
+				style="width: {contextWidth}px;"
+			>
 				<ClauseContextPanel
 					{paperId}
 					committeeId={committee.id}
@@ -508,3 +675,22 @@
 		</button>
 	{/if}
 {/snippet}
+
+<style>
+	/* Hide the built-in preview section inside ResolutionEditor — we render
+	   our own preview panel to the left instead. */
+	.editor-no-internal-preview :global(.border-t.border-base-300.pt-6) {
+		display: none;
+	}
+
+	/* Strip the fieldset chrome so the editor blends into the panel. */
+	.editor-no-internal-preview :global(fieldset) {
+		border: none;
+		border-radius: 0;
+		background: transparent;
+		padding: 1rem;
+	}
+	.editor-no-internal-preview :global(fieldset > legend) {
+		display: none;
+	}
+</style>

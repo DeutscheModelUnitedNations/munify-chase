@@ -100,7 +100,7 @@
 			<input
 				type="range"
 				min="10"
-				max="30"
+				max="50"
 				step="1"
 				bind:value={localRootFontSize}
 				onchange={() =>
@@ -123,7 +123,7 @@
 			<input
 				type="range"
 				min="10"
-				max="30"
+				max="50"
 				step="1"
 				bind:value={localResolutionFontSize}
 				onchange={() =>

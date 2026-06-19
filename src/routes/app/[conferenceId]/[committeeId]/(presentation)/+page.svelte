@@ -40,6 +40,7 @@
 		whiteboardContent: true,
 		presentationLayout: true,
 		presentationRootFontSize: true,
+		presentationResolutionFontSize: true,
 		displayRegionalGroups: true,
 		currentOperativeIndex: true,
 		activeDraftResolutionId: true,
@@ -117,9 +118,13 @@
 		}
 	});
 
+	const activePaperId = $derived(committee?.activeDraftResolutionId ?? null);
+
 	let layout = $derived(
 		getPresentationLayoutPreset(
-			(committee?.presentationLayout as PresentationLayoutPresetOptions) ?? undefined
+			activePaperId != null
+				? 'resolution'
+				: ((committee?.presentationLayout as PresentationLayoutPresetOptions) ?? undefined)
 		)
 	);
 
@@ -258,6 +263,18 @@
 				/>
 			</GridItem>
 		{/if}
+
+		{#if layout.resolutionPreview && activePaperId}
+			{@const gridProps = layout.resolutionPreview}
+			<GridItem {...gridProps} class="card bg-base-100 overflow-auto p-4" id="resolution-preview">
+				<PresentationResolutionPreview
+					paperId={activePaperId}
+					currentOperativeIndex={committee.currentOperativeIndex}
+					resolutionFontSize={committee.presentationResolutionFontSize ?? 16}
+					showAmendments
+				/>
+			</GridItem>
+		{/if}
 	</Grid>
 
 	<RegionalGroups
@@ -274,16 +291,6 @@
 
 	<ShowOfHandsVotingPresentation {committeeId} />
 	<RollCallVotingPresentation {committeeId} {committee} />
-
-	{#if committee.activeDraftResolution && (committee.activeDraftResolution.status === 'AMENDMENT_PHASE' || committee.activeDraftResolution.status === 'VOTING_PHASE')}
-		<div class="bg-base-200 fixed inset-0 z-40 flex flex-col">
-			<PresentationResolutionPreview
-				paperId={committee.activeDraftResolution.id}
-				currentOperativeIndex={committee.currentOperativeIndex}
-				showAmendments
-			/>
-		</div>
-	{/if}
 {:else}
 	<UndrawError
 		undrawImage={emptyStreet}

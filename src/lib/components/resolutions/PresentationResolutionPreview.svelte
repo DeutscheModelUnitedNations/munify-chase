@@ -11,9 +11,11 @@
 		/** When set, the matching operative clause is visually marked as active. */
 		currentOperativeIndex?: number;
 		showAmendments?: boolean;
+		resolutionFontSize?: number;
 	}
 
-	let { paperId, currentOperativeIndex, showAmendments = false }: Props = $props();
+	let { paperId, currentOperativeIndex, showAmendments = false, resolutionFontSize = 16 }: Props =
+		$props();
 
 	let yClient = $state<PaperYjsClient | null>(null);
 	$effect(() => {
@@ -61,7 +63,10 @@
 </script>
 
 {#if resolution}
-	<div class="h-full w-full overflow-auto p-8 [&_.active-clause]:bg-warning/10">
+	<div
+		class="resolution-font-size-wrapper h-full w-full overflow-auto p-8 [&_.active-clause]:bg-warning/10"
+		style="--resolution-font-size: {resolutionFontSize}px"
+	>
 		<ResolutionPreview
 			{resolution}
 			labels={englishLabels}
@@ -78,3 +83,10 @@
 		</ResolutionPreview>
 	</div>
 {/if}
+
+<style>
+	.resolution-font-size-wrapper :global(.resolution-preview),
+	.resolution-font-size-wrapper :global(.operative-paragraph-preview) {
+		font-size: var(--resolution-font-size) !important;
+	}
+</style>

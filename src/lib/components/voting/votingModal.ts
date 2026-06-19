@@ -22,6 +22,8 @@ export interface VotingResult {
 interface VotingModalState {
 	config: VotingConfig;
 	onComplete: (result: VotingResult) => void;
+	/** Skip the setup form and go straight to the executing phase (resume flow). */
+	resume?: boolean;
 }
 
 export const votingModalStore = writable<VotingModalState | null>(null);
@@ -30,6 +32,19 @@ export function openVotingModal(config: VotingConfig = {}): Promise<VotingResult
 	return new Promise((resolve) => {
 		votingModalStore.set({
 			config,
+			onComplete: (result) => {
+				votingModalStore.set(null);
+				resolve(result);
+			}
+		});
+	});
+}
+
+export function resumeVotingModal(config: VotingConfig = {}): Promise<VotingResult> {
+	return new Promise((resolve) => {
+		votingModalStore.set({
+			config,
+			resume: true,
 			onComplete: (result) => {
 				votingModalStore.set(null);
 				resolve(result);

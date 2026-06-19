@@ -2,6 +2,7 @@
 	import { enableViewTransitionApi } from '$lib/helpers/viewTransitionApi.svelte';
 	import { Toaster, useToasterStore } from 'svelte-french-toast';
 	import toast from 'svelte-french-toast';
+	import { page } from '$app/state';
 	import dayjs from 'dayjs';
 	import duration from 'dayjs/plugin/duration';
 	import '../app.css';
@@ -83,7 +84,11 @@
 
 {@render children()}
 
-<Toaster position="top-right" containerClassName="mt-16" toastOptions={{ className: 'border-2' }} />
+<Toaster
+	position={page.route.id?.includes('[paperId]') ? 'bottom-left' : 'top-right'}
+	containerClassName="mt-16"
+	toastOptions={{ className: 'border-2' }}
+/>
 <Alert />
 <OfflineBanner />
 

@@ -31,6 +31,7 @@
 		id: true,
 		abbreviation: true,
 		name: true,
+		activeDraftResolutionId: true,
 		stateOfDebate: true,
 		status: true,
 		statusHeadline: true,
@@ -322,7 +323,7 @@
 <!-- Bottom dock -->
 <div class="dock dock-md lg:dock-lg md:justify-center md:gap-4">
 	{#each dockItems as item, i (item.key)}
-		<a href={item.href} class="group relative {isActive(item.key) ? 'dock-active' : ''}">
+		<a href={item.href} class="group relative {isActive(item.key) && !(item.key === 'resolutions' && committee?.activeDraftResolutionId && page.url.pathname.includes(committee.activeDraftResolutionId)) ? 'dock-active' : ''}">
 			<i class="fa-duotone {item.icon} size-[1.2em]"></i>
 			<span class="dock-label">{item.label()}</span>
 			<kbd
@@ -331,4 +332,17 @@
 			>
 		</a>
 	{/each}
+	{#if committee?.activeDraftResolutionId}
+		<a
+			href={resolve('/app/[conferenceId]/[committeeId]/(chairs)/resolutions/[paperId]', {
+				conferenceId,
+				committeeId,
+				paperId: committee.activeDraftResolutionId
+			})}
+			class="group relative {page.url.pathname.includes(committee.activeDraftResolutionId) ? 'dock-active' : ''}"
+		>
+			<i class="fa-duotone fa-file-pen size-[1.2em]"></i>
+			<span class="dock-label">{m.activeDraftResolution()}</span>
+		</a>
+	{/if}
 </div>

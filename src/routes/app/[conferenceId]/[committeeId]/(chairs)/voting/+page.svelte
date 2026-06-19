@@ -20,6 +20,13 @@
 		statusUntil: true,
 		stateOfDebate: true,
 		activeAgendaItem: { id: true, title: true },
+		activeVotingSession: {
+			id: true,
+			mode: true,
+			voteName: true,
+			majority: true,
+			withAbstentions: true
+		},
 		members: {
 			id: true,
 			present: true,
@@ -52,7 +59,7 @@
 			</div>
 			<div class="flex h-full w-full flex-3 flex-col gap-4">
 				<BasicCard title={m.voting()}>
-					<VotingSetup {committee} />
+					<VotingSetup {committee} activeVotingSession={committee.activeVotingSession ?? null} />
 				</BasicCard>
 			</div>
 		</div>

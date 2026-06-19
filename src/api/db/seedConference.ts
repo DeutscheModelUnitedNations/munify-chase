@@ -13,6 +13,7 @@ import * as Y from 'yjs';
 import { jsonToYDoc } from '@deutschemodelunitednations/munify-resolution-editor/yjs';
 import {
 	createEmptyResolution,
+	toRoman,
 	type Resolution
 } from '@deutschemodelunitednations/munify-resolution-editor/schema';
 
@@ -202,20 +203,177 @@ try {
 	console.error(e);
 }
 
-function encodeYjsState(seed: Resolution): Buffer {
+// ─── helpers ─────────────────────────────────────────────────────────────────
+
+function encodeYjsState(res: Resolution): Buffer {
 	const doc = new Y.Doc();
-	jsonToYDoc(doc, seed);
+	jsonToYDoc(doc, res);
 	return Buffer.from(Y.encodeStateAsUpdate(doc));
 }
 
+function buildResolution(
+	committeeName: string,
+	preambleClauses: string[],
+	operativeClauses: string[]
+): Resolution {
+	const res = createEmptyResolution(committeeName);
+	res.preamble = preambleClauses.map((content) => ({ id: nanoid(), content }));
+	res.operative = operativeClauses.map((content) => ({
+		id: nanoid(),
+		blocks: [{ type: 'text' as const, id: nanoid(), content }]
+	}));
+	return res;
+}
+
+async function insertPaper(opts: {
+	committeeId: string;
+	agendaItemId: string;
+	creatorMemberId: string;
+	status: (typeof schema.resolutionPaper.$inferInsert)['status'];
+	title: string;
+	documentNumber?: string;
+	content: Resolution;
+	sponsorMemberIds: string[];
+	snapshots?: Array<{ trigger: (typeof schema.paperContentSnapshot.$inferInsert)['trigger'] }>;
+}) {
+	const paperId = nanoid();
+	await db.insert(schema.resolutionPaper).values({
+		id: paperId,
+		committeeId: opts.committeeId,
+		agendaItemId: opts.agendaItemId,
+		creatorCommitteeMemberId: opts.creatorMemberId,
+		status: opts.status,
+		title: opts.title,
+		documentNumber: opts.documentNumber
+	});
+	await db.insert(schema.paperYjsDoc).values({
+		id: nanoid(),
+		paperId,
+		state: encodeYjsState(opts.content)
+	});
+	for (const memberId of [...new Set(opts.sponsorMemberIds)]) {
+		await db.insert(schema.paperSponsor).values({ id: nanoid(), paperId, committeeMemberId: memberId });
+	}
+	for (const snap of opts.snapshots ?? []) {
+		await db.insert(schema.paperContentSnapshot).values({
+			id: nanoid(),
+			paperId,
+			content: JSON.stringify(opts.content),
+			trigger: snap.trigger
+		});
+	}
+	return paperId;
+}
+
+// ─── topic content ────────────────────────────────────────────────────────────
+
+type TopicContent = { preamble: string[]; operative: string[] };
+
+function climateFinanceContent(): TopicContent {
+	return {
+		preamble: [
+			'Reaffirming the commitments made under the Paris Agreement and the Glasgow Climate Pact to limit global warming to 1.5 °C and to support the most vulnerable nations in their adaptation efforts,',
+			'Recognizing that developing countries, particularly Small Island Developing States (SIDS) and Least Developed Countries (LDCs), bear disproportionate climate impacts despite contributing least to cumulative global emissions,',
+			'Deeply concerned by the estimated $400 billion annual gap in climate adaptation financing identified in UNEP\'s Adaptation Gap Report 2023,',
+			'Welcoming the establishment of the Loss and Damage Fund at COP28 and urging its prompt operationalization with adequate, predictable and grant-based financing,',
+			'Noting with concern that fewer than 15 per cent of current climate finance flows are directed toward adaptation, the remainder being allocated to mitigation activities,'
+		],
+		operative: [
+			'Calls upon all developed nations to fulfil their commitment to jointly mobilize $100 billion per year in climate finance for developing countries and to significantly scale this target beyond 2025;',
+			'Urges multilateral development banks to triple their climate adaptation lending by 2030, with a minimum of 50 per cent of new financing directed to the most vulnerable nations and communities;',
+			'Recommends the establishment of a Climate Adaptation Rapid Response Facility to provide emergency concessional financing within 30 days of a declared climate disaster;',
+			'Decides to establish an inter-governmental Expert Panel on Climate Adaptation Finance to review the adequacy and accessibility of existing funds and to report to the General Assembly at its eightieth session;',
+			'Requests the Secretary-General to appoint a Special Envoy on Climate Finance to facilitate high-level negotiations between contributor and recipient nations and to present a roadmap within six months;',
+			'Encourages all Member States to integrate climate adaptation into their national development plans, public budgeting frameworks and official development assistance strategies by 2026;'
+		]
+	};
+}
+
+function multilateralismContent(): TopicContent {
+	return {
+		preamble: [
+			'Reaffirming the purposes and principles enshrined in the Charter of the United Nations and the fundamental importance of strengthening multilateral cooperation to address shared global challenges,',
+			'Recognizing that the global governance architecture must better reflect the realities of the twenty-first century and ensure meaningful, equitable representation for all regions and peoples,',
+			'Recalling the Pact for the Future adopted at the Summit of the Future in September 2024 and the commitments therein to reform international institutions and revitalize multilateralism,',
+			'Deeply concerned that the voices of the Global South remain systematically underrepresented in key multilateral decision-making bodies, including in areas of trade, finance and security,',
+			'Acknowledging that trust in multilateral institutions has eroded in recent years and that urgent reform is necessary to restore their legitimacy and effectiveness,'
+		],
+		operative: [
+			'Calls for a comprehensive, transparent and inclusive intergovernmental process to reform the United Nations Security Council to reflect contemporary geopolitical realities, including through expanding both permanent and non-permanent membership;',
+			'Urges Member States to strengthen the authority, resources and effectiveness of the General Assembly as the chief deliberative, policy-making and representative organ of the United Nations;',
+			'Recommends enhanced and structured participation of regional bodies, civil society organizations, youth representatives and indigenous peoples in multilateral forums, including through formal consultative status mechanisms;',
+			'Invites the Secretary-General to convene a high-level panel on multilateral governance reform to present concrete, actionable recommendations to the General Assembly no later than 2026;',
+			'Encourages Member States to increase their assessed contributions and voluntary funding to the United Nations system to ensure it has adequate resources to fulfil its mandate;'
+		]
+	};
+}
+
+function conflictRootCausesContent(): TopicContent {
+	return {
+		preamble: [
+			'Recalling its previous resolutions on the maintenance of international peace and security, in particular resolutions 1366 (2001) on conflict prevention and 2171 (2014) on mediation,',
+			'Recognizing that sustainable peace requires addressing the structural root causes of conflict, including entrenched poverty, inequality, political exclusion, weak governance and impunity,',
+			'Deeply alarmed by the significant humanitarian consequences of ongoing armed conflicts and the increasing trend of protracted intra-state violence affecting millions of civilians worldwide,',
+			'Affirming the vital importance of inclusive political dialogue, national reconciliation processes and transitional justice mechanisms in post-conflict societies,',
+			'Reiterating the primary responsibility of states to protect their populations and to create conditions for lasting peace through inclusive development and good governance,'
+		],
+		operative: [
+			'Condemns all acts of violence against civilian populations and demands that all parties to armed conflicts immediately comply with their obligations under international humanitarian and human rights law;',
+			'Calls upon all Member States to invest in conflict prevention through early warning systems, nationally owned mediation capacity and integrated development programming in fragile and conflict-affected settings;',
+			'Urges greater coherence and coordination between the Security Council, the General Assembly, the Peacebuilding Commission and regional organizations in conflict prevention and resolution;',
+			'Requests the Peacebuilding Commission to develop specific guidelines for addressing economic exclusion and youth unemployment as primary drivers of conflict relapse;',
+			'Encourages the Secretary-General to expand the capacity of the Department of Political and Peacebuilding Affairs to support preventive diplomacy and good-offices missions;'
+		]
+	};
+}
+
+function techAndPeaceContent(): TopicContent {
+	return {
+		preamble: [
+			'Recognizing the transformative potential of emerging technologies for international peace and security, and the urgent need for international norms and frameworks to govern their development and use,',
+			'Alarmed by the rapid proliferation of lethal autonomous weapons systems and the integration of artificial intelligence into military decision-making without adequate ethical, legal or accountability frameworks,',
+			'Deeply concerned by the growing use of social media platforms and digital information environments for targeted disinformation campaigns that undermine democratic institutions, inflame tensions and contribute to conflict,',
+			'Recalling the work of the Open-Ended Working Group on developments in the field of information and telecommunications in the context of international security and the Group of Governmental Experts on Lethal Autonomous Weapons Systems,',
+			'Acknowledging the profound dual-use nature of cyber capabilities and the imperative to prevent their misuse while preserving their benefits for sustainable development and humanitarian action,'
+		],
+		operative: [
+			'Urges all Member States to refrain from offensive cyber operations targeting critical civilian infrastructure, including hospitals, power grids, water systems and financial institutions, consistent with international law;',
+			'Calls for the establishment of a UN Digital Stability Board, modelled on existing non-proliferation and arms control bodies, to develop, promote and monitor adherence to norms for responsible state behaviour in cyberspace;',
+			'Invites the Secretary-General to appoint a High-Level Panel on Artificial Intelligence, Autonomous Systems and Peace with a mandate to present concrete recommendations to the Security Council within twelve months;',
+			'Encourages all Member States to engage constructively in negotiations toward a legally binding international instrument prohibiting or restricting the use of fully autonomous weapons that operate without meaningful human control;',
+			'Requests the development of a United Nations Digital Blue Helmet capacity to support peacekeeping missions operating in environments affected by disinformation, election interference and cyber threats;'
+		]
+	};
+}
+
+function getTopicContent(agendaTitle: string): TopicContent {
+	const lower = agendaTitle.toLowerCase();
+	if (lower.includes('climate') || lower.includes('adaptation') || lower.includes('financing')) {
+		return climateFinanceContent();
+	}
+	if (lower.includes('multilateral') || lower.includes('inclusive')) {
+		return multilateralismContent();
+	}
+	if (lower.includes('conflict') || lower.includes('root cause') || lower.includes('peace')) {
+		return conflictRootCausesContent();
+	}
+	if (lower.includes('tech') || lower.includes('digital') || lower.includes('cyber') || lower.includes('ai')) {
+		return techAndPeaceContent();
+	}
+	// fallback
+	return climateFinanceContent();
+}
+
+// ─── main seeding logic ───────────────────────────────────────────────────────
+
 async function seedResolutionPapers() {
-	// For each committee with an active agenda item, create 2 papers in
-	// different statuses. Uses plain SELECTs because the seed db has no
-	// relations registered.
 	const committees = await db.select().from(schema.committee);
 
 	for (const committee of committees) {
-		if (!committee.activeAgendaItemId) continue;
+		const agendaItems = await db
+			.select()
+			.from(schema.agendaItem)
+			.where(eq(schema.agendaItem.committeeId, committee.id));
 
 		const allMembers = await db
 			.select({
@@ -229,204 +387,254 @@ async function seedResolutionPapers() {
 			)
 			.where(eq(schema.committeeMember.committeeId, committee.id));
 
-		const delegateMembers = allMembers.filter((m) => m.representationType === 'DELEGATION');
-		if (delegateMembers.length < 3) continue;
+		const delegates = allMembers.filter((m) => m.representationType === 'DELEGATION');
+		if (delegates.length < 5) continue;
+
+		const adminCU = (
+			await db
+				.select()
+				.from(schema.conferenceUser)
+				.where(
+					and(
+						eq(schema.conferenceUser.conferenceId, committee.conferenceId),
+						eq(schema.conferenceUser.conferenceUserType, 'ADMIN')
+					)
+				)
+				.limit(1)
+		)[0];
+
+		const delegateCUs = await db
+			.select({ id: schema.conferenceUser.id })
+			.from(schema.conferenceUser)
+			.innerJoin(
+				schema.committeeMember,
+				eq(schema.conferenceUser.committeeMemberId, schema.committeeMember.id)
+			)
+			.where(eq(schema.committeeMember.committeeId, committee.id));
 
 		console.info(`  ${committee.name}:`);
 
-		// === WORKING_PAPER ===
-		{
-			const creator = delegateMembers[0];
-			const sponsors = delegateMembers.slice(0, 3);
-			const paperId = nanoid();
-			const title = `Working draft on agenda item`;
-			const seed = createEmptyResolution(committee.name);
-			seed.committeeName = committee.name;
+		// pick(n, offset) — wraps around to avoid running out of delegates
+		const pick = (n: number, offset = 0) =>
+			Array.from({ length: n }, (_, i) => delegates[(offset + i) % delegates.length].id);
 
-			await db.insert(schema.resolutionPaper).values({
-				id: paperId,
+		for (let itemIdx = 0; itemIdx < agendaItems.length; itemIdx++) {
+			const agendaItem = agendaItems[itemIdx];
+			const isActive = agendaItem.id === committee.activeAgendaItemId;
+			const roman = toRoman(itemIdx + 1);
+			const abbr = committee.abbreviation;
+			const { preamble, operative } = getTopicContent(agendaItem.title);
+
+			// Shorter preamble/operative for working papers; full for DRs and above.
+			const wpContent = buildResolution(committee.name, preamble.slice(0, 3), operative.slice(0, 3));
+			const drContent = buildResolution(committee.name, preamble, operative);
+
+			console.info(`    [${agendaItem.title}${isActive ? ' — active' : ''}]`);
+
+			// ── WORKING_PAPER ─────────────────────────────────────────────────
+			const wpId = await insertPaper({
 				committeeId: committee.id,
-				agendaItemId: committee.activeAgendaItemId,
-				creatorCommitteeMemberId: creator.id,
+				agendaItemId: agendaItem.id,
+				creatorMemberId: pick(1, 0)[0],
 				status: 'WORKING_PAPER',
-				title,
-				documentNumber: `WP/${committee.abbreviation}/1`
+				title: `Draft: ${agendaItem.title}`,
+				content: wpContent,
+				sponsorMemberIds: pick(3, 0)
 			});
-			await db.insert(schema.paperYjsDoc).values({
-				id: nanoid(),
-				paperId,
-				state: encodeYjsState(seed)
-			});
-			for (const s of sponsors) {
-				await db.insert(schema.paperSponsor).values({
-					id: nanoid(),
-					paperId,
-					committeeMemberId: s.id
-				});
-			}
-			console.info(`    - ${title} [WORKING_PAPER, ${sponsors.length} sponsors] (${paperId})`);
-		}
+			console.info(`      WORKING_PAPER (${wpId})`);
 
-		// === DRAFT_RESOLUTION (active) ===
-		{
-			const creator = delegateMembers[1];
-			const sponsors = delegateMembers.slice(0, 5);
-			const paperId = nanoid();
-			const title = `Draft resolution`;
-
-			// Pre-seed with a realistic resolution body so the editor isn't empty.
-			const seed: Resolution = createEmptyResolution(committee.name);
-			seed.committeeName = committee.name;
-			seed.preamble = [
-				{
-					id: nanoid(),
-					content:
-						'Reaffirming the principles of the Charter of the United Nations and the Universal Declaration of Human Rights,'
-				},
-				{
-					id: nanoid(),
-					content:
-						'Recognizing the urgency of coordinated international action on the matter at hand,'
-				},
-				{
-					id: nanoid(),
-					content: 'Deeply concerned by the lack of sustained financing for capacity building,'
-				}
-			];
-			seed.operative = [
-				{
-					id: nanoid(),
-					blocks: [
-						{
-							type: 'text',
-							id: nanoid(),
-							content:
-								'Calls upon all Member States to support the establishment of a coordinated reporting mechanism;'
-						}
-					]
-				},
-				{
-					id: nanoid(),
-					blocks: [
-						{
-							type: 'text',
-							id: nanoid(),
-							content:
-								'Requests the Secretary-General to submit, within twelve months, a detailed implementation roadmap;'
-						}
-					]
-				},
-				{
-					id: nanoid(),
-					blocks: [
-						{
-							type: 'text',
-							id: nanoid(),
-							content:
-								'Decides to remain actively seized of the matter and to review progress at its next session.'
-						}
-					]
-				}
-			];
-
-			await db.insert(schema.resolutionPaper).values({
-				id: paperId,
+			// ── SUBMITTED ─────────────────────────────────────────────────────
+			const submittedContent = buildResolution(
+				committee.name,
+				preamble.slice(0, 4),
+				operative.slice(0, 4)
+			);
+			const subId = await insertPaper({
 				committeeId: committee.id,
-				agendaItemId: committee.activeAgendaItemId,
-				creatorCommitteeMemberId: creator.id,
-				status: 'DRAFT_RESOLUTION',
-				title,
-				documentNumber: `DR/${committee.abbreviation}/1`
+				agendaItemId: agendaItem.id,
+				creatorMemberId: pick(1, 10)[0],
+				status: 'SUBMITTED',
+				title: `${agendaItem.title} — co-sponsored proposal`,
+				content: submittedContent,
+				sponsorMemberIds: pick(5, 10),
+				snapshots: [{ trigger: 'SUBMITTED' }]
 			});
-			await db.insert(schema.paperYjsDoc).values({
-				id: nanoid(),
-				paperId,
-				state: encodeYjsState(seed)
-			});
-			for (const s of sponsors) {
-				await db.insert(schema.paperSponsor).values({
-					id: nanoid(),
-					paperId,
-					committeeMemberId: s.id
-				});
-			}
-
-			// Pin as the committee's active DR.
-			await db
-				.update(schema.committee)
-				.set({ activeDraftResolutionId: paperId })
-				.where(eq(schema.committee.id, committee.id));
-
-			// One pending amendment from a non-sponsor.
-			if (delegateMembers.length > 5) {
-				const proposer = delegateMembers[5];
-				const amendmentId = nanoid();
-				await db.insert(schema.amendment).values({
-					id: amendmentId,
-					paperId,
-					proposerCommitteeMemberId: proposer.id,
-					type: 'ALTER_TEXT',
-					status: 'SUBMITTED',
-					targetClauseId: seed.operative[0].id,
-					targetOperativeIndex: 0,
-					newContent:
-						'Calls upon all Member States to support the establishment of a transparent and coordinated reporting mechanism, with annual public review;',
-					documentNumber: `${committee.abbreviation}/1/ALT.1`
-				});
-				await db.insert(schema.amendmentSponsor).values({
-					id: nanoid(),
-					amendmentId,
-					committeeMemberId: proposer.id
-				});
-			}
-
-			// One PUBLIC and one TEAM_ONLY comment.
-			const adminCU = (
-				await db
-					.select()
-					.from(schema.conferenceUser)
-					.where(
-						and(
-							eq(schema.conferenceUser.conferenceId, committee.conferenceId),
-							eq(schema.conferenceUser.conferenceUserType, 'ADMIN')
-						)
-					)
-					.limit(1)
-			)[0];
+			// Add a chair comment on the submitted paper
 			if (adminCU) {
 				await db.insert(schema.resolutionComment).values({
 					id: nanoid(),
-					paperId,
+					paperId: subId,
 					authorConferenceUserId: adminCU.id,
-					content: 'Please refine the language in OP3 — chairs',
+					content: 'Solid structure. Please tighten the preambulatory language before promotion.',
 					visibility: 'TEAM_ONLY'
 				});
 			}
-			const delegateCU = (
-				await db
-					.select({ id: schema.conferenceUser.id })
-					.from(schema.conferenceUser)
-					.innerJoin(
-						schema.committeeMember,
-						eq(schema.conferenceUser.committeeMemberId, schema.committeeMember.id)
-					)
-					.where(eq(schema.committeeMember.committeeId, committee.id))
-					.limit(1)
-			)[0];
-			if (delegateCU) {
+			console.info(`      SUBMITTED (${subId})`);
+
+			// ── DRAFT_RESOLUTION ──────────────────────────────────────────────
+			const drDocNum = `${abbr}/${roman}/DR.1`;
+			const drId = await insertPaper({
+				committeeId: committee.id,
+				agendaItemId: agendaItem.id,
+				creatorMemberId: pick(1, 20)[0],
+				status: 'DRAFT_RESOLUTION',
+				documentNumber: drDocNum,
+				content: drContent,
+				title: `Draft Resolution on ${agendaItem.title}`,
+				sponsorMemberIds: pick(7, 20),
+				snapshots: [{ trigger: 'SUBMITTED' }]
+			});
+			// Add a pending amendment to the DR
+			if (delegates.length > 3) {
+				const proposer = delegates[Math.min(3, delegates.length - 1)].id;
+				const amendId = nanoid();
+				await db.insert(schema.amendment).values({
+					id: amendId,
+					paperId: drId,
+					proposerCommitteeMemberId: proposer,
+					type: 'ALTER_TEXT',
+					status: 'SUBMITTED',
+					targetClauseId: drContent.operative[0].id,
+					targetOperativeIndex: 0,
+					newContent: operative[0].replace(';', ', taking into account the principle of common but differentiated responsibilities;'),
+					documentNumber: `${abbr}/${roman}/ALT.1`
+				});
+				await db.insert(schema.amendmentSponsor).values({
+					id: nanoid(),
+					amendmentId: amendId,
+					committeeMemberId: proposer
+				});
+			}
+			// Chair comment on the DR
+			if (adminCU) {
 				await db.insert(schema.resolutionComment).values({
 					id: nanoid(),
-					paperId,
-					authorConferenceUserId: delegateCU.id,
-					content: 'Strong support from our delegation on PP2.',
-					clauseId: seed.preamble[1].id,
+					paperId: drId,
+					authorConferenceUserId: adminCU.id,
+					content: 'Pending amendment in OP1 needs a vote before we proceed.',
+					visibility: 'TEAM_ONLY'
+				});
+			}
+			// Delegate comment on a preamble clause
+			if (delegateCUs[0]) {
+				await db.insert(schema.resolutionComment).values({
+					id: nanoid(),
+					paperId: drId,
+					authorConferenceUserId: delegateCUs[0].id,
+					content: 'Our delegation strongly supports the language in PP2.',
+					clauseId: drContent.preamble[1].id,
 					visibility: 'PUBLIC'
 				});
 			}
+			console.info(`      DRAFT_RESOLUTION ${drDocNum} (${drId})`);
 
-			console.info(
-				`    - ${title} [DRAFT_RESOLUTION active, ${sponsors.length} sponsors] (${paperId})`
-			);
+			if (isActive) {
+				// Pin this DR as the committee's active draft resolution
+				await db
+					.update(schema.committee)
+					.set({ activeDraftResolutionId: drId })
+					.where(eq(schema.committee.id, committee.id));
+
+				// ── AMENDMENT_PHASE ───────────────────────────────────────────
+				const drDocNum2 = `${abbr}/${roman}/DR.2`;
+				const apContent = buildResolution(committee.name, preamble, [
+					...operative.slice(0, 5),
+					'Invites the Secretary-General to present a report on implementation progress to the Assembly at its next session.'
+				]);
+				const apId = await insertPaper({
+					committeeId: committee.id,
+					agendaItemId: agendaItem.id,
+					creatorMemberId: pick(1, 40)[0],
+					status: 'AMENDMENT_PHASE',
+					documentNumber: drDocNum2,
+					content: apContent,
+					title: `Draft Resolution on ${agendaItem.title}`,
+					sponsorMemberIds: pick(6, 40),
+					snapshots: [{ trigger: 'SUBMITTED' }]
+				});
+				// A CONSENSUS_ADOPTED amendment that was already applied
+				if (delegates.length > 5) {
+					const adoptedAmendId = nanoid();
+					await db.insert(schema.amendment).values({
+						id: adoptedAmendId,
+						paperId: apId,
+						proposerCommitteeMemberId: delegates[4].id,
+						type: 'ADD',
+						status: 'CONSENSUS_ADOPTED',
+						targetOperativeIndex: 2,
+						targetPosition: 3,
+						newContent: 'Also encourages Member States to share best practices and technical expertise through South-South and triangular cooperation mechanisms;',
+						documentNumber: `${abbr}/${roman}/ADD.1`
+					});
+					await db.insert(schema.amendmentSponsor).values({
+						id: nanoid(),
+						amendmentId: adoptedAmendId,
+						committeeMemberId: delegates[4].id
+					});
+				}
+				// A REJECTED amendment
+				if (delegates.length > 6) {
+					const rejectedAmendId = nanoid();
+					await db.insert(schema.amendment).values({
+						id: rejectedAmendId,
+						paperId: apId,
+						proposerCommitteeMemberId: delegates[5].id,
+						type: 'DELETE',
+						status: 'REJECTED',
+						targetClauseId: apContent.operative[1].id,
+						targetOperativeIndex: 1,
+						documentNumber: `${abbr}/${roman}/DEL.1`
+					});
+					await db.insert(schema.amendmentSponsor).values({
+						id: nanoid(),
+						amendmentId: rejectedAmendId,
+						committeeMemberId: delegates[5].id
+					});
+				}
+				console.info(`      AMENDMENT_PHASE ${drDocNum2} (${apId})`);
+
+				// ── VOTING_PHASE ──────────────────────────────────────────────
+				const drDocNum3 = `${abbr}/${roman}/DR.3`;
+				const vpContent = buildResolution(committee.name, preamble, operative);
+				const vpId = await insertPaper({
+					committeeId: committee.id,
+					agendaItemId: agendaItem.id,
+					creatorMemberId: pick(1, 60)[0],
+					status: 'VOTING_PHASE',
+					documentNumber: drDocNum3,
+					content: vpContent,
+					title: `Draft Resolution on ${agendaItem.title}`,
+					sponsorMemberIds: pick(9, 60),
+					snapshots: [{ trigger: 'SUBMITTED' }]
+				});
+				console.info(`      VOTING_PHASE ${drDocNum3} (${vpId})`);
+			} else {
+				// ── FINAL (adopted) — only for non-active topics ──────────────
+				const resDocNum = `${abbr}/${roman}/RES.1`;
+				const finalContent = buildResolution(committee.name, preamble, operative);
+				const finalId = await insertPaper({
+					committeeId: committee.id,
+					agendaItemId: agendaItem.id,
+					creatorMemberId: pick(1, 40)[0],
+					status: 'FINAL',
+					documentNumber: resDocNum,
+					content: finalContent,
+					title: `Resolution on ${agendaItem.title}`,
+					sponsorMemberIds: pick(8, 40),
+					snapshots: [{ trigger: 'SUBMITTED' }, { trigger: 'VOTE_CONCLUDED' }]
+				});
+				// Chair note on the adopted resolution
+				if (adminCU) {
+					await db.insert(schema.resolutionComment).values({
+						id: nanoid(),
+						paperId: finalId,
+						authorConferenceUserId: adminCU.id,
+						content: 'Adopted by consensus. Excellent work by all delegations.',
+						visibility: 'TEAM_ONLY'
+					});
+				}
+				console.info(`      FINAL ${resDocNum} (${finalId})`);
+			}
 		}
 	}
 }

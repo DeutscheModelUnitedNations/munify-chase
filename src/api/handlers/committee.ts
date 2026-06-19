@@ -244,10 +244,22 @@ schemaBuilder.mutationFields((t) => {
 			},
 			resolve: async (query, _root, args, ctx) => {
 				if (args.paperId) {
-				// does it exist?
-					await db.query.resolutionPaper
+					const paper = await db.query.resolutionPaper
 						.findFirst({ where: { id: args.paperId, committeeId: args.committeeId } })
 						.then(assertFindFirstExists);
+
+					const committee = await db.query.committee
+						.findFirst({ where: { id: args.committeeId } })
+						.then(assertFindFirstExists);
+
+					if (
+						committee.activeAgendaItemId &&
+						paper.agendaItemId !== committee.activeAgendaItemId
+					) {
+						throw new GraphQLError(
+							'Only papers belonging to the currently active agenda item may be set as active'
+						);
+					}
 				}
 				await db
 					.update(schema.committee)

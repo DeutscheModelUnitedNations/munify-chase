@@ -185,36 +185,40 @@ schemaBuilder.mutationFields((t) => ({
 			}
 
 			if (args.status === 'SUBMITTED') {
-				// Submitting runs the submission flow: it is only allowed from
-				// WORKING_PAPER, requires a sponsor, and snapshots the content.
 				const paper = await db.query.resolutionPaper
 					.findFirst(updateFilter.query.single)
 					.then(assertFindFirstExists);
 
-				if (paper.status !== 'WORKING_PAPER') {
-					throw new GraphQLError('Only working papers can be submitted');
-				}
-
-				const sponsors = await db.query.paperSponsor.findMany({
-					where: { paperId: args.id }
-				});
-				if (sponsors.length === 0) {
-					throw new GraphQLError('Paper needs at least one sponsor to submit');
-				}
-
-				const content = await readPaperJson(args.id);
-				await db.transaction(async (tx) => {
-					await tx.insert(schema.paperContentSnapshot).values({
-						id: nanoid(),
-						paperId: args.id,
-						content,
-						trigger: 'SUBMITTED'
+				if (paper.status === 'WORKING_PAPER') {
+					// Full submission flow: requires a sponsor and snapshots content.
+					const sponsors = await db.query.paperSponsor.findMany({
+						where: { paperId: args.id }
 					});
-					await tx
+					if (sponsors.length === 0) {
+						throw new GraphQLError('Paper needs at least one sponsor to submit');
+					}
+
+					const content = await readPaperJson(args.id);
+					await db.transaction(async (tx) => {
+						await tx.insert(schema.paperContentSnapshot).values({
+							id: nanoid(),
+							paperId: args.id,
+							content,
+							trigger: 'SUBMITTED'
+						});
+						await tx
+							.update(schema.resolutionPaper)
+							.set({ status: 'SUBMITTED' })
+							.where(updateFilter.sql.where);
+					});
+				} else {
+					// Revert from a later stage: simple status update without the
+					// submission flow (chairs only, already enforced by ability filter).
+					await db
 						.update(schema.resolutionPaper)
 						.set({ status: 'SUBMITTED' })
 						.where(updateFilter.sql.where);
-				});
+				}
 			} else if (args.status === 'DRAFT_RESOLUTION') {
 				const paper = await db.query.resolutionPaper
 					.findFirst(updateFilter.query.single)

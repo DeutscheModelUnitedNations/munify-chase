@@ -6,8 +6,9 @@
 	import { nanoid } from '$lib/helpers/nanoid';
 	import { m } from '$lib/paraglide/messages';
 	import BasicCard from '$lib/components/BasicCard.svelte';
-	import SubmittedQueue from '$lib/components/resolutions/SubmittedQueue.svelte';
+	import Flag from '$lib/components/Flag.svelte';
 	import CommitteePhaseToggles from '$lib/components/resolutions/CommitteePhaseToggles.svelte';
+	import { getTranslatedCountryNameFromAlpha3Code } from '$lib/utils/nationTranslationHelper.svelte';
 	import {
 		statusLabel,
 		statusBadgeClass,
@@ -37,7 +38,8 @@
 		try {
 			await client.mutate.setActiveDraftResolution({
 				__args: { committeeId, paperId: unset ? undefined : paperId },
-				id: true
+				id: true,
+				activeDraftResolutionId: true
 			});
 		} catch (err) {
 			toast.error(err instanceof Error ? err.message : 'Failed');
@@ -53,21 +55,34 @@
 		status: true,
 		documentNumber: true,
 		createdAt: true,
-		creatorCommitteeMember: { id: true, representation: { name: true } },
+		creatorCommitteeMember: {
+			id: true,
+			representation: { name: true, type: true, alpha2Code: true, alpha3Code: true, faIcon: true }
+		},
 		sponsors: { id: true },
 		agendaItem: { id: true, title: true }
 	});
 
+	// Submitted tab removed — submitted papers appear inside the Draft Resolutions tab.
+	const STATUS_FILTERS_KEYS = PAPER_STATUS_ORDER.filter((s) => s !== 'SUBMITTED');
 	const statusFilters: { key: PaperStatus | 'ALL'; label: () => string }[] = [
 		{ key: 'ALL', label: () => m.all() },
-		...PAPER_STATUS_ORDER.map((s) => ({ key: s, label: () => statusLabel(s) }))
+		...STATUS_FILTERS_KEYS.map((s) => ({ key: s, label: () => statusLabel(s) }))
 	];
 	let activeFilter = $state<PaperStatus | 'ALL'>('ALL');
 
 	const filteredPapers = $derived.by(() => {
-		const list = papers ?? [];
-		if (activeFilter === 'ALL') return list;
-		return list.filter((p) => p.status === activeFilter);
+		const activeAgendaItemId = committee?.activeAgendaItem?.id;
+		const list = (papers ?? []).filter(
+			(p) => !activeAgendaItemId || p.agendaItem?.id === activeAgendaItemId
+		);
+		const filtered =
+			activeFilter === 'ALL'
+				? list
+				: activeFilter === 'DRAFT_RESOLUTION'
+					? list.filter((p) => p.status === 'DRAFT_RESOLUTION' || p.status === 'SUBMITTED')
+					: list.filter((p) => p.status === activeFilter);
+		return [...filtered].sort((a, b) => (b.sponsors?.length ?? 0) - (a.sponsors?.length ?? 0));
 	});
 
 	function paperHref(paperId: string) {
@@ -112,6 +127,26 @@
 			creating = false;
 		}
 	}
+
+	// Promote submitted papers to draft resolution (used in DR tab)
+	let promotingId = $state<string | null>(null);
+	async function promote(paperId: string) {
+		promotingId = paperId;
+		try {
+			await client.mutate.updateResolutionPaper({
+				__args: {
+					id: paperId,
+					status: 'DRAFT_RESOLUTION'
+				},
+				id: true
+			});
+			toast.success(m.promotedToDr());
+		} catch (err) {
+			toast.error(err instanceof Error ? err.message : 'Failed to promote');
+		} finally {
+			promotingId = null;
+		}
+	}
 </script>
 
 <div class="flex h-full w-full flex-col items-center">
@@ -139,9 +174,7 @@
 			</div>
 		{/if}
 
-		<SubmittedQueue {committeeId} {paperHref} />
-
-		<!-- One tab per paper state, plus an "All" view -->
+		<!-- One tab per paper state (submitted papers fold into Draft Resolutions) -->
 		<div role="tablist" class="tabs tabs-boxed w-fit">
 			{#each statusFilters as filter (filter.key)}
 				<button
@@ -167,8 +200,9 @@
 			<div class="grid gap-3">
 				{#each filteredPapers as paper (paper.id)}
 					{@const isActive = committee?.activeDraftResolutionId === paper.id}
+					{@const isSubmitted = paper.status === 'SUBMITTED'}
 					<div class="card bg-base-100 hover:bg-base-200 transition">
-						<div class="card-body flex-row items-center gap-4 p-4">
+						<div class="card-body flex-row flex-wrap items-center gap-4 p-4">
 							<a href={paperHref(paper.id)} class="flex min-w-0 flex-1 flex-col">
 								<div class="flex flex-wrap items-center gap-2">
 									<span class="font-semibold">
@@ -178,15 +212,32 @@
 										{statusLabel(paper.status as PaperStatus)}
 									</span>
 								</div>
-								<div class="text-base-content/60 text-sm">
-									{paper.agendaItem?.title ?? ''}
-									{#if paper.creatorCommitteeMember?.representation?.name}
-										· {paper.creatorCommitteeMember.representation.name}
+								<div class="text-base-content/60 flex flex-wrap items-center gap-x-2 text-sm">
+									{#if paper.creatorCommitteeMember?.representation}
+										{@const rep = paper.creatorCommitteeMember.representation}
+										<div class="my-2 flex items-center gap-1">
+											<Flag size="xs" representation={rep} />
+											<span>
+												{rep.name ??
+													getTranslatedCountryNameFromAlpha3Code(rep.alpha3Code)}
+											</span>
+										</div>
+										·
 									{/if}
-									· {paper.sponsors.length}
+									{paper.sponsors.length}
 									{paper.sponsors.length === 1 ? m.sponsor() : m.sponsors()}
 								</div>
 							</a>
+							{#if isSubmitted}
+								<button
+									class="btn btn-primary btn-sm"
+									disabled={promotingId === paper.id}
+									onclick={() => promote(paper.id)}
+								>
+									{#if promotingId === paper.id}<i class="fas fa-spinner fa-spin"></i>{/if}
+									{m.promoteToDraftResolution()}
+								</button>
+							{/if}
 							<button
 								class="btn btn-sm btn-circle"
 								class:btn-secondary={isActive}

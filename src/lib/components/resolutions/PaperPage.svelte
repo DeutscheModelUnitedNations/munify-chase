@@ -84,7 +84,14 @@
 		currentOperativeIndex: true,
 		amendmentSubmissionOpen: true,
 		amendmentSponsoringOpen: true,
-		supportReevaluationOpen: true
+		supportReevaluationOpen: true,
+		activeVotingSession: {
+			id: true,
+			mode: true,
+			voteName: true,
+			majority: true,
+			withAbstentions: true
+		}
 	});
 	const committee = $derived(committees?.[0]);
 
@@ -204,7 +211,8 @@
 		try {
 			await client.mutate.setActiveDraftResolution({
 				__args: { committeeId: cId, paperId: isActiveDr ? undefined : pId },
-				id: true
+				id: true,
+				activeDraftResolutionId: true
 			});
 		} catch (err) {
 			toast.error(err instanceof Error ? err.message : 'Failed');
@@ -277,10 +285,14 @@
 
 			{#if team}
 				<ChairControlBar
-					paper={{ id: paper.id, status }}
+					paper={{ id: paper.id, status, title: paper.documentNumber ?? paper.title ?? '' }}
 					committee={{
 						id: committee.id,
-						currentOperativeIndex: committee.currentOperativeIndex
+						currentOperativeIndex: committee.currentOperativeIndex,
+						amendmentSubmissionOpen: committee.amendmentSubmissionOpen,
+						amendmentSponsoringOpen: committee.amendmentSponsoringOpen,
+						supportReevaluationOpen: committee.supportReevaluationOpen,
+						activeVotingSession: committee.activeVotingSession ?? null
 					}}
 					{operativeCount}
 				/>

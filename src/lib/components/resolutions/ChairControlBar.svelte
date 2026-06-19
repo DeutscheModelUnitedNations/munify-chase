@@ -3,12 +3,23 @@
 	import { client } from '$lib/api/rumbleClient/client';
 	import toast from 'svelte-french-toast';
 	import { PAPER_STATUS_ORDER, statusLabel, type PaperStatus } from './paperContext';
+	import { openVotingModal, resumeVotingModal } from '$lib/components/voting/votingModal';
 
 	interface Props {
-		paper: { id: string; status: PaperStatus };
+		paper: { id: string; status: PaperStatus; title: string };
 		committee: {
 			id: string;
 			currentOperativeIndex: number;
+			amendmentSubmissionOpen: boolean;
+			amendmentSponsoringOpen: boolean;
+			supportReevaluationOpen: boolean;
+			activeVotingSession: {
+				id: string;
+				mode: string;
+				voteName?: string | null;
+				majority?: string | null;
+				withAbstentions?: boolean | null;
+			} | null;
 		};
 		operativeCount: number;
 	}
@@ -20,13 +31,30 @@
 
 	let busy = $state(false);
 
+	let amendmentPhaseModalOpen = $state(false);
+
 	async function advance() {
+		if (!nextStatus) return;
+		if (nextStatus === 'AMENDMENT_PHASE') {
+			amendmentPhaseModalOpen = true;
+			return;
+		}
+		if (nextStatus === 'VOTING_PHASE') {
+			await doAdvance();
+			openVotingModal({ voteName: paper.title, voteType: 'ROLL_CALL', majority: 'ABSOLUTE', withAbstentions: true });
+			return;
+		}
+		await doAdvance();
+	}
+
+	async function doAdvance() {
 		if (!nextStatus) return;
 		busy = true;
 		try {
 			await client.mutate.updateResolutionPaper({
 				__args: { id: paper.id, status: nextStatus },
-				id: true
+				id: true,
+				status: true
 			});
 			toast.success(m.statusChangedTo({ status: statusLabel(nextStatus) }));
 		} catch (err) {
@@ -36,11 +64,38 @@
 		}
 	}
 
+	async function advanceWithAutoAllow() {
+		amendmentPhaseModalOpen = false;
+		busy = true;
+		try {
+			await client.mutate.setCommitteeResolutionToggles({
+				__args: {
+					committeeId: committee.id,
+					amendmentSubmissionOpen: true,
+					amendmentSponsoringOpen: true,
+					supportReevaluationOpen: true
+				},
+				id: true
+			});
+		} catch (err) {
+			toast.error(err instanceof Error ? err.message : 'Failed to update settings');
+		} finally {
+			busy = false;
+		}
+		await doAdvance();
+	}
+
+	async function advanceKeepSettings() {
+		amendmentPhaseModalOpen = false;
+		await doAdvance();
+	}
+
 	async function setCurrentClause(index: number) {
 		try {
 			await client.mutate.setCommitteeResolutionToggles({
 				__args: { committeeId: committee.id, currentOperativeIndex: index },
-				id: true
+				id: true,
+				currentOperativeIndex: true
 			});
 		} catch (err) {
 			toast.error(err instanceof Error ? err.message : 'Failed');
@@ -51,11 +106,8 @@
 		paper.status === 'AMENDMENT_PHASE' || paper.status === 'VOTING_PHASE'
 	);
 
-	// Earlier stages can be reverted to. Re-entering SUBMITTED runs the
-	// server-side submission flow (only valid from a working paper), so it is
-	// never a backward target.
 	function canRevertTo(status: PaperStatus, index: number) {
-		return index < currentIdx && status !== 'SUBMITTED';
+		return index < currentIdx;
 	}
 	// A step's bubble is interactive when it is the immediate next stage
 	// (advance) or a revertable earlier stage.
@@ -85,7 +137,8 @@
 		try {
 			await client.mutate.updateResolutionPaper({
 				__args: { id: paper.id, status: revertTarget },
-				id: true
+				id: true,
+				status: true
 			});
 			toast.success(m.statusChangedTo({ status: statusLabel(revertTarget) }));
 		} catch (err) {
@@ -129,7 +182,7 @@
 				<span
 					class:font-bold={i === currentIdx}
 					class:opacity-50={i > currentIdx}
-					title={i < currentIdx && status === 'SUBMITTED' ? m.cannotRevertToSubmitted() : undefined}
+					title={undefined}
 				>
 					{statusLabel(status)}
 				</span>
@@ -165,7 +218,110 @@
 			</button>
 		</div>
 	{/if}
+
+	{#if paper.status === 'VOTING_PHASE'}
+		{@const active = committee.activeVotingSession}
+		<button
+			class="btn btn-sm {active ? 'btn-warning' : 'btn-success'}"
+			title={active ? m.resumeVote() : m.startVote()}
+			onclick={() => {
+				if (active) {
+					resumeVotingModal({
+						voteType: active.mode as 'SHOW_OF_HANDS' | 'ROLL_CALL',
+						voteName: active.voteName ?? paper.title,
+						majority: (active.majority ?? 'ABSOLUTE') as 'SIMPLE' | 'ABSOLUTE' | 'TWO_THIRDS',
+						withAbstentions: active.withAbstentions ?? true
+					});
+				} else {
+					openVotingModal({ voteName: paper.title, voteType: 'ROLL_CALL', majority: 'ABSOLUTE', withAbstentions: true });
+				}
+			}}
+		>
+			<i class="fas {active ? 'fa-rotate-right' : 'fa-person-booth'}"></i>
+			{active ? m.resumeVote() : m.startVote()}
+		</button>
+	{/if}
 </div>
+
+{#if amendmentPhaseModalOpen}
+	<div class="modal modal-open">
+		<div class="modal-box">
+			<h3 class="text-lg font-bold">{m.amendmentPhaseSettingsTitle()}</h3>
+			<p class="py-3">{m.amendmentPhaseSettingsDescription()}</p>
+			<div class="flex flex-wrap gap-x-6 gap-y-2 pb-4">
+				<label class="label cursor-pointer gap-2 py-0">
+					<input
+						type="checkbox"
+						class="toggle toggle-primary"
+						checked={committee.amendmentSubmissionOpen}
+						onchange={(e) =>
+							client.mutate.setCommitteeResolutionToggles({
+								__args: { committeeId: committee.id, amendmentSubmissionOpen: e.currentTarget.checked },
+								id: true
+							})}
+					/>
+					<span class="label-text text-sm">{m.amendmentSubmission()}</span>
+				</label>
+				<label class="label cursor-pointer gap-2 py-0">
+					<input
+						type="checkbox"
+						class="toggle toggle-primary"
+						checked={committee.amendmentSponsoringOpen}
+						onchange={(e) =>
+							client.mutate.setCommitteeResolutionToggles({
+								__args: {
+									committeeId: committee.id,
+									amendmentSponsoringOpen: e.currentTarget.checked
+								},
+								id: true
+							})}
+					/>
+					<span class="label-text text-sm">{m.amendmentSponsoring()}</span>
+				</label>
+				<label class="label cursor-pointer gap-2 py-0">
+					<input
+						type="checkbox"
+						class="toggle toggle-primary"
+						checked={committee.supportReevaluationOpen}
+						onchange={(e) =>
+							client.mutate.setCommitteeResolutionToggles({
+								__args: {
+									committeeId: committee.id,
+									supportReevaluationOpen: e.currentTarget.checked
+								},
+								id: true
+							})}
+					/>
+					<span class="label-text text-sm">{m.supportReevaluation()}</span>
+				</label>
+			</div>
+			<div class="modal-action">
+				<button
+					class="btn btn-ghost"
+					onclick={() => (amendmentPhaseModalOpen = false)}
+				>{m.cancel()}</button>
+				<button
+					class="btn btn-outline"
+					disabled={busy}
+					onclick={advanceKeepSettings}
+				>{m.amendmentPhaseSettingsChangeNothing()}</button>
+				<button
+					class="btn btn-primary"
+					disabled={busy}
+					onclick={advanceWithAutoAllow}
+				>
+					{#if busy}<i class="fas fa-spinner fa-spin"></i>{/if}
+					{m.amendmentPhaseSettingsAutoAllow()}
+				</button>
+			</div>
+		</div>
+		<button
+			class="modal-backdrop"
+			aria-label={m.cancel()}
+			onclick={() => (amendmentPhaseModalOpen = false)}
+		></button>
+	</div>
+{/if}
 
 {#if revertTarget}
 	<div class="modal modal-open">

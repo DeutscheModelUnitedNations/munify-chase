@@ -275,6 +275,23 @@ export const optimistic: OptimisticMutationConfig = {
 		return result;
 	},
 	deleteCommittee: () => true,
+	setCommitteeResolutionToggles: (args) => {
+		const result: Record<string, unknown> = {
+			__typename: 'Committee',
+			id: args.committeeId
+		};
+		for (const field of [
+			'amendmentSubmissionOpen',
+			'amendmentSponsoringOpen',
+			'supportReevaluationOpen',
+			'currentOperativeIndex'
+		]) {
+			if ((args as Record<string, unknown>)[field] !== undefined) {
+				result[field] = (args as Record<string, unknown>)[field];
+			}
+		}
+		return result;
+	},
 
 	// -------------------------------------------------------------------------
 	// committeeMember.ts

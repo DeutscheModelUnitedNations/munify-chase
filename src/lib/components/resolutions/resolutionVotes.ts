@@ -47,15 +47,18 @@ export async function launchFinalVote(opts: {
 	committeeId: string;
 	majorityAmount: number;
 	voteName: string;
+	mode?: 'SHOW_OF_HANDS' | 'ROLL_CALL';
+	majority?: 'SIMPLE' | 'ABSOLUTE' | 'TWO_THIRDS';
+	withAbstentions?: boolean;
 }): Promise<string | null> {
 	const session = await client.mutate.startVotingSession({
 		__args: {
 			id: nanoid(),
 			committeeId: opts.committeeId,
-			mode: 'ROLL_CALL',
-			majority: 'ABSOLUTE',
+			mode: opts.mode ?? 'ROLL_CALL',
+			majority: opts.majority ?? 'ABSOLUTE',
 			majorityAmount: opts.majorityAmount,
-			withAbstentions: true,
+			withAbstentions: opts.withAbstentions ?? true,
 			voteName: opts.voteName
 		},
 		id: true

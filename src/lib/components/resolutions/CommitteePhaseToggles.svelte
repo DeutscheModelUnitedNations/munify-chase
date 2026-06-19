@@ -25,7 +25,10 @@
 		try {
 			await client.mutate.setCommitteeResolutionToggles({
 				__args: { committeeId, ...args },
-				id: true
+				id: true,
+				amendmentSubmissionOpen: true,
+				amendmentSponsoringOpen: true,
+				supportReevaluationOpen: true
 			});
 		} catch (err) {
 			toast.error(err instanceof Error ? err.message : 'Failed');

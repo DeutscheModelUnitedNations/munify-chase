@@ -29,6 +29,7 @@
 		id: true,
 		abbreviation: true,
 		name: true,
+		activeDraftResolutionId: true,
 		conference: {
 			id: true,
 			title: true
@@ -84,10 +85,23 @@
 				conferenceId: page.params.conferenceId!,
 				committeeId: page.params.committeeId!
 			})}
-			class:dock-active={page.url.pathname.includes('/papers')}
+			class:dock-active={page.url.pathname.includes('/papers') && !page.url.pathname.includes(committee?.activeDraftResolutionId ?? '__none__')}
 		>
 			<i class="fa-duotone fa-file-lines size-[1.2em]"></i>
 			<span class="dock-label">{m.resolutions()}</span>
 		</a>
+		{#if committee?.activeDraftResolutionId}
+			<a
+				href={resolve('/app/[conferenceId]/participant/[committeeId]/papers/[paperId]', {
+					conferenceId: page.params.conferenceId!,
+					committeeId: page.params.committeeId!,
+					paperId: committee.activeDraftResolutionId
+				})}
+				class:dock-active={page.url.pathname.includes(committee.activeDraftResolutionId)}
+			>
+				<i class="fa-duotone fa-file-pen size-[1.2em]"></i>
+				<span class="dock-label">{m.activeDraftResolution()}</span>
+			</a>
+		{/if}
 	</div>
 {/if}

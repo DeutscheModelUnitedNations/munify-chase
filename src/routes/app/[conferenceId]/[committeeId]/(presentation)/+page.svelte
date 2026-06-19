@@ -16,6 +16,7 @@
 	import PresentationRollCall from '$lib/components/rollCall/PresentationRollCall.svelte';
 	import ShowOfHandsVotingPresentation from '$lib/components/voting/ShowOfHandsVotingPresentation.svelte';
 	import RollCallVotingPresentation from '$lib/components/voting/RollCallVotingPresentation.svelte';
+	import PresentationResolutionPreview from '$lib/components/resolutions/PresentationResolutionPreview.svelte';
 	import { sortTranslatedCountries } from '$lib/utils/nationTranslationHelper.svelte';
 	import CurrentSpeaker from '$lib/components/speakersList/CurrentSpeaker.svelte';
 	import SpeakersQueue from '$lib/components/speakersList/PresentationSpeakersQueue.svelte';
@@ -40,6 +41,9 @@
 		presentationLayout: true,
 		presentationRootFontSize: true,
 		displayRegionalGroups: true,
+		currentOperativeIndex: true,
+		activeDraftResolutionId: true,
+		activeDraftResolution: { id: true, status: true },
 		activeAgendaItem: {
 			id: true,
 			title: true,
@@ -270,6 +274,16 @@
 
 	<ShowOfHandsVotingPresentation {committeeId} />
 	<RollCallVotingPresentation {committeeId} {committee} />
+
+	{#if committee.activeDraftResolution && (committee.activeDraftResolution.status === 'AMENDMENT_PHASE' || committee.activeDraftResolution.status === 'VOTING_PHASE')}
+		<div class="bg-base-200 fixed inset-0 z-40 flex flex-col">
+			<PresentationResolutionPreview
+				paperId={committee.activeDraftResolution.id}
+				currentOperativeIndex={committee.currentOperativeIndex}
+				showAmendments
+			/>
+		</div>
+	{/if}
 {:else}
 	<UndrawError
 		undrawImage={emptyStreet}

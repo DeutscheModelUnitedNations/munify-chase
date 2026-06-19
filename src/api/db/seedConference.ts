@@ -336,8 +336,7 @@ async function seedResolutionPapers() {
 				creatorCommitteeMemberId: creator.id,
 				status: 'DRAFT_RESOLUTION',
 				title,
-				documentNumber: `DR/${committee.abbreviation}/1`,
-				sequenceNumber: 1
+				documentNumber: `DR/${committee.abbreviation}/1`
 			});
 			await db.insert(schema.paperYjsDoc).values({
 				id: nanoid(),
@@ -372,8 +371,7 @@ async function seedResolutionPapers() {
 					targetOperativeIndex: 0,
 					newContent:
 						'Calls upon all Member States to support the establishment of a transparent and coordinated reporting mechanism, with annual public review;',
-					documentNumber: `${committee.abbreviation}/1/ALT.1`,
-					sequenceNumber: 1
+					documentNumber: `${committee.abbreviation}/1/ALT.1`
 				});
 				await db.insert(schema.amendmentSponsor).values({
 					id: nanoid(),

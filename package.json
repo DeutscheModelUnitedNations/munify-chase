@@ -12,7 +12,7 @@
 		"@inlang/cli": "^3.1.11",
 		"@inlang/paraglide-js": "^2.18.2",
 		"@lingual/i18n-check": "^0.9.5",
-		"@m1212e/rumble": "^0.21.2",
+		"@m1212e/rumble": "^0.21.3",
 		"@m1212e/sveltekit-oidc": "^0.0.43",
 		"@m1212e/urql-crosstab-sync": "^0.1.0",
 		"@pothos/plugin-validation": "^4.3.0",

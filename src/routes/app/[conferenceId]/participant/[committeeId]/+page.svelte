@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { m } from '$lib/paraglide/messages';
 	import { page } from '$app/state';
+	import { resolve } from '$app/paths';
 	import { client } from '$lib/api/rumbleClient/client';
 	import { nanoid } from '$lib/helpers/nanoid';
 	import { getCurrentUser } from '$lib/state/currentUser.svelte';
@@ -261,6 +262,24 @@
 				{/if}
 			{/each}
 		{/if}
+
+		<!-- Resolutions Card -->
+		<a
+			class="card bg-base-100 shadow-sm transition hover:shadow-md"
+			href={resolve('/app/[conferenceId]/participant/[committeeId]/papers', {
+				conferenceId: page.params.conferenceId!,
+				committeeId: page.params.committeeId!
+			})}
+		>
+			<div class="card-body flex-row items-center gap-3 p-4">
+				<i class="fa-duotone fa-file-lines text-2xl"></i>
+				<div class="flex-1">
+					<h2 class="card-title text-lg">{m.resolutions()}</h2>
+					<p class="text-base-content/60 text-sm">{m.resolutionsCardHint()}</p>
+				</div>
+				<i class="fas fa-chevron-right opacity-50"></i>
+			</div>
+		</a>
 
 		<!-- Whiteboard Card -->
 		{#if committee.showWhiteboard && committee.whiteboardContent}

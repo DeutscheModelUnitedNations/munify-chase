@@ -74,10 +74,20 @@
 				conferenceId: page.params.conferenceId!,
 				committeeId: page.params.committeeId!
 			})}
-			class="dock-active"
+			class:dock-active={!page.url.pathname.includes('/papers')}
 		>
 			<i class="fa-duotone fa-users size-[1.2em]"></i>
 			<span class="dock-label">{m.committee()}</span>
+		</a>
+		<a
+			href={resolve('/app/[conferenceId]/participant/[committeeId]/papers', {
+				conferenceId: page.params.conferenceId!,
+				committeeId: page.params.committeeId!
+			})}
+			class:dock-active={page.url.pathname.includes('/papers')}
+		>
+			<i class="fa-duotone fa-file-lines size-[1.2em]"></i>
+			<span class="dock-label">{m.resolutions()}</span>
 		</a>
 	</div>
 {/if}

@@ -408,7 +408,6 @@ export const resolutionPaper = snakeCase.table('resolution_paper', {
 	status: paperStatus().notNull().default('WORKING_PAPER'),
 	title: text(),
 	documentNumber: text(),
-	sequenceNumber: smallint(),
 	// Final resolution-level vote. Tallies and outcome live on the linked
 	// votingSession row.
 	voteVotingSessionId: text().references((): AnyPgColumn => votingSession.id, {
@@ -507,8 +506,7 @@ export const amendment = snakeCase.table('amendment', {
 	newContent: text(),
 	// Destination index for ADD / ALTER_POSITION.
 	targetPosition: smallint(),
-	documentNumber: text(),
-	sequenceNumber: smallint()
+	documentNumber: text()
 });
 
 export const amendmentSponsor = snakeCase.table(

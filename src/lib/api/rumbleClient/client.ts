@@ -73,7 +73,6 @@ export type Amendment = {
     where?: CommitteememberWhereInputArgument | null | undefined
   }) => Committeemember,
   proposerCommitteeMemberId: ID,
-  sequenceNumber: Int | null,
   sponsors: (p?: {
     limit?: Int | null | undefined,
     offset?: Int | null | undefined,
@@ -97,7 +96,6 @@ export type AmendmentOrderInputArgument = {
   paperId?: SortingParameter | null | undefined,
   proposer?: CommitteememberOrderInputArgument | null | undefined,
   proposerCommitteeMemberId?: SortingParameter | null | undefined,
-  sequenceNumber?: SortingParameter | null | undefined,
   sponsors?: AmendmentsponsorOrderInputArgument | null | undefined,
   status?: SortingParameter | null | undefined,
   targetClauseId?: SortingParameter | null | undefined,
@@ -116,7 +114,6 @@ export type AmendmentWhereInputArgument = {
   paperId?: ID | null | undefined,
   proposer?: CommitteememberWhereInputArgument | null | undefined,
   proposerCommitteeMemberId?: ID | null | undefined,
-  sequenceNumber?: IntWhereInputArgument | null | undefined,
   sponsors?: AmendmentsponsorWhereInputArgument | null | undefined,
   status?: AmendmentstatusEnum | null | undefined,
   targetClauseId?: ID | null | undefined,
@@ -824,14 +821,6 @@ export type Mutation = {
     position?: Int | null | undefined,
     speakersListId: ID
   }) => Speakeronlist,
-  chairCreateResolutionPaper: (p: {
-    agendaItemId: ID,
-    committeeId: ID,
-    creatorCommitteeMemberId: ID,
-    id?: ID | null | undefined,
-    status?: unknown | null | undefined,
-    title?: String | null | undefined
-  }) => Resolutionpaper,
   clearSpeakersList: (p: {
     id: ID
   }) => Speakerslist,
@@ -842,7 +831,7 @@ export type Mutation = {
     id: ID,
     outcome?: unknown | null | undefined
   }) => Boolean,
-  concludeResolutionVote: (p: {
+  concludeResolutionPaperVote: (p: {
     paperId: ID,
     votingSessionId: ID
   }) => Resolutionpaper,
@@ -914,7 +903,9 @@ export type Mutation = {
   createResolutionPaper: (p: {
     agendaItemId: ID,
     committeeId: ID,
+    creatorCommitteeMemberId?: ID | null | undefined,
     id?: ID | null | undefined,
+    status?: unknown | null | undefined,
     title?: String | null | undefined
   }) => Resolutionpaper,
   deleteAmendment: (p: {
@@ -1028,10 +1019,6 @@ export type Mutation = {
     currentOperativeIndex?: Int | null | undefined,
     supportReevaluationOpen?: Boolean | null | undefined
   }) => Committee,
-  setPaperStatus: (p: {
-    id: ID,
-    status: unknown
-  }) => Resolutionpaper,
   setPresenceForCommitteeMembers: (p: {
     ids: unknown,
     present: Boolean,
@@ -1064,9 +1051,6 @@ export type Mutation = {
   submitAmendment: (p: {
     id: ID
   }) => Amendment,
-  submitPaper: (p: {
-    id: ID
-  }) => Resolutionpaper,
   unlinkOperativeClauseVote: (p: {
     clauseId: String,
     paperId: ID
@@ -1105,10 +1089,6 @@ export type Mutation = {
     id: ID,
     name?: String | null | undefined
   }) => Conferenceuser,
-  updatePaperTitle: (p: {
-    id: ID,
-    title?: String | null | undefined
-  }) => Resolutionpaper,
   updatePresenceEvent: (p: {
     committeeId?: ID | null | undefined,
     id: ID,
@@ -1120,6 +1100,12 @@ export type Mutation = {
     content: String,
     id: ID
   }) => Resolutioncomment,
+  updateResolutionPaper: (p: {
+    documentNumber?: String | null | undefined,
+    id: ID,
+    status?: unknown | null | undefined,
+    title?: String | null | undefined
+  }) => Resolutionpaper,
   updateSpeakerOnList: (p: {
     id: ID,
     overwriteName?: String | null | undefined
@@ -1753,7 +1739,6 @@ export type Resolutionpaper = {
     where?: CommitteememberWhereInputArgument | null | undefined
   }) => Committeemember,
   creatorCommitteeMemberId: ID,
-  deletedAt: DateTime | null,
   documentNumber: String | null,
   editors: (p?: {
     limit?: Int | null | undefined,
@@ -1768,7 +1753,6 @@ export type Resolutionpaper = {
     orderBy?: OperativeclausevoteOrderInputArgument | null | undefined,
     where?: OperativeclausevoteWhereInputArgument | null | undefined
   }) => Operativeclausevote[],
-  sequenceNumber: Int | null,
   shareCodes: (p?: {
     limit?: Int | null | undefined,
     offset?: Int | null | undefined,
@@ -1807,12 +1791,10 @@ export type ResolutionpaperOrderInputArgument = {
   createdAt?: SortingParameter | null | undefined,
   creatorCommitteeMember?: CommitteememberOrderInputArgument | null | undefined,
   creatorCommitteeMemberId?: SortingParameter | null | undefined,
-  deletedAt?: SortingParameter | null | undefined,
   documentNumber?: SortingParameter | null | undefined,
   editors?: PapereditorOrderInputArgument | null | undefined,
   id?: SortingParameter | null | undefined,
   operativeClauseVotes?: OperativeclausevoteOrderInputArgument | null | undefined,
-  sequenceNumber?: SortingParameter | null | undefined,
   shareCodes?: PapersharecodeOrderInputArgument | null | undefined,
   snapshots?: PapercontentsnapshotOrderInputArgument | null | undefined,
   sponsors?: PapersponsorOrderInputArgument | null | undefined,
@@ -1833,12 +1815,10 @@ export type ResolutionpaperWhereInputArgument = {
   createdAt?: DateWhereInputArgument | null | undefined,
   creatorCommitteeMember?: CommitteememberWhereInputArgument | null | undefined,
   creatorCommitteeMemberId?: ID | null | undefined,
-  deletedAt?: DateWhereInputArgument | null | undefined,
   documentNumber?: StringWhereInputArgument | null | undefined,
   editors?: PapereditorWhereInputArgument | null | undefined,
   id?: ID | null | undefined,
   operativeClauseVotes?: OperativeclausevoteWhereInputArgument | null | undefined,
-  sequenceNumber?: IntWhereInputArgument | null | undefined,
   shareCodes?: PapersharecodeWhereInputArgument | null | undefined,
   snapshots?: PapercontentsnapshotWhereInputArgument | null | undefined,
   sponsors?: PapersponsorWhereInputArgument | null | undefined,

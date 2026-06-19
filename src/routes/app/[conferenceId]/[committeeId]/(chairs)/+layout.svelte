@@ -118,10 +118,6 @@
 		}
 	});
 
-	// TODO: enable once resolution feature is implemented in schema/API
-	// const activeDraftResolutionId = $derived(committee?.activeDraftResolutionId ?? null);
-	const activeDraftResolutionId: string | null = null;
-
 	const dockItems = $derived([
 		{
 			icon: 'fa-gears',
@@ -159,8 +155,15 @@
 			}),
 			key: 'voting'
 		},
-		// TODO: add resolutions dock item once route exists
-		...(activeDraftResolutionId ? [] : [])
+		{
+			icon: 'fa-file-lines',
+			label: () => m.resolutions(),
+			href: resolve('/app/[conferenceId]/[committeeId]/(chairs)/resolutions', {
+				conferenceId,
+				committeeId
+			}),
+			key: 'resolutions'
+		}
 	]);
 
 	function isActive(key: string) {
@@ -168,7 +171,7 @@
 	}
 
 	$effect(() => {
-		hotkeys('alt+1, alt+2, alt+3, alt+4', (event, handler) => {
+		hotkeys('alt+1, alt+2, alt+3, alt+4, alt+5', (event, handler) => {
 			event.preventDefault();
 			switch (handler.key) {
 				case 'alt+1':
@@ -203,9 +206,17 @@
 						})
 					);
 					break;
+				case 'alt+5':
+					goto(
+						resolve('/app/[conferenceId]/[committeeId]/(chairs)/resolutions', {
+							conferenceId,
+							committeeId
+						})
+					);
+					break;
 			}
 		});
-		return () => hotkeys.unbind('alt+1, alt+2, alt+3, alt+4');
+		return () => hotkeys.unbind('alt+1, alt+2, alt+3, alt+4, alt+5');
 	});
 
 	let committeeStatusExpiredAlerted = $state(false);

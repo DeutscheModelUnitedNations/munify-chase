@@ -12,10 +12,12 @@ import {
 	isTeamInConference,
 	isPaperAuthor
 } from '$api/services/authHelper';
-import { assertFindFirstExists } from '@m1212e/rumble';
+import { assertFindFirstExists, assertFirstEntryExists } from '@m1212e/rumble';
 import { nanoid, nanoidValidation } from '$lib/helpers/nanoid';
 import { GraphQLError } from 'graphql';
 import { readPaperJson } from '$api/yjs/server';
+import { and, count, eq, inArray } from 'drizzle-orm';
+import { toRoman } from '@deutschemodelunitednations/munify-resolution-editor/schema';
 
 abilityBuilder.resolutionPaper.allow('read').when((ctx) => {
 	return {
@@ -150,18 +152,35 @@ schemaBuilder.mutationFields((t) => ({
 		args: {
 			id: t.arg.id({ required: true }),
 			title: t.arg.string(),
-			status: t.arg({ type: statusEnum })
+			status: t.arg({ type: statusEnum }),
+			documentNumber: t.arg.string()
 		},
 		resolve: async (query, _root, args, ctx) => {
 			const updateFilter = ctx.abilities.resolutionPaper
 				.filter('update')
 				.merge({ where: { id: args.id } });
 
-			// Persist the title first, so it is set before any submission flow
-			if (args.title != null) {
+			// documentNumber is chair-only
+			const isChair = args.documentNumber != null
+				? !!(await db.query.resolutionPaper.findFirst({
+						where: {
+							id: args.id,
+							committee: isTeamInConference(ctx)
+						}
+					}))
+				: false;
+			if (args.documentNumber != null && !isChair) {
+				throw new GraphQLError('Only chairs may set the document number');
+			}
+
+			// Persist plain metadata first, so it is set before any submission flow
+			const metaUpdate: Partial<typeof schema.resolutionPaper.$inferInsert> = {};
+			if (args.title != null) metaUpdate.title = args.title;
+			if (args.documentNumber != null) metaUpdate.documentNumber = args.documentNumber;
+			if (Object.keys(metaUpdate).length > 0) {
 				await db
 					.update(schema.resolutionPaper)
-					.set({ title: args.title })
+					.set(metaUpdate)
 					.where(updateFilter.sql.where);
 			}
 
@@ -196,6 +215,49 @@ schemaBuilder.mutationFields((t) => ({
 						.set({ status: 'SUBMITTED' })
 						.where(updateFilter.sql.where);
 				});
+			} else if (args.status === 'DRAFT_RESOLUTION') {
+				const paper = await db.query.resolutionPaper
+					.findFirst(updateFilter.query.single)
+					.then(assertFindFirstExists);
+
+				const statusUpdate: Partial<typeof schema.resolutionPaper.$inferInsert> = {
+					status: 'DRAFT_RESOLUTION'
+				};
+
+				if (!paper.documentNumber) {
+					const committee = await db.query.committee
+						.findFirst({ where: { id: paper.committeeId } })
+						.then(assertFindFirstExists);
+
+					const agendaItems = await db.query.agendaItem.findMany({
+						where: { committeeId: paper.committeeId }
+					});
+					const agendaItemIndex = agendaItems.findIndex((ai) => ai.id === paper.agendaItemId);
+					const agendaPosition = agendaItemIndex >= 0 ? agendaItemIndex + 1 : 1;
+
+					const existingCount = await db
+						.select({ n: count() })
+						.from(schema.resolutionPaper)
+						.where(
+							and(
+								eq(schema.resolutionPaper.agendaItemId, paper.agendaItemId),
+								inArray(schema.resolutionPaper.status, [
+									'DRAFT_RESOLUTION',
+									'AMENDMENT_PHASE',
+									'VOTING_PHASE',
+									'FINAL'
+								])
+							)
+						)
+						.then(assertFirstEntryExists);
+
+					statusUpdate.documentNumber = `${committee.abbreviation}/${toRoman(agendaPosition)}/DR.${existingCount.n + 1}`;
+				}
+
+				await db
+					.update(schema.resolutionPaper)
+					.set(statusUpdate)
+					.where(updateFilter.sql.where);
 			} else if (args.status != null) {
 				await db
 					.update(schema.resolutionPaper)

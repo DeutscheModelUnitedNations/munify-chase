@@ -8,7 +8,7 @@
 	const paperId = $derived(page.params.paperId!);
 
 	const backHref = $derived(
-		resolve('/app/[conferenceId]/[committeeId]/(chairs)/resolutions', { conferenceId, committeeId })
+		resolve('/app/[conferenceId]/participant/[committeeId]/papers', { conferenceId, committeeId })
 	);
 </script>
 

@@ -19,6 +19,7 @@
 		simpleMajority: number;
 		/** Shows clause vote controls (DRAFT/AMENDMENT/VOTING phases). */
 		showVoteTab: boolean;
+		ondeselect?: () => void;
 	}
 
 	let {
@@ -32,7 +33,8 @@
 		sponsoringOpen,
 		activeAmendmentId,
 		simpleMajority,
-		showVoteTab
+		showVoteTab,
+		ondeselect
 	}: Props = $props();
 
 	type Tab = 'amendments' | 'comments' | 'vote';
@@ -69,9 +71,16 @@
 </script>
 
 <div class="bg-base-200 flex h-full w-full flex-col">
-	<div class="border-base-300 border-b p-3">
-		<p class="text-base-content/60 text-xs">{m.selected()}</p>
-		<p class="font-semibold">{clauseLabel}</p>
+	<div class="border-base-300 flex items-center gap-2 border-b p-3">
+		<div class="min-w-0 flex-1">
+			<p class="text-base-content/60 text-xs">{m.selected()}</p>
+			<p class="truncate font-semibold">{clauseLabel}</p>
+		</div>
+		{#if ondeselect && selectedClauseId}
+			<button class="btn btn-ghost btn-xs btn-circle shrink-0" onclick={ondeselect} aria-label={m.deselect()}>
+				<i class="fas fa-xmark"></i>
+			</button>
+		{/if}
 	</div>
 
 	<div role="tablist" class="tabs tabs-bordered px-2 pt-2">

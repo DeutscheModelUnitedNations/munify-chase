@@ -15,6 +15,7 @@
 	import { getServerTime } from '$lib/state/serverTime.svelte';
 	import hotkeys from 'hotkeys-js';
 	import VotingModal from '$lib/components/voting/VotingModal.svelte';
+	import AdoptionConfetti from '$lib/components/AdoptionConfetti.svelte';
 	import { openPresentationWindow } from '$lib/state/presentationWindow.svelte';
 
 	interface Props {
@@ -101,6 +102,7 @@
 				faIcon: true
 			}
 		},
+		lastResolutionAdoptionDate: true,
 		conference: {
 			id: true,
 			title: true,
@@ -312,13 +314,7 @@
 	<VotingModal {committee} />
 {/if}
 
-<!-- TODO: enable AdoptionConfetti once resolution adoption feature is implemented -->
-<!-- <AdoptionConfetti
-	lastAdoptionDate={committee?.lastResolutionAdoptionDate}
-	agendaItem={committee?.activeAgendaItem?.title ?? m.unknown()}
-	committeeName={committee?.name ?? m.unknown()}
-	confettiDurationSec={20}
-/> -->
+<AdoptionConfetti lastAdoptionDate={committee?.lastResolutionAdoptionDate} confettiDurationSec={45} />
 
 <!-- Bottom dock -->
 <div class="dock dock-md lg:dock-lg md:justify-center md:gap-4">

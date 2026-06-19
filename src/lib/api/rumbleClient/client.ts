@@ -214,6 +214,7 @@ export type Committee = {
   customTwoThirdsMajority: Int | null,
   displayRegionalGroups: Boolean,
   id: ID,
+  lastResolutionAdoptionDate: DateTime | null,
   members: (p?: {
     limit?: Int | null | undefined,
     offset?: Int | null | undefined,
@@ -285,6 +286,7 @@ export type CommitteeOrderInputArgument = {
   customTwoThirdsMajority?: SortingParameter | null | undefined,
   displayRegionalGroups?: SortingParameter | null | undefined,
   id?: SortingParameter | null | undefined,
+  lastResolutionAdoptionDate?: SortingParameter | null | undefined,
   members?: CommitteememberOrderInputArgument | null | undefined,
   name?: SortingParameter | null | undefined,
   presenceEvents?: PresenceeventOrderInputArgument | null | undefined,
@@ -328,6 +330,7 @@ export type CommitteeWhereInputArgument = {
   customTwoThirdsMajority?: IntWhereInputArgument | null | undefined,
   displayRegionalGroups?: Boolean | null | undefined,
   id?: ID | null | undefined,
+  lastResolutionAdoptionDate?: DateWhereInputArgument | null | undefined,
   members?: CommitteememberWhereInputArgument | null | undefined,
   name?: StringWhereInputArgument | null | undefined,
   presenceEvents?: PresenceeventWhereInputArgument | null | undefined,
@@ -1101,6 +1104,7 @@ export type Mutation = {
     id: ID
   }) => Resolutioncomment,
   updateResolutionPaper: (p: {
+    deployConfetti?: Boolean | null | undefined,
     documentNumber?: String | null | undefined,
     id: ID,
     status?: unknown | null | undefined,

@@ -10,6 +10,7 @@
 	} from '$lib/components/navbar/conferenceNavItems';
 	import { client } from '$lib/api/rumbleClient/client';
 	import { page } from '$app/state';
+	import AdoptionConfetti from '$lib/components/AdoptionConfetti.svelte';
 
 	import { getCurrentUser } from '$lib/state/currentUser.svelte';
 
@@ -36,9 +37,21 @@
 			status: true,
 			statusHeadline: true,
 			statusUntil: true,
-			stateOfDebate: true
+			stateOfDebate: true,
+			lastResolutionAdoptionDate: true
 		}
 	});
+
+	const adoptingCommittee = $derived(
+		(conference?.committees ?? [])
+			.filter((c) => c.lastResolutionAdoptionDate != null)
+			.sort(
+				(a, b) =>
+					new Date(b.lastResolutionAdoptionDate!).getTime() -
+					new Date(a.lastResolutionAdoptionDate!).getTime()
+			)[0] ?? null
+	);
+	const mostRecentAdoption = $derived(adoptingCommittee?.lastResolutionAdoptionDate ?? null);
 
 	const conferenceUsers = await client.liveQuery.conferenceUsers({
 		__args: {
@@ -95,6 +108,14 @@
 		/>
 	</div>
 </div>
+
+<AdoptionConfetti
+	lastAdoptionDate={mostRecentAdoption}
+	confettiDurationSec={45}
+	showBanner
+	committeeName={adoptingCommittee?.name ?? adoptingCommittee?.abbreviation ?? ''}
+	agendaItem={adoptingCommittee?.activeAgendaItem?.title ?? ''}
+/>
 
 {#if conference}
 	<CommitteeGrid conference={conference as unknown as ConferenceData} environment="TEAM" />

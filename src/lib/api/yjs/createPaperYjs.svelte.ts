@@ -16,8 +16,10 @@ import { WebsocketProvider } from 'y-websocket';
 import { IndexeddbPersistence } from 'y-indexeddb';
 import {
 	createYjsStore,
-	createAwarenessPresence
+	createAwarenessPresence,
+	jsonToYDoc
 } from '@deutschemodelunitednations/munify-resolution-editor/yjs';
+import { createEmptyResolution } from '@deutschemodelunitednations/munify-resolution-editor';
 import type {
 	ResolutionStore,
 	PresenceAdapter,
@@ -55,6 +57,11 @@ export function createPaperYjsClient(opts: CreateOptions): PaperYjsClient {
 	// 1. Local persistence — hydrates synchronously then emits 'synced'.
 	const idbPersistence = new IndexeddbPersistence(`chase-yjs-paper-${opts.paperId}`, doc);
 	idbPersistence.once('synced', () => {
+		// Seed the root structure only if the doc is truly empty (brand-new paper).
+		// Doing this after IDB loads avoids the CRDT race where a pre-load seed's
+		// Y.Array at clock 0 can randomly win over the existing IDB array at clock 0
+		// (tie broken by random clientID), wiping the user's content.
+		jsonToYDoc(doc, createEmptyResolution(''));
 		persistenceLoaded = true;
 	});
 

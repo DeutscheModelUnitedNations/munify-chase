@@ -32,6 +32,7 @@
 	let busy = $state(false);
 
 	let amendmentPhaseModalOpen = $state(false);
+	let finalConfirmOpen = $state(false);
 
 	async function advance() {
 		if (!nextStatus) return;
@@ -44,24 +45,36 @@
 			openVotingModal({ voteName: paper.title, voteType: 'ROLL_CALL', majority: 'ABSOLUTE', withAbstentions: true });
 			return;
 		}
+		if (nextStatus === 'FINAL') {
+			finalConfirmOpen = true;
+			return;
+		}
 		await doAdvance();
 	}
 
-	async function doAdvance() {
+	async function doAdvance(deployConfetti = false) {
 		if (!nextStatus) return;
+		// Capture before the await — $derived updates once the mutation response arrives,
+		// so nextStatus would be undefined by the time the toast fires.
+		const advancingTo = nextStatus;
 		busy = true;
 		try {
 			await client.mutate.updateResolutionPaper({
-				__args: { id: paper.id, status: nextStatus },
+				__args: { id: paper.id, status: advancingTo, deployConfetti },
 				id: true,
 				status: true
 			});
-			toast.success(m.statusChangedTo({ status: statusLabel(nextStatus) }));
+			toast.success(m.statusChangedTo({ status: statusLabel(advancingTo) }));
 		} catch (err) {
 			toast.error(err instanceof Error ? err.message : 'Failed to advance');
 		} finally {
 			busy = false;
 		}
+	}
+
+	async function advanceToFinal(withConfetti: boolean) {
+		finalConfirmOpen = false;
+		await doAdvance(withConfetti);
 	}
 
 	async function advanceWithAutoAllow() {
@@ -338,5 +351,28 @@
 		</div>
 		<button class="modal-backdrop" aria-label={m.cancel()} onclick={() => (revertTarget = null)}
 		></button>
+	</div>
+{/if}
+
+{#if finalConfirmOpen}
+	<div class="modal modal-open">
+		<div class="modal-box text-center">
+			<div class="mb-3 text-4xl">🎉</div>
+			<h3 class="text-lg font-bold">{m.finalizeResolutionTitle()}</h3>
+			<p class="py-3">{m.finalizeResolutionDescription()}</p>
+			<p class="text-base-content/60 pb-4 text-sm">{m.finalizeConfettiPrompt()}</p>
+			<div class="modal-action flex-col gap-2 sm:flex-row">
+				<button class="btn btn-ghost" onclick={() => (finalConfirmOpen = false)}>{m.cancel()}</button>
+				<button class="btn btn-outline btn-success" disabled={busy} onclick={() => advanceToFinal(false)}>
+					{#if busy}<i class="fas fa-spinner fa-spin"></i>{/if}
+					{m.finalizeWithoutConfetti()}
+				</button>
+				<button class="btn btn-success" disabled={busy} onclick={() => advanceToFinal(true)}>
+					{#if busy}<i class="fas fa-spinner fa-spin"></i>{/if}
+					{m.finalizeWithConfetti()}
+				</button>
+			</div>
+		</div>
+		<button class="modal-backdrop" aria-label={m.cancel()} onclick={() => (finalConfirmOpen = false)}></button>
 	</div>
 {/if}

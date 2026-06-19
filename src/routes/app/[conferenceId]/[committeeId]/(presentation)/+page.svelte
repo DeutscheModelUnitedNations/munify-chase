@@ -17,6 +17,7 @@
 	import ShowOfHandsVotingPresentation from '$lib/components/voting/ShowOfHandsVotingPresentation.svelte';
 	import RollCallVotingPresentation from '$lib/components/voting/RollCallVotingPresentation.svelte';
 	import PresentationResolutionPreview from '$lib/components/resolutions/PresentationResolutionPreview.svelte';
+	import AdoptionConfetti from '$lib/components/AdoptionConfetti.svelte';
 	import { sortTranslatedCountries } from '$lib/utils/nationTranslationHelper.svelte';
 	import CurrentSpeaker from '$lib/components/speakersList/CurrentSpeaker.svelte';
 	import SpeakersQueue from '$lib/components/speakersList/PresentationSpeakersQueue.svelte';
@@ -45,6 +46,7 @@
 		currentOperativeIndex: true,
 		activeDraftResolutionId: true,
 		activeDraftResolution: { id: true, status: true },
+		lastResolutionAdoptionDate: true,
 		activeAgendaItem: {
 			id: true,
 			title: true,
@@ -269,13 +271,17 @@
 			<GridItem {...gridProps} class="card bg-base-100 overflow-auto p-4" id="resolution-preview">
 				<PresentationResolutionPreview
 					paperId={activePaperId}
-					currentOperativeIndex={committee.currentOperativeIndex}
+					currentOperativeIndex={committee.activeDraftResolution?.status === 'AMENDMENT_PHASE'
+						? committee.currentOperativeIndex
+						: undefined}
 					resolutionFontSize={committee.presentationResolutionFontSize ?? 16}
-					showAmendments
+					showAmendments={committee.activeDraftResolution?.status === 'AMENDMENT_PHASE'}
 				/>
 			</GridItem>
 		{/if}
 	</Grid>
+
+	<AdoptionConfetti lastAdoptionDate={committee.lastResolutionAdoptionDate} confettiDurationSec={45} />
 
 	<RegionalGroups
 		open={committee.displayRegionalGroups ?? false}

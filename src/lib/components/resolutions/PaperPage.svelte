@@ -36,6 +36,9 @@
 		type PaperStatus,
 		type ResolutionViewer
 	} from './paperContext';
+	import { nanoid } from '$lib/helpers/nanoid';
+	import { launchClauseVote } from './resolutionVotes';
+	import { openVotingModal, resumeVotingModal } from '$lib/components/voting/votingModal';
 
 	interface Props {
 		paperId: string;
@@ -79,12 +82,12 @@
 		agendaItem: { title: true },
 		creatorCommitteeMember: {
 			id: true,
-			representation: { name: true, alpha3Code: true }
+			representation: { id: true, name: true, alpha3Code: true }
 		},
 		sponsors: {
 			id: true,
 			committeeMember: {
-				representation: { name: true, alpha3Code: true }
+				representation: { id: true, name: true, alpha3Code: true }
 			}
 		},
 		editors: { id: true, conferenceUser: { id: true } }
@@ -124,7 +127,7 @@
 		targetOperativeIndex: true,
 		targetPosition: true,
 		newContent: true,
-		proposer: { id: true, representation: { name: true } },
+		proposer: { id: true, representation: { id: true, name: true } },
 		sponsors: { id: true }
 	});
 	const clauseVotes = await client.liveQuery.operativeClauseVotes({
@@ -148,6 +151,11 @@
 	);
 	const rejectedClauseIds = $derived(
 		(clauseVotes ?? []).filter((v) => v.vote?.outcome === 'REJECTED').map((v) => v.clauseId)
+	);
+	const showVoteTab = $derived(status !== 'WORKING_PAPER' && status !== 'SUBMITTED');
+	// Lookup map for clause vote records (for inline vote button + outcome badge).
+	const clauseVoteMap = $derived(
+		new Map((clauseVotes ?? []).map((v) => [v.clauseId, v]))
 	);
 
 	function amendmentCountFor(clauseId: string) {
@@ -224,6 +232,104 @@
 	);
 	function selectClause(id: string) {
 		selectedClauseId = selectedClauseId === id ? null : id;
+	}
+
+	// Svelte action: adds a highlight outline to the OperativeClauseEditor's root
+	// element by traversing from the clauseAnnotations injection point.
+	function highlightClause(
+		node: HTMLElement,
+		params: { selected: boolean; current: boolean; clauseId: string }
+	) {
+		// node is inside the library's "absolute -left-2 -top-2" wrapper div, whose
+		// next sibling is the OperativeClauseEditor root element.
+		const clauseEl = node.parentElement?.nextElementSibling as HTMLElement | null;
+		if (!clauseEl) return;
+
+		// Needs to be positioned so the side handle can use absolute placement.
+		clauseEl.style.position = 'relative';
+
+		// Slim arrow handle injected into the right side of the clause card.
+		// Positioned right: -1rem so it sits exactly in the fieldset's 1rem padding —
+		// never outside the scroll container.
+		let currentClauseId = params.clauseId;
+		const handle = document.createElement('button');
+		handle.type = 'button';
+		handle.className = 'clause-side-handle';
+		handle.setAttribute('aria-label', 'Open in panel');
+		handle.innerHTML = '<i class="fas fa-chevron-right"></i>';
+		handle.addEventListener('click', (e) => {
+			e.stopPropagation();
+			selectClause(currentClauseId);
+		});
+		clauseEl.append(handle);
+
+		function apply(p: typeof params) {
+			currentClauseId = p.clauseId;
+			clauseEl!.classList.toggle('clause-is-selected', p.selected);
+			clauseEl!.classList.toggle('clause-is-current', p.current);
+			handle.classList.toggle('is-selected', p.selected);
+		}
+
+		apply(params);
+		return {
+			update: apply,
+			destroy() {
+				handle.remove();
+				clauseEl!.classList.remove('clause-is-selected', 'clause-is-current');
+			}
+		};
+	}
+
+	// ---- inline clause vote -------------------------------------------------
+	// Clause to link once the committee's activeVotingSession appears (set before
+	// opening the modal so the $effect fires as soon as ShowOfHandsVotingChair
+	// creates the session — avoids creating the DB session before config is done).
+	let pendingLinkClauseId = $state<string | null>(null);
+	let pendingLinkSessionId = $state<string | null>(null);
+
+	$effect(() => {
+		const sessionId = committee?.activeVotingSession?.id;
+		const clauseId = pendingLinkClauseId;
+		// Only link when a NEW session appears (not one that was already active).
+		if (!sessionId || !clauseId || sessionId === pendingLinkSessionId) return;
+		pendingLinkClauseId = null;
+		client.mutate
+			.linkOperativeClauseVote({
+				__args: { id: nanoid(), paperId, clauseId, votingSessionId: sessionId },
+				id: true
+			})
+			.catch(() => {});
+	});
+
+	let suggestRemoveClauseId = $state<string | null>(null);
+
+	async function startClauseVote(clauseId: string, clauseLabel: string) {
+		// Capture the current session ID so the $effect ignores it (only fires for new ones).
+		pendingLinkSessionId = committee?.activeVotingSession?.id ?? null;
+		pendingLinkClauseId = clauseId;
+		const result = await openVotingModal({
+			voteName: clauseLabel,
+			voteType: 'SHOW_OF_HANDS',
+			majority: 'SIMPLE',
+			withAbstentions: true
+		});
+		// Clear if vote was cancelled before starting (session never appeared).
+		pendingLinkClauseId = null;
+		pendingLinkSessionId = null;
+		if (!result.cancelled && result.outcome === 'REJECTED') {
+			suggestRemoveClauseId = clauseId;
+		}
+	}
+
+	async function resumeClauseVote() {
+		const active = committee?.activeVotingSession;
+		if (!active) return;
+		await resumeVotingModal({
+			voteType: (active.mode ?? 'SHOW_OF_HANDS') as 'SHOW_OF_HANDS' | 'ROLL_CALL',
+			voteName: active.voteName ?? '',
+			majority: (active.majority ?? 'SIMPLE') as 'SIMPLE' | 'ABSOLUTE' | 'TWO_THIRDS',
+			withAbstentions: active.withAbstentions ?? true
+		});
 	}
 
 	// ---- actions ------------------------------------------------------------
@@ -333,7 +439,7 @@
 {#snippet noHeader()}{/snippet}
 
 {#if paper && committee}
-	<div class="flex h-[calc(100vh-4rem)] w-full flex-col">
+	<div class="flex h-[calc(100vh-8rem)] w-full flex-col overflow-hidden">
 		<!-- Single header bar: title, lifecycle chain + chair controls, actions.
 		     Uses the page background (base-200) to stay distinct from the app nav. -->
 		<header class="bg-base-200 flex flex-wrap items-center gap-x-4 gap-y-2 px-4 py-2">
@@ -482,54 +588,56 @@
 			onpointerup={stopDrag}
 			onpointerleave={stopDrag}
 		>
-			<!-- Left: collapsible document preview -->
-			{#if previewOpen}
-				<aside
-					class="hidden shrink-0 flex-col overflow-hidden lg:flex"
-					style="width: {previewWidth}px;"
-				>
-					<div class="border-base-300 flex items-center justify-between border-b px-3 py-2">
-						<span class="text-sm font-semibold">
-							<i class="fa-solid fa-eye mr-1.5"></i>{m.resolutionPreview()}
-						</span>
+			<!-- Left: collapsible document preview (hidden on FINAL) -->
+			{#if status !== 'FINAL'}
+				{#if previewOpen}
+					<aside
+						class="hidden shrink-0 flex-col overflow-hidden lg:flex"
+						style="width: {previewWidth}px;"
+					>
+						<div class="border-base-300 flex items-center justify-between border-b px-3 py-2">
+							<span class="text-sm font-semibold">
+								<i class="fa-solid fa-eye mr-1.5"></i>{m.resolutionPreview()}
+							</span>
+							<button
+								class="btn btn-ghost btn-xs"
+								title={m.resolutionHidePreview()}
+								onclick={() => (previewOpen = false)}
+							>
+								<i class="fas fa-chevron-left"></i>
+							</button>
+						</div>
+						{#if browser && yClient}
+							<div class="min-h-0 flex-1 overflow-auto p-4">
+								<ResolutionPreview
+									resolution={yClient.store.snapshot}
+									{headerData}
+									labels={englishLabels}
+									amendments={amendmentOverlays}
+									{rejectedClauseIds}
+								/>
+							</div>
+						{/if}
+					</aside>
+					<!-- Drag handle: preview / editor -->
+					<div
+						role="separator"
+						aria-label="Resize preview panel"
+						aria-orientation="vertical"
+						class="drag-handle group hidden w-3 shrink-0 cursor-col-resize items-stretch justify-center lg:flex"
+						onpointerdown={(e) => { e.preventDefault(); e.currentTarget.setPointerCapture(e.pointerId); startDrag('preview'); }}
+					><div class="bg-base-300 w-px group-hover:w-1 group-hover:bg-primary/40 group-active:bg-primary/60 transition-all"></div></div>
+				{:else}
+					<div class="hidden shrink-0 flex-col items-center pt-2 lg:flex">
 						<button
 							class="btn btn-ghost btn-xs"
-							title={m.resolutionHidePreview()}
-							onclick={() => (previewOpen = false)}
+							title={m.resolutionShowPreview()}
+							onclick={() => (previewOpen = true)}
 						>
-							<i class="fas fa-chevron-left"></i>
+							<i class="fas fa-chevron-right"></i>
 						</button>
 					</div>
-					{#if browser && yClient}
-						<div class="overflow-auto p-4">
-							<ResolutionPreview
-								resolution={yClient.store.snapshot}
-								{headerData}
-								labels={englishLabels}
-								amendments={amendmentOverlays}
-								{rejectedClauseIds}
-							/>
-						</div>
-					{/if}
-				</aside>
-				<!-- Drag handle: preview / editor -->
-				<div
-					role="separator"
-					aria-label="Resize preview panel"
-					aria-orientation="vertical"
-					class="drag-handle group hidden w-3 shrink-0 cursor-col-resize items-stretch justify-center lg:flex"
-					onpointerdown={(e) => { e.preventDefault(); e.currentTarget.setPointerCapture(e.pointerId); startDrag('preview'); }}
-				><div class="bg-base-300 w-px group-hover:w-1 group-hover:bg-primary/40 group-active:bg-primary/60 transition-all"></div></div>
-			{:else}
-				<div class="hidden shrink-0 flex-col items-center pt-2 lg:flex">
-					<button
-						class="btn btn-ghost btn-xs"
-						title={m.resolutionShowPreview()}
-						onclick={() => (previewOpen = true)}
-					>
-						<i class="fas fa-chevron-right"></i>
-					</button>
-				</div>
+				{/if}
 			{/if}
 
 			<!-- Center: editor -->
@@ -554,38 +662,73 @@
 				{/if}
 			</div>
 
-			<!-- Drag handle: editor / context -->
-			<div
-				role="separator"
-				aria-label="Resize context panel"
-				aria-orientation="vertical"
-				class="drag-handle group hidden w-3 shrink-0 cursor-col-resize items-stretch justify-center lg:flex"
-				onpointerdown={(e) => { e.preventDefault(); e.currentTarget.setPointerCapture(e.pointerId); startDrag('context'); }}
-			><div class="bg-base-300 w-px group-hover:w-1 group-hover:bg-primary/40 group-active:bg-primary/60 transition-all"></div></div>
+			<!-- Drag handle + right context panel: hidden on FINAL -->
+			{#if status !== 'FINAL'}
+				<div
+					role="separator"
+					aria-label="Resize context panel"
+					aria-orientation="vertical"
+					class="drag-handle group hidden w-3 shrink-0 cursor-col-resize items-stretch justify-center lg:flex"
+					onpointerdown={(e) => { e.preventDefault(); e.currentTarget.setPointerCapture(e.pointerId); startDrag('context'); }}
+				><div class="bg-base-300 w-px group-hover:w-1 group-hover:bg-primary/40 group-active:bg-primary/60 transition-all"></div></div>
 
-			<!-- Right: clause context (comments, amendments, votes) -->
-			<aside
-				class="hidden shrink-0 lg:block"
-				style="width: {contextWidth}px;"
-			>
-				<ClauseContextPanel
-					{paperId}
-					committeeId={committee.id}
-					{selectedClauseId}
-					{selectedClauseIndex}
-					{operativeCount}
-					{viewer}
-					submissionOpen={committee.amendmentSubmissionOpen}
-					sponsoringOpen={committee.amendmentSponsoringOpen}
-					activeAmendmentId={committee.activeAmendmentId ?? null}
-					simpleMajority={committee.simpleMajority}
-					showVoteTab={status !== 'WORKING_PAPER' && status !== 'SUBMITTED'}
-				/>
-			</aside>
+				<aside
+					class="hidden shrink-0 overflow-hidden lg:flex lg:flex-col"
+					style="width: {contextWidth}px;"
+				>
+					<ClauseContextPanel
+						{paperId}
+						committeeId={committee.id}
+						{selectedClauseId}
+						{selectedClauseIndex}
+						{operativeCount}
+						{viewer}
+						submissionOpen={committee.amendmentSubmissionOpen}
+						sponsoringOpen={committee.amendmentSponsoringOpen}
+						activeAmendmentId={committee.activeAmendmentId ?? null}
+						simpleMajority={committee.simpleMajority}
+						showVoteTab={false}
+						ondeselect={() => (selectedClauseId = null)}
+					/>
+				</aside>
+			{/if}
 		</div>
 	</div>
 
 	<SnapshotHistoryModal bind:open={historyOpen} {paperId} close={() => (historyOpen = false)} />
+
+	<!-- Remove-clause suggestion after a rejected clause vote -->
+	{#if suggestRemoveClauseId}
+		{@const clauseToRemove = suggestRemoveClauseId}
+		<div class="modal modal-open">
+			<div class="modal-box">
+				<h3 class="mb-1 text-lg font-bold">
+					<span class="badge badge-error mr-2">{m.rejected()}</span>
+				</h3>
+				<p class="py-3">{m.rejectedClauseRemoveSuggestion()}</p>
+				<div class="modal-action">
+					<button class="btn btn-ghost" onclick={() => (suggestRemoveClauseId = null)}>
+						{m.keepClause()}
+					</button>
+					<button
+						class="btn btn-error"
+						onclick={() => {
+							yClient?.store.deleteOperativeClause(clauseToRemove);
+							suggestRemoveClauseId = null;
+						}}
+					>
+						<i class="fas fa-trash"></i>
+						{m.removeClause()}
+					</button>
+				</div>
+			</div>
+			<button
+				class="modal-backdrop"
+				aria-label={m.keepClause()}
+				onclick={() => (suggestRemoveClauseId = null)}
+			></button>
+		</div>
+	{/if}
 
 	<!-- Submit confirmation modal -->
 	{#if submitConfirmOpen}
@@ -648,32 +791,61 @@
 	</div>
 {/if}
 
-{#snippet clauseToolbarSnippet({ clause }: { clause: { id: string }; index: number })}
-	<button
-		class="btn btn-ghost btn-xs"
-		class:btn-active={selectedClauseId === clause.id}
-		title={m.selectClause()}
-		onclick={() => selectClause(clause.id)}
-	>
-		<i class="fas fa-comments"></i>
-	</button>
+{#snippet clauseToolbarSnippet({ clause, index }: { clause: { id: string }; index: number })}
+	{@const clauseLabel = m.clauseN({ n: String(index + 1) })}
+	{@const existingVote = clauseVoteMap.get(clause.id)}
+	<div class="mb-10 -mt-1 flex items-center justify-end gap-2">
+		{#if showVoteTab && team && index === committee.currentOperativeIndex}
+			{@const inProgress = !!committee.activeVotingSession && !!existingVote?.vote && existingVote.vote.outcome == null}
+			{#if inProgress}
+				<button class="btn btn-sm btn-warning gap-2" onclick={resumeClauseVote}>
+					<i class="fas fa-rotate-right"></i>
+					{m.resumeVote()}
+				</button>
+			{:else}
+				<button
+					class="btn btn-sm gap-2"
+					class:btn-secondary={!existingVote?.vote}
+					class:btn-ghost={!!existingVote?.vote}
+					onclick={() => startClauseVote(clause.id, clauseLabel)}
+				>
+					<i class="fas fa-person-booth"></i>
+					{existingVote?.vote ? m.restartVote() : m.startClauseVote()}
+				</button>
+			{/if}
+		{/if}
+	</div>
 {/snippet}
 
-{#snippet clauseAnnotationsSnippet({ clause }: { clause: { id: string }; index: number })}
+{#snippet clauseAnnotationsSnippet({ clause, index }: { clause: { id: string }; index: number })}
 	{@const ac = amendmentCountFor(clause.id)}
 	{@const cc = commentCountFor(clause.id)}
-	{#if ac || cc}
-		<button
-			class="flex items-center gap-2"
-			onclick={() => selectClause(clause.id)}
-			class:opacity-100={selectedClauseId === clause.id}
-		>
-			{#if ac}<span class="badge badge-xs badge-warning gap-1"
-					><i class="fas fa-pen-nib"></i>{ac}</span
-				>{/if}
-			{#if cc}<span class="badge badge-xs gap-1"><i class="fas fa-comment"></i>{cc}</span>{/if}
-		</button>
-	{/if}
+	{@const outcome = clauseVoteMap.get(clause.id)?.vote?.outcome}
+	{@const isCurrent = index === committee?.currentOperativeIndex}
+	<div use:highlightClause={{ selected: selectedClauseId === clause.id, current: isCurrent, clauseId: clause.id }}>
+		{#if isCurrent || ac || cc || outcome}
+			<button
+				class="flex items-center gap-2"
+				onclick={() => selectClause(clause.id)}
+				class:opacity-100={selectedClauseId === clause.id}
+			>
+				{#if isCurrent}
+					<span class="badge badge-xs badge-secondary gap-1">
+						<i class="fas fa-caret-right"></i>{m.currentClause()}
+					</span>
+				{/if}
+				{#if outcome}
+					<span class="badge badge-xs gap-1 {outcome === 'ADOPTED' ? 'badge-success' : 'badge-error'}">
+						{outcome === 'ADOPTED' ? m.adopted() : m.rejected()}
+					</span>
+				{/if}
+				{#if ac}<span class="badge badge-xs badge-warning gap-1"
+						><i class="fas fa-pen-nib"></i>{ac}</span
+					>{/if}
+				{#if cc}<span class="badge badge-xs gap-1"><i class="fas fa-comment"></i>{cc}</span>{/if}
+			</button>
+		{/if}
+	</div>
 {/snippet}
 
 <style>
@@ -683,12 +855,53 @@
 		display: none;
 	}
 
+	/* Slim selection handle on the right edge of each operative clause card.
+	   Uses right: -2rem so it sits in the fieldset's 2rem right padding — within the
+	   scroll container and never causing horizontal overflow. */
+	:global(.clause-side-handle) {
+		position: absolute;
+		right: -2rem;
+		top: 0;
+		bottom: 0;
+		width: 2rem;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		cursor: pointer;
+		background: var(--color-base-300);
+		border-radius: 0 var(--radius-box) var(--radius-box) 0;
+		font-size: 0.5rem;
+		color: var(--color-base-content);
+		opacity: 0.4;
+		transition: opacity 0.15s, background-color 0.15s;
+		border: none;
+	}
+	:global(.clause-side-handle:hover) {
+		opacity: 0.9;
+	}
+	:global(.clause-side-handle.is-selected) {
+		background: var(--color-primary);
+		color: var(--color-primary-content);
+		opacity: 1;
+	}
+
+	/* Highlight ring on the selected operative clause card. */
+	:global(.clause-is-selected) {
+		outline: 2px solid var(--color-primary);
+		outline-offset: 2px;
+	}
+
+	/* Left accent bar on the currently active clause. */
+	:global(.clause-is-current) {
+		border-left: 3px solid var(--color-secondary) !important;
+	}
+
 	/* Strip the fieldset chrome so the editor blends into the panel. */
 	.editor-no-internal-preview :global(fieldset) {
 		border: none;
 		border-radius: 0;
 		background: transparent;
-		padding: 1rem;
+		padding: 1rem 3rem 1rem 1rem;
 	}
 	.editor-no-internal-preview :global(fieldset > legend) {
 		display: none;

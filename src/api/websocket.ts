@@ -118,31 +118,28 @@ createWs(
 	head: Buffer
 ) => {
 	const url = new URL(req.url ?? '/', 'http://localhost');
-	switch (url.pathname) {
-		case '/api/graphql':
-			gqlWSS.handleUpgrade(req, socket, head, (ws) => {
-				gqlWSS.emit('connection', ws, req);
-			});
-			break;
-		case '/api/yjs': {
-			const paperId = url.searchParams.get('room');
-			if (!paperId) {
-				socket.write('HTTP/1.1 400 Bad Request\r\n\r\n');
-				socket.destroy();
+	if (url.pathname === '/api/graphql') {
+		gqlWSS.handleUpgrade(req, socket, head, (ws) => {
+			gqlWSS.emit('connection', ws, req);
+		});
+	} else if (url.pathname.startsWith('/api/yjs')) {
+		// y-websocket appends the room as a path segment: /api/yjs/<paperId>
+		// also accept ?room=<paperId> as a fallback
+		const paperId =
+			url.pathname.slice('/api/yjs/'.length) || url.searchParams.get('room');
+		if (!paperId) {
+			socket.write('HTTP/1.1 400 Bad Request\r\n\r\n');
+			socket.destroy();
+			return;
+		}
+		yjsWSS.handleUpgrade(req, socket, head, async (ws) => {
+			const event = await authenticateWsRequest(req);
+			const ctx = await context(event as any);
+			if (!ctx) {
+				ws.close(4401, 'Unauthorized');
 				return;
 			}
-			yjsWSS.handleUpgrade(req, socket, head, async (ws) => {
-				const event = await authenticateWsRequest(req);
-				const ctx = await context(event as any);
-				if (!ctx) {
-					ws.close(4401, 'Unauthorized');
-					return;
-				}
-				void openYjsRoom(ws, paperId, ctx);
-			});
-			break;
-		}
-		default:
-			return;
+			void openYjsRoom(ws, paperId, ctx);
+		});
 	}
 };

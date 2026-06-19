@@ -97,7 +97,8 @@ export const committee = snakeCase.table(
 		presentationLayout: text().notNull().default('default'),
 		presentationRootFontSize: smallint().notNull().default(16),
 		presentationResolutionFontSize: smallint().notNull().default(16),
-		displayRegionalGroups: boolean().notNull().default(false)
+		displayRegionalGroups: boolean().notNull().default(false),
+		lastResolutionAdoptionDate: timestamp({ mode: 'date' })
 	},
 	(t) => [unique().on(t.conferenceId, t.name), unique().on(t.conferenceId, t.abbreviation)]
 );

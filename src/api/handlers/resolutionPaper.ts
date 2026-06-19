@@ -153,7 +153,8 @@ schemaBuilder.mutationFields((t) => ({
 			id: t.arg.id({ required: true }),
 			title: t.arg.string(),
 			status: t.arg({ type: statusEnum }),
-			documentNumber: t.arg.string()
+			documentNumber: t.arg.string(),
+			deployConfetti: t.arg.boolean()
 		},
 		resolve: async (query, _root, args, ctx) => {
 			const updateFilter = ctx.abilities.resolutionPaper
@@ -267,6 +268,15 @@ schemaBuilder.mutationFields((t) => ({
 					.update(schema.resolutionPaper)
 					.set({ status: args.status })
 					.where(updateFilter.sql.where);
+				if (args.status === 'FINAL' && args.deployConfetti) {
+					const paper = await db.query.resolutionPaper
+						.findFirst({ where: { id: args.id }, columns: { committeeId: true } })
+						.then(assertFindFirstExists);
+					await db
+						.update(schema.committee)
+						.set({ lastResolutionAdoptionDate: new Date() })
+						.where(eq(schema.committee.id, paper.committeeId));
+				}
 			}
 
 			pubsub.updated(args.id);
@@ -304,6 +314,9 @@ schemaBuilder.mutationFields((t) => ({
 		},
 		resolve: async (query, _root, args, ctx) => {
 			const content = await readPaperJson(args.paperId);
+			const paperForCommittee = await db.query.resolutionPaper
+				.findFirst({ where: { id: args.paperId }, columns: { committeeId: true } })
+				.then(assertFindFirstExists);
 			await db.transaction(async (tx) => {
 				await tx
 					.update(schema.resolutionPaper)
@@ -321,6 +334,10 @@ schemaBuilder.mutationFields((t) => ({
 					content,
 					trigger: 'VOTE_CONCLUDED'
 				});
+				await tx
+					.update(schema.committee)
+					.set({ lastResolutionAdoptionDate: new Date() })
+					.where(eq(schema.committee.id, paperForCommittee.committeeId));
 			});
 
 			pubsub.updated(args.paperId);

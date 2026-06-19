@@ -158,11 +158,23 @@
 		new Map((clauseVotes ?? []).map((v) => [v.clauseId, v]))
 	);
 
+	const amendmentCountMap = $derived(
+		(amendmentRows ?? []).reduce((m, a) => {
+			if (a.targetClauseId) m.set(a.targetClauseId, (m.get(a.targetClauseId) ?? 0) + 1);
+			return m;
+		}, new Map<string, number>())
+	);
+	const commentCountMap = $derived(
+		(comments ?? []).reduce((m, c) => {
+			if (c.clauseId) m.set(c.clauseId, (m.get(c.clauseId) ?? 0) + 1);
+			return m;
+		}, new Map<string, number>())
+	);
 	function amendmentCountFor(clauseId: string) {
-		return (amendmentRows ?? []).filter((a) => a.targetClauseId === clauseId).length;
+		return amendmentCountMap.get(clauseId) ?? 0;
 	}
 	function commentCountFor(clauseId: string) {
-		return (comments ?? []).filter((c) => c.clauseId === clauseId).length;
+		return commentCountMap.get(clauseId) ?? 0;
 	}
 
 	// ---- header data (for paper preview / export) ---------------------------
@@ -238,7 +250,7 @@
 	// element by traversing from the clauseAnnotations injection point.
 	function highlightClause(
 		node: HTMLElement,
-		params: { selected: boolean; current: boolean; clauseId: string }
+		params: { selected: boolean; current: boolean; clauseId: string; commentCount: number; amendmentCount: number }
 	) {
 		// node is inside the library's "absolute -left-2 -top-2" wrapper div, whose
 		// next sibling is the OperativeClauseEditor root element.
@@ -248,23 +260,26 @@
 		// Needs to be positioned so the side handle can use absolute placement.
 		clauseEl.style.position = 'relative';
 
-		// Slim arrow handle injected into the right side of the clause card.
-		// Positioned right: -1rem so it sits exactly in the fieldset's 1rem padding —
-		// never outside the scroll container.
 		let currentClauseId = params.clauseId;
 		const handle = document.createElement('button');
 		handle.type = 'button';
 		handle.className = 'clause-side-handle';
-		handle.setAttribute('aria-label', 'Open in panel');
-		handle.innerHTML = '<i class="fas fa-chevron-right"></i>';
+		handle.setAttribute('aria-label', 'Open clause panel');
 		handle.addEventListener('click', (e) => {
 			e.stopPropagation();
 			selectClause(currentClauseId);
 		});
 		clauseEl.append(handle);
 
+		function fmt(n: number) { return n > 99 ? '99+' : String(n); }
+
+		function renderHandle(_cc: number, _ac: number) {
+			return '<i class="fas fa-chevron-right"></i>';
+		}
+
 		function apply(p: typeof params) {
 			currentClauseId = p.clauseId;
+			handle.innerHTML = renderHandle(p.commentCount, p.amendmentCount);
 			clauseEl!.classList.toggle('clause-is-selected', p.selected);
 			clauseEl!.classList.toggle('clause-is-current', p.current);
 			handle.classList.toggle('is-selected', p.selected);
@@ -655,7 +670,6 @@
 							{rejectedClauseIds}
 							{headerData}
 							previewHeader={noHeader}
-							clauseToolbar={clauseToolbarSnippet}
 							clauseAnnotations={clauseAnnotationsSnippet}
 						/>
 					</div>
@@ -681,6 +695,7 @@
 						committeeId={committee.id}
 						{selectedClauseId}
 						{selectedClauseIndex}
+						{operative}
 						{operativeCount}
 						{viewer}
 						submissionOpen={committee.amendmentSubmissionOpen}
@@ -791,59 +806,57 @@
 	</div>
 {/if}
 
-{#snippet clauseToolbarSnippet({ clause, index }: { clause: { id: string }; index: number })}
-	{@const clauseLabel = m.clauseN({ n: String(index + 1) })}
-	{@const existingVote = clauseVoteMap.get(clause.id)}
-	<div class="mb-10 -mt-1 flex items-center justify-end gap-2">
-		{#if showVoteTab && team && index === committee.currentOperativeIndex}
-			{@const inProgress = !!committee.activeVotingSession && !!existingVote?.vote && existingVote.vote.outcome == null}
-			{#if inProgress}
-				<button class="btn btn-sm btn-warning gap-2" onclick={resumeClauseVote}>
-					<i class="fas fa-rotate-right"></i>
-					{m.resumeVote()}
-				</button>
-			{:else}
-				<button
-					class="btn btn-sm gap-2"
-					class:btn-secondary={!existingVote?.vote}
-					class:btn-ghost={!!existingVote?.vote}
-					onclick={() => startClauseVote(clause.id, clauseLabel)}
-				>
-					<i class="fas fa-person-booth"></i>
-					{existingVote?.vote ? m.restartVote() : m.startClauseVote()}
-				</button>
-			{/if}
-		{/if}
-	</div>
-{/snippet}
 
 {#snippet clauseAnnotationsSnippet({ clause, index }: { clause: { id: string }; index: number })}
 	{@const ac = amendmentCountFor(clause.id)}
 	{@const cc = commentCountFor(clause.id)}
-	{@const outcome = clauseVoteMap.get(clause.id)?.vote?.outcome}
+	{@const existingVote = clauseVoteMap.get(clause.id)}
+	{@const outcome = existingVote?.vote?.outcome}
 	{@const isCurrent = index === committee?.currentOperativeIndex}
-	<div use:highlightClause={{ selected: selectedClauseId === clause.id, current: isCurrent, clauseId: clause.id }}>
+	{@const clauseLabel = m.clauseN({ n: String(index + 1) })}
+	<div use:highlightClause={{ selected: selectedClauseId === clause.id, current: isCurrent, clauseId: clause.id, commentCount: cc, amendmentCount: ac }}>
 		{#if isCurrent || ac || cc || outcome}
-			<button
+			<div
 				class="flex items-center gap-2"
-				onclick={() => selectClause(clause.id)}
 				class:opacity-100={selectedClauseId === clause.id}
 			>
 				{#if isCurrent}
-					<span class="badge badge-xs badge-secondary gap-1">
-						<i class="fas fa-caret-right"></i>{m.currentClause()}
-					</span>
+					{#if showVoteTab && team}
+						{@const inProgress = !!committee?.activeVotingSession && !!existingVote?.vote && existingVote.vote.outcome == null}
+						{#if inProgress}
+							<button
+								class="btn btn-xs btn-warning gap-2"
+								onclick={resumeClauseVote}
+							>
+								<i class="fas fa-rotate-right"></i>{m.resumeVote()}
+							</button>
+						{:else}
+							<button
+								class="btn btn-xs gap-2"
+								class:btn-secondary={!existingVote?.vote}
+								class:btn-ghost={!!existingVote?.vote}
+								onclick={() => startClauseVote(clause.id, clauseLabel)}
+							>
+								<i class="fas fa-person-booth"></i>
+								{existingVote?.vote ? m.restartVote() : m.startClauseVote()}
+							</button>
+						{/if}
+					{:else}
+						<button class="badge badge-xs badge-secondary gap-1" onclick={() => selectClause(clause.id)}>
+							<i class="fas fa-caret-right"></i>{m.currentClause()}
+						</button>
+					{/if}
 				{/if}
 				{#if outcome}
-					<span class="badge badge-xs gap-1 {outcome === 'ADOPTED' ? 'badge-success' : 'badge-error'}">
+					<button class="badge badge-xs gap-1 {outcome === 'ADOPTED' ? 'badge-success' : 'badge-error'}" onclick={() => selectClause(clause.id)}>
 						{outcome === 'ADOPTED' ? m.adopted() : m.rejected()}
-					</span>
+					</button>
 				{/if}
-				{#if ac}<span class="badge badge-xs badge-warning gap-1"
-						><i class="fas fa-pen-nib"></i>{ac}</span
+				{#if ac}<button class="badge badge-xs badge-warning gap-1" onclick={() => selectClause(clause.id)}
+						><i class="fas fa-pen-nib"></i>{ac}</button
 					>{/if}
-				{#if cc}<span class="badge badge-xs gap-1"><i class="fas fa-comment"></i>{cc}</span>{/if}
-			</button>
+				{#if cc}<button class="badge badge-xs gap-1" onclick={() => selectClause(clause.id)}><i class="fas fa-comment"></i>{cc}</button>{/if}
+			</div>
 		{/if}
 	</div>
 {/snippet}
@@ -870,7 +883,7 @@
 		cursor: pointer;
 		background: var(--color-base-300);
 		border-radius: 0 var(--radius-box) var(--radius-box) 0;
-		font-size: 0.5rem;
+		font-size: 0.75rem;
 		color: var(--color-base-content);
 		opacity: 0.4;
 		transition: opacity 0.15s, background-color 0.15s;
@@ -883,6 +896,37 @@
 		background: var(--color-primary);
 		color: var(--color-primary-content);
 		opacity: 1;
+	}
+	:global(.clause-handle-icon-wrap) {
+		position: relative;
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+	}
+	:global(.clause-handle-count) {
+		position: absolute;
+		min-width: 1rem;
+		height: 1rem;
+		font-size: 0.6rem;
+		line-height: 1rem;
+		text-align: center;
+		background: var(--color-neutral);
+		color: var(--color-neutral-content);
+		border-radius: 999px;
+		padding: 0 2px;
+		font-weight: 700;
+	}
+	:global(.clause-handle-count--comment) {
+		top: -6px;
+		right: -7px;
+	}
+	:global(.clause-handle-count--amendment) {
+		bottom: -6px;
+		left: -7px;
+	}
+	:global(.clause-side-handle.is-selected .clause-handle-count) {
+		background: var(--color-primary-content);
+		color: var(--color-primary);
 	}
 
 	/* Highlight ring on the selected operative clause card. */

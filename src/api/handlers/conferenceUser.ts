@@ -8,7 +8,7 @@ import {
 } from '$api/rumble';
 import { eq } from 'drizzle-orm';
 import { db, schema } from '$api/db/db';
-import { isAdminInConference, isParticipantInConference } from '$api/services/authHelper';
+import { isAdminInConference, isParticipantInConference, isTeamInConference } from '$api/services/authHelper';
 import { GraphQLError } from 'graphql';
 import { assertFindFirstExists, assertFirstEntryExists } from '@m1212e/rumble';
 import { emailValidation } from '$api/services/emailValidation';
@@ -23,6 +23,26 @@ abilityBuilder.conferenceUser.allow('read').when((ctx) => {
 			conferenceId: true,
 			userEmail: false,
 			name: false,
+			committeeMemberId: true,
+			conferenceMemberId: true,
+			conferenceUserType: true,
+			attendanceCode: false,
+			createdAt: true,
+			updatedAt: true
+		}
+	};
+});
+
+// Team read — exposes name/email so team members can see who wrote comments.
+// attendanceCode stays hidden (only admins need it).
+abilityBuilder.conferenceUser.allow('read').when((ctx) => {
+	return {
+		where: isTeamInConference(ctx),
+		columns: {
+			id: true,
+			conferenceId: true,
+			userEmail: true,
+			name: true,
 			committeeMemberId: true,
 			conferenceMemberId: true,
 			conferenceUserType: true,

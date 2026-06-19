@@ -12,19 +12,15 @@
 
 	let { open = $bindable(), paperId, close }: Props = $props();
 
-	const snapshotsPromise = $derived(
-		open
-			? client.liveQuery.paperContentSnapshots({
-					__args: {
-						where: { paper: { id: paperId } },
-						orderBy: { createdAt: 'desc' }
-					},
-					id: true,
-					createdAt: true,
-					trigger: true
-				})
-			: null
-	);
+	const snapshots = await client.liveQuery.paperContentSnapshots({
+		__args: {
+			where: { paper: { id: paperId } },
+			orderBy: { createdAt: 'desc' }
+		},
+		id: true,
+		createdAt: true,
+		trigger: true
+	});
 
 	let saving = $state(false);
 	async function saveSnapshot() {
@@ -43,10 +39,16 @@
 	}
 
 	let restoringId = $state<string | null>(null);
-	async function restore(snapshotId: string) {
-		if (!confirm(m.restoreSnapshotConfirmTitle() + '\n\n' + m.restoreSnapshotConfirmWarning())) {
-			return;
-		}
+	let confirmSnap = $state<string | null>(null);
+
+	function restore(snapshotId: string) {
+		confirmSnap = snapshotId;
+	}
+
+	async function doRestore() {
+		if (!confirmSnap) return;
+		const snapshotId = confirmSnap;
+		confirmSnap = null;
 		restoringId = snapshotId;
 		try {
 			await client.mutate.restorePaperFromSnapshot({
@@ -146,53 +148,41 @@
 		</div>
 
 		<div class="bg-base-100 max-h-[55vh] overflow-y-auto rounded-lg p-2">
-			{#if !snapshotsPromise}
-				<div class="flex justify-center py-12">
-					<i class="fas fa-spinner fa-spin text-2xl opacity-50"></i>
+			{#if !snapshots || snapshots.length === 0}
+				<div class="flex flex-col items-center gap-2 py-12 text-center opacity-60">
+					<i class="fas fa-folder-open text-4xl"></i>
+					<p class="max-w-sm">{m.noSnapshotsYet()}</p>
 				</div>
 			{:else}
-				{#await snapshotsPromise}
-					<div class="flex justify-center py-12">
-						<i class="fas fa-spinner fa-spin text-2xl opacity-50"></i>
-					</div>
-				{:then snapshots}
-					{#if !snapshots || snapshots.length === 0}
-						<div class="flex flex-col items-center gap-2 py-12 text-center opacity-60">
-							<i class="fas fa-folder-open text-4xl"></i>
-							<p class="max-w-sm">{m.noSnapshotsYet()}</p>
-						</div>
-					{:else}
-						<ul class="space-y-1">
-							{#each snapshots as snap (snap.id)}
-								{@const t = snap.trigger as Trigger}
-								<li class="hover:bg-base-200 flex items-center gap-3 rounded p-2 transition">
-									<div class="badge badge-md gap-1 {triggerBadgeClass(t)}" title={triggerLabel(t)}>
-										<i class="fas {triggerIcon(t)}"></i>
-										{triggerLabel(t)}
-									</div>
-									<div class="flex-1">
-										<div class="text-sm font-medium">{relativeTime(snap.createdAt)}</div>
-										<div class="text-base-content/60 text-xs">
-											{formatTimestamp(snap.createdAt)}
-										</div>
-									</div>
-									<button
-										class="btn btn-sm btn-ghost"
-										onclick={() => restore(snap.id)}
-										disabled={restoringId !== null}
-									>
-										{#if restoringId === snap.id}
-											<i class="fas fa-spinner fa-spin"></i>
-										{:else}
-											<i class="fas fa-rotate-left"></i>
-										{/if}
-										{m.restoreSnapshot()}
-									</button>
-								</li>
-							{/each}
-						</ul>
-					{/if}
-				{/await}
+				<ul class="space-y-1">
+					{#each snapshots as snap (snap.id)}
+						{@const t = snap.trigger as Trigger}
+						<li class="hover:bg-base-200 flex items-center gap-3 rounded p-2 transition">
+							<div class="badge badge-md gap-1 {triggerBadgeClass(t)}" title={triggerLabel(t)}>
+								<i class="fas {triggerIcon(t)}"></i>
+								{triggerLabel(t)}
+							</div>
+							<div class="flex-1">
+								<div class="text-sm font-medium">{relativeTime(snap.createdAt)}</div>
+								<div class="text-base-content/60 text-xs">
+									{formatTimestamp(snap.createdAt)}
+								</div>
+							</div>
+							<button
+								class="btn btn-sm btn-ghost"
+								onclick={() => restore(snap.id)}
+								disabled={restoringId !== null}
+							>
+								{#if restoringId === snap.id}
+									<i class="fas fa-spinner fa-spin"></i>
+								{:else}
+									<i class="fas fa-rotate-left"></i>
+								{/if}
+								{m.restoreSnapshot()}
+							</button>
+						</li>
+					{/each}
+				</ul>
 			{/if}
 		</div>
 
@@ -207,3 +197,24 @@
 		<button onclick={() => close()}>close</button>
 	</form>
 </dialog>
+
+{#if confirmSnap}
+	<div class="modal modal-open z-[1000]">
+		<div class="modal-box">
+			<h3 class="text-lg font-bold">{m.restoreSnapshotConfirmTitle()}</h3>
+			<p class="py-3">{m.restoreSnapshotConfirmWarning()}</p>
+			<div class="modal-action">
+				<button class="btn btn-ghost" onclick={() => (confirmSnap = null)}>{m.cancel()}</button>
+				<button class="btn btn-warning" disabled={restoringId !== null} onclick={doRestore}>
+					{#if restoringId !== null}
+						<i class="fas fa-spinner fa-spin"></i>
+					{:else}
+						<i class="fas fa-rotate-left"></i>
+					{/if}
+					{m.restoreSnapshot()}
+				</button>
+			</div>
+		</div>
+		<button class="modal-backdrop" aria-label={m.cancel()} onclick={() => (confirmSnap = null)}></button>
+	</div>
+{/if}

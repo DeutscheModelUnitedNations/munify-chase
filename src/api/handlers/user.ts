@@ -1,5 +1,5 @@
 import { abilityBuilder, schemaBuilder, object, query } from '$api/rumble';
-import { isAdmin, isGlobalAdmin } from '$api/services/authHelper';
+import { isAdmin, isGlobalAdmin, isTeamInConference } from '$api/services/authHelper';
 
 abilityBuilder.user.allow('read').when(({ oidc }) => {
 	if (oidc?.user) {
@@ -15,6 +15,28 @@ abilityBuilder.user.allow('read').when((ctx) => {
 			conferenceMemberships: {
 				conference: isAdmin(ctx)
 			}
+		}
+	};
+});
+
+// Team members can read basic identity fields (givenName, familyName) of other
+// users in their conference — needed to display comment author names.
+abilityBuilder.user.allow('read').when((ctx) => {
+	return {
+		where: {
+			conferenceMemberships: {
+				conference: isTeamInConference(ctx)
+			}
+		},
+		columns: {
+			id: true,
+			givenName: true,
+			familyName: true,
+			preferredUsername: true,
+			email: false,
+			locale: false,
+			createdAt: false,
+			updatedAt: false
 		}
 	};
 });

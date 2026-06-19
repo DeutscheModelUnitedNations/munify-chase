@@ -3,25 +3,22 @@
 	import { client } from '$lib/api/rumbleClient/client';
 	import { nanoid } from '$lib/helpers/nanoid';
 	import toast from 'svelte-french-toast';
-	import AmendmentComposer from './AmendmentComposer.svelte';
 	import {
 		isTeam,
-		amendmentTypeLabel,
 		amendmentStatusLabel,
 		amendmentStatusBadgeClass,
 		type AmendmentType,
 		type AmendmentStatus,
 		type ResolutionViewer
 	} from './paperContext';
+	import { getTranslatedCountryNameFromAlpha3Code } from '$lib/utils/nationTranslationHelper.svelte';
+	import Flag from '$lib/components/Flag.svelte';
 
 	interface Props {
 		paperId: string;
 		committeeId: string;
 		selectedClauseId: string | null;
-		selectedClauseIndex: number | null;
-		operativeCount: number;
 		viewer: ResolutionViewer;
-		submissionOpen: boolean;
 		sponsoringOpen: boolean;
 		activeAmendmentId: string | null;
 	}
@@ -30,10 +27,7 @@
 		paperId,
 		committeeId,
 		selectedClauseId,
-		selectedClauseIndex,
-		operativeCount,
 		viewer,
-		submissionOpen,
 		sponsoringOpen,
 		activeAmendmentId
 	}: Props = $props();
@@ -46,7 +40,8 @@
 		targetClauseId: true,
 		newContent: true,
 		targetPosition: true,
-		proposer: { id: true, representation: { name: true } },
+		documentNumber: true,
+		proposer: { id: true, representation: { name: true, alpha2Code: true, alpha3Code: true, faIcon: true, type: true } },
 		sponsors: { id: true, committeeMember: { id: true } }
 	});
 
@@ -60,13 +55,11 @@
 
 	const myMemberId = $derived(viewer.committeeMemberId ?? null);
 	const team = $derived(isTeam(viewer));
-	const canPropose = $derived(!team && !!myMemberId && submissionOpen);
 
 	function mySponsorRow(a: (typeof scoped)[number]) {
 		return a.sponsors?.find((s) => s.committeeMember?.id === myMemberId);
 	}
 
-	let composerOpen = $state(false);
 	let busyId = $state<string | null>(null);
 
 	async function run(id: string, fn: () => Promise<unknown>, successMsg?: string) {
@@ -114,33 +107,48 @@
 			{selectedClauseId ? m.noAmendmentsForClause() : m.noDocumentAmendments()}
 		</p>
 	{:else}
-		<div class="flex-1 space-y-2 overflow-y-auto">
+		<div class="flex-1 space-y-3 overflow-y-auto">
 			{#each scoped as a (a.id)}
 				{@const mine = a.proposer?.id === myMemberId}
 				{@const myRow = mySponsorRow(a)}
 				{@const isActive = a.id === activeAmendmentId}
 				<div
-					class="bg-base-100 rounded-lg p-2"
+					class="bg-base-100 rounded-lg p-3"
 					class:ring-2={isActive}
 					class:ring-primary={isActive}
 				>
 					<div class="flex items-center justify-between gap-2">
-						<span class="badge badge-sm badge-outline"
-							>{amendmentTypeLabel(a.type as AmendmentType)}</span
-						>
+						<div class="flex items-center gap-1.5">
+							<span class="flex items-center gap-1.5 font-mono text-sm font-semibold">
+								{#if a.type === 'ADD'}
+									<i class="fas fa-plus"></i>
+								{:else if a.type === 'DELETE'}
+									<i class="fas fa-trash"></i>
+								{:else if a.type === 'ALTER_TEXT'}
+									<i class="fas fa-pen"></i>
+								{:else if a.type === 'ALTER_POSITION'}
+									<i class="fas fa-arrows-up-down"></i>
+								{/if}
+								{#if a.documentNumber}
+									{a.documentNumber}
+								{/if}
+							</span>
+						</div>
 						<span class="badge badge-sm {amendmentStatusBadgeClass(a.status as AmendmentStatus)}">
 							{amendmentStatusLabel(a.status as AmendmentStatus)}
 						</span>
 					</div>
-					<div class="text-base-content/70 mt-1 text-xs">
-						{a.proposer?.representation?.name ?? '?'} · {a.sponsors?.length ?? 0}
-						{m.sponsors()}
+					<div class="text-base-content/70 mt-2 flex items-center gap-2 text-xs">
+						<Flag representation={a.proposer?.representation} size="xs" />
+						<span>{getTranslatedCountryNameFromAlpha3Code(a.proposer?.representation?.alpha3Code) ?? a.proposer?.representation?.name ?? m.unknown()}</span>
+						<span class="text-base-content/40">·</span>
+						<span>{a.sponsors?.length ?? 0} {m.sponsors()}</span>
 					</div>
 					{#if a.newContent}
-						<p class="mt-1 font-mono text-xs whitespace-pre-wrap opacity-80">{a.newContent}</p>
+						<p class="bg-base-200 mt-2 rounded p-2 font-mono text-xs whitespace-pre-wrap opacity-80">{a.newContent}</p>
 					{/if}
 
-					<div class="mt-2 flex flex-wrap gap-1">
+					<div class="mt-3 flex flex-wrap gap-1.5">
 						{#if mine && a.status === 'PENDING'}
 							<button
 								class="btn btn-xs btn-primary"
@@ -198,19 +206,4 @@
 		</div>
 	{/if}
 
-	{#if canPropose}
-		<button class="btn btn-primary btn-sm" onclick={() => (composerOpen = true)}>
-			<i class="fas fa-plus"></i>
-			{m.proposeAmendment()}
-		</button>
-	{/if}
 </div>
-
-<AmendmentComposer
-	bind:open={composerOpen}
-	{paperId}
-	{selectedClauseId}
-	{selectedClauseIndex}
-	{operativeCount}
-	close={() => (composerOpen = false)}
-/>

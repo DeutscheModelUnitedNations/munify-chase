@@ -11,6 +11,7 @@
 		placeholder?: string;
 		side?: 'top' | 'bottom' | 'left' | 'right';
 		kbd?: string;
+		triggerClass?: string;
 		filter: (option: T[], value: string) => T[];
 		getStringValue: (value: T) => string;
 		/** Unique key per option for the {#each} block. Defaults to getStringValue but must be overridden when multiple options can share the same display name. */
@@ -27,6 +28,7 @@
 		placeholder,
 		side,
 		kbd,
+		triggerClass = 'btn btn-square input-lg join-item',
 		filter,
 		getStringValue,
 		getKey,
@@ -50,7 +52,7 @@
 
 <Combobox.Root type="single" bind:value bind:open>
 	<div class="join">
-		<Combobox.Trigger class="btn btn-square input-lg join-item">
+		<Combobox.Trigger class={triggerClass}>
 			<i class="fas fa-magnifying-glass"></i>
 		</Combobox.Trigger>
 		<Combobox.Input>
@@ -93,7 +95,7 @@
 	</div>
 	<Combobox.Portal>
 		<Combobox.Content
-			class="bg-base-100 border-base-300 shadow-popover card z-30 max-h-60 w-[var(--bits-combobox-anchor-width)] min-w-[var(--bits-combobox-anchor-width)] border px-1 py-3 shadow-lg outline-hidden select-none data-[side=bottom]:translate-y-1 data-[side=left]:-translate-x-1 data-[side=right]:translate-x-1 data-[side=top]:-translate-y-1"
+			class="bg-base-100 border-base-300 shadow-popover card z-[1000] max-h-60 w-[var(--bits-combobox-anchor-width)] min-w-[var(--bits-combobox-anchor-width)] border px-1 py-3 shadow-lg outline-hidden select-none data-[side=bottom]:translate-y-1 data-[side=left]:-translate-x-1 data-[side=right]:translate-x-1 data-[side=top]:-translate-y-1"
 			sideOffset={10}
 			{side}
 		>

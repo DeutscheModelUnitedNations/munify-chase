@@ -3,14 +3,17 @@
 	import { client } from '$lib/api/rumbleClient/client';
 	import CommentThread from './CommentThread.svelte';
 	import AmendmentList from './AmendmentList.svelte';
+	import AmendmentComposer from './AmendmentComposer.svelte';
 	import ClauseVotePanel from './ClauseVotePanel.svelte';
-	import type { ResolutionViewer } from './paperContext';
+	import { isTeam, type ResolutionViewer } from './paperContext';
+	import type { OperativeClause } from '@deutschemodelunitednations/munify-resolution-editor';
 
 	interface Props {
 		paperId: string;
 		committeeId: string;
 		selectedClauseId: string | null;
 		selectedClauseIndex: number | null;
+		operative: OperativeClause[];
 		operativeCount: number;
 		viewer: ResolutionViewer;
 		submissionOpen: boolean;
@@ -27,6 +30,7 @@
 		committeeId,
 		selectedClauseId,
 		selectedClauseIndex,
+		operative,
 		operativeCount,
 		viewer,
 		submissionOpen,
@@ -39,6 +43,10 @@
 
 	type Tab = 'amendments' | 'comments' | 'vote';
 	let tab = $state<Tab>('comments');
+	let composerOpen = $state(false);
+
+	const team = $derived(isTeam(viewer));
+	const canPropose = $derived(team || (!!viewer.committeeMemberId && submissionOpen));
 
 	// Lightweight count queries for tab badges (graphcache dedupes with children).
 	const amendments = await client.liveQuery.amendments({
@@ -83,33 +91,45 @@
 		{/if}
 	</div>
 
-	<div role="tablist" class="tabs tabs-bordered px-2 pt-2">
-		<button
-			role="tab"
-			class="tab"
-			class:tab-active={tab === 'amendments'}
-			onclick={() => (tab = 'amendments')}
-		>
-			{m.amendments()}
-			{#if amendmentCount}<span class="badge badge-xs ml-1">{amendmentCount}</span>{/if}
-		</button>
-		<button
-			role="tab"
-			class="tab"
-			class:tab-active={tab === 'comments'}
-			onclick={() => (tab = 'comments')}
-		>
-			{m.comments()}
-			{#if commentCount}<span class="badge badge-xs ml-1">{commentCount}</span>{/if}
-		</button>
-		{#if showVoteTab}
+	<div class="border-base-300 flex items-center border-b">
+		<div role="tablist" class="tabs tabs-bordered flex-1 px-2 pt-2">
 			<button
 				role="tab"
 				class="tab"
-				class:tab-active={tab === 'vote'}
-				onclick={() => (tab = 'vote')}
+				class:tab-active={tab === 'amendments'}
+				onclick={() => (tab = 'amendments')}
 			>
-				{m.vote()}
+				{m.amendments()}
+				{#if amendmentCount}<span class="badge badge-xs ml-1">{amendmentCount}</span>{/if}
+			</button>
+			<button
+				role="tab"
+				class="tab"
+				class:tab-active={tab === 'comments'}
+				onclick={() => (tab = 'comments')}
+			>
+				{m.comments()}
+				{#if commentCount}<span class="badge badge-xs ml-1">{commentCount}</span>{/if}
+			</button>
+			{#if showVoteTab}
+				<button
+					role="tab"
+					class="tab"
+					class:tab-active={tab === 'vote'}
+					onclick={() => (tab = 'vote')}
+				>
+					{m.vote()}
+				</button>
+			{/if}
+		</div>
+		{#if tab === 'amendments' && canPropose}
+			<button
+				class="btn btn-primary btn-xs mr-2 shrink-0"
+				title={m.proposeAmendment()}
+				onclick={() => (composerOpen = true)}
+			>
+				<i class="fas fa-plus"></i>
+				{m.proposeAmendment()}
 			</button>
 		{/if}
 	</div>
@@ -120,10 +140,7 @@
 				{paperId}
 				{committeeId}
 				{selectedClauseId}
-				{selectedClauseIndex}
-				{operativeCount}
 				{viewer}
-				{submissionOpen}
 				{sponsoringOpen}
 				{activeAmendmentId}
 			/>
@@ -141,3 +158,15 @@
 		{/if}
 	</div>
 </div>
+
+<AmendmentComposer
+	bind:open={composerOpen}
+	{paperId}
+	{committeeId}
+	{selectedClauseId}
+	{selectedClauseIndex}
+	{operative}
+	{operativeCount}
+	{viewer}
+	close={() => (composerOpen = false)}
+/>

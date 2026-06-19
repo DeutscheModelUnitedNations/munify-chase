@@ -4,6 +4,9 @@
 	import { nanoid } from '$lib/helpers/nanoid';
 	import toast from 'svelte-french-toast';
 	import type { ResolutionViewer } from './paperContext';
+	import { isTeam } from './paperContext';
+	import Flag from '$lib/components/Flag.svelte';
+	import { getTranslatedCountryNameFromAlpha3Code } from '$lib/utils/nationTranslationHelper.svelte';
 
 	interface Props {
 		paperId: string;
@@ -22,8 +25,65 @@
 		visibility: true,
 		parentCommentId: true,
 		createdAt: true,
-		author: { id: true, name: true }
+		author: {
+			id: true,
+			name: true,
+			userEmail: true,
+			conferenceUserType: true,
+			user: {
+				givenName: true,
+				familyName: true,
+				preferredUsername: true
+			},
+			committeeMember: {
+				representation: {
+					name: true,
+					type: true,
+					alpha2Code: true,
+					alpha3Code: true,
+					faIcon: true
+				}
+			},
+			conferenceMember: {
+				representation: {
+					name: true,
+					type: true,
+					alpha2Code: true,
+					alpha3Code: true,
+					faIcon: true
+				}
+			}
+		}
 	});
+
+	type Author = NonNullable<(typeof comments)[number]['author']>;
+
+	function authorRepresentation(author: Author | null | undefined) {
+		return author?.committeeMember?.representation ?? author?.conferenceMember?.representation ?? null;
+	}
+
+	function authorDisplay(author: Author | null | undefined): { name: string; representation: ReturnType<typeof authorRepresentation> } {
+		if (!author) return { name: '?', representation: null };
+
+		const isParticipantAuthor =
+			author.conferenceUserType === 'DELEGATE' || author.conferenceUserType === 'NON_STATE_ACTOR';
+
+		if (isParticipantAuthor) {
+			const rep = authorRepresentation(author);
+			const name = rep?.name ?? (rep?.alpha3Code ? getTranslatedCountryNameFromAlpha3Code(rep.alpha3Code) : null) ?? '?';
+			return { name, representation: rep };
+		}
+
+		if (isTeam(viewer)) {
+			const oidcName = [author.user?.givenName, author.user?.familyName]
+				.filter(Boolean)
+				.join(' ')
+				.trim() || null;
+			return { name: author.name ?? oidcName ?? author.user?.preferredUsername ?? author.userEmail ?? '?', representation: null };
+		}
+
+		return { name: m.roleTeam(), representation: null };
+	}
 
 	// Comments scoped to the current selection (clause-level vs document-level).
 	const scoped = $derived(
@@ -35,11 +95,21 @@
 	}
 
 	let draft = $state('');
-	let teamOnly = $state(false);
+	let teamOnly = $state(
+		typeof localStorage !== 'undefined'
+			? localStorage.getItem('commentTeamOnly') === 'true'
+			: false
+	);
+	$effect(() => {
+		localStorage.setItem('commentTeamOnly', String(teamOnly));
+	});
 	let replyTo = $state<string | null>(null);
 	let sending = $state(false);
 
 	const canTeamOnly = $derived(viewer.type === 'ADMIN' || viewer.type === 'TEAM');
+	const replyToComment = $derived((comments ?? []).find((c) => c.id === replyTo) ?? null);
+	const replyForcesTeamOnly = $derived(replyToComment?.visibility === 'TEAM_ONLY');
+	const effectiveTeamOnly = $derived(replyForcesTeamOnly || teamOnly);
 
 	async function send() {
 		const content = draft.trim();
@@ -53,7 +123,7 @@
 					content,
 					clauseId: selectedClauseId ?? undefined,
 					parentCommentId: replyTo ?? undefined,
-					visibility: teamOnly && canTeamOnly ? 'TEAM_ONLY' : 'PUBLIC'
+					visibility: effectiveTeamOnly && canTeamOnly ? 'TEAM_ONLY' : 'PUBLIC'
 				},
 				id: true
 			});
@@ -89,9 +159,15 @@
 			<p class="text-base-content/50 py-6 text-center text-sm">{m.noCommentsYet()}</p>
 		{:else}
 			{#each roots as comment (comment.id)}
-				<div class="bg-base-100 rounded-lg p-2">
+				{@const display = authorDisplay(comment.author)}
+				<div class="bg-base-100 rounded-lg border-l-2 p-2" class:border-warning={comment.visibility === 'TEAM_ONLY'} class:border-transparent={comment.visibility !== 'TEAM_ONLY'}>
 					<div class="flex items-start justify-between gap-2">
-						<span class="text-sm font-semibold">{comment.author?.name ?? '?'}</span>
+						<div class="flex items-center gap-1.5">
+							{#if display.representation}
+								<Flag size="xs" representation={display.representation} />
+							{/if}
+							<span class="text-sm font-semibold">{display.name}</span>
+						</div>
 						<div class="flex items-center gap-1">
 							{#if comment.visibility === 'TEAM_ONLY'}
 								<span class="badge badge-xs badge-warning" title={m.teamOnly()}>
@@ -112,9 +188,15 @@
 					<p class="text-sm whitespace-pre-wrap">{comment.content}</p>
 
 					{#each repliesOf(comment.id) as reply (reply.id)}
-						<div class="border-base-300 mt-2 ml-4 border-l-2 pl-2">
+						{@const replyDisplay = authorDisplay(reply.author)}
+						<div class="mt-2 ml-4 border-l-2 pl-2" class:border-warning={reply.visibility === 'TEAM_ONLY'} class:border-base-300={reply.visibility !== 'TEAM_ONLY'}>
 							<div class="flex items-start justify-between gap-2">
-								<span class="text-xs font-semibold">{reply.author?.name ?? '?'}</span>
+								<div class="flex items-center gap-1.5">
+									{#if replyDisplay.representation}
+										<Flag size="xs" representation={replyDisplay.representation} />
+									{/if}
+									<span class="text-xs font-semibold">{replyDisplay.name}</span>
+								</div>
 								{#if canDelete(reply.author?.id ?? '')}
 									<button
 										class="btn btn-ghost btn-xs"
@@ -145,21 +227,23 @@
 		{#if replyTo}
 			<div class="text-base-content/60 flex items-center justify-between text-xs">
 				<span>{m.replyingToComment()}</span>
-				<button class="btn btn-ghost btn-xs" onclick={() => (replyTo = null)}>
+				<button class="btn btn-ghost btn-xs" aria-label={m.cancel()} onclick={() => (replyTo = null)}>
 					<i class="fas fa-xmark"></i>
 				</button>
 			</div>
 		{/if}
 		<textarea
-			class="textarea textarea-bordered textarea-sm w-full"
+			class="textarea textarea-sm w-full"
+			class:textarea-bordered={!effectiveTeamOnly}
+			class:textarea-warning={effectiveTeamOnly}
 			rows="2"
 			placeholder={m.writeAComment()}
 			bind:value={draft}
 		></textarea>
 		<div class="flex items-center justify-between gap-2">
 			{#if canTeamOnly}
-				<label class="label cursor-pointer gap-2 py-0">
-					<input type="checkbox" class="checkbox checkbox-xs" bind:checked={teamOnly} />
+				<label class="label gap-2 py-0" class:cursor-pointer={!replyForcesTeamOnly} class:cursor-not-allowed={replyForcesTeamOnly}>
+					<input type="checkbox" class="checkbox checkbox-xs" class:checkbox-warning={effectiveTeamOnly} checked={effectiveTeamOnly} disabled={replyForcesTeamOnly} onchange={(e) => { if (!replyForcesTeamOnly) teamOnly = e.currentTarget.checked; }} />
 					<span class="label-text text-xs">{m.teamOnly()}</span>
 				</label>
 			{:else}

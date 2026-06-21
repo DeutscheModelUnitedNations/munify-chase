@@ -510,6 +510,9 @@
 						activeVotingSession: committee.activeVotingSession ?? null
 					}}
 					{operativeCount}
+					currentClauseId={operative[committee.currentOperativeIndex]?.id ?? null}
+					currentClauseLabel={m.clauseN({ n: String(committee.currentOperativeIndex + 1) })}
+					onStartClauseVote={startClauseVote}
 				/>
 			{:else}
 				<!-- Read-only lifecycle chain for participants -->
@@ -704,6 +707,7 @@
 						simpleMajority={committee.simpleMajority}
 						showVoteTab={false}
 						ondeselect={() => (selectedClauseId = null)}
+						onselectclause={(id) => (selectedClauseId = id)}
 					/>
 				</aside>
 			{/if}
@@ -814,38 +818,16 @@
 	{@const outcome = existingVote?.vote?.outcome}
 	{@const isCurrent = index === committee?.currentOperativeIndex}
 	{@const clauseLabel = m.clauseN({ n: String(index + 1) })}
-	<div use:highlightClause={{ selected: selectedClauseId === clause.id, current: isCurrent, clauseId: clause.id, commentCount: cc, amendmentCount: ac }}>
-		{#if isCurrent || ac || cc || outcome}
+	<div use:highlightClause={{ selected: selectedClauseId === clause.id, current: isCurrent && isDebatePhase, clauseId: clause.id, commentCount: cc, amendmentCount: ac }}>
+		{#if (isCurrent && isDebatePhase) || ac || cc || outcome}
 			<div
 				class="flex items-center gap-2"
 				class:opacity-100={selectedClauseId === clause.id}
 			>
-				{#if isCurrent}
-					{#if showVoteTab && team}
-						{@const inProgress = !!committee?.activeVotingSession && !!existingVote?.vote && existingVote.vote.outcome == null}
-						{#if inProgress}
-							<button
-								class="btn btn-xs btn-warning gap-2"
-								onclick={resumeClauseVote}
-							>
-								<i class="fas fa-rotate-right"></i>{m.resumeVote()}
-							</button>
-						{:else}
-							<button
-								class="btn btn-xs gap-2"
-								class:btn-secondary={!existingVote?.vote}
-								class:btn-ghost={!!existingVote?.vote}
-								onclick={() => startClauseVote(clause.id, clauseLabel)}
-							>
-								<i class="fas fa-person-booth"></i>
-								{existingVote?.vote ? m.restartVote() : m.startClauseVote()}
-							</button>
-						{/if}
-					{:else}
-						<button class="badge badge-xs badge-secondary gap-1" onclick={() => selectClause(clause.id)}>
-							<i class="fas fa-caret-right"></i>{m.currentClause()}
-						</button>
-					{/if}
+				{#if isCurrent && isDebatePhase}
+					<button class="badge badge-xs badge-secondary gap-1" onclick={() => selectClause(clause.id)}>
+						<i class="fas fa-caret-right"></i>{m.currentClause()}
+					</button>
 				{/if}
 				{#if outcome}
 					<button class="badge badge-xs gap-1 {outcome === 'ADOPTED' ? 'badge-success' : 'badge-error'}" onclick={() => selectClause(clause.id)}>

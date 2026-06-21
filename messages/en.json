@@ -567,6 +567,8 @@
 	"preambleClause": "Preamble Clause",
 	"presence": "Presence",
 	"present": "Present",
+	"stopPresenting": "Stop Presenting",
+	"jumpToActiveAmendment": "Jump to active amendment",
 	"presentationMode": "Presentation View",
 	"pressWebsite": "Press Website",
 	"preview": "Preview",

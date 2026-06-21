@@ -23,6 +23,7 @@
 		/** Shows clause vote controls (DRAFT/AMENDMENT/VOTING phases). */
 		showVoteTab: boolean;
 		ondeselect?: () => void;
+		onselectclause?: (clauseId: string | null) => void;
 	}
 
 	let {
@@ -38,7 +39,8 @@
 		activeAmendmentId,
 		simpleMajority,
 		showVoteTab,
-		ondeselect
+		ondeselect,
+		onselectclause
 	}: Props = $props();
 
 	type Tab = 'amendments' | 'comments' | 'vote';
@@ -73,6 +75,13 @@
 		selectedClauseId ? m.clauseN({ n: String((selectedClauseIndex ?? 0) + 1) }) : m.wholeDocument()
 	);
 
+	const activeAmendmentTargetClauseId = $derived(
+		(amendments ?? []).find((a) => a.id === activeAmendmentId)?.targetClauseId ?? null
+	);
+	const showJumpToActive = $derived(
+		activeAmendmentId !== null && activeAmendmentTargetClauseId !== selectedClauseId
+	);
+
 	$effect(() => {
 		if (tab === 'vote' && !showVoteTab) tab = 'comments';
 	});
@@ -84,6 +93,16 @@
 			<p class="text-base-content/60 text-xs">{m.selected()}</p>
 			<p class="truncate font-semibold">{clauseLabel}</p>
 		</div>
+		{#if showJumpToActive && onselectclause}
+			<button
+				class="btn btn-primary btn-xs shrink-0 gap-1"
+				onclick={() => { onselectclause!(activeAmendmentTargetClauseId); tab = 'amendments'; }}
+				title={m.jumpToActiveAmendment()}
+			>
+				<i class="fas fa-bolt"></i>
+				{m.jumpToActiveAmendment()}
+			</button>
+		{/if}
 		{#if ondeselect && selectedClauseId}
 			<button class="btn btn-ghost btn-xs btn-circle shrink-0" onclick={ondeselect} aria-label={m.deselect()}>
 				<i class="fas fa-xmark"></i>

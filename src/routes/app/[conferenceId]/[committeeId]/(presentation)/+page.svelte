@@ -46,6 +46,25 @@
 		currentOperativeIndex: true,
 		activeDraftResolutionId: true,
 		activeDraftResolution: { id: true, status: true },
+		activeAmendmentId: true,
+		activeAmendment: {
+			id: true,
+			type: true,
+			documentNumber: true,
+			targetClauseId: true,
+			targetOperativeIndex: true,
+			targetPosition: true,
+			newContent: true,
+			proposer: {
+				id: true,
+				representation: {
+					id: true,
+					name: true,
+					alpha2Code: true,
+					alpha3Code: true
+				}
+			}
+		},
 		lastResolutionAdoptionDate: true,
 		activeAgendaItem: {
 			id: true,
@@ -271,11 +290,14 @@
 			<GridItem {...gridProps} class="card bg-base-100 overflow-auto p-4" id="resolution-preview">
 				<PresentationResolutionPreview
 					paperId={activePaperId}
-					currentOperativeIndex={committee.activeDraftResolution?.status === 'AMENDMENT_PHASE'
+					currentOperativeIndex={committee.activeDraftResolution?.status === 'AMENDMENT_PHASE' || committee.activeDraftResolution?.status === 'VOTING_PHASE'
 						? committee.currentOperativeIndex
 						: undefined}
 					resolutionFontSize={committee.presentationResolutionFontSize ?? 16}
 					showAmendments={committee.activeDraftResolution?.status === 'AMENDMENT_PHASE'}
+					activeAmendment={committee.activeDraftResolution?.status === 'AMENDMENT_PHASE'
+						? (committee.activeAmendment ?? null)
+						: null}
 				/>
 			</GridItem>
 		{/if}

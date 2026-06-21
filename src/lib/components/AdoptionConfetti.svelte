@@ -23,18 +23,16 @@
 		agendaItem = ''
 	}: Props = $props();
 
-	let timeSinceLastAdoption = $state(
-		lastAdoptionDate ? dayjs().diff(dayjs(lastAdoptionDate), 'seconds') : null
-	);
+	let now = $state(Date.now());
 
 	onMount(() => {
-		const interval = setInterval(() => {
-			if (lastAdoptionDate) {
-				timeSinceLastAdoption = dayjs().diff(lastAdoptionDate, 'seconds');
-			}
-		}, 1000);
+		const interval = setInterval(() => { now = Date.now(); }, 1000);
 		return () => clearInterval(interval);
 	});
+
+	const timeSinceLastAdoption = $derived(
+		lastAdoptionDate ? Math.floor((now - lastAdoptionDate.getTime()) / 1000) : null
+	);
 
 	const confettiExplosionCount = $derived(Math.floor(confettiDurationSec * 1.6));
 	function randomPercentage() {

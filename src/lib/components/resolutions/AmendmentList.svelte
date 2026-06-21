@@ -47,10 +47,16 @@
 
 	// Clause-targeted amendments when a clause is selected; ADD amendments
 	// (which target a position, not a clause) surface at the document level.
+	const PROCESSED: AmendmentStatus[] = ['CONSENSUS_ADOPTED', 'ACCEPTED', 'REJECTED', 'WITHDRAWN'];
+	const isProcessed = (a: { status?: string | null }) =>
+		PROCESSED.includes(a.status as AmendmentStatus);
+
 	const scoped = $derived.by(() => {
 		const list = amendments ?? [];
-		if (selectedClauseId) return list.filter((a) => a.targetClauseId === selectedClauseId);
-		return list.filter((a) => !a.targetClauseId);
+		const filtered = selectedClauseId
+			? list.filter((a) => a.targetClauseId === selectedClauseId)
+			: list.filter((a) => !a.targetClauseId);
+		return filtered.slice().sort((a, b) => Number(isProcessed(a)) - Number(isProcessed(b)));
 	});
 
 	const myMemberId = $derived(viewer.committeeMemberId ?? null);
@@ -89,9 +95,35 @@
 		);
 	const reject = (id: string) =>
 		run(id, () => client.mutate.rejectAmendment({ __args: { id }, id: true }));
+	// Select activeAmendmentId + the activeAmendment relation so the mutation
+	// response (and the optimistic layer) update the cached Committee entity
+	// directly, rather than relying on the subscription to eventually push it.
+	const activeAmendmentSelection = {
+		id: true,
+		activeAmendmentId: true,
+		activeAmendment: {
+			id: true,
+			type: true,
+			documentNumber: true,
+			targetClauseId: true,
+			targetOperativeIndex: true,
+			targetPosition: true,
+			newContent: true
+		}
+	} as const;
 	const present = (id: string) =>
 		run(id, () =>
-			client.mutate.setActiveAmendment({ __args: { committeeId, amendmentId: id }, id: true })
+			client.mutate.setActiveAmendment({
+				__args: { committeeId, amendmentId: id },
+				...activeAmendmentSelection
+			})
+		);
+	const unpresent = () =>
+		run('unpresent', () =>
+			client.mutate.setActiveAmendment({
+				__args: { committeeId },
+				...activeAmendmentSelection
+			})
 		);
 	const sponsor = (id: string) =>
 		run(id, () =>
@@ -115,6 +147,7 @@
 				<div
 					class="bg-base-100 rounded-lg p-3"
 					class:ring-2={isActive}
+					class:ring-inset={isActive}
 					class:ring-primary={isActive}
 				>
 					<div class="flex items-center justify-between gap-2">
@@ -179,11 +212,19 @@
 						{/if}
 
 						{#if team && (a.status === 'SUBMITTED' || a.status === 'PENDING')}
-							<button
-								class="btn btn-xs btn-ghost"
-								disabled={busyId === a.id}
-								onclick={() => present(a.id)}>{m.present()}</button
-							>
+							{#if isActive}
+								<button
+									class="btn btn-xs btn-primary"
+									disabled={busyId === a.id || busyId === 'unpresent'}
+									onclick={() => unpresent()}>{m.stopPresenting()}</button
+								>
+							{:else}
+								<button
+									class="btn btn-xs btn-ghost"
+									disabled={busyId === a.id}
+									onclick={() => present(a.id)}>{m.present()}</button
+								>
+							{/if}
 							<button
 								class="btn btn-xs btn-success"
 								disabled={busyId === a.id}

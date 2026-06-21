@@ -293,6 +293,18 @@ export const optimistic: OptimisticMutationConfig = {
 		return result;
 	},
 
+	setActiveAmendment: (args) => {
+		const amendmentId = (args.amendmentId as string | null | undefined) ?? null;
+		return {
+			__typename: 'Committee',
+			id: args.committeeId as string,
+			activeAmendmentId: amendmentId,
+			activeAmendment: amendmentId
+				? { __typename: 'Amendment', id: amendmentId }
+				: null
+		};
+	},
+
 	// -------------------------------------------------------------------------
 	// committeeMember.ts
 	// -------------------------------------------------------------------------

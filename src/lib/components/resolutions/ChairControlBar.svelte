@@ -22,9 +22,12 @@
 			} | null;
 		};
 		operativeCount: number;
+		currentClauseId?: string | null;
+		currentClauseLabel?: string;
+		onStartClauseVote?: (clauseId: string, clauseLabel: string) => Promise<void>;
 	}
 
-	let { paper, committee, operativeCount }: Props = $props();
+	let { paper, committee, operativeCount, currentClauseId, currentClauseLabel, onStartClauseVote }: Props = $props();
 
 	const currentIdx = $derived(PAPER_STATUS_ORDER.indexOf(paper.status));
 	const nextStatus = $derived(PAPER_STATUS_ORDER[currentIdx + 1] as PaperStatus | undefined);
@@ -42,7 +45,7 @@
 		}
 		if (nextStatus === 'VOTING_PHASE') {
 			await doAdvance();
-			openVotingModal({ voteName: paper.title, voteType: 'ROLL_CALL', majority: 'ABSOLUTE', withAbstentions: true });
+			await setCurrentClause(0);
 			return;
 		}
 		if (nextStatus === 'FINAL') {
@@ -234,25 +237,47 @@
 
 	{#if paper.status === 'VOTING_PHASE'}
 		{@const active = committee.activeVotingSession}
-		<button
-			class="btn btn-sm {active ? 'btn-warning' : 'btn-success'}"
-			title={active ? m.resumeVote() : m.startVote()}
-			onclick={() => {
-				if (active) {
+		{#if active}
+			<button
+				class="btn btn-sm btn-warning"
+				title={m.resumeVote()}
+				onclick={() =>
 					resumeVotingModal({
 						voteType: active.mode as 'SHOW_OF_HANDS' | 'ROLL_CALL',
 						voteName: active.voteName ?? paper.title,
 						majority: (active.majority ?? 'ABSOLUTE') as 'SIMPLE' | 'ABSOLUTE' | 'TWO_THIRDS',
 						withAbstentions: active.withAbstentions ?? true
-					});
-				} else {
-					openVotingModal({ voteName: paper.title, voteType: 'ROLL_CALL', majority: 'ABSOLUTE', withAbstentions: true });
-				}
-			}}
-		>
-			<i class="fas {active ? 'fa-rotate-right' : 'fa-person-booth'}"></i>
-			{active ? m.resumeVote() : m.startVote()}
-		</button>
+					})}
+			>
+				<i class="fas fa-rotate-right"></i>
+				{m.resumeVote()}
+			</button>
+		{:else}
+			{#if currentClauseId && onStartClauseVote}
+				<button
+					class="btn btn-sm btn-secondary"
+					title={m.startClauseVote()}
+					onclick={() => onStartClauseVote!(currentClauseId!, currentClauseLabel ?? '')}
+				>
+					<i class="fas fa-person-booth"></i>
+					{m.startClauseVote()}
+				</button>
+			{/if}
+			<button
+				class="btn btn-sm btn-success"
+				title={m.startVote()}
+				onclick={() =>
+					openVotingModal({
+						voteName: paper.title,
+						voteType: 'ROLL_CALL',
+						majority: 'ABSOLUTE',
+						withAbstentions: true
+					})}
+			>
+				<i class="fas fa-gavel"></i>
+				{m.startVote()}
+			</button>
+		{/if}
 	{/if}
 </div>
 

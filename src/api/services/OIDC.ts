@@ -1,4 +1,5 @@
 import { db, schema } from '$api/db/db';
+import { eq } from 'drizzle-orm';
 import { building, dev } from '$app/environment';
 import { configPrivate } from '$config/private';
 import { configPublic } from '$config/public';
@@ -95,6 +96,18 @@ export const OIDC = !building
 							givenName: normalized.given_name ?? ''
 						}
 					});
+
+				// Sync full name to cpnf user too
+				const fullName = [normalized.given_name, normalized.family_name]
+					.filter(Boolean)
+					.join(' ')
+					.trim() || null;
+				if (fullName) {
+					await db
+						.update(schema.conferenceUser)
+						.set({ name: fullName })
+						.where(eq(schema.conferenceUser.userEmail, normalized.email));
+				}
 			}
 		})
 	: ({} as Awaited<ReturnType<typeof makeOIDC>>);

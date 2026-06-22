@@ -167,17 +167,19 @@
 			</div>
 		{/if}
 
-		<div role="tablist" class="tabs tabs-boxed w-fit">
-			{#each statusFilters as filter (filter.key)}
-				<button
-					role="tab"
-					class="tab"
-					class:tab-active={activeFilter === filter.key}
-					onclick={() => (activeFilter = filter.key)}
-				>
-					{filter.label()}
-				</button>
-			{/each}
+		<div class="overflow-x-auto">
+			<div role="tablist" class="tabs tabs-boxed w-max min-w-full">
+				{#each statusFilters as filter (filter.key)}
+					<button
+						role="tab"
+						class="tab"
+						class:tab-active={activeFilter === filter.key}
+						onclick={() => (activeFilter = filter.key)}
+					>
+						{filter.label()}
+					</button>
+				{/each}
+			</div>
 		</div>
 
 		{#if !filteredPapers.length}

@@ -22,6 +22,8 @@
 		simpleMajority: number;
 		/** Shows clause vote controls (DRAFT/AMENDMENT/VOTING phases). */
 		showVoteTab: boolean;
+		/** When set, switches the panel to this tab (e.g. clicking an amendment/comment badge). */
+		requestedTab?: 'amendments' | 'comments' | 'vote';
 		ondeselect?: () => void;
 		onselectclause?: (clauseId: string | null) => void;
 	}
@@ -39,12 +41,19 @@
 		activeAmendmentId,
 		simpleMajority,
 		showVoteTab,
+		requestedTab,
 		ondeselect,
 		onselectclause
 	}: Props = $props();
 
 	type Tab = 'amendments' | 'comments' | 'vote';
 	let tab = $state<Tab>('comments');
+
+	$effect(() => {
+		// selectedClauseId tracked so re-selecting a clause with a badge also switches tab
+		selectedClauseId;
+		if (requestedTab) tab = requestedTab;
+	});
 	let composerOpen = $state(false);
 
 	const team = $derived(isTeam(viewer));

@@ -240,11 +240,17 @@
 
 	// ---- selection ----------------------------------------------------------
 	let selectedClauseId = $state<string | null>(null);
+	let requestedTab = $state<'amendments' | 'comments' | 'vote' | undefined>(undefined);
 	const selectedClauseIndex = $derived(
 		selectedClauseId ? operative.findIndex((c) => c.id === selectedClauseId) : null
 	);
 	function selectClause(id: string) {
 		selectedClauseId = selectedClauseId === id ? null : id;
+		requestedTab = undefined;
+	}
+	function selectClauseWithTab(id: string, tab: 'amendments' | 'comments' | 'vote') {
+		selectedClauseId = id;
+		requestedTab = tab;
 	}
 
 	// Svelte action: adds a highlight outline to the OperativeClauseEditor's root
@@ -749,6 +755,7 @@
 						activeAmendmentId={committee.activeAmendmentId ?? null}
 						simpleMajority={committee.simpleMajority}
 						showVoteTab={false}
+						{requestedTab}
 						ondeselect={() => (selectedClauseId = null)}
 						onselectclause={(id) => (selectedClauseId = id)}
 					/>
@@ -863,23 +870,29 @@
 	<div use:highlightClause={{ selected: selectedClauseId === clause.id, current: isCurrent && isDebatePhase, clauseId: clause.id, commentCount: cc, amendmentCount: ac }}>
 		{#if (isCurrent && isDebatePhase) || ac || cc || outcome}
 			<div
-				class="flex items-center gap-2"
+				class="flex items-center gap-1"
 				class:opacity-100={selectedClauseId === clause.id}
 			>
 				{#if isCurrent && isDebatePhase}
-					<button class="badge badge-xs badge-secondary gap-1" onclick={() => selectClause(clause.id)}>
+					<button class="btn btn-xs btn-secondary gap-1" onclick={() => selectClause(clause.id)}>
 						<i class="fas fa-caret-right"></i>{m.currentClause()}
 					</button>
 				{/if}
 				{#if outcome}
-					<button class="badge badge-xs gap-1 {outcome === 'ADOPTED' ? 'badge-success' : 'badge-error'}" onclick={() => selectClause(clause.id)}>
+					<button class="btn btn-xs gap-1 {outcome === 'ADOPTED' ? 'btn-success' : 'btn-error'}" onclick={() => selectClause(clause.id)}>
 						{outcome === 'ADOPTED' ? m.adopted() : m.rejected()}
 					</button>
 				{/if}
-				{#if ac}<button class="badge badge-xs badge-warning gap-1" onclick={() => selectClause(clause.id)}
-						><i class="fas fa-pen-nib"></i>{ac}</button
-					>{/if}
-				{#if cc}<button class="badge badge-xs gap-1" onclick={() => selectClause(clause.id)}><i class="fas fa-comment"></i>{cc}</button>{/if}
+				{#if ac}
+					<button class="btn btn-xs btn-warning gap-1" onclick={() => selectClauseWithTab(clause.id, 'amendments')}>
+						<i class="fas fa-pen-nib"></i>{ac}
+					</button>
+				{/if}
+				{#if cc}
+					<button class="btn btn-xs gap-1" onclick={() => selectClauseWithTab(clause.id, 'comments')}>
+						<i class="fas fa-comment"></i>{cc}
+					</button>
+				{/if}
 			</div>
 		{/if}
 	</div>

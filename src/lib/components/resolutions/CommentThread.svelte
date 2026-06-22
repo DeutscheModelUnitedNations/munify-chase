@@ -154,15 +154,15 @@
 		{selectedClauseId ? m.comments() : m.documentComments()}
 	</p>
 
-	<div class="flex-1 space-y-2 overflow-y-auto">
+	<div class="flex-1 space-y-4 overflow-y-auto">
 		{#if !roots.length}
 			<p class="text-base-content/50 py-6 text-center text-sm">{m.noCommentsYet()}</p>
 		{:else}
 			{#each roots as comment (comment.id)}
 				{@const display = authorDisplay(comment.author)}
-				<div class="bg-base-100 rounded-lg border-l-2 p-2" class:border-warning={comment.visibility === 'TEAM_ONLY'} class:border-transparent={comment.visibility !== 'TEAM_ONLY'}>
+				<div class="bg-base-100 rounded-lg border-l-2 p-4" class:border-warning={comment.visibility === 'TEAM_ONLY'} class:border-transparent={comment.visibility !== 'TEAM_ONLY'}>
 					<div class="flex items-start justify-between gap-2">
-						<div class="flex items-center gap-1.5">
+						<div class="flex items-center gap-2.5">
 							{#if display.representation}
 								<Flag size="xs" representation={display.representation} />
 							{/if}
@@ -185,13 +185,13 @@
 							{/if}
 						</div>
 					</div>
-					<p class="text-sm whitespace-pre-wrap">{comment.content}</p>
+					<p class="mt-2 text-sm whitespace-pre-wrap">{comment.content}</p>
 
 					{#each repliesOf(comment.id) as reply (reply.id)}
 						{@const replyDisplay = authorDisplay(reply.author)}
 						<div class="mt-2 ml-4 border-l-2 pl-2" class:border-warning={reply.visibility === 'TEAM_ONLY'} class:border-base-300={reply.visibility !== 'TEAM_ONLY'}>
 							<div class="flex items-start justify-between gap-2">
-								<div class="flex items-center gap-1.5">
+								<div class="flex items-center gap-2.5">
 									{#if replyDisplay.representation}
 										<Flag size="xs" representation={replyDisplay.representation} />
 									{/if}
@@ -207,7 +207,7 @@
 									</button>
 								{/if}
 							</div>
-							<p class="text-xs whitespace-pre-wrap">{reply.content}</p>
+							<p class="mt-1.5 text-xs whitespace-pre-wrap">{reply.content}</p>
 						</div>
 					{/each}
 

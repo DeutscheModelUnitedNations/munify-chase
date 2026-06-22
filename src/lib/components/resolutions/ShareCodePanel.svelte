@@ -71,11 +71,11 @@
 	{/if}
 
 	<div class="join">
-		<button class="btn btn-sm join-item" disabled={busy} onclick={() => create('EDIT')}>
+		<button class="btn btn-ghost btn-sm join-item" disabled={busy} onclick={() => create('EDIT')}>
 			<i class="fas fa-pen"></i>
 			{m.shareEdit()}
 		</button>
-		<button class="btn btn-sm join-item" disabled={busy} onclick={() => create('SPONSOR')}>
+		<button class="btn btn-ghost btn-sm join-item" disabled={busy} onclick={() => create('SPONSOR')}>
 			<i class="fas fa-handshake"></i>
 			{m.shareSponsor()}
 		</button>

@@ -121,7 +121,7 @@
 	{#if !sponsors?.length}
 		<p class="text-base-content/50 text-sm">{m.noSponsorsYet()}</p>
 	{:else}
-		<ul class="space-y-1">
+		<ul class="space-y-2.5">
 			{#each sortedSponsors as s (s.id)}
 				<li class="flex items-center justify-between gap-2 text-sm">
 					<div class="flex items-center gap-2">
@@ -158,6 +158,7 @@
 			getKey={(mem) => mem.id}
 			placeholder={m.selectMember()}
 			submit={addByName}
+			triggerClass="btn btn-neutral btn-square input-lg join-item"
 		>
 			{#snippet ListItem(option)}
 				<Flag size="xs" representation={option.representation} />
@@ -165,7 +166,7 @@
 			{/snippet}
 			{#snippet AdditionalButtons()}
 				<button
-					class="btn btn-lg btn-square join-item"
+					class="btn btn-neutral btn-lg btn-square join-item"
 					aria-label={m.addSponsor()}
 					disabled={busy || !pickValue}
 					onclick={addByName}

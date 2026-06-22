@@ -821,7 +821,7 @@
 		<div class="modal modal-open">
 			<div class="modal-box bg-base-200">
 				<div class="mb-3 flex items-center justify-between">
-					<h3 class="text-lg font-bold">{m.details()}</h3>
+					<h3 class="text-lg font-bold">{m.sponsors()}</h3>
 					<button
 						class="btn btn-ghost btn-sm"
 						onclick={() => (detailsOpen = false)}
@@ -830,9 +830,8 @@
 						<i class="fas fa-xmark"></i>
 					</button>
 				</div>
-				<div class="space-y-4">
+				<div class="space-y-4 px-4">
 					<div>
-						<h4 class="mb-1 font-semibold">{m.sponsors()}</h4>
 						<SponsorPanel {paperId} committeeId={committee.id} paperStatus={status} {viewer} />
 					</div>
 					{#if isCreatorOrEditor || team}

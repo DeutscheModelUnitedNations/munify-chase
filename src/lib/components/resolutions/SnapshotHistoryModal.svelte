@@ -187,7 +187,7 @@
 		</div>
 
 		<div class="modal-action">
-			<button class="btn" onclick={() => close()}>
+			<button class="btn btn-ghost" onclick={() => close()}>
 				<i class="fas fa-xmark"></i>
 				{m.close()}
 			</button>

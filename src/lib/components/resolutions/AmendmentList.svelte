@@ -7,12 +7,14 @@
 		isTeam,
 		amendmentStatusLabel,
 		amendmentStatusBadgeClass,
+		amendmentTypeLabel,
 		type AmendmentType,
 		type AmendmentStatus,
 		type ResolutionViewer
 	} from './paperContext';
 	import { getTranslatedCountryNameFromAlpha3Code } from '$lib/utils/nationTranslationHelper.svelte';
 	import Flag from '$lib/components/Flag.svelte';
+	import { openVotingModal, type VotingResult } from '$lib/components/voting/votingModal';
 
 	interface Props {
 		paperId: string;
@@ -38,6 +40,7 @@
 		type: true,
 		status: true,
 		targetClauseId: true,
+		targetOperativeIndex: true,
 		newContent: true,
 		targetPosition: true,
 		documentNumber: true,
@@ -125,12 +128,108 @@
 				...activeAmendmentSelection
 			})
 		);
+
+	type AmendmentRow = (typeof scoped)[number];
+
+	// Vote on an amendment: present it (so it shows on the beamer), run a
+	// show-of-hands vote, then open an outcome modal that summarises the pending
+	// change and lets the chair apply or reject it (pre-selected by the result,
+	// but overridable). The split-button's dropdown skips the vote entirely.
+	let voteOutcome = $state<{ amendment: AmendmentRow; result: VotingResult } | null>(null);
+
+	async function startAmendmentVote(a: AmendmentRow) {
+		await present(a.id);
+		const typeLabel = amendmentTypeLabel(a.type as AmendmentType);
+		const voteName = a.documentNumber ? `${a.documentNumber} – ${typeLabel}` : typeLabel;
+		const result = await openVotingModal({
+			voteName,
+			voteType: 'SHOW_OF_HANDS',
+			majority: 'SIMPLE',
+			withAbstentions: true
+		});
+		if (result.cancelled) {
+			await unpresent();
+			return;
+		}
+		// Keep the amendment on the beamer while the chair reviews the outcome.
+		voteOutcome = { amendment: a, result };
+	}
+
+	async function applyVoteOutcome() {
+		const vo = voteOutcome;
+		if (!vo) return;
+		voteOutcome = null;
+		await accept(vo.amendment.id, false);
+		await unpresent();
+	}
+
+	async function rejectVoteOutcome() {
+		const vo = voteOutcome;
+		if (!vo) return;
+		voteOutcome = null;
+		await reject(vo.amendment.id);
+		await unpresent();
+	}
+
+	function cancelVoteOutcome() {
+		voteOutcome = null;
+		unpresent();
+	}
+
+	// A short, human-readable summary of what applying the amendment will do.
+	function changeSummary(a: AmendmentRow): { headline: string; body?: string | null } {
+		const opNum = a.targetOperativeIndex != null ? a.targetOperativeIndex + 1 : null;
+		const clauseRef = opNum != null ? ` – ${m.operativeClausePresentation()} ${opNum}` : '';
+		switch (a.type) {
+			case 'DELETE':
+				return { headline: `${m.deleteClausePresentation()}${clauseRef}` };
+			case 'ALTER_TEXT':
+				return { headline: `${m.alterClausePresentation()}${clauseRef}`, body: a.newContent };
+			case 'ADD':
+				return {
+					headline: `${m.addClausePresentation()} – ${m.insertAfterPresentation({ index: (a.targetPosition ?? 0) + 1 })}`,
+					body: a.newContent
+				};
+			case 'ALTER_POSITION':
+				return {
+					headline: `${m.moveClausePresentation()} – ${m.moveToPositionPresentation({ position: (a.targetPosition ?? 0) + 1 })}`
+				};
+			default:
+				return { headline: amendmentTypeLabel(a.type as AmendmentType) };
+		}
+	}
+
 	const sponsor = (id: string) =>
 		run(id, () =>
 			client.mutate.addAmendmentSponsor({ __args: { id: nanoid(), amendmentId: id }, id: true })
 		);
 	const unsponsor = (sponsorId: string, amendmentId: string) =>
 		run(amendmentId, () => client.mutate.removeAmendmentSponsor({ __args: { id: sponsorId } }));
+
+	// Chair decisions (accept / adopt-by-consensus / reject) are confirmed via a
+	// modal before they take effect, since they immediately alter the document.
+	type DecisionKind = 'accept' | 'consensus' | 'reject';
+	let pendingDecision = $state<{ kind: DecisionKind; amendmentId: string } | null>(null);
+
+	const decisionMessage = (kind: DecisionKind) =>
+		kind === 'accept'
+			? m.confirmAcceptAmendment()
+			: kind === 'consensus'
+				? m.confirmAdoptByConsensus()
+				: m.confirmRejectAmendment();
+
+	function closeDecision() {
+		pendingDecision = null;
+	}
+
+	async function confirmDecision() {
+		const decision = pendingDecision;
+		if (!decision) return;
+		pendingDecision = null;
+		if (decision.kind === 'accept') await accept(decision.amendmentId, false);
+		else if (decision.kind === 'consensus') await accept(decision.amendmentId, true);
+		else await reject(decision.amendmentId);
+	}
 </script>
 
 <div class="flex h-full flex-col gap-3">
@@ -225,21 +324,63 @@
 									onclick={() => present(a.id)}>{m.present()}</button
 								>
 							{/if}
-							<button
-								class="btn btn-xs btn-success"
-								disabled={busyId === a.id}
-								onclick={() => accept(a.id, true)}>{m.adoptByConsensus()}</button
-							>
-							<button
-								class="btn btn-xs btn-success btn-outline"
-								disabled={busyId === a.id}
-								onclick={() => accept(a.id, false)}>{m.accept()}</button
-							>
-							<button
-								class="btn btn-xs btn-error btn-outline"
-								disabled={busyId === a.id}
-								onclick={() => reject(a.id)}>{m.reject()}</button
-							>
+							<div class="join ml-auto">
+								<button
+									class="btn btn-xs btn-primary join-item"
+									disabled={busyId === a.id || busyId === 'unpresent'}
+									onclick={() => startAmendmentVote(a)}
+								>
+									<i class="fas fa-person-booth"></i>
+									{m.startVote()}
+								</button>
+								<div class="dropdown dropdown-end join-item flex">
+									<!-- svelte-ignore a11y_no_noninteractive_tabindex -->
+									<button
+										tabindex="0"
+										class="btn btn-xs btn-primary join-item px-1.5"
+										aria-label={m.decideManually()}
+										title={m.decideManually()}
+									>
+										<i class="fas fa-chevron-down"></i>
+									</button>
+									<!-- svelte-ignore a11y_no_noninteractive_tabindex -->
+									<ul
+										tabindex="0"
+										class="dropdown-content menu bg-base-100 border-base-300 rounded-box z-50 mt-1 w-48 border p-1 shadow-xl"
+									>
+										<li>
+											<button
+												class="text-success"
+												disabled={busyId === a.id}
+												onclick={() => (pendingDecision = { kind: 'consensus', amendmentId: a.id })}
+											>
+												<i class="fas fa-handshake"></i>
+												{m.adoptByConsensus()}
+											</button>
+										</li>
+										<li>
+											<button
+												class="text-success"
+												disabled={busyId === a.id}
+												onclick={() => (pendingDecision = { kind: 'accept', amendmentId: a.id })}
+											>
+												<i class="fas fa-check"></i>
+												{m.accept()}
+											</button>
+										</li>
+										<li>
+											<button
+												class="text-error"
+												disabled={busyId === a.id}
+												onclick={() => (pendingDecision = { kind: 'reject', amendmentId: a.id })}
+											>
+												<i class="fas fa-xmark"></i>
+												{m.reject()}
+											</button>
+										</li>
+									</ul>
+								</div>
+							</div>
 						{/if}
 					</div>
 				</div>
@@ -248,3 +389,64 @@
 	{/if}
 
 </div>
+
+{#if pendingDecision}
+	<div class="modal modal-open">
+		<div class="modal-box">
+			<h3 class="text-lg font-bold">{m.confirm()}</h3>
+			<p class="py-3">{decisionMessage(pendingDecision.kind)}</p>
+			<div class="modal-action">
+				<button class="btn btn-ghost" onclick={closeDecision}>{m.cancel()}</button>
+				<button
+					class="btn {pendingDecision.kind === 'reject' ? 'btn-error' : 'btn-success'}"
+					onclick={confirmDecision}>{m.confirm()}</button
+				>
+			</div>
+		</div>
+		<button class="modal-backdrop" aria-label={m.cancel()} onclick={closeDecision}></button>
+	</div>
+{/if}
+
+{#if voteOutcome}
+	{@const adopted = voteOutcome.result.outcome === 'ADOPTED'}
+	{@const summary = changeSummary(voteOutcome.amendment)}
+	<div class="modal modal-open">
+		<div class="modal-box">
+			<div class="flex items-center justify-between gap-2">
+				<h3 class="text-lg font-bold">{m.voteResult()}</h3>
+				<span class="badge {adopted ? 'badge-success' : 'badge-error'}">
+					{adopted ? m.amendmentStatusAccepted() : m.amendmentStatusRejected()}
+				</span>
+			</div>
+
+			<div class="text-base-content/70 mt-2 flex flex-wrap gap-x-4 gap-y-1 text-sm">
+				<span><i class="fas fa-check text-success"></i> {voteOutcome.result.votesFor} {m.votesFor()}</span>
+				<span><i class="fas fa-xmark text-error"></i> {voteOutcome.result.votesAgainst} {m.votesAgainst()}</span>
+				<span><i class="fas fa-minus"></i> {voteOutcome.result.votesAbstain} {m.votesAbstain()}</span>
+			</div>
+
+			<div class="bg-base-200 mt-4 rounded-lg p-3">
+				<p class="text-base-content/60 text-xs">{m.proposedAmendmentPresentation()}</p>
+				<p class="mt-1 font-semibold">{summary.headline}</p>
+				{#if summary.body}
+					<p class="bg-base-100 mt-2 rounded p-2 font-mono text-xs whitespace-pre-wrap">{summary.body}</p>
+				{/if}
+			</div>
+
+			<div class="modal-action">
+				<button class="btn btn-ghost" onclick={cancelVoteOutcome}>{m.cancel()}</button>
+				<button
+					class="btn btn-error"
+					class:btn-outline={adopted}
+					onclick={rejectVoteOutcome}>{m.reject()}</button
+				>
+				<button
+					class="btn btn-success"
+					class:btn-outline={!adopted}
+					onclick={applyVoteOutcome}>{m.applyAmendment()}</button
+				>
+			</div>
+		</div>
+		<button class="modal-backdrop" aria-label={m.cancel()} onclick={cancelVoteOutcome}></button>
+	</div>
+{/if}

@@ -209,7 +209,7 @@
 			<!-- Header row -->
 			<div class="flex flex-wrap items-center gap-3 border-b-2 border-base-300 pb-3">
 				<div class="flex flex-col">
-					<span class="badge badge-lg {getAmendmentTypeBadge(activeAmendment.type)} font-bold">
+					<span class="badge badge-lg {getAmendmentTypeBadge(activeAmendment.type)} h-auto px-4 py-2 text-xl font-bold">
 						{getAmendmentTypeLabel(activeAmendment.type)}
 					</span>
 					{#if activeAmendment.documentNumber}
@@ -227,7 +227,7 @@
 
 			{#if activeAmendment.type === 'DELETE' && resolvedActiveAmendIdx >= 0}
 				{@const targetClause = resolution.operative[resolvedActiveAmendIdx]}
-				<div class="flex items-center justify-center gap-2 text-error">
+				<div class="mx-auto flex w-fit items-center gap-2 rounded-full bg-error px-4 py-2 text-error-content">
 					<i class="fas fa-trash-can text-lg"></i>
 					<span class="text-lg font-semibold">{m.operativeClausePresentation()} {resolvedActiveAmendIdx + 1}</span>
 				</div>
@@ -246,7 +246,7 @@
 
 			{:else if activeAmendment.type === 'ALTER_TEXT' && resolvedActiveAmendIdx >= 0}
 				{@const targetClause = resolution.operative[resolvedActiveAmendIdx]}
-				<div class="flex items-center justify-center gap-2 text-warning">
+				<div class="mx-auto flex w-fit items-center gap-2 rounded-full bg-warning px-4 py-2 text-warning-content">
 					<i class="fas fa-pen-to-square text-lg"></i>
 					<span class="text-lg font-semibold">{m.operativeClausePresentation()} {resolvedActiveAmendIdx + 1}</span>
 				</div>
@@ -265,7 +265,7 @@
 				</div>
 
 			{:else if activeAmendment.type === 'ADD'}
-				<div class="flex items-center justify-center gap-2 text-green-700">
+				<div class="mx-auto flex w-fit items-center gap-2 rounded-full bg-green-700 px-4 py-2 text-white">
 					<i class="fas fa-plus text-lg"></i>
 					<span class="text-lg font-semibold">{m.insertAfterPresentation({ index: (activeAmendment.targetPosition ?? 0) + 1 })}</span>
 				</div>
@@ -284,7 +284,7 @@
 			{:else if activeAmendment.type === 'ALTER_POSITION' && resolvedActiveAmendIdx >= 0}
 				{@const targetClause = resolution.operative[resolvedActiveAmendIdx]}
 				<div class="flex flex-1 flex-col items-center justify-center gap-6 overflow-auto p-4">
-					<div class="flex items-center gap-2 text-info">
+					<div class="flex w-fit items-center gap-2 rounded-full bg-info px-4 py-2 text-info-content">
 						<i class="fas fa-arrows-up-down text-lg"></i>
 						<span class="text-lg font-semibold">{m.operativeClausePresentation()} {resolvedActiveAmendIdx + 1}</span>
 					</div>
@@ -300,7 +300,7 @@
 							</ResolutionPreview>
 						</div>
 					{/if}
-					<div class="flex items-center gap-3 rounded-full bg-info/10 px-5 py-2 text-info">
+					<div class="flex items-center gap-3 rounded-full bg-info px-6 py-3 text-info-content">
 						<i class="fas fa-arrow-down text-2xl"></i>
 						<span class="text-xl font-semibold">{m.moveToPositionPresentation({ position: (activeAmendment.targetPosition ?? 0) + 1 })}</span>
 					</div>

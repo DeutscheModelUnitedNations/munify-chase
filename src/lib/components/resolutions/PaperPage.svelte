@@ -39,6 +39,7 @@
 	import { nanoid } from '$lib/helpers/nanoid';
 	import { launchClauseVote } from './resolutionVotes';
 	import { openVotingModal, resumeVotingModal } from '$lib/components/voting/votingModal';
+	import { downloadResolutionTypst, downloadResolutionPdf } from '$lib/utils/resolutionExport';
 
 	interface Props {
 		paperId: string;
@@ -434,6 +435,22 @@
 		}
 	}
 
+	let isExportingPdf = $state(false);
+	async function exportPdf() {
+		const snapshot = yClient?.store.snapshot;
+		if (!snapshot || isExportingPdf) return;
+		isExportingPdf = true;
+		try {
+			await toast.promise(downloadResolutionPdf(snapshot, headerData, paper?.documentNumber), {
+				loading: m.exportPdfLoading(),
+				success: m.exportPdfSuccess(),
+				error: m.exportPdfError()
+			});
+		} finally {
+			isExportingPdf = false;
+		}
+	}
+
 	async function submitPaper() {
 		submitConfirmOpen = false;
 		submitting = true;
@@ -531,6 +548,32 @@
 			{/if}
 
 			<div class="ml-auto flex items-center gap-2">
+				<button
+					type="button"
+					class="btn btn-ghost btn-sm"
+					title={m.downloadTypst()}
+					aria-label={m.downloadTypst()}
+					disabled={!yClient?.store.snapshot}
+					onclick={() =>
+						yClient?.store.snapshot &&
+						downloadResolutionTypst(yClient.store.snapshot, headerData, paper?.documentNumber)}
+				>
+					<i class="fas fa-file-code"></i>
+				</button>
+				<button
+					type="button"
+					class="btn btn-ghost btn-sm"
+					title={m.downloadPdf()}
+					aria-label={m.downloadPdf()}
+					disabled={!yClient?.store.snapshot || isExportingPdf}
+					onclick={exportPdf}
+				>
+					{#if isExportingPdf}
+						<span class="loading loading-spinner loading-xs"></span>
+					{:else}
+						<i class="fas fa-file-pdf"></i>
+					{/if}
+				</button>
 				{#if yClient}
 					<SyncBadge
 						connectionState={yClient.connectionState}

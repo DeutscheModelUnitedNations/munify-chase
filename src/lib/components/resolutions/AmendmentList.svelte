@@ -321,8 +321,11 @@
 								<button
 									class="btn btn-xs btn-ghost"
 									disabled={busyId === a.id}
-									onclick={() => present(a.id)}>{m.present()}</button
+									onclick={() => present(a.id)}
 								>
+									<i class="fa-solid fa-eye"></i>
+									{m.present()}
+								</button>
 							{/if}
 							<div class="join ml-auto">
 								<button

@@ -1,0 +1,1 @@
+ALTER TABLE "conference_user" DROP CONSTRAINT "conference_user_user_email_key";

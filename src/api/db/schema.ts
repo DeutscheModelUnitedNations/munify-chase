@@ -167,7 +167,7 @@ export const conferenceUser = snakeCase.table(
 	{
 		...defaultIdAndTimestamps,
 		conferenceUserType: conferenceUserType().notNull(),
-		userEmail: text().notNull().unique(), // using email instead of uuid to allow creating OIDC users by email adress without having to wait for the user to create an account
+		userEmail: text().notNull(), // using email instead of uuid to allow creating OIDC users by email adress without having to wait for the user to create an account
 		// optional display name; the user table is created lazily on first OIDC
 		// login, so we keep names on the conferenceUser instead. UI falls back to
 		// userEmail when null.

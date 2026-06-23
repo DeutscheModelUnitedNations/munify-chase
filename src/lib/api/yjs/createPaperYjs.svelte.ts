@@ -124,6 +124,21 @@ export function createPaperYjsClient(opts: CreateOptions): PaperYjsClient {
 		}
 	});
 
+	// When the provider starts disconnected (navigator.onLine was false at mount
+	// time), y-websocket won't try to connect until it's told to. Wire the
+	// browser's `online` event so that coming back from full offline triggers a
+	// reconnect and the CRDT merges any locally-queued edits.
+	function handleOnline() {
+		if (wsProvider.shouldConnect) {
+			wsProvider.connect();
+		}
+	}
+	function handleOffline() {
+		connectionState = 'disconnected';
+	}
+	window.addEventListener('online', handleOnline);
+	window.addEventListener('offline', handleOffline);
+
 	// 3. Editor store + presence adapter.
 	const store = createYjsStore(doc);
 	const presence = createAwarenessPresence({
@@ -156,6 +171,8 @@ export function createPaperYjsClient(opts: CreateOptions): PaperYjsClient {
 		if (destroyed) return;
 		destroyed = true;
 		wsProvider.awareness.off('change', refreshPresences);
+		window.removeEventListener('online', handleOnline);
+		window.removeEventListener('offline', handleOffline);
 		try {
 			wsProvider.disconnect();
 		} catch {

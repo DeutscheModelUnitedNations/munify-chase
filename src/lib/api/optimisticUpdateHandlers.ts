@@ -759,6 +759,185 @@ export const optimistic: OptimisticMutationConfig = {
 	completeRollCallSession: () => true,
 
 	// -------------------------------------------------------------------------
+	// resolutionPaper.ts
+	// -------------------------------------------------------------------------
+	createResolutionPaper: (args) => {
+		const id = ensureId(args.id);
+		return {
+			__typename: 'Resolutionpaper',
+			id,
+			committeeId: args.committeeId as string,
+			committee: { __typename: 'Committee', id: args.committeeId as string },
+			agendaItemId: args.agendaItemId as string,
+			agendaItem: { __typename: 'Agendaitem', id: args.agendaItemId as string },
+			creatorCommitteeMemberId: (args.creatorCommitteeMemberId as string | undefined) ?? null,
+			creatorCommitteeMember: args.creatorCommitteeMemberId
+				? { __typename: 'Committeemember', id: args.creatorCommitteeMemberId as string }
+				: null,
+			status: (args.status as string | undefined) ?? 'WORKING_PAPER',
+			title: (args.title as string | undefined) ?? null,
+			documentNumber: null,
+			voteVotingSessionId: null,
+			vote: null,
+			sponsors: [],
+			editors: [],
+			shareCodes: [],
+			comments: [],
+			amendments: [],
+			operativeClauseVotes: [],
+			snapshots: [],
+			createdAt: new Date(),
+			updatedAt: null
+		};
+	},
+	updateResolutionPaper: (args) => {
+		const result: Record<string, unknown> = {
+			__typename: 'Resolutionpaper',
+			id: args.id
+		};
+		if (args.title != null) result.title = args.title;
+		if (args.status != null) result.status = args.status;
+		if (args.documentNumber != null) result.documentNumber = args.documentNumber;
+		return result;
+	},
+	deleteResolutionPaper: () => true,
+	concludeResolutionPaperVote: (args) => ({
+		__typename: 'Resolutionpaper',
+		id: args.paperId,
+		status: 'FINAL',
+		voteVotingSessionId: args.votingSessionId ?? null
+	}),
+	setActiveDraftResolution: (args) => {
+		const paperId = (args.paperId as string | null | undefined) ?? null;
+		return {
+			__typename: 'Committee',
+			id: args.committeeId as string,
+			activeDraftResolutionId: paperId,
+			activeDraftResolution: paperId
+				? { __typename: 'Resolutionpaper', id: paperId }
+				: null
+		};
+	},
+
+	// -------------------------------------------------------------------------
+	// resolutionComment.ts
+	// -------------------------------------------------------------------------
+	createResolutionComment: (args) => {
+		const id = ensureId(args.id);
+		return {
+			__typename: 'Resolutioncomment',
+			id,
+			paperId: args.paperId as string,
+			paper: { __typename: 'Resolutionpaper', id: args.paperId as string },
+			clauseId: (args.clauseId as string | undefined) ?? null,
+			authorConferenceUserId: null,
+			author: null,
+			content: args.content as string,
+			visibility: (args.visibility as string | undefined) ?? 'PUBLIC',
+			parentCommentId: (args.parentCommentId as string | undefined) ?? null,
+			parent: args.parentCommentId
+				? { __typename: 'Resolutioncomment', id: args.parentCommentId as string }
+				: null,
+			replies: [],
+			createdAt: new Date(),
+			updatedAt: null
+		};
+	},
+	updateResolutionComment: (args) => ({
+		__typename: 'Resolutioncomment',
+		id: args.id,
+		content: args.content
+	}),
+	deleteResolutionComment: () => true,
+
+	// -------------------------------------------------------------------------
+	// amendment.ts
+	// -------------------------------------------------------------------------
+	createAmendment: (args) => {
+		const id = ensureId(args.id);
+		return {
+			__typename: 'Amendment',
+			id,
+			paperId: args.paperId as string,
+			paper: { __typename: 'Resolutionpaper', id: args.paperId as string },
+			proposerCommitteeMemberId: (args.proposerCommitteeMemberId as string | undefined) ?? null,
+			proposer: args.proposerCommitteeMemberId
+				? { __typename: 'Committeemember', id: args.proposerCommitteeMemberId as string }
+				: null,
+			type: args.type as string,
+			status: (args.status as string | undefined) ?? 'PENDING',
+			targetClauseId: (args.targetClauseId as string | undefined) ?? null,
+			targetOperativeIndex: (args.targetOperativeIndex as number | undefined) ?? null,
+			newContent: (args.newContent as string | undefined) ?? null,
+			targetPosition: (args.targetPosition as number | undefined) ?? null,
+			documentNumber: null,
+			sponsors: [],
+			createdAt: new Date(),
+			updatedAt: null
+		};
+	},
+	submitAmendment: (args) => ({
+		__typename: 'Amendment',
+		id: args.id,
+		status: 'SUBMITTED'
+	}),
+	acceptAmendment: (args) => ({
+		__typename: 'Amendment',
+		id: args.id,
+		// Mirror server: consensus flag selects the status variant
+		status: args.consensus ? 'CONSENSUS_ADOPTED' : 'ACCEPTED'
+	}),
+	rejectAmendment: (args) => ({
+		__typename: 'Amendment',
+		id: args.id,
+		status: 'REJECTED'
+	}),
+	deleteAmendment: () => true,
+
+	// -------------------------------------------------------------------------
+	// paperEditor.ts
+	// -------------------------------------------------------------------------
+	addPaperEditor: (args) => {
+		const id = ensureId(args.id);
+		return {
+			__typename: 'Papereditor',
+			id,
+			paperId: args.paperId as string,
+			paper: { __typename: 'Resolutionpaper', id: args.paperId as string },
+			conferenceUserId: args.conferenceUserId as string,
+			conferenceUser: { __typename: 'Conferenceuser', id: args.conferenceUserId as string },
+			createdAt: new Date(),
+			updatedAt: null
+		};
+	},
+	removePaperEditor: () => true,
+
+	// -------------------------------------------------------------------------
+	// paperShareCode.ts — createPaperShareCode is skipped because the share
+	// code string is generated server-side and cannot be predicted locally.
+	// -------------------------------------------------------------------------
+	deletePaperShareCode: () => true,
+
+	// -------------------------------------------------------------------------
+	// operativeClauseVote.ts
+	// -------------------------------------------------------------------------
+	linkOperativeClauseVote: (args) => {
+		const id = ensureId(args.id);
+		return {
+			__typename: 'Operativeclausevote',
+			id,
+			paperId: args.paperId as string,
+			paper: { __typename: 'Resolutionpaper', id: args.paperId as string },
+			clauseId: args.clauseId as string,
+			votingSessionId: args.votingSessionId as string,
+			vote: { __typename: 'Votingsession', id: args.votingSessionId as string },
+			createdAt: new Date(),
+			updatedAt: null
+		};
+	},
+	unlinkOperativeClauseVote: () => true,
+
+	// -------------------------------------------------------------------------
 	// speakerOnList.ts
 	// -------------------------------------------------------------------------
 	updateSpeakerOnList: (args) => ({
@@ -2126,6 +2305,192 @@ export const updates: UpdatesConfig = {
 				}
 			}
 			cache.invalidate(event);
+		},
+
+		// ---------------------------------------------------------------
+		// resolutionPaper
+		// ---------------------------------------------------------------
+		createResolutionPaper: (result, args, cache) => {
+			const created = (result as Record<string, Record<string, unknown>>).createResolutionPaper;
+			if (!created?.id) return;
+			addToList(cache, { __typename: 'Committee', id: args.committeeId as string }, 'resolutionPapers', {
+				__typename: 'Resolutionpaper',
+				id: created.id as string
+			});
+		},
+		deleteResolutionPaper: (_result, args, cache) => {
+			const paper = { __typename: 'Resolutionpaper', id: args.id as string };
+			const key = cache.keyOfEntity(paper);
+			const committeeId = cache.resolve(paper, 'committeeId') as string | undefined;
+			if (key && committeeId) {
+				removeFromList(cache, { __typename: 'Committee', id: committeeId }, 'resolutionPapers', key);
+			}
+			cache.invalidate(paper);
+		},
+
+		// ---------------------------------------------------------------
+		// resolutionComment
+		// ---------------------------------------------------------------
+		createResolutionComment: (result, args, cache) => {
+			const created = (result as Record<string, Record<string, unknown>>).createResolutionComment;
+			if (!created?.id) return;
+			const child = { __typename: 'Resolutioncomment', id: created.id as string };
+			addToList(cache, { __typename: 'Resolutionpaper', id: args.paperId as string }, 'comments', child);
+			if (args.parentCommentId) {
+				addToList(
+					cache,
+					{ __typename: 'Resolutioncomment', id: args.parentCommentId as string },
+					'replies',
+					child
+				);
+			}
+		},
+		deleteResolutionComment: (_result, args, cache) => {
+			const comment = { __typename: 'Resolutioncomment', id: args.id as string };
+			const key = cache.keyOfEntity(comment);
+			const paperId = cache.resolve(comment, 'paperId') as string | undefined;
+			const parentCommentId = cache.resolve(comment, 'parentCommentId') as string | undefined;
+			if (key) {
+				if (paperId) {
+					removeFromList(cache, { __typename: 'Resolutionpaper', id: paperId }, 'comments', key);
+				}
+				if (parentCommentId) {
+					removeFromList(
+						cache,
+						{ __typename: 'Resolutioncomment', id: parentCommentId },
+						'replies',
+						key
+					);
+				}
+			}
+			cache.invalidate(comment);
+		},
+
+		// ---------------------------------------------------------------
+		// amendment
+		// ---------------------------------------------------------------
+		createAmendment: (result, args, cache) => {
+			const created = (result as Record<string, Record<string, unknown>>).createAmendment;
+			if (!created?.id) return;
+			addToList(
+				cache,
+				{ __typename: 'Resolutionpaper', id: args.paperId as string },
+				'amendments',
+				{ __typename: 'Amendment', id: created.id as string }
+			);
+		},
+		deleteAmendment: (_result, args, cache) => {
+			const amendment = { __typename: 'Amendment', id: args.id as string };
+			const key = cache.keyOfEntity(amendment);
+			const paperId = cache.resolve(amendment, 'paperId') as string | undefined;
+			if (key && paperId) {
+				removeFromList(cache, { __typename: 'Resolutionpaper', id: paperId }, 'amendments', key);
+			}
+			cache.invalidate(amendment);
+		},
+
+		// ---------------------------------------------------------------
+		// paperEditor
+		// ---------------------------------------------------------------
+		addPaperEditor: (result, args, cache) => {
+			const created = (result as Record<string, Record<string, unknown>>).addPaperEditor;
+			if (!created?.id) return;
+			addToList(
+				cache,
+				{ __typename: 'Resolutionpaper', id: args.paperId as string },
+				'editors',
+				{ __typename: 'Papereditor', id: created.id as string }
+			);
+		},
+		removePaperEditor: (_result, args, cache) => {
+			const editor = { __typename: 'Papereditor', id: args.id as string };
+			const key = cache.keyOfEntity(editor);
+			const paperId = cache.resolve(editor, 'paperId') as string | undefined;
+			if (key && paperId) {
+				removeFromList(cache, { __typename: 'Resolutionpaper', id: paperId }, 'editors', key);
+			}
+			cache.invalidate(editor);
+		},
+
+		// ---------------------------------------------------------------
+		// paperShareCode
+		// ---------------------------------------------------------------
+		createPaperShareCode: (result, args, cache) => {
+			const created = (result as Record<string, Record<string, unknown>>).createPaperShareCode;
+			if (!created?.id) return;
+			addToList(
+				cache,
+				{ __typename: 'Resolutionpaper', id: args.paperId as string },
+				'shareCodes',
+				{ __typename: 'Papersharecode', id: created.id as string }
+			);
+		},
+		deletePaperShareCode: (_result, args, cache) => {
+			const shareCode = { __typename: 'Papersharecode', id: args.id as string };
+			const key = cache.keyOfEntity(shareCode);
+			const paperId = cache.resolve(shareCode, 'paperId') as string | undefined;
+			if (key && paperId) {
+				removeFromList(cache, { __typename: 'Resolutionpaper', id: paperId }, 'shareCodes', key);
+			}
+			cache.invalidate(shareCode);
+		},
+
+		// ---------------------------------------------------------------
+		// operativeClauseVote
+		// ---------------------------------------------------------------
+		linkOperativeClauseVote: (result, args, cache) => {
+			const created = (result as Record<string, Record<string, unknown>>).linkOperativeClauseVote;
+			if (!created?.id) return;
+			// linkOperativeClauseVote is an upsert: if a vote for this clause already
+			// exists, remove the stale entry before adding the fresh one so the list
+			// stays deduplicated and the old entity is GC'd.
+			const paper = { __typename: 'Resolutionpaper', id: args.paperId as string };
+			const voteFields = cache
+				.inspectFields(paper)
+				.filter((f) => f.fieldName === 'operativeClauseVotes');
+			for (const f of voteFields) {
+				const existing = cache.resolve(paper, 'operativeClauseVotes', f.arguments) as
+					| string[]
+					| null
+					| undefined;
+				if (!Array.isArray(existing)) continue;
+				for (const k of existing) {
+					if (typeof k !== 'string' || !k.startsWith('Operativeclausevote:')) continue;
+					const id = k.slice('Operativeclausevote:'.length);
+					if (id === (created.id as string)) continue;
+					const clauseId = cache.resolve({ __typename: 'Operativeclausevote', id }, 'clauseId');
+					if (clauseId === args.clauseId) {
+						removeFromList(cache, paper, 'operativeClauseVotes', k);
+						cache.invalidate({ __typename: 'Operativeclausevote', id });
+					}
+				}
+			}
+			addToList(cache, paper, 'operativeClauseVotes', {
+				__typename: 'Operativeclausevote',
+				id: created.id as string
+			});
+		},
+		unlinkOperativeClauseVote: (_result, args, cache) => {
+			const paper = { __typename: 'Resolutionpaper', id: args.paperId as string };
+			const voteFields = cache
+				.inspectFields(paper)
+				.filter((f) => f.fieldName === 'operativeClauseVotes');
+			for (const f of voteFields) {
+				const existing = cache.resolve(paper, 'operativeClauseVotes', f.arguments) as
+					| string[]
+					| null
+					| undefined;
+				if (!Array.isArray(existing)) continue;
+				for (const k of existing) {
+					if (typeof k !== 'string' || !k.startsWith('Operativeclausevote:')) continue;
+					const id = k.slice('Operativeclausevote:'.length);
+					const clauseId = cache.resolve({ __typename: 'Operativeclausevote', id }, 'clauseId');
+					if (clauseId === args.clauseId) {
+						removeFromList(cache, paper, 'operativeClauseVotes', k);
+						cache.invalidate({ __typename: 'Operativeclausevote', id });
+					}
+				}
+			}
 		},
 
 		// ---------------------------------------------------------------

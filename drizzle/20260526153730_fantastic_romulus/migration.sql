@@ -1,1 +1,0 @@
-ALTER TYPE "presence_event_marker" ADD VALUE 'ROLL_CALL';

@@ -4,18 +4,30 @@
 	import { page } from '$app/state';
 	import { client } from '$lib/api/rumbleClient/client';
 	import { getCurrentUser } from '$lib/state/currentUser.svelte';
-	import ThemeSwitcher from '$lib/components/ThemeSwitcher.svelte';
+	import NavbarBurgerMenu from '$lib/components/NavbarBurgerMenu.svelte';
+	import {
+		buildConferenceNavItems,
+		roleBadgeClassFor,
+		roleLabelFor
+	} from '$lib/components/navbar/conferenceNavItems';
 	import type { Snippet } from 'svelte';
 
 	let { children }: { children: Snippet } = $props();
 
 	const currentUser = await getCurrentUser();
+	const userId = currentUser?.id ?? '';
+	const userDisplayName =
+		[currentUser?.givenName, currentUser?.familyName].filter(Boolean).join(' ').trim() ||
+		currentUser?.preferredUsername ||
+		currentUser?.email ||
+		'';
+
 	const [conferenceUser] =
 		(await client.liveQuery.conferenceUsers({
 			__args: {
 				where: {
 					conference: { id: page.params.conferenceId },
-					user: { id: currentUser?.id ?? '' }
+					user: { id: userId }
 				}
 			},
 			id: true,
@@ -23,6 +35,18 @@
 		})) ?? [];
 	const role = $derived(conferenceUser?.conferenceUserType);
 	const showBack = $derived(role !== 'DELEGATE');
+
+	const isGlobalAdmin = await client.query.isGlobalAdmin();
+
+	const menubarItems = $derived(
+		buildConferenceNavItems({
+			role,
+			conferenceId: page.params.conferenceId!,
+			activeRouteId: page.route.id,
+			activePathname: page.url.pathname,
+			isGlobalAdmin: !!isGlobalAdmin
+		})
+	);
 
 	const committee = await client.liveQuery.committee({
 		__args: { id: page.params.committeeId! },
@@ -59,7 +83,21 @@
 		{/if}
 		<h1 class="ml-2 flex-1 text-lg font-bold">{committee.abbreviation} — {committee.name}</h1>
 		<div class="flex-none">
-			<ThemeSwitcher />
+			<NavbarBurgerMenu
+				items={menubarItems}
+				user={{
+					name: userDisplayName,
+					email: currentUser?.email ?? undefined,
+					givenName: currentUser?.givenName ?? undefined,
+					familyName: currentUser?.familyName ?? undefined
+				}}
+				roleLabel={roleLabelFor(role)}
+				roleBadgeClass={roleBadgeClassFor(role)}
+				conferenceTitle={committee?.conference?.title}
+				conferenceId={page.params.conferenceId}
+				dashboardHref="/app"
+				signOutHref="/logout"
+			/>
 		</div>
 	</div>
 

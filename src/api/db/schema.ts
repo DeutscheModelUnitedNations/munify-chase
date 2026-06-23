@@ -94,6 +94,7 @@ export const committee = snakeCase.table(
 		//TODO should these defaults be set at DB level?
 		customSimpleMajority: smallint(), // 50% by default
 		customTwoThirdsMajority: smallint(), // 66% by default
+		paperSupportThreshold: smallint().notNull().default(10), // percentage, 10% by default
 		presentationLayout: text().notNull().default('default'),
 		presentationRootFontSize: smallint().notNull().default(16),
 		presentationResolutionFontSize: smallint().notNull().default(16),

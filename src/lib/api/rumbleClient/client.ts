@@ -222,6 +222,7 @@ export type Committee = {
     where?: CommitteememberWhereInputArgument | null | undefined
   }) => Committeemember[],
   name: String,
+  paperSupportThreshold: Int,
   presenceEvents: (p?: {
     limit?: Int | null | undefined,
     offset?: Int | null | undefined,
@@ -289,6 +290,7 @@ export type CommitteeOrderInputArgument = {
   lastResolutionAdoptionDate?: SortingParameter | null | undefined,
   members?: CommitteememberOrderInputArgument | null | undefined,
   name?: SortingParameter | null | undefined,
+  paperSupportThreshold?: SortingParameter | null | undefined,
   presenceEvents?: PresenceeventOrderInputArgument | null | undefined,
   presentationLayout?: SortingParameter | null | undefined,
   presentationResolutionFontSize?: SortingParameter | null | undefined,
@@ -333,6 +335,7 @@ export type CommitteeWhereInputArgument = {
   lastResolutionAdoptionDate?: DateWhereInputArgument | null | undefined,
   members?: CommitteememberWhereInputArgument | null | undefined,
   name?: StringWhereInputArgument | null | undefined,
+  paperSupportThreshold?: IntWhereInputArgument | null | undefined,
   presenceEvents?: PresenceeventWhereInputArgument | null | undefined,
   presentationLayout?: StringWhereInputArgument | null | undefined,
   presentationResolutionFontSize?: IntWhereInputArgument | null | undefined,
@@ -978,7 +981,7 @@ export type Mutation = {
   }) => Presenceevent,
   redeemPaperShareCode: (p: {
     code: String
-  }) => Papersharecode,
+  }) => Boolean,
   regenerateNsaAttendanceCode: (p: {
     conferenceUserId: ID
   }) => Conferenceuser,

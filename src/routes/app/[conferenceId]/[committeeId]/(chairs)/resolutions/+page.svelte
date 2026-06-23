@@ -4,6 +4,7 @@
 	import { page } from '$app/state';
 	import { client } from '$lib/api/rumbleClient/client';
 	import { nanoid } from '$lib/helpers/nanoid';
+	import { workingPaperName } from '$lib/helpers/paperName';
 	import { m } from '$lib/paraglide/messages';
 	import BasicCard from '$lib/components/BasicCard.svelte';
 	import Flag from '$lib/components/Flag.svelte';
@@ -57,7 +58,7 @@
 		createdAt: true,
 		creatorCommitteeMember: {
 			id: true,
-			representation: { name: true, type: true, alpha2Code: true, alpha3Code: true, faIcon: true }
+			representation: { id: true, name: true, type: true, alpha2Code: true, alpha3Code: true, faIcon: true }
 		},
 		sponsors: { id: true },
 		agendaItem: { id: true, title: true }
@@ -200,7 +201,7 @@
 							<a href={paperHref(paper.id)} class="flex min-w-0 flex-1 flex-col">
 								<div class="flex flex-wrap items-center gap-2">
 									<span class="font-semibold">
-										{paper.documentNumber || paper.title || m.workingPaper()}
+										{paper.documentNumber || paper.title || workingPaperName(paper.id)}
 									</span>
 									<span class="badge badge-sm {statusBadgeClass(paper.status as PaperStatus)}">
 										{statusLabel(paper.status as PaperStatus)}

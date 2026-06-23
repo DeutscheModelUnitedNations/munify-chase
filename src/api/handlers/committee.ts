@@ -71,7 +71,6 @@ const ref = object({
 	adjust: (t) => ({
 		totalPresent: t.field({
 			type: 'Int',
-			//TODO remove as any when rumble fixed it's types
 			resolve: (parent) => getTotalPresentCount(parent as CommitteeParentWithOptionalMembers)
 		}),
 		simpleMajority: t.field({
@@ -90,6 +89,13 @@ const ref = object({
 				if (custom) return custom;
 				const total = await getTotalPresentCount(parent as CommitteeParentWithOptionalMembers);
 				return calculateMajority(total, 'twoThirds');
+			}
+		}),
+		paperSupportThreshold: t.field({
+			type: 'Int',
+			resolve: async (parent) => {
+				const total = await getTotalPresentCount(parent as CommitteeParentWithOptionalMembers);
+				return Math.ceil(total * (parent.paperSupportThreshold / 100));
 			}
 		})
 	})
@@ -251,6 +257,12 @@ schemaBuilder.mutationFields((t) => {
 					const committee = await db.query.committee
 						.findFirst({ where: { id: args.committeeId } })
 						.then(assertFindFirstExists);
+
+					if (paper.status === 'WORKING_PAPER') {
+						throw new GraphQLError(
+							'Working papers cannot be set as active, the paper must be submitted or promoted first'
+						);
+					}
 
 					if (
 						committee.activeAgendaItemId &&

@@ -18,6 +18,7 @@
 		viewer: ResolutionViewer;
 		submissionOpen: boolean;
 		sponsoringOpen: boolean;
+		minAmendmentSponsors: number;
 		activeAmendmentId: string | null;
 		simpleMajority: number;
 		/** Shows clause vote controls (DRAFT/AMENDMENT/VOTING phases). */
@@ -38,6 +39,7 @@
 		viewer,
 		submissionOpen,
 		sponsoringOpen,
+		minAmendmentSponsors,
 		activeAmendmentId,
 		simpleMajority,
 		showVoteTab,
@@ -170,6 +172,7 @@
 				{selectedClauseId}
 				{viewer}
 				{sponsoringOpen}
+				{minAmendmentSponsors}
 				{activeAmendmentId}
 			/>
 		{:else if tab === 'comments'}

@@ -42,6 +42,8 @@
 		conference: { hasModeratedCaucus: true }
 	});
 
+	const minAmendmentSponsors = $derived(Math.ceil((committee?.totalPresent ?? 0) * 0.1));
+
 	let editWhiteboardModalOpen = $state(false);
 
 	const selfAddTabs = [
@@ -81,6 +83,7 @@
 						totalPresent={committee.totalPresent}
 						simpleMajority={committee.simpleMajority}
 						twoThirdsMajority={committee.twoThirdsMajority}
+						{minAmendmentSponsors}
 					/>
 				</BasicCard>
 				<BasicCard className="relative group">

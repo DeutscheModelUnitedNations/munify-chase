@@ -16,7 +16,7 @@ import {
 import { assertFindFirstExists } from '@m1212e/rumble';
 import { nanoid, nanoidValidation } from '$lib/helpers/nanoid';
 import { GraphQLError } from 'graphql';
-import { eq } from 'drizzle-orm';
+import { and, count, eq } from 'drizzle-orm';
 import { applyServerMutation, readPaperJson } from '$api/yjs/server';
 import {
 	yDocToJson,
@@ -151,11 +151,45 @@ schemaBuilder.mutationFields((t) => ({
 		args: { id: t.arg.id({ required: true }) },
 		resolve: async (query, _root, args, ctx) => {
 			const amendment = await db.query.amendment
-				.findFirst({ where: { id: args.id } })
+				.findFirst({
+					where: { id: args.id },
+					with: { paper: { columns: { committeeId: true } } }
+				})
 				.then(assertFindFirstExists);
 
 			if (amendment.status !== 'PENDING') {
 				throw new GraphQLError('Only pending amendments can be submitted');
+			}
+
+			const sponsors = await db.query.amendmentSponsor.findMany({
+				where: { amendmentId: args.id }
+			});
+
+			const committee = await db.query.committee
+				.findFirst({ where: { id: amendment.paper.committeeId } })
+				.then(assertFindFirstExists);
+
+			const presentCount = await db
+				.select({ count: count() })
+				.from(schema.committeeMember)
+				.innerJoin(
+					schema.representation,
+					eq(schema.committeeMember.representationId, schema.representation.id)
+				)
+				.where(
+					and(
+						eq(schema.committeeMember.committeeId, amendment.paper.committeeId),
+						eq(schema.committeeMember.present, true),
+						eq(schema.representation.type, 'DELEGATION')
+					)
+				)
+				.then(([r]) => r?.count ?? 0);
+			const required = Math.ceil(presentCount * (committee.paperSupportThreshold / 100));
+
+			if (sponsors.length < required) {
+				throw new GraphQLError(
+					`Amendment needs at least ${required} sponsor(s) to be submitted (has ${sponsors.length})`
+				);
 			}
 
 			await db

@@ -1,7 +1,6 @@
 <script lang="ts">
 	import { m } from '$lib/paraglide/messages';
 	import { client } from '$lib/api/rumbleClient/client';
-	import { nanoid } from '$lib/helpers/nanoid';
 	import toast from 'svelte-french-toast';
 	import {
 		isTeam,
@@ -15,6 +14,8 @@
 	import { getTranslatedCountryNameFromAlpha3Code } from '$lib/utils/nationTranslationHelper.svelte';
 	import Flag from '$lib/components/Flag.svelte';
 	import { openVotingModal, type VotingResult } from '$lib/components/voting/votingModal';
+	import AmendmentSponsorPanel from './AmendmentSponsorPanel.svelte';
+	import { slide } from 'svelte/transition';
 
 	interface Props {
 		paperId: string;
@@ -22,6 +23,7 @@
 		selectedClauseId: string | null;
 		viewer: ResolutionViewer;
 		sponsoringOpen: boolean;
+		minAmendmentSponsors: number;
 		activeAmendmentId: string | null;
 	}
 
@@ -31,6 +33,7 @@
 		selectedClauseId,
 		viewer,
 		sponsoringOpen,
+		minAmendmentSponsors,
 		activeAmendmentId
 	}: Props = $props();
 
@@ -45,7 +48,7 @@
 		targetPosition: true,
 		documentNumber: true,
 		proposer: { id: true, representation: { name: true, alpha2Code: true, alpha3Code: true, faIcon: true, type: true } },
-		sponsors: { id: true, committeeMember: { id: true } }
+		sponsors: { id: true, amendmentId: true, committeeMember: { id: true } }
 	});
 
 	// Clause-targeted amendments when a clause is selected; ADD amendments
@@ -65,8 +68,12 @@
 	const myMemberId = $derived(viewer.committeeMemberId ?? null);
 	const team = $derived(isTeam(viewer));
 
-	function mySponsorRow(a: (typeof scoped)[number]) {
-		return a.sponsors?.find((s) => s.committeeMember?.id === myMemberId);
+	let expandedSponsors = $state(new Set<string>());
+	function toggleSponsors(id: string) {
+		const next = new Set(expandedSponsors);
+		if (next.has(id)) next.delete(id);
+		else next.add(id);
+		expandedSponsors = next;
 	}
 
 	let busyId = $state<string | null>(null);
@@ -199,13 +206,6 @@
 		}
 	}
 
-	const sponsor = (id: string) =>
-		run(id, () =>
-			client.mutate.addAmendmentSponsor({ __args: { id: nanoid(), amendmentId: id }, id: true })
-		);
-	const unsponsor = (sponsorId: string, amendmentId: string) =>
-		run(amendmentId, () => client.mutate.removeAmendmentSponsor({ __args: { id: sponsorId } }));
-
 	// Chair decisions (accept / adopt-by-consensus / reject) are confirmed via a
 	// modal before they take effect, since they immediately alter the document.
 	type DecisionKind = 'accept' | 'consensus' | 'reject';
@@ -241,8 +241,10 @@
 		<div class="flex-1 space-y-3 overflow-y-auto">
 			{#each scoped as a (a.id)}
 				{@const mine = a.proposer?.id === myMemberId}
-				{@const myRow = mySponsorRow(a)}
 				{@const isActive = a.id === activeAmendmentId}
+				{@const sponsorsExpanded = expandedSponsors.has(a.id)}
+				{@const sponsorCount = a.sponsors?.length ?? 0}
+				{@const canSubmit = sponsorCount >= minAmendmentSponsors}
 				<div
 					class="bg-base-100 rounded-lg p-3"
 					class:ring-2={isActive}
@@ -274,40 +276,52 @@
 						<Flag representation={a.proposer?.representation} size="xs" />
 						<span>{getTranslatedCountryNameFromAlpha3Code(a.proposer?.representation?.alpha3Code) ?? a.proposer?.representation?.name ?? m.unknown()}</span>
 						<span class="text-base-content/40">·</span>
-						<span>{a.sponsors?.length ?? 0} {m.sponsors()}</span>
+						<button
+							class="btn btn-xs btn-ghost -my-1 -ml-1 gap-1"
+							class:text-warning={!canSubmit && a.status === 'PENDING'}
+							onclick={() => toggleSponsors(a.id)}
+						>
+							{m.sponsorsCount({ current: String(sponsorCount), needed: String(minAmendmentSponsors) })}
+							<i
+								class="fas fa-chevron-down text-[0.6rem] transition-transform duration-200"
+								class:rotate-180={sponsorsExpanded}
+							></i>
+						</button>
 					</div>
+					{#if sponsorsExpanded}
+						<div transition:slide={{ duration: 200 }}>
+						<AmendmentSponsorPanel
+							amendmentId={a.id}
+							{committeeId}
+							{sponsoringOpen}
+							{viewer}
+							proposerMemberId={a.proposer?.id}
+							amendmentStatus={a.status}
+						/>
+						</div>
+					{/if}
+
 					{#if a.newContent}
 						<p class="bg-base-200 mt-2 rounded p-2 font-mono text-xs whitespace-pre-wrap opacity-80">{a.newContent}</p>
 					{/if}
 
 					<div class="mt-3 flex flex-wrap gap-1.5">
 						{#if mine && a.status === 'PENDING'}
-							<button
-								class="btn btn-xs btn-primary"
-								disabled={busyId === a.id}
-								onclick={() => submit(a.id)}>{m.submit()}</button
+							<div
+								class="tooltip tooltip-top"
+								data-tip={canSubmit ? undefined : m.sponsorsNeededToSubmit({ current: String(sponsorCount), needed: String(minAmendmentSponsors) })}
 							>
+								<button
+									class="btn btn-xs btn-primary"
+									disabled={busyId === a.id || !canSubmit}
+									onclick={() => submit(a.id)}>{m.submit()}</button
+								>
+							</div>
 							<button
 								class="btn btn-xs btn-ghost"
 								disabled={busyId === a.id}
 								onclick={() => withdraw(a.id)}>{m.withdraw()}</button
 							>
-						{/if}
-
-						{#if !mine && !team && myMemberId && sponsoringOpen && a.status !== 'REJECTED' && a.status !== 'WITHDRAWN'}
-							{#if myRow}
-								<button
-									class="btn btn-xs btn-ghost"
-									disabled={busyId === a.id}
-									onclick={() => unsponsor(myRow.id, a.id)}>{m.removeSponsorship()}</button
-								>
-							{:else}
-								<button
-									class="btn btn-xs btn-outline"
-									disabled={busyId === a.id}
-									onclick={() => sponsor(a.id)}>{m.sponsorAmendment()}</button
-								>
-							{/if}
 						{/if}
 
 						{#if team && (a.status === 'SUBMITTED' || a.status === 'PENDING')}
@@ -320,7 +334,7 @@
 							{:else}
 								<button
 									class="btn btn-xs btn-ghost"
-									disabled={busyId === a.id}
+									disabled={busyId === a.id || a.status === 'PENDING'}
 									onclick={() => present(a.id)}
 								>
 									<i class="fa-solid fa-eye"></i>
@@ -330,7 +344,7 @@
 							<div class="join ml-auto">
 								<button
 									class="btn btn-xs btn-primary join-item"
-									disabled={busyId === a.id || busyId === 'unpresent'}
+									disabled={busyId === a.id || busyId === 'unpresent' || a.status === 'PENDING'}
 									onclick={() => startAmendmentVote(a)}
 								>
 									<i class="fas fa-person-booth"></i>

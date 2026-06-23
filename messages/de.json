@@ -87,7 +87,7 @@
 	"amendmentPhaseSettingsChangeNothing": "Einstellungen beibehalten",
 	"amendmentPhaseSettingsDescription": "Sollen Delegierte Änderungsanträge einreichen und unterstützen dürfen, bevor die Änderungsphase beginnt?",
 	"amendmentPhaseSettingsTitle": "Einstellungen Änderungsphase",
-	"amendmentSubmission":"Änderungsanträge einreichen",
+	"amendmentSubmission": "Änderungsanträge einreichen",
 	"amendmentSubmissionClosed": "Einreichung von Änderungsanträgen ist geschlossen",
 	"amendmentSubmissionOpen": "Delegierte können neue Änderungsanträge einreichen",
 	"amendmentSubmitted": "Eingereicht",
@@ -757,6 +757,10 @@
 	"selectNsaPerson": "NA-Person wählen",
 	"selectProposerDelegation": "Antragstellende Delegation auswählen",
 	"selectTargetClause": "Zielabsatz auswählen",
+	"setAsCurrentClause": "Als aktuellen Absatz festlegen",
+	"selectOutOfOrderTitle": "Außer der Reihe auswählen?",
+	"selectOutOfOrderDescription": "Dieser Absatz ist nicht der nächste in der Reihenfolge. Soll er trotzdem als aktueller Absatz festgelegt werden?",
+	"selectOutOfOrderConfirm": "Trotzdem auswählen",
 	"send": "Senden",
 	"sendBack": "Zurückverweisen",
 	"sentBack": "Zurückverwiesen",
@@ -798,6 +802,8 @@
 	"sponsorPaper": "Unterstützen",
 	"sponsorRemoved": "Sponsor entfernt",
 	"sponsors": "Unterstützerstaaten",
+	"sponsorsCount": "{current}/{needed} Unterstützerstaaten",
+	"sponsorsNeededToSubmit": "Benötigt {needed} Unterstütz(er) zum Einreichen ({current} bisher)",
 	"sponsorThisPaper": "Dieses Papier unterstützen",
 	"sponsorThreshold": "{current}/{needed} Unterstützer ({percent}% benötigt)",
 	"startAmendmentPhase": "Änderungsantragsphase starten",
@@ -966,5 +972,6 @@
 	"you": "Du",
 	"youCannotEditYourself": "Du kannst deine eigene Rolle nicht bearbeiten",
 	"yourAttendanceCode": "Dein Anwesenheitscode",
-	"youreUp": "Du bist dran!"
+	"youreUp": "Du bist dran!",
+	"paperLockedAfterSubmission": "Dieses Dokument wurde den Vorsitzenden vorgelegt und kann von den Teilnehmenden nicht mehr bearbeitet werden. Die Vorsitzenden können jedoch weiterhin Korrekturen vornehmen."
 }

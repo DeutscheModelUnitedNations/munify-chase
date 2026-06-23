@@ -72,6 +72,8 @@
 		}
 	});
 
+	const minAmendmentSponsors = $derived(Math.ceil((committee?.totalPresent ?? 0) * 0.1));
+
 	let countries = $derived(
 		committee?.members
 			.filter(isDelegationMember)
@@ -145,6 +147,7 @@
 						totalPresent={committee.totalPresent}
 						simpleMajority={committee.simpleMajority}
 						twoThirdsMajority={committee.twoThirdsMajority}
+						{minAmendmentSponsors}
 					/>
 				</BasicCard>
 				<BasicCard>

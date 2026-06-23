@@ -87,7 +87,7 @@
 	"amendmentPhaseSettingsChangeNothing": "Manter configurações atuais",
 	"amendmentPhaseSettingsDescription": "Deseja permitir que os delegados submetam e apoiem alterações antes de entrar na fase de alterações?",
 	"amendmentPhaseSettingsTitle": "Configurações da fase de alterações",
-	"amendmentSubmission":"Submissão de Emendas",
+	"amendmentSubmission": "Submissão de Emendas",
 	"amendmentSubmissionClosed": "A submissão de emendas está encerrada",
 	"amendmentSubmissionOpen": "Delegados podem submeter novas emendas",
 	"amendmentSubmitted": "Submetida",
@@ -757,6 +757,10 @@
 	"selectNsaPerson": "Selecionar pessoa ANE",
 	"selectProposerDelegation": "Selecionar Delegação Proponente",
 	"selectTargetClause": "Selecionar Cláusula Alvo",
+	"setAsCurrentClause": "Definir como cláusula atual",
+	"selectOutOfOrderTitle": "Selecionar fora de ordem?",
+	"selectOutOfOrderDescription": "Esta cláusula não é a próxima na sequência. Deseja selecioná-la como cláusula atual mesmo assim?",
+	"selectOutOfOrderConfirm": "Selecionar mesmo assim",
 	"send": "Enviar",
 	"sendBack": "Devolver",
 	"sentBack": "Devolvida",
@@ -798,6 +802,8 @@
 	"sponsorPaper": "Patrocinar",
 	"sponsorRemoved": "Patrocinador removido",
 	"sponsors": "Patrocinadores",
+	"sponsorsCount": "{current}/{needed} Patrocinadores",
+	"sponsorsNeededToSubmit": "Precisa de {needed} patrocinador(es) para submeter ({current} até agora)",
 	"sponsorThisPaper": "Patrocinar este documento",
 	"sponsorThreshold": "{current}/{needed} patrocinadores ({percent}% necessários)",
 	"startAmendmentPhase": "Iniciar Fase de Emendas",
@@ -966,5 +972,6 @@
 	"you": "Você",
 	"youCannotEditYourself": "Não pode editar a sua própria função",
 	"yourAttendanceCode": "O seu código de presença",
-	"youreUp": "É a sua vez!"
+	"youreUp": "É a sua vez!",
+	"paperLockedAfterSubmission": "Este artigo foi submetido à coordenação e não pode mais ser editado pelos participantes. A coordenação ainda pode fazer correções."
 }

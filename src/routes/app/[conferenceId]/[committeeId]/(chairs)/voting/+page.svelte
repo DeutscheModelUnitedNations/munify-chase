@@ -40,6 +40,8 @@
 			}
 		}
 	});
+
+	const minAmendmentSponsors = $derived(Math.ceil((committee?.totalPresent ?? 0) * 0.1));
 </script>
 
 {#if committee}
@@ -54,6 +56,7 @@
 						totalPresent={committee.totalPresent}
 						simpleMajority={committee.simpleMajority}
 						twoThirdsMajority={committee.twoThirdsMajority}
+						{minAmendmentSponsors}
 					/>
 				</BasicCard>
 			</div>

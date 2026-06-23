@@ -4,6 +4,7 @@
 	import { page } from '$app/state';
 	import { client } from '$lib/api/rumbleClient/client';
 	import { nanoid } from '$lib/helpers/nanoid';
+	import { workingPaperName } from '$lib/helpers/paperName';
 	import { m } from '$lib/paraglide/messages';
 	import { getCurrentUser } from '$lib/state/currentUser.svelte';
 	import {
@@ -11,6 +12,8 @@
 		statusBadgeClass,
 		type PaperStatus
 	} from '$lib/components/resolutions/paperContext';
+	import Flag from '$lib/components/Flag.svelte';
+	import { getTranslatedCountryNameFromAlpha3Code } from '$lib/utils/nationTranslationHelper.svelte';
 	import toast from 'svelte-french-toast';
 
 	const conferenceId = $derived(page.params.conferenceId!);
@@ -41,7 +44,10 @@
 		title: true,
 		status: true,
 		documentNumber: true,
-		creatorCommitteeMember: { id: true, representation: { name: true } },
+		creatorCommitteeMember: {
+			id: true,
+			representation: { id: true, name: true, type: true, alpha2Code: true, alpha3Code: true, faIcon: true }
+		},
 		editors: { id: true, conferenceUser: { id: true } },
 		sponsors: { id: true }
 	});
@@ -51,10 +57,13 @@
 	const myPapers = $derived(
 		(papers ?? []).filter(
 			(p) =>
-				!PUBLISHED.includes(p.status as PaperStatus) &&
+				p.status === 'WORKING_PAPER' &&
 				((myMemberId && p.creatorCommitteeMember?.id === myMemberId) ||
 					(p.editors ?? []).some((e) => e.conferenceUser?.id === myConfUserId))
 		)
+	);
+	const submittedPapers = $derived(
+		(papers ?? []).filter((p) => p.status === 'SUBMITTED')
 	);
 	const published = $derived(
 		(papers ?? []).filter((p) => PUBLISHED.includes(p.status as PaperStatus))
@@ -145,7 +154,48 @@
 			{#each myPapers as p (p.id)}
 				<a href={paperHref(p.id)} class="card bg-base-100 hover:bg-base-200 transition">
 					<div class="card-body flex-row items-center gap-3 p-3">
-						<span class="flex-1 font-medium">{p.title || m.workingPaper()}</span>
+						<div class="flex min-w-0 flex-1 flex-col">
+							<span class="font-medium">{p.title || workingPaperName(p.id)}</span>
+							{#if p.creatorCommitteeMember?.representation}
+								{@const rep = p.creatorCommitteeMember.representation}
+								<div class="text-base-content/60 mt-1 flex items-center gap-1 text-sm">
+									<Flag size="xs" representation={rep} />
+									<span>{rep.name ?? getTranslatedCountryNameFromAlpha3Code(rep.alpha3Code)}</span>
+								</div>
+							{/if}
+						</div>
+						<span class="badge badge-sm {statusBadgeClass(p.status as PaperStatus)}">
+							{statusLabel(p.status as PaperStatus)}
+						</span>
+						<i class="fas fa-chevron-right opacity-50"></i>
+					</div>
+				</a>
+			{/each}
+		{/if}
+	</section>
+
+	<!-- Submitted papers (visible to all committee members) -->
+	<section class="flex flex-col gap-2">
+		<h2 class="font-bold">{m.submittedPapers()}</h2>
+		{#if !submittedPapers.length}
+			<p class="text-base-content/50 text-sm">{m.noSubmittedPapers()}</p>
+		{:else}
+			{#each submittedPapers as p (p.id)}
+				<a href={paperHref(p.id)} class="card bg-base-100 hover:bg-base-200 transition">
+					<div class="card-body flex-row items-center gap-3 p-3">
+						<div class="flex min-w-0 flex-1 flex-col">
+							<span class="font-medium">{p.title || workingPaperName(p.id)}</span>
+							{#if p.creatorCommitteeMember?.representation}
+								{@const rep = p.creatorCommitteeMember.representation}
+								<div class="text-base-content/60 mt-1 flex items-center gap-1 text-sm">
+									<Flag size="xs" representation={rep} />
+									<span>{rep.name ?? getTranslatedCountryNameFromAlpha3Code(rep.alpha3Code)}</span>
+								</div>
+							{/if}
+						</div>
+						<span class="badge badge-ghost gap-1"
+							><i class="fas fa-handshake"></i>{p.sponsors?.length ?? 0}</span
+						>
 						<span class="badge badge-sm {statusBadgeClass(p.status as PaperStatus)}">
 							{statusLabel(p.status as PaperStatus)}
 						</span>
@@ -165,8 +215,16 @@
 			{#each published as p (p.id)}
 				<a href={paperHref(p.id)} class="card bg-base-100 hover:bg-base-200 transition">
 					<div class="card-body flex-row items-center gap-3 p-3">
-						<span class="flex-1 font-medium">{p.documentNumber || p.title || m.workingPaper()}</span
-						>
+						<div class="flex min-w-0 flex-1 flex-col">
+							<span class="font-medium">{p.documentNumber || p.title || workingPaperName(p.id)}</span>
+							{#if p.creatorCommitteeMember?.representation}
+								{@const rep = p.creatorCommitteeMember.representation}
+								<div class="text-base-content/60 mt-1 flex items-center gap-1 text-sm">
+									<Flag size="xs" representation={rep} />
+									<span>{rep.name ?? getTranslatedCountryNameFromAlpha3Code(rep.alpha3Code)}</span>
+								</div>
+							{/if}
+						</div>
 						<span class="badge badge-ghost gap-1"
 							><i class="fas fa-handshake"></i>{p.sponsors?.length ?? 0}</span
 						>

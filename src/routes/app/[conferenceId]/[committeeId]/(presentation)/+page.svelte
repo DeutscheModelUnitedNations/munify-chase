@@ -139,6 +139,8 @@
 		}
 	});
 
+	const minAmendmentSponsors = $derived(Math.ceil((committee?.totalPresent ?? 0) * 0.1));
+
 	const activePaperId = $derived(committee?.activeDraftResolutionId ?? null);
 
 	let layout = $derived(
@@ -246,6 +248,7 @@
 					totalPresent={committee.totalPresent}
 					simpleMajority={committee.simpleMajority}
 					twoThirdsMajority={committee.twoThirdsMajority}
+					{minAmendmentSponsors}
 				/>
 			</GridItem>
 		{/if}

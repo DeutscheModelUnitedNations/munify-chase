@@ -1,9 +1,10 @@
 <script lang="ts">
 	import { browser } from '$app/environment';
+	import { goto } from '$app/navigation';
 	import { m } from '$lib/paraglide/messages';
 	import { client } from '$lib/api/rumbleClient/client';
 	import { getCurrentUser } from '$lib/state/currentUser.svelte';
-	import { onDestroy } from 'svelte';
+	import { onDestroy, untrack } from 'svelte';
 	import toast from 'svelte-french-toast';
 
 	import {
@@ -18,7 +19,9 @@
 	} from '@deutschemodelunitednations/munify-resolution-editor/phrases';
 	import { svgToDataUrl } from '$lib/utils/svgToDataUrl';
 	import { getTranslatedCountryNameFromAlpha3Code } from '$lib/utils/nationTranslationHelper.svelte';
-	import { createPaperYjsClient, type PaperYjsClient } from '$lib/api/yjs/createPaperYjs.svelte';
+	import { createPaperYjsClient, type PaperYjsClient, type PresenceUserMeta } from '$lib/api/yjs/createPaperYjs.svelte';
+	import PresenceIndicator from './PresenceIndicator.svelte';
+	import ClausePresenceBadges from './ClausePresenceBadges.svelte';
 
 	import SyncBadge from './SyncBadge.svelte';
 	import ChairControlBar from './ChairControlBar.svelte';
@@ -37,6 +40,7 @@
 		type ResolutionViewer
 	} from './paperContext';
 	import { nanoid } from '$lib/helpers/nanoid';
+	import { workingPaperName } from '$lib/helpers/paperName';
 	import { launchClauseVote } from './resolutionVotes';
 	import { openVotingModal, resumeVotingModal } from '$lib/components/voting/votingModal';
 	import { downloadResolutionTypst, downloadResolutionPdf } from '$lib/utils/resolutionExport';
@@ -60,7 +64,14 @@
 		},
 		id: true,
 		conferenceUserType: true,
-		committeeMemberId: true
+		committeeMemberId: true,
+		committeeMember: {
+			representation: {
+				name: true,
+				alpha2Code: true,
+				alpha3Code: true
+			}
+		}
 	});
 
 	const viewer = $derived<ResolutionViewer>({
@@ -100,7 +111,9 @@
 		id: true,
 		name: true,
 		abbreviation: true,
+		totalPresent: true,
 		simpleMajority: true,
+		twoThirdsMajority: true,
 		activeDraftResolutionId: true,
 		activeAmendmentId: true,
 		currentOperativeIndex: true,
@@ -146,6 +159,7 @@
 	const status = $derived((paper?.status ?? 'WORKING_PAPER') as PaperStatus);
 	const currentStatusIdx = $derived(PAPER_STATUS_ORDER.indexOf(status));
 	const isDebatePhase = $derived(status === 'AMENDMENT_PHASE' || status === 'VOTING_PHASE');
+	const minAmendmentSponsors = $derived(Math.ceil((committee?.totalPresent ?? 0) * 0.1));
 
 	const amendmentOverlays = $derived(
 		isDebatePhase ? toAmendmentOverlays(amendmentRows ?? []) : undefined
@@ -202,9 +216,24 @@
 	});
 
 	// ---- access -------------------------------------------------------------
+
+	// If the paper disappears from the live query (e.g. sponsorship removed and
+	// the user had no other access), navigate back to the overview.
+	let paperEverLoaded = false;
+	$effect(() => {
+		if (paper) {
+			paperEverLoaded = true;
+		} else if (paperEverLoaded) {
+			goto(backHref);
+		}
+	});
+
+	const isCreator = $derived(
+		paper?.creatorCommitteeMember?.id != null &&
+		paper.creatorCommitteeMember.id === viewer.committeeMemberId
+	);
 	const isCreatorOrEditor = $derived(
-		(paper?.creatorCommitteeMember?.id != null &&
-			paper.creatorCommitteeMember.id === viewer.committeeMemberId) ||
+		isCreator ||
 			(paper?.editors ?? []).some((e) => e.conferenceUser?.id === viewer.conferenceUserId)
 	);
 	const canEdit = $derived(canEditPaper(status, viewer, { isCreatorOrEditor }));
@@ -213,15 +242,28 @@
 	// ---- Y.js client --------------------------------------------------------
 	let yClient = $state<PaperYjsClient | null>(null);
 	$effect(() => {
-		const presenceUser = {
-			id: viewer.userId || 'anonymous',
-			name:
-				[currentUser.givenName, currentUser.familyName].filter(Boolean).join(' ').trim() ||
-				currentUser.email ||
-				'Anonymous',
-			color: undefined
-		};
-		const created = createPaperYjsClient({ paperId, user: presenceUser });
+		// Only paperId is tracked: the client is recreated when the user navigates
+		// to a different paper. Everything else (identity, meta) is session-stable
+		// and is read once at connect time without creating reactive dependencies.
+		const pid = paperId;
+		const created = untrack(() => {
+			const presenceUser = {
+				id: currentUser.id || 'anonymous',
+				name:
+					[currentUser.givenName, currentUser.familyName].filter(Boolean).join(' ').trim() ||
+					currentUser.email ||
+					'Anonymous',
+				color: undefined
+			};
+			const presenceMeta: PresenceUserMeta = {
+				conferenceUserType:
+					(conferenceUsers?.[0]?.conferenceUserType ?? 'SPECTATOR') as PresenceUserMeta['conferenceUserType'],
+				nationName: conferenceUsers?.[0]?.committeeMember?.representation?.name ?? null,
+				alpha2Code: conferenceUsers?.[0]?.committeeMember?.representation?.alpha2Code ?? null,
+				alpha3Code: conferenceUsers?.[0]?.committeeMember?.representation?.alpha3Code ?? null
+			};
+			return createPaperYjsClient({ paperId: pid, user: presenceUser, meta: presenceMeta });
+		});
 		yClient = created;
 		return () => void created.destroy();
 	});
@@ -257,7 +299,18 @@
 	// element by traversing from the clauseAnnotations injection point.
 	function highlightClause(
 		node: HTMLElement,
-		params: { selected: boolean; current: boolean; clauseId: string; commentCount: number; amendmentCount: number }
+		params: {
+			selected: boolean;
+			current: boolean;
+			clauseId: string;
+			commentCount: number;
+			amendmentCount: number;
+			showSetCurrentBtn: boolean;
+			isCurrentClause: boolean;
+			isNextClause: boolean;
+			onSetCurrentNext?: () => void;
+			onSetCurrentOutOfOrder?: () => void;
+		}
 	) {
 		// node is inside the library's "absolute -left-2 -top-2" wrapper div, whose
 		// next sibling is the OperativeClauseEditor root element.
@@ -278,10 +331,43 @@
 		});
 		clauseEl.append(handle);
 
-		function fmt(n: number) { return n > 99 ? '99+' : String(n); }
+		// Absolutely positioned at bottom of clause — does not affect card height.
+		const setCurrentBtn = document.createElement('button');
+		setCurrentBtn.type = 'button';
+		setCurrentBtn.className = 'clause-set-current-btn';
+		clauseEl.append(setCurrentBtn);
 
 		function renderHandle(_cc: number, _ac: number) {
 			return '<i class="fas fa-chevron-right"></i>';
+		}
+
+		type BtnState = 'hidden' | 'next' | 'other';
+		let lastBtnState: BtnState | null = null;
+
+		function applyBtnState(p: typeof params) {
+			const state: BtnState =
+				!p.showSetCurrentBtn || p.isCurrentClause ? 'hidden'
+				: p.isNextClause ? 'next'
+				: 'other';
+
+			// Always keep the callbacks fresh so closures don't go stale.
+			if (state === 'next') setCurrentBtn.onclick = () => p.onSetCurrentNext?.();
+			else if (state === 'other') setCurrentBtn.onclick = () => p.onSetCurrentOutOfOrder?.();
+
+			if (state === lastBtnState) return;
+			lastBtnState = state;
+
+			if (state === 'hidden') {
+				setCurrentBtn.style.display = 'none';
+			} else if (state === 'next') {
+				setCurrentBtn.style.display = '';
+				setCurrentBtn.className = 'clause-set-current-btn clause-set-current-btn--next btn btn-xs btn-success gap-1';
+				setCurrentBtn.innerHTML = `<i class="fas fa-play"></i>${m.setAsCurrentClause()}`;
+			} else {
+				setCurrentBtn.style.display = '';
+				setCurrentBtn.className = 'clause-set-current-btn clause-set-current-btn--other btn btn-xs btn-ghost gap-1';
+				setCurrentBtn.innerHTML = '<i class="fas fa-play"></i>';
+			}
 		}
 
 		function apply(p: typeof params) {
@@ -290,6 +376,7 @@
 			clauseEl!.classList.toggle('clause-is-selected', p.selected);
 			clauseEl!.classList.toggle('clause-is-current', p.current);
 			handle.classList.toggle('is-selected', p.selected);
+			applyBtnState(p);
 		}
 
 		apply(params);
@@ -297,6 +384,7 @@
 			update: apply,
 			destroy() {
 				handle.remove();
+				setCurrentBtn.remove();
 				clauseEl!.classList.remove('clause-is-selected', 'clause-is-current');
 			}
 		};
@@ -324,6 +412,21 @@
 	});
 
 	let suggestRemoveClauseId = $state<string | null>(null);
+	let outOfOrderClauseIndex = $state<number | null>(null);
+
+	async function setCurrentClause(index: number) {
+		const committeeId = committee?.id;
+		if (!committeeId) return;
+		try {
+			await client.mutate.setCommitteeResolutionToggles({
+				__args: { committeeId, currentOperativeIndex: index },
+				id: true,
+				currentOperativeIndex: true
+			});
+		} catch (err) {
+			toast.error(err instanceof Error ? err.message : 'Failed');
+		}
+	}
 
 	async function startClauseVote(clauseId: string, clauseLabel: string) {
 		// Capture the current session ID so the $effect ignores it (only fires for new ones).
@@ -367,6 +470,8 @@
 
 	let historyOpen = $state(false);
 	let detailsOpen = $state(false);
+	let shareOpen = $state(false);
+	let presenceOpen = $state(false);
 	let previewOpen = $state(stored('chase:paper:previewOpen', true));
 
 	// ---- panel resize -------------------------------------------------------
@@ -502,7 +607,7 @@
 				{:else}
 					<div class="flex items-center gap-1">
 						<span class="truncate text-lg font-semibold">
-							{paper.documentNumber || paper.title || m.workingPaper()}
+							{paper.documentNumber || paper.title || workingPaperName(paperId)}
 						</span>
 						{#if team && status === 'SUBMITTED'}
 							<button
@@ -580,6 +685,16 @@
 						<i class="fas fa-file-pdf"></i>
 					{/if}
 				</button>
+				{#if yClient && yClient.remotePresences.length > 0}
+					<button
+						class="btn btn-ghost btn-sm gap-1.5"
+						onclick={() => (presenceOpen = true)}
+						title="Co-editors"
+					>
+						<i class="fas fa-users"></i>
+						{yClient.remotePresences.length}
+					</button>
+				{/if}
 				{#if yClient}
 					<SyncBadge
 						connectionState={yClient.connectionState}
@@ -587,12 +702,23 @@
 						wsSynced={yClient.wsSynced}
 					/>
 				{/if}
+				{#if status === 'WORKING_PAPER' && (isCreator || team)}
+					<button
+						class="btn btn-ghost btn-sm"
+						onclick={() => (shareOpen = true)}
+						title={m.shareCodes()}
+					>
+						<i class="fas fa-share-nodes"></i>
+						{m.shareCodes()}
+					</button>
+				{/if}
 				<button
 					class="btn btn-ghost btn-sm"
 					onclick={() => (detailsOpen = !detailsOpen)}
 					title={m.sponsors()}
 				>
 					<i class="fas fa-users-gear"></i>
+					{m.sponsors()}
 				</button>
 				{#if team}
 					<div class="dropdown dropdown-end">
@@ -632,17 +758,26 @@
 						{isActiveDr ? m.activeDraftResolution() : m.setActiveDr()}
 					</button>
 				{/if}
-				{#if status === 'WORKING_PAPER' && (isCreatorOrEditor || team)}
+				{#if status === 'WORKING_PAPER' && (isCreator || team)}
 					<button
 						class="btn btn-primary btn-sm"
 						disabled={submitting}
 						onclick={() => (submitConfirmOpen = true)}
 					>
+						<i class="fas fa-paper-plane"></i>
 						{m.submit()}
 					</button>
 				{/if}
 			</div>
 		</header>
+
+		<!-- Locked-paper notice: shown to creators/editors while the paper is in SUBMITTED stage -->
+		{#if !team && status === 'SUBMITTED' && isCreatorOrEditor}
+			<div role="status" class="bg-warning/10 border-warning/30 flex items-center gap-2 border-b px-4 py-2 text-sm">
+				<i class="fas fa-lock text-warning shrink-0"></i>
+				<span>{m.paperLockedAfterSubmission()}</span>
+			</div>
+		{/if}
 
 		<!-- Body: preview panel + editor + context panel -->
 		<!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
@@ -723,6 +858,7 @@
 							{headerData}
 							previewHeader={noHeader}
 							clauseAnnotations={clauseAnnotationsSnippet}
+							preambleAnnotations={preambleAnnotationsSnippet}
 						/>
 					</div>
 				{/if}
@@ -752,6 +888,7 @@
 						{viewer}
 						submissionOpen={committee.amendmentSubmissionOpen}
 						sponsoringOpen={committee.amendmentSponsoringOpen}
+						minAmendmentSponsors={minAmendmentSponsors}
 						activeAmendmentId={committee.activeAmendmentId ?? null}
 						simpleMajority={committee.simpleMajority}
 						showVoteTab={false}
@@ -799,6 +936,38 @@
 		</div>
 	{/if}
 
+	<!-- Out-of-order clause selection confirmation -->
+	{#if outOfOrderClauseIndex !== null}
+		{@const clauseIdx = outOfOrderClauseIndex}
+		<div class="modal modal-open">
+			<div class="modal-box">
+				<h3 class="text-lg font-bold">{m.selectOutOfOrderTitle()}</h3>
+				<p class="py-3">{m.selectOutOfOrderDescription()}</p>
+				<div class="modal-action">
+					<button class="btn btn-ghost" onclick={() => (outOfOrderClauseIndex = null)}>
+						{m.cancel()}
+					</button>
+					<button
+						class="btn btn-warning"
+						onclick={async () => {
+							const idx = clauseIdx;
+							outOfOrderClauseIndex = null;
+							await setCurrentClause(idx);
+						}}
+					>
+						<i class="fas fa-play"></i>
+						{m.selectOutOfOrderConfirm()}
+					</button>
+				</div>
+			</div>
+			<button
+				class="modal-backdrop"
+				aria-label={m.cancel()}
+				onclick={() => (outOfOrderClauseIndex = null)}
+			></button>
+		</div>
+	{/if}
+
 	<!-- Submit confirmation modal -->
 	{#if submitConfirmOpen}
 		<div class="modal modal-open">
@@ -823,7 +992,54 @@
 		</div>
 	{/if}
 
-	<!-- Sponsors / share codes drawer -->
+	<!-- Share codes modal (working paper stage only) -->
+	{#if shareOpen}
+		<div class="modal modal-open">
+			<div class="modal-box bg-base-200">
+				<div class="mb-3 flex items-center justify-between">
+					<h3 class="text-lg font-bold">{m.shareCodes()}</h3>
+					<button
+						class="btn btn-ghost btn-sm"
+						onclick={() => (shareOpen = false)}
+						aria-label={m.close()}
+					>
+						<i class="fas fa-xmark"></i>
+					</button>
+				</div>
+				<div class="px-4">
+					<ShareCodePanel {paperId} />
+				</div>
+			</div>
+			<button class="modal-backdrop" aria-label={m.close()} onclick={() => (shareOpen = false)}
+			></button>
+		</div>
+	{/if}
+
+	<!-- Co-editors modal -->
+	{#if presenceOpen && yClient}
+		<div class="modal modal-open">
+			<div class="modal-box">
+				<div class="mb-3 flex items-center justify-between">
+					<h3 class="text-lg font-bold">
+						<i class="fas fa-users mr-2"></i>Co-editors
+					</h3>
+					<button
+						class="btn btn-ghost btn-sm"
+						onclick={() => (presenceOpen = false)}
+						aria-label={m.close()}
+					>
+						<i class="fas fa-xmark"></i>
+					</button>
+				</div>
+				<div class="px-1">
+					<PresenceIndicator remotePresences={yClient.remotePresences} {viewer} />
+				</div>
+			</div>
+			<button class="modal-backdrop" aria-label={m.close()} onclick={() => (presenceOpen = false)}></button>
+		</div>
+	{/if}
+
+	<!-- Sponsors drawer -->
 	{#if detailsOpen}
 		<div class="modal modal-open">
 			<div class="modal-box bg-base-200">
@@ -841,12 +1057,6 @@
 					<div>
 						<SponsorPanel {paperId} committeeId={committee.id} paperStatus={status} {viewer} />
 					</div>
-					{#if isCreatorOrEditor || team}
-						<div>
-							<h4 class="mb-1 font-semibold">{m.shareCodes()}</h4>
-							<ShareCodePanel {paperId} />
-						</div>
-					{/if}
 				</div>
 			</div>
 			<button class="modal-backdrop" aria-label={m.close()} onclick={() => (detailsOpen = false)}
@@ -860,41 +1070,73 @@
 {/if}
 
 
+{#snippet preambleAnnotationsSnippet({ clause }: { clause: { id: string } })}
+	{#if yClient}
+		<ClausePresenceBadges
+			clauseId={clause.id}
+			presence={yClient.presence}
+			remotePresences={yClient.remotePresences}
+			{viewer}
+		/>
+	{/if}
+{/snippet}
+
 {#snippet clauseAnnotationsSnippet({ clause, index }: { clause: { id: string }; index: number })}
 	{@const ac = amendmentCountFor(clause.id)}
 	{@const cc = commentCountFor(clause.id)}
 	{@const existingVote = clauseVoteMap.get(clause.id)}
 	{@const outcome = existingVote?.vote?.outcome}
 	{@const isCurrent = index === committee?.currentOperativeIndex}
-	{@const clauseLabel = m.clauseN({ n: String(index + 1) })}
-	<div use:highlightClause={{ selected: selectedClauseId === clause.id, current: isCurrent && isDebatePhase, clauseId: clause.id, commentCount: cc, amendmentCount: ac }}>
-		{#if (isCurrent && isDebatePhase) || ac || cc || outcome}
-			<div
-				class="flex items-center gap-1"
-				class:opacity-100={selectedClauseId === clause.id}
-			>
-				{#if isCurrent && isDebatePhase}
-					<button class="btn btn-xs btn-secondary gap-1" onclick={() => selectClause(clause.id)}>
-						<i class="fas fa-caret-right"></i>{m.currentClause()}
-					</button>
-				{/if}
-				{#if outcome}
-					<button class="btn btn-xs gap-1 {outcome === 'ADOPTED' ? 'btn-success' : 'btn-error'}" onclick={() => selectClause(clause.id)}>
-						{outcome === 'ADOPTED' ? m.adopted() : m.rejected()}
-					</button>
-				{/if}
-				{#if ac}
-					<button class="btn btn-xs btn-warning gap-1" onclick={() => selectClauseWithTab(clause.id, 'amendments')}>
-						<i class="fas fa-pen-nib"></i>{ac}
-					</button>
-				{/if}
-				{#if cc}
-					<button class="btn btn-xs gap-1" onclick={() => selectClauseWithTab(clause.id, 'comments')}>
-						<i class="fas fa-comment"></i>{cc}
-					</button>
-				{/if}
-			</div>
-		{/if}
+	{@const isNext = index === (committee?.currentOperativeIndex ?? -1) + 1}
+	<div use:highlightClause={{
+		selected: selectedClauseId === clause.id,
+		current: isCurrent && isDebatePhase,
+		clauseId: clause.id,
+		commentCount: cc,
+		amendmentCount: ac,
+		showSetCurrentBtn: team && isDebatePhase,
+		isCurrentClause: isCurrent,
+		isNextClause: isNext,
+		onSetCurrentNext: () => setCurrentClause(index),
+		onSetCurrentOutOfOrder: () => (outOfOrderClauseIndex = index)
+	}}>
+		<div class="flex flex-col gap-0.5">
+			{#if yClient}
+				<ClausePresenceBadges
+					clauseId={clause.id}
+					presence={yClient.presence}
+					remotePresences={yClient.remotePresences}
+					{viewer}
+				/>
+			{/if}
+			{#if (isCurrent && isDebatePhase) || ac || cc || outcome}
+				<div
+					class="flex items-center gap-1"
+					class:opacity-100={selectedClauseId === clause.id}
+				>
+					{#if isCurrent && isDebatePhase}
+						<button class="btn btn-xs btn-secondary gap-1" onclick={() => selectClause(clause.id)}>
+							<i class="fas fa-caret-right"></i>{m.currentClause()}
+						</button>
+					{/if}
+					{#if outcome}
+						<button class="btn btn-xs gap-1 {outcome === 'ADOPTED' ? 'btn-success' : 'btn-error'}" onclick={() => selectClause(clause.id)}>
+							{outcome === 'ADOPTED' ? m.adopted() : m.rejected()}
+						</button>
+					{/if}
+					{#if ac}
+						<button class="btn btn-xs btn-warning gap-1" onclick={() => selectClauseWithTab(clause.id, 'amendments')}>
+							<i class="fas fa-pen-nib"></i>{ac}
+						</button>
+					{/if}
+					{#if cc}
+						<button class="btn btn-xs gap-1" onclick={() => selectClauseWithTab(clause.id, 'comments')}>
+							<i class="fas fa-comment"></i>{cc}
+						</button>
+					{/if}
+				</div>
+			{/if}
+		</div>
 	</div>
 {/snippet}
 
@@ -910,24 +1152,26 @@
 	   scroll container and never causing horizontal overflow. */
 	:global(.clause-side-handle) {
 		position: absolute;
-		right: -2rem;
+		right: -2.5rem;
 		top: 0;
 		bottom: 0;
-		width: 2rem;
+		width: 2.5rem;
 		display: flex;
 		align-items: center;
 		justify-content: center;
 		cursor: pointer;
 		background: var(--color-base-300);
 		border-radius: 0 var(--radius-box) var(--radius-box) 0;
-		font-size: 0.75rem;
+		font-size: 0.9rem;
 		color: var(--color-base-content);
-		opacity: 0.4;
+		opacity: 0.6;
 		transition: opacity 0.15s, background-color 0.15s;
 		border: none;
 	}
 	:global(.clause-side-handle:hover) {
-		opacity: 0.9;
+		opacity: 1;
+		background: var(--color-base-content);
+		color: var(--color-base-100);
 	}
 	:global(.clause-side-handle.is-selected) {
 		background: var(--color-primary);
@@ -977,12 +1221,33 @@
 		border-left: 3px solid var(--color-secondary) !important;
 	}
 
+	/* "Set as current clause" button — absolutely positioned at the bottom of each
+	   clause card so it doesn't affect card height. */
+	:global(.clause-set-current-btn) {
+		position: absolute;
+		bottom: -0.75rem;
+		left: -0.5rem;
+		z-index: 3;
+	}
+	:global(.clause-set-current-btn--other) {
+		background: var(--color-base-300) !important;
+	}
+	:global(.clause-set-current-btn--other:hover) {
+		background: var(--color-base-content) !important;
+		color: var(--color-base-100);
+	}
+
 	/* Strip the fieldset chrome so the editor blends into the panel. */
 	.editor-no-internal-preview :global(fieldset) {
 		border: none;
 		border-radius: 0;
 		background: transparent;
-		padding: 1rem 3rem 1rem 1rem;
+		padding: 1rem 3.5rem 1rem 1rem;
+	}
+
+	/* Extra vertical gap between individual operative clause cards. */
+	.editor-no-internal-preview :global(.space-y-4 > div) {
+		padding-bottom: 1.25rem;
 	}
 	.editor-no-internal-preview :global(fieldset > legend) {
 		display: none;

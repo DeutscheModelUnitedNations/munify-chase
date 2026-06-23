@@ -1,13 +1,24 @@
 <script lang="ts">
+	import { untrack } from 'svelte';
 	import { m } from '$lib/paraglide/messages';
 	import { client } from '$lib/api/rumbleClient/client';
 	import { nanoid } from '$lib/helpers/nanoid';
-	import { parseClauseFragment } from '@deutschemodelunitednations/munify-resolution-editor/res-markup';
+	import {
+		parseClauseFragment,
+		serializeClause
+	} from '@deutschemodelunitednations/munify-resolution-editor/res-markup';
 	import toast from 'svelte-french-toast';
 	import Fuse, { type IFuseOptions } from 'fuse.js';
 	import { isTeam, type AmendmentType, type ResolutionViewer } from './paperContext';
-	import { type OperativeClause, getFirstTextContent, getAllTextContent } from '@deutschemodelunitednations/munify-resolution-editor';
+	import {
+		type OperativeClause,
+		getFirstTextContent,
+		getAllTextContent,
+		OperativeParagraphEditor
+	} from '@deutschemodelunitednations/munify-resolution-editor';
+	import { englishOperativePhrases } from '@deutschemodelunitednations/munify-resolution-editor/phrases';
 	import { getTranslatedCountryNameFromAlpha3Code } from '$lib/utils/nationTranslationHelper.svelte';
+	import { getResolutionLabels } from '$lib/utils/resolutionEditorLabels';
 	import Combobox from '$lib/components/Combobox.svelte';
 	import Flag from '$lib/components/Flag.svelte';
 
@@ -49,7 +60,10 @@
 
 	$effect(() => {
 		if (open) {
-			targetClauseId = selectedClauseId;
+			// untrack so selectedClauseId is read once on open, not re-tracked as a
+			// dependency — prevents sidebar selection changes (or type changes that
+			// trigger reactive cascades) from resetting the in-modal target clause.
+			targetClauseId = untrack(() => selectedClauseId);
 			clauseSearch = '';
 		}
 	});
@@ -94,17 +108,50 @@
 
 	let type = $state<AmendmentType>('ALTER_TEXT');
 	let newContent = $state('');
-	let targetPosition = $state(0);
+	// null means "show picker"; -1 means insert at beginning; >=0 means insert after clause at that index
+	let targetPosition = $state<number | null>(null);
 	let saving = $state(false);
 
 	const needsContent = $derived(type === 'ADD' || type === 'ALTER_TEXT');
 	const needsPosition = $derived(type === 'ADD' || type === 'ALTER_POSITION');
 	const needsTargetClause = $derived(type !== 'ADD');
 
+	// Diff base for ALTER_TEXT: serialized original clause, always in sync with selection
+	const oldMarkup = $derived.by(() => {
+		if (type === 'ALTER_TEXT' && targetClauseIndex >= 0) {
+			const clause = operative[targetClauseIndex];
+			return clause ? serializeClause(clause) : '';
+		}
+		return '';
+	});
+
 	const contentError = $derived.by(() => {
 		if (!needsContent || !newContent.trim()) return null;
 		const parsed = parseClauseFragment(newContent);
 		return parsed.valid ? null : parsed.errors.map((e) => e.code).join(', ');
+	});
+
+	const canSubmit = $derived(
+		(!team || !!selectedMember) &&
+		(!needsTargetClause || !!targetClauseId) &&
+		(!needsContent || (!!newContent.trim() && !contentError)) &&
+		(!needsPosition || targetPosition !== null) &&
+		(type !== 'ALTER_TEXT' || newContent !== oldMarkup)
+	);
+
+	// Seed editor content when the target clause or type changes
+	$effect(() => {
+		if (type === 'ALTER_TEXT' && targetClauseIndex >= 0) {
+			newContent = oldMarkup;
+		} else if (type !== 'ALTER_TEXT') {
+			newContent = '';
+		}
+	});
+
+	$effect(() => {
+		if (open) {
+			targetPosition = operative.length > 0 ? operative.length - 1 : null;
+		}
 	});
 
 	async function submit() {
@@ -130,7 +177,7 @@
 					targetClauseId: needsTargetClause ? (targetClauseId ?? undefined) : undefined,
 					targetOperativeIndex: needsTargetClause ? (targetClauseIndex >= 0 ? targetClauseIndex : undefined) : undefined,
 					newContent: needsContent ? newContent : undefined,
-					targetPosition: needsPosition ? targetPosition : undefined,
+					targetPosition: needsPosition ? (targetPosition ?? -1) : undefined,
 					proposerCommitteeMemberId: team ? (selectedMember?.id ?? undefined) : undefined
 				},
 				id: true
@@ -155,7 +202,7 @@
 </script>
 
 <dialog class="modal" {open}>
-	<div class="modal-box bg-base-200 flex flex-col" style="min-height: 32rem;">
+	<div class="modal-box bg-base-200 flex flex-col w-11/12 max-w-4xl" style="min-height: 32rem;">
 		<h3 class="mb-4 text-lg font-bold">{m.proposeAmendment()}</h3>
 
 		<div class="flex flex-1 flex-col gap-4 overflow-y-auto">
@@ -255,15 +302,26 @@
 			{/if}
 
 			<!-- New content -->
-			{#if needsContent}
-				<div>
-					<textarea
-						class="textarea textarea-bordered w-full font-mono text-sm"
-						class:textarea-error={!!contentError}
-						rows="4"
-						placeholder={m.amendmentContentPlaceholder()}
-						bind:value={newContent}
-					></textarea>
+			{#if needsContent && (type !== 'ALTER_TEXT' || targetClauseId)}
+				<div class="flex flex-col gap-1">
+					{#if type === 'ALTER_TEXT'}
+						<OperativeParagraphEditor
+							bind:markup={newContent}
+							{oldMarkup}
+							showDiff={true}
+							editableOldMarkup={false}
+							operativeNumber={targetClauseIndex >= 0 ? targetClauseIndex + 1 : 1}
+							operativePhrases={englishOperativePhrases}
+							labels={getResolutionLabels()}
+						/>
+					{:else}
+						<OperativeParagraphEditor
+							bind:markup={newContent}
+							operativeNumber={targetPosition !== null ? targetPosition + 2 : 1}
+							operativePhrases={englishOperativePhrases}
+							labels={getResolutionLabels()}
+						/>
+					{/if}
 					{#if contentError}
 						<p class="text-error mt-1 text-xs">{m.invalidResMarkup()}: {contentError}</p>
 					{/if}
@@ -272,22 +330,60 @@
 
 			<!-- Target position (ADD / ALTER_POSITION) -->
 			{#if needsPosition}
-				<label class="form-control gap-1">
+				<div class="flex flex-col gap-1">
 					<span class="label-text text-sm font-medium">{m.targetPosition()}</span>
-					<input
-						type="number"
-						class="input input-bordered input-sm w-32"
-						min="0"
-						max={operativeCount}
-						bind:value={targetPosition}
-					/>
-				</label>
+					{#if targetPosition !== null}
+						{@const clause = operative[targetPosition]}
+						<div class="bg-base-100 flex items-start gap-2 rounded-lg px-3 py-2">
+							<span class="shrink-0 font-mono text-sm font-semibold opacity-60">
+								{targetPosition === -1 ? '↑' : `${targetPosition + 1}.`}
+							</span>
+							<span class="flex-1 text-sm">
+								{targetPosition === -1
+									? m.insertAtBeginning()
+									: clause
+										? m.insertAfterPresentation({ index: String(targetPosition + 1) }) + ' — ' + getFirstTextContent(clause)
+										: m.insertAtBeginning()}
+							</span>
+							<button
+								class="btn btn-ghost btn-xs btn-circle shrink-0"
+								aria-label={m.deselect()}
+								onclick={() => (targetPosition = null)}
+							>
+								<i class="fas fa-xmark text-xs"></i>
+							</button>
+						</div>
+					{:else}
+						<div class="bg-base-300 flex max-h-40 flex-col gap-1 overflow-y-auto rounded-lg p-1">
+							<button
+								class="hover:bg-base-200 flex items-start gap-2 rounded px-2 py-1.5 text-left text-sm transition-colors"
+								onclick={() => (targetPosition = -1)}
+							>
+								<span class="shrink-0 font-mono font-semibold opacity-60">↑</span>
+								<span class="flex-1">{m.insertAtBeginning()}</span>
+							</button>
+							{#each operative as clause, i (clause.id)}
+								{#if type !== 'ALTER_POSITION' || i !== targetClauseIndex}
+									<button
+										class="hover:bg-base-200 flex items-start gap-2 rounded px-2 py-1.5 text-left text-sm transition-colors"
+										onclick={() => (targetPosition = i)}
+									>
+										<span class="shrink-0 font-mono font-semibold opacity-60">{i + 1}.</span>
+										<span class="line-clamp-1 flex-1">
+											{m.insertAfterPresentation({ index: String(i + 1) })} — {getFirstTextContent(clause)}
+										</span>
+									</button>
+								{/if}
+							{/each}
+						</div>
+					{/if}
+				</div>
 			{/if}
 		</div>
 
 		<div class="modal-action">
 			<button class="btn btn-ghost" onclick={() => close()}>{m.cancel()}</button>
-			<button class="btn btn-primary" disabled={saving} onclick={submit}>
+			<button class="btn btn-primary" disabled={saving || !canSubmit} onclick={submit}>
 				{#if saving}<i class="fas fa-spinner fa-spin"></i>{/if}
 				{m.proposeAmendment()}
 			</button>

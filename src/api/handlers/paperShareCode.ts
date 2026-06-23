@@ -101,10 +101,10 @@ schemaBuilder.mutationFields((t) => ({
 		}
 	}),
 
-	redeemPaperShareCode: t.drizzleField({
-		type: ref,
+	redeemPaperShareCode: t.field({
+		type: 'Boolean',
 		args: { code: t.arg.string({ required: true }) },
-		resolve: async (query, _root, args, ctx) => {
+		resolve: async (_root, args, ctx) => {
 			const user = ctx.mustBeLoggedIn();
 			const shareCode = await db.query.paperShareCode
 				.findFirst({
@@ -148,14 +148,7 @@ schemaBuilder.mutationFields((t) => ({
 				}
 			});
 
-			return db.query.paperShareCode
-				.findFirst(
-					query(
-						ctx.abilities.paperShareCode.filter('read').merge({ where: { id: shareCode.id } }).query
-							.single
-					)
-				)
-				.then(assertFindFirstExists);
+			return true;
 		}
 	})
 }));

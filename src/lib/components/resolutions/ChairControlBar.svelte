@@ -118,10 +118,6 @@
 		}
 	}
 
-	const showClausePointer = $derived(
-		paper.status === 'AMENDMENT_PHASE' || paper.status === 'VOTING_PHASE'
-	);
-
 	function canRevertTo(status: PaperStatus, index: number) {
 		return index < currentIdx;
 	}
@@ -205,35 +201,6 @@
 			</li>
 		{/each}
 	</ul>
-
-	{#if showClausePointer}
-		<div class="flex items-center gap-1">
-			<span class="text-base-content/60 text-xs">{m.currentClause()}</span>
-			<button
-				class="btn btn-xs btn-ghost"
-				disabled={committee.currentOperativeIndex <= 0}
-				aria-label="previous clause"
-				onclick={() => setCurrentClause(Math.max(0, committee.currentOperativeIndex - 1))}
-			>
-				<i class="fas fa-chevron-left"></i>
-			</button>
-			<span class="text-sm font-semibold">
-				{Math.min(
-					committee.currentOperativeIndex + 1,
-					Math.max(operativeCount, 1)
-				)}/{operativeCount}
-			</span>
-			<button
-				class="btn btn-xs btn-ghost"
-				disabled={committee.currentOperativeIndex >= operativeCount - 1}
-				aria-label="next clause"
-				onclick={() =>
-					setCurrentClause(Math.min(operativeCount - 1, committee.currentOperativeIndex + 1))}
-			>
-				<i class="fas fa-chevron-right"></i>
-			</button>
-		</div>
-	{/if}
 
 	{#if paper.status === 'VOTING_PHASE'}
 		{@const active = committee.activeVotingSession}

@@ -17,12 +17,39 @@ import { nanoid, nanoidValidation } from '$lib/helpers/nanoid';
 import { GraphQLError } from 'graphql';
 import { readPaperJson } from '$api/yjs/server';
 import { and, count, eq, inArray } from 'drizzle-orm';
-import { toRoman } from '@deutschemodelunitednations/munify-resolution-editor/schema';
+import {
+	toRoman,
+	isClauseEmpty
+} from '@deutschemodelunitednations/munify-resolution-editor/schema';
+import type { Resolution } from '@deutschemodelunitednations/munify-resolution-editor/schema';
+
+abilityBuilder.resolutionPaper.allow('read').when((ctx) => {
+	return { where: { committee: isTeamInConference(ctx) } };
+});
+
+abilityBuilder.resolutionPaper.allow('read').when((ctx) => {
+	return { where: { ...isPaperAuthor(ctx) } };
+});
+
+abilityBuilder.resolutionPaper.allow('read').when((ctx) => {
+	const user = ctx.mustBeLoggedIn();
+	return {
+		where: {
+			sponsors: { committeeMember: { users: { user: { id: user.sub } } } }
+		}
+	};
+});
 
 abilityBuilder.resolutionPaper.allow('read').when((ctx) => {
 	return {
 		where: {
-			committee: isParticipantInConference(ctx)
+			OR: [
+				{ status: 'SUBMITTED' as const, committee: isParticipantInConference(ctx) },
+				{ status: 'DRAFT_RESOLUTION' as const, committee: isParticipantInConference(ctx) },
+				{ status: 'AMENDMENT_PHASE' as const, committee: isParticipantInConference(ctx) },
+				{ status: 'VOTING_PHASE' as const, committee: isParticipantInConference(ctx) },
+				{ status: 'FINAL' as const, committee: isParticipantInConference(ctx) }
+			]
 		}
 	};
 });
@@ -191,7 +218,25 @@ schemaBuilder.mutationFields((t) => ({
 					.then(assertFindFirstExists);
 
 				if (paper.status === 'WORKING_PAPER') {
-					// Full submission flow: requires a sponsor and snapshots content.
+					// Only the creator or a chair may submit.
+					const isChairSubmit = !!(await db.query.resolutionPaper.findFirst({
+						where: { id: args.id, committee: isTeamInConference(ctx) },
+						columns: { id: true }
+					}));
+					if (!isChairSubmit) {
+						const submitter = ctx.mustBeLoggedIn();
+						const isCreatorSubmit = !!(await db.query.resolutionPaper.findFirst({
+							where: {
+								id: args.id,
+								creatorCommitteeMember: { users: { user: { id: submitter.sub } } }
+							},
+							columns: { id: true }
+						}));
+						if (!isCreatorSubmit) {
+							throw new GraphQLError('Only the paper creator or a chair may submit this paper');
+						}
+					}
+
 					const sponsors = await db.query.paperSponsor.findMany({
 						where: { paperId: args.id }
 					});
@@ -200,6 +245,22 @@ schemaBuilder.mutationFields((t) => ({
 					}
 
 					const content = await readPaperJson(args.id);
+					const resolution = JSON.parse(content) as Resolution;
+
+					const hasPreambleContent = resolution.preamble.some((c) => c.content.trim().length > 0);
+					if (!hasPreambleContent) {
+						throw new GraphQLError(
+							'Paper must have at least one preamble clause with content before submitting'
+						);
+					}
+
+					const hasOperativeContent = resolution.operative.some((c) => !isClauseEmpty(c));
+					if (!hasOperativeContent) {
+						throw new GraphQLError(
+							'Paper must have at least one operative clause with content before submitting'
+						);
+					}
+
 					await db.transaction(async (tx) => {
 						await tx.insert(schema.paperContentSnapshot).values({
 							id: nanoid(),

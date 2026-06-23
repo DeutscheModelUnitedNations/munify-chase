@@ -5,9 +5,10 @@
 		totalPresent: number | null;
 		simpleMajority: number | null;
 		twoThirdsMajority: number | null;
+		minAmendmentSponsors?: number | null;
 	}
 
-	let { totalPresent, simpleMajority, twoThirdsMajority }: Props = $props();
+	let { totalPresent, simpleMajority, twoThirdsMajority, minAmendmentSponsors = null }: Props = $props();
 </script>
 
 {#snippet Card(cardData: {
@@ -52,4 +53,11 @@
 		faIcon: 'fa-circle-chevron-up',
 		tooltip: m.twoThirdsMajorityTooltip()
 	})}
+	{#if minAmendmentSponsors !== null}
+		{@render Card({
+			number: minAmendmentSponsors ?? 0,
+			faIcon: 'fa-file-plus',
+			tooltip: m.paperSupportThresholdTooltip()
+		})}
+	{/if}
 </div>

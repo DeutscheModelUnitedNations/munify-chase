@@ -113,6 +113,8 @@
 		}
 	});
 
+	const minAmendmentSponsors = $derived(Math.ceil((committee?.totalPresent ?? 0) * 0.1));
+
 	let role = $derived(conferenceUser?.conferenceUserType);
 	let isParticipant = $derived(role === 'DELEGATE' || role === 'NON_STATE_ACTOR');
 
@@ -202,6 +204,7 @@
 					totalPresent={committee.totalPresent}
 					simpleMajority={committee.simpleMajority}
 					twoThirdsMajority={committee.twoThirdsMajority}
+					{minAmendmentSponsors}
 				/>
 			</div>
 		</div>

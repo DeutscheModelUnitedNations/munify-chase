@@ -11,6 +11,8 @@
 	import { client } from '$lib/api/rumbleClient/client';
 	import { page } from '$app/state';
 	import AdoptionConfetti from '$lib/components/AdoptionConfetti.svelte';
+	import { goto } from '$app/navigation';
+	import { resolve } from '$app/paths';
 
 	import { getCurrentUser } from '$lib/state/currentUser.svelte';
 
@@ -21,6 +23,30 @@
 		currentUser.preferredUsername ||
 		currentUser.email ||
 		'';
+
+	// Role check first — redirect participants before making the heavy conference query.
+	const [conferenceUsersEarly, isGlobalAdmin] = await Promise.all([
+		client.query.conferenceUsers({
+			__args: {
+				where: {
+					conference: { id: page.params.conferenceId },
+					user: { id: userId }
+				}
+			},
+			id: true,
+			conferenceUserType: true
+		}),
+		client.query.isGlobalAdmin()
+	]);
+	const earlyRole = conferenceUsersEarly?.[0]?.conferenceUserType;
+	if (!isGlobalAdmin && earlyRole !== 'ADMIN' && earlyRole !== 'TEAM') {
+		goto(
+			resolve('/app/[conferenceId]/participant', {
+				conferenceId: page.params.conferenceId!
+			}),
+			{ replaceState: true }
+		);
+	}
 
 	const conference = await client.liveQuery.conference({
 		__args: { id: page.params.conferenceId! },
@@ -66,8 +92,6 @@
 
 	let currentUserRole = $derived(conferenceUsers?.[0]);
 	let role = $derived(currentUserRole?.conferenceUserType);
-
-	const isGlobalAdmin = await client.query.isGlobalAdmin();
 
 	let menubarItems = $derived(
 		buildConferenceNavItems({

@@ -69,16 +69,22 @@ schemaBuilder.mutationFields((t) => ({
 
 				pubsub.created();
 			} else {
+				const user = ctx.mustBeLoggedIn();
+				if (!user.email) throw new GraphQLError('User email required');
 				const committeeMember = await db.query.committeeMember
 					.findFirst({
 						where: {
-							...isParticipantInConference(ctx),
+							users: { userEmail: user.email },
 							committee: { resolutionPapers: { id: args.paperId } }
 						}
 					})
 					.then(assertFindFirstExists);
 
-				if (paper.status !== 'WORKING_PAPER' && paper.status !== 'SUBMITTED') {
+				if (
+					paper.status !== 'WORKING_PAPER' &&
+					paper.status !== 'SUBMITTED' &&
+					paper.status !== 'DRAFT_RESOLUTION'
+				) {
 					throw new GraphQLError('Sponsoring is not open for this paper');
 				}
 
@@ -93,6 +99,8 @@ schemaBuilder.mutationFields((t) => ({
 					.onConflictDoNothing()
 					.then(assertFirstEntryExists)
 					.then((p) => p.id);
+
+				pubsub.created();
 			}
 
 			return db.query.paperSponsor
@@ -111,6 +119,23 @@ schemaBuilder.mutationFields((t) => ({
 		type: 'Boolean',
 		args: { id: t.arg.id({ required: true }) },
 		resolve: async (_root, args, ctx) => {
+			const sponsor = await db.query.paperSponsor
+				.findFirst({ where: { id: args.id }, with: { paper: true } })
+				.then(assertFindFirstExists);
+
+			const isChair = !!(await db.query.committee.findFirst({
+				where: { ...isTeamInConference(ctx), id: sponsor.paper.committeeId }
+			}));
+
+			if (
+				!isChair &&
+				sponsor.paper.status !== 'WORKING_PAPER' &&
+				sponsor.paper.status !== 'SUBMITTED' &&
+				sponsor.paper.status !== 'DRAFT_RESOLUTION'
+			) {
+				throw new GraphQLError('Sponsoring is not open for this paper');
+			}
+
 			await db
 				.delete(schema.paperSponsor)
 				.where(

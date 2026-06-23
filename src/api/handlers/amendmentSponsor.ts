@@ -54,8 +54,8 @@ schemaBuilder.mutationFields((t) => ({
 				})
 				.then(assertFindFirstExists);
 
-			const chair = await db.query.committeeMember.findFirst({
-				where: { id: amendment.paper.committee.conferenceId, committee: isTeamInConference(ctx) },
+			const chair = await db.query.committee.findFirst({
+				where: { id: amendment.paper.committee.id, ...isTeamInConference(ctx) },
 				columns: { id: true }
 			});
 

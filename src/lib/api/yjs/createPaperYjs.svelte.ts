@@ -28,6 +28,23 @@ import type {
 
 export type YjsConnectionState = 'connecting' | 'connected' | 'disconnected' | 'error';
 
+/** Extra identity fields broadcast via awareness for presence display. */
+export interface PresenceUserMeta {
+	conferenceUserType: 'ADMIN' | 'TEAM' | 'DELEGATE' | 'NON_STATE_ACTOR' | 'SPECTATOR';
+	/** Nation display name (for DELEGATE / NON_STATE_ACTOR). */
+	nationName?: string | null;
+	/** ISO alpha-2 code for flag rendering. */
+	alpha2Code?: string | null;
+	/** ISO alpha-3 code for translated name lookup on the viewer side. */
+	alpha3Code?: string | null;
+}
+
+/** A remote peer's awareness state as seen by this client. */
+export interface RemotePresence {
+	user: PresenceUser;
+	userMeta?: PresenceUserMeta;
+}
+
 export interface PaperYjsClient {
 	doc: Y.Doc;
 	store: ResolutionStore;
@@ -38,6 +55,8 @@ export interface PaperYjsClient {
 	get wsSynced(): boolean;
 	/** Reactive: current WS state. */
 	get connectionState(): YjsConnectionState;
+	/** Reactive: remote peers currently in the awareness session (self excluded). */
+	get remotePresences(): RemotePresence[];
 	/** Tear down providers, persist, destroy doc. Returns once flushed to IDB. */
 	destroy(): Promise<void>;
 }
@@ -45,6 +64,8 @@ export interface PaperYjsClient {
 interface CreateOptions {
 	paperId: string;
 	user: PresenceUser;
+	/** Identity metadata to broadcast via awareness for presence display. */
+	meta?: PresenceUserMeta;
 }
 
 export function createPaperYjsClient(opts: CreateOptions): PaperYjsClient {
@@ -110,10 +131,31 @@ export function createPaperYjsClient(opts: CreateOptions): PaperYjsClient {
 		awareness: wsProvider.awareness
 	});
 
+	// Broadcast extra identity metadata so peers can apply display rules.
+	if (opts.meta) {
+		wsProvider.awareness.setLocalStateField('userMeta', opts.meta);
+	}
+
+	// 4. Reactive remote-presence list (self excluded).
+	let remotePresences = $state<RemotePresence[]>([]);
+
+	function refreshPresences() {
+		const states = wsProvider.awareness.getStates();
+		const localId = wsProvider.awareness.clientID;
+		remotePresences = [...states.entries()]
+			.filter(([clientId]) => clientId !== localId)
+			.map(([, state]) => state as RemotePresence)
+			.filter((s) => !!s.user);
+	}
+
+	refreshPresences();
+	wsProvider.awareness.on('change', refreshPresences);
+
 	let destroyed = false;
 	async function destroy(): Promise<void> {
 		if (destroyed) return;
 		destroyed = true;
+		wsProvider.awareness.off('change', refreshPresences);
 		try {
 			wsProvider.disconnect();
 		} catch {
@@ -140,6 +182,9 @@ export function createPaperYjsClient(opts: CreateOptions): PaperYjsClient {
 		},
 		get connectionState() {
 			return connectionState;
+		},
+		get remotePresences() {
+			return remotePresences;
 		},
 		destroy
 	};

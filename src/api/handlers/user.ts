@@ -19,14 +19,11 @@ abilityBuilder.user.allow('read').when((ctx) => {
 	};
 });
 
-// Team members can read basic identity fields (givenName, familyName) of other
-// users in their conference — needed to display comment author names.
+//  needed to display comment author names
 abilityBuilder.user.allow('read').when((ctx) => {
 	return {
 		where: {
-			conferenceMemberships: {
-				conference: isTeamInConference(ctx)
-			}
+			conferenceMemberships: isTeamInConference(ctx)
 		},
 		columns: {
 			id: true,

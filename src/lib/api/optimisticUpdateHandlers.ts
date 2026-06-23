@@ -2129,6 +2129,98 @@ export const updates: UpdatesConfig = {
 		},
 
 		// ---------------------------------------------------------------
+		// amendmentSponsor
+		// ---------------------------------------------------------------
+		addAmendmentSponsor: (result, args, cache) => {
+			const created = (result as Record<string, Record<string, unknown>>).addAmendmentSponsor;
+			if (!created?.id) return;
+			const child = { __typename: 'Amendmentsponsor', id: created.id as string };
+
+			// Update Amendment.sponsors (used by AmendmentList for count)
+			addToList(cache, { __typename: 'Amendment', id: args.amendmentId as string }, 'sponsors', child);
+
+			// Update root Query.amendmentSponsors (used by AmendmentSponsorPanel liveQuery)
+			const childKey = cache.keyOfEntity(child);
+			if (childKey) {
+				const fields = cache
+					.inspectFields('Query')
+					.filter(
+						(f) =>
+							f.fieldName === 'amendmentSponsors' &&
+							(f.arguments as { where?: { amendment?: { id?: string } } } | null)?.where
+								?.amendment?.id === (args.amendmentId as string)
+					);
+				for (const f of fields) {
+					const current = cache.resolve('Query', 'amendmentSponsors', f.arguments) as
+						| string[]
+						| null
+						| undefined;
+					if (!Array.isArray(current) || current.includes(childKey)) continue;
+					cache.link('Query', 'amendmentSponsors', f.arguments, [...current, childKey]);
+				}
+			}
+		},
+
+		removeAmendmentSponsor: (_result, args, cache) => {
+			const sponsor = { __typename: 'Amendmentsponsor', id: args.id as string };
+			const amendmentId = cache.resolve(sponsor, 'amendmentId') as string | undefined;
+			if (amendmentId) {
+				const key = cache.keyOfEntity(sponsor);
+				if (key) {
+					// Remove from Amendment.sponsors (used by AmendmentList for count)
+					removeFromList(cache, { __typename: 'Amendment', id: amendmentId }, 'sponsors', key);
+					// Remove from root Query.amendmentSponsors (used by AmendmentSponsorPanel liveQuery)
+					const fields = cache
+						.inspectFields('Query')
+						.filter(
+							(f) =>
+								f.fieldName === 'amendmentSponsors' &&
+								(f.arguments as { where?: { amendment?: { id?: string } } } | null)?.where
+									?.amendment?.id === amendmentId
+						);
+					for (const f of fields) {
+						const current = cache.resolve('Query', 'amendmentSponsors', f.arguments) as
+							| string[]
+							| null
+							| undefined;
+						if (!Array.isArray(current)) continue;
+						cache.link(
+							'Query',
+							'amendmentSponsors',
+							f.arguments,
+							current.filter((k) => k !== key)
+						);
+					}
+				}
+			}
+			cache.invalidate(sponsor);
+		},
+
+		// ---------------------------------------------------------------
+		// paperSponsor
+		// ---------------------------------------------------------------
+		addPaperSponsor: (result, args, cache) => {
+			const created = (result as Record<string, Record<string, unknown>>).addPaperSponsor;
+			if (!created?.id) return;
+			addToList(
+				cache,
+				{ __typename: 'Resolutionpaper', id: args.paperId as string },
+				'sponsors',
+				{ __typename: 'Papersponsor', id: created.id as string }
+			);
+		},
+
+		removePaperSponsor: (_result, args, cache) => {
+			const sponsor = { __typename: 'Papersponsor', id: args.id as string };
+			const paperId = cache.resolve(sponsor, 'paperId') as string | undefined;
+			if (paperId) {
+				const key = cache.keyOfEntity(sponsor);
+				if (key) removeFromList(cache, { __typename: 'Resolutionpaper', id: paperId }, 'sponsors', key);
+			}
+			cache.invalidate(sponsor);
+		},
+
+		// ---------------------------------------------------------------
 		// importDelegatorConference — too coarse to optimistically project; just
 		// invalidate the conference list so the next query refetches fresh data.
 		// ---------------------------------------------------------------

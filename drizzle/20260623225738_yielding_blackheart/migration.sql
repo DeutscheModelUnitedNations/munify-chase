@@ -71,12 +71,14 @@ ALTER TABLE "presence_event" ALTER COLUMN "type" SET DATA TYPE text;--> statemen
 DROP TYPE "presence_event_marker";--> statement-breakpoint
 CREATE TYPE "presence_event_marker" AS ENUM('AUTO_SWITCH', 'ROLL_CALL', 'NSA_SCAN', 'MANUAL');--> statement-breakpoint
 ALTER TABLE "presence_event" ALTER COLUMN "type" SET DATA TYPE "presence_event_marker" USING "type"::"presence_event_marker";--> statement-breakpoint
+ALTER TABLE "operative_clause_vote" DROP COLUMN "outcome";--> statement-breakpoint
+ALTER TABLE "voting_session" ALTER COLUMN "outcome" SET DATA TYPE text;--> statement-breakpoint
 DROP TYPE "voting_outcome";--> statement-breakpoint
 CREATE TYPE "voting_outcome" AS ENUM('ADOPTED', 'REJECTED');--> statement-breakpoint
+ALTER TABLE "voting_session" ALTER COLUMN "outcome" SET DATA TYPE "voting_outcome" USING "outcome"::"voting_outcome";--> statement-breakpoint
 ALTER TABLE "committee" DROP COLUMN "max_draft_resolutions";--> statement-breakpoint
 ALTER TABLE "committee" DROP COLUMN "current_operative_clause_id";--> statement-breakpoint
 ALTER TABLE "committee" DROP COLUMN "resolution_headline";--> statement-breakpoint
-ALTER TABLE "operative_clause_vote" DROP COLUMN "outcome";--> statement-breakpoint
 ALTER TABLE "operative_clause_vote" DROP COLUMN "votes_for";--> statement-breakpoint
 ALTER TABLE "operative_clause_vote" DROP COLUMN "votes_against";--> statement-breakpoint
 ALTER TABLE "operative_clause_vote" DROP COLUMN "votes_abstain";--> statement-breakpoint

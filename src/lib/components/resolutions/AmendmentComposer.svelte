@@ -104,7 +104,9 @@
 	};
 
 	let proposerValue = $state('');
-	const selectedMember = $derived((members ?? []).find((mem) => getMemberName(mem) === proposerValue) ?? null);
+	const selectedMember = $derived(
+		(members ?? []).find((mem) => getMemberName(mem) === proposerValue) ?? null
+	);
 
 	let type = $state<AmendmentType>('ALTER_TEXT');
 	let newContent = $state('');
@@ -133,10 +135,10 @@
 
 	const canSubmit = $derived(
 		(!team || !!selectedMember) &&
-		(!needsTargetClause || !!targetClauseId) &&
-		(!needsContent || (!!newContent.trim() && !contentError)) &&
-		(!needsPosition || targetPosition !== null) &&
-		(type !== 'ALTER_TEXT' || newContent !== oldMarkup)
+			(!needsTargetClause || !!targetClauseId) &&
+			(!needsContent || (!!newContent.trim() && !contentError)) &&
+			(!needsPosition || targetPosition !== null) &&
+			(type !== 'ALTER_TEXT' || newContent !== oldMarkup)
 	);
 
 	// Seed editor content when the target clause or type changes
@@ -175,7 +177,11 @@
 					paperId,
 					type,
 					targetClauseId: needsTargetClause ? (targetClauseId ?? undefined) : undefined,
-					targetOperativeIndex: needsTargetClause ? (targetClauseIndex >= 0 ? targetClauseIndex : undefined) : undefined,
+					targetOperativeIndex: needsTargetClause
+						? targetClauseIndex >= 0
+							? targetClauseIndex
+							: undefined
+						: undefined,
 					newContent: needsContent ? newContent : undefined,
 					targetPosition: needsPosition ? (targetPosition ?? -1) : undefined,
 					proposerCommitteeMemberId: team ? (selectedMember?.id ?? undefined) : undefined
@@ -187,7 +193,22 @@
 			proposerValue = '';
 			close();
 		} catch (err) {
-			toast.error(err instanceof Error ? err.message : 'Failed to create amendment');
+			// Network errors mean the request was queued for offline sync — the
+			// optimistic update is already visible in the list, so close the dialog
+			// and show the normal success message.
+			if (
+				err &&
+				typeof err === 'object' &&
+				'networkError' in err &&
+				(err as { networkError: unknown }).networkError
+			) {
+				toast.success(m.amendmentCreated());
+				newContent = '';
+				proposerValue = '';
+				close();
+			} else {
+				toast.error(err instanceof Error ? err.message : 'Failed to create amendment');
+			}
 		} finally {
 			saving = false;
 		}
@@ -197,7 +218,11 @@
 		{ value: 'ALTER_TEXT', label: () => m.amendmentTypeAlterText(), icon: 'fa-pen' },
 		{ value: 'DELETE', label: () => m.amendmentTypeDelete(), icon: 'fa-trash' },
 		{ value: 'ADD', label: () => m.amendmentTypeAdd(), icon: 'fa-plus' },
-		{ value: 'ALTER_POSITION', label: () => m.amendmentTypeAlterPosition(), icon: 'fa-arrows-up-down' }
+		{
+			value: 'ALTER_POSITION',
+			label: () => m.amendmentTypeAlterPosition(),
+			icon: 'fa-arrows-up-down'
+		}
 	];
 </script>
 
@@ -210,7 +235,10 @@
 			<div class="bg-base-300 flex gap-1 rounded-lg p-1">
 				{#each types as t (t.value)}
 					<button
-						class="flex flex-1 cursor-pointer items-center justify-center gap-1.5 rounded px-2 py-1.5 text-sm font-medium transition-colors {type === t.value ? 'bg-base-100 text-base-content shadow-sm' : 'text-base-content/50 hover:text-base-content'}"
+						class="flex flex-1 cursor-pointer items-center justify-center gap-1.5 rounded px-2 py-1.5 text-sm font-medium transition-colors {type ===
+						t.value
+							? 'bg-base-100 text-base-content shadow-sm'
+							: 'text-base-content/50 hover:text-base-content'}"
 						onclick={() => (type = t.value)}
 					>
 						<i class="fas {t.icon} text-xs"></i>
@@ -290,11 +318,14 @@
 									class="hover:bg-base-200 flex items-start gap-2 rounded px-2 py-1.5 text-left text-sm transition-colors"
 									onclick={() => (targetClauseId = clause.id)}
 								>
-									<span class="shrink-0 font-mono font-semibold opacity-60">{globalIndex + 1}.</span>
+									<span class="shrink-0 font-mono font-semibold opacity-60">{globalIndex + 1}.</span
+									>
 									<span class="line-clamp-1 flex-1">{preview}</span>
 								</button>
 							{:else}
-								<p class="text-base-content/50 px-2 py-3 text-center text-xs">{m.noOperativeClauses()}</p>
+								<p class="text-base-content/50 px-2 py-3 text-center text-xs">
+									{m.noOperativeClauses()}
+								</p>
 							{/each}
 						</div>
 					{/if}
@@ -342,7 +373,9 @@
 								{targetPosition === -1
 									? m.insertAtBeginning()
 									: clause
-										? m.insertAfterPresentation({ index: String(targetPosition + 1) }) + ' — ' + getFirstTextContent(clause)
+										? m.insertAfterPresentation({ index: String(targetPosition + 1) }) +
+											' — ' +
+											getFirstTextContent(clause)
 										: m.insertAtBeginning()}
 							</span>
 							<button
@@ -370,7 +403,9 @@
 									>
 										<span class="shrink-0 font-mono font-semibold opacity-60">{i + 1}.</span>
 										<span class="line-clamp-1 flex-1">
-											{m.insertAfterPresentation({ index: String(i + 1) })} — {getFirstTextContent(clause)}
+											{m.insertAfterPresentation({ index: String(i + 1) })} — {getFirstTextContent(
+												clause
+											)}
 										</span>
 									</button>
 								{/if}

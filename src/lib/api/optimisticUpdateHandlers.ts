@@ -299,9 +299,7 @@ export const optimistic: OptimisticMutationConfig = {
 			__typename: 'Committee',
 			id: args.committeeId as string,
 			activeAmendmentId: amendmentId,
-			activeAmendment: amendmentId
-				? { __typename: 'Amendment', id: amendmentId }
-				: null
+			activeAmendment: amendmentId ? { __typename: 'Amendment', id: amendmentId } : null
 		};
 	},
 
@@ -813,9 +811,7 @@ export const optimistic: OptimisticMutationConfig = {
 			__typename: 'Committee',
 			id: args.committeeId as string,
 			activeDraftResolutionId: paperId,
-			activeDraftResolution: paperId
-				? { __typename: 'Resolutionpaper', id: paperId }
-				: null
+			activeDraftResolution: paperId ? { __typename: 'Resolutionpaper', id: paperId } : null
 		};
 	},
 
@@ -853,16 +849,116 @@ export const optimistic: OptimisticMutationConfig = {
 	// -------------------------------------------------------------------------
 	// amendment.ts
 	// -------------------------------------------------------------------------
-	createAmendment: (args) => {
+	createAmendment: (args, cache) => {
 		const id = ensureId(args.id);
+		const sponsorId = nanoid();
+
+		// Chairs supply the proposer via args; delegates resolve from the cached
+		// conferenceUser row (same logic as findSelfConferenceUser).
+		let proposerCommitteeMemberId = (args.proposerCommitteeMemberId as string | undefined) ?? null;
+		if (!proposerCommitteeMemberId) {
+			const paperId = args.paperId as string;
+			const committeeId = cache.resolve(
+				{ __typename: 'Resolutionpaper', id: paperId },
+				'committeeId'
+			) as string | null | undefined;
+			if (committeeId) {
+				const conferenceId = cache.resolve(
+					{ __typename: 'Committee', id: committeeId },
+					'conferenceId'
+				) as string | null | undefined;
+				const self = findSelfConferenceUser(cache, conferenceId ?? null);
+				proposerCommitteeMemberId = self?.committeeMemberId ?? null;
+			}
+		}
+
+		// Mirror the server's auto-sponsor: write an Amendmentsponsor entity for the
+		// proposer so AmendmentList shows the correct sponsor count immediately.
+		if (proposerCommitteeMemberId) {
+			const proposerMember = readEntity<{
+				id: string;
+				representation?: {
+					id: string;
+					name?: string | null;
+					alpha2Code?: string | null;
+					alpha3Code?: string | null;
+					faIcon?: string | null;
+					type?: string | null;
+				} | null;
+			}>(
+				cache,
+				gql`
+					fragment CreateAmendmentProposer on Committeemember {
+						id
+						representation {
+							id
+							name
+							alpha2Code
+							alpha3Code
+							faIcon
+							type
+						}
+					}
+				`,
+				{ __typename: 'Committeemember', id: proposerCommitteeMemberId }
+			);
+			cache.writeFragment(
+				gql`
+					fragment CreateAmendmentSponsorEntry on Amendmentsponsor {
+						id
+						amendmentId
+						committeeMember {
+							id
+							representation {
+								id
+								name
+								alpha2Code
+								alpha3Code
+								faIcon
+								type
+							}
+						}
+					}
+				`,
+				{
+					__typename: 'Amendmentsponsor',
+					id: sponsorId,
+					amendmentId: id,
+					committeeMember: proposerMember
+				} as Record<string, unknown>
+			);
+			// Link sponsor into any already-open Query.amendmentSponsors query for
+			// this amendment (e.g. the sponsor panel was opened before the create).
+			const sponsorKey = cache.keyOfEntity({ __typename: 'Amendmentsponsor', id: sponsorId });
+			if (sponsorKey) {
+				const fields = cache
+					.inspectFields('Query')
+					.filter(
+						(f) =>
+							f.fieldName === 'amendmentSponsors' &&
+							(f.arguments as { where?: { amendment?: { id?: string } } } | null)?.where?.amendment
+								?.id === id
+					);
+				for (const f of fields) {
+					const current = cache.resolve('Query', 'amendmentSponsors', f.arguments) as
+						| string[]
+						| null
+						| undefined;
+					if (Array.isArray(current) && !current.includes(sponsorKey)) {
+						cache.link('Query', 'amendmentSponsors', f.arguments, [...current, sponsorKey]);
+					}
+				}
+			}
+		}
+
 		return {
 			__typename: 'Amendment',
 			id,
 			paperId: args.paperId as string,
 			paper: { __typename: 'Resolutionpaper', id: args.paperId as string },
-			proposerCommitteeMemberId: (args.proposerCommitteeMemberId as string | undefined) ?? null,
-			proposer: args.proposerCommitteeMemberId
-				? { __typename: 'Committeemember', id: args.proposerCommitteeMemberId as string }
+			proposerCommitteeMemberId,
+			proposer: proposerCommitteeMemberId
+				? { __typename: 'Committeemember', id: proposerCommitteeMemberId }
 				: null,
 			type: args.type as string,
 			status: (args.status as string | undefined) ?? 'PENDING',
@@ -871,7 +967,9 @@ export const optimistic: OptimisticMutationConfig = {
 			newContent: (args.newContent as string | undefined) ?? null,
 			targetPosition: (args.targetPosition as number | undefined) ?? null,
 			documentNumber: null,
-			sponsors: [],
+			sponsors: proposerCommitteeMemberId
+				? [{ __typename: 'Amendmentsponsor', id: sponsorId }]
+				: [],
 			createdAt: new Date(),
 			updatedAt: null
 		};
@@ -2313,17 +2411,27 @@ export const updates: UpdatesConfig = {
 		createResolutionPaper: (result, args, cache) => {
 			const created = (result as Record<string, Record<string, unknown>>).createResolutionPaper;
 			if (!created?.id) return;
-			addToList(cache, { __typename: 'Committee', id: args.committeeId as string }, 'resolutionPapers', {
-				__typename: 'Resolutionpaper',
-				id: created.id as string
-			});
+			addToList(
+				cache,
+				{ __typename: 'Committee', id: args.committeeId as string },
+				'resolutionPapers',
+				{
+					__typename: 'Resolutionpaper',
+					id: created.id as string
+				}
+			);
 		},
 		deleteResolutionPaper: (_result, args, cache) => {
 			const paper = { __typename: 'Resolutionpaper', id: args.id as string };
 			const key = cache.keyOfEntity(paper);
 			const committeeId = cache.resolve(paper, 'committeeId') as string | undefined;
 			if (key && committeeId) {
-				removeFromList(cache, { __typename: 'Committee', id: committeeId }, 'resolutionPapers', key);
+				removeFromList(
+					cache,
+					{ __typename: 'Committee', id: committeeId },
+					'resolutionPapers',
+					key
+				);
 			}
 			cache.invalidate(paper);
 		},
@@ -2335,7 +2443,12 @@ export const updates: UpdatesConfig = {
 			const created = (result as Record<string, Record<string, unknown>>).createResolutionComment;
 			if (!created?.id) return;
 			const child = { __typename: 'Resolutioncomment', id: created.id as string };
-			addToList(cache, { __typename: 'Resolutionpaper', id: args.paperId as string }, 'comments', child);
+			addToList(
+				cache,
+				{ __typename: 'Resolutionpaper', id: args.paperId as string },
+				'comments',
+				child
+			);
 			if (args.parentCommentId) {
 				addToList(
 					cache,
@@ -2395,12 +2508,10 @@ export const updates: UpdatesConfig = {
 		addPaperEditor: (result, args, cache) => {
 			const created = (result as Record<string, Record<string, unknown>>).addPaperEditor;
 			if (!created?.id) return;
-			addToList(
-				cache,
-				{ __typename: 'Resolutionpaper', id: args.paperId as string },
-				'editors',
-				{ __typename: 'Papereditor', id: created.id as string }
-			);
+			addToList(cache, { __typename: 'Resolutionpaper', id: args.paperId as string }, 'editors', {
+				__typename: 'Papereditor',
+				id: created.id as string
+			});
 		},
 		removePaperEditor: (_result, args, cache) => {
 			const editor = { __typename: 'Papereditor', id: args.id as string };
@@ -2502,7 +2613,12 @@ export const updates: UpdatesConfig = {
 			const child = { __typename: 'Amendmentsponsor', id: created.id as string };
 
 			// Update Amendment.sponsors (used by AmendmentList for count)
-			addToList(cache, { __typename: 'Amendment', id: args.amendmentId as string }, 'sponsors', child);
+			addToList(
+				cache,
+				{ __typename: 'Amendment', id: args.amendmentId as string },
+				'sponsors',
+				child
+			);
 
 			// Update root Query.amendmentSponsors (used by AmendmentSponsorPanel liveQuery)
 			const childKey = cache.keyOfEntity(child);
@@ -2512,8 +2628,8 @@ export const updates: UpdatesConfig = {
 					.filter(
 						(f) =>
 							f.fieldName === 'amendmentSponsors' &&
-							(f.arguments as { where?: { amendment?: { id?: string } } } | null)?.where
-								?.amendment?.id === (args.amendmentId as string)
+							(f.arguments as { where?: { amendment?: { id?: string } } } | null)?.where?.amendment
+								?.id === (args.amendmentId as string)
 					);
 				for (const f of fields) {
 					const current = cache.resolve('Query', 'amendmentSponsors', f.arguments) as
@@ -2567,12 +2683,10 @@ export const updates: UpdatesConfig = {
 		addPaperSponsor: (result, args, cache) => {
 			const created = (result as Record<string, Record<string, unknown>>).addPaperSponsor;
 			if (!created?.id) return;
-			addToList(
-				cache,
-				{ __typename: 'Resolutionpaper', id: args.paperId as string },
-				'sponsors',
-				{ __typename: 'Papersponsor', id: created.id as string }
-			);
+			addToList(cache, { __typename: 'Resolutionpaper', id: args.paperId as string }, 'sponsors', {
+				__typename: 'Papersponsor',
+				id: created.id as string
+			});
 		},
 
 		removePaperSponsor: (_result, args, cache) => {
@@ -2580,7 +2694,8 @@ export const updates: UpdatesConfig = {
 			const paperId = cache.resolve(sponsor, 'paperId') as string | undefined;
 			if (paperId) {
 				const key = cache.keyOfEntity(sponsor);
-				if (key) removeFromList(cache, { __typename: 'Resolutionpaper', id: paperId }, 'sponsors', key);
+				if (key)
+					removeFromList(cache, { __typename: 'Resolutionpaper', id: paperId }, 'sponsors', key);
 			}
 			cache.invalidate(sponsor);
 		},

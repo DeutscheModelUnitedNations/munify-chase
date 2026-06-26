@@ -30,10 +30,10 @@ schemaBuilder.mutationFields((t) => ({
 		},
 		resolve: async (query, _root, args, ctx) => {
 			await db.query.resolutionPaper
-				.findFirst(
-					ctx.abilities.resolutionPaper.filter('update').merge({ where: { id: args.paperId } })
-						.query.single
-				)
+				.findFirst({
+					where: { id: args.paperId, committee: isTeamInConference(ctx) },
+					columns: { id: true }
+				})
 				.then(assertFindFirstExists);
 
 			await db

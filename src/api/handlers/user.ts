@@ -65,6 +65,7 @@ query({ table: 'user' });
 schemaBuilder.queryFields((t) => ({
 	isGlobalAdmin: t.boolean({
 		resolve: (root, args, ctx) => {
+			ctx.mustBeLoggedIn();
 			return isGlobalAdmin(ctx);
 		}
 	}),

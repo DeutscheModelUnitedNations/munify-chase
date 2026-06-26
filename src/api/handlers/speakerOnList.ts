@@ -6,14 +6,9 @@ import { assertFindFirstExists, assertFirstEntryExists } from '@m1212e/rumble';
 import { SpeakersListRef } from './speakersList';
 import {
 	isTeamInConference,
-	isGlobalAdmin,
 	isParticipantInConference
 } from '$api/services/authHelper';
 import { nanoidValidation } from '$lib/helpers/nanoid';
-
-abilityBuilder.speakerOnList.allow(['read', 'update', 'delete']).when((ctx) => {
-	if (isGlobalAdmin(ctx)) return 'allow';
-});
 
 abilityBuilder.speakerOnList.allow('read').when((ctx) => {
 	return {

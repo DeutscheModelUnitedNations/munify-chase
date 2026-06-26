@@ -219,12 +219,26 @@
 
 	// If the paper disappears from the live query (e.g. sponsorship removed and
 	// the user had no other access), navigate back to the overview.
+	// We debounce by one microtask tick so that a transient undefined caused by
+	// a GraphQL subscription reconnect (which briefly returns no data before
+	// rehydrating from the server) does not trigger a spurious navigation that
+	// would destroy any offline Y.js edits still in the IndexedDB buffer.
 	let paperEverLoaded = false;
+	let navigateAwayTimer: ReturnType<typeof setTimeout> | null = null;
 	$effect(() => {
 		if (paper) {
 			paperEverLoaded = true;
+			if (navigateAwayTimer !== null) {
+				clearTimeout(navigateAwayTimer);
+				navigateAwayTimer = null;
+			}
 		} else if (paperEverLoaded) {
-			goto(backHref);
+			// Wait a short moment before navigating: a genuine access revocation
+			// persists, while a transient reconnect gap resolves within a tick.
+			navigateAwayTimer = setTimeout(() => {
+				navigateAwayTimer = null;
+				if (!paper) goto(backHref);
+			}, 3000);
 		}
 	});
 

@@ -77,14 +77,6 @@ export function createPaperYjsClient(opts: CreateOptions): PaperYjsClient {
 
 	// 1. Local persistence — hydrates synchronously then emits 'synced'.
 	const idbPersistence = new IndexeddbPersistence(`chase-yjs-paper-${opts.paperId}`, doc);
-	idbPersistence.once('synced', () => {
-		// Seed the root structure only if the doc is truly empty (brand-new paper).
-		// Doing this after IDB loads avoids the CRDT race where a pre-load seed's
-		// Y.Array at clock 0 can randomly win over the existing IDB array at clock 0
-		// (tie broken by random clientID), wiping the user's content.
-		jsonToYDoc(doc, createEmptyResolution(''));
-		persistenceLoaded = true;
-	});
 
 	// 2. WebSocket provider. y-websocket appends the room as a path segment;
 	// our server also reads `room` from the query string. Build a ws:// or
@@ -92,10 +84,22 @@ export function createPaperYjsClient(opts: CreateOptions): PaperYjsClient {
 	const wsProto = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
 	const wsUrl = `${wsProto}//${window.location.host}/api/yjs`;
 
+	// Start disconnected: we connect only after IDB has fully synced so that
+	// all WS updates (server content, peer deletions, etc.) are guaranteed to
+	// be written to IndexedDB. If the WS connected before IDB was ready
+	// (this.db === null in y-indexeddb), those updates would only live in
+	// memory. On component remount the IDB would load a stale snapshot and the
+	// offline edits that reference the missing WS-synced structures would become
+	// pending Y.js ops — invisible until the next WS sync. By delaying the WS
+	// connection until IDB is ready, every update is persisted from the start.
 	const wsProvider = new WebsocketProvider(wsUrl, opts.paperId, doc, {
 		params: { room: opts.paperId },
-		connect: navigator.onLine
+		connect: false
 	});
+
+	// Track whether a terminal server error (4403/4401/4500) has been received.
+	// In that case we must NOT reconnect — the server made a definitive ruling.
+	let terminalError = false;
 
 	wsProvider.on('status', (event: { status: 'connecting' | 'connected' | 'disconnected' }) => {
 		connectionState = event.status;
@@ -119,17 +123,42 @@ export function createPaperYjsClient(opts: CreateOptions): PaperYjsClient {
 			closeEvent &&
 			(closeEvent.code === 4403 || closeEvent.code === 4500 || closeEvent.code === 4401)
 		) {
+			terminalError = true;
 			wsProvider.shouldConnect = false;
 			connectionState = 'error';
 		}
 	});
 
-	// When the provider starts disconnected (navigator.onLine was false at mount
-	// time), y-websocket won't try to connect until it's told to. Wire the
-	// browser's `online` event so that coming back from full offline triggers a
-	// reconnect and the CRDT merges any locally-queued edits.
+	let destroyed = false;
+
+	// Connect the WS (and seed the doc if empty) once IDB has fully loaded.
+	// This guarantees all subsequent WS updates are saved to IndexedDB.
+	idbPersistence.whenSynced.then(() => {
+		if (destroyed) return; // client was torn down before IDB finished
+		// Seed the root structure only if the doc is truly empty (brand-new paper).
+		// Doing this after IDB loads avoids the CRDT race where a pre-load seed's
+		// Y.Array at clock 0 can randomly win over the existing IDB array at clock 0
+		// (tie broken by random clientID), wiping the user's content.
+		jsonToYDoc(doc, createEmptyResolution(''));
+		persistenceLoaded = true;
+
+		if (!terminalError) {
+			// connect() unconditionally sets shouldConnect = true internally, so
+			// this works regardless of whether we started online or offline.
+			wsProvider.connect();
+		}
+	});
+
+	// Wire the browser's `online` event so that coming back from offline
+	// triggers an immediate reconnect instead of waiting for y-websocket's
+	// exponential-backoff retry (which y-websocket does NOT self-resume on the
+	// online event — it has no window.online listener of its own).
 	function handleOnline() {
-		if (wsProvider.shouldConnect) {
+		if (!terminalError) {
+			// connect() sets shouldConnect = true and calls setupWS() only if
+			// no connection is already pending (ws === null). Safe to call
+			// unconditionally: if a pending attempt is in flight it's a no-op
+			// and that attempt will succeed now that we're online.
 			wsProvider.connect();
 		}
 	}
@@ -166,7 +195,6 @@ export function createPaperYjsClient(opts: CreateOptions): PaperYjsClient {
 	refreshPresences();
 	wsProvider.awareness.on('change', refreshPresences);
 
-	let destroyed = false;
 	async function destroy(): Promise<void> {
 		if (destroyed) return;
 		destroyed = true;

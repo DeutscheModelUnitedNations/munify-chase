@@ -188,13 +188,16 @@ schemaBuilder.mutationFields((t) => ({
 				.filter('update')
 				.merge({ where: { id: args.id } });
 
-			// documentNumber is chair-only
-			const isChair = args.documentNumber != null
+			const needsChairCheck =
+				args.documentNumber != null ||
+				(args.status != null && args.status !== 'SUBMITTED');
+			const isChair = needsChairCheck
 				? !!(await db.query.resolutionPaper.findFirst({
 						where: {
 							id: args.id,
 							committee: isTeamInConference(ctx)
-						}
+						},
+						columns: { id: true }
 					}))
 				: false;
 			if (args.documentNumber != null && !isChair) {
@@ -282,6 +285,9 @@ schemaBuilder.mutationFields((t) => ({
 						.where(updateFilter.sql.where);
 				}
 			} else if (args.status === 'DRAFT_RESOLUTION') {
+				if (!isChair) {
+					throw new GraphQLError('Only chairs may promote a paper to draft resolution');
+				}
 				const paper = await db.query.resolutionPaper
 					.findFirst(updateFilter.query.single)
 					.then(assertFindFirstExists);
@@ -325,6 +331,9 @@ schemaBuilder.mutationFields((t) => ({
 					.set(statusUpdate)
 					.where(updateFilter.sql.where);
 			} else if (args.status != null) {
+				if (!isChair) {
+					throw new GraphQLError('Only chairs may change the paper status');
+				}
 				await db
 					.update(schema.resolutionPaper)
 					.set({ status: args.status })
@@ -374,6 +383,14 @@ schemaBuilder.mutationFields((t) => ({
 			votingSessionId: t.arg.id({ required: true })
 		},
 		resolve: async (query, _root, args, ctx) => {
+			// Only chairs may conclude a vote.
+			await db.query.resolutionPaper
+				.findFirst({
+					where: { id: args.paperId, committee: isTeamInConference(ctx) },
+					columns: { id: true }
+				})
+				.then(assertFindFirstExists);
+
 			const content = await readPaperJson(args.paperId);
 			const paperForCommittee = await db.query.resolutionPaper
 				.findFirst({ where: { id: args.paperId }, columns: { committeeId: true } })

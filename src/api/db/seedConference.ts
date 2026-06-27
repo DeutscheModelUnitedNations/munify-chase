@@ -252,7 +252,9 @@ async function insertPaper(opts: {
 		state: encodeYjsState(opts.content)
 	});
 	for (const memberId of [...new Set(opts.sponsorMemberIds)]) {
-		await db.insert(schema.paperSponsor).values({ id: nanoid(), paperId, committeeMemberId: memberId });
+		await db
+			.insert(schema.paperSponsor)
+			.values({ id: nanoid(), paperId, committeeMemberId: memberId });
 	}
 	for (const snap of opts.snapshots ?? []) {
 		await db.insert(schema.paperContentSnapshot).values({
@@ -265,6 +267,43 @@ async function insertPaper(opts: {
 	return paperId;
 }
 
+type AmendmentStatus = (typeof schema.amendment.$inferInsert)['status'];
+
+async function insertAmendment(opts: {
+	paperId: string;
+	proposer: string;
+	type: (typeof schema.amendment.$inferInsert)['type'];
+	status: AmendmentStatus;
+	targetClauseId?: string;
+	targetOperativeIndex?: number;
+	targetPosition?: number;
+	newContent?: string;
+	documentNumber: string;
+	sponsorIds?: string[];
+	obsoletedByAmendmentId?: string;
+}): Promise<string> {
+	const amendId = nanoid();
+	await db.insert(schema.amendment).values({
+		id: amendId,
+		paperId: opts.paperId,
+		proposerCommitteeMemberId: opts.proposer,
+		type: opts.type,
+		status: opts.status,
+		targetClauseId: opts.targetClauseId,
+		targetOperativeIndex: opts.targetOperativeIndex,
+		targetPosition: opts.targetPosition,
+		newContent: opts.newContent,
+		documentNumber: opts.documentNumber,
+		obsoletedByAmendmentId: opts.obsoletedByAmendmentId
+	});
+	for (const memberId of opts.sponsorIds ?? [opts.proposer]) {
+		await db
+			.insert(schema.amendmentSponsor)
+			.values({ id: nanoid(), amendmentId: amendId, committeeMemberId: memberId });
+	}
+	return amendId;
+}
+
 // ─── topic content ────────────────────────────────────────────────────────────
 
 type TopicContent = { preamble: string[]; operative: string[] };
@@ -274,7 +313,7 @@ function climateFinanceContent(): TopicContent {
 		preamble: [
 			'Reaffirming the commitments made under the Paris Agreement and the Glasgow Climate Pact to limit global warming to 1.5 °C and to support the most vulnerable nations in their adaptation efforts,',
 			'Recognizing that developing countries, particularly Small Island Developing States (SIDS) and Least Developed Countries (LDCs), bear disproportionate climate impacts despite contributing least to cumulative global emissions,',
-			'Deeply concerned by the estimated $400 billion annual gap in climate adaptation financing identified in UNEP\'s Adaptation Gap Report 2023,',
+			"Deeply concerned by the estimated $400 billion annual gap in climate adaptation financing identified in UNEP's Adaptation Gap Report 2023,",
 			'Welcoming the establishment of the Loss and Damage Fund at COP28 and urging its prompt operationalization with adequate, predictable and grant-based financing,',
 			'Noting with concern that fewer than 15 per cent of current climate finance flows are directed toward adaptation, the remainder being allocated to mitigation activities,'
 		],
@@ -357,7 +396,12 @@ function getTopicContent(agendaTitle: string): TopicContent {
 	if (lower.includes('conflict') || lower.includes('root cause') || lower.includes('peace')) {
 		return conflictRootCausesContent();
 	}
-	if (lower.includes('tech') || lower.includes('digital') || lower.includes('cyber') || lower.includes('ai')) {
+	if (
+		lower.includes('tech') ||
+		lower.includes('digital') ||
+		lower.includes('cyber') ||
+		lower.includes('ai')
+	) {
 		return techAndPeaceContent();
 	}
 	// fallback
@@ -418,6 +462,12 @@ async function seedResolutionPapers() {
 		const pick = (n: number, offset = 0) =>
 			Array.from({ length: n }, (_, i) => delegates[(offset + i) % delegates.length].id);
 
+		// How many sponsors are needed for an amendment to meet the support threshold
+		const thresholdCount = Math.max(
+			1,
+			Math.ceil((delegates.length * (committee.paperSupportThreshold ?? 10)) / 100)
+		);
+
 		for (let itemIdx = 0; itemIdx < agendaItems.length; itemIdx++) {
 			const agendaItem = agendaItems[itemIdx];
 			const isActive = agendaItem.id === committee.activeAgendaItemId;
@@ -426,7 +476,11 @@ async function seedResolutionPapers() {
 			const { preamble, operative } = getTopicContent(agendaItem.title);
 
 			// Shorter preamble/operative for working papers; full for DRs and above.
-			const wpContent = buildResolution(committee.name, preamble.slice(0, 3), operative.slice(0, 3));
+			const wpContent = buildResolution(
+				committee.name,
+				preamble.slice(0, 3),
+				operative.slice(0, 3)
+			);
 			const drContent = buildResolution(committee.name, preamble, operative);
 
 			console.info(`    [${agendaItem.title}${isActive ? ' — active' : ''}]`);
@@ -441,6 +495,49 @@ async function seedResolutionPapers() {
 				content: wpContent,
 				sponsorMemberIds: pick(3, 0)
 			});
+			// Amendments on WORKING_PAPER — all PENDING (drafting stage, nothing official yet)
+			if (delegates.length > 2) {
+				await insertAmendment({
+					paperId: wpId,
+					proposer: delegates[1 % delegates.length].id,
+					type: 'ALTER_TEXT',
+					status: 'PENDING',
+					targetClauseId: wpContent.operative[0].id,
+					targetOperativeIndex: 0,
+					newContent: operative[0].replace(
+						';',
+						', with particular attention to the needs of the most vulnerable nations;'
+					),
+					documentNumber: `${abbr}/${roman}/WP.ALT.1`,
+					sponsorIds: [delegates[1 % delegates.length].id]
+				});
+			}
+			if (delegates.length > 3) {
+				await insertAmendment({
+					paperId: wpId,
+					proposer: delegates[2 % delegates.length].id,
+					type: 'DELETE',
+					status: 'PENDING',
+					targetClauseId: wpContent.operative[1 % wpContent.operative.length].id,
+					targetOperativeIndex: 1 % wpContent.operative.length,
+					documentNumber: `${abbr}/${roman}/WP.DEL.1`,
+					sponsorIds: [delegates[2 % delegates.length].id, delegates[3 % delegates.length].id]
+				});
+			}
+			if (delegates.length > 4) {
+				await insertAmendment({
+					paperId: wpId,
+					proposer: delegates[3 % delegates.length].id,
+					type: 'ADD',
+					status: 'PENDING',
+					targetOperativeIndex: 2,
+					targetPosition: 2,
+					newContent:
+						'Emphasizes the importance of transparent and accountable implementation mechanisms at all levels;',
+					documentNumber: `${abbr}/${roman}/WP.ADD.1`,
+					sponsorIds: []
+				});
+			}
 			console.info(`      WORKING_PAPER (${wpId})`);
 
 			// ── SUBMITTED ─────────────────────────────────────────────────────
@@ -467,6 +564,78 @@ async function seedResolutionPapers() {
 					authorConferenceUserId: adminCU.id,
 					content: 'Solid structure. Please tighten the preambulatory language before promotion.',
 					visibility: 'TEAM_ONLY'
+				});
+			}
+			// Amendments on SUBMITTED paper — mix of PENDING and SUBMITTED
+			if (delegates.length > 2) {
+				await insertAmendment({
+					paperId: subId,
+					proposer: delegates[1 % delegates.length].id,
+					type: 'ALTER_TEXT',
+					status: 'SUBMITTED',
+					targetClauseId: submittedContent.operative[0].id,
+					targetOperativeIndex: 0,
+					newContent: operative[0].replace(
+						';',
+						', consistent with the principle of common but differentiated responsibilities and respective capabilities;'
+					),
+					documentNumber: `${abbr}/${roman}/SUB.ALT.1`,
+					sponsorIds: [delegates[1 % delegates.length].id, delegates[2 % delegates.length].id]
+				});
+			}
+			if (delegates.length > 4) {
+				await insertAmendment({
+					paperId: subId,
+					proposer: delegates[3 % delegates.length].id,
+					type: 'ALTER_TEXT',
+					status: 'SUBMITTED',
+					targetClauseId: submittedContent.operative[1 % submittedContent.operative.length].id,
+					targetOperativeIndex: 1 % submittedContent.operative.length,
+					newContent: operative[1 % operative.length].replace(
+						';',
+						', with a minimum allocation of 50 per cent directed to the Least Developed Countries;'
+					),
+					documentNumber: `${abbr}/${roman}/SUB.ALT.2`,
+					sponsorIds: [delegates[3 % delegates.length].id, delegates[4 % delegates.length].id]
+				});
+			}
+			if (delegates.length > 5) {
+				await insertAmendment({
+					paperId: subId,
+					proposer: delegates[4 % delegates.length].id,
+					type: 'DELETE',
+					status: 'SUBMITTED',
+					targetClauseId: submittedContent.operative[2 % submittedContent.operative.length].id,
+					targetOperativeIndex: 2 % submittedContent.operative.length,
+					documentNumber: `${abbr}/${roman}/SUB.DEL.1`,
+					sponsorIds: [delegates[4 % delegates.length].id, delegates[5 % delegates.length].id]
+				});
+			}
+			if (delegates.length > 6) {
+				await insertAmendment({
+					paperId: subId,
+					proposer: delegates[5 % delegates.length].id,
+					type: 'ADD',
+					status: 'PENDING',
+					targetOperativeIndex: 3,
+					targetPosition: 3,
+					newContent:
+						'Requests the Secretary-General to provide technical assistance to developing countries in the implementation of commitments under this resolution;',
+					documentNumber: `${abbr}/${roman}/SUB.ADD.1`,
+					sponsorIds: [delegates[5 % delegates.length].id]
+				});
+			}
+			if (delegates.length > 7) {
+				await insertAmendment({
+					paperId: subId,
+					proposer: delegates[6 % delegates.length].id,
+					type: 'ALTER_POSITION',
+					status: 'PENDING',
+					targetClauseId: submittedContent.operative[0].id,
+					targetOperativeIndex: 0,
+					targetPosition: submittedContent.operative.length - 1,
+					documentNumber: `${abbr}/${roman}/SUB.POS.1`,
+					sponsorIds: []
 				});
 			}
 			console.info(`      SUBMITTED (${subId})`);
@@ -509,10 +678,15 @@ async function seedResolutionPapers() {
 					status: 'SUBMITTED',
 					targetClauseId: drContent.operative[0].id,
 					targetOperativeIndex: 0,
-					newContent: operative[0].replace(';', ', taking into account the principle of common but differentiated responsibilities;'),
+					newContent: operative[0].replace(
+						';',
+						', taking into account the principle of common but differentiated responsibilities;'
+					),
 					documentNumber: `${abbr}/${roman}/ALT.1`
 				});
-				await db.insert(schema.amendmentSponsor).values({ id: nanoid(), amendmentId: amendId, committeeMemberId: proposer });
+				await db
+					.insert(schema.amendmentSponsor)
+					.values({ id: nanoid(), amendmentId: amendId, committeeMemberId: proposer });
 			}
 			// DELETE + PENDING — 2 sponsors
 			if (delegates.length > 5) {
@@ -529,8 +703,12 @@ async function seedResolutionPapers() {
 					targetOperativeIndex: 1,
 					documentNumber: `${abbr}/${roman}/DEL.1`
 				});
-				await db.insert(schema.amendmentSponsor).values({ id: nanoid(), amendmentId: amendId, committeeMemberId: proposer });
-				await db.insert(schema.amendmentSponsor).values({ id: nanoid(), amendmentId: amendId, committeeMemberId: cosponsor });
+				await db
+					.insert(schema.amendmentSponsor)
+					.values({ id: nanoid(), amendmentId: amendId, committeeMemberId: proposer });
+				await db
+					.insert(schema.amendmentSponsor)
+					.values({ id: nanoid(), amendmentId: amendId, committeeMemberId: cosponsor });
 			}
 			// ADD + PENDING — inserts a new clause at position 2
 			if (delegates.length > 6) {
@@ -544,10 +722,13 @@ async function seedResolutionPapers() {
 					status: 'PENDING',
 					targetOperativeIndex: 2,
 					targetPosition: 2,
-					newContent: 'Emphasizes the need for transparent reporting mechanisms that allow civil society to monitor state compliance with commitments made under this resolution;',
+					newContent:
+						'Emphasizes the need for transparent reporting mechanisms that allow civil society to monitor state compliance with commitments made under this resolution;',
 					documentNumber: `${abbr}/${roman}/ADD.1`
 				});
-				await db.insert(schema.amendmentSponsor).values({ id: nanoid(), amendmentId: amendId, committeeMemberId: proposer });
+				await db
+					.insert(schema.amendmentSponsor)
+					.values({ id: nanoid(), amendmentId: amendId, committeeMemberId: proposer });
 			}
 			// ALTER_POSITION + PENDING — moves clause 2 to position 0
 			if (delegates.length > 7) {
@@ -564,7 +745,133 @@ async function seedResolutionPapers() {
 					targetPosition: 0,
 					documentNumber: `${abbr}/${roman}/POS.1`
 				});
-				await db.insert(schema.amendmentSponsor).values({ id: nanoid(), amendmentId: amendId, committeeMemberId: proposer });
+				await db
+					.insert(schema.amendmentSponsor)
+					.values({ id: nanoid(), amendmentId: amendId, committeeMemberId: proposer });
+			}
+			// ALTER_TEXT + PENDING — 0 sponsors (proposer only, no support collected yet)
+			if (delegates.length > 8) {
+				const amendId = nanoid();
+				await db.insert(schema.amendment).values({
+					id: amendId,
+					paperId: drId,
+					proposerCommitteeMemberId: delegates[8 % delegates.length].id,
+					type: 'ALTER_TEXT',
+					status: 'PENDING',
+					targetClauseId: drContent.operative[2 % drContent.operative.length].id,
+					targetOperativeIndex: 2,
+					newContent: operative[2 % operative.length].replace(
+						';',
+						', ensuring full transparency and public accountability mechanisms;'
+					),
+					documentNumber: `${abbr}/${roman}/ALT.2`
+				});
+				// Intentionally no amendmentSponsor row — zero supporters
+			}
+			// DELETE + SUBMITTED — sponsors clearly above threshold (well-supported amendment)
+			if (delegates.length > 9) {
+				const amendId = nanoid();
+				const p = delegates[9 % delegates.length].id;
+				await db.insert(schema.amendment).values({
+					id: amendId,
+					paperId: drId,
+					proposerCommitteeMemberId: p,
+					type: 'DELETE',
+					status: 'SUBMITTED',
+					targetClauseId: drContent.operative[drContent.operative.length > 1 ? 1 : 0].id,
+					targetOperativeIndex: drContent.operative.length > 1 ? 1 : 0,
+					documentNumber: `${abbr}/${roman}/DEL.2`
+				});
+				// Add sponsors well above threshold
+				const aboveThresholdCount = Math.min(thresholdCount + 3, delegates.length - 9);
+				for (let i = 0; i < aboveThresholdCount; i++) {
+					await db.insert(schema.amendmentSponsor).values({
+						id: nanoid(),
+						amendmentId: amendId,
+						committeeMemberId: delegates[(9 + i) % delegates.length].id
+					});
+				}
+			}
+
+			// More amendments on the DR — denser coverage
+			if (delegates.length > 10) {
+				await insertAmendment({
+					paperId: drId,
+					proposer: delegates[10 % delegates.length].id,
+					type: 'ALTER_TEXT',
+					status: 'SUBMITTED',
+					targetClauseId: drContent.operative[2 % drContent.operative.length].id,
+					targetOperativeIndex: 2 % drContent.operative.length,
+					newContent: operative[2 % operative.length].replace(
+						';',
+						', with an explicit timeline and accountability framework;'
+					),
+					documentNumber: `${abbr}/${roman}/ALT.3`,
+					sponsorIds: [
+						delegates[10 % delegates.length].id,
+						delegates[11 % delegates.length].id,
+						delegates[12 % delegates.length].id
+					]
+				});
+			}
+			if (delegates.length > 12) {
+				await insertAmendment({
+					paperId: drId,
+					proposer: delegates[11 % delegates.length].id,
+					type: 'ALTER_TEXT',
+					status: 'SUBMITTED',
+					targetClauseId: drContent.operative[0].id,
+					targetOperativeIndex: 0,
+					newContent: operative[0].replace(
+						';',
+						', including through innovative instruments such as green bonds and debt-for-climate swaps;'
+					),
+					documentNumber: `${abbr}/${roman}/ALT.4`,
+					sponsorIds: [delegates[11 % delegates.length].id]
+				});
+			}
+			if (delegates.length > 13) {
+				await insertAmendment({
+					paperId: drId,
+					proposer: delegates[12 % delegates.length].id,
+					type: 'ADD',
+					status: 'SUBMITTED',
+					targetOperativeIndex: drContent.operative.length,
+					targetPosition: drContent.operative.length,
+					newContent:
+						'Stresses the need for simplified access modalities to climate funds, removing bureaucratic barriers that disproportionately hinder the smallest and most vulnerable states;',
+					documentNumber: `${abbr}/${roman}/ADD.2`,
+					sponsorIds: [delegates[12 % delegates.length].id, delegates[13 % delegates.length].id]
+				});
+			}
+			if (delegates.length > 14) {
+				await insertAmendment({
+					paperId: drId,
+					proposer: delegates[13 % delegates.length].id,
+					type: 'ALTER_TEXT',
+					status: 'PENDING',
+					targetClauseId: drContent.operative[1 % drContent.operative.length].id,
+					targetOperativeIndex: 1 % drContent.operative.length,
+					newContent: operative[1 % operative.length].replace(
+						';',
+						', subject to the sovereign right of states to determine their own development pathways;'
+					),
+					documentNumber: `${abbr}/${roman}/ALT.5`,
+					sponsorIds: [delegates[13 % delegates.length].id]
+				});
+			}
+			if (delegates.length > 15) {
+				await insertAmendment({
+					paperId: drId,
+					proposer: delegates[14 % delegates.length].id,
+					type: 'ALTER_POSITION',
+					status: 'SUBMITTED',
+					targetClauseId: drContent.operative[drContent.operative.length > 2 ? 2 : 0].id,
+					targetOperativeIndex: drContent.operative.length > 2 ? 2 : 0,
+					targetPosition: 0,
+					documentNumber: `${abbr}/${roman}/POS.2`,
+					sponsorIds: [delegates[14 % delegates.length].id, delegates[15 % delegates.length].id]
+				});
 			}
 
 			// Comments on the DR — all visibility/clause/thread combinations
@@ -618,7 +925,8 @@ async function seedResolutionPapers() {
 					id: rootCommentId,
 					paperId: drId,
 					authorConferenceUserId: delegateCUs[2].id,
-					content: 'We propose adding a reference to the Secretary-General\'s report A/79/123 in the preamble.',
+					content:
+						"We propose adding a reference to the Secretary-General's report A/79/123 in the preamble.",
 					clauseId: drContent.preamble[0].id,
 					visibility: 'PUBLIC'
 				});
@@ -682,117 +990,599 @@ async function seedResolutionPapers() {
 				const apOp = apContent.operative;
 				const apPP = apContent.preamble;
 
+				// Captures for amendmentReviewItems below
+				let acceptedAmendId: string | null = null;
+				const pendingAmendIds: string[] = [];
+
 				// ADD + CONSENSUS_ADOPTED — applied, 1 sponsor
 				if (delegates.length > 4) {
 					const amendId = nanoid();
 					await db.insert(schema.amendment).values({
-						id: amendId, paperId: apId,
+						id: amendId,
+						paperId: apId,
 						proposerCommitteeMemberId: delegates[4 % delegates.length].id,
-						type: 'ADD', status: 'CONSENSUS_ADOPTED',
-						targetOperativeIndex: 2, targetPosition: 3,
-						newContent: 'Also encourages Member States to share best practices and technical expertise through South-South and triangular cooperation mechanisms;',
+						type: 'ADD',
+						status: 'CONSENSUS_ADOPTED',
+						targetOperativeIndex: 2,
+						targetPosition: 3,
+						newContent:
+							'Also encourages Member States to share best practices and technical expertise through South-South and triangular cooperation mechanisms;',
 						documentNumber: `${abbr}/${roman}/ADD.1`
 					});
-					await db.insert(schema.amendmentSponsor).values({ id: nanoid(), amendmentId: amendId, committeeMemberId: delegates[4 % delegates.length].id });
+					await db
+						.insert(schema.amendmentSponsor)
+						.values({
+							id: nanoid(),
+							amendmentId: amendId,
+							committeeMemberId: delegates[4 % delegates.length].id
+						});
 				}
 				// DELETE + REJECTED — 1 sponsor
 				if (delegates.length > 5) {
 					const amendId = nanoid();
 					await db.insert(schema.amendment).values({
-						id: amendId, paperId: apId,
+						id: amendId,
+						paperId: apId,
 						proposerCommitteeMemberId: delegates[5 % delegates.length].id,
-						type: 'DELETE', status: 'REJECTED',
-						targetClauseId: apOp[1 % apOp.length].id, targetOperativeIndex: 1,
+						type: 'DELETE',
+						status: 'REJECTED',
+						targetClauseId: apOp[1 % apOp.length].id,
+						targetOperativeIndex: 1,
 						documentNumber: `${abbr}/${roman}/DEL.1`
 					});
-					await db.insert(schema.amendmentSponsor).values({ id: nanoid(), amendmentId: amendId, committeeMemberId: delegates[5 % delegates.length].id });
+					await db
+						.insert(schema.amendmentSponsor)
+						.values({
+							id: nanoid(),
+							amendmentId: amendId,
+							committeeMemberId: delegates[5 % delegates.length].id
+						});
 				}
 				// ALTER_TEXT + ACCEPTED — 3 sponsors
 				if (delegates.length > 8) {
 					const amendId = nanoid();
+					acceptedAmendId = amendId;
 					const proposer = delegates[6 % delegates.length].id;
 					await db.insert(schema.amendment).values({
-						id: amendId, paperId: apId,
+						id: amendId,
+						paperId: apId,
 						proposerCommitteeMemberId: proposer,
-						type: 'ALTER_TEXT', status: 'ACCEPTED',
-						targetClauseId: apOp[2 % apOp.length].id, targetOperativeIndex: 2,
-						newContent: operative[2 % operative.length].replace(';', ', with particular attention to gender-responsive and youth-inclusive approaches;'),
+						type: 'ALTER_TEXT',
+						status: 'ACCEPTED',
+						targetClauseId: apOp[2 % apOp.length].id,
+						targetOperativeIndex: 2,
+						newContent: operative[2 % operative.length].replace(
+							';',
+							', with particular attention to gender-responsive and youth-inclusive approaches;'
+						),
 						documentNumber: `${abbr}/${roman}/ALT.2`
 					});
 					for (const idx of [6, 7, 8]) {
-						await db.insert(schema.amendmentSponsor).values({ id: nanoid(), amendmentId: amendId, committeeMemberId: delegates[idx % delegates.length].id });
+						await db
+							.insert(schema.amendmentSponsor)
+							.values({
+								id: nanoid(),
+								amendmentId: amendId,
+								committeeMemberId: delegates[idx % delegates.length].id
+							});
 					}
 				}
 				// ALTER_POSITION + WITHDRAWN — 1 sponsor
 				if (delegates.length > 9) {
 					const amendId = nanoid();
 					await db.insert(schema.amendment).values({
-						id: amendId, paperId: apId,
+						id: amendId,
+						paperId: apId,
 						proposerCommitteeMemberId: delegates[9 % delegates.length].id,
-						type: 'ALTER_POSITION', status: 'WITHDRAWN',
-						targetClauseId: apOp[0].id, targetOperativeIndex: 0, targetPosition: 4,
+						type: 'ALTER_POSITION',
+						status: 'WITHDRAWN',
+						targetClauseId: apOp[0].id,
+						targetOperativeIndex: 0,
+						targetPosition: 4,
 						documentNumber: `${abbr}/${roman}/POS.2`
 					});
-					await db.insert(schema.amendmentSponsor).values({ id: nanoid(), amendmentId: amendId, committeeMemberId: delegates[9 % delegates.length].id });
+					await db
+						.insert(schema.amendmentSponsor)
+						.values({
+							id: nanoid(),
+							amendmentId: amendId,
+							committeeMemberId: delegates[9 % delegates.length].id
+						});
 				}
 				// DELETE + SUBMITTED — 2 sponsors
 				if (delegates.length > 11) {
 					const amendId = nanoid();
 					const p = delegates[10 % delegates.length].id;
 					await db.insert(schema.amendment).values({
-						id: amendId, paperId: apId,
+						id: amendId,
+						paperId: apId,
 						proposerCommitteeMemberId: p,
-						type: 'DELETE', status: 'SUBMITTED',
-						targetClauseId: apOp[3 % apOp.length].id, targetOperativeIndex: 3,
+						type: 'DELETE',
+						status: 'SUBMITTED',
+						targetClauseId: apOp[3 % apOp.length].id,
+						targetOperativeIndex: 3,
 						documentNumber: `${abbr}/${roman}/DEL.2`
 					});
-					await db.insert(schema.amendmentSponsor).values({ id: nanoid(), amendmentId: amendId, committeeMemberId: p });
-					await db.insert(schema.amendmentSponsor).values({ id: nanoid(), amendmentId: amendId, committeeMemberId: delegates[11 % delegates.length].id });
+					await db
+						.insert(schema.amendmentSponsor)
+						.values({ id: nanoid(), amendmentId: amendId, committeeMemberId: p });
+					await db
+						.insert(schema.amendmentSponsor)
+						.values({
+							id: nanoid(),
+							amendmentId: amendId,
+							committeeMemberId: delegates[11 % delegates.length].id
+						});
 				}
-				// ADD + PENDING — no sponsors yet
+				// ADD + SUBMITTED — used as review item subject (State 2)
 				if (delegates.length > 12) {
 					const amendId = nanoid();
+					pendingAmendIds.push(amendId);
+					const p = delegates[12 % delegates.length].id;
 					await db.insert(schema.amendment).values({
-						id: amendId, paperId: apId,
-						proposerCommitteeMemberId: delegates[12 % delegates.length].id,
-						type: 'ADD', status: 'PENDING',
-						targetOperativeIndex: 5, targetPosition: 5,
-						newContent: 'Calls upon the international community to ensure that climate finance reaches the most vulnerable communities without bureaucratic delay;',
+						id: amendId,
+						paperId: apId,
+						proposerCommitteeMemberId: p,
+						type: 'ADD',
+						status: 'SUBMITTED',
+						targetOperativeIndex: 5,
+						targetPosition: 5,
+						newContent:
+							'Calls upon the international community to ensure that climate finance reaches the most vulnerable communities without bureaucratic delay;',
 						documentNumber: `${abbr}/${roman}/ADD.2`
 					});
+					await db
+						.insert(schema.amendmentSponsor)
+						.values({ id: nanoid(), amendmentId: amendId, committeeMemberId: p });
 				}
-				// ALTER_TEXT + PENDING — targets preamble (no targetClauseId to test that path), no sponsors
+				// ALTER_TEXT + SUBMITTED — used as review item subject (State 3)
 				if (delegates.length > 13) {
 					const amendId = nanoid();
+					pendingAmendIds.push(amendId);
+					const p = delegates[13 % delegates.length].id;
 					await db.insert(schema.amendment).values({
-						id: amendId, paperId: apId,
-						proposerCommitteeMemberId: delegates[13 % delegates.length].id,
-						type: 'ALTER_TEXT', status: 'PENDING',
+						id: amendId,
+						paperId: apId,
+						proposerCommitteeMemberId: p,
+						type: 'ALTER_TEXT',
+						status: 'SUBMITTED',
 						targetClauseId: apPP[0].id,
-						newContent: 'Reaffirming the purposes and principles enshrined in the Charter of the United Nations and the indispensable role of multilateral cooperation,',
+						newContent:
+							'Reaffirming the purposes and principles enshrined in the Charter of the United Nations and the indispensable role of multilateral cooperation,',
 						documentNumber: `${abbr}/${roman}/ALT.3`
 					});
+					await db
+						.insert(schema.amendmentSponsor)
+						.values({ id: nanoid(), amendmentId: amendId, committeeMemberId: p });
 				}
-				// ALTER_POSITION + SUBMITTED — moves last op clause to front
+				// ALTER_POSITION + SUBMITTED — 1 sponsor (moves last op clause to front)
 				if (delegates.length > 14) {
 					const amendId = nanoid();
 					const p = delegates[14 % delegates.length].id;
 					await db.insert(schema.amendment).values({
-						id: amendId, paperId: apId,
+						id: amendId,
+						paperId: apId,
 						proposerCommitteeMemberId: p,
-						type: 'ALTER_POSITION', status: 'SUBMITTED',
+						type: 'ALTER_POSITION',
+						status: 'SUBMITTED',
 						targetClauseId: apOp[apOp.length - 1].id,
 						targetOperativeIndex: apOp.length - 1,
 						targetPosition: 0,
 						documentNumber: `${abbr}/${roman}/POS.3`
 					});
-					await db.insert(schema.amendmentSponsor).values({ id: nanoid(), amendmentId: amendId, committeeMemberId: p });
+					await db
+						.insert(schema.amendmentSponsor)
+						.values({ id: nanoid(), amendmentId: amendId, committeeMemberId: p });
+				}
+
+				// ── Threshold-testing scenarios ──────────────────────────────────
+
+				// ALTER_TEXT + PENDING — 1 sponsor (below threshold for all but the smallest committees)
+				if (delegates.length > 40) {
+					const amendId = nanoid();
+					pendingAmendIds.push(amendId);
+					const p = delegates[40 % delegates.length].id;
+					await db.insert(schema.amendment).values({
+						id: amendId,
+						paperId: apId,
+						proposerCommitteeMemberId: p,
+						type: 'ALTER_TEXT',
+						status: 'PENDING',
+						targetClauseId: apOp[apOp.length > 3 ? 3 : 0].id,
+						targetOperativeIndex: apOp.length > 3 ? 3 : 0,
+						newContent: operative[(apOp.length > 3 ? 3 : 0) % operative.length].replace(
+							';',
+							', while respecting the principle of national sovereignty and non-interference;'
+						),
+						documentNumber: `${abbr}/${roman}/ALT.4`
+					});
+					// 1 sponsor — clearly below threshold for large committees (e.g. GA needs ~19)
+					await db
+						.insert(schema.amendmentSponsor)
+						.values({ id: nanoid(), amendmentId: amendId, committeeMemberId: p });
+				}
+
+				// ADD + PENDING — exactly thresholdCount sponsors (right at the threshold, ready to submit)
+				if (delegates.length > 50 + thresholdCount) {
+					const amendId = nanoid();
+					pendingAmendIds.push(amendId);
+					const p = delegates[50 % delegates.length].id;
+					await db.insert(schema.amendment).values({
+						id: amendId,
+						paperId: apId,
+						proposerCommitteeMemberId: p,
+						type: 'ADD',
+						status: 'PENDING',
+						targetOperativeIndex: 1,
+						targetPosition: 1,
+						newContent:
+							'Requests the Secretariat to compile a biennial progress review and present findings to the Assembly at its next regular session;',
+						documentNumber: `${abbr}/${roman}/ADD.3`
+					});
+					// Exactly threshold sponsors — the minimum needed
+					for (let i = 0; i < thresholdCount; i++) {
+						await db.insert(schema.amendmentSponsor).values({
+							id: nanoid(),
+							amendmentId: amendId,
+							committeeMemberId: delegates[(50 + i) % delegates.length].id
+						});
+					}
+				}
+
+				// DELETE + SUBMITTED — 0 sponsors (submitted but never collected support)
+				if (delegates.length > 70) {
+					const amendId = nanoid();
+					const p = delegates[70 % delegates.length].id;
+					await db.insert(schema.amendment).values({
+						id: amendId,
+						paperId: apId,
+						proposerCommitteeMemberId: p,
+						type: 'DELETE',
+						status: 'SUBMITTED',
+						targetClauseId: apOp[apOp.length > 4 ? 4 : 0].id,
+						targetOperativeIndex: apOp.length > 4 ? 4 : 0,
+						documentNumber: `${abbr}/${roman}/DEL.3`
+					});
+					// No sponsors — 0 supporters (edge case: submitted without collecting any support)
+				}
+
+				// ALTER_POSITION + SUBMITTED — sponsors well above threshold (strongly supported)
+				if (delegates.length > 80 + thresholdCount * 2) {
+					const amendId = nanoid();
+					const p = delegates[80 % delegates.length].id;
+					await db.insert(schema.amendment).values({
+						id: amendId,
+						paperId: apId,
+						proposerCommitteeMemberId: p,
+						type: 'ALTER_POSITION',
+						status: 'SUBMITTED',
+						targetClauseId: apOp[0].id,
+						targetOperativeIndex: 0,
+						targetPosition: apOp.length - 1,
+						documentNumber: `${abbr}/${roman}/POS.4`
+					});
+					// Sponsors 2× above threshold
+					const aboveCount = Math.min(thresholdCount * 2 + 2, delegates.length - 80);
+					for (let i = 0; i < aboveCount; i++) {
+						await db.insert(schema.amendmentSponsor).values({
+							id: nanoid(),
+							amendmentId: amendId,
+							committeeMemberId: delegates[(80 + i) % delegates.length].id
+						});
+					}
+				}
+
+				// ── Review-scenario amendments ────────────────────────────────────────────────
+				// Created specifically to give each amendment review state a seeded subject.
+				// Uses modulo wrapping so they work even in small committees.
+
+				let reviewObsolete1AmendId: string | null = null; // OBSOLESCENCE, unresolved — ALTER_TEXT same clause
+				let reviewObsolete2AmendId: string | null = null; // OBSOLESCENCE, resolved → WITHDRAWN — DELETE same clause
+				let reviewObsolete3AmendId: string | null = null; // OBSOLESCENCE, unresolved — ALTER_TEXT same clause, alt rewrite
+				let reviewObsolete4AmendId: string | null = null; // OBSOLESCENCE, unresolved — DELETE same clause, competing DELETE
+				let reviewRewrite1AmendId: string | null = null; // REWRITE, unresolved — ADD contradicts gender language
+				let reviewRewrite2AmendId: string | null = null; // REWRITE, unresolved — ALTER_TEXT adds redundant gender language
+				let reviewRewrite3AmendId: string | null = null; // REWRITE, unresolved — ALTER_TEXT references stale clause wording
+				let reviewRewrite4AmendId: string | null = null; // REWRITE, resolved, custom manual edit
+				let reviewRewrite5AmendId: string | null = null; // REWRITE, resolved, kept original — conflicts with 30-day window (minor; chair accepted risk)
+				let reviewRewrite6AmendId: string | null = null; // REWRITE, unresolved — ALTER_TEXT contradicts gender/youth focus
+				let reviewRewrite7AmendId: string | null = null; // REWRITE, unresolved — ALTER_TEXT quotes old OP2 language
+				let reviewRewrite8AmendId: string | null = null; // REWRITE, unresolved — ALTER_TEXT on OP1 sets ≥45-day floor, contradicts 30-day OP3
+
+				// RW.1 — OBSOLESCENCE: targets the same clause (apOp[2]) as the accepted ALT.2 with competing text
+				// Direct clause conflict → AI should flag as likely obsolete
+				{
+					const amendId = nanoid();
+					reviewObsolete1AmendId = amendId;
+					const p = delegates[15 % delegates.length].id;
+					await db.insert(schema.amendment).values({
+						id: amendId,
+						paperId: apId,
+						proposerCommitteeMemberId: p,
+						type: 'ALTER_TEXT',
+						status: 'SUBMITTED',
+						targetClauseId: apOp[2 % apOp.length].id,
+						targetOperativeIndex: 2 % apOp.length,
+						newContent: operative[2 % operative.length].replace(
+							';',
+							', with priority given to Small Island Developing States and Least Developed Countries and without imposing additional reporting requirements on recipients;'
+						),
+						documentNumber: `${abbr}/${roman}/RW.1`
+					});
+					await db
+						.insert(schema.amendmentSponsor)
+						.values({ id: nanoid(), amendmentId: amendId, committeeMemberId: p });
+				}
+
+				// RW.2 — OBSOLESCENCE resolved → WITHDRAWN: DELETE on the same clause (apOp[2]) just altered by ALT.2
+				// Chair ruled it obsolete — can't delete a clause that was already substantively rewritten
+				{
+					const amendId = nanoid();
+					reviewObsolete2AmendId = amendId;
+					const p = delegates[16 % delegates.length].id;
+					await db.insert(schema.amendment).values({
+						id: amendId,
+						paperId: apId,
+						proposerCommitteeMemberId: p,
+						type: 'DELETE',
+						status: 'SUBMITTED',
+						targetClauseId: apOp[2 % apOp.length].id,
+						targetOperativeIndex: 2 % apOp.length,
+						documentNumber: `${abbr}/${roman}/RW.2`
+					});
+					await db
+						.insert(schema.amendmentSponsor)
+						.values({ id: nanoid(), amendmentId: amendId, committeeMemberId: p });
+				}
+
+				// RW.3 — REWRITE: ADD that explicitly contradicts the gender-responsive language added by ALT.2
+				// Inserts a clause affirming the Facility shall operate without gender-disaggregated requirements
+				{
+					const amendId = nanoid();
+					reviewRewrite1AmendId = amendId;
+					const p = delegates[17 % delegates.length].id;
+					await db.insert(schema.amendment).values({
+						id: amendId,
+						paperId: apId,
+						proposerCommitteeMemberId: p,
+						type: 'ADD',
+						status: 'SUBMITTED',
+						targetOperativeIndex: 3,
+						targetPosition: 3,
+						newContent:
+							'Affirms that the Climate Adaptation Rapid Response Facility shall operate on the basis of purely technical and needs-based criteria, without imposing gender-disaggregated reporting obligations on recipient Member States;',
+						documentNumber: `${abbr}/${roman}/RW.3`
+					});
+					await db
+						.insert(schema.amendmentSponsor)
+						.values({ id: nanoid(), amendmentId: amendId, committeeMemberId: p });
+				}
+
+				// RW.4 — REWRITE: ALTER_TEXT on apOp[1] adding "gender-responsive and youth-inclusive" language
+				// Now redundant — ALT.2 already introduced identical phrasing in apOp[2]
+				{
+					const amendId = nanoid();
+					reviewRewrite2AmendId = amendId;
+					const p = delegates[18 % delegates.length].id;
+					await db.insert(schema.amendment).values({
+						id: amendId,
+						paperId: apId,
+						proposerCommitteeMemberId: p,
+						type: 'ALTER_TEXT',
+						status: 'SUBMITTED',
+						targetClauseId: apOp[1 % apOp.length].id,
+						targetOperativeIndex: 1 % apOp.length,
+						newContent: operative[1 % operative.length].replace(
+							';',
+							', with particular attention to gender-responsive and youth-inclusive approaches;'
+						),
+						documentNumber: `${abbr}/${roman}/RW.4`
+					});
+					await db
+						.insert(schema.amendmentSponsor)
+						.values({ id: nanoid(), amendmentId: amendId, committeeMemberId: p });
+				}
+
+				// RW.5 — REWRITE: ALTER_TEXT on apOp[3] that references the original (pre-ALT.2) wording of apOp[2]
+				// The quoted rationale is now factually stale after the clause was amended
+				{
+					const amendId = nanoid();
+					reviewRewrite3AmendId = amendId;
+					const p = delegates[19 % delegates.length].id;
+					await db.insert(schema.amendment).values({
+						id: amendId,
+						paperId: apId,
+						proposerCommitteeMemberId: p,
+						type: 'ALTER_TEXT',
+						status: 'SUBMITTED',
+						targetClauseId: apOp[3 % apOp.length].id,
+						targetOperativeIndex: 3 % apOp.length,
+						newContent: operative[3 % operative.length].replace(
+							';',
+							', noting that OP2 establishes the Facility without gender-specific conditionalities;'
+						),
+						documentNumber: `${abbr}/${roman}/RW.5`
+					});
+					await db
+						.insert(schema.amendmentSponsor)
+						.values({ id: nanoid(), amendmentId: amendId, committeeMemberId: p });
+				}
+
+				// RW.6 — REWRITE resolved via custom manual edit
+				// ALTER_TEXT on apOp[4] referencing the Rapid Response Facility "as originally proposed" — stale after ALT.2
+				{
+					const amendId = nanoid();
+					reviewRewrite4AmendId = amendId;
+					const p = delegates[20 % delegates.length].id;
+					await db.insert(schema.amendment).values({
+						id: amendId,
+						paperId: apId,
+						proposerCommitteeMemberId: p,
+						type: 'ALTER_TEXT',
+						status: 'SUBMITTED',
+						targetClauseId: apOp[4 % apOp.length].id,
+						targetOperativeIndex: 4 % apOp.length,
+						newContent: operative[4 % operative.length].replace(
+							';',
+							', drawing on the original mandate of the Climate Adaptation Rapid Response Facility as proposed by the primary sponsors, without reference to gender or age-specific criteria;'
+						),
+						documentNumber: `${abbr}/${roman}/RW.6`
+					});
+					await db
+						.insert(schema.amendmentSponsor)
+						.values({ id: nanoid(), amendmentId: amendId, committeeMemberId: p });
+				}
+
+				// RW.7 — REWRITE resolved via skip / keep original (no amendmentRevision)
+				// ADD proposing a 60-day review window for Rapid Response Facility disbursements — conflicts with the
+				// 30-day emergency timeline in amended apOp[2]; chair reviewed AI concern but kept original text
+				{
+					const amendId = nanoid();
+					reviewRewrite5AmendId = amendId;
+					const p = delegates[21 % delegates.length].id;
+					await db.insert(schema.amendment).values({
+						id: amendId,
+						paperId: apId,
+						proposerCommitteeMemberId: p,
+						type: 'ADD',
+						status: 'SUBMITTED',
+						targetOperativeIndex: 5,
+						targetPosition: 5,
+						newContent:
+							'Recommends that the Climate Adaptation Rapid Response Facility conduct a mandatory 60-day due-diligence review before releasing funds to any recipient state, to prevent misappropriation;',
+						documentNumber: `${abbr}/${roman}/RW.7`
+					});
+					await db
+						.insert(schema.amendmentSponsor)
+						.values({ id: nanoid(), amendmentId: amendId, committeeMemberId: p });
+				}
+
+				// RW.12 — REWRITE: ALTER_TEXT on apOp[0] mandating a minimum 45-day disbursement floor
+				// Directly conflicts with the ≤30-day emergency window of the Rapid Response Facility in amended apOp[2]
+				{
+					const amendId = nanoid();
+					reviewRewrite8AmendId = amendId;
+					const p = delegates[26 % delegates.length].id;
+					await db.insert(schema.amendment).values({
+						id: amendId,
+						paperId: apId,
+						proposerCommitteeMemberId: p,
+						type: 'ALTER_TEXT',
+						status: 'SUBMITTED',
+						targetClauseId: apOp[0].id,
+						targetOperativeIndex: 0,
+						newContent: operative[0].replace(
+							';',
+							', provided that all disbursement mechanisms maintain a minimum processing period of no less than 45 days per transaction to ensure proper fiduciary due diligence;'
+						),
+						documentNumber: `${abbr}/${roman}/RW.12`
+					});
+					await db
+						.insert(schema.amendmentSponsor)
+						.values({ id: nanoid(), amendmentId: amendId, committeeMemberId: p });
+				}
+
+				// RW.8 — OBSOLESCENCE: second competing ALTER_TEXT on apOp[2] with an entirely different rewrite
+				// Proposes financial transparency focus instead — directly conflicts on same clause as ALT.2
+				{
+					const amendId = nanoid();
+					reviewObsolete3AmendId = amendId;
+					const p = delegates[22 % delegates.length].id;
+					await db.insert(schema.amendment).values({
+						id: amendId,
+						paperId: apId,
+						proposerCommitteeMemberId: p,
+						type: 'ALTER_TEXT',
+						status: 'SUBMITTED',
+						targetClauseId: apOp[2 % apOp.length].id,
+						targetOperativeIndex: 2 % apOp.length,
+						newContent: operative[2 % operative.length].replace(
+							';',
+							', subject to transparent financial accountability mechanisms and independent third-party auditing of disbursements;'
+						),
+						documentNumber: `${abbr}/${roman}/RW.8`
+					});
+					await db
+						.insert(schema.amendmentSponsor)
+						.values({ id: nanoid(), amendmentId: amendId, committeeMemberId: p });
+				}
+
+				// RW.9 — OBSOLESCENCE: a second DELETE targeting apOp[2], the same clause already altered
+				// Competes directly with the accepted ALTER_TEXT — can't delete what was just rewritten
+				{
+					const amendId = nanoid();
+					reviewObsolete4AmendId = amendId;
+					const p = delegates[23 % delegates.length].id;
+					await db.insert(schema.amendment).values({
+						id: amendId,
+						paperId: apId,
+						proposerCommitteeMemberId: p,
+						type: 'DELETE',
+						status: 'SUBMITTED',
+						targetClauseId: apOp[2 % apOp.length].id,
+						targetOperativeIndex: 2 % apOp.length,
+						documentNumber: `${abbr}/${roman}/RW.9`
+					});
+					await db
+						.insert(schema.amendmentSponsor)
+						.values({ id: nanoid(), amendmentId: amendId, committeeMemberId: p });
+				}
+
+				// RW.10 — REWRITE: ALTER_TEXT on apOp[5] that explicitly rejects gender-specific criteria
+				// Directly contradicts the "gender-responsive and youth-inclusive approaches" in amended apOp[2]
+				{
+					const amendId = nanoid();
+					reviewRewrite6AmendId = amendId;
+					const p = delegates[24 % delegates.length].id;
+					await db.insert(schema.amendment).values({
+						id: amendId,
+						paperId: apId,
+						proposerCommitteeMemberId: p,
+						type: 'ALTER_TEXT',
+						status: 'SUBMITTED',
+						targetClauseId: apOp[5 % apOp.length].id,
+						targetOperativeIndex: 5 % apOp.length,
+						newContent: operative[5 % operative.length].replace(
+							';',
+							', reaffirming that climate finance should remain free from gender-specific or age-based conditionalities that may impede access by recipient states;'
+						),
+						documentNumber: `${abbr}/${roman}/RW.10`
+					});
+					await db
+						.insert(schema.amendmentSponsor)
+						.values({ id: nanoid(), amendmentId: amendId, committeeMemberId: p });
+				}
+
+				// RW.11 — REWRITE: ALTER_TEXT on apOp[4] that quotes "OP2 as originally proposed"
+				// References the pre-amendment text of apOp[2] — factually stale after ALT.2
+				{
+					const amendId = nanoid();
+					reviewRewrite7AmendId = amendId;
+					const p = delegates[25 % delegates.length].id;
+					await db.insert(schema.amendment).values({
+						id: amendId,
+						paperId: apId,
+						proposerCommitteeMemberId: p,
+						type: 'ALTER_TEXT',
+						status: 'SUBMITTED',
+						targetClauseId: apOp[4 % apOp.length].id,
+						targetOperativeIndex: 4 % apOp.length,
+						newContent: operative[4 % operative.length].replace(
+							';',
+							', building on the Rapid Response Facility as established in OP2 prior to amendment, with a mandate limited to emergency disbursements only;'
+						),
+						documentNumber: `${abbr}/${roman}/RW.11`
+					});
+					await db
+						.insert(schema.amendmentSponsor)
+						.values({ id: nanoid(), amendmentId: amendId, committeeMemberId: p });
 				}
 
 				// Comments on AMENDMENT_PHASE paper
 				if (adminCU) {
 					await db.insert(schema.resolutionComment).values({
-						id: nanoid(), paperId: apId,
+						id: nanoid(),
+						paperId: apId,
 						authorConferenceUserId: adminCU.id,
 						content: 'Eight amendments pending — check the order of votes carefully.',
 						visibility: 'TEAM_ONLY'
@@ -800,9 +1590,11 @@ async function seedResolutionPapers() {
 				}
 				if (delegateCUs[0]) {
 					await db.insert(schema.resolutionComment).values({
-						id: nanoid(), paperId: apId,
+						id: nanoid(),
+						paperId: apId,
 						authorConferenceUserId: delegateCUs[0].id,
-						content: 'We formally withdraw our support for DEL.2 — the underlying clause should remain.',
+						content:
+							'We formally withdraw our support for DEL.2 — the underlying clause should remain.',
 						visibility: 'PUBLIC'
 					});
 				}
@@ -810,20 +1602,222 @@ async function seedResolutionPapers() {
 				if (delegateCUs[1] && delegateCUs[2]) {
 					const rootId = nanoid();
 					await db.insert(schema.resolutionComment).values({
-						id: rootId, paperId: apId,
+						id: rootId,
+						paperId: apId,
 						authorConferenceUserId: delegateCUs[1].id,
-						content: 'OP1 is the crux of this resolution — any amendment here must be voted separately.',
+						content:
+							'OP1 is the crux of this resolution — any amendment here must be voted separately.',
 						clauseId: apOp[0].id,
 						visibility: 'PUBLIC'
 					});
 					await db.insert(schema.resolutionComment).values({
-						id: nanoid(), paperId: apId,
+						id: nanoid(),
+						paperId: apId,
 						authorConferenceUserId: delegateCUs[2].id,
 						content: 'Agreed. We will call for a separate vote on ALT.2.',
 						clauseId: apOp[0].id,
 						visibility: 'PUBLIC',
 						parentCommentId: rootId
 					});
+				}
+
+				// AmendmentReviewItems — distinct review states seeded without pre-populated AI output.
+				// States 1–4 = OBSOLESCENCE phase; states 5–10 = REWRITE phase.
+				// AI fields are left empty; the AI will populate them at runtime.
+				if (acceptedAmendId) {
+					// ── State 1: OBSOLESCENCE, unresolved — competing ALTER_TEXT on same clause ──
+					if (reviewObsolete1AmendId) {
+						await db.insert(schema.amendmentReviewItem).values({
+							id: nanoid(),
+							paperId: apId,
+							triggerAmendmentId: acceptedAmendId,
+							subjectAmendmentId: reviewObsolete1AmendId,
+							phase: 'OBSOLESCENCE',
+							resolved: false
+						});
+					}
+
+					// ── State 2: OBSOLESCENCE, unresolved — pending amendment on unrelated clause ──
+					if (pendingAmendIds[0]) {
+						await db.insert(schema.amendmentReviewItem).values({
+							id: nanoid(),
+							paperId: apId,
+							triggerAmendmentId: acceptedAmendId,
+							subjectAmendmentId: pendingAmendIds[0],
+							phase: 'OBSOLESCENCE',
+							resolved: false
+						});
+					}
+
+					// ── State 3: OBSOLESCENCE, unresolved — pending amendment on unrelated clause ──
+					if (pendingAmendIds[1]) {
+						await db.insert(schema.amendmentReviewItem).values({
+							id: nanoid(),
+							paperId: apId,
+							triggerAmendmentId: acceptedAmendId,
+							subjectAmendmentId: pendingAmendIds[1],
+							phase: 'OBSOLESCENCE',
+							resolved: false
+						});
+					}
+
+					// ── State 4: OBSOLESCENCE, resolved — DELETE on same clause ruled obsolete → WITHDRAWN ──
+					if (reviewObsolete2AmendId) {
+						await db
+							.update(schema.amendment)
+							.set({ status: 'WITHDRAWN', obsoletedByAmendmentId: acceptedAmendId })
+							.where(eq(schema.amendment.id, reviewObsolete2AmendId));
+						await db.insert(schema.amendmentReviewItem).values({
+							id: nanoid(),
+							paperId: apId,
+							triggerAmendmentId: acceptedAmendId,
+							subjectAmendmentId: reviewObsolete2AmendId,
+							phase: 'OBSOLESCENCE',
+							resolved: true
+						});
+					}
+
+					// ── State 5: REWRITE, unresolved — ADD contradicting gender-responsive language ──
+					if (reviewRewrite1AmendId) {
+						await db.insert(schema.amendmentReviewItem).values({
+							id: nanoid(),
+							paperId: apId,
+							triggerAmendmentId: acceptedAmendId,
+							subjectAmendmentId: reviewRewrite1AmendId,
+							phase: 'REWRITE',
+							resolved: false
+						});
+					}
+
+					// ── State 6: REWRITE, unresolved — ALTER_TEXT adding redundant gender language ──
+					if (reviewRewrite2AmendId) {
+						await db.insert(schema.amendmentReviewItem).values({
+							id: nanoid(),
+							paperId: apId,
+							triggerAmendmentId: acceptedAmendId,
+							subjectAmendmentId: reviewRewrite2AmendId,
+							phase: 'REWRITE',
+							resolved: false
+						});
+					}
+
+					// ── State 7: REWRITE, unresolved — ALTER_TEXT referencing stale clause wording ──
+					if (reviewRewrite3AmendId) {
+						await db.insert(schema.amendmentReviewItem).values({
+							id: nanoid(),
+							paperId: apId,
+							triggerAmendmentId: acceptedAmendId,
+							subjectAmendmentId: reviewRewrite3AmendId,
+							phase: 'REWRITE',
+							resolved: false
+						});
+					}
+
+					// ── State 8: REWRITE, unresolved — ALTER_TEXT on OP1 mandating ≥45-day floor, conflicts with ≤30-day OP3 ──
+					if (reviewRewrite8AmendId) {
+						await db.insert(schema.amendmentReviewItem).values({
+							id: nanoid(),
+							paperId: apId,
+							triggerAmendmentId: acceptedAmendId,
+							subjectAmendmentId: reviewRewrite8AmendId,
+							phase: 'REWRITE',
+							resolved: false
+						});
+					}
+
+					// ── State 9: REWRITE, resolved — chair rewrote the stale OP2 reference to match the amended language ──
+					if (reviewRewrite4AmendId) {
+						const reviewItemId9 = nanoid();
+						// originalText9 mirrors RW.6's newContent exactly (what the amendment proposed before the chair's edit)
+						const originalText9 = operative[4 % operative.length].replace(
+							';',
+							', drawing on the original mandate of the Climate Adaptation Rapid Response Facility as proposed by the primary sponsors, without reference to gender or age-specific criteria;'
+						);
+						const editedText9 = operative[4 % operative.length].replace(
+							';',
+							', in a manner consistent with the Climate Adaptation Rapid Response Facility as amended, including its gender-responsive and youth-inclusive mandate;'
+						);
+						await db.insert(schema.amendmentReviewItem).values({
+							id: reviewItemId9,
+							paperId: apId,
+							triggerAmendmentId: acceptedAmendId,
+							subjectAmendmentId: reviewRewrite4AmendId,
+							phase: 'REWRITE',
+							resolved: true
+						});
+						await db.insert(schema.amendmentRevision).values({
+							id: nanoid(),
+							amendmentId: reviewRewrite4AmendId,
+							previousContent: originalText9,
+							newContent: editedText9,
+							causedByAmendmentId: acceptedAmendId,
+							reviewItemId: reviewItemId9
+						});
+						await db
+							.update(schema.amendment)
+							.set({ newContent: editedText9 })
+							.where(eq(schema.amendment.id, reviewRewrite4AmendId));
+					}
+
+					// ── State 10: REWRITE, resolved — chair kept the original text ──
+					if (reviewRewrite5AmendId) {
+						await db.insert(schema.amendmentReviewItem).values({
+							id: nanoid(),
+							paperId: apId,
+							triggerAmendmentId: acceptedAmendId,
+							subjectAmendmentId: reviewRewrite5AmendId,
+							phase: 'REWRITE',
+							resolved: true
+						});
+					}
+
+					// ── State 11: OBSOLESCENCE, unresolved — second competing ALTER_TEXT on same clause ──
+					if (reviewObsolete3AmendId) {
+						await db.insert(schema.amendmentReviewItem).values({
+							id: nanoid(),
+							paperId: apId,
+							triggerAmendmentId: acceptedAmendId,
+							subjectAmendmentId: reviewObsolete3AmendId,
+							phase: 'OBSOLESCENCE',
+							resolved: false
+						});
+					}
+
+					// ── State 12: OBSOLESCENCE, unresolved — second DELETE on same clause ──
+					if (reviewObsolete4AmendId) {
+						await db.insert(schema.amendmentReviewItem).values({
+							id: nanoid(),
+							paperId: apId,
+							triggerAmendmentId: acceptedAmendId,
+							subjectAmendmentId: reviewObsolete4AmendId,
+							phase: 'OBSOLESCENCE',
+							resolved: false
+						});
+					}
+
+					// ── State 13: REWRITE, unresolved — ALTER_TEXT rejecting gender-specific criteria ──
+					if (reviewRewrite6AmendId) {
+						await db.insert(schema.amendmentReviewItem).values({
+							id: nanoid(),
+							paperId: apId,
+							triggerAmendmentId: acceptedAmendId,
+							subjectAmendmentId: reviewRewrite6AmendId,
+							phase: 'REWRITE',
+							resolved: false
+						});
+					}
+
+					// ── State 14: REWRITE, unresolved — ALTER_TEXT referencing pre-amendment OP2 ──
+					if (reviewRewrite7AmendId) {
+						await db.insert(schema.amendmentReviewItem).values({
+							id: nanoid(),
+							paperId: apId,
+							triggerAmendmentId: acceptedAmendId,
+							subjectAmendmentId: reviewRewrite7AmendId,
+							phase: 'REWRITE',
+							resolved: false
+						});
+					}
 				}
 				console.info(`      AMENDMENT_PHASE ${drDocNum2} (${apId})`);
 
@@ -844,7 +1838,8 @@ async function seedResolutionPapers() {
 				// TEAM_ONLY chair comment on VOTING_PHASE
 				if (adminCU) {
 					await db.insert(schema.resolutionComment).values({
-						id: nanoid(), paperId: vpId,
+						id: nanoid(),
+						paperId: vpId,
 						authorConferenceUserId: adminCU.id,
 						content: 'Roll call vote in progress — record every vote individually.',
 						visibility: 'TEAM_ONLY'
@@ -853,10 +1848,83 @@ async function seedResolutionPapers() {
 				// PUBLIC paper-level delegate comment on VOTING_PHASE
 				if (delegateCUs[0]) {
 					await db.insert(schema.resolutionComment).values({
-						id: nanoid(), paperId: vpId,
+						id: nanoid(),
+						paperId: vpId,
 						authorConferenceUserId: delegateCUs[0].id,
 						content: 'Our delegation requests an explanation of vote before the vote is recorded.',
 						visibility: 'PUBLIC'
+					});
+				}
+				// Amendments on VOTING_PHASE — all processed (voting is underway, no new amendments possible)
+				if (delegates.length > 3) {
+					await insertAmendment({
+						paperId: vpId,
+						proposer: delegates[2 % delegates.length].id,
+						type: 'ALTER_TEXT',
+						status: 'ACCEPTED',
+						targetClauseId: vpContent.operative[0].id,
+						targetOperativeIndex: 0,
+						newContent: operative[0].replace(
+							';',
+							', including through dedicated fast-track disbursement windows for declared climate emergencies;'
+						),
+						documentNumber: `${abbr}/${roman}/VP.ALT.1`,
+						sponsorIds: [delegates[2 % delegates.length].id, delegates[3 % delegates.length].id]
+					});
+				}
+				if (delegates.length > 5) {
+					await insertAmendment({
+						paperId: vpId,
+						proposer: delegates[4 % delegates.length].id,
+						type: 'DELETE',
+						status: 'REJECTED',
+						targetClauseId: vpContent.operative[1 % vpContent.operative.length].id,
+						targetOperativeIndex: 1 % vpContent.operative.length,
+						documentNumber: `${abbr}/${roman}/VP.DEL.1`,
+						sponsorIds: [delegates[4 % delegates.length].id, delegates[5 % delegates.length].id]
+					});
+				}
+				if (delegates.length > 7) {
+					await insertAmendment({
+						paperId: vpId,
+						proposer: delegates[6 % delegates.length].id,
+						type: 'ADD',
+						status: 'CONSENSUS_ADOPTED',
+						targetOperativeIndex: vpContent.operative.length,
+						targetPosition: vpContent.operative.length,
+						newContent:
+							'Decides to convene a high-level review conference within three years to assess progress in implementation of the commitments made herein;',
+						documentNumber: `${abbr}/${roman}/VP.ADD.1`,
+						sponsorIds: [delegates[6 % delegates.length].id, delegates[7 % delegates.length].id]
+					});
+				}
+				if (delegates.length > 9) {
+					await insertAmendment({
+						paperId: vpId,
+						proposer: delegates[8 % delegates.length].id,
+						type: 'ALTER_TEXT',
+						status: 'WITHDRAWN',
+						targetClauseId: vpContent.operative[2 % vpContent.operative.length].id,
+						targetOperativeIndex: 2 % vpContent.operative.length,
+						newContent: operative[2 % operative.length].replace(
+							';',
+							', provided that recipient states demonstrate measurable progress against agreed benchmarks;'
+						),
+						documentNumber: `${abbr}/${roman}/VP.ALT.2`,
+						sponsorIds: [delegates[8 % delegates.length].id]
+					});
+				}
+				if (delegates.length > 11) {
+					await insertAmendment({
+						paperId: vpId,
+						proposer: delegates[10 % delegates.length].id,
+						type: 'ALTER_POSITION',
+						status: 'REJECTED',
+						targetClauseId: vpContent.operative[0].id,
+						targetOperativeIndex: 0,
+						targetPosition: vpContent.operative.length - 1,
+						documentNumber: `${abbr}/${roman}/VP.POS.1`,
+						sponsorIds: [delegates[10 % delegates.length].id, delegates[11 % delegates.length].id]
 					});
 				}
 				console.info(`      VOTING_PHASE ${drDocNum3} (${vpId})`);
@@ -878,7 +1946,8 @@ async function seedResolutionPapers() {
 				// TEAM_ONLY chair note
 				if (adminCU) {
 					await db.insert(schema.resolutionComment).values({
-						id: nanoid(), paperId: finalId,
+						id: nanoid(),
+						paperId: finalId,
 						authorConferenceUserId: adminCU.id,
 						content: 'Adopted by consensus. Excellent work by all delegations.',
 						visibility: 'TEAM_ONLY'
@@ -887,23 +1956,183 @@ async function seedResolutionPapers() {
 				// PUBLIC delegate congratulation comment
 				if (delegateCUs[0]) {
 					await db.insert(schema.resolutionComment).values({
-						id: nanoid(), paperId: finalId,
+						id: nanoid(),
+						paperId: finalId,
 						authorConferenceUserId: delegateCUs[0].id,
-						content: 'Historic resolution — our delegation is proud to have co-sponsored this text.',
+						content:
+							'Historic resolution — our delegation is proud to have co-sponsored this text.',
 						visibility: 'PUBLIC'
 					});
 				}
 				// PUBLIC clause-level comment on adopted OP1
 				if (delegateCUs[1]) {
 					await db.insert(schema.resolutionComment).values({
-						id: nanoid(), paperId: finalId,
+						id: nanoid(),
+						paperId: finalId,
 						authorConferenceUserId: delegateCUs[1].id,
-						content: 'OP1 sets a clear benchmark — we look forward to the review at the next session.',
+						content:
+							'OP1 sets a clear benchmark — we look forward to the review at the next session.',
 						clauseId: finalContent.operative[0].id,
 						visibility: 'PUBLIC'
 					});
 				}
+				// Amendments on FINAL — all processed (historical record of what happened in the vote)
+				if (delegates.length > 3) {
+					await insertAmendment({
+						paperId: finalId,
+						proposer: delegates[2 % delegates.length].id,
+						type: 'ALTER_TEXT',
+						status: 'ACCEPTED',
+						targetClauseId: finalContent.operative[0].id,
+						targetOperativeIndex: 0,
+						newContent: operative[0].replace(
+							';',
+							', with particular attention to the needs of Least Developed Countries and Small Island Developing States;'
+						),
+						documentNumber: `${abbr}/${roman}/F.ALT.1`,
+						sponsorIds: [delegates[2 % delegates.length].id, delegates[3 % delegates.length].id]
+					});
+				}
+				if (delegates.length > 5) {
+					await insertAmendment({
+						paperId: finalId,
+						proposer: delegates[4 % delegates.length].id,
+						type: 'DELETE',
+						status: 'REJECTED',
+						targetClauseId: finalContent.operative[1 % finalContent.operative.length].id,
+						targetOperativeIndex: 1 % finalContent.operative.length,
+						documentNumber: `${abbr}/${roman}/F.DEL.1`,
+						sponsorIds: [delegates[4 % delegates.length].id, delegates[5 % delegates.length].id]
+					});
+				}
+				if (delegates.length > 7) {
+					await insertAmendment({
+						paperId: finalId,
+						proposer: delegates[6 % delegates.length].id,
+						type: 'ADD',
+						status: 'CONSENSUS_ADOPTED',
+						targetOperativeIndex: finalContent.operative.length,
+						targetPosition: finalContent.operative.length,
+						newContent:
+							'Calls upon all Member States to submit voluntary implementation reports to the Secretary-General within two years of adoption of this resolution;',
+						documentNumber: `${abbr}/${roman}/F.ADD.1`,
+						sponsorIds: [delegates[6 % delegates.length].id, delegates[7 % delegates.length].id]
+					});
+				}
+				if (delegates.length > 9) {
+					await insertAmendment({
+						paperId: finalId,
+						proposer: delegates[8 % delegates.length].id,
+						type: 'ALTER_TEXT',
+						status: 'WITHDRAWN',
+						targetClauseId: finalContent.operative[2 % finalContent.operative.length].id,
+						targetOperativeIndex: 2 % finalContent.operative.length,
+						newContent: operative[2 % operative.length].replace(
+							';',
+							', subject to annual reporting obligations and independent verification;'
+						),
+						documentNumber: `${abbr}/${roman}/F.ALT.2`,
+						sponsorIds: [delegates[8 % delegates.length].id]
+					});
+				}
+				if (delegates.length > 11) {
+					await insertAmendment({
+						paperId: finalId,
+						proposer: delegates[10 % delegates.length].id,
+						type: 'ALTER_TEXT',
+						status: 'ACCEPTED',
+						targetClauseId: finalContent.operative[3 % finalContent.operative.length].id,
+						targetOperativeIndex: 3 % finalContent.operative.length,
+						newContent: operative[(3 % finalContent.operative.length) % operative.length].replace(
+							';',
+							', with full respect for national sovereignty and ownership of implementation strategies;'
+						),
+						documentNumber: `${abbr}/${roman}/F.ALT.3`,
+						sponsorIds: [
+							delegates[10 % delegates.length].id,
+							delegates[11 % delegates.length].id,
+							delegates[0].id
+						]
+					});
+				}
 				console.info(`      FINAL ${resDocNum} (${finalId})`);
+			}
+
+			// ── Speakers lists ─────────────────────────────────────────────────
+			// Populate every agenda item's lists with speakers and meaningful phase states
+			{
+				const lists = await db
+					.select()
+					.from(schema.speakersList)
+					.where(eq(schema.speakersList.agendaItemId, agendaItem.id));
+
+				for (const list of lists) {
+					if (isActive) {
+						if (list.type === 'SPEAKERS_LIST') {
+							// Active item: 5 speakers queued, first one currently speaking (SPEECH)
+							const speakerCount = Math.min(5, delegates.length);
+							for (let i = 0; i < speakerCount; i++) {
+								await db.insert(schema.speakerOnList).values({
+									id: nanoid(),
+									speakersListId: list.id,
+									committeeMemberId: delegates[i % delegates.length].id,
+									position: i
+								});
+							}
+							await db
+								.update(schema.speakersList)
+								.set({ phase: 'SPEECH', timeLeft: 95, startTimestamp: new Date() })
+								.where(eq(schema.speakersList.id, list.id));
+						} else {
+							// Active COMMENT_LIST: 3 speakers queued, floor open for a question (QUESTION)
+							const commentCount = Math.min(3, delegates.length);
+							for (let i = 0; i < commentCount; i++) {
+								await db.insert(schema.speakerOnList).values({
+									id: nanoid(),
+									speakersListId: list.id,
+									committeeMemberId: delegates[(i + 5) % delegates.length].id,
+									position: i
+								});
+							}
+							await db
+								.update(schema.speakersList)
+								.set({ phase: 'QUESTION', timeLeft: 20 })
+								.where(eq(schema.speakersList.id, list.id));
+						}
+					} else {
+						if (list.type === 'SPEAKERS_LIST') {
+							// Inactive item: 4 past speakers, list closed, last speaker done (SPEECH_DONE)
+							const speakerCount = Math.min(4, delegates.length);
+							for (let i = 0; i < speakerCount; i++) {
+								await db.insert(schema.speakerOnList).values({
+									id: nanoid(),
+									speakersListId: list.id,
+									committeeMemberId: delegates[(i + 10) % delegates.length].id,
+									position: i
+								});
+							}
+							await db
+								.update(schema.speakersList)
+								.set({ isClosed: true, phase: 'SPEECH_DONE', timeLeft: 0 })
+								.where(eq(schema.speakersList.id, list.id));
+						} else {
+							// Inactive COMMENT_LIST: 2 speakers, delegate currently answering (ANSWER)
+							const commentCount = Math.min(2, delegates.length);
+							for (let i = 0; i < commentCount; i++) {
+								await db.insert(schema.speakerOnList).values({
+									id: nanoid(),
+									speakersListId: list.id,
+									committeeMemberId: delegates[(i + 15) % delegates.length].id,
+									position: i
+								});
+							}
+							await db
+								.update(schema.speakersList)
+								.set({ phase: 'ANSWER', timeLeft: 12, startTimestamp: new Date() })
+								.where(eq(schema.speakersList.id, list.id));
+						}
+					}
+				}
 			}
 		}
 	}

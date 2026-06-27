@@ -6,20 +6,32 @@
 		backLabel?: string;
 	}
 
-	let { status, message = 'An unexpected error occurred', backHref, backLabel = 'Go Back' }: Props =
-		$props();
+	let {
+		status,
+		message = 'An unexpected error occurred',
+		backHref,
+		backLabel = 'Go Back'
+	}: Props = $props();
 
 	let clearing = $state(false);
 	let cleared = $state(false);
 
 	async function clearCache() {
 		clearing = true;
-		await new Promise<void>((resolve) => {
-			const req = indexedDB.deleteDatabase('chase-cache');
-			req.onsuccess = () => resolve();
-			req.onerror = () => resolve();
-			req.onblocked = () => resolve();
-		});
+		const dbs = await indexedDB.databases().catch(() => [{ name: 'chase-cache' }]);
+		await Promise.all(
+			dbs
+				.filter((db): db is IDBDatabaseInfo & { name: string } => !!db.name)
+				.map(
+					(db) =>
+						new Promise<void>((resolve) => {
+							const req = indexedDB.deleteDatabase(db.name);
+							req.onsuccess = () => resolve();
+							req.onerror = () => resolve();
+							req.onblocked = () => resolve();
+						})
+				)
+		);
 		clearing = false;
 		cleared = true;
 		setTimeout(() => window.location.reload(), 800);

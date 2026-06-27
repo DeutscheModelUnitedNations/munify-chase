@@ -15,7 +15,11 @@
 	import Flag from '$lib/components/Flag.svelte';
 	import { openVotingModal, type VotingResult } from '$lib/components/voting/votingModal';
 	import AmendmentSponsorPanel from './AmendmentSponsorPanel.svelte';
+	import AmendmentReviewPanel from './AmendmentReviewPanel.svelte';
+	import AiSpinner from '$lib/components/AiSpinner.svelte';
+	import AiIcon from '$lib/components/AiIcon.svelte';
 	import { slide } from 'svelte/transition';
+	import { rankAmendmentsByImpact } from '$lib/ai/amendments';
 
 	interface Props {
 		paperId: string;
@@ -25,6 +29,8 @@
 		sponsoringOpen: boolean;
 		minAmendmentSponsors: number;
 		activeAmendmentId: string | null;
+		/** When set, immediately opens the review modal for this trigger amendment ID. */
+		openTriggerId?: string | null;
 	}
 
 	let {
@@ -34,8 +40,82 @@
 		viewer,
 		sponsoringOpen,
 		minAmendmentSponsors,
-		activeAmendmentId
+		activeAmendmentId,
+		openTriggerId = null
 	}: Props = $props();
+
+	const allReviewItems = await client.liveQuery.amendmentReviewItems({
+		__args: { where: { paper: { id: paperId } } },
+		id: true,
+		phase: true,
+		resolved: true,
+		aiObsolete: true,
+		aiObsoleteReason: true,
+		aiRewriteSuggestion: true,
+		triggerClauseOldContent: true,
+		triggerAmendment: {
+			id: true,
+			documentNumber: true,
+			type: true,
+			newContent: true,
+			targetClauseId: true,
+			targetOperativeIndex: true,
+			proposer: {
+				id: true,
+				representation: { name: true, alpha2Code: true, alpha3Code: true, faIcon: true, type: true }
+			},
+			sponsors: { id: true }
+		},
+		subjectAmendment: {
+			id: true,
+			documentNumber: true,
+			type: true,
+			status: true,
+			newContent: true,
+			targetOperativeIndex: true,
+			proposer: {
+				id: true,
+				representation: { name: true, alpha2Code: true, alpha3Code: true, faIcon: true, type: true }
+			},
+			sponsors: { id: true }
+		}
+	});
+
+	// Group unresolved review items by trigger, scoped to the currently visible clause tab.
+	const pendingReviewGroups = $derived.by(() => {
+		const pending = (allReviewItems ?? []).filter(
+			(r: {
+				resolved?: boolean | null;
+				subjectAmendment?: { status?: string | null; type?: string | null } | null;
+			}) =>
+				!r.resolved &&
+				r.subjectAmendment?.status === 'SUBMITTED' &&
+				r.subjectAmendment?.type === 'ALTER_TEXT'
+		);
+		const map = new Map<string, typeof pending>();
+		for (const item of pending) {
+			const key = item.triggerAmendment?.id ?? '';
+			if (!key) continue;
+			// Only surface the banner on the clause the trigger amendment targeted.
+			if ((item.triggerAmendment?.targetClauseId ?? null) !== selectedClauseId) continue;
+			if (!map.has(key)) map.set(key, []);
+			map.get(key)!.push(item);
+		}
+		return [...map.entries()].map(([triggerId, items]) => ({
+			triggerId,
+			items,
+			trigger: items[0]?.triggerAmendment
+		}));
+	});
+
+	let activeTrigger = $state<string | null>(null);
+	const activeGroup = $derived(
+		activeTrigger ? (pendingReviewGroups.find((g) => g.triggerId === activeTrigger) ?? null) : null
+	);
+
+	$effect(() => {
+		if (openTriggerId != null) activeTrigger = openTriggerId;
+	});
 
 	const amendments = await client.liveQuery.amendments({
 		__args: { where: { paper: { id: paperId } }, orderBy: { createdAt: 'asc' } },
@@ -47,7 +127,11 @@
 		newContent: true,
 		targetPosition: true,
 		documentNumber: true,
-		proposer: { id: true, representation: { name: true, alpha2Code: true, alpha3Code: true, faIcon: true, type: true } },
+		createdAt: true,
+		proposer: {
+			id: true,
+			representation: { name: true, alpha2Code: true, alpha3Code: true, faIcon: true, type: true }
+		},
 		sponsors: { id: true, amendmentId: true, committeeMember: { id: true } }
 	});
 
@@ -56,14 +140,77 @@
 	const PROCESSED: AmendmentStatus[] = ['CONSENSUS_ADOPTED', 'ACCEPTED', 'REJECTED', 'WITHDRAWN'];
 	const isProcessed = (a: { status?: string | null }) =>
 		PROCESSED.includes(a.status as AmendmentStatus);
+	// PENDING = not yet submitted to chairs; always sort to absolute bottom.
+	const isPending = (a: { status?: string | null }) => a.status === 'PENDING';
+	// Sort weight: 0 = active/submitted, 1 = processed, 2 = pending draft
+	function sortTier(a: { status?: string | null }): number {
+		if (isPending(a)) return 2;
+		if (isProcessed(a)) return 1;
+		return 0;
+	}
+
+	// Type-based priority: DELETE first (renders others obsolete), then ALTER_TEXT,
+	// then ADD, then ALTER_POSITION.
+	function typePriority(type: string | null | undefined): number {
+		switch (type) {
+			case 'DELETE':
+				return 0;
+			case 'ALTER_TEXT':
+				return 1;
+			case 'ADD':
+				return 2;
+			case 'ALTER_POSITION':
+				return 3;
+			default:
+				return 4;
+		}
+	}
+
+	// AI-assigned impact ranks for ALTER_TEXT amendments. Populated on demand.
+	let aiSortOrder = $state(new Map<string, number>());
+	let aiSortBusy = $state(false);
 
 	const scoped = $derived.by(() => {
 		const list = amendments ?? [];
 		const filtered = selectedClauseId
 			? list.filter((a) => a.targetClauseId === selectedClauseId)
 			: list.filter((a) => !a.targetClauseId);
-		return filtered.slice().sort((a, b) => Number(isProcessed(a)) - Number(isProcessed(b)));
+		return filtered.slice().sort((a, b) => {
+			const tierDiff = sortTier(a) - sortTier(b);
+			if (tierDiff !== 0) return tierDiff;
+			// Within processed or within pending: preserve submission order.
+			if (isProcessed(a) || isPending(a)) return 0;
+			// Active/submitted: type priority first.
+			const typeDiff = typePriority(a.type) - typePriority(b.type);
+			if (typeDiff !== 0) return typeDiff;
+			// Within ALTER_TEXT: AI impact rank if available.
+			if (a.type === 'ALTER_TEXT' && aiSortOrder.size > 0) {
+				const aRank = aiSortOrder.get(a.id) ?? Infinity;
+				const bRank = aiSortOrder.get(b.id) ?? Infinity;
+				if (aRank !== bRank) return aRank - bRank;
+			}
+			return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
+		});
 	});
+
+	const unprocessedAlterText = $derived(
+		scoped.filter((a) => a.status === 'SUBMITTED' && a.type === 'ALTER_TEXT')
+	);
+
+	async function sortByImpact() {
+		if (aiSortBusy || unprocessedAlterText.length < 2) return;
+		aiSortBusy = true;
+		try {
+			const ranked = await rankAmendmentsByImpact(unprocessedAlterText);
+			const map = new Map<string, number>();
+			ranked.forEach((id, i) => map.set(id, i));
+			aiSortOrder = map;
+		} catch (err) {
+			toast.error(err instanceof Error ? err.message : 'AI sort failed');
+		} finally {
+			aiSortBusy = false;
+		}
+	}
 
 	const myMemberId = $derived(viewer.committeeMemberId ?? null);
 	const team = $derived(isTeam(viewer));
@@ -233,11 +380,54 @@
 </script>
 
 <div class="flex h-full flex-col gap-3">
+	<!-- Review banners — shown whenever accepted amendments left unresolved siblings -->
+	{#if team && pendingReviewGroups.length > 0}
+		<div class="flex flex-col gap-1.5">
+			{#each pendingReviewGroups as group (group.triggerId)}
+				<button
+					class="bg-warning/15 border-warning/40 text-warning-content flex cursor-pointer items-center gap-2 rounded-lg border px-3 py-2 text-left text-sm hover:brightness-95 active:brightness-90"
+					onclick={() => (activeTrigger = group.triggerId)}
+				>
+					<i class="fas fa-triangle-exclamation text-warning shrink-0"></i>
+					<span class="flex-1">
+						<span class="font-semibold">
+							{group.items.length} amendment{group.items.length > 1 ? 's' : ''} need{group.items
+								.length === 1
+								? 's'
+								: ''} review
+						</span>
+						after accepting
+						<span class="font-mono">{group.trigger?.documentNumber ?? 'amendment'}</span>
+					</span>
+					<i class="fas fa-chevron-right text-warning/60 shrink-0 text-xs"></i>
+				</button>
+			{/each}
+		</div>
+	{/if}
+
 	{#if !scoped.length}
 		<p class="text-base-content/50 py-6 text-center text-sm">
 			{selectedClauseId ? m.noAmendmentsForClause() : m.noDocumentAmendments()}
 		</p>
 	{:else}
+		{#if team && unprocessedAlterText.length > 1}
+			<div class="flex justify-end">
+				<button
+					class="btn btn-xs {aiSortOrder.size > 0 ? 'btn-primary' : 'btn-ghost'}"
+					disabled={aiSortBusy}
+					onclick={sortByImpact}
+				>
+					{#if aiSortBusy}
+						<AiSpinner size="xs" />
+					{:else if aiSortOrder.size > 0}
+						<AiIcon size="xs" />
+					{:else}
+						<i class="fas fa-wand-magic-sparkles"></i>
+					{/if}
+					Sort by impact
+				</button>
+			</div>
+		{/if}
 		<div class="flex-1 space-y-3 overflow-y-auto">
 			{#each scoped as a (a.id)}
 				{@const mine = a.proposer?.id === myMemberId}
@@ -274,14 +464,21 @@
 					</div>
 					<div class="text-base-content/70 mt-2 flex items-center gap-2 text-xs">
 						<Flag representation={a.proposer?.representation} size="xs" />
-						<span>{getTranslatedCountryNameFromAlpha3Code(a.proposer?.representation?.alpha3Code) ?? a.proposer?.representation?.name ?? m.unknown()}</span>
+						<span
+							>{getTranslatedCountryNameFromAlpha3Code(a.proposer?.representation?.alpha3Code) ??
+								a.proposer?.representation?.name ??
+								m.unknown()}</span
+						>
 						<span class="text-base-content/40">·</span>
 						<button
 							class="btn btn-xs btn-ghost -my-1 -ml-1 gap-1"
 							class:text-warning={!canSubmit && a.status === 'PENDING'}
 							onclick={() => toggleSponsors(a.id)}
 						>
-							{m.sponsorsCount({ current: String(sponsorCount), needed: String(minAmendmentSponsors) })}
+							{m.sponsorsCount({
+								current: String(sponsorCount),
+								needed: String(minAmendmentSponsors)
+							})}
 							<i
 								class="fas fa-chevron-down text-[0.6rem] transition-transform duration-200"
 								class:rotate-180={sponsorsExpanded}
@@ -290,26 +487,35 @@
 					</div>
 					{#if sponsorsExpanded}
 						<div transition:slide={{ duration: 200 }}>
-						<AmendmentSponsorPanel
-							amendmentId={a.id}
-							{committeeId}
-							{sponsoringOpen}
-							{viewer}
-							proposerMemberId={a.proposer?.id}
-							amendmentStatus={a.status}
-						/>
+							<AmendmentSponsorPanel
+								amendmentId={a.id}
+								{committeeId}
+								{sponsoringOpen}
+								{viewer}
+								proposerMemberId={a.proposer?.id}
+								amendmentStatus={a.status}
+							/>
 						</div>
 					{/if}
 
 					{#if a.newContent}
-						<p class="bg-base-200 mt-2 rounded p-2 font-mono text-xs whitespace-pre-wrap opacity-80">{a.newContent}</p>
+						<p
+							class="bg-base-200 mt-2 rounded p-2 font-mono text-xs whitespace-pre-wrap opacity-80"
+						>
+							{a.newContent}
+						</p>
 					{/if}
 
 					<div class="mt-3 flex flex-wrap gap-1.5">
 						{#if mine && a.status === 'PENDING'}
 							<div
 								class="tooltip tooltip-top"
-								data-tip={canSubmit ? undefined : m.sponsorsNeededToSubmit({ current: String(sponsorCount), needed: String(minAmendmentSponsors) })}
+								data-tip={canSubmit
+									? undefined
+									: m.sponsorsNeededToSubmit({
+											current: String(sponsorCount),
+											needed: String(minAmendmentSponsors)
+										})}
 							>
 								<button
 									class="btn btn-xs btn-primary"
@@ -404,7 +610,6 @@
 			{/each}
 		</div>
 	{/if}
-
 </div>
 
 {#if pendingDecision}
@@ -437,33 +642,45 @@
 			</div>
 
 			<div class="text-base-content/70 mt-2 flex flex-wrap gap-x-4 gap-y-1 text-sm">
-				<span><i class="fas fa-check text-success"></i> {voteOutcome.result.votesFor} {m.votesFor()}</span>
-				<span><i class="fas fa-xmark text-error"></i> {voteOutcome.result.votesAgainst} {m.votesAgainst()}</span>
-				<span><i class="fas fa-minus"></i> {voteOutcome.result.votesAbstain} {m.votesAbstain()}</span>
+				<span
+					><i class="fas fa-check text-success"></i>
+					{voteOutcome.result.votesFor}
+					{m.votesFor()}</span
+				>
+				<span
+					><i class="fas fa-xmark text-error"></i>
+					{voteOutcome.result.votesAgainst}
+					{m.votesAgainst()}</span
+				>
+				<span
+					><i class="fas fa-minus"></i> {voteOutcome.result.votesAbstain} {m.votesAbstain()}</span
+				>
 			</div>
 
 			<div class="bg-base-200 mt-4 rounded-lg p-3">
 				<p class="text-base-content/60 text-xs">{m.proposedAmendmentPresentation()}</p>
 				<p class="mt-1 font-semibold">{summary.headline}</p>
 				{#if summary.body}
-					<p class="bg-base-100 mt-2 rounded p-2 font-mono text-xs whitespace-pre-wrap">{summary.body}</p>
+					<p class="bg-base-100 mt-2 rounded p-2 font-mono text-xs whitespace-pre-wrap">
+						{summary.body}
+					</p>
 				{/if}
 			</div>
 
 			<div class="modal-action">
 				<button class="btn btn-ghost" onclick={cancelVoteOutcome}>{m.cancel()}</button>
-				<button
-					class="btn btn-error"
-					class:btn-outline={adopted}
-					onclick={rejectVoteOutcome}>{m.reject()}</button
+				<button class="btn btn-error" class:btn-outline={adopted} onclick={rejectVoteOutcome}
+					>{m.reject()}</button
 				>
-				<button
-					class="btn btn-success"
-					class:btn-outline={!adopted}
-					onclick={applyVoteOutcome}>{m.applyAmendment()}</button
+				<button class="btn btn-success" class:btn-outline={!adopted} onclick={applyVoteOutcome}
+					>{m.applyAmendment()}</button
 				>
 			</div>
 		</div>
 		<button class="modal-backdrop" aria-label={m.cancel()} onclick={cancelVoteOutcome}></button>
 	</div>
+{/if}
+
+{#if activeGroup}
+	<AmendmentReviewPanel items={activeGroup.items} onclose={() => (activeTrigger = null)} />
 {/if}

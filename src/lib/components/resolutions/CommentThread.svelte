@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { browser } from '$app/environment';
 	import { m } from '$lib/paraglide/messages';
 	import { client } from '$lib/api/rumbleClient/client';
 	import { nanoid } from '$lib/helpers/nanoid';
@@ -59,10 +60,15 @@
 	type Author = NonNullable<(typeof comments)[number]['author']>;
 
 	function authorRepresentation(author: Author | null | undefined) {
-		return author?.committeeMember?.representation ?? author?.conferenceMember?.representation ?? null;
+		return (
+			author?.committeeMember?.representation ?? author?.conferenceMember?.representation ?? null
+		);
 	}
 
-	function authorDisplay(author: Author | null | undefined): { name: string; representation: ReturnType<typeof authorRepresentation> } {
+	function authorDisplay(author: Author | null | undefined): {
+		name: string;
+		representation: ReturnType<typeof authorRepresentation>;
+	} {
 		if (!author) return { name: '?', representation: null };
 
 		const isParticipantAuthor =
@@ -70,16 +76,20 @@
 
 		if (isParticipantAuthor) {
 			const rep = authorRepresentation(author);
-			const name = rep?.name ?? (rep?.alpha3Code ? getTranslatedCountryNameFromAlpha3Code(rep.alpha3Code) : null) ?? '?';
+			const name =
+				rep?.name ??
+				(rep?.alpha3Code ? getTranslatedCountryNameFromAlpha3Code(rep.alpha3Code) : null) ??
+				'?';
 			return { name, representation: rep };
 		}
 
 		if (isTeam(viewer)) {
-			const oidcName = [author.user?.givenName, author.user?.familyName]
-				.filter(Boolean)
-				.join(' ')
-				.trim() || null;
-			return { name: author.name ?? oidcName ?? author.user?.preferredUsername ?? author.userEmail ?? '?', representation: null };
+			const oidcName =
+				[author.user?.givenName, author.user?.familyName].filter(Boolean).join(' ').trim() || null;
+			return {
+				name: author.name ?? oidcName ?? author.user?.preferredUsername ?? author.userEmail ?? '?',
+				representation: null
+			};
 		}
 
 		return { name: m.roleTeam(), representation: null };
@@ -95,11 +105,7 @@
 	}
 
 	let draft = $state('');
-	let teamOnly = $state(
-		typeof localStorage !== 'undefined'
-			? localStorage.getItem('commentTeamOnly') === 'true'
-			: false
-	);
+	let teamOnly = $state(browser ? localStorage.getItem('commentTeamOnly') === 'true' : false);
 	$effect(() => {
 		localStorage.setItem('commentTeamOnly', String(teamOnly));
 	});
@@ -160,7 +166,11 @@
 		{:else}
 			{#each roots as comment (comment.id)}
 				{@const display = authorDisplay(comment.author)}
-				<div class="bg-base-100 rounded-lg border-l-2 p-4" class:border-warning={comment.visibility === 'TEAM_ONLY'} class:border-transparent={comment.visibility !== 'TEAM_ONLY'}>
+				<div
+					class="bg-base-100 rounded-lg border-l-2 p-4"
+					class:border-warning={comment.visibility === 'TEAM_ONLY'}
+					class:border-transparent={comment.visibility !== 'TEAM_ONLY'}
+				>
 					<div class="flex items-start justify-between gap-2">
 						<div class="flex items-center gap-2.5">
 							{#if display.representation}
@@ -189,7 +199,11 @@
 
 					{#each repliesOf(comment.id) as reply (reply.id)}
 						{@const replyDisplay = authorDisplay(reply.author)}
-						<div class="mt-2 ml-4 border-l-2 pl-2" class:border-warning={reply.visibility === 'TEAM_ONLY'} class:border-base-300={reply.visibility !== 'TEAM_ONLY'}>
+						<div
+							class="mt-2 ml-4 border-l-2 pl-2"
+							class:border-warning={reply.visibility === 'TEAM_ONLY'}
+							class:border-base-300={reply.visibility !== 'TEAM_ONLY'}
+						>
 							<div class="flex items-start justify-between gap-2">
 								<div class="flex items-center gap-2.5">
 									{#if replyDisplay.representation}
@@ -227,7 +241,11 @@
 		{#if replyTo}
 			<div class="text-base-content/60 flex items-center justify-between text-xs">
 				<span>{m.replyingToComment()}</span>
-				<button class="btn btn-ghost btn-xs" aria-label={m.cancel()} onclick={() => (replyTo = null)}>
+				<button
+					class="btn btn-ghost btn-xs"
+					aria-label={m.cancel()}
+					onclick={() => (replyTo = null)}
+				>
 					<i class="fas fa-xmark"></i>
 				</button>
 			</div>
@@ -242,8 +260,21 @@
 		></textarea>
 		<div class="flex items-center justify-between gap-2">
 			{#if canTeamOnly}
-				<label class="label gap-2 py-0" class:cursor-pointer={!replyForcesTeamOnly} class:cursor-not-allowed={replyForcesTeamOnly}>
-					<input type="checkbox" class="checkbox checkbox-xs" class:checkbox-warning={effectiveTeamOnly} checked={effectiveTeamOnly} disabled={replyForcesTeamOnly} onchange={(e) => { if (!replyForcesTeamOnly) teamOnly = e.currentTarget.checked; }} />
+				<label
+					class="label gap-2 py-0"
+					class:cursor-pointer={!replyForcesTeamOnly}
+					class:cursor-not-allowed={replyForcesTeamOnly}
+				>
+					<input
+						type="checkbox"
+						class="checkbox checkbox-xs"
+						class:checkbox-warning={effectiveTeamOnly}
+						checked={effectiveTeamOnly}
+						disabled={replyForcesTeamOnly}
+						onchange={(e) => {
+							if (!replyForcesTeamOnly) teamOnly = e.currentTarget.checked;
+						}}
+					/>
 					<span class="label-text text-xs">{m.teamOnly()}</span>
 				</label>
 			{:else}

@@ -13,7 +13,7 @@ import {
 	isParticipantInConference
 } from '$api/services/authHelper';
 import { assertFindFirstExists, assertFirstEntryExists } from '@m1212e/rumble';
-import { and, count, eq, type InferSelectModel } from 'drizzle-orm';
+import { and, count, eq, isNull, type InferSelectModel } from 'drizzle-orm';
 import { calculateMajority } from '$lib/utils/majorities';
 import { nanoidValidation } from '$lib/helpers/nanoid';
 import { GraphQLError } from 'graphql';
@@ -121,7 +121,6 @@ schemaBuilder.mutationFields((t) => {
 				abbreviation: t.arg.string({ required: true })
 			},
 			resolve: async (query, _root, args, ctx) => {
-
 				await db.query.conference
 					.findFirst(
 						ctx.abilities.conference.filter('update').merge({ where: { id: args.conferenceId } })
@@ -264,10 +263,7 @@ schemaBuilder.mutationFields((t) => {
 						);
 					}
 
-					if (
-						committee.activeAgendaItemId &&
-						paper.agendaItemId !== committee.activeAgendaItemId
-					) {
+					if (committee.activeAgendaItemId && paper.agendaItemId !== committee.activeAgendaItemId) {
 						throw new GraphQLError(
 							'Only papers belonging to the currently active agenda item may be set as active'
 						);
@@ -287,8 +283,8 @@ schemaBuilder.mutationFields((t) => {
 				return db.query.committee
 					.findFirst(
 						query(
-							ctx.abilities.committee.filter('read').merge({ where: { id: args.committeeId } }).query
-								.single
+							ctx.abilities.committee.filter('read').merge({ where: { id: args.committeeId } })
+								.query.single
 						)
 					)
 					.then(assertFindFirstExists);
@@ -314,6 +310,14 @@ schemaBuilder.mutationFields((t) => {
 							where: { id: args.amendmentId, paperId: committee.activeDraftResolutionId }
 						})
 						.then(assertFindFirstExists);
+
+					// Stamp presentedAt the first time an amendment hits the beamer
+					await db
+						.update(schema.amendment)
+						.set({ presentedAt: new Date() })
+						.where(
+							and(eq(schema.amendment.id, args.amendmentId), isNull(schema.amendment.presentedAt))
+						);
 				}
 				await db
 					.update(schema.committee)
@@ -326,8 +330,8 @@ schemaBuilder.mutationFields((t) => {
 				return db.query.committee
 					.findFirst(
 						query(
-							ctx.abilities.committee.filter('read').merge({ where: { id: args.committeeId } }).query
-								.single
+							ctx.abilities.committee.filter('read').merge({ where: { id: args.committeeId } })
+								.query.single
 						)
 					)
 					.then(assertFindFirstExists);
@@ -359,8 +363,8 @@ schemaBuilder.mutationFields((t) => {
 				return db.query.committee
 					.findFirst(
 						query(
-							ctx.abilities.committee.filter('read').merge({ where: { id: args.committeeId } }).query
-								.single
+							ctx.abilities.committee.filter('read').merge({ where: { id: args.committeeId } })
+								.query.single
 						)
 					)
 					.then(assertFindFirstExists);

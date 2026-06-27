@@ -25,6 +25,10 @@
 		showVoteTab: boolean;
 		/** When set, switches the panel to this tab (e.g. clicking an amendment/comment badge). */
 		requestedTab?: 'amendments' | 'comments' | 'vote';
+		/** True when there is at least one unresolved amendment review for the selected clause. */
+		hasReview?: boolean;
+		/** When set, immediately opens the review modal for this trigger amendment ID. */
+		openTriggerId?: string | null;
 		ondeselect?: () => void;
 		onselectclause?: (clauseId: string | null) => void;
 	}
@@ -44,6 +48,8 @@
 		simpleMajority,
 		showVoteTab,
 		requestedTab,
+		hasReview = false,
+		openTriggerId = null,
 		ondeselect,
 		onselectclause
 	}: Props = $props();
@@ -107,7 +113,10 @@
 		{#if showJumpToActive && onselectclause}
 			<button
 				class="btn btn-primary btn-xs shrink-0 gap-1"
-				onclick={() => { onselectclause!(activeAmendmentTargetClauseId); tab = 'amendments'; }}
+				onclick={() => {
+					onselectclause!(activeAmendmentTargetClauseId);
+					tab = 'amendments';
+				}}
 				title={m.jumpToActiveAmendment()}
 			>
 				<i class="fas fa-bolt"></i>
@@ -115,7 +124,11 @@
 			</button>
 		{/if}
 		{#if ondeselect && selectedClauseId}
-			<button class="btn btn-ghost btn-xs btn-circle shrink-0" onclick={ondeselect} aria-label={m.deselect()}>
+			<button
+				class="btn btn-ghost btn-xs btn-circle shrink-0"
+				onclick={ondeselect}
+				aria-label={m.deselect()}
+			>
 				<i class="fas fa-xmark"></i>
 			</button>
 		{/if}
@@ -131,6 +144,7 @@
 			>
 				{m.amendments()}
 				{#if amendmentCount}<span class="badge badge-xs ml-1">{amendmentCount}</span>{/if}
+				{#if hasReview}<span class="badge badge-error badge-xs ml-1">!</span>{/if}
 			</button>
 			<button
 				role="tab"
@@ -174,6 +188,7 @@
 				{sponsoringOpen}
 				{minAmendmentSponsors}
 				{activeAmendmentId}
+				{openTriggerId}
 			/>
 		{:else if tab === 'comments'}
 			<CommentThread {paperId} {selectedClauseId} {viewer} />

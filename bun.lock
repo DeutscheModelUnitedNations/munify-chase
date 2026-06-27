@@ -5,6 +5,7 @@
     "": {
       "name": "munify-chase",
       "dependencies": {
+        "@mlc-ai/web-llm": "^0.2.84",
         "canvas-confetti": "^1.9.4",
         "codenamize-ts": "^1.0.2",
         "drizzle-kit": "^1.0.0-rc.3",
@@ -335,6 +336,8 @@
     "@m1212e/sveltekit-oidc": ["@m1212e/sveltekit-oidc@0.0.43", "", { "dependencies": { "jose": "^6.2.3", "openid-client": "^6.8.4", "typebox": "^1.1.38" }, "peerDependencies": { "svelte": "^5.0.0" } }, ""],
 
     "@m1212e/urql-crosstab-sync": ["@m1212e/urql-crosstab-sync@0.1.0", "", { "peerDependencies": { "@urql/core": "^6", "wonka": "^6" } }, "sha512-aGcEdZ8lq0UK724OhjEcD4LXPzlCKupx31WUTtji/i6QPhrjkF5dCgzke1j4hHxkb0p7ToubssyK+Hu5ntuI5Q=="],
+
+    "@mlc-ai/web-llm": ["@mlc-ai/web-llm@0.2.84", "", { "dependencies": { "loglevel": "^1.9.1" } }, "sha512-hrOWzK4/nGNmgoRKT8pgVmZZ2oEPpbblIWQOwpqNyvK2dysHw3KVB1gNJOuRcQfKOPhucEhX1NJzXzgMDnwSCQ=="],
 
     "@napi-rs/wasm-runtime": ["@napi-rs/wasm-runtime@1.1.4", "", { "dependencies": { "@tybys/wasm-util": "^0.10.1" }, "peerDependencies": { "@emnapi/core": "^1.7.1", "@emnapi/runtime": "^1.7.1" } }, "sha512-3NQNNgA1YSlJb/kMH1ildASP9HW7/7kYnRI2szWJaofaS1hWmbGI4H+d3+22aGzXXN9IJ+n+GiFVcGipJP18ow=="],
 
@@ -1147,6 +1150,8 @@
     "lodash": ["lodash@4.18.1", "", {}, ""],
 
     "lodash.merge": ["lodash.merge@4.6.2", "", {}, ""],
+
+    "loglevel": ["loglevel@1.9.2", "", {}, "sha512-HgMmCqIJSAKqo68l0rS2AanEWfkxaZ5wNiEFb5ggm08lDs9Xl2KxBlX3PTcaD2chBM1gXAYf491/M2Rv8Jwayg=="],
 
     "loud-rejection": ["loud-rejection@2.2.0", "", { "dependencies": { "currently-unhandled": "^0.4.1", "signal-exit": "^3.0.2" } }, ""],
 

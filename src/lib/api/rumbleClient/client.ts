@@ -63,16 +63,30 @@ export type Amendment = {
   documentNumber: String | null,
   id: ID,
   newContent: String | null,
+  obsoletedByAmendmentId: ID | null,
   paper: (p?: {
     orderBy?: ResolutionpaperOrderInputArgument | null | undefined,
     where?: ResolutionpaperWhereInputArgument | null | undefined
   }) => Resolutionpaper,
   paperId: ID,
+  presentedAt: DateTime | null,
   proposer: (p?: {
     orderBy?: CommitteememberOrderInputArgument | null | undefined,
     where?: CommitteememberWhereInputArgument | null | undefined
   }) => Committeemember,
   proposerCommitteeMemberId: ID,
+  reviewItemsAsSubject: (p?: {
+    limit?: Int | null | undefined,
+    offset?: Int | null | undefined,
+    orderBy?: AmendmentreviewitemOrderInputArgument | null | undefined,
+    where?: AmendmentreviewitemWhereInputArgument | null | undefined
+  }) => Amendmentreviewitem[],
+  revisions: (p?: {
+    limit?: Int | null | undefined,
+    offset?: Int | null | undefined,
+    orderBy?: AmendmentrevisionOrderInputArgument | null | undefined,
+    where?: AmendmentrevisionWhereInputArgument | null | undefined
+  }) => Amendmentrevision[],
   sponsors: (p?: {
     limit?: Int | null | undefined,
     offset?: Int | null | undefined,
@@ -92,10 +106,14 @@ export type AmendmentOrderInputArgument = {
   documentNumber?: SortingParameter | null | undefined,
   id?: SortingParameter | null | undefined,
   newContent?: SortingParameter | null | undefined,
+  obsoletedByAmendmentId?: SortingParameter | null | undefined,
   paper?: ResolutionpaperOrderInputArgument | null | undefined,
   paperId?: SortingParameter | null | undefined,
+  presentedAt?: SortingParameter | null | undefined,
   proposer?: CommitteememberOrderInputArgument | null | undefined,
   proposerCommitteeMemberId?: SortingParameter | null | undefined,
+  reviewItemsAsSubject?: AmendmentreviewitemOrderInputArgument | null | undefined,
+  revisions?: AmendmentrevisionOrderInputArgument | null | undefined,
   sponsors?: AmendmentsponsorOrderInputArgument | null | undefined,
   status?: SortingParameter | null | undefined,
   targetClauseId?: SortingParameter | null | undefined,
@@ -110,16 +128,142 @@ export type AmendmentWhereInputArgument = {
   documentNumber?: StringWhereInputArgument | null | undefined,
   id?: ID | null | undefined,
   newContent?: StringWhereInputArgument | null | undefined,
+  obsoletedByAmendmentId?: ID | null | undefined,
   paper?: ResolutionpaperWhereInputArgument | null | undefined,
   paperId?: ID | null | undefined,
+  presentedAt?: DateWhereInputArgument | null | undefined,
   proposer?: CommitteememberWhereInputArgument | null | undefined,
   proposerCommitteeMemberId?: ID | null | undefined,
+  reviewItemsAsSubject?: AmendmentreviewitemWhereInputArgument | null | undefined,
+  revisions?: AmendmentrevisionWhereInputArgument | null | undefined,
   sponsors?: AmendmentsponsorWhereInputArgument | null | undefined,
   status?: AmendmentstatusEnum | null | undefined,
   targetClauseId?: ID | null | undefined,
   targetOperativeIndex?: IntWhereInputArgument | null | undefined,
   targetPosition?: IntWhereInputArgument | null | undefined,
   type?: AmendmenttypeEnum | null | undefined,
+  updatedAt?: DateWhereInputArgument | null | undefined    
+};
+		
+export type Amendmentreviewitem = {
+  aiObsolete: Boolean | null,
+  aiObsoleteReason: String | null,
+  aiRewriteSuggestion: String | null,
+  aiSuggestionApplied: Boolean,
+  createdAt: DateTime,
+  id: ID,
+  paper: (p?: {
+    orderBy?: ResolutionpaperOrderInputArgument | null | undefined,
+    where?: ResolutionpaperWhereInputArgument | null | undefined
+  }) => Resolutionpaper,
+  paperId: ID,
+  phase: AmendmentreviewphaseEnum,
+  resolved: Boolean,
+  revision: (p?: {
+    orderBy?: AmendmentrevisionOrderInputArgument | null | undefined,
+    where?: AmendmentrevisionWhereInputArgument | null | undefined
+  }) => Amendmentrevision | null,
+  subjectAmendment: (p?: {
+    orderBy?: AmendmentOrderInputArgument | null | undefined,
+    where?: AmendmentWhereInputArgument | null | undefined
+  }) => Amendment,
+  subjectAmendmentId: ID,
+  triggerAmendment: (p?: {
+    orderBy?: AmendmentOrderInputArgument | null | undefined,
+    where?: AmendmentWhereInputArgument | null | undefined
+  }) => Amendment,
+  triggerAmendmentId: ID,
+  triggerClauseOldContent: String | null,
+  updatedAt: DateTime | null    
+};
+		
+export type AmendmentreviewitemOrderInputArgument = {
+  aiObsolete?: SortingParameter | null | undefined,
+  aiObsoleteReason?: SortingParameter | null | undefined,
+  aiRewriteSuggestion?: SortingParameter | null | undefined,
+  aiSuggestionApplied?: SortingParameter | null | undefined,
+  createdAt?: SortingParameter | null | undefined,
+  id?: SortingParameter | null | undefined,
+  paper?: ResolutionpaperOrderInputArgument | null | undefined,
+  paperId?: SortingParameter | null | undefined,
+  phase?: SortingParameter | null | undefined,
+  resolved?: SortingParameter | null | undefined,
+  revision?: AmendmentrevisionOrderInputArgument | null | undefined,
+  subjectAmendment?: AmendmentOrderInputArgument | null | undefined,
+  subjectAmendmentId?: SortingParameter | null | undefined,
+  triggerAmendment?: AmendmentOrderInputArgument | null | undefined,
+  triggerAmendmentId?: SortingParameter | null | undefined,
+  triggerClauseOldContent?: SortingParameter | null | undefined,
+  updatedAt?: SortingParameter | null | undefined    
+};
+		
+export type AmendmentreviewitemWhereInputArgument = {
+  aiObsolete?: Boolean | null | undefined,
+  aiObsoleteReason?: StringWhereInputArgument | null | undefined,
+  aiRewriteSuggestion?: StringWhereInputArgument | null | undefined,
+  aiSuggestionApplied?: Boolean | null | undefined,
+  createdAt?: DateWhereInputArgument | null | undefined,
+  id?: ID | null | undefined,
+  paper?: ResolutionpaperWhereInputArgument | null | undefined,
+  paperId?: ID | null | undefined,
+  phase?: AmendmentreviewphaseEnum | null | undefined,
+  resolved?: Boolean | null | undefined,
+  revision?: AmendmentrevisionWhereInputArgument | null | undefined,
+  subjectAmendment?: AmendmentWhereInputArgument | null | undefined,
+  subjectAmendmentId?: ID | null | undefined,
+  triggerAmendment?: AmendmentWhereInputArgument | null | undefined,
+  triggerAmendmentId?: ID | null | undefined,
+  triggerClauseOldContent?: StringWhereInputArgument | null | undefined,
+  updatedAt?: DateWhereInputArgument | null | undefined    
+};
+		
+export type AmendmentreviewphaseEnum = "OBSOLESCENCE" | "REWRITE";
+		
+export type Amendmentrevision = {
+  aiSuggestionApplied: Boolean,
+  amendment: (p?: {
+    orderBy?: AmendmentOrderInputArgument | null | undefined,
+    where?: AmendmentWhereInputArgument | null | undefined
+  }) => Amendment,
+  amendmentId: ID,
+  causedByAmendmentId: ID | null,
+  createdAt: DateTime,
+  id: ID,
+  newContent: String,
+  previousContent: String,
+  reviewItem: (p?: {
+    orderBy?: AmendmentreviewitemOrderInputArgument | null | undefined,
+    where?: AmendmentreviewitemWhereInputArgument | null | undefined
+  }) => Amendmentreviewitem | null,
+  reviewItemId: ID | null,
+  updatedAt: DateTime | null    
+};
+		
+export type AmendmentrevisionOrderInputArgument = {
+  aiSuggestionApplied?: SortingParameter | null | undefined,
+  amendment?: AmendmentOrderInputArgument | null | undefined,
+  amendmentId?: SortingParameter | null | undefined,
+  causedByAmendmentId?: SortingParameter | null | undefined,
+  createdAt?: SortingParameter | null | undefined,
+  id?: SortingParameter | null | undefined,
+  newContent?: SortingParameter | null | undefined,
+  previousContent?: SortingParameter | null | undefined,
+  reviewItem?: AmendmentreviewitemOrderInputArgument | null | undefined,
+  reviewItemId?: SortingParameter | null | undefined,
+  updatedAt?: SortingParameter | null | undefined    
+};
+		
+export type AmendmentrevisionWhereInputArgument = {
+  aiSuggestionApplied?: Boolean | null | undefined,
+  amendment?: AmendmentWhereInputArgument | null | undefined,
+  amendmentId?: ID | null | undefined,
+  causedByAmendmentId?: ID | null | undefined,
+  createdAt?: DateWhereInputArgument | null | undefined,
+  id?: ID | null | undefined,
+  newContent?: StringWhereInputArgument | null | undefined,
+  previousContent?: StringWhereInputArgument | null | undefined,
+  reviewItem?: AmendmentreviewitemWhereInputArgument | null | undefined,
+  reviewItemId?: ID | null | undefined,
   updatedAt?: DateWhereInputArgument | null | undefined    
 };
 		
@@ -1000,6 +1144,15 @@ export type Mutation = {
   removeSpeakerOnList: (p: {
     speakerOnListId: ID
   }) => Speakerslist,
+  resolveObsolescence: (p: {
+    obsolete: Boolean,
+    reviewItemId: ID
+  }) => Boolean,
+  resolveRewrite: (p: {
+    aiSuggestionApplied?: Boolean | null | undefined,
+    newContent: String,
+    reviewItemId: ID
+  }) => Boolean,
   restorePaperFromSnapshot: (p: {
     snapshotId: ID
   }) => Papercontentsnapshot,
@@ -1040,6 +1193,9 @@ export type Mutation = {
     sessionId: ID,
     vote: unknown
   }) => Votingvote,
+  skipReviewItem: (p: {
+    reviewItemId: ID
+  }) => Boolean,
   startRollCallSession: (p: {
     committeeId: ID,
     id?: ID | null | undefined
@@ -1113,6 +1269,12 @@ export type Mutation = {
     status?: unknown | null | undefined,
     title?: String | null | undefined
   }) => Resolutionpaper,
+  updateReviewItemAiOutput: (p: {
+    aiObsolete?: Boolean | null | undefined,
+    aiObsoleteReason?: String | null | undefined,
+    aiRewriteSuggestion?: String | null | undefined,
+    reviewItemId: ID
+  }) => Boolean,
   updateSpeakerOnList: (p: {
     id: ID,
     overwriteName?: String | null | undefined
@@ -1390,6 +1552,24 @@ export type Query = {
   amendment: (p: {
     id: ID
   }) => Amendment,
+  amendmentReviewItem: (p: {
+    id: ID
+  }) => Amendmentreviewitem,
+  amendmentReviewItems: (p?: {
+    limit?: Int | null | undefined,
+    offset?: Int | null | undefined,
+    orderBy?: AmendmentreviewitemOrderInputArgument | null | undefined,
+    where?: AmendmentreviewitemWhereInputArgument | null | undefined
+  }) => Amendmentreviewitem[],
+  amendmentRevision: (p: {
+    id: ID
+  }) => Amendmentrevision,
+  amendmentRevisions: (p?: {
+    limit?: Int | null | undefined,
+    offset?: Int | null | undefined,
+    orderBy?: AmendmentrevisionOrderInputArgument | null | undefined,
+    where?: AmendmentrevisionWhereInputArgument | null | undefined
+  }) => Amendmentrevision[],
   amendmentSponsor: (p: {
     id: ID
   }) => Amendmentsponsor,
@@ -2038,6 +2218,24 @@ export type Subscription = {
   amendment: (p: {
     id: ID
   }) => Amendment,
+  amendmentReviewItem: (p: {
+    id: ID
+  }) => Amendmentreviewitem,
+  amendmentReviewItems: (p?: {
+    limit?: Int | null | undefined,
+    offset?: Int | null | undefined,
+    orderBy?: AmendmentreviewitemOrderInputArgument | null | undefined,
+    where?: AmendmentreviewitemWhereInputArgument | null | undefined
+  }) => Amendmentreviewitem[],
+  amendmentRevision: (p: {
+    id: ID
+  }) => Amendmentrevision,
+  amendmentRevisions: (p?: {
+    limit?: Int | null | undefined,
+    offset?: Int | null | undefined,
+    orderBy?: AmendmentrevisionOrderInputArgument | null | undefined,
+    where?: AmendmentrevisionWhereInputArgument | null | undefined
+  }) => Amendmentrevision[],
   amendmentSponsor: (p: {
     id: ID
   }) => Amendmentsponsor,
@@ -2435,7 +2633,7 @@ export const client = {
    */
   liveQuery: makeLiveQuery<Query>({
 	  urqlClient,
-	  availableSubscriptions: new Set(["agendaItem", "agendaItems", "amendment", "amendmentSponsor", "amendmentSponsors", "amendments", "committee", "committeeMember", "committeeMembers", "committees", "conference", "conferenceMember", "conferenceMembers", "conferenceUser", "conferenceUsers", "conferences", "operativeClauseVote", "operativeClauseVotes", "paperContentSnapshot", "paperContentSnapshots", "paperEditor", "paperEditors", "paperShareCode", "paperShareCodes", "paperSponsor", "paperSponsors", "presenceEvent", "presenceEvents", "representation", "representations", "resolutionComment", "resolutionComments", "resolutionPaper", "resolutionPapers", "rollCallSession", "rollCallSessions", "speakerOnList", "speakerOnLists", "speakersList", "speakersLists", "user", "users", "votingSession", "votingSessions", "votingVote", "votingVotes"]),
+	  availableSubscriptions: new Set(["agendaItem", "agendaItems", "amendment", "amendmentReviewItem", "amendmentReviewItems", "amendmentRevision", "amendmentRevisions", "amendmentSponsor", "amendmentSponsors", "amendments", "committee", "committeeMember", "committeeMembers", "committees", "conference", "conferenceMember", "conferenceMembers", "conferenceUser", "conferenceUsers", "conferences", "operativeClauseVote", "operativeClauseVotes", "paperContentSnapshot", "paperContentSnapshots", "paperEditor", "paperEditors", "paperShareCode", "paperShareCodes", "paperSponsor", "paperSponsors", "presenceEvent", "presenceEvents", "representation", "representations", "resolutionComment", "resolutionComments", "resolutionPaper", "resolutionPapers", "rollCallSession", "rollCallSessions", "speakerOnList", "speakerOnLists", "speakersList", "speakersLists", "user", "users", "votingSession", "votingSessions", "votingVote", "votingVotes"]),
 		schema,
   }),
   /**

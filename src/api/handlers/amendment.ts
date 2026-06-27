@@ -85,7 +85,6 @@ schemaBuilder.mutationFields((t) => ({
 			targetPosition: t.arg.int()
 		},
 		resolve: async (query, _root, args, ctx) => {
-
 			const isChair = await db.query.resolutionPaper.findFirst({
 				where: {
 					id: args.paperId,
@@ -233,6 +232,10 @@ schemaBuilder.mutationFields((t) => ({
 
 			const newStatus = args.consensus ? 'CONSENSUS_ADOPTED' : 'ACCEPTED';
 
+			// Capture the old clause text before applying so it can be stored on
+			// review items for the AI (which needs to see what changed).
+			let triggerClauseOldContent: string | null = null;
+
 			// Apply the amendment to the paper's Y.Doc first; the yjs layer has
 			// its own persistence so it can't share the DB transaction. Doing it
 			// before the status flip means the amendment is only marked accepted
@@ -240,6 +243,11 @@ schemaBuilder.mutationFields((t) => ({
 			await applyServerMutation(amendment.paperId, (doc) => {
 				const current = yDocToJson(doc);
 				const next: Resolution = JSON.parse(JSON.stringify(current));
+
+				if (amendment.type === 'ALTER_TEXT' && amendment.targetClauseId) {
+					const old = current.operative.find((c) => c.id === amendment.targetClauseId);
+					if (old) triggerClauseOldContent = JSON.stringify(old);
+				}
 
 				switch (amendment.type) {
 					case 'DELETE': {
@@ -294,6 +302,33 @@ schemaBuilder.mutationFields((t) => ({
 				});
 			});
 
+			// For ALTER_TEXT: find remaining SUBMITTED amendments on the same clause
+			// and create OBSOLESCENCE-phase review items so the chair can assess
+			// which are now obsolete or need rewording
+			if (amendment.type === 'ALTER_TEXT' && amendment.targetClauseId) {
+				const siblings = await db.query.amendment.findMany({
+					where: {
+						paperId: amendment.paperId,
+						status: 'SUBMITTED',
+						type: 'ALTER_TEXT',
+						targetClauseId: amendment.targetClauseId
+					},
+					columns: { id: true }
+				});
+				if (siblings.length > 0) {
+					await db.insert(schema.amendmentReviewItem).values(
+						siblings.map((s) => ({
+							id: nanoid(),
+							paperId: amendment.paperId,
+							triggerAmendmentId: args.id,
+							subjectAmendmentId: s.id,
+							phase: 'OBSOLESCENCE' as const,
+							triggerClauseOldContent
+						}))
+					);
+				}
+			}
+
 			snapshotPubsub.created();
 			pubsub.updated(args.id);
 
@@ -332,12 +367,28 @@ schemaBuilder.mutationFields((t) => ({
 		type: 'Boolean',
 		args: { id: t.arg.id({ required: true }) },
 		resolve: async (_root, args, ctx) => {
-			await db
-				.delete(schema.amendment)
+			const [existing] = await db
+				.select({ id: schema.amendment.id, status: schema.amendment.status })
+				.from(schema.amendment)
 				.where(
 					ctx.abilities.amendment.filter('delete').merge({ where: { id: args.id } }).sql.where
 				);
-			pubsub.removed();
+			if (!existing) throw new GraphQLError('Amendment not found or not authorized');
+
+			if (existing.status === 'PENDING') {
+				// Hard delete is safe for drafts — they have never been formally submitted
+				// and carry no training-data value yet.
+				await db.delete(schema.amendment).where(eq(schema.amendment.id, existing.id));
+				pubsub.removed();
+			} else {
+				// SUBMITTED and beyond: soft-delete to preserve training data and avoid
+				// orphaning any in-progress amendmentReviewItem rows.
+				await db
+					.update(schema.amendment)
+					.set({ status: 'WITHDRAWN' })
+					.where(eq(schema.amendment.id, existing.id));
+				pubsub.updated(existing.id);
+			}
 			return true;
 		}
 	})

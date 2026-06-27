@@ -21,6 +21,7 @@ import './paperContentSnapshot';
 import './resolutionComment';
 import './amendment';
 import './amendmentSponsor';
+import './amendmentReviewItem';
 import './operativeClauseVote';
 import { building, dev } from '$app/environment';
 import { clientCreator } from '$api/rumble';

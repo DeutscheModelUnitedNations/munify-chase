@@ -16,10 +16,8 @@ import { WebsocketProvider } from 'y-websocket';
 import { IndexeddbPersistence } from 'y-indexeddb';
 import {
 	createYjsStore,
-	createAwarenessPresence,
-	jsonToYDoc
+	createAwarenessPresence
 } from '@deutschemodelunitednations/munify-resolution-editor/yjs';
-import { createEmptyResolution } from '@deutschemodelunitednations/munify-resolution-editor';
 import type {
 	ResolutionStore,
 	PresenceAdapter,
@@ -131,15 +129,14 @@ export function createPaperYjsClient(opts: CreateOptions): PaperYjsClient {
 
 	let destroyed = false;
 
-	// Connect the WS (and seed the doc if empty) once IDB has fully loaded.
-	// This guarantees all subsequent WS updates are saved to IndexedDB.
+	// Connect the WS once IDB has fully loaded. This guarantees all subsequent
+	// WS updates are saved to IndexedDB. We do NOT pre-seed with an empty
+	// resolution here — doing so would race with the server's Y.applyUpdate: both
+	// would write the root Y.Map keys at the same clock depth, and tie-breaking
+	// is random (clientId), so the empty arrays would win ~50% of the time and
+	// wipe visible content for fresh browsers.
 	idbPersistence.whenSynced.then(() => {
 		if (destroyed) return; // client was torn down before IDB finished
-		// Seed the root structure only if the doc is truly empty (brand-new paper).
-		// Doing this after IDB loads avoids the CRDT race where a pre-load seed's
-		// Y.Array at clock 0 can randomly win over the existing IDB array at clock 0
-		// (tie broken by random clientID), wiping the user's content.
-		jsonToYDoc(doc, createEmptyResolution(''));
 		persistenceLoaded = true;
 
 		if (!terminalError) {

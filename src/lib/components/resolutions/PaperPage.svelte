@@ -4,7 +4,7 @@
 	import { m } from '$lib/paraglide/messages';
 	import { client } from '$lib/api/rumbleClient/client';
 	import { getCurrentUser } from '$lib/state/currentUser.svelte';
-	import { onDestroy, untrack } from 'svelte';
+	import { onDestroy, tick, untrack } from 'svelte';
 	import toast from 'svelte-french-toast';
 
 	import {
@@ -19,7 +19,11 @@
 	} from '@deutschemodelunitednations/munify-resolution-editor/phrases';
 	import { svgToDataUrl } from '$lib/utils/svgToDataUrl';
 	import { getTranslatedCountryNameFromAlpha3Code } from '$lib/utils/nationTranslationHelper.svelte';
-	import { createPaperYjsClient, type PaperYjsClient, type PresenceUserMeta } from '$lib/api/yjs/createPaperYjs.svelte';
+	import {
+		createPaperYjsClient,
+		type PaperYjsClient,
+		type PresenceUserMeta
+	} from '$lib/api/yjs/createPaperYjs.svelte';
 	import PresenceIndicator from './PresenceIndicator.svelte';
 	import ClausePresenceBadges from './ClausePresenceBadges.svelte';
 
@@ -44,6 +48,8 @@
 	import { launchClauseVote } from './resolutionVotes';
 	import { openVotingModal, resumeVotingModal } from '$lib/components/voting/votingModal';
 	import { downloadResolutionTypst, downloadResolutionPdf } from '$lib/utils/resolutionExport';
+	import { getEngine } from '$lib/ai/model';
+	import { assessAiCapability } from '$lib/ai/assess';
 
 	interface Props {
 		paperId: string;
@@ -155,6 +161,12 @@
 		id: true,
 		clauseId: true
 	});
+	const reviewItemsForBadges = await client.liveQuery.amendmentReviewItems({
+		__args: { where: { paper: { id: paperId } } },
+		id: true,
+		resolved: true,
+		triggerAmendment: { id: true, targetClauseId: true }
+	});
 
 	const status = $derived((paper?.status ?? 'WORKING_PAPER') as PaperStatus);
 	const currentStatusIdx = $derived(PAPER_STATUS_ORDER.indexOf(status));
@@ -169,15 +181,15 @@
 	);
 	const showVoteTab = $derived(status !== 'WORKING_PAPER' && status !== 'SUBMITTED');
 	// Lookup map for clause vote records (for inline vote button + outcome badge).
-	const clauseVoteMap = $derived(
-		new Map((clauseVotes ?? []).map((v) => [v.clauseId, v]))
-	);
+	const clauseVoteMap = $derived(new Map((clauseVotes ?? []).map((v) => [v.clauseId, v])));
 
 	const amendmentCountMap = $derived(
-		(amendmentRows ?? []).reduce((m, a) => {
-			if (a.targetClauseId) m.set(a.targetClauseId, (m.get(a.targetClauseId) ?? 0) + 1);
-			return m;
-		}, new Map<string, number>())
+		(amendmentRows ?? [])
+			.filter((a) => a.status === 'SUBMITTED' && (a.sponsors?.length ?? 0) >= minAmendmentSponsors)
+			.reduce((m, a) => {
+				if (a.targetClauseId) m.set(a.targetClauseId, (m.get(a.targetClauseId) ?? 0) + 1);
+				return m;
+			}, new Map<string, number>())
 	);
 	const commentCountMap = $derived(
 		(comments ?? []).reduce((m, c) => {
@@ -185,6 +197,25 @@
 			return m;
 		}, new Map<string, number>())
 	);
+	const reviewClauseIds = $derived(
+		new Set(
+			(reviewItemsForBadges ?? [])
+				.filter((r) => !r.resolved && r.triggerAmendment?.targetClauseId)
+				.map((r) => r.triggerAmendment!.targetClauseId as string)
+		)
+	);
+	// Maps clauseId → first unresolved trigger amendment ID for direct modal opening.
+	const reviewTriggerForClause = $derived(
+		(reviewItemsForBadges ?? [])
+			.filter((r) => !r.resolved && r.triggerAmendment?.targetClauseId && r.triggerAmendment?.id)
+			.reduce((map, r) => {
+				const clauseId = r.triggerAmendment!.targetClauseId as string;
+				if (!map.has(clauseId)) map.set(clauseId, r.triggerAmendment!.id as string);
+				return map;
+			}, new Map<string, string>())
+	);
+	let pendingOpenTriggerId = $state<string | null>(null);
+
 	function amendmentCountFor(clauseId: string) {
 		return amendmentCountMap.get(clauseId) ?? 0;
 	}
@@ -244,7 +275,7 @@
 
 	const isCreator = $derived(
 		paper?.creatorCommitteeMember?.id != null &&
-		paper.creatorCommitteeMember.id === viewer.committeeMemberId
+			paper.creatorCommitteeMember.id === viewer.committeeMemberId
 	);
 	const isCreatorOrEditor = $derived(
 		isCreator ||
@@ -252,6 +283,42 @@
 	);
 	const canEdit = $derived(canEditPaper(status, viewer, { isCreatorOrEditor }));
 	const team = $derived(isTeam(viewer));
+
+	// ---- AI model preload (chairs only) -------------------------------------
+	let aiDownloadProgress = $state<number | null>(null);
+	let aiDisabledReason = $state<string | null>(null);
+	let aiModelId = $state<string | null>(null);
+	let aiReady = $state(false);
+
+	function formatModelId(id: string): string {
+		// Strip quantisation suffix (e.g. -q4f32_1-MLC) and replace dashes with spaces
+		return id.replace(/-q\d+f\d+.*$/, '').replaceAll('-', ' ');
+	}
+
+	$effect(() => {
+		if (!team) return;
+		assessAiCapability().then((assessment) => {
+			if (!assessment.supported) {
+				aiDisabledReason = assessment.reason;
+				setTimeout(() => (aiDisabledReason = null), 6000);
+				return;
+			}
+			aiModelId = assessment.modelId ?? null;
+			// Assessment passed — start downloading the model.
+			getEngine();
+			const handler = (e: Event) => {
+				const { progress } = (e as CustomEvent<{ progress: number; text: string }>).detail;
+				if (progress < 1) {
+					aiDownloadProgress = progress;
+				} else {
+					aiDownloadProgress = null;
+					aiReady = true;
+					setTimeout(() => (aiReady = false), 5000);
+				}
+			};
+			window.addEventListener('webllm-progress', handler);
+		});
+	});
 
 	// ---- Y.js client --------------------------------------------------------
 	let yClient = $state<PaperYjsClient | null>(null);
@@ -270,8 +337,8 @@
 				color: undefined
 			};
 			const presenceMeta: PresenceUserMeta = {
-				conferenceUserType:
-					(conferenceUsers?.[0]?.conferenceUserType ?? 'SPECTATOR') as PresenceUserMeta['conferenceUserType'],
+				conferenceUserType: (conferenceUsers?.[0]?.conferenceUserType ??
+					'SPECTATOR') as PresenceUserMeta['conferenceUserType'],
 				nationName: conferenceUsers?.[0]?.committeeMember?.representation?.name ?? null,
 				alpha2Code: conferenceUsers?.[0]?.committeeMember?.representation?.alpha2Code ?? null,
 				alpha3Code: conferenceUsers?.[0]?.committeeMember?.representation?.alpha3Code ?? null
@@ -307,6 +374,14 @@
 	function selectClauseWithTab(id: string, tab: 'amendments' | 'comments' | 'vote') {
 		selectedClauseId = id;
 		requestedTab = tab;
+	}
+	async function selectClauseAndOpenReview(clauseId: string) {
+		selectClauseWithTab(clauseId, 'amendments');
+		const triggerId = reviewTriggerForClause.get(clauseId);
+		if (!triggerId) return;
+		pendingOpenTriggerId = triggerId;
+		await tick();
+		pendingOpenTriggerId = null;
 	}
 
 	// Svelte action: adds a highlight outline to the OperativeClauseEditor's root
@@ -360,9 +435,7 @@
 
 		function applyBtnState(p: typeof params) {
 			const state: BtnState =
-				!p.showSetCurrentBtn || p.isCurrentClause ? 'hidden'
-				: p.isNextClause ? 'next'
-				: 'other';
+				!p.showSetCurrentBtn || p.isCurrentClause ? 'hidden' : p.isNextClause ? 'next' : 'other';
 
 			// Always keep the callbacks fresh so closures don't go stale.
 			if (state === 'next') setCurrentBtn.onclick = () => p.onSetCurrentNext?.();
@@ -375,11 +448,13 @@
 				setCurrentBtn.style.display = 'none';
 			} else if (state === 'next') {
 				setCurrentBtn.style.display = '';
-				setCurrentBtn.className = 'clause-set-current-btn clause-set-current-btn--next btn btn-xs btn-success gap-1';
+				setCurrentBtn.className =
+					'clause-set-current-btn clause-set-current-btn--next btn btn-xs btn-success gap-1';
 				setCurrentBtn.innerHTML = `<i class="fas fa-play"></i>${m.setAsCurrentClause()}`;
 			} else {
 				setCurrentBtn.style.display = '';
-				setCurrentBtn.className = 'clause-set-current-btn clause-set-current-btn--other btn btn-xs btn-ghost gap-1';
+				setCurrentBtn.className =
+					'clause-set-current-btn clause-set-current-btn--other btn btn-xs btn-ghost gap-1';
 				setCurrentBtn.innerHTML = '<i class="fas fa-play"></i>';
 			}
 		}
@@ -494,9 +569,15 @@
 	let contextWidth = $state(stored('chase:paper:contextWidth', 384));
 	let dragging = $state<'preview' | 'context' | null>(null);
 
-	$effect(() => { localStorage.setItem('chase:paper:previewOpen', JSON.stringify(previewOpen)); });
-	$effect(() => { localStorage.setItem('chase:paper:previewWidth', JSON.stringify(previewWidth)); });
-	$effect(() => { localStorage.setItem('chase:paper:contextWidth', JSON.stringify(contextWidth)); });
+	$effect(() => {
+		localStorage.setItem('chase:paper:previewOpen', JSON.stringify(previewOpen));
+	});
+	$effect(() => {
+		localStorage.setItem('chase:paper:previewWidth', JSON.stringify(previewWidth));
+	});
+	$effect(() => {
+		localStorage.setItem('chase:paper:contextWidth', JSON.stringify(contextWidth));
+	});
 
 	function startDrag(handle: 'preview' | 'context') {
 		dragging = handle;
@@ -509,9 +590,15 @@
 		const rect = body.getBoundingClientRect();
 		const MIN = 200;
 		if (dragging === 'preview') {
-			previewWidth = Math.max(MIN, Math.min(e.clientX - rect.left, rect.width - contextWidth - MIN * 2));
+			previewWidth = Math.max(
+				MIN,
+				Math.min(e.clientX - rect.left, rect.width - contextWidth - MIN * 2)
+			);
 		} else {
-			contextWidth = Math.max(MIN, Math.min(rect.right - e.clientX, rect.width - previewWidth - MIN * 2));
+			contextWidth = Math.max(
+				MIN,
+				Math.min(rect.right - e.clientX, rect.width - previewWidth - MIN * 2)
+			);
 		}
 	}
 
@@ -612,7 +699,7 @@
 							bind:value={docNumDraft}
 							onkeydown={(e) => {
 								if (e.key === 'Enter') saveDocNum();
-								if (e.key === 'Escape') (editingDocNum = false);
+								if (e.key === 'Escape') editingDocNum = false;
 							}}
 							onblur={saveDocNum}
 							autofocus
@@ -787,7 +874,10 @@
 
 		<!-- Locked-paper notice: shown to creators/editors while the paper is in SUBMITTED stage -->
 		{#if !team && status === 'SUBMITTED' && isCreatorOrEditor}
-			<div role="status" class="bg-warning/10 border-warning/30 flex items-center gap-2 border-b px-4 py-2 text-sm">
+			<div
+				role="status"
+				class="bg-warning/10 border-warning/30 flex items-center gap-2 border-b px-4 py-2 text-sm"
+			>
 				<i class="fas fa-lock text-warning shrink-0"></i>
 				<span>{m.paperLockedAfterSubmission()}</span>
 			</div>
@@ -841,8 +931,16 @@
 						aria-label="Resize preview panel"
 						aria-orientation="vertical"
 						class="drag-handle group hidden w-3 shrink-0 cursor-col-resize items-stretch justify-center lg:flex"
-						onpointerdown={(e) => { e.preventDefault(); e.currentTarget.setPointerCapture(e.pointerId); startDrag('preview'); }}
-					><div class="bg-base-300 w-px group-hover:w-1 group-hover:bg-primary/40 group-active:bg-primary/60 transition-all"></div></div>
+						onpointerdown={(e) => {
+							e.preventDefault();
+							e.currentTarget.setPointerCapture(e.pointerId);
+							startDrag('preview');
+						}}
+					>
+						<div
+							class="bg-base-300 w-px group-hover:w-1 group-hover:bg-primary/40 group-active:bg-primary/60 transition-all"
+						></div>
+					</div>
 				{:else}
 					<div class="hidden shrink-0 flex-col items-center pt-2 lg:flex">
 						<button
@@ -885,8 +983,16 @@
 					aria-label="Resize context panel"
 					aria-orientation="vertical"
 					class="drag-handle group hidden w-3 shrink-0 cursor-col-resize items-stretch justify-center lg:flex"
-					onpointerdown={(e) => { e.preventDefault(); e.currentTarget.setPointerCapture(e.pointerId); startDrag('context'); }}
-				><div class="bg-base-300 w-px group-hover:w-1 group-hover:bg-primary/40 group-active:bg-primary/60 transition-all"></div></div>
+					onpointerdown={(e) => {
+						e.preventDefault();
+						e.currentTarget.setPointerCapture(e.pointerId);
+						startDrag('context');
+					}}
+				>
+					<div
+						class="bg-base-300 w-px group-hover:w-1 group-hover:bg-primary/40 group-active:bg-primary/60 transition-all"
+					></div>
+				</div>
 
 				<aside
 					class="hidden shrink-0 overflow-hidden lg:flex lg:flex-col"
@@ -902,11 +1008,13 @@
 						{viewer}
 						submissionOpen={committee.amendmentSubmissionOpen}
 						sponsoringOpen={committee.amendmentSponsoringOpen}
-						minAmendmentSponsors={minAmendmentSponsors}
+						{minAmendmentSponsors}
 						activeAmendmentId={committee.activeAmendmentId ?? null}
 						simpleMajority={committee.simpleMajority}
 						showVoteTab={false}
 						{requestedTab}
+						hasReview={selectedClauseId != null && reviewClauseIds.has(selectedClauseId)}
+						openTriggerId={pendingOpenTriggerId}
 						ondeselect={() => (selectedClauseId = null)}
 						onselectclause={(id) => (selectedClauseId = id)}
 					/>
@@ -1049,7 +1157,8 @@
 					<PresenceIndicator remotePresences={yClient.remotePresences} {viewer} />
 				</div>
 			</div>
-			<button class="modal-backdrop" aria-label={m.close()} onclick={() => (presenceOpen = false)}></button>
+			<button class="modal-backdrop" aria-label={m.close()} onclick={() => (presenceOpen = false)}
+			></button>
 		</div>
 	{/if}
 
@@ -1077,12 +1186,50 @@
 			></button>
 		</div>
 	{/if}
+
+	<!-- AI model status (chairs only) -->
+	{#if aiDownloadProgress !== null}
+		<div
+			class="fixed bottom-4 right-4 z-50 flex w-56 flex-col gap-1.5 rounded-xl border border-base-300 bg-base-100 p-3 shadow-lg"
+		>
+			<div class="flex items-center justify-between text-xs font-medium">
+				<span>Preparing AI model</span>
+				<span class="tabular-nums opacity-60">{Math.round(aiDownloadProgress * 100)}%</span>
+			</div>
+			<progress class="progress progress-primary w-full" value={aiDownloadProgress} max={1}
+			></progress>
+			{#if aiModelId}
+				<p class="text-xs opacity-40 truncate">{formatModelId(aiModelId)}</p>
+			{/if}
+		</div>
+	{:else if aiReady}
+		<div
+			class="fixed bottom-4 right-4 z-50 flex w-56 items-center gap-2 rounded-xl border border-base-300 bg-base-100 p-3 shadow-lg text-xs"
+		>
+			<i class="fas fa-circle-check text-success shrink-0"></i>
+			<div class="min-w-0">
+				<p class="font-medium">AI model ready</p>
+				{#if aiModelId}
+					<p class="opacity-40 truncate">{formatModelId(aiModelId)}</p>
+				{/if}
+			</div>
+		</div>
+	{:else if aiDisabledReason !== null}
+		<div
+			class="fixed bottom-4 right-4 z-50 flex w-56 items-start gap-2 rounded-xl border border-base-300 bg-base-100 p-3 shadow-lg text-xs"
+		>
+			<i class="fas fa-microchip opacity-40 mt-0.5 shrink-0"></i>
+			<div>
+				<p class="font-medium">AI features unavailable</p>
+				<p class="opacity-50 mt-0.5">{aiDisabledReason}</p>
+			</div>
+		</div>
+	{/if}
 {:else}
 	<div class="flex h-full w-full items-center justify-center">
 		<i class="fas fa-spinner fa-spin text-3xl opacity-50"></i>
 	</div>
 {/if}
-
 
 {#snippet preambleAnnotationsSnippet({ clause }: { clause: { id: string } })}
 	{#if yClient}
@@ -1102,18 +1249,21 @@
 	{@const outcome = existingVote?.vote?.outcome}
 	{@const isCurrent = index === committee?.currentOperativeIndex}
 	{@const isNext = index === (committee?.currentOperativeIndex ?? -1) + 1}
-	<div use:highlightClause={{
-		selected: selectedClauseId === clause.id,
-		current: isCurrent && isDebatePhase,
-		clauseId: clause.id,
-		commentCount: cc,
-		amendmentCount: ac,
-		showSetCurrentBtn: team && isDebatePhase,
-		isCurrentClause: isCurrent,
-		isNextClause: isNext,
-		onSetCurrentNext: () => setCurrentClause(index),
-		onSetCurrentOutOfOrder: () => (outOfOrderClauseIndex = index)
-	}}>
+	{@const hasReview = reviewClauseIds.has(clause.id)}
+	<div
+		use:highlightClause={{
+			selected: selectedClauseId === clause.id,
+			current: isCurrent && isDebatePhase,
+			clauseId: clause.id,
+			commentCount: cc,
+			amendmentCount: ac,
+			showSetCurrentBtn: team && isDebatePhase,
+			isCurrentClause: isCurrent,
+			isNextClause: isNext,
+			onSetCurrentNext: () => setCurrentClause(index),
+			onSetCurrentOutOfOrder: () => (outOfOrderClauseIndex = index)
+		}}
+	>
 		<div class="flex flex-col gap-0.5">
 			{#if yClient}
 				<ClausePresenceBadges
@@ -1123,28 +1273,47 @@
 					{viewer}
 				/>
 			{/if}
-			{#if (isCurrent && isDebatePhase) || ac || cc || outcome}
-				<div
-					class="flex items-center gap-1"
-					class:opacity-100={selectedClauseId === clause.id}
-				>
+			{#if (isCurrent && isDebatePhase) || ac || cc || outcome || hasReview}
+				<div class="flex items-center gap-1" class:opacity-100={selectedClauseId === clause.id}>
 					{#if isCurrent && isDebatePhase}
 						<button class="btn btn-xs btn-secondary gap-1" onclick={() => selectClause(clause.id)}>
 							<i class="fas fa-caret-right"></i>{m.currentClause()}
 						</button>
 					{/if}
 					{#if outcome}
-						<button class="btn btn-xs gap-1 {outcome === 'ADOPTED' ? 'btn-success' : 'btn-error'}" onclick={() => selectClause(clause.id)}>
+						<button
+							class="btn btn-xs gap-1 {outcome === 'ADOPTED' ? 'btn-success' : 'btn-error'}"
+							onclick={() => selectClause(clause.id)}
+						>
 							{outcome === 'ADOPTED' ? m.adopted() : m.rejected()}
 						</button>
 					{/if}
 					{#if ac}
-						<button class="btn btn-xs btn-warning gap-1" onclick={() => selectClauseWithTab(clause.id, 'amendments')}>
+						<button
+							class="btn btn-xs btn-warning gap-1 relative"
+							onclick={() =>
+								hasReview
+									? selectClauseAndOpenReview(clause.id)
+									: selectClauseWithTab(clause.id, 'amendments')}
+						>
 							<i class="fas fa-pen-nib"></i>{ac}
+							{#if hasReview}<span class="badge badge-error badge-xs absolute -right-1 -top-1"
+									>!</span
+								>{/if}
+						</button>
+					{:else if hasReview}
+						<button
+							class="btn btn-xs btn-error gap-1"
+							onclick={() => selectClauseAndOpenReview(clause.id)}
+						>
+							<i class="fas fa-triangle-exclamation"></i>
 						</button>
 					{/if}
 					{#if cc}
-						<button class="btn btn-xs gap-1" onclick={() => selectClauseWithTab(clause.id, 'comments')}>
+						<button
+							class="btn btn-xs gap-1"
+							onclick={() => selectClauseWithTab(clause.id, 'comments')}
+						>
 							<i class="fas fa-comment"></i>{cc}
 						</button>
 					{/if}
@@ -1179,7 +1348,9 @@
 		font-size: 0.9rem;
 		color: var(--color-base-content);
 		opacity: 0.6;
-		transition: opacity 0.15s, background-color 0.15s;
+		transition:
+			opacity 0.15s,
+			background-color 0.15s;
 		border: none;
 	}
 	:global(.clause-side-handle:hover) {

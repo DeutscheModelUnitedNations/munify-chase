@@ -951,6 +951,29 @@ export const optimistic: OptimisticMutationConfig = {
 			}
 		}
 
+		// Link the new amendment into any already-open Query.amendments list for
+		// this paper so the AmendmentList updates immediately without waiting for
+		// the server subscription to fire.
+		const paperId = args.paperId as string;
+		const amendmentKey = `Amendment:${id}`;
+		const amendmentFields = cache
+			.inspectFields('Query')
+			.filter(
+				(f) =>
+					f.fieldName === 'amendments' &&
+					(f.arguments as { where?: { paper?: { id?: string } } } | null)?.where?.paper?.id ===
+						paperId
+			);
+		for (const f of amendmentFields) {
+			const current = cache.resolve('Query', 'amendments', f.arguments) as
+				| string[]
+				| null
+				| undefined;
+			if (Array.isArray(current) && !current.includes(amendmentKey)) {
+				cache.link('Query', 'amendments', f.arguments, [...current, amendmentKey]);
+			}
+		}
+
 		return {
 			__typename: 'Amendment',
 			id,
@@ -2485,12 +2508,47 @@ export const updates: UpdatesConfig = {
 		createAmendment: (result, args, cache) => {
 			const created = (result as Record<string, Record<string, unknown>>).createAmendment;
 			if (!created?.id) return;
+			const child = { __typename: 'Amendment', id: created.id as string };
 			addToList(
 				cache,
 				{ __typename: 'Resolutionpaper', id: args.paperId as string },
 				'amendments',
-				{ __typename: 'Amendment', id: created.id as string }
+				child
 			);
+			// Also update the root-level Query.amendments list that AmendmentList queries
+			// directly; without this the list stays stale until the WS subscription fires.
+			const paperId = args.paperId as string;
+			const childKey = cache.keyOfEntity(child);
+			if (childKey) {
+				const fields = cache
+					.inspectFields('Query')
+					.filter(
+						(f) =>
+							f.fieldName === 'amendments' &&
+							(f.arguments as { where?: { paper?: { id?: string } } } | null)?.where?.paper?.id ===
+								paperId
+					);
+				for (const f of fields) {
+					const current = cache.resolve('Query', 'amendments', f.arguments) as
+						| string[]
+						| null
+						| undefined;
+					if (Array.isArray(current) && !current.includes(childKey)) {
+						cache.link('Query', 'amendments', f.arguments, [...current, childKey]);
+					}
+				}
+			}
+		},
+		acceptAmendment: (_result, _args, cache) => {
+			// acceptAmendment may create amendmentReviewItem rows as a side effect.
+			// Invalidate any open Query.amendmentReviewItems lists so the cache
+			// refetches and the review banners appear without waiting for the
+			// subscription push.
+			for (const f of cache.inspectFields('Query')) {
+				if (f.fieldName === 'amendmentReviewItems') {
+					cache.invalidate('Query', f.fieldName, f.arguments);
+				}
+			}
 		},
 		deleteAmendment: (_result, args, cache) => {
 			const amendment = { __typename: 'Amendment', id: args.id as string };

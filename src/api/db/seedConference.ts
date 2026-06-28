@@ -1009,13 +1009,11 @@ async function seedResolutionPapers() {
 							'Also encourages Member States to share best practices and technical expertise through South-South and triangular cooperation mechanisms;',
 						documentNumber: `${abbr}/${roman}/ADD.1`
 					});
-					await db
-						.insert(schema.amendmentSponsor)
-						.values({
-							id: nanoid(),
-							amendmentId: amendId,
-							committeeMemberId: delegates[4 % delegates.length].id
-						});
+					await db.insert(schema.amendmentSponsor).values({
+						id: nanoid(),
+						amendmentId: amendId,
+						committeeMemberId: delegates[4 % delegates.length].id
+					});
 				}
 				// DELETE + REJECTED — 1 sponsor
 				if (delegates.length > 5) {
@@ -1030,13 +1028,11 @@ async function seedResolutionPapers() {
 						targetOperativeIndex: 1,
 						documentNumber: `${abbr}/${roman}/DEL.1`
 					});
-					await db
-						.insert(schema.amendmentSponsor)
-						.values({
-							id: nanoid(),
-							amendmentId: amendId,
-							committeeMemberId: delegates[5 % delegates.length].id
-						});
+					await db.insert(schema.amendmentSponsor).values({
+						id: nanoid(),
+						amendmentId: amendId,
+						committeeMemberId: delegates[5 % delegates.length].id
+					});
 				}
 				// ALTER_TEXT + ACCEPTED — 3 sponsors
 				if (delegates.length > 8) {
@@ -1051,6 +1047,12 @@ async function seedResolutionPapers() {
 						status: 'ACCEPTED',
 						targetClauseId: apOp[2 % apOp.length].id,
 						targetOperativeIndex: 2,
+						oldContent: JSON.stringify({
+							id: nanoid(),
+							blocks: [
+								{ type: 'text' as const, id: nanoid(), content: operative[2 % operative.length] }
+							]
+						}),
 						newContent: operative[2 % operative.length].replace(
 							';',
 							', with particular attention to gender-responsive and youth-inclusive approaches;'
@@ -1058,13 +1060,11 @@ async function seedResolutionPapers() {
 						documentNumber: `${abbr}/${roman}/ALT.2`
 					});
 					for (const idx of [6, 7, 8]) {
-						await db
-							.insert(schema.amendmentSponsor)
-							.values({
-								id: nanoid(),
-								amendmentId: amendId,
-								committeeMemberId: delegates[idx % delegates.length].id
-							});
+						await db.insert(schema.amendmentSponsor).values({
+							id: nanoid(),
+							amendmentId: amendId,
+							committeeMemberId: delegates[idx % delegates.length].id
+						});
 					}
 				}
 				// ALTER_POSITION + WITHDRAWN — 1 sponsor
@@ -1081,13 +1081,11 @@ async function seedResolutionPapers() {
 						targetPosition: 4,
 						documentNumber: `${abbr}/${roman}/POS.2`
 					});
-					await db
-						.insert(schema.amendmentSponsor)
-						.values({
-							id: nanoid(),
-							amendmentId: amendId,
-							committeeMemberId: delegates[9 % delegates.length].id
-						});
+					await db.insert(schema.amendmentSponsor).values({
+						id: nanoid(),
+						amendmentId: amendId,
+						committeeMemberId: delegates[9 % delegates.length].id
+					});
 				}
 				// DELETE + SUBMITTED — 2 sponsors
 				if (delegates.length > 11) {
@@ -1106,13 +1104,11 @@ async function seedResolutionPapers() {
 					await db
 						.insert(schema.amendmentSponsor)
 						.values({ id: nanoid(), amendmentId: amendId, committeeMemberId: p });
-					await db
-						.insert(schema.amendmentSponsor)
-						.values({
-							id: nanoid(),
-							amendmentId: amendId,
-							committeeMemberId: delegates[11 % delegates.length].id
-						});
+					await db.insert(schema.amendmentSponsor).values({
+						id: nanoid(),
+						amendmentId: amendId,
+						committeeMemberId: delegates[11 % delegates.length].id
+					});
 				}
 				// ADD + SUBMITTED — used as review item subject (State 2)
 				if (delegates.length > 12) {
@@ -1632,8 +1628,7 @@ async function seedResolutionPapers() {
 							paperId: apId,
 							triggerAmendmentId: acceptedAmendId,
 							subjectAmendmentId: reviewObsolete1AmendId,
-							phase: 'OBSOLESCENCE',
-							resolved: false
+							phase: 'OBSOLESCENCE'
 						});
 					}
 
@@ -1644,8 +1639,7 @@ async function seedResolutionPapers() {
 							paperId: apId,
 							triggerAmendmentId: acceptedAmendId,
 							subjectAmendmentId: pendingAmendIds[0],
-							phase: 'OBSOLESCENCE',
-							resolved: false
+							phase: 'OBSOLESCENCE'
 						});
 					}
 
@@ -1656,8 +1650,7 @@ async function seedResolutionPapers() {
 							paperId: apId,
 							triggerAmendmentId: acceptedAmendId,
 							subjectAmendmentId: pendingAmendIds[1],
-							phase: 'OBSOLESCENCE',
-							resolved: false
+							phase: 'OBSOLESCENCE'
 						});
 					}
 
@@ -1672,8 +1665,8 @@ async function seedResolutionPapers() {
 							paperId: apId,
 							triggerAmendmentId: acceptedAmendId,
 							subjectAmendmentId: reviewObsolete2AmendId,
-							phase: 'OBSOLESCENCE',
-							resolved: true
+							phase: 'RESOLVED',
+							verdictObsolete: true
 						});
 					}
 
@@ -1684,8 +1677,7 @@ async function seedResolutionPapers() {
 							paperId: apId,
 							triggerAmendmentId: acceptedAmendId,
 							subjectAmendmentId: reviewRewrite1AmendId,
-							phase: 'REWRITE',
-							resolved: false
+							phase: 'REWRITE'
 						});
 					}
 
@@ -1696,8 +1688,7 @@ async function seedResolutionPapers() {
 							paperId: apId,
 							triggerAmendmentId: acceptedAmendId,
 							subjectAmendmentId: reviewRewrite2AmendId,
-							phase: 'REWRITE',
-							resolved: false
+							phase: 'REWRITE'
 						});
 					}
 
@@ -1708,8 +1699,7 @@ async function seedResolutionPapers() {
 							paperId: apId,
 							triggerAmendmentId: acceptedAmendId,
 							subjectAmendmentId: reviewRewrite3AmendId,
-							phase: 'REWRITE',
-							resolved: false
+							phase: 'REWRITE'
 						});
 					}
 
@@ -1720,14 +1710,12 @@ async function seedResolutionPapers() {
 							paperId: apId,
 							triggerAmendmentId: acceptedAmendId,
 							subjectAmendmentId: reviewRewrite8AmendId,
-							phase: 'REWRITE',
-							resolved: false
+							phase: 'REWRITE'
 						});
 					}
 
 					// ── State 9: REWRITE, resolved — chair rewrote the stale OP2 reference to match the amended language ──
 					if (reviewRewrite4AmendId) {
-						const reviewItemId9 = nanoid();
 						// originalText9 mirrors RW.6's newContent exactly (what the amendment proposed before the chair's edit)
 						const originalText9 = operative[4 % operative.length].replace(
 							';',
@@ -1738,20 +1726,12 @@ async function seedResolutionPapers() {
 							', in a manner consistent with the Climate Adaptation Rapid Response Facility as amended, including its gender-responsive and youth-inclusive mandate;'
 						);
 						await db.insert(schema.amendmentReviewItem).values({
-							id: reviewItemId9,
+							id: nanoid(),
 							paperId: apId,
 							triggerAmendmentId: acceptedAmendId,
 							subjectAmendmentId: reviewRewrite4AmendId,
-							phase: 'REWRITE',
-							resolved: true
-						});
-						await db.insert(schema.amendmentRevision).values({
-							id: nanoid(),
-							amendmentId: reviewRewrite4AmendId,
-							previousContent: originalText9,
-							newContent: editedText9,
-							causedByAmendmentId: acceptedAmendId,
-							reviewItemId: reviewItemId9
+							phase: 'RESOLVED',
+							verdictRewrite: editedText9
 						});
 						await db
 							.update(schema.amendment)
@@ -1766,8 +1746,8 @@ async function seedResolutionPapers() {
 							paperId: apId,
 							triggerAmendmentId: acceptedAmendId,
 							subjectAmendmentId: reviewRewrite5AmendId,
-							phase: 'REWRITE',
-							resolved: true
+							phase: 'RESOLVED',
+							verdictRewrite: null
 						});
 					}
 
@@ -1778,8 +1758,7 @@ async function seedResolutionPapers() {
 							paperId: apId,
 							triggerAmendmentId: acceptedAmendId,
 							subjectAmendmentId: reviewObsolete3AmendId,
-							phase: 'OBSOLESCENCE',
-							resolved: false
+							phase: 'OBSOLESCENCE'
 						});
 					}
 
@@ -1790,8 +1769,7 @@ async function seedResolutionPapers() {
 							paperId: apId,
 							triggerAmendmentId: acceptedAmendId,
 							subjectAmendmentId: reviewObsolete4AmendId,
-							phase: 'OBSOLESCENCE',
-							resolved: false
+							phase: 'OBSOLESCENCE'
 						});
 					}
 
@@ -1802,8 +1780,7 @@ async function seedResolutionPapers() {
 							paperId: apId,
 							triggerAmendmentId: acceptedAmendId,
 							subjectAmendmentId: reviewRewrite6AmendId,
-							phase: 'REWRITE',
-							resolved: false
+							phase: 'REWRITE'
 						});
 					}
 
@@ -1814,8 +1791,7 @@ async function seedResolutionPapers() {
 							paperId: apId,
 							triggerAmendmentId: acceptedAmendId,
 							subjectAmendmentId: reviewRewrite7AmendId,
-							phase: 'REWRITE',
-							resolved: false
+							phase: 'REWRITE'
 						});
 					}
 				}

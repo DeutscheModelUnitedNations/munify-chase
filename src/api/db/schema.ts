@@ -385,7 +385,11 @@ export const amendmentStatus = pgEnum('amendment_status', [
 	'WITHDRAWN'
 ]);
 
-export const amendmentReviewPhase = pgEnum('amendment_review_phase', ['OBSOLESCENCE', 'REWRITE']);
+export const amendmentReviewPhase = pgEnum('amendment_review_phase', [
+	'OBSOLESCENCE',
+	'REWRITE',
+	'RESOLVED'
+]);
 
 export const shareCodePermission = pgEnum('share_code_permission', ['SPONSOR', 'EDIT']);
 
@@ -508,13 +512,14 @@ export const amendment = snakeCase.table('amendment', {
 	targetOperativeIndex: smallint(),
 	// RES-Markup fragment for ADD / ALTER_TEXT.
 	newContent: text(),
+	// RES-Markup fragment for ADD / ALTER_TEXT (store the old value of the clause for direct comparison after acceptance).
+	oldContent: text(),
 	// Destination index for ADD / ALTER_POSITION.
 	targetPosition: smallint(),
 	documentNumber: text(),
 	// Set when this amendment is stamped as the active beamer amendment, gives ordering ground truth.
 	presentedAt: timestamp(),
 	// Set when this amendment was withdrawn because another was accepted and rendered it obsolete.
-	// Training data link: why was this amendment removed?
 	obsoletedByAmendmentId: text().references((): AnyPgColumn => amendment.id, {
 		onDelete: 'set null'
 	})
@@ -568,35 +573,12 @@ export const amendmentReviewItem = snakeCase.table('amendment_review_item', {
 		.notNull()
 		.references(() => amendment.id, { onDelete: 'cascade' }),
 	phase: amendmentReviewPhase().notNull(),
-	resolved: boolean().notNull().default(false),
-	// Snapshot of the clause text as it existed before the trigger amendment was accepted.
-	// Captured at acceptance time so the AI can see what changed.
-	triggerClauseOldContent: text(),
-	// AI output — written when the WebLLM analysis completes, read by the review UI.
+	// ai suggestion for this amendment's fate
 	aiObsolete: boolean(),
 	aiObsoleteReason: text(),
 	aiRewriteSuggestion: text(),
-	// Training signal: did the chair accept the AI suggestion verbatim?
-	aiSuggestionApplied: boolean().notNull().default(false)
-});
-
-// Content history for an amendment. Written when the chair rewrites an amendment
-// during the post-acceptance review. Used as Task-3 training examples.
-export const amendmentRevision = snakeCase.table('amendment_revision', {
-	...defaultIdAndTimestamps,
-	amendmentId: text()
-		.notNull()
-		.references(() => amendment.id, { onDelete: 'cascade' }),
-	previousContent: text().notNull(),
-	newContent: text().notNull(),
-	// Which accepted amendment caused this rewrite. Null = manual edit outside review flow.
-	causedByAmendmentId: text().references((): AnyPgColumn => amendment.id, {
-		onDelete: 'set null'
-	}),
-	// The review item that produced this revision. Null = manual edit outside review flow.
-	// Allows direct querying of "which review decisions produced rewrites" for training data.
-	reviewItemId: text().references((): AnyPgColumn => amendmentReviewItem.id, {
-		onDelete: 'set null'
-	}),
-	aiSuggestionApplied: boolean().notNull().default(false)
+	aiRewriteReason: text(),
+	// Human verdict to be set by the chair/admin
+	verdictObsolete: boolean(),
+	verdictRewrite: text()
 });

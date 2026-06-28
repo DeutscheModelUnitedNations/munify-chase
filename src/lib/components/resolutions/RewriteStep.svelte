@@ -5,10 +5,17 @@
 	import AiIcon from '$lib/components/AiIcon.svelte';
 	import Flag from '$lib/components/Flag.svelte';
 	import { getTranslatedCountryNameFromAlpha3Code } from '$lib/utils/nationTranslationHelper.svelte';
+	import {
+		OperativeParagraphPreview,
+		serializeClause
+	} from '@deutschemodelunitednations/munify-resolution-editor';
+	import { englishLabels } from '@deutschemodelunitednations/munify-resolution-editor/i18n';
 
 	interface ReviewItem {
 		id: string;
 		aiRewriteSuggestion: string | null | undefined;
+		aiRewriteReason: string | null | undefined;
+		triggerAmendment: { oldContent: string | null | undefined } | null | undefined;
 		subjectAmendment:
 			| {
 					documentNumber: string | null | undefined;
@@ -42,15 +49,18 @@
 		items: ReviewItem[];
 		/** Later-clause amendments — shown collapsed, auto-expanded on hit. */
 		laterItems?: ReviewItem[];
+		/** ID of the item the AI queue is currently working on. */
+		currentlyProcessingId?: string | null;
 	}
 
-	let { items, laterItems = [] }: Props = $props();
+	let { items, laterItems = [], currentlyProcessingId = null }: Props = $props();
 
 	let busy = $state(false);
 	let editMode = $state<Record<string, boolean>>({});
 	let edits = $state<Record<string, string | undefined>>({});
 
 	let laterExpandedOverride = $state<boolean | null>(null);
+	let reasonExpanded = $state(new Set<string>());
 	const laterAiHasHit = $derived(
 		laterItems.some(
 			(i) =>
@@ -73,7 +83,9 @@
 	async function keepOriginalForItem(item: ReviewItem) {
 		busy = true;
 		try {
-			await client.mutate.skipReviewItem({ __args: { reviewItemId: item.id } });
+			await client.mutate.updateAmendmentReviewItem({
+				__args: { reviewItemId: item.id, phase: 'RESOLVED' }
+			});
 		} catch (err) {
 			toast.error(err instanceof Error ? err.message : 'Action failed');
 		} finally {
@@ -84,11 +96,11 @@
 	async function acceptAiForItem(item: ReviewItem) {
 		busy = true;
 		try {
-			await client.mutate.resolveRewrite({
+			await client.mutate.updateAmendmentReviewItem({
 				__args: {
 					reviewItemId: item.id,
-					newContent: item.aiRewriteSuggestion ?? '',
-					aiSuggestionApplied: true
+					phase: 'RESOLVED',
+					verdictRewrite: item.aiRewriteSuggestion ?? ''
 				}
 			});
 		} catch (err) {
@@ -102,13 +114,46 @@
 		const content = edits[item.id] ?? item.subjectAmendment?.newContent ?? '';
 		busy = true;
 		try {
-			await client.mutate.resolveRewrite({
-				__args: { reviewItemId: item.id, newContent: content, aiSuggestionApplied: false }
+			await client.mutate.updateAmendmentReviewItem({
+				__args: { reviewItemId: item.id, phase: 'RESOLVED', verdictRewrite: content }
 			});
 		} catch (err) {
 			toast.error(err instanceof Error ? err.message : 'Action failed');
 		} finally {
 			busy = false;
+		}
+	}
+
+	async function commitAllLater() {
+		busy = true;
+		try {
+			await Promise.all(
+				laterItems.map((item) => {
+					const suggestion = item.aiRewriteSuggestion;
+					const hasSuggestion =
+						suggestion !== null && suggestion !== undefined && suggestion !== '';
+					return client.mutate.updateAmendmentReviewItem({
+						__args: {
+							reviewItemId: item.id,
+							phase: 'RESOLVED',
+							...(hasSuggestion ? { verdictRewrite: suggestion } : {})
+						}
+					});
+				})
+			);
+		} catch (err) {
+			toast.error(err instanceof Error ? err.message : 'Action failed');
+		} finally {
+			busy = false;
+		}
+	}
+
+	function parseOldMarkup(triggerClauseOldContent: string | null | undefined): string | undefined {
+		if (!triggerClauseOldContent) return undefined;
+		try {
+			return serializeClause(JSON.parse(triggerClauseOldContent));
+		} catch {
+			return undefined;
 		}
 	}
 
@@ -149,12 +194,31 @@
 				{@const aiNeedsRewrite = aiEvaluated && item.aiRewriteSuggestion !== ''}
 				{@const aiSuggestion = aiNeedsRewrite ? (item.aiRewriteSuggestion ?? '') : ''}
 				{@const isEditing = editMode[item.id] ?? false}
+				{@const oldMarkup = parseOldMarkup(item.triggerAmendment?.oldContent)}
 
 				<div class="bg-base-200 flex flex-col gap-2 rounded-lg p-3">
 					<div class="flex items-center justify-between gap-2">
-						<p class="font-mono text-sm font-semibold">
-							{item.subjectAmendment?.documentNumber ?? typeLabel(item.subjectAmendment?.type)}
-						</p>
+						<div class="flex items-center gap-2">
+							<p class="font-mono text-sm font-semibold">
+								{item.subjectAmendment?.documentNumber ?? typeLabel(item.subjectAmendment?.type)}
+							</p>
+							{#if aiEvaluated}
+								{#if aiNeedsRewrite}
+									<span class="badge badge-warning badge-sm">
+										<AiIcon />Adjustment suggested
+									</span>
+								{:else}
+									<span class="badge badge-success badge-sm">
+										<AiIcon />No changes needed
+									</span>
+								{/if}
+							{:else if currentlyProcessingId === item.id}
+								<span class="badge badge-ghost badge-sm gap-1">
+									<AiSpinner size="xs" />
+									Analysing…
+								</span>
+							{/if}
+						</div>
 						<div class="flex items-center gap-2 text-xs text-base-content/60 shrink-0">
 							{#if item.subjectAmendment?.proposer?.representation}
 								<span class="flex items-center gap-1">
@@ -173,103 +237,165 @@
 						</div>
 					</div>
 
+					{#if oldMarkup}
+						<div>
+							<p class="text-base-content/50 mb-1 text-xs uppercase tracking-wide">
+								Original clause text
+							</p>
+							<div class="bg-base-100 rounded p-2">
+								<OperativeParagraphPreview
+									markup={oldMarkup}
+									operativeNumber={(item.subjectAmendment?.targetOperativeIndex ?? 0) + 1}
+									labels={englishLabels}
+								/>
+							</div>
+						</div>
+					{/if}
+
 					<div>
-						<p class="text-base-content/50 mb-1 text-xs uppercase tracking-wide">Current text</p>
-						<p class="bg-base-100 rounded p-2 font-mono text-xs whitespace-pre-wrap">
-							{originalContent}
+						<p class="text-base-content/50 mb-1 text-xs uppercase tracking-wide">
+							{oldMarkup ? 'Amendment proposes' : 'Proposed text'}
 						</p>
+						<div class="bg-base-100 rounded p-2">
+							<OperativeParagraphPreview
+								markup={originalContent}
+								{oldMarkup}
+								showDiff={!!oldMarkup}
+								operativeNumber={(item.subjectAmendment?.targetOperativeIndex ?? 0) + 1}
+								labels={englishLabels}
+							/>
+						</div>
 					</div>
 
-					{#if !aiEvaluated}
-						<div class="flex items-center gap-2 text-xs opacity-60">
-							<AiSpinner size="xs" />
-							Evaluating…
-						</div>
-					{:else if aiNeedsRewrite && !isEditing}
+					{#if aiNeedsRewrite && !isEditing}
 						<div>
 							<p
 								class="text-base-content/50 mb-1 flex items-center gap-1 text-xs uppercase tracking-wide"
 							>
 								<AiIcon />
 								<i class="fas fa-wand-magic-sparkles text-primary"></i>
-								AI suggestion
+								AI revision
 							</p>
-							<p
-								class="bg-primary/10 border-primary/20 rounded border p-2 font-mono text-xs whitespace-pre-wrap"
-							>
-								{aiSuggestion}
-							</p>
+							<div class="bg-base-100 rounded p-2">
+								<OperativeParagraphPreview
+									markup={aiSuggestion}
+									oldMarkup={originalContent}
+									showDiff={true}
+									operativeNumber={(item.subjectAmendment?.targetOperativeIndex ?? 0) + 1}
+									labels={englishLabels}
+								/>
+							</div>
 						</div>
+					{/if}
+					{#if aiEvaluated && item.aiRewriteReason}
+						<button
+							class="text-base-content/40 hover:text-base-content/70 flex cursor-pointer items-center gap-1 text-xs"
+							onclick={() => {
+								const next = new Set(reasonExpanded);
+								if (next.has(item.id)) next.delete(item.id);
+								else next.add(item.id);
+								reasonExpanded = next;
+							}}
+						>
+							<AiIcon />
+							<i
+								class="fas fa-chevron-{reasonExpanded.has(item.id)
+									? 'down'
+									: 'right'} text-[0.55rem]"
+							></i>
+							AI reasoning
+						</button>
+						{#if reasonExpanded.has(item.id)}
+							<p class="text-base-content/50 flex items-center gap-1 text-xs italic">
+								{item.aiRewriteReason}
+							</p>
+						{/if}
 					{/if}
 
 					{#if isEditing}
+						{@const currentEditValue = (edits[item.id] ?? aiSuggestion) || originalContent}
 						<textarea
 							class="textarea textarea-bordered w-full font-mono text-xs"
 							rows="3"
-							value={(edits[item.id] ?? aiSuggestion) || originalContent}
+							value={currentEditValue}
 							oninput={(e) => {
 								edits[item.id] = (e.currentTarget as HTMLTextAreaElement).value;
 							}}
 						></textarea>
-					{/if}
-
-					<div class="flex flex-wrap items-center justify-end gap-2">
-						<!-- Pen toggle -->
-						<button
-							class="btn btn-ghost btn-sm cursor-pointer"
-							class:btn-active={isEditing}
-							disabled={busy || !aiEvaluated}
-							onclick={() => {
-								if (isEditing) {
+						<div>
+							<p class="text-base-content/50 mb-1 text-xs uppercase tracking-wide">Preview</p>
+							<div class="bg-base-100 rounded p-2">
+								<OperativeParagraphPreview
+									markup={currentEditValue}
+									oldMarkup={originalContent}
+									showDiff={true}
+									operativeNumber={(item.subjectAmendment?.targetOperativeIndex ?? 0) + 1}
+									labels={englishLabels}
+								/>
+							</div>
+						</div>
+						<div class="flex items-center justify-end gap-2">
+							<button
+								class="btn btn-ghost btn-sm cursor-pointer"
+								disabled={busy}
+								onclick={() => {
 									editMode[item.id] = false;
-								} else {
-									if (!edits[item.id]) edits[item.id] = aiSuggestion || originalContent;
-									editMode[item.id] = true;
-								}
-							}}
-							title={isEditing ? 'Close editor' : 'Edit manually'}
-						>
-							<i class="fas fa-pen text-xs"></i>
-						</button>
-
-						{#if isEditing}
+								}}
+							>
+								Cancel
+							</button>
 							<button
 								class="btn btn-primary btn-sm cursor-pointer"
 								disabled={busy}
 								onclick={() => confirmEditForItem(item)}
 							>
 								{#if busy}<AiSpinner size="xs" />{/if}
-								Save
+								Commit
 							</button>
-						{:else if aiNeedsRewrite}
+						</div>
+					{:else}
+						<div class="flex flex-wrap items-center justify-end gap-2">
 							<button
 								class="btn btn-ghost btn-sm cursor-pointer"
-								disabled={busy}
-								onclick={() => keepOriginalForItem(item)}
+								disabled={busy || !aiEvaluated}
+								onclick={() => {
+									if (!edits[item.id]) edits[item.id] = aiSuggestion || originalContent;
+									editMode[item.id] = true;
+								}}
+								title="Edit manually"
 							>
-								Keep original
+								<i class="fas fa-pen text-xs"></i>
 							</button>
-							<button
-								class="btn btn-primary btn-sm cursor-pointer"
-								disabled={busy}
-								onclick={() => acceptAiForItem(item)}
-							>
-								{#if busy}<AiSpinner size="xs" />{/if}
-								<i class="fas fa-wand-magic-sparkles"></i>
-								Accept AI
-							</button>
-						{:else if aiEvaluated}
-							<button
-								class="btn btn-success btn-sm cursor-pointer"
-								disabled={busy}
-								onclick={() => keepOriginalForItem(item)}
-							>
-								{#if busy}<AiSpinner size="xs" />{/if}
-								<i class="fas fa-check"></i>
-								Confirm
-							</button>
-						{/if}
-					</div>
+							{#if aiNeedsRewrite}
+								<button
+									class="btn btn-ghost btn-sm cursor-pointer"
+									disabled={busy}
+									onclick={() => keepOriginalForItem(item)}
+								>
+									Keep original
+								</button>
+								<button
+									class="btn btn-primary btn-sm cursor-pointer"
+									disabled={busy}
+									onclick={() => acceptAiForItem(item)}
+								>
+									{#if busy}<AiSpinner size="xs" />{/if}
+									<i class="fas fa-wand-magic-sparkles"></i>
+									Accept AI
+								</button>
+							{:else if aiEvaluated}
+								<button
+									class="btn btn-success btn-sm cursor-pointer"
+									disabled={busy}
+									onclick={() => keepOriginalForItem(item)}
+								>
+									{#if busy}<AiSpinner size="xs" />{/if}
+									<i class="fas fa-check"></i>
+									Confirm
+								</button>
+							{/if}
+						</div>
+					{/if}
 				</div>
 			{/each}
 		</div>
@@ -278,21 +404,25 @@
 	<!-- Later-clause amendments -->
 	{#if laterItems.length > 0}
 		<div class="border-base-300 rounded-lg border">
-			<button
-				class="flex w-full cursor-pointer items-center justify-between px-3 py-2.5 text-sm"
-				onclick={() => (laterExpandedOverride = !laterExpanded)}
-			>
-				<span class="flex items-center gap-2 font-medium">
+			<div class="flex w-full items-center justify-between px-3 py-2.5 text-sm">
+				<button
+					class="flex flex-1 cursor-pointer items-center gap-2 text-left font-medium"
+					onclick={() => (laterExpandedOverride = !laterExpanded)}
+				>
 					<i class="fas fa-chevron-{laterExpanded ? 'down' : 'right'} text-xs opacity-60"></i>
 					Later clauses ({laterItems.length})
 					{#if laterItems.some((i) => i.aiRewriteSuggestion !== null && i.aiRewriteSuggestion !== undefined && i.aiRewriteSuggestion !== '')}
 						<span class="badge badge-warning badge-sm"><AiIcon />needs review</span>
 					{:else if laterItems.every((i) => i.aiRewriteSuggestion !== null && i.aiRewriteSuggestion !== undefined)}
 						<span class="badge badge-success badge-sm"><AiIcon />all fine</span>
+					{:else if laterItems.some((i) => i.id === currentlyProcessingId)}
+						<AiSpinner size="xs" />
 					{/if}
-				</span>
-				<span class="text-base-content/40 text-xs">unlikely to be affected</span>
-			</button>
+				</button>
+				<button class="btn btn-xs btn-success" disabled={busy} onclick={commitAllLater}>
+					Confirm all
+				</button>
+			</div>
 
 			{#if laterExpanded}
 				<div class="border-base-300 flex flex-col gap-3 border-t p-3">
@@ -304,6 +434,7 @@
 						{@const laterNeedsRewrite = laterAiEvaluated && item.aiRewriteSuggestion !== ''}
 						{@const laterSuggestion = laterNeedsRewrite ? (item.aiRewriteSuggestion ?? '') : ''}
 						{@const isEditing = editMode[item.id] ?? false}
+						{@const laterOldMarkup = parseOldMarkup(item.triggerAmendment?.oldContent)}
 
 						<div class="bg-base-100 border-base-300 flex flex-col gap-2 rounded-lg border p-3">
 							<div class="flex items-center justify-between gap-2">
@@ -314,6 +445,22 @@
 									</p>
 									{#if clauseIdx != null}
 										<span class="badge badge-outline badge-sm">Clause {clauseIdx + 1}</span>
+									{/if}
+									{#if laterAiEvaluated}
+										{#if laterNeedsRewrite}
+											<span class="badge badge-warning badge-sm">
+												<AiIcon />Adjustment suggested
+											</span>
+										{:else}
+											<span class="badge badge-success badge-sm">
+												<AiIcon />No changes needed
+											</span>
+										{/if}
+									{:else if currentlyProcessingId === item.id}
+										<span class="badge badge-ghost badge-sm gap-1">
+											<AiSpinner size="xs" />
+											Analysing…
+										</span>
 									{/if}
 								</div>
 								<div class="flex items-center gap-2 text-xs text-base-content/60 shrink-0">
@@ -337,103 +484,141 @@
 								</div>
 							</div>
 
+							{#if laterOldMarkup}
+								<div>
+									<p class="text-base-content/50 mb-1 text-xs uppercase tracking-wide">
+										Original clause text
+									</p>
+									<div class="bg-base-200 rounded p-2">
+										<OperativeParagraphPreview
+											markup={laterOldMarkup}
+											operativeNumber={(clauseIdx ?? 0) + 1}
+											labels={englishLabels}
+										/>
+									</div>
+								</div>
+							{/if}
+
 							<div>
 								<p class="text-base-content/50 mb-1 text-xs uppercase tracking-wide">
-									Current text
+									{laterOldMarkup ? 'Amendment proposes' : 'Proposed text'}
 								</p>
-								<p class="bg-base-200 rounded p-2 font-mono text-xs whitespace-pre-wrap">
-									{laterOriginal}
-								</p>
+								<div class="bg-base-200 rounded p-2">
+									<OperativeParagraphPreview
+										markup={laterOriginal}
+										oldMarkup={laterOldMarkup}
+										showDiff={!!laterOldMarkup}
+										operativeNumber={(clauseIdx ?? 0) + 1}
+										labels={englishLabels}
+									/>
+								</div>
 							</div>
 
-							{#if !laterAiEvaluated}
-								<div class="flex items-center gap-2 text-xs opacity-60">
-									<AiSpinner size="xs" />
-									Evaluating…
-								</div>
-							{:else if laterNeedsRewrite && !isEditing}
+							{#if laterNeedsRewrite && !isEditing}
 								<div>
 									<p
 										class="text-base-content/50 mb-1 flex items-center gap-1 text-xs uppercase tracking-wide"
 									>
+										<AiIcon />
 										<i class="fas fa-wand-magic-sparkles text-primary"></i>
-										AI suggestion
+										AI revision
 									</p>
-									<p
-										class="bg-primary/10 border-primary/20 rounded border p-2 font-mono text-xs whitespace-pre-wrap"
-									>
-										{laterSuggestion}
-									</p>
+									<div class="bg-base-200 rounded p-2">
+										<OperativeParagraphPreview
+											markup={laterSuggestion}
+											oldMarkup={laterOriginal}
+											showDiff={true}
+											operativeNumber={(clauseIdx ?? 0) + 1}
+											labels={englishLabels}
+										/>
+									</div>
 								</div>
 							{/if}
 
 							{#if isEditing}
+								{@const currentEditValue = (edits[item.id] ?? laterSuggestion) || laterOriginal}
 								<textarea
 									class="textarea textarea-bordered w-full font-mono text-xs"
 									rows="3"
-									value={(edits[item.id] ?? laterSuggestion) || laterOriginal}
+									value={currentEditValue}
 									oninput={(e) => {
 										edits[item.id] = (e.currentTarget as HTMLTextAreaElement).value;
 									}}
 								></textarea>
-							{/if}
-
-							<div class="flex flex-wrap items-center justify-end gap-2">
-								<button
-									class="btn btn-ghost btn-sm cursor-pointer"
-									class:btn-active={isEditing}
-									disabled={busy || !laterAiEvaluated}
-									onclick={() => {
-										if (isEditing) {
+								<div>
+									<p class="text-base-content/50 mb-1 text-xs uppercase tracking-wide">Preview</p>
+									<div class="bg-base-200 rounded p-2">
+										<OperativeParagraphPreview
+											markup={currentEditValue}
+											oldMarkup={laterOriginal}
+											showDiff={true}
+											operativeNumber={(clauseIdx ?? 0) + 1}
+											labels={englishLabels}
+										/>
+									</div>
+								</div>
+								<div class="flex items-center justify-end gap-2">
+									<button
+										class="btn btn-ghost btn-sm cursor-pointer"
+										disabled={busy}
+										onclick={() => {
 											editMode[item.id] = false;
-										} else {
-											if (!edits[item.id]) edits[item.id] = laterSuggestion || laterOriginal;
-											editMode[item.id] = true;
-										}
-									}}
-									title={isEditing ? 'Close editor' : 'Edit manually'}
-								>
-									<i class="fas fa-pen text-xs"></i>
-								</button>
-
-								{#if isEditing}
+										}}
+									>
+										Cancel
+									</button>
 									<button
 										class="btn btn-primary btn-sm cursor-pointer"
 										disabled={busy}
 										onclick={() => confirmEditForItem(item)}
 									>
 										{#if busy}<AiSpinner size="xs" />{/if}
-										Save
+										Commit
 									</button>
-								{:else if laterNeedsRewrite}
+								</div>
+							{:else}
+								<div class="flex flex-wrap items-center justify-end gap-2">
 									<button
 										class="btn btn-ghost btn-sm cursor-pointer"
-										disabled={busy}
-										onclick={() => keepOriginalForItem(item)}
+										disabled={busy || !laterAiEvaluated}
+										onclick={() => {
+											if (!edits[item.id]) edits[item.id] = laterSuggestion || laterOriginal;
+											editMode[item.id] = true;
+										}}
+										title="Edit manually"
 									>
-										Keep original
+										<i class="fas fa-pen text-xs"></i>
 									</button>
-									<button
-										class="btn btn-primary btn-sm cursor-pointer"
-										disabled={busy}
-										onclick={() => acceptAiForItem(item)}
-									>
-										{#if busy}<AiSpinner size="xs" />{/if}
-										<i class="fas fa-wand-magic-sparkles"></i>
-										Accept AI
-									</button>
-								{:else if laterAiEvaluated}
-									<button
-										class="btn btn-success btn-sm cursor-pointer"
-										disabled={busy}
-										onclick={() => keepOriginalForItem(item)}
-									>
-										{#if busy}<AiSpinner size="xs" />{/if}
-										<i class="fas fa-check"></i>
-										Confirm
-									</button>
-								{/if}
-							</div>
+									{#if laterNeedsRewrite}
+										<button
+											class="btn btn-ghost btn-sm cursor-pointer"
+											disabled={busy}
+											onclick={() => keepOriginalForItem(item)}
+										>
+											Keep original
+										</button>
+										<button
+											class="btn btn-primary btn-sm cursor-pointer"
+											disabled={busy}
+											onclick={() => acceptAiForItem(item)}
+										>
+											{#if busy}<AiSpinner size="xs" />{/if}
+											<i class="fas fa-wand-magic-sparkles"></i>
+											Accept AI
+										</button>
+									{:else if laterAiEvaluated}
+										<button
+											class="btn btn-success btn-sm cursor-pointer"
+											disabled={busy}
+											onclick={() => keepOriginalForItem(item)}
+										>
+											{#if busy}<AiSpinner size="xs" />{/if}
+											<i class="fas fa-check"></i>
+											Confirm
+										</button>
+									{/if}
+								</div>
+							{/if}
 						</div>
 					{/each}
 				</div>

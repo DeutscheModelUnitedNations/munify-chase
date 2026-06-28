@@ -1,12 +1,16 @@
 <script lang="ts">
 	import { client } from '$lib/api/rumbleClient/client';
 	import { classifyObsolescence, evaluateAndSuggestRewrite } from '$lib/ai/amendments';
-	import { SvelteSet } from 'svelte/reactivity';
 	import AiSpinner from '$lib/components/AiSpinner.svelte';
 	import ObsolescenceStep from './ObsolescenceStep.svelte';
 	import RewriteStep from './RewriteStep.svelte';
 	import Flag from '$lib/components/Flag.svelte';
 	import { getTranslatedCountryNameFromAlpha3Code } from '$lib/utils/nationTranslationHelper.svelte';
+	import {
+		OperativeParagraphPreview,
+		serializeClause
+	} from '@deutschemodelunitednations/munify-resolution-editor';
+	import { englishLabels } from '@deutschemodelunitednations/munify-resolution-editor/i18n';
 
 	interface Representation {
 		name: string | null | undefined;
@@ -19,17 +23,17 @@
 	interface ReviewItem {
 		id: string;
 		phase: string | null | undefined;
-		resolved: boolean | null | undefined;
 		aiObsolete: boolean | null | undefined;
 		aiObsoleteReason: string | null | undefined;
 		aiRewriteSuggestion: string | null | undefined;
-		triggerClauseOldContent: string | null | undefined;
+		aiRewriteReason: string | null | undefined;
 		triggerAmendment:
 			| {
 					id: string;
 					documentNumber: string | null | undefined;
 					type: string | null | undefined;
 					newContent: string | null | undefined;
+					oldContent: string | null | undefined;
 					targetOperativeIndex: number | null | undefined;
 					proposer:
 						| { id: string; representation: Representation | null | undefined }
@@ -46,6 +50,7 @@
 					type: string | null | undefined;
 					status: string | null | undefined;
 					newContent: string | null | undefined;
+					oldContent: string | null | undefined;
 					targetOperativeIndex: number | null | undefined;
 					proposer:
 						| { id: string; representation: Representation | null | undefined }
@@ -67,10 +72,8 @@
 	const trigger = $derived(items[0]?.triggerAmendment);
 	const triggerClauseIdx = $derived(trigger?.targetOperativeIndex);
 
-	const obsolescenceItems = $derived(
-		items.filter((i) => i.phase === 'OBSOLESCENCE' && !i.resolved)
-	);
-	const rewriteItems = $derived(items.filter((i) => i.phase === 'REWRITE' && !i.resolved));
+	const obsolescenceItems = $derived(items.filter((i) => i.phase === 'OBSOLESCENCE'));
+	const rewriteItems = $derived(items.filter((i) => i.phase === 'REWRITE'));
 
 	// Split by clause: same-or-earlier clause vs strictly later clause.
 	// Amendments targeting later clauses are very unlikely to need changes — show them
@@ -110,18 +113,16 @@
 		)
 	);
 
-	const totalItems = $derived(items.length);
-	const resolvedItems = $derived(items.filter((i) => i.resolved).length);
-	const allResolved = $derived(resolvedItems === totalItems);
+	const allResolved = $derived(items.every((i) => i.phase === 'RESOLVED'));
+	// Step 1 (Deletions) is active while any obsolescence items remain; then step 2 (Text adjustments).
+	const currentStep = $derived(obsolescenceItems.length > 0 ? 1 : 2);
 
-	let activeTab = $state<'OBSOLESCENCE' | 'REWRITE'>('OBSOLESCENCE');
-
-	const obsCount = $derived(obsolescenceItems.length);
-	const rewriteCount = $derived(rewriteItems.length);
-
-	// Track which item IDs we've enqueued to avoid re-adding on reactive re-runs.
-	const aiStarted = new SvelteSet<string>();
+	// Separate sets per task type so an item processed for OBSOLESCENCE can still
+	// be queued for REWRITE once it advances to that phase.
+	const aiStartedObs = new Set<string>();
+	const aiStartedRew = new Set<string>();
 	let aiRunning = $state(false);
+	let currentlyProcessingId = $state<string | null>(null);
 
 	// Plain (non-reactive) FIFO queue — drained one task at a time.
 	type AiTask = { type: 'obsolescence' | 'rewrite'; item: ReviewItem };
@@ -141,26 +142,64 @@
 		draining = false;
 	}
 
-	// Single effect watches both lists; new items are enqueued and the drain starts.
+	// Single effect watches item lists; new items are enqueued in display order
+	// (same-clause first, later-clause sorted ascending). aiStarted is a plain Set so
+	// mutations to it do not re-trigger this effect — only changes to the item lists do.
+	//
+	// When subscription updates deliver items out of order (e.g. later-clause items
+	// arrive before same-clause items), we re-sort the pending portion of the queue so
+	// same-clause items always run before later-clause items regardless of arrival order.
 	$effect(() => {
 		if (!trigger) return;
 		const trig = trigger;
 
-		const newObs = obsolescenceItems.filter((i) => i.aiObsolete == null && !aiStarted.has(i.id));
-		const newRew = rewriteItems.filter(
-			(i) => i.aiRewriteSuggestion === null && !aiStarted.has(i.id)
+		const byClause = (a: ReviewItem, b: ReviewItem) =>
+			(a.subjectAmendment?.targetOperativeIndex ?? Infinity) -
+			(b.subjectAmendment?.targetOperativeIndex ?? Infinity);
+
+		const obsOrdered = [...sameClauseObsolescence, ...[...laterClauseObsolescence].sort(byClause)];
+		const rewOrdered = [...sameClauseRewrite, ...[...laterClauseRewrite].sort(byClause)];
+
+		const newObs = obsOrdered.filter((i) => i.aiObsolete == null && !aiStartedObs.has(i.id));
+		const newRew = rewOrdered.filter(
+			(i) => i.aiRewriteSuggestion === null && !aiStartedRew.has(i.id)
 		);
 		const newTasks: AiTask[] = [
 			...newObs.map((i) => ({ type: 'obsolescence' as const, item: i })),
 			...newRew.map((i) => ({ type: 'rewrite' as const, item: i }))
 		];
 		if (newTasks.length === 0) return;
-		for (const t of newTasks) aiStarted.add(t.item.id);
-		aiQueue.push(...newTasks);
+		for (const t of newTasks) {
+			if (t.type === 'obsolescence') aiStartedObs.add(t.item.id);
+			else aiStartedRew.add(t.item.id);
+		}
+
+		// Pull any pending (not yet dequeued) tasks out of the queue, merge with new
+		// tasks, then re-sort everything in canonical display order before pushing back.
+		// This corrects cases where later-clause items were queued earlier because they
+		// arrived via subscription before same-clause items.
+		const obsIndexMap = new Map(obsOrdered.map((item, idx) => [item.id, idx]));
+		const rewIndexMap = new Map(rewOrdered.map((item, idx) => [item.id, idx]));
+		const pending = aiQueue.splice(0);
+		const combined = [...pending, ...newTasks];
+		combined.sort((a, b) => {
+			const aIsObs = a.type === 'obsolescence';
+			const bIsObs = b.type === 'obsolescence';
+			if (aIsObs !== bIsObs) return aIsObs ? -1 : 1;
+			const idxA = aIsObs
+				? (obsIndexMap.get(a.item.id) ?? Infinity)
+				: (rewIndexMap.get(a.item.id) ?? Infinity);
+			const idxB = bIsObs
+				? (obsIndexMap.get(b.item.id) ?? Infinity)
+				: (rewIndexMap.get(b.item.id) ?? Infinity);
+			return idxA - idxB;
+		});
+		aiQueue.push(...combined);
 		drainAiQueue(trig);
 	});
 
 	async function processObsolescence(item: ReviewItem, trig: NonNullable<typeof trigger>) {
+		currentlyProcessingId = item.id;
 		try {
 			const result = await classifyObsolescence(
 				{
@@ -168,17 +207,18 @@
 					documentNumber: trig.documentNumber,
 					newContent: trig.newContent,
 					targetOperativeIndex: trig.targetOperativeIndex,
-					oldContent: item.triggerClauseOldContent
+					oldContent: item.triggerAmendment?.oldContent
 				},
 				{
 					id: item.id,
 					documentNumber: item.subjectAmendment?.documentNumber,
 					newContent: item.subjectAmendment?.newContent,
+					oldContent: item.subjectAmendment?.oldContent,
 					targetOperativeIndex: item.subjectAmendment?.targetOperativeIndex
 				}
 			);
 			if (!result) return;
-			await client.mutate.updateReviewItemAiOutput({
+			await client.mutate.updateAmendmentReviewItem({
 				__args: {
 					reviewItemId: result.id,
 					aiObsolete: result.obsolete,
@@ -187,10 +227,13 @@
 			});
 		} catch (err) {
 			console.error('[AI] Obsolescence classification failed:', err);
+		} finally {
+			if (currentlyProcessingId === item.id) currentlyProcessingId = null;
 		}
 	}
 
 	async function processRewrite(item: ReviewItem, trig: NonNullable<typeof trigger>) {
+		currentlyProcessingId = item.id;
 		try {
 			const result = await evaluateAndSuggestRewrite(
 				{
@@ -198,7 +241,7 @@
 					documentNumber: trig.documentNumber,
 					newContent: trig.newContent,
 					targetOperativeIndex: trig.targetOperativeIndex,
-					oldContent: item.triggerClauseOldContent
+					oldContent: item.triggerAmendment?.oldContent
 				},
 				{
 					id: item.id,
@@ -207,37 +250,45 @@
 					targetOperativeIndex: item.subjectAmendment?.targetOperativeIndex
 				}
 			);
-			await client.mutate.updateReviewItemAiOutput({
+			await client.mutate.updateAmendmentReviewItem({
 				__args: {
 					reviewItemId: item.id,
-					aiRewriteSuggestion: result.suggestion
+					aiRewriteSuggestion: result.suggestion,
+					aiRewriteReason: result.reason
 				}
 			});
 		} catch (err) {
 			console.error('[AI] Rewrite evaluation failed:', err);
+		} finally {
+			if (currentlyProcessingId === item.id) currentlyProcessingId = null;
 		}
 	}
 
 	function opClauseRef(idx: number | null | undefined) {
 		return idx != null ? ` – Clause ${idx + 1}` : '';
 	}
+
+	function parseOldMarkup(raw: string | null | undefined): string | undefined {
+		if (!raw) return undefined;
+		try {
+			return serializeClause(JSON.parse(raw));
+		} catch {
+			return undefined;
+		}
+	}
+
+	// Old clause text from any review item (all share the same trigger clause snapshot).
+	const triggerOldMarkup = $derived(parseOldMarkup(items[0]?.triggerAmendment?.oldContent));
 </script>
 
 <div class="modal modal-open">
-	<div class="modal-box flex max-w-2xl flex-col gap-4">
+	<div class="modal-box flex max-w-2xl flex-col gap-5">
 		<!-- Header -->
-		<div class="flex items-start justify-between gap-4">
-			<div>
-				<h3 class="text-base font-bold">
-					Review after accepting
-					{trigger?.documentNumber ?? 'amendment'}
-				</h3>
-				<p class="text-base-content/60 text-sm">
-					{#if trigger?.type === 'ALTER_TEXT'}
-						Text of clause{opClauseRef(trigger.targetOperativeIndex)} was changed
-					{/if}
-				</p>
-			</div>
+		<div class="flex items-center justify-between gap-4">
+			<h3 class="text-base font-bold">
+				Review after accepting
+				{trigger?.documentNumber ?? 'amendment'}
+			</h3>
 			<div class="flex items-center gap-2">
 				{#if aiRunning}
 					<AiSpinner size="sm" />
@@ -249,122 +300,92 @@
 			</div>
 		</div>
 
-		<!-- Trigger amendment metadata -->
-		{#if trigger}
-			<div class="bg-base-200 rounded-lg p-3 flex flex-col gap-2">
-				<div class="flex items-center justify-between gap-2">
-					<div class="flex items-center gap-2">
-						{#if trigger.type === 'ADD'}
-							<i class="fas fa-plus text-xs opacity-60"></i>
-						{:else if trigger.type === 'DELETE'}
-							<i class="fas fa-trash text-xs opacity-60"></i>
-						{:else if trigger.type === 'ALTER_TEXT'}
-							<i class="fas fa-pen text-xs opacity-60"></i>
-						{:else if trigger.type === 'ALTER_POSITION'}
-							<i class="fas fa-arrows-up-down text-xs opacity-60"></i>
-						{/if}
-						{#if trigger.documentNumber}
-							<span class="font-mono text-sm font-semibold">{trigger.documentNumber}</span>
-						{/if}
-						{#if trigger.targetOperativeIndex != null}
-							<span class="text-base-content/50 text-xs"
-								>Clause {trigger.targetOperativeIndex + 1}</span
-							>
-						{/if}
-					</div>
-					<div class="flex items-center gap-2 text-xs text-base-content/60 shrink-0">
-						{#if trigger.proposer?.representation}
-							<span class="flex items-center gap-1.5">
-								<Flag representation={trigger.proposer.representation} size="xs" />
-								{getTranslatedCountryNameFromAlpha3Code(
-									trigger.proposer.representation.alpha3Code
-								) ?? trigger.proposer.representation.name}
-							</span>
-						{/if}
-						{#if (trigger.sponsors?.length ?? 0) > 0}
-							<span class="text-base-content/40">
-								<i class="fas fa-users mr-0.5 text-[0.6rem]"></i>{trigger.sponsors?.length}
-							</span>
-						{/if}
-					</div>
+		<!-- Step progress (non-interactive) -->
+		<ul class="steps w-full text-xs">
+			<li class="step step-primary">Deletions</li>
+			<li class="step" class:step-primary={currentStep >= 2}>Text adjustments</li>
+		</ul>
+
+		<!-- Diff view — no wrapper boxes; OperativeParagraphPreview supplies its own card -->
+		{#if trigger && (triggerOldMarkup || trigger.newContent)}
+			<div class="flex flex-col gap-3">
+				<div class="flex items-center gap-2 text-xs text-base-content/50">
+					{#if trigger.type === 'ALTER_TEXT'}
+						<i class="fas fa-pen opacity-60"></i>
+					{/if}
+					{#if trigger.documentNumber}
+						<span class="font-mono font-semibold">{trigger.documentNumber}</span>
+					{/if}
+					{#if trigger.targetOperativeIndex != null}
+						<span>· Clause {trigger.targetOperativeIndex + 1}</span>
+					{/if}
+					{#if trigger.proposer?.representation}
+						<span class="ml-auto flex items-center gap-1">
+							<Flag representation={trigger.proposer.representation} size="xs" />
+							{getTranslatedCountryNameFromAlpha3Code(trigger.proposer.representation.alpha3Code) ??
+								trigger.proposer.representation.name}
+						</span>
+					{/if}
 				</div>
+				{#if triggerOldMarkup}
+					<div>
+						<p class="text-base-content/40 mb-1 text-xs uppercase tracking-wide">Before</p>
+						<OperativeParagraphPreview
+							markup={triggerOldMarkup}
+							operativeNumber={(trigger.targetOperativeIndex ?? 0) + 1}
+							labels={englishLabels}
+						/>
+					</div>
+				{/if}
 				{#if trigger.newContent}
 					<div>
-						<p class="text-base-content/50 mb-1 text-xs uppercase tracking-wide">New text</p>
-						<p class="font-mono text-xs whitespace-pre-wrap opacity-80">{trigger.newContent}</p>
+						<p class="text-base-content/40 mb-1 text-xs uppercase tracking-wide">
+							{triggerOldMarkup ? 'After' : 'New text'}
+						</p>
+						<OperativeParagraphPreview
+							markup={trigger.newContent}
+							oldMarkup={triggerOldMarkup}
+							showDiff={!!triggerOldMarkup}
+							operativeNumber={(trigger.targetOperativeIndex ?? 0) + 1}
+							labels={englishLabels}
+						/>
 					</div>
 				{/if}
 			</div>
+			<div class="border-base-300 border-t"></div>
 		{/if}
 
-		<!-- Progress -->
-		<div class="flex items-center gap-1 text-xs text-base-content/40">
-			<span class="ml-auto">{resolvedItems}/{totalItems} resolved</span>
-		</div>
-
-		<!-- Tabs -->
-		<div role="tablist" class="tabs tabs-bordered -mt-2">
-			<button
-				role="tab"
-				class="tab"
-				class:tab-active={activeTab === 'OBSOLESCENCE'}
-				onclick={() => (activeTab = 'OBSOLESCENCE')}
-			>
-				<i class="fas fa-trash-can mr-1.5 text-xs"></i>
-				Deletions
-				{#if obsCount > 0}
-					<span class="badge badge-sm ml-1.5">{obsCount}</span>
-				{/if}
-			</button>
-			<button
-				role="tab"
-				class="tab"
-				class:tab-active={activeTab === 'REWRITE'}
-				onclick={() => (activeTab = 'REWRITE')}
-			>
-				<i class="fas fa-pen-to-square mr-1.5 text-xs"></i>
-				Text adjustments
-				{#if rewriteCount > 0}
-					<span class="badge badge-sm ml-1.5">{rewriteCount}</span>
-				{/if}
-			</button>
-		</div>
-
-		<!-- Tab content -->
+		<!-- Step content -->
 		{#if allResolved}
-			<div class="py-4 text-center">
+			<div class="py-6 text-center">
 				<i class="fas fa-circle-check text-success text-2xl"></i>
 				<p class="mt-2 font-semibold">All amendments reviewed</p>
 				<button class="btn btn-primary mt-4 cursor-pointer" onclick={onclose}>Done</button>
 			</div>
-		{:else if activeTab === 'OBSOLESCENCE'}
+		{:else if currentStep === 1}
 			{#if obsolescenceItems.length > 0}
 				<ObsolescenceStep
 					items={sameClauseObsolescence}
 					laterItems={laterClauseObsolescence}
+					{currentlyProcessingId}
 					onadvance={() => {}}
+				/>
+			{/if}
+		{:else}
+			{#if rewriteItems.length > 0}
+				<RewriteStep
+					items={sameClauseRewrite}
+					laterItems={laterClauseRewrite}
+					{currentlyProcessingId}
 				/>
 			{:else}
 				<div class="flex flex-col items-center gap-2 py-8 text-center">
 					<i class="fas fa-circle-check text-success text-2xl"></i>
-					<p class="font-semibold">No obsolescence check needed</p>
+					<p class="font-semibold">No text adjustments needed</p>
 					<p class="text-base-content/50 max-w-xs text-sm">
-						No other submitted amendments target the same clause — nothing risks becoming outdated
-						by this change.
+						All surviving amendments were marked clean — nothing needs rewording.
 					</p>
-				</div>
-			{/if}
-		{:else if activeTab === 'REWRITE'}
-			{#if rewriteItems.length > 0}
-				<RewriteStep items={sameClauseRewrite} laterItems={laterClauseRewrite} />
-			{:else}
-				<div class="flex flex-col items-center gap-2 py-8 text-center">
-					<i class="fas fa-pen-slash text-base-content/30 text-2xl"></i>
-					<p class="font-semibold">No text adjustments to review</p>
-					<p class="text-base-content/50 max-w-xs text-sm">
-						All obsolescence decisions have been recorded. Any surviving amendments will appear here
-						once the Deletions tab is resolved.
-					</p>
+					<button class="btn btn-primary mt-2 cursor-pointer" onclick={onclose}>Done</button>
 				</div>
 			{/if}
 		{/if}

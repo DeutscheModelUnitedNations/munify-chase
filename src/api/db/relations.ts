@@ -446,10 +446,6 @@ export const relations = defineRelations(schema, (r) => ({
 		reviewItemsAsSubject: r.many.amendmentReviewItem({
 			from: r.amendment.id,
 			to: r.amendmentReviewItem.subjectAmendmentId
-		}),
-		revisions: r.many.amendmentRevision({
-			from: r.amendment.id,
-			to: r.amendmentRevision.amendmentId
 		})
 	},
 	amendmentReviewItem: {
@@ -467,23 +463,6 @@ export const relations = defineRelations(schema, (r) => ({
 			from: r.amendmentReviewItem.subjectAmendmentId,
 			to: r.amendment.id,
 			optional: false
-		}),
-		revision: r.one.amendmentRevision({
-			from: r.amendmentReviewItem.id,
-			to: r.amendmentRevision.reviewItemId,
-			optional: true
-		})
-	},
-	amendmentRevision: {
-		amendment: r.one.amendment({
-			from: r.amendmentRevision.amendmentId,
-			to: r.amendment.id,
-			optional: false
-		}),
-		reviewItem: r.one.amendmentReviewItem({
-			from: r.amendmentRevision.reviewItemId,
-			to: r.amendmentReviewItem.id,
-			optional: true
 		})
 	},
 	amendmentSponsor: {

@@ -48,16 +48,16 @@
 		__args: { where: { paper: { id: paperId } } },
 		id: true,
 		phase: true,
-		resolved: true,
 		aiObsolete: true,
 		aiObsoleteReason: true,
 		aiRewriteSuggestion: true,
-		triggerClauseOldContent: true,
+		aiRewriteReason: true,
 		triggerAmendment: {
 			id: true,
 			documentNumber: true,
 			type: true,
 			newContent: true,
+			oldContent: true,
 			targetClauseId: true,
 			targetOperativeIndex: true,
 			proposer: {
@@ -72,6 +72,7 @@
 			type: true,
 			status: true,
 			newContent: true,
+			oldContent: true,
 			targetOperativeIndex: true,
 			proposer: {
 				id: true,
@@ -85,10 +86,10 @@
 	const pendingReviewGroups = $derived.by(() => {
 		const pending = (allReviewItems ?? []).filter(
 			(r: {
-				resolved?: boolean | null;
+				phase?: string | null;
 				subjectAmendment?: { status?: string | null; type?: string | null } | null;
 			}) =>
-				!r.resolved &&
+				r.phase !== 'RESOLVED' &&
 				r.subjectAmendment?.status === 'SUBMITTED' &&
 				r.subjectAmendment?.type === 'ALTER_TEXT'
 		);
@@ -115,6 +116,18 @@
 
 	$effect(() => {
 		if (openTriggerId != null) activeTrigger = openTriggerId;
+	});
+
+	// After accepting an amendment, auto-open the review panel once the server
+	// delivers the new review items via subscription.
+	let pendingAutoOpenFor = $state<string | null>(null);
+	$effect(() => {
+		if (!pendingAutoOpenFor) return;
+		const group = pendingReviewGroups.find((g) => g.triggerId === pendingAutoOpenFor);
+		if (group) {
+			activeTrigger = pendingAutoOpenFor;
+			pendingAutoOpenFor = null;
+		}
 	});
 
 	const amendments = await client.liveQuery.amendments({
@@ -244,12 +257,15 @@
 			m.amendmentSubmitted()
 		);
 	const withdraw = (id: string) => run(id, () => client.mutate.deleteAmendment({ __args: { id } }));
-	const accept = (id: string, consensus: boolean) =>
-		run(
+	const accept = async (id: string, consensus: boolean) => {
+		await run(
 			id,
 			() => client.mutate.acceptAmendment({ __args: { id, consensus }, id: true }),
 			m.amendmentApplied()
 		);
+		// Watch for review items arriving via subscription and auto-open the panel.
+		pendingAutoOpenFor = id;
+	};
 	const reject = (id: string) =>
 		run(id, () => client.mutate.rejectAmendment({ __args: { id }, id: true }));
 	// Select activeAmendmentId + the activeAmendment relation so the mutation

@@ -43,10 +43,12 @@
 		items: ReviewItem[];
 		/** Amendments targeting a later clause — unlikely to be affected. Shown collapsed. */
 		laterItems?: ReviewItem[];
+		/** ID of the item the AI queue is currently working on. */
+		currentlyProcessingId?: string | null;
 		onadvance: () => void;
 	}
 
-	let { items, laterItems = [], onadvance }: Props = $props();
+	let { items, laterItems = [], currentlyProcessingId = null, onadvance }: Props = $props();
 
 	const allItems = $derived([...items, ...laterItems]);
 
@@ -79,17 +81,21 @@
 	);
 
 	let busy = $state(false);
+	let reasonExpanded = $state(new Set<string>());
 
 	const obsoleteCount = $derived(Object.values(decisions).filter(Boolean).length);
-	const aiReady = $derived(allItems.length === 0 || allItems.some((i) => i.aiObsolete != null));
 
 	async function confirm() {
 		busy = true;
 		try {
 			await Promise.all(
 				allItems.map((item) =>
-					client.mutate.resolveObsolescence({
-						__args: { reviewItemId: item.id, obsolete: decisions[item.id] ?? false }
+					client.mutate.updateAmendmentReviewItem({
+						__args: {
+							reviewItemId: item.id,
+							phase: decisions[item.id] ? 'RESOLVED' : 'REWRITE',
+							verdictObsolete: decisions[item.id] ?? false
+						}
 					})
 				)
 			);
@@ -120,12 +126,6 @@
 	<div>
 		<p class="text-base-content/70 text-sm">
 			Which of the following amendments are now obsolete because of this change?
-			{#if !aiReady}
-				<span class="badge badge-ghost badge-sm ml-1 gap-1">
-					<AiSpinner size="xs" />
-					AI analysing…
-				</span>
-			{/if}
 		</p>
 	</div>
 
@@ -154,6 +154,11 @@
 									<span class="badge badge-sm {badge.cls}">
 										<AiIcon />{badge.label}
 									</span>
+								{:else if currentlyProcessingId === item.id}
+									<span class="badge badge-ghost badge-sm gap-1">
+										<AiSpinner size="xs" />
+										Analysing…
+									</span>
 								{/if}
 							</div>
 							<div class="flex items-center gap-2 text-xs text-base-content/60 shrink-0">
@@ -181,10 +186,35 @@
 								{item.subjectAmendment.newContent}
 							</p>
 						{/if}
-						{#if item.aiObsoleteReason && item.aiObsolete === true}
-							<p class="text-warning/80 flex items-center gap-1 text-xs italic">
-								<AiIcon />{item.aiObsoleteReason}
-							</p>
+						{#if item.aiObsoleteReason}
+							{#if item.aiObsolete === true}
+								<p class="text-warning/80 flex items-center gap-1 text-xs italic">
+									<AiIcon />{item.aiObsoleteReason}
+								</p>
+							{:else}
+								<button
+									class="text-base-content/40 hover:text-base-content/70 flex cursor-pointer items-center gap-1 text-xs"
+									onclick={() => {
+										const next = new Set(reasonExpanded);
+										if (next.has(item.id)) next.delete(item.id);
+										else next.add(item.id);
+										reasonExpanded = next;
+									}}
+								>
+									<AiIcon />
+									<i
+										class="fas fa-chevron-{reasonExpanded.has(item.id)
+											? 'down'
+											: 'right'} text-[0.55rem]"
+									></i>
+									AI reasoning
+								</button>
+								{#if reasonExpanded.has(item.id)}
+									<p class="text-base-content/50 flex items-center gap-1 text-xs italic">
+										{item.aiObsoleteReason}
+									</p>
+								{/if}
+							{/if}
 						{/if}
 					</div>
 				</label>
@@ -197,21 +227,23 @@
 	<!-- Later-clause amendments (collapsed unless AI finds a hit) -->
 	{#if laterItems.length > 0}
 		<div class="border-base-300 rounded-lg border">
-			<button
-				class="flex w-full cursor-pointer items-center justify-between px-3 py-2.5 text-sm"
-				onclick={() => (laterExpandedOverride = !laterExpanded)}
-			>
-				<span class="flex items-center gap-2 font-medium">
+			<div class="flex w-full items-center justify-between px-3 py-2.5 text-sm">
+				<button
+					class="flex flex-1 cursor-pointer items-center gap-2 text-left font-medium"
+					onclick={() => (laterExpandedOverride = !laterExpanded)}
+				>
 					<i class="fas fa-chevron-{laterExpanded ? 'down' : 'right'} text-xs opacity-60"></i>
 					Later clauses ({laterItems.length})
 					{#if laterItems.some((i) => i.aiObsolete === true)}
 						<span class="badge badge-error badge-sm"><AiIcon />hit</span>
 					{:else if laterItems.every((i) => i.aiObsolete != null)}
 						<span class="badge badge-success badge-sm"><AiIcon />all fine</span>
+					{:else if laterItems.some((i) => i.id === currentlyProcessingId)}
+						<AiSpinner size="xs" />
 					{/if}
-				</span>
+				</button>
 				<span class="text-base-content/40 text-xs">unlikely to be affected</span>
-			</button>
+			</div>
 			{#if laterExpanded}
 				<div class="border-base-300 flex flex-col gap-2 border-t p-3">
 					{#each sortedLaterItems as item (item.id)}
@@ -241,10 +273,10 @@
 											<span class="badge badge-sm {badge.cls}">
 												<AiIcon />{badge.label}
 											</span>
-										{:else if item.aiObsolete == null}
+										{:else if item.aiObsolete == null && currentlyProcessingId === item.id}
 											<span class="badge badge-ghost badge-sm gap-1">
 												<AiSpinner size="xs" />
-												analysing…
+												Analysing…
 											</span>
 										{/if}
 									</div>
@@ -291,9 +323,7 @@
 			{#if busy}
 				<AiSpinner size="sm" />
 			{/if}
-			{obsoleteCount > 0
-				? `Remove ${obsoleteCount} amendment${obsoleteCount > 1 ? 's' : ''} and continue`
-				: 'None are obsolete — continue'}
+			Commit
 		</button>
 	</div>
 </div>

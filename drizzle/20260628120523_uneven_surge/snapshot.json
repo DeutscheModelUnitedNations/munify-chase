@@ -4,7 +4,7 @@
 			"entityType": "enums",
 			"name": "amendment_review_phase",
 			"schema": "public",
-			"values": ["OBSOLESCENCE", "REWRITE"]
+			"values": ["OBSOLESCENCE", "REWRITE", "RESOLVED"]
 		},
 		{
 			"entityType": "enums",
@@ -143,12 +143,6 @@
 			"entityType": "tables",
 			"isRlsEnabled": false,
 			"name": "amendment_review_item",
-			"schema": "public"
-		},
-		{
-			"entityType": "tables",
-			"isRlsEnabled": false,
-			"name": "amendment_revision",
 			"schema": "public"
 		},
 		{
@@ -496,6 +490,19 @@
 			"entityType": "columns",
 			"generated": null,
 			"identity": null,
+			"name": "old_content",
+			"notNull": false,
+			"schema": "public",
+			"table": "amendment",
+			"type": "text",
+			"typeSchema": null
+		},
+		{
+			"default": null,
+			"dimensions": 0,
+			"entityType": "columns",
+			"generated": null,
+			"identity": null,
 			"name": "target_position",
 			"notNull": false,
 			"schema": "public",
@@ -634,32 +641,6 @@
 			"typeSchema": "public"
 		},
 		{
-			"default": "false",
-			"dimensions": 0,
-			"entityType": "columns",
-			"generated": null,
-			"identity": null,
-			"name": "resolved",
-			"notNull": true,
-			"schema": "public",
-			"table": "amendment_review_item",
-			"type": "boolean",
-			"typeSchema": null
-		},
-		{
-			"default": null,
-			"dimensions": 0,
-			"entityType": "columns",
-			"generated": null,
-			"identity": null,
-			"name": "trigger_clause_old_content",
-			"notNull": false,
-			"schema": "public",
-			"table": "amendment_review_item",
-			"type": "text",
-			"typeSchema": null
-		},
-		{
 			"default": null,
 			"dimensions": 0,
 			"entityType": "columns",
@@ -699,13 +680,13 @@
 			"typeSchema": null
 		},
 		{
-			"default": "false",
+			"default": null,
 			"dimensions": 0,
 			"entityType": "columns",
 			"generated": null,
 			"identity": null,
-			"name": "ai_suggestion_applied",
-			"notNull": true,
+			"name": "verdict_obsolete",
+			"notNull": false,
 			"schema": "public",
 			"table": "amendment_review_item",
 			"type": "boolean",
@@ -717,115 +698,11 @@
 			"entityType": "columns",
 			"generated": null,
 			"identity": null,
-			"name": "id",
-			"notNull": true,
-			"schema": "public",
-			"table": "amendment_revision",
-			"type": "text",
-			"typeSchema": null
-		},
-		{
-			"default": "now()",
-			"dimensions": 0,
-			"entityType": "columns",
-			"generated": null,
-			"identity": null,
-			"name": "created_at",
-			"notNull": true,
-			"schema": "public",
-			"table": "amendment_revision",
-			"type": "timestamp",
-			"typeSchema": null
-		},
-		{
-			"default": "now()",
-			"dimensions": 0,
-			"entityType": "columns",
-			"generated": null,
-			"identity": null,
-			"name": "updated_at",
+			"name": "verdict_rewrite",
 			"notNull": false,
 			"schema": "public",
-			"table": "amendment_revision",
-			"type": "timestamp",
-			"typeSchema": null
-		},
-		{
-			"default": null,
-			"dimensions": 0,
-			"entityType": "columns",
-			"generated": null,
-			"identity": null,
-			"name": "amendment_id",
-			"notNull": true,
-			"schema": "public",
-			"table": "amendment_revision",
+			"table": "amendment_review_item",
 			"type": "text",
-			"typeSchema": null
-		},
-		{
-			"default": null,
-			"dimensions": 0,
-			"entityType": "columns",
-			"generated": null,
-			"identity": null,
-			"name": "previous_content",
-			"notNull": true,
-			"schema": "public",
-			"table": "amendment_revision",
-			"type": "text",
-			"typeSchema": null
-		},
-		{
-			"default": null,
-			"dimensions": 0,
-			"entityType": "columns",
-			"generated": null,
-			"identity": null,
-			"name": "new_content",
-			"notNull": true,
-			"schema": "public",
-			"table": "amendment_revision",
-			"type": "text",
-			"typeSchema": null
-		},
-		{
-			"default": null,
-			"dimensions": 0,
-			"entityType": "columns",
-			"generated": null,
-			"identity": null,
-			"name": "caused_by_amendment_id",
-			"notNull": false,
-			"schema": "public",
-			"table": "amendment_revision",
-			"type": "text",
-			"typeSchema": null
-		},
-		{
-			"default": null,
-			"dimensions": 0,
-			"entityType": "columns",
-			"generated": null,
-			"identity": null,
-			"name": "review_item_id",
-			"notNull": false,
-			"schema": "public",
-			"table": "amendment_revision",
-			"type": "text",
-			"typeSchema": null
-		},
-		{
-			"default": "false",
-			"dimensions": 0,
-			"entityType": "columns",
-			"generated": null,
-			"identity": null,
-			"name": "ai_suggestion_applied",
-			"notNull": true,
-			"schema": "public",
-			"table": "amendment_revision",
-			"type": "boolean",
 			"typeSchema": null
 		},
 		{
@@ -3614,45 +3491,6 @@
 			"columns": ["amendment_id"],
 			"columnsTo": ["id"],
 			"entityType": "fks",
-			"name": "amendment_revision_amendment_id_amendment_id_fkey",
-			"nameExplicit": false,
-			"onDelete": "CASCADE",
-			"onUpdate": "NO ACTION",
-			"schema": "public",
-			"schemaTo": "public",
-			"table": "amendment_revision",
-			"tableTo": "amendment"
-		},
-		{
-			"columns": ["caused_by_amendment_id"],
-			"columnsTo": ["id"],
-			"entityType": "fks",
-			"name": "amendment_revision_caused_by_amendment_id_amendment_id_fkey",
-			"nameExplicit": false,
-			"onDelete": "SET NULL",
-			"onUpdate": "NO ACTION",
-			"schema": "public",
-			"schemaTo": "public",
-			"table": "amendment_revision",
-			"tableTo": "amendment"
-		},
-		{
-			"columns": ["review_item_id"],
-			"columnsTo": ["id"],
-			"entityType": "fks",
-			"name": "amendment_revision_review_item_id_amendment_review_item_id_fkey",
-			"nameExplicit": false,
-			"onDelete": "SET NULL",
-			"onUpdate": "NO ACTION",
-			"schema": "public",
-			"schemaTo": "public",
-			"table": "amendment_revision",
-			"tableTo": "amendment_review_item"
-		},
-		{
-			"columns": ["amendment_id"],
-			"columnsTo": ["id"],
-			"entityType": "fks",
 			"name": "amendment_sponsor_amendment_id_amendment_id_fk",
 			"nameExplicit": false,
 			"onDelete": "CASCADE",
@@ -4339,14 +4177,6 @@
 		{
 			"columns": ["id"],
 			"entityType": "pks",
-			"name": "amendment_revision_pkey",
-			"nameExplicit": false,
-			"schema": "public",
-			"table": "amendment_revision"
-		},
-		{
-			"columns": ["id"],
-			"entityType": "pks",
 			"name": "amendment_sponsor_pkey",
 			"nameExplicit": false,
 			"schema": "public",
@@ -4709,8 +4539,8 @@
 		}
 	],
 	"dialect": "postgres",
-	"id": "449a2746-660c-44cd-9f60-ab09787dc31d",
-	"prevIds": ["34024b60-88fd-4538-9158-b06624b14776"],
+	"id": "97701754-2979-40a4-b308-ad1e79d5405e",
+	"prevIds": ["6d18d7c5-c97f-4971-b102-3e133333596b"],
 	"renames": [],
 	"version": "8"
 }

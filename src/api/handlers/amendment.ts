@@ -16,7 +16,7 @@ import {
 import { assertFindFirstExists } from '@m1212e/rumble';
 import { nanoid, nanoidValidation } from '$lib/helpers/nanoid';
 import { GraphQLError } from 'graphql';
-import { and, count, eq } from 'drizzle-orm';
+import { and, count, eq, inArray } from 'drizzle-orm';
 import { applyServerMutation, readPaperJson } from '$api/yjs/server';
 import {
 	yDocToJson,
@@ -54,6 +54,7 @@ const ref = object({ table: 'amendment' });
 query({ table: 'amendment' });
 const pubsub = rumblePubsub({ table: 'amendment' });
 const snapshotPubsub = rumblePubsub({ table: 'paperContentSnapshot' });
+const reviewItemPubsub = rumblePubsub({ table: 'amendmentReviewItem' });
 
 const typeEnum = enum_({ tsName: 'amendmentType' });
 const statusEnum = enum_({ tsName: 'amendmentStatus' });
@@ -232,8 +233,8 @@ schemaBuilder.mutationFields((t) => ({
 
 			const newStatus = args.consensus ? 'CONSENSUS_ADOPTED' : 'ACCEPTED';
 
-			// Capture the old clause text before applying so it can be stored on
-			// review items for the AI (which needs to see what changed).
+			// Ordered clause IDs after the mutation — used to find same/later-clause siblings.
+			let postMutationClauseIds: string[] = [];
 			let triggerClauseOldContent: string | null = null;
 
 			// Apply the amendment to the paper's Y.Doc first; the yjs layer has
@@ -285,6 +286,7 @@ schemaBuilder.mutationFields((t) => ({
 					}
 				}
 
+				postMutationClauseIds = next.operative.map((c) => c.id);
 				replaceResolution(doc, next);
 			});
 
@@ -302,19 +304,26 @@ schemaBuilder.mutationFields((t) => ({
 				});
 			});
 
-			// For ALTER_TEXT: find remaining SUBMITTED amendments on the same clause
-			// and create OBSOLESCENCE-phase review items so the chair can assess
-			// which are now obsolete or need rewording
+			// For ALTER_TEXT: find remaining SUBMITTED ALTER_TEXT amendments on the
+			// same clause or any later clause and create OBSOLESCENCE-phase review
+			// items so the chair can assess which are now obsolete or need rewording.
 			if (amendment.type === 'ALTER_TEXT' && amendment.targetClauseId) {
-				const siblings = await db.query.amendment.findMany({
-					where: {
-						paperId: amendment.paperId,
-						status: 'SUBMITTED',
-						type: 'ALTER_TEXT',
-						targetClauseId: amendment.targetClauseId
-					},
-					columns: { id: true }
-				});
+				const targetIdx = postMutationClauseIds.indexOf(amendment.targetClauseId);
+				const clauseIdsAtOrAfter =
+					targetIdx >= 0 ? postMutationClauseIds.slice(targetIdx) : [amendment.targetClauseId];
+
+				const siblings = await db
+					.select({ id: schema.amendment.id })
+					.from(schema.amendment)
+					.where(
+						and(
+							eq(schema.amendment.paperId, amendment.paperId),
+							eq(schema.amendment.status, 'SUBMITTED'),
+							eq(schema.amendment.type, 'ALTER_TEXT'),
+							inArray(schema.amendment.targetClauseId, clauseIdsAtOrAfter)
+						)
+					);
+
 				if (siblings.length > 0) {
 					await db.insert(schema.amendmentReviewItem).values(
 						siblings.map((s) => ({
@@ -326,6 +335,7 @@ schemaBuilder.mutationFields((t) => ({
 							triggerClauseOldContent
 						}))
 					);
+					reviewItemPubsub.created();
 				}
 			}
 

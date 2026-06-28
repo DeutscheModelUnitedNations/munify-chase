@@ -164,7 +164,7 @@
 	const reviewItemsForBadges = await client.liveQuery.amendmentReviewItems({
 		__args: { where: { paper: { id: paperId } } },
 		id: true,
-		resolved: true,
+		phase: true,
 		triggerAmendment: { id: true, targetClauseId: true }
 	});
 
@@ -200,14 +200,17 @@
 	const reviewClauseIds = $derived(
 		new Set(
 			(reviewItemsForBadges ?? [])
-				.filter((r) => !r.resolved && r.triggerAmendment?.targetClauseId)
+				.filter((r) => r.phase !== 'RESOLVED' && r.triggerAmendment?.targetClauseId)
 				.map((r) => r.triggerAmendment!.targetClauseId as string)
 		)
 	);
 	// Maps clauseId → first unresolved trigger amendment ID for direct modal opening.
 	const reviewTriggerForClause = $derived(
 		(reviewItemsForBadges ?? [])
-			.filter((r) => !r.resolved && r.triggerAmendment?.targetClauseId && r.triggerAmendment?.id)
+			.filter(
+				(r) =>
+					r.phase !== 'RESOLVED' && r.triggerAmendment?.targetClauseId && r.triggerAmendment?.id
+			)
 			.reduce((map, r) => {
 				const clauseId = r.triggerAmendment!.targetClauseId as string;
 				if (!map.has(clauseId)) map.set(clauseId, r.triggerAmendment!.id as string);

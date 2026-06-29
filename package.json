@@ -117,7 +117,10 @@
 		"wonka": "6.3.6"
 	},
 	"dependencies": {
+		"@ai-sdk/anthropic": "^4.0.1",
+		"@ai-sdk/openai": "^4.0.2",
 		"@mlc-ai/web-llm": "^0.2.84",
+		"ai": "^7.0.4",
 		"canvas-confetti": "^1.9.4",
 		"codenamize-ts": "^1.0.2",
 		"drizzle-kit": "^1.0.0-rc.3",

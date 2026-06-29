@@ -1,4 +1,7 @@
 import { serializeClause } from '@deutschemodelunitednations/munify-resolution-editor';
+import { configPublic } from '$lib/config/public';
+import { urqlClient } from '$lib/api/client';
+import { gql } from '@urql/core';
 import { getEngine } from './model';
 
 type AmendmentBrief = {
@@ -51,6 +54,109 @@ function robustJsonParse(raw: string): unknown {
 	throw new SyntaxError(`Could not parse LLM output: ${raw.slice(0, 120)}`);
 }
 
+// ─── GraphQL documents ────────────────────────────────────────────────────────
+
+const AI_BACKEND_AVAILABLE_QUERY = gql`
+	query AiBackendAvailable {
+		aiBackendAvailable
+	}
+`;
+
+const AI_CLASSIFY_OBSOLESCENCE = gql`
+	mutation AiClassifyObsolescence(
+		$triggerOld: String!
+		$triggerNew: String!
+		$subjectOld: String!
+		$subjectNew: String!
+		$clauseRef: String!
+		$documentNumber: String!
+	) {
+		aiClassifyObsolescence(
+			triggerOld: $triggerOld
+			triggerNew: $triggerNew
+			subjectOld: $subjectOld
+			subjectNew: $subjectNew
+			clauseRef: $clauseRef
+			documentNumber: $documentNumber
+		) {
+			obsolete
+			reason
+		}
+	}
+`;
+
+const AI_RANK_AMENDMENTS = gql`
+	mutation AiRankAmendmentsByImpact($list: String!) {
+		aiRankAmendmentsByImpact(list: $list)
+	}
+`;
+
+const AI_EVALUATE_REWRITE = gql`
+	mutation AiEvaluateAndSuggestRewrite(
+		$triggerOld: String!
+		$triggerNew: String!
+		$subjectNew: String!
+		$clauseRef: String!
+		$documentNumber: String!
+	) {
+		aiEvaluateAndSuggestRewrite(
+			triggerOld: $triggerOld
+			triggerNew: $triggerNew
+			subjectNew: $subjectNew
+			clauseRef: $clauseRef
+			documentNumber: $documentNumber
+		) {
+			needsRewrite
+			reason
+			suggestion
+		}
+	}
+`;
+
+// ─── Backend availability cache ───────────────────────────────────────────────
+
+let backendAvailableCache: boolean | null = null;
+
+async function isBackendAvailable(): Promise<boolean> {
+	if (backendAvailableCache !== null) return backendAvailableCache;
+	try {
+		const result = await urqlClient
+			.query<{ aiBackendAvailable: boolean }>(AI_BACKEND_AVAILABLE_QUERY, {})
+			.toPromise();
+		backendAvailableCache = result.data?.aiBackendAvailable ?? false;
+		return backendAvailableCache;
+	} catch {
+		backendAvailableCache = false;
+		return false;
+	}
+}
+
+/**
+ * Returns which execution path to use.
+ * - "backend": call via GraphQL mutations
+ * - "local": use WebLLM in-browser
+ * - null: no AI available
+ */
+async function resolveEngine(): Promise<'backend' | 'local' | null> {
+	const mode = configPublic.PUBLIC_AI_MODE;
+
+	if (mode === 'backend') {
+		return (await isBackendAvailable()) ? 'backend' : null;
+	}
+
+	if (mode === 'local') {
+		const engine = await getEngine();
+		return engine ? 'local' : null;
+	}
+
+	// "auto": prefer backend, fall back to local
+	if (await isBackendAvailable()) return 'backend';
+	const engine = await getEngine();
+	return engine ? 'local' : null;
+}
+
+// ─── Public API ───────────────────────────────────────────────────────────────
+
 export interface ObsolescenceResult {
 	id: string;
 	obsolete: boolean;
@@ -61,13 +167,38 @@ export async function classifyObsolescence(
 	trigger: AmendmentBrief,
 	subject: AmendmentBrief
 ): Promise<ObsolescenceResult | null> {
-	const engine = await getEngine();
-	if (!engine) return null;
+	const path = await resolveEngine();
+	if (!path) return null;
 
 	const triggerOld = toText(trigger.oldContent);
 	const triggerNew = toText(trigger.newContent);
 	const subjectOld = toText(subject.oldContent);
 	const subjectNew = toText(subject.newContent);
+	const ref = clauseRef(trigger.targetOperativeIndex);
+	const docNum = subject.documentNumber ?? 'amendment';
+
+	if (path === 'backend') {
+		const result = await urqlClient
+			.mutation<{
+				aiClassifyObsolescence: { obsolete: boolean; reason: string } | null;
+			}>(AI_CLASSIFY_OBSOLESCENCE, {
+				triggerOld,
+				triggerNew,
+				subjectOld,
+				subjectNew,
+				clauseRef: ref,
+				documentNumber: docNum
+			})
+			.toPromise();
+
+		const data = result.data?.aiClassifyObsolescence;
+		if (!data) return null;
+		return { id: subject.id ?? '', obsolete: data.obsolete, reason: data.reason };
+	}
+
+	// local WebLLM path
+	const engine = await getEngine();
+	if (!engine) return null;
 
 	const response = await engine.chat.completions.create({
 		messages: [
@@ -84,7 +215,7 @@ Examples:
 			},
 			{
 				role: 'user',
-				content: `An amendment was accepted that changes ${clauseRef(trigger.targetOperativeIndex)}.
+				content: `An amendment was accepted that changes ${ref}.
 
 Before the accepted change, the clause read:
 "${triggerOld}"
@@ -92,7 +223,7 @@ Before the accepted change, the clause read:
 After the accepted change, the clause now reads:
 "${triggerNew}"
 
-The surviving amendment (${subject.documentNumber ?? 'amendment'}) was written to change the clause from:
+The surviving amendment (${docNum}) was written to change the clause from:
 "${subjectOld}"
 to:
 "${subjectNew}"
@@ -129,8 +260,8 @@ export async function rankAmendmentsByImpact(
 		targetOperativeIndex?: number | null;
 	}>
 ): Promise<string[]> {
-	const engine = await getEngine();
-	if (!engine || amendments.length < 2) return amendments.map((a) => a.id);
+	const path = await resolveEngine();
+	if (!path || amendments.length < 2) return amendments.map((a) => a.id);
 
 	const list = amendments
 		.map(
@@ -138,6 +269,17 @@ export async function rankAmendmentsByImpact(
 				`${i + 1}. id="${a.id}" (${a.documentNumber ?? 'amendment'} – clause ${a.targetOperativeIndex != null ? a.targetOperativeIndex + 1 : '?'}): "${a.newContent ?? '(no text)'}"`
 		)
 		.join('\n');
+
+	if (path === 'backend') {
+		const result = await urqlClient
+			.mutation<{ aiRankAmendmentsByImpact: string[] }>(AI_RANK_AMENDMENTS, { list })
+			.toPromise();
+		return result.data?.aiRankAmendmentsByImpact ?? amendments.map((a) => a.id);
+	}
+
+	// local WebLLM path
+	const engine = await getEngine();
+	if (!engine) return amendments.map((a) => a.id);
 
 	const response = await engine.chat.completions.create({
 		messages: [
@@ -176,8 +318,41 @@ export async function evaluateAndSuggestRewrite(
 	trigger: AmendmentBrief,
 	subject: AmendmentBrief
 ): Promise<RewriteResult> {
+	const path = await resolveEngine();
+	if (!path) return { needsRewrite: false, suggestion: '', reason: '' };
+
+	const triggerOld = toText(trigger.oldContent);
+	const triggerNew = toText(trigger.newContent);
+	const subjectNew = toText(subject.newContent);
+	const ref = clauseRef(trigger.targetOperativeIndex);
+	const docNum = subject.documentNumber ?? 'amendment';
+
+	if (path === 'backend') {
+		const result = await urqlClient
+			.mutation<{
+				aiEvaluateAndSuggestRewrite: { needsRewrite: boolean; reason: string; suggestion: string };
+			}>(AI_EVALUATE_REWRITE, {
+				triggerOld,
+				triggerNew,
+				subjectNew,
+				clauseRef: ref,
+				documentNumber: docNum
+			})
+			.toPromise();
+
+		const data = result.data?.aiEvaluateAndSuggestRewrite;
+		if (!data) return { needsRewrite: false, suggestion: '', reason: '' };
+		const needsRewrite = !!data.needsRewrite;
+		return {
+			needsRewrite,
+			suggestion: needsRewrite ? (data.suggestion ?? '') : '',
+			reason: String(data.reason ?? '')
+		};
+	}
+
+	// local WebLLM path
 	const engine = await getEngine();
-	if (!engine) return { needsRewrite: false, suggestion: '' };
+	if (!engine) return { needsRewrite: false, suggestion: '', reason: '' };
 
 	const response = await engine.chat.completions.create({
 		messages: [
@@ -193,16 +368,16 @@ Old "compile a report", new "compile an annual report", surviving intent: soften
 			},
 			{
 				role: 'user',
-				content: `An amendment was accepted that changes ${clauseRef(trigger.targetOperativeIndex)}.
+				content: `An amendment was accepted that changes ${ref}.
 
 Before the accepted change, the clause read:
-"${toText(trigger.oldContent)}"
+"${triggerOld}"
 
 After the accepted change, the clause now reads:
-"${toText(trigger.newContent)}"
+"${triggerNew}"
 
-The surviving amendment (${subject.documentNumber ?? 'amendment'}) was written to change that clause to:
-"${toText(subject.newContent)}"
+The surviving amendment (${docNum}) was written to change that clause to:
+"${subjectNew}"
 
 Identify what the surviving amendment was trying to achieve (its intent). Then apply that intent to the new clause text and produce the merged result.`
 			}
@@ -220,10 +395,6 @@ Identify what the surviving amendment was trying to achieve (its intent). Then a
 	};
 	const needsRewrite = !!parsed.needsRewrite;
 
-	console.log({
-		needsRewrite,
-		suggestion: parsed.suggestion
-	});
 	return {
 		needsRewrite,
 		suggestion: needsRewrite ? (parsed.suggestion ?? '') : '',

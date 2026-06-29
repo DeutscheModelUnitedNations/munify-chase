@@ -16,7 +16,11 @@ const schema = z.object({
 	OTEL_AUTHORIZATION_HEADER: z.optional(z.string()),
 	ADMIN_EMAIL_WHITELIST: z.string().optional().default(''),
 	ADMIN_DOMAIN_WHITELIST: z.string().optional().default(''),
-	REDIS_URL: z.string().optional()
+	REDIS_URL: z.string().optional(),
+	// Backend AI — JSON array of provider configs using "provider/model" string IDs, e.g.:
+	// [{"model":"openai/gpt-4o-mini","apiKey":"sk-..."},{"model":"anthropic/claude-haiku-4.5","apiKey":"sk-ant-..."}]
+	// Supported prefixes: "openai" (also covers any OpenAI-compatible API via baseUrl), "anthropic"
+	AI_PROVIDERS: z.string().optional()
 });
 
 export const configPrivate = getConfig({ schema, envSource: env });

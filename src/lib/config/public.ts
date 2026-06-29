@@ -10,7 +10,9 @@ const schema = z.object({
 	PUBLIC_DEFAULT_LOCALE: z.string().default('de'),
 	PUBLIC_OIDC_LOGIN_CALLBACK_ROUTE: z.string().optional(),
 	PUBLIC_OIDC_LOGOUT_CALLBACK_ROUTE: z.string().optional(),
-	PUBLIC_CONTACT_EMAIL: z.string().optional()
+	PUBLIC_CONTACT_EMAIL: z.string().optional(),
+	// AI mode: "local" = WebLLM only, "backend" = server only, "auto" = prefer backend, fall back to local
+	PUBLIC_AI_MODE: z.enum(['local', 'backend', 'auto']).optional().default('auto')
 });
 
 export const configPublic = getConfig({ schema, envSource: env });

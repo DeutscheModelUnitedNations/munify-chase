@@ -23,6 +23,7 @@ import './amendment';
 import './amendmentSponsor';
 import './amendmentReviewItem';
 import './operativeClauseVote';
+import './ai';
 import { building, dev } from '$app/environment';
 import { clientCreator } from '$api/rumble';
 

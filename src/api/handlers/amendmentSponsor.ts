@@ -121,12 +121,12 @@ schemaBuilder.mutationFields((t) => ({
 		type: 'Boolean',
 		args: { id: t.arg.id({ required: true }) },
 		resolve: async (_root, args, ctx) => {
-		await db
-			.delete(schema.amendmentSponsor)
-			.where(
-				ctx.abilities.amendmentSponsor.filter('delete').merge({ where: { id: args.id } }).sql
-					.where
-			);
+			await db
+				.delete(schema.amendmentSponsor)
+				.where(
+					ctx.abilities.amendmentSponsor.filter('delete').merge({ where: { id: args.id } }).sql
+						.where
+				);
 			pubsub.removed();
 			return true;
 		}

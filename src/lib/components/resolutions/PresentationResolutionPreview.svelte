@@ -9,7 +9,10 @@
 		type OperativeClause
 	} from '@deutschemodelunitednations/munify-resolution-editor';
 	import { englishLabels } from '@deutschemodelunitednations/munify-resolution-editor/i18n';
-	import { englishPreamblePhrases, englishOperativePhrases } from '@deutschemodelunitednations/munify-resolution-editor/phrases';
+	import {
+		englishPreamblePhrases,
+		englishOperativePhrases
+	} from '@deutschemodelunitednations/munify-resolution-editor/phrases';
 	import { createPaperYjsClient, type PaperYjsClient } from '$lib/api/yjs/createPaperYjs.svelte';
 	import { toAmendmentOverlays } from './paperContext';
 	import { svgToDataUrl } from '$lib/utils/svgToDataUrl';
@@ -170,21 +173,31 @@
 
 	function getAmendmentTypeLabel(type: string): string {
 		switch (type) {
-			case 'DELETE': return m.deleteClausePresentation();
-			case 'ALTER_TEXT': return m.alterClausePresentation();
-			case 'ADD': return m.addClausePresentation();
-			case 'ALTER_POSITION': return m.moveClausePresentation();
-			default: return type;
+			case 'DELETE':
+				return m.deleteClausePresentation();
+			case 'ALTER_TEXT':
+				return m.alterClausePresentation();
+			case 'ADD':
+				return m.addClausePresentation();
+			case 'ALTER_POSITION':
+				return m.moveClausePresentation();
+			default:
+				return type;
 		}
 	}
 
 	function getAmendmentTypeBadge(type: string): string {
 		switch (type) {
-			case 'DELETE': return 'badge-error';
-			case 'ALTER_TEXT': return 'badge-warning';
-			case 'ADD': return 'bg-green-700 text-white border-0';
-			case 'ALTER_POSITION': return 'badge-info';
-			default: return 'badge-ghost';
+			case 'DELETE':
+				return 'badge-error';
+			case 'ALTER_TEXT':
+				return 'badge-warning';
+			case 'ADD':
+				return 'bg-green-700 text-white border-0';
+			case 'ALTER_POSITION':
+				return 'badge-info';
+			default:
+				return 'badge-ghost';
 		}
 	}
 
@@ -205,20 +218,33 @@
 {#if resolution}
 	{#if activeAmendment}
 		<!-- Active amendment: focused full-area display -->
-		<div class="resolution-font-size-wrapper flex h-full w-full flex-col gap-5 overflow-hidden p-4" style="--resolution-font-size: {resolutionFontSize}px">
+		<div
+			class="resolution-font-size-wrapper flex h-full w-full flex-col gap-5 overflow-hidden p-4"
+			style="--resolution-font-size: {resolutionFontSize}px"
+		>
 			<!-- Header row -->
 			<div class="flex flex-wrap items-center gap-3 border-b-2 border-base-300 pb-3">
 				<div class="flex flex-col">
-					<span class="badge badge-lg {getAmendmentTypeBadge(activeAmendment.type)} h-auto px-4 py-2 text-xl font-bold">
+					<span
+						class="badge badge-lg {getAmendmentTypeBadge(
+							activeAmendment.type
+						)} h-auto px-4 py-2 text-xl font-bold"
+					>
 						{getAmendmentTypeLabel(activeAmendment.type)}
 					</span>
 					{#if activeAmendment.documentNumber}
-						<span class="font-mono text-base-content/60 text-lg">{activeAmendment.documentNumber}</span>
+						<span class="font-mono text-base-content/60 text-lg"
+							>{activeAmendment.documentNumber}</span
+						>
 					{/if}
 				</div>
-				<span class="flex-1 text-center text-2xl font-semibold">{m.proposedAmendmentPresentation()}</span>
+				<span class="flex-1 text-center text-2xl font-semibold"
+					>{m.proposedAmendmentPresentation()}</span
+				>
 				{#if activeAmendment.proposer?.representation}
-					<div class="ml-auto flex items-center gap-2 rounded-box bg-base-200 py-1 pl-1 pr-3 text-base">
+					<div
+						class="ml-auto flex items-center gap-2 rounded-box bg-base-200 py-1 pl-1 pr-3 text-base"
+					>
 						<Flag representation={activeAmendment.proposer.representation} size="sm" />
 						<span class="font-medium">{getProposerName(activeAmendment.proposer)}</span>
 					</div>
@@ -227,12 +253,18 @@
 
 			{#if activeAmendment.type === 'DELETE' && resolvedActiveAmendIdx >= 0}
 				{@const targetClause = resolution.operative[resolvedActiveAmendIdx]}
-				<div class="mx-auto flex w-fit items-center gap-2 rounded-full bg-error px-4 py-2 text-error-content">
+				<div
+					class="mx-auto flex w-fit items-center gap-2 rounded-full bg-error px-4 py-2 text-error-content"
+				>
 					<i class="fas fa-trash-can text-lg"></i>
-					<span class="text-lg font-semibold">{m.operativeClausePresentation()} {resolvedActiveAmendIdx + 1}</span>
+					<span class="text-lg font-semibold"
+						>{m.operativeClausePresentation()} {resolvedActiveAmendIdx + 1}</span
+					>
 				</div>
 				{#if targetClause}
-					<div class="flex-1 overflow-auto rounded-lg border-2 border-error/30 border-l-4 border-l-error bg-white p-4 opacity-70 line-through decoration-error decoration-4">
+					<div
+						class="flex-1 overflow-auto rounded-lg border-2 border-error/30 border-l-4 border-l-error bg-white p-4 opacity-70 line-through decoration-error decoration-4"
+					>
 						<ResolutionPreview
 							resolution={singleClauseResolution(targetClause)}
 							labels={englishLabels}
@@ -243,16 +275,21 @@
 						</ResolutionPreview>
 					</div>
 				{/if}
-
 			{:else if activeAmendment.type === 'ALTER_TEXT' && resolvedActiveAmendIdx >= 0}
 				{@const targetClause = resolution.operative[resolvedActiveAmendIdx]}
-				<div class="mx-auto flex w-fit items-center gap-2 rounded-full bg-warning px-4 py-2 text-warning-content">
+				<div
+					class="mx-auto flex w-fit items-center gap-2 rounded-full bg-warning px-4 py-2 text-warning-content"
+				>
 					<i class="fas fa-pen-to-square text-lg"></i>
-					<span class="text-lg font-semibold">{m.operativeClausePresentation()} {resolvedActiveAmendIdx + 1}</span>
+					<span class="text-lg font-semibold"
+						>{m.operativeClausePresentation()} {resolvedActiveAmendIdx + 1}</span
+					>
 				</div>
 				<div class="flex-1 overflow-auto p-4">
 					{#if activeAmendment.newContent}
-						<div class="rounded-lg border-2 border-warning/30 border-l-4 border-l-warning bg-white p-4 pt-6">
+						<div
+							class="rounded-lg border-2 border-warning/30 border-l-4 border-l-warning bg-white p-4 pt-6"
+						>
 							<OperativeParagraphPreview
 								markup={activeAmendment.newContent}
 								oldMarkup={targetClause ? serializeClause(targetClause) : undefined}
@@ -263,15 +300,20 @@
 						</div>
 					{/if}
 				</div>
-
 			{:else if activeAmendment.type === 'ADD'}
-				<div class="mx-auto flex w-fit items-center gap-2 rounded-full bg-green-700 px-4 py-2 text-white">
+				<div
+					class="mx-auto flex w-fit items-center gap-2 rounded-full bg-green-700 px-4 py-2 text-white"
+				>
 					<i class="fas fa-plus text-lg"></i>
-					<span class="text-lg font-semibold">{m.insertAfterPresentation({ index: (activeAmendment.targetPosition ?? 0) + 1 })}</span>
+					<span class="text-lg font-semibold"
+						>{m.insertAfterPresentation({ index: (activeAmendment.targetPosition ?? 0) + 1 })}</span
+					>
 				</div>
 				<div class="flex-1 overflow-auto p-4">
 					{#if activeAmendment.newContent}
-						<div class="rounded-lg border-2 border-green-700/40 border-l-4 border-l-green-700 bg-white p-4 pt-6">
+						<div
+							class="rounded-lg border-2 border-green-700/40 border-l-4 border-l-green-700 bg-white p-4 pt-6"
+						>
 							<OperativeParagraphPreview
 								markup={activeAmendment.newContent}
 								operativeNumber={(activeAmendment.targetPosition ?? 0) + 2}
@@ -280,16 +322,21 @@
 						</div>
 					{/if}
 				</div>
-
 			{:else if activeAmendment.type === 'ALTER_POSITION' && resolvedActiveAmendIdx >= 0}
 				{@const targetClause = resolution.operative[resolvedActiveAmendIdx]}
 				<div class="flex flex-1 flex-col items-center justify-center gap-6 overflow-auto p-4">
-					<div class="flex w-fit items-center gap-2 rounded-full bg-info px-4 py-2 text-info-content">
+					<div
+						class="flex w-fit items-center gap-2 rounded-full bg-info px-4 py-2 text-info-content"
+					>
 						<i class="fas fa-arrows-up-down text-lg"></i>
-						<span class="text-lg font-semibold">{m.operativeClausePresentation()} {resolvedActiveAmendIdx + 1}</span>
+						<span class="text-lg font-semibold"
+							>{m.operativeClausePresentation()} {resolvedActiveAmendIdx + 1}</span
+						>
 					</div>
 					{#if targetClause}
-						<div class="w-full rounded-lg border-2 border-info/30 border-l-4 border-l-info bg-white p-4">
+						<div
+							class="w-full rounded-lg border-2 border-info/30 border-l-4 border-l-info bg-white p-4"
+						>
 							<ResolutionPreview
 								resolution={singleClauseResolution(targetClause)}
 								labels={englishLabels}
@@ -302,7 +349,11 @@
 					{/if}
 					<div class="flex items-center gap-3 rounded-full bg-info px-6 py-3 text-info-content">
 						<i class="fas fa-arrow-down text-2xl"></i>
-						<span class="text-xl font-semibold">{m.moveToPositionPresentation({ position: (activeAmendment.targetPosition ?? 0) + 1 })}</span>
+						<span class="text-xl font-semibold"
+							>{m.moveToPositionPresentation({
+								position: (activeAmendment.targetPosition ?? 0) + 1
+							})}</span
+						>
 					</div>
 				</div>
 			{/if}

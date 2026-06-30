@@ -215,6 +215,7 @@
 				</button>
 			</div>
 		</div>
-		<button class="modal-backdrop" aria-label={m.cancel()} onclick={() => (confirmSnap = null)}></button>
+		<button class="modal-backdrop" aria-label={m.cancel()} onclick={() => (confirmSnap = null)}
+		></button>
 	</div>
 {/if}

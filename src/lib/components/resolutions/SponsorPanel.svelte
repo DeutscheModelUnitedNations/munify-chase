@@ -21,7 +21,10 @@
 	const sponsors = await client.liveQuery.paperSponsors({
 		__args: { where: { paper: { id: paperId } } },
 		id: true,
-		committeeMember: { id: true, representation: { name: true, alpha2Code: true, alpha3Code: true, faIcon: true, type: true } }
+		committeeMember: {
+			id: true,
+			representation: { name: true, alpha2Code: true, alpha3Code: true, faIcon: true, type: true }
+		}
 	});
 
 	const team = $derived(isTeam(viewer));
@@ -79,9 +82,7 @@
 			);
 			return fuse.search(search).map((r) => r.item);
 		}
-		return allMembers
-			.filter(notYetSponsor)
-			.sort((a, b) => getName(a).localeCompare(getName(b)));
+		return allMembers.filter(notYetSponsor).sort((a, b) => getName(a).localeCompare(getName(b)));
 	};
 
 	let pickValue = $state('');
@@ -126,7 +127,13 @@
 				<li class="flex items-center justify-between gap-2 text-sm">
 					<div class="flex items-center gap-2">
 						<Flag representation={s.committeeMember?.representation} size="xs" />
-						<span>{getTranslatedCountryNameFromAlpha3Code(s.committeeMember?.representation?.alpha3Code) ?? s.committeeMember?.representation?.name ?? '?'}</span>
+						<span
+							>{getTranslatedCountryNameFromAlpha3Code(
+								s.committeeMember?.representation?.alpha3Code
+							) ??
+								s.committeeMember?.representation?.name ??
+								'?'}</span
+						>
 					</div>
 					{#if team || s.committeeMember?.id === myMemberId}
 						<button

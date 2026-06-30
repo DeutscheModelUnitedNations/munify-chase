@@ -125,8 +125,7 @@ createWs(
 	} else if (url.pathname.startsWith('/api/yjs')) {
 		// y-websocket appends the room as a path segment: /api/yjs/<paperId>
 		// also accept ?room=<paperId> as a fallback
-		const paperId =
-			url.pathname.slice('/api/yjs/'.length) || url.searchParams.get('room');
+		const paperId = url.pathname.slice('/api/yjs/'.length) || url.searchParams.get('room');
 		if (!paperId) {
 			socket.write('HTTP/1.1 400 Bad Request\r\n\r\n');
 			socket.destroy();

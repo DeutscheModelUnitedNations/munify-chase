@@ -43,7 +43,6 @@ schemaBuilder.mutationFields((t) => {
 				representationId: t.arg.id({ required: true })
 			},
 			resolve: async (query, _root, args, ctx) => {
-
 				const committee = await db.query.committee.findFirst({
 					where: { id: args.committeeId }
 				});

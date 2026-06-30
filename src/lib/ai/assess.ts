@@ -10,15 +10,17 @@ export interface AiAssessment {
 	vramRequiredMB?: number;
 }
 
-// Candidate model IDs in preference order (best quality → smallest).
-// All must exist in WebLLM's prebuiltAppConfig.model_list so vram_required_MB
-// is available for comparison. f16 quantisation halves memory vs f32.
-const CANDIDATE_MODEL_IDS = [
-	'Hermes-3-Llama-3.2-3B-q4f16_1-MLC',
-	'Llama-3.2-3B-Instruct-q4f16_1-MLC',
-	'Llama-3.2-1B-Instruct-q4f32_1-MLC',
-	'Llama-3.2-1B-Instruct-q4f16_1-MLC'
+// Human-friendly model tiers exposed to the settings UI (index 0 = fastest/smallest).
+export const LOCAL_MODEL_TIERS = [
+	{ id: 'Qwen3-0.6B-q4f16_1-MLC', label: 'Fastest', vramMB: 1403, thinking: true },
+	{ id: 'Qwen3.5-0.8B-q4f16_1-MLC', label: 'Light', vramMB: 1629, thinking: true },
+	{ id: 'Qwen3.5-2B-q4f16_1-MLC', label: 'Balanced', vramMB: 2245, thinking: true },
+	{ id: 'Qwen3.5-4B-q4f16_1-MLC', label: 'Advanced', vramMB: 3868, thinking: true },
+	{ id: 'Qwen3-8B-q4f16_1-MLC', label: 'Expert', vramMB: 5696, thinking: true }
 ] as const;
+
+// Auto-detection order: best quality first, falling back to smaller models.
+const CANDIDATE_MODEL_IDS = [...LOCAL_MODEL_TIERS].reverse().map((t) => t.id) as string[];
 
 // Browsers/drivers known to report a hardware adapter but run all compute on
 // the CPU (no real GPU acceleration).
@@ -26,9 +28,26 @@ const SOFTWARE_BACKEND_PATTERNS = ['swiftshader', 'llvmpipe', 'softpipe', 'lavap
 
 let cached: Promise<AiAssessment> | null = null;
 
-export function assessAiCapability(): Promise<AiAssessment> {
+/**
+ * Assesses hardware capability and selects a model.
+ * Pass `forcedTier` (0 = fastest … 3 = best) to skip VRAM auto-detection
+ * and use a specific LOCAL_MODEL_TIERS entry directly.
+ */
+export function assessAiCapability(forcedTier?: number | null): Promise<AiAssessment> {
+	if (forcedTier != null) return runWithForcedTier(forcedTier);
 	if (!cached) cached = run();
 	return cached;
+}
+
+function runWithForcedTier(tier: number): Promise<AiAssessment> {
+	const clamped = Math.max(0, Math.min(LOCAL_MODEL_TIERS.length - 1, tier));
+	const entry = LOCAL_MODEL_TIERS[clamped];
+	return Promise.resolve({
+		supported: true,
+		reason: '',
+		modelId: entry.id,
+		vramRequiredMB: entry.vramMB
+	});
 }
 
 async function run(): Promise<AiAssessment> {
@@ -118,6 +137,20 @@ async function run(): Promise<AiAssessment> {
 	const { prebuiltAppConfig } = await import('@mlc-ai/web-llm');
 	const catalog = prebuiltAppConfig.model_list;
 
+	// On some platforms (notably Linux + AMD/Intel via Vulkan) Chrome reports no
+	// adapter info at all and caps maxStorageBufferBindingSize at a conservative
+	// browser default (1024 MB) that has no relation to actual VRAM. In that case
+	// skip VRAM filtering and trust the model preference order — any desktop GPU
+	// capable of WebGPU can handle the 3B models.
+	const hasAdapterInfo = !!(vendor || device || description || backend);
+	const skipVramCheck = !hasAdapterInfo;
+
+	if (skipVramCheck) {
+		console.warn(
+			'[WebLLM] No adapter info available — skipping VRAM check, selecting by preference order'
+		);
+	}
+
 	for (const candidateId of CANDIDATE_MODEL_IDS) {
 		const record = catalog.find((m) => m.model_id === candidateId);
 		if (!record) continue;
@@ -128,7 +161,7 @@ async function run(): Promise<AiAssessment> {
 			`[WebLLM] Checking ${candidateId}: needs ${Math.round(vramNeeded)} MB, available ${Math.round(maxStorageBindingMB)} MB`
 		);
 
-		if (vramNeeded <= maxStorageBindingMB) {
+		if (skipVramCheck || vramNeeded <= maxStorageBindingMB) {
 			console.log(`[WebLLM] Selected model: ${candidateId}`);
 			return {
 				supported: true,
@@ -142,7 +175,7 @@ async function run(): Promise<AiAssessment> {
 
 	// Nothing fit — fall back to the smallest model unconditionally and hope
 	// shared GPU memory covers the shortfall (common on iGPUs).
-	const fallbackId = 'Llama-3.2-1B-Instruct-q4f16_1-MLC';
+	const fallbackId = LOCAL_MODEL_TIERS[0].id;
 	const fallbackRecord = catalog.find((m) => m.model_id === fallbackId);
 	console.warn(
 		`[WebLLM] No model fit within ${Math.round(maxStorageBindingMB)} MB — using fallback ${fallbackId}`

@@ -27,7 +27,14 @@
 		onStartClauseVote?: (clauseId: string, clauseLabel: string) => Promise<void>;
 	}
 
-	let { paper, committee, operativeCount, currentClauseId, currentClauseLabel, onStartClauseVote }: Props = $props();
+	let {
+		paper,
+		committee,
+		operativeCount,
+		currentClauseId,
+		currentClauseLabel,
+		onStartClauseVote
+	}: Props = $props();
 
 	const currentIdx = $derived(PAPER_STATUS_ORDER.indexOf(paper.status));
 	const nextStatus = $derived(PAPER_STATUS_ORDER[currentIdx + 1] as PaperStatus | undefined);
@@ -261,7 +268,10 @@
 						checked={committee.amendmentSubmissionOpen}
 						onchange={(e) =>
 							client.mutate.setCommitteeResolutionToggles({
-								__args: { committeeId: committee.id, amendmentSubmissionOpen: e.currentTarget.checked },
+								__args: {
+									committeeId: committee.id,
+									amendmentSubmissionOpen: e.currentTarget.checked
+								},
 								id: true
 							})}
 					/>
@@ -301,20 +311,13 @@
 				</label>
 			</div>
 			<div class="modal-action">
-				<button
-					class="btn btn-ghost"
-					onclick={() => (amendmentPhaseModalOpen = false)}
-				>{m.cancel()}</button>
-				<button
-					class="btn btn-outline"
-					disabled={busy}
-					onclick={advanceKeepSettings}
-				>{m.amendmentPhaseSettingsChangeNothing()}</button>
-				<button
-					class="btn btn-primary"
-					disabled={busy}
-					onclick={advanceWithAutoAllow}
+				<button class="btn btn-ghost" onclick={() => (amendmentPhaseModalOpen = false)}
+					>{m.cancel()}</button
 				>
+				<button class="btn btn-outline" disabled={busy} onclick={advanceKeepSettings}
+					>{m.amendmentPhaseSettingsChangeNothing()}</button
+				>
+				<button class="btn btn-primary" disabled={busy} onclick={advanceWithAutoAllow}>
 					{#if busy}<i class="fas fa-spinner fa-spin"></i>{/if}
 					{m.amendmentPhaseSettingsAutoAllow()}
 				</button>
@@ -354,8 +357,14 @@
 			<p class="py-3">{m.finalizeResolutionDescription()}</p>
 			<p class="text-base-content/60 pb-4 text-sm">{m.finalizeConfettiPrompt()}</p>
 			<div class="modal-action flex-col gap-2 sm:flex-row">
-				<button class="btn btn-ghost" onclick={() => (finalConfirmOpen = false)}>{m.cancel()}</button>
-				<button class="btn btn-outline btn-success" disabled={busy} onclick={() => advanceToFinal(false)}>
+				<button class="btn btn-ghost" onclick={() => (finalConfirmOpen = false)}
+					>{m.cancel()}</button
+				>
+				<button
+					class="btn btn-outline btn-success"
+					disabled={busy}
+					onclick={() => advanceToFinal(false)}
+				>
 					{#if busy}<i class="fas fa-spinner fa-spin"></i>{/if}
 					{m.finalizeWithoutConfetti()}
 				</button>
@@ -365,6 +374,10 @@
 				</button>
 			</div>
 		</div>
-		<button class="modal-backdrop" aria-label={m.cancel()} onclick={() => (finalConfirmOpen = false)}></button>
+		<button
+			class="modal-backdrop"
+			aria-label={m.cancel()}
+			onclick={() => (finalConfirmOpen = false)}
+		></button>
 	</div>
 {/if}

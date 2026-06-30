@@ -1,9 +1,6 @@
 import { db, schema } from '$api/db/db';
 import { abilityBuilder, object, query, pubsub as rumblePubsub, schemaBuilder } from '$api/rumble';
-import {
-	isParticipantInConference,
-	isTeamInConference,
-} from '$api/services/authHelper';
+import { isParticipantInConference, isTeamInConference } from '$api/services/authHelper';
 import { assertFindFirstExists } from '@m1212e/rumble';
 import { nanoidValidation } from '$lib/helpers/nanoid';
 

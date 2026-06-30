@@ -293,7 +293,8 @@
 			<GridItem {...gridProps} class="card bg-base-100 overflow-auto p-4" id="resolution-preview">
 				<PresentationResolutionPreview
 					paperId={activePaperId}
-					currentOperativeIndex={committee.activeDraftResolution?.status === 'AMENDMENT_PHASE' || committee.activeDraftResolution?.status === 'VOTING_PHASE'
+					currentOperativeIndex={committee.activeDraftResolution?.status === 'AMENDMENT_PHASE' ||
+					committee.activeDraftResolution?.status === 'VOTING_PHASE'
 						? committee.currentOperativeIndex
 						: undefined}
 					resolutionFontSize={committee.presentationResolutionFontSize ?? 16}
@@ -306,7 +307,10 @@
 		{/if}
 	</Grid>
 
-	<AdoptionConfetti lastAdoptionDate={committee.lastResolutionAdoptionDate} confettiDurationSec={45} />
+	<AdoptionConfetti
+		lastAdoptionDate={committee.lastResolutionAdoptionDate}
+		confettiDurationSec={45}
+	/>
 
 	<RegionalGroups
 		open={committee.displayRegionalGroups ?? false}

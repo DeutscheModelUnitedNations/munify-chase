@@ -88,7 +88,6 @@ schemaBuilder.mutationFields((t) => ({
 			code: t.arg.string({ required: true })
 		},
 		resolve: async (query, _root, args, ctx) => {
-
 			const committee = await db.query.committee
 				.findFirst(
 					ctx.abilities.committee.filter('update').merge({ where: { id: args.committeeId } }).query
@@ -174,7 +173,6 @@ schemaBuilder.mutationFields((t) => ({
 			code: t.arg.string({ required: true })
 		},
 		resolve: async (query, _root, args, ctx) => {
-
 			const committee = await db.query.committee
 				.findFirst(
 					ctx.abilities.committee.filter('update').merge({ where: { id: args.committeeId } }).query
@@ -251,7 +249,6 @@ schemaBuilder.mutationFields((t) => ({
 			note: t.arg.string()
 		},
 		resolve: async (query, _root, args, ctx) => {
-
 			const committee = await db.query.committee
 				.findFirst(
 					ctx.abilities.committee.filter('update').merge({ where: { id: args.committeeId } }).query

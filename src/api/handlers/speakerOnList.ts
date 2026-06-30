@@ -4,10 +4,7 @@ import { db, schema } from '$api/db/db';
 import { and, count, eq, gte, sql } from 'drizzle-orm';
 import { assertFindFirstExists, assertFirstEntryExists } from '@m1212e/rumble';
 import { SpeakersListRef } from './speakersList';
-import {
-	isTeamInConference,
-	isParticipantInConference
-} from '$api/services/authHelper';
+import { isTeamInConference, isParticipantInConference } from '$api/services/authHelper';
 import { nanoidValidation } from '$lib/helpers/nanoid';
 
 abilityBuilder.speakerOnList.allow('read').when((ctx) => {
@@ -87,7 +84,6 @@ schemaBuilder.mutationFields((t) => {
 				position: t.arg.int()
 			},
 			resolve: async (query, root, args, ctx) => {
-
 				if (args.committeeMemberId && args.conferenceMemberId) {
 					throw new GraphQLError('Cannot set both committeeMemberId and conferenceMemberId');
 				}
@@ -233,7 +229,6 @@ schemaBuilder.mutationFields((t) => {
 				speakersListId: t.arg.id({ required: true })
 			},
 			resolve: async (query, root, args, ctx) => {
-
 				const user = ctx.mustBeLoggedIn();
 				if (!user.email) {
 					throw new GraphQLError('User email is required');

@@ -58,7 +58,14 @@
 		createdAt: true,
 		creatorCommitteeMember: {
 			id: true,
-			representation: { id: true, name: true, type: true, alpha2Code: true, alpha3Code: true, faIcon: true }
+			representation: {
+				id: true,
+				name: true,
+				type: true,
+				alpha2Code: true,
+				alpha3Code: true,
+				faIcon: true
+			}
 		},
 		sponsors: { id: true },
 		agendaItem: { id: true, title: true }
@@ -75,8 +82,7 @@
 		const list = (papers ?? []).filter(
 			(p) => !activeAgendaItemId || p.agendaItem?.id === activeAgendaItemId
 		);
-		const filtered =
-			activeFilter === 'ALL' ? list : list.filter((p) => p.status === activeFilter);
+		const filtered = activeFilter === 'ALL' ? list : list.filter((p) => p.status === activeFilter);
 		return [...filtered].sort((a, b) => (b.sponsors?.length ?? 0) - (a.sponsors?.length ?? 0));
 	});
 
@@ -213,8 +219,7 @@
 										<div class="my-2 flex items-center gap-1">
 											<Flag size="xs" representation={rep} />
 											<span>
-												{rep.name ??
-													getTranslatedCountryNameFromAlpha3Code(rep.alpha3Code)}
+												{rep.name ?? getTranslatedCountryNameFromAlpha3Code(rep.alpha3Code)}
 											</span>
 										</div>
 										·

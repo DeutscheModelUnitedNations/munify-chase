@@ -15,7 +15,12 @@
 
 	function getDisplay(presence: RemotePresence): {
 		name: string;
-		representation: { alpha2Code?: string | null; alpha3Code?: string | null; name?: string | null; type: string } | null;
+		representation: {
+			alpha2Code?: string | null;
+			alpha3Code?: string | null;
+			name?: string | null;
+			type: string;
+		} | null;
 	} {
 		const meta = presence.userMeta;
 
@@ -33,7 +38,12 @@
 				'?';
 			const representation =
 				meta.alpha2Code || meta.alpha3Code
-					? { alpha2Code: meta.alpha2Code, alpha3Code: meta.alpha3Code, name: meta.nationName, type: 'DELEGATION' }
+					? {
+							alpha2Code: meta.alpha2Code,
+							alpha3Code: meta.alpha3Code,
+							name: meta.nationName,
+							type: 'DELEGATION'
+						}
 					: null;
 			return { name, representation };
 		}
@@ -47,9 +57,7 @@
 
 	// De-duplicate by user id (same user in multiple tabs appears once).
 	const unique = $derived(
-		remotePresences.filter(
-			(p, i, arr) => arr.findIndex((q) => q.user.id === p.user.id) === i
-		)
+		remotePresences.filter((p, i, arr) => arr.findIndex((q) => q.user.id === p.user.id) === i)
 	);
 </script>
 

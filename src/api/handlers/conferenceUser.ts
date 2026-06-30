@@ -8,7 +8,11 @@ import {
 } from '$api/rumble';
 import { eq } from 'drizzle-orm';
 import { db, schema } from '$api/db/db';
-import { isAdminInConference, isParticipantInConference, isTeamInConference } from '$api/services/authHelper';
+import {
+	isAdminInConference,
+	isParticipantInConference,
+	isTeamInConference
+} from '$api/services/authHelper';
 import { GraphQLError } from 'graphql';
 import { assertFindFirstExists, assertFirstEntryExists } from '@m1212e/rumble';
 import { emailValidation } from '$api/services/emailValidation';
@@ -175,7 +179,6 @@ schemaBuilder.mutationFields((t) => ({
 			})
 		},
 		resolve: async (query, _root, args, ctx) => {
-
 			await db.query.conference
 				.findFirst(
 					ctx.abilities.conference.filter('update').merge({ where: { id: args.conferenceId } })

@@ -62,11 +62,11 @@ schemaBuilder.mutationFields((t) => ({
 
 			const update: Partial<typeof schema.amendmentReviewItem.$inferInsert> = {};
 
-			// always writable regardless of phase.
-			if (args.aiObsolete != null) update.aiObsolete = args.aiObsolete;
-			if (args.aiObsoleteReason != null) update.aiObsoleteReason = args.aiObsoleteReason;
-			if (args.aiRewriteSuggestion != null) update.aiRewriteSuggestion = args.aiRewriteSuggestion;
-			if (args.aiRewriteReason != null) update.aiRewriteReason = args.aiRewriteReason;
+			// always writable regardless of phase (null clears the field).
+			if (args.aiObsolete !== undefined) update.aiObsolete = args.aiObsolete;
+			if (args.aiObsoleteReason !== undefined) update.aiObsoleteReason = args.aiObsoleteReason;
+			if (args.aiRewriteSuggestion !== undefined) update.aiRewriteSuggestion = args.aiRewriteSuggestion;
+			if (args.aiRewriteReason !== undefined) update.aiRewriteReason = args.aiRewriteReason;
 
 			// Phase transition.
 			if (args.phase != null) {

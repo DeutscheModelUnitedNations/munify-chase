@@ -75,7 +75,11 @@
 			<i class="fas fa-pen"></i>
 			{m.shareEdit()}
 		</button>
-		<button class="btn btn-ghost btn-sm join-item" disabled={busy} onclick={() => create('SPONSOR')}>
+		<button
+			class="btn btn-ghost btn-sm join-item"
+			disabled={busy}
+			onclick={() => create('SPONSOR')}
+		>
 			<i class="fas fa-handshake"></i>
 			{m.shareSponsor()}
 		</button>

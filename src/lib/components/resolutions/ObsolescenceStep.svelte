@@ -3,13 +3,13 @@
 	import toast from 'svelte-french-toast';
 	import AiSpinner from '$lib/components/AiSpinner.svelte';
 	import AiIcon from '$lib/components/AiIcon.svelte';
+	import AiResultBadge from './AiResultBadge.svelte';
 	import Flag from '$lib/components/Flag.svelte';
 	import { getTranslatedCountryNameFromAlpha3Code } from '$lib/utils/nationTranslationHelper.svelte';
 
 	interface ReviewItem {
 		id: string;
 		aiObsolete: boolean | null | undefined;
-		aiObsoleteReason: string | null | undefined;
 		subjectAmendment:
 			| {
 					documentNumber: string | null | undefined;
@@ -46,9 +46,11 @@
 		/** ID of the item the AI queue is currently working on. */
 		currentlyProcessingId?: string | null;
 		onadvance: () => void;
+		onrerunItem?: (itemId: string) => void;
 	}
 
-	let { items, laterItems = [], currentlyProcessingId = null, onadvance }: Props = $props();
+	let { items, laterItems = [], currentlyProcessingId = null, onadvance, onrerunItem }: Props =
+		$props();
 
 	const allItems = $derived([...items, ...laterItems]);
 
@@ -81,7 +83,6 @@
 	);
 
 	let busy = $state(false);
-	let reasonExpanded = $state(new Set<string>());
 
 	const obsoleteCount = $derived(Object.values(decisions).filter(Boolean).length);
 
@@ -134,7 +135,7 @@
 		<div class="flex flex-col gap-2">
 			{#each items as item (item.id)}
 				{@const badge = obsoleteBadge(item.aiObsolete)}
-				<label class="bg-base-200 flex cursor-pointer items-start gap-3 rounded-lg p-3">
+				<label class="flex cursor-pointer items-start gap-3 py-2">
 					<input
 						type="checkbox"
 						class="checkbox checkbox-error mt-0.5"
@@ -151,9 +152,11 @@
 									{item.subjectAmendment?.documentNumber ?? typeLabel(item.subjectAmendment?.type)}
 								</span>
 								{#if badge}
-									<span class="badge badge-sm {badge.cls}">
-										<AiIcon />{badge.label}
-									</span>
+									<AiResultBadge
+										label={badge.label}
+										cls={badge.cls}
+										onclick={() => onrerunItem?.(item.id)}
+									/>
 								{:else if currentlyProcessingId === item.id}
 									<span class="badge badge-ghost badge-sm gap-1">
 										<AiSpinner size="xs" />
@@ -185,36 +188,6 @@
 							<p class="text-base-content/60 font-mono text-xs whitespace-pre-wrap">
 								{item.subjectAmendment.newContent}
 							</p>
-						{/if}
-						{#if item.aiObsoleteReason}
-							{#if item.aiObsolete === true}
-								<p class="text-warning/80 flex items-center gap-1 text-xs italic">
-									<AiIcon />{item.aiObsoleteReason}
-								</p>
-							{:else}
-								<button
-									class="text-base-content/40 hover:text-base-content/70 flex cursor-pointer items-center gap-1 text-xs"
-									onclick={() => {
-										const next = new Set(reasonExpanded);
-										if (next.has(item.id)) next.delete(item.id);
-										else next.add(item.id);
-										reasonExpanded = next;
-									}}
-								>
-									<AiIcon />
-									<i
-										class="fas fa-chevron-{reasonExpanded.has(item.id)
-											? 'down'
-											: 'right'} text-[0.55rem]"
-									></i>
-									AI reasoning
-								</button>
-								{#if reasonExpanded.has(item.id)}
-									<p class="text-base-content/50 flex items-center gap-1 text-xs italic">
-										{item.aiObsoleteReason}
-									</p>
-								{/if}
-							{/if}
 						{/if}
 					</div>
 				</label>
@@ -249,7 +222,7 @@
 					{#each sortedLaterItems as item (item.id)}
 						{@const badge = obsoleteBadge(item.aiObsolete)}
 						{@const clauseIdx = item.subjectAmendment?.targetOperativeIndex}
-						<label class="bg-base-200 flex cursor-pointer items-start gap-3 rounded-lg p-3">
+						<label class="flex cursor-pointer items-start gap-3 py-2">
 							<input
 								type="checkbox"
 								class="checkbox checkbox-error mt-0.5"
@@ -270,9 +243,11 @@
 											<span class="badge badge-outline badge-sm">Clause {clauseIdx + 1}</span>
 										{/if}
 										{#if badge}
-											<span class="badge badge-sm {badge.cls}">
-												<AiIcon />{badge.label}
-											</span>
+											<AiResultBadge
+												label={badge.label}
+												cls={badge.cls}
+												onclick={() => onrerunItem?.(item.id)}
+											/>
 										{:else if item.aiObsolete == null && currentlyProcessingId === item.id}
 											<span class="badge badge-ghost badge-sm gap-1">
 												<AiSpinner size="xs" />
@@ -303,11 +278,6 @@
 								{#if item.subjectAmendment?.newContent}
 									<p class="text-base-content/60 font-mono text-xs whitespace-pre-wrap">
 										{item.subjectAmendment.newContent}
-									</p>
-								{/if}
-								{#if item.aiObsoleteReason && item.aiObsolete === true}
-									<p class="text-warning/80 flex items-center gap-1 text-xs italic">
-										<AiIcon />{item.aiObsoleteReason}
 									</p>
 								{/if}
 							</div>

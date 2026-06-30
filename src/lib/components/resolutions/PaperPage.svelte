@@ -5,6 +5,7 @@
 	import { client } from '$lib/api/rumbleClient/client';
 	import { getCurrentUser } from '$lib/state/currentUser.svelte';
 	import { onDestroy, tick, untrack } from 'svelte';
+	import { fly } from 'svelte/transition';
 	import toast from 'svelte-french-toast';
 
 	import {
@@ -48,8 +49,17 @@
 	import { launchClauseVote } from './resolutionVotes';
 	import { openVotingModal, resumeVotingModal } from '$lib/components/voting/votingModal';
 	import { downloadResolutionTypst, downloadResolutionPdf } from '$lib/utils/resolutionExport';
-	import { getEngine } from '$lib/ai/model';
+	import { getEngine, unloadEngine } from '$lib/ai/model';
 	import { assessAiCapability } from '$lib/ai/assess';
+	import {
+		initAiPreference,
+		getAiOnboarded,
+		getAiPreference,
+		getLocalModelTier,
+		setAiPreference,
+		type AiPreference
+	} from '$lib/ai/aiPreference.svelte';
+	import AiOnboardingModal from './AiOnboardingModal.svelte';
 
 	interface Props {
 		paperId: string;
@@ -292,35 +302,94 @@
 	let aiDisabledReason = $state<string | null>(null);
 	let aiModelId = $state<string | null>(null);
 	let aiReady = $state(false);
+	let aiOnboardingOpen = $state(false);
+	let aiHasBackend = $state(false);
+	let aiNotifDodging = $state(false);
+
+	function dodgeOnHover(node: HTMLElement) {
+		const onMove = (e: MouseEvent) => {
+			const r = node.getBoundingClientRect();
+			const pad = 24;
+			aiNotifDodging =
+				e.clientX >= r.left - pad &&
+				e.clientX <= r.right + pad &&
+				e.clientY >= r.top - pad &&
+				e.clientY <= r.bottom + pad;
+		};
+		window.addEventListener('mousemove', onMove);
+		return () => {
+			window.removeEventListener('mousemove', onMove);
+			aiNotifDodging = false;
+		};
+	}
 
 	function formatModelId(id: string): string {
 		// Strip quantisation suffix (e.g. -q4f32_1-MLC) and replace dashes with spaces
 		return id.replace(/-q\d+f\d+.*$/, '').replaceAll('-', ' ');
 	}
 
-	$effect(() => {
-		if (!team) return;
-		assessAiCapability().then((assessment) => {
+	function startLocalEngine() {
+		assessAiCapability(getLocalModelTier()).then((assessment) => {
 			if (!assessment.supported) {
 				aiDisabledReason = assessment.reason;
 				setTimeout(() => (aiDisabledReason = null), 6000);
 				return;
 			}
 			aiModelId = assessment.modelId ?? null;
-			// Assessment passed — start downloading the model.
 			getEngine();
-			const handler = (e: Event) => {
+			const cleanup = () => {
+				window.removeEventListener('webllm-progress', progressHandler);
+				window.removeEventListener('webllm-error', errorHandler);
+			};
+			const progressHandler = (e: Event) => {
 				const { progress } = (e as CustomEvent<{ progress: number; text: string }>).detail;
 				if (progress < 1) {
-					aiDownloadProgress = progress;
+					aiDownloadProgress = Math.max(aiDownloadProgress ?? 0, progress);
 				} else {
 					aiDownloadProgress = null;
 					aiReady = true;
 					setTimeout(() => (aiReady = false), 5000);
+					cleanup();
 				}
 			};
-			window.addEventListener('webllm-progress', handler);
+			const errorHandler = (e: Event) => {
+				const { message, retrying } = (e as CustomEvent<{ message: string; retrying?: boolean }>).detail;
+				aiDownloadProgress = null;
+				aiDisabledReason = message;
+				if (!retrying) {
+					console.error('[AI engine load failed]', message);
+					setTimeout(() => (aiDisabledReason = null), 8000);
+					cleanup();
+				}
+			};
+			window.addEventListener('webllm-progress', progressHandler);
+			window.addEventListener('webllm-error', errorHandler);
 		});
+	}
+
+	async function applyAiPreference(mode: AiPreference, modelTier: number | null = null) {
+		const tierChanged = modelTier !== getLocalModelTier();
+		setAiPreference(mode, modelTier);
+		if (mode === 'local') {
+			if (tierChanged) await unloadEngine();
+			startLocalEngine();
+		}
+	}
+
+	$effect(() => {
+		if (!team) return;
+		initAiPreference();
+		if (getAiOnboarded()) {
+			if (getAiPreference() === 'local') startLocalEngine();
+			return;
+		}
+		// First visit — query backend availability then show modal
+		(client.query.hasAiProviders() as unknown as Promise<boolean>)
+			.catch(() => false)
+			.then((has) => {
+				aiHasBackend = has;
+				aiOnboardingOpen = true;
+			});
 	});
 
 	// ---- Y.js client --------------------------------------------------------
@@ -845,6 +914,13 @@
 					</div>
 					<button
 						class="btn btn-ghost btn-sm"
+						onclick={() => (aiOnboardingOpen = true)}
+						title={m.aiOnboardingOpenSettings()}
+					>
+						<i class="fas fa-robot"></i>
+					</button>
+					<button
+						class="btn btn-ghost btn-sm"
 						onclick={() => (historyOpen = true)}
 						title={m.documentHistory()}
 					>
@@ -1190,42 +1266,52 @@
 		</div>
 	{/if}
 
+	<AiOnboardingModal
+		bind:open={aiOnboardingOpen}
+		hasBackend={aiHasBackend}
+		initialModelTier={getLocalModelTier()}
+		onConfirm={applyAiPreference}
+	/>
+
 	<!-- AI model status (chairs only) -->
-	{#if aiDownloadProgress !== null}
+	{#if aiDownloadProgress !== null || aiReady || aiDisabledReason !== null}
 		<div
-			class="fixed bottom-4 right-4 z-50 flex w-56 flex-col gap-1.5 rounded-xl border border-base-300 bg-base-100 p-3 shadow-lg"
+			use:dodgeOnHover
+			transition:fly={{ x: 80, duration: 250, opacity: 0 }}
+			class="pointer-events-none fixed bottom-4 right-4 z-50 transition-all duration-300 ease-out {aiNotifDodging
+				? 'translate-y-2 scale-95 opacity-0'
+				: 'translate-y-0 scale-100 opacity-100'}"
 		>
-			<div class="flex items-center justify-between text-xs font-medium">
-				<span>Preparing AI model</span>
-				<span class="tabular-nums opacity-60">{Math.round(aiDownloadProgress * 100)}%</span>
-			</div>
-			<progress class="progress progress-primary w-full" value={aiDownloadProgress} max={1}
-			></progress>
-			{#if aiModelId}
-				<p class="text-xs opacity-40 truncate">{formatModelId(aiModelId)}</p>
+			{#if aiDownloadProgress !== null}
+				<div class="flex w-56 flex-col gap-1.5 rounded-xl border border-base-300 bg-base-100 p-3 shadow-lg">
+					<div class="flex items-center justify-between text-xs font-medium">
+						<span>Preparing AI model</span>
+						<span class="tabular-nums opacity-60">{Math.round(aiDownloadProgress * 100)}%</span>
+					</div>
+					<progress class="progress progress-primary w-full" value={aiDownloadProgress} max={1}></progress>
+					{#if aiModelId}
+						<p class="text-xs opacity-40 truncate">{formatModelId(aiModelId)}</p>
+					{/if}
+				</div>
+			{:else if aiReady}
+				<div class="flex w-56 items-center gap-2 rounded-xl border border-base-300 bg-base-100 p-3 shadow-lg text-xs">
+					<i class="fas fa-circle-check text-success shrink-0"></i>
+					<div class="min-w-0">
+						<p class="font-medium">AI model ready</p>
+						{#if aiModelId}
+							<p class="opacity-40 truncate">{formatModelId(aiModelId)}</p>
+						{/if}
+					</div>
+				</div>
+			{:else if aiDisabledReason !== null}
+				<div class="flex w-56 items-start gap-2 rounded-xl border border-base-300 bg-base-100 p-3 shadow-lg text-xs">
+					<i class="fas fa-microchip opacity-40 mt-0.5 shrink-0"></i>
+					<div>
+						<p class="font-medium">AI features unavailable</p>
+						<p class="opacity-50 mt-0.5">{aiDisabledReason}</p>
+					</div>
+				</div>
 			{/if}
-		</div>
-	{:else if aiReady}
-		<div
-			class="fixed bottom-4 right-4 z-50 flex w-56 items-center gap-2 rounded-xl border border-base-300 bg-base-100 p-3 shadow-lg text-xs"
-		>
-			<i class="fas fa-circle-check text-success shrink-0"></i>
-			<div class="min-w-0">
-				<p class="font-medium">AI model ready</p>
-				{#if aiModelId}
-					<p class="opacity-40 truncate">{formatModelId(aiModelId)}</p>
-				{/if}
-			</div>
-		</div>
-	{:else if aiDisabledReason !== null}
-		<div
-			class="fixed bottom-4 right-4 z-50 flex w-56 items-start gap-2 rounded-xl border border-base-300 bg-base-100 p-3 shadow-lg text-xs"
-		>
-			<i class="fas fa-microchip opacity-40 mt-0.5 shrink-0"></i>
-			<div>
-				<p class="font-medium">AI features unavailable</p>
-				<p class="opacity-50 mt-0.5">{aiDisabledReason}</p>
-			</div>
 		</div>
 	{/if}
 {:else}

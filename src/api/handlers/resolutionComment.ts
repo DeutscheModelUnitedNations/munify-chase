@@ -59,7 +59,6 @@ schemaBuilder.mutationFields((t) => ({
 			visibility: t.arg({ type: visibilityEnum })
 		},
 		resolve: async (query, _root, args, ctx) => {
-
 			const user = ctx.mustBeLoggedIn();
 
 			const paper = await db.query.resolutionPaper

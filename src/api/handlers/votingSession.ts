@@ -61,7 +61,6 @@ schemaBuilder.mutationFields((t) => ({
 			currentStage: t.arg({ type: stageEnum })
 		},
 		resolve: async (q, _root, args, ctx) => {
-
 			const committee = await db.query.committee
 				.findFirst(
 					ctx.abilities.committee.filter('update').merge({ where: { id: args.committeeId } }).query
@@ -177,7 +176,6 @@ schemaBuilder.mutationFields((t) => ({
 			vote: t.arg({ type: voteChoiceEnum, required: true })
 		},
 		resolve: async (q, _root, args, ctx) => {
-
 			const resultId = await db.transaction(async (tx) => {
 				const session = await tx.query.votingSession.findFirst({
 					where: { id: args.sessionId, completedAt: { isNull: true } }

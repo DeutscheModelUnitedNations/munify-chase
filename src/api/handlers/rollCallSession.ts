@@ -29,7 +29,6 @@ schemaBuilder.mutationFields((t) => {
 				committeeId: t.arg.id({ required: true })
 			},
 			resolve: async (q, _root, args, ctx) => {
-
 				const committee = await db.query.committee
 					.findFirst(
 						ctx.abilities.committee.filter('update').merge({ where: { id: args.committeeId } })

@@ -98,10 +98,8 @@ export const OIDC = !building
 					});
 
 				// Sync full name to cpnf user too
-				const fullName = [normalized.given_name, normalized.family_name]
-					.filter(Boolean)
-					.join(' ')
-					.trim() || null;
+				const fullName =
+					[normalized.given_name, normalized.family_name].filter(Boolean).join(' ').trim() || null;
 				if (fullName) {
 					await db
 						.update(schema.conferenceUser)

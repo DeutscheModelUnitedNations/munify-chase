@@ -20,6 +20,7 @@
 	import AiIcon from '$lib/components/AiIcon.svelte';
 	import { slide } from 'svelte/transition';
 	import { rankAmendmentsByImpact } from '$lib/ai/amendments';
+	import { getAiPreference, preferenceToMode } from '$lib/ai/aiPreference.svelte';
 
 	interface Props {
 		paperId: string;
@@ -49,9 +50,7 @@
 		id: true,
 		phase: true,
 		aiObsolete: true,
-		aiObsoleteReason: true,
 		aiRewriteSuggestion: true,
-		aiRewriteReason: true,
 		triggerAmendment: {
 			id: true,
 			documentNumber: true,
@@ -212,9 +211,11 @@
 
 	async function sortByImpact() {
 		if (aiSortBusy || unprocessedAlterText.length < 2) return;
+		const pref = getAiPreference();
+		if (pref === 'off') return;
 		aiSortBusy = true;
 		try {
-			const ranked = await rankAmendmentsByImpact(unprocessedAlterText);
+			const ranked = await rankAmendmentsByImpact(unprocessedAlterText, preferenceToMode(pref));
 			const map = new Map<string, number>();
 			ranked.forEach((id, i) => map.set(id, i));
 			aiSortOrder = map;

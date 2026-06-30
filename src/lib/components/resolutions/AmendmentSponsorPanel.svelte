@@ -105,7 +105,13 @@
 				amendmentId: true,
 				committeeMember: {
 					id: true,
-					representation: { name: true, alpha2Code: true, alpha3Code: true, faIcon: true, type: true }
+					representation: {
+						name: true,
+						alpha2Code: true,
+						alpha3Code: true,
+						faIcon: true,
+						type: true
+					}
 				}
 			});
 		} catch (err) {

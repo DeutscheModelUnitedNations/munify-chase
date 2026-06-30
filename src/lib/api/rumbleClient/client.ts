@@ -58,6 +58,15 @@ export type AgendaitemWhereInputArgument = {
   updatedAt?: DateWhereInputArgument | null | undefined    
 };
 		
+export type AiMessageInput = {
+  content: String,
+  role: AiMessageRole    
+};
+		
+export type AiMessageRole = "assistant" | "system" | "user";
+		
+export type AiResponseType = "json" | "text";
+		
 export type Amendment = {
   createdAt: DateTime,
   documentNumber: String | null,
@@ -920,7 +929,7 @@ export type Mutation = {
   }) => Boolean,
   completeVotingSession: (p: {
     id: ID,
-    outcome?: unknown | null | undefined
+    outcome?: VotingoutcomeEnum | null | undefined
   }) => Boolean,
   concludeResolutionPaperVote: (p: {
     paperId: ID,
@@ -936,11 +945,11 @@ export type Mutation = {
     newContent?: String | null | undefined,
     paperId: ID,
     proposerCommitteeMemberId?: ID | null | undefined,
-    status?: unknown | null | undefined,
+    status?: AmendmentstatusEnum | null | undefined,
     targetClauseId?: String | null | undefined,
     targetOperativeIndex?: Int | null | undefined,
     targetPosition?: Int | null | undefined,
-    type: unknown
+    type: AmendmenttypeEnum
   }) => Amendment,
   createCommittee: (p: {
     abbreviation: String,
@@ -960,7 +969,7 @@ export type Mutation = {
   }) => Conferencemember,
   createConferenceUser: (p: {
     conferenceId: ID,
-    conferenceUserType: unknown,
+    conferenceUserType: ConferenceusertypeEnum,
     id?: ID | null | undefined,
     name?: String | null | undefined,
     userEmail: String
@@ -972,7 +981,7 @@ export type Mutation = {
   createPaperShareCode: (p: {
     id?: ID | null | undefined,
     paperId: ID,
-    permission: unknown
+    permission: SharecodepermissionEnum
   }) => Papersharecode,
   createRepresentation: (p: {
     alpha2Code?: String | null | undefined,
@@ -981,7 +990,7 @@ export type Mutation = {
     faIcon?: String | null | undefined,
     id?: ID | null | undefined,
     name?: String | null | undefined,
-    type: unknown
+    type: RepresentationtypeEnum
   }) => Representation,
   createResolutionComment: (p: {
     clauseId?: String | null | undefined,
@@ -989,14 +998,14 @@ export type Mutation = {
     id?: ID | null | undefined,
     paperId: ID,
     parentCommentId?: ID | null | undefined,
-    visibility?: unknown | null | undefined
+    visibility?: CommentvisibilityEnum | null | undefined
   }) => Resolutioncomment,
   createResolutionPaper: (p: {
     agendaItemId: ID,
     committeeId: ID,
     creatorCommitteeMemberId?: ID | null | undefined,
     id?: ID | null | undefined,
-    status?: unknown | null | undefined,
+    status?: PaperstatusEnum | null | undefined,
     title?: String | null | undefined
   }) => Resolutionpaper,
   deleteAmendment: (p: {
@@ -1039,7 +1048,7 @@ export type Mutation = {
     committeeId: ID,
     conferenceUserId: ID,
     id?: ID | null | undefined,
-    markerType?: unknown | null | undefined,
+    markerType?: PresenceeventmarkerEnum | null | undefined,
     note?: String | null | undefined,
     present: Boolean,
     timestamp?: DateTime | null | undefined
@@ -1111,7 +1120,7 @@ export type Mutation = {
     supportReevaluationOpen?: Boolean | null | undefined
   }) => Committee,
   setPresenceForCommitteeMembers: (p: {
-    ids: unknown,
+    ids: ID[],
     present: Boolean,
     rollCallSessionId?: ID | null | undefined
   }) => Committeemember[],
@@ -1123,7 +1132,7 @@ export type Mutation = {
     committeeMemberId: ID,
     id?: ID | null | undefined,
     sessionId: ID,
-    vote: unknown
+    vote: VotechoiceEnum
   }) => Votingvote,
   startRollCallSession: (p: {
     committeeId: ID,
@@ -1131,11 +1140,11 @@ export type Mutation = {
   }) => Rollcallsession,
   startVotingSession: (p: {
     committeeId: ID,
-    currentStage?: unknown | null | undefined,
+    currentStage?: VotingstageEnum | null | undefined,
     id?: ID | null | undefined,
-    majority: unknown,
+    majority: VotingmajoritytypeEnum,
     majorityAmount: Int,
-    mode: unknown,
+    mode: VotingmodeEnum,
     voteName?: String | null | undefined,
     withAbstentions: Boolean
   }) => Votingsession,
@@ -1151,7 +1160,7 @@ export type Mutation = {
     aiObsoleteReason?: String | null | undefined,
     aiRewriteReason?: String | null | undefined,
     aiRewriteSuggestion?: String | null | undefined,
-    phase?: unknown | null | undefined,
+    phase?: AmendmentreviewphaseEnum | null | undefined,
     reviewItemId: ID,
     verdictObsolete?: Boolean | null | undefined,
     verdictRewrite?: String | null | undefined
@@ -1168,7 +1177,7 @@ export type Mutation = {
     presentationRootFontSize?: Int | null | undefined,
     showWhiteboard?: Boolean | null | undefined,
     stateOfDebate?: String | null | undefined,
-    status?: unknown | null | undefined,
+    status?: CommitteestatusEnum | null | undefined,
     statusHeadline?: String | null | undefined,
     statusUntil?: DateTime | null | undefined,
     whiteboardContent?: String | null | undefined
@@ -1186,7 +1195,7 @@ export type Mutation = {
   updateConferenceUser: (p: {
     committeeMemberId?: ID | null | undefined,
     conferenceMemberId?: ID | null | undefined,
-    conferenceUserType: unknown,
+    conferenceUserType: ConferenceusertypeEnum,
     id: ID,
     name?: String | null | undefined
   }) => Conferenceuser,
@@ -1205,7 +1214,7 @@ export type Mutation = {
     deployConfetti?: Boolean | null | undefined,
     documentNumber?: String | null | undefined,
     id: ID,
-    status?: unknown | null | undefined,
+    status?: PaperstatusEnum | null | undefined,
     title?: String | null | undefined
   }) => Resolutionpaper,
   updateSpeakerOnList: (p: {
@@ -1215,7 +1224,7 @@ export type Mutation = {
   updateSpeakersList: (p: {
     id: ID,
     isClosed?: Boolean | null | undefined,
-    phase?: unknown | null | undefined,
+    phase?: SpeakerslistphaseEnum | null | undefined,
     speakingTime?: Int | null | undefined,
     startTimestamp?: DateTime | null | undefined,
     stopTimer?: Boolean | null | undefined,
@@ -1223,7 +1232,7 @@ export type Mutation = {
   }) => Speakerslist,
   updateVotingSession: (p: {
     currentMemberIndex?: Int | null | undefined,
-    currentStage?: unknown | null | undefined,
+    currentStage?: VotingstageEnum | null | undefined,
     id: ID,
     votesAbstain?: Int | null | undefined,
     votesCon?: Int | null | undefined,
@@ -1482,6 +1491,13 @@ export type Query = {
     orderBy?: AgendaitemOrderInputArgument | null | undefined,
     where?: AgendaitemWhereInputArgument | null | undefined
   }) => Agendaitem[],
+  aiCall: (p: {
+    maxTokens?: Int | null | undefined,
+    messages: AiMessageInput[],
+    responseJSONSchema?: JSON | null | undefined,
+    responseType?: AiResponseType | null | undefined,
+    temperature?: Float | null | undefined
+  }) => String | null,
   amendment: (p: {
     id: ID
   }) => Amendment,
@@ -1555,6 +1571,7 @@ export type Query = {
     where?: ConferenceWhereInputArgument | null | undefined
   }) => Conference[],
   currentUserClaims: () => UserClaims,
+  hasAiProviders: Boolean,
   isGlobalAdmin: Boolean,
   operativeClauseVote: (p: {
     id: ID

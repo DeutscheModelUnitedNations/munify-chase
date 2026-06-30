@@ -36,7 +36,6 @@ schemaBuilder.mutationFields((t) => ({
 			representationId: t.arg.id({ required: true })
 		},
 		resolve: async (query, root, args, ctx) => {
-
 			await db.query.conference
 				.findFirst(
 					ctx.abilities.conference.filter('update').merge({ where: { id: args.conferenceId } })

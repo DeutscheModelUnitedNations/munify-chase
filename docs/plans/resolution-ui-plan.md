@@ -24,7 +24,7 @@ inspiration from `main` but deliberately fixes its usability problems.
   links the paper → its final votingSession. The bespoke `resolutionVoteResult`
   table is gone.
 - Lifecycle: `WORKING_PAPER → SUBMITTED → DRAFT_RESOLUTION → AMENDMENT_PHASE →
-  VOTING_PHASE → FINAL`.
+VOTING_PHASE → FINAL`.
 - Editors are `conferenceUser`s (NSAs work too). Share codes grant `SPONSOR` /
   `EDIT`. `paperContentSnapshot` provides version history.
 - Committee debate controls already exist as mutations: `setActiveDraftResolution`,
@@ -92,13 +92,13 @@ than splitting into two giant pages.
 
 ## Routes (follow existing app conventions)
 
-| Route | Audience | Purpose |
-|-------|----------|---------|
-| `(chairs)/resolutions/+page.svelte` | Chair/Team | List + **ranked Submitted queue** (by sponsor count, suggest top N) with one-click *Promote to DR* |
-| `(chairs)/resolutions/[paperId]/+page.svelte` | Chair/Team | `PaperPage` with chair affordances |
-| `participant/[committeeId]/+page.svelte` | Delegate/NSA | Add a **Resolutions card** to the existing mobile-first committee overview |
-| `participant/[committeeId]/papers/+page.svelte` | Delegate/NSA | Papers list: my papers, enter share code, create working paper, published DRs |
-| `participant/[committeeId]/papers/[paperId]/+page.svelte` | Delegate/NSA | `PaperPage` with participant affordances |
+| Route                                                     | Audience     | Purpose                                                                                            |
+| --------------------------------------------------------- | ------------ | -------------------------------------------------------------------------------------------------- |
+| `(chairs)/resolutions/+page.svelte`                       | Chair/Team   | List + **ranked Submitted queue** (by sponsor count, suggest top N) with one-click _Promote to DR_ |
+| `(chairs)/resolutions/[paperId]/+page.svelte`             | Chair/Team   | `PaperPage` with chair affordances                                                                 |
+| `participant/[committeeId]/+page.svelte`                  | Delegate/NSA | Add a **Resolutions card** to the existing mobile-first committee overview                         |
+| `participant/[committeeId]/papers/+page.svelte`           | Delegate/NSA | Papers list: my papers, enter share code, create working paper, published DRs                      |
+| `participant/[committeeId]/papers/[paperId]/+page.svelte` | Delegate/NSA | `PaperPage` with participant affordances                                                           |
 
 Stubs for the chair routes and `ResolutionEditorMount` / `SnapshotHistoryModal` /
 `SyncBadge` already exist and will be absorbed/refactored into the shared
@@ -108,7 +108,7 @@ components below.
 
 - `PaperPage.svelte` — shared layout: control bar + editor + context panel; takes
   `paperId`, resolved `role`, `paper.status`, `canEdit`.
-- `ResolutionEditorMount.svelte` *(exists)* — Y.js wiring; extend to pass
+- `ResolutionEditorMount.svelte` _(exists)_ — Y.js wiring; extend to pass
   `amendments`, `rejectedClauseIds`, per-clause snippets, and `selectedClauseId`
   selection callback.
 - `ClauseContextPanel.svelte` — tabbed Amendments/Comments/Vote, driven by
@@ -123,13 +123,14 @@ components below.
 - `SubmittedQueue.svelte` — ranked promotion queue for the chair list page.
 - `ShareCodePanel.svelte` / `SponsorPanel.svelte` — share-code create/copy/redeem
   and sponsor management.
-- `SnapshotHistoryModal.svelte` *(exists)* — version history + restore.
+- `SnapshotHistoryModal.svelte` _(exists)_ — version history + restore.
 - `PresentationResolutionPreview.svelte` — read-only preview grid item for the
   presentation view, driven by `activeDraftResolutionId` + `currentOperativeIndex`.
 
 ## Voting integration (auto-launch)
 
 Chair `[start vote]` (clause) and `[final vote]` actions:
+
 1. create + activate a `votingSession` for the committee;
 2. link it via `linkOperativeClauseVote` (clause) or `concludeResolutionPaperVote`
    (final);
@@ -175,4 +176,7 @@ This is the only handler-layer change in the plan.
    clause.
 8. **i18n + polish** — `messages/{de,en,pt}.json`, empty/loading states, mobile
    layout for the participant editor.
+
+```
+
 ```

@@ -123,7 +123,8 @@
 				conferenceId: page.params.conferenceId!,
 				committeeId: page.params.committeeId!
 			})}
-			class:dock-active={page.url.pathname.includes('/papers') && !page.url.pathname.includes(committee?.activeDraftResolutionId ?? '__none__')}
+			class:dock-active={page.url.pathname.includes('/papers') &&
+				!page.url.pathname.includes(committee?.activeDraftResolutionId ?? '__none__')}
 		>
 			<i class="fa-duotone fa-file-lines size-[1.2em]"></i>
 			<span class="dock-label">{m.resolutions()}</span>

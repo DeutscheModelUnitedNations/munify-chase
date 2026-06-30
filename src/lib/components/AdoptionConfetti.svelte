@@ -26,7 +26,9 @@
 	let now = $state(Date.now());
 
 	onMount(() => {
-		const interval = setInterval(() => { now = Date.now(); }, 1000);
+		const interval = setInterval(() => {
+			now = Date.now();
+		}, 1000);
 		return () => clearInterval(interval);
 	});
 

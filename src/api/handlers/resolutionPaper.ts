@@ -189,8 +189,7 @@ schemaBuilder.mutationFields((t) => ({
 				.merge({ where: { id: args.id } });
 
 			const needsChairCheck =
-				args.documentNumber != null ||
-				(args.status != null && args.status !== 'SUBMITTED');
+				args.documentNumber != null || (args.status != null && args.status !== 'SUBMITTED');
 			const isChair = needsChairCheck
 				? !!(await db.query.resolutionPaper.findFirst({
 						where: {
@@ -209,10 +208,7 @@ schemaBuilder.mutationFields((t) => ({
 			if (args.title != null) metaUpdate.title = args.title;
 			if (args.documentNumber != null) metaUpdate.documentNumber = args.documentNumber;
 			if (Object.keys(metaUpdate).length > 0) {
-				await db
-					.update(schema.resolutionPaper)
-					.set(metaUpdate)
-					.where(updateFilter.sql.where);
+				await db.update(schema.resolutionPaper).set(metaUpdate).where(updateFilter.sql.where);
 			}
 
 			if (args.status === 'SUBMITTED') {
@@ -326,10 +322,7 @@ schemaBuilder.mutationFields((t) => ({
 					statusUpdate.documentNumber = `${committee.abbreviation}/${toRoman(agendaPosition)}/DR.${existingCount.n + 1}`;
 				}
 
-				await db
-					.update(schema.resolutionPaper)
-					.set(statusUpdate)
-					.where(updateFilter.sql.where);
+				await db.update(schema.resolutionPaper).set(statusUpdate).where(updateFilter.sql.where);
 			} else if (args.status != null) {
 				if (!isChair) {
 					throw new GraphQLError('Only chairs may change the paper status');

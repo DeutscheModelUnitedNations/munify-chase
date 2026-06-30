@@ -8,7 +8,12 @@
 		minAmendmentSponsors?: number | null;
 	}
 
-	let { totalPresent, simpleMajority, twoThirdsMajority, minAmendmentSponsors = null }: Props = $props();
+	let {
+		totalPresent,
+		simpleMajority,
+		twoThirdsMajority,
+		minAmendmentSponsors = null
+	}: Props = $props();
 </script>
 
 {#snippet Card(cardData: {

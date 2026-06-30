@@ -1,8 +1,21 @@
 import { serializeClause } from '@deutschemodelunitednations/munify-resolution-editor';
-import { configPublic } from '$lib/config/public';
-import { urqlClient } from '$lib/api/client';
-import { gql } from '@urql/core';
-import { getEngine } from './model';
+import { callAI, type AiMode } from './call';
+
+function describeChange(oldText: string, newText: string): string {
+	const ow = oldText.trim().split(/\s+/);
+	const nw = newText.trim().split(/\s+/);
+	let pre = 0;
+	while (pre < ow.length && pre < nw.length && ow[pre] === nw[pre]) pre++;
+	let suf = 0;
+	const maxSuf = Math.min(ow.length - pre, nw.length - pre);
+	while (suf < maxSuf && ow[ow.length - 1 - suf] === nw[nw.length - 1 - suf]) suf++;
+	const removed = ow.slice(pre, suf ? -suf : undefined);
+	const added = nw.slice(pre, suf ? -suf : undefined);
+	if (removed.length === 0 && added.length === 0) return 'no wording change';
+	if (removed.length === 0) return `inserts "${added.join(' ')}"`;
+	if (added.length === 0) return `deletes "${removed.join(' ')}"`;
+	return `replaces "${removed.join(' ')}" with "${added.join(' ')}"`;
+}
 
 type AmendmentBrief = {
 	id?: string;
@@ -29,193 +42,130 @@ function clauseRef(idx: number | null | undefined) {
 function extractJson(raw: string): string {
 	const fenced = raw.match(/```(?:json)?\s*([\s\S]*?)(?:```|$)/);
 	if (fenced) return fenced[1].trim();
-	const brace = raw.search(/[{[]/);
-	if (brace > 0) return raw.slice(brace);
-	return raw.trim();
+
+	const start = raw.search(/[{[]/);
+	if (start < 0) return raw.trim();
+
+	// Walk forward to find the matching close bracket, so trailing model
+	// commentary after the JSON object doesn't break JSON.parse.
+	const openChar = raw[start];
+	const closeChar = openChar === '{' ? '}' : ']';
+	let depth = 0;
+	let inString = false;
+	let escape = false;
+	for (let i = start; i < raw.length; i++) {
+		const c = raw[i];
+		if (escape) {
+			escape = false;
+			continue;
+		}
+		if (c === '\\' && inString) {
+			escape = true;
+			continue;
+		}
+		if (c === '"') {
+			inString = !inString;
+			continue;
+		}
+		if (inString) continue;
+		if (c === openChar) depth++;
+		else if (c === closeChar && --depth === 0) return raw.slice(start, i + 1);
+	}
+
+	// Truncated — return from start to end for closeJson to complete.
+	return raw.slice(start);
 }
 
-function robustJsonParse(raw: string): unknown {
-	const cleaned = extractJson(raw);
+/**
+ * Attempts to close a truncated JSON string by tracking open strings and
+ * unclosed braces/brackets, then appending the minimum suffix to make it valid.
+ */
+function closeJson(s: string): string {
+	let inString = false;
+	let escape = false;
+	const stack: string[] = [];
+	for (let i = 0; i < s.length; i++) {
+		const c = s[i];
+		if (escape) {
+			escape = false;
+			continue;
+		}
+		if (c === '\\' && inString) {
+			escape = true;
+			continue;
+		}
+		if (c === '"') {
+			inString = !inString;
+			continue;
+		}
+		if (inString) continue;
+		if (c === '{') stack.push('}');
+		else if (c === '[') stack.push(']');
+		else if (c === '}' || c === ']') stack.pop();
+	}
+	return s + (inString ? '"' : '') + stack.reverse().join('');
+}
+
+function safeTextParse(raw: string): string {
+	return raw
+		.replace(/<think>[\s\S]*?<\/think>/g, '')
+		.replace(/<think>[\s\S]*/g, '')
+		.trim()
+		.replace(/^["']|["']$/g, '');
+}
+
+function robustJsonParse(raw: string): any {
+	const stripped = safeTextParse(raw);
+	// LLMs sometimes emit literal newlines/tabs inside JSON string values, which is invalid.
+	const sanitize = (s: string) => s.replace(/[\r\n\t]+/g, ' ');
+
+	const cleaned = sanitize(extractJson(stripped));
 	try {
 		return JSON.parse(cleaned);
 	} catch {
 		/* continue */
 	}
 
-	const patches = ['"}', '"]}', '}', ']}'];
-	for (const patch of patches) {
-		try {
-			return JSON.parse(cleaned + patch);
-		} catch {
-			/* continue */
-		}
+	try {
+		return JSON.parse(closeJson(cleaned));
+	} catch {
+		/* continue */
 	}
 
 	throw new SyntaxError(`Could not parse LLM output: ${raw.slice(0, 120)}`);
 }
 
-// ─── GraphQL documents ────────────────────────────────────────────────────────
-
-const AI_BACKEND_AVAILABLE_QUERY = gql`
-	query AiBackendAvailable {
-		aiBackendAvailable
-	}
-`;
-
-const AI_CLASSIFY_OBSOLESCENCE = gql`
-	mutation AiClassifyObsolescence(
-		$triggerOld: String!
-		$triggerNew: String!
-		$subjectOld: String!
-		$subjectNew: String!
-		$clauseRef: String!
-		$documentNumber: String!
-	) {
-		aiClassifyObsolescence(
-			triggerOld: $triggerOld
-			triggerNew: $triggerNew
-			subjectOld: $subjectOld
-			subjectNew: $subjectNew
-			clauseRef: $clauseRef
-			documentNumber: $documentNumber
-		) {
-			obsolete
-			reason
-		}
-	}
-`;
-
-const AI_RANK_AMENDMENTS = gql`
-	mutation AiRankAmendmentsByImpact($list: String!) {
-		aiRankAmendmentsByImpact(list: $list)
-	}
-`;
-
-const AI_EVALUATE_REWRITE = gql`
-	mutation AiEvaluateAndSuggestRewrite(
-		$triggerOld: String!
-		$triggerNew: String!
-		$subjectNew: String!
-		$clauseRef: String!
-		$documentNumber: String!
-	) {
-		aiEvaluateAndSuggestRewrite(
-			triggerOld: $triggerOld
-			triggerNew: $triggerNew
-			subjectNew: $subjectNew
-			clauseRef: $clauseRef
-			documentNumber: $documentNumber
-		) {
-			needsRewrite
-			reason
-			suggestion
-		}
-	}
-`;
-
-// ─── Backend availability cache ───────────────────────────────────────────────
-
-let backendAvailableCache: boolean | null = null;
-
-async function isBackendAvailable(): Promise<boolean> {
-	if (backendAvailableCache !== null) return backendAvailableCache;
-	try {
-		const result = await urqlClient
-			.query<{ aiBackendAvailable: boolean }>(AI_BACKEND_AVAILABLE_QUERY, {})
-			.toPromise();
-		backendAvailableCache = result.data?.aiBackendAvailable ?? false;
-		return backendAvailableCache;
-	} catch {
-		backendAvailableCache = false;
-		return false;
-	}
-}
-
-/**
- * Returns which execution path to use.
- * - "backend": call via GraphQL mutations
- * - "local": use WebLLM in-browser
- * - null: no AI available
- */
-async function resolveEngine(): Promise<'backend' | 'local' | null> {
-	const mode = configPublic.PUBLIC_AI_MODE;
-
-	if (mode === 'backend') {
-		return (await isBackendAvailable()) ? 'backend' : null;
-	}
-
-	if (mode === 'local') {
-		const engine = await getEngine();
-		return engine ? 'local' : null;
-	}
-
-	// "auto": prefer backend, fall back to local
-	if (await isBackendAvailable()) return 'backend';
-	const engine = await getEngine();
-	return engine ? 'local' : null;
-}
-
-// ─── Public API ───────────────────────────────────────────────────────────────
-
 export interface ObsolescenceResult {
 	id: string;
 	obsolete: boolean;
-	reason: string;
 }
 
 export async function classifyObsolescence(
 	trigger: AmendmentBrief,
-	subject: AmendmentBrief
+	subject: AmendmentBrief,
+	mode: AiMode = 'offline'
 ): Promise<ObsolescenceResult | null> {
-	const path = await resolveEngine();
-	if (!path) return null;
-
 	const triggerOld = toText(trigger.oldContent);
 	const triggerNew = toText(trigger.newContent);
 	const subjectOld = toText(subject.oldContent);
 	const subjectNew = toText(subject.newContent);
-	const ref = clauseRef(trigger.targetOperativeIndex);
-	const docNum = subject.documentNumber ?? 'amendment';
 
-	if (path === 'backend') {
-		const result = await urqlClient
-			.mutation<{
-				aiClassifyObsolescence: { obsolete: boolean; reason: string } | null;
-			}>(AI_CLASSIFY_OBSOLESCENCE, {
-				triggerOld,
-				triggerNew,
-				subjectOld,
-				subjectNew,
-				clauseRef: ref,
-				documentNumber: docNum
-			})
-			.toPromise();
-
-		const data = result.data?.aiClassifyObsolescence;
-		if (!data) return null;
-		return { id: subject.id ?? '', obsolete: data.obsolete, reason: data.reason };
-	}
-
-	// local WebLLM path
-	const engine = await getEngine();
-	if (!engine) return null;
-
-	const response = await engine.chat.completions.create({
+	const raw = await callAI({
 		messages: [
 			{
 				role: 'system',
-				content: `You are a Model UN resolution expert. Output ONLY JSON: {"obsolete":boolean,"reason":string}.
+				content: `You are a Model UN resolution expert. Output ONLY JSON: {"obsolete":boolean}.
 
 Obsolete = accepted change already made the same change, removed the targeted words, or shifted meaning so much the amendment no longer makes sense. Not obsolete = targets a different part of the clause.
 
 Examples:
-"10%"→"20%", surviving proposes "20%" → obsolete (already adopted)
-"10%"→"20%", surviving proposes "15%" → not obsolete (distinct proposal)
-"developed nations"→"all nations", surviving targets "developed nations" → obsolete (words removed)`
+"10%"→"20%", surviving proposes "20%" → {"obsolete":true}
+"10%"→"20%", surviving proposes "15%" → {"obsolete":false}
+"developed nations"→"all nations", surviving targets "developed nations" → {"obsolete":true}`
 			},
 			{
 				role: 'user',
-				content: `An amendment was accepted that changes ${ref}.
+				content: `An amendment was accepted that changes ${clauseRef(trigger.targetOperativeIndex)}.
 
 Before the accepted change, the clause read:
 "${triggerOld}"
@@ -223,7 +173,7 @@ Before the accepted change, the clause read:
 After the accepted change, the clause now reads:
 "${triggerNew}"
 
-The surviving amendment (${docNum}) was written to change the clause from:
+The surviving amendment (${subject.documentNumber ?? 'amendment'}) was written to change the clause from:
 "${subjectOld}"
 to:
 "${subjectNew}"
@@ -232,23 +182,22 @@ First, check whether the words the surviving amendment was targeting still appea
 			}
 		],
 		temperature: 0.1,
-		max_tokens: 200,
-		response_format: {
-			type: 'json_object',
-			schema: JSON.stringify({
-				type: 'object',
-				properties: { obsolete: { type: 'boolean' }, reason: { type: 'string' } },
-				required: ['obsolete', 'reason']
-			})
-		}
+		maxTokens: 300,
+		responseType: 'json',
+		responseJSONSchema: JSON.stringify({
+			type: 'object',
+			properties: { obsolete: { type: 'boolean' } },
+			required: ['obsolete']
+		}),
+		mode
 	});
 
-	const raw = response.choices[0]?.message?.content ?? '';
-	const parsed = robustJsonParse(raw) as { obsolete: boolean; reason: string };
+	if (raw === null) return null;
+
+	const parsed = robustJsonParse(raw) as { obsolete: boolean };
 	return {
 		id: subject.id ?? '',
-		obsolete: !!parsed.obsolete,
-		reason: String(parsed.reason ?? '')
+		obsolete: !!parsed.obsolete
 	};
 }
 
@@ -258,10 +207,10 @@ export async function rankAmendmentsByImpact(
 		documentNumber?: string | null;
 		newContent?: string | null;
 		targetOperativeIndex?: number | null;
-	}>
+	}>,
+	mode: AiMode = 'offline'
 ): Promise<string[]> {
-	const path = await resolveEngine();
-	if (!path || amendments.length < 2) return amendments.map((a) => a.id);
+	if (amendments.length < 2) return amendments.map((a) => a.id);
 
 	const list = amendments
 		.map(
@@ -270,18 +219,7 @@ export async function rankAmendmentsByImpact(
 		)
 		.join('\n');
 
-	if (path === 'backend') {
-		const result = await urqlClient
-			.mutation<{ aiRankAmendmentsByImpact: string[] }>(AI_RANK_AMENDMENTS, { list })
-			.toPromise();
-		return result.data?.aiRankAmendmentsByImpact ?? amendments.map((a) => a.id);
-	}
-
-	// local WebLLM path
-	const engine = await getEngine();
-	if (!engine) return amendments.map((a) => a.id);
-
-	const response = await engine.chat.completions.create({
+	const raw = await callAI({
 		messages: [
 			{
 				role: 'system',
@@ -298,106 +236,66 @@ Low: synonyms, adjectives, punctuation, minor rephrasing.`
 			}
 		],
 		temperature: 0.1,
-		max_tokens: 200,
-		response_format: { type: 'json_object', schema: '{}' }
+		maxTokens: 300,
+		responseType: 'json',
+		responseJSONSchema: JSON.stringify({
+			type: 'object',
+			properties: { ranked: { type: 'array', items: { type: 'string' } } },
+			required: ['ranked']
+		}),
+		mode
 	});
 
-	const raw = response.choices[0]?.message?.content ?? '';
+	if (raw === null) return amendments.map((a) => a.id);
+
 	const parsed = robustJsonParse(raw) as { ranked: string[] };
 	return parsed.ranked ?? amendments.map((a) => a.id);
 }
 
-export interface RewriteResult {
-	needsRewrite: boolean;
-	/** Empty string when needsRewrite is false. */
-	suggestion: string;
-	reason: string;
-}
-
 export async function evaluateAndSuggestRewrite(
 	trigger: AmendmentBrief,
-	subject: AmendmentBrief
-): Promise<RewriteResult> {
-	const path = await resolveEngine();
-	if (!path) return { needsRewrite: false, suggestion: '', reason: '' };
+	subject: AmendmentBrief,
+	mode: AiMode = 'offline'
+): Promise<string> {
+	const originalClause = toText(subject.oldContent ?? trigger.oldContent);
+	const currentClause = toText(trigger.newContent);
+	const proposedClause = toText(subject.newContent);
+	const delta = describeChange(originalClause, proposedClause);
 
-	const triggerOld = toText(trigger.oldContent);
-	const triggerNew = toText(trigger.newContent);
-	const subjectNew = toText(subject.newContent);
-	const ref = clauseRef(trigger.targetOperativeIndex);
-	const docNum = subject.documentNumber ?? 'amendment';
-
-	if (path === 'backend') {
-		const result = await urqlClient
-			.mutation<{
-				aiEvaluateAndSuggestRewrite: { needsRewrite: boolean; reason: string; suggestion: string };
-			}>(AI_EVALUATE_REWRITE, {
-				triggerOld,
-				triggerNew,
-				subjectNew,
-				clauseRef: ref,
-				documentNumber: docNum
-			})
-			.toPromise();
-
-		const data = result.data?.aiEvaluateAndSuggestRewrite;
-		if (!data) return { needsRewrite: false, suggestion: '', reason: '' };
-		const needsRewrite = !!data.needsRewrite;
-		return {
-			needsRewrite,
-			suggestion: needsRewrite ? (data.suggestion ?? '') : '',
-			reason: String(data.reason ?? '')
-		};
-	}
-
-	// local WebLLM path
-	const engine = await getEngine();
-	if (!engine) return { needsRewrite: false, suggestion: '', reason: '' };
-
-	const response = await engine.chat.completions.create({
+	const raw = await callAI({
 		messages: [
 			{
 				role: 'system',
-				content: `You are a Model UN resolution expert. Output ONLY JSON: {"needsRewrite":boolean,"reason":string,"suggestion":string}.
-
-Merge the surviving amendment's intent into the new clause text. suggestion = start from the NEW clause, apply what the surviving amendment intended to change, output the merged clause as plain prose (no explanation). needsRewrite = false only if the surviving amendment targets a part completely untouched by the accepted change (then suggestion = "").
-
-Examples:
-Old "…member states…30 days", new "…all nations…30 days", surviving intent: 60 days → {"needsRewrite":true,"reason":"Baseline shifted; merged 60-day intent into new text.","suggestion":"…all nations…60 days"}
-Old "compile a report", new "compile an annual report", surviving intent: soften verb to 'invites' → {"needsRewrite":true,"reason":"Applied softened verb to updated text.","suggestion":"invites…to compile an annual report"}`
+				content: `You are a text editor for merging change requests to a text.
+Rules:
+- Output only the merged text. No explanation, no commentary.
+- Keep all wording that is not part of the change.
+- Same language as input. Joining words like "and", "oder", "ou" are good.
+- A simple concat with a SINGLE CONCAT WORD is often a GOOD solution. When doing that, prefer the first text to actually turn out to be first in the merge.
+- Beware of sentence symbols like periods, commas, semicolons, and colons. They should NOT BE MISPLACED OR APPEAR RANDOMLY MID SENTENCE. Use combinatory words instead!`
 			},
 			{
 				role: 'user',
-				content: `An amendment was accepted that changes ${ref}.
-
-Before the accepted change, the clause read:
-"${triggerOld}"
-
-After the accepted change, the clause now reads:
-"${triggerNew}"
-
-The surviving amendment (${docNum}) was written to change that clause to:
-"${subjectNew}"
-
-Identify what the surviving amendment was trying to achieve (its intent). Then apply that intent to the new clause text and produce the merged result.`
+				content: `The original text is "${originalClause}".
+There are two suggested changes.
+The first one wants to change the text to "${currentClause}".
+The second one wants to change the text to "${proposedClause}".
+Respond with the FULL MERGED TEXT preserving BOTH change intents. Double check that you did not leave out any intent of either change request!`
 			}
 		],
-		temperature: 0.1,
-		max_tokens: Math.max(150, 80 + Math.ceil(((subject.newContent?.length ?? 0) * 1.5) / 4)),
-		response_format: { type: 'json_object', schema: '{}' }
+		temperature: 0.43,
+		// maxTokens: Math.min(1000, Math.ceil(currentClause.length / 3) + 500),
+		responseType: 'text',
+		enableThinking: true,
+		mode
 	});
 
-	const raw = response.choices[0]?.message?.content ?? '';
-	const parsed = robustJsonParse(raw) as {
-		needsRewrite: boolean;
-		suggestion: string;
-		reason: string;
-	};
-	const needsRewrite = !!parsed.needsRewrite;
+	console.log(raw)
 
-	return {
-		needsRewrite,
-		suggestion: needsRewrite ? (parsed.suggestion ?? '') : '',
-		reason: String(parsed.reason ?? '')
-	};
+	if (!raw) return '';
+	const result = safeTextParse(raw)
+		.replace(/^OUTPUT:\s*/i, '')
+		.replace(/^["']|["']$/g, '')
+		.trim();
+	return result;
 }

@@ -3,19 +3,21 @@
 	import toast from 'svelte-french-toast';
 	import AiSpinner from '$lib/components/AiSpinner.svelte';
 	import AiIcon from '$lib/components/AiIcon.svelte';
+	import AiResultBadge from './AiResultBadge.svelte';
 	import Flag from '$lib/components/Flag.svelte';
+	import ThreeWayDiffPreview from './ThreeWayDiffPreview.svelte';
 	import { getTranslatedCountryNameFromAlpha3Code } from '$lib/utils/nationTranslationHelper.svelte';
 	import {
 		OperativeParagraphPreview,
 		serializeClause
 	} from '@deutschemodelunitednations/munify-resolution-editor';
 	import { englishLabels } from '@deutschemodelunitednations/munify-resolution-editor/i18n';
+	import { SvelteSet } from 'svelte/reactivity';
 
 	interface ReviewItem {
 		id: string;
 		aiRewriteSuggestion: string | null | undefined;
-		aiRewriteReason: string | null | undefined;
-		triggerAmendment: { oldContent: string | null | undefined } | null | undefined;
+		triggerAmendment: { newContent: string | null | undefined; oldContent: string | null | undefined } | null | undefined;
 		subjectAmendment:
 			| {
 					documentNumber: string | null | undefined;
@@ -51,23 +53,18 @@
 		laterItems?: ReviewItem[];
 		/** ID of the item the AI queue is currently working on. */
 		currentlyProcessingId?: string | null;
+		onrerunItem?: (itemId: string) => void;
 	}
 
-	let { items, laterItems = [], currentlyProcessingId = null }: Props = $props();
+	let { items, laterItems = [], currentlyProcessingId = null, onrerunItem }: Props = $props();
 
 	let busy = $state(false);
 	let editMode = $state<Record<string, boolean>>({});
 	let edits = $state<Record<string, string | undefined>>({});
 
 	let laterExpandedOverride = $state<boolean | null>(null);
-	let reasonExpanded = $state(new Set<string>());
 	const laterAiHasHit = $derived(
-		laterItems.some(
-			(i) =>
-				i.aiRewriteSuggestion !== null &&
-				i.aiRewriteSuggestion !== undefined &&
-				i.aiRewriteSuggestion !== ''
-		)
+		laterItems.some((i) => i.aiRewriteSuggestion !== null && i.aiRewriteSuggestion !== undefined)
 	);
 	const laterExpanded = $derived(
 		laterExpandedOverride !== null ? laterExpandedOverride : laterAiHasHit
@@ -191,27 +188,22 @@
 				{@const originalContent = item.subjectAmendment?.newContent ?? ''}
 				{@const aiEvaluated =
 					item.aiRewriteSuggestion !== null && item.aiRewriteSuggestion !== undefined}
-				{@const aiNeedsRewrite = aiEvaluated && item.aiRewriteSuggestion !== ''}
-				{@const aiSuggestion = aiNeedsRewrite ? (item.aiRewriteSuggestion ?? '') : ''}
+				{@const aiSuggestion = item.aiRewriteSuggestion ?? ''}
 				{@const isEditing = editMode[item.id] ?? false}
 				{@const oldMarkup = parseOldMarkup(item.triggerAmendment?.oldContent)}
 
-				<div class="bg-base-200 flex flex-col gap-2 rounded-lg p-3">
+				<div class="flex flex-col gap-2 py-2">
 					<div class="flex items-center justify-between gap-2">
 						<div class="flex items-center gap-2">
 							<p class="font-mono text-sm font-semibold">
 								{item.subjectAmendment?.documentNumber ?? typeLabel(item.subjectAmendment?.type)}
 							</p>
 							{#if aiEvaluated}
-								{#if aiNeedsRewrite}
-									<span class="badge badge-warning badge-sm">
-										<AiIcon />Adjustment suggested
-									</span>
-								{:else}
-									<span class="badge badge-success badge-sm">
-										<AiIcon />No changes needed
-									</span>
-								{/if}
+								<AiResultBadge
+									label="Adjustment suggested"
+									cls="badge-warning"
+									onclick={() => onrerunItem?.(item.id)}
+								/>
 							{:else if currentlyProcessingId === item.id}
 								<span class="badge badge-ghost badge-sm gap-1">
 									<AiSpinner size="xs" />
@@ -237,26 +229,11 @@
 						</div>
 					</div>
 
-					{#if oldMarkup}
-						<div>
-							<p class="text-base-content/50 mb-1 text-xs uppercase tracking-wide">
-								Original clause text
-							</p>
-							<div class="bg-base-100 rounded p-2">
-								<OperativeParagraphPreview
-									markup={oldMarkup}
-									operativeNumber={(item.subjectAmendment?.targetOperativeIndex ?? 0) + 1}
-									labels={englishLabels}
-								/>
-							</div>
-						</div>
-					{/if}
-
 					<div>
 						<p class="text-base-content/50 mb-1 text-xs uppercase tracking-wide">
-							{oldMarkup ? 'Amendment proposes' : 'Proposed text'}
+							Proposed text
 						</p>
-						<div class="bg-base-100 rounded p-2">
+						<div class="rounded-lg bg-white p-3">
 							<OperativeParagraphPreview
 								markup={originalContent}
 								{oldMarkup}
@@ -267,7 +244,7 @@
 						</div>
 					</div>
 
-					{#if aiNeedsRewrite && !isEditing}
+					{#if aiEvaluated && !isEditing}
 						<div>
 							<p
 								class="text-base-content/50 mb-1 flex items-center gap-1 text-xs uppercase tracking-wide"
@@ -276,40 +253,35 @@
 								<i class="fas fa-wand-magic-sparkles text-primary"></i>
 								AI revision
 							</p>
-							<div class="bg-base-100 rounded p-2">
-								<OperativeParagraphPreview
-									markup={aiSuggestion}
-									oldMarkup={originalContent}
-									showDiff={true}
-									operativeNumber={(item.subjectAmendment?.targetOperativeIndex ?? 0) + 1}
-									labels={englishLabels}
-								/>
+							<div class="rounded-lg bg-white p-3 flex flex-col gap-2">
+								{#if item.triggerAmendment?.newContent && oldMarkup}
+									<ThreeWayDiffPreview
+										originalMarkup={oldMarkup}
+										triggerMarkup={item.triggerAmendment.newContent}
+										aiMarkup={aiSuggestion}
+										operativeNumber={(item.subjectAmendment?.targetOperativeIndex ?? 0) + 1}
+									/>
+									<div class="flex items-center gap-3 text-xs text-gray-400 pt-1 border-t border-gray-100">
+										<span class="flex items-center gap-1">
+											<span class="bg-warning/40 inline-block size-2 rounded-sm"></span>
+											Accepted amendment
+										</span>
+										<span class="flex items-center gap-1">
+											<span class="bg-success/60 inline-block size-2 rounded-sm"></span>
+											AI adjustment
+										</span>
+									</div>
+								{:else}
+									<OperativeParagraphPreview
+										markup={aiSuggestion}
+										oldMarkup={item.triggerAmendment?.newContent ?? originalContent}
+										showDiff={true}
+										operativeNumber={(item.subjectAmendment?.targetOperativeIndex ?? 0) + 1}
+										labels={englishLabels}
+									/>
+								{/if}
 							</div>
 						</div>
-					{/if}
-					{#if aiEvaluated && item.aiRewriteReason}
-						<button
-							class="text-base-content/40 hover:text-base-content/70 flex cursor-pointer items-center gap-1 text-xs"
-							onclick={() => {
-								const next = new Set(reasonExpanded);
-								if (next.has(item.id)) next.delete(item.id);
-								else next.add(item.id);
-								reasonExpanded = next;
-							}}
-						>
-							<AiIcon />
-							<i
-								class="fas fa-chevron-{reasonExpanded.has(item.id)
-									? 'down'
-									: 'right'} text-[0.55rem]"
-							></i>
-							AI reasoning
-						</button>
-						{#if reasonExpanded.has(item.id)}
-							<p class="text-base-content/50 flex items-center gap-1 text-xs italic">
-								{item.aiRewriteReason}
-							</p>
-						{/if}
 					{/if}
 
 					{#if isEditing}
@@ -324,7 +296,7 @@
 						></textarea>
 						<div>
 							<p class="text-base-content/50 mb-1 text-xs uppercase tracking-wide">Preview</p>
-							<div class="bg-base-100 rounded p-2">
+							<div class="rounded-lg bg-white p-3">
 								<OperativeParagraphPreview
 									markup={currentEditValue}
 									oldMarkup={originalContent}
@@ -366,7 +338,7 @@
 							>
 								<i class="fas fa-pen text-xs"></i>
 							</button>
-							{#if aiNeedsRewrite}
+							{#if aiEvaluated}
 								<button
 									class="btn btn-ghost btn-sm cursor-pointer"
 									disabled={busy}
@@ -411,10 +383,8 @@
 				>
 					<i class="fas fa-chevron-{laterExpanded ? 'down' : 'right'} text-xs opacity-60"></i>
 					Later clauses ({laterItems.length})
-					{#if laterItems.some((i) => i.aiRewriteSuggestion !== null && i.aiRewriteSuggestion !== undefined && i.aiRewriteSuggestion !== '')}
+					{#if laterItems.some((i) => i.aiRewriteSuggestion !== null && i.aiRewriteSuggestion !== undefined)}
 						<span class="badge badge-warning badge-sm"><AiIcon />needs review</span>
-					{:else if laterItems.every((i) => i.aiRewriteSuggestion !== null && i.aiRewriteSuggestion !== undefined)}
-						<span class="badge badge-success badge-sm"><AiIcon />all fine</span>
 					{:else if laterItems.some((i) => i.id === currentlyProcessingId)}
 						<AiSpinner size="xs" />
 					{/if}
@@ -431,12 +401,11 @@
 						{@const laterOriginal = item.subjectAmendment?.newContent ?? ''}
 						{@const laterAiEvaluated =
 							item.aiRewriteSuggestion !== null && item.aiRewriteSuggestion !== undefined}
-						{@const laterNeedsRewrite = laterAiEvaluated && item.aiRewriteSuggestion !== ''}
-						{@const laterSuggestion = laterNeedsRewrite ? (item.aiRewriteSuggestion ?? '') : ''}
+						{@const laterSuggestion = item.aiRewriteSuggestion ?? ''}
 						{@const isEditing = editMode[item.id] ?? false}
 						{@const laterOldMarkup = parseOldMarkup(item.triggerAmendment?.oldContent)}
 
-						<div class="bg-base-100 border-base-300 flex flex-col gap-2 rounded-lg border p-3">
+						<div class="flex flex-col gap-2 py-2">
 							<div class="flex items-center justify-between gap-2">
 								<div class="flex items-center gap-2">
 									<p class="font-mono text-sm font-semibold">
@@ -447,15 +416,11 @@
 										<span class="badge badge-outline badge-sm">Clause {clauseIdx + 1}</span>
 									{/if}
 									{#if laterAiEvaluated}
-										{#if laterNeedsRewrite}
-											<span class="badge badge-warning badge-sm">
-												<AiIcon />Adjustment suggested
-											</span>
-										{:else}
-											<span class="badge badge-success badge-sm">
-												<AiIcon />No changes needed
-											</span>
-										{/if}
+										<AiResultBadge
+											label="Adjustment suggested"
+											cls="badge-warning"
+											onclick={() => onrerunItem?.(item.id)}
+										/>
 									{:else if currentlyProcessingId === item.id}
 										<span class="badge badge-ghost badge-sm gap-1">
 											<AiSpinner size="xs" />
@@ -484,26 +449,11 @@
 								</div>
 							</div>
 
-							{#if laterOldMarkup}
-								<div>
-									<p class="text-base-content/50 mb-1 text-xs uppercase tracking-wide">
-										Original clause text
-									</p>
-									<div class="bg-base-200 rounded p-2">
-										<OperativeParagraphPreview
-											markup={laterOldMarkup}
-											operativeNumber={(clauseIdx ?? 0) + 1}
-											labels={englishLabels}
-										/>
-									</div>
-								</div>
-							{/if}
-
 							<div>
 								<p class="text-base-content/50 mb-1 text-xs uppercase tracking-wide">
-									{laterOldMarkup ? 'Amendment proposes' : 'Proposed text'}
+									Proposed text
 								</p>
-								<div class="bg-base-200 rounded p-2">
+								<div class="rounded-lg bg-white p-3">
 									<OperativeParagraphPreview
 										markup={laterOriginal}
 										oldMarkup={laterOldMarkup}
@@ -514,7 +464,7 @@
 								</div>
 							</div>
 
-							{#if laterNeedsRewrite && !isEditing}
+							{#if laterAiEvaluated && !isEditing}
 								<div>
 									<p
 										class="text-base-content/50 mb-1 flex items-center gap-1 text-xs uppercase tracking-wide"
@@ -523,14 +473,33 @@
 										<i class="fas fa-wand-magic-sparkles text-primary"></i>
 										AI revision
 									</p>
-									<div class="bg-base-200 rounded p-2">
-										<OperativeParagraphPreview
-											markup={laterSuggestion}
-											oldMarkup={laterOriginal}
-											showDiff={true}
-											operativeNumber={(clauseIdx ?? 0) + 1}
-											labels={englishLabels}
-										/>
+									<div class="rounded-lg bg-white p-3 flex flex-col gap-2">
+										{#if item.triggerAmendment?.newContent && laterOldMarkup}
+											<ThreeWayDiffPreview
+												originalMarkup={laterOldMarkup}
+												triggerMarkup={item.triggerAmendment.newContent}
+												aiMarkup={laterSuggestion}
+												operativeNumber={(clauseIdx ?? 0) + 1}
+											/>
+											<div class="flex items-center gap-3 text-xs text-gray-400 pt-1 border-t border-gray-100">
+												<span class="flex items-center gap-1">
+													<span class="bg-warning/40 inline-block size-2 rounded-sm"></span>
+													Accepted amendment
+												</span>
+												<span class="flex items-center gap-1">
+													<span class="bg-success/60 inline-block size-2 rounded-sm"></span>
+													AI adjustment
+												</span>
+											</div>
+										{:else}
+											<OperativeParagraphPreview
+												markup={laterSuggestion}
+												oldMarkup={item.triggerAmendment?.newContent ?? laterOriginal}
+												showDiff={true}
+												operativeNumber={(clauseIdx ?? 0) + 1}
+												labels={englishLabels}
+											/>
+										{/if}
 									</div>
 								</div>
 							{/if}
@@ -547,7 +516,7 @@
 								></textarea>
 								<div>
 									<p class="text-base-content/50 mb-1 text-xs uppercase tracking-wide">Preview</p>
-									<div class="bg-base-200 rounded p-2">
+									<div class="rounded-lg bg-white p-3">
 										<OperativeParagraphPreview
 											markup={currentEditValue}
 											oldMarkup={laterOriginal}
@@ -589,7 +558,7 @@
 									>
 										<i class="fas fa-pen text-xs"></i>
 									</button>
-									{#if laterNeedsRewrite}
+									{#if laterAiEvaluated}
 										<button
 											class="btn btn-ghost btn-sm cursor-pointer"
 											disabled={busy}

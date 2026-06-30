@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { client } from '$lib/api/rumbleClient/client';
 	import { classifyObsolescence, evaluateAndSuggestRewrite } from '$lib/ai/amendments';
+	import { getAiPreference, preferenceToMode } from '$lib/ai/aiPreference.svelte';
 	import AiSpinner from '$lib/components/AiSpinner.svelte';
 	import ObsolescenceStep from './ObsolescenceStep.svelte';
 	import RewriteStep from './RewriteStep.svelte';
@@ -24,9 +25,7 @@
 		id: string;
 		phase: string | null | undefined;
 		aiObsolete: boolean | null | undefined;
-		aiObsoleteReason: string | null | undefined;
 		aiRewriteSuggestion: string | null | undefined;
-		aiRewriteReason: string | null | undefined;
 		triggerAmendment:
 			| {
 					id: string;
@@ -199,6 +198,8 @@
 	});
 
 	async function processObsolescence(item: ReviewItem, trig: NonNullable<typeof trigger>) {
+		const pref = getAiPreference();
+		if (pref === 'off') return;
 		currentlyProcessingId = item.id;
 		try {
 			const result = await classifyObsolescence(
@@ -215,14 +216,15 @@
 					newContent: item.subjectAmendment?.newContent,
 					oldContent: item.subjectAmendment?.oldContent,
 					targetOperativeIndex: item.subjectAmendment?.targetOperativeIndex
-				}
+				},
+				preferenceToMode(pref)
 			);
 			if (!result) return;
 			await client.mutate.updateAmendmentReviewItem({
 				__args: {
 					reviewItemId: result.id,
 					aiObsolete: result.obsolete,
-					aiObsoleteReason: result.reason
+					aiObsoleteReason: null
 				}
 			});
 		} catch (err) {
@@ -233,9 +235,11 @@
 	}
 
 	async function processRewrite(item: ReviewItem, trig: NonNullable<typeof trigger>) {
+		const pref = getAiPreference();
+		if (pref === 'off') return;
 		currentlyProcessingId = item.id;
 		try {
-			const result = await evaluateAndSuggestRewrite(
+			const suggestion = await evaluateAndSuggestRewrite(
 				{
 					id: trig.id,
 					documentNumber: trig.documentNumber,
@@ -248,13 +252,14 @@
 					documentNumber: item.subjectAmendment?.documentNumber,
 					newContent: item.subjectAmendment?.newContent,
 					targetOperativeIndex: item.subjectAmendment?.targetOperativeIndex
-				}
+				},
+				preferenceToMode(pref)
 			);
 			await client.mutate.updateAmendmentReviewItem({
 				__args: {
 					reviewItemId: item.id,
-					aiRewriteSuggestion: result.suggestion,
-					aiRewriteReason: result.reason
+					aiRewriteSuggestion: suggestion,
+					aiRewriteReason: null
 				}
 			});
 		} catch (err) {
@@ -262,6 +267,26 @@
 		} finally {
 			if (currentlyProcessingId === item.id) currentlyProcessingId = null;
 		}
+	}
+
+	async function rerunObsolescence(itemId: string) {
+		if (!trigger) return;
+		aiStartedObs.delete(itemId);
+		currentlyProcessingId = itemId;
+		await client.mutate.updateAmendmentReviewItem({
+			__args: { reviewItemId: itemId, aiObsolete: null, aiObsoleteReason: null }
+		});
+		// subscription delivers null → $effect re-queues automatically
+	}
+
+	async function rerunRewrite(itemId: string) {
+		if (!trigger) return;
+		aiStartedRew.delete(itemId);
+		currentlyProcessingId = itemId;
+		await client.mutate.updateAmendmentReviewItem({
+			__args: { reviewItemId: itemId, aiRewriteSuggestion: null, aiRewriteReason: null }
+		});
+		// subscription delivers null → $effect re-queues automatically
 	}
 
 	function opClauseRef(idx: number | null | undefined) {
@@ -330,11 +355,13 @@
 				{#if triggerOldMarkup}
 					<div>
 						<p class="text-base-content/40 mb-1 text-xs uppercase tracking-wide">Before</p>
-						<OperativeParagraphPreview
-							markup={triggerOldMarkup}
-							operativeNumber={(trigger.targetOperativeIndex ?? 0) + 1}
-							labels={englishLabels}
-						/>
+						<div class="rounded-lg bg-white p-3">
+							<OperativeParagraphPreview
+								markup={triggerOldMarkup}
+								operativeNumber={(trigger.targetOperativeIndex ?? 0) + 1}
+								labels={englishLabels}
+							/>
+						</div>
 					</div>
 				{/if}
 				{#if trigger.newContent}
@@ -342,13 +369,15 @@
 						<p class="text-base-content/40 mb-1 text-xs uppercase tracking-wide">
 							{triggerOldMarkup ? 'After' : 'New text'}
 						</p>
-						<OperativeParagraphPreview
-							markup={trigger.newContent}
-							oldMarkup={triggerOldMarkup}
-							showDiff={!!triggerOldMarkup}
-							operativeNumber={(trigger.targetOperativeIndex ?? 0) + 1}
-							labels={englishLabels}
-						/>
+						<div class="rounded-lg bg-white p-3">
+							<OperativeParagraphPreview
+								markup={trigger.newContent}
+								oldMarkup={triggerOldMarkup}
+								showDiff={!!triggerOldMarkup}
+								operativeNumber={(trigger.targetOperativeIndex ?? 0) + 1}
+								labels={englishLabels}
+							/>
+						</div>
 					</div>
 				{/if}
 			</div>
@@ -369,6 +398,7 @@
 					laterItems={laterClauseObsolescence}
 					{currentlyProcessingId}
 					onadvance={() => {}}
+					onrerunItem={rerunObsolescence}
 				/>
 			{/if}
 		{:else}
@@ -377,6 +407,7 @@
 					items={sameClauseRewrite}
 					laterItems={laterClauseRewrite}
 					{currentlyProcessingId}
+					onrerunItem={rerunRewrite}
 				/>
 			{:else}
 				<div class="flex flex-col items-center gap-2 py-8 text-center">

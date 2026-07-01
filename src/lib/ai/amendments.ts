@@ -1,5 +1,10 @@
 import { serializeClause } from '@deutschemodelunitednations/munify-resolution-editor';
 import { callAI, type AiMode } from './call';
+import { getAiPreference, preferenceToMode } from './aiPreference.svelte';
+
+function defaultMode(): AiMode {
+	return preferenceToMode(getAiPreference());
+}
 
 /*
  * ATTENTION: The parameters in this module are carefully tuned for the smallest local model.
@@ -171,7 +176,7 @@ function extractTrailingBoolean(raw: string): boolean | null {
 export async function classifyObsolescence(
 	trigger: AmendmentBrief,
 	subject: AmendmentBrief,
-	mode: AiMode = 'offline'
+	mode: AiMode = defaultMode()
 ): Promise<ObsolescenceResult | null> {
 	// const triggerOld = toText(trigger.oldContent);
 	const triggerNew = toText(trigger.newContent);
@@ -261,7 +266,7 @@ export async function rankAmendmentsByImpact(
 		newContent?: string | null;
 		targetOperativeIndex?: number | null;
 	}>,
-	mode: AiMode = 'offline'
+	mode: AiMode = defaultMode()
 ): Promise<string[]> {
 	if (amendments.length < 2) return amendments.map((a) => a.id);
 
@@ -308,7 +313,7 @@ Low: synonyms, adjectives, punctuation, minor rephrasing.`
 export async function evaluateAndSuggestRewrite(
 	trigger: AmendmentBrief,
 	subject: AmendmentBrief,
-	mode: AiMode = 'offline'
+	mode: AiMode = defaultMode()
 ): Promise<string> {
 	const originalClause = toText(subject.oldContent ?? trigger.oldContent);
 	const currentClause = toText(trigger.newContent);

@@ -18,11 +18,14 @@ const schema = z.object({
 	ADMIN_DOMAIN_WHITELIST: z.string().optional().default(''),
 	REDIS_URL: z.string().optional(),
 	AI_PROVIDERS: z
-		.array(
-			z.object({
-				model: z.string(),
-				apiKey: z.string().optional()
-			})
+		.preprocess(
+			(val) => (typeof val === 'string' ? JSON.parse(val) : val),
+			z.array(
+				z.object({
+					model: z.string(),
+					apiKey: z.string().optional()
+				})
+			)
 		)
 		.optional()
 });

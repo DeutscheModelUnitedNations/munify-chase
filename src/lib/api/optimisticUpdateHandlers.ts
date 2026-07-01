@@ -2561,6 +2561,37 @@ export const updates: UpdatesConfig = {
 		},
 
 		// ---------------------------------------------------------------
+		// amendmentReviewItem
+		// ---------------------------------------------------------------
+		// updateAmendmentReviewItem returns a bare Boolean, so graphcache has no
+		// entity to normalize the response against. Without this, the only path
+		// back to the client is the amendmentReviewItem(s) subscription — which,
+		// combined with the persisted offline cache, can leave the AI re-run
+		// badges (see ObsolescenceStep/RewriteStep "re-roll" click) stuck showing
+		// stale field values until the page is reloaded. Write the mutated fields
+		// directly from the known args instead of waiting on that round-trip.
+		updateAmendmentReviewItem: (_result, args, cache) => {
+			const fields: Record<string, unknown> = {};
+			if (args.phase !== undefined) fields.phase = args.phase;
+			if (args.aiObsolete !== undefined) fields.aiObsolete = args.aiObsolete;
+			if (args.aiObsoleteReason !== undefined) fields.aiObsoleteReason = args.aiObsoleteReason;
+			if (args.aiRewriteSuggestion !== undefined)
+				fields.aiRewriteSuggestion = args.aiRewriteSuggestion;
+			if (args.aiRewriteReason !== undefined) fields.aiRewriteReason = args.aiRewriteReason;
+			if (Object.keys(fields).length === 0) return;
+
+			cache.writeFragment(
+				gql`
+					fragment AmendmentReviewItemAiUpdate on Amendmentreviewitem {
+						id
+						${Object.keys(fields).join('\n\t\t\t\t\t\t')}
+					}
+				`,
+				{ __typename: 'Amendmentreviewitem', id: args.reviewItemId as string, ...fields }
+			);
+		},
+
+		// ---------------------------------------------------------------
 		// paperEditor
 		// ---------------------------------------------------------------
 		addPaperEditor: (result, args, cache) => {

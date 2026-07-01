@@ -102,7 +102,7 @@ const nextProvider = () => {
 /**
  * Makes a call to an AI provider with retry logic. Auto selects some configured AI provider and retries with another provider if the first one fails. Throws an error if all attempts fail.
  */
-export function makeAICall(
+export async function makeAICall(
 	params: Omit<Parameters<typeof generateText>[0], 'model'>,
 	maxIterations = 3
 ) {
@@ -113,7 +113,7 @@ export function makeAICall(
 
 	for (let attempt = 1; attempt <= maxIterations; attempt++) {
 		try {
-			return generateText({
+			return await generateText({
 				...params,
 				model: provider.model
 			} as Parameters<typeof generateText>[0]);

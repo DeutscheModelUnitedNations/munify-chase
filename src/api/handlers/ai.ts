@@ -104,17 +104,26 @@ schemaBuilder.queryFields((t) => ({
 					role: m.role,
 					content: m.content
 				})),
-				temperature: args.temperature ?? 0.1,
-				maxOutputTokens: args.maxTokens ?? 500,
+				// Callers (mirroring the local WebLLM message shape) interleave 'system'
+				// role messages directly in `messages` instead of using the separate
+				// `system`/`instructions` option, which some providers (e.g. Google) reject
+				// by default.
+				allowSystemInMessages: true,
+				temperature: args.temperature,
+				maxOutputTokens: args.maxTokens,
 				output:
 					args.responseType === 'json'
 						? args.responseJSONSchema
 							? Output.object({
-									schema: jsonSchema(args.responseJSONSchema)
+									// The client sends the schema as a JSON string (WebLLM's local
+									// grammar-constrained format requires a string), so it must be
+									// parsed back into an object before reaching the ai SDK's jsonSchema().
+									schema: jsonSchema(JSON.parse(args.responseJSONSchema))
 								})
 							: Output.json()
 						: Output.text()
 			});
+			console.log('AI call result:', result);
 			return result?.text ?? null;
 		}
 	}),

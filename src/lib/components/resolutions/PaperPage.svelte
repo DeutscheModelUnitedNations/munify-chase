@@ -3,6 +3,7 @@
 	import { goto } from '$app/navigation';
 	import { m } from '$lib/paraglide/messages';
 	import { client } from '$lib/api/rumbleClient/client';
+	import { urqlClient } from '$lib/api/client';
 	import { getCurrentUser } from '$lib/state/currentUser.svelte';
 	import { onDestroy, tick, untrack } from 'svelte';
 	import { fly } from 'svelte/transition';
@@ -353,7 +354,8 @@
 				}
 			};
 			const errorHandler = (e: Event) => {
-				const { message, retrying } = (e as CustomEvent<{ message: string; retrying?: boolean }>).detail;
+				const { message, retrying } = (e as CustomEvent<{ message: string; retrying?: boolean }>)
+					.detail;
 				aiDownloadProgress = null;
 				aiDisabledReason = message;
 				if (!retrying) {
@@ -379,17 +381,26 @@
 	$effect(() => {
 		if (!team) return;
 		initAiPreference();
+		// Always refresh backend availability so re-opening AI settings later
+		// reflects the server's current configuration, not just the state at
+		// first-visit onboarding time. Uses the raw urql client with
+		// network-only to skip the persisted offline cache, which would
+		// otherwise keep serving a stale (e.g. previously-false) result.
+		urqlClient
+			.query('{ hasAiProviders }', {}, { requestPolicy: 'network-only' })
+			.toPromise()
+			.then((result) => {
+				aiHasBackend = result.data?.hasAiProviders ?? false;
+			})
+			.catch(() => {
+				aiHasBackend = false;
+			});
 		if (getAiOnboarded()) {
 			if (getAiPreference() === 'local') startLocalEngine();
 			return;
 		}
-		// First visit — query backend availability then show modal
-		(client.query.hasAiProviders() as unknown as Promise<boolean>)
-			.catch(() => false)
-			.then((has) => {
-				aiHasBackend = has;
-				aiOnboardingOpen = true;
-			});
+		// First visit — show the onboarding modal
+		aiOnboardingOpen = true;
 	});
 
 	// ---- Y.js client --------------------------------------------------------
@@ -1283,18 +1294,23 @@
 				: 'translate-y-0 scale-100 opacity-100'}"
 		>
 			{#if aiDownloadProgress !== null}
-				<div class="flex w-56 flex-col gap-1.5 rounded-xl border border-base-300 bg-base-100 p-3 shadow-lg">
+				<div
+					class="flex w-56 flex-col gap-1.5 rounded-xl border border-base-300 bg-base-100 p-3 shadow-lg"
+				>
 					<div class="flex items-center justify-between text-xs font-medium">
 						<span>Preparing AI model</span>
 						<span class="tabular-nums opacity-60">{Math.round(aiDownloadProgress * 100)}%</span>
 					</div>
-					<progress class="progress progress-primary w-full" value={aiDownloadProgress} max={1}></progress>
+					<progress class="progress progress-primary w-full" value={aiDownloadProgress} max={1}
+					></progress>
 					{#if aiModelId}
 						<p class="text-xs opacity-40 truncate">{formatModelId(aiModelId)}</p>
 					{/if}
 				</div>
 			{:else if aiReady}
-				<div class="flex w-56 items-center gap-2 rounded-xl border border-base-300 bg-base-100 p-3 shadow-lg text-xs">
+				<div
+					class="flex w-56 items-center gap-2 rounded-xl border border-base-300 bg-base-100 p-3 shadow-lg text-xs"
+				>
 					<i class="fas fa-circle-check text-success shrink-0"></i>
 					<div class="min-w-0">
 						<p class="font-medium">AI model ready</p>
@@ -1304,7 +1320,9 @@
 					</div>
 				</div>
 			{:else if aiDisabledReason !== null}
-				<div class="flex w-56 items-start gap-2 rounded-xl border border-base-300 bg-base-100 p-3 shadow-lg text-xs">
+				<div
+					class="flex w-56 items-start gap-2 rounded-xl border border-base-300 bg-base-100 p-3 shadow-lg text-xs"
+				>
 					<i class="fas fa-microchip opacity-40 mt-0.5 shrink-0"></i>
 					<div>
 						<p class="font-medium">AI features unavailable</p>

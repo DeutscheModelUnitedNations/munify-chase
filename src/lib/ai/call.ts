@@ -1,5 +1,24 @@
 import { getEngine, loadedModelSupportsThinking, resetIdleTimer } from './model';
 import { client } from '$lib/api/rumbleClient/client';
+import { urqlClient } from '$lib/api/client';
+
+const AI_CALL_QUERY = `
+	query AiCall(
+		$messages: [AiMessageInput!]!
+		$temperature: Float
+		$maxTokens: Int
+		$responseType: AiResponseType
+		$responseJSONSchema: JSON
+	) {
+		aiCall(
+			messages: $messages
+			temperature: $temperature
+			maxTokens: $maxTokens
+			responseType: $responseType
+			responseJSONSchema: $responseJSONSchema
+		)
+	}
+`;
 
 export type AiMode = 'offline' | 'online';
 
@@ -47,15 +66,22 @@ export async function callAI({
 		return response.choices[0]?.message?.content ?? '';
 	}
 
-	const result = (await client.query.aiCall({
-		__args: {
-			messages,
-			temperature,
-			maxTokens,
-			responseType: responseType as ServerArgs['responseType'],
-			responseJSONSchema
-		}
-	})) as unknown as string | null;
+	// TODO: this needs no cache set. Make this suppoerted in rumble client
+	const { data, error } = await urqlClient
+		.query(
+			AI_CALL_QUERY,
+			{
+				messages,
+				temperature,
+				maxTokens,
+				responseType: responseType as ServerArgs['responseType'],
+				responseJSONSchema
+			},
+			{ requestPolicy: 'network-only' }
+		)
+		.toPromise();
 
-	return result ?? '';
+	if (error) throw error;
+
+	return (data?.aiCall as string | null) ?? '';
 }

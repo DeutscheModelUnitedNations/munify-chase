@@ -3,6 +3,15 @@ import { client } from '$lib/api/rumbleClient/client';
 
 export type AiMode = 'offline' | 'online';
 
+type ServerArgs = Parameters<typeof client.query.aiCall>[0]['__args'];
+
+/** 'boolean' is a local-only, grammar-constrained format — never sent to the server. */
+type CallAIArgs = Omit<ServerArgs, 'responseType'> & {
+	responseType?: ServerArgs['responseType'] | 'boolean';
+	mode: AiMode;
+	enableThinking?: boolean;
+};
+
 /**
  * Sends a chat completion request to either the local WebLLM engine or the remote GraphQL
  * endpoint, depending on the `mode` parameter. Returns the raw text output from the model.
@@ -15,10 +24,7 @@ export async function callAI({
 	temperature,
 	mode,
 	enableThinking = false
-}: Parameters<typeof client.query.aiCall>[0]['__args'] & {
-	mode: AiMode;
-	enableThinking?: boolean;
-}): Promise<string> {
+}: CallAIArgs): Promise<string> {
 	if (mode === 'offline') {
 		const engine = await getEngine();
 		if (!engine) throw new Error('WebLLM engine not available');
@@ -31,7 +37,9 @@ export async function callAI({
 			response_format:
 				responseType === 'json'
 					? { type: 'json_object', schema: responseJSONSchema ?? '{}' }
-					: { type: 'text' },
+					: responseType === 'boolean'
+						? { type: 'grammar', grammar: 'root ::= "true" | "false"' }
+						: { type: 'text' },
 			...(useThinking ? { extra_body: { enable_thinking: true } } : {})
 		});
 
@@ -44,7 +52,7 @@ export async function callAI({
 			messages,
 			temperature,
 			maxTokens,
-			responseType,
+			responseType: responseType as ServerArgs['responseType'],
 			responseJSONSchema
 		}
 	})) as unknown as string | null;

@@ -1,6 +1,11 @@
 import { serializeClause } from '@deutschemodelunitednations/munify-resolution-editor';
 import { callAI, type AiMode } from './call';
 
+/*
+ * ATTENTION: The parameters in this module are carefully tuned for the smallest local model.
+ * Before you change anything, be sure you know what you are doing!
+ */
+
 function describeChange(oldText: string, newText: string): string {
 	const ow = oldText.trim().split(/\s+/);
 	const nw = newText.trim().split(/\s+/);
@@ -140,64 +145,112 @@ export interface ObsolescenceResult {
 	obsolete: boolean;
 }
 
+/**
+ * Tallies standalone "true"/"false" tokens across the full model output (think blocks
+ * already stripped by safeTextParse) and returns whichever occurs more often. Used to
+ * trust a single online call's own verdict instead of spending a second call to re-extract
+ * it. Counting across the whole response is more robust than only checking the final line,
+ * since the reasoning tends to consistently reference the eventual verdict throughout.
+ */
+function extractTrailingBoolean(raw: string): boolean | null {
+	// Strip markdown emphasis/code markers and collapse whitespace so tokens like
+	// "**true**" or a stray "true\n\n" still match cleanly.
+	const cleaned = safeTextParse(raw).replace(/[*_`]/g, '').replace(/\s+/g, ' ').trim();
+	const matches = cleaned.match(/\btrue\b|\bfalse\b/gi);
+	if (!matches || matches.length === 0) return null;
+	let trueCount = 0;
+	let falseCount = 0;
+	for (const m of matches) {
+		if (m.toLowerCase() === 'true') trueCount++;
+		else falseCount++;
+	}
+	if (trueCount === falseCount) return null;
+	return trueCount > falseCount;
+}
+
 export async function classifyObsolescence(
 	trigger: AmendmentBrief,
 	subject: AmendmentBrief,
 	mode: AiMode = 'offline'
 ): Promise<ObsolescenceResult | null> {
-	const triggerOld = toText(trigger.oldContent);
+	// const triggerOld = toText(trigger.oldContent);
 	const triggerNew = toText(trigger.newContent);
-	const subjectOld = toText(subject.oldContent);
+	// subject.oldContent is only populated once an amendment is accepted; a still-pending
+	// subject amendment never has it set, so fall back to the shared pre-change baseline
+	// captured on the trigger amendment (both target the same original clause text).
+	const subjectOld = toText(subject.oldContent ?? trigger.oldContent);
 	const subjectNew = toText(subject.newContent);
 
-	const raw = await callAI({
+	const reasoning = await callAI({
 		messages: [
 			{
 				role: 'system',
-				content: `You are a Model UN resolution expert. Output ONLY JSON: {"obsolete":boolean}.
+				content: `You are a text evaluation expert that is trained to detect obsolescence after a change to a text. You will be given a text change proposal. Your task is to determine whether the proposal is obsolete.
 
-Obsolete = accepted change already made the same change, removed the targeted words, or shifted meaning so much the amendment no longer makes sense. Not obsolete = targets a different part of the clause.
+A proposal is obsolete if EITHER of these two, separate questions is true:
+ - Question A (subsumed): Does the current text already fully express the proposed change, such that applying the change would alter nothing meaningful in the text?
+ - Question B (irreconcilable): Is the current text so substantially or completely different from the proposed change that merging them would not make sense (e.g. the change effectively replaces the whole text with unrelated wording)?
+
+Answer Question A, then Question B, explicitly and separately, before giving your final verdict. The final verdict is true only if A is true OR B is true; otherwise false.
 
 Examples:
-"10%"→"20%", surviving proposes "20%" → {"obsolete":true}
-"10%"→"20%", surviving proposes "15%" → {"obsolete":false}
-"developed nations"→"all nations", surviving targets "developed nations" → {"obsolete":true}`
+Current text: "The committee shall meet bi-annually."; Proposed change: "The committee shall meet every year." -> "The committee shall meet every two years."; A=true (the current text already says "bi-annually", i.e. every two years); B=false; Result: true
+Current text: "The committee shall meet bi-annually."; Proposed change: "The committee shall meet every year." -> "The committee shall meet every year to discuss recent changes."; A=false (the current text does not mention discussing recent changes); B=false (the texts are close enough to merge); Result: false
+Current text: "The human rights council decides to be actively involved in developments in that field."; Proposed change: "The committee shall meet every year." -> "The committee shall meet every year to discuss recent changes."; A=false; B=true (the current text has nothing in common with the proposed change, so there is no sensible way to merge them); Result: true
+Current text: "The committee calls upon Member States to increase funding for education."; Proposed change: "The committee calls upon Member States to increase funding for education." -> "The committee calls upon developed Member States to increase funding for education and healthcare."; A=false (the change adds "developed" and "healthcare", which the current text does not cover); B=false (the change only extends the current text and could be merged into it); Result: false
+
+Reason step by step, explicitly stating A and B. Finish your response with one boolean value, and nothing else in the response, no prefix, no field name, just a boolean value that directly can be parsed (e.g. no obsolete='true', just 'true'). Respond with a truthy value if you think it is obsolete. Respond with a falsy value if you think it is not obsolete.`
 			},
 			{
 				role: 'user',
-				content: `An amendment was accepted that changes ${clauseRef(trigger.targetOperativeIndex)}.
-
-Before the accepted change, the clause read:
-"${triggerOld}"
-
-After the accepted change, the clause now reads:
-"${triggerNew}"
-
-The surviving amendment (${subject.documentNumber ?? 'amendment'}) was written to change the clause from:
-"${subjectOld}"
-to:
-"${subjectNew}"
-
-First, check whether the words the surviving amendment was targeting still appear in the updated clause text. Then decide: is this surviving amendment now obsolete?`
+				content: `Please determine if the change of "${subjectOld}" to "${subjectNew}" is obsolete if the current text is "${triggerNew}". Answer Question A and Question B explicitly, then finish with a final line containing exactly one word representing the verdict as a bool value, and nothing else.`
 			}
 		],
-		temperature: 0.1,
-		maxTokens: 300,
-		responseType: 'json',
-		responseJSONSchema: JSON.stringify({
-			type: 'object',
-			properties: { obsolete: { type: 'boolean' } },
-			required: ['obsolete']
-		}),
+		temperature: 0.2,
+		responseType: 'text',
+		enableThinking: true,
 		mode
 	});
 
-	if (raw === null) return null;
+	console.log(reasoning);
 
-	const parsed = robustJsonParse(raw) as { obsolete: boolean };
+	if (reasoning === null) return null;
+
+	// Remote models are trusted to follow the trailing true/false instruction in one call. We also dont wanna waste another paid call here if not running locally.
+	const extracted = extractTrailingBoolean(reasoning);
+	if (mode === 'online') {
+		if (extracted === null) return null;
+		return { id: subject.id ?? '', obsolete: extracted };
+	}
+
+	// Local models are weaker at instruction-following; only fall back to a second
+	// grammar-constrained call (re-extracting from the same reasoning, no re-prompting)
+	// when the trailing true/false parse failed.
+	if (extracted !== null) {
+		return { id: subject.id ?? '', obsolete: extracted };
+	}
+
+	const verdict = await callAI({
+		messages: [
+			{
+				role: 'system',
+				content:
+					'Extract the final verdict (obsolete or not) from the analysis given. Respond with exactly one word: true or false.'
+			},
+			// Pass the complete reasoning, including any <think> blocks, so the extraction
+			// call sees the full deliberation rather than just a stripped conclusion.
+			{ role: 'user', content: reasoning }
+		],
+		temperature: 0,
+		responseType: 'boolean',
+		mode
+	});
+
+	if (verdict === null) return null;
+
 	return {
 		id: subject.id ?? '',
-		obsolete: !!parsed.obsolete
+		obsolete: safeTextParse(verdict).toLowerCase() === 'true'
 	};
 }
 
@@ -272,7 +325,18 @@ Rules:
 - Keep all wording that is not part of the change.
 - Same language as input. Joining words like "and", "oder", "ou" are good.
 - A simple concat with a SINGLE CONCAT WORD is often a GOOD solution. When doing that, prefer the first text to actually turn out to be first in the merge.
-- Beware of sentence symbols like periods, commas, semicolons, and colons. They should NOT BE MISPLACED OR APPEAR RANDOMLY MID SENTENCE. Use combinatory words instead!`
+- Beware of sentence symbols like periods, commas, semicolons, and colons. They should NOT BE MISPLACED OR APPEAR RANDOMLY MID SENTENCE. Use combinatory words instead!
+
+Examples:
+Original: "Requests the Secretary-General to report annually."
+First change: "Requests the Secretary-General to report annually to the General Assembly."
+Second change: "Requests the Secretary-General to report annually to the Security Council."
+Merged: "Requests the Secretary-General to report annually to the General Assembly and the Security Council."
+
+Original: "Calls upon Member States to increase funding."
+First change: "Calls upon Member States to increase funding for education."
+Second change: "Calls upon developed Member States to increase funding."
+Merged: "Calls upon developed Member States to increase funding for education."`
 			},
 			{
 				role: 'user',
@@ -284,13 +348,10 @@ Respond with the FULL MERGED TEXT preserving BOTH change intents. Double check t
 			}
 		],
 		temperature: 0.43,
-		// maxTokens: Math.min(1000, Math.ceil(currentClause.length / 3) + 500),
 		responseType: 'text',
 		enableThinking: true,
 		mode
 	});
-
-	console.log(raw)
 
 	if (!raw) return '';
 	const result = safeTextParse(raw)

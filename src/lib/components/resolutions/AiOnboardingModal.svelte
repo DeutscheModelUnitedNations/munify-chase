@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { onMount } from 'svelte';
 	import Modal from '$lib/components/Modal.svelte';
 	import { m } from '$lib/paraglide/messages';
 	import type { AiPreference } from '$lib/ai/aiPreference.svelte';
@@ -13,12 +14,21 @@
 
 	let { open = $bindable(), hasBackend, initialModelTier, onConfirm }: Props = $props();
 
+	let hasWebGpu = $state(true);
+	onMount(() => {
+		hasWebGpu = typeof navigator !== 'undefined' && 'gpu' in navigator;
+	});
+
 	let userOverride = $state<AiPreference | null>(null);
-	const selected = $derived<AiPreference>(userOverride ?? (hasBackend ? 'backend' : 'local'));
+	const selected = $derived<AiPreference>(
+		userOverride ?? (hasBackend ? 'backend' : hasWebGpu ? 'local' : 'off')
+	);
 
 	// -1 = auto, 0..3 = specific tier. Undefined means user hasn't touched it yet.
 	let tierOverride = $state<number | undefined>(undefined);
-	const tierSlider = $derived<number>(tierOverride !== undefined ? tierOverride : (initialModelTier ?? -1));
+	const tierSlider = $derived<number>(
+		tierOverride !== undefined ? tierOverride : (initialModelTier ?? -1)
+	);
 	const effectiveTier = $derived<number | null>(tierSlider === -1 ? null : tierSlider);
 	const previewTier = $derived(effectiveTier ?? LOCAL_MODEL_TIERS.length - 1);
 
@@ -48,7 +58,10 @@
 			<p class="font-semibold mb-1">{m.aiOnboardingHowTitle()}</p>
 			<div class="space-y-2 opacity-80">
 				{#if hasBackend}
-					<p><span class="font-medium opacity-100">Backend AI —</span> {m.aiOnboardingBackendDesc()}</p>
+					<p>
+						<span class="font-medium opacity-100">Backend AI —</span>
+						{m.aiOnboardingBackendDesc()}
+					</p>
 				{/if}
 				<p><span class="font-medium opacity-100">Local AI —</span> {m.aiOnboardingLocalDesc()}</p>
 			</div>
@@ -62,7 +75,11 @@
 		<section>
 			<p class="font-semibold mb-2">{m.aiOnboardingChooseMode()}</p>
 			<div class="flex flex-col gap-2">
-				<label class="flex items-center gap-3 {hasBackend ? 'cursor-pointer' : 'cursor-not-allowed opacity-40'}">
+				<label
+					class="flex items-center gap-3 {hasBackend
+						? 'cursor-pointer'
+						: 'cursor-not-allowed opacity-40'}"
+				>
 					<input
 						type="radio"
 						class="radio radio-sm"
@@ -70,16 +87,23 @@
 						disabled={!hasBackend}
 						onchange={() => (userOverride = 'backend')}
 					/>
-					<span>{hasBackend ? m.aiOnboardingModeBackend() : m.aiOnboardingModeBackendDisabled()}</span>
+					<span
+						>{hasBackend ? m.aiOnboardingModeBackend() : m.aiOnboardingModeBackendDisabled()}</span
+					>
 				</label>
-				<label class="flex items-center gap-3 cursor-pointer">
+				<label
+					class="flex items-center gap-3 {hasWebGpu
+						? 'cursor-pointer'
+						: 'cursor-not-allowed opacity-40'}"
+				>
 					<input
 						type="radio"
 						class="radio radio-sm"
 						checked={selected === 'local'}
+						disabled={!hasWebGpu}
 						onchange={() => (userOverride = 'local')}
 					/>
-					<span>{m.aiOnboardingModeLocal()}</span>
+					<span>{hasWebGpu ? m.aiOnboardingModeLocal() : m.aiOnboardingModeLocalDisabled()}</span>
 				</label>
 				<label class="flex items-center gap-3 cursor-pointer">
 					<input
@@ -91,6 +115,22 @@
 					<span>{m.aiOnboardingModeOff()}</span>
 				</label>
 			</div>
+			{#if !hasWebGpu}
+				<div class="alert alert-warning py-2 text-xs mt-2">
+					<i class="fas fa-triangle-exclamation shrink-0"></i>
+					<span>
+						{m.aiOnboardingWebGpuUnsupported()}
+						<a
+							href="https://developer.mozilla.org/en-US/docs/Web/API/Navigator/gpu"
+							target="_blank"
+							rel="noopener noreferrer"
+							class="link link-primary"
+						>
+							{m.aiOnboardingWebGpuLearnMore()}
+						</a>
+					</span>
+				</div>
+			{/if}
 		</section>
 
 		{#if selected === 'local'}
@@ -100,9 +140,7 @@
 					<div class="flex items-center justify-between text-xs">
 						<span class="opacity-60">{m.aiOnboardingModelFastest()}</span>
 						<span class="font-medium">
-							{tierSlider === -1
-								? m.aiOnboardingModelAuto()
-								: LOCAL_MODEL_TIERS[previewTier].label}
+							{tierSlider === -1 ? m.aiOnboardingModelAuto() : LOCAL_MODEL_TIERS[previewTier].label}
 						</span>
 						<span class="opacity-60">{m.aiOnboardingModelBest()}</span>
 					</div>

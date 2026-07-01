@@ -151,8 +151,6 @@ export type AmendmentWhereInputArgument = {
 		
 export type Amendmentreviewitem = {
   aiObsolete: Boolean | null,
-  aiObsoleteReason: String | null,
-  aiRewriteReason: String | null,
   aiRewriteSuggestion: String | null,
   createdAt: DateTime,
   id: ID,
@@ -179,8 +177,6 @@ export type Amendmentreviewitem = {
 		
 export type AmendmentreviewitemOrderInputArgument = {
   aiObsolete?: SortingParameter | null | undefined,
-  aiObsoleteReason?: SortingParameter | null | undefined,
-  aiRewriteReason?: SortingParameter | null | undefined,
   aiRewriteSuggestion?: SortingParameter | null | undefined,
   createdAt?: SortingParameter | null | undefined,
   id?: SortingParameter | null | undefined,
@@ -198,8 +194,6 @@ export type AmendmentreviewitemOrderInputArgument = {
 		
 export type AmendmentreviewitemWhereInputArgument = {
   aiObsolete?: Boolean | null | undefined,
-  aiObsoleteReason?: StringWhereInputArgument | null | undefined,
-  aiRewriteReason?: StringWhereInputArgument | null | undefined,
   aiRewriteSuggestion?: StringWhereInputArgument | null | undefined,
   createdAt?: DateWhereInputArgument | null | undefined,
   id?: ID | null | undefined,

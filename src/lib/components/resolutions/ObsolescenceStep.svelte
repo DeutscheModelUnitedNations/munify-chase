@@ -2,14 +2,16 @@
 	import { client } from '$lib/api/rumbleClient/client';
 	import toast from 'svelte-french-toast';
 	import AiSpinner from '$lib/components/AiSpinner.svelte';
-	import AiIcon from '$lib/components/AiIcon.svelte';
 	import AiResultBadge from './AiResultBadge.svelte';
 	import Flag from '$lib/components/Flag.svelte';
 	import { getTranslatedCountryNameFromAlpha3Code } from '$lib/utils/nationTranslationHelper.svelte';
+	import { OperativeParagraphPreview } from '@deutschemodelunitednations/munify-resolution-editor';
+	import { englishLabels } from '@deutschemodelunitednations/munify-resolution-editor/i18n';
 
 	interface ReviewItem {
 		id: string;
 		aiObsolete: boolean | null | undefined;
+		triggerAmendment: { newContent: string | null | undefined } | null | undefined;
 		subjectAmendment:
 			| {
 					documentNumber: string | null | undefined;
@@ -39,20 +41,14 @@
 	}
 
 	interface Props {
-		/** Amendments targeting the same or earlier clause as the accepted change. */
 		items: ReviewItem[];
-		/** Amendments targeting a later clause — unlikely to be affected. Shown collapsed. */
-		laterItems?: ReviewItem[];
 		/** ID of the item the AI queue is currently working on. */
 		currentlyProcessingId?: string | null;
 		onadvance: () => void;
 		onrerunItem?: (itemId: string) => void;
 	}
 
-	let { items, laterItems = [], currentlyProcessingId = null, onadvance, onrerunItem }: Props =
-		$props();
-
-	const allItems = $derived([...items, ...laterItems]);
+	let { items, currentlyProcessingId = null, onadvance, onrerunItem }: Props = $props();
 
 	// Chair's explicit checkbox overrides. Undefined = fall back to AI recommendation.
 	let userDecisions = $state<Record<string, boolean>>({});
@@ -60,25 +56,10 @@
 	// Merge AI recommendations with explicit overrides.
 	const decisions = $derived.by(() =>
 		Object.fromEntries(
-			allItems.map((item) => [
+			items.map((item) => [
 				item.id,
 				item.id in userDecisions ? userDecisions[item.id] : (item.aiObsolete ?? false)
 			])
-		)
-	);
-
-	// Auto-expand the later-clause section if AI finds a hit.
-	// null = follow AI recommendation; true/false = user has explicitly toggled.
-	let laterExpandedOverride = $state<boolean | null>(null);
-	const laterAiHasHit = $derived(laterItems.some((i) => i.aiObsolete === true));
-	const laterExpanded = $derived(
-		laterExpandedOverride !== null ? laterExpandedOverride : laterAiHasHit
-	);
-	const sortedLaterItems = $derived(
-		[...laterItems].sort(
-			(a, b) =>
-				(a.subjectAmendment?.targetOperativeIndex ?? Infinity) -
-				(b.subjectAmendment?.targetOperativeIndex ?? Infinity)
 		)
 	);
 
@@ -90,7 +71,7 @@
 		busy = true;
 		try {
 			await Promise.all(
-				allItems.map((item) =>
+				items.map((item) =>
 					client.mutate.updateAmendmentReviewItem({
 						__args: {
 							reviewItemId: item.id,
@@ -132,160 +113,83 @@
 
 	<!-- Same-clause (or clause-unknown) amendments -->
 	{#if items.length > 0}
-		<div class="flex flex-col gap-2">
+		<div class="flex flex-col gap-3">
 			{#each items as item (item.id)}
 				{@const badge = obsoleteBadge(item.aiObsolete)}
-				<label class="flex cursor-pointer items-start gap-3 py-2">
-					<input
-						type="checkbox"
-						class="checkbox checkbox-error mt-0.5"
-						checked={decisions[item.id]}
-						onchange={(e) => {
-							userDecisions[item.id] = e.currentTarget.checked;
-						}}
-						disabled={busy}
-					/>
-					<div class="flex min-w-0 flex-1 flex-col gap-1">
-						<div class="flex items-center justify-between gap-2">
-							<div class="flex items-center gap-2">
-								<span class="font-mono text-sm font-semibold">
-									{item.subjectAmendment?.documentNumber ?? typeLabel(item.subjectAmendment?.type)}
+				{@const oldMarkup = item.triggerAmendment?.newContent ?? undefined}
+				<div
+					class="flex flex-col gap-2 rounded-lg px-2 py-2 {decisions[item.id]
+						? 'bg-error/40 ring-2 ring-error/60'
+						: ''}"
+				>
+					<div class="flex items-center justify-between gap-2">
+						<div class="flex items-center gap-2">
+							<p class="font-mono text-sm font-semibold">
+								{item.subjectAmendment?.documentNumber ?? typeLabel(item.subjectAmendment?.type)}
+							</p>
+							{#if badge}
+								<AiResultBadge
+									label={badge.label}
+									cls={badge.cls}
+									onclick={() => onrerunItem?.(item.id)}
+								/>
+							{:else if currentlyProcessingId === item.id}
+								<span class="badge badge-ghost badge-sm gap-1">
+									<AiSpinner size="xs" />
+									Analysing…
 								</span>
-								{#if badge}
-									<AiResultBadge
-										label={badge.label}
-										cls={badge.cls}
-										onclick={() => onrerunItem?.(item.id)}
-									/>
-								{:else if currentlyProcessingId === item.id}
-									<span class="badge badge-ghost badge-sm gap-1">
-										<AiSpinner size="xs" />
-										Analysing…
-									</span>
-								{/if}
-							</div>
-							<div class="flex items-center gap-2 text-xs text-base-content/60 shrink-0">
-								{#if item.subjectAmendment?.proposer?.representation}
-									<span class="flex items-center gap-1">
-										<Flag
-											representation={item.subjectAmendment.proposer.representation}
-											size="xs"
-										/>
-										{getTranslatedCountryNameFromAlpha3Code(
-											item.subjectAmendment.proposer.representation.alpha3Code
-										) ?? item.subjectAmendment.proposer.representation.name}
-									</span>
-								{/if}
-								{#if (item.subjectAmendment?.sponsors?.length ?? 0) > 0}
-									<span class="text-base-content/40">
-										<i class="fas fa-users mr-0.5 text-[0.6rem]"></i>{item.subjectAmendment
-											?.sponsors?.length}
-									</span>
-								{/if}
+							{/if}
+						</div>
+						<div class="flex items-center gap-2 text-xs text-base-content/60 shrink-0">
+							{#if item.subjectAmendment?.proposer?.representation}
+								<span class="flex items-center gap-1">
+									<Flag representation={item.subjectAmendment.proposer.representation} size="xs" />
+									{getTranslatedCountryNameFromAlpha3Code(
+										item.subjectAmendment.proposer.representation.alpha3Code
+									) ?? item.subjectAmendment.proposer.representation.name}
+								</span>
+							{/if}
+							{#if (item.subjectAmendment?.sponsors?.length ?? 0) > 0}
+								<span class="text-base-content/40">
+									<i class="fas fa-users mr-0.5 text-[0.6rem]"></i>{item.subjectAmendment?.sponsors
+										?.length}
+								</span>
+							{/if}
+						</div>
+					</div>
+
+					{#if item.subjectAmendment?.newContent}
+						<div>
+							<p class="text-base-content/50 mb-1 text-xs uppercase tracking-wide">Proposed text</p>
+							<div class="rounded-lg bg-white p-3">
+								<OperativeParagraphPreview
+									markup={item.subjectAmendment.newContent}
+									{oldMarkup}
+									showDiff={!!oldMarkup}
+									operativeNumber={(item.subjectAmendment?.targetOperativeIndex ?? 0) + 1}
+									labels={englishLabels}
+								/>
 							</div>
 						</div>
-						{#if item.subjectAmendment?.newContent}
-							<p class="text-base-content/60 font-mono text-xs whitespace-pre-wrap">
-								{item.subjectAmendment.newContent}
-							</p>
-						{/if}
-					</div>
-				</label>
+					{/if}
+
+					<label class="flex cursor-pointer items-center gap-2 pt-1">
+						<input
+							type="checkbox"
+							class="checkbox checkbox-error checkbox-sm"
+							checked={decisions[item.id]}
+							onchange={(e) => {
+								userDecisions[item.id] = e.currentTarget.checked;
+							}}
+							disabled={busy}
+						/>
+						<span class="text-sm">Mark as obsolete</span>
+					</label>
+				</div>
 			{/each}
 		</div>
-	{:else if laterItems.length === 0}
+	{:else}
 		<p class="text-base-content/40 py-2 text-center text-sm">No amendments to check.</p>
-	{/if}
-
-	<!-- Later-clause amendments (collapsed unless AI finds a hit) -->
-	{#if laterItems.length > 0}
-		<div class="border-base-300 rounded-lg border">
-			<div class="flex w-full items-center justify-between px-3 py-2.5 text-sm">
-				<button
-					class="flex flex-1 cursor-pointer items-center gap-2 text-left font-medium"
-					onclick={() => (laterExpandedOverride = !laterExpanded)}
-				>
-					<i class="fas fa-chevron-{laterExpanded ? 'down' : 'right'} text-xs opacity-60"></i>
-					Later clauses ({laterItems.length})
-					{#if laterItems.some((i) => i.aiObsolete === true)}
-						<span class="badge badge-error badge-sm"><AiIcon />hit</span>
-					{:else if laterItems.every((i) => i.aiObsolete != null)}
-						<span class="badge badge-success badge-sm"><AiIcon />all fine</span>
-					{:else if laterItems.some((i) => i.id === currentlyProcessingId)}
-						<AiSpinner size="xs" />
-					{/if}
-				</button>
-				<span class="text-base-content/40 text-xs">unlikely to be affected</span>
-			</div>
-			{#if laterExpanded}
-				<div class="border-base-300 flex flex-col gap-2 border-t p-3">
-					{#each sortedLaterItems as item (item.id)}
-						{@const badge = obsoleteBadge(item.aiObsolete)}
-						{@const clauseIdx = item.subjectAmendment?.targetOperativeIndex}
-						<label class="flex cursor-pointer items-start gap-3 py-2">
-							<input
-								type="checkbox"
-								class="checkbox checkbox-error mt-0.5"
-								checked={decisions[item.id]}
-								onchange={(e) => {
-									userDecisions[item.id] = e.currentTarget.checked;
-								}}
-								disabled={busy}
-							/>
-							<div class="flex min-w-0 flex-1 flex-col gap-1">
-								<div class="flex items-center justify-between gap-2">
-									<div class="flex items-center gap-2">
-										<span class="font-mono text-sm font-semibold">
-											{item.subjectAmendment?.documentNumber ??
-												typeLabel(item.subjectAmendment?.type)}
-										</span>
-										{#if clauseIdx != null}
-											<span class="badge badge-outline badge-sm">Clause {clauseIdx + 1}</span>
-										{/if}
-										{#if badge}
-											<AiResultBadge
-												label={badge.label}
-												cls={badge.cls}
-												onclick={() => onrerunItem?.(item.id)}
-											/>
-										{:else if item.aiObsolete == null && currentlyProcessingId === item.id}
-											<span class="badge badge-ghost badge-sm gap-1">
-												<AiSpinner size="xs" />
-												Analysing…
-											</span>
-										{/if}
-									</div>
-									<div class="flex items-center gap-2 text-xs text-base-content/60 shrink-0">
-										{#if item.subjectAmendment?.proposer?.representation}
-											<span class="flex items-center gap-1">
-												<Flag
-													representation={item.subjectAmendment.proposer.representation}
-													size="xs"
-												/>
-												{getTranslatedCountryNameFromAlpha3Code(
-													item.subjectAmendment.proposer.representation.alpha3Code
-												) ?? item.subjectAmendment.proposer.representation.name}
-											</span>
-										{/if}
-										{#if (item.subjectAmendment?.sponsors?.length ?? 0) > 0}
-											<span class="text-base-content/40">
-												<i class="fas fa-users mr-0.5 text-[0.6rem]"></i>{item.subjectAmendment
-													?.sponsors?.length}
-											</span>
-										{/if}
-									</div>
-								</div>
-								{#if item.subjectAmendment?.newContent}
-									<p class="text-base-content/60 font-mono text-xs whitespace-pre-wrap">
-										{item.subjectAmendment.newContent}
-									</p>
-								{/if}
-							</div>
-						</label>
-					{/each}
-				</div>
-			{/if}
-		</div>
 	{/if}
 
 	<div class="flex justify-end gap-2 pt-2">

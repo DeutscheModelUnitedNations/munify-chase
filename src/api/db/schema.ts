@@ -575,9 +575,7 @@ export const amendmentReviewItem = snakeCase.table('amendment_review_item', {
 	phase: amendmentReviewPhase().notNull(),
 	// ai suggestion for this amendment's fate
 	aiObsolete: boolean(),
-	aiObsoleteReason: text(),
 	aiRewriteSuggestion: text(),
-	aiRewriteReason: text(),
 	// Human verdict to be set by the chair/admin
 	verdictObsolete: boolean(),
 	verdictRewrite: text()

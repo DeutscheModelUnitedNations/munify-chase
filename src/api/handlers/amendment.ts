@@ -16,7 +16,7 @@ import {
 import { assertFindFirstExists } from '@m1212e/rumble';
 import { nanoid, nanoidValidation } from '$lib/helpers/nanoid';
 import { GraphQLError } from 'graphql';
-import { and, count, eq, inArray } from 'drizzle-orm';
+import { and, count, eq } from 'drizzle-orm';
 import { applyServerMutation, readPaperJson } from '$api/yjs/server';
 import {
 	yDocToJson,
@@ -233,8 +233,6 @@ schemaBuilder.mutationFields((t) => ({
 
 			const newStatus = args.consensus ? 'CONSENSUS_ADOPTED' : 'ACCEPTED';
 
-			// Ordered clause IDs after the mutation — used to find same/later-clause siblings.
-			let postMutationClauseIds: string[] = [];
 			let triggerClauseOldContent: string | null = null;
 
 			// Apply the amendment to the paper's Y.Doc first; the yjs layer has
@@ -286,7 +284,6 @@ schemaBuilder.mutationFields((t) => ({
 					}
 				}
 
-				postMutationClauseIds = next.operative.map((c) => c.id);
 				replaceResolution(doc, next);
 			});
 
@@ -295,7 +292,10 @@ schemaBuilder.mutationFields((t) => ({
 			await db.transaction(async (tx) => {
 				await tx
 					.update(schema.amendment)
-					.set({ status: newStatus })
+					.set({
+						status: newStatus,
+						...(triggerClauseOldContent ? { oldContent: triggerClauseOldContent } : {})
+					})
 					.where(eq(schema.amendment.id, args.id));
 				await tx.insert(schema.paperContentSnapshot).values({
 					paperId: amendment.paperId,
@@ -305,13 +305,10 @@ schemaBuilder.mutationFields((t) => ({
 			});
 
 			// For ALTER_TEXT: find remaining SUBMITTED ALTER_TEXT amendments on the
-			// same clause or any later clause and create OBSOLESCENCE-phase review
-			// items so the chair can assess which are now obsolete or need rewording.
+			// same clause and create OBSOLESCENCE-phase review items so the chair
+			// can assess which are now obsolete or need rewording.
+			// TODO: also check amendments targeting later clauses — disabled for now.
 			if (amendment.type === 'ALTER_TEXT' && amendment.targetClauseId) {
-				const targetIdx = postMutationClauseIds.indexOf(amendment.targetClauseId);
-				const clauseIdsAtOrAfter =
-					targetIdx >= 0 ? postMutationClauseIds.slice(targetIdx) : [amendment.targetClauseId];
-
 				const siblings = await db
 					.select({ id: schema.amendment.id })
 					.from(schema.amendment)
@@ -320,7 +317,7 @@ schemaBuilder.mutationFields((t) => ({
 							eq(schema.amendment.paperId, amendment.paperId),
 							eq(schema.amendment.status, 'SUBMITTED'),
 							eq(schema.amendment.type, 'ALTER_TEXT'),
-							inArray(schema.amendment.targetClauseId, clauseIdsAtOrAfter)
+							eq(schema.amendment.targetClauseId, amendment.targetClauseId)
 						)
 					);
 
@@ -331,8 +328,7 @@ schemaBuilder.mutationFields((t) => ({
 							paperId: amendment.paperId,
 							triggerAmendmentId: args.id,
 							subjectAmendmentId: s.id,
-							phase: 'OBSOLESCENCE' as const,
-							triggerClauseOldContent
+							phase: 'OBSOLESCENCE' as const
 						}))
 					);
 					reviewItemPubsub.created();

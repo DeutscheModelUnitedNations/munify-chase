@@ -69,48 +69,9 @@
 	let { items, onclose }: Props = $props();
 
 	const trigger = $derived(items[0]?.triggerAmendment);
-	const triggerClauseIdx = $derived(trigger?.targetOperativeIndex);
 
 	const obsolescenceItems = $derived(items.filter((i) => i.phase === 'OBSOLESCENCE'));
 	const rewriteItems = $derived(items.filter((i) => i.phase === 'REWRITE'));
-
-	// Split by clause: same-or-earlier clause vs strictly later clause.
-	// Amendments targeting later clauses are very unlikely to need changes — show them
-	// collapsed and only auto-expand when the AI finds a hit.
-	// Only amendments for the same clause or later clauses are shown.
-	// Earlier-clause amendments cannot be affected by a change to a later clause.
-	const sameClauseObsolescence = $derived(
-		obsolescenceItems.filter(
-			(i) =>
-				triggerClauseIdx == null ||
-				i.subjectAmendment?.targetOperativeIndex == null ||
-				i.subjectAmendment.targetOperativeIndex === triggerClauseIdx
-		)
-	);
-	const laterClauseObsolescence = $derived(
-		obsolescenceItems.filter(
-			(i) =>
-				triggerClauseIdx != null &&
-				i.subjectAmendment?.targetOperativeIndex != null &&
-				i.subjectAmendment.targetOperativeIndex > triggerClauseIdx
-		)
-	);
-	const sameClauseRewrite = $derived(
-		rewriteItems.filter(
-			(i) =>
-				triggerClauseIdx == null ||
-				i.subjectAmendment?.targetOperativeIndex == null ||
-				i.subjectAmendment.targetOperativeIndex === triggerClauseIdx
-		)
-	);
-	const laterClauseRewrite = $derived(
-		rewriteItems.filter(
-			(i) =>
-				triggerClauseIdx != null &&
-				i.subjectAmendment?.targetOperativeIndex != null &&
-				i.subjectAmendment.targetOperativeIndex > triggerClauseIdx
-		)
-	);
 
 	const allResolved = $derived(items.every((i) => i.phase === 'RESOLVED'));
 	// Step 1 (Deletions) is active while any obsolescence items remain; then step 2 (Text adjustments).
@@ -141,26 +102,15 @@
 		draining = false;
 	}
 
-	// Single effect watches item lists; new items are enqueued in display order
-	// (same-clause first, later-clause sorted ascending). aiStarted is a plain Set so
-	// mutations to it do not re-trigger this effect — only changes to the item lists do.
-	//
-	// When subscription updates deliver items out of order (e.g. later-clause items
-	// arrive before same-clause items), we re-sort the pending portion of the queue so
-	// same-clause items always run before later-clause items regardless of arrival order.
+	// Single effect watches item lists; new items are enqueued in display order.
+	// aiStarted is a plain Set so mutations to it do not re-trigger this effect —
+	// only changes to the item lists do.
 	$effect(() => {
 		if (!trigger) return;
 		const trig = trigger;
 
-		const byClause = (a: ReviewItem, b: ReviewItem) =>
-			(a.subjectAmendment?.targetOperativeIndex ?? Infinity) -
-			(b.subjectAmendment?.targetOperativeIndex ?? Infinity);
-
-		const obsOrdered = [...sameClauseObsolescence, ...[...laterClauseObsolescence].sort(byClause)];
-		const rewOrdered = [...sameClauseRewrite, ...[...laterClauseRewrite].sort(byClause)];
-
-		const newObs = obsOrdered.filter((i) => i.aiObsolete == null && !aiStartedObs.has(i.id));
-		const newRew = rewOrdered.filter(
+		const newObs = obsolescenceItems.filter((i) => i.aiObsolete == null && !aiStartedObs.has(i.id));
+		const newRew = rewriteItems.filter(
 			(i) => i.aiRewriteSuggestion === null && !aiStartedRew.has(i.id)
 		);
 		const newTasks: AiTask[] = [
@@ -173,27 +123,7 @@
 			else aiStartedRew.add(t.item.id);
 		}
 
-		// Pull any pending (not yet dequeued) tasks out of the queue, merge with new
-		// tasks, then re-sort everything in canonical display order before pushing back.
-		// This corrects cases where later-clause items were queued earlier because they
-		// arrived via subscription before same-clause items.
-		const obsIndexMap = new Map(obsOrdered.map((item, idx) => [item.id, idx]));
-		const rewIndexMap = new Map(rewOrdered.map((item, idx) => [item.id, idx]));
-		const pending = aiQueue.splice(0);
-		const combined = [...pending, ...newTasks];
-		combined.sort((a, b) => {
-			const aIsObs = a.type === 'obsolescence';
-			const bIsObs = b.type === 'obsolescence';
-			if (aIsObs !== bIsObs) return aIsObs ? -1 : 1;
-			const idxA = aIsObs
-				? (obsIndexMap.get(a.item.id) ?? Infinity)
-				: (rewIndexMap.get(a.item.id) ?? Infinity);
-			const idxB = bIsObs
-				? (obsIndexMap.get(b.item.id) ?? Infinity)
-				: (rewIndexMap.get(b.item.id) ?? Infinity);
-			return idxA - idxB;
-		});
-		aiQueue.push(...combined);
+		aiQueue.push(...newTasks);
 		drainAiQueue(trig);
 	});
 
@@ -352,22 +282,10 @@
 						</span>
 					{/if}
 				</div>
-				{#if triggerOldMarkup}
-					<div>
-						<p class="text-base-content/40 mb-1 text-xs uppercase tracking-wide">Before</p>
-						<div class="rounded-lg bg-white p-3">
-							<OperativeParagraphPreview
-								markup={triggerOldMarkup}
-								operativeNumber={(trigger.targetOperativeIndex ?? 0) + 1}
-								labels={englishLabels}
-							/>
-						</div>
-					</div>
-				{/if}
 				{#if trigger.newContent}
 					<div>
 						<p class="text-base-content/40 mb-1 text-xs uppercase tracking-wide">
-							{triggerOldMarkup ? 'After' : 'New text'}
+							{triggerOldMarkup ? 'Accepted change' : 'New text'}
 						</p>
 						<div class="rounded-lg bg-white p-3">
 							<OperativeParagraphPreview
@@ -394,8 +312,7 @@
 		{:else if currentStep === 1}
 			{#if obsolescenceItems.length > 0}
 				<ObsolescenceStep
-					items={sameClauseObsolescence}
-					laterItems={laterClauseObsolescence}
+					items={obsolescenceItems}
 					{currentlyProcessingId}
 					onadvance={() => {}}
 					onrerunItem={rerunObsolescence}
@@ -403,12 +320,7 @@
 			{/if}
 		{:else}
 			{#if rewriteItems.length > 0}
-				<RewriteStep
-					items={sameClauseRewrite}
-					laterItems={laterClauseRewrite}
-					{currentlyProcessingId}
-					onrerunItem={rerunRewrite}
-				/>
+				<RewriteStep items={rewriteItems} {currentlyProcessingId} onrerunItem={rerunRewrite} />
 			{:else}
 				<div class="flex flex-col items-center gap-2 py-8 text-center">
 					<i class="fas fa-circle-check text-success text-2xl"></i>

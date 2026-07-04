@@ -160,3 +160,11 @@ CVE-2026-39836
 
 # net/mail: DoS via consumePhrase - esbuild doesn't parse email
 CVE-2026-42499
+
+# undici: WebSocket DoS via unbounded memory growth - app uses `ws` package for all WebSockets,
+# undici's WebSocket API is never invoked in this codebase
+CVE-2026-12151
+
+# crypto/x509: DoS via excessive DNS name processing in certificate chains - esbuild doesn't
+# validate X.509 certificates or perform DNS lookups
+CVE-2026-27145

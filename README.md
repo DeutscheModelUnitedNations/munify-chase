@@ -66,6 +66,22 @@ Yes, you can! Please refer to the contributing section below.
 
 For feature suggestions, please post in the discussion section of this repository. You can find it [here](https://github.com/DeutscheModelUnitedNations/munify-chase/discussions). If you want to write it yourself, please see the contributing section below.
 
+## Releasing
+
+Releases are created using the `npm version` command, which bumps `package.json`, creates a git tag, and triggers the release CI:
+
+```bash
+npm version patch   # 1.2.3 → 1.2.4
+npm version minor   # 1.2.3 → 1.3.0
+npm version major   # 1.2.3 → 2.0.0
+```
+
+Push the resulting commit and tag together:
+
+```bash
+git push --follow-tags
+```
+
 ## Contributing
 
 Contributions are always welcome!

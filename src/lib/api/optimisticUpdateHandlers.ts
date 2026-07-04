@@ -951,26 +951,28 @@ export const optimistic: OptimisticMutationConfig = {
 			}
 		}
 
-		// Link the new amendment into any already-open Query.amendments list for
-		// this paper so the AmendmentList updates immediately without waiting for
-		// the server subscription to fire.
+		// Link the new amendment into any already-open amendments lists (both Query
+		// and Subscription roots, since liveQuery uses both) so the AmendmentList
+		// updates immediately without waiting for the server subscription to fire.
 		const paperId = args.paperId as string;
 		const amendmentKey = `Amendment:${id}`;
-		const amendmentFields = cache
-			.inspectFields('Query')
-			.filter(
-				(f) =>
-					f.fieldName === 'amendments' &&
-					(f.arguments as { where?: { paper?: { id?: string } } } | null)?.where?.paper?.id ===
-						paperId
-			);
-		for (const f of amendmentFields) {
-			const current = cache.resolve('Query', 'amendments', f.arguments) as
-				| string[]
-				| null
-				| undefined;
-			if (Array.isArray(current) && !current.includes(amendmentKey)) {
-				cache.link('Query', 'amendments', f.arguments, [...current, amendmentKey]);
+		for (const rootType of ['Query', 'Subscription']) {
+			const amendmentFields = cache
+				.inspectFields(rootType)
+				.filter(
+					(f) =>
+						f.fieldName === 'amendments' &&
+						(f.arguments as { where?: { paper?: { id?: string } } } | null)?.where?.paper?.id ===
+							paperId
+				);
+			for (const f of amendmentFields) {
+				const current = cache.resolve(rootType, 'amendments', f.arguments) as
+					| string[]
+					| null
+					| undefined;
+				if (Array.isArray(current) && !current.includes(amendmentKey)) {
+					cache.link(rootType, 'amendments', f.arguments, [...current, amendmentKey]);
+				}
 			}
 		}
 
@@ -2508,33 +2510,69 @@ export const updates: UpdatesConfig = {
 		createAmendment: (result, args, cache) => {
 			const created = (result as Record<string, Record<string, unknown>>).createAmendment;
 			if (!created?.id) return;
-			const child = { __typename: 'Amendment', id: created.id as string };
+			const id = created.id as string;
+			const child = { __typename: 'Amendment', id };
+
+			// Write all known fields from args into the entity so the amendment card
+			// renders fully before the subscription delivers the complete entity. Without
+			// this the entity only has {id} after the optimistic layer is cleared, causing
+			// a brief visual gap until the WS subscription fires.
+			cache.writeFragment(
+				gql`
+					fragment CreateAmendmentCacheUpdate on Amendment {
+						id
+						type
+						status
+						targetClauseId
+						targetOperativeIndex
+						newContent
+						targetPosition
+						paperId
+					}
+				`,
+				{
+					__typename: 'Amendment',
+					id,
+					type: args.type as string,
+					status: (args.status as string | undefined) ?? 'PENDING',
+					targetClauseId: (args.targetClauseId as string | undefined) ?? null,
+					targetOperativeIndex: (args.targetOperativeIndex as number | undefined) ?? null,
+					newContent: (args.newContent as string | undefined) ?? null,
+					targetPosition: (args.targetPosition as number | undefined) ?? null,
+					paperId: args.paperId as string
+				} as Record<string, unknown>
+			);
+
 			addToList(
 				cache,
 				{ __typename: 'Resolutionpaper', id: args.paperId as string },
 				'amendments',
 				child
 			);
-			// Also update the root-level Query.amendments list that AmendmentList queries
-			// directly; without this the list stays stale until the WS subscription fires.
+			// Update the root-level amendments lists that AmendmentList queries directly.
+			// liveQuery uses both a regular query (Query root) and a subscription
+			// (Subscription root); link in both so the list updates immediately without
+			// waiting for the WS subscription push.
 			const paperId = args.paperId as string;
 			const childKey = cache.keyOfEntity(child);
 			if (childKey) {
-				const fields = cache
-					.inspectFields('Query')
-					.filter(
-						(f) =>
-							f.fieldName === 'amendments' &&
-							(f.arguments as { where?: { paper?: { id?: string } } } | null)?.where?.paper?.id ===
-								paperId
-					);
-				for (const f of fields) {
-					const current = cache.resolve('Query', 'amendments', f.arguments) as
-						| string[]
-						| null
-						| undefined;
-					if (Array.isArray(current) && !current.includes(childKey)) {
-						cache.link('Query', 'amendments', f.arguments, [...current, childKey]);
+				for (const rootType of ['Query', 'Subscription']) {
+					const fields = cache
+						.inspectFields(rootType)
+						.filter(
+							(f) =>
+								f.fieldName === 'amendments' &&
+								(f.arguments as { where?: { paper?: { id?: string } } } | null)?.where?.paper
+									?.id === paperId
+						);
+					for (const f of fields) {
+						const current = cache.resolve(rootType, 'amendments', f.arguments) as
+							| string[]
+							| null
+							| undefined;
+						if (Array.isArray(current) && !current.includes(childKey)) {
+							cache.link(rootType, 'amendments', f.arguments, [...current, childKey]);
+						}
 					}
 				}
 			}

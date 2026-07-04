@@ -111,7 +111,7 @@
 		targetOperativeIndex: true,
 		targetPosition: true,
 		newContent: true,
-		proposer: { id: true, representation: { id: true, name: true } },
+		proposer: { id: true, representation: { id: true, name: true, alpha2Code: true } },
 		sponsors: { id: true }
 	});
 	const clauseVotes = await client.liveQuery.operativeClauseVotes({

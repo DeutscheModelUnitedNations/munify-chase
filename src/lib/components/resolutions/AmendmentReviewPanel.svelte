@@ -257,7 +257,7 @@
 
 		<!-- Step progress (non-interactive) -->
 		<ul class="steps w-full text-xs">
-			<li class="step step-primary">Deletions</li>
+			<li class="step step-primary">Obsolescence</li>
 			<li class="step" class:step-primary={currentStep >= 2}>Text adjustments</li>
 		</ul>
 

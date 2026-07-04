@@ -45,10 +45,6 @@ function toText(raw: string | null | undefined): string {
 	}
 }
 
-function clauseRef(idx: number | null | undefined) {
-	return idx != null ? `operative clause ${idx + 1}` : 'an operative clause';
-}
-
 function extractJson(raw: string): string {
 	const fenced = raw.match(/```(?:json)?\s*([\s\S]*?)(?:```|$)/);
 	if (fenced) return fenced[1].trim();
@@ -217,8 +213,6 @@ Reason step by step, explicitly stating A and B. Finish your response with one b
 		mode
 	});
 
-	console.log(reasoning);
-
 	if (reasoning === null) return null;
 
 	// Remote models are trusted to follow the trailing true/false instruction in one call. We also dont wanna waste another paid call here if not running locally.
@@ -259,6 +253,19 @@ Reason step by step, explicitly stating A and B. Finish your response with one b
 	};
 }
 
+
+function sanitizeRankedIndices(ranked: unknown, count: number): number[] | null {
+	if (!Array.isArray(ranked)) return null;
+	if (ranked.length !== count) return null;
+	const seen = new Set<number>();
+	for (const item of ranked) {
+		const n = typeof item === 'number' ? item : parseInt(String(item), 10);
+		if (!Number.isInteger(n) || n < 1 || n > count || seen.has(n)) return null;
+		seen.add(n);
+	}
+	return ranked.map((item) => (typeof item === 'number' ? item : parseInt(String(item), 10)));
+}
+
 export async function rankAmendmentsByImpact(
 	amendments: Array<{
 		id: string;
@@ -270,44 +277,100 @@ export async function rankAmendmentsByImpact(
 ): Promise<string[]> {
 	if (amendments.length < 2) return amendments.map((a) => a.id);
 
+	const inputIds = amendments.map((a) => a.id);
+	const fallback = inputIds;
+
+	// Use 1-based numeric keys in the prompt so the model never has to reproduce 30-char nanoids.
 	const list = amendments
 		.map(
 			(a, i) =>
-				`${i + 1}. id="${a.id}" (${a.documentNumber ?? 'amendment'} – clause ${a.targetOperativeIndex != null ? a.targetOperativeIndex + 1 : '?'}): "${a.newContent ?? '(no text)'}"`
+				`${i + 1}. (${a.documentNumber ?? 'amendment'} – clause ${a.targetOperativeIndex != null ? a.targetOperativeIndex + 1 : '?'}): "${toText(a.newContent)}"`
 		)
 		.join('\n');
 
-	const raw = await callAI({
-		messages: [
-			{
-				role: 'system',
-				content: `You are a Model UN resolution expert. Output ONLY JSON: {"ranked":[id,...]}.
+	const systemPrompt = `You are a Model UN resolution expert.
 
 Impact = how much the change affects the clause's operative meaning and political weight.
 High: operative verb replacement, scope change (who is obligated), binding language.
 Medium: qualifying conditions, purpose/scope rewording, new sub-clauses.
-Low: synonyms, adjectives, punctuation, minor rephrasing.`
-			},
-			{
-				role: 'user',
-				content: `Rank these amendments from most to least impactful:\n${list}`
-			}
+Low: synonyms, adjectives, punctuation, minor rephrasing.`;
+
+	const userPrompt = `Rank these amendments from most to least impactful:\n${list}\n\nOutput ONLY raw JSON (no markdown, no code fences): {"ranked":[3,2,1,4]} using the amendment numbers above — include every number exactly once.`;
+
+	const resolveIndices = (parsed: { ranked: unknown }): string[] | null => {
+		const indices = sanitizeRankedIndices(parsed?.ranked, amendments.length);
+		if (!indices) return null;
+		return indices.map((n) => inputIds[n - 1]);
+	};
+
+	if (mode === 'online') {
+		const raw = await callAI({
+			messages: [
+				{ role: 'system', content: systemPrompt },
+				{ role: 'user', content: userPrompt }
+			],
+			temperature: 0.1,
+			responseType: 'text',
+			enableThinking: true,
+			mode
+		});
+
+		if (!raw) return fallback;
+
+		try {
+			return resolveIndices(robustJsonParse(raw)) ?? fallback;
+		} catch {
+			return fallback;
+		}
+	}
+
+	// Local: free reasoning call first (enables thinking), then constrained extraction if needed.
+	const reasoning = await callAI({
+		messages: [
+			{ role: 'system', content: systemPrompt },
+			{ role: 'user', content: userPrompt }
 		],
 		temperature: 0.1,
-		maxTokens: 300,
+		responseType: 'text',
+		enableThinking: true,
+		mode
+	});
+
+	if (!reasoning) return fallback;
+
+	try {
+		const result = resolveIndices(robustJsonParse(reasoning));
+		if (result) return result;
+	} catch {
+		/* fall through to extraction call */
+	}
+
+	// Second call: schema-constrained extraction from the reasoning output.
+	const extracted = await callAI({
+		messages: [
+			{
+				role: 'system',
+				content: `Extract the final ranked amendment numbers from the analysis given. Output ONLY valid JSON: {"ranked":[1,2,3,4,5]} using integers 1–${amendments.length}.`
+			},
+			{ role: 'user', content: reasoning }
+		],
+		temperature: 0,
 		responseType: 'json',
 		responseJSONSchema: JSON.stringify({
 			type: 'object',
-			properties: { ranked: { type: 'array', items: { type: 'string' } } },
+			properties: { ranked: { type: 'array', items: { type: 'integer' } } },
 			required: ['ranked']
 		}),
 		mode
 	});
 
-	if (raw === null) return amendments.map((a) => a.id);
+	if (!extracted) return fallback;
 
-	const parsed = robustJsonParse(raw) as { ranked: string[] };
-	return parsed.ranked ?? amendments.map((a) => a.id);
+	try {
+		return resolveIndices(robustJsonParse(extracted)) ?? fallback;
+	} catch {
+		return fallback;
+	}
 }
 
 export async function evaluateAndSuggestRewrite(

@@ -123,7 +123,6 @@ schemaBuilder.queryFields((t) => ({
 							: Output.json()
 						: Output.text()
 			});
-			console.log('AI call result:', result);
 			return result?.text ?? null;
 		}
 	}),

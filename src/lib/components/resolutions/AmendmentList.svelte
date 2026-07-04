@@ -72,6 +72,7 @@
 			status: true,
 			newContent: true,
 			oldContent: true,
+			targetClauseId: true,
 			targetOperativeIndex: true,
 			proposer: {
 				id: true,
@@ -98,6 +99,8 @@
 			if (!key) continue;
 			// Only surface the banner on the clause the trigger amendment targeted.
 			if ((item.triggerAmendment?.targetClauseId ?? null) !== selectedClauseId) continue;
+			// Subject must target the same clause as the trigger — guards against stale data.
+			if ((item.subjectAmendment?.targetClauseId ?? null) !== selectedClauseId) continue;
 			if (!map.has(key)) map.set(key, []);
 			map.get(key)!.push(item);
 		}

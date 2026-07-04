@@ -8,11 +8,14 @@
 	interface Props {
 		open: boolean;
 		hasBackend: boolean;
+		/** The preference already saved by the user, or null for first-time onboarding. */
+		savedPreference: AiPreference | null;
 		initialModelTier: number | null;
 		onConfirm: (mode: AiPreference, modelTier: number | null) => void;
 	}
 
-	let { open = $bindable(), hasBackend, initialModelTier, onConfirm }: Props = $props();
+	let { open = $bindable(), hasBackend, savedPreference, initialModelTier, onConfirm }: Props =
+		$props();
 
 	let hasWebGpu = $state(true);
 	onMount(() => {
@@ -20,8 +23,12 @@
 	});
 
 	let userOverride = $state<AiPreference | null>(null);
+	// Reset the override whenever the modal opens so each opening starts fresh from the saved value.
+	$effect(() => {
+		if (open) userOverride = null;
+	});
 	const selected = $derived<AiPreference>(
-		userOverride ?? (hasBackend ? 'backend' : hasWebGpu ? 'local' : 'off')
+		userOverride ?? savedPreference ?? (hasBackend ? 'backend' : hasWebGpu ? 'local' : 'off')
 	);
 
 	// -1 = auto, 0..3 = specific tier. Undefined means user hasn't touched it yet.

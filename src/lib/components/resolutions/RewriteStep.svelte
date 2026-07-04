@@ -61,6 +61,16 @@
 	let editMode = $state<Record<string, boolean>>({});
 	let edits = $state<Record<string, string | undefined>>({});
 
+	function autoResize(node: HTMLTextAreaElement) {
+		const resize = () => {
+			node.style.height = 'auto';
+			node.style.height = node.scrollHeight + 'px';
+		};
+		resize();
+		node.addEventListener('input', resize);
+		return { destroy() { node.removeEventListener('input', resize); } };
+	}
+
 	async function keepOriginalForItem(item: ReviewItem) {
 		busy = true;
 		try {
@@ -138,8 +148,12 @@
 				{@const aiSuggestion = item.aiRewriteSuggestion ?? ''}
 				{@const isEditing = editMode[item.id] ?? false}
 				{@const oldMarkup = parseOldMarkup(item.triggerAmendment?.oldContent)}
+				{@const initialEditValue = (aiSuggestion || null) ?? originalContent}
+				{@const currentEditValue = edits[item.id] ?? initialEditValue}
+				{@const editUnchanged = currentEditValue === initialEditValue}
 
-				<div class="flex flex-col gap-2 py-2">
+				<div class="flex flex-col gap-3 py-2">
+					<!-- Header -->
 					<div class="flex items-center justify-between gap-2">
 						<div class="flex items-center gap-2">
 							<p class="font-mono text-sm font-semibold">
@@ -176,145 +190,132 @@
 						</div>
 					</div>
 
-					<div>
-						<p class="text-base-content/50 mb-1 text-xs uppercase tracking-wide">Proposed text</p>
-						<div class="rounded-lg bg-white p-3">
-							<OperativeParagraphPreview
-								markup={originalContent}
-								{oldMarkup}
-								showDiff={!!oldMarkup}
-								operativeNumber={(item.subjectAmendment?.targetOperativeIndex ?? 0) + 1}
-								labels={englishLabels}
-							/>
-						</div>
-					</div>
-
-					{#if aiEvaluated && !isEditing}
-						<div>
-							<p
-								class="text-base-content/50 mb-1 flex items-center gap-1 text-xs uppercase tracking-wide"
-							>
-								<AiIcon />
-								<i class="fas fa-wand-magic-sparkles text-primary"></i>
-								AI revision
-							</p>
-							<div class="rounded-lg bg-white p-3 flex flex-col gap-2">
-								{#if item.triggerAmendment?.newContent && oldMarkup}
-									<ThreeWayDiffPreview
-										originalMarkup={oldMarkup}
-										triggerMarkup={item.triggerAmendment.newContent}
-										aiMarkup={aiSuggestion}
-										operativeNumber={(item.subjectAmendment?.targetOperativeIndex ?? 0) + 1}
-									/>
-									<div
-										class="flex items-center gap-3 text-xs text-gray-400 pt-1 border-t border-gray-100"
-									>
-										<span class="flex items-center gap-1">
-											<span class="bg-warning/40 inline-block size-2 rounded-sm"></span>
-											Accepted amendment
-										</span>
-										<span class="flex items-center gap-1">
-											<span class="bg-success/60 inline-block size-2 rounded-sm"></span>
-											AI adjustment
-										</span>
-									</div>
-								{:else}
-									<OperativeParagraphPreview
-										markup={aiSuggestion}
-										oldMarkup={item.triggerAmendment?.newContent ?? originalContent}
-										showDiff={true}
-										operativeNumber={(item.subjectAmendment?.targetOperativeIndex ?? 0) + 1}
-										labels={englishLabels}
-									/>
-								{/if}
+					<!-- Side-by-side columns -->
+					<div class="grid grid-cols-2 gap-3 items-stretch">
+						<!-- Left: Proposed text -->
+						<div class="flex flex-col gap-1">
+							<div class="flex items-center h-6">
+								<p class="text-base-content/50 text-xs uppercase tracking-wide">Proposed text</p>
 							</div>
-						</div>
-					{/if}
-
-					{#if isEditing}
-						{@const currentEditValue = (edits[item.id] ?? aiSuggestion) || originalContent}
-						<textarea
-							class="textarea textarea-bordered w-full font-mono text-xs"
-							rows="3"
-							value={currentEditValue}
-							oninput={(e) => {
-								edits[item.id] = (e.currentTarget as HTMLTextAreaElement).value;
-							}}
-						></textarea>
-						<div>
-							<p class="text-base-content/50 mb-1 text-xs uppercase tracking-wide">Preview</p>
-							<div class="rounded-lg bg-white p-3">
+							<div class="rounded-lg bg-white p-3 flex-1">
 								<OperativeParagraphPreview
-									markup={currentEditValue}
-									oldMarkup={originalContent}
-									showDiff={true}
+									markup={originalContent}
+									{oldMarkup}
+									showDiff={!!oldMarkup}
 									operativeNumber={(item.subjectAmendment?.targetOperativeIndex ?? 0) + 1}
 									labels={englishLabels}
 								/>
 							</div>
 						</div>
-						<div class="flex items-center justify-end gap-2">
+
+						<!-- Right: AI revision or edit textarea -->
+						<div class="flex flex-col gap-1">
+							<div class="flex items-center justify-between h-6">
+								<p class="text-base-content/50 flex items-center gap-1 text-xs uppercase tracking-wide">
+									{#if aiEvaluated}
+										<AiIcon />
+										<i class="fas fa-wand-magic-sparkles text-primary"></i>
+										AI revision
+									{:else}
+										Manual edit
+									{/if}
+								</p>
+								{#if aiEvaluated && !isEditing}
+									<button
+										class="btn btn-ghost btn-xs cursor-pointer"
+										onclick={() => {
+											if (!edits[item.id]) edits[item.id] = aiSuggestion || originalContent;
+											editMode[item.id] = true;
+										}}
+										title="Edit manually"
+									>
+										<i class="fas fa-pen text-xs"></i>
+									</button>
+								{/if}
+							</div>
+
+							{#if isEditing}
+								<textarea
+									class="flex-1 w-full rounded-lg bg-white p-3 resize-none outline-none border-0 text-sm leading-relaxed text-gray-900"
+									value={currentEditValue}
+									oninput={(e) => {
+										edits[item.id] = (e.currentTarget as HTMLTextAreaElement).value;
+									}}
+								></textarea>
+							{:else if aiEvaluated}
+								<div class="rounded-lg bg-white p-3 flex-1">
+									{#if item.triggerAmendment?.newContent && oldMarkup}
+										<ThreeWayDiffPreview
+											originalMarkup={oldMarkup}
+											triggerMarkup={item.triggerAmendment.newContent}
+											aiMarkup={aiSuggestion}
+											operativeNumber={(item.subjectAmendment?.targetOperativeIndex ?? 0) + 1}
+										/>
+									{:else}
+										<OperativeParagraphPreview
+											markup={aiSuggestion}
+											oldMarkup={item.triggerAmendment?.newContent ?? originalContent}
+											showDiff={true}
+											operativeNumber={(item.subjectAmendment?.targetOperativeIndex ?? 0) + 1}
+											labels={englishLabels}
+										/>
+									{/if}
+								</div>
+							{:else}
+								<button
+									class="rounded-lg border-2 border-dashed border-base-300 p-3 w-full flex-1 text-base-content/40 text-sm hover:border-base-content/30 hover:text-base-content/60 transition-colors cursor-pointer flex items-center justify-center gap-2"
+									onclick={() => {
+										if (!edits[item.id]) edits[item.id] = originalContent;
+										editMode[item.id] = true;
+									}}
+								>
+									<i class="fas fa-pen text-xs"></i>
+									Edit manually
+								</button>
+							{/if}
+						</div>
+					</div>
+
+					<!-- Actions -->
+					<div class="flex items-center justify-end gap-2">
+						{#if isEditing}
 							<button
 								class="btn btn-ghost btn-sm cursor-pointer"
 								disabled={busy}
-								onclick={() => {
-									editMode[item.id] = false;
-								}}
+								onclick={() => { editMode[item.id] = false; delete edits[item.id]; }}
 							>
 								Cancel
 							</button>
 							<button
 								class="btn btn-primary btn-sm cursor-pointer"
-								disabled={busy}
+								disabled={busy || editUnchanged}
 								onclick={() => confirmEditForItem(item)}
 							>
 								{#if busy}<AiSpinner size="xs" />{/if}
 								Commit
 							</button>
-						</div>
-					{:else}
-						<div class="flex flex-wrap items-center justify-end gap-2">
+						{:else if aiEvaluated}
 							<button
-								class="btn btn-ghost btn-sm cursor-pointer"
-								disabled={busy || !aiEvaluated}
-								onclick={() => {
-									if (!edits[item.id]) edits[item.id] = aiSuggestion || originalContent;
-									editMode[item.id] = true;
-								}}
-								title="Edit manually"
+								class="btn btn-primary btn-sm cursor-pointer"
+								disabled={busy}
+								onclick={() => acceptAiForItem(item)}
 							>
-								<i class="fas fa-pen text-xs"></i>
+								{#if busy}<AiSpinner size="xs" />{/if}
+								<i class="fas fa-wand-magic-sparkles"></i>
+								Accept AI
 							</button>
-							{#if aiEvaluated}
-								<button
-									class="btn btn-ghost btn-sm cursor-pointer"
-									disabled={busy}
-									onclick={() => keepOriginalForItem(item)}
-								>
-									Keep original
-								</button>
-								<button
-									class="btn btn-primary btn-sm cursor-pointer"
-									disabled={busy}
-									onclick={() => acceptAiForItem(item)}
-								>
-									{#if busy}<AiSpinner size="xs" />{/if}
-									<i class="fas fa-wand-magic-sparkles"></i>
-									Accept AI
-								</button>
-							{:else if aiEvaluated}
-								<button
-									class="btn btn-success btn-sm cursor-pointer"
-									disabled={busy}
-									onclick={() => keepOriginalForItem(item)}
-								>
-									{#if busy}<AiSpinner size="xs" />{/if}
-									<i class="fas fa-check"></i>
-									Confirm
-								</button>
-							{/if}
-						</div>
-					{/if}
+						{:else}
+							<button
+								class="btn btn-success btn-sm cursor-pointer"
+								disabled={busy || editUnchanged}
+								onclick={() => keepOriginalForItem(item)}
+							>
+								{#if busy}<AiSpinner size="xs" />{/if}
+								<i class="fas fa-check"></i>
+								Confirm
+							</button>
+						{/if}
+					</div>
 				</div>
 			{/each}
 		</div>

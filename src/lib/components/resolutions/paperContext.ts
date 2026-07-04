@@ -148,8 +148,16 @@ export interface AmendmentRow {
 	targetOperativeIndex?: number | null;
 	targetPosition?: number | null;
 	newContent?: string | null;
-	proposer?: { representation?: { name?: string | null } | null } | null;
+	proposer?: {
+		representation?: { name?: string | null; alpha2Code?: string | null } | null;
+	} | null;
 	sponsors?: { id: string }[];
+}
+
+function alpha2ToFlagEmoji(alpha2: string): string {
+	return Array.from(alpha2.toUpperCase())
+		.map((c) => String.fromCodePoint(c.charCodeAt(0) + 127397))
+		.join('');
 }
 
 /**
@@ -167,6 +175,9 @@ export function toAmendmentOverlays(rows: readonly AmendmentRow[]): AmendmentOve
 			if (!parsed.valid) continue;
 			newContent = parsed.clause;
 		}
+		const rep = r.proposer?.representation;
+		const flag = rep?.alpha2Code ? alpha2ToFlagEmoji(rep.alpha2Code) + ' ' : '';
+		const proposerName = rep?.name ? flag + rep.name : undefined;
 		overlays.push({
 			id: r.id,
 			type: r.type as AmendmentOverlay['type'],
@@ -175,7 +186,7 @@ export function toAmendmentOverlays(rows: readonly AmendmentRow[]): AmendmentOve
 			targetOperativeIndex: r.targetOperativeIndex ?? undefined,
 			targetPosition: r.targetPosition ?? undefined,
 			newContent,
-			proposerName: r.proposer?.representation?.name ?? undefined,
+			proposerName,
 			sponsorCount: r.sponsors?.length ?? 0
 		});
 	}

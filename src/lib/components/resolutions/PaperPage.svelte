@@ -69,6 +69,10 @@
 
 	let { paperId, backHref }: Props = $props();
 
+	// Restore AI preference from localStorage immediately so any code that reads
+	// getAiPreference() before the team-gated effect fires sees the correct value.
+	initAiPreference();
+
 	// ---- identity -----------------------------------------------------------
 	const currentUser = await getCurrentUser();
 
@@ -158,7 +162,7 @@
 		targetOperativeIndex: true,
 		targetPosition: true,
 		newContent: true,
-		proposer: { id: true, representation: { id: true, name: true } },
+		proposer: { id: true, representation: { id: true, name: true, alpha2Code: true } },
 		sponsors: { id: true }
 	});
 	const clauseVotes = await client.liveQuery.operativeClauseVotes({
@@ -380,7 +384,6 @@
 
 	$effect(() => {
 		if (!team) return;
-		initAiPreference();
 		// Always refresh backend availability so re-opening AI settings later
 		// reflects the server's current configuration, not just the state at
 		// first-visit onboarding time. Uses the raw urql client with
@@ -1280,6 +1283,7 @@
 	<AiOnboardingModal
 		bind:open={aiOnboardingOpen}
 		hasBackend={aiHasBackend}
+		savedPreference={getAiOnboarded() ? getAiPreference() : null}
 		initialModelTier={getLocalModelTier()}
 		onConfirm={applyAiPreference}
 	/>

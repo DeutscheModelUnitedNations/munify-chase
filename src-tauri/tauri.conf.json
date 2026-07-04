@@ -53,5 +53,5 @@
 		}
 	},
 	"productName": "munify-chase",
-	"version": "0.1.0"
+	"version": "../package.json"
 }

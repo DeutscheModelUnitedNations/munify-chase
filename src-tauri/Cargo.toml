@@ -1,6 +1,6 @@
 [package]
 name = "munify-chase"
-version = "0.1.0"
+version = "3.0.0"
 description = "Conference management for Model United Nations debates"
 authors = ["Deutsche Model United Nations (DMUN) e.V."]
 edition = "2021"

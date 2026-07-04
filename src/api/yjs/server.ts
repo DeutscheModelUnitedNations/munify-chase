@@ -1,114 +1,63 @@
 /**
- * Server-side Y.Doc cache for resolution papers.
+ * Server-side yjs backend for resolution papers, built on Hocuspocus.
  *
- * Each connected paper is held in memory as a single canonical `Y.Doc`.
- * All edits — from connected clients via WebSocket and from server-side
- * mutations like amendment-apply — go through this cache so the in-memory
- * doc is the source of truth. The doc binary is persisted to
- * `paper_yjs_doc.state` on a debounce.
+ * Hocuspocus owns the per-paper Y.Doc lifecycle: loading, debounced
+ * persistence, unloading, and fanning updates out to connected clients.
+ * The `Database` extension persists the doc binary to `paper_yjs_doc.state`
+ * via Drizzle; when `REDIS_URL` is set, the `Redis` extension syncs doc
+ * updates and awareness across Node instances.
  *
- * Horizontal scaling: when `REDIS_URL` is set, every doc update is also
- * published to Redis so other Node instances can apply it to their own
- * cached docs. Each instance tags its messages with a unique `instanceId`
- * and ignores its own echoes.
+ * Authorization runs in the `onConnect` hook against the same authHelper
+ * filters the Rumble ability rules use, so the rules here cannot drift out
+ * of sync with the GraphQL surface (§3.2 of the resolution feature plan):
+ *   - Team (chair/admin) or global admin: always allowed to write.
+ *   - paperEditor: write while WORKING_PAPER, read after.
+ *   - Anyone else in the conference: read-only.
  *
  * Corrupt-state policy: if `paper_yjs_doc.state` fails to decode we throw
- * (no silent rehydration). Callers — including `openYjsRoom` — surface this
- * to the client. Manual recovery via the most recent snapshot is the
- * intended fallback.
+ * (no silent rehydration). The client receives an authentication-failed
+ * message with reason `document-corrupt` and shows a recovery prompt.
+ * Manual recovery via the most recent snapshot is the intended fallback.
  */
 
+import { Hocuspocus, type Document, type connectedPayload } from '@hocuspocus/server';
+import { Database } from '@hocuspocus/extension-database';
+import { Redis as RedisExtension } from '@hocuspocus/extension-redis';
+import { Redis } from 'ioredis';
 import * as Y from 'yjs';
-import * as awarenessProtocol from 'y-protocols/awareness';
 import { db, schema } from '../db/db';
 import { configPrivate } from '$config/private';
-import { Redis } from 'ioredis';
-import { nanoid } from '$lib/helpers/nanoid';
+import type { Context } from '$api/context';
+import {
+	isParticipantInConference,
+	isPaperEditor,
+	isTeamInConference
+} from '$api/services/authHelper';
 
 const PERSIST_DEBOUNCE_MS = 1500;
-const IDLE_EVICT_MS = 30_000;
 
-const INSTANCE_ID = nanoid();
+/**
+ * How often each open yjs session re-runs its permission check. Catches
+ * paper-status changes (WORKING_PAPER → SUBMITTED → FINAL → …), paperEditor
+ * row removal, and the paper being soft-deleted while a client is still
+ * connected. Pubsub-driven invalidation would be lower-latency but adds a
+ * subscription per room; the periodic tick is a deliberate trade against
+ * that complexity. Adjust here if/when this becomes a concern.
+ */
+const REAUTH_INTERVAL_MS = 30_000;
 
-const DOC_CHANNEL_PREFIX = 'yjs:doc:';
-const AWARENESS_CHANNEL_PREFIX = 'yjs:awareness:';
-
-interface CacheEntry {
-	doc: Y.Doc;
-	awareness: awarenessProtocol.Awareness;
-	refCount: number;
-	dirty: boolean;
-	persistTimer: ReturnType<typeof setTimeout> | null;
-	idleTimer: ReturnType<typeof setTimeout> | null;
+/** Per-connection context passed into `handleConnection` from the upgrade handler. */
+export interface YjsConnectionContext {
+	ctx: Context;
 }
-
-const cache = new Map<string, CacheEntry>();
-const loadingPromises = new Map<string, Promise<CacheEntry>>();
-
-// ---------------------------------------------------------------------------
-// Redis pub/sub (multi-instance fanout)
-// ---------------------------------------------------------------------------
-
-let pubClient: Redis | undefined;
-let subClient: Redis | undefined;
-
-if (configPrivate.REDIS_URL) {
-	pubClient = new Redis(configPrivate.REDIS_URL);
-	subClient = new Redis(configPrivate.REDIS_URL);
-
-	subClient.psubscribe(`${DOC_CHANNEL_PREFIX}*`, `${AWARENESS_CHANNEL_PREFIX}*`).catch((err) => {
-		console.error('[yjs] redis psubscribe failed', err);
-	});
-
-	subClient.on('pmessageBuffer', (_pattern: Buffer, channel: Buffer, message: Buffer) => {
-		const channelStr = channel.toString('utf8');
-		if (message.byteLength < 22) return; // 22-char nanoid prefix
-		const senderId = message.subarray(0, 22).toString('utf8');
-		if (senderId === INSTANCE_ID) return; // own echo
-
-		const payload = message.subarray(22);
-
-		if (channelStr.startsWith(DOC_CHANNEL_PREFIX)) {
-			const paperId = channelStr.slice(DOC_CHANNEL_PREFIX.length);
-			const entry = cache.get(paperId);
-			if (!entry) return; // doc not loaded on this instance, nothing to apply
-			Y.applyUpdate(entry.doc, new Uint8Array(payload), 'remote');
-		} else if (channelStr.startsWith(AWARENESS_CHANNEL_PREFIX)) {
-			const paperId = channelStr.slice(AWARENESS_CHANNEL_PREFIX.length);
-			const entry = cache.get(paperId);
-			if (!entry) return;
-			awarenessProtocol.applyAwarenessUpdate(entry.awareness, new Uint8Array(payload), 'remote');
-		}
-	});
-}
-
-function publishDocUpdate(paperId: string, update: Uint8Array) {
-	if (!pubClient) return;
-	const idBytes = Buffer.from(INSTANCE_ID, 'utf8');
-	const payload = Buffer.concat([idBytes, Buffer.from(update)]);
-	pubClient
-		.publish(`${DOC_CHANNEL_PREFIX}${paperId}`, payload as unknown as string)
-		.catch((err) => {
-			console.error('[yjs] redis publish doc update failed', { paperId, err });
-		});
-}
-
-function publishAwarenessUpdate(paperId: string, update: Uint8Array) {
-	if (!pubClient) return;
-	const idBytes = Buffer.from(INSTANCE_ID, 'utf8');
-	const payload = Buffer.concat([idBytes, Buffer.from(update)]);
-	pubClient
-		.publish(`${AWARENESS_CHANNEL_PREFIX}${paperId}`, payload as unknown as string)
-		.catch((err) => {
-			console.error('[yjs] redis publish awareness failed', { paperId, err });
-		});
-}
-
-// ---------------------------------------------------------------------------
-// Cache lifecycle
-// ---------------------------------------------------------------------------
 
 export class CorruptYjsStateError extends Error {
+	/**
+	 * Sent verbatim to the client in the permission-denied message, so the UI
+	 * can distinguish a corrupt doc from a plain authorization failure.
+	 */
+	reason = 'document-corrupt';
+
 	constructor(
 		public paperId: string,
 		cause: unknown
@@ -118,215 +67,175 @@ export class CorruptYjsStateError extends Error {
 	}
 }
 
-async function loadEntry(paperId: string): Promise<CacheEntry> {
-	const doc = new Y.Doc();
-	const existing = await db.query.paperYjsDoc.findFirst({ where: { paperId } });
-
-	if (existing?.state && existing.state.byteLength > 0) {
-		try {
-			Y.applyUpdate(doc, existing.state);
-		} catch (err) {
-			console.error('[yjs] corrupt paper_yjs_doc.state — hard failing', {
-				paperId,
-				byteLength: existing.state.byteLength,
-				err
-			});
-			throw new CorruptYjsStateError(paperId, err);
-		}
-	}
-	// If there's no row yet, the doc starts empty. The first persist will
-	// insert. This is the expected path for a freshly-created paper.
-
-	const awareness = new awarenessProtocol.Awareness(doc);
-
-	const entry: CacheEntry = {
-		doc,
-		awareness,
-		refCount: 0,
-		dirty: false,
-		persistTimer: null,
-		idleTimer: null
-	};
-
-	const onUpdate = (update: Uint8Array, origin: unknown) => {
-		entry.dirty = true;
-		schedulePersist(paperId, entry);
-		// Only republish updates that originated locally (a ws client or a
-		// server mutation). Updates with origin === 'remote' came from Redis.
-		if (origin !== 'remote') {
-			publishDocUpdate(paperId, update);
-		}
-	};
-	doc.on('update', onUpdate);
-	(entry as CacheEntry & { _onUpdate: typeof onUpdate })._onUpdate = onUpdate;
-
-	const onAwarenessUpdate = (
-		_changed: { added: number[]; updated: number[]; removed: number[] },
-		origin: unknown
-	) => {
-		if (origin === 'remote') return;
-		const allClients = Array.from(awareness.getStates().keys());
-		const update = awarenessProtocol.encodeAwarenessUpdate(awareness, allClients);
-		publishAwarenessUpdate(paperId, update);
-	};
-	awareness.on('update', onAwarenessUpdate);
-	(entry as CacheEntry & { _onAwarenessUpdate: typeof onAwarenessUpdate })._onAwarenessUpdate =
-		onAwarenessUpdate;
-
-	return entry;
+interface AuthResult {
+	allowed: boolean;
+	canWrite: boolean;
 }
 
-function getOrLoad(paperId: string): Promise<CacheEntry> {
-	const existing = cache.get(paperId);
-	if (existing) return Promise.resolve(existing);
-	let pending = loadingPromises.get(paperId);
-	if (pending) return pending;
-	pending = loadEntry(paperId)
-		.then((entry) => {
-			cache.set(paperId, entry);
-			return entry;
-		})
-		.finally(() => {
-			loadingPromises.delete(paperId);
-		});
-	loadingPromises.set(paperId, pending);
-	return pending;
-}
-
-function schedulePersist(paperId: string, entry: CacheEntry) {
-	if (entry.persistTimer) return;
-	entry.persistTimer = setTimeout(() => {
-		entry.persistTimer = null;
-		void persist(paperId, entry);
-	}, PERSIST_DEBOUNCE_MS);
-}
-
-async function persist(paperId: string, entry: CacheEntry): Promise<void> {
-	if (!entry.dirty) return;
-	entry.dirty = false;
-	const state = Buffer.from(Y.encodeStateAsUpdate(entry.doc));
+async function authorize(paperId: string, ctx: Context): Promise<AuthResult> {
 	try {
-		await db
-			.insert(schema.paperYjsDoc)
-			.values({ paperId, state })
-			.onConflictDoUpdate({
-				target: schema.paperYjsDoc.paperId,
-				set: { state, updatedAt: new Date() }
-			});
-	} catch (err) {
-		entry.dirty = true; // retry on next tick
-		console.error('[yjs] failed to persist paper', paperId, err);
+		ctx.mustBeLoggedIn();
+	} catch {
+		return { allowed: false, canWrite: false };
 	}
+
+	// Read access to paper and paper existence
+	const paper = await db.query.resolutionPaper.findFirst({
+		where: {
+			id: paperId,
+			committee: isParticipantInConference(ctx)
+		}
+	});
+	if (!paper) {
+		return { allowed: false, canWrite: false };
+	}
+
+	// is team
+	if (
+		await db.query.resolutionPaper.findFirst({
+			where: { id: paperId, committee: isTeamInConference(ctx) }
+		})
+	) {
+		return { allowed: true, canWrite: true };
+	}
+
+	if (paper.status === 'WORKING_PAPER') {
+		if (
+			await db.query.paperEditor.findFirst({
+				where: isPaperEditor(ctx, paperId)
+			})
+		)
+			return { allowed: true, canWrite: true };
+	}
+
+	return { allowed: true, canWrite: false };
 }
 
-function scheduleIdleEvict(paperId: string, entry: CacheEntry) {
-	if (entry.idleTimer) clearTimeout(entry.idleTimer);
-	entry.idleTimer = setTimeout(async () => {
-		if (entry.refCount > 0) return;
-		await persist(paperId, entry);
-		if (entry.dirty) {
-			// persist failed; keep doc in memory and reschedule
-			entry.idleTimer = null;
-			scheduleIdleEvict(paperId, entry);
-			return;
-		}
-		const onUpdate = (entry as CacheEntry & { _onUpdate?: (u: Uint8Array, o: unknown) => void })
-			._onUpdate;
-		if (onUpdate) entry.doc.off('update', onUpdate);
-		const onAwarenessUpdate = (
-			entry as CacheEntry & {
-				_onAwarenessUpdate?: (
-					changed: { added: number[]; updated: number[]; removed: number[] },
-					origin: unknown
-				) => void;
+export const hocuspocus = new Hocuspocus<YjsConnectionContext>({
+	debounce: PERSIST_DEBOUNCE_MS,
+
+	extensions: [
+		new Database({
+			fetch: async ({ documentName: paperId }) => {
+				const existing = await db.query.paperYjsDoc.findFirst({ where: { paperId } });
+				if (!existing?.state || existing.state.byteLength === 0) {
+					// No row yet — the doc starts empty and the first store will
+					// insert. This is the expected path for a freshly-created paper.
+					return null;
+				}
+				// Validate before handing the bytes to Hocuspocus: a decode failure
+				// must surface as a distinct, non-retryable error to the client
+				// instead of an opaque load failure.
+				try {
+					Y.applyUpdate(new Y.Doc(), existing.state);
+				} catch (err) {
+					console.error('[yjs] corrupt paper_yjs_doc.state — hard failing', {
+						paperId,
+						byteLength: existing.state.byteLength,
+						err
+					});
+					throw new CorruptYjsStateError(paperId, err);
+				}
+				return existing.state;
+			},
+			store: async ({ documentName: paperId, state }) => {
+				await db
+					.insert(schema.paperYjsDoc)
+					.values({ paperId, state })
+					.onConflictDoUpdate({
+						target: schema.paperYjsDoc.paperId,
+						set: { state, updatedAt: new Date() }
+					});
 			}
-		)._onAwarenessUpdate;
-		if (onAwarenessUpdate) entry.awareness.off('update', onAwarenessUpdate);
-		entry.awareness.destroy();
-		entry.doc.destroy();
-		cache.delete(paperId);
-	}, IDLE_EVICT_MS);
-}
+		}),
+		...(configPrivate.REDIS_URL
+			? [
+					new RedisExtension({
+						// The extension bundles its own older ioredis whose types are
+						// nominally incompatible with the project's; the runtime API
+						// the extension uses is identical across both versions.
+						createClient: () =>
+							new Redis(configPrivate.REDIS_URL as string) as unknown as ReturnType<
+								NonNullable<ConstructorParameters<typeof RedisExtension>[0]['createClient']>
+							>
+					})
+				]
+			: [])
+	],
 
-/**
- * Acquire a Y.Doc + awareness for the given paper. Increments the cache
- * entry's ref count; the caller must release it when done.
- *
- * Throws `CorruptYjsStateError` if the persisted state is unreadable.
- */
-export async function acquirePaperDoc(paperId: string): Promise<{
-	doc: Y.Doc;
-	awareness: awarenessProtocol.Awareness;
-	release: () => void;
-}> {
-	const entry = await getOrLoad(paperId);
-	entry.refCount++;
-	if (entry.idleTimer) {
-		clearTimeout(entry.idleTimer);
-		entry.idleTimer = null;
-	}
-	let released = false;
-	return {
-		doc: entry.doc,
-		awareness: entry.awareness,
-		release: () => {
-			if (released) return;
-			released = true;
-			entry.refCount--;
-			if (entry.refCount <= 0) scheduleIdleEvict(paperId, entry);
+	// Runs once per document connection, before the doc is loaded. Throwing
+	// rejects the connection: the client receives a permission-denied message
+	// carrying the error's `reason` and stops retrying.
+	onConnect: async ({ documentName: paperId, context, connectionConfig }) => {
+		const auth = await authorize(paperId, context.ctx);
+		if (!auth.allowed) {
+			throw { code: 4403, reason: 'forbidden' };
 		}
-	};
-}
+		connectionConfig.readOnly = !auth.canWrite;
+	},
+
+	// Periodically re-evaluate permissions so a paper transitioning out of
+	// the editable window flips live sessions to read-only (or kicks them on
+	// outright revocation) without waiting for a reconnect.
+	// eslint-disable-next-line require-await
+	connected: async ({
+		documentName: paperId,
+		context,
+		connection
+	}: connectedPayload<YjsConnectionContext>) => {
+		const reauthTimer = setInterval(async () => {
+			let next: AuthResult;
+			try {
+				next = await authorize(paperId, context.ctx);
+			} catch (err) {
+				console.error('[yjs] re-authorize failed', { paperId, err });
+				return;
+			}
+			if (!next.allowed) {
+				try {
+					connection.webSocket.close(4403, 'Permission revoked');
+				} catch {
+					/* noop */
+				}
+				return;
+			}
+			connection.readOnly = !next.canWrite;
+		}, REAUTH_INTERVAL_MS);
+		connection.onClose(() => clearInterval(reauthTimer));
+	}
+});
 
 /**
  * Run a server-side mutation against the paper's Y.Doc. The function
  * receives the live doc and may apply Y operations directly. The mutation
- * is wrapped in a `Y.transact` so observers — including connected
- * websocket peers and other Node instances — see one coherent update.
+ * runs inside a Hocuspocus direct connection, so observers — including
+ * connected websocket peers and other Node instances via Redis — see one
+ * coherent update, and the doc is persisted on disconnect.
  */
 export async function applyServerMutation<T>(paperId: string, fn: (doc: Y.Doc) => T): Promise<T> {
-	const handle = await acquirePaperDoc(paperId);
+	const connection = await hocuspocus.openDirectConnection(paperId);
 	try {
 		let result!: T;
-		handle.doc.transact(() => {
-			result = fn(handle.doc);
-		}, 'server');
-		// Force-flush persist so callers can read fresh state immediately.
-		const entry = cache.get(paperId);
-		if (entry?.dirty) {
-			if (entry.persistTimer) {
-				clearTimeout(entry.persistTimer);
-				entry.persistTimer = null;
-			}
-			await persist(paperId, entry);
-		}
+		await connection.transact((document: Document) => {
+			result = fn(document);
+		});
 		return result;
 	} finally {
-		handle.release();
+		await connection.disconnect();
 	}
 }
 
 /**
  * Read the current JSON projection of a paper's Y.Doc — for snapshots, PDF
- * export, etc. Loads the doc into the cache if it isn't already.
+ * export, etc. Loads the doc if it isn't already in memory.
  */
 export async function readPaperJson(paperId: string): Promise<string> {
-	const handle = await acquirePaperDoc(paperId);
+	const connection = await hocuspocus.openDirectConnection(paperId);
 	try {
 		const { yDocToJson } = await import('@deutschemodelunitednations/munify-resolution-editor/yjs');
-		return JSON.stringify(yDocToJson(handle.doc));
+		if (!connection.document) throw new Error(`yjs document ${paperId} not available`);
+		return JSON.stringify(yDocToJson(connection.document));
 	} finally {
-		handle.release();
-	}
-}
-
-/**
- * Force-persist all dirty docs. Intended for graceful server shutdown.
- */
-export async function flushAll(): Promise<void> {
-	for (const [paperId, entry] of cache) {
-		if (entry.persistTimer) clearTimeout(entry.persistTimer);
-		entry.persistTimer = null;
-		if (entry.dirty) await persist(paperId, entry);
+		await connection.disconnect();
 	}
 }

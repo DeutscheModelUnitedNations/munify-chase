@@ -127,22 +127,20 @@ createWs(
 			gqlWSS.emit('connection', ws, req);
 		});
 	} else if (url.pathname.startsWith('/api/yjs')) {
-		// y-websocket appends the room as a path segment: /api/yjs/<paperId>
-		// also accept ?room=<paperId> as a fallback
-		const paperId = url.pathname.slice('/api/yjs/'.length) || url.searchParams.get('room');
-		if (!paperId) {
-			socket.write('HTTP/1.1 400 Bad Request\r\n\r\n');
-			socket.destroy();
-			return;
-		}
-		yjsWSS.handleUpgrade(req, socket, head, async (ws) => {
-			const event = await authenticateWsRequest(req);
-			const ctx = await context(event as unknown as RequestEvent);
-			if (!ctx) {
-				ws.close(4401, 'Unauthorized');
-				return;
-			}
-			void openYjsRoom(ws, paperId, ctx);
+		// The paper id travels in-band with every Hocuspocus protocol message,
+		// so the URL carries no room segment. Authorization per paper happens
+		// in the Hocuspocus onConnect hook.
+		yjsWSS.handleUpgrade(req, socket, head, (ws) => {
+			// openYjsRoom attaches its message buffer synchronously; authentication
+			// resolves inside it via this promise.
+			openYjsRoom(
+				ws,
+				req,
+				(async () => {
+					const event = await authenticateWsRequest(req);
+					return await context(event as unknown as RequestEvent);
+				})()
+			);
 		});
 	}
 };

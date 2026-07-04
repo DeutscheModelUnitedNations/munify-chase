@@ -297,7 +297,10 @@ Low: synonyms, adjectives, punctuation, minor rephrasing.`;
 	const userPrompt = `Rank these amendments from most to least impactful:\n${list}\n\nOutput ONLY raw JSON (no markdown, no code fences): {"ranked":[3,2,1,4]} using the amendment numbers above — include every number exactly once.`;
 
 	const resolveIndices = (parsed: unknown): string[] | null => {
-		const ranked = typeof parsed === 'object' && parsed !== null ? (parsed as Record<string, unknown>).ranked : undefined;
+		const ranked =
+			typeof parsed === 'object' && parsed !== null
+				? (parsed as Record<string, unknown>).ranked
+				: undefined;
 		const indices = sanitizeRankedIndices(ranked, amendments.length);
 		if (!indices) return null;
 		return indices.map((n) => inputIds[n - 1]);

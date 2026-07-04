@@ -80,6 +80,11 @@ jobs:
             fi
           fi
 
+          # The fork has its own CI pipeline — never let main's ci.yml merge
+          # into it (textual merges splice main's jobs into the diverged file,
+          # producing valid-but-wrong YAML that verification can't catch).
+          git checkout HEAD -- .github/workflows/ci.yml
+
           # Fork policy: the native client has no server. Drop server-only
           # paths main may have added since the last sync.
           git rm -rqf --ignore-unmatch -- \

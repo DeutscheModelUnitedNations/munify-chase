@@ -241,6 +241,16 @@ jobs:
 
             </details>
 
+            ### Native client (desktop app)
+
+            Installers for macOS (`.dmg`), Windows (`.exe`) and Linux (`.deb` / `.AppImage`)
+            are built from the `native-client` branch and attached to this release
+            automatically a few minutes after publication.
+
+            > ℹ️ The app is distributed unsigned, so your OS may show a security warning on
+            > first launch. See the [installation guide](https://github.com/DeutscheModelUnitedNations/munify-chase/blob/native-client/docs/INSTALL.md)
+            > for how to get past it on each platform. Updates afterwards are automatic.
+
             ---
 
             <div align="center">
@@ -250,3 +260,129 @@ jobs:
             </div>
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  # ============================================
+  # LAYER 4: NATIVE CLIENT BUILD (tag push only)
+  # ============================================
+  # Builds the Tauri desktop app from the `native-client` branch and attaches
+  # the installers (+ updater artifacts) to the release created above. The
+  # Sync Native Client workflow merges main into native-client on every push,
+  # so by the time a tag lands the branch normally already contains the
+  # released code — the wait step below only bridges the race between the two
+  # workflows. If the sync is stuck on a conflict, this job times out; resolve
+  # the sync PR and re-run it.
+
+  native-client-build:
+    if: github.ref_type == 'tag'
+    needs: [release]
+    environment: production
+    permissions:
+      contents: write
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - platform: ubuntu-22.04
+            rust_targets: ''
+            args: ''
+          - platform: windows-latest
+            rust_targets: ''
+            args: ''
+          - platform: macos-latest
+            rust_targets: aarch64-apple-darwin,x86_64-apple-darwin
+            args: '--target universal-apple-darwin'
+    runs-on: ${{ matrix.platform }}
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: native-client
+          fetch-depth: 0
+
+      - name: Wait for native-client to contain the released commit
+        shell: bash
+        run: |
+          set -euo pipefail
+          for attempt in $(seq 1 30); do
+            if git merge-base --is-ancestor "$GITHUB_SHA" HEAD; then
+              echo "native-client contains $GITHUB_SHA."
+              exit 0
+            fi
+            echo "Attempt $attempt/30: native-client does not yet contain $GITHUB_SHA, retrying in 30s…"
+            sleep 30
+            git fetch origin native-client --quiet
+            git reset --hard origin/native-client --quiet
+          done
+          echo "::error::native-client never picked up ${GITHUB_REF_NAME} (${GITHUB_SHA}). The Sync Native Client workflow probably hit a merge conflict — resolve its PR, then re-run this job."
+          exit 1
+
+      - uses: ./.github/actions/setup-bun
+
+      - name: Install Rust stable
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.rust_targets }}
+
+      - name: Rust cache
+        uses: swatinem/rust-cache@v2
+        with:
+          workspaces: ./src-tauri -> target
+
+      - name: Install Linux system dependencies
+        if: startsWith(matrix.platform, 'ubuntu')
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf squashfs-tools
+
+      - uses: tauri-apps/tauri-action@v0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PUBLIC_OIDC_AUTHORITY: ${{ vars.PUBLIC_OIDC_AUTHORITY }}
+          PUBLIC_OIDC_CLIENT_ID: ${{ vars.PUBLIC_OIDC_CLIENT_ID }}
+          PUBLIC_API_URL: ${{ vars.PUBLIC_API_URL }}
+          # Updater package signing (minisign). Generated via `tauri signer generate`.
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
+        with:
+          # Attach the artifacts to the release the `release` job created for
+          # this tag. tauri-action finds the existing release by tag name.
+          tagName: ${{ github.ref_name }}
+          releaseDraft: false
+          # NOTE: prereleases are excluded by GitHub's /releases/latest, which the
+          # updater endpoint in tauri.conf.json points at. Auto-update therefore only
+          # activates once a NON-prerelease (stable) version is published; alpha/beta/rc
+          # builds are manual-download only. This is intentional.
+          prerelease: ${{ contains(github.ref_name, 'alpha') || contains(github.ref_name, 'beta') || contains(github.ref_name, 'rc') }}
+          args: ${{ matrix.args }}
+
+      # The linuxdeploy GTK plugin sets GDK_BACKEND=x11 but EGL still picks up
+      # WAYLAND_DISPLAY and fails with EGL_BAD_PARAMETER. Unset it so EGL uses
+      # X11/XWayland throughout, and disable DMABuf as belt-and-suspenders.
+      - name: Patch AppImage – fix EGL on Wayland
+        if: startsWith(matrix.platform, 'ubuntu')
+        run: |
+          set -e
+          APPIMAGE=$(find src-tauri/target/release/bundle/appimage -name "*.AppImage" ! -name "*.AppImage.sig" | head -1)
+          echo "Patching: $APPIMAGE"
+
+          # Extract without FUSE
+          "$APPIMAGE" --appimage-extract
+
+          # After GDK_BACKEND=x11: unset WAYLAND_DISPLAY so EGL doesn't try
+          # the Wayland platform, and disable the DMABuf renderer.
+          sed -i '/^export GDK_BACKEND=x11/a unset WAYLAND_DISPLAY\nexport WEBKIT_DISABLE_DMABUF_RENDERER=1' \
+            squashfs-root/apprun-hooks/linuxdeploy-plugin-gtk.sh
+
+          # Download and run appimagetool without FUSE
+          wget -q "https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage" \
+            -O /tmp/appimagetool && chmod +x /tmp/appimagetool
+          ARCH=x86_64 /tmp/appimagetool --appimage-extract-and-run squashfs-root "$APPIMAGE"
+
+          rm -rf squashfs-root
+
+      - name: Re-upload patched AppImage to release
+        if: startsWith(matrix.platform, 'ubuntu')
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          APPIMAGE=$(find src-tauri/target/release/bundle/appimage -name "*.AppImage" ! -name "*.AppImage.sig" | head -1)
+          gh release upload "${{ github.ref_name }}" "$APPIMAGE" --clobber

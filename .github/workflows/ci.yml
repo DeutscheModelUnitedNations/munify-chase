@@ -282,6 +282,8 @@ jobs:
       fail-fast: false
       matrix:
         include:
+          # Pinned to the oldest supported LTS so the AppImage/deb link against
+          # an old glibc and run on older distros (see Tauri AppImage docs).
           - platform: ubuntu-22.04
             rust_targets: ''
             args: ''
@@ -331,9 +333,9 @@ jobs:
         if: startsWith(matrix.platform, 'ubuntu')
         run: |
           sudo apt-get update
-          sudo apt-get install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf squashfs-tools
+          sudo apt-get install -y libwebkit2gtk-4.1-dev libayatana-appindicator3-dev librsvg2-dev patchelf xdg-utils
 
-      - uses: tauri-apps/tauri-action@v0
+      - uses: tauri-apps/tauri-action@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           PUBLIC_OIDC_AUTHORITY: ${{ vars.PUBLIC_OIDC_AUTHORITY }}
@@ -354,35 +356,7 @@ jobs:
           prerelease: ${{ contains(github.ref_name, 'alpha') || contains(github.ref_name, 'beta') || contains(github.ref_name, 'rc') }}
           args: ${{ matrix.args }}
 
-      # The linuxdeploy GTK plugin sets GDK_BACKEND=x11 but EGL still picks up
-      # WAYLAND_DISPLAY and fails with EGL_BAD_PARAMETER. Unset it so EGL uses
-      # X11/XWayland throughout, and disable DMABuf as belt-and-suspenders.
-      - name: Patch AppImage – fix EGL on Wayland
-        if: startsWith(matrix.platform, 'ubuntu')
-        run: |
-          set -e
-          APPIMAGE=$(find src-tauri/target/release/bundle/appimage -name "*.AppImage" ! -name "*.AppImage.sig" | head -1)
-          echo "Patching: $APPIMAGE"
-
-          # Extract without FUSE
-          "$APPIMAGE" --appimage-extract
-
-          # After GDK_BACKEND=x11: unset WAYLAND_DISPLAY so EGL doesn't try
-          # the Wayland platform, and disable the DMABuf renderer.
-          sed -i '/^export GDK_BACKEND=x11/a unset WAYLAND_DISPLAY\nexport WEBKIT_DISABLE_DMABUF_RENDERER=1' \
-            squashfs-root/apprun-hooks/linuxdeploy-plugin-gtk.sh
-
-          # Download and run appimagetool without FUSE
-          wget -q "https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage" \
-            -O /tmp/appimagetool && chmod +x /tmp/appimagetool
-          ARCH=x86_64 /tmp/appimagetool --appimage-extract-and-run squashfs-root "$APPIMAGE"
-
-          rm -rf squashfs-root
-
-      - name: Re-upload patched AppImage to release
-        if: startsWith(matrix.platform, 'ubuntu')
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          APPIMAGE=$(find src-tauri/target/release/bundle/appimage -name "*.AppImage" ! -name "*.AppImage.sig" | head -1)
-          gh release upload "${{ github.ref_name }}" "$APPIMAGE" --clobber
+      # NOTE: no post-build AppImage patching here. The Wayland/DMABuf EGL
+      # workarounds live in src-tauri/src/lib.rs on the native-client branch —
+      # patching the AppImage after the build would invalidate the updater's
+      # minisign signature and break auto-updates on Linux.

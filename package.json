@@ -100,6 +100,11 @@
 		"typescript-eslint": "^8.60.1",
 		"vite": "^8.0.16",
 		"vite-plugin-mkcert": "^2.1.0",
+		"y-indexeddb": "^9.0.12",
+		"svelte-confetti": "^2.3.2",
+		"y-protocols": "^1.0.7",
+		"y-websocket": "^3.0.0",
+		"yjs": "^13.6.31",
 		"vitest": "^4.1.8",
 		"world-countries": "^5.1.0",
 		"zod": "^4.4.3"
@@ -129,11 +134,6 @@
 		"prepare": "svelte-kit sync || echo ''",
 		"preview": "vite preview",
 		"test": "vitest run",
-		"y-indexeddb": "^9.0.12",
-		"y-protocols": "^1.0.7",
-		"y-websocket": "^3.0.0",
-		"yjs": "^13.6.31",
-		"svelte-confetti": "^2.3.2",
 		"typecheck": "tsc --noEmit",
 		"vite-dev": "vite dev"
 	},
@@ -146,9 +146,7 @@
 		"drizzle-orm": "^1.0.0-rc.3",
 		"pg": "^8.21.0",
 		"polka": "^0.5.2",
-		"svelte-confetti": "^2.3.2",
-		"ws": "^8.21.0",
-		"y-indexeddb": "^9.0.12"
+		"ws": "^8.21.0"
 	},
 	"version": "0.0.1"
 }

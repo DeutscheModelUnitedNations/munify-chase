@@ -9,9 +9,7 @@
         "drizzle-orm": "^1.0.0-rc.3",
         "pg": "^8.21.0",
         "polka": "^0.5.2",
-        "svelte-confetti": "^2.3.2",
         "ws": "^8.21.0",
-        "y-indexeddb": "^9.0.12",
       },
       "devDependencies": {
         "@ai-sdk/amazon-bedrock": "^5.0.4",
@@ -104,6 +102,7 @@
         "sofa-api": "^0.18.10",
         "svelte": "^5.56.2",
         "svelte-check": "^4.6.0",
+        "svelte-confetti": "^2.3.2",
         "svelte-fast-marquee": "^0.8.0",
         "svelte-french-toast": "2.0.0-alpha.0",
         "svelte-grid-extended": "^1.2.1",
@@ -116,6 +115,10 @@
         "vite-plugin-mkcert": "^2.1.0",
         "vitest": "^4.1.8",
         "world-countries": "^5.1.0",
+        "y-indexeddb": "^9.0.12",
+        "y-protocols": "^1.0.7",
+        "y-websocket": "^3.0.0",
+        "yjs": "^13.6.31",
         "zod": "^4.4.3",
       },
     },
@@ -1681,6 +1684,8 @@
     "y-indexeddb": ["y-indexeddb@9.0.12", "", { "dependencies": { "lib0": "^0.2.74" }, "peerDependencies": { "yjs": "^13.0.0" } }, "sha512-9oCFRSPPzBK7/w5vOkJBaVCQZKHXB/v6SIT+WYhnJxlEC61juqG0hBrAf+y3gmSMLFLwICNH9nQ53uscuse6Hg=="],
 
     "y-protocols": ["y-protocols@1.0.7", "", { "dependencies": { "lib0": "^0.2.85" }, "peerDependencies": { "yjs": "^13.0.0" } }, "sha512-YSVsLoXxO67J6eE/nV4AtFtT3QEotZf5sK5BHxFBXso7VDUT3Tx07IfA6hsu5Q5OmBdMkQVmFZ9QOA7fikWvnw=="],
+
+    "y-websocket": ["y-websocket@3.0.0", "", { "dependencies": { "lib0": "^0.2.102", "y-protocols": "^1.0.5" }, "peerDependencies": { "yjs": "^13.5.6" } }, "sha512-mUHy7AzkOZ834T/7piqtlA8Yk6AchqKqcrCXjKW8J1w2lPtRDjz8W5/CvXz9higKAHgKRKqpI3T33YkRFLkPtg=="],
 
     "y18n": ["y18n@5.0.8", "", {}, ""],
 

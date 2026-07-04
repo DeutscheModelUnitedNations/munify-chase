@@ -146,6 +146,7 @@
 		"drizzle-orm": "^1.0.0-rc.3",
 		"pg": "^8.21.0",
 		"polka": "^0.5.2",
+		"svelte-confetti": "^2.3.2",
 		"ws": "^8.21.0",
 		"y-indexeddb": "^9.0.12"
 	},

@@ -8,7 +8,7 @@ const AI_CALL_QUERY = `
 		$temperature: Float
 		$maxTokens: Int
 		$responseType: AiResponseType
-		$responseJSONSchema: JSON
+		$responseJSONSchema: String
 	) {
 		aiCall(
 			messages: $messages

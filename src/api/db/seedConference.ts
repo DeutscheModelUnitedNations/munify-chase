@@ -1272,18 +1272,18 @@ async function seedResolutionPapers() {
 				// Created specifically to give each amendment review state a seeded subject.
 				// Uses modulo wrapping so they work even in small committees.
 
-				let reviewObsolete1AmendId: string | null = null; // OBSOLESCENCE, unresolved — ALTER_TEXT same clause
-				let reviewObsolete2AmendId: string | null = null; // OBSOLESCENCE, resolved → WITHDRAWN — DELETE same clause
-				let reviewObsolete3AmendId: string | null = null; // OBSOLESCENCE, unresolved — ALTER_TEXT same clause, alt rewrite
-				let reviewObsolete4AmendId: string | null = null; // OBSOLESCENCE, unresolved — DELETE same clause, competing DELETE
-				let reviewRewrite1AmendId: string | null = null; // REWRITE, unresolved — ADD contradicts gender language
-				let reviewRewrite2AmendId: string | null = null; // REWRITE, unresolved — ALTER_TEXT adds redundant gender language
-				let reviewRewrite3AmendId: string | null = null; // REWRITE, unresolved — ALTER_TEXT references stale clause wording
-				let reviewRewrite4AmendId: string | null = null; // REWRITE, resolved, custom manual edit
-				let reviewRewrite5AmendId: string | null = null; // REWRITE, resolved, kept original — conflicts with 30-day window (minor; chair accepted risk)
-				let reviewRewrite6AmendId: string | null = null; // REWRITE, unresolved — ALTER_TEXT contradicts gender/youth focus
-				let reviewRewrite7AmendId: string | null = null; // REWRITE, unresolved — ALTER_TEXT quotes old OP2 language
-				let reviewRewrite8AmendId: string | null = null; // REWRITE, unresolved — ALTER_TEXT on OP1 sets ≥45-day floor, contradicts 30-day OP3
+				let reviewObsolete1AmendId: string | null; // OBSOLESCENCE, unresolved — ALTER_TEXT same clause
+				let reviewObsolete2AmendId: string | null; // OBSOLESCENCE, resolved → WITHDRAWN — DELETE same clause
+				let reviewObsolete3AmendId: string | null; // OBSOLESCENCE, unresolved — ALTER_TEXT same clause, alt rewrite
+				let reviewObsolete4AmendId: string | null; // OBSOLESCENCE, unresolved — DELETE same clause, competing DELETE
+				let reviewRewrite1AmendId: string | null; // REWRITE, unresolved — ADD contradicts gender language
+				let reviewRewrite2AmendId: string | null; // REWRITE, unresolved — ALTER_TEXT adds redundant gender language
+				let reviewRewrite3AmendId: string | null; // REWRITE, unresolved — ALTER_TEXT references stale clause wording
+				let reviewRewrite4AmendId: string | null; // REWRITE, resolved, custom manual edit
+				let reviewRewrite5AmendId: string | null; // REWRITE, resolved, kept original — conflicts with 30-day window (minor; chair accepted risk)
+				let reviewRewrite6AmendId: string | null; // REWRITE, unresolved — ALTER_TEXT contradicts gender/youth focus
+				let reviewRewrite7AmendId: string | null; // REWRITE, unresolved — ALTER_TEXT quotes old OP2 language
+				let reviewRewrite8AmendId: string | null; // REWRITE, unresolved — ALTER_TEXT on OP1 sets ≥45-day floor, contradicts 30-day OP3
 
 				// RW.1 — OBSOLESCENCE: targets the same clause (apOp[2]) as the accepted ALT.2 with competing text
 				// Direct clause conflict → AI should flag as likely obsolete

@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { client } from '$lib/api/rumbleClient/client';
+	import { SvelteSet } from 'svelte/reactivity';
 	import { classifyObsolescence, evaluateAndSuggestRewrite } from '$lib/ai/amendments';
 	import { getAiPreference, preferenceToMode } from '$lib/ai/aiPreference.svelte';
 	import AiSpinner from '$lib/components/AiSpinner.svelte';
@@ -79,8 +80,8 @@
 
 	// Separate sets per task type so an item processed for OBSOLESCENCE can still
 	// be queued for REWRITE once it advances to that phase.
-	const aiStartedObs = new Set<string>();
-	const aiStartedRew = new Set<string>();
+	const aiStartedObs = new SvelteSet<string>();
+	const aiStartedRew = new SvelteSet<string>();
 	let aiRunning = $state(false);
 	let currentlyProcessingId = $state<string | null>(null);
 

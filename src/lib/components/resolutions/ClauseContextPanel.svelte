@@ -59,7 +59,7 @@
 
 	$effect(() => {
 		// selectedClauseId tracked so re-selecting a clause with a badge also switches tab
-		selectedClauseId;
+		void selectedClauseId;
 		if (requestedTab) tab = requestedTab;
 	});
 	let composerOpen = $state(false);

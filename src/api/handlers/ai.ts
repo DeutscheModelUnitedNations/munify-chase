@@ -90,7 +90,7 @@ schemaBuilder.queryFields((t) => ({
 					values: ['text', 'json'] as const
 				})
 			}),
-			responseJSONSchema: t.arg({ type: 'JSON' })
+			responseJSONSchema: t.arg.string()
 		},
 		resolve: async (_root, args, ctx) => {
 			await requireChairAccess(ctx);

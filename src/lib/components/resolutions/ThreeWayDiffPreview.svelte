@@ -22,12 +22,7 @@
 
 	let { originalMarkup, triggerMarkup, aiMarkup, operativeNumber = 1 }: Props = $props();
 
-	type TripleStatus =
-		| 'same'
-		| 'trigger-added'
-		| 'trigger-removed'
-		| 'ai-added'
-		| 'ai-removed';
+	type TripleStatus = 'same' | 'trigger-added' | 'trigger-removed' | 'ai-added' | 'ai-removed';
 
 	interface AnnotatedWord {
 		value: string;
@@ -120,16 +115,12 @@
 			let status: TripleStatus = 'same';
 			if (item.status === 'added') {
 				// Check first word to determine if trigger or AI added this subclause.
-				const firstText = item.blocks.find((b) => b.type === 'text') as
-					| RenderText
-					| undefined;
+				const firstText = item.blocks.find((b) => b.type === 'text') as RenderText | undefined;
 				const firstWord = firstText?.words[0];
 				const inB = firstWord ? consumeBag(firstWord.value) : false;
 				status = inB ? 'trigger-added' : 'ai-added';
 			} else if (item.status === 'removed') {
-				const firstText = item.blocks.find((b) => b.type === 'text') as
-					| RenderText
-					| undefined;
+				const firstText = item.blocks.find((b) => b.type === 'text') as RenderText | undefined;
 				const firstWord = firstText?.words[0];
 				const inB = firstWord ? consumeBag(firstWord.value) : false;
 				status = inB ? 'ai-removed' : 'trigger-removed';
@@ -186,19 +177,18 @@
 	}
 
 	// Split the first word off for italic formatting of the operative phrase.
-	function splitFirst(words: AnnotatedWord[]): { first: AnnotatedWord | null; rest: AnnotatedWord[] } {
+	function splitFirst(words: AnnotatedWord[]): {
+		first: AnnotatedWord | null;
+		rest: AnnotatedWord[];
+	} {
 		if (words.length === 0) return { first: null, rest: [] };
 		return { first: words[0], rest: words.slice(1) };
 	}
 </script>
 
-<div
-	class="operative-paragraph-preview w-full bg-white text-[0.95rem] leading-[1.7] text-gray-900"
->
+<div class="operative-paragraph-preview w-full bg-white text-[0.95rem] leading-[1.7] text-gray-900">
 	{#if !annotated}
-		<div
-			class="rounded border border-error/40 bg-error/10 px-3 py-2 font-sans text-sm text-error"
-		>
+		<div class="rounded border border-error/40 bg-error/10 px-3 py-2 font-sans text-sm text-error">
 			Could not parse markup for three-way diff.
 		</div>
 	{:else if annotated.blocks.length === 0}
@@ -215,14 +205,21 @@
 						{@const isFirst = bi === 0}
 						{#if block.blockStatus !== 'same'}
 							<span class={blockClasses(block.blockStatus)}>
-								{#if isFirst}{@const { first, rest } = splitFirst(block.words)}{#if first}<span class="italic">{first.value}</span>{/if}{#each rest as w, i (i)}{w.value}{/each}{:else}{plainText(block.words)}{/if}{block.punctuation}
+								{#if isFirst}{@const { first, rest } = splitFirst(block.words)}{#if first}<span
+											class="italic">{first.value}</span
+										>{/if}{#each rest as w, i (i)}{w.value}{/each}{:else}{plainText(
+										block.words
+									)}{/if}{block.punctuation}
 							</span>
 						{:else if isFirst}
 							{@const { first, rest } = splitFirst(block.words)}
-							{#if first}<span class="italic">{first.value}</span>{/if}{#each rest as w, wi (wi)}<span class={wordClasses(w.status)}>{w.value}</span>{/each}{block.punctuation}
+							{#if first}<span class="italic">{first.value}</span
+								>{/if}{#each rest as w, wi (wi)}<span class={wordClasses(w.status)}>{w.value}</span
+								>{/each}{block.punctuation}
 						{:else}
 							<p class="mb-1 mt-2 text-justify indent-8">
-								{#each block.words as w, wi (wi)}<span class={wordClasses(w.status)}>{w.value}</span>{/each}{block.punctuation}
+								{#each block.words as w, wi (wi)}<span class={wordClasses(w.status)}>{w.value}</span
+									>{/each}{block.punctuation}
 							</p>
 						{/if}
 					{:else}
@@ -246,7 +243,8 @@
 								{plainText(block.words)}{block.punctuation}
 							</span>
 						{:else}
-							{#each block.words as w, wi (wi)}<span class={wordClasses(w.status)}>{w.value}</span>{/each}{block.punctuation}
+							{#each block.words as w, wi (wi)}<span class={wordClasses(w.status)}>{w.value}</span
+								>{/each}{block.punctuation}
 						{/if}
 					{:else if depth < 4}
 						{@render subList(block.items, depth + 1)}

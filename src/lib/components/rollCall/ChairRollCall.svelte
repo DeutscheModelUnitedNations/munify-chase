@@ -7,6 +7,7 @@
 	import hotkeys from 'hotkeys-js';
 	import toast from 'svelte-french-toast';
 	import { client } from '$lib/api/rumbleClient/client';
+	import { SvelteSet } from 'svelte/reactivity';
 	import { nanoid } from '$lib/helpers/nanoid';
 
 	interface Props {
@@ -45,7 +46,7 @@
 	// set only exists to guard against double-fire on the same row (key repeat /
 	// accidental double-click) which would otherwise re-run the +1 advance below
 	// and visually skip an entry.
-	const inFlight = new Set<string>();
+	const inFlight = new SvelteSet<string>();
 
 	const setPresence = (present: boolean) => {
 		const member = members[currentIndex];

@@ -322,9 +322,11 @@
 				e.clientY <= r.bottom + pad;
 		};
 		window.addEventListener('mousemove', onMove);
-		return () => {
-			window.removeEventListener('mousemove', onMove);
-			aiNotifDodging = false;
+		return {
+			destroy() {
+				window.removeEventListener('mousemove', onMove);
+				aiNotifDodging = false;
+			}
 		};
 	}
 
@@ -818,7 +820,6 @@
 					paper={{ id: paper.id, status, title: paper.documentNumber ?? paper.title ?? '' }}
 					committee={{
 						id: committee.id,
-						currentOperativeIndex: committee.currentOperativeIndex,
 						amendmentSubmissionOpen: committee.amendmentSubmissionOpen,
 						amendmentSponsoringOpen: committee.amendmentSponsoringOpen,
 						supportReevaluationOpen: committee.supportReevaluationOpen,
@@ -909,7 +910,6 @@
 				</button>
 				{#if team}
 					<div class="dropdown dropdown-end">
-						<!-- svelte-ignore a11y_no_noninteractive_tabindex -->
 						<button tabindex="0" class="btn btn-ghost btn-sm" title="Committee settings">
 							<i class="fas fa-gear"></i>
 						</button>
@@ -977,7 +977,6 @@
 		{/if}
 
 		<!-- Body: preview panel + editor + context panel -->
-		<!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
 		<div
 			role="region"
 			class="panel-body flex min-h-0 flex-1"

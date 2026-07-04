@@ -9,7 +9,6 @@
 		paper: { id: string; status: PaperStatus; title: string };
 		committee: {
 			id: string;
-			currentOperativeIndex: number;
 			amendmentSubmissionOpen: boolean;
 			amendmentSponsoringOpen: boolean;
 			supportReevaluationOpen: boolean;

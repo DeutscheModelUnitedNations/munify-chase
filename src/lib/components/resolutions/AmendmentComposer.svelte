@@ -94,7 +94,7 @@
 	};
 	const fuse = new Fuse<FuseItem>([], fuseOptions);
 
-	const filterMembers = (allMembers: typeof members, search: string) => {
+	const filterMembers = (allMembers: (typeof members)[number][], search: string) => {
 		const plain = (allMembers ?? []) as MemberItem[];
 		if (search.length > 0) {
 			fuse.setCollection(plain.map((x) => ({ ...x, label: getMemberName(x) })));

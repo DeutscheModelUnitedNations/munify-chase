@@ -10,7 +10,7 @@ const schema = z.object({
 	PUBLIC_DEFAULT_LOCALE: z.string().default('de'),
 	PUBLIC_OIDC_LOGIN_CALLBACK_ROUTE: z.string().optional(),
 	PUBLIC_OIDC_LOGOUT_CALLBACK_ROUTE: z.string().optional(),
-	PUBLIC_CONTACT_EMAIL: z.string().optional(),
+	PUBLIC_CONTACT_EMAIL: z.string().optional()
 });
 
 export const configPublic = getConfig({ schema, envSource: env });

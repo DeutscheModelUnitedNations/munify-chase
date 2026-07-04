@@ -29,10 +29,15 @@ function dispatchError(message: string, retrying = false): void {
 /** Find the largest tier that fits in available storage with a safety buffer. */
 async function selectFittingTier(preferred: number | null): Promise<number | null> {
 	const available = navigator.storage?.estimate
-		? await navigator.storage.estimate().then(({ quota = 0, usage = 0 }) => (quota - usage) / 1024 / 1024)
+		? await navigator.storage
+				.estimate()
+				.then(({ quota = 0, usage = 0 }) => (quota - usage) / 1024 / 1024)
 		: null;
 	if (available === null) return preferred;
-	const start = preferred !== null ? Math.min(preferred, LOCAL_MODEL_TIERS.length - 1) : LOCAL_MODEL_TIERS.length - 1;
+	const start =
+		preferred !== null
+			? Math.min(preferred, LOCAL_MODEL_TIERS.length - 1)
+			: LOCAL_MODEL_TIERS.length - 1;
 	for (let i = start; i >= 0; i--) {
 		if (LOCAL_MODEL_TIERS[i].vramMB + STORAGE_BUFFER_MB <= available) return i;
 	}
@@ -42,7 +47,9 @@ async function selectFittingTier(preferred: number | null): Promise<number | nul
 async function clearCache(): Promise<void> {
 	const { deleteModelAllInfoInCache, prebuiltAppConfig } = await import('@mlc-ai/web-llm');
 	const appConfig = { ...prebuiltAppConfig, cacheBackend: 'opfs' as const };
-	await Promise.allSettled(LOCAL_MODEL_TIERS.map((t) => deleteModelAllInfoInCache(t.id, appConfig)));
+	await Promise.allSettled(
+		LOCAL_MODEL_TIERS.map((t) => deleteModelAllInfoInCache(t.id, appConfig))
+	);
 }
 
 async function loadEngine(modelId: string, fixWindowSize = false): Promise<MLCEngineInterface> {
@@ -50,13 +57,17 @@ async function loadEngine(modelId: string, fixWindowSize = false): Promise<MLCEn
 		await Promise.all([import('@mlc-ai/web-llm'), import('./worker.ts?worker')]);
 	const modelList = fixWindowSize
 		? prebuiltAppConfig.model_list.map((m) =>
-				m.model_id === modelId ? { ...m, overrides: { ...m.overrides, sliding_window_size: -1 } } : m
+				m.model_id === modelId
+					? { ...m, overrides: { ...m.overrides, sliding_window_size: -1 } }
+					: m
 			)
 		: prebuiltAppConfig.model_list;
 	const engine = await CreateWebWorkerMLCEngine(new MLCWorker(), modelId, {
 		appConfig: { ...prebuiltAppConfig, model_list: modelList, cacheBackend: 'opfs' as const },
 		initProgressCallback: (p) =>
-			window.dispatchEvent(new CustomEvent('webllm-progress', { detail: { progress: p.progress, text: p.text } }))
+			window.dispatchEvent(
+				new CustomEvent('webllm-progress', { detail: { progress: p.progress, text: p.text } })
+			)
 	});
 	loadedModelId = modelId;
 	return engine;
@@ -85,7 +96,9 @@ async function createEnginePromise(): Promise<MLCEngineInterface | null> {
 	const tier = await selectFittingTier(preferred);
 
 	if (tier === null) {
-		dispatchError('Not enough browser storage for any AI model. Please free up disk space and reload.');
+		dispatchError(
+			'Not enough browser storage for any AI model. Please free up disk space and reload.'
+		);
 		return null;
 	}
 	if (preferred !== null && tier < preferred) {
@@ -108,7 +121,10 @@ async function createEnginePromise(): Promise<MLCEngineInterface | null> {
 		}
 
 		// Storage full mid-download — clear and retry one tier down.
-		dispatchError('Storage full mid-download — clearing cache and retrying with a smaller model…', true);
+		dispatchError(
+			'Storage full mid-download — clearing cache and retrying with a smaller model…',
+			true
+		);
 		await clearCache().catch(() => undefined);
 
 		const fallbackTier = tier - 1;
@@ -142,7 +158,10 @@ export async function unloadEngine(): Promise<void> {
 	if (!enginePromise) return;
 	const promise = enginePromise;
 	enginePromise = null;
-	if (idleTimer) { clearTimeout(idleTimer); idleTimer = null; }
+	if (idleTimer) {
+		clearTimeout(idleTimer);
+		idleTimer = null;
+	}
 	await (await promise)?.unload();
 }
 

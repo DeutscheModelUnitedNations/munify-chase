@@ -81,7 +81,7 @@
 
 	const fuse = new Fuse<FuseItem>([], fuseOptions);
 
-	const filterMembers = (allMembers: typeof members, search: string) => {
+	const filterMembers = (allMembers: (typeof members)[number][], search: string) => {
 		const notYetSponsor = (mem: (typeof members)[number]) =>
 			!(sponsors ?? []).some((s) => s.committeeMember?.id === mem.id);
 		if (search.length > 0) {

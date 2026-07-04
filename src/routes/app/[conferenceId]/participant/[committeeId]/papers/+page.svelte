@@ -109,14 +109,11 @@
 		if (!code.trim()) return;
 		redeeming = true;
 		try {
-			const res = await client.mutate.redeemPaperShareCode({
-				__args: { code: code.trim().toUpperCase() },
-				id: true,
-				paper: { id: true }
+			await client.mutate.redeemPaperShareCode({
+				__args: { code: code.trim().toUpperCase() }
 			});
 			toast.success(m.codeRedeemed());
 			code = '';
-			if (res?.paper?.id) await goto(paperHref(res.paper.id));
 		} catch (err) {
 			toast.error(err instanceof Error ? err.message : 'Invalid code');
 		} finally {

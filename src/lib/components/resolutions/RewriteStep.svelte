@@ -68,7 +68,11 @@
 		};
 		resize();
 		node.addEventListener('input', resize);
-		return { destroy() { node.removeEventListener('input', resize); } };
+		return {
+			destroy() {
+				node.removeEventListener('input', resize);
+			}
+		};
 	}
 
 	async function keepOriginalForItem(item: ReviewItem) {
@@ -211,7 +215,9 @@
 						<!-- Right: AI revision or edit textarea -->
 						<div class="flex flex-col gap-1">
 							<div class="flex items-center justify-between h-6">
-								<p class="text-base-content/50 flex items-center gap-1 text-xs uppercase tracking-wide">
+								<p
+									class="text-base-content/50 flex items-center gap-1 text-xs uppercase tracking-wide"
+								>
 									{#if aiEvaluated}
 										<AiIcon />
 										<i class="fas fa-wand-magic-sparkles text-primary"></i>
@@ -282,7 +288,10 @@
 							<button
 								class="btn btn-ghost btn-sm cursor-pointer"
 								disabled={busy}
-								onclick={() => { editMode[item.id] = false; delete edits[item.id]; }}
+								onclick={() => {
+									editMode[item.id] = false;
+									delete edits[item.id];
+								}}
 							>
 								Cancel
 							</button>

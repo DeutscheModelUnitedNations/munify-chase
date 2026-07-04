@@ -105,7 +105,7 @@
 		step = 1;
 	}
 
-	async function downloadFile(): Promise<void> {
+	function downloadFile(): void {
 		if (!importData) return;
 		if (!importData.$schema) {
 			importData.$schema = `${page.url.origin}/api/schemas/import`;

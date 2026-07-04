@@ -176,9 +176,9 @@ async function loadEntry(paperId: string): Promise<CacheEntry> {
 	return entry;
 }
 
-async function getOrLoad(paperId: string): Promise<CacheEntry> {
+function getOrLoad(paperId: string): Promise<CacheEntry> {
 	const existing = cache.get(paperId);
-	if (existing) return existing;
+	if (existing) return Promise.resolve(existing);
 	let pending = loadingPromises.get(paperId);
 	if (pending) return pending;
 	pending = loadEntry(paperId)

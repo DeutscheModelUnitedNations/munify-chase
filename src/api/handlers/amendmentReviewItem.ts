@@ -65,7 +65,8 @@ schemaBuilder.mutationFields((t) => ({
 			// always writable regardless of phase (null clears the field).
 			if (args.aiObsolete !== undefined) update.aiObsolete = args.aiObsolete;
 			if (args.aiObsoleteReason !== undefined) update.aiObsoleteReason = args.aiObsoleteReason;
-			if (args.aiRewriteSuggestion !== undefined) update.aiRewriteSuggestion = args.aiRewriteSuggestion;
+			if (args.aiRewriteSuggestion !== undefined)
+				update.aiRewriteSuggestion = args.aiRewriteSuggestion;
 			if (args.aiRewriteReason !== undefined) update.aiRewriteReason = args.aiRewriteReason;
 
 			// Phase transition.

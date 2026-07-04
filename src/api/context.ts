@@ -4,7 +4,7 @@ import { GraphQLError } from 'graphql';
 
 export const oidcRoles = ['admin', 'member', 'service_user'] as const;
 
-export async function context(req: RequestEvent) {
+export function context(req: RequestEvent) {
 	// if the currently handled request is from a ws connection
 	// the actual underlying request might be nested in the extra property of the request event
 	const maybeExtra = (req as RequestEvent & { extra?: { request?: RequestEvent } }).extra;

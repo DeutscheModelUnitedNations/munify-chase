@@ -105,7 +105,7 @@ createWs(
 			const req = ctx.extra.request as RequestWithLocals;
 			const ws = ctx.extra.socket as unknown as WSWebSocket;
 			const event = await authenticateWsRequest(req);
-			scheduleExpiration(ws, (event as any)?.locals?.oidc?.accessToken?.exp);
+			scheduleExpiration(ws, (event as unknown as { locals?: { oidc?: { accessToken?: { exp?: number } } } } | undefined)?.locals?.oidc?.accessToken?.exp);
 			return true;
 		}
 	},
@@ -133,7 +133,7 @@ createWs(
 		}
 		yjsWSS.handleUpgrade(req, socket, head, async (ws) => {
 			const event = await authenticateWsRequest(req);
-			const ctx = await context(event as any);
+			const ctx = await context(event as unknown as RequestEvent);
 			if (!ctx) {
 				ws.close(4401, 'Unauthorized');
 				return;

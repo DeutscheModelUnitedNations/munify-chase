@@ -120,7 +120,7 @@ function safeTextParse(raw: string): string {
 		.replace(/^["']|["']$/g, '');
 }
 
-function robustJsonParse(raw: string): any {
+function robustJsonParse(raw: string): unknown {
 	const stripped = safeTextParse(raw);
 	// LLMs sometimes emit literal newlines/tabs inside JSON string values, which is invalid.
 	const sanitize = (s: string) => s.replace(/[\r\n\t]+/g, ' ');
@@ -253,7 +253,6 @@ Reason step by step, explicitly stating A and B. Finish your response with one b
 	};
 }
 
-
 function sanitizeRankedIndices(ranked: unknown, count: number): number[] | null {
 	if (!Array.isArray(ranked)) return null;
 	if (ranked.length !== count) return null;
@@ -297,8 +296,9 @@ Low: synonyms, adjectives, punctuation, minor rephrasing.`;
 
 	const userPrompt = `Rank these amendments from most to least impactful:\n${list}\n\nOutput ONLY raw JSON (no markdown, no code fences): {"ranked":[3,2,1,4]} using the amendment numbers above — include every number exactly once.`;
 
-	const resolveIndices = (parsed: { ranked: unknown }): string[] | null => {
-		const indices = sanitizeRankedIndices(parsed?.ranked, amendments.length);
+	const resolveIndices = (parsed: unknown): string[] | null => {
+		const ranked = typeof parsed === 'object' && parsed !== null ? (parsed as Record<string, unknown>).ranked : undefined;
+		const indices = sanitizeRankedIndices(ranked, amendments.length);
 		if (!indices) return null;
 		return indices.map((n) => inputIds[n - 1]);
 	};

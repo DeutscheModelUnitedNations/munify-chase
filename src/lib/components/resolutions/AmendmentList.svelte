@@ -19,6 +19,7 @@
 	import AiSpinner from '$lib/components/AiSpinner.svelte';
 	import AiIcon from '$lib/components/AiIcon.svelte';
 	import { slide } from 'svelte/transition';
+	import { SvelteMap, SvelteSet } from 'svelte/reactivity';
 	import { rankAmendmentsByImpact } from '$lib/ai/amendments';
 	import { getAiPreference, preferenceToMode } from '$lib/ai/aiPreference.svelte';
 
@@ -93,7 +94,7 @@
 				r.subjectAmendment?.status === 'SUBMITTED' &&
 				r.subjectAmendment?.type === 'ALTER_TEXT'
 		);
-		const map = new Map<string, typeof pending>();
+		const map = new SvelteMap<string, typeof pending>();
 		for (const item of pending) {
 			const key = item.triggerAmendment?.id ?? '';
 			if (!key) continue;
@@ -219,7 +220,7 @@
 		aiSortBusy = true;
 		try {
 			const ranked = await rankAmendmentsByImpact(unprocessedAlterText, preferenceToMode(pref));
-			const map = new Map<string, number>();
+			const map = new SvelteMap<string, number>();
 			ranked.forEach((id, i) => map.set(id, i));
 			aiSortOrder = map;
 		} catch (err) {
@@ -234,7 +235,7 @@
 
 	let expandedSponsors = $state(new Set<string>());
 	function toggleSponsors(id: string) {
-		const next = new Set(expandedSponsors);
+		const next = new SvelteSet(expandedSponsors);
 		if (next.has(id)) next.delete(id);
 		else next.add(id);
 		expandedSponsors = next;
@@ -577,7 +578,6 @@
 									{m.startVote()}
 								</button>
 								<div class="dropdown dropdown-end join-item flex">
-									<!-- svelte-ignore a11y_no_noninteractive_tabindex -->
 									<button
 										tabindex="0"
 										class="btn btn-xs btn-primary join-item px-1.5"

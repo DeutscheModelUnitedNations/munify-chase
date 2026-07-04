@@ -14,8 +14,13 @@
 		onConfirm: (mode: AiPreference, modelTier: number | null) => void;
 	}
 
-	let { open = $bindable(), hasBackend, savedPreference, initialModelTier, onConfirm }: Props =
-		$props();
+	let {
+		open = $bindable(),
+		hasBackend,
+		savedPreference,
+		initialModelTier,
+		onConfirm
+	}: Props = $props();
 
 	let hasWebGpu = $state(true);
 	onMount(() => {

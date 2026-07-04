@@ -10,6 +10,9 @@
 	} from '$lib/components/navbar/conferenceNavItems';
 	import { client } from '$lib/api/rumbleClient/client';
 	import { page } from '$app/state';
+	import AdoptionConfetti from '$lib/components/AdoptionConfetti.svelte';
+	import { goto } from '$app/navigation';
+	import { resolve } from '$app/paths';
 
 	import { getCurrentUser } from '$lib/state/currentUser.svelte';
 
@@ -20,6 +23,30 @@
 		currentUser.preferredUsername ||
 		currentUser.email ||
 		'';
+
+	// Role check first — redirect participants before making the heavy conference query.
+	const [conferenceUsersEarly, isGlobalAdmin] = await Promise.all([
+		client.query.conferenceUsers({
+			__args: {
+				where: {
+					conference: { id: page.params.conferenceId },
+					user: { id: userId }
+				}
+			},
+			id: true,
+			conferenceUserType: true
+		}),
+		client.query.isGlobalAdmin()
+	]);
+	const earlyRole = conferenceUsersEarly?.[0]?.conferenceUserType;
+	if (!isGlobalAdmin && earlyRole !== 'ADMIN' && earlyRole !== 'TEAM') {
+		goto(
+			resolve('/app/[conferenceId]/participant', {
+				conferenceId: page.params.conferenceId!
+			}),
+			{ replaceState: true }
+		);
+	}
 
 	const conference = await client.liveQuery.conference({
 		__args: { id: page.params.conferenceId! },
@@ -36,9 +63,21 @@
 			status: true,
 			statusHeadline: true,
 			statusUntil: true,
-			stateOfDebate: true
+			stateOfDebate: true,
+			lastResolutionAdoptionDate: true
 		}
 	});
+
+	const adoptingCommittee = $derived(
+		(conference?.committees ?? [])
+			.filter((c) => c.lastResolutionAdoptionDate != null)
+			.sort(
+				(a, b) =>
+					new Date(b.lastResolutionAdoptionDate!).getTime() -
+					new Date(a.lastResolutionAdoptionDate!).getTime()
+			)[0] ?? null
+	);
+	const mostRecentAdoption = $derived(adoptingCommittee?.lastResolutionAdoptionDate ?? null);
 
 	const conferenceUsers = await client.liveQuery.conferenceUsers({
 		__args: {
@@ -53,8 +92,6 @@
 
 	let currentUserRole = $derived(conferenceUsers?.[0]);
 	let role = $derived(currentUserRole?.conferenceUserType);
-
-	const isGlobalAdmin = await client.query.isGlobalAdmin();
 
 	let menubarItems = $derived(
 		buildConferenceNavItems({
@@ -95,6 +132,14 @@
 		/>
 	</div>
 </div>
+
+<AdoptionConfetti
+	lastAdoptionDate={mostRecentAdoption}
+	confettiDurationSec={45}
+	showBanner
+	committeeName={adoptingCommittee?.name ?? adoptingCommittee?.abbreviation ?? ''}
+	agendaItem={adoptingCommittee?.activeAgendaItem?.title ?? ''}
+/>
 
 {#if conference}
 	<CommitteeGrid conference={conference as unknown as ConferenceData} environment="TEAM" />

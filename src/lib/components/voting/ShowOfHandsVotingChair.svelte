@@ -5,6 +5,7 @@
 	import hotkeys from 'hotkeys-js';
 	import { untrack } from 'svelte';
 	import { client } from '$lib/api/rumbleClient/client';
+	import { nanoid } from '$lib/helpers/nanoid';
 	import { type VotingMajority, type VotingStage } from './votingModal';
 	import VoteClicker from './VoteClicker.svelte';
 	import ResultChart from './ResultChart.svelte';
@@ -71,10 +72,18 @@
 
 	const syncToServer = () => {
 		if (!sessionId) return;
+		// Select the stage/tally fields we write so they actually land in the cache:
+		// graphcache only persists an optimistic mutation's selected fields, so a bare
+		// `{ id }` selection would leave the presentation popup frozen on PRO with zeroed
+		// tallies offline (no network round-trip to fill them).
 		client.mutate
 			.updateVotingSession({
 				__args: { id: sessionId, currentStage: currentState, votesPro, votesCon, votesAbstain },
-				id: true
+				id: true,
+				currentStage: true,
+				votesPro: true,
+				votesCon: true,
+				votesAbstain: true
 			})
 			.catch(() => {});
 	};
@@ -195,9 +204,19 @@
 
 			untrack(() => {
 				if (!committee) return;
+				// Mint the session id client-side and adopt it synchronously so the chair can
+				// drive (and later complete) the vote without waiting for a server response —
+				// offline the mutation promise never resolves, so relying on `.then()` to set
+				// `sessionId` would leave every follow-up mutation a no-op. Passing the id
+				// through also keeps the optimistic entity key identical in the chair and the
+				// presentation popup (same broadcast variables), so the committee's
+				// activeVotingSession FK resolves to one shared row. Mirrors the roll-call chair.
+				const id = nanoid();
+				sessionId = id;
 				client.mutate
 					.startVotingSession({
 						__args: {
+							id,
 							committeeId: committee.id,
 							mode: 'SHOW_OF_HANDS',
 							majority,
@@ -217,6 +236,7 @@
 							client.mutate.completeVotingSession({ __args: { id: sessionId! } }).catch(() => {});
 							return;
 						}
+						// Server may resume an existing session under a different id; adopt it.
 						sessionId = result.id;
 						if (result.currentStage) currentState = result.currentStage as VotingStage;
 						votesPro = result.votesPro ?? 0;

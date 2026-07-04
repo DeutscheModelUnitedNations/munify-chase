@@ -18,27 +18,12 @@
 	import PresentationSettings from './PresentationSettings.svelte';
 	import Tabs from '$lib/components/Tabs.svelte';
 	import StatusWidget from '../StatusWidget.svelte';
-	import { isTauri } from '$lib/platform';
-
-	async function openPresentationWindow() {
-		const url = `/app/${page.params.conferenceId}/${page.params.committeeId}`;
-		if (isTauri()) {
-			const { WebviewWindow } = await import('@tauri-apps/api/webviewWindow');
-			const existing = await WebviewWindow.getByLabel('presentation');
-			if (existing) {
-				await existing.setFocus();
-			} else {
-				new WebviewWindow('presentation', {
-					url,
-					title: 'MUNify CHASE – Presentation',
-					width: 1280,
-					height: 720
-				});
-			}
-		} else {
-			window.open(url, '_blank');
-		}
-	}
+	import {
+		fullscreenDelegationSupported,
+		openPresentationWindow,
+		postToPresentation,
+		presentationOpen
+	} from '$lib/state/presentationWindow.svelte';
 
 	const committee = await client.liveQuery.committee({
 		__args: { id: page.params.committeeId! },
@@ -57,12 +42,33 @@
 		conference: { hasModeratedCaucus: true }
 	});
 
+	const minAmendmentSponsors = $derived(Math.ceil((committee?.totalPresent ?? 0) * 0.1));
+
 	let editWhiteboardModalOpen = $state(false);
 
 	const selfAddTabs = [
 		{ id: true, label: m.on(), faIcon: 'fa-check' },
 		{ id: false, label: m.off(), faIcon: 'fa-xmark' }
 	];
+
+	const presentationUrl = $derived(
+		resolve('/app/[conferenceId]/[committeeId]/(presentation)', {
+			conferenceId: page.params.conferenceId!,
+			committeeId: page.params.committeeId!
+		})
+	);
+
+	const openPresentation = () => {
+		openPresentationWindow(presentationUrl, page.params.committeeId!);
+	};
+
+	const toggleFullscreen = () => {
+		if (!postToPresentation('toggle-fullscreen')) {
+			openPresentation();
+		}
+	};
+
+	const canToggleFullscreen = fullscreenDelegationSupported();
 </script>
 
 {#if committee}
@@ -77,6 +83,7 @@
 						totalPresent={committee.totalPresent}
 						simpleMajority={committee.simpleMajority}
 						twoThirdsMajority={committee.twoThirdsMajority}
+						{minAmendmentSponsors}
 					/>
 				</BasicCard>
 				<BasicCard className="relative group">
@@ -113,14 +120,30 @@
 					/>
 				</BasicCard>
 				<BasicCard title={m.presentationMode()}>
-					<button
-						class="btn btn-primary btn-lg mb-4 flex items-center gap-3"
-						onclick={openPresentationWindow}
-					>
-						<i class="fas fa-projector"></i>
-						{m.openPresentation()}
-						<Kbd hotkey="alt+P" class="text-base-content" />
-					</button>
+					<div class="mb-4 flex flex-wrap items-center gap-3">
+						<button
+							type="button"
+							class="btn btn-primary btn-lg flex items-center gap-3"
+							onclick={openPresentation}
+						>
+							<i class="fas fa-projector"></i>
+							{m.openPresentation()}
+							<Kbd hotkey="alt+P" class="text-base-content" />
+						</button>
+						{#if canToggleFullscreen}
+							<button
+								type="button"
+								class="btn btn-lg flex items-center gap-3"
+								onclick={toggleFullscreen}
+								disabled={!presentationOpen()}
+								title={presentationOpen() ? m.enterFullscreen() : m.openPresentation()}
+								aria-label={m.enterFullscreen()}
+							>
+								<i class="fas fa-expand"></i>
+								{m.enterFullscreen()}
+							</button>
+						{/if}
+					</div>
 					<PresentationSettings committeeId={page.params.committeeId!} />
 				</BasicCard>
 				<BasicCard title={m.allowSelfAddToSpeakersList()}>

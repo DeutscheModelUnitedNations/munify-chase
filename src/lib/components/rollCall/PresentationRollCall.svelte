@@ -21,16 +21,22 @@
 
 	let { members, committeeId }: Props = $props();
 
-	const activeSessions = await client.liveQuery.rollCallSessions({
-		__args: {
-			where: { committeeId, completedAt: { isNull: true } },
-			orderBy: { createdAt: 'desc' }
-		},
+	// Drive the modal from `committee.activeRollCallSession` — the single source of
+	// truth defined in the schema. Open iff the committee references a session;
+	// close when that reference goes null.
+	const committee = await client.liveQuery.committee({
+		__args: { id: committeeId },
 		id: true,
-		currentMemberIndex: true
+		activeRollCallSession: {
+			id: true,
+			currentMemberIndex: true,
+			// Needed so updates.completeRollCallSession can resolve which committee to
+			// clear when the close replays cross-tab / offline (no subscription).
+			committeeId: true
+		}
 	});
 
-	let currentIndex = $derived(activeSessions?.at(0)?.currentMemberIndex ?? null);
+	let currentIndex = $derived(committee?.activeRollCallSession?.currentMemberIndex ?? null);
 </script>
 
 <Modal open={currentIndex !== null}>

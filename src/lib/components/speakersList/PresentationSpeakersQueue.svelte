@@ -9,6 +9,7 @@
 	import Marquee from 'svelte-fast-marquee';
 	import { browser } from '$app/environment';
 	import { onMount } from 'svelte';
+	import { compareSpeakers } from '$lib/helpers/speakerSort';
 
 	interface Props {
 		// speaker on list
@@ -44,7 +45,7 @@
 	// eslint-disable-next-line no-useless-assignment -- $bindable() initializer is read by parent
 	let { rawSpeakers, closed = false, resizeFn = $bindable() }: Props = $props();
 
-	let speakers = $derived(rawSpeakers?.toSorted((a, b) => a.position - b.position).toSpliced(0, 1));
+	let speakers = $derived(rawSpeakers?.toSorted(compareSpeakers).toSpliced(0, 1));
 
 	let container = $state<HTMLElement | null>(null);
 	let overflowContainer = $state<HTMLElement | null>(null);

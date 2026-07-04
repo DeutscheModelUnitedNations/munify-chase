@@ -34,20 +34,22 @@
 	}
 	let { committeeId, committee }: Props = $props();
 
-	const activeSessions = await client.liveQuery.votingSessions({
-		__args: {
-			where: { committeeId, completedAt: { isNull: true } },
-			limit: 1
-		},
+	// `committee.activeVotingSession` is the single source of truth for "is a vote
+	// happening?" — open iff it references a session, close when null.
+	const committeeWithVote = await client.liveQuery.committee({
+		__args: { id: committeeId },
 		id: true,
-		mode: true,
-		voteName: true,
-		majority: true,
-		withAbstentions: true,
-		votes: { id: true, committeeMemberId: true, vote: true }
+		activeVotingSession: {
+			id: true,
+			mode: true,
+			voteName: true,
+			majority: true,
+			withAbstentions: true,
+			votes: { id: true, committeeMemberId: true, vote: true }
+		}
 	});
 
-	let session = $derived((activeSessions ?? [])[0] ?? null);
+	let session = $derived(committeeWithVote?.activeVotingSession ?? null);
 
 	const [send, receive] = crossfade({
 		duration: 1000,

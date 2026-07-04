@@ -35,11 +35,11 @@
 			}}
 		>
 			{#if tab.faIcon}
-				<i class="fa-solid fa-{tab.faIcon?.replace('fa-', '')} {tab.label ? 'mr-2' : ''} text-lg"
+				<i class="fa-solid fa-{tab.faIcon?.replace('fa-', '')} {tab.label ? 'sm:mr-2' : ''} text-lg"
 				></i>
 			{/if}
 			{#if tab.label}
-				<span class="tab-label">{tab.label}</span>
+				<span class="tab-label hidden sm:inline">{tab.label}</span>
 			{/if}
 		</button>
 	{/each}

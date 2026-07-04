@@ -49,6 +49,13 @@
 			</div>
 		</li>
 		<li>
+			<a href="https://delegator.munify.cloud/my-account" target="_blank" rel="noopener noreferrer">
+				<i class="fa-duotone fa-user"></i>
+				{m.myDelegatorAccount()}
+				<i class="fa-solid fa-arrow-up-right text-base-content/50 text-xs" aria-hidden="true"></i>
+			</a>
+		</li>
+		<li>
 			<button
 				onclick={() => {
 					clearTokens();

@@ -98,6 +98,8 @@
 		}
 	});
 
+	const minAmendmentSponsors = $derived(Math.ceil((committee?.totalPresent ?? 0) * 0.1));
+
 	let speakersList = $derived(
 		committee?.activeAgendaItem?.speakersList.find((item) => item.type === 'SPEAKERS_LIST')
 	);
@@ -127,6 +129,7 @@
 					totalPresent={committee.totalPresent}
 					simpleMajority={committee.simpleMajority}
 					twoThirdsMajority={committee.twoThirdsMajority}
+					{minAmendmentSponsors}
 				/>
 			</BasicCard>
 		</div>

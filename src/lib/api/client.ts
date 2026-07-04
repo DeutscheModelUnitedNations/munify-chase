@@ -1,9 +1,21 @@
 import { nativeDateExchange } from '@m1212e/rumble/client';
-import { Client, type Exchange, fetchExchange, subscriptionExchange } from '@urql/core';
-import { offlineExchange } from '@m1212e/urql-exchange-graphcache';
-import { makeDefaultStorage } from '@m1212e/urql-exchange-graphcache/default-storage';
+import {
+	Client,
+	CombinedError,
+	type Exchange,
+	type Operation,
+	fetchExchange,
+	makeOperation,
+	subscriptionExchange
+} from '@urql/core';
+import { offlineExchange } from '@urql/exchange-graphcache';
+import { makeDefaultStorage } from '@urql/exchange-graphcache/default-storage';
+import { crossTabSyncExchange } from '@m1212e/urql-crosstab-sync';
+import { filter, map, onPush, pipe } from 'wonka';
+import { browser } from '$app/environment';
 import { schema } from './rumbleClient/schema';
 import { optimistic, updates } from './optimisticUpdateHandlers';
+import { setWsConnected } from '$lib/state/connection.svelte';
 import { createClient as createWSClient } from 'graphql-ws';
 import { configPublic } from '$config/public';
 import { getCachedAccessToken } from '$lib/platform/oidc';
@@ -13,120 +25,196 @@ const wsUrl = graphqlUrl.replace(/^https/, 'wss').replace(/^http/, 'ws');
 
 const exchanges: Exchange[] = [nativeDateExchange];
 
-// Captured by the storage wrapper below so the WS connected handler can also
-// flush the offline mutation queue without relying on navigator.onLine.
-let triggerFlush: (() => void) | undefined;
+if (browser) {
+	const storage = makeDefaultStorage({
+		idbName: 'chase-cache',
+		maxAge: 7
+	});
 
-const storage = makeDefaultStorage({
-	idbName: 'chase-cache',
-	maxAge: 7
-});
+	// graphcache wires its offline-mutation-queue flush to `storage.onOnline`, which
+	// only fires on the browser 'online' event (navigator.onLine). A server/WS-only
+	// outage never toggles navigator.onLine, so the queue would otherwise stall until
+	// the next real network blip. Capture the flush callback(s) graphcache registers
+	// so we can also trigger them on WebSocket reconnect (see wsClient.on.connected).
+	const onlineCallbacks = new Set<() => void>();
+	const baseOnOnline = storage.onOnline?.bind(storage);
+	storage.onOnline = (cb: () => void) => {
+		onlineCallbacks.add(cb);
+		baseOnOnline?.(cb);
+	};
+	const flushOfflineQueue = () => {
+		for (const cb of onlineCallbacks) cb();
+	};
 
-// Wrap the storage to intercept onOnline so we can trigger a flush from two
-// sources: the browser online event (original behaviour) and the WS reconnect
-// event (needed when only the server goes down while the browser stays online).
-const wrappedStorage = {
-	...storage,
-	onOnline(cb: () => void) {
-		triggerFlush = cb;
-		storage.onOnline!(cb);
-	}
-};
-
-exchanges.push(
-	offlineExchange({
-		schema,
-		storage: wrappedStorage,
-		optimistic,
-		updates,
-		broadcastChannel: 'chase-cross-tab-sync',
-		// Treat any network-level failure with no response as an offline error.
-		// The default predicate requires navigator.onLine === false or specific
-		// error message strings (which don't match on Safari or when only the
-		// server is down). This broader check works across all browsers and in
-		// server-down scenarios where the browser network remains up.
-		isOfflineError: (error) => {
-			if (error?.networkError && !error?.response) return true;
-			const status = (error?.response as Response | undefined)?.status;
-			return status === 502 || status === 503 || status === 504;
-		},
-		// Capture the flush function so WS reconnects can drain the queue too.
-		onFlushReady: (flush) => {
-			triggerFlush = flush;
-		}
-	})
-);
-
-// Tracks in-flight queries and mutations sent via WS so we can fail them
-// immediately when the connection drops instead of waiting for graphql-ws to
-// retry — the offlineExchange then queues and replays them on reconnect.
-const pendingNonSubscriptions = new Map<
-	number,
-	{ sink: { error?: (err: unknown) => void }; unsubscribe: () => void }
->();
-
-let wsConnected = false;
-
-const wsClient = createWSClient({
-	url: wsUrl,
-	shouldRetry: () => true,
-	connectionParams: () => {
-		const token = getCachedAccessToken();
-		return token ? { Authorization: `Bearer ${token}` } : {};
-	},
-	on: {
-		connected: () => {
-			wsConnected = true;
-			// Flush the offline mutation queue when the WS reconnects. This covers
-			// the case where the server restarts but navigator.onLine never toggled
-			// (so the browser online event never fired).
-			triggerFlush?.();
-		},
-		closed: () => {
-			wsConnected = false;
-			// Fail all in-flight non-subscription operations immediately.
-			// Calling unsubscribe() first marks the operation as done in graphql-ws
-			// so it won't retry it after reconnecting — the offlineExchange owns
-			// the retry instead. isOfflineError catches the resulting networkError
-			// (no response) and queues the operation in failedQueue.
-			for (const [, { sink, unsubscribe }] of pendingNonSubscriptions) {
-				unsubscribe();
-				sink.error?.(new Error('WebSocket connection lost'));
-			}
-			pendingNonSubscriptions.clear();
-		}
-	}
-});
-
-exchanges.push(
-	subscriptionExchange({
-		isSubscriptionOperation: (op) => op.kind === 'subscription' || wsConnected,
-		forwardSubscription(request, operation) {
-			const input = { ...request, query: request.query || '' };
-			return {
-				subscribe(sink) {
-					// eslint-disable-next-line @typescript-eslint/no-explicit-any
-					const innerUnsubscribe = wsClient.subscribe(input, sink as any);
-
-					if (operation.kind !== 'subscription') {
-						pendingNonSubscriptions.set(operation.key, {
-							sink,
-							unsubscribe: innerUnsubscribe
-						});
-						return {
-							unsubscribe() {
-								pendingNonSubscriptions.delete(operation.key);
-								innerUnsubscribe();
-							}
-						};
-					}
-
-					return { unsubscribe: innerUnsubscribe };
+	// Track active queries so we can refetch them (network-only) on WS reconnect.
+	// Subscriptions resubscribe themselves via graphql-ws retry, but plain query data
+	// can be stale after an outage. `reexecuteActiveQueries` is assigned once the
+	// exchange runs.
+	const activeQueries = new Map<number, Operation>();
+	let reexecuteActiveQueries = () => {};
+	const trackQueriesExchange: Exchange =
+		({ client, forward }) =>
+		(ops$) => {
+			reexecuteActiveQueries = () => {
+				for (const op of activeQueries.values()) {
+					client.reexecuteOperation(
+						makeOperation('query', op, { ...op.context, requestPolicy: 'network-only' })
+					);
 				}
 			};
+			return pipe(
+				ops$,
+				onPush((op) => {
+					if (op.kind === 'query') activeQueries.set(op.key, op);
+					else if (op.kind === 'teardown') activeQueries.delete(op.key);
+				}),
+				forward
+			);
+		};
+
+	// Cross-tab synthetic mutations have two failure modes that wipe their
+	// optimistic layer in the popup tab when the chair's underlying mutation
+	// fails (always, while offline):
+	//
+	//   1. The error result emitted by `crossTabSyncExchange.receiver.results$`
+	//      reaches `offlineExchange`'s offline-error filter. That filter only
+	//      protects the layer when `context.optimistic` is true, and the
+	//      synthetic op `crossTabSyncExchange` creates doesn't set it. The
+	//      result therefore reaches `cacheExchange.updateCacheWithResult`,
+	//      which rolls the layer back.
+	//
+	//   2. Right after delivering the result, `crossTabSyncExchange` also
+	//      unsubscribes the synthetic op's subscription. urql dispatches a
+	//      `teardown` op for it, which `cacheExchange.prepareForwardedOperation`
+	//      handles by calling `noopDataState → reserveLayer → clearLayer` —
+	//      wiping the optimistic layer regardless of the filter.
+	//
+	// Sitting outermost (above `offlineExchange`), this exchange:
+	//   - stamps synthetic remote mutations with `optimistic: true` so the
+	//     offline-error filter catches their error result, and
+	//   - swallows `teardown` ops for those mutations so they never reach
+	//     `cacheExchange` and the layer survives for the lifetime of the
+	//     offline session.
+	//
+	// The popup's modal is therefore driven by the same cache state the chair
+	// writes optimistically, via the normal cross-tab mutation sync.
+	const keepSyntheticOptimisticExchange: Exchange =
+		({ forward }) =>
+		(ops$) => {
+			const syntheticKeys = new Set<number>();
+			return pipe(
+				ops$,
+				filter((op) => {
+					if (op.kind === 'teardown' && syntheticKeys.has(op.key)) {
+						syntheticKeys.delete(op.key);
+						return false;
+					}
+					return true;
+				}),
+				map((op) => {
+					if (op.kind !== 'mutation') return op;
+					const meta = (op.context as { crossTabSync?: { remote?: boolean } }).crossTabSync;
+					if (!meta?.remote) return op;
+					syntheticKeys.add(op.key);
+					if (op.context.optimistic) return op;
+					return makeOperation(op.kind, op, { ...op.context, optimistic: true });
+				}),
+				forward
+			);
+		};
+
+	exchanges.push(
+		trackQueriesExchange,
+		keepSyntheticOptimisticExchange,
+		offlineExchange({
+			schema,
+			storage,
+			optimistic,
+			updates
+		}),
+		crossTabSyncExchange({ channelName: 'chase-cross-tab-sync' })
+	);
+
+	const pendingNonSubscriptions = new Map<
+		number,
+		{ sink: { error?: (err: unknown) => void }; unsubscribe: () => void }
+	>();
+
+	let wsConnected = false;
+	let everConnected = false;
+
+	const wsClient = createWSClient({
+		url: wsUrl,
+		shouldRetry: () => true,
+		connectionParams: () => {
+			const token = getCachedAccessToken();
+			return token ? { Authorization: `Bearer ${token}` } : {};
+		},
+		on: {
+			connected: () => {
+				const isReconnect = everConnected;
+				everConnected = true;
+				wsConnected = true;
+				setWsConnected(true);
+				if (isReconnect) {
+					// The WS came back. navigator.onLine may never have toggled (a
+					// server/WS-only outage), so explicitly flush the offline mutation
+					// queue and refetch active queries to reconcile any state the
+					// subscriptions missed while we were disconnected.
+					flushOfflineQueue();
+					reexecuteActiveQueries();
+				}
+			},
+			closed: () => {
+				wsConnected = false;
+				setWsConnected(false);
+				for (const [, { sink, unsubscribe }] of pendingNonSubscriptions) {
+					unsubscribe();
+					// Surface as an offline-style network error (a CombinedError carrying a
+					// networkError whose message matches graphcache's isOfflineError check)
+					// so an in-flight optimistic mutation is queued for retry on reconnect
+					// instead of being dropped. A plain Error fails that check and is lost.
+					sink.error?.(
+						new CombinedError({
+							networkError: new Error('network error: WebSocket connection lost')
+						})
+					);
+				}
+				pendingNonSubscriptions.clear();
+			}
 		}
-	})
-);
+	});
+
+	exchanges.push(
+		subscriptionExchange({
+			isSubscriptionOperation: (op) => op.kind === 'subscription' || wsConnected,
+			forwardSubscription(request, operation) {
+				const input = { ...request, query: request.query || '' };
+				return {
+					subscribe(sink) {
+						// eslint-disable-next-line @typescript-eslint/no-explicit-any
+						const innerUnsubscribe = wsClient.subscribe(input, sink as any);
+
+						if (operation.kind !== 'subscription') {
+							pendingNonSubscriptions.set(operation.key, {
+								sink,
+								unsubscribe: innerUnsubscribe
+							});
+							return {
+								unsubscribe() {
+									pendingNonSubscriptions.delete(operation.key);
+									innerUnsubscribe();
+								}
+							};
+						}
+
+						return { unsubscribe: innerUnsubscribe };
+					}
+				};
+			}
+		})
+	);
+}
 
 exchanges.push(fetchExchange);
 

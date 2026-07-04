@@ -26,28 +26,20 @@
 	let { speakersList, type, otherList }: Props = $props();
 
 	let timerRunning = $derived(!!speakersList?.startTimestamp);
-	// Prevents accidental double-clicks from undoing an optimistic stop/start.
-	// When offline the mutation promise never resolves, so we bound the lock to
-	// a short timeout instead of awaiting the result.
-	let timerActionPending = $state(false);
+	// Silent debounce to absorb accidental fat-finger double-clicks that would
+	// otherwise immediately undo the optimistic start/stop. Kept short and
+	// non-visual: offline mutations never resolve, so a longer lock would leave
+	// the button looking disabled until the timeout expired.
+	let lastTimerActionAt = 0;
 
 	const withTimerLock = (fn: () => Promise<void>) => async () => {
-		if (timerActionPending) return;
-		timerActionPending = true;
-		// The optimistic update fires synchronously on dispatch, so the UI already
-		// reflects the new state before the network round-trip.  When offline the
-		// mutation is queued and its promise never resolves; the lock would be held
-		// forever without this timeout.
-		const lockTimeout = setTimeout(() => {
-			timerActionPending = false;
-		}, 5000);
+		const now = performance.now();
+		if (now - lastTimerActionAt < 250) return;
+		lastTimerActionAt = now;
 		try {
 			await fn();
 		} catch {
 			// Network errors are handled individually inside each handler.
-		} finally {
-			clearTimeout(lockTimeout);
-			timerActionPending = false;
 		}
 	};
 
@@ -213,16 +205,10 @@
 <div class="flex gap-2">
 	<button
 		class="btn btn-lg join-item flex flex-1 gap-2
-			{!speakersList?.speakers?.length || timerActionPending
-			? 'btn-disabled'
-			: timerRunning
-				? 'bg-error'
-				: 'bg-success'}"
+			{!speakersList?.speakers?.length ? 'btn-disabled' : timerRunning ? 'bg-error' : 'bg-success'}"
 		onclick={timerRunning ? stopTimer : startTimer}
 	>
-		{#if timerActionPending}
-			<span class="loading loading-spinner loading-sm"></span>
-		{:else if timerRunning}
+		{#if timerRunning}
 			<i class="fas fa-pause"></i>
 		{:else}
 			<i class="fas fa-play"></i>

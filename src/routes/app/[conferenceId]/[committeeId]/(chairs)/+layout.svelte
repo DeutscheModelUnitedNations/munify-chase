@@ -15,6 +15,8 @@
 	import { getServerTime } from '$lib/state/serverTime.svelte';
 	import hotkeys from 'hotkeys-js';
 	import VotingModal from '$lib/components/voting/VotingModal.svelte';
+	import AdoptionConfetti from '$lib/components/AdoptionConfetti.svelte';
+	import { openPresentationWindow } from '$lib/state/presentationWindow.svelte';
 
 	interface Props {
 		children: Snippet;
@@ -30,6 +32,7 @@
 		id: true,
 		abbreviation: true,
 		name: true,
+		activeDraftResolutionId: true,
 		stateOfDebate: true,
 		status: true,
 		statusHeadline: true,
@@ -99,6 +102,7 @@
 				faIcon: true
 			}
 		},
+		lastResolutionAdoptionDate: true,
 		conference: {
 			id: true,
 			title: true,
@@ -116,10 +120,6 @@
 			}
 		}
 	});
-
-	// TODO: enable once resolution feature is implemented in schema/API
-	// const activeDraftResolutionId = $derived(committee?.activeDraftResolutionId ?? null);
-	const activeDraftResolutionId: string | null = null;
 
 	const dockItems = $derived([
 		{
@@ -158,8 +158,15 @@
 			}),
 			key: 'voting'
 		},
-		// TODO: add resolutions dock item once route exists
-		...(activeDraftResolutionId ? [] : [])
+		{
+			icon: 'fa-file-lines',
+			label: () => m.resolutions(),
+			href: resolve('/app/[conferenceId]/[committeeId]/(chairs)/resolutions', {
+				conferenceId,
+				committeeId
+			}),
+			key: 'resolutions'
+		}
 	]);
 
 	function isActive(key: string) {
@@ -167,7 +174,7 @@
 	}
 
 	$effect(() => {
-		hotkeys('alt+1, alt+2, alt+3, alt+4', (event, handler) => {
+		hotkeys('alt+1, alt+2, alt+3, alt+4, alt+5', (event, handler) => {
 			event.preventDefault();
 			switch (handler.key) {
 				case 'alt+1':
@@ -202,9 +209,17 @@
 						})
 					);
 					break;
+				case 'alt+5':
+					goto(
+						resolve('/app/[conferenceId]/[committeeId]/(chairs)/resolutions', {
+							conferenceId,
+							committeeId
+						})
+					);
+					break;
 			}
 		});
-		return () => hotkeys.unbind('alt+1, alt+2, alt+3, alt+4');
+		return () => hotkeys.unbind('alt+1, alt+2, alt+3, alt+4, alt+5');
 	});
 
 	let committeeStatusExpiredAlerted = $state(false);
@@ -264,7 +279,13 @@
 	$effect(() => {
 		hotkeys('alt+p', (event) => {
 			event.preventDefault();
-			window.open('.', '_blank');
+			openPresentationWindow(
+				resolve('/app/[conferenceId]/[committeeId]/(presentation)', {
+					conferenceId,
+					committeeId
+				}),
+				committeeId
+			);
 		});
 		return () => hotkeys.unbind('alt+p');
 	});
@@ -298,18 +319,25 @@
 	<VotingModal {committee} />
 {/if}
 
-<!-- TODO: enable AdoptionConfetti once resolution adoption feature is implemented -->
-<!-- <AdoptionConfetti
+<AdoptionConfetti
 	lastAdoptionDate={committee?.lastResolutionAdoptionDate}
-	agendaItem={committee?.activeAgendaItem?.title ?? m.unknown()}
-	committeeName={committee?.name ?? m.unknown()}
-	confettiDurationSec={20}
-/> -->
+	confettiDurationSec={45}
+/>
 
 <!-- Bottom dock -->
 <div class="dock dock-md lg:dock-lg md:justify-center md:gap-4">
 	{#each dockItems as item, i (item.key)}
-		<a href={item.href} class="group relative {isActive(item.key) ? 'dock-active' : ''}">
+		<a
+			href={item.href}
+			class="group relative {isActive(item.key) &&
+			!(
+				item.key === 'resolutions' &&
+				committee?.activeDraftResolutionId &&
+				page.url.pathname.includes(committee.activeDraftResolutionId)
+			)
+				? 'dock-active'
+				: ''}"
+		>
 			<i class="fa-duotone {item.icon} size-[1.2em]"></i>
 			<span class="dock-label">{item.label()}</span>
 			<kbd
@@ -318,4 +346,19 @@
 			>
 		</a>
 	{/each}
+	{#if committee?.activeDraftResolutionId}
+		<a
+			href={resolve('/app/[conferenceId]/[committeeId]/(chairs)/resolutions/[paperId]', {
+				conferenceId,
+				committeeId,
+				paperId: committee.activeDraftResolutionId
+			})}
+			class="group relative {page.url.pathname.includes(committee.activeDraftResolutionId)
+				? 'dock-active'
+				: ''}"
+		>
+			<i class="fa-duotone fa-file-pen size-[1.2em]"></i>
+			<span class="dock-label">{m.activeDraftResolution()}</span>
+		</a>
+	{/if}
 </div>

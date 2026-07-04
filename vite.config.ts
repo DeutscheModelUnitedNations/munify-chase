@@ -17,7 +17,13 @@ export default defineConfig({
 		}),
 		sveltekit()
 	],
-	// Tauri expects a fixed port, fail if that port is not available
+	resolve: {
+		dedupe: ['yjs', 'y-protocols']
+	},
+	optimizeDeps: {
+		include: ['y-protocols/sync', 'y-protocols/awareness', '@hocuspocus/provider'],
+		exclude: ['yjs']
+	},
 	server: {
 		port: 1420,
 		strictPort: true,

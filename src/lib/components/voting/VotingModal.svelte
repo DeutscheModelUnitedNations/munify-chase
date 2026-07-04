@@ -52,9 +52,15 @@
 			majority = state.config.majority ?? 'SIMPLE';
 			withAbstentions = state.config.withAbstentions ?? false;
 			currentOnComplete = state.onComplete;
-			phase = 'SETUP';
-			setupOpen = true;
-			executingOpen = false;
+			if (state.resume) {
+				phase = 'EXECUTING';
+				setupOpen = false;
+				executingOpen = true;
+			} else {
+				phase = 'SETUP';
+				setupOpen = true;
+				executingOpen = false;
+			}
 		} else {
 			setupOpen = false;
 			executingOpen = false;

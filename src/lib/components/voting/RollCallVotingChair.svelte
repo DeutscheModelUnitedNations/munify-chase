@@ -112,10 +112,16 @@
 				rollCallVotingAbstain = [...rollCallVotingAbstain, member.id];
 				break;
 		}
+		// Select committeeMemberId + vote so they persist in the cache offline (graphcache
+		// only writes an optimistic mutation's selected fields). The presentation popup
+		// categorises votes by these fields, so a bare `{ id }` selection would leave every
+		// flag stuck in the "remaining" column offline.
 		client.mutate
 			.setVoteForMember({
 				__args: { id: nanoid(), sessionId, committeeMemberId: member.id, vote },
-				id: true
+				id: true,
+				committeeMemberId: true,
+				vote: true
 			})
 			.catch(() => toast.error(m.rollCallError()));
 	};
@@ -215,9 +221,19 @@
 				rollCallVotingCon = [];
 				rollCallVotingAbstain = [];
 
+				// Mint the session id client-side and adopt it synchronously so the chair can
+				// drive (and complete) the vote without waiting for a server response — offline
+				// the mutation promise never resolves, so relying on `.then()` to set
+				// `sessionId` would leave every follow-up mutation a no-op. Passing the id
+				// through also keeps the optimistic entity key identical in the chair and the
+				// presentation popup, so the committee's activeVotingSession FK resolves to one
+				// shared row. Mirrors the roll-call chair.
+				const id = nanoid();
+				sessionId = id;
 				client.mutate
 					.startVotingSession({
 						__args: {
+							id,
 							committeeId: committee.id,
 							mode: 'ROLL_CALL',
 							majority: majority ?? 'SIMPLE',
@@ -227,13 +243,14 @@
 						},
 						id: true,
 						currentMemberIndex: true,
-						votes: { committeeMemberId: true, vote: true }
+						votes: { id: true, committeeMemberId: true, vote: true }
 					})
 					.then((result) => {
 						if (!active) {
 							client.mutate.completeVotingSession({ __args: { id: sessionId! } }).catch(() => {});
 							return;
 						}
+						// Server may resume an existing session under a different id; adopt it.
 						sessionId = result.id;
 						currentIndex = result.currentMemberIndex;
 						rollCallVotingPro = result.votes

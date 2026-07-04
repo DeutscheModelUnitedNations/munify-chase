@@ -16,6 +16,8 @@
 	import PresentationRollCall from '$lib/components/rollCall/PresentationRollCall.svelte';
 	import ShowOfHandsVotingPresentation from '$lib/components/voting/ShowOfHandsVotingPresentation.svelte';
 	import RollCallVotingPresentation from '$lib/components/voting/RollCallVotingPresentation.svelte';
+	import PresentationResolutionPreview from '$lib/components/resolutions/PresentationResolutionPreview.svelte';
+	import AdoptionConfetti from '$lib/components/AdoptionConfetti.svelte';
 	import { sortTranslatedCountries } from '$lib/utils/nationTranslationHelper.svelte';
 	import CurrentSpeaker from '$lib/components/speakersList/CurrentSpeaker.svelte';
 	import SpeakersQueue from '$lib/components/speakersList/PresentationSpeakersQueue.svelte';
@@ -39,7 +41,31 @@
 		whiteboardContent: true,
 		presentationLayout: true,
 		presentationRootFontSize: true,
+		presentationResolutionFontSize: true,
 		displayRegionalGroups: true,
+		currentOperativeIndex: true,
+		activeDraftResolutionId: true,
+		activeDraftResolution: { id: true, status: true },
+		activeAmendmentId: true,
+		activeAmendment: {
+			id: true,
+			type: true,
+			documentNumber: true,
+			targetClauseId: true,
+			targetOperativeIndex: true,
+			targetPosition: true,
+			newContent: true,
+			proposer: {
+				id: true,
+				representation: {
+					id: true,
+					name: true,
+					alpha2Code: true,
+					alpha3Code: true
+				}
+			}
+		},
+		lastResolutionAdoptionDate: true,
 		activeAgendaItem: {
 			id: true,
 			title: true,
@@ -113,9 +139,15 @@
 		}
 	});
 
+	const minAmendmentSponsors = $derived(Math.ceil((committee?.totalPresent ?? 0) * 0.1));
+
+	const activePaperId = $derived(committee?.activeDraftResolutionId ?? null);
+
 	let layout = $derived(
 		getPresentationLayoutPreset(
-			(committee?.presentationLayout as PresentationLayoutPresetOptions) ?? undefined
+			activePaperId != null
+				? 'resolution'
+				: ((committee?.presentationLayout as PresentationLayoutPresetOptions) ?? undefined)
 		)
 	);
 
@@ -128,8 +160,6 @@
 	);
 	let speakersQueueResizeFn = $state<(() => void) | undefined>(undefined);
 	let commentsQueueResizeFn = $state<(() => void) | undefined>(undefined);
-
-	let isFullscreen = $state(false);
 
 	$effect(() => {
 		if (!layout || !committee) {
@@ -149,21 +179,18 @@
 		}
 	});
 
-	const toggleFullscreen = () => {
-		if (!document.fullscreenElement) {
-			document.documentElement.requestFullscreen();
-		} else {
-			document.exitFullscreen();
-		}
-	};
-
 	$effect(() => {
-		const handler = () => {
-			isFullscreen = !!document.fullscreenElement;
+		const handler = (event: MessageEvent) => {
+			if (event.source !== window.opener) return;
+			if (event.data !== 'toggle-fullscreen') return;
+			if (!document.fullscreenElement) {
+				document.documentElement.requestFullscreen().catch(() => {});
+			} else {
+				document.exitFullscreen().catch(() => {});
+			}
 		};
-		handler();
-		document.addEventListener('fullscreenchange', handler);
-		return () => document.removeEventListener('fullscreenchange', handler);
+		window.addEventListener('message', handler);
+		return () => window.removeEventListener('message', handler);
 	});
 </script>
 
@@ -221,6 +248,7 @@
 					totalPresent={committee.totalPresent}
 					simpleMajority={committee.simpleMajority}
 					twoThirdsMajority={committee.twoThirdsMajority}
+					{minAmendmentSponsors}
 				/>
 			</GridItem>
 		{/if}
@@ -259,7 +287,30 @@
 				/>
 			</GridItem>
 		{/if}
+
+		{#if layout.resolutionPreview && activePaperId}
+			{@const gridProps = layout.resolutionPreview}
+			<GridItem {...gridProps} class="card bg-base-100 overflow-auto p-4" id="resolution-preview">
+				<PresentationResolutionPreview
+					paperId={activePaperId}
+					currentOperativeIndex={committee.activeDraftResolution?.status === 'AMENDMENT_PHASE' ||
+					committee.activeDraftResolution?.status === 'VOTING_PHASE'
+						? committee.currentOperativeIndex
+						: undefined}
+					resolutionFontSize={committee.presentationResolutionFontSize ?? 16}
+					showAmendments={committee.activeDraftResolution?.status === 'AMENDMENT_PHASE'}
+					activeAmendment={committee.activeDraftResolution?.status === 'AMENDMENT_PHASE'
+						? (committee.activeAmendment ?? null)
+						: null}
+				/>
+			</GridItem>
+		{/if}
 	</Grid>
+
+	<AdoptionConfetti
+		lastAdoptionDate={committee.lastResolutionAdoptionDate}
+		confettiDurationSec={45}
+	/>
 
 	<RegionalGroups
 		open={committee.displayRegionalGroups ?? false}
@@ -275,15 +326,6 @@
 
 	<ShowOfHandsVotingPresentation {committeeId} />
 	<RollCallVotingPresentation {committeeId} {committee} />
-
-	<button
-		class="btn btn-ghost fixed bottom-3 left-3 z-50 h-12 w-12 min-h-0 p-0 opacity-15 hover:opacity-60 transition-opacity"
-		onclick={toggleFullscreen}
-		aria-label={isFullscreen ? m.exitFullscreen() : m.enterFullscreen()}
-		title={isFullscreen ? m.exitFullscreen() : m.enterFullscreen()}
-	>
-		<i class="fas {isFullscreen ? 'fa-compress' : 'fa-expand'} text-sm"></i>
-	</button>
 {:else}
 	<UndrawError
 		undrawImage={emptyStreet}

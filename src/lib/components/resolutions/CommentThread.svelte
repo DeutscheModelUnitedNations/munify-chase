@@ -257,6 +257,12 @@
 			rows="2"
 			placeholder={m.writeAComment()}
 			bind:value={draft}
+			onkeydown={(e) => {
+				if (e.key === 'Enter' && !e.shiftKey && !sending && draft.trim()) {
+					e.preventDefault();
+					send();
+				}
+			}}
 		></textarea>
 		<div class="flex items-center justify-between gap-2">
 			{#if canTeamOnly}

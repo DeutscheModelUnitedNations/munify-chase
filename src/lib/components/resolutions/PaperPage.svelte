@@ -1046,25 +1046,37 @@
 				{/if}
 			{/if}
 
-			<!-- Center: editor -->
+			<!-- Center: preview (FINAL) or editor -->
 			<div class="min-h-0 flex-1 overflow-auto">
 				{#if browser && yClient}
-					<div class="editor-no-internal-preview flex h-full w-full flex-col">
-						<ResolutionEditor
-							store={yClient.store}
-							presence={yClient.presence}
-							labels={englishLabels}
-							preamblePhrases={englishPreamblePhrases}
-							operativePhrases={englishOperativePhrases}
-							editable={canEdit}
-							amendments={amendmentOverlays}
-							{rejectedClauseIds}
-							{headerData}
-							previewHeader={noHeader}
-							clauseAnnotations={clauseAnnotationsSnippet}
-							preambleAnnotations={preambleAnnotationsSnippet}
-						/>
-					</div>
+					{#if status === 'FINAL'}
+						<div class="min-h-0 flex-1 overflow-auto p-4">
+							<ResolutionPreview
+								resolution={yClient.store.snapshot}
+								{headerData}
+								labels={englishLabels}
+								amendments={amendmentOverlays}
+								{rejectedClauseIds}
+							/>
+						</div>
+					{:else}
+						<div class="editor-no-internal-preview flex h-full w-full flex-col">
+							<ResolutionEditor
+								store={yClient.store}
+								presence={yClient.presence}
+								labels={englishLabels}
+								preamblePhrases={englishPreamblePhrases}
+								operativePhrases={englishOperativePhrases}
+								editable={canEdit}
+								amendments={amendmentOverlays}
+								{rejectedClauseIds}
+								{headerData}
+								previewHeader={noHeader}
+								clauseAnnotations={clauseAnnotationsSnippet}
+								preambleAnnotations={preambleAnnotationsSnippet}
+							/>
+						</div>
+					{/if}
 				{/if}
 			</div>
 

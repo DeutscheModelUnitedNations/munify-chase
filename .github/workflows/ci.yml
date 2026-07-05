@@ -153,11 +153,6 @@ jobs:
           prerelease: ${{ contains(github.ref_name, 'alpha') || contains(github.ref_name, 'beta') || contains(github.ref_name, 'rc') }}
           args: ${{ matrix.args }}
 
-      # NOTE: the former post-build "Patch AppImage – fix EGL on Wayland" step
-      # was replaced by setting WEBKIT_DISABLE_DMABUF_RENDERER (and unsetting
-      # WAYLAND_DISPLAY under GDK_BACKEND=x11) in src-tauri/src/lib.rs — the
-      # patch invalidated the updater's minisign signature of the AppImage.
-
   # ============================================
   # LAYER 3: RELEASE (tag push only)
   # ============================================

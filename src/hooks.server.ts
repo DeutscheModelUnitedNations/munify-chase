@@ -5,6 +5,7 @@ import { paraglideMiddleware } from '$lib/paraglide/server';
 import { sequence } from '@sveltejs/kit/hooks';
 import { OIDC } from '$api/services/OIDC';
 import { locales, baseLocale, cookieName, cookieMaxAge } from '$lib/paraglide/runtime';
+import { configPublic } from '$config/public';
 
 const TAURI_ORIGIN = 'tauri://localhost';
 
@@ -64,7 +65,9 @@ export const handle: Handle = sequence(
 
 			return resolve(event, {
 				transformPageChunk: ({ html }) => {
-					return html.replace('%lang%', locale);
+					return html
+						.replace('%lang%', locale)
+						.replaceAll('%fontawesomeCdnUrl%', configPublic.PUBLIC_FONTAWESOME_CDN_URL);
 				}
 			});
 		})

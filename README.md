@@ -4,6 +4,14 @@
 
 MUNify CHASE is a Software to managing Debates of Model United Nations Conferences with tools like speakers lists, digital voting and resolution editing. It is part of the MUNify Project, which aims to provide a comprehensive Software Suite for Model United Nations Conferences. MUNify is an Open Source Project by the german non-profit organization [Deutsche Model United Nations (DMUN) e.V.](https://dmun.de).
 
+<p align="center">
+  <a href="https://github.com/DeutscheModelUnitedNations/munify-chase/releases/latest">
+    <img src="https://img.shields.io/badge/⬇%20Download%20Native%20Client-macOS%20%7C%20Windows%20%7C%20Linux-blue?style=for-the-badge" alt="Download Native Client" />
+  </a>
+  <br/>
+  <sub>Opens the latest release page — scroll down to <strong>Assets</strong> to find the installer for your platform.</sub>
+</p>
+
 The project is still under development. If you are interested in using it, please contact us via the discussion section of this repository.
 
 We are happy to recieve feedback, contributions and donations. Please see below for more information.
@@ -65,6 +73,14 @@ Yes, you can! Please refer to the contributing section below.
 #### Can you add a feature?
 
 For feature suggestions, please post in the discussion section of this repository. You can find it [here](https://github.com/DeutscheModelUnitedNations/munify-chase/discussions). If you want to write it yourself, please see the contributing section below.
+
+## Native Client
+
+CHASE ships a Tauri-based desktop application (macOS `.dmg`, Windows `.exe`, Linux `.deb` / `.AppImage`) in addition to the web app. The latest installers are always attached to the [latest GitHub release](https://github.com/DeutscheModelUnitedNations/munify-chase/releases/latest).
+
+The desktop app is built from the `native-client` branch, which is a server-free fork of `main`. Whenever a commit lands on `main`, the **Sync Native Client** workflow automatically merges it into `native-client`, strips out server-only files (API routes, Drizzle config, Docker compose, etc.), regenerates the lockfile, and runs `svelte-check`/`tsc` to verify the result. If the merge can be applied cleanly it is pushed directly; otherwise the workflow opens a pull request for manual resolution.
+
+When you push a version tag (e.g. `v3.1.0`), the **CI** workflow runs the standard checks, builds and publishes the Docker image, creates a GitHub release, and then kicks off the **native-client-build** job. That job checks out `native-client`, waits for it to contain the tagged commit (bridging the race with the sync workflow), and then runs `tauri-action` in a matrix across Ubuntu 22.04, Windows, and macOS. The resulting installers are attached to the same release automatically. Pre-release tags (`alpha`, `beta`, `rc`) are published as GitHub pre-releases and excluded from the auto-updater endpoint so that end-users only receive stable updates automatically.
 
 ## Releasing
 

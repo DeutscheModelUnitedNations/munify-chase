@@ -302,7 +302,12 @@
 	<title>{committee?.abbreviation ?? 'N/A'} {m.chairControls()} - MUNify CHASE</title>
 </svelte:head>
 
-<ChairNavbar title={committee?.abbreviation} conferenceTitle={committee?.conference?.title} {speakersList} {commentList} />
+<ChairNavbar
+	title={committee?.abbreviation}
+	conferenceTitle={committee?.conference?.title}
+	{speakersList}
+	{commentList}
+/>
 
 <div class="pb-16">
 	{@render children()}

@@ -161,6 +161,9 @@ CVE-2026-39836
 # net/mail: DoS via consumePhrase - esbuild doesn't parse email
 CVE-2026-42499
 
+# mime: DoS via maliciously-crafted MIME header with many invalid encodings - esbuild doesn't decode MIME headers
+CVE-2026-42504
+
 # undici: WebSocket DoS via unbounded memory growth - app uses `ws` package for all WebSockets,
 # undici's WebSocket API is never invoked in this codebase
 CVE-2026-12151

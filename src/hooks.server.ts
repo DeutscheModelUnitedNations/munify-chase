@@ -67,7 +67,7 @@ export const handle: Handle = sequence(
 				transformPageChunk: ({ html }) => {
 					return html
 						.replace('%lang%', locale)
-						.replaceAll('%fontawesomeCdnUrl%', configPublic.PUBLIC_FONTAWESOME_CDN_URL);
+						.replaceAll('%fontawesome.baseUrl%', configPublic.PUBLIC_FONTAWESOME_CSS_BASE_URL);
 				}
 			});
 		})

@@ -4,7 +4,13 @@
 
 MUNify CHASE is a Software to managing Debates of Model United Nations Conferences with tools like speakers lists, digital voting and resolution editing. It is part of the MUNify Project, which aims to provide a comprehensive Software Suite for Model United Nations Conferences. MUNify is an Open Source Project by the german non-profit organization [Deutsche Model United Nations (DMUN) e.V.](https://dmun.de).
 
-**[⬇ Download the latest native client (macOS / Windows / Linux)](https://github.com/DeutscheModelUnitedNations/munify-chase/releases/latest)**
+<p align="center">
+  <a href="https://github.com/DeutscheModelUnitedNations/munify-chase/releases/latest">
+    <img src="https://img.shields.io/badge/⬇%20Download%20Native%20Client-macOS%20%7C%20Windows%20%7C%20Linux-blue?style=for-the-badge" alt="Download Native Client" />
+  </a>
+  <br/>
+  <sub>Opens the latest release page — scroll down to <strong>Assets</strong> to find the installer for your platform.</sub>
+</p>
 
 The project is still under development. If you are interested in using it, please contact us via the discussion section of this repository.
 

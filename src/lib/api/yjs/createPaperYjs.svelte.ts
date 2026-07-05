@@ -28,6 +28,7 @@ import type {
 	PresenceAdapter,
 	PresenceUser
 } from '@deutschemodelunitednations/munify-resolution-editor';
+import { configPublic } from '$config/public';
 
 export type YjsConnectionState = 'connecting' | 'connected' | 'disconnected' | 'error';
 
@@ -83,10 +84,11 @@ export function createPaperYjsClient(opts: CreateOptions): PaperYjsClient {
 	const idbPersistence = new IndexeddbPersistence(`chase-yjs-paper-${opts.paperId}`, doc);
 
 	// 2. Hocuspocus provider. The paper id is sent in-band as the document
-	// name, so the URL is just the endpoint. Build a ws:// or wss:// URL
-	// directly from window.location to avoid a mutable URL.
-	const wsProto = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-	const wsUrl = `${wsProto}//${window.location.host}/api/yjs`;
+	// name, so the URL is just the endpoint. Derive from PUBLIC_API_URL (same
+	// origin as the GraphQL endpoint) so the URL matches the CSP connect-src.
+	const wsUrl = configPublic.PUBLIC_API_URL.replace(/^https/, 'wss')
+		.replace(/^http/, 'ws')
+		.replace(/\/api\/graphql$/, '/api/yjs');
 
 	// Track whether the server has made a definitive ruling (forbidden,
 	// unauthorized, corrupt doc). In that case we must NOT reconnect.

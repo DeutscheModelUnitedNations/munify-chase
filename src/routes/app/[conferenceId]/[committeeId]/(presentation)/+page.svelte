@@ -24,6 +24,7 @@
 	import { browser } from '$app/environment';
 	import { client } from '$lib/api/rumbleClient/client';
 	import { page } from '$app/state';
+	import { toggleFullscreen } from '$lib/platform';
 
 	const committeeId = page.params.committeeId!;
 
@@ -191,6 +192,16 @@
 		};
 		window.addEventListener('message', handler);
 		return () => window.removeEventListener('message', handler);
+	});
+
+	$effect(() => {
+		const handler = (event: KeyboardEvent) => {
+			if (event.key !== 'F11') return;
+			event.preventDefault();
+			void toggleFullscreen();
+		};
+		window.addEventListener('keydown', handler);
+		return () => window.removeEventListener('keydown', handler);
 	});
 </script>
 

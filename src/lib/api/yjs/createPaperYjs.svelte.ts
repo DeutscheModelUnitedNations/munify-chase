@@ -70,6 +70,13 @@ interface CreateOptions {
 	user: PresenceUser;
 	/** Identity metadata to broadcast via awareness for presence display. */
 	meta?: PresenceUserMeta;
+	/**
+	 * Bearer access token to pass to the Hocuspocus server via the `auth`
+	 * in-band message. Required for native/Tauri clients that cannot send
+	 * session cookies cross-origin. Leave undefined for web clients (cookie
+	 * auth happens at the WebSocket upgrade level).
+	 */
+	token?: string;
 }
 
 export function createPaperYjsClient(opts: CreateOptions): PaperYjsClient {
@@ -118,6 +125,7 @@ export function createPaperYjsClient(opts: CreateOptions): PaperYjsClient {
 		document: doc,
 		awareness,
 		websocketProvider: socket,
+		...(opts.token ? { token: opts.token } : {}),
 		onSynced: ({ state }) => {
 			wsSynced = state;
 		},

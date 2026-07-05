@@ -104,6 +104,16 @@ createWs(
 		onConnect: async (ctx: Context<Record<string, string>, Extra>) => {
 			const req = ctx.extra.request as RequestWithLocals;
 			const ws = ctx.extra.socket as unknown as WSWebSocket;
+
+			// Native clients (Tauri) send the Bearer token in graphql-ws connectionParams
+			// rather than as an HTTP Authorization header on the WS upgrade request (which
+			// is what web clients do via cookies). Inject the token into the Node
+			// IncomingMessage headers before the OIDC handler runs so both auth paths work.
+			const bearerFromParams = ctx.connectionParams?.Authorization;
+			if (bearerFromParams && !req.headers.authorization) {
+				(req.headers as Record<string, string>).authorization = bearerFromParams;
+			}
+
 			const event = await authenticateWsRequest(req);
 			scheduleExpiration(
 				ws,

@@ -33,6 +33,7 @@ import {
 	isPaperEditor,
 	isTeamInConference
 } from '$api/services/authHelper';
+import { contextFromBearerToken } from '$api/wsAuth';
 
 const PERSIST_DEBOUNCE_MS = 1500;
 
@@ -46,9 +47,14 @@ const PERSIST_DEBOUNCE_MS = 1500;
  */
 const REAUTH_INTERVAL_MS = 30_000;
 
-/** Per-connection context passed into `handleConnection` from the upgrade handler. */
+/**
+ * Per-connection context passed into `handleConnection` from the upgrade handler.
+ * `ctx` is undefined when upgrade-time auth failed (native client with no session
+ * cookie); the `onAuthenticate` hook resolves it from the in-band Bearer token
+ * before `onConnect` runs.
+ */
 export interface YjsConnectionContext {
-	ctx: Context;
+	ctx: Context | undefined;
 }
 
 export class CorruptYjsStateError extends Error {
@@ -163,10 +169,37 @@ export const hocuspocus = new Hocuspocus<YjsConnectionContext>({
 			: [])
 	],
 
+	// Called when the client sends a Hocuspocus `auth` message carrying a token.
+	// This is the path for native/Tauri clients that cannot send session cookies
+	// cross-origin: they pass a Bearer access token via HocuspocusProvider.token,
+	// which arrives here. We verify it and populate context.ctx so that
+	// onConnect can run the normal per-paper authorization.
+	//
+	// For web-browser clients (cookie auth), the provider sends no token so this
+	// hook is never called — context.ctx is already set from upgrade-time auth.
+	onAuthenticate: async ({ token, context: connCtx }) => {
+		if (connCtx.ctx) {
+			// Upgrade-time auth already succeeded; nothing to do here.
+			return;
+		}
+		if (!token) {
+			throw { code: 4401, reason: 'unauthorized' };
+		}
+		const ctx = await contextFromBearerToken(token);
+		if (!ctx) {
+			throw { code: 4401, reason: 'unauthorized' };
+		}
+		connCtx.ctx = ctx;
+	},
+
 	// Runs once per document connection, before the doc is loaded. Throwing
 	// rejects the connection: the client receives a permission-denied message
 	// carrying the error's `reason` and stops retrying.
 	onConnect: async ({ documentName: paperId, context, connectionConfig }) => {
+		if (!context.ctx) {
+			// No upgrade-time auth and no in-band token (onAuthenticate was not called).
+			throw { code: 4401, reason: 'unauthorized' };
+		}
 		const auth = await authorize(paperId, context.ctx);
 		if (!auth.allowed) {
 			throw { code: 4403, reason: 'forbidden' };
@@ -183,7 +216,9 @@ export const hocuspocus = new Hocuspocus<YjsConnectionContext>({
 		context,
 		connection
 	}: connectedPayload<YjsConnectionContext>) => {
+		if (!context.ctx) return;
 		const reauthTimer = setInterval(async () => {
+			if (!context.ctx) return;
 			let next: AuthResult;
 			try {
 				next = await authorize(paperId, context.ctx);

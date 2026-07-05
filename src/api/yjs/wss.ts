@@ -2,10 +2,20 @@
  * Adapter between the app's `ws`-based WebSocket upgrade handling and the
  * Hocuspocus instance in `server.ts`.
  *
- * Authentication happens at upgrade time (see `src/api/websocket.ts`); the
- * resulting request `Context` is passed to Hocuspocus per connection, and
- * per-document authorization runs in the instance's `onConnect` hook. The
- * document name arrives in-band with every protocol message (Hocuspocus
+ * Authentication runs in two places:
+ *   1. Upgrade time (cookie / Authorization header) — `authenticateUpgradeRequest`
+ *      in wsAuth.ts builds a Context that is passed to `handleConnection`. This
+ *      covers web-browser clients that already have a session cookie.
+ *   2. Hocuspocus `onAuthenticate` hook — handles native/Tauri clients that
+ *      cannot send session cookies cross-origin and instead pass a Bearer token
+ *      via the Hocuspocus `auth` in-band message. The hook verifies the token
+ *      and sets `context.ctx` before `onConnect` runs.
+ *
+ * When upgrade-time auth fails (native client), the connection is NOT closed
+ * immediately — it is handed to Hocuspocus with `ctx: undefined` so that
+ * `onAuthenticate` gets a chance to validate the in-band token.
+ *
+ * The document name arrives in-band with every protocol message (Hocuspocus
  * multiplexing), so the URL path carries no room segment.
  */
 
@@ -64,14 +74,9 @@ export function openYjsRoom(
 		} catch (err) {
 			console.error('[yjs] authentication failed during ws upgrade', err);
 		}
-		if (!ctx) {
-			try {
-				ws.close(4401, 'Unauthorized');
-			} catch {
-				/* noop */
-			}
-			return;
-		}
+		// Do NOT close here when ctx is undefined: native/Tauri clients that
+		// cannot send session cookies will authenticate in-band via the
+		// Hocuspocus onAuthenticate hook using a Bearer token.
 		if (earlyClosed) return;
 
 		const clientConnection = hocuspocus.handleConnection(ws, buildRequest(req), { ctx });

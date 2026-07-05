@@ -7,65 +7,13 @@ import { useServer, type Extra } from 'graphql-ws/use/ws';
 import type { Context } from 'graphql-ws';
 import { createWs } from '$api/rumble';
 import type { IncomingMessage } from 'node:http';
-import type { RequestEvent } from '@sveltejs/kit';
-import { OIDC } from './services/OIDC';
-import { parse as parseCookies } from 'cookie';
 import dayjs from 'dayjs';
 import { openYjsRoom } from './yjs/wss';
 import { context } from './context';
+import { authenticateUpgradeRequest, type RequestWithLocals } from './wsAuth';
 
 const gqlWSS = new WebSocketServer({ noServer: true });
 const yjsWSS = new WebSocketServer({ noServer: true });
-
-/**
- * This is a bit hacky, but we need to create a synthetic RequestEvent to pass to the OIDC handler
- * so that it can populate the locals with the authenticated user.
- * Since this only ever runs on upgrade requests, we can get away with a lot of the properties being empty or no-ops.
- */
-function buildSyntheticEvent(req: IncomingMessage): RequestEvent {
-	// const host = req.headers.host ?? 'localhost';
-	// const proto = req.headers['x-forwarded-proto'] ?? 'https';
-	// TODO: align these with node adapter behavior
-	const host = 'localhost';
-	const proto = 'https';
-	const url = new URL(req.url ?? '/', `${proto}://${host}`);
-	const cookies = parseCookies(req.headers.cookie ?? '');
-	const locals = {} as RequestEvent['locals'];
-
-	const requestHeaders = new Headers();
-	for (const [key, value] of Object.entries(req.headers)) {
-		if (typeof value === 'string') {
-			requestHeaders.set(key, value);
-		} else if (Array.isArray(value)) {
-			requestHeaders.set(key, value.join(', '));
-		}
-	}
-
-	return {
-		url,
-		request: new Request(url.toString(), { headers: requestHeaders }),
-		locals,
-		cookies: {
-			get: (name: string) => cookies[name],
-			getAll: () => Object.entries(cookies).map(([name, value]) => ({ name, value, path: '/' })),
-			set: () => {},
-			delete: () => {},
-			serialize: () => ''
-		},
-		params: {},
-		route: { id: null },
-		platform: undefined,
-		fetch: globalThis.fetch,
-		setHeaders: () => {},
-		depends: () => {},
-		untrack: <T>(fn: () => T) => fn(),
-		isDataRequest: false,
-		isSubRequest: false
-	} as unknown as RequestEvent;
-}
-
-type LocalsBag = RequestEvent['locals'];
-type RequestWithLocals = IncomingMessage & { locals?: LocalsBag };
 
 function scheduleExpiration(ws: WSWebSocket, exp: number | undefined) {
 	const expirationTimestamp = exp ? dayjs.unix(exp) : dayjs().add(300, 'seconds');
@@ -78,24 +26,6 @@ function scheduleExpiration(ws: WSWebSocket, exp: number | undefined) {
 	ws.addEventListener('close', () => {
 		clearTimeout(timeout);
 	});
-}
-
-async function authenticateWsRequest(req: RequestWithLocals) {
-	// has this req already been authenticated by a previous handler in the upgrade chain? If so, skip redundant work.
-	if ((req.locals as App.Locals)?.oidc) return req.locals as App.Locals;
-
-	const syntheticEvent = buildSyntheticEvent(req);
-	try {
-		await OIDC.handle({
-			event: syntheticEvent,
-			// eslint-disable-next-line require-await
-			resolve: async () => new Response()
-		});
-	} catch {
-		return undefined;
-	}
-	req.locals = syntheticEvent.locals;
-	return syntheticEvent as RequestEvent;
 }
 
 createWs(
@@ -114,7 +44,7 @@ createWs(
 				(req.headers as Record<string, string>).authorization = bearerFromParams;
 			}
 
-			const event = await authenticateWsRequest(req);
+			const event = await authenticateUpgradeRequest(req);
 			scheduleExpiration(
 				ws,
 				(event as unknown as { locals?: { oidc?: { accessToken?: { exp?: number } } } } | undefined)
@@ -139,16 +69,17 @@ createWs(
 	} else if (url.pathname.startsWith('/api/yjs')) {
 		// The paper id travels in-band with every Hocuspocus protocol message,
 		// so the URL carries no room segment. Authorization per paper happens
-		// in the Hocuspocus onConnect hook.
+		// in the Hocuspocus onConnect hook. If upgrade-time auth fails (native
+		// client with no session cookie), the connection is not immediately closed
+		// — the Hocuspocus onAuthenticate hook handles Bearer token auth in-band.
 		yjsWSS.handleUpgrade(req, socket, head, (ws) => {
-			// openYjsRoom attaches its message buffer synchronously; authentication
-			// resolves inside it via this promise.
 			openYjsRoom(
 				ws,
 				req,
 				(async () => {
-					const event = await authenticateWsRequest(req);
-					return await context(event as unknown as RequestEvent);
+					const event = await authenticateUpgradeRequest(req);
+					if (!event) return undefined;
+					return context(event as unknown as import('@sveltejs/kit').RequestEvent);
 				})()
 			);
 		});

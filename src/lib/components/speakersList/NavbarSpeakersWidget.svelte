@@ -1,6 +1,5 @@
 <script lang="ts">
 	import dayjs from 'dayjs';
-	import { onMount } from 'svelte';
 	import { client } from '$lib/api/rumbleClient/client';
 	import Flag from '$lib/components/Flag.svelte';
 	import { m } from '$lib/paraglide/messages';
@@ -333,7 +332,7 @@
 				await stopSpeakersListTimer();
 				break;
 			case 'speech_stopped':
-				if (hasQuestioner) {
+				if ((commentList?.speakers.length ?? 0) > 0) {
 					await startCommentListTimer();
 				} else {
 					await advanceToNextSpeaker();
@@ -383,13 +382,14 @@
 		);
 	};
 
-	onMount(() => {
-		hotkeys('shift+space', (event) => {
-			if (!hasSpeaker) return;
+	$effect(() => {
+		const handler = (event: KeyboardEvent) => {
 			event.preventDefault();
+			if (!hasSpeaker) return;
 			handleButton();
-		});
-		return () => hotkeys.unbind('shift+space');
+		};
+		hotkeys('shift+space', handler);
+		return () => hotkeys.unbind('shift+space', handler);
 	});
 </script>
 

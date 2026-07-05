@@ -222,6 +222,13 @@
 		return () => hotkeys.unbind('alt+1, alt+2, alt+3, alt+4, alt+5');
 	});
 
+	let speakersList = $derived(
+		committee?.activeAgendaItem?.speakersList.find((item) => item.type === 'SPEAKERS_LIST')
+	);
+	let commentList = $derived(
+		committee?.activeAgendaItem?.speakersList.find((item) => item.type === 'COMMENT_LIST')
+	);
+
 	let committeeStatusExpiredAlerted = $state(false);
 	let speakersListOvertimeAlerted = $state(false);
 	let commentListOvertimeAlerted = $state(false);
@@ -295,12 +302,7 @@
 	<title>{committee?.abbreviation ?? 'N/A'} {m.chairControls()} - MUNify CHASE</title>
 </svelte:head>
 
-<ChairNavbar
-	title={committee?.abbreviation}
-	conferenceTitle={committee?.conference?.title}
-	speakersList={committee?.activeAgendaItem?.speakersList.find((l) => l.type === 'SPEAKERS_LIST')}
-	commentList={committee?.activeAgendaItem?.speakersList.find((l) => l.type === 'COMMENT_LIST')}
-/>
+<ChairNavbar title={committee?.abbreviation} conferenceTitle={committee?.conference?.title} {speakersList} {commentList} />
 
 <div class="pb-16">
 	{@render children()}

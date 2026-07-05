@@ -14,6 +14,7 @@
 		englishOperativePhrases
 	} from '@deutschemodelunitednations/munify-resolution-editor/phrases';
 	import { createPaperYjsClient, type PaperYjsClient } from '$lib/api/yjs/createPaperYjs.svelte';
+	import { getCachedAccessToken } from '$lib/platform/oidc';
 	import { toAmendmentOverlays } from './paperContext';
 	import { svgToDataUrl } from '$lib/utils/svgToDataUrl';
 	import { getTranslatedCountryNameFromAlpha3Code } from '$lib/utils/nationTranslationHelper.svelte';
@@ -63,7 +64,8 @@
 	$effect(() => {
 		const created = createPaperYjsClient({
 			paperId,
-			user: { id: 'presentation', name: 'Presentation', color: undefined }
+			user: { id: 'presentation', name: 'Presentation', color: undefined },
+			token: getCachedAccessToken() ?? undefined
 		});
 		yClient = created;
 		return () => void created.destroy();

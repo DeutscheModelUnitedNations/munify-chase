@@ -5,6 +5,7 @@
 	import { client } from '$lib/api/rumbleClient/client';
 	import { urqlClient } from '$lib/api/client';
 	import { getCurrentUser } from '$lib/state/currentUser.svelte';
+	import { getCachedAccessToken } from '$lib/platform/oidc';
 	import { onDestroy, tick, untrack } from 'svelte';
 	import { fly } from 'svelte/transition';
 	import toast from 'svelte-french-toast';
@@ -431,7 +432,12 @@
 				alpha2Code: conferenceUsers?.[0]?.committeeMember?.representation?.alpha2Code ?? null,
 				alpha3Code: conferenceUsers?.[0]?.committeeMember?.representation?.alpha3Code ?? null
 			};
-			return createPaperYjsClient({ paperId: pid, user: presenceUser, meta: presenceMeta });
+			return createPaperYjsClient({
+				paperId: pid,
+				user: presenceUser,
+				meta: presenceMeta,
+				token: getCachedAccessToken() ?? undefined
+			});
 		});
 		yClient = created;
 		return () => void created.destroy();

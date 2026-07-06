@@ -93,6 +93,18 @@ async function authorize(paperId: string, ctx: Context): Promise<AuthResult> {
 	return { allowed: true, canWrite: false };
 }
 
+async function authorizeConnection(
+	paperId: string,
+	ctx: Context,
+	connectionConfig: { readOnly: boolean }
+) {
+	const auth = await authorize(paperId, ctx);
+	if (!auth.allowed) {
+		throw { code: 4403, reason: 'forbidden' };
+	}
+	connectionConfig.readOnly = !auth.canWrite;
+}
+
 export const hocuspocus = new Hocuspocus<YjsConnectionContext>({
 	debounce: PERSIST_DEBOUNCE_MS,
 
@@ -147,8 +159,19 @@ export const hocuspocus = new Hocuspocus<YjsConnectionContext>({
 
 	// In-band token auth for native/Tauri clients that cannot send session
 	// cookies. Web clients auth at upgrade time, so context.ctx is already set.
-	onAuthenticate: async ({ token, context: connCtx }) => {
-		if (connCtx.ctx) {
+	// Hocuspocus runs onConnect BEFORE onAuthenticate (both fire on the client's
+	// auth message). Cookie-authenticated connections already have a ctx from the
+	// upgrade and are authorized here; connections without one pass through so
+	// onAuthenticate can resolve the in-band token — it then authorizes itself.
+	onConnect: async ({ documentName: paperId, context, connectionConfig }) => {
+		if (!context.ctx) {
+			return;
+		}
+		await authorizeConnection(paperId, context.ctx, connectionConfig);
+	},
+
+	onAuthenticate: async ({ token, context, connectionConfig, documentName: paperId }) => {
+		if (context.ctx) {
 			return;
 		}
 		if (!token) {
@@ -158,19 +181,8 @@ export const hocuspocus = new Hocuspocus<YjsConnectionContext>({
 		if (!ctx) {
 			throw { code: 4401, reason: 'unauthorized' };
 		}
-		connCtx.ctx = ctx;
-	},
-
-	// Runs once per document connection; throwing rejects the connection.
-	onConnect: async ({ documentName: paperId, context, connectionConfig }) => {
-		if (!context.ctx) {
-			throw { code: 4401, reason: 'unauthorized' };
-		}
-		const auth = await authorize(paperId, context.ctx);
-		if (!auth.allowed) {
-			throw { code: 4403, reason: 'forbidden' };
-		}
-		connectionConfig.readOnly = !auth.canWrite;
+		context.ctx = ctx;
+		await authorizeConnection(paperId, ctx, connectionConfig);
 	},
 
 	// Periodically re-evaluate permissions so a paper transitioning out of

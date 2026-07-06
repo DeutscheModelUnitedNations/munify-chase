@@ -46,7 +46,7 @@
 		const current = createPaperYjsClient({
 			paperId,
 			user,
-			token: getCachedAccessToken() ?? undefined
+			token: () => getCachedAccessToken()
 		});
 		client = current;
 		return () => {

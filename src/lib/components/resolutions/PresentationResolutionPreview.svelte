@@ -65,7 +65,7 @@
 		const created = createPaperYjsClient({
 			paperId,
 			user: { id: 'presentation', name: 'Presentation', color: undefined },
-			token: getCachedAccessToken() ?? undefined
+			token: () => getCachedAccessToken()
 		});
 		yClient = created;
 		return () => void created.destroy();

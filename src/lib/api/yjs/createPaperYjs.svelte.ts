@@ -72,11 +72,10 @@ interface CreateOptions {
 	meta?: PresenceUserMeta;
 	/**
 	 * Bearer access token to pass to the Hocuspocus server via the `auth`
-	 * in-band message. Required for native/Tauri clients that cannot send
-	 * session cookies cross-origin. Leave undefined for web clients (cookie
-	 * auth happens at the WebSocket upgrade level).
+	 * in-band message. Pass a function so the freshest token is read on every
+	 * (re)connect instead of a value captured once at creation time.
 	 */
-	token?: string;
+	token?: string | (() => string | null | undefined);
 }
 
 export function createPaperYjsClient(opts: CreateOptions): PaperYjsClient {
@@ -125,7 +124,19 @@ export function createPaperYjsClient(opts: CreateOptions): PaperYjsClient {
 		document: doc,
 		awareness,
 		websocketProvider: socket,
-		...(opts.token ? { token: opts.token } : {}),
+		...(opts.token
+			? {
+					token: () => {
+						const token = typeof opts.token === 'function' ? opts.token() : opts.token;
+						if (!token) {
+							console.warn('[yjs] no access token available for paper connection', {
+								paperId: opts.paperId
+							});
+						}
+						return token ?? '';
+					}
+				}
+			: {}),
 		onSynced: ({ state }) => {
 			wsSynced = state;
 		},

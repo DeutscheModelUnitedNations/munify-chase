@@ -436,7 +436,7 @@
 				paperId: pid,
 				user: presenceUser,
 				meta: presenceMeta,
-				token: getCachedAccessToken() ?? undefined
+				token: () => getCachedAccessToken()
 			});
 		});
 		yClient = created;

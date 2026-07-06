@@ -93,7 +93,7 @@ export function createPaperYjsClient(opts: CreateOptions): PaperYjsClient {
 	// name, so the URL is just the endpoint. Build a ws:// or wss:// URL
 	// directly from window.location to avoid a mutable URL.
 	const wsProto = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-	const wsUrl = `${wsProto}//${window.location.host}/api/yjs`;
+	const wsUrl = `${wsProto}//${window.location.host}/api/docs`;
 
 	// Track whether the server has made a definitive ruling (forbidden,
 	// unauthorized, corrupt doc). In that case we must NOT reconnect.

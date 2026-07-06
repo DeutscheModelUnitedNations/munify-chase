@@ -1,23 +1,9 @@
 /**
  * Server-side yjs backend for resolution papers, built on Hocuspocus.
- *
- * Hocuspocus owns the per-paper Y.Doc lifecycle: loading, debounced
- * persistence, unloading, and fanning updates out to connected clients.
- * The `Database` extension persists the doc binary to `paper_yjs_doc.state`
- * via Drizzle; when `REDIS_URL` is set, the `Redis` extension syncs doc
- * updates and awareness across Node instances.
- *
- * Authorization runs in the `onConnect` hook against the same authHelper
- * filters the Rumble ability rules use, so the rules here cannot drift out
- * of sync with the GraphQL surface (§3.2 of the resolution feature plan):
- *   - Team (chair/admin) or global admin: always allowed to write.
- *   - paperEditor: write while WORKING_PAPER, read after.
- *   - Anyone else in the conference: read-only.
- *
- * Corrupt-state policy: if `paper_yjs_doc.state` fails to decode we throw
- * (no silent rehydration). The client receives an authentication-failed
- * message with reason `document-corrupt` and shows a recovery prompt.
- * Manual recovery via the most recent snapshot is the intended fallback.
+ * Docs persist to `paper_yjs_doc.state`; with `REDIS_URL` set, updates sync
+ * across Node instances. Authorization in `onConnect` reuses the authHelper
+ * filters the Rumble ability rules use: team/global admin write, paperEditor
+ * writes while WORKING_PAPER, other conference members read-only.
  */
 
 import { Hocuspocus, type Document, type connectedPayload } from '@hocuspocus/server';
@@ -33,26 +19,16 @@ import {
 	isPaperEditor,
 	isTeamInConference
 } from '$api/services/authHelper';
-import { contextFromBearerToken } from '$api/wsAuth';
+import { authenticateToken } from '$api/services/auth';
 
 const PERSIST_DEBOUNCE_MS = 1500;
 
-/**
- * How often each open yjs session re-runs its permission check. Catches
- * paper-status changes (WORKING_PAPER → SUBMITTED → FINAL → …), paperEditor
- * row removal, and the paper being soft-deleted while a client is still
- * connected. Pubsub-driven invalidation would be lower-latency but adds a
- * subscription per room; the periodic tick is a deliberate trade against
- * that complexity. Adjust here if/when this becomes a concern.
- */
+// How often each open session re-runs its permission check, so status changes
+// and revocations take effect without a reconnect.
 const REAUTH_INTERVAL_MS = 30_000;
 
-/**
- * Per-connection context passed into `handleConnection` from the upgrade handler.
- * `ctx` is undefined when upgrade-time auth failed (native client with no session
- * cookie); the `onAuthenticate` hook resolves it from the in-band Bearer token
- * before `onConnect` runs.
- */
+// `ctx` is undefined when upgrade-time auth failed (native client without a
+// session cookie); onAuthenticate resolves it from the in-band Bearer token.
 export interface YjsConnectionContext {
 	ctx: Context | undefined;
 }
@@ -169,35 +145,25 @@ export const hocuspocus = new Hocuspocus<YjsConnectionContext>({
 			: [])
 	],
 
-	// Called when the client sends a Hocuspocus `auth` message carrying a token.
-	// This is the path for native/Tauri clients that cannot send session cookies
-	// cross-origin: they pass a Bearer access token via HocuspocusProvider.token,
-	// which arrives here. We verify it and populate context.ctx so that
-	// onConnect can run the normal per-paper authorization.
-	//
-	// For web-browser clients (cookie auth), the provider sends no token so this
-	// hook is never called — context.ctx is already set from upgrade-time auth.
+	// In-band token auth for native/Tauri clients that cannot send session
+	// cookies. Web clients auth at upgrade time, so context.ctx is already set.
 	onAuthenticate: async ({ token, context: connCtx }) => {
 		if (connCtx.ctx) {
-			// Upgrade-time auth already succeeded; nothing to do here.
 			return;
 		}
 		if (!token) {
 			throw { code: 4401, reason: 'unauthorized' };
 		}
-		const ctx = await contextFromBearerToken(token);
+		const ctx = await authenticateToken(token);
 		if (!ctx) {
 			throw { code: 4401, reason: 'unauthorized' };
 		}
 		connCtx.ctx = ctx;
 	},
 
-	// Runs once per document connection, before the doc is loaded. Throwing
-	// rejects the connection: the client receives a permission-denied message
-	// carrying the error's `reason` and stops retrying.
+	// Runs once per document connection; throwing rejects the connection.
 	onConnect: async ({ documentName: paperId, context, connectionConfig }) => {
 		if (!context.ctx) {
-			// No upgrade-time auth and no in-band token (onAuthenticate was not called).
 			throw { code: 4401, reason: 'unauthorized' };
 		}
 		const auth = await authorize(paperId, context.ctx);
@@ -217,6 +183,25 @@ export const hocuspocus = new Hocuspocus<YjsConnectionContext>({
 		connection
 	}: connectedPayload<YjsConnectionContext>) => {
 		if (!context.ctx) return;
+
+		// Close the session when the OIDC access token expires. 4408 is not a
+		// terminal code on the client, so browser clients reconnect with their
+		// refreshed session; native clients must re-authenticate.
+		const exp = (context.ctx.oidc?.accessToken as { exp?: number } | undefined)?.exp;
+		if (exp) {
+			const expiryTimer = setTimeout(
+				() => {
+					try {
+						connection.webSocket.close(4408, 'Token expired');
+					} catch {
+						/* noop */
+					}
+				},
+				Math.max(0, exp * 1000 - Date.now())
+			);
+			connection.onClose(() => clearTimeout(expiryTimer));
+		}
+
 		const reauthTimer = setInterval(async () => {
 			if (!context.ctx) return;
 			let next: AuthResult;

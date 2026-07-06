@@ -3,7 +3,7 @@
  *
  * Wires a Y.Doc to:
  *   - IndexedDB persistence — local-first, edits survive offline
- *   - Hocuspocus WebSocket sync to /api/yjs — real-time co-editing
+ *   - Hocuspocus WebSocket sync to /api/docs — real-time co-editing
  *   - Awareness (y-protocols) — remote cursors / focus
  *
  * Exposes a Svelte 5 reactive `connectionState` and `synced` flag for the

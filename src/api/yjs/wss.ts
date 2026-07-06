@@ -1,22 +1,8 @@
 /**
- * Adapter between the app's `ws`-based WebSocket upgrade handling and the
- * Hocuspocus instance in `server.ts`.
- *
- * Authentication runs in two places:
- *   1. Upgrade time (cookie / Authorization header) — `authenticateUpgradeRequest`
- *      in wsAuth.ts builds a Context that is passed to `handleConnection`. This
- *      covers web-browser clients that already have a session cookie.
- *   2. Hocuspocus `onAuthenticate` hook — handles native/Tauri clients that
- *      cannot send session cookies cross-origin and instead pass a Bearer token
- *      via the Hocuspocus `auth` in-band message. The hook verifies the token
- *      and sets `context.ctx` before `onConnect` runs.
- *
- * When upgrade-time auth fails (native client), the connection is NOT closed
- * immediately — it is handed to Hocuspocus with `ctx: undefined` so that
- * `onAuthenticate` gets a chance to validate the in-band token.
- *
- * The document name arrives in-band with every protocol message (Hocuspocus
- * multiplexing), so the URL path carries no room segment.
+ * Adapter between the app's `ws`-based upgrade handling and the Hocuspocus
+ * instance in `server.ts`. Auth runs at upgrade time (cookie / Authorization
+ * header) or, for native clients, via the in-band token in the Hocuspocus
+ * onAuthenticate hook — so a failed upgrade auth does NOT close the socket.
  */
 
 import type { IncomingMessage } from 'node:http';
@@ -39,15 +25,9 @@ function buildRequest(req: IncomingMessage): Request {
 }
 
 /**
- * Hand a WebSocket over to Hocuspocus once `ctxPromise` resolves. Hocuspocus
- * takes care of sync, awareness, read-only enforcement, persistence, and
- * multi-instance fanout from here on.
- *
- * Must be called synchronously from the upgrade callback: the client sends
- * its auth + sync-step-1 frames immediately on open, and `ws` does NOT queue
- * 'message' events received before a listener exists. We attach a buffering
- * listener right away and replay the buffer once authentication (which is
- * what `ctxPromise` awaits) has finished.
+ * Hand a WebSocket over to Hocuspocus once `ctxPromise` resolves. Must be
+ * called synchronously from the upgrade callback: `ws` does not queue
+ * 'message' events, so early frames are buffered and replayed after auth.
  */
 export function openYjsRoom(
 	ws: WebSocket,
@@ -79,6 +59,9 @@ export function openYjsRoom(
 		// Hocuspocus onAuthenticate hook using a Bearer token.
 		if (earlyClosed) return;
 
+		// Unauthenticated connections need no extra deadline here: Hocuspocus
+		// terminates any connection that has not authenticated within its
+		// `timeout` (60s default).
 		const clientConnection = hocuspocus.handleConnection(ws, buildRequest(req), { ctx });
 
 		const toUint8 = (data: Buffer) => new Uint8Array(data.buffer, data.byteOffset, data.byteLength);

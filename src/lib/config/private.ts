@@ -17,6 +17,12 @@ const schema = z.object({
 	ADMIN_EMAIL_WHITELIST: z.string().optional().default(''),
 	ADMIN_DOMAIN_WHITELIST: z.string().optional().default(''),
 	REDIS_URL: z.string().optional(),
+	// same semantics as the node adapter: forwarded headers are only trusted
+	// when explicitly configured
+	ORIGIN: z.string().optional(),
+	PROTOCOL_HEADER: z.string().optional(),
+	HOST_HEADER: z.string().optional(),
+	PORT_HEADER: z.string().optional(),
 	AI_PROVIDERS: z
 		.preprocess(
 			(val) => (typeof val === 'string' ? JSON.parse(val) : val),

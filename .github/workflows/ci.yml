@@ -310,6 +310,9 @@ jobs:
               exit 0
             fi
             echo "Attempt $attempt/30: native-client does not yet contain $GITHUB_SHA, retrying in 30s…"
+            if [ "$attempt" -eq 10 ]; then
+              echo "::warning::Still waiting after 10 attempts. If the commit is not picked up soon, check the open PRs — the Sync Native Client workflow may have created a PR to resolve a merge conflict that needs manual approval."
+            fi
             sleep 30
             git fetch origin native-client --quiet
             git reset --hard origin/native-client --quiet

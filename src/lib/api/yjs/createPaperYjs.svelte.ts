@@ -3,7 +3,7 @@
  *
  * Wires a Y.Doc to:
  *   - IndexedDB persistence — local-first, edits survive offline
- *   - Hocuspocus WebSocket sync to /api/yjs — real-time co-editing
+ *   - Hocuspocus WebSocket sync to /api/docs — real-time co-editing
  *   - Awareness (y-protocols) — remote cursors / focus
  *
  * Exposes a Svelte 5 reactive `connectionState` and `synced` flag for the
@@ -95,7 +95,7 @@ export function createPaperYjsClient(opts: CreateOptions): PaperYjsClient {
 	// origin as the GraphQL endpoint) so the URL matches the CSP connect-src.
 	const wsUrl = configPublic.PUBLIC_API_URL.replace(/^https/, 'wss')
 		.replace(/^http/, 'ws')
-		.replace(/\/api\/graphql$/, '/api/yjs');
+		.replace(/\/api\/graphql$/, '/api/docs');
 
 	// Track whether the server has made a definitive ruling (forbidden,
 	// unauthorized, corrupt doc). In that case we must NOT reconnect.

@@ -26,9 +26,9 @@ MUNify CHASE is a software for managing debates of Model United Nations conferen
 
 Full documentation — setup guides, self-hosting, user manual, and FAQs — lives at **[munify.cloud](https://munify.cloud)**.
 
-- [Self-hosting guide](https://munify.cloud/docs/chase/selfhost/getting-started)
-- [FAQ](https://munify.cloud/docs/chase/faq)
-- [User manual](https://munify.cloud/docs/chase/user-manual)
+- [Self-hosting guide](https://munify.cloud/chase/selfhost/getting-started)
+- [FAQ](https://munify.cloud/chase/faq)
+- [User manual](https://munify.cloud/chase/user-manual/introduction)
 
 ## Dependencies
 

@@ -2,6 +2,7 @@ import { paraglideVitePlugin } from '@inlang/paraglide-js';
 import tailwindcss from '@tailwindcss/vite';
 import { sveltekit } from '@sveltejs/kit/vite';
 import { defineConfig } from 'vite';
+import { vendorCdnPlugin } from './src/vite-plugin-vendor-cdn';
 
 const host = process.env.TAURI_DEV_HOST;
 
@@ -9,6 +10,7 @@ export default defineConfig({
 	// prevent Vite from obscuring rust errors
 	clearScreen: false,
 	plugins: [
+		vendorCdnPlugin(),
 		tailwindcss(),
 		paraglideVitePlugin({
 			project: './project.inlang',

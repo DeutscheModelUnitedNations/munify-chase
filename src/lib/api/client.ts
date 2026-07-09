@@ -230,8 +230,34 @@ if (browser) {
 	let everConnected = false;
 	let pendingErrorTimer: ReturnType<typeof setTimeout> | null = null;
 
+	// Unix expiry (seconds) of the session's access token, as last reported by
+	// /api/keepalive. null means unknown — e.g. before the first connect.
+	let tokenExp: number | null = null;
+
 	const wsClient = createWSClient({
-		url: '/api/graphql',
+		// The upgrade request authenticates via the session cookie and cannot
+		// refresh it (the auth runs after the 101 handshake, so there is no
+		// response to carry a Set-Cookie). In steady state all traffic rides
+		// the socket, so no other request triggers the OIDC handle hook's
+		// token refresh either. So before a (re)connect attempt whose token
+		// is expired or about to (or of unknown age), fire one plain HTTP
+		// request through the hook to freshen the cookie. When the token is
+		// known to still be valid (e.g. reconnecting after a network blip)
+		// this adds no round trip. On failure connect anyway — the retry
+		// loop handles an unreachable server.
+		url: async () => {
+			if (tokenExp === null || tokenExp * 1000 - Date.now() < 60_000) {
+				try {
+					const res = await fetch('/api/keepalive');
+					const body: { exp: number | null } = await res.json();
+					tokenExp = body.exp;
+				} catch {
+					// offline or server down; the connection attempt below
+					// will fail too and graphql-ws will retry
+				}
+			}
+			return '/api/graphql';
+		},
 		shouldRetry: () => true,
 		on: {
 			connected: () => {

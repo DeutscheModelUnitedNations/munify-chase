@@ -1,0 +1,16 @@
+pkgbase = munify-chase-bin
+	pkgdesc = Conference management for Model United Nations debates (native client)
+	pkgver = 3.0.15
+	pkgrel = 1
+	url = https://github.com/DeutscheModelUnitedNations/munify-chase
+	arch = x86_64
+	license = AGPL-3.0-or-later
+	depends = webkit2gtk-4.1
+	depends = gtk3
+	provides = munify-chase
+	conflicts = munify-chase
+	options = !strip
+	source = https://github.com/DeutscheModelUnitedNations/munify-chase/releases/download/v3.0.15/munify-chase_3.0.15_amd64.deb
+	sha256sums = a1f0641f688eebb5e27bf1b0a6c203a6206f3d7d5cd16161598fcd0d8ad215ef
+
+pkgname = munify-chase-bin

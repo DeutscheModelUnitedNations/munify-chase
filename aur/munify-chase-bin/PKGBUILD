@@ -1,0 +1,19 @@
+# Maintainer: Deutsche Model United Nations (DMUN) e.V. <tech@dmun.de>
+pkgname=munify-chase-bin
+pkgver=3.0.15
+pkgrel=1
+pkgdesc="Conference management for Model United Nations debates (native client)"
+arch=('x86_64')
+url="https://github.com/DeutscheModelUnitedNations/munify-chase"
+license=('AGPL-3.0-or-later')
+depends=('webkit2gtk-4.1' 'gtk3')
+provides=('munify-chase')
+conflicts=('munify-chase')
+options=('!strip')
+source=("https://github.com/DeutscheModelUnitedNations/munify-chase/releases/download/v${pkgver}/munify-chase_${pkgver}_amd64.deb")
+sha256sums=('a1f0641f688eebb5e27bf1b0a6c203a6206f3d7d5cd16161598fcd0d8ad215ef')
+
+package() {
+	bsdtar -xf "munify-chase_${pkgver}_amd64.deb" -C "${srcdir}"
+	bsdtar -xf "${srcdir}/data.tar.gz" -C "${pkgdir}"
+}

@@ -243,6 +243,12 @@ const addressNations = [
 	{ iso_code: 'ZWE' }
 ];
 
+// world-countries ships some outdated German common names. Override them here so
+// the UI uses the current names (e.g. Eswatini instead of the former "Swasiland").
+const germanCommonNameOverrides: Record<string, string> = {
+	SWZ: 'Eswatini'
+};
+
 //TODO this could probably be part of the localization engine
 function nationCodeToLocalName(code: string, locale = getLocale(), official = false) {
 	const getTranslationCode = (locale: string) => {
@@ -281,6 +287,14 @@ function nationCodeToLocalName(code: string, locale = getLocale(), official = fa
 	if (official) {
 		return translation.official;
 	}
+
+	if (locale === 'de') {
+		const override = germanCommonNameOverrides[nation.cca3];
+		if (override) {
+			return override;
+		}
+	}
+
 	return translation.common;
 }
 

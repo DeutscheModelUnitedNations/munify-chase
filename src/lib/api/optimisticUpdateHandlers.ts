@@ -1633,7 +1633,98 @@ export const optimistic: OptimisticMutationConfig = {
 			createdAt: new Date(),
 			updatedAt: null
 		};
-	}
+	},
+
+	// -------------------------------------------------------------------------
+	// paperShareCode.ts / paperSponsor.ts / amendmentSponsor.ts /
+	// amendmentReviewItem.ts / paperContentSnapshot.ts
+	//
+	// `updates` below already has full addToList/removeFromList/writeFragment logic
+	// for most of these mutations (someone wired the sync half already) — it was
+	// just never reachable because these mutations had no `optimistic` entry, so
+	// graphcache never marked `context.optimistic`, so a network failure surfaced
+	// as a hard error instead of being queued for retry on reconnect (see
+	// client.ts). Returning `{ __typename, id, ...knownFields }` here for the
+	// entity-returning mutations (mirroring exactly what each resolve() in the
+	// matching handlers/*.ts writes) both fixes that gate AND — since `updates`
+	// keys off `result.<mutationName>.id` — makes the entity appear in its list
+	// immediately, same as the mutations that already had both halves wired.
+	//
+	// The four Boolean-returning mutations (redeemPaperShareCode,
+	// removePaperSponsor, removeAmendmentSponsor, updateAmendmentReviewItem) have
+	// no entity to attach fields to via this return value; their `updates`
+	// handlers (removePaperSponsor/removeAmendmentSponsor) work off `args.id`
+	// alone, and updateAmendmentReviewItem's writes fields straight from `args`
+	// via `cache.writeFragment` — so `() => true` is all `optimistic` needs to
+	// supply, matching the existing `completeRollCallSession`/`completeVotingSession`
+	// precedent above.
+	//
+	// `importDelegatorConference` (import.ts) is deliberately NOT given a stub
+	// despite `updates` already handling it defensively: it's an admin-only,
+	// non-idempotent bulk conference import, not something that should silently
+	// auto-retry unattended after a network drop.
+	// -------------------------------------------------------------------------
+	createPaperShareCode: (args) => {
+		const id = ensureId(args.id);
+		return {
+			__typename: 'Papersharecode',
+			id,
+			paperId: args.paperId as string,
+			paper: { __typename: 'Resolutionpaper', id: args.paperId as string },
+			code: '',
+			permission: args.permission,
+			createdAt: new Date(),
+			updatedAt: null
+		};
+	},
+	redeemPaperShareCode: () => true,
+	addPaperSponsor: (args) => {
+		const id = ensureId(args.id);
+		return {
+			__typename: 'Papersponsor',
+			id,
+			paperId: args.paperId as string,
+			paper: { __typename: 'Resolutionpaper', id: args.paperId as string },
+			committeeMemberId: (args.committeeMemberId as string | null) ?? null,
+			createdAt: new Date()
+		};
+	},
+	removePaperSponsor: () => true,
+	addAmendmentSponsor: (args) => {
+		const id = ensureId(args.id);
+		return {
+			__typename: 'Amendmentsponsor',
+			id,
+			amendmentId: args.amendmentId as string,
+			amendment: { __typename: 'Amendment', id: args.amendmentId as string },
+			committeeMemberId: (args.committeeMemberId as string | null) ?? null,
+			createdAt: new Date()
+		};
+	},
+	removeAmendmentSponsor: () => true,
+	updateAmendmentReviewItem: () => true,
+	createManualSnapshot: (args) => {
+		const id = ensureId(args.id);
+		return {
+			__typename: 'Papercontentsnapshot',
+			id,
+			paperId: args.paperId as string,
+			paper: { __typename: 'Resolutionpaper', id: args.paperId as string },
+			content: '',
+			trigger: 'MANUAL',
+			createdAt: new Date(),
+			updatedAt: null
+		};
+	},
+	// Backend returns the pre-existing, unmodified snapshot being restored FROM
+	// (not the new backup snapshot it creates as a side effect) — its content/
+	// trigger are real, already-cached, immutable data, so touch only `id`
+	// (enough to gate the offline queue) and never overwrite those fields with
+	// a guessed placeholder.
+	restorePaperFromSnapshot: (args) => ({
+		__typename: 'Papercontentsnapshot',
+		id: args.snapshotId
+	})
 };
 
 // ---------------------------------------------------------------------------

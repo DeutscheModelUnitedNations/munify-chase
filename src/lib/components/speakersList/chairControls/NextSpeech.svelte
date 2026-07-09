@@ -50,7 +50,9 @@
 								__args: {
 									id: speakersList.id,
 									timeLeft: speakersList.speakingTime,
-									stopTimer: true
+									stopTimer: true,
+									// Moving to a new speaker resets the phase for the next speech
+									phase: 'SPEECH'
 								},
 								id: true,
 								timeLeft: true,
@@ -86,7 +88,13 @@
 						speakers: { id: true, position: true }
 					}),
 					client.mutate.updateSpeakersList({
-						__args: { id: speakersList.id, timeLeft: speakersList.speakingTime, stopTimer: true },
+						__args: {
+							id: speakersList.id,
+							timeLeft: speakersList.speakingTime,
+							stopTimer: true,
+							// Advancing to a new main-list speaker resets the phase for the next speech
+							...(type === 'SPEAKERS_LIST' ? { phase: 'SPEECH' } : {})
+						},
 						id: true,
 						timeLeft: true,
 						startTimestamp: true,

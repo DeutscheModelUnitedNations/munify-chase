@@ -74,41 +74,41 @@
 		? getCommitteeStatusBackground(committeeStatus)
 		: ''} {fullHeight ? 'h-full' : ''}"
 >
-	<div class="flex h-full w-full flex-1 flex-row items-center gap-4 overflow-hidden py-2">
+	<div class="flex h-full w-full min-w-0 flex-1 flex-row items-center gap-4 overflow-hidden py-2">
 		{#if iconText}
 			<div class="flex-none text-center text-4xl font-bold">{iconText}</div>
 		{:else if faIcon}
 			<i class="fas fa-{faIcon.replace('fa-', '')} w-6 flex-none text-center"></i>
 		{/if}
 
-		{#if !isOverflowing || !marqueeOnOverflow || until}
-			<div class="flex w-full flex-1 flex-col overflow-hidden">
-				<h3 bind:this={textElement} class="w-full text-nowrap">
+		<div class="flex w-full min-w-0 flex-1 flex-col overflow-hidden">
+			{#if !isOverflowing || !marqueeOnOverflow}
+				<h3 bind:this={textElement} class="w-full min-w-0 truncate">
 					{text}
 				</h3>
-				{#if until}
-					<p class="text-sm">
-						{m.until({
-							time:
-								until?.toLocaleTimeString(getLocale(), {
-									hour: '2-digit',
-									minute: '2-digit'
-								}) ?? m.unknown()
-						})}
-					</p>
-				{/if}
-			</div>
-		{:else}
-			<Marquee
-				speed={30}
-				class="w-full flex-1"
-				gap="1rem"
-				style="mask-image: linear-gradient(to right, transparent, black 10%, black 90%, transparent);"
-			>
-				<p class="text-nowrap">{text}</p>
-				<p>+++</p>
-			</Marquee>
-		{/if}
+			{:else}
+				<Marquee
+					speed={30}
+					class="w-full min-w-0 flex-1"
+					gap="1rem"
+					style="mask-image: linear-gradient(to right, transparent, black 10%, black 90%, transparent);"
+				>
+					<p class="text-nowrap">{text}</p>
+					<p>+++</p>
+				</Marquee>
+			{/if}
+			{#if until}
+				<p class="text-sm">
+					{m.until({
+						time:
+							until?.toLocaleTimeString(getLocale(), {
+								hour: '2-digit',
+								minute: '2-digit'
+							}) ?? m.unknown()
+					})}
+				</p>
+			{/if}
+		</div>
 
 		{#if until && countdownDelta && !hideCountdown}
 			{#if countdownDeltaInFuture()}

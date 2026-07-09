@@ -9,7 +9,7 @@
 // banner from flickering during brief reconnects (e.g. server restart,
 // token refresh, OS network change in the native desktop client).
 
-const DISCONNECT_GRACE_MS = 2000;
+export const DISCONNECT_GRACE_MS = 2000;
 
 let wsConnected = $state<boolean | null>(null);
 let prevConnected: boolean | null = null;
@@ -42,4 +42,25 @@ export function getWsConnected(): boolean | null {
 /** True only when the state flipped from a confirmed false → true (not from null → true). */
 export function justReconnected(): boolean {
 	return prevConnected === false && wsConnected === true;
+}
+
+/**
+ * Holds the last non-null/undefined value of a live-query-derived getter while the
+ * WS is confirmed disconnected, instead of collapsing to null/undefined. A brief
+ * blip (still within DISCONNECT_GRACE_MS, so getWsConnected() !== false) passes
+ * values through unchanged — only a confirmed outage freezes the last-known-good
+ * value, so UI driven by this (modal open/close, active timers) doesn't flicker
+ * or reset on a transient network error.
+ */
+export function latchWhileDisconnected<T>(getValue: () => T): () => T {
+	let last = $state(getValue());
+	$effect(() => {
+		const next = getValue();
+		if (next !== null && next !== undefined) {
+			last = next;
+		} else if (getWsConnected() !== false) {
+			last = next;
+		}
+	});
+	return () => last;
 }

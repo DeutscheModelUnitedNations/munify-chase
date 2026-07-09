@@ -5,6 +5,7 @@
 	import { client } from '$lib/api/rumbleClient/client';
 	import { nanoid } from '$lib/helpers/nanoid';
 	import { getCurrentUser } from '$lib/state/currentUser.svelte';
+	import { latchWhileDisconnected } from '$lib/state/connection.svelte';
 	import IconInfoBox from '$lib/components/IconInfoBox.svelte';
 	import { getCommitteeStatusIcon, getCommitteeStatusText } from '$lib/utils/committeeStatus';
 	import CurrentSpeaker from '$lib/components/speakersList/CurrentSpeaker.svelte';
@@ -127,11 +128,16 @@
 			conferenceUser?.conferenceMember?.representation
 	);
 
+	// Freeze the last-known agenda item while the WS is confirmed disconnected, so a
+	// transient network blip doesn't reset the active speaker's timer.
+	const getActiveAgendaItem = latchWhileDisconnected(() => committee?.activeAgendaItem);
+	const activeAgendaItem = $derived(getActiveAgendaItem());
+
 	const speakersList = $derived(
-		committee?.activeAgendaItem?.speakersList?.find((sl) => sl.type === 'SPEAKERS_LIST')
+		activeAgendaItem?.speakersList?.find((sl) => sl.type === 'SPEAKERS_LIST')
 	);
 	const commentList = $derived(
-		committee?.activeAgendaItem?.speakersList?.find((sl) => sl.type === 'COMMENT_LIST')
+		activeAgendaItem?.speakersList?.find((sl) => sl.type === 'COMMENT_LIST')
 	);
 
 	// Self-add logic
@@ -185,7 +191,7 @@
 		<!-- Committee Status Card -->
 		<div class="card bg-base-100 shadow-sm">
 			<div class="card-body gap-2 p-4">
-				<IconInfoBox text={committee.activeAgendaItem?.title ?? '—'} faIcon="podium" />
+				<IconInfoBox text={activeAgendaItem?.title ?? '—'} faIcon="podium" />
 				<IconInfoBox
 					text={getCommitteeStatusText(committee.status)}
 					faIcon={getCommitteeStatusIcon(committee.status)}

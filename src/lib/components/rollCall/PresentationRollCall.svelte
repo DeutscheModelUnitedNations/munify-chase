@@ -3,6 +3,7 @@
 	import Modal from '../Modal.svelte';
 	import ScrollingCountryList from './ScrollingCountryList.svelte';
 	import { client } from '$lib/api/rumbleClient/client';
+	import { latchWhileDisconnected } from '$lib/state/connection.svelte';
 
 	interface Props {
 		members: Array<{
@@ -36,7 +37,12 @@
 		}
 	});
 
-	let currentIndex = $derived(committee?.activeRollCallSession?.currentMemberIndex ?? null);
+	// Freeze the last-known index while the WS is confirmed disconnected, so a real
+	// outage doesn't close the modal mid-roll-call — only a genuine session change does.
+	const getCurrentIndex = latchWhileDisconnected(
+		() => committee?.activeRollCallSession?.currentMemberIndex ?? null
+	);
+	let currentIndex = $derived(getCurrentIndex());
 </script>
 
 <Modal open={currentIndex !== null}>

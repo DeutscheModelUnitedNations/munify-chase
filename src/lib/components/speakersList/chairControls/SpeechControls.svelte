@@ -48,7 +48,12 @@
 
 		const ops: Promise<unknown>[] = [
 			client.mutate.updateSpeakersList({
-				__args: { id: speakersList.id, startTimestamp: getServerTime().toDate() },
+				__args: {
+					id: speakersList.id,
+					startTimestamp: getServerTime().toDate(),
+					// Starting the main speakers list timer always (re)enters the speech phase
+					...(type === 'SPEAKERS_LIST' ? { phase: 'SPEECH' } : {})
+				},
 				id: true,
 				speakingTime: true,
 				startTimestamp: true,
@@ -91,7 +96,9 @@
 				.updateSpeakersList({
 					__args: {
 						id: speakersList.id,
-						stopTimer: true
+						stopTimer: true,
+						// Stopping the main speakers list timer marks the speech as done
+						...(type === 'SPEAKERS_LIST' ? { phase: 'SPEECH_DONE' } : {})
 					},
 					id: true,
 					timeLeft: true,

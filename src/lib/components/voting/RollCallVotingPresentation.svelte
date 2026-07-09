@@ -1,6 +1,7 @@
 <script lang="ts">
 	import Flag from '$lib/components/Flag.svelte';
 	import { client } from '$lib/api/rumbleClient/client';
+	import { latchWhileDisconnected } from '$lib/state/connection.svelte';
 	import { m } from '$lib/paraglide/messages';
 	import { cubicIn, cubicInOut, cubicOut } from 'svelte/easing';
 	import { fly } from 'svelte/transition';
@@ -49,7 +50,10 @@
 		}
 	});
 
-	let session = $derived(committeeWithVote?.activeVotingSession ?? null);
+	// Freeze the last-known session while the WS is confirmed disconnected, so a real
+	// outage doesn't close the vote mid-count — only a genuine vote completion does.
+	const getSession = latchWhileDisconnected(() => committeeWithVote?.activeVotingSession ?? null);
+	let session = $derived(getSession());
 
 	const [send, receive] = crossfade({
 		duration: 1000,

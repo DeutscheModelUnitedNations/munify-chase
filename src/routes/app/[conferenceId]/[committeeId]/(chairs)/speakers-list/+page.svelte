@@ -11,6 +11,7 @@
 	import SpeakersQueuePresentation from '$lib/components/speakersList/ChairSpeakersQueue.svelte';
 	import StatusWidget from '../StatusWidget.svelte';
 	import Majorities from '$lib/components/Majorities.svelte';
+	import { latchWhileDisconnected } from '$lib/state/connection.svelte';
 
 	const committee = await client.liveQuery.committee({
 		__args: { id: page.params.committeeId! },
@@ -100,15 +101,21 @@
 
 	const minAmendmentSponsors = $derived(Math.ceil((committee?.totalPresent ?? 0) * 0.1));
 
+	// Freeze the last-known agenda item while the WS is confirmed disconnected, so a
+	// transient network blip doesn't flash "no agenda item selected" over the page —
+	// only a genuine agenda item change (selected/cleared) does.
+	const getActiveAgendaItem = latchWhileDisconnected(() => committee?.activeAgendaItem);
+	let activeAgendaItem = $derived(getActiveAgendaItem());
+
 	let speakersList = $derived(
-		committee?.activeAgendaItem?.speakersList.find((item) => item.type === 'SPEAKERS_LIST')
+		activeAgendaItem?.speakersList.find((item) => item.type === 'SPEAKERS_LIST')
 	);
 	let commentList = $derived(
-		committee?.activeAgendaItem?.speakersList.find((item) => item.type === 'COMMENT_LIST')
+		activeAgendaItem?.speakersList.find((item) => item.type === 'COMMENT_LIST')
 	);
 </script>
 
-{#if !committee?.activeAgendaItem}
+{#if !activeAgendaItem}
 	<UndrawError
 		undrawImage={question}
 		title={m.noAgendaItemSelected()}
@@ -120,7 +127,7 @@
 	<div
 		class="flex w-full flex-col items-center justify-center gap-6 p-6 lg:flex-row lg:items-start"
 	>
-		<div class="top-22 hidden h-full flex-col gap-4 2xl:sticky 2xl:flex">
+		<div class="top-22 hidden h-full w-lg flex-col gap-4 2xl:sticky 2xl:flex">
 			<BasicCard>
 				<StatusWidget {committee} />
 			</BasicCard>

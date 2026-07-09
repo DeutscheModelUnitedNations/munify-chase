@@ -55,6 +55,7 @@ runs:
         | macOS (Universal) | \`.dmg\` |
         | Windows | \`.exe\` (NSIS installer) |
         | Linux (Debian/Ubuntu) | \`.deb\` |
+        | Linux (Fedora/RedHat) | \`.rpm\` |
         | Linux (portable) | \`.AppImage\` |
         | Arch Linux | build from [\`aur/munify-chase-bin\`](https://github.com/DeutscheModelUnitedNations/munify-chase/tree/native-client/aur/munify-chase-bin) — see below |
 

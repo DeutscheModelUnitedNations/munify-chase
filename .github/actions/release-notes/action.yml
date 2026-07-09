@@ -1,0 +1,86 @@
+name: 'Release Notes'
+description: 'Renders the GitHub release body used for a version tag'
+
+inputs:
+  version:
+    description: 'The release tag name, e.g. v3.0.15'
+    required: true
+
+outputs:
+  body:
+    description: 'Rendered release body markdown'
+    value: ${{ steps.render.outputs.body }}
+
+runs:
+  using: 'composite'
+  steps:
+    - id: render
+      shell: bash
+      env:
+        VERSION: ${{ inputs.version }}
+        VERSION_NUMBER: ${{ inputs.version }}
+      run: |
+        VERSION_NUMBER="${VERSION_NUMBER#v}"
+        {
+          echo "body<<RELEASE_NOTES_EOF"
+          cat <<EOF
+        <div align="center">
+
+        # MUNify CHASE \`${VERSION}\`
+
+        </div>
+
+        ### Docker images
+
+        \`\`\`bash
+        docker pull ghcr.io/${{ github.repository }}:${VERSION_NUMBER}
+        \`\`\`
+
+        <details><summary>DockerHub mirror</summary>
+
+        \`\`\`bash
+        docker pull deutschemodelunitednations/chase:${VERSION_NUMBER}
+        \`\`\`
+
+        </details>
+
+        ### Native client (desktop app)
+
+        Installers for macOS (\`.dmg\`), Windows (\`.exe\`) and Linux (\`.deb\` / \`.AppImage\`)
+        are built from the \`native-client\` branch and attached to this release
+        automatically a few minutes after publication.
+
+        | Platform | File |
+        |----------|------|
+        | macOS (Universal) | \`.dmg\` |
+        | Windows | \`.exe\` (NSIS installer) |
+        | Linux (Debian/Ubuntu) | \`.deb\` |
+        | Linux (portable) | \`.AppImage\` |
+        | Arch Linux | build from [\`aur/munify-chase-bin\`](https://github.com/DeutscheModelUnitedNations/munify-chase/tree/native-client/aur/munify-chase-bin) — see below |
+
+        > ℹ️ The app is distributed unsigned, so your OS may show a security warning on
+        > first launch. See the [installation guide](https://github.com/DeutscheModelUnitedNations/munify-chase/blob/native-client/docs/INSTALL.md)
+        > for how to get past it on each platform. Updates afterwards are automatic.
+
+        #### Arch Linux
+
+        Not yet on the AUR (registration is currently suspended upstream — see
+        [\`aur/munify-chase-bin/README.md\`](https://github.com/DeutscheModelUnitedNations/munify-chase/blob/native-client/aur/munify-chase-bin/README.md)).
+        Build it directly from the repo instead:
+
+        \`\`\`bash
+        git clone https://github.com/DeutscheModelUnitedNations/munify-chase.git
+        cd munify-chase/aur/munify-chase-bin
+        makepkg -si   # or: yay -Bi \$(pwd)
+        \`\`\`
+
+        ---
+
+        <div align="center">
+        <sub>A project by <a href="https://dmun.de">Deutsche Model United Nations (DMUN) e.V.</a></sub>
+        <br>
+        <sub>Proudly free and open source — built for the MUN community worldwide 🌍</sub>
+        </div>
+        EOF
+          echo "RELEASE_NOTES_EOF"
+        } >> "$GITHUB_OUTPUT"

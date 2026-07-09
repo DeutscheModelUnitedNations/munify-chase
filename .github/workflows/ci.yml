@@ -205,59 +205,20 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
+    outputs:
+      body: ${{ steps.notes.outputs.body }}
     steps:
       - uses: actions/checkout@v6
 
-      - name: Extract version
-        id: version
-        run: echo "number=${GITHUB_REF_NAME#v}" >> "$GITHUB_OUTPUT"
+      - id: notes
+        uses: ./.github/actions/release-notes
+        with:
+          version: ${{ github.ref_name }}
 
       - uses: softprops/action-gh-release@v2
         with:
           generate_release_notes: true
-          body: |
-            <div align="center">
-
-            # MUNify CHASE `${{ github.ref_name }}`
-
-            [![SvelteKit](https://img.shields.io/badge/SvelteKit-FF3E00?style=for-the-badge&logo=svelte&logoColor=white)](https://svelte.dev)
-            [![Drizzle](https://img.shields.io/badge/Drizzle-C5F74F?style=for-the-badge&logo=drizzle&logoColor=black)](https://orm.drizzle.team)
-            [![GraphQL](https://img.shields.io/badge/GraphQL-E10098?style=for-the-badge&logo=graphql&logoColor=white)](https://graphql.org)
-            [![Docker](https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white)](https://hub.docker.com/r/deutschemodelunitednations/chase)
-
-            </div>
-
-            ### Docker images
-
-            ```bash
-            docker pull ghcr.io/${{ github.repository }}:${{ steps.version.outputs.number }}
-            ```
-
-            <details><summary>DockerHub mirror</summary>
-
-            ```bash
-            docker pull deutschemodelunitednations/chase:${{ steps.version.outputs.number }}
-            ```
-
-            </details>
-
-            ### Native client (desktop app)
-
-            Installers for macOS (`.dmg`), Windows (`.exe`) and Linux (`.deb` / `.AppImage`)
-            are built from the `native-client` branch and attached to this release
-            automatically a few minutes after publication.
-
-            > ℹ️ The app is distributed unsigned, so your OS may show a security warning on
-            > first launch. See the [installation guide](https://github.com/DeutscheModelUnitedNations/munify-chase/blob/native-client/docs/INSTALL.md)
-            > for how to get past it on each platform. Updates afterwards are automatic.
-
-            ---
-
-            <div align="center">
-            <sub>A project by <a href="https://dmun.de">Deutsche Model United Nations (DMUN) e.V.</a></sub>
-            <br>
-            <sub>Proudly free and open source — built for the MUN community worldwide 🌍</sub>
-            </div>
+          body: ${{ steps.notes.outputs.body }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -350,7 +311,13 @@ jobs:
         with:
           # Attach the artifacts to the release the `release` job created for
           # this tag. tauri-action finds the existing release by tag name.
+          #
+          # tauri-action unconditionally overwrites the body of an existing,
+          # non-draft release with whatever `releaseBody` resolves to
+          # (tauri-apps/tauri-action#1277) — pass the same body the `release`
+          # job used, or this step blanks it out.
           tagName: ${{ github.ref_name }}
+          releaseBody: ${{ needs.release.outputs.body }}
           releaseDraft: false
           # NOTE: prereleases are excluded by GitHub's /releases/latest, which the
           # updater endpoint in tauri.conf.json points at. Auto-update therefore only

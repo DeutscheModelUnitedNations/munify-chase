@@ -50,7 +50,7 @@
 				() => {
 					activeGroup = nextGroup(activeGroup);
 				},
-				Math.max(getGroupMembers(activeGroup).length * 500, 5000)
+				Math.min(Math.max(getGroupMembers(activeGroup).length * 250, 5000), 9000)
 			);
 		}
 

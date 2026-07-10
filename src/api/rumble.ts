@@ -37,11 +37,11 @@ export const {
 	clientCreator
 } = rumble({
 	db,
+	schema,
 	context,
 	defaultLimit: 1000,
 	subscriptions: [{ eventTarget }],
 	pothosConfig: {
 		plugins: [ValidationPlugin]
-	},
-	schema
+	}
 });

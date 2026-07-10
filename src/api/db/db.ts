@@ -6,8 +6,6 @@ import { building } from '$app/environment';
 
 const conf = {
 	relations: relationsInternal,
-	casing: 'snake_case',
-	schema: schemaInternal,
 	jit: true
 } as const;
 

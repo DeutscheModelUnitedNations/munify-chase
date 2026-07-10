@@ -7,8 +7,9 @@ import { OIDC } from './services/OIDC';
 export const oidcRoles = ['admin', 'member', 'service_user'] as const;
 
 export function context(req: RequestEvent) {
-	if (hasSyntheticSvelteRequestEvent(req as any)) {
-		req = (req as any)[SYNTHETIC_EVENT_FIELD];
+	const source: unknown = (req as any).extra?.request ?? req;
+	if (hasSyntheticSvelteRequestEvent(source as any)) {
+		req = (source as any)[SYNTHETIC_EVENT_FIELD];
 	}
 
 	const OIDCRoleNames: (typeof oidcRoles)[number][] = [];

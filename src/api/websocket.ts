@@ -2,6 +2,7 @@
 import '$api/handlers/register';
 
 import { WebSocketServer } from 'ws';
+import type { WebSocket } from 'ws';
 import type { Socket } from 'node:net';
 import { useServer } from 'graphql-ws/use/ws';
 import { createWs } from '$api/rumble';
@@ -10,27 +11,84 @@ import { openYjsRoom } from './yjs/wss';
 import { nativeToRequestEvent } from './services/auth';
 import { OIDC } from './services/OIDC';
 import { context, type Context } from './context';
-import type { RequestEvent } from '../routes/api/pdf/$types';
 
 const gqlWSS = new WebSocketServer({ noServer: true });
 const yjsWSS = new WebSocketServer({ noServer: true });
 
-createWs(useServer as unknown as (options: unknown, ws: typeof gqlWSS) => void, {}, gqlWSS);
+export const SYNTHETIC_EVENT_FIELD = '__syntheticSvelteRequestEvent';
+
+export function hasSyntheticSvelteRequestEvent(
+	req: IncomingMessage | { extra?: unknown }
+): boolean {
+	return SYNTHETIC_EVENT_FIELD in (req as object);
+}
+
+// Stash the raw TCP socket on the upgrade IncomingMessage so the graphql-ws
+// onConnect handler can reach it for deferred (connection_init) auth.
+const UPGRADE_SOCKET_FIELD = '__upgradeSocket';
+
+createWs(
+	useServer as unknown as (options: unknown, ws: typeof gqlWSS) => void,
+	{
+		onConnect: async (wsCtx: {
+			connectionParams?: unknown;
+			extra: { socket: WebSocket; request: IncomingMessage };
+		}) => {
+			const req = wsCtx.extra.request;
+			// Upgrade-time auth (cookie / Authorization header) already stored the
+			// synthetic event on the IncomingMessage — nothing more to do.
+			if ((req as any)[SYNTHETIC_EVENT_FIELD]) return;
+
+			// Clients that cannot set HTTP headers (e.g. native/Tauri) send their
+			// token as connectionParams.Authorization in the connection_init message.
+			const params = wsCtx.connectionParams as Record<string, unknown> | undefined;
+			const authHeader =
+				typeof params?.Authorization === 'string'
+					? params.Authorization
+					: typeof params?.authorization === 'string'
+						? params.authorization
+						: undefined;
+
+			if (!authHeader?.startsWith('Bearer ')) {
+				return false;
+			}
+
+			// Inject the Bearer token into a synthetic request event and run OIDC.
+			const fakeReq = Object.create(req) as IncomingMessage;
+			fakeReq.headers = { ...req.headers, authorization: authHeader };
+			let syntheticEvent = nativeToRequestEvent(fakeReq);
+			try {
+				await OIDC.handle({
+					event: syntheticEvent,
+					resolve: (event) => {
+						syntheticEvent = event;
+						return new Response();
+					}
+				});
+				const ctx = context(syntheticEvent);
+				ctx.mustBeLoggedIn();
+				(req as any)[SYNTHETIC_EVENT_FIELD] = syntheticEvent;
+				const socket = (req as any)[UPGRADE_SOCKET_FIELD] as Socket;
+				startWSValidityChecker(ctx, socket);
+			} catch (err) {
+				console.error('[wss] failed to validate connection_init Bearer token', err);
+				return false;
+			}
+		}
+	},
+	gqlWSS
+);
 
 const setHeaders = (headers: string[], req: IncomingMessage) => {
-	const cookies = (req as any).syntheticSvelteRequestEvent as string[] | undefined;
-	if (cookies) {
-		for (const cookie of cookies) headers.push(`Set-Cookie: ${cookie}`);
+	const cookies = (req as any)[SYNTHETIC_EVENT_FIELD] as
+		| { headers?: { 'set-cookie'?: string[] } }
+		| undefined;
+	if (cookies?.headers?.['set-cookie']) {
+		for (const cookie of cookies.headers['set-cookie']) headers.push(`Set-Cookie: ${cookie}`);
 	}
 };
 gqlWSS.on('headers', setHeaders);
 yjsWSS.on('headers', setHeaders);
-
-export const SYNTHETIC_EVENT_FIELD = '__syntheticSvelteRequestEvent';
-
-export function hasSyntheticSvelteRequestEvent(req: IncomingMessage | RequestEvent): boolean {
-	return SYNTHETIC_EVENT_FIELD in req;
-}
 
 (globalThis as Record<string, unknown>).__wssUpgrade = async (
 	req: IncomingMessage,
@@ -41,8 +99,12 @@ export function hasSyntheticSvelteRequestEvent(req: IncomingMessage | RequestEve
 	const isGql = url.pathname === '/api/graphql';
 	const isYjs = url.pathname.startsWith('/api/docs');
 
+	// Store the raw socket early so the graphql-ws onConnect handler can reach
+	// it when deferred (connection_init) authentication is needed.
+	if (isGql) (req as any)[UPGRADE_SOCKET_FIELD] = socket;
+
 	let syntheticSvelteRequestEvent = nativeToRequestEvent(req);
-	let ctx: Context;
+	let ctx: Context | undefined;
 
 	try {
 		await OIDC.handle({
@@ -54,24 +116,28 @@ export function hasSyntheticSvelteRequestEvent(req: IncomingMessage | RequestEve
 		});
 		ctx = context(syntheticSvelteRequestEvent);
 		ctx.mustBeLoggedIn();
+		(req as any)[SYNTHETIC_EVENT_FIELD] = syntheticSvelteRequestEvent;
+		startWSValidityChecker(ctx, socket);
 	} catch (err) {
-		console.error('[wss] failed to validate websocket connection', err);
-		socket.destroy();
-		return;
+		if (!isGql && !isYjs) {
+			console.error('[wss] failed to validate websocket connection', err);
+			socket.destroy();
+			return;
+		}
+		// isGql: allow through — graphql-ws onConnect validates connectionParams
+		//        (Bearer token in the connection_init message).
+		// isYjs: allow through — Hocuspocus onAuthenticate validates the in-band
+		//        Bearer token sent by the client after the upgrade.
 	}
-	(req as any)[SYNTHETIC_EVENT_FIELD] = syntheticSvelteRequestEvent;
-
-	startWSValidityChecker(ctx, socket);
 
 	if (isGql) {
 		gqlWSS.handleUpgrade(req, socket, head, (ws) => {
 			gqlWSS.emit('connection', ws, req);
 		});
 	} else if (isYjs) {
-		// The paper id travels in-band with every Hocuspocus message, so the URL
-		// carries no room segment. If upgrade-time auth fails (native client
-		// without a session cookie), the Hocuspocus onAuthenticate hook still
-		// gets a chance to auth via the in-band Bearer token.
+		// ctx may be undefined here when upgrade-time auth found no credentials;
+		// openYjsRoom accepts undefined and Hocuspocus's onAuthenticate hook will
+		// validate the in-band Bearer token before allowing document access.
 		yjsWSS.handleUpgrade(req, socket, head, (ws) => {
 			openYjsRoom(ws, req, Promise.resolve(ctx));
 		});

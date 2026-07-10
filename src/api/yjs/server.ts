@@ -13,12 +13,14 @@ import { Redis } from 'ioredis';
 import * as Y from 'yjs';
 import { db, schema } from '../db/db';
 import { configPrivate } from '$config/private';
-import type { Context } from '$api/context';
+import { context, type Context } from '$api/context';
 import {
 	isParticipantInConference,
 	isPaperEditor,
 	isTeamInConference
 } from '$api/services/authHelper';
+import { nativeToRequestEvent } from '$api/services/auth';
+import { OIDC } from '$api/services/OIDC';
 
 const PERSIST_DEBOUNCE_MS = 1500;
 
@@ -156,12 +158,44 @@ export const hocuspocus = new Hocuspocus<YjsConnectionContext>({
 			: [])
 	],
 
-	// websocket.ts's upgrade handler (both cookie and Bearer-header auth go
-	// through OIDC.handle there) already destroys the socket before the WS
-	// handshake completes if auth fails, and openDirectConnection (used by
-	// applyServerMutation/readPaperJson) never calls this hook at all — so
-	// context.ctx is always populated here for a real client connection.
-	// The throw is defensive/unreachable rather than load-bearing.
+	// Validate in-band Bearer tokens from native/Tauri clients that cannot set
+	// HTTP headers at upgrade time. Runs before onConnect.
+	onAuthenticate: async ({ token, context: connContext }) => {
+		// Upgrade-time auth (session cookie or Authorization header) already
+		// populated ctx — nothing to do here.
+		if (connContext.ctx) return;
+
+		if (!token) {
+			throw { code: 4401, reason: 'unauthorized' };
+		}
+
+		// Reuse the same OIDC validation path as HTTP requests.
+		const fakeReq = {
+			headers: { authorization: `Bearer ${token}` },
+			url: '/'
+		} as Parameters<typeof nativeToRequestEvent>[0];
+		let syntheticEvent = nativeToRequestEvent(fakeReq);
+		try {
+			await OIDC.handle({
+				event: syntheticEvent,
+				resolve: (event) => {
+					syntheticEvent = event;
+					return new Response();
+				}
+			});
+			const ctx = context(syntheticEvent);
+			ctx.mustBeLoggedIn();
+			connContext.ctx = ctx;
+		} catch (err) {
+			console.error('[yjs] in-band authentication failed', err);
+			throw { code: 4401, reason: 'unauthorized' };
+		}
+	},
+
+	// onAuthenticate runs before onConnect, so ctx is always populated by here
+	// (upgrade-time auth or in-band auth). openDirectConnection (used by
+	// applyServerMutation/readPaperJson) skips both hooks entirely.
+	// The throw below guards clients that somehow bypass onAuthenticate.
 	onConnect: async ({ documentName: paperId, context, connectionConfig }) => {
 		if (!context.ctx) {
 			throw { code: 4401, reason: 'unauthorized' };

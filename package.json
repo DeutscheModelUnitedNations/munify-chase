@@ -28,7 +28,7 @@
 		"@inlang/paraglide-js": "^2.18.2",
 		"@lingual/i18n-check": "^0.9.5",
 		"@m1212e/rumble": "^0.21.5",
-		"@m1212e/sveltekit-oidc": "^0.0.43",
+		"@m1212e/sveltekit-oidc": "^0.0.46",
 		"@m1212e/urql-crosstab-sync": "^0.1.0",
 		"@mlc-ai/web-llm": "^0.2.84",
 		"@pothos/plugin-validation": "^4.3.0",

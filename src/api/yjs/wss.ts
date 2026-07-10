@@ -1,10 +1,3 @@
-/**
- * Adapter between the app's `ws`-based upgrade handling and the Hocuspocus
- * instance in `server.ts`. Auth runs at upgrade time (cookie / Authorization
- * header) or, for native clients, via the in-band token in the Hocuspocus
- * onAuthenticate hook — so a failed upgrade auth does NOT close the socket.
- */
-
 import type { IncomingMessage } from 'node:http';
 import type { WebSocket } from 'ws';
 import type { Context } from '$api/context';
@@ -24,11 +17,6 @@ function buildRequest(req: IncomingMessage): Request {
 	return new Request(url, { headers });
 }
 
-/**
- * Hand a WebSocket over to Hocuspocus once `ctxPromise` resolves. Must be
- * called synchronously from the upgrade callback: `ws` does not queue
- * 'message' events, so early frames are buffered and replayed after auth.
- */
 export function openYjsRoom(
 	ws: WebSocket,
 	req: IncomingMessage,
@@ -52,7 +40,7 @@ export function openYjsRoom(
 		try {
 			ctx = await ctxPromise;
 		} catch (err) {
-			console.error('[yjs] authentication failed during ws upgrade', err);
+			console.error('[yjs] context creation failed', err);
 		}
 		// Do NOT close here when ctx is undefined: native/Tauri clients that
 		// cannot send session cookies will authenticate in-band via the

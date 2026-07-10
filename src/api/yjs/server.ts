@@ -19,7 +19,6 @@ import {
 	isPaperEditor,
 	isTeamInConference
 } from '$api/services/authHelper';
-import { authenticateToken } from '$api/services/auth';
 
 const PERSIST_DEBOUNCE_MS = 1500;
 
@@ -157,37 +156,23 @@ export const hocuspocus = new Hocuspocus<YjsConnectionContext>({
 			: [])
 	],
 
-	// In-band token auth for native/Tauri clients that cannot send session
-	// cookies. Web clients auth at upgrade time, so context.ctx is already set.
-	// Hocuspocus runs onConnect BEFORE onAuthenticate (both fire on the client's
-	// auth message). Cookie-authenticated connections already have a ctx from the
-	// upgrade and are authorized here; connections without one pass through so
-	// onAuthenticate can resolve the in-band token — it then authorizes itself.
+	// websocket.ts's upgrade handler (both cookie and Bearer-header auth go
+	// through OIDC.handle there) already destroys the socket before the WS
+	// handshake completes if auth fails, and openDirectConnection (used by
+	// applyServerMutation/readPaperJson) never calls this hook at all — so
+	// context.ctx is always populated here for a real client connection.
+	// The throw is defensive/unreachable rather than load-bearing.
 	onConnect: async ({ documentName: paperId, context, connectionConfig }) => {
 		if (!context.ctx) {
-			return;
+			throw { code: 4401, reason: 'unauthorized' };
 		}
 		await authorizeConnection(paperId, context.ctx, connectionConfig);
 	},
 
-	onAuthenticate: async ({ token, context, connectionConfig, documentName: paperId }) => {
-		if (context.ctx) {
-			return;
-		}
-		if (!token) {
-			throw { code: 4401, reason: 'unauthorized' };
-		}
-		const ctx = await authenticateToken(token);
-		if (!ctx) {
-			throw { code: 4401, reason: 'unauthorized' };
-		}
-		context.ctx = ctx;
-		await authorizeConnection(paperId, ctx, connectionConfig);
-	},
-
-	// Periodically re-evaluate permissions so a paper transitioning out of
-	// the editable window flips live sessions to read-only (or kicks them on
-	// outright revocation) without waiting for a reconnect.
+	// Periodically re-check both session liveness and paper permissions, so a
+	// revoked/expired session or a paper transitioning out of the editable
+	// window flips live sessions to read-only (or kicks them) without waiting
+	// for a reconnect.
 	// eslint-disable-next-line require-await
 	connected: async ({
 		documentName: paperId,
@@ -195,30 +180,26 @@ export const hocuspocus = new Hocuspocus<YjsConnectionContext>({
 		connection
 	}: connectedPayload<YjsConnectionContext>) => {
 		if (!context.ctx) return;
-
-		// Close the session when the OIDC access token expires. 4408 is not a
-		// terminal code on the client, so browser clients reconnect with their
-		// refreshed session; native clients must re-authenticate.
-		const exp = (context.ctx.oidc?.accessToken as { exp?: number } | undefined)?.exp;
-		if (exp) {
-			const expiryTimer = setTimeout(
-				() => {
-					try {
-						connection.webSocket.close(4408, 'Token expired');
-					} catch {
-						/* noop */
-					}
-				},
-				Math.max(0, exp * 1000 - Date.now())
-			);
-			connection.onClose(() => clearTimeout(expiryTimer));
-		}
+		const ctx = context.ctx;
 
 		const reauthTimer = setInterval(async () => {
-			if (!context.ctx) return;
+			// 4408 isn't a terminal code on the client, so browser clients
+			// reconnect with their refreshed session; native clients must
+			// re-authenticate. A transient check failure fails open — only a
+			// definitive "not live" result closes the connection.
+			try {
+				if (!(await ctx.isSessionLive())) {
+					connection.webSocket.close(4408, 'Session expired');
+					return;
+				}
+			} catch (err) {
+				console.error('[yjs] session liveness check failed', { paperId, err });
+				return;
+			}
+
 			let next: AuthResult;
 			try {
-				next = await authorize(paperId, context.ctx);
+				next = await authorize(paperId, ctx);
 			} catch (err) {
 				console.error('[yjs] re-authorize failed', { paperId, err });
 				return;

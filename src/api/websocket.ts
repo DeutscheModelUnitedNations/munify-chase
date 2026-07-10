@@ -81,39 +81,15 @@ export function hasSyntheticSvelteRequestEvent(req: IncomingMessage | RequestEve
 const SESSION_LIVENESS_CHECK_INTERVAL_MS = 5 * 60_000;
 
 function startWSValidityChecker(ctx: Context, socket: Socket) {
-	const checkSessionLive = ctx.oidc?.checkSessionLive;
-	const rawAccessToken = ctx.oidc?.raw?.accessToken;
 	const interval = setInterval(async () => {
 		try {
-			if (checkSessionLive) {
-				// Cookie-based session: introspect the refresh token (RFC 7662,
-				// read-only) — never consumes/rotates it.
-				const result = await checkSessionLive();
-				if (!result.active) {
-					clearInterval(interval);
-					socket.destroy();
-				}
-				return;
+			if (!(await ctx.isSessionLive())) {
+				clearInterval(interval);
+				socket.destroy();
 			}
-
-			if (rawAccessToken) {
-				// Native/bearer client: no refresh token to check, so fall back to
-				// validating the access token itself the same way the regular
-				// flow does (local JWT verify, then introspection fallback for
-				// opaque tokens) — introspecting an access token is always
-				// read-only regardless of provider, unlike a refresh grant.
-				const stillValid = await OIDC.validateToken(rawAccessToken);
-				if (!stillValid) {
-					clearInterval(interval);
-					socket.destroy();
-				}
-				return;
-			}
-
-			// Neither a refresh token nor a raw access token is available to check
-			clearInterval(interval);
-			socket.destroy();
 		} catch (err) {
+			// A transient failure (e.g. the introspection call itself erroring
+			// out) fails open — only a definitive "not live" result disconnects.
 			console.error('[wss] failed to check websocket session liveness', err);
 		}
 	}, SESSION_LIVENESS_CHECK_INTERVAL_MS);

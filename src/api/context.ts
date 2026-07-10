@@ -2,6 +2,7 @@ import { configPrivate } from '$config/private';
 import type { RequestEvent } from '@sveltejs/kit';
 import { GraphQLError } from 'graphql';
 import { hasSyntheticSvelteRequestEvent, SYNTHETIC_EVENT_FIELD } from './websocket';
+import { OIDC } from './services/OIDC';
 
 export const oidcRoles = ['admin', 'member', 'service_user'] as const;
 
@@ -48,6 +49,21 @@ export function context(req: RequestEvent) {
 		},
 		hasRole(role: string) {
 			return OIDCRoleNames.includes(role as (typeof oidcRoles)[number]);
+		},
+		isSessionLive: async (): Promise<boolean> => {
+			const oidc = req.locals.oidc;
+			if (!oidc) return false;
+
+			if (oidc.checkSessionLive) {
+				const result = await oidc.checkSessionLive();
+				return result.active === true;
+			}
+
+			if (oidc.raw?.accessToken) {
+				return Boolean(await OIDC.validateToken(oidc.raw.accessToken));
+			}
+
+			return false;
 		}
 	};
 }

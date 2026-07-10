@@ -17,10 +17,6 @@
 			}
 		})();
 	}
-
-	// Token freshness for the WebSocket is handled in $lib/api/client.ts: a
-	// request to /api/keepalive runs through the OIDC handle hook (refreshing
-	// the session cookie if needed) before every WS (re)connect attempt.
 </script>
 
 {@render children()}

@@ -86,30 +86,7 @@ const remoteFunctionsExchange: Exchange = ({ forward }) => {
 	};
 };
 
-// urql has no way to set a global default requestPolicy — the Client hardcodes
-// 'cache-first' whenever a caller doesn't pass one explicitly (see
-// createRequestOperation in @urql/core). Combined with our IndexedDB-persisted
-// offlineExchange cache (maxAge: 7 days), a cache-first query that gets a full
-// cache hit resolves entirely from that (possibly stale) local data and never
-// reaches the network — surfacing as fresh SSR data flashing and then reverting
-// to a stale cached value once the browser client mounts and re-runs the query.
-// Force every query without an explicit policy to 'cache-and-network' instead:
-// it still resolves instantly from cache, but always reconciles with a network
-// fetch when one is possible, so the UI can't get stuck showing stale data.
-const preferNetworkExchange: Exchange =
-	({ forward }) =>
-	(ops$) =>
-		pipe(
-			ops$,
-			map((op) =>
-				op.kind === 'query' && op.context.requestPolicy === 'cache-first'
-					? makeOperation(op.kind, op, { ...op.context, requestPolicy: 'cache-and-network' })
-					: op
-			),
-			forward
-		);
-
-const exchanges: Exchange[] = [nativeDateExchange, preferNetworkExchange];
+const exchanges: Exchange[] = [nativeDateExchange];
 
 if (browser) {
 	const storage = makeDefaultStorage({
@@ -320,6 +297,16 @@ exchanges.push(fetchExchange);
 
 export const urqlClient = new Client({
 	url: '/api/graphql',
+	// Default for queries that don't pass an explicit policy: resolve instantly
+	// from the (IndexedDB-persisted, maxAge 7 days) cache but always reconcile
+	// with a network fetch, so the UI can't get stuck on stale offline data.
+	// This must stay a Client-level default and NOT an exchange that rewrites
+	// 'cache-first' ops: graphcache re-executes dependent queries with an
+	// explicit 'cache-first' after every cache write so they resolve from cache
+	// and stop there — upgrading those to 'cache-and-network' turns every write
+	// into a network refetch of all sibling queries, which re-write the same
+	// entities and re-trigger each other in an infinite request storm.
+	requestPolicy: 'cache-and-network',
 	// check for session timeouts?
 	// fetchSubscriptions: true, // subscriptions via SSE (default yoga implementation)
 	exchanges,

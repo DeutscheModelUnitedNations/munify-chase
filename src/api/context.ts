@@ -1,25 +1,22 @@
 import { configPrivate } from '$config/private';
 import type { RequestEvent } from '@sveltejs/kit';
 import { GraphQLError } from 'graphql';
+import { hasSyntheticSvelteRequestEvent, SYNTHETIC_EVENT_FIELD } from './websocket';
 
 export const oidcRoles = ['admin', 'member', 'service_user'] as const;
 
-// Contexts resolved during a WebSocket upgrade, keyed by the raw Node request
-// that graphql-ws hands back in `extra` on every operation.
-const wsContexts = new WeakMap<object, Context>();
+export function context(req: RequestEvent) {
+	if (hasSyntheticSvelteRequestEvent(req as any)) {
+		req = (req as any)[SYNTHETIC_EVENT_FIELD];
+	}
 
-export function rememberWsContext(request: object, ctx: Context) {
-	wsContexts.set(request, ctx);
-}
-
-export function contextFromLocals(locals: RequestEvent['locals']) {
 	const OIDCRoleNames: (typeof oidcRoles)[number][] = [];
 	if (configPrivate.OIDC_ROLE_CLAIM) {
 		const rolesRaw =
-			(locals.oidc?.accessToken as Record<string, unknown> | undefined)?.[
+			(req.locals.oidc?.accessToken as Record<string, unknown> | undefined)?.[
 				configPrivate.OIDC_ROLE_CLAIM
 			] ??
-			(locals.oidc?.idToken as Record<string, unknown> | undefined)?.[
+			(req.locals.oidc?.idToken as Record<string, unknown> | undefined)?.[
 				configPrivate.OIDC_ROLE_CLAIM
 			];
 		if (rolesRaw) {
@@ -41,13 +38,13 @@ export function contextFromLocals(locals: RequestEvent['locals']) {
 	}
 
 	return {
-		...locals,
+		...req.locals,
 		mustBeLoggedIn: () => {
-			if (!locals.oidc?.user) {
+			if (!req.locals.oidc?.user) {
 				throw new GraphQLError('Must be logged in');
 			}
 
-			return locals.oidc.user;
+			return req.locals.oidc.user;
 		},
 		hasRole(role: string) {
 			return OIDCRoleNames.includes(role as (typeof oidcRoles)[number]);
@@ -55,13 +52,4 @@ export function contextFromLocals(locals: RequestEvent['locals']) {
 	};
 }
 
-export function context(req: RequestEvent) {
-	// requests from a ws connection carry the raw upgrade request in `extra`
-	const wsRequest = (req as RequestEvent & { extra?: { request?: object } }).extra?.request;
-	if (wsRequest) {
-		return wsContexts.get(wsRequest) ?? contextFromLocals({} as RequestEvent['locals']);
-	}
-	return contextFromLocals(req.locals);
-}
-
-export type Context = ReturnType<typeof contextFromLocals>;
+export type Context = ReturnType<typeof context>;

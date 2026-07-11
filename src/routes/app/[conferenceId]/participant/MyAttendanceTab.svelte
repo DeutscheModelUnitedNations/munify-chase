@@ -8,18 +8,16 @@
 	}
 	let { conferenceUserId }: Props = $props();
 
-	const events = $derived(
-		await client.liveQuery.presenceEvents({
-			__args: {
-				where: { conferenceUserId },
-				orderBy: { timestamp: 'desc' }
-			},
-			id: true,
-			present: true,
-			timestamp: true,
-			committee: { id: true, name: true, abbreviation: true }
-		})
-	);
+	const events = await client.liveQuery.presenceEvents({
+		__args: {
+			where: { conferenceUserId },
+			orderBy: { timestamp: 'desc' }
+		},
+		id: true,
+		present: true,
+		timestamp: true,
+		committee: { id: true, name: true, abbreviation: true }
+	});
 
 	function fmt(ts: string | Date) {
 		const d = ts instanceof Date ? ts : new Date(ts);

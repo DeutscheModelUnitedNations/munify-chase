@@ -17,16 +17,14 @@
 		smallScreen: m.layoutPresetSmallScreen
 	};
 
-	const committeeData = $derived(
-		await client.liveQuery.committee({
-			__args: { id: committeeId },
-			id: true,
-			presentationLayout: true,
-			presentationRootFontSize: true,
-			presentationResolutionFontSize: true,
-			displayRegionalGroups: true
-		})
-	);
+	const committeeData = await client.liveQuery.committee({
+		__args: { id: committeeId },
+		id: true,
+		presentationLayout: true,
+		presentationRootFontSize: true,
+		presentationResolutionFontSize: true,
+		displayRegionalGroups: true
+	});
 
 	// Local state for slider instant preview — initialized to defaults; $effects below sync from server
 	let localRootFontSize = $state(16);

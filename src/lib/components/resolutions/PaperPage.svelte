@@ -76,26 +76,24 @@
 	// ---- identity -----------------------------------------------------------
 	const currentUser = await getCurrentUser();
 
-	const conferenceUsers = $derived(
-		await client.liveQuery.conferenceUsers({
-			__args: {
-				where: {
-					user: { id: currentUser.id ?? '' },
-					conference: { committees: { resolutionPapers: { id: paperId } } }
-				}
-			},
-			id: true,
-			conferenceUserType: true,
-			committeeMemberId: true,
-			committeeMember: {
-				representation: {
-					name: true,
-					alpha2Code: true,
-					alpha3Code: true
-				}
+	const conferenceUsers = await client.liveQuery.conferenceUsers({
+		__args: {
+			where: {
+				user: { id: currentUser.id ?? '' },
+				conference: { committees: { resolutionPapers: { id: paperId } } }
 			}
-		})
-	);
+		},
+		id: true,
+		conferenceUserType: true,
+		committeeMemberId: true,
+		committeeMember: {
+			representation: {
+				name: true,
+				alpha2Code: true,
+				alpha3Code: true
+			}
+		}
+	});
 
 	const viewer = $derived<ResolutionViewer>({
 		userId: currentUser.id ?? '',
@@ -106,96 +104,84 @@
 
 	// ---- paper + committee --------------------------------------------------
 	// liveQuery returns a reactive proxy once awaited; args are stable per mount.
-	const papers = $derived(
-		await client.liveQuery.resolutionPapers({
-			__args: { where: { id: paperId } },
+	const papers = await client.liveQuery.resolutionPapers({
+		__args: { where: { id: paperId } },
+		id: true,
+		title: true,
+		status: true,
+		documentNumber: true,
+		updatedAt: true,
+		committee: { id: true },
+		agendaItem: { title: true },
+		creatorCommitteeMember: {
 			id: true,
-			title: true,
-			status: true,
-			documentNumber: true,
-			updatedAt: true,
-			committee: { id: true },
-			agendaItem: { title: true },
-			creatorCommitteeMember: {
-				id: true,
+			representation: { id: true, name: true, alpha3Code: true }
+		},
+		sponsors: {
+			id: true,
+			committeeMember: {
 				representation: { id: true, name: true, alpha3Code: true }
-			},
-			sponsors: {
-				id: true,
-				committeeMember: {
-					representation: { id: true, name: true, alpha3Code: true }
-				}
-			},
-			editors: { id: true, conferenceUser: { id: true } }
-		})
-	);
+			}
+		},
+		editors: { id: true, conferenceUser: { id: true } }
+	});
 	const paper = $derived(papers?.[0]);
 
-	const committees = $derived(
-		await client.liveQuery.committees({
-			__args: { where: { resolutionPapers: { id: paperId } } },
+	const committees = await client.liveQuery.committees({
+		__args: { where: { resolutionPapers: { id: paperId } } },
+		id: true,
+		name: true,
+		abbreviation: true,
+		totalPresent: true,
+		simpleMajority: true,
+		twoThirdsMajority: true,
+		activeDraftResolutionId: true,
+		activeAmendmentId: true,
+		currentOperativeIndex: true,
+		amendmentSubmissionOpen: true,
+		amendmentSponsoringOpen: true,
+		supportReevaluationOpen: true,
+		conference: { title: true, logoSvg: true },
+		activeVotingSession: {
 			id: true,
-			name: true,
-			abbreviation: true,
-			totalPresent: true,
-			simpleMajority: true,
-			twoThirdsMajority: true,
-			activeDraftResolutionId: true,
-			activeAmendmentId: true,
-			currentOperativeIndex: true,
-			amendmentSubmissionOpen: true,
-			amendmentSponsoringOpen: true,
-			supportReevaluationOpen: true,
-			conference: { title: true, logoSvg: true },
-			activeVotingSession: {
-				id: true,
-				mode: true,
-				voteName: true,
-				majority: true,
-				withAbstentions: true
-			}
-		})
-	);
+			mode: true,
+			voteName: true,
+			majority: true,
+			withAbstentions: true
+		}
+	});
 	const committee = $derived(committees?.[0]);
 
 	// ---- amendments + votes (overlays / highlighting) -----------------------
-	const amendmentRows = $derived(
-		await client.liveQuery.amendments({
-			__args: { where: { paper: { id: paperId } } },
-			id: true,
-			type: true,
-			status: true,
-			targetClauseId: true,
-			targetOperativeIndex: true,
-			targetPosition: true,
-			newContent: true,
-			proposer: { id: true, representation: { id: true, name: true, alpha2Code: true } },
-			sponsors: { id: true }
-		})
-	);
-	const clauseVotes = $derived(
-		await client.liveQuery.operativeClauseVotes({
-			__args: { where: { paper: { id: paperId } } },
-			id: true,
-			clauseId: true,
-			vote: { id: true, outcome: true }
-		})
-	);
-	const comments = $derived(
-		await client.liveQuery.resolutionComments({
-			__args: { where: { paper: { id: paperId } } },
-			id: true,
-			clauseId: true
-		})
-	);
-	const reviewItemsForBadges = $derived(
-		await client.liveQuery.amendmentReviewItems({
-			__args: { where: { paper: { id: paperId } } },
-			id: true,
-			phase: true,
-			triggerAmendment: { id: true, targetClauseId: true }
-		})
-	);
+	const amendmentRows = await client.liveQuery.amendments({
+		__args: { where: { paper: { id: paperId } } },
+		id: true,
+		type: true,
+		status: true,
+		targetClauseId: true,
+		targetOperativeIndex: true,
+		targetPosition: true,
+		newContent: true,
+		proposer: { id: true, representation: { id: true, name: true, alpha2Code: true } },
+		sponsors: { id: true }
+	});
+	const clauseVotes = await client.liveQuery.operativeClauseVotes({
+		__args: { where: { paper: { id: paperId } } },
+		id: true,
+		clauseId: true,
+		vote: { id: true, outcome: true }
+	});
+	const comments = await client.liveQuery.resolutionComments({
+		__args: { where: { paper: { id: paperId } } },
+		id: true,
+		clauseId: true
+	});
+	const reviewItemsForBadges = await client.liveQuery.amendmentReviewItems({
+		__args: { where: { paper: { id: paperId } } },
+		id: true,
+		phase: true,
+		triggerAmendment: { id: true, targetClauseId: true }
+	});
 
 	const status = $derived((paper?.status ?? 'WORKING_PAPER') as PaperStatus);
 	const currentStatusIdx = $derived(PAPER_STATUS_ORDER.indexOf(status));

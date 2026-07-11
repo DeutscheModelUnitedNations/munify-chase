@@ -22,27 +22,23 @@
 
 	let { open = $bindable(), conferenceId, event, onClose }: Props = $props();
 
-	const conference = $derived(
-		await client.liveQuery.conference({
-			__args: { id: conferenceId },
-			committees: { id: true, name: true, abbreviation: true }
-		})
-	);
+	const conference = await client.liveQuery.conference({
+		__args: { id: conferenceId },
+		committees: { id: true, name: true, abbreviation: true }
+	});
 
-	const nsaUsers = $derived(
-		await client.liveQuery.conferenceUsers({
-			__args: {
-				where: {
-					conference: { id: conferenceId },
-					conferenceUserType: 'NON_STATE_ACTOR'
-				}
-			},
-			id: true,
-			userEmail: true,
-			name: true,
-			conferenceMember: { representation: { name: true } }
-		})
-	);
+	const nsaUsers = await client.liveQuery.conferenceUsers({
+		__args: {
+			where: {
+				conference: { id: conferenceId },
+				conferenceUserType: 'NON_STATE_ACTOR'
+			}
+		},
+		id: true,
+		userEmail: true,
+		name: true,
+		conferenceMember: { representation: { name: true } }
+	});
 
 	let conferenceUserId = $state('');
 	let committeeId = $state('');

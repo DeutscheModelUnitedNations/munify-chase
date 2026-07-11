@@ -75,61 +75,53 @@
 	const resolution = $derived(yClient?.store.snapshot ?? null);
 
 	// ---- Committee + conference data (for header) ---------------------------
-	const committees = $derived(
-		await client.liveQuery.committees({
-			__args: { where: { resolutionPapers: { id: paperId } } },
-			id: true,
-			name: true,
-			abbreviation: true,
-			conference: { title: true, logoSvg: true }
-		})
-	);
+	const committees = await client.liveQuery.committees({
+		__args: { where: { resolutionPapers: { id: paperId } } },
+		id: true,
+		name: true,
+		abbreviation: true,
+		conference: { title: true, logoSvg: true }
+	});
 	const committee = $derived(committees?.[0]);
 
 	// ---- Paper metadata (for header) ----------------------------------------
-	const papers = $derived(
-		await client.liveQuery.resolutionPapers({
-			__args: { where: { id: paperId } },
+	const papers = await client.liveQuery.resolutionPapers({
+		__args: { where: { id: paperId } },
+		id: true,
+		documentNumber: true,
+		updatedAt: true,
+		agendaItem: { title: true },
+		creatorCommitteeMember: {
+			representation: { id: true, name: true, alpha3Code: true }
+		},
+		sponsors: {
 			id: true,
-			documentNumber: true,
-			updatedAt: true,
-			agendaItem: { title: true },
-			creatorCommitteeMember: {
+			committeeMember: {
 				representation: { id: true, name: true, alpha3Code: true }
-			},
-			sponsors: {
-				id: true,
-				committeeMember: {
-					representation: { id: true, name: true, alpha3Code: true }
-				}
 			}
-		})
-	);
+		}
+	});
 	const paper = $derived(papers?.[0]);
 
 	// ---- Amendment overlays + rejected clauses ------------------------------
-	const amendmentRows = $derived(
-		await client.liveQuery.amendments({
-			__args: { where: { paper: { id: paperId } } },
-			id: true,
-			type: true,
-			status: true,
-			targetClauseId: true,
-			targetOperativeIndex: true,
-			targetPosition: true,
-			newContent: true,
-			proposer: { id: true, representation: { id: true, name: true, alpha2Code: true } },
-			sponsors: { id: true }
-		})
-	);
-	const clauseVotes = $derived(
-		await client.liveQuery.operativeClauseVotes({
-			__args: { where: { paper: { id: paperId } } },
-			id: true,
-			clauseId: true,
-			vote: { id: true, outcome: true }
-		})
-	);
+	const amendmentRows = await client.liveQuery.amendments({
+		__args: { where: { paper: { id: paperId } } },
+		id: true,
+		type: true,
+		status: true,
+		targetClauseId: true,
+		targetOperativeIndex: true,
+		targetPosition: true,
+		newContent: true,
+		proposer: { id: true, representation: { id: true, name: true, alpha2Code: true } },
+		sponsors: { id: true }
+	});
+	const clauseVotes = await client.liveQuery.operativeClauseVotes({
+		__args: { where: { paper: { id: paperId } } },
+		id: true,
+		clauseId: true,
+		vote: { id: true, outcome: true }
+	});
 
 	const overlays = $derived(showAmendments ? toAmendmentOverlays(amendmentRows) : undefined);
 	const rejectedClauseIds = $derived(

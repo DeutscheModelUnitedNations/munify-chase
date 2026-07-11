@@ -18,46 +18,44 @@
 
 	let { paperId, selectedClauseId, viewer }: Props = $props();
 
-	const comments = $derived(
-		await client.liveQuery.resolutionComments({
-			__args: { where: { paper: { id: paperId } }, orderBy: { createdAt: 'asc' } },
+	const comments = await client.liveQuery.resolutionComments({
+		__args: { where: { paper: { id: paperId } }, orderBy: { createdAt: 'asc' } },
+		id: true,
+		content: true,
+		clauseId: true,
+		visibility: true,
+		parentCommentId: true,
+		createdAt: true,
+		author: {
 			id: true,
-			content: true,
-			clauseId: true,
-			visibility: true,
-			parentCommentId: true,
-			createdAt: true,
-			author: {
-				id: true,
-				name: true,
-				userEmail: true,
-				conferenceUserType: true,
-				user: {
-					givenName: true,
-					familyName: true,
-					preferredUsername: true
-				},
-				committeeMember: {
-					representation: {
-						name: true,
-						type: true,
-						alpha2Code: true,
-						alpha3Code: true,
-						faIcon: true
-					}
-				},
-				conferenceMember: {
-					representation: {
-						name: true,
-						type: true,
-						alpha2Code: true,
-						alpha3Code: true,
-						faIcon: true
-					}
+			name: true,
+			userEmail: true,
+			conferenceUserType: true,
+			user: {
+				givenName: true,
+				familyName: true,
+				preferredUsername: true
+			},
+			committeeMember: {
+				representation: {
+					name: true,
+					type: true,
+					alpha2Code: true,
+					alpha3Code: true,
+					faIcon: true
+				}
+			},
+			conferenceMember: {
+				representation: {
+					name: true,
+					type: true,
+					alpha2Code: true,
+					alpha3Code: true,
+					faIcon: true
 				}
 			}
-		})
-	);
+		}
+	});
 
 	type Author = NonNullable<(typeof comments)[number]['author']>;
 

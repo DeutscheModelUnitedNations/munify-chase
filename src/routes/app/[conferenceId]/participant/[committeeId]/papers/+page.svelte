@@ -32,36 +32,32 @@
 	const myMemberId = $derived(viewer?.committeeMemberId ?? null);
 	const myConfUserId = $derived(viewer?.id ?? '');
 
-	const committee = $derived(
-		await client.liveQuery.committee({
-			__args: { id: committeeId },
-			id: true,
-			activeAgendaItem: { id: true, title: true }
-		})
-	);
+	const committee = await client.liveQuery.committee({
+		__args: { id: committeeId },
+		id: true,
+		activeAgendaItem: { id: true, title: true }
+	});
 
-	const papers = $derived(
-		await client.liveQuery.resolutionPapers({
-			__args: { where: { committee: { id: committeeId } } },
+	const papers = await client.liveQuery.resolutionPapers({
+		__args: { where: { committee: { id: committeeId } } },
+		id: true,
+		title: true,
+		status: true,
+		documentNumber: true,
+		creatorCommitteeMember: {
 			id: true,
-			title: true,
-			status: true,
-			documentNumber: true,
-			creatorCommitteeMember: {
+			representation: {
 				id: true,
-				representation: {
-					id: true,
-					name: true,
-					type: true,
-					alpha2Code: true,
-					alpha3Code: true,
-					faIcon: true
-				}
-			},
-			editors: { id: true, conferenceUser: { id: true } },
-			sponsors: { id: true }
-		})
-	);
+				name: true,
+				type: true,
+				alpha2Code: true,
+				alpha3Code: true,
+				faIcon: true
+			}
+		},
+		editors: { id: true, conferenceUser: { id: true } },
+		sponsors: { id: true }
+	});
 
 	const PUBLISHED: PaperStatus[] = ['DRAFT_RESOLUTION', 'AMENDMENT_PHASE', 'VOTING_PHASE', 'FINAL'];
 

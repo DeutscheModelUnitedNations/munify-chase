@@ -12,17 +12,15 @@
 
 	let { open = $bindable(), paperId, close }: Props = $props();
 
-	const snapshots = $derived(
-		await client.liveQuery.paperContentSnapshots({
-			__args: {
-				where: { paper: { id: paperId } },
-				orderBy: { createdAt: 'desc' }
-			},
-			id: true,
-			createdAt: true,
-			trigger: true
-		})
-	);
+	const snapshots = await client.liveQuery.paperContentSnapshots({
+		__args: {
+			where: { paper: { id: paperId } },
+			orderBy: { createdAt: 'desc' }
+		},
+		id: true,
+		createdAt: true,
+		trigger: true
+	});
 
 	let saving = $state(false);
 	async function saveSnapshot() {

@@ -15,13 +15,11 @@ import { context, type Context } from './context';
 const gqlWSS = new WebSocketServer({ noServer: true });
 const yjsWSS = new WebSocketServer({ noServer: true });
 
-export const SYNTHETIC_EVENT_FIELD = '__syntheticSvelteRequestEvent';
-
-export function hasSyntheticSvelteRequestEvent(
-	req: IncomingMessage | { extra?: unknown }
-): boolean {
-	return SYNTHETIC_EVENT_FIELD in (req as object);
-}
+export {
+	SYNTHETIC_EVENT_FIELD,
+	hasSyntheticSvelteRequestEvent
+} from './services/syntheticRequestEvent';
+import { SYNTHETIC_EVENT_FIELD } from './services/syntheticRequestEvent';
 
 // Stash the raw TCP socket on the upgrade IncomingMessage so the graphql-ws
 // onConnect handler can reach it for deferred (connection_init) auth.

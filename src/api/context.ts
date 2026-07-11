@@ -1,7 +1,10 @@
 import { configPrivate } from '$config/private';
 import type { RequestEvent } from '@sveltejs/kit';
 import { GraphQLError } from 'graphql';
-import { hasSyntheticSvelteRequestEvent, SYNTHETIC_EVENT_FIELD } from './websocket';
+import {
+	hasSyntheticSvelteRequestEvent,
+	SYNTHETIC_EVENT_FIELD
+} from './services/syntheticRequestEvent';
 import { OIDC } from './services/OIDC';
 
 export const oidcRoles = ['admin', 'member', 'service_user'] as const;

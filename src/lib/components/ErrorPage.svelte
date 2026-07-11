@@ -1,6 +1,4 @@
 <script lang="ts">
-	import { resolve } from '$app/paths';
-
 	interface Props {
 		status?: number;
 		message?: string;
@@ -50,12 +48,12 @@
 	</div>
 	<div class="flex flex-wrap justify-center gap-3">
 		{#if backHref}
-			<a href={resolve(backHref)} class="btn btn-primary">
+			<a href={backHref} class="btn btn-primary">
 				<i class="fa-duotone fa-arrow-left"></i>
 				{backLabel}
 			</a>
 		{/if}
-		<a href={resolve('/app')} class="btn btn-ghost">
+		<a href="/app" class="btn btn-ghost">
 			<i class="fa-duotone fa-grid-2"></i>
 			My Conferences
 		</a>

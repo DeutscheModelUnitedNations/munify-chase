@@ -1,6 +1,6 @@
 import type { IncomingMessage } from 'node:http';
 import type { RequestEvent } from '@sveltejs/kit';
-import { parse as parseCookies, type CookieSerializeOptions as SerializeOptions } from 'cookie';
+import { parse as parseCookies, type SerializeOptions } from 'cookie';
 import { configPrivate } from '$config/private';
 
 function headerValue(

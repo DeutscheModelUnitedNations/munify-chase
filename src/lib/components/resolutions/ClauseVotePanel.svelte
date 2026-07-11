@@ -18,20 +18,22 @@
 	let { paperId, committeeId, selectedClauseId, viewer, simpleMajority, clauseLabel }: Props =
 		$props();
 
-	const votes = await client.liveQuery.operativeClauseVotes({
-		__args: { where: { paper: { id: paperId } } },
-		id: true,
-		clauseId: true,
-		vote: {
+	const votes = $derived(
+		await client.liveQuery.operativeClauseVotes({
+			__args: { where: { paper: { id: paperId } } },
 			id: true,
-			voteName: true,
-			votesPro: true,
-			votesCon: true,
-			votesAbstain: true,
-			outcome: true,
-			completedAt: true
-		}
-	});
+			clauseId: true,
+			vote: {
+				id: true,
+				voteName: true,
+				votesPro: true,
+				votesCon: true,
+				votesAbstain: true,
+				outcome: true,
+				completedAt: true
+			}
+		})
+	);
 
 	const current = $derived((votes ?? []).find((v) => v.clauseId === selectedClauseId));
 

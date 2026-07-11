@@ -36,9 +36,7 @@
 					oldContent: string | null | undefined;
 					targetOperativeIndex: number | null | undefined;
 					proposer:
-						| { id: string; representation: Representation | null | undefined }
-						| null
-						| undefined;
+						{ id: string; representation: Representation | null | undefined } | null | undefined;
 					sponsors: Array<{ id: string }> | null | undefined;
 			  }
 			| null
@@ -53,9 +51,7 @@
 					oldContent: string | null | undefined;
 					targetOperativeIndex: number | null | undefined;
 					proposer:
-						| { id: string; representation: Representation | null | undefined }
-						| null
-						| undefined;
+						{ id: string; representation: Representation | null | undefined } | null | undefined;
 					sponsors: Array<{ id: string }> | null | undefined;
 			  }
 			| null
@@ -218,10 +214,6 @@
 			__args: { reviewItemId: itemId, aiRewriteSuggestion: null, aiRewriteReason: null }
 		});
 		// subscription delivers null → $effect re-queues automatically
-	}
-
-	function opClauseRef(idx: number | null | undefined) {
-		return idx != null ? ` – Clause ${idx + 1}` : '';
 	}
 
 	function parseOldMarkup(raw: string | null | undefined): string | undefined {

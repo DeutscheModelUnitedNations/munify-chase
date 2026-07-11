@@ -30,6 +30,7 @@
 	>
 		<div class="h-7 text-lg">
 			{#if text}
+				<!-- eslint-disable-next-line svelte/no-at-html-tags -- card text is internal formatted content -->
 				<p class="whitespace-nowrap">{@html text}</p>
 			{:else if faIcon}
 				<i class="fa-duotone fa-{faIcon.replace('fa-', '')}"></i>

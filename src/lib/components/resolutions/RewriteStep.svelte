@@ -61,20 +61,6 @@
 	let editMode = $state<Record<string, boolean>>({});
 	let edits = $state<Record<string, string | undefined>>({});
 
-	function autoResize(node: HTMLTextAreaElement) {
-		const resize = () => {
-			node.style.height = 'auto';
-			node.style.height = node.scrollHeight + 'px';
-		};
-		resize();
-		node.addEventListener('input', resize);
-		return {
-			destroy() {
-				node.removeEventListener('input', resize);
-			}
-		};
-	}
-
 	async function keepOriginalForItem(item: ReviewItem) {
 		busy = true;
 		try {
@@ -246,8 +232,7 @@
 									value={currentEditValue}
 									oninput={(e) => {
 										edits[item.id] = (e.currentTarget as HTMLTextAreaElement).value;
-									}}
-								></textarea>
+									}}></textarea>
 							{:else if aiEvaluated}
 								<div class="rounded-lg bg-white p-3 flex-1">
 									{#if item.triggerAmendment?.newContent && oldMarkup}

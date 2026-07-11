@@ -29,7 +29,7 @@
 	let changeSpeakersNameModalOpen = $state(false);
 	let changeSpeakersNameValue = $state('');
 	let changeSpeakingTimeModalOpen = $state(false);
-	let changeSpeakingTimeValue = $state(speakersList?.speakingTime ?? 0);
+	let changeSpeakingTimeValue = $state(0);
 	let chageSpeakingTimeDisplayValue = $derived(
 		dayjs.duration(changeSpeakingTimeValue, 'seconds').format('mm:ss')
 	);
@@ -130,6 +130,12 @@
 		);
 		changeSpeakingTimeModalOpen = false;
 	};
+
+	$effect(() => {
+		if (speakersList?.speakingTime != null) {
+			changeSpeakingTimeValue = speakersList.speakingTime;
+		}
+	});
 
 	$effect(() => {
 		if (speakersList && speakersList?.speakers.length > 0) {

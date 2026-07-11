@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { m, unassigned } from '$lib/paraglide/messages';
+	import { m } from '$lib/paraglide/messages';
 	import QRCode from 'qrcode';
 	import Tabs from '../Tabs.svelte';
 	import toast from 'svelte-french-toast';
@@ -77,7 +77,7 @@
 				}
 			});
 			qrImageUrl = url;
-		} catch (err) {
+		} catch (_err) {
 			qrError = m.qrGenerationFailed();
 			qrImageUrl = null;
 		} finally {

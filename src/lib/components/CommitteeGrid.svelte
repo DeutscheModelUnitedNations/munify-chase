@@ -70,7 +70,6 @@
 					text={getCommitteeStatusText(committee.status)}
 					faIcon={getCommitteeStatusIcon(committee.status)}
 					committeeStatus={committee.status}
-					marqueeOnOverflow={false}
 					until={new Date(committee.statusUntil)}
 				/>
 			</div>

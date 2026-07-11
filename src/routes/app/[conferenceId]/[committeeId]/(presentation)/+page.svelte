@@ -23,6 +23,7 @@
 	import SpeakersQueue from '$lib/components/speakersList/PresentationSpeakersQueue.svelte';
 	import { browser } from '$app/environment';
 	import { client } from '$lib/api/rumbleClient/client';
+	import { latchWhileDisconnected } from '$lib/state/connection.svelte';
 	import { page } from '$app/state';
 	import { toggleFullscreen } from '$lib/platform';
 
@@ -152,12 +153,17 @@
 		)
 	);
 
+	// Freeze the last-known agenda item while the WS is confirmed disconnected, so a
+	// transient network blip doesn't reset the active speaker's timer on the projector.
+	const getActiveAgendaItem = latchWhileDisconnected(() => committee?.activeAgendaItem);
+	let activeAgendaItem = $derived(getActiveAgendaItem());
+
 	let speakersList = $derived(
-		committee?.activeAgendaItem?.speakersList.find((x) => x.type === 'SPEAKERS_LIST')
+		activeAgendaItem?.speakersList.find((x) => x.type === 'SPEAKERS_LIST')
 	);
 
 	let commentsList = $derived(
-		committee?.activeAgendaItem?.speakersList.find((x) => x.type === 'COMMENT_LIST')
+		activeAgendaItem?.speakersList.find((x) => x.type === 'COMMENT_LIST')
 	);
 	let speakersQueueResizeFn = $state<(() => void) | undefined>(undefined);
 	let commentsQueueResizeFn = $state<(() => void) | undefined>(undefined);
@@ -239,7 +245,6 @@
 						: getCommitteeStatusText(committee.status)}
 					faIcon={getCommitteeStatusIcon(committee.status)}
 					committeeStatus={committee.status}
-					marqueeOnOverflow={false}
 					until={new Date(committee.statusUntil)}
 					fullHeight
 					hideCountdown={committee.status === 'FORMAL'}
@@ -249,7 +254,7 @@
 		{#if layout.agendaItem}
 			{@const gridProps = layout.agendaItem}
 			<GridItem {...gridProps} class="card bg-base-100 gap-2 overflow-hidden p-4" id="agenda-item">
-				<IconInfoBox text={committee.activeAgendaItem?.title || '—'} faIcon="podium" fullHeight />
+				<IconInfoBox text={activeAgendaItem?.title || '—'} faIcon="podium" fullHeight />
 			</GridItem>
 		{/if}
 		{#if layout.majorities}

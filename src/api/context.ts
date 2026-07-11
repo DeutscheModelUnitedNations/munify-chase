@@ -1,0 +1,73 @@
+import { configPrivate } from '$config/private';
+import type { RequestEvent } from '@sveltejs/kit';
+import { GraphQLError } from 'graphql';
+import { hasSyntheticSvelteRequestEvent, SYNTHETIC_EVENT_FIELD } from './websocket';
+import { OIDC } from './services/OIDC';
+
+export const oidcRoles = ['admin', 'member', 'service_user'] as const;
+
+export function context(req: RequestEvent) {
+	const source: unknown =
+		(req as RequestEvent & { extra?: { request?: unknown } }).extra?.request ?? req;
+	if (hasSyntheticSvelteRequestEvent(source as { extra?: unknown })) {
+		req = (source as Record<string, unknown>)[SYNTHETIC_EVENT_FIELD] as RequestEvent;
+	}
+
+	const OIDCRoleNames: (typeof oidcRoles)[number][] = [];
+	if (configPrivate.OIDC_ROLE_CLAIM) {
+		const rolesRaw =
+			(req.locals.oidc?.accessToken as Record<string, unknown> | undefined)?.[
+				configPrivate.OIDC_ROLE_CLAIM
+			] ??
+			(req.locals.oidc?.idToken as Record<string, unknown> | undefined)?.[
+				configPrivate.OIDC_ROLE_CLAIM
+			];
+		if (rolesRaw) {
+			// Support both Logto format (array of role objects/strings) and Zitadel format (object with role keys)
+			const collected: string[] = [];
+			if (Array.isArray(rolesRaw)) {
+				for (const role of rolesRaw) {
+					const name = typeof role === 'string' ? role : (role as { name?: string })?.name;
+					if (name) collected.push(name);
+				}
+			} else if (typeof rolesRaw === 'object') {
+				collected.push(...Object.keys(rolesRaw));
+			}
+			const validRoles = collected.filter((r): r is (typeof oidcRoles)[number] =>
+				(oidcRoles as readonly string[]).includes(r)
+			);
+			OIDCRoleNames.push(...validRoles);
+		}
+	}
+
+	return {
+		...req.locals,
+		mustBeLoggedIn: () => {
+			if (!req.locals.oidc?.user) {
+				throw new GraphQLError('Must be logged in');
+			}
+
+			return req.locals.oidc.user;
+		},
+		hasRole(role: string) {
+			return OIDCRoleNames.includes(role as (typeof oidcRoles)[number]);
+		},
+		isSessionLive: async (): Promise<boolean> => {
+			const oidc = req.locals.oidc;
+			if (!oidc) return false;
+
+			if (oidc.checkSessionLive) {
+				const result = await oidc.checkSessionLive();
+				return result.active === true;
+			}
+
+			if (oidc.raw?.accessToken) {
+				return Boolean(await OIDC.validateToken(oidc.raw.accessToken));
+			}
+
+			return false;
+		}
+	};
+}
+
+export type Context = ReturnType<typeof context>;

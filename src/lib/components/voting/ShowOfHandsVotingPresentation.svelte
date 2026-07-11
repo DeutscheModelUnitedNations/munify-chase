@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { client } from '$lib/api/rumbleClient/client';
+	import { latchWhileDisconnected } from '$lib/state/connection.svelte';
 	import { type VotingStage } from './votingModal';
 	import { m } from '$lib/paraglide/messages';
 	import { cubicIn, cubicOut } from 'svelte/easing';
@@ -16,25 +17,30 @@
 	// happening?" — driving the modal from this FK keeps every tab consistent
 	// (including offline popups whose cross-tab synthetic mutations would otherwise
 	// roll back a list-based `where: completedAt isNull` query result).
-	const committeeWithVote = await client.liveQuery.committee({
-		__args: { id: committeeId },
-		id: true,
-		simpleMajority: true,
-		twoThirdsMajority: true,
-		activeVotingSession: {
+	const committeeWithVote = $derived(
+		await client.liveQuery.committee({
+			__args: { id: committeeId },
 			id: true,
-			mode: true,
-			currentStage: true,
-			votesPro: true,
-			votesCon: true,
-			votesAbstain: true,
-			voteName: true,
-			majority: true,
-			withAbstentions: true
-		}
-	});
+			simpleMajority: true,
+			twoThirdsMajority: true,
+			activeVotingSession: {
+				id: true,
+				mode: true,
+				currentStage: true,
+				votesPro: true,
+				votesCon: true,
+				votesAbstain: true,
+				voteName: true,
+				majority: true,
+				withAbstentions: true
+			}
+		})
+	);
 
-	let session = $derived(committeeWithVote?.activeVotingSession ?? null);
+	// Freeze the last-known session while the WS is confirmed disconnected, so a real
+	// outage doesn't close the vote mid-count — only a genuine vote completion does.
+	const getSession = latchWhileDisconnected(() => committeeWithVote?.activeVotingSession ?? null);
+	let session = $derived(getSession());
 
 	let majorityAmount = $derived.by(() => {
 		if (!session) return 0;

@@ -55,9 +55,11 @@
 	let rollCallVotingCon = $state<string[]>([]);
 	let rollCallVotingAbstain = $state<string[]>([]);
 
-	let members = committee?.members
-		.filter((member) => member.present && member.representation?.type === 'DELEGATION')
-		.sort((a, b) => sortTranslatedCountries(a.representation!, b.representation!));
+	let members = $derived(
+		committee?.members
+			.filter((member) => member.present && member.representation?.type === 'DELEGATION')
+			.sort((a, b) => sortTranslatedCountries(a.representation!, b.representation!)) ?? []
+	);
 
 	let majorityAmount = $derived.by(() => {
 		switch (majority) {

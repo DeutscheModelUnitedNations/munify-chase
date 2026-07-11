@@ -9,7 +9,7 @@
 		roleBadgeClassFor,
 		roleLabelFor
 	} from '$lib/components/navbar/conferenceNavItems';
-	import * as m from '$lib/paraglide/messages.js';
+
 	import { getCurrentUser } from '$lib/state/currentUser.svelte';
 	import hotkeys from 'hotkeys-js';
 	import { goto } from '$app/navigation';
@@ -106,58 +106,6 @@
 			isGlobalAdmin: !!isGlobalAdmin
 		})
 	);
-
-	const dockItems = $derived([
-		{
-			icon: 'fa-gears',
-			label: () => m.setup(),
-			href: resolve('/app/[conferenceId]/[committeeId]/(chairs)/setup', {
-				conferenceId,
-				committeeId
-			}),
-			key: 'setup'
-		},
-		{
-			icon: 'fa-users',
-			label: () => m.presence(),
-			href: resolve('/app/[conferenceId]/[committeeId]/(chairs)/presence', {
-				conferenceId,
-				committeeId
-			}),
-			key: 'presence'
-		},
-		{
-			icon: 'fa-podium',
-			label: () => m.speakersList(),
-			href: resolve('/app/[conferenceId]/[committeeId]/(chairs)/speakers-list', {
-				conferenceId,
-				committeeId
-			}),
-			key: 'speakers-list'
-		},
-		{
-			icon: 'fa-person-booth',
-			label: () => m.voting(),
-			href: resolve('/app/[conferenceId]/[committeeId]/(chairs)/voting', {
-				conferenceId,
-				committeeId
-			}),
-			key: 'voting'
-		},
-		{
-			icon: 'fa-file-lines',
-			label: () => m.resolutions(),
-			href: resolve('/app/[conferenceId]/[committeeId]/(chairs)/resolutions', {
-				conferenceId,
-				committeeId
-			}),
-			key: 'resolutions'
-		}
-	]);
-
-	function isActive(key: string) {
-		return page.route.id?.includes(key) ?? false;
-	}
 
 	$effect(() => {
 		hotkeys('alt+1, alt+2, alt+3, alt+4', (event, handler) => {

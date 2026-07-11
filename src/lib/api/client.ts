@@ -15,7 +15,7 @@ import { filter, map, onPush, pipe } from 'wonka';
 import { browser } from '$app/environment';
 import { schema } from './rumbleClient/schema';
 import { optimistic, updates } from './optimisticUpdateHandlers';
-import { setWsConnected } from '$lib/state/connection.svelte';
+import { setWsConnected, DISCONNECT_GRACE_MS } from '$lib/state/connection.svelte';
 import { createClient as createWSClient } from 'graphql-ws';
 import { configPublic } from '$config/public';
 import { getCachedAccessToken } from '$lib/platform/oidc';
@@ -142,6 +142,7 @@ if (browser) {
 
 	let wsConnected = false;
 	let everConnected = false;
+	let pendingErrorTimer: ReturnType<typeof setTimeout> | null = null;
 
 	const wsClient = createWSClient({
 		url: wsUrl,
@@ -152,6 +153,10 @@ if (browser) {
 		},
 		on: {
 			connected: () => {
+				if (pendingErrorTimer !== null) {
+					clearTimeout(pendingErrorTimer);
+					pendingErrorTimer = null;
+				}
 				const isReconnect = everConnected;
 				everConnected = true;
 				wsConnected = true;
@@ -168,19 +173,28 @@ if (browser) {
 			closed: () => {
 				wsConnected = false;
 				setWsConnected(false);
-				for (const [, { sink, unsubscribe }] of pendingNonSubscriptions) {
-					unsubscribe();
-					// Surface as an offline-style network error (a CombinedError carrying a
-					// networkError whose message matches graphcache's isOfflineError check)
-					// so an in-flight optimistic mutation is queued for retry on reconnect
-					// instead of being dropped. A plain Error fails that check and is lost.
-					sink.error?.(
-						new CombinedError({
-							networkError: new Error('network error: WebSocket connection lost')
-						})
-					);
-				}
-				pendingNonSubscriptions.clear();
+				// Don't error pending queries/mutations out immediately: graphql-ws's own
+				// retry loop (shouldRetry: () => true) transparently re-sends each in-flight
+				// operation on the same sink once the socket reconnects, so a brief drop
+				// resolves with no error at all. Only if the outage outlasts the grace
+				// window do we give up waiting and surface it as an offline-style error.
+				if (pendingErrorTimer !== null) return;
+				pendingErrorTimer = setTimeout(() => {
+					pendingErrorTimer = null;
+					for (const [, { sink, unsubscribe }] of pendingNonSubscriptions) {
+						unsubscribe();
+						// Surface as an offline-style network error (a CombinedError carrying a
+						// networkError whose message matches graphcache's isOfflineError check)
+						// so an in-flight optimistic mutation is queued for retry on reconnect
+						// instead of being dropped. A plain Error fails that check and is lost.
+						sink.error?.(
+							new CombinedError({
+								networkError: new Error('network error: WebSocket connection lost')
+							})
+						);
+					}
+					pendingNonSubscriptions.clear();
+				}, DISCONNECT_GRACE_MS);
 			}
 		}
 	});

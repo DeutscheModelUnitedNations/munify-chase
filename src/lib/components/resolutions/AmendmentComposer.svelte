@@ -27,9 +27,7 @@
 		paperId: string;
 		committeeId: string;
 		selectedClauseId: string | null;
-		selectedClauseIndex: number | null;
 		operative: OperativeClause[];
-		operativeCount: number;
 		viewer: ResolutionViewer;
 		close: () => void;
 	}
@@ -39,16 +37,18 @@
 		paperId,
 		committeeId,
 		selectedClauseId,
-		selectedClauseIndex,
 		operative,
-		operativeCount,
 		viewer,
 		close
 	}: Props = $props();
 
 	// Track which clause the user has picked as target inside the dialog.
 	// Pre-select whatever is currently selected in the editor.
-	let targetClauseId = $state<string | null>(selectedClauseId);
+	// eslint-disable-next-line svelte/prefer-writable-derived -- writable and reactive to prop changes
+	let targetClauseId = $state<string | null>(null);
+	$effect(() => {
+		targetClauseId = selectedClauseId;
+	});
 	let targetClauseIndex = $derived(operative.findIndex((c) => c.id === targetClauseId));
 
 	let clauseSearch = $state('');
@@ -70,11 +70,13 @@
 
 	const team = $derived(isTeam(viewer));
 
-	const members = await client.liveQuery.committeeMembers({
-		__args: { where: { committee: { id: committeeId } } },
-		id: true,
-		representation: { name: true, alpha2Code: true, alpha3Code: true, faIcon: true, type: true }
-	});
+	const members = $derived(
+		await client.liveQuery.committeeMembers({
+			__args: { where: { committee: { id: committeeId } } },
+			id: true,
+			representation: { name: true, alpha2Code: true, alpha3Code: true, faIcon: true, type: true }
+		})
+	);
 
 	function getMemberName(member: (typeof members)[number] | undefined) {
 		return (

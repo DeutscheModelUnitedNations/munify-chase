@@ -159,10 +159,17 @@ export const hocuspocus = new Hocuspocus<YjsConnectionContext>({
 	],
 
 	// Validate in-band Bearer tokens from native/Tauri clients that cannot set
-	// HTTP headers at upgrade time. Runs before onConnect.
-	onAuthenticate: async ({ token, context: connContext }) => {
-		// Upgrade-time auth (session cookie or Authorization header) already
-		// populated ctx — nothing to do here.
+	// HTTP headers at upgrade time. In Hocuspocus v4.x this runs AFTER onConnect,
+	// so for native clients (ctx undefined in onConnect) this hook also handles
+	// the paper authorization that onConnect skipped.
+	onAuthenticate: async ({
+		token,
+		documentName: paperId,
+		context: connContext,
+		connectionConfig
+	}) => {
+		// Upgrade-time auth (session cookie) already populated ctx and onConnect
+		// already authorized the paper — nothing more to do here.
 		if (connContext.ctx) return;
 
 		if (!token) {
@@ -190,15 +197,20 @@ export const hocuspocus = new Hocuspocus<YjsConnectionContext>({
 			console.error('[yjs] in-band authentication failed', err);
 			throw { code: 4401, reason: 'unauthorized' };
 		}
+
+		// onConnect ran before us and skipped authorization because ctx was null.
+		// Now that ctx is set, authorize the paper access.
+		await authorizeConnection(paperId, connContext.ctx, connectionConfig);
 	},
 
-	// onAuthenticate runs before onConnect, so ctx is always populated by here
-	// (upgrade-time auth or in-band auth). openDirectConnection (used by
-	// applyServerMutation/readPaperJson) skips both hooks entirely.
-	// The throw below guards clients that somehow bypass onAuthenticate.
+	// In Hocuspocus v4.x onConnect runs BEFORE onAuthenticate. For web clients
+	// (session-cookie upgrade), ctx is already set here and we authorize now.
+	// For native/Tauri clients (no cookie at upgrade time), ctx is undefined
+	// here — we return and let onAuthenticate do both auth and authz below.
 	onConnect: async ({ documentName: paperId, context, connectionConfig }) => {
 		if (!context.ctx) {
-			throw { code: 4401, reason: 'unauthorized' };
+			// Native client: defer to onAuthenticate (in-band Bearer token flow).
+			return;
 		}
 		await authorizeConnection(paperId, context.ctx, connectionConfig);
 	},

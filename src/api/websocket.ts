@@ -112,8 +112,9 @@ yjsWSS.on('headers', setHeaders);
 				return new Response();
 			}
 		});
-		ctx = context(syntheticSvelteRequestEvent);
-		ctx.mustBeLoggedIn();
+		const authedCtx = context(syntheticSvelteRequestEvent);
+		authedCtx.mustBeLoggedIn();
+		ctx = authedCtx;
 		(req as unknown as Record<string, unknown>)[SYNTHETIC_EVENT_FIELD] =
 			syntheticSvelteRequestEvent;
 		startWSValidityChecker(ctx, socket);

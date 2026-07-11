@@ -171,3 +171,5 @@ CVE-2026-12151
 # crypto/x509: DoS via excessive DNS name processing in certificate chains - esbuild doesn't
 # validate X.509 certificates or perform DNS lookups
 CVE-2026-27145
+
+CVE-2026-39822

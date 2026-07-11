@@ -159,8 +159,15 @@ export const hocuspocus = new Hocuspocus<YjsConnectionContext>({
 	],
 
 	// Validate in-band Bearer tokens from native/Tauri clients that cannot set
-	// HTTP headers at upgrade time. Runs before onConnect.
-	onAuthenticate: async ({ token, context: connContext }) => {
+	// HTTP headers at upgrade time. In Hocuspocus v4.3.0, onConnect runs before
+	// onAuthenticate, so paper authorization for native clients is deferred to
+	// here after ctx is established.
+	onAuthenticate: async ({
+		token,
+		documentName: paperId,
+		context: connContext,
+		connectionConfig
+	}) => {
 		// Upgrade-time auth (session cookie or Authorization header) already
 		// populated ctx — nothing to do here.
 		if (connContext.ctx) return;
@@ -190,15 +197,22 @@ export const hocuspocus = new Hocuspocus<YjsConnectionContext>({
 			console.error('[yjs] in-band authentication failed', err);
 			throw { code: 4401, reason: 'unauthorized' };
 		}
+		// Authorization is outside the OIDC try-catch so a "forbidden" from
+		// authorizeConnection propagates to the client correctly instead of
+		// being swallowed and rethrown as "unauthorized".
+		await authorizeConnection(paperId, connContext.ctx, connectionConfig);
 	},
 
-	// onAuthenticate runs before onConnect, so ctx is always populated by here
-	// (upgrade-time auth or in-band auth). openDirectConnection (used by
-	// applyServerMutation/readPaperJson) skips both hooks entirely.
-	// The throw below guards clients that somehow bypass onAuthenticate.
+	// In Hocuspocus v4.3.0, onConnect runs before onAuthenticate. For web
+	// clients ctx is set at upgrade time and authorization runs here. For
+	// native/Tauri clients ctx is undefined at this point — return early and
+	// let onAuthenticate handle both token validation and paper authorization.
+	// openDirectConnection (used by applyServerMutation/readPaperJson) skips
+	// both hooks entirely.
 	onConnect: async ({ documentName: paperId, context, connectionConfig }) => {
 		if (!context.ctx) {
-			throw { code: 4401, reason: 'unauthorized' };
+			// Native client: ctx not yet set; onAuthenticate will authorize.
+			return;
 		}
 		await authorizeConnection(paperId, context.ctx, connectionConfig);
 	},

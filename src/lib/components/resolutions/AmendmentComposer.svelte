@@ -70,13 +70,11 @@
 
 	const team = $derived(isTeam(viewer));
 
-	const members = $derived(
-		await client.liveQuery.committeeMembers({
-			__args: { where: { committee: { id: committeeId } } },
-			id: true,
-			representation: { name: true, alpha2Code: true, alpha3Code: true, faIcon: true, type: true }
-		})
-	);
+	const members = await client.liveQuery.committeeMembers({
+		__args: { where: { committee: { id: committeeId } } },
+		id: true,
+		representation: { name: true, alpha2Code: true, alpha3Code: true, faIcon: true, type: true }
+	});
 
 	function getMemberName(member: (typeof members)[number] | undefined) {
 		return (

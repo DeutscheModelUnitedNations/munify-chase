@@ -10,14 +10,12 @@
 
 	let { paperId }: Props = $props();
 
-	const codes = $derived(
-		await client.liveQuery.paperShareCodes({
-			__args: { where: { paper: { id: paperId } } },
-			id: true,
-			code: true,
-			permission: true
-		})
-	);
+	const codes = await client.liveQuery.paperShareCodes({
+		__args: { where: { paper: { id: paperId } } },
+		id: true,
+		code: true,
+		permission: true
+	});
 
 	let busy = $state(false);
 	async function create(permission: 'EDIT' | 'SPONSOR') {

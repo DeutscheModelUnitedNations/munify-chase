@@ -67,20 +67,16 @@
 	const canPropose = $derived(team || (!!viewer.committeeMemberId && submissionOpen));
 
 	// Lightweight count queries for tab badges (graphcache dedupes with children).
-	const amendments = $derived(
-		await client.liveQuery.amendments({
-			__args: { where: { paper: { id: paperId } } },
-			id: true,
-			targetClauseId: true
-		})
-	);
-	const comments = $derived(
-		await client.liveQuery.resolutionComments({
-			__args: { where: { paper: { id: paperId } } },
-			id: true,
-			clauseId: true
-		})
-	);
+	const amendments = await client.liveQuery.amendments({
+		__args: { where: { paper: { id: paperId } } },
+		id: true,
+		targetClauseId: true
+	});
+	const comments = await client.liveQuery.resolutionComments({
+		__args: { where: { paper: { id: paperId } } },
+		id: true,
+		clauseId: true
+	});
 
 	const amendmentCount = $derived(
 		(amendments ?? []).filter((a) =>

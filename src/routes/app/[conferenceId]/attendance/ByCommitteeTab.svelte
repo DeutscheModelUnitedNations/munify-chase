@@ -15,23 +15,21 @@
 	const WARNING_HOURS = 4;
 	const WARNING_MS = WARNING_HOURS * 60 * 60 * 1000;
 
-	const conference = $derived(
-		await client.liveQuery.conference({
-			__args: { id: conferenceId },
+	const conference = await client.liveQuery.conference({
+		__args: { id: conferenceId },
+		id: true,
+		committees: {
 			id: true,
-			committees: {
+			name: true,
+			abbreviation: true,
+			totalPresent: true,
+			members: {
 				id: true,
-				name: true,
-				abbreviation: true,
-				totalPresent: true,
-				members: {
-					id: true,
-					present: true,
-					representation: { type: true }
-				}
+				present: true,
+				representation: { type: true }
 			}
-		})
-	);
+		}
+	});
 
 	type CommitteeForStat = NonNullable<NonNullable<typeof conference>['committees']>[number];
 
@@ -60,26 +58,24 @@
 		return { present, total };
 	});
 
-	const allEvents = $derived(
-		await client.liveQuery.presenceEvents({
-			__args: {
-				where: { committee: { conference: { id: conferenceId } } },
-				orderBy: { timestamp: 'desc' }
-			},
+	const allEvents = await client.liveQuery.presenceEvents({
+		__args: {
+			where: { committee: { conference: { id: conferenceId } } },
+			orderBy: { timestamp: 'desc' }
+		},
+		id: true,
+		present: true,
+		committeeId: true,
+		timestamp: true,
+		conferenceUser: {
 			id: true,
-			present: true,
-			committeeId: true,
-			timestamp: true,
-			conferenceUser: {
-				id: true,
-				userEmail: true,
-				name: true,
-				conferenceMember: {
-					representation: { name: true, faIcon: true }
-				}
+			userEmail: true,
+			name: true,
+			conferenceMember: {
+				representation: { name: true, faIcon: true }
 			}
-		})
-	);
+		}
+	});
 
 	let now = $derived(getServerTime().valueOf());
 

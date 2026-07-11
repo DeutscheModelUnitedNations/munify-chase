@@ -15,26 +15,24 @@
 	// Compute stats client-side: fine for typical conference sizes (a few thousand
 	// events). If the event log grows past ~10k, move this into a server-side
 	// window-function query (see plan §6).
-	const events = $derived(
-		await client.liveQuery.presenceEvents({
-			__args: {
-				where: { committee: { conference: { id: conferenceId } } },
-				orderBy: { timestamp: 'asc' }
-			},
+	const events = await client.liveQuery.presenceEvents({
+		__args: {
+			where: { committee: { conference: { id: conferenceId } } },
+			orderBy: { timestamp: 'asc' }
+		},
+		id: true,
+		present: true,
+		timestamp: true,
+		committeeId: true,
+		conferenceUserId: true,
+		conferenceUser: {
 			id: true,
-			present: true,
-			timestamp: true,
-			committeeId: true,
-			conferenceUserId: true,
-			conferenceUser: {
-				id: true,
-				userEmail: true,
-				name: true,
-				conferenceMember: { representation: { name: true } }
-			},
-			committee: { id: true, name: true, abbreviation: true }
-		})
-	);
+			userEmail: true,
+			name: true,
+			conferenceMember: { representation: { name: true } }
+		},
+		committee: { id: true, name: true, abbreviation: true }
+	});
 
 	let now = $derived(getServerTime().valueOf());
 
@@ -126,23 +124,21 @@
 		new Map((events ?? []).map((e) => [e.committee?.id, e.committee]))
 	);
 
-	const delegateConference = $derived(
-		await client.liveQuery.conference({
-			__args: { id: conferenceId },
+	const delegateConference = await client.liveQuery.conference({
+		__args: { id: conferenceId },
+		id: true,
+		committees: {
 			id: true,
-			committees: {
+			name: true,
+			abbreviation: true,
+			totalPresent: true,
+			members: {
 				id: true,
-				name: true,
-				abbreviation: true,
-				totalPresent: true,
-				members: {
-					id: true,
-					present: true,
-					representation: { type: true }
-				}
+				present: true,
+				representation: { type: true }
 			}
-		})
-	);
+		}
+	});
 
 	type DelegateCommittee = NonNullable<
 		NonNullable<typeof delegateConference>['committees']

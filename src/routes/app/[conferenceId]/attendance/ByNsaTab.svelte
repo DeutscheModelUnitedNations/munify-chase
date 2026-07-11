@@ -11,46 +11,40 @@
 	}
 	let { conferenceId }: Props = $props();
 
-	const nsaUsers = $derived(
-		await client.liveQuery.conferenceUsers({
-			__args: {
-				where: {
-					conference: { id: conferenceId },
-					conferenceUserType: 'NON_STATE_ACTOR'
-				}
-			},
-			id: true,
-			userEmail: true,
-			name: true,
-			attendanceCode: true,
-			conferenceMember: {
-				id: true,
-				representation: { id: true, name: true, faIcon: true }
+	const nsaUsers = await client.liveQuery.conferenceUsers({
+		__args: {
+			where: {
+				conference: { id: conferenceId },
+				conferenceUserType: 'NON_STATE_ACTOR'
 			}
-		})
-	);
-
-	const allEvents = $derived(
-		await client.liveQuery.presenceEvents({
-			__args: {
-				where: { committee: { conference: { id: conferenceId } } },
-				orderBy: { timestamp: 'desc' }
-			},
+		},
+		id: true,
+		userEmail: true,
+		name: true,
+		attendanceCode: true,
+		conferenceMember: {
 			id: true,
-			present: true,
-			committeeId: true,
-			timestamp: true,
-			conferenceUser: { id: true }
-		})
-	);
+			representation: { id: true, name: true, faIcon: true }
+		}
+	});
 
-	const conference = $derived(
-		await client.liveQuery.conference({
-			__args: { id: conferenceId },
-			title: true,
-			committees: { id: true, name: true, abbreviation: true }
-		})
-	);
+	const allEvents = await client.liveQuery.presenceEvents({
+		__args: {
+			where: { committee: { conference: { id: conferenceId } } },
+			orderBy: { timestamp: 'desc' }
+		},
+		id: true,
+		present: true,
+		committeeId: true,
+		timestamp: true,
+		conferenceUser: { id: true }
+	});
+
+	const conference = await client.liveQuery.conference({
+		__args: { id: conferenceId },
+		title: true,
+		committees: { id: true, name: true, abbreviation: true }
+	});
 
 	type NsaUser = NonNullable<typeof nsaUsers>[number];
 

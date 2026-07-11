@@ -17,25 +17,23 @@
 	// happening?" — driving the modal from this FK keeps every tab consistent
 	// (including offline popups whose cross-tab synthetic mutations would otherwise
 	// roll back a list-based `where: completedAt isNull` query result).
-	const committeeWithVote = $derived(
-		await client.liveQuery.committee({
-			__args: { id: committeeId },
+	const committeeWithVote = await client.liveQuery.committee({
+		__args: { id: committeeId },
+		id: true,
+		simpleMajority: true,
+		twoThirdsMajority: true,
+		activeVotingSession: {
 			id: true,
-			simpleMajority: true,
-			twoThirdsMajority: true,
-			activeVotingSession: {
-				id: true,
-				mode: true,
-				currentStage: true,
-				votesPro: true,
-				votesCon: true,
-				votesAbstain: true,
-				voteName: true,
-				majority: true,
-				withAbstentions: true
-			}
-		})
-	);
+			mode: true,
+			currentStage: true,
+			votesPro: true,
+			votesCon: true,
+			votesAbstain: true,
+			voteName: true,
+			majority: true,
+			withAbstentions: true
+		}
+	});
 
 	// Freeze the last-known session while the WS is confirmed disconnected, so a real
 	// outage doesn't close the vote mid-count — only a genuine vote completion does.

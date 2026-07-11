@@ -17,26 +17,24 @@
 	// All presence events in the conference, newest first. We subscribe to the
 	// auto-generated query (which supports live updates) and derive the latest
 	// event per user client-side.
-	const allEvents = $derived(
-		await client.liveQuery.presenceEvents({
-			__args: {
-				where: { committee: { conference: { id: conferenceId } }, type: 'NSA_SCAN' },
-				orderBy: { timestamp: 'desc' }
-			},
+	const allEvents = await client.liveQuery.presenceEvents({
+		__args: {
+			where: { committee: { conference: { id: conferenceId } }, type: 'NSA_SCAN' },
+			orderBy: { timestamp: 'desc' }
+		},
+		id: true,
+		present: true,
+		committeeId: true,
+		timestamp: true,
+		conferenceUser: {
 			id: true,
-			present: true,
-			committeeId: true,
-			timestamp: true,
-			conferenceUser: {
-				id: true,
-				userEmail: true,
-				name: true,
-				conferenceMember: {
-					representation: { name: true, faIcon: true }
-				}
+			userEmail: true,
+			name: true,
+			conferenceMember: {
+				representation: { name: true, faIcon: true }
 			}
-		})
-	);
+		}
+	});
 
 	type PresenceEvent = NonNullable<typeof allEvents>[number];
 

@@ -25,19 +25,17 @@
 	// Drive the modal from `committee.activeRollCallSession` — the single source of
 	// truth defined in the schema. Open iff the committee references a session;
 	// close when that reference goes null.
-	const committee = $derived(
-		await client.liveQuery.committee({
-			__args: { id: committeeId },
+	const committee = await client.liveQuery.committee({
+		__args: { id: committeeId },
+		id: true,
+		activeRollCallSession: {
 			id: true,
-			activeRollCallSession: {
-				id: true,
-				currentMemberIndex: true,
-				// Needed so updates.completeRollCallSession can resolve which committee to
-				// clear when the close replays cross-tab / offline (no subscription).
-				committeeId: true
-			}
-		})
-	);
+			currentMemberIndex: true,
+			// Needed so updates.completeRollCallSession can resolve which committee to
+			// clear when the close replays cross-tab / offline (no subscription).
+			committeeId: true
+		}
+	});
 
 	// Freeze the last-known index while the WS is confirmed disconnected, so a real
 	// outage doesn't close the modal mid-roll-call — only a genuine session change does.

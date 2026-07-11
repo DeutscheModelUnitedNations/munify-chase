@@ -10,6 +10,7 @@
 
 <div class="prose leading-6">
 	{#if data && data !== '<p></p>'}
+		<!-- eslint-disable-next-line svelte/no-at-html-tags -- whiteboard content is sanitized server-side -->
 		{@html data}
 	{:else}
 		<p class="text-center opacity-60">

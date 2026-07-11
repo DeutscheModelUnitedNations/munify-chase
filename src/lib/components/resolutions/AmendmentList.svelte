@@ -46,42 +46,56 @@
 		openTriggerId = null
 	}: Props = $props();
 
-	const allReviewItems = await client.liveQuery.amendmentReviewItems({
-		__args: { where: { paper: { id: paperId } } },
-		id: true,
-		phase: true,
-		aiObsolete: true,
-		aiRewriteSuggestion: true,
-		triggerAmendment: {
+	const allReviewItems = $derived(
+		await client.liveQuery.amendmentReviewItems({
+			__args: { where: { paper: { id: paperId } } },
 			id: true,
-			documentNumber: true,
-			type: true,
-			newContent: true,
-			oldContent: true,
-			targetClauseId: true,
-			targetOperativeIndex: true,
-			proposer: {
+			phase: true,
+			aiObsolete: true,
+			aiRewriteSuggestion: true,
+			triggerAmendment: {
 				id: true,
-				representation: { name: true, alpha2Code: true, alpha3Code: true, faIcon: true, type: true }
+				documentNumber: true,
+				type: true,
+				newContent: true,
+				oldContent: true,
+				targetClauseId: true,
+				targetOperativeIndex: true,
+				proposer: {
+					id: true,
+					representation: {
+						name: true,
+						alpha2Code: true,
+						alpha3Code: true,
+						faIcon: true,
+						type: true
+					}
+				},
+				sponsors: { id: true }
 			},
-			sponsors: { id: true }
-		},
-		subjectAmendment: {
-			id: true,
-			documentNumber: true,
-			type: true,
-			status: true,
-			newContent: true,
-			oldContent: true,
-			targetClauseId: true,
-			targetOperativeIndex: true,
-			proposer: {
+			subjectAmendment: {
 				id: true,
-				representation: { name: true, alpha2Code: true, alpha3Code: true, faIcon: true, type: true }
-			},
-			sponsors: { id: true }
-		}
-	});
+				documentNumber: true,
+				type: true,
+				status: true,
+				newContent: true,
+				oldContent: true,
+				targetClauseId: true,
+				targetOperativeIndex: true,
+				proposer: {
+					id: true,
+					representation: {
+						name: true,
+						alpha2Code: true,
+						alpha3Code: true,
+						faIcon: true,
+						type: true
+					}
+				},
+				sponsors: { id: true }
+			}
+		})
+	);
 
 	// Group unresolved review items by trigger, scoped to the currently visible clause tab.
 	const pendingReviewGroups = $derived.by(() => {
@@ -133,23 +147,25 @@
 		}
 	});
 
-	const amendments = await client.liveQuery.amendments({
-		__args: { where: { paper: { id: paperId } }, orderBy: { createdAt: 'asc' } },
-		id: true,
-		type: true,
-		status: true,
-		targetClauseId: true,
-		targetOperativeIndex: true,
-		newContent: true,
-		targetPosition: true,
-		documentNumber: true,
-		createdAt: true,
-		proposer: {
+	const amendments = $derived(
+		await client.liveQuery.amendments({
+			__args: { where: { paper: { id: paperId } }, orderBy: { createdAt: 'asc' } },
 			id: true,
-			representation: { name: true, alpha2Code: true, alpha3Code: true, faIcon: true, type: true }
-		},
-		sponsors: { id: true, amendmentId: true, committeeMember: { id: true } }
-	});
+			type: true,
+			status: true,
+			targetClauseId: true,
+			targetOperativeIndex: true,
+			newContent: true,
+			targetPosition: true,
+			documentNumber: true,
+			createdAt: true,
+			proposer: {
+				id: true,
+				representation: { name: true, alpha2Code: true, alpha3Code: true, faIcon: true, type: true }
+			},
+			sponsors: { id: true, amendmentId: true, committeeMember: { id: true } }
+		})
+	);
 
 	// Clause-targeted amendments when a clause is selected; ADD amendments
 	// (which target a position, not a clause) surface at the document level.

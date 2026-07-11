@@ -11,22 +11,6 @@ function defaultMode(): AiMode {
  * Before you change anything, be sure you know what you are doing!
  */
 
-function describeChange(oldText: string, newText: string): string {
-	const ow = oldText.trim().split(/\s+/);
-	const nw = newText.trim().split(/\s+/);
-	let pre = 0;
-	while (pre < ow.length && pre < nw.length && ow[pre] === nw[pre]) pre++;
-	let suf = 0;
-	const maxSuf = Math.min(ow.length - pre, nw.length - pre);
-	while (suf < maxSuf && ow[ow.length - 1 - suf] === nw[nw.length - 1 - suf]) suf++;
-	const removed = ow.slice(pre, suf ? -suf : undefined);
-	const added = nw.slice(pre, suf ? -suf : undefined);
-	if (removed.length === 0 && added.length === 0) return 'no wording change';
-	if (removed.length === 0) return `inserts "${added.join(' ')}"`;
-	if (added.length === 0) return `deletes "${removed.join(' ')}"`;
-	return `replaces "${removed.join(' ')}" with "${added.join(' ')}"`;
-}
-
 type AmendmentBrief = {
 	id?: string;
 	documentNumber?: string | null;
@@ -384,7 +368,6 @@ export async function evaluateAndSuggestRewrite(
 	const originalClause = toText(subject.oldContent ?? trigger.oldContent);
 	const currentClause = toText(trigger.newContent);
 	const proposedClause = toText(subject.newContent);
-	const delta = describeChange(originalClause, proposedClause);
 
 	const raw = await callAI({
 		messages: [

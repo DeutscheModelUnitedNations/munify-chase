@@ -27,15 +27,17 @@
 		amendmentStatus
 	}: Props = $props();
 
-	const sponsors = await client.liveQuery.amendmentSponsors({
-		__args: { where: { amendment: { id: amendmentId } } },
-		id: true,
-		amendmentId: true,
-		committeeMember: {
+	const sponsors = $derived(
+		await client.liveQuery.amendmentSponsors({
+			__args: { where: { amendment: { id: amendmentId } } },
 			id: true,
-			representation: { name: true, alpha2Code: true, alpha3Code: true, faIcon: true, type: true }
-		}
-	});
+			amendmentId: true,
+			committeeMember: {
+				id: true,
+				representation: { name: true, alpha2Code: true, alpha3Code: true, faIcon: true, type: true }
+			}
+		})
+	);
 
 	const team = $derived(isTeam(viewer));
 	const myMemberId = $derived(viewer.committeeMemberId ?? null);
@@ -59,11 +61,13 @@
 		})
 	);
 
-	const members = await client.liveQuery.committeeMembers({
-		__args: { where: { committee: { id: committeeId } } },
-		id: true,
-		representation: { name: true, alpha2Code: true, alpha3Code: true, faIcon: true, type: true }
-	});
+	const members = $derived(
+		await client.liveQuery.committeeMembers({
+			__args: { where: { committee: { id: committeeId } } },
+			id: true,
+			representation: { name: true, alpha2Code: true, alpha3Code: true, faIcon: true, type: true }
+		})
+	);
 
 	const getName = (member: (typeof members)[number] | undefined) =>
 		getTranslatedCountryNameFromAlpha3Code(member?.representation?.alpha3Code) ??

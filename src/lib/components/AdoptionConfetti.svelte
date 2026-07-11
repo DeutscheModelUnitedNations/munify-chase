@@ -1,6 +1,5 @@
 <script lang="ts">
 	import { m } from '$lib/paraglide/messages';
-	import dayjs from 'dayjs';
 	import { onMount } from 'svelte';
 	import { Confetti } from 'svelte-confetti';
 	import Marquee from 'svelte-fast-marquee';

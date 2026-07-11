@@ -47,8 +47,7 @@
 	} from './paperContext';
 	import { nanoid } from '$lib/helpers/nanoid';
 	import { workingPaperName } from '$lib/helpers/paperName';
-	import { launchClauseVote } from './resolutionVotes';
-	import { openVotingModal, resumeVotingModal } from '$lib/components/voting/votingModal';
+	import { openVotingModal } from '$lib/components/voting/votingModal';
 	import { downloadResolutionTypst, downloadResolutionPdf } from '$lib/utils/resolutionExport';
 	import { getEngine, unloadEngine } from '$lib/ai/model';
 	import { assessAiCapability } from '$lib/ai/assess';
@@ -76,24 +75,26 @@
 	// ---- identity -----------------------------------------------------------
 	const currentUser = await getCurrentUser();
 
-	const conferenceUsers = await client.liveQuery.conferenceUsers({
-		__args: {
-			where: {
-				user: { id: currentUser.id ?? '' },
-				conference: { committees: { resolutionPapers: { id: paperId } } }
+	const conferenceUsers = $derived(
+		await client.liveQuery.conferenceUsers({
+			__args: {
+				where: {
+					user: { id: currentUser.id ?? '' },
+					conference: { committees: { resolutionPapers: { id: paperId } } }
+				}
+			},
+			id: true,
+			conferenceUserType: true,
+			committeeMemberId: true,
+			committeeMember: {
+				representation: {
+					name: true,
+					alpha2Code: true,
+					alpha3Code: true
+				}
 			}
-		},
-		id: true,
-		conferenceUserType: true,
-		committeeMemberId: true,
-		committeeMember: {
-			representation: {
-				name: true,
-				alpha2Code: true,
-				alpha3Code: true
-			}
-		}
-	});
+		})
+	);
 
 	const viewer = $derived<ResolutionViewer>({
 		userId: currentUser.id ?? '',
@@ -104,84 +105,96 @@
 
 	// ---- paper + committee --------------------------------------------------
 	// liveQuery returns a reactive proxy once awaited; args are stable per mount.
-	const papers = await client.liveQuery.resolutionPapers({
-		__args: { where: { id: paperId } },
-		id: true,
-		title: true,
-		status: true,
-		documentNumber: true,
-		updatedAt: true,
-		committee: { id: true },
-		agendaItem: { title: true },
-		creatorCommitteeMember: {
+	const papers = $derived(
+		await client.liveQuery.resolutionPapers({
+			__args: { where: { id: paperId } },
 			id: true,
-			representation: { id: true, name: true, alpha3Code: true }
-		},
-		sponsors: {
-			id: true,
-			committeeMember: {
+			title: true,
+			status: true,
+			documentNumber: true,
+			updatedAt: true,
+			committee: { id: true },
+			agendaItem: { title: true },
+			creatorCommitteeMember: {
+				id: true,
 				representation: { id: true, name: true, alpha3Code: true }
-			}
-		},
-		editors: { id: true, conferenceUser: { id: true } }
-	});
+			},
+			sponsors: {
+				id: true,
+				committeeMember: {
+					representation: { id: true, name: true, alpha3Code: true }
+				}
+			},
+			editors: { id: true, conferenceUser: { id: true } }
+		})
+	);
 	const paper = $derived(papers?.[0]);
 
-	const committees = await client.liveQuery.committees({
-		__args: { where: { resolutionPapers: { id: paperId } } },
-		id: true,
-		name: true,
-		abbreviation: true,
-		totalPresent: true,
-		simpleMajority: true,
-		twoThirdsMajority: true,
-		activeDraftResolutionId: true,
-		activeAmendmentId: true,
-		currentOperativeIndex: true,
-		amendmentSubmissionOpen: true,
-		amendmentSponsoringOpen: true,
-		supportReevaluationOpen: true,
-		conference: { title: true, logoSvg: true },
-		activeVotingSession: {
+	const committees = $derived(
+		await client.liveQuery.committees({
+			__args: { where: { resolutionPapers: { id: paperId } } },
 			id: true,
-			mode: true,
-			voteName: true,
-			majority: true,
-			withAbstentions: true
-		}
-	});
+			name: true,
+			abbreviation: true,
+			totalPresent: true,
+			simpleMajority: true,
+			twoThirdsMajority: true,
+			activeDraftResolutionId: true,
+			activeAmendmentId: true,
+			currentOperativeIndex: true,
+			amendmentSubmissionOpen: true,
+			amendmentSponsoringOpen: true,
+			supportReevaluationOpen: true,
+			conference: { title: true, logoSvg: true },
+			activeVotingSession: {
+				id: true,
+				mode: true,
+				voteName: true,
+				majority: true,
+				withAbstentions: true
+			}
+		})
+	);
 	const committee = $derived(committees?.[0]);
 
 	// ---- amendments + votes (overlays / highlighting) -----------------------
-	const amendmentRows = await client.liveQuery.amendments({
-		__args: { where: { paper: { id: paperId } } },
-		id: true,
-		type: true,
-		status: true,
-		targetClauseId: true,
-		targetOperativeIndex: true,
-		targetPosition: true,
-		newContent: true,
-		proposer: { id: true, representation: { id: true, name: true, alpha2Code: true } },
-		sponsors: { id: true }
-	});
-	const clauseVotes = await client.liveQuery.operativeClauseVotes({
-		__args: { where: { paper: { id: paperId } } },
-		id: true,
-		clauseId: true,
-		vote: { id: true, outcome: true }
-	});
-	const comments = await client.liveQuery.resolutionComments({
-		__args: { where: { paper: { id: paperId } } },
-		id: true,
-		clauseId: true
-	});
-	const reviewItemsForBadges = await client.liveQuery.amendmentReviewItems({
-		__args: { where: { paper: { id: paperId } } },
-		id: true,
-		phase: true,
-		triggerAmendment: { id: true, targetClauseId: true }
-	});
+	const amendmentRows = $derived(
+		await client.liveQuery.amendments({
+			__args: { where: { paper: { id: paperId } } },
+			id: true,
+			type: true,
+			status: true,
+			targetClauseId: true,
+			targetOperativeIndex: true,
+			targetPosition: true,
+			newContent: true,
+			proposer: { id: true, representation: { id: true, name: true, alpha2Code: true } },
+			sponsors: { id: true }
+		})
+	);
+	const clauseVotes = $derived(
+		await client.liveQuery.operativeClauseVotes({
+			__args: { where: { paper: { id: paperId } } },
+			id: true,
+			clauseId: true,
+			vote: { id: true, outcome: true }
+		})
+	);
+	const comments = $derived(
+		await client.liveQuery.resolutionComments({
+			__args: { where: { paper: { id: paperId } } },
+			id: true,
+			clauseId: true
+		})
+	);
+	const reviewItemsForBadges = $derived(
+		await client.liveQuery.amendmentReviewItems({
+			__args: { where: { paper: { id: paperId } } },
+			id: true,
+			phase: true,
+			triggerAmendment: { id: true, targetClauseId: true }
+		})
+	);
 
 	const status = $derived((paper?.status ?? 'WORKING_PAPER') as PaperStatus);
 	const currentStatusIdx = $derived(PAPER_STATUS_ORDER.indexOf(status));
@@ -194,7 +207,7 @@
 	const rejectedClauseIds = $derived(
 		(clauseVotes ?? []).filter((v) => v.vote?.outcome === 'REJECTED').map((v) => v.clauseId)
 	);
-	const showVoteTab = $derived(status !== 'WORKING_PAPER' && status !== 'SUBMITTED');
+	const _showVoteTab = $derived(status !== 'WORKING_PAPER' && status !== 'SUBMITTED');
 	// Lookup map for clause vote records (for inline vote button + outcome badge).
 	const clauseVoteMap = $derived(new Map((clauseVotes ?? []).map((v) => [v.clauseId, v])));
 
@@ -286,6 +299,7 @@
 			// persists, while a transient reconnect gap resolves within a tick.
 			navigateAwayTimer = setTimeout(() => {
 				navigateAwayTimer = null;
+				// eslint-disable-next-line svelte/no-navigation-without-resolve -- backHref is a pre-resolved prop
 				if (!paper) goto(backHref);
 			}, 3000);
 		}
@@ -439,7 +453,6 @@
 	onDestroy(() => void yClient?.destroy());
 
 	const operative = $derived(yClient?.store.snapshot.operative ?? []);
-	const operativeCount = $derived(operative.length);
 
 	// Seed committeeName in the Y.js doc once IDB has loaded and the field is blank.
 	$effect(() => {
@@ -623,17 +636,6 @@
 		}
 	}
 
-	async function resumeClauseVote() {
-		const active = committee?.activeVotingSession;
-		if (!active) return;
-		await resumeVotingModal({
-			voteType: (active.mode ?? 'SHOW_OF_HANDS') as 'SHOW_OF_HANDS' | 'ROLL_CALL',
-			voteName: active.voteName ?? '',
-			majority: (active.majority ?? 'SIMPLE') as 'SIMPLE' | 'ABSOLUTE' | 'TWO_THIRDS',
-			withAbstentions: active.withAbstentions ?? true
-		});
-	}
-
 	// ---- actions ------------------------------------------------------------
 	function stored<T>(key: string, fallback: T): T {
 		if (!browser) return fallback;
@@ -775,12 +777,14 @@
 		<!-- Single header bar: title, lifecycle chain + chair controls, actions.
 		     Uses the page background (base-200) to stay distinct from the app nav. -->
 		<header class="bg-base-200 flex flex-wrap items-center gap-x-4 gap-y-2 px-4 py-2">
+			<!-- eslint-disable-next-line svelte/no-navigation-without-resolve -- backHref is a pre-resolved prop -->
 			<a class="btn btn-ghost btn-sm" href={backHref} aria-label={m.back()}>
 				<i class="fas fa-arrow-left"></i>
 			</a>
 			<div class="min-w-0">
 				{#if editingDocNum && team}
 					<div class="flex items-center gap-1">
+						<!-- svelte-ignore a11y_autofocus -->
 						<input
 							class="input input-bordered input-sm w-36"
 							type="text"
@@ -791,6 +795,7 @@
 							}}
 							onblur={saveDocNum}
 							autofocus
+							aria-label={m.documentNumber()}
 						/>
 					</div>
 				{:else}
@@ -825,7 +830,6 @@
 						supportReevaluationOpen: committee.supportReevaluationOpen,
 						activeVotingSession: committee.activeVotingSession ?? null
 					}}
-					{operativeCount}
 					currentClauseId={operative[committee.currentOperativeIndex]?.id ?? null}
 					currentClauseLabel={m.clauseN({ n: String(committee.currentOperativeIndex + 1) })}
 					onStartClauseVote={startClauseVote}
@@ -1108,7 +1112,6 @@
 						{selectedClauseId}
 						{selectedClauseIndex}
 						{operative}
-						{operativeCount}
 						{viewer}
 						submissionOpen={committee.amendmentSubmissionOpen}
 						sponsoringOpen={committee.amendmentSponsoringOpen}
@@ -1426,6 +1429,7 @@
 					{:else if hasReview}
 						<button
 							class="btn btn-xs btn-error gap-1"
+							aria-label={m.goToReview()}
 							onclick={() => selectClauseAndOpenReview(clause.id)}
 						>
 							<i class="fas fa-triangle-exclamation"></i>

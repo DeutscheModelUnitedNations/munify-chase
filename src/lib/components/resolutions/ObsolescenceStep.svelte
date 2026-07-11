@@ -65,8 +65,6 @@
 
 	let busy = $state(false);
 
-	const obsoleteCount = $derived(Object.values(decisions).filter(Boolean).length);
-
 	async function confirm() {
 		busy = true;
 		try {

@@ -37,18 +37,20 @@
 
 	// `committee.activeVotingSession` is the single source of truth for "is a vote
 	// happening?" — open iff it references a session, close when null.
-	const committeeWithVote = await client.liveQuery.committee({
-		__args: { id: committeeId },
-		id: true,
-		activeVotingSession: {
+	const committeeWithVote = $derived(
+		await client.liveQuery.committee({
+			__args: { id: committeeId },
 			id: true,
-			mode: true,
-			voteName: true,
-			majority: true,
-			withAbstentions: true,
-			votes: { id: true, committeeMemberId: true, vote: true }
-		}
-	});
+			activeVotingSession: {
+				id: true,
+				mode: true,
+				voteName: true,
+				majority: true,
+				withAbstentions: true,
+				votes: { id: true, committeeMemberId: true, vote: true }
+			}
+		})
+	);
 
 	// Freeze the last-known session while the WS is confirmed disconnected, so a real
 	// outage doesn't close the vote mid-count — only a genuine vote completion does.

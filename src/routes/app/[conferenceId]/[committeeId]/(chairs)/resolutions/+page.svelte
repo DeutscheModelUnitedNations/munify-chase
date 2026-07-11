@@ -21,16 +21,18 @@
 	const conferenceId = $derived(page.params.conferenceId!);
 	const committeeId = $derived(page.params.committeeId!);
 
-	const committee = await client.liveQuery.committee({
-		__args: { id: committeeId },
-		id: true,
-		name: true,
-		activeDraftResolutionId: true,
-		amendmentSubmissionOpen: true,
-		amendmentSponsoringOpen: true,
-		supportReevaluationOpen: true,
-		activeAgendaItem: { id: true, title: true }
-	});
+	const committee = $derived(
+		await client.liveQuery.committee({
+			__args: { id: committeeId },
+			id: true,
+			name: true,
+			activeDraftResolutionId: true,
+			amendmentSubmissionOpen: true,
+			amendmentSponsoringOpen: true,
+			supportReevaluationOpen: true,
+			activeAgendaItem: { id: true, title: true }
+		})
+	);
 
 	let settingActiveId = $state<string | null>(null);
 	async function setActive(paperId: string) {
@@ -49,27 +51,29 @@
 		}
 	}
 
-	const papers = await client.liveQuery.resolutionPapers({
-		__args: { where: { committee: { id: committeeId } } },
-		id: true,
-		title: true,
-		status: true,
-		documentNumber: true,
-		createdAt: true,
-		creatorCommitteeMember: {
+	const papers = $derived(
+		await client.liveQuery.resolutionPapers({
+			__args: { where: { committee: { id: committeeId } } },
 			id: true,
-			representation: {
+			title: true,
+			status: true,
+			documentNumber: true,
+			createdAt: true,
+			creatorCommitteeMember: {
 				id: true,
-				name: true,
-				type: true,
-				alpha2Code: true,
-				alpha3Code: true,
-				faIcon: true
-			}
-		},
-		sponsors: { id: true },
-		agendaItem: { id: true, title: true }
-	});
+				representation: {
+					id: true,
+					name: true,
+					type: true,
+					alpha2Code: true,
+					alpha3Code: true,
+					faIcon: true
+				}
+			},
+			sponsors: { id: true },
+			agendaItem: { id: true, title: true }
+		})
+	);
 
 	const statusFilters: { key: PaperStatus | 'ALL'; label: () => string }[] = [
 		{ key: 'ALL', label: () => m.all() },

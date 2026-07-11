@@ -20,20 +20,13 @@
 				withAbstentions?: boolean | null;
 			} | null;
 		};
-		operativeCount: number;
 		currentClauseId?: string | null;
 		currentClauseLabel?: string;
 		onStartClauseVote?: (clauseId: string, clauseLabel: string) => Promise<void>;
 	}
 
-	let {
-		paper,
-		committee,
-		operativeCount,
-		currentClauseId,
-		currentClauseLabel,
-		onStartClauseVote
-	}: Props = $props();
+	let { paper, committee, currentClauseId, currentClauseLabel, onStartClauseVote }: Props =
+		$props();
 
 	const currentIdx = $derived(PAPER_STATUS_ORDER.indexOf(paper.status));
 	const nextStatus = $derived(PAPER_STATUS_ORDER[currentIdx + 1] as PaperStatus | undefined);

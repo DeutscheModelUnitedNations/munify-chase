@@ -220,10 +220,6 @@
 		// subscription delivers null → $effect re-queues automatically
 	}
 
-	function opClauseRef(idx: number | null | undefined) {
-		return idx != null ? ` – Clause ${idx + 1}` : '';
-	}
-
 	function parseOldMarkup(raw: string | null | undefined): string | undefined {
 		if (!raw) return undefined;
 		try {

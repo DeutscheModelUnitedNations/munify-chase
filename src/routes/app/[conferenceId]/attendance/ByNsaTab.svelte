@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { client } from '$lib/api/rumbleClient/client';
 	import { m } from '$lib/paraglide/messages';
+	import { resolve } from '$app/paths';
 	import BasicCard from '$lib/components/BasicCard.svelte';
 	import NsaQrCardModal from './NsaQrCardModal.svelte';
 	import { SvelteMap } from 'svelte/reactivity';
@@ -10,40 +11,46 @@
 	}
 	let { conferenceId }: Props = $props();
 
-	const nsaUsers = await client.liveQuery.conferenceUsers({
-		__args: {
-			where: {
-				conference: { id: conferenceId },
-				conferenceUserType: 'NON_STATE_ACTOR'
-			}
-		},
-		id: true,
-		userEmail: true,
-		name: true,
-		attendanceCode: true,
-		conferenceMember: {
+	const nsaUsers = $derived(
+		await client.liveQuery.conferenceUsers({
+			__args: {
+				where: {
+					conference: { id: conferenceId },
+					conferenceUserType: 'NON_STATE_ACTOR'
+				}
+			},
 			id: true,
-			representation: { id: true, name: true, faIcon: true }
-		}
-	});
+			userEmail: true,
+			name: true,
+			attendanceCode: true,
+			conferenceMember: {
+				id: true,
+				representation: { id: true, name: true, faIcon: true }
+			}
+		})
+	);
 
-	const allEvents = await client.liveQuery.presenceEvents({
-		__args: {
-			where: { committee: { conference: { id: conferenceId } } },
-			orderBy: { timestamp: 'desc' }
-		},
-		id: true,
-		present: true,
-		committeeId: true,
-		timestamp: true,
-		conferenceUser: { id: true }
-	});
+	const allEvents = $derived(
+		await client.liveQuery.presenceEvents({
+			__args: {
+				where: { committee: { conference: { id: conferenceId } } },
+				orderBy: { timestamp: 'desc' }
+			},
+			id: true,
+			present: true,
+			committeeId: true,
+			timestamp: true,
+			conferenceUser: { id: true }
+		})
+	);
 
-	const conference = await client.liveQuery.conference({
-		__args: { id: conferenceId },
-		title: true,
-		committees: { id: true, name: true, abbreviation: true }
-	});
+	const conference = $derived(
+		await client.liveQuery.conference({
+			__args: { id: conferenceId },
+			title: true,
+			committees: { id: true, name: true, abbreviation: true }
+		})
+	);
 
 	type NsaUser = NonNullable<typeof nsaUsers>[number];
 
@@ -146,7 +153,7 @@
 <div class="flex flex-col gap-4">
 	<div class="flex flex-wrap items-center justify-end gap-2">
 		<a
-			href="/app/{conferenceId}/attendance/print"
+			href={resolve('/app/[conferenceId]/attendance/print', { conferenceId })}
 			class="btn btn-secondary btn-sm"
 			target="_blank"
 			rel="noopener"

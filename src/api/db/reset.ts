@@ -1,8 +1,6 @@
 import { sql } from 'drizzle-orm';
 import { drizzle } from 'drizzle-orm/node-postgres';
 
-// casing is a valid runtime option but missing from DrizzlePgConfig types in this RC
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const db = drizzle(process.env.DATABASE_URL!);
 
 console.info('Resetting database...');

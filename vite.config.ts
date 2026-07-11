@@ -4,7 +4,6 @@ import { sveltekit } from '@sveltejs/kit/vite';
 import { defineConfig, type ViteDevServer } from 'vite';
 import type { IncomingMessage } from 'node:http';
 import type { Duplex } from 'node:stream';
-import mkcert from 'vite-plugin-mkcert';
 
 function wsPlugin() {
 	return {

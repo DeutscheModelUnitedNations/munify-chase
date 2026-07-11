@@ -17,8 +17,6 @@ import {
 	type Resolution
 } from '@deutschemodelunitednations/munify-resolution-editor/schema';
 
-// casing is a valid runtime option but missing from DrizzlePgConfig types in this RC
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const db = drizzle(process.env.DATABASE_URL!);
 
 console.info('Resetting database...\n');
@@ -1716,11 +1714,6 @@ async function seedResolutionPapers() {
 
 					// ── State 9: REWRITE, resolved — chair rewrote the stale OP2 reference to match the amended language ──
 					if (reviewRewrite4AmendId) {
-						// originalText9 mirrors RW.6's newContent exactly (what the amendment proposed before the chair's edit)
-						const originalText9 = operative[4 % operative.length].replace(
-							';',
-							', drawing on the original mandate of the Climate Adaptation Rapid Response Facility as proposed by the primary sponsors, without reference to gender or age-specific criteria;'
-						);
 						const editedText9 = operative[4 % operative.length].replace(
 							';',
 							', in a manner consistent with the Climate Adaptation Rapid Response Facility as amended, including its gender-responsive and youth-inclusive mandate;'

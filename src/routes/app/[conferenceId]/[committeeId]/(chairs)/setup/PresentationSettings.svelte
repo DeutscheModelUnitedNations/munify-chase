@@ -1,9 +1,6 @@
 <script lang="ts">
 	import Tabs from '$lib/components/Tabs.svelte';
-	import {
-		getPresentationLayoutPresets,
-		type PresentationLayoutPresetOptions
-	} from '$lib/data/presentationLayoutPresets';
+	import { getPresentationLayoutPresets } from '$lib/data/presentationLayoutPresets';
 	import { client } from '$lib/api/rumbleClient/client';
 	import { m } from '$lib/paraglide/messages';
 	import { promiseToastStrings } from '$lib/utils/toast';
@@ -20,18 +17,20 @@
 		smallScreen: m.layoutPresetSmallScreen
 	};
 
-	const committeeData = await client.liveQuery.committee({
-		__args: { id: committeeId },
-		id: true,
-		presentationLayout: true,
-		presentationRootFontSize: true,
-		presentationResolutionFontSize: true,
-		displayRegionalGroups: true
-	});
+	const committeeData = $derived(
+		await client.liveQuery.committee({
+			__args: { id: committeeId },
+			id: true,
+			presentationLayout: true,
+			presentationRootFontSize: true,
+			presentationResolutionFontSize: true,
+			displayRegionalGroups: true
+		})
+	);
 
-	// Local state for slider instant preview
-	let localRootFontSize = $state(committeeData?.presentationRootFontSize ?? 16);
-	let localResolutionFontSize = $state(committeeData?.presentationResolutionFontSize ?? 16);
+	// Local state for slider instant preview — initialized to defaults; $effects below sync from server
+	let localRootFontSize = $state(16);
+	let localResolutionFontSize = $state(16);
 
 	// Keep local slider state in sync when server value changes (e.g. another device updates it)
 	$effect(() => {

@@ -120,7 +120,7 @@
 				<li class="menu-title">{m.navigation()}</li>
 				{#each items as item (item.key ?? item.href)}
 					<li>
-						<!-- eslint-disable-next-line svelte/no-navigation-without-resolve -- href is resolved by caller -->
+						<!-- eslint-disable svelte/no-navigation-without-resolve -->
 						<a
 							href={item.href}
 							class={item.active ? 'menu-active font-semibold' : ''}
@@ -137,6 +137,7 @@
 								<i class="fa-solid fa-circle text-primary text-[0.5rem]" aria-hidden="true"></i>
 							{/if}
 						</a>
+						<!-- eslint-enable svelte/no-navigation-without-resolve -->
 					</li>
 				{/each}
 			{/if}

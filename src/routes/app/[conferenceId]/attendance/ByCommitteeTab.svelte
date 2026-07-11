@@ -15,21 +15,23 @@
 	const WARNING_HOURS = 4;
 	const WARNING_MS = WARNING_HOURS * 60 * 60 * 1000;
 
-	const conference = await client.liveQuery.conference({
-		__args: { id: conferenceId },
-		id: true,
-		committees: {
+	const conference = $derived(
+		await client.liveQuery.conference({
+			__args: { id: conferenceId },
 			id: true,
-			name: true,
-			abbreviation: true,
-			totalPresent: true,
-			members: {
+			committees: {
 				id: true,
-				present: true,
-				representation: { type: true }
+				name: true,
+				abbreviation: true,
+				totalPresent: true,
+				members: {
+					id: true,
+					present: true,
+					representation: { type: true }
+				}
 			}
-		}
-	});
+		})
+	);
 
 	type CommitteeForStat = NonNullable<NonNullable<typeof conference>['committees']>[number];
 
@@ -58,24 +60,26 @@
 		return { present, total };
 	});
 
-	const allEvents = await client.liveQuery.presenceEvents({
-		__args: {
-			where: { committee: { conference: { id: conferenceId } } },
-			orderBy: { timestamp: 'desc' }
-		},
-		id: true,
-		present: true,
-		committeeId: true,
-		timestamp: true,
-		conferenceUser: {
+	const allEvents = $derived(
+		await client.liveQuery.presenceEvents({
+			__args: {
+				where: { committee: { conference: { id: conferenceId } } },
+				orderBy: { timestamp: 'desc' }
+			},
 			id: true,
-			userEmail: true,
-			name: true,
-			conferenceMember: {
-				representation: { name: true, faIcon: true }
+			present: true,
+			committeeId: true,
+			timestamp: true,
+			conferenceUser: {
+				id: true,
+				userEmail: true,
+				name: true,
+				conferenceMember: {
+					representation: { name: true, faIcon: true }
+				}
 			}
-		}
-	});
+		})
+	);
 
 	let now = $derived(getServerTime().valueOf());
 
@@ -125,7 +129,7 @@
 			>
 		</div>
 	{/if}
-	{#each conference?.committees ?? [] as committee}
+	{#each conference?.committees ?? [] as committee (committee.id)}
 		{@const list = byCommittee.get(committee.id) ?? []}
 		{@const stat = delegateStat(committee)}
 		<BasicCard title={`${committee.name} (${committee.abbreviation ?? ''})`}>
@@ -141,7 +145,7 @@
 				<p class="text-base-content/50 py-2 text-sm">{m.noNsasInCommittee()}</p>
 			{:else}
 				<ul class="flex flex-col gap-1">
-					{#each list as event}
+					{#each list as event (event.id)}
 						{@const rep = event.conferenceUser?.conferenceMember?.representation}
 						<li class="card hover:bg-base-200 flex flex-row items-center gap-3 p-2">
 							{#if rep?.faIcon}

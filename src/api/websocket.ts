@@ -37,7 +37,7 @@ createWs(
 			const req = wsCtx.extra.request;
 			// Upgrade-time auth (cookie / Authorization header) already stored the
 			// synthetic event on the IncomingMessage — nothing more to do.
-			if ((req as any)[SYNTHETIC_EVENT_FIELD]) return;
+			if ((req as unknown as Record<string, unknown>)[SYNTHETIC_EVENT_FIELD]) return;
 
 			// Clients that cannot set HTTP headers (e.g. native/Tauri) send their
 			// token as connectionParams.Authorization in the connection_init message.
@@ -67,8 +67,8 @@ createWs(
 				});
 				const ctx = context(syntheticEvent);
 				ctx.mustBeLoggedIn();
-				(req as any)[SYNTHETIC_EVENT_FIELD] = syntheticEvent;
-				const socket = (req as any)[UPGRADE_SOCKET_FIELD] as Socket;
+				(req as unknown as Record<string, unknown>)[SYNTHETIC_EVENT_FIELD] = syntheticEvent;
+				const socket = (req as unknown as Record<string, unknown>)[UPGRADE_SOCKET_FIELD] as Socket;
 				startWSValidityChecker(ctx, socket);
 			} catch (err) {
 				console.error('[wss] failed to validate connection_init Bearer token', err);
@@ -80,7 +80,7 @@ createWs(
 );
 
 const setHeaders = (headers: string[], req: IncomingMessage) => {
-	const cookies = (req as any)[SYNTHETIC_EVENT_FIELD] as
+	const cookies = (req as unknown as Record<string, unknown>)[SYNTHETIC_EVENT_FIELD] as
 		| { headers?: { 'set-cookie'?: string[] } }
 		| undefined;
 	if (cookies?.headers?.['set-cookie']) {
@@ -101,7 +101,7 @@ yjsWSS.on('headers', setHeaders);
 
 	// Store the raw socket early so the graphql-ws onConnect handler can reach
 	// it when deferred (connection_init) authentication is needed.
-	if (isGql) (req as any)[UPGRADE_SOCKET_FIELD] = socket;
+	if (isGql) (req as unknown as Record<string, unknown>)[UPGRADE_SOCKET_FIELD] = socket;
 
 	let syntheticSvelteRequestEvent = nativeToRequestEvent(req);
 	let ctx: Context | undefined;
@@ -116,7 +116,8 @@ yjsWSS.on('headers', setHeaders);
 		});
 		ctx = context(syntheticSvelteRequestEvent);
 		ctx.mustBeLoggedIn();
-		(req as any)[SYNTHETIC_EVENT_FIELD] = syntheticSvelteRequestEvent;
+		(req as unknown as Record<string, unknown>)[SYNTHETIC_EVENT_FIELD] =
+			syntheticSvelteRequestEvent;
 		startWSValidityChecker(ctx, socket);
 	} catch (err) {
 		if (!isGql && !isYjs) {

@@ -9,26 +9,28 @@
 	}
 	let { conferenceId }: Props = $props();
 
-	const events = await client.liveQuery.presenceEvents({
-		__args: {
-			where: { committee: { conference: { id: conferenceId } } },
-			orderBy: { timestamp: 'desc' }
-		},
-		id: true,
-		present: true,
-		type: true,
-		timestamp: true,
-		committeeId: true,
-		conferenceUserId: true,
-		note: true,
-		conferenceUser: {
+	const events = $derived(
+		await client.liveQuery.presenceEvents({
+			__args: {
+				where: { committee: { conference: { id: conferenceId } } },
+				orderBy: { timestamp: 'desc' }
+			},
 			id: true,
-			userEmail: true,
-			name: true,
-			conferenceMember: { representation: { name: true } }
-		},
-		committee: { id: true, name: true, abbreviation: true }
-	});
+			present: true,
+			type: true,
+			timestamp: true,
+			committeeId: true,
+			conferenceUserId: true,
+			note: true,
+			conferenceUser: {
+				id: true,
+				userEmail: true,
+				name: true,
+				conferenceMember: { representation: { name: true } }
+			},
+			committee: { id: true, name: true, abbreviation: true }
+		})
+	);
 
 	let nsaScanOnly = $state(false);
 	let hideCheckOut = $state(true);

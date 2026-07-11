@@ -1,6 +1,6 @@
 import type { IncomingMessage } from 'node:http';
 import type { RequestEvent } from '@sveltejs/kit';
-import { parse as parseCookies, serialize as serializeCookie, type SerializeOptions } from 'cookie';
+import { parse as parseCookies, type SerializeOptions } from 'cookie';
 import { configPrivate } from '$config/private';
 
 function headerValue(
@@ -52,10 +52,10 @@ export function nativeToRequestEvent(
 					.map(([name, value]) => ({ name, value, path: '/' }));
 				return all;
 			},
-			set: (name: string, value: string, opts: SerializeOptions) => {
+			set: (name: string, value: string, _opts: SerializeOptions) => {
 				jar[name] = value;
 			},
-			delete: (name: string, opts: SerializeOptions) => {
+			delete: (name: string, _opts: SerializeOptions) => {
 				delete jar[name];
 			},
 			serialize: () => ''

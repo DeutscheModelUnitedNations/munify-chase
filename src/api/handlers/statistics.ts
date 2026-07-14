@@ -602,7 +602,7 @@ schemaBuilder.queryFields((t) => ({
 			if (cached) return cached;
 
 			// ── Speaking leaderboard ─────────────────────────────────────────
-			async function fetchSpeakingByRepresentation(source: 'committee' | 'conference') {
+			function fetchSpeakingByRepresentation(source: 'committee' | 'conference') {
 				if (source === 'committee') {
 					return db
 						.select({

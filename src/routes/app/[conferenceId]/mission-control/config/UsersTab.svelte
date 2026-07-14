@@ -513,8 +513,7 @@
 			<textarea
 				class="textarea textarea-bordered h-24 w-full"
 				placeholder={m.bulkEmailPlaceholder()}
-				bind:value={bulkEmails}
-			></textarea>
+				bind:value={bulkEmails}></textarea>
 			<div class="flex flex-wrap items-end gap-4">
 				<div class="form-control">
 					<label class="label" for="role-select">

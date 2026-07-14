@@ -135,20 +135,18 @@
 	);
 
 	let adminConferences = $derived<LauncherConference[]>(
-		(allConferences ?? []).map(
-			(c): LauncherConference => ({
-				id: c.id,
-				title: c.title,
-				location: c.location,
-				startDate: toIsoDate(c.startDate),
-				endDate: toIsoDate(c.endDate),
-				committees: c.committees ?? [],
-				role: 'ADMIN' as const,
-				roleDetail: null,
-				representation: null,
-				href: `/app/${c.id}/mission-control`
-			})
-		)
+		(allConferences ?? []).map((c): LauncherConference => ({
+			id: c.id,
+			title: c.title,
+			location: c.location,
+			startDate: toIsoDate(c.startDate),
+			endDate: toIsoDate(c.endDate),
+			committees: c.committees ?? [],
+			role: 'ADMIN' as const,
+			roleDetail: null,
+			representation: null,
+			href: `/app/${c.id}/mission-control`
+		}))
 	);
 
 	let filteredAdminConferences = $derived.by(() => {

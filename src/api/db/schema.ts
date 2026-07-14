@@ -255,7 +255,9 @@ export const spokenTimePeriod = snakeCase.table('spoken_time_period', {
 		.references(() => speakersList.id, { onDelete: 'cascade' })
 		.notNull(),
 	startTimestamp: timestamp().notNull(),
-	endTimestamp: timestamp().notNull()
+	endTimestamp: timestamp().notNull(),
+	queuedAt: timestamp().notNull(),
+	phase: speakersListPhase().notNull()
 });
 
 export const committeeTopicChangedTimestamp = snakeCase.table('committee_topic_changed_timestamp', {

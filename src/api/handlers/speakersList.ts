@@ -107,7 +107,14 @@ schemaBuilder.mutationFields((t) => {
 								startTimestamp: speakersList.startTimestamp,
 								speakersListId: speakersList.id,
 								committeeMemberId: speakersList.speakers[0].committeeMemberId,
-								conferenceMemberId: speakersList.speakers[0].conferenceMemberId
+								conferenceMemberId: speakersList.speakers[0].conferenceMemberId,
+								queuedAt: speakersList.speakers[0].createdAt,
+								phase: (currentPhase ?? 'SPEECH') as
+									| 'SPEECH'
+									| 'SPEECH_DONE'
+									| 'QUESTION'
+									| 'ANSWER'
+									| 'ANSWER_DONE'
 							});
 						}
 					} else if (mappedArgs.phase === undefined && mappedArgs.startTimestamp) {

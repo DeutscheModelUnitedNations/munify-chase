@@ -24,6 +24,7 @@ import './amendmentSponsor';
 import './amendmentReviewItem';
 import './operativeClauseVote';
 import './ai';
+import './statistics';
 import { building, dev } from '$app/environment';
 import { clientCreator } from '$api/rumble';
 

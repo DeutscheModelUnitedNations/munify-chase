@@ -22,6 +22,14 @@ import {
 	isClauseEmpty
 } from '@deutschemodelunitednations/munify-resolution-editor/schema';
 import type { Resolution } from '@deutschemodelunitednations/munify-resolution-editor/schema';
+import * as Y from 'yjs';
+import { jsonToYDoc } from '@deutschemodelunitednations/munify-resolution-editor/yjs';
+
+function createInitialYjsState(): Buffer {
+	const doc = new Y.Doc();
+	jsonToYDoc(doc, { preamble: [], operative: [], committeeName: '' });
+	return Buffer.from(Y.encodeStateAsUpdate(doc));
+}
 
 abilityBuilder.resolutionPaper.allow('read').when((ctx) => {
 	return { where: { committee: isTeamInConference(ctx) } };
@@ -160,6 +168,13 @@ schemaBuilder.mutationFields((t) => ({
 						conferenceUserId: cuId
 					});
 				}
+				// Pre-initialize the Y.Doc with empty preamble/operative arrays so
+				// delegates can immediately add clauses without the store's operativeArr()
+				// returning null for a fresh document.
+				await tx.insert(schema.paperYjsDoc).values({
+					paperId: args.id,
+					state: createInitialYjsState()
+				});
 			});
 
 			pubsub.created();

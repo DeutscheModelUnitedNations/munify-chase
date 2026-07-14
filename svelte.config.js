@@ -7,7 +7,8 @@ const config = {
 	compilerOptions: {
 		experimental: {
 			async: true
-		}
+		},
+		warningFilter: (warning) => warning.code !== 'state_referenced_locally'
 	},
 	kit: {
 		experimental: {

@@ -36,9 +36,7 @@
 					oldContent: string | null | undefined;
 					targetOperativeIndex: number | null | undefined;
 					proposer:
-						| { id: string; representation: Representation | null | undefined }
-						| null
-						| undefined;
+						{ id: string; representation: Representation | null | undefined } | null | undefined;
 					sponsors: Array<{ id: string }> | null | undefined;
 			  }
 			| null
@@ -53,9 +51,7 @@
 					oldContent: string | null | undefined;
 					targetOperativeIndex: number | null | undefined;
 					proposer:
-						| { id: string; representation: Representation | null | undefined }
-						| null
-						| undefined;
+						{ id: string; representation: Representation | null | undefined } | null | undefined;
 					sponsors: Array<{ id: string }> | null | undefined;
 			  }
 			| null

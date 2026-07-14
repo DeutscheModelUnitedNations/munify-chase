@@ -79,8 +79,7 @@ createWs(
 
 const setHeaders = (headers: string[], req: IncomingMessage) => {
 	const cookies = (req as unknown as Record<string, unknown>)[SYNTHETIC_EVENT_FIELD] as
-		| { headers?: { 'set-cookie'?: string[] } }
-		| undefined;
+		{ headers?: { 'set-cookie'?: string[] } } | undefined;
 	if (cookies?.headers?.['set-cookie']) {
 		for (const cookie of cookies.headers['set-cookie']) headers.push(`Set-Cookie: ${cookie}`);
 	}

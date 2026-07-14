@@ -1,13 +1,7 @@
 import { m } from '$lib/paraglide/messages';
 
 export type ConferenceUserRole =
-	| 'ADMIN'
-	| 'TEAM'
-	| 'DELEGATE'
-	| 'NON_STATE_ACTOR'
-	| 'SPECTATOR'
-	| undefined
-	| null;
+	'ADMIN' | 'TEAM' | 'DELEGATE' | 'NON_STATE_ACTOR' | 'SPECTATOR' | undefined | null;
 
 export interface NavItem {
 	key: string;

@@ -941,9 +941,7 @@ export const optimistic: OptimisticMutationConfig = {
 					);
 				for (const f of fields) {
 					const current = cache.resolve('Query', 'amendmentSponsors', f.arguments) as
-						| string[]
-						| null
-						| undefined;
+						string[] | null | undefined;
 					if (Array.isArray(current) && !current.includes(sponsorKey)) {
 						cache.link('Query', 'amendmentSponsors', f.arguments, [...current, sponsorKey]);
 					}
@@ -967,9 +965,7 @@ export const optimistic: OptimisticMutationConfig = {
 				);
 			for (const f of amendmentFields) {
 				const current = cache.resolve(rootType, 'amendments', f.arguments) as
-					| string[]
-					| null
-					| undefined;
+					string[] | null | undefined;
 				if (Array.isArray(current) && !current.includes(amendmentKey)) {
 					cache.link(rootType, 'amendments', f.arguments, [...current, amendmentKey]);
 				}
@@ -1841,9 +1837,7 @@ function recomputeCommitteeMajoritiesForMembers(
 			.filter((f) => f.fieldName === 'members');
 		for (const f of memberFields) {
 			const members = cache.resolve({ __typename: 'Committee', id }, 'members', f.arguments) as
-				| string[]
-				| null
-				| undefined;
+				string[] | null | undefined;
 			if (!Array.isArray(members)) continue;
 			if (members.some((m) => typeof m === 'string' && affectedMemberKeys.has(m))) {
 				committeeIds.add(id);
@@ -1877,18 +1871,14 @@ function recomputeCommitteeMajoritiesForMembers(
 			const id = key.slice('Committeemember:'.length);
 			const member = { __typename: 'Committeemember', id };
 			const representationKey = cache.resolve(member, 'representation') as
-				| string
-				| null
-				| undefined;
+				string | null | undefined;
 			let type: string | null | undefined = null;
 			if (typeof representationKey === 'string') {
 				const repId = representationKey.startsWith('Representation:')
 					? representationKey.slice('Representation:'.length)
 					: representationKey;
 				type = cache.resolve({ __typename: 'Representation', id: repId }, 'type') as
-					| string
-					| null
-					| undefined;
+					string | null | undefined;
 			}
 			if (type !== 'DELEGATION') continue;
 			const cachedPresent = cache.resolve(member, 'present') as boolean | null | undefined;
@@ -1937,9 +1927,7 @@ function findExistingVoteId(
 	committeeMemberId: string
 ): string | null {
 	const votes = cache.resolve({ __typename: 'Votingsession', id: sessionId }, 'votes') as
-		| string[]
-		| null
-		| undefined;
+		string[] | null | undefined;
 	if (!Array.isArray(votes)) return null;
 	for (const key of votes) {
 		if (typeof key !== 'string' || !key.startsWith('Votingvote:')) continue;
@@ -2658,9 +2646,7 @@ export const updates: UpdatesConfig = {
 						);
 					for (const f of fields) {
 						const current = cache.resolve(rootType, 'amendments', f.arguments) as
-							| string[]
-							| null
-							| undefined;
+							string[] | null | undefined;
 						if (Array.isArray(current) && !current.includes(childKey)) {
 							cache.link(rootType, 'amendments', f.arguments, [...current, childKey]);
 						}
@@ -2779,9 +2765,7 @@ export const updates: UpdatesConfig = {
 				.filter((f) => f.fieldName === 'operativeClauseVotes');
 			for (const f of voteFields) {
 				const existing = cache.resolve(paper, 'operativeClauseVotes', f.arguments) as
-					| string[]
-					| null
-					| undefined;
+					string[] | null | undefined;
 				if (!Array.isArray(existing)) continue;
 				for (const k of existing) {
 					if (typeof k !== 'string' || !k.startsWith('Operativeclausevote:')) continue;
@@ -2806,9 +2790,7 @@ export const updates: UpdatesConfig = {
 				.filter((f) => f.fieldName === 'operativeClauseVotes');
 			for (const f of voteFields) {
 				const existing = cache.resolve(paper, 'operativeClauseVotes', f.arguments) as
-					| string[]
-					| null
-					| undefined;
+					string[] | null | undefined;
 				if (!Array.isArray(existing)) continue;
 				for (const k of existing) {
 					if (typeof k !== 'string' || !k.startsWith('Operativeclausevote:')) continue;
@@ -2851,9 +2833,7 @@ export const updates: UpdatesConfig = {
 					);
 				for (const f of fields) {
 					const current = cache.resolve('Query', 'amendmentSponsors', f.arguments) as
-						| string[]
-						| null
-						| undefined;
+						string[] | null | undefined;
 					if (!Array.isArray(current) || current.includes(childKey)) continue;
 					cache.link('Query', 'amendmentSponsors', f.arguments, [...current, childKey]);
 				}
@@ -2879,9 +2859,7 @@ export const updates: UpdatesConfig = {
 						);
 					for (const f of fields) {
 						const current = cache.resolve('Query', 'amendmentSponsors', f.arguments) as
-							| string[]
-							| null
-							| undefined;
+							string[] | null | undefined;
 						if (!Array.isArray(current)) continue;
 						cache.link(
 							'Query',

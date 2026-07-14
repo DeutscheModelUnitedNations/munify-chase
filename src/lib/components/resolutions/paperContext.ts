@@ -3,21 +3,11 @@ import { parseClauseFragment } from '@deutschemodelunitednations/munify-resoluti
 import type { AmendmentOverlay } from '@deutschemodelunitednations/munify-resolution-editor';
 
 export type PaperStatus =
-	| 'WORKING_PAPER'
-	| 'SUBMITTED'
-	| 'DRAFT_RESOLUTION'
-	| 'AMENDMENT_PHASE'
-	| 'VOTING_PHASE'
-	| 'FINAL';
+	'WORKING_PAPER' | 'SUBMITTED' | 'DRAFT_RESOLUTION' | 'AMENDMENT_PHASE' | 'VOTING_PHASE' | 'FINAL';
 
 export type AmendmentType = 'DELETE' | 'ADD' | 'ALTER_TEXT' | 'ALTER_POSITION';
 export type AmendmentStatus =
-	| 'PENDING'
-	| 'SUBMITTED'
-	| 'CONSENSUS_ADOPTED'
-	| 'ACCEPTED'
-	| 'REJECTED'
-	| 'WITHDRAWN';
+	'PENDING' | 'SUBMITTED' | 'CONSENSUS_ADOPTED' | 'ACCEPTED' | 'REJECTED' | 'WITHDRAWN';
 
 export type ConferenceUserType = 'ADMIN' | 'TEAM' | 'DELEGATE' | 'NON_STATE_ACTOR' | 'SPECTATOR';
 

@@ -110,11 +110,7 @@ schemaBuilder.mutationFields((t) => {
 								conferenceMemberId: speakersList.speakers[0].conferenceMemberId,
 								queuedAt: speakersList.speakers[0].createdAt,
 								phase: (currentPhase ?? 'SPEECH') as
-									| 'SPEECH'
-									| 'SPEECH_DONE'
-									| 'QUESTION'
-									| 'ANSWER'
-									| 'ANSWER_DONE'
+									'SPEECH' | 'SPEECH_DONE' | 'QUESTION' | 'ANSWER' | 'ANSWER_DONE'
 							});
 						}
 					} else if (mappedArgs.phase === undefined && mappedArgs.startTimestamp) {
@@ -131,12 +127,7 @@ schemaBuilder.mutationFields((t) => {
 					// Auto-derive phase when caller didn't provide one explicitly.
 					// Explicit phase from the client always wins (widget direct transitions).
 					let effectivePhase = mappedArgs.phase as
-						| 'SPEECH'
-						| 'SPEECH_DONE'
-						| 'QUESTION'
-						| 'ANSWER'
-						| 'ANSWER_DONE'
-						| undefined;
+						'SPEECH' | 'SPEECH_DONE' | 'QUESTION' | 'ANSWER' | 'ANSWER_DONE' | undefined;
 
 					if (effectivePhase === undefined && currentPhase !== undefined) {
 						if (args.stopTimer && mappedArgs.timeLeft !== undefined) {

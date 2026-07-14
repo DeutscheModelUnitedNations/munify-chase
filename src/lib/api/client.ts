@@ -130,7 +130,25 @@ if (browser) {
 			schema,
 			storage,
 			optimistic,
-			updates
+			updates,
+			keys: {
+				ConferenceStats: () => null,
+				PersonalStats: () => null,
+				PersonalSpeakingStats: () => null,
+				PersonalAttendanceStats: () => null,
+				PersonalVotingStats: () => null,
+				PersonalActivityStats: () => null,
+				DelegationSpeakingStats: () => null,
+				RegionalStats: () => null,
+				AmendmentCountStats: () => null,
+				PaperSponsorStats: () => null,
+				CommitteeActivityStats: () => null,
+				VotingAlignmentStats: () => null,
+				ContraryStats: () => null,
+				AttendanceTrendPoint: () => null,
+				SpeakingTimelineBucket: () => null,
+				SpeakingFairness: () => null
+			}
 		}),
 		crossTabSyncExchange({ channelName: 'chase-cross-tab-sync' })
 	);

@@ -116,6 +116,7 @@
 		"wonka": "6.3.6"
 	},
 	"dependencies": {
+		"chart.js": "^4.5.1",
 		"drizzle-kit": "^1.0.0-rc.3",
 		"drizzle-orm": "^1.0.0-rc.3",
 		"pg": "^8.21.0",

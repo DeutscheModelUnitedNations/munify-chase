@@ -309,6 +309,13 @@ export const translatedNationCodeAddressFormOptions = $state(
 		.sort((a, b) => (a.value === 'DEU' ? -1 : b.value === 'DEU' ? 1 : 0))
 );
 
+/** Accepts either an ISO 3166-1 alpha-2 or alpha-3 code, returns the localised country name or null. */
+export const getCountryNameFromCode = (code: string | null | undefined): string | null => {
+	if (!code) return null;
+	const result = nationCodeToLocalName(code);
+	return result === 'N/A' ? null : result;
+};
+
 export const getTranslatedCountryNameFromAlpha3Code = (alpha3Code?: string | null) => {
 	if (!alpha3Code) return 'N/A';
 	const found = NationIso3ToLocalNamesMap.get(alpha3Code.toUpperCase());

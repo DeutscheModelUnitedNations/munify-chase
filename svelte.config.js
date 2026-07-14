@@ -12,7 +12,8 @@ const config = {
 	compilerOptions: {
 		experimental: {
 			async: true
-		}
+		},
+		warningFilter: (warning) => warning.code !== 'state_referenced_locally'
 	},
 	kit: {
 		// remoteFunctions requires a server runtime — not available in Tauri/static mode

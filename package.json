@@ -60,7 +60,7 @@
 		"lefthook": "^2.1.9",
 		"lib0": "^0.2.117",
 		"nanoid": "^5.1.11",
-		"prettier": "^3.8.3",
+		"prettier": "^3.9.5",
 		"prettier-plugin-sort-json": "^4.2.0",
 		"prettier-plugin-svelte": "^4.1.0",
 		"prettier-plugin-tailwindcss": "^0.8.0",
@@ -123,5 +123,5 @@
 		"polka": "^0.5.2",
 		"ws": "^8.21.0"
 	},
-	"version": "3.0.30"
+	"version": "3.0.31"
 }

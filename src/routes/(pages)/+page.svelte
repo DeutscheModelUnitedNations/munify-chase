@@ -98,6 +98,41 @@
 						{m.homeContributeButtonLabel()}
 					</a>
 				</TextSection>
+				<TextSection title={m.homeDocsTitle()} text={m.homeDocsText()}>
+					<a class="btn btn-primary mt-3" href="https://munify.cloud/chase" target="_blank">
+						<i class="fas fa-book mr-2"></i>
+						{m.homeDocsButtonLabel()}
+					</a>
+					<div class="mt-2 flex flex-wrap justify-center gap-2 lg:justify-start">
+						<a
+							class="btn btn-outline btn-sm"
+							href="https://munify.cloud/chase/user-manual/chair/getting-started"
+							target="_blank"
+						>
+							{m.homeDocsChairLabel()}
+						</a>
+						<a
+							class="btn btn-outline btn-sm"
+							href="https://munify.cloud/chase/user-manual/delegate/getting-started"
+							target="_blank"
+						>
+							{m.homeDocsDelegateLabel()}
+						</a>
+						<a
+							class="btn btn-outline btn-sm"
+							href="https://munify.cloud/chase/user-manual/admin/getting-started"
+							target="_blank"
+						>
+							{m.homeDocsAdminLabel()}
+						</a>
+					</div>
+				</TextSection>
+				<TextSection title={m.homeHostingTitle()} text={m.homeHostingText()}>
+					<a class="btn btn-primary mt-3" href="mailto:vorstand@dmun.de">
+						<i class="fas fa-envelope mr-2"></i>
+						{m.homeHostingButtonLabel()}
+					</a>
+				</TextSection>
 			</div>
 
 			<ContactSection />

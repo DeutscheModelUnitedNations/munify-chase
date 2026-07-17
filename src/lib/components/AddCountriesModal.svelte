@@ -111,8 +111,7 @@
 			id="country-codes-input"
 			class="textarea h-32 w-full font-mono"
 			bind:value={inputText}
-			placeholder={m.countryCodesPlaceholder()}
-		></textarea>
+			placeholder={m.countryCodesPlaceholder()}></textarea>
 		<p class="label break-words whitespace-normal">{m.countryCodesHelp()}</p>
 	</fieldset>
 

@@ -14,10 +14,8 @@ runs:
       with:
         path: |
           ~/.bun/install/cache
-          node_modules
           .eslintcache
         key: bun-${{ runner.os }}-${{ hashFiles('bun.lock') }}
-        restore-keys: bun-${{ runner.os }}-
 
     - run: bun install --frozen-lockfile
       shell: bash

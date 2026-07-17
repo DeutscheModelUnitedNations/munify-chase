@@ -232,7 +232,8 @@
 									value={currentEditValue}
 									oninput={(e) => {
 										edits[item.id] = (e.currentTarget as HTMLTextAreaElement).value;
-									}}></textarea>
+									}}
+								></textarea>
 							{:else if aiEvaluated}
 								<div class="rounded-lg bg-white p-3 flex-1">
 									{#if item.triggerAmendment?.newContent && oldMarkup}

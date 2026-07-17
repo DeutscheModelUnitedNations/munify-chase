@@ -311,7 +311,7 @@ export const presenceEvent = snakeCase.table('presence_event', {
 	note: text()
 });
 
-export const votingMode = pgEnum('voting_mode', ['SHOW_OF_HANDS', 'ROLL_CALL']);
+export const votingMode = pgEnum('voting_mode', ['SHOW_OF_HANDS', 'ROLL_CALL', 'DEVICE_BASED']);
 export const votingMajorityType = pgEnum('voting_majority_type', [
 	'SIMPLE',
 	'ABSOLUTE',
@@ -340,7 +340,9 @@ export const votingSession = snakeCase.table('voting_session', {
 	votesAbstain: integer().notNull().default(0),
 	currentMemberIndex: integer().notNull().default(0),
 	completedAt: timestamp(),
-	outcome: votingOutcome()
+	outcome: votingOutcome(),
+	deviceVotingWindowSeconds: integer(),
+	deviceVotingStartedAt: timestamp()
 });
 
 export const votingVote = snakeCase.table(

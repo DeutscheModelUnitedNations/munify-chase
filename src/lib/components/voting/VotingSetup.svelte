@@ -3,6 +3,7 @@
 	import { m } from '$lib/paraglide/messages';
 	import RollCallVotingChair from './RollCallVotingChair.svelte';
 	import ShowOfHandsVotingChair from './ShowOfHandsVotingChair.svelte';
+	import DeviceBasedVotingChair from './DeviceBasedVotingChair.svelte';
 	import VotingSetupForm from './VotingSetupForm.svelte';
 
 	interface Props {
@@ -29,30 +30,36 @@
 			voteName?: string | null;
 			majority?: string | null;
 			withAbstentions?: boolean | null;
+			deviceVotingWindowSeconds?: number | null;
 		} | null;
 	}
 
 	let { committee, activeVotingSession = null }: Props = $props();
 
-	let voteType: 'SHOW_OF_HANDS' | 'ROLL_CALL' = $state('SHOW_OF_HANDS');
+	let voteType: 'SHOW_OF_HANDS' | 'ROLL_CALL' | 'DEVICE_BASED' = $state('SHOW_OF_HANDS');
 	let voteName: string = $state('');
 	let majority: VotingMajority = $state('SIMPLE');
 	let withAbstentions: boolean = $state(false);
+	let deviceVotingWindowSeconds: number = $state(20);
 
 	let showOfHandModalOpen: boolean = $state(false);
 	let rollCallModalOpen: boolean = $state(false);
+	let deviceBasedModalOpen: boolean = $state(false);
 
 	function openResume() {
 		if (!activeVotingSession) return;
-		const mode = activeVotingSession.mode as 'SHOW_OF_HANDS' | 'ROLL_CALL';
+		const mode = activeVotingSession.mode as 'SHOW_OF_HANDS' | 'ROLL_CALL' | 'DEVICE_BASED';
 		voteType = mode;
 		voteName = activeVotingSession.voteName ?? '';
 		majority = (activeVotingSession.majority ?? 'SIMPLE') as VotingMajority;
 		withAbstentions = activeVotingSession.withAbstentions ?? false;
+		deviceVotingWindowSeconds = activeVotingSession.deviceVotingWindowSeconds ?? 20;
 		if (mode === 'SHOW_OF_HANDS') {
 			showOfHandModalOpen = true;
-		} else {
+		} else if (mode === 'ROLL_CALL') {
 			rollCallModalOpen = true;
+		} else {
+			deviceBasedModalOpen = true;
 		}
 	}
 </script>
@@ -74,11 +81,14 @@
 		bind:voteName
 		bind:majority
 		bind:withAbstentions
+		bind:deviceVotingWindowSeconds
 		onstart={() => {
 			if (voteType === 'SHOW_OF_HANDS') {
 				showOfHandModalOpen = true;
 			} else if (voteType === 'ROLL_CALL') {
 				rollCallModalOpen = true;
+			} else {
+				deviceBasedModalOpen = true;
 			}
 		}}
 	/>
@@ -98,4 +108,13 @@
 	{voteName}
 	{majority}
 	{withAbstentions}
+/>
+
+<DeviceBasedVotingChair
+	bind:active={deviceBasedModalOpen}
+	{committee}
+	{voteName}
+	{majority}
+	{withAbstentions}
+	{deviceVotingWindowSeconds}
 />

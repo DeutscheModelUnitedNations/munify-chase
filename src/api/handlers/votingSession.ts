@@ -58,7 +58,8 @@ schemaBuilder.mutationFields((t) => ({
 			majorityAmount: t.arg.int({ required: true }),
 			withAbstentions: t.arg.boolean({ required: true }),
 			voteName: t.arg.string(),
-			currentStage: t.arg({ type: stageEnum })
+			currentStage: t.arg({ type: stageEnum }),
+			deviceVotingWindowSeconds: t.arg.int()
 		},
 		resolve: async (q, _root, args, ctx) => {
 			const committee = await db.query.committee
@@ -101,7 +102,10 @@ schemaBuilder.mutationFields((t) => ({
 						majorityAmount: args.majorityAmount,
 						withAbstentions: args.withAbstentions,
 						voteName: args.voteName ?? null,
-						currentStage: args.currentStage ?? (args.mode === 'SHOW_OF_HANDS' ? 'PRO' : null)
+						currentStage: args.currentStage ?? (args.mode === 'SHOW_OF_HANDS' ? 'PRO' : null),
+						deviceVotingWindowSeconds:
+							args.mode === 'DEVICE_BASED' ? (args.deviceVotingWindowSeconds ?? 20) : null,
+						deviceVotingStartedAt: args.mode === 'DEVICE_BASED' ? new Date() : null
 					})
 					.returning()
 					.then(assertFirstEntryExists);
@@ -213,6 +217,129 @@ schemaBuilder.mutationFields((t) => ({
 						id: args.id,
 						votingSessionId: args.sessionId,
 						committeeMemberId: args.committeeMemberId,
+						vote: args.vote
+					})
+					.returning({ id: schema.votingVote.id })
+					.then(assertFirstEntryExists);
+
+				return inserted.id;
+			});
+
+			sessionPubsub.updated(args.sessionId);
+			votePubsub.updated(resultId);
+
+			return db.query.votingVote
+				.findFirst(
+					q(ctx.abilities.votingVote.filter('read').merge({ where: { id: resultId } }).query.single)
+				)
+				.then(assertFindFirstExists);
+		}
+	}),
+
+	castDeviceVote: t.drizzleField({
+		type: voteRef,
+		args: {
+			id: t.arg.id().validate(nanoidValidation),
+			sessionId: t.arg.id({ required: true }),
+			vote: t.arg({ type: voteChoiceEnum, required: true }),
+			// Cache hint only — the caller's committeeMemberId is always resolved
+			// server-side below and this value is never read here. It exists so the
+			// offline-first client can key its optimistic cache entity/list updates
+			// without waiting for a round trip; a spoofed value has no effect since
+			// it's ignored for authorization and never written to the database.
+			committeeMemberId: t.arg.id()
+		},
+		resolve: async (q, _root, args, ctx) => {
+			const user = ctx.mustBeLoggedIn();
+			if (!user.email) {
+				throw new GraphQLError('User email is required');
+			}
+
+			// Grace period so an in-flight tap sent right before expiry isn't
+			// rejected just because of network latency.
+			const DEVICE_VOTE_GRACE_MS = 3000;
+
+			const resultId = await db.transaction(async (tx) => {
+				const session = await tx.query.votingSession.findFirst({
+					where: { id: args.sessionId, completedAt: { isNull: true } }
+				});
+				if (!session) throw new GraphQLError('Voting session not found or already completed');
+				if (session.mode !== 'DEVICE_BASED') {
+					throw new GraphQLError('Voting session is not a device-based vote');
+				}
+
+				const committee = await tx.query.committee.findFirst({
+					where: { id: session.committeeId }
+				});
+				if (committee?.activeVotingSessionId !== args.sessionId) {
+					throw new GraphQLError('Voting session is not the active session for this committee');
+				}
+
+				if (!session.deviceVotingStartedAt || !session.deviceVotingWindowSeconds) {
+					throw new GraphQLError('Voting window has not been opened');
+				}
+				const windowEndsAt =
+					session.deviceVotingStartedAt.getTime() +
+					session.deviceVotingWindowSeconds * 1000 +
+					DEVICE_VOTE_GRACE_MS;
+				if (Date.now() > windowEndsAt) {
+					throw new GraphQLError('Voting window has closed');
+				}
+
+				// Never trust a client-supplied committeeMemberId here — resolve the
+				// caller's own seat server-side so a delegate can only vote for
+				// themselves. Mirrors selfAddToSpeakersList's conferenceUser lookup.
+				const conferenceUser = await tx.query.conferenceUser
+					.findFirst({
+						where: {
+							userEmail: user.email!,
+							conference: { committees: { id: session.committeeId } }
+						},
+						with: { committeeMember: true }
+					})
+					.then(assertFindFirstExists);
+
+				if (conferenceUser.conferenceUserType !== 'DELEGATE') {
+					throw new GraphQLError('Only delegates can cast a device-based vote');
+				}
+				if (!conferenceUser.committeeMember) {
+					throw new GraphQLError('Delegate is not assigned to a committee seat');
+				}
+				if (!conferenceUser.committeeMember.present) {
+					// Otherwise an absent delegate's vote lands in the votingVote table and
+					// inflates votesPro/Con/Abstain, while the chair/presentation "who hasn't
+					// voted" list — scoped to present members only, matching the roll-call
+					// chair's own member filter — never lists (or clears) them, so the tally
+					// silently drifts out of sync with what's displayed.
+					throw new GraphQLError('Delegate must be marked as present to vote');
+				}
+				if (conferenceUser.committeeMember.committeeId !== session.committeeId) {
+					throw new GraphQLError('Delegate is not a member of this committee');
+				}
+				const committeeMemberId = conferenceUser.committeeMember.id;
+
+				// Upsert: update if exists, insert if not
+				const existing = await tx.query.votingVote.findFirst({
+					where: {
+						votingSessionId: args.sessionId,
+						committeeMemberId
+					}
+				});
+
+				if (existing) {
+					await tx
+						.update(schema.votingVote)
+						.set({ vote: args.vote })
+						.where(eq(schema.votingVote.id, existing.id));
+					return existing.id;
+				}
+
+				const inserted = await tx
+					.insert(schema.votingVote)
+					.values({
+						id: args.id,
+						votingSessionId: args.sessionId,
+						committeeMemberId,
 						vote: args.vote
 					})
 					.returning({ id: schema.votingVote.id })

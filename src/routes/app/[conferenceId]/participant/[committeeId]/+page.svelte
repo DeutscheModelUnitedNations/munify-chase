@@ -13,6 +13,7 @@
 	import WhiteboardViewer from '$lib/components/whiteboard/WhiteboardViewer.svelte';
 	import Majorities from '$lib/components/Majorities.svelte';
 	import ParticipantIdentityCard from '../ParticipantIdentityCard.svelte';
+	import DeviceVoteModal from '$lib/components/voting/DeviceVoteModal.svelte';
 
 	const currentUser = await getCurrentUser();
 	const [conferenceUser] =
@@ -65,6 +66,16 @@
 		totalPresent: true,
 		simpleMajority: true,
 		twoThirdsMajority: true,
+		activeVotingSessionId: true,
+		activeVotingSession: {
+			id: true,
+			mode: true,
+			voteName: true,
+			withAbstentions: true,
+			deviceVotingStartedAt: true,
+			deviceVotingWindowSeconds: true,
+			votes: { id: true, committeeMemberId: true, vote: true }
+		},
 		activeAgendaItem: {
 			id: true,
 			title: true,
@@ -132,6 +143,23 @@
 	// transient network blip doesn't reset the active speaker's timer.
 	const getActiveAgendaItem = latchWhileDisconnected(() => committee?.activeAgendaItem);
 	const activeAgendaItem = $derived(getActiveAgendaItem());
+
+	// Same freeze rationale as the agenda item: a real disconnect closes the vote via
+	// completeVotingSession clearing activeVotingSessionId, not the WS blip itself.
+	const getActiveVotingSession = latchWhileDisconnected(() => committee?.activeVotingSession);
+	const activeVotingSession = $derived(getActiveVotingSession());
+	const showDeviceVoteModal = $derived(
+		!!activeVotingSession &&
+			activeVotingSession.mode === 'DEVICE_BASED' &&
+			!!activeVotingSession.deviceVotingStartedAt &&
+			!!activeVotingSession.deviceVotingWindowSeconds &&
+			!!myCommitteeMemberId &&
+			myPresent
+	);
+	const myVote = $derived(
+		activeVotingSession?.votes.find((v) => v.committeeMemberId === myCommitteeMemberId)?.vote ??
+			null
+	);
 
 	const speakersList = $derived(
 		activeAgendaItem?.speakersList?.find((sl) => sl.type === 'SPEAKERS_LIST')
@@ -300,4 +328,17 @@
 			</div>
 		{/if}
 	</div>
+{/if}
+
+{#if showDeviceVoteModal && activeVotingSession?.deviceVotingStartedAt && activeVotingSession?.deviceVotingWindowSeconds && myCommitteeMemberId}
+	<DeviceVoteModal
+		active={showDeviceVoteModal}
+		sessionId={activeVotingSession.id}
+		voteName={activeVotingSession.voteName}
+		withAbstentions={activeVotingSession.withAbstentions}
+		deviceVotingStartedAt={activeVotingSession.deviceVotingStartedAt}
+		deviceVotingWindowSeconds={activeVotingSession.deviceVotingWindowSeconds}
+		{myVote}
+		{myCommitteeMemberId}
+	/>
 {/if}

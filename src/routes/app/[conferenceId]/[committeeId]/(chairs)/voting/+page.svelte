@@ -25,7 +25,8 @@
 			mode: true,
 			voteName: true,
 			majority: true,
-			withAbstentions: true
+			withAbstentions: true,
+			deviceVotingWindowSeconds: true
 		},
 		members: {
 			id: true,

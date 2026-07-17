@@ -88,9 +88,55 @@ const remoteFunctionsExchange: Exchange = ({ forward }) => {
 
 const exchanges: Exchange[] = [nativeDateExchange];
 
+// The persisted (IndexedDB) cache stores normalized entities shaped by the GraphQL
+// schema at the time they were written. A fixed database name survives across
+// deployments, so a schema change (new fields/enum values/mutations — i.e. every
+// feature release) can leave old cached entities in a shape the current schema
+// doesn't expect. graphcache doesn't detect or migrate this itself: writes for the
+// changed entities keep landing, but reads of them can silently stop reacting,
+// which looks exactly like "the server pushed an update but the UI never re-rendered"
+// — and by design there's no way to ask every user to clear site data after a deploy.
+// Deriving the database name from a hash of the schema means a schema change
+// automatically buckets into a fresh, empty database instead of rehydrating a stale
+// one; the abandoned old database is just inert extra storage, not a correctness risk.
+function hashSchema(schemaObject: unknown): string {
+	const json = JSON.stringify(schemaObject);
+	let hash = 0;
+	for (let i = 0; i < json.length; i++) {
+		hash = (Math.imul(31, hash) + json.charCodeAt(i)) | 0;
+	}
+	return (hash >>> 0).toString(36);
+}
+
+// Every schema-changing deploy abandons the previous hashed database (see hashSchema
+// above) rather than reusing/migrating it, so without cleanup they'd accumulate
+// indefinitely — one orphaned IndexedDB database per schema change, forever. Delete
+// every `chase-cache-*` database that isn't the current one (plus the old fixed-name
+// `chase-cache` from before this versioning existed) on each load. Best-effort: skips
+// silently if the browser lacks `indexedDB.databases()` or a delete is blocked by
+// another open tab — a missed cleanup here just leaves inert storage, not a bug.
+async function cleanupStaleCaches(currentIdbName: string) {
+	if (typeof indexedDB === 'undefined' || typeof indexedDB.databases !== 'function') return;
+	try {
+		const databases = await indexedDB.databases();
+		const stale = databases
+			.map((d) => d.name)
+			.filter((name): name is string => !!name)
+			.filter((name) => name === 'chase-cache' || name.startsWith('chase-cache-'))
+			.filter((name) => name !== currentIdbName);
+		for (const name of stale) {
+			indexedDB.deleteDatabase(name);
+		}
+	} catch {
+		// Best-effort cleanup only — see comment above.
+	}
+}
+
 if (browser) {
+	const idbName = `chase-cache-${hashSchema(schema)}`;
+	cleanupStaleCaches(idbName);
 	const storage = makeDefaultStorage({
-		idbName: 'chase-cache',
+		idbName,
 		maxAge: 7
 	});
 

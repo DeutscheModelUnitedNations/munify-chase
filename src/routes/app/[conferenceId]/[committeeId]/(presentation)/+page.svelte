@@ -16,6 +16,7 @@
 	import PresentationRollCall from '$lib/components/rollCall/PresentationRollCall.svelte';
 	import ShowOfHandsVotingPresentation from '$lib/components/voting/ShowOfHandsVotingPresentation.svelte';
 	import RollCallVotingPresentation from '$lib/components/voting/RollCallVotingPresentation.svelte';
+	import DeviceBasedVotingPresentation from '$lib/components/voting/DeviceBasedVotingPresentation.svelte';
 	import PresentationResolutionPreview from '$lib/components/resolutions/PresentationResolutionPreview.svelte';
 	import AdoptionConfetti from '$lib/components/AdoptionConfetti.svelte';
 	import { sortTranslatedCountries } from '$lib/utils/nationTranslationHelper.svelte';
@@ -331,6 +332,7 @@
 
 	<ShowOfHandsVotingPresentation {committeeId} />
 	<RollCallVotingPresentation {committeeId} {committee} />
+	<DeviceBasedVotingPresentation {committeeId} {committee} />
 {:else}
 	<UndrawError
 		undrawImage={emptyStreet}

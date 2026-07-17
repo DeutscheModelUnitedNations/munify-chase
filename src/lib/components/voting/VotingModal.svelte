@@ -7,6 +7,7 @@
 	import VotingSetupForm from './VotingSetupForm.svelte';
 	import ShowOfHandsVotingChair from './ShowOfHandsVotingChair.svelte';
 	import RollCallVotingChair from './RollCallVotingChair.svelte';
+	import DeviceBasedVotingChair from './DeviceBasedVotingChair.svelte';
 	import { votingModalStore, closeVotingModal, type VotingResult } from './votingModal';
 
 	interface Props {
@@ -38,10 +39,11 @@
 	let setupOpen = $state(false);
 	let executingOpen = $state(false);
 
-	let voteType = $state<'SHOW_OF_HANDS' | 'ROLL_CALL'>('SHOW_OF_HANDS');
+	let voteType = $state<'SHOW_OF_HANDS' | 'ROLL_CALL' | 'DEVICE_BASED'>('SHOW_OF_HANDS');
 	let voteName = $state('');
 	let majority = $state<VotingMajority>('SIMPLE');
 	let withAbstentions = $state(false);
+	let deviceVotingWindowSeconds = $state(20);
 
 	let currentOnComplete: ((result: VotingResult) => void) | undefined = $state(undefined);
 
@@ -51,6 +53,7 @@
 			voteName = state.config.voteName ?? '';
 			majority = state.config.majority ?? 'SIMPLE';
 			withAbstentions = state.config.withAbstentions ?? false;
+			deviceVotingWindowSeconds = state.config.deviceVotingWindowSeconds ?? 20;
 			currentOnComplete = state.onComplete;
 			if (state.resume) {
 				phase = 'EXECUTING';
@@ -90,6 +93,7 @@
 			voteName = '';
 			majority = 'SIMPLE';
 			withAbstentions = false;
+			deviceVotingWindowSeconds = 20;
 			currentOnComplete = undefined;
 		}
 	};
@@ -126,6 +130,7 @@
 			bind:voteName
 			bind:majority
 			bind:withAbstentions
+			bind:deviceVotingWindowSeconds
 			onstart={startVote}
 		/>
 	</Modal>
@@ -141,13 +146,23 @@
 			{withAbstentions}
 			oncomplete={handleComplete}
 		/>
-	{:else}
+	{:else if voteType === 'ROLL_CALL'}
 		<RollCallVotingChair
 			bind:active={executingOpen}
 			{committee}
 			{voteName}
 			{majority}
 			{withAbstentions}
+			oncomplete={handleComplete}
+		/>
+	{:else}
+		<DeviceBasedVotingChair
+			bind:active={executingOpen}
+			{committee}
+			{voteName}
+			{majority}
+			{withAbstentions}
+			{deviceVotingWindowSeconds}
 			oncomplete={handleComplete}
 		/>
 	{/if}

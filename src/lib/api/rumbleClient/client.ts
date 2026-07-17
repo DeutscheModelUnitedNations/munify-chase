@@ -977,6 +977,12 @@ export type Mutation = {
     position?: Int | null | undefined,
     speakersListId: ID
   }) => Speakeronlist,
+  castDeviceVote: (p: {
+    committeeMemberId?: ID | null | undefined,
+    id?: ID | null | undefined,
+    sessionId: ID,
+    vote: VotechoiceEnum
+  }) => Votingvote,
   clearSpeakersList: (p: {
     id: ID
   }) => Speakerslist,
@@ -1197,6 +1203,7 @@ export type Mutation = {
   startVotingSession: (p: {
     committeeId: ID,
     currentStage?: VotingstageEnum | null | undefined,
+    deviceVotingWindowSeconds?: Int | null | undefined,
     id?: ID | null | undefined,
     majority: VotingmajoritytypeEnum,
     majorityAmount: Int,
@@ -2552,7 +2559,7 @@ export type VotingAlignmentStats = {
 		
 export type VotingmajoritytypeEnum = "ABSOLUTE" | "SIMPLE" | "TWO_THIRDS";
 		
-export type VotingmodeEnum = "ROLL_CALL" | "SHOW_OF_HANDS";
+export type VotingmodeEnum = "DEVICE_BASED" | "ROLL_CALL" | "SHOW_OF_HANDS";
 		
 export type VotingoutcomeEnum = "ADOPTED" | "REJECTED";
 		
@@ -2566,6 +2573,8 @@ export type Votingsession = {
   createdAt: DateTime,
   currentMemberIndex: Int,
   currentStage: VotingstageEnum | null,
+  deviceVotingStartedAt: DateTime | null,
+  deviceVotingWindowSeconds: Int | null,
   id: ID,
   majority: VotingmajoritytypeEnum,
   majorityAmount: Int,
@@ -2597,6 +2606,8 @@ export type VotingsessionOrderInputArgument = {
   createdAt?: SortingParameter | null | undefined,
   currentMemberIndex?: SortingParameter | null | undefined,
   currentStage?: SortingParameter | null | undefined,
+  deviceVotingStartedAt?: SortingParameter | null | undefined,
+  deviceVotingWindowSeconds?: SortingParameter | null | undefined,
   id?: SortingParameter | null | undefined,
   majority?: SortingParameter | null | undefined,
   majorityAmount?: SortingParameter | null | undefined,
@@ -2620,6 +2631,8 @@ export type VotingsessionWhereInputArgument = {
   createdAt?: DateWhereInputArgument | null | undefined,
   currentMemberIndex?: IntWhereInputArgument | null | undefined,
   currentStage?: VotingstageEnum | null | undefined,
+  deviceVotingStartedAt?: DateWhereInputArgument | null | undefined,
+  deviceVotingWindowSeconds?: IntWhereInputArgument | null | undefined,
   id?: ID | null | undefined,
   majority?: VotingmajoritytypeEnum | null | undefined,
   majorityAmount?: IntWhereInputArgument | null | undefined,

@@ -101,6 +101,8 @@ const VOTING_SESSION_DETAILS_FRAGMENT = gql`
 		voteName
 		majority
 		withAbstentions
+		deviceVotingStartedAt
+		deviceVotingWindowSeconds
 	}
 `;
 
@@ -1588,6 +1590,11 @@ export const optimistic: OptimisticMutationConfig = {
 			currentMemberIndex: 0,
 			completedAt: null,
 			outcome: null,
+			deviceVotingWindowSeconds:
+				mode === 'DEVICE_BASED'
+					? ((args.deviceVotingWindowSeconds as number | undefined) ?? 20)
+					: null,
+			deviceVotingStartedAt: mode === 'DEVICE_BASED' ? getServerTime().toDate() : null,
 			votes: [],
 			createdAt: new Date(),
 			updatedAt: null
@@ -1612,6 +1619,28 @@ export const optimistic: OptimisticMutationConfig = {
 	setVoteForMember: (args, cache) => {
 		// Mirror server upsert: if a vote already exists for (sessionId, committeeMemberId),
 		// reuse its id so we update the same entity instead of creating a phantom.
+		const existingId = findExistingVoteId(
+			cache,
+			args.sessionId as string,
+			args.committeeMemberId as string
+		);
+		const id = existingId ?? ensureId(args.id);
+		return {
+			__typename: 'Votingvote',
+			id,
+			votingSessionId: args.sessionId,
+			votingSession: { __typename: 'Votingsession', id: args.sessionId as string },
+			committeeMemberId: args.committeeMemberId,
+			committeeMember: { __typename: 'Committeemember', id: args.committeeMemberId as string },
+			vote: args.vote,
+			createdAt: new Date(),
+			updatedAt: null
+		};
+	},
+	castDeviceVote: (args, cache) => {
+		// Same upsert-by-(sessionId, committeeMemberId) reasoning as setVoteForMember.
+		// `committeeMemberId` here is a cache-only hint (see the handler comment in
+		// votingSession.ts) — the server always resolves the caller's own seat itself.
 		const existingId = findExistingVoteId(
 			cache,
 			args.sessionId as string,
@@ -2399,7 +2428,13 @@ export const updates: UpdatesConfig = {
 				mode: args.mode,
 				voteName: (args.voteName as string | null | undefined) ?? null,
 				majority: args.majority,
-				withAbstentions: args.withAbstentions
+				withAbstentions: args.withAbstentions,
+				// Use the server's own values here (this handler runs post-resolution, unlike
+				// `optimistic` above) rather than guessing "now" — a resumed session's window
+				// started earlier, and re-stamping it here would restart the countdown for
+				// every client that (re)opens the chair modal or reconnects.
+				deviceVotingStartedAt: created.deviceVotingStartedAt ?? null,
+				deviceVotingWindowSeconds: created.deviceVotingWindowSeconds ?? null
 			} as Record<string, unknown>);
 		},
 		completeVotingSession: (_result, args, cache) => {
@@ -2444,6 +2479,25 @@ export const updates: UpdatesConfig = {
 				'votingVotes',
 				{ __typename: 'Votingvote', id: vote.id as string }
 			);
+		},
+		castDeviceVote: (result, args, cache) => {
+			const vote = (result as Record<string, Record<string, unknown>>).castDeviceVote;
+			if (!vote?.id) return;
+			addToList(cache, { __typename: 'Votingsession', id: args.sessionId as string }, 'votes', {
+				__typename: 'Votingvote',
+				id: vote.id as string
+			});
+			// The real committeeMemberId only becomes known once the mutation resolves
+			// (the server never trusts the client-supplied hint) — key the member-side
+			// list off the confirmed result, not args.
+			if (vote.committeeMemberId) {
+				addToList(
+					cache,
+					{ __typename: 'Committeemember', id: vote.committeeMemberId as string },
+					'votingVotes',
+					{ __typename: 'Votingvote', id: vote.id as string }
+				);
+			}
 		},
 
 		// ---------------------------------------------------------------

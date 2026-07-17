@@ -209,7 +209,7 @@
 				title={m.resumeVote()}
 				onclick={() =>
 					resumeVotingModal({
-						voteType: active.mode as 'SHOW_OF_HANDS' | 'ROLL_CALL',
+						voteType: active.mode as 'SHOW_OF_HANDS' | 'ROLL_CALL' | 'DEVICE_BASED',
 						voteName: active.voteName ?? paper.title,
 						majority: (active.majority ?? 'ABSOLUTE') as 'SIMPLE' | 'ABSOLUTE' | 'TWO_THIRDS',
 						withAbstentions: active.withAbstentions ?? true

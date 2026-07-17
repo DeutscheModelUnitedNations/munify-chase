@@ -7,8 +7,9 @@ export type VotingMajority = 'SIMPLE' | 'ABSOLUTE' | 'TWO_THIRDS';
 export interface VotingConfig {
 	voteName?: string;
 	majority?: VotingMajority;
-	voteType?: 'SHOW_OF_HANDS' | 'ROLL_CALL';
+	voteType?: 'SHOW_OF_HANDS' | 'ROLL_CALL' | 'DEVICE_BASED';
 	withAbstentions?: boolean;
+	deviceVotingWindowSeconds?: number;
 }
 
 export interface VotingResult {

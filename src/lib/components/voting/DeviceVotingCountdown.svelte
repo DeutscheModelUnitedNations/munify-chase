@@ -8,6 +8,7 @@
 		expired?: boolean;
 	}
 
+	// eslint-disable-next-line no-useless-assignment -- $bindable() initializer is read by parent
 	let { startTimestamp, windowSeconds, expired = $bindable(false) }: Props = $props();
 
 	// Re-derives every 500ms via getServerTime()'s tick (see serverTime.svelte.ts), so this

@@ -30,6 +30,7 @@
 
 	// Bridge into Modal.svelte's bindable `open` — closeOnEsc is false so Modal never
 	// writes back to it, this component stays the single source of truth via `active`.
+	// eslint-disable-next-line svelte/prefer-writable-derived -- must be $state to satisfy Modal's bind:open
 	let open = $state(active);
 	$effect(() => {
 		open = active;
@@ -39,6 +40,7 @@
 
 	// Instant local feedback on tap; resyncs from the server-confirmed vote whenever the
 	// live query catches up (e.g. after a resume or a vote cast from another tab).
+	// eslint-disable-next-line svelte/prefer-writable-derived -- writable locally on tap, also reactive to prop changes
 	let selected = $state<'PRO' | 'CON' | 'ABSTAIN' | null>(myVote);
 	$effect(() => {
 		selected = myVote;

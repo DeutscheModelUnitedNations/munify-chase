@@ -208,3 +208,6 @@ jobs:
             </div>
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Trigger Dokploy deploy
+        run: curl -fsSL -X POST "${{ secrets.DOKPLOY_DEPLOY_WEBHOOK_URL }}"

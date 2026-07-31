@@ -104,7 +104,7 @@ export const committee = snakeCase.table(
 	(t) => [unique().on(t.conferenceId, t.name), unique().on(t.conferenceId, t.abbreviation)]
 );
 
-export const displayDevice = pgTable('display_device', {
+export const displayDevice = snakeCase.table('display_device', {
 	// Pi-generated nanoid (the device owns its id); not server-defaulted.
 	id: text().primaryKey().notNull(),
 	...defaultTimestamps,

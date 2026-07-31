@@ -82,7 +82,12 @@ export const kioskOIDCHandle: Handle = async ({ event, resolve }) => {
 			event.locals.oidc = {
 				user: normalizeOIDCClaims({ ...accessPayload, ...idPayload }),
 				accessToken: accessPayload,
-				idToken: idPayload
+				idToken: idPayload,
+				// The kiosk bridge (/api/kiosk/session) never sets a refresh-token
+				// cookie — the Pi helper stays the sole owner of it — so there's
+				// nothing to surface here.
+				refreshToken: undefined,
+				raw: { accessToken, idToken }
 			};
 		}
 	} catch {

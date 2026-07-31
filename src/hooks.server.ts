@@ -4,6 +4,7 @@ import { type Handle, redirect } from '@sveltejs/kit';
 import { paraglideMiddleware } from '$lib/paraglide/server';
 import { sequence } from '@sveltejs/kit/hooks';
 import { OIDC } from '$api/services/OIDC';
+import { kioskOIDCHandle } from '$api/services/kioskOIDC';
 import { locales, baseLocale, cookieName, cookieMaxAge } from '$lib/paraglide/runtime';
 
 const nonBaseLocales = locales.filter((l) => l !== baseLocale);
@@ -28,14 +29,20 @@ const localeRedirect: Handle = ({ event, resolve }) => {
 	return resolve(event);
 };
 
-export const handle: Handle = sequence(OIDC.handle, localeRedirect, ({ event, resolve }) =>
-	paraglideMiddleware(event.request, ({ request: localizedRequest, locale }) => {
-		event.request = localizedRequest;
+export const handle: Handle = sequence(
+	OIDC.handle,
+	// Only runs when OIDC.handle above didn't already establish a session —
+	// see kioskOIDC.ts for why the Pi display kiosk needs this.
+	kioskOIDCHandle,
+	localeRedirect,
+	({ event, resolve }) =>
+		paraglideMiddleware(event.request, ({ request: localizedRequest, locale }) => {
+			event.request = localizedRequest;
 
-		return resolve(event, {
-			transformPageChunk: ({ html }) => {
-				return html.replace('%lang%', locale);
-			}
-		});
-	})
+			return resolve(event, {
+				transformPageChunk: ({ html }) => {
+					return html.replace('%lang%', locale);
+				}
+			});
+		})
 );

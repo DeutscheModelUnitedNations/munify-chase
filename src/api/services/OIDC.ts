@@ -4,7 +4,7 @@ import { configPrivate } from '$config/private';
 import { configPublic } from '$config/public';
 import { makeOIDC } from '@m1212e/sveltekit-oidc';
 
-type NormalizedOIDCClaims = {
+export type NormalizedOIDCClaims = {
 	sub: string;
 	email?: string;
 	locale?: string;
@@ -21,7 +21,7 @@ function asString(value: unknown): string | undefined {
  * Normalize OIDC claims from different providers into a consistent shape.
  * Logto uses `username` instead of `preferred_username` and `name` instead of `family_name`/`given_name`.
  */
-function normalizeOIDCClaims(claims: Record<string, unknown>): NormalizedOIDCClaims {
+export function normalizeOIDCClaims(claims: Record<string, unknown>): NormalizedOIDCClaims {
 	const sub = asString(claims.sub);
 	if (!sub) {
 		throw new Error('OIDC claim "sub" is missing or invalid');

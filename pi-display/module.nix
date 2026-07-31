@@ -81,6 +81,7 @@ in
     # No SSID is baked into the image; provisioning happens at first boot.
     networking.networkmanager.enable = true;
     networking.wireless.enable = false;
+    networking.firewall.trustedInterfaces = [ cfg.wlanInterface ];
 
     # --- Auto-login + Wayland kiosk (cage runs a single Chromium) ---------
     services.cage = {
@@ -158,7 +159,6 @@ in
     ];
 
     # Headless appliance conveniences.
-    services.openssh.enable = lib.mkDefault true;
     documentation.enable = false;
   };
 }

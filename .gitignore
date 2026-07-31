@@ -30,3 +30,4 @@ vite.config.ts.timestamp-*
 # Pi display appliance — builder-generated, never commit secrets
 pi-display/local.nix
 pi-display/result
+pi-display/flake.lock

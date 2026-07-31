@@ -57,6 +57,10 @@ HOTSPOT_GATEWAY = "10.42.0.1"
 
 # Signalled by the portal when /connect receives credentials.
 _provision_event = threading.Event()
+_provision_status = {
+    "state": "idle",
+    "message": ""
+}
 
 
 # --- nanoid / state ---------------------------------------------------------
@@ -80,6 +84,11 @@ def save_state(state: dict) -> None:
         json.dump(state, f)
     os.chmod(tmp, 0o600)
     os.replace(tmp, STATE_FILE)
+
+
+def set_provision_status(state: str, message: str = "") -> None:
+    _provision_status["state"] = state
+    _provision_status["message"] = message
 
 
 # --- HTTP helpers (outbound) ------------------------------------------------
@@ -130,7 +139,7 @@ def _nmcli(*args: str, timeout: int = 30) -> subprocess.CompletedProcess:
 
 
 def _nm_unescape(s: str) -> str:
-    """Reverse nmcli --terse escaping (`\:` -> `:`, `\\` -> `\`)."""
+    r"""Reverse nmcli --terse escaping (`\:` -> `:`, `\\` -> `\`)."""
     out, i = [], 0
     while i < len(s):
         if s[i] == "\\" and i + 1 < len(s):
@@ -158,11 +167,15 @@ def scan_networks() -> list[dict]:
         i = 0
         while i < len(line):
             if line[i] == "\\" and i + 1 < len(line):
-                buf.append(line[i:i + 2]); i += 2
+                buf.append(line[i:i + 2])
+                i += 2
             elif line[i] == ":":
-                parts.append("".join(buf)); buf = []; i += 1
+                parts.append("".join(buf))
+                buf = []
+                i += 1
             else:
-                buf.append(line[i]); i += 1
+                buf.append(line[i])
+                i += 1
         parts.append("".join(buf))
         if len(parts) < 3:
             continue
@@ -201,6 +214,20 @@ def hotspot_up(ssid: str, psk: str) -> None:
             f"nmcli hotspot failed (exit {res.returncode}): "
             f"{(res.stderr or res.stdout or '').strip()}"
         )
+    # `device wifi hotspot` has no flag for this — WPS comes up enabled by
+    # default, which makes Windows/Android show a WPS-PIN prompt instead of
+    # the password field. Disable it post-creation and reactivate.
+    _nmcli(
+        "connection", "modify", HOTSPOT_CONNECTION,
+        "802-11-wireless-security.wps-method", "disabled",
+        timeout=15,
+    )
+    res2 = _nmcli("connection", "up", HOTSPOT_CONNECTION, timeout=30)
+    if res2.returncode != 0:
+        raise RuntimeError(
+            f"nmcli connection up (after disabling WPS) failed "
+            f"(exit {res2.returncode}): {(res2.stderr or res2.stdout or '').strip()}"
+        )
 
 
 def hotspot_down() -> None:
@@ -209,11 +236,19 @@ def hotspot_down() -> None:
 
 
 def connect_wifi(ssid: str, psk: str) -> tuple[bool, str]:
-    """Try to join `ssid`. Returns (ok, message)."""
+    """Try to join `ssid`. Returns (ok, message).
+
+    A bad password or an out-of-range SSID both fail fast (NM gives up
+    on the handshake/association within a few seconds); a short timeout
+    here just gets the setup AP back sooner on the common failure case.
+    """
     args = ["device", "wifi", "connect", ssid, "ifname", WLAN_IFACE]
     if psk:
         args += ["password", psk]
-    res = _nmcli(*args, timeout=45)
+    try:
+        res = _nmcli(*args, timeout=25)
+    except subprocess.TimeoutExpired:
+        return False, f"Timed out connecting to {ssid}."
     if res.returncode == 0:
         return True, "Connected."
     return False, (res.stderr or res.stdout or "Connection failed").strip()
@@ -273,6 +308,43 @@ def loading_page(msg: str) -> str:
         "display:flex;align-items:center;justify-content:center;height:100vh;margin:0'>"
         f"<h1>{_esc(msg)}</h1></body>"
     )
+
+
+def _countdown_page(title: str, detail: str, interval: int) -> str:
+    """Kiosk page that ticks a live per-second countdown and self-reloads
+    after `interval` seconds, so a stalled retry never looks frozen."""
+    return (
+        "<!doctype html><meta charset=utf-8><title>CHASE display</title>"
+        "<body style='font-family:sans-serif;background:#1d232a;color:#fff;"
+        "display:flex;flex-direction:column;align-items:center;justify-content:center;"
+        "height:100vh;margin:0;gap:.5rem'>"
+        f"<h1 style='margin:0'>{_esc(title)}</h1>"
+        f"<p id=countdown style='margin:0;opacity:.8'>Retrying in {interval}s</p>"
+        f"<p style='margin:0;opacity:.6;font-size:.9rem'>{_esc(detail)}</p>"
+        "<script>"
+        f"let s={interval};"
+        "const el=document.getElementById('countdown');"
+        "setInterval(()=>{s=Math.max(0,s-1);el.textContent='Retrying in '+s+'s';},1000);"
+        f"setTimeout(()=>location.reload(),{interval * 1000});"
+        "</script></body>"
+    )
+
+
+def waiting_for_network_page(attempt: int, threshold: int, interval: int) -> str:
+    """Shown while connectivity is down but we haven't given up and started
+    WiFi setup yet."""
+    return _countdown_page(
+        "Waiting for network…",
+        f"Attempt {attempt} of {threshold} — starting WiFi setup if this keeps failing.",
+        interval,
+    )
+
+
+def reconnecting_page(attempt: int, interval: int, error: str = "") -> str:
+    """Shown when the OIDC discover/refresh/device-grant call fails
+    transiently (network blip, Logto 5xx, timeout)."""
+    detail = f"Attempt {attempt} — {error}" if error else f"Attempt {attempt}"
+    return _countdown_page("Reconnecting…", detail, interval)
 
 
 def provisioning_kiosk_page(ssid: str, psk: str, portal_url: str) -> str:
@@ -346,6 +418,9 @@ def session_page(tokens: dict, device_id: str) -> str:
     )
 
 
+_MANUAL_SSID_VALUE = "__manual__"
+
+
 def portal_form_page(networks: list[dict], message: str = "") -> str:
     options = "".join(
         f"<option value=\"{_esc(n['ssid'])}\">"
@@ -355,6 +430,7 @@ def portal_form_page(networks: list[dict], message: str = "") -> str:
     )
     if not options:
         options = "<option disabled>No networks visible — wait a few seconds and reload</option>"
+    options += f"<option value=\"{_MANUAL_SSID_VALUE}\">Other (hidden network)…</option>"
     msg_html = (
         f"<p style='background:#fee;color:#900;padding:.75rem;border-radius:.5rem'>{_esc(message)}</p>"
         if message else ""
@@ -371,7 +447,13 @@ def portal_form_page(networks: list[dict], message: str = "") -> str:
         f"{msg_html}"
         "<form method=post action=/connect>"
         "<label for=ssid>Network</label>"
-        f"<select id=ssid name=ssid required>{options}</select>"
+        f"<select id=ssid name=ssid required "
+        f"onchange=\"document.getElementById('manualWrap').style.display="
+        f"this.value==='{_MANUAL_SSID_VALUE}'?'block':'none'\">{options}</select>"
+        "<div id=manualWrap style='display:none'>"
+        "<label for=manualSsid>Network name (SSID)</label>"
+        "<input id=manualSsid name=manualSsid type=text autocomplete=off>"
+        "</div>"
         "<label for=psk>Password</label>"
         "<input id=psk name=psk type=password autocomplete=off>"
         "<button type=submit>Connect</button>"
@@ -379,13 +461,18 @@ def portal_form_page(networks: list[dict], message: str = "") -> str:
     )
 
 
-def portal_connecting_page(ssid: str) -> str:
+def portal_testing_page(message: str = "") -> str:
     return (
-        "<!doctype html><meta charset=utf-8><title>Connecting…</title>"
-        "<meta http-equiv=refresh content='8;url=/status'>"
+        "<!doctype html><meta charset=utf-8><title>Testing connection</title>"
         "<body style='font-family:sans-serif;max-width:32rem;margin:4rem auto;text-align:center'>"
-        f"<h1>Joining {_esc(ssid)}…</h1>"
-        "<p>The display will rejoin your venue's WiFi. You can close this page.</p>"
+        f"<h1>{_esc(message or 'Testing WiFi connection…')}</h1>"
+        "<p>The display drops its setup network while it tries to join yours, "
+        "so this page will stop updating. If it succeeds, this page just goes "
+        "quiet — you can close it. If it fails, the setup network comes back "
+        "and this page will show the error.</p>"
+        # Keep polling /status; if the AP briefly drops while the Pi joins
+        # the new network, the reload just retries once it's back.
+        "<script>setTimeout(()=>location.reload(),1500)</script>"
         "</body>"
     )
 
@@ -464,13 +551,18 @@ class PortalHandler(http.server.BaseHTTPRequestHandler):
             PortalHandler.last_error = ""
             return
         if path == "/status":
-            # If main() consumed the pending creds, we either succeeded
-            # (hotspot is gone, can't reach this page) or failed (error set).
-            if PortalHandler.last_error:
-                self._html(200, portal_form_page(self._scan_cached(), PortalHandler.last_error))
-                PortalHandler.last_error = ""
-            else:
+            status = _provision_status["state"]
+            message = _provision_status["message"]
+            if status == "testing":
+                self._html(200, portal_testing_page(message))
+                return
+            if status == "failed":
+                self._html(200, portal_form_page(self._scan_cached(), message))
+                return
+            if status == "success":
                 self._html(200, portal_success_page())
+                return
+            self._html(200, portal_form_page(self._scan_cached()))
             return
         # Captive-portal probes from every major OS hit known paths and want
         # specific responses. ANYTHING that isn't the success response above
@@ -486,14 +578,16 @@ class PortalHandler(http.server.BaseHTTPRequestHandler):
         raw = self.rfile.read(length).decode("utf-8", "replace")
         form = urllib.parse.parse_qs(raw)
         ssid = (form.get("ssid", [""])[0] or "").strip()
+        if ssid == _MANUAL_SSID_VALUE:
+            ssid = (form.get("manualSsid", [""])[0] or "").strip()
         psk = (form.get("psk", [""])[0] or "")
         if not ssid:
-            PortalHandler.last_error = "Pick a network."
+            PortalHandler.last_error = "Pick a network or enter its name."
             self._redirect("/")
             return
         PortalHandler.pending = {"ssid": ssid, "psk": psk}
         _provision_event.set()
-        self._html(200, portal_connecting_page(ssid))
+        self._html(200, portal_testing_page(f"Testing {ssid}…"))
 
 
 class _ReusableThreadingTCPServer(socketserver.ThreadingTCPServer):
@@ -543,6 +637,7 @@ def run_provisioning(state: dict, device_id: str) -> None:
     """Bring up the AP, show the dual-QR screen, wait for /connect success."""
     ssid, psk = hotspot_credentials(state, device_id)
     portal_url = f"http://{HOTSPOT_GATEWAY}/"
+    set_provision_status("idle")
 
     make_qr(wifi_qr_payload(ssid, psk), QR_WIFI_PNG)
     make_qr(portal_url, QR_PORTAL_PNG)
@@ -565,16 +660,27 @@ def run_provisioning(state: dict, device_id: str) -> None:
             PortalHandler.pending = None
             if not pending:
                 continue
+            set_provision_status("testing", f"Testing {pending['ssid']}")
             # Tear the hotspot down BEFORE attempting the upstream connect,
             # otherwise the radio is busy in AP mode and nmcli will refuse.
             try:
                 hotspot_down()
             except Exception:
                 pass
+
             ok, msg = connect_wifi(pending["ssid"], pending["psk"])
-            if ok and connectivity_ok():
-                return
-            PortalHandler.last_error = msg or "Could not connect — check the password."
+            if ok:
+                # Wait for DHCP
+                for _ in range(10):
+                    if connectivity_ok():
+                        set_provision_status("success", "Connected")
+                        return
+                    time.sleep(2)
+                msg = "WiFi connected, but internet access failed."
+
+            set_provision_status("failed", msg or "Could not connect.")
+            PortalHandler.last_error = msg or "Could not connect — check password."
+
             # Bring the hotspot back so the operator can retry.
             try:
                 hotspot_up(ssid, psk)
@@ -654,18 +760,30 @@ def refresh(meta: dict, refresh_token: str) -> dict:
     )
 
 
-def _is_invalid_grant(exc: BaseException) -> bool:
-    """True iff `exc` is an OAuth error body with error=invalid_grant."""
+def _parse_oauth_error(exc: BaseException) -> "dict | None":
+    """Parse an HTTPError's RFC 6749 JSON error body ({error, error_description}).
+
+    The response stream can only be read once, so callers must do this a
+    single time and share the result rather than each calling exc.read().
+    """
     if not isinstance(exc, urllib.error.HTTPError):
-        return False
+        return None
     try:
-        body = exc.read().decode()
+        return json.loads(exc.read().decode())
     except Exception:
-        return False
-    try:
-        return json.loads(body).get("error") == "invalid_grant"
-    except Exception:
-        return False
+        return None
+
+
+def _error_summary(exc: BaseException, oauth_error: "dict | None") -> str:
+    """Short, screen-safe description of an OIDC/network failure."""
+    if isinstance(exc, urllib.error.HTTPError):
+        detail = oauth_error.get("error_description") or oauth_error.get("error") if oauth_error else None
+        msg = f"HTTP {exc.code}: {detail}" if detail else f"HTTP {exc.code} {exc.reason}"
+    elif isinstance(exc, urllib.error.URLError):
+        msg = str(exc.reason)
+    else:
+        msg = str(exc) or type(exc).__name__
+    return msg[:200]
 
 
 # --- Main loop --------------------------------------------------------------
@@ -679,6 +797,7 @@ def main() -> None:
     save_state(state)
 
     consecutive_failures = 0
+    reconnect_attempts = 0
     meta: dict | None = None
 
     while True:
@@ -696,7 +815,17 @@ def main() -> None:
                 consecutive_failures = 0
                 meta = None  # re-discover after a network change
                 continue
-            write_page(loading_page("Waiting for network…"))
+            write_page(
+                waiting_for_network_page(
+                    consecutive_failures, PROVISION_FAILURE_THRESHOLD, PROVISION_PROBE_INTERVAL
+                )
+            )
+            if consecutive_failures == 1:
+                # Chromium runs --kiosk pinned to this page's URL, but once
+                # OIDC succeeds it navigates away to the live CHASE app
+                # (session_page's auto-submit). Rewriting the file alone
+                # wouldn't be seen from there — force it back on screen.
+                reload_kiosk()
             time.sleep(PROVISION_PROBE_INTERVAL)
             continue
         consecutive_failures = 0
@@ -717,6 +846,7 @@ def main() -> None:
 
             write_page(session_page(tokens, device_id))
             reload_kiosk()
+            reconnect_attempts = 0
 
             # 3. Sleep until just before expiry, but keep probing so we can
             # fall back to provisioning if the venue WiFi dies mid-session.
@@ -735,10 +865,17 @@ def main() -> None:
             # actually dead (revoked / expired / rotated-and-leaked).
             # Transient failures (network blip, Logto 5xx, timeout) must
             # NOT wipe the token, or every hiccup forces a QR #1 re-auth.
-            if _is_invalid_grant(e):
+            oauth_error = _parse_oauth_error(e)
+            if oauth_error and oauth_error.get("error") == "invalid_grant":
                 state.pop("refresh_token", None)
                 save_state(state)
-            write_page(loading_page("Reconnecting…"))
+            reconnect_attempts += 1
+            write_page(reconnecting_page(reconnect_attempts, 10, _error_summary(e, oauth_error)))
+            if reconnect_attempts == 1:
+                # Same reasoning as the network-wait branch: Chromium may
+                # already be showing the live CHASE app on another origin,
+                # so rewriting the file alone wouldn't be seen from there.
+                reload_kiosk()
             print("chase-kiosk-helper:", repr(e), flush=True)
             time.sleep(10)
 

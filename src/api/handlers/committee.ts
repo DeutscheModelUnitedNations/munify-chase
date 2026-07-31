@@ -8,14 +8,15 @@ import {
 	schemaBuilder
 } from '$api/rumble';
 import {
-	isChairInConference,
+	isTeamInConference,
 	isAdminInConference,
 	isDisplayKiosk,
 	isParticipantInConference
 } from '$api/services/authHelper';
 import { assertFindFirstExists, assertFirstEntryExists } from '@m1212e/rumble';
-import { and, count, eq, type InferSelectModel } from 'drizzle-orm';
+import { and, count, eq, isNull, type InferSelectModel } from 'drizzle-orm';
 import { calculateMajority } from '$lib/utils/majorities';
+import { nanoidValidation } from '$lib/helpers/nanoid';
 import { GraphQLError } from 'graphql';
 
 abilityBuilder.committee.allow('read').when((ctx) => {
@@ -29,7 +30,7 @@ abilityBuilder.committee.allow('read').when((ctx) => {
 
 abilityBuilder.committee.allow('update').when((ctx) => {
 	return {
-		where: isChairInConference(ctx)
+		where: isTeamInConference(ctx)
 	};
 });
 
@@ -74,7 +75,6 @@ const ref = object({
 	adjust: (t) => ({
 		totalPresent: t.field({
 			type: 'Int',
-			//TODO remove as any when rumble fixed it's types
 			resolve: (parent) => getTotalPresentCount(parent as CommitteeParentWithOptionalMembers)
 		}),
 		simpleMajority: t.field({
@@ -98,10 +98,8 @@ const ref = object({
 		paperSupportThreshold: t.field({
 			type: 'Int',
 			resolve: async (parent) => {
-				const custom = parent.customPaperSupportThreshold;
-				if (custom) return custom;
 				const total = await getTotalPresentCount(parent as CommitteeParentWithOptionalMembers);
-				return Math.ceil(total * 0.1);
+				return Math.ceil(total * (parent.paperSupportThreshold / 100));
 			}
 		})
 	})
@@ -112,7 +110,6 @@ const statusEnum = enum_({
 });
 
 const pubsub = rumblePubsub({ table: 'committee' });
-const paperPubsub = rumblePubsub({ table: 'resolutionPaper' });
 query({
 	table: 'committee'
 });
@@ -122,11 +119,12 @@ schemaBuilder.mutationFields((t) => {
 		createCommittee: t.drizzleField({
 			type: ref,
 			args: {
+				id: t.arg.id().validate(nanoidValidation),
 				conferenceId: t.arg.id({ required: true }),
 				name: t.arg.string({ required: true }),
 				abbreviation: t.arg.string({ required: true })
 			},
-			resolve: async (query, root, args, ctx) => {
+			resolve: async (query, _root, args, ctx) => {
 				await db.query.conference
 					.findFirst(
 						ctx.abilities.conference.filter('update').merge({ where: { id: args.conferenceId } })
@@ -137,6 +135,7 @@ schemaBuilder.mutationFields((t) => {
 				const result = await db
 					.insert(schema.committee)
 					.values({
+						id: args.id,
 						conferenceId: args.conferenceId,
 						name: args.name,
 						abbreviation: args.abbreviation
@@ -162,7 +161,7 @@ schemaBuilder.mutationFields((t) => {
 			args: {
 				id: t.arg.id({ required: true })
 			},
-			resolve: async (root, args, ctx) => {
+			resolve: async (_root, args, ctx) => {
 				await db
 					.delete(schema.committee)
 					.where(
@@ -191,118 +190,45 @@ schemaBuilder.mutationFields((t) => {
 				}),
 				stateOfDebate: t.arg.string(),
 				activeAgendaItemId: t.arg.id(),
-				lastResolutionAdoptionDate: t.arg({
-					type: 'DateTime'
-				}),
 				allowDelegationsToAddThemselvesToSpeakersList: t.arg.boolean(),
-				maxDraftResolutions: t.arg.int(),
-				activeDraftResolutionId: t.arg.id(),
-				clearActiveDraftResolution: t.arg.boolean(),
-				currentOperativeIndex: t.arg.int(),
-				currentOperativeClauseId: t.arg.string(),
-				supportReEvaluationOpen: t.arg.boolean(),
-				amendmentSubmissionOpen: t.arg.boolean(),
-				amendmentSponsoringOpen: t.arg.boolean(),
-				activeAmendmentId: t.arg.id(),
-				clearActiveAmendment: t.arg.boolean()
+				presentationLayout: t.arg.string(),
+				presentationRootFontSize: t.arg.int(),
+				presentationResolutionFontSize: t.arg.int(),
+				displayRegionalGroups: t.arg.boolean()
 			},
-			resolve: async (query, root, args, ctx) => {
-				// Validate activeDraftResolutionId if provided
-				if (args.activeDraftResolutionId) {
-					const paper = await db.query.resolutionPaper.findFirst({
-						where: { id: args.activeDraftResolutionId }
-					});
+			resolve: async (query, _root, args, ctx) => {
+				await db.transaction(async (tx) => {
+					await tx
+						.update(schema.committee)
+						.set({
+							name: args.name ?? undefined,
+							abbreviation: args.abbreviation ?? undefined,
+							whiteboardContent: args.whiteboardContent ?? undefined,
+							showWhiteboard: args.showWhiteboard ?? undefined,
+							status: args.status ?? undefined,
+							statusHeadline: args.statusHeadline ?? undefined,
+							statusUntil: args.statusUntil ?? undefined,
+							stateOfDebate: args.stateOfDebate ?? undefined,
+							activeAgendaItemId: args.activeAgendaItemId ?? undefined,
+							allowDelegationsToAddThemselvesToSpeakersList:
+								args.allowDelegationsToAddThemselvesToSpeakersList ?? undefined,
+							presentationLayout: args.presentationLayout ?? undefined,
+							presentationRootFontSize: args.presentationRootFontSize ?? undefined,
+							presentationResolutionFontSize: args.presentationResolutionFontSize ?? undefined,
+							displayRegionalGroups: args.displayRegionalGroups ?? undefined
+						})
+						.where(
+							ctx.abilities.committee.filter('update').merge({ where: { id: args.id } }).sql.where
+						);
 
-					if (!paper) {
-						throw new GraphQLError('Paper not found');
-					}
-					if (paper.committeeId !== args.id) {
-						throw new GraphQLError('Paper does not belong to this committee');
-					}
-					if (
-						paper.status !== 'DRAFT_RESOLUTION' &&
-						paper.status !== 'AMENDMENT_PHASE' &&
-						paper.status !== 'VOTING_PHASE'
-					) {
-						throw new GraphQLError('Only draft resolutions can be set as active');
-					}
-				}
-
-				// Auto-close re-evaluation when setting an active DR
-				const supportReEvaluationOpen = args.activeDraftResolutionId
-					? false
-					: (args.supportReEvaluationOpen ?? undefined);
-
-				await db
-					.update(schema.committee)
-					.set({
-						name: args.name ?? undefined,
-						abbreviation: args.abbreviation ?? undefined,
-						whiteboardContent: args.whiteboardContent ?? undefined,
-						showWhiteboard: args.showWhiteboard ?? undefined,
-						status: args.status ?? undefined,
-						statusHeadline: args.statusHeadline ?? undefined,
-						statusUntil: args.statusUntil ?? undefined,
-						stateOfDebate: args.stateOfDebate ?? undefined,
-						activeAgendaItemId: args.activeAgendaItemId ?? undefined,
-						lastResolutionAdoptionDate: args.lastResolutionAdoptionDate ?? undefined,
-						allowDelegationsToAddThemselvesToSpeakersList:
-							args.allowDelegationsToAddThemselvesToSpeakersList ?? undefined,
-						maxDraftResolutions: args.maxDraftResolutions ?? undefined,
-						activeDraftResolutionId: args.clearActiveDraftResolution
-							? null
-							: (args.activeDraftResolutionId ?? undefined),
-						currentOperativeIndex: args.currentOperativeIndex ?? undefined,
-						currentOperativeClauseId: args.currentOperativeClauseId ?? undefined,
-						supportReEvaluationOpen,
-						amendmentSubmissionOpen: args.amendmentSubmissionOpen ?? undefined,
-						amendmentSponsoringOpen: args.amendmentSponsoringOpen ?? undefined,
-						activeAmendmentId: args.clearActiveAmendment
-							? null
-							: (args.activeAmendmentId ?? undefined)
-					})
-					.where(
-						ctx.abilities.committee.filter('update').merge({ where: { id: args.id } }).sql.where
-					);
-
-				// Auto-transition active DR to AMENDMENT_PHASE when currentOperativeIndex is set
-				if (args.currentOperativeIndex !== undefined && args.currentOperativeIndex !== null) {
-					const committee = await db.query.committee.findFirst({
-						where: { id: args.id }
-					});
-
-					const activeDrId = args.activeDraftResolutionId ?? committee?.activeDraftResolutionId;
-
-					if (activeDrId) {
-						const activeDr = await db.query.resolutionPaper.findFirst({
-							where: { id: activeDrId }
+					if (args.activeAgendaItemId) {
+						await tx.insert(schema.committeeTopicChangedTimestamp).values({
+							committeeId: args.id,
+							agendaItemId: args.activeAgendaItemId,
+							timestamp: new Date()
 						});
-
-						if (activeDr && activeDr.status === 'DRAFT_RESOLUTION') {
-							await db
-								.update(schema.resolutionPaper)
-								.set({ status: 'AMENDMENT_PHASE' })
-								.where(eq(schema.resolutionPaper.id, activeDrId));
-
-							// Create snapshot
-							await db.insert(schema.paperContentSnapshot).values({
-								paperId: activeDrId,
-								content: activeDr.content,
-								trigger: 'AMENDMENT_PHASE'
-							});
-
-							paperPubsub.updated(activeDrId);
-						}
 					}
-				}
-
-				if (args.activeAgendaItemId) {
-					await db.insert(schema.committeeTopicChangedTimestamp).values({
-						committeeId: args.id,
-						agendaItemId: args.activeAgendaItemId,
-						timestamp: new Date()
-					});
-				}
+				});
 
 				pubsub.updated(args.id);
 
@@ -314,6 +240,135 @@ schemaBuilder.mutationFields((t) => {
 									id: args.id
 								}
 							}).query.single
+						)
+					)
+					.then(assertFindFirstExists);
+			}
+		}),
+		setActiveDraftResolution: t.drizzleField({
+			type: ref,
+			args: {
+				committeeId: t.arg.id({ required: true }),
+				paperId: t.arg.id()
+			},
+			resolve: async (query, _root, args, ctx) => {
+				if (args.paperId) {
+					const paper = await db.query.resolutionPaper
+						.findFirst({ where: { id: args.paperId, committeeId: args.committeeId } })
+						.then(assertFindFirstExists);
+
+					const committee = await db.query.committee
+						.findFirst({ where: { id: args.committeeId } })
+						.then(assertFindFirstExists);
+
+					if (paper.status === 'WORKING_PAPER') {
+						throw new GraphQLError(
+							'Working papers cannot be set as active, the paper must be submitted or promoted first'
+						);
+					}
+
+					if (committee.activeAgendaItemId && paper.agendaItemId !== committee.activeAgendaItemId) {
+						throw new GraphQLError(
+							'Only papers belonging to the currently active agenda item may be set as active'
+						);
+					}
+				}
+				await db
+					.update(schema.committee)
+					.set({
+						activeDraftResolutionId: args.paperId ?? null,
+						activeAmendmentId: null
+					})
+					.where(
+						ctx.abilities.committee.filter('update').merge({ where: { id: args.committeeId } }).sql
+							.where
+					);
+				pubsub.updated(args.committeeId);
+				return db.query.committee
+					.findFirst(
+						query(
+							ctx.abilities.committee.filter('read').merge({ where: { id: args.committeeId } })
+								.query.single
+						)
+					)
+					.then(assertFindFirstExists);
+			}
+		}),
+		setActiveAmendment: t.drizzleField({
+			type: ref,
+			args: {
+				committeeId: t.arg.id({ required: true }),
+				amendmentId: t.arg.id()
+			},
+			resolve: async (query, _root, args, ctx) => {
+				if (args.amendmentId) {
+					// the amendment must belong to the committee's currently selected draft resolution
+					const committee = await db.query.committee
+						.findFirst({ where: { id: args.committeeId } })
+						.then(assertFindFirstExists);
+					if (!committee.activeDraftResolutionId) {
+						throw new GraphQLError('No active draft resolution selected');
+					}
+					await db.query.amendment
+						.findFirst({
+							where: { id: args.amendmentId, paperId: committee.activeDraftResolutionId }
+						})
+						.then(assertFindFirstExists);
+
+					// Stamp presentedAt the first time an amendment hits the beamer
+					await db
+						.update(schema.amendment)
+						.set({ presentedAt: new Date() })
+						.where(
+							and(eq(schema.amendment.id, args.amendmentId), isNull(schema.amendment.presentedAt))
+						);
+				}
+				await db
+					.update(schema.committee)
+					.set({ activeAmendmentId: args.amendmentId ?? null })
+					.where(
+						ctx.abilities.committee.filter('update').merge({ where: { id: args.committeeId } }).sql
+							.where
+					);
+				pubsub.updated(args.committeeId);
+				return db.query.committee
+					.findFirst(
+						query(
+							ctx.abilities.committee.filter('read').merge({ where: { id: args.committeeId } })
+								.query.single
+						)
+					)
+					.then(assertFindFirstExists);
+			}
+		}),
+		setCommitteeResolutionToggles: t.drizzleField({
+			type: ref,
+			args: {
+				committeeId: t.arg.id({ required: true }),
+				supportReevaluationOpen: t.arg.boolean(),
+				amendmentSubmissionOpen: t.arg.boolean(),
+				amendmentSponsoringOpen: t.arg.boolean(),
+				currentOperativeIndex: t.arg.int()
+			},
+			resolve: async (query, _root, args, ctx) => {
+				await db
+					.update(schema.committee)
+					.set({
+						supportReevaluationOpen: args.supportReevaluationOpen ?? undefined,
+						amendmentSubmissionOpen: args.amendmentSubmissionOpen ?? undefined,
+						amendmentSponsoringOpen: args.amendmentSponsoringOpen ?? undefined,
+						currentOperativeIndex: args.currentOperativeIndex ?? undefined
+					})
+					.where(
+						ctx.abilities.committee.filter('update').merge({ where: { id: args.committeeId } }).sql
+							.where
+					);
+				pubsub.updated(args.committeeId);
+				return db.query.committee
+					.findFirst(
+						query(
+							ctx.abilities.committee.filter('read').merge({ where: { id: args.committeeId } })
+								.query.single
 						)
 					)
 					.then(assertFindFirstExists);

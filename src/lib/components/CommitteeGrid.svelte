@@ -11,7 +11,6 @@
 			statusUntil: Date;
 			stateOfDebate?: string | null;
 			activeAgendaItem?: { title?: string | null } | null;
-			lastResolutionAdoptionDate?: Date | null;
 		}>;
 	}
 </script>
@@ -20,7 +19,6 @@
 	import { resolve } from '$app/paths';
 	import IconInfoBox from './IconInfoBox.svelte';
 	import { getCommitteeStatusIcon, getCommitteeStatusText } from '$lib/utils/committeeStatus';
-	import AdoptionConfetti from './AdoptionConfetti.svelte';
 
 	interface Props {
 		conference: ConferenceData;
@@ -52,7 +50,7 @@
 <div class="flex h-full w-full flex-wrap gap-4 p-4">
 	{#each conference.committees.toSorted( (a, b) => a.abbreviation.localeCompare(b.abbreviation) ) as committee (committee.id)}
 		<a
-			class="card bg-base-100 relative min-w-md flex-1 shadow-sm transition-all duration-300 ease-in-out hover:-translate-y-1 hover:shadow-md"
+			class="card bg-base-100 relative w-full sm:flex-1 sm:min-w-72 shadow-sm transition-all duration-300 ease-in-out hover:-translate-y-1 hover:shadow-md"
 			href={getHref(committee.id)}
 		>
 			<div class="card-body">
@@ -72,18 +70,9 @@
 					text={getCommitteeStatusText(committee.status)}
 					faIcon={getCommitteeStatusIcon(committee.status)}
 					committeeStatus={committee.status}
-					marqueeOnOverflow={false}
 					until={new Date(committee.statusUntil)}
 				/>
 			</div>
 		</a>
-
-		<AdoptionConfetti
-			agendaItem={committee.activeAgendaItem?.title ?? '—'}
-			committeeName={committee.name}
-			lastAdoptionDate={committee.lastResolutionAdoptionDate}
-			confettiDurationSec={90}
-			showBanner
-		/>
 	{/each}
 </div>

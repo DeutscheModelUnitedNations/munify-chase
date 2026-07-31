@@ -1,0 +1,10 @@
+{
+	"languages": {
+		"JavaScript": {
+			"language_servers": ["typescript-language-server", "eslint", "!biome"]
+		},
+		"TypeScript": {
+			"language_servers": ["typescript-language-server", "eslint", "!biome"]
+		}
+	}
+}

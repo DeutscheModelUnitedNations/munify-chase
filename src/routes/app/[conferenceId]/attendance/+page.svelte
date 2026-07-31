@@ -14,7 +14,6 @@
 	import ByNsaTab from './ByNsaTab.svelte';
 	import NotCheckedInTab from './NotCheckedInTab.svelte';
 	import HistoryTab from './HistoryTab.svelte';
-	import StatsTab from './StatsTab.svelte';
 
 	const conferenceId = page.params.conferenceId!;
 	const currentUser = await getCurrentUser();
@@ -51,15 +50,14 @@
 	let role = $derived(conferenceUsers?.[0]?.conferenceUserType);
 	let allowed = $derived(isGlobalAdmin || role === 'ADMIN' || role === 'TEAM');
 
-	type TabId = 'BY_COMMITTEE' | 'BY_NSA' | 'NOT_CHECKED_IN' | 'HISTORY' | 'STATS';
+	type TabId = 'BY_COMMITTEE' | 'BY_NSA' | 'NOT_CHECKED_IN' | 'HISTORY';
 	let activeTab = $state<TabId>('NOT_CHECKED_IN');
 
 	const tabs: { id: TabId; label: string; faIcon: string }[] = [
 		{ id: 'NOT_CHECKED_IN', label: m.nsaAttendanceTabNotCheckedIn(), faIcon: 'fa-user-clock' },
 		{ id: 'BY_COMMITTEE', label: m.nsaAttendanceTabByCommittee(), faIcon: 'fa-building-columns' },
 		{ id: 'BY_NSA', label: m.nsaAttendanceTabByNsa(), faIcon: 'fa-people-group' },
-		{ id: 'HISTORY', label: m.nsaAttendanceTabHistory(), faIcon: 'fa-clock-rotate-left' },
-		{ id: 'STATS', label: m.nsaAttendanceTabStats(), faIcon: 'fa-chart-column' }
+		{ id: 'HISTORY', label: m.nsaAttendanceTabHistory(), faIcon: 'fa-clock-rotate-left' }
 	];
 
 	let menubarItems = $derived(
@@ -112,8 +110,6 @@
 				<NotCheckedInTab {conferenceId} />
 			{:else if activeTab === 'HISTORY'}
 				<HistoryTab {conferenceId} />
-			{:else if activeTab === 'STATS'}
-				<StatsTab {conferenceId} conferenceTitle={conferenceMeta?.title ?? undefined} />
 			{/if}
 		</div>
 	</div>

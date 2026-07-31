@@ -1,4 +1,17 @@
 import { m } from '$lib/paraglide/messages';
+import { CombinedError } from '@urql/core';
+
+/**
+ * Appends the first GraphQL error message from the backend to a base toast
+ * message, so users see why their action was rejected rather than a generic
+ * "Save failed" string.
+ */
+export function withBackendMessage(baseMsg: string, err: unknown): string {
+	if (err instanceof CombinedError && err.graphQLErrors.length > 0) {
+		return `${baseMsg}: ${err.graphQLErrors[0].message}`;
+	}
+	return baseMsg;
+}
 
 export function promiseToastStrings(
 	targetName: string,

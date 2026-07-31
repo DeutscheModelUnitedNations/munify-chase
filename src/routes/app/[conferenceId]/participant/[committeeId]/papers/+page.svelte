@@ -1,392 +1,244 @@
 <script lang="ts">
-	import { m } from '$lib/paraglide/messages';
-	import { page } from '$app/state';
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
+	import { page } from '$app/state';
 	import { client } from '$lib/api/rumbleClient/client';
+	import { nanoid } from '$lib/helpers/nanoid';
+	import { workingPaperName } from '$lib/helpers/paperName';
+	import { m } from '$lib/paraglide/messages';
 	import { getCurrentUser } from '$lib/state/currentUser.svelte';
-	import { generatePaperName } from '$lib/utils/paperNameGenerator';
+	import {
+		statusLabel,
+		statusBadgeClass,
+		type PaperStatus
+	} from '$lib/components/resolutions/paperContext';
 	import Flag from '$lib/components/Flag.svelte';
+	import { getTranslatedCountryNameFromAlpha3Code } from '$lib/utils/nationTranslationHelper.svelte';
 	import toast from 'svelte-french-toast';
 
+	const conferenceId = $derived(page.params.conferenceId!);
+	const committeeId = $derived(page.params.committeeId!);
+
 	const currentUser = await getCurrentUser();
-	const [conferenceUser] =
-		(await client.liveQuery.conferenceUsers({
-			__args: {
-				where: {
-					conference: { id: page.params.conferenceId },
-					user: { id: currentUser?.id ?? '' }
-				}
-			},
-			id: true,
-			conferenceUserType: true,
-			committeeMemberId: true
-		})) ?? [];
+	const conferenceUsers = await client.liveQuery.conferenceUsers({
+		__args: {
+			where: { user: { id: currentUser.id ?? '' }, conference: { id: page.params.conferenceId } }
+		},
+		id: true,
+		conferenceUserType: true,
+		committeeMemberId: true
+	});
+	const viewer = $derived(conferenceUsers?.[0]);
+	const myMemberId = $derived(viewer?.committeeMemberId ?? null);
+	const myConfUserId = $derived(viewer?.id ?? '');
 
 	const committee = await client.liveQuery.committee({
-		__args: { id: page.params.committeeId! },
+		__args: { id: committeeId },
 		id: true,
-		activeAgendaItem: { id: true },
-		supportReEvaluationOpen: true,
-		activeDraftResolutionId: true
+		activeAgendaItem: { id: true, title: true }
 	});
 
 	const papers = await client.liveQuery.resolutionPapers({
-		__args: {
-			where: {
-				committee: { id: page.params.committeeId }
-			}
-		},
+		__args: { where: { committee: { id: committeeId } } },
 		id: true,
 		title: true,
 		status: true,
 		documentNumber: true,
-		creatorCommitteeMemberId: true,
-		updatedAt: true,
-		editors: {
+		creatorCommitteeMember: {
 			id: true,
-			conferenceUserId: true
-		},
-		sponsors: {
-			id: true,
-			committeeMemberId: true,
-			committeeMember: {
+			representation: {
 				id: true,
-				representation: {
-					id: true,
-					name: true,
-					alpha3Code: true,
-					type: true,
-					faIcon: true
-				}
+				name: true,
+				type: true,
+				alpha2Code: true,
+				alpha3Code: true,
+				faIcon: true
 			}
-		}
+		},
+		editors: { id: true, conferenceUser: { id: true } },
+		sponsors: { id: true }
 	});
 
-	let role = $derived(conferenceUser?.conferenceUserType);
-	let myCommitteeMemberId = $derived(conferenceUser?.committeeMemberId);
-	let myConferenceUserId = $derived(conferenceUser?.id);
-	let isDelegate = $derived(role === 'DELEGATE');
+	const PUBLISHED: PaperStatus[] = ['DRAFT_RESOLUTION', 'AMENDMENT_PHASE', 'VOTING_PHASE', 'FINAL'];
 
-	let activeAgendaItem = $derived(committee?.activeAgendaItem);
-
-	// My papers: created by me, or I'm an editor, or I'm a sponsor
-	let myPapers = $derived(
+	const myPapers = $derived(
 		(papers ?? []).filter(
 			(p) =>
-				p.creatorCommitteeMemberId === myCommitteeMemberId ||
-				p.editors.some((e) => e.conferenceUserId === myConferenceUserId) ||
-				p.sponsors.some((s) => s.committeeMemberId === myCommitteeMemberId)
+				p.status === 'WORKING_PAPER' &&
+				((myMemberId && p.creatorCommitteeMember?.id === myMemberId) ||
+					(p.editors ?? []).some((e) => e.conferenceUser?.id === myConfUserId))
 		)
 	);
-
-	// Draft resolutions: status is DRAFT_RESOLUTION or later
-	let draftResolutions = $derived(
-		(papers ?? []).filter(
-			(p) =>
-				p.status === 'DRAFT_RESOLUTION' || p.status === 'AMENDMENT_PHASE' || p.status === 'FINAL'
-		)
+	const submittedPapers = $derived((papers ?? []).filter((p) => p.status === 'SUBMITTED'));
+	const published = $derived(
+		(papers ?? []).filter((p) => PUBLISHED.includes(p.status as PaperStatus))
 	);
 
-	async function handleCreatePaper() {
-		if (!activeAgendaItem) return;
+	function paperHref(paperId: string) {
+		return resolve('/app/[conferenceId]/participant/[committeeId]/papers/[paperId]', {
+			conferenceId,
+			committeeId,
+			paperId
+		});
+	}
+
+	let creating = $state(false);
+	async function createPaper() {
+		if (!committee?.activeAgendaItem) {
+			toast.error(m.selectActiveAgendaItemFirst());
+			return;
+		}
+		creating = true;
 		try {
-			const result = await client.mutate.createResolutionPaper({
-				__args: {
-					committeeId: page.params.committeeId!,
-					agendaItemId: activeAgendaItem.id,
-					title: generatePaperName()
-				},
+			const id = nanoid();
+			const created = await client.mutate.createResolutionPaper({
+				__args: { id, committeeId, agendaItemId: committee.activeAgendaItem.id },
 				id: true
 			});
-			toast.success(m.paperCreated());
-			if (result?.id) {
-				goto(
-					resolve('/app/[conferenceId]/participant/[committeeId]/papers/[paperId]', {
-						conferenceId: page.params.conferenceId!,
-						committeeId: page.params.committeeId!,
-						paperId: result.id
-					})
-				);
-			}
-		} catch {
-			toast.error(m.toastCreateError({ targetName: m.workingPaper() }));
+			if (created) await goto(paperHref(created.id));
+		} catch (err) {
+			toast.error(err instanceof Error ? err.message : 'Failed to create paper');
+		} finally {
+			creating = false;
 		}
 	}
 
-	async function toggleSupport(paperId: string, currentlySupporting: boolean) {
-		if (!myCommitteeMemberId) return;
+	let code = $state('');
+	let redeeming = $state(false);
+	async function redeem() {
+		if (!code.trim()) return;
+		redeeming = true;
 		try {
-			if (currentlySupporting) {
-				// Cast required: rumble generator types scalar-returning mutations as plain types instead of fns
-				await (
-					client.mutate.removeSponsor as unknown as (p: {
-						__args: { paperId: string; committeeMemberId: string };
-					}) => Promise<unknown>
-				)({
-					__args: { paperId, committeeMemberId: myCommitteeMemberId }
-				});
-			} else {
-				await client.mutate.addSponsor({
-					__args: { paperId, committeeMemberId: myCommitteeMemberId },
-					id: true
-				});
-			}
-		} catch {
-			toast.error(m.saveError());
-		}
-	}
-
-	let shareCodeInput = $state('');
-
-	async function handleRedeemCode() {
-		if (!shareCodeInput.trim()) return;
-		try {
-			const result = await client.mutate.redeemShareCode({
-				__args: { code: shareCodeInput.trim().toUpperCase() },
-				paperId: true,
-				permission: true
+			await client.mutate.redeemPaperShareCode({
+				__args: { code: code.trim().toUpperCase() }
 			});
-			const paperId = result?.paperId;
-			if (paperId) {
-				toast.success(m.codeRedeemed());
-				shareCodeInput = '';
-				goto(
-					resolve('/app/[conferenceId]/participant/[committeeId]/papers/[paperId]', {
-						conferenceId: page.params.conferenceId!,
-						committeeId: page.params.committeeId!,
-						paperId
-					})
-				);
-			}
-		} catch {
-			toast.error(m.invalidShareCode());
+			toast.success(m.codeRedeemed());
+			code = '';
+		} catch (err) {
+			toast.error(err instanceof Error ? err.message : 'Invalid code');
+		} finally {
+			redeeming = false;
 		}
-	}
-
-	function getStatusBadgeClass(status: string) {
-		switch (status) {
-			case 'WORKING_PAPER':
-				return 'badge-ghost';
-			case 'SUBMITTED':
-				return 'badge-warning';
-			case 'DRAFT_RESOLUTION':
-				return 'badge-info';
-			case 'AMENDMENT_PHASE':
-				return 'badge-secondary';
-			case 'FINAL':
-				return 'badge-success';
-			default:
-				return 'badge-ghost';
-		}
-	}
-
-	function getStatusText(status: string) {
-		switch (status) {
-			case 'WORKING_PAPER':
-				return m.workingPaper();
-			case 'SUBMITTED':
-				return m.submitted();
-			case 'DRAFT_RESOLUTION':
-				return m.draftResolution();
-			case 'AMENDMENT_PHASE':
-				return m.amendmentPhase();
-			case 'FINAL':
-				return m.finalResolution();
-			default:
-				return status;
-		}
-	}
-
-	function timeAgo(dateStr: string | Date | null | undefined) {
-		if (!dateStr) return '';
-		const date = dateStr instanceof Date ? dateStr : new Date(dateStr);
-		const now = new Date();
-		const diff = now.getTime() - date.getTime();
-		const minutes = Math.floor(diff / 60000);
-		if (minutes < 1) return 'just now';
-		if (minutes < 60) return `${minutes}m ago`;
-		const hours = Math.floor(minutes / 60);
-		if (hours < 24) return `${hours}h ago`;
-		const days = Math.floor(hours / 24);
-		return `${days}d ago`;
 	}
 </script>
 
-<svelte:head>
-	<title>{m.papers()} - MUNify CHASE</title>
-</svelte:head>
-
-<div class="mx-auto flex max-w-3xl flex-col gap-6 p-4">
-	<!-- My Papers Section -->
-	<div>
-		<h2 class="mb-3 text-xl font-bold">{m.myPapers()}</h2>
-
-		<!-- Action row -->
-		<div class="mb-4 flex flex-wrap gap-2">
-			{#if isDelegate}
-				{#if activeAgendaItem}
-					<button class="btn btn-primary btn-sm" onclick={handleCreatePaper}>
-						<i class="fas fa-plus mr-1"></i>
-						{m.createPaper()}
-					</button>
-				{:else}
-					<div class="tooltip" data-tip={m.noActiveAgendaItem()}>
-						<button class="btn btn-primary btn-sm" disabled>
-							<i class="fas fa-plus mr-1"></i>
-							{m.createPaper()}
-						</button>
-					</div>
-				{/if}
-			{/if}
-
-			<div class="join">
-				<input
-					type="text"
-					class="input input-sm join-item input-bordered w-32"
-					placeholder={m.enterCode()}
-					bind:value={shareCodeInput}
-					onkeydown={(e) => e.key === 'Enter' && handleRedeemCode()}
-				/>
-				<button class="btn btn-sm join-item btn-soft" onclick={handleRedeemCode}>
-					<i class="fas fa-ticket mr-1"></i>
-					{m.redeemShareCode()}
-				</button>
-			</div>
+<div class="flex flex-col gap-4 p-4">
+	<!-- Create + redeem -->
+	<div class="grid gap-3 sm:grid-cols-2">
+		<button
+			class="btn btn-primary"
+			disabled={creating || !committee?.activeAgendaItem}
+			onclick={createPaper}
+		>
+			{#if creating}<i class="fas fa-spinner fa-spin"></i>{:else}<i class="fas fa-plus"></i>{/if}
+			{m.newWorkingPaper()}
+		</button>
+		<div class="join">
+			<input
+				class="input input-bordered join-item w-full font-mono uppercase"
+				placeholder={m.enterShareCode()}
+				bind:value={code}
+			/>
+			<button class="btn join-item" disabled={redeeming || !code.trim()} onclick={redeem}>
+				{#if redeeming}<i class="fas fa-spinner fa-spin"></i>{:else}<i class="fas fa-ticket"
+					></i>{/if}
+				{m.redeem()}
+			</button>
 		</div>
-
-		<!-- Paper cards -->
-		{#if myPapers.length === 0}
-			<div class="text-base-content/50 py-8 text-center text-sm">
-				{m.noPapersYet()}
-			</div>
-		{:else}
-			<div class="grid grid-cols-1 gap-3 md:grid-cols-2">
-				{#each myPapers as paper (paper.id)}
-					<a
-						href={resolve('/app/[conferenceId]/participant/[committeeId]/papers/[paperId]', {
-							conferenceId: page.params.conferenceId!,
-							committeeId: page.params.committeeId!,
-							paperId: paper.id
-						})}
-						class="card bg-base-100 shadow-sm transition-shadow hover:shadow-md"
-					>
-						<div class="card-body gap-2 p-4">
-							<div class="flex items-start justify-between gap-2">
-								<h3 class="card-title text-base">
-									{#if paper.documentNumber}
-										<span class="font-mono">{paper.documentNumber}</span>
-									{:else}
-										{paper.title || m.untitledPaper()}
-									{/if}
-								</h3>
-								<span
-									class="badge badge-soft {getStatusBadgeClass(paper.status)} badge-sm shrink-0"
-								>
-									{getStatusText(paper.status)}
-								</span>
-							</div>
-							<div class="flex items-center gap-3 text-xs opacity-60">
-								<span>
-									<i class="fas fa-users mr-1"></i>
-									{m.sponsorCount({ count: String(paper.sponsors.length) })}
-								</span>
-								<span>{timeAgo(paper.updatedAt)}</span>
-							</div>
-						</div>
-					</a>
-				{/each}
-			</div>
-		{/if}
 	</div>
 
-	<!-- Draft Resolutions Section -->
-	<div>
-		<div class="mb-3 flex items-center gap-3">
-			<h2 class="text-xl font-bold">{m.draftResolutions()}</h2>
-			{#if committee?.supportReEvaluationOpen}
-				<span class="badge badge-warning animate-pulse">{m.supportReEvaluation()}</span>
-			{/if}
-		</div>
-
-		{#if draftResolutions.length === 0}
-			<div class="text-base-content/50 py-8 text-center text-sm">
-				{m.noDraftResolutionsYet()}
-			</div>
+	<!-- My papers -->
+	<section class="flex flex-col gap-2">
+		<h2 class="font-bold">{m.myPapers()}</h2>
+		{#if !myPapers.length}
+			<p class="text-base-content/50 text-sm">{m.noPapersYet()}</p>
 		{:else}
-			<div class="grid grid-cols-1 gap-3 md:grid-cols-2">
-				{#each draftResolutions as paper (paper.id)}
-					{@const isSupportingDr = paper.sponsors.some(
-						(s) => s.committeeMemberId === myCommitteeMemberId
-					)}
-					{@const isActiveDr = paper.id === committee?.activeDraftResolutionId}
-					<div
-						class="card bg-base-100 shadow-sm transition-shadow hover:shadow-md {isActiveDr
-							? 'ring-success ring-2'
-							: ''}"
-					>
-						<a
-							href={resolve('/app/[conferenceId]/participant/[committeeId]/papers/[paperId]', {
-								conferenceId: page.params.conferenceId!,
-								committeeId: page.params.committeeId!,
-								paperId: paper.id
-							})}
-							class="card-body gap-2 p-4"
-						>
-							<div class="flex items-start justify-between gap-2">
-								<div class="flex items-center gap-2">
-									<h3 class="card-title text-base font-mono">
-										{paper.documentNumber ?? m.draftResolution()}
-									</h3>
-									{#if isActiveDr}
-										<span class="badge badge-success badge-sm">
-											{m.activeDraftResolution()}
-										</span>
-									{/if}
-								</div>
-								<span
-									class="badge badge-soft {getStatusBadgeClass(paper.status)} badge-sm shrink-0"
-								>
-									{getStatusText(paper.status)}
-								</span>
-							</div>
-							<div class="flex items-center gap-3 text-xs opacity-60">
-								<span>
-									<i class="fas fa-users mr-1"></i>
-									{m.supporterCount({ count: String(paper.sponsors.length) })}
-								</span>
-							</div>
-							<!-- Sponsor flags -->
-							{#if paper.sponsors.length > 0}
-								<div class="flex flex-wrap gap-1">
-									{#each paper.sponsors as sponsor (sponsor.id)}
-										{#if sponsor.committeeMember?.representation}
-											<Flag representation={sponsor.committeeMember.representation} size="xs" />
-										{/if}
-									{/each}
+			{#each myPapers as p (p.id)}
+				<a href={paperHref(p.id)} class="card bg-base-100 hover:bg-base-200 transition">
+					<div class="card-body flex-row items-center gap-3 p-3">
+						<div class="flex min-w-0 flex-1 flex-col">
+							<span class="font-medium">{p.title || workingPaperName(p.id)}</span>
+							{#if p.creatorCommitteeMember?.representation}
+								{@const rep = p.creatorCommitteeMember.representation}
+								<div class="text-base-content/60 mt-1 flex items-center gap-1 text-sm">
+									<Flag size="xs" representation={rep} />
+									<span>{rep.name ?? getTranslatedCountryNameFromAlpha3Code(rep.alpha3Code)}</span>
 								</div>
 							{/if}
-						</a>
-						<!-- Support toggle during re-evaluation -->
-						{#if committee?.supportReEvaluationOpen && isDelegate && paper.status !== 'FINAL'}
-							<div class="border-base-300 border-t px-4 py-2">
-								<button
-									class="btn btn-sm w-full {isSupportingDr ? 'btn-outline' : 'btn-primary'}"
-									onclick={() => toggleSupport(paper.id, isSupportingDr)}
-								>
-									{#if isSupportingDr}
-										<i class="fas fa-minus mr-1"></i>
-										{m.withdrawSupport()}
-									{:else}
-										<i class="fas fa-plus mr-1"></i>
-										{m.supportDraftResolution()}
-									{/if}
-								</button>
-							</div>
-						{/if}
+						</div>
+						<span class="badge badge-sm {statusBadgeClass(p.status as PaperStatus)}">
+							{statusLabel(p.status as PaperStatus)}
+						</span>
+						<i class="fas fa-chevron-right opacity-50"></i>
 					</div>
-				{/each}
-			</div>
+				</a>
+			{/each}
 		{/if}
-	</div>
+	</section>
+
+	<!-- Submitted papers (visible to all committee members) -->
+	<section class="flex flex-col gap-2">
+		<h2 class="font-bold">{m.submittedPapers()}</h2>
+		{#if !submittedPapers.length}
+			<p class="text-base-content/50 text-sm">{m.noSubmittedPapers()}</p>
+		{:else}
+			{#each submittedPapers as p (p.id)}
+				<a href={paperHref(p.id)} class="card bg-base-100 hover:bg-base-200 transition">
+					<div class="card-body flex-row items-center gap-3 p-3">
+						<div class="flex min-w-0 flex-1 flex-col">
+							<span class="font-medium">{p.title || workingPaperName(p.id)}</span>
+							{#if p.creatorCommitteeMember?.representation}
+								{@const rep = p.creatorCommitteeMember.representation}
+								<div class="text-base-content/60 mt-1 flex items-center gap-1 text-sm">
+									<Flag size="xs" representation={rep} />
+									<span>{rep.name ?? getTranslatedCountryNameFromAlpha3Code(rep.alpha3Code)}</span>
+								</div>
+							{/if}
+						</div>
+						<span class="badge badge-ghost gap-1"
+							><i class="fas fa-handshake"></i>{p.sponsors?.length ?? 0}</span
+						>
+						<span class="badge badge-sm {statusBadgeClass(p.status as PaperStatus)}">
+							{statusLabel(p.status as PaperStatus)}
+						</span>
+						<i class="fas fa-chevron-right opacity-50"></i>
+					</div>
+				</a>
+			{/each}
+		{/if}
+	</section>
+
+	<!-- Published draft resolutions -->
+	<section class="flex flex-col gap-2">
+		<h2 class="font-bold">{m.draftResolutions()}</h2>
+		{#if !published.length}
+			<p class="text-base-content/50 text-sm">{m.noDraftResolutionsYet()}</p>
+		{:else}
+			{#each published as p (p.id)}
+				<a href={paperHref(p.id)} class="card bg-base-100 hover:bg-base-200 transition">
+					<div class="card-body flex-row items-center gap-3 p-3">
+						<div class="flex min-w-0 flex-1 flex-col">
+							<span class="font-medium"
+								>{p.documentNumber || p.title || workingPaperName(p.id)}</span
+							>
+							{#if p.creatorCommitteeMember?.representation}
+								{@const rep = p.creatorCommitteeMember.representation}
+								<div class="text-base-content/60 mt-1 flex items-center gap-1 text-sm">
+									<Flag size="xs" representation={rep} />
+									<span>{rep.name ?? getTranslatedCountryNameFromAlpha3Code(rep.alpha3Code)}</span>
+								</div>
+							{/if}
+						</div>
+						<span class="badge badge-ghost gap-1"
+							><i class="fas fa-handshake"></i>{p.sponsors?.length ?? 0}</span
+						>
+						<span class="badge badge-sm {statusBadgeClass(p.status as PaperStatus)}">
+							{statusLabel(p.status as PaperStatus)}
+						</span>
+						<i class="fas fa-chevron-right opacity-50"></i>
+					</div>
+				</a>
+			{/each}
+		{/if}
+	</section>
 </div>

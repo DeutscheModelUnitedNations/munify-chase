@@ -14,7 +14,12 @@
 
 	let { open = $bindable(), committeeId, whiteboardContent, close }: Props = $props();
 
-	let newWhiteboardContent = $state<string | null | undefined>(whiteboardContent);
+	// eslint-disable-next-line svelte/prefer-writable-derived -- needs to be writable via bind: and reactive to prop changes
+	let newWhiteboardContent = $state<string | null | undefined>(undefined);
+
+	$effect(() => {
+		newWhiteboardContent = whiteboardContent;
+	});
 
 	const publishChanges = async () => {
 		if (!committeeId) {

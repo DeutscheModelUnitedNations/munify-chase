@@ -16,15 +16,14 @@
 
 	// All presence events in the conference, newest first. We subscribe to the
 	// auto-generated query (which supports live updates) and derive the latest
-	// event per user client-side. The custom latestNsaPresenceEvents query
-	// would be more efficient but is not subscribable.
-	const allEvents = await client.liveQuery.nsaPresenceEvents({
+	// event per user client-side.
+	const allEvents = await client.liveQuery.presenceEvents({
 		__args: {
-			where: { conference: { id: conferenceId } },
+			where: { committee: { conference: { id: conferenceId } }, type: 'NSA_SCAN' },
 			orderBy: { timestamp: 'desc' }
 		},
 		id: true,
-		type: true,
+		present: true,
 		committeeId: true,
 		timestamp: true,
 		conferenceUser: {
@@ -46,7 +45,7 @@
 			const uid = e.conferenceUser?.id;
 			if (!uid || seen.has(uid)) continue;
 			seen.add(uid);
-			if (e.type === 'CHECK_IN' && e.committeeId === committeeId) out.push(e);
+			if (e.present && e.committeeId === committeeId) out.push(e);
 		}
 		return out.sort((a, b) => {
 			const aName =
@@ -59,7 +58,7 @@
 
 	function formatSince(ts: string | Date) {
 		const d = ts instanceof Date ? ts : new Date(ts);
-		return d.toLocaleTimeString();
+		return d.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' });
 	}
 </script>
 
@@ -82,12 +81,17 @@
 						{:else}
 							<i class="fas fa-user-tag text-xl"></i>
 						{/if}
-						<h3 class="flex-1 text-lg">
-							{event.conferenceUser?.name ??
-								rep?.name ??
-								event.conferenceUser?.userEmail ??
-								m.unknown()}
-						</h3>
+						<div class="flex flex-1 flex-col">
+							<h3 class="text-lg">
+								{event.conferenceUser?.name ??
+									rep?.name ??
+									event.conferenceUser?.userEmail ??
+									m.unknown()}
+							</h3>
+							{#if rep?.name && event.conferenceUser?.name}
+								<span class="text-base-content/60 text-sm">{rep.name}</span>
+							{/if}
+						</div>
 						<span class="text-base-content/60 text-sm">
 							{m.checkedInSince({ time: formatSince(event.timestamp) })}
 						</span>

@@ -1,12 +1,13 @@
 import { db, schema } from '$api/db/db';
 import { abilityBuilder, schemaBuilder, object, pubsub as rumblePubsub, query } from '$api/rumble';
 import {
-	isChairInConference,
+	isTeamInConference,
 	isAdminInConference,
 	isParticipantInConference
 } from '$api/services/authHelper';
 import { assertFindFirstExists, assertFirstEntryExists } from '@m1212e/rumble';
 import { GraphQLError } from 'graphql';
+import { nanoidValidation } from '$lib/helpers/nanoid';
 
 abilityBuilder.committeeMember.allow('read').when((ctx) => {
 	return {
@@ -19,7 +20,7 @@ abilityBuilder.committeeMember.allow('read').when((ctx) => {
 abilityBuilder.committeeMember.allow('update').when((ctx) => {
 	return {
 		where: {
-			committee: isChairInConference(ctx)
+			committee: isTeamInConference(ctx)
 		}
 	};
 });
@@ -37,10 +38,11 @@ schemaBuilder.mutationFields((t) => {
 		createCommitteeMember: t.drizzleField({
 			type: ref,
 			args: {
+				id: t.arg.id().validate(nanoidValidation),
 				committeeId: t.arg.id({ required: true }),
 				representationId: t.arg.id({ required: true })
 			},
-			resolve: async (query, root, args, ctx) => {
+			resolve: async (query, _root, args, ctx) => {
 				const committee = await db.query.committee.findFirst({
 					where: { id: args.committeeId }
 				});
@@ -57,6 +59,7 @@ schemaBuilder.mutationFields((t) => {
 				const result = await db
 					.insert(schema.committeeMember)
 					.values({
+						id: args.id,
 						committeeId: args.committeeId,
 						representationId: args.representationId
 					})
@@ -81,7 +84,7 @@ schemaBuilder.mutationFields((t) => {
 			args: {
 				id: t.arg.id({ required: true })
 			},
-			resolve: async (root, args, ctx) => {
+			resolve: async (_root, args, ctx) => {
 				await db
 					.delete(schema.committeeMember)
 					.where(
@@ -98,10 +101,19 @@ schemaBuilder.mutationFields((t) => {
 			type: [ref],
 			args: {
 				ids: t.arg.idList({ required: true }),
-				present: t.arg.boolean({ required: true })
+				present: t.arg.boolean({ required: true }),
+				rollCallSessionId: t.arg.id({ required: false })
 			},
-			resolve: async (query, root, args, ctx) => {
+			resolve: async (query, _root, args, ctx) => {
 				await db.transaction(async (tx) => {
+					if (args.rollCallSessionId) {
+						const session = await tx.query.rollCallSession.findFirst({
+							where: { id: args.rollCallSessionId, completedAt: { isNull: true } }
+						});
+						if (!session)
+							throw new GraphQLError('Roll call session not found or already completed');
+					}
+
 					const res = await tx
 						.update(schema.committeeMember)
 						.set({
@@ -113,17 +125,32 @@ schemaBuilder.mutationFields((t) => {
 								.merge({ where: { id: { in: args.ids } } }).sql.where
 						)
 						.returning({
-							id: schema.committeeMember.id
+							id: schema.committeeMember.id,
+							committeeId: schema.committeeMember.committeeId
 						});
 
 					if (res.length > 0) {
-						await tx.insert(schema.presenceChangedTimestamp).values(
-							res.map((committeeMember) => ({
-								committeeMemberId: committeeMember.id,
-								presentSetTo: args.present,
-								timestamp: new Date()
-							}))
+						const conferenceUsers = await tx.query.conferenceUser.findMany({
+							where: { committeeMemberId: { in: res.map((cm) => cm.id) } }
+						});
+						const cuByMemberId = new Map(
+							conferenceUsers.map((cu) => [cu.committeeMemberId, cu.id])
 						);
+
+						const events = res
+							.filter((cm) => cuByMemberId.has(cm.id))
+							.map((cm) => ({
+								conferenceUserId: cuByMemberId.get(cm.id)!,
+								committeeId: cm.committeeId,
+								rollCallSessionId: args.rollCallSessionId ?? null,
+								type: (args.rollCallSessionId ? 'ROLL_CALL' : 'MANUAL') as 'ROLL_CALL' | 'MANUAL',
+								present: args.present,
+								timestamp: new Date()
+							}));
+
+						if (events.length > 0) {
+							await tx.insert(schema.presenceEvent).values(events);
+						}
 					}
 				});
 

@@ -24,6 +24,5 @@
 		: getCommitteeStatusText(committee?.status || 'FORMAL')}
 	faIcon={getCommitteeStatusIcon(committee?.status || 'FORMAL')}
 	committeeStatus={committee?.status}
-	marqueeOnOverflow={false}
 	until={new Date(committee?.statusUntil || Date.now())}
 />

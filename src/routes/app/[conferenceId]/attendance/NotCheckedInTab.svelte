@@ -28,13 +28,13 @@
 		}
 	});
 
-	const allEvents = await client.liveQuery.nsaPresenceEvents({
+	const allEvents = await client.liveQuery.presenceEvents({
 		__args: {
-			where: { conference: { id: conferenceId } },
+			where: { committee: { conference: { id: conferenceId } } },
 			orderBy: { timestamp: 'desc' }
 		},
 		id: true,
-		type: true,
+		present: true,
 		conferenceUser: { id: true }
 	});
 
@@ -108,7 +108,7 @@
 		const out: NsaUser[] = [];
 		for (const u of nsaUsers ?? []) {
 			const latest = latestByUser.get(u.id);
-			const isOut = !latest || latest.type === 'CHECK_OUT';
+			const isOut = !latest || !latest.present;
 			if (!isOut) continue;
 			if (onlyWithHistory && !latest) continue;
 			out.push(u);

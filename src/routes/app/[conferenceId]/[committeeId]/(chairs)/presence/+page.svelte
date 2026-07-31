@@ -16,6 +16,7 @@
 		sortTranslatedCountries
 	} from '$lib/utils/nationTranslationHelper.svelte';
 	import ChairRollCall from '$lib/components/rollCall/ChairRollCall.svelte';
+	import dayjs from 'dayjs';
 	import StatusWidget from '../StatusWidget.svelte';
 	import { isDelegationMember, isUNMember } from '$lib/helpers/distinguishConferenceMembers';
 	import { translateRegionalGroupEnum } from '$lib/utils/enumTranslationHelper';
@@ -27,12 +28,21 @@
 		totalPresent: true,
 		simpleMajority: true,
 		twoThirdsMajority: true,
-		paperSupportThreshold: true,
 		status: true,
 		statusHeadline: true,
 		statusUntil: true,
 		stateOfDebate: true,
 		activeAgendaItem: { id: true, title: true },
+		// Active-roll-call status now lives on the committee as a single FK; pull
+		// it alongside the rest so a single liveQuery powers the Start/Resume
+		// button and the modal's `externalActiveSessionId` prop.
+		activeRollCallSession: {
+			id: true,
+			currentMemberIndex: true,
+			// Needed so updates.completeRollCallSession can resolve which committee to
+			// clear when the close replays cross-tab / offline (no subscription).
+			committeeId: true
+		},
 		members: {
 			id: true,
 			present: true,
@@ -62,6 +72,8 @@
 		}
 	});
 
+	const minAmendmentSponsors = $derived(Math.ceil((committee?.totalPresent ?? 0) * 0.1));
+
 	let countries = $derived(
 		committee?.members
 			.filter(isDelegationMember)
@@ -74,6 +86,27 @@
 			?.sort((a, b) => (a.representation.name ?? '').localeCompare(b.representation.name ?? '')) ??
 			[]
 	);
+
+	let activeSession = $derived(committee?.activeRollCallSession ?? null);
+
+	const pastSessions = await client.liveQuery.rollCallSessions({
+		__args: {
+			where: { committeeId: page.params.committeeId!, completedAt: { isNull: false } },
+			orderBy: { createdAt: 'desc' }
+		},
+		id: true,
+		currentMemberIndex: true,
+		createdAt: true,
+		completedAt: true,
+		startedBy: {
+			name: true,
+			userEmail: true
+		},
+		presenceEvents: {
+			id: true,
+			present: true
+		}
+	});
 
 	let rollCallActive = $state(false);
 
@@ -114,14 +147,75 @@
 						totalPresent={committee.totalPresent}
 						simpleMajority={committee.simpleMajority}
 						twoThirdsMajority={committee.twoThirdsMajority}
-						paperSupportThreshold={committee.paperSupportThreshold}
+						{minAmendmentSponsors}
 					/>
 				</BasicCard>
 				<BasicCard>
-					<button class="btn btn-primary btn-xl" onclick={() => (rollCallActive = true)}>
-						<i class="fas fa-user-magnifying-glass mr-2"></i>
-						{m.rollCall()}
-					</button>
+					<div class="flex flex-col gap-2">
+						{#if activeSession}
+							<div class="alert alert-info p-2 text-sm">
+								<i class="fas fa-circle-info"></i>
+								<span>
+									{m.rollCallActiveAt({
+										index: activeSession.currentMemberIndex + 1,
+										total: countries.length
+									})}
+								</span>
+							</div>
+							<button class="btn btn-warning btn-xl" onclick={() => (rollCallActive = true)}>
+								<i class="fas fa-rotate-right mr-2"></i>
+								{m.resumeRollCall()}
+							</button>
+						{:else}
+							<button class="btn btn-primary btn-xl" onclick={() => (rollCallActive = true)}>
+								<i class="fas fa-user-magnifying-glass mr-2"></i>
+								{m.rollCall()}
+							</button>
+						{/if}
+
+						{#if pastSessions && pastSessions.length > 0}
+							<details class="group">
+								<summary
+									class="text-base-content/60 hover:text-base-content flex cursor-pointer select-none list-none items-center gap-1 text-sm transition-colors"
+								>
+									<i class="fas fa-chevron-right text-xs transition-transform group-open:rotate-90"
+									></i>
+									{m.pastRollCalls({ count: pastSessions.length })}
+								</summary>
+								<div class="mt-2 flex flex-col gap-1">
+									{#each pastSessions as session (session.id)}
+										{@const presentCount = session.presenceEvents.filter((e) => e.present).length}
+										{@const totalCount = session.presenceEvents.length}
+										<div class="bg-base-200 rounded-lg p-2 text-sm">
+											<div class="flex items-center justify-between gap-2">
+												<span class="font-medium">
+													{dayjs(session.createdAt).format('DD.MM. HH:mm')}
+												</span>
+												<span class="text-base-content/60 text-xs">
+													<span class="text-success font-medium">{presentCount}</span>
+													<span class="text-base-content/40">/{totalCount}</span>
+												</span>
+											</div>
+											<div
+												class="text-base-content/50 mt-0.5 flex items-center justify-between gap-2 text-xs"
+											>
+												<span>
+													<i class="fas fa-flag-checkered mr-1"></i>
+													{dayjs(session.completedAt).format('HH:mm')}
+												</span>
+												{#if session.startedBy}
+													<span class="truncate">
+														<i class="fas fa-user mr-1"></i>
+														{session.startedBy.name ?? session.startedBy.userEmail}
+													</span>
+												{/if}
+											</div>
+										</div>
+									{/each}
+								</div>
+							</details>
+						{/if}
+					</div>
 				</BasicCard>
 				<BasicCard>
 					<PresenceActions memberIds={committee.members.map((x) => x.id)} />
@@ -205,4 +299,5 @@
 	bind:active={rollCallActive}
 	members={countries}
 	committeeId={page.params.committeeId!}
+	externalActiveSessionId={activeSession?.id ?? null}
 />

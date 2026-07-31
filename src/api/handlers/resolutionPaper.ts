@@ -2,195 +2,179 @@ import { db, schema } from '$api/db/db';
 import {
 	abilityBuilder,
 	enum_,
-	schemaBuilder,
 	object,
+	query,
 	pubsub as rumblePubsub,
-	query
+	schemaBuilder
 } from '$api/rumble';
-import { and, eq, isNull, count as drizzleCount, inArray } from 'drizzle-orm';
-import { isChairInConference, isGlobalAdmin } from '$api/services/authHelper';
+import {
+	isParticipantInConference,
+	isTeamInConference,
+	isPaperAuthor
+} from '$api/services/authHelper';
 import { assertFindFirstExists, assertFirstEntryExists } from '@m1212e/rumble';
+import { nanoid, nanoidValidation } from '$lib/helpers/nanoid';
 import { GraphQLError } from 'graphql';
+import { readPaperJson } from '$api/yjs/server';
+import { and, count, eq, inArray } from 'drizzle-orm';
 import {
-	ResolutionSchema,
-	createEmptyResolution,
-	toRoman
+	toRoman,
+	isClauseEmpty
 } from '@deutschemodelunitednations/munify-resolution-editor/schema';
-import {
-	replaceResolution,
-	yDocToJson
-} from '@deutschemodelunitednations/munify-resolution-editor/yjs';
-import { applyServerMutation, readPaperJson } from '$api/yjs/server';
+import type { Resolution } from '@deutschemodelunitednations/munify-resolution-editor/schema';
+import * as Y from 'yjs';
+import { jsonToYDoc } from '@deutschemodelunitednations/munify-resolution-editor/yjs';
 
-abilityBuilder.resolutionPaper.allow(['read', 'update']).when((ctx) => {
-	if (isGlobalAdmin(ctx)) {
-		return { where: { deletedAt: { isNull: true } } };
-	}
+function createInitialYjsState(): Buffer {
+	const doc = new Y.Doc();
+	jsonToYDoc(doc, { preamble: [], operative: [], committeeName: '' });
+	return Buffer.from(Y.encodeStateAsUpdate(doc));
+}
+
+abilityBuilder.resolutionPaper.allow('read').when((ctx) => {
+	return { where: { committee: isTeamInConference(ctx) } };
 });
 
-abilityBuilder.resolutionPaper.allow('read').when(({ mustBeLoggedIn }) => {
-	mustBeLoggedIn();
-	return { where: { deletedAt: { isNull: true } } };
+abilityBuilder.resolutionPaper.allow('read').when((ctx) => {
+	return { where: { ...isPaperAuthor(ctx) } };
 });
 
-abilityBuilder.resolutionPaper.allow(['update']).when((ctx) => {
+abilityBuilder.resolutionPaper.allow('read').when((ctx) => {
+	const user = ctx.mustBeLoggedIn();
 	return {
 		where: {
-			deletedAt: { isNull: true },
-			committee: {
-				...isChairInConference(ctx)
-			}
+			sponsors: { committeeMember: { users: { user: { id: user.sub } } } }
+		}
+	};
+});
+
+abilityBuilder.resolutionPaper.allow('read').when((ctx) => {
+	return {
+		where: {
+			OR: [
+				{ status: 'SUBMITTED' as const, committee: isParticipantInConference(ctx) },
+				{ status: 'DRAFT_RESOLUTION' as const, committee: isParticipantInConference(ctx) },
+				{ status: 'AMENDMENT_PHASE' as const, committee: isParticipantInConference(ctx) },
+				{ status: 'VOTING_PHASE' as const, committee: isParticipantInConference(ctx) },
+				{ status: 'FINAL' as const, committee: isParticipantInConference(ctx) }
+			]
+		}
+	};
+});
+
+abilityBuilder.resolutionPaper.allow('delete').when((ctx) => {
+	return {
+		where: {
+			committee: isTeamInConference(ctx)
+		}
+	};
+});
+
+abilityBuilder.resolutionPaper.allow('update').when((ctx) => {
+	return {
+		where: {
+			OR: [
+				{ committee: isTeamInConference(ctx) },
+				{ status: 'WORKING_PAPER' as const, ...isPaperAuthor(ctx) }
+			]
 		}
 	};
 });
 
 const ref = object({ table: 'resolutionPaper' });
+export const ResolutionPaperRef = ref;
+
+const statusEnum = enum_({ tsName: 'paperStatus' });
 
 const pubsub = rumblePubsub({ table: 'resolutionPaper' });
-const committeePubsub = rumblePubsub({ table: 'committee' });
-const voteResultPubsub = rumblePubsub({ table: 'resolutionVoteResult' });
-const clauseVotePubsub = rumblePubsub({ table: 'operativeClauseVote' });
+
 query({ table: 'resolutionPaper' });
 
 schemaBuilder.mutationFields((t) => ({
 	createResolutionPaper: t.drizzleField({
 		type: ref,
 		args: {
+			id: t.arg.id().validate(nanoidValidation),
 			committeeId: t.arg.id({ required: true }),
 			agendaItemId: t.arg.id({ required: true }),
+			// Chairs must specify the creator; for committee-member callers this
+			// arg is ignored and the caller's own committeeMember is used.
+			creatorCommitteeMemberId: t.arg.id(),
+			// Only honored on the chair path. Committee members always create
+			// papers in WORKING_PAPER.
+			status: t.arg({ type: statusEnum }),
 			title: t.arg.string()
 		},
-		resolve: async (query, root, args, ctx) => {
-			const user = ctx.mustBeLoggedIn();
+		resolve: async (query, _root, args, ctx) => {
+			const chair = !!(await db.query.committee.findFirst({
+				where: { id: args.committeeId, ...isTeamInConference(ctx) }
+			}));
 
-			// Must be a DELEGATE with a committeeMember in this committee
-			const conferenceUser = await db.query.conferenceUser
-				.findFirst({
-					where: {
-						user: { id: user.sub },
-						conferenceUserType: 'DELEGATE',
-						committeeMember: {
-							committeeId: args.committeeId
-						}
-					}
-				})
-				.then(assertFindFirstExists);
+			let creatorCommitteeMemberId: string;
+			let status: typeof schema.resolutionPaper.$inferSelect.status;
+			let editorConferenceUserIds: string[];
 
-			if (!conferenceUser.committeeMemberId) {
-				throw new GraphQLError('You must be assigned to a committee member');
+			if (chair) {
+				if (!args.creatorCommitteeMemberId) {
+					throw new GraphQLError('creatorCommitteeMemberId is required when creating as chair');
+				}
+				const creator = await db.query.committeeMember
+					.findFirst({
+						where: { id: args.creatorCommitteeMemberId, committeeId: args.committeeId },
+						with: { users: true }
+					})
+					.then(assertFindFirstExists);
+				creatorCommitteeMemberId = creator.id;
+				status = args.status ?? 'SUBMITTED';
+				editorConferenceUserIds = creator.users.map((u) => u.id);
+			} else {
+				const user = ctx.mustBeLoggedIn();
+				if (!user.email) throw new GraphQLError('User email is required');
+
+				const conferenceUser = await db.query.conferenceUser
+					.findFirst({
+						where: {
+							userEmail: user.email,
+							committeeMember: { committeeId: args.committeeId }
+						},
+						with: { committeeMember: true }
+					})
+					.then(assertFindFirstExists);
+
+				if (!conferenceUser.committeeMember) {
+					throw new GraphQLError('You are not assigned as a committee member');
+				}
+				creatorCommitteeMemberId = conferenceUser.committeeMember.id;
+				status = 'WORKING_PAPER';
+				editorConferenceUserIds = [conferenceUser.id];
 			}
 
-			// Get committee name for the empty resolution
-			const committee = await db.query.committee
-				.findFirst({
-					where: { id: args.committeeId }
-				})
-				.then(assertFindFirstExists);
-
-			const result = await db
-				.insert(schema.resolutionPaper)
-				.values({
+			await db.transaction(async (tx) => {
+				await tx.insert(schema.resolutionPaper).values({
+					id: args.id,
 					committeeId: args.committeeId,
 					agendaItemId: args.agendaItemId,
-					creatorCommitteeMemberId: conferenceUser.committeeMemberId,
-					title: args.title ?? undefined,
-					content: createEmptyResolution(committee.name)
-				})
-				.returning()
-				.then(assertFirstEntryExists);
-
-			// Auto-add creator as sponsor
-			await db.insert(schema.paperSponsor).values({
-				paperId: result.id,
-				committeeMemberId: conferenceUser.committeeMemberId
-			});
-
-			// Auto-add creator as editor
-			await db.insert(schema.paperEditor).values({
-				paperId: result.id,
-				conferenceUserId: conferenceUser.id
-			});
-
-			pubsub.created();
-
-			return db.query.resolutionPaper
-				.findFirst(
-					query(
-						ctx.abilities.resolutionPaper.filter('read').merge({
-							where: { id: result.id }
-						}).query.single
-					)
-				)
-				.then(assertFindFirstExists);
-		}
-	}),
-
-	chairCreateResolutionPaper: t.drizzleField({
-		type: ref,
-		args: {
-			committeeId: t.arg.id({ required: true }),
-			agendaItemId: t.arg.id({ required: true }),
-			committeeMemberId: t.arg.id({ required: true }),
-			title: t.arg.string()
-		},
-		resolve: async (query, root, args, ctx) => {
-			// Validate committeeMemberId belongs to this committee
-			await db.query.committeeMember
-				.findFirst({
-					where: { id: args.committeeMemberId, committeeId: args.committeeId }
-				})
-				.then(assertFindFirstExists);
-
-			// Fetch committee and verify chair/admin access in one query
-			const committee = await db.query.committee
-				.findFirst(
-					ctx.abilities.committee.filter('update').merge({ where: { id: args.committeeId } }).query
-						.single
-				)
-				.then(assertFindFirstExists);
-
-			const content = createEmptyResolution(committee.name);
-
-			const result = await db.transaction(async (tx) => {
-				const paper = await tx
-					.insert(schema.resolutionPaper)
-					.values({
-						committeeId: args.committeeId,
-						agendaItemId: args.agendaItemId,
-						creatorCommitteeMemberId: args.committeeMemberId,
-						title: args.title ?? undefined,
-						content,
-						status: 'SUBMITTED'
-					})
-					.returning()
-					.then(assertFirstEntryExists);
-
-				// Auto-add creator as sponsor
+					creatorCommitteeMemberId,
+					status,
+					title: args.title ?? null
+				});
 				await tx.insert(schema.paperSponsor).values({
-					paperId: paper.id,
-					committeeMemberId: args.committeeMemberId
+					paperId: args.id,
+					committeeMemberId: creatorCommitteeMemberId
 				});
-
-				// Auto-add creator as editor (find their conferenceUser)
-				const conferenceUser = await tx.query.conferenceUser.findFirst({
-					where: { committeeMemberId: args.committeeMemberId }
-				});
-
-				if (conferenceUser) {
+				for (const cuId of editorConferenceUserIds) {
 					await tx.insert(schema.paperEditor).values({
-						paperId: paper.id,
-						conferenceUserId: conferenceUser.id
+						paperId: args.id,
+						conferenceUserId: cuId
 					});
 				}
-
-				// Create content snapshot for submission
-				await tx.insert(schema.paperContentSnapshot).values({
-					paperId: paper.id,
-					content,
-					trigger: 'SUBMITTED'
+				// Pre-initialize the Y.Doc with empty preamble/operative arrays so
+				// delegates can immediately add clauses without the store's operativeArr()
+				// returning null for a fresh document.
+				await tx.insert(schema.paperYjsDoc).values({
+					paperId: args.id,
+					state: createInitialYjsState()
 				});
-
-				return paper;
 			});
 
 			pubsub.created();
@@ -198,551 +182,257 @@ schemaBuilder.mutationFields((t) => ({
 			return db.query.resolutionPaper
 				.findFirst(
 					query(
-						ctx.abilities.resolutionPaper.filter('read').merge({
-							where: { id: result.id }
-						}).query.single
+						ctx.abilities.resolutionPaper.filter('read').merge({ where: { id: args.id } }).query
+							.single
 					)
 				)
 				.then(assertFindFirstExists);
 		}
 	}),
-
-	updatePaperTitle: t.drizzleField({
+	updateResolutionPaper: t.drizzleField({
 		type: ref,
 		args: {
-			paperId: t.arg.id({ required: true }),
-			title: t.arg.string({ required: true })
+			id: t.arg.id({ required: true }),
+			title: t.arg.string(),
+			status: t.arg({ type: statusEnum }),
+			documentNumber: t.arg.string(),
+			deployConfetti: t.arg.boolean()
 		},
-		resolve: async (query, root, args, ctx) => {
-			const user = ctx.mustBeLoggedIn();
+		resolve: async (query, _root, args, ctx) => {
+			const updateFilter = ctx.abilities.resolutionPaper
+				.filter('update')
+				.merge({ where: { id: args.id } });
 
-			const paper = await db.query.resolutionPaper
-				.findFirst({
-					where: { id: args.paperId }
-				})
-				.then(assertFindFirstExists);
-
-			if (paper.status !== 'WORKING_PAPER') {
-				throw new GraphQLError('Title can only be changed for working papers');
+			const needsChairCheck =
+				args.documentNumber != null || (args.status != null && args.status !== 'SUBMITTED');
+			const isChair = needsChairCheck
+				? !!(await db.query.resolutionPaper.findFirst({
+						where: {
+							id: args.id,
+							committee: isTeamInConference(ctx)
+						},
+						columns: { id: true }
+					}))
+				: false;
+			if (args.documentNumber != null && !isChair) {
+				throw new GraphQLError('Only chairs may set the document number');
 			}
 
-			// Must be creator or editor
-			const isEditor = await db.query.paperEditor.findFirst({
-				where: {
-					paperId: args.paperId,
-					conferenceUser: { user: { id: user.sub } }
-				}
-			});
-
-			if (!isEditor && !ctx.hasRole('admin')) {
-				throw new GraphQLError('You do not have permission to edit this paper');
+			// Persist plain metadata first, so it is set before any submission flow
+			const metaUpdate: Partial<typeof schema.resolutionPaper.$inferInsert> = {};
+			if (args.title != null) metaUpdate.title = args.title;
+			if (args.documentNumber != null) metaUpdate.documentNumber = args.documentNumber;
+			if (Object.keys(metaUpdate).length > 0) {
+				await db.update(schema.resolutionPaper).set(metaUpdate).where(updateFilter.sql.where);
 			}
 
-			await db
-				.update(schema.resolutionPaper)
-				.set({ title: args.title })
-				.where(eq(schema.resolutionPaper.id, args.paperId));
+			if (args.status === 'SUBMITTED') {
+				const paper = await db.query.resolutionPaper
+					.findFirst(updateFilter.query.single)
+					.then(assertFindFirstExists);
 
-			pubsub.updated(args.paperId);
-
-			return db.query.resolutionPaper
-				.findFirst(
-					query(
-						ctx.abilities.resolutionPaper.filter('read').merge({
-							where: { id: args.paperId }
-						}).query.single
-					)
-				)
-				.then(assertFindFirstExists);
-		}
-	}),
-
-	submitPaper: t.drizzleField({
-		type: ref,
-		args: {
-			paperId: t.arg.id({ required: true })
-		},
-		resolve: async (query, root, args, ctx) => {
-			const user = ctx.mustBeLoggedIn();
-
-			const paper = await db.query.resolutionPaper
-				.findFirst({
-					where: { id: args.paperId }
-				})
-				.then(assertFindFirstExists);
-
-			if (paper.status !== 'WORKING_PAPER') {
-				throw new GraphQLError('Only working papers can be submitted');
-			}
-
-			// Only creator can submit
-			await db.query.conferenceUser
-				.findFirst({
-					where: {
-						user: { id: user.sub },
-						committeeMemberId: paper.creatorCommitteeMemberId
+				if (paper.status === 'WORKING_PAPER') {
+					// Only the creator or a chair may submit.
+					const isChairSubmit = !!(await db.query.resolutionPaper.findFirst({
+						where: { id: args.id, committee: isTeamInConference(ctx) },
+						columns: { id: true }
+					}));
+					if (!isChairSubmit) {
+						const submitter = ctx.mustBeLoggedIn();
+						const isCreatorSubmit = !!(await db.query.resolutionPaper.findFirst({
+							where: {
+								id: args.id,
+								creatorCommitteeMember: { users: { user: { id: submitter.sub } } }
+							},
+							columns: { id: true }
+						}));
+						if (!isCreatorSubmit) {
+							throw new GraphQLError('Only the paper creator or a chair may submit this paper');
+						}
 					}
-				})
-				.then(assertFindFirstExists);
 
-			// Materialise the latest Y.Doc state so the snapshot is current.
-			const freshContent = await readPaperJson(args.paperId);
+					const sponsors = await db.query.paperSponsor.findMany({
+						where: { paperId: args.id }
+					});
+					if (sponsors.length === 0) {
+						throw new GraphQLError('Paper needs at least one sponsor to submit');
+					}
 
-			await db.transaction(async (tx) => {
-				await tx
-					.update(schema.resolutionPaper)
-					.set({ status: 'SUBMITTED' })
-					.where(eq(schema.resolutionPaper.id, args.paperId));
+					const content = await readPaperJson(args.id);
+					const resolution = JSON.parse(content) as Resolution;
 
-				await tx.insert(schema.paperContentSnapshot).values({
-					paperId: args.paperId,
-					content: freshContent ?? paper.content,
-					trigger: 'SUBMITTED'
-				});
-			});
+					const hasPreambleContent = resolution.preamble.some((c) => c.content.trim().length > 0);
+					if (!hasPreambleContent) {
+						throw new GraphQLError(
+							'Paper must have at least one preamble clause with content before submitting'
+						);
+					}
 
-			pubsub.updated(args.paperId);
+					const hasOperativeContent = resolution.operative.some((c) => !isClauseEmpty(c));
+					if (!hasOperativeContent) {
+						throw new GraphQLError(
+							'Paper must have at least one operative clause with content before submitting'
+						);
+					}
 
-			return db.query.resolutionPaper
-				.findFirst(
-					query(
-						ctx.abilities.resolutionPaper.filter('read').merge({
-							where: { id: args.paperId }
-						}).query.single
-					)
-				)
-				.then(assertFindFirstExists);
-		}
-	}),
+					await db.transaction(async (tx) => {
+						await tx.insert(schema.paperContentSnapshot).values({
+							id: nanoid(),
+							paperId: args.id,
+							content,
+							trigger: 'SUBMITTED'
+						});
+						await tx
+							.update(schema.resolutionPaper)
+							.set({ status: 'SUBMITTED' })
+							.where(updateFilter.sql.where);
+					});
+				} else {
+					// Revert from a later stage: simple status update without the
+					// submission flow (chairs only, already enforced by ability filter).
+					await db
+						.update(schema.resolutionPaper)
+						.set({ status: 'SUBMITTED' })
+						.where(updateFilter.sql.where);
+				}
+			} else if (args.status === 'DRAFT_RESOLUTION') {
+				if (!isChair) {
+					throw new GraphQLError('Only chairs may promote a paper to draft resolution');
+				}
+				const paper = await db.query.resolutionPaper
+					.findFirst(updateFilter.query.single)
+					.then(assertFindFirstExists);
 
-	promoteToDraftResolution: t.drizzleField({
-		type: ref,
-		args: {
-			paperId: t.arg.id({ required: true })
-		},
-		resolve: async (query, root, args, ctx) => {
-			const paper = await db.query.resolutionPaper
-				.findFirst(
-					ctx.abilities.resolutionPaper.filter('update').merge({ where: { id: args.paperId } })
-						.query.single
-				)
-				.then(assertFindFirstExists);
-
-			if (paper.status !== 'SUBMITTED') {
-				throw new GraphQLError('Only submitted papers can be promoted to draft resolutions');
-			}
-
-			const committee = await db.query.committee
-				.findFirst({
-					where: { id: paper.committeeId }
-				})
-				.then(assertFindFirstExists);
-
-			// Get agenda item position for numbering
-			const agendaItems = await db.query.agendaItem.findMany({
-				where: { committeeId: paper.committeeId }
-			});
-			const agendaItemIndex = agendaItems.findIndex((ai) => ai.id === paper.agendaItemId);
-			const agendaPosition = agendaItemIndex >= 0 ? agendaItemIndex + 1 : 1;
-
-			// Count existing DRs for this agenda item for sequence number
-			const existingDRsForItem = await db
-				.select({ count: drizzleCount() })
-				.from(schema.resolutionPaper)
-				.where(
-					and(
-						eq(schema.resolutionPaper.agendaItemId, paper.agendaItemId),
-						eq(schema.resolutionPaper.status, 'DRAFT_RESOLUTION'),
-						isNull(schema.resolutionPaper.deletedAt)
-					)
-				)
-				.then(assertFirstEntryExists);
-
-			const sequenceNumber = existingDRsForItem.count + 1;
-			const documentNumber = `${committee.abbreviation}/${toRoman(agendaPosition)}/DR.${sequenceNumber}`;
-
-			const freshContent = await readPaperJson(args.paperId);
-
-			await db.transaction(async (tx) => {
-				await tx
-					.update(schema.resolutionPaper)
-					.set({
-						status: 'DRAFT_RESOLUTION',
-						documentNumber,
-						sequenceNumber
-					})
-					.where(eq(schema.resolutionPaper.id, args.paperId));
-
-				await tx.insert(schema.paperContentSnapshot).values({
-					paperId: args.paperId,
-					content: freshContent ?? paper.content,
-					trigger: 'DRAFT_RESOLUTION'
-				});
-			});
-
-			pubsub.updated(args.paperId);
-
-			return db.query.resolutionPaper
-				.findFirst(
-					query(
-						ctx.abilities.resolutionPaper.filter('read').merge({
-							where: { id: args.paperId }
-						}).query.single
-					)
-				)
-				.then(assertFindFirstExists);
-		}
-	}),
-
-	startVotingPhase: t.drizzleField({
-		type: ref,
-		args: {
-			paperId: t.arg.id({ required: true })
-		},
-		resolve: async (query, root, args, ctx) => {
-			const paper = await db.query.resolutionPaper
-				.findFirst(
-					ctx.abilities.resolutionPaper.filter('update').merge({ where: { id: args.paperId } })
-						.query.single
-				)
-				.then(assertFindFirstExists);
-
-			if (paper.status !== 'AMENDMENT_PHASE') {
-				throw new GraphQLError('Paper must be in AMENDMENT_PHASE to start voting');
-			}
-
-			const freshContent = await readPaperJson(args.paperId);
-			const contentForSnapshot = freshContent ?? paper.content;
-
-			await db.transaction(async (tx) => {
-				await tx
-					.update(schema.resolutionPaper)
-					.set({ status: 'VOTING_PHASE' })
-					.where(eq(schema.resolutionPaper.id, args.paperId));
-
-				await tx.insert(schema.paperContentSnapshot).values({
-					paperId: args.paperId,
-					content: contentForSnapshot,
-					trigger: 'VOTING_PHASE'
-				});
-
-				const firstClauseId = freshContent?.operative[0]?.id ?? null;
-				await tx
-					.update(schema.committee)
-					.set({ currentOperativeIndex: 0, currentOperativeClauseId: firstClauseId })
-					.where(eq(schema.committee.id, paper.committeeId));
-			});
-
-			pubsub.updated(args.paperId);
-			committeePubsub.updated(paper.committeeId);
-
-			return db.query.resolutionPaper
-				.findFirst(
-					query(
-						ctx.abilities.resolutionPaper.filter('read').merge({
-							where: { id: args.paperId }
-						}).query.single
-					)
-				)
-				.then(assertFindFirstExists);
-		}
-	}),
-
-	recordVoteResult: t.drizzleField({
-		type: ref,
-		args: {
-			paperId: t.arg.id({ required: true }),
-			outcome: t.arg({ type: enum_({ tsName: 'voteOutcome' }), required: true }),
-			votesFor: t.arg.int({ required: true }),
-			votesAgainst: t.arg.int({ required: true }),
-			votesAbstain: t.arg.int()
-		},
-		resolve: async (query, root, args, ctx) => {
-			const paper = await db.query.resolutionPaper
-				.findFirst(
-					ctx.abilities.resolutionPaper.filter('update').merge({ where: { id: args.paperId } })
-						.query.single
-				)
-				.then(assertFindFirstExists);
-
-			if (paper.status !== 'VOTING_PHASE' && paper.status !== 'AMENDMENT_PHASE') {
-				throw new GraphQLError('Paper must be in VOTING_PHASE to record final vote');
-			}
-
-			// Look up rejected clauses up-front, but defer the Y.Doc trim until
-			// after the SQL tx commits — otherwise a tx failure would leave the
-			// live doc (and mirrored JSON) with clauses already removed while
-			// the paper status stays in VOTING_PHASE/AMENDMENT_PHASE.
-			let rejectedIds: Set<string> = new Set();
-			if (args.outcome === 'ADOPTED') {
-				const rejectedVotes = await db.query.operativeClauseVote.findMany({
-					where: { paperId: args.paperId, outcome: 'REJECTED' }
-				});
-				rejectedIds = new Set(rejectedVotes.map((v) => v.clauseId));
-			}
-
-			await db.transaction(async (tx) => {
-				await tx.insert(schema.resolutionVoteResult).values({
-					paperId: args.paperId,
-					outcome: args.outcome,
-					votesFor: args.votesFor,
-					votesAgainst: args.votesAgainst,
-					votesAbstain: args.votesAbstain ?? 0
-				});
-
-				const updateSet: { status: 'FINAL'; documentNumber?: string } = {
-					status: 'FINAL'
+				const statusUpdate: Partial<typeof schema.resolutionPaper.$inferInsert> = {
+					status: 'DRAFT_RESOLUTION'
 				};
 
-				if (args.outcome === 'ADOPTED' && paper.documentNumber) {
-					updateSet.documentNumber = paper.documentNumber.replace('/DR.', '/RES.');
+				if (!paper.documentNumber) {
+					const committee = await db.query.committee
+						.findFirst({ where: { id: paper.committeeId } })
+						.then(assertFindFirstExists);
+
+					const agendaItems = await db.query.agendaItem.findMany({
+						where: { committeeId: paper.committeeId }
+					});
+					const agendaItemIndex = agendaItems.findIndex((ai) => ai.id === paper.agendaItemId);
+					const agendaPosition = agendaItemIndex >= 0 ? agendaItemIndex + 1 : 1;
+
+					const existingCount = await db
+						.select({ n: count() })
+						.from(schema.resolutionPaper)
+						.where(
+							and(
+								eq(schema.resolutionPaper.agendaItemId, paper.agendaItemId),
+								inArray(schema.resolutionPaper.status, [
+									'DRAFT_RESOLUTION',
+									'AMENDMENT_PHASE',
+									'VOTING_PHASE',
+									'FINAL'
+								])
+							)
+						)
+						.then(assertFirstEntryExists);
+
+					statusUpdate.documentNumber = `${committee.abbreviation}/${toRoman(agendaPosition)}/DR.${existingCount.n + 1}`;
 				}
 
-				await tx
+				await db.update(schema.resolutionPaper).set(statusUpdate).where(updateFilter.sql.where);
+			} else if (args.status != null) {
+				if (!isChair) {
+					throw new GraphQLError('Only chairs may change the paper status');
+				}
+				await db
 					.update(schema.resolutionPaper)
-					.set(updateSet)
-					.where(eq(schema.resolutionPaper.id, args.paperId));
-			});
-
-			// Tx committed — now trim the Y.Doc so connected peers see the
-			// final adopted content.
-			if (args.outcome === 'ADOPTED' && rejectedIds.size > 0) {
-				await applyServerMutation(args.paperId, (doc) => {
-					const fresh = yDocToJson(doc);
-					fresh.operative = fresh.operative.filter((c) => !rejectedIds.has(c.id));
-					replaceResolution(doc, fresh);
-				});
+					.set({ status: args.status })
+					.where(updateFilter.sql.where);
+				if (args.status === 'FINAL' && args.deployConfetti) {
+					const paper = await db.query.resolutionPaper
+						.findFirst({ where: { id: args.id }, columns: { committeeId: true } })
+						.then(assertFindFirstExists);
+					await db
+						.update(schema.committee)
+						.set({ lastResolutionAdoptionDate: new Date() })
+						.where(eq(schema.committee.id, paper.committeeId));
+				}
 			}
 
-			// Always clear activeDraftResolutionId and currentOperativeIndex
-			const updateSet: Record<string, unknown> = {
-				activeDraftResolutionId: null,
-				currentOperativeIndex: null,
-				currentOperativeClauseId: null
-			};
-
-			if (args.outcome === 'ADOPTED') {
-				updateSet.lastResolutionAdoptionDate = new Date();
-			}
-
-			await db
-				.update(schema.committee)
-				.set(updateSet)
-				.where(eq(schema.committee.id, paper.committeeId));
-
-			committeePubsub.updated(paper.committeeId);
-			pubsub.updated(args.paperId);
-			voteResultPubsub.created();
+			pubsub.updated(args.id);
 
 			return db.query.resolutionPaper
 				.findFirst(
 					query(
-						ctx.abilities.resolutionPaper.filter('read').merge({
-							where: { id: args.paperId }
-						}).query.single
+						ctx.abilities.resolutionPaper.filter('read').merge({ where: { id: args.id } }).query
+							.single
 					)
 				)
 				.then(assertFindFirstExists);
 		}
 	}),
 
-	softDeletePaper: t.field({
+	deleteResolutionPaper: t.field({
 		type: 'Boolean',
-		args: {
-			paperId: t.arg.id({ required: true })
-		},
-		resolve: async (root, args, ctx) => {
-			const user = ctx.mustBeLoggedIn();
-
-			const paper = await db.query.resolutionPaper
-				.findFirst({
-					where: { id: args.paperId }
-				})
-				.then(assertFindFirstExists);
-
-			if (paper.status !== 'WORKING_PAPER') {
-				throw new GraphQLError('Only working papers can be deleted');
-			}
-
-			// Only creator can delete
-			await db.query.conferenceUser
-				.findFirst({
-					where: {
-						user: { id: user.sub },
-						committeeMemberId: paper.creatorCommitteeMemberId
-					}
-				})
-				.then(assertFindFirstExists);
-
+		args: { id: t.arg.id({ required: true }) },
+		resolve: async (_root, args, ctx) => {
 			await db
-				.update(schema.resolutionPaper)
-				.set({ deletedAt: new Date() })
-				.where(eq(schema.resolutionPaper.id, args.paperId));
-
-			pubsub.updated(args.paperId);
-
+				.delete(schema.resolutionPaper)
+				.where(
+					ctx.abilities.resolutionPaper.filter('delete').merge({ where: { id: args.id } }).sql.where
+				);
+			pubsub.removed();
 			return true;
 		}
 	}),
 
-	revertPaperStatus: t.drizzleField({
+	concludeResolutionPaperVote: t.drizzleField({
 		type: ref,
 		args: {
 			paperId: t.arg.id({ required: true }),
-			restoreSnapshot: t.arg.boolean()
+			votingSessionId: t.arg.id({ required: true })
 		},
-		resolve: async (query, root, args, ctx) => {
-			const paper = await db.query.resolutionPaper
-				.findFirst(
-					ctx.abilities.resolutionPaper.filter('update').merge({ where: { id: args.paperId } })
-						.query.single
-				)
+		resolve: async (query, _root, args, ctx) => {
+			// Only chairs may conclude a vote.
+			await db.query.resolutionPaper
+				.findFirst({
+					where: { id: args.paperId, committee: isTeamInConference(ctx) },
+					columns: { id: true }
+				})
 				.then(assertFindFirstExists);
 
-			const statusOrder = [
-				'WORKING_PAPER',
-				'SUBMITTED',
-				'DRAFT_RESOLUTION',
-				'AMENDMENT_PHASE',
-				'VOTING_PHASE',
-				'FINAL'
-			] as const;
-			const currentIndex = statusOrder.indexOf(paper.status as (typeof statusOrder)[number]);
-			if (currentIndex <= 0) {
-				throw new GraphQLError('Paper is already at initial status and cannot be reverted');
-			}
-			const targetStatus = statusOrder[currentIndex - 1];
-
-			// Snapshot restoration (AMENDMENT_PHASE → DRAFT_RESOLUTION) is
-			// deferred until after the revert tx commits — otherwise a tx
-			// failure leaves clients on restored content while the paper is
-			// still in AMENDMENT_PHASE with adopted amendments still applied.
-			let restoredContent:
-				| import('@deutschemodelunitednations/munify-resolution-editor/schema').Resolution
-				| null = null;
-			if (paper.status === 'AMENDMENT_PHASE' && args.restoreSnapshot) {
-				const snapshot = await db.query.paperContentSnapshot.findFirst({
-					where: { paperId: args.paperId, trigger: 'AMENDMENT_PHASE' },
-					orderBy: { createdAt: 'desc' }
-				});
-				const snapshotContent = snapshot?.content
-					? ResolutionSchema.safeParse(snapshot.content)
-					: undefined;
-				if (snapshotContent?.success) {
-					restoredContent = snapshotContent.data;
-				}
-			}
-
-			const currentContent = await readPaperJson(args.paperId);
-			// What the doc will look like *after* this revert — restored from
-			// snapshot if applicable, otherwise unchanged.
-			const freshContent = restoredContent ?? currentContent;
-
+			const content = await readPaperJson(args.paperId);
+			const paperForCommittee = await db.query.resolutionPaper
+				.findFirst({ where: { id: args.paperId }, columns: { committeeId: true } })
+				.then(assertFindFirstExists);
 			await db.transaction(async (tx) => {
-				// Status-specific side effects
-				if (paper.status === 'FINAL') {
-					// Delete the resolution vote result
-					await tx
-						.delete(schema.resolutionVoteResult)
-						.where(eq(schema.resolutionVoteResult.paperId, args.paperId));
-					// Restore as active DR if committee has none
-					const committee = await tx.query.committee
-						.findFirst({ where: { id: paper.committeeId } })
-						.then(assertFindFirstExists);
-					if (!committee.activeDraftResolutionId) {
-						const firstClauseId = freshContent?.operative[0]?.id ?? null;
-						await tx
-							.update(schema.committee)
-							.set({
-								activeDraftResolutionId: args.paperId,
-								currentOperativeIndex: 0,
-								currentOperativeClauseId: firstClauseId
-							})
-							.where(eq(schema.committee.id, paper.committeeId));
-					}
-				} else if (paper.status === 'VOTING_PHASE') {
-					// Delete all operative clause votes for this paper
-					await tx
-						.delete(schema.operativeClauseVote)
-						.where(eq(schema.operativeClauseVote.paperId, args.paperId));
-				} else if (paper.status === 'AMENDMENT_PHASE') {
-					// Clear currentOperativeIndex on committee
-					await tx
-						.update(schema.committee)
-						.set({ currentOperativeIndex: null, currentOperativeClauseId: null })
-						.where(eq(schema.committee.id, paper.committeeId));
-					if (args.restoreSnapshot) {
-						// Reset applied amendments back to PENDING
-						await tx
-							.update(schema.amendment)
-							.set({ status: 'PENDING' })
-							.where(
-								and(
-									eq(schema.amendment.paperId, args.paperId),
-									inArray(schema.amendment.status, ['CONSENSUS_ADOPTED', 'ACCEPTED'])
-								)
-							);
-					}
-				} else if (paper.status === 'DRAFT_RESOLUTION') {
-					// Clear document number and sequence
-					await tx
-						.update(schema.resolutionPaper)
-						.set({ documentNumber: null, sequenceNumber: null })
-						.where(eq(schema.resolutionPaper.id, args.paperId));
-					// Clear active DR if this paper was active
-					const committee = await tx.query.committee
-						.findFirst({ where: { id: paper.committeeId } })
-						.then(assertFindFirstExists);
-					if (committee.activeDraftResolutionId === args.paperId) {
-						await tx
-							.update(schema.committee)
-							.set({
-								activeDraftResolutionId: null,
-								currentOperativeIndex: null,
-								currentOperativeClauseId: null
-							})
-							.where(eq(schema.committee.id, paper.committeeId));
-					}
-				}
-				// SUBMITTED → WORKING_PAPER: no side effects
-
-				// Update the paper status
 				await tx
 					.update(schema.resolutionPaper)
-					.set({ status: targetStatus })
-					.where(eq(schema.resolutionPaper.id, args.paperId));
-
+					.set({
+						status: 'FINAL',
+						voteVotingSessionId: args.votingSessionId
+					})
+					.where(
+						ctx.abilities.resolutionPaper.filter('update').merge({ where: { id: args.paperId } })
+							.sql.where
+					);
 				await tx.insert(schema.paperContentSnapshot).values({
+					id: nanoid(),
 					paperId: args.paperId,
-					content: freshContent ?? paper.content,
-					trigger: `REVERT_FROM_${paper.status}`
+					content,
+					trigger: 'VOTE_CONCLUDED'
 				});
+				await tx
+					.update(schema.committee)
+					.set({ lastResolutionAdoptionDate: new Date() })
+					.where(eq(schema.committee.id, paperForCommittee.committeeId));
 			});
 
-			// Tx committed — only now push the restored snapshot to the live
-			// Y.Doc so peers see the rollback after the DB state agrees.
-			if (restoredContent) {
-				await applyServerMutation(args.paperId, (doc) => {
-					replaceResolution(doc, restoredContent);
-				});
-			}
-
 			pubsub.updated(args.paperId);
-			committeePubsub.updated(paper.committeeId);
-
-			// Notify vote subscriptions when reverting from statuses that delete votes
-			if (paper.status === 'FINAL') {
-				voteResultPubsub.created();
-			} else if (paper.status === 'VOTING_PHASE') {
-				clauseVotePubsub.created();
-			}
 
 			return db.query.resolutionPaper
 				.findFirst(
 					query(
-						ctx.abilities.resolutionPaper.filter('read').merge({
-							where: { id: args.paperId }
-						}).query.single
+						ctx.abilities.resolutionPaper.filter('read').merge({ where: { id: args.paperId } })
+							.query.single
 					)
 				)
 				.then(assertFindFirstExists);

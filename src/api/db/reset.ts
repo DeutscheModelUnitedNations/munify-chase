@@ -1,9 +1,7 @@
 import { sql } from 'drizzle-orm';
 import { drizzle } from 'drizzle-orm/node-postgres';
 
-const db = drizzle(process.env.DATABASE_URL!, {
-	casing: 'snake_case'
-});
+const db = drizzle(process.env.DATABASE_URL!);
 
 console.info('Resetting database...');
 await db.execute(sql`

@@ -3,6 +3,8 @@
 	import { page } from '$app/state';
 	import { resolve } from '$app/paths';
 	import { client } from '$lib/api/rumbleClient/client';
+	import toast from 'svelte-french-toast';
+	import { promiseToastStrings } from '$lib/utils/toast';
 	import Kbd from '$lib/components/Kbd.svelte';
 	import UndrawError from '$lib/components/UndrawError.svelte';
 	import emptyStreet from '$assets/undraw/empty_street.svg';
@@ -16,7 +18,12 @@
 	import PresentationSettings from './PresentationSettings.svelte';
 	import Tabs from '$lib/components/Tabs.svelte';
 	import StatusWidget from '../StatusWidget.svelte';
-	import dayjs from 'dayjs';
+	import {
+		fullscreenDelegationSupported,
+		openPresentationWindow,
+		postToPresentation,
+		presentationOpen
+	} from '$lib/state/presentationWindow.svelte';
 
 	const committee = await client.liveQuery.committee({
 		__args: { id: page.params.committeeId! },
@@ -30,11 +37,12 @@
 		totalPresent: true,
 		simpleMajority: true,
 		twoThirdsMajority: true,
-		paperSupportThreshold: true,
 		activeAgendaItem: { id: true, title: true },
 		agendaItems: { id: true, title: true },
 		conference: { hasModeratedCaucus: true }
 	});
+
+	const minAmendmentSponsors = $derived(Math.ceil((committee?.totalPresent ?? 0) * 0.1));
 
 	let editWhiteboardModalOpen = $state(false);
 
@@ -42,6 +50,25 @@
 		{ id: true, label: m.on(), faIcon: 'fa-check' },
 		{ id: false, label: m.off(), faIcon: 'fa-xmark' }
 	];
+
+	const presentationUrl = $derived(
+		resolve('/app/[conferenceId]/[committeeId]/(presentation)', {
+			conferenceId: page.params.conferenceId!,
+			committeeId: page.params.committeeId!
+		})
+	);
+
+	const openPresentation = () => {
+		openPresentationWindow(presentationUrl, page.params.committeeId!);
+	};
+
+	const toggleFullscreen = () => {
+		if (!postToPresentation('toggle-fullscreen')) {
+			openPresentation();
+		}
+	};
+
+	const canToggleFullscreen = fullscreenDelegationSupported();
 </script>
 
 {#if committee}
@@ -56,7 +83,7 @@
 						totalPresent={committee.totalPresent}
 						simpleMajority={committee.simpleMajority}
 						twoThirdsMajority={committee.twoThirdsMajority}
-						paperSupportThreshold={committee.paperSupportThreshold}
+						{minAmendmentSponsors}
 					/>
 				</BasicCard>
 				<BasicCard className="relative group">
@@ -93,18 +120,30 @@
 					/>
 				</BasicCard>
 				<BasicCard title={m.presentationMode()}>
-					<a
-						href={resolve('/app/[conferenceId]/[committeeId]/(presentation)', {
-							conferenceId: page.params.conferenceId!,
-							committeeId: page.params.committeeId!
-						})}
-						class="btn btn-primary btn-lg mb-4 flex items-center gap-3"
-						target="_blank"
-					>
-						<i class="fas fa-projector"></i>
-						{m.openPresentation()}
-						<Kbd hotkey="alt+P" class="text-base-content" />
-					</a>
+					<div class="mb-4 flex flex-wrap items-center gap-3">
+						<button
+							type="button"
+							class="btn btn-primary btn-lg flex items-center gap-3"
+							onclick={openPresentation}
+						>
+							<i class="fas fa-projector"></i>
+							{m.openPresentation()}
+							<Kbd hotkey="alt+P" class="text-base-content" />
+						</button>
+						{#if canToggleFullscreen}
+							<button
+								type="button"
+								class="btn btn-lg flex items-center gap-3"
+								onclick={toggleFullscreen}
+								disabled={!presentationOpen()}
+								title={presentationOpen() ? m.enterFullscreen() : m.openPresentation()}
+								aria-label={m.enterFullscreen()}
+							>
+								<i class="fas fa-expand"></i>
+								{m.enterFullscreen()}
+							</button>
+						{/if}
+					</div>
 					<PresentationSettings committeeId={page.params.committeeId!} />
 				</BasicCard>
 				<BasicCard title={m.allowSelfAddToSpeakersList()}>
@@ -113,26 +152,15 @@
 						activeTab={committee.allowDelegationsToAddThemselvesToSpeakersList}
 						tabs={selfAddTabs}
 						onTabChange={(tab) => {
-							client.mutate.updateCommittee({
-								__args: { id: committee.id, allowDelegationsToAddThemselvesToSpeakersList: tab },
-								id: true
-							});
+							toast.promise(
+								client.mutate.updateCommittee({
+									__args: { id: committee.id, allowDelegationsToAddThemselvesToSpeakersList: tab },
+									id: true
+								}),
+								promiseToastStrings(m.allowSelfAddToSpeakersList(), 'update')
+							);
 						}}
 					/>
-				</BasicCard>
-				<BasicCard title={m.announceAdoption()}>
-					<button
-						class="btn btn-primary btn-lg mb-4 flex items-center gap-3"
-						onclick={() => {
-							client.mutate.updateCommittee({
-								__args: { id: committee.id, lastResolutionAdoptionDate: dayjs().toDate() },
-								id: true
-							});
-						}}
-					>
-						<i class="fas fa-party-horn"></i>
-						{m.announceAdoption()}
-					</button>
 				</BasicCard>
 			</div>
 		</div>

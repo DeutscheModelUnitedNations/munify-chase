@@ -32,3 +32,5 @@ pi-display/local.nix
 pi-display/result
 pi-display/flake.lock
 pi-display/_pycache_
+
+src-tauri

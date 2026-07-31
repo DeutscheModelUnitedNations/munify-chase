@@ -10,21 +10,14 @@ import { eq } from 'drizzle-orm';
 import { db, schema } from '$api/db/db';
 import {
 	isAdminInConference,
-	isGlobalAdmin,
-	isParticipantInConference
+	isParticipantInConference,
+	isTeamInConference
 } from '$api/services/authHelper';
 import { GraphQLError } from 'graphql';
 import { assertFindFirstExists, assertFirstEntryExists } from '@m1212e/rumble';
 import { emailValidation } from '$api/services/emailValidation';
 import { attendanceCode as generateAttendanceCode } from '$lib/helpers/attendanceCode';
-
-// Global admins bypass column restrictions entirely. Without this short-circuit,
-// rumble's mergeFilters intersects the explicit-true sets across rules — the
-// participant rule below hides userEmail/attendanceCode, and that decision wins
-// over the admin rule because the admin rule has no `columns` key to contribute.
-abilityBuilder.conferenceUser.allow('read').when((ctx) => {
-	if (isGlobalAdmin(ctx)) return 'allow';
-});
+import { nanoidValidation } from '$lib/helpers/nanoid';
 
 abilityBuilder.conferenceUser.allow('read').when((ctx) => {
 	return {
@@ -44,20 +37,49 @@ abilityBuilder.conferenceUser.allow('read').when((ctx) => {
 	};
 });
 
-// Self-read: a logged-in participant can always read their own name + email
-// (needed for participant pages like MyAttendanceTab). Rumble merges column
-// sets across allow('read') rules additively, so this opens up just these
-// columns for the matching row without disturbing the participant rule.
+// Team read — exposes name/email so team members can see who wrote comments.
+// attendanceCode stays hidden (only admins need it).
 abilityBuilder.conferenceUser.allow('read').when((ctx) => {
-	try {
-		const user = ctx.mustBeLoggedIn();
-		if (!user.email) return undefined;
+	return {
+		where: isTeamInConference(ctx),
+		columns: {
+			id: true,
+			conferenceId: true,
+			userEmail: true,
+			name: true,
+			committeeMemberId: true,
+			conferenceMemberId: true,
+			conferenceUserType: true,
+			attendanceCode: false,
+			createdAt: true,
+			updatedAt: true
+		}
+	};
+});
+
+// Self read
+abilityBuilder.conferenceUser.allow('read').when((ctx) => {
+	const sub = ctx.oidc?.user.sub;
+	if (sub) {
 		return {
-			where: { user: { email: user.email } },
-			columns: { name: true, userEmail: true }
+			where: {
+				user: {
+					id: sub
+				}
+			},
+			columns: {
+				id: true,
+				conferenceId: true,
+				userEmail: true,
+				name: true,
+				committeeMemberId: true,
+				conferenceMemberId: true,
+				conferenceUserType: true,
+				attendanceCode: true,
+				createdAt: true,
+				updatedAt: true
+			}
 		};
-	} catch {
-		return undefined;
 	}
 });
 
@@ -104,37 +126,37 @@ export const ConferenceUserRef = object({
 		// lazily on first OIDC login (services/OIDC.ts), so an imported but
 		// not-yet-redeemed conferenceUser legitimately has no user.
 		user: t.relation('user', { nullable: true }),
-		// Live attendance state derived from the latest nsaPresenceEvent.
-		// Per-row queries here can N+1 on large NSA dashboards; a bulk top-level
-		// query in nsaPresenceEvent.ts is provided for live overview tabs.
+		// Live attendance state derived from the latest presenceEvent.
+		// Per-row queries here can N+1 on large dashboards; a bulk top-level
+		// query in presenceEvent.ts is provided for live overview tabs.
 		isCheckedIn: t.boolean({
 			resolve: async (parent) => {
-				const latest = await db.query.nsaPresenceEvent.findFirst({
+				const latest = await db.query.presenceEvent.findFirst({
 					where: { conferenceUserId: parent.id },
 					orderBy: { timestamp: 'desc' }
 				});
-				return latest?.type === 'CHECK_IN';
+				return latest?.present ?? false;
 			}
 		}),
 		currentCommitteeId: t.string({
 			nullable: true,
 			resolve: async (parent) => {
-				const latest = await db.query.nsaPresenceEvent.findFirst({
+				const latest = await db.query.presenceEvent.findFirst({
 					where: { conferenceUserId: parent.id },
 					orderBy: { timestamp: 'desc' }
 				});
-				return latest?.type === 'CHECK_IN' ? latest.committeeId : null;
+				return latest?.present ? latest.committeeId : null;
 			}
 		}),
 		currentCheckedInSince: t.field({
 			type: 'DateTime',
 			nullable: true,
 			resolve: async (parent) => {
-				const latest = await db.query.nsaPresenceEvent.findFirst({
+				const latest = await db.query.presenceEvent.findFirst({
 					where: { conferenceUserId: parent.id },
 					orderBy: { timestamp: 'desc' }
 				});
-				return latest?.type === 'CHECK_IN' ? latest.timestamp : null;
+				return latest?.present ? latest.timestamp : null;
 			}
 		})
 	})
@@ -147,6 +169,7 @@ schemaBuilder.mutationFields((t) => ({
 	createConferenceUser: t.drizzleField({
 		type: ConferenceUserRef,
 		args: {
+			id: t.arg.id().validate(nanoidValidation),
 			conferenceId: t.arg.id({ required: true }),
 			userEmail: t.arg.string({ required: true }).validate(emailValidation),
 			name: t.arg.string(),
@@ -155,7 +178,7 @@ schemaBuilder.mutationFields((t) => ({
 				required: true
 			})
 		},
-		resolve: async (query, root, args, ctx) => {
+		resolve: async (query, _root, args, ctx) => {
 			await db.query.conference
 				.findFirst(
 					ctx.abilities.conference.filter('update').merge({ where: { id: args.conferenceId } })
@@ -184,6 +207,7 @@ schemaBuilder.mutationFields((t) => ({
 			const result = await db
 				.insert(schema.conferenceUser)
 				.values({
+					id: args.id,
 					conferenceId: args.conferenceId,
 					userEmail: args.userEmail,
 					name: args.name?.trim() || null,
@@ -212,7 +236,7 @@ schemaBuilder.mutationFields((t) => ({
 		args: {
 			id: t.arg({ type: 'ID', required: true })
 		},
-		resolve: async (root, args, ctx) => {
+		resolve: async (_root, args, ctx) => {
 			const conferenceUser = await db.query.conferenceUser
 				.findFirst(
 					ctx.abilities.conferenceUser.filter('delete').merge({ where: { id: args.id } }).query
@@ -227,24 +251,27 @@ schemaBuilder.mutationFields((t) => ({
 				throw new GraphQLError('You cannot delete yourself from the conference');
 			}
 
-			// Prevent deleting the last ADMIN
-			if (conferenceUser.conferenceUserType === 'ADMIN') {
-				const remainingAdmins = await db.query.conferenceUser.findMany({
-					where: {
-						conferenceId: conferenceUser.conferenceId,
-						conferenceUserType: 'ADMIN',
-						id: { ne: args.id }
+			await db.transaction(async (tx) => {
+				// Prevent deleting the last ADMIN — re-checked inside the transaction to
+				// avoid a race where two concurrent deletes both pass the count check.
+				if (conferenceUser.conferenceUserType === 'ADMIN') {
+					const remainingAdmins = await tx.query.conferenceUser.findMany({
+						where: {
+							conferenceId: conferenceUser.conferenceId,
+							conferenceUserType: 'ADMIN',
+							id: { ne: args.id }
+						}
+					});
+
+					if (remainingAdmins.length === 0) {
+						throw new GraphQLError(
+							'Cannot delete the last ADMIN. Promote another user to ADMIN first.'
+						);
 					}
-				});
-
-				if (remainingAdmins.length === 0) {
-					throw new GraphQLError(
-						'Cannot delete the last ADMIN. Promote another user to ADMIN first.'
-					);
 				}
-			}
 
-			await db.delete(schema.conferenceUser).where(eq(schema.conferenceUser.id, args.id));
+				await tx.delete(schema.conferenceUser).where(eq(schema.conferenceUser.id, args.id));
+			});
 
 			pubsub.removed();
 
@@ -264,7 +291,7 @@ schemaBuilder.mutationFields((t) => ({
 			conferenceMemberId: t.arg({ type: 'ID' }),
 			name: t.arg.string()
 		},
-		resolve: async (query, root, args, ctx) => {
+		resolve: async (query, _root, args, ctx) => {
 			const conferenceUser = await db.query.conferenceUser
 				.findFirst(
 					ctx.abilities.conferenceUser.filter('update').merge({ where: { id: args.id } }).query
@@ -281,23 +308,6 @@ schemaBuilder.mutationFields((t) => ({
 				args.conferenceUserType !== 'ADMIN'
 			) {
 				throw new GraphQLError('You cannot demote yourself from ADMIN');
-			}
-
-			// Prevent orphaning the conference (removing the last ADMIN)
-			if (conferenceUser.conferenceUserType === 'ADMIN' && args.conferenceUserType !== 'ADMIN') {
-				const remainingAdmins = await db.query.conferenceUser.findMany({
-					where: {
-						conferenceId: conferenceUser.conferenceId,
-						conferenceUserType: 'ADMIN',
-						id: { ne: args.id }
-					}
-				});
-
-				if (remainingAdmins.length === 0) {
-					throw new GraphQLError(
-						'Cannot demote the last ADMIN. Promote another user to ADMIN first.'
-					);
-				}
 			}
 
 			// Validate committeeMemberId belongs to a committee in the same conference
@@ -354,15 +364,36 @@ schemaBuilder.mutationFields((t) => ({
 					updateSet.conferenceMemberId = args.conferenceMemberId;
 				}
 				// Promotion to NSA: ensure the user has an attendance code.
+				// Done outside the transaction since it does its own retried reads.
 				if (!conferenceUser.attendanceCode) {
 					updateSet.attendanceCode = await pickUniqueAttendanceCode(conferenceUser.conferenceId);
 				}
 			}
 
-			await db
-				.update(schema.conferenceUser)
-				.set(updateSet)
-				.where(eq(schema.conferenceUser.id, args.id));
+			await db.transaction(async (tx) => {
+				// Prevent orphaning the conference — re-checked inside the transaction to
+				// avoid a race where two concurrent demotions both pass the count check.
+				if (conferenceUser.conferenceUserType === 'ADMIN' && args.conferenceUserType !== 'ADMIN') {
+					const remainingAdmins = await tx.query.conferenceUser.findMany({
+						where: {
+							conferenceId: conferenceUser.conferenceId,
+							conferenceUserType: 'ADMIN',
+							id: { ne: args.id }
+						}
+					});
+
+					if (remainingAdmins.length === 0) {
+						throw new GraphQLError(
+							'Cannot demote the last ADMIN. Promote another user to ADMIN first.'
+						);
+					}
+				}
+
+				await tx
+					.update(schema.conferenceUser)
+					.set(updateSet)
+					.where(eq(schema.conferenceUser.id, args.id));
+			});
 
 			pubsub.updated(args.id);
 

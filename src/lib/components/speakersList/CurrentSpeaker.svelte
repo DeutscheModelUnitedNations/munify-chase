@@ -5,6 +5,7 @@
 	import Timer from './Timer.svelte';
 	import { scale } from 'svelte/transition';
 	import { bounceOut } from 'svelte/easing';
+	import { compareSpeakers } from '$lib/helpers/speakerSort';
 
 	interface Props {
 		speakersList?: {
@@ -44,9 +45,7 @@
 
 	let { speakersList }: Props = $props();
 
-	let currentSpeaker = $derived(
-		speakersList?.speakers.toSorted((a, b) => a.position - b.position).at(0)
-	);
+	let currentSpeaker = $derived(speakersList?.speakers.toSorted(compareSpeakers).at(0));
 
 	let representation = $derived(
 		currentSpeaker?.committeeMember?.representation ||

@@ -4,7 +4,6 @@
 	import Kbd from '$lib/components/Kbd.svelte';
 	import { m } from '$lib/paraglide/messages';
 	import { getServerTime } from '$lib/state/serverTime.svelte';
-	import dayjs from 'dayjs';
 	import hotkeys from 'hotkeys-js';
 	import { onMount } from 'svelte';
 	import toast from 'svelte-french-toast';
@@ -27,61 +26,109 @@
 	let { speakersList, type, otherList }: Props = $props();
 
 	let timerRunning = $derived(!!speakersList?.startTimestamp);
+	// Silent debounce to absorb accidental fat-finger double-clicks that would
+	// otherwise immediately undo the optimistic start/stop. Kept short and
+	// non-visual: offline mutations never resolve, so a longer lock would leave
+	// the button looking disabled until the timeout expired.
+	let lastTimerActionAt = 0;
 
-	const startTimer = async () => {
-		if (!speakersList) return;
-
-		if (otherList) {
-			await client.mutate.updateSpeakersList({
-				__args: { id: speakersList.id, startTimestamp: getServerTime().toDate() },
-				id: true,
-				speakingTime: true,
-				startTimestamp: true
-			});
-			await client.mutate.updateSpeakersList({
-				__args: {
-					id: otherList.id,
-					timeLeft:
-						otherList.type === 'SPEAKERS_LIST' ? speakersList.speakingTime : otherList.speakingTime,
-					stopTimer: true
-				},
-				id: true,
-				speakingTime: true,
-				timeLeft: true,
-				startTimestamp: true
-			});
-		} else {
-			await client.mutate.updateSpeakersList({
-				__args: { id: speakersList.id, startTimestamp: getServerTime().toDate() },
-				id: true,
-				speakingTime: true,
-				startTimestamp: true
-			});
+	const withTimerLock = (fn: () => Promise<void>) => async () => {
+		const now = performance.now();
+		if (now - lastTimerActionAt < 250) return;
+		lastTimerActionAt = now;
+		try {
+			await fn();
+		} catch {
+			// Network errors are handled individually inside each handler.
 		}
 	};
 
-	const stopTimer = async () => {
+	const startTimer = withTimerLock(async () => {
 		if (!speakersList) return;
 
-		await client.mutate
-			.updateSpeakersList({
+		const ops: Promise<unknown>[] = [
+			client.mutate.updateSpeakersList({
 				__args: {
 					id: speakersList.id,
-					timeLeft:
-						dayjs(speakersList.startTimestamp).diff(getServerTime(), 'seconds') +
-						speakersList.timeLeft,
-					stopTimer: true
+					startTimestamp: getServerTime().toDate(),
+					// Starting the main speakers list timer always (re)enters the speech phase
+					...(type === 'SPEAKERS_LIST' ? { phase: 'SPEECH' } : {})
 				},
 				id: true,
-				timeLeft: true,
-				startTimestamp: true
+				speakingTime: true,
+				startTimestamp: true,
+				phase: true
 			})
-			.then((r) => {
-				if (!r) {
-					toast.error(m.errorUpdatingTimer());
-				}
-			});
-	};
+		];
+
+		if (otherList) {
+			ops.push(
+				client.mutate.updateSpeakersList({
+					__args: {
+						id: otherList.id,
+						timeLeft:
+							otherList.type === 'SPEAKERS_LIST'
+								? speakersList.speakingTime
+								: otherList.speakingTime,
+						stopTimer: true,
+						// When starting the comment list timer, mark the speakers list as entering question phase
+						...(type === 'COMMENT_LIST' ? { phase: 'QUESTION' } : {})
+					},
+					id: true,
+					speakingTime: true,
+					timeLeft: true,
+					startTimestamp: true,
+					phase: true
+				})
+			);
+		}
+
+		const results = await Promise.allSettled(ops);
+		if (results.some((r) => r.status === 'fulfilled' && !r.value))
+			toast.error(m.errorUpdatingTimer());
+	});
+
+	const stopTimer = withTimerLock(async () => {
+		if (!speakersList) return;
+
+		const mutations: Promise<unknown>[] = [
+			client.mutate
+				.updateSpeakersList({
+					__args: {
+						id: speakersList.id,
+						stopTimer: true,
+						// Stopping the main speakers list timer marks the speech as done
+						...(type === 'SPEAKERS_LIST' ? { phase: 'SPEECH_DONE' } : {})
+					},
+					id: true,
+					timeLeft: true,
+					startTimestamp: true,
+					phase: true
+				})
+				.then((r) => {
+					if (!r) toast.error(m.errorUpdatingTimer());
+				})
+				.catch(() => {
+					// Network error — mutation was queued by the offline exchange;
+					// the optimistic update keeps the timer frozen until reconnect.
+				})
+		];
+
+		// When stopping the comment list timer, transition the speakers list to answer phase
+		if (type === 'COMMENT_LIST' && otherList) {
+			mutations.push(
+				client.mutate
+					.updateSpeakersList({
+						__args: { id: otherList.id, phase: 'ANSWER' },
+						id: true,
+						phase: true
+					})
+					.catch(() => {})
+			);
+		}
+
+		await Promise.all(mutations);
+	});
 
 	const resetTimer = async () => {
 		if (!speakersList) return;
@@ -96,13 +143,15 @@
 				},
 				id: true,
 				timeLeft: true,
-				startTimestamp: true
+				startTimestamp: true,
+				phase: true
 			})
 			.then((r) => {
 				if (!r) {
 					toast.error(m.errorUpdatingTimer());
 				}
-			});
+			})
+			.catch(() => {});
 	};
 
 	const changeTimer = async (delta: number) => {
@@ -118,7 +167,8 @@
 				if (!r) {
 					toast.error(m.errorUpdatingTimer());
 				}
-			});
+			})
+			.catch(() => {});
 	};
 
 	onMount(() => {
@@ -137,7 +187,6 @@
 					break;
 				case 'shift+space':
 					if (type === 'COMMENT_LIST') {
-						console.log('Start /Stop Timer Comment List');
 						if (timerRunning) {
 							stopTimer();
 						} else {
@@ -147,13 +196,11 @@
 					break;
 				case 'alt+r':
 					if (type === 'SPEAKERS_LIST') {
-						console.log('Reset Timer Speakers List');
 						resetTimer();
 					}
 					break;
 				case 'alt+shift+r':
 					if (type === 'COMMENT_LIST') {
-						console.log('Reset Timer Comment List');
 						resetTimer();
 					}
 					break;
@@ -165,7 +212,7 @@
 <div class="flex gap-2">
 	<button
 		class="btn btn-lg join-item flex flex-1 gap-2
-			{(!speakersList?.speakers?.length && 'btn-disabled') || (timerRunning ? 'bg-error' : 'bg-success')}"
+			{!speakersList?.speakers?.length ? 'btn-disabled' : timerRunning ? 'bg-error' : 'bg-success'}"
 		onclick={timerRunning ? stopTimer : startTimer}
 	>
 		{#if timerRunning}

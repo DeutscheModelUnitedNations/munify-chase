@@ -12,8 +12,7 @@ export const importDataSchema = z.object({
 		z.object({
 			id: z.string(),
 			name: z.string(),
-			abbreviation: z.string(),
-			resolutionHeadline: z.string().optional()
+			abbreviation: z.string()
 		})
 	),
 	representations: z.array(

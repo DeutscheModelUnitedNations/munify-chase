@@ -11,19 +11,21 @@ import './speakersList';
 import './time';
 import './user';
 import './import';
-import './presenceChangedTimestamp';
-import './nsaPresenceEvent';
+import './presenceEvent';
+import './rollCallSession';
+import './votingSession';
 import './resolutionPaper';
+import './paperEditor';
 import './paperSponsor';
 import './paperShareCode';
-import './paperEditor';
 import './paperContentSnapshot';
 import './resolutionComment';
 import './amendment';
 import './amendmentSponsor';
+import './amendmentReviewItem';
 import './operativeClauseVote';
-import './resolutionVoteResult';
-
+import './ai';
+import './statistics';
 import { building, dev } from '$app/environment';
 import { clientCreator } from '$api/rumble';
 
@@ -33,6 +35,6 @@ if (dev || building) {
 		apiUrl: '/api/graphql',
 		useExternalUrqlClient: '../client',
 		removeExisting: false,
-		autoIncludeIdField: true
+		autoIncludeIdField: false
 	});
 }

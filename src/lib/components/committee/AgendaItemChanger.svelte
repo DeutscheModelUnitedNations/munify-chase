@@ -12,7 +12,11 @@
 
 	let { committeeId, activeAgendaItem, agendaItems }: Props = $props();
 
-	let value = $state(activeAgendaItem?.id ?? '');
+	// eslint-disable-next-line svelte/prefer-writable-derived -- writable and reactive to prop changes
+	let value = $state('');
+	$effect(() => {
+		value = activeAgendaItem?.id ?? '';
+	});
 
 	const update = async () => {
 		if (value === activeAgendaItem?.id) {

@@ -1,0 +1,177 @@
+name: Sync Native Client
+
+# Keeps the `native-client` branch (Tauri-only fork, no server) in sync with
+# main. On every push to main this merges main into native-client:
+#
+#   - Delete/modify conflicts are auto-resolved by keeping the file deleted —
+#     the fork intentionally removed the whole server, so a file main modified
+#     but the fork deleted stays deleted.
+#   - Server-only paths main (re)added since the last sync are dropped again
+#     (see the fork policy list below).
+#   - The lockfile is regenerated and the merged result is verified with
+#     svelte-check before pushing.
+#
+# If both sides modified the same file, or verification fails, nothing is
+# pushed to native-client. Instead a pull request is opened for manual
+# resolution.
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: sync-native-client
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    env:
+      SYNC_BRANCH: sync/main-into-native-client
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: native-client
+          fetch-depth: 0
+          # Pushes made with the default GITHUB_TOKEN do not trigger other
+          # workflows, so native-client's CI will NOT run on synced merges.
+          # Configure a SYNC_TOKEN secret (fine-grained PAT with contents:
+          # read/write on this repo) to have synced pushes run CI normally.
+          token: ${{ secrets.SYNC_TOKEN || github.token }}
+
+      - name: Merge main into native-client
+        id: merge
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git fetch origin main --quiet
+
+          if git merge-base --is-ancestor origin/main HEAD; then
+            echo "native-client already contains main — nothing to sync."
+            echo "result=uptodate" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          if ! git merge --no-commit origin/main; then
+            # Auto-resolve delete/modify conflicts: the fork deleted the file,
+            # main modified it — keep it deleted. A file with a stage-2 entry
+            # was modified on BOTH sides and needs a human.
+            conflicted=false
+            while IFS= read -r file; do
+              if git ls-files -u -- "$file" | awk '{print $3}' | grep -qx '2'; then
+                conflicted=true
+              else
+                git rm -qf -- "$file"
+              fi
+            done < <(git diff --name-only --diff-filter=U)
+
+            if [ "$conflicted" = true ]; then
+              echo "Conflicts need manual resolution:" >> "$GITHUB_STEP_SUMMARY"
+              git diff --name-only --diff-filter=U | sed 's/^/- `/;s/$/`/' >> "$GITHUB_STEP_SUMMARY" || true
+              git merge --abort
+              echo "result=conflicted" >> "$GITHUB_OUTPUT"
+              exit 0
+            fi
+          fi
+
+          # The fork has its own CI pipeline — never let main's ci.yml merge
+          # into it (textual merges splice main's jobs into the diverged file,
+          # producing valid-but-wrong YAML that verification can't catch).
+          git checkout HEAD -- .github/workflows/ci.yml
+
+          # Fork policy: the native client has no server. Drop server-only
+          # paths main may have added since the last sync.
+          git rm -rqf --ignore-unmatch -- \
+            src/api \
+            src/routes/api \
+            src/routes/logout \
+            src/routes/app/+layout.server.ts \
+            src/hooks.server.ts \
+            src/lib/config/private.ts \
+            src/server.js \
+            drizzle \
+            drizzle.config.ts \
+            dev.docker-compose.yml
+
+          echo "result=merged" >> "$GITHUB_OUTPUT"
+
+      - uses: oven-sh/setup-bun@v2
+        if: steps.merge.outputs.result == 'merged'
+
+      - name: Regenerate lockfile
+        if: steps.merge.outputs.result == 'merged'
+        run: |
+          # package.json changes from main can leave the textually-merged
+          # bun.lock inconsistent — regenerate it against the merged manifest.
+          bun install
+          git add bun.lock
+
+      - name: Verify merged result
+        id: verify
+        if: steps.merge.outputs.result == 'merged'
+        continue-on-error: true
+        run: |
+          bunx svelte-kit sync
+          bunx @inlang/paraglide-js compile --project ./project.inlang --outdir ./src/lib/paraglide
+          bun run check
+          bun run typecheck
+
+      - name: Commit merge
+        id: commit
+        if: steps.merge.outputs.result == 'merged'
+        run: |
+          set -euo pipefail
+          if git diff --cached --quiet && [ ! -f .git/MERGE_HEAD ]; then
+            echo "Merge produced no changes — nothing to push."
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          if [ -f .git/MERGE_HEAD ]; then
+            git commit --no-edit
+          else
+            git commit -m "chore: apply native-client fork policy"
+          fi
+          echo "changed=true" >> "$GITHUB_OUTPUT"
+
+      - name: Push to native-client
+        if: steps.commit.outputs.changed == 'true' && steps.verify.outcome == 'success'
+        run: git push origin HEAD:native-client
+
+      - name: Open PR (verification failed)
+        if: steps.commit.outputs.changed == 'true' && steps.verify.outcome == 'failure'
+        env:
+          GH_TOKEN: ${{ secrets.SYNC_TOKEN || github.token }}
+        run: |
+          set -euo pipefail
+          git push -f origin "HEAD:refs/heads/${SYNC_BRANCH}"
+          if [ -z "$(gh pr list --base native-client --head "${SYNC_BRANCH}" --state open --json number --jq '.[].number')" ]; then
+            gh pr create \
+              --base native-client \
+              --head "${SYNC_BRANCH}" \
+              --label "PR: Infrastructure" \
+              --title "chore: merge main into native-client" \
+              --body "Automated sync of \`main\` into \`native-client\`. The merge itself succeeded (including auto-resolution of delete/modify conflicts), but \`svelte-check\`/\`tsc\` failed on the merged result — see the failed [Sync Native Client run](${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}). Fix the fallout on this branch, then merge."
+          fi
+          echo "Verification failed — opened/updated PR from ${SYNC_BRANCH} instead of pushing." >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Open PR (merge conflicts)
+        if: steps.merge.outputs.result == 'conflicted'
+        env:
+          GH_TOKEN: ${{ secrets.SYNC_TOKEN || github.token }}
+        run: |
+          set -euo pipefail
+          if [ -z "$(gh pr list --base native-client --head main --state open --json number --jq '.[].number')" ]; then
+            gh pr create \
+              --base native-client \
+              --head main \
+              --label "PR: Infrastructure" \
+              --title "chore: merge main into native-client" \
+              --body "Automated sync of \`main\` into \`native-client\` hit conflicts that need manual resolution (files modified on both branches — see the [workflow run summary](${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID})). Resolve locally with \`git merge main\` on \`native-client\` (keep server files deleted), then push."
+          fi
+          echo "Merge conflicts — opened/updated PR main → native-client for manual resolution." >> "$GITHUB_STEP_SUMMARY"

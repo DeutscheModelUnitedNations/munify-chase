@@ -11,8 +11,11 @@
 		placeholder?: string;
 		side?: 'top' | 'bottom' | 'left' | 'right';
 		kbd?: string;
+		triggerClass?: string;
 		filter: (option: T[], value: string) => T[];
 		getStringValue: (value: T) => string;
+		/** Unique key per option for the {#each} block. Defaults to getStringValue but must be overridden when multiple options can share the same display name. */
+		getKey?: (option: T) => string | number;
 		ListItem: Snippet<[T]>;
 		AdditionalButtons?: Snippet;
 		submit?: (value?: string) => void;
@@ -25,8 +28,10 @@
 		placeholder,
 		side,
 		kbd,
+		triggerClass = 'btn btn-square input-lg join-item',
 		filter,
 		getStringValue,
+		getKey,
 		ListItem,
 		AdditionalButtons,
 		submit
@@ -35,6 +40,8 @@
 	let filteredOptions: T[] = $derived(filter(options, value));
 
 	let input: HTMLInputElement | undefined;
+	// open is tracked separately so we can open the dropdown when the user focuses the text input
+	let open = $state(false);
 
 	$effect(() => {
 		if (focused && input) {
@@ -43,9 +50,9 @@
 	});
 </script>
 
-<Combobox.Root type="single" bind:value>
+<Combobox.Root type="single" bind:value bind:open>
 	<div class="join">
-		<Combobox.Trigger class="btn btn-square input-lg join-item">
+		<Combobox.Trigger class={triggerClass}>
 			<i class="fas fa-magnifying-glass"></i>
 		</Combobox.Trigger>
 		<Combobox.Input>
@@ -56,6 +63,9 @@
 						bind:this={input}
 						{placeholder}
 						aria-label={placeholder}
+						onfocus={() => {
+							open = true;
+						}}
 						oninput={(e) => {
 							value = (e.target as HTMLInputElement).value;
 						}}
@@ -64,6 +74,7 @@
 							if (e.key === 'Escape') {
 								focused = false;
 								value = '';
+								open = false;
 								(e.target as HTMLInputElement).blur();
 							} else if (e.key === 'Enter' && submit) {
 								submit(value);
@@ -84,7 +95,7 @@
 	</div>
 	<Combobox.Portal>
 		<Combobox.Content
-			class="bg-base-100 border-base-300 shadow-popover card z-30 max-h-60 w-[var(--bits-combobox-anchor-width)] min-w-[var(--bits-combobox-anchor-width)] border px-1 py-3 shadow-lg outline-hidden select-none data-[side=bottom]:translate-y-1 data-[side=left]:-translate-x-1 data-[side=right]:translate-x-1 data-[side=top]:-translate-y-1"
+			class="bg-base-100 border-base-300 shadow-popover card z-[1000] max-h-60 w-[var(--bits-combobox-anchor-width)] min-w-[var(--bits-combobox-anchor-width)] border px-1 py-3 shadow-lg outline-hidden select-none data-[side=bottom]:translate-y-1 data-[side=left]:-translate-x-1 data-[side=right]:translate-x-1 data-[side=top]:-translate-y-1"
 			sideOffset={10}
 			{side}
 		>
@@ -92,7 +103,7 @@
 				<i class="fas fa-caret-up"></i>
 			</Combobox.ScrollUpButton>
 			<Combobox.Viewport class="p-1">
-				{#each filteredOptions as option, i (i)}
+				{#each filteredOptions as option (getKey ? getKey(option) : getStringValue(option))}
 					<Combobox.Item
 						class="hover:bg-base-200 active:bg-base-300 data-highlighted:bg-base-300 flex w-full cursor-pointer items-center rounded-md py-3 pl-5 text-sm outline-hidden transition-all duration-200 select-none"
 						value={getStringValue(option)}

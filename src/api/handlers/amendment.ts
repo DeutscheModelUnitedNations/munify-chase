@@ -2,665 +2,207 @@ import { db, schema } from '$api/db/db';
 import {
 	abilityBuilder,
 	enum_,
-	schemaBuilder,
 	object,
+	query,
 	pubsub as rumblePubsub,
-	query
+	schemaBuilder
 } from '$api/rumble';
-import { isChairInConference, isGlobalAdmin } from '$api/services/authHelper';
-import { assertFindFirstExists, assertFirstEntryExists } from '@m1212e/rumble';
-import { and, eq, count as drizzleCount, not, inArray, gt, gte, sql } from 'drizzle-orm';
-import { GraphQLError } from 'graphql';
-import { type OperativeClause } from '@deutschemodelunitednations/munify-resolution-editor/schema';
-import { parseClauseFragment } from '@deutschemodelunitednations/munify-resolution-editor/res-markup';
 import {
-	replaceResolution,
-	yDocToJson
-} from '@deutschemodelunitednations/munify-resolution-editor/yjs';
+	isParticipantInConference,
+	isTeamInConference,
+	committeeMemberForPaper,
+	isAmendmentProposer
+} from '$api/services/authHelper';
+import { assertFindFirstExists } from '@m1212e/rumble';
+import { nanoid, nanoidValidation } from '$lib/helpers/nanoid';
+import { GraphQLError } from 'graphql';
+import { and, count, eq } from 'drizzle-orm';
 import { applyServerMutation, readPaperJson } from '$api/yjs/server';
+import {
+	yDocToJson,
+	replaceResolution
+} from '@deutschemodelunitednations/munify-resolution-editor/yjs';
+import { parseClauseFragment } from '@deutschemodelunitednations/munify-resolution-editor/res-markup';
+import type {
+	OperativeClause,
+	Resolution
+} from '@deutschemodelunitednations/munify-resolution-editor/schema';
 
 abilityBuilder.amendment.allow('read').when((ctx) => {
-	if (isGlobalAdmin(ctx)) return 'allow';
-});
-
-abilityBuilder.amendment.allow('read').when(({ mustBeLoggedIn }) => {
-	mustBeLoggedIn();
-	return 'allow';
-});
-
-abilityBuilder.amendment.allow(['update']).when((ctx) => {
 	return {
 		where: {
-			paper: {
-				committee: {
-					...isChairInConference(ctx)
-				}
-			}
+			paper: { committee: isParticipantInConference(ctx) }
+		}
+	};
+});
+
+// Editing an amendment is allowed for chairs at any time, and for the
+// proposer while the amendment is still PENDING (i.e. not yet submitted to
+// the chair). Once SUBMITTED or further, only chairs can edit/delete.
+abilityBuilder.amendment.allow(['update', 'delete']).when((ctx) => {
+	return {
+		where: {
+			OR: [
+				{ paper: { committee: isTeamInConference(ctx) } },
+				{ status: 'PENDING' as const, ...isAmendmentProposer(ctx) }
+			]
 		}
 	};
 });
 
 const ref = object({ table: 'amendment' });
-
-const amendmentTypeEnum = enum_({ tsName: 'amendmentType' });
-
-// =============================================================================
-// HELPERS
-// =============================================================================
-
-function validateAmendmentArgs(
-	type: string,
-	args: {
-		targetClauseId?: string | null;
-		targetOperativeIndex?: number | null;
-		targetPosition?: number | null;
-		newContent?: unknown;
-	}
-) {
-	switch (type) {
-		case 'DELETE':
-			if (args.targetClauseId === undefined || args.targetClauseId === null) {
-				throw new GraphQLError('DELETE amendments require targetClauseId');
-			}
-			if (args.targetOperativeIndex === undefined || args.targetOperativeIndex === null) {
-				throw new GraphQLError('DELETE amendments require targetOperativeIndex');
-			}
-			break;
-		case 'ADD':
-			if (args.targetPosition === undefined || args.targetPosition === null) {
-				throw new GraphQLError('ADD amendments require targetPosition');
-			}
-			if (!args.newContent) {
-				throw new GraphQLError('ADD amendments require newContent');
-			}
-			break;
-		case 'ALTER_TEXT':
-			if (args.targetClauseId === undefined || args.targetClauseId === null) {
-				throw new GraphQLError('ALTER_TEXT amendments require targetClauseId');
-			}
-			if (args.targetOperativeIndex === undefined || args.targetOperativeIndex === null) {
-				throw new GraphQLError('ALTER_TEXT amendments require targetOperativeIndex');
-			}
-			if (!args.newContent) {
-				throw new GraphQLError('ALTER_TEXT amendments require newContent');
-			}
-			break;
-		case 'ALTER_POSITION':
-			if (args.targetClauseId === undefined || args.targetClauseId === null) {
-				throw new GraphQLError('ALTER_POSITION amendments require targetClauseId');
-			}
-			if (args.targetOperativeIndex === undefined || args.targetOperativeIndex === null) {
-				throw new GraphQLError('ALTER_POSITION amendments require targetOperativeIndex (source)');
-			}
-			if (args.targetPosition === undefined || args.targetPosition === null) {
-				throw new GraphQLError('ALTER_POSITION amendments require targetPosition (destination)');
-			}
-			break;
-	}
-}
-
-/**
- * Find the current index of a clause by its stable ID.
- * Throws if the clause is not found (e.g. already deleted by a prior amendment).
- */
-function findClauseIndex(operative: { id: string }[], clauseId: string): number {
-	const idx = operative.findIndex((c) => c.id === clauseId);
-	if (idx === -1) {
-		throw new GraphQLError(
-			`Clause "${clauseId}" not found in resolution — it may have been deleted by a prior amendment`
-		);
-	}
-	return idx;
-}
-
-/**
- * Auto-adjust targetPosition on remaining PENDING/SUBMITTED ADD/ALTER_POSITION amendments
- * after a structural change (deletion or insertion) shifts operative clause indices.
- */
-async function adjustPendingPositions(
-	tx: Parameters<Parameters<typeof db.transaction>[0]>[0],
-	paperId: string,
-	excludeAmendmentId: string,
-	direction: 'decrement' | 'increment',
-	thresholdIndex: number,
-	comparison: 'gt' | 'gte'
-) {
-	const delta = direction === 'decrement' ? -1 : 1;
-	const cmp =
-		comparison === 'gt'
-			? gt(schema.amendment.targetPosition, thresholdIndex)
-			: gte(schema.amendment.targetPosition, thresholdIndex);
-
-	await tx
-		.update(schema.amendment)
-		.set({ targetPosition: sql`${schema.amendment.targetPosition} + ${delta}` })
-		.where(
-			and(
-				eq(schema.amendment.paperId, paperId),
-				inArray(schema.amendment.status, ['PENDING', 'SUBMITTED']),
-				inArray(schema.amendment.type, ['ADD', 'ALTER_POSITION']),
-				not(eq(schema.amendment.id, excludeAmendmentId)),
-				cmp
-			)
-		);
-}
-
-/**
- * Compute the post-amendment resolution as a pure function. Used both
- * server-side (to drive the Y.Doc) and indirectly by tests.
- */
-function computeAmendedResolution(
-	resolution: import('@deutschemodelunitednations/munify-resolution-editor/schema').Resolution,
-	amendment: typeof schema.amendment.$inferSelect
-): import('@deutschemodelunitednations/munify-resolution-editor/schema').Resolution {
-	const next = structuredClone(resolution);
-	switch (amendment.type) {
-		case 'DELETE': {
-			const idx = findClauseIndex(next.operative, amendment.targetClauseId!);
-			next.operative.splice(idx, 1);
-			break;
-		}
-		case 'ADD': {
-			const parsedClause = parseClauseFragment(amendment.newContent as string);
-			if (!parsedClause.valid) {
-				throw new GraphQLError('Invalid newContent for ADD amendment');
-			}
-			const insertAfter = amendment.targetPosition!;
-			next.operative.splice(insertAfter + 1, 0, parsedClause.clause);
-			break;
-		}
-		case 'ALTER_TEXT': {
-			const idx = findClauseIndex(next.operative, amendment.targetClauseId!);
-			const parsedClause = parseClauseFragment(amendment.newContent as string);
-			if (!parsedClause.valid) {
-				throw new GraphQLError('Invalid newContent for ALTER_TEXT amendment');
-			}
-			next.operative[idx] = {
-				...parsedClause.clause,
-				id: next.operative[idx].id
-			};
-			break;
-		}
-		case 'ALTER_POSITION': {
-			const sourceIdx = findClauseIndex(next.operative, amendment.targetClauseId!);
-			// insertAfter=-1 means insert at beginning; insertAfter=i means insert after clause i
-			const insertAfter = amendment.targetPosition!;
-			if (insertAfter < -1 || insertAfter >= next.operative.length) {
-				throw new GraphQLError('Destination index out of range');
-			}
-			const [clause] = next.operative.splice(sourceIdx, 1);
-			// Adjust destination for the removal of source (same "insert after" semantics as ADD)
-			const effectiveInsertAfter = insertAfter >= sourceIdx ? insertAfter - 1 : insertAfter;
-			next.operative.splice(effectiveInsertAfter + 1, 0, clause);
-			break;
-		}
-	}
-	return next;
-}
-
-/**
- * Side-effects of applying an amendment: snapshot, withdraw conflicts,
- * adjust pending positions. Runs inside the supplied transaction.
- *
- * Caller is responsible for routing the resulting content through
- * `applyServerMutation` outside the transaction.
- */
-async function applyAmendmentSideEffects(
-	tx: Parameters<Parameters<typeof db.transaction>[0]>[0],
-	amendment: typeof schema.amendment.$inferSelect,
-	paperId: string,
-	freshContent: import('@deutschemodelunitednations/munify-resolution-editor/schema').Resolution
-) {
-	await tx.insert(schema.paperContentSnapshot).values({
-		paperId,
-		content: freshContent,
-		trigger: `AMENDMENT_${amendment.type}`
-	});
-
-	switch (amendment.type) {
-		case 'DELETE': {
-			const idx = findClauseIndex(freshContent.operative, amendment.targetClauseId!);
-			await tx
-				.update(schema.amendment)
-				.set({ status: 'WITHDRAWN' })
-				.where(
-					and(
-						eq(schema.amendment.paperId, paperId),
-						eq(schema.amendment.targetClauseId, amendment.targetClauseId!),
-						inArray(schema.amendment.status, ['PENDING', 'SUBMITTED']),
-						not(eq(schema.amendment.id, amendment.id))
-					)
-				);
-			await adjustPendingPositions(tx, paperId, amendment.id, 'decrement', idx, 'gt');
-			break;
-		}
-		case 'ADD': {
-			const insertAfter = amendment.targetPosition!;
-			await adjustPendingPositions(tx, paperId, amendment.id, 'increment', insertAfter, 'gte');
-			break;
-		}
-		case 'ALTER_TEXT':
-			break;
-		case 'ALTER_POSITION': {
-			const sourceIdx = findClauseIndex(freshContent.operative, amendment.targetClauseId!);
-			const destIdx = amendment.targetPosition!;
-			const adjustedDest = destIdx > sourceIdx ? destIdx - 1 : destIdx;
-			await adjustPendingPositions(tx, paperId, amendment.id, 'decrement', sourceIdx, 'gt');
-			await adjustPendingPositions(tx, paperId, amendment.id, 'increment', adjustedDest, 'gte');
-			break;
-		}
-	}
-}
-
-/**
- * Orchestrate an amendment apply: resolve the latest paper content from
- * the in-memory Y.Doc, run the tx-side effects, and replace the Y.Doc
- * (so connected peers see the change). Replaces the previous
- * `applyAmendmentToResolution` signature.
- */
-async function applyAmendmentEverywhere(
-	amendment: typeof schema.amendment.$inferSelect,
-	paperId: string,
-	statusUpdate: { status: 'CONSENSUS_ADOPTED' | 'ACCEPTED' }
-) {
-	// Apply against the canonical live Y.Doc first so concurrent peer edits
-	// are preserved by the CRDT merge, then commit the DB state. Doing the
-	// SQL tx first would risk advancing amendment status without the doc
-	// actually reflecting it; doing the snapshot-then-replace pattern would
-	// clobber any edits that landed between the read and the write.
-	const freshBefore = await applyServerMutation(paperId, (doc) => {
-		const before = yDocToJson(doc);
-		const next = computeAmendedResolution(before, amendment);
-		replaceResolution(doc, next);
-		return before;
-	});
-
-	await db.transaction(async (tx) => {
-		await tx
-			.update(schema.amendment)
-			.set(statusUpdate)
-			.where(eq(schema.amendment.id, amendment.id));
-		await applyAmendmentSideEffects(tx, amendment, paperId, freshBefore);
-	});
-}
-
-const pubsub = rumblePubsub({ table: 'amendment' });
-const paperPubsub = rumblePubsub({ table: 'resolutionPaper' });
 query({ table: 'amendment' });
+const pubsub = rumblePubsub({ table: 'amendment' });
+const snapshotPubsub = rumblePubsub({ table: 'paperContentSnapshot' });
+const reviewItemPubsub = rumblePubsub({ table: 'amendmentReviewItem' });
 
-// =============================================================================
-// MUTATIONS
-// =============================================================================
+const typeEnum = enum_({ tsName: 'amendmentType' });
+const statusEnum = enum_({ tsName: 'amendmentStatus' });
+
+function parseFragmentOrThrow(text: string): OperativeClause {
+	const result = parseClauseFragment(text);
+	if (!result.valid) {
+		throw new GraphQLError(`Invalid RES-Markup: ${result.errors.map((e) => e.code).join(', ')}`);
+	}
+	return result.clause;
+}
 
 schemaBuilder.mutationFields((t) => ({
 	createAmendment: t.drizzleField({
 		type: ref,
 		args: {
+			id: t.arg.id().validate(nanoidValidation),
 			paperId: t.arg.id({ required: true }),
-			type: t.arg({ type: amendmentTypeEnum, required: true }),
+			type: t.arg({ type: typeEnum, required: true }),
+			// Chairs must specify the proposer; for committee-member callers this
+			// arg is ignored and the caller's own committeeMember is used.
+			proposerCommitteeMemberId: t.arg.id(),
+			// Only honored on the chair path. Committee members always create
+			// amendments in PENDING.
+			status: t.arg({ type: statusEnum }),
 			targetClauseId: t.arg.string(),
 			targetOperativeIndex: t.arg.int(),
-			targetPosition: t.arg.int(),
-			newContent: t.arg.string()
+			newContent: t.arg.string(),
+			targetPosition: t.arg.int()
 		},
-		resolve: async (query, root, args, ctx) => {
-			const user = ctx.mustBeLoggedIn();
-
-			// Find delegate's committee member
-			const paper = await db.query.resolutionPaper
-				.findFirst({ where: { id: args.paperId } })
-				.then(assertFindFirstExists);
-
-			if (paper.status !== 'AMENDMENT_PHASE') {
-				throw new GraphQLError('Paper must be in AMENDMENT_PHASE');
-			}
-
-			// Verify this is the active DR
-			const committee = await db.query.committee
-				.findFirst({ where: { id: paper.committeeId } })
-				.then(assertFindFirstExists);
-
-			if (committee.activeDraftResolutionId !== paper.id) {
-				throw new GraphQLError('Paper must be the active draft resolution');
-			}
-
-			if (!committee.amendmentSubmissionOpen) {
-				throw new GraphQLError('Amendment submission is currently closed');
-			}
-
-			// Find the delegate's conference user + committee member
-			const conferenceUser = await db.query.conferenceUser
-				.findFirst({
-					where: {
-						user: { id: user.sub },
-						conferenceUserType: 'DELEGATE',
-						committeeMember: {
-							committeeId: paper.committeeId
-						}
-					}
-				})
-				.then(assertFindFirstExists);
-
-			if (!conferenceUser.committeeMemberId) {
-				throw new GraphQLError('You must be assigned to a committee member');
-			}
-
-			// Validate type-specific args
-			validateAmendmentArgs(args.type, args);
-
-			// If targetClauseId is provided, resolve and auto-correct the operative index.
-			// Read from the canonical Y.Doc (readPaperJson) rather than paper.content,
-			// since the latter is only a projection of the live doc and can lag during
-			// active collaboration.
-			if (args.targetClauseId) {
-				const canonical = await readPaperJson(args.paperId);
-				if (canonical) {
-					const actualIdx = canonical.operative.findIndex(
-						(c: OperativeClause) => c.id === args.targetClauseId
-					);
-					if (actualIdx === -1) {
-						throw new GraphQLError('Target clause no longer exists in the resolution');
-					}
-					// Auto-correct stale index from client
-					if (args.targetOperativeIndex !== actualIdx) {
-						args.targetOperativeIndex = actualIdx;
-					}
+		resolve: async (query, _root, args, ctx) => {
+			const isChair = await db.query.resolutionPaper.findFirst({
+				where: {
+					id: args.paperId,
+					committee: isTeamInConference(ctx)
 				}
-			}
+			});
 
-			// For DELETE and ALTER_TEXT, validate targetOperativeIndex >= currentOperativeIndex
-			if (
-				(args.type === 'DELETE' || args.type === 'ALTER_TEXT') &&
-				committee.currentOperativeIndex !== null &&
-				args.targetOperativeIndex !== undefined &&
-				args.targetOperativeIndex !== null &&
-				args.targetOperativeIndex < committee.currentOperativeIndex
-			) {
-				throw new GraphQLError('Cannot amend a clause that has already been passed');
-			}
+			let proposerCommitteeMemberId: string;
+			let status: typeof schema.amendment.$inferSelect.status;
 
-			// Validate newContent if provided
-			if (args.newContent) {
-				const parsedContent = parseClauseFragment(args.newContent);
-				if (!parsedContent.valid) {
-					throw new GraphQLError(
-						'Invalid newContent (RES-Markup): ' +
-							parsedContent.errors.map((e) => e.message).join('; ')
-					);
+			if (isChair) {
+				if (!args.proposerCommitteeMemberId) {
+					throw new GraphQLError('proposerCommitteeMemberId is required when creating as chair');
 				}
+				proposerCommitteeMemberId = args.proposerCommitteeMemberId;
+				status = args.status ?? 'SUBMITTED';
+			} else {
+				const cu = await db.query.conferenceUser
+					.findFirst({
+						where: committeeMemberForPaper(ctx, args.paperId, {
+							amendmentSubmissionOpen: true
+						}),
+						with: { committeeMember: true }
+					})
+					.then(assertFindFirstExists);
+				proposerCommitteeMemberId = cu.committeeMember!.id;
+				status = 'PENDING';
 			}
 
-			// Check for duplicate amendment (same proposer, type, and target clause)
-			{
-				const duplicateConditions = [
-					eq(schema.amendment.paperId, args.paperId),
-					eq(schema.amendment.proposerCommitteeMemberId, conferenceUser.committeeMemberId),
-					eq(schema.amendment.type, args.type),
-					inArray(schema.amendment.status, ['PENDING', 'SUBMITTED'])
-				];
-
-				// Use targetClauseId for duplicate detection (stable, not affected by index drift)
-				if (args.targetClauseId) {
-					duplicateConditions.push(eq(schema.amendment.targetClauseId, args.targetClauseId));
-				}
-
-				const [{ count: duplicateCount }] = await db
-					.select({ count: drizzleCount() })
-					.from(schema.amendment)
-					.where(and(...duplicateConditions));
-
-				if (Number(duplicateCount) > 0) {
-					throw new GraphQLError(
-						'You have already submitted an amendment of this type for this clause'
-					);
-				}
-			}
-
-			// Count existing amendments of same type for this paper to assign sequence number
-			const [{ count: sameTypeCount }] = await db
-				.select({ count: drizzleCount() })
-				.from(schema.amendment)
-				.where(
-					and(eq(schema.amendment.paperId, args.paperId), eq(schema.amendment.type, args.type))
-				);
-
-			const typeSeq = Number(sameTypeCount) + 1;
-
-			const typePrefixMap: Record<string, string> = {
-				DELETE: 'DEL',
-				ALTER_TEXT: 'ALT',
-				ADD: 'ADD',
-				ALTER_POSITION: 'POS'
-			};
-			const typePrefix = typePrefixMap[args.type];
-
-			const documentNumber = `${paper.documentNumber}/${typePrefix}.${typeSeq}`;
-
-			// Create amendment
-			const result = await db
-				.insert(schema.amendment)
-				.values({
+			await db.transaction(async (tx) => {
+				await tx.insert(schema.amendment).values({
+					id: args.id,
 					paperId: args.paperId,
-					proposerCommitteeMemberId: conferenceUser.committeeMemberId,
+					proposerCommitteeMemberId,
 					type: args.type,
-					status: 'SUBMITTED',
-					targetClauseId: args.targetClauseId ?? undefined,
-					targetOperativeIndex: args.targetOperativeIndex ?? undefined,
-					newContent: args.newContent ?? undefined,
-					targetPosition: args.targetPosition ?? undefined,
-					documentNumber,
-					sequenceNumber: typeSeq
-				})
-				.returning()
-				.then(assertFirstEntryExists);
-
-			// Auto-add proposer as first sponsor
-			await db.insert(schema.amendmentSponsor).values({
-				amendmentId: result.id,
-				committeeMemberId: conferenceUser.committeeMemberId
+					status,
+					targetClauseId: args.targetClauseId ?? null,
+					targetOperativeIndex: args.targetOperativeIndex ?? null,
+					newContent: args.newContent ?? null,
+					targetPosition: args.targetPosition ?? null
+				});
+				await tx.insert(schema.amendmentSponsor).values({
+					id: nanoid(),
+					amendmentId: args.id,
+					committeeMemberId: proposerCommitteeMemberId
+				});
 			});
 
 			pubsub.created();
-			paperPubsub.updated(args.paperId);
 
 			return db.query.amendment
 				.findFirst(
 					query(
-						ctx.abilities.amendment.filter('read').merge({
-							where: { id: result.id }
-						}).query.single
-					)
-				)
-				.then(assertFindFirstExists);
-		}
-	}),
-	chairCreateAmendment: t.drizzleField({
-		type: ref,
-		args: {
-			paperId: t.arg.id({ required: true }),
-			type: t.arg({ type: amendmentTypeEnum, required: true }),
-			committeeMemberId: t.arg.id({ required: true }),
-			targetClauseId: t.arg.string(),
-			targetOperativeIndex: t.arg.int(),
-			targetPosition: t.arg.int(),
-			newContent: t.arg.string()
-		},
-		resolve: async (query, root, args, ctx) => {
-			const paper = await db.query.resolutionPaper
-				.findFirst(
-					ctx.abilities.resolutionPaper.filter('update').merge({ where: { id: args.paperId } })
-						.query.single
-				)
-				.then(assertFindFirstExists);
-
-			if (paper.status !== 'AMENDMENT_PHASE') {
-				throw new GraphQLError('Paper must be in AMENDMENT_PHASE');
-			}
-
-			// Verify this is the active DR
-			const committee = await db.query.committee
-				.findFirst({ where: { id: paper.committeeId } })
-				.then(assertFindFirstExists);
-
-			if (committee.activeDraftResolutionId !== paper.id) {
-				throw new GraphQLError('Paper must be the active draft resolution');
-			}
-
-			// Validate committeeMemberId belongs to this committee
-			await db.query.committeeMember
-				.findFirst({
-					where: { id: args.committeeMemberId, committeeId: paper.committeeId }
-				})
-				.then(assertFindFirstExists);
-
-			// Validate type-specific args
-			validateAmendmentArgs(args.type, args);
-
-			// If targetClauseId is provided, resolve and auto-correct the operative index.
-			// Read from the canonical Y.Doc rather than the paper.content projection.
-			if (args.targetClauseId) {
-				const canonical = await readPaperJson(args.paperId);
-				if (canonical) {
-					const actualIdx = canonical.operative.findIndex(
-						(c: OperativeClause) => c.id === args.targetClauseId
-					);
-					if (actualIdx === -1) {
-						throw new GraphQLError('Target clause no longer exists in the resolution');
-					}
-					// Auto-correct stale index from client
-					if (args.targetOperativeIndex !== actualIdx) {
-						args.targetOperativeIndex = actualIdx;
-					}
-				}
-			}
-
-			// Validate newContent if provided
-			if (args.newContent) {
-				const parsedContent = parseClauseFragment(args.newContent);
-				if (!parsedContent.valid) {
-					throw new GraphQLError(
-						'Invalid newContent (RES-Markup): ' +
-							parsedContent.errors.map((e) => e.message).join('; ')
-					);
-				}
-			}
-
-			// Check for duplicate amendment (same proposer, type, and target clause)
-			{
-				const duplicateConditions = [
-					eq(schema.amendment.paperId, args.paperId),
-					eq(schema.amendment.proposerCommitteeMemberId, args.committeeMemberId),
-					eq(schema.amendment.type, args.type),
-					inArray(schema.amendment.status, ['PENDING', 'SUBMITTED'])
-				];
-
-				// Use targetClauseId for duplicate detection (stable, not affected by index drift)
-				if (args.targetClauseId) {
-					duplicateConditions.push(eq(schema.amendment.targetClauseId, args.targetClauseId));
-				}
-
-				const [{ count: duplicateCount }] = await db
-					.select({ count: drizzleCount() })
-					.from(schema.amendment)
-					.where(and(...duplicateConditions));
-
-				if (Number(duplicateCount) > 0) {
-					throw new GraphQLError(
-						'You have already submitted an amendment of this type for this clause'
-					);
-				}
-			}
-
-			// Count existing amendments of same type for this paper to assign sequence number
-			const [{ count: sameTypeCount }] = await db
-				.select({ count: drizzleCount() })
-				.from(schema.amendment)
-				.where(
-					and(eq(schema.amendment.paperId, args.paperId), eq(schema.amendment.type, args.type))
-				);
-
-			const typeSeq = Number(sameTypeCount) + 1;
-
-			const typePrefixMap: Record<string, string> = {
-				DELETE: 'DEL',
-				ALTER_TEXT: 'ALT',
-				ADD: 'ADD',
-				ALTER_POSITION: 'POS'
-			};
-			const typePrefix = typePrefixMap[args.type];
-
-			const documentNumber = `${paper.documentNumber}/${typePrefix}.${typeSeq}`;
-
-			// Create amendment
-			const result = await db
-				.insert(schema.amendment)
-				.values({
-					paperId: args.paperId,
-					proposerCommitteeMemberId: args.committeeMemberId,
-					type: args.type,
-					status: 'SUBMITTED',
-					targetClauseId: args.targetClauseId ?? undefined,
-					targetOperativeIndex: args.targetOperativeIndex ?? undefined,
-					newContent: args.newContent ?? undefined,
-					targetPosition: args.targetPosition ?? undefined,
-					documentNumber,
-					sequenceNumber: typeSeq
-				})
-				.returning()
-				.then(assertFirstEntryExists);
-
-			// Auto-add proposer as first sponsor
-			await db.insert(schema.amendmentSponsor).values({
-				amendmentId: result.id,
-				committeeMemberId: args.committeeMemberId
-			});
-
-			pubsub.created();
-			paperPubsub.updated(args.paperId);
-
-			return db.query.amendment
-				.findFirst(
-					query(
-						ctx.abilities.amendment.filter('read').merge({ where: { id: result.id } }).query.single
+						ctx.abilities.amendment.filter('read').merge({ where: { id: args.id } }).query.single
 					)
 				)
 				.then(assertFindFirstExists);
 		}
 	}),
 
-	adoptByConsensus: t.drizzleField({
+	submitAmendment: t.drizzleField({
 		type: ref,
-		args: {
-			amendmentId: t.arg.id({ required: true })
-		},
-		resolve: async (query, root, args, ctx) => {
+		args: { id: t.arg.id({ required: true }) },
+		resolve: async (query, _root, args, ctx) => {
 			const amendment = await db.query.amendment
-				.findFirst({ where: { id: args.amendmentId } })
+				.findFirst({
+					where: { id: args.id },
+					with: { paper: { columns: { committeeId: true } } }
+				})
 				.then(assertFindFirstExists);
 
-			if (amendment.status !== 'SUBMITTED') {
-				throw new GraphQLError('Only SUBMITTED amendments can be adopted by consensus');
+			if (amendment.status !== 'PENDING') {
+				throw new GraphQLError('Only pending amendments can be submitted');
 			}
 
-			await db.query.resolutionPaper
-				.findFirst(
-					ctx.abilities.resolutionPaper.filter('update').merge({ where: { id: amendment.paperId } })
-						.query.single
-				)
-				.then(assertFindFirstExists);
-
-			await applyAmendmentEverywhere(amendment, amendment.paperId, {
-				status: 'CONSENSUS_ADOPTED'
+			const sponsors = await db.query.amendmentSponsor.findMany({
+				where: { amendmentId: args.id }
 			});
 
-			pubsub.updated(args.amendmentId);
-			paperPubsub.updated(amendment.paperId);
+			const committee = await db.query.committee
+				.findFirst({ where: { id: amendment.paper.committeeId } })
+				.then(assertFindFirstExists);
 
+			const presentCount = await db
+				.select({ count: count() })
+				.from(schema.committeeMember)
+				.innerJoin(
+					schema.representation,
+					eq(schema.committeeMember.representationId, schema.representation.id)
+				)
+				.where(
+					and(
+						eq(schema.committeeMember.committeeId, amendment.paper.committeeId),
+						eq(schema.committeeMember.present, true),
+						eq(schema.representation.type, 'DELEGATION')
+					)
+				)
+				.then(([r]) => r?.count ?? 0);
+			const required = Math.ceil(presentCount * (committee.paperSupportThreshold / 100));
+
+			if (sponsors.length < required) {
+				throw new GraphQLError(
+					`Amendment needs at least ${required} sponsor(s) to be submitted (has ${sponsors.length})`
+				);
+			}
+
+			await db
+				.update(schema.amendment)
+				.set({ status: 'SUBMITTED' })
+				.where(
+					ctx.abilities.amendment.filter('update').merge({ where: { id: args.id } }).sql.where
+				);
+			pubsub.updated(args.id);
 			return db.query.amendment
 				.findFirst(
 					query(
-						ctx.abilities.amendment.filter('read').merge({ where: { id: args.amendmentId } }).query
-							.single
+						ctx.abilities.amendment.filter('read').merge({ where: { id: args.id } }).query.single
 					)
 				)
 				.then(assertFindFirstExists);
@@ -670,17 +212,18 @@ schemaBuilder.mutationFields((t) => ({
 	acceptAmendment: t.drizzleField({
 		type: ref,
 		args: {
-			amendmentId: t.arg.id({ required: true })
+			id: t.arg.id({ required: true }),
+			consensus: t.arg.boolean()
 		},
-		resolve: async (query, root, args, ctx) => {
+		resolve: async (query, _root, args, ctx) => {
 			const amendment = await db.query.amendment
-				.findFirst({ where: { id: args.amendmentId } })
+				.findFirst(
+					ctx.abilities.amendment.filter('read').merge({ where: { id: args.id } }).query.single
+				)
 				.then(assertFindFirstExists);
 
-			if (amendment.status !== 'SUBMITTED') {
-				throw new GraphQLError('Only SUBMITTED amendments can be accepted');
-			}
-
+			// Accepting an amendment modifies the paper, not the amendment as such.
+			// Gate accordingly on the caller's ability to update the paper.
 			await db.query.resolutionPaper
 				.findFirst(
 					ctx.abilities.resolutionPaper.filter('update').merge({ where: { id: amendment.paperId } })
@@ -688,18 +231,117 @@ schemaBuilder.mutationFields((t) => ({
 				)
 				.then(assertFindFirstExists);
 
-			await applyAmendmentEverywhere(amendment, amendment.paperId, {
-				status: 'ACCEPTED'
+			const newStatus = args.consensus ? 'CONSENSUS_ADOPTED' : 'ACCEPTED';
+
+			let triggerClauseOldContent: string | null = null;
+
+			// Apply the amendment to the paper's Y.Doc first; the yjs layer has
+			// its own persistence so it can't share the DB transaction. Doing it
+			// before the status flip means the amendment is only marked accepted
+			// if the paper change actually landed.
+			await applyServerMutation(amendment.paperId, (doc) => {
+				const current = yDocToJson(doc);
+				const next: Resolution = JSON.parse(JSON.stringify(current));
+
+				if (amendment.type === 'ALTER_TEXT' && amendment.targetClauseId) {
+					const old = current.operative.find((c) => c.id === amendment.targetClauseId);
+					if (old) triggerClauseOldContent = JSON.stringify(old);
+				}
+
+				switch (amendment.type) {
+					case 'DELETE': {
+						if (!amendment.targetClauseId) return;
+						next.operative = next.operative.filter((c) => c.id !== amendment.targetClauseId);
+						break;
+					}
+					case 'ADD': {
+						if (!amendment.newContent) return;
+						const clause = parseFragmentOrThrow(amendment.newContent);
+						const pos = Math.max(
+							0,
+							Math.min(amendment.targetPosition ?? next.operative.length, next.operative.length)
+						);
+						next.operative.splice(pos, 0, clause);
+						break;
+					}
+					case 'ALTER_TEXT': {
+						if (!amendment.targetClauseId || !amendment.newContent) return;
+						const fresh = parseFragmentOrThrow(amendment.newContent);
+						const idx = next.operative.findIndex((c) => c.id === amendment.targetClauseId);
+						if (idx < 0) return;
+						// Preserve clause id to keep cursors stable; replace blocks.
+						next.operative[idx] = { ...fresh, id: amendment.targetClauseId };
+						break;
+					}
+					case 'ALTER_POSITION': {
+						if (!amendment.targetClauseId || amendment.targetPosition == null) return;
+						const idx = next.operative.findIndex((c) => c.id === amendment.targetClauseId);
+						if (idx < 0) return;
+						const [clause] = next.operative.splice(idx, 1);
+						const target = Math.max(0, Math.min(amendment.targetPosition, next.operative.length));
+						next.operative.splice(target, 0, clause);
+						break;
+					}
+				}
+
+				replaceResolution(doc, next);
 			});
 
-			pubsub.updated(args.amendmentId);
-			paperPubsub.updated(amendment.paperId);
+			const content = await readPaperJson(amendment.paperId);
+
+			await db.transaction(async (tx) => {
+				await tx
+					.update(schema.amendment)
+					.set({
+						status: newStatus,
+						...(triggerClauseOldContent ? { oldContent: triggerClauseOldContent } : {})
+					})
+					.where(eq(schema.amendment.id, args.id));
+				await tx.insert(schema.paperContentSnapshot).values({
+					paperId: amendment.paperId,
+					content,
+					trigger: 'AMENDMENT_APPLIED'
+				});
+			});
+
+			// For ALTER_TEXT: find remaining SUBMITTED ALTER_TEXT amendments on the
+			// same clause and create OBSOLESCENCE-phase review items so the chair
+			// can assess which are now obsolete or need rewording.
+			// TODO: also check amendments targeting later clauses — disabled for now.
+			if (amendment.type === 'ALTER_TEXT' && amendment.targetClauseId) {
+				const siblings = await db
+					.select({ id: schema.amendment.id })
+					.from(schema.amendment)
+					.where(
+						and(
+							eq(schema.amendment.paperId, amendment.paperId),
+							eq(schema.amendment.status, 'SUBMITTED'),
+							eq(schema.amendment.type, 'ALTER_TEXT'),
+							eq(schema.amendment.targetClauseId, amendment.targetClauseId)
+						)
+					);
+
+				if (siblings.length > 0) {
+					await db.insert(schema.amendmentReviewItem).values(
+						siblings.map((s) => ({
+							id: nanoid(),
+							paperId: amendment.paperId,
+							triggerAmendmentId: args.id,
+							subjectAmendmentId: s.id,
+							phase: 'OBSOLESCENCE' as const
+						}))
+					);
+					reviewItemPubsub.created();
+				}
+			}
+
+			snapshotPubsub.created();
+			pubsub.updated(args.id);
 
 			return db.query.amendment
 				.findFirst(
 					query(
-						ctx.abilities.amendment.filter('read').merge({ where: { id: args.amendmentId } }).query
-							.single
+						ctx.abilities.amendment.filter('read').merge({ where: { id: args.id } }).query.single
 					)
 				)
 				.then(assertFindFirstExists);
@@ -708,243 +350,52 @@ schemaBuilder.mutationFields((t) => ({
 
 	rejectAmendment: t.drizzleField({
 		type: ref,
-		args: {
-			amendmentId: t.arg.id({ required: true })
-		},
-		resolve: async (query, root, args, ctx) => {
-			const amendment = await db.query.amendment
-				.findFirst({ where: { id: args.amendmentId } })
-				.then(assertFindFirstExists);
-
-			if (amendment.status !== 'SUBMITTED') {
-				throw new GraphQLError('Only SUBMITTED amendments can be rejected');
-			}
-
+		args: { id: t.arg.id({ required: true }) },
+		resolve: async (query, _root, args, ctx) => {
 			await db
 				.update(schema.amendment)
 				.set({ status: 'REJECTED' })
 				.where(
-					ctx.abilities.amendment.filter('update').merge({ where: { id: args.amendmentId } }).sql
-						.where
+					ctx.abilities.amendment.filter('update').merge({ where: { id: args.id } }).sql.where
 				);
-
-			pubsub.updated(args.amendmentId);
-			paperPubsub.updated(amendment.paperId);
-
+			pubsub.updated(args.id);
 			return db.query.amendment
 				.findFirst(
 					query(
-						ctx.abilities.amendment.filter('read').merge({ where: { id: args.amendmentId } }).query
-							.single
+						ctx.abilities.amendment.filter('read').merge({ where: { id: args.id } }).query.single
 					)
 				)
 				.then(assertFindFirstExists);
 		}
 	}),
 
-	withdrawAmendment: t.drizzleField({
-		type: ref,
-		args: {
-			amendmentId: t.arg.id({ required: true })
-		},
-		resolve: async (query, root, args, ctx) => {
-			ctx.mustBeLoggedIn();
-
-			const amendment = await db.query.amendment
-				.findFirst({ where: { id: args.amendmentId } })
-				.then(assertFindFirstExists);
-
-			if (amendment.status !== 'SUBMITTED') {
-				throw new GraphQLError('Only SUBMITTED amendments can be withdrawn');
-			}
-
-			await db
-				.update(schema.amendment)
-				.set({ status: 'WITHDRAWN' })
+	deleteAmendment: t.field({
+		type: 'Boolean',
+		args: { id: t.arg.id({ required: true }) },
+		resolve: async (_root, args, ctx) => {
+			const [existing] = await db
+				.select({ id: schema.amendment.id, status: schema.amendment.status })
+				.from(schema.amendment)
 				.where(
-					ctx.abilities.amendment.filter('update').merge({ where: { id: args.amendmentId } }).sql
-						.where
+					ctx.abilities.amendment.filter('delete').merge({ where: { id: args.id } }).sql.where
 				);
+			if (!existing) throw new GraphQLError('Amendment not found or not authorized');
 
-			pubsub.updated(args.amendmentId);
-			paperPubsub.updated(amendment.paperId);
-
-			return db.query.amendment
-				.findFirst(
-					query(
-						ctx.abilities.amendment.filter('read').merge({ where: { id: args.amendmentId } }).query
-							.single
-					)
-				)
-				.then(assertFindFirstExists);
-		}
-	}),
-
-	editAmendment: t.drizzleField({
-		type: ref,
-		args: {
-			amendmentId: t.arg.id({ required: true }),
-			targetClauseId: t.arg.string(),
-			targetOperativeIndex: t.arg.int(),
-			targetPosition: t.arg.int(),
-			newContent: t.arg.string(),
-			proposerCommitteeMemberId: t.arg.id()
-		},
-		resolve: async (query, root, args, ctx) => {
-			const amendment = await db.query.amendment
-				.findFirst({ where: { id: args.amendmentId } })
-				.then(assertFindFirstExists);
-
-			if (amendment.status !== 'SUBMITTED') {
-				throw new GraphQLError('Only SUBMITTED amendments can be edited');
-			}
-
-			const paper = await db.query.resolutionPaper
-				.findFirst(
-					ctx.abilities.resolutionPaper.filter('update').merge({ where: { id: amendment.paperId } })
-						.query.single
-				)
-				.then(assertFindFirstExists);
-
-			// Merge provided args with existing values
-			const merged = {
-				targetClauseId:
-					args.targetClauseId !== undefined ? args.targetClauseId : amendment.targetClauseId,
-				targetOperativeIndex:
-					args.targetOperativeIndex !== undefined
-						? args.targetOperativeIndex
-						: amendment.targetOperativeIndex,
-				targetPosition:
-					args.targetPosition !== undefined ? args.targetPosition : amendment.targetPosition,
-				newContent: args.newContent !== undefined ? args.newContent : amendment.newContent
-			};
-
-			// Re-validate with merged values
-			validateAmendmentArgs(amendment.type, merged);
-
-			// If targetClauseId is provided, resolve and auto-correct the operative index.
-			// Read from the canonical Y.Doc rather than the paper.content projection.
-			if (merged.targetClauseId) {
-				const canonical = await readPaperJson(amendment.paperId);
-				if (canonical) {
-					const actualIdx = canonical.operative.findIndex(
-						(c: OperativeClause) => c.id === merged.targetClauseId
-					);
-					if (actualIdx === -1) {
-						throw new GraphQLError('Target clause no longer exists in the resolution');
-					}
-					// Auto-correct stale index
-					if (merged.targetOperativeIndex !== actualIdx) {
-						merged.targetOperativeIndex = actualIdx;
-						args.targetOperativeIndex = actualIdx;
-					}
-				}
-			}
-
-			// Validate newContent if provided
-			if (args.newContent) {
-				const parsedContent = parseClauseFragment(args.newContent);
-				if (!parsedContent.valid) {
-					throw new GraphQLError(
-						'Invalid newContent (RES-Markup): ' +
-							parsedContent.errors.map((e) => e.message).join('; ')
-					);
-				}
-			}
-
-			// Check if anything actually changed
-			const updateFields: Record<string, unknown> = {};
-			if (args.targetClauseId !== undefined && args.targetClauseId !== amendment.targetClauseId) {
-				updateFields.targetClauseId = args.targetClauseId;
-			}
-			if (
-				args.targetOperativeIndex !== undefined &&
-				args.targetOperativeIndex !== amendment.targetOperativeIndex
-			) {
-				updateFields.targetOperativeIndex = args.targetOperativeIndex;
-			}
-			if (args.targetPosition !== undefined && args.targetPosition !== amendment.targetPosition) {
-				updateFields.targetPosition = args.targetPosition;
-			}
-			if (args.newContent !== undefined) {
-				updateFields.newContent = args.newContent;
-			}
-
-			const proposerChanged =
-				args.proposerCommitteeMemberId !== undefined &&
-				args.proposerCommitteeMemberId !== null &&
-				args.proposerCommitteeMemberId !== amendment.proposerCommitteeMemberId;
-
-			if (Object.keys(updateFields).length === 0 && !proposerChanged) {
-				// Nothing changed
-				return db.query.amendment
-					.findFirst(
-						query(
-							ctx.abilities.amendment.filter('read').merge({ where: { id: args.amendmentId } })
-								.query.single
-						)
-					)
-					.then(assertFindFirstExists);
-			}
-
-			if (proposerChanged) {
-				// Validate new proposer belongs to committee
-				await db.query.committeeMember
-					.findFirst({
-						where: { id: args.proposerCommitteeMemberId!, committeeId: paper.committeeId }
-					})
-					.then(assertFindFirstExists);
-
-				updateFields.proposerCommitteeMemberId = args.proposerCommitteeMemberId;
-			}
-
-			await db.transaction(async (tx) => {
-				if (proposerChanged) {
-					const oldProposerId = amendment.proposerCommitteeMemberId;
-					const newProposerId = args.proposerCommitteeMemberId!;
-
-					// Remove old proposer's sponsor entry
-					await tx
-						.delete(schema.amendmentSponsor)
-						.where(
-							and(
-								eq(schema.amendmentSponsor.amendmentId, args.amendmentId),
-								eq(schema.amendmentSponsor.committeeMemberId, oldProposerId)
-							)
-						);
-
-					// Add new proposer as sponsor if not already one
-					const existingSponsor = await tx.query.amendmentSponsor.findFirst({
-						where: {
-							amendmentId: args.amendmentId,
-							committeeMemberId: newProposerId
-						}
-					});
-					if (!existingSponsor) {
-						await tx.insert(schema.amendmentSponsor).values({
-							amendmentId: args.amendmentId,
-							committeeMemberId: newProposerId
-						});
-					}
-				}
-
-				await tx
+			if (existing.status === 'PENDING') {
+				// Hard delete is safe for drafts — they have never been formally submitted
+				// and carry no training-data value yet.
+				await db.delete(schema.amendment).where(eq(schema.amendment.id, existing.id));
+				pubsub.removed();
+			} else {
+				// SUBMITTED and beyond: soft-delete to preserve training data and avoid
+				// orphaning any in-progress amendmentReviewItem rows.
+				await db
 					.update(schema.amendment)
-					.set(updateFields)
-					.where(eq(schema.amendment.id, args.amendmentId));
-			});
-
-			pubsub.updated(args.amendmentId);
-			paperPubsub.updated(amendment.paperId);
-
-			return db.query.amendment
-				.findFirst(
-					query(
-						ctx.abilities.amendment.filter('read').merge({ where: { id: args.amendmentId } }).query
-							.single
-					)
-				)
-				.then(assertFindFirstExists);
+					.set({ status: 'WITHDRAWN' })
+					.where(eq(schema.amendment.id, existing.id));
+				pubsub.updated(existing.id);
+			}
+			return true;
 		}
 	})
 }));

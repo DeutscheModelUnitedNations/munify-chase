@@ -15,12 +15,19 @@
 		totalPresent: true,
 		simpleMajority: true,
 		twoThirdsMajority: true,
-		paperSupportThreshold: true,
 		status: true,
 		statusHeadline: true,
 		statusUntil: true,
 		stateOfDebate: true,
 		activeAgendaItem: { id: true, title: true },
+		activeVotingSession: {
+			id: true,
+			mode: true,
+			voteName: true,
+			majority: true,
+			withAbstentions: true,
+			deviceVotingWindowSeconds: true
+		},
 		members: {
 			id: true,
 			present: true,
@@ -34,6 +41,8 @@
 			}
 		}
 	});
+
+	const minAmendmentSponsors = $derived(Math.ceil((committee?.totalPresent ?? 0) * 0.1));
 </script>
 
 {#if committee}
@@ -48,13 +57,13 @@
 						totalPresent={committee.totalPresent}
 						simpleMajority={committee.simpleMajority}
 						twoThirdsMajority={committee.twoThirdsMajority}
-						paperSupportThreshold={committee.paperSupportThreshold}
+						{minAmendmentSponsors}
 					/>
 				</BasicCard>
 			</div>
 			<div class="flex h-full w-full flex-3 flex-col gap-4">
 				<BasicCard title={m.voting()}>
-					<VotingSetup {committee} />
+					<VotingSetup {committee} activeVotingSession={committee.activeVotingSession ?? null} />
 				</BasicCard>
 			</div>
 		</div>

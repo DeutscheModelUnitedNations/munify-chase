@@ -1,8 +1,7 @@
 import type { schema } from '$api/db/db';
 
 type Member =
-	| typeof schema.conferenceMember.$inferSelect
-	| typeof schema.committeeMember.$inferSelect;
+	typeof schema.conferenceMember.$inferSelect | typeof schema.committeeMember.$inferSelect;
 type Representation = typeof schema.representation.$inferSelect;
 type DefaultRepresentation = Pick<Representation, 'id' | 'createdAt' | 'updatedAt' | 'type'>;
 type NSARepresentation = Pick<Representation, 'faIcon' | 'name' | 'conferenceId'> & {

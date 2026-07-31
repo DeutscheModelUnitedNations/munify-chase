@@ -7,6 +7,32 @@ import { OIDC } from '$api/services/OIDC';
 import { kioskOIDCHandle } from '$api/services/kioskOIDC';
 import { locales, baseLocale, cookieName, cookieMaxAge } from '$lib/paraglide/runtime';
 
+const TAURI_ORIGIN = 'tauri://localhost';
+
+/** Allow the Tauri desktop shell (origin tauri://localhost) to reach the API. */
+const tauriCors: Handle = async ({ event, resolve }) => {
+	const origin = event.request.headers.get('origin');
+	if (origin !== TAURI_ORIGIN) return resolve(event);
+
+	if (event.request.method === 'OPTIONS') {
+		return new Response(null, {
+			status: 204,
+			headers: {
+				'Access-Control-Allow-Origin': TAURI_ORIGIN,
+				'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+				'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+				'Access-Control-Allow-Credentials': 'true',
+				'Access-Control-Max-Age': '86400'
+			}
+		});
+	}
+
+	const response = await resolve(event);
+	response.headers.set('Access-Control-Allow-Origin', TAURI_ORIGIN);
+	response.headers.set('Access-Control-Allow-Credentials', 'true');
+	return response;
+};
+
 const nonBaseLocales = locales.filter((l) => l !== baseLocale);
 
 /** Redirect locale-prefixed URLs to bare paths, setting the cookie instead. */
@@ -30,6 +56,7 @@ const localeRedirect: Handle = ({ event, resolve }) => {
 };
 
 export const handle: Handle = sequence(
+	tauriCors,
 	OIDC.handle,
 	// Only runs when OIDC.handle above didn't already establish a session —
 	// see kioskOIDC.ts for why the Pi display kiosk needs this.

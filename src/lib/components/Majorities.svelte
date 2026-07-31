@@ -5,10 +5,15 @@
 		totalPresent: number | null;
 		simpleMajority: number | null;
 		twoThirdsMajority: number | null;
-		paperSupportThreshold: number | null;
+		minAmendmentSponsors?: number | null;
 	}
 
-	let { totalPresent, simpleMajority, twoThirdsMajority, paperSupportThreshold }: Props = $props();
+	let {
+		totalPresent,
+		simpleMajority,
+		twoThirdsMajority,
+		minAmendmentSponsors = null
+	}: Props = $props();
 </script>
 
 {#snippet Card(cardData: {
@@ -25,6 +30,7 @@
 	>
 		<div class="h-7 text-lg">
 			{#if text}
+				<!-- eslint-disable-next-line svelte/no-at-html-tags -- card text is internal formatted content -->
 				<p class="whitespace-nowrap">{@html text}</p>
 			{:else if faIcon}
 				<i class="fa-duotone fa-{faIcon.replace('fa-', '')}"></i>
@@ -53,9 +59,11 @@
 		faIcon: 'fa-circle-chevron-up',
 		tooltip: m.twoThirdsMajorityTooltip()
 	})}
-	{@render Card({
-		number: paperSupportThreshold ?? 0,
-		faIcon: 'fa-file-plus',
-		tooltip: m.paperSupportThresholdTooltip()
-	})}
+	{#if minAmendmentSponsors !== null}
+		{@render Card({
+			number: minAmendmentSponsors ?? 0,
+			faIcon: 'fa-file-plus',
+			tooltip: m.paperSupportThresholdTooltip()
+		})}
+	{/if}
 </div>

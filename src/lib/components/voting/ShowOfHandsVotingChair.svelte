@@ -3,7 +3,10 @@
 	import { m } from '$lib/paraglide/messages';
 	import Modal from '../Modal.svelte';
 	import hotkeys from 'hotkeys-js';
-	import { localDB, type VotingMajority, type VotingStage } from '$lib/local-db/localDB';
+	import { untrack } from 'svelte';
+	import { client } from '$lib/api/rumbleClient/client';
+	import { nanoid } from '$lib/helpers/nanoid';
+	import { type VotingMajority, type VotingStage } from './votingModal';
 	import VoteClicker from './VoteClicker.svelte';
 	import ResultChart from './ResultChart.svelte';
 	import { calculateMajority } from '$lib/utils/majorities';
@@ -33,10 +36,11 @@
 	}: Props = $props();
 
 	let currentState = $state<VotingStage>('PRO');
-
 	let votesPro = $state(0);
 	let votesCon = $state(0);
 	let votesAbstain = $state(0);
+	let sessionId = $state<string | null>(null);
+
 	let votesTotal = $derived.by(() => {
 		switch (majority) {
 			case 'SIMPLE':
@@ -60,28 +64,54 @@
 		}
 	});
 	let presentDelegations = $derived(committee?.totalPresent ?? 0);
+	let votesCast = $derived(votesPro + votesCon + votesAbstain);
 	let votesProgress = $derived(
-		presentDelegations > 0 ? Math.min((votesTotal / presentDelegations) * 100, 100) : 0
+		presentDelegations > 0 ? Math.min((votesCast / presentDelegations) * 100, 100) : 0
 	);
-	let votesOvershot = $derived(presentDelegations > 0 && votesTotal > presentDelegations);
+	let votesOvershot = $derived(presentDelegations > 0 && votesCast > presentDelegations);
+
+	const syncToServer = () => {
+		if (!sessionId) return;
+		// Select the stage/tally fields we write so they actually land in the cache:
+		// graphcache only persists an optimistic mutation's selected fields, so a bare
+		// `{ id }` selection would leave the presentation popup frozen on PRO with zeroed
+		// tallies offline (no network round-trip to fill them).
+		client.mutate
+			.updateVotingSession({
+				__args: { id: sessionId, currentStage: currentState, votesPro, votesCon, votesAbstain },
+				id: true,
+				currentStage: true,
+				votesPro: true,
+				votesCon: true,
+				votesAbstain: true
+			})
+			.catch(() => {});
+	};
 
 	const exit = (completed: boolean = false) => {
+		const outcome: 'ADOPTED' | 'REJECTED' | null = completed
+			? votesPro >= majorityAmount
+				? 'ADOPTED'
+				: 'REJECTED'
+			: null;
+
+		if (sessionId) {
+			const id = sessionId;
+			sessionId = null;
+			client.mutate.completeVotingSession({ __args: { id, outcome } }).catch(() => {});
+		}
+
 		if (oncomplete) {
 			if (completed) {
 				oncomplete({
-					outcome: votesPro >= majorityAmount ? 'ADOPTED' : 'REJECTED',
+					outcome: outcome!,
 					votesFor: votesPro,
 					votesAgainst: votesCon,
 					votesAbstain: votesAbstain,
 					cancelled: false
 				});
 			} else {
-				oncomplete({
-					votesFor: 0,
-					votesAgainst: 0,
-					votesAbstain: 0,
-					cancelled: true
-				});
+				oncomplete({ votesFor: 0, votesAgainst: 0, votesAbstain: 0, cancelled: true });
 			}
 		}
 		votesPro = 0;
@@ -108,6 +138,21 @@
 				break;
 			case 'EVALUATION':
 				exit(true);
+				return;
+		}
+		syncToServer();
+	};
+
+	const adjustCurrentVote = (delta: number) => {
+		switch (currentState) {
+			case 'PRO':
+				votesPro = Math.max(0, votesPro + delta);
+				break;
+			case 'CON':
+				votesCon = Math.max(0, votesCon + delta);
+				break;
+			case 'ABSTAIN':
+				votesAbstain = Math.max(0, votesAbstain + delta);
 				break;
 		}
 	};
@@ -128,11 +173,13 @@
 				}
 				break;
 		}
+		syncToServer();
 	};
 
 	$effect(() => {
 		if (active) {
-			hotkeys('enter, esc, backspace', 'showOfHandsVote', (event, handler) => {
+			(document.activeElement as HTMLElement | null)?.blur();
+			hotkeys('enter, esc, backspace, up, down, space', 'showOfHandsVote', (event, handler) => {
 				event.preventDefault();
 				switch (handler.key) {
 					case 'enter':
@@ -144,41 +191,77 @@
 					case 'backspace':
 						previousState();
 						break;
+					case 'up':
+					case 'space':
+						adjustCurrentVote(1);
+						break;
+					case 'down':
+						adjustCurrentVote(-1);
+						break;
 				}
 			});
 			hotkeys.setScope('showOfHandsVote');
+
+			untrack(() => {
+				if (!committee) return;
+				// Mint the session id client-side and adopt it synchronously so the chair can
+				// drive (and later complete) the vote without waiting for a server response —
+				// offline the mutation promise never resolves, so relying on `.then()` to set
+				// `sessionId` would leave every follow-up mutation a no-op. Passing the id
+				// through also keeps the optimistic entity key identical in the chair and the
+				// presentation popup (same broadcast variables), so the committee's
+				// activeVotingSession FK resolves to one shared row. Mirrors the roll-call chair.
+				const id = nanoid();
+				sessionId = id;
+				client.mutate
+					.startVotingSession({
+						__args: {
+							id,
+							committeeId: committee.id,
+							mode: 'SHOW_OF_HANDS',
+							majority,
+							majorityAmount: 0,
+							withAbstentions,
+							voteName: voteName ?? null,
+							currentStage: 'PRO'
+						},
+						id: true,
+						currentStage: true,
+						votesPro: true,
+						votesCon: true,
+						votesAbstain: true
+					})
+					.then((result) => {
+						if (!active) {
+							client.mutate
+								.completeVotingSession({ __args: { id: result.id, outcome: null } })
+								.catch(() => {});
+							return;
+						}
+						// Server may resume an existing session under a different id; adopt it.
+						sessionId = result.id;
+						if (result.currentStage) currentState = result.currentStage as VotingStage;
+						votesPro = result.votesPro ?? 0;
+						votesCon = result.votesCon ?? 0;
+						votesAbstain = result.votesAbstain ?? 0;
+					})
+					.catch(() => {});
+			});
+
 			return () => {
 				hotkeys.deleteScope('showOfHandsVote');
 			};
-		}
-	});
-
-	$effect(() => {
-		if (!committee) return;
-		if (active) {
-			localDB.committeeSettings.update(committee.id, {
-				showOfHandsVotingActive: true,
-				showOfHandsVotingStage: currentState,
-				showOfHandsVotingVotesPro: votesPro,
-				showOfHandsVotingVotesCon: votesCon,
-				showOfHandsVotingVotesAbstain: votesAbstain,
-				showOfHandsVotingVotesTotal: votesTotal,
-				votingVoteName: voteName,
-				votingMajority: majority,
-				votingWithAbstentions: withAbstentions,
-				votingMajorityAmount: majorityAmount
-			});
 		} else {
-			localDB.committeeSettings.update(committee.id, {
-				showOfHandsVotingActive: false,
-				showOfHandsVotingVotesPro: 0,
-				showOfHandsVotingVotesCon: 0,
-				showOfHandsVotingVotesAbstain: 0,
-				showOfHandsVotingVotesTotal: 0,
-				votingVoteName: null,
-				votingMajority: null,
-				votingWithAbstentions: false,
-				votingMajorityAmount: null
+			untrack(() => {
+				if (sessionId) {
+					const id = sessionId;
+					sessionId = null;
+					client.mutate.completeVotingSession({ __args: { id, outcome: null } }).catch(() => {});
+				}
+				votesPro = 0;
+				votesCon = 0;
+				votesAbstain = 0;
+				currentState = 'PRO';
 			});
 		}
 	});
@@ -205,12 +288,12 @@
 			></progress>
 			<div class="flex justify-between text-sm">
 				<span class={votesOvershot ? 'text-error font-semibold' : 'text-base-content/60'}>
-					{votesTotal} / {presentDelegations}
+					{votesCast} / {presentDelegations}
 				</span>
 				{#if votesOvershot}
 					<span class="text-error font-semibold">
 						<i class="fas fa-triangle-exclamation"></i>
-						+{votesTotal - presentDelegations}
+						+{votesCast - presentDelegations}
 						{m.over()}
 					</span>
 				{:else if votesTotal === presentDelegations}

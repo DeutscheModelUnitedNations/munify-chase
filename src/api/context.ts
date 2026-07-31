@@ -1,15 +1,19 @@
 import { configPrivate } from '$config/private';
 import type { RequestEvent } from '@sveltejs/kit';
 import { GraphQLError } from 'graphql';
+import {
+	hasSyntheticSvelteRequestEvent,
+	SYNTHETIC_EVENT_FIELD
+} from './services/syntheticRequestEvent';
+import { OIDC } from './services/OIDC';
 
 export const oidcRoles = ['admin', 'member', 'service_user'] as const;
 
-export async function context(req: RequestEvent) {
-	// if the currently handled request is from a ws connection
-	// the actual underlying request might be nested in the extra property of the request event
-	const maybeExtra = (req as RequestEvent & { extra?: { request?: RequestEvent } }).extra;
-	if (maybeExtra?.request) {
-		req = maybeExtra.request;
+export function context(req: RequestEvent) {
+	const source: unknown =
+		(req as RequestEvent & { extra?: { request?: unknown } }).extra?.request ?? req;
+	if (hasSyntheticSvelteRequestEvent(source as { extra?: unknown })) {
+		req = (source as Record<string, unknown>)[SYNTHETIC_EVENT_FIELD] as RequestEvent;
 	}
 
 	const OIDCRoleNames: (typeof oidcRoles)[number][] = [];
@@ -50,8 +54,23 @@ export async function context(req: RequestEvent) {
 		},
 		hasRole(role: string) {
 			return OIDCRoleNames.includes(role as (typeof oidcRoles)[number]);
+		},
+		isSessionLive: async (): Promise<boolean> => {
+			const oidc = req.locals.oidc;
+			if (!oidc) return false;
+
+			if (oidc.checkSessionLive) {
+				const result = await oidc.checkSessionLive();
+				return result.active === true;
+			}
+
+			if (oidc.raw?.accessToken) {
+				return Boolean(await OIDC.validateToken(oidc.raw.accessToken));
+			}
+
+			return false;
 		}
 	};
 }
 
-export type Context = Awaited<ReturnType<typeof context>>;
+export type Context = ReturnType<typeof context>;

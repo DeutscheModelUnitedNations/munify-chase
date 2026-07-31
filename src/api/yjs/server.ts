@@ -1,256 +1,300 @@
 /**
- * Server-side Y.Doc cache for resolution papers.
- *
- * Each connected paper is held in memory as a single canonical `Y.Doc`.
- * All edits — from connected clients via WebSocket and from server-side
- * mutations like amendment-apply — go through this cache so the in-memory
- * doc is the source of truth. The doc binary is persisted to
- * `paper_yjs_doc.state` on a debounce, and the JSON projection is
- * mirrored to `resolution_paper.content` so amendment-apply, print,
- * snapshots, etc. can keep reading JSON.
+ * Server-side yjs backend for resolution papers, built on Hocuspocus.
+ * Docs persist to `paper_yjs_doc.state`; with `REDIS_URL` set, updates sync
+ * across Node instances. Authorization in `onConnect` reuses the authHelper
+ * filters the Rumble ability rules use: team/global admin write, paperEditor
+ * writes while WORKING_PAPER, other conference members read-only.
  */
 
+import { Hocuspocus, type Document, type connectedPayload } from '@hocuspocus/server';
+import { Database } from '@hocuspocus/extension-database';
+import { Redis as RedisExtension } from '@hocuspocus/extension-redis';
+import { Redis } from 'ioredis';
 import * as Y from 'yjs';
-import { eq } from 'drizzle-orm';
 import { db, schema } from '../db/db';
-import { jsonToYDoc, yDocToJson } from '@deutschemodelunitednations/munify-resolution-editor/yjs';
+import { configPrivate } from '$config/private';
+import { context, type Context } from '$api/context';
 import {
-	createEmptyResolution,
-	migrateResolution,
-	type Resolution
-} from '@deutschemodelunitednations/munify-resolution-editor/schema';
+	isParticipantInConference,
+	isPaperEditor,
+	isTeamInConference
+} from '$api/services/authHelper';
+import { nativeToRequestEvent } from '$api/services/auth';
+import { OIDC } from '$api/services/OIDC';
 
 const PERSIST_DEBOUNCE_MS = 1500;
-const IDLE_EVICT_MS = 30_000;
 
-interface CacheEntry {
-	doc: Y.Doc;
-	refCount: number;
-	dirty: boolean;
-	persistTimer: ReturnType<typeof setTimeout> | null;
-	idleTimer: ReturnType<typeof setTimeout> | null;
+// How often each open session re-runs its permission check, so status changes
+// and revocations take effect without a reconnect.
+const REAUTH_INTERVAL_MS = 30_000;
+
+// `ctx` is undefined when upgrade-time auth failed (native client without a
+// session cookie); onAuthenticate resolves it from the in-band Bearer token.
+export interface YjsConnectionContext {
+	ctx: Context | undefined;
 }
 
-const cache = new Map<string, CacheEntry>();
-const loadingPromises = new Map<string, Promise<CacheEntry>>();
+export class CorruptYjsStateError extends Error {
+	/**
+	 * Sent verbatim to the client in the permission-denied message, so the UI
+	 * can distinguish a corrupt doc from a plain authorization failure.
+	 */
+	reason = 'document-corrupt';
 
-async function loadEntry(paperId: string): Promise<CacheEntry> {
-	const doc = new Y.Doc();
-	const existing = await db.query.paperYjsDoc.findFirst({
-		where: { paperId }
-	});
-
-	// Try to apply the persisted state. If the row is missing, empty, or
-	// corrupt (truncated bytea / aborted persist / customType mismatch),
-	// fall through to reseeding from the JSON projection — losing local
-	// CRDT history for this paper, but restoring access.
-	let loadedFromState = false;
-	if (existing?.state && existing.state.byteLength > 0) {
-		try {
-			Y.applyUpdate(doc, existing.state);
-			loadedFromState = true;
-		} catch (err) {
-			console.warn('[yjs] paper_yjs_doc.state failed to decode, reseeding from JSON', {
-				paperId,
-				byteLength: existing.state.byteLength,
-				err
-			});
-		}
+	constructor(
+		public paperId: string,
+		cause: unknown
+	) {
+		super(`paper_yjs_doc.state for paper ${paperId} failed to decode`);
+		this.cause = cause;
 	}
-
-	if (!loadedFromState) {
-		const paper = await db.query.resolutionPaper.findFirst({
-			where: { id: paperId }
-		});
-		let seed: Resolution;
-		try {
-			seed = paper?.content
-				? migrateResolution(paper.content)
-				: createEmptyResolution(paper?.title ?? '');
-		} catch (err) {
-			console.warn('[yjs] could not migrate paper content, seeding empty', paperId, err);
-			seed = createEmptyResolution(paper?.title ?? '');
-		}
-		jsonToYDoc(doc, seed);
-		// Persist immediately so future loads use the binary doc.
-		const state = Y.encodeStateAsUpdate(doc);
-		await db
-			.insert(schema.paperYjsDoc)
-			.values({ paperId, state })
-			.onConflictDoUpdate({
-				target: schema.paperYjsDoc.paperId,
-				set: { state, updatedAt: new Date() }
-			});
-	}
-
-	const entry: CacheEntry = {
-		doc,
-		refCount: 0,
-		dirty: false,
-		persistTimer: null,
-		idleTimer: null
-	};
-
-	const onUpdate = () => {
-		entry.dirty = true;
-		schedulePersist(paperId, entry);
-	};
-	doc.on('update', onUpdate);
-	(entry as CacheEntry & { _onUpdate: typeof onUpdate })._onUpdate = onUpdate;
-
-	return entry;
 }
 
-async function getOrLoad(paperId: string): Promise<CacheEntry> {
-	const existing = cache.get(paperId);
-	if (existing) return existing;
-	let pending = loadingPromises.get(paperId);
-	if (pending) return pending;
-	pending = loadEntry(paperId)
-		.then((entry) => {
-			cache.set(paperId, entry);
-			return entry;
-		})
-		.finally(() => {
-			loadingPromises.delete(paperId);
-		});
-	loadingPromises.set(paperId, pending);
-	return pending;
+interface AuthResult {
+	allowed: boolean;
+	canWrite: boolean;
 }
 
-function schedulePersist(paperId: string, entry: CacheEntry) {
-	if (entry.persistTimer) return;
-	entry.persistTimer = setTimeout(() => {
-		entry.persistTimer = null;
-		void persist(paperId, entry);
-	}, PERSIST_DEBOUNCE_MS);
-}
-
-async function persist(paperId: string, entry: CacheEntry): Promise<void> {
-	if (!entry.dirty) return;
-	entry.dirty = false;
-	const state = Y.encodeStateAsUpdate(entry.doc);
-	const json = yDocToJson(entry.doc);
+async function authorize(paperId: string, ctx: Context): Promise<AuthResult> {
 	try {
-		await db.transaction(async (tx) => {
-			await tx
-				.insert(schema.paperYjsDoc)
-				.values({ paperId, state })
-				.onConflictDoUpdate({
-					target: schema.paperYjsDoc.paperId,
-					set: { state, updatedAt: new Date() }
-				});
-			await tx
-				.update(schema.resolutionPaper)
-				.set({ content: json })
-				.where(eq(schema.resolutionPaper.id, paperId));
-		});
-	} catch (err) {
-		// Mark dirty again so the next tick retries.
-		entry.dirty = true;
-		console.error('[yjs] failed to persist paper', paperId, err);
+		ctx.mustBeLoggedIn();
+	} catch {
+		return { allowed: false, canWrite: false };
 	}
+
+	// Read access to paper and paper existence
+	const paper = await db.query.resolutionPaper.findFirst({
+		where: {
+			id: paperId,
+			committee: isParticipantInConference(ctx)
+		}
+	});
+	if (!paper) {
+		return { allowed: false, canWrite: false };
+	}
+
+	// is team
+	if (
+		await db.query.resolutionPaper.findFirst({
+			where: { id: paperId, committee: isTeamInConference(ctx) }
+		})
+	) {
+		return { allowed: true, canWrite: true };
+	}
+
+	if (paper.status === 'WORKING_PAPER') {
+		if (
+			await db.query.paperEditor.findFirst({
+				where: isPaperEditor(ctx, paperId)
+			})
+		)
+			return { allowed: true, canWrite: true };
+	}
+
+	return { allowed: true, canWrite: false };
 }
 
-function scheduleIdleEvict(paperId: string, entry: CacheEntry) {
-	if (entry.idleTimer) clearTimeout(entry.idleTimer);
-	entry.idleTimer = setTimeout(async () => {
-		if (entry.refCount > 0) return;
-		await persist(paperId, entry);
-		// If persist() failed it set entry.dirty back to true. Keep the doc
-		// in memory so the next persist tick (or a subsequent flushAll) can
-		// retry, rather than dropping unsaved edits.
-		if (entry.dirty) {
-			entry.idleTimer = null;
-			scheduleIdleEvict(paperId, entry);
+async function authorizeConnection(
+	paperId: string,
+	ctx: Context,
+	connectionConfig: { readOnly: boolean }
+) {
+	const auth = await authorize(paperId, ctx);
+	if (!auth.allowed) {
+		throw { code: 4403, reason: 'forbidden' };
+	}
+	connectionConfig.readOnly = !auth.canWrite;
+}
+
+export const hocuspocus = new Hocuspocus<YjsConnectionContext>({
+	debounce: PERSIST_DEBOUNCE_MS,
+
+	extensions: [
+		new Database({
+			fetch: async ({ documentName: paperId }) => {
+				const existing = await db.query.paperYjsDoc.findFirst({ where: { paperId } });
+				if (!existing?.state || existing.state.byteLength === 0) {
+					// No row yet — the doc starts empty and the first store will
+					// insert. This is the expected path for a freshly-created paper.
+					return null;
+				}
+				// Validate before handing the bytes to Hocuspocus: a decode failure
+				// must surface as a distinct, non-retryable error to the client
+				// instead of an opaque load failure.
+				try {
+					Y.applyUpdate(new Y.Doc(), existing.state);
+				} catch (err) {
+					console.error('[yjs] corrupt paper_yjs_doc.state — hard failing', {
+						paperId,
+						byteLength: existing.state.byteLength,
+						err
+					});
+					throw new CorruptYjsStateError(paperId, err);
+				}
+				return existing.state;
+			},
+			store: async ({ documentName: paperId, state }) => {
+				await db
+					.insert(schema.paperYjsDoc)
+					.values({ paperId, state })
+					.onConflictDoUpdate({
+						target: schema.paperYjsDoc.paperId,
+						set: { state, updatedAt: new Date() }
+					});
+			}
+		}),
+		...(configPrivate.REDIS_URL
+			? [
+					new RedisExtension({
+						// The extension bundles its own older ioredis whose types are
+						// nominally incompatible with the project's; the runtime API
+						// the extension uses is identical across both versions.
+						createClient: () =>
+							new Redis(configPrivate.REDIS_URL as string) as unknown as ReturnType<
+								NonNullable<ConstructorParameters<typeof RedisExtension>[0]['createClient']>
+							>
+					})
+				]
+			: [])
+	],
+
+	// Validate in-band Bearer tokens from native/Tauri clients that cannot set
+	// HTTP headers at upgrade time. In Hocuspocus v4.x this runs AFTER onConnect,
+	// so for native clients (ctx undefined in onConnect) this hook also handles
+	// the paper authorization that onConnect skipped.
+	onAuthenticate: async ({
+		token,
+		documentName: paperId,
+		context: connContext,
+		connectionConfig
+	}) => {
+		// Upgrade-time auth (session cookie) already populated ctx and onConnect
+		// already authorized the paper — nothing more to do here.
+		if (connContext.ctx) return;
+
+		if (!token) {
+			throw { code: 4401, reason: 'unauthorized' };
+		}
+
+		// Reuse the same OIDC validation path as HTTP requests.
+		const fakeReq = {
+			headers: { authorization: `Bearer ${token}` },
+			url: '/'
+		} as Parameters<typeof nativeToRequestEvent>[0];
+		let syntheticEvent = nativeToRequestEvent(fakeReq);
+		try {
+			await OIDC.handle({
+				event: syntheticEvent,
+				resolve: (event) => {
+					syntheticEvent = event;
+					return new Response();
+				}
+			});
+			const ctx = context(syntheticEvent);
+			ctx.mustBeLoggedIn();
+			connContext.ctx = ctx;
+		} catch (err) {
+			console.error('[yjs] in-band authentication failed', err);
+			throw { code: 4401, reason: 'unauthorized' };
+		}
+
+		// onConnect ran before us and skipped authorization because ctx was null.
+		// Now that ctx is set, authorize the paper access.
+		await authorizeConnection(paperId, connContext.ctx, connectionConfig);
+	},
+
+	// In Hocuspocus v4.x onConnect runs BEFORE onAuthenticate. For web clients
+	// (session-cookie upgrade), ctx is already set here and we authorize now.
+	// For native/Tauri clients (no cookie at upgrade time), ctx is undefined
+	// here — we return and let onAuthenticate do both auth and authz below.
+	onConnect: async ({ documentName: paperId, context, connectionConfig }) => {
+		if (!context.ctx) {
+			// Native client: defer to onAuthenticate (in-band Bearer token flow).
 			return;
 		}
-		const onUpdate = (entry as CacheEntry & { _onUpdate?: (u: Uint8Array, o: unknown) => void })
-			._onUpdate;
-		if (onUpdate) entry.doc.off('update', onUpdate);
-		entry.doc.destroy();
-		cache.delete(paperId);
-	}, IDLE_EVICT_MS);
-}
+		await authorizeConnection(paperId, context.ctx, connectionConfig);
+	},
 
-/**
- * Acquire a Y.Doc for the given paper. Increments the cache entry's
- * ref count; the caller must release it when done.
- */
-export async function acquirePaperDoc(paperId: string): Promise<{
-	doc: Y.Doc;
-	release: () => void;
-}> {
-	const entry = await getOrLoad(paperId);
-	entry.refCount++;
-	if (entry.idleTimer) {
-		clearTimeout(entry.idleTimer);
-		entry.idleTimer = null;
+	// Periodically re-check both session liveness and paper permissions, so a
+	// revoked/expired session or a paper transitioning out of the editable
+	// window flips live sessions to read-only (or kicks them) without waiting
+	// for a reconnect.
+	// eslint-disable-next-line require-await
+	connected: async ({
+		documentName: paperId,
+		context,
+		connection
+	}: connectedPayload<YjsConnectionContext>) => {
+		if (!context.ctx) return;
+		const ctx = context.ctx;
+
+		const reauthTimer = setInterval(async () => {
+			// 4408 isn't a terminal code on the client, so browser clients
+			// reconnect with their refreshed session; native clients must
+			// re-authenticate. A transient check failure fails open — only a
+			// definitive "not live" result closes the connection.
+			try {
+				if (!(await ctx.isSessionLive())) {
+					connection.webSocket.close(4408, 'Session expired');
+					return;
+				}
+			} catch (err) {
+				console.error('[yjs] session liveness check failed', { paperId, err });
+				return;
+			}
+
+			let next: AuthResult;
+			try {
+				next = await authorize(paperId, ctx);
+			} catch (err) {
+				console.error('[yjs] re-authorize failed', { paperId, err });
+				return;
+			}
+			if (!next.allowed) {
+				try {
+					connection.webSocket.close(4403, 'Permission revoked');
+				} catch {
+					/* noop */
+				}
+				return;
+			}
+			connection.readOnly = !next.canWrite;
+		}, REAUTH_INTERVAL_MS);
+		connection.onClose(() => clearInterval(reauthTimer));
 	}
-	let released = false;
-	return {
-		doc: entry.doc,
-		release: () => {
-			if (released) return;
-			released = true;
-			entry.refCount--;
-			if (entry.refCount <= 0) scheduleIdleEvict(paperId, entry);
-		}
-	};
-}
+});
 
 /**
  * Run a server-side mutation against the paper's Y.Doc. The function
  * receives the live doc and may apply Y operations directly. The mutation
- * is wrapped in a `Y.transact` so observers — including connected
- * websocket peers — see one coherent update.
+ * runs inside a Hocuspocus direct connection, so observers — including
+ * connected websocket peers and other Node instances via Redis — see one
+ * coherent update, and the doc is persisted on disconnect.
  */
 export async function applyServerMutation<T>(paperId: string, fn: (doc: Y.Doc) => T): Promise<T> {
-	const { doc, release } = await acquirePaperDoc(paperId);
+	const connection = await hocuspocus.openDirectConnection(paperId);
 	try {
 		let result!: T;
-		doc.transact(() => {
-			result = fn(doc);
-		}, 'server');
-		// Force-flush persist so callers can read fresh JSON immediately.
-		const entry = cache.get(paperId);
-		if (entry?.dirty) {
-			if (entry.persistTimer) {
-				clearTimeout(entry.persistTimer);
-				entry.persistTimer = null;
-			}
-			await persist(paperId, entry);
-		}
+		await connection.transact((document: Document) => {
+			result = fn(document);
+		});
 		return result;
 	} finally {
-		release();
+		await connection.disconnect();
 	}
 }
 
 /**
- * Get the latest persisted JSON projection of a paper. Used by callers
- * that need to read content immediately after `applyServerMutation`.
+ * Read the current JSON projection of a paper's Y.Doc — for snapshots, PDF
+ * export, etc. Loads the doc if it isn't already in memory.
  */
-export async function readPaperJson(paperId: string): Promise<Resolution | null> {
-	const cached = cache.get(paperId);
-	if (cached) return yDocToJson(cached.doc);
-	const paper = await db.query.resolutionPaper.findFirst({ where: { id: paperId } });
-	if (!paper?.content) return null;
+export async function readPaperJson(paperId: string): Promise<string> {
+	const connection = await hocuspocus.openDirectConnection(paperId);
 	try {
-		return migrateResolution(paper.content);
-	} catch {
-		return null;
-	}
-}
-
-/**
- * Force-persist all dirty docs and shut down the cache.
- * Intended for graceful server shutdown.
- */
-export async function flushAll(): Promise<void> {
-	for (const [paperId, entry] of cache) {
-		if (entry.persistTimer) clearTimeout(entry.persistTimer);
-		entry.persistTimer = null;
-		if (entry.dirty) await persist(paperId, entry);
+		const { yDocToJson } = await import('@deutschemodelunitednations/munify-resolution-editor/yjs');
+		if (!connection.document) throw new Error(`yjs document ${paperId} not available`);
+		return JSON.stringify(yDocToJson(connection.document));
+	} finally {
+		await connection.disconnect();
 	}
 }

@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { localDB, type VotingMajority } from '$lib/local-db/localDB';
+	import { type VotingMajority } from './votingModal';
 	import { m } from '$lib/paraglide/messages';
 	import { onDestroy, onMount } from 'svelte';
 	import hotkeys from 'hotkeys-js';
@@ -7,6 +7,7 @@
 	import VotingSetupForm from './VotingSetupForm.svelte';
 	import ShowOfHandsVotingChair from './ShowOfHandsVotingChair.svelte';
 	import RollCallVotingChair from './RollCallVotingChair.svelte';
+	import DeviceBasedVotingChair from './DeviceBasedVotingChair.svelte';
 	import { votingModalStore, closeVotingModal, type VotingResult } from './votingModal';
 
 	interface Props {
@@ -38,10 +39,11 @@
 	let setupOpen = $state(false);
 	let executingOpen = $state(false);
 
-	let voteType = $state<'SHOW_OF_HANDS' | 'ROLL_CALL'>('SHOW_OF_HANDS');
+	let voteType = $state<'SHOW_OF_HANDS' | 'ROLL_CALL' | 'DEVICE_BASED'>('SHOW_OF_HANDS');
 	let voteName = $state('');
 	let majority = $state<VotingMajority>('SIMPLE');
 	let withAbstentions = $state(false);
+	let deviceVotingWindowSeconds = $state(20);
 
 	let currentOnComplete: ((result: VotingResult) => void) | undefined = $state(undefined);
 
@@ -51,10 +53,17 @@
 			voteName = state.config.voteName ?? '';
 			majority = state.config.majority ?? 'SIMPLE';
 			withAbstentions = state.config.withAbstentions ?? false;
+			deviceVotingWindowSeconds = state.config.deviceVotingWindowSeconds ?? 20;
 			currentOnComplete = state.onComplete;
-			phase = 'SETUP';
-			setupOpen = true;
-			executingOpen = false;
+			if (state.resume) {
+				phase = 'EXECUTING';
+				setupOpen = false;
+				executingOpen = true;
+			} else {
+				phase = 'SETUP';
+				setupOpen = true;
+				executingOpen = false;
+			}
 		} else {
 			setupOpen = false;
 			executingOpen = false;
@@ -62,28 +71,8 @@
 		}
 	});
 
-	const clearDexieVotingState = () => {
-		if (!committee) return;
-		localDB.committeeSettings.update(committee.id, {
-			showOfHandsVotingActive: false,
-			showOfHandsVotingVotesPro: 0,
-			showOfHandsVotingVotesCon: 0,
-			showOfHandsVotingVotesAbstain: 0,
-			showOfHandsVotingVotesTotal: 0,
-			rollCallVotingActive: false,
-			rollCallVotingPro: [],
-			rollCallVotingCon: [],
-			rollCallVotingAbstain: [],
-			votingVoteName: null,
-			votingMajority: null,
-			votingWithAbstentions: false,
-			votingMajorityAmount: null
-		});
-	};
-
 	const handleComplete = (result: VotingResult) => {
 		executingOpen = false;
-		clearDexieVotingState();
 		if (currentOnComplete) {
 			const cb = currentOnComplete;
 			currentOnComplete = undefined;
@@ -96,7 +85,6 @@
 
 	const toggleModal = () => {
 		if (setupOpen || executingOpen) {
-			clearDexieVotingState();
 			closeVotingModal();
 		} else {
 			phase = 'SETUP';
@@ -105,6 +93,7 @@
 			voteName = '';
 			majority = 'SIMPLE';
 			withAbstentions = false;
+			deviceVotingWindowSeconds = 20;
 			currentOnComplete = undefined;
 		}
 	};
@@ -132,7 +121,6 @@
 		<button
 			class="btn btn-sm btn-circle btn-ghost absolute top-2 right-2"
 			onclick={() => {
-				clearDexieVotingState();
 				closeVotingModal();
 			}}>✕</button
 		>
@@ -142,6 +130,7 @@
 			bind:voteName
 			bind:majority
 			bind:withAbstentions
+			bind:deviceVotingWindowSeconds
 			onstart={startVote}
 		/>
 	</Modal>
@@ -157,13 +146,23 @@
 			{withAbstentions}
 			oncomplete={handleComplete}
 		/>
-	{:else}
+	{:else if voteType === 'ROLL_CALL'}
 		<RollCallVotingChair
 			bind:active={executingOpen}
 			{committee}
 			{voteName}
 			{majority}
 			{withAbstentions}
+			oncomplete={handleComplete}
+		/>
+	{:else}
+		<DeviceBasedVotingChair
+			bind:active={executingOpen}
+			{committee}
+			{voteName}
+			{majority}
+			{withAbstentions}
+			{deviceVotingWindowSeconds}
 			oncomplete={handleComplete}
 		/>
 	{/if}

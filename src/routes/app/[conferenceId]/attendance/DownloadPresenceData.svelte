@@ -2,6 +2,7 @@
 	import { client } from '$lib/api/rumbleClient/client';
 	import { m } from '$lib/paraglide/messages';
 	import toast from 'svelte-french-toast';
+	import { withBackendMessage } from '$lib/utils/toast';
 
 	interface Props {
 		conferenceTitle?: string;
@@ -54,9 +55,9 @@
 			a.click();
 			document.body.removeChild(a);
 			URL.revokeObjectURL(url);
-		} catch (error) {
-			console.error('Failed to export presence data', error);
-			toast.error(m.saveError());
+		} catch (err) {
+			console.error('Failed to export presence data', err);
+			toast.error(withBackendMessage(m.saveError(), err));
 		} finally {
 			isDownloading = false;
 		}

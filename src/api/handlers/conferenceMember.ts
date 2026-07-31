@@ -9,6 +9,7 @@ import {
 } from '$api/rumble';
 import { isAdminInConference, isParticipantInConference } from '$api/services/authHelper';
 import { assertFindFirstExists, assertFirstEntryExists } from '@m1212e/rumble';
+import { nanoidValidation } from '$lib/helpers/nanoid';
 
 abilityBuilder.conferenceMember.allow('read').when((ctx) => {
 	return {
@@ -30,6 +31,7 @@ schemaBuilder.mutationFields((t) => ({
 	createConferenceMember: t.drizzleField({
 		type: ConferenceMemberRef,
 		args: {
+			id: t.arg.id().validate(nanoidValidation),
 			conferenceId: t.arg.id({ required: true }),
 			representationId: t.arg.id({ required: true })
 		},
@@ -44,6 +46,7 @@ schemaBuilder.mutationFields((t) => ({
 			const result = await db
 				.insert(schema.conferenceMember)
 				.values({
+					id: args.id,
 					conferenceId: args.conferenceId,
 					representationId: args.representationId
 				})

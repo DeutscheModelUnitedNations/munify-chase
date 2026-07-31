@@ -55,9 +55,6 @@ export const POST: RequestHandler = async ({ request }) => {
 
 	const dir = await mkdtemp(join(tmpdir(), 'mun-'));
 	try {
-		// Resolve the emblem actually rendered into the PDF: the conference logo
-		// when configured, otherwise the bundled UN emblem fallback. The file is
-		// referenced via `#image(...)` so it works with all Typst versions.
 		const emblemSvg = header.conferenceEmblem
 			? (decodeEmblemDataUrl(header.conferenceEmblem) ?? unEmblemSvg)
 			: unEmblemSvg;

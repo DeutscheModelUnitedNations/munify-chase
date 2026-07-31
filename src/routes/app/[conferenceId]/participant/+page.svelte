@@ -54,7 +54,6 @@
 			id: true,
 			name: true,
 			abbreviation: true,
-			lastResolutionAdoptionDate: true,
 			activeAgendaItem: {
 				id: true,
 				title: true

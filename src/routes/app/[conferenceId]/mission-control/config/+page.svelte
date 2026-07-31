@@ -27,7 +27,6 @@
 		startDate: true,
 		endDate: true,
 		hasModeratedCaucus: true,
-		resolutionFeatureEnabled: true,
 		logoSvg: true,
 		committees: {
 			id: true,

@@ -37,8 +37,24 @@ export default ts.config(
 		}
 	},
 	{
+		ignores: [
+			'src/lib/paraglide/**',
+			'src/lib/api/rumbleClient/**',
+			'src/api/db/seed-data/schema.d.ts'
+		]
+	},
+	{
 		rules: {
-			'@typescript-eslint/no-unused-vars': 'warn',
+			'require-await': 'error',
+			'@typescript-eslint/no-unused-vars': [
+				'warn',
+				{
+					argsIgnorePattern: '^_',
+					varsIgnorePattern: '^_',
+					caughtErrorsIgnorePattern: '^_',
+					destructuredArrayIgnorePattern: '^_'
+				}
+			],
 			'@typescript-eslint/no-explicit-any': 'error',
 			'svelte/no-at-html-tags': 'warn',
 			'svelte/valid-compile': 'warn',

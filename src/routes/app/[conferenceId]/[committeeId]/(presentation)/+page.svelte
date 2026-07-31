@@ -5,23 +5,26 @@
 	import { getCommitteeStatusIcon, getCommitteeStatusText } from '$lib/utils/committeeStatus';
 	import WhiteboardViewer from '$lib/components/whiteboard/WhiteboardViewer.svelte';
 	import Majorities from '$lib/components/Majorities.svelte';
-	import { liveQuery } from 'dexie';
-	import { localDB } from '$lib/local-db/localDB';
-	import { getPresentationLayoutPreset } from '$lib/data/presentationLayoutPresets';
+	import {
+		getPresentationLayoutPreset,
+		type PresentationLayoutPresetOptions
+	} from '$lib/data/presentationLayoutPresets';
 	import AbbreviationInfoBox from '$lib/components/AbbreviationInfoBox.svelte';
 	import UndrawError from '$lib/components/UndrawError.svelte';
 	import emptyStreet from '$assets/undraw/empty_street.svg';
 	import RegionalGroups from './RegionalGroups.svelte';
 	import PresentationRollCall from '$lib/components/rollCall/PresentationRollCall.svelte';
+	import ShowOfHandsVotingPresentation from '$lib/components/voting/ShowOfHandsVotingPresentation.svelte';
+	import RollCallVotingPresentation from '$lib/components/voting/RollCallVotingPresentation.svelte';
+	import DeviceBasedVotingPresentation from '$lib/components/voting/DeviceBasedVotingPresentation.svelte';
+	import PresentationResolutionPreview from '$lib/components/resolutions/PresentationResolutionPreview.svelte';
+	import AdoptionConfetti from '$lib/components/AdoptionConfetti.svelte';
 	import { sortTranslatedCountries } from '$lib/utils/nationTranslationHelper.svelte';
 	import CurrentSpeaker from '$lib/components/speakersList/CurrentSpeaker.svelte';
 	import SpeakersQueue from '$lib/components/speakersList/PresentationSpeakersQueue.svelte';
-	import ShowOfHandsVotingPresentation from '$lib/components/voting/ShowOfHandsVotingPresentation.svelte';
-	import RollCallVotingPresentation from '$lib/components/voting/RollCallVotingPresentation.svelte';
 	import { browser } from '$app/environment';
-	import AdoptionConfetti from '$lib/components/AdoptionConfetti.svelte';
-	import PresentationResolutionPreview from './PresentationResolutionPreview.svelte';
 	import { client } from '$lib/api/rumbleClient/client';
+	import { latchWhileDisconnected } from '$lib/state/connection.svelte';
 	import { page } from '$app/state';
 
 	const committeeId = page.params.committeeId!;
@@ -31,23 +34,24 @@
 		id: true,
 		abbreviation: true,
 		name: true,
-		resolutionHeadline: true,
 		status: true,
 		statusHeadline: true,
 		statusUntil: true,
 		totalPresent: true,
 		simpleMajority: true,
 		twoThirdsMajority: true,
-		paperSupportThreshold: true,
-		lastResolutionAdoptionDate: true,
-		activeDraftResolutionId: true,
+		whiteboardContent: true,
+		presentationLayout: true,
+		presentationRootFontSize: true,
+		presentationResolutionFontSize: true,
+		displayRegionalGroups: true,
 		currentOperativeIndex: true,
-		currentOperativeClauseId: true,
+		activeDraftResolutionId: true,
+		activeDraftResolution: { id: true, status: true },
 		activeAmendmentId: true,
 		activeAmendment: {
 			id: true,
 			type: true,
-			status: true,
 			documentNumber: true,
 			targetClauseId: true,
 			targetOperativeIndex: true,
@@ -63,68 +67,7 @@
 				}
 			}
 		},
-		activeDraftResolution: {
-			id: true,
-			content: true,
-			documentNumber: true,
-			status: true,
-			title: true,
-			updatedAt: true,
-			agendaItem: {
-				id: true,
-				title: true
-			},
-			creator: {
-				id: true,
-				representation: {
-					id: true,
-					name: true,
-					alpha2Code: true,
-					alpha3Code: true
-				}
-			},
-			sponsors: {
-				id: true,
-				committeeMember: {
-					id: true,
-					representation: {
-						id: true,
-						name: true,
-						alpha3Code: true
-					}
-				}
-			},
-			amendments: {
-				id: true,
-				type: true,
-				status: true,
-				documentNumber: true,
-				targetClauseId: true,
-				targetOperativeIndex: true,
-				targetPosition: true,
-				newContent: true,
-				proposer: {
-					id: true,
-					representation: {
-						id: true,
-						name: true
-					}
-				}
-			},
-			operativeClauseVotes: {
-				id: true,
-				clauseId: true,
-				outcome: true
-			},
-			voteResult: {
-				id: true,
-				outcome: true,
-				votesFor: true,
-				votesAgainst: true,
-				votesAbstain: true
-			}
-		},
-		whiteboardContent: true,
+		lastResolutionAdoptionDate: true,
 		activeAgendaItem: {
 			id: true,
 			title: true,
@@ -183,7 +126,7 @@
 		conference: {
 			id: true,
 			title: true,
-			resolutionFeatureEnabled: true,
+			logoSvg: true,
 			uniqueConferenceMembers: {
 				id: true,
 				representation: {
@@ -198,24 +141,32 @@
 		}
 	});
 
-	let committeeSettings = liveQuery(() => localDB.committeeSettings.get(committeeId));
+	const minAmendmentSponsors = $derived(Math.ceil((committee?.totalPresent ?? 0) * 0.1));
+
+	const activePaperId = $derived(committee?.activeDraftResolutionId ?? null);
 
 	let layout = $derived(
-		($committeeSettings && getPresentationLayoutPreset($committeeSettings.layout)) ??
-			getPresentationLayoutPreset()
+		getPresentationLayoutPreset(
+			activePaperId != null
+				? 'resolution'
+				: ((committee?.presentationLayout as PresentationLayoutPresetOptions) ?? undefined)
+		)
 	);
 
+	// Freeze the last-known agenda item while the WS is confirmed disconnected, so a
+	// transient network blip doesn't reset the active speaker's timer on the projector.
+	const getActiveAgendaItem = latchWhileDisconnected(() => committee?.activeAgendaItem);
+	let activeAgendaItem = $derived(getActiveAgendaItem());
+
 	let speakersList = $derived(
-		committee?.activeAgendaItem?.speakersList.find((x) => x.type === 'SPEAKERS_LIST')
+		activeAgendaItem?.speakersList.find((x) => x.type === 'SPEAKERS_LIST')
 	);
 
 	let commentsList = $derived(
-		committee?.activeAgendaItem?.speakersList.find((x) => x.type === 'COMMENT_LIST')
+		activeAgendaItem?.speakersList.find((x) => x.type === 'COMMENT_LIST')
 	);
 	let speakersQueueResizeFn = $state<(() => void) | undefined>(undefined);
 	let commentsQueueResizeFn = $state<(() => void) | undefined>(undefined);
-
-	let isFullscreen = $state(false);
 
 	$effect(() => {
 		if (!layout || !committee) {
@@ -230,26 +181,23 @@
 	};
 
 	$effect(() => {
-		if ($committeeSettings?.presentationRootFontSize) {
-			document.documentElement.style.fontSize = `${$committeeSettings.presentationRootFontSize}px`;
+		if (committee?.presentationRootFontSize) {
+			document.documentElement.style.fontSize = `${committee.presentationRootFontSize}px`;
 		}
 	});
 
-	const toggleFullscreen = () => {
-		if (!document.fullscreenElement) {
-			document.documentElement.requestFullscreen();
-		} else {
-			document.exitFullscreen();
-		}
-	};
-
 	$effect(() => {
-		const handler = () => {
-			isFullscreen = !!document.fullscreenElement;
+		const handler = (event: MessageEvent) => {
+			if (event.source !== window.opener) return;
+			if (event.data !== 'toggle-fullscreen') return;
+			if (!document.fullscreenElement) {
+				document.documentElement.requestFullscreen().catch(() => {});
+			} else {
+				document.exitFullscreen().catch(() => {});
+			}
 		};
-		handler();
-		document.addEventListener('fullscreenchange', handler);
-		return () => document.removeEventListener('fullscreenchange', handler);
+		window.addEventListener('message', handler);
+		return () => window.removeEventListener('message', handler);
 	});
 </script>
 
@@ -287,7 +235,6 @@
 						: getCommitteeStatusText(committee.status)}
 					faIcon={getCommitteeStatusIcon(committee.status)}
 					committeeStatus={committee.status}
-					marqueeOnOverflow={false}
 					until={new Date(committee.statusUntil)}
 					fullHeight
 					hideCountdown={committee.status === 'FORMAL'}
@@ -297,7 +244,7 @@
 		{#if layout.agendaItem}
 			{@const gridProps = layout.agendaItem}
 			<GridItem {...gridProps} class="card bg-base-100 gap-2 overflow-hidden p-4" id="agenda-item">
-				<IconInfoBox text={committee.activeAgendaItem?.title || '—'} faIcon="podium" fullHeight />
+				<IconInfoBox text={activeAgendaItem?.title || '—'} faIcon="podium" fullHeight />
 			</GridItem>
 		{/if}
 		{#if layout.majorities}
@@ -307,7 +254,7 @@
 					totalPresent={committee.totalPresent}
 					simpleMajority={committee.simpleMajority}
 					twoThirdsMajority={committee.twoThirdsMajority}
-					paperSupportThreshold={committee.paperSupportThreshold}
+					{minAmendmentSponsors}
 				/>
 			</GridItem>
 		{/if}
@@ -347,19 +294,32 @@
 			</GridItem>
 		{/if}
 
-		{#if layout.resolutionPreview}
+		{#if layout.resolutionPreview && activePaperId}
 			{@const gridProps = layout.resolutionPreview}
 			<GridItem {...gridProps} class="card bg-base-100 overflow-auto p-4" id="resolution-preview">
 				<PresentationResolutionPreview
-					{committee}
-					resolutionFontSize={$committeeSettings?.presentationResolutionFontSize ?? 16}
+					paperId={activePaperId}
+					currentOperativeIndex={committee.activeDraftResolution?.status === 'AMENDMENT_PHASE' ||
+					committee.activeDraftResolution?.status === 'VOTING_PHASE'
+						? committee.currentOperativeIndex
+						: undefined}
+					resolutionFontSize={committee.presentationResolutionFontSize ?? 16}
+					showAmendments={committee.activeDraftResolution?.status === 'AMENDMENT_PHASE'}
+					activeAmendment={committee.activeDraftResolution?.status === 'AMENDMENT_PHASE'
+						? (committee.activeAmendment ?? null)
+						: null}
 				/>
 			</GridItem>
 		{/if}
 	</Grid>
 
+	<AdoptionConfetti
+		lastAdoptionDate={committee.lastResolutionAdoptionDate}
+		confettiDurationSec={45}
+	/>
+
 	<RegionalGroups
-		open={$committeeSettings?.displayRegionalGroups ?? false}
+		open={committee.displayRegionalGroups ?? false}
 		committeeMembers={committee.members}
 	/>
 
@@ -370,23 +330,9 @@
 			.sort((a, b) => sortTranslatedCountries(a.representation!, b.representation!))}
 	/>
 
-	<ShowOfHandsVotingPresentation committeeSettings={$committeeSettings} />
-	<RollCallVotingPresentation committeeSettings={$committeeSettings} {committee} />
-
-	<AdoptionConfetti
-		lastAdoptionDate={committee?.lastResolutionAdoptionDate}
-		agendaItem={committee?.activeAgendaItem?.title ?? m.unknown()}
-		committeeName={committee?.name ?? m.unknown()}
-		confettiDurationSec={90}
-	/>
-	<button
-		class="btn btn-ghost fixed bottom-3 left-3 z-50 h-12 w-12 min-h-0 p-0 opacity-15 hover:opacity-60 transition-opacity"
-		onclick={toggleFullscreen}
-		aria-label={isFullscreen ? m.exitFullscreen() : m.enterFullscreen()}
-		title={isFullscreen ? m.exitFullscreen() : m.enterFullscreen()}
-	>
-		<i class="fas {isFullscreen ? 'fa-compress' : 'fa-expand'} text-sm"></i>
-	</button>
+	<ShowOfHandsVotingPresentation {committeeId} />
+	<RollCallVotingPresentation {committeeId} {committee} />
+	<DeviceBasedVotingPresentation {committeeId} {committee} />
 {:else}
 	<UndrawError
 		undrawImage={emptyStreet}

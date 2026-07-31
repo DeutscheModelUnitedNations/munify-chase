@@ -1,5 +1,7 @@
 <script lang="ts">
 	import { type Snippet } from 'svelte';
+	import { goto } from '$app/navigation';
+	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
 	import { client } from '$lib/api/rumbleClient/client';
 	import ChairNavbar from './ChairNavbar.svelte';
@@ -12,8 +14,9 @@
 	import BellIcon from '$lib/components/toast/BellIcon.svelte';
 	import { getServerTime } from '$lib/state/serverTime.svelte';
 	import hotkeys from 'hotkeys-js';
-	import AdoptionConfetti from '$lib/components/AdoptionConfetti.svelte';
 	import VotingModal from '$lib/components/voting/VotingModal.svelte';
+	import AdoptionConfetti from '$lib/components/AdoptionConfetti.svelte';
+	import { openPresentationWindow } from '$lib/state/presentationWindow.svelte';
 
 	interface Props {
 		children: Snippet;
@@ -22,13 +25,14 @@
 	let { children }: Props = $props();
 
 	const committeeId = page.params.committeeId!;
+	const conferenceId = page.params.conferenceId!;
 
 	const committee = await client.liveQuery.committee({
 		__args: { id: committeeId },
 		id: true,
 		abbreviation: true,
 		name: true,
-		resolutionHeadline: true,
+		activeDraftResolutionId: true,
 		stateOfDebate: true,
 		status: true,
 		statusHeadline: true,
@@ -36,17 +40,7 @@
 		totalPresent: true,
 		simpleMajority: true,
 		twoThirdsMajority: true,
-		paperSupportThreshold: true,
-		maxDraftResolutions: true,
-		activeDraftResolutionId: true,
-		supportReEvaluationOpen: true,
-		amendmentSubmissionOpen: true,
-		amendmentSponsoringOpen: true,
-		currentOperativeIndex: true,
-		currentOperativeClauseId: true,
-		activeAmendmentId: true,
 		whiteboardContent: true,
-		lastResolutionAdoptionDate: true,
 		allowDelegationsToAddThemselvesToSpeakersList: true,
 		activeAgendaItem: {
 			id: true,
@@ -58,6 +52,7 @@
 				speakingTime: true,
 				startTimestamp: true,
 				timeLeft: true,
+				phase: true,
 				speakers: {
 					id: true,
 					position: true,
@@ -107,11 +102,11 @@
 				faIcon: true
 			}
 		},
+		lastResolutionAdoptionDate: true,
 		conference: {
 			id: true,
 			title: true,
 			hasModeratedCaucus: true,
-			// TODO: resolutionFeatureEnabled not available in Rumble client yet
 			uniqueConferenceMembers: {
 				id: true,
 				representation: {
@@ -125,6 +120,114 @@
 			}
 		}
 	});
+
+	const dockItems = $derived([
+		{
+			icon: 'fa-gears',
+			label: () => m.setup(),
+			href: resolve('/app/[conferenceId]/[committeeId]/(chairs)/setup', {
+				conferenceId,
+				committeeId
+			}),
+			key: 'setup'
+		},
+		{
+			icon: 'fa-users',
+			label: () => m.presence(),
+			href: resolve('/app/[conferenceId]/[committeeId]/(chairs)/presence', {
+				conferenceId,
+				committeeId
+			}),
+			key: 'presence'
+		},
+		{
+			icon: 'fa-podium',
+			label: () => m.speakersList(),
+			href: resolve('/app/[conferenceId]/[committeeId]/(chairs)/speakers-list', {
+				conferenceId,
+				committeeId
+			}),
+			key: 'speakers-list'
+		},
+		{
+			icon: 'fa-box-ballot',
+			label: () => m.voting(),
+			href: resolve('/app/[conferenceId]/[committeeId]/(chairs)/voting', {
+				conferenceId,
+				committeeId
+			}),
+			key: 'voting'
+		},
+		{
+			icon: 'fa-file-lines',
+			label: () => m.resolutions(),
+			href: resolve('/app/[conferenceId]/[committeeId]/(chairs)/resolutions', {
+				conferenceId,
+				committeeId
+			}),
+			key: 'resolutions'
+		}
+	]);
+
+	function isActive(key: string) {
+		return page.route.id?.includes(key) ?? false;
+	}
+
+	$effect(() => {
+		hotkeys('alt+1, alt+2, alt+3, alt+4, alt+5', (event, handler) => {
+			event.preventDefault();
+			switch (handler.key) {
+				case 'alt+1':
+					goto(
+						resolve('/app/[conferenceId]/[committeeId]/(chairs)/setup', {
+							conferenceId,
+							committeeId
+						})
+					);
+					break;
+				case 'alt+2':
+					goto(
+						resolve('/app/[conferenceId]/[committeeId]/(chairs)/presence', {
+							conferenceId,
+							committeeId
+						})
+					);
+					break;
+				case 'alt+3':
+					goto(
+						resolve('/app/[conferenceId]/[committeeId]/(chairs)/speakers-list', {
+							conferenceId,
+							committeeId
+						})
+					);
+					break;
+				case 'alt+4':
+					goto(
+						resolve('/app/[conferenceId]/[committeeId]/(chairs)/voting', {
+							conferenceId,
+							committeeId
+						})
+					);
+					break;
+				case 'alt+5':
+					goto(
+						resolve('/app/[conferenceId]/[committeeId]/(chairs)/resolutions', {
+							conferenceId,
+							committeeId
+						})
+					);
+					break;
+			}
+		});
+		return () => hotkeys.unbind('alt+1, alt+2, alt+3, alt+4, alt+5');
+	});
+
+	let speakersList = $derived(
+		committee?.activeAgendaItem?.speakersList.find((item) => item.type === 'SPEAKERS_LIST')
+	);
+	let commentList = $derived(
+		committee?.activeAgendaItem?.speakersList.find((item) => item.type === 'COMMENT_LIST')
+	);
 
 	let committeeStatusExpiredAlerted = $state(false);
 	let speakersListOvertimeAlerted = $state(false);
@@ -183,7 +286,13 @@
 	$effect(() => {
 		hotkeys('alt+p', (event) => {
 			event.preventDefault();
-			window.open('.', '_blank');
+			openPresentationWindow(
+				resolve('/app/[conferenceId]/[committeeId]/(presentation)', {
+					conferenceId,
+					committeeId
+				}),
+				committeeId
+			);
 		});
 		return () => hotkeys.unbind('alt+p');
 	});
@@ -196,7 +305,8 @@
 <ChairNavbar
 	title={committee?.abbreviation}
 	conferenceTitle={committee?.conference?.title}
-	activeDraftResolutionId={committee?.activeDraftResolutionId}
+	{speakersList}
+	{commentList}
 />
 
 <div class="pb-16">
@@ -218,7 +328,44 @@
 
 <AdoptionConfetti
 	lastAdoptionDate={committee?.lastResolutionAdoptionDate}
-	agendaItem={committee?.activeAgendaItem?.title ?? m.unknown()}
-	committeeName={committee?.name ?? m.unknown()}
-	confettiDurationSec={20}
+	confettiDurationSec={45}
 />
+
+<!-- Bottom dock -->
+<div class="dock dock-md lg:dock-lg md:justify-center md:gap-4">
+	{#each dockItems as item, i (item.key)}
+		<a
+			href={item.href}
+			class="group relative {isActive(item.key) &&
+			!(
+				item.key === 'resolutions' &&
+				committee?.activeDraftResolutionId &&
+				page.url.pathname.includes(committee.activeDraftResolutionId)
+			)
+				? 'dock-active'
+				: ''}"
+		>
+			<i class="fa-duotone {item.icon} size-[1.2em]"></i>
+			<span class="dock-label">{item.label()}</span>
+			<kbd
+				class="kbd kbd-sm absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity backdrop-blur-sm bg-base-100/80 px-2 py-1 z-10"
+				>⌥{i + 1}</kbd
+			>
+		</a>
+	{/each}
+	{#if committee?.activeDraftResolutionId}
+		<a
+			href={resolve('/app/[conferenceId]/[committeeId]/(chairs)/resolutions/[paperId]', {
+				conferenceId,
+				committeeId,
+				paperId: committee.activeDraftResolutionId
+			})}
+			class="group relative {page.url.pathname.includes(committee.activeDraftResolutionId)
+				? 'dock-active'
+				: ''}"
+		>
+			<i class="fa-duotone fa-file-pen size-[1.2em]"></i>
+			<span class="dock-label">{m.activeDraftResolution()}</span>
+		</a>
+	{/if}
+</div>

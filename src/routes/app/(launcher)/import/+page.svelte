@@ -6,6 +6,7 @@
 	import { client } from '$lib/api/rumbleClient/client';
 	import type { RepresentationtypeEnum } from '$lib/api/rumbleClient/client';
 	import toast from 'svelte-french-toast';
+	import { withBackendMessage } from '$lib/utils/toast';
 	import { importDataSchema } from '$lib/utils/import';
 	import { z } from 'zod/v4';
 	import AddCountriesModal from '$lib/components/AddCountriesModal.svelte';
@@ -104,7 +105,7 @@
 		step = 1;
 	}
 
-	async function downloadFile(): Promise<void> {
+	function downloadFile(): void {
 		if (!importData) return;
 		if (!importData.$schema) {
 			importData.$schema = `${page.url.origin}/api/schemas/import`;
@@ -143,9 +144,9 @@
 			} as typeof importData;
 			const res = await client.mutate
 				.importDelegatorConference({ __args: { data: payload }, id: true })
-				.catch((e) => {
-					toast.error(m.conferenceCreationError());
-					console.error('Error creating conference:', e);
+				.catch((err) => {
+					toast.error(withBackendMessage(m.conferenceCreationError(), err));
+					console.error('Error creating conference:', err);
 				});
 			if (res) {
 				toast.success(m.conferenceCreated());

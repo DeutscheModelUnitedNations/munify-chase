@@ -3,6 +3,7 @@
 	import { m } from '$lib/paraglide/messages';
 	import BasicCard from '$lib/components/BasicCard.svelte';
 	import { SvelteMap, SvelteSet } from 'svelte/reactivity';
+	import { getServerTime } from '$lib/state/serverTime.svelte';
 
 	interface Props {
 		conferenceId: string;
@@ -57,13 +58,13 @@
 		return { present, total };
 	});
 
-	const allEvents = await client.liveQuery.nsaPresenceEvents({
+	const allEvents = await client.liveQuery.presenceEvents({
 		__args: {
-			where: { conference: { id: conferenceId } },
+			where: { committee: { conference: { id: conferenceId } } },
 			orderBy: { timestamp: 'desc' }
 		},
 		id: true,
-		type: true,
+		present: true,
 		committeeId: true,
 		timestamp: true,
 		conferenceUser: {
@@ -76,11 +77,7 @@
 		}
 	});
 
-	let now = $state(Date.now());
-	$effect(() => {
-		const t = setInterval(() => (now = Date.now()), 60_000);
-		return () => clearInterval(t);
-	});
+	let now = $derived(getServerTime().valueOf());
 
 	type LatestEvent = NonNullable<typeof allEvents>[number];
 
@@ -92,7 +89,7 @@
 			const uid = event.conferenceUser?.id;
 			if (!uid || seen.has(uid)) continue;
 			seen.add(uid);
-			if (event.type !== 'CHECK_IN') continue;
+			if (!event.present) continue;
 			const list = map.get(event.committeeId) ?? [];
 			list.push(event);
 			map.set(event.committeeId, list);
@@ -128,7 +125,7 @@
 			>
 		</div>
 	{/if}
-	{#each conference?.committees ?? [] as committee}
+	{#each conference?.committees ?? [] as committee (committee.id)}
 		{@const list = byCommittee.get(committee.id) ?? []}
 		{@const stat = delegateStat(committee)}
 		<BasicCard title={`${committee.name} (${committee.abbreviation ?? ''})`}>
@@ -144,7 +141,7 @@
 				<p class="text-base-content/50 py-2 text-sm">{m.noNsasInCommittee()}</p>
 			{:else}
 				<ul class="flex flex-col gap-1">
-					{#each list as event}
+					{#each list as event (event.id)}
 						{@const rep = event.conferenceUser?.conferenceMember?.representation}
 						<li class="card hover:bg-base-200 flex flex-row items-center gap-3 p-2">
 							{#if rep?.faIcon}

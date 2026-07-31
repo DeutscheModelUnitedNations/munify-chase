@@ -1,13 +1,7 @@
 import { m } from '$lib/paraglide/messages';
 
 export type ConferenceUserRole =
-	| 'ADMIN'
-	| 'TEAM'
-	| 'DELEGATE'
-	| 'NON_STATE_ACTOR'
-	| 'SPECTATOR'
-	| undefined
-	| null;
+	'ADMIN' | 'TEAM' | 'DELEGATE' | 'NON_STATE_ACTOR' | 'SPECTATOR' | undefined | null;
 
 export interface NavItem {
 	key: string;
@@ -52,6 +46,7 @@ export function buildConferenceNavItems({
 }: BuildArgs): NavItem[] {
 	const isAdmin = role === 'ADMIN' || !!isGlobalAdmin;
 	const isTeamOrAdmin = isAdmin || role === 'TEAM';
+	const isParticipant = role === 'DELEGATE' || role === 'NON_STATE_ACTOR';
 
 	const items: NavItem[] = [];
 
@@ -80,6 +75,28 @@ export function buildConferenceNavItems({
 			active:
 				hasRouteSegment(activeRouteId, 'attendance') ||
 				hasRouteSegment(activePathname, 'attendance')
+		});
+
+		items.push({
+			key: 'statistics',
+			faIcon: 'fa-chart-column',
+			title: m.statistics(),
+			href: `/app/${conferenceId}/statistics`,
+			active:
+				hasRouteSegment(activeRouteId, 'statistics') ||
+				hasRouteSegment(activePathname, 'statistics')
+		});
+	}
+
+	if (isParticipant) {
+		items.push({
+			key: 'statistics',
+			faIcon: 'fa-chart-column',
+			title: m.statistics(),
+			href: `/app/${conferenceId}/statistics`,
+			active:
+				hasRouteSegment(activeRouteId, 'statistics') ||
+				hasRouteSegment(activePathname, 'statistics')
 		});
 	}
 

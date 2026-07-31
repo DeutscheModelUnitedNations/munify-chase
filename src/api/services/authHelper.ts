@@ -1,5 +1,6 @@
 import type { Context } from '$api/context';
 import { configPrivate } from '$config/private';
+import { GraphQLError } from 'graphql';
 
 export function isAdminEmail(email: string) {
 	const whitelistEmails = configPrivate.ADMIN_EMAIL_WHITELIST.split(',').filter(Boolean);
@@ -9,10 +10,6 @@ export function isAdminEmail(email: string) {
 	return whitelistEmails.includes(email) || whitelistDomains.includes(domain);
 }
 
-/**
- * Check if the current user is a global admin (OIDC admin role OR whitelisted email).
- * Global admins have full access to everything.
- */
 export function isGlobalAdmin(ctx: Context) {
 	if (ctx.hasRole('admin')) return true;
 	try {
@@ -33,12 +30,7 @@ export function isDisplayKiosk(ctx: Context) {
 	return ctx.hasRole('service_user');
 }
 
-/**
- * Helper to check if the current user is a chair (ADMIN/TEAM) for a conference, or a global admin.
- *
- * @returns A filter object for the conference query. Injectable at e.g. committee level.
- */
-export function isChairInConference(ctx: Context) {
+export function isTeamInConference(ctx: Context) {
 	if (isGlobalAdmin(ctx)) {
 		return {};
 	}
@@ -69,35 +61,18 @@ export function isChairInConference(ctx: Context) {
 	};
 }
 
-/**
- * Helper to check if the current user is a participant (any role) for a conference, or a global admin.
- *
- * @returns A filter object for the conference query. Injectable at e.g. committee level.
- */
 export function isParticipantInConference(ctx: Context) {
 	return {
 		conference: isParticipant(ctx)
 	};
 }
 
-/**
- * Helper to check if the current user is an ADMIN for a specific conference
- * (either OIDC admin or conference ADMIN role)
- *
- * @returns A filter object for the conference query. Injectable at conference level.
- */
 export function isAdminInConference(ctx: Context) {
 	return {
 		conference: isAdmin(ctx)
 	};
 }
 
-/**
- * Helper to check if the current user is an ADMIN
- * (either OIDC admin or conference ADMIN role)
- *
- * @returns A filter object for the conference query. Injectable at conference level.
- */
 export function isAdmin(ctx: Context) {
 	if (isGlobalAdmin(ctx)) {
 		return {};
@@ -115,11 +90,6 @@ export function isAdmin(ctx: Context) {
 	};
 }
 
-/**
- * Helper to check if the current user is a participant (any role) for a conference, or a global admin.
- *
- * @returns A filter object for the conference query. Injectable at conference level.
- */
 export function isParticipant(ctx: Context) {
 	if (isGlobalAdmin(ctx)) {
 		return {};
@@ -134,4 +104,49 @@ export function isParticipant(ctx: Context) {
 			}
 		}
 	};
+}
+
+export function committeeMemberForPaper(
+	ctx: Context,
+	paperId: string,
+	committeePredicates: Record<string, unknown> = {}
+) {
+	const user = ctx.mustBeLoggedIn();
+	if (!user.email) throw new GraphQLError('User email required');
+	return {
+		userEmail: user.email,
+		committeeMember: {
+			committee: {
+				resolutionPapers: { id: paperId },
+				...committeePredicates
+			}
+		}
+	} as const;
+}
+
+export function isAmendmentProposer(ctx: Context) {
+	const user = ctx.mustBeLoggedIn();
+	if (!user.email) throw new GraphQLError('User email required');
+	return {
+		proposer: {
+			users: { userEmail: user.email }
+		}
+	} as const;
+}
+
+export function isPaperEditor(ctx: Context, paperId: string) {
+	const user = ctx.mustBeLoggedIn();
+	return {
+		paperId,
+		conferenceUser: { user: { id: user.sub } }
+	} as const;
+}
+
+export function isPaperAuthor(ctx: Context) {
+	const user = ctx.mustBeLoggedIn();
+	return {
+		editors: {
+			conferenceUser: { user: { id: user.sub } }
+		}
+	} as const;
 }

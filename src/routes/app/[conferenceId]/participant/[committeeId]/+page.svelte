@@ -1,8 +1,11 @@
 <script lang="ts">
 	import { m } from '$lib/paraglide/messages';
 	import { page } from '$app/state';
+	import { resolve } from '$app/paths';
 	import { client } from '$lib/api/rumbleClient/client';
+	import { nanoid } from '$lib/helpers/nanoid';
 	import { getCurrentUser } from '$lib/state/currentUser.svelte';
+	import { latchWhileDisconnected } from '$lib/state/connection.svelte';
 	import IconInfoBox from '$lib/components/IconInfoBox.svelte';
 	import { getCommitteeStatusIcon, getCommitteeStatusText } from '$lib/utils/committeeStatus';
 	import CurrentSpeaker from '$lib/components/speakersList/CurrentSpeaker.svelte';
@@ -10,6 +13,7 @@
 	import WhiteboardViewer from '$lib/components/whiteboard/WhiteboardViewer.svelte';
 	import Majorities from '$lib/components/Majorities.svelte';
 	import ParticipantIdentityCard from '../ParticipantIdentityCard.svelte';
+	import DeviceVoteModal from '$lib/components/voting/DeviceVoteModal.svelte';
 
 	const currentUser = await getCurrentUser();
 	const [conferenceUser] =
@@ -62,7 +66,16 @@
 		totalPresent: true,
 		simpleMajority: true,
 		twoThirdsMajority: true,
-		paperSupportThreshold: true,
+		activeVotingSessionId: true,
+		activeVotingSession: {
+			id: true,
+			mode: true,
+			voteName: true,
+			withAbstentions: true,
+			deviceVotingStartedAt: true,
+			deviceVotingWindowSeconds: true,
+			votes: { id: true, committeeMemberId: true, vote: true }
+		},
 		activeAgendaItem: {
 			id: true,
 			title: true,
@@ -73,9 +86,19 @@
 				speakingTime: true,
 				startTimestamp: true,
 				timeLeft: true,
+				phase: true,
+				agendaItem: {
+					id: true,
+					committee: {
+						id: true,
+						allowDelegationsToAddThemselvesToSpeakersList: true,
+						conferenceId: true
+					}
+				},
 				speakers: {
 					id: true,
 					position: true,
+					speakersListId: true,
 					overwriteName: true,
 					committeeMember: {
 						id: true,
@@ -102,6 +125,8 @@
 		}
 	});
 
+	const minAmendmentSponsors = $derived(Math.ceil((committee?.totalPresent ?? 0) * 0.1));
+
 	let role = $derived(conferenceUser?.conferenceUserType);
 	let isParticipant = $derived(role === 'DELEGATE' || role === 'NON_STATE_ACTOR');
 
@@ -114,11 +139,33 @@
 			conferenceUser?.conferenceMember?.representation
 	);
 
+	// Freeze the last-known agenda item while the WS is confirmed disconnected, so a
+	// transient network blip doesn't reset the active speaker's timer.
+	const getActiveAgendaItem = latchWhileDisconnected(() => committee?.activeAgendaItem);
+	const activeAgendaItem = $derived(getActiveAgendaItem());
+
+	// Same freeze rationale as the agenda item: a real disconnect closes the vote via
+	// completeVotingSession clearing activeVotingSessionId, not the WS blip itself.
+	const getActiveVotingSession = latchWhileDisconnected(() => committee?.activeVotingSession);
+	const activeVotingSession = $derived(getActiveVotingSession());
+	const showDeviceVoteModal = $derived(
+		!!activeVotingSession &&
+			activeVotingSession.mode === 'DEVICE_BASED' &&
+			!!activeVotingSession.deviceVotingStartedAt &&
+			!!activeVotingSession.deviceVotingWindowSeconds &&
+			!!myCommitteeMemberId &&
+			myPresent
+	);
+	const myVote = $derived(
+		activeVotingSession?.votes.find((v) => v.committeeMemberId === myCommitteeMemberId)?.vote ??
+			null
+	);
+
 	const speakersList = $derived(
-		committee?.activeAgendaItem?.speakersList?.find((sl) => sl.type === 'SPEAKERS_LIST')
+		activeAgendaItem?.speakersList?.find((sl) => sl.type === 'SPEAKERS_LIST')
 	);
 	const commentList = $derived(
-		committee?.activeAgendaItem?.speakersList?.find((sl) => sl.type === 'COMMENT_LIST')
+		activeAgendaItem?.speakersList?.find((sl) => sl.type === 'COMMENT_LIST')
 	);
 
 	// Self-add logic
@@ -141,16 +188,18 @@
 
 	async function handleSelfAdd(listId: string) {
 		await client.mutate.selfAddToSpeakersList({
-			__args: { speakersListId: listId },
+			__args: { id: nanoid(), speakersListId: listId },
 			id: true,
-			position: true
+			position: true,
+			speakersListId: true
 		});
 	}
 
 	async function handleSelfRemove(listId: string) {
 		await client.mutate.selfRemoveFromSpeakersList({
 			__args: { speakersListId: listId },
-			id: true
+			id: true,
+			speakers: { id: true, position: true }
 		});
 	}
 </script>
@@ -170,7 +219,7 @@
 		<!-- Committee Status Card -->
 		<div class="card bg-base-100 shadow-sm">
 			<div class="card-body gap-2 p-4">
-				<IconInfoBox text={committee.activeAgendaItem?.title ?? '—'} faIcon="podium" />
+				<IconInfoBox text={activeAgendaItem?.title ?? '—'} faIcon="podium" />
 				<IconInfoBox
 					text={getCommitteeStatusText(committee.status)}
 					faIcon={getCommitteeStatusIcon(committee.status)}
@@ -189,7 +238,7 @@
 					totalPresent={committee.totalPresent}
 					simpleMajority={committee.simpleMajority}
 					twoThirdsMajority={committee.twoThirdsMajority}
-					paperSupportThreshold={committee.paperSupportThreshold}
+					{minAmendmentSponsors}
 				/>
 			</div>
 		</div>
@@ -251,6 +300,24 @@
 			{/each}
 		{/if}
 
+		<!-- Resolutions Card -->
+		<a
+			class="card bg-base-100 shadow-sm transition hover:shadow-md"
+			href={resolve('/app/[conferenceId]/participant/[committeeId]/papers', {
+				conferenceId: page.params.conferenceId!,
+				committeeId: page.params.committeeId!
+			})}
+		>
+			<div class="card-body flex-row items-center gap-3 p-4">
+				<i class="fa-duotone fa-file-lines text-2xl"></i>
+				<div class="flex-1">
+					<h2 class="card-title text-lg">{m.resolutions()}</h2>
+					<p class="text-base-content/60 text-sm">{m.resolutionsCardHint()}</p>
+				</div>
+				<i class="fas fa-chevron-right opacity-50"></i>
+			</div>
+		</a>
+
 		<!-- Whiteboard Card -->
 		{#if committee.showWhiteboard && committee.whiteboardContent}
 			<div class="card bg-base-100 shadow-sm">
@@ -261,4 +328,17 @@
 			</div>
 		{/if}
 	</div>
+{/if}
+
+{#if showDeviceVoteModal && activeVotingSession?.deviceVotingStartedAt && activeVotingSession?.deviceVotingWindowSeconds && myCommitteeMemberId}
+	<DeviceVoteModal
+		active={showDeviceVoteModal}
+		sessionId={activeVotingSession.id}
+		voteName={activeVotingSession.voteName}
+		withAbstentions={activeVotingSession.withAbstentions}
+		deviceVotingStartedAt={activeVotingSession.deviceVotingStartedAt}
+		deviceVotingWindowSeconds={activeVotingSession.deviceVotingWindowSeconds}
+		{myVote}
+		{myCommitteeMemberId}
+	/>
 {/if}

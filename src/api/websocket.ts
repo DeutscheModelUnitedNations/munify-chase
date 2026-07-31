@@ -1,155 +1,162 @@
 // make sure we register all handlers before generating the schema later
 import '$api/handlers/register';
 
-import { WebSocketServer, type WebSocket as WSWebSocket } from 'ws';
+import { WebSocketServer } from 'ws';
+import type { WebSocket } from 'ws';
 import type { Socket } from 'node:net';
 import { useServer } from 'graphql-ws/use/ws';
-import { createWs } from './rumble';
+import { createWs } from '$api/rumble';
 import type { IncomingMessage } from 'node:http';
-import type { RequestEvent } from '@sveltejs/kit';
-import { OIDC } from './services/OIDC';
-import { parse as parseCookies } from 'cookie';
-import dayjs from 'dayjs';
 import { openYjsRoom } from './yjs/wss';
+import { nativeToRequestEvent } from './services/auth';
+import { OIDC } from './services/OIDC';
+import { context, type Context } from './context';
 
 const gqlWSS = new WebSocketServer({ noServer: true });
-const otherWSS = new WebSocketServer({ noServer: true });
 const yjsWSS = new WebSocketServer({ noServer: true });
 
-const YJS_PATH_PREFIX = '/api/ws/yjs/';
+export {
+	SYNTHETIC_EVENT_FIELD,
+	hasSyntheticSvelteRequestEvent
+} from './services/syntheticRequestEvent';
+import { SYNTHETIC_EVENT_FIELD } from './services/syntheticRequestEvent';
 
-/**
- * This is a bit hacky, but we need to create a synthetic RequestEvent to pass to the OIDC handler
- * so that it can populate the locals with the authenticated user.
- * Since this only ever runs on upgrade requests, we can get away with a lot of the properties being empty or no-ops.
- */
-function buildSyntheticEvent(req: IncomingMessage): RequestEvent {
-	// const host = req.headers.host ?? 'localhost';
-	// const proto = req.headers['x-forwarded-proto'] ?? 'https';
-	// TODO: align these with node adapter behavior
-	const host = 'localhost';
-	const proto = 'https';
-	const url = new URL(req.url ?? '/', `${proto}://${host}`);
-	const cookies = parseCookies(req.headers.cookie ?? '');
-	const locals = {} as RequestEvent['locals'];
+// Stash the raw TCP socket on the upgrade IncomingMessage so the graphql-ws
+// onConnect handler can reach it for deferred (connection_init) auth.
+const UPGRADE_SOCKET_FIELD = '__upgradeSocket';
 
-	return {
-		url,
-		request: new Request(url.toString()),
-		locals,
-		cookies: {
-			get: (name: string) => cookies[name],
-			getAll: () => Object.entries(cookies).map(([name, value]) => ({ name, value, path: '/' })),
-			set: () => {},
-			delete: () => {},
-			serialize: () => ''
-		},
-		params: {},
-		route: { id: null },
-		platform: undefined,
-		fetch: globalThis.fetch,
-		setHeaders: () => {},
-		depends: () => {},
-		untrack: <T>(fn: () => T) => fn(),
-		isDataRequest: false,
-		isSubRequest: false
-	} as unknown as RequestEvent;
-}
+createWs(
+	useServer as unknown as (options: unknown, ws: typeof gqlWSS) => void,
+	{
+		onConnect: async (wsCtx: {
+			connectionParams?: unknown;
+			extra: { socket: WebSocket; request: IncomingMessage };
+		}) => {
+			const req = wsCtx.extra.request;
+			// Upgrade-time auth (cookie / Authorization header) already stored the
+			// synthetic event on the IncomingMessage — nothing more to do.
+			if ((req as unknown as Record<string, unknown>)[SYNTHETIC_EVENT_FIELD]) return;
 
-async function authenticateWebSocketRequest(req: IncomingMessage) {
-	const syntheticEvent = buildSyntheticEvent(req);
+			// Clients that cannot set HTTP headers (e.g. native/Tauri) send their
+			// token as connectionParams.Authorization in the connection_init message.
+			const params = wsCtx.connectionParams as Record<string, unknown> | undefined;
+			const authHeader =
+				typeof params?.Authorization === 'string'
+					? params.Authorization
+					: typeof params?.authorization === 'string'
+						? params.authorization
+						: undefined;
 
-	await OIDC.handle({
-		event: syntheticEvent,
-		resolve: async () => new Response()
-	});
+			if (!authHeader?.startsWith('Bearer ')) {
+				return false;
+			}
 
-	return syntheticEvent.locals;
-}
+			// Inject the Bearer token into a synthetic request event and run OIDC.
+			const fakeReq = Object.create(req) as IncomingMessage;
+			fakeReq.headers = { ...req.headers, authorization: authHeader };
+			let syntheticEvent = nativeToRequestEvent(fakeReq);
+			try {
+				await OIDC.handle({
+					event: syntheticEvent,
+					resolve: (event) => {
+						syntheticEvent = event;
+						return new Response();
+					}
+				});
+				const ctx = context(syntheticEvent);
+				ctx.mustBeLoggedIn();
+				(req as unknown as Record<string, unknown>)[SYNTHETIC_EVENT_FIELD] = syntheticEvent;
+				const socket = (req as unknown as Record<string, unknown>)[UPGRADE_SOCKET_FIELD] as Socket;
+				startWSValidityChecker(ctx, socket);
+			} catch (err) {
+				console.error('[wss] failed to validate connection_init Bearer token', err);
+				return false;
+			}
+		}
+	},
+	gqlWSS
+);
 
-// rumble 0.18.1's createWs over-constrains the `implementation` generic so that
-// graphql-ws's `useServer` (which keeps its own generic parameters) no longer
-// satisfies it. Runtime is unaffected — strip the generics at the call boundary.
-createWs(useServer as unknown as (options: unknown, ws: typeof gqlWSS) => void, {}, gqlWSS);
+const setHeaders = (headers: string[], req: IncomingMessage) => {
+	const cookies = (req as unknown as Record<string, unknown>)[SYNTHETIC_EVENT_FIELD] as
+		{ headers?: { 'set-cookie'?: string[] } } | undefined;
+	if (cookies?.headers?.['set-cookie']) {
+		for (const cookie of cookies.headers['set-cookie']) headers.push(`Set-Cookie: ${cookie}`);
+	}
+};
+gqlWSS.on('headers', setHeaders);
+yjsWSS.on('headers', setHeaders);
 
-type LocalsBag = RequestEvent['locals'];
-type RequestWithLocals = IncomingMessage & { locals?: LocalsBag };
-
-async function attachLocals(req: IncomingMessage, ws: WSWebSocket) {
-	const locals = await authenticateWebSocketRequest(req);
-	(req as RequestWithLocals).locals = locals;
-
-	const exp = locals.oidc?.accessToken?.exp;
-	const expirationTimestamp = exp ? dayjs.unix(exp) : dayjs().add(300, 'seconds');
-
-	const timeout = setTimeout(
-		() => {
-			ws.close();
-		},
-		expirationTimestamp.diff(dayjs(), 'milliseconds')
-	);
-
-	ws.addEventListener('close', () => {
-		clearTimeout(timeout);
-	});
-}
-
-(globalThis as Record<string, unknown>).__wssUpgrade = (
+(globalThis as Record<string, unknown>).__wssUpgrade = async (
 	req: IncomingMessage,
 	socket: Socket,
 	head: Buffer
 ) => {
-	if (req.url?.startsWith(YJS_PATH_PREFIX)) {
-		const paperId = req.url.slice(YJS_PATH_PREFIX.length).split('?')[0];
-		yjsWSS.handleUpgrade(req, socket, head, (ws) => {
-			attachLocals(req, ws)
-				.then(() => {
-					const oidc = (req as RequestWithLocals).locals?.oidc;
-					const userSub = oidc?.user?.sub as string | undefined;
-					if (!userSub) {
-						const cookieHeader = req.headers.cookie ?? '';
-						console.warn('[yjs] WS upgrade has no user subject after OIDC handle', {
-							paperId,
-							hasCookieHeader: cookieHeader.length > 0,
-							cookieNames: Object.keys(parseCookies(cookieHeader)),
-							oidcKeys: oidc ? Object.keys(oidc) : null,
-							hasAccessToken: !!oidc?.accessToken,
-							accessTokenExp: oidc?.accessToken?.exp ?? null
-						});
-					}
-					void openYjsRoom(ws, paperId, userSub);
-				})
-				.catch((err) => {
-					console.error('[yjs] auth bootstrap failed; closing socket', { paperId, err });
-					try {
-						ws.close(1011, 'Authentication failed');
-					} catch {
-						/* noop */
-					}
-				});
+	const url = new URL(req.url ?? '/', 'http://localhost');
+	const isGql = url.pathname === '/api/graphql';
+	const isYjs = url.pathname.startsWith('/api/docs');
+
+	// Store the raw socket early so the graphql-ws onConnect handler can reach
+	// it when deferred (connection_init) authentication is needed.
+	if (isGql) (req as unknown as Record<string, unknown>)[UPGRADE_SOCKET_FIELD] = socket;
+
+	let syntheticSvelteRequestEvent = nativeToRequestEvent(req);
+	let ctx: Context | undefined;
+
+	try {
+		await OIDC.handle({
+			event: syntheticSvelteRequestEvent,
+			resolve: (event) => {
+				syntheticSvelteRequestEvent = event;
+				return new Response();
+			}
 		});
-		return;
-	}
-	switch (req.url) {
-		case '/api/ws':
-			otherWSS.handleUpgrade(req, socket, head, (ws) => {
-				attachLocals(req, ws).then(() => {
-					ws.emit('connection', ws, req);
-					ws.send('unimplemented');
-					ws.close();
-				});
-			});
-			break;
-		case '/api/graphql':
-			gqlWSS.handleUpgrade(req, socket, head, (ws) => {
-				attachLocals(req, ws).then(() => {
-					gqlWSS.emit('connection', ws, req);
-				});
-			});
-			break;
-		default:
+		const authedCtx = context(syntheticSvelteRequestEvent);
+		authedCtx.mustBeLoggedIn();
+		ctx = authedCtx;
+		(req as unknown as Record<string, unknown>)[SYNTHETIC_EVENT_FIELD] =
+			syntheticSvelteRequestEvent;
+		startWSValidityChecker(ctx, socket);
+	} catch (err) {
+		if (!isGql && !isYjs) {
+			console.error('[wss] failed to validate websocket connection', err);
+			socket.destroy();
 			return;
+		}
+		// isGql: allow through — graphql-ws onConnect validates connectionParams
+		//        (Bearer token in the connection_init message).
+		// isYjs: allow through — Hocuspocus onAuthenticate validates the in-band
+		//        Bearer token sent by the client after the upgrade.
+	}
+
+	if (isGql) {
+		gqlWSS.handleUpgrade(req, socket, head, (ws) => {
+			gqlWSS.emit('connection', ws, req);
+		});
+	} else if (isYjs) {
+		// ctx may be undefined here when upgrade-time auth found no credentials;
+		// openYjsRoom accepts undefined and Hocuspocus's onAuthenticate hook will
+		// validate the in-band Bearer token before allowing document access.
+		yjsWSS.handleUpgrade(req, socket, head, (ws) => {
+			openYjsRoom(ws, req, Promise.resolve(ctx));
+		});
 	}
 };
 
-export const wss = otherWSS;
+const SESSION_LIVENESS_CHECK_INTERVAL_MS = 5 * 60_000;
+
+function startWSValidityChecker(ctx: Context, socket: Socket) {
+	const interval = setInterval(async () => {
+		try {
+			if (!(await ctx.isSessionLive())) {
+				clearInterval(interval);
+				socket.destroy();
+			}
+		} catch (err) {
+			// A transient failure (e.g. the introspection call itself erroring
+			// out) fails open — only a definitive "not live" result disconnects.
+			console.error('[wss] failed to check websocket session liveness', err);
+		}
+	}, SESSION_LIVENESS_CHECK_INTERVAL_MS);
+	socket.once('close', () => clearInterval(interval));
+}

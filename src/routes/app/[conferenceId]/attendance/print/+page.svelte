@@ -72,7 +72,7 @@
 <style>
 	.cards-grid {
 		display: grid;
-		grid-template-columns: repeat(auto-fill, 85mm);
+		grid-template-columns: repeat(auto-fill, 55mm);
 		gap: 5mm;
 		justify-content: center;
 		background: #f3f4f6;
@@ -86,7 +86,7 @@
 			display: none !important;
 		}
 		.cards-grid {
-			grid-template-columns: repeat(2, 85mm);
+			grid-template-columns: repeat(auto-fill, 55mm);
 			gap: 5mm;
 			padding: 0;
 			background: white;

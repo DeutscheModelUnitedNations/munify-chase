@@ -1,11 +1,15 @@
 import { writable } from 'svelte/store';
-import type { VotingMajority } from '$lib/local-db/localDB';
+
+export type VotingStage = 'PRO' | 'CON' | 'ABSTAIN' | 'EVALUATION';
+export type VotingOptions = 'PRO' | 'CON' | 'ABSTAIN';
+export type VotingMajority = 'SIMPLE' | 'ABSOLUTE' | 'TWO_THIRDS';
 
 export interface VotingConfig {
 	voteName?: string;
 	majority?: VotingMajority;
-	voteType?: 'SHOW_OF_HANDS' | 'ROLL_CALL';
+	voteType?: 'SHOW_OF_HANDS' | 'ROLL_CALL' | 'DEVICE_BASED';
 	withAbstentions?: boolean;
+	deviceVotingWindowSeconds?: number;
 }
 
 export interface VotingResult {
@@ -19,6 +23,8 @@ export interface VotingResult {
 interface VotingModalState {
 	config: VotingConfig;
 	onComplete: (result: VotingResult) => void;
+	/** Skip the setup form and go straight to the executing phase (resume flow). */
+	resume?: boolean;
 }
 
 export const votingModalStore = writable<VotingModalState | null>(null);
@@ -27,6 +33,19 @@ export function openVotingModal(config: VotingConfig = {}): Promise<VotingResult
 	return new Promise((resolve) => {
 		votingModalStore.set({
 			config,
+			onComplete: (result) => {
+				votingModalStore.set(null);
+				resolve(result);
+			}
+		});
+	});
+}
+
+export function resumeVotingModal(config: VotingConfig = {}): Promise<VotingResult> {
+	return new Promise((resolve) => {
+		votingModalStore.set({
+			config,
+			resume: true,
 			onComplete: (result) => {
 				votingModalStore.set(null);
 				resolve(result);

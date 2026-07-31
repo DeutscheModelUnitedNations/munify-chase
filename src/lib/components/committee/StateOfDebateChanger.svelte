@@ -14,7 +14,11 @@
 
 	let { committeeId, oldStateOfDebate, abort }: Props = $props();
 
-	let value = $state(oldStateOfDebate ?? '');
+	// eslint-disable-next-line svelte/prefer-writable-derived -- writable and reactive to prop changes
+	let value = $state('');
+	$effect(() => {
+		value = oldStateOfDebate ?? '';
+	});
 
 	const presets = stateOfDebateTemplates.map((preset) => ({
 		label: preset

@@ -1,6 +1,5 @@
 <script lang="ts">
 	import { m } from '$lib/paraglide/messages';
-	import dayjs from 'dayjs';
 	import { onMount } from 'svelte';
 	import { Confetti } from 'svelte-confetti';
 	import Marquee from 'svelte-fast-marquee';
@@ -8,37 +7,35 @@
 	import { fade, fly } from 'svelte/transition';
 
 	interface Props {
-		agendaItem: string;
-		committeeName: string;
 		lastAdoptionDate?: Date | null;
 		confettiDurationSec?: number;
 		showBanner?: boolean;
+		committeeName?: string;
+		agendaItem?: string;
 	}
 
 	let {
 		lastAdoptionDate,
-		agendaItem,
-		committeeName,
-		confettiDurationSec = 30,
-		showBanner = false
+		confettiDurationSec = 45,
+		showBanner = false,
+		committeeName = '',
+		agendaItem = ''
 	}: Props = $props();
 
-	let timeSinceLastAdoption = $state(
-		lastAdoptionDate && dayjs().diff(dayjs(lastAdoptionDate), 'seconds')
-	);
+	let now = $state(Date.now());
 
 	onMount(() => {
 		const interval = setInterval(() => {
-			if (lastAdoptionDate) {
-				timeSinceLastAdoption = dayjs().diff(lastAdoptionDate, 'seconds');
-			}
+			now = Date.now();
 		}, 1000);
-		return () => {
-			clearInterval(interval);
-		};
+		return () => clearInterval(interval);
 	});
 
-	let confettiExplosionCount = $derived(Math.floor(confettiDurationSec) * 1.6);
+	const timeSinceLastAdoption = $derived(
+		lastAdoptionDate ? Math.floor((now - lastAdoptionDate.getTime()) / 1000) : null
+	);
+
+	const confettiExplosionCount = $derived(Math.floor(confettiDurationSec * 1.6));
 	function randomPercentage() {
 		return Math.random() * 100;
 	}
@@ -47,7 +44,7 @@
 	}
 </script>
 
-{#if timeSinceLastAdoption && timeSinceLastAdoption < confettiDurationSec}
+{#if timeSinceLastAdoption != null && timeSinceLastAdoption < confettiDurationSec}
 	<div
 		class="pointer-events-none fixed -top-[50px] right-0 bottom-0 left-0 z-50 flex justify-center overflow-hidden"
 		out:fade={{ duration: 3000 }}
@@ -63,7 +60,7 @@
 		/>
 	</div>
 	<div class="pointer-events-none fixed inset-0 z-50" out:fade={{ duration: 3000 }}>
-		{#each Array(confettiExplosionCount), idx (idx)}
+		{#each Array(confettiExplosionCount) as _, idx (idx)}
 			{@const delay = randomDelay()}
 			<div style="position: absolute; top: {randomPercentage()}%; left: {randomPercentage()}%;">
 				<Confetti delay={[delay, delay]} duration={1000} x={[-0.5, 0.5]} y={[-0.5, 0.5]} />
@@ -71,17 +68,14 @@
 		{/each}
 	</div>
 
-	{#if showBanner}
+	{#if showBanner && committeeName && agendaItem}
 		<div
-			class="h-md bg-primary text-primary-content fixed right-0 bottom-0 left-0 z-50"
+			class="bg-primary text-primary-content fixed right-0 bottom-0 left-0 z-50 h-20"
 			transition:fly={{ y: 100, easing: cubicInOut, duration: 1000 }}
 		>
 			<Marquee class="h-full w-full overflow-hidden py-6 whitespace-nowrap" speed={50} gap="4rem">
 				<h1 class="text-4xl font-bold">
-					{m.adoptionAnnouncement({
-						committeeName,
-						agendaItem
-					})}
+					{m.adoptionAnnouncement({ committeeName, agendaItem })}
 				</h1>
 				<h1 class="text-4xl font-bold">+++</h1>
 			</Marquee>

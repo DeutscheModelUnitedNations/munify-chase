@@ -25,15 +25,11 @@
 		abort
 	}: Props = $props();
 
-	const categories: {
-		id: CommitteestatusEnum;
-		faIcon: string;
-		tooltip: string;
-	}[] = [
-		{ id: 'FORMAL', faIcon: 'podium', tooltip: m.formalDebate() },
-		{ id: 'INFORMAL', faIcon: 'messages', tooltip: m.informalCaucus() },
-		{ id: 'PAUSE', faIcon: 'mug-saucer', tooltip: m.pause() },
-		{ id: 'SUSPENSION', faIcon: 'forward-step', tooltip: m.suspension() },
+	const categories = $derived([
+		{ id: 'FORMAL' as CommitteestatusEnum, faIcon: 'podium', tooltip: m.formalDebate() },
+		{ id: 'INFORMAL' as CommitteestatusEnum, faIcon: 'messages', tooltip: m.informalCaucus() },
+		{ id: 'PAUSE' as CommitteestatusEnum, faIcon: 'mug-saucer', tooltip: m.pause() },
+		{ id: 'SUSPENSION' as CommitteestatusEnum, faIcon: 'forward-step', tooltip: m.suspension() },
 		...(hasModeratedCaucus
 			? [
 					{
@@ -43,15 +39,23 @@
 					}
 				]
 			: [])
-	];
+	]);
 
 	const absoluteTimes = [0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55];
 	const relativeTimes = [3, 5, 10, 15, 20, 25, 30];
 
 	let activeCategory: CommitteestatusEnum = $state('INFORMAL');
-	let until = $state(dayjs(oldUntil) ?? getServerTime());
+	// eslint-disable-next-line svelte/prefer-writable-derived -- writable and reactive to prop changes
+	let until = $state(getServerTime());
+	$effect(() => {
+		until = dayjs(oldUntil) ?? getServerTime();
+	});
 	let untilFormatted = $derived(dayjs(until).format('HH:mm:ss'));
-	let customName = $state(oldCustomName);
+	// eslint-disable-next-line svelte/prefer-writable-derived -- writable and reactive to prop changes
+	let customName = $state('');
+	$effect(() => {
+		customName = oldCustomName;
+	});
 
 	let customNameOpen = $state(false);
 

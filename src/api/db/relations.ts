@@ -25,10 +25,6 @@ export const relations = defineRelations(schema, (r) => ({
 			from: r.conference.id,
 			to: r.representation.conferenceId
 		}),
-		nsaPresenceEvents: r.many.nsaPresenceEvent({
-			from: r.conference.id,
-			to: r.nsaPresenceEvent.conferenceId
-		}),
 		displayDevices: r.many.displayDevice({
 			from: r.conference.id,
 			to: r.displayDevice.conferenceId
@@ -43,13 +39,25 @@ export const relations = defineRelations(schema, (r) => ({
 			from: r.committee.activeAgendaItemId,
 			to: r.agendaItem.id
 		}),
+		activeRollCallSession: r.one.rollCallSession({
+			from: r.committee.activeRollCallSessionId,
+			to: r.rollCallSession.id,
+			optional: true
+		}),
+		activeVotingSession: r.one.votingSession({
+			from: r.committee.activeVotingSessionId,
+			to: r.votingSession.id,
+			optional: true
+		}),
 		activeDraftResolution: r.one.resolutionPaper({
 			from: r.committee.activeDraftResolutionId,
-			to: r.resolutionPaper.id
+			to: r.resolutionPaper.id,
+			optional: true
 		}),
 		activeAmendment: r.one.amendment({
 			from: r.committee.activeAmendmentId,
-			to: r.amendment.id
+			to: r.amendment.id,
+			optional: true
 		}),
 		agendaItems: r.many.agendaItem({
 			from: r.committee.id,
@@ -59,13 +67,21 @@ export const relations = defineRelations(schema, (r) => ({
 			from: r.committee.id,
 			to: r.committeeMember.committeeId
 		}),
+		presenceEvents: r.many.presenceEvent({
+			from: r.committee.id,
+			to: r.presenceEvent.committeeId
+		}),
+		rollCallSessions: r.many.rollCallSession({
+			from: r.committee.id,
+			to: r.rollCallSession.committeeId
+		}),
+		votingSessions: r.many.votingSession({
+			from: r.committee.id,
+			to: r.votingSession.committeeId
+		}),
 		resolutionPapers: r.many.resolutionPaper({
 			from: r.committee.id,
 			to: r.resolutionPaper.committeeId
-		}),
-		nsaPresenceEvents: r.many.nsaPresenceEvent({
-			from: r.committee.id,
-			to: r.nsaPresenceEvent.committeeId
 		}),
 		displayDevices: r.many.displayDevice({
 			from: r.committee.id,
@@ -97,25 +113,25 @@ export const relations = defineRelations(schema, (r) => ({
 			from: r.committeeMember.id,
 			to: r.conferenceUser.committeeMemberId
 		}),
-		presenceChangedTimestamps: r.many.presenceChangedTimestamp({
+		votingVotes: r.many.votingVote({
 			from: r.committeeMember.id,
-			to: r.presenceChangedTimestamp.committeeMemberId
+			to: r.votingVote.committeeMemberId
 		}),
 		createdPapers: r.many.resolutionPaper({
 			from: r.committeeMember.id,
 			to: r.resolutionPaper.creatorCommitteeMemberId
 		}),
-		paperSponsors: r.many.paperSponsor({
+		paperSponsorships: r.many.paperSponsor({
 			from: r.committeeMember.id,
 			to: r.paperSponsor.committeeMemberId
-		}),
-		amendmentSponsors: r.many.amendmentSponsor({
-			from: r.committeeMember.id,
-			to: r.amendmentSponsor.committeeMemberId
 		}),
 		proposedAmendments: r.many.amendment({
 			from: r.committeeMember.id,
 			to: r.amendment.proposerCommitteeMemberId
+		}),
+		amendmentSponsorships: r.many.amendmentSponsor({
+			from: r.committeeMember.id,
+			to: r.amendmentSponsor.committeeMemberId
 		})
 	},
 	conferenceUser: {
@@ -143,21 +159,21 @@ export const relations = defineRelations(schema, (r) => ({
 			to: r.conferenceMember.id,
 			optional: true
 		}),
-		paperEditors: r.many.paperEditor({
+		presenceEvents: r.many.presenceEvent({
+			from: r.conferenceUser.id,
+			to: r.presenceEvent.conferenceUserId
+		}),
+		triggeredPresenceEvents: r.many.presenceEvent({
+			from: r.conferenceUser.id,
+			to: r.presenceEvent.triggeredByConferenceUserId
+		}),
+		paperEditorships: r.many.paperEditor({
 			from: r.conferenceUser.id,
 			to: r.paperEditor.conferenceUserId
 		}),
-		comments: r.many.resolutionComment({
+		authoredComments: r.many.resolutionComment({
 			from: r.conferenceUser.id,
 			to: r.resolutionComment.authorConferenceUserId
-		}),
-		nsaPresenceEvents: r.many.nsaPresenceEvent({
-			from: r.conferenceUser.id,
-			to: r.nsaPresenceEvent.conferenceUserId
-		}),
-		triggeredNsaPresenceEvents: r.many.nsaPresenceEvent({
-			from: r.conferenceUser.id,
-			to: r.nsaPresenceEvent.triggeredByConferenceUserId
 		})
 	},
 	representation: {
@@ -255,31 +271,70 @@ export const relations = defineRelations(schema, (r) => ({
 			to: r.committee.id
 		})
 	},
-	presenceChangedTimestamp: {
-		committeeMember: r.one.committeeMember({
-			from: r.presenceChangedTimestamp.committeeMemberId,
-			to: r.committeeMember.id
-		})
-	},
-	nsaPresenceEvent: {
+	presenceEvent: {
 		conferenceUser: r.one.conferenceUser({
-			from: r.nsaPresenceEvent.conferenceUserId,
+			from: r.presenceEvent.conferenceUserId,
 			to: r.conferenceUser.id,
 			optional: false
 		}),
 		committee: r.one.committee({
-			from: r.nsaPresenceEvent.committeeId,
+			from: r.presenceEvent.committeeId,
 			to: r.committee.id,
 			optional: false
 		}),
-		conference: r.one.conference({
-			from: r.nsaPresenceEvent.conferenceId,
-			to: r.conference.id,
+		triggeredBy: r.one.conferenceUser({
+			from: r.presenceEvent.triggeredByConferenceUserId,
+			to: r.conferenceUser.id,
+			optional: true
+		}),
+		rollCallSession: r.one.rollCallSession({
+			from: r.presenceEvent.rollCallSessionId,
+			to: r.rollCallSession.id,
+			optional: true
+		})
+	},
+	rollCallSession: {
+		committee: r.one.committee({
+			from: r.rollCallSession.committeeId,
+			to: r.committee.id,
 			optional: false
 		}),
-		triggeredBy: r.one.conferenceUser({
-			from: r.nsaPresenceEvent.triggeredByConferenceUserId,
-			to: r.conferenceUser.id
+		startedBy: r.one.conferenceUser({
+			from: r.rollCallSession.startedByConferenceUserId,
+			to: r.conferenceUser.id,
+			optional: true
+		}),
+		presenceEvents: r.many.presenceEvent({
+			from: r.rollCallSession.id,
+			to: r.presenceEvent.rollCallSessionId
+		})
+	},
+	votingSession: {
+		committee: r.one.committee({
+			from: r.votingSession.committeeId,
+			to: r.committee.id,
+			optional: false
+		}),
+		startedBy: r.one.conferenceUser({
+			from: r.votingSession.startedByConferenceUserId,
+			to: r.conferenceUser.id,
+			optional: true
+		}),
+		votes: r.many.votingVote({
+			from: r.votingSession.id,
+			to: r.votingVote.votingSessionId
+		})
+	},
+	votingVote: {
+		votingSession: r.one.votingSession({
+			from: r.votingVote.votingSessionId,
+			to: r.votingSession.id,
+			optional: false
+		}),
+		committeeMember: r.one.committeeMember({
+			from: r.votingVote.committeeMemberId,
+			to: r.committeeMember.id,
+			optional: false
 		})
 	},
 	resolutionPaper: {
@@ -293,22 +348,26 @@ export const relations = defineRelations(schema, (r) => ({
 			to: r.agendaItem.id,
 			optional: false
 		}),
-		creator: r.one.committeeMember({
+		creatorCommitteeMember: r.one.committeeMember({
 			from: r.resolutionPaper.creatorCommitteeMemberId,
 			to: r.committeeMember.id,
 			optional: false
+		}),
+		snapshots: r.many.paperContentSnapshot({
+			from: r.resolutionPaper.id,
+			to: r.paperContentSnapshot.paperId
 		}),
 		sponsors: r.many.paperSponsor({
 			from: r.resolutionPaper.id,
 			to: r.paperSponsor.paperId
 		}),
-		shareCodes: r.many.paperShareCode({
-			from: r.resolutionPaper.id,
-			to: r.paperShareCode.paperId
-		}),
 		editors: r.many.paperEditor({
 			from: r.resolutionPaper.id,
 			to: r.paperEditor.paperId
+		}),
+		shareCodes: r.many.paperShareCode({
+			from: r.resolutionPaper.id,
+			to: r.paperShareCode.paperId
 		}),
 		comments: r.many.resolutionComment({
 			from: r.resolutionPaper.id,
@@ -318,20 +377,13 @@ export const relations = defineRelations(schema, (r) => ({
 			from: r.resolutionPaper.id,
 			to: r.amendment.paperId
 		}),
-		snapshots: r.many.paperContentSnapshot({
-			from: r.resolutionPaper.id,
-			to: r.paperContentSnapshot.paperId
-		}),
 		operativeClauseVotes: r.many.operativeClauseVote({
 			from: r.resolutionPaper.id,
 			to: r.operativeClauseVote.paperId
 		}),
-		// Optional: a resolutionVoteResult row only exists once a paper has
-		// been voted on. Papers that are still in progress (not FINAL) have
-		// no result, so this relation legitimately resolves to null.
-		voteResult: r.one.resolutionVoteResult({
-			from: r.resolutionPaper.id,
-			to: r.resolutionVoteResult.paperId,
+		vote: r.one.votingSession({
+			from: r.resolutionPaper.voteVotingSessionId,
+			to: r.votingSession.id,
 			optional: true
 		})
 	},
@@ -354,13 +406,6 @@ export const relations = defineRelations(schema, (r) => ({
 			optional: false
 		})
 	},
-	paperShareCode: {
-		paper: r.one.resolutionPaper({
-			from: r.paperShareCode.paperId,
-			to: r.resolutionPaper.id,
-			optional: false
-		})
-	},
 	paperEditor: {
 		paper: r.one.resolutionPaper({
 			from: r.paperEditor.paperId,
@@ -370,6 +415,13 @@ export const relations = defineRelations(schema, (r) => ({
 		conferenceUser: r.one.conferenceUser({
 			from: r.paperEditor.conferenceUserId,
 			to: r.conferenceUser.id,
+			optional: false
+		})
+	},
+	paperShareCode: {
+		paper: r.one.resolutionPaper({
+			from: r.paperShareCode.paperId,
+			to: r.resolutionPaper.id,
 			optional: false
 		})
 	},
@@ -384,9 +436,10 @@ export const relations = defineRelations(schema, (r) => ({
 			to: r.conferenceUser.id,
 			optional: false
 		}),
-		parentComment: r.one.resolutionComment({
+		parent: r.one.resolutionComment({
 			from: r.resolutionComment.parentCommentId,
-			to: r.resolutionComment.id
+			to: r.resolutionComment.id,
+			optional: true
 		}),
 		replies: r.many.resolutionComment({
 			from: r.resolutionComment.id,
@@ -407,6 +460,27 @@ export const relations = defineRelations(schema, (r) => ({
 		sponsors: r.many.amendmentSponsor({
 			from: r.amendment.id,
 			to: r.amendmentSponsor.amendmentId
+		}),
+		reviewItemsAsSubject: r.many.amendmentReviewItem({
+			from: r.amendment.id,
+			to: r.amendmentReviewItem.subjectAmendmentId
+		})
+	},
+	amendmentReviewItem: {
+		paper: r.one.resolutionPaper({
+			from: r.amendmentReviewItem.paperId,
+			to: r.resolutionPaper.id,
+			optional: false
+		}),
+		triggerAmendment: r.one.amendment({
+			from: r.amendmentReviewItem.triggerAmendmentId,
+			to: r.amendment.id,
+			optional: false
+		}),
+		subjectAmendment: r.one.amendment({
+			from: r.amendmentReviewItem.subjectAmendmentId,
+			to: r.amendment.id,
+			optional: false
 		})
 	},
 	amendmentSponsor: {
@@ -426,19 +500,10 @@ export const relations = defineRelations(schema, (r) => ({
 			from: r.operativeClauseVote.paperId,
 			to: r.resolutionPaper.id,
 			optional: false
-		})
-	},
-	resolutionVoteResult: {
-		paper: r.one.resolutionPaper({
-			from: r.resolutionVoteResult.paperId,
-			to: r.resolutionPaper.id,
-			optional: false
-		})
-	},
-	paperYjsDoc: {
-		paper: r.one.resolutionPaper({
-			from: r.paperYjsDoc.paperId,
-			to: r.resolutionPaper.id,
+		}),
+		vote: r.one.votingSession({
+			from: r.operativeClauseVote.votingSessionId,
+			to: r.votingSession.id,
 			optional: false
 		})
 	}

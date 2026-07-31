@@ -4,7 +4,6 @@ import { sveltekit } from '@sveltejs/kit/vite';
 import { defineConfig, type ViteDevServer } from 'vite';
 import type { IncomingMessage } from 'node:http';
 import type { Duplex } from 'node:stream';
-import mkcert from 'vite-plugin-mkcert';
 
 function wsPlugin() {
 	return {
@@ -68,7 +67,7 @@ function devAutoRestart() {
 
 export default defineConfig({
 	plugins: [
-		mkcert(),
+		// mkcert(),
 		devAutoRestart(),
 		tailwindcss(),
 		paraglideVitePlugin({
@@ -80,9 +79,9 @@ export default defineConfig({
 		wsPlugin()
 	],
 	// Yjs throws "Yjs was already imported" if two copies are loaded.
-	// Vite prebundles `y-websocket` + `y-protocols/*` and chunks the shared
-	// `yjs` they pull in. If we ALSO alias chase's direct `yjs` imports to
-	// `node_modules/yjs/dist/yjs.mjs` directly, that bypasses the chunk and
+	// Vite prebundles `@hocuspocus/provider` + `y-protocols/*` and chunks the
+	// shared `yjs` they pull in. If we ALSO alias chase's direct `yjs` imports
+	// to `node_modules/yjs/dist/yjs.mjs` directly, that bypasses the chunk and
 	// loads a SECOND yjs module at runtime. Use `dedupe` (which makes
 	// resolution always walk up to the project's yjs) without the alias —
 	// then chase's import and the prebundled chunk converge on the same
@@ -91,11 +90,11 @@ export default defineConfig({
 		dedupe: ['yjs', 'y-protocols']
 	},
 	optimizeDeps: {
-		include: ['y-protocols/sync', 'y-protocols/awareness', 'y-websocket'],
+		include: ['y-protocols/sync', 'y-protocols/awareness', '@hocuspocus/provider'],
 		// EXCLUDE yjs from prebundling entirely. When yjs is prebundled,
 		// vite ends up with two yjs entries (one for chase's direct import,
-		// one as the chunk shared by y-protocols/y-websocket), each with
-		// its own module-init scope → "Yjs was already imported" warning.
+		// one as the chunk shared by y-protocols/@hocuspocus/provider), each
+		// with its own module-init scope → "Yjs was already imported" warning.
 		// Excluded, every `import 'yjs'` resolves to the single source file
 		// at chase/node_modules/yjs/dist/yjs.mjs, ESM-cached once.
 		exclude: ['yjs']

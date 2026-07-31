@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { client } from '$lib/api/rumbleClient/client';
+	import { nanoid } from '$lib/helpers/nanoid';
 	import Combobox from '$lib/components/Combobox.svelte';
 	import Flag from '$lib/components/Flag.svelte';
 	import type { MergeWithUndefined } from '$lib/helpers/utilityTypes';
@@ -105,12 +106,14 @@
 		await toast.promise(
 			client.mutate.addSpeakerOnList({
 				__args: {
+					id: nanoid(),
 					committeeMemberId: committeeMember?.id,
 					conferenceMemberId: conferenceMember?.id,
 					speakersListId: speakersList.id
 				},
 				id: true,
-				position: true
+				position: true,
+				speakersListId: true
 			}),
 			promiseToastStrings(getName((committeeMember ?? conferenceMember) as Member), 'add')
 		);
@@ -147,6 +150,7 @@
 	filter={(member, value) => filter(member, value)}
 	placeholder="Search for a country"
 	getStringValue={(member) => getName(member)}
+	getKey={(member) => member.id}
 	kbd={speakersList?.type === 'COMMENT_LIST' ? 'alt+shift+A' : 'alt+A'}
 	submit={() => addSpeakerToList()}
 >

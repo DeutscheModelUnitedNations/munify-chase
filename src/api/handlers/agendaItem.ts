@@ -1,6 +1,6 @@
 import { db, schema } from '$api/db/db';
 import { abilityBuilder, object, query, pubsub as rumblePubsub, schemaBuilder } from '$api/rumble';
-import { nanoid } from '$lib/helpers/nanoid';
+import { nanoid, nanoidValidation } from '$lib/helpers/nanoid';
 import { assertFindFirstExists, assertFirstEntryExists } from '@m1212e/rumble';
 import { isDisplayKiosk, isParticipantInConference } from '$api/services/authHelper';
 
@@ -45,6 +45,7 @@ schemaBuilder.mutationFields((t) => {
 		createAgendaItem: t.drizzleField({
 			type: ref,
 			args: {
+				id: t.arg.id().validate(nanoidValidation),
 				title: t.arg({ type: 'String', required: true }),
 				committeeId: t.arg({ type: 'ID', required: true })
 			},
@@ -63,7 +64,7 @@ schemaBuilder.mutationFields((t) => {
 						.values({
 							title: args.title,
 							committeeId: args.committeeId,
-							id: nanoid()
+							id: args.id
 						})
 						.returning()
 						.then(assertFirstEntryExists);

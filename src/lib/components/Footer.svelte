@@ -13,9 +13,11 @@
 	>
 		<nav class="flex flex-col flex-wrap justify-center gap-4 md:flex-row">
 			<a class="link-hover link" href={resolve('/(pages)')}>{m.home()}</a>
+			<!-- eslint-disable svelte/no-at-html-tags -- translation string, not user input -->
 			<a class="link-hover link" href="https://dmun.de/impressum" target="_blank"
 				>{@html m.imprintAndPrivacy()}</a
 			>
+			<!-- eslint-enable svelte/no-at-html-tags -->
 		</nav>
 		<div class="flex">
 			<ThemeSwitcher />

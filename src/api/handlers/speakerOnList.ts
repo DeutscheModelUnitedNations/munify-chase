@@ -4,15 +4,8 @@ import { db, schema } from '$api/db/db';
 import { and, count, eq, gte, sql } from 'drizzle-orm';
 import { assertFindFirstExists, assertFirstEntryExists } from '@m1212e/rumble';
 import { SpeakersListRef } from './speakersList';
-import {
-	isChairInConference,
-	isGlobalAdmin,
-	isParticipantInConference
-} from '$api/services/authHelper';
-
-abilityBuilder.speakerOnList.allow(['read', 'update', 'delete']).when((ctx) => {
-	if (isGlobalAdmin(ctx)) return 'allow';
-});
+import { isTeamInConference, isParticipantInConference } from '$api/services/authHelper';
+import { nanoidValidation } from '$lib/helpers/nanoid';
 
 abilityBuilder.speakerOnList.allow('read').when((ctx) => {
 	return {
@@ -31,7 +24,7 @@ abilityBuilder.speakerOnList.allow(['update', 'delete']).when((ctx) => {
 		where: {
 			speakersList: {
 				agendaItem: {
-					committee: isChairInConference(ctx)
+					committee: isTeamInConference(ctx)
 				}
 			}
 		}
@@ -82,6 +75,7 @@ schemaBuilder.mutationFields((t) => {
 		addSpeakerOnList: t.drizzleField({
 			type: ref,
 			args: {
+				id: t.arg.id().validate(nanoidValidation),
 				//TOOD do we need the userId here?
 				//TOOD do we need the reference by nation here?
 				committeeMemberId: t.arg.id(),
@@ -137,6 +131,7 @@ schemaBuilder.mutationFields((t) => {
 						const created = await tx
 							.insert(schema.speakerOnList)
 							.values({
+								id: args.id,
 								committeeMemberId: args.committeeMemberId,
 								conferenceMemberId: args.conferenceMemberId,
 								speakersListId: speakersList.id,
@@ -230,6 +225,7 @@ schemaBuilder.mutationFields((t) => {
 		selfAddToSpeakersList: t.drizzleField({
 			type: ref,
 			args: {
+				id: t.arg.id().validate(nanoidValidation),
 				speakersListId: t.arg.id({ required: true })
 			},
 			resolve: async (query, root, args, ctx) => {
@@ -352,6 +348,7 @@ schemaBuilder.mutationFields((t) => {
 						const created = await tx
 							.insert(schema.speakerOnList)
 							.values({
+								id: args.id,
 								committeeMemberId,
 								conferenceMemberId,
 								speakersListId: args.speakersListId,
@@ -394,8 +391,38 @@ schemaBuilder.mutationFields((t) => {
 
 				const removed = await db.transaction(
 					async (tx) => {
+						// Fetch the speakers list first so we can scope the conferenceUser
+						// lookup to the right conference (fixes multi-conference users).
+						const speakersList = await tx.query.speakersList.findFirst({
+							where: { id: args.speakersListId },
+							with: {
+								agendaItem: {
+									with: {
+										committee: true
+									}
+								}
+							}
+						});
+
+						if (!speakersList) {
+							throw new GraphQLError('Speakers list not found');
+						}
+
+						const committee = speakersList.agendaItem?.committee;
+						if (!committee) {
+							throw new GraphQLError('Committee not found for this speakers list');
+						}
+						if (!committee.allowDelegationsToAddThemselvesToSpeakersList) {
+							throw new GraphQLError(
+								'Self-removing from speakers list is not enabled for this committee'
+							);
+						}
+
 						const conferenceUser = await tx.query.conferenceUser.findFirst({
-							where: { userEmail: user.email! },
+							where: {
+								userEmail: user.email!,
+								conferenceId: committee.conferenceId
+							},
 							with: {
 								committeeMember: true,
 								conferenceMember: true
@@ -427,31 +454,6 @@ schemaBuilder.mutationFields((t) => {
 
 						if (!speakerOnList) {
 							throw new GraphQLError('You are not on this speakers list');
-						}
-
-						const speakersList = await tx.query.speakersList.findFirst({
-							where: { id: args.speakersListId },
-							with: {
-								agendaItem: {
-									with: {
-										committee: true
-									}
-								}
-							}
-						});
-
-						if (!speakersList) {
-							throw new GraphQLError('Speakers list not found');
-						}
-
-						const committee = speakersList.agendaItem?.committee;
-						if (!committee) {
-							throw new GraphQLError('Committee not found for this speakers list');
-						}
-						if (!committee.allowDelegationsToAddThemselvesToSpeakersList) {
-							throw new GraphQLError(
-								'Self-removing from speakers list is not enabled for this committee'
-							);
 						}
 
 						const deleted = await tx
@@ -522,8 +524,22 @@ schemaBuilder.mutationFields((t) => {
 							)
 							.then(assertFindFirstExists);
 
-						if (args.position === aboutToMoveSpeakerOnList.position) {
-							throw new GraphQLError('Cannot move to the same position');
+						// Clamp target to the occupied range so moving a speaker beyond the
+						// last position never creates sparse gaps in the list.
+						const maxPositionRow = await tx.query.speakerOnList.findFirst({
+							where: {
+								speakersListId: aboutToMoveSpeakerOnList.speakersListId
+							},
+							orderBy: (t, { desc }) => desc(t.position),
+							columns: { position: true }
+						});
+						const maxPosition = maxPositionRow?.position ?? aboutToMoveSpeakerOnList.position;
+						const targetPosition = Math.max(0, Math.min(maxPosition, args.position));
+
+						if (targetPosition === aboutToMoveSpeakerOnList.position) {
+							// Already at the boundary — no-op. Return the correct type so
+							// pubsub.updated receives a valid ID array.
+							return [aboutToMoveSpeakerOnList.id];
 						}
 
 						await tx
@@ -535,14 +551,14 @@ schemaBuilder.mutationFields((t) => {
 
 						const updatedEntityIds = [aboutToMoveSpeakerOnList.id];
 
-						if (args.position > aboutToMoveSpeakerOnList.position) {
+						if (targetPosition > aboutToMoveSpeakerOnList.position) {
 							const toUpdate = await tx.query.speakerOnList.findMany({
 								where: {
 									AND: [
 										{
 											position: {
 												gt: aboutToMoveSpeakerOnList.position,
-												lte: args.position
+												lte: targetPosition
 											}
 										},
 										{
@@ -565,14 +581,14 @@ schemaBuilder.mutationFields((t) => {
 
 								updatedEntityIds.push(entry.id);
 							}
-						} else if (args.position < aboutToMoveSpeakerOnList.position) {
+						} else if (targetPosition < aboutToMoveSpeakerOnList.position) {
 							const toUpdate = await tx.query.speakerOnList.findMany({
 								where: {
 									AND: [
 										{
 											position: {
 												lt: aboutToMoveSpeakerOnList.position,
-												gte: args.position
+												gte: targetPosition
 											}
 										},
 										{
@@ -600,7 +616,7 @@ schemaBuilder.mutationFields((t) => {
 						await tx
 							.update(schema.speakerOnList)
 							.set({
-								position: args.position
+								position: targetPosition
 							})
 							.where(eq(schema.speakerOnList.id, aboutToMoveSpeakerOnList.id));
 

@@ -1,13 +1,16 @@
 <script lang="ts">
-	import type { VotingMajority } from '$lib/local-db/localDB';
+	import type { VotingMajority } from './votingModal';
 	import { m } from '$lib/paraglide/messages';
 	import Tabs from '../Tabs.svelte';
+	import Combobox from '../Combobox.svelte';
+	import votingNameTemplates from '$lib/data/votingNameTemplates';
 
 	interface Props {
-		voteType: 'SHOW_OF_HANDS' | 'ROLL_CALL';
+		voteType: 'SHOW_OF_HANDS' | 'ROLL_CALL' | 'DEVICE_BASED';
 		voteName: string;
 		majority: VotingMajority;
 		withAbstentions: boolean;
+		deviceVotingWindowSeconds: number;
 		onstart: () => void;
 	}
 
@@ -16,16 +19,18 @@
 		voteName = $bindable(),
 		majority = $bindable(),
 		withAbstentions = $bindable(),
+		deviceVotingWindowSeconds = $bindable(),
 		onstart
 	}: Props = $props();
 
 	const voteTypeTabs: {
-		id: 'SHOW_OF_HANDS' | 'ROLL_CALL';
+		id: 'SHOW_OF_HANDS' | 'ROLL_CALL' | 'DEVICE_BASED';
 		label: string;
 		faIcon: string;
 	}[] = [
 		{ id: 'SHOW_OF_HANDS', label: m.showOfHandsVoting(), faIcon: 'hand-wave' },
-		{ id: 'ROLL_CALL', label: m.rollCallVoting(), faIcon: 'list-check' }
+		{ id: 'ROLL_CALL', label: m.rollCallVoting(), faIcon: 'list-check' },
+		{ id: 'DEVICE_BASED', label: m.deviceBasedVoting(), faIcon: 'mobile' }
 	];
 
 	const majorityTabs: {
@@ -41,6 +46,10 @@
 		{ id: false, label: m.withoutAbstentions() },
 		{ id: true, label: m.withAbstentions() }
 	];
+
+	const voteNamePresets = votingNameTemplates.map((preset) => ({
+		label: preset
+	}));
 </script>
 
 <div class="flex flex-col gap-2">
@@ -58,9 +67,47 @@
 			onTabChange={(tab) => (withAbstentions = tab)}
 		/>
 	</fieldset>
+	{#if voteType === 'DEVICE_BASED'}
+		<fieldset class="fieldset bg-base-200 border-base-300 rounded-box w-full border p-4">
+			<legend class="fieldset-legend">{m.deviceVotingWindowSeconds()}</legend>
+			<input
+				type="number"
+				min="5"
+				max="300"
+				class="input w-full"
+				bind:value={deviceVotingWindowSeconds}
+			/>
+			<p class="label whitespace-normal">{m.deviceVotingWindowSecondsDescription()}</p>
+		</fieldset>
+	{/if}
 	<fieldset class="fieldset bg-base-200 border-base-300 rounded-box w-full border p-4">
 		<legend class="fieldset-legend">{m.voteTitel()}</legend>
-		<input type="text" class="input w-full" placeholder={m.voting()} bind:value={voteName} />
+		<Combobox
+			bind:value={voteName}
+			options={voteNamePresets}
+			side="top"
+			placeholder={m.voting()}
+			getStringValue={({ label }) => label}
+			filter={(options, v) =>
+				options.filter(({ label }) => label.toLowerCase().includes(v.toLowerCase()))}
+		>
+			{#snippet ListItem(option)}
+				<div class="flex items-center gap-2">
+					<i class="fas fa-box-ballot"></i>
+					<span>{option.label}</span>
+				</div>
+			{/snippet}
+
+			{#snippet AdditionalButtons()}
+				<button
+					class="btn btn-square input-lg join-item"
+					aria-label="Clear selection"
+					onclick={() => (voteName = '')}
+				>
+					<i class="fas fa-trash"></i>
+				</button>
+			{/snippet}
+		</Combobox>
 		<p class="label whitespace-normal">{m.voteTitleDescription()}</p>
 	</fieldset>
 

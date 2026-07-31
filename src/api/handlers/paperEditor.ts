@@ -1,61 +1,84 @@
 import { db, schema } from '$api/db/db';
-import { abilityBuilder, schemaBuilder, object, pubsub as rumblePubsub, query } from '$api/rumble';
-import { and, eq } from 'drizzle-orm';
-import { isGlobalAdmin } from '$api/services/authHelper';
+import { abilityBuilder, object, query, pubsub as rumblePubsub, schemaBuilder } from '$api/rumble';
+import { isParticipantInConference, isTeamInConference } from '$api/services/authHelper';
 import { assertFindFirstExists } from '@m1212e/rumble';
+import { nanoidValidation } from '$lib/helpers/nanoid';
 
-abilityBuilder.paperEditor.allow(['read', 'update']).when((ctx) => {
-	if (isGlobalAdmin(ctx)) return 'allow';
+abilityBuilder.paperEditor.allow('read').when((ctx) => {
+	return {
+		where: {
+			paper: { committee: isParticipantInConference(ctx) }
+		}
+	};
 });
 
-abilityBuilder.paperEditor.allow('read').when(({ mustBeLoggedIn }) => {
-	mustBeLoggedIn();
-	return 'allow';
+abilityBuilder.paperEditor.allow('delete').when((ctx) => {
+	const user = ctx.mustBeLoggedIn();
+	return {
+		where: {
+			OR: [
+				{ paper: { committee: isTeamInConference(ctx) } }, // team members can delete
+				{ paper: { creatorCommitteeMember: { users: { user: { id: user.sub } } } } }, // owner of the paper can delete
+				{ conferenceUser: { user: { id: user.sub } } } // self delete
+			]
+		}
+	};
 });
 
-object({ table: 'paperEditor' });
-const pubsub = rumblePubsub({ table: 'paperEditor' });
-const paperPubsub = rumblePubsub({ table: 'resolutionPaper' });
+const ref = object({ table: 'paperEditor' });
 query({ table: 'paperEditor' });
+const pubsub = rumblePubsub({ table: 'paperEditor' });
 
 schemaBuilder.mutationFields((t) => ({
-	removeEditor: t.field({
-		type: 'Boolean',
+	addPaperEditor: t.drizzleField({
+		type: ref,
 		args: {
+			id: t.arg.id().validate(nanoidValidation),
 			paperId: t.arg.id({ required: true }),
 			conferenceUserId: t.arg.id({ required: true })
 		},
-		resolve: async (root, args, ctx) => {
-			const user = ctx.mustBeLoggedIn();
-
-			// Must be paper creator
-			const paper = await db.query.resolutionPaper
-				.findFirst({
-					where: { id: args.paperId }
-				})
-				.then(assertFindFirstExists);
-
-			await db.query.conferenceUser
-				.findFirst({
-					where: {
-						user: { id: user.sub },
-						committeeMemberId: paper.creatorCommitteeMemberId
-					}
-				})
+		resolve: async (query, _root, args, ctx) => {
+			await db.query.resolutionPaper
+				.findFirst(
+					ctx.abilities.resolutionPaper.filter('update').merge({
+						where: { id: args.paperId }
+					}).query.single
+				)
 				.then(assertFindFirstExists);
 
 			await db
+				.insert(schema.paperEditor)
+				.values({
+					id: args.id,
+					paperId: args.paperId,
+					conferenceUserId: args.conferenceUserId
+				})
+				.onConflictDoNothing();
+
+			pubsub.created();
+
+			return db.query.paperEditor
+				.findFirst(
+					query(
+						ctx.abilities.paperEditor.filter('read').merge({
+							where: { paperId: args.paperId, conferenceUserId: args.conferenceUserId }
+						}).query.single
+					)
+				)
+				.then(assertFindFirstExists);
+		}
+	}),
+
+	removePaperEditor: t.field({
+		type: 'Boolean',
+		args: { id: t.arg.id({ required: true }) },
+		resolve: async (_root, args, ctx) => {
+			await db
 				.delete(schema.paperEditor)
 				.where(
-					and(
-						eq(schema.paperEditor.paperId, args.paperId),
-						eq(schema.paperEditor.conferenceUserId, args.conferenceUserId)
-					)
+					ctx.abilities.paperEditor.filter('delete').merge({ where: { id: args.id } }).sql.where
 				);
-
 			pubsub.removed();
-			paperPubsub.updated(args.paperId);
-
 			return true;
 		}
 	})

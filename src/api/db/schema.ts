@@ -1,6 +1,6 @@
 import { nanoid } from '../../lib/helpers/nanoid';
 import {
-	pgTable,
+	snakeCase,
 	text,
 	timestamp,
 	date,
@@ -9,17 +9,9 @@ import {
 	boolean,
 	smallint,
 	integer,
-	json,
-	customType,
-	index,
+	bytea,
 	type AnyPgColumn
 } from 'drizzle-orm/pg-core';
-
-const bytea = customType<{ data: Uint8Array; driverData: Buffer }>({
-	dataType: () => 'bytea',
-	toDriver: (v) => Buffer.from(v),
-	fromDriver: (v) => new Uint8Array(v as Buffer)
-});
 
 const defaultTimestamps = {
 	createdAt: timestamp().defaultNow().notNull(),
@@ -35,7 +27,7 @@ const defaultIdAndTimestamps = {
 	...defaultTimestamps
 };
 
-export const user = pgTable('user', {
+export const user = snakeCase.table('user', {
 	id: text().primaryKey().unique().notNull(),
 	...defaultTimestamps,
 
@@ -47,7 +39,7 @@ export const user = pgTable('user', {
 	preferredUsername: text().notNull()
 });
 
-export const conference = pgTable('conference', {
+export const conference = snakeCase.table('conference', {
 	...defaultIdAndTimestamps,
 	title: text().notNull(),
 	pressWebsite: text(),
@@ -55,7 +47,6 @@ export const conference = pgTable('conference', {
 	startDate: date({ mode: 'date' }),
 	endDate: date({ mode: 'date' }),
 	hasModeratedCaucus: boolean().notNull().default(false),
-	resolutionFeatureEnabled: boolean().notNull().default(true),
 	logoSvg: text()
 });
 
@@ -67,7 +58,7 @@ export const committeeStatus = pgEnum('committee_status', [
 	'SUSPENSION'
 ]);
 
-export const committee = pgTable(
+export const committee = snakeCase.table(
 	'committee',
 	{
 		...defaultIdAndTimestamps,
@@ -83,21 +74,32 @@ export const committee = pgTable(
 		statusUntil: timestamp({ mode: 'date' }).defaultNow().notNull(),
 		stateOfDebate: text(),
 		allowDelegationsToAddThemselvesToSpeakersList: boolean().notNull().default(false),
-		activeAgendaItemId: text().references((): AnyPgColumn => agendaItem.id),
+		activeAgendaItemId: text().references(() => agendaItem.id),
+		activeRollCallSessionId: text().references((): AnyPgColumn => rollCallSession.id, {
+			onDelete: 'set null'
+		}),
+		activeVotingSessionId: text().references((): AnyPgColumn => votingSession.id, {
+			onDelete: 'set null'
+		}),
+		activeDraftResolutionId: text().references((): AnyPgColumn => resolutionPaper.id, {
+			onDelete: 'set null'
+		}),
+		activeAmendmentId: text().references((): AnyPgColumn => amendment.id, {
+			onDelete: 'set null'
+		}),
+		supportReevaluationOpen: boolean().notNull().default(false),
+		amendmentSubmissionOpen: boolean().notNull().default(true),
+		amendmentSponsoringOpen: boolean().notNull().default(true),
+		currentOperativeIndex: smallint().notNull().default(0),
 		//TODO should these defaults be set at DB level?
 		customSimpleMajority: smallint(), // 50% by default
 		customTwoThirdsMajority: smallint(), // 66% by default
-		customPaperSupportThreshold: smallint(), // 10% by default
-		lastResolutionAdoptionDate: timestamp({ mode: 'date' }),
-		maxDraftResolutions: smallint().notNull().default(3),
-		activeDraftResolutionId: text().references((): AnyPgColumn => resolutionPaper.id),
-		currentOperativeIndex: smallint(),
-		currentOperativeClauseId: text(),
-		supportReEvaluationOpen: boolean().notNull().default(false),
-		amendmentSubmissionOpen: boolean().notNull().default(true),
-		amendmentSponsoringOpen: boolean().notNull().default(true),
-		activeAmendmentId: text().references((): AnyPgColumn => amendment.id, { onDelete: 'set null' }),
-		resolutionHeadline: text()
+		paperSupportThreshold: smallint().notNull().default(10), // percentage, 10% by default
+		presentationLayout: text().notNull().default('default'),
+		presentationRootFontSize: smallint().notNull().default(16),
+		presentationResolutionFontSize: smallint().notNull().default(16),
+		displayRegionalGroups: boolean().notNull().default(false),
+		lastResolutionAdoptionDate: timestamp({ mode: 'date' })
 	},
 	(t) => [unique().on(t.conferenceId, t.name), unique().on(t.conferenceId, t.abbreviation)]
 );
@@ -130,7 +132,7 @@ export const regionalGroup = pgEnum('regional_group', [
 	'WESTERN_EUROPE_OTHERS'
 ]);
 
-export const representation = pgTable(
+export const representation = snakeCase.table(
 	'representation',
 	{
 		...defaultIdAndTimestamps,
@@ -150,7 +152,7 @@ export const representation = pgTable(
 	]
 );
 
-export const conferenceMember = pgTable('conference_member', {
+export const conferenceMember = snakeCase.table('conference_member', {
 	...defaultIdAndTimestamps,
 	conferenceId: text()
 		.notNull()
@@ -160,7 +162,7 @@ export const conferenceMember = pgTable('conference_member', {
 		.references(() => representation.id)
 });
 
-export const committeeMember = pgTable('committee_member', {
+export const committeeMember = snakeCase.table('committee_member', {
 	...defaultIdAndTimestamps,
 	present: boolean().notNull().default(false),
 	committeeId: text()
@@ -171,7 +173,7 @@ export const committeeMember = pgTable('committee_member', {
 		.references(() => representation.id)
 });
 
-export const conferenceUser = pgTable(
+export const conferenceUser = snakeCase.table(
 	'conference_user',
 	{
 		...defaultIdAndTimestamps,
@@ -192,13 +194,13 @@ export const conferenceUser = pgTable(
 	},
 	// Postgres default NULLS DISTINCT keeps the constraint compatible with the many
 	// non-NSA users that have attendanceCode = NULL.
-	(t) => [unique().on(t.conferenceId, t.attendanceCode)]
+	(t) => [unique().on(t.conferenceId, t.attendanceCode), unique().on(t.conferenceId, t.userEmail)]
 );
 
-export const agendaItem = pgTable('agenda_item', {
+export const agendaItem = snakeCase.table('agenda_item', {
 	...defaultIdAndTimestamps,
 	committeeId: text()
-		.references(() => committee.id, { onDelete: 'cascade' })
+		.references((): AnyPgColumn => committee.id, { onDelete: 'cascade' })
 		.notNull(),
 	title: text().notNull()
 });
@@ -208,7 +210,15 @@ export const speakersListCategory = pgEnum('speakers_list_category', [
 	'COMMENT_LIST'
 ]);
 
-export const speakersList = pgTable(
+export const speakersListPhase = pgEnum('speakers_list_phase', [
+	'SPEECH',
+	'SPEECH_DONE',
+	'QUESTION',
+	'ANSWER',
+	'ANSWER_DONE'
+]);
+
+export const speakersList = snakeCase.table(
 	'speakers_list',
 	{
 		...defaultIdAndTimestamps,
@@ -219,17 +229,18 @@ export const speakersList = pgTable(
 		speakingTime: smallint().notNull(),
 		timeLeft: smallint().notNull().default(0),
 		startTimestamp: timestamp(),
-		isClosed: boolean().default(false).notNull()
+		isClosed: boolean().default(false).notNull(),
+		phase: speakersListPhase().default('SPEECH').notNull()
 	},
 	(t) => [unique().on(t.agendaItemId, t.type)]
 );
 
-export const speakerOnList = pgTable(
+export const speakerOnList = snakeCase.table(
 	'speaker_on_list',
 	{
 		...defaultIdAndTimestamps,
 		committeeMemberId: text().references(() => committeeMember.id, { onDelete: 'cascade' }),
-		conferenceMemberId: text().references((): AnyPgColumn => conferenceMember.id, {
+		conferenceMemberId: text().references(() => conferenceMember.id, {
 			onDelete: 'cascade'
 		}),
 		speakersListId: text()
@@ -245,68 +256,124 @@ export const speakerOnList = pgTable(
 	]
 );
 
-export const spokenTimePeriod = pgTable('spoken_time_period', {
+export const spokenTimePeriod = snakeCase.table('spoken_time_period', {
 	...defaultIdAndTimestamps,
 	committeeMemberId: text().references(() => committeeMember.id, { onDelete: 'cascade' }),
-	conferenceMemberId: text().references((): AnyPgColumn => conferenceMember.id, {
+	conferenceMemberId: text().references(() => conferenceMember.id, {
 		onDelete: 'cascade'
 	}),
 	speakersListId: text()
 		.references(() => speakersList.id, { onDelete: 'cascade' })
 		.notNull(),
 	startTimestamp: timestamp().notNull(),
-	endTimestamp: timestamp().notNull()
+	endTimestamp: timestamp().notNull(),
+	queuedAt: timestamp().notNull(),
+	phase: speakersListPhase().notNull()
 });
 
-export const committeeTopicChangedTimestamp = pgTable('committee_topic_changed_timestamp', {
+export const committeeTopicChangedTimestamp = snakeCase.table('committee_topic_changed_timestamp', {
 	...defaultIdAndTimestamps,
 	committeeId: text().references(() => committee.id, { onDelete: 'cascade' }),
 	agendaItemId: text().references(() => agendaItem.id, { onDelete: 'cascade' }),
 	timestamp: timestamp().notNull()
 });
 
-export const presenceChangedTimestamp = pgTable('presence_changed_timestamp', {
+export const rollCallSession = snakeCase.table('roll_call_session', {
 	...defaultIdAndTimestamps,
-	committeeMemberId: text()
+	committeeId: text()
 		.notNull()
-		.references(() => committeeMember.id, { onDelete: 'cascade' }),
-	timestamp: timestamp().notNull(),
-	presentSetTo: boolean().notNull()
+		.references(() => committee.id, { onDelete: 'cascade' }),
+	startedByConferenceUserId: text().references(() => conferenceUser.id, {
+		onDelete: 'set null'
+	}),
+	currentMemberIndex: integer().notNull().default(0),
+	completedAt: timestamp()
 });
 
-export const nsaPresenceEventType = pgEnum('nsa_presence_event_type', ['CHECK_IN', 'CHECK_OUT']);
+export const presenceEventMarker = pgEnum('presence_event_marker', [
+	'AUTO_SWITCH',
+	'ROLL_CALL',
+	'NSA_SCAN',
+	'MANUAL'
+]);
+export const presenceEvent = snakeCase.table('presence_event', {
+	id: text()
+		.$defaultFn(() => nanoid())
+		.primaryKey(),
 
-export const nsaPresenceEvent = pgTable(
-	'nsa_presence_event',
+	conferenceUserId: text()
+		.notNull()
+		.references(() => conferenceUser.id, { onDelete: 'cascade' }),
+	committeeId: text()
+		.notNull()
+		.references(() => committee.id, { onDelete: 'cascade' }),
+	// chair/admin who triggered the event; null for system-generated auto-checkouts on switch
+	triggeredByConferenceUserId: text().references(() => conferenceUser.id, {
+		onDelete: 'set null'
+	}),
+
+	rollCallSessionId: text().references(() => rollCallSession.id, {
+		onDelete: 'set null'
+	}),
+
+	timestamp: timestamp().defaultNow().notNull(),
+	present: boolean().notNull(),
+	type: presenceEventMarker().notNull(),
+	note: text()
+});
+
+export const votingMode = pgEnum('voting_mode', ['SHOW_OF_HANDS', 'ROLL_CALL', 'DEVICE_BASED']);
+export const votingMajorityType = pgEnum('voting_majority_type', [
+	'SIMPLE',
+	'ABSOLUTE',
+	'TWO_THIRDS'
+]);
+export const votingStage = pgEnum('voting_stage', ['PRO', 'CON', 'ABSTAIN', 'EVALUATION']);
+export const votingOutcome = pgEnum('voting_outcome', ['ADOPTED', 'REJECTED']);
+export const voteChoice = pgEnum('vote_choice', ['PRO', 'CON', 'ABSTAIN']);
+
+export const votingSession = snakeCase.table('voting_session', {
+	...defaultIdAndTimestamps,
+	committeeId: text()
+		.notNull()
+		.references(() => committee.id, { onDelete: 'cascade' }),
+	startedByConferenceUserId: text().references(() => conferenceUser.id, {
+		onDelete: 'set null'
+	}),
+	mode: votingMode().notNull(),
+	voteName: text(),
+	majority: votingMajorityType().notNull(),
+	withAbstentions: boolean().notNull().default(false),
+	majorityAmount: integer().notNull(),
+	currentStage: votingStage(),
+	votesPro: integer().notNull().default(0),
+	votesCon: integer().notNull().default(0),
+	votesAbstain: integer().notNull().default(0),
+	currentMemberIndex: integer().notNull().default(0),
+	completedAt: timestamp(),
+	outcome: votingOutcome(),
+	deviceVotingWindowSeconds: integer(),
+	deviceVotingStartedAt: timestamp()
+});
+
+export const votingVote = snakeCase.table(
+	'voting_vote',
 	{
 		...defaultIdAndTimestamps,
-		conferenceUserId: text()
+		votingSessionId: text()
 			.notNull()
-			.references(() => conferenceUser.id, { onDelete: 'cascade' }),
-		committeeId: text()
+			.references(() => votingSession.id, { onDelete: 'cascade' }),
+		committeeMemberId: text()
 			.notNull()
-			.references(() => committee.id, { onDelete: 'cascade' }),
-		// denormalized for conference-scoped subscriptions and the latest-event window query
-		conferenceId: text()
-			.notNull()
-			.references(() => conference.id, { onDelete: 'cascade' }),
-		type: nsaPresenceEventType().notNull(),
-		timestamp: timestamp().notNull(),
-		// chair/admin who triggered the event; null for system-generated auto-checkouts on switch
-		triggeredByConferenceUserId: text().references((): AnyPgColumn => conferenceUser.id, {
-			onDelete: 'set null'
-		}),
-		// stable marker like 'AUTO_SWITCH' or free-text correction note
-		note: text()
+			.references(() => committeeMember.id, { onDelete: 'cascade' }),
+		vote: voteChoice().notNull()
 	},
-	(t) => [
-		index('nsa_presence_event_user_ts_idx').on(t.conferenceUserId, t.timestamp.desc()),
-		index('nsa_presence_event_committee_ts_idx').on(t.committeeId, t.timestamp.desc()),
-		index('nsa_presence_event_conference_ts_idx').on(t.conferenceId, t.timestamp.desc())
-	]
+	(t) => [unique().on(t.votingSessionId, t.committeeMemberId)]
 );
 
-// Resolution enums
+// ----------------------------------------------------------------------------
+// Resolution feature
+// ----------------------------------------------------------------------------
 
 export const paperStatus = pgEnum('paper_status', [
 	'WORKING_PAPER',
@@ -316,10 +383,6 @@ export const paperStatus = pgEnum('paper_status', [
 	'VOTING_PHASE',
 	'FINAL'
 ]);
-
-export const shareCodePermission = pgEnum('share_code_permission', ['SPONSOR', 'EDIT']);
-
-export const commentVisibility = pgEnum('comment_visibility', ['PUBLIC', 'TEAM_ONLY']);
 
 export const amendmentType = pgEnum('amendment_type', [
 	'DELETE',
@@ -337,11 +400,24 @@ export const amendmentStatus = pgEnum('amendment_status', [
 	'WITHDRAWN'
 ]);
 
-export const voteOutcome = pgEnum('vote_outcome', ['ADOPTED', 'REJECTED', 'SENT_BACK']);
+export const amendmentReviewPhase = pgEnum('amendment_review_phase', [
+	'OBSOLESCENCE',
+	'REWRITE',
+	'RESOLVED'
+]);
 
-// Resolution tables
+export const shareCodePermission = pgEnum('share_code_permission', ['SPONSOR', 'EDIT']);
 
-export const resolutionPaper = pgTable('resolution_paper', {
+export const commentVisibility = pgEnum('comment_visibility', ['PUBLIC', 'TEAM_ONLY']);
+
+export const snapshotTrigger = pgEnum('snapshot_trigger', [
+	'SUBMITTED',
+	'AMENDMENT_APPLIED',
+	'VOTE_CONCLUDED',
+	'MANUAL'
+]);
+
+export const resolutionPaper = snakeCase.table('resolution_paper', {
 	...defaultIdAndTimestamps,
 	committeeId: text()
 		.notNull()
@@ -353,23 +429,34 @@ export const resolutionPaper = pgTable('resolution_paper', {
 		.notNull()
 		.references(() => committeeMember.id, { onDelete: 'cascade' }),
 	status: paperStatus().notNull().default('WORKING_PAPER'),
-	content: json(),
 	title: text(),
 	documentNumber: text(),
-	sequenceNumber: smallint(),
-	deletedAt: timestamp()
+	// Final resolution-level vote. Tallies and outcome live on the linked
+	// votingSession row.
+	voteVotingSessionId: text().references((): AnyPgColumn => votingSession.id, {
+		onDelete: 'set null'
+	})
 });
 
-export const paperContentSnapshot = pgTable('paper_content_snapshot', {
+export const paperYjsDoc = snakeCase.table('paper_yjs_doc', {
+	...defaultIdAndTimestamps,
+	paperId: text()
+		.notNull()
+		.unique()
+		.references(() => resolutionPaper.id, { onDelete: 'cascade' }),
+	state: bytea().notNull()
+});
+
+export const paperContentSnapshot = snakeCase.table('paper_content_snapshot', {
 	...defaultIdAndTimestamps,
 	paperId: text()
 		.notNull()
 		.references(() => resolutionPaper.id, { onDelete: 'cascade' }),
-	content: json(),
-	trigger: text()
+	content: text().notNull(), // JSON serialized Resolution
+	trigger: snapshotTrigger().notNull()
 });
 
-export const paperSponsor = pgTable(
+export const paperSponsor = snakeCase.table(
 	'paper_sponsor',
 	{
 		...defaultIdAndTimestamps,
@@ -383,16 +470,7 @@ export const paperSponsor = pgTable(
 	(t) => [unique().on(t.paperId, t.committeeMemberId)]
 );
 
-export const paperShareCode = pgTable('paper_share_code', {
-	...defaultIdAndTimestamps,
-	paperId: text()
-		.notNull()
-		.references(() => resolutionPaper.id, { onDelete: 'cascade' }),
-	code: text().notNull().unique(),
-	permission: shareCodePermission().notNull()
-});
-
-export const paperEditor = pgTable(
+export const paperEditor = snakeCase.table(
 	'paper_editor',
 	{
 		...defaultIdAndTimestamps,
@@ -406,11 +484,22 @@ export const paperEditor = pgTable(
 	(t) => [unique().on(t.paperId, t.conferenceUserId)]
 );
 
-export const resolutionComment = pgTable('resolution_comment', {
+export const paperShareCode = snakeCase.table('paper_share_code', {
 	...defaultIdAndTimestamps,
 	paperId: text()
 		.notNull()
 		.references(() => resolutionPaper.id, { onDelete: 'cascade' }),
+	code: text().notNull().unique(),
+	permission: shareCodePermission().notNull()
+});
+
+export const resolutionComment = snakeCase.table('resolution_comment', {
+	...defaultIdAndTimestamps,
+	paperId: text()
+		.notNull()
+		.references(() => resolutionPaper.id, { onDelete: 'cascade' }),
+	// References a Y.Doc clause id (string from the library's generateClauseId).
+	// Intentionally not a FK — clauses live in the Y.Doc, not the DB.
 	clauseId: text(),
 	authorConferenceUserId: text()
 		.notNull()
@@ -422,7 +511,7 @@ export const resolutionComment = pgTable('resolution_comment', {
 	})
 });
 
-export const amendment = pgTable('amendment', {
+export const amendment = snakeCase.table('amendment', {
 	...defaultIdAndTimestamps,
 	paperId: text()
 		.notNull()
@@ -432,15 +521,26 @@ export const amendment = pgTable('amendment', {
 		.references(() => committeeMember.id, { onDelete: 'cascade' }),
 	type: amendmentType().notNull(),
 	status: amendmentStatus().notNull().default('PENDING'),
+	// Y.Doc clause id this amendment targets. Stored as plain text — not a FK.
 	targetClauseId: text(),
+	// Snapshot of the operative index at proposal time (used to detect stale targets).
 	targetOperativeIndex: smallint(),
+	// RES-Markup fragment for ADD / ALTER_TEXT.
 	newContent: text(),
+	// RES-Markup fragment for ADD / ALTER_TEXT (store the old value of the clause for direct comparison after acceptance).
+	oldContent: text(),
+	// Destination index for ADD / ALTER_POSITION.
 	targetPosition: smallint(),
 	documentNumber: text(),
-	sequenceNumber: smallint()
+	// Set when this amendment is stamped as the active beamer amendment, gives ordering ground truth.
+	presentedAt: timestamp(),
+	// Set when this amendment was withdrawn because another was accepted and rendered it obsolete.
+	obsoletedByAmendmentId: text().references((): AnyPgColumn => amendment.id, {
+		onDelete: 'set null'
+	})
 });
 
-export const amendmentSponsor = pgTable(
+export const amendmentSponsor = snakeCase.table(
 	'amendment_sponsor',
 	{
 		...defaultIdAndTimestamps,
@@ -454,7 +554,7 @@ export const amendmentSponsor = pgTable(
 	(t) => [unique().on(t.amendmentId, t.committeeMemberId)]
 );
 
-export const operativeClauseVote = pgTable(
+export const operativeClauseVote = snakeCase.table(
 	'operative_clause_vote',
 	{
 		...defaultIdAndTimestamps,
@@ -462,40 +562,38 @@ export const operativeClauseVote = pgTable(
 			.notNull()
 			.references(() => resolutionPaper.id, { onDelete: 'cascade' }),
 		clauseId: text().notNull(),
-		outcome: voteOutcome().notNull(),
-		votesFor: integer().notNull(),
-		votesAgainst: integer().notNull(),
-		votesAbstain: integer().notNull().default(0)
+		// Reference row only — the actual vote tally + outcome live on the
+		// linked votingSession.
+		votingSessionId: text()
+			.notNull()
+			.references(() => votingSession.id, { onDelete: 'cascade' })
 	},
 	(t) => [unique().on(t.paperId, t.clauseId)]
 );
 
-/**
- * Y.js document state for a resolution paper.
- *
- * The `state` column holds the full Y.Doc encoded via `Y.encodeStateAsUpdate`
- * and is the canonical source of truth for paper content.
- * `resolution_paper.content` is a materialized JSON projection refreshed on
- * every persist so amendment-apply, print, and snapshots can read JSON
- * without instantiating a Y.Doc.
- */
-export const paperYjsDoc = pgTable('paper_yjs_doc', {
+// One row per (accepted amendment × affected remaining amendment). Drives the
+// post-acceptance review flow. The review for a paper is complete when all rows
+// for that paper have resolved = true.
+export const amendmentReviewItem = snakeCase.table('amendment_review_item', {
 	...defaultIdAndTimestamps,
 	paperId: text()
 		.notNull()
-		.unique()
 		.references(() => resolutionPaper.id, { onDelete: 'cascade' }),
-	state: bytea('state').notNull()
-});
-
-export const resolutionVoteResult = pgTable('resolution_vote_result', {
-	...defaultIdAndTimestamps,
-	paperId: text()
+	// The amendment that was accepted and triggered this review.
+	triggerAmendmentId: text()
 		.notNull()
-		.unique()
-		.references(() => resolutionPaper.id, { onDelete: 'cascade' }),
-	outcome: voteOutcome().notNull(),
-	votesFor: integer().notNull(),
-	votesAgainst: integer().notNull(),
-	votesAbstain: integer().notNull().default(0)
+		.references(() => amendment.id, { onDelete: 'cascade' }),
+	// The amendment whose fate is being decided in this review item.
+	subjectAmendmentId: text()
+		.notNull()
+		.references(() => amendment.id, { onDelete: 'cascade' }),
+	phase: amendmentReviewPhase().notNull(),
+	// ai suggestion for this amendment's fate
+	aiObsolete: boolean(),
+	aiObsoleteReason: text(),
+	aiRewriteSuggestion: text(),
+	aiRewriteReason: text(),
+	// Human verdict to be set by the chair/admin
+	verdictObsolete: boolean(),
+	verdictRewrite: text()
 });

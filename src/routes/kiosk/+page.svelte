@@ -5,6 +5,7 @@
 	import { m } from '$lib/paraglide/messages';
 	import { client } from '$lib/api/rumbleClient/client';
 	import { page } from '$app/state';
+	import { browser } from '$app/environment';
 
 	// The Pi helper navigates Chromium to /kiosk?deviceId=<id>. There is no
 	// human input on the appliance; the id is never typed.
@@ -13,7 +14,10 @@
 	// Ensure the row exists. Idempotent; only the shared display account
 	// (service_user) is allowed to register. Errors (e.g. revoked device) are
 	// ignored — the live query below drives the on-screen state.
-	if (deviceId) {
+	//
+	// Client-only: `client.mutate.*` is a SvelteKit remote-function `command`,
+	// which throws if invoked during SSR of a GET request (this page load).
+	if (browser && deviceId) {
 		try {
 			await client.mutate.registerDisplayDevice({ __args: { id: deviceId }, id: true });
 		} catch {

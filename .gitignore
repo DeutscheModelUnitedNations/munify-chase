@@ -31,6 +31,6 @@ vite.config.ts.timestamp-*
 pi-display/local.nix
 pi-display/result
 pi-display/flake.lock
-pi-display/_pycache_
+pi-display/__pycache__
 
 src-tauri

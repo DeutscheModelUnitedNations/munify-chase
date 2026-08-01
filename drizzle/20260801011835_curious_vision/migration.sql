@@ -1,3 +1,4 @@
+CREATE TYPE "display_device_locale" AS ENUM('en', 'de', 'pt');--> statement-breakpoint
 CREATE TABLE "display_device" (
 	"id" text PRIMARY KEY,
 	"created_at" timestamp DEFAULT now() NOT NULL,
@@ -6,7 +7,9 @@ CREATE TABLE "display_device" (
 	"revoked" boolean DEFAULT false NOT NULL,
 	"conference_id" text,
 	"committee_id" text,
-	"last_seen_at" timestamp
+	"last_seen_at" timestamp,
+	"locale" "display_device_locale",
+	"timezone" text
 );
 --> statement-breakpoint
 ALTER TABLE "display_device" ADD CONSTRAINT "display_device_conference_id_conference_id_fkey" FOREIGN KEY ("conference_id") REFERENCES "conference"("id") ON DELETE SET NULL;--> statement-breakpoint

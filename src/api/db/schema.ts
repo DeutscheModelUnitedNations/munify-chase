@@ -104,6 +104,9 @@ export const committee = snakeCase.table(
 	(t) => [unique().on(t.conferenceId, t.name), unique().on(t.conferenceId, t.abbreviation)]
 );
 
+// Matches src/lib/paraglide/runtime.js's locales list.
+export const displayDeviceLocale = pgEnum('display_device_locale', ['en', 'de', 'pt']);
+
 export const displayDevice = snakeCase.table('display_device', {
 	// Pi-generated nanoid (the device owns its id); not server-defaulted.
 	id: text().primaryKey().notNull(),
@@ -112,7 +115,11 @@ export const displayDevice = snakeCase.table('display_device', {
 	revoked: boolean().notNull().default(false),
 	conferenceId: text().references(() => conference.id, { onDelete: 'set null' }),
 	committeeId: text().references((): AnyPgColumn => committee.id, { onDelete: 'set null' }),
-	lastSeenAt: timestamp({ mode: 'date' })
+	lastSeenAt: timestamp({ mode: 'date' }),
+	// Null means "use the app default" (Accept-Language / base locale).
+	locale: displayDeviceLocale(),
+	// IANA timezone name (e.g. "Europe/Berlin"); null means browser/OS default.
+	timezone: text()
 });
 
 export const conferenceUserType = pgEnum('conference_user_type', [

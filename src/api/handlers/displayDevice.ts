@@ -1,8 +1,19 @@
 import { db, schema } from '$api/db/db';
-import { abilityBuilder, object, query, schemaBuilder, pubsub as rumblePubsub } from '$api/rumble';
+import {
+	abilityBuilder,
+	enum_,
+	object,
+	query,
+	schemaBuilder,
+	pubsub as rumblePubsub
+} from '$api/rumble';
 import { isAdmin, isDisplayKiosk, isGlobalAdmin } from '$api/services/authHelper';
 import { assertFindFirstExists } from '@m1212e/rumble';
 import { GraphQLError } from 'graphql';
+
+const displayDeviceLocaleEnum = enum_({
+	tsName: 'displayDeviceLocale'
+});
 
 abilityBuilder.displayDevice.allow('read').when((ctx) => {
 	if (isGlobalAdmin(ctx)) {
@@ -88,13 +99,17 @@ schemaBuilder.mutationFields((t) => ({
 			id: t.arg.id({ required: true }),
 			conferenceId: t.arg.id(),
 			committeeId: t.arg.id(),
-			name: t.arg.string()
+			name: t.arg.string(),
+			locale: t.arg({ type: displayDeviceLocaleEnum }),
+			timezone: t.arg.string()
 		},
 		resolve: async (query, root, args, ctx) => {
 			const set: Partial<typeof schema.displayDevice.$inferInsert> = {};
 			if (args.conferenceId !== undefined) set.conferenceId = args.conferenceId;
 			if (args.committeeId !== undefined) set.committeeId = args.committeeId;
 			if (args.name !== undefined) set.name = args.name;
+			if (args.locale !== undefined) set.locale = args.locale;
+			if (args.timezone !== undefined) set.timezone = args.timezone;
 			// Clearing the conference also clears the committee — a committee
 			// always belongs to a conference, so leaving committeeId set with a
 			// null conferenceId would orphan the FK.

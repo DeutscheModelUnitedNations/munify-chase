@@ -3,10 +3,25 @@
 	import { client } from '$lib/api/rumbleClient/client';
 	import { page } from '$app/state';
 	import { getCurrentUser } from '$lib/state/currentUser.svelte';
+	import { locales } from '$lib/paraglide/runtime';
 
 	await getCurrentUser();
 
 	const focusId = page.url.searchParams.get('focus');
+
+	const localeLabels: Record<string, string> = { de: 'Deutsch', en: 'English', pt: 'Português' };
+
+	// Native, always-current IANA zone list — no hardcoded list to maintain.
+	// Not supported in some very old browsers; the select just shows the
+	// current/empty option then, since staff use this page on their own
+	// up-to-date browser, not the kiosk appliance.
+	const timezones: string[] = (() => {
+		try {
+			return Intl.supportedValuesOf('timeZone');
+		} catch {
+			return [];
+		}
+	})();
 
 	const devices = await client.liveQuery.displayDevices({
 		id: true,
@@ -15,6 +30,8 @@
 		conferenceId: true,
 		committeeId: true,
 		lastSeenAt: true,
+		locale: true,
+		timezone: true,
 		conference: { id: true, title: true },
 		committee: { id: true, abbreviation: true }
 	});
@@ -25,7 +42,13 @@
 		committees: { id: true, name: true, abbreviation: true }
 	});
 
-	type Draft = { name: string; conferenceId: string; committeeId: string };
+	type Draft = {
+		name: string;
+		conferenceId: string;
+		committeeId: string;
+		locale: string;
+		timezone: string;
+	};
 	let drafts = $state<Record<string, Draft>>({});
 
 	// Seed an editable draft for every device id once it appears. Done in an
@@ -36,7 +59,9 @@
 				drafts[d.id] = {
 					name: d.name ?? '',
 					conferenceId: d.conferenceId ?? '',
-					committeeId: d.committeeId ?? ''
+					committeeId: d.committeeId ?? '',
+					locale: d.locale ?? '',
+					timezone: d.timezone ?? ''
 				};
 			}
 		}
@@ -58,7 +83,9 @@
 					id,
 					name: d.name.trim() === '' ? null : d.name.trim(),
 					conferenceId: d.conferenceId === '' ? null : d.conferenceId,
-					committeeId: d.committeeId === '' ? null : d.committeeId
+					committeeId: d.committeeId === '' ? null : d.committeeId,
+					locale: d.locale === '' ? null : d.locale,
+					timezone: d.timezone === '' ? null : d.timezone
 				},
 				id: true
 			});
@@ -145,6 +172,24 @@
 												<option value="">{m.displaysAllCommittees()}</option>
 												{#each committeesFor(draft.conferenceId) as cm (cm.id)}
 													<option value={cm.id}>{cm.abbreviation} — {cm.name}</option>
+												{/each}
+											</select>
+											<select
+												class="select select-sm select-bordered w-56"
+												bind:value={draft.locale}
+											>
+												<option value="">{m.displaysDefaultLanguage()}</option>
+												{#each locales as l (l)}
+													<option value={l}>{localeLabels[l] ?? l}</option>
+												{/each}
+											</select>
+											<select
+												class="select select-sm select-bordered w-56"
+												bind:value={draft.timezone}
+											>
+												<option value="">{m.displaysDefaultTimezone()}</option>
+												{#each timezones as tz (tz)}
+													<option value={tz}>{tz}</option>
 												{/each}
 											</select>
 											<button

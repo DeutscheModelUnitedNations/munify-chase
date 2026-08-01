@@ -328,6 +328,8 @@
 	"displaysColDevice": "Gerät",
 	"displaysColLastSeen": "Zuletzt gesehen",
 	"displaysColStatus": "Status",
+	"displaysDefaultLanguage": "Standardsprache",
+	"displaysDefaultTimezone": "Standard-Zeitzone",
 	"displaysEmpty": "Es haben sich noch keine Anzeigen registriert.",
 	"displaysManage": "Anzeigen",
 	"displaysNamePlaceholder": "Anzeigename",

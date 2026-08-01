@@ -6,6 +6,7 @@
 	import { client } from '$lib/api/rumbleClient/client';
 	import { page } from '$app/state';
 	import { browser } from '$app/environment';
+	import { getLocale, setLocale, locales } from '$lib/paraglide/runtime';
 
 	// The Pi helper navigates Chromium to /kiosk?deviceId=<id>. There is no
 	// human input on the appliance; the id is never typed.
@@ -31,7 +32,7 @@
 	// exactly one matching row and throws otherwise; treat "not found" the
 	// same as "not registered yet" and fall through to the pairing screen,
 	// rather than crashing the whole render.
-	let device = null;
+	let device: Awaited<ReturnType<typeof client.liveQuery.displayDevice>> | null = $state(null);
 	if (deviceId) {
 		try {
 			device = await client.liveQuery.displayDevice({
@@ -41,6 +42,8 @@
 				revoked: true,
 				conferenceId: true,
 				committeeId: true,
+				locale: true,
+				timezone: true,
 				conference: {
 					id: true,
 					title: true,
@@ -64,6 +67,21 @@
 			// Not registered yet — pairing screen below handles a null device.
 		}
 	}
+
+	// Kiosk has no UI to pick a language — apply whatever the organizer
+	// assigned in /app/displays. setLocale() writes the paraglide cookie and
+	// reloads, so this self-corrects within one extra reload; $effect only
+	// runs client-side (never during SSR), so no `browser` guard is needed.
+	$effect(() => {
+		const deviceLocale = device?.locale;
+		if (
+			deviceLocale &&
+			(locales as readonly string[]).includes(deviceLocale) &&
+			deviceLocale !== getLocale()
+		) {
+			setLocale(deviceLocale as (typeof locales)[number]);
+		}
+	});
 
 	// Where an organizer assigns this device. Route groups like (launcher) do
 	// not appear in the URL, so the path is /app/displays.
@@ -108,7 +126,7 @@
 				{assignedConference?.title}
 			</h1>
 			<div class="flex-none pr-4">
-				<CurrentTime />
+				<CurrentTime timezone={device?.timezone} />
 			</div>
 		</div>
 		<CommitteeGrid conference={gridConference} environment="SPECTATOR" />

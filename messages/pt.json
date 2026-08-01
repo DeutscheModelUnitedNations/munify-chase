@@ -328,6 +328,8 @@
 	"displaysColDevice": "Dispositivo",
 	"displaysColLastSeen": "Visto pela última vez",
 	"displaysColStatus": "Estado",
+	"displaysDefaultLanguage": "Idioma padrão",
+	"displaysDefaultTimezone": "Fuso horário padrão",
 	"displaysEmpty": "Nenhuma tela se registou ainda.",
 	"displaysManage": "Telas",
 	"displaysNamePlaceholder": "Nome da tela",

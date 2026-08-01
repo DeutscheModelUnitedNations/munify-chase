@@ -5172,6 +5172,42 @@
 			"schemaTo": "public",
 			"table": "display_device",
 			"tableTo": "committee"
+		},
+		{
+			"entityType": "enums",
+			"name": "display_device_locale",
+			"schema": "public",
+			"values": [
+				"en",
+				"de",
+				"pt"
+			]
+		},
+		{
+			"default": null,
+			"dimensions": 0,
+			"entityType": "columns",
+			"generated": null,
+			"identity": null,
+			"name": "locale",
+			"notNull": false,
+			"schema": "public",
+			"table": "display_device",
+			"type": "display_device_locale",
+			"typeSchema": "public"
+		},
+		{
+			"default": null,
+			"dimensions": 0,
+			"entityType": "columns",
+			"generated": null,
+			"identity": null,
+			"name": "timezone",
+			"notNull": false,
+			"schema": "public",
+			"table": "display_device",
+			"type": "text",
+			"typeSchema": null
 		}
 	],
 	"dialect": "postgres",

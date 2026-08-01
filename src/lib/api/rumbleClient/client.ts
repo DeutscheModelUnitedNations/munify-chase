@@ -870,8 +870,10 @@ export type Displaydevice = {
   createdAt: DateTime,
   id: ID,
   lastSeenAt: DateTime | null,
+  locale: DisplaydevicelocaleEnum | null,
   name: String | null,
   revoked: Boolean,
+  timezone: String | null,
   updatedAt: DateTime | null    
 };
 		
@@ -883,8 +885,10 @@ export type DisplaydeviceOrderInputArgument = {
   createdAt?: SortingParameter | null | undefined,
   id?: SortingParameter | null | undefined,
   lastSeenAt?: SortingParameter | null | undefined,
+  locale?: SortingParameter | null | undefined,
   name?: SortingParameter | null | undefined,
   revoked?: SortingParameter | null | undefined,
+  timezone?: SortingParameter | null | undefined,
   updatedAt?: SortingParameter | null | undefined    
 };
 		
@@ -896,10 +900,14 @@ export type DisplaydeviceWhereInputArgument = {
   createdAt?: DateWhereInputArgument | null | undefined,
   id?: ID | null | undefined,
   lastSeenAt?: DateWhereInputArgument | null | undefined,
+  locale?: DisplaydevicelocaleEnum | null | undefined,
   name?: StringWhereInputArgument | null | undefined,
   revoked?: Boolean | null | undefined,
+  timezone?: StringWhereInputArgument | null | undefined,
   updatedAt?: DateWhereInputArgument | null | undefined    
 };
+		
+export type DisplaydevicelocaleEnum = "de" | "en" | "pt";
 		
 export type Float = number;
 		
@@ -1042,7 +1050,9 @@ export type Mutation = {
     committeeId?: ID | null | undefined,
     conferenceId?: ID | null | undefined,
     id: ID,
-    name?: String | null | undefined
+    locale?: DisplaydevicelocaleEnum | null | undefined,
+    name?: String | null | undefined,
+    timezone?: String | null | undefined
   }) => Displaydevice,
   castDeviceVote: (p: {
     committeeMemberId?: ID | null | undefined,

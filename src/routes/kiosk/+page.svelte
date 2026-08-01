@@ -1,6 +1,7 @@
 <script lang="ts">
 	import QRCode from 'qrcode';
 	import CommitteeGrid, { type ConferenceData } from '$lib/components/CommitteeGrid.svelte';
+	import CommitteePresentation from '$lib/components/presentation/CommitteePresentation.svelte';
 	import CurrentTime from '$lib/components/CurrentTime.svelte';
 	import { m } from '$lib/paraglide/messages';
 	import { client } from '$lib/api/rumbleClient/client';
@@ -105,16 +106,18 @@
 		device && !device.revoked && device.conference ? device.conference : null
 	);
 
+	// A single assigned committee switches the kiosk to that committee's full
+	// CommitteePresentation view (the same one a chair would open on a
+	// projector) instead of the multi-committee overview grid below.
+	let presentationCommitteeId = $derived(
+		assignedConference && device?.committeeId ? device.committeeId : null
+	);
+
 	let gridConference = $derived.by<ConferenceData | null>(() => {
-		if (!assignedConference) return null;
-		const committees = device?.committeeId
-			? (assignedConference.committees ?? []).filter(
-					(c: { id: string }) => c.id === device.committeeId
-				)
-			: (assignedConference.committees ?? []);
+		if (!assignedConference || presentationCommitteeId) return null;
 		return {
 			id: assignedConference.id,
-			committees
+			committees: assignedConference.committees ?? []
 		} as unknown as ConferenceData;
 	});
 </script>
@@ -128,6 +131,15 @@
 		<i class="fa-duotone fa-display-slash text-base-content/40 text-7xl"></i>
 		<h1 class="m-0 text-3xl font-bold">{m.displayKioskNotConfigured()}</h1>
 	</div>
+{:else if presentationCommitteeId}
+	<!-- Force a remount on committee change: CommitteePresentation's live query
+	     binds to its committeeId prop only once at mount (a single, never-
+	     reassigned `client.liveQuery.*` const — see the note on `device`
+	     above), so switching the assignment to a different committee needs a
+	     fresh instance rather than an in-place prop update. -->
+	{#key presentationCommitteeId}
+		<CommitteePresentation committeeId={presentationCommitteeId} />
+	{/key}
 {:else if gridConference}
 	<div class="bg-base-200 flex min-h-screen flex-col">
 		<div class="navbar bg-base-100 shadow-sm">

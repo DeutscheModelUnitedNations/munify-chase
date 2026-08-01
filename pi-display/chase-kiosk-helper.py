@@ -658,16 +658,17 @@ def portal_form_page(networks: list[dict], message: str = "") -> str:
         "<body>"
         "<h1>Connect this display to WiFi</h1>"
         f"{msg_html}"
-        "<form method=post action=/connect>"
-        "<div style='display:flex;justify-content:space-between;align-items:baseline'>"
-        "<label for=ssid style='margin:.75rem 0 .25rem'>Network</label>"
-        # Type=button (not submit) so it can't accidentally submit the form.
-        # nmcli caches scans for ~10s server-side, so a plain reload is
-        # enough to pick up newly-discovered networks.
+        # Outside the form and type=button so it can never submit it. Its
+        # own full-width button rather than a small icon next to the select
+        # — the network list only updates on reload (nmcli's scan cache is
+        # ~10s server-side), which isn't obvious unless this says so plainly.
         "<button type=button onclick='location.reload()' "
-        "style='width:auto;margin:0;padding:.3rem .7rem;font-size:.85rem;"
-        "background:transparent;color:#1d232a;border:1px solid #ccc'>"
-        "Refresh</button></div>"
+        "style='width:100%;padding:.75rem;margin-top:1rem;font-size:1rem;"
+        "font-weight:600;background:#fff;color:#1d232a;"
+        "border:2px solid #1d232a;border-radius:.5rem'>"
+        "↻ Rescan for Wi-Fi networks</button>"
+        "<form method=post action=/connect>"
+        "<label for=ssid>Network</label>"
         f"<select id=ssid name=ssid required "
         f"onchange=\"document.getElementById('manualWrap').style.display="
         f"this.value==='{_MANUAL_SSID_VALUE}'?'block':'none'\">{options}</select>"

@@ -2,10 +2,37 @@
 	import { m } from '$lib/paraglide/messages';
 	import { client } from '$lib/api/rumbleClient/client';
 	import { page } from '$app/state';
+	import { browser } from '$app/environment';
+	import { goto } from '$app/navigation';
+	import { resolve } from '$app/paths';
 	import { getCurrentUser } from '$lib/state/currentUser.svelte';
 	import { locales } from '$lib/paraglide/runtime';
 
-	await getCurrentUser();
+	const user = await getCurrentUser();
+	const isGlobalAdminUser = (await client.query.isGlobalAdmin()) as unknown as boolean;
+
+	// This page manages every conference's displays from one place, so
+	// "can see a row" (ability-filtered on the query below) isn't enough —
+	// someone with no admin/team role anywhere shouldn't land on the page
+	// shell at all. The device list itself is still ability-filtered
+	// server-side regardless, this just avoids exposing the management UI
+	// to plain participants.
+	const myConferenceRoles = isGlobalAdminUser
+		? []
+		: await client.liveQuery.conferenceUsers({
+				__args: {
+					where: {
+						user: { id: user.id },
+						OR: [{ conferenceUserType: 'ADMIN' }, { conferenceUserType: 'TEAM' }]
+					}
+				},
+				id: true
+			});
+	const authorized = isGlobalAdminUser || (myConferenceRoles ?? []).length > 0;
+
+	if (browser && !authorized) {
+		goto(resolve('/app/(launcher)'));
+	}
 
 	const focusId = page.url.searchParams.get('focus');
 
@@ -118,119 +145,121 @@
 	<title>{m.displaysManage()} - MUNify CHASE</title>
 </svelte:head>
 
-<div class="bg-base-200 min-h-screen p-4 sm:p-8">
-	<div class="mx-auto w-full max-w-5xl">
-		<h1 class="mb-2 text-3xl font-bold tracking-tight">{m.displaysManage()}</h1>
-		<p class="text-base-content/60 mb-6 text-sm">{m.displaysAdminOnlyHint()}</p>
+{#if authorized}
+	<div class="bg-base-200 min-h-screen p-4 sm:p-8">
+		<div class="mx-auto w-full max-w-5xl">
+			<h1 class="mb-2 text-3xl font-bold tracking-tight">{m.displaysManage()}</h1>
+			<p class="text-base-content/60 mb-6 text-sm">{m.displaysAdminOnlyHint()}</p>
 
-		{#if (devices ?? []).length === 0}
-			<div class="card bg-base-100 p-10 text-center shadow-sm">
-				<i class="fa-duotone fa-display text-base-content/30 mb-3 text-5xl"></i>
-				<p class="text-base-content/70 m-0">{m.displaysEmpty()}</p>
-			</div>
-		{:else}
-			<div class="card bg-base-100 overflow-x-auto p-0 shadow-sm">
-				<table class="table">
-					<thead>
-						<tr>
-							<th>{m.displaysColDevice()}</th>
-							<th>{m.displaysColAssignment()}</th>
-							<th>{m.displaysColLastSeen()}</th>
-							<th class="text-right">{m.displaysColStatus()}</th>
-						</tr>
-					</thead>
-					<tbody>
-						{#each devices ?? [] as d (d.id)}
-							{@const draft = drafts[d.id]}
-							{#if draft}
-								<tr class={d.id === focusId ? 'bg-warning/10' : ''}>
-									<td class="align-top">
-										<input
-											class="input input-sm input-bordered w-44"
-											placeholder={m.displaysNamePlaceholder()}
-											bind:value={draft.name}
-										/>
-										<div class="text-base-content/50 mt-1 font-mono text-xs">{d.id}</div>
-									</td>
-									<td class="align-top">
-										<div class="flex flex-col gap-2">
-											<select
-												class="select select-sm select-bordered w-56"
-												bind:value={draft.conferenceId}
-												onchange={() => (draft.committeeId = '')}
-											>
-												<option value="">{m.displaysSelectConference()}</option>
-												{#each conferences ?? [] as c (c.id)}
-													<option value={c.id}>{c.title}</option>
-												{/each}
-											</select>
-											<select
-												class="select select-sm select-bordered w-56"
-												bind:value={draft.committeeId}
-												disabled={draft.conferenceId === ''}
-											>
-												<option value="">{m.displaysAllCommittees()}</option>
-												{#each committeesFor(draft.conferenceId) as cm (cm.id)}
-													<option value={cm.id}>{cm.abbreviation} — {cm.name}</option>
-												{/each}
-											</select>
-											<select
-												class="select select-sm select-bordered w-56"
-												bind:value={draft.locale}
-											>
-												<option value="">{m.displaysDefaultLanguage()}</option>
-												{#each locales as l (l)}
-													<option value={l}>{localeLabels[l] ?? l}</option>
-												{/each}
-											</select>
-											<select
-												class="select select-sm select-bordered w-56"
-												bind:value={draft.timezone}
-											>
-												<option value="">{m.displaysDefaultTimezone()}</option>
-												{#each timezones as tz (tz)}
-													<option value={tz}>{tz}</option>
-												{/each}
-											</select>
-											<button
-												class="btn btn-sm btn-primary w-28"
-												disabled={busy === d.id}
-												onclick={() => save(d.id)}
-											>
-												{m.displaysSave()}
-											</button>
-										</div>
-									</td>
-									<td class="align-top text-sm">{fmtLastSeen(d.lastSeenAt)}</td>
-									<td class="align-top text-right">
-										{#if d.revoked}
-											<span class="badge badge-error mb-2">{m.displaysStatusRevoked()}</span>
-											<br />
-											<button
-												class="btn btn-xs btn-ghost"
-												disabled={busy === d.id}
-												onclick={() => setRevoked(d.id, false)}
-											>
-												{m.displaysRestore()}
-											</button>
-										{:else}
-											<span class="badge badge-success mb-2">{m.displaysStatusActive()}</span>
-											<br />
-											<button
-												class="btn btn-xs btn-ghost text-error"
-												disabled={busy === d.id}
-												onclick={() => setRevoked(d.id, true)}
-											>
-												{m.displaysRevoke()}
-											</button>
-										{/if}
-									</td>
-								</tr>
-							{/if}
-						{/each}
-					</tbody>
-				</table>
-			</div>
-		{/if}
+			{#if (devices ?? []).length === 0}
+				<div class="card bg-base-100 p-10 text-center shadow-sm">
+					<i class="fa-duotone fa-display text-base-content/30 mb-3 text-5xl"></i>
+					<p class="text-base-content/70 m-0">{m.displaysEmpty()}</p>
+				</div>
+			{:else}
+				<div class="card bg-base-100 overflow-x-auto p-0 shadow-sm">
+					<table class="table">
+						<thead>
+							<tr>
+								<th>{m.displaysColDevice()}</th>
+								<th>{m.displaysColAssignment()}</th>
+								<th>{m.displaysColLastSeen()}</th>
+								<th class="text-right">{m.displaysColStatus()}</th>
+							</tr>
+						</thead>
+						<tbody>
+							{#each devices ?? [] as d (d.id)}
+								{@const draft = drafts[d.id]}
+								{#if draft}
+									<tr class={d.id === focusId ? 'bg-warning/10' : ''}>
+										<td class="align-top">
+											<input
+												class="input input-sm input-bordered w-44"
+												placeholder={m.displaysNamePlaceholder()}
+												bind:value={draft.name}
+											/>
+											<div class="text-base-content/50 mt-1 font-mono text-xs">{d.id}</div>
+										</td>
+										<td class="align-top">
+											<div class="flex flex-col gap-2">
+												<select
+													class="select select-sm select-bordered w-56"
+													bind:value={draft.conferenceId}
+													onchange={() => (draft.committeeId = '')}
+												>
+													<option value="">{m.displaysSelectConference()}</option>
+													{#each conferences ?? [] as c (c.id)}
+														<option value={c.id}>{c.title}</option>
+													{/each}
+												</select>
+												<select
+													class="select select-sm select-bordered w-56"
+													bind:value={draft.committeeId}
+													disabled={draft.conferenceId === ''}
+												>
+													<option value="">{m.displaysAllCommittees()}</option>
+													{#each committeesFor(draft.conferenceId) as cm (cm.id)}
+														<option value={cm.id}>{cm.abbreviation} — {cm.name}</option>
+													{/each}
+												</select>
+												<select
+													class="select select-sm select-bordered w-56"
+													bind:value={draft.locale}
+												>
+													<option value="">{m.displaysDefaultLanguage()}</option>
+													{#each locales as l (l)}
+														<option value={l}>{localeLabels[l] ?? l}</option>
+													{/each}
+												</select>
+												<select
+													class="select select-sm select-bordered w-56"
+													bind:value={draft.timezone}
+												>
+													<option value="">{m.displaysDefaultTimezone()}</option>
+													{#each timezones as tz (tz)}
+														<option value={tz}>{tz}</option>
+													{/each}
+												</select>
+												<button
+													class="btn btn-sm btn-primary w-28"
+													disabled={busy === d.id}
+													onclick={() => save(d.id)}
+												>
+													{m.displaysSave()}
+												</button>
+											</div>
+										</td>
+										<td class="align-top text-sm">{fmtLastSeen(d.lastSeenAt)}</td>
+										<td class="align-top text-right">
+											{#if d.revoked}
+												<span class="badge badge-error mb-2">{m.displaysStatusRevoked()}</span>
+												<br />
+												<button
+													class="btn btn-xs btn-ghost"
+													disabled={busy === d.id}
+													onclick={() => setRevoked(d.id, false)}
+												>
+													{m.displaysRestore()}
+												</button>
+											{:else}
+												<span class="badge badge-success mb-2">{m.displaysStatusActive()}</span>
+												<br />
+												<button
+													class="btn btn-xs btn-ghost text-error"
+													disabled={busy === d.id}
+													onclick={() => setRevoked(d.id, true)}
+												>
+													{m.displaysRevoke()}
+												</button>
+											{/if}
+										</td>
+									</tr>
+								{/if}
+							{/each}
+						</tbody>
+					</table>
+				</div>
+			{/if}
+		</div>
 	</div>
-</div>
+{/if}

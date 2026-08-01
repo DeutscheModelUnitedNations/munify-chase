@@ -7,7 +7,7 @@ import {
 	schemaBuilder,
 	pubsub as rumblePubsub
 } from '$api/rumble';
-import { isAdmin, isDisplayKiosk, isGlobalAdmin } from '$api/services/authHelper';
+import { isDisplayKiosk, isGlobalAdmin, isTeamInConference } from '$api/services/authHelper';
 import { assertFindFirstExists } from '@m1212e/rumble';
 import { GraphQLError } from 'graphql';
 
@@ -24,22 +24,25 @@ abilityBuilder.displayDevice.allow('read').when((ctx) => {
 	if (isDisplayKiosk(ctx)) {
 		return { where: { revoked: false } };
 	}
-	// Conference organizers see devices assigned to their conference only.
-	// Unassigned devices are NOT included here: this `.when()` callback is
-	// sync and can't await a "user-is-admin-somewhere" DB check, so without
-	// a gate the `conferenceId IS NULL` arm would leak unassigned devices
-	// (and via `update`, let any logged-in user claim them) to non-admins.
-	// Claiming a freshly-paired Pi is therefore a global-admin action.
-	return { where: { conference: isAdmin(ctx) } };
+	// Conference admins and team members see devices assigned to one of
+	// their conferences only. Unassigned devices are explicitly excluded
+	// via `conferenceId: { isNotNull: true }` rather than relying on the
+	// relational filter alone to fail closed on a null FK — claiming a
+	// freshly-paired Pi is a global-admin action, and a not-yet-claimed
+	// device must never be shown to (or claimable by) a conference
+	// organizer who happens to be admin/team somewhere else.
+	return { where: { conferenceId: { isNotNull: true }, ...isTeamInConference(ctx) } };
 });
 
 abilityBuilder.displayDevice.allow('update').when((ctx) => {
 	if (isGlobalAdmin(ctx)) {
 		return { where: {} };
 	}
-	// See note on `read` above — conference admins can only mutate devices
-	// already assigned to their conference, not unassigned ones.
-	return { where: { conference: isAdmin(ctx) } };
+	// See note on `read` above — conference admins/team members can only
+	// mutate devices already assigned to one of their conferences, not
+	// unassigned ones. Same predicate as `read` so nobody can ever see an
+	// entry they aren't also allowed to edit.
+	return { where: { conferenceId: { isNotNull: true }, ...isTeamInConference(ctx) } };
 });
 
 export const DisplayDeviceRef = object({

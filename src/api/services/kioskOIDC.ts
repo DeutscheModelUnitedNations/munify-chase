@@ -36,26 +36,39 @@ let jwksAndIssuer: Promise<{
 function getJwksAndIssuer() {
 	if (!jwksAndIssuer) {
 		jwksAndIssuer = (async () => {
-			const res = await fetch(configPublic.PUBLIC_OIDC_AUTHORITY);
+			const res = await fetch(configPublic.PUBLIC_OIDC_AUTHORITY, {
+				signal: AbortSignal.timeout(5000)
+			});
 			const meta = (await res.json()) as { jwks_uri: string; issuer: string };
 			return {
 				jwks: createRemoteJWKSet(new URL(meta.jwks_uri)),
 				issuer: meta.issuer
 			};
-		})();
+		})().catch((e) => {
+			// Don't let a single slow/unreachable discovery call permanently wedge
+			// every future request behind a cached rejected promise — let the next
+			// request try again.
+			jwksAndIssuer = null;
+			throw e;
+		});
 	}
 	return jwksAndIssuer;
 }
 
 async function verify(
+	label: string,
 	token: string,
 	issuer: string,
 	jwks: ReturnType<typeof createRemoteJWKSet>
 ): Promise<JWTPayload | undefined> {
 	try {
 		const { payload } = await jwtVerify(token, jwks, { issuer, audience: trustedAudiences });
+		// TEMPORARY DEBUG — remove once the kiosk role-claim issue is resolved.
+		console.log(`[kioskOIDC] ${label} verified ok, aud=${JSON.stringify(payload.aud)}`);
 		return payload;
-	} catch {
+	} catch (e) {
+		// TEMPORARY DEBUG — remove once the kiosk role-claim issue is resolved.
+		console.log(`[kioskOIDC] ${label} verify failed:`, e instanceof Error ? e.message : e);
 		return undefined;
 	}
 }
@@ -67,6 +80,10 @@ export const kioskOIDCHandle: Handle = async ({ event, resolve }) => {
 
 	const accessToken = event.cookies.get(`${COOKIE_PREFIX}access_token`);
 	const idToken = event.cookies.get(`${COOKIE_PREFIX}id_token`);
+	// TEMPORARY DEBUG — remove once the kiosk role-claim issue is resolved.
+	console.log(
+		`[kioskOIDC] ${event.url.pathname}: accessToken cookie=${!!accessToken} idToken cookie=${!!idToken} trustedAudiences=${JSON.stringify(trustedAudiences)}`
+	);
 	if (!accessToken) {
 		return resolve(event);
 	}
@@ -74,8 +91,8 @@ export const kioskOIDCHandle: Handle = async ({ event, resolve }) => {
 	try {
 		const { jwks, issuer } = await getJwksAndIssuer();
 		const [accessPayload, idPayload] = await Promise.all([
-			verify(accessToken, issuer, jwks),
-			idToken ? verify(idToken, issuer, jwks) : Promise.resolve(undefined)
+			verify('accessToken', accessToken, issuer, jwks),
+			idToken ? verify('idToken', idToken, issuer, jwks) : Promise.resolve(undefined)
 		]);
 
 		if (accessPayload || idPayload) {
@@ -90,9 +107,17 @@ export const kioskOIDCHandle: Handle = async ({ event, resolve }) => {
 				raw: { accessToken, idToken }
 			};
 		}
-	} catch {
-		// Not a kiosk-issued token either — leave locals.oidc unset, same as
-		// the primary handle's own failure path for unprotected routes.
+		// TEMPORARY DEBUG — remove once the kiosk role-claim issue is resolved.
+		console.log(
+			`[kioskOIDC] resolved roles claim (${configPrivate.OIDC_ROLE_CLAIM}):`,
+			JSON.stringify(
+				(accessPayload?.[configPrivate.OIDC_ROLE_CLAIM ?? ''] ??
+					idPayload?.[configPrivate.OIDC_ROLE_CLAIM ?? '']) as unknown
+			)
+		);
+	} catch (e) {
+		// TEMPORARY DEBUG — remove once the kiosk role-claim issue is resolved.
+		console.log('[kioskOIDC] unexpected error:', e instanceof Error ? e.message : e);
 	}
 
 	return resolve(event);

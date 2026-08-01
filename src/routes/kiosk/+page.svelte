@@ -32,41 +32,50 @@
 	// exactly one matching row and throws otherwise; treat "not found" the
 	// same as "not registered yet" and fall through to the pairing screen,
 	// rather than crashing the whole render.
-	let device: Awaited<ReturnType<typeof client.liveQuery.displayDevice>> | null = $state(null);
-	if (deviceId) {
-		try {
-			device = await client.liveQuery.displayDevice({
-				__args: { id: deviceId },
-				id: true,
-				name: true,
-				revoked: true,
-				conferenceId: true,
-				committeeId: true,
-				locale: true,
-				timezone: true,
-				conference: {
-					id: true,
-					title: true,
-					committees: {
+	//
+	// A single never-reassigned `const` matters here: `client.liveQuery.*`
+	// returns a Proxy wired to Svelte's createSubscriber — reading a property
+	// on it (e.g. in the $deriveds below) subscribes to live updates pushed
+	// via the server's pubsub. Reassigning a separate $state variable instead
+	// broke that — the page stopped picking up admin changes (committee,
+	// locale, timezone) without a manual reload.
+	const device = deviceId
+		? await (async () => {
+				try {
+					return await client.liveQuery.displayDevice({
+						__args: { id: deviceId },
 						id: true,
 						name: true,
-						abbreviation: true,
-						activeAgendaItem: {
+						revoked: true,
+						conferenceId: true,
+						committeeId: true,
+						locale: true,
+						timezone: true,
+						conference: {
 							id: true,
-							title: true
-						},
-						status: true,
-						statusHeadline: true,
-						statusUntil: true,
-						stateOfDebate: true,
-						lastResolutionAdoptionDate: true
-					}
+							title: true,
+							committees: {
+								id: true,
+								name: true,
+								abbreviation: true,
+								activeAgendaItem: {
+									id: true,
+									title: true
+								},
+								status: true,
+								statusHeadline: true,
+								statusUntil: true,
+								stateOfDebate: true,
+								lastResolutionAdoptionDate: true
+							}
+						}
+					});
+				} catch {
+					// Not registered yet — pairing screen below handles a null device.
+					return null;
 				}
-			});
-		} catch {
-			// Not registered yet — pairing screen below handles a null device.
-		}
-	}
+			})()
+		: null;
 
 	// Kiosk has no UI to pick a language — apply whatever the organizer
 	// assigned in /app/displays. setLocale() writes the paraglide cookie and

@@ -74,6 +74,16 @@ async function verify(
 }
 
 export const kioskOIDCHandle: Handle = async ({ event, resolve }) => {
+	// TEMPORARY DEBUG — remove once the kiosk role-claim issue is resolved.
+	if (!building) {
+		console.log(
+			`[kioskOIDC] ${event.url.pathname}: building=${building} hasLocalsOidc=${!!event.locals.oidc}` +
+				(event.locals.oidc ? ` existingUser=${JSON.stringify(event.locals.oidc.user)}` : '') +
+				` trustedAudiences=${JSON.stringify(trustedAudiences)}` +
+				` refreshTokenCookie=${!!event.cookies.get('auth_oidc_refresh_token')}`
+		);
+	}
+
 	if (building || event.locals.oidc || trustedAudiences.length === 0) {
 		return resolve(event);
 	}

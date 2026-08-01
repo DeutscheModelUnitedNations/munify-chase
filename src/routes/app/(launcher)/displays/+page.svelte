@@ -83,6 +83,12 @@
 	// exercised from this admin-facing page at all.
 	const devices = authorized
 		? await client.liveQuery.displayDevices({
+				// Without an explicit orderBy, Postgres makes no row-order
+				// guarantee at all — it was drifting on every revoke/restore
+				// because that UPDATE moves the row to a new physical version.
+				// createdAt is stable (never touched by revoke/restore) and
+				// keeps devices in registration order regardless.
+				__args: { orderBy: { createdAt: 'asc' } },
 				id: true,
 				name: true,
 				revoked: true,

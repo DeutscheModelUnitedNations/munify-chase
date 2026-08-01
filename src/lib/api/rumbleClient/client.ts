@@ -1774,6 +1774,7 @@ export type Query = {
     where?: DisplaydeviceWhereInputArgument | null | undefined
   }) => Displaydevice[],
   hasAiProviders: Boolean,
+  isDisplayKiosk: Boolean,
   isGlobalAdmin: Boolean,
   myStats: (p: {
     conferenceId: ID

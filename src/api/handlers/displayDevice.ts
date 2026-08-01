@@ -107,6 +107,19 @@ schemaBuilder.mutationFields((t) => ({
 			timezone: t.arg.string()
 		},
 		resolve: async (query, root, args, ctx) => {
+			// Claiming/unassigning a device (including clearing it back to
+			// unassigned) stays a global-admin action — conference admins/team
+			// members may only edit settings on devices already assigned to
+			// their conference. This also prevents a real crash: the `update`
+			// ability only matches rows whose *current* conferenceId already
+			// satisfies `isTeamInConference`, so letting a conference admin
+			// change conferenceId would leave the row outside their own `read`
+			// filter right after the write, and the read-back below would
+			// throw instead of returning the updated row.
+			if (args.conferenceId !== undefined && !isGlobalAdmin(ctx)) {
+				throw new GraphQLError('Only global admins can assign or unassign a display device');
+			}
+
 			const set: Partial<typeof schema.displayDevice.$inferInsert> = {};
 			if (args.conferenceId !== undefined) set.conferenceId = args.conferenceId;
 			if (args.committeeId !== undefined) set.committeeId = args.committeeId;

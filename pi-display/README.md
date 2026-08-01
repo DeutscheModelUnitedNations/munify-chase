@@ -38,7 +38,7 @@ disk) is preserved across the switch.
 browser sign-in before granting internet access): the Pi detects this case
 after joining and, if its WiFi chip supports running as an access point and
 a client at once (`iw list`'s "valid interface combinations"; most Pi 4/5
-onboard chips do), automatically brings up a *second* AP so the operator can
+onboard chips do), automatically brings up a _second_ AP so the operator can
 rejoin from their phone and complete the venue's sign-in — the venue network
 never sees the Pi drop its connection while this happens. On hardware that
 can't do this, or if the sign-in isn't completed within a few minutes, the
@@ -61,6 +61,15 @@ the access token expires.
 - Recommended: a **long access-token TTL** (hours). The kiosk briefly
   reloads when it re-seeds the session each token period; a long TTL makes
   that rare.
+- **Never grant `service_user` to a staff/admin account, or `admin` to the
+  shared display account.** Several ability rules check `service_user`
+  before checking global-admin status, so an account holding both roles is
+  silently downgraded to kiosk-only access (e.g. it loses `/app` admin
+  access entirely). Keep the display identity and staff identities as
+  separate Logto users. If a staff member signs into a regular browser
+  with the shared display account by mistake, CHASE detects this on
+  `/app/displays` and tells them to log out and back in with their own
+  account — but there's no general-purpose guard against it elsewhere.
 
 ## Build & flash
 

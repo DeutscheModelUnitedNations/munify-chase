@@ -2,14 +2,16 @@
 	import { m } from '$lib/paraglide/messages';
 	import { client } from '$lib/api/rumbleClient/client';
 	import { page } from '$app/state';
-	import { browser } from '$app/environment';
-	import { goto } from '$app/navigation';
-	import { resolve } from '$app/paths';
 	import { getCurrentUser } from '$lib/state/currentUser.svelte';
 	import { locales } from '$lib/paraglide/runtime';
 
 	const user = await getCurrentUser();
 	const isGlobalAdminUser = (await client.query.isGlobalAdmin()) as unknown as boolean;
+	// The shared Pi kiosk account (`service_user`) can end up here if someone
+	// signs into a regular browser with it by mistake — it has no conference
+	// memberships, so it's never `authorized` below, but it deserves a more
+	// actionable message than the generic permission error.
+	const isKioskUser = (await client.query.isDisplayKiosk()) as unknown as boolean;
 
 	// This page manages every conference's displays from one place, so
 	// "can see a row" (ability-filtered on the query below) isn't enough —
@@ -23,22 +25,19 @@
 	// filters), the GraphQL `where` input generated for conferenceUser has
 	// no AND/OR/NOT combinators and no `in` on the enum field — only exact
 	// per-field equality. Same approach as the launcher page.
-	const myConferenceRoles = isGlobalAdminUser
-		? []
-		: await client.liveQuery.conferenceUsers({
-				__args: { where: { user: { id: user.id } } },
-				id: true,
-				conferenceUserType: true
-			});
+	const myConferenceRoles =
+		isGlobalAdminUser || isKioskUser
+			? []
+			: await client.liveQuery.conferenceUsers({
+					__args: { where: { user: { id: user.id } } },
+					id: true,
+					conferenceUserType: true
+				});
 	const authorized =
 		isGlobalAdminUser ||
 		(myConferenceRoles ?? []).some(
 			(cu) => cu.conferenceUserType === 'ADMIN' || cu.conferenceUserType === 'TEAM'
 		);
-
-	if (browser && !authorized) {
-		goto(resolve('/app/(launcher)'));
-	}
 
 	const focusId = page.url.searchParams.get('focus');
 
@@ -115,7 +114,14 @@
 				__args: {
 					id,
 					name: d.name.trim() === '' ? null : d.name.trim(),
-					conferenceId: d.conferenceId === '' ? null : d.conferenceId,
+					// Conference (re)assignment is a global-admin-only action (the
+					// select is disabled for everyone else); omitting the arg
+					// entirely — rather than resending the unchanged value —
+					// keeps conference admins/team members from tripping the
+					// server-side guard on every unrelated settings save.
+					...(isGlobalAdminUser
+						? { conferenceId: d.conferenceId === '' ? null : d.conferenceId }
+						: {}),
 					committeeId: d.committeeId === '' ? null : d.committeeId,
 					locale: d.locale === '' ? null : d.locale,
 					timezone: d.timezone === '' ? null : d.timezone
@@ -192,6 +198,8 @@
 													class="select select-sm select-bordered w-56"
 													bind:value={draft.conferenceId}
 													onchange={() => (draft.committeeId = '')}
+													disabled={!isGlobalAdminUser}
+													title={isGlobalAdminUser ? '' : m.displaysConferenceAdminOnly()}
 												>
 													<option value="">{m.displaysSelectConference()}</option>
 													{#each conferences ?? [] as c (c.id)}
@@ -267,5 +275,17 @@
 				</div>
 			{/if}
 		</div>
+	</div>
+{:else if isKioskUser}
+	<div class="bg-base-200 flex min-h-screen flex-col items-center justify-center gap-4 p-8">
+		<i class="fa-duotone fa-display text-base-content/40 text-7xl"></i>
+		<h1 class="m-0 text-3xl font-bold">{m.displaysKioskAccountHeadline()}</h1>
+		<p class="text-base-content/70 m-0 max-w-md text-center">{m.displaysKioskAccountBody()}</p>
+	</div>
+{:else}
+	<div class="bg-base-200 flex min-h-screen flex-col items-center justify-center gap-4 p-8">
+		<i class="fa-duotone fa-lock text-base-content/40 text-7xl"></i>
+		<h1 class="m-0 text-3xl font-bold">{m.displaysPermissionDeniedHeadline()}</h1>
+		<p class="text-base-content/70 m-0 max-w-md text-center">{m.displaysPermissionDeniedBody()}</p>
 	</div>
 {/if}

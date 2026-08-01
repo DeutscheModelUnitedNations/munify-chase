@@ -7,23 +7,37 @@ import {
 	pubsub as rumblePubsub,
 	query
 } from '$api/rumble';
-import { isTeamInConference, isParticipantInConference } from '$api/services/authHelper';
+import {
+	isDisplayKiosk,
+	isTeamInConference,
+	isParticipantInConference
+} from '$api/services/authHelper';
 import { assertFindFirstExists, assertFirstEntryExists } from '@m1212e/rumble';
 import { eq } from 'drizzle-orm';
 import { GraphQLError } from 'graphql';
 import { nanoidValidation } from '$lib/helpers/nanoid';
 
-abilityBuilder.votingSession.allow('read').when((ctx) => ({
-	where: { committee: isParticipantInConference(ctx) }
-}));
+abilityBuilder.votingSession.allow('read').when((ctx) => {
+	if (isDisplayKiosk(ctx)) {
+		return { where: { committee: { conference: { displayDevices: { revoked: false } } } } };
+	}
+	return { where: { committee: isParticipantInConference(ctx) } };
+});
 
 abilityBuilder.votingSession.allow('update').when((ctx) => ({
 	where: { committee: isTeamInConference(ctx) }
 }));
 
-abilityBuilder.votingVote.allow('read').when((ctx) => ({
-	where: { votingSession: { committee: isParticipantInConference(ctx) } }
-}));
+abilityBuilder.votingVote.allow('read').when((ctx) => {
+	if (isDisplayKiosk(ctx)) {
+		return {
+			where: {
+				votingSession: { committee: { conference: { displayDevices: { revoked: false } } } }
+			}
+		};
+	}
+	return { where: { votingSession: { committee: isParticipantInConference(ctx) } } };
+});
 
 abilityBuilder.votingVote.allow('update').when((ctx) => ({
 	where: { votingSession: { committee: isTeamInConference(ctx) } }

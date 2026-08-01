@@ -4,10 +4,23 @@ import { db, schema } from '$api/db/db';
 import { and, count, eq, gte, sql } from 'drizzle-orm';
 import { assertFindFirstExists, assertFirstEntryExists } from '@m1212e/rumble';
 import { SpeakersListRef } from './speakersList';
-import { isTeamInConference, isParticipantInConference } from '$api/services/authHelper';
+import {
+	isDisplayKiosk,
+	isTeamInConference,
+	isParticipantInConference
+} from '$api/services/authHelper';
 import { nanoidValidation } from '$lib/helpers/nanoid';
 
 abilityBuilder.speakerOnList.allow('read').when((ctx) => {
+	if (isDisplayKiosk(ctx)) {
+		return {
+			where: {
+				speakersList: {
+					agendaItem: { committee: { conference: { displayDevices: { revoked: false } } } }
+				}
+			}
+		};
+	}
 	return {
 		where: {
 			speakersList: {

@@ -6,8 +6,6 @@
 	import { locales } from '$lib/paraglide/runtime';
 
 	const user = await getCurrentUser();
-	// TEMPORARY DEBUG — remove once the kiosk 500 is resolved.
-	console.log(`[displaysPage] step=getCurrentUser userId=${user.id} userEmail=${user.email}`);
 	// The shared Pi kiosk account (`service_user`) can end up here if someone
 	// signs into a regular browser with it by mistake. Checked first and
 	// treated as an absolute veto below: some staff-owned accounts also
@@ -18,13 +16,9 @@
 	// treat it as an admin. Kiosk identity always wins here — this page
 	// must never run the admin queries below for it, full stop.
 	const isKioskUser = (await client.query.isDisplayKiosk()) as unknown as boolean;
-	// TEMPORARY DEBUG — remove once the kiosk 500 is resolved.
-	console.log(`[displaysPage] step=isDisplayKiosk isKioskUser=${isKioskUser}`);
 	const isGlobalAdminUser = isKioskUser
 		? false
 		: ((await client.query.isGlobalAdmin()) as unknown as boolean);
-	// TEMPORARY DEBUG — remove once the kiosk 500 is resolved.
-	console.log(`[displaysPage] step=isGlobalAdmin isGlobalAdminUser=${isGlobalAdminUser}`);
 
 	// This page manages every conference's displays from one place, so
 	// "can see a row" (ability-filtered on the query below) isn't enough —
@@ -52,11 +46,6 @@
 			(myConferenceRoles ?? []).some(
 				(cu) => cu.conferenceUserType === 'ADMIN' || cu.conferenceUserType === 'TEAM'
 			));
-
-	// TEMPORARY DEBUG — remove once the kiosk 500 is resolved.
-	console.log(
-		`[displaysPage] userId=${user.id} userEmail=${user.email} isKioskUser=${isKioskUser} isGlobalAdminUser=${isGlobalAdminUser} myConferenceRolesCount=${(myConferenceRoles ?? []).length} authorized=${authorized}`
-	);
 
 	const focusId = page.url.searchParams.get('focus');
 
@@ -100,11 +89,6 @@
 				committees: { id: true, name: true, abbreviation: true }
 			})
 		: null;
-
-	// TEMPORARY DEBUG — remove once the kiosk 500 is resolved.
-	console.log(
-		`[displaysPage] step=devicesConferences devicesCount=${devices?.length ?? 'null'} conferencesCount=${conferences?.length ?? 'null'}`
-	);
 
 	type Draft = {
 		name: string;

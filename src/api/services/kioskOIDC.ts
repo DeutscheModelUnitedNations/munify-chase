@@ -76,9 +76,18 @@ async function verify(
 export const kioskOIDCHandle: Handle = async ({ event, resolve }) => {
 	// TEMPORARY DEBUG — remove once the kiosk role-claim issue is resolved.
 	if (!building) {
+		const claim = configPrivate.OIDC_ROLE_CLAIM ?? '';
+		const existingAccessToken = event.locals.oidc?.accessToken as
+			Record<string, unknown> | undefined;
+		const existingIdToken = event.locals.oidc?.idToken as Record<string, unknown> | undefined;
 		console.log(
 			`[kioskOIDC] ${event.url.pathname}: building=${building} hasLocalsOidc=${!!event.locals.oidc}` +
-				(event.locals.oidc ? ` existingUser=${JSON.stringify(event.locals.oidc.user)}` : '') +
+				(event.locals.oidc
+					? ` existingUser=${JSON.stringify(event.locals.oidc.user)}` +
+						` existingAccessTokenAud=${JSON.stringify(existingAccessToken?.aud)}` +
+						` existingIdTokenAud=${JSON.stringify(existingIdToken?.aud)}` +
+						` existingRolesClaim=${JSON.stringify(existingAccessToken?.[claim] ?? existingIdToken?.[claim])}`
+					: '') +
 				` trustedAudiences=${JSON.stringify(trustedAudiences)}` +
 				` refreshTokenCookie=${!!event.cookies.get('auth_oidc_refresh_token')}`
 		);

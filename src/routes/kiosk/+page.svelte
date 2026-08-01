@@ -25,8 +25,16 @@
 		}
 	}
 
-	const device = deviceId
-		? await client.liveQuery.displayDevice({
+	// A brand-new device's row may not exist yet at SSR time — registration
+	// above only runs client-side (browser-only), so the very first SSR pass
+	// for a never-before-seen deviceId always predates it. This query requires
+	// exactly one matching row and throws otherwise; treat "not found" the
+	// same as "not registered yet" and fall through to the pairing screen,
+	// rather than crashing the whole render.
+	let device = null;
+	if (deviceId) {
+		try {
+			device = await client.liveQuery.displayDevice({
 				__args: { id: deviceId },
 				id: true,
 				name: true,
@@ -51,8 +59,11 @@
 						lastResolutionAdoptionDate: true
 					}
 				}
-			})
-		: null;
+			});
+		} catch {
+			// Not registered yet — pairing screen below handles a null device.
+		}
+	}
 
 	// Where an organizer assigns this device. Route groups like (launcher) do
 	// not appear in the URL, so the path is /app/displays.

@@ -130,9 +130,15 @@ echo
 echo "Wrote local.nix."
 
 # Nix flakes only see git-tracked files. local.nix is gitignored on purpose
-# (it holds instance-specific config), so it must be force-staged — never
-# committed — for the flake evaluator to find it.
+# (it holds instance-specific config — OIDC client id, base URL, and an SSH
+# key/password hash), so it must be force-staged — never committed — for the
+# flake evaluator to find it. Unstage it again on exit, success or failure,
+# so it can't end up in a later `git commit` by accident; the trap runs
+# regardless of how the script exits (including Ctrl-C or `nix build`
+# failing under `set -e`). The file itself is left in place, just untracked
+# again, so re-running the build doesn't require re-entering everything.
 git add -f local.nix
+trap 'git restore --staged local.nix 2>/dev/null || git reset -- local.nix 2>/dev/null || true' EXIT
 
 echo "Building SD image (this takes a while)…"
 nix build --impure \

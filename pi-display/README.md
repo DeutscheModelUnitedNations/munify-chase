@@ -34,6 +34,19 @@ If the venue WiFi drops for more than ~3 minutes (configurable), the Pi
 networks without SSH or a reflash. The OIDC session (refresh token on
 disk) is preserved across the switch.
 
+**Venue captive portals** (hotel/conference-center WiFi that needs its own
+browser sign-in before granting internet access): the Pi detects this case
+after joining and, if its WiFi chip supports running as an access point and
+a client at once (`iw list`'s "valid interface combinations"; most Pi 4/5
+onboard chips do), automatically brings up a *second* AP so the operator can
+rejoin from their phone and complete the venue's sign-in — the venue network
+never sees the Pi drop its connection while this happens. On hardware that
+can't do this, or if the sign-in isn't completed within a few minutes, the
+display falls back to suggesting either joining through a travel
+router/hotspot instead (recommended — it absorbs the portal for everything
+behind it) or asking venue IT to whitelist the Pi's WiFi MAC address, shown
+on screen.
+
 The Pi never receives the refresh token back from CHASE — Logto rotates
 refresh tokens on use, so the helper stays the sole owner and re-seeds the
 browser session (via a top-level form POST to `/api/kiosk/session`) before

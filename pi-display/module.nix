@@ -93,6 +93,12 @@ in
       program = "${pkgs.chromium}/bin/chromium "
         + "--kiosk --noerrdialogs --disable-infobars --incognito "
         + "--disable-session-crashed-bubble --check-for-update-interval=31536000 "
+        # --disable-infobars doesn't cover it: Chromium moved the translate
+        # prompt to its own bubble UI, not the (deprecated) infobar system.
+        # The display serves multiple languages by design (per-device locale),
+        # so Chrome's "this page isn't in your language" heuristic fires
+        # constantly; disable the feature outright rather than the UI for it.
+        + "--disable-features=Translate,TranslateUI "
         + "http://127.0.0.1:8081/";
     };
     services.cage.environment.WLR_LIBINPUT_NO_DEVICES = "1";
@@ -142,6 +148,7 @@ in
         QRENCODE = "${pkgs.qrencode}/bin/qrencode";
         NMCLI = "${pkgs.networkmanager}/bin/nmcli";
         SYSTEMCTL = "${pkgs.systemd}/bin/systemctl";
+        IW = "${pkgs.iw}/bin/iw";
       };
     };
 

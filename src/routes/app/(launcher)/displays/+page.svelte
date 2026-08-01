@@ -6,12 +6,19 @@
 	import { locales } from '$lib/paraglide/runtime';
 
 	const user = await getCurrentUser();
-	const isGlobalAdminUser = (await client.query.isGlobalAdmin()) as unknown as boolean;
 	// The shared Pi kiosk account (`service_user`) can end up here if someone
-	// signs into a regular browser with it by mistake — it has no conference
-	// memberships, so it's never `authorized` below, but it deserves a more
-	// actionable message than the generic permission error.
+	// signs into a regular browser with it by mistake. Checked first and
+	// treated as an absolute veto below: some staff-owned accounts also
+	// happen to satisfy the global-admin domain/email whitelist, and several
+	// ability rules (conference.ts, committee.ts) check `service_user`
+	// before checking admin status, so a ctx that's both ends up with an
+	// inconsistent, half-kiosk-scoped read filter if this page tries to
+	// treat it as an admin. Kiosk identity always wins here — this page
+	// must never run the admin queries below for it, full stop.
 	const isKioskUser = (await client.query.isDisplayKiosk()) as unknown as boolean;
+	const isGlobalAdminUser = isKioskUser
+		? false
+		: ((await client.query.isGlobalAdmin()) as unknown as boolean);
 
 	// This page manages every conference's displays from one place, so
 	// "can see a row" (ability-filtered on the query below) isn't enough —
@@ -34,10 +41,11 @@
 					conferenceUserType: true
 				});
 	const authorized =
-		isGlobalAdminUser ||
-		(myConferenceRoles ?? []).some(
-			(cu) => cu.conferenceUserType === 'ADMIN' || cu.conferenceUserType === 'TEAM'
-		);
+		!isKioskUser &&
+		(isGlobalAdminUser ||
+			(myConferenceRoles ?? []).some(
+				(cu) => cu.conferenceUserType === 'ADMIN' || cu.conferenceUserType === 'TEAM'
+			));
 
 	const focusId = page.url.searchParams.get('focus');
 
@@ -55,24 +63,32 @@
 		}
 	})();
 
-	const devices = await client.liveQuery.displayDevices({
-		id: true,
-		name: true,
-		revoked: true,
-		conferenceId: true,
-		committeeId: true,
-		lastSeenAt: true,
-		locale: true,
-		timezone: true,
-		conference: { id: true, title: true },
-		committee: { id: true, abbreviation: true }
-	});
+	// Only ever queried for an authorized (admin/team) ctx — never for the
+	// kiosk account, whose ability filters take a different, kiosk-scoped
+	// priority branch in conference.ts/committee.ts and shouldn't be
+	// exercised from this admin-facing page at all.
+	const devices = authorized
+		? await client.liveQuery.displayDevices({
+				id: true,
+				name: true,
+				revoked: true,
+				conferenceId: true,
+				committeeId: true,
+				lastSeenAt: true,
+				locale: true,
+				timezone: true,
+				conference: { id: true, title: true },
+				committee: { id: true, abbreviation: true }
+			})
+		: null;
 
-	const conferences = await client.liveQuery.conferences({
-		id: true,
-		title: true,
-		committees: { id: true, name: true, abbreviation: true }
-	});
+	const conferences = authorized
+		? await client.liveQuery.conferences({
+				id: true,
+				title: true,
+				committees: { id: true, name: true, abbreviation: true }
+			})
+		: null;
 
 	type Draft = {
 		name: string;

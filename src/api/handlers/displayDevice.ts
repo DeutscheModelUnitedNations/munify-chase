@@ -7,8 +7,13 @@ import {
 	schemaBuilder,
 	pubsub as rumblePubsub
 } from '$api/rumble';
-import { isDisplayKiosk, isGlobalAdmin, isTeamInConference } from '$api/services/authHelper';
-import { assertFindFirstExists } from '@m1212e/rumble';
+import {
+	isAdminInConference,
+	isDisplayKiosk,
+	isGlobalAdmin,
+	isTeamInConference
+} from '$api/services/authHelper';
+import { assertFindFirstExists, assertFirstEntryExists } from '@m1212e/rumble';
 import { GraphQLError } from 'graphql';
 
 const displayDeviceLocaleEnum = enum_({
@@ -19,10 +24,18 @@ abilityBuilder.displayDevice.allow('read').when((ctx) => {
 	if (isGlobalAdmin(ctx)) {
 		return { where: {} };
 	}
-	// The shared kiosk account may read any non-revoked device row; per-device
-	// scoping comes from the deviceId the kiosk queries, not the identity.
+	// The shared kiosk account may read any device row, including revoked
+	// ones — per-device scoping comes from the deviceId the kiosk queries,
+	// not the identity. Excluding revoked rows here used to seem like the
+	// obvious extra lockout, but it actively breaks revocation: a revoked
+	// device's own live query on itself is how /kiosk notices `revoked` and
+	// shows the "you've been revoked" screen. Once that row disappeared from
+	// its own read filter, the by-id query started throwing (findFirst
+	// required, nothing matched), which surfaced through the live
+	// subscription as a dropped connection — an "offline" banner instead of
+	// the revoked message, on the one row a revoked kiosk most needs to see.
 	if (isDisplayKiosk(ctx)) {
-		return { where: { revoked: false } };
+		return { where: {} };
 	}
 	// Conference admins and team members see devices assigned to one of
 	// their conferences only. Unassigned devices are explicitly excluded
@@ -43,6 +56,21 @@ abilityBuilder.displayDevice.allow('update').when((ctx) => {
 	// unassigned ones. Same predicate as `read` so nobody can ever see an
 	// entry they aren't also allowed to edit.
 	return { where: { conferenceId: { isNotNull: true }, ...isTeamInConference(ctx) } };
+});
+
+abilityBuilder.displayDevice.allow('delete').when((ctx) => {
+	// Deletion is a stronger, irreversible action than editing settings, so
+	// — unlike read/update — team members don't get it, only admins. Baking
+	// `revoked: true` into the ability itself (rather than only checking it
+	// in the resolver) means an attempt to delete a still-active device is
+	// rejected at the same layer as every other permission check, for
+	// anyone, including global admins.
+	if (isGlobalAdmin(ctx)) {
+		return { where: { revoked: true } };
+	}
+	return {
+		where: { revoked: true, conferenceId: { isNotNull: true }, ...isAdminInConference(ctx) }
+	};
 });
 
 export const DisplayDeviceRef = object({
@@ -197,6 +225,32 @@ schemaBuilder.mutationFields((t) => ({
 					)
 				)
 				.then(assertFindFirstExists);
+		}
+	}),
+	/**
+	 * Permanently remove a device row. Only ever reachable for already-revoked
+	 * devices — enforced by the `delete` ability's `revoked: true` clause, not
+	 * just the UI hiding the button — so `.returning()` coming back empty
+	 * unambiguously means "not revoked (or not permitted)", not a fluke.
+	 */
+	deleteDisplayDevice: t.field({
+		type: 'Boolean',
+		args: {
+			id: t.arg.id({ required: true })
+		},
+		resolve: async (root, args, ctx) => {
+			const deleted = await db
+				.delete(schema.displayDevice)
+				.where(
+					ctx.abilities.displayDevice.filter('delete').merge({ where: { id: args.id } }).sql.where
+				)
+				.returning({ id: schema.displayDevice.id });
+
+			assertFirstEntryExists(deleted);
+
+			pubsub.removed();
+
+			return true;
 		}
 	})
 }));

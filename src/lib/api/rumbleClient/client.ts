@@ -1165,6 +1165,9 @@ export type Mutation = {
   deleteConferenceUser: (p: {
     id: ID
   }) => Boolean,
+  deleteDisplayDevice: (p: {
+    id: ID
+  }) => Boolean,
   deletePaperShareCode: (p: {
     id: ID
   }) => Boolean,

@@ -4,6 +4,8 @@
 	import { page } from '$app/state';
 	import { getCurrentUser } from '$lib/state/currentUser.svelte';
 	import { locales } from '$lib/paraglide/runtime';
+	import toast from 'svelte-french-toast';
+	import { promiseToastStrings } from '$lib/utils/toast';
 
 	const user = await getCurrentUser();
 	// The shared Pi kiosk account (`service_user`) can end up here if someone
@@ -38,6 +40,7 @@
 			: await client.liveQuery.conferenceUsers({
 					__args: { where: { user: { id: user.id } } },
 					id: true,
+					conferenceId: true,
 					conferenceUserType: true
 				});
 	const authorized =
@@ -46,6 +49,17 @@
 			(myConferenceRoles ?? []).some(
 				(cu) => cu.conferenceUserType === 'ADMIN' || cu.conferenceUserType === 'TEAM'
 			));
+
+	// Deletion is admin-only (global or conference), unlike read/update which
+	// team members also get — mirrors the `delete` ability in displayDevice.ts.
+	const myAdminConferenceIds = new Set(
+		(myConferenceRoles ?? [])
+			.filter((cu) => cu.conferenceUserType === 'ADMIN')
+			.map((cu) => cu.conferenceId)
+	);
+	function canDelete(d: { conferenceId: string | null }): boolean {
+		return isGlobalAdminUser || (!!d.conferenceId && myAdminConferenceIds.has(d.conferenceId));
+	}
 
 	const focusId = page.url.searchParams.get('focus');
 
@@ -125,25 +139,29 @@
 		const d = drafts[id];
 		if (!d) return;
 		busy = id;
+		const targetName = d.name.trim() || id;
 		try {
-			await client.mutate.assignDisplayDevice({
-				__args: {
-					id,
-					name: d.name.trim() === '' ? null : d.name.trim(),
-					// Conference (re)assignment is a global-admin-only action (the
-					// select is disabled for everyone else); omitting the arg
-					// entirely — rather than resending the unchanged value —
-					// keeps conference admins/team members from tripping the
-					// server-side guard on every unrelated settings save.
-					...(isGlobalAdminUser
-						? { conferenceId: d.conferenceId === '' ? null : d.conferenceId }
-						: {}),
-					committeeId: d.committeeId === '' ? null : d.committeeId,
-					locale: d.locale === '' ? null : d.locale,
-					timezone: d.timezone === '' ? null : d.timezone
-				},
-				id: true
-			});
+			await toast.promise(
+				client.mutate.assignDisplayDevice({
+					__args: {
+						id,
+						name: d.name.trim() === '' ? null : d.name.trim(),
+						// Conference (re)assignment is a global-admin-only action (the
+						// select is disabled for everyone else); omitting the arg
+						// entirely — rather than resending the unchanged value —
+						// keeps conference admins/team members from tripping the
+						// server-side guard on every unrelated settings save.
+						...(isGlobalAdminUser
+							? { conferenceId: d.conferenceId === '' ? null : d.conferenceId }
+							: {}),
+						committeeId: d.committeeId === '' ? null : d.committeeId,
+						locale: d.locale === '' ? null : d.locale,
+						timezone: d.timezone === '' ? null : d.timezone
+					},
+					id: true
+				}),
+				promiseToastStrings(targetName, 'update')
+			);
 		} finally {
 			busy = null;
 		}
@@ -151,12 +169,32 @@
 
 	async function setRevoked(id: string, revoked: boolean) {
 		busy = id;
+		const targetName = drafts[id]?.name.trim() || id;
 		try {
-			await client.mutate.setDisplayDeviceRevoked({
-				__args: { id, revoked },
-				id: true,
-				revoked: true
-			});
+			await toast.promise(
+				client.mutate.setDisplayDeviceRevoked({
+					__args: { id, revoked },
+					id: true,
+					revoked: true
+				}),
+				promiseToastStrings(targetName, 'update')
+			);
+		} finally {
+			busy = null;
+		}
+	}
+
+	async function deleteDevice(id: string) {
+		if (!confirm(m.confirmDeleteDisplayDevice())) return;
+		const targetName = drafts[id]?.name.trim() || id;
+		busy = id;
+		try {
+			await toast.promise(
+				// eslint-disable-next-line @typescript-eslint/no-explicit-any -- rumble generator types delete mutations as plain `Boolean` instead of callable functions
+				(client.mutate.deleteDisplayDevice as any)({ __args: { id } } as any),
+				promiseToastStrings(targetName, 'delete')
+			);
+			delete drafts[id];
 		} finally {
 			busy = null;
 		}
@@ -271,6 +309,15 @@
 												>
 													{m.displaysRestore()}
 												</button>
+												{#if canDelete(d)}
+													<button
+														class="btn btn-xs btn-ghost text-error"
+														disabled={busy === d.id}
+														onclick={() => deleteDevice(d.id)}
+													>
+														{m.displaysDelete()}
+													</button>
+												{/if}
 											{:else}
 												<span class="badge badge-success mb-2">{m.displaysStatusActive()}</span>
 												<br />

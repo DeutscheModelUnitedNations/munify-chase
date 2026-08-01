@@ -83,6 +83,17 @@ in
     networking.wireless.enable = false;
     networking.firewall.trustedInterfaces = [ cfg.wlanInterface ];
 
+    # Belt-and-suspenders against the Translate bubble: `--disable-features=
+    # Translate,TranslateUI` alone kept resurfacing it, because recent
+    # Chromium re-derives the "offer to translate" heuristic from the
+    # profile's translate prefs regardless of that switch. The managed
+    # policy is the one mechanism Chromium documents as authoritative here
+    # (enterprise policy, evaluated before/independent of profile prefs and
+    # of --incognito) — see chromeenterprise.google/policies/#TranslateEnabled.
+    environment.etc."chromium/policies/managed/chase-kiosk.json".text = builtins.toJSON {
+      TranslateEnabled = false;
+    };
+
     # --- Auto-login + Wayland kiosk (cage runs a single Chromium) ---------
     services.cage = {
       enable = true;

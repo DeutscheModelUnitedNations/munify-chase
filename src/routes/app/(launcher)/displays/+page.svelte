@@ -17,18 +17,24 @@
 	// shell at all. The device list itself is still ability-filtered
 	// server-side regardless, this just avoids exposing the management UI
 	// to plain participants.
+	//
+	// Filtered client-side rather than via a `where: { OR: [...] } }` arg:
+	// unlike the server-side ability-builder DSL (Drizzle relational
+	// filters), the GraphQL `where` input generated for conferenceUser has
+	// no AND/OR/NOT combinators and no `in` on the enum field — only exact
+	// per-field equality. Same approach as the launcher page.
 	const myConferenceRoles = isGlobalAdminUser
 		? []
 		: await client.liveQuery.conferenceUsers({
-				__args: {
-					where: {
-						user: { id: user.id },
-						OR: [{ conferenceUserType: 'ADMIN' }, { conferenceUserType: 'TEAM' }]
-					}
-				},
-				id: true
+				__args: { where: { user: { id: user.id } } },
+				id: true,
+				conferenceUserType: true
 			});
-	const authorized = isGlobalAdminUser || (myConferenceRoles ?? []).length > 0;
+	const authorized =
+		isGlobalAdminUser ||
+		(myConferenceRoles ?? []).some(
+			(cu) => cu.conferenceUserType === 'ADMIN' || cu.conferenceUserType === 'TEAM'
+		);
 
 	if (browser && !authorized) {
 		goto(resolve('/app/(launcher)'));
@@ -73,7 +79,7 @@
 		name: string;
 		conferenceId: string;
 		committeeId: string;
-		locale: string;
+		locale: (typeof locales)[number] | '';
 		timezone: string;
 	};
 	let drafts = $state<Record<string, Draft>>({});

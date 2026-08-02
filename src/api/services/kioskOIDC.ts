@@ -56,53 +56,25 @@ function getJwksAndIssuer() {
 }
 
 async function verify(
-	label: string,
 	token: string,
 	issuer: string,
 	jwks: ReturnType<typeof createRemoteJWKSet>
 ): Promise<JWTPayload | undefined> {
 	try {
 		const { payload } = await jwtVerify(token, jwks, { issuer, audience: trustedAudiences });
-		// TEMPORARY DEBUG — remove once the kiosk role-claim issue is resolved.
-		console.log(`[kioskOIDC] ${label} verified ok, aud=${JSON.stringify(payload.aud)}`);
 		return payload;
-	} catch (e) {
-		// TEMPORARY DEBUG — remove once the kiosk role-claim issue is resolved.
-		console.log(`[kioskOIDC] ${label} verify failed:`, e instanceof Error ? e.message : e);
+	} catch {
 		return undefined;
 	}
 }
 
 export const kioskOIDCHandle: Handle = async ({ event, resolve }) => {
-	// TEMPORARY DEBUG — remove once the kiosk role-claim issue is resolved.
-	if (!building) {
-		const claim = configPrivate.OIDC_ROLE_CLAIM ?? '';
-		const existingAccessToken = event.locals.oidc?.accessToken as
-			Record<string, unknown> | undefined;
-		const existingIdToken = event.locals.oidc?.idToken as Record<string, unknown> | undefined;
-		console.log(
-			`[kioskOIDC] ${event.url.pathname}: building=${building} hasLocalsOidc=${!!event.locals.oidc}` +
-				(event.locals.oidc
-					? ` existingUser=${JSON.stringify(event.locals.oidc.user)}` +
-						` existingAccessTokenAud=${JSON.stringify(existingAccessToken?.aud)}` +
-						` existingIdTokenAud=${JSON.stringify(existingIdToken?.aud)}` +
-						` existingRolesClaim=${JSON.stringify(existingAccessToken?.[claim] ?? existingIdToken?.[claim])}`
-					: '') +
-				` trustedAudiences=${JSON.stringify(trustedAudiences)}` +
-				` refreshTokenCookie=${!!event.cookies.get('auth_oidc_refresh_token')}`
-		);
-	}
-
 	if (building || event.locals.oidc || trustedAudiences.length === 0) {
 		return resolve(event);
 	}
 
 	const accessToken = event.cookies.get(`${COOKIE_PREFIX}access_token`);
 	const idToken = event.cookies.get(`${COOKIE_PREFIX}id_token`);
-	// TEMPORARY DEBUG — remove once the kiosk role-claim issue is resolved.
-	console.log(
-		`[kioskOIDC] ${event.url.pathname}: accessToken cookie=${!!accessToken} idToken cookie=${!!idToken} trustedAudiences=${JSON.stringify(trustedAudiences)}`
-	);
 	if (!accessToken) {
 		return resolve(event);
 	}
@@ -110,8 +82,8 @@ export const kioskOIDCHandle: Handle = async ({ event, resolve }) => {
 	try {
 		const { jwks, issuer } = await getJwksAndIssuer();
 		const [accessPayload, idPayload] = await Promise.all([
-			verify('accessToken', accessToken, issuer, jwks),
-			idToken ? verify('idToken', idToken, issuer, jwks) : Promise.resolve(undefined)
+			verify(accessToken, issuer, jwks),
+			idToken ? verify(idToken, issuer, jwks) : Promise.resolve(undefined)
 		]);
 
 		if (accessPayload || idPayload) {
@@ -126,17 +98,9 @@ export const kioskOIDCHandle: Handle = async ({ event, resolve }) => {
 				raw: { accessToken, idToken }
 			};
 		}
-		// TEMPORARY DEBUG — remove once the kiosk role-claim issue is resolved.
-		console.log(
-			`[kioskOIDC] resolved roles claim (${configPrivate.OIDC_ROLE_CLAIM}):`,
-			JSON.stringify(
-				(accessPayload?.[configPrivate.OIDC_ROLE_CLAIM ?? ''] ??
-					idPayload?.[configPrivate.OIDC_ROLE_CLAIM ?? '']) as unknown
-			)
-		);
-	} catch (e) {
-		// TEMPORARY DEBUG — remove once the kiosk role-claim issue is resolved.
-		console.log('[kioskOIDC] unexpected error:', e instanceof Error ? e.message : e);
+	} catch {
+		// Fallback verification failed — fall through and let the request
+		// proceed unauthenticated, same as the primary OIDC.handle would.
 	}
 
 	return resolve(event);

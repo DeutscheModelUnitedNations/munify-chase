@@ -8,6 +8,33 @@ import { kioskOIDCHandle } from '$api/services/kioskOIDC';
 import { locales, baseLocale, cookieName, cookieMaxAge } from '$lib/paraglide/runtime';
 
 const TAURI_ORIGIN = 'tauri://localhost';
+const KIOSK_BOOTSTRAP_ORIGIN = 'http://127.0.0.1:8081';
+
+/**
+ * `kit.csrf.trustedOrigins` (svelte.config.js) exempts KIOSK_BOOTSTRAP_ORIGIN
+ * from SvelteKit's CSRF check so the Pi kiosk's cross-origin form POST to
+ * /api/kiosk/session can go through. That exemption is unavoidably global —
+ * `trustedOrigins` is a flat origin allowlist with no path/method scoping,
+ * and SvelteKit's own check runs inside `respond()` before any `handle` hook
+ * is invoked, so a hook can't intercept or narrow it from the inside. What a
+ * hook *can* do is run after the fact and reject anything that used the
+ * exemption for something other than the one request it exists for — closing
+ * the gap where any other local dev server someone happens to run on
+ * 127.0.0.1:8081 could otherwise forge cross-origin form POSTs to any other
+ * mutating route on this deployment while claiming the same origin.
+ */
+const kioskOriginScope: Handle = ({ event, resolve }) => {
+	const origin = event.request.headers.get('origin');
+	if (origin !== KIOSK_BOOTSTRAP_ORIGIN) return resolve(event);
+
+	const isKioskSessionPost =
+		event.request.method === 'POST' && event.url.pathname === '/api/kiosk/session';
+	if (!isKioskSessionPost) {
+		return new Response('Cross-site request forbidden', { status: 403 });
+	}
+
+	return resolve(event);
+};
 
 /** Allow the Tauri desktop shell (origin tauri://localhost) to reach the API. */
 const tauriCors: Handle = async ({ event, resolve }) => {
@@ -56,6 +83,7 @@ const localeRedirect: Handle = ({ event, resolve }) => {
 };
 
 export const handle: Handle = sequence(
+	kioskOriginScope,
 	tauriCors,
 	OIDC.handle,
 	// Only runs when OIDC.handle above didn't already establish a session —

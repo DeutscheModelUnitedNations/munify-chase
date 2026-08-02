@@ -19,7 +19,11 @@ const config = {
 		// http://127.0.0.1:8081 on every device) to /api/kiosk/session on this
 		// origin. That's a legitimate cross-origin form submission, so it needs
 		// an explicit CSRF allowlist entry or SvelteKit rejects it with a 403
-		// before the request ever reaches our route code.
+		// before the request ever reaches our route code. `trustedOrigins` has
+		// no path/method scoping (SvelteKit's own CSRF check runs before any
+		// `handle` hook, so a hook can't narrow this from the inside either) —
+		// `kioskOriginScope` in src/hooks.server.ts rejects anything that uses
+		// this exemption for something other than that one POST.
 		csrf: {
 			trustedOrigins: ['http://127.0.0.1:8081']
 		},

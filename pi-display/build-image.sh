@@ -70,7 +70,7 @@ EOF
 
 2)
     SSH_PASSWORD="$(openssl rand -base64 18 | tr -d '=+/')"
-    SSH_PASSWORD_HASH="$(mkpasswd -m yescrypt "$SSH_PASSWORD")"
+    SSH_PASSWORD_HASH="$(mkpasswd -m yescrypt --stdin <<< "$SSH_PASSWORD")"
 
     echo
     echo "======================================"

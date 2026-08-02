@@ -239,10 +239,25 @@ def supports_concurrent_ap_sta() -> bool:
         break
 
     for combo in "\n".join(block_lines).split("*")[1:]:
-        types: set[str] = set()
-        for m in re.finditer(r"\{([^}]*)\}", combo):
-            types.update(t.strip() for t in m.group(1).split(","))
-        if "managed" in types and "AP" in types:
+        # Each combination lists one or more independent caps, e.g.
+        # "#{ managed } <= 1, #{ AP, mesh point } <= 1" (managed and AP each
+        # get their own interface) vs. "#{ managed, AP } <= 1" (they share a
+        # single slot and can't coexist). Evaluate each cap group on its own
+        # rather than unioning all types in the combo together.
+        groups: list[tuple[set[str], int]] = []
+        for m in re.finditer(r"#\{([^}]*)\}\s*<=\s*(\d+)", combo):
+            types = {t.strip() for t in m.group(1).split(",")}
+            groups.append((types, int(m.group(2))))
+
+        managed_group = next((g for g in groups if "managed" in g[0]), None)
+        ap_group = next((g for g in groups if "AP" in g[0]), None)
+        if not managed_group or not ap_group:
+            continue
+
+        if managed_group is ap_group:
+            if managed_group[1] >= 2:
+                return True
+        elif managed_group[1] >= 1 and ap_group[1] >= 1:
             return True
     return False
 

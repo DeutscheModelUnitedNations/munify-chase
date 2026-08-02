@@ -71,8 +71,9 @@
 							}
 						}
 					});
-				} catch {
+				} catch (err) {
 					// Not registered yet — pairing screen below handles a null device.
+					console.error('Failed to load display device', deviceId, err);
 					return null;
 				}
 			})()

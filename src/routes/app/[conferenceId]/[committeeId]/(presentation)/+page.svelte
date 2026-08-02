@@ -2,7 +2,7 @@
 	import { page } from '$app/state';
 	import CommitteePresentation from '$lib/components/presentation/CommitteePresentation.svelte';
 
-	const committeeId = page.params.committeeId!;
+	let committeeId = $derived(page.params.committeeId!);
 </script>
 
 <!-- Force a remount on committeeId change: CommitteePresentation's live query

@@ -4,68 +4,37 @@
 			"entityType": "enums",
 			"name": "amendment_review_phase",
 			"schema": "public",
-			"values": [
-				"OBSOLESCENCE",
-				"REWRITE",
-				"RESOLVED"
-			]
+			"values": ["OBSOLESCENCE", "REWRITE", "RESOLVED"]
 		},
 		{
 			"entityType": "enums",
 			"name": "amendment_status",
 			"schema": "public",
-			"values": [
-				"PENDING",
-				"SUBMITTED",
-				"CONSENSUS_ADOPTED",
-				"ACCEPTED",
-				"REJECTED",
-				"WITHDRAWN"
-			]
+			"values": ["PENDING", "SUBMITTED", "CONSENSUS_ADOPTED", "ACCEPTED", "REJECTED", "WITHDRAWN"]
 		},
 		{
 			"entityType": "enums",
 			"name": "amendment_type",
 			"schema": "public",
-			"values": [
-				"DELETE",
-				"ADD",
-				"ALTER_TEXT",
-				"ALTER_POSITION"
-			]
+			"values": ["DELETE", "ADD", "ALTER_TEXT", "ALTER_POSITION"]
 		},
 		{
 			"entityType": "enums",
 			"name": "comment_visibility",
 			"schema": "public",
-			"values": [
-				"PUBLIC",
-				"TEAM_ONLY"
-			]
+			"values": ["PUBLIC", "TEAM_ONLY"]
 		},
 		{
 			"entityType": "enums",
 			"name": "committee_status",
 			"schema": "public",
-			"values": [
-				"FORMAL",
-				"INFORMAL",
-				"MODERATED_INFORMAL",
-				"PAUSE",
-				"SUSPENSION"
-			]
+			"values": ["FORMAL", "INFORMAL", "MODERATED_INFORMAL", "PAUSE", "SUSPENSION"]
 		},
 		{
 			"entityType": "enums",
 			"name": "conference_user_type",
 			"schema": "public",
-			"values": [
-				"ADMIN",
-				"TEAM",
-				"SPECTATOR",
-				"DELEGATE",
-				"NON_STATE_ACTOR"
-			]
+			"values": ["ADMIN", "TEAM", "SPECTATOR", "DELEGATE", "NON_STATE_ACTOR"]
 		},
 		{
 			"entityType": "enums",
@@ -84,12 +53,7 @@
 			"entityType": "enums",
 			"name": "presence_event_marker",
 			"schema": "public",
-			"values": [
-				"AUTO_SWITCH",
-				"ROLL_CALL",
-				"NSA_SCAN",
-				"MANUAL"
-			]
+			"values": ["AUTO_SWITCH", "ROLL_CALL", "NSA_SCAN", "MANUAL"]
 		},
 		{
 			"entityType": "enums",
@@ -107,102 +71,61 @@
 			"entityType": "enums",
 			"name": "representation_type",
 			"schema": "public",
-			"values": [
-				"DELEGATION",
-				"NSA",
-				"UN"
-			]
+			"values": ["DELEGATION", "NSA", "UN"]
 		},
 		{
 			"entityType": "enums",
 			"name": "share_code_permission",
 			"schema": "public",
-			"values": [
-				"SPONSOR",
-				"EDIT"
-			]
+			"values": ["SPONSOR", "EDIT"]
 		},
 		{
 			"entityType": "enums",
 			"name": "snapshot_trigger",
 			"schema": "public",
-			"values": [
-				"SUBMITTED",
-				"AMENDMENT_APPLIED",
-				"VOTE_CONCLUDED",
-				"MANUAL"
-			]
+			"values": ["SUBMITTED", "AMENDMENT_APPLIED", "VOTE_CONCLUDED", "MANUAL"]
 		},
 		{
 			"entityType": "enums",
 			"name": "speakers_list_category",
 			"schema": "public",
-			"values": [
-				"SPEAKERS_LIST",
-				"COMMENT_LIST"
-			]
+			"values": ["SPEAKERS_LIST", "COMMENT_LIST"]
 		},
 		{
 			"entityType": "enums",
 			"name": "speakers_list_phase",
 			"schema": "public",
-			"values": [
-				"SPEECH",
-				"SPEECH_DONE",
-				"QUESTION",
-				"ANSWER",
-				"ANSWER_DONE"
-			]
+			"values": ["SPEECH", "SPEECH_DONE", "QUESTION", "ANSWER", "ANSWER_DONE"]
 		},
 		{
 			"entityType": "enums",
 			"name": "vote_choice",
 			"schema": "public",
-			"values": [
-				"PRO",
-				"CON",
-				"ABSTAIN"
-			]
+			"values": ["PRO", "CON", "ABSTAIN"]
 		},
 		{
 			"entityType": "enums",
 			"name": "voting_majority_type",
 			"schema": "public",
-			"values": [
-				"SIMPLE",
-				"ABSOLUTE",
-				"TWO_THIRDS"
-			]
+			"values": ["SIMPLE", "ABSOLUTE", "TWO_THIRDS"]
 		},
 		{
 			"entityType": "enums",
 			"name": "voting_mode",
 			"schema": "public",
-			"values": [
-				"SHOW_OF_HANDS",
-				"ROLL_CALL",
-				"DEVICE_BASED"
-			]
+			"values": ["SHOW_OF_HANDS", "ROLL_CALL", "DEVICE_BASED"]
 		},
 		{
 			"entityType": "enums",
 			"name": "voting_outcome",
 			"schema": "public",
-			"values": [
-				"ADOPTED",
-				"REJECTED"
-			]
+			"values": ["ADOPTED", "REJECTED"]
 		},
 		{
 			"entityType": "enums",
 			"name": "voting_stage",
 			"schema": "public",
-			"values": [
-				"PRO",
-				"CON",
-				"ABSTAIN",
-				"EVALUATION"
-			]
+			"values": ["PRO", "CON", "ABSTAIN", "EVALUATION"]
 		},
 		{
 			"entityType": "tables",
@@ -3539,12 +3462,8 @@
 			"typeSchema": "public"
 		},
 		{
-			"columns": [
-				"committee_id"
-			],
-			"columnsTo": [
-				"id"
-			],
+			"columns": ["committee_id"],
+			"columnsTo": ["id"],
 			"entityType": "fks",
 			"name": "agenda_item_committee_id_committee_id_fk",
 			"nameExplicit": false,
@@ -3556,12 +3475,8 @@
 			"tableTo": "committee"
 		},
 		{
-			"columns": [
-				"paper_id"
-			],
-			"columnsTo": [
-				"id"
-			],
+			"columns": ["paper_id"],
+			"columnsTo": ["id"],
 			"entityType": "fks",
 			"name": "amendment_paper_id_resolution_paper_id_fk",
 			"nameExplicit": false,
@@ -3573,12 +3488,8 @@
 			"tableTo": "resolution_paper"
 		},
 		{
-			"columns": [
-				"proposer_committee_member_id"
-			],
-			"columnsTo": [
-				"id"
-			],
+			"columns": ["proposer_committee_member_id"],
+			"columnsTo": ["id"],
 			"entityType": "fks",
 			"name": "amendment_proposer_committee_member_id_committee_member_id_fk",
 			"nameExplicit": false,
@@ -3590,12 +3501,8 @@
 			"tableTo": "committee_member"
 		},
 		{
-			"columns": [
-				"obsoleted_by_amendment_id"
-			],
-			"columnsTo": [
-				"id"
-			],
+			"columns": ["obsoleted_by_amendment_id"],
+			"columnsTo": ["id"],
 			"entityType": "fks",
 			"name": "amendment_obsoleted_by_amendment_id_amendment_id_fkey",
 			"nameExplicit": false,
@@ -3607,12 +3514,8 @@
 			"tableTo": "amendment"
 		},
 		{
-			"columns": [
-				"paper_id"
-			],
-			"columnsTo": [
-				"id"
-			],
+			"columns": ["paper_id"],
+			"columnsTo": ["id"],
 			"entityType": "fks",
 			"name": "amendment_review_item_paper_id_resolution_paper_id_fkey",
 			"nameExplicit": false,
@@ -3624,12 +3527,8 @@
 			"tableTo": "resolution_paper"
 		},
 		{
-			"columns": [
-				"trigger_amendment_id"
-			],
-			"columnsTo": [
-				"id"
-			],
+			"columns": ["trigger_amendment_id"],
+			"columnsTo": ["id"],
 			"entityType": "fks",
 			"name": "amendment_review_item_trigger_amendment_id_amendment_id_fkey",
 			"nameExplicit": false,
@@ -3641,12 +3540,8 @@
 			"tableTo": "amendment"
 		},
 		{
-			"columns": [
-				"subject_amendment_id"
-			],
-			"columnsTo": [
-				"id"
-			],
+			"columns": ["subject_amendment_id"],
+			"columnsTo": ["id"],
 			"entityType": "fks",
 			"name": "amendment_review_item_subject_amendment_id_amendment_id_fkey",
 			"nameExplicit": false,
@@ -3658,12 +3553,8 @@
 			"tableTo": "amendment"
 		},
 		{
-			"columns": [
-				"amendment_id"
-			],
-			"columnsTo": [
-				"id"
-			],
+			"columns": ["amendment_id"],
+			"columnsTo": ["id"],
 			"entityType": "fks",
 			"name": "amendment_sponsor_amendment_id_amendment_id_fk",
 			"nameExplicit": false,
@@ -3675,12 +3566,8 @@
 			"tableTo": "amendment"
 		},
 		{
-			"columns": [
-				"committee_member_id"
-			],
-			"columnsTo": [
-				"id"
-			],
+			"columns": ["committee_member_id"],
+			"columnsTo": ["id"],
 			"entityType": "fks",
 			"name": "amendment_sponsor_committee_member_id_committee_member_id_fk",
 			"nameExplicit": false,
@@ -3692,12 +3579,8 @@
 			"tableTo": "committee_member"
 		},
 		{
-			"columns": [
-				"conference_id"
-			],
-			"columnsTo": [
-				"id"
-			],
+			"columns": ["conference_id"],
+			"columnsTo": ["id"],
 			"entityType": "fks",
 			"name": "committee_conference_id_conference_id_fk",
 			"nameExplicit": false,
@@ -3709,12 +3592,8 @@
 			"tableTo": "conference"
 		},
 		{
-			"columns": [
-				"active_agenda_item_id"
-			],
-			"columnsTo": [
-				"id"
-			],
+			"columns": ["active_agenda_item_id"],
+			"columnsTo": ["id"],
 			"entityType": "fks",
 			"name": "committee_active_agenda_item_id_agenda_item_id_fk",
 			"nameExplicit": false,
@@ -3726,12 +3605,8 @@
 			"tableTo": "agenda_item"
 		},
 		{
-			"columns": [
-				"active_roll_call_session_id"
-			],
-			"columnsTo": [
-				"id"
-			],
+			"columns": ["active_roll_call_session_id"],
+			"columnsTo": ["id"],
 			"entityType": "fks",
 			"name": "committee_active_roll_call_session_id_roll_call_session_id_fkey",
 			"nameExplicit": false,
@@ -3743,12 +3618,8 @@
 			"tableTo": "roll_call_session"
 		},
 		{
-			"columns": [
-				"active_voting_session_id"
-			],
-			"columnsTo": [
-				"id"
-			],
+			"columns": ["active_voting_session_id"],
+			"columnsTo": ["id"],
 			"entityType": "fks",
 			"name": "committee_active_voting_session_id_voting_session_id_fkey",
 			"nameExplicit": false,
@@ -3760,12 +3631,8 @@
 			"tableTo": "voting_session"
 		},
 		{
-			"columns": [
-				"active_draft_resolution_id"
-			],
-			"columnsTo": [
-				"id"
-			],
+			"columns": ["active_draft_resolution_id"],
+			"columnsTo": ["id"],
 			"entityType": "fks",
 			"name": "committee_active_draft_resolution_id_resolution_paper_id_fkey",
 			"nameExplicit": false,
@@ -3777,12 +3644,8 @@
 			"tableTo": "resolution_paper"
 		},
 		{
-			"columns": [
-				"active_amendment_id"
-			],
-			"columnsTo": [
-				"id"
-			],
+			"columns": ["active_amendment_id"],
+			"columnsTo": ["id"],
 			"entityType": "fks",
 			"name": "committee_active_amendment_id_amendment_id_fk",
 			"nameExplicit": false,
@@ -3794,12 +3657,8 @@
 			"tableTo": "amendment"
 		},
 		{
-			"columns": [
-				"committee_id"
-			],
-			"columnsTo": [
-				"id"
-			],
+			"columns": ["committee_id"],
+			"columnsTo": ["id"],
 			"entityType": "fks",
 			"name": "committee_member_committee_id_committee_id_fk",
 			"nameExplicit": false,
@@ -3811,12 +3670,8 @@
 			"tableTo": "committee"
 		},
 		{
-			"columns": [
-				"representation_id"
-			],
-			"columnsTo": [
-				"id"
-			],
+			"columns": ["representation_id"],
+			"columnsTo": ["id"],
 			"entityType": "fks",
 			"name": "committee_member_representation_id_representation_id_fk",
 			"nameExplicit": false,
@@ -3828,12 +3683,8 @@
 			"tableTo": "representation"
 		},
 		{
-			"columns": [
-				"committee_id"
-			],
-			"columnsTo": [
-				"id"
-			],
+			"columns": ["committee_id"],
+			"columnsTo": ["id"],
 			"entityType": "fks",
 			"name": "committee_topic_changed_timestamp_committee_id_committee_id_fk",
 			"nameExplicit": false,
@@ -3845,12 +3696,8 @@
 			"tableTo": "committee"
 		},
 		{
-			"columns": [
-				"agenda_item_id"
-			],
-			"columnsTo": [
-				"id"
-			],
+			"columns": ["agenda_item_id"],
+			"columnsTo": ["id"],
 			"entityType": "fks",
 			"name": "committee_topic_changed_timestamp_agenda_item_id_agenda_item_id",
 			"nameExplicit": false,
@@ -3862,12 +3709,8 @@
 			"tableTo": "agenda_item"
 		},
 		{
-			"columns": [
-				"conference_id"
-			],
-			"columnsTo": [
-				"id"
-			],
+			"columns": ["conference_id"],
+			"columnsTo": ["id"],
 			"entityType": "fks",
 			"name": "conference_member_conference_id_conference_id_fk",
 			"nameExplicit": false,
@@ -3879,12 +3722,8 @@
 			"tableTo": "conference"
 		},
 		{
-			"columns": [
-				"representation_id"
-			],
-			"columnsTo": [
-				"id"
-			],
+			"columns": ["representation_id"],
+			"columnsTo": ["id"],
 			"entityType": "fks",
 			"name": "conference_member_representation_id_representation_id_fk",
 			"nameExplicit": false,
@@ -3896,12 +3735,8 @@
 			"tableTo": "representation"
 		},
 		{
-			"columns": [
-				"conference_id"
-			],
-			"columnsTo": [
-				"id"
-			],
+			"columns": ["conference_id"],
+			"columnsTo": ["id"],
 			"entityType": "fks",
 			"name": "conference_user_conference_id_conference_id_fk",
 			"nameExplicit": false,
@@ -3913,12 +3748,8 @@
 			"tableTo": "conference"
 		},
 		{
-			"columns": [
-				"conference_member_id"
-			],
-			"columnsTo": [
-				"id"
-			],
+			"columns": ["conference_member_id"],
+			"columnsTo": ["id"],
 			"entityType": "fks",
 			"name": "conference_user_conference_member_id_conference_member_id_fk",
 			"nameExplicit": false,
@@ -3930,12 +3761,8 @@
 			"tableTo": "conference_member"
 		},
 		{
-			"columns": [
-				"committee_member_id"
-			],
-			"columnsTo": [
-				"id"
-			],
+			"columns": ["committee_member_id"],
+			"columnsTo": ["id"],
 			"entityType": "fks",
 			"name": "conference_user_committee_member_id_committee_member_id_fk",
 			"nameExplicit": false,
@@ -3947,12 +3774,8 @@
 			"tableTo": "committee_member"
 		},
 		{
-			"columns": [
-				"paper_id"
-			],
-			"columnsTo": [
-				"id"
-			],
+			"columns": ["paper_id"],
+			"columnsTo": ["id"],
 			"entityType": "fks",
 			"name": "operative_clause_vote_paper_id_resolution_paper_id_fk",
 			"nameExplicit": false,
@@ -3964,12 +3787,8 @@
 			"tableTo": "resolution_paper"
 		},
 		{
-			"columns": [
-				"voting_session_id"
-			],
-			"columnsTo": [
-				"id"
-			],
+			"columns": ["voting_session_id"],
+			"columnsTo": ["id"],
 			"entityType": "fks",
 			"name": "operative_clause_vote_voting_session_id_voting_session_id_fkey",
 			"nameExplicit": false,
@@ -3981,12 +3800,8 @@
 			"tableTo": "voting_session"
 		},
 		{
-			"columns": [
-				"paper_id"
-			],
-			"columnsTo": [
-				"id"
-			],
+			"columns": ["paper_id"],
+			"columnsTo": ["id"],
 			"entityType": "fks",
 			"name": "paper_content_snapshot_paper_id_resolution_paper_id_fk",
 			"nameExplicit": false,
@@ -3998,12 +3813,8 @@
 			"tableTo": "resolution_paper"
 		},
 		{
-			"columns": [
-				"paper_id"
-			],
-			"columnsTo": [
-				"id"
-			],
+			"columns": ["paper_id"],
+			"columnsTo": ["id"],
 			"entityType": "fks",
 			"name": "paper_editor_paper_id_resolution_paper_id_fk",
 			"nameExplicit": false,
@@ -4015,12 +3826,8 @@
 			"tableTo": "resolution_paper"
 		},
 		{
-			"columns": [
-				"conference_user_id"
-			],
-			"columnsTo": [
-				"id"
-			],
+			"columns": ["conference_user_id"],
+			"columnsTo": ["id"],
 			"entityType": "fks",
 			"name": "paper_editor_conference_user_id_conference_user_id_fk",
 			"nameExplicit": false,
@@ -4032,12 +3839,8 @@
 			"tableTo": "conference_user"
 		},
 		{
-			"columns": [
-				"paper_id"
-			],
-			"columnsTo": [
-				"id"
-			],
+			"columns": ["paper_id"],
+			"columnsTo": ["id"],
 			"entityType": "fks",
 			"name": "paper_share_code_paper_id_resolution_paper_id_fk",
 			"nameExplicit": false,
@@ -4049,12 +3852,8 @@
 			"tableTo": "resolution_paper"
 		},
 		{
-			"columns": [
-				"paper_id"
-			],
-			"columnsTo": [
-				"id"
-			],
+			"columns": ["paper_id"],
+			"columnsTo": ["id"],
 			"entityType": "fks",
 			"name": "paper_sponsor_paper_id_resolution_paper_id_fk",
 			"nameExplicit": false,
@@ -4066,12 +3865,8 @@
 			"tableTo": "resolution_paper"
 		},
 		{
-			"columns": [
-				"committee_member_id"
-			],
-			"columnsTo": [
-				"id"
-			],
+			"columns": ["committee_member_id"],
+			"columnsTo": ["id"],
 			"entityType": "fks",
 			"name": "paper_sponsor_committee_member_id_committee_member_id_fk",
 			"nameExplicit": false,
@@ -4083,12 +3878,8 @@
 			"tableTo": "committee_member"
 		},
 		{
-			"columns": [
-				"paper_id"
-			],
-			"columnsTo": [
-				"id"
-			],
+			"columns": ["paper_id"],
+			"columnsTo": ["id"],
 			"entityType": "fks",
 			"name": "paper_yjs_doc_paper_id_resolution_paper_id_fkey",
 			"nameExplicit": false,
@@ -4100,12 +3891,8 @@
 			"tableTo": "resolution_paper"
 		},
 		{
-			"columns": [
-				"conference_user_id"
-			],
-			"columnsTo": [
-				"id"
-			],
+			"columns": ["conference_user_id"],
+			"columnsTo": ["id"],
 			"entityType": "fks",
 			"name": "presence_event_conference_user_id_conference_user_id_fkey",
 			"nameExplicit": false,
@@ -4117,12 +3904,8 @@
 			"tableTo": "conference_user"
 		},
 		{
-			"columns": [
-				"committee_id"
-			],
-			"columnsTo": [
-				"id"
-			],
+			"columns": ["committee_id"],
+			"columnsTo": ["id"],
 			"entityType": "fks",
 			"name": "presence_event_committee_id_committee_id_fkey",
 			"nameExplicit": false,
@@ -4134,12 +3917,8 @@
 			"tableTo": "committee"
 		},
 		{
-			"columns": [
-				"triggered_by_conference_user_id"
-			],
-			"columnsTo": [
-				"id"
-			],
+			"columns": ["triggered_by_conference_user_id"],
+			"columnsTo": ["id"],
 			"entityType": "fks",
 			"name": "presence_event_xznprRrYgWYA_fkey",
 			"nameExplicit": false,
@@ -4151,12 +3930,8 @@
 			"tableTo": "conference_user"
 		},
 		{
-			"columns": [
-				"roll_call_session_id"
-			],
-			"columnsTo": [
-				"id"
-			],
+			"columns": ["roll_call_session_id"],
+			"columnsTo": ["id"],
 			"entityType": "fks",
 			"name": "presence_event_roll_call_session_id_roll_call_session_id_fkey",
 			"nameExplicit": false,
@@ -4168,12 +3943,8 @@
 			"tableTo": "roll_call_session"
 		},
 		{
-			"columns": [
-				"conference_id"
-			],
-			"columnsTo": [
-				"id"
-			],
+			"columns": ["conference_id"],
+			"columnsTo": ["id"],
 			"entityType": "fks",
 			"name": "representation_conference_id_conference_id_fk",
 			"nameExplicit": false,
@@ -4185,12 +3956,8 @@
 			"tableTo": "conference"
 		},
 		{
-			"columns": [
-				"paper_id"
-			],
-			"columnsTo": [
-				"id"
-			],
+			"columns": ["paper_id"],
+			"columnsTo": ["id"],
 			"entityType": "fks",
 			"name": "resolution_comment_paper_id_resolution_paper_id_fk",
 			"nameExplicit": false,
@@ -4202,12 +3969,8 @@
 			"tableTo": "resolution_paper"
 		},
 		{
-			"columns": [
-				"author_conference_user_id"
-			],
-			"columnsTo": [
-				"id"
-			],
+			"columns": ["author_conference_user_id"],
+			"columnsTo": ["id"],
 			"entityType": "fks",
 			"name": "resolution_comment_author_conference_user_id_conference_user_id",
 			"nameExplicit": false,
@@ -4219,12 +3982,8 @@
 			"tableTo": "conference_user"
 		},
 		{
-			"columns": [
-				"parent_comment_id"
-			],
-			"columnsTo": [
-				"id"
-			],
+			"columns": ["parent_comment_id"],
+			"columnsTo": ["id"],
 			"entityType": "fks",
 			"name": "resolution_comment_parent_comment_id_resolution_comment_id_fk",
 			"nameExplicit": false,
@@ -4236,12 +3995,8 @@
 			"tableTo": "resolution_comment"
 		},
 		{
-			"columns": [
-				"committee_id"
-			],
-			"columnsTo": [
-				"id"
-			],
+			"columns": ["committee_id"],
+			"columnsTo": ["id"],
 			"entityType": "fks",
 			"name": "resolution_paper_committee_id_committee_id_fk",
 			"nameExplicit": false,
@@ -4253,12 +4008,8 @@
 			"tableTo": "committee"
 		},
 		{
-			"columns": [
-				"agenda_item_id"
-			],
-			"columnsTo": [
-				"id"
-			],
+			"columns": ["agenda_item_id"],
+			"columnsTo": ["id"],
 			"entityType": "fks",
 			"name": "resolution_paper_agenda_item_id_agenda_item_id_fk",
 			"nameExplicit": false,
@@ -4270,12 +4021,8 @@
 			"tableTo": "agenda_item"
 		},
 		{
-			"columns": [
-				"creator_committee_member_id"
-			],
-			"columnsTo": [
-				"id"
-			],
+			"columns": ["creator_committee_member_id"],
+			"columnsTo": ["id"],
 			"entityType": "fks",
 			"name": "resolution_paper_creator_committee_member_id_committee_member_i",
 			"nameExplicit": false,
@@ -4287,12 +4034,8 @@
 			"tableTo": "committee_member"
 		},
 		{
-			"columns": [
-				"vote_voting_session_id"
-			],
-			"columnsTo": [
-				"id"
-			],
+			"columns": ["vote_voting_session_id"],
+			"columnsTo": ["id"],
 			"entityType": "fks",
 			"name": "resolution_paper_vote_voting_session_id_voting_session_id_fkey",
 			"nameExplicit": false,
@@ -4304,12 +4047,8 @@
 			"tableTo": "voting_session"
 		},
 		{
-			"columns": [
-				"committee_id"
-			],
-			"columnsTo": [
-				"id"
-			],
+			"columns": ["committee_id"],
+			"columnsTo": ["id"],
 			"entityType": "fks",
 			"name": "roll_call_session_committee_id_committee_id_fkey",
 			"nameExplicit": false,
@@ -4321,12 +4060,8 @@
 			"tableTo": "committee"
 		},
 		{
-			"columns": [
-				"started_by_conference_user_id"
-			],
-			"columnsTo": [
-				"id"
-			],
+			"columns": ["started_by_conference_user_id"],
+			"columnsTo": ["id"],
 			"entityType": "fks",
 			"name": "roll_call_session_J2lptyrzjtLx_fkey",
 			"nameExplicit": false,
@@ -4338,12 +4073,8 @@
 			"tableTo": "conference_user"
 		},
 		{
-			"columns": [
-				"committee_member_id"
-			],
-			"columnsTo": [
-				"id"
-			],
+			"columns": ["committee_member_id"],
+			"columnsTo": ["id"],
 			"entityType": "fks",
 			"name": "speaker_on_list_committee_member_id_committee_member_id_fk",
 			"nameExplicit": false,
@@ -4355,12 +4086,8 @@
 			"tableTo": "committee_member"
 		},
 		{
-			"columns": [
-				"conference_member_id"
-			],
-			"columnsTo": [
-				"id"
-			],
+			"columns": ["conference_member_id"],
+			"columnsTo": ["id"],
 			"entityType": "fks",
 			"name": "speaker_on_list_conference_member_id_conference_member_id_fk",
 			"nameExplicit": false,
@@ -4372,12 +4099,8 @@
 			"tableTo": "conference_member"
 		},
 		{
-			"columns": [
-				"speakers_list_id"
-			],
-			"columnsTo": [
-				"id"
-			],
+			"columns": ["speakers_list_id"],
+			"columnsTo": ["id"],
 			"entityType": "fks",
 			"name": "speaker_on_list_speakers_list_id_speakers_list_id_fk",
 			"nameExplicit": false,
@@ -4389,12 +4112,8 @@
 			"tableTo": "speakers_list"
 		},
 		{
-			"columns": [
-				"agenda_item_id"
-			],
-			"columnsTo": [
-				"id"
-			],
+			"columns": ["agenda_item_id"],
+			"columnsTo": ["id"],
 			"entityType": "fks",
 			"name": "speakers_list_agenda_item_id_agenda_item_id_fk",
 			"nameExplicit": false,
@@ -4406,12 +4125,8 @@
 			"tableTo": "agenda_item"
 		},
 		{
-			"columns": [
-				"committee_member_id"
-			],
-			"columnsTo": [
-				"id"
-			],
+			"columns": ["committee_member_id"],
+			"columnsTo": ["id"],
 			"entityType": "fks",
 			"name": "spoken_time_period_committee_member_id_committee_member_id_fk",
 			"nameExplicit": false,
@@ -4423,12 +4138,8 @@
 			"tableTo": "committee_member"
 		},
 		{
-			"columns": [
-				"conference_member_id"
-			],
-			"columnsTo": [
-				"id"
-			],
+			"columns": ["conference_member_id"],
+			"columnsTo": ["id"],
 			"entityType": "fks",
 			"name": "spoken_time_period_conference_member_id_conference_member_id_fk",
 			"nameExplicit": false,
@@ -4440,12 +4151,8 @@
 			"tableTo": "conference_member"
 		},
 		{
-			"columns": [
-				"speakers_list_id"
-			],
-			"columnsTo": [
-				"id"
-			],
+			"columns": ["speakers_list_id"],
+			"columnsTo": ["id"],
 			"entityType": "fks",
 			"name": "spoken_time_period_speakers_list_id_speakers_list_id_fk",
 			"nameExplicit": false,
@@ -4457,12 +4164,8 @@
 			"tableTo": "speakers_list"
 		},
 		{
-			"columns": [
-				"committee_id"
-			],
-			"columnsTo": [
-				"id"
-			],
+			"columns": ["committee_id"],
+			"columnsTo": ["id"],
 			"entityType": "fks",
 			"name": "voting_session_committee_id_committee_id_fkey",
 			"nameExplicit": false,
@@ -4474,12 +4177,8 @@
 			"tableTo": "committee"
 		},
 		{
-			"columns": [
-				"started_by_conference_user_id"
-			],
-			"columnsTo": [
-				"id"
-			],
+			"columns": ["started_by_conference_user_id"],
+			"columnsTo": ["id"],
 			"entityType": "fks",
 			"name": "voting_session_CFZOAYRJVkye_fkey",
 			"nameExplicit": false,
@@ -4491,12 +4190,8 @@
 			"tableTo": "conference_user"
 		},
 		{
-			"columns": [
-				"voting_session_id"
-			],
-			"columnsTo": [
-				"id"
-			],
+			"columns": ["voting_session_id"],
+			"columnsTo": ["id"],
 			"entityType": "fks",
 			"name": "voting_vote_voting_session_id_voting_session_id_fkey",
 			"nameExplicit": false,
@@ -4508,12 +4203,8 @@
 			"tableTo": "voting_session"
 		},
 		{
-			"columns": [
-				"committee_member_id"
-			],
-			"columnsTo": [
-				"id"
-			],
+			"columns": ["committee_member_id"],
+			"columnsTo": ["id"],
 			"entityType": "fks",
 			"name": "voting_vote_committee_member_id_committee_member_id_fkey",
 			"nameExplicit": false,
@@ -4525,9 +4216,7 @@
 			"tableTo": "committee_member"
 		},
 		{
-			"columns": [
-				"id"
-			],
+			"columns": ["id"],
 			"entityType": "pks",
 			"name": "agenda_item_pkey",
 			"nameExplicit": false,
@@ -4535,9 +4224,7 @@
 			"table": "agenda_item"
 		},
 		{
-			"columns": [
-				"id"
-			],
+			"columns": ["id"],
 			"entityType": "pks",
 			"name": "amendment_pkey",
 			"nameExplicit": false,
@@ -4545,9 +4232,7 @@
 			"table": "amendment"
 		},
 		{
-			"columns": [
-				"id"
-			],
+			"columns": ["id"],
 			"entityType": "pks",
 			"name": "amendment_review_item_pkey",
 			"nameExplicit": false,
@@ -4555,9 +4240,7 @@
 			"table": "amendment_review_item"
 		},
 		{
-			"columns": [
-				"id"
-			],
+			"columns": ["id"],
 			"entityType": "pks",
 			"name": "amendment_sponsor_pkey",
 			"nameExplicit": false,
@@ -4565,9 +4248,7 @@
 			"table": "amendment_sponsor"
 		},
 		{
-			"columns": [
-				"id"
-			],
+			"columns": ["id"],
 			"entityType": "pks",
 			"name": "committee_pkey",
 			"nameExplicit": false,
@@ -4575,9 +4256,7 @@
 			"table": "committee"
 		},
 		{
-			"columns": [
-				"id"
-			],
+			"columns": ["id"],
 			"entityType": "pks",
 			"name": "committee_member_pkey",
 			"nameExplicit": false,
@@ -4585,9 +4264,7 @@
 			"table": "committee_member"
 		},
 		{
-			"columns": [
-				"id"
-			],
+			"columns": ["id"],
 			"entityType": "pks",
 			"name": "committee_topic_changed_timestamp_pkey",
 			"nameExplicit": false,
@@ -4595,9 +4272,7 @@
 			"table": "committee_topic_changed_timestamp"
 		},
 		{
-			"columns": [
-				"id"
-			],
+			"columns": ["id"],
 			"entityType": "pks",
 			"name": "conference_pkey",
 			"nameExplicit": false,
@@ -4605,9 +4280,7 @@
 			"table": "conference"
 		},
 		{
-			"columns": [
-				"id"
-			],
+			"columns": ["id"],
 			"entityType": "pks",
 			"name": "conference_member_pkey",
 			"nameExplicit": false,
@@ -4615,9 +4288,7 @@
 			"table": "conference_member"
 		},
 		{
-			"columns": [
-				"id"
-			],
+			"columns": ["id"],
 			"entityType": "pks",
 			"name": "conference_user_pkey",
 			"nameExplicit": false,
@@ -4625,9 +4296,7 @@
 			"table": "conference_user"
 		},
 		{
-			"columns": [
-				"id"
-			],
+			"columns": ["id"],
 			"entityType": "pks",
 			"name": "operative_clause_vote_pkey",
 			"nameExplicit": false,
@@ -4635,9 +4304,7 @@
 			"table": "operative_clause_vote"
 		},
 		{
-			"columns": [
-				"id"
-			],
+			"columns": ["id"],
 			"entityType": "pks",
 			"name": "paper_content_snapshot_pkey",
 			"nameExplicit": false,
@@ -4645,9 +4312,7 @@
 			"table": "paper_content_snapshot"
 		},
 		{
-			"columns": [
-				"id"
-			],
+			"columns": ["id"],
 			"entityType": "pks",
 			"name": "paper_editor_pkey",
 			"nameExplicit": false,
@@ -4655,9 +4320,7 @@
 			"table": "paper_editor"
 		},
 		{
-			"columns": [
-				"id"
-			],
+			"columns": ["id"],
 			"entityType": "pks",
 			"name": "paper_share_code_pkey",
 			"nameExplicit": false,
@@ -4665,9 +4328,7 @@
 			"table": "paper_share_code"
 		},
 		{
-			"columns": [
-				"id"
-			],
+			"columns": ["id"],
 			"entityType": "pks",
 			"name": "paper_sponsor_pkey",
 			"nameExplicit": false,
@@ -4675,9 +4336,7 @@
 			"table": "paper_sponsor"
 		},
 		{
-			"columns": [
-				"id"
-			],
+			"columns": ["id"],
 			"entityType": "pks",
 			"name": "paper_yjs_doc_pkey",
 			"nameExplicit": false,
@@ -4685,9 +4344,7 @@
 			"table": "paper_yjs_doc"
 		},
 		{
-			"columns": [
-				"id"
-			],
+			"columns": ["id"],
 			"entityType": "pks",
 			"name": "presence_event_pkey",
 			"nameExplicit": false,
@@ -4695,9 +4352,7 @@
 			"table": "presence_event"
 		},
 		{
-			"columns": [
-				"id"
-			],
+			"columns": ["id"],
 			"entityType": "pks",
 			"name": "representation_pkey",
 			"nameExplicit": false,
@@ -4705,9 +4360,7 @@
 			"table": "representation"
 		},
 		{
-			"columns": [
-				"id"
-			],
+			"columns": ["id"],
 			"entityType": "pks",
 			"name": "resolution_comment_pkey",
 			"nameExplicit": false,
@@ -4715,9 +4368,7 @@
 			"table": "resolution_comment"
 		},
 		{
-			"columns": [
-				"id"
-			],
+			"columns": ["id"],
 			"entityType": "pks",
 			"name": "resolution_paper_pkey",
 			"nameExplicit": false,
@@ -4725,9 +4376,7 @@
 			"table": "resolution_paper"
 		},
 		{
-			"columns": [
-				"id"
-			],
+			"columns": ["id"],
 			"entityType": "pks",
 			"name": "roll_call_session_pkey",
 			"nameExplicit": false,
@@ -4735,9 +4384,7 @@
 			"table": "roll_call_session"
 		},
 		{
-			"columns": [
-				"id"
-			],
+			"columns": ["id"],
 			"entityType": "pks",
 			"name": "speaker_on_list_pkey",
 			"nameExplicit": false,
@@ -4745,9 +4392,7 @@
 			"table": "speaker_on_list"
 		},
 		{
-			"columns": [
-				"id"
-			],
+			"columns": ["id"],
 			"entityType": "pks",
 			"name": "speakers_list_pkey",
 			"nameExplicit": false,
@@ -4755,9 +4400,7 @@
 			"table": "speakers_list"
 		},
 		{
-			"columns": [
-				"id"
-			],
+			"columns": ["id"],
 			"entityType": "pks",
 			"name": "spoken_time_period_pkey",
 			"nameExplicit": false,
@@ -4765,9 +4408,7 @@
 			"table": "spoken_time_period"
 		},
 		{
-			"columns": [
-				"id"
-			],
+			"columns": ["id"],
 			"entityType": "pks",
 			"name": "user_pkey",
 			"nameExplicit": false,
@@ -4775,9 +4416,7 @@
 			"table": "user"
 		},
 		{
-			"columns": [
-				"id"
-			],
+			"columns": ["id"],
 			"entityType": "pks",
 			"name": "voting_session_pkey",
 			"nameExplicit": false,
@@ -4785,9 +4424,7 @@
 			"table": "voting_session"
 		},
 		{
-			"columns": [
-				"id"
-			],
+			"columns": ["id"],
 			"entityType": "pks",
 			"name": "voting_vote_pkey",
 			"nameExplicit": false,
@@ -4795,10 +4432,7 @@
 			"table": "voting_vote"
 		},
 		{
-			"columns": [
-				"amendment_id",
-				"committee_member_id"
-			],
+			"columns": ["amendment_id", "committee_member_id"],
 			"entityType": "uniques",
 			"name": "amendment_sponsor_amendment_id_committee_member_id_unique",
 			"nameExplicit": false,
@@ -4807,10 +4441,7 @@
 			"table": "amendment_sponsor"
 		},
 		{
-			"columns": [
-				"conference_id",
-				"name"
-			],
+			"columns": ["conference_id", "name"],
 			"entityType": "uniques",
 			"name": "committee_conference_id_name_unique",
 			"nameExplicit": false,
@@ -4819,10 +4450,7 @@
 			"table": "committee"
 		},
 		{
-			"columns": [
-				"conference_id",
-				"abbreviation"
-			],
+			"columns": ["conference_id", "abbreviation"],
 			"entityType": "uniques",
 			"name": "committee_conference_id_abbreviation_unique",
 			"nameExplicit": false,
@@ -4831,10 +4459,7 @@
 			"table": "committee"
 		},
 		{
-			"columns": [
-				"conference_id",
-				"attendance_code"
-			],
+			"columns": ["conference_id", "attendance_code"],
 			"entityType": "uniques",
 			"name": "conference_user_conference_id_attendance_code_unique",
 			"nameExplicit": false,
@@ -4843,10 +4468,7 @@
 			"table": "conference_user"
 		},
 		{
-			"columns": [
-				"conference_id",
-				"user_email"
-			],
+			"columns": ["conference_id", "user_email"],
 			"entityType": "uniques",
 			"name": "conference_user_conference_id_user_email_unique",
 			"nameExplicit": false,
@@ -4855,10 +4477,7 @@
 			"table": "conference_user"
 		},
 		{
-			"columns": [
-				"paper_id",
-				"clause_id"
-			],
+			"columns": ["paper_id", "clause_id"],
 			"entityType": "uniques",
 			"name": "operative_clause_vote_paper_id_clause_id_unique",
 			"nameExplicit": false,
@@ -4867,10 +4486,7 @@
 			"table": "operative_clause_vote"
 		},
 		{
-			"columns": [
-				"paper_id",
-				"conference_user_id"
-			],
+			"columns": ["paper_id", "conference_user_id"],
 			"entityType": "uniques",
 			"name": "paper_editor_paper_id_conference_user_id_unique",
 			"nameExplicit": false,
@@ -4879,10 +4495,7 @@
 			"table": "paper_editor"
 		},
 		{
-			"columns": [
-				"paper_id",
-				"committee_member_id"
-			],
+			"columns": ["paper_id", "committee_member_id"],
 			"entityType": "uniques",
 			"name": "paper_sponsor_paper_id_committee_member_id_unique",
 			"nameExplicit": false,
@@ -4891,10 +4504,7 @@
 			"table": "paper_sponsor"
 		},
 		{
-			"columns": [
-				"conference_id",
-				"name"
-			],
+			"columns": ["conference_id", "name"],
 			"entityType": "uniques",
 			"name": "representation_conference_id_name_unique",
 			"nameExplicit": false,
@@ -4903,11 +4513,7 @@
 			"table": "representation"
 		},
 		{
-			"columns": [
-				"conference_id",
-				"alpha2_code",
-				"alpha3_code"
-			],
+			"columns": ["conference_id", "alpha2_code", "alpha3_code"],
 			"entityType": "uniques",
 			"name": "representation_conference_id_alpha2_code_alpha3_code_unique",
 			"nameExplicit": false,
@@ -4916,10 +4522,7 @@
 			"table": "representation"
 		},
 		{
-			"columns": [
-				"speakers_list_id",
-				"position"
-			],
+			"columns": ["speakers_list_id", "position"],
 			"entityType": "uniques",
 			"name": "speaker_on_list_speakers_list_id_position_unique",
 			"nameExplicit": false,
@@ -4928,10 +4531,7 @@
 			"table": "speaker_on_list"
 		},
 		{
-			"columns": [
-				"speakers_list_id",
-				"committee_member_id"
-			],
+			"columns": ["speakers_list_id", "committee_member_id"],
 			"entityType": "uniques",
 			"name": "speaker_on_list_speakers_list_id_committee_member_id_unique",
 			"nameExplicit": false,
@@ -4940,10 +4540,7 @@
 			"table": "speaker_on_list"
 		},
 		{
-			"columns": [
-				"speakers_list_id",
-				"conference_member_id"
-			],
+			"columns": ["speakers_list_id", "conference_member_id"],
 			"entityType": "uniques",
 			"name": "speaker_on_list_speakers_list_id_conference_member_id_unique",
 			"nameExplicit": false,
@@ -4952,10 +4549,7 @@
 			"table": "speaker_on_list"
 		},
 		{
-			"columns": [
-				"agenda_item_id",
-				"type"
-			],
+			"columns": ["agenda_item_id", "type"],
 			"entityType": "uniques",
 			"name": "speakers_list_agenda_item_id_type_unique",
 			"nameExplicit": false,
@@ -4964,10 +4558,7 @@
 			"table": "speakers_list"
 		},
 		{
-			"columns": [
-				"voting_session_id",
-				"committee_member_id"
-			],
+			"columns": ["voting_session_id", "committee_member_id"],
 			"entityType": "uniques",
 			"name": "voting_vote_voting_session_id_committee_member_id_unique",
 			"nameExplicit": false,
@@ -4976,9 +4567,7 @@
 			"table": "voting_vote"
 		},
 		{
-			"columns": [
-				"code"
-			],
+			"columns": ["code"],
 			"entityType": "uniques",
 			"name": "paper_share_code_code_unique",
 			"nameExplicit": false,
@@ -4987,9 +4576,7 @@
 			"table": "paper_share_code"
 		},
 		{
-			"columns": [
-				"paper_id"
-			],
+			"columns": ["paper_id"],
 			"entityType": "uniques",
 			"name": "paper_yjs_doc_paper_id_key",
 			"nameExplicit": false,
@@ -4998,9 +4585,7 @@
 			"table": "paper_yjs_doc"
 		},
 		{
-			"columns": [
-				"id"
-			],
+			"columns": ["id"],
 			"entityType": "uniques",
 			"name": "user_id_unique",
 			"nameExplicit": false,
@@ -5009,9 +4594,7 @@
 			"table": "user"
 		},
 		{
-			"columns": [
-				"email"
-			],
+			"columns": ["email"],
 			"entityType": "uniques",
 			"name": "user_email_unique",
 			"nameExplicit": false,
@@ -5130,9 +4713,7 @@
 			"typeSchema": null
 		},
 		{
-			"columns": [
-				"id"
-			],
+			"columns": ["id"],
 			"entityType": "pks",
 			"name": "display_device_pkey",
 			"nameExplicit": false,
@@ -5140,12 +4721,8 @@
 			"table": "display_device"
 		},
 		{
-			"columns": [
-				"conference_id"
-			],
-			"columnsTo": [
-				"id"
-			],
+			"columns": ["conference_id"],
+			"columnsTo": ["id"],
 			"entityType": "fks",
 			"name": "display_device_conference_id_conference_id_fkey",
 			"nameExplicit": false,
@@ -5157,12 +4734,8 @@
 			"tableTo": "conference"
 		},
 		{
-			"columns": [
-				"committee_id"
-			],
-			"columnsTo": [
-				"id"
-			],
+			"columns": ["committee_id"],
+			"columnsTo": ["id"],
 			"entityType": "fks",
 			"name": "display_device_committee_id_committee_id_fkey",
 			"nameExplicit": false,
@@ -5177,11 +4750,7 @@
 			"entityType": "enums",
 			"name": "display_device_locale",
 			"schema": "public",
-			"values": [
-				"en",
-				"de",
-				"pt"
-			]
+			"values": ["en", "de", "pt"]
 		},
 		{
 			"default": null,
@@ -5212,9 +4781,7 @@
 	],
 	"dialect": "postgres",
 	"id": "5ee202ca-8f1d-4fdf-bf8f-34b85129553e",
-	"prevIds": [
-		"7da77fb2-111d-4f5d-aaa2-00e3aa4b98f1"
-	],
+	"prevIds": ["7da77fb2-111d-4f5d-aaa2-00e3aa4b98f1"],
 	"renames": [],
 	"version": "8"
 }

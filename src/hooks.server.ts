@@ -5,6 +5,7 @@ import { paraglideMiddleware } from '$lib/paraglide/server';
 import { sequence } from '@sveltejs/kit/hooks';
 import { OIDC } from '$api/services/OIDC';
 import { locales, baseLocale, cookieName, cookieMaxAge } from '$lib/paraglide/runtime';
+import { isLocalConferenceActive, LOCAL_CONFERENCE_ID } from '$lib/state/localDemo.svelte';
 
 const TAURI_ORIGIN = 'tauri://localhost';
 
@@ -32,6 +33,15 @@ const tauriCors: Handle = async ({ event, resolve }) => {
 	return response;
 };
 
+// The offline demo conference never has a real OIDC session (it's reachable without
+// logging in at all)
+const oidcOrLocalDemoBypass: Handle = ({ event, resolve }) => {
+	if (event.url.pathname.startsWith(`/app/${LOCAL_CONFERENCE_ID}`)) {
+		return resolve(event);
+	}
+	return OIDC.handle({ event, resolve });
+};
+
 const nonBaseLocales = locales.filter((l) => l !== baseLocale);
 
 /** Redirect locale-prefixed URLs to bare paths, setting the cookie instead. */
@@ -56,7 +66,7 @@ const localeRedirect: Handle = ({ event, resolve }) => {
 
 export const handle: Handle = sequence(
 	tauriCors,
-	OIDC.handle,
+	oidcOrLocalDemoBypass,
 	localeRedirect,
 	({ event, resolve }) =>
 		paraglideMiddleware(event.request, ({ request: localizedRequest, locale }) => {

@@ -57,9 +57,31 @@ function readEntity<T extends Record<string, unknown>>(
 	return cache.readFragment(fragment, entity as Record<string, unknown>) as T | null;
 }
 
-function ensureId(id: unknown): string {
+// Local demo mode invokes an optimistic handler's id generation more than once for the
+// same mutation call (once to build the optimistic entity, once from
+// `withLocalDemoMutationCommits` to commit a "server" entity, and once more when shaping
+// the fake mutation result in client.ts). Against a real backend this doesn't matter —
+// the server issues the authoritative id and callers reconcile against it — but the local
+// demo has no such authority, so all three call sites must agree on one id. They're NOT
+// guaranteed to receive the exact same `args` object reference (urql/graphcache/crosstab-sync
+// clone operation.variables at some hops), so memoize by a value-based key (JSON of the args)
+// rather than object identity. A short TTL bounds the (rare) risk of two genuinely distinct
+// mutation calls with byte-identical args colliding into the same id.
+const ENSURE_ID_TTL_MS = 2000;
+const ensuredIds = new Map<string, { id: string; expiresAt: number }>();
+export function ensureId(args: unknown): string {
+	const id = (args as Record<string, unknown> | undefined)?.id;
 	if (typeof id === 'string' && id.length > 0) return id;
-	return nanoid();
+	if (!args || typeof args !== 'object') return nanoid();
+
+	const now = Date.now();
+	const key = JSON.stringify(args);
+	const cached = ensuredIds.get(key);
+	if (cached && cached.expiresAt > now) return cached.id;
+
+	const generated = nanoid();
+	ensuredIds.set(key, { id: generated, expiresAt: now + ENSURE_ID_TTL_MS });
+	return generated;
 }
 
 // ---------------------------------------------------------------------------
@@ -193,7 +215,7 @@ export const optimistic: OptimisticMutationConfig = {
 	// agendaItem.ts
 	// -------------------------------------------------------------------------
 	createAgendaItem: (args) => {
-		const id = ensureId(args.id);
+		const id = ensureId(args);
 		return {
 			__typename: 'Agendaitem',
 			id,
@@ -211,7 +233,7 @@ export const optimistic: OptimisticMutationConfig = {
 	// committee.ts
 	// -------------------------------------------------------------------------
 	createCommittee: (args) => {
-		const id = ensureId(args.id);
+		const id = ensureId(args);
 		return {
 			__typename: 'Committee',
 			id,
@@ -309,7 +331,7 @@ export const optimistic: OptimisticMutationConfig = {
 	// committeeMember.ts
 	// -------------------------------------------------------------------------
 	createCommitteeMember: (args) => {
-		const id = ensureId(args.id);
+		const id = ensureId(args);
 		return {
 			__typename: 'Committeemember',
 			id,
@@ -368,7 +390,7 @@ export const optimistic: OptimisticMutationConfig = {
 	// conferenceMember.ts
 	// -------------------------------------------------------------------------
 	createConferenceMember: (args) => {
-		const id = ensureId(args.id);
+		const id = ensureId(args);
 		return {
 			__typename: 'Conferencemember',
 			id,
@@ -386,7 +408,7 @@ export const optimistic: OptimisticMutationConfig = {
 	// conferenceUser.ts
 	// -------------------------------------------------------------------------
 	createConferenceUser: (args) => {
-		const id = ensureId(args.id);
+		const id = ensureId(args);
 		const type = args.conferenceUserType as string;
 		const attendanceCode = type === 'NON_STATE_ACTOR' ? generateAttendanceCode() : null;
 		const name =
@@ -475,7 +497,7 @@ export const optimistic: OptimisticMutationConfig = {
 	// presenceEvent.ts
 	// -------------------------------------------------------------------------
 	recordNsaCheckIn: (args, cache) => {
-		const id = ensureId(args.id);
+		const id = ensureId(args);
 		const now = getServerTime().toDate();
 		// Best-effort: try to resolve the NSA conferenceUser from the cache by scanning
 		// known Conferenceuser entries. If we can't find them we still return a phantom
@@ -544,7 +566,7 @@ export const optimistic: OptimisticMutationConfig = {
 		};
 	},
 	recordNsaCheckOut: (args, cache) => {
-		const id = ensureId(args.id);
+		const id = ensureId(args);
 		const now = getServerTime().toDate();
 		const target = resolveNsaTargetInCache(cache, args.committeeId as string, args.code as string);
 		const conferenceUserId = target?.id ?? `pending-${id}`;
@@ -586,7 +608,7 @@ export const optimistic: OptimisticMutationConfig = {
 		};
 	},
 	insertPresenceEvent: (args, cache) => {
-		const id = ensureId(args.id);
+		const id = ensureId(args);
 		const timestamp = (args.timestamp as Date | string | undefined) ?? getServerTime().toDate();
 		const targetId = args.conferenceUserId as string;
 
@@ -705,7 +727,7 @@ export const optimistic: OptimisticMutationConfig = {
 	// representation.ts
 	// -------------------------------------------------------------------------
 	createRepresentation: (args) => {
-		const id = ensureId(args.id);
+		const id = ensureId(args);
 		return {
 			__typename: 'Representation',
 			id,
@@ -736,7 +758,7 @@ export const optimistic: OptimisticMutationConfig = {
 		// presentation popup's modal opens immediately. We don't fall back to a
 		// findActive lookup any more; the chair passes its current FK as `id` when
 		// resuming, and a fresh start always supplies a fresh nanoid.
-		const id = ensureId(args.id);
+		const id = ensureId(args);
 		return {
 			__typename: 'Rollcallsession',
 			id,
@@ -762,7 +784,7 @@ export const optimistic: OptimisticMutationConfig = {
 	// resolutionPaper.ts
 	// -------------------------------------------------------------------------
 	createResolutionPaper: (args) => {
-		const id = ensureId(args.id);
+		const id = ensureId(args);
 		return {
 			__typename: 'Resolutionpaper',
 			id,
@@ -821,7 +843,7 @@ export const optimistic: OptimisticMutationConfig = {
 	// resolutionComment.ts
 	// -------------------------------------------------------------------------
 	createResolutionComment: (args) => {
-		const id = ensureId(args.id);
+		const id = ensureId(args);
 		return {
 			__typename: 'Resolutioncomment',
 			id,
@@ -852,7 +874,7 @@ export const optimistic: OptimisticMutationConfig = {
 	// amendment.ts
 	// -------------------------------------------------------------------------
 	createAmendment: (args, cache) => {
-		const id = ensureId(args.id);
+		const id = ensureId(args);
 		const sponsorId = nanoid();
 
 		// Chairs supply the proposer via args; delegates resolve from the cached
@@ -1019,7 +1041,7 @@ export const optimistic: OptimisticMutationConfig = {
 	// paperEditor.ts
 	// -------------------------------------------------------------------------
 	addPaperEditor: (args) => {
-		const id = ensureId(args.id);
+		const id = ensureId(args);
 		return {
 			__typename: 'Papereditor',
 			id,
@@ -1043,7 +1065,7 @@ export const optimistic: OptimisticMutationConfig = {
 	// operativeClauseVote.ts
 	// -------------------------------------------------------------------------
 	linkOperativeClauseVote: (args) => {
-		const id = ensureId(args.id);
+		const id = ensureId(args);
 		return {
 			__typename: 'Operativeclausevote',
 			id,
@@ -1083,7 +1105,7 @@ export const optimistic: OptimisticMutationConfig = {
 		const explicit = typeof args.position === 'number' ? (args.position as number) : null;
 		const position = explicit ?? speakers.length;
 
-		const newId = ensureId(args.id);
+		const newId = ensureId(args);
 
 		const shifted = speakers.map((s) => {
 			if (explicit !== null && s.position >= explicit) return { ...s, position: s.position + 1 };
@@ -1290,7 +1312,7 @@ export const optimistic: OptimisticMutationConfig = {
 			return null;
 		}
 
-		const newId = ensureId(args.id);
+		const newId = ensureId(args);
 		const position = speakers.length;
 
 		// Mirror addSpeakerOnList: ensure the new Speakeronlist's member link is in the
@@ -1567,7 +1589,7 @@ export const optimistic: OptimisticMutationConfig = {
 		// caller-supplied id and let the `updates` handler write the FK on the
 		// committee. The chair passes the current FK as `id` when resuming and a
 		// fresh nanoid when starting; no need to scan the cache for an existing.
-		const id = ensureId(args.id);
+		const id = ensureId(args);
 		const mode = args.mode as string;
 		return {
 			__typename: 'Votingsession',
@@ -1624,7 +1646,7 @@ export const optimistic: OptimisticMutationConfig = {
 			args.sessionId as string,
 			args.committeeMemberId as string
 		);
-		const id = existingId ?? ensureId(args.id);
+		const id = existingId ?? ensureId(args);
 		return {
 			__typename: 'Votingvote',
 			id,
@@ -1646,7 +1668,7 @@ export const optimistic: OptimisticMutationConfig = {
 			args.sessionId as string,
 			args.committeeMemberId as string
 		);
-		const id = existingId ?? ensureId(args.id);
+		const id = existingId ?? ensureId(args);
 		return {
 			__typename: 'Votingvote',
 			id,
@@ -1690,7 +1712,7 @@ export const optimistic: OptimisticMutationConfig = {
 	// auto-retry unattended after a network drop.
 	// -------------------------------------------------------------------------
 	createPaperShareCode: (args) => {
-		const id = ensureId(args.id);
+		const id = ensureId(args);
 		return {
 			__typename: 'Papersharecode',
 			id,
@@ -1704,7 +1726,7 @@ export const optimistic: OptimisticMutationConfig = {
 	},
 	redeemPaperShareCode: () => true,
 	addPaperSponsor: (args) => {
-		const id = ensureId(args.id);
+		const id = ensureId(args);
 		return {
 			__typename: 'Papersponsor',
 			id,
@@ -1716,7 +1738,7 @@ export const optimistic: OptimisticMutationConfig = {
 	},
 	removePaperSponsor: () => true,
 	addAmendmentSponsor: (args) => {
-		const id = ensureId(args.id);
+		const id = ensureId(args);
 		return {
 			__typename: 'Amendmentsponsor',
 			id,
@@ -1729,7 +1751,7 @@ export const optimistic: OptimisticMutationConfig = {
 	removeAmendmentSponsor: () => true,
 	updateAmendmentReviewItem: () => true,
 	createManualSnapshot: (args) => {
-		const id = ensureId(args.id);
+		const id = ensureId(args);
 		return {
 			__typename: 'Papercontentsnapshot',
 			id,
